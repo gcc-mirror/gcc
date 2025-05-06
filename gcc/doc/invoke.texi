@@ -31532,6 +31532,14 @@ to @samp{zvks} and @samp{zvkg}.
 @tab 1.0
 @tab Supervisor-mode timer interrupts extension.
 
+@item svade
+@tab 1.0
+@tab Cause exception when hardware updating of A/D bits is disabled
+
+@item svadu
+@tab 1.0
+@tab Hardware Updating of A/D Bits extension.
+
 @item svinval
 @tab 1.0
 @tab Fine-grained address-translation cache invalidation extension.

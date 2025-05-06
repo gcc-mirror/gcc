@@ -466,6 +466,10 @@ Mask(XCVBI) Var(riscv_xcv_subext)
 TargetVariable
 int riscv_sv_subext
 
+Mask(SVADE) Var(riscv_sv_subext)
+
+Mask(SVADU) Var(riscv_sv_subext)
+
 Mask(SVINVAL) Var(riscv_sv_subext)
 
 Mask(SVNAPOT) Var(riscv_sv_subext)
