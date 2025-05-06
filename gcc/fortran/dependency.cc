@@ -944,8 +944,12 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 	   types), not in characters.  */
 	return subarray_p;
 
-      case REF_COMPONENT:
       case REF_INQUIRY:
+	/* Within an array reference, inquiry references of complex
+	   variables generally need a temporary.  */
+	return subarray_p;
+
+      case REF_COMPONENT:
 	break;
       }
 
