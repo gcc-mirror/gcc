@@ -50,6 +50,9 @@
 #include <signal.h>
 #include <syslog.h>
 #include <unistd.h>
+#if __has_include(<errno.h>)
+# include <errno.h> // for program_invocation_short_name
+#endif
 
 #include "config.h"
 #include "libgcobol-fp.h"
@@ -11179,10 +11182,18 @@ match_declarative( bool enabled,
 static void
 default_exception_handler( ec_type_t ec )
 {
-  extern char *program_invocation_short_name;
+#if HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME
+  /* Declared in errno.h, when available.  */
+  const char *ident = program_invocation_short_name;
+#elif defined (HAVE_GETPROGNAME)
+  /* Declared in stdlib.h.  */
+  const char *ident = getprogname();
+#else
+  /* Avoid a NULL entry.  */
+  const char *ident = "unnamed_COBOL_program";
+#endif
   static bool first_time = true;
   static int priority = LOG_INFO, option = LOG_PERROR, facility = LOG_USER;
-  const char *ident = program_invocation_short_name;
   ec_disposition_t disposition = ec_category_fatal_e;
 
   if( first_time ) {
