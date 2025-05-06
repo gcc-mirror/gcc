@@ -1302,3 +1302,77 @@
     }
   DONE;
 })
+
+;; More forms of single bit extraction.  The RISC-V port does not
+;; define SHIFT_COUNT_TRUNCATED so we need forms where the bit position
+;; is masked.
+;;
+;; We could in theory use this for rv32 as well, but it probably does
+;; not occur in practice.  The bit position would need to be QI/HI mode,
+;; otherwise we would not need the zero extension.
+;;
+;; One could also argue that the zero extension is redundant and should
+;; have been optimized away during RTL simplification.
+(define_insn "*bextdi_position_ze_masked"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extract:DI (match_operand:DI 1 "register_operand" "r")
+			 (const_int 1)
+			 (zero_extend:DI
+			  (and:SI (match_operand:SI 2 "register_operand" "r")
+				  (const_int 63)))))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+;; Same as above, but without the extraneous zero_extend.
+(define_insn "*bextdi_position_ze_masked"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(zero_extract:X
+	  (match_operand:X 1 "register_operand" "r")
+	  (const_int 1)
+	  (and:X (match_operand:SI 2 "register_operand" "r")
+		 (match_operand:SI 3 "bitpos_mask_operand" "n"))))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+
+;; Single bit extraction by first shifting it into the sign bit, then
+;; shifting it down to the low bit.
+(define_insn "*bext<mode>_position_masked"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(lshiftrt:X (ashift:X (match_operand:X 1 "register_operand" "r")
+			      (match_operand:QI 2 "register_operand" "r"))
+		    (match_operand:X 3 "bitpos_mask_operand" "n")))]
+  "TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+;; Single bit extraction by shifting into the low bit, but with the
+;; position formed with a subreg of a mask.
+(define_insn "*bext<mode>_position_masked_subreg"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(lshiftrt:X
+	 (ashift:X (match_operand:X 1 "register_operand" "r")
+		   (subreg:QI
+		    (and:X (match_operand:X 2 "register_operand" "r")
+			   (match_operand:X 3 "bitpos_mask_operand" "n")) 0))
+	 (match_operand:X 4 "bitpos_mask_operand" "n")))]
+  "TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+;; This has shown up in testing.  In particular we end up with an
+;; immediate input.  We can load that into a register and target
+;; one of the above bext patterns.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (lshiftrt:X (match_operand 1 "immediate_operand")
+			   (match_operand:QI 2 "register_operand"))
+	       (const_int 1)))
+   (clobber (match_operand:X 3 "register_operand"))]
+  ""
+  [(set (match_dup 3) (match_dup 1))
+   (set (match_dup 0) (zero_extract:X (match_dup 3)
+				      (const_int 1)
+				      (zero_extend:X (match_dup 2))))])
