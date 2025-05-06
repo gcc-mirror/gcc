@@ -8300,6 +8300,8 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	ll_and_mask &= sign;
       if (l_xor)
 	{
+	  if (ll_bitsize != lr_bitsize)
+	    return 0;
 	  if (!lr_and_mask.get_precision ())
 	    lr_and_mask = sign;
 	  else
@@ -8321,6 +8323,8 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	rl_and_mask &= sign;
       if (r_xor)
 	{
+	  if (rl_bitsize != rr_bitsize)
+	    return 0;
 	  if (!rr_and_mask.get_precision ())
 	    rr_and_mask = sign;
 	  else
@@ -8728,7 +8732,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       wide_int lr_mask, rr_mask;
       if (lr_and_mask.get_precision ())
 	lr_mask = wi::lshift (wide_int::from (lr_and_mask, rnprec, UNSIGNED),
-			  xlr_bitpos);
+			      xlr_bitpos);
       else
 	lr_mask = wi::shifted_mask (xlr_bitpos, lr_bitsize, false, rnprec);
       if (rr_and_mask.get_precision ())
