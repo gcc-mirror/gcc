@@ -22794,6 +22794,27 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else
 	*total = vec_fp_conversion_cost (cost, GET_MODE_BITSIZE (mode));
       return false;
+    case FLOAT:
+    case UNSIGNED_FLOAT:
+      if (!SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
+	/* TODO: We do not have cost tables for x87.  */
+	*total = cost->fadd;
+      else if (VECTOR_MODE_P (mode))
+	*total = ix86_vec_cost (mode, cost->cvtpi2ps);
+      else
+	*total = cost->cvtsi2ss;
+      return false;
+
+    case FIX:
+    case UNSIGNED_FIX:
+      if (!SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
+	/* TODO: We do not have cost tables for x87.  */
+	*total = cost->fadd;
+      else if (VECTOR_MODE_P (mode))
+	*total = ix86_vec_cost (mode, cost->cvtps2pi);
+      else
+	*total = cost->cvtss2si;
+      return false;
 
     case ABS:
       /* SSE requires memory load for the constant operand. It may make
