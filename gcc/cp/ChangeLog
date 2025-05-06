@@ -1,3 +1,156 @@
+2025-05-05  Iain Sandoe  <iains.gcc@gmail.com>
+
+	Backported from master:
+	2025-02-03  Iain Sandoe  <iains.gcc@gmail.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/116506
+	PR c++/116880
+	* coroutines.cc (build_co_await): Ensure that xvalues are
+	materialised.  Handle references/pointer values in awaiter
+	access expressions.
+	(is_stable_lvalue): New.
+	* decl.cc (cxx_maybe_build_cleanup): Handle null arg.
+
+2025-05-05  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-01-08  Jason Merrill  <jason@redhat.com>
+
+	* coroutines.cc (cp_coroutine_transform::build_ramp_function): Build
+	INIT_EXPR directly.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98935
+	* coroutines.cc (register_local_var_uses): Add a pset to the
+	tree walk to avoid visiting the same BIND_EXPR twice.  Make
+	an early exit for cases that the callback does not apply.
+	(cp_coroutine_transform::apply_transforms): Add a pset to the
+	tree walk for register_local_vars.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/116793
+	* coroutines.cc (await_statement_expander): Just process
+	subtrees if encountering a CLEANUP_POINT_EXPR.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	* coroutines.cc (co_await_get_resume_call): Return a tree
+	directly, rather than a tree pointer.
+	* cp-tree.h (co_await_get_resume_call): Adjust signature
+	accordingly.
+	* cvt.cc (convert_to_void): Do not alter CO_AWAIT_EXPRs when
+	discarding them.  Simplify handling implicit INDIRECT_REFs.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/116502
+	* coroutines.cc (maybe_promote_temps): Convert temporary
+	initializers to void without complaining.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-09-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc
+	(cp_coroutine_transform::build_ramp_function): Separate the
+	build of promise constructor and destructor.  When evaluating
+	the constructor, check that build_special_member_call returns
+	an expression with side effects before adding it.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-09-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115905
+	* coroutines.cc (struct coro_aw_data): Add a member for the
+	restart dispatch label.
+	(expand_one_await_expression): Rework to modernise and to
+	handle the boolean await_suspend() case.
+	(build_actor_fn): Rework the dispatcher and allow for a jump
+	back to the dispatcher.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/116482
+	* coroutines.cc
+	(coro_build_actor_or_destroy_function): Make the parameter
+	decls DECL_ARTIFICIAL.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-08-26  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/113457
+	* coroutines.cc (struct coroutine_info): Add integer field
+	awaitable_number.  This is a counter used for assigning unique
+	names to awaitable temporaries.
+	(get_awaitable_var): Use awaitable_number from coroutine_info
+	instead of the static int awn.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/110635
+	* coroutines.cc
+	(cp_coroutine_transform::wrap_original_function_body): Look through
+	initial await target expressions to find the actual co_await_expr
+	that we need to update.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/102051
+	* coroutines.cc
+	(cp_coroutine_transform::build_ramp_function): Handle
+	"throwing_cleanup" here instead of ...
+	(cp_coroutine_transform::apply_transforms): ... here.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/109682
+	* coroutines.cc
+	(cp_coroutine_transform::build_ramp_function): Allow for cases where
+	get_return_on_allocation_fail has a type convertible to the ramp
+	return type.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100476
+	* coroutines.cc
+	(cp_coroutine_transform::build_ramp_function): Remove special
+	handling of void get_return_object expressions.
+
 2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

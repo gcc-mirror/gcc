@@ -1,3 +1,125 @@
+2025-05-05  Iain Sandoe  <iains.gcc@gmail.com>
+
+	Backported from master:
+	2025-02-03  Iain Sandoe  <iains.gcc@gmail.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/116506
+	PR c++/116880
+	* g++.dg/coroutines/pr116506.C: New test.
+	* g++.dg/coroutines/pr116880.C: New test.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98935
+	* g++.dg/coroutines/pr98935.C: New test.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/116793
+	* g++.dg/coroutines/pr116793-1.C: New test.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	* g++.dg/coroutines/nodiscard-1.C: New test.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/116502
+	* g++.dg/coroutines/maybe-unused-1.C: New test.
+	* g++.dg/coroutines/pr116502.C: New test.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-09-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115905
+	* g++.dg/coroutines/torture/pr115905.C: New test.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-09-04  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/106973
+	* g++.dg/coroutines/pr106973.C: New test.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-08-29  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/105104
+	* g++.dg/coroutines/torture/pr105104.C: New test.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/116482
+	* g++.dg/coroutines/pr116482.C: New test.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-08-26  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/113457
+	* g++.dg/coroutines/pr113457-1.C: New test.
+	* g++.dg/coroutines/pr113457.C: New test.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/110635
+	* g++.dg/coroutines/pr110635.C: New test.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/102051
+	* g++.dg/coroutines/pr102051.C: New test.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/109682
+	* g++.dg/coroutines/pr109682.C: New test.
+
+2025-05-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100476
+	* g++.dg/coroutines/coro-bad-gro-01-void-gro-non-class-coro.C:
+	Adjust expected diagnostic.
+	* g++.dg/coroutines/pr102489.C: Avoid void get_return_object.
+	* g++.dg/coroutines/pr103868.C: Likewise.
+	* g++.dg/coroutines/pr94879-folly-1.C: Likewise.
+	* g++.dg/coroutines/pr94883-folly-2.C: Likewise.
+	* g++.dg/coroutines/pr96749-2.C: Likewise.
+
 2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

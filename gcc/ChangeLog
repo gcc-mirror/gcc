@@ -1,3 +1,20 @@
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-09-04  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/106973
+	* internal-fn.def (CO_YIELD): Mark as ECF_LEAF.
+
+2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-08-29  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/105104
+	* coroutine-passes.cc (execute_early_expand_coro_ifns): Don't
+	remove any labels.
+
 2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
