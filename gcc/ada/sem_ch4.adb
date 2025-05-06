@@ -835,6 +835,14 @@ package body Sem_Ch4 is
          Error_Msg_N ("cannot allocate abstract object", E);
       end if;
 
+      --  If the type of a constrained array has an unconstrained first
+      --  subtype, its Finalize_Address primitive expects the address of
+      --  an object with a dope vector (see Make_Finalize_Address_Stmts).
+
+      if Is_Constr_Array_Subt_Of_Unc_With_Controlled (Type_Id) then
+         Set_Is_Constr_Array_Subt_With_Bounds (Type_Id);
+      end if;
+
       Set_Etype (N, Acc_Type);
 
       --  If this is an allocator for the return stack, then no restriction may

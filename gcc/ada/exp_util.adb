@@ -8703,6 +8703,20 @@ package body Exp_Util is
       end if;
    end Is_Captured_Function_Call;
 
+   -------------------------------------------------
+   -- Is_Constr_Array_Subt_Of_Unc_With_Controlled --
+   -------------------------------------------------
+
+   function Is_Constr_Array_Subt_Of_Unc_With_Controlled (Typ : Entity_Id)
+     return Boolean
+   is
+   begin
+      return Is_Array_Type (Typ)
+        and then Is_Constrained (Typ)
+        and then Has_Controlled_Component (Typ)
+        and then not Is_Constrained (First_Subtype (Typ));
+   end Is_Constr_Array_Subt_Of_Unc_With_Controlled;
+
    ------------------------------------------
    -- Is_Conversion_Or_Reference_To_Formal --
    ------------------------------------------
@@ -12759,11 +12773,8 @@ package body Exp_Util is
 
          if Nkind (Exp) = N_Function_Call
            and then (Is_Build_In_Place_Result_Type (Exp_Type)
-                      or else (Is_Array_Type (Exp_Type)
-                                and then Has_Controlled_Component (Exp_Type)
-                                and then Is_Constrained (Exp_Type)
-                                and then not
-                                  Is_Constrained (First_Subtype (Exp_Type))))
+                      or else
+                     Is_Constr_Array_Subt_Of_Unc_With_Controlled (Exp_Type))
            and then Nkind (Parent (Exp)) /= N_Object_Declaration
            and then not Is_Expression_Of_Func_Return (Exp)
          then

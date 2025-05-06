@@ -696,6 +696,15 @@ package body Exp_Ch7 is
    --  Set the Finalize_Address primitive for the object that has been
    --  attached to a finalization Master_Node.
 
+   function Shift_Address_For_Descriptor
+     (Addr   : Node_Id;
+      Typ    : Entity_Id;
+      Op_Nam : Name_Id) return Node_Id
+     with Pre => Is_Array_Type (Typ)
+                   and then not Is_Constrained (Typ)
+                   and then Op_Nam in Name_Op_Add | Name_Op_Subtract;
+   --  Add to Addr, or subtract from Addr, the size of the descriptor of Typ
+
    ----------------------------------
    -- Attach_Object_To_Master_Node --
    ----------------------------------
@@ -5546,35 +5555,14 @@ package body Exp_Ch7 is
       --  an object with a dope vector (see Make_Finalize_Address_Stmts).
       --  This is achieved by setting Is_Constr_Array_Subt_With_Bounds,
       --  but the address of the object is still that of its elements,
-      --  so we need to shift it.
+      --  so we need to shift it back to skip the dope vector.
 
       if Is_Array_Type (Utyp)
         and then not Is_Constrained (First_Subtype (Utyp))
       then
-         --  Shift the address from the start of the elements to the
-         --  start of the dope vector:
-
-         --    V - (Utyp'Descriptor_Size / Storage_Unit)
-
          Obj_Addr :=
-           Make_Function_Call (Loc,
-             Name                   =>
-               Make_Expanded_Name (Loc,
-                 Chars => Name_Op_Subtract,
-                 Prefix =>
-                   New_Occurrence_Of
-                     (RTU_Entity (System_Storage_Elements), Loc),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Name_Op_Subtract)),
-             Parameter_Associations => New_List (
-               Obj_Addr,
-               Make_Op_Divide (Loc,
-                 Left_Opnd  =>
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Utyp, Loc),
-                     Attribute_Name => Name_Descriptor_Size),
-                 Right_Opnd =>
-                   Make_Integer_Literal (Loc, System_Storage_Unit))));
+           Shift_Address_For_Descriptor
+             (Obj_Addr, First_Subtype (Utyp), Name_Op_Subtract);
       end if;
 
       return Obj_Addr;
@@ -8183,6 +8171,10 @@ package body Exp_Ch7 is
       Ptr_Typ   : Entity_Id;
 
    begin
+      --  Array types: picking the (unconstrained) base type as designated type
+      --  requires allocating the bounds alongside the data, so we only do this
+      --  when the first subtype itself was declared as unconstrained.
+
       if Is_Array_Type (Typ) then
          if Is_Constrained (First_Subtype (Typ)) then
             Desig_Typ := First_Subtype (Typ);
@@ -8278,63 +8270,18 @@ package body Exp_Ch7 is
       --  lays in front of the elements and then use a thin pointer to perform
       --  the address-to-access conversion.
 
-      if Is_Array_Type (Typ)
-        and then not Is_Constrained (First_Subtype (Typ))
-      then
-         declare
-            Dope_Id : Entity_Id;
+      if Is_Array_Type (Typ) and then not Is_Constrained (Desig_Typ) then
+         Obj_Expr :=
+           Shift_Address_For_Descriptor (Obj_Expr, Desig_Typ, Name_Op_Add);
 
-         begin
-            --  Ensure that Ptr_Typ is a thin pointer; generate:
-            --    for Ptr_Typ'Size use System.Address'Size;
+         --  Ensure that Ptr_Typ is a thin pointer; generate:
+         --    for Ptr_Typ'Size use System.Address'Size;
 
-            Append_To (Decls,
-              Make_Attribute_Definition_Clause (Loc,
-                Name       => New_Occurrence_Of (Ptr_Typ, Loc),
-                Chars      => Name_Size,
-                Expression =>
-                  Make_Integer_Literal (Loc, System_Address_Size)));
-
-            --  Generate:
-            --    Dnn : constant Storage_Offset :=
-            --            Desig_Typ'Descriptor_Size / Storage_Unit;
-
-            Dope_Id := Make_Temporary (Loc, 'D');
-
-            Append_To (Decls,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Dope_Id,
-                Constant_Present    => True,
-                Object_Definition   =>
-                  New_Occurrence_Of (RTE (RE_Storage_Offset), Loc),
-                Expression          =>
-                  Make_Op_Divide (Loc,
-                    Left_Opnd  =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix         => New_Occurrence_Of (Desig_Typ, Loc),
-                        Attribute_Name => Name_Descriptor_Size),
-                    Right_Opnd =>
-                      Make_Integer_Literal (Loc, System_Storage_Unit))));
-
-            --  Shift the address from the start of the dope vector to the
-            --  start of the elements:
-            --
-            --    V + Dnn
-
-            Obj_Expr :=
-              Make_Function_Call (Loc,
-                Name                   =>
-                  Make_Expanded_Name (Loc,
-                    Chars => Name_Op_Add,
-                    Prefix =>
-                      New_Occurrence_Of
-                        (RTU_Entity (System_Storage_Elements), Loc),
-                    Selector_Name =>
-                      Make_Identifier (Loc, Name_Op_Add)),
-                Parameter_Associations => New_List (
-                  Obj_Expr,
-                  New_Occurrence_Of (Dope_Id, Loc)));
-         end;
+         Append_To (Decls,
+           Make_Attribute_Definition_Clause (Loc,
+             Name       => New_Occurrence_Of (Ptr_Typ, Loc),
+             Chars      => Name_Size,
+             Expression => Make_Integer_Literal (Loc, System_Address_Size)));
       end if;
 
       Fin_Call :=
@@ -8911,6 +8858,41 @@ package body Exp_Ch7 is
    begin
       return Scope_Stack.Table (Scope_Stack.Last).Node_To_Be_Wrapped;
    end Node_To_Be_Wrapped;
+
+   ----------------------------------
+   -- Shift_Address_For_Descriptor --
+   ----------------------------------
+
+   function Shift_Address_For_Descriptor
+     (Addr   : Node_Id;
+      Typ    : Entity_Id;
+      Op_Nam : Name_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (Addr);
+
+   begin
+      --  Generate:
+      --    Addr +/- (Typ'Descriptor_Size / Storage_Unit)
+
+      return
+        Make_Function_Call (Loc,
+          Name                   =>
+            Make_Expanded_Name (Loc,
+              Chars  => Op_Nam,
+              Prefix =>
+                New_Occurrence_Of
+                  (RTU_Entity (System_Storage_Elements), Loc),
+              Selector_Name => Make_Identifier (Loc, Op_Nam)),
+          Parameter_Associations => New_List (
+            Addr,
+            Make_Op_Divide (Loc,
+              Left_Opnd  =>
+                Make_Attribute_Reference (Loc,
+                  Prefix         => New_Occurrence_Of (Typ, Loc),
+                  Attribute_Name => Name_Descriptor_Size),
+              Right_Opnd =>
+                Make_Integer_Literal (Loc, System_Storage_Unit))));
+   end Shift_Address_For_Descriptor;
 
    ----------------------------
    -- Store_Actions_In_Scope --
