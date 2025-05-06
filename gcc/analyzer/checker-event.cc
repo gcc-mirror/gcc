@@ -112,7 +112,8 @@ checker_event::checker_event (enum event_kind kind,
   m_original_depth (loc_info.m_depth),
   m_effective_depth (loc_info.m_depth),
   m_pending_diagnostic (NULL), m_emission_id (),
-  m_logical_loc (loc_info.m_fndecl)
+  m_logical_loc
+    (tree_logical_location_manager::key_from_tree (loc_info.m_fndecl))
 {
   /* Update effective fndecl and depth if inlining has been recorded.  */
   if (flag_analyzer_undo_inlining)
@@ -122,7 +123,8 @@ checker_event::checker_event (enum event_kind kind,
 	{
 	  m_effective_fndecl = info.get_inner_fndecl ();
 	  m_effective_depth += info.get_extra_frames ();
-	  m_logical_loc = tree_logical_location (m_effective_fndecl);
+	  m_logical_loc
+	    = tree_logical_location_manager::key_from_tree (m_effective_fndecl);
 	}
     }
 }
@@ -141,7 +143,8 @@ checker_event::get_meaning () const
 
 void
 checker_event::
-maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const
+maybe_add_sarif_properties (sarif_builder &builder,
+			    sarif_object &thread_flow_loc_obj) const
 {
   sarif_property_bag &props = thread_flow_loc_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/checker_event/"
@@ -150,12 +153,11 @@ maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const
   props.set_string (PROPERTY_PREFIX "kind", event_kind_to_string (m_kind));
 
   if (m_original_fndecl != m_effective_fndecl)
-    {
-      tree_logical_location logical_loc (m_original_fndecl);
-      props.set<sarif_logical_location>
-	(PROPERTY_PREFIX "original_fndecl",
-	 make_sarif_logical_location_object (logical_loc));
-    }
+    props.set_logical_location
+      (PROPERTY_PREFIX "original_fndecl",
+       builder,
+       tree_logical_location_manager::key_from_tree (m_original_fndecl));
+
   if (m_original_depth != m_effective_depth)
     props.set_integer (PROPERTY_PREFIX "original_depth", m_original_depth);
 #undef PROPERTY_PREFIX
@@ -502,10 +504,11 @@ state_change_event::get_meaning () const
    for superedge_event.  */
 
 void
-superedge_event::maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj)
+superedge_event::maybe_add_sarif_properties (sarif_builder &builder,
+					     sarif_object &thread_flow_loc_obj)
   const
 {
-  checker_event::maybe_add_sarif_properties (thread_flow_loc_obj);
+  checker_event::maybe_add_sarif_properties (builder, thread_flow_loc_obj);
   sarif_property_bag &props = thread_flow_loc_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/superedge_event/"
   if (m_sedge)

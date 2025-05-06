@@ -217,7 +217,7 @@ public:
 
 class edit_context;
 class diagnostic_client_data_hooks;
-class logical_location;
+class logical_location_manager;
 class diagnostic_diagram;
 class diagnostic_source_effect_info;
 class diagnostic_output_format;
@@ -670,6 +670,9 @@ public:
   {
     return m_client_data_hooks;
   }
+
+  const logical_location_manager *
+  get_logical_location_manager () const;
 
   const urlifier *get_urlifier () const;
 

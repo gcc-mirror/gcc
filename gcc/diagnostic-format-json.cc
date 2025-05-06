@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-buffer.h"
 #include "json.h"
 #include "selftest.h"
+#include "diagnostic-client-data-hooks.h"
 #include "logical-location.h"
 
 class json_output_format;
@@ -272,11 +273,13 @@ make_json_for_path (diagnostic_context &context,
       auto pp = ref_pp->clone ();
       event.print_desc (*pp.get ());
       event_obj->set_string ("description", pp_formatted_text (pp.get ()));
-      if (const logical_location *logical_loc = event.get_logical_location ())
-	{
-	  label_text name (logical_loc->get_name_for_path_output ());
-	  event_obj->set_string ("function", name.get ());
-	}
+      if (logical_location logical_loc = event.get_logical_location ())
+	if (auto hooks = context.get_client_data_hooks ())
+	  if (auto mgr = hooks->get_logical_location_manager ())
+	    {
+	      label_text name (mgr->get_name_for_path_output (logical_loc));
+	      event_obj->set_string ("function", name.get ());
+	    }
       event_obj->set_integer ("depth", event.get_stack_depth ());
       path_array->append (std::move (event_obj));
     }

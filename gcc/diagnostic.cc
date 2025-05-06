@@ -580,6 +580,14 @@ diagnostic_context::pop_urlifier ()
     delete node.m_urlifier;
 }
 
+const logical_location_manager *
+diagnostic_context::get_logical_location_manager () const
+{
+  if (!m_client_data_hooks)
+    return nullptr;
+  return m_client_data_hooks->get_logical_location_manager ();
+}
+
 const urlifier *
 diagnostic_context::get_urlifier () const
 {
@@ -1037,14 +1045,14 @@ diagnostic_context::notes_inhibited_in_group () const
   return false;
 }
 
-/* class logical_location.  */
+/* class logical_location_manager.  */
 
 /* Return true iff this is a function or method.  */
 
 bool
-logical_location::function_p () const
+logical_location_manager::function_p (key k) const
 {
-  switch (get_kind ())
+  switch (get_kind (k))
     {
     default:
       gcc_unreachable ();

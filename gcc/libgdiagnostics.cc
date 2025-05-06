@@ -162,7 +162,7 @@ as_location_t (const diagnostic_physical_location *loc)
 
 /* This has to be a "struct" as it is exposed in the C API.  */
 
-struct diagnostic_logical_location : public logical_location
+struct diagnostic_logical_location
 {
   diagnostic_logical_location (enum diagnostic_logical_location_kind_t kind,
 			       const diagnostic_logical_location *parent,
@@ -175,60 +175,6 @@ struct diagnostic_logical_location : public logical_location
     m_fully_qualified_name (fully_qualified_name),
     m_decorated_name (decorated_name)
   {
-  }
-
-  const char *get_short_name () const final override
-  {
-    return m_short_name.get_str ();
-  }
-  const char *get_name_with_scope () const final override
-  {
-    return m_fully_qualified_name.get_str ();
-  }
-  const char *get_internal_name () const final override
-  {
-    return m_decorated_name.get_str ();
-  }
-  enum logical_location_kind get_kind () const final override
-  {
-    switch (m_kind)
-      {
-      default:
-	gcc_unreachable ();
-      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION:
-	return LOGICAL_LOCATION_KIND_FUNCTION;
-      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MEMBER:
-	return LOGICAL_LOCATION_KIND_MEMBER;
-      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MODULE:
-	return LOGICAL_LOCATION_KIND_MODULE;
-      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_NAMESPACE:
-	return LOGICAL_LOCATION_KIND_NAMESPACE;
-      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TYPE:
-	return LOGICAL_LOCATION_KIND_TYPE;
-      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_RETURN_TYPE:
-	return LOGICAL_LOCATION_KIND_RETURN_TYPE;
-      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PARAMETER:
-	return LOGICAL_LOCATION_KIND_PARAMETER;
-      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE:
-	return LOGICAL_LOCATION_KIND_VARIABLE;
-      }
-  }
-
-  enum diagnostic_logical_location_kind_t get_external_kind () const
-  {
-    return m_kind;
-  }
-
-  const diagnostic_logical_location *get_parent () const { return m_parent; }
-
-  const char *get_fully_qualified_name () const
-  {
-    return m_fully_qualified_name.get_str ();
-  }
-
-  label_text get_name_for_path_output () const
-  {
-    return label_text::borrow (m_short_name.get_str ());
   }
 
   bool
@@ -248,7 +194,6 @@ struct diagnostic_logical_location : public logical_location
     return false;
   }
 
-private:
   enum diagnostic_logical_location_kind_t m_kind;
   const diagnostic_logical_location *m_parent;
   owned_nullable_string m_short_name;
@@ -313,6 +258,80 @@ round_alloc_size (size_t s)
   return s;
 }
 
+class impl_logical_location_manager : public logical_location_manager
+{
+public:
+  static const diagnostic_logical_location *
+  ptr_from_key (logical_location k)
+  {
+    return k.cast_to<const diagnostic_logical_location *> ();
+  }
+
+  static logical_location
+  key_from_ptr (const diagnostic_logical_location *ptr)
+  {
+    return logical_location::from_ptr (ptr);
+  }
+
+  const char *get_short_name (key k) const final override
+  {
+    if (auto loc = ptr_from_key (k))
+      return loc->m_short_name.get_str ();
+    else
+      return nullptr;
+  }
+
+  const char *get_name_with_scope (key k) const final override
+  {
+    if (auto loc = ptr_from_key (k))
+      return loc->m_fully_qualified_name.get_str ();
+    else
+      return nullptr;
+  }
+
+  const char *get_internal_name (key k) const final override
+  {
+    if (auto loc = ptr_from_key (k))
+      return loc->m_decorated_name.get_str ();
+    else
+      return nullptr;
+  }
+
+  enum logical_location_kind get_kind (key k) const final override
+  {
+    auto loc = ptr_from_key (k);
+    gcc_assert (loc);
+    switch (loc->m_kind)
+      {
+      default:
+	gcc_unreachable ();
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION:
+	return LOGICAL_LOCATION_KIND_FUNCTION;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MEMBER:
+	return LOGICAL_LOCATION_KIND_MEMBER;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MODULE:
+	return LOGICAL_LOCATION_KIND_MODULE;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_NAMESPACE:
+	return LOGICAL_LOCATION_KIND_NAMESPACE;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TYPE:
+	return LOGICAL_LOCATION_KIND_TYPE;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_RETURN_TYPE:
+	return LOGICAL_LOCATION_KIND_RETURN_TYPE;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PARAMETER:
+	return LOGICAL_LOCATION_KIND_PARAMETER;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE:
+	return LOGICAL_LOCATION_KIND_VARIABLE;
+      }
+  }
+
+  label_text get_name_for_path_output (key k) const final override
+  {
+    auto loc = ptr_from_key (k);
+    gcc_assert (loc);
+    return label_text::borrow (loc->m_short_name.get_str ());
+  }
+};
+
 class impl_diagnostic_client_data_hooks : public diagnostic_client_data_hooks
 {
 public:
@@ -321,7 +340,14 @@ public:
   {}
 
   const client_version_info *get_any_version_info () const final override;
-  const logical_location *get_current_logical_location () const final override;
+
+  const logical_location_manager *
+  get_logical_location_manager () const final override
+  {
+    return &m_logical_location_manager;
+  }
+  logical_location get_current_logical_location () const final override;
+
   const char * maybe_get_sarif_source_language (const char *filename)
     const final override;
   void add_sarif_invocation_properties (sarif_object &invocation_obj)
@@ -329,6 +355,7 @@ public:
 
 private:
   diagnostic_manager &m_mgr;
+  impl_logical_location_manager m_logical_location_manager;
 };
 
 class impl_client_version_info : public client_version_info
@@ -428,6 +455,14 @@ public:
 
   line_maps *get_line_table () { return &m_line_table; }
   diagnostic_context &get_dc () { return m_dc; }
+
+  const logical_location_manager &
+  get_logical_location_manager () const
+  {
+    auto mgr = m_dc.get_logical_location_manager ();
+    gcc_assert (mgr);
+    return *mgr;
+  }
 
   void write_patch (FILE *dst_stream);
 
@@ -711,9 +746,9 @@ public:
       pp_string (&pp, m_desc_uncolored.get ());
   }
 
-  const logical_location *get_logical_location () const
+  logical_location get_logical_location () const final override
   {
-    return m_logical_loc;
+    return impl_logical_location_manager::key_from_ptr (m_logical_loc);
   }
 
   meaning get_meaning () const final override
@@ -777,8 +812,9 @@ private:
 
 struct diagnostic_execution_path : public diagnostic_path
 {
-  diagnostic_execution_path ()
-  : m_thread ("")
+  diagnostic_execution_path (const logical_location_manager &logical_loc_mgr)
+  : diagnostic_path (logical_loc_mgr),
+    m_thread ("")
   {
   }
 
@@ -819,9 +855,9 @@ struct diagnostic_execution_path : public diagnostic_path
   same_function_p (int event_idx_a,
 		   int event_idx_b) const final override
   {
-    const logical_location *logical_loc_a
+    logical_location logical_loc_a
       = m_events[event_idx_a]->get_logical_location ();
-    const logical_location *logical_loc_b
+    logical_location logical_loc_b
       = m_events[event_idx_b]->get_logical_location ();
 
     /* Pointer equality, as we uniqify logical location instances.  */
@@ -907,7 +943,9 @@ public:
   diagnostic_execution_path *
   add_execution_path ()
   {
-    m_path = std::make_unique<diagnostic_execution_path> ();
+    m_path
+      = std::make_unique<diagnostic_execution_path>
+	  (m_diag_mgr.get_logical_location_manager ());
     m_rich_loc.set_path (m_path.get ());
     return m_path.get ();
   }
@@ -978,12 +1016,13 @@ impl_diagnostic_client_data_hooks::get_any_version_info () const
   return m_mgr.get_client_version_info ();
 }
 
-const logical_location *
+logical_location
 impl_diagnostic_client_data_hooks::get_current_logical_location () const
 {
   gcc_assert (m_mgr.get_current_diag ());
 
-  return m_mgr.get_current_diag ()->get_logical_location ();
+  return impl_logical_location_manager::key_from_ptr
+    (m_mgr.get_current_diag ()->get_logical_location ());
 }
 
 const char *
@@ -1051,13 +1090,13 @@ diagnostic_text_sink::text_starter (diagnostic_text_output_format &text_output,
   if (diag_logical_loc && diag_logical_loc != mgr.get_prev_diag_logical_loc ())
     {
       pp_set_prefix (pp, nullptr);
-      switch (diag_logical_loc->get_kind ())
+      switch (diag_logical_loc->m_kind)
 	{
 	default:
 	  break;
-	case LOGICAL_LOCATION_KIND_FUNCTION:
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION:
 	  if (const char *name
-	      = diag_logical_loc->get_name_with_scope ())
+	      = diag_logical_loc->m_fully_qualified_name.get_str ())
 	    {
 	      pp_printf (pp, _("In function %qs"), name);
 	      pp_character (pp, ':');
@@ -1135,7 +1174,9 @@ GCC_DIAGNOSTIC_POP
 diagnostic_execution_path *
 diagnostic_manager::new_execution_path ()
 {
-  return new diagnostic_execution_path ();
+  auto mgr = m_dc.get_logical_location_manager ();
+  gcc_assert (mgr);
+  return new diagnostic_execution_path (*mgr);
 }
 
 /* Error-checking at the API boundary.  */
@@ -1463,7 +1504,7 @@ diagnostic_manager_debug_dump_logical_location (const diagnostic_manager *diag_m
   if (loc)
     {
       fprintf (out, "logical_location(kind=");
-      switch (loc->get_external_kind ())
+      switch (loc->m_kind)
 	{
 	default:
 	  gcc_unreachable ();
@@ -1492,15 +1533,18 @@ diagnostic_manager_debug_dump_logical_location (const diagnostic_manager *diag_m
 	  fprintf (out, "variable");
 	  break;
 	}
-      if (const diagnostic_logical_location *parent = loc->get_parent ())
-	diagnostic_manager_debug_dump_logical_location (diag_mgr,
-							parent,
-							out);
-      if (const char *val = loc->get_short_name ())
+      if (auto parent = loc->m_parent)
+	{
+         fprintf (out, ", parent=");
+	 diagnostic_manager_debug_dump_logical_location (diag_mgr,
+							 parent,
+							 out);
+	}
+      if (const char *val = loc->m_short_name.get_str ())
 	fprintf (out, ", short_name=\"%s\"", val);
-      if (const char *val = loc->get_name_with_scope ())
+      if (const char *val = loc->m_fully_qualified_name.get_str ())
 	fprintf (out, ", fully_qualified_name=\"%s\"", val);
-      if (const char *val = loc->get_internal_name ())
+      if (const char *val = loc->m_decorated_name.get_str ())
 	fprintf (out, ", decorated_name=\"%s\"", val);
       fprintf (out, ")");
     }
@@ -1801,7 +1845,7 @@ diagnostic_logical_location_get_kind (const diagnostic_logical_location *loc)
 {
   FAIL_IF_NULL (loc);
 
-  return loc->get_external_kind ();
+  return loc->m_kind;
 }
 
 const diagnostic_logical_location *
@@ -1809,7 +1853,7 @@ diagnostic_logical_location_get_parent (const diagnostic_logical_location *loc)
 {
   FAIL_IF_NULL (loc);
 
-  return loc->get_parent ();
+  return loc->m_parent;
 }
 
 const char *
@@ -1817,7 +1861,7 @@ diagnostic_logical_location_get_short_name (const diagnostic_logical_location *l
 {
   FAIL_IF_NULL (loc);
 
-  return loc->get_short_name ();
+  return loc->m_short_name.get_str ();
 }
 
 const char *
@@ -1825,7 +1869,7 @@ diagnostic_logical_location_get_fully_qualified_name (const diagnostic_logical_l
 {
   FAIL_IF_NULL (loc);
 
-  return loc->get_fully_qualified_name ();
+  return loc->m_fully_qualified_name.get_str ();
 }
 
 const char *
@@ -1833,5 +1877,5 @@ diagnostic_logical_location_get_decorated_name (const diagnostic_logical_locatio
 {
   FAIL_IF_NULL (loc);
 
-  return loc->get_internal_name ();
+  return loc->m_decorated_name.get_str ();
 }

@@ -191,6 +191,9 @@ public:
   }
 
 private:
+  const logical_location_manager &
+  get_logical_location_manager () const;
+
   void build_emission_path (const path_builder &pb,
 			    const exploded_path &epath,
 			    checker_path *emission_path) const;

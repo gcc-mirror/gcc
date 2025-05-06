@@ -40,12 +40,9 @@ class simple_diagnostic_event : public diagnostic_event
   location_t get_location () const final override { return m_loc; }
   int get_stack_depth () const final override { return m_depth; }
   void print_desc (pretty_printer &pp) const final override;
-  const logical_location *get_logical_location () const final override
+  logical_location get_logical_location () const final override
   {
-    if (m_fndecl)
-      return &m_logical_loc;
-    else
-      return nullptr;
+    return tree_logical_location_manager::key_from_tree (m_fndecl);
   }
   meaning get_meaning () const final override
   {
@@ -70,7 +67,7 @@ class simple_diagnostic_event : public diagnostic_event
  private:
   location_t m_loc;
   tree m_fndecl;
-  tree_logical_location m_logical_loc;
+  logical_location m_logical_loc;
   int m_depth;
   char *m_desc; // has been i18n-ed and formatted
   bool m_connected_to_next_event;
@@ -98,7 +95,8 @@ private:
 class simple_diagnostic_path : public diagnostic_path
 {
  public:
-  simple_diagnostic_path (pretty_printer *event_pp);
+  simple_diagnostic_path (const tree_logical_location_manager &logical_loc_mgr,
+			  pretty_printer *event_pp);
 
   unsigned num_events () const final override { return m_events.length (); }
   const diagnostic_event & get_event (int idx) const final override;

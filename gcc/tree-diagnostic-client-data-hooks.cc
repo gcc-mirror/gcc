@@ -123,12 +123,14 @@ public:
     return &m_version_info;
   }
 
-  const logical_location *get_current_logical_location () const final override
+  const logical_location_manager *get_logical_location_manager () const final override
   {
-    if (current_function_decl)
-      return &m_current_fndecl_logical_loc;
-    else
-      return NULL;
+    return &m_logical_location_manager;
+  }
+
+  logical_location_manager::key get_current_logical_location () const final override
+  {
+    return m_logical_location_manager.key_from_tree (current_function_decl);
   }
 
   const char *
@@ -159,7 +161,7 @@ public:
 
 private:
   compiler_version_info m_version_info;
-  current_fndecl_logical_location m_current_fndecl_logical_loc;
+  tree_logical_location_manager m_logical_location_manager;
 };
 
 /* Create a compiler_data_hooks (so that the class can be local

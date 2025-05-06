@@ -34,8 +34,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* class simple_diagnostic_path : public diagnostic_path.  */
 
-simple_diagnostic_path::simple_diagnostic_path (pretty_printer *event_pp)
-: m_event_pp (event_pp),
+simple_diagnostic_path::
+simple_diagnostic_path (const tree_logical_location_manager &logical_loc_mgr,
+			pretty_printer *event_pp)
+: diagnostic_path (logical_loc_mgr),
+  m_event_pp (event_pp),
   m_localize_events (true)
 {
   add_thread ("main");
@@ -161,7 +164,8 @@ simple_diagnostic_event (location_t loc,
 			 int depth,
 			 const char *desc,
 			 diagnostic_thread_id_t thread_id)
-: m_loc (loc), m_fndecl (fndecl), m_logical_loc (fndecl),
+: m_loc (loc), m_fndecl (fndecl),
+  m_logical_loc (tree_logical_location_manager::key_from_tree (fndecl)),
   m_depth (depth), m_desc (xstrdup (desc)),
   m_connected_to_next_event (false),
   m_thread_id (thread_id)
@@ -188,11 +192,12 @@ namespace selftest {
 static void
 test_intraprocedural_path (pretty_printer *event_pp)
 {
+  tree_logical_location_manager mgr;
   tree fntype_void_void
     = build_function_type_array (void_type_node, 0, NULL);
   tree fndecl_foo = build_fn_decl ("foo", fntype_void_void);
 
-  simple_diagnostic_path path (event_pp);
+  simple_diagnostic_path path (mgr, event_pp);
   path.add_event (UNKNOWN_LOCATION, fndecl_foo, 0, "first %qs", "free");
   path.add_event (UNKNOWN_LOCATION, fndecl_foo, 0, "double %qs", "free");
 

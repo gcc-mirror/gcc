@@ -100,12 +100,9 @@ public:
 
   location_t get_location () const final override { return m_loc; }
   int get_stack_depth () const final override { return m_effective_depth; }
-  const logical_location *get_logical_location () const final override
+  logical_location get_logical_location () const final override
   {
-    if (m_effective_fndecl)
-      return &m_logical_loc;
-    else
-      return NULL;
+    return m_logical_loc;
   }
   meaning get_meaning () const override;
   bool connect_to_next_event_p () const override { return false; }
@@ -115,7 +112,8 @@ public:
   }
 
   void
-  maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const override;
+  maybe_add_sarif_properties (sarif_builder &,
+			      sarif_object &thread_flow_loc_obj) const override;
 
   /* Additional functionality.  */
   tree get_fndecl () const { return m_effective_fndecl; }
@@ -154,7 +152,7 @@ protected:
   int m_effective_depth;
   pending_diagnostic *m_pending_diagnostic;
   diagnostic_event_id_t m_emission_id; // only set once all pruning has occurred
-  tree_logical_location m_logical_loc;
+  logical_location m_logical_loc;
 };
 
 /* A concrete event subclass for a purely textual event, for use in
@@ -391,7 +389,8 @@ public:
 class superedge_event : public checker_event
 {
 public:
-  void maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj)
+  void maybe_add_sarif_properties (sarif_builder &,
+				   sarif_object &thread_flow_loc_obj)
     const override;
 
   /* Mark this edge event as being either an interprocedural call or

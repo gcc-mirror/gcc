@@ -1580,7 +1580,8 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   /* This is the diagnostic_path subclass that will be built for
      the diagnostic.  */
-  checker_path emission_path (get_logger ());
+  checker_path emission_path (get_logical_location_manager (),
+			      get_logger ());
 
   /* Populate emission_path with a full description of EPATH.  */
   build_emission_path (pb, *epath, &emission_path);
@@ -1654,6 +1655,15 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 	  free (filename);
 	}
     }
+}
+
+const logical_location_manager &
+diagnostic_manager::get_logical_location_manager () const
+{
+  gcc_assert (global_dc);
+  auto mgr = global_dc->get_logical_location_manager ();
+  gcc_assert (mgr);
+  return *mgr;
 }
 
 /* Emit a "path" of events to EMISSION_PATH describing the exploded path

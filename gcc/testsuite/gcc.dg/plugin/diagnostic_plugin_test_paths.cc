@@ -147,7 +147,9 @@ example_1 ()
     {
       auto_diagnostic_group d;
       gcc_rich_location richloc (gimple_location (call_to_PyList_Append));
-      simple_diagnostic_path path (global_dc->get_reference_printer ());
+      tree_logical_location_manager logical_loc_mgr;
+      simple_diagnostic_path path (logical_loc_mgr,
+				   global_dc->get_reference_printer ());
       diagnostic_event_id_t alloc_event_id
 	= path.add_event (gimple_location (call_to_PyList_New),
 			  example_a_fun->decl, 0,
@@ -214,7 +216,8 @@ class test_diagnostic_path : public simple_diagnostic_path
 {
  public:
   test_diagnostic_path (pretty_printer *event_pp)
-  : simple_diagnostic_path (event_pp)
+  : simple_diagnostic_path (m_logical_loc_mgr,
+			    event_pp)
   {
   }
   diagnostic_event_id_t
@@ -262,6 +265,9 @@ class test_diagnostic_path : public simple_diagnostic_path
     add_event (call_evloc.m_loc, call_evloc.m_fun->decl, caller_stack_depth,
 	       "calling %qs", callee);
   }
+
+private:
+  tree_logical_location_manager m_logical_loc_mgr;
 };
 
 static void

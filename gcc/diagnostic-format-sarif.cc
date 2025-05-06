@@ -708,6 +708,12 @@ public:
     m_printer = &printer;
   }
 
+  const logical_location_manager *
+  get_logical_location_manager () const
+  {
+    return m_logical_loc_mgr;
+  }
+
   void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind,
 			     diagnostic_sarif_format_buffer *buffer);
@@ -729,7 +735,7 @@ public:
   std::unique_ptr<sarif_location>
   make_location_object (sarif_location_manager &loc_mgr,
 			const rich_location &rich_loc,
-			const logical_location *logical_loc,
+			logical_location logical_loc,
 			enum diagnostic_artifact_role role);
   std::unique_ptr<sarif_location>
   make_location_object (sarif_location_manager &loc_mgr,
@@ -790,7 +796,7 @@ private:
 			 location_t where);
   void
   set_any_logical_locs_arr (sarif_location &location_obj,
-			    const logical_location *logical_loc);
+			    logical_location logical_loc);
   std::unique_ptr<sarif_location>
   make_location_object (sarif_location_manager &loc_mgr,
 			const diagnostic_event &event,
@@ -878,6 +884,8 @@ private:
   pretty_printer *m_printer;
   const line_maps *m_line_maps;
   sarif_token_printer m_token_printer;
+
+  const logical_location_manager *m_logical_loc_mgr;
 
   /* The JSON object for the invocation object.  */
   std::unique_ptr<sarif_invocation> m_invocation_obj;
@@ -1232,7 +1240,8 @@ sarif_result::on_nested_diagnostic (const diagnostic_info &diagnostic,
      sometimes these will related to current_function_decl, but
      often they won't.  */
   auto location_obj
-    = builder.make_location_object (*this, *diagnostic.richloc, nullptr,
+    = builder.make_location_object (*this, *diagnostic.richloc,
+				    logical_location (),
 				    diagnostic_artifact_role::result_file);
   auto message_obj
     = builder.make_message_object (pp_formatted_text (builder.get_printer ()));
@@ -1579,6 +1588,7 @@ sarif_builder::sarif_builder (diagnostic_context &context,
   m_printer (&printer),
   m_line_maps (line_maps),
   m_token_printer (*this),
+  m_logical_loc_mgr (nullptr),
   m_invocation_obj
     (std::make_unique<sarif_invocation> (*this,
 					 context.get_original_argv ())),
@@ -1595,6 +1605,9 @@ sarif_builder::sarif_builder (diagnostic_context &context,
 {
   gcc_assert (m_line_maps);
   gcc_assert (m_serialization_format);
+
+  if (auto client_data_hooks = context.get_client_data_hooks ())
+    m_logical_loc_mgr = client_data_hooks->get_logical_location_manager ();
 
   /* Mark MAIN_INPUT_FILENAME_ as the artifact that the tool was
      instructed to scan.
@@ -2089,7 +2102,7 @@ sarif_builder::make_locations_arr (sarif_location_manager &loc_mgr,
 				   enum diagnostic_artifact_role role)
 {
   auto locations_arr = std::make_unique<json::array> ();
-  const logical_location *logical_loc = nullptr;
+  logical_location logical_loc;
   if (auto client_data_hooks = m_context.get_client_data_hooks ())
     logical_loc = client_data_hooks->get_current_logical_location ();
 
@@ -2108,13 +2121,15 @@ sarif_builder::make_locations_arr (sarif_location_manager &loc_mgr,
 void
 sarif_builder::
 set_any_logical_locs_arr (sarif_location &location_obj,
-			  const logical_location *logical_loc)
+			  logical_location logical_loc)
 {
   if (!logical_loc)
     return;
+  gcc_assert (m_logical_loc_mgr);
   auto location_locs_arr = std::make_unique<json::array> ();
   location_locs_arr->append<sarif_logical_location>
-    (make_sarif_logical_location_object (*logical_loc));
+    (make_sarif_logical_location_object (logical_loc,
+					 *m_logical_loc_mgr));
   location_obj.set<json::array> ("logicalLocations",
 				 std::move (location_locs_arr));
 }
@@ -2127,7 +2142,7 @@ set_any_logical_locs_arr (sarif_location &location_obj,
 std::unique_ptr<sarif_location>
 sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 				     const rich_location &rich_loc,
-				     const logical_location *logical_loc,
+				     logical_location logical_loc,
 				     enum diagnostic_artifact_role role)
 {
   class escape_nonascii_renderer : public content_renderer
@@ -2321,7 +2336,7 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 						std::move (phs_loc_obj));
 
   /* "logicalLocations" property (SARIF v2.1.0 section 3.28.4).  */
-  const logical_location *logical_loc = event.get_logical_location ();
+  logical_location logical_loc = event.get_logical_location ();
   set_any_logical_locs_arr (*location_obj, logical_loc);
 
   /* "message" property (SARIF v2.1.0 section 3.28.5).  */
@@ -2670,32 +2685,53 @@ maybe_get_sarif_kind (enum logical_location_kind kind)
     }
 }
 
-/* Make a "logicalLocation" object (SARIF v2.1.0 section 3.33) for LOGICAL_LOC,
-   or return nullptr.  */
+/* Set PROPERTY_NAME within this bag to a "logicalLocation" object (SARIF v2.1.0
+   section 3.33) for LOGICAL_LOC.  The object has an "index" property to refer to
+   theRuns.logicalLocations (3.33.3).  */
+
+void
+sarif_property_bag::set_logical_location (const char *property_name,
+					  sarif_builder &builder,
+					  logical_location logical_loc)
+{
+  gcc_assert (logical_loc);
+  const logical_location_manager *mgr
+    = builder.get_logical_location_manager ();
+  gcc_assert (mgr);
+  set<sarif_logical_location>
+    (property_name,
+     make_sarif_logical_location_object (logical_loc, *mgr));
+}
+
+/* Make a "logicalLocation" object (SARIF v2.1.0 section 3.33) for
+   LOGICAL_LOC, which must be non-null.  */
 
 std::unique_ptr<sarif_logical_location>
-make_sarif_logical_location_object (const logical_location &logical_loc)
+make_sarif_logical_location_object (logical_location logical_loc,
+				    const logical_location_manager &mgr)
 {
-  auto logical_loc_obj = std::make_unique<sarif_logical_location> ();
+  gcc_assert (logical_loc);
+
+  auto sarif_logical_loc = std::make_unique<sarif_logical_location> ();
 
   /* "name" property (SARIF v2.1.0 section 3.33.4).  */
-  if (const char *short_name = logical_loc.get_short_name ())
-    logical_loc_obj->set_string ("name", short_name);
+  if (const char *short_name = mgr.get_short_name (logical_loc))
+    sarif_logical_loc->set_string ("name", short_name);
 
   /* "fullyQualifiedName" property (SARIF v2.1.0 section 3.33.5).  */
-  if (const char *name_with_scope = logical_loc.get_name_with_scope ())
-    logical_loc_obj->set_string ("fullyQualifiedName", name_with_scope);
+  if (const char *name_with_scope = mgr.get_name_with_scope (logical_loc))
+    sarif_logical_loc->set_string ("fullyQualifiedName", name_with_scope);
 
   /* "decoratedName" property (SARIF v2.1.0 section 3.33.6).  */
-  if (const char *internal_name = logical_loc.get_internal_name ())
-    logical_loc_obj->set_string ("decoratedName", internal_name);
+  if (const char *internal_name = mgr.get_internal_name (logical_loc))
+    sarif_logical_loc->set_string ("decoratedName", internal_name);
 
   /* "kind" property (SARIF v2.1.0 section 3.33.7).  */
-  enum logical_location_kind kind = logical_loc.get_kind ();
+  enum logical_location_kind kind = mgr.get_kind (logical_loc);
   if (const char *sarif_kind_str = maybe_get_sarif_kind (kind))
-    logical_loc_obj->set_string ("kind", sarif_kind_str);
+    sarif_logical_loc->set_string ("kind", sarif_kind_str);
 
-  return logical_loc_obj;
+  return sarif_logical_loc;
 }
 
 label_text
@@ -2784,7 +2820,7 @@ populate_thread_flow_location_object (sarif_result &result,
 {
   /* Give diagnostic_event subclasses a chance to add custom properties
      via a property bag.  */
-  ev.maybe_add_sarif_properties (tfl_obj);
+  ev.maybe_add_sarif_properties (*this, tfl_obj);
 
   /* "location" property (SARIF v2.1.0 section 3.38.3).  */
   tfl_obj.set<sarif_location>
@@ -4029,7 +4065,8 @@ test_make_location_object (const sarif_generation_options &sarif_gen_opts,
 
   std::unique_ptr<sarif_location> location_obj
     = builder.make_location_object
-    (result, richloc, nullptr, diagnostic_artifact_role::analysis_target);
+	(result, richloc, logical_location (),
+	 diagnostic_artifact_role::analysis_target);
   ASSERT_NE (location_obj, nullptr);
 
   auto physical_location

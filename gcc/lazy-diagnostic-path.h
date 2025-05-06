@@ -48,6 +48,12 @@ class lazy_diagnostic_path : public diagnostic_path
 
   bool generated_p () const { return m_inner_path != nullptr; }
 
+protected:
+  lazy_diagnostic_path (const logical_location_manager &logical_loc_mgr)
+  : diagnostic_path (logical_loc_mgr)
+  {
+  }
+
  private:
   void lazily_generate_path () const;
   virtual std::unique_ptr<diagnostic_path> make_inner_path () const = 0;
