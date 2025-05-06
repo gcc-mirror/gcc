@@ -9690,7 +9690,7 @@ riscv_register_move_cost (machine_mode mode,
   if (to == V_REGS)
     {
       if (from_is_gpr)
-	return get_vector_costs ()->regmove->GR2VR;
+	return get_gr2vr_cost ();
       else if (from_is_fpr)
 	return get_vector_costs ()->regmove->FR2VR;
     }
@@ -12540,6 +12540,21 @@ get_vector_costs ()
   return costs;
 }
 
+/* Return the cost of operation that move from gpr to vr.
+   It will take the value of --param=gpr2vr_cost if it is provided.
+   Or the default regmove->GR2VR will be returned.  */
+
+int
+get_gr2vr_cost ()
+{
+  int cost = get_vector_costs ()->regmove->GR2VR;
+
+  if (gpr2vr_cost != GPR2VR_COST_UNPROVIDED)
+    cost = gpr2vr_cost;
+
+  return cost;
+}
+
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
 
 static int
@@ -12606,7 +12621,7 @@ riscv_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	{
 	  /* TODO: This is too pessimistic in case we can splat.  */
 	  int regmove_cost = fp ? costs->regmove->FR2VR
-	    : costs->regmove->GR2VR;
+	    : get_gr2vr_cost ();
 	  return (regmove_cost + common_costs->scalar_to_vec_cost)
 	    * estimated_poly_value (TYPE_VECTOR_SUBPARTS (vectype));
 	}

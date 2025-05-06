@@ -1121,7 +1121,7 @@ costs::adjust_stmt_cost (enum vect_cost_for_stmt kind, loop_vec_info loop,
     {
     case scalar_to_vec:
       stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->FR2VR
-		    : costs->regmove->GR2VR);
+		    : get_gr2vr_cost ());
       break;
     case vec_to_scalar:
       stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->VR2FR
