@@ -3591,7 +3591,7 @@ print_source_line (FILE *f, const vector<const char *> &source_lines,
    Returns 1 if the path was printed, 0 otherwise.  */
 static unsigned
 print_prime_path_lines (FILE *gcov_file, const function_info &fn,
-			const vector<unsigned> &path, size_t pathno)
+			const vector<unsigned> &path, unsigned pathno)
 {
   const bool is_covered = fn.paths.covered_p (pathno);
   if (is_covered && !flag_prime_paths_lines_covered)
@@ -3600,9 +3600,9 @@ print_prime_path_lines (FILE *gcov_file, const function_info &fn,
     return 0;
 
   if (is_covered)
-    fprintf (gcov_file, "path %zu covered: lines", pathno);
+    fprintf (gcov_file, "path %u covered: lines", pathno);
   else
-    fprintf (gcov_file, "path %zu not covered: lines", pathno);
+    fprintf (gcov_file, "path %u not covered: lines", pathno);
 
   for (size_t k = 0; k != path.size (); ++k)
     {
@@ -3658,7 +3658,7 @@ print_inlined_separator (FILE *gcov_file, unsigned current_index, const
    Returns 1 if the path was printed, 0 otherwise.  */
 static unsigned
 print_prime_path_source (FILE *gcov_file, const function_info &fn,
-			 const vector<unsigned> &path, size_t pathno)
+			 const vector<unsigned> &path, unsigned pathno)
 {
   const bool is_covered = fn.paths.covered_p (pathno);
   if (is_covered && !flag_prime_paths_source_covered)
@@ -3667,9 +3667,9 @@ print_prime_path_source (FILE *gcov_file, const function_info &fn,
     return 0;
 
   if (is_covered)
-    fprintf (gcov_file, "path %zu covered:\n", pathno);
+    fprintf (gcov_file, "path %u covered:\n", pathno);
   else
-    fprintf (gcov_file, "path %zu not covered:\n", pathno);
+    fprintf (gcov_file, "path %u not covered:\n", pathno);
   unsigned current = fn.src;
   for (size_t k = 0; k != path.size (); ++k)
     {
@@ -3728,19 +3728,19 @@ output_path_coverage (FILE *gcov_file, const function_info *fn)
   if (fn->paths.paths.empty ())
     fnotice (gcov_file, "path coverage omitted\n");
   else
-    fnotice (gcov_file, "paths covered %u of %zu\n",
-	     fn->paths.covered_paths (), fn->paths.paths.size ());
+    fnotice (gcov_file, "paths covered %u of " HOST_SIZE_T_PRINT_UNSIGNED "\n",
+	     fn->paths.covered_paths (), (fmt_size_t)fn->paths.paths.size ());
 
   if (flag_prime_paths_lines_uncovered || flag_prime_paths_lines_covered)
     {
-      size_t pathno = 0;
+      unsigned pathno = 0;
       for (const vector<unsigned> &path : fn->paths.paths)
 	print_prime_path_lines (gcov_file, *fn, path, pathno++);
     }
 
   if (flag_prime_paths_source_uncovered || flag_prime_paths_source_covered)
     {
-      size_t pathno = 0;
+      unsigned pathno = 0;
       for (const vector<unsigned> &path : fn->paths.paths)
 	print_prime_path_source (gcov_file, *fn, path, pathno++);
     }
