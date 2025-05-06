@@ -188,7 +188,19 @@ esac
 AC_SUBST(extra_ldflags_libgcobol)
 
 AC_CHECK_HEADERS_ONCE(floatingpoint.h ieeefp.h fenv.h fptrap.h \
-complex.h stdlib.h)
+complex.h stdlib.h errno.h)
+
+# Look for a way to represent the program name
+# First, check the GLIBC case
+AC_CHECK_DECLS([program_invocation_short_name], , ,[
+#if HAVE_ERRNO_H
+# define _GNU_SOURCE
+# include <errno.h>
+#endif
+])
+
+# Check an alternate
+AC_CHECK_FUNCS_ONCE(getprogname)
 
 # These are GLIBC
 AC_CHECK_FUNCS_ONCE(random_r srandom_r initstate_r setstate_r)

@@ -6,8 +6,15 @@
 /* Define to 1 if you have the <complex.h> header file. */
 #undef HAVE_COMPLEX_H
 
+/* Define to 1 if you have the declaration of `program_invocation_short_name',
+   and to 0 if you don't. */
+#undef HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
 
 /* Define to 1 if you have the <fenv.h> header file. */
 #undef HAVE_FENV_H
@@ -20,6 +27,9 @@
 
 /* Define to 1 if you have the <fptrap.h> header file. */
 #undef HAVE_FPTRAP_H
+
+/* Define to 1 if you have the `getprogname' function. */
+#undef HAVE_GETPROGNAME
 
 /* Define if you have the iconv() function and it works. */
 #undef HAVE_ICONV
