@@ -34,8 +34,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* bool, true and false are keywords.  */
 #else
 #define bool	_Bool
-#define true	1
-#define false	0
+#define true	(bool) 1
+#define false	(bool) 0
 #endif
 
 #else /* __cplusplus */
