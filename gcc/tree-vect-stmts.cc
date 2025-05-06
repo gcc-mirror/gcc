@@ -8791,6 +8791,15 @@ vectorizable_store (vec_info *vinfo,
 	  if (n == const_nunits)
 	    {
 	      int mis_align = dr_misalignment (first_dr_info, vectype);
+	      /* With VF > 1 we advance the DR by step, if that is constant
+		 and only aligned when performed VF times, DR alignment
+		 analysis can analyze this as aligned since it assumes
+		 contiguous accesses.  But that is not how we code generate
+		 here, so adjust for this.  */
+	      if (maybe_gt (vf, 1u)
+		  && !multiple_p (DR_STEP_ALIGNMENT (first_dr_info->dr),
+				  DR_TARGET_ALIGNMENT (first_dr_info)))
+		mis_align = -1;
 	      dr_alignment_support dr_align
 		= vect_supportable_dr_alignment (vinfo, dr_info, vectype,
 						 mis_align);
@@ -8812,6 +8821,10 @@ vectorizable_store (vec_info *vinfo,
 	      ltype = build_vector_type (elem_type, n);
 	      lvectype = vectype;
 	      int mis_align = dr_misalignment (first_dr_info, ltype);
+	      if (maybe_gt (vf, 1u)
+		  && !multiple_p (DR_STEP_ALIGNMENT (first_dr_info->dr),
+				  DR_TARGET_ALIGNMENT (first_dr_info)))
+		mis_align = -1;
 	      dr_alignment_support dr_align
 		= vect_supportable_dr_alignment (vinfo, dr_info, ltype,
 						 mis_align);
@@ -8872,17 +8885,10 @@ vectorizable_store (vec_info *vinfo,
 		}
 	    }
 	  unsigned align;
-	  /* ???  We'd want to use
-	       if (alignment_support_scheme == dr_aligned)
-		 align = known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
-	     since doing that is what we assume we can in the above checks.
-	     But this interferes with groups with gaps where for example
-	     VF == 2 makes the group in the unrolled loop aligned but the
-	     fact that we advance with step between the two subgroups
-	     makes the access to the second unaligned.  See PR119586.
-	     We have to anticipate that here or adjust code generation to
-	     avoid the misaligned loads by means of permutations.  */
-	  align = dr_alignment (vect_dr_behavior (vinfo, first_dr_info));
+	  if (alignment_support_scheme == dr_aligned)
+	    align = known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
+	  else
+	    align = dr_alignment (vect_dr_behavior (vinfo, first_dr_info));
 	  /* Alignment is at most the access size if we do multiple stores.  */
 	  if (nstores > 1)
 	    align = MIN (tree_to_uhwi (TYPE_SIZE_UNIT (ltype)), align);
@@ -10810,6 +10816,15 @@ vectorizable_load (vec_info *vinfo,
 	  if (n == const_nunits)
 	    {
 	      int mis_align = dr_misalignment (first_dr_info, vectype);
+	      /* With VF > 1 we advance the DR by step, if that is constant
+		 and only aligned when performed VF times, DR alignment
+		 analysis can analyze this as aligned since it assumes
+		 contiguous accesses.  But that is not how we code generate
+		 here, so adjust for this.  */
+	      if (maybe_gt (vf, 1u)
+		  && !multiple_p (DR_STEP_ALIGNMENT (first_dr_info->dr),
+				  DR_TARGET_ALIGNMENT (first_dr_info)))
+		mis_align = -1;
 	      dr_alignment_support dr_align
 		= vect_supportable_dr_alignment (vinfo, dr_info, vectype,
 						 mis_align);
@@ -10838,6 +10853,10 @@ vectorizable_load (vec_info *vinfo,
 		  if (VECTOR_TYPE_P (ptype))
 		    {
 		      mis_align = dr_misalignment (first_dr_info, ptype);
+		      if (maybe_gt (vf, 1u)
+			  && !multiple_p (DR_STEP_ALIGNMENT (first_dr_info->dr),
+					  DR_TARGET_ALIGNMENT (first_dr_info)))
+			mis_align = -1;
 		      dr_align
 			= vect_supportable_dr_alignment (vinfo, dr_info, ptype,
 							 mis_align);
@@ -10857,8 +10876,10 @@ vectorizable_load (vec_info *vinfo,
 		}
 	    }
 	  unsigned align;
-	  /* ???  The above is still wrong, see vectorizable_store.  */
-	  align = dr_alignment (vect_dr_behavior (vinfo, first_dr_info));
+	  if (alignment_support_scheme == dr_aligned)
+	    align = known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
+	  else
+	    align = dr_alignment (vect_dr_behavior (vinfo, first_dr_info));
 	  /* Alignment is at most the access size if we do multiple loads.  */
 	  if (nloads > 1)
 	    align = MIN (tree_to_uhwi (TYPE_SIZE_UNIT (ltype)), align);
