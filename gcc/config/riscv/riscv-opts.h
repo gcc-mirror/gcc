@@ -162,4 +162,6 @@ enum riscv_tls_type {
 #define TARGET_VECTOR_AUTOVEC_SEGMENT					       \
   (TARGET_VECTOR && riscv_mautovec_segment)
 
+#define GPR2VR_COST_UNPROVIDED -1
+
 #endif /* ! GCC_RISCV_OPTS_H */
