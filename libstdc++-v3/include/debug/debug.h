@@ -58,7 +58,7 @@ namespace __gnu_debug
   using namespace std::__debug;
 
   template<typename _Ite, typename _Seq, typename _Cat>
-    struct _Safe_iterator;
+    class _Safe_iterator;
 }
 
 #if ! defined _GLIBCXX_DEBUG || ! _GLIBCXX_HOSTED

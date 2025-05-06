@@ -36,7 +36,7 @@
 
 #if __cplusplus > 201703L
 #include <concepts>
-namespace __gnu_debug { struct _Safe_iterator_base; }
+namespace __gnu_debug { class _Safe_iterator_base; }
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
