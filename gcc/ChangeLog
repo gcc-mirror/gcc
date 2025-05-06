@@ -1,3 +1,64 @@
+2025-05-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/119971
+	* config/riscv/bitmanip.md (rotation with masked count): Rewrite
+	as define_insn patterns.  Fix formatting.
+	* config/riscv/riscv.md (shift with masked count): Similarly.
+
+2025-05-05  Uros Bizjak  <ubizjak@gmail.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/120019
+	* config/i386/i386.cc (ix86_print_operand): Handle 'v' operand
+	modifier to emit segment override prefix.
+	* config/i386/i386.md (*strmovdi_rex_1): Use %v operand modifier
+	to emit segment override prefix.
+	(*strmovsi_1): Ditto.
+	(*strmovhi_1): Ditto.
+	(*strmovqi_1): Ditto.
+	(*rep_movdi_rex64): Ditto.
+	(*rep_movsi): Ditto.
+	(*rep_movqi): Ditto.
+
+2025-05-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120048
+	* ipa-cp.cc (ipcp_store_vr_results): Check for UNDEFINED.
+
+2025-05-05  Kyle Huey  <khuey@kylehuey.com>
+
+	* dwarf2out.cc (resolve_addr_in_expr): Propagate dtprel into the address
+	table when appropriate.
+
+2025-05-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118163
+	PR c++/118392
+	* diagnostic.cc (diagnostic_context::initialize): Initialize
+	m_diagnostic_groups.m_inhibiting_notes_from.
+	(diagnostic_context::inhibit_notes_in_group): New.
+	(diagnostic_context::notes_inhibited_in_group): New
+	(diagnostic_context::report_diagnostic): Call
+	inhibit_notes_in_group and notes_inhibited_in_group.
+	(diagnostic_context::end_group): Call inhibit_notes_in_group.
+	(diagnostic_context::pop_nesting_level): Ditto.
+	* diagnostic.h (diagnostic_context::m_diagnostic_groups): Add
+	member to track the depth at which a warning has been inhibited.
+	(diagnostic_context::notes_inhibited_in_group): Declare.
+	(diagnostic_context::inhibit_notes_in_group): Declare.
+	* doc/ux.texi: Document diagnostic_group behavior with regards
+	to inhibited warnings.
+
+2025-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (truncsfbf2): Fix comment typo,
+	unsafte -> unsafe.
+
+2025-05-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/genrvv-type-indexer.cc: Apply clang-format to the
+	file.
+
 2025-05-04  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config.gcc (riscv): Add riscv-vect-permcost.o to extra_objs.

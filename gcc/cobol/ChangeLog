@@ -1,3 +1,136 @@
+2025-05-05  Robert Dubner  <rdubner@symas.com>
+
+	* cdf.y: Exceptions.
+	* except.cc (cbl_enabled_exception_t::dump): Likewise.
+	(cbl_enabled_exceptions_t::dump): Likewise.
+	(cbl_enabled_exceptions_t::status): Likewise.
+	(cbl_enabled_exceptions_t::encode): Likewise.
+	(cbl_enabled_exceptions_t::turn_on_off): Likewise.
+	(cbl_enabled_exceptions_t::match): Likewise.
+	(declarative_runtime_match): Likewise. Likewise.
+	* exceptg.h (struct cbl_exception_files_t): Likewise.
+	(class exception_turn_t): Likewise.
+	(apply_cdf_turn): Likewise.
+	* genapi.cc (treeplet_fill_source): Use refer_offset().
+	(function_handle_from_name): Likewise.
+	(parser_initialize_programs): Likewise.
+	(parser_statement_begin): Likewise.
+	(array_of_long_long): Exceptions.
+	(parser_compile_ecs): Exceptions.
+	(parser_compile_dcls): Exceptions.
+	(store_location_stuff): Exceptions.
+	(initialize_variable_internal): Use refer_offset().
+	(compare_binary_binary): Use refer_offset().
+	(cobol_compare): Use refer_offset().
+	(paragraph_label): Formatting.
+	(parser_goto): Use refer_offset().
+	(parser_perform_times): Likewise.
+	(internal_perform_through_times): Likewise.
+	(parser_enter_file): Exceptions.
+	(psa_FldLiteralN): Add comment.
+	(parser_accept): Use refer_offset().
+	(parser_accept_command_line): Likewise.
+	(parser_accept_command_line_count): Likewise.
+	(parser_accept_envar): Likewise.
+	(parser_set_envar): Likewise.
+	(parser_display_internal): Likewise.
+	(parser_initialize_table): Likewise.
+	(parser_sleep): Likewise.
+	(parser_allocate): Likewise.
+	(parser_free): Likewise.
+	(parser_division): Likewise.
+	(parser_relop_long): Likewise.
+	(parser_see_stop_run): Likewise.
+	(parser_classify): Likewise.
+	(parser_file_add): Include symbol_table_index in __gg__file_init().
+	(parser_file_open): Use refer_offset().
+	(parser_file_write): Move forward declaration of store_location_stuff().
+	(parser_file_start): Use refer_offset().
+	(parser_inspect_conv): Likewise:
+	(parser_intrinsic_numval_c): Likewise:
+	(parser_intrinsic_subst): Likewise:
+	(parser_intrinsic_call_1): Likewise:
+	(parser_intrinsic_call_2): Likewise:
+	(parser_intrinsic_call_3): Likewise:
+	(parser_intrinsic_call_4): Likewise:
+	(parser_sort): Likewise:
+	(parser_return_start): Exceptions.
+	(parser_unstring): Use refer_offset().
+	(create_and_call): Likewise.
+	(parser_set_pointers): Use refer_offset().
+	(parser_program_hierarchy): Comment.
+	(parser_set_handled): Exceptions; removed.
+	(parser_set_file_number): Exceptions; removed.
+	(stash_exceptions): Exceptions; removed.
+	(parser_exception_prepare): Exceptions; removed.
+	(parser_match_exception): Exceptions; eliminate blob.
+	(parser_check_fatal_exception): Exceptions.
+	(parser_push_exception): Create.
+	(parser_pop_exception): Create.
+	(mh_identical): Use refer_offset().
+	(mh_source_is_literalN): Likewise.
+	(mh_dest_is_float): Likewise.
+	(mh_numeric_display): Likewise.
+	(mh_little_endian): Likewise.
+	(mh_source_is_group): Likewise.
+	(move_helper): Likewise.
+	(binary_initial_from_float128): Formatting; change error message.
+	(initial_from_float128): Change name to "initial_from_initial"
+	(initial_from_initial): Add one byte to allocation for figconsts.
+	(parser_symbol_add): Use initial_from_initial().
+	(parser_symbol_add): Eliminate unneeded logic around actually_create...
+	* genapi.h: Exceptions.
+	* genmath.cc (fast_add): Use refer_offset().
+	(fast_subtract): Likewise.
+	(fast_multiply): Likewise.
+	(fast_divide): Likewise.
+	* genutil.cc: Exceptions; various global definitions.
+	(get_integer_value): Comment.
+	(get_data_offset_dest): Eliminate.
+	(get_data_offset_source): Rename to get_data_offset().
+	(get_data_offset): Use refer_offset().
+	(get_binary_value): Likewise; eliminate use of literal_decl_node.
+	(build_array_of_treeplets): Likewise.
+	(build_array_of_fourplets): Likewise.
+	(REFER_CHECK): Comment:
+	(refer_refmod_length): Use get_any_capacity(); use refer_offset;
+	set reflen to integer_one_node.
+	(refer_offset_dest): Change name to refer_offset.
+	(refer_offset): Use get_data_offset().
+	(refer_size_dest): Change name to refer_size().
+	(refer_size): Use get_any_capacity().
+	(refer_offset_source): Use refer_offset().
+	(refer_size_source): Likewise.
+	(qualified_data_source): Likewise.
+	(qualified_data_dest): Likewise.
+	(qualified_data_location): Likewise.
+	* genutil.h: Exceptions; changes to global declarations.
+	* lexio.cc (likely_nist_file): Added to detect NIST file format.
+	(cdftext::free_form_reference_format): Handle NIST file format.
+	* parse.y: (strip_trailing_zeroes): Added.
+	Changes for exceptions.
+	* parse_ante.h (parse_error_inc): Likewise.
+	(YYLLOC_DEFAULT): Likewise.
+	(static_cast): Likewise.
+	(is_cobol_word): Change to is_cobol_charset.
+	(is_cobol_charset): Refine allowed characters.
+	(require_numeric): Change to require integer.
+	(require_integer): Likewise.
+	(current_enabled_ecs): Exceptions.
+	(is_integer_literal): Change interpretation.
+	(procedure_division_ready): Exceptions.
+	(statement_epilog): Likewise.
+	(statement_begin): Likewise.
+	* show_parse.h: Changes to GCOBOL_SHOW handling.
+	* structs.cc: Add symbol_index to cblc_file_t structure.
+	* symbols.cc (field_str): Repair .initial handling in FldLiteralN.
+	* symbols.h (struct cbl_field_t): Eliminate literal_decl_node.
+	(current_enabled_ecs): Exceptions.
+	* util.cc (cbl_message): Add final newline to error message.
+	(ftoupper): Added.
+	(iso_cobol_word): Add list of ISO reserved words.
+	* util.h (ftoupper): Added.
+
 2025-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR cobol/119364

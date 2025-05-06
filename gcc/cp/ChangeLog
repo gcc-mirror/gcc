@@ -1,3 +1,8 @@
+2025-05-05  Simon Martin  <simon@nasilyan.com>
+
+	* cp-tree.h (parsing_default_capturing_generic_lambda_in_template):
+	Remove obsolete prototype.
+
 2025-05-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/115207

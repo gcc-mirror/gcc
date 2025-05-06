@@ -1,3 +1,9 @@
+2025-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/120104
+	* exp_ch3.adb (Expand_Freeze_Record_Type): For a controlled tagged
+	type, freeze only the controlled primitives that are present.
+
 2025-04-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/112958

@@ -1,3 +1,7 @@
+2025-05-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/interop-hsa.c: GCN offloading only.
+
 2025-05-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocate-8a.f90: New test.

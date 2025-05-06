@@ -1,3 +1,35 @@
+2025-05-05  Robert Dubner  <rdubner@symas.com>
+
+	* charmaps.cc: Add #include <vector>.
+	* common-defs.h (COMMON_DEFS_H_): Add #include <stdio.h>.
+	(enum cbl_file_mode_t): Add file_mode_any_e.
+	(enum file_stmt_t): Created.
+	(cbl_file_mode_str): Add case for file_mode_any_e.
+	(ec_cmp): Exceptions.
+	(struct cbl_enabled_exception_t): Likewise.
+	(struct cbl_declarative_t): Likewise.
+	(class cbl_enabled_exceptions_array_t): Likewise.
+	(class cbl_enabled_exceptions_t): Likewise.
+	(struct cbl_enabled_exceptions_array_t): Likewise.
+	(enabled_exception_match): Likewise.
+	* constants.cc: Add #include <vector>.
+	* exceptl.h (struct cbl_exception_t): Removed.
+	(struct cbl_declarative_t): Removed.
+	(class ec_status_t): Removed.
+	* gcobolio.h: Add symbol_table_index to cblc_file_t.
+	* gfileio.cc: Add #include <vector>
+	(establish_status): Comment.
+	(__io__file_init): Handle symbol_table_index.
+	(__io__file_delete): Set file->prior_op.
+	(__io__file_rewrite): Likewise.
+	(__io__file_read): Likewise.
+	(__io__file_open): Likewise.
+	(__io__file_close): Likewise.
+	* gmath.cc: Include #include <vector>.
+	* intrinsic.cc: Include #include <vector>.
+	* libgcobol.cc: Multiple modifications for exceptions.
+	* valconv.cc: #include <vector>.
+
 2025-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR cobol/119364

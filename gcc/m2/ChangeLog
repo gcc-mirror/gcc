@@ -1,3 +1,15 @@
+2025-05-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120117
+	* gm2-compiler/M2GenGCC.mod (FoldBecomes): Remove the call to
+	RemoveQuad since this is performed by TypeCheckBecomes.
+	* gm2-compiler/PCSymBuild.mod (buildConstFunction): Rewrite
+	header comment.
+	Check for a set or a type aliased set and appropriately
+	skip type equivalences and obtain the element type.
+	* gm2-compiler/SymbolTable.mod (PutConst): Add call to
+	CheckBreak.
+
 2025-04-24  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/119915

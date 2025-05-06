@@ -1,3 +1,65 @@
+2025-05-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/119971
+	* gcc.target/riscv/pr119971.c: New test.
+	* gcc.target/riscv/zbb-rol-ror-03.c: Adjust test slightly.
+
+2025-05-05  Uros Bizjak  <ubizjak@gmail.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/120019
+	* gcc.target/i386/pr111657-1.c (dg-do): Change to "assemble".
+	(dg-options): Remove -masm=att and add -save-temps.
+	(dg-final): Update scan-assembler and scan-assembler-not strings.
+
+2025-05-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120117
+	* gm2/pim/pass/highbit.mod: New test.
+	* gm2/pim/pass/highbit2.mod: New test.
+
+2025-05-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120048
+	* gcc.dg/pr120048.c: New.
+
+2025-05-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/120054
+	* gcc.target/riscv/predef-19.c: Adjust testcase.
+
+2025-05-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/120085
+	* gcc.dg/lto/modref-2_0.c: Link test with libm.
+
+2025-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/finalizable1.ads: New test.
+
+2025-05-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR middle-end/112877
+	* gcc.dg/vect/vect-simd-clone-16c.c: Fix target selector syntax.
+	* gcc.dg/vect/vect-simd-clone-16d.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-17c.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-17d.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18c.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18d.c: Likewise.
+
+2025-05-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118163
+	PR c++/118392
+	* g++.dg/diagnostic/incomplete-type-2.C: New test.
+	* g++.dg/diagnostic/incomplete-type-2a.C: New test.
+	* g++.dg/diagnostic/inhibit-warn-3.C: New test.
+
+2025-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/120084
+	* gcc.dg/lto/pr60779_0.c: Require linker-plugin.
+
 2025-05-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/119986
