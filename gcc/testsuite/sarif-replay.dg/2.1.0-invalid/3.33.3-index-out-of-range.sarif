@@ -27,6 +27,9 @@
 }
 
 /* { dg-begin-multiline-output "" }
+In JSON property '/runs/0/results/0/locations/0/logicalLocations/0/index'
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
    17 |                                     "index": 42
       |                                              ^~
    { dg-end-multiline-output "" } */

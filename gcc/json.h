@@ -73,6 +73,49 @@ enum kind
   JSON_NULL
 };
 
+namespace pointer { // json::pointer
+
+/* Implementation of JSON pointer (RFC 6901).  */
+
+/* A token within a JSON pointer, expressing the parent of a particular
+   JSON value, and how it is descended from that parent.
+
+   A JSON pointer can be built as a list of these tokens.  */
+
+struct token
+{
+  enum class kind
+  {
+    root_value,
+    object_member,
+    array_index
+  };
+
+  token ();
+  token (json::object &parent, const char *member);
+  token (json::array &parent, size_t index);
+  token (const token &other) = delete;
+  token (token &&other) = delete;
+
+  ~token ();
+
+  token &
+  operator= (const token &other) = delete;
+
+  token &
+  operator= (token &&other);
+
+  json::value *m_parent;
+  union u
+  {
+    char *u_member;
+    size_t u_index;
+  } m_data;
+  enum kind m_kind;
+};
+
+} // namespace json::pointer
+
 /* Base class of JSON value.  */
 
 class value
@@ -88,6 +131,10 @@ class value
   virtual object *dyn_cast_object () { return nullptr; }
 
   static int compare (const json::value &val_a, const json::value &val_b);
+
+  const pointer::token &get_pointer_token () const { return m_pointer_token; }
+
+  pointer::token m_pointer_token;
 };
 
 /* Subclass of value for objects: a collection of key/value pairs

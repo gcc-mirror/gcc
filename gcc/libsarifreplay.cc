@@ -106,6 +106,82 @@ make_physical_location (libgdiagnostics::manager &mgr,
   return mgr.new_location_from_range (start, start, end);
 }
 
+static enum diagnostic_logical_location_kind_t
+get_logical_location_kind_for_json_kind (enum json::kind json_kind)
+{
+  switch (json_kind)
+    {
+    default:
+      gcc_unreachable ();
+
+    case json::JSON_OBJECT:
+      return DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT;
+
+    case json::JSON_ARRAY:
+      return DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY;
+
+    case json::JSON_INTEGER:
+    case json::JSON_FLOAT:
+    case json::JSON_STRING:
+    case json::JSON_TRUE:
+    case json::JSON_FALSE:
+    case json::JSON_NULL:
+      return DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY;
+      /* Perhaps this should be DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE,
+	 but then we need to more carefully track context.  */
+    }
+}
+
+static libgdiagnostics::logical_location
+make_logical_location_from_jv (libgdiagnostics::manager &mgr,
+			       const json::value &jv)
+{
+  libgdiagnostics::logical_location parent;
+  const json::pointer::token &pointer_token = jv.get_pointer_token ();
+
+  if (pointer_token.m_parent)
+    /* Recursively ensure that we have ancestor locations.  */
+    parent = make_logical_location_from_jv (mgr,
+					    *jv.m_pointer_token.m_parent);
+
+  std::string short_name;
+  std::string fully_qualified_name;
+  switch (pointer_token.m_kind)
+    {
+    default:
+      gcc_unreachable ();
+
+    case json::pointer::token::kind::root_value:
+      short_name = "";
+      fully_qualified_name = "";
+      break;
+
+    case json::pointer::token::kind::object_member:
+      short_name = pointer_token.m_data.u_member;
+      gcc_assert (parent.m_inner);
+      fully_qualified_name
+	= std::string (parent.get_fully_qualified_name ()) + "/" + short_name;
+      break;
+
+    case json::pointer::token::kind::array_index:
+      short_name = std::to_string (pointer_token.m_data.u_index);
+      gcc_assert (parent.m_inner);
+      fully_qualified_name
+	= std::string (parent.get_fully_qualified_name ()) + "/" + short_name;
+      break;
+    }
+
+  enum diagnostic_logical_location_kind_t kind
+    = get_logical_location_kind_for_json_kind (jv.get_kind ());
+
+  return mgr.new_logical_location (kind,
+				   parent,
+				   short_name.c_str (),
+				   fully_qualified_name.c_str (),
+				   nullptr);
+}
+
+
 enum class status
 {
   ok,
@@ -416,6 +492,9 @@ private:
 				m_loaded_file,
 				m_json_location_map.get_range_for_value (jv));
     diag.set_location (loc_range);
+
+    diag.set_logical_location (make_logical_location_from_jv (m_control_mgr,
+							      jv));
 
     diag.finish_va (gmsgid, args);
   }

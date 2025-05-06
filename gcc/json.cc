@@ -74,6 +74,52 @@ print_escaped_json_string (pretty_printer *pp,
   pp_character (pp, '"');
 }
 
+/* class pointer::token.  */
+
+pointer::token::token ()
+{
+  m_parent = nullptr;
+  m_data.u_member = nullptr;
+  m_kind = kind::root_value;
+}
+
+pointer::token::token (json::object &parent, const char *member)
+{
+  m_parent = &parent;
+  m_data.u_member = xstrdup (member); // ideally we'd share
+  m_kind = kind::object_member;
+}
+
+pointer::token::token (json::array &parent, size_t index)
+{
+  m_parent = &parent;
+  m_data.u_index = index;
+  m_kind = kind::array_index;
+}
+
+pointer::token::~token ()
+{
+  if (m_kind == kind::object_member)
+    {
+      gcc_assert (m_data.u_member);
+      free (m_data.u_member);
+    }
+}
+
+pointer::token &
+pointer::token::operator= (pointer::token &&other)
+{
+  m_parent = other.m_parent;
+  m_data = other.m_data;
+  m_kind = other.m_kind;
+
+  other.m_parent = nullptr;
+  other.m_data.u_member = nullptr;
+  other.m_kind = kind::root_value;
+
+  return *this;
+}
+
 /* class json::value.  */
 
 /* Dump this json::value tree to OUTF.
@@ -268,6 +314,8 @@ object::set (const char *key, value *v)
       m_map.put (owned_key, v);
       m_keys.safe_push (owned_key);
     }
+
+  v->m_pointer_token = pointer::token (*this, key);
 }
 
 /* Get the json::value * for KEY.
@@ -401,6 +449,7 @@ void
 array::append (value *v)
 {
   gcc_assert (v);
+  v->m_pointer_token = pointer::token (*this, m_elements.length ());
   m_elements.safe_push (v);
 }
 
