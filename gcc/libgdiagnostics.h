@@ -487,6 +487,32 @@ diagnostic_manager_debug_dump_logical_location (const diagnostic_manager *diag_m
   LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (2)
   LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (3);
 
+/* Accessors for logical locations (added in LIBGDIAGNOSTICS_ABI_1;
+   you can test for their presence using
+   #ifdef LIBDIAGNOSTICS_HAVE_LOGICAL_LOCATION_ACCESSORS
+*/
+#define LIBDIAGNOSTICS_HAVE_LOGICAL_LOCATION_ACCESSORS
+
+extern enum diagnostic_logical_location_kind_t
+diagnostic_logical_location_get_kind (const diagnostic_logical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
+extern const diagnostic_logical_location *
+diagnostic_logical_location_get_parent (const diagnostic_logical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
+extern const char *
+diagnostic_logical_location_get_short_name (const diagnostic_logical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
+extern const char *
+diagnostic_logical_location_get_fully_qualified_name (const diagnostic_logical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
+extern const char *
+diagnostic_logical_location_get_decorated_name (const diagnostic_logical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
 /* Diagnostic groups.  */
 
 /* Begin a diagnostic group.  All diagnostics emitted within

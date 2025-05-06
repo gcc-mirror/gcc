@@ -113,3 +113,28 @@ Associating diagnostics with locations
     Set the logical location of ``diag``.
 
     ``diag`` must be non-NULL; ``logical_loc`` can be NULL.
+
+Accessors
+*********
+
+The following functions can be used to access the data that was passed to a
+:type:`diagnostic_logical_location` when it was created.  In each case, the
+``loc`` parameter must be non-NULL.  :type:`const char *` values will point
+at copies of the original buffer.
+
+.. function:: enum diagnostic_logical_location_kind_t diagnostic_logical_location_get_kind (const diagnostic_logical_location *loc)
+
+.. function:: const diagnostic_logical_location *diagnostic_logical_location_get_parent (const diagnostic_logical_location *loc)
+
+.. function:: const char *diagnostic_logical_location_get_short_name (const diagnostic_logical_location *loc)
+
+.. function:: const char *diagnostic_logical_location_get_fully_qualified_name (const diagnostic_logical_location *loc)
+
+.. function:: const char *diagnostic_logical_location_get_decorated_name (const diagnostic_logical_location *loc)
+
+The above accessors were added in :ref:`LIBGDIAGNOSTICS_ABI_1`; you can
+test for their presence using
+
+   .. code-block:: c
+
+      #ifdef LIBDIAGNOSTICS_HAVE_LOGICAL_LOCATION_ACCESSORS

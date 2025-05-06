@@ -36,3 +36,4 @@ Topic reference
    text-output.rst
    sarif.rst
    ux.rst
+   compatibility.rst

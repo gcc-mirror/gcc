@@ -221,6 +221,11 @@ struct diagnostic_logical_location : public logical_location
 
   const diagnostic_logical_location *get_parent () const { return m_parent; }
 
+  const char *get_fully_qualified_name () const
+  {
+    return m_fully_qualified_name.get_str ();
+  }
+
   label_text get_name_for_path_output () const
   {
     return label_text::borrow (m_short_name.get_str ());
@@ -1787,4 +1792,46 @@ diagnostic_physical_location_get_file (const diagnostic_physical_location *physi
     return nullptr;
 
   return physical_loc->get_file ();
+}
+
+/* Public entrypoints for accessing logical location data.  */
+
+enum diagnostic_logical_location_kind_t
+diagnostic_logical_location_get_kind (const diagnostic_logical_location *loc)
+{
+  FAIL_IF_NULL (loc);
+
+  return loc->get_external_kind ();
+}
+
+const diagnostic_logical_location *
+diagnostic_logical_location_get_parent (const diagnostic_logical_location *loc)
+{
+  FAIL_IF_NULL (loc);
+
+  return loc->get_parent ();
+}
+
+const char *
+diagnostic_logical_location_get_short_name (const diagnostic_logical_location *loc)
+{
+  FAIL_IF_NULL (loc);
+
+  return loc->get_short_name ();
+}
+
+const char *
+diagnostic_logical_location_get_fully_qualified_name (const diagnostic_logical_location *loc)
+{
+  FAIL_IF_NULL (loc);
+
+  return loc->get_fully_qualified_name ();
+}
+
+const char *
+diagnostic_logical_location_get_decorated_name (const diagnostic_logical_location *loc)
+{
+  FAIL_IF_NULL (loc);
+
+  return loc->get_internal_name ();
 }
