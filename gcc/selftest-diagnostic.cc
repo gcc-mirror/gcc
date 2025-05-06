@@ -69,7 +69,7 @@ bool
 test_diagnostic_context::report (diagnostic_t kind,
 				 rich_location &richloc,
 				 const diagnostic_metadata *metadata,
-				 int option,
+				 diagnostic_option_id option,
 				 const char * fmt, ...)
 {
   va_list ap;
