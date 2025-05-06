@@ -84,6 +84,10 @@ class value
 
   void dump (FILE *, bool formatted) const;
   void DEBUG_FUNCTION dump () const;
+
+  virtual object *dyn_cast_object () { return nullptr; }
+
+  static int compare (const json::value &val_a, const json::value &val_b);
 };
 
 /* Subclass of value for objects: a collection of key/value pairs
@@ -99,6 +103,8 @@ class object : public value
 
   enum kind get_kind () const final override { return JSON_OBJECT; }
   void print (pretty_printer *pp, bool formatted) const final override;
+
+  object *dyn_cast_object () final override { return this; }
 
   bool is_empty () const { return m_map.is_empty (); }
 
@@ -126,6 +132,8 @@ class object : public value
 
   /* Set to literal true/false.  */
   void set_bool (const char *key, bool v);
+
+  static int compare (const json::object &obj_a, const json::object &obj_b);
 
  private:
   typedef hash_map <char *, value *,

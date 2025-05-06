@@ -330,6 +330,13 @@ public:
     gcc_assert (loc);
     return label_text::borrow (loc->m_short_name.get_str ());
   }
+
+  key get_parent (key k) const final override
+  {
+    auto loc = ptr_from_key (k);
+    gcc_assert (loc);
+    return key_from_ptr (loc->m_parent);
+  }
 };
 
 class impl_diagnostic_client_data_hooks : public diagnostic_client_data_hooks

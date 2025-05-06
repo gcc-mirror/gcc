@@ -139,15 +139,4 @@ public:
   sarif_property_bag &get_or_create_properties ();
 };
 
-/* Subclass of sarif_object for SARIF "logicalLocation" objects
-   (SARIF v2.1.0 section 3.33).  */
-
-class sarif_logical_location : public sarif_object
-{
-};
-
-extern std::unique_ptr<sarif_logical_location>
-make_sarif_logical_location_object (logical_location logical_loc,
-				    const logical_location_manager &mgr);
-
 #endif /* ! GCC_DIAGNOSTIC_FORMAT_SARIF_H */

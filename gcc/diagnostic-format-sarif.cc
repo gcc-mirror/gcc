@@ -51,6 +51,52 @@ along with GCC; see the file COPYING3.  If not see
 #include "demangle.h"
 #include "backtrace.h"
 
+/* A json::array where the values are "unique" as per
+   SARIF v2.1.0 section 3.7.3 ("Array properties with unique values").  */
+
+template <typename JsonElementType>
+class sarif_array_of_unique : public json::array
+{
+ public:
+  size_t append_uniquely (std::unique_ptr<JsonElementType> val)
+  {
+    /* This should be O(log(n)) due to the std::map.  */
+    auto search = m_index_by_value.find (val.get ());
+    if (search != m_index_by_value.end())
+      return (*search).second;
+
+    const size_t insertion_idx = size ();
+    m_index_by_value.insert ({val.get (), insertion_idx});
+    append (std::move (val));
+    return insertion_idx;
+  }
+
+  /* For ease of reading output, add "index": idx to all
+     objects in the array.
+     We don't do this until we've added everything, since
+     the "index" property would otherwise confuse the
+     comparison against new elements.  */
+  void add_explicit_index_values ()
+  {
+    for (size_t idx = 0; idx < length (); ++idx)
+      if (json::object *obj = get (idx)->dyn_cast_object ())
+	obj->set_integer ("index", idx);
+  }
+
+private:
+  struct comparator_t {
+    bool operator () (const json::value *a, const json::value *b) const
+    {
+      gcc_assert (a);
+      gcc_assert (b);
+      return json::value::compare (*a, *b) < 0;
+    }
+  };
+
+  // json::value * here is borrowed from m_elements
+  std::map<json::value *, int, comparator_t> m_index_by_value;
+};
+
 /* Forward decls.  */
 class sarif_builder;
 class content_renderer;
@@ -446,6 +492,13 @@ class sarif_physical_location : public sarif_object {};
 
 class sarif_region : public sarif_object {};
 
+/* Subclass of sarif_object for SARIF "logicalLocation" objects
+   (SARIF v2.1.0 section 3.33).  */
+
+class sarif_logical_location : public sarif_object
+{
+};
+
 /* Subclass of sarif_object for SARIF "locationRelationship" objects
    (SARIF v2.1.0 section 3.34).  */
 
@@ -772,6 +825,9 @@ public:
 
   const sarif_generation_options &get_opts () const { return m_sarif_gen_opts; }
 
+  std::unique_ptr<sarif_logical_location>
+  make_minimal_sarif_logical_location (logical_location);
+
 private:
   class sarif_token_printer : public token_printer
   {
@@ -829,6 +885,10 @@ private:
 					const content_renderer *snippet_renderer) const;
   std::unique_ptr<sarif_region>
   make_region_object_for_hint (const fixit_hint &hint) const;
+
+  int
+  ensure_sarif_logical_location_for (logical_location k);
+
   std::unique_ptr<sarif_multiformat_message_string>
   make_multiformat_message_string (const char *msg) const;
   std::unique_ptr<sarif_log>
@@ -908,6 +968,8 @@ private:
 
   /* The set of all CWE IDs we've seen, if any.  */
   hash_set <int_hash <int, 0, 1> > m_cwe_id_set;
+
+  std::unique_ptr<sarif_array_of_unique<sarif_logical_location>> m_cached_logical_locs;
 
   int m_tabstop;
 
@@ -1597,6 +1659,8 @@ sarif_builder::sarif_builder (diagnostic_context &context,
   m_seen_any_relative_paths (false),
   m_rule_id_set (),
   m_rules_arr (new json::array ()),
+  m_cached_logical_locs
+    (std::make_unique<sarif_array_of_unique<sarif_logical_location>> ()),
   m_tabstop (context.m_tabstop),
   m_serialization_format (std::move (serialization_format)),
   m_sarif_gen_opts (sarif_gen_opts),
@@ -2116,7 +2180,8 @@ sarif_builder::make_locations_arr (sarif_location_manager &loc_mgr,
 }
 
 /* If LOGICAL_LOC is non-null, use it to create a "logicalLocations" property
-   within LOCATION_OBJ (SARIF v2.1.0 section 3.28.4).  */
+   within LOCATION_OBJ (SARIF v2.1.0 section 3.28.4) with a minimal logical
+   location object referencing theRuns.logicalLocations (3.33.3).  */
 
 void
 sarif_builder::
@@ -2127,9 +2192,12 @@ set_any_logical_locs_arr (sarif_location &location_obj,
     return;
   gcc_assert (m_logical_loc_mgr);
   auto location_locs_arr = std::make_unique<json::array> ();
+
+  auto logical_loc_obj = make_minimal_sarif_logical_location (logical_loc);
+
   location_locs_arr->append<sarif_logical_location>
-    (make_sarif_logical_location_object (logical_loc,
-					 *m_logical_loc_mgr));
+    (std::move (logical_loc_obj));
+
   location_obj.set<json::array> ("logicalLocations",
 				 std::move (location_locs_arr));
 }
@@ -2694,42 +2762,80 @@ sarif_property_bag::set_logical_location (const char *property_name,
 					  sarif_builder &builder,
 					  logical_location logical_loc)
 {
-  gcc_assert (logical_loc);
-  const logical_location_manager *mgr
-    = builder.get_logical_location_manager ();
-  gcc_assert (mgr);
   set<sarif_logical_location>
     (property_name,
-     make_sarif_logical_location_object (logical_loc, *mgr));
+     builder.make_minimal_sarif_logical_location (logical_loc));
 }
 
-/* Make a "logicalLocation" object (SARIF v2.1.0 section 3.33) for
-   LOGICAL_LOC, which must be non-null.  */
+/* Ensure that m_cached_logical_locs has a "logicalLocation" object
+   (SARIF v2.1.0 section 3.33) for K, and return its index within the
+   array.  */
 
-std::unique_ptr<sarif_logical_location>
-make_sarif_logical_location_object (logical_location logical_loc,
-				    const logical_location_manager &mgr)
+int
+sarif_builder::
+ensure_sarif_logical_location_for (logical_location k)
 {
-  gcc_assert (logical_loc);
+  gcc_assert (m_logical_loc_mgr);
 
   auto sarif_logical_loc = std::make_unique<sarif_logical_location> ();
 
-  /* "name" property (SARIF v2.1.0 section 3.33.4).  */
-  if (const char *short_name = mgr.get_short_name (logical_loc))
+  if (const char *short_name = m_logical_loc_mgr->get_short_name (k))
     sarif_logical_loc->set_string ("name", short_name);
 
   /* "fullyQualifiedName" property (SARIF v2.1.0 section 3.33.5).  */
-  if (const char *name_with_scope = mgr.get_name_with_scope (logical_loc))
+  if (const char *name_with_scope = m_logical_loc_mgr->get_name_with_scope (k))
     sarif_logical_loc->set_string ("fullyQualifiedName", name_with_scope);
 
   /* "decoratedName" property (SARIF v2.1.0 section 3.33.6).  */
-  if (const char *internal_name = mgr.get_internal_name (logical_loc))
+  if (const char *internal_name = m_logical_loc_mgr->get_internal_name (k))
     sarif_logical_loc->set_string ("decoratedName", internal_name);
 
   /* "kind" property (SARIF v2.1.0 section 3.33.7).  */
-  enum logical_location_kind kind = mgr.get_kind (logical_loc);
+  enum logical_location_kind kind = m_logical_loc_mgr->get_kind (k);
   if (const char *sarif_kind_str = maybe_get_sarif_kind (kind))
     sarif_logical_loc->set_string ("kind", sarif_kind_str);
+
+  /* "parentIndex" property (SARIF v2.1.0 section 3.33.8).  */
+  if (auto parent_key = m_logical_loc_mgr->get_parent (k))
+    {
+      /* Recurse upwards.  */
+      int parent_index = ensure_sarif_logical_location_for (parent_key);
+      sarif_logical_loc->set_integer ("parentIndex", parent_index);
+    }
+
+  /* Consolidate if this logical location already exists.  */
+  int index
+    = m_cached_logical_locs->append_uniquely (std::move (sarif_logical_loc));
+
+  return index;
+}
+
+/* Ensure that theRuns.logicalLocations (3.14.17) has a "logicalLocation" object
+   (SARIF v2.1.0 section 3.33) for LOGICAL_LOC.
+   Create and return a minimal logicalLocation object referring to the
+   full object by index.  */
+
+std::unique_ptr<sarif_logical_location>
+sarif_builder::
+make_minimal_sarif_logical_location (logical_location logical_loc)
+{
+  gcc_assert (m_logical_loc_mgr);
+
+  /* Ensure that m_cached_logical_locs has a "logicalLocation" object
+     (SARIF v2.1.0 section 3.33) for LOGICAL_LOC, and return its index within
+     the array.  */
+
+  auto sarif_logical_loc = std::make_unique <sarif_logical_location> ();
+
+  int index = ensure_sarif_logical_location_for (logical_loc);
+
+  // 3.33.3 index property
+  sarif_logical_loc->set_integer ("index", index);
+
+  /* "fullyQualifiedName" property (SARIF v2.1.0 section 3.33.5).  */
+  if (const char *name_with_scope
+        = m_logical_loc_mgr->get_name_with_scope (logical_loc))
+    sarif_logical_loc->set_string ("fullyQualifiedName", name_with_scope);
 
   return sarif_logical_loc;
 }
@@ -3073,6 +3179,14 @@ make_run_object (std::unique_ptr<sarif_invocation> invocation_obj,
 
   /* "results" property (SARIF v2.1.0 section 3.14.23).  */
   run_obj->set<json::array> ("results", std::move (results));
+
+  /* "logicalLocations" property (SARIF v2.1.0 3.14.17). */
+  if (m_cached_logical_locs->size () > 0)
+    {
+      m_cached_logical_locs->add_explicit_index_values ();
+      run_obj->set<json::array> ("logicalLocations",
+				 std::move (m_cached_logical_locs));
+    }
 
   return run_obj;
 }
@@ -3960,6 +4074,76 @@ sarif_generation_options::sarif_generation_options ()
 
 namespace selftest {
 
+static void
+test_sarif_array_of_unique_1 ()
+{
+  sarif_array_of_unique<json::string> arr;
+
+  ASSERT_EQ (arr.length (), 0);
+
+  {
+    size_t idx = arr.append_uniquely (std::make_unique<json::string> ("foo"));
+    ASSERT_EQ (idx, 0);
+    ASSERT_EQ (arr.length (), 1);
+  }
+  {
+    size_t idx = arr.append_uniquely (std::make_unique<json::string> ("bar"));
+    ASSERT_EQ (idx, 1);
+    ASSERT_EQ (arr.length (), 2);
+  }
+
+  /* Try adding them again, should be idempotent.  */
+  {
+    size_t idx = arr.append_uniquely (std::make_unique<json::string> ("foo"));
+    ASSERT_EQ (idx, 0);
+    ASSERT_EQ (arr.length (), 2);
+  }
+  {
+    size_t idx = arr.append_uniquely (std::make_unique<json::string> ("bar"));
+    ASSERT_EQ (idx, 1);
+    ASSERT_EQ (arr.length (), 2);
+  }
+}
+
+static void
+test_sarif_array_of_unique_2 ()
+{
+  sarif_array_of_unique<json::object> arr;
+
+  ASSERT_EQ (arr.length (), 0);
+
+  {
+    auto obj0 = std::make_unique<json::object> ();
+    size_t idx = arr.append_uniquely (std::move (obj0));
+    ASSERT_EQ (idx, 0);
+    ASSERT_EQ (arr.length (), 1);
+
+    // Attempting to add another empty objects should be idempotent.
+    idx = arr.append_uniquely (std::make_unique<json::object> ());
+    ASSERT_EQ (idx, 0);
+    ASSERT_EQ (arr.length (), 1);
+  }
+  {
+    auto obj1 = std::make_unique<json::object> ();
+    obj1->set_string ("foo", "bar");
+    size_t idx = arr.append_uniquely (std::move (obj1));
+    ASSERT_EQ (idx, 1);
+    ASSERT_EQ (arr.length (), 2);
+
+    // Attempting to add an equivalent object should be idempotent.
+    auto other = std::make_unique<json::object> ();
+    other->set_string ("foo", "bar");
+    idx = arr.append_uniquely (std::move (other));
+    ASSERT_EQ (idx, 1);
+    ASSERT_EQ (arr.length (), 2);
+  }
+
+  // Verify behavior of add_explicit_index_values.
+  arr.add_explicit_index_values ();
+  ASSERT_JSON_INT_PROPERTY_EQ (arr[0], "index", 0);
+  ASSERT_JSON_INT_PROPERTY_EQ (arr[1], "index", 1);
+}
+
 /* A subclass of sarif_output_format for writing selftests.
    The JSON output is cached internally, rather than written
    out to a file.  */
@@ -4625,6 +4809,9 @@ run_line_table_case_tests_per_version (const line_table_case &case_)
 void
 diagnostic_format_sarif_cc_tests ()
 {
+  test_sarif_array_of_unique_1 ();
+  test_sarif_array_of_unique_2 ();
+
   for_each_sarif_gen_option (test_simple_log);
   for_each_sarif_gen_option (test_message_with_embedded_link);
   for_each_sarif_gen_option (test_message_with_braces);

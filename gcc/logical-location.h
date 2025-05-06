@@ -143,6 +143,9 @@ public:
   /* Get a string for location K in a form suitable for path output.  */
   virtual label_text get_name_for_path_output (key k) const = 0;
 
+  /* Get the parent logical_logical of K, if any, or nullptr.  */
+  virtual key get_parent (key k) const = 0;
+
   bool function_p (key k) const;
 };
 

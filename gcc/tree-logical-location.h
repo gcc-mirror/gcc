@@ -35,6 +35,7 @@ public:
   const char *get_internal_name (key) const final override;
   enum logical_location_kind get_kind (key) const final override;
   label_text get_name_for_path_output (key) const final override;
+  key get_parent (key) const final override;
 
   static tree tree_from_key (logical_location k)
   {
