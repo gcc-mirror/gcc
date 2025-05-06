@@ -7590,6 +7590,10 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Allocator:
       {
+	const Entity_Id gnat_desig_type
+	  = Designated_Type (Underlying_Type (Etype (gnat_node)));
+	const Entity_Id gnat_pool = Storage_Pool (gnat_node);
+
 	tree gnu_type, gnu_init;
 	bool ignore_init_type;
 
@@ -7608,9 +7612,6 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	else if (Nkind (gnat_temp) == N_Qualified_Expression)
 	  {
-	    const Entity_Id gnat_desig_type
-	      = Designated_Type (Underlying_Type (Etype (gnat_node)));
-
 	    ignore_init_type = Has_Constrained_Partial_View (gnat_desig_type);
 
 	    gnu_init = gnat_to_gnu (Expression (gnat_temp));
@@ -7637,11 +7638,24 @@ gnat_to_gnu (Node_Id gnat_node)
 	else
 	  gcc_unreachable ();
 
-	gnu_result_type = get_unpadded_type (Etype (gnat_node));
+	/* If this is an array allocated with its bounds, use the thin pointer
+	   as the result type to trigger the machinery in build_allocator, but
+	   make sure not to do it for allocations on the return and secondary
+	   stacks (see build_call_alloc_dealloc_proc for more details).  */
+        if (Is_Constr_Array_Subt_With_Bounds (gnat_desig_type)
+	    && Is_Record_Type (Underlying_Type (Etype (gnat_pool)))
+	    && !type_annotate_only)
+	  {
+	    tree gnu_array = gnat_to_gnu_type (Base_Type (gnat_desig_type));
+	    gnu_result_type
+	      = build_pointer_type (TYPE_OBJECT_RECORD_TYPE (gnu_array));
+	  }
+	else
+	  gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
 	return build_allocator (gnu_type, gnu_init, gnu_result_type,
 				Procedure_To_Call (gnat_node),
-				Storage_Pool (gnat_node), gnat_node,
-				ignore_init_type);
+				gnat_pool, gnat_node, ignore_init_type);
       }
       break;
 
@@ -8577,6 +8591,18 @@ gnat_to_gnu (Node_Id gnat_node)
 	  (void) gnat_to_gnu_entity (gnat_desig_type, NULL_TREE, false);
 
 	  gnu_ptr = gnat_to_gnu (gnat_temp);
+
+	  /* If this is an array allocated with its bounds, first convert to
+	     the thin pointer to trigger the special machinery below.  */
+	  if (Is_Constr_Array_Subt_With_Bounds (gnat_desig_type))
+	    {
+	      tree gnu_array = gnat_to_gnu_type (Base_Type (gnat_desig_type));
+	      gnu_ptr
+		= convert (build_pointer_type
+			   (TYPE_OBJECT_RECORD_TYPE (gnu_array)),
+			   gnu_ptr);
+	    }
+
 	  gnu_ptr_type = TREE_TYPE (gnu_ptr);
 
 	  /* If this is a thin pointer, we must first dereference it to create
