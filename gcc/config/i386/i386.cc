@@ -11363,6 +11363,9 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
 	    x = XVECEXP (x, 0, 0);
 	    return (GET_CODE (x) == SYMBOL_REF
 		    && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC);
+	  case UNSPEC_SECREL32:
+	    x = XVECEXP (x, 0, 0);
+	    return GET_CODE (x) == SYMBOL_REF;
 	  default:
 	    return false;
 	  }
@@ -11499,6 +11502,9 @@ legitimate_pic_operand_p (rtx x)
 	    x = XVECEXP (inner, 0, 0);
 	    return (GET_CODE (x) == SYMBOL_REF
 		    && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_EXEC);
+	  case UNSPEC_SECREL32:
+	    x = XVECEXP (inner, 0, 0);
+	    return GET_CODE (x) == SYMBOL_REF;
 	  case UNSPEC_MACHOPIC_OFFSET:
 	    return legitimate_pic_address_disp_p (x);
 	  default:
@@ -11679,6 +11685,9 @@ legitimate_pic_address_disp_p (rtx disp)
       disp = XVECEXP (disp, 0, 0);
       return (GET_CODE (disp) == SYMBOL_REF
 	      && SYMBOL_REF_TLS_MODEL (disp) == TLS_MODEL_LOCAL_DYNAMIC);
+    case UNSPEC_SECREL32:
+      disp = XVECEXP (disp, 0, 0);
+      return GET_CODE (disp) == SYMBOL_REF;
     }
 
   return false;
@@ -11956,6 +11965,7 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict,
 	  case UNSPEC_INDNTPOFF:
 	  case UNSPEC_NTPOFF:
 	  case UNSPEC_DTPOFF:
+	  case UNSPEC_SECREL32:
 	    break;
 
 	  default:
@@ -11981,7 +11991,8 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict,
 		  || GET_CODE (XEXP (XEXP (disp, 0), 0)) != UNSPEC
 		  || !CONST_INT_P (XEXP (XEXP (disp, 0), 1))
 		  || (XINT (XEXP (XEXP (disp, 0), 0), 1) != UNSPEC_DTPOFF
-		      && XINT (XEXP (XEXP (disp, 0), 0), 1) != UNSPEC_NTPOFF))
+		      && XINT (XEXP (XEXP (disp, 0), 0), 1) != UNSPEC_NTPOFF
+		      && XINT (XEXP (XEXP (disp, 0), 0), 1) != UNSPEC_SECREL32))
 		/* Non-constant pic memory reference.  */
 		return false;
 	    }
@@ -12305,6 +12316,22 @@ get_thread_pointer (machine_mode tp_mode, bool to_reg)
   return tp;
 }
 
+/* Construct the SYMBOL_REF for the _tls_index symbol.  */
+
+static GTY(()) rtx ix86_tls_index_symbol;
+
+static rtx
+ix86_tls_index (void)
+{
+  if (!ix86_tls_index_symbol)
+    ix86_tls_index_symbol = gen_rtx_SYMBOL_REF (SImode, "_tls_index");
+
+  if (flag_pic)
+    return gen_rtx_CONST (Pmode, gen_rtx_UNSPEC (Pmode, gen_rtvec (1, ix86_tls_index_symbol), UNSPEC_PCREL));
+  else
+    return ix86_tls_index_symbol;
+}
+
 /* Construct the SYMBOL_REF for the tls_get_addr function.  */
 
 static GTY(()) rtx ix86_tls_symbol;
@@ -12363,6 +12390,26 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
   machine_mode tp_mode = Pmode;
   int type;
 
+#if TARGET_WIN32_TLS
+  off = gen_const_mem (SImode, ix86_tls_index ());
+  set_mem_alias_set (off, GOT_ALIAS_SET);
+
+  tp = gen_const_mem (Pmode, GEN_INT (TARGET_64BIT ? 88 : 44));
+  set_mem_addr_space (tp, DEFAULT_TLS_SEG_REG);
+
+  if (TARGET_64BIT)
+    off = convert_to_mode (Pmode, off, 1);
+
+  base = force_reg (Pmode, off);
+  tp = copy_to_mode_reg (Pmode, tp);
+
+  tp = gen_const_mem (Pmode, gen_rtx_PLUS (Pmode, tp, gen_rtx_MULT (Pmode, base, GEN_INT (UNITS_PER_WORD))));
+  set_mem_alias_set (tp, GOT_ALIAS_SET);
+
+  base = force_reg (Pmode, tp);
+
+  return gen_rtx_PLUS (Pmode, base, gen_rtx_CONST (Pmode, gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_SECREL32)));
+#else
   /* Fall back to global dynamic model if tool chain cannot support local
      dynamic.  */
   if (TARGET_SUN_TLS && !TARGET_64BIT
@@ -12585,6 +12632,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
     }
 
   return dest;
+#endif
 }
 
 /* Return true if the TLS address requires insn using integer registers.
@@ -13054,6 +13102,9 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	case UNSPEC_INDNTPOFF:
 	  fputs ("@indntpoff", file);
 	  break;
+	case UNSPEC_SECREL32:
+	  fputs ("@secrel32", file);
+	  break;
 #if TARGET_MACHO
 	case UNSPEC_MACHOPIC_OFFSET:
 	  putc ('-', file);
@@ -13079,7 +13130,11 @@ i386_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
   fputs (ASM_LONG, file);
   output_addr_const (file, x);
+#if TARGET_WIN32_TLS
+  fputs ("@secrel32", file);
+#else
   fputs ("@dtpoff", file);
+#endif
   switch (size)
     {
     case 4:
@@ -14854,6 +14909,10 @@ i386_asm_output_addr_const_extra (FILE *file, rtx x)
     case UNSPEC_INDNTPOFF:
       output_addr_const (file, op);
       fputs ("@indntpoff", file);
+      break;
+    case UNSPEC_SECREL32:
+      output_addr_const (file, op);
+      fputs ("@secrel32", file);
       break;
 #if TARGET_MACHO
     case UNSPEC_MACHOPIC_OFFSET:

@@ -218,6 +218,7 @@
 	  case UNSPEC_DTPOFF:
 	  case UNSPEC_GOTNTPOFF:
 	  case UNSPEC_NTPOFF:
+	  case UNSPEC_SECREL32:
 	    return true;
 	  default:
 	    break;
