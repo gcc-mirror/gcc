@@ -1002,11 +1002,12 @@ cgraph_node::create_version_clone (tree new_decl,
    TREE_MAP is a mapping of tree nodes we want to replace with
    new ones (according to results of prior analysis).
 
-   If non-NULL ARGS_TO_SKIP determine function parameters to remove
-   from new version.
-   If SKIP_RETURN is true, the new version will return void.
+   If non-NULL PARAM_ADJUSTMENTS determine how function formal parameters
+   should be modified in the new version and if it should return void.
    If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
    If non_NULL NEW_ENTRY determine new entry BB of the clone.
+   SUFFIX is a string that will be used to create a new name for the new
+   function.
 
    If TARGET_ATTRIBUTES is non-null, when creating a new declaration,
    add the attributes to DECL_ATTRIBUTES.  And call valid_attribute_p

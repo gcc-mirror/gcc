@@ -1020,11 +1020,12 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      TREE_MAP is a mapping of tree nodes we want to replace with
      new ones (according to results of prior analysis).
 
-     If non-NULL ARGS_TO_SKIP determine function parameters to remove
-     from new version.
-     If SKIP_RETURN is true, the new version will return void.
+     If non-NULL PARAM_ADJUSTMENTS determine how function formal parameters
+     should be modified in the new version and if it should return void.
      If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
      If non_NULL NEW_ENTRY determine new entry BB of the clone.
+     SUFFIX is a string that will be used to create a new name for the new
+     function.
 
      If TARGET_ATTRIBUTES is non-null, when creating a new declaration,
      add the attributes to DECL_ATTRIBUTES.  And call valid_attribute_p
@@ -1039,7 +1040,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
     (vec<cgraph_edge *> redirect_callers,
      vec<ipa_replace_map *, va_gc> *tree_map,
      ipa_param_adjustments *param_adjustments,
-     bitmap bbs_to_copy, basic_block new_entry_block, const char *clone_name,
+     bitmap bbs_to_copy, basic_block new_entry_block, const char *suffix,
      tree target_attributes = NULL_TREE, bool version_decl = true);
 
   /* Insert a new cgraph_function_version_info node into cgraph_fnver_htab
