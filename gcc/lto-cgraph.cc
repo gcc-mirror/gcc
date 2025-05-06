@@ -1303,7 +1303,7 @@ input_node (struct lto_file_decl_data *file_data,
     {
       node = dyn_cast<cgraph_node *> (nodes[clone_ref])->create_clone (fn_decl,
 	profile_count::uninitialized (), false,
-	vNULL, false, NULL, NULL);
+	vNULL, false, NULL, NULL, NULL);
     }
   else
     {

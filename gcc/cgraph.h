@@ -965,15 +965,19 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      If the new node is being inlined into another one, NEW_INLINED_TO should be
      the outline function the new one is (even indirectly) inlined to.
      All hooks will see this in node's inlined_to, when invoked.
-     Can be NULL if the node is not inlined.  SUFFIX is string that is appended
-     to the original name.  */
+     Should be NULL if the node is not inlined.
+
+     SUFFIX is string that is appended to the original name, it should only be
+     NULL if NEW_INLINED_TO is not NULL or if the clone being created is
+     temporary and a record about it should not be added into the ipa-clones
+     dump file.  */
   cgraph_node *create_clone (tree decl, profile_count count,
 			     bool update_original,
 			     vec<cgraph_edge *> redirect_callers,
 			     bool call_duplication_hook,
 			     cgraph_node *new_inlined_to,
 			     ipa_param_adjustments *param_adjustments,
-			     const char *suffix = NULL);
+			     const char *suffix);
 
   /* Create callgraph node clone with new declaration.  The actual body will be
      copied later at compilation stage.  The name of the new clone will be

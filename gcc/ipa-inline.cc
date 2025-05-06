@@ -1865,7 +1865,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	{
 	  /* We need original clone to copy around.  */
 	  master_clone = node->create_clone (node->decl, node->count,
-	    false, vNULL, true, NULL, NULL);
+	    false, vNULL, true, NULL, NULL, NULL);
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
 	      clone_inlined_nodes (e, true, false, NULL);

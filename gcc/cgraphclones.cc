@@ -366,8 +366,13 @@ localize_profile (cgraph_node *n)
 
    If the new node is being inlined into another one, NEW_INLINED_TO should be
    the outline function the new one is (even indirectly) inlined to.  All hooks
-   will see this in node's inlined_to, when invoked.  Can be NULL if the
+   will see this in node's inlined_to, when invoked.  Should be NULL if the
    node is not inlined.
+
+   SUFFIX is string that is appended to the original name, it should only be
+   NULL if NEW_INLINED_TO is not NULL or if the clone being created is
+   temporary and a record about it should not be added into the ipa-clones dump
+   file.
 
    If PARAM_ADJUSTMENTS is non-NULL, the parameter manipulation information
    will be overwritten by the new structure.  Otherwise the new node will

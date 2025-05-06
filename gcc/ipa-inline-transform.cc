@@ -225,7 +225,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 				       e->count,
 				       update_original, vNULL, true,
 				       inlining_into,
-				       NULL);
+				       NULL, NULL);
 	  n->used_as_abstract_origin = e->callee->used_as_abstract_origin;
 	  e->redirect_callee (n);
 	}
