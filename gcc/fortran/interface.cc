@@ -1403,77 +1403,82 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 	}
     }
 
-  /* Check INTENT.  */
-  if (s1->attr.intent != s2->attr.intent && !s1->attr.artificial
-      && !s2->attr.artificial)
-    {
-      snprintf (errmsg, err_len, "INTENT mismatch in argument '%s'",
-		s1->name);
-      return false;
-    }
+  /* A lot of information is missing for artificially generated
+     formal arguments, let's not look into that.  */
 
-  /* Check OPTIONAL attribute.  */
-  if (s1->attr.optional != s2->attr.optional)
+  if (!s1->attr.artificial && !s2->attr.artificial)
     {
-      snprintf (errmsg, err_len, "OPTIONAL mismatch in argument '%s'",
-		s1->name);
-      return false;
-    }
+      /* Check INTENT.  */
+      if (s1->attr.intent != s2->attr.intent)
+	{
+	  snprintf (errmsg, err_len, "INTENT mismatch in argument '%s'",
+		    s1->name);
+	  return false;
+	}
 
-  /* Check ALLOCATABLE attribute.  */
-  if (s1->attr.allocatable != s2->attr.allocatable)
-    {
-      snprintf (errmsg, err_len, "ALLOCATABLE mismatch in argument '%s'",
-		s1->name);
-      return false;
-    }
+      /* Check OPTIONAL attribute.  */
+      if (s1->attr.optional != s2->attr.optional)
+	{
+	  snprintf (errmsg, err_len, "OPTIONAL mismatch in argument '%s'",
+		    s1->name);
+	  return false;
+	}
 
-  /* Check POINTER attribute.  */
-  if (s1->attr.pointer != s2->attr.pointer)
-    {
-      snprintf (errmsg, err_len, "POINTER mismatch in argument '%s'",
-		s1->name);
-      return false;
-    }
+      /* Check ALLOCATABLE attribute.  */
+      if (s1->attr.allocatable != s2->attr.allocatable)
+	{
+	  snprintf (errmsg, err_len, "ALLOCATABLE mismatch in argument '%s'",
+		    s1->name);
+	  return false;
+	}
 
-  /* Check TARGET attribute.  */
-  if (s1->attr.target != s2->attr.target)
-    {
-      snprintf (errmsg, err_len, "TARGET mismatch in argument '%s'",
-		s1->name);
-      return false;
-    }
+      /* Check POINTER attribute.  */
+      if (s1->attr.pointer != s2->attr.pointer)
+	{
+	  snprintf (errmsg, err_len, "POINTER mismatch in argument '%s'",
+		    s1->name);
+	  return false;
+	}
 
-  /* Check ASYNCHRONOUS attribute.  */
-  if (s1->attr.asynchronous != s2->attr.asynchronous)
-    {
-      snprintf (errmsg, err_len, "ASYNCHRONOUS mismatch in argument '%s'",
-		s1->name);
-      return false;
-    }
+      /* Check TARGET attribute.  */
+      if (s1->attr.target != s2->attr.target)
+	{
+	  snprintf (errmsg, err_len, "TARGET mismatch in argument '%s'",
+		    s1->name);
+	  return false;
+	}
 
-  /* Check CONTIGUOUS attribute.  */
-  if (s1->attr.contiguous != s2->attr.contiguous)
-    {
-      snprintf (errmsg, err_len, "CONTIGUOUS mismatch in argument '%s'",
-		s1->name);
-      return false;
-    }
+      /* Check ASYNCHRONOUS attribute.  */
+      if (s1->attr.asynchronous != s2->attr.asynchronous)
+	{
+	  snprintf (errmsg, err_len, "ASYNCHRONOUS mismatch in argument '%s'",
+		    s1->name);
+	  return false;
+	}
 
-  /* Check VALUE attribute.  */
-  if (s1->attr.value != s2->attr.value)
-    {
-      snprintf (errmsg, err_len, "VALUE mismatch in argument '%s'",
-		s1->name);
-      return false;
-    }
+      /* Check CONTIGUOUS attribute.  */
+      if (s1->attr.contiguous != s2->attr.contiguous)
+	{
+	  snprintf (errmsg, err_len, "CONTIGUOUS mismatch in argument '%s'",
+		    s1->name);
+	  return false;
+	}
 
-  /* Check VOLATILE attribute.  */
-  if (s1->attr.volatile_ != s2->attr.volatile_)
-    {
-      snprintf (errmsg, err_len, "VOLATILE mismatch in argument '%s'",
-		s1->name);
-      return false;
+      /* Check VALUE attribute.  */
+      if (s1->attr.value != s2->attr.value)
+	{
+	  snprintf (errmsg, err_len, "VALUE mismatch in argument '%s'",
+		    s1->name);
+	  return false;
+	}
+
+      /* Check VOLATILE attribute.  */
+      if (s1->attr.volatile_ != s2->attr.volatile_)
+	{
+	  snprintf (errmsg, err_len, "VOLATILE mismatch in argument '%s'",
+		    s1->name);
+	  return false;
+	}
     }
 
   /* Check interface of dummy procedures.  */
@@ -5848,6 +5853,12 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
   gfc_symbol *s;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   static int var_num;
+
+  /* Do not infer the formal from actual arguments if we are dealing with
+     classes.  */
+
+  if (sym->ts.type == BT_CLASS)
+    return;
 
   f = &sym->formal;
   for (a = actual_args; a != NULL; a = a->next)
