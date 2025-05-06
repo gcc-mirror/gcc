@@ -10907,6 +10907,10 @@ package body Sem_Ch4 is
    --  Start of processing for Try_Object_Operation
 
    begin
+      if Is_Class_Wide_Equivalent_Type (Obj_Type) then
+         Obj_Type := Corresponding_Mutably_Tagged_Type (Obj_Type);
+      end if;
+
       Analyze_Expression (Obj);
 
       --  Analyze the actuals if node is known to be a subprogram call
