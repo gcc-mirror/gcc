@@ -816,6 +816,11 @@ package Exp_Util is
    --    Rnn : constant Ann := Func (...)'reference;
    --    Rnn.all
 
+   function Is_Constr_Array_Subt_Of_Unc_With_Controlled (Typ : Entity_Id)
+     return Boolean;
+   --  Return True if Typ is a constrained subtype of an array type with an
+   --  unconstrained first subtype and a controlled component type.
+
    function Is_Conversion_Or_Reference_To_Formal (N : Node_Id) return Boolean;
    --  Return True if N is a type conversion, or a dereference thereof, or a
    --  reference to a formal parameter.

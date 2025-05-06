@@ -5328,17 +5328,14 @@ package body Sem_Ch3 is
          else
             Validate_Controlled_Object (Id);
          end if;
+      end if;
 
-         --  If the type of a constrained array has an unconstrained first
-         --  subtype, its Finalize_Address primitive expects the address of
-         --  an object with a dope vector (see Make_Finalize_Address_Stmts).
+      --  If the type of a constrained array has an unconstrained first
+      --  subtype, its Finalize_Address primitive expects the address of
+      --  an object with a dope vector (see Make_Finalize_Address_Stmts).
 
-         if Is_Array_Type (Etype (Id))
-           and then Is_Constrained (Etype (Id))
-           and then not Is_Constrained (First_Subtype (Etype (Id)))
-         then
-            Set_Is_Constr_Array_Subt_With_Bounds (Etype (Id));
-         end if;
+      if Is_Constr_Array_Subt_Of_Unc_With_Controlled (Etype (Id)) then
+         Set_Is_Constr_Array_Subt_With_Bounds (Etype (Id));
       end if;
 
       if Has_Task (Etype (Id)) then
