@@ -203,6 +203,24 @@ vector_permconst::process_bb (basic_block bb)
       if (bias < 0 || bias > 16384 / 8)
 	continue;
 
+      /* We need to verify that each element would be a valid value
+	 in the inner mode after applying the bias.  */
+      machine_mode inner = GET_MODE_INNER (GET_MODE (cvec));
+      HOST_WIDE_INT precision = GET_MODE_PRECISION (inner).to_constant ();
+      int i;
+      for (i = 0; i < CONST_VECTOR_NUNITS (cvec).to_constant (); i++)
+	{
+	  HOST_WIDE_INT val = INTVAL (CONST_VECTOR_ELT (cvec, i)) - bias;
+	  if (val != sext_hwi (val, precision))
+	    break;
+	}
+
+      /* If the loop terminated early, then we found a case where the
+	 adjusted constant would not fit, so we can't record the constant
+	 for this case (it's unlikely to be useful anyway.  */
+      if (i != CONST_VECTOR_NUNITS (cvec).to_constant ())
+	continue;
+
       /* At this point we have a load of a constant integer vector from the
 	 constant pool.  That constant integer vector is hopefully a
 	 permutation constant.  We need to make a copy of the vector and
@@ -211,7 +229,7 @@ vector_permconst::process_bb (basic_block bb)
 	 XXX This violates structure sharing conventions.  */
       rtvec_def *nvec = gen_rtvec (CONST_VECTOR_NUNITS (cvec).to_constant ());
 
-      for (int i = 0; i < CONST_VECTOR_NUNITS (cvec).to_constant (); i++)
+      for (i = 0; i < CONST_VECTOR_NUNITS (cvec).to_constant (); i++)
 	nvec->elem[i] = GEN_INT (INTVAL (CONST_VECTOR_ELT (cvec, i)) - bias);
 
       rtx copy = gen_rtx_CONST_VECTOR (GET_MODE (cvec), nvec);
