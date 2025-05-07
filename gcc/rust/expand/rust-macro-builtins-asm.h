@@ -151,7 +151,7 @@ bool
 check_identifier (Parser<MacroInvocLexer> &parser, std::string ident);
 
 void
-check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option);
+check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsm::Option option);
 
 // From rustc
 WARN_UNUSED_RESULT

@@ -1476,7 +1476,7 @@ InlineAsm::InlineAsm (location_t locus, bool is_global_asm,
 		      std::vector<AST::TupleTemplateStr> template_strs,
 		      std::vector<HIR::InlineAsmOperand> operands,
 		      std::vector<AST::TupleClobber> clobber_abi,
-		      std::set<AST::InlineAsmOption> options,
+		      std::set<AST::InlineAsm::Option> options,
 		      Analysis::NodeMapping mappings,
 		      AST::AttrVec outer_attribs)
   : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),

@@ -25,18 +25,6 @@
 #include "rust-parse.h"
 
 namespace Rust {
-std::map<AST::InlineAsmOption, std::string> InlineAsmOptionMap{
-  {AST::InlineAsmOption::PURE, "pure"},
-  {AST::InlineAsmOption::NOMEM, "nomem"},
-  {AST::InlineAsmOption::READONLY, "readonly"},
-  {AST::InlineAsmOption::PRESERVES_FLAGS, "preserves_flags"},
-  {AST::InlineAsmOption::NORETURN, "noreturn"},
-  {AST::InlineAsmOption::NOSTACK, "nostack"},
-  {AST::InlineAsmOption::MAY_UNWIND, "may_unwind"},
-  {AST::InlineAsmOption::ATT_SYNTAX, "att_syntax"},
-  {AST::InlineAsmOption::RAW, "raw"},
-};
-
 std::set<std::string> potentially_nonpromoted_keywords
   = {"in", "out", "lateout", "inout", "inlateout", "const", "sym", "label"};
 
@@ -500,7 +488,7 @@ parse_reg_operand_unexpected (InlineAsmContext inline_asm_ctx)
 }
 
 void
-check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option)
+check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsm::Option option)
 {
   auto &parser = inline_asm_ctx.parser;
   auto &inline_asm = inline_asm_ctx.inline_asm;
@@ -509,7 +497,7 @@ check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option)
       // TODO: report an error of duplication
       rust_error_at (parser.peek_current_token ()->get_locus (),
 		     "the %qs option was already provided",
-		     InlineAsmOptionMap[option].c_str ());
+		     AST::InlineAsm::option_to_string (option).c_str ());
       return;
     }
   else
@@ -536,39 +524,40 @@ parse_options (InlineAsmContext &inline_asm_ctx)
     {
       if (!is_global_asm && check_identifier (parser, "pure"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::PURE);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::PURE);
 	}
       else if (!is_global_asm && check_identifier (parser, "nomem"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::NOMEM);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::NOMEM);
 	}
       else if (!is_global_asm && check_identifier (parser, "readonly"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::READONLY);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::READONLY);
 	}
       else if (!is_global_asm && check_identifier (parser, "preserves_flags"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::PRESERVES_FLAGS);
+	  check_and_set (inline_asm_ctx,
+			 AST::InlineAsm::Option::PRESERVES_FLAGS);
 	}
       else if (!is_global_asm && check_identifier (parser, "noreturn"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::NORETURN);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::NORETURN);
 	}
       else if (!is_global_asm && check_identifier (parser, "nostack"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::NOSTACK);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::NOSTACK);
 	}
       else if (!is_global_asm && check_identifier (parser, "may_unwind"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::MAY_UNWIND);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::MAY_UNWIND);
 	}
       else if (check_identifier (parser, "att_syntax"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::ATT_SYNTAX);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::ATT_SYNTAX);
 	}
       else if (check_identifier (parser, "raw"))
 	{
-	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::RAW);
+	  check_and_set (inline_asm_ctx, AST::InlineAsm::Option::RAW);
 	}
       else
 	{
