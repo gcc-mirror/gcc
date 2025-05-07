@@ -621,8 +621,8 @@ linemap_add (line_maps *set, enum lc_reason reason,
 	 #include "included", inside the same "includer" file.  */
 
       linemap_assert (!MAIN_FILE_P (map - 1));
-      /* (MAP - 1) points to the map we are leaving. The
-	 map from which (MAP - 1) got included should be the map
+      /* (MAP - 1) points to the map we are leaving.  The
+	 map from which (MAP - 1) got included should be usually the map
 	 that comes right before MAP in the same file.  */
       from = linemap_included_from_linemap (set, map - 1);
 
@@ -630,7 +630,24 @@ linemap_add (line_maps *set, enum lc_reason reason,
       if (to_file == NULL)
 	{
 	  to_file = ORDINARY_MAP_FILE_NAME (from);
-	  to_line = SOURCE_LINE (from, from[1].start_location);
+	  /* Compute the line on which the map resumes, for #include this
+	     should be the line after the #include line.  Usually FROM is
+	     the map right before LC_ENTER map - the first map of the included
+	     file, and in that case SOURCE_LINE (from, from[1].start_location);
+	     computes the right line (and does handle even some special cases
+	     (e.g. where for returning from <command line> we still want to
+	     be at line 0 or some -traditional-cpp cases).  In rare cases
+	     FROM can be followed by LC_RENAME created by linemap_line_start
+	     for line right after #include line.  If that happens,
+	     start_location of the FROM[1] map will be the same as
+	     start_location of FROM[2] LC_ENTER, but FROM[1] start_location
+	     might not have advance enough for moving to a full next line.
+	     In that case compute the line of #include line and add 1 to it
+	     to advance to the next line.  See PR120061.  */
+	  if (from[1].reason == LC_RENAME)
+	    to_line = SOURCE_LINE (from, linemap_included_from (map - 1)) + 1;
+	  else
+	    to_line = SOURCE_LINE (from, from[1].start_location);
 	  sysp = ORDINARY_MAP_IN_SYSTEM_HEADER_P (from);
 	}
       else
@@ -660,11 +677,26 @@ linemap_add (line_maps *set, enum lc_reason reason,
       if (set->depth == 0)
 	map->included_from = 0;
       else
-	/* The location of the end of the just-closed map.  */
-	map->included_from
-	  = (((map[0].start_location - 1 - map[-1].start_location)
-	      & ~((loc_one << map[-1].m_column_and_range_bits) - 1))
-	     + map[-1].start_location);
+	{
+	  /* Compute location from whence this line map was included.
+	     For #include this should be preferrably column 0 of the
+	     line on which #include directive appears.
+	     map[-1] is the just closed map and usually included_from
+	     falls within that map.  In rare cases linemap_line_start
+	     can insert a new LC_RENAME map for the line immediately
+	     after #include line, in that case map[-1] will have the
+	     same start_location as the new one and so included_from
+	     would not be from map[-1] but likely map[-2].  If that
+	     happens, mask off map[-2] m_column_and_range_bits bits
+	     instead of map[-1].  See PR120061.  */
+	  int i = -1;
+	  while (map[i].start_location == map[0].start_location)
+	    --i;
+	  map->included_from
+	    = (((map[0].start_location - 1 - map[i].start_location)
+		& ~((loc_one << map[i].m_column_and_range_bits) - 1))
+	       + map[i].start_location);
+	}
       set->depth++;
       if (set->trace_includes)
 	trace_include (set, map);

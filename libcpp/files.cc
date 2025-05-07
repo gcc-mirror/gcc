@@ -1047,14 +1047,6 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 		    && (pfile->line_table->highest_location
 			!= LINE_MAP_MAX_LOCATION - 1));
 
-  if (decrement && LINEMAPS_ORDINARY_USED (pfile->line_table))
-    {
-      const line_map_ordinary *map
-	= LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table);
-      if (map && map->start_location == pfile->line_table->highest_location)
-	decrement = false;
-    }
-
   if (decrement)
     pfile->line_table->highest_location--;
 
