@@ -95,32 +95,17 @@ struct riscv_implied_info_t
   constexpr riscv_implied_info_t (const char *implied_ext,
 				  riscv_implied_predicator_t predicator
 				  = nullptr)
-    : ext (nullptr), implied_ext (implied_ext), predicator (predicator)
+    : implied_ext (implied_ext), predicator (predicator)
   {}
 
-  constexpr riscv_implied_info_t (const char *ext, const char *implied_ext,
-				  riscv_implied_predicator_t predicator
-				  = nullptr)
-    : ext (ext), implied_ext (implied_ext), predicator (predicator){};
-
-  bool match (const riscv_subset_list *subset_list, const char *ext_name) const
+  bool match (const riscv_subset_list *subset_list) const
   {
-    if (ext_name && strcmp (ext_name, ext) != 0)
-      return false;
-
     if (predicator && !predicator (subset_list))
       return false;
 
     return true;
   }
 
-  bool match (const riscv_subset_list *subset_list,
-	      const riscv_subset_t *subset) const
-  {
-    return match (subset_list, subset->name.c_str());
-  }
-
-  const char *ext;
   const char *implied_ext;
   riscv_implied_predicator_t predicator;
 };
@@ -230,203 +215,43 @@ static const std::unordered_map<std::string, riscv_ext_info_t> riscv_ext_infos
 #undef DEFINE_RISCV_EXT
 };
 
-/* Implied ISA info, must end with NULL sentinel.  */
-static const riscv_implied_info_t riscv_implied_info[] =
+static const riscv_ext_info_t &
+get_riscv_ext_info (const std::string &ext)
 {
-  {"m", "zmmul"},
+  auto itr = riscv_ext_infos.find (ext);
+  if (itr == riscv_ext_infos.end ())
+    {
+      gcc_unreachable ();
+    }
+  return itr->second;
+}
 
-  {"d", "f"},
-  {"f", "zicsr"},
-  {"d", "zicsr"},
+/* Return true if any change.  */
+bool
+riscv_ext_info_t::apply_implied_ext (riscv_subset_list *subset_list) const
+{
+  bool any_change = false;
+  for (const riscv_implied_info_t &implied_info : m_implied_exts)
+    {
+      /* Skip if implied extension already present.  */
+      if (subset_list->lookup (implied_info.implied_ext))
+	continue;
 
-  {"a", "zaamo"},
-  {"a", "zalrsc"},
+      any_change = true;
+      if (!implied_info.match (subset_list))
+	continue;
 
-  {"c", "zca"},
-  {"c", "zcf",
-   [] (const riscv_subset_list *subset_list) -> bool
-   {
-     return subset_list->xlen () == 32 && subset_list->lookup ("f");
-   }},
-  {"c", "zcd",
-   [] (const riscv_subset_list *subset_list) -> bool
-   {
-     return subset_list->lookup ("d");
-   }},
+      /* Version of implied extension will get from current ISA spec
+	 version.  */
+      subset_list->add (implied_info.implied_ext, true);
 
-  {"zabha", "zaamo"},
-  {"zacas", "zaamo"},
-  {"zawrs", "zalrsc"},
-
-  {"zcmop", "zca"},
-
-  {"b", "zba"},
-  {"b", "zbb"},
-  {"b", "zbs"},
-
-  {"zdinx", "zfinx"},
-  {"zfinx", "zicsr"},
-  {"zdinx", "zicsr"},
-
-  {"zicfiss", "zicsr"},
-  {"zicfiss", "zimop"},
-  {"zicfilp", "zicsr"},
-
-  {"zclsd", "zilsd"},
-  {"zclsd", "zca"},
-
-  {"zk", "zkn"},
-  {"zk", "zkr"},
-  {"zk", "zkt"},
-  {"zkn", "zbkb"},
-  {"zkn", "zbkc"},
-  {"zkn", "zbkx"},
-  {"zkn", "zkne"},
-  {"zkn", "zknd"},
-  {"zkn", "zknh"},
-  {"zks", "zbkb"},
-  {"zks", "zbkc"},
-  {"zks", "zbkx"},
-  {"zks", "zksed"},
-  {"zks", "zksh"},
-
-  {"v", "zvl128b"},
-  {"v", "zve64d"},
-
-  {"zve32f", "f"},
-  {"zve64f", "f"},
-  {"zve64d", "d"},
-
-  {"zve32x", "zicsr"},
-  {"zve32x", "zvl32b"},
-  {"zve32f", "zve32x"},
-  {"zve32f", "zvl32b"},
-
-  {"zve64x", "zve32x"},
-  {"zve64x", "zvl64b"},
-  {"zve64f", "zve32f"},
-  {"zve64f", "zve64x"},
-  {"zve64f", "zvl64b"},
-  {"zve64d", "zve64f"},
-  {"zve64d", "zvl64b"},
-
-  {"zvl64b", "zvl32b"},
-  {"zvl128b", "zvl64b"},
-  {"zvl256b", "zvl128b"},
-  {"zvl512b", "zvl256b"},
-  {"zvl1024b", "zvl512b"},
-  {"zvl2048b", "zvl1024b"},
-  {"zvl4096b", "zvl2048b"},
-  {"zvl8192b", "zvl4096b"},
-  {"zvl16384b", "zvl8192b"},
-  {"zvl32768b", "zvl16384b"},
-  {"zvl65536b", "zvl32768b"},
-
-  {"zvkn", "zvkned"},
-  {"zvkn", "zvknhb"},
-  {"zvkn", "zvkb"},
-  {"zvkn", "zvkt"},
-  {"zvknc", "zvkn"},
-  {"zvknc", "zvbc"},
-  {"zvkng", "zvkn"},
-  {"zvkng", "zvkg"},
-  {"zvks", "zvksed"},
-  {"zvks", "zvksh"},
-  {"zvks", "zvkb"},
-  {"zvks", "zvkt"},
-  {"zvksc", "zvks"},
-  {"zvksc", "zvbc"},
-  {"zvksg", "zvks"},
-  {"zvksg", "zvkg"},
-  {"zvbb",  "zvkb"},
-  {"zvbc",   "zve64x"},
-  {"zvkb",   "zve32x"},
-  {"zvkg",   "zve32x"},
-  {"zvkned", "zve32x"},
-  {"zvknha", "zve32x"},
-  {"zvknhb", "zve64x"},
-  {"zvksed", "zve32x"},
-  {"zvksh",  "zve32x"},
-
-  {"zfbfmin", "zfhmin"},
-  {"zfh", "zfhmin"},
-  {"zfhmin", "f"},
-
-  {"zfa", "f"},
-
-  {"zvfbfmin", "zve32f"},
-  {"zvfbfwma", "zvfbfmin"},
-  {"zvfbfwma", "zfbfmin"},
-  {"zvfhmin", "zve32f"},
-  {"zvfh", "zve32f"},
-  {"zvfh", "zfhmin"},
-
-  {"zhinx", "zhinxmin"},
-  {"zhinxmin", "zfinx"},
-
-  {"zce",  "zca"},
-  {"zce",  "zcb"},
-  {"zce",  "zcmp"},
-  {"zce",  "zcmt"},
-  {"zcf",  "zca"},
-  {"zcd",  "zca"},
-  {"zcb",  "zca"},
-  {"zcmp", "zca"},
-  {"zcmt", "zca"},
-  {"zcmt", "zicsr"},
-  {"zce", "zcf",
-   [] (const riscv_subset_list *subset_list) -> bool
-   {
-     return subset_list->xlen () == 32 && subset_list->lookup ("f");
-   }},
-  {"zca", "c",
-   [] (const riscv_subset_list *subset_list) -> bool
-   {
-     /* For RV32 Zca implies C for one of these combinations of
-	extensions: Zca, F_Zca_Zcf and FD_Zca_Zcf_Zcd.  */
-     if (subset_list->xlen () == 32)
-       {
-	 if (subset_list->lookup ("d"))
-	   return subset_list->lookup ("zcf") && subset_list->lookup ("zcd");
-
-	 if (subset_list->lookup ("f"))
-	   return subset_list->lookup ("zcf");
-
-	 return true;
-       }
-
-     /* For RV64 Zca implies C for one of these combinations of
-	extensions: Zca and FD_Zca_Zcd (Zcf is not available
-	for RV64).  */
-     if (subset_list->xlen () == 64)
-       {
-	 if (subset_list->lookup ("d"))
-	   return subset_list->lookup ("zcd");
-
-	 return true;
-       }
-
-     /* Do nothing for future RV128 specification. Behaviour
-	for this case is not yet well defined.  */
-     return false;
-   }},
-
-  {"smaia", "ssaia"},
-  {"smstateen", "ssstateen"},
-  {"smepmp", "zicsr"},
-  {"ssaia", "zicsr"},
-  {"sscofpmf", "zicsr"},
-  {"ssstateen", "zicsr"},
-  {"sstc", "zicsr"},
-
-  {"ssnpm", "zicsr"},
-  {"smnpm", "zicsr"},
-  {"smmpm", "zicsr"},
-
-  {"xsfvcp", "zve32x"},
-
-  {NULL, NULL, NULL}
-};
+      /* Recursively add implied extension by implied_info->implied_ext.  */
+      const riscv_ext_info_t &implied_ext_info
+	= get_riscv_ext_info (implied_info.implied_ext);
+      implied_ext_info.apply_implied_ext (subset_list);
+    }
+  return any_change;
+}
 
 /* This structure holds version information for specific ISA version.  */
 
@@ -659,24 +484,6 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"xsfvqmaccdod",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"xsfvfnrclipxfqf", ISA_SPEC_CLASS_NONE, 1, 0},
 
-  /* Terminate the list.  */
-  {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
-};
-
-/* Combine extensions defined in this table  */
-static const struct riscv_ext_version riscv_combine_info[] =
-{
-  {"a", ISA_SPEC_CLASS_20191213, 2, 1},
-  {"b",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zk",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zkn",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zks",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvkn", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvknc", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvkng", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvks", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvksc", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvksg", ISA_SPEC_CLASS_NONE, 1, 0},
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -1510,25 +1317,8 @@ riscv_subset_list::parse_single_std_ext (const char *p, bool exact_single_p)
 void
 riscv_subset_list::handle_implied_ext (const char *ext)
 {
-  const riscv_implied_info_t *implied_info;
-  for (implied_info = &riscv_implied_info[0];
-       implied_info->ext;
-       ++implied_info)
-    {
-      if (!implied_info->match (this, ext))
-	continue;
-
-      /* Skip if implied extension already present.  */
-      if (lookup (implied_info->implied_ext))
-	continue;
-
-      /* Version of implied extension will get from current ISA spec
-	 version.  */
-      add (implied_info->implied_ext, true);
-
-      /* Recursively add implied extension by implied_info->implied_ext.  */
-      handle_implied_ext (implied_info->implied_ext);
-    }
+  const riscv_ext_info_t &ext_info = get_riscv_ext_info (ext);
+  ext_info.apply_implied_ext (this);
 
   /* For RISC-V ISA version 2.2 or earlier version, zicsr and zifence is
      included in the base ISA.  */
@@ -1549,14 +1339,13 @@ riscv_subset_list::check_implied_ext ()
   riscv_subset_t *itr;
   for (itr = m_head; itr != NULL; itr = itr->next)
     {
-      const riscv_implied_info_t *implied_info;
-      for (implied_info = &riscv_implied_info[0]; implied_info->ext;
-	   ++implied_info)
+      auto &ext = *itr;
+      auto &ext_info = get_riscv_ext_info (ext.name);
+      for (auto &implied_ext : ext_info.implied_exts ())
 	{
-	  if (!implied_info->match (this, itr))
+	  if (!implied_ext.match (this))
 	    continue;
-
-	  if (!lookup (implied_info->implied_ext))
+	  if (lookup (implied_ext.implied_ext) == NULL)
 	    return false;
 	}
     }
@@ -1567,27 +1356,23 @@ riscv_subset_list::check_implied_ext ()
 void
 riscv_subset_list::handle_combine_ext ()
 {
-  const riscv_ext_version *combine_info;
-  const riscv_implied_info_t *implied_info;
-  bool is_combined = false;
-
-  for (combine_info = &riscv_combine_info[0]; combine_info->name;
-       ++combine_info)
+  for (const auto &[ext_name, ext_info] : riscv_ext_infos)
     {
-      /* Skip if combine extensions are present */
-      if (lookup (combine_info->name))
+      bool is_combined = true;
+      /* Skip if this extension don't need to combine.  */
+      if (!ext_info.need_combine_p ())
+	continue;
+      /* Skip if combine extensions are present.  */
+      if (lookup (ext_name.c_str ()))
 	continue;
 
-      /* Find all extensions of the combine extension   */
-      for (implied_info = &riscv_implied_info[0]; implied_info->ext;
-	   ++implied_info)
+      /* Check all implied extensions is present.  */
+      for (const auto &implied_ext : ext_info.implied_exts ())
 	{
-	  if (!implied_info->match (this, combine_info->name))
+	  if (!implied_ext.match (this))
 	    continue;
 
-	  if (lookup (implied_info->implied_ext))
-	    is_combined = true;
-	  else
+	  if (!lookup (implied_ext.implied_ext))
 	    {
 	      is_combined = false;
 	      break;
@@ -1597,11 +1382,9 @@ riscv_subset_list::handle_combine_ext ()
       /* Add combine extensions */
       if (is_combined)
 	{
-	  if (lookup (combine_info->name) == NULL)
-	    {
-	      add (combine_info->name, combine_info->major_version,
-		   combine_info->minor_version, false, true);
-	    }
+	  riscv_version_t ver = ext_info.default_version();
+	  add (ext_name.c_str (), ver.major_version,
+	       ver.minor_version, false, true);
 	}
     }
 }
@@ -2253,20 +2036,18 @@ riscv_minimal_hwprobe_feature_bits (const char *isa,
 	  search_q.pop ();
 
 	  /* Iterate through the implied extension table.  */
-	  const riscv_implied_info_t *implied_info;
-	  for (implied_info = &riscv_implied_info[0];
-	      implied_info->ext;
-	      ++implied_info)
+	  auto &ext_info = get_riscv_ext_info (search_ext);
+	  for (const auto &implied_ext : ext_info.implied_exts ())
 	    {
 	      /* When the search extension matches the implied extension and
 		 the implied extension has not been visited, mark the implied
 		 extension in the implied_exts set and push it into the
 		 queue.  */
-	      if (implied_info->match (subset_list, search_ext)
-		  && implied_exts.count (implied_info->implied_ext) == 0)
+	      if (implied_ext.match (subset_list)
+		  && implied_exts.count (implied_ext.implied_ext) == 0)
 		{
-		  implied_exts.insert (implied_info->implied_ext);
-		  search_q.push (implied_info->implied_ext);
+		  implied_exts.insert (implied_ext.implied_ext);
+		  search_q.push (implied_ext.implied_ext);
 		}
 	    }
 	}
