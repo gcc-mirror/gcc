@@ -6562,7 +6562,7 @@ create_variable_info_for (tree decl, const char *name, bool add_id)
 	  varpool_node *vnode = varpool_node::get (decl);
 
 	  /* For escaped variables initialize them from nonlocal.  */
-	  if (!vnode->all_refs_explicit_p ())
+	  if (!vnode || !vnode->all_refs_explicit_p ())
 	    make_copy_constraint (vi, nonlocal_id);
 
 	  /* While we can in theory walk references for the varpool
@@ -6581,7 +6581,7 @@ create_variable_info_for (tree decl, const char *name, bool add_id)
 		process_constraint (new_constraint (lhs, *rhsp));
 	      /* If this is a variable that escapes from the unit
 		 the initializer escapes as well.  */
-	      if (!vnode->all_refs_explicit_p ())
+	      if (!vnode || !vnode->all_refs_explicit_p ())
 		{
 		  lhs.var = escaped_id;
 		  lhs.offset = 0;
