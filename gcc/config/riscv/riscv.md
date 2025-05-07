@@ -3173,15 +3173,25 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 4) (lshiftrt:X (subreg:X (match_dup 2) 0) (match_dup 6)))
-   (set (match_dup 4) (and:X (match_dup 4) (match_dup 7)))
+   (set (match_dup 4) (match_dup 8))
    (set (pc) (if_then_else (match_op_dup 1 [(match_dup 4) (const_int 0)])
 			   (label_ref (match_dup 0)) (pc)))]
 {
-	HOST_WIDE_INT mask = INTVAL (operands[3]);
-	int trailing = ctz_hwi (mask);
+  HOST_WIDE_INT mask = INTVAL (operands[3]);
+  int trailing = ctz_hwi (mask);
 
-	operands[6] = GEN_INT (trailing);
-	operands[7] = GEN_INT (mask >> trailing);
+  operands[6] = GEN_INT (trailing);
+  operands[7] = GEN_INT (mask >> trailing);
+
+  /* This splits after reload, so there's little chance to clean things
+     up.  Rather than emit a ton of RTL here, we can just make a new
+     operand for that RHS and use it.  For the case where the AND would
+     have been redundant, we can make it a NOP move, which does get
+     cleaned up.  */
+  if (operands[7] == CONSTM1_RTX (word_mode))
+    operands[8] = operands[4];
+  else
+    operands[8] = gen_rtx_AND (word_mode, operands[4], operands[7]);
 }
 [(set_attr "type" "branch")])
 
