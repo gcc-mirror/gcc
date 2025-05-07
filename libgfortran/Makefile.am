@@ -400,6 +400,12 @@ generated/maxloc1_16_i2.c \
 generated/maxloc1_4_i4.c \
 generated/maxloc1_8_i4.c \
 generated/maxloc1_16_i4.c \
+generated/maxloc1_4_i8.c \
+generated/maxloc1_8_i8.c \
+generated/maxloc1_16_i8.c \
+generated/maxloc1_4_i16.c \
+generated/maxloc1_8_i16.c \
+generated/maxloc1_16_i16.c \
 generated/maxloc1_4_m1.c \
 generated/maxloc1_8_m1.c \
 generated/maxloc1_16_m1.c \
@@ -414,7 +420,6 @@ generated/maxloc1_8_m8.c \
 generated/maxloc1_16_m8.c \
 generated/maxloc1_4_m16.c \
 generated/maxloc1_8_m16.c \
-generated/maxloc1_16_i16.c \
 generated/maxloc1_4_r4.c \
 generated/maxloc1_8_r4.c \
 generated/maxloc1_16_r4.c \
