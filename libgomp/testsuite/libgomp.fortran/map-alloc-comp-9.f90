@@ -1,8 +1,19 @@
+! { dg-additional-options "-cpp" }
+!
 ! Ensure that polymorphic mapping is diagnosed as undefined behavior
 ! Ensure that static access to polymorphic variables works
 
+! Some extended tests are only run with shared memory
+! To enforce this (where possible) on the device side:
+!   #define USE_USM_REQUIREMENT
+! which is done in map-alloc-comp-9-usm.f90
+
 subroutine test(case)
 implicit none(type, external)
+#ifdef USE_USM_REQUIREMENT
+  !$omp requires unified_shared_memory
+#endif
+
 type t
   integer :: x(4)
 end type t
@@ -73,10 +84,14 @@ var4%y2(2)%y%x%x = -7 * [1111,2222,3333,4444]
 var4%y2(2)%y%x2(1)%x = -8 * [1111,2222,3333,4444]
 var4%y2(2)%y%x2(2)%x = -9 * [1111,2222,3333,4444]
 
+#ifdef USE_USM_REQUIREMENT
+is_shared_mem = .true.
+#else
 is_shared_mem = .false.
 !$omp target map(to: is_shared_mem)
   is_shared_mem = .true.
 !$omp end target
+#endif
 
 if (case == 1) then
   ! implicit mapping
@@ -532,6 +547,10 @@ end subroutine test
 program main
   use omp_lib
   implicit none(type, external)
+#ifdef USE_USM_REQUIREMENT
+  !$omp requires unified_shared_memory
+#endif
+
   interface
     subroutine test(case)
       integer, value :: case
