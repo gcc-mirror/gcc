@@ -1834,10 +1834,13 @@ export namespace std
 }
 
 // <mdspan>
+#if __glibcxx_mdspan
+export namespace std
 {
   using std::extents;
   // FIXME layout_*, default_accessor and mdspan
 }
+#endif
 
 // 20.2 <memory>
 export namespace std
