@@ -420,6 +420,7 @@ generated/maxloc1_8_m8.c \
 generated/maxloc1_16_m8.c \
 generated/maxloc1_4_m16.c \
 generated/maxloc1_8_m16.c \
+generated/maxloc1_16_m16.c \
 generated/maxloc1_4_r4.c \
 generated/maxloc1_8_r4.c \
 generated/maxloc1_16_r4.c \
