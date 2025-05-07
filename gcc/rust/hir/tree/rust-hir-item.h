@@ -95,17 +95,11 @@ protected:
 class TypeParam : public GenericParam
 {
   AST::AttrVec outer_attrs;
-
   Identifier type_representation;
-
-  // bool has_type_param_bounds;
-  // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound>>
-    type_param_bounds; // inlined form
-
+  std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
   tl::optional<std::unique_ptr<Type>> type;
-
   location_t locus;
+  bool was_impl_trait;
 
 public:
   // Returns whether the type of the type param has been specified.
@@ -121,9 +115,9 @@ public:
   TypeParam (Analysis::NodeMapping mappings, Identifier type_representation,
 	     location_t locus = UNDEF_LOCATION,
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
-	     = std::vector<std::unique_ptr<TypeParamBound>> (),
+	     = {},
 	     tl::optional<std::unique_ptr<Type>> type = tl::nullopt,
-	     AST::AttrVec outer_attrs = std::vector<AST::Attribute> ());
+	     AST::AttrVec outer_attrs = {}, bool was_impl_trait = false);
 
   // Copy constructor uses clone
   TypeParam (TypeParam const &other);
@@ -153,6 +147,8 @@ public:
   Analysis::NodeMapping get_type_mappings () const;
 
   std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ();
+
+  bool from_impl_trait () const { return was_impl_trait; }
 
 protected:
   // Clone function implementation as (not pure) virtual method

@@ -620,7 +620,8 @@ ASTLowerGenericParam::visit (AST::TypeParam &param)
   translated
     = new HIR::TypeParam (mapping, param.get_type_representation (),
 			  param.get_locus (), std::move (type_param_bounds),
-			  std::move (type), param.get_outer_attrs ());
+			  std::move (type), param.get_outer_attrs (),
+			  param.from_impl_trait ());
 }
 
 HIR::TypeParamBound *
