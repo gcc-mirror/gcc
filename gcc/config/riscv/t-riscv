@@ -187,3 +187,16 @@ s-riscv-vector-type-indexer.gen.defs: build/genrvv-type-indexer$(build_exeext)
 	$(STAMP) s-riscv-vector-type-indexer.gen.defs
 
 genprog+=rvv-type-indexer
+
+$(srcdir)/config/riscv/riscv-ext.opt: $(srcdir)/config/riscv/riscv-ext.def
+
+$(srcdir)/config/riscv/riscv-ext.opt: s-riscv-ext.opt ; @true
+
+build/gen-riscv-ext-opt$(build_exeext): $(srcdir)/config/riscv/gen-riscv-ext-opt.cc \
+	$(srcdir)/config/riscv/riscv-ext.def
+	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@
+
+s-riscv-ext.opt: build/gen-riscv-ext-opt$(build_exeext)
+	$(RUN_GEN) build/gen-riscv-ext-opt$(build_exeext) > tmp-riscv-ext.opt
+	$(SHELL) $(srcdir)/../move-if-change tmp-riscv-ext.opt $(srcdir)/config/riscv/riscv-ext.opt
+	$(STAMP) s-riscv-ext.opt

@@ -1,0 +1,404 @@
+; Target options for the RISC-V port of the compiler
+;
+; Copyright (C) 2025 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see 
+; <http://www.gnu.org/licenses/>.
+; This file is generated automatically using
+;  gcc/config/riscv/gen-riscv-ext-opt.cc from:
+;       gcc/config/riscv/riscv-ext.def
+
+; Please *DO NOT* edit manually.
+TargetVariable
+int riscv_base_subext
+
+TargetVariable
+int riscv_sd_subext
+
+TargetVariable
+int riscv_sm_subext
+
+TargetVariable
+int riscv_ss_subext
+
+TargetVariable
+int riscv_su_subext
+
+TargetVariable
+int riscv_sv_subext
+
+TargetVariable
+int riscv_xcv_subext
+
+TargetVariable
+int riscv_xsf_subext
+
+TargetVariable
+int riscv_xthead_subext
+
+TargetVariable
+int riscv_xventana_subext
+
+TargetVariable
+int riscv_za_subext
+
+TargetVariable
+int riscv_zb_subext
+
+TargetVariable
+int riscv_zc_subext
+
+TargetVariable
+int riscv_zf_subext
+
+TargetVariable
+int riscv_zi_subext
+
+TargetVariable
+int riscv_zinx_subext
+
+TargetVariable
+int riscv_zk_subext
+
+TargetVariable
+int riscv_zm_subext
+
+TargetVariable
+int riscv_zt_subext
+
+TargetVariable
+int riscv_zvb_subext
+
+TargetVariable
+int riscv_zve_subext
+
+TargetVariable
+int riscv_zvf_subext
+
+TargetVariable
+int riscv_zvk_subext
+
+TargetVariable
+int riscv_zvl_subext
+
+Mask(RVE) Var(riscv_base_subext)
+
+Mask(RVI) Var(riscv_base_subext)
+
+Mask(MUL) Var(riscv_base_subext)
+
+Mask(ATOMIC) Var(riscv_base_subext)
+
+Mask(HARD_FLOAT) Var(riscv_base_subext)
+
+Mask(DOUBLE_FLOAT) Var(riscv_base_subext)
+
+Mask(RVC) Var(riscv_base_subext)
+
+Mask(RVB) Var(riscv_base_subext)
+
+Mask(RVV) Var(riscv_base_subext)
+
+Mask(RVH) Var(riscv_base_subext)
+
+Mask(ZIC64B) Var(riscv_zi_subext)
+
+Mask(ZICBOM) Var(riscv_zi_subext)
+
+Mask(ZICBOP) Var(riscv_zi_subext)
+
+Mask(ZICBOZ) Var(riscv_zi_subext)
+
+Mask(ZICCAMOA) Var(riscv_zi_subext)
+
+Mask(ZICCIF) Var(riscv_zi_subext)
+
+Mask(ZICCLSM) Var(riscv_zi_subext)
+
+Mask(ZICCRSE) Var(riscv_zi_subext)
+
+Mask(ZICFILP) Var(riscv_zi_subext)
+
+Mask(ZICFISS) Var(riscv_zi_subext)
+
+Mask(ZICNTR) Var(riscv_zi_subext)
+
+Mask(ZICOND) Var(riscv_zi_subext)
+
+Mask(ZICSR) Var(riscv_zi_subext)
+
+Mask(ZIFENCEI) Var(riscv_zi_subext)
+
+Mask(ZIHINTNTL) Var(riscv_zi_subext)
+
+Mask(ZIHINTPAUSE) Var(riscv_zi_subext)
+
+Mask(ZIHPM) Var(riscv_zi_subext)
+
+Mask(ZIMOP) Var(riscv_zi_subext)
+
+Mask(ZILSD) Var(riscv_zi_subext)
+
+Mask(ZMMUL) Var(riscv_zm_subext)
+
+Mask(ZA128RS) Var(riscv_za_subext)
+
+Mask(ZA64RS) Var(riscv_za_subext)
+
+Mask(ZAAMO) Var(riscv_za_subext)
+
+Mask(ZABHA) Var(riscv_za_subext)
+
+Mask(ZACAS) Var(riscv_za_subext)
+
+Mask(ZALRSC) Var(riscv_za_subext)
+
+Mask(ZAWRS) Var(riscv_za_subext)
+
+Mask(ZAMA16B) Var(riscv_za_subext)
+
+Mask(ZFA) Var(riscv_zf_subext)
+
+Mask(ZFBFMIN) Var(riscv_zf_subext)
+
+Mask(ZFH) Var(riscv_zf_subext)
+
+Mask(ZFHMIN) Var(riscv_zf_subext)
+
+Mask(ZFINX) Var(riscv_zinx_subext)
+
+Mask(ZDINX) Var(riscv_zinx_subext)
+
+Mask(ZCA) Var(riscv_zc_subext)
+
+Mask(ZCB) Var(riscv_zc_subext)
+
+Mask(ZCD) Var(riscv_zc_subext)
+
+Mask(ZCE) Var(riscv_zc_subext)
+
+Mask(ZCF) Var(riscv_zc_subext)
+
+Mask(ZCMOP) Var(riscv_zc_subext)
+
+Mask(ZCMP) Var(riscv_zc_subext)
+
+Mask(ZCMT) Var(riscv_zc_subext)
+
+Mask(ZCLSD) Var(riscv_zc_subext)
+
+Mask(ZBA) Var(riscv_zb_subext)
+
+Mask(ZBB) Var(riscv_zb_subext)
+
+Mask(ZBC) Var(riscv_zb_subext)
+
+Mask(ZBKB) Var(riscv_zb_subext)
+
+Mask(ZBKC) Var(riscv_zb_subext)
+
+Mask(ZBKX) Var(riscv_zb_subext)
+
+Mask(ZBS) Var(riscv_zb_subext)
+
+Mask(ZK) Var(riscv_zk_subext)
+
+Mask(ZKN) Var(riscv_zk_subext)
+
+Mask(ZKND) Var(riscv_zk_subext)
+
+Mask(ZKNE) Var(riscv_zk_subext)
+
+Mask(ZKNH) Var(riscv_zk_subext)
+
+Mask(ZKR) Var(riscv_zk_subext)
+
+Mask(ZKS) Var(riscv_zk_subext)
+
+Mask(ZKSED) Var(riscv_zk_subext)
+
+Mask(ZKSH) Var(riscv_zk_subext)
+
+Mask(ZKT) Var(riscv_zk_subext)
+
+Mask(ZTSO) Var(riscv_zt_subext)
+
+Mask(ZVBB) Var(riscv_zvb_subext)
+
+Mask(ZVBC) Var(riscv_zvb_subext)
+
+Mask(ZVE32F) Var(riscv_zve_subext)
+
+Mask(ZVE32X) Var(riscv_zve_subext)
+
+Mask(ZVE64D) Var(riscv_zve_subext)
+
+Mask(ZVE64F) Var(riscv_zve_subext)
+
+Mask(ZVE64X) Var(riscv_zve_subext)
+
+Mask(ZVFBFMIN) Var(riscv_zvf_subext)
+
+Mask(ZVFBFWMA) Var(riscv_zvf_subext)
+
+Mask(ZVFH) Var(riscv_zvf_subext)
+
+Mask(ZVFHMIN) Var(riscv_zvf_subext)
+
+Mask(ZVKB) Var(riscv_zvk_subext)
+
+Mask(ZVKG) Var(riscv_zvk_subext)
+
+Mask(ZVKN) Var(riscv_zvk_subext)
+
+Mask(ZVKNC) Var(riscv_zvk_subext)
+
+Mask(ZVKNED) Var(riscv_zvk_subext)
+
+Mask(ZVKNG) Var(riscv_zvk_subext)
+
+Mask(ZVKNHA) Var(riscv_zvk_subext)
+
+Mask(ZVKNHB) Var(riscv_zvk_subext)
+
+Mask(ZVKS) Var(riscv_zvk_subext)
+
+Mask(ZVKSC) Var(riscv_zvk_subext)
+
+Mask(ZVKSED) Var(riscv_zvk_subext)
+
+Mask(ZVKSG) Var(riscv_zvk_subext)
+
+Mask(ZVKSH) Var(riscv_zvk_subext)
+
+Mask(ZVKT) Var(riscv_zvk_subext)
+
+Mask(ZVL1024B) Var(riscv_zvl_subext)
+
+Mask(ZVL128B) Var(riscv_zvl_subext)
+
+Mask(ZVL16384B) Var(riscv_zvl_subext)
+
+Mask(ZVL2048B) Var(riscv_zvl_subext)
+
+Mask(ZVL256B) Var(riscv_zvl_subext)
+
+Mask(ZVL32768B) Var(riscv_zvl_subext)
+
+Mask(ZVL32B) Var(riscv_zvl_subext)
+
+Mask(ZVL4096B) Var(riscv_zvl_subext)
+
+Mask(ZVL512B) Var(riscv_zvl_subext)
+
+Mask(ZVL64B) Var(riscv_zvl_subext)
+
+Mask(ZVL65536B) Var(riscv_zvl_subext)
+
+Mask(ZVL8192B) Var(riscv_zvl_subext)
+
+Mask(ZHINX) Var(riscv_zinx_subext)
+
+Mask(ZHINXMIN) Var(riscv_zinx_subext)
+
+Mask(SDTRIG) Var(riscv_sd_subext)
+
+Mask(SMAIA) Var(riscv_sm_subext)
+
+Mask(SMEPMP) Var(riscv_sm_subext)
+
+Mask(SMMPM) Var(riscv_sm_subext)
+
+Mask(SMNPM) Var(riscv_sm_subext)
+
+Mask(SMSTATEEN) Var(riscv_sm_subext)
+
+Mask(SSAIA) Var(riscv_ss_subext)
+
+Mask(SSCOFPMF) Var(riscv_ss_subext)
+
+Mask(SSNPM) Var(riscv_ss_subext)
+
+Mask(SSPM) Var(riscv_ss_subext)
+
+Mask(SSSTATEEN) Var(riscv_ss_subext)
+
+Mask(SSTC) Var(riscv_ss_subext)
+
+Mask(SSSTRICT) Var(riscv_ss_subext)
+
+Mask(SUPM) Var(riscv_su_subext)
+
+Mask(SVINVAL) Var(riscv_sv_subext)
+
+Mask(SVNAPOT) Var(riscv_sv_subext)
+
+Mask(SVPBMT) Var(riscv_sv_subext)
+
+Mask(SVVPTC) Var(riscv_sv_subext)
+
+Mask(SVADU) Var(riscv_sv_subext)
+
+Mask(SVADE) Var(riscv_sv_subext)
+
+Mask(XCVALU) Var(riscv_xcv_subext)
+
+Mask(XCVBI) Var(riscv_xcv_subext)
+
+Mask(XCVELW) Var(riscv_xcv_subext)
+
+Mask(XCVMAC) Var(riscv_xcv_subext)
+
+Mask(XCVSIMD) Var(riscv_xcv_subext)
+
+Mask(XSFCEASE) Var(riscv_xsf_subext)
+
+Mask(XSFVCP) Var(riscv_xsf_subext)
+
+Mask(XSFVFNRCLIPXFQF) Var(riscv_xsf_subext)
+
+Mask(XSFVQMACCDOD) Var(riscv_xsf_subext)
+
+Mask(XSFVQMACCQOQ) Var(riscv_xsf_subext)
+
+Mask(XTHEADBA) Var(riscv_xthead_subext)
+
+Mask(XTHEADBB) Var(riscv_xthead_subext)
+
+Mask(XTHEADBS) Var(riscv_xthead_subext)
+
+Mask(XTHEADCMO) Var(riscv_xthead_subext)
+
+Mask(XTHEADCONDMOV) Var(riscv_xthead_subext)
+
+Mask(XTHEADFMEMIDX) Var(riscv_xthead_subext)
+
+Mask(XTHEADFMV) Var(riscv_xthead_subext)
+
+Mask(XTHEADINT) Var(riscv_xthead_subext)
+
+Mask(XTHEADMAC) Var(riscv_xthead_subext)
+
+Mask(XTHEADMEMIDX) Var(riscv_xthead_subext)
+
+Mask(XTHEADMEMPAIR) Var(riscv_xthead_subext)
+
+Mask(XTHEADSYNC) Var(riscv_xthead_subext)
+
+Mask(XTHEADVECTOR) Var(riscv_xthead_subext)
+
+Mask(XVENTANACONDOPS) Var(riscv_xventana_subext)
+

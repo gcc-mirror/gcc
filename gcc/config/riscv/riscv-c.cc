@@ -36,10 +36,10 @@ along with GCC; see the file COPYING3.  If not see
 
 struct pragma_intrinsic_flags
 {
-  int intrinsic_target_flags;
+  int intrinsic_riscv_isa_flags;
 
   int intrinsic_riscv_vector_elen_flags;
-  int intrinsic_riscv_zvl_flags;
+  int intrinsic_riscv_zvl_subext;
   int intrinsic_riscv_zvb_subext;
   int intrinsic_riscv_zvk_subext;
 };
@@ -47,16 +47,16 @@ struct pragma_intrinsic_flags
 static void
 riscv_pragma_intrinsic_flags_pollute (struct pragma_intrinsic_flags *flags)
 {
-  flags->intrinsic_target_flags = target_flags;
+  flags->intrinsic_riscv_isa_flags = riscv_isa_flags;
   flags->intrinsic_riscv_vector_elen_flags = riscv_vector_elen_flags;
-  flags->intrinsic_riscv_zvl_flags = riscv_zvl_flags;
+  flags->intrinsic_riscv_zvl_subext = riscv_zvl_subext;
   flags->intrinsic_riscv_zvb_subext = riscv_zvb_subext;
   flags->intrinsic_riscv_zvk_subext = riscv_zvk_subext;
 
-  target_flags = target_flags
+  riscv_isa_flags = riscv_isa_flags
     | MASK_VECTOR;
 
-  riscv_zvl_flags = riscv_zvl_flags
+  riscv_zvl_subext = riscv_zvl_subext
     | MASK_ZVL32B
     | MASK_ZVL64B
     | MASK_ZVL128B
@@ -97,10 +97,10 @@ riscv_pragma_intrinsic_flags_pollute (struct pragma_intrinsic_flags *flags)
 static void
 riscv_pragma_intrinsic_flags_restore (struct pragma_intrinsic_flags *flags)
 {
-  target_flags = flags->intrinsic_target_flags;
+  riscv_isa_flags = flags->intrinsic_riscv_isa_flags;
 
   riscv_vector_elen_flags = flags->intrinsic_riscv_vector_elen_flags;
-  riscv_zvl_flags = flags->intrinsic_riscv_zvl_flags;
+  riscv_zvl_subext = flags->intrinsic_riscv_zvl_subext;
   riscv_zvb_subext = flags->intrinsic_riscv_zvb_subext;
   riscv_zvk_subext = flags->intrinsic_riscv_zvk_subext;
 }

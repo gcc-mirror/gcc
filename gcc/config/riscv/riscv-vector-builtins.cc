@@ -3842,26 +3842,26 @@ check_required_extensions (const function_instance &instance)
 	required_extensions |= RVV_REQUIRE_RV64BIT;
     }
 
-  uint64_t riscv_isa_flags = 0;
+  uint64_t isa_flags = 0;
 
   if (TARGET_VECTOR_ELEN_BF_16)
-    riscv_isa_flags |= RVV_REQUIRE_ELEN_BF_16;
+    isa_flags |= RVV_REQUIRE_ELEN_BF_16;
   if (TARGET_VECTOR_ELEN_FP_16)
-    riscv_isa_flags |= RVV_REQUIRE_ELEN_FP_16;
+    isa_flags |= RVV_REQUIRE_ELEN_FP_16;
   if (TARGET_VECTOR_ELEN_FP_32)
-    riscv_isa_flags |= RVV_REQUIRE_ELEN_FP_32;
+    isa_flags |= RVV_REQUIRE_ELEN_FP_32;
   if (TARGET_VECTOR_ELEN_FP_64)
-    riscv_isa_flags |= RVV_REQUIRE_ELEN_FP_64;
+    isa_flags |= RVV_REQUIRE_ELEN_FP_64;
   if (TARGET_VECTOR_ELEN_64)
-    riscv_isa_flags |= RVV_REQUIRE_ELEN_64;
+    isa_flags |= RVV_REQUIRE_ELEN_64;
   if (TARGET_64BIT)
-    riscv_isa_flags |= RVV_REQUIRE_RV64BIT;
+    isa_flags |= RVV_REQUIRE_RV64BIT;
   if (TARGET_FULL_V)
-    riscv_isa_flags |= RVV_REQUIRE_FULL_V;
+    isa_flags |= RVV_REQUIRE_FULL_V;
   if (TARGET_MIN_VLEN > 32)
-    riscv_isa_flags |= RVV_REQUIRE_MIN_VLEN_64;
+    isa_flags |= RVV_REQUIRE_MIN_VLEN_64;
 
-  uint64_t missing_extensions = required_extensions & ~riscv_isa_flags;
+  uint64_t missing_extensions = required_extensions & ~isa_flags;
   if (missing_extensions != 0)
     return false;
   return true;
