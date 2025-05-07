@@ -1,0 +1,35 @@
+/* Ventana extension definition file for RISC-V.
+   Copyright (C) 2025 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.
+
+Please run `make riscv-regen` in build folder to make sure updated anything.
+
+Format of DEFINE_RISCV_EXT, please refer to riscv-ext.def.  */
+
+DEFINE_RISCV_EXT(
+  /* NAME */ xventanacondops,
+  /* UPPERCAE_NAME */ XVENTANACONDOPS,
+  /* FULL_NAME */ "Ventana integer conditional operations extension",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ xventana,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
