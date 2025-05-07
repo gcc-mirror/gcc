@@ -7918,11 +7918,9 @@ riscv_can_inline_p (tree caller, tree callee)
   struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
   struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
 
-  int isa_flag_mask = riscv_x_target_flags_isa_mask ();
-
-  /* Callee and caller should have the same target options except for ISA.  */
-  int callee_target_flags = callee_opts->x_target_flags & ~isa_flag_mask;
-  int caller_target_flags = caller_opts->x_target_flags & ~isa_flag_mask;
+  /* Callee and caller should have the same target options.  */
+  int callee_target_flags = callee_opts->x_target_flags;
+  int caller_target_flags = caller_opts->x_target_flags;
 
   if (callee_target_flags != caller_target_flags)
     return false;

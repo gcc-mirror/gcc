@@ -129,6 +129,5 @@ extern bool riscv_minimal_hwprobe_feature_bits (const char *,
 						location_t);
 extern bool
 riscv_ext_is_subset (struct cl_target_option *, struct cl_target_option *);
-extern int riscv_x_target_flags_isa_mask (void);
 
 #endif /* ! GCC_RISCV_SUBSET_H */
