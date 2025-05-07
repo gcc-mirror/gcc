@@ -1,3 +1,7 @@
+2025-05-06  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* testsuite/libgomp.c-target/aarch64/udr-sve.c: Fix test.
+
 2025-05-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.c/interop-hsa.c: GCN offloading only.

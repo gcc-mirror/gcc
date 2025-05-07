@@ -1,3 +1,29 @@
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.cc (checker_event::checker_event): Update
+	initialization of m_logical_loc.
+	(checker_event::maybe_add_sarif_properties): Add "builder" param.
+	Replace call to make_sarif_logical_location_object with call to
+	sarif_property_bag::set_logical_location.
+	(superedge_event::maybe_add_sarif_properties): Add "builder"
+	param.
+	* checker-event.h (checker_event::get_logical_location):
+	Reimplement.
+	(checker_event::maybe_add_sarif_properties): Add "builder" param.
+	(checker_event::maybe_add_sarif_properties): Add "builder" param.
+	(checker_event::m_logical_loc): Convert from tree_logical_location
+	to logical_location.
+	(superedge_event::maybe_add_sarif_properties): Add sarif_builder
+	param.
+	* checker-path.h (checker_path::checker_path): Add logical_loc_mgr
+	param.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Pass logical location
+	manager to emission_path ctor.
+	(diagnostic_manager::get_logical_location_manager): New.
+	* diagnostic-manager.h
+	(diagnostic_manager::get_logical_location_manager): New decl.
+
 2025-04-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* sm-malloc.cc (malloc_diagnostic::describe_state_change): Tweak

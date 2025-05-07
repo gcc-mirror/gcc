@@ -1,3 +1,20 @@
+2025-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* check.cc (gfc_check_c_associated): Modify checks to avoid
+	ICE and allow use, intrinsic :: iso_c_binding from a separate
+	module file.
+
+2025-05-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119928
+	* interface.cc (gfc_check_dummy_characteristics): Do not issue
+	error if one dummy symbol has been generated from an actual
+	argument and the other one has OPTIONAL, INTENT, ALLOCATABLE,
+	POINTER, TARGET, VALUE, ASYNCHRONOUS or CONTIGUOUS.
+	(gfc_get_formal_from_actual_arglist): Do nothing if symbol
+	is a class.
+
 2025-05-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/119986

@@ -1,3 +1,500 @@
+2025-05-06  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: New extension.
+
+2025-05-06  Mingzhu Yan  <yanmingzhu@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_version_table): New
+	extension.
+	(riscv_ext_flag_table) Ditto.
+	* config/riscv/riscv.opt: New mask.
+	* doc/invoke.texi (RISC-V Options): New extension
+
+2025-05-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.cc (ix86_rtx_costs): Cost FLOAT, UNSIGNED_FLOAT,
+	FIX, UNSIGNED_FIX.
+	* config/i386/i386.h (struct processor_costs): Add
+	cvtsi2ss, cvtss2si, cvtpi2ps, cvtps2pi.
+	* config/i386/x86-tune-costs.h (struct processor_costs): Update tables.
+
+2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119852
+	* cgraph.h (cgraph_node::create_clone): Remove the default value of
+	argument suffix.  Update function comment.
+	* cgraphclones.cc (cgraph_node::create_clone): Update function comment.
+	* ipa-inline-transform.cc (clone_inlined_nodes): Pass NULL to suffix
+	of create_clone explicitely.
+	* ipa-inline.cc (recursive_inlining): Likewise.
+	* lto-cgraph.cc (input_node): Likewise.
+
+2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (cgraph_node::create_version_clone_with_body): Fix function
+	comment.  Change the name of clone_name to suffix, in line with the
+	function definition.
+	* cgraphclones.cc (cgraph_node::create_version_clone_with_body): Fix
+	function comment.
+
+2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119852
+	* cgraphclones.cc (dump_callgraph_transformation): Document the
+	function.  Do not dump if suffix is NULL.
+
+2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	* doc/invoke.texi (Developer Options): Document -fdump-ipa-clones.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest-diagnostic.cc (test_diagnostic_context::report): Use
+	diagnostic_option_id rather than plain int.
+	* selftest-diagnostic.h (test_diagnostic_context::report):
+	Likewise.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117988
+	* json.cc (json::pointer::token::token): New ctors.
+	(json::pointer::token::~token): New.
+	(json::pointer::token::operator=): New.
+	(json::object::set): Set the value's m_pointer_token.
+	(json::array::append): Likewise.
+	* json.h (json::pointer::token): New struct.
+	(json::value::get_pointer_token): New accessor.
+	(json::value::m_pointer_token): New field.
+	* libsarifreplay.cc (get_logical_location_kind_for_json_kind):
+	New.
+	(make_logical_location_from_jv): New.
+	(sarif_replayer::report_problem): Set the logical location of the
+	diagnostic.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc (maybe_get_sarif_kind): Add cases for
+	new kinds of logical location.
+	* doc/libgdiagnostics/topics/logical-locations.rst: Add new kinds
+	of logical location for handling XML and JSON.
+	* libgdiagnostics.cc (impl_logical_location_manager::get_kind):
+	Add cases for new kinds of logical location.
+	(diagnostic_text_sink::text_starter): Likewise, introducing a
+	macro for this.
+	(diagnostic_manager_debug_dump_logical_location): Likewise.
+	* libgdiagnostics.h (enum diagnostic_logical_location_kind_t): Add
+	new kinds of logical location for handling XML and JSON.
+	* libsarifreplay.cc (handle_logical_location_object): Add entries
+	to "kind_values" for decoding sarif logical location kinds
+	relating to XML and JSON.
+	* logical-location.h (enum logical_location_kind): Add new kinds
+	of logical location for handling XML and JSON.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116176
+	* diagnostic-format-sarif.cc (class sarif_array_of_unique): New
+	template.
+	(class sarif_logical_location): Move here from
+	diagnostic-format-sarif.h.
+	(sarif_builder::m_cached_logical_locs): New.
+	(sarif_builder::sarif_builder): Initialize it.
+	(sarif_builder::set_any_logical_locs_arr): Call
+	make_minimal_sarif_logical_location rather than
+	make_sarif_logical_location_object.
+	(sarif_property_bag::set_logical_location): Likewise.
+	(make_sarif_logical_location_object): Replace with...
+	(sarif_builder::ensure_sarif_logical_location_for): ...this.
+	Capture "parentIndex" property.  Consolidate into
+	theRuns.logicalLocations.
+	(sarif_builder::make_minimal_sarif_logical_location): New.
+	(sarif_builder::make_run_object): Add "index" properties to
+	m_cached_logical_locs and move it to theRuns.logicalLocations.
+	(selftest::test_sarif_array_of_unique_1): New.
+	(selftest::test_sarif_array_of_unique_2): New.
+	(selftest::diagnostic_format_sarif_cc_tests): Call the new
+	selftests.
+	* diagnostic-format-sarif.h (class sarif_logical_location): Move
+	to diagnostic-format-sarif.cc.
+	(make_sarif_logical_location_object): Drop decl.
+	* json.cc (value::compare): New.
+	(object::compare): New.
+	(selftest::fail_comparison): New.
+	(selftest::assert_json_equal): New.
+	(ASSERT_JSON_EQ): New.
+	(selftest::assert_json_non_equal): New.
+	(ASSERT_JSON_NE): New.
+	(selftest::test_comparisons): New.
+	(selftest::json_cc_tests): Call the new selftest.
+	* json.h (json::value::dyn_cast_object): New vfunc.
+	(json::object::dyn_cast_object): New vfunc impl.
+	(json::object::compare): New decl.
+	* libgdiagnostics.cc
+	(impl_logical_location_manager::get_parent): New.
+	* logical-location.h (logical_location_manager::get_parent): New
+	vfunc impl.
+	* selftest-logical-location.h
+	(test_logical_location_manager::get_parent): New vfunc impl.
+	* tree-logical-location.cc (assert_valid_tree): New.
+	(tree_logical_location_manager::get_short_name): Support types as
+	well as decls.
+	(tree_logical_location_manager::get_name_with_scope): Gracefully
+	handle non-decl nodes.
+	(tree_logical_location_manager::get_internal_name): Likewise.
+	(tree_logical_location_manager::get_kind): Don't attempt to handle
+	null nodes.  Handle NAMESPACE_DECL and RECORD_TYPE.
+	(tree_logical_location_manager::get_name_for_path_output):
+	Gracefully handle non-decl nodes.
+	(tree_logical_location_manager::get_parent): New.
+	* tree-logical-location.h
+	(tree_logical_location_manager::get_parent): New vfunc impl.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-client-data-hooks.h: Include "logical-location.h".
+	(diagnostic_client_data_hooks::get_logical_location_manager): New.
+	(diagnostic_client_data_hooks::get_current_logical_location):
+	Convert return type from const logical_location * to
+	logical_location.
+	* diagnostic-format-json.cc: Include
+	"diagnostic-client-data-hooks.h".
+	(make_json_for_path): Update to use logical_location_manager from
+	the context.
+	* diagnostic-format-sarif.cc
+	(sarif_builder::get_logical_location_manager): New.
+	(sarif_builder::make_location_object): Update type of logical_loc
+	from "const logical_location *" to "logical_location".
+	(sarif_builder::set_any_logical_locs_arr): Likewise.
+	(sarif_builder::m_logical_loc_mgr): New field.
+	(sarif_result::on_nested_diagnostic): Use logical_location default
+	ctor rather than nullptr.
+	(sarif_builder::sarif_builder): Initialize m_logical_loc_mgr from
+	context's client data hooks.
+	(sarif_builder::make_locations_arr): Convert type of logical_loc
+	from from "const logical_location *" to "logical_location".
+	(sarif_builder::set_any_logical_locs_arr): Likewise.  Pass manager
+	to make_sarif_logical_location_object.
+	(sarif_builder::make_location_object): Likewise.
+	(sarif_property_bag::set_logical_location): New.
+	(make_sarif_logical_location_object): Update for introduction of
+	logical_location_manager.
+	(populate_thread_flow_location_object): Pass builder to
+	ev.maybe_add_sarif_properties.
+	(selftest::test_make_location_object): Use logical_location
+	default ctor rather than nullptr.
+	* diagnostic-format-sarif.h (class logical_location): Replace
+	forward decl with include of "logical-location.h".
+	(class sarif_builder): New forward decl.
+	(sarif_property_bag::set_logical_location): New.
+	(make_sarif_logical_location_object): Add "mgr" param.
+	* diagnostic-path.cc
+	(diagnostic_path::get_first_event_in_a_function): Update for
+	change of logical_location type.
+	(per_thread_summary::per_thread_summary): Pass in
+	"logical_loc_mgr".
+	(per_thread_summary::m_logical_loc_mgr): New field.
+	(event_range::m_logical_loc): Update for change of
+	logical_location type.
+	(path_summary::get_logical_location_manager): New accessor.
+	(path_summary::m_logical_loc_mgr): New field.
+	(path_summary::get_or_create_events_for_thread_id): Pass
+	m_logical_loc_mgr to per_thread_summary ctor.
+	(path_summary::path_summary): Initialize m_logical_loc_mgr.
+	(thread_event_printer::print_swimlane_for_event_range): Add param
+	"logical_loc_mgr".  Update for change in logical_loc type.
+	(print_path_summary_as_text): Pass manager to
+	thread_event_printer::print_swimlane_for_event_range.
+	(diagnostic_text_output_format::print_path): Update for
+	introduction of logical_location_manager.
+	* diagnostic-path.h: Include "logical-location.h".
+	(class sarif_builder): New forward decl.
+	(diagnostic_event::get_logical_location): Convert return type from
+	"const logical_location *" to "logical_location".
+	(diagnostic_event::maybe_add_sarif_properties): Add sarif_builder
+	param.
+	(diagnostic_path::get_logical_location_manager): New accessor.
+	(diagnostic_path::diagnostic_path): New ctor, taking manager.
+	(diagnostic_path::m_logical_loc_mgr): New field.
+	* diagnostic.cc
+	(diagnostic_context::get_logical_location_manager): New.
+	(logical_location::function_p): Convert to...
+	(logical_location_manager::function_p): ...this.
+	* diagnostic.h (class logical_location): Replace forward decl
+	with...
+	(class logical_location_manager): ...this.
+	(diagnostic_context::get_logical_location_manager): New decl.
+	* lazy-diagnostic-path.cc
+	(selftest::test_lazy_path::test_lazy_path): Pass m_logical_loc_mgr
+	to path ctor.
+	(selftest::test_lazy_path::make_inner_path): Likewise.
+	(selftest::test_lazy_path::m_logical_loc_mgr): New field.
+	* lazy-diagnostic-path.h
+	(lazy_diagnostic_path::lazy_diagnostic_path): New ctor.
+	* libgdiagnostics.cc (struct diagnostic_logical_location): Convert
+	from subclass of logical_location to a plain struct, dropping
+	accessors.
+	(class impl_logical_location_manager): New.
+	(impl_diagnostic_client_data_hooks::get_logical_location_manager):
+	New
+	(impl_diagnostic_client_data_hooks::m_logical_location_manager):
+	New field.
+	(diagnostic_manager::get_logical_location_manager): New.
+	(libgdiagnostics_path_event::get_logical_location): Reimplement.
+	(diagnostic_execution_path::diagnostic_execution_path): Add
+	logical_loc_mgr and pass to base class.
+	(diagnostic_execution_path::same_function_p): Update for change to
+	logical_location type.
+	(diagnostic::add_execution_path): Pass logical_loc_mgr to path
+	ctor.
+	(impl_diagnostic_client_data_hooks::get_current_logical_location):
+	Reimplement.
+	(diagnostic_text_sink::text_starter): Reimplement printing of
+	logical location.
+	(diagnostic_manager::new_execution_path): Pass mgr to path ctor.
+	(diagnostic_manager_debug_dump_logical_location): Update for
+	changes to diagnostic_logical_location.
+	(diagnostic_logical_location_get_kind): Likewise.
+	(diagnostic_logical_location_get_parent): Likewise.
+	(diagnostic_logical_location_get_short_name): Likewise.
+	(diagnostic_logical_location_get_fully_qualified_name): Likewise.
+	(diagnostic_logical_location_get_decorated_name): Likewise.
+	* logical-location.h (class logical_location_manager): New.
+	(class logical_location): Convert to typedef of
+	logical_location_manager::key.
+	* selftest-diagnostic-path.cc
+	(selftest::test_diagnostic_path::test_diagnostic_path): Pass
+	m_test_logical_loc_mgr to base ctor.
+	(selftest::test_diagnostic_path::same_function_p): Use pointer
+	comparison.
+	(selftest::test_diagnostic_path::add_event): Use
+	logical_location_from_funcname.
+	(selftest::test_diagnostic_path::add_thread_event): Likewise.
+	(selftest::test_diagnostic_path::logical_location_from_funcname):
+	New.
+	(selftest::test_diagnostic_event::test_diagnostic_event): Fix
+	indentation.  Pass logical_location rather than const char *.
+	* selftest-diagnostic-path.h
+	(selftest::test_diagnostic_event::test_diagnostic_event):
+	Likewise.
+	(selftest::test_diagnostic_event::get_logical_location): Update
+	for change to logical_location type.
+	(selftest::test_diagnostic_event::get_function_name): Drop.
+	(selftest::test_diagnostic_event::m_logical_loc): Convert from
+	test_logical_location to logical_location.
+	(selftest::test_diagnostic_path::logical_location_from_funcname):
+	New.
+	(selftest::test_diagnostic_path::m_test_logical_loc_mgr): New
+	field.
+	* selftest-logical-location.cc: Include "selftest.h".
+	(selftest::test_logical_location::test_logical_location): Drop.
+	(selftest::test_logical_location_manager::~test_logical_location_manager):
+	New.
+	(selftest::test_logical_location::get_short_name): Replace with...
+	(selftest::test_logical_location_manager::get_short_name):
+	...this.
+	(selftest::test_logical_location::get_name_with_scope): Replace
+	with...
+	(selftest::test_logical_location_manager::get_name_with_scope):
+	...this.
+	(selftest::test_logical_location::get_internal_name): Replace
+	with...
+	(selftest::test_logical_location_manager::get_internal_name):
+	...this.
+	(selftest::test_logical_location::get_kind): Replace with...
+	(selftest::test_logical_location_manager::get_kind): ...this.
+	(selftest::test_logical_location::get_name_for_path_output):
+	Replace with...
+	(selftest::test_logical_location_manager::get_name_for_path_output):
+	...this.
+	(selftest::test_logical_location_manager::logical_location_from_funcname):
+	New.
+	(selftest::test_logical_location_manager::item_from_funcname):
+	New.
+	(selftest::selftest_logical_location_cc_tests): New.
+	* selftest-logical-location.h (class test_logical_location):
+	Replace with...
+	(class test_logical_location_manager): ...this.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	selftest_logical_location_cc_tests.
+	* selftest.h (selftest::selftest_logical_location_cc_tests): New
+	decl.
+	* simple-diagnostic-path.cc
+	(simple_diagnostic_path::simple_diagnostic_path): Add
+	"logical_loc_mgr" param and pass it to base ctor.
+	(simple_diagnostic_event::simple_diagnostic_event): Update init of
+	m_logical_loc.
+	(selftest::test_intraprocedural_path): Update for changes to
+	logical locations.
+	* simple-diagnostic-path.h: Likewise.
+	* tree-diagnostic-client-data-hooks.cc
+	(compiler_data_hooks::get_logical_location_manger): New.
+	(compiler_data_hooks::get_current_logical_location): Update.
+	(compiler_data_hooks::m_current_fndecl_logical_loc): Replace
+	with...
+	(compiler_data_hooks::m_logical_location_manager): ...this.
+	* tree-logical-location.cc
+	(compiler_logical_location::get_short_name_for_tree): Replace
+	with...
+	(tree_logical_location_manager::get_short_name): ...this.
+	(compiler_logical_location::get_name_with_scope_for_tree): Replace
+	with...
+	(tree_logical_location_manager::get_name_with_scope): ...this.
+	(compiler_logical_location::get_internal_name_for_tree): Replace
+	with...
+	(tree_logical_location_manager::get_internal_name): ...this.
+	(compiler_logical_location::get_kind_for_tree): Replace with...
+	(tree_logical_location_manager::get_kind): ...this.
+	(compiler_logical_location::get_name_for_tree_for_path_output):
+	Replace with...
+	(tree_logical_location_manager::get_name_for_path_output):
+	...this.
+	(tree_logical_location::get_short_name): Drop.
+	(tree_logical_location::get_name_with_scope): Drop.
+	(tree_logical_location::get_internal_name): Drop.
+	(tree_logical_location::get_kind): Drop.
+	(tree_logical_location::get_name_for_path_output): Drop.
+	(current_fndecl_logical_location::get_short_name): Drop.
+	(current_fndecl_logical_location::get_name_with_scope): Drop.
+	(current_fndecl_logical_location::get_internal_name): Drop.
+	(current_fndecl_logical_location::get_kind): Drop.
+	(current_fndecl_logical_location::get_name_for_path_output): Drop.
+	* tree-logical-location.h (class compiler_logical_location): Drop.
+	(class tree_logical_location): Drop.
+	(class current_fndecl_logical_location): Drop.
+	(class tree_logical_location_manager): New.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/libgdiagnostics/topics/compatibility.rst: New file, based
+	on gcc/jit/docs/topics/compatibility.rst.
+	* doc/libgdiagnostics/topics/index.rst: Add compatibility.rst.
+	* doc/libgdiagnostics/topics/logical-locations.rst (Accessors):
+	New section.
+	* libgdiagnostics++.h (logical_location::operator bool): New.
+	(logical_location::operator==): New.
+	(logical_location::operator!=): New.
+	(logical_location::get_kind): New.
+	(logical_location::get_parent): New.
+	(logical_location::get_short_name): New.
+	(logical_location::get_fully_qualified_name): New.
+	(logical_location::get_decorated_name): New.
+	* libgdiagnostics.cc
+	(diagnostic_logical_location::get_fully_qualified_name): New.
+	(diagnostic_logical_location_get_kind): New entrypoint.
+	(diagnostic_logical_location_get_parent): New entrypoint.
+	(diagnostic_logical_location_get_short_name): New entrypoint.
+	(diagnostic_logical_location_get_fully_qualified_name): New
+	entrypoint.
+	(diagnostic_logical_location_get_decorated_name): New entrypoint.
+	* libgdiagnostics.h
+	(LIBDIAGNOSTICS_HAVE_LOGICAL_LOCATION_ACCESSORS): New define.
+	(diagnostic_logical_location_get_kind): New entrypoint.
+	(diagnostic_logical_location_get_parent): New entrypoint.
+	(diagnostic_logical_location_get_short_name): New entrypoint.
+	(diagnostic_logical_location_get_fully_qualified_name): New
+	entrypoint.
+	(diagnostic_logical_location_get_decorated_name): New entrypoint.
+	* libgdiagnostics.map (LIBGDIAGNOSTICS_ABI_1): New.
+
+2025-05-06  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR middle-end/114512
+	* config/riscv/bitmanip.md (bext* patterns): New patterns for
+	bext recognition plus splitter for extracting variable bit from
+	a constant.
+	* config/riscv/predicates.md (bitpos_mask_operand): New predicate.
+
+2025-05-06  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*<optab>_vx_<mode>): Add new
+	combine to convert vec_duplicate + vadd.vv to vaddvx on GR2VR
+	cost.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Take care of the cost
+	when vec_dup and vadd v, vec_dup(x).
+	* config/riscv/vector-iterators.md: Add new iterator for vx.
+
+2025-05-06  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-protos.h (get_gr2vr_cost): Add new decl to
+	get the cost of gr2vr.
+	* config/riscv/riscv-vector-costs.cc (costs::adjust_stmt_cost):
+	Leverage the helper function to get the cost of gr2vr.
+	* config/riscv/riscv.cc (riscv_register_move_cost): Ditto.
+	(riscv_builtin_vectorization_cost): Ditto.
+	(get_gr2vr_cost): Add new impl of the helper function.
+
+2025-05-06  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-opts.h (RVV_GR2VR_COST_UNPROVIDED): Add
+	new macro to indicate the param is not provided.
+	* config/riscv/riscv.opt: Add new option --pararm=gpr2vr-cost.
+
+2025-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/1157777
+	* tree-vectorizer.h (_slp_tree::avoid_stlf_fail): New member.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Initialize it.
+	(vect_print_slp_tree): Dump it.
+	* tree-vect-data-refs.cc (vect_slp_analyze_instance_dependence):
+	For dataflow dependent loads of a store check whether there's
+	a cross-iteration data dependence that for sure prohibits
+	store-to-load forwarding and mark involved loads.
+	* tree-vect-stmts.cc (get_group_load_store_type): For avoid_stlf_fail
+	marked loads use VMAT_ELEMENTWISE.
+
+2025-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120074
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): For
+	lsignbit && l_xor case, punt if ll_bitsize != lr_bitsize.  Similarly
+	for rsignbit && r_xor case, punt if rl_bitsize != rr_bitsize.
+	Formatting fix.
+
+2025-05-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.cc (ix86_tls_index): Add ifdef.
+
+2025-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120031
+	* match.pd ((nop_outer_cast)-(inner_cast)var -> -(outer_cast)(var)):
+	Allow inner conversions that are not widenings when the outer
+	type is unsigned.
+
+2025-05-06  LIU Hao  <lh_mouse@126.com>
+
+	PR pch/14940
+	* config/i386/host-mingw32.cc (mingw32_gt_pch_use_address):
+	Replace the loop that attempted to map the PCH only to its
+	original address with more adaptive operations
+
+2025-05-06  Julian Waters  <tanksherman27@gmail.com>
+	    Eric Botcazou  <botcazou@adacore.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+	    Liu Hao  <lh_mouse@126.com>
+
+	* config/i386/i386.cc (ix86_legitimate_constant_p): Handle new UNSPEC.
+	(legitimate_pic_operand_p): Handle new UNSPEC.
+	(legitimate_pic_address_disp_p): Handle new UNSPEC.
+	(ix86_legitimate_address_p): Handle new UNSPEC.
+	(ix86_tls_index_symbol): New symbol for _tls_index.
+	(ix86_tls_index): Handle creation of _tls_index symbol.
+	(legitimize_tls_address): Create thread local access sequence.
+	(output_pic_addr_const): Handle new UNSPEC.
+	(i386_output_dwarf_dtprel): Handle new UNSPEC.
+	(i386_asm_output_addr_const_extra): Handle new UNSPEC.
+	* config/i386/i386.h (TARGET_WIN32_TLS): Define.
+	* config/i386/i386.md: New UNSPEC.
+	* config/i386/predicates.md: Handle new UNSPEC.
+	* config/mingw/mingw32.h (TARGET_WIN32_TLS): Define.
+	(TARGET_ASM_SELECT_SECTION): Define.
+	(DEFAULT_TLS_SEG_REG): Define.
+	* config/mingw/winnt.cc (mingw_pe_select_section): Select proper TLS section.
+	(mingw_pe_unique_section): Handle TLS section.
+	* config/mingw/winnt.h (mingw_pe_select_section): Declare.
+	* configure: Regenerate.
+	* configure.ac: New check for broken linker thread local support
+
 2025-05-05  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/119971

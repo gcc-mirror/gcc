@@ -1,3 +1,147 @@
+2025-05-06  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/arch-47.c: New test.
+
+2025-05-06  Mingzhu Yan  <yanmingzhu@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-45.c: New test.
+	* gcc.target/riscv/arch-46.c: New test.
+
+2025-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* gfortran.dg/pr120049_a.f90: New test.
+	* gfortran.dg/pr120049_b.f90: New test.
+
+2025-05-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119928
+	* gfortran.dg/interface_60.f90: New test.
+
+2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119852
+	* gcc.dg/ipa/pr119852.c: New test.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117988
+	* sarif-replay.dg/2.1.0-invalid/3.1-not-an-object.sarif: Add
+	expected logical location.
+	* sarif-replay.dg/2.1.0-invalid/3.11.11-missing-arguments-for-placeholders.sarif:
+	Likewise.
+	* sarif-replay.dg/2.1.0-invalid/3.11.11-not-enough-arguments-for-placeholders.sarif:
+	Likewise.
+	* sarif-replay.dg/2.1.0-invalid/3.11.5-unescaped-braces.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-invalid/3.13.2-no-version.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-invalid/3.13.2-version-not-a-string.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-invalid/3.13.4-bad-runs.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-invalid/3.13.4-no-runs.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-invalid/3.13.4-non-object-in-runs.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-invalid/3.27.10-bad-level.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-invalid/3.33.3-index-out-of-range.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-unhandled/3.27.10-none-level.sarif: Likewise.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgdiagnostics.dg/test-nested-logical-locations-json-c.py: New test.
+	* libgdiagnostics.dg/test-nested-logical-locations-json.c: New test.
+	* sarif-replay.dg/2.1.0-valid/3.33.7-json-example.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/3.33.7-xml-example.sarif: New test.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116176
+	* g++.dg/sarif-output/logical-locations-1.C: New test.
+	* g++.dg/sarif-output/logical-locations-1.py: New test script.
+	* g++.dg/sarif-output/logical-locations-2.C: New test.
+	* g++.dg/sarif-output/logical-locations-2.py: New test script.
+	* g++.dg/sarif-output/logical-locations-3.C: New test.
+	* g++.dg/sarif-output/logical-locations-3.py: New test script.
+	* g++.dg/sarif-output/sarif-output.exp: New script, adapted
+	from gcc.dg/sarif-output/sarif-output.exp.
+	* libgdiagnostics.dg/test-logical-location-c.py: Update for using
+	theRun.logicalLocations.
+	* libgdiagnostics.dg/test-warning-with-path-c.py: Likewise.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.cc: Update for
+	changes to simple_diagnostic_path.
+
+2025-05-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* libgdiagnostics.dg/test-logical-location.c: Include
+	<string.h>.
+	(main): Verify that the accessors work.
+	* libgdiagnostics.dg/test-logical-location.cc: New test.
+
+2025-05-06  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR middle-end/114512
+	* gcc.target/riscv/pr114512.c: New test.
+
+2025-05-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u8.c: New test.
+
+2025-05-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u8.c: New test.
+
+2025-05-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add new folder vx_vf for all
+	vec_dup + vv to vx testcases.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_run.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u8.c: New test.
+
+2025-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/1157777
+	* gcc.dg/vect/bb-slp-pr115777.c: New testcase.
+
+2025-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120074
+	* gcc.dg/pr120074.c: New test.
+
+2025-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120031
+	* gcc.target/i386/pr120031.c: New testcase.
+
 2025-05-05  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/119971

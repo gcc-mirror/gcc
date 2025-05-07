@@ -1,3 +1,7 @@
+2025-05-06  Sam James  <sam@gentoo.org>
+
+	* configure.tgt: Add sparc64-unknown-linux-gnu as a supported target.
+
 2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/119761

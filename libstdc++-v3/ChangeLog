@@ -1,3 +1,56 @@
+2025-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70560
+	PR libstdc++/119667
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Only check for
+	__atomic_fetch_add on _Atomic_word. Define new macro
+	_GLIBCXX_ATOMIC_WORD_BUILTINS and stop defining macro
+	_GLIBCXX_ATOMIC_BUILTINS.
+	(GLIBCXX_ENABLE_BACKTRACE): Check for __atomic_load_n and
+	__atomic_store_n on int, void* and size_t.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.host: Fix typo in comment.
+	* include/ext/atomicity.h (__exchange_and_add, __atomic_add):
+	Depend on _GLIBCXX_ATOMIC_WORD_BUILTINS macro instead of old
+	_GLIBCXX_ATOMIC_BUILTINS macro.
+
+2025-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117905
+	* include/pstl/glue_numeric_impl.h (reduce, transform_reduce)
+	(transform_reduce, inclusive_scan, transform_exclusive_scan)
+	(transform_inclusive_scan): Use std::move for __init parameter.
+	* include/pstl/numeric_impl.h (__brick_transform_reduce)
+	(__pattern_transform_reduce, __brick_transform_scan)
+	(__pattern_transform_scan): Likewise.
+	* include/std/numeric (inclusive_scan, transform_exclusive_scan):
+	Use std::move to create local copy of the first element.
+	* testsuite/26_numerics/pstl/numeric_ops/108236.cc: Move test
+	using move-only type to ...
+	* testsuite/26_numerics/pstl/numeric_ops/move_only.cc: New test.
+
+2025-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120029
+	* src/c++17/fs_path.cc (path::operator+=(const path&)): Handle
+	parameters that alias the path or one of its components.
+	* testsuite/27_io/filesystem/path/concat/120029.cc: New test.
+	* testsuite/experimental/filesystem/path/concat/120029.cc: New
+	test.
+
+2025-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/120112
+	* include/bits/ptr_traits.h (_Safe_iterator_base): Use class
+	keyword in class-head of declaration.
+	* include/debug/debug.h (_Safe_iterator): Likewise.
+
+2025-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (counted_iterator): Add noexcept
+	to friend operators which only access the _M_length member.
+
 2025-05-02  Dhruv Chawla  <dhruvc@nvidia.com>
 
 	* include/std/memory: Define __glibcxx_want_addressof_constexpr.

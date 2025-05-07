@@ -1,3 +1,14 @@
+2025-05-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for program_invocation_short_name and
+	and getprogname().
+	* libgcobol.cc (default_exception_handler): When the platform
+	has program_invocation_short_name, use it otherwise fall
+	back to using getprogname() or a constant string (if neither
+	interface is available).
+
 2025-05-05  Robert Dubner  <rdubner@symas.com>
 
 	* charmaps.cc: Add #include <vector>.
