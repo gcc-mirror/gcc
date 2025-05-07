@@ -503,9 +503,7 @@ namespace __format
 	_M_format(const _Tp& __t, _FormatContext& __fc,
 		  bool __is_neg = false) const
 	{
-	  auto __first = _M_spec._M_chrono_specs.begin();
-	  const auto __last = _M_spec._M_chrono_specs.end();
-	  if (__first == __last)
+	  if (_M_spec._M_chrono_specs.empty())
 	    return _M_format_to_ostream(__t, __fc, __is_neg);
 
 #if defined _GLIBCXX_USE_NL_LANGINFO_L && __CHAR_BIT__ == 8
@@ -525,28 +523,28 @@ namespace __format
 		    __fc._M_loc =  __with_encoding_conversion(__loc);
 		}
 #endif
-
-	  _Sink_iter<_CharT> __out;
-	  __format::_Str_sink<_CharT> __sink;
-	  bool __write_direct = false;
-	  if constexpr (is_same_v<typename _FormatContext::iterator,
-				  _Sink_iter<_CharT>>)
-	    {
-	      if (_M_spec._M_width_kind == __format::_WP_none)
-		{
-		  __out = __fc.out();
-		  __write_direct = true;
-		}
-	      else
-		__out = __sink.out();
-	    }
-	  else
-	    __out = __sink.out();
-
 	  // formatter<duration> passes the correct value of __is_neg
 	  // for durations but for hh_mm_ss we decide it here.
 	  if constexpr (__is_specialization_of<_Tp, chrono::hh_mm_ss>)
 	    __is_neg = __t.is_negative();
+
+	  const size_t __padwidth = _M_spec._M_get_width(__fc);
+	  if (__padwidth == 0)
+	    return _M_format_to(__t, __fc.out(), __fc, __is_neg);
+
+	  using _Out = typename _FormatContext::iterator;
+	  _Padding_sink<_Out, _CharT> __sink(__fc.out(), __padwidth);
+	  _M_format_to(__t, __sink.out(), __fc, __is_neg);
+	  return __sink._M_finish(_M_spec._M_align, _M_spec._M_fill);
+	}
+
+      template<typename _Tp, typename _Out, typename _FormatContext>
+	_Out
+	_M_format_to(const _Tp& __t, _Out __out, _FormatContext& __fc,
+		     bool __is_neg) const
+	{
+	  auto __first = _M_spec._M_chrono_specs.begin();
+	  const auto __last = _M_spec._M_chrono_specs.end();
 
 	  auto __print_sign = [&__is_neg, &__out] {
 	    if constexpr (chrono::__is_duration_v<_Tp>
@@ -699,20 +697,7 @@ namespace __format
 		}
 	    }
 	  while (__first != __last);
-
-	  if constexpr (is_same_v<typename _FormatContext::iterator,
-				  _Sink_iter<_CharT>>)
-	    if (__write_direct)
-	      return __out;
-
-	  auto __str = __sink.view();
-	  size_t __width;
-	  if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
-	    __width = __unicode::__field_width(__str);
-	  else
-	    __width = __str.size();
-	  return __format::__write_padded_as_spec(__str, __width,
-						  __fc, _M_spec);
+	  return std::move(__out);
 	}
 
       _ChronoSpec<_CharT> _M_spec;
