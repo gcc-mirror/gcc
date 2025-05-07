@@ -734,7 +734,6 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 
 	  stmt_vec_info stmt_vinfo
 	    = vect_stmt_to_vectorize (loop_vinfo->lookup_stmt (stmt));
-	  stmt = STMT_VINFO_STMT (stmt_vinfo);
 	  auto dr_ref = STMT_VINFO_DATA_REF (stmt_vinfo);
 	  if (!dr_ref)
 	    continue;
