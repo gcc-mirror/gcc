@@ -25767,6 +25767,26 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 			  (ix86_tune_cost, GET_MODE_BITSIZE (mode));
 	  break;
 
+	case FLOAT_EXPR:
+	    if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
+	      stmt_cost = ix86_cost->cvtsi2ss;
+	    else if (X87_FLOAT_MODE_P (mode))
+	      /* TODO: We do not have cost tables for x87.  */
+	      stmt_cost = ix86_cost->fadd;
+	    else
+	      stmt_cost = ix86_vec_cost (mode, ix86_cost->cvtpi2ps);
+	    break;
+
+	case FIX_TRUNC_EXPR:
+	    if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
+	      stmt_cost = ix86_cost->cvtss2si;
+	    else if (X87_FLOAT_MODE_P (mode))
+	      /* TODO: We do not have cost tables for x87.  */
+	      stmt_cost = ix86_cost->fadd;
+	    else
+	      stmt_cost = ix86_vec_cost (mode, ix86_cost->cvtps2pi);
+	    break;
+
 	case COND_EXPR:
 	  {
 	    /* SSE2 conditinal move sequence is:
@@ -25930,8 +25950,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	break;
       }
 
-  if (kind == vec_promote_demote
-      && fp && FLOAT_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt))))
+  if (kind == vec_promote_demote)
     {
       int outer_size
 	= tree_to_uhwi
@@ -25941,16 +25960,25 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	= tree_to_uhwi
 	    (TYPE_SIZE
 		(TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt))));
-      int stmt_cost = vec_fp_conversion_cost
-			(ix86_tune_cost, GET_MODE_BITSIZE (mode));
-      /* VEC_PACK_TRUNC_EXPR: If inner size is greater than outer size we will end
-	 up doing two conversions and packing them.  */
+      bool inner_fp = FLOAT_TYPE_P
+			(TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt)));
+
+      if (fp && inner_fp)
+	stmt_cost = vec_fp_conversion_cost
+			  (ix86_tune_cost, GET_MODE_BITSIZE (mode));
+      else if (fp && !inner_fp)
+	stmt_cost = ix86_vec_cost (mode, ix86_cost->cvtpi2ps);
+      else if (!fp && inner_fp)
+	stmt_cost = ix86_vec_cost (mode, ix86_cost->cvtps2pi);
+      else
+	stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
+      /* VEC_PACK_TRUNC_EXPR and similar demote operations: If outer size is
+	 greater than inner size we will end up doing two conversions and
+	 packing them.  We always pack pairs; if the size difference is greater
+	 it is split into multiple demote operations.  */
       if (inner_size > outer_size)
-	{
-	  int n = inner_size / outer_size;
-	  stmt_cost = stmt_cost * n
-		      + (n - 1) * ix86_vec_cost (mode, ix86_cost->sse_op);
-	}
+	stmt_cost = stmt_cost * 2
+		    + ix86_vec_cost (mode, ix86_cost->sse_op);
     }
 
   /* If we do elementwise loads into a vector then we are bound by
