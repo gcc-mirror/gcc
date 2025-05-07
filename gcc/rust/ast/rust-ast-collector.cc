@@ -1518,7 +1518,88 @@ TokenCollector::visit (AsyncBlockExpr &expr)
 
 void
 TokenCollector::visit (InlineAsm &expr)
-{}
+{
+  push (Rust::Token::make_identifier (expr.get_locus (), "asm"));
+  push (Rust::Token::make (EXCLAM, expr.get_locus ()));
+  push (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
+
+  for (auto &template_str : expr.get_template_strs ())
+    push (Rust::Token::make_string (template_str.get_locus (),
+				    std::move (template_str.symbol)));
+
+  push (Rust::Token::make (COLON, expr.get_locus ()));
+
+  for (auto &operand : expr.get_operands ())
+    {
+      using RegisterType = AST::InlineAsmOperand::RegisterType;
+      switch (operand.get_register_type ())
+	{
+	  case RegisterType::In: {
+	    visit (operand.get_in ().expr);
+	    break;
+	  }
+	  case RegisterType::Out: {
+	    visit (operand.get_out ().expr);
+	    break;
+	  }
+	  case RegisterType::InOut: {
+	    visit (operand.get_in_out ().expr);
+	    break;
+	  }
+	  case RegisterType::SplitInOut: {
+	    auto split = operand.get_split_in_out ();
+	    visit (split.in_expr);
+	    visit (split.out_expr);
+	    break;
+	  }
+	  case RegisterType::Const: {
+	    visit (operand.get_const ().anon_const.expr);
+	    break;
+	  }
+	  case RegisterType::Sym: {
+	    visit (operand.get_sym ().expr);
+	    break;
+	  }
+	  case RegisterType::Label: {
+	    visit (operand.get_label ().expr);
+	    break;
+	  }
+	}
+      push (Rust::Token::make (COMMA, expr.get_locus ()));
+    }
+  push (Rust::Token::make (COLON, expr.get_locus ()));
+
+  for (auto &clobber : expr.get_clobber_abi ())
+    {
+      push (Rust::Token::make_string (expr.get_locus (),
+				      std::move (clobber.symbol)));
+      push (Rust::Token::make (COMMA, expr.get_locus ()));
+    }
+  push (Rust::Token::make (COLON, expr.get_locus ()));
+
+  for (auto it = expr.named_args.begin (); it != expr.named_args.end (); ++it)
+    {
+      auto &arg = *it;
+      push (
+	Rust::Token::make_identifier (expr.get_locus (), arg.first.c_str ()));
+      push (Rust::Token::make (EQUAL, expr.get_locus ()));
+      push (Rust::Token::make_identifier (expr.get_locus (),
+					  std::to_string (arg.second)));
+
+      push (Rust::Token::make (COMMA, expr.get_locus ()));
+    }
+
+  push (Rust::Token::make (COLON, expr.get_locus ()));
+
+  for (auto &option : expr.get_options ())
+    {
+      push (Rust::Token::make_identifier (
+	expr.get_locus (), InlineAsm::option_to_string (option).c_str ()));
+      push (Rust::Token::make (COMMA, expr.get_locus ()));
+    }
+
+  push (Rust::Token::make (RIGHT_PAREN, expr.get_locus ()));
+}
 
 void
 TokenCollector::visit (LlvmInlineAsm &expr)

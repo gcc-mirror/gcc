@@ -3059,7 +3059,7 @@ public:
   std::vector<AST::TupleTemplateStr> template_strs;
   std::vector<HIR::InlineAsmOperand> operands;
   std::vector<AST::TupleClobber> clobber_abi;
-  std::set<AST::InlineAsmOption> options;
+  std::set<AST::InlineAsm::Option> options;
 
   std::vector<location_t> line_spans;
 
@@ -3094,7 +3094,7 @@ public:
 
   std::vector<AST::TupleClobber> get_clobber_abi () { return clobber_abi; }
 
-  std::set<AST::InlineAsmOption> get_options () { return options; }
+  std::set<AST::InlineAsm::Option> get_options () { return options; }
 
   bool is_simple_asm ()
   {
@@ -3113,7 +3113,7 @@ public:
 	     std::vector<AST::TupleTemplateStr> template_strs,
 	     std::vector<HIR::InlineAsmOperand> operands,
 	     std::vector<AST::TupleClobber> clobber_abi,
-	     std::set<AST::InlineAsmOption> options,
+	     std::set<AST::InlineAsm::Option> options,
 	     Analysis::NodeMapping mappings,
 	     AST::AttrVec outer_attribs = AST::AttrVec ());
 };

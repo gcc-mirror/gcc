@@ -837,7 +837,7 @@ TypeCheckExpr::visit (HIR::InlineAsm &expr)
   // NOTE: Hoise out if we have noreturn as an option
   // to return a never type
   // TODO : new keyword for memory seems sooooo shaky
-  if (expr.options.count (AST::InlineAsmOption::NORETURN) == 1)
+  if (expr.options.count (AST::InlineAsm::Option::NORETURN) == 1)
     infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
   else
     infered = TyTy::TupleType::get_unit_type ();

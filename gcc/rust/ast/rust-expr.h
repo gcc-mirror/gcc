@@ -4822,20 +4822,6 @@ protected:
   }
 };
 
-// Inline-assembly specific options
-enum class InlineAsmOption
-{
-  PURE = 1 << 0,
-  NOMEM = 1 << 1,
-  READONLY = 1 << 2,
-  PRESERVES_FLAGS = 1 << 3,
-  NORETURN = 1 << 4,
-  NOSTACK = 1 << 5,
-  ATT_SYNTAX = 1 << 6,
-  RAW = 1 << 7,
-  MAY_UNWIND = 1 << 8,
-};
-
 struct AnonConst
 {
   NodeId id;
@@ -5288,6 +5274,20 @@ struct TupleTemplateStr
 // Inline Assembly Node
 class InlineAsm : public ExprWithoutBlock
 {
+public:
+  enum class Option
+  {
+    PURE = 1 << 0,
+    NOMEM = 1 << 1,
+    READONLY = 1 << 2,
+    PRESERVES_FLAGS = 1 << 3,
+    NORETURN = 1 << 4,
+    NOSTACK = 1 << 5,
+    ATT_SYNTAX = 1 << 6,
+    RAW = 1 << 7,
+    MAY_UNWIND = 1 << 8,
+  };
+
 private:
   location_t locus;
   // TODO: Not sure how outer_attrs plays with InlineAsm, I put it here in order
@@ -5311,7 +5311,7 @@ public:
   std::map<std::string, int> named_args;
   std::set<int> reg_args;
   std::vector<TupleClobber> clobber_abi;
-  std::set<InlineAsmOption> options;
+  std::set<InlineAsm::Option> options;
 
   std::vector<location_t> line_spans;
 
@@ -5342,7 +5342,7 @@ public:
 
   std::vector<TupleClobber> get_clobber_abi () { return clobber_abi; }
 
-  std::set<InlineAsmOption> get_options () { return options; }
+  std::set<InlineAsm::Option> get_options () { return options; }
 
   InlineAsm *clone_expr_without_block_impl () const override
   {
@@ -5350,6 +5350,33 @@ public:
   }
 
   Expr::Kind get_expr_kind () const override { return Expr::Kind::InlineAsm; }
+
+  static std::string option_to_string (Option option)
+  {
+    switch (option)
+      {
+      case Option::PURE:
+	return "pure";
+      case Option::NOMEM:
+	return "nomem";
+      case Option::READONLY:
+	return "readonly";
+      case Option::PRESERVES_FLAGS:
+	return "preserves_flags";
+      case Option::NORETURN:
+	return "noreturn";
+      case Option::NOSTACK:
+	return "nostack";
+      case Option::ATT_SYNTAX:
+	return "att_syntax";
+      case Option::RAW:
+	return "raw";
+      case Option::MAY_UNWIND:
+	return "may_unwind";
+      default:
+	rust_unreachable ();
+      }
+  }
 };
 
 class LlvmInlineAsm : public ExprWithoutBlock
