@@ -286,6 +286,10 @@ Max number of bytes to compare as part of inlined strcmp/strncmp routines (defau
 Target RejectNegative Joined UInteger Var(gpr2vr_cost) Init(GPR2VR_COST_UNPROVIDED)
 Set the cost value of the rvv instruction when operate from GPR to VR.
 
+-param=riscv-autovec-mode=
+Target Undocumented RejectNegative Joined Var(riscv_autovec_mode) Save
+Set the only autovec mode to try.
+
 Enum
 Name(rvv_max_lmul) Type(enum rvv_max_lmul_enum)
 The RVV possible LMUL (-mrvv-max-lmul=):

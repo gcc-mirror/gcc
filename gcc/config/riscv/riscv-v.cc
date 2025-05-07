@@ -2821,6 +2821,28 @@ autovectorize_vector_modes (vector_modes *modes, bool)
 	i++;
 	size = base_size / (1U << i);
      }
+
+  /* If the user specified the exact mode to use look if it is available and
+     remove all other ones before returning.  */
+  if (riscv_autovec_mode)
+    {
+      auto_vector_modes ms;
+      ms.safe_splice (*modes);
+      modes->truncate (0);
+
+      for (machine_mode mode : ms)
+	{
+	  if (!strcmp (GET_MODE_NAME (mode), riscv_autovec_mode))
+	    {
+	      modes->safe_push (mode);
+	      return 0;
+	    }
+	}
+
+      /* Nothing found, fall back to regular handling.  */
+      modes->safe_splice (ms);
+    }
+
   /* Enable LOOP_VINFO comparison in COST model.  */
   return VECT_COMPARE_COSTS;
 }
