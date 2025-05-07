@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options {-march-map=sm_62 -mptx=_} } */
+/* { dg-options {-march=sm_61 -mptx=_} } */
 /* { dg-additional-options -save-temps } */
 /* { dg-final { scan-assembler-times {(?n)^	\.version	7\.3$} 1 } } */
 /* { dg-final { scan-assembler-times {(?n)^	\.target	sm_61$} 1 } } */

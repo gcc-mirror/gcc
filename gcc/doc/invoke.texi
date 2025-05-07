@@ -30698,6 +30698,7 @@ Generate code for the specified PTX ISA target architecture.
 Valid architecture strings are
 @samp{sm_30}, @samp{sm_35}, @samp{sm_37},
 @samp{sm_52}, @samp{sm_53},
+@samp{sm_61},
 @samp{sm_70}, @samp{sm_75},
 @samp{sm_80}, and @samp{sm_89}.
 The default depends on how the compiler has been configured, see
