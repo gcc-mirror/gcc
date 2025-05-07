@@ -30711,6 +30711,7 @@ Generate code for the specified PTX ISA version.
 Valid version strings are
 @samp{3.1},
 @samp{4.1}, @samp{4.2},
+@samp{5.0},
 @samp{6.0}, @samp{6.3},
 @samp{7.0}, @samp{7.3}, and @samp{7.8}.
 The default PTX ISA version is the one that added support for the
