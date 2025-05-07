@@ -203,7 +203,8 @@ public:
 
     // Create the new generic parameter
     auto generic_param = std::unique_ptr<TypeParam> (
-      new TypeParam (ident, type.get_locus (), std::move (bounds)));
+      new TypeParam (ident, type.get_locus (), std::move (bounds), nullptr, {},
+		     true /*from impl trait*/));
 
     // Store the generic parameter to be added to the function signature
     implicit_generic_params.push_back (std::move (generic_param));
@@ -241,7 +242,8 @@ public:
 
     // Create the new generic parameter
     auto generic_param = std::unique_ptr<TypeParam> (
-      new TypeParam (ident, type.get_locus (), std::move (bounds)));
+      new TypeParam (ident, type.get_locus (), std::move (bounds), nullptr, {},
+		     true /*from impl trait*/));
 
     // Store the generic parameter to be added to the function signature
     implicit_generic_params.push_back (std::move (generic_param));

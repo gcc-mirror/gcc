@@ -51,21 +51,12 @@ class TypePath;
 // A type generic parameter (as opposed to a lifetime generic parameter)
 class TypeParam : public GenericParam
 {
-  // bool has_outer_attribute;
-  // std::unique_ptr<Attribute> outer_attr;
   AST::AttrVec outer_attrs;
-
   Identifier type_representation;
-
-  // bool has_type_param_bounds;
-  // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound>>
-    type_param_bounds; // inlined form
-
-  // bool has_type;
+  std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
   std::unique_ptr<Type> type;
-
   location_t locus;
+  bool was_impl_trait;
 
 public:
   Identifier get_type_representation () const { return type_representation; }
@@ -85,18 +76,19 @@ public:
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
-	     AST::AttrVec outer_attrs = {})
+	     AST::AttrVec outer_attrs = {}, bool was_impl_trait = false)
     : GenericParam (Analysis::Mappings::get ().get_next_node_id ()),
       outer_attrs (std::move (outer_attrs)),
       type_representation (std::move (type_representation)),
       type_param_bounds (std::move (type_param_bounds)),
-      type (std::move (type)), locus (locus)
+      type (std::move (type)), locus (locus), was_impl_trait (was_impl_trait)
   {}
 
   // Copy constructor uses clone
   TypeParam (TypeParam const &other)
     : GenericParam (other.node_id), outer_attrs (other.outer_attrs),
-      type_representation (other.type_representation), locus (other.locus)
+      type_representation (other.type_representation), locus (other.locus),
+      was_impl_trait (other.was_impl_trait)
   {
     // guard to prevent null pointer dereference
     if (other.type != nullptr)
@@ -114,6 +106,7 @@ public:
     outer_attrs = other.outer_attrs;
     locus = other.locus;
     node_id = other.node_id;
+    was_impl_trait = other.was_impl_trait;
 
     // guard to prevent null pointer dereference
     if (other.type != nullptr)
@@ -153,16 +146,18 @@ public:
     return type;
   }
 
-  // TODO: mutable getter seems kinda dodgy
   std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
     return type_param_bounds;
   }
+
   const std::vector<std::unique_ptr<TypeParamBound>> &
   get_type_param_bounds () const
   {
     return type_param_bounds;
   }
+
+  bool from_impl_trait () const { return was_impl_trait; }
 
 protected:
   // Clone function implementation as virtual method

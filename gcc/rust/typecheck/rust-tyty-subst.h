@@ -60,6 +60,7 @@ public:
   const ParamType *get_param_ty () const;
 
   HIR::TypeParam &get_generic_param ();
+  const HIR::TypeParam &get_generic_param () const;
 
   // this is used for the backend to override the HirId ref of the param to
   // what the concrete type is for the rest of the context

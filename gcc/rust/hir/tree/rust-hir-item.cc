@@ -26,16 +26,18 @@ TypeParam::TypeParam (
   Analysis::NodeMapping mappings, Identifier type_representation,
   location_t locus,
   std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-  tl::optional<std::unique_ptr<Type>> type, AST::AttrVec outer_attrs)
+  tl::optional<std::unique_ptr<Type>> type, AST::AttrVec outer_attrs,
+  bool was_impl_trait)
   : GenericParam (mappings), outer_attrs (std::move (outer_attrs)),
     type_representation (std::move (type_representation)),
     type_param_bounds (std::move (type_param_bounds)), type (std::move (type)),
-    locus (locus)
+    locus (locus), was_impl_trait (was_impl_trait)
 {}
 
 TypeParam::TypeParam (TypeParam const &other)
   : GenericParam (other.mappings), outer_attrs (other.outer_attrs),
-    type_representation (other.type_representation), locus (other.locus)
+    type_representation (other.type_representation), locus (other.locus),
+    was_impl_trait (other.was_impl_trait)
 {
   // guard to prevent null pointer dereference
   if (other.has_type ())
@@ -55,6 +57,7 @@ TypeParam::operator= (TypeParam const &other)
   outer_attrs = other.outer_attrs;
   locus = other.locus;
   mappings = other.mappings;
+  was_impl_trait = other.was_impl_trait;
 
   // guard to prevent null pointer dereference
   if (other.has_type ())
