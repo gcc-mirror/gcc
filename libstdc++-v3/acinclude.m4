@@ -5290,7 +5290,8 @@ AC_DEFUN([GLIBCXX_ENABLE_BACKTRACE], [
 
   BACKTRACE_CPPFLAGS="-D_GNU_SOURCE"
 
-  GLIBCXX_LANG_PUSH
+  AC_LANG_CPLUSPLUS
+  old_CXXFLAGS="$CXXFLAGS"
 
   # libbacktrace's own configure.ac only tests atomics for int,
   # but the code actually uses atomics for size_t and pointers as well.
@@ -5356,7 +5357,8 @@ EOF
     rm -f conftest*
   fi
 
-  GLIBCXX_LANG_POP
+  CXXFLAGS="$old_CXXFLAGS"
+  AC_LANG_RESTORE
 
   if test "$glibcxx_cv_libbacktrace_atomics" = yes; then
     BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_ATOMIC_FUNCTIONS=1"

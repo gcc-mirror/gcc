@@ -53537,7 +53537,13 @@ fi
 
   BACKTRACE_CPPFLAGS="-D_GNU_SOURCE"
 
-  GLIBCXX_LANG_PUSH
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  old_CXXFLAGS="$CXXFLAGS"
 
   # libbacktrace's own configure.ac only tests atomics for int,
   # but the code actually uses atomics for size_t and pointers as well.
@@ -53578,7 +53584,7 @@ main ()
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
+if ac_fn_cxx_try_link "$LINENO"; then :
   glibcxx_cv_libbacktrace_atomics=yes
 else
   glibcxx_cv_libbacktrace_atomics=no
@@ -53595,7 +53601,7 @@ $as_echo "$glibcxx_cv_libbacktrace_atomics" >&6; }
     CXXFLAGS='-O0 -S'
 
     cat > conftest.$ac_ext << EOF
-#line 53598 "configure"
+#line 53604 "configure"
 #include <stddef.h>
 int main()
 {
@@ -53633,7 +53639,13 @@ $as_echo "$glibcxx_cv_libbacktrace_atomics" >&6; }
     rm -f conftest*
   fi
 
-  GLIBCXX_LANG_POP
+  CXXFLAGS="$old_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
   if test "$glibcxx_cv_libbacktrace_atomics" = yes; then
     BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_ATOMIC_FUNCTIONS=1"
