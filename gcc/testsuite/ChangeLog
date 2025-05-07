@@ -1,3 +1,16 @@
+2025-05-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120048
+	* gcc.dg/pr120048.c: New.
+
+2025-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120074
+	* gcc.dg/pr120074.c: New test.
+
 2025-05-05  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

@@ -1,3 +1,19 @@
+2025-05-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120048
+	* ipa-cp.cc (ipcp_store_vr_results): Check for UNDEFINED.
+
+2025-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120074
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): For
+	lsignbit && l_xor case, punt if ll_bitsize != lr_bitsize.  Similarly
+	for rsignbit && r_xor case, punt if rl_bitsize != rr_bitsize.
+	Formatting fix.
+
 2025-05-05  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
