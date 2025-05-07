@@ -6,9 +6,9 @@
 
 #define T uint16_t
 
-DEF_VX_BINARY_WRAP(T, +)
+DEF_VX_BINARY_CASE_0_WRAP(T, +)
 
 #define TEST_DATA               TEST_BINARY_DATA_WRAP(T, vadd)
-#define TEST_RUN(out, in, x, n) RUN_VX_BINARY_WRAP(out, in, x, n)
+#define TEST_RUN(out, in, x, n) RUN_VX_BINARY_CASE_0_WRAP(out, in, x, n)
 
 #include "vx_binary_run.h"

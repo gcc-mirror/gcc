@@ -3,6 +3,6 @@
 
 #include "vx_binary.h"
 
-DEF_VX_BINARY(uint8_t, +)
+DEF_VX_BINARY_CASE_0(uint8_t, +)
 
 /* { dg-final { scan-assembler-times {vadd.vx} 1 } } */
