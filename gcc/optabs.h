@@ -334,6 +334,10 @@ extern bool have_insn_for (enum rtx_code, machine_mode);
 /* Generate a conditional trap instruction.  */
 extern rtx_insn *gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
 
+/* Check whether the vec_perm can be interpreted as an and operation.  */
+extern rtx vec_perm_and_mask (machine_mode mode, const vec_perm_indices &sel,
+			      bool zero_op0_p);
+
 /* Generate code for VEC_PERM_EXPR.  */
 extern rtx expand_vec_perm_var (machine_mode, rtx, rtx, rtx, rtx);
 extern rtx expand_vec_perm_const (machine_mode, rtx, rtx,

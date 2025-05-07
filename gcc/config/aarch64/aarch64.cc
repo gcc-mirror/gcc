@@ -26886,6 +26886,40 @@ aarch64_evpc_ins (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize patterns suitable for the AND instructions.  */
+static bool
+aarch64_evpc_and (struct expand_vec_perm_d *d)
+{
+  /* Either d->op0 or d->op1 should be a vector of all zeros.  */
+  if (d->one_vector_p || (!d->zero_op0_p && !d->zero_op1_p))
+    return false;
+
+  machine_mode mode = d->vmode;
+  machine_mode sel_mode;
+  if (!related_int_vector_mode (mode).exists (&sel_mode))
+    return false;
+
+  insn_code and_code = optab_handler (and_optab, sel_mode);
+  rtx and_mask = vec_perm_and_mask (sel_mode, d->perm, d->zero_op0_p);
+  if (and_code == CODE_FOR_nothing || !and_mask)
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  class expand_operand ops[3];
+  rtx in = d->zero_op0_p ? d->op1 : d->op0;
+  create_output_operand (&ops[0], gen_lowpart (sel_mode, d->target), sel_mode);
+  create_input_operand (&ops[1], gen_lowpart (sel_mode, in), sel_mode);
+  create_input_operand (&ops[2], and_mask, sel_mode);
+  expand_insn (and_code, 3, ops);
+  rtx result = gen_lowpart (mode, ops[0].value);
+  if (!rtx_equal_p (d->target, result))
+    emit_move_insn (d->target, result);
+
+  return true;
+}
+
 static bool
 aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
@@ -26920,6 +26954,8 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  else if (aarch64_evpc_zip (d))
 	    return true;
 	  else if (aarch64_evpc_uzp (d))
+	    return true;
+	  else if (aarch64_evpc_and (d))
 	    return true;
 	  else if (aarch64_evpc_trn (d))
 	    return true;

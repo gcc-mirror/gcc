@@ -6362,6 +6362,50 @@ expand_vec_perm_1 (enum insn_code icode, rtx target,
   return NULL_RTX;
 }
 
+/* Check if vec_perm mask SEL is a constant equivalent to an and operation of
+   the non-zero vec_perm operand with some mask consisting of 0xffs and 0x00s,
+   assuming the other vec_perm operand is a constant vector of zeros.  Return
+   the mask for the equivalent and operation, or NULL_RTX if the vec_perm can
+   not be modeled as an and.  MODE is the mode of the value being anded.
+   ZERO_OP0_P is true if the first operand of the vec_perm is a constant vector
+   of zeros or false if the second operand of the vec_perm is a constant vector
+   of zeros.  */
+rtx
+vec_perm_and_mask (machine_mode mode, const vec_perm_indices &sel,
+		   bool zero_op0_p)
+{
+  unsigned int nelt;
+  if (!GET_MODE_NUNITS (mode).is_constant (&nelt))
+    return NULL_RTX;
+
+  rtx_vector_builder builder (mode, nelt, 1);
+  machine_mode emode = GET_MODE_INNER (mode);
+
+  for (unsigned int i = 0; i < nelt; i++)
+    {
+      if (zero_op0_p)
+	{
+	  if (known_eq (sel[i], nelt + i))
+	    builder.quick_push (CONSTM1_RTX (emode));
+	  else if (known_lt (sel[i], nelt))
+	    builder.quick_push (CONST0_RTX (emode));
+	  else
+	    return NULL_RTX;
+	}
+      else
+	{
+	  if (known_eq (sel[i], i))
+	    builder.quick_push (CONSTM1_RTX (emode));
+	  else if (known_ge (sel[i], nelt))
+	    builder.quick_push (CONST0_RTX (emode));
+	  else
+	    return NULL_RTX;
+	}
+    }
+
+  return builder.build ();
+}
+
 /* Implement a permutation of vectors v0 and v1 using the permutation
    vector in SEL and return the result.  Use TARGET to hold the result
    if nonnull and convenient.
