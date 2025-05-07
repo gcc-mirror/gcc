@@ -538,6 +538,14 @@
   "vlvg<bhfgq>\t%v0,%1,%Y4(%2)"
   [(set_attr "op_type" "VRS")])
 
+(define_expand "cstoreti4"
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operator:SI 1 "ordered_comparison_operator"
+	 [(match_operand:TI 2 "register_operand")
+	  (match_operand:TI 3 "register_operand")]))]
+  "TARGET_VX"
+  "s390_expand_cstoreti4 (operands[0], operands[1], operands[2], operands[3]); DONE;")
+
 
 ;; FIXME: Support also vector mode operands for 0
 ;; This is used via RTL standard name as well as for expanding the builtin
@@ -2208,6 +2216,28 @@
   operands[4] = gen_reg_rtx (V2DImode);
   operands[5] = gen_reg_rtx (V2DImode);
 })
+
+(define_insn "*vec_cmpv2di_lane0_<cc_tolower>"
+  [(set (reg:CC_SUZ CC_REGNUM)
+	(compare:CC_SUZ
+	  (vec_select:DI
+	    (match_operand:V2DI 0 "register_operand" "v")
+	    (parallel [(const_int 0)]))
+	  (vec_select:DI
+	    (match_operand:V2DI 1 "register_operand" "v")
+	    (parallel [(const_int 0)]))))]
+  "TARGET_VX"
+  "vec<l>g\t%v0,%v1"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "*vec_cmpti_<cc_tolower>"
+  [(set (reg:CC_SUZ CC_REGNUM)
+	(compare:CC_SUZ
+	  (match_operand:TI 0 "register_operand" "v")
+	  (match_operand:TI 1 "register_operand" "v")))]
+  "TARGET_VXE3"
+  "vec<l>q\t%v0,%v1"
+  [(set_attr "op_type" "VRR")])
 
 
 ;;
