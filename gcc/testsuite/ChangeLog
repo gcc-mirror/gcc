@@ -1,3 +1,26 @@
+2025-05-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120048
+	* gcc.dg/pr120048.c: New.
+
+2025-05-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109464
+	* g++.dg/template/explicit-instantiation8.C: New test.
+
+2025-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-15  Jakub Jelinek  <jakub@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR lto/113208
+	* g++.dg/abi/comdat3.C: New test.
+	* g++.dg/abi/comdat4.C: New test.
+
 2025-05-05  Iain Sandoe  <iains.gcc@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,26 @@
+2025-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-15  Jakub Jelinek  <jakub@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR lto/113208
+	* cp-tree.h (maybe_optimize_cdtor): Remove.
+	* decl2.cc (tentative_decl_linkage): Call maybe_make_one_only
+	for implicit instantiations of maybe in charge ctors/dtors
+	declared inline.
+	(import_export_decl): Don't call maybe_optimize_cdtor.
+	(c_parse_final_cleanups): Formatting fixes.
+	* optimize.cc (can_alias_cdtor): Adjust condition, for
+	HAVE_COMDAT_GROUP && DECL_ONE_ONLY && DECL_WEAK return true even
+	if not DECL_INTERFACE_KNOWN.
+	(maybe_clone_body): Don't clear DECL_SAVED_TREE, instead set it
+	to void_node.
+	(maybe_clone_body): Remove.
+	* decl.cc (cxx_comdat_group): For DECL_CLONED_FUNCTION_P
+	functions if SUPPORTS_ONE_ONLY return DECL_COMDAT_GROUP if already
+	set.
+
 2025-05-05  Iain Sandoe  <iains.gcc@gmail.com>
 
 	Backported from master:

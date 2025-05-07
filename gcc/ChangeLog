@@ -1,3 +1,8 @@
+2025-05-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120048
+	* ipa-cp.cc (ipcp_store_vr_results): Check for UNDEFINED.
+
 2025-05-05  Arsen Arsenović  <arsen@aarsen.me>
 
 	Backported from master:
