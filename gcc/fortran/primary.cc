@@ -4396,7 +4396,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
     case FL_PROCEDURE:
       /* Check for a nonrecursive function result variable.  */
       if (sym->attr.function
-	  && !sym->attr.external
+	  && (!sym->attr.external || sym->abr_modproc_decl)
 	  && sym->result == sym
 	  && (gfc_is_function_return_value (sym, gfc_current_ns)
 	      || (sym->attr.entry
