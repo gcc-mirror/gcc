@@ -164,4 +164,12 @@ enum riscv_tls_type {
 
 #define GPR2VR_COST_UNPROVIDED -1
 
+/* Extra extension flags, used for carry extra info for a RISC-V extension.  */
+enum
+{
+  EXT_FLAG_MACRO = 1 << 0,
+};
+
+#define BITMASK_NOT_YET_ALLOCATED -1
+
 #endif /* ! GCC_RISCV_OPTS_H */

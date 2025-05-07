@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <sstream>
 #include <vector>
+#include <unordered_map>
 #include <queue>
 
 #define INCLUDE_STRING
@@ -41,11 +42,62 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_DEFAULT_TARGET_FLAGS (MASK_BIG_ENDIAN)
 #endif
 
+/* Type for pointer to member of gcc_options and cl_target_option.  */
+typedef int (gcc_options::*opt_var_ref_t);
+typedef int (cl_target_option::*cl_opt_var_ref_t);
+
+/* Types for recording extension to internal flag.  */
+struct riscv_ext_flag_table_t
+{
+  riscv_ext_flag_table_t (const char *ext, opt_var_ref_t var_ref,
+			  cl_opt_var_ref_t cl_var_ref, int mask)
+	: ext (ext), var_ref (var_ref), cl_var_ref (cl_var_ref), mask (mask)
+  {}
+  riscv_ext_flag_table_t (opt_var_ref_t var_ref,
+			  cl_opt_var_ref_t cl_var_ref, int mask)
+	: ext (nullptr), var_ref (var_ref), cl_var_ref (cl_var_ref), mask (mask)
+  {}
+
+  const char *ext;
+  opt_var_ref_t var_ref;
+  cl_opt_var_ref_t cl_var_ref;
+  int mask;
+
+  void clean (gcc_options *opts) const { opts->*var_ref &= ~mask; }
+
+  void set (gcc_options *opts) const { opts->*var_ref |= mask; }
+
+  bool check (cl_target_option *opts) const
+  {
+    return (opts->*cl_var_ref & mask);
+  }
+};
+
+/* Type for hold RISC-V extension version.  */
+struct riscv_version_t
+{
+  riscv_version_t (int major_version, int minor_version,
+		   enum riscv_isa_spec_class isa_spec_class
+		   = ISA_SPEC_CLASS_NONE)
+    : major_version (major_version), minor_version (minor_version),
+      isa_spec_class (isa_spec_class)
+  {}
+  int major_version;
+  int minor_version;
+  enum riscv_isa_spec_class isa_spec_class;
+};
+
 typedef bool (*riscv_implied_predicator_t) (const riscv_subset_list *);
 
 /* Type for implied ISA info.  */
 struct riscv_implied_info_t
 {
+  constexpr riscv_implied_info_t (const char *implied_ext,
+				  riscv_implied_predicator_t predicator
+				  = nullptr)
+    : ext (nullptr), implied_ext (implied_ext), predicator (predicator)
+  {}
+
   constexpr riscv_implied_info_t (const char *ext, const char *implied_ext,
 				  riscv_implied_predicator_t predicator
 				  = nullptr)
@@ -53,7 +105,7 @@ struct riscv_implied_info_t
 
   bool match (const riscv_subset_list *subset_list, const char *ext_name) const
   {
-    if (strcmp (ext_name, ext) != 0)
+    if (ext_name && strcmp (ext_name, ext) != 0)
       return false;
 
     if (predicator && !predicator (subset_list))
@@ -71,6 +123,111 @@ struct riscv_implied_info_t
   const char *ext;
   const char *implied_ext;
   riscv_implied_predicator_t predicator;
+};
+
+static void
+apply_extra_extension_flags (const char *ext,
+			     std::vector<riscv_ext_flag_table_t> &flag_table);
+
+/* Class for hold the extension info.  */
+class riscv_ext_info_t
+{
+public:
+  riscv_ext_info_t (const char *ext,
+		    const std::vector<riscv_implied_info_t> &implied_exts,
+		    const std::vector<riscv_version_t> &supported_versions,
+		    const std::vector<riscv_ext_flag_table_t> &flag_table,
+		    int bitmask_group_id, int bitmask_group_bit_pos,
+		    unsigned extra_extension_flags)
+    : m_ext (ext), m_implied_exts (implied_exts),
+      m_supported_versions (supported_versions), m_flag_table (flag_table),
+      m_bitmask_group_id (bitmask_group_id),
+      m_bitmask_group_bit_pos (bitmask_group_bit_pos),
+      m_extra_extension_flags (extra_extension_flags)
+  {
+    apply_extra_extension_flags (ext, m_flag_table);
+  }
+
+  /* Return true if any change.  */
+  bool apply_implied_ext (riscv_subset_list *subset_list) const;
+
+  const std::vector<riscv_implied_info_t> implied_exts () const
+  {
+    return m_implied_exts;
+  }
+
+  bool need_combine_p () const
+  {
+     return m_extra_extension_flags & EXT_FLAG_MACRO;
+  }
+
+  riscv_version_t default_version () const
+  {
+    if (m_supported_versions.size () == 1)
+      {
+	return *m_supported_versions.begin ();
+      }
+
+    for (const riscv_version_t &ver : m_supported_versions)
+      {
+	if (ver.isa_spec_class == riscv_isa_spec
+	    || ver.isa_spec_class == ISA_SPEC_CLASS_NONE)
+	  return ver;
+      }
+    gcc_unreachable ();
+  }
+
+  void clean_opts (gcc_options *opts) const
+  {
+    for (auto &flag : m_flag_table)
+      flag.clean (opts);
+  }
+
+  void set_opts (gcc_options *opts) const
+  {
+    for (auto &flag : m_flag_table)
+      flag.set (opts);
+  }
+
+  bool check_opts (cl_target_option *opts) const
+  {
+    bool result = true;
+    for (auto &flag : m_flag_table)
+      result = result && flag.check (opts);
+    return result;
+  }
+
+  const std::vector<riscv_version_t> &supported_versions () const
+  {
+    return m_supported_versions;
+  }
+
+private:
+  const char *m_ext;
+  std::vector<riscv_implied_info_t> m_implied_exts;
+  std::vector<riscv_version_t> m_supported_versions;
+  std::vector<riscv_ext_flag_table_t> m_flag_table;
+  int m_bitmask_group_id;
+  int m_bitmask_group_bit_pos;
+  unsigned m_extra_extension_flags;
+};
+
+static const std::unordered_map<std::string, riscv_ext_info_t> riscv_ext_infos
+  = {
+#define DEFINE_RISCV_EXT(NAME, UPPERCAE_NAME, FULL_NAME, DESC, URL, DEP_EXTS,  \
+			 SUPPORTED_VERSIONS, FLAG_GROUP, BITMASK_GROUP_ID,     \
+			 BITMASK_BIT_POSITION, EXTRA_EXTENSION_FLAGS)          \
+  {std::string (#NAME),                                                        \
+   riscv_ext_info_t (#NAME, std::vector<riscv_implied_info_t> DEP_EXTS,        \
+		     std::vector<riscv_version_t> SUPPORTED_VERSIONS,          \
+		     std::vector<riscv_ext_flag_table_t> (                     \
+		       {{&gcc_options::x_riscv_##FLAG_GROUP##_subext,          \
+			 &cl_target_option::x_riscv_##FLAG_GROUP##_subext,     \
+			 MASK_##UPPERCAE_NAME}}),                              \
+		     BITMASK_GROUP_ID, BITMASK_BIT_POSITION,                   \
+		     EXTRA_EXTENSION_FLAGS)},
+#include "../../../config/riscv/riscv-ext.def"
+#undef DEFINE_RISCV_EXT
 };
 
 /* Implied ISA info, must end with NULL sentinel.  */
@@ -268,7 +425,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"xsfvcp", "zve32x"},
 
-  {NULL, NULL}
+  {NULL, NULL, NULL}
 };
 
 /* This structure holds version information for specific ISA version.  */
@@ -1759,18 +1916,6 @@ riscv_arch_str (bool version_p)
     return std::string();
 }
 
-/* Type for pointer to member of gcc_options and cl_target_option.  */
-typedef int (gcc_options::*opt_var_ref_t);
-typedef int (cl_target_option::*cl_opt_var_ref_t);
-
-/* Types for recording extension to internal flag.  */
-struct riscv_ext_flag_table_t {
-  const char *ext;
-  opt_var_ref_t var_ref;
-  cl_opt_var_ref_t cl_var_ref;
-  int mask;
-};
-
 #define RISCV_EXT_FLAG_ENTRY(NAME, VAR, MASK) \
   {NAME, &gcc_options::VAR, &cl_target_option::VAR, MASK}
 
@@ -1968,6 +2113,24 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   {NULL, NULL, NULL, 0}
 };
+
+/* Add extra extension flags into FLAG_TABLE for EXT.  */
+static void
+apply_extra_extension_flags (const char *ext,
+			     std::vector<riscv_ext_flag_table_t> &flag_table)
+{
+  const riscv_ext_flag_table_t *arch_ext_flag_tab;
+  for (arch_ext_flag_tab = &riscv_ext_flag_table[0]; arch_ext_flag_tab->ext;
+       ++arch_ext_flag_tab)
+    {
+      if (strcmp (arch_ext_flag_tab->ext, ext) == 0)
+	{
+	  flag_table.push_back ({arch_ext_flag_tab->var_ref,
+				 arch_ext_flag_tab->cl_var_ref,
+				 arch_ext_flag_tab->mask});
+	}
+    }
+}
 
 /* Types for recording extension to RISC-V C-API bitmask.  */
 struct riscv_ext_bitmask_table_t {
