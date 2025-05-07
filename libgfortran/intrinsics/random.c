@@ -1215,7 +1215,7 @@ arandom_m8 (gfc_array_m8 *x)
     }
 }
 
-#ifdef GFC_HAVE_GFC_UINTEGER_16
+#ifdef HAVE_GFC_UINTEGER_16
 
 /* Fill an unsigned array with random bytes.  */
 
