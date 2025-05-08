@@ -1,3 +1,11 @@
+2025-05-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-02-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/118950
+	* gcc.target/riscv/rvv/autovec/pr118950.c: New test.
+
 2025-05-06  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/120048
