@@ -12638,7 +12638,11 @@ trees_out::write_function_def (tree decl)
     {
       unsigned flags = 0;
 
-      flags |= 1 * DECL_NOT_REALLY_EXTERN (decl);
+      /* Whether the importer should emit this definition, if used.  */
+      flags |= 1 * (DECL_NOT_REALLY_EXTERN (decl)
+		    && (get_importer_interface (decl)
+			!= importer_interface::always_import));
+
       if (f)
 	{
 	  flags |= 2;
