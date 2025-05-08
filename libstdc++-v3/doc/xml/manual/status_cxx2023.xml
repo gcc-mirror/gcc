@@ -418,14 +418,13 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Relaxing Ranges Just A Smidge</entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2609r3.html">
         P2609R3
         </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 14.3 </entry>
       <entry> <code>__cpp_lib_ranges &gt;= 202302L</code> </entry>
     </row>
 
@@ -513,14 +512,13 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Deprecate std::aligned_storage and std::aligned_union </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1413r3.pdf">
         P1413R3
         </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 13.1 </entry>
       <entry />
     </row>
 
@@ -823,7 +821,7 @@ or any notes about the implementation.
         P2508R1
         </link>
       </entry>
-      <entry align="center"> 13.1 (feature test macro not defined)</entry>
+      <entry align="center"> 13.1 (feature test macro not updated)</entry>
       <entry> <code>__cpp_lib_format &gt;= 202207L</code> </entry>
     </row>
 
