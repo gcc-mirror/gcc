@@ -629,7 +629,7 @@ ForeverStack<N>::resolve_path (
   std::function<void (const S &, NodeId)> insert_segment_resolution,
   std::vector<Error> &collect_errors)
 {
-  // TODO: What to do if segments.empty() ?
+  rust_assert (!segments.empty ());
 
   // handle paths with opening scopes
   std::function<void (void)> cleanup_current = [] () {};
