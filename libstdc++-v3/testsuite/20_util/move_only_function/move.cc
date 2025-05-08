@@ -32,6 +32,12 @@ test01()
   VERIFY( m1().copy == 1 );
   VERIFY( m1().move == 0 );
 
+  // Standard specifies move assigment as copy and swap
+  m1 = std::move(m1);
+  VERIFY( m1 != nullptr );
+  VERIFY( m1().copy == 1 );
+  VERIFY( m1().move == 0 );
+
   // This will move construct a new target object and destroy the old one:
   auto m2 = std::move(m1);
   VERIFY( m1 == nullptr && m2 != nullptr );
@@ -77,6 +83,11 @@ test02()
 
   F f;
   std::move_only_function<F::Counters() const> m1(f);
+  VERIFY( m1().copy == 1 );
+  VERIFY( m1().move == 0 );
+
+  m1 = std::move(m1);
+  VERIFY( m1 != nullptr );
   VERIFY( m1().copy == 1 );
   VERIFY( m1().move == 0 );
 
