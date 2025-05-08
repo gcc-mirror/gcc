@@ -269,225 +269,6 @@ struct riscv_profiles
   const char *profile_string;
 };
 
-/* All standard extensions defined in all supported ISA spec.  */
-static const struct riscv_ext_version riscv_ext_version_table[] =
-{
-  /* name, ISA spec, major version, minor_version.  */
-  {"e", ISA_SPEC_CLASS_20191213, 2, 0},
-  {"e", ISA_SPEC_CLASS_20190608, 2, 0},
-  {"e", ISA_SPEC_CLASS_2P2,      2, 0},
-
-  {"i", ISA_SPEC_CLASS_20191213, 2, 1},
-  {"i", ISA_SPEC_CLASS_20190608, 2, 1},
-  {"i", ISA_SPEC_CLASS_2P2,      2, 0},
-
-  {"m", ISA_SPEC_CLASS_20191213, 2, 0},
-  {"m", ISA_SPEC_CLASS_20190608, 2, 0},
-  {"m", ISA_SPEC_CLASS_2P2,      2, 0},
-
-  {"a", ISA_SPEC_CLASS_20191213, 2, 1},
-  {"a", ISA_SPEC_CLASS_20190608, 2, 0},
-  {"a", ISA_SPEC_CLASS_2P2,      2, 0},
-
-  {"f", ISA_SPEC_CLASS_20191213, 2, 2},
-  {"f", ISA_SPEC_CLASS_20190608, 2, 2},
-  {"f", ISA_SPEC_CLASS_2P2,      2, 0},
-
-  {"d", ISA_SPEC_CLASS_20191213, 2, 2},
-  {"d", ISA_SPEC_CLASS_20190608, 2, 2},
-  {"d", ISA_SPEC_CLASS_2P2,      2, 0},
-
-  {"c", ISA_SPEC_CLASS_20191213, 2, 0},
-  {"c", ISA_SPEC_CLASS_20190608, 2, 0},
-  {"c", ISA_SPEC_CLASS_2P2,      2, 0},
-
-  {"b",       ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"h",       ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"v",       ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zicsr", ISA_SPEC_CLASS_20191213, 2, 0},
-  {"zicsr", ISA_SPEC_CLASS_20190608, 2, 0},
-
-  {"zifencei", ISA_SPEC_CLASS_20191213, 2, 0},
-  {"zifencei", ISA_SPEC_CLASS_20190608, 2, 0},
-
-  {"zicond", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"za64rs",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"za128rs", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zawrs", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zaamo", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zalrsc", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zabha", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zacas", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zama16b", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zba", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zbb", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zbc", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zbs", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zfinx", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zdinx", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zhinx", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zhinxmin", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zbkb",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zbkc",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zbkx",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zkne",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zknd",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zknh",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zkr",   ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zksed", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zksh",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zkt",   ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zihintntl", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zihintpause", ISA_SPEC_CLASS_NONE, 2, 0},
-
-  {"zicboz",ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zicbom",ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zicbop",ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zic64b",   ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ziccamoa", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ziccif",   ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zicclsm",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ziccrse",  ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zicfiss", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zicfilp", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zimop", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zcmop", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zicntr", ISA_SPEC_CLASS_NONE, 2, 0},
-  {"zihpm",  ISA_SPEC_CLASS_NONE, 2, 0},
-
-  {"zilsd",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zclsd",  ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zk",    ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zkn",   ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zks",   ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"ztso",  ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zve32x", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zve32f", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zve64x", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zve64f", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zve64d", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zvbb", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvbc", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvkb", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvkg", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvkned", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvknha", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvknhb", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvksed", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvksh", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvkn", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvknc", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvkng", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvks", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvksc", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvksg", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvkt", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zvl32b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl64b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl128b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl256b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl512b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl1024b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl2048b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl4096b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl8192b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl16384b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl32768b", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvl65536b", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zfbfmin",   ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zfh",       ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zfhmin",    ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvfbfmin",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvfbfwma",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvfhmin",   ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zvfh",      ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zfa",     ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zmmul", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"zca",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zcb",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zce",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zcf",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zcd",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zcmp", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"zcmt", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"sdtrig",  ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"smaia",     ISA_SPEC_CLASS_NONE, 1, 0},
-  {"smepmp",    ISA_SPEC_CLASS_NONE, 1, 0},
-  {"smstateen", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"ssaia",     ISA_SPEC_CLASS_NONE, 1, 0},
-  {"sscofpmf",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ssstateen", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"sstc",      ISA_SPEC_CLASS_NONE, 1, 0},
-  {"ssstrict",  ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"ssnpm",     ISA_SPEC_CLASS_NONE, 1, 0},
-  {"smnpm",     ISA_SPEC_CLASS_NONE, 1, 0},
-  {"smmpm",     ISA_SPEC_CLASS_NONE, 1, 0},
-  {"sspm",      ISA_SPEC_CLASS_NONE, 1, 0},
-  {"supm",      ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"svade",   ISA_SPEC_CLASS_NONE, 1, 0},
-  {"svadu",   ISA_SPEC_CLASS_NONE, 1, 0},
-  {"svinval", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"svpbmt",  ISA_SPEC_CLASS_NONE, 1, 0},
-  {"svvptc",  ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"xcvmac", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xcvalu", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xcvelw", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xcvsimd", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xcvbi", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"xtheadba", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadbb", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadbs", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadcmo", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadcondmov", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadfmemidx", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadfmv", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadint", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadmac", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadmemidx", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadmempair", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadsync", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xtheadvector", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"xventanacondops", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  {"xsfvcp",   ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xsfcease", ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xsfvqmaccqoq",    ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xsfvqmaccdod",    ISA_SPEC_CLASS_NONE, 1, 0},
-  {"xsfvfnrclipxfqf", ISA_SPEC_CLASS_NONE, 1, 0},
-
-  /* Terminate the list.  */
-  {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
-};
-
 /* This table records the mapping form RISC-V Profiles into march string.  */
 static const riscv_profiles riscv_profiles_table[] =
 {
@@ -762,11 +543,8 @@ subset_cmp (const std::string &a, const std::string &b)
 static bool
 standard_extensions_p (const char *ext)
 {
-  const riscv_ext_version *ext_ver;
-  for (ext_ver = &riscv_ext_version_table[0]; ext_ver->name != NULL; ++ext_ver)
-    if (strcmp (ext, ext_ver->name) == 0)
-      return true;
-  return false;
+  auto itr = riscv_ext_infos.find (ext);
+  return itr != riscv_ext_infos.end ();
 }
 
 /* Add new subset to list.  */
@@ -896,24 +674,19 @@ get_default_version (const char *ext,
 		     unsigned int *major_version,
 		     unsigned int *minor_version)
 {
-  const riscv_ext_version *ext_ver;
-  for (ext_ver = &riscv_ext_version_table[0];
-       ext_ver->name != NULL;
-       ++ext_ver)
-    if (strcmp (ext, ext_ver->name) == 0)
-      {
-	if ((ext_ver->isa_spec_class == riscv_isa_spec) ||
-	    (ext_ver->isa_spec_class == ISA_SPEC_CLASS_NONE))
-	  {
-	    *major_version = ext_ver->major_version;
-	    *minor_version = ext_ver->minor_version;
-	    return;
-	  }
-      }
+  auto itr = riscv_ext_infos.find (ext);
+  if (itr == riscv_ext_infos.end ())
+    {
+      /* Not found version info.  */
+      *major_version = 0;
+      *minor_version = 0;
+      return;
+    }
 
-  /* Not found version info.  */
-  *major_version = 0;
-  *minor_version = 0;
+  riscv_version_t ver = itr->second.default_version ();
+  /* Get the version info from riscv_ext_infos.  */
+  *major_version = ver.major_version;
+  *minor_version = ver.minor_version;
 }
 
 /* Add new subset to list, but using default version from ISA spec version.  */
@@ -2601,16 +2374,15 @@ riscv_arch_help (int, const char **)
     }
   };
   std::map<std::string, std::set<unsigned>, extension_comparator> all_exts;
-  for (const riscv_ext_version &ext : riscv_ext_version_table)
+  for (const auto &[ext_name, ext_info] : riscv_ext_infos)
     {
-      if (!ext.name)
-	break;
-      if (ext.name[0] == 'g')
-	continue;
-      unsigned version_value = (ext.major_version * RISCV_MAJOR_VERSION_BASE)
-				+ (ext.minor_version
-				   * RISCV_MINOR_VERSION_BASE);
-      all_exts[ext.name].insert(version_value);
+      for (auto &supported_version : ext_info.supported_versions ())
+	{
+	  unsigned version_value
+	    = (supported_version.major_version * RISCV_MAJOR_VERSION_BASE)
+	      + (supported_version.minor_version * RISCV_MINOR_VERSION_BASE);
+	  all_exts[ext_name].insert (version_value);
+	}
     }
 
   printf("All available -march extensions for RISC-V:\n");
