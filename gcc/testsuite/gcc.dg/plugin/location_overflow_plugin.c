@@ -101,7 +101,7 @@ plugin_init (struct plugin_name_args *plugin_info,
       break;
 
     default:
-      error_at (UNKNOWN_LOCATION, "unrecognized value for plugin argument");
+      break;
     }
 
   return 0;
