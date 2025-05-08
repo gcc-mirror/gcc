@@ -2892,7 +2892,7 @@ gfc_match_do (void)
 	  locus where = gfc_current_locus;
 
 	  if (gfc_match_eos () == MATCH_YES)
-	    break;
+	    goto concurr_ok;
 
 	  else if (gfc_match ("local ( ") == MATCH_YES)
 	    {
@@ -3141,6 +3141,7 @@ gfc_match_do (void)
       if (gfc_match_eos () != MATCH_YES)
 	goto concurr_cleanup;
 
+concurr_ok:
       if (label != NULL
 	   && !gfc_reference_st_label (label, ST_LABEL_DO_TARGET))
 	goto concurr_cleanup;
