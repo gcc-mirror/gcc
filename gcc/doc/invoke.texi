@@ -1268,7 +1268,7 @@ See RS/6000 and PowerPC Options.
 -mfence-tso  -mno-fence-tso
 -mdiv  -mno-div
 -misa-spec=@var{ISA-spec-string}
--march=@var{ISA-string|Profiles|Profiles_ISA-string}
+-march=@var{ISA-string|Profiles|Profiles_ISA-string|CPU/processor string}
 -mtune=@var{processor-string}
 -mpreferred-stack-boundary=@var{num}
 -msmall-data-limit=@var{N-bytes}

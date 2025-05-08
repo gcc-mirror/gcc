@@ -980,8 +980,9 @@ riscv_subset_list::parse_base_ext (const char *p)
     }
   else
     {
-      error_at (m_loc, "%<-march=%s%>: ISA string must begin with rv32, rv64 "
-		"or Profiles", m_arch);
+      error_at (m_loc, "%<-march=%s%>: ISA string must begin with rv32, rv64,"
+		" a supported RVA profile or refer to a supported CPU",
+		m_arch);
       return NULL;
     }
 
@@ -1708,7 +1709,8 @@ riscv_handle_option (struct gcc_options *opts,
   switch (decoded->opt_index)
     {
     case OPT_march_:
-      riscv_parse_arch_string (decoded->arg, opts, loc);
+      if (riscv_find_cpu (decoded->arg) == NULL)
+	riscv_parse_arch_string (decoded->arg, opts, loc);
       return true;
 
     case OPT_mcpu_:
@@ -1725,15 +1727,18 @@ riscv_handle_option (struct gcc_options *opts,
 /* Expand arch string with implied extensions.  */
 
 const char *
-riscv_expand_arch (int argc ATTRIBUTE_UNUSED,
+riscv_expand_arch (int argc,
 		   const char **argv)
 {
   gcc_assert (argc == 1);
   location_t loc = UNKNOWN_LOCATION;
-  riscv_parse_arch_string (argv[0], NULL, loc);
+  /* Try to interpret the arch as CPU first.  */
+  const char *arch_str = riscv_expand_arch_from_cpu (argc, argv);
+  if (!strlen (arch_str))
+    riscv_parse_arch_string (argv[0], NULL, loc);
   const std::string arch = riscv_arch_str (false);
-  if (arch.length())
-    return xasprintf ("-march=%s", arch.c_str());
+  if (arch.length ())
+    return xasprintf ("-march=%s", arch.c_str ());
   else
     return "";
 }
