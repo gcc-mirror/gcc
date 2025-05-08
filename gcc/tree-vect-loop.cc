@@ -1473,6 +1473,20 @@ vect_analyze_loop_form (class loop *loop, gimple *loop_vectorized_call,
 				       "not vectorized:"
 				       " unsupported control flow in loop.\n");
       }
+
+  /* Check if we have any control flow that doesn't leave the loop.  */
+  bool has_phi = false;
+  for (unsigned i = 0; i < loop->num_nodes; i++)
+    if (!gimple_seq_empty_p (phi_nodes (bbs[i])))
+      {
+	has_phi = true;
+	break;
+      }
+  if (!has_phi)
+    return opt_result::failure_at (vect_location,
+				   "not vectorized:"
+				   " no scalar evolution detected in loop.\n");
+
   free (bbs);
 
   /* Different restrictions apply when we are considering an inner-most loop,
@@ -1597,9 +1611,20 @@ vect_analyze_loop_form (class loop *loop, gimple *loop_vectorized_call,
 	std::swap (info->conds[0], info->conds[i]);
     }
 
-  if (integer_zerop (info->assumptions)
-      || !info->number_of_iterations
-      || chrec_contains_undetermined (info->number_of_iterations))
+  if (chrec_contains_undetermined (info->number_of_iterations))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Loop being analyzed as uncounted.\n");
+      if (loop->inner)
+	return opt_result::failure_at
+	  (vect_location,
+	   "not vectorized: outer loop vectorization of uncounted loops"
+	   " is unsupported.\n");
+      return opt_result::success ();
+    }
+
+  if (integer_zerop (info->assumptions))
     return opt_result::failure_at
       (info->conds[0],
        "not vectorized: number of iterations cannot be computed.\n");
