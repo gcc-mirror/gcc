@@ -40,6 +40,11 @@ AM_MAINTAINER_MODE
 
 AM_INIT_AUTOMAKE([1.15.1 no-define foreign no-dist -Wall -Wno-portability])
 
+AC_MSG_CHECKING([for --enable-libgcobol])
+AC_ARG_ENABLE(libgcobol,
+  [AS_HELP_STRING([--enable-libgcobol], [Enable libgcobol])])
+AC_MSG_RESULT($enable_libgcobol)
+
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,
 AS_HELP_STRING([--enable-version-specific-runtime-libs],
@@ -138,6 +143,14 @@ AC_CHECK_SIZEOF([void *])
 unset LIBGCOBOL_SUPPORTED
 . ${srcdir}/configure.tgt
 
+# Decide if it's usable.
+case $LIBGCOBOL_SUPPORTED:$enable_libgcobol in
+*:no)  use_libgcobol=no  ;;
+*:yes) use_libgcobol=yes ;;
+yes:*) use_libgcobol=yes ;;
+*:*)   use_libgcobol=no  ;;
+esac
+
 # -----------------
 # __int128 support
 # -----------------
@@ -164,7 +177,7 @@ AC_CACHE_CHECK([whether __int128 is supported], [libgcobol_cv_have_int128],
     libgcobol_cv_have_int128=no
 ])])
 
-AM_CONDITIONAL(BUILD_LIBGCOBOL, [test "x$LIBGCOBOL_SUPPORTED" = xyes && test "x$libgcobol_cv_have_int128" = xyes])
+AM_CONDITIONAL(BUILD_LIBGCOBOL, [test "x$use_libgcobol" = xyes && test "x$libgcobol_cv_have_int128" = xyes])
 
 # Check if functions are available in libc before adding extra libs.
 AC_SEARCH_LIBS([malloc], [c])
