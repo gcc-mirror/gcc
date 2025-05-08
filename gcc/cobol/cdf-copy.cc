@@ -42,6 +42,16 @@
 #include "util.h"
 #include "copybook.h"
 
+// GLOB_BRACE and GLOB_TILDE are BSD extensions.  Provide fallback definitions
+// if necessary.
+#ifndef GLOB_BRACE
+#define GLOB_BRACE 0
+#endif
+
+#ifndef GLOB_TILDE
+#define GLOB_TILDE 0
+#endif
+
 #define COUNT_OF(X) (sizeof(X) / sizeof(X[0]))
 
 /*
