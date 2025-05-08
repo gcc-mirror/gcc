@@ -2171,12 +2171,6 @@ VFP floating-point registers @code{d0}-@code{d31} and the appropriate
 subset @code{d0}-@code{d15} based on command line options.
 Used for 64 bit values only.  Not valid for Thumb1.
 
-@item y
-The iWMMX co-processor registers.
-
-@item z
-The iWMMX GR registers.
-
 @item G
 The floating-point constant 0.0
 
@@ -2209,9 +2203,6 @@ A symbol in the text segment of the current file
 
 @item Uv
 A memory reference suitable for VFP load/store insns (reg+constant offset)
-
-@item Uy
-A memory reference suitable for iWMMXt load/store instructions.
 
 @item Uq
 A memory reference suitable for the ARMv4 ldrsb instruction.
