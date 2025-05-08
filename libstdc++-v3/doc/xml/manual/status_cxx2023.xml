@@ -312,17 +312,21 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry> <code>ranges::to</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1206r7.pdf">
         P1206R7
         </link>
       </entry>
-      <entry align="center"> 14.1 (<code>ranges::to</code> function) </entry>
+      <entry align="center">
+	<informaltable colsep="0" rowsep="0" rowheader="norowheader" frame="none"><tgroup cols="1"><tbody>
+	<row><entry> 14.1 (<code>ranges::to</code> function) </entry></row>
+	<row><entry> 15.1 (new members in containers) </entry></row>
+	</tbody></tgroup></informaltable>
+      </entry>
       <entry>
-	<code>__cpp_lib_containers_ranges &gt;= 202202L</code>,
-	<code>__cpp_lib_ranges_to_container &gt;= 202202L</code>
+	<code>__cpp_lib_ranges_to_container &gt;= 202202L</code>,
+	<code>__cpp_lib_containers_ranges &gt;= 202202L</code>
       </entry>
     </row>
 
@@ -418,14 +422,13 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Relaxing Ranges Just A Smidge</entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2609r3.html">
         P2609R3
         </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 14.3 </entry>
       <entry> <code>__cpp_lib_ranges &gt;= 202302L</code> </entry>
     </row>
 
@@ -513,14 +516,13 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Deprecate std::aligned_storage and std::aligned_union </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p1413r3.pdf">
         P1413R3
         </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 13.1 </entry>
       <entry />
     </row>
 
@@ -635,26 +637,24 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> <code>&lt;flat_map&gt;</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0429r9.pdf">
         P0429R9
         </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 15.1 </entry>
       <entry> <code>__cpp_lib_flat_map &gt;= 202207L</code> </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> <code>&lt;flat_set&gt;</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1222r4.pdf">
         P1222R4
         </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 15.1 </entry>
       <entry> <code>__cpp_lib_flat_set &gt;= 202207L</code> </entry>
     </row>
 
@@ -823,12 +823,11 @@ or any notes about the implementation.
         P2508R1
         </link>
       </entry>
-      <entry align="center"> 13.1 (feature test macro not defined)</entry>
+      <entry align="center"> 13.1 (feature test macro not updated until 15.1) </entry>
       <entry> <code>__cpp_lib_format &gt;= 202207L</code> </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	Clarify handling of encodings in localized formatting of chrono types
       </entry>
@@ -837,7 +836,7 @@ or any notes about the implementation.
         P2419R2
         </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 15.1 </entry>
       <entry> <code>__cpp_lib_format &gt;= 202207L</code> </entry>
     </row>
 
@@ -850,31 +849,34 @@ or any notes about the implementation.
         P2510R3
         </link>
       </entry>
-      <entry align="center"> 13.2 (feature test macro not defined)</entry>
+      <entry align="center"> 13.2 (feature test macro not updated until 15.1) </entry>
       <entry> <code>__cpp_lib_format &gt;= 202207L</code> </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Formatting Ranges </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html">
         P2286R8
         </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center">
+	<informaltable colsep="0" rowsep="0" rowheader="norowheader" frame="none"><tgroup cols="1"><tbody>
+	<row><entry> 15.1 (changes to adaptors missing) </entry></row>
+	<row><entry> 15.2 (complete) </entry></row>
+	</tbody></tgroup></informaltable>
+      </entry>
       <entry> <code>__cpp_lib_format_ranges &gt;= 202207L</code> </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Improve default container formatting </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2585r1.html">
         P2585R1
         </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 15.1 (feature test macro not defined until 15.2) </entry>
       <entry> <code>__cpp_lib_format_ranges &gt;= 202207L</code> </entry>
     </row>
 
@@ -1249,7 +1251,6 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
         Standard Library Modules <code>std</code> and <code>std.compat</code>
       </entry>
@@ -1258,7 +1259,7 @@ or any notes about the implementation.
         P2465R3
         </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 15.1 </entry>
       <entry> <code>__cpp_lib_modules &gt;= 202207L</code> </entry>
     </row>
 
