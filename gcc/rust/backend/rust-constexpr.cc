@@ -1901,6 +1901,9 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 
   location_t loc = EXPR_LOCATION (t);
 
+  if (t == NULL_TREE)
+    return NULL_TREE;
+
   if (CONSTANT_CLASS_P (t))
     {
       if (TREE_OVERFLOW (t))
