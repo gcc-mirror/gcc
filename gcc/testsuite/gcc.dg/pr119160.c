@@ -1,5 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -finstrument-functions-once -favoid-store-forwarding -fnon-call-exceptions -fschedule-insns -mgeneral-regs-only -Wno-psabi" } */
+/* { dg-options "-O2 -finstrument-functions-once -favoid-store-forwarding -fnon-call-exceptions -fschedule-insns -Wno-psabi" } */
+/* { dg-additional-options "-mgeneral-regs-only" { target { x86_64-*-* i?86-*-* arm*-*-* aarch64*-*-* } } } */
 
 typedef __attribute__((__vector_size__ (32))) int V;
 
