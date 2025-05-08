@@ -12321,7 +12321,7 @@ singleton_vxrm_need (void)
   /* Walk the IL noting if VXRM is needed and if there's more than one
      mode needed.  */
   bool found = false;
-  int saved_vxrm_mode;
+  int saved_vxrm_mode = VXRM_MODE_NONE;
   for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (!INSN_P (insn) || DEBUG_INSN_P (insn))
