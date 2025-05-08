@@ -46,6 +46,11 @@
 #include <string>
 #include <vector>
 
+// Provide fallback definition.
+#ifndef NAME_MAX
+#define NAME_MAX 255
+#endif
+
 #define PICTURE_MAX 64
 
 extern const char *numed_message;
