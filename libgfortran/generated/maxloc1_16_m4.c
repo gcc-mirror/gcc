@@ -147,7 +147,7 @@ maxloc1_16_m4 (gfc_array_i16 * const restrict retarray,
 #if defined (GFC_UINTEGER_4_INFINITY)
 	maxval = -GFC_UINTEGER_4_INFINITY;
 #else
-	maxval = -GFC_UINTEGER_4_HUGE;
+	maxval = 0;
 #endif
 	result = 1;
 	if (len <= 0)
@@ -366,7 +366,7 @@ mmaxloc1_16_m4 (gfc_array_i16 * const restrict retarray,
 #if defined (GFC_UINTEGER_4_INFINITY)
 	maxval = -GFC_UINTEGER_4_INFINITY;
 #else
-	maxval = -GFC_UINTEGER_4_HUGE;
+	maxval = 0;
 #endif
 #if defined (GFC_UINTEGER_4_QUIET_NAN)
 	GFC_INTEGER_16 result2 = 0;

@@ -96,7 +96,7 @@ maxloc0_8_m1 (gfc_array_i8 * const restrict retarray,
 #if defined(GFC_UINTEGER_1_INFINITY)
     maxval = -GFC_UINTEGER_1_INFINITY;
 #else
-    maxval = -GFC_UINTEGER_1_HUGE;
+    maxval = 0;
 #endif
   while (base)
     {
@@ -271,7 +271,7 @@ mmaxloc0_8_m1 (gfc_array_i8 * const restrict retarray,
 #if defined(GFC_UINTEGER_1_INFINITY)
     maxval = -GFC_UINTEGER_1_INFINITY;
 #else
-    maxval = -GFC_UINTEGER_1_HUGE;
+    maxval = 0;
 #endif
   while (base)
     {

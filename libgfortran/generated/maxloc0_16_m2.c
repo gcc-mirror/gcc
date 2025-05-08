@@ -96,7 +96,7 @@ maxloc0_16_m2 (gfc_array_i16 * const restrict retarray,
 #if defined(GFC_UINTEGER_2_INFINITY)
     maxval = -GFC_UINTEGER_2_INFINITY;
 #else
-    maxval = -GFC_UINTEGER_2_HUGE;
+    maxval = 0;
 #endif
   while (base)
     {
@@ -271,7 +271,7 @@ mmaxloc0_16_m2 (gfc_array_i16 * const restrict retarray,
 #if defined(GFC_UINTEGER_2_INFINITY)
     maxval = -GFC_UINTEGER_2_INFINITY;
 #else
-    maxval = -GFC_UINTEGER_2_HUGE;
+    maxval = 0;
 #endif
   while (base)
     {
