@@ -1,3 +1,74 @@
+2025-05-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120137
+	PR target/120154
+	* gcc.target/riscv/pr120137.c: New test.
+	* gcc.target/riscv/pr120154.c: New test.
+
+2025-05-07  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/arch-48.c: New test.
+
+2025-05-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/110796
+	PR target/118446
+	* gcc.target/arm/armv8_2-fp16-arith-1.c: Adjust due to no-longer
+	emitting VCMPE when -ffast-math..
+
+2025-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/108900
+	PR preprocessor/116047
+	PR preprocessor/120061
+	* gcc.dg/plugin/plugin.exp: Add location-overflow-test-pr116047.c
+	and location-overflow-test-pr120061.c.
+	* gcc.dg/plugin/location_overflow_plugin.cc (plugin_init): Don't error
+	on unknown values, instead just break.  Handle 0x4fHHHHHH arguments
+	differently.
+	* gcc.dg/plugin/location-overflow-test-pr116047.c: New test.
+	* gcc.dg/plugin/location-overflow-test-pr116047-1.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr116047-2.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061.c: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061-1.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061-2.h: New test.
+
+2025-05-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/pr119919.c: Add -mtune=znver1
+
+2025-05-07  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/117978
+	* gcc.target/aarch64/sve/acle/general/whilelt_5.c: Adjust expected
+	outcome.
+	* gcc.target/aarch64/sve/ldst_ptrue_pat_128_to_neon.c: New test.
+	* gcc.target/aarch64/sve/while_7.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/while_9.c: Adjust expected outcome.
+
+2025-05-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/cstoreti-1.c: New test.
+	* gcc.target/s390/vector/cstoreti-2.c: New test.
+
+2025-05-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120036
+	* g++.target/i386/pr120036.C: New test.
+	* gcc.target/i386/pr117839-3a.c: Likewise.
+	* gcc.target/i386/pr117839-3b.c: Likewise.
+
+2025-05-07  Paul Thomas  <pault@gcc.gnu.org>
+	    and Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/119948
+	* gfortran.dg/pr119948.f90: Update to incorporate failing test,
+	where module procedure is the result. Test submodule cases.
+
+2025-05-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* g++.target/riscv/redundant-andi.C: New test.
+
 2025-05-06  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
 
 	* gcc.target/riscv/arch-47.c: New test.

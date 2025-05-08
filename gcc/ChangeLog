@@ -1,3 +1,114 @@
+2025-05-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120137
+	PR target/120154
+	* config/riscv/riscv-vect-permconst.cc (process_bb): Verify each
+	canonicalized element fits into the vector element mode.
+
+2025-05-07  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: New extension.
+	* config/riscv/riscv.opt: Ditto.
+
+2025-05-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/91323
+	* config/arm/arm.cc (arm_select_cc_mode): Use CCFPEmode for LTGT.
+
+2025-05-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/110796
+	PR target/118446
+	* config/arm/arm.h (REVERSIBLE_CC_MODE): FP modes are only
+	reversible if flag_finite_math_only.
+	* config/arm/arm.cc (arm_select_cc_mode): Return CCFPmode for all
+	FP comparisons if flag_finite_math_only.
+
+2025-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/111276
+	* gimple-fold.cc (arith_code_with_undefined_signed_overflow): Make static.
+	(gimple_with_undefined_signed_overflow): New function.
+	* gimple-fold.h (arith_code_with_undefined_signed_overflow): Remove.
+	(gimple_with_undefined_signed_overflow): Add declaration.
+	* tree-if-conv.cc (if_convertible_gimple_assign_stmt_p): Use
+	gimple_with_undefined_signed_overflow instead of manually
+	checking lhs and the code of the stmt.
+	(predicate_statements): Likewise.
+	* tree-ssa-ifcombine.cc (ifcombine_rewrite_to_defined_overflow): Likewise.
+	* tree-ssa-loop-im.cc (move_computations_worker): Likewise.
+	* tree-ssa-reassoc.cc (update_range_test): Likewise. Reformat.
+	* tree-scalar-evolution.cc (final_value_replacement_loop): Use
+	gimple_with_undefined_signed_overflow instead of
+	arith_code_with_undefined_signed_overflow.
+	* tree-ssa-loop-split.cc (split_loop): Likewise.
+
+2025-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-loop-im.cc (compute_invariantness): Hoist to the always executed point
+	if ignorning the cost.
+
+2025-05-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Add FLOAT_EXPR;
+	FIX_TRUNC_EXPR and vec_promote_demote costs.
+
+2025-05-07  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/117978
+	* config/aarch64/aarch64-protos.h: Declare
+	aarch64_emit_load_store_through_mode and aarch64_sve_maskloadstore.
+	* config/aarch64/aarch64-sve.md
+	(maskload<mode><vpred>): New define_expand folding maskloads with
+	certain predicate patterns to ASIMD loads.
+	(*aarch64_maskload<mode><vpred>): Renamed from maskload<mode><vpred>.
+	(maskstore<mode><vpred>): New define_expand folding maskstores with
+	certain predicate patterns to ASIMD stores.
+	(*aarch64_maskstore<mode><vpred>): Renamed from maskstore<mode><vpred>.
+	* config/aarch64/aarch64.cc
+	(aarch64_emit_load_store_through_mode): New function emitting a
+	load/store through subregs of a given mode.
+	(aarch64_emit_sve_pred_move): Refactor to use
+	aarch64_emit_load_store_through_mode.
+	(aarch64_expand_maskloadstore): New function to emit ASIMD loads/stores
+	for maskloads/stores with SVE predicates with VL1, VL2, VL4, VL8, or
+	VL16 patterns.
+	(aarch64_partial_ptrue_length): New function returning number of leading
+	set bits in a predicate.
+
+2025-05-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-protos.h (s390_expand_cstoreti4): New
+	function.
+	* config/s390/s390.cc (s390_expand_cstoreti4): New function.
+	* config/s390/s390.md (CC_SUZ): New mode iterator.
+	(l): New mode attribute.
+	(cc_tolower): New mode attribute.
+	* config/s390/vector.md (cstoreti4): New expander.
+	(*vec_cmpv2di_lane0_<cc_tolower>): New insn.
+	(*vec_cmpti_<cc_tolower>): New insn.
+
+2025-05-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120036
+	* config/i386/i386-features.cc (ix86_get_vector_load_mode):
+	Handle 8/4/2 bytes.
+	(remove_redundant_vector_load): If the mode size is smaller than
+	its natural size, first insert an extra move with a QI vector
+	SUBREG of the same size to avoid validate_subreg failure.
+
+2025-05-07  hongtao.liu  <hongtao.liu@intel.com>
+
+	PR gcov-profile/118508
+	* auto-profile.cc
+	(autofdo_source_profile::get_callsite_total_count): Fix name
+	mismatch for fortran.
+
+2025-05-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md (*branch<ANYI:mode>_shiftedarith_equals_zero):
+	Avoid generating unnecessary andi.  Fix formatting.
+
 2025-05-06  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
 
 	* common/config/riscv/riscv-common.cc: New extension.

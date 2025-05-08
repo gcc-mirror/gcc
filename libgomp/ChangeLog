@@ -1,3 +1,9 @@
+2025-05-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/map-alloc-comp-9.f90: Process differently
+	when USE_USM_REQUIREMENT is set.
+	* testsuite/libgomp.fortran/map-alloc-comp-9-usm.f90: New test.
+
 2025-05-06  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* testsuite/libgomp.c-target/aarch64/udr-sve.c: Fix test.

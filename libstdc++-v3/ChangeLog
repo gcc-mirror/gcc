@@ -1,3 +1,54 @@
+2025-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120159
+	* src/c++23/std.cc.in (is_layout_compatible_v): Export.
+
+2025-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++23/std.cc.in: Fix export for std::extents.
+
+2025-05-07  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/extents/class_mandates_neg.cc: New test.
+	* testsuite/23_containers/mdspan/extents/ctor_copy.cc: New test.
+	* testsuite/23_containers/mdspan/extents/ctor_ints.cc: New test.
+	* testsuite/23_containers/mdspan/extents/ctor_shape.cc: New test.
+	* testsuite/23_containers/mdspan/extents/custom_integer.cc: New test.
+	* testsuite/23_containers/mdspan/extents/misc.cc: New test.
+
+2025-05-07  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/107761
+	* include/std/mdspan (extents): New class.
+	* src/c++23/std.cc.in: Add 'using std::extents'.
+
+2025-05-07  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* doc/doxygen/user.cfg.in: Add <mdspan>.
+	* include/Makefile.am: Ditto.
+	* include/Makefile.in: Ditto.
+	* include/precompiled/stdc++.h: Ditto.
+	* include/std/mdspan: New file.
+
+2025-05-07  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/bits/version.def: Add internal feature testing macro
+	__glibcxx_mdspan.
+	* include/bits/version.h: Regenerate.
+
+2025-05-07  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/120114
+	* include/bits/chrono_io.h (__formatter_chrono::_M_format): Use __field_width.
+	* testsuite/std/time/format/pr120114.cc: New test.
+
+2025-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120147
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Restore use of
+	AC_LANG_CPLUSPLUS.
+	* configure: Regenerate.
+
 2025-05-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/70560
