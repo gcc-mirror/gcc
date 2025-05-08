@@ -33,7 +33,8 @@ namespace dts {
       : input(input)
       , first(NULL), second(NULL), matched(false)
     {
-      static regmatch_t empty = { -1, -1 };
+      static regmatch_t empty;
+      empty.rm_so = empty.rm_eo = -1;
       regmatch_t& self(*this);
       self = empty;
     }
