@@ -14040,7 +14040,7 @@ vect_analyze_stmt (vec_info *vinfo,
 	  || vectorizable_comparison (vinfo, stmt_info, NULL, NULL, node,
 				      cost_vec)
 	  || vectorizable_lc_phi (as_a <loop_vec_info> (vinfo),
-				  stmt_info, NULL, node)
+				  stmt_info, node)
 	  || vectorizable_recurr (as_a <loop_vec_info> (vinfo),
 				   stmt_info, NULL, node, cost_vec)
 	  || vectorizable_early_exit (vinfo, stmt_info, NULL, NULL, node,
@@ -14207,19 +14207,19 @@ vect_transform_stmt (vec_info *vinfo,
 
     case reduc_vec_info_type:
       done = vect_transform_reduction (as_a <loop_vec_info> (vinfo), stmt_info,
-				       gsi, &vec_stmt, slp_node);
+				       gsi, slp_node);
       gcc_assert (done);
       break;
 
     case cycle_phi_info_type:
       done = vect_transform_cycle_phi (as_a <loop_vec_info> (vinfo), stmt_info,
-				       &vec_stmt, slp_node, slp_node_instance);
+				       slp_node, slp_node_instance);
       gcc_assert (done);
       break;
 
     case lc_phi_info_type:
-      done = vectorizable_lc_phi (as_a <loop_vec_info> (vinfo),
-				  stmt_info, &vec_stmt, slp_node);
+      done = vect_transform_lc_phi (as_a <loop_vec_info> (vinfo),
+				    stmt_info, slp_node);
       gcc_assert (done);
       break;
 
