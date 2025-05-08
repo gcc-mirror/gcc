@@ -1,3 +1,11 @@
+2025-05-07  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-05-03  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.cc (c_common_post_options): Let plain -Wabi warn
+	about changes in a future version.
+
 2025-04-25  Release Manager
 
 	* GCC 15.1.0 released.

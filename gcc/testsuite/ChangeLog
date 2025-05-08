@@ -1,3 +1,20 @@
+2025-05-07  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120012
+	* g++.dg/abi/base-defaulted1.C: New test.
+	* g++.dg/abi/base-defaulted1a.C: New test.
+
+2025-05-07  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119852
+	* gcc.dg/ipa/pr119852.c: New test.
+
 2025-05-06  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/120048

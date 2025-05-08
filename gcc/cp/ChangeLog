@@ -1,3 +1,14 @@
+2025-05-07  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120012
+	* cp-tree.h (struct lang_type): Add non_aggregate_pod.
+	(CLASSTYPE_NON_AGGREGATE_POD): New.
+	* class.cc (check_bases_and_members): Set it.
+	(check_non_pod_aggregate): Diagnose it.
+
 2025-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,20 @@
+2025-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120159
+	* src/c++23/std.cc.in (is_layout_compatible_v): Export.
+
+2025-05-07  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-05-07  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/120114
+	* include/bits/chrono_io.h (__formatter_chrono::_M_format): Use __field_width.
+	* testsuite/std/time/format/pr120114.cc: New test.
+
 2025-05-06  Dhruv Chawla  <dhruvc@nvidia.com>
 
 	Backported from master:

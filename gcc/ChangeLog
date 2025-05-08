@@ -1,3 +1,19 @@
+2025-05-07  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119852
+	* cgraphclones.cc (dump_callgraph_transformation): Document the
+	function.  Do not dump if suffix is NULL.
+
+2025-05-07  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	* doc/invoke.texi (Developer Options): Document -fdump-ipa-clones.
+
 2025-05-06  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/120048
