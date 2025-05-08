@@ -2617,16 +2617,25 @@ out:
       if (oprnds_info[0]->def_stmts[0]
 	  && is_a<gassign *> (oprnds_info[0]->def_stmts[0]->stmt))
 	code = gimple_assign_rhs_code (oprnds_info[0]->def_stmts[0]->stmt);
+      basic_block bb = nullptr;
 
       for (unsigned j = 0; j < group_size; ++j)
 	{
 	  FOR_EACH_VEC_ELT (oprnds_info, i, oprnd_info)
 	    {
 	      stmt_vec_info stmt_info = oprnd_info->def_stmts[j];
-	      if (!stmt_info || !stmt_info->stmt
+	      if (!stmt_info
 		  || !is_a<gassign *> (stmt_info->stmt)
 		  || gimple_assign_rhs_code (stmt_info->stmt) != code
 		  || skip_args[i])
+		{
+		  success = false;
+		  break;
+		}
+	      /* Avoid mixing lanes with defs in different basic-blocks.  */
+	      if (!bb)
+		bb = gimple_bb (vect_orig_stmt (stmt_info)->stmt);
+	      else if (gimple_bb (vect_orig_stmt (stmt_info)->stmt) != bb)
 		{
 		  success = false;
 		  break;
