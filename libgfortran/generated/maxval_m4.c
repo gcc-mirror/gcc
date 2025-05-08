@@ -143,10 +143,10 @@ maxval_m4 (gfc_array_m4 * const restrict retarray,
 #if defined (GFC_UINTEGER_4_INFINITY)
 	result = -GFC_UINTEGER_4_INFINITY;
 #else
-	result = -GFC_UINTEGER_4_HUGE;
+	result = 0;
 #endif
 	if (len <= 0)
-	  *dest = -GFC_UINTEGER_4_HUGE;
+	  *dest = 0;
 	else
 	  {
 #if ! defined HAVE_BACK_ARG
@@ -351,7 +351,7 @@ mmaxval_m4 (gfc_array_m4 * const restrict retarray,
 #if defined (GFC_UINTEGER_4_INFINITY)
 	result = -GFC_UINTEGER_4_INFINITY;
 #else
-	result = -GFC_UINTEGER_4_HUGE;
+	result = 0;
 #endif
 #if defined (GFC_UINTEGER_4_QUIET_NAN)
 	int non_empty_p = 0;
@@ -372,9 +372,9 @@ mmaxval_m4 (gfc_array_m4 * const restrict retarray,
 	    if (unlikely (n >= len))
 	      {
 #if defined (GFC_UINTEGER_4_QUIET_NAN)
-		result = non_empty_p ? GFC_UINTEGER_4_QUIET_NAN : -GFC_UINTEGER_4_HUGE;
+		result = non_empty_p ? GFC_UINTEGER_4_QUIET_NAN : 0;
 #else
-		result = -GFC_UINTEGER_4_HUGE;
+		result = 0;
 #endif
 	      }
 	    else for (; n < len; n++, src += delta, msrc += mdelta)
@@ -535,7 +535,7 @@ smaxval_m4 (gfc_array_m4 * const restrict retarray,
 
   while(1)
     {
-      *dest = -GFC_UINTEGER_4_HUGE;
+      *dest = 0;
       count[0]++;
       dest += dstride[0];
       n = 0;
