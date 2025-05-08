@@ -1183,14 +1183,31 @@ since C++14 and the implementation is complete.
     <row>
       <entry>23.2.8</entry>
       <entry>Primitive numeric output conversion</entry>
-      <entry>Partial</entry>
-      <entry/>
+      <entry>Y</entry>
+      <entry>
+	Floating-point types up to 64-bit are formatted using
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	  xlink:href="https://github.com/ulfjack/ryu">Ryu</link>.
+	Types with greater precision are formatted using the C library
+	(<function>sprintf</function> and conditionally
+	<function>strfromf128</function>).
+	For powerpc64le-unknown-linux-gnu <function>__sprintfieee128</function>
+	must be provided by Glibc.
+      </entry>
     </row>
     <row>
       <entry>23.2.9</entry>
       <entry>Primitive numeric input conversion</entry>
-      <entry>Partial</entry>
-      <entry/>
+      <entry>Y</entry>
+      <entry>
+	Floating-point types up to 64-bit are parsed using
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	  xlink:href="https://github.com/fastfloat/fast_float">fast_float</link>.
+	Types with greater precision are parsed using the C library
+	(<function>strtold</function>).
+	For powerpc64le-unknown-linux-gnu <function>__strtoieee128</function>
+	must be provided by Glibc.
+      </entry>
     </row>
     <row>
       <entry>23.3</entry>
