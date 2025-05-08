@@ -10141,6 +10141,9 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	  else if (lookup_attribute ("no_callee_saved_registers",
 				     TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
 	    call_no_callee_saved_registers = true;
+	  if (fndecl == current_function_decl
+	      && decl_binds_to_current_def_p (fndecl))
+	    cfun->machine->recursive_function = true;
 	}
     }
   else

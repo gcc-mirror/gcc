@@ -3088,10 +3088,12 @@ ix86_rpad_gate ()
 /* Generate a vector set, DEST = SRC, at entry of the nearest dominator
    for basic block map BBS, which is in the fake loop that contains the
    whole function, so that there is only a single vector set in the
-   whole function.   */
+   whole function.  If not nullptr, INNER_SCALAR is the inner scalar of
+   SRC, as (reg:SI 99) in (vec_duplicate:V4SI (reg:SI 99)).  */
 
 static void
-ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs)
+ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs,
+			      rtx inner_scalar = nullptr)
 {
   basic_block bb = nearest_common_dominator_for_set (CDI_DOMINATORS, bbs);
   while (bb->loop_father->latch
@@ -3112,10 +3114,23 @@ ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs)
       insn = NEXT_INSN (insn);
     }
 
+  rtx_insn *set_insn;
   if (insn == BB_HEAD (bb))
-    emit_insn_before (set, insn);
+    set_insn = emit_insn_before (set, insn);
   else
-    emit_insn_after (set, insn ? PREV_INSN (insn) : BB_END (bb));
+    set_insn = emit_insn_after (set,
+				insn ? PREV_INSN (insn) : BB_END (bb));
+
+  if (inner_scalar)
+    {
+      /* Set the source in (vec_duplicate:V4SI (reg:SI 99)).  */
+      rtx reg = XEXP (src, 0);
+      if ((REG_P (inner_scalar) || MEM_P (inner_scalar))
+	  && GET_MODE (reg) != GET_MODE (inner_scalar))
+	inner_scalar = gen_rtx_SUBREG (GET_MODE (reg), inner_scalar, 0);
+      rtx set = gen_rtx_SET (reg, inner_scalar);
+      emit_insn_before (set, set_insn);
+    }
 }
 
 /* At entry of the nearest common dominator for basic blocks with
@@ -3346,26 +3361,15 @@ make_pass_remove_partial_avx_dependency (gcc::context *ctxt)
   return new pass_remove_partial_avx_dependency (ctxt);
 }
 
-/* Return a machine mode suitable for vector SIZE.  */
+/* Return a machine mode suitable for vector SIZE with SMODE inner
+   mode.  */
 
 static machine_mode
-ix86_get_vector_load_mode (unsigned int size)
+ix86_get_vector_cse_mode (unsigned int size, machine_mode smode)
 {
-  machine_mode mode;
-  if (size == 64)
-    mode = V64QImode;
-  else if (size == 32)
-    mode = V32QImode;
-  else if (size == 16)
-    mode = V16QImode;
-  else if (size == 8)
-    mode = V8QImode;
-  else if (size == 4)
-    mode = V4QImode;
-  else if (size == 2)
-    mode = V2QImode;
-  else
-    gcc_unreachable ();
+  scalar_mode s_mode = as_a <scalar_mode> (smode);
+  poly_uint64 nunits = size / GET_MODE_SIZE (smode);
+  machine_mode mode = mode_for_vector (s_mode, nunits).require ();
   return mode;
 }
 
@@ -3374,7 +3378,8 @@ ix86_get_vector_load_mode (unsigned int size)
 
 static void
 replace_vector_const (machine_mode vector_mode, rtx vector_const,
-		      auto_bitmap &vector_insns)
+		      auto_bitmap &vector_insns,
+		      machine_mode scalar_mode)
 {
   bitmap_iterator bi;
   unsigned int id;
@@ -3386,7 +3391,8 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
       /* Get the single SET instruction.  */
       rtx set = single_set (insn);
       rtx src = SET_SRC (set);
-      machine_mode mode = GET_MODE (src);
+      rtx dest = SET_DEST (set);
+      machine_mode mode = GET_MODE (dest);
 
       rtx replace;
       /* Replace the source operand with VECTOR_CONST.  */
@@ -3400,7 +3406,8 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
 	      /* If the mode size is smaller than its natural size,
 		 first insert an extra move with a QI vector SUBREG
 		 of the same size to avoid validate_subreg failure.  */
-	      machine_mode vmode = ix86_get_vector_load_mode (size);
+	      machine_mode vmode
+		= ix86_get_vector_cse_mode (size, scalar_mode);
 	      rtx vreg;
 	      if (mode == vmode)
 		vreg = vector_const;
@@ -3426,6 +3433,186 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
     }
 }
 
+enum x86_cse_kind
+{
+  X86_CSE_CONST0_VECTOR,
+  X86_CSE_CONSTM1_VECTOR,
+  X86_CSE_VEC_DUP
+};
+
+struct redundant_load
+{
+  /* Bitmap of basic blocks with broadcast instructions.  */
+  auto_bitmap bbs;
+  /* Bitmap of broadcast instructions.  */
+  auto_bitmap insns;
+  /* The broadcast inner scalar.  */
+  rtx val;
+  /* The inner scalar mode.  */
+  machine_mode mode;
+  /* The instruction which sets the inner scalar.  Nullptr if the inner
+     scalar is applied to the whole function, instead of within the same
+     block.  */
+  rtx_insn *def_insn;
+  /* The widest broadcast source.  */
+  rtx broadcast_source;
+  /* The widest broadcast register.  */
+  rtx broadcast_reg;
+  /* The basic block of the broadcast instruction.  */
+  basic_block bb;
+  /* The number of broadcast instructions with the same inner scalar.  */
+  unsigned HOST_WIDE_INT count;
+  /* The threshold of broadcast instructions with the same inner
+     scalar.  */
+  unsigned int threshold;
+  /* The widest broadcast size in bytes.  */
+  unsigned int size;
+  /* Load kind.  */
+  x86_cse_kind kind;
+};
+
+/* Return the inner scalar if OP is a broadcast, else return nullptr.  */
+
+static rtx
+ix86_broadcast_inner (rtx op, machine_mode mode,
+		      machine_mode *scalar_mode_p,
+		      x86_cse_kind *kind_p, rtx_insn **insn_p)
+{
+  if (op == const0_rtx || op == CONST0_RTX (mode))
+    {
+      *scalar_mode_p = QImode;
+      *kind_p = X86_CSE_CONST0_VECTOR;
+      *insn_p = nullptr;
+      return const0_rtx;
+    }
+  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	   && (op == constm1_rtx || op == CONSTM1_RTX (mode)))
+    {
+      *scalar_mode_p = QImode;
+      *kind_p = X86_CSE_CONSTM1_VECTOR;
+      *insn_p = nullptr;
+      return constm1_rtx;
+    }
+
+  mode = GET_MODE (op);
+  int nunits = GET_MODE_NUNITS (mode);
+  if (nunits < 2)
+    return nullptr;
+
+  *kind_p = X86_CSE_VEC_DUP;
+
+  rtx reg;
+  if (GET_CODE (op) == VEC_DUPLICATE)
+    {
+      /* Only
+	  (vec_duplicate:V4SI (reg:SI 99))
+	  (vec_duplicate:V2DF (mem/u/c:DF (symbol_ref/u:DI ("*.LC1") [flags 0x2]) [0  S8 A64]))
+	 are supported.  Set OP to the broadcast source by default.  */
+      op = XEXP (op, 0);
+      reg = op;
+      if (SUBREG_P (op)
+	  && SUBREG_BYTE (op) == 0
+	  && !paradoxical_subreg_p (op))
+	reg = SUBREG_REG (op);
+      if (!REG_P (reg))
+	{
+	  if (MEM_P (op)
+	      && SYMBOL_REF_P (XEXP (op, 0))
+	      && CONSTANT_POOL_ADDRESS_P (XEXP (op, 0)))
+	    {
+	      /* Handle constant broadcast from memory.  */
+	      *scalar_mode_p = GET_MODE_INNER (mode);
+	      *insn_p = nullptr;
+	      return op;
+	    }
+	  return nullptr;
+	}
+    }
+  else if (CONST_VECTOR_P (op))
+    {
+      rtx first = XVECEXP (op, 0, 0);
+      for (int i = 1; i < nunits; ++i)
+	{
+	  rtx tmp = XVECEXP (op, 0, i);
+	  /* Vector duplicate value.  */
+	  if (!rtx_equal_p (tmp, first))
+	    return nullptr;
+	}
+      *scalar_mode_p = GET_MODE (first);
+      *insn_p = nullptr;
+      return first;
+    }
+  else
+    return nullptr;
+
+  mode = GET_MODE (op);
+
+  /* Only single def chain is supported.  */
+  df_ref ref = DF_REG_DEF_CHAIN (REGNO (reg));
+  if (!ref
+      || DF_REF_IS_ARTIFICIAL (ref)
+      || DF_REF_NEXT_REG (ref) != nullptr)
+    return nullptr;
+
+  rtx_insn *insn = DF_REF_INSN (ref);
+  rtx set = single_set (insn);
+  if (!set)
+    return nullptr;
+
+  rtx src = SET_SRC (set);
+
+  if (CONST_INT_P (src))
+    {
+      /* Handle sequences like
+
+	 (set (reg:SI 99)
+	       (const_int 34 [0x22]))
+	 (set (reg:V4SI 98)
+	       (vec_duplicate:V4SI (reg:SI 99)))
+
+	 Set *INSN_P to nullptr and return SET_SRC if SET_SRC is an
+	 integer constant.  */
+      op = src;
+      *insn_p = nullptr;
+    }
+  else
+    {
+      /* Handle sequences like
+
+	 (set (reg:QI 105 [ c ])
+	      (reg:QI 5 di [ c ]))
+	 (set (reg:V64QI 102 [ _1 ])
+	      (vec_duplicate:V64QI (reg:QI 105 [ c ])))
+
+	 (set (reg/v:SI 116 [ argc ])
+	      (mem/c:SI (reg:SI 135) [2 argc+0 S4 A32]))
+	 (set (reg:V4SI 119 [ _45 ])
+	      (vec_duplicate:V4SI (reg/v:SI 116 [ argc ])))
+
+	 (set (reg:SI 98 [ _1 ])
+	      (sign_extend:SI (reg:QI 106 [ c ])))
+	 (set (reg:V16SI 103 [ _2 ])
+	       (vec_duplicate:V16SI (reg:SI 98 [ _1 ])))
+
+	 (set (reg:SI 102 [ cost ])
+	      (mem/c:SI (symbol_ref:DI ("cost") [flags 0x40])))
+	 (set (reg:V4HI 103 [ _16 ])
+	      (vec_duplicate:V4HI (subreg:HI (reg:SI 102 [ cost ]) 0)))
+
+	 (set (subreg:SI (reg/v:HI 107 [ cr_val ]) 0)
+	      (ashift:SI (reg:SI 158)
+			 (subreg:QI (reg:SI 156 [ _2 ]) 0)))
+	 (set (reg:V16HI 183 [ _61 ])
+	      (vec_duplicate:V16HI (reg/v:HI 107 [ cr_val ])))
+
+	 Set *INSN_P to INSN and return the broadcast source otherwise.  */
+      *insn_p = insn;
+    }
+
+  *scalar_mode_p = mode;
+  return op;
+}
+
 /* At entry of the nearest common dominator for basic blocks with vector
    CONST0_RTX and integer CONSTM1_RTX uses, generate a single widest
    vector set instruction for all CONST0_RTX and integer CONSTM1_RTX
@@ -3440,19 +3627,15 @@ remove_redundant_vector_load (void)
 {
   timevar_push (TV_MACH_DEP);
 
-  auto_bitmap zero_bbs;
-  auto_bitmap m1_bbs;
-  auto_bitmap zero_insns;
-  auto_bitmap m1_insns;
-
+  auto_vec<redundant_load *> loads;
+  redundant_load *load;
   basic_block bb;
   rtx_insn *insn;
-  unsigned HOST_WIDE_INT zero_count = 0;
-  unsigned HOST_WIDE_INT m1_count = 0;
-  unsigned int zero_size = 0;
-  unsigned int m1_size = 0;
+  unsigned int i;
 
   df_set_flags (DF_DEFER_INSN_RESCAN);
+
+  bool recursive_call_p = cfun->machine->recursive_function;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -3481,79 +3664,139 @@ remove_redundant_vector_load (void)
 	  if (!REG_P (dest) && !SUBREG_P (dest))
 	    continue;
 
-	  if (src == CONST0_RTX (mode))
-	    {
-	      /* Record vector instruction with CONST0_RTX.  */
-	      bitmap_set_bit (zero_insns, INSN_UID (insn));
+	  rtx_insn *def_insn;
+	  machine_mode scalar_mode;
+	  x86_cse_kind kind;
+	  rtx val = ix86_broadcast_inner (src, mode, &scalar_mode,
+					  &kind, &def_insn);
+	  if (!val)
+	    continue;
 
-	      /* Record the maximum vector size.  */
-	      if (zero_size < GET_MODE_SIZE (mode))
-		zero_size = GET_MODE_SIZE (mode);
+	   /* Remove redundant register loads if there are more than 2
+	      loads will be used.  */
+	  unsigned int threshold = 2;
 
-	      /* Record the basic block with CONST0_RTX.  */
-	      bitmap_set_bit (zero_bbs, bb->index);
-	      zero_count++;
-	    }
-	  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-		   && src == CONSTM1_RTX (mode))
-	    {
-	      /* Record vector instruction with CONSTM1_RTX.  */
-	      bitmap_set_bit (m1_insns, INSN_UID (insn));
+	  /* Check if there is a matching redundant vector load.   */
+	  bool matched = false;
+	  FOR_EACH_VEC_ELT (loads, i, load)
+	    if (load->val
+		&& load->kind == kind
+		&& load->mode == scalar_mode
+		&& (load->bb == bb
+		    || kind < X86_CSE_VEC_DUP
+		    /* Non all 0s/1s vector load must be in the same
+		       basic block if it is in a recursive call.  */
+		    || !recursive_call_p)
+		&& rtx_equal_p (load->val, val))
+	      {
+		/* Record vector instruction.  */
+		bitmap_set_bit (load->insns, INSN_UID (insn));
 
-	      /* Record the maximum vector size.  */
-	      if (m1_size < GET_MODE_SIZE (mode))
-		m1_size = GET_MODE_SIZE (mode);
+		/* Record the maximum vector size.  */
+		if (load->size < GET_MODE_SIZE (mode))
+		  load->size = GET_MODE_SIZE (mode);
 
-	      /* Record the basic block with CONSTM1_RTX.  */
-	      bitmap_set_bit (m1_bbs, bb->index);
-	      m1_count++;
-	    }
+		/* Record the basic block.  */
+		bitmap_set_bit (load->bbs, bb->index);
+		load->count++;
+		matched = true;
+		break;
+	      }
+
+	  if (matched)
+	    continue;
+
+	  /* We see this vector broadcast the first time.  */
+	  load = new redundant_load;
+
+	  load->val = copy_rtx (val);
+	  load->mode = scalar_mode;
+	  load->size = GET_MODE_SIZE (mode);
+	  load->def_insn = def_insn;
+	  load->count = 1;
+	  load->threshold = threshold;
+	  load->bb = BLOCK_FOR_INSN (insn);
+	  load->kind = kind;
+
+	  bitmap_set_bit (load->insns, INSN_UID (insn));
+	  bitmap_set_bit (load->bbs, bb->index);
+
+	  loads.safe_push (load);
 	}
     }
 
-  if (zero_count > 1 || m1_count > 1)
+  bool replaced = false;
+  rtx reg, broadcast_source, broadcast_reg;
+  FOR_EACH_VEC_ELT (loads, i, load)
+    if (load->count >= load->threshold)
+      {
+	machine_mode mode = ix86_get_vector_cse_mode (load->size,
+						      load->mode);
+	broadcast_reg = gen_reg_rtx (mode);
+	if (load->def_insn)
+	  {
+	    /* Replace redundant vector loads with a single vector load
+	       in the same basic block.  */
+	    reg = load->val;
+	    if (load->mode != GET_MODE (reg))
+	      reg = gen_rtx_SUBREG (load->mode, reg, 0);
+	    broadcast_source = gen_rtx_VEC_DUPLICATE (mode, reg);
+	    replace_vector_const (mode, broadcast_reg, load->insns,
+				  load->mode);
+	  }
+	else
+	  {
+	    /* This is a constant integer/double vector.  If the
+	       inner scalar is 0 or -1, set vector to CONST0_RTX
+	       or CONSTM1_RTX directly.  */
+	    rtx reg;
+	    switch (load->kind)
+	      {
+	      case X86_CSE_CONST0_VECTOR:
+		broadcast_source = CONST0_RTX (mode);
+		break;
+	      case X86_CSE_CONSTM1_VECTOR:
+		broadcast_source = CONSTM1_RTX (mode);
+		break;
+	      default:
+		reg = gen_reg_rtx (load->mode);
+		broadcast_source = gen_rtx_VEC_DUPLICATE (mode, reg);
+		break;
+	      }
+	    replace_vector_const (mode, broadcast_reg, load->insns,
+				  load->mode);
+	  }
+	load->broadcast_source = broadcast_source;
+	load->broadcast_reg = broadcast_reg;
+	replaced = true;
+      }
+
+  if (replaced)
     {
-      machine_mode zero_mode, m1_mode;
-      rtx vector_const0, vector_constm1;
-
-      if (zero_count > 1)
-	{
-	  zero_mode = ix86_get_vector_load_mode (zero_size);
-	  vector_const0 = gen_reg_rtx (zero_mode);
-	  replace_vector_const (zero_mode, vector_const0, zero_insns);
-	}
-      else
-	{
-	  zero_mode = VOIDmode;
-	  vector_const0 = nullptr;
-	}
-
-      if (m1_count > 1)
-	{
-	  m1_mode = ix86_get_vector_load_mode (m1_size);
-	  vector_constm1 = gen_reg_rtx (m1_mode);
-	  replace_vector_const (m1_mode, vector_constm1, m1_insns);
-	}
-      else
-	{
-	  m1_mode = VOIDmode;
-	  vector_constm1 = nullptr;
-	}
-
       /* (Re-)discover loops so that bb->loop_father can be used in the
 	 analysis below.  */
       calculate_dominance_info (CDI_DOMINATORS);
       loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-      if (vector_const0)
-	ix86_place_single_vector_set (vector_const0,
-				      CONST0_RTX (zero_mode),
-				      zero_bbs);
-
-      if (vector_constm1)
-	ix86_place_single_vector_set (vector_constm1,
-				      CONSTM1_RTX (m1_mode),
-				      m1_bbs);
+      FOR_EACH_VEC_ELT (loads, i, load)
+	if (load->count >= load->threshold)
+	  {
+	    if (load->def_insn)
+	      {
+		/* Insert a broadcast after the original scalar
+		   definition.  */
+		rtx set = gen_rtx_SET (load->broadcast_reg,
+				       load->broadcast_source);
+		insn = emit_insn_after (set, load->def_insn);
+	      }
+	    else
+	      ix86_place_single_vector_set (load->broadcast_reg,
+					    load->broadcast_source,
+					    load->bbs,
+					    (load->kind == X86_CSE_VEC_DUP
+					     ? load->val
+					     : nullptr));
+	  }
 
       loop_optimizer_finalize ();
 
