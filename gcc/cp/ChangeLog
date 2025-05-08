@@ -1,3 +1,11 @@
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR c++/79786
+	* rtti.cc (emit_tinfo_decl): Fix DATA_ABI_ALIGNMENT invocation.
+
 2025-04-23  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

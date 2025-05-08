@@ -1,3 +1,44 @@
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/101533
+	* g++.dg/debug/pr101533.C: New testcase.
+
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101478
+	* gcc.dg/pr101478.c: New testcase.
+
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91299
+	* gcc.dg/lto/pr91299_0.c: New testcase.
+	* gcc.dg/lto/pr91299_1.c: Likewise.
+
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87984
+	* gcc.target/i386/pr87984.c: New testcase.
+
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66279
+	* g++.dg/pr66279.C: New testcase.
+
 2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

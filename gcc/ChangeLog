@@ -1,3 +1,52 @@
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/101533
+	* dwarf2out.cc (gen_type_die_with_usage): When we have
+	output the typedef already do nothing for a typedef variant.
+	Do not set TREE_ASM_WRITTEN on the type.
+
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101478
+	* gimplify.cc (gimplify_addr_expr): Check we still have an
+	ADDR_EXPR before calling recompute_tree_invariant_for_addr_expr.
+
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87984
+	* tree-ssa-dom.cc (dom_opt_dom_walker::optimize_stmt): Do
+	not perform redundant store elimination to hard register
+	variables.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt):
+	Likewise.
+
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66279
+	* gimplify.cc (gimplify_asm_expr): Copy TREE_PURPOSE before
+	rewriting it for "+" processing.
+
+2025-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111125
+	* tree-vect-slp.cc (vect_slp_function): Split at novector
+	loop entry, do not push blocks in novector loops.
+
 2025-05-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-linux.h (NEED_INDICATE_EXEC_STACK): Define to 1.
