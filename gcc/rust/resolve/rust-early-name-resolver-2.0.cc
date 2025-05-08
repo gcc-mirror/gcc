@@ -249,7 +249,7 @@ Early::visit (AST::Module &module)
 void
 Early::visit (AST::MacroInvocation &invoc)
 {
-  auto path = invoc.get_invoc_data ().get_path ();
+  auto &path = invoc.get_invoc_data ().get_path ();
 
   if (invoc.get_kind () == AST::MacroInvocation::InvocKind::Builtin)
     for (auto &pending_invoc : invoc.get_pending_eager_invocations ())
@@ -272,7 +272,7 @@ Early::visit (AST::MacroInvocation &invoc)
   // we won't have changed `definition` from `nullopt` if there are more
   // than one segments in our path
   if (!definition.has_value ())
-    definition = ctx.resolve_path (path.get_segments (), Namespace::Macros);
+    definition = ctx.resolve_path (path, Namespace::Macros);
 
   // if the definition still does not have a value, then it's an error
   if (!definition.has_value ())
@@ -314,8 +314,8 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 	  auto traits = attr.get_traits_to_derive ();
 	  for (auto &trait : traits)
 	    {
-	      auto definition = ctx.resolve_path (trait.get ().get_segments (),
-						  Namespace::Macros);
+	      auto definition
+		= ctx.resolve_path (trait.get (), Namespace::Macros);
 	      if (!definition.has_value ())
 		{
 		  // FIXME: Change to proper error message
@@ -337,8 +337,8 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 		 ->lookup_builtin (name)
 		 .is_error ()) // Do not resolve builtins
 	{
-	  auto definition = ctx.resolve_path (attr.get_path ().get_segments (),
-					      Namespace::Macros);
+	  auto definition
+	    = ctx.resolve_path (attr.get_path (), Namespace::Macros);
 	  if (!definition.has_value ())
 	    {
 	      // FIXME: Change to proper error message

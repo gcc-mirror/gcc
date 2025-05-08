@@ -762,7 +762,8 @@ DefaultASTVisitor::visit (AST::TypeBoundWhereClauseItem &item)
 void
 DefaultASTVisitor::visit (AST::Visibility &vis)
 {
-  visit (vis.get_path ());
+  if (vis.has_path ())
+    visit (vis.get_path ());
 }
 
 void

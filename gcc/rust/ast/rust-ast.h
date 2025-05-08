@@ -402,15 +402,15 @@ class SimplePath
 
 public:
   // Constructor
-  SimplePath (std::vector<SimplePathSegment> path_segments,
-	      bool has_opening_scope_resolution = false,
-	      location_t locus = UNDEF_LOCATION)
+  explicit SimplePath (std::vector<SimplePathSegment> path_segments,
+		       bool has_opening_scope_resolution = false,
+		       location_t locus = UNDEF_LOCATION)
     : opening_scope_resolution (has_opening_scope_resolution),
       segments (std::move (path_segments)), locus (locus),
       node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
-  SimplePath (Identifier ident)
+  explicit SimplePath (Identifier ident)
     : opening_scope_resolution (false),
       segments ({SimplePathSegment (ident.as_string (), ident.get_locus ())}),
       locus (ident.get_locus ()),
