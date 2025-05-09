@@ -4186,7 +4186,7 @@ It can detect the following types of problems:
           Block5 (Block5'Last) := 5;  --  Outside the object
        end Wrong_Size_Overlay;
 
-  If the code is built with the :switch:`-fsanitize=address` and :switch:`-g`` options,
+  If the code is built with the :switch:`-fsanitize=address` and :switch:`-g` options,
   the following error is shown at execution time:
 
     ::
@@ -4403,3 +4403,56 @@ detect the following types of problems:
     ::
 
         float_cast_overflow.adb:5:20: runtime error: 3.40282e+38 is outside the range of representable values of type 'integer'
+
+Sanitizers in mixed-language applications
+-----------------------------------------
+
+Most of the checks performed by sanitizers operate at a global level, which
+means they can detect issues even when they span across language boundaries.
+This applies notably to:
+
+* All checks performed by the AddressSanitizer: wrong memory overlays, buffer
+  overflows, uses after lifetime, memory leaks. These checks apply globally,
+  regardless of where the objects are allocated or defined, or where they are
+  destroyed
+
+* Wrong alignment checks performed by the UndefinedBehaviorSanitizer. It will
+  check whether an object created in a given language is accessed in another
+  with an incompatible alignment
+
+An interesting case that highlights the benefit of global sanitization is a
+buffer overflow caused by a mismatch in language bindings. Consider the
+following C function, which allocates an array of 4 characters:
+
+      .. code-block:: c
+
+         char *get_str (void) {
+            char *str = malloc (4 * sizeof (char));
+         }
+
+This function is then bound to Ada code, which incorrectly assumes the buffer
+is of size 5:
+
+      .. code-block:: ada
+
+         type Buffer is array (1 .. 5) of Character;
+
+         function Get_Str return access Buffer
+            with Import => True, Convention => C, External_Name => "get_str";
+
+         Str : access Buffer := Get_Str;
+         Ch  : Character     := S (S'Last);  -- Detected by AddressSanitizer as erroneous
+
+On the Ada side, accessing ``Str (5)`` appears valid because the array type
+declares five elements. However, the actual memory allocated in C only holds
+four. This mismatch is not detectable by Ada run-time checks, because Ada has
+no visibility into how the memory was allocated.
+
+However, the AddressSanitizer will detect the heap buffer overflow at runtime,
+halting execution and providing a clear diagnostic:
+
+    ::
+
+        ...
+        SUMMARY: AddressSanitizer: heap-buffer-overflow buffer_overflow.adb:20 in _ada_buffer_overflow
+        ...
