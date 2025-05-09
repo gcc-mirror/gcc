@@ -1,3 +1,6 @@
+/* { dg-do run { target { offload_device_nvptx } } } */
+/* { dg-do link { target { ! offload_device_nvptx } } } */
+
 /* { dg-require-effective-target openacc_cuda } */
 /* { dg-require-effective-target openacc_cudart } */
 /* { dg-additional-options "-lcuda -lcudart" } */
