@@ -2286,7 +2286,7 @@ irange::set_range_from_bitmask ()
       if (has_zero)
 	{
 	  int_range<2> zero;
-	  zero.set_zero (type ());
+	  zero.set_zero (m_type);
 	  union_ (zero);
 	}
       if (flag_checking)
@@ -2295,31 +2295,58 @@ irange::set_range_from_bitmask ()
     }
   else if (popcount == 0)
     {
-      set_zero (type ());
+      set_zero (m_type);
       return true;
     }
 
-  // If the mask doesn't have any trailing zero, return.
+  // If the mask doesn't have a trailing zero, theres nothing to filter.
   int z = wi::ctz (m_bitmask.mask ());
   if (!z)
     return false;
 
-  // Remove trailing ranges that this bitmask indicates can't exist.
-  int_range_max mask_range;
-  int prec = TYPE_PRECISION (type ());
-  wide_int ub = (wi::one (prec) << z) - 1;
-  mask_range = int_range<2> (type (), wi::zero (prec), ub);
+  int prec = TYPE_PRECISION (m_type);
+  wide_int value = m_bitmask.value ();
+  wide_int mask = m_bitmask.mask ();
 
-  // Then remove the specific value these bits contain from the range.
-  wide_int value = m_bitmask.value () & ub;
-  mask_range.intersect (int_range<2> (type (), value, value, VR_ANTI_RANGE));
+  // Remove the [0, X] values which the trailing-zero mask rules out.
+  // For example, if z == 4, the mask is 0xFFF0, and the lowest 4 bits
+  // define the range [0, 15]. Only one of which (value & low_mask) is allowed.
+  wide_int ub = (wi::one (prec) << z) - 1;  // Upper bound of affected range.
+  int_range_max mask_range (m_type, wi::zero (prec), ub);
 
-  // Inverting produces a list of ranges which can be valid.
+  // Remove the one valid value from the excluded range and form an anti-range.
+  wide_int allow = value & ub;
+  mask_range.intersect (int_range<2> (m_type, allow, allow, VR_ANTI_RANGE));
+
+  // Invert it to get the allowed values and intersect it with the main range.
   mask_range.invert ();
+  bool changed = intersect (mask_range);
 
-  // And finally select R from only those valid values.
-  intersect (mask_range);
-  return true;
+  // Now handle the rest of the domain — the upper side for positive values,
+  // or [-X, -1] for signed negatives.
+  // Compute the maximum value representable under the mask/value constraint.
+  ub = mask | value;
+
+  // If value is non-negative, adjust the upper limit to remove values above
+  // UB that conflict with known fixed bits.
+  if (TYPE_SIGN (m_type) == UNSIGNED || wi::clz (ub) > 0)
+    mask_range = int_range<1> (m_type, wi::zero (prec), ub);
+  else
+    {
+      // For signed negative values, find the lowest value with trailing zeros.
+      // This forms a range such as [-512, -1] for z=9.
+      wide_int lb = -(wi::one (prec) << z);
+      mask_range = int_range<2> (m_type, lb, wi::minus_one (prec));
+
+      // Remove the one allowed value from that set.
+      allow = value | lb;
+      mask_range.intersect (int_range<2> (m_type, allow, allow, VR_ANTI_RANGE));
+      mask_range.invert ();
+    }
+
+  // Make sure we call intersect, so do it first.
+  changed = intersect (mask_range) | changed;
+  return changed;
 }
 
 void

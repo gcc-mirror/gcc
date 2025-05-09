@@ -488,7 +488,7 @@ set_bitmask (tree name, const wide_int &value, const wide_int &mask)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
 
-  int_range<2> r (TREE_TYPE (name));
+  int_range_max r (TREE_TYPE (name));
   r.update_bitmask (irange_bitmask (value, mask));
   set_range_info (name, r);
 }
