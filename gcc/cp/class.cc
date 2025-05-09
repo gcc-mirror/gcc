@@ -5744,6 +5744,9 @@ type_has_converting_constructor (tree t)
     {
       tree fn = *iter;
       tree parm = FUNCTION_FIRST_USER_PARMTYPE (fn);
+      if (parm == NULL_TREE)
+	/* Varargs.  */
+	return true;
       if (parm == void_list_node
 	  || !sufficient_parms_p (TREE_CHAIN (parm)))
 	/* Can't accept a single argument, so won't be considered for

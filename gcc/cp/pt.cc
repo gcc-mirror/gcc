@@ -23254,7 +23254,7 @@ fn_type_unification (tree fn,
      conversions that we know are not going to induce template instantiation
      (PR99599).  */
   if (strict == DEDUCE_CALL
-      && incomplete
+      && incomplete && flag_concepts
       && check_non_deducible_conversions (parms, args, nargs, fn, strict, flags,
 					  convs, explain_p,
 					  /*noninst_only_p=*/true))
