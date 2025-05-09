@@ -17477,10 +17477,18 @@ tsubst_baselink (tree baselink, tree object_type,
 
       if (!baselink)
 	{
-	  if ((complain & tf_error)
-	      && constructor_name_p (name, qualifying_scope))
-	    error ("cannot call constructor %<%T::%D%> directly",
-		   qualifying_scope, name);
+	  if (complain & tf_error)
+	    {
+	      if (constructor_name_p (name, qualifying_scope))
+		error ("cannot call constructor %<%T::%D%> directly",
+		       qualifying_scope, name);
+	      else
+		/* Lookup succeeded at parse time, but failed during
+		   instantiation; must be because we're trying to refer to it
+		   while forming its declaration (c++/120204).  */
+		error ("declaration of %<%T::%D%> depends on itself",
+		       qualifying_scope, name);
+	    }
 	  return error_mark_node;
 	}
 
