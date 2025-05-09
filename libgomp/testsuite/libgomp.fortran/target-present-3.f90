@@ -1,5 +1,11 @@
+! { dg-additional-options -cpp }
+
 program main
   implicit none
+#ifdef OMP_USM
+  !$omp requires unified_shared_memory self_maps
+#endif
+
   integer, parameter :: N = 100
   integer :: a(N), b(N), c(N), i
 

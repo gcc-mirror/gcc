@@ -8,6 +8,10 @@
 ! { dg-additional-options "-DMEM_SHARED" { target offload_device_shared_as } }
 
 module m
+#ifdef OMP_USM
+  !$omp requires unified_shared_memory self_maps
+#endif
+
 contains
   subroutine r (a, b, c, d, e)
     implicit none

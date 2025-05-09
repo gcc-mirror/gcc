@@ -8,6 +8,10 @@
 
 program main
   implicit none
+#ifdef OMP_USM
+  !$omp requires unified_shared_memory self_maps
+#endif
+
   integer, allocatable :: a, b, c, d, e
 
   allocate (a)
