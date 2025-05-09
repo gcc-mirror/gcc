@@ -7025,9 +7025,10 @@ vectorizable_operation (vec_info *vinfo,
 	 ops we have to lower the lowering code assumes we are
 	 dealing with word_mode.  */
       if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype))
+	  || !GET_MODE_SIZE (vec_mode).is_constant ()
 	  || (((code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
-	    || !target_support_p)
-	   && maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD))
+	       || !target_support_p)
+	      && maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD))
 	  /* Check only during analysis.  */
 	  || (!vec_stmt && !vect_can_vectorize_without_simd_p (code)))
 	{
@@ -7167,88 +7168,108 @@ vectorizable_operation (vec_info *vinfo,
       vop1 = ((op_type == binary_op || op_type == ternary_op)
 	      ? vec_oprnds1[i] : NULL_TREE);
       vop2 = ((op_type == ternary_op) ? vec_oprnds2[i] : NULL_TREE);
-      if (using_emulated_vectors_p
-	  && (code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR))
+      if (using_emulated_vectors_p)
 	{
 	  /* Lower the operation.  This follows vector lowering.  */
-	  unsigned int width = vector_element_bits (vectype);
-	  tree inner_type = TREE_TYPE (vectype);
-	  tree word_type
-	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (word_mode), 1);
-	  HOST_WIDE_INT max = GET_MODE_MASK (TYPE_MODE (inner_type));
-	  tree low_bits = build_replicated_int_cst (word_type, width, max >> 1);
-	  tree high_bits
-	    = build_replicated_int_cst (word_type, width, max & ~(max >> 1));
+	  tree word_type = build_nonstandard_integer_type
+			     (GET_MODE_BITSIZE (vec_mode).to_constant (), 1);
 	  tree wvop0 = make_ssa_name (word_type);
 	  new_stmt = gimple_build_assign (wvop0, VIEW_CONVERT_EXPR,
 					  build1 (VIEW_CONVERT_EXPR,
 						  word_type, vop0));
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	  tree result_low, signs;
-	  if (code == PLUS_EXPR || code == MINUS_EXPR)
+	  tree wvop1 = NULL_TREE;
+	  if (vop1)
 	    {
-	      tree wvop1 = make_ssa_name (word_type);
+	      wvop1 = make_ssa_name (word_type);
 	      new_stmt = gimple_build_assign (wvop1, VIEW_CONVERT_EXPR,
 					      build1 (VIEW_CONVERT_EXPR,
 						      word_type, vop1));
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	      signs = make_ssa_name (word_type);
-	      new_stmt = gimple_build_assign (signs,
-					      BIT_XOR_EXPR, wvop0, wvop1);
-	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	      tree b_low = make_ssa_name (word_type);
-	      new_stmt = gimple_build_assign (b_low,
-					      BIT_AND_EXPR, wvop1, low_bits);
-	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	      tree a_low = make_ssa_name (word_type);
-	      if (code == PLUS_EXPR)
-		new_stmt = gimple_build_assign (a_low,
-						BIT_AND_EXPR, wvop0, low_bits);
-	      else
-		new_stmt = gimple_build_assign (a_low,
-						BIT_IOR_EXPR, wvop0, high_bits);
-	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	      if (code == MINUS_EXPR)
+	    }
+
+	  tree result_low;
+	  if (code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
+	    {
+	      unsigned int width = vector_element_bits (vectype);
+	      tree inner_type = TREE_TYPE (vectype);
+	      HOST_WIDE_INT max = GET_MODE_MASK (TYPE_MODE (inner_type));
+	      tree low_bits
+		= build_replicated_int_cst (word_type, width, max >> 1);
+	      tree high_bits
+		= build_replicated_int_cst (word_type,
+					    width, max & ~(max >> 1));
+	      tree signs;
+	      if (code == PLUS_EXPR || code == MINUS_EXPR)
 		{
-		  new_stmt = gimple_build_assign (NULL_TREE,
-						  BIT_NOT_EXPR, signs);
+		  signs = make_ssa_name (word_type);
+		  new_stmt = gimple_build_assign (signs,
+						  BIT_XOR_EXPR, wvop0, wvop1);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		  tree b_low = make_ssa_name (word_type);
+		  new_stmt = gimple_build_assign (b_low, BIT_AND_EXPR,
+						  wvop1, low_bits);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		  tree a_low = make_ssa_name (word_type);
+		  if (code == PLUS_EXPR)
+		    new_stmt = gimple_build_assign (a_low, BIT_AND_EXPR,
+						    wvop0, low_bits);
+		  else
+		    new_stmt = gimple_build_assign (a_low, BIT_IOR_EXPR,
+						    wvop0, high_bits);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		  if (code == MINUS_EXPR)
+		    {
+		      new_stmt = gimple_build_assign (NULL_TREE,
+						      BIT_NOT_EXPR, signs);
+		      signs = make_ssa_name (word_type);
+		      gimple_assign_set_lhs (new_stmt, signs);
+		      vect_finish_stmt_generation (vinfo, stmt_info,
+						   new_stmt, gsi);
+		    }
+		  new_stmt = gimple_build_assign (NULL_TREE, BIT_AND_EXPR,
+						  signs, high_bits);
 		  signs = make_ssa_name (word_type);
 		  gimple_assign_set_lhs (new_stmt, signs);
 		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		  result_low = make_ssa_name (word_type);
+		  new_stmt = gimple_build_assign (result_low, code,
+						  a_low, b_low);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 		}
-	      new_stmt = gimple_build_assign (NULL_TREE,
-					      BIT_AND_EXPR, signs, high_bits);
-	      signs = make_ssa_name (word_type);
-	      gimple_assign_set_lhs (new_stmt, signs);
-	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      else /* if (code == NEGATE_EXPR) */
+		{
+		  tree a_low = make_ssa_name (word_type);
+		  new_stmt = gimple_build_assign (a_low, BIT_AND_EXPR,
+						  wvop0, low_bits);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		  signs = make_ssa_name (word_type);
+		  new_stmt = gimple_build_assign (signs, BIT_NOT_EXPR, wvop0);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		  new_stmt = gimple_build_assign (NULL_TREE, BIT_AND_EXPR,
+						  signs, high_bits);
+		  signs = make_ssa_name (word_type);
+		  gimple_assign_set_lhs (new_stmt, signs);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		  result_low = make_ssa_name (word_type);
+		  new_stmt = gimple_build_assign (result_low,
+						  MINUS_EXPR, high_bits, a_low);
+		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+		}
+	      new_stmt = gimple_build_assign (NULL_TREE, BIT_XOR_EXPR,
+					      result_low, signs);
 	      result_low = make_ssa_name (word_type);
-	      new_stmt = gimple_build_assign (result_low, code, a_low, b_low);
+	      gimple_assign_set_lhs (new_stmt, result_low);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	    }
 	  else
 	    {
-	      tree a_low = make_ssa_name (word_type);
-	      new_stmt = gimple_build_assign (a_low,
-					      BIT_AND_EXPR, wvop0, low_bits);
-	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	      signs = make_ssa_name (word_type);
-	      new_stmt = gimple_build_assign (signs, BIT_NOT_EXPR, wvop0);
-	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
-	      new_stmt = gimple_build_assign (NULL_TREE,
-					      BIT_AND_EXPR, signs, high_bits);
-	      signs = make_ssa_name (word_type);
-	      gimple_assign_set_lhs (new_stmt, signs);
-	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      new_stmt = gimple_build_assign (NULL_TREE, code, wvop0, wvop1);
 	      result_low = make_ssa_name (word_type);
-	      new_stmt = gimple_build_assign (result_low,
-					      MINUS_EXPR, high_bits, a_low);
+	      gimple_assign_set_lhs (new_stmt, result_low);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+
 	    }
-	  new_stmt = gimple_build_assign (NULL_TREE, BIT_XOR_EXPR, result_low,
-					  signs);
-	  result_low = make_ssa_name (word_type);
-	  gimple_assign_set_lhs (new_stmt, result_low);
-	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	  new_stmt = gimple_build_assign (NULL_TREE, VIEW_CONVERT_EXPR,
 					  build1 (VIEW_CONVERT_EXPR,
 						  vectype, result_low));
