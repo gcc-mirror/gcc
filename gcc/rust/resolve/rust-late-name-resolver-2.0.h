@@ -60,6 +60,7 @@ public:
   void visit (AST::LoopLabel &) override;
   void visit (AST::PathInExpression &) override;
   void visit (AST::TypePath &) override;
+  void visit (AST::Visibility &) override;
   void visit (AST::Trait &) override;
   void visit (AST::StructExprStruct &) override;
   void visit (AST::StructExprStructBase &) override;

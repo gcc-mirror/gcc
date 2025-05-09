@@ -516,6 +516,62 @@ Late::visit (AST::TypePath &type)
 }
 
 void
+Late::visit (AST::Visibility &vis)
+{
+  if (!vis.has_path ())
+    return;
+
+  AST::SimplePath &path = vis.get_path ();
+
+  rust_assert (path.get_segments ().size ());
+  auto &first_seg = path.get_segments ()[0];
+
+  auto mode = ResolutionMode::Normal;
+
+  if (path.has_opening_scope_resolution ())
+    {
+      if (get_rust_edition () == Edition::E2015)
+	mode = ResolutionMode::FromRoot;
+      else
+	mode = ResolutionMode::FromExtern;
+    }
+  else if (!first_seg.is_crate_path_seg () && !first_seg.is_super_path_seg ()
+	   && !first_seg.is_lower_self_seg ())
+    {
+      if (get_rust_edition () == Edition::E2015)
+	{
+	  mode = ResolutionMode::FromRoot;
+	}
+      else
+	{
+	  rust_error_at (path.get_locus (),
+			 "relative paths are not supported in visibilities in "
+			 "2018 edition or later");
+	  return;
+	}
+    }
+
+  auto res = ctx.resolve_path (path.get_segments (), mode, Namespace::Types);
+
+  if (!res.has_value ())
+    {
+      rust_error_at (path.get_locus (), ErrorCode::E0433,
+		     "could not resolve path %qs", path.as_string ().c_str ());
+      return;
+    }
+
+  // TODO: is this possible?
+  if (res->is_ambiguous ())
+    {
+      rust_error_at (path.get_locus (), ErrorCode::E0659, "%qs is ambiguous",
+		     path.as_string ().c_str ());
+      return;
+    }
+
+  ctx.map_usage (Usage (path.get_node_id ()), Definition (res->get_node_id ()));
+}
+
+void
 Late::visit (AST::Trait &trait)
 {
   // kind of weird how this is done
