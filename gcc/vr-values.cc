@@ -1996,10 +1996,13 @@ simplify_using_ranges::simplify (gimple_stmt_iterator *gsi)
 
 	case BIT_AND_EXPR:
 	case BIT_IOR_EXPR:
-	  /* Optimize away BIT_AND_EXPR and BIT_IOR_EXPR
-	     if all the bits being cleared are already cleared or
-	     all the bits being set are already set.  */
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
+	  /* Optimize away BIT_AND_EXPR and BIT_IOR_EXPR if all the bits
+	     being cleared are already cleared or all the bits being set
+	     are already set.  Beware that boolean types must be handled
+	     logically (see range-op.cc) unless they have precision 1.  */
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+	      && (TREE_CODE (TREE_TYPE (rhs1)) != BOOLEAN_TYPE
+		  || TYPE_PRECISION (TREE_TYPE (rhs1)) == 1))
 	    return simplify_bit_ops_using_ranges (gsi, stmt);
 	  break;
 
