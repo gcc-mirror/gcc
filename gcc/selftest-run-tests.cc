@@ -98,6 +98,7 @@ selftest::run_tests ()
      rely on.  */
   diagnostic_color_cc_tests ();
   diagnostic_show_locus_cc_tests ();
+  diagnostic_format_html_cc_tests ();
   diagnostic_format_json_cc_tests ();
   diagnostic_format_sarif_cc_tests ();
   edit_context_cc_tests ();

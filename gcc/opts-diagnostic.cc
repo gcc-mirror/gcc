@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-color.h"
 #include "diagnostic-format.h"
+#include "diagnostic-format-html.h"
 #include "diagnostic-format-text.h"
 #include "diagnostic-format-sarif.h"
 #include "selftest.h"
@@ -217,6 +218,17 @@ public:
 	     const scheme_name_and_params &parsed_arg) const final override;
 };
 
+class html_scheme_handler : public output_factory::scheme_handler
+{
+public:
+  html_scheme_handler () : scheme_handler ("experimental-html") {}
+
+  std::unique_ptr<diagnostic_output_format>
+  make_sink (const context &ctxt,
+	     const char *unparsed_arg,
+	     const scheme_name_and_params &parsed_arg) const final override;
+};
+
 /* struct context.  */
 
 void
@@ -318,6 +330,7 @@ output_factory::output_factory ()
 {
   m_scheme_handlers.push_back (std::make_unique<text_scheme_handler> ());
   m_scheme_handlers.push_back (std::make_unique<sarif_scheme_handler> ());
+  m_scheme_handlers.push_back (std::make_unique<html_scheme_handler> ());
 }
 
 const output_factory::scheme_handler *
@@ -522,6 +535,53 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 			       std::move (serialization_obj),
 			       sarif_gen_opts,
 			       std::move (output_file));
+  return sink;
+}
+
+/* class html_scheme_handler : public output_factory::scheme_handler.  */
+
+std::unique_ptr<diagnostic_output_format>
+html_scheme_handler::make_sink (const context &ctxt,
+				const char *unparsed_arg,
+				const scheme_name_and_params &parsed_arg) const
+{
+  label_text filename;
+  for (auto& iter : parsed_arg.m_kvs)
+    {
+      const std::string &key = iter.first;
+      const std::string &value = iter.second;
+      if (key == "file")
+	{
+	  filename = label_text::take (xstrdup (value.c_str ()));
+	  continue;
+	}
+
+      /* Key not found.  */
+      auto_vec<const char *> known_keys;
+      known_keys.safe_push ("file");
+      ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (), known_keys);
+      return nullptr;
+    }
+
+  diagnostic_output_file output_file;
+  if (filename.get ())
+    output_file = ctxt.open_output_file (std::move (filename));
+  else
+    // Default filename
+    {
+      const char *basename = (ctxt.m_opts.x_dump_base_name
+			      ? ctxt.m_opts.x_dump_base_name
+			      : ctxt.m_opts.x_main_input_basename);
+      output_file = diagnostic_output_format_open_html_file (ctxt.m_dc,
+							     line_table,
+							     basename);
+    }
+  if (!output_file)
+    return nullptr;
+
+  auto sink = make_html_sink (ctxt.m_dc,
+			      *line_table,
+			      std::move (output_file));
   return sink;
 }
 

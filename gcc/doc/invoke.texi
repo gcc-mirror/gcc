@@ -6072,6 +6072,22 @@ in this release.
 
 @end table
 
+@item experimental-html
+Emit diagnostics to a file in HTML format.  This scheme is experimental,
+and may go away in future GCC releases.  The details of the output are
+also subject to change.
+
+Supported keys are:
+
+@table @gcctabopt
+
+@item file=@var{FILENAME}
+Specify the filename to write the HTML output to, potentially with a
+leading absolute or relative path.  If not specified, it defaults to
+@file{@var{source}.html}.
+
+@end table
+
 @end table
 
 For example,
@@ -6091,7 +6107,7 @@ In EBNF:
 @var{diagnostics-output-specifier} = @var{diagnostics-output-name}
                                    | @var{diagnostics-output-name}, ":", @var{key-value-pairs};
 
-@var{diagnostics-output-name} = "text" | "sarif";
+@var{diagnostics-output-name} = "text" | "sarif" | "experimental-html";
 
 @var{key-value-pairs} = @var{key-value-pair}
                       | @var{key-value-pair} "," @var{key-value-pairs};

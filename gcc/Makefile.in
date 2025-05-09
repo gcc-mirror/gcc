@@ -1850,6 +1850,7 @@ OBJS = \
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
+	diagnostic-format-html.o \
 	diagnostic-format-json.o \
 	diagnostic-format-sarif.o \
 	diagnostic-format-text.o \

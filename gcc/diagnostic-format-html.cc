@@ -1,6 +1,5 @@
-/* Verify that we can write a non-trivial diagnostic output format
-   as a plugin (XHTML).
-   Copyright (C) 2018-2024 Free Software Foundation, Inc.
+/* HTML output for diagnostics.
+   Copyright (C) 2024-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,35 +18,21 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-
 #include "config.h"
-#define INCLUDE_LIST
 #define INCLUDE_MAP
-#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "diagnostic-metadata.h"
-#include "diagnostic-path.h"
-#include "cpplib.h"
-#include "logical-location.h"
-#include "diagnostic-client-data-hooks.h"
-#include "diagnostic-diagram.h"
-#include "text-art/canvas.h"
 #include "diagnostic-format.h"
+#include "diagnostic-format-html.h"
+#include "diagnostic-output-file.h"
 #include "diagnostic-buffer.h"
-#include "ordered-hash-map.h"
-#include "sbitmap.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
-#include "selftest-diagnostic-show-locus.h"
-#include "text-range-label.h"
 #include "pretty-print-format-impl.h"
-#include "pretty-print-urlifier.h"
 #include "intl.h"
-#include "gcc-plugin.h"
-#include "plugin-version.h"
 
 namespace xml {
 
@@ -57,8 +42,6 @@ namespace xml {
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
-
-static void write_escaped_text (const char *text);
 
 struct node
 {
@@ -246,17 +229,17 @@ element::set_attr (const char *name, label_text value)
 
 } // namespace xml
 
-class xhtml_builder;
+class html_builder;
 
 /* Concrete buffering implementation subclass for HTML output.  */
 
-class diagnostic_xhtml_format_buffer : public diagnostic_per_format_buffer
+class diagnostic_html_format_buffer : public diagnostic_per_format_buffer
 {
 public:
-  friend class xhtml_builder;
-  friend class xhtml_output_format;
+  friend class html_builder;
+  friend class html_output_format;
 
-  diagnostic_xhtml_format_buffer (xhtml_builder &builder)
+  diagnostic_html_format_buffer (html_builder &builder)
   : m_builder (builder)
   {}
 
@@ -272,11 +255,11 @@ public:
   }
 
 private:
-  xhtml_builder &m_builder;
+  html_builder &m_builder;
   std::vector<std::unique_ptr<xml::element>> m_results;
 };
 
-/* A class for managing XHTML output of diagnostics.
+/* A class for managing HTML output of diagnostics.
 
    Implemented:
    - message text
@@ -291,18 +274,18 @@ private:
    - paths
 */
 
-class xhtml_builder
+class html_builder
 {
 public:
-  friend class diagnostic_xhtml_format_buffer;
+  friend class diagnostic_html_format_buffer;
 
-  xhtml_builder (diagnostic_context &context,
+  html_builder (diagnostic_context &context,
 		 pretty_printer &pp,
 		 const line_maps *line_maps);
 
   void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind,
-			     diagnostic_xhtml_format_buffer *buffer);
+			     diagnostic_html_format_buffer *buffer);
   void emit_diagram (const diagnostic_diagram &diagram);
   void end_group ();
 
@@ -350,12 +333,12 @@ make_span (label_text class_)
   return span;
 }
 
-/* class diagnostic_xhtml_format_buffer : public diagnostic_per_format_buffer.  */
+/* class diagnostic_html_format_buffer : public diagnostic_per_format_buffer.  */
 
 void
-diagnostic_xhtml_format_buffer::dump (FILE *out, int indent) const
+diagnostic_html_format_buffer::dump (FILE *out, int indent) const
 {
-  fprintf (out, "%*sdiagnostic_xhtml_format_buffer:\n", indent, "");
+  fprintf (out, "%*sdiagnostic_html_format_buffer:\n", indent, "");
   int idx = 0;
   for (auto &result : m_results)
     {
@@ -367,40 +350,40 @@ diagnostic_xhtml_format_buffer::dump (FILE *out, int indent) const
 }
 
 bool
-diagnostic_xhtml_format_buffer::empty_p () const
+diagnostic_html_format_buffer::empty_p () const
 {
   return m_results.empty ();
 }
 
 void
-diagnostic_xhtml_format_buffer::move_to (diagnostic_per_format_buffer &base)
+diagnostic_html_format_buffer::move_to (diagnostic_per_format_buffer &base)
 {
-  diagnostic_xhtml_format_buffer &dest
-    = static_cast<diagnostic_xhtml_format_buffer &> (base);
+  diagnostic_html_format_buffer &dest
+    = static_cast<diagnostic_html_format_buffer &> (base);
   for (auto &&result : m_results)
     dest.m_results.push_back (std::move (result));
   m_results.clear ();
 }
 
 void
-diagnostic_xhtml_format_buffer::clear ()
+diagnostic_html_format_buffer::clear ()
 {
   m_results.clear ();
 }
 
 void
-diagnostic_xhtml_format_buffer::flush ()
+diagnostic_html_format_buffer::flush ()
 {
   for (auto &&result : m_results)
     m_builder.m_diagnostics_element->add_child (std::move (result));
   m_results.clear ();
 }
 
-/* class xhtml_builder.  */
+/* class html_builder.  */
 
-/* xhtml_builder's ctor.  */
+/* html_builder's ctor.  */
 
-xhtml_builder::xhtml_builder (diagnostic_context &context,
+html_builder::html_builder (diagnostic_context &context,
 			      pretty_printer &pp,
 			      const line_maps *line_maps)
 : m_context (context),
@@ -440,12 +423,12 @@ xhtml_builder::xhtml_builder (diagnostic_context &context,
   }
 }
 
-/* Implementation of "on_report_diagnostic" for XHTML output.  */
+/* Implementation of "on_report_diagnostic" for HTML output.  */
 
 void
-xhtml_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
-				     diagnostic_t orig_diag_kind,
-				     diagnostic_xhtml_format_buffer *buffer)
+html_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
+				    diagnostic_t orig_diag_kind,
+				    diagnostic_html_format_buffer *buffer)
 {
   if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
     {
@@ -476,13 +459,13 @@ xhtml_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
 }
 
 std::unique_ptr<xml::element>
-xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
-					    diagnostic_t orig_diag_kind)
+html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
+					   diagnostic_t orig_diag_kind)
 {
-  class xhtml_token_printer : public token_printer
+  class html_token_printer : public token_printer
   {
   public:
-    xhtml_token_printer (xhtml_builder &builder,
+    html_token_printer (html_builder &builder,
 			 xml::element &parent_element)
     : m_builder (builder)
     {
@@ -557,7 +540,7 @@ xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
       m_open_elements.pop_back ();
     }
 
-    xhtml_builder &m_builder;
+    html_builder &m_builder;
     /* We maintain a stack of currently "open" elements.
        Children are added to the topmost open element.  */
     std::vector<xml::element *> m_open_elements;
@@ -568,7 +551,7 @@ xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   // TODO: might be nice to emulate the text output format, but colorize it
 
   auto message_span = make_span (label_text::borrow ("gcc-message"));
-  xhtml_token_printer tok_printer (*this, *message_span.get ());
+  html_token_printer tok_printer (*this, *message_span.get ());
   m_printer->set_token_printer (&tok_printer);
   pp_output_formatted_text (m_printer, m_context.get_urlifier ());
   m_printer->set_token_printer (nullptr);
@@ -642,10 +625,10 @@ xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 }
 
 /* Implementation of diagnostic_context::m_diagrams.m_emission_cb
-   for XHTML output.  */
+   for HTML output.  */
 
 void
-xhtml_builder::emit_diagram (const diagnostic_diagram &/*diagram*/)
+html_builder::emit_diagram (const diagnostic_diagram &/*diagram*/)
 {
   /* We must be within the emission of a top-level diagnostic.  */
   gcc_assert (m_cur_diagnostic_element);
@@ -653,10 +636,10 @@ xhtml_builder::emit_diagram (const diagnostic_diagram &/*diagram*/)
   // TODO
 }
 
-/* Implementation of "end_group_cb" for XHTML output.  */
+/* Implementation of "end_group_cb" for HTML output.  */
 
 void
-xhtml_builder::end_group ()
+html_builder::end_group ()
 {
   if (m_cur_diagnostic_element)
     m_diagnostics_element->add_child (std::move (m_cur_diagnostic_element));
@@ -668,17 +651,17 @@ xhtml_builder::end_group ()
    Flush it all to OUTF.  */
 
 void
-xhtml_builder::flush_to_file (FILE *outf)
+html_builder::flush_to_file (FILE *outf)
 {
   auto top = m_document.get ();
   top->dump (outf);
   fprintf (outf, "\n");
 }
 
-class xhtml_output_format : public diagnostic_output_format
+class html_output_format : public diagnostic_output_format
 {
 public:
-  ~xhtml_output_format ()
+  ~html_output_format ()
   {
     /* Any diagnostics should have been handled by now.
        If not, then something's gone wrong with diagnostic
@@ -690,19 +673,19 @@ public:
 
   void dump (FILE *out, int indent) const override
   {
-    fprintf (out, "%*sxhtml_output_format\n", indent, "");
+    fprintf (out, "%*shtml_output_format\n", indent, "");
     diagnostic_output_format::dump (out, indent);
   }
 
   std::unique_ptr<diagnostic_per_format_buffer>
   make_per_format_buffer () final override
   {
-    return std::make_unique<diagnostic_xhtml_format_buffer> (m_builder);
+    return std::make_unique<diagnostic_html_format_buffer> (m_builder);
   }
   void set_buffer (diagnostic_per_format_buffer *base_buffer) final override
   {
-    diagnostic_xhtml_format_buffer *buffer
-      = static_cast<diagnostic_xhtml_format_buffer *> (base_buffer);
+    diagnostic_html_format_buffer *buffer
+      = static_cast<diagnostic_html_format_buffer *> (base_buffer);
     m_buffer = buffer;
   }
 
@@ -752,66 +735,39 @@ public:
   }
 
 protected:
-  xhtml_output_format (diagnostic_context &context,
-		       const line_maps *line_maps)
+  html_output_format (diagnostic_context &context,
+		      const line_maps *line_maps)
   : diagnostic_output_format (context),
     m_builder (context, *get_printer (), line_maps),
     m_buffer (nullptr)
   {}
 
-  xhtml_builder m_builder;
-  diagnostic_xhtml_format_buffer *m_buffer;
+  html_builder m_builder;
+  diagnostic_html_format_buffer *m_buffer;
 };
 
-class xhtml_stream_output_format : public xhtml_output_format
+class html_file_output_format : public html_output_format
 {
 public:
-  xhtml_stream_output_format (diagnostic_context &context,
-			      const line_maps *line_maps,
-			      FILE *stream)
-  : xhtml_output_format (context, line_maps),
-    m_stream (stream)
+  html_file_output_format (diagnostic_context &context,
+			   const line_maps *line_maps,
+			   diagnostic_output_file output_file)
+  : html_output_format (context, line_maps),
+    m_output_file (std::move (output_file))
   {
+    gcc_assert (m_output_file.get_open_file ());
+    gcc_assert (m_output_file.get_filename ());
   }
-  ~xhtml_stream_output_format ()
+  ~html_file_output_format ()
   {
-    m_builder.flush_to_file (m_stream);
+    m_builder.flush_to_file (m_output_file.get_open_file ());
   }
-  bool machine_readable_stderr_p () const final override
+  void dump (FILE *out, int indent) const override
   {
-    return m_stream == stderr;
-  }
-private:
-  FILE *m_stream;
-};
-
-class xhtml_file_output_format : public xhtml_output_format
-{
-public:
-  xhtml_file_output_format (diagnostic_context &context,
-			    const line_maps *line_maps,
-			    const char *base_file_name)
-  : xhtml_output_format (context, line_maps),
-    m_base_file_name (xstrdup (base_file_name))
-  {
-  }
-  ~xhtml_file_output_format ()
-  {
-    char *filename = concat (m_base_file_name, ".xhtml", nullptr);
-    free (m_base_file_name);
-    m_base_file_name = nullptr;
-    FILE *outf = fopen (filename, "w");
-    if (!outf)
-      {
-	const char *errstr = xstrerror (errno);
-	fnotice (stderr, "error: unable to open '%s' for writing: %s\n",
-		 filename, errstr);
-	free (filename);
-	return;
-      }
-    m_builder.flush_to_file (outf);
-    fclose (outf);
-    free (filename);
+    fprintf (out, "%*shtml_file_output_format: %s\n",
+	     indent, "",
+	     m_output_file.get_filename ());
+    diagnostic_output_format::dump (out, indent);
   }
   bool machine_readable_stderr_p () const final override
   {
@@ -819,68 +775,76 @@ public:
   }
 
 private:
-  char *m_base_file_name;
+  diagnostic_output_file m_output_file;
 };
 
-/* Populate CONTEXT in preparation for XHTML output (either to stderr, or
-   to a file).  */
+/* Attempt to open BASE_FILE_NAME.html for writing.
+   Return a non-null diagnostic_output_file,
+   or return a null diagnostic_output_file and complain to CONTEXT
+   using LINE_MAPS.  */
 
-static void
-diagnostic_output_format_init_xhtml (diagnostic_context &context,
-				     std::unique_ptr<xhtml_output_format> fmt)
+diagnostic_output_file
+diagnostic_output_format_open_html_file (diagnostic_context &context,
+					 line_maps *line_maps,
+					 const char *base_file_name)
 {
-  /* Don't colorize the text.  */
-  pp_show_color (fmt->get_printer ()) = false;
-  context.set_show_highlight_colors (false);
+  if (!base_file_name)
+    {
+      rich_location richloc (line_maps, UNKNOWN_LOCATION);
+      context.emit_diagnostic_with_group
+	(DK_ERROR, richloc, nullptr, 0,
+	 "unable to determine filename for HTML output");
+      return diagnostic_output_file ();
+    }
 
-  context.set_output_format (std::move (fmt));
+  label_text filename = label_text::take (concat (base_file_name,
+						  ".html",
+						  nullptr));
+  FILE *outf = fopen (filename.get (), "w");
+  if (!outf)
+    {
+      rich_location richloc (line_maps, UNKNOWN_LOCATION);
+      context.emit_diagnostic_with_group
+	(DK_ERROR, richloc, nullptr, 0,
+	 "unable to open %qs for HTML output: %m",
+	 filename.get ());
+      return diagnostic_output_file ();
+    }
+  return diagnostic_output_file (outf, true, std::move (filename));
 }
 
-/* Populate CONTEXT in preparation for XHTML output to stderr.  */
-
-void
-diagnostic_output_format_init_xhtml_stderr (diagnostic_context &context,
-					    const line_maps *line_maps)
+std::unique_ptr<diagnostic_output_format>
+make_html_sink (diagnostic_context &context,
+		const line_maps &line_maps,
+		diagnostic_output_file output_file)
 {
-  gcc_assert (line_maps);
-  auto format = std::make_unique<xhtml_stream_output_format> (context,
-							      line_maps,
-							      stderr);
-  diagnostic_output_format_init_xhtml (context, std::move (format));
-}
-
-/* Populate CONTEXT in preparation for XHTML output to a file named
-   BASE_FILE_NAME.xhtml.  */
-
-void
-diagnostic_output_format_init_xhtml_file (diagnostic_context &context,
-					  const line_maps *line_maps,
-					  const char *base_file_name)
-{
-  gcc_assert (line_maps);
-  auto format = std::make_unique<xhtml_file_output_format> (context,
-							    line_maps,
-							    base_file_name);
-  diagnostic_output_format_init_xhtml (context, std::move (format));
+  auto sink
+    = std::make_unique<html_file_output_format> (context,
+						 &line_maps,
+						 std::move (output_file));
+  sink->update_printer ();
+  return sink;
 }
 
 #if CHECKING_P
 
 namespace selftest {
 
-/* A subclass of xhtml_output_format for writing selftests.
+/* A subclass of html_output_format for writing selftests.
    The XML output is cached internally, rather than written
    out to a file.  */
 
-class test_xhtml_diagnostic_context : public test_diagnostic_context
+class test_html_diagnostic_context : public test_diagnostic_context
 {
 public:
-  test_xhtml_diagnostic_context ()
+  test_html_diagnostic_context ()
   {
-    auto format = std::make_unique<xhtml_buffered_output_format> (*this,
-								  line_table);
-    m_format = format.get (); // borrowed
-    diagnostic_output_format_init_xhtml (*this, std::move (format));
+    auto sink = std::make_unique<html_buffered_output_format> (*this,
+							       line_table);
+    sink->update_printer ();
+    m_format = sink.get (); // borrowed
+
+    set_output_format (std::move (sink));
   }
 
   const xml::document &get_document () const
@@ -889,12 +853,12 @@ public:
   }
 
 private:
-  class xhtml_buffered_output_format : public xhtml_output_format
+  class html_buffered_output_format : public html_output_format
   {
   public:
-    xhtml_buffered_output_format (diagnostic_context &context,
-				  const line_maps *line_maps)
-      : xhtml_output_format (context, line_maps)
+    html_buffered_output_format (diagnostic_context &context,
+				 const line_maps *line_maps)
+    : html_output_format (context, line_maps)
     {
     }
     bool machine_readable_stderr_p () const final override
@@ -903,17 +867,17 @@ private:
     }
   };
 
-  xhtml_output_format *m_format; // borrowed
+  html_output_format *m_format; // borrowed
 };
 
-  /* Test of reporting a diagnostic at UNKNOWN_LOCATION to a
-     diagnostic_context and examining the generated XML document.
-     Verify various basic properties. */
+/* Test of reporting a diagnostic at UNKNOWN_LOCATION to a
+   diagnostic_context and examining the generated XML document.
+   Verify various basic properties. */
 
 static void
 test_simple_log ()
 {
-  test_xhtml_diagnostic_context dc;
+  test_html_diagnostic_context dc;
 
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   dc.report (DK_ERROR, richloc, nullptr, 0, "this is a test: %i", 42);
@@ -945,8 +909,8 @@ test_simple_log ()
 
 /* Run all of the selftests within this file.  */
 
-static void
-xhtml_format_selftests ()
+void
+diagnostic_format_html_cc_tests ()
 {
   test_simple_log ();
 }
@@ -954,32 +918,3 @@ xhtml_format_selftests ()
 } // namespace selftest
 
 #endif /* CHECKING_P */
-
-/* Plugin hooks.  */
-
-int plugin_is_GPL_compatible;
-
-/* Entrypoint for the plugin.  */
-
-int
-plugin_init (struct plugin_name_args *plugin_info,
-	     struct plugin_gcc_version *version)
-{
-  const char *plugin_name = plugin_info->base_name;
-  int argc = plugin_info->argc;
-  struct plugin_argument *argv = plugin_info->argv;
-
-  if (!plugin_default_version_check (version, &gcc_version))
-    return 1;
-
-  global_dc->set_output_format
-    (std::make_unique<xhtml_stream_output_format> (*global_dc,
-						   line_table,
-						   stderr));
-
-#if CHECKING_P
-  selftest::xhtml_format_selftests ();
-#endif
-
-  return 0;
-}
