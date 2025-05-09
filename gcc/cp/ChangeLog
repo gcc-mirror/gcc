@@ -1,3 +1,10 @@
+2025-05-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99599
+	* cp-tree.h (type_has_converting_constructor): Declare.
+	* class.cc (type_has_converting_constructor): New.
+	* pt.cc	(conversion_may_instantiate_p): Don't check completeness.
+
 2025-05-05  Simon Martin  <simon@nasilyan.com>
 
 	* cp-tree.h (parsing_default_capturing_generic_lambda_in_template):

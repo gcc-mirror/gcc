@@ -1,3 +1,166 @@
+2025-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-fold.cc (replace_stmt_with_simplification): Return false
+	if replacing `bool_var != 0` with `bool_var` in GIMPLE_COND.
+
+2025-05-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.cc (get_initial_def_for_reduction): Remove.
+	(vect-create_epilog_for_reduction): Remove non-SLP path.
+	(vectorize_fold_left_reduction): Likewise.
+	(vectorizable_lane_reducing): Likewise.
+	(vectorizable_reduction): Likewise.
+	(vect_transform_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise.
+	(vectorizable_lc_phi): Remove non-SLP PATH and split into...
+	(vect_transform_lc_phi): ... this.
+	(update_epilogue_loop_vinfo): Update comment.
+	* tree-vect-stmts.cc (vect_analyze_stmt): Update call to
+	vectorizable_lc_phi.
+	(vect_transform_stmt): Update calls to vect_transform_reduction and
+	vect_transform_cycle_phi.  Rename call from vectorizable_lc_phi to
+	vect_transform_lc_phi.
+	* tree-vectorizer.h (vect_transform_reduction): Update declaration.
+	(vect_transform_cycle_phi): Likewise.
+	(vectorizable_lc_phi): Likewise.
+	(vect_transform_lc_phi): New.
+
+2025-05-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gensupport.cc (conlist::conlist): Pass a location to the constructor.
+	Only allow skipping of non-alpha-numeric characters when parsing a
+	number and only allow '=', '+' or '%'.  Add some error checking when
+	parsing an operand number.
+	(parse_section_layout): Pass the location to the conlist constructor.
+	(parse_section): Allow an optional list of forbidden characters.
+	If specified, reject strings containing them.
+	(convert_syntax): Reject '=', '+' or '%' in an alternative.
+
+2025-05-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_<optab><mode>): Move
+	commutative marker to the cons specification.
+	(add<mode>3): Likewise.
+	(@aarch64_pred_<su>abd<mode>): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	(*cond_<optab><mode>_z): Likewise.
+	(<optab><mode>3): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	(*aarch64_pred_abd<mode>_relaxed): Likewise.
+	(*aarch64_pred_abd<mode>_strict): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	(@aarch64_pred_fma<mode>): Likewise.
+	(@aarch64_pred_fnma<mode>): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_<su>clamp<mode>): Move
+	commutative marker to the cons specification.
+	(*aarch64_sve_<su>clamp<mode>_x): Likewise.
+	(@aarch64_sve_fclamp<mode>): Likewise.
+	(*aarch64_sve_fclamp<mode>_x): Likewise.
+	(*aarch64_sve2_nor<mode>): Likewise.
+	(*aarch64_sve2_nand<mode>): Likewise.
+	(*aarch64_pred_faminmax_fused): Likewise.
+	* config/aarch64/aarch64.md (*loadwb_pre_pair_<ldst_sz>): Move the
+	early-clobber marker to the relevant alternative.
+	(*storewb_pre_pair_<ldst_sz>): Likewise.
+	(*add<mode>3_aarch64): Move commutative marker to the cons
+	specification.
+	(*addsi3_aarch64_uxtw): Likewise.
+	(*add<mode>3_poly_1): Likewise.
+	(add<mode>3_compare0): Likewise.
+	(*addsi3_compare0_uxtw): Likewise.
+	(*add<mode>3nr_compare0): Likewise.
+	(<optab><mode>3): Likewise.
+	(*<optab>si3_uxtw): Likewise.
+	(*and<mode>3_compare0): Likewise.
+	(*andsi3_compare0_uxtw): Likewise.
+	(@aarch64_and<mode>3nr_compare0): Likewise.
+
+2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116352
+	* tree-vect-slp.cc (vect_build_slp_tree_2): When compressing
+	operands from a two-operator node make sure the resulting
+	operation does not mix defs from different basic-blocks.
+
+2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120043
+	* tree-ssa-phiopt.cc (cond_store_replacement): Check
+	whether the store is to readonly memory.
+
+2025-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116938
+	* tree-ssa-phiopt.cc (move_stmt): Use rewrite_to_defined_overflow
+	isntead of manually doing the rewrite of the VCE.
+
+2025-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/120122
+	PR tree-optimization/116939
+	* gimple-fold.h (gimple_with_undefined_signed_overflow): Rename to ..
+	(rewrite_to_defined_overflow): This.
+	(gimple_needing_rewrite_undefined): Rename to ...
+	(rewrite_to_defined_unconditional): this.
+	* gimple-fold.cc (gimple_with_undefined_signed_overflow): Rename to ...
+	(gimple_needing_rewrite_undefined): This. Return true for VCE with integral
+	types of smaller precision.
+	(rewrite_to_defined_overflow): Rename to ...
+	(rewrite_to_defined_unconditional): This. Handle VCE rewriting to a cast.
+	* tree-if-conv.cc: s/gimple_with_undefined_signed_overflow/gimple_needing_rewrite_undefined/
+	s/rewrite_to_defined_overflow/rewrite_to_defined_unconditional.
+	* tree-scalar-evolution.cc: Likewise
+	* tree-ssa-ifcombine.cc: Likewise.
+	* tree-ssa-loop-im.cc: Likewise.
+	* tree-ssa-loop-split.cc: Likewise.
+	* tree-ssa-reassoc.cc: Likewise.
+
+2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/120146
+	* tree-ssa-structalias.cc (create_variable_info_for): If
+	the symtab cannot tell us whether all refs to a variable
+	are explicit assume they are not.
+
+2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119589
+	PR tree-optimization/119586
+	PR tree-optimization/119155
+	* tree-vect-stmts.cc (vectorizable_store): Verify
+	DR_STEP_ALIGNMENT preserves DR_TARGET_ALIGNMENT when
+	VF > 1 and VMAT_STRIDED_SLP.  Use vector aligned accesses when
+	we can.
+	(vectorizable_load): Likewise.
+
+2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120143
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	Move/update the original stmts, not the pattern stmts which
+	lack virtual operands and are not in the IL.
+
+2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120089
+	* tree-vect-stmts.cc (vect_stmt_relevant_p): Mark all
+	PHIs live when not already so and doing early-break
+	vectorization.
+	(vect_mark_stmts_to_be_vectorized): Skip virtual PHIs.
+	* tree-vect-slp.cc (vect_analyze_slp): Robustify handling
+	of early-break forced IVs.
+
+2025-05-08  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_exact_log2_inverse): New.
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set_zero<mode>):
+	Update pattern accordingly.
+	* config/aarch64/aarch64.cc (aarch64_exact_log2_inverse): New.
+	* simplify-rtx.cc (simplify_context::simplify_ternary_operation):
+	Canonicalize vec_merge.
+
 2025-05-07  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/120137

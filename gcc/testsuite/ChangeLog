@@ -1,3 +1,62 @@
+2025-05-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120179
+	* gfortran.dg/do_concurrent_basic.f90: Extend testcase.
+
+2025-05-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99599
+	* g++.dg/cpp2a/concepts-recursive-sat4.C: Adjust again.
+	* g++.dg/cpp2a/concepts-nondep5.C: New test.
+
+2025-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/120168
+	* gcc.dg/tree-ssa/pr31261.c: Use `signed char` instead
+	of plain char.
+
+2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120043
+	* gcc.dg/torture/pr120043.c: New testcase.
+
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120152
+	PR libfortran/120153
+	PR libfortran/120158
+	* gfortran.dg/pr120152_1.f90: New test.
+	* gfortran.dg/pr120152_2.f90: New test.
+	* gfortran.dg/pr120153.f90: New test.
+	* gfortran.dg/pr120158.f90: New test.
+
+2025-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116938
+	* gcc.dg/tree-ssa/phi-opt-40.c: Update to expect ABSU_EXPR.
+	* gcc.dg/tree-ssa/phi-opt-41.c: Likewise.
+
+2025-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/120122
+	PR tree-optimization/116939
+	* gcc.dg/torture/pr120122-1.c: New test.
+
+2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/120146
+	* g++.dg/ipa/pr120146.C: New testcase.
+
+2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120143
+	* gcc.dg/vect/vect-early-break_135-pr120143.c: New testcase.
+
+2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120089
+	* gcc.dg/vect/vect-early-break_134-pr120089.c: New testcase.
+
 2025-05-07  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/120137

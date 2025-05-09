@@ -1,3 +1,19 @@
+2025-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR cobol/119217
+	* symbols.h (NAME_MAX): Define fallback.
+
+2025-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR cobol/119217
+	* dts.h (csub_match): Initialize rm_so, rm_eo fields explicitly.
+
+2025-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR cobol/119217
+	* cdf-copy.cc (GLOB_BRACE): Define fallback.
+	(GLOB_TILDE): Likewise.
+
 2025-05-05  Robert Dubner  <rdubner@symas.com>
 
 	* cdf.y: Exceptions.

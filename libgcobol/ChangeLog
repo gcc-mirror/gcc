@@ -1,3 +1,9 @@
+2025-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Handle --enable-libgcobol.
+	Let it override LIBGCOBOL_SUPPORTED.
+	* configure: Regenerate.
+
 2025-05-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.h.in: Regenerate.

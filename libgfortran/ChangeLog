@@ -1,3 +1,44 @@
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120158
+	* m4/iparm.m4 (atype_min): For atype_name starting with
+	GFC_UINTEGER define to 0.
+	* generated/maxloc0_16_m1.c: Regenerate.
+	* generated/maxloc0_16_m2.c: Regenerate.
+	* generated/maxloc0_16_m4.c: Regenerate.
+	* generated/maxloc0_16_m8.c: Regenerate.
+	* generated/maxloc0_16_m16.c: Regenerate.
+	* generated/maxloc0_4_m1.c: Regenerate.
+	* generated/maxloc0_4_m2.c: Regenerate.
+	* generated/maxloc0_4_m4.c: Regenerate.
+	* generated/maxloc0_4_m8.c: Regenerate.
+	* generated/maxloc0_4_m16.c: Regenerate.
+	* generated/maxloc0_8_m1.c: Regenerate.
+	* generated/maxloc0_8_m2.c: Regenerate.
+	* generated/maxloc0_8_m4.c: Regenerate.
+	* generated/maxloc0_8_m8.c: Regenerate.
+	* generated/maxloc0_8_m16.c: Regenerate.
+	* generated/maxloc1_16_m1.c: Regenerate.
+	* generated/maxloc1_16_m2.c: Regenerate.
+	* generated/maxloc1_16_m4.c: Regenerate.
+	* generated/maxloc1_16_m8.c: Regenerate.
+	* generated/maxloc1_16_m16.c: Regenerate.
+	* generated/maxloc1_4_m1.c: Regenerate.
+	* generated/maxloc1_4_m2.c: Regenerate.
+	* generated/maxloc1_4_m4.c: Regenerate.
+	* generated/maxloc1_4_m8.c: Regenerate.
+	* generated/maxloc1_4_m16.c: Regenerate.
+	* generated/maxloc1_8_m1.c: Regenerate.
+	* generated/maxloc1_8_m2.c: Regenerate.
+	* generated/maxloc1_8_m4.c: Regenerate.
+	* generated/maxloc1_8_m8.c: Regenerate.
+	* generated/maxloc1_8_m16.c: Regenerate.
+	* generated/maxval_m1.c: Regenerate.
+	* generated/maxval_m2.c: Regenerate.
+	* generated/maxval_m4.c: Regenerate.
+	* generated/maxval_m8.c: Regenerate.
+	* generated/maxval_m16.c: Regenerate.
+
 2025-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/120153

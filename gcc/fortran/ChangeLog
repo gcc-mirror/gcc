@@ -1,3 +1,9 @@
+2025-05-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120179
+	* match.cc (gfc_match_do): Do not attempt to match end-of-statement
+	twice.
+
 2025-05-07  Paul Thomas  <pault@gcc.gnu.org>
 	    and Steven G. Kargl  <kargl@gcc.gnu.org>
 
