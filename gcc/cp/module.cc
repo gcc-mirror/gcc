@@ -6024,7 +6024,7 @@ trees_out::lang_decl_bools (tree t, bits_out& bits)
       WB (lang->u.fn.has_dependent_explicit_spec_p);
       WB (lang->u.fn.immediate_fn_p);
       WB (lang->u.fn.maybe_deleted);
-      /* We do not stream lang->u.fn.implicit_constexpr.  */
+      WB (lang->u.fn.implicit_constexpr);
       WB (lang->u.fn.escalated_p);
       WB (lang->u.fn.xobj_func);
       goto lds_min;
@@ -6095,7 +6095,7 @@ trees_in::lang_decl_bools (tree t, bits_in& bits)
       RB (lang->u.fn.has_dependent_explicit_spec_p);
       RB (lang->u.fn.immediate_fn_p);
       RB (lang->u.fn.maybe_deleted);
-      /* We do not stream lang->u.fn.implicit_constexpr.  */
+      RB (lang->u.fn.implicit_constexpr);
       RB (lang->u.fn.escalated_p);
       RB (lang->u.fn.xobj_func);
       goto lds_min;
@@ -12193,13 +12193,23 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 
       /* Similarly if EXISTING has undeduced constexpr, but DECL's
 	 is already deduced.  */
-      if (DECL_MAYBE_DELETED (e_inner) && !DECL_MAYBE_DELETED (d_inner)
-	  && DECL_DECLARED_CONSTEXPR_P (d_inner))
-	DECL_DECLARED_CONSTEXPR_P (e_inner) = true;
-      else if (!DECL_MAYBE_DELETED (e_inner) && DECL_MAYBE_DELETED (d_inner))
-	/* Nothing to do.  */;
+      if (DECL_DECLARED_CONSTEXPR_P (e_inner)
+	  == DECL_DECLARED_CONSTEXPR_P (d_inner))
+	/* Already matches.  */;
+      else if (DECL_DECLARED_CONSTEXPR_P (d_inner)
+	       && (DECL_MAYBE_DELETED (e_inner)
+		   || decl_implicit_constexpr_p (d_inner)))
+	/* DECL was deduced, copy to EXISTING.  */
+	{
+	  DECL_DECLARED_CONSTEXPR_P (e_inner) = true;
+	  if (decl_implicit_constexpr_p (d_inner))
+	    DECL_LANG_SPECIFIC (e_inner)->u.fn.implicit_constexpr = true;
+	}
       else if (DECL_DECLARED_CONSTEXPR_P (e_inner)
-	       != DECL_DECLARED_CONSTEXPR_P (d_inner))
+	       && (DECL_MAYBE_DELETED (d_inner)
+		   || decl_implicit_constexpr_p (e_inner)))
+	/* EXISTING was deduced, leave it alone.  */;
+      else
 	{
 	  mismatch_msg = G_("conflicting %<constexpr%> for imported "
 			    "declaration %#qD");
