@@ -3,7 +3,6 @@
 
 #include <ciso646>
 
-// { dg-warning "deprecated" "" { target c++17_only } 0 }
 // { dg-error "not a standard header" "" { target c++20 } 0 }
 
 #ifdef and
