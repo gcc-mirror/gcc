@@ -1,3 +1,36 @@
+2025-05-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119610
+	* g++.dg/torture/pr119610.C: New test.
+	* g++.target/aarch64/sve/pr119610-sve.C: Likewise.
+
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* g++.dg/opt/pr119327.C: New test.
+
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/108900
+	PR preprocessor/116047
+	PR preprocessor/120061
+	* gcc.dg/plugin/plugin.exp: Add location-overflow-test-pr116047.c
+	and location-overflow-test-pr120061.c.
+	* gcc.dg/plugin/location_overflow_plugin.c (plugin_init): Don't error
+	on unknown values, instead just break.
+	* gcc.dg/plugin/location-overflow-test-pr116047.c: New test.
+	* gcc.dg/plugin/location-overflow-test-pr116047-1.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr116047-2.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061.c: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061-1.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061-2.h: New test.
+
 2025-05-07  Robin Dapp  <rdapp@ventanamicro.com>
 
 	Backported from master:

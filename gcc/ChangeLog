@@ -1,3 +1,26 @@
+2025-05-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119610
+	* config/aarch64/aarch64.cc (aarch64_allocate_and_probe_stack_space):
+	Add a bytes_below_sp parameter and use it to calculate the CFA
+	offsets.  Attach the first SVE CFA note to the move into the
+	associated temporary register.
+	(aarch64_allocate_and_probe_stack_space): Update calls accordingly.
+	Start out with bytes_per_sp set to the frame size and decrement
+	it after each allocation.
+
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* config/rs6000/rs6000.cc (rs6000_can_inline_p): Ignore also
+	OPTION_MASK_SAVE_TOC_INDIRECT differences.
+
 2025-05-07  Robin Dapp  <rdapp@ventanamicro.com>
 
 	Backported from master:

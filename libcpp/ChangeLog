@@ -1,3 +1,16 @@
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/108900
+	PR preprocessor/116047
+	PR preprocessor/120061
+	* files.cc (_cpp_stack_file): Revert 2025-03-28 change.
+	* line-map.cc (linemap_add): Use
+	SOURCE_LINE (from, linemap_included_from (map - 1)) + 1; instead of
+	SOURCE_LINE (from, from[1].start_location); to compute to_line
+	for LC_LEAVE if from[1].reason is LC_RENAME.  For LC_ENTER
+	included_from computation, look at map[-2] or even lower if map[-1]
+	has the same start_location as map[0].
+
 2025-04-23  Jeremy Bettis  <jbettis@google.com>
 
 	Backported from master:
