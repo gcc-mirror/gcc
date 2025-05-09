@@ -38,41 +38,43 @@ along with GCC; see the file COPYING3.  If not see
  * future.
  */
 
-extern const attribute_spec grs_langhook_common_attribute_table[];
+extern const struct scoped_attribute_specs grs_langhook_gnu_attribute_table;
+extern const struct scoped_attribute_specs grs_langhook_common_attribute_table;
+
+/* clang-format off */
+/* Disable clang-format because it insists in having the return type on a
+   single line (that's for definitions) */
 
 /* Internal attribute handlers for built-in functions.  */
-static tree
-handle_noreturn_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_leaf_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_const_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_malloc_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_pure_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_novops_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_nonnull_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_nothrow_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_type_generic_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_fnspec_attribute (tree *, tree, tree, int, bool *);
-static tree
-handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *);
+static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
+static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
+static tree handle_const_attribute (tree *, tree, tree, int, bool *);
+static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
+static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
+static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
+static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
+static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
+static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
+static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
+static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *);
+
+/* Rust attribute handlers for user defined attributes.  */
+static tree handle_cold_attribute (tree *, tree, tree, int, bool *);
+static tree handle_hot_attribute (tree *, tree, tree, int, bool *);
+
+/* clang-format on */
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)                              \
   {                                                                            \
     name, function, type, variable                                             \
   }
+
+// clang-format off
+// Disabling clang-format because it insists in having several ATTR_EXCL() on a
+// single line.
 
 static const struct attribute_spec::exclusions attr_noreturn_exclusions[] = {
   //  ATTR_EXCL ("alloc_size", true, true, true),
@@ -89,11 +91,22 @@ static const struct attribute_spec::exclusions attr_returns_twice_exclusions[]
     ATTR_EXCL (NULL, false, false, false),
 };
 
+extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[] = {
+
+  ATTR_EXCL ("cold", true, true, true),
+  ATTR_EXCL ("hot", true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
 static const struct attribute_spec::exclusions attr_const_pure_exclusions[] = {
   // ATTR_EXCL ("alloc_size", true, true, true),
   ATTR_EXCL ("const", true, true, true),
   ATTR_EXCL ("noreturn", true, true, true),
-  ATTR_EXCL ("pure", true, true, true), ATTR_EXCL (NULL, false, false, false)};
+  ATTR_EXCL ("pure", true, true, true),
+  ATTR_EXCL (NULL, false, false, false)
+};
+
+// clang-format on
 
 /* Helper to define an attribute.  */
 #define ATTR_SPEC(name, min_len, max_len, decl_req, type_req, fn_type_req,     \
@@ -105,7 +118,7 @@ static const struct attribute_spec::exclusions attr_const_pure_exclusions[] = {
 
 /* Table of machine-independent attributes.
    For internal use (marking of built-ins) only.  */
-const attribute_spec grs_langhook_common_attribute_table[] = {
+static const attribute_spec grs_langhook_common_attributes[] = {
   ATTR_SPEC ("noreturn", 0, 0, true, false, false, false,
 	     handle_noreturn_attribute, attr_noreturn_exclusions),
   ATTR_SPEC ("leaf", 0, 0, true, false, false, false, handle_leaf_attribute,
@@ -132,8 +145,20 @@ const attribute_spec grs_langhook_common_attribute_table[] = {
 	     NULL),
   ATTR_SPEC ("omp declare simd", 0, -1, true, false, false, false,
 	     handle_omp_declare_simd_attribute, NULL),
-  ATTR_SPEC (NULL, 0, 0, false, false, false, false, NULL, NULL),
 };
+
+const scoped_attribute_specs grs_langhook_common_attribute_table
+  = {"gnu", {grs_langhook_common_attributes}};
+
+static const attribute_spec grs_langhook_gnu_attributes[] = {
+  ATTR_SPEC ("cold", 0, 0, true, false, false, false, handle_cold_attribute,
+	     attr_cold_hot_exclusions),
+  ATTR_SPEC ("hot", 0, 0, true, false, false, false, handle_hot_attribute,
+	     attr_cold_hot_exclusions),
+};
+
+const scoped_attribute_specs grs_langhook_gnu_attribute_table
+  = {"gnu", {grs_langhook_gnu_attributes}};
 
 /* Built-in attribute handlers.
    These functions take the arguments:
@@ -204,7 +229,7 @@ handle_const_attribute (tree *node, tree, tree, int, bool *)
 /* Handle a "malloc" attribute; arguments as in
    struct attribute_spec.handler.  */
 
-tree
+static tree
 handle_malloc_attribute (tree *node, tree, tree, int, bool *)
 {
   gcc_assert (TREE_CODE (*node) == FUNCTION_DECL
@@ -217,9 +242,14 @@ handle_malloc_attribute (tree *node, tree, tree, int, bool *)
    struct attribute_spec.handler.  */
 
 static tree
-handle_pure_attribute (tree *node, tree, tree, int, bool *)
+handle_pure_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 {
-  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
   DECL_PURE_P (*node) = 1;
   return NULL_TREE;
 }
@@ -228,9 +258,14 @@ handle_pure_attribute (tree *node, tree, tree, int, bool *)
    struct attribute_spec.handler.  */
 
 static tree
-handle_novops_attribute (tree *node, tree, tree, int, bool *)
+handle_novops_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 {
-  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
   DECL_IS_NOVOPS (*node) = 1;
   return NULL_TREE;
 }
@@ -301,9 +336,14 @@ handle_nonnull_attribute (tree *node, tree, tree args, int, bool *)
    struct attribute_spec.handler.  */
 
 static tree
-handle_nothrow_attribute (tree *node, tree, tree, int, bool *)
+handle_nothrow_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 {
-  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
   TREE_NOTHROW (*node) = 1;
   return NULL_TREE;
 }
@@ -339,9 +379,14 @@ handle_transaction_pure_attribute (tree *node, tree, tree, int, bool *)
    struct attribute_spec.handler.  */
 
 static tree
-handle_returns_twice_attribute (tree *node, tree, tree, int, bool *)
+handle_returns_twice_attribute (tree *node, tree name, tree, int,
+				bool *no_add_attrs)
 {
-  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
 
   DECL_IS_RETURNS_TWICE (*node) = 1;
 
@@ -351,7 +396,7 @@ handle_returns_twice_attribute (tree *node, tree, tree, int, bool *)
 /* Handle a "fn spec" attribute; arguments as in
    struct attribute_spec.handler.  */
 
-tree
+static tree
 handle_fnspec_attribute (tree *, tree, tree args, int, bool *)
 {
   gcc_assert (args && TREE_CODE (TREE_VALUE (args)) == STRING_CST
@@ -362,9 +407,46 @@ handle_fnspec_attribute (tree *, tree, tree args, int, bool *)
 /* Handle an "omp declare simd" attribute; arguments as in
    struct attribute_spec.handler.  */
 
-tree
-handle_omp_declare_simd_attribute (tree *node, tree, tree, int, bool *)
+static tree
+handle_omp_declare_simd_attribute (tree *node, tree name, tree, int,
+				   bool *no_add_attrs)
 {
-  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Language specific attribute handlers.
+   These functions take the arguments:
+   (tree *node, tree name, tree args, int flags, bool *no_add_attrs)  */
+
+/* Handle a "cold" and attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_cold_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+static tree
+handle_hot_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
   return NULL_TREE;
 }
