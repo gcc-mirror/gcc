@@ -48,6 +48,7 @@
 #include "basic-block.h"
 #include "gimple.h"
 #include "ssa.h"
+#include "regs.h"
 
 #define SIMD_MAX_BUILTIN_ARGS 7
 
@@ -1105,37 +1106,35 @@ arm_init_simd_builtin_types (void)
      an entry in our mangling table, consequently, they get default
      mangling.  As a further gotcha, poly8_t and poly16_t are signed
      types, poly64_t and poly128_t are unsigned types.  */
-  if (!TARGET_HAVE_MVE)
-    {
-      arm_simd_polyQI_type_node
-	= build_distinct_type_copy (intQI_type_node);
-      (*lang_hooks.types.register_builtin_type) (arm_simd_polyQI_type_node,
-						 "__builtin_neon_poly8");
-      arm_simd_polyHI_type_node
-	= build_distinct_type_copy (intHI_type_node);
-      (*lang_hooks.types.register_builtin_type) (arm_simd_polyHI_type_node,
-						 "__builtin_neon_poly16");
-      arm_simd_polyDI_type_node
-	= build_distinct_type_copy (unsigned_intDI_type_node);
-      (*lang_hooks.types.register_builtin_type) (arm_simd_polyDI_type_node,
-						 "__builtin_neon_poly64");
-      arm_simd_polyTI_type_node
-	= build_distinct_type_copy (unsigned_intTI_type_node);
-      (*lang_hooks.types.register_builtin_type) (arm_simd_polyTI_type_node,
-						 "__builtin_neon_poly128");
-      /* Init poly vector element types with scalar poly types.  */
-      arm_simd_types[Poly8x8_t].eltype = arm_simd_polyQI_type_node;
-      arm_simd_types[Poly8x16_t].eltype = arm_simd_polyQI_type_node;
-      arm_simd_types[Poly16x4_t].eltype = arm_simd_polyHI_type_node;
-      arm_simd_types[Poly16x8_t].eltype = arm_simd_polyHI_type_node;
-      /* Note: poly64x2_t is defined in arm_neon.h, to ensure it gets default
-	 mangling.  */
+  arm_simd_polyQI_type_node
+    = build_distinct_type_copy (intQI_type_node);
+  (*lang_hooks.types.register_builtin_type) (arm_simd_polyQI_type_node,
+					     "__builtin_neon_poly8");
+  arm_simd_polyHI_type_node
+    = build_distinct_type_copy (intHI_type_node);
+  (*lang_hooks.types.register_builtin_type) (arm_simd_polyHI_type_node,
+					     "__builtin_neon_poly16");
+  arm_simd_polyDI_type_node
+    = build_distinct_type_copy (unsigned_intDI_type_node);
+  (*lang_hooks.types.register_builtin_type) (arm_simd_polyDI_type_node,
+					     "__builtin_neon_poly64");
+  arm_simd_polyTI_type_node
+    = build_distinct_type_copy (unsigned_intTI_type_node);
+  (*lang_hooks.types.register_builtin_type) (arm_simd_polyTI_type_node,
+					     "__builtin_neon_poly128");
+  /* Init poly vector element types with scalar poly types.  */
+  arm_simd_types[Poly8x8_t].eltype = arm_simd_polyQI_type_node;
+  arm_simd_types[Poly8x16_t].eltype = arm_simd_polyQI_type_node;
+  arm_simd_types[Poly16x4_t].eltype = arm_simd_polyHI_type_node;
+  arm_simd_types[Poly16x8_t].eltype = arm_simd_polyHI_type_node;
+  /* Note: poly64x2_t is defined in arm_neon.h, to ensure it gets default
+     mangling.  */
 
-      /* Prevent front-ends from transforming poly vectors into string
-	 literals.  */
-      TYPE_STRING_FLAG (arm_simd_polyQI_type_node) = false;
-      TYPE_STRING_FLAG (arm_simd_polyHI_type_node) = false;
-    }
+  /* Prevent front-ends from transforming poly vectors into string
+     literals.  */
+  TYPE_STRING_FLAG (arm_simd_polyQI_type_node) = false;
+  TYPE_STRING_FLAG (arm_simd_polyHI_type_node) = false;
+
   /* Init all the element types built by the front-end.  */
   arm_simd_types[Int8x8_t].eltype = get_typenode_from_name (INT8_TYPE);
   arm_simd_types[Int8x16_t].eltype = get_typenode_from_name (INT8_TYPE);
@@ -1445,14 +1444,29 @@ arm_init_cde_builtins (void)
     }
 }
 
+/* RAII class for enabling enough features to define built-in types
+   and implement the arm_mve.h pragma.  */
+class arm_target_switcher
+{
+public:
+  arm_target_switcher (const enum isa_feature *flags);
+  ~arm_target_switcher ();
+
+private:
+  sbitmap m_old_arm_active_target_isa;
+  bool m_old_general_regs_only;
+  tree m_old_target_pragma;
+  bool m_old_have_regs_of_mode[MAX_MACHINE_MODE];
+};
+
 /* Set up all the MVE builtins mentioned in arm_mve_builtins.def file.  */
 static void
 arm_init_mve_builtins (void)
 {
   unsigned int i, fcode = ARM_BUILTIN_MVE_PATTERN_START;
 
-  arm_init_simd_builtin_scalar_types ();
-  arm_init_simd_builtin_types ();
+  enum isa_feature mve_flags[] = { ISA_MVE_FP, isa_nobit };
+  arm_target_switcher switcher (mve_flags);
 
   /* Add support for __builtin_{get,set}_fpscr_nzcvqc, used by MVE intrinsics
      that read and/or write the carry bit.  */
@@ -1495,14 +1509,6 @@ static void
 arm_init_neon_builtins (void)
 {
   unsigned int i, fcode = ARM_BUILTIN_NEON_PATTERN_START;
-
-  arm_init_simd_builtin_types ();
-
-  /* Strong-typing hasn't been implemented for all AdvSIMD builtin intrinsics.
-     Therefore we need to preserve the old __builtin scalar types.  It can be
-     removed once all the intrinsics become strongly typed using the qualifier
-     system.  */
-  arm_init_simd_builtin_scalar_types ();
 
   for (i = 0; i < ARRAY_SIZE (neon_builtin_data); i++, fcode++)
     {
@@ -1688,6 +1694,65 @@ arm_init_fp16_builtins (void)
   (*lang_hooks.types.register_builtin_type) (arm_fp16_type_node, "__fp16");
 }
 
+/* Return true if MMODE is an MVE mode.  */
+static bool
+arm_need_mve_mode_regs (int mmode)
+{
+  return (bitmap_bit_p (arm_active_target.isa, isa_bit_mve)
+	  && (VALID_MVE_MODE ((machine_mode) mmode)
+	      || VALID_MVE_STRUCT_MODE ((machine_mode) mmode)
+	      || VALID_MVE_PRED_MODE ((machine_mode) mmode)));
+}
+
+/* Return true if MMODE is a NEON mode.  */
+static bool
+arm_need_neon_mode_regs (int mmode)
+{
+  return (bitmap_bit_p (arm_active_target.isa, isa_bit_neon)
+	  && (VALID_NEON_QREG_MODE ((machine_mode) mmode)
+	      || VALID_NEON_DREG_MODE ((machine_mode) mmode)));
+}
+
+/* Temporarily set FLAGS as the enabled target features.  */
+arm_target_switcher::arm_target_switcher (const enum isa_feature *flags)
+  : m_old_general_regs_only (TARGET_GENERAL_REGS_ONLY),
+    m_old_target_pragma (current_target_pragma)
+{
+  m_old_arm_active_target_isa = sbitmap_alloc (isa_num_bits);
+  bitmap_copy (m_old_arm_active_target_isa, arm_active_target.isa);
+
+  /* Changing the ISA flags and have_regs_of_mode should be enough here.  We
+     shouldn't need to pay the compile-time cost of a full target switch.  */
+  if (! TARGET_SOFT_FLOAT)
+    global_options.x_target_flags &= ~MASK_GENERAL_REGS_ONLY;
+
+  arm_initialize_isa (arm_active_target.isa, flags);
+
+  /* Target pragmas are irrelevant when defining intrinsics artificially.  */
+  current_target_pragma = NULL_TREE;
+
+  /* Ensure SIMD / VFP regs are available if Neon or MVE is enabled.  */
+  memcpy (m_old_have_regs_of_mode, have_regs_of_mode, sizeof
+	  (have_regs_of_mode));
+
+  for (int i = 0; i < NUM_MACHINE_MODES; ++i)
+    if (arm_need_mve_mode_regs (i)
+	|| arm_need_neon_mode_regs (i))
+      have_regs_of_mode[i] = true;
+}
+
+arm_target_switcher::~arm_target_switcher ()
+{
+  if (m_old_general_regs_only)
+    global_options.x_target_flags |= MASK_GENERAL_REGS_ONLY;
+  bitmap_copy (arm_active_target.isa, m_old_arm_active_target_isa);
+  sbitmap_free (m_old_arm_active_target_isa);
+  current_target_pragma = m_old_target_pragma;
+
+  memcpy (have_regs_of_mode, m_old_have_regs_of_mode,
+	  sizeof (have_regs_of_mode));
+}
+
 void
 arm_init_builtins (void)
 {
@@ -1707,10 +1772,16 @@ arm_init_builtins (void)
       = arm_general_add_builtin_function ("__builtin_arm_lane_check",
 					  lane_check_fpr,
 					  ARM_BUILTIN_SIMD_LANE_CHECK);
-      if (TARGET_HAVE_MVE)
-	arm_init_mve_builtins ();
-      else
-	arm_init_neon_builtins ();
+
+      /* Strong-typing hasn't been implemented for all AdvSIMD builtin
+	 intrinsics.  Therefore we need to preserve the old __builtin scalar
+	 types.  It can be removed once all the intrinsics become strongly
+	 typed using the qualifier system.  */
+      arm_init_simd_builtin_scalar_types ();
+      arm_init_simd_builtin_types ();
+      arm_init_neon_builtins ();
+      arm_init_mve_builtins ();
+
       arm_init_vfp_builtins ();
       arm_init_crypto_builtins ();
     }
