@@ -5451,9 +5451,12 @@ package body Freeze is
                      Set_Must_Be_On_Byte_Boundary (Rec);
 
                      --  Check for component clause that is inconsistent with
-                     --  the required byte boundary alignment.
+                     --  the required byte boundary alignment. Do not do this
+                     --  in CodePeer_Mode, as we do not have sufficient info
+                     --  on size and representation clauses.
 
-                     if Present (CC)
+                     if not CodePeer_Mode
+                       and then Present (CC)
                        and then Normalized_First_Bit (Comp) mod
                                   System_Storage_Unit /= 0
                      then
