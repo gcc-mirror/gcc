@@ -679,8 +679,6 @@ ftms = {
   values = {
     v = 201703;
     cxxmin = 17;
-    hosted = yes;
-    gthread = yes;
   };
 };
 

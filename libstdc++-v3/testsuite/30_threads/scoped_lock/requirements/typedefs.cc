@@ -1,5 +1,4 @@
 // { dg-do compile { target c++17 } }
-// { dg-require-gthreads "" }
 // { dg-add-options no_pch }
 
 // Copyright (C) 2017-2025 Free Software Foundation, Inc.
@@ -29,9 +28,30 @@
 # error "Feature-test macro for scoped_lock has wrong value"
 #endif
 
+struct BasicLockable
+{
+  BasicLockable() = default;
+  ~BasicLockable() = default;
+  void lock() { }
+  void unlock() { }
+};
+
 void test01()
 {
-  // Check for required typedefs
-  typedef std::scoped_lock<std::mutex> test_type;
-  typedef test_type::mutex_type mutex_type;
+  // Check for required typedef.
+  using test_type = std::scoped_lock<BasicLockable>;
+  static_assert(std::is_same_v<test_type::mutex_type, BasicLockable>);
+}
+
+template<typename T, typename = void>
+constexpr bool has_mutex_type = false;
+
+template<typename T>
+constexpr bool has_mutex_type<T, std::void_t<typename T::mutex_type>> = true;
+
+void test02()
+{
+  // Check that typedef is absent as required.
+  using test_type = std::scoped_lock<BasicLockable, BasicLockable>;
+  static_assert(!has_mutex_type<test_type>);
 }

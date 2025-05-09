@@ -751,7 +751,7 @@
 #undef __glibcxx_want_parallel_algorithm
 
 #if !defined(__cpp_lib_scoped_lock)
-# if (__cplusplus >= 201703L) && defined(_GLIBCXX_HAS_GTHREADS) && _GLIBCXX_HOSTED
+# if (__cplusplus >= 201703L)
 #  define __glibcxx_scoped_lock 201703L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_scoped_lock)
 #   define __cpp_lib_scoped_lock 201703L
