@@ -6704,6 +6704,7 @@ package body Sem_Ch12 is
 
             elsif Nkind (Parent (N)) = N_Compilation_Unit then
                Rewrite (N, Unit (Parent (N)));
+               Move_Aspects (From => Original_Node (N), To => N);
                Set_Unit (Parent (N), N);
             end if;
 
@@ -6712,6 +6713,7 @@ package body Sem_Ch12 is
 
          elsif Nkind (Parent (N)) = N_Compilation_Unit then
             Rewrite (N, Unit (Parent (N)));
+            Move_Aspects (From => Original_Node (N), To => N);
             Set_Unit (Parent (N), N);
          end if;
 
