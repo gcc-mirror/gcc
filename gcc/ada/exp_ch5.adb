@@ -5980,8 +5980,7 @@ package body Exp_Ch5 is
       --       ...
       --    end loop
 
-      elsif Present (Scheme)
-        and then Present (Condition_Actions (Scheme))
+      elsif Present (Condition_Actions (Scheme))
         and then Present (Condition (Scheme))
       then
          declare
@@ -6013,9 +6012,7 @@ package body Exp_Ch5 is
 
       --  Here to deal with iterator case
 
-      elsif Present (Scheme)
-        and then Present (Iterator_Specification (Scheme))
-      then
+      elsif Present (Iterator_Specification (Scheme)) then
          Expand_Iterator_Loop (N);
 
          --  An iterator loop may generate renaming declarations for elements
