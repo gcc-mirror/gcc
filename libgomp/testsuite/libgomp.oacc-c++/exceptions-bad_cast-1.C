@@ -52,3 +52,6 @@ int main()
    PR119692.
 
    { dg-shouldfail {'std::bad_cast' exception} } */
+/* There are configurations where we 'WARNING: program timed out.' while in
+   'dynamic_cast', see <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=119692#c6>.
+   { dg-timeout 10 } ... to make sure that happens quickly.  */
