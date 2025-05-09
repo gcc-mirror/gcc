@@ -1,3 +1,36 @@
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120152
+	PR libfortran/120153
+	PR libfortran/120158
+	* gfortran.dg/pr120152_1.f90: New test.
+	* gfortran.dg/pr120152_2.f90: New test.
+	* gfortran.dg/pr120153.f90: New test.
+	* gfortran.dg/pr120158.f90: New test.
+
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/108900
+	PR preprocessor/116047
+	PR preprocessor/120061
+	* gcc.dg/plugin/plugin.exp: Add location-overflow-test-pr116047.c
+	and location-overflow-test-pr120061.c.
+	* gcc.dg/plugin/location_overflow_plugin.cc (plugin_init): Don't error
+	on unknown values, instead just break.  Handle 0x4fHHHHHH arguments
+	differently.
+	* gcc.dg/plugin/location-overflow-test-pr116047.c: New test.
+	* gcc.dg/plugin/location-overflow-test-pr116047-1.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr116047-2.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061.c: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061-1.h: New test.
+	* gcc.dg/plugin/location-overflow-test-pr120061-2.h: New test.
+
 2025-05-07  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
