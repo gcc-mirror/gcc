@@ -6811,7 +6811,6 @@ vectorizable_operation (vec_info *vinfo,
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
   tree vectype_out;
-  unsigned int ncopies;
   int vec_num;
   int i;
   vec<tree> vec_oprnds0 = vNULL;
@@ -6872,7 +6871,7 @@ vectorizable_operation (vec_info *vinfo,
     }
 
   scalar_dest = gimple_assign_lhs (stmt);
-  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+  vectype_out = SLP_TREE_VECTYPE (slp_node);
 
   /* Most operations cannot handle bit-precision types without extra
      truncations.  */
@@ -6983,20 +6982,8 @@ vectorizable_operation (vec_info *vinfo,
     }
 
   /* Multiple types in SLP are handled by creating the appropriate number of
-     vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
-     case of SLP.  */
-  if (slp_node)
-    {
-      ncopies = 1;
-      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-    }
-  else
-    {
-      ncopies = vect_get_num_copies (loop_vinfo, vectype);
-      vec_num = 1;
-    }
-
-  gcc_assert (ncopies >= 1);
+     vectorized stmts for each SLP node.  */
+  vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 
   /* Reject attempts to combine mask types with nonmask types, e.g. if
      we have an AND between a (nonmask) boolean loaded from memory and
@@ -7080,12 +7067,12 @@ vectorizable_operation (vec_info *vinfo,
 	  if (cond_len_fn != IFN_LAST
 	      && direct_internal_fn_supported_p (cond_len_fn, vectype,
 						 OPTIMIZE_FOR_SPEED))
-	    vect_record_loop_len (loop_vinfo, lens, ncopies * vec_num, vectype,
+	    vect_record_loop_len (loop_vinfo, lens, vec_num, vectype,
 				  1);
 	  else if (cond_fn != IFN_LAST
 		   && direct_internal_fn_supported_p (cond_fn, vectype,
 						      OPTIMIZE_FOR_SPEED))
-	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
+	    vect_record_loop_mask (loop_vinfo, masks, vec_num,
 				   vectype, NULL);
 	  else
 	    {
@@ -7098,10 +7085,9 @@ vectorizable_operation (vec_info *vinfo,
 	}
 
       /* Put types on constant and invariant SLP children.  */
-      if (slp_node
-	  && (!vect_maybe_update_slp_op_vectype (slp_op0, vectype)
-	      || !vect_maybe_update_slp_op_vectype (slp_op1, vectype)
-	      || !vect_maybe_update_slp_op_vectype (slp_op2, vectype)))
+      if (!vect_maybe_update_slp_op_vectype (slp_op0, vectype)
+	  || !vect_maybe_update_slp_op_vectype (slp_op1, vectype)
+	  || !vect_maybe_update_slp_op_vectype (slp_op2, vectype))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7112,15 +7098,14 @@ vectorizable_operation (vec_info *vinfo,
       STMT_VINFO_TYPE (stmt_info) = op_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_operation");
       vect_model_simple_cost (vinfo, stmt_info,
-			      ncopies, dt, ndts, slp_node, cost_vec);
+			      1, dt, ndts, slp_node, cost_vec);
       if (using_emulated_vectors_p)
 	{
 	  /* The above vect_model_simple_cost call handles constants
 	     in the prologue and (mis-)costs one of the stmts as
 	     vector stmt.  See below for the actual lowering that will
 	     be applied.  */
-	  unsigned n
-	    = slp_node ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies;
+	  unsigned n = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	  switch (code)
 	    {
 	    case PLUS_EXPR:
@@ -7173,60 +7158,7 @@ vectorizable_operation (vec_info *vinfo,
   else
     vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
-  /* In case the vectorization factor (VF) is bigger than the number
-     of elements that we can fit in a vectype (nunits), we have to generate
-     more than one vector stmt - i.e - we need to "unroll" the
-     vector stmt by a factor VF/nunits.  In doing so, we record a pointer
-     from one copy of the vector stmt to the next, in the field
-     STMT_VINFO_RELATED_STMT.  This is necessary in order to allow following
-     stages to find the correct vector defs to be used when vectorizing
-     stmts that use the defs of the current stmt.  The example below
-     illustrates the vectorization process when VF=16 and nunits=4 (i.e.,
-     we need to create 4 vectorized stmts):
-
-     before vectorization:
-                                RELATED_STMT    VEC_STMT
-        S1:     x = memref      -               -
-        S2:     z = x + 1       -               -
-
-     step 1: vectorize stmt S1 (done in vectorizable_load. See more details
-             there):
-                                RELATED_STMT    VEC_STMT
-        VS1_0:  vx0 = memref0   VS1_1           -
-        VS1_1:  vx1 = memref1   VS1_2           -
-        VS1_2:  vx2 = memref2   VS1_3           -
-        VS1_3:  vx3 = memref3   -               -
-        S1:     x = load        -               VS1_0
-        S2:     z = x + 1       -               -
-
-     step2: vectorize stmt S2 (done here):
-        To vectorize stmt S2 we first need to find the relevant vector
-        def for the first operand 'x'.  This is, as usual, obtained from
-        the vector stmt recorded in the STMT_VINFO_VEC_STMT of the stmt
-        that defines 'x' (S1).  This way we find the stmt VS1_0, and the
-        relevant vector def 'vx0'.  Having found 'vx0' we can generate
-        the vector stmt VS2_0, and as usual, record it in the
-        STMT_VINFO_VEC_STMT of stmt S2.
-        When creating the second copy (VS2_1), we obtain the relevant vector
-        def from the vector stmt recorded in the STMT_VINFO_RELATED_STMT of
-        stmt VS1_0.  This way we find the stmt VS1_1 and the relevant
-        vector def 'vx1'.  Using 'vx1' we create stmt VS2_1 and record a
-        pointer to it in the STMT_VINFO_RELATED_STMT of the vector stmt VS2_0.
-        Similarly when creating stmts VS2_2 and VS2_3.  This is the resulting
-        chain of stmts and pointers:
-                                RELATED_STMT    VEC_STMT
-        VS1_0:  vx0 = memref0   VS1_1           -
-        VS1_1:  vx1 = memref1   VS1_2           -
-        VS1_2:  vx2 = memref2   VS1_3           -
-        VS1_3:  vx3 = memref3   -               -
-        S1:     x = load        -               VS1_0
-        VS2_0:  vz0 = vx0 + v1  VS2_1           -
-        VS2_1:  vz1 = vx1 + v1  VS2_2           -
-        VS2_2:  vz2 = vx2 + v1  VS2_3           -
-        VS2_3:  vz3 = vx3 + v1  -               -
-        S2:     z = x + 1       -               VS2_0  */
-
-  vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
+  vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
 		     op0, &vec_oprnds0, op1, &vec_oprnds1, op2, &vec_oprnds2);
   /* Arguments are ready.  Create the new vector stmt.  */
   FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)
@@ -7329,7 +7261,7 @@ vectorizable_operation (vec_info *vinfo,
 	  tree mask;
 	  if (masked_loop_p)
 	    mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
-				       vec_num * ncopies, vectype, i);
+				       vec_num, vectype, i);
 	  else
 	    /* Dummy mask.  */
 	    mask = build_minus_one_cst (truth_type_for (vectype));
@@ -7356,7 +7288,7 @@ vectorizable_operation (vec_info *vinfo,
 	  if (len_loop_p)
 	    {
 	      tree len = vect_get_loop_len (loop_vinfo, gsi, lens,
-					    vec_num * ncopies, vectype, i, 1);
+					    vec_num, vectype, i, 1);
 	      signed char biasval
 		= LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
 	      tree bias = build_int_cst (intQI_type_node, biasval);
@@ -7383,21 +7315,19 @@ vectorizable_operation (vec_info *vinfo,
 	      && code == BIT_AND_EXPR
 	      && VECTOR_BOOLEAN_TYPE_P (vectype))
 	    {
-	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op0,
-								 ncopies}))
+	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op0, 1 }))
 		{
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
-					     vec_num * ncopies, vectype, i);
+					     vec_num, vectype, i);
 
 		  vop0 = prepare_vec_mask (loop_vinfo, TREE_TYPE (mask), mask,
 					   vop0, gsi);
 		}
 
-	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op1,
-								 ncopies }))
+	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op1, 1 }))
 		{
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
-					     vec_num * ncopies, vectype, i);
+					     vec_num, vectype, i);
 
 		  vop1 = prepare_vec_mask (loop_vinfo, TREE_TYPE (mask), mask,
 					   vop1, gsi);
@@ -7428,14 +7358,8 @@ vectorizable_operation (vec_info *vinfo,
 				       new_stmt, gsi);
 	}
 
-      if (slp_node)
-	slp_node->push_vec_def (new_stmt);
-      else
-	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+      slp_node->push_vec_def (new_stmt);
     }
-
-  if (!slp_node)
-    *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
 
   vec_oprnds0.release ();
   vec_oprnds1.release ();
