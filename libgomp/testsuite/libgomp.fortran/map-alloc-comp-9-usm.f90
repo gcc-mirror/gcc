@@ -1,3 +1,4 @@
+! { dg-require-effective-target omp_usm }
 ! { dg-additional-options "-cpp -DUSE_USM_REQUIREMENT=1 -Wno-openmp" }
 !
 ! We silence the warning:
