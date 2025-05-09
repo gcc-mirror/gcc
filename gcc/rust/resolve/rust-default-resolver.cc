@@ -113,15 +113,33 @@ DefaultResolver::visit (AST::IfLetExpr &expr)
 void
 DefaultResolver::visit (AST::Trait &trait)
 {
-  auto inner_fn_1
-    = [this, &trait] () { AST::DefaultASTVisitor::visit (trait); };
+  visit_outer_attrs (trait);
+  visit (trait.get_visibility ());
+  visit_inner_attrs (trait);
 
-  auto inner_fn_2 = [this, &trait, &inner_fn_1] () {
-    ctx.canonical_ctx.scope (trait.get_node_id (), trait.get_identifier (),
-			     std::move (inner_fn_1));
+  auto inner_fn_1 = [this, &trait] () {
+    for (auto &item : trait.get_trait_items ())
+      visit (item);
   };
 
-  ctx.scoped (Rib::Kind::TraitOrImpl, trait.get_node_id (), inner_fn_2,
+  auto inner_fn_2 = [this, &trait, &inner_fn_1] () {
+    visit (trait.get_implicit_self ());
+    for (auto &generic : trait.get_generic_params ())
+      visit (generic);
+    if (trait.has_where_clause ())
+      visit (trait.get_where_clause ());
+    for (auto &bound : trait.get_type_param_bounds ())
+      visit (bound);
+
+    ctx.scoped (Rib::Kind::TraitOrImpl, trait.get_node_id (), inner_fn_1);
+  };
+
+  auto inner_fn_3 = [this, &trait, &inner_fn_2] () {
+    ctx.canonical_ctx.scope (trait.get_node_id (), trait.get_identifier (),
+			     std::move (inner_fn_2));
+  };
+
+  ctx.scoped (Rib::Kind::Generics, trait.get_node_id (), inner_fn_3,
 	      trait.get_identifier () /* FIXME: Is that valid?*/);
 }
 

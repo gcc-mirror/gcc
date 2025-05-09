@@ -297,6 +297,10 @@ ForeverStack<N>::get (Node &start, const Identifier &name)
 
   // TODO: Can we improve the API? have `reverse_iter` return an optional?
   reverse_iter (start, [&resolved_definition, &name] (Node &current) {
+    // we can't reference associated types/functions like this
+    if (current.rib.kind == Rib::Kind::TraitOrImpl)
+      return KeepGoing::Yes;
+
     auto candidate = current.rib.get (name.as_string ());
 
     return candidate.map_or (
@@ -549,6 +553,14 @@ ForeverStack<N>::resolve_segments (
       bool searched_prelude = false;
       while (true)
 	{
+	  if (is_start (iterator, segments)
+	      && current_node->rib.kind == Rib::Kind::TraitOrImpl)
+	    {
+	      // we can't reference associated types/functions like this
+	      current_node = &current_node->parent.value ();
+	      continue;
+	    }
+
 	  // may set the value of child
 	  for (auto &kv : current_node->children)
 	    {
