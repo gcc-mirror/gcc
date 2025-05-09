@@ -4234,80 +4234,57 @@
 (define_expand "@aarch64_adr<mode>_shift"
   [(set (match_operand:SVE_FULL_SDI 0 "register_operand")
 	(plus:SVE_FULL_SDI
-	  (unspec:SVE_FULL_SDI
-	    [(match_dup 4)
-	     (ashift:SVE_FULL_SDI
-	       (match_operand:SVE_FULL_SDI 2 "register_operand")
-	       (match_operand:SVE_FULL_SDI 3 "const_1_to_3_operand"))]
-	    UNSPEC_PRED_X)
+	  (ashift:SVE_FULL_SDI
+	    (match_operand:SVE_FULL_SDI 2 "register_operand")
+	    (match_operand:SVE_FULL_SDI 3 "const_1_to_3_operand"))
 	  (match_operand:SVE_FULL_SDI 1 "register_operand")))]
   "TARGET_SVE && TARGET_NON_STREAMING"
-  {
-    operands[4] = CONSTM1_RTX (<VPRED>mode);
-  }
 )
 
-(define_insn_and_rewrite "*aarch64_adr<mode>_shift"
+(define_insn "*aarch64_adr<mode>_shift"
   [(set (match_operand:SVE_24I 0 "register_operand" "=w")
 	(plus:SVE_24I
-	  (unspec:SVE_24I
-	    [(match_operand 4)
-	     (ashift:SVE_24I
-	       (match_operand:SVE_24I 2 "register_operand" "w")
-	       (match_operand:SVE_24I 3 "const_1_to_3_operand"))]
-	    UNSPEC_PRED_X)
+	  (ashift:SVE_24I
+	    (match_operand:SVE_24I 2 "register_operand" "w")
+	    (match_operand:SVE_24I 3 "const_1_to_3_operand"))
 	  (match_operand:SVE_24I 1 "register_operand" "w")))]
   "TARGET_SVE && TARGET_NON_STREAMING"
   "adr\t%0.<Vctype>, [%1.<Vctype>, %2.<Vctype>, lsl %3]"
-  "&& !CONSTANT_P (operands[4])"
-  {
-    operands[4] = CONSTM1_RTX (<VPRED>mode);
-  }
 )
 
 ;; Same, but with the index being sign-extended from the low 32 bits.
 (define_insn_and_rewrite "*aarch64_adr_shift_sxtw"
   [(set (match_operand:VNx2DI 0 "register_operand" "=w")
 	(plus:VNx2DI
-	  (unspec:VNx2DI
-	    [(match_operand 4)
-	     (ashift:VNx2DI
-	       (unspec:VNx2DI
-		 [(match_operand 5)
-		  (sign_extend:VNx2DI
-		    (truncate:VNx2SI
-		      (match_operand:VNx2DI 2 "register_operand" "w")))]
-		 UNSPEC_PRED_X)
-	       (match_operand:VNx2DI 3 "const_1_to_3_operand"))]
-	    UNSPEC_PRED_X)
+	  (ashift:VNx2DI
+	    (unspec:VNx2DI
+	      [(match_operand 4)
+	       (sign_extend:VNx2DI
+		 (truncate:VNx2SI
+		   (match_operand:VNx2DI 2 "register_operand" "w")))]
+	     UNSPEC_PRED_X)
+	    (match_operand:VNx2DI 3 "const_1_to_3_operand"))
 	  (match_operand:VNx2DI 1 "register_operand" "w")))]
   "TARGET_SVE && TARGET_NON_STREAMING"
   "adr\t%0.d, [%1.d, %2.d, sxtw %3]"
-  "&& (!CONSTANT_P (operands[4]) || !CONSTANT_P (operands[5]))"
+  "&& !CONSTANT_P (operands[4])"
   {
-    operands[5] = operands[4] = CONSTM1_RTX (VNx2BImode);
+    operands[4] = CONSTM1_RTX (VNx2BImode);
   }
 )
 
 ;; Same, but with the index being zero-extended from the low 32 bits.
-(define_insn_and_rewrite "*aarch64_adr_shift_uxtw"
+(define_insn "*aarch64_adr_shift_uxtw"
   [(set (match_operand:VNx2DI 0 "register_operand" "=w")
 	(plus:VNx2DI
-	  (unspec:VNx2DI
-	    [(match_operand 5)
-	     (ashift:VNx2DI
-	       (and:VNx2DI
-		 (match_operand:VNx2DI 2 "register_operand" "w")
-		 (match_operand:VNx2DI 4 "aarch64_sve_uxtw_immediate"))
-	       (match_operand:VNx2DI 3 "const_1_to_3_operand"))]
-	    UNSPEC_PRED_X)
+	  (ashift:VNx2DI
+	    (and:VNx2DI
+	      (match_operand:VNx2DI 2 "register_operand" "w")
+	      (match_operand:VNx2DI 4 "aarch64_sve_uxtw_immediate"))
+	    (match_operand:VNx2DI 3 "const_1_to_3_operand"))
 	  (match_operand:VNx2DI 1 "register_operand" "w")))]
   "TARGET_SVE && TARGET_NON_STREAMING"
   "adr\t%0.d, [%1.d, %2.d, uxtw %3]"
-  "&& !CONSTANT_P (operands[5])"
-  {
-    operands[5] = CONSTM1_RTX (VNx2BImode);
-  }
 )
 
 ;; -------------------------------------------------------------------------
@@ -4899,7 +4876,7 @@
     if (CONST_INT_P (operands[2]))
       {
 	amount = gen_const_vec_duplicate (<MODE>mode, operands[2]);
-	if (!aarch64_sve_<lr>shift_operand (operands[2], <MODE>mode))
+	if (!aarch64_sve_<lr>shift_operand (amount, <MODE>mode))
 	  amount = force_reg (<MODE>mode, amount);
       }
     else
@@ -4923,15 +4900,40 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {
+    if (CONSTANT_P (operands[2]))
+      {
+	emit_insn (gen_aarch64_v<optab><mode>3_const (operands[0], operands[1],
+						      operands[2]));
+	DONE;
+      }
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
-;; Shift by a vector, predicated with a PTRUE.  We don't actually need
-;; the predicate for the first alternative, but using Upa or X isn't
-;; likely to gain much and would make the instruction seem less uniform
-;; to the register allocator.
-(define_insn_and_split "@aarch64_pred_<optab><mode>"
+;; Shift by a vector, predicated with a PTRUE.
+(define_expand "@aarch64_pred_<optab><mode>"
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (ASHIFT:SVE_I
+	     (match_operand:SVE_I 2 "register_operand")
+	     (match_operand:SVE_I 3 "aarch64_sve_<lr>shift_operand"))]
+	  UNSPEC_PRED_X))]
+  "TARGET_SVE"
+  {
+    if (CONSTANT_P (operands[3]))
+      {
+	emit_insn (gen_aarch64_v<optab><mode>3_const (operands[0], operands[2],
+						      operands[3]));
+	DONE;
+      }
+  }
+)
+
+;; We don't actually need the predicate for the first alternative, but
+;; using Upa or X isn't likely to gain much and would make the instruction
+;; seem less uniform to the register allocator.
+(define_insn_and_split "*aarch64_pred_<optab><mode>"
   [(set (match_operand:SVE_I 0 "register_operand")
 	(unspec:SVE_I
 	  [(match_operand:<VPRED> 1 "register_operand")
@@ -4946,33 +4948,32 @@
      [ w        , Upl , w , 0     ; *              ] <shift>r\t%0.<Vetype>, %1/m, %3.<Vetype>, %2.<Vetype>
      [ ?&w      , Upl , w , w     ; yes            ] movprfx\t%0, %2\;<shift>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
   }
-  "&& reload_completed
-   && !register_operand (operands[3], <MODE>mode)"
+  "&& !register_operand (operands[3], <MODE>mode)"
   [(set (match_dup 0) (ASHIFT:SVE_I (match_dup 2) (match_dup 3)))]
   ""
 )
 
-;; Unpredicated shift operations by a constant (post-RA only).
+;; Unpredicated shift operations by a constant.
 ;; These are generated by splitting a predicated instruction whose
 ;; predicate is unused.
-(define_insn "*post_ra_v_ashl<mode>3"
+(define_insn "aarch64_vashl<mode>3_const"
   [(set (match_operand:SVE_I 0 "register_operand")
 	(ashift:SVE_I
 	  (match_operand:SVE_I 1 "register_operand")
 	  (match_operand:SVE_I 2 "aarch64_simd_lshift_imm")))]
-  "TARGET_SVE && reload_completed"
+  "TARGET_SVE"
   {@ [ cons: =0 , 1 , 2   ]
      [ w	, w , vs1 ] add\t%0.<Vetype>, %1.<Vetype>, %1.<Vetype>
      [ w	, w , Dl  ] lsl\t%0.<Vetype>, %1.<Vetype>, #%2
   }
 )
 
-(define_insn "*post_ra_v_<optab><mode>3"
+(define_insn "aarch64_v<optab><mode>3_const"
   [(set (match_operand:SVE_I 0 "register_operand" "=w")
 	(SHIFTRT:SVE_I
 	  (match_operand:SVE_I 1 "register_operand" "w")
 	  (match_operand:SVE_I 2 "aarch64_simd_rshift_imm")))]
-  "TARGET_SVE && reload_completed"
+  "TARGET_SVE"
   "<shift>\t%0.<Vetype>, %1.<Vetype>, #%2"
 )
 
