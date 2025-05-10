@@ -11463,6 +11463,12 @@ check_return_expr (tree retval, bool *no_warning, bool *dangling)
 	  && call_from_lambda_thunk_p (retval))
 	converted = true;
 
+      /* Don't check copy-initialization for NRV in a coroutine ramp; we
+	 implement this case as NRV, but it's specified as directly
+	 initializing the return value from get_return_object().  */
+      if (DECL_RAMP_FN (current_function_decl) && named_return_value_okay_p)
+	converted = true;
+
       /* First convert the value to the function's return type, then
 	 to the type of return value's location to handle the
 	 case that functype is smaller than the valtype.  */
