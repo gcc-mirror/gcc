@@ -1,3 +1,25 @@
+2025-05-09  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120179
+	* gfortran.dg/do_concurrent_basic.f90: Extend testcase.
+
+2025-05-09  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119986
+	* gfortran.dg/actual_array_subref.f90: New test.
+
+2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt106.adb: New test.
+	* gnat.dg/opt106_pkg1.ads, gnat.dg/opt106_pkg1.adb: New helper.
+	* gnat.dg/opt106_pkg2.ads, gnat.dg/opt106_pkg2.adb: Likewise.
+
 2025-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

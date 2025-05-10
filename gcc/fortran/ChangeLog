@@ -1,3 +1,25 @@
+2025-05-09  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120179
+	* match.cc (gfc_match_do): Do not attempt to match end-of-statement
+	twice.
+
+2025-05-09  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119986
+	* expr.cc (is_subref_array): When searching for array references,
+	do not terminate early so that inquiry references to complex
+	components work.
+	* primary.cc (gfc_variable_attr): A substring reference can refer
+	to either a scalar or array character variable.  Adjust search
+	accordingly.
+
 2025-05-03  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

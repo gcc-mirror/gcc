@@ -1,3 +1,9 @@
+2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* vr-values.cc (simplify_using_ranges::simplify) <BIT_AND_EXPR>:
+	Do not call simplify_bit_ops_using_ranges for boolean types whose
+	precision is not 1.
+
 2025-05-07  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
