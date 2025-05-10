@@ -1,3 +1,24 @@
+2025-05-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/interop-cuda-full.c: Use 'link' instead
+	of 'run' when the default device is "! offload_device_nvptx".
+	* testsuite/libgomp.c/interop-cuda-libonly.c: Likewise.
+	* testsuite/libgomp.c/interop-hip-nvidia-full.c: Likewise.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-headers.c: Likewise.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-hip-header.c: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-full.F90: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-no-module.F90: Likewise.
+	* testsuite/libgomp.c/interop-hip-amd-full.c: Use 'link' instead
+	of 'run' when the default device is "! offload_device_gcn".
+	* testsuite/libgomp.c/interop-hip-amd-no-hip-header.c: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-amd-full.F90: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-amd-no-module.F90: Likewise.
+
+2025-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* testsuite/lib/libgomp.exp: Add load_lib of scanhtml.exp.
+
 2025-05-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.fortran/map-alloc-comp-9.f90: Process differently

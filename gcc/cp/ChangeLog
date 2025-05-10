@@ -1,3 +1,15 @@
+2025-05-09  Jason Merrill  <jason@redhat.com>
+
+	* decl2.cc (determine_visibility): Ignore args for friend templates.
+
+2025-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99599
+	PR c++/120185
+	* class.cc (type_has_converting_constructor): Handle null parm.
+	* pt.cc (fn_type_unification): Skip early non-dep checking if
+	no concepts.
+
 2025-05-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/99599

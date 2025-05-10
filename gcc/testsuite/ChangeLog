@@ -1,3 +1,158 @@
+2025-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99599
+	PR c++/120185
+	* g++.dg/cpp2a/concepts-nondep6.C: New test.
+
+2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt106.adb: New test.
+	* gnat.dg/opt106_pkg1.ads, gnat.dg/opt106_pkg1.adb: New helper.
+	* gnat.dg/opt106_pkg2.ads, gnat.dg/opt106_pkg2.adb: Likewise.
+
+2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/120182
+	* gcc.dg/torture/pr120182.c: New testcase.
+
+2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119960
+	* gcc.dg/vect/bb-slp-pr119960-1.c: New testcase.
+
+2025-05-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* g++.dg/cpp2a/constinit16.C: Require tls.
+
+2025-05-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* g++.dg/cpp2a/decomp2.C: Require tls_runtime.
+
+2025-05-09  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.dg/pr119160.c: Limit backends.
+
+2025-05-09  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/ptrue_ldr_str.c: New test.
+	* gcc.target/aarch64/sve/acle/general/attributes_6.c: Adjust
+	expected outcome.
+	* gcc.target/aarch64/sve/cost_model_14.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/cost_model_4.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/cost_model_5.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/cost_model_6.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/cost_model_7.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f16.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f32.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_f64.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_mf8.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s16.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s32.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s64.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_s8.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u16.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u32.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u64.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/varargs_2_u8.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/peel_ind_2.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/single_1.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/single_2.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/single_3.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/single_4.c: Adjust expected outcome.
+
+2025-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.cc: Move to
+	gcc/diagnostic-format-html.cc.
+	* gcc.dg/html-output/html-output.exp: New support script.
+	* gcc.dg/html-output/missing-semicolon.c: New test.
+	* gcc.dg/html-output/missing-semicolon.py: New test script.
+	* gcc.dg/plugin/diagnostic-test-xhtml-1.c: Deleted test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Drop moved plugin
+	and its deleted test.
+	* lib/gcc-dg.exp (load_lib): Add load_lib of scanhtml.exp.
+	* lib/htmltest.py: New support script.
+	* lib/scanhtml.exp: New support script, based on scansarif.exp.
+
+2025-05-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-u8.c: New test.
+
+2025-05-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-u8.c: New test.
+
+2025-05-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-u8.c: New test.
+
+2025-05-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Rename VX_BINARY
+	to VX_BINARY_CASE_0 for underlying case 1.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i16.c: Take the
+	new name for test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u8.c: Ditto
+
+2025-05-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Separate test running of
+	rvv vx_vf.
+
 2025-05-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/120179

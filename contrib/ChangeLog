@@ -1,3 +1,7 @@
+2025-05-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* check_GNU_style_lib.py: Remove literal prefix.
+
 2025-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config-list.mk: Update FreeBSD targets to version 13.

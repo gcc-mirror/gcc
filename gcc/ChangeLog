@@ -1,3 +1,88 @@
+2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* vr-values.cc (simplify_using_ranges::simplify) <BIT_AND_EXPR>:
+	Do not call simplify_bit_ops_using_ranges for boolean types whose
+	precision is not 1.
+
+2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114166
+	* tree-vect-stmts.cc (vectorizable_operation): Lower also
+	bitwise operations on word-mode vectors.
+
+2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_operation): Remve non-SLP
+	path.
+
+2025-05-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple.h (gimple_cond_true_canonical_p): New function.
+	(gimple_cond_false_canonical_p): New function.
+	* gimple-fold.cc (replace_stmt_with_simplification): Return
+	false if replacing the operands of GIMPLE_COND with an INTEGER_CST
+	and already in canonical form.
+
+2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/120182
+	* dse.cc (canon_address): Constant addresses have no
+	separate store group.
+
+2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119960
+	* tree-vect-slp.cc (vect_slp_can_convert_to_external):
+	Handle cases where defs from multiple BBs are ordered
+	by their dominance relation.
+
+2025-05-09  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/120086
+	* gcov.cc (print_prime_path_lines): Use unsigned, format with
+	%u.
+	(print_prime_path_source): Likewise.
+	(output_path_coverage): Format with HOST_SIZE_T_PRINT_UNSIGNED,
+	use unsigned for pathno.
+
+2025-05-09  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve.md (*aarch64_sve_ptrue<mode>_ldr_str):
+	Add define_insn_and_split to fold predicated SVE loads/stores with
+	ptrue predicates to unpredicated instructions.
+
+2025-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* Makefile.in (OBJS-libcommon): Add diagnostic-format-html.o.
+	* diagnostic-format-html.cc: Move here from
+	testsuite/gcc.dg/plugin/diagnostic_plugin_xhtml_format.cc.
+	Simplify includes.  Rename "xhtml" to "html" throughout.
+	(write_escaped_text): Drop.
+	(class xhtml_stream_output_format): Drop.
+	(class html_file_output_format): Reimplement using
+	diagnostic_output_file.
+	(diagnostic_output_format_init_xhtml): Drop.
+	(diagnostic_output_format_init_xhtml_stderr): Drop.
+	(diagnostic_output_format_init_xhtml_file): Drop.
+	(diagnostic_output_format_open_html_file): New.
+	(make_html_sink): New.
+	(xhtml_format_selftests): Convert to...
+	(diagnostic_format_html_cc_tests): ...this.
+	(plugin_is_GPL_compatible): Drop.
+	(plugin_init): Drop.
+	* diagnostic-format-html.h: New file.
+	* doc/invoke.texi (-fdiagnostics-add-output=): Add
+	"experimental-html" scheme.
+	* opts-diagnostic.cc: Include "diagnostic-format-html.h".
+	(class html_scheme_handler): New.
+	(output_factory::output_factory): Add html_scheme_handler.
+	(html_scheme_handler::make_sink): New.
+	* selftest-run-tests.cc (selftest::run_tests): Call the new
+	selftests.
+	* selftest.h (selftest::diagnostic_format_html_cc_tests): New
+	decl.
+
 2025-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* gimple-fold.cc (replace_stmt_with_simplification): Return false

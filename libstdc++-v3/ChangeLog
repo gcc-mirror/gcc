@@ -1,3 +1,23 @@
+2025-05-09  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_format_to):
+	Extracted from _M_format.
+	(__formatter_chrono::_M_format): Use _Padding_sink and delegate
+	to _M_format_to.
+
+2025-05-09  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (__Sink_iter<_CharT>::_M_discarding)
+	(__Sink<_CharT>::_M_discarding, _Iter_sink<_CharT, _OutIter>::_M_discarding)
+	(_Padding_sinl<_CharT, _Out>::_M_padwidth)
+	(_Padding_sink<_CharT, _Out>::_M_maxwidth): Remove const.
+	(_Padding_sink<_CharT, _Out>::_M_sync_discarding)
+	(_Padding_sink<_CharT, _Out>::_M_discarding): Define.
+	(_Padding_sink<_CharT, _Out>::_Padding_sink(_Out, size_t, size_t))
+	(_Padding_sink<_CharT, _Out>::_M_force_update):
+	(_Padding_sink<_CharT, _Out>::_M_flush): Call _M_sync_discarding.
+	(_Padding_sink<_CharT, _Out>::_Padding_sink(_Out, size_t)): Delegate.
+
 2025-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/120159

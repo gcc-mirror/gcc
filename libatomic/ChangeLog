@@ -1,3 +1,8 @@
+2025-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* testsuite/lib/libatomic.exp: Add load_lib of scanhtml.exp.
+
 2025-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/101075
