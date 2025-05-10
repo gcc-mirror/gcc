@@ -3116,10 +3116,30 @@ ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs,
 
   rtx_insn *set_insn;
   if (insn == BB_HEAD (bb))
-    set_insn = emit_insn_before (set, insn);
+    {
+      set_insn = emit_insn_before (set, insn);
+      if (dump_file)
+	{
+	  fprintf (dump_file, "\nPlace:\n\n");
+	  print_rtl_single (dump_file, set_insn);
+	  fprintf (dump_file, "\nbefore:\n\n");
+	  print_rtl_single (dump_file, insn);
+	  fprintf (dump_file, "\n");
+	}
+    }
   else
-    set_insn = emit_insn_after (set,
-				insn ? PREV_INSN (insn) : BB_END (bb));
+    {
+      rtx_insn *after = insn ? PREV_INSN (insn) : BB_END (bb);
+      set_insn = emit_insn_after (set, after);
+      if (dump_file)
+	{
+	  fprintf (dump_file, "\nPlace:\n\n");
+	  print_rtl_single (dump_file, set_insn);
+	  fprintf (dump_file, "\nafter:\n\n");
+	  print_rtl_single (dump_file, after);
+	  fprintf (dump_file, "\n");
+	}
+    }
 
   if (inner_scalar)
     {
@@ -3129,7 +3149,15 @@ ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs,
 	  && GET_MODE (reg) != GET_MODE (inner_scalar))
 	inner_scalar = gen_rtx_SUBREG (GET_MODE (reg), inner_scalar, 0);
       rtx set = gen_rtx_SET (reg, inner_scalar);
-      emit_insn_before (set, set_insn);
+      insn = emit_insn_before (set, set_insn);
+      if (dump_file)
+	{
+	  fprintf (dump_file, "\nAdd:\n\n");
+	  print_rtl_single (dump_file, insn);
+	  fprintf (dump_file, "\nbefore:\n\n");
+	  print_rtl_single (dump_file, set_insn);
+	  fprintf (dump_file, "\n");
+	}
     }
 }
 
@@ -3416,7 +3444,15 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
 		  vreg = gen_reg_rtx (vmode);
 		  rtx vsubreg = gen_rtx_SUBREG (vmode, vector_const, 0);
 		  rtx pat = gen_rtx_SET (vreg, vsubreg);
-		  emit_insn_before (pat, insn);
+		  rtx_insn *vinsn = emit_insn_before (pat, insn);
+		  if (dump_file)
+		    {
+		      fprintf (dump_file, "\nInsert an extra move:\n\n");
+		      print_rtl_single (dump_file, vinsn);
+		      fprintf (dump_file, "\nbefore:\n\n");
+		      print_rtl_single (dump_file, insn);
+		      fprintf (dump_file, "\n");
+		    }
 		}
 	      replace = gen_rtx_SUBREG (mode, vreg, 0);
 	    }
@@ -3424,11 +3460,22 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
 	    replace = gen_rtx_SUBREG (mode, vector_const, 0);
 	}
 
+      if (dump_file)
+	{
+	  fprintf (dump_file, "\nReplace:\n\n");
+	  print_rtl_single (dump_file, insn);
+	}
       SET_SRC (set) = replace;
       /* Drop possible dead definitions.  */
       PATTERN (insn) = set;
       INSN_CODE (insn) = -1;
       recog_memoized (insn);
+      if (dump_file)
+	{
+	  fprintf (dump_file, "\nwith:\n\n");
+	  print_rtl_single (dump_file, insn);
+	  fprintf (dump_file, "\n");
+	}
       df_insn_rescan (insn);
     }
 }
@@ -3788,6 +3835,14 @@ remove_redundant_vector_load (void)
 		rtx set = gen_rtx_SET (load->broadcast_reg,
 				       load->broadcast_source);
 		insn = emit_insn_after (set, load->def_insn);
+		if (dump_file)
+		  {
+		    fprintf (dump_file, "\nAdd:\n\n");
+		    print_rtl_single (dump_file, insn);
+		    fprintf (dump_file, "\nafter:\n\n");
+		    print_rtl_single (dump_file, load->def_insn);
+		    fprintf (dump_file, "\n");
+		  }
 	      }
 	    else
 	      ix86_place_single_vector_set (load->broadcast_reg,
