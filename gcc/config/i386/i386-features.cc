@@ -3372,12 +3372,12 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
 
       /* Get the single SET instruction.  */
       rtx set = single_set (insn);
-      rtx dest = SET_SRC (set);
-      machine_mode mode = GET_MODE (dest);
+      rtx src = SET_SRC (set);
+      machine_mode mode = GET_MODE (src);
 
       rtx replace;
       /* Replace the source operand with VECTOR_CONST.  */
-      if (SUBREG_P (dest) || mode == vector_mode)
+      if (SUBREG_P (src) || mode == vector_mode)
 	replace = vector_const;
       else
 	{
