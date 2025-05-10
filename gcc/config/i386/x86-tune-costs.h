@@ -107,6 +107,7 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
 					   in 128bit, 256bit and 512bit */
   4, 4, 6,				/* cost of moving XMM,YMM,ZMM register */
   4,					/* cost of moving SSE register to integer.  */
+  4,					/* cost of moving integer register to SSE.  */
   COSTS_N_BYTES (5), 0,			/* Gather load static, per_elt.  */
   COSTS_N_BYTES (5), 0,			/* Gather store static, per_elt.  */
   0,					/* size of l1 cache  */
@@ -227,6 +228,7 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   3,					/* cost of moving SSE register to integer.  */
+  3,					/* cost of moving integer register to SSE.  */
   4, 4,					/* Gather load static, per_elt.  */
   4, 4,					/* Gather store static, per_elt.  */
   0,					/* size of l1 cache  */
@@ -345,6 +347,7 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   3,					/* cost of moving SSE register to integer.  */
+  3,					/* cost of moving integer register to SSE.  */
   4, 4,					/* Gather load static, per_elt.  */
   4, 4,					/* Gather store static, per_elt.  */
   4,					/* size of l1 cache.  486 has 8kB cache
@@ -465,6 +468,7 @@ struct processor_costs pentium_cost = {
   {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   3,					/* cost of moving SSE register to integer.  */
+  3,					/* cost of moving integer register to SSE.  */
   4, 4,					/* Gather load static, per_elt.  */
   4, 4,					/* Gather store static, per_elt.  */
   8,					/* size of l1 cache.  */
@@ -576,6 +580,7 @@ struct processor_costs lakemont_cost = {
   {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   3,					/* cost of moving SSE register to integer.  */
+  3,					/* cost of moving integer register to SSE.  */
   4, 4,					/* Gather load static, per_elt.  */
   4, 4,					/* Gather store static, per_elt.  */
   8,					/* size of l1 cache.  */
@@ -702,6 +707,7 @@ struct processor_costs pentiumpro_cost = {
   {4, 8, 16, 32, 64},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   3,					/* cost of moving SSE register to integer.  */
+  3,					/* cost of moving integer register to SSE.  */
   4, 4,					/* Gather load static, per_elt.  */
   4, 4,					/* Gather store static, per_elt.  */
   8,					/* size of l1 cache.  */
@@ -819,6 +825,7 @@ struct processor_costs geode_cost = {
   {2, 2, 8, 16, 32},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   2, 2,					/* Gather load static, per_elt.  */
   2, 2,					/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
@@ -936,6 +943,7 @@ struct processor_costs k6_cost = {
   {2, 2, 8, 16, 32},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   2, 2,					/* Gather load static, per_elt.  */
   2, 2,					/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
@@ -1059,6 +1067,7 @@ struct processor_costs athlon_cost = {
   {4, 4, 10, 10, 20},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   5,					/* cost of moving SSE register to integer.  */
+  5,					/* cost of moving integer register to SSE.  */
   4, 4,					/* Gather load static, per_elt.  */
   4, 4,					/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
@@ -1184,6 +1193,7 @@ struct processor_costs k8_cost = {
   {4, 4, 10, 10, 20},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   5,					/* cost of moving SSE register to integer.  */
+  5,					/* cost of moving integer register to SSE.  */
   4, 4,					/* Gather load static, per_elt.  */
   4, 4,					/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
@@ -1322,6 +1332,7 @@ struct processor_costs amdfam10_cost = {
   {4, 4, 5, 10, 20},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   3,					/* cost of moving SSE register to integer.  */
+  3,					/* cost of moving integer register to SSE.  */
   4, 4,					/* Gather load static, per_elt.  */
   4, 4,					/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
@@ -1452,6 +1463,7 @@ const struct processor_costs bdver_cost = {
   {10, 10, 10, 40, 60},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   16,					/* cost of moving SSE register to integer.  */
+  16,					/* cost of moving integer register to SSE.  */
   12, 12,				/* Gather load static, per_elt.  */
   10, 10,				/* Gather store static, per_elt.  */
   16,					/* size of l1 cache.  */
@@ -1603,6 +1615,7 @@ struct processor_costs znver1_cost = {
   {8, 8, 8, 16, 32},			/* cost of unaligned stores.  */
   2, 3, 6,				/* cost of moving XMM,YMM,ZMM register.  */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   /* VGATHERDPD is 23 uops and throughput is 9, VGATHERDPD is 35 uops,
      throughput 12.  Approx 9 uops do not depend on vector size and every load
      is 7 uops.  */
@@ -1770,6 +1783,7 @@ struct processor_costs znver2_cost = {
   2, 2, 3,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   /* VGATHERDPD is 23 uops and throughput is 9, VGATHERDPD is 35 uops,
      throughput 12.  Approx 9 uops do not depend on vector size and every load
      is 7 uops.  */
@@ -1912,6 +1926,7 @@ struct processor_costs znver3_cost = {
   2, 2, 3,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   /* VGATHERDPD is 15 uops and throughput is 4, VGATHERDPS is 23 uops,
      throughput 9.  Approx 7 uops do not depend on vector size and every load
      is 4 uops.  */
@@ -2056,6 +2071,7 @@ struct processor_costs znver4_cost = {
   2, 2, 2,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   /* VGATHERDPD is 17 uops and throughput is 4, VGATHERDPS is 24 uops,
      throughput 5.  Approx 7 uops do not depend on vector size and every load
      is 5 uops.  */
@@ -2204,6 +2220,7 @@ struct processor_costs znver5_cost = {
   2, 2, 2,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
 
   /* TODO: gather and scatter instructions are currently disabled in
      x86-tune.def.  In some cases they are however a win, see PR116582
@@ -2372,6 +2389,7 @@ struct processor_costs skylake_cost = {
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
   2, 2, 4,				/* cost of moving XMM,YMM,ZMM register */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   20, 8,				/* Gather load static, per_elt.  */
   22, 10,				/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
@@ -2508,6 +2526,7 @@ struct processor_costs icelake_cost = {
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
   2, 2, 4,				/* cost of moving XMM,YMM,ZMM register */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   20, 8,				/* Gather load static, per_elt.  */
   22, 10,				/* Gather store static, per_elt.  */
   64,					/* size of l1 cache.  */
@@ -2638,6 +2657,7 @@ struct processor_costs alderlake_cost = {
   {8, 8, 8, 10, 15},			/* cost of unaligned storess.  */
   2, 3, 4,				/* cost of moving XMM,YMM,ZMM register */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   18, 6,				/* Gather load static, per_elt.  */
   18, 6,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
@@ -2761,6 +2781,7 @@ const struct processor_costs btver1_cost = {
   {10, 10, 12, 48, 96},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   14,					/* cost of moving SSE register to integer.  */
+  14,					/* cost of moving integer register to SSE.  */
   10, 10,				/* Gather load static, per_elt.  */
   10, 10,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
@@ -2881,6 +2902,7 @@ const struct processor_costs btver2_cost = {
   {10, 10, 12, 48, 96},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   14,					/* cost of moving SSE register to integer.  */
+  14,					/* cost of moving integer register to SSE.  */
   10, 10,				/* Gather load static, per_elt.  */
   10, 10,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
@@ -3000,6 +3022,7 @@ struct processor_costs pentium4_cost = {
   {32, 32, 32, 64, 128},		/* cost of unaligned stores.  */
   12, 24, 48,				/* cost of moving XMM,YMM,ZMM register */
   20,					/* cost of moving SSE register to integer.  */
+  20,					/* cost of moving integer register to SSE.  */
   16, 16,				/* Gather load static, per_elt.  */
   16, 16,				/* Gather store static, per_elt.  */
   8,					/* size of l1 cache.  */
@@ -3122,6 +3145,7 @@ struct processor_costs nocona_cost = {
   {24, 24, 24, 48, 96},			/* cost of unaligned stores.  */
   6, 12, 24,				/* cost of moving XMM,YMM,ZMM register */
   20,					/* cost of moving SSE register to integer.  */
+  20,					/* cost of moving integer register to SSE.  */
   12, 12,				/* Gather load static, per_elt.  */
   12, 12,				/* Gather store static, per_elt.  */
   8,					/* size of l1 cache.  */
@@ -3242,6 +3266,7 @@ struct processor_costs atom_cost = {
   {16, 16, 16, 32, 64},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   8,					/* cost of moving SSE register to integer.  */
+  8,					/* cost of moving integer register to SSE.  */
   8, 8,					/* Gather load static, per_elt.  */
   8, 8,					/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
@@ -3362,6 +3387,7 @@ struct processor_costs slm_cost = {
   {16, 16, 16, 32, 64},			/* cost of unaligned stores.  */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
   8,					/* cost of moving SSE register to integer.  */
+  8,					/* cost of moving integer register to SSE.  */
   8, 8,					/* Gather load static, per_elt.  */
   8, 8,					/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
@@ -3494,6 +3520,7 @@ struct processor_costs tremont_cost = {
   {6, 6, 6, 10, 15},			/* cost of unaligned storess.  */
   2, 3, 4,				/* cost of moving XMM,YMM,ZMM register */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   18, 6,				/* Gather load static, per_elt.  */
   18, 6,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
@@ -3616,6 +3643,7 @@ struct processor_costs intel_cost = {
   {10, 10, 10, 10, 10},			/* cost of unaligned loads.  */
   2, 2, 2,				/* cost of moving XMM,YMM,ZMM register */
   4,					/* cost of moving SSE register to integer.  */
+  4,					/* cost of moving integer register to SSE.  */
   6, 6,					/* Gather load static, per_elt.  */
   6, 6,					/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
@@ -3731,15 +3759,16 @@ struct processor_costs lujiazui_cost = {
   {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {6, 6, 6},			/* cost of storing integer registers.  */
+  {6, 6, 6},				/* cost of storing integer registers.  */
   {6, 6, 6, 10, 15},			/* cost of loading SSE register
-				in 32bit, 64bit, 128bit, 256bit and 512bit.  */
+					   in 32bit, 64bit, 128bit, 256bit and 512bit.  */
   {6, 6, 6, 10, 15},			/* cost of storing SSE register
-				in 32bit, 64bit, 128bit, 256bit and 512bit.  */
+					   in 32bit, 64bit, 128bit, 256bit and 512bit.  */
   {6, 6, 6, 10, 15},			/* cost of unaligned loads.  */
   {6, 6, 6, 10, 15},			/* cost of unaligned storess.  */
-  2, 3, 4,			/* cost of moving XMM,YMM,ZMM register.  */
-  6,				/* cost of moving SSE register to integer.  */
+  2, 3, 4,				/* cost of moving XMM,YMM,ZMM register.  */
+  6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   18, 6,				/* Gather load static, per_elt.  */
   18, 6,				/* Gather store static, per_elt.  */
   32,				  	/* size of l1 cache.  */
@@ -3864,6 +3893,7 @@ struct processor_costs yongfeng_cost = {
   {8, 8, 8, 12, 15},			/* cost of unaligned storess.  */
   2, 3, 4,			/* cost of moving XMM,YMM,ZMM register.  */
   8,				/* cost of moving SSE register to integer.  */
+  8,					/* cost of moving integer register to SSE.  */
   18, 6,				/* Gather load static, per_elt.  */
   18, 6,				/* Gather store static, per_elt.  */
   32,				  	/* size of l1 cache.  */
@@ -3987,6 +4017,7 @@ struct processor_costs shijidadao_cost = {
   {8, 8, 8, 12, 15},			/* cost of unaligned storess.  */
   2, 3, 4,			/* cost of moving XMM,YMM,ZMM register.  */
   8,				/* cost of moving SSE register to integer.  */
+  8,					/* cost of moving integer register to SSE.  */
   18, 6,				/* Gather load static, per_elt.  */
   18, 6,				/* Gather store static, per_elt.  */
   32,				  	/* size of l1 cache.  */
@@ -4116,6 +4147,7 @@ struct processor_costs generic_cost = {
   {6, 6, 6, 10, 15},			/* cost of unaligned storess.  */
   2, 3, 4,				/* cost of moving XMM,YMM,ZMM register */
   6,					/* cost of moving SSE register to integer.  */
+  6,					/* cost of moving integer register to SSE.  */
   18, 6,				/* Gather load static, per_elt.  */
   18, 6,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
@@ -4249,6 +4281,7 @@ struct processor_costs core_cost = {
   {6, 6, 6, 6, 12},			/* cost of unaligned stores.  */
   2, 2, 4,				/* cost of moving XMM,YMM,ZMM register */
   2,					/* cost of moving SSE register to integer.  */
+  2,					/* cost of moving integer register to SSE.  */
   /* VGATHERDPD is 7 uops, rec throughput 5, while VGATHERDPD is 9 uops,
      rec. throughput 6.
      So 5 uops statically and one uops per load.  */

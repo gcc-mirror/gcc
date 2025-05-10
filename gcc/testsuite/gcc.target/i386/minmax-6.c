@@ -15,4 +15,4 @@ UMVLine16Y_11 (short unsigned int * Pic, int y, int width)
 /* We do not want the RA to spill %esi for it's dual-use but using
    pmaxsd is OK.  */
 /* { dg-final { scan-assembler-not "rsp" { target { ! { ia32 } } } } } */
-/* { dg-final { scan-assembler "pmaxsd" } } */
+/* { dg-final { scan-assembler "pmaxsd" { xfail *-*-* } } } */

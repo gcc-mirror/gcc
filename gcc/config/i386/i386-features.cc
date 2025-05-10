@@ -518,15 +518,17 @@ scalar_chain::build (bitmap candidates, unsigned insn_uid, bitmap disallowed)
    instead of using a scalar one.  */
 
 int
-general_scalar_chain::vector_const_cost (rtx exp)
+general_scalar_chain::vector_const_cost (rtx exp, basic_block bb)
 {
   gcc_assert (CONST_INT_P (exp));
 
   if (standard_sse_constant_p (exp, vmode))
     return ix86_cost->sse_op;
+  if (optimize_bb_for_size_p (bb))
+    return COSTS_N_BYTES (8);
   /* We have separate costs for SImode and DImode, use SImode costs
      for smaller modes.  */
-  return ix86_cost->sse_load[smode == DImode ? 1 : 0];
+  return COSTS_N_INSNS (ix86_cost->sse_load[smode == DImode ? 1 : 0]) / 2;
 }
 
 /* Compute a gain for chain conversion.  */
@@ -547,7 +549,7 @@ general_scalar_chain::compute_convert_gain ()
      smaller modes than SImode the int load/store costs need to be
      adjusted as well.  */
   unsigned sse_cost_idx = smode == DImode ? 1 : 0;
-  unsigned m = smode == DImode ? (TARGET_64BIT ? 1 : 2) : 1;
+  int m = smode == DImode ? (TARGET_64BIT ? 1 : 2) : 1;
 
   EXECUTE_IF_SET_IN_BITMAP (insns, 0, insn_uid, bi)
     {
@@ -555,26 +557,55 @@ general_scalar_chain::compute_convert_gain ()
       rtx def_set = single_set (insn);
       rtx src = SET_SRC (def_set);
       rtx dst = SET_DEST (def_set);
+      basic_block bb = BLOCK_FOR_INSN (insn);
       int igain = 0;
 
       if (REG_P (src) && REG_P (dst))
-	igain += 2 * m - ix86_cost->xmm_move;
+	{
+	  if (optimize_bb_for_size_p (bb))
+	    /* reg-reg move is 2 bytes, while SSE 3.  */
+	    igain += COSTS_N_BYTES (2 * m - 3);
+	  else
+	    /* Move costs are normalized to reg-reg move having cost 2.  */
+	    igain += COSTS_N_INSNS (2 * m - ix86_cost->xmm_move) / 2;
+	}
       else if (REG_P (src) && MEM_P (dst))
-	igain
-	  += m * ix86_cost->int_store[2] - ix86_cost->sse_store[sse_cost_idx];
+	{
+	  if (optimize_bb_for_size_p (bb))
+	    /* Integer load/store is 3+ bytes and SSE 4+.  */
+	    igain += COSTS_N_BYTES (3 * m - 4);
+	  else
+	    igain
+	      += COSTS_N_INSNS (m * ix86_cost->int_store[2]
+				- ix86_cost->sse_store[sse_cost_idx]) / 2;
+	}
       else if (MEM_P (src) && REG_P (dst))
-	igain += m * ix86_cost->int_load[2] - ix86_cost->sse_load[sse_cost_idx];
+	{
+	  if (optimize_bb_for_size_p (bb))
+	    igain += COSTS_N_BYTES (3 * m - 4);
+	  else
+	    igain += COSTS_N_INSNS (m * ix86_cost->int_load[2]
+				    - ix86_cost->sse_load[sse_cost_idx]) / 2;
+	}
       else
 	{
 	  /* For operations on memory operands, include the overhead
 	     of explicit load and store instructions.  */
 	  if (MEM_P (dst))
-	    igain += optimize_insn_for_size_p ()
-		     ? -COSTS_N_BYTES (8)
-		     : (m * (ix86_cost->int_load[2]
-			     + ix86_cost->int_store[2])
-			- (ix86_cost->sse_load[sse_cost_idx] +
-			   ix86_cost->sse_store[sse_cost_idx]));
+	    {
+	      if (optimize_bb_for_size_p (bb))
+		/* ??? This probably should account size difference
+		   of SSE and integer load rather than full SSE load.  */
+		igain -= COSTS_N_BYTES (8);
+	      else
+		{
+		  int cost = (m * (ix86_cost->int_load[2]
+				   + ix86_cost->int_store[2])
+			     - (ix86_cost->sse_load[sse_cost_idx] +
+				ix86_cost->sse_store[sse_cost_idx]));
+		  igain += COSTS_N_INSNS (cost) / 2;
+		}
+	    }
 
 	  switch (GET_CODE (src))
 	    {
@@ -595,7 +626,7 @@ general_scalar_chain::compute_convert_gain ()
 	      igain += ix86_cost->shift_const - ix86_cost->sse_op;
 
 	      if (CONST_INT_P (XEXP (src, 0)))
-		igain -= vector_const_cost (XEXP (src, 0));
+		igain -= vector_const_cost (XEXP (src, 0), bb);
 	      break;
 
 	    case ROTATE:
@@ -631,16 +662,17 @@ general_scalar_chain::compute_convert_gain ()
 		igain += m * ix86_cost->add;
 
 	      if (CONST_INT_P (XEXP (src, 0)))
-		igain -= vector_const_cost (XEXP (src, 0));
+		igain -= vector_const_cost (XEXP (src, 0), bb);
 	      if (CONST_INT_P (XEXP (src, 1)))
-		igain -= vector_const_cost (XEXP (src, 1));
+		igain -= vector_const_cost (XEXP (src, 1), bb);
 	      if (MEM_P (XEXP (src, 1)))
 		{
-		  if (optimize_insn_for_size_p ())
+		  if (optimize_bb_for_size_p (bb))
 		    igain -= COSTS_N_BYTES (m == 2 ? 3 : 5);
 		  else
-		    igain += m * ix86_cost->int_load[2]
-			     - ix86_cost->sse_load[sse_cost_idx];
+		    igain += COSTS_N_INSNS
+			       (m * ix86_cost->int_load[2]
+				 - ix86_cost->sse_load[sse_cost_idx]) / 2;
 		}
 	      break;
 
@@ -698,7 +730,7 @@ general_scalar_chain::compute_convert_gain ()
 	    case CONST_INT:
 	      if (REG_P (dst))
 		{
-		  if (optimize_insn_for_size_p ())
+		  if (optimize_bb_for_size_p (bb))
 		    {
 		      /* xor (2 bytes) vs. xorps (3 bytes).  */
 		      if (src == const0_rtx)
@@ -722,14 +754,14 @@ general_scalar_chain::compute_convert_gain ()
 		      /* DImode can be immediate for TARGET_64BIT
 			 and SImode always.  */
 		      igain += m * COSTS_N_INSNS (1);
-		      igain -= vector_const_cost (src);
+		      igain -= vector_const_cost (src, bb);
 		    }
 		}
 	      else if (MEM_P (dst))
 		{
 		  igain += (m * ix86_cost->int_store[2]
 			    - ix86_cost->sse_store[sse_cost_idx]);
-		  igain -= vector_const_cost (src);
+		  igain -= vector_const_cost (src, bb);
 		}
 	      break;
 
@@ -737,13 +769,14 @@ general_scalar_chain::compute_convert_gain ()
 	      if (XVECEXP (XEXP (src, 1), 0, 0) == const0_rtx)
 		{
 		  // movd (4 bytes) replaced with movdqa (4 bytes).
-		  if (!optimize_insn_for_size_p ())
-		    igain += ix86_cost->sse_to_integer - ix86_cost->xmm_move;
+		  if (!optimize_bb_for_size_p (bb))
+		    igain += COSTS_N_INSNS (ix86_cost->sse_to_integer
+					    - ix86_cost->xmm_move) / 2;
 		}
 	      else
 		{
 		  // pshufd; movd replaced with pshufd.
-		  if (optimize_insn_for_size_p ())
+		  if (optimize_bb_for_size_p (bb))
 		    igain += COSTS_N_BYTES (4);
 		  else
 		    igain += ix86_cost->sse_to_integer;
@@ -769,11 +802,11 @@ general_scalar_chain::compute_convert_gain ()
   /* Cost the integer to sse and sse to integer moves.  */
   if (!optimize_function_for_size_p (cfun))
     {
-      cost += n_sse_to_integer * ix86_cost->sse_to_integer;
+      cost += n_sse_to_integer * COSTS_N_INSNS (ix86_cost->sse_to_integer) / 2;
       /* ???  integer_to_sse but we only have that in the RA cost table.
 	      Assume sse_to_integer/integer_to_sse are the same which they
 	      are at the moment.  */
-      cost += n_integer_to_sse * ix86_cost->sse_to_integer;
+      cost += n_integer_to_sse * COSTS_N_INSNS (ix86_cost->integer_to_sse) / 2;
     }
   else if (TARGET_64BIT || smode == SImode)
     {
@@ -1508,13 +1541,13 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
    with numerous special cases.  */
 
 static int
-timode_immed_const_gain (rtx cst)
+timode_immed_const_gain (rtx cst, basic_block bb)
 {
   /* movabsq vs. movabsq+vmovq+vunpacklqdq.  */
   if (CONST_WIDE_INT_P (cst)
       && CONST_WIDE_INT_NUNITS (cst) == 2
       && CONST_WIDE_INT_ELT (cst, 0) == CONST_WIDE_INT_ELT (cst, 1))
-    return optimize_insn_for_size_p () ? -COSTS_N_BYTES (9)
+    return optimize_bb_for_size_p (bb) ? -COSTS_N_BYTES (9)
 				       : -COSTS_N_INSNS (2);
   /* 2x movabsq ~ vmovdqa.  */
   return 0;
@@ -1546,33 +1579,34 @@ timode_scalar_chain::compute_convert_gain ()
       rtx src = SET_SRC (def_set);
       rtx dst = SET_DEST (def_set);
       HOST_WIDE_INT op1val;
+      basic_block bb = BLOCK_FOR_INSN (insn);
       int scost, vcost;
       int igain = 0;
 
       switch (GET_CODE (src))
 	{
 	case REG:
-	  if (optimize_insn_for_size_p ())
+	  if (optimize_bb_for_size_p (bb))
 	    igain = MEM_P (dst) ? COSTS_N_BYTES (6) : COSTS_N_BYTES (3);
 	  else
 	    igain = COSTS_N_INSNS (1);
 	  break;
 
 	case MEM:
-	  igain = optimize_insn_for_size_p () ? COSTS_N_BYTES (7)
+	  igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (7)
 					      : COSTS_N_INSNS (1);
 	  break;
 
 	case CONST_INT:
 	  if (MEM_P (dst)
 	      && standard_sse_constant_p (src, V1TImode))
-	    igain = optimize_insn_for_size_p () ? COSTS_N_BYTES (11) : 1;
+	    igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (11) : 1;
 	  break;
 
 	case CONST_WIDE_INT:
 	  /* 2 x mov vs. vmovdqa.  */
 	  if (MEM_P (dst))
-	    igain = optimize_insn_for_size_p () ? COSTS_N_BYTES (3)
+	    igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (3)
 						: COSTS_N_INSNS (1);
 	  break;
 
@@ -1587,14 +1621,14 @@ timode_scalar_chain::compute_convert_gain ()
 	  if (!MEM_P (dst))
 	    igain = COSTS_N_INSNS (1);
 	  if (CONST_SCALAR_INT_P (XEXP (src, 1)))
-	    igain += timode_immed_const_gain (XEXP (src, 1));
+	    igain += timode_immed_const_gain (XEXP (src, 1), bb);
 	  break;
 
 	case ASHIFT:
 	case LSHIFTRT:
 	  /* See ix86_expand_v1ti_shift.  */
 	  op1val = INTVAL (XEXP (src, 1));
-	  if (optimize_insn_for_size_p ())
+	  if (optimize_bb_for_size_p (bb))
 	    {
 	      if (op1val == 64 || op1val == 65)
 		scost = COSTS_N_BYTES (5);
@@ -1628,7 +1662,7 @@ timode_scalar_chain::compute_convert_gain ()
 	case ASHIFTRT:
 	  /* See ix86_expand_v1ti_ashiftrt.  */
 	  op1val = INTVAL (XEXP (src, 1));
-	  if (optimize_insn_for_size_p ())
+	  if (optimize_bb_for_size_p (bb))
 	    {
 	      if (op1val == 64 || op1val == 127)
 		scost = COSTS_N_BYTES (7);
@@ -1706,7 +1740,7 @@ timode_scalar_chain::compute_convert_gain ()
 	case ROTATERT:
 	  /* See ix86_expand_v1ti_rotate.  */
 	  op1val = INTVAL (XEXP (src, 1));
-	  if (optimize_insn_for_size_p ())
+	  if (optimize_bb_for_size_p (bb))
 	    {
 	      scost = COSTS_N_BYTES (13);
 	      if ((op1val & 31) == 0)
@@ -1738,16 +1772,16 @@ timode_scalar_chain::compute_convert_gain ()
 	    {
 	      if (GET_CODE (XEXP (src, 0)) == AND)
 		/* and;and;or (9 bytes) vs. ptest (5 bytes).  */
-		igain = optimize_insn_for_size_p() ? COSTS_N_BYTES (4)
-						   : COSTS_N_INSNS (2);
+		igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (4)
+						    : COSTS_N_INSNS (2);
 	      /* or (3 bytes) vs. ptest (5 bytes).  */
-	      else if (optimize_insn_for_size_p ())
+	      else if (optimize_bb_for_size_p (bb))
 		igain = -COSTS_N_BYTES (2);
 	    }
 	  else if (XEXP (src, 1) == const1_rtx)
 	    /* and;cmp -1 (7 bytes) vs. pcmpeqd;pxor;ptest (13 bytes).  */
-	    igain = optimize_insn_for_size_p() ? -COSTS_N_BYTES (6)
-					       : -COSTS_N_INSNS (1);
+	    igain = optimize_bb_for_size_p (bb) ? -COSTS_N_BYTES (6)
+						: -COSTS_N_INSNS (1);
 	  break;
 
 	default:

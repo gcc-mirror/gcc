@@ -17,4 +17,4 @@ void bar (int aleft, int axcenter)
 /* We do not want the RA to spill %esi for it's dual-use but using
    pminsd is OK.  */
 /* { dg-final { scan-assembler-not "rsp" { target { ! { ia32 } } } } } */
-/* { dg-final { scan-assembler "pminsd" } } */
+/* { dg-final { scan-assembler "pminsd" { xfail *-*-* } } } */
