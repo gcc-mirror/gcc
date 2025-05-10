@@ -1767,8 +1767,15 @@
 (define_expand "<optab><mode>3"
   [(set (match_operand:X 0 "register_operand")
 	(any_or:X (match_operand:X 1 "register_operand" "")
-		   (match_operand:X 2 "arith_or_zbs_operand" "")))]
-  "")
+		   (match_operand:X 2 "reg_or_const_int_operand" "")))]
+  ""
+
+{
+  /* If synthesis of the logical op is successful, then no further code
+     generation is necessary.  Else just generate code normally.  */
+  if (CONST_INT_P (operands[2]) && synthesize_ior_xor (<OPTAB>, operands))
+    DONE;
+})
 
 (define_insn "*<optab><mode>3"
   [(set (match_operand:X                0 "register_operand" "=r,r")

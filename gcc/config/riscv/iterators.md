@@ -262,6 +262,9 @@
 
 (define_code_attr fix_uns [(fix "fix") (unsigned_fix "fixuns")])
 
+(define_code_attr OPTAB [(ior "IOR")
+                         (xor "XOR")])
+
 
 ;; -------------------------------------------------------------------
 ;; Code Attributes
