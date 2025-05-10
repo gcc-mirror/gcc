@@ -33,13 +33,15 @@ start_condition_str( int sc ) {
   const char *state = "???";
   switch(sc) {
   case INITIAL: state = "INITIAL"; break;
+  case addr_of: state = "addr_of"; break;
   case author_state: state = "author_state"; break;
   case basis: state = "basis"; break;
   case bool_state: state = "bool_state"; break;
   case cdf_state: state = "cdf_state"; break;
   case classify: state = "classify"; break;
-  case copy_state: state = "copy_state"; break;
+  case cobol_words: state = "cobol_words"; break;
   case comment_entries: state = "comment_entries"; break;
+  case copy_state: state = "copy_state"; break;
   case date_state: state = "date_state"; break;
   case datetime_fmt: state = "datetime_fmt"; break;
   case dot_state: state = "dot_state"; break;
@@ -62,8 +64,8 @@ start_condition_str( int sc ) {
   case quoted2: state = "quoted2"; break;
   case quoteq: state = "quoteq"; break;
   case raising: state = "raising"; break;
-  case subscripts: state = "subscripts"; break;
   case sort_state: state = "sort_state"; break;
+  case subscripts: state = "subscripts"; break;
   }
   return state;
 }

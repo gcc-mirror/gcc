@@ -19,7 +19,7 @@
 *> { dg-output {CORRECTLY_TRUE: A_4 NOT  = B_4(\n|\r\n|\r)} }
 *> { dg-output {CORRECTLY_ELSE: A_4 NOT  > B_4(\n|\r\n|\r)} }
 *> { dg-output { } }
-* Not strictly Reference Format
+        >>SOURCE FREE
         IDENTIFICATION DIVISION.
         PROGRAM-ID. test.
         DATA DIVISION.

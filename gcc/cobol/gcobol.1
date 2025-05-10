@@ -97,8 +97,9 @@ Define a CDF name (for use with
 to have the value of
 .Ar expr .
 .It Fl E
-Write the CDF-processed \*[lang] input to standard output in free-form
-reference format.  Certain non-\*[lang]  markers are included in the
+Write the CDF-processed \*[lang] input to standard output in
+.Em "free-form reference format".
+Certain non-\*[lang] markers are included in the
 output to indicate where copybook files were included.  For
 line-number consistency with the input, blank lines are retained.
 .Pp
@@ -147,13 +148,13 @@ and
 in that order.
 .It Fl ffixed-form
 Use strict
-.Em "Reference Format"
+.Em "fixed-form reference format"
 in reading the \*[lang] input:
 72-character lines, with a 6-character sequence area, and an indicator
 column.  Data past column 72 are ignored.
 .It Fl ffree-form
 Force the \*[lang] input to be interpreted as
-.Em "free format" .
+.Em "free-form reference format".
 Line breaks are insignificant, except that
 .Ql *
 at the start of a line acts as a comment marker.
@@ -187,12 +188,23 @@ the entire program could appear on one line.
 .Pp
 By default,
 .Nm
-auto-detects the source code format by examining the
-.Em "sequence number area"
-of the first line of the first file: if those characters are all
-digits or blanks, the file is assumed to be in
-.Em "reference format" ,
+auto-detects the source code format by examining the line that
+contains the text "program-id".  When there are characters on past column 72 
+on that line, the file is assumed to be in 
+.Em "extended source format",
 with the indicator area in column 7.
+Otherwise, columns 1-6 are examined. If those characters are all digits
+or blanks, the file is assumed to be in
+.Em "fixed-form reference format",
+also with the indicator in column 7.
+
+If not auto-detected as 
+.Em "fixed-form reference format" 
+or 
+.Em "extended source format",
+the file is assumed to be in 
+.Em "free-form reference format".
+
 .Pp
 .
 .It Fl fcobol-exceptions Ar exception Op Ns , Ns Ar exception Ns ...
@@ -1000,9 +1012,12 @@ to standard error as a warning message.
 may be one of:
 .Bl -tag -compact
 .It Sy FIXED
-Source conforms to \*[lang] Reference Format with unlimited line length.
+Source conforms to \*[lang] 
+.Em "fixed-form reference format"
+with unlimited line length.
 .It Sy FREE
-Line endings and indentation are ignored by the compiler, except that a
+Source conforms to \*[lang] 
+.Em "free-form reference format".
 .Ql "*"
 at the beginning of a line is recognized as a comment.
 .El

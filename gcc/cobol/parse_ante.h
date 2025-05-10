@@ -928,10 +928,11 @@ teed_up_names() {
 }
 
 class tokenset_t {
-  std::vector<const char *>token_names;
-  std::map <std::string, int> tokens;
-  std::set<std::string> cobol_words;
-
+  // token_names is initialized from a generated header file. 
+  std::vector<const char *>token_names;  // position indicates token value
+  std::map <std::string, int> tokens;    // aliases
+  std::set<std::string> cobol_words;  // Anything in COBOL-WORDS may appear only once. 
+ public:
   static std::string
   lowercase( const cbl_name_t name ) {
     cbl_name_t lname;
@@ -949,40 +950,56 @@ class tokenset_t {
   tokenset_t();
   int find( const cbl_name_t name, bool include_intrinsics );
 
-  bool equate( const YYLTYPE& loc, int token, const cbl_name_t name ) {
+  bool equate( const YYLTYPE& loc, int token,
+	       const cbl_name_t name, const cbl_name_t verb = "EQUATE") {
     auto lname( lowercase(name) );
     auto cw = cobol_words.insert(lname);
     if( ! cw.second ) {
-      error_msg(loc, "COBOL-WORDS EQUATE: %s may appear but once", name);
+      error_msg(loc, "COBOL-WORDS %s: %s may appear but once", verb, name);
       return false;
     }
     auto p = tokens.find(lowercase(name));
     bool fOK = p == tokens.end();
     if( fOK ) { // name not already in use
       tokens[lname] = token;
+      dbgmsg("%s:%d: %d has alias %s", __func__, __LINE__, token, name);
     } else {
-      error_msg(loc, "EQUATE: %s already defined as a token", name);
+      error_msg(loc, "%s: %s already defined as a token", verb, name);
     }
     return fOK;
   }
-  bool undefine( const YYLTYPE& loc, const cbl_name_t name ) {
+  bool undefine( const YYLTYPE& loc,
+		 const cbl_name_t name, const cbl_name_t verb = "UNDEFINE" ) {
     auto lname( lowercase(name) );
     auto cw = cobol_words.insert(lname);
     if( ! cw.second ) {
-      error_msg(loc, "COBOL-WORDS UNDEFINE: %s may appear but once", name);
+      error_msg(loc, "COBOL-WORDS %s: %s may appear but once", verb, name);
       return false;
     }
+
+    // Do not erase generic, multi-type tokens COMPUTATIONAL and BINARY_INTEGER.
+    if( binary_integer_usage_of(name) ) {
+      dbgmsg("%s:%d: generic %s remains valid as a token", __func__, __LINE__, name);
+      return true;
+    }
+
     auto p = tokens.find(lname);
     bool fOK = p != tokens.end();
     if( fOK ) { // name in use
       tokens.erase(p);
     } else {
-      error_msg(loc, "UNDEFINE: %s not defined as a token", name);
+      error_msg(loc, "%s: %s not defined as a token", verb, name);
     }
+    dbgmsg("%s:%d: %s removed as a valid token name", __func__, __LINE__, name);
     return fOK;
   }
-  bool substitute( const YYLTYPE& loc, const cbl_name_t extant, int token, const cbl_name_t name ) {
-    return equate( loc, token, name ) && undefine( loc, extant );
+  
+  bool substitute( const YYLTYPE& loc,
+		   const cbl_name_t extant, int token, const cbl_name_t name ) {
+    return
+      equate( loc, token, name, "SUBSTITUTE" )
+      &&
+      undefine( loc, extant, "SUBSTITUTE" );
   }
   bool reserve( const YYLTYPE& loc, const cbl_name_t name ) {
     auto lname( lowercase(name) );
@@ -1018,24 +1035,42 @@ class current_tokens_t {
   int find( const cbl_name_t name, bool include_intrinsics ) {
     return tokens.find(name, include_intrinsics);
   }
-  bool equate( const YYLTYPE& loc, cbl_name_t keyword, const cbl_name_t name ) {
-    int token = keyword_tok(keyword);
-    if( 0 == token ) {
-      error_msg(loc, "EQUATE %s: not a valid token", keyword);
-      return false;
+  bool equate( const YYLTYPE& loc, cbl_name_t keyword, const cbl_name_t alias ) {
+    int token; 
+    if( 0 == (token = binary_integer_usage_of(keyword)) ) {
+      if( 0 == (token = keyword_tok(keyword)) ) {
+	error_msg(loc, "EQUATE %s: not a valid token", keyword);
+	return false;
+      }
     }
-    return tokens.equate(loc, token, name);
+    auto name = keyword_alias_add(tokens.uppercase(keyword),
+				  tokens.uppercase(alias));
+    if( name != keyword ) {
+      error_msg(loc, "EQUATE: %s is already an alias for %s", alias, name.c_str());
+      return false;
+    } 
+    return tokens.equate(loc, token, alias);
   }
   bool undefine( const YYLTYPE& loc, cbl_name_t keyword ) {
     return tokens.undefine(loc, keyword);
   }
-  bool substitute( const YYLTYPE& loc, cbl_name_t keyword, const cbl_name_t name ) {
-    int token = keyword_tok(keyword);
-    if( 0 == token ) {
-      error_msg(loc, "SUBSTITUTE %s: not a valid token", keyword);
-      return false;
+  bool substitute( const YYLTYPE& loc, cbl_name_t keyword, const cbl_name_t alias ) {
+    int token; 
+    if( 0 == (token = binary_integer_usage_of(keyword)) ) {
+      if( 0 == (token = keyword_tok(keyword)) ) {
+	error_msg(loc, "SUBSTITUTE %s: not a valid token", keyword);
+	return false;
+      }
     }
-    return tokens.substitute(loc, keyword, token, name);
+    auto name = keyword_alias_add(tokens.uppercase(keyword),
+				  tokens.uppercase(alias));
+    if( name != keyword ) {
+      error_msg(loc, "SUBSTITUTE: %s is already an alias for %s", alias, name.c_str());
+      return false;
+    } 
+
+    dbgmsg("%s:%d: %s (%d) will have alias %s", __func__, __LINE__, keyword, token, alias);
+    return tokens.substitute(loc, keyword, token, alias);
   }
   bool reserve( const YYLTYPE& loc, const cbl_name_t name ) {
     return tokens.reserve(loc, name);
@@ -3117,6 +3152,21 @@ special_of( const char F[], int L, const char name[] ) {
   return cbl_special_name_of(e);
 }
 #define special_of( F ) special_of(__func__, __LINE__, (F))
+
+static const special_name_t *
+cmd_or_env_special_of( std::string name ) {
+  static const std::map< std::string, special_name_t > fujitsus
+    { // Fujitsu calls these "function names", not device names
+      { "ARGUMENT-NUMBER", ARG_NUM_e },
+      { "ARGUMENT-VALUE", ARG_VALUE_e } ,
+      { "ENVIRONMENT-NAME", ENV_NAME_e },
+      { "ENVIRONMENT-VALUE", ENV_VALUE_e },
+    };
+
+  std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+  auto p = fujitsus.find(name.c_str());
+  return p != fujitsus.end()? &p->second : nullptr;
+}
 
 static inline void
 parser_add2( struct cbl_num_result_t& to,

@@ -98,7 +98,6 @@ NP        P+|(P{COUNT})
 
 UNSIGNED  [[:space:]]+UNSIGNED
 SIGNED    [[:space:]]+SIGNED
-DBLLONG   (LONG-LONG|DOUBLE)
 
 ALNUM     [AX9]+
 
@@ -976,20 +975,19 @@ USE({SPC}FOR)?		{ return USE; }
   COMP(UTATIONAL)?		{ return ucomputable(FldNumericBinary, 0); }
   BINARY            		{ return scomputable(FldNumericBinary, 0); }
 
-  BINARY-CHAR{SIGNED}   	{ return scomputable(FldNumericBin5, 1); }
-  BINARY-CHAR{UNSIGNED} 	{ return ucomputable(FldNumericBin5, 1); }
-  BINARY-CHAR 			{ return scomputable(FldNumericBin5, 1); }
-  BINARY-SHORT{SIGNED}  	{ return scomputable(FldNumericBin5, 2); }
-  BINARY-SHORT{UNSIGNED}	{ return ucomputable(FldNumericBin5, 2); }
-  BINARY-SHORT 			{ return scomputable(FldNumericBin5, 2); }
-  BINARY-LONG{SIGNED}   	{ return scomputable(FldNumericBin5, 4); }
-  BINARY-LONG{UNSIGNED} 	{ return ucomputable(FldNumericBin5, 4); }
-  BINARY-LONG 			{ return scomputable(FldNumericBin5, 4); }
-  BINARY-{DBLLONG}{SIGNED}	{ return scomputable(FldNumericBin5, 8); }
-  BINARY-{DBLLONG}{UNSIGNED}	{ return ucomputable(FldNumericBin5, 8); }
-  BINARY-{DBLLONG}		{ return scomputable(FldNumericBin5, 8); }
+  BINARY-CHAR	   		{ return bcomputable(FldNumericBin5, 1); }
+  BINARY-SHORT	  		{ return bcomputable(FldNumericBin5, 2); }
+  BINARY-LONG	   		{ return bcomputable(FldNumericBin5, 4); }
+  BINARY-DOUBLE			{ return bcomputable(FldNumericBin5, 8); }
+  BINARY-LONG-LONG		{ if( ! dialect_mf() ) {
+				    error_msg(yylloc, "%s requires -dialect mf", yytext);
+				  }
+				  return bcomputable(FldNumericBin5, 8);
+				}
+
   BIT				{ not_implemented("USAGE type: BIT");
 				  return BIT; }
+
   FLOAT-BINARY-32		{ return ucomputable(FldFloat, 4); }
   FLOAT-BINARY-64		{ return ucomputable(FldFloat, 8); }
   FLOAT-BINARY-128		{ return ucomputable(FldFloat, 16); }
@@ -1002,6 +1000,9 @@ USE({SPC}FOR)?		{ return USE; }
   FLOAT-EXTENDED  		{ return ucomputable(FldFloat, 16); }
   FLOAT-LONG	  		{ return ucomputable(FldFloat, 8); }
   FLOAT-SHORT    		{ return ucomputable(FldFloat, 4); }
+
+  SIGNED			{ return SIGNED_kw; }
+  UNSIGNED			{ return UNSIGNED_kw; }
 
   INDEX				{ return INDEX; }
   MESSAGE-TAG			{ not_implemented("USAGE type: MESSAGE-TAG"); }
@@ -1117,10 +1118,14 @@ USE({SPC}FOR)?		{ return USE; }
   FD/[[:blank:]]+       { parsing.need_level(false); return FD; }
   SD/[[:blank:]]+       { parsing.need_level(false); return SD; }
 
-  {NAME}                { // NAME here is never a token name
+  {NAME}                { // NAME here might be a token alias
+		   	  int token;
+		          if( 0 != (token = binary_integer_usage(yytext)) ) {
+			    return token;
+			  }
                           if( is_integer_token() ) return numstr_of(yytext);
 			  ydflval.string = yylval.string = xstrdup(yytext);
-			  auto token = typed_name(yytext);
+			  token = typed_name(yytext);
 			  return token == NAME88? NAME : token;
  			}
 
@@ -1203,6 +1208,11 @@ USE({SPC}FOR)?		{ return USE; }
   {N9}*V/{N9}*     { yylval.number = ndigit(yyleng - 1); return picset(NINEV); }
   {N9}/{N9}*[,.]?  { yylval.number = ndigit(yyleng);     return picset(NINES); }
   P+/[,.]?\r?\n    { yylval.number = yyleng;             return picset(PIC_P); }
+
+  1{1,31}/({COUNT}|[(]{NAME}[)]) {
+                         yy_push_state(picture_count);
+                         yylval.string = xstrdup(yytext); return picset(ONES); }
+  1{1,31} {              yylval.string = xstrdup(yytext); return picset(ONES); }
 
   {ALNUM}/{COUNT}({ALNUM}{COUNT}?)+ {
                          yy_push_state(picture_count);
@@ -1613,15 +1623,17 @@ USE({SPC}FOR)?		{ return USE; }
 		     *--p = '\0';
 		   }
 
-                   int token = keyword_tok(yylval.string);
-                   if( token ) return token;
+		   int token;
+		   if( 0 != (token = binary_integer_usage(yylval.string)) )return token;
+                   if( 0 != (token = keyword_tok(yylval.string)) ) return token;
                    if( is_integer_token() ) return numstr_of(yylval.string);
                    return typed_name(yylval.string);
                  }
   {NAME}/{OSPC}{DOTSEP} {
 		   assert(YY_START == procedure_div);
-                   int token = keyword_tok(yytext);
-                   if( token ) return token;
+		   int token;
+		   if( 0 != (token = binary_integer_usage(yytext)) ) return token;
+                   if( 0 != (token = keyword_tok(yytext)) ) return token;
                    if( is_integer_token() ) return numstr_of(yytext);
 
                    ydflval.string = yylval.string = xstrdup(yytext);
@@ -2468,6 +2480,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
                   if( YY_START == quoted1 || YY_START == quoted2 ) {
 		    error_msg(yylloc, "syntax error: unterminated string '%s'",
 			     tmpstring);
+		    return NO_CONDITION;
 		    cbl_internal_error("");
                   }
                   yypop_buffer_state();
