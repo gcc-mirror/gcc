@@ -217,7 +217,7 @@ ASTLoweringItem::visit (AST::StructStruct &struct_decl)
 					 field.get_outer_attrs ());
 
       if (struct_field_name_exists (fields, translated_field))
-	break;
+	continue;
 
       fields.push_back (std::move (translated_field));
     }
