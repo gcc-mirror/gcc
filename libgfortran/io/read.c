@@ -1375,7 +1375,7 @@ exponent:
 
   /* At this point a digit string is required.  We calculate the value
      of the exponent in order to take account of the scale factor and
-     the d parameter before explict conversion takes place.  */
+     the d parameter before explicit conversion takes place.  */
 
   if (w == 0)
     {
