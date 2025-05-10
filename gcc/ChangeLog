@@ -1,3 +1,18 @@
+2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* vr-values.cc (simplify_using_ranges::simplify) <BIT_AND_EXPR>:
+	Do not call simplify_bit_ops_using_ranges for boolean types whose
+	precision is not 1.
+
+2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120156
+	* tree-ssa-alias.cc (ptr_deref_may_alias_decl_p): Verify
+	the pointer is an SSA name.
+
 2025-05-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

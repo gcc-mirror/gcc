@@ -1,3 +1,9 @@
+2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt106.adb: New test.
+	* gnat.dg/opt106_pkg1.ads, gnat.dg/opt106_pkg1.adb: New helper.
+	* gnat.dg/opt106_pkg2.ads, gnat.dg/opt106_pkg2.adb: Likewise.
+
 2025-05-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
