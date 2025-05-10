@@ -43,6 +43,10 @@
 # include <unistd.h>  // isatty
 #endif
 
+#ifdef __VXWORKS__
+#include <ioLib.h>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
