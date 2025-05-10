@@ -14035,17 +14035,53 @@ expand_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
   rtx data = gen_rtx_ZERO_EXTEND (word_mode, operands[2]);
   riscv_expand_op (XOR, word_mode, a0, crc, data);
 
-  if (TARGET_64BIT)
-    emit_insn (gen_riscv_clmul_di (a0, a0, t0));
-  else
-    emit_insn (gen_riscv_clmul_si (a0, a0, t0));
+  if (TARGET_ZBKC || TARGET_ZBC)
+    {
+      if (TARGET_64BIT)
+	emit_insn (gen_riscv_clmul_di (a0, a0, t0));
+      else
+	emit_insn (gen_riscv_clmul_si (a0, a0, t0));
 
-  riscv_expand_op (LSHIFTRT, word_mode, a0, a0,
-		   gen_int_mode (crc_size, word_mode));
-  if (TARGET_64BIT)
-    emit_insn (gen_riscv_clmul_di (a0, a0, t1));
+      riscv_expand_op (LSHIFTRT, word_mode, a0, a0,
+		       gen_int_mode (crc_size, word_mode));
+      if (TARGET_64BIT)
+	emit_insn (gen_riscv_clmul_di (a0, a0, t1));
+      else
+	emit_insn (gen_riscv_clmul_si (a0, a0, t1));
+    }
   else
-    emit_insn (gen_riscv_clmul_si (a0, a0, t1));
+    {
+      machine_mode vmode;
+      if (!riscv_vector::get_vector_mode (DImode, 1).exists (&vmode))
+	gcc_unreachable ();
+
+      rtx vec = gen_reg_rtx (vmode);
+
+      insn_code icode1 = code_for_pred_broadcast (vmode);
+      rtx ops1[] = {vec, a0};
+      emit_nonvlmax_insn (icode1, UNARY_OP, ops1, CONST1_RTX (Pmode));
+
+      rtx rvv1di_reg = gen_rtx_SUBREG (RVVM1DImode, vec, 0);
+      insn_code icode2 = code_for_pred_vclmul_scalar (UNSPEC_VCLMUL,
+						      E_RVVM1DImode);
+      rtx ops2[] = {rvv1di_reg, rvv1di_reg, t0};
+      emit_nonvlmax_insn (icode2, riscv_vector::BINARY_OP, ops2, CONST1_RTX
+			  (Pmode));
+
+      rtx shift_amount = gen_int_mode (data_size, Pmode);
+      insn_code icode3 = code_for_pred_scalar (LSHIFTRT, vmode);
+      rtx ops3[] = {vec, vec, shift_amount};
+      emit_nonvlmax_insn (icode3, BINARY_OP, ops3, CONST1_RTX (Pmode));
+
+      insn_code icode4 = code_for_pred_vclmul_scalar (UNSPEC_VCLMULH,
+						      E_RVVM1DImode);
+      rtx ops4[] = {rvv1di_reg, rvv1di_reg, t1};
+      emit_nonvlmax_insn (icode4, riscv_vector::BINARY_OP, ops4, CONST1_RTX
+			  (Pmode));
+
+      rtx vec_low_lane = gen_lowpart (DImode, vec);
+      riscv_emit_move (a0, vec_low_lane);
+    }
 
   if (crc_size > data_size)
     {
@@ -14094,19 +14130,53 @@ expand_reversed_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
   rtx a0 = gen_reg_rtx (word_mode);
   riscv_expand_op (XOR, word_mode, a0, crc, data);
 
-  if (TARGET_64BIT)
-    emit_insn (gen_riscv_clmul_di (a0, a0, t0));
-  else
-    emit_insn (gen_riscv_clmul_si (a0, a0, t0));
+  if (TARGET_ZBKC || TARGET_ZBC)
+    {
+      if (TARGET_64BIT)
+	emit_insn (gen_riscv_clmul_di (a0, a0, t0));
+      else
+	emit_insn (gen_riscv_clmul_si (a0, a0, t0));
 
-  rtx num_shift = gen_int_mode (GET_MODE_BITSIZE (word_mode) - data_size,
-				word_mode);
-  riscv_expand_op (ASHIFT, word_mode, a0, a0, num_shift);
+      rtx num_shift = gen_int_mode (BITS_PER_WORD - data_size, word_mode);
+      riscv_expand_op (ASHIFT, word_mode, a0, a0, num_shift);
 
-  if (TARGET_64BIT)
-    emit_insn (gen_riscv_clmulh_di (a0, a0, t1));
+      if (TARGET_64BIT)
+	emit_insn (gen_riscv_clmulh_di (a0, a0, t1));
+      else
+	emit_insn (gen_riscv_clmulh_si (a0, a0, t1));
+    }
   else
-    emit_insn (gen_riscv_clmulh_si (a0, a0, t1));
+    {
+      machine_mode vmode;
+      if (!riscv_vector::get_vector_mode (DImode, 1).exists (&vmode))
+	gcc_unreachable ();
+
+      rtx vec = gen_reg_rtx (vmode);
+      insn_code icode1 = code_for_pred_broadcast (vmode);
+      rtx ops1[] = {vec, a0};
+      emit_nonvlmax_insn (icode1, UNARY_OP, ops1, CONST1_RTX (Pmode));
+
+      rtx rvv1di_reg = gen_rtx_SUBREG (RVVM1DImode, vec, 0);
+      insn_code icode2 = code_for_pred_vclmul_scalar (UNSPEC_VCLMUL,
+						      E_RVVM1DImode);
+      rtx ops2[] = {rvv1di_reg, rvv1di_reg, t0};
+      emit_nonvlmax_insn (icode2, riscv_vector::BINARY_OP, ops2, CONST1_RTX
+			  (Pmode));
+
+      rtx shift_amount = gen_int_mode (BITS_PER_WORD - data_size, Pmode);
+      insn_code icode3 = code_for_pred_scalar (ASHIFT, vmode);
+      rtx ops3[] = {vec, vec, shift_amount};
+      emit_nonvlmax_insn (icode3, BINARY_OP, ops3, CONST1_RTX (Pmode));
+
+      insn_code icode4 = code_for_pred_vclmul_scalar (UNSPEC_VCLMULH,
+						      E_RVVM1DImode);
+      rtx ops4[] = {rvv1di_reg, rvv1di_reg, t1};
+      emit_nonvlmax_insn (icode4, riscv_vector::BINARY_OP, ops4, CONST1_RTX
+			  (Pmode));
+
+      rtx vec_low_lane = gen_lowpart (DImode, vec);
+      riscv_emit_move (a0, vec_low_lane);
+    }
 
   if (crc_size > data_size)
     {

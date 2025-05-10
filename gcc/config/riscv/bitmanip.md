@@ -1222,7 +1222,7 @@
      we can't keep it in 64 bit variable.)
      then use clmul instruction to implement the CRC,
      otherwise (TARGET_ZBKB) generate table based using brev.  */
-  if ((TARGET_ZBKC || TARGET_ZBC) && <ANYI:MODE>mode < word_mode)
+  if ((TARGET_ZBKC || TARGET_ZBC || TARGET_ZVBC) && <ANYI:MODE>mode < word_mode)
     expand_reversed_crc_using_clmul (<ANYI:MODE>mode, <ANYI1:MODE>mode,
 				     operands);
   else if (TARGET_ZBKB)
@@ -1254,7 +1254,8 @@
 		      (match_operand:SUBX 3)]
 		      UNSPEC_CRC))]
   /* We don't support the case when data's size is bigger than CRC's size.  */
-  "(TARGET_ZBKC || TARGET_ZBC) && <SUBX:MODE>mode >= <SUBX1:MODE>mode"
+  "(TARGET_ZBKC || TARGET_ZBC || TARGET_ZVBC)
+   && <SUBX:MODE>mode >= <SUBX1:MODE>mode"
 {
   /* If we have the ZBC or ZBKC extension (ie, clmul) and
      it is possible to store the quotient within a single variable
