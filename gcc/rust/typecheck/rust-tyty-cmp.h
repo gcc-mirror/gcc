@@ -621,7 +621,8 @@ public:
 	ok = true;
 	return;
 
-	case InferType::InferTypeKind::INTEGRAL: {
+      case InferType::InferTypeKind::INTEGRAL:
+	{
 	  if (type.get_infer_kind () == InferType::InferTypeKind::INTEGRAL)
 	    {
 	      ok = true;
@@ -635,7 +636,8 @@ public:
 	}
 	break;
 
-	case InferType::InferTypeKind::FLOAT: {
+      case InferType::InferTypeKind::FLOAT:
+	{
 	  if (type.get_infer_kind () == InferType::InferTypeKind::FLOAT)
 	    {
 	      ok = true;

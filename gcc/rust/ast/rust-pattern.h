@@ -375,8 +375,7 @@ enum class RangeKind
   EXCLUDED,
 };
 
-RangeKind
-tokenid_to_rangekind (TokenId id);
+RangeKind tokenid_to_rangekind (TokenId id);
 // AST node for matching within a certain range (range pattern)
 class RangePattern : public Pattern
 {

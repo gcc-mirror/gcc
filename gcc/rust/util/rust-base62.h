@@ -26,8 +26,7 @@ namespace Rust {
 /**
  * Get the Base62 representation of an integer
  */
-std::string
-base62_integer (uint64_t value);
+std::string base62_integer (uint64_t value);
 
 } // namespace Rust
 

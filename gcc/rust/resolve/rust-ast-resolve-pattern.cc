@@ -94,13 +94,15 @@ PatternDeclaration::visit (AST::TupleStructPattern &pattern)
   AST::TupleStructItems &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-      case AST::TupleStructItems::RANGE: {
+    case AST::TupleStructItems::RANGE:
+      {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-      case AST::TupleStructItems::NO_RANGE: {
+    case AST::TupleStructItems::NO_RANGE:
+      {
 	auto &items_no_range
 	  = static_cast<AST::TupleStructItemsNoRange &> (items);
 
@@ -123,7 +125,8 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
     {
       switch (field->get_item_type ())
 	{
-	  case AST::StructPatternField::ItemType::TUPLE_PAT: {
+	case AST::StructPatternField::ItemType::TUPLE_PAT:
+	  {
 	    AST::StructPatternFieldTuplePat &tuple
 	      = static_cast<AST::StructPatternFieldTuplePat &> (*field);
 
@@ -131,7 +134,8 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	  }
 	  break;
 
-	  case AST::StructPatternField::ItemType::IDENT_PAT: {
+	case AST::StructPatternField::ItemType::IDENT_PAT:
+	  {
 	    AST::StructPatternFieldIdentPat &ident
 	      = static_cast<AST::StructPatternFieldIdentPat &> (*field);
 
@@ -139,7 +143,8 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	  }
 	  break;
 
-	  case AST::StructPatternField::ItemType::IDENT: {
+	case AST::StructPatternField::ItemType::IDENT:
+	  {
 	    auto &ident = static_cast<AST::StructPatternFieldIdent &> (*field);
 
 	    Mutability mut
@@ -160,7 +165,8 @@ PatternDeclaration::visit (AST::TuplePattern &pattern)
   auto &items = pattern.get_items ();
   switch (items.get_pattern_type ())
     {
-      case AST::TuplePatternItems::TuplePatternItemType::MULTIPLE: {
+    case AST::TuplePatternItems::TuplePatternItemType::MULTIPLE:
+      {
 	auto &ref = static_cast<AST::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
 
@@ -169,7 +175,8 @@ PatternDeclaration::visit (AST::TuplePattern &pattern)
       }
       break;
 
-      case AST::TuplePatternItems::TuplePatternItemType::RANGED: {
+    case AST::TuplePatternItems::TuplePatternItemType::RANGED:
+      {
 	auto &ref
 	  = static_cast<AST::TuplePatternItemsRanged &> (pattern.get_items ());
 
@@ -348,14 +355,16 @@ resolve_range_pattern_bound (AST::RangePatternBound &bound)
       // Nothing to resolve for a literal.
       break;
 
-      case AST::RangePatternBound::RangePatternBoundType::PATH: {
+    case AST::RangePatternBound::RangePatternBoundType::PATH:
+      {
 	auto &ref = static_cast<AST::RangePatternBoundPath &> (bound);
 
 	ResolvePath::go (ref.get_path ());
       }
       break;
 
-      case AST::RangePatternBound::RangePatternBoundType::QUALPATH: {
+    case AST::RangePatternBound::RangePatternBoundType::QUALPATH:
+      {
 	auto &ref = static_cast<AST::RangePatternBoundQualPath &> (bound);
 
 	ResolvePath::go (ref.get_qualified_path ());

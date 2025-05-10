@@ -430,7 +430,8 @@ MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
       parser.parse_visibility ();
       break;
 
-      case AST::MacroFragSpec::STMT: {
+    case AST::MacroFragSpec::STMT:
+      {
 	auto restrictions = ParseRestrictions ();
 	restrictions.consume_semi = false;
 	parser.parse_stmt (restrictions);
@@ -480,19 +481,22 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
   // this is used so we can check that we delimit the stream correctly.
   switch (delimiter->get_id ())
     {
-      case LEFT_PAREN: {
+    case LEFT_PAREN:
+      {
 	if (!check_delim (AST::DelimType::PARENS))
 	  return false;
       }
       break;
 
-      case LEFT_SQUARE: {
+    case LEFT_SQUARE:
+      {
 	if (!check_delim (AST::DelimType::SQUARE))
 	  return false;
       }
       break;
 
-      case LEFT_CURLY: {
+    case LEFT_CURLY:
+      {
 	if (!check_delim (AST::DelimType::CURLY))
 	  return false;
       }
@@ -510,7 +514,8 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 
       switch (match->get_macro_match_type ())
 	{
-	  case AST::MacroMatch::MacroMatchType::Fragment: {
+	case AST::MacroMatch::MacroMatchType::Fragment:
+	  {
 	    AST::MacroMatchFragment *fragment
 	      = static_cast<AST::MacroMatchFragment *> (match.get ());
 	    if (!match_fragment (parser, *fragment))
@@ -524,14 +529,16 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 	  }
 	  break;
 
-	  case AST::MacroMatch::MacroMatchType::Tok: {
+	case AST::MacroMatch::MacroMatchType::Tok:
+	  {
 	    AST::Token *tok = static_cast<AST::Token *> (match.get ());
 	    if (!match_token (parser, *tok))
 	      return false;
 	  }
 	  break;
 
-	  case AST::MacroMatch::MacroMatchType::Repetition: {
+	case AST::MacroMatch::MacroMatchType::Repetition:
+	  {
 	    AST::MacroMatchRepetition *rep
 	      = static_cast<AST::MacroMatchRepetition *> (match.get ());
 	    if (!match_repetition (parser, *rep))
@@ -539,7 +546,8 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 	  }
 	  break;
 
-	  case AST::MacroMatch::MacroMatchType::Matcher: {
+	case AST::MacroMatch::MacroMatchType::Matcher:
+	  {
 	    AST::MacroMatcher *m
 	      = static_cast<AST::MacroMatcher *> (match.get ());
 	    expansion_depth++;
@@ -556,19 +564,22 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 
   switch (delimiter->get_id ())
     {
-      case LEFT_PAREN: {
+    case LEFT_PAREN:
+      {
 	if (!parser.skip_token (RIGHT_PAREN))
 	  return false;
       }
       break;
 
-      case LEFT_SQUARE: {
+    case LEFT_SQUARE:
+      {
 	if (!parser.skip_token (RIGHT_SQUARE))
 	  return false;
       }
       break;
 
-      case LEFT_CURLY: {
+    case LEFT_CURLY:
+      {
 	if (!parser.skip_token (RIGHT_CURLY))
 	  return false;
       }
@@ -617,7 +628,8 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 	  size_t offs_begin = source.get_offs ();
 	  switch (match->get_macro_match_type ())
 	    {
-	      case AST::MacroMatch::MacroMatchType::Fragment: {
+	    case AST::MacroMatch::MacroMatchType::Fragment:
+	      {
 		AST::MacroMatchFragment *fragment
 		  = static_cast<AST::MacroMatchFragment *> (match.get ());
 		valid_current_match = match_fragment (parser, *fragment);
@@ -632,20 +644,23 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 	      }
 	      break;
 
-	      case AST::MacroMatch::MacroMatchType::Tok: {
+	    case AST::MacroMatch::MacroMatchType::Tok:
+	      {
 		AST::Token *tok = static_cast<AST::Token *> (match.get ());
 		valid_current_match = match_token (parser, *tok);
 	      }
 	      break;
 
-	      case AST::MacroMatch::MacroMatchType::Repetition: {
+	    case AST::MacroMatch::MacroMatchType::Repetition:
+	      {
 		AST::MacroMatchRepetition *rep
 		  = static_cast<AST::MacroMatchRepetition *> (match.get ());
 		valid_current_match = match_repetition (parser, *rep);
 	      }
 	      break;
 
-	      case AST::MacroMatch::MacroMatchType::Matcher: {
+	    case AST::MacroMatch::MacroMatchType::Matcher:
+	      {
 		AST::MacroMatcher *m
 		  = static_cast<AST::MacroMatcher *> (match.get ());
 		valid_current_match = match_matcher (parser, *m, true);

@@ -34,11 +34,9 @@ enum ABI
   SYSV64
 };
 
-extern Rust::ABI
-get_abi_from_string (const std::string &abi);
+extern Rust::ABI get_abi_from_string (const std::string &abi);
 
-extern std::string
-get_string_from_abi (Rust::ABI abi);
+extern std::string get_string_from_abi (Rust::ABI abi);
 
 } // namespace Rust
 

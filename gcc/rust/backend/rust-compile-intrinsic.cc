@@ -32,8 +32,7 @@
 
 // declaration taken from "stringpool.h"
 // the get_identifier macro causes compilation issues
-extern tree
-get_identifier (const char *);
+extern tree get_identifier (const char *);
 
 namespace Rust {
 namespace Compile {
@@ -70,28 +69,19 @@ check_for_basic_integer_type (const std::string &intrinsic_str,
   return is_basic_integer;
 }
 
-static tree
-offset_handler (Context *ctx, TyTy::FnType *fntype);
-static tree
-sizeof_handler (Context *ctx, TyTy::FnType *fntype);
-static tree
-transmute_handler (Context *ctx, TyTy::FnType *fntype);
-static tree
-rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
-static tree
-wrapping_op_handler_inner (Context *ctx, TyTy::FnType *fntype, tree_code op);
-static tree
-op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op);
-static tree
-uninit_handler (Context *ctx, TyTy::FnType *fntype);
-static tree
-move_val_init_handler (Context *ctx, TyTy::FnType *fntype);
-static tree
-assume_handler (Context *ctx, TyTy::FnType *fntype);
-static tree
-discriminant_value_handler (Context *ctx, TyTy::FnType *fntype);
-static tree
-variant_count_handler (Context *ctx, TyTy::FnType *fntype);
+static tree offset_handler (Context *ctx, TyTy::FnType *fntype);
+static tree sizeof_handler (Context *ctx, TyTy::FnType *fntype);
+static tree transmute_handler (Context *ctx, TyTy::FnType *fntype);
+static tree rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
+static tree wrapping_op_handler_inner (Context *ctx, TyTy::FnType *fntype,
+				       tree_code op);
+static tree op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype,
+				    tree_code op);
+static tree uninit_handler (Context *ctx, TyTy::FnType *fntype);
+static tree move_val_init_handler (Context *ctx, TyTy::FnType *fntype);
+static tree assume_handler (Context *ctx, TyTy::FnType *fntype);
+static tree discriminant_value_handler (Context *ctx, TyTy::FnType *fntype);
+static tree variant_count_handler (Context *ctx, TyTy::FnType *fntype);
 
 enum class Prefetch
 {
@@ -99,8 +89,8 @@ enum class Prefetch
   Write
 };
 
-static tree
-prefetch_data_handler (Context *ctx, TyTy::FnType *fntype, Prefetch kind);
+static tree prefetch_data_handler (Context *ctx, TyTy::FnType *fntype,
+				   Prefetch kind);
 
 static inline tree
 rotate_left_handler (Context *ctx, TyTy::FnType *fntype)
@@ -140,10 +130,10 @@ prefetch_write_data (Context *ctx, TyTy::FnType *fntype)
   return prefetch_data_handler (ctx, fntype, Prefetch::Write);
 }
 
-static tree
-atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering);
-static tree
-atomic_load_handler_inner (Context *ctx, TyTy::FnType *fntype, int ordering);
+static tree atomic_store_handler_inner (Context *ctx, TyTy::FnType *fntype,
+					int ordering);
+static tree atomic_load_handler_inner (Context *ctx, TyTy::FnType *fntype,
+				       int ordering);
 
 static inline std::function<tree (Context *, TyTy::FnType *)>
 atomic_store_handler (int ordering)
@@ -161,8 +151,8 @@ atomic_load_handler (int ordering)
   };
 }
 
-static inline tree
-unchecked_op_inner (Context *ctx, TyTy::FnType *fntype, tree_code op);
+static inline tree unchecked_op_inner (Context *ctx, TyTy::FnType *fntype,
+				       tree_code op);
 
 const static std::function<tree (Context *, TyTy::FnType *)>
 unchecked_op_handler (tree_code op)
@@ -172,8 +162,8 @@ unchecked_op_handler (tree_code op)
   };
 }
 
-static inline tree
-copy_handler_inner (Context *ctx, TyTy::FnType *fntype, bool overlaps);
+static inline tree copy_handler_inner (Context *ctx, TyTy::FnType *fntype,
+				       bool overlaps);
 
 const static std::function<tree (Context *, TyTy::FnType *)>
 copy_handler (bool overlaps)
@@ -183,8 +173,8 @@ copy_handler (bool overlaps)
   };
 }
 
-static inline tree
-expect_handler_inner (Context *ctx, TyTy::FnType *fntype, bool likely);
+static inline tree expect_handler_inner (Context *ctx, TyTy::FnType *fntype,
+					 bool likely);
 
 const static std::function<tree (Context *, TyTy::FnType *)>
 expect_handler (bool likely)
@@ -194,8 +184,8 @@ expect_handler (bool likely)
   };
 }
 
-static tree
-try_handler_inner (Context *ctx, TyTy::FnType *fntype, bool is_new_api);
+static tree try_handler_inner (Context *ctx, TyTy::FnType *fntype,
+			       bool is_new_api);
 
 const static std::function<tree (Context *, TyTy::FnType *)>
 try_handler (bool is_new_api)

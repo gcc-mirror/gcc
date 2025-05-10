@@ -221,25 +221,20 @@ typedef std::shared_ptr<Token> TokenPtr;
 typedef std::shared_ptr<const Token> const_TokenPtr;
 
 // Hackily defined way to get token description for enum value using x-macros
-const char *
-get_token_description (TokenId id);
+const char *get_token_description (TokenId id);
 /* Hackily defined way to get token description as a string for enum value using
  * x-macros */
-const char *
-token_id_to_str (TokenId id);
+const char *token_id_to_str (TokenId id);
 /* checks if a token is a keyword */
-bool
-token_id_is_keyword (TokenId id);
+bool token_id_is_keyword (TokenId id);
 /* gets the string associated with a keyword */
-const std::string &
-token_id_keyword_string (TokenId id);
+const std::string &token_id_keyword_string (TokenId id);
 // Get type hint description as a string.
-const char *
-get_type_hint_string (PrimitiveCoreType type);
+const char *get_type_hint_string (PrimitiveCoreType type);
 
 /* Normalize string if a token is a identifier */
-std::string
-nfc_normalize_token_string (location_t loc, TokenId id, const std::string &str);
+std::string nfc_normalize_token_string (location_t loc, TokenId id,
+					const std::string &str);
 
 // Represents a single token. Create using factory static methods.
 class Token

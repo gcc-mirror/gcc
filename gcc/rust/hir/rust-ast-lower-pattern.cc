@@ -74,13 +74,15 @@ ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
   auto &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-      case AST::TupleStructItems::RANGE: {
+    case AST::TupleStructItems::RANGE:
+      {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-      case AST::TupleStructItems::NO_RANGE: {
+    case AST::TupleStructItems::NO_RANGE:
+      {
 	AST::TupleStructItemsNoRange &items_no_range
 	  = static_cast<AST::TupleStructItemsNoRange &> (items);
 
@@ -120,7 +122,8 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
       HIR::StructPatternField *f = nullptr;
       switch (field->get_item_type ())
 	{
-	  case AST::StructPatternField::ItemType::TUPLE_PAT: {
+	case AST::StructPatternField::ItemType::TUPLE_PAT:
+	  {
 	    auto &tuple
 	      = static_cast<AST::StructPatternFieldTuplePat &> (*field);
 
@@ -140,7 +143,8 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 	  }
 	  break;
 
-	  case AST::StructPatternField::ItemType::IDENT_PAT: {
+	case AST::StructPatternField::ItemType::IDENT_PAT:
+	  {
 	    AST::StructPatternFieldIdentPat &ident
 	      = static_cast<AST::StructPatternFieldIdentPat &> (*field);
 
@@ -160,7 +164,8 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 	  }
 	  break;
 
-	  case AST::StructPatternField::ItemType::IDENT: {
+	case AST::StructPatternField::ItemType::IDENT:
+	  {
 	    AST::StructPatternFieldIdent &ident
 	      = static_cast<AST::StructPatternFieldIdent &> (*field.get ());
 
@@ -213,7 +218,8 @@ ASTLoweringPattern::visit (AST::TuplePattern &pattern)
   std::unique_ptr<HIR::TuplePatternItems> items;
   switch (pattern.get_items ().get_pattern_type ())
     {
-      case AST::TuplePatternItems::TuplePatternItemType::MULTIPLE: {
+    case AST::TuplePatternItems::TuplePatternItemType::MULTIPLE:
+      {
 	AST::TuplePatternItemsMultiple &ref
 	  = static_cast<AST::TuplePatternItemsMultiple &> (
 	    pattern.get_items ());
@@ -221,7 +227,8 @@ ASTLoweringPattern::visit (AST::TuplePattern &pattern)
       }
       break;
 
-      case AST::TuplePatternItems::TuplePatternItemType::RANGED: {
+    case AST::TuplePatternItems::TuplePatternItemType::RANGED:
+      {
 	AST::TuplePatternItemsRanged &ref
 	  = static_cast<AST::TuplePatternItemsRanged &> (pattern.get_items ());
 	items = lower_tuple_pattern_ranged (ref);

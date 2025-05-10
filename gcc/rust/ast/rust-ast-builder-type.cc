@@ -62,7 +62,8 @@ ASTTypeBuilder::visit (TypePath &path)
     {
       switch (seg->get_type ())
 	{
-	  case TypePathSegment::REG: {
+	case TypePathSegment::REG:
+	  {
 	    const TypePathSegment &segment
 	      = (const TypePathSegment &) (*seg.get ());
 	    TypePathSegment *s
@@ -74,7 +75,8 @@ ASTTypeBuilder::visit (TypePath &path)
 	  }
 	  break;
 
-	  case TypePathSegment::GENERIC: {
+	case TypePathSegment::GENERIC:
+	  {
 	    TypePathSegmentGeneric &generic
 	      = (TypePathSegmentGeneric &) (*seg.get ());
 
@@ -89,7 +91,8 @@ ASTTypeBuilder::visit (TypePath &path)
 	  }
 	  break;
 
-	  case TypePathSegment::FUNCTION: {
+	case TypePathSegment::FUNCTION:
+	  {
 	    rust_unreachable ();
 	    // TODO
 	    // const TypePathSegmentFunction &fn

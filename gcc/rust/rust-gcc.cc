@@ -1876,7 +1876,8 @@ non_zero_size_type (tree type)
 	}
       return rust_non_zero_struct;
 
-      case ARRAY_TYPE: {
+    case ARRAY_TYPE:
+      {
 	tree element_type = non_zero_size_type (TREE_TYPE (type));
 	return build_array_type_nelts (element_type, 1);
       }

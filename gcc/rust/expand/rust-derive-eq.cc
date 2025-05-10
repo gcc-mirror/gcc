@@ -181,7 +181,8 @@ DeriveEq::visit_enum (Enum &item)
 	case EnumItem::Kind::Discriminant:
 	  // nothing to do as they contain no inner types
 	  continue;
-	  case EnumItem::Kind::Tuple: {
+	case EnumItem::Kind::Tuple:
+	  {
 	    auto &tuple = static_cast<EnumItemTuple &> (*variant);
 
 	    for (auto &field : tuple.get_tuple_fields ())
@@ -191,7 +192,8 @@ DeriveEq::visit_enum (Enum &item)
 	      }
 	    break;
 	  }
-	  case EnumItem::Kind::Struct: {
+	case EnumItem::Kind::Struct:
+	  {
 	    auto &tuple = static_cast<EnumItemStruct &> (*variant);
 
 	    for (auto &field : tuple.get_struct_fields ())

@@ -88,7 +88,8 @@ token_id_keyword_string (TokenId id)
   switch (id)
     {
 #define RS_TOKEN_KEYWORD_2015(id, str_ptr)                                     \
-    case id: {                                                                 \
+  case id:                                                                     \
+    {                                                                          \
       static const std::string str (str_ptr);                                  \
       return str;                                                              \
     }                                                                          \

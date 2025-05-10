@@ -29,8 +29,7 @@
 // for flag_name_resolution_2_0
 #include "options.h"
 
-extern bool
-saw_errors (void);
+extern bool saw_errors (void);
 
 namespace Rust {
 namespace Resolver {
@@ -231,7 +230,8 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	      break;
 
 	    case HIR::SelfParam::IMM_REF:
-	      case HIR::SelfParam::MUT_REF: {
+	    case HIR::SelfParam::MUT_REF:
+	      {
 		auto mutability
 		  = self_param.get_self_kind () == HIR::SelfParam::IMM_REF
 		      ? Mutability::Imm

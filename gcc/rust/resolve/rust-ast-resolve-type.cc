@@ -210,7 +210,8 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 
       switch (segment->get_type ())
 	{
-	  case AST::TypePathSegment::SegmentType::GENERIC: {
+	case AST::TypePathSegment::SegmentType::GENERIC:
+	  {
 	    AST::TypePathSegmentGeneric *s
 	      = static_cast<AST::TypePathSegmentGeneric *> (segment.get ());
 	    if (s->has_generic_args ())
@@ -509,7 +510,8 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
       auto &final_seg = path.get_segments ().back ();
       switch (final_seg->get_type ())
 	{
-	  case AST::TypePathSegment::SegmentType::GENERIC: {
+	case AST::TypePathSegment::SegmentType::GENERIC:
+	  {
 	    AST::TypePathSegmentGeneric *s
 	      = static_cast<AST::TypePathSegmentGeneric *> (final_seg.get ());
 
@@ -651,7 +653,8 @@ ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &type)
 
       switch (additional_bound->get_bound_type ())
 	{
-	  case AST::TypeParamBound::TRAIT: {
+	case AST::TypeParamBound::TRAIT:
+	  {
 	    auto bound_path = CanonicalPath::create_empty ();
 
 	    auto &bound_type_path

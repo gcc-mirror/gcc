@@ -232,42 +232,50 @@ protected: // Main collection entry points (for different categories).
   {
     switch (stmt.get_kind ())
       {
-	case Statement::Kind::ASSIGNMENT: {
+      case Statement::Kind::ASSIGNMENT:
+	{
 	  // TODO: for unwind, must had hadning for non-panic-only assignements
 	  issue_write_deep (stmt.get_place ());
 	  visit_assignment_expr (stmt.get_place (), stmt.get_expr ());
 	  break;
 	}
-	case Statement::Kind::SWITCH: {
+      case Statement::Kind::SWITCH:
+	{
 	  issue_read_move (stmt.get_place ());
 	  issue_jumps ();
 	}
 	break;
-	case Statement::Kind::GOTO: {
+      case Statement::Kind::GOTO:
+	{
 	  issue_jumps ();
 	}
 	break;
-	case Statement::Kind::RETURN: {
+      case Statement::Kind::RETURN:
+	{
 	  issue_place_access (RETURN_VALUE_PLACE);
 	  issue_locals_dealloc ();
 	  break;
 	}
-	case Statement::Kind::STORAGE_DEAD: {
+      case Statement::Kind::STORAGE_DEAD:
+	{
 	  facts.path_moved_at_base.emplace_back (stmt.get_place ().value,
 						 get_current_point_mid ());
 	  facts.var_defined_at.emplace_back (stmt.get_place ().value,
 					     get_current_point_mid ());
 	  break;
 	}
-	case Statement::Kind::STORAGE_LIVE: {
+      case Statement::Kind::STORAGE_LIVE:
+	{
 	  issue_write_deep (stmt.get_place (), true);
 	  break;
 	}
-	case Statement::Kind::USER_TYPE_ASCRIPTION: {
+      case Statement::Kind::USER_TYPE_ASCRIPTION:
+	{
 	  issue_user_type_constraints (stmt.get_place (), stmt.get_type ());
 	  break;
 	}
-	case Statement::Kind::FAKE_READ: {
+      case Statement::Kind::FAKE_READ:
+	{
 	  issue_place_access (stmt.get_place ());
 	  break;
 	}
@@ -791,7 +799,8 @@ protected: // Subset helpers.
 	  type->as<const TyTy::SliceType> ()->get_element_type (), region_start,
 	  regions);
       case TyTy::FNDEF:
-	case TyTy::TUPLE: {
+      case TyTy::TUPLE:
+	{
 	  for (auto &field : type->as<const TyTy::TupleType> ()->get_fields ())
 	    sanitize_constraints (field.get_tyty (), region_start, regions);
 	}

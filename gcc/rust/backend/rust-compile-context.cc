@@ -70,7 +70,8 @@ Context::type_hasher (tree type)
       hstate.add_object (TYPE_HASH (TYPE_OFFSET_BASETYPE (type)));
       break;
 
-      case ARRAY_TYPE: {
+    case ARRAY_TYPE:
+      {
 	if (TYPE_DOMAIN (type))
 	  hstate.add_object (TYPE_HASH (TYPE_DOMAIN (type)));
 	if (!AGGREGATE_TYPE_P (TREE_TYPE (type)))
@@ -81,7 +82,8 @@ Context::type_hasher (tree type)
       }
       break;
 
-      case INTEGER_TYPE: {
+    case INTEGER_TYPE:
+      {
 	tree t = TYPE_MAX_VALUE (type);
 	if (!t)
 	  t = TYPE_MIN_VALUE (type);
@@ -91,7 +93,8 @@ Context::type_hasher (tree type)
       }
 
     case REAL_TYPE:
-      case FIXED_POINT_TYPE: {
+    case FIXED_POINT_TYPE:
+      {
 	unsigned prec = TYPE_PRECISION (type);
 	hstate.add_object (prec);
 	break;
@@ -103,7 +106,8 @@ Context::type_hasher (tree type)
 
     case RECORD_TYPE:
     case UNION_TYPE:
-      case QUAL_UNION_TYPE: {
+    case QUAL_UNION_TYPE:
+      {
 	for (tree t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
 	  {
 	    hashval_t name_hash = IDENTIFIER_HASH_VALUE (DECL_NAME (t));
@@ -118,7 +122,8 @@ Context::type_hasher (tree type)
       break;
 
     case REFERENCE_TYPE:
-      case POINTER_TYPE: {
+    case POINTER_TYPE:
+      {
 	hashval_t type_hash = type_hasher (TREE_TYPE (type));
 	hstate.add_object (type_hash);
       }

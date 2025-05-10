@@ -829,29 +829,32 @@ ResolveItem::resolve_extern_item (AST::ExternalItem &item)
   ResolveExternItem::go (item, prefix, canonical_prefix);
 }
 
-static void
-flatten_glob (const AST::UseTreeGlob &glob, std::vector<Import> &imports);
-static void
-flatten_rebind (const AST::UseTreeRebind &glob, std::vector<Import> &imports);
-static void
-flatten_list (const AST::UseTreeList &glob, std::vector<Import> &imports);
+static void flatten_glob (const AST::UseTreeGlob &glob,
+			  std::vector<Import> &imports);
+static void flatten_rebind (const AST::UseTreeRebind &glob,
+			    std::vector<Import> &imports);
+static void flatten_list (const AST::UseTreeList &glob,
+			  std::vector<Import> &imports);
 
 static void
 flatten (const AST::UseTree *tree, std::vector<Import> &imports)
 {
   switch (tree->get_kind ())
     {
-      case AST::UseTree::Glob: {
+    case AST::UseTree::Glob:
+      {
 	auto glob = static_cast<const AST::UseTreeGlob *> (tree);
 	flatten_glob (*glob, imports);
 	break;
       }
-      case AST::UseTree::Rebind: {
+    case AST::UseTree::Rebind:
+      {
 	auto rebind = static_cast<const AST::UseTreeRebind *> (tree);
 	flatten_rebind (*rebind, imports);
 	break;
       }
-      case AST::UseTree::List: {
+    case AST::UseTree::List:
+      {
 	auto list = static_cast<const AST::UseTreeList *> (tree);
 	flatten_list (*list, imports);
 	break;

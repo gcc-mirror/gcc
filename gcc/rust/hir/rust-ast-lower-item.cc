@@ -495,7 +495,8 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
 	{
 	  switch (generic_param->get_kind ())
 	    {
-	      case HIR::GenericParam::GenericKind::TYPE: {
+	    case HIR::GenericParam::GenericKind::TYPE:
+	      {
 		const HIR::TypeParam &t
 		  = static_cast<const HIR::TypeParam &> (*generic_param);
 
@@ -652,7 +653,8 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
 	{
 	  switch (generic_param->get_kind ())
 	    {
-	      case HIR::GenericParam::GenericKind::TYPE: {
+	    case HIR::GenericParam::GenericKind::TYPE:
+	      {
 		const HIR::TypeParam &t
 		  = static_cast<const HIR::TypeParam &> (*generic_param);
 

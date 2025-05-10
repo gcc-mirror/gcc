@@ -328,14 +328,16 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	switch (ltype->get_infer_kind ())
 	  {
 	  case TyTy::InferType::InferTypeKind::GENERAL:
 	    return rtype->clone ();
 
-	    case TyTy::InferType::InferTypeKind::INTEGRAL: {
+	  case TyTy::InferType::InferTypeKind::INTEGRAL:
+	    {
 	      bool is_valid = r->get_infer_kind ()
 				== TyTy::InferType::InferTypeKind::INTEGRAL
 			      || r->get_infer_kind ()
@@ -345,7 +347,8 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
 	    }
 	    break;
 
-	    case TyTy::InferType::InferTypeKind::FLOAT: {
+	  case TyTy::InferType::InferTypeKind::FLOAT:
+	    {
 	      bool is_valid
 		= r->get_infer_kind () == TyTy::InferType::InferTypeKind::FLOAT
 		  || r->get_infer_kind ()
@@ -361,7 +364,8 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
     case TyTy::INT:
     case TyTy::UINT:
     case TyTy::USIZE:
-      case TyTy::ISIZE: {
+    case TyTy::ISIZE:
+      {
 	bool is_valid = (ltype->get_infer_kind ()
 			 == TyTy::InferType::InferTypeKind::GENERAL)
 			|| (ltype->get_infer_kind ()
@@ -374,7 +378,8 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
       }
       break;
 
-      case TyTy::FLOAT: {
+    case TyTy::FLOAT:
+      {
 	bool is_valid = (ltype->get_infer_kind ()
 			 == TyTy::InferType::InferTypeKind::GENERAL)
 			|| (ltype->get_infer_kind ()
@@ -404,7 +409,8 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
     case TyTy::PROJECTION:
     case TyTy::DYNAMIC:
     case TyTy::CLOSURE:
-      case TyTy::OPAQUE: {
+    case TyTy::OPAQUE:
+      {
 	bool is_valid = (ltype->get_infer_kind ()
 			 == TyTy::InferType::InferTypeKind::GENERAL);
 	if (is_valid)
@@ -424,7 +430,8 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -433,7 +440,8 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::ADT: {
+    case TyTy::ADT:
+      {
 	TyTy::ADTType &type = *static_cast<TyTy::ADTType *> (rtype);
 	if (ltype->get_adt_kind () != type.get_adt_kind ())
 	  {
@@ -544,7 +552,8 @@ UnifyRules::expect_str (TyTy::StrType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -589,7 +598,8 @@ UnifyRules::expect_reference (TyTy::ReferenceType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -598,7 +608,8 @@ UnifyRules::expect_reference (TyTy::ReferenceType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::REF: {
+    case TyTy::REF:
+      {
 	TyTy::ReferenceType &type = *static_cast<TyTy::ReferenceType *> (rtype);
 	auto base_type = ltype->get_base ();
 	auto other_base_type = type.get_base ();
@@ -660,7 +671,8 @@ UnifyRules::expect_pointer (TyTy::PointerType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -669,7 +681,8 @@ UnifyRules::expect_pointer (TyTy::PointerType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::POINTER: {
+    case TyTy::POINTER:
+      {
 	TyTy::PointerType &type = *static_cast<TyTy::PointerType *> (rtype);
 	auto base_type = ltype->get_base ();
 	auto other_base_type = type.get_base ();
@@ -731,7 +744,8 @@ UnifyRules::expect_param (TyTy::ParamType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -740,7 +754,8 @@ UnifyRules::expect_param (TyTy::ParamType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::PARAM: {
+    case TyTy::PARAM:
+      {
 	TyTy::ParamType &type = *static_cast<TyTy::ParamType *> (rtype);
 	// bool symbol_matches
 	//   = ltype->get_symbol ().compare (type.get_symbol ()) == 0;
@@ -793,7 +808,8 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -802,7 +818,8 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::ARRAY: {
+    case TyTy::ARRAY:
+      {
 	TyTy::ArrayType &type = *static_cast<TyTy::ArrayType *> (rtype);
 	TyTy::BaseType *element_unify = UnifyRules::Resolve (
 	  TyTy::TyWithLocation (ltype->get_element_type ()),
@@ -853,7 +870,8 @@ UnifyRules::expect_slice (TyTy::SliceType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -862,7 +880,8 @@ UnifyRules::expect_slice (TyTy::SliceType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::SLICE: {
+    case TyTy::SLICE:
+      {
 	TyTy::SliceType &type = *static_cast<TyTy::SliceType *> (rtype);
 	TyTy::BaseType *element_unify = UnifyRules::Resolve (
 	  TyTy::TyWithLocation (ltype->get_element_type ()),
@@ -912,7 +931,8 @@ UnifyRules::expect_fndef (TyTy::FnType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -921,7 +941,8 @@ UnifyRules::expect_fndef (TyTy::FnType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::FNDEF: {
+    case TyTy::FNDEF:
+      {
 	TyTy::FnType &type = *static_cast<TyTy::FnType *> (rtype);
 	if (ltype->num_params () != type.num_params ())
 	  {
@@ -1003,7 +1024,8 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -1012,7 +1034,8 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::FNPTR: {
+    case TyTy::FNPTR:
+      {
 	TyTy::FnPtr &type = *static_cast<TyTy::FnPtr *> (rtype);
 	if (ltype->num_params () != type.num_params ())
 	  {
@@ -1048,7 +1071,8 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::FNDEF: {
+    case TyTy::FNDEF:
+      {
 	TyTy::FnType &type = *static_cast<TyTy::FnType *> (rtype);
 	auto this_ret_type = ltype->get_return_type ();
 	auto other_ret_type = type.get_return_type ();
@@ -1120,7 +1144,8 @@ UnifyRules::expect_tuple (TyTy::TupleType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -1129,7 +1154,8 @@ UnifyRules::expect_tuple (TyTy::TupleType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::TUPLE: {
+    case TyTy::TUPLE:
+      {
 	TyTy::TupleType &type = *static_cast<TyTy::TupleType *> (rtype);
 	if (ltype->num_fields () != type.num_fields ())
 	  {
@@ -1191,7 +1217,8 @@ UnifyRules::expect_bool (TyTy::BoolType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -1239,7 +1266,8 @@ UnifyRules::expect_char (TyTy::CharType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -1287,7 +1315,8 @@ UnifyRules::expect_int (TyTy::IntType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL
@@ -1300,7 +1329,8 @@ UnifyRules::expect_int (TyTy::IntType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::INT: {
+    case TyTy::INT:
+      {
 	TyTy::IntType &type = *static_cast<TyTy::IntType *> (rtype);
 	bool is_valid = ltype->get_int_kind () == type.get_int_kind ();
 	if (is_valid)
@@ -1342,7 +1372,8 @@ UnifyRules::expect_uint (TyTy::UintType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL
@@ -1355,7 +1386,8 @@ UnifyRules::expect_uint (TyTy::UintType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::UINT: {
+    case TyTy::UINT:
+      {
 	TyTy::UintType &type = *static_cast<TyTy::UintType *> (rtype);
 	bool is_valid = ltype->get_uint_kind () == type.get_uint_kind ();
 	if (is_valid)
@@ -1397,7 +1429,8 @@ UnifyRules::expect_float (TyTy::FloatType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL
@@ -1410,7 +1443,8 @@ UnifyRules::expect_float (TyTy::FloatType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::FLOAT: {
+    case TyTy::FLOAT:
+      {
 	TyTy::FloatType &type = *static_cast<TyTy::FloatType *> (rtype);
 	bool is_valid = ltype->get_float_kind () == type.get_float_kind ();
 	if (is_valid)
@@ -1452,7 +1486,8 @@ UnifyRules::expect_isize (TyTy::ISizeType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () != TyTy::InferType::InferTypeKind::FLOAT;
@@ -1500,7 +1535,8 @@ UnifyRules::expect_usize (TyTy::USizeType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () != TyTy::InferType::InferTypeKind::FLOAT;
@@ -1548,7 +1584,8 @@ UnifyRules::expect_never (TyTy::NeverType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -1569,7 +1606,8 @@ UnifyRules::expect_placeholder (TyTy::PlaceholderType *ltype,
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -1619,7 +1657,8 @@ UnifyRules::expect_projection (TyTy::ProjectionType *ltype,
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -1666,7 +1705,8 @@ UnifyRules::expect_dyn (TyTy::DynamicObjectType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -1675,7 +1715,8 @@ UnifyRules::expect_dyn (TyTy::DynamicObjectType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::DYNAMIC: {
+    case TyTy::DYNAMIC:
+      {
 	TyTy::DynamicObjectType &type
 	  = *static_cast<TyTy::DynamicObjectType *> (rtype);
 	if (ltype->num_specified_bounds () != type.num_specified_bounds ())
@@ -1725,7 +1766,8 @@ UnifyRules::expect_closure (TyTy::ClosureType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -1734,7 +1776,8 @@ UnifyRules::expect_closure (TyTy::ClosureType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::CLOSURE: {
+    case TyTy::CLOSURE:
+      {
 	TyTy::ClosureType &type = *static_cast<TyTy::ClosureType *> (rtype);
 	if (ltype->get_def_id () != type.get_def_id ())
 	  {
@@ -1796,7 +1839,8 @@ UnifyRules::expect_opaque (TyTy::OpaqueType *ltype, TyTy::BaseType *rtype)
 {
   switch (rtype->get_kind ())
     {
-      case TyTy::INFER: {
+    case TyTy::INFER:
+      {
 	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
@@ -1805,7 +1849,8 @@ UnifyRules::expect_opaque (TyTy::OpaqueType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
-      case TyTy::OPAQUE: {
+    case TyTy::OPAQUE:
+      {
 	auto &type = *static_cast<TyTy::OpaqueType *> (rtype);
 	if (ltype->num_specified_bounds () != type.num_specified_bounds ())
 	  {

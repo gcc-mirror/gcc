@@ -213,13 +213,15 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
   auto &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-      case HIR::TupleStructItems::RANGED: {
+    case HIR::TupleStructItems::RANGED:
+      {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-      case HIR::TupleStructItems::MULTIPLE: {
+    case HIR::TupleStructItems::MULTIPLE:
+      {
 	HIR::TupleStructItemsNoRange &items_no_range
 	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
 
@@ -333,13 +335,15 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
     {
       switch (field->get_item_type ())
 	{
-	  case HIR::StructPatternField::ItemType::TUPLE_PAT: {
+	case HIR::StructPatternField::ItemType::TUPLE_PAT:
+	  {
 	    // TODO
 	    rust_unreachable ();
 	  }
 	  break;
 
-	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
+	case HIR::StructPatternField::ItemType::IDENT_PAT:
+	  {
 	    HIR::StructPatternFieldIdentPat &ident
 	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field);
 
@@ -358,7 +362,8 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	  }
 	  break;
 
-	  case HIR::StructPatternField::ItemType::IDENT: {
+	case HIR::StructPatternField::ItemType::IDENT:
+	  {
 	    HIR::StructPatternFieldIdent &ident
 	      = static_cast<HIR::StructPatternFieldIdent &> (*field);
 
@@ -397,7 +402,8 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	    case HIR::StructPatternField::ItemType::IDENT:
 	    case HIR::StructPatternField::ItemType::IDENT_PAT:
 	      break;
-	      default: {
+	    default:
+	      {
 		auto first_elem
 		  = struct_pattern_elems.get_struct_pattern_fields ()
 		      .at (0)
@@ -459,7 +465,8 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
   std::unique_ptr<HIR::TuplePatternItems> items;
   switch (pattern.get_items ().get_item_type ())
     {
-      case HIR::TuplePatternItems::ItemType::MULTIPLE: {
+    case HIR::TuplePatternItems::ItemType::MULTIPLE:
+      {
 	auto &ref = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
 
@@ -498,7 +505,8 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
       }
       break;
 
-      case HIR::TuplePatternItems::ItemType::RANGED: {
+    case HIR::TuplePatternItems::ItemType::RANGED:
+      {
 	// HIR::TuplePatternItemsRanged &ref
 	//   = *static_cast<HIR::TuplePatternItemsRanged *> (
 	//     pattern.get_items ().get ());
@@ -608,7 +616,8 @@ TypeCheckPattern::typecheck_range_pattern_bound (
   TyTy::BaseType *resolved_bound = nullptr;
   switch (bound.get_bound_type ())
     {
-      case HIR::RangePatternBound::RangePatternBoundType::LITERAL: {
+    case HIR::RangePatternBound::RangePatternBoundType::LITERAL:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundLiteral &> (bound);
 
 	HIR::Literal lit = ref.get_literal ();
@@ -617,14 +626,16 @@ TypeCheckPattern::typecheck_range_pattern_bound (
       }
       break;
 
-      case HIR::RangePatternBound::RangePatternBoundType::PATH: {
+    case HIR::RangePatternBound::RangePatternBoundType::PATH:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundPath &> (bound);
 
 	resolved_bound = TypeCheckExpr::Resolve (ref.get_path ());
       }
       break;
 
-      case HIR::RangePatternBound::RangePatternBoundType::QUALPATH: {
+    case HIR::RangePatternBound::RangePatternBoundType::QUALPATH:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundQualPath &> (bound);
 
 	resolved_bound = TypeCheckExpr::Resolve (ref.get_qualified_path ());

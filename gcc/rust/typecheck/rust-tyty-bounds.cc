@@ -226,7 +226,8 @@ TypeCheckBase::get_predicate_from_bound (
   auto &final_seg = type_path.get_final_segment ();
   switch (final_seg.get_type ())
     {
-      case HIR::TypePathSegment::SegmentType::GENERIC: {
+    case HIR::TypePathSegment::SegmentType::GENERIC:
+      {
 	auto &final_generic_seg
 	  = static_cast<HIR::TypePathSegmentGeneric &> (final_seg);
 	if (final_generic_seg.has_generic_args ())
@@ -251,7 +252,8 @@ TypeCheckBase::get_predicate_from_bound (
       }
       break;
 
-      case HIR::TypePathSegment::SegmentType::FUNCTION: {
+    case HIR::TypePathSegment::SegmentType::FUNCTION:
+      {
 	auto &final_function_seg
 	  = static_cast<HIR::TypePathSegmentFunction &> (final_seg);
 	auto &fn = final_function_seg.get_function_path ();

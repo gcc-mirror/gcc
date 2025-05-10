@@ -908,7 +908,8 @@ TypeResolveGenericParam::apply_trait_bounds (HIR::TypeParam &param,
 	{
 	  switch (bound->get_bound_type ())
 	    {
-	      case HIR::TypeParamBound::BoundType::TRAITBOUND: {
+	    case HIR::TypeParamBound::BoundType::TRAITBOUND:
+	      {
 		HIR::TraitBound &b = static_cast<HIR::TraitBound &> (*bound);
 
 		TyTy::TypeBoundPredicate predicate = get_predicate_from_bound (
@@ -920,7 +921,8 @@ TypeResolveGenericParam::apply_trait_bounds (HIR::TypeParam &param,
 		  {
 		    switch (predicate.get_polarity ())
 		      {
-			case BoundPolarity::AntiBound: {
+		      case BoundPolarity::AntiBound:
+			{
 			  bool found = predicates.find (predicate.get_id ())
 				       != predicates.end ();
 			  if (found)
@@ -937,7 +939,8 @@ TypeResolveGenericParam::apply_trait_bounds (HIR::TypeParam &param,
 			}
 			break;
 
-			default: {
+		      default:
+			{
 			  if (predicates.find (predicate.get_id ())
 			      == predicates.end ())
 			    {
@@ -1033,7 +1036,8 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
     {
       switch (bound->get_bound_type ())
 	{
-	  case HIR::TypeParamBound::BoundType::TRAITBOUND: {
+	case HIR::TypeParamBound::BoundType::TRAITBOUND:
+	  {
 	    auto *b = static_cast<HIR::TraitBound *> (bound.get ());
 
 	    TyTy::TypeBoundPredicate predicate
@@ -1042,7 +1046,8 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 	      specified_bounds.push_back (std::move (predicate));
 	  }
 	  break;
-	  case HIR::TypeParamBound::BoundType::LIFETIME: {
+	case HIR::TypeParamBound::BoundType::LIFETIME:
+	  {
 	    if (auto param = binding->try_as<TyTy::ParamType> ())
 	      {
 		auto *b = static_cast<HIR::Lifetime *> (bound.get ());

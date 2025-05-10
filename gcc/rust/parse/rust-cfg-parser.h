@@ -36,15 +36,14 @@ namespace Rust {
  *
  * @return false if the given input was invalid, true otherwise
  */
-bool
-parse_cfg_option (std::string &input, std::string &key, std::string &value);
+bool parse_cfg_option (std::string &input, std::string &key,
+		       std::string &value);
 } // namespace Rust
 
 #if CHECKING_P
 
 namespace selftest {
-extern void
-rust_cfg_parser_test (void);
+extern void rust_cfg_parser_test (void);
 } // namespace selftest
 
 #endif // CHECKING_P

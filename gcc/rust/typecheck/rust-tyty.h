@@ -78,8 +78,7 @@ enum TypeKind
   ERROR
 };
 
-extern bool
-is_primitive_type_kind (TypeKind kind);
+extern bool is_primitive_type_kind (TypeKind kind);
 
 class TypeKindFormat
 {
@@ -268,8 +267,8 @@ public:
   {}
 
   WARN_UNUSED_RESULT virtual size_t get_num_params () const = 0;
-  WARN_UNUSED_RESULT virtual BaseType *
-  get_param_type_at (size_t index) const = 0;
+  WARN_UNUSED_RESULT virtual BaseType *get_param_type_at (size_t index) const
+    = 0;
   WARN_UNUSED_RESULT virtual BaseType *get_return_type () const = 0;
 };
 

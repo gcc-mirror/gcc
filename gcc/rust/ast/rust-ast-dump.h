@@ -49,7 +49,8 @@ public:
       {
 	switch (item.get_kind ())
 	  {
-	    case AST::CollectItem::Kind::Token: {
+	  case AST::CollectItem::Kind::Token:
+	    {
 	      TokenPtr current = item.get_token ();
 	      if (require_spacing (previous, current))
 		stream << " ";
@@ -90,7 +91,6 @@ private:
 } // namespace Rust
 
 // In the global namespace to make it easier to call from debugger
-void
-debug (Rust::AST::Visitable &v);
+void debug (Rust::AST::Visitable &v);
 
 #endif // !RUST_AST_DUMP_H

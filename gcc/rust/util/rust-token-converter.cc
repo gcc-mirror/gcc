@@ -202,7 +202,8 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	case PERCENT_EQ:
 	case SCOPE_RESOLUTION:
 	case NOT_EQUAL:
-	  case EQUAL_EQUAL: {
+	case EQUAL_EQUAL:
+	  {
 	    auto str = token->as_string ();
 	    auto it = str.cbegin ();
 	    for (; it != str.cend () - 1; it++)
@@ -260,9 +261,8 @@ convert (const std::vector<const_TokenPtr> &tokens)
   return trees.back ();
 }
 
-static void
-from_tokenstream (const ProcMacro::TokenStream &ts,
-		  std::vector<const_TokenPtr> &result);
+static void from_tokenstream (const ProcMacro::TokenStream &ts,
+			      std::vector<const_TokenPtr> &result);
 
 /**
  * Append the token corresponding to a given Ident to a vector.

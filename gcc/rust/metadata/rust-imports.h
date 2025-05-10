@@ -11,8 +11,7 @@
 
 namespace Rust {
 
-extern void
-add_search_path (const std::string &path);
+extern void add_search_path (const std::string &path);
 
 class Import
 {

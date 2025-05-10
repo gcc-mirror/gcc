@@ -217,7 +217,7 @@ public:
   const T &operator[] (I pid) const { return internal_vector[pid.value]; }
 
   void push_back (T &&param) { internal_vector.push_back (std::move (param)); }
-  template <typename... Args> void emplace_back (Args &&... args)
+  template <typename... Args> void emplace_back (Args &&...args)
   {
     internal_vector.emplace_back (std::forward<Args> (args)...);
   }
@@ -471,14 +471,16 @@ private:
       case TyTy::FNDEF:
       case TyTy::NEVER:
 	return true;
-	case TyTy::TUPLE: {
+      case TyTy::TUPLE:
+	{
 	  auto &fields = ty->as<TyTy::TupleType> ()->get_fields ();
 	  return std::all_of (fields.begin (), fields.end (),
 			      [] (const TyTy::TyVar &field) {
 				return is_type_copy (field.get_tyty ());
 			      });
 	}
-	case TyTy::ARRAY: {
+      case TyTy::ARRAY:
+	{
 	  return is_type_copy (ty->as<TyTy::ArrayType> ()->get_element_type ());
 	}
       case TyTy::INFER:

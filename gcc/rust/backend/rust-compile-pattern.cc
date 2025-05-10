@@ -112,7 +112,8 @@ compile_range_pattern_bound (HIR::RangePatternBound &bound,
   tree result = NULL_TREE;
   switch (bound.get_bound_type ())
     {
-      case HIR::RangePatternBound::RangePatternBoundType::LITERAL: {
+    case HIR::RangePatternBound::RangePatternBoundType::LITERAL:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundLiteral &> (bound);
 
 	HIR::LiteralExpr litexpr (mappings, ref.get_literal (), locus,
@@ -122,7 +123,8 @@ compile_range_pattern_bound (HIR::RangePatternBound &bound,
       }
       break;
 
-      case HIR::RangePatternBound::RangePatternBoundType::PATH: {
+    case HIR::RangePatternBound::RangePatternBoundType::PATH:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundPath &> (bound);
 
 	result = ResolvePathRef::Compile (ref.get_path (), ctx);
@@ -132,7 +134,8 @@ compile_range_pattern_bound (HIR::RangePatternBound &bound,
       }
       break;
 
-      case HIR::RangePatternBound::RangePatternBoundType::QUALPATH: {
+    case HIR::RangePatternBound::RangePatternBoundType::QUALPATH:
+      {
 	auto &ref = static_cast<HIR::RangePatternBoundQualPath &> (bound);
 
 	result = ResolvePathRef::Compile (ref.get_qualified_path (), ctx);
@@ -261,13 +264,15 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
     {
       switch (field->get_item_type ())
 	{
-	  case HIR::StructPatternField::ItemType::TUPLE_PAT: {
+	case HIR::StructPatternField::ItemType::TUPLE_PAT:
+	  {
 	    // TODO
 	    rust_unreachable ();
 	  }
 	  break;
 
-	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
+	case HIR::StructPatternField::ItemType::IDENT_PAT:
+	  {
 	    HIR::StructPatternFieldIdentPat &ident
 	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field.get ());
 
@@ -289,7 +294,8 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 	  }
 	  break;
 
-	  case HIR::StructPatternField::ItemType::IDENT: {
+	case HIR::StructPatternField::ItemType::IDENT:
+	  {
 	    // ident pattern always matches - do nothing
 	  }
 	  break;
@@ -348,13 +354,15 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
   HIR::TupleStructItems &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-      case HIR::TupleStructItems::RANGED: {
+    case HIR::TupleStructItems::RANGED:
+      {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-      case HIR::TupleStructItems::MULTIPLE: {
+    case HIR::TupleStructItems::MULTIPLE:
+      {
 	HIR::TupleStructItemsNoRange &items_no_range
 	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
 
@@ -396,13 +404,15 @@ CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
 
   switch (pattern.get_items ().get_item_type ())
     {
-      case HIR::TuplePatternItems::RANGED: {
+    case HIR::TuplePatternItems::RANGED:
+      {
 	// TODO
 	gcc_unreachable ();
       }
       break;
 
-      case HIR::TuplePatternItems::MULTIPLE: {
+    case HIR::TuplePatternItems::MULTIPLE:
+      {
 	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
 	size_t tuple_field_index = 0;
@@ -459,13 +469,15 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
   HIR::TupleStructItems &items = pattern.get_items ();
   switch (items.get_item_type ())
     {
-      case HIR::TupleStructItems::RANGED: {
+    case HIR::TupleStructItems::RANGED:
+      {
 	// TODO
 	rust_unreachable ();
       }
       break;
 
-      case HIR::TupleStructItems::MULTIPLE: {
+    case HIR::TupleStructItems::MULTIPLE:
+      {
 	HIR::TupleStructItemsNoRange &items_no_range
 	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
 
@@ -666,7 +678,8 @@ CompilePatternBindings::visit (HIR::TuplePattern &pattern)
 
   switch (pattern.get_items ().get_item_type ())
     {
-      case HIR::TuplePatternItems::ItemType::RANGED: {
+    case HIR::TuplePatternItems::ItemType::RANGED:
+      {
 	size_t tuple_idx = 0;
 	auto &items
 	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
@@ -709,7 +722,8 @@ CompilePatternBindings::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-      case HIR::TuplePatternItems::ItemType::MULTIPLE: {
+    case HIR::TuplePatternItems::ItemType::MULTIPLE:
+      {
 	size_t tuple_idx = 0;
 	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
@@ -730,7 +744,8 @@ CompilePatternBindings::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-      default: {
+    default:
+      {
 	rust_unreachable ();
       }
     }
@@ -790,7 +805,8 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 
   switch (pattern.get_items ().get_item_type ())
     {
-      case HIR::TuplePatternItems::ItemType::RANGED: {
+    case HIR::TuplePatternItems::ItemType::RANGED:
+      {
 	size_t tuple_idx = 0;
 	auto &items
 	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
@@ -834,7 +850,8 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-      case HIR::TuplePatternItems::ItemType::MULTIPLE: {
+    case HIR::TuplePatternItems::ItemType::MULTIPLE:
+      {
 	size_t tuple_idx = 0;
 	auto &items = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
@@ -856,7 +873,8 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
 
 	return;
       }
-      default: {
+    default:
+      {
 	rust_unreachable ();
       }
     }

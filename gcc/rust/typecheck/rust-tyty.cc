@@ -230,11 +230,13 @@ BaseType::is_unit () const
     case NEVER:
       return true;
 
-      case TUPLE: {
+    case TUPLE:
+      {
 	return x->as<const TupleType> ()->num_fields () == 0;
       }
 
-      case ADT: {
+    case ADT:
+      {
 	auto adt = x->as<const ADTType> ();
 	if (adt->is_enum ())
 	  return false;
@@ -894,28 +896,32 @@ BaseType::has_substitutions_defined () const
     case OPAQUE:
       return false;
 
-      case PROJECTION: {
+    case PROJECTION:
+      {
 	const ProjectionType &p = *static_cast<const ProjectionType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (p);
 	return ref.has_substitutions ();
       }
       break;
 
-      case FNDEF: {
+    case FNDEF:
+      {
 	const FnType &fn = *static_cast<const FnType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (fn);
 	return ref.has_substitutions ();
       }
       break;
 
-      case ADT: {
+    case ADT:
+      {
 	const ADTType &adt = *static_cast<const ADTType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (adt);
 	return ref.has_substitutions ();
       }
       break;
 
-      case CLOSURE: {
+    case CLOSURE:
+      {
 	const ClosureType &closure = *static_cast<const ClosureType *> (x);
 	const SubstitutionRef &ref
 	  = static_cast<const SubstitutionRef &> (closure);
@@ -956,28 +962,32 @@ BaseType::needs_generic_substitutions () const
     case OPAQUE:
       return false;
 
-      case PROJECTION: {
+    case PROJECTION:
+      {
 	const ProjectionType &p = *static_cast<const ProjectionType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (p);
 	return ref.needs_substitution ();
       }
       break;
 
-      case FNDEF: {
+    case FNDEF:
+      {
 	const FnType &fn = *static_cast<const FnType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (fn);
 	return ref.needs_substitution ();
       }
       break;
 
-      case ADT: {
+    case ADT:
+      {
 	const ADTType &adt = *static_cast<const ADTType *> (x);
 	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (adt);
 	return ref.needs_substitution ();
       }
       break;
 
-      case CLOSURE: {
+    case CLOSURE:
+      {
 	const ClosureType &closure = *static_cast<const ClosureType *> (x);
 	const SubstitutionRef &ref
 	  = static_cast<const SubstitutionRef &> (closure);
@@ -996,28 +1006,32 @@ BaseType::get_subst_argument_mappings () const
   const TyTy::BaseType *x = destructure ();
   switch (x->get_kind ())
     {
-      case PROJECTION: {
+    case PROJECTION:
+      {
 	const auto &p = *static_cast<const ProjectionType *> (x);
 	const auto &ref = static_cast<const SubstitutionRef &> (p);
 	return ref.get_substitution_arguments ();
       }
       break;
 
-      case FNDEF: {
+    case FNDEF:
+      {
 	const auto &fn = *static_cast<const FnType *> (x);
 	const auto &ref = static_cast<const SubstitutionRef &> (fn);
 	return ref.get_substitution_arguments ();
       }
       break;
 
-      case ADT: {
+    case ADT:
+      {
 	const auto &adt = *static_cast<const ADTType *> (x);
 	const auto &ref = static_cast<const SubstitutionRef &> (adt);
 	return ref.get_substitution_arguments ();
       }
       break;
 
-      case CLOSURE: {
+    case CLOSURE:
+      {
 	const auto &closure = *static_cast<const ClosureType *> (x);
 	const auto &ref = static_cast<const SubstitutionRef &> (closure);
 	return ref.get_substitution_arguments ();
@@ -1140,13 +1154,15 @@ InferType::default_type (BaseType **type) const
 	case GENERAL:
 	  return false;
 
-	  case INTEGRAL: {
+	case INTEGRAL:
+	  {
 	    ok = context->lookup_builtin ("i32", type);
 	    rust_assert (ok);
 	    return ok;
 	  }
 
-	  case FLOAT: {
+	case FLOAT:
+	  {
 	    ok = context->lookup_builtin ("f64", type);
 	    rust_assert (ok);
 	    return ok;
@@ -1269,7 +1285,8 @@ InferType::apply_primitive_type_hint (const BaseType &hint)
       default_hint.kind = hint.get_kind ();
       break;
 
-      case INT: {
+    case INT:
+      {
 	infer_kind = INTEGRAL;
 	default_hint.kind = hint.get_kind ();
 	default_hint.shint = TypeHint::SignedHint::SIGNED;
@@ -1294,7 +1311,8 @@ InferType::apply_primitive_type_hint (const BaseType &hint)
       }
       break;
 
-      case UINT: {
+    case UINT:
+      {
 	infer_kind = INTEGRAL;
 	default_hint.kind = hint.get_kind ();
 	default_hint.shint = TypeHint::SignedHint::UNSIGNED;
@@ -1319,7 +1337,8 @@ InferType::apply_primitive_type_hint (const BaseType &hint)
       }
       break;
 
-      case TypeKind::FLOAT: {
+    case TypeKind::FLOAT:
+      {
 	infer_kind = FLOAT;
 	default_hint.shint = TypeHint::SignedHint::SIGNED;
 	default_hint.kind = hint.get_kind ();

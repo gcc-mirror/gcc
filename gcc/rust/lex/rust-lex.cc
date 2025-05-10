@@ -1317,7 +1317,8 @@ Lexer::parse_escape (char opening_char)
 
   switch (current_char.value)
     {
-      case 'x': {
+    case 'x':
+      {
 	auto hex_escape_pair = parse_partial_hex_escape ();
 	long hexLong = hex_escape_pair.first;
 	additional_length_offset += hex_escape_pair.second;
@@ -1400,7 +1401,8 @@ Lexer::parse_utf8_escape ()
 
   switch (current_char.value)
     {
-      case 'x': {
+    case 'x':
+      {
 	auto hex_escape_pair = parse_partial_hex_escape ();
 	long hexLong = hex_escape_pair.first;
 	additional_length_offset += hex_escape_pair.second;
@@ -1438,7 +1440,8 @@ Lexer::parse_utf8_escape ()
     case '"':
       output_char = '"';
       break;
-      case 'u': {
+    case 'u':
+      {
 	auto unicode_escape_pair = parse_partial_unicode_escape ();
 	output_char = unicode_escape_pair.first;
 	additional_length_offset += unicode_escape_pair.second;

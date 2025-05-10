@@ -33,8 +33,7 @@ enum class Edition
   E2021
 };
 
-Edition
-get_rust_edition ();
+Edition get_rust_edition ();
 
 } // namespace Rust
 

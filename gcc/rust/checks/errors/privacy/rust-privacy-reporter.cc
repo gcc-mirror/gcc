@@ -157,7 +157,8 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
     {
     case ModuleVisibility::Public:
       break;
-      case ModuleVisibility::Restricted: {
+    case ModuleVisibility::Restricted:
+      {
 	// If we are in the crate, everything is restricted correctly, but we
 	// can't get a module for it
 	if (!current_module.has_value ())
@@ -215,7 +216,8 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
     case TyTy::USIZE:
     case TyTy::ISIZE:
     case TyTy::ADT:
-      case TyTy::STR: {
+    case TyTy::STR:
+      {
 	auto ref_id = ty->get_ref ();
 	if (auto lookup_id = mappings.lookup_hir_to_node (ref_id))
 	  return check_for_privacy_violation (*lookup_id, locus);
@@ -243,7 +245,8 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
 	   static_cast<const TyTy::TupleType *> (ty)->get_fields ())
 	recursive_check (param.get_tyty ());
       return;
-      case TyTy::PLACEHOLDER: {
+    case TyTy::PLACEHOLDER:
+      {
 	const auto p = static_cast<const TyTy::PlaceholderType *> (ty);
 	if (!p->can_resolve ())
 	  return;
@@ -413,7 +416,8 @@ PrivacyReporter::visit (HIR::ArrayExpr &expr)
   HIR::ArrayElems &elements = expr.get_internal_elements ();
   switch (elements.get_array_expr_type ())
     {
-      case HIR::ArrayElems::ArrayExprType::VALUES: {
+    case HIR::ArrayElems::ArrayExprType::VALUES:
+      {
 	auto &elems = static_cast<HIR::ArrayElemsValues &> (elements);
 	for (auto &value : elems.get_values ())
 	  value->accept_vis (*this);

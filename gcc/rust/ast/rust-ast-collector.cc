@@ -154,20 +154,24 @@ TokenCollector::visit (Attribute &attrib)
     {
       switch (attrib.get_attr_input ().get_attr_input_type ())
 	{
-	  case AST::AttrInput::AttrInputType::LITERAL: {
+	case AST::AttrInput::AttrInputType::LITERAL:
+	  {
 	    visit (static_cast<AttrInputLiteral &> (attrib.get_attr_input ()));
 	    break;
 	  }
-	  case AST::AttrInput::AttrInputType::MACRO: {
+	case AST::AttrInput::AttrInputType::MACRO:
+	  {
 	    visit (static_cast<AttrInputMacro &> (attrib.get_attr_input ()));
 	    break;
 	  }
-	  case AST::AttrInput::AttrInputType::META_ITEM: {
+	case AST::AttrInput::AttrInputType::META_ITEM:
+	  {
 	    visit (static_cast<AttrInputMetaItemContainer &> (
 	      attrib.get_attr_input ()));
 	    break;
 	  }
-	  case AST::AttrInput::AttrInputType::TOKEN_TREE: {
+	case AST::AttrInput::AttrInputType::TOKEN_TREE:
+	  {
 	    visit (static_cast<DelimTokenTree &> (attrib.get_attr_input ()));
 	    break;
 	  }
@@ -634,7 +638,8 @@ TokenCollector::visit (GenericArg &arg)
     case GenericArg::Kind::Type:
       visit (arg.get_type ());
       break;
-      case GenericArg::Kind::Either: {
+    case GenericArg::Kind::Either:
+      {
 	auto path = arg.get_path ();
 	push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (path)));
       }
@@ -789,7 +794,8 @@ TokenCollector::visit (Literal &lit, location_t locus)
       push (Rust::Token::make_float (locus, std::move (value),
 				     lit.get_type_hint ()));
       break;
-      case Literal::LitType::BOOL: {
+    case Literal::LitType::BOOL:
+      {
 	if (value == Values::Keywords::FALSE_LITERAL)
 	  push (Rust::Token::make (FALSE_LITERAL, locus));
 	else if (value == Values::Keywords::TRUE_LITERAL)
@@ -1534,33 +1540,40 @@ TokenCollector::visit (InlineAsm &expr)
       using RegisterType = AST::InlineAsmOperand::RegisterType;
       switch (operand.get_register_type ())
 	{
-	  case RegisterType::In: {
+	case RegisterType::In:
+	  {
 	    visit (operand.get_in ().expr);
 	    break;
 	  }
-	  case RegisterType::Out: {
+	case RegisterType::Out:
+	  {
 	    visit (operand.get_out ().expr);
 	    break;
 	  }
-	  case RegisterType::InOut: {
+	case RegisterType::InOut:
+	  {
 	    visit (operand.get_in_out ().expr);
 	    break;
 	  }
-	  case RegisterType::SplitInOut: {
+	case RegisterType::SplitInOut:
+	  {
 	    auto split = operand.get_split_in_out ();
 	    visit (split.in_expr);
 	    visit (split.out_expr);
 	    break;
 	  }
-	  case RegisterType::Const: {
+	case RegisterType::Const:
+	  {
 	    visit (operand.get_const ().anon_const.expr);
 	    break;
 	  }
-	  case RegisterType::Sym: {
+	case RegisterType::Sym:
+	  {
 	    visit (operand.get_sym ().expr);
 	    break;
 	  }
-	  case RegisterType::Label: {
+	case RegisterType::Label:
+	  {
 	    visit (operand.get_label ().expr);
 	    break;
 	  }
@@ -1776,7 +1789,8 @@ TokenCollector::visit (UseTreeGlob &use_tree)
 {
   switch (use_tree.get_glob_type ())
     {
-      case UseTreeGlob::PathType::PATH_PREFIXED: {
+    case UseTreeGlob::PathType::PATH_PREFIXED:
+      {
 	auto path = use_tree.get_path ();
 	visit (path);
 	push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
@@ -1796,7 +1810,8 @@ TokenCollector::visit (UseTreeList &use_tree)
 {
   switch (use_tree.get_path_type ())
     {
-      case UseTreeList::PathType::PATH_PREFIXED: {
+    case UseTreeList::PathType::PATH_PREFIXED:
+      {
 	auto path = use_tree.get_path ();
 	visit (path);
 	push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
@@ -1824,7 +1839,8 @@ TokenCollector::visit (UseTreeRebind &use_tree)
   visit (path);
   switch (use_tree.get_new_bind_type ())
     {
-      case UseTreeRebind::NewBindType::IDENTIFIER: {
+    case UseTreeRebind::NewBindType::IDENTIFIER:
+      {
 	push (Rust::Token::make (AS, UNDEF_LOCATION));
 	auto id = use_tree.get_identifier ().as_string ();
 	push (

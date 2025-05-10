@@ -88,10 +88,8 @@ constexpr static const char *file_separator = "/";
  */
 #define rust_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
 
-extern void
-rust_preserve_from_gc (tree t);
+extern void rust_preserve_from_gc (tree t);
 
-extern const char *
-rust_localize_identifier (const char *ident);
+extern const char *rust_localize_identifier (const char *ident);
 
 #endif // !defined(RUST_SYSTEM_H)

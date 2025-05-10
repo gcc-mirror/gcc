@@ -33,29 +33,23 @@
 #include "rust-token.h"
 namespace Rust {
 
-std::string
-make_macro_path_str (BuiltinMacro kind);
+std::string make_macro_path_str (BuiltinMacro kind);
 
-std::vector<std::unique_ptr<AST::MacroInvocation>>
-check_for_eager_invocations (
+std::vector<std::unique_ptr<AST::MacroInvocation>> check_for_eager_invocations (
   std::vector<std::unique_ptr<AST::Expr>> &expressions);
 
 // Shorthand function for creating unique_ptr tokens
 
-std::unique_ptr<AST::Token>
-make_token (const TokenPtr tok);
+std::unique_ptr<AST::Token> make_token (const TokenPtr tok);
 
-std::unique_ptr<AST::Expr>
-make_string (location_t locus, std::string value);
+std::unique_ptr<AST::Expr> make_string (location_t locus, std::string value);
 // TODO: Is this correct?
-AST::Fragment
-make_eager_builtin_invocation (
+AST::Fragment make_eager_builtin_invocation (
   BuiltinMacro kind, location_t locus, AST::DelimTokenTree arguments,
   std::vector<std::unique_ptr<AST::MacroInvocation>> &&pending_invocations);
 // Match the end token of a macro given the start delimiter of the macro
-TokenId
-macro_end_token (AST::DelimTokenTree &invoc_token_tree,
-		 Parser<MacroInvocLexer> &parser);
+TokenId macro_end_token (AST::DelimTokenTree &invoc_token_tree,
+			 Parser<MacroInvocLexer> &parser);
 // Expand and then extract a string literal from the macro
 std::unique_ptr<AST::LiteralExpr>
 try_extract_string_literal_from_fragment (const location_t &parent_locus,
@@ -70,21 +64,18 @@ try_expand_many_expr (Parser<MacroInvocLexer> &parser,
 //   and return the LiteralExpr for it. Allow for an optional trailing comma,
 //   but otherwise enforce that these are the only tokens.
 
-std::unique_ptr<AST::Expr>
-parse_single_string_literal (BuiltinMacro kind,
-			     AST::DelimTokenTree &invoc_token_tree,
-			     location_t invoc_locus, MacroExpander *expander,
-			     bool is_semicoloned = false);
+std::unique_ptr<AST::Expr> parse_single_string_literal (
+  BuiltinMacro kind, AST::DelimTokenTree &invoc_token_tree,
+  location_t invoc_locus, MacroExpander *expander, bool is_semicoloned = false);
 
 // Treat PATH as a path relative to the source file currently being
 // compiled, and return the absolute path for it.
 
-std::string
-source_relative_path (std::string path, location_t locus);
+std::string source_relative_path (std::string path, location_t locus);
 
 // Read the full contents of the file FILENAME and return them in a vector.
 // FIXME: platform specific.
-tl::optional<std::vector<uint8_t>>
-load_file_bytes (location_t invoc_locus, const char *filename);
+tl::optional<std::vector<uint8_t>> load_file_bytes (location_t invoc_locus,
+						    const char *filename);
 } // namespace Rust
 #endif // GCCRS_RUST_MACRO_BUILTINS_HELPERS_H

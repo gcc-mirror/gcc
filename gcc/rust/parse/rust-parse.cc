@@ -144,10 +144,9 @@ peculiar_fragment_match_compatible_fragment (
     = contains (fragment_follow_set[last_spec.get_kind ()], spec.get_kind ());
 
   if (!is_valid)
-    rust_error_at (
-      match_locus,
-      "fragment specifier %qs is not allowed after %qs fragments",
-      spec.as_string ().c_str (), last_spec.as_string ().c_str ());
+    rust_error_at (match_locus,
+		   "fragment specifier %qs is not allowed after %qs fragments",
+		   spec.as_string ().c_str (), last_spec.as_string ().c_str ());
 
   return is_valid;
 }
@@ -244,7 +243,8 @@ peculiar_fragment_match_compatible (const AST::MacroMatchFragment &last_match,
   // the error.
   switch (match.get_macro_match_type ())
     {
-      case AST::MacroMatch::Tok: {
+    case AST::MacroMatch::Tok:
+      {
 	auto tok = static_cast<const AST::Token *> (&match);
 	if (contains (allowed_toks, tok->get_id ()))
 	  return true;
@@ -254,7 +254,8 @@ peculiar_fragment_match_compatible (const AST::MacroMatchFragment &last_match,
 	break;
       }
       break;
-      case AST::MacroMatch::Repetition: {
+    case AST::MacroMatch::Repetition:
+      {
 	auto repetition
 	  = static_cast<const AST::MacroMatchRepetition *> (&match);
 	auto &matches = repetition->get_matches ();
@@ -263,7 +264,8 @@ peculiar_fragment_match_compatible (const AST::MacroMatchFragment &last_match,
 	  return peculiar_fragment_match_compatible (last_match, *first_frag);
 	break;
       }
-      case AST::MacroMatch::Matcher: {
+    case AST::MacroMatch::Matcher:
+      {
 	auto matcher = static_cast<const AST::MacroMatcher *> (&match);
 	auto first_token = matcher->get_delim_type ();
 	TokenId delim_id;
@@ -289,7 +291,8 @@ peculiar_fragment_match_compatible (const AST::MacroMatchFragment &last_match,
 	error_locus = matcher->get_match_locus ();
 	break;
       }
-      case AST::MacroMatch::Fragment: {
+    case AST::MacroMatch::Fragment:
+      {
 	auto last_spec = last_match.get_frag_spec ();
 	auto fragment = static_cast<const AST::MacroMatchFragment *> (&match);
 	if (last_spec.has_follow_set_fragment_restrictions ())
@@ -328,10 +331,11 @@ is_match_compatible (const AST::MacroMatch &last_match,
 
   switch (last_match.get_macro_match_type ())
     {
-      // This is our main stop condition: When we are finally looking at the
-      // last match (or its actual last component), and it is a fragment, it
-      // may contain some follow up restrictions.
-      case AST::MacroMatch::Fragment: {
+    // This is our main stop condition: When we are finally looking at the
+    // last match (or its actual last component), and it is a fragment, it
+    // may contain some follow up restrictions.
+    case AST::MacroMatch::Fragment:
+      {
 	auto fragment
 	  = static_cast<const AST::MacroMatchFragment *> (&last_match);
 	if (fragment->get_frag_spec ().has_follow_set_restrictions ())
@@ -339,7 +343,8 @@ is_match_compatible (const AST::MacroMatch &last_match,
 	else
 	  return true;
       }
-      case AST::MacroMatch::Repetition: {
+    case AST::MacroMatch::Repetition:
+      {
 	// A repetition on the left hand side means we want to make sure the
 	// last match of the repetition is compatible with the new match
 	auto repetition

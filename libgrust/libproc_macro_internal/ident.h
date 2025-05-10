@@ -47,17 +47,13 @@ public:
 
 extern "C" {
 
-Ident
-Ident__new (FFIString str, Span span);
+Ident Ident__new (FFIString str, Span span);
 
-Ident
-Ident__new_raw (FFIString str, Span span);
+Ident Ident__new_raw (FFIString str, Span span);
 
-void
-Ident__drop (Ident *ident);
+void Ident__drop (Ident *ident);
 
-Ident
-Ident__clone (const Ident *ident);
+Ident Ident__clone (const Ident *ident);
 }
 
 } // namespace ProcMacro

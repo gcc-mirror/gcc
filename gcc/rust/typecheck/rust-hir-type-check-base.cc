@@ -124,7 +124,8 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
   TyTy::BaseType *infered = nullptr;
   switch (literal.get_lit_type ())
     {
-      case HIR::Literal::LitType::INT: {
+    case HIR::Literal::LitType::INT:
+      {
 	bool ok = false;
 
 	switch (literal.get_type_hint ())
@@ -191,7 +192,8 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
       }
       break;
 
-      case HIR::Literal::LitType::FLOAT: {
+    case HIR::Literal::LitType::FLOAT:
+      {
 	bool ok = false;
 
 	switch (literal.get_type_hint ())
@@ -216,25 +218,29 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
       }
       break;
 
-      case HIR::Literal::LitType::BOOL: {
+    case HIR::Literal::LitType::BOOL:
+      {
 	auto ok = context->lookup_builtin ("bool", &infered);
 	rust_assert (ok);
       }
       break;
 
-      case HIR::Literal::LitType::CHAR: {
+    case HIR::Literal::LitType::CHAR:
+      {
 	auto ok = context->lookup_builtin ("char", &infered);
 	rust_assert (ok);
       }
       break;
 
-      case HIR::Literal::LitType::BYTE: {
+    case HIR::Literal::LitType::BYTE:
+      {
 	auto ok = context->lookup_builtin ("u8", &infered);
 	rust_assert (ok);
       }
       break;
 
-      case HIR::Literal::LitType::STRING: {
+    case HIR::Literal::LitType::STRING:
+      {
 	TyTy::BaseType *base = nullptr;
 	auto ok = context->lookup_builtin ("str", &base);
 	rust_assert (ok);
@@ -246,7 +252,8 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
       }
       break;
 
-      case HIR::Literal::LitType::BYTE_STRING: {
+    case HIR::Literal::LitType::BYTE_STRING:
+      {
 	/* This is an arraytype of u8 reference (&[u8;size]). It isn't in
 	   UTF-8, but really just a byte array. Code to construct the array
 	   reference copied from ArrayElemsValues and ArrayType. */
@@ -440,7 +447,8 @@ TypeCheckBase::resolve_generic_params (
     {
       switch (generic_param->get_kind ())
 	{
-	  case HIR::GenericParam::GenericKind::LIFETIME: {
+	case HIR::GenericParam::GenericKind::LIFETIME:
+	  {
 	    auto lifetime_param
 	      = static_cast<HIR::LifetimeParam &> (*generic_param);
 	    auto lifetime = lifetime_param.get_lifetime ();
@@ -449,7 +457,8 @@ TypeCheckBase::resolve_generic_params (
 	  }
 	  break;
 
-	  case HIR::GenericParam::GenericKind::CONST: {
+	case HIR::GenericParam::GenericKind::CONST:
+	  {
 	    if (is_foreign && abi != Rust::ABI::INTRINSIC)
 	      {
 		rust_error_at (generic_param->get_locus (), ErrorCode::E0044,
@@ -478,7 +487,8 @@ TypeCheckBase::resolve_generic_params (
 	  }
 	  break;
 
-	  case HIR::GenericParam::GenericKind::TYPE: {
+	case HIR::GenericParam::GenericKind::TYPE:
+	  {
 	    if (is_foreign && abi != Rust::ABI::INTRINSIC)
 	      {
 		rust_error_at (generic_param->get_locus (), ErrorCode::E0044,

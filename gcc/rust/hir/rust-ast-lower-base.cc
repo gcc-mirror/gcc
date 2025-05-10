@@ -648,12 +648,14 @@ ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
     {
       switch (arg.get_kind ())
 	{
-	  case AST::GenericArg::Kind::Type: {
+	case AST::GenericArg::Kind::Type:
+	  {
 	    auto type = ASTLoweringType::translate (arg.get_type ());
 	    type_args.emplace_back (std::unique_ptr<HIR::Type> (type));
 	    break;
 	  }
-	  case AST::GenericArg::Kind::Const: {
+	case AST::GenericArg::Kind::Const:
+	  {
 	    auto expr = ASTLoweringExpr::translate (arg.get_expression ());
 	    const_args.emplace_back (
 	      HIR::ConstGenericArg (std::unique_ptr<HIR::Expr> (expr),
@@ -887,7 +889,8 @@ ASTLoweringBase::lower_range_pattern_bound (AST::RangePatternBound &bound)
   std::unique_ptr<HIR::RangePatternBound> hir_bound = nullptr;
   switch (bound.get_bound_type ())
     {
-      case AST::RangePatternBound::RangePatternBoundType::LITERAL: {
+    case AST::RangePatternBound::RangePatternBoundType::LITERAL:
+      {
 	AST::RangePatternBoundLiteral &ref
 	  = static_cast<AST::RangePatternBoundLiteral &> (bound);
 
@@ -898,7 +901,8 @@ ASTLoweringBase::lower_range_pattern_bound (AST::RangePatternBound &bound)
 					     ref.get_has_minus ()));
       }
       break;
-      case AST::RangePatternBound::RangePatternBoundType::PATH: {
+    case AST::RangePatternBound::RangePatternBoundType::PATH:
+      {
 	auto &ref = static_cast<AST::RangePatternBoundPath &> (bound);
 
 	HIR::PathInExpression *path
@@ -908,7 +912,8 @@ ASTLoweringBase::lower_range_pattern_bound (AST::RangePatternBound &bound)
 	  new HIR::RangePatternBoundPath (*path));
       }
       break;
-      case AST::RangePatternBound::RangePatternBoundType::QUALPATH: {
+    case AST::RangePatternBound::RangePatternBoundType::QUALPATH:
+      {
 	auto &ref = static_cast<AST::RangePatternBoundQualPath &> (bound);
 
 	HIR::QualifiedPathInExpression *qualpath

@@ -224,7 +224,8 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 	  // handling.
 	  break;
 
-	  case HIR::GenericParam::GenericKind::TYPE: {
+	case HIR::GenericParam::GenericKind::TYPE:
+	  {
 	    auto &typaram = static_cast<HIR::TypeParam &> (*generic_param);
 	    bool is_self
 	      = typaram.get_type_representation ().as_string ().compare ("Self")
@@ -543,7 +544,8 @@ AssociatedImplTrait::setup_associated_types (
 	  // handling.
 	  break;
 
-	  case HIR::GenericParam::GenericKind::TYPE: {
+	case HIR::GenericParam::GenericKind::TYPE:
+	  {
 	    TyTy::BaseType *l = nullptr;
 	    bool ok = context->lookup_type (
 	      generic_param->get_mappings ().get_hirid (), &l);
@@ -753,7 +755,8 @@ TraitItemReference::is_object_safe () const
   // https://doc.rust-lang.org/reference/items/traits.html#object-safety
   switch (get_trait_item_type ())
     {
-      case TraitItemReference::TraitItemType::FN: {
+    case TraitItemReference::TraitItemType::FN:
+      {
 	// lets be boring and just check that this is indeed a method will do
 	// for now
 	const HIR::TraitItem *item = get_hir_trait_item ();

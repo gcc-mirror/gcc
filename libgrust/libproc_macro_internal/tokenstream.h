@@ -51,23 +51,17 @@ public:
   static void drop (TokenStream *stream);
 };
 
-extern "C" TokenStream
-TokenStream__new ();
+extern "C" TokenStream TokenStream__new ();
 
-extern "C" TokenStream
-TokenStream__with_capacity (std::uint64_t capacity);
+extern "C" TokenStream TokenStream__with_capacity (std::uint64_t capacity);
 
-extern "C" void
-TokenSream__push (TokenStream *stream, TokenTree tree);
+extern "C" void TokenSream__push (TokenStream *stream, TokenTree tree);
 
-extern "C" bool
-TokenStream__from_string (FFIString str, TokenStream *ts);
+extern "C" bool TokenStream__from_string (FFIString str, TokenStream *ts);
 
-extern "C" TokenStream
-TokenStream__clone (const TokenStream *ts);
+extern "C" TokenStream TokenStream__clone (const TokenStream *ts);
 
-extern "C" void
-TokenStream__drop (TokenStream *stream);
+extern "C" void TokenStream__drop (TokenStream *stream);
 
 } // namespace ProcMacro
 

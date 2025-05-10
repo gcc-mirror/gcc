@@ -33,9 +33,9 @@ namespace Analysis {
 
 using namespace HIR;
 
-void
-check_match_usefulness (Resolver::TypeCheckContext *ctx,
-			TyTy::BaseType *scrutinee_ty, HIR::MatchExpr &expr);
+void check_match_usefulness (Resolver::TypeCheckContext *ctx,
+			     TyTy::BaseType *scrutinee_ty,
+			     HIR::MatchExpr &expr);
 
 class PatternChecker : public HIR::HIRFullVisitor
 {

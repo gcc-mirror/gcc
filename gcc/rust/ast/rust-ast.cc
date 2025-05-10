@@ -249,27 +249,31 @@ Attribute::get_traits_to_derive ()
   auto &input = get_attr_input ();
   switch (input.get_attr_input_type ())
     {
-      case AST::AttrInput::META_ITEM: {
+    case AST::AttrInput::META_ITEM:
+      {
 	auto &meta = static_cast<AST::AttrInputMetaItemContainer &> (input);
 	for (auto &current : meta.get_items ())
 	  {
 	    // HACK: Find a better way to achieve the downcast.
 	    switch (current->get_kind ())
 	      {
-		case AST::MetaItemInner::Kind::MetaItem: {
+	      case AST::MetaItemInner::Kind::MetaItem:
+		{
 		  // Let raw pointer go out of scope without freeing, it doesn't
 		  // own the data anyway
 		  auto meta_item
 		    = static_cast<AST::MetaItem *> (current.get ());
 		  switch (meta_item->get_item_kind ())
 		    {
-		      case AST::MetaItem::ItemKind::Path: {
+		    case AST::MetaItem::ItemKind::Path:
+		      {
 			auto path
 			  = static_cast<AST::MetaItemPath *> (meta_item);
 			result.push_back (path->get_path ());
 		      }
 		      break;
-		      case AST::MetaItem::ItemKind::Word: {
+		    case AST::MetaItem::ItemKind::Word:
+		      {
 			auto word = static_cast<AST::MetaWord *> (meta_item);
 			// Convert current word to path
 			current = std::make_unique<AST::MetaItemPath> (
@@ -782,7 +786,8 @@ UseTreeGlob::as_string () const
       return "*";
     case GLOBAL:
       return "::*";
-      case PATH_PREFIXED: {
+    case PATH_PREFIXED:
+      {
 	std::string path_str = path.as_string ();
 	return path_str + "::*";
       }
@@ -805,7 +810,8 @@ UseTreeList::as_string () const
     case GLOBAL:
       path_str = "::{";
       break;
-      case PATH_PREFIXED: {
+    case PATH_PREFIXED:
+      {
 	path_str = path.as_string () + "::{";
 	break;
       }
@@ -3653,14 +3659,16 @@ AttributeParser::parse_path_meta_item ()
 
   switch (peek_token ()->get_id ())
     {
-      case LEFT_PAREN: {
+    case LEFT_PAREN:
+      {
 	std::vector<std::unique_ptr<MetaItemInner>> meta_items
 	  = parse_meta_item_seq ();
 
 	return std::unique_ptr<MetaItemSeq> (
 	  new MetaItemSeq (std::move (path), std::move (meta_items)));
       }
-      case EQUAL: {
+    case EQUAL:
+      {
 	skip_token ();
 
 	location_t locus = peek_token ()->get_locus ();
@@ -5047,7 +5055,8 @@ FormatArgs::get_outer_attrs ()
   rust_unreachable ();
 }
 
-void FormatArgs::set_outer_attrs (std::vector<Attribute>)
+void
+FormatArgs::set_outer_attrs (std::vector<Attribute>)
 {
   rust_unreachable ();
 }

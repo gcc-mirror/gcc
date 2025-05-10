@@ -373,7 +373,8 @@ TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
   switch (expr.get_expr_type ())
     {
     case ArithmeticOrLogicalOperator::LEFT_SHIFT:
-      case ArithmeticOrLogicalOperator::RIGHT_SHIFT: {
+    case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+      {
 	TyTy::TyWithLocation from (rhs, expr.get_rhs ().get_locus ());
 	TyTy::TyWithLocation to (lhs, expr.get_lhs ().get_locus ());
 	infered = cast_site (expr.get_mappings ().get_hirid (), from, to,
@@ -381,7 +382,8 @@ TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
       }
       break;
 
-      default: {
+    default:
+      {
 	infered = unify_site (
 	  expr.get_mappings ().get_hirid (),
 	  TyTy::TyWithLocation (lhs, expr.get_lhs ().get_locus ()),
@@ -470,7 +472,8 @@ TypeCheckExpr::visit (HIR::NegationExpr &expr)
   // https://doc.rust-lang.org/reference/expressions/operator-expr.html#negation-operators
   switch (expr.get_expr_type ())
     {
-      case NegationOperator::NEGATE: {
+    case NegationOperator::NEGATE:
+      {
 	bool valid
 	  = (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
 	    || (negated_expr_ty->get_kind () == TyTy::TypeKind::UINT)
@@ -492,7 +495,8 @@ TypeCheckExpr::visit (HIR::NegationExpr &expr)
       }
       break;
 
-      case NegationOperator::NOT: {
+    case NegationOperator::NOT:
+      {
 	bool valid
 	  = (negated_expr_ty->get_kind () == TyTy::TypeKind::BOOL)
 	    || (negated_expr_ty->get_kind () == TyTy::TypeKind::INT)
@@ -790,38 +794,45 @@ typecheck_inline_asm_operand (HIR::InlineAsm &expr)
     {
       switch (operand.get_register_type ())
 	{
-	  case RegisterType::In: {
+	case RegisterType::In:
+	  {
 	    auto in = operand.get_in ();
 	    TypeCheckExpr::Resolve (*in.expr);
 	    break;
 	  }
-	  case RegisterType::Out: {
+	case RegisterType::Out:
+	  {
 	    auto out = operand.get_out ();
 	    TypeCheckExpr::Resolve (*out.expr);
 	    break;
 	  }
-	  case RegisterType::InOut: {
+	case RegisterType::InOut:
+	  {
 	    auto in_out = operand.get_in_out ();
 	    TypeCheckExpr::Resolve (*in_out.expr);
 	    break;
 	  }
-	  case RegisterType::SplitInOut: {
+	case RegisterType::SplitInOut:
+	  {
 	    auto split_in_out = operand.get_split_in_out ();
 	    TypeCheckExpr::Resolve (*split_in_out.in_expr);
 	    TypeCheckExpr::Resolve (*split_in_out.out_expr);
 	    break;
 	  }
-	  case RegisterType::Const: {
+	case RegisterType::Const:
+	  {
 	    auto anon_const = operand.get_const ().anon_const;
 	    TypeCheckExpr::Resolve (*anon_const.expr);
 	    break;
 	  }
-	  case RegisterType::Sym: {
+	case RegisterType::Sym:
+	  {
 	    auto sym = operand.get_sym ();
 	    TypeCheckExpr::Resolve (*sym.expr);
 	    break;
 	  }
-	  case RegisterType::Label: {
+	case RegisterType::Label:
+	  {
 	    auto label = operand.get_label ();
 	    TypeCheckExpr::Resolve (*label.expr);
 	    break;
@@ -996,8 +1007,7 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
   rich_location r (line_table, expr.get_locus ());
   r.add_range (expr.get_array_expr ().get_locus ());
   r.add_range (expr.get_index_expr ().get_locus ());
-  rust_error_at (r, ErrorCode::E0277,
-		 "the type %qs cannot be indexed by %qs",
+  rust_error_at (r, ErrorCode::E0277, "the type %qs cannot be indexed by %qs",
 		 array_expr_ty->get_name ().c_str (),
 		 index_expr_ty->get_name ().c_str ());
 }
@@ -1011,7 +1021,8 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
   TyTy::BaseType *element_type = nullptr;
   switch (elements.get_array_expr_type ())
     {
-      case HIR::ArrayElems::ArrayExprType::COPIED: {
+    case HIR::ArrayElems::ArrayExprType::COPIED:
+      {
 	HIR::ArrayElemsCopied &elems
 	  = static_cast<HIR::ArrayElemsCopied &> (elements);
 	element_type = TypeCheckExpr::Resolve (elems.get_elem_to_copy ());
@@ -1035,7 +1046,8 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
       }
       break;
 
-      case HIR::ArrayElems::ArrayExprType::VALUES: {
+    case HIR::ArrayElems::ArrayExprType::VALUES:
+      {
 	HIR::ArrayElemsValues &elems
 	  = static_cast<HIR::ArrayElemsValues &> (elements);
 

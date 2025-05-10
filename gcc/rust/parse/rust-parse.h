@@ -764,9 +764,9 @@ private:
   };
 };
 
-std::string
-extract_module_path (const AST::AttrVec &inner_attrs,
-		     const AST::AttrVec &outer_attrs, const std::string &name);
+std::string extract_module_path (const AST::AttrVec &inner_attrs,
+				 const AST::AttrVec &outer_attrs,
+				 const std::string &name);
 
 /**
  * Check if a MacroMatch is allowed to follow the last parsed MacroMatch.
@@ -776,9 +776,8 @@ extract_module_path (const AST::AttrVec &inner_attrs,
  *
  * @return true if the follow-up is valid, false otherwise
  */
-bool
-is_match_compatible (const AST::MacroMatch &last_match,
-		     const AST::MacroMatch &current_match);
+bool is_match_compatible (const AST::MacroMatch &last_match,
+			  const AST::MacroMatch &current_match);
 } // namespace Rust
 
 // as now template, include implementations of all methods

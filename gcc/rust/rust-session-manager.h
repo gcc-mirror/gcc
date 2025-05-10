@@ -441,8 +441,7 @@ private:
 
 #if CHECKING_P
 namespace selftest {
-extern void
-rust_crate_name_validation_test (void);
+extern void rust_crate_name_validation_test (void);
 }
 #endif // CHECKING_P
 

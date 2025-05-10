@@ -1883,7 +1883,8 @@ CompileExpr::visit (HIR::ArrayExpr &expr)
   HIR::ArrayElems &elements = expr.get_internal_elements ();
   switch (elements.get_array_expr_type ())
     {
-      case HIR::ArrayElems::ArrayExprType::VALUES: {
+    case HIR::ArrayElems::ArrayExprType::VALUES:
+      {
 	HIR::ArrayElemsValues &elems
 	  = static_cast<HIR::ArrayElemsValues &> (elements);
 	translated
@@ -2032,7 +2033,8 @@ HIRCompileBase::resolve_adjustements (
 	  return error_mark_node;
 
 	case Resolver::Adjustment::AdjustmentType::IMM_REF:
-	  case Resolver::Adjustment::AdjustmentType::MUT_REF: {
+	case Resolver::Adjustment::AdjustmentType::MUT_REF:
+	  {
 	    if (!RS_DST_FLAG (TREE_TYPE (e)))
 	      {
 		e = address_expression (e, locus);

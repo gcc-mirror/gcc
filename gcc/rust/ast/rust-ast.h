@@ -67,8 +67,7 @@ private:
   location_t loc;
 };
 
-std::ostream &
-operator<< (std::ostream &os, Identifier const &i);
+std::ostream &operator<< (std::ostream &os, Identifier const &i);
 
 namespace AST {
 // foward decl: ast visitor

@@ -415,21 +415,18 @@ TopLevel::visit (AST::TypeAlias &type_item)
   DefaultResolver::visit (type_item);
 }
 
-static void
-flatten_rebind (
+static void flatten_rebind (
   const AST::UseTreeRebind &glob,
   std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> &rebind_paths);
 
-static void
-flatten_list (
+static void flatten_list (
   const AST::UseTreeList &glob, std::vector<AST::SimplePath> &paths,
   std::vector<AST::SimplePath> &glob_paths,
   std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> &rebind_paths,
   NameResolutionContext &ctx);
-static void
-flatten_glob (const AST::UseTreeGlob &glob,
-	      std::vector<AST::SimplePath> &glob_paths,
-	      NameResolutionContext &ctx);
+static void flatten_glob (const AST::UseTreeGlob &glob,
+			  std::vector<AST::SimplePath> &glob_paths,
+			  NameResolutionContext &ctx);
 
 static void
 flatten (
@@ -440,17 +437,20 @@ flatten (
 {
   switch (tree->get_kind ())
     {
-      case AST::UseTree::Rebind: {
+    case AST::UseTree::Rebind:
+      {
 	auto rebind = static_cast<const AST::UseTreeRebind *> (tree);
 	flatten_rebind (*rebind, rebind_paths);
 	break;
       }
-      case AST::UseTree::List: {
+    case AST::UseTree::List:
+      {
 	auto list = static_cast<const AST::UseTreeList *> (tree);
 	flatten_list (*list, paths, glob_paths, rebind_paths, ctx);
 	break;
       }
-      case AST::UseTree::Glob: {
+    case AST::UseTree::Glob:
+      {
 	auto glob = static_cast<const AST::UseTreeGlob *> (tree);
 	flatten_glob (*glob, glob_paths, ctx);
 	break;

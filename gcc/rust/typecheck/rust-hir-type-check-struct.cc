@@ -329,8 +329,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       repeat_location.add_range (prev_field_locus);
 
       rust_error_at (repeat_location, ErrorCode::E0062,
-		     "field %qs specified more than once",
-		     field_name.c_str ());
+		     "field %qs specified more than once", field_name.c_str ());
       return false;
     }
 

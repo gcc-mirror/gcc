@@ -273,7 +273,8 @@ SubstituteCtx::substitute_token (size_t token_idx)
       // don't substitute, dollar sign is alone/metavar is unknown
       return {std::vector<std::unique_ptr<AST::Token>> (), 0};
 
-      case LEFT_PAREN: {
+    case LEFT_PAREN:
+      {
 	// We need to parse up until the closing delimiter and expand this
 	// fragment->n times.
 	rust_debug ("expanding repetition");

@@ -158,7 +158,8 @@ ReachabilityVisitor::visit (HIR::Enum &enum_item)
 
       switch (variant->get_enum_item_kind ())
 	{
-	  case HIR::EnumItem::Tuple: {
+	case HIR::EnumItem::Tuple:
+	  {
 	    // Should we update the fields only if they are public? Similarly to
 	    // what we do in the ReachabilityVisitor for HIR::TupleStruct?
 	    auto tuple_variant
@@ -167,7 +168,8 @@ ReachabilityVisitor::visit (HIR::Enum &enum_item)
 	      ctx.update_reachability (field.get_mappings (), variant_reach);
 	    break;
 	  }
-	  case HIR::EnumItem::Struct: {
+	case HIR::EnumItem::Struct:
+	  {
 	    // Should we update the fields only if they are public? Similarly to
 	    // what we do in the ReachabilityVisitor for HIR::StructStruct?
 	    auto struct_variant

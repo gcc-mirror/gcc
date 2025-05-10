@@ -73,7 +73,8 @@ TypeCastRules::cast_rules ()
 	      to.get_ty ()->debug_str ().c_str ());
   switch (from_type->get_kind ())
     {
-      case TyTy::TypeKind::INFER: {
+    case TyTy::TypeKind::INFER:
+      {
 	TyTy::InferType *from_infer
 	  = static_cast<TyTy::InferType *> (from_type);
 	switch (from_infer->get_infer_kind ())
@@ -85,7 +86,8 @@ TypeCastRules::cast_rules ()
 	  case TyTy::InferType::InferTypeKind::INTEGRAL:
 	    switch (to.get_ty ()->get_kind ())
 	      {
-		case TyTy::TypeKind::CHAR: {
+	      case TyTy::TypeKind::CHAR:
+		{
 		  // only u8 and char
 		  bool was_uint
 		    = from.get_ty ()->get_kind () == TyTy::TypeKind::UINT;
@@ -108,7 +110,8 @@ TypeCastRules::cast_rules ()
 		return TypeCoercionRules::CoercionResult{
 		  {}, to.get_ty ()->clone ()};
 
-		case TyTy::TypeKind::INFER: {
+	      case TyTy::TypeKind::INFER:
+		{
 		  TyTy::InferType *to_infer
 		    = static_cast<TyTy::InferType *> (to.get_ty ());
 
@@ -140,7 +143,8 @@ TypeCastRules::cast_rules ()
 		return TypeCoercionRules::CoercionResult{
 		  {}, to.get_ty ()->clone ()};
 
-		case TyTy::TypeKind::INFER: {
+	      case TyTy::TypeKind::INFER:
+		{
 		  TyTy::InferType *to_infer
 		    = static_cast<TyTy::InferType *> (to.get_ty ());
 
@@ -187,7 +191,8 @@ TypeCastRules::cast_rules ()
     case TyTy::TypeKind::INT:
       switch (to.get_ty ()->get_kind ())
 	{
-	  case TyTy::TypeKind::CHAR: {
+	case TyTy::TypeKind::CHAR:
+	  {
 	    // only u8 and char
 	    bool was_uint = from.get_ty ()->get_kind () == TyTy::TypeKind::UINT;
 	    bool was_u8 = was_uint
@@ -200,7 +205,8 @@ TypeCastRules::cast_rules ()
 	  }
 	  break;
 
-	  case TyTy::TypeKind::FLOAT: {
+	case TyTy::TypeKind::FLOAT:
+	  {
 	    // can only do this for number types not char
 	    bool from_char
 	      = from.get_ty ()->get_kind () == TyTy::TypeKind::CHAR;
@@ -210,7 +216,8 @@ TypeCastRules::cast_rules ()
 	  }
 	  break;
 
-	  case TyTy::TypeKind::POINTER: {
+	case TyTy::TypeKind::POINTER:
+	  {
 	    // char can't be casted as a ptr
 	    bool from_char
 	      = from.get_ty ()->get_kind () == TyTy::TypeKind::CHAR;
@@ -244,7 +251,8 @@ TypeCastRules::cast_rules ()
 	case TyTy::TypeKind::FLOAT:
 	  return TypeCoercionRules::CoercionResult{{}, to.get_ty ()->clone ()};
 
-	  case TyTy::TypeKind::INFER: {
+	case TyTy::TypeKind::INFER:
+	  {
 	    TyTy::InferType *to_infer
 	      = static_cast<TyTy::InferType *> (to.get_ty ());
 
@@ -273,7 +281,8 @@ TypeCastRules::cast_rules ()
 	case TyTy::TypeKind::USIZE:
 	case TyTy::TypeKind::ISIZE:
 	case TyTy::TypeKind::UINT:
-	  case TyTy::TypeKind::INT: {
+	case TyTy::TypeKind::INT:
+	  {
 	    // refs should not cast to numeric type
 	    bool from_ptr
 	      = from.get_ty ()->get_kind () == TyTy::TypeKind::POINTER;

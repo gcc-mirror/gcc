@@ -43,11 +43,9 @@ public:
 };
 
 extern "C" {
-FFIString
-FFIString__new (const unsigned char *data, std::uint64_t len);
+FFIString FFIString__new (const unsigned char *data, std::uint64_t len);
 
-void
-FFIString__drop (FFIString *str);
+void FFIString__drop (FFIString *str);
 }
 
 } // namespace ProcMacro

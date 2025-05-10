@@ -221,7 +221,8 @@ check_doc_attribute (const AST::Attribute &attribute)
       break;
       // FIXME: Handle them as well
 
-      case AST::AttrInput::TOKEN_TREE: {
+    case AST::AttrInput::TOKEN_TREE:
+      {
 	// FIXME: This doesn't check for #[doc(alias(...))]
 	const auto &option = static_cast<const AST::DelimTokenTree &> (
 	  attribute.get_attr_input ());

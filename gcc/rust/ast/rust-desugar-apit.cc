@@ -297,7 +297,8 @@ public:
       {
 	switch (implicit_generic->get_kind ())
 	  {
-	    case GenericParam::Kind::Type: {
+	  case GenericParam::Kind::Type:
+	    {
 	      TypeParam &p
 		= *static_cast<TypeParam *> (implicit_generic.get ());
 
@@ -326,7 +327,8 @@ private:
 	auto &tb = bounds[i];
 	switch (tb->get_bound_type ())
 	  {
-	    case TypeParamBound::TypeParamBoundType::TRAIT: {
+	  case TypeParamBound::TypeParamBoundType::TRAIT:
+	    {
 	      TraitBound &ttb = *static_cast<TraitBound *> (tb.get ());
 	      TypePath &path = ttb.get_type_path ();
 	      bool deusgared = process_type_path (p, ttb, path);
@@ -350,7 +352,8 @@ private:
       {
 	switch (segment->get_type ())
 	  {
-	    case TypePathSegment::SegmentType::GENERIC: {
+	  case TypePathSegment::SegmentType::GENERIC:
+	    {
 	      TypePathSegmentGeneric &seg
 		= *static_cast<TypePathSegmentGeneric *> (segment.get ());
 	      desugared |= process_generic_segment (p, parent, path, seg);
@@ -397,7 +400,8 @@ private:
 	  {
 	    switch (implicit_generic->get_kind ())
 	      {
-		case GenericParam::Kind::Type: {
+	      case GenericParam::Kind::Type:
+		{
 		  TypeParam &tp
 		    = *static_cast<TypeParam *> (implicit_generic.get ());
 

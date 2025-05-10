@@ -62,11 +62,9 @@
 #include "tm.h"
 #include "rust-target.h"
 
-extern bool
-saw_errors (void);
+extern bool saw_errors (void);
 
-extern Linemap *
-rust_get_linemap ();
+extern Linemap *rust_get_linemap ();
 
 namespace Rust {
 
@@ -151,9 +149,9 @@ validate_crate_name (const std::string &crate_name, Error &error)
     {
       if (!(is_alphabetic (c.value) || is_numeric (c.value) || c.value == '_'))
 	{
-	  error = Error (UNDEF_LOCATION,
-			 "invalid character %qs in crate name: %qs",
-			 c.as_string ().c_str (), crate_name.c_str ());
+	  error
+	    = Error (UNDEF_LOCATION, "invalid character %qs in crate name: %qs",
+		     c.as_string ().c_str (), crate_name.c_str ());
 	  return false;
 	}
     }
@@ -204,14 +202,16 @@ Session::handle_option (
   switch (code)
     {
     case OPT_I:
-      case OPT_L: {
+    case OPT_L:
+      {
 	// TODO: add search path
 	const std::string p = std::string (arg);
 	add_search_path (p);
       }
       break;
 
-      case OPT_frust_extern_: {
+    case OPT_frust_extern_:
+      {
 	std::string input (arg);
 	ret = handle_extern_option (input);
       }
@@ -252,7 +252,8 @@ Session::handle_option (
       Compile::Mangler::set_mangling (flag_rust_mangling);
       break;
 
-      case OPT_frust_cfg_: {
+    case OPT_frust_cfg_:
+      {
 	auto string_arg = std::string (arg);
 	ret = handle_cfg_option (string_arg);
 	break;
@@ -1110,8 +1111,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   if (stream == NULL	       // No stream and
       && proc_macros.empty ()) // no proc macros
     {
-      rust_error_at (locus, "failed to locate crate %qs",
-		     import_name.c_str ());
+      rust_error_at (locus, "failed to locate crate %qs", import_name.c_str ());
       return UNKNOWN_NODEID;
     }
 

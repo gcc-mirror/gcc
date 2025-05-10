@@ -680,33 +680,40 @@ DefaultASTVisitor::visit (AST::InlineAsm &expr)
     {
       switch (operand.get_register_type ())
 	{
-	  case RegisterType::In: {
+	case RegisterType::In:
+	  {
 	    visit (operand.get_in ().expr);
 	    break;
 	  }
-	  case RegisterType::Out: {
+	case RegisterType::Out:
+	  {
 	    visit (operand.get_out ().expr);
 	    break;
 	  }
-	  case RegisterType::InOut: {
+	case RegisterType::InOut:
+	  {
 	    visit (operand.get_in_out ().expr);
 	    break;
 	  }
-	  case RegisterType::SplitInOut: {
+	case RegisterType::SplitInOut:
+	  {
 	    auto split = operand.get_split_in_out ();
 	    visit (split.in_expr);
 	    visit (split.out_expr);
 	    break;
 	  }
-	  case RegisterType::Const: {
+	case RegisterType::Const:
+	  {
 	    visit (operand.get_const ().anon_const.expr);
 	    break;
 	  }
-	  case RegisterType::Sym: {
+	case RegisterType::Sym:
+	  {
 	    visit (operand.get_sym ().expr);
 	    break;
 	  }
-	  case RegisterType::Label: {
+	case RegisterType::Label:
+	  {
 	    visit (operand.get_label ().expr);
 	    break;
 	  }

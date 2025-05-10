@@ -83,14 +83,11 @@ public:
 /*
  * Used to get the node id of a path segment object
  */
-NodeId
-unwrap_segment_node_id (const AST::TypePathSegment &seg);
+NodeId unwrap_segment_node_id (const AST::TypePathSegment &seg);
 
-NodeId
-unwrap_segment_node_id (const AST::SimplePathSegment &seg);
+NodeId unwrap_segment_node_id (const AST::SimplePathSegment &seg);
 
-NodeId
-unwrap_segment_node_id (const AST::PathExprSegment &seg);
+NodeId unwrap_segment_node_id (const AST::PathExprSegment &seg);
 
 template <class T>
 NodeId

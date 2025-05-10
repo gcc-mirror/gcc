@@ -125,13 +125,15 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
   // pointers
   switch (expected->get_kind ())
     {
-      case TyTy::TypeKind::POINTER: {
+    case TyTy::TypeKind::POINTER:
+      {
 	TyTy::PointerType *ptr = static_cast<TyTy::PointerType *> (expected);
 	try_result = coerce_unsafe_ptr (receiver, ptr, ptr->mutability ());
 	return !try_result.is_error ();
       }
 
-      case TyTy::TypeKind::REF: {
+    case TyTy::TypeKind::REF:
+      {
 	TyTy::ReferenceType *ptr
 	  = static_cast<TyTy::ReferenceType *> (expected);
 	try_result
@@ -147,7 +149,8 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
   // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/coercion.rs#L210
   switch (receiver->get_kind ())
     {
-      default: {
+    default:
+      {
 	rust_debug (
 	  "do_coercion default unify and infer expected: %s receiver %s",
 	  receiver->debug_str ().c_str (), expected->debug_str ().c_str ());
@@ -182,7 +185,8 @@ TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
   TyTy::BaseType *element = nullptr;
   switch (receiver->get_kind ())
     {
-      case TyTy::TypeKind::REF: {
+    case TyTy::TypeKind::REF:
+      {
 	TyTy::ReferenceType *ref
 	  = static_cast<TyTy::ReferenceType *> (receiver);
 	from_mutbl = ref->mutability ();
@@ -190,14 +194,16 @@ TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
       }
       break;
 
-      case TyTy::TypeKind::POINTER: {
+    case TyTy::TypeKind::POINTER:
+      {
 	TyTy::PointerType *ref = static_cast<TyTy::PointerType *> (receiver);
 	from_mutbl = ref->mutability ();
 	element = ref->get_base ();
       }
       break;
 
-      default: {
+    default:
+      {
 	// FIXME this can probably turn into a unify_and
 	if (receiver->can_eq (expected, false))
 	  return CoercionResult{{}, expected->clone ()};
@@ -264,14 +270,16 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
   Mutability from_mutbl = Mutability::Imm;
   switch (receiver->get_kind ())
     {
-      case TyTy::TypeKind::REF: {
+    case TyTy::TypeKind::REF:
+      {
 	TyTy::ReferenceType *from
 	  = static_cast<TyTy::ReferenceType *> (receiver);
 	from_mutbl = from->mutability ();
       }
       break;
 
-      default: {
+    default:
+      {
 	// FIXME
 	// we might be able to replace this with a can_eq because we default
 	// back to a final unity anyway
