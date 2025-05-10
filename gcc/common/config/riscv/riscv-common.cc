@@ -274,6 +274,12 @@ struct riscv_ext_version
   int minor_version;
 };
 
+struct riscv_profiles
+{
+  const char *profile_name;
+  const char *profile_string;
+};
+
 /* All standard extensions defined in all supported ISA spec.  */
 static const struct riscv_ext_version riscv_ext_version_table[] =
 {
@@ -500,6 +506,31 @@ static const struct riscv_ext_version riscv_combine_info[] =
   {"zvksg", ISA_SPEC_CLASS_NONE, 1, 0},
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
+};
+
+/* This table records the mapping form RISC-V Profiles into march string.  */
+static const riscv_profiles riscv_profiles_table[] =
+{
+  /* RVI20U only contains the base extension 'i' as mandatory extension.  */
+  {"rvi20u64", "rv64i"},
+  {"rvi20u32", "rv32i"},
+
+  /* RVA20U contains the 'i,m,a,f,d,c,zicsr,zicntr,ziccif,ziccrse,ziccamoa,
+     zicclsm,za128rs' as mandatory extensions.  */
+  {"rva20u64", "rv64imafdc_zicsr_zicntr_ziccif_ziccrse_ziccamoa"
+   "_zicclsm_za128rs"},
+
+  /* RVA22U contains the 'i,m,a,f,d,c,zicsr,zihintpause,zba,zbb,zbs,zicntr,
+     zihpm,ziccif,ziccrse,ziccamoa, zicclsm,zic64b,za64rs,zicbom,zicbop,zicboz,
+     zfhmin,zkt' as mandatory extensions.  */
+  {"rva22u64", "rv64imafdc_zicsr_zicntr_ziccif_ziccrse_ziccamoa"
+   "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
+   "_zicboz_zfhmin_zkt"},
+
+  /* Currently we do not define S/M mode Profiles in gcc part.  */
+
+  /* Terminate the list.  */
+  {NULL, NULL}
 };
 
 static const riscv_cpu_info riscv_cpu_tables[] =
@@ -1109,6 +1140,52 @@ riscv_subset_list::parsing_subset_version (const char *ext,
   return p;
 }
 
+/* Parsing RISC-V Profiles in -march string.
+   Return string with mandatory extensions of Profiles.  */
+std::string
+riscv_subset_list::parse_profiles (const char *arch)
+{
+  /* Checking if input string contains a Profiles.
+    There are two cases use Profiles in -march option:
+
+    1. Only use Profiles in '-march' as input
+    2. Mixed Profiles with other extensions
+
+    Use '_' to split Profiles and other extension.  */
+    std::string p(arch);
+    const size_t p_len = p.size();
+
+    for (int i = 0; riscv_profiles_table[i].profile_name != nullptr; ++i)
+    {
+      const std::string& p_name = riscv_profiles_table[i].profile_name;
+      const std::string& p_str = riscv_profiles_table[i].profile_string;
+      size_t pos = p.find(p_name);
+      /* Find profile at the begin.  */
+      if (pos == 0 && pos + p_name.size() <= p_len)
+	{
+	  size_t after_pos = pos + p_name.size();
+	  std::string after_part = p.substr(after_pos);
+
+	  /* If there're only profile, return the profile_string directly.  */
+	  if (after_part[0] == '\0')
+	    return p_str;
+
+	  /* If isn't '_' after profile, need to add it and mention the user.  */
+	  if (after_part[0] != '_')
+	  {
+	    warning_at (m_loc, 0, "Should use \"%c\" to contact Profiles with other "
+				  "extensions", '_');
+	    return p_str + "_" + after_part;
+	  }
+
+	  /* Return 'profiles_additional' extensions.  */
+	  return p_str + after_part;
+	}
+    }
+  /* Not found profile, return directly.  */
+  return p;
+}
+
 /* Parsing function for base extensions, rv[32|64][i|e|g]
 
    Return Value:
@@ -1135,8 +1212,8 @@ riscv_subset_list::parse_base_ext (const char *p)
     }
   else
     {
-      error_at (m_loc, "%<-march=%s%>: ISA string must begin with rv32 or rv64",
-		m_arch);
+      error_at (m_loc, "%<-march=%s%>: ISA string must begin with rv32, rv64 "
+		"or Profiles", m_arch);
       return NULL;
     }
 
@@ -1527,8 +1604,10 @@ riscv_subset_list::parse (const char *arch, location_t loc)
     return NULL;
 
   riscv_subset_list *subset_list = new riscv_subset_list (arch, loc);
+
   const char *p = arch;
-  p = subset_list->parse_base_ext (p);
+  std::string a = subset_list->parse_profiles(p);
+  p = subset_list->parse_base_ext (a.c_str());
   if (p == NULL)
     goto fail;
 

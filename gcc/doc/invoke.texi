@@ -1268,7 +1268,7 @@ See RS/6000 and PowerPC Options.
 -mfence-tso  -mno-fence-tso
 -mdiv  -mno-div
 -misa-spec=@var{ISA-spec-string}
--march=@var{ISA-string}
+-march=@var{ISA-string|Profiles|Profiles_ISA-string}
 -mtune=@var{processor-string}
 -mpreferred-stack-boundary=@var{num}
 -msmall-data-limit=@var{N-bytes}
@@ -31115,11 +31115,16 @@ The default is @option{-misa-spec=20191213} unless GCC has been configured
 with @option{--with-isa-spec=} specifying a different default version.
 
 @opindex march
-@item -march=@var{ISA-string}
-Generate code for given RISC-V ISA (e.g.@: @samp{rv64im}).  ISA strings must be
-lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
-@samp{rv32imaf}. Additionally, a special value @option{help}
-(@option{-march=help}) is accepted to list all supported extensions.
+@item -march=@var{ISA-string|Profiles|Profile_ISA-string}
+Generate code for given RISC-V ISA or Profiles or a combination of them
+(e.g.@: @samp{rv64im} @samp{rvi20u64} @samp{rvi20u64_zbb}).  ISA strings and
+Profiles must be lower-case.  Examples include @samp{rv64i}, @samp{rv32g},
+@samp{rv32e}, @samp{rv32imaf}, @samp{rva22u64} and @samp{rva23u64}.
+To combine Profiles and optional RISC-V ISA extention, the profile should start
+at the beginning of the option, then use underline connect ISA-string (e.g.@:
+@samp{rvi20u64_zca_zcb} @samp{rva23u64_zacas}).  Additionally, a special value
+@option{help} (@option{-march=help}) is accepted to list all supported
+extensions.
 
 The syntax of the ISA string is defined as follows:
 
