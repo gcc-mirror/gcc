@@ -4430,17 +4430,27 @@ static int
 xtensa_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			   reg_class_t from, reg_class_t to)
 {
-  if (from == to && from != BR_REGS && to != BR_REGS)
+  /* If both are equal (except for BR_REGS) or belong to AR_REGS,
+     the cost is 2 (the default value).  */
+  if ((from == to && from != BR_REGS && to != BR_REGS)
+      || (reg_class_subset_p (from, AR_REGS)
+	  && reg_class_subset_p (to, AR_REGS)))
     return 2;
-  else if (reg_class_subset_p (from, AR_REGS)
-	   && reg_class_subset_p (to, AR_REGS))
-    return 2;
-  else if (reg_class_subset_p (from, AR_REGS) && to == ACC_REG)
+
+  /* The cost between AR_REGS and FR_REGS must be <= 8 (2x the default
+     MEMORY_MOVE_COST) to avoid unwanted spills, and > 4 (2x the above
+     case) to avoid excessive register-to-register moves.  */
+  if ((reg_class_subset_p (from, AR_REGS) && to == FP_REGS)
+      || (from == FP_REGS && reg_class_subset_p (to, AR_REGS)))
+    return 5;
+
+  if ((reg_class_subset_p (from, AR_REGS) && to == ACC_REG)
+      || (from == ACC_REG && reg_class_subset_p (to, AR_REGS)))
     return 3;
-  else if (from == ACC_REG && reg_class_subset_p (to, AR_REGS))
-    return 3;
-  else
-    return 10;
+
+  /* Otherwise, spills to stack (because greater than 2x the default
+     MEMORY_MOVE_COST).  */
+  return 10;
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
