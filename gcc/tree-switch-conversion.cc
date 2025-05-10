@@ -1793,11 +1793,13 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters, int max_c)
      end up with as few clusters as possible.  */
 
   unsigned l = clusters.length ();
+
+  if (l == 0)
+    return clusters.copy ();
+  gcc_checking_assert (l <= INT_MAX);
+
   auto_vec<min_cluster_item> min;
   min.reserve (l + 1);
-
-  gcc_checking_assert (l > 0);
-  gcc_checking_assert (l <= INT_MAX);
 
   int bits_in_word = GET_MODE_BITSIZE (word_mode);
 
