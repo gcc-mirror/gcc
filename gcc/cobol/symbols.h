@@ -348,9 +348,7 @@ struct cbl_field_data_t {
 
   cbl_field_data_t& valify() {
     assert(initial);
-    const size_t len = strlen(initial);
-    std::string input(len + 1, '\0'); // add a NUL
-    std::copy(initial, initial + len, input.begin()); 
+    std::string input(initial);
     if( decimal_is_comma() ) {
       std::replace(input.begin(), input.end(), ',', '.');
     }
@@ -2211,6 +2209,10 @@ class name_queue_t : private std::queue<cbl_namelocs_t>
 
 };
 
+const std::string& keyword_alias_add( const std::string& keyword,
+				      const std::string& alias );
+int binary_integer_usage_of( const char name[] );
+  
 void tee_up_empty();
 void tee_up_name( const YYLTYPE& loc, const char name[] );
 cbl_namelist_t teed_up_names();

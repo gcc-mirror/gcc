@@ -3564,7 +3564,6 @@ parser_enter_file(const char *filename)
 
     SET_VAR_DECL(var_decl_default_compute_error  , INT    , "__gg__default_compute_error");
     SET_VAR_DECL(var_decl_rdigits                , INT    , "__gg__rdigits");
-    SET_VAR_DECL(var_decl_odo_violation          , INT    , "__gg__odo_violation");
     SET_VAR_DECL(var_decl_unique_prog_id         , SIZE_T , "__gg__unique_prog_id");
 
     SET_VAR_DECL(var_decl_entry_location         , VOID_P , "__gg__entry_pointer");
@@ -5100,6 +5099,16 @@ parser_display_field(cbl_field_t *field)
                                 DISPLAY_NO_ADVANCE);
   }
 
+/*
+ * The first parameter to parser_display is the "device" upon which to display
+ * the data. Besides normal devices, these may include elements that define the
+ * Unix command line and environment:
+ *  1.  ARG_NUM_e, the ARGUMENT-NUMBER
+ *  2.  ARG_VALUE_e, the ARGUMENT-VALUE
+ *  3.  ENV_NAME_e, the ENVIRONMENT-NAME
+ *  4.  ENV_VALUE_e, the ENVIRONMENT-VALUE
+ * that need special care and feeding. 
+ */
 void
 parser_display( const struct cbl_special_name_t *upon,
                 struct cbl_refer_t refs[],

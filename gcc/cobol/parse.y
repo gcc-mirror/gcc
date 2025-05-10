@@ -332,7 +332,7 @@
 			NUMED     "NUMERIC-EDITED picture"
 			NUMED_CR  "NUMERIC-EDITED CR picture"
 			NUMED_DB  "NUMERIC-EDITED DB picture"
-%token  <number>        NINEDOT NINES NINEV PIC_P
+%token  <number>        NINEDOT NINES NINEV PIC_P ONES
 %token  <string>        SPACES
 %token  <literal>       LITERAL
 %token  <number>        END EOP
@@ -341,7 +341,7 @@
 %token  <number>        NUMBER NEGATIVE
 %token  <numstr>        NUMSTR    "numeric literal"
 %token  <number>        OVERFLOW_kw "OVERFLOW"
-%token  <computational> COMPUTATIONAL
+%token  <computational> BINARY_INTEGER COMPUTATIONAL
 
 %token  <boolean>       PERFORM BACKWARD
 %token  <number>        POSITIVE
@@ -573,12 +573,12 @@
 			THAN TIME TIMES
 			TO TOP
 			TOP_LEVEL
-			TRACKS TRACK_AREA TRAILING TRANSFORM TRIM TRUE_kw "True" TRY
-			TURN TYPE TYPEDEF
+			TRACKS TRACK_AREA TRAILING TRANSFORM TRIM TRUE_kw "True"
+			TRY TURN TYPE TYPEDEF
 
-			ULENGTH UNBOUNDED UNIT UNITS UNIT_RECORD UNTIL UP UPON
-			UPOS UPPER_CASE USAGE USING USUBSTR USUPPLEMENTARY
-			UTILITY UUID4 UVALID UWIDTH
+			ULENGTH UNBOUNDED UNIT UNITS UNIT_RECORD UNTIL
+			UP UPON UPOS UPPER_CASE USAGE USING 
+			USUBSTR USUPPLEMENTARY UTILITY UUID4 UVALID UWIDTH
 
 			VALUE VARIANCE VARYING VOLATILE
 
@@ -659,7 +659,7 @@
 %type   <number>        star_cbl_opt close_how
 
 %type   <number>        test_before usage_clause1 might_be
-%type   <boolean>       all optional sign_leading on_off initialized strong
+%type   <boolean>       all optional sign_leading on_off initialized strong is_signed
 %type   <number>        count data_clauses data_clause
 %type   <number>        nine nines nps relop spaces_etc reserved_value signed
 %type   <number>        variable_type
@@ -801,7 +801,7 @@
 
 %type   <switches>      upsi_entry
 
-%type   <special>       acceptable disp_target
+%type   <special>       acceptable disp_upon
 %type   <display>       disp_body
 
 %type   <false_domain>  domains domain
@@ -2508,23 +2508,14 @@ dev_mnemonic:	device_name is NAME
                 }
 	|	NAME[device] is NAME[name]
 		{
-		  static const std::map< std::string, special_name_t > fujitsus
-		  { // Fujitsu calls these "function names", not device names
-		    { "ARGUMENT-NUMBER", ARG_NUM_e },
-		    { "ARGUMENT-VALUE", ARG_VALUE_e } ,
-		    { "ENVIRONMENT-NAME", ENV_NAME_e },
-		    { "ENVIRONMENT-VALUE", ENV_VALUE_e },
-		  };
-		  std::string device($device);
-		  std::transform($device, $device + strlen($device),
-		                 device.begin(), toupper);
-		  auto p = fujitsus.find(device.c_str());
-		  if( p == fujitsus.end() ) {
+		  auto p = cmd_or_env_special_of($device);
+		  if( !p ) {
 		    error_msg(@device, "%s is not a device name");
+		    YYERROR;
 		  }
 
-                  cbl_special_name_t special = { 0, p->second };
-                  if( !namcpy(@name, special.name, $name) ) YYERROR;
+                  cbl_special_name_t special = { 0, *p };
+                  namcpy(@name, special.name, $name);
 
                   symbol_special_add(PROGRAM, &special);
 		}
@@ -3286,7 +3277,7 @@ index_field1:   ctx_name[name]
 		  field.data = data;
                   if( !namcpy(@name, field.name, $name) ) YYERROR;
 
-                  auto symbol = symbol_field(PROGRAM, 0, $name);
+                  auto symbol = symbol_field(PROGRAM, field.parent, $name);
                   if( symbol ) {
                     auto field( cbl_field_of(symbol) );
                     error_msg(@name,  "'%s' already defined on line %d",
@@ -4104,7 +4095,13 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                     gcc_unreachable();
                   }
                 }
+	|	PIC ones
                 ;
+ones:		ONES
+		{
+		  cbl_unimplemented("Boolean type not implemented");
+		}
+		;
 
 alphanum_pic:   alphanum_part {
                   current_field()->set_attr($1.attr);
@@ -4213,8 +4210,99 @@ usage_clause:   usage_clause1[type]
                   }
                 }
                 ;
-usage_clause1:  usage COMPUTATIONAL[comp]   native
+usage_clause1:  usage BIT
+		{
+		  cbl_unimplemented("Boolean type not implemented");
+		}
+|		usage BINARY_INTEGER [comp] is_signed
                 {
+		  // action for BINARY_INTEGER is repeated for COMPUTATIONAL, below. 
+		  // If it changes, consolidate in a function. 
+                  bool infer = true;
+                  cbl_field_t *field = current_field();
+
+		  if( ! $is_signed ) {
+		    $comp.signable = false;
+		  }
+
+                  // Some binary types have defined capacity;
+                  switch($comp.type) {
+                  // COMPUTATIONAL and COMP-5 rely on PICTURE.
+                  case FldNumericBinary:
+                    field->attr |= big_endian_e;
+                    __attribute__((fallthrough));
+                  case FldNumericBin5:
+		    // If no capacity yet, then no picture, infer $comp.capacity.
+		    // If field has capacity, ensure USAGE is compatible.
+		    if( field->data.capacity > 0 ) { // PICTURE before USAGE
+		      infer = false;
+		      switch( field->type ) {
+		      case FldAlphanumeric:   // PIC X COMP-5 or COMP-X
+			assert( field->data.digits == 0 );
+			assert( field->data.rdigits == 0 );
+		        if( dialect_mf() ) {
+                          field->type = $comp.type;
+			  field->clear_attr(signable_e);
+		        } else {
+			  error_msg(@comp, "numeric USAGE invalid "
+				           "with Alpnanumeric PICTURE");
+			  dialect_error(@1, "Alpnanumeric COMP-5 or COMP-X", "mf");
+			  YYERROR;
+		        }
+                        break;
+		      case FldNumericDisplay: // PIC 9 COMP-5 or COMP-X
+		        if( $comp.capacity == 0xFF ) { // comp-x is a bit like comp-5
+			  assert( field->data.digits == field->data.capacity );
+		          if( ! dialect_mf() ) {
+				  dialect_error(@1, "COMP-X", "mf");
+		          }
+			}
+                        field->type = $comp.type;
+                        field->data.capacity = type_capacity(field->type,
+                                                             field->data.digits);
+		        break;
+		      default: break;
+                      }
+		    }
+                    break;
+		  case FldPacked: // comp-6 is unsigned comp-3
+		    assert(! $comp.signable);  // else PACKED_DECIMAL from scanner
+		    field->attr |= separate_e;
+		    if( ! dialect_mf() ) {
+		      dialect_error(@1, "COMP-6", "mf");
+		    }
+                    if( field->type == FldNumericDisplay ) {// PICTURE before USAGE
+                      infer = false;
+                      assert(field->data.capacity > 0);
+                      field->type = $comp.type;
+                      field->data.capacity = type_capacity(field->type,
+                                                           field->data.digits);
+                    }
+		    break;
+                  default:
+                    break;
+                  }
+
+                  if( infer ) {
+                    if( $comp.capacity > 0 ) {
+                      if( field->data.capacity > 0 ) {
+                        error_msg(@comp, "%s is BINARY type, incompatible with PICTURE",
+                               field->name);
+                        YYERROR;
+                      }
+                      field->data.capacity = $comp.capacity;
+                      field->type = $comp.type;
+                      if( $comp.signable ) {
+                        field->attr = (field->attr | signable_e);
+                      }
+                    }
+                  }
+                  $$ = $comp.type;
+                }
+	|	usage COMPUTATIONAL[comp] native
+                { 
+		  // logic below duplicates BINARY_INTEGER, above.
+		  // If it changes, consolidate in a function. 
                   bool infer = true;
                   cbl_field_t *field = current_field();
 
@@ -4238,7 +4326,8 @@ usage_clause1:  usage COMPUTATIONAL[comp]   native
 			  field->clear_attr(signable_e);
 		        } else {
 			  error_msg(@comp, "numeric USAGE invalid "
-				   "with Alpnanumeric PICTURE");
+				           "with Alpnanumeric PICTURE");
+			  dialect_error(@1, "Alpnanumeric COMP-5 or COMP-X", "mf");
 			  YYERROR;
 		        }
                         break;
@@ -5429,7 +5518,7 @@ disp_body:      disp_vargs[vargs]
                   $$.special = NULL;
                   $$.vargs = $vargs;
                 }
-        |       disp_vargs[vargs] UPON disp_target[special]
+        |       disp_vargs[vargs] UPON disp_upon[special]
                 {
                   $$.special = $special;
                   $$.vargs = $vargs;
@@ -5441,17 +5530,25 @@ disp_vargs:     DISPLAY vargs {
                 }
                 ;
 
-disp_target:    device_name {
+disp_upon:    	device_name {
                   $$ = symbol_special($1.id);
                 }
         |       NAME
                 {
-                  symbol_elem_t *e = symbol_special(PROGRAM, $1);
+                  symbol_elem_t *e = symbol_special(PROGRAM, $NAME);
                   if( !e ) {
-                    error_msg(@NAME, "no such special name '%s'", $NAME);
-                    YYERROR;
-                  }
-                  $$ = cbl_special_name_of(e);
+		    const special_name_t *special_type = cmd_or_env_special_of($NAME);
+		    if( !special_type ) {
+                      error_msg(@NAME, "no such special name '%s'", $NAME);
+                      YYERROR;
+		    }
+		    // Add the name now, as a convenience. 
+		    cbl_special_name_t special = { 0, *special_type };
+		    namcpy(@NAME, special.name, $NAME);
+
+                    e = symbol_special_add(PROGRAM, &special);
+		  }
+		  $$ = cbl_special_name_of(e);
                 }
                 ;
 
@@ -8961,6 +9058,19 @@ inspect:        INSPECT backward inspected TALLYING tallies
 		      error_msg(@all, "ALL must be part of a figurative constant");
 		      YYERROR;
 		    }
+		  } else {
+		    cbl_field_t *match = $match->field,
+		                *replace = $replace_oper->field;
+		    if( is_literal(match) && is_literal(replace) ) {
+		      if( !$match->all && !$replace_oper->all) {
+			if( match->data.capacity != replace->data.capacity ) {
+			  error_msg(@match, "'%s', size %u NOT EQUAL '%s', size %u",
+				    nice_name_of(match), match->data.capacity, 
+				    nice_name_of(replace), replace->data.capacity);
+			  YYERROR;
+			}
+		      }
+		    }
 		  }
                   if( is_constant($inspected->field) ) {
                     auto name = nice_name_of($inspected->field);
@@ -10918,6 +11028,11 @@ sign:           %empty
         |       SIGN
                 ;
 
+is_signed:	%empty      { $$ = true; }
+	|	SIGNED_kw   { $$ = true; }
+	|	UNSIGNED_kw { $$ = false; }
+		;
+
 start_after:	%empty %prec AFTER
 	|	START AFTER varg
 		;
@@ -11245,7 +11360,7 @@ tokenset_t::tokenset_t() {
 #include "token_names.h"
 }
 
-bool iso_cobol_word( const std::string& name, bool include_intrinsics );
+bool iso_cobol_word( const std::string& name, bool include_context );
 
 // Look up the lowercase form of a keyword, excluding some CDF names.
 int
@@ -11276,8 +11391,13 @@ tokenset_t::find( const cbl_name_t name, bool include_intrinsics ) {
       }
   }
 
-  //// if( ! iso_cobol_word(uppercase(name), include_intrinsics) ) return 0;
-
+  /*
+   * The input name may be one of:
+   *  1. an intrinsic function name (OK if include_intrinsics)
+   *  2. an ISO/GCC reserved word or context-sensitive word (OK)
+   *  3. a token in our token list for convenience, such as BINARY_INTEGER (bzzt)
+   */
+  
   cbl_name_t lname;
   std::transform(name, name + strlen(name) + 1, lname, ftolower);
   auto p = tokens.find(lname);
@@ -11286,9 +11406,10 @@ tokenset_t::find( const cbl_name_t name, bool include_intrinsics ) {
 
   if( token == SECTION ) yylval.number = 0;
 
-  if( include_intrinsics ) return token;
-
-  return intrinsic_cname(token)? 0 : token;
+  if( include_intrinsics && intrinsic_cname(token) ) return token;
+  if( iso_cobol_word(uppercase(name), true) ) return token;
+  
+  return 0;
 }
 
 int

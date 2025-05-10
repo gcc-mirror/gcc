@@ -68,7 +68,6 @@ tree var_decl_exception_paragraph;    // const char *__gg__exception_paragraph;
 
 tree var_decl_default_compute_error;  // int         __gg__default_compute_error;
 tree var_decl_rdigits;                // int         __gg__rdigits;
-tree var_decl_odo_violation;          // int         __gg__odo_violation;
 tree var_decl_unique_prog_id;         // size_t      __gg__unique_prog_id;
 
 tree var_decl_entry_location;         // This is for managing ENTRY statements
@@ -106,6 +105,18 @@ tree var_decl_treeplet_4s; // SIZE_T_P                , "__gg__treeplet_4s"
 // instruction, I instead gg_assign(var_decl_nop, integer_zero_node)
 tree var_decl_nop;                // int         __gg__nop;
 tree var_decl_main_called;        // int         __gg__main_called;
+
+#if 0
+#define REFER
+#else
+#define REFER do                                \
+  {                                             \
+  if( getenv("REFER") )                         \
+    {                                           \
+    fprintf(stderr, "REFER %s\n", __func__);    \
+    }                                           \
+  }while(0);
+#endif
 
 int
 get_scaled_rdigits(cbl_field_t *field)
@@ -231,8 +242,6 @@ get_integer_value(tree value,
     }
 
 
-
-
   Analyze();
   // Call this routine when you know the result has to be an integer with no
   // rdigits.  This routine became necessary the first time I saw an
@@ -287,6 +296,11 @@ static tree
 get_data_offset(cbl_refer_t &refer,
                 int *pflags = NULL)
   {
+  REFER;
+  if( getenv("REFER") )
+    {
+    fprintf(stderr, "      %s %s\n", refer.field->name, refer.field->data.initial);
+    }
   Analyze();
   // This routine returns a tree which is the size_t offset to the data in the
   // refer/field
@@ -351,6 +365,7 @@ get_data_offset(cbl_refer_t &refer,
         {
         // The subscript isn't an integer
         set_exception_code(ec_bound_subscript_e);
+        gg_assign(var_decl_rdigits, integer_zero_node);
         }
       ELSE
         {
@@ -408,7 +423,7 @@ get_data_offset(cbl_refer_t &refer,
             get_integer_value(value64, depending_on);
             IF( subscript, ge_op, value64 )
               {
-              gg_assign(var_decl_odo_violation, integer_one_node);
+              set_exception_code(ec_bound_odo_e);
               }
             ELSE
               ENDIF
@@ -439,6 +454,7 @@ get_data_offset(cbl_refer_t &refer,
       {
       // refmod offset is not an integer, and has to be
       set_exception_code(ec_bound_ref_mod_e);
+      gg_assign(var_decl_rdigits, integer_zero_node);
       }
     ELSE
       ENDIF
@@ -1139,17 +1155,9 @@ scale_by_power_of_ten_N(tree value,
   Analyzer.Message("takes int N");
   if( N == 0 )
     {
-    if( check_for_fractional )
-      {
-      gg_assign(var_decl_rdigits, integer_zero_node);
-      }
     }
   else if( N > 0 )
     {
-    if( check_for_fractional )
-      {
-      gg_assign(var_decl_rdigits, integer_zero_node);
-      }
     tree value_type = TREE_TYPE(value);
     FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten(N);
     gg_assign(value, gg_multiply(value, wide_int_to_tree( value_type,
@@ -1169,7 +1177,6 @@ scale_by_power_of_ten_N(tree value,
         gg_assign(var_decl_rdigits, integer_one_node);
         }
       ELSE
-        gg_assign(var_decl_rdigits, integer_zero_node);
         ENDIF
       }
     gg_assign(value, gg_divide(value, wide_int_to_tree( value_type,
@@ -1722,11 +1729,14 @@ get_literal_string(cbl_field_t *field)
 bool
 refer_is_clean(cbl_refer_t &refer)
   {
-  if( !refer.field )
+  if( !refer.field || refer.field->type == FldLiteralN )
     {
     // It is routine for a refer to have no field.  It happens when the parser
-    // passes us a refer for an optional parameter that has been ommitted, for
+    // passes us a refer for an optional parameter that has been omitted, for
     // example.
+    
+    // It is also the case that a FldLiteralN will never have suscripts, or the
+    // like.
     return true;
     }
 
@@ -1739,38 +1749,6 @@ refer_is_clean(cbl_refer_t &refer)
           ;
   }
 
-void
-REFER_CHECK(const char *func,
-            int         line,
-            cbl_refer_t &refer
-            )
-  {
-  static int counter=1;
-
-  if( counter == 5 )
-    {
-    fprintf(stderr, "DING! %d\n", counter);
-    }
-
-
-  fprintf(stderr,
-          "ct REFER_CHECK(%d): %s():%d %s\n",
-          counter,
-          func,
-          line,
-          refer.field->name);
-
-  gg_printf("rt REFER_CHECK(%d): %s():%d %s (%s)\n",
-            build_int_cst_type(INT, counter),
-            gg_string_literal(func),
-            build_int_cst_type(INT, line),
-            gg_string_literal(refer.field->name),
-            gg_string_literal(cbl_field_type_str(refer.field->type)),
-            NULL_TREE);
-  counter+=1;
-  }
-
-
 /*  This routine returns the length portion of a refmod(start:length) reference.
     It extracts both the start and the length so that it can add them together
     to make sure that result falls within refer.capacity.
@@ -1779,6 +1757,7 @@ static
 tree  // size_t
 refer_refmod_length(cbl_refer_t &refer)
   {
+  REFER;
   Analyze();
   if( refer.refmod.from || refer.refmod.len )
     {
@@ -1797,6 +1776,7 @@ refer_refmod_length(cbl_refer_t &refer)
       {
       set_exception_code(ec_bound_ref_mod_e);
       gg_assign(refstart, gg_cast(LONG, integer_one_node));
+      gg_assign(var_decl_rdigits, integer_zero_node);
       }
     ELSE
       ENDIF
@@ -1835,6 +1815,7 @@ refer_refmod_length(cbl_refer_t &refer)
             // length is not an integer
             set_exception_code(ec_bound_ref_mod_e);
             gg_assign(reflen, gg_cast(LONG, integer_one_node));
+            gg_assign(var_decl_rdigits, integer_zero_node);
             }
           ELSE
             {
@@ -1898,6 +1879,7 @@ static
 tree // size_t
 refer_fill_depends(cbl_refer_t &refer)
   {
+  REFER;
   // This returns a positive number which is the amount a depends-limited
   // capacity needs to be reduced.
   Analyze();
@@ -1928,6 +1910,7 @@ refer_fill_depends(cbl_refer_t &refer)
     // This needs to evaluate to an integer
     set_exception_code(ec_bound_odo_e);
     gg_assign(value64, build_int_cst_type(TREE_TYPE(value64), odo->occurs.bounds.upper));
+    gg_assign(var_decl_rdigits, integer_zero_node);
     }
   ELSE
     ENDIF
@@ -1973,27 +1956,27 @@ tree  // size_t
 refer_offset(cbl_refer_t &refer,
                     int *pflags)
   {
+  // This routine calculates the effect of a refer offset on the
+  // refer.field->data location.  When there are subscripts, the data location
+  // gets augmented by the (subscript-1)*element_size calculation.  And when 
+  // there is a refmod, the data location additionally gets augmented by
+  // (refmod.from-1)
+
+  REFER;
   if( !refer.field )
     {
+    // It's common for the field to be missing.  It generally means that an
+    // optional parameter wasn't supplied.
     return size_t_zero_node;
     }
-  if( !refer.nsubscript )
+
+  if( refer.field->type == FldLiteralN || refer.field->type == FldLiteralA )
     {
-    return get_data_offset(refer);
+    // We know that literals have no offset
+    return size_t_zero_node;
     }
 
-  Analyze();
-
-  tree retval = gg_define_variable(SIZE_T);
-  gg_assign(var_decl_odo_violation, integer_zero_node);
-
-  gg_assign(retval, get_data_offset(refer, pflags));
-  IF( var_decl_odo_violation, ne_op, integer_zero_node )
-    {
-    set_exception_code(ec_bound_odo_e);
-    }
-  ELSE
-    ENDIF
+  tree retval = get_data_offset(refer, pflags);
   return retval;
   }
 
@@ -2001,6 +1984,7 @@ static
 tree
 refer_size(cbl_refer_t &refer, refer_type_t refer_type)
   {
+  REFER;
   Analyze();
   static tree retval = gg_define_variable(SIZE_T, "..rs_retval", vs_file_static);
 
@@ -2042,12 +2026,14 @@ refer_size(cbl_refer_t &refer, refer_type_t refer_type)
 tree  // size_t
 refer_size_dest(cbl_refer_t &refer)
   {
+  REFER;
   return refer_size(refer, refer_dest);
   }
 
 tree  // size_t
 refer_size_source(cbl_refer_t &refer)
   {
+  REFER;
   /*  There are oddities involved with refer_size_source and refer_size_dest.
       See the comments in refer_has_depends for some explanation.  There are
       other considerations, as well.  For example, consider a move, where you

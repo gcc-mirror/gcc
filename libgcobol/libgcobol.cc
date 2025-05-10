@@ -131,7 +131,6 @@ int         __gg__exception_line_number       = 0    ;
 const char *__gg__exception_statement         = NULL ;
 int         __gg__default_compute_error       = 0    ;
 int         __gg__rdigits                     = 0    ;
-int         __gg__odo_violation               = 0    ;
 int         __gg__nop                         = 0    ;
 int         __gg__main_called                 = 0    ;
 

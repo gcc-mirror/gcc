@@ -56,7 +56,6 @@ extern tree var_decl_exception_paragraph;    // const char *__gg__exception_para
 
 extern tree var_decl_default_compute_error;  // int         __gg__default_compute_error;
 extern tree var_decl_rdigits;                // int         __gg__rdigits;
-extern tree var_decl_odo_violation;          // int         __gg__odo_violation;
 extern tree var_decl_unique_prog_id;         // size_t      __gg__unique_prog_id;
 
 extern tree var_decl_entry_location;         // This is for managing ENTRY statements
@@ -121,7 +120,7 @@ void      set_exception_code_func(ec_type_t ec,
 #define set_exception_code(ec) set_exception_code_func(ec, __LINE__)
 bool      process_this_exception(ec_type_t ec);
 #define   CHECK_FOR_FRACTIONAL_DIGITS true
-void      get_integer_value(tree value,
+void      get_integer_value(tree value,  // This is always a LONG
                             cbl_field_t *field,
                             tree         offset=NULL,  // size_t
                             bool check_for_fractional_digits=false);
@@ -145,12 +144,6 @@ tree      refer_offset(cbl_refer_t &refer,
                        int *pflags=NULL);
 tree      refer_size_source(cbl_refer_t &refer);
 tree      refer_size_dest(cbl_refer_t &refer);
-
-void     REFER_CHECK( const char *func,
-                      int         line,
-                      cbl_refer_t &refer
-                      );
-#define refer_check(a) REFER_CHECK(__func__, __LINE__, a)
 
 tree      qualified_data_location(cbl_refer_t &refer);
 

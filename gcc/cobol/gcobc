@@ -142,6 +142,11 @@ do
 
     if [ "$pending_arg" ]
     then
+        case $pending_arg in
+            -o) output_name="$opt"  # capture named output file
+                ;;
+        esac
+
         opts="$opts $pending_arg $opt"
         pending_arg=
         continue
@@ -392,7 +397,13 @@ do
             ;;
         # -main
         # -nomain
-        # -o
+
+        -o) pending_arg=$opt
+            ;;
+        -o*) output_name=$opt ## non-empty means do not infer
+             opts="$opts $opt"
+            ;;
+
         # -O0, -Ox
         -O | -O2 | -Os) warn "$opt"
                         ;;
@@ -432,7 +443,23 @@ do
         -x) mode=
             ;;
 
-        *) opts="$opts $opt" # pass through
+        -) output_name=a.out # nonnull to prevent overriding gcc default
+           opts="$opts /dev/stdin"
+           ;;
+
+        *) if [ -z "$output_name" ]  # first non-option argument is source file name
+           then
+               output_name=$(basename ${opt%.*})
+               case $mode in
+                   -c) output_name="$output_name".o
+                       ;;
+                   -shared)
+                       output_name="$output_name".so
+                       ;;
+               esac
+               opts="$opts -o $output_name"
+           fi    
+           opts="$opts $opt" # pass through
            ;;
     esac
 done

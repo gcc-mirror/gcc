@@ -157,7 +157,7 @@ cobol/cdf.cc: cobol/cdf.y
 FLEX_WARNING = warning, dangerous trailing context
 
 cobol/scan.cc: cobol/scan.l
-	$(FLEX) -o$@ $(LFLAGS) $< >$@~ 2>&1
+	$(FLEX) -o$@ $(LFLAGS) $< 2>$@~ || { cat $@~ >&1; exit 1; }
 	awk  '! /$(FLEX_WARNING)/ {print > "/dev/stderr"; nerr++}	\
 	     END {print "$(FLEX):", NR, "messages" > "/dev/stderr";	\
 		  exit nerr}' $@~

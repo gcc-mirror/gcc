@@ -2294,7 +2294,7 @@ symbol_table_init(void) {
       "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
     { 0, FldAlphanumeric, FldInvalid, signable_e | global_e, 0,0,2, nonarray, 0,
       "DEBUG-CONTENTS", 0, {}, {76,76,0,0, NULL}, NULL },
-};
+  };
 
   // debug registers
   assert(table.nelem + COUNT_OF(debug_registers) < table.capacity);

@@ -2331,6 +2331,75 @@ bool fisprint(int c)
 
 // 8.9 Reserved words
 static const std::set<std::string> reserved_words = {
+  // GCC COBOL keywords
+  "COMMAND-LINE",
+  "COMMAND-LINE-COUNT",
+
+  // GCC device names
+  "C01",
+  "C02",
+  "C03",
+  "C04",
+  "C05",
+  "C06",
+  "C07",
+  "C08",
+  "C09",
+  "C10",
+  "C11",
+  "C12",
+  "CONSOLE",
+  "S01",
+  "S02",
+  "S03",
+  "S04",
+  "S05",
+  "STDERR",
+  "STDIN",
+  "STDOUT",
+  "SYSIN",
+  "SYSIPT",
+  "SYSLIST",
+  "SYSLST",
+  "SYSOUT",
+  "SYSPCH",
+  "SYSPUNCH",
+  "UPSI",
+
+  // IBM keywords that GCC recognizes
+  "BASIS",
+  "CBL",
+  "ENTER",
+  "READY",
+  "TITLE",
+  "TRACE",
+  "ALTER",
+  "COBOL",
+  "DATE-COMPILED",
+  "DATE-WRITTEN",
+  "DBCS",
+  "DEBUGGING",
+  "EGCS",
+  "ENTRY",
+  "EVERY",
+  "INSTALLATION",
+  "I-O-CONTROL",
+  "KANJI",
+  "LABEL",
+  "NULLS",
+  "PADDING",
+  "PROCEDURES",
+  "PROCEED",
+  "RECORDING",
+  "RERUN",
+  "REVERSED",
+  "SECURITY",
+  "TALLY",
+  "VOLATILE",
+  "XML",
+  "END-START",
+  
+  // ISO 2023 keywords
   "ACCEPT",
   "ACCESS",
   "ACTIVE-CLASS",
@@ -2497,8 +2566,6 @@ static const std::set<std::string> reserved_words = {
   "FLOAT-EXTENDED",
   "FLOAT-INFINITY",
   "FLOAT-LONG",
-  "FLOAT-NOT-A-NUMBER",
-  "FLOAT-NOT-A-NUMBER-",
   "FLOAT-NOT-A-NUMBER-",
   "FLOAT-SHORT",
   "FOOTING",
@@ -2856,10 +2923,11 @@ static const std::set<std::string> context_sensitive_words = {
 };
 
 // Is the input a COBOL word, per ISO/IEC 1989:2023 (E) ?
+// We add a few GCC-specific keywords, and our supported IBM keywords.
 bool
-iso_cobol_word( const std::string& name, bool include_intrinsics ) {
+iso_cobol_word( const std::string& name, bool include_context ) {
   auto ok = 1 == reserved_words.count(name);
-  if( include_intrinsics && !ok ) {
+  if( include_context && !ok ) {
     ok = 1 == context_sensitive_words.count(name);
   }
   return ok;

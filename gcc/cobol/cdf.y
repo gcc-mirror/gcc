@@ -193,7 +193,7 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 %type	<cdfarg>	namelit name_any name_one
 %type	<string>	name subscript subscripts inof
 %token <boolean>  BOOL
-%token <number>  FEATURE 363  NUMBER 302  EXCEPTION_NAME 280    "EXCEPTION NAME"
+%token <number>  FEATURE 365  NUMBER 303  EXCEPTION_NAME 280    "EXCEPTION NAME"
 
 %type	<cdfval>	cdf_expr
 %type	<cdfval>	cdf_relexpr cdf_reloper cdf_and cdf_bool_expr
@@ -203,48 +203,48 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 %type   <file>		filename
 %type   <files>         filenames
 
-%token BY 476
-%token COPY 360
-%token CDF_DISPLAY 382    ">>DISPLAY"
-%token IN 595
+%token BY 478
+%token COPY 362
+%token CDF_DISPLAY 384    ">>DISPLAY"
+%token IN 597
 %token NAME 286
-%token NUMSTR 304    "numeric literal"
-%token OF 676
-%token PSEUDOTEXT 711
-%token REPLACING 733
-%token LITERAL 297
-%token SUPPRESS 374
+%token NUMSTR 305    "numeric literal"
+%token OF 678
+%token PSEUDOTEXT 713
+%token REPLACING 735
+%token LITERAL 298
+%token SUPPRESS 376
 
-%token LSUB 365    "("
-%token SUBSCRIPT 373  RSUB 370    ")"
+%token LSUB 367    "("
+%token SUBSCRIPT 375  RSUB 372    ")"
 
-%token CDF_DEFINE 381    ">>DEFINE"
-%token CDF_IF 383    ">>IF"
-%token CDF_ELSE 384    ">>ELSE"
-%token CDF_END_IF 385    ">>END-IF"
-%token CDF_EVALUATE 386    ">>EVALUATE"
-%token CDF_WHEN 387    ">>WHEN"
-%token CDF_END_EVALUATE 388    ">>END-EVALUATE"
+%token CDF_DEFINE 383    ">>DEFINE"
+%token CDF_IF 385    ">>IF"
+%token CDF_ELSE 386    ">>ELSE"
+%token CDF_END_IF 387    ">>END-IF"
+%token CDF_EVALUATE 388    ">>EVALUATE"
+%token CDF_WHEN 389    ">>WHEN"
+%token CDF_END_EVALUATE 390    ">>END-EVALUATE"
 
-%token AS 458  CONSTANT 359  DEFINED 361
+%token AS 460  CONSTANT 361  DEFINED 363
 %type	<boolean>	     DEFINED
-%token OTHER 688  PARAMETER_kw 366    "PARAMETER"
-%token OFF 677  OVERRIDE 367
-%token THRU 929
-%token TRUE_kw 803    "True"
+%token OTHER 690  PARAMETER_kw 368    "PARAMETER"
+%token OFF 679  OVERRIDE 369
+%token THRU 931
+%token TRUE_kw 805    "True"
 
-%token CALL_COBOL 389    "CALL"
-%token CALL_VERBATIM 390    "CALL (as C)"
+%token CALL_COBOL 391    "CALL"
+%token CALL_VERBATIM 392    "CALL (as C)"
 
-%token TURN 805  CHECKING 486  LOCATION 639  ON 679  WITH 831
+%token TURN 807  CHECKING 488  LOCATION 641  ON 681  WITH 833
 
-%left OR 930
-%left AND 931
-%right NOT 932
-%left '<'  '>'  '='  NE 933  LE 934  GE 935
+%left OR 932
+%left AND 933
+%right NOT 934
+%left '<'  '>'  '='  NE 935  LE 936  GE 937
 %left '-'  '+'
 %left '*'  '/'
-%right NEG 937
+%right NEG 939
 
 %define api.prefix {ydf}
 %define api.token.prefix{YDF_}
@@ -448,7 +448,6 @@ cdf_if:		CDF_IF cdf_cond_expr {
 		  scanner_parsing(YDF_CDF_IF, $2);
 		}
 	|	CDF_IF error {
-		  ////if( scanner_parsing() ) yyerrok;
 		} CDF_END_IF { // not pushed, don't pop
 		  if( ! scanner_parsing() ) YYACCEPT;
 		}
@@ -467,18 +466,17 @@ cdf_eval_obj:	cdf_cond_expr
         ;
 
 cdf_cond_expr:	BOOL
-	|	NAME DEFINED[maybe]
+	|	NAME DEFINED
 		{
 		  auto p = dictionary.find($1);
 		  bool found = p != dictionary.end();
-		  if( !$maybe ) found = ! found;
-		  if( ! found ) {
-		    $$ = !$2;
-		    dbgmsg("CDF: %s not found in dictionary (result %s)",
+		  if( !$DEFINED ) found = ! found;
+		  $$ = found;
+		  if( found ) {
+		    dbgmsg("CDF: %s found in dictionary (result %s)",
 			   $1, $$? "true" : "false");
 		  } else {
-		    $$ = $2;
-		    dbgmsg("CDF: %s found in dictionary (result %s)",
+		    dbgmsg("CDF: %s not found in dictionary (result %s)",
 			   $1, $$? "true" : "false");
 		  }
 		}

@@ -409,11 +409,6 @@ enum module_type_t {
 static bool
 ec_cmp( ec_type_t raised, ec_type_t ec )
 {
-  if( getenv("match_declarative") )
-    {
-    fprintf(stderr, "          ec_cmp %x %x\n", raised, ec);
-    }
-
   if( raised == ec ) return true;
 
   // If both low bytes are nonzero, we had to match exactly, above. 
@@ -605,9 +600,6 @@ T enabled_exception_match( T beg, T end, ec_type_t type, size_t file ) {
                              return
                                elem.file == 0 &&
                                ec_cmp(ec, elem.ec); } );
-  } else {
-    if( getenv("match_declarative") )
-      fprintf(stderr, "          enabled_exception_match found %x in input\n", type);
   }
   return output;
 }

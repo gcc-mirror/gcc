@@ -46,7 +46,21 @@ static struct {
     first_file = false;
     return tf;
   }
+  inline bool is_fixed() const { return column == 7; }
+  inline bool is_reffmt() const { return is_fixed() && right_margin == 73; }
+  inline bool is_free() const { return ! is_fixed(); }
+  
+  const char * description() const {
+    if( is_reffmt() ) return "REFERENCE";
+    if( is_fixed() ) return "FIXED";
+    if( is_free() ) return "FREE";
+    gcc_unreachable();
+  }    
 } indicator = { true, false, 0, 0 };
+
+// public source format test functions
+bool is_fixed_format() { return indicator.is_fixed(); }
+bool is_reference_format() { return indicator.is_reffmt(); }
 
 static bool debug_mode = false;
 
@@ -86,10 +100,6 @@ cobol_set_indicator_column( int column )
   indicator.column = column;
 }
 
-bool is_fixed_format() { return indicator.column == 7; }
-bool is_reference_format() {
-  return indicator.column == 7 && indicator.right_margin == 73;
-}
 bool include_debug()      { return indicator.column == 7 && debug_mode; }
 bool set_debug( bool tf ) { return debug_mode = tf && is_fixed_format(); }
 
@@ -348,13 +358,14 @@ check_source_format_directive( filespan_t& mfile ) {
       gcc_assert(cm[3].length() == 4 || cm[3].length() == 5);
       break;
     }
-    mfile.cur = const_cast<char*>(cm[0].second);
+
     dbgmsg( "%s:%d: %s format set, on line " HOST_SIZE_T_PRINT_UNSIGNED,
             __func__, __LINE__,
             indicator.column == 7? "FIXED" : "FREE",
             (fmt_size_t)mfile.lineno() );
-    erase_line(const_cast<char*>(cm[0].first),
-               const_cast<char*>(cm[0].second));
+    char *bol = indicator.is_fixed()? mfile.cur : const_cast<char*>(cm[0].first);
+    erase_line(bol, const_cast<char*>(cm[0].second));
+    mfile.cur = const_cast<char*>(cm[0].second);
   }
 }
 
@@ -393,33 +404,22 @@ struct buffer_t : public bytespan_t {
   }
 };
 
-static bool
-valid_sequence_area( const char *p, const char *eodata ) {
-  const char *pend = p + 6;
-  if ( eodata < pend ) return false;
+static inline bool is_p( char ch ) { return TOUPPER(ch) == 'P'; }
 
-  for( ; p < pend; p++ ) {
-    if( ! (ISDIGIT(*p) || *p == SPACE) ) {
-      return false;
+static bool
+is_program_id( const char *p, const char *eol ) {
+  static const std::string program_id("PROGRAM-ID");
+  auto eop = p + program_id.size();
+  if( eop < eol ) {
+    // PROGRAM-ID must be followed by a dot, perhaps with intervening whitespace.
+    for( const char *dot=eop; dot < eol && *dot != '.'; dot++ ) {
+      if( !ISSPACE(*dot) ) return false;
     }
+    std::string line (p, eop);
+    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
+    return line == program_id;
   }
-  return true; // characters either digits or blanks
-}
-
-// Inspect the 2nd line for telltale signs of a NIST file.
-// If true, caller sets right margin to 73, indicating Reference Format
-static bool
-likely_nist_file( const char *p, const char *eodata ) {
-  if( (p = std::find(p, eodata, '\n')) == eodata ) return false;
-  if ( eodata < ++p + 80 ) return false;
-  p += 72;
-
-  return
-    ISALPHA(p[0]) && ISALPHA(p[1]) && 
-    ISDIGIT(p[2]) && ISDIGIT(p[3]) && ISDIGIT(p[4]) &&
-    p[5] == '4' &&
-    p[6] == '.' &&
-    p[7] == '2';
+  return false;
 }
 
 const char * esc( size_t len, const char input[] );
@@ -1620,6 +1620,54 @@ cdftext::map_file( int fd ) {
 
 bool lexio_dialect_mf();
 
+/*
+ * A valid sequence area is 6 digits or blanks at the begining of the line that
+ * contains PROGRAM-ID. Return NULL if no valid sequence area, else return
+ * pointer to BOL.
+ */
+static const char *
+valid_sequence_area( const char *data, const char *eodata ) {
+  
+  for( const char *p = data;
+       (p = std::find_if(p, eodata, is_p)) != eodata;
+       p++ )
+  {
+    auto eol = std::find(p, eodata, '\n');
+    if( p == data || ISSPACE(p[-1]) ) {
+      if( is_program_id(p, eol) ) {  // found program-id token
+	const char *bol = p;
+	for( ; data <= bol-1 && bol[-1] != '\n'; --bol )
+	  ;
+	if( 6 < p - bol ) {
+	  if( std::all_of(bol, bol+6, ::isdigit) ) {
+	    return bol;
+	  }
+	  if( std::all_of(bol, bol+6, ::isblank) ) {
+	    return bol;
+	  }
+	  break;
+	}
+      }
+    }
+  }
+  return nullptr;  
+}
+
+/*
+ * Reference Format -- valid COBOL between columns 8 and 72 -- has data after
+ * column 72 on the PROGRAM-ID line. Extended Reference Format (that allows
+ * longer lines) has no reason to follow the PROGRAM-ID with more stuff.
+ */
+static bool
+infer_reference_format( const char *bol, const char *eodata ) {
+  assert(bol);
+  auto eol = std::find(bol, eodata, '\n');
+  if( 72 < eol - bol ) {
+    return ! std::all_of(bol + 72, eol, ::isspace);
+  }
+  return false;
+}
+
 filespan_t
 cdftext::free_form_reference_format( int input ) {
   filespan_t source_buffer = map_file(input);
@@ -1638,27 +1686,19 @@ cdftext::free_form_reference_format( int input ) {
   } current( mfile.data );
 
   /*
-   * If the format is not explicitly set on the command line, test the
-   * first 6 bytes of the first file to determine the format
-   * heuristically. If the first 6 characters are only digits or
-   * blanks, then the file is in fixed format.
+   * Infer source code format. 
    */
-
   if( indicator.inference_pending()  ) {
-    const char *p = mfile.data;
-    while( p < mfile.eodata ) {
-      const char * pend =
-        std::find(p, const_cast<const char *>(mfile.eodata), '\n');
-      if( 6 < pend - p ) break;
-      p = pend;
-      if( p < mfile.eodata) p++;
+    const char *bol = valid_sequence_area(mfile.data, mfile.eodata);
+    if( bol ) {
+      indicator.column = 7;
+      if( infer_reference_format(bol, mfile.eodata) ) {
+	indicator.right_margin = 73;
+      }
     }
-    if( valid_sequence_area(p, mfile.eodata) ) indicator.column = 7;
-    if( likely_nist_file(p, mfile.eodata) )    indicator.right_margin = 73;
 
-    dbgmsg("%s:%d: %s%s format detected", __func__, __LINE__,
-           indicator.column == 7? "FIXED" : "FREE",
-           indicator.right_margin == 73? "" : "-extended");
+    dbgmsg("%s:%d: %s format detected", __func__, __LINE__,
+           indicator.description());
   }
 
   while( mfile.next_line() ) {
