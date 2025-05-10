@@ -877,7 +877,10 @@ Parser<ManagedTokenSource>::parse_attr_input ()
 	return attr_input_lit;
       }
       break;
+    case RIGHT_PAREN:
     case RIGHT_SQUARE:
+    case RIGHT_CURLY:
+    case END_OF_FILE:
       // means AttrInput is missing, which is allowed
       return nullptr;
     default:
@@ -11911,7 +11914,7 @@ Parser<ManagedTokenSource>::skip_after_end_attribute ()
 {
   const_TokenPtr t = lexer.peek_token ();
 
-  while (t->get_id () != RIGHT_SQUARE)
+  while (t->get_id () != RIGHT_SQUARE && t->get_id () != END_OF_FILE)
     {
       lexer.skip_token ();
       t = lexer.peek_token ();
