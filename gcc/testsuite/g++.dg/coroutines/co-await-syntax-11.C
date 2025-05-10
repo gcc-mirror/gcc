@@ -1,4 +1,4 @@
-//  { dg-additional-options "-std=c++17 -w" }
+//  { dg-additional-options "-std=c++17 -fcoroutines -w" }
 
 #include <utility>
 #include <type_traits>

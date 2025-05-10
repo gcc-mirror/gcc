@@ -1215,6 +1215,10 @@ c_common_post_options (const char **pfilename)
   if (cxx_dialect >= cxx20)
     flag_concepts = 1;
 
+  /* Coroutines are also a C++20 feature.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_coroutines, cxx_dialect >= cxx20);
+
   /* Enable lifetime extension of range based for temporaries for C++23.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       flag_range_for_ext_temps, cxx_dialect >= cxx23);
@@ -2009,8 +2013,6 @@ set_std_cxx20 (int iso)
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
-  /* C++20 includes coroutines. */
-  flag_coroutines = true;
   cxx_dialect = cxx20;
   lang_hooks.name = "GNU C++20";
 }
@@ -2027,8 +2029,6 @@ set_std_cxx23 (int iso)
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
-  /* C++23 includes coroutines.  */
-  flag_coroutines = true;
   cxx_dialect = cxx23;
   lang_hooks.name = "GNU C++23";
 }
@@ -2045,8 +2045,6 @@ set_std_cxx26 (int iso)
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
-  /* C++26 includes coroutines.  */
-  flag_coroutines = true;
   cxx_dialect = cxx26;
   lang_hooks.name = "GNU C++26";
 }

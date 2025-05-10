@@ -41,6 +41,7 @@ proc g++-std-flags { test } {
 
 	set low 0
 	# Some directories expect certain minimums.
+	if { [string match "*/coroutines/*" $test] } { set low 20 }
 	if { [string match "*/modules/*" $test] } { set low 17 }
 
 	# See g++.exp for the initial value of this list.

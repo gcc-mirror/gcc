@@ -1,4 +1,4 @@
-//  { dg-additional-options "-std=c++14" }
+//  { dg-additional-options "-std=c++14 -fcoroutines" }
 //  { dg-skip-if "requires hosted libstdc++ for vector in ramp-return.h" { ! hostedlib } }
 
 #include "ramp-return.h"
