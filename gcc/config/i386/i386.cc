@@ -21753,7 +21753,7 @@ ix86_widen_mult_cost (const struct processor_costs *cost,
       /* pmuludq under sse2, pmuldq under sse4.1, for sign_extend,
 	 require extra 4 mul, 4 add, 4 cmp and 2 shift.  */
       if (!TARGET_SSE4_1 && !uns_p)
-	extra_cost = (cost->mulss + cost->addss + cost->sse_op) * 4
+	extra_cost = (cost->mulss + cost->sse_op + cost->sse_op) * 4
 		      + cost->sse_op * 2;
       /* Fallthru.  */
     case V4DImode:
@@ -21803,11 +21803,11 @@ ix86_multiplication_cost (const struct processor_costs *cost,
 	  else if (TARGET_AVX2)
 	    nops += 2;
 	  else if (TARGET_XOP)
-	    extra += cost->sse_load[2];
+	    extra += COSTS_N_INSNS (cost->sse_load[2]) / 2;
 	  else
 	    {
 	      nops += 1;
-	      extra += cost->sse_load[2];
+	      extra += COSTS_N_INSNS (cost->sse_load[2]) / 2;
 	    }
 	  goto do_qimode;
 
@@ -21826,13 +21826,13 @@ ix86_multiplication_cost (const struct processor_costs *cost,
 	    {
 	      nmults += 1;
 	      nops += 2;
-	      extra += cost->sse_load[2];
+	      extra += COSTS_N_INSNS (cost->sse_load[2]) / 2;
 	    }
 	  else
 	    {
 	      nmults += 1;
 	      nops += 4;
-	      extra += cost->sse_load[2];
+	      extra += COSTS_N_INSNS (cost->sse_load[2]) / 2;
 	    }
 	  goto do_qimode;
 
@@ -21845,14 +21845,16 @@ ix86_multiplication_cost (const struct processor_costs *cost,
 	    {
 	      nmults += 1;
 	      nops += 4;
-	      extra += cost->sse_load[3] * 2;
+	      /* 2 loads, so no division by 2.  */
+	      extra += COSTS_N_INSNS (cost->sse_load[3]);
 	    }
 	  goto do_qimode;
 
 	case V64QImode:
 	  nmults = 2;
 	  nops = 9;
-	  extra = cost->sse_load[3] * 2 + cost->sse_load[4] * 2;
+	  /* 2 loads of each size, so no division by 2.  */
+	  extra = COSTS_N_INSNS (cost->sse_load[3] + cost->sse_load[4]);
 
 	do_qimode:
 	  return ix86_vec_cost (mode, cost->mulss * nmults
@@ -21945,7 +21947,7 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 	    /* Use vpbroadcast.  */
 	    extra = cost->sse_op;
 	  else
-	    extra = cost->sse_load[2];
+	    extra = COSTS_N_INSNS (cost->sse_load[2]) / 2;
 
 	  if (constant_op1)
 	    {
@@ -21976,7 +21978,7 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 		 shift with one insn set the cost to prefer paddb.  */
 	      if (constant_op1)
 		{
-		  extra = cost->sse_load[2];
+		  extra = COSTS_N_INSNS (cost->sse_load[2]) / 2;
 		  return ix86_vec_cost (mode, cost->sse_op) + extra;
 		}
 	      else
@@ -21991,7 +21993,9 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 	    /* Use vpbroadcast.  */
 	    extra = cost->sse_op;
 	  else
-	    extra = (mode == V16QImode) ? cost->sse_load[2] : cost->sse_load[3];
+	    extra = COSTS_N_INSNS (mode == V16QImode
+				   ? cost->sse_load[2]
+				   : cost->sse_load[3]) / 2;
 
 	  if (constant_op1)
 	    {
@@ -26060,7 +26064,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	      else
 		{
 		  m_num_gpr_needed[where]++;
-		  stmt_cost += ix86_cost->sse_to_integer;
+		  stmt_cost += COSTS_N_INSNS (ix86_cost->integer_to_sse) / 2;
 		}
 	    }
 	}
