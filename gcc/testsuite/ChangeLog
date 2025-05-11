@@ -1,3 +1,58 @@
+2025-05-10  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group1/simple-if.cob: Make explicitly >>SOURCE FREE
+
+2025-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102891
+	* gfortran.dg/transfer_array_subref.f90: New test.
+
+2025-05-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/minmax-6.c: xfail test that pmax is used.
+	* gcc.target/i386/minmax-7.c: xfall test that pmin is used.
+
+2025-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120193
+	* gfortran.dg/guality/pr120193.f90: New test.
+
+2025-05-10  Filip Kastl  <fkastl@suse.cz>
+
+	* gcc.target/aarch64/pr99988.c: Add -fno-bit-tests.
+
+2025-05-10  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/120080
+	* gcc.dg/tree-ssa/pr120080.c: New test.
+
+2025-05-10  Co-authored-by: Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/ior-synthesis-1.c: New test.
+	* gcc.target/riscv/ior-synthesis-2.c: New test.
+	* gcc.target/riscv/xor-synthesis-1.c: New test.
+	* gcc.target/riscv/xor-synthesis-2.c: New test.
+	* gcc.target/riscv/xor-synthesis-3.c: New test.
+
+2025-05-10  Anton Blanchard  <antonb@tenstorrent.com>
+
+	* gcc.target/riscv/rvv/base/crc-builtin-zvbc.c: New test.
+
+2025-05-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/pr87600.h (REG1, REG2): Test for __PPC__ as well.
+	* gcc.dg/pr89313.c (REG): Likewise.
+
+2025-05-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/powerpc/block-cmp-8.c: Require powerpc64
+	instruction execution support.
+
+2025-05-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120204
+	* g++.dg/cpp1y/constexpr-recursion3.C: New test.
+
 2025-05-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/99599

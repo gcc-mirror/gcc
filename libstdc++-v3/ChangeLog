@@ -1,3 +1,7 @@
+2025-05-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* src/c++23/print.cc [__VXWORKS__]: Include ioLib.h.
+
 2025-05-09  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/bits/chrono_io.h (__formatter_chrono::_M_format_to):

@@ -1,3 +1,7 @@
+2025-05-10  Yuao Ma  <c8ef@outlook.com>
+
+	* io/read.c (read_f): Comment typo, explict -> explicit.
+
 2025-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/120158

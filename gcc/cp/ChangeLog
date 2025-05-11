@@ -1,3 +1,8 @@
+2025-05-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120204
+	* pt.cc (tsubst_baselink): Always error if lookup fails.
+
 2025-05-09  Jason Merrill  <jason@redhat.com>
 
 	* decl2.cc (determine_visibility): Ignore args for friend templates.

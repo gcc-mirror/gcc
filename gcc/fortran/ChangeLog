@@ -1,3 +1,19 @@
+2025-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102891
+	* dependency.cc (gfc_ref_needs_temporary_p): Within an array
+	reference, inquiry references of complex variables generally
+	need a temporary.
+
+2025-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120193
+	* trans-types.cc (gfc_init_types): For flag_unsigned use
+	build_distinct_type_copy or build_variant_type_copy from
+	gfc_character_types[index_char] if index_char > -1 instead of
+	gfc_character_types[index_char] or
+	gfc_build_unsigned_type (&gfc_unsigned_kinds[index]).
+
 2025-05-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/120179

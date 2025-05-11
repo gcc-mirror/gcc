@@ -1,3 +1,9 @@
+2025-05-10  Robert Dubner  <rdubner@symas.com>
+
+	* common-defs.h (ec_cmp): Delete "getenv("match_declarative")" calls.
+	(enabled_exception_match): Delete "getenv("match_declarative")" calls.
+	* libgcobol.cc: Eliminate __gg__odo_violation.
+
 2025-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Handle --enable-libgcobol.

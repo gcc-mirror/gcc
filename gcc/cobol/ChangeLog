@@ -1,3 +1,56 @@
+2025-05-10  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119337
+	* Make-lang.in: Change how $(FLEX) is invoked.
+	* cdf.y: Change parser tokens.
+	* gcobc: Changed how name is inferred for PR119337
+	* gcobol.1: Documentation for SOURCE format heuristic
+	* genapi.cc: Eliminate __gg__odo_violation.
+	(parser_display_field): Change comment.
+	* genutil.cc:Eliminate __gg__odo_violation.
+	(REFER): New macro for analyzing subscript/refmod calculations.
+	(get_integer_value): Likewise.
+	(get_data_offset): Eliminate __gg__odo_violation.
+	(scale_by_power_of_ten_N): Eliminate unnecessary var_decl_rdigits operation.
+	(refer_is_clean): Check for FldLiteralN.
+	(REFER_CHECK): Eliminate.
+	(refer_refmod_length): Streamline var_decl_rdigits processing.
+	(refer_fill_depends): Likewise.
+	(refer_offset): Streamline processing when FldLiteralN.
+	(refer_size): Tag with REFER macro.
+	(refer_size_dest): Likewise.
+	(refer_size_source): Likewise.
+	* genutil.h (get_integer_value): Delete declaration for odo_violation;
+	change comment for get_integer_value
+	(REFER_CHECK): Delete declaration.
+	(refer_check): Delete #define.
+	* lexio.cc (is_fixed_format): Changes for source format auto-detect.
+	(is_reference_format): Likewise.
+	(check_source_format_directive): Likewise.
+	(valid_sequence_area): Likewise.
+	(is_p): Likewise.
+	(is_program_id): Likewise.
+	(likely_nist_file): Likewise.
+	(infer_reference_format): Likewise.
+	(cdftext::free_form_reference_format): Likewise.
+	* parse.y: Token changes.
+	* parse_ante.h (class tokenset_t):  Likewise.
+	(class current_tokens_t):  Likewise.
+	(cmd_or_env_special_of): Likewise.
+	* scan.l:  Likewise.
+	* scan_ante.h (bcomputable): Likewise.
+	(keyword_alias_add): Likewise.
+	(struct bint_t): Likewise.
+	(binary_integer_usage): Likewise.
+	(binary_integer_usage_of): Likewise.
+	* scan_post.h (start_condition_str): Likewise.
+	* symbols.cc (symbol_table_init): Formatting.
+	* symbols.h (struct cbl_field_data_t): Add "input" method to field_data_t.
+	(keyword_alias_add): Add forward declaration.
+	(binary_integer_usage_of): Likewise.
+	* token_names.h: Change list of tokens.
+	* util.cc (iso_cobol_word): Change list of COBOL reserved words.
+
 2025-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR cobol/119217

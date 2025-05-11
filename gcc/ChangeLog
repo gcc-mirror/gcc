@@ -1,3 +1,59 @@
+2025-05-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/92080
+	PR target/117839
+	* config/i386/i386-features.cc (replace_vector_const): Change
+	dest to src.
+
+2025-05-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386-features.cc
+	(general_scalar_chain::vector_const_cost): Add BB parameter; handle
+	size costs; use COSTS_N_INSNS to compute move costs.
+	(general_scalar_chain::compute_convert_gain): Use optimize_bb_for_size
+	instead of optimize_insn_for size; use COSTS_N_INSNS to compute move costs;
+	update calls of general_scalar_chain::vector_const_cost; use
+	ix86_cost->integer_to_sse.
+	(timode_immed_const_gain): Add bb parameter; use
+	optimize_bb_for_size_p.
+	(timode_scalar_chain::compute_convert_gain): Use optimize_bb_for_size_p.
+	* config/i386/i386-features.h (class general_scalar_chain): Update
+	prototype of vector_const_cost.
+	* config/i386/i386.h (struct processor_costs): Add integer_to_sse.
+	* config/i386/x86-tune-costs.h (struct processor_costs): Copy
+	sse_to_integer to integer_to_sse everywhere.
+
+2025-05-10  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/120080
+	* tree-switch-conversion.cc (bit_test_cluster::find_bit_tests):
+	Replace assert with return.
+
+2025-05-10  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	* config/riscv/iterators.md (OPTAB): New iterator.
+	* config/riscv/predicates.md (arith_or_zbs_operand): Remove.
+	(reg_or_const_int_operand): New predicate.
+	* config/riscv/riscv-protos.h (synthesize_ior_xor): Prototype.
+	* config/riscv/riscv.cc (synthesize_ior_xor): New function.
+	* config/riscv/riscv.md (ior/xor expander): Use synthesize_ior_xor.
+
+2025-05-10  LIU Hao  <lh_mouse@126.com>
+
+	PR target/111107
+	* config/i386/cygming.h (PREFERRED_STACK_BOUNDARY_DEFAULT): Override
+	definition from i386.h.
+	(STACK_REALIGN_DEFAULT): Undefine, as it no longer has an effect.
+	* config/i386/i386.cc (ix86_update_stack_boundary): Force minimum
+	128-bit alignment if `force_align_arg_pointer`.
+
+2025-05-10  Anton Blanchard  <antonb@tenstorrent.com>
+
+	* config/riscv/bitmanip.md (crc_rev<ANYI1:mode><ANYI:mode>4): Check
+	TARGET_ZVBC.
+	* config/riscv/riscv.cc (expand_crc_using_clmul): Emit code using
+	vclmul if TARGET_ZVBC.
+
 2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* vr-values.cc (simplify_using_ranges::simplify) <BIT_AND_EXPR>:
