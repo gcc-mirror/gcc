@@ -1,3 +1,11 @@
+2025-05-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-05-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/119909
+	* gcc.dg/torture/pr119131-1.c: Add -Wno-psabi.
+
 2025-05-09  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
