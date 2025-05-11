@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target dfp } */
+/* { dg-additional-options "-Wno-psabi" } */
 /* PR target/119131 */
 
 typedef __attribute__((__vector_size__ (64))) char C;
