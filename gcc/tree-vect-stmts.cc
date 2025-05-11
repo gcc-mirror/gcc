@@ -424,6 +424,7 @@ vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
      alternate exit.  */
   if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
       && is_a <gphi *> (stmt)
+      && gimple_bb (stmt) == LOOP_VINFO_LOOP (loop_vinfo)->header
       && ((! VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info))
 	  && ! *live_p)
 	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def))
