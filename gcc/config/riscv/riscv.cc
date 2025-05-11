@@ -3875,6 +3875,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		*total = gr2vr_cost * COSTS_N_INSNS (1);
 		break;
 	      case PLUS:
+	      case MINUS:
 		{
 		  rtx op_0 = XEXP (x, 0);
 		  rtx op_1 = XEXP (x, 1);
