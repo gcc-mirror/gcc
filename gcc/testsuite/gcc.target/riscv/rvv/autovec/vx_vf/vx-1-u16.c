@@ -4,5 +4,7 @@
 #include "vx_binary.h"
 
 DEF_VX_BINARY_CASE_0(uint16_t, +, add)
+DEF_VX_BINARY_CASE_0(uint16_t, -, sub)
 
 /* { dg-final { scan-assembler-times {vadd.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vsub.vx} 1 } } */
