@@ -1,3 +1,16 @@
+// { dg-do run }
+
+// With the changes to deal with CWG2563 (and PR119916) we now use the
+// referenced promise in the return expression.  It is quite reasonable
+// for a body implementation to complete before control is returned to
+// the ramp - and in that case we would be creating the ramp return object
+// from an already-deleted promise object.
+// This is recognised to be a poor situation and resolution via a core
+// issue is planned.
+
+// In this test we explicitly trigger the circumstance mentioned above.
+// { dg-xfail-run-if "" { *-*-* } }
+
 #include <coroutine>
 
 #ifdef OUTPUT
@@ -6,23 +19,25 @@
 
 struct Promise;
 
-bool promise_live = false;
+int promise_life = 0;
 
 struct Handle : std::coroutine_handle<Promise> {
+
     Handle(Promise &p) : std::coroutine_handle<Promise>(Handle::from_promise(p)) {
-        if (!promise_live)
-          __builtin_abort ();
 #ifdef OUTPUT
-        std::cout << "Handle(Promise &)\n";
+        std::cout << "Handle(Promise &) " << promise_life << std::endl;
 #endif
-    }
+         if (promise_life <= 0)
+          __builtin_abort ();
+   }
+
     Handle(Promise &&p) : std::coroutine_handle<Promise>(Handle::from_promise(p)) {
-        if (!promise_live)
-          __builtin_abort ();
 #ifdef OUTPUT
-        std::cout << "Handle(Promise &&)\n";
+        std::cout << "Handle(Promise &&) "  << promise_life  << std::endl;
 #endif
-    }
+         if (promise_life <= 0)
+          __builtin_abort ();
+   }
 
     using promise_type = Promise;
 };
@@ -30,46 +45,73 @@ struct Handle : std::coroutine_handle<Promise> {
 struct Promise {
     Promise() {
 #ifdef OUTPUT
-        std::cout << "Promise()\n";
+        std::cout << "Promise()" << std::endl;
 #endif
-        promise_live = true;
+        promise_life++;
     }
+
+    Promise(Promise& p){
+#ifdef OUTPUT
+        std::cout << "Promise(Promise&)" << std::endl;
+#endif
+        promise_life++;
+    }
+
     ~Promise() {
 #ifdef OUTPUT
-        std::cout << "~Promise()\n";
+        std::cout << "~Promise()" << std::endl;
 #endif
-        if (!promise_live)
+        if (promise_life <= 0)
           __builtin_abort ();
-        promise_live = false;
+        promise_life--;
     }
+
     Promise& get_return_object() noexcept {
 #ifdef OUTPUT
-        std::cout << "get_return_object()\n";
+        std::cout << "get_return_object() " << promise_life << std::endl;
 #endif
-        if (!promise_live)
+        if (promise_life <= 0)
           __builtin_abort ();
         return *this;
     }
-    std::suspend_never initial_suspend() const noexcept { return {}; }
-    std::suspend_never final_suspend() const noexcept { return {}; }
+
+    std::suspend_never initial_suspend() const noexcept {
+#ifdef OUTPUT
+        std::cout << "initial_suspend()" << std::endl;
+#endif
+     return {}; 
+    }
+    std::suspend_never final_suspend() const noexcept {
+#ifdef OUTPUT
+        std::cout << "final_suspend()" << std::endl;
+#endif
+    return {};
+    }
     void return_void() const noexcept {
-        if (!promise_live)
+        if (!promise_life)
           __builtin_abort ();
 #ifdef OUTPUT
-        std::cout << "return_void()\n";
+        std::cout << "return_void()" << std::endl;
 #endif
     }
     void unhandled_exception() const noexcept {}
 };
 
 Handle Coro() {
+
+#ifdef OUTPUT
+        std::cout << "Coro()" << std::endl;
+#endif
     co_return;
 }
 
 int main() {
-  Coro();
 
-  if (promise_live)
+  Coro();
+#ifdef OUTPUT
+        std::cout << "done Coro()" << std::endl;
+#endif
+  if (promise_life)
     __builtin_abort ();
   return 0;
 }

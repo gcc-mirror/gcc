@@ -5137,8 +5137,11 @@ cp_coroutine_transform::build_ramp_function ()
   /* Check for a bad get return object type.
      [dcl.fct.def.coroutine] / 7 requires:
      The expression promise.get_return_object() is used to initialize the
-     returned reference or prvalue result object ... */
-  tree gro_type = TREE_TYPE (get_ro);
+     returned reference or prvalue result object ...
+     When we use a local to hold this, it is decltype(auto).  */
+  tree gro_type
+    = finish_decltype_type (get_ro, /*id_expression_or_member_access_p*/false,
+			    tf_warning_or_error);
   if (VOID_TYPE_P (gro_type) && !void_ramp_p)
     {
       error_at (fn_start, "no viable conversion from %<void%> provided by"
@@ -5176,7 +5179,7 @@ cp_coroutine_transform::build_ramp_function ()
 	= coro_build_and_push_artificial_var (loc, "_Coro_gro", gro_type,
 					      orig_fn_decl, NULL_TREE);
 
-      r = cp_build_init_expr (coro_gro, get_ro);
+      r = cp_build_init_expr (coro_gro, STRIP_REFERENCE_REF (get_ro));
       finish_expr_stmt (r);
       tree coro_gro_cleanup
 	= cxx_maybe_build_cleanup (coro_gro, tf_warning_or_error);
@@ -5198,7 +5201,8 @@ cp_coroutine_transform::build_ramp_function ()
   /* The ramp is done, we just need the return statement, which we build from
      the return object we constructed before we called the function body.  */
 
-  finish_return_stmt (void_ramp_p ? NULL_TREE : coro_gro);
+  r = void_ramp_p ? NULL_TREE : convert_from_reference (coro_gro);
+  finish_return_stmt (r);
 
   if (flag_exceptions)
     {
