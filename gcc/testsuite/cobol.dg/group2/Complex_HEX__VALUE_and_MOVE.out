@@ -1,0 +1,16 @@
+the value is    0x3333040302013333
+should be       0x3333040302013333
+var-low  :      0x3333000000003333
+var-space:      0x3333202020203333
+var-quote:      0x3333222222223333
+var-zero :      0x3333303030303333
+var-high :      0x3333ffffffff3333
+initial         0x3333333333333333
+low-value       0x3333000000003333
+space           0x3333202020203333
+quote           0x3333222222223333
+zeroes          0x3333303030303333
+high-value      0x3333ffffffff3333
+01020304        0x3333040302013333
+ref-mod         0x3300333333333333
+

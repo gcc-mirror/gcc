@@ -1,0 +1,9 @@
+Fixed-point divide by zero:
+1 - "EC-SIZE-ZERO-DIVIDE"
+2 - ""
+3 - "EC-SIZE-ZERO-DIVIDE"
+Floating-point divide by zero:
+4 - "EC-SIZE-ZERO-DIVIDE"
+5 - ""
+6 - "EC-SIZE-ZERO-DIVIDE"
+
