@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-rtl.h"
 #include "dbgcnt.h"
 #include "diagnostic-core.h"
+#include "target.h"
 
 /* These should probably move into a C++ class.  */
 static vec<bitmap_head> livein;
@@ -764,13 +765,25 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 			 We don't want to mark those bits live unnecessarily
 			 as that inhibits extension elimination in important
 			 cases such as those in Coremark.  So we need that
-			 outer code.  */
+			 outer code.
+
+			 But if !TRULY_NOOP_TRUNCATION_MODES_P, the mode
+			 change performed by Y would normally need to be a
+			 TRUNCATE rather than a SUBREG.  It is probably the
+			 guarantee provided by SUBREG_PROMOTED_VAR_P that
+			 allows the SUBREG in Y as an exception.  We must
+			 therefore preserve that guarantee and treat the
+			 upper bits of the inner register as live
+			 regardless of the outer code.  See PR 120050.  */
 		      if (!REG_P (SUBREG_REG (y))
 			  || (SUBREG_PROMOTED_VAR_P (y)
 			      && ((GET_CODE (SET_SRC (x)) == SIGN_EXTEND
 				   && SUBREG_PROMOTED_SIGNED_P (y))
 				  || (GET_CODE (SET_SRC (x)) == ZERO_EXTEND
-				      && SUBREG_PROMOTED_UNSIGNED_P (y)))))
+				      && SUBREG_PROMOTED_UNSIGNED_P (y))
+				  || !TRULY_NOOP_TRUNCATION_MODES_P (
+					GET_MODE (y),
+					GET_MODE (SUBREG_REG (y))))))
 			break;
 
 		      bit = subreg_lsb (y).to_constant ();
