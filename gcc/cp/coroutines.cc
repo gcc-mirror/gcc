@@ -4451,7 +4451,7 @@ cp_coroutine_transform::wrap_original_function_body ()
       tree i_a_r_c
 	= coro_build_artificial_var (loc, coro_frame_i_a_r_c_id,
 				     boolean_type_node, orig_fn_decl,
-				     boolean_false_node);
+				     NULL_TREE);
       DECL_CHAIN (i_a_r_c) = var_list;
       var_list = i_a_r_c;
       add_decl_expr (i_a_r_c);
@@ -4867,19 +4867,11 @@ cp_coroutine_transform::build_ramp_function ()
   add_decl_expr (coro_fp);
 
   tree coro_promise_live = NULL_TREE;
-  tree coro_gro_live = NULL_TREE;
   if (flag_exceptions)
     {
       /* Signal that we need to clean up the promise object on exception.  */
       coro_promise_live
 	= coro_build_and_push_artificial_var (loc, "_Coro_promise_live",
-					      boolean_type_node, orig_fn_decl,
-					      boolean_false_node);
-
-      /* When the get-return-object is in the RETURN slot, we need to arrange
-	 for cleanup on exception.  */
-      coro_gro_live
-	= coro_build_and_push_artificial_var (loc, "_Coro_gro_live",
 					      boolean_type_node, orig_fn_decl,
 					      boolean_false_node);
 
@@ -4970,13 +4962,19 @@ cp_coroutine_transform::build_ramp_function ()
   tree ramp_try_block = NULL_TREE;
   tree ramp_try_stmts = NULL_TREE;
   tree iarc_x = NULL_TREE;
+  tree coro_before_return = NULL_TREE;
   if (flag_exceptions)
     {
+      coro_before_return
+	= coro_build_and_push_artificial_var (loc, "_Coro_before_return",
+					      boolean_type_node, orig_fn_decl,
+					      boolean_true_node);
       iarc_x
 	= coro_build_and_push_artificial_var_with_dve (loc,
 						       coro_frame_i_a_r_c_id,
 						       boolean_type_node,
-						       orig_fn_decl, NULL_TREE,
+						       orig_fn_decl,
+						       boolean_false_node,
 						       deref_fp);
       ramp_try_block = begin_try_block ();
       ramp_try_stmts = begin_compound_stmt (BCS_TRY_BLOCK);
@@ -5136,90 +5134,54 @@ cp_coroutine_transform::build_ramp_function ()
     (loc, coro_resume_index_id, short_unsigned_type_node,  orig_fn_decl,
      build_zero_cst (short_unsigned_type_node), deref_fp);
 
-  if (flag_exceptions && iarc_x)
-    {
-      r = cp_build_init_expr (iarc_x, boolean_false_node);
-      finish_expr_stmt (r);
-    }
-
-  /* Used for return objects in the RESULT slot.  */
-  tree ret_val_dtor = NULL_TREE;
-  tree retval = NULL_TREE;
+  /* We must manage the cleanups ourselves, with the exception of the g_r_o,
+     because the responsibility for them changes after the initial suspend.
+     However, any use of cxx_maybe_build_cleanup () in preceding code can
+     set the throwing_cleanup flag.  */
+  cp_function_chain->throwing_cleanup = false;
 
   /* [dcl.fct.def.coroutine] / 7
      The expression promise.get_return_object() is used to initialize the
      glvalue result or prvalue result object of a call to a coroutine.  */
 
-  /* We must manage the cleanups ourselves, because the responsibility for
-     them changes after the initial suspend.  However, any use of
-     cxx_maybe_build_cleanup () can set the throwing_cleanup flag.  */
-  cp_function_chain->throwing_cleanup = false;
+  tree coro_gro = NULL_TREE;
   if (void_ramp_p)
     /* We still want to call the method, even if the result is unused.  */
-    r = get_ro;
+    finish_expr_stmt (get_ro);
   else
     {
-      /* The initial section of finish_return_expr ().  */
-      bool no_warning;
-      bool dangling;
-      /* Without a relevant location, bad conversions in check_return_expr
-	 result in unusable diagnostics, since there is not even a mention
-	 of the relevant function.  Here we carry out the first part of
-	 finish_return_expr().  */
-      input_location = fn_start;
-      r = check_return_expr (get_ro, &no_warning, &dangling);
-      input_location = UNKNOWN_LOCATION;
-      gcc_checking_assert (!dangling);
-      /* Check for bad things.  */
-      if (!r || r == error_mark_node)
-	return false;
-      if (!aggregate_value_p (fn_return_type, orig_fn_decl)
-	  && TREE_CODE (r) == INIT_EXPR)
-	{
-	  /* If fn_return_type doesn't need to be returned in memory, normally
-	     gimplify_return_expr redirects the INIT_EXPR to a temporary.  But
-	     r isn't wrapped in the RETURN_EXPR, so we need to do the
-	     redirection here as well.  See PR118874.  */
-	  tree temp = create_temporary_var (fn_return_type);
-	  add_decl_expr (temp);
-	  retval = copy_node (r);
-	  TREE_OPERAND (r, 0) = temp;
-	  TREE_OPERAND (retval, 1) = temp;
-	}
-      else
-	retval = DECL_RESULT (orig_fn_decl);
-    }
+      /* Per CWG2563, we keep the result of promise.get_return_object () in
+	 a temp which is then used to intialize the return object, including
+	 NVRO.  */
 
-  finish_expr_stmt (r);
+      /* Temporary var to hold the g_r_o across the function body.  */
+      coro_gro
+	= coro_build_and_push_artificial_var (loc, "_Coro_gro", gro_type,
+					      orig_fn_decl, NULL_TREE);
 
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (fn_return_type))
-    /* If some part of the initalization code (prior to the await_resume
-       of the initial suspend expression), then we need to clean up the
-       return value.  */
-    ret_val_dtor = cxx_maybe_build_cleanup (DECL_RESULT (orig_fn_decl),
-					    tf_warning_or_error);
-
-  /* If we have a live g.r.o in the return slot, then signal this for exception
-     cleanup.  */
-  if (flag_exceptions && ret_val_dtor)
-    {
-      r = cp_build_init_expr (coro_gro_live, boolean_true_node);
+      r = cp_build_init_expr (coro_gro, get_ro);
       finish_expr_stmt (r);
+      tree coro_gro_cleanup
+	= cxx_maybe_build_cleanup (coro_gro, tf_warning_or_error);
+      if (coro_gro_cleanup)
+	push_cleanup (coro_gro, coro_gro_cleanup, /*eh_only*/false);
     }
 
   /* Start the coroutine body.  */
   r = build_call_expr_loc (fn_start, resumer, 1, coro_fp);
   finish_expr_stmt (r);
 
+  if (flag_exceptions)
+    {
+      r = cp_build_modify_expr (input_location, coro_before_return, NOP_EXPR,
+				boolean_false_node, tf_warning_or_error);
+      finish_expr_stmt (r);
+    }
+ 
   /* The ramp is done, we just need the return statement, which we build from
-     the return object we constructed before we called the actor.  */
+     the return object we constructed before we called the function body.  */
 
-  r = retval;
-
-  /* The reminder of finish_return_expr ().  */
-  r = build_stmt (loc, RETURN_EXPR, r);
-  r = maybe_cleanup_point_expr_void (r);
-  r = add_stmt (r);
+  finish_return_stmt (void_ramp_p ? NULL_TREE : coro_gro);
 
   if (flag_exceptions)
     {
@@ -5228,16 +5190,6 @@ cp_coroutine_transform::build_ramp_function ()
       tree handler = begin_handler ();
       finish_handler_parms (NULL_TREE, handler); /* catch (...) */
 
-      /* If we have a live G.R.O in the return slot, then run its DTOR.  */
-      if (ret_val_dtor && ret_val_dtor != error_mark_node)
-	{
-	  tree gro_d_if = begin_if_stmt ();
-	  finish_if_stmt_cond (coro_gro_live, gro_d_if);
-	  finish_expr_stmt (ret_val_dtor);
-	  finish_then_clause (gro_d_if);
-	  finish_if_stmt (gro_d_if);
-	}
-
       /* Before initial resume is called, the responsibility for cleanup on
 	 exception falls to the ramp.  After that, the coroutine body code
 	 should do the cleanup.  This is signalled by the flag
@@ -5245,8 +5197,11 @@ cp_coroutine_transform::build_ramp_function ()
 
       tree not_iarc
 	= build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, iarc_x);
+      tree do_cleanup = build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node,
+				    coro_before_return, not_iarc);
       tree cleanup_if = begin_if_stmt ();
-      finish_if_stmt_cond (not_iarc, cleanup_if);
+      finish_if_stmt_cond (do_cleanup, cleanup_if);
+
       /* If the promise is live, then run its dtor if that's available.  */
       if (promise_dtor && promise_dtor != error_mark_node)
 	{
@@ -5299,6 +5254,7 @@ cp_coroutine_transform::build_ramp_function ()
       finish_handler (handler);
       finish_handler_sequence (ramp_try_block);
     }
+
   finish_compound_stmt (ramp_fnbody);
   return true;
 }
