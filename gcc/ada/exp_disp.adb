@@ -801,7 +801,7 @@ package body Exp_Disp is
 
         --  No action needed if the dispatching call has been already expanded
 
-        or else Is_Expanded_Dispatching_Call (Name (Call_Node))
+        or else Is_Expanded_Dispatching_Call (Call_Node)
       then
          return;
       end if;
@@ -1209,6 +1209,8 @@ package body Exp_Disp is
       --  the generation of spurious warnings under ZFP run-time.
 
       Analyze_And_Resolve (Call_Node, Call_Typ, Suppress => All_Checks);
+
+      Set_Is_Expanded_Dispatching_Call (Call_Node);
    end Expand_Dispatching_Call;
 
    ---------------------------------
@@ -2349,17 +2351,6 @@ package body Exp_Disp is
       return not Is_Interface (Typ)
         and then not Restriction_Active (No_Dispatching_Calls);
    end Has_DT;
-
-   ----------------------------------
-   -- Is_Expanded_Dispatching_Call --
-   ----------------------------------
-
-   function Is_Expanded_Dispatching_Call (N : Node_Id) return Boolean is
-   begin
-      return Nkind (N) in N_Subprogram_Call
-        and then Nkind (Name (N)) = N_Explicit_Dereference
-        and then Is_Dispatch_Table_Entity (Etype (Name (N)));
-   end Is_Expanded_Dispatching_Call;
 
    -------------------------------------
    -- Is_Predefined_Dispatching_Alias --

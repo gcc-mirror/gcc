@@ -4756,27 +4756,34 @@ package body Exp_Ch6 is
       then
          declare
             Ass : Node_Id := Empty;
+            Par : Node_Id := Parent (Call_Node);
 
          begin
-            if Nkind (Parent (Call_Node)) = N_Assignment_Statement then
-               Ass := Parent (Call_Node);
+            --  Search for the LHS of an enclosing assignment statement to a
+            --  classwide type object (if present) and propagate the tag to
+            --  this function call.
 
-            elsif Nkind (Parent (Call_Node)) = N_Qualified_Expression
-              and then Nkind (Parent (Parent (Call_Node))) =
-                                                  N_Assignment_Statement
-            then
-               Ass := Parent (Parent (Call_Node));
+            while Nkind (Par) in N_Case_Expression
+                               | N_Case_Expression_Alternative
+                               | N_Explicit_Dereference
+                               | N_If_Expression
+                               | N_Qualified_Expression
+                               | N_Unchecked_Type_Conversion
+            loop
+               if Nkind (Par) = N_Case_Expression_Alternative then
+                  Par := Parent (Par);
+               end if;
 
-            elsif Nkind (Parent (Call_Node)) = N_Explicit_Dereference
-              and then Nkind (Parent (Parent (Call_Node))) =
-                                                  N_Assignment_Statement
-            then
-               Ass := Parent (Parent (Call_Node));
-            end if;
+               exit when not Is_Tag_Indeterminate (Par);
 
-            if Present (Ass)
-              and then Is_Class_Wide_Type (Etype (Name (Ass)))
+               Par := Parent (Par);
+            end loop;
+
+            if Nkind (Par) = N_Assignment_Statement
+              and then Is_Class_Wide_Type (Etype (Name (Par)))
             then
+               Ass := Par;
+
                --  Move the error messages below to sem???
 
                if Is_Access_Type (Etype (Call_Node)) then
@@ -4789,6 +4796,12 @@ package body Exp_Ch6 is
                          Call_Node, Root_Type (Etype (Name (Ass))));
                   else
                      Propagate_Tag (Name (Ass), Call_Node);
+
+                     --  Remember that the tag has been propagated to avoid
+                     --  propagating it again, as part of the (bottom-up)
+                     --  analysis of the enclosing assignment.
+
+                     Set_Tag_Propagated (Name (Ass));
                   end if;
 
                elsif Etype (Call_Node) /= Root_Type (Etype (Name (Ass))) then
@@ -4799,6 +4812,12 @@ package body Exp_Ch6 is
 
                else
                   Propagate_Tag (Name (Ass), Call_Node);
+
+                  --  Remember that the tag has been propagated to avoid
+                  --  propagating it again, as part of the (bottom-up)
+                  --  analysis of the enclosing assignment.
+
+                  Set_Tag_Propagated (Name (Ass));
                end if;
 
                --  The call will be rewritten as a dispatching call, and

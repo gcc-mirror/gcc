@@ -3085,6 +3085,52 @@ package body Sem_Disp is
       then
          return Is_Tag_Indeterminate (Prefix (Orig_Node));
 
+      --  An if-expression is tag-indeterminate if all of the dependent
+      --  expressions are tag-indeterminate (RM 4.5.7 (17/3)).
+
+      elsif Nkind (Orig_Node) = N_If_Expression then
+         declare
+            Cond : constant Node_Id := First (Expressions (Orig_Node));
+            Expr : Node_Id := Next (Cond);
+
+         begin
+            if not Is_Tag_Indeterminate (Original_Node (Expr)) then
+               return False;
+            end if;
+
+            Next (Expr);
+
+            if Present (Expr)
+              and then not Is_Tag_Indeterminate (Original_Node (Expr))
+            then
+               return False;
+            end if;
+
+            return True;
+         end;
+
+      --  A case-expression is tag-indeterminate if all of the dependent
+      --  expressions are tag-indeterminate (RM 4.5.7 (17/3)).
+
+      elsif Nkind (Orig_Node) = N_Case_Expression then
+         declare
+            Alt  : Node_Id := First (Alternatives (Orig_Node));
+            Expr : Node_Id;
+
+         begin
+            while Present (Alt) loop
+               Expr := Expression (Alt);
+
+               if not Is_Tag_Indeterminate (Original_Node (Expr)) then
+                  return False;
+               end if;
+
+               Next (Alt);
+            end loop;
+
+            return True;
+         end;
+
       else
          return False;
       end if;
@@ -3245,6 +3291,7 @@ package body Sem_Disp is
       elsif Nkind (Actual) = N_Explicit_Dereference
         and then Nkind (Original_Node (Prefix (Actual))) = N_Function_Call
       then
+         pragma Assert (Is_Expanded_Dispatching_Call (Actual));
          return;
 
       --  When expansion is suppressed, an unexpanded call to 'Input can occur,
