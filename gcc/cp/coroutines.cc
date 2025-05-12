@@ -4866,39 +4866,6 @@ cp_coroutine_transform::build_ramp_function ()
   coro_fp = pushdecl (coro_fp);
   add_decl_expr (coro_fp);
 
-  tree coro_promise_live = NULL_TREE;
-  if (flag_exceptions)
-    {
-      /* Signal that we need to clean up the promise object on exception.  */
-      coro_promise_live
-	= coro_build_and_push_artificial_var (loc, "_Coro_promise_live",
-					      boolean_type_node, orig_fn_decl,
-					      boolean_false_node);
-
-      /* To signal that we need to cleanup copied function args.  */
-      if (DECL_ARGUMENTS (orig_fn_decl))
-	for (tree arg = DECL_ARGUMENTS (orig_fn_decl); arg != NULL;
-	     arg = DECL_CHAIN (arg))
-	  {
-	    param_info *parm_i = param_uses.get (arg);
-	    if (parm_i->trivial_dtor)
-	      continue;
-	    parm_i->guard_var = pushdecl (parm_i->guard_var);
-	    add_decl_expr (parm_i->guard_var);
-	  }
-    }
-
-  /* deref the frame pointer, to use in member access code.  */
-  tree deref_fp
-    = cp_build_indirect_ref (loc, coro_fp, RO_UNARY_STAR,
-			     tf_warning_or_error);
-  tree frame_needs_free
-    = coro_build_and_push_artificial_var_with_dve (loc,
-						   coro_frame_needs_free_id,
-						   boolean_type_node,
-						   orig_fn_decl, NULL_TREE,
-						   deref_fp);
-
   /* Build the frame.  */
 
   /* The CO_FRAME internal function is a mechanism to allow the middle end
@@ -4942,25 +4909,23 @@ cp_coroutine_transform::build_ramp_function ()
       finish_if_stmt (if_stmt);
     }
 
+  /* Dereference the frame pointer, to use in member access code.  */
+  tree deref_fp
+    = cp_build_indirect_ref (loc, coro_fp, RO_UNARY_STAR, tf_warning_or_error);
+
   /* For now, once allocation has succeeded we always assume that this needs
      destruction, there's no impl. for frame allocation elision.  */
-  r = cp_build_init_expr (frame_needs_free, boolean_true_node);
-  finish_expr_stmt (r);
+  tree frame_needs_free
+    = coro_build_and_push_artificial_var_with_dve (loc,
+						   coro_frame_needs_free_id,
+						   boolean_type_node,
+						   orig_fn_decl,
+						   boolean_true_node,
+						   deref_fp);
+  /* Although it appears to be unused here the frame entry is needed and we
+     just set it true.  */
+  TREE_USED (frame_needs_free) = true;
 
-  /* Set up the promise.  */
-  tree p
-    = coro_build_and_push_artificial_var_with_dve (loc, coro_promise_id,
-						   promise_type, orig_fn_decl,
-						   NULL_TREE, deref_fp);
-
-  /* Up to now any exception thrown will propagate directly to the caller.
-     This is OK since the only source of such exceptions would be in allocation
-     of the coroutine frame, and therefore the ramp will not have initialized
-     any further state.  From here, we will track state that needs explicit
-     destruction in the case that promise or g.r.o setup fails or an exception
-     is thrown from the initial suspend expression.  */
-  tree ramp_try_block = NULL_TREE;
-  tree ramp_try_stmts = NULL_TREE;
   tree iarc_x = NULL_TREE;
   tree coro_before_return = NULL_TREE;
   if (flag_exceptions)
@@ -4976,8 +4941,15 @@ cp_coroutine_transform::build_ramp_function ()
 						       orig_fn_decl,
 						       boolean_false_node,
 						       deref_fp);
-      ramp_try_block = begin_try_block ();
-      ramp_try_stmts = begin_compound_stmt (BCS_TRY_BLOCK);
+      tree frame_cleanup = push_stmt_list ();
+      tree do_fr_cleanup
+	= build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, iarc_x);
+      do_fr_cleanup = build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node,
+				  coro_before_return, do_fr_cleanup);
+      r = build3 (COND_EXPR, void_type_node, do_fr_cleanup,
+			     delete_frame_call, void_node);
+      finish_expr_stmt (r);
+      push_cleanup (coro_fp, pop_stmt_list (frame_cleanup), /*eh_only*/true);
     }
 
   /* Put the resumer and destroyer functions in.  */
@@ -5050,23 +5022,37 @@ cp_coroutine_transform::build_ramp_function ()
 					tf_warning_or_error);
 	    }
 	  finish_expr_stmt (r);
-	  if (!parm.trivial_dtor)
+
+	  /* Arrange for parm copies to be cleaned up when an exception is
+	     thrown before initial await resume.  */
+	  if (flag_exceptions && !parm.trivial_dtor)
 	    {
-	      param_dtor_list.safe_push (parm.field_id);
-	      /* Cleanup this frame copy on exception.  */
 	      parm.fr_copy_dtor
 		= cxx_maybe_build_cleanup (fld_idx, tf_warning_or_error);
-	      if (flag_exceptions)
+	      if (parm.fr_copy_dtor && parm.fr_copy_dtor != error_mark_node)
 		{
-		  /* This var is now live.  */
-		  r = build_modify_expr (loc, parm.guard_var,
-					 boolean_type_node, INIT_EXPR, loc,
-					 boolean_true_node, boolean_type_node);
+		  param_dtor_list.safe_push (parm.field_id);
+		  tree param_cleanup = push_stmt_list ();
+		  tree do_cleanup
+		    = build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, iarc_x);
+		  do_cleanup
+		    = build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node,
+				  coro_before_return, do_cleanup);
+		  r = build3_loc (loc, COND_EXPR, void_type_node, do_cleanup,
+				  parm.fr_copy_dtor, void_node);
 		  finish_expr_stmt (r);
+		  push_cleanup (fld_idx, pop_stmt_list (param_cleanup),
+				/*eh_only*/true);
 		}
 	    }
 	}
     }
+
+  /* Set up the promise.  */
+  tree p
+    = coro_build_and_push_artificial_var_with_dve (loc, coro_promise_id,
+						   promise_type, orig_fn_decl,
+						   NULL_TREE, deref_fp);
 
   if (type_build_ctor_call (promise_type))
     {
@@ -5101,11 +5087,22 @@ cp_coroutine_transform::build_ramp_function ()
 	finish_expr_stmt (r);
     }
 
-  tree promise_dtor = cxx_maybe_build_cleanup (p, tf_warning_or_error);;
-  if (flag_exceptions && promise_dtor)
+  if (flag_exceptions)
     {
-      r = cp_build_init_expr (coro_promise_live, boolean_true_node);
-      finish_expr_stmt (r);
+      tree promise_dtor = cxx_maybe_build_cleanup (p, tf_warning_or_error);
+      /* If the promise is live, then run its dtor if that's available.  */
+      if (promise_dtor && promise_dtor != error_mark_node)
+	{
+	  tree promise_cleanup = push_stmt_list ();
+	  tree do_cleanup
+	    = build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, iarc_x);
+	  do_cleanup = build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node,
+				   coro_before_return, do_cleanup);
+	  r = build3 (COND_EXPR, void_type_node, do_cleanup,
+		      promise_dtor, void_node);
+	  finish_expr_stmt (r);
+	  push_cleanup (p, pop_stmt_list (promise_cleanup), /*eh_only*/true);
+	}
     }
 
   tree get_ro
@@ -5180,84 +5177,12 @@ cp_coroutine_transform::build_ramp_function ()
 				boolean_false_node, tf_warning_or_error);
       finish_expr_stmt (r);
     }
- 
+
   /* The ramp is done, we just need the return statement, which we build from
-     the return object we constructed before we called the function body.  */
+     the return object we constructed before we called the actor.  */
 
   r = void_ramp_p ? NULL_TREE : convert_from_reference (coro_gro);
   finish_return_stmt (r);
-
-  if (flag_exceptions)
-    {
-      finish_compound_stmt (ramp_try_stmts);
-      finish_try_block (ramp_try_block);
-      tree handler = begin_handler ();
-      finish_handler_parms (NULL_TREE, handler); /* catch (...) */
-
-      /* Before initial resume is called, the responsibility for cleanup on
-	 exception falls to the ramp.  After that, the coroutine body code
-	 should do the cleanup.  This is signalled by the flag
-	 'initial_await_resume_called'.  */
-
-      tree not_iarc
-	= build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, iarc_x);
-      tree do_cleanup = build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node,
-				    coro_before_return, not_iarc);
-      tree cleanup_if = begin_if_stmt ();
-      finish_if_stmt_cond (do_cleanup, cleanup_if);
-
-      /* If the promise is live, then run its dtor if that's available.  */
-      if (promise_dtor && promise_dtor != error_mark_node)
-	{
-	  tree promise_d_if = begin_if_stmt ();
-	  finish_if_stmt_cond (coro_promise_live, promise_d_if);
-	  finish_expr_stmt (promise_dtor);
-	  finish_then_clause (promise_d_if);
-	  finish_if_stmt (promise_d_if);
-	}
-
-      /* Clean up any frame copies of parms with non-trivial dtors.
-	 Do this in reverse order from their creation.  */
-      auto_vec<param_info *> worklist;
-      if (DECL_ARGUMENTS (orig_fn_decl))
-	for (tree arg = DECL_ARGUMENTS (orig_fn_decl); arg != NULL;
-	     arg = DECL_CHAIN (arg))
-	  {
-	    param_info *parm_i = param_uses.get (arg);
-	    if (parm_i->trivial_dtor)
-	      continue;
-	    worklist.safe_push (parm_i);
-	  }
-      while (!worklist.is_empty ())
-	{
-	  param_info *parm_i = worklist.pop ();
-	  if (parm_i->fr_copy_dtor && parm_i->fr_copy_dtor != error_mark_node)
-	    {
-	      tree dtor_if = begin_if_stmt ();
-	      finish_if_stmt_cond (parm_i->guard_var, dtor_if);
-	      finish_expr_stmt (parm_i->fr_copy_dtor);
-	      finish_then_clause (dtor_if);
-	      finish_if_stmt (dtor_if);
-	    }
-	}
-
-      /* No delete the frame if required.  */
-      tree fnf_if = begin_if_stmt ();
-      finish_if_stmt_cond (frame_needs_free, fnf_if);
-      finish_expr_stmt (delete_frame_call);
-      finish_then_clause (fnf_if);
-      finish_if_stmt (fnf_if);
-
-      /* Finished cleanups conditional on "initial resume is not called".  */
-      finish_then_clause (cleanup_if);
-      finish_if_stmt (cleanup_if);
-
-      tree rethrow = build_throw (loc, NULL_TREE, tf_warning_or_error);
-      suppress_warning (rethrow);
-      finish_expr_stmt (rethrow);
-      finish_handler (handler);
-      finish_handler_sequence (ramp_try_block);
-    }
 
   finish_compound_stmt (ramp_fnbody);
   return true;
