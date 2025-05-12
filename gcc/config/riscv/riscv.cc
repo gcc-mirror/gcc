@@ -3904,6 +3904,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
   if (riscv_v_ext_mode_p (mode))
     {
       int gr2vr_cost = get_gr2vr_cost ();
+      int fr2vr_cost = get_fr2vr_cost ();
 
       switch (outer_code)
 	{
@@ -3923,14 +3924,29 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		{
 		  rtx op_0 = XEXP (x, 0);
 		  rtx op_1 = XEXP (x, 1);
+		  rtx op;
 
 		  if (GET_CODE (op_0) == VEC_DUPLICATE
 		      || GET_CODE (op_1) == VEC_DUPLICATE)
-		    *total = (gr2vr_cost + 1) * COSTS_N_INSNS (1);
-		  else
-		    *total = COSTS_N_INSNS (1);
+		    {
+		      *total = (gr2vr_cost + 1) * COSTS_N_INSNS (1);
+		      break;
+		    }
+		  else if (GET_CODE (op = op_0) == MULT
+			   || GET_CODE (op = op_1) == MULT)
+		    {
+		      rtx mult_op0 = XEXP (op, 0);
+		      if (GET_CODE (mult_op0) == VEC_DUPLICATE)
+			{
+			  if (FLOAT_MODE_P (mode))
+			    *total = (fr2vr_cost + 1) * COSTS_N_INSNS (1);
+			  else
+			    *total = (gr2vr_cost + 1) * COSTS_N_INSNS (1);
+			  break;
+			}
+		    }
 		}
-		break;
+		/* Fall through.  */
 	      default:
 		*total = COSTS_N_INSNS (1);
 		break;
@@ -12643,6 +12659,21 @@ get_gr2vr_cost ()
 
   if (gpr2vr_cost != GPR2VR_COST_UNPROVIDED)
     cost = gpr2vr_cost;
+
+  return cost;
+}
+
+/* Return the cost of moving data from floating-point to vector register.
+   It will take the value of --param=fpr2vr-cost if it is provided.
+   Otherwise the default regmove->FR2VR will be returned.  */
+
+int
+get_fr2vr_cost ()
+{
+  int cost = get_vector_costs ()->regmove->FR2VR;
+
+  if (fpr2vr_cost != FPR2VR_COST_UNPROVIDED)
+    cost = fpr2vr_cost;
 
   return cost;
 }
