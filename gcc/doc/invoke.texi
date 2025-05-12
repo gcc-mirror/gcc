@@ -30911,12 +30911,13 @@ to store the immediate to a register first.
 @opindex mcmodel=
 @opindex mcmodel=small
 @item -mcmodel=small
-Generate OpenRISC code for the small model: The GOT is limited to 64k. This is
-the default model.
+Generate OpenRISC code for the small model: The GOT is limited to 64k and
+function call jumps are limited to 64M offsets. This is the default model.
 
 @opindex mcmodel=large
 @item -mcmodel=large
-Generate OpenRISC code for the large model: The GOT may grow up to 4G in size.
+Generate OpenRISC code for the large model: The GOT may grow up to 4G in size
+and function call jumps can target the full 4G address space.
 
 
 @end table

@@ -61,7 +61,8 @@
 	 (match_test "TARGET_ROR"))))
 
 (define_predicate "call_insn_operand"
-  (ior (match_code "symbol_ref")
+  (ior (and (match_code "symbol_ref")
+	    (match_test "!TARGET_CMODEL_LARGE"))
        (match_operand 0 "register_operand")))
 
 (define_predicate "high_operand"
