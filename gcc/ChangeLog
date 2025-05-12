@@ -1,3 +1,35 @@
+2025-05-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.cc (ix86_widen_mult_cost): Use sse_op to cost
+	SSE integer addition.
+	(ix86_multiplication_cost): Use COSTS_N_INSNS (...)/2 to cost sse
+	loads.
+	(ix86_shift_rotate_cost): Likewise.
+	(ix86_vector_costs::add_stmt_cost): Likewise.
+
+2025-05-11  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_register_move_cost):
+	Add appropriate move costs between AR_REGS and FP_REGS.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120211
+	* tree-vect-stmts.cc (vect_stmt_relevant_p): Only add PHIs
+	from the loop header to LOOP_VINFO_EARLY_BREAKS_LIVE_IVS.
+
+2025-05-11  Jiawei  <jiawei@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: New profile.
+
+2025-05-11  Jiawei  <jiawei@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc (struct riscv_profiles): New struct.
+	(riscv_subset_list::parse_profiles): New parser.
+	(riscv_subset_list::parse_base_ext): Ditto.
+	* config/riscv/riscv-subset.h: New def.
+	* doc/invoke.texi: New option descriptions.
+
 2025-05-10  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/92080

@@ -1,3 +1,189 @@
+2025-05-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/pr91446.c: xfail.
+	* gcc.target/i386/pr99881.c: remove xfail.
+
+2025-05-11  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_xtensa_atomic): New function.
+	(check_effective_target_sync_int_long)
+	(check_effective_target_sync_char_short): Add test for xtensa.
+
+2025-05-11  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/258_Nested_PERFORM.cob: New testcase.
+	* cobol.dg/group2/259_PERFORM_VARYING_BY_-0.2.cob: Likewise.
+	* cobol.dg/group2/338_Default_Arithmetic__1_.cob: Likewise.
+	* cobol.dg/group2/access_to_OPTIONAL_LINKAGE_item_not_passed.cob: Likewise.
+	* cobol.dg/group2/ALLOCATE___FREE_basic_default_versions.cob: Likewise.
+	* cobol.dg/group2/ALLOCATE___FREE_with_BASED_item__1_.cob: Likewise.
+	* cobol.dg/group2/ALLOCATE___FREE_with_BASED_item__2_.cob: Likewise.
+	* cobol.dg/group2/ALLOCATE_Rule_8_OPTION_INITIALIZE_with_figconst.cob: Likewise.
+	* cobol.dg/group2/Alphanumeric_and_binary_numeric.cob: Likewise.
+	* cobol.dg/group2/Alphanumeric_MOVE_with_truncation.cob: Likewise.
+	* cobol.dg/group2/ANY_LENGTH__1_.cob: Likewise.
+	* cobol.dg/group2/ANY_LENGTH__2_.cob: Likewise.
+	* cobol.dg/group2/ANY_LENGTH__3_.cob: Likewise.
+	* cobol.dg/group2/ANY_LENGTH__4_.cob: Likewise.
+	* cobol.dg/group2/ANY_LENGTH__5_.cob: Likewise.
+	* cobol.dg/group2/CALL_with_OMITTED_parameter.cob: Likewise.
+	* cobol.dg/group2/Class_check_with_reference_modification.cob: Likewise.
+	* cobol.dg/group2/Complex_HEX__VALUE_and_MOVE.cob: Likewise.
+	* cobol.dg/group2/Complex_IF.cob: Likewise.
+	* cobol.dg/group2/Concatenation_operator.cob: Likewise.
+	* cobol.dg/group2/CONTINUE_AFTER_1_SECONDS.cob: Likewise.
+	* cobol.dg/group2/CURRENCY_SIGN.cob: Likewise.
+	* cobol.dg/group2/CURRENCY_SIGN_WITH_PICTURE_SYMBOL.cob: Likewise.
+	* cobol.dg/group2/DECIMAL-POINT_is_COMMA__1_.cob: Likewise.
+	* cobol.dg/group2/DECIMAL-POINT_is_COMMA__2_.cob: Likewise.
+	* cobol.dg/group2/DECIMAL-POINT_is_COMMA__3_.cob: Likewise.
+	* cobol.dg/group2/DECIMAL-POINT_is_COMMA__4_.cob: Likewise.
+	* cobol.dg/group2/DECIMAL-POINT_is_COMMA__5_.cob: Likewise.
+	* cobol.dg/group2/EC-SIZE-TRUNCATION_EC-SIZE-OVERFLOW.cob: Likewise.
+	* cobol.dg/group2/EC-SIZE-ZERO-DIVIDE__fixed_and_float.cob: Likewise.
+	* cobol.dg/group2/EXIT_PARAGRAPH.cob: Likewise.
+	* cobol.dg/group2/EXIT_PERFORM.cob: Likewise.
+	* cobol.dg/group2/EXIT_PERFORM_CYCLE.cob: Likewise.
+	* cobol.dg/group2/EXIT_SECTION.cob: Likewise.
+	* cobol.dg/group2/Fixed_continuation_indicator.cob: Likewise.
+	* cobol.dg/group2/FLOAT-LONG_with_SIZE_ERROR.cob: Likewise.
+	* cobol.dg/group2/FLOAT-SHORT___FLOAT-LONG_w_o_SIZE_ERROR.cob: Likewise.
+	* cobol.dg/group2/FLOAT-SHORT_with_SIZE_ERROR.cob: Likewise.
+	* cobol.dg/group2/Index_and_parenthesized_expression.cob: Likewise.
+	* cobol.dg/group2/LENGTH_OF_omnibus.cob: Likewise.
+	* cobol.dg/group2/LOCAL-STORAGE__3__with_recursive_PROGRAM-ID.cob: Likewise.
+	* cobol.dg/group2/LOCAL-STORAGE__4__with_recursive_PROGRAM-ID_..._USING.cob: Likewise.
+	* cobol.dg/group2/MOVE_indexes.cob: Likewise.
+	* cobol.dg/group2/MOVE_integer_literal_to_alphanumeric.cob: Likewise.
+	* cobol.dg/group2/MOVE_to_edited_item__1_.cob: Likewise.
+	* cobol.dg/group2/MOVE_to_edited_item__2_.cob: Likewise.
+	* cobol.dg/group2/MOVE_to_item_with_simple_and_floating_insertion.cob: Likewise.
+	* cobol.dg/group2/MOVE_to_itself.cob: Likewise.
+	* cobol.dg/group2/MOVE_to_JUSTIFIED_item.cob: Likewise.
+	* cobol.dg/group2/MOVE_with_group_refmod.cob: Likewise.
+	* cobol.dg/group2/MOVE_with_refmod.cob: Likewise.
+	* cobol.dg/group2/MOVE_with_refmod__variable_.cob: Likewise.
+	* cobol.dg/group2/MOVE_Z_literal_.cob: Likewise.
+	* cobol.dg/group2/Multi-target_MOVE_with_subscript_re-evaluation.cob: Likewise.
+	* cobol.dg/group2/Non-numeric_data_in_numeric_items__1_.cob: Likewise.
+	* cobol.dg/group2/Non-numeric_data_in_numeric_items__2_.cob: Likewise.
+	* cobol.dg/group2/Non-overflow_after_overflow.cob: Likewise.
+	* cobol.dg/group2/OCCURS_clause_with_1_entry.cob: Likewise.
+	* cobol.dg/group2/OSVS_Arithmetic_Test__2_.cob: Likewise.
+	* cobol.dg/group2/PERFORM_..._CONTINUE.cob: Likewise.
+	* cobol.dg/group2/PERFORM_inline__1_.cob: Likewise.
+	* cobol.dg/group2/PERFORM_inline__2_.cob: Likewise.
+	* cobol.dg/group2/PERFORM_type_OSVS.cob: Likewise.
+	* cobol.dg/group2/PIC_ZZZ-__ZZZ_.cob: Likewise.
+	* cobol.dg/group2/Quick_check_of_PIC_XX_COMP-5.cob: Likewise.
+	* cobol.dg/group2/Quote_marks_in_comment_paragraphs.cob: Likewise.
+	* cobol.dg/group2/Recursive_PERFORM_paragraph.cob: Likewise.
+	* cobol.dg/group2/REDEFINES_values_on_FILLER_and_INITIALIZE.cob: Likewise.
+	* cobol.dg/group2/SORT__EBCDIC_table_sort__1_.cob: Likewise.
+	* cobol.dg/group2/SORT__EBCDIC_table_sort__2_.cob: Likewise.
+	* cobol.dg/group2/SORT__table_sort__2_.cob: Likewise.
+	* cobol.dg/group2/SORT__table_sort__3A_.cob: Likewise.
+	* cobol.dg/group2/SORT__table_sort__3B_.cob: Likewise.
+	* cobol.dg/group2/SORT__table_sort.cob: Likewise.
+	* cobol.dg/group2/SOURCE_FIXED_FREE_directives.cob: Likewise.
+	* cobol.dg/group2/Static_CALL_with_ON_EXCEPTION__with_-fno-static-call_.cob: Likewise.
+	* cobol.dg/group2/_-static__compilation.cob: Likewise.
+	* cobol.dg/group2/STOP_RUN_WITH_ERROR_STATUS.cob: Likewise.
+	* cobol.dg/group2/STOP_RUN_WITH_NORMAL_STATUS.cob: Likewise.
+	* cobol.dg/group2/STRING___UNSTRING__NOT__ON_OVERFLOW.cob: Likewise.
+	* cobol.dg/group2/STRING_with_subscript_reference.cob: Likewise.
+	* cobol.dg/group2/UNSTRING_DELIMITED_ALL_LOW-VALUE.cob: Likewise.
+	* cobol.dg/group2/UNSTRING_DELIMITED_ALL_SPACE-2.cob: Likewise.
+	* cobol.dg/group2/UNSTRING_DELIMITED_POINTER.cob: Likewise.
+	* cobol.dg/group2/UNSTRING_DELIMITER_IN.cob: Likewise.
+	* cobol.dg/group2/UNSTRING_with_FUNCTION___literal.cob: Likewise.
+	* cobol.dg/group2/258_Nested_PERFORM.out: Known-good results file.
+	* cobol.dg/group2/259_PERFORM_VARYING_BY_-0.2.out: Likewise.
+	* cobol.dg/group2/338_Default_Arithmetic__1_.out: Likewise.
+	* cobol.dg/group2/access_to_OPTIONAL_LINKAGE_item_not_passed.out: Likewise.
+	* cobol.dg/group2/ALLOCATE___FREE_basic_default_versions.out: Likewise.
+	* cobol.dg/group2/ALLOCATE_Rule_8_OPTION_INITIALIZE_with_figconst.out: Likewise.
+	* cobol.dg/group2/Alphanumeric_MOVE_with_truncation.out: Likewise.
+	* cobol.dg/group2/ANY_LENGTH__1_.out: Likewise.
+	* cobol.dg/group2/ANY_LENGTH__2_.out: Likewise.
+	* cobol.dg/group2/ANY_LENGTH__3_.out: Likewise.
+	* cobol.dg/group2/ANY_LENGTH__5_.out: Likewise.
+	* cobol.dg/group2/CALL_with_OMITTED_parameter.out: Likewise.
+	* cobol.dg/group2/Complex_HEX__VALUE_and_MOVE.out: Likewise.
+	* cobol.dg/group2/Complex_IF.out: Likewise.
+	* cobol.dg/group2/Concatenation_operator.out: Likewise.
+	* cobol.dg/group2/CONTINUE_AFTER_1_SECONDS.out: Likewise.
+	* cobol.dg/group2/CURRENCY_SIGN.out: Likewise.
+	* cobol.dg/group2/CURRENCY_SIGN_WITH_PICTURE_SYMBOL.out: Likewise.
+	* cobol.dg/group2/DECIMAL-POINT_is_COMMA__1_.out: Likewise.
+	* cobol.dg/group2/DECIMAL-POINT_is_COMMA__2_.out: Likewise.
+	* cobol.dg/group2/DECIMAL-POINT_is_COMMA__3_.out: Likewise.
+	* cobol.dg/group2/DECIMAL-POINT_is_COMMA__4_.out: Likewise.
+	* cobol.dg/group2/DECIMAL-POINT_is_COMMA__5_.out: Likewise.
+	* cobol.dg/group2/EC-SIZE-TRUNCATION_EC-SIZE-OVERFLOW.out: Likewise.
+	* cobol.dg/group2/EC-SIZE-ZERO-DIVIDE__fixed_and_float.out: Likewise.
+	* cobol.dg/group2/EXIT_PERFORM_CYCLE.out: Likewise.
+	* cobol.dg/group2/EXIT_PERFORM.out: Likewise.
+	* cobol.dg/group2/Fixed_continuation_indicator.out: Likewise.
+	* cobol.dg/group2/FLOAT-LONG_with_SIZE_ERROR.out: Likewise.
+	* cobol.dg/group2/FLOAT-SHORT___FLOAT-LONG_w_o_SIZE_ERROR.out: Likewise.
+	* cobol.dg/group2/FLOAT-SHORT_with_SIZE_ERROR.out: Likewise.
+	* cobol.dg/group2/Index_and_parenthesized_expression.out: Likewise.
+	* cobol.dg/group2/LENGTH_OF_omnibus.out: Likewise.
+	* cobol.dg/group2/LOCAL-STORAGE__3__with_recursive_PROGRAM-ID.out: Likewise.
+	* cobol.dg/group2/LOCAL-STORAGE__4__with_recursive_PROGRAM-ID_..._USING.out: Likewise.
+	* cobol.dg/group2/MOVE_integer_literal_to_alphanumeric.out: Likewise.
+	* cobol.dg/group2/MOVE_to_edited_item__1_.out: Likewise.
+	* cobol.dg/group2/MOVE_to_edited_item__2_.out: Likewise.
+	* cobol.dg/group2/MOVE_to_item_with_simple_and_floating_insertion.out: Likewise.
+	* cobol.dg/group2/MOVE_to_JUSTIFIED_item.out: Likewise.
+	* cobol.dg/group2/MOVE_Z_literal_.out: Likewise.
+	* cobol.dg/group2/Multi-target_MOVE_with_subscript_re-evaluation.out: Likewise.
+	* cobol.dg/group2/Non-numeric_data_in_numeric_items__1_.out: Likewise.
+	* cobol.dg/group2/Non-numeric_data_in_numeric_items__2_.out: Likewise.
+	* cobol.dg/group2/OSVS_Arithmetic_Test__2_.out: Likewise.
+	* cobol.dg/group2/Quick_check_of_PIC_XX_COMP-5.out: Likewise.
+	* cobol.dg/group2/Quote_marks_in_comment_paragraphs.out: Likewise.
+	* cobol.dg/group2/Recursive_PERFORM_paragraph.out: Likewise.
+	* cobol.dg/group2/REDEFINES_values_on_FILLER_and_INITIALIZE.out: Likewise.
+	* cobol.dg/group2/SORT__table_sort__2_.out: Likewise.
+	* cobol.dg/group2/SORT__table_sort__3A_.out: Likewise.
+	* cobol.dg/group2/SORT__table_sort__3B_.out: Likewise.
+	* cobol.dg/group2/SOURCE_FIXED_FREE_directives.out: Likewise.
+	* cobol.dg/group2/Static_CALL_with_ON_EXCEPTION__with_-fno-static-call_.out: Likewise.
+	* cobol.dg/group2/_-static__compilation.out: Likewise.
+	* cobol.dg/group2/STRING___UNSTRING__NOT__ON_OVERFLOW.out: Likewise.
+	* cobol.dg/group2/UNSTRING_with_FUNCTION___literal.out: Likewise.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120211
+	* gcc.dg/vect/vect-early-break_135-pr120211.c: New testcase.
+	* gcc.dg/torture/pr120211-1.c: Likewise.
+
+2025-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120163
+	* gfortran.dg/interface_61.f90: New test.
+
+2025-05-11  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-53.c: New test.
+	* gcc.target/riscv/arch-54.c: New test.
+
+2025-05-11  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-49.c: New test.
+	* gcc.target/riscv/arch-50.c: New test.
+	* gcc.target/riscv/arch-51.c: New test.
+	* gcc.target/riscv/arch-52.c: New test.
+
+2025-05-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/119909
+	* gcc.dg/torture/pr119131-1.c: Add -Wno-psabi.
+
 2025-05-10  Robert Dubner  <rdubner@symas.com>
 
 	* cobol.dg/group1/simple-if.cob: Make explicitly >>SOURCE FREE

@@ -1,3 +1,9 @@
+2025-05-11  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119377
+	* common-defs.h: (struct cbl_declaratives_t): Change "bool global" to
+	"uint32_t global".
+
 2025-05-10  Robert Dubner  <rdubner@symas.com>
 
 	* common-defs.h (ec_cmp): Delete "getenv("match_declarative")" calls.
