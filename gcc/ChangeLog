@@ -1,3 +1,51 @@
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120211
+	* tree-vect-stmts.cc (vect_stmt_relevant_p): Only add PHIs
+	from the loop header to LOOP_VINFO_EARLY_BREAKS_LIVE_IVS.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/120146
+	* tree-ssa-structalias.cc (create_variable_info_for): If
+	the symtab cannot tell us whether all refs to a variable
+	are explicit assume they are not.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120143
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	Move/update the original stmts, not the pattern stmts which
+	lack virtual operands and are not in the IL.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120089
+	* tree-vect-stmts.cc (vect_stmt_relevant_p): Mark all
+	PHIs live when not already so and doing early-break
+	vectorization.
+	(vect_mark_stmts_to_be_vectorized): Skip virtual PHIs.
+	* tree-vect-slp.cc (vect_analyze_slp): Robustify handling
+	of early-break forced IVs.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120043
+	* tree-ssa-phiopt.cc (cond_store_replacement): Check
+	whether the store is to readonly memory.
+
 2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* vr-values.cc (simplify_using_ranges::simplify) <BIT_AND_EXPR>:

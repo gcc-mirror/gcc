@@ -1,3 +1,46 @@
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120211
+	* gcc.dg/vect/vect-early-break_135-pr120211.c: New testcase.
+	* gcc.dg/torture/pr120211-1.c: Likewise.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/120146
+	* g++.dg/ipa/pr120146.C: New testcase.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120143
+	* gcc.dg/vect/vect-early-break_135-pr120143.c: New testcase.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120089
+	* gcc.dg/vect/vect-early-break_134-pr120089.c: New testcase.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120043
+	* gcc.dg/torture/pr120043.c: New testcase.
+
+2025-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119928
+	* gfortran.dg/interface_60.f90: New test.
+
 2025-05-11  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
