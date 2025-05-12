@@ -1547,7 +1547,7 @@ Fortran 90 and later
 
 
 @node ATAN
-@section @code{ATAN} --- Arctangent function 
+@section @code{ATAN} --- Arctangent function
 @fnindex ATAN
 @fnindex DATAN
 @cindex trigonometric function, tangent, inverse
@@ -1619,6 +1619,7 @@ Degrees function: @*
 @item @emph{Synopsis}:
 @multitable @columnfractions .80
 @item @code{RESULT = ATAND(X)}
+@item @code{RESULT = ATAND(Y, X)}
 @end multitable
 
 @item @emph{Description}:
@@ -1630,21 +1631,23 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL};
-if @var{Y} is present, @var{X} shall be REAL.
+@item @var{X} @tab The type shall be @code{REAL}.
 @item @var{Y} @tab The type and kind type parameter shall be the same as @var{X}.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{X}.
-The result is in degrees and lies in the range
-@math{-90 \leq \Re \atand(x) \leq 90}.
+If @var{Y} is present, the result is identical to @code{ATAN2D(Y, X)}.
+Otherwise, the result is in degrees and lies in the range
+@math{-90 \leq \atand(x) \leq 90}.
 
 @item @emph{Example}:
 @smallexample
 program test_atand
   real(8) :: x = 2.866_8
+  real(4) :: x1 = 1.e0_4, y1 = 0.5e0_4
   x = atand(x)
+  x1 = atand(y1, x1)
 end program test_atand
 @end smallexample
 
