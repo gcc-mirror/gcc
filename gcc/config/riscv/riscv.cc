@@ -3740,6 +3740,26 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       return true;
     }
 
+  if (TARGET_ZILSD
+      && (GET_MODE_UNIT_SIZE (mode) == (UNITS_PER_WORD * 2))
+      && ((REG_P (dest) && MEM_P (src))
+	  || (MEM_P (dest) && REG_P (src)))
+      && can_create_pseudo_p ())
+    {
+      rtx reg = REG_P (dest) ? dest : src;
+      unsigned regno = REGNO (reg);
+      /* ZILSD requires an even-odd register pair, let RA to
+	 fix the constraint if the reg is hard reg and not even reg.  */
+      if ((regno < FIRST_PSEUDO_REGISTER)
+	  && (regno % 2) != 0)
+	{
+	  rtx tmp = gen_reg_rtx (GET_MODE (reg));
+	  emit_move_insn (tmp, src);
+	  emit_move_insn (dest, tmp);
+	  return true;
+	}
+    }
+
   /* RISC-V GCC may generate non-legitimate address due to we provide some
      pattern for optimize access PIC local symbol and it's make GCC generate
      unrecognizable instruction during optimizing.  */
@@ -4575,6 +4595,19 @@ riscv_split_64bit_move_p (rtx dest, rtx src)
 {
   if (TARGET_64BIT)
     return false;
+
+  /* Zilsd provides load/store with even-odd register pair. */
+  if (TARGET_ZILSD
+      && (((REG_P (dest) && MEM_P (src))
+	  || (MEM_P (dest) && REG_P (src)))))
+    {
+      rtx reg = REG_P (dest) ? dest : src;
+      unsigned regno = REGNO (reg);
+      /* GCC may still generating some load/store with odd-even reg pair
+	 because the ABI handling, but that's fine, just split that later.  */
+      if (GP_REG_P (regno))
+	return (regno < FIRST_PSEUDO_REGISTER) && ((regno % 2) != 0);
+    }
 
   /* There is no need to split if the FLI instruction in the `Zfa` extension can be used.  */
   if (satisfies_constraint_zfli (src))
@@ -9796,6 +9829,12 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   if (GP_REG_P (regno))
     {
       if (riscv_v_ext_mode_p (mode))
+	return false;
+
+      /* Zilsd require load/store with even-odd reg pair.  */
+      if (TARGET_ZILSD
+	  && (GET_MODE_UNIT_SIZE (mode) == (UNITS_PER_WORD * 2))
+	  && ((regno % 2) != 0))
 	return false;
 
       if (!GP_REG_P (regno + nregs - 1))
