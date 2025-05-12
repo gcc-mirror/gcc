@@ -5304,7 +5304,7 @@ AC_DEFUN([GLIBCXX_ENABLE_BACKTRACE], [
 	[AC_TRY_LINK([], [
 	    int i = 0;
 	    int* p = &i;
-	    size_t s = 0;
+	    __SIZE_TYPE__ s = 0;
 	    // backtrace_atomic_load_pointer
 	    void* vp = __atomic_load_n(&p, __ATOMIC_ACQUIRE);
 	    // backtrace_atomic_load_int
@@ -5331,7 +5331,7 @@ int main()
 {
   int i = 0;
   int* p = &i;
-  size_t s = 0;
+  __SIZE_TYPE__ s = 0;
   // backtrace_atomic_load_pointer
   void* vp = __atomic_load_n(&p, __ATOMIC_ACQUIRE);
   // backtrace_atomic_load_int
