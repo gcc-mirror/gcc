@@ -370,21 +370,10 @@ case "${host}" in
 	;;
     esac
     ;;
-  amdgcn-*-amdhsa)
-    # To avoid greater pain elsewhere, force use of '__atomic' builtins,
-    # regardless of the outcome of 'configure' checks; see PR119645
-    # "GCN, nvptx: libstdc++ 'checking for atomic builtins [...]... no'".
-    atomicity_dir=cpu/generic/atomicity_builtins
-    ;;
   arm*-*-freebsd*)
      port_specific_symbol_files="\$(srcdir)/../config/os/gnu-linux/arm-eabi-extra.ver"
      ;;
   nvptx-*-none)
-    # To avoid greater pain elsewhere, force use of '__atomic' builtins,
-    # regardless of the outcome of 'configure' checks; see PR119645
-    # "GCN, nvptx: libstdc++ 'checking for atomic builtins [...]... no'".
-    atomicity_dir=cpu/generic/atomicity_builtins
-
     # For 'make all-target-libstdc++-v3', re 'alloca'/VLA usage:
     EXTRA_CFLAGS="${EXTRA_CFLAGS} -mfake-ptx-alloca"
     OPTIMIZE_CXXFLAGS="${OPTIMIZE_CXXFLAGS} -mfake-ptx-alloca"
