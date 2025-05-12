@@ -1,3 +1,11 @@
+2025-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117498
+	* gcc.c-torture/execute/pr117498.c: New test.
+
 2025-05-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
