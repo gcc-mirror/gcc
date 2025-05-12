@@ -22,13 +22,13 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file include/bits/move_only_function.h
+/** @file include/bits/funcwrap.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{functional}
  */
 
-#ifndef _GLIBCXX_MOVE_ONLY_FUNCTION_H
-#define _GLIBCXX_MOVE_ONLY_FUNCTION_H 1
+#ifndef _GLIBCXX_FUNCWRAP_H
+#define _GLIBCXX_FUNCWRAP_H 1
 
 #ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
@@ -504,4 +504,4 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #endif // __glibcxx_copyable_function
 
 #endif // __glibcxx_copyable_function || __glibcxx_copyable_function
-#endif // _GLIBCXX_MOVE_ONLY_FUNCTION_H
+#endif // _GLIBCXX_FUNCWRAP_H

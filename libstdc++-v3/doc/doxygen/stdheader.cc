@@ -55,7 +55,7 @@ void init_map()
     headers["functional_hash.h"]        = "functional";
     headers["mofunc_impl.h"]            = "functional";
     headers["cpyfunc_impl.h"]           = "functional";
-    headers["move_only_function.h"]     = "functional";
+    headers["funcwrap.h"]               = "functional";
     headers["invoke.h"]                 = "functional";
     headers["ranges_cmp.h"]             = "functional";
     headers["refwrap.h"]                = "functional";

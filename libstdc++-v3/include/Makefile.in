@@ -558,6 +558,7 @@ bits_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/fs_ops.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/fs_path.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/fstream.tcc \
+@GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/funcwrap.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/gslice.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/gslice_array.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/hashtable.h \
@@ -577,7 +578,6 @@ bits_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/mask_array.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/memory_resource.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/mofunc_impl.h \
-@GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/move_only_function.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/new_allocator.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/node_handle.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/ostream.tcc \
