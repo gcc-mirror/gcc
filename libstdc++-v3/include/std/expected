@@ -1169,13 +1169,13 @@ namespace __expected
 	    return !__y.has_value() && bool(__x.error() == __y.error());
 	}
 
-      template<typename _Up>
+      template<typename _Up, same_as<_Tp> _Vp>
 	requires (!__expected::__is_expected<_Up>)
 	  && requires (const _Tp& __t, const _Up& __u) {
 	    { __t == __u } -> convertible_to<bool>;
 	  }
 	friend constexpr bool
-	operator==(const expected& __x, const _Up& __v)
+	operator==(const expected<_Vp, _Er>& __x, const _Up& __v)
 	noexcept(noexcept(bool(*__x == __v)))
 	{ return __x.has_value() && bool(*__x == __v); }
 
