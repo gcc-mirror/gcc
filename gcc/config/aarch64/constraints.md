@@ -466,6 +466,13 @@
  (and (match_code "const_vector")
       (match_test "aarch64_simd_valid_orr_imm (op)")))
 
+(define_constraint "Df"
+  "@internal
+   A constraint that matches a vector of immediates for and which can be
+   optimized as fmov."
+ (and (match_code "const_vector")
+      (match_test "aarch64_simd_valid_and_imm_fmov (op)")))
+
 (define_constraint "Db"
   "@internal
    A constraint that matches vector of immediates for and/bic."

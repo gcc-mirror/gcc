@@ -123,7 +123,8 @@
 (define_predicate "aarch64_reg_or_and_imm"
    (ior (match_operand 0 "register_operand")
 	(and (match_code "const_vector")
-	     (match_test "aarch64_simd_valid_and_imm (op)"))))
+	     (ior (match_test "aarch64_simd_valid_and_imm (op)")
+		  (match_test "aarch64_simd_valid_and_imm_fmov (op)")))))
 
 (define_predicate "aarch64_reg_or_xor_imm"
    (ior (match_operand 0 "register_operand")
