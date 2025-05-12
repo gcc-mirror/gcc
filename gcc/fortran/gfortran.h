@@ -3918,7 +3918,7 @@ void gfc_resolve_omp_do_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_omp_declare (gfc_namespace *);
 void gfc_resolve_omp_udrs (gfc_symtree *);
 void gfc_resolve_omp_udms (gfc_symtree *);
-void gfc_omp_instantiate_mappers (gfc_code *, gfc_omp_clauses *,
+bool gfc_omp_instantiate_mappers (gfc_code *, gfc_omp_clauses *,
 				  toc_directive = TOC_OPENMP,
 				  int = OMP_LIST_MAP);
 void gfc_omp_save_and_clear_state (struct gfc_omp_saved_state *);

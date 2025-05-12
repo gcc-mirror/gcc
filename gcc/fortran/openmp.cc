@@ -13976,13 +13976,18 @@ gfc_omp_instantiate_mapper (gfc_omp_namelist **outlistp,
   return outlistp;
 }
 
-void
+/* Instantiate mappers for CLAUSES for LIST.  Returns true on success and
+   false if errors were diagnosed.  This function is invoked from the
+   translation phase so callers need to handle passing up the error.  */
+bool
 gfc_omp_instantiate_mappers (gfc_code *code ATTRIBUTE_UNUSED, gfc_omp_clauses *clauses,
 			     toc_directive cd, int list)
 {
   gfc_omp_namelist *clause = clauses->lists[list];
   gfc_omp_namelist **clausep = &clauses->lists[list];
   bool invoked_mappers = false;
+  int orig_errors, new_errors;
+  gfc_get_errors (NULL, &orig_errors);
 
   for (; clause; clause = *clausep)
     {
@@ -14023,6 +14028,9 @@ gfc_omp_instantiate_mappers (gfc_code *code ATTRIBUTE_UNUSED, gfc_omp_clauses *c
       resolve_omp_mapper_clauses (code, clauses, gfc_current_ns);
       gfc_current_ns = old_ns;
     }
+
+  gfc_get_errors (NULL, &new_errors);
+  return new_errors == orig_errors;
 }
 
 /* Resolve !$omp declare mapper constructs.  */
