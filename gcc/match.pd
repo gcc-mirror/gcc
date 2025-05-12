@@ -11360,6 +11360,37 @@ and,
        && single_use (@4)
        && single_use (@5))))
 
+/* Floating point or integer comparison and floating point conversion
+   with REAL_CST.  */
+(match (cond_expr_convert_p @0 @2 @3 @6)
+ (cond (simple_comparison@6 @0 @1) (REAL_CST@2) (convert@5 @3))
+  (if (!flag_trapping_math
+       && SCALAR_FLOAT_TYPE_P (type)
+       && SCALAR_FLOAT_TYPE_P (TREE_TYPE (@3))
+       && !operand_equal_p (TYPE_SIZE (type),
+			    TYPE_SIZE (TREE_TYPE (@0)))
+       && operand_equal_p (TYPE_SIZE (TREE_TYPE (@0)),
+			   TYPE_SIZE (TREE_TYPE (@3)))
+       && single_use (@5)
+       && (flag_unsafe_math_optimizations
+	   || exact_real_truncate (TYPE_MODE (TREE_TYPE (@3)),
+				   &TREE_REAL_CST (@2))))))
+
+/* Floating point or integer comparison and floating point conversion
+   with REAL_CST.  */
+(match (cond_expr_convert_p @0 @2 @3 @6)
+ (cond (simple_comparison@6 @0 @1) (convert@4 @2) (REAL_CST@3))
+  (if (!flag_trapping_math
+       && SCALAR_FLOAT_TYPE_P (type)
+       && SCALAR_FLOAT_TYPE_P (TREE_TYPE (@2))
+       && !operand_equal_p (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (@0)))
+       && operand_equal_p (TYPE_SIZE (TREE_TYPE (@0)),
+			   TYPE_SIZE (TREE_TYPE (@2)))
+       && single_use (@4)
+       && (flag_unsafe_math_optimizations
+	   || exact_real_truncate (TYPE_MODE (TREE_TYPE (@2)),
+				   &TREE_REAL_CST (@3))))))
+
 (for bit_op (bit_and bit_ior bit_xor)
  (match (bitwise_induction_p @0 @2 @3)
   (bit_op:c
