@@ -3694,6 +3694,9 @@ RVC general purpose register (x8-x15).
 RVC floating-point registers (f8-f15), if available, reuse GPR as FPR when use
 zfinx.
 
+@item cR
+Even-odd RVC general purpose register pair.
+
 @item R
 Even-odd general purpose register pair.
 
