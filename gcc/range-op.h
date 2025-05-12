@@ -86,6 +86,10 @@ public:
 			   const irange &lh,
 			   const irange &rh,
 			   relation_trio = TRIO_VARYING) const;
+  virtual bool fold_range (frange &r, tree type,
+			   const irange &lh,
+			   const frange &rh,
+			   relation_trio = TRIO_VARYING) const;
   virtual bool fold_range (prange &r, tree type,
 			   const prange &lh,
 			   const prange &rh,
@@ -146,7 +150,14 @@ public:
 			  const irange &lhs,
 			  const frange &op2,
 			  relation_trio = TRIO_VARYING) const;
-
+  virtual bool op1_range (irange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_trio = TRIO_VARYING) const;
+  virtual bool op1_range (frange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2,
+			  relation_trio = TRIO_VARYING) const;
 
   virtual bool op2_range (irange &r, tree type,
 			  const irange &lhs,

@@ -473,6 +473,15 @@ public:
   bool fold_range (prange &r, tree type,
 		   const irange &op1, const prange &op2,
 		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const frange &lh,
+		   const irange &rh,
+		   relation_trio = TRIO_VARYING) const;
+  bool fold_range (frange &r, tree type,
+		   const irange &lh,
+		   const frange &rh,
+		   relation_trio = TRIO_VARYING) const;
+
   bool op1_range (irange &r, tree type,
 		  const irange &lhs, const irange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
@@ -485,6 +494,15 @@ public:
   bool op1_range (prange &r, tree type,
 		  const irange &lhs, const prange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (frange &r, tree type,
+		  const irange &lhs,
+		  const irange &op2,
+		  relation_trio = TRIO_VARYING) const;
+  bool op1_range (irange &r, tree type,
+		  const frange &lhs,
+		  const frange &op2,
+		  relation_trio = TRIO_VARYING) const;
+
   relation_kind lhs_op1_relation (const irange &lhs,
 				  const irange &op1, const irange &op2,
 				  relation_kind) const final override;

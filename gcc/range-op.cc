@@ -164,6 +164,8 @@ dispatch_trio (unsigned lhs, unsigned op1, unsigned op2)
 // These are the supported dispatch patterns. These map to the parameter list
 // of the routines in range_operator.  Note the last 3 characters are
 // shorthand for the LHS, OP1, and OP2 range discriminator class.
+// Reminder, single operand instructions use the LHS type for op2, even if
+// unused. so FLOAT = INT would be RO_FIF.
 
 const unsigned RO_III =	dispatch_trio (VR_IRANGE, VR_IRANGE, VR_IRANGE);
 const unsigned RO_IFI = dispatch_trio (VR_IRANGE, VR_FRANGE, VR_IRANGE);
@@ -246,6 +248,10 @@ range_op_handler::fold_range (vrange &r, tree type,
 	return m_operator->fold_range (as_a <frange> (r), type,
 				       as_a <irange> (lh),
 				       as_a <irange> (rh), rel);
+      case RO_FIF:
+	return m_operator->fold_range (as_a <frange> (r), type,
+				       as_a <irange> (lh),
+				       as_a <frange> (rh), rel);
       case RO_PPP:
 	return m_operator->fold_range (as_a <prange> (r), type,
 				       as_a <prange> (lh),
@@ -292,6 +298,10 @@ range_op_handler::op1_range (vrange &r, tree type,
 	return m_operator->op1_range (as_a <irange> (r), type,
 				      as_a <irange> (lhs),
 				      as_a <irange> (op2), rel);
+      case RO_IFF:
+	return m_operator->op1_range (as_a <irange> (r), type,
+				      as_a <frange> (lhs),
+				      as_a <frange> (op2), rel);
       case RO_PPP:
 	return m_operator->op1_range (as_a <prange> (r), type,
 				      as_a <prange> (lhs),
@@ -312,6 +322,10 @@ range_op_handler::op1_range (vrange &r, tree type,
 	return m_operator->op1_range (as_a <frange> (r), type,
 				      as_a <irange> (lhs),
 				      as_a <frange> (op2), rel);
+      case RO_FII:
+	return m_operator->op1_range (as_a <frange> (r), type,
+				      as_a <irange> (lhs),
+				      as_a <irange> (op2), rel);
       case RO_FFF:
 	return m_operator->op1_range (as_a <frange> (r), type,
 				      as_a <frange> (lhs),
@@ -760,6 +774,30 @@ range_operator::fold_range (irange &r, tree type,
   update_bitmask (r, lh, rh);
   return true;
 }
+
+
+bool
+range_operator::fold_range (frange &, tree, const irange &,
+			   const frange &, relation_trio) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_range (irange &, tree, const frange &,
+			  const frange &, relation_trio) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_range (frange &, tree, const irange &,
+			  const irange &, relation_trio) const
+{
+  return false;
+}
+
+
 
 // The default for op1_range is to return false.
 
