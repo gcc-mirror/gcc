@@ -1,3 +1,20 @@
+2025-05-11  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-05-20  Pan Li  <pan2.li@intel.com>
+
+	* dse.cc (get_stored_val): Make sure read_mode/write_mode
+	is valid subreg before gen_lowpart.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113197
+	* tree-ssa-structalias.cc (handle_call_arg): Remove bougs
+	assert.
+
 2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* vr-values.cc (simplify_using_ranges::simplify) <BIT_AND_EXPR>:

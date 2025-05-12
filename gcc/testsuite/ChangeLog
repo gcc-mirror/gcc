@@ -1,3 +1,35 @@
+2025-05-11  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-05-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/bug-6.c: New test.
+
+2025-05-11  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	Backported from master:
+	2024-10-24  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR ipa/113197
+	* gcc.dg/lto/pr113197_0.c: Require effective target pie.
+
+2025-05-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113197
+	* gcc.dg/lto/pr113197_0.c: New testcase.
+	* gcc.dg/lto/pr113197_1.c: Likewise.
+
+2025-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117498
+	* gcc.c-torture/execute/pr117498.c: New test.
+
 2025-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt106.adb: New test.
