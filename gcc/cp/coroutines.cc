@@ -4460,7 +4460,7 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
       tree i_a_r_c
 	= coro_build_artificial_var (fn_start, coro_frame_i_a_r_c_id,
 				     boolean_type_node, orig,
-				     boolean_false_node);
+				     NULL_TREE);
       DECL_CHAIN (i_a_r_c) = var_list;
       var_list = i_a_r_c;
       add_decl_expr (i_a_r_c);
@@ -4779,9 +4779,14 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree coro_gro_live
     = coro_build_artificial_var (fn_start, "_Coro_gro_live",
 				 boolean_type_node, orig, boolean_false_node);
-
   DECL_CHAIN (coro_gro_live) = varlist;
   varlist = coro_gro_live;
+
+  tree coro_before_return
+    = coro_build_artificial_var (fn_start, "_Coro_before_return",
+				 boolean_type_node, orig, boolean_true_node);
+  DECL_CHAIN (coro_before_return) = varlist;
+  varlist = coro_before_return;
 
   /* Collected the scope vars we need ... only one for now. */
   BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
@@ -4811,6 +4816,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       }
   add_decl_expr (coro_promise_live);
   add_decl_expr (coro_gro_live);
+  add_decl_expr (coro_before_return);
 
   /* The CO_FRAME internal function is a mechanism to allow the middle end
      to adjust the allocation in response to optimizations.  We provide the
@@ -4964,8 +4970,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   tree allocated = build1 (CONVERT_EXPR, coro_frame_ptr, new_fn);
   tree r = cp_build_init_expr (coro_fp, allocated);
-  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-  add_stmt (r);
+  finish_expr_stmt (r);
+
+  /* deref the frame pointer, to use in member access code.  */
+  tree deref_fp = build_x_arrow (fn_start, coro_fp, tf_warning_or_error);
 
   /* If the user provided a method to return an object on alloc fail, then
      check the returned pointer and call the func if it's null.
@@ -5001,15 +5009,21 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      destruction in the case that promise or g.r.o setup fails or an exception
      is thrown from the initial suspend expression.  */
   tree ramp_cleanup = NULL_TREE;
+  tree iarc_x = NULL_TREE;
   if (flag_exceptions)
     {
+      iarc_x = lookup_member (coro_frame_type, coro_frame_i_a_r_c_id,
+		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
+      iarc_x
+	= build_class_member_access_expr (deref_fp, iarc_x, NULL_TREE, false,
+					  tf_warning_or_error);
+      r = cp_build_init_expr (iarc_x, boolean_false_node);
+      finish_expr_stmt (r);
+
       ramp_cleanup = build_stmt (fn_start, TRY_BLOCK, NULL, NULL);
       add_stmt (ramp_cleanup);
       TRY_STMTS (ramp_cleanup) = push_stmt_list ();
     }
-
-  /* deref the frame pointer, to use in member access code.  */
-  tree deref_fp = build_x_arrow (fn_start, coro_fp, tf_warning_or_error);
 
   /* For now, once allocation has succeeded we always assume that this needs
      destruction, there's no impl. for frame allocation elision.  */
@@ -5018,8 +5032,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree fnf_x = build_class_member_access_expr (deref_fp, fnf_m, NULL_TREE,
 					       false, tf_warning_or_error);
   r = cp_build_init_expr (fnf_x, boolean_true_node);
-  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-  add_stmt (r);
+  finish_expr_stmt (r);
 
   /* Put the resumer and destroyer functions in.  */
 
@@ -5305,6 +5318,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      either as the return value (if it's the same type) or to the CTOR
      for an object of the return type.  */
 
+  r = build_modify_expr (fn_start, coro_before_return, boolean_type_node,
+			 INIT_EXPR, fn_start, boolean_false_node,
+			 boolean_type_node);
+  finish_expr_stmt (r);
+
   /* We must manage the cleanups ourselves, because the responsibility for
      them changes after the initial suspend.  However, any use of
      cxx_maybe_build_cleanup () can set the throwing_cleanup flag.  */
@@ -5351,6 +5369,12 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  add_stmt (gro_d_if);
 	}
 
+      tree gating_if = begin_if_stmt ();
+      tree gate = build1 (TRUTH_NOT_EXPR, boolean_type_node, iarc_x);
+      gate = build2 (TRUTH_AND_EXPR, boolean_type_node, coro_before_return,
+		     gate);
+      finish_if_stmt_cond (gate, gating_if);
+
       /* If the promise is live, then run its dtor if that's available.  */
       if (promise_dtor && promise_dtor != error_mark_node)
 	{
@@ -5389,6 +5413,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       tree del_coro_fr = coro_get_frame_dtor (coro_fp, orig, frame_size,
 					      promise_type, fn_start);
       finish_expr_stmt (del_coro_fr);
+      finish_then_clause (gating_if);
+      finish_if_stmt (gating_if);
+
       tree rethrow = build_throw (fn_start, NULL_TREE, tf_warning_or_error);
       suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
