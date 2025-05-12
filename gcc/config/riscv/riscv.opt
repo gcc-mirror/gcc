@@ -483,6 +483,25 @@ Mask(SVNAPOT) Var(riscv_sv_subext)
 Mask(SVVPTC) Var(riscv_sv_subext)
 
 TargetVariable
+int riscv_ss_subext
+
+Mask(SSNPM) Var(riscv_ss_subext)
+
+Mask(SSPM) Var(riscv_ss_subext)
+
+TargetVariable
+int riscv_sm_subext
+
+Mask(SMNPM) Var(riscv_sm_subext)
+
+Mask(SMMPM) Var(riscv_sm_subext)
+
+TargetVariable
+int riscv_su_subext
+
+Mask(SUPM) Var(riscv_su_subext)
+
+TargetVariable
 int riscv_ztso_subext
 
 Mask(ZTSO) Var(riscv_ztso_subext)
