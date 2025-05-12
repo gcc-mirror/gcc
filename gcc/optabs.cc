@@ -4304,9 +4304,6 @@ can_compare_p (enum rtx_code code, machine_mode mode,
           && (icode = optab_handler (cstore_optab, mode)) != CODE_FOR_nothing
           && insn_operand_matches (icode, 1, test))
 	return true;
-      if (purpose == ccp_cmov
-	  && optab_handler (cmov_optab, mode) != CODE_FOR_nothing)
-	return true;
 
       mode = GET_MODE_WIDER_MODE (mode).else_void ();
       PUT_MODE (test, mode);

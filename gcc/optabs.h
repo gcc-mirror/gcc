@@ -244,11 +244,10 @@ extern void emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
 extern void emit_libcall_block (rtx_insn *, rtx, rtx, rtx);
 
 /* The various uses that a comparison can have; used by can_compare_p:
-   jumps, conditional moves, store flag operations.  */
+   jumps, store flag operations.  */
 enum can_compare_purpose
 {
   ccp_jump,
-  ccp_cmov,
   ccp_store_flag
 };
 
