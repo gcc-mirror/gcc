@@ -6879,8 +6879,10 @@ check_non_pod_aggregate (tree field)
   tree type = TREE_TYPE (field);
   if (TYPE_IDENTIFIER (type) == as_base_identifier)
     type = TYPE_CONTEXT (type);
-  if (!CLASS_TYPE_P (type) || (!CLASSTYPE_NON_POD_AGGREGATE (type)
-			       && !CLASSTYPE_NON_AGGREGATE_POD (type)))
+  if (!CLASS_TYPE_P (type)
+      || is_empty_class (type)
+      || (!CLASSTYPE_NON_POD_AGGREGATE (type)
+	  && !CLASSTYPE_NON_AGGREGATE_POD (type)))
     return;
   tree size = end_of_class (type, (DECL_FIELD_IS_BASE (field)
 				   ? eoc_nvsize : eoc_nv_or_dsize));
