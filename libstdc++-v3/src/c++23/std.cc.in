@@ -1412,6 +1412,9 @@ export namespace std
 #if __cpp_lib_move_only_function
   using std::move_only_function;
 #endif
+#if __cpp_lib_copyable_function
+  using std::copyable_function;
+#endif
   using std::multiplies;
   using std::negate;
   using std::not_equal_to;

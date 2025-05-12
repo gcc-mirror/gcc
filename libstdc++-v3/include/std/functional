@@ -80,6 +80,7 @@
 #define __glibcxx_want_bind_front
 #define __glibcxx_want_bind_back
 #define __glibcxx_want_constexpr_functional
+#define __glibcxx_want_copyable_function
 #define __glibcxx_want_invoke
 #define __glibcxx_want_invoke_r
 #define __glibcxx_want_move_only_function

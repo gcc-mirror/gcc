@@ -1748,6 +1748,15 @@ ftms = {
 };
 
 ftms = {
+  name = copyable_function;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    hosted = yes;
+  };
+};
+
+ftms = {
   name = out_ptr;
   values = {
     v = 202311;

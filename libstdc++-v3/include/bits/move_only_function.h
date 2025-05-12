@@ -1,4 +1,4 @@
-// Implementation of std::move_only_function -*- C++ -*-
+// Implementation of std::move_only_function and std::copyable_function -*- C++ -*-
 
 // Copyright The GNU Toolchain Authors.
 //
@@ -36,7 +36,7 @@
 
 #include <bits/version.h>
 
-#ifdef __glibcxx_move_only_function // C++ >= 23 && HOSTED
+#if defined(__glibcxx_move_only_function) || defined(__glibcxx_copyable_function)
 
 #include <bits/invoke.h>
 #include <bits/utility.h>
@@ -200,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      };
 
     // A function that performs operation __op on the __target and possibly __src.
-    using _Func = void (*)(_Op __op, _Storage& __target, const _Storage* __src) noexcept;
+    using _Func = void (*)(_Op __op, _Storage& __target, const _Storage* __src);
 
     // The no-op manager function for objects with no target.
     static void _S_empty(_Op, _Storage&, const _Storage*) noexcept { }
@@ -377,11 +377,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      { _M_manage(_Manager::_Op::_Destroy, _M_storage, nullptr); }
 
      _Manager::_Func _M_manage;
+
+#ifdef __glibcxx_copyable_function // C++ >= 26 && HOSTED
+     friend class _Cpy_base;
+#endif // __glibcxx_copyable_function
    };
 
 } // namespace __polyfunc
   /// @endcond
 
+#ifdef __glibcxx_move_only_function // C++ >= 23 && HOSTED
   template<typename... _Signature>
     class move_only_function; // not defined
 
@@ -401,10 +406,72 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { };
   }  // namespace __detail::__variant
   /// @endcond
+#endif // __glibcxx_move_only_function
+
+#ifdef __glibcxx_copyable_function // C++ >= 26 && HOSTED
+  /// @cond undocumented
+  namespace __polyfunc
+  {
+     class _Cpy_base : public _Mo_base
+     {
+     protected:
+       _Cpy_base() = default;
+
+       template<typename _Tp, typename... _Args>
+	 void
+	 _M_init(_Args&&... __args)
+	 noexcept(_S_nothrow_init<_Tp, _Args...>())
+	 {
+	   _M_storage._M_init<_Tp>(std::forward<_Args>(__args)...);
+	   _M_manage = _Manager::_S_select<true, _Tp>();
+	 }
+
+      void
+      _M_copy(_Cpy_base const& __x)
+      {
+	using _Op = _Manager::_Op;
+	__x._M_manage(_Op::_Copy, _M_storage, &__x._M_storage);
+	_M_manage = __x._M_manage;
+      }
+
+      _Cpy_base(_Cpy_base&&) = default;
+
+      _Cpy_base(_Cpy_base const& __x)
+      { _M_copy(__x); }
+
+      _Cpy_base&
+      operator=(_Cpy_base&&) = default;
+
+      _Cpy_base&
+      // Needs to use copy and swap for exception guarantees.
+      operator=(_Cpy_base const&) = delete;
+    };
+  } // namespace __polyfunc
+  /// @endcond
+
+  template<typename... _Signature>
+    class copyable_function; // not defined
+
+  template<typename _Tp>
+    constexpr bool __is_polymorphic_function_v<copyable_function<_Tp>> = true;
+
+    namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // copyable_function into a variant.
+    template<typename... _Signature>
+      struct _Never_valueless_alt<std::copyable_function<_Signature...>>
+      : true_type
+      { };
+  }  // namespace __detail::__variant
+#endif // __glibcxx_copyable_function
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
+#ifdef __glibcxx_move_only_function // C++ >= 23 && HOSTED
 #include "mofunc_impl.h"
 #define _GLIBCXX_MOF_CV const
 #include "mofunc_impl.h"
@@ -418,6 +485,23 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #define _GLIBCXX_MOF_CV const
 #define _GLIBCXX_MOF_REF &&
 #include "mofunc_impl.h"
-
 #endif // __glibcxx_move_only_function
+
+#ifdef __glibcxx_copyable_function // C++ >= 26 && HOSTED
+#include "cpyfunc_impl.h"
+#define _GLIBCXX_MOF_CV const
+#include "cpyfunc_impl.h"
+#define _GLIBCXX_MOF_REF &
+#include "cpyfunc_impl.h"
+#define _GLIBCXX_MOF_REF &&
+#include "cpyfunc_impl.h"
+#define _GLIBCXX_MOF_CV const
+#define _GLIBCXX_MOF_REF &
+#include "cpyfunc_impl.h"
+#define _GLIBCXX_MOF_CV const
+#define _GLIBCXX_MOF_REF &&
+#include "cpyfunc_impl.h"
+#endif // __glibcxx_copyable_function
+
+#endif // __glibcxx_copyable_function || __glibcxx_copyable_function
 #endif // _GLIBCXX_MOVE_ONLY_FUNCTION_H
