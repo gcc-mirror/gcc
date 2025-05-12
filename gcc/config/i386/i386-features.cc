@@ -3095,13 +3095,10 @@ ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs)
       insn = NEXT_INSN (insn);
     }
 
-  rtx_insn *set_insn;
   if (insn == BB_HEAD (bb))
-    set_insn = emit_insn_before (set, insn);
+    emit_insn_before (set, insn);
   else
-    set_insn = emit_insn_after (set,
-				insn ? PREV_INSN (insn) : BB_END (bb));
-  df_insn_rescan (set_insn);
+    emit_insn_after (set, insn ? PREV_INSN (insn) : BB_END (bb));
 }
 
 /* At entry of the nearest common dominator for basic blocks with
@@ -3225,7 +3222,6 @@ remove_partial_avx_dependency (void)
 	  /* Generate an XMM vector SET.  */
 	  set = gen_rtx_SET (vec, src);
 	  set_insn = emit_insn_before (set, insn);
-	  df_insn_rescan (set_insn);
 
 	  if (cfun->can_throw_non_call_exceptions)
 	    {
@@ -3396,8 +3392,7 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
 		  vreg = gen_reg_rtx (vmode);
 		  rtx vsubreg = gen_rtx_SUBREG (vmode, vector_const, 0);
 		  rtx pat = gen_rtx_SET (vreg, vsubreg);
-		  rtx_insn *vinsn = emit_insn_before (pat, insn);
-		  df_insn_rescan (vinsn);
+		  emit_insn_before (pat, insn);
 		}
 	      replace = gen_rtx_SUBREG (mode, vreg, 0);
 	    }
