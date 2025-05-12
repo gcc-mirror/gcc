@@ -130,7 +130,8 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
 		  tree vectype, int misalign,
 		  enum vect_cost_model_location where)
 {
-  return record_stmt_cost (body_cost_vec, count, kind, NULL, node,
+  return record_stmt_cost (body_cost_vec, count, kind,
+			   SLP_TREE_REPRESENTATIVE (node), node,
 			   vectype, misalign, where);
 }
 
@@ -905,11 +906,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
    be generated for the single vector op.  We will handle that shortly.  */
 
 static void
-vect_model_simple_cost (vec_info *,
-			stmt_vec_info stmt_info, int ncopies,
-			enum vect_def_type *dt,
-			int ndts,
-			slp_tree node,
+vect_model_simple_cost (vec_info *, int ncopies, enum vect_def_type *dt,
+			int ndts, slp_tree node,
 			stmt_vector_for_cost *cost_vec,
 			vect_cost_for_stmt kind = vector_stmt)
 {
@@ -928,11 +926,11 @@ vect_model_simple_cost (vec_info *,
     for (int i = 0; i < ndts; i++)
       if (dt[i] == vect_constant_def || dt[i] == vect_external_def)
 	prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
-					   stmt_info, 0, vect_prologue);
+					   node, 0, vect_prologue);
 
   /* Pass the inside-of-loop statements to the target-specific cost model.  */
   inside_cost += record_stmt_cost (cost_vec, ncopies, kind,
-				   stmt_info, 0, vect_body);
+				   node, 0, vect_body);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -3756,8 +3754,7 @@ vectorizable_call (vec_info *vinfo,
 	    }
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_call");
-      vect_model_simple_cost (vinfo, stmt_info,
-			      ncopies, dt, ndts, slp_node, cost_vec);
+      vect_model_simple_cost (vinfo, ncopies, dt, ndts, slp_node, cost_vec);
       if (ifn != IFN_LAST && modifier == NARROW && !slp_node)
 	record_stmt_cost (cost_vec, ncopies / 2,
 			  vec_promote_demote, stmt_info, 0, vect_body);
@@ -4724,8 +4721,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
       STMT_VINFO_TYPE (stmt_info) = call_simd_clone_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_simd_clone_call");
-/*      vect_model_simple_cost (vinfo, stmt_info, ncopies,
-				dt, slp_node, cost_vec); */
+/*      vect_model_simple_cost (vinfo, ncopies, dt, slp_node, cost_vec); */
       return true;
     }
 
@@ -5922,7 +5918,7 @@ vectorizable_conversion (vec_info *vinfo,
       if (modifier == NONE)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
-	  vect_model_simple_cost (vinfo, stmt_info, (1 + multi_step_cvt),
+	  vect_model_simple_cost (vinfo, (1 + multi_step_cvt),
 				  dt, ndts, slp_node, cost_vec);
 	}
       else if (modifier == NARROW_SRC || modifier == NARROW_DST)
@@ -6291,8 +6287,7 @@ vectorizable_assignment (vec_info *vinfo,
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_assignment");
       if (!vect_nop_conversion_p (stmt_info))
-	vect_model_simple_cost (vinfo, stmt_info, ncopies, dt, ndts, slp_node,
-				cost_vec);
+	vect_model_simple_cost (vinfo, ncopies, dt, ndts, slp_node, cost_vec);
       return true;
     }
 
@@ -6662,7 +6657,7 @@ vectorizable_shift (vec_info *vinfo,
 	}
       STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_shift");
-      vect_model_simple_cost (vinfo, stmt_info, ncopies, dt,
+      vect_model_simple_cost (vinfo, ncopies, dt,
 			      scalar_shift_arg ? 1 : ndts, slp_node, cost_vec);
       return true;
     }
@@ -7099,8 +7094,7 @@ vectorizable_operation (vec_info *vinfo,
 
       STMT_VINFO_TYPE (stmt_info) = op_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_operation");
-      vect_model_simple_cost (vinfo, stmt_info,
-			      1, dt, ndts, slp_node, cost_vec);
+      vect_model_simple_cost (vinfo, 1, dt, ndts, slp_node, cost_vec);
       if (using_emulated_vectors_p)
 	{
 	  /* The above vect_model_simple_cost call handles constants
@@ -12931,7 +12925,7 @@ vectorizable_condition (vec_info *vinfo,
 	}
 
       STMT_VINFO_TYPE (stmt_info) = condition_vec_info_type;
-      vect_model_simple_cost (vinfo, stmt_info, ncopies, dts, ndts, slp_node,
+      vect_model_simple_cost (vinfo, ncopies, dts, ndts, slp_node,
 			      cost_vec, kind);
       return true;
     }
@@ -13363,8 +13357,7 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
 	  return false;
 	}
 
-      vect_model_simple_cost (vinfo, stmt_info,
-			      ncopies * (1 + (bitop2 != NOP_EXPR)),
+      vect_model_simple_cost (vinfo, ncopies * (1 + (bitop2 != NOP_EXPR)),
 			      dts, ndts, slp_node, cost_vec);
       return true;
     }

@@ -2454,6 +2454,17 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
 			   STMT_VINFO_VECTYPE (stmt_info), misalign, where);
 }
 
+/* Overload of record_stmt_cost with VECTYPE derived from SLP node.  */
+
+inline unsigned
+record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
+		  enum vect_cost_for_stmt kind, slp_tree node,
+		  int misalign, enum vect_cost_model_location where)
+{
+  return record_stmt_cost (body_cost_vec, count, kind, node,
+			   SLP_TREE_VECTYPE (node), misalign, where);
+}
+
 extern void vect_finish_replace_stmt (vec_info *, stmt_vec_info, gimple *);
 extern void vect_finish_stmt_generation (vec_info *, stmt_vec_info, gimple *,
 					 gimple_stmt_iterator *);
