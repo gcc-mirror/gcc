@@ -34,6 +34,10 @@
    */
 #undef HAVE_DECL_GETENV
 
+/* Define to 1 if you have the declaration of `tzname', and to 0 if you don't.
+   */
+#undef HAVE_DECL_TZNAME
+
 /* Define to 1 if you have the <direct.h> header file. */
 #undef HAVE_DIRECT_H
 
@@ -232,6 +236,9 @@
 /* Define to 1 if the system has the type `struct tm'. */
 #undef HAVE_STRUCT_TM
 
+/* Define to 1 if `tm_zone' is a member of `struct tm'. */
+#undef HAVE_STRUCT_TM_TM_ZONE
+
 /* Define to 1 if you have the <sys/errno.h> header file. */
 #undef HAVE_SYS_ERRNO_H
 
@@ -286,6 +293,10 @@
 /* Define if struct tm has a tm_gmtoff field. */
 #undef HAVE_TM_TM_GMTOFF
 
+/* Define to 1 if your `struct tm' has `tm_zone'. Deprecated, use
+   `HAVE_STRUCT_TM_TM_ZONE' instead. */
+#undef HAVE_TM_ZONE
+
 /* function tzname exists */
 #undef HAVE_TZNAME
 
@@ -338,6 +349,9 @@
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
+/* Define to 1 if your <sys/time.h> declares `struct tm'. */
+#undef TM_IN_SYS_TIME
+
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
@@ -362,6 +376,45 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* struct timeval was found */
+#undef WE_HAVE_STRUCT_TIMEVAL
+
+/* struct timeval.tv_sec was found */
+#undef WE_HAVE_STRUCT_TIMEVAL_TV_SEC
+
+/* struct timeval.tv_usec was found */
+#undef WE_HAVE_STRUCT_TIMEVAL_TV_USEC
+
+/* struct tm was found */
+#undef WE_HAVE_STRUCT_TM
+
+/* struct tm.tm_hour was found */
+#undef WE_HAVE_STRUCT_TM_HOUR
+
+/* struct tm.tm_isdst was found */
+#undef WE_HAVE_STRUCT_TM_ISDST
+
+/* struct tm.tm_mday was found */
+#undef WE_HAVE_STRUCT_TM_MDAY
+
+/* struct tm.tm_min was found */
+#undef WE_HAVE_STRUCT_TM_MIN
+
+/* struct tm.tm_mon was found */
+#undef WE_HAVE_STRUCT_TM_MON
+
+/* struct tm.tm_sec was found */
+#undef WE_HAVE_STRUCT_TM_SEC
+
+/* struct tm.tm_wday was found */
+#undef WE_HAVE_STRUCT_TM_WDAY
+
+/* struct tm.tm_yday was found */
+#undef WE_HAVE_STRUCT_TM_YDAY
+
+/* struct tm.tm_year was found */
+#undef WE_HAVE_STRUCT_TM_YEAR
 
 /* Defined if no way to sleep is available. */
 #undef _GLIBCXX_NO_SLEEP
