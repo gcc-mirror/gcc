@@ -7103,10 +7103,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 
 	if (lexer.peek_token ()->get_id () == EXCLAM)
 	  {
-	    // Bind a reference to avoid -Wredundant-move on post-P1825R0
-	    // compilers. Change to non-reference type and remove the moves
-	    // below once C++20 is required to build gcc.
-	    std::unique_ptr<AST::MacroInvocation> &&invoc
+	    std::unique_ptr<AST::MacroInvocation> invoc
 	      = parse_macro_invocation_partial (std::move (path),
 						std::move (outer_attrs));
 
@@ -7114,7 +7111,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 	      {
 		invoc->add_semicolon ();
 		// Macro invocation with semicolon.
-		return std::move (invoc);
+		return invoc;
 	      }
 
 	    TokenId after_macro = lexer.peek_token ()->get_id ();
@@ -7122,14 +7119,14 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 	    if (restrictions.allow_close_after_expr_stmt
 		&& (after_macro == RIGHT_PAREN || after_macro == RIGHT_CURLY
 		    || after_macro == RIGHT_SQUARE))
-	      return std::move (invoc);
+	      return invoc;
 
 	    if (invoc->get_invoc_data ().get_delim_tok_tree ().get_delim_type ()
 		  == AST::CURLY
 		&& after_macro != DOT && after_macro != QUESTION_MARK)
 	      {
 		rust_debug ("braced macro statement");
-		return std::move (invoc);
+		return invoc;
 	      }
 
 	    null_denotation = std::move (invoc);
