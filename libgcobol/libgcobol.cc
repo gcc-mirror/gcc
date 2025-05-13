@@ -75,6 +75,11 @@
 
 #include "exceptl.h"
 
+/* BSD extension.  */
+#if !defined(LOG_PERROR)
+#define LOG_PERROR 0
+#endif
+
 #if !defined (HAVE_STRFROMF32)
 # if __FLT_MANT_DIG__ == 24 && __FLT_MAX_EXP__ == 128
 static int
