@@ -378,7 +378,7 @@ BEGIN
          THEN
             INC (afterperc) ;
             Cast (u, w) ;
-            in := ConCat (in, Slice (fmt, startpos, nextperc)) ;
+            in := Copy (fmt, in, startpos, nextperc) ;
             in := ConCat (in, CardinalToString (u, width, leader, 16, TRUE)) ;
             startpos := afterperc ;
             DSdbExit (NIL) ;
@@ -387,7 +387,7 @@ BEGIN
          THEN
             INC (afterperc) ;
             Cast (u, w) ;
-            in := ConCat (in, Slice (fmt, startpos, nextperc)) ;
+            in := Copy (fmt, in, startpos, nextperc) ;
             in := ConCat (in, CardinalToString (u, width, leader, 10, FALSE)) ;
             startpos := afterperc ;
             DSdbExit (NIL) ;
