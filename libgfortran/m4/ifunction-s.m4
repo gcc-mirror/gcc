@@ -421,7 +421,7 @@ s'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray,
 
   for (n = 0; n < dim; n++)
     {
-      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n) * string_len;
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
       if (extent[n] <= 0)
 	extent[n] = 0;
@@ -429,8 +429,7 @@ s'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray,
 
   for (n = dim; n < rank; n++)
     {
-      extent[n] =
-	GFC_DESCRIPTOR_EXTENT(array,n + 1) * string_len;
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n + 1);
 
       if (extent[n] <= 0)
 	extent[n] = 0;
