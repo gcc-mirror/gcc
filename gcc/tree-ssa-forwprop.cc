@@ -579,22 +579,8 @@ forward_propagate_into_gimple_cond (gcond *stmt)
       return (cfg_changed || is_gimple_min_invariant (tmp)) ? 2 : 1;
     }
 
-  /* Canonicalize _Bool == 0 and _Bool != 1 to _Bool != 0 by swapping edges.  */
-  if ((TREE_CODE (TREE_TYPE (rhs1)) == BOOLEAN_TYPE
-       || (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
-	   && TYPE_PRECISION (TREE_TYPE (rhs1)) == 1))
-      && ((code == EQ_EXPR
-	   && integer_zerop (rhs2))
-	  || (code == NE_EXPR
-	      && integer_onep (rhs2))))
-    {
-      basic_block bb = gimple_bb (stmt);
-      gimple_cond_set_code (stmt, NE_EXPR);
-      gimple_cond_set_rhs (stmt, build_zero_cst (TREE_TYPE (rhs1)));
-      EDGE_SUCC (bb, 0)->flags ^= (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
-      EDGE_SUCC (bb, 1)->flags ^= (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
-      return 1;
-    }
+  if (canonicalize_bool_cond (stmt, gimple_bb (stmt)))
+    return 1;
 
   return 0;
 }
