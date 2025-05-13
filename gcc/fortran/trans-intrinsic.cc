@@ -5201,22 +5201,6 @@ gfc_conv_intrinsic_dot_product (gfc_se * se, gfc_expr * expr)
 }
 
 
-/* Remove unneeded kind= argument from actual argument list when the
-   result conversion is dealt with in a different place.  */
-
-static void
-strip_kind_from_actual (gfc_actual_arglist * actual)
-{
-  for (gfc_actual_arglist *a = actual; a; a = a->next)
-    {
-      if (a && a->name && strcmp (a->name, "kind") == 0)
-	{
-	  gfc_free_expr (a->expr);
-	  a->expr = NULL;
-	}
-    }
-}
-
 /* Emit code for minloc or maxloc intrinsic.  There are many different cases
    we need to handle.  For performance reasons we sometimes create two
    loops instead of one, where the second one is much simpler.
@@ -5314,7 +5298,8 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   tree lab1, lab2;
   tree b_if, b_else;
   gfc_loopinfo loop;
-  gfc_actual_arglist *actual;
+  gfc_actual_arglist *array_arg, *dim_arg, *mask_arg, *kind_arg;
+  gfc_actual_arglist *back_arg;
   gfc_ss *arrayss;
   gfc_ss *maskss;
   gfc_se arrayse;
@@ -5327,15 +5312,21 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   int n;
   bool optional_mask;
 
-  actual = expr->value.function.actual;
+  array_arg = expr->value.function.actual;
+  dim_arg = array_arg->next;
+  mask_arg = dim_arg->next;
+  kind_arg = mask_arg->next;
+  back_arg = kind_arg->next;
 
-  /* The last argument, BACK, is passed by value. Ensure that
-     by setting its name to %VAL. */
-  for (gfc_actual_arglist *a = actual; a; a = a->next)
+  /* Remove kind.  */
+  if (kind_arg->expr)
     {
-      if (a->next == NULL)
-	a->name = "%VAL";
+      gfc_free_expr (kind_arg->expr);
+      kind_arg->expr = NULL;
     }
+
+  /* Pass BACK argument by value.  */
+  back_arg->name = "%VAL";
 
   if (se->ss)
     {
@@ -5343,24 +5334,17 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
       return;
     }
 
-  arrayexpr = actual->expr;
+  arrayexpr = array_arg->expr;
 
-  /* Special case for character maxloc.  Remove unneeded actual
-     arguments, then call a library function.  */
+  /* Special case for character maxloc.  Remove unneeded "dim" actual
+     argument, then call a library function.  */
 
   if (arrayexpr->ts.type == BT_CHARACTER)
     {
-      gfc_actual_arglist *a;
-      a = actual;
-      strip_kind_from_actual (a);
-      while (a)
+      if (dim_arg->expr)
 	{
-	  if (a->name && strcmp (a->name, "dim") == 0)
-	    {
-	      gfc_free_expr (a->expr);
-	      a->expr = NULL;
-	    }
-	  a = a->next;
+	  gfc_free_expr (dim_arg->expr);
+	  dim_arg->expr = NULL;
 	}
       gfc_conv_intrinsic_funcall (se, expr);
       return;
@@ -5375,13 +5359,11 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   arrayss = gfc_walk_expr (arrayexpr);
   gcc_assert (arrayss != gfc_ss_terminator);
 
-  actual = actual->next->next;
-  gcc_assert (actual);
-  maskexpr = actual->expr;
+  maskexpr = mask_arg->expr;
   optional_mask = maskexpr && maskexpr->expr_type == EXPR_VARIABLE
     && maskexpr->symtree->n.sym->attr.dummy
     && maskexpr->symtree->n.sym->attr.optional;
-  backexpr = actual->next->next->expr;
+  backexpr = back_arg->expr;
   nonempty = NULL;
   if (maskexpr && maskexpr->rank != 0)
     {
