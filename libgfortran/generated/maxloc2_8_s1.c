@@ -152,8 +152,8 @@ GFC_INTEGER_8
 smaxloc2_8_s1 (gfc_array_s1 * const restrict array,
 				 GFC_LOGICAL_4 *mask, GFC_LOGICAL_4 back, gfc_charlen_type len)
 {
-  if (mask)
-    return maxloc2_8_s1 (array, len, back);
+  if (mask == NULL || *mask)
+    return maxloc2_8_s1 (array, back, len);
   else
     return 0;
 }
