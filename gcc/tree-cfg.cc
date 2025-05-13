@@ -3870,11 +3870,21 @@ verify_gimple_assign_unary (gassign *stmt)
     case NEGATE_EXPR:
     case ABS_EXPR:
     case BIT_NOT_EXPR:
-    case PAREN_EXPR:
     case CONJ_EXPR:
       /* Disallow pointer and offset types for many of the unary gimple. */
       if (POINTER_TYPE_P (lhs_type)
 	  || TREE_CODE (lhs_type) == OFFSET_TYPE)
+	{
+	  error ("invalid types for %qs", code_name);
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
+	}
+      break;
+
+    case PAREN_EXPR:
+      /* Disallow non arthmetic types on PAREN_EXPR. */
+      if (AGGREGATE_TYPE_P (lhs_type))
 	{
 	  error ("invalid types for %qs", code_name);
 	  debug_generic_expr (lhs_type);
