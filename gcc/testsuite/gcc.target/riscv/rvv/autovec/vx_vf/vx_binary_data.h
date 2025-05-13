@@ -6,7 +6,7 @@
 #define TEST_BINARY_DATA(T, NAME)      test_##T##_##NAME##_data
 #define TEST_BINARY_DATA_WRAP(T, NAME) TEST_BINARY_DATA(T, NAME)
 
-int8_t TEST_BINARY_DATA(int8_t, vadd)[][3][N] =
+int8_t TEST_BINARY_DATA(int8_t, add)[][3][N] =
 {
   {
     { 1 },
@@ -55,7 +55,7 @@ int8_t TEST_BINARY_DATA(int8_t, vadd)[][3][N] =
   },
 };
 
-int16_t TEST_BINARY_DATA(int16_t, vadd)[][3][N] =
+int16_t TEST_BINARY_DATA(int16_t, add)[][3][N] =
 {
   {
     { 1 },
@@ -104,7 +104,7 @@ int16_t TEST_BINARY_DATA(int16_t, vadd)[][3][N] =
   },
 };
 
-int32_t TEST_BINARY_DATA(int32_t, vadd)[][3][N] =
+int32_t TEST_BINARY_DATA(int32_t, add)[][3][N] =
 {
   {
     { 1 },
@@ -153,7 +153,7 @@ int32_t TEST_BINARY_DATA(int32_t, vadd)[][3][N] =
   },
 };
 
-int64_t TEST_BINARY_DATA(int64_t, vadd)[][3][N] =
+int64_t TEST_BINARY_DATA(int64_t, add)[][3][N] =
 {
   {
     { 1 },
@@ -202,7 +202,7 @@ int64_t TEST_BINARY_DATA(int64_t, vadd)[][3][N] =
   },
 };
 
-uint8_t TEST_BINARY_DATA(uint8_t, vadd)[][3][N] =
+uint8_t TEST_BINARY_DATA(uint8_t, add)[][3][N] =
 {
   {
     { 1 },
@@ -251,7 +251,7 @@ uint8_t TEST_BINARY_DATA(uint8_t, vadd)[][3][N] =
   },
 };
 
-uint16_t TEST_BINARY_DATA(uint16_t, vadd)[][3][N] =
+uint16_t TEST_BINARY_DATA(uint16_t, add)[][3][N] =
 {
   {
     { 1 },
@@ -300,7 +300,7 @@ uint16_t TEST_BINARY_DATA(uint16_t, vadd)[][3][N] =
   },
 };
 
-uint32_t TEST_BINARY_DATA(uint32_t, vadd)[][3][N] =
+uint32_t TEST_BINARY_DATA(uint32_t, add)[][3][N] =
 {
   {
     { 1 },
@@ -349,7 +349,7 @@ uint32_t TEST_BINARY_DATA(uint32_t, vadd)[][3][N] =
   },
 };
 
-uint64_t TEST_BINARY_DATA(uint64_t, vadd)[][3][N] =
+uint64_t TEST_BINARY_DATA(uint64_t, add)[][3][N] =
 {
   {
     { 1 },
@@ -398,7 +398,7 @@ uint64_t TEST_BINARY_DATA(uint64_t, vadd)[][3][N] =
   },
 };
 
-int8_t TEST_BINARY_DATA(int8_t, vsub)[][3][N] =
+int8_t TEST_BINARY_DATA(int8_t, sub)[][3][N] =
 {
   {
     { 1 },
@@ -447,7 +447,7 @@ int8_t TEST_BINARY_DATA(int8_t, vsub)[][3][N] =
   },
 };
 
-int16_t TEST_BINARY_DATA(int16_t, vsub)[][3][N] =
+int16_t TEST_BINARY_DATA(int16_t, sub)[][3][N] =
 {
   {
     { 1 },
@@ -496,7 +496,7 @@ int16_t TEST_BINARY_DATA(int16_t, vsub)[][3][N] =
   },
 };
 
-int32_t TEST_BINARY_DATA(int32_t, vsub)[][3][N] =
+int32_t TEST_BINARY_DATA(int32_t, sub)[][3][N] =
 {
   {
     { 1 },
@@ -545,7 +545,7 @@ int32_t TEST_BINARY_DATA(int32_t, vsub)[][3][N] =
   },
 };
 
-int64_t TEST_BINARY_DATA(int64_t, vsub)[][3][N] =
+int64_t TEST_BINARY_DATA(int64_t, sub)[][3][N] =
 {
   {
     { 1 },
@@ -594,7 +594,7 @@ int64_t TEST_BINARY_DATA(int64_t, vsub)[][3][N] =
   },
 };
 
-uint8_t TEST_BINARY_DATA(uint8_t, vsub)[][3][N] =
+uint8_t TEST_BINARY_DATA(uint8_t, sub)[][3][N] =
 {
   {
     { 1 },
@@ -643,7 +643,7 @@ uint8_t TEST_BINARY_DATA(uint8_t, vsub)[][3][N] =
   },
 };
 
-uint16_t TEST_BINARY_DATA(uint16_t, vsub)[][3][N] =
+uint16_t TEST_BINARY_DATA(uint16_t, sub)[][3][N] =
 {
   {
     { 1 },
@@ -692,7 +692,7 @@ uint16_t TEST_BINARY_DATA(uint16_t, vsub)[][3][N] =
   },
 };
 
-uint32_t TEST_BINARY_DATA(uint32_t, vsub)[][3][N] =
+uint32_t TEST_BINARY_DATA(uint32_t, sub)[][3][N] =
 {
   {
     { 1 },
@@ -741,7 +741,7 @@ uint32_t TEST_BINARY_DATA(uint32_t, vsub)[][3][N] =
   },
 };
 
-uint64_t TEST_BINARY_DATA(uint64_t, vsub)[][3][N] =
+uint64_t TEST_BINARY_DATA(uint64_t, sub)[][3][N] =
 {
   {
     { 1 },
