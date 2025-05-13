@@ -1,3 +1,282 @@
+2025-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssanames.cc (set_bitmask): Use int_range_max for temps.
+	* value-range.cc (irange::set_range_from_bitmask): Handle all
+	trailing zero values.
+
+2025-05-12  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add form 7 matching pattern for unsigned integer
+	SAT_ADD.
+
+2025-05-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64.md (cmov<mode>6): Remove.
+
+2025-05-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120230
+	* optabs.cc (can_compare_p): Remove support for ccp_cmov.
+	* optabs.def (cmov_optab): Remove.
+	* optabs.h (can_compare_purpose): Remove ccp_cmov.
+
+2025-05-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120231
+	* range-op-float.cc (operator_cast::fold_range): New variants.
+	(operator_cast::op1_range): Likewise.
+	* range-op-mixed.h (operator_cast::fold_range): Likewise.
+	(operator_cast::op1_range): Likewise
+	* range-op.cc (range_op_handler::fold_range): Add RO_FIF dispatch.
+	(range_op_handler::op1_range): Add RO_IFF and RO_FII patterns.
+	(range_operator::fold_range): Provide new variant default.
+	(range_operator::op1_range): Likewise.
+	* range-op.h (range_operator): Add new variant methods.
+
+2025-05-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120188
+	* doc/gm2.texi (Semantic checking): Add -fm2-plugin command line option.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-sm.def: Add '61'.
+	* config/nvptx/nvptx-gen.h: Regenerate.
+	* config/nvptx/nvptx-gen.opt: Likewise.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm): Adjust.
+	* config/nvptx/nvptx.opt (-march-map=sm_61, -march-map=sm_62):
+	Likewise.
+	* config.gcc: Likewise.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-march=sm_61'.
+	* config/nvptx/gen-multilib-matches-tests: Extend.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
+	'PTX_VERSION_5_0'.
+	* config/nvptx/nvptx.cc (ptx_version_to_string)
+	(ptx_version_to_number): Adjust.
+	* config/nvptx/nvptx.h (TARGET_PTX_5_0): New.
+	* config/nvptx/nvptx.opt (Enum(ptx_version)): Add 'EnumValue'
+	'5.0' for 'PTX_VERSION_5_0'.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-mptx=5.0'.
+
+2025-05-12  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::check_conflict_ext): New extension.
+	* config/riscv/riscv.opt: Ditto.
+
+2025-05-12  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::check_conflict_ext): New extension.
+	* config/riscv/riscv.opt: Ditto.
+
+2025-05-12  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer-out.cc (hash_tree): Hash TYPE_MODE_RAW.
+	When offloading hash modes as VOIDmode for aggregates
+	and vectors.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* doc/extend.texi: Remove the iwmmxt intrinsics.
+	* doc/md.texi: Remove the iwmmxt-related constraints.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/aout.h (REGISTER_NAMES): Remove iwmmxt registers.
+	* config/arm/arm.h (FIRST_IWMMXT_REGNUM): Delete.
+	(LAST_IWMMXT_REGNUM): Delete.
+	(FIRST_IWMMXT_GR_REGNUM): Delete.
+	(LAST_IWMMXT_GR_REGNUM): Delete.
+	(IS_IWMMXT_REGNUM):  Delete.
+	(IS_IWMMXT_GR_REGNUM): Delete.
+	(FRAME_POINTER_REGNUM): Define relative to CC_REGNUM.
+	(ARG_POINTER_REGNUM): Define relative to FRAME_POINTER_REGNUM.
+	(FIRST_PSEUDO_REGISTER): Adjust.
+	(WREG): Delete.
+	(WGREG): Delete.
+	(REG_ALLOC_ORDER): Remove iWMMX registers.
+	(enum reg_class): Remove iWMMX register classes.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS):  Remove iWMMX registers.
+	* config/arm/arm.md (CC_REGNUM): Adjust value.
+	(VFPCC_RENGUM): Likewise.
+	(APSRQ_REGNUM): Likewise.
+	(APSRGE_REGNUM): Likewise.
+	(VPR_REGNUM): Likewise.
+	(RA_AUTH_CODE): Likewise.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (feature iwmmxt, feature iwmmxt2):  Delete.
+	* config/arm/arm-protos.h (arm_output_iwmmxt_shift_immediate): Delete.
+	(arm_output_iwmmxt_tinsr): Delete.
+	(arm_arch_iwmmxt): Delete.
+	(arm_arch_iwmmxt2): Delete.
+	* config/arm/arm.h (TARGET_IWMMXT): Delete.
+	(TARGET_IWMMXT2): Delete.
+	(TARGET_REALLY_IWMMXT): Delete.
+	(TARGET_REALLY_IWMMXT2): Delete.
+	(VALID_IWMMXT_REG_MODE): Delete.
+	(ARM_HAVE_V8QI_ARITH): Remove iWMMXT.
+	(ARM_HAVE_V4HI_ARITH): Likewise.
+	(ARM_HAVE_V2SI_ARITH): Likewise.
+	(ARM_HAVE_V8QI_LDST): Likewise.
+	(ARM_HAVE_V4HI_LDST): Likewise.
+	(ARM_HAVE_V2SI_LDST): Likewise.
+	(SECONDARY_OUTPUT_RELOAD_CLASS):  Remove iWMMXT cases.
+	(SECONDARY_INPUT_RELOAD_CLASS): Likewise.
+	* config/arm/arm.cc (arm_arch_iwmmxt): Delete.
+	(arm_arch_iwmmxt2): Delete.
+	(arm_option_reconfigure_globals): Don't initialize them.
+	(arm_register_move_cost): Remove costs for iwmmxt.
+	(struct minipool_node):  Update comment.
+	(output_move_double): Likewise
+	(output_return_instruction): Likewise.
+	(arm_print_operand, cases 'U' and 'w'): Report an error if
+	used.
+	(arm_regno_class): Remove iWMMXT cases.
+	(arm_debugger_regno): Remove iWMMXT cases.
+	(arm_output_iwmmxt_shift_immediate): Delete.
+	(arm_output_iwmmxt_tinsr): Delete.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-c.cc (arm_cpu_builtins):  Remove predefines
+	for __IWWMXT__, __IWMMXT2__ and __ARM_WMMX.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/iterators.md (VMMX, VMMX2): Remove mode iterators.
+	(MMX_char): Remove mode iterator attribute.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (core_cycles): Remove iwmmxt attributes.
+	* config/arm/types.md (autodetect_type): Likewise.
+	* config/arm/marvell-f-iwmmxt.md: Removed.
+	* config/arm/t-arm: Remove marvell-f-iwmmxt.md
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.cc (arm_option_check_internal): Remove
+	IWMMXT check.
+	(arm_options_perform_arch_sanity_checks): Likewise.
+	(use_return_insn): Likewise.
+	(arm_init_cumulative_args): Likewise.
+	(arm_legitimate_index_p): Likewise.
+	(thumb2_legitimate_index_p): Likewise.
+	(arm_compute_save_core_reg_mask): Likewise.
+	(output_return_instruction): Likewise.
+	(arm_compute_frame_layout): Likewise.
+	(arm_save_coproc_regs): Likewise.
+	(arm_hard_regno_mode_ok): Likewise.
+	(arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise.
+	(arm_vector_mode_supported_p): Likewise.
+	(arm_preferred_simd_mode): Likewise.
+	(arm_conditional_register_usage): Likewise.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (arm, --with-abi): Remove iwmmxt abi option.
+	* config/arm/arm.opt (enum ARM_ABI_IWMMXT): Remove.
+	* config/arm/arm.h (TARGET_IWMMXT_ABI): Delete.
+	(enum arm_pcs): Remove ARM_PCS_AAPCS_IWMMXT.
+	(FUNCTION_ARG_REGNO_P): Remove IWMMXT ABI support.
+	(CUMULATIVE_ARGS): Remove iwmmxt_nregs.
+	* config/arm/arm.cc (arm_options_perform_arch_sanity_checks):
+	Remove IWMMXT ABI checks.
+	(arm_libcall_value_1): Likewise.
+	(arm_function_value_regno_p): Likewise.
+	(arm_apply_result_size): Remove adjustment for IWMMXT ABI.
+	(arm_function_arg): Remove IWMMXT ABI support.
+	(arm_arg_partial_bytes): Likewise.
+	(arm_function_arg_advance): Likewise.
+	(arm_init_cumulative_args): Don't initialize iwmmxt_nregs.
+	* doc/invoke.texi (arm -mabi): Remove mention of the iwmmxt
+	ABI option.
+	* config/arm/arm-opts.h (enum arm_abi_type): Remove ARM_ABI_IWMMXT.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md(attr arch): Remove iwmmxt and iwmmxt2.
+	Remove checks based on TARGET_REALLY_IWMMXT2 from all split
+	patterns.
+	(arm_movdi): Likewise.
+	(*arm_movt): Likewise.
+	(arch_enabled): Remove test for iwmmxt2.
+	* config/arm/constraints.md (y, z): Remove register constraints.
+	(Uy): Remove memory constraint.
+	* config/arm/thumb2.md (thumb2_pop_single): Remove check for
+	IWMMXT.
+	* config/arm/vec-common.md (mov<mode>): Remove check for IWMMXT.
+	(mul<mode>3): Likewise.
+	(xor<mode>3): Likewise.
+	(<absneg_str><mode>2): Likewise.
+	(@movmisalign<mode>): Likewise.
+	(@mve_<mve_insn>q_<supf><mode>): Likewise.
+	(vashl<mode>3): Likewise.
+	(vashr<mode>3): Likewise.
+	(vlshr<mode>3): Likewise.
+	(uavg<mode>3_ceil): Likewise.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md: Don't include iwmmxt.md.
+	* config/arm/t-arm (MD_INCLUDES): Remove iwmmxt*.md.
+	* config/arm/iwmmxt.md: Removed.
+	* config/arm/iwmmxt2.md: Removed.
+	* config/arm/unspecs.md: Remove comment referring to
+	iwmmxt2.md.
+	(enum unspec): Remove iWMMXt unspec values.
+	(enum unspecv): Likewise.
+	* config/arm/predicates.md (imm_or_reg_operand): Delete.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-builtins.cc (enum arm_builtins): Delete iWMMX
+	builtin values.
+	(bdesc_2arg): Likewise.
+	(bdesc_1arg): Likewise.
+	(arm_init_iwmmxt_builtins): Delete.
+	(arm_init_builtins): Don't call arm_init_iwmmxt_builtins.
+	(safe_vector_operand): Use __builtin_unreachable instead of emitting
+	an iwmmxt builtin.
+	(arm_general_expand_builtin): Remove iWMMX builtins support.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (arch iwmmxt): treat in the same
+	way as we would treat XScale.
+	(arch iwmmxt2): Likewise.
+	(cpu xscale): Add aliases for iwmmxt and iwmmxt2.
+	(cpu iwmmxt): Delete.
+	(cpu iwmmxt2): Delete.
+	* config/arm/arm-generic.md (load_ldsched_xscale): Remove references
+	to iwmmxt.
+	(load_ldsched): Likewise.
+	* config/arm/arm-tables.opt: Regenerated.
+	* config/arm/arm-tune.md: Regenerated.
+	* doc/sourcebuild.texi (arm_iwmmxt_ok): Delete.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.h (SECONDARY_OUTPUT_RELOAD_CLASS): Add	parentheis
+	and re-indent.
+	(SECONDARY_INPUT_RELOAD_CLASS): Likewise.
+
+2025-05-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120228
+	* config/i386/i386-features.cc (ix86_place_single_vector_set):
+	Remove df_insn_rescan after emit_insn_*.
+	(remove_partial_avx_dependency): Likewise.
+	(replace_vector_const): Likewise.
+
 2025-05-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* config/i386/i386.cc (ix86_widen_mult_cost): Use sse_op to cost

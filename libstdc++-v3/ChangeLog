@@ -1,3 +1,75 @@
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119645
+	* configure.host [GCN, nvptx] (atomicity_dir): Don't set.
+
+2025-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119714
+	PR libstdc++/112490
+	* include/std/expected (expected::operator==): Replace
+	non-dependent std::expected function parameter with a dependent
+	one of type expected<_Vp, _Er> where _Vp matches _Tp.
+	* testsuite/20_util/expected/119714.cc: New test.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120187
+	* include/c_global/ciso646: Only give deprecated warning for
+	C++20 and later.
+	* include/c_global/ccomplex: Add @since to Doxygen comment.
+	* include/c_global/cstdalign: Likewise.
+	* include/c_global/cstdbool: Likewise.
+	* include/c_global/ctgmath: Likewise.
+	* testsuite/18_support/headers/ciso646/macros.cc: Remove
+	dg-warning for c++17_only effective target.
+	* testsuite/18_support/headers/ciso646/macros-2.cc: New test.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2023.xml: Update status of proposals
+	implemented after GCC 14.2 release.
+	* doc/html/manual/status.html: Regenerate.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120198
+	* include/bits/version.def (scoped_lock): Do not depend on
+	gthreads or hosted.
+	* include/bits/version.h: Regenerate.
+	* include/std/mutex (scoped_lock): Update comment.
+	* testsuite/30_threads/scoped_lock/requirements/typedefs.cc:
+	Remove dg-require-gthreads and use custom lockable type instead
+	of std::mutex. Check that typedef is only present for a single
+	template argument.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR libstdc++/70560
+	PR libstdc++/119667
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Use '__SIZE_TYPE__'
+	instead of 'size_t'.
+	* configure: Regenerate.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118260
+	* python/hook.in: Suppress output from gdb.execute calls to
+	register skips.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status for
+	std::to_chars and std::from_chars.
+	* doc/html/manual/*: Regenerate.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65909
+	* testsuite/lib/libstdc++.exp (check_v3_target_namedlocale):
+	Hardcode the locale name instead of passing it to the
+	executable. Do not hardcode buffer size for string.
+
 2025-05-10  Alexandre Oliva  <oliva@adacore.com>
 
 	* src/c++23/print.cc [__VXWORKS__]: Include ioLib.h.
