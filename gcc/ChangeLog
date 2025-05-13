@@ -1,3 +1,12 @@
+2025-05-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-01-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/118411
+	* final.cc (get_attr_length_1): Handle asm for CALL_INSN
+	and JUMP_INSNs.
+
 2025-05-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-linux.h (NEED_INDICATE_EXEC_STACK): Define to 1.
