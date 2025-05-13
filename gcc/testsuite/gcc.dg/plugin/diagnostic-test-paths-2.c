@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdiagnostics-show-caret -fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events" } */
+/* { dg-options "-fdiagnostics-show-caret -fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-add-output=experimental-html" } */
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -52,3 +52,7 @@ make_a_list_of_random_ints_badly(PyObject *self,
       |     (3) when calling 'PyList_Append', passing NULL from (1) as argument 1
      { dg-end-multiline-output "" } */
 }
+
+/* Use a Python script to verify various properties about the generated
+   HTML file:
+   { dg-final { run-html-pytest diagnostic-test-paths-2.c "diagnostic-test-paths-2.py" } } */

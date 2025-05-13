@@ -60,7 +60,8 @@ def test_basics(html_tree):
 
     pre = diag.find('xhtml:pre', ns)
     assert pre is not None
-    assert pre.attrib['class'] == 'gcc-annotated-source'
+    assert pre.attrib['class'] == 'gcc-generated-patch'
+    assert pre.text.startswith('--- ')
 
 # For reference, here's the generated HTML:
 """
@@ -76,7 +77,9 @@ def test_basics(html_tree):
     <div class="gcc-diagnostic-list">
       <div class="gcc-diagnostic">
         <span class="gcc-message">expected &apos;<span class="gcc-quoted-text">;</span>&apos; before &apos;<span class="gcc-quoted-text">}</span>&apos; token</span>
-        <pre class="gcc-annotated-source"></pre>
+        <pre class="gcc-generated-patch">
+        [...snip...]
+        </pre>
       </div>
     </div>
   </body>
