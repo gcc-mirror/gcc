@@ -41,7 +41,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   if (back)
     {
       src = array->base_addr + (extent - 1) * sstride;
-      for (i = extent; i >= 0; i--)
+      for (i = extent; i > 0; i--)
 	{
 	  if ('comparison`'`)
 	    return i;
@@ -94,7 +94,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     {
       src = array->base_addr + (extent - 1) * sstride;
       mbase += (extent - 1) * mstride;
-      for (i = extent; i >= 0; i--)
+      for (i = extent; i > 0; i--)
 	{
 	  if (*mbase && ('comparison`'`))
 	    return i;
