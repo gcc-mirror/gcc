@@ -1,3 +1,11 @@
+2025-05-12  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120012
+	* class.cc (check_non_pod_aggregate): Check is_empty_class.
+
 2025-05-07  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
