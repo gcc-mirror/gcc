@@ -1,3 +1,9 @@
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2023.xml: Update status of proposals
+	implemented for GCC 13.
+	* doc/html/manual/status.html: Regenerate.
+
 2025-05-08  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
