@@ -31,6 +31,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bid128_2_str.h"
 #include "bid128_2_str_macros.h"
 
+#define MIN_DIGITS(a,b) ((a) < (b) ? (a) : (b))
+
 extern int bid128_coeff_2_string (UINT64 X_hi, UINT64 X_lo,
 				  char *char_ptr);
 
@@ -283,6 +285,7 @@ bid128_from_string (char *ps _RND_MODE_PARAM _EXC_FLAGS_PARAM
   int ndigits_before, ndigits_after, ndigits_total, dec_expon, sgn_exp,
     i, d2, rdx_pt_enc;
   char c, buffer[MAX_STRING_DIGITS_128];
+  int min_digits, sticky_bit=0;
   int save_rnd_mode;
   int save_fpsf;
 
@@ -443,8 +446,10 @@ bid128_from_string (char *ps _RND_MODE_PARAM _EXC_FLAGS_PARAM
   if (!rdx_pt_enc) {
     // investigate string (before radix point)
     while ((unsigned) (c - '0') <= 9
-           && ndigits_before < MAX_STRING_DIGITS_128) {
-      buffer[ndigits_before] = c;
+           /*&& ndigits_before < MAX_STRING_DIGITS_128*/) {
+      if(ndigits_before < MAX_FORMAT_DIGITS_128) buffer[ndigits_before] = c;
+      else if(ndigits_before < MAX_STRING_DIGITS_128) { buffer[ndigits_before] = c; }
+      else if(c>'0') { sticky_bit = 1; }
       ps++;
       c = *ps;
       ndigits_before++;
@@ -457,8 +462,10 @@ bid128_from_string (char *ps _RND_MODE_PARAM _EXC_FLAGS_PARAM
 
         // investigate string (after radix point)
         while ((unsigned) (c - '0') <= 9
-               && ndigits_total < MAX_STRING_DIGITS_128) {
-          buffer[ndigits_total] = c;
+               /*&& ndigits_total < MAX_STRING_DIGITS_128*/) {
+          if(ndigits_total < MAX_FORMAT_DIGITS_128) buffer[ndigits_total] = c;
+          else if(ndigits_total < MAX_STRING_DIGITS_128) { buffer[ndigits_total] = c; }
+	  else if(c>'0') { sticky_bit = 1; }
           ps++;
           c = *ps;
           ndigits_total++;
@@ -474,8 +481,10 @@ bid128_from_string (char *ps _RND_MODE_PARAM _EXC_FLAGS_PARAM
     ndigits_total = 0;
     // investigate string (after radix point)
     while ((unsigned) (c - '0') <= 9
-           && ndigits_total < MAX_STRING_DIGITS_128) {
-      buffer[ndigits_total] = c;
+           /*&& ndigits_total < MAX_STRING_DIGITS_128*/) {
+      if(ndigits_total < MAX_FORMAT_DIGITS_128)  buffer[ndigits_total] = c;
+      else if(ndigits_total < MAX_STRING_DIGITS_128)  { buffer[ndigits_total] = c; }
+      else if(c>'0') { sticky_bit = 1; }
       ps++;
       c = *ps;
       ndigits_total++;
@@ -594,57 +603,63 @@ bid128_from_string (char *ps _RND_MODE_PARAM _EXC_FLAGS_PARAM
       coeff_l2 = coeff_low + coeff_low;
       coeff_low = (coeff_l2 << 2) + coeff_l2 + buffer[i] - '0';
     }
-	switch(rnd_mode) {
-	case ROUNDING_TO_NEAREST:
-    carry = ((unsigned) ('4' - buffer[i])) >> 31;
-    if ((buffer[i] == '5' && !(coeff_low & 1)) || dec_expon < 0) {
-      if (dec_expon >= 0) {
-        carry = 0;
-        i++;
+    switch(rnd_mode) {
+    case ROUNDING_TO_NEAREST:
+      carry = ((unsigned) ('4' - buffer[i])) >> 31;
+      if ((buffer[i] == '5' && !(coeff_low & 1) && !sticky_bit) || dec_expon < 0) {
+	if (dec_expon >= 0) {
+	  carry = 0;
+	  i++;
+	}
+        min_digits = MIN_DIGITS(ndigits_total, MAX_STRING_DIGITS_128);
+	for (carry=sticky_bit; (!carry) && (i < min_digits); i++) {
+	  if (buffer[i] > '0') {
+	    carry = 1;
+	    break;
+	  }
+	}
       }
-      for (; i < ndigits_total; i++) {
-        if (buffer[i] > '0') {
-          carry = 1;
-          break;
-        }
-      }
-    }
-	break;
+      break;
 
-	case ROUNDING_DOWN:
-		if(sign_x)
-      for (; i < ndigits_total; i++) {
-        if (buffer[i] > '0') {
-          carry = 1;
-          break;
-        }
+    case ROUNDING_DOWN:
+      if(sign_x) {
+        min_digits = MIN_DIGITS(ndigits_total, MAX_STRING_DIGITS_128);
+        for (carry=sticky_bit; (!carry) && (i < min_digits); i++) {
+	  if (buffer[i] > '0') {
+	    carry = 1;
+	    break;
+	  }
+	}
       }
-		break;
-	case ROUNDING_UP:
-		if(!sign_x)
-      for (; i < ndigits_total; i++) {
-        if (buffer[i] > '0') {
-          carry = 1;
-          break;
-        }
+      break;
+    case ROUNDING_UP:
+      if(!sign_x) {
+	min_digits = MIN_DIGITS(ndigits_total, MAX_STRING_DIGITS_128);
+        for (carry=sticky_bit; (!carry) && (i < min_digits); i++) {
+	  if (buffer[i] > '0') {
+	    carry = 1;
+	    break;
+	  }
+	}
       }
-		break;
-	case ROUNDING_TO_ZERO:
-		carry=0;
-		break;
-	case ROUNDING_TIES_AWAY:
-    carry = ((unsigned) ('4' - buffer[i])) >> 31;
-    if (dec_expon < 0) {
-      for (; i < ndigits_total; i++) {
-        if (buffer[i] > '0') {
-          carry = 1;
-          break;
-        }
+      break;
+    case ROUNDING_TO_ZERO:
+      carry=0;
+      break;
+    case ROUNDING_TIES_AWAY:
+      carry = ((unsigned) ('4' - buffer[i])) >> 31;
+      if (dec_expon < 0) {
+        min_digits = MIN_DIGITS(ndigits_total, MAX_STRING_DIGITS_128);
+        for (carry=sticky_bit; (!carry) && (i < min_digits); i++) {
+	  if (buffer[i] > '0') {
+	    carry = 1;
+	    break;
+	  }
+	}
       }
-    }
-		break;
-
-        default: break; // default added to avoid compiler warning
+      break;
+      
+    default: break; // default added to avoid compiler warning
 	}
     // now form the coefficient as coeff_high*10^17+coeff_low+carry
     scale_high = 100000000000000000ull;
