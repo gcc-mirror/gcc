@@ -551,9 +551,8 @@ forward_propagate_into_gimple_cond (gcond *stmt)
   tree rhs1 = gimple_cond_lhs (stmt);
   tree rhs2 = gimple_cond_rhs (stmt);
 
-  /* We can do tree combining on SSA_NAME and comparison expressions.  */
-  if (TREE_CODE_CLASS (gimple_cond_code (stmt)) != tcc_comparison)
-    return 0;
+  /* GIMPLE_COND will always be a comparison.  */
+  gcc_assert (TREE_CODE_CLASS (gimple_cond_code (stmt)) == tcc_comparison);
 
   tmp = forward_propagate_into_comparison_1 (stmt, code,
 					     boolean_type_node,
