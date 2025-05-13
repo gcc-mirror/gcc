@@ -13,7 +13,7 @@ main ()
       T *in = TEST_DATA[i][1];
       T *expect = TEST_DATA[i][2];
 
-      TEST_RUN (out, in, x, N);
+      TEST_RUN (T, NAME, out, in, x, N);
 
       for (k = 0; k < N; k++)
 	if (out[k] != expect[k])
