@@ -7265,6 +7265,7 @@ VAR
    pSym: PtrToSymbol ;
 BEGIN
    pSym := GetPsym(Sym) ;
+   CheckBreak (Sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 

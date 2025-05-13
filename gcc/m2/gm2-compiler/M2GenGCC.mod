@@ -2914,9 +2914,6 @@ BEGIN
          IF TypeCheckBecomes (p, quad)
          THEN
             PerformFoldBecomes (p, quad)
-         ELSE
-            GetQuad (quad, op, des, op2, expr) ;
-            RemoveQuad (p, des, quad)
          END
       END
    END
