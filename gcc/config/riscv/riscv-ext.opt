@@ -29,6 +29,9 @@ TargetVariable
 int riscv_sd_subext
 
 TargetVariable
+int riscv_sh_subext
+
+TargetVariable
 int riscv_sm_subext
 
 TargetVariable
@@ -315,6 +318,20 @@ Mask(ZHINX) Var(riscv_zinx_subext)
 Mask(ZHINXMIN) Var(riscv_zinx_subext)
 
 Mask(SDTRIG) Var(riscv_sd_subext)
+
+Mask(SHA) Var(riscv_sh_subext)
+
+Mask(SHCOUNTERENW) Var(riscv_sh_subext)
+
+Mask(SHGATPA) Var(riscv_sh_subext)
+
+Mask(SHTVALA) Var(riscv_sh_subext)
+
+Mask(SHVSTVALA) Var(riscv_sh_subext)
+
+Mask(SHVSTVECD) Var(riscv_sh_subext)
+
+Mask(SHVSATPA) Var(riscv_sh_subext)
 
 Mask(SMAIA) Var(riscv_sm_subext)
 

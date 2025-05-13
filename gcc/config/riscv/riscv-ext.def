@@ -1572,6 +1572,97 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ sha,
+  /* UPPERCAE_NAME */ SHA,
+  /* FULL_NAME */ "The augmented hypervisor extension",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"h", "shcounterenw", "shgatpa", "shtvala", "shvstvala", "shvstvecd", "shvsatpa", "ssstateen"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sh,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ shcounterenw,
+  /* UPPERCAE_NAME */ SHCOUNTERENW,
+  /* FULL_NAME */ "Support writeable enables for any supported counter",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"h", "zihpm"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sh,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ shgatpa,
+  /* UPPERCAE_NAME */ SHGATPA,
+  /* FULL_NAME */ "SvNNx4 mode supported for all modes supported by satp",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"h", "ssstateen"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sh,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ shtvala,
+  /* UPPERCAE_NAME */ SHTVALA,
+  /* FULL_NAME */ "The htval register provides all needed values",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"h"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sh,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ shvstvala,
+  /* UPPERCAE_NAME */ SHVSTVALA,
+  /* FULL_NAME */ "The vstval register provides all needed values",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"h"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sh,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ shvstvecd,
+  /* UPPERCAE_NAME */ SHVSTVECD,
+  /* FULL_NAME */ "The vstvec register supports Direct mode",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"h"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sh,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ shvsatpa,
+  /* UPPERCAE_NAME */ SHVSATPA,
+  /* FULL_NAME */ "The vsatp register supports all modes supported by satp",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"h"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sh,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ smaia,
   /* UPPERCAE_NAME */ SMAIA,
   /* FULL_NAME */ "Advanced interrupt architecture extension",

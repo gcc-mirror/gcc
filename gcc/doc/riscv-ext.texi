@@ -462,6 +462,34 @@
 @tab 1.0
 @tab sdtrig extension
 
+@item sha
+@tab 1.0
+@tab The augmented hypervisor extension
+
+@item shcounterenw
+@tab 1.0
+@tab Support writeable enables for any supported counter
+
+@item shgatpa
+@tab 1.0
+@tab SvNNx4 mode supported for all modes supported by satp
+
+@item shtvala
+@tab 1.0
+@tab The htval register provides all needed values
+
+@item shvstvala
+@tab 1.0
+@tab The vstval register provides all needed values
+
+@item shvstvecd
+@tab 1.0
+@tab The vstvec register supports Direct mode
+
+@item shvsatpa
+@tab 1.0
+@tab The vsatp register supports all modes supported by satp
+
 @item smaia
 @tab 1.0
 @tab Advanced interrupt architecture extension
