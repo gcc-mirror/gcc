@@ -4,5 +4,7 @@
 #include "vx_binary.h"
 
 DEF_VX_BINARY_CASE_1(int64_t, +, add, VX_BINARY_BODY)
+DEF_VX_BINARY_CASE_1(int64_t, -, sub, VX_BINARY_BODY)
 
 /* { dg-final { scan-assembler {vadd.vx} } } */
+/* { dg-final { scan-assembler {vsub.vx} } } */
