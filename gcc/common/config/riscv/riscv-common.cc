@@ -364,7 +364,7 @@ riscv_subset_t::riscv_subset_t ()
 
 riscv_subset_list::riscv_subset_list (const char *arch, location_t loc)
   : m_arch (arch), m_loc (loc), m_head (NULL), m_tail (NULL), m_xlen (0),
-    m_subset_num (0)
+    m_subset_num (0), m_allow_adding_dup (false)
 {
 }
 
