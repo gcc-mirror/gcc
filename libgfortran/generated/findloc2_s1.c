@@ -49,7 +49,7 @@ findloc2_s1 (gfc_array_s1 * const restrict array, const GFC_UINTEGER_1 * restric
   if (back)
     {
       src = array->base_addr + (extent - 1) * sstride;
-      for (i = extent; i >= 0; i--)
+      for (i = extent; i > 0; i--)
 	{
 	  if (compare_string (len_array, (char *) src, len_value, (char *) value) == 0)
 	    return i;
@@ -112,7 +112,7 @@ mfindloc2_s1 (gfc_array_s1 * const restrict array,
     {
       src = array->base_addr + (extent - 1) * sstride;
       mbase += (extent - 1) * mstride;
-      for (i = extent; i >= 0; i--)
+      for (i = extent; i > 0; i--)
 	{
 	  if (*mbase && (compare_string (len_array, (char *) src, len_value, (char *) value) == 0))
 	    return i;
