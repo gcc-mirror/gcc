@@ -31,25 +31,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-range.h"
 
-// Return the bitmask inherent in a range.
+// Return the bitmask inherent in a range :   TYPE [MIN, MAX].
+// This use to be get_bitmask_from_range ().
 
-static irange_bitmask
-get_bitmask_from_range (tree type,
-			const wide_int &min, const wide_int &max)
+irange_bitmask::irange_bitmask (tree type,
+				const wide_int &min, const wide_int &max)
 {
   unsigned prec = TYPE_PRECISION (type);
-
   // All the bits of a singleton are known.
   if (min == max)
     {
-      wide_int mask = wi::zero (prec);
-      wide_int value = min;
-      return irange_bitmask (value, mask);
+      m_mask = wi::zero (prec);
+      m_value = min;
     }
-
-  wide_int xorv = min ^ max;
-  xorv = wi::mask (prec - wi::clz (xorv), false, prec);
-  return irange_bitmask (wi::zero (prec), min | xorv);
+  else
+    {
+      wide_int xorv = min ^ max;
+      xorv = wi::mask (prec - wi::clz (xorv), false, prec);
+      m_value = wi::zero (prec);
+      m_mask = min | xorv;
+    }
 }
 
 void
@@ -469,7 +470,7 @@ prange::set (tree type, const wide_int &min, const wide_int &max,
     }
 
   m_kind = VR_RANGE;
-  m_bitmask = get_bitmask_from_range (type, min, max);
+  m_bitmask = irange_bitmask (type, min, max);
   if (flag_checking)
     verify_range ();
 }
@@ -583,7 +584,7 @@ prange::intersect (const vrange &v)
     }
 
   // Intersect all bitmasks: the old one, the new one, and the other operand's.
-  irange_bitmask new_bitmask = get_bitmask_from_range (m_type, m_min, m_max);
+  irange_bitmask new_bitmask (m_type, m_min, m_max);
   m_bitmask.intersect (new_bitmask);
   m_bitmask.intersect (r.m_bitmask);
   if (varying_compatible_p ())
@@ -2396,8 +2397,7 @@ irange::get_bitmask () const
   // in the mask.
   //
   // See also the note in irange_bitmask::intersect.
-  irange_bitmask bm
-    = get_bitmask_from_range (type (), lower_bound (), upper_bound ());
+  irange_bitmask bm (type (), lower_bound (), upper_bound ());
   if (!m_bitmask.unknown_p ())
     bm.intersect (m_bitmask);
   return bm;
