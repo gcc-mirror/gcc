@@ -1,3 +1,19 @@
+2025-05-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119986
+	* gfortran.dg/actual_array_subref.f90: New test.
+
+2025-05-12  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119852
+	* gcc.dg/ipa/pr119852.c: New test.
+
 2025-05-11  Pan Li  <pan2.li@intel.com>
 
 	Backported from master:

@@ -1,3 +1,9 @@
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2023.xml: Update status of proposal
+	implemented after GCC 14.2 release.
+	* doc/html/manual/status.html: Regenerate.
+
 2025-05-06  Dhruv Chawla  <dhruvc@nvidia.com>
 
 	Backported from master:
