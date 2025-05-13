@@ -5,6 +5,12 @@
 ! Test extra math intrinsics formerly offered by -fdec-math,
 ! now included with -std=gnu or -std=legacy.
 !
+! Since Fortran 2023, the degree trigonometric functions (sind, cosd, ...)
+! are part of the standard; additionally, Fortran 2023 added a two-argument
+! version of atand as alias for atan2d.
+!
+! Note that cotan and cotand are not part of Fortran 2023; hence, this file
+! still requires -std=gnu and cannot be compiled with -std=f2023.
 
 module dec_math
 
