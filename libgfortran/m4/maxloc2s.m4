@@ -153,8 +153,8 @@ export_proto(s'name`'rtype_qual`_'atype_code`);
 s'name`'rtype_qual`_'atype_code` ('atype` * const restrict array,
 				 GFC_LOGICAL_4 *mask'back_arg`, gfc_charlen_type len)
 {
-  if (mask)
-    return 'name`'rtype_qual`_'atype_code` (array, len, back);
+  if (mask == NULL || *mask)
+    return 'name`'rtype_qual`_'atype_code` (array, back, len);
   else
     return 0;
 }

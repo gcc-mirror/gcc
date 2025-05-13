@@ -152,8 +152,8 @@ GFC_INTEGER_4
 smaxloc2_4_s4 (gfc_array_s4 * const restrict array,
 				 GFC_LOGICAL_4 *mask, GFC_LOGICAL_4 back, gfc_charlen_type len)
 {
-  if (mask)
-    return maxloc2_4_s4 (array, len, back);
+  if (mask == NULL || *mask)
+    return maxloc2_4_s4 (array, back, len);
   else
     return 0;
 }
