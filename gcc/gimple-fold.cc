@@ -6239,8 +6239,9 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
       auto code = tree_code (res_op->code);
       if (TREE_CODE_CLASS (code) == tcc_comparison
 	  /* GIMPLE_CONDs condition may not throw.  */
-	  && (!flag_exceptions
-	      || !cfun->can_throw_non_call_exceptions
+	  && ((cfun
+	       && (!flag_exceptions
+		   || !cfun->can_throw_non_call_exceptions))
 	      || !operation_could_trap_p (code,
 					  FLOAT_TYPE_P (TREE_TYPE (ops[0])),
 					  false, NULL_TREE)))
@@ -6282,8 +6283,9 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	     `(ne (cmp @0 @1) integer_zerop)` which creates a new expression
 	     for the comparison.  */
 	  if (TREE_CODE_CLASS (code) == tcc_comparison
-	      && flag_exceptions
-	      && cfun->can_throw_non_call_exceptions
+	      && (!cfun
+		  || (flag_exceptions
+		      && cfun->can_throw_non_call_exceptions))
 	      && operation_could_trap_p (code,
 					 FLOAT_TYPE_P (TREE_TYPE (ops[0])),
 					 false, NULL_TREE))
