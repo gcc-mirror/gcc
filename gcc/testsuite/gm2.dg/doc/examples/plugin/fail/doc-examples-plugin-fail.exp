@@ -11,7 +11,7 @@ gm2_init_pim4 $srcdir/$subdir
 dg-init
 
 # If the --enable-plugin has not been enabled during configure, bail.
-if { ![gm2-dg-frontend-configure-check "enable-plugin" ] } {
+if { ![info exists TESTING_IN_BUILD_TREE] || ![info exists ENABLE_PLUGIN] } {
     return
 }
 
