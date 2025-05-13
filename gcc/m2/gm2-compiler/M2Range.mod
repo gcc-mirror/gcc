@@ -154,6 +154,34 @@ TYPE
 VAR
    TopOfRange: CARDINAL ;
    RangeIndex: Index ;
+   BreakRange: CARDINAL ;
+
+
+PROCEDURE gdbhook ;
+END gdbhook ;
+
+
+(*
+   BreakWhenRangeCreated - to be called interactively by gdb.
+*)
+
+PROCEDURE BreakWhenRangeCreated (r: CARDINAL) ;
+BEGIN
+   BreakRange := r
+END BreakWhenRangeCreated ;
+
+
+(*
+   CheckBreak - if sym = BreakRange then call gdbhook.
+*)
+
+PROCEDURE CheckBreak (r: CARDINAL) ;
+BEGIN
+   IF BreakRange = r
+   THEN
+      gdbhook
+   END
+END CheckBreak ;
 
 
 (*
@@ -302,6 +330,7 @@ BEGIN
    THEN
       InternalError ('out of memory error')
    ELSE
+      CheckBreak (r) ;
       WITH p^ DO
          type           := none ;
          des            := NulSym ;
@@ -3746,7 +3775,19 @@ END WriteRangeCheck ;
 PROCEDURE Init ;
 BEGIN
    TopOfRange := 0 ;
-   RangeIndex := InitIndex(1)
+   RangeIndex := InitIndex(1) ;
+   BreakWhenRangeCreated (0) ;  (* Disable the intereactive range watch.  *)
+   (* To examine the range when it is created run cc1gm2 from gdb
+      and set a break point on gdbhook.
+      (gdb) break gdbhook
+      (gdb) run
+      Now below interactively call BreakWhenRangeCreated with the symbol
+      under investigation.  *)
+   gdbhook ;
+   (* Now is the time to interactively call gdb, for example:
+      (gdb) print BreakWhenRangeCreated (1234)
+      (gdb) cont
+      and you will arrive at gdbhook when this symbol is created.  *)
 END Init ;
 
 
