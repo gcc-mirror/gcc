@@ -8680,7 +8680,7 @@ vectorizable_store (vec_info *vinfo,
       }
     else if (vls_type != VLS_STORE_INVARIANT)
       return;
-    *prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec, stmt_info,
+    *prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
 					slp_node, 0, vect_prologue);
   };
 
@@ -8989,8 +8989,7 @@ vectorizable_store (vec_info *vinfo,
 	      if (nstores > 1)
 		inside_cost
 		  += record_stmt_cost (cost_vec, n_adjacent_stores,
-				       vec_to_scalar, stmt_info, slp_node,
-				       0, vect_body);
+				       vec_to_scalar, slp_node, 0, vect_body);
 	    }
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -9327,8 +9326,7 @@ vectorizable_store (vec_info *vinfo,
 	    {
 	      if (costing_p && vls_type == VLS_STORE_INVARIANT)
 		prologue_cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
-						   stmt_info, slp_node, 0,
-						   vect_prologue);
+						   slp_node, 0, vect_prologue);
 	      else if (!costing_p)
 		{
 		  /* Since the store is not grouped, DR_GROUP_SIZE is 1, and
@@ -9402,8 +9400,7 @@ vectorizable_store (vec_info *vinfo,
 		  unsigned int cnunits = vect_nunits_for_cost (vectype);
 		  inside_cost
 		    += record_stmt_cost (cost_vec, cnunits, scalar_store,
-					 stmt_info, slp_node, 0,
-					 vect_body);
+					 slp_node, 0, vect_body);
 		  continue;
 		}
 
@@ -9471,7 +9468,7 @@ vectorizable_store (vec_info *vinfo,
 		  unsigned int cnunits = vect_nunits_for_cost (vectype);
 		  inside_cost
 		    += record_stmt_cost (cost_vec, cnunits, scalar_store,
-					 stmt_info, slp_node, 0, vect_body);
+					 slp_node, 0, vect_body);
 		  continue;
 		}
 
@@ -9579,14 +9576,14 @@ vectorizable_store (vec_info *vinfo,
 		     consumed by the load).  */
 		  inside_cost
 		    += record_stmt_cost (cost_vec, cnunits, vec_to_scalar,
-					 stmt_info, slp_node, 0, vect_body);
+					 slp_node, 0, vect_body);
 		  /* N scalar stores plus extracting the elements.  */
 		  inside_cost
 		    += record_stmt_cost (cost_vec, cnunits, vec_to_scalar,
-					 stmt_info, slp_node, 0, vect_body);
+					 slp_node, 0, vect_body);
 		  inside_cost
 		    += record_stmt_cost (cost_vec, cnunits, scalar_store,
-					 stmt_info, slp_node, 0, vect_body);
+					 slp_node, 0, vect_body);
 		  continue;
 		}
 
@@ -9780,8 +9777,7 @@ vectorizable_store (vec_info *vinfo,
 	      int group_size = DR_GROUP_SIZE (first_stmt_info);
 	      int nstmts = ceil_log2 (group_size) * group_size;
 	      inside_cost += record_stmt_cost (cost_vec, nstmts, vec_perm,
-					       stmt_info, slp_node, 0,
-					       vect_body);
+					       slp_node, 0, vect_body);
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "vect_model_store_cost: "
@@ -9810,8 +9806,7 @@ vectorizable_store (vec_info *vinfo,
 	    {
 	      if (costing_p)
 		inside_cost += record_stmt_cost (cost_vec, 1, vec_perm,
-						 stmt_info, slp_node, 0,
-						 vect_body);
+						 slp_node, 0, vect_body);
 	      else
 		{
 		  tree perm_mask = perm_mask_for_reverse (vectype);
@@ -10030,11 +10025,11 @@ vectorizable_store (vec_info *vinfo,
 		  /* Spill.  */
 		  prologue_cost
 		    += record_stmt_cost (cost_vec, ncopies, vector_store,
-					 stmt_info, slp_node, 0, vect_epilogue);
+					 slp_node, 0, vect_epilogue);
 		  /* Loads.  */
 		  prologue_cost
 		    += record_stmt_cost (cost_vec, ncopies * nregs, scalar_load,
-					 stmt_info, slp_node, 0, vect_epilogue);
+					 slp_node, 0, vect_epilogue);
 		}
 	    }
 	}
@@ -10607,9 +10602,8 @@ vectorizable_load (vec_info *vinfo,
 	  enum vect_cost_model_location cost_loc
 	    = hoist_p ? vect_prologue : vect_body;
 	  unsigned int cost = record_stmt_cost (cost_vec, 1, scalar_load,
-						stmt_info, slp_node, 0,
-						cost_loc);
-	  cost += record_stmt_cost (cost_vec, 1, scalar_to_vec, stmt_info,
+						slp_node, 0, cost_loc);
+	  cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
 				    slp_node, 0, cost_loc);
 	  unsigned int prologue_cost = hoist_p ? cost : 0;
 	  unsigned int inside_cost = hoist_p ? 0 : cost;
@@ -10875,8 +10869,7 @@ vectorizable_load (vec_info *vinfo,
 		    n_adjacent_loads++;
 		  else
 		    inside_cost += record_stmt_cost (cost_vec, 1, scalar_load,
-						     stmt_info, slp_node, 0,
-						     vect_body);
+						     slp_node, 0, vect_body);
 		  continue;
 		}
 	      tree this_off = build_int_cst (TREE_TYPE (alias_off),
@@ -10914,8 +10907,7 @@ vectorizable_load (vec_info *vinfo,
 	    {
 	      if (costing_p)
 		inside_cost += record_stmt_cost (cost_vec, 1, vec_construct,
-						 stmt_info, slp_node, 0,
-						 vect_body);
+						 slp_node, 0, vect_body);
 	      else
 		{
 		  tree vec_inv = build_constructor (lvectype, v);
@@ -10970,8 +10962,7 @@ vectorizable_load (vec_info *vinfo,
 	      vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL, vf,
 					    true, &n_perms, &n_loads);
 	      inside_cost += record_stmt_cost (cost_vec, n_perms, vec_perm,
-					       first_stmt_info, slp_node, 0,
-					       vect_body);
+					       slp_node, 0, vect_body);
 	    }
 	  else
 	    vect_transform_slp_perm_load (vinfo, slp_node, dr_chain, gsi, vf,
@@ -11541,7 +11532,7 @@ vectorizable_load (vec_info *vinfo,
 		      unsigned int cnunits = vect_nunits_for_cost (vectype);
 		      inside_cost
 			= record_stmt_cost (cost_vec, cnunits, scalar_load,
-					    stmt_info, slp_node, 0, vect_body);
+					    slp_node, 0, vect_body);
 		      continue;
 		    }
 		  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
@@ -11617,7 +11608,7 @@ vectorizable_load (vec_info *vinfo,
 		      unsigned int cnunits = vect_nunits_for_cost (vectype);
 		      inside_cost
 			= record_stmt_cost (cost_vec, cnunits, scalar_load,
-					    stmt_info, slp_node, 0, vect_body);
+					    slp_node, 0, vect_body);
 		      continue;
 		    }
 		  poly_uint64 offset_nunits
@@ -11746,16 +11737,16 @@ vectorizable_load (vec_info *vinfo,
 		      /* For emulated gathers N offset vector element
 			 offset add is consumed by the load).  */
 		      inside_cost = record_stmt_cost (cost_vec, const_nunits,
-						      vec_to_scalar, stmt_info,
+						      vec_to_scalar,
 						      slp_node, 0, vect_body);
 		      /* N scalar loads plus gathering them into a
 			 vector.  */
 		      inside_cost
 			= record_stmt_cost (cost_vec, const_nunits, scalar_load,
-					    stmt_info, slp_node, 0, vect_body);
+					    slp_node, 0, vect_body);
 		      inside_cost
 			= record_stmt_cost (cost_vec, 1, vec_construct,
-					    stmt_info, slp_node, 0, vect_body);
+					    slp_node, 0, vect_body);
 		      continue;
 		    }
 		  unsigned HOST_WIDE_INT const_offset_nunits
@@ -12416,8 +12407,7 @@ vectorizable_load (vec_info *vinfo,
 	    {
 	      if (costing_p)
 		inside_cost = record_stmt_cost (cost_vec, 1, vec_perm,
-						stmt_info, slp_node, 0,
-						vect_body);
+						slp_node, 0, vect_body);
 	      else
 		{
 		  tree perm_mask = perm_mask_for_reverse (vectype);
@@ -12486,8 +12476,7 @@ vectorizable_load (vec_info *vinfo,
 	      vect_transform_slp_perm_load (vinfo, slp_node, vNULL, nullptr, vf,
 					    true, &n_perms, nullptr);
 	      inside_cost = record_stmt_cost (cost_vec, n_perms, vec_perm,
-					      stmt_info, slp_node, 0,
-					      vect_body);
+					      slp_node, 0, vect_body);
 	    }
 	  else
 	    {
@@ -12514,8 +12503,7 @@ vectorizable_load (vec_info *vinfo,
 		  int group_size = DR_GROUP_SIZE (first_stmt_info);
 		  int nstmts = ceil_log2 (group_size) * group_size;
 		  inside_cost += record_stmt_cost (cost_vec, nstmts, vec_perm,
-						   stmt_info, slp_node, 0,
-						   vect_body);
+						   slp_node, 0, vect_body);
 
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_NOTE, vect_location,
