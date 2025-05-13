@@ -123,7 +123,6 @@ GRS_OBJS = \
     rust/rust-keyword-values.o \
     rust/rust-abi.o \
     rust/rust-token-converter.o \
-    rust/rust-macro.o \
     rust/rust-ast-lower.o \
     rust/rust-ast-lower-base.o \
     rust/rust-ast-lower-pattern.o \
