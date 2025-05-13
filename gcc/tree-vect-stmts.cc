@@ -1017,13 +1017,15 @@ vect_get_store_cost (vec_info *, stmt_vec_info stmt_info, slp_tree slp_node,
 		     unsigned int *inside_cost,
 		     stmt_vector_for_cost *body_cost_vec)
 {
+  tree vectype
+    = slp_node ? SLP_TREE_VECTYPE (slp_node) : STMT_VINFO_VECTYPE (stmt_info);
   switch (alignment_support_scheme)
     {
     case dr_aligned:
       {
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies,
-					  vector_store, stmt_info, slp_node, 0,
-					  vect_body);
+					  vector_store, stmt_info, slp_node,
+					  vectype, 0, vect_body);
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
@@ -1036,7 +1038,7 @@ vect_get_store_cost (vec_info *, stmt_vec_info stmt_info, slp_tree slp_node,
         /* Here, we assign an additional cost for the unaligned store.  */
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies,
 					  unaligned_store, stmt_info, slp_node,
-					  misalignment, vect_body);
+					  vectype, misalignment, vect_body);
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
                            "vect_model_store_cost: unaligned supported by "
@@ -1070,12 +1072,15 @@ vect_get_load_cost (vec_info *, stmt_vec_info stmt_info, slp_tree slp_node,
 		    stmt_vector_for_cost *body_cost_vec,
 		    bool record_prologue_costs)
 {
+  tree vectype
+    = slp_node ? SLP_TREE_VECTYPE (slp_node) : STMT_VINFO_VECTYPE (stmt_info);
   switch (alignment_support_scheme)
     {
     case dr_aligned:
       {
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies, vector_load,
-					  stmt_info, slp_node, 0, vect_body);
+					  stmt_info, slp_node, vectype,
+					  0, vect_body);
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
@@ -1088,7 +1093,7 @@ vect_get_load_cost (vec_info *, stmt_vec_info stmt_info, slp_tree slp_node,
         /* Here, we assign an additional cost for the unaligned load.  */
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies,
 					  unaligned_load, stmt_info, slp_node,
-					  misalignment, vect_body);
+					  vectype, misalignment, vect_body);
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
@@ -1100,18 +1105,19 @@ vect_get_load_cost (vec_info *, stmt_vec_info stmt_info, slp_tree slp_node,
     case dr_explicit_realign:
       {
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies * 2,
-					  vector_load, stmt_info, slp_node, 0,
-					  vect_body);
+					  vector_load, stmt_info, slp_node,
+					  vectype, 0, vect_body);
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies,
-					  vec_perm, stmt_info, slp_node, 0,
-					  vect_body);
+					  vec_perm, stmt_info, slp_node,
+					  vectype, 0, vect_body);
 
         /* FIXME: If the misalignment remains fixed across the iterations of
            the containing loop, the following cost should be added to the
            prologue costs.  */
         if (targetm.vectorize.builtin_mask_for_load)
 	  *inside_cost += record_stmt_cost (body_cost_vec, 1, vector_stmt,
-					    stmt_info, slp_node, 0, vect_body);
+					    stmt_info, slp_node, vectype,
+					    0, vect_body);
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
@@ -1137,17 +1143,21 @@ vect_get_load_cost (vec_info *, stmt_vec_info stmt_info, slp_tree slp_node,
           {
 	    *prologue_cost += record_stmt_cost (prologue_cost_vec, 2,
 						vector_stmt, stmt_info,
-						slp_node, 0, vect_prologue);
+						slp_node, vectype,
+						0, vect_prologue);
             if (targetm.vectorize.builtin_mask_for_load)
 	      *prologue_cost += record_stmt_cost (prologue_cost_vec, 1,
 						  vector_stmt, stmt_info,
-						  slp_node, 0, vect_prologue);
+						  slp_node, vectype,
+						  0, vect_prologue);
           }
 
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies, vector_load,
-					  stmt_info, slp_node, 0, vect_body);
+					  stmt_info, slp_node, vectype,
+					  0, vect_body);
 	*inside_cost += record_stmt_cost (body_cost_vec, ncopies, vec_perm,
-					  stmt_info, slp_node, 0, vect_body);
+					  stmt_info, slp_node, vectype,
+					  0, vect_body);
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
