@@ -41,10 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 extern const struct scoped_attribute_specs grs_langhook_gnu_attribute_table;
 extern const struct scoped_attribute_specs grs_langhook_common_attribute_table;
 
-/* clang-format off */
-/* Disable clang-format because it insists in having the return type on a
-   single line (that's for definitions) */
-
 /* Internal attribute handlers for built-in functions.  */
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
@@ -63,8 +59,6 @@ static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *);
 /* Rust attribute handlers for user defined attributes.  */
 static tree handle_cold_attribute (tree *, tree, tree, int, bool *);
 static tree handle_hot_attribute (tree *, tree, tree, int, bool *);
-
-/* clang-format on */
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)                              \
