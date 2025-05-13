@@ -2949,7 +2949,9 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	  && BINFO_VIRTUAL_P (base_binfo)
 	  && fn && TREE_CODE (fn) == FUNCTION_DECL
 	  && move_fn_p (fn) && !trivial_fn_p (fn)
-	  && vbase_has_user_provided_move_assign (BINFO_TYPE (base_binfo)))
+	  && vbase_has_user_provided_move_assign (BINFO_TYPE (base_binfo))
+	  && warning_enabled_at (DECL_SOURCE_LOCATION (fn),
+				 OPT_Wvirtual_move_assign))
 	warning (OPT_Wvirtual_move_assign,
 		 "defaulted move assignment for %qT calls a non-trivial "
 		 "move assignment operator for virtual base %qT",
