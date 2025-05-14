@@ -198,8 +198,6 @@ RISCV_EXT_DEFS = \
 
 $(srcdir)/config/riscv/riscv-ext.opt: $(RISCV_EXT_DEFS)
 
-$(srcdir)/config/riscv/riscv-ext.opt: s-riscv-ext.opt ; @true
-
 build/gen-riscv-ext-opt$(build_exeext): $(srcdir)/config/riscv/gen-riscv-ext-opt.cc \
 	$(RISCV_EXT_DEFS)
 	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@
