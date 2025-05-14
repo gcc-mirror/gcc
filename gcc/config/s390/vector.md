@@ -938,7 +938,7 @@
       else
 	{
 	  reg_pair += 2;  // get rid of prefix %f
-	  snprintf (buf, sizeof (buf), "ldr\t%%f0,%%f1;vpdi\t%%%%v%s,%%v1,%%%%v%s,5", reg_pair, reg_pair);
+	  snprintf (buf, sizeof (buf), "vlr\t%%v0,%%v1;vpdi\t%%%%v%s,%%v1,%%%%v%s,5", reg_pair, reg_pair);
 	  output_asm_insn (buf, operands);
 	  return "";
 	}
