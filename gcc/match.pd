@@ -2845,7 +2845,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (&a + b) !=/== (&a[1] + c) -> (&a[0] - &a[1]) + b !=/== c */
 (for neeq (ne eq)
  (simplify
-  (neeq:c ADDR_EXPR@0 (pointer_plus @2 @3))
+  (neeq:c (pointer_plus @2 @3) ADDR_EXPR@0)
    (with { poly_int64 diff; tree inner_type = TREE_TYPE (@3);}
     (if (ptr_difference_const (@0, @2, &diff))
      (neeq { build_int_cst_type (inner_type, diff); } @3))))
@@ -7658,8 +7658,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 (for cmp (eq ne)
  (simplify
-  /* SSA names are canonicalized to 2nd place.  */
-  (cmp addr@0 SSA_NAME@1)
+  /* ADDRs are canonicalized to 2nd place.  */
+  (cmp SSA_NAME@1 addr@0)
   (with
    {
      poly_int64 off; tree base;

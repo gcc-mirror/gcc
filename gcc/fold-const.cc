@@ -7246,10 +7246,10 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1)
   if (TREE_CONSTANT (arg0))
     return true;
 
-  /* Put invariant address in arg1. */
-  if (is_gimple_invariant_address (arg1))
+  /* Put addresses in arg1. */
+  if (TREE_CODE (arg1) == ADDR_EXPR)
     return false;
-  if (is_gimple_invariant_address (arg0))
+  if (TREE_CODE (arg0) == ADDR_EXPR)
     return true;
 
   /* It is preferable to swap two SSA_NAME to ensure a canonical form
