@@ -28,9 +28,9 @@
 #ifndef _AVX512BWINTRIN_H_INCLUDED
 #define _AVX512BWINTRIN_H_INCLUDED
 
-#if !defined (__AVX512BW__) || defined (__EVEX512__)
+#if !defined (__AVX512BW__)
 #pragma GCC push_options
-#pragma GCC target("avx512bw,no-evex512")
+#pragma GCC target("avx512bw")
 #define __DISABLE_AVX512BW__
 #endif /* __AVX512BW__ */
 
@@ -345,17 +345,6 @@ _kandn_mask64 (__mmask64 __A, __mmask64 __B)
 {
   return (__mmask64) __builtin_ia32_kandndi ((__mmask64) __A, (__mmask64) __B);
 }
-
-#ifdef __DISABLE_AVX512BW__
-#undef __DISABLE_AVX512BW__
-#pragma GCC pop_options
-#endif /* __DISABLE_AVX512BW__ */
-
-#if !defined (__AVX512BW__) || !defined (__EVEX512__)
-#pragma GCC push_options
-#pragma GCC target("avx512bw,evex512")
-#define __DISABLE_AVX512BW_512__
-#endif /* __AVX512BW_512__ */
 
 /* Internal data types for implementing the intrinsics.  */
 typedef short __v32hi __attribute__ ((__vector_size__ (64)));
@@ -3369,8 +3358,8 @@ _mm512_bsrli_epi128 (__m512i __A, const int __N)
 
 #endif
 
-#ifdef __DISABLE_AVX512BW_512__
-#undef __DISABLE_AVX512BW_512__
+#ifdef __DISABLE_AVX512BW__
+#undef __DISABLE_AVX512BW__
 #pragma GCC pop_options
 #endif /* __DISABLE_AVX512BW_512__ */
 

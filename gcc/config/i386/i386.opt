@@ -36,13 +36,6 @@ HOST_WIDE_INT ix86_isa_flags_explicit
 Variable
 HOST_WIDE_INT ix86_isa_flags2_explicit
 
-; Indicate if AVX512 and AVX10.1 are explicitly set no.
-Variable
-int ix86_no_avx512_explicit = 0
-
-Variable
-int ix86_no_avx10_1_explicit = 0
-
 ; Additional target flags
 Variable
 int ix86_target_flags
@@ -102,14 +95,6 @@ HOST_WIDE_INT x_ix86_isa_flags2_explicit
 ;; which flags were passed by the user
 TargetSave
 HOST_WIDE_INT x_ix86_isa_flags_explicit
-
-;; which flags were passed by the user
-TargetSave
-HOST_WIDE_INT x_ix86_no_avx512_explicit
-
-;; which flags were passed by the user
-TargetSave
-HOST_WIDE_INT x_ix86_no_avx10_1_explicit
 
 ;; whether -mtune was not specified
 TargetSave
@@ -1351,38 +1336,24 @@ mapx-inline-asm-use-gpr32
 Target Var(ix86_apx_inline_asm_use_gpr32) Init(0)
 Enable GPR32 in inline asm when APX_F enabled.
 
-mevex512
-Target Mask(ISA2_EVEX512) Var(ix86_isa_flags2) Save Warn(%<-mevex512%> will be deprecated in GCC 16 due to all machines 512 bit vector size supported)
-Support 512 bit vector built-in functions and code generation.
-
 musermsr
 Target Mask(ISA2_USER_MSR) Var(ix86_isa_flags2) Save
 Support USER_MSR built-in functions and code generation.
 
-mavx10.1-256
-Target Mask(ISA2_AVX10_1_256) Var(ix86_isa_flags2) Save Warn(%<-mavx10.1%> is aliased to 512 bit since GCC14.3 and GCC15.1 while %<-mavx10.1-256%> and %<-mavx10.1-512%> will be deprecated in GCC 16 due to all machines 512 bit vector size supported)
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
-and AVX10.1-256 built-in functions and code generation.
-
 mavx10.1
-Target Mask(ISA2_AVX10_1) Var(ix86_isa_flags2) Save Warn(%<-mavx10.1%> is aliased to 512 bit since GCC14.3 and GCC15.1 while %<-mavx10.1-256%> and %<-mavx10.1-512%> will be deprecated in GCC 16 due to all machines 512 bit vector size supported)
+Target Mask(ISA2_AVX10_1) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
-and AVX10.1-512 built-in functions and code generation.
-
-mavx10.1-512
-Target Alias(mavx10.1)
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
-and AVX10.1-512 built-in functions and code generation.
+and AVX10.1 built-in functions and code generation.
 
 mavx10.2
 Target Mask(ISA2_AVX10_2) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
-AVX10.1-512 and AVX10.2 built-in functions and code generation.
+AVX10.1 and AVX10.2 built-in functions and code generation.
 
 mamx-avx512
 Target Mask(ISA2_AMX_AVX512) Var(ix86_isa_flags2) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512,
-AVX10.2 and AMX-AVX512 built-in functions and code generation.
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX10.1, AVX10.2 and AMX-AVX512 built-in functions and code generation.
 
 mamx-tf32
 Target Mask(ISA2_AMX_TF32) Var(ix86_isa_flags2) Save

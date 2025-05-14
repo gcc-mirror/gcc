@@ -28,9 +28,9 @@
 #ifndef _AVX512DQINTRIN_H_INCLUDED
 #define _AVX512DQINTRIN_H_INCLUDED
 
-#if !defined (__AVX512DQ__) || defined (__EVEX512__)
+#if !defined (__AVX512DQ__)
 #pragma GCC push_options
-#pragma GCC target("avx512dq,no-evex512")
+#pragma GCC target("avx512dq")
 #define __DISABLE_AVX512DQ__
 #endif /* __AVX512DQ__ */
 
@@ -638,17 +638,6 @@ _mm_mask_fpclass_sd_mask (__mmask8 __U, __m128d __A, const int __imm)
     (__mmask8)(U), (int)(R)))
 
 #endif
-
-#ifdef __DISABLE_AVX512DQ__
-#undef __DISABLE_AVX512DQ__
-#pragma GCC pop_options
-#endif /* __DISABLE_AVX512DQ__ */
-
-#if !defined (__AVX512DQ__) || !defined (__EVEX512__)
-#pragma GCC push_options
-#pragma GCC target("avx512dq,evex512")
-#define __DISABLE_AVX512DQ_512__
-#endif /* __AVX512DQ_512__ */
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -2897,9 +2886,9 @@ _mm512_fpclass_ps_mask (__m512 __A, const int __imm)
 
 #endif
 
-#ifdef __DISABLE_AVX512DQ_512__
-#undef __DISABLE_AVX512DQ_512__
+#ifdef __DISABLE_AVX512DQ__
+#undef __DISABLE_AVX512DQ__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX512DQ_512__ */
+#endif /* __DISABLE_AVX512DQ__ */
 
 #endif /* _AVX512DQINTRIN_H_INCLUDED */

@@ -1676,7 +1676,7 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
   enum ix86_builtins code;
   const machine_mode mode = TYPE_MODE (TREE_TYPE (mem_vectype));
 
-  if ((!TARGET_AVX512F || !TARGET_EVEX512) && GET_MODE_SIZE (mode) == 64)
+  if (!TARGET_AVX512F && GET_MODE_SIZE (mode) == 64)
     return NULL_TREE;
 
   if (! TARGET_AVX2

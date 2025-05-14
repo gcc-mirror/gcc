@@ -729,12 +729,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__SHA512__");
   if (isa_flag2 & OPTION_MASK_ISA2_SM4)
     def_or_undef (parse_in, "__SM4__");
-  if (isa_flag2 & OPTION_MASK_ISA2_EVEX512)
-    def_or_undef (parse_in, "__EVEX512__");
   if (isa_flag2 & OPTION_MASK_ISA2_USER_MSR)
     def_or_undef (parse_in, "__USER_MSR__");
-  if (isa_flag2 & OPTION_MASK_ISA2_AVX10_1_256)
-    def_or_undef (parse_in, "__AVX10_1_256__");
   if (isa_flag2 & OPTION_MASK_ISA2_AVX10_1)
     def_or_undef (parse_in, "__AVX10_1__");
   if (isa_flag2 & OPTION_MASK_ISA2_APX_F)

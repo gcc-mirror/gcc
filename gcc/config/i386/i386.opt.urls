@@ -590,20 +590,11 @@ UrlSuffix(gcc/x86-Options.html#index-mapxf)
 mapx-inline-asm-use-gpr32
 UrlSuffix(gcc/x86-Options.html#index-mapx-inline-asm-use-gpr32)
 
-mevex512
-UrlSuffix(gcc/x86-Options.html#index-mevex512)
-
 musermsr
 UrlSuffix(gcc/x86-Options.html#index-musermsr)
 
-mavx10.1-256
-UrlSuffix(gcc/x86-Options.html#index-mavx10_002e1-256)
-
 mavx10.1
 UrlSuffix(gcc/x86-Options.html#index-mavx10_002e1)
-
-mavx10.1-512
-UrlSuffix(gcc/x86-Options.html#index-mavx10_002e1-512)
 
 mavx10.2
 UrlSuffix(gcc/x86-Options.html#index-mavx10_002e2)

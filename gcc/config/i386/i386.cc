@@ -1997,8 +1997,7 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 	    if (GET_MODE_NUNITS (mode) == TYPE_VECTOR_SUBPARTS (type)
 		&& GET_MODE_INNER (mode) == innermode)
 	      {
-		if (size == 64 && (!TARGET_AVX512F || !TARGET_EVEX512)
-		    && !TARGET_IAMCU)
+		if (size == 64 && !TARGET_AVX512F && !TARGET_IAMCU)
 		  {
 		    static bool warnedavx512f;
 		    static bool warnedavx512f_ret;
@@ -4421,7 +4420,7 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 	  /* AVX512F values are returned in ZMM0 if available.  */
 	  if (size == 64)
-	    return !TARGET_AVX512F || !TARGET_EVEX512;
+	    return !TARGET_AVX512F;
 	}
 
       if (mode == XFmode)
@@ -5375,7 +5374,7 @@ standard_sse_constant_p (rtx x, machine_mode pred_mode)
       switch (GET_MODE_SIZE (mode))
 	{
 	case 64:
-	  if (TARGET_AVX512F && TARGET_EVEX512)
+	  if (TARGET_AVX512F)
 	    return 2;
 	  break;
 	case 32:
@@ -5428,10 +5427,8 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	    {
 	      if (TARGET_AVX512VL)
 		return "vpxord\t%x0, %x0, %x0";
-	      else if (TARGET_EVEX512)
-		return "vpxord\t%g0, %g0, %g0";
 	      else
-		gcc_unreachable ();
+		return "vpxord\t%g0, %g0, %g0";
 	    }
 	  return "vpxor\t%x0, %x0, %x0";
 
@@ -5447,19 +5444,15 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 		{
 		  if (TARGET_AVX512VL)
 		    return "vxorpd\t%x0, %x0, %x0";
-		  else if (TARGET_EVEX512)
-		    return "vxorpd\t%g0, %g0, %g0";
 		  else
-		    gcc_unreachable ();
+		    return "vxorpd\t%g0, %g0, %g0";
 		}
 	      else
 		{
 		  if (TARGET_AVX512VL)
 		    return "vpxorq\t%x0, %x0, %x0";
-		  else if (TARGET_EVEX512)
-		    return "vpxorq\t%g0, %g0, %g0";
 		  else
-		    gcc_unreachable ();
+		    return "vpxorq\t%g0, %g0, %g0";
 		}
 	    }
 	  return "vxorpd\t%x0, %x0, %x0";
@@ -5476,19 +5469,15 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 		{
 		  if (TARGET_AVX512VL)
 		    return "vxorps\t%x0, %x0, %x0";
-		  else if (TARGET_EVEX512)
-		    return "vxorps\t%g0, %g0, %g0";
 		  else
-		    gcc_unreachable ();
+		    return "vxorps\t%g0, %g0, %g0";
 		}
 	      else
 		{
 		  if (TARGET_AVX512VL)
 		    return "vpxord\t%x0, %x0, %x0";
-		  else if (TARGET_EVEX512)
-		    return "vpxord\t%g0, %g0, %g0";
 		  else
-		    gcc_unreachable ();
+		    return "vpxord\t%g0, %g0, %g0";
 		}
 	    }
 	  return "vxorps\t%x0, %x0, %x0";
@@ -5509,7 +5498,7 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	case MODE_XI:
 	case MODE_V8DF:
 	case MODE_V16SF:
-	  gcc_assert (TARGET_AVX512F && TARGET_EVEX512);
+	  gcc_assert (TARGET_AVX512F);
 	  return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
 
 	case MODE_OI:
@@ -5525,10 +5514,8 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	    {
 	      if (TARGET_AVX512VL)
 		return "vpternlogd\t{$0xFF, %0, %0, %0|%0, %0, %0, 0xFF}";
-	      else if (TARGET_EVEX512)
-		return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
 	      else
-		gcc_unreachable ();
+		return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
 	    }
 	  return (TARGET_AVX
 		  ? "vpcmpeqd\t%0, %0, %0"
@@ -5542,7 +5529,7 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
     {
       if (GET_MODE_SIZE (mode) == 64)
 	{
-	  gcc_assert (TARGET_AVX512F && TARGET_EVEX512);
+	  gcc_assert (TARGET_AVX512F);
 	  return "vpcmpeqd\t%t0, %t0, %t0";
 	}
       else if (GET_MODE_SIZE (mode) == 32)
@@ -5554,7 +5541,7 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
     }
   else if (vector_all_ones_zero_extend_quarter_operand (x, mode))
     {
-      gcc_assert (TARGET_AVX512F && TARGET_EVEX512);
+      gcc_assert (TARGET_AVX512F);
       return "vpcmpeqd\t%x0, %x0, %x0";
     }
 
@@ -5665,8 +5652,6 @@ ix86_get_ssemov (rtx *operands, unsigned size,
 	  || memory_operand (operands[1], mode))
 	gcc_unreachable ();
       size = 64;
-      /* We need TARGET_EVEX512 to move into zmm register.  */
-      gcc_assert (TARGET_EVEX512);
       switch (type)
 	{
 	case opcode_int:
@@ -11419,7 +11404,7 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
 	case E_OImode:
 	case E_XImode:
 	  if (!standard_sse_constant_p (x, mode)
-	      && GET_MODE_SIZE (TARGET_AVX512F && TARGET_EVEX512
+	      && GET_MODE_SIZE (TARGET_AVX512F
 				? XImode
 				: (TARGET_AVX
 				   ? OImode
@@ -20316,12 +20301,8 @@ ix86_vectorize_builtin_scatter (const_tree vectype,
 {
   bool si;
   enum ix86_builtins code;
-  const machine_mode mode = TYPE_MODE (TREE_TYPE (vectype));
 
   if (!TARGET_AVX512F)
-    return NULL_TREE;
-
-  if (!TARGET_EVEX512 && GET_MODE_SIZE (mode) == 64)
     return NULL_TREE;
 
   if (known_eq (TYPE_VECTOR_SUBPARTS (vectype), 2u)
@@ -21445,7 +21426,7 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	  - any of 512-bit wide vector mode
 	  - any scalar mode.  */
       if (TARGET_AVX512F
-	  && ((VALID_AVX512F_REG_OR_XI_MODE (mode) && TARGET_EVEX512)
+	  && ((VALID_AVX512F_REG_OR_XI_MODE (mode))
 	      || VALID_AVX512F_SCALAR_MODE (mode)))
 	return true;
 
@@ -21687,7 +21668,7 @@ ix86_set_reg_reg_cost (machine_mode mode)
 
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
-      if ((TARGET_AVX512F && TARGET_EVEX512 && VALID_AVX512F_REG_MODE (mode))
+      if ((TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
 	  || (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
 	  || (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
 	  || (TARGET_SSE && VALID_SSE_REG_MODE (mode))
@@ -22143,9 +22124,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
   /* Handling different vternlog variants.  */
   if ((GET_MODE_SIZE (mode) == 64
-       ? (TARGET_AVX512F && TARGET_EVEX512)
+       ? TARGET_AVX512F
        : (TARGET_AVX512VL
-	  || (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)))
+	  || (TARGET_AVX512F && !TARGET_PREFER_AVX256)))
       && GET_MODE_SIZE (mode) >= 16
       && outer_code_i == SET
       && ternlog_operand (x, mode))
@@ -22494,8 +22475,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	{
 	  /* (ior (not ...) ...) can be a single insn in AVX512.  */
 	  if (GET_CODE (XEXP (x, 0)) == NOT && TARGET_AVX512F
-	      && ((TARGET_EVEX512
-		   && GET_MODE_SIZE (mode) == 64)
+	      && (GET_MODE_SIZE (mode) == 64
 		  || (TARGET_AVX512VL
 		      && (GET_MODE_SIZE (mode) == 32
 			  || GET_MODE_SIZE (mode) == 16))))
@@ -22586,8 +22566,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
 	      /* (and (not ...) (not ...)) can be a single insn in AVX512.  */
 	      if (GET_CODE (right) == NOT && TARGET_AVX512F
-		  && ((TARGET_EVEX512
-		       && GET_MODE_SIZE (mode) == 64)
+		  && (GET_MODE_SIZE (mode) == 64
 		      || (TARGET_AVX512VL
 			  && (GET_MODE_SIZE (mode) == 32
 			      || GET_MODE_SIZE (mode) == 16))))
@@ -22657,8 +22636,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	{
 	  /* (not (xor ...)) can be a single insn in AVX512.  */
 	  if (GET_CODE (XEXP (x, 0)) == XOR && TARGET_AVX512F
-	      && ((TARGET_EVEX512
-		   && GET_MODE_SIZE (mode) == 64)
+	      && (GET_MODE_SIZE (mode) == 64
 		  || (TARGET_AVX512VL
 		      && (GET_MODE_SIZE (mode) == 32
 			  || GET_MODE_SIZE (mode) == 16))))
@@ -24570,7 +24548,7 @@ ix86_vector_mode_supported_p (machine_mode mode)
     return true;
   if (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
     return true;
-  if (TARGET_AVX512F && TARGET_EVEX512 && VALID_AVX512F_REG_MODE (mode))
+  if (TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
     return true;
   if ((TARGET_MMX || TARGET_MMX_WITH_SSE)
       && VALID_MMX_REG_MODE (mode))
@@ -25367,7 +25345,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
   switch (mode)
     {
     case E_QImode:
-      if (TARGET_AVX512BW && TARGET_EVEX512 && !TARGET_PREFER_AVX256)
+      if (TARGET_AVX512BW && !TARGET_PREFER_AVX256)
 	return V64QImode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V32QImode;
@@ -25375,7 +25353,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
 	return V16QImode;
 
     case E_HImode:
-      if (TARGET_AVX512BW && TARGET_EVEX512 && !TARGET_PREFER_AVX256)
+      if (TARGET_AVX512BW && !TARGET_PREFER_AVX256)
 	return V32HImode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V16HImode;
@@ -25383,7 +25361,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
 	return V8HImode;
 
     case E_SImode:
-      if (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V16SImode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V8SImode;
@@ -25391,7 +25369,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
 	return V4SImode;
 
     case E_DImode:
-      if (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V8DImode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V4DImode;
@@ -25405,16 +25383,15 @@ ix86_preferred_simd_mode (scalar_mode mode)
 	    {
 	      if (TARGET_PREFER_AVX128)
 		return V8HFmode;
-	      else if (TARGET_PREFER_AVX256 || !TARGET_EVEX512)
+	      else if (TARGET_PREFER_AVX256)
 		return V16HFmode;
 	    }
-	  if (TARGET_EVEX512)
-	    return V32HFmode;
+	  return V32HFmode;
 	}
       return word_mode;
 
     case E_BFmode:
-      if (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V32BFmode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V16BFmode;
@@ -25422,7 +25399,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
 	return V8BFmode;
 
     case E_SFmode:
-      if (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V16SFmode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V8SFmode;
@@ -25430,7 +25407,7 @@ ix86_preferred_simd_mode (scalar_mode mode)
 	return V4SFmode;
 
     case E_DFmode:
-      if (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)
+      if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
 	return V8DFmode;
       else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V4DFmode;
@@ -25450,13 +25427,13 @@ ix86_preferred_simd_mode (scalar_mode mode)
 static unsigned int
 ix86_autovectorize_vector_modes (vector_modes *modes, bool all)
 {
-  if (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)
+  if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
     {
       modes->safe_push (V64QImode);
       modes->safe_push (V32QImode);
       modes->safe_push (V16QImode);
     }
-  else if (TARGET_AVX512F && TARGET_EVEX512 && all)
+  else if (TARGET_AVX512F && all)
     {
       modes->safe_push (V32QImode);
       modes->safe_push (V16QImode);
@@ -25494,7 +25471,7 @@ ix86_get_mask_mode (machine_mode data_mode)
   unsigned elem_size = vector_size / nunits;
 
   /* Scalar mask case.  */
-  if ((TARGET_AVX512F && TARGET_EVEX512 && vector_size == 64)
+  if ((TARGET_AVX512F && vector_size == 64)
       || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16))
       /* AVX512FP16 only supports vector comparison
 	 to kmask for _Float16.  */
@@ -26281,7 +26258,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
     {
       /* If the function isn't exported, we can pick up just one ISA
 	 for the clones.  */
-      if (TARGET_AVX512F && TARGET_EVEX512)
+      if (TARGET_AVX512F)
 	clonei->vecsize_mangle = 'e';
       else if (TARGET_AVX2)
 	clonei->vecsize_mangle = 'd';
@@ -26373,17 +26350,17 @@ ix86_simd_clone_usable (struct cgraph_node *node, machine_mode)
 	return -1;
       if (!TARGET_AVX)
 	return 0;
-      return (TARGET_AVX512F && TARGET_EVEX512) ? 3 : TARGET_AVX2 ? 2 : 1;
+      return TARGET_AVX512F ? 3 : TARGET_AVX2 ? 2 : 1;
     case 'c':
       if (!TARGET_AVX)
 	return -1;
-      return (TARGET_AVX512F && TARGET_EVEX512) ? 2 : TARGET_AVX2 ? 1 : 0;
+      return TARGET_AVX512F ? 2 : TARGET_AVX2 ? 1 : 0;
     case 'd':
       if (!TARGET_AVX2)
 	return -1;
-      return (TARGET_AVX512F && TARGET_EVEX512) ? 1 : 0;
+      return TARGET_AVX512F ? 1 : 0;
     case 'e':
-      if (!TARGET_AVX512F || !TARGET_EVEX512)
+      if (!TARGET_AVX512F)
 	return -1;
       return 0;
     default:
