@@ -4371,6 +4371,8 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 	  mpz_clear (sz);
 	  *asterisk = false;
 	}
+      else
+	*asterisk = true;
     }
   return ret;
 }
