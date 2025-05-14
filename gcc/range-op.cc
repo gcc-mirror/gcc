@@ -3716,14 +3716,34 @@ operator_bitwise_and::op1_range (irange &r, tree type,
       return true;
     }
 
+  if (!op2.singleton_p (mask))
+    return true;
+
   // For 0 = op1 & MASK, op1 is ~MASK.
-  if (lhs.zero_p () && op2.singleton_p ())
+  if (lhs.zero_p ())
     {
       wide_int nz = wi::bit_not (op2.get_nonzero_bits ());
       int_range<2> tmp (type);
       tmp.set_nonzero_bits (nz);
       r.intersect (tmp);
     }
+
+  irange_bitmask lhs_bm = lhs.get_bitmask ();
+  // given   [5,7]  mask 0x3 value 0x4 =  N &  [7, 7] mask 0x0 value 0x7
+  // Nothing is known about the bits not specified in the mask value (op2),
+  //  Start with the mask, 1's will occur where values were masked.
+  wide_int op1_mask = ~mask;
+  // Any bits that are unknown on the LHS are also unknown in op1,
+  // so union the current mask with the LHS mask.
+  op1_mask |= lhs_bm.mask ();
+  // The resulting zeros correspond to known bits in the LHS mask, and
+  // the LHS value should tell us what they are.  Mask off any
+  // extraneous values thats are not convered by the mask.
+  wide_int op1_value = lhs_bm.value () & ~op1_mask;
+  irange_bitmask op1_bm (op1_value, op1_mask);
+  // INtersect this mask with anything already known about the value.
+  op1_bm.intersect (r.get_bitmask ());
+  r.update_bitmask (op1_bm);
   return true;
 }
 
