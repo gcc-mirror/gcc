@@ -1183,6 +1183,7 @@ gfc_simplify_asin (gfc_expr *x)
 }
 
 
+#if MPFR_VERSION < MPFR_VERSION_NUM(4,2,0)
 /* Convert radians to degrees, i.e., x * 180 / pi.  */
 
 static void
@@ -1196,6 +1197,7 @@ rad2deg (mpfr_t x)
   mpfr_div (x, x, tmp, GFC_RND_MODE);
   mpfr_clear (tmp);
 }
+#endif
 
 
 /* Simplify ACOSD(X) where the returned value has units of degree.  */
@@ -1217,8 +1219,12 @@ gfc_simplify_acosd (gfc_expr *x)
     }
 
   result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+#if MPFR_VERSION >= MPFR_VERSION_NUM(4,2,0)
+  mpfr_acosu (result->value.real, x->value.real, 360, GFC_RND_MODE);
+#else
   mpfr_acos (result->value.real, x->value.real, GFC_RND_MODE);
   rad2deg (result->value.real);
+#endif
 
   return range_check (result, "ACOSD");
 }
@@ -1243,8 +1249,12 @@ gfc_simplify_asind (gfc_expr *x)
     }
 
   result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+#if MPFR_VERSION >= MPFR_VERSION_NUM(4,2,0)
+  mpfr_asinu (result->value.real, x->value.real, 360, GFC_RND_MODE);
+#else
   mpfr_asin (result->value.real, x->value.real, GFC_RND_MODE);
   rad2deg (result->value.real);
+#endif
 
   return range_check (result, "ASIND");
 }
@@ -1261,8 +1271,12 @@ gfc_simplify_atand (gfc_expr *x)
     return NULL;
 
   result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+#if MPFR_VERSION >= MPFR_VERSION_NUM(4,2,0)
+  mpfr_atanu (result->value.real, x->value.real, 360, GFC_RND_MODE);
+#else
   mpfr_atan (result->value.real, x->value.real, GFC_RND_MODE);
   rad2deg (result->value.real);
+#endif
 
   return range_check (result, "ATAND");
 }
@@ -1954,8 +1968,13 @@ gfc_simplify_atan2d (gfc_expr *y, gfc_expr *x)
     }
 
   result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+#if MPFR_VERSION >= MPFR_VERSION_NUM(4,2,0)
+  mpfr_atan2u (result->value.real, y->value.real, x->value.real, 360,
+	       GFC_RND_MODE);
+#else
   mpfr_atan2 (result->value.real, y->value.real, x->value.real, GFC_RND_MODE);
   rad2deg (result->value.real);
+#endif
 
   return range_check (result, "ATAN2D");
 }
@@ -1990,6 +2009,8 @@ gfc_simplify_cos (gfc_expr *x)
 }
 
 
+#if MPFR_VERSION < MPFR_VERSION_NUM(4,2,0)
+/* Used by trigd_fe.inc.  */
 static void
 deg2rad (mpfr_t x)
 {
@@ -2001,11 +2022,13 @@ deg2rad (mpfr_t x)
   mpfr_mul (x, x, d2r, GFC_RND_MODE);
   mpfr_clear (d2r);
 }
+#endif
 
 
+#if MPFR_VERSION < MPFR_VERSION_NUM(4,2,0)
 /* Simplification routines for SIND, COSD, TAND.  */
 #include "trigd_fe.inc"
-
+#endif
 
 /* Simplify COSD(X) where X has the unit of degree.  */
 
@@ -2018,8 +2041,12 @@ gfc_simplify_cosd (gfc_expr *x)
     return NULL;
 
   result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+#if MPFR_VERSION >= MPFR_VERSION_NUM(4,2,0)
+  mpfr_cosu (result->value.real, x->value.real, 360, GFC_RND_MODE);
+#else
   mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
   simplify_cosd (result->value.real);
+#endif
 
   return range_check (result, "COSD");
 }
@@ -2036,8 +2063,12 @@ gfc_simplify_sind (gfc_expr *x)
     return NULL;
 
   result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+#if MPFR_VERSION >= MPFR_VERSION_NUM(4,2,0)
+  mpfr_sinu (result->value.real, x->value.real, 360, GFC_RND_MODE);
+#else
   mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
   simplify_sind (result->value.real);
+#endif
 
   return range_check (result, "SIND");
 }
@@ -2054,8 +2085,12 @@ gfc_simplify_tand (gfc_expr *x)
     return NULL;
 
   result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+#if MPFR_VERSION >= MPFR_VERSION_NUM(4,2,0)
+  mpfr_tanu (result->value.real, x->value.real, 360, GFC_RND_MODE);
+#else
   mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
   simplify_tand (result->value.real);
+#endif
 
   return range_check (result, "TAND");
 }
@@ -2078,7 +2113,11 @@ gfc_simplify_cotand (gfc_expr *x)
   result = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
   mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
   mpfr_add_ui (result->value.real, result->value.real, 90, GFC_RND_MODE);
+#if MPFR_VERSION >= MPFR_VERSION_NUM(4,2,0)
+  mpfr_tanu (result->value.real, x->value.real, 360, GFC_RND_MODE);
+#else
   simplify_tand (result->value.real);
+#endif
   mpfr_neg (result->value.real, result->value.real, GFC_RND_MODE);
 
   return range_check (result, "COTAND");
