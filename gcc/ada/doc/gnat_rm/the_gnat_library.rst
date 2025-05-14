@@ -2037,7 +2037,7 @@ technically an implementation-defined addition).
 
 This package provides facilities for partition interfacing.  It
 is used primarily in a distribution context when using Annex E
-with ``GLADE``.
+with ``PolyORB``.
 
 .. _`System.Pool_Global_(s-pooglo.ads)`:
 

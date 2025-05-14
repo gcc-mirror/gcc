@@ -15905,8 +15905,7 @@ should allow them to block until the corresponding subprogram body
 returns.”
 @end quotation
 
-Followed by GLADE, a separately supplied PCS that can be used with
-GNAT.
+A separately supplied PCS that can be used with GNAT when combined with the PolyORB product.
 
 @quotation
 
@@ -15914,9 +15913,6 @@ GNAT.
 should raise @code{Storage_Error} if it runs out of space trying to
 write the @code{Item} into the stream.”
 @end quotation
-
-Followed by GLADE, a separately supplied PCS that can be used with
-GNAT.
 
 @geindex COBOL support
 
@@ -16759,11 +16755,7 @@ may have been set by a call to @code{Ada.Command_Line.Set_Exit_Status}).
 “The mechanisms for building and running partitions.  See 10.2(24).”
 @end itemize
 
-GNAT itself supports programs with only a single partition. The GNATDIST
-tool provided with the GLADE package (which also includes an implementation
-of the PCS) provides a completely flexible method for building and running
-programs consisting of multiple partitions. See the separate GLADE manual
-for details.
+GNAT itself supports programs with only a single partition. The PolyORB product (which also includes an implementation of the PCS) provides a completely flexible method for building and running programs consisting of multiple partitions. See the separate PolyORB user guide for details.
 
 
 @itemize *
@@ -16784,7 +16776,7 @@ implementation.  See 10.2(28).”
 @end itemize
 
 Passive partitions are supported on targets where shared memory is
-provided by the operating system. See the GLADE reference manual for
+provided by the operating system. See the PolyORB user guide for
 further details.
 
 
@@ -18170,8 +18162,8 @@ Unknown.
 programs.  See E(5).”
 @end itemize
 
-The GLADE package provides a utility GNATDIST for creating and executing
-distributed programs. See the GLADE reference manual for further details.
+The PolyORB product provides means creating and executing
+distributed programs. See the PolyORB user guide for further details.
 
 
 @itemize *
@@ -18181,7 +18173,7 @@ distributed programs. See the GLADE reference manual for further details.
 inaccessible.  See E.1(7).”
 @end itemize
 
-See the GLADE reference manual for full details on such events.
+See the PolyORB user guide for full details on such events.
 
 
 @itemize *
@@ -18191,7 +18183,7 @@ See the GLADE reference manual for full details on such events.
 shared resources between partitions in certain cases.  See E.1(11).”
 @end itemize
 
-See the GLADE reference manual for full details on these aspects of
+See the PolyORB user guide for full details on these aspects of
 multi-partition execution.
 
 
@@ -18202,7 +18194,7 @@ multi-partition execution.
 immediately aborted as a result of cancellation.  See E.4(13).”
 @end itemize
 
-See the GLADE reference manual for details on the effect of abort in
+See the PolyORB user guide for details on the effect of abort in
 a distributed application.
 
 
@@ -18221,7 +18213,7 @@ System.RPC.Partition_ID’Last is Integer’Last. See source file @code{s-rpc.ad
 “Implementation-defined interfaces in the PCS.  See E.5(26).”
 @end itemize
 
-See the GLADE reference manual for a full description of all
+See the PolyORB user guide for a full description of all
 implementation defined interfaces.
 
 
@@ -25641,7 +25633,7 @@ technically an implementation-defined addition).
 
 This package provides facilities for partition interfacing.  It
 is used primarily in a distribution context when using Annex E
-with @code{GLADE}.
+with @code{PolyORB}.
 
 @node System Pool_Global s-pooglo ads,System Pool_Local s-pooloc ads,System Partition_Interface s-parint ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library id141}@anchor{409}@anchor{gnat_rm/the_gnat_library system-pool-global-s-pooglo-ads}@anchor{40a}
@@ -26211,9 +26203,8 @@ The Real-Time Systems Annex is fully implemented.
 @item `Distributed Systems (Annex E)'
 
 Stub generation is fully implemented in the GNAT compiler.  In addition,
-a complete compatible PCS is available as part of the GLADE system,
-a separate product.  When the two
-products are used in conjunction, this annex is fully implemented.
+a complete compatible PCS is available as part of @code{PolyORB},
+a separate product. Note, that PolyORB is a deprecated product and will be eventually replaced with other technologies such as @code{RTI}.
 
 @item `Information Systems (Annex F)'
 

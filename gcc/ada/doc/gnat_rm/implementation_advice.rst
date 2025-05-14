@@ -1218,15 +1218,11 @@ RM E.5(28-29): Partition Communication Subsystem
   should allow them to block until the corresponding subprogram body
   returns."
 
-Followed by GLADE, a separately supplied PCS that can be used with
-GNAT.
+A separately supplied PCS that can be used with GNAT when combined with the PolyORB product.
 
   "The ``Write`` operation on a stream of type ``Params_Stream_Type``
   should raise ``Storage_Error`` if it runs out of space trying to
   write the ``Item`` into the stream."
-
-Followed by GLADE, a separately supplied PCS that can be used with
-GNAT.
 
 .. index:: COBOL support
 

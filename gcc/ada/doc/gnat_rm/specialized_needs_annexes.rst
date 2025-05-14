@@ -18,9 +18,8 @@ GNAT implements all of these annexes:
 
 *Distributed Systems (Annex E)*
   Stub generation is fully implemented in the GNAT compiler.  In addition,
-  a complete compatible PCS is available as part of the GLADE system,
-  a separate product.  When the two
-  products are used in conjunction, this annex is fully implemented.
+  a complete compatible PCS is available as part of ``PolyORB``,
+  a separate product. Note, that PolyORB is a deprecated product and will be eventually replaced with other technologies such as ``RTI``.
 
 
 *Information Systems (Annex F)*
@@ -34,4 +33,3 @@ GNAT implements all of these annexes:
 *Safety and Security / High-Integrity Systems (Annex H)*
   The Safety and Security Annex (termed the High-Integrity Systems Annex
   in Ada 2005) is fully implemented.
-

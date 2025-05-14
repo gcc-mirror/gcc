@@ -377,11 +377,7 @@ may have been set by a call to ``Ada.Command_Line.Set_Exit_Status``).
 *
   "The mechanisms for building and running partitions.  See 10.2(24)."
 
-GNAT itself supports programs with only a single partition. The GNATDIST
-tool provided with the GLADE package (which also includes an implementation
-of the PCS) provides a completely flexible method for building and running
-programs consisting of multiple partitions. See the separate GLADE manual
-for details.
+GNAT itself supports programs with only a single partition. The PolyORB product (which also includes an implementation of the PCS) provides a completely flexible method for building and running programs consisting of multiple partitions. See the separate PolyORB user guide for details.
 
 *
   "The details of program execution, including program
@@ -394,7 +390,7 @@ See separate section on compilation model.
   implementation.  See 10.2(28)."
 
 Passive partitions are supported on targets where shared memory is
-provided by the operating system. See the GLADE reference manual for
+provided by the operating system. See the PolyORB user guide for
 further details.
 
 *
@@ -1188,27 +1184,27 @@ Unknown.
   "The means for creating and executing distributed
   programs.  See E(5)."
 
-The GLADE package provides a utility GNATDIST for creating and executing
-distributed programs. See the GLADE reference manual for further details.
+The PolyORB product provides means creating and executing
+distributed programs. See the PolyORB user guide for further details.
 
 *
   "Any events that can result in a partition becoming
   inaccessible.  See E.1(7)."
 
-See the GLADE reference manual for full details on such events.
+See the PolyORB user guide for full details on such events.
 
 *
   "The scheduling policies, treatment of priorities, and management of
   shared resources between partitions in certain cases.  See E.1(11)."
 
-See the GLADE reference manual for full details on these aspects of
+See the PolyORB user guide for full details on these aspects of
 multi-partition execution.
 
 *
   "Whether the execution of the remote subprogram is
   immediately aborted as a result of cancellation.  See E.4(13)."
 
-See the GLADE reference manual for details on the effect of abort in
+See the PolyORB user guide for details on the effect of abort in
 a distributed application.
 
 *
@@ -1219,7 +1215,7 @@ System.RPC.Partition_ID'Last is Integer'Last. See source file :file:`s-rpc.ads`.
 *
   "Implementation-defined interfaces in the PCS.  See E.5(26)."
 
-See the GLADE reference manual for a full description of all
+See the PolyORB user guide for a full description of all
 implementation defined interfaces.
 
 *
