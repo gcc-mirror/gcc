@@ -26156,14 +26156,10 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
   /* When X86_TUNE_AVX512_TWO_EPILOGUES is enabled arrange for both
      a AVX2 and a SSE epilogue for AVX512 vectorized loops.  */
   if (loop_vinfo
+      && LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+      && GET_MODE_SIZE (loop_vinfo->vector_mode) == 32
       && ix86_tune_features[X86_TUNE_AVX512_TWO_EPILOGUES])
-    {
-      if (GET_MODE_SIZE (loop_vinfo->vector_mode) == 64)
-	m_suggested_epilogue_mode = V32QImode;
-      else if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
-	       && GET_MODE_SIZE (loop_vinfo->vector_mode) == 32)
-	m_suggested_epilogue_mode = V16QImode;
-    }
+    m_suggested_epilogue_mode = V16QImode;
   /* When a 128bit SSE vectorized epilogue still has a VF of 16 or larger
      enable a 64bit SSE epilogue.  */
   if (loop_vinfo
