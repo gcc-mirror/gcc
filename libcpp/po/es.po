@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: cpplib 15.1-b20250316\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-03-14 22:05+0000\n"
-"PO-Revision-Date: 2025-05-12 11:20-0600\n"
+"PO-Revision-Date: 2025-05-14 12:48-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@cfuga.mx>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -204,7 +204,7 @@ msgstr "%<\\x{%> no termina con %<}%> después de %.*s"
 
 #: charset.cc:2204
 msgid "hex escape sequence out of range"
-msgstr "secuencia de escape hexadecimal fuera de rango"
+msgstr "secuencia de escape hexadecimal fuera de intervalo"
 
 #: charset.cc:2247
 #, gcc-internal-format
@@ -218,7 +218,7 @@ msgstr "%<\\o{%> no termina con %<}%> después de %.*s"
 
 #: charset.cc:2314
 msgid "octal escape sequence out of range"
-msgstr "secuencia de escape octal fuera de rango"
+msgstr "secuencia de escape octal fuera de intervalo"
 
 #: charset.cc:2366 charset.cc:2376
 #, gcc-internal-format
@@ -485,7 +485,7 @@ msgstr "%qs después de %<#line%> no es un entero positivo"
 
 #: directives.cc:1513 directives.cc:1516
 msgid "line number out of range"
-msgstr "número de línea fuera de rango"
+msgstr "número de línea fuera de intervalo"
 
 #: directives.cc:1529 directives.cc:1610
 #, gcc-internal-format
