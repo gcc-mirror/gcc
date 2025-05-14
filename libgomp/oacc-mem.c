@@ -979,7 +979,7 @@ acc_attach_async (void **hostaddr, int async)
     }
 
   gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, n, (uintptr_t) hostaddr,
-		       0, NULL, false);
+		       0, NULL, false, true);
 
   gomp_mutex_unlock (&acc_dev->lock);
 }
@@ -1215,7 +1215,7 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	  if ((kinds[i] & 0xff) == GOMP_MAP_ATTACH)
 	    {
 	      gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, n,
-				   (uintptr_t) h, s, NULL, false);
+				   (uintptr_t) h, s, NULL, false, true);
 	      /* OpenACC 'attach'/'detach' doesn't affect structured/dynamic
 		 reference counts ('n->refcount', 'n->dynamic_refcount').  */
 	    }
@@ -1233,7 +1233,7 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 		  = lookup_host (acc_dev, hostaddrs[j], sizeof (void *));
 		gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, m,
 				     (uintptr_t) hostaddrs[j], sizes[j], NULL,
-				     false);
+				     false, true);
 	      }
 
 	  bool processed = false;

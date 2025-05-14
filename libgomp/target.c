@@ -800,12 +800,22 @@ gomp_map_fields_existing (struct target_mem_desc *tgt,
 	      (void *) cur_node.host_end);
 }
 
-attribute_hidden void
+/* Update the devptr by setting it to the device address of the host pointee
+   'attach_to'; devptr is obtained from the splay_tree_key n.
+   When the pointer is already attached or the host pointee is either
+   NULL or in memory map, this function returns true.
+   Otherwise, the device pointer is set to point to the host pointee and:
+   - If allow_zero_length_array_sections is set, true is returned.
+   - Else, if fail_if_not_found is set, a fatal error is issued.
+   - Otherwise, false is returned.  */
+
+attribute_hidden bool
 gomp_attach_pointer (struct gomp_device_descr *devicep,
 		     struct goacc_asyncqueue *aq, splay_tree mem_map,
 		     splay_tree_key n, uintptr_t attach_to, size_t bias,
 		     struct gomp_coalesce_buf *cbufp,
-		     bool allow_zero_length_array_sections)
+		     bool allow_zero_length_array_sections,
+		     bool fail_if_not_found)
 {
   struct splay_tree_key_s s;
   size_t size, idx;
@@ -860,7 +870,7 @@ gomp_attach_pointer (struct gomp_device_descr *devicep,
 	  gomp_copy_host2dev (devicep, aq, (void *) devptr, (void *) &data,
 			      sizeof (void *), true, cbufp);
 
-	  return;
+	  return true;
 	}
 
       s.host_start = target + bias;
@@ -869,15 +879,16 @@ gomp_attach_pointer (struct gomp_device_descr *devicep,
 
       if (!tn)
 	{
-	  if (allow_zero_length_array_sections)
-	    /* When allowing attachment to zero-length array sections, we
-	       copy the host pointer when the target region is not mapped.  */
-	    data = target;
-	  else
+	  /* We copy the host pointer when the target region is not mapped;
+	     for allow_zero_length_array_sections, that's permitted.
+	     Otherwise, it depends on the context. Return false in that
+	     case, unless fail_if_not_found.  */
+	  if (!allow_zero_length_array_sections && fail_if_not_found)
 	    {
 	      gomp_mutex_unlock (&devicep->lock);
 	      gomp_fatal ("pointer target not mapped for attach");
 	    }
+	  data = target;
 	}
       else
 	data = tn->tgt->tgt_start + tn->tgt_offset + target - tn->host_start;
@@ -889,10 +900,13 @@ gomp_attach_pointer (struct gomp_device_descr *devicep,
 
       gomp_copy_host2dev (devicep, aq, (void *) devptr, (void *) &data,
 			  sizeof (void *), true, cbufp);
+      if (!tn && !allow_zero_length_array_sections)
+	return false;
     }
   else
     gomp_debug (1, "%s: attach count for %p -> %u\n", __FUNCTION__,
 		(void *) attach_to, (int) n->aux->attach_count[idx]);
+  return true;
 }
 
 attribute_hidden void
@@ -1794,9 +1808,37 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		      bool zlas
 			= ((kind & typemask)
 			   == GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION);
-		      gomp_attach_pointer (devicep, aq, mem_map, n,
-					   (uintptr_t) hostaddrs[i], sizes[i],
-					   cbufp, zlas);
+		      /* For 'target enter data', the map clauses are split;
+			 however, for more complex code with struct and
+			 pointer members, the mapping and the attach can end up
+			 in different sets; or the wrong mapping with the
+			 attach. As there is no way to know whether a size
+			 zero like  'var->ptr[i][:0]' happend in the same
+			 directive or not, the not-attached check is now
+			 fully silenced for 'enter data'.  */
+		      if (openmp_p && (pragma_kind & GOMP_MAP_VARS_ENTER_DATA))
+			zlas = true;
+		      if (!gomp_attach_pointer (devicep, aq, mem_map, n,
+						(uintptr_t) hostaddrs[i], sizes[i],
+						cbufp, zlas, !openmp_p))
+			{
+			  /* Pointee not found; that's an error except for
+			     map(var[:n]) with n == 0; the compiler adds a
+			     runtime condition such that for those the kind is
+			     always GOMP_MAP_ZERO_LEN_ARRAY_SECTION.  */
+			  for (j = i; j > 0; j--)
+			    if (*(void**) hostaddrs[i] == hostaddrs[j-1] - sizes[i]
+				&& sizes[j-1] == 0
+				&& (GOMP_MAP_ZERO_LEN_ARRAY_SECTION
+				    == (get_kind (short_mapkind, kinds, j-1)
+					& typemask)))
+			      break;
+			  if (j == 0)
+			    {
+			      gomp_mutex_unlock (&devicep->lock);
+			      gomp_fatal ("pointer target not mapped for attach");
+			    }
+			}
 		    }
 		  else if ((pragma_kind & GOMP_MAP_VARS_OPENACC) != 0)
 		    {
