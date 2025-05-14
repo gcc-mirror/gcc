@@ -2114,7 +2114,7 @@ gfc_simplify_cotand (gfc_expr *x)
   mpfr_set (result->value.real, x->value.real, GFC_RND_MODE);
   mpfr_add_ui (result->value.real, result->value.real, 90, GFC_RND_MODE);
 #if MPFR_VERSION >= MPFR_VERSION_NUM(4,2,0)
-  mpfr_tanu (result->value.real, x->value.real, 360, GFC_RND_MODE);
+  mpfr_tanu (result->value.real, result->value.real, 360, GFC_RND_MODE);
 #else
   simplify_tand (result->value.real);
 #endif
