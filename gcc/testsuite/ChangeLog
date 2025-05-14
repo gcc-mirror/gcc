@@ -1,3 +1,11 @@
+2025-05-13  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119852
+	* gcc.dg/ipa/pr119852.c: New test.
+
 2025-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
