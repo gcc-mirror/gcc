@@ -215,10 +215,6 @@ extern int ffs(int);
 extern int mkstemps(char *, int);
 #endif
 
-#if defined (HAVE_DECL_MKSTEMPS) && !HAVE_DECL_MKSTEMPS
-extern int mkstemps(char *, int);
-#endif
-
 /* Make memrchr available on systems that do not have it.  */
 #if !defined (__GNU_LIBRARY__ ) && !defined (__linux__) && \
     !defined (HAVE_MEMRCHR)
