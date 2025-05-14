@@ -1673,3 +1673,26 @@
     DONE;
   }
   [(set_attr "type" "vandn")])
+
+
+;; =============================================================================
+;; Combine vec_duplicate + op.vv to op.vx
+;; Include
+;; - vadd.vx
+;; =============================================================================
+(define_insn_and_split "*<optab>_vx_<mode>"
+ [(set (match_operand:V_VLSI    0 "register_operand")
+       (any_int_binop_no_shift_vx:V_VLSI
+	 (vec_duplicate:V_VLSI
+	   (match_operand:<VEL> 1 "register_operand"))
+	 (match_operand:V_VLSI  2 "<binop_rhs2_predicate>")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    rtx ops[] = {operands[0], operands[2], operands[1]};
+    riscv_vector::emit_vlmax_insn (code_for_pred_scalar (<CODE>, <MODE>mode),
+				   riscv_vector::BINARY_OP, ops);
+  }
+  [(set_attr "type" "vialu")])

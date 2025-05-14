@@ -29,6 +29,8 @@ struct NonDefaultConstructible
 
 template class std::atomic<NonDefaultConstructible>;
 
+static_assert(!std::is_default_constructible<std::atomic<NonDefaultConstructible>>::value);
+
 void
 test01()
 {

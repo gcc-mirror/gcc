@@ -1,4 +1,4 @@
-// { dg-skip-if "PR 70349" { hppa*-*-hpux* && { ! lp64 } } }
+// { dg-skip-if "PR 70349" { hppa*-*-hpux* } }
 // { dg-options "-fabi-version=9 -fno-implicit-constexpr" }
 // { dg-final { scan-assembler "_Z1fB7__test1v" } }
 // { dg-final { scan-assembler "_ZZ1fB7__test1vEN1T1gB7__test2Ev" } }

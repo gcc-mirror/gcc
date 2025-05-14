@@ -1,0 +1,50 @@
+# -*- shell-script -*-
+# Copyright (C) 2025 Free Software Foundation, Inc.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This is the target specific configuration file.  This is invoked by the
+# autoconf generated configure script.  Putting it in a separate shell file
+# lets us skip running autoconf when modifying target specific information.
+
+# Enable the libgcobol build only on systems where it is known to work.
+# More targets shall be added after testing.
+# For testing, you can override this with --enable-libgcobol. (See configure.ac)
+
+LIBGCOBOL_SUPPORTED=no
+
+case "${target}" in
+    aarch64*-*-linux*)
+	LIBGCOBOL_SUPPORTED=yes
+	;;
+    powerpc64le-*-linux*)
+	if test x$ac_cv_sizeof_void_p = x8; then
+		LIBGCOBOL_SUPPORTED=yes
+	fi
+	;;
+    riscv64-*-linux*)
+	if test x$ac_cv_sizeof_void_p = x8; then
+		LIBGCOBOL_SUPPORTED=yes
+	fi
+	;;
+    x86_64-*-linux* | i?86-*-linux* | x86_64-*-darwin*)
+	if test x$ac_cv_sizeof_void_p = x8; then
+		LIBGCOBOL_SUPPORTED=yes
+	fi
+	;;
+    *)
+	UNSUPPORTED=1
+	;;
+esac

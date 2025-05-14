@@ -1,7 +1,5 @@
 /* Adapted from malloc-1.c, but wrapping the pointers in a struct.  */
 
-/* { dg-require-effective-target alloca } */
-
 #include <stdlib.h>
 
 extern int foo (void);

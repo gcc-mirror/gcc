@@ -104,6 +104,13 @@ riscv-avlprop.o: $(srcdir)/config/riscv/riscv-avlprop.cc \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-avlprop.cc
 
+riscv-vect-permconst.o: $(srcdir)/config/riscv/riscv-vect-permconst.cc \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
+  $(TARGET_H) tree-pass.h df.h rtl-ssa.h cfgcleanup.h insn-attr.h \
+  tm-constrs.h insn-opinit.h cfgrtl.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/riscv/riscv-vect-permconst.cc
+
 riscv-d.o: $(srcdir)/config/riscv/riscv-d.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(COMPILE) $<

@@ -2,7 +2,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test14538.d(18): Error: cannot implicitly convert expression `x ? cast(uint)this.fCells[x].code : 32u` of type `uint` to `Cell`
+fail_compilation/test14538.d(18): Error: return value `x ? cast(uint)this.fCells[x].code : 32u` of type `uint` does not match return type `Cell`, and cannot be implicitly converted
 ---
 */
 

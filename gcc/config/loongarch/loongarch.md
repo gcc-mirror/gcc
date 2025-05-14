@@ -3200,10 +3200,8 @@
       emit_insn (gen_<optab>di3 (operands[0], operands[1], operands[3]));
     else
       {
-	/* Hmm would we really reach here?  If we reach here we'd have
-	   a miss-optimization in the generic code (as it should have
-	   optimized this to alslsi3_extend_subreg).  But let's be safe
-	   than sorry.  */
+	/* We can end up here with things like:
+	   x:DI = sign_extend(a:SI + ((b:DI << 2) & 0xfffffffc)#0)  */
 	gcc_checking_assert (<is_and>);
 	emit_move_insn (operands[0], operands[1]);
       }

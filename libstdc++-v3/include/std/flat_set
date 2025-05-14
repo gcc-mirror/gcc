@@ -350,12 +350,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_cont.max_size(); }
 
       // modifiers
-      template<typename... _Args>
+      template<typename _Arg, typename... _Args>
 	pair<iterator, bool>
-	_M_try_emplace(optional<const_iterator> __hint, _Args&&... __args)
+	_M_try_emplace(optional<const_iterator> __hint, _Arg&& __arg, _Args&&... __args)
 	{
 	  // TODO: Simplify and audit the hint handling.
-	  value_type __k(std::forward<_Args>(__args)...);
+	  auto&& __k = [&] -> decltype(auto) {
+	    if constexpr (sizeof...(_Args) == 0
+			  && same_as<remove_cvref_t<_Arg>, value_type>)
+	      return std::forward<_Arg>(__arg);
+	    else
+	      return value_type(std::forward<_Arg>(__arg),
+				std::forward<_Args>(__args)...);
+	  }();
 	  typename container_type::iterator __it;
 	  int __r = -1, __s = -1;
 	  if (__hint.has_value()
@@ -397,10 +404,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return {__it, false};
 
 	  auto __guard = _M_make_clear_guard();
-	  __it = _M_cont.insert(__it, std::move(__k));
+	  __it = _M_cont.insert(__it, std::forward<decltype(__k)>(__k));
 	  __guard._M_disable();
 	  return {__it, true};
 	}
+
+      template<typename... _Args>
+	pair<iterator, bool>
+	_M_try_emplace(optional<const_iterator> __hint)
+	{ return _M_try_emplace(__hint, value_type()); }
 
       template<typename... _Args>
 	requires is_constructible_v<value_type, _Args...>
@@ -480,7 +492,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  typename container_type::iterator __it;
 	  if constexpr (requires { _M_cont.insert_range(_M_cont.end(), __rg); })
 	    __it = _M_cont.insert_range(_M_cont.end(), __rg);
-	  else if constexpr (ranges::common_range<_Rg>)
+	  else if constexpr (ranges::common_range<_Rg>
+			     && __has_input_iter_cat<ranges::iterator_t<_Rg>>)
 	    __it = _M_cont.insert(_M_cont.end(), ranges::begin(__rg), ranges::end(__rg));
 	  else
 	    {
@@ -732,15 +745,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __x.swap(__y); }
 
       template<typename _Predicate>
-	friend size_type
-	erase_if(_Derived& __c, _Predicate __pred)
+	size_type
+	_M_erase_if(_Predicate __pred)
 	{
-	  auto __guard = __c._M_make_clear_guard();
-	  auto __first = __c._M_cont.begin();
-	  auto __last = __c._M_cont.end();
+	  auto __guard = _M_make_clear_guard();
+	  auto __first = _M_cont.begin();
+	  auto __last = _M_cont.end();
 	  __first = std::remove_if(__first, __last, __pred);
 	  auto __n = __last - __first;
-	  __c.erase(__first, __last);
+	  erase(__first, __last);
 	  __guard._M_disable();
 	  return __n;
 	}
@@ -847,6 +860,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Impl::lower_bound;
       using _Impl::upper_bound;
       using _Impl::equal_range;
+
+      using _Impl::_M_erase_if;
     };
 
   template<typename _KeyContainer,
@@ -917,6 +932,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : bool_constant<uses_allocator_v<_KeyContainer, _Alloc>>
     { };
 
+  template<typename _Key, typename _Compare, typename _KeyContainer,
+	   typename _Predicate>
+    typename flat_set<_Key, _Compare, _KeyContainer>::size_type
+    erase_if(flat_set<_Key, _Compare, _KeyContainer>& __c, _Predicate __pred)
+    { return __c._M_erase_if(std::move(__pred)); }
+
   /* Class template flat_multiset - container adaptor
    *
    * @ingroup
@@ -986,6 +1007,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Impl::lower_bound;
       using _Impl::upper_bound;
       using _Impl::equal_range;
+
+      using _Impl::_M_erase_if;
     };
 
   template<typename _KeyContainer,
@@ -1055,6 +1078,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct uses_allocator<flat_multiset<_Key, _Compare, _KeyContainer>, _Alloc>
     : bool_constant<uses_allocator_v<_KeyContainer, _Alloc>>
     { };
+
+  template<typename _Key, typename _Compare, typename _KeyContainer,
+	   typename _Predicate>
+    typename flat_multiset<_Key, _Compare, _KeyContainer>::size_type
+    erase_if(flat_multiset<_Key, _Compare, _KeyContainer>& __c, _Predicate __pred)
+    { return __c._M_erase_if(std::move(__pred)); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

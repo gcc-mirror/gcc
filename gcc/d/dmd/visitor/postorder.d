@@ -1,12 +1,12 @@
 /**
  * A depth-first visitor for expressions and statements.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/apply.d, _apply.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/visitor/postorder.d, _apply.d)
  * Documentation:  https://dlang.org/phobos/dmd_apply.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/apply.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/visitor/postorder.d
  */
 
 module dmd.visitor.postorder;
@@ -82,13 +82,13 @@ public:
     override void visit(NewExp e)
     {
         //printf("NewExp::apply(): %s\n", toChars());
-        doCond(e.thisexp) || doCond(e.arguments.peekSlice()) || applyTo(e);
+        doCond(e.placement) || doCond(e.thisexp) || doCond(e.arguments.peekSlice()) || applyTo(e);
     }
 
     override void visit(NewAnonClassExp e)
     {
         //printf("NewAnonClassExp::apply(): %s\n", toChars());
-        doCond(e.thisexp) || doCond(e.arguments.peekSlice()) || applyTo(e);
+        doCond(e.placement) || doCond(e.thisexp) || doCond(e.arguments.peekSlice()) || applyTo(e);
     }
 
     override void visit(TypeidExp e)

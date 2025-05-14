@@ -1,4 +1,5 @@
 // { dg-do run { target c++23 } }
+// { dg-timeout-factor 2 }
 
 #include <flat_map>
 
@@ -11,6 +12,68 @@
 #include <vector>
 #include <testsuite_allocator.h>
 #include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
+#include <tuple>
+
+struct Gt {
+  template<typename T, typename U>
+  bool operator()(T const& l, U const & r) const
+  { return l > r; }
+};
+
+void
+test_deduction_guide()
+{
+  __gnu_test::test_input_range<std::pair<long, float>> r(0, 0);
+  std::flat_map it1(r.begin(), r.begin());
+  static_assert(std::is_same_v<decltype(it1), std::flat_map<long, float>>);
+  std::flat_map fr1(std::from_range, r);
+  static_assert(std::is_same_v<decltype(fr1), std::flat_map<long, float>>);
+
+  Gt cmp;
+  std::flat_map it2(r.begin(), r.begin(), cmp);
+  static_assert(std::is_same_v<decltype(it2), std::flat_map<long, float, Gt>>);
+  std::flat_map fr2(std::from_range, r, cmp);
+  static_assert(std::is_same_v<decltype(fr2), std::flat_map<long, float, Gt>>);
+
+  using Alloc = __gnu_test::SimpleAllocator<std::pair<const long, float>>;
+  Alloc alloc;
+  // No matching deduction guide
+  // std::flat_map it3(r.begin(), r.begin(), alloc);
+  std::flat_map fr3(std::from_range, r, alloc);
+  static_assert(std::is_same_v<
+     decltype(fr3),
+     std::flat_map<long, float, std::less<long>,
+		   std::vector<long, __gnu_test::SimpleAllocator<long>>,
+		   std::vector<float, __gnu_test::SimpleAllocator<float>>>>);
+
+  // No matching deduction guide
+  // std::flat_map it4(r.begin(), r.begin(), cmp, alloc);
+  std::flat_map fr4(std::from_range, r, cmp, alloc);
+  static_assert(std::is_same_v<
+     decltype(fr4),
+     std::flat_map<long, float, Gt,
+		   std::vector<long, __gnu_test::SimpleAllocator<long>>,
+		   std::vector<float, __gnu_test::SimpleAllocator<float>>>>);
+
+  __gnu_test::test_input_range<std::pair<const long, const float>> r2(0, 0);
+  std::flat_map it5(r2.begin(), r2.begin());
+  static_assert(std::is_same_v<decltype(it5), std::flat_map<long, float>>);
+  std::flat_map fr5(std::from_range, r2);
+  static_assert(std::is_same_v<decltype(fr5), std::flat_map<long, float>>);
+
+  __gnu_test::test_input_range<std::pair<const long&, float&>> r3(0, 0);
+  std::flat_map it6(r3.begin(), r3.begin());
+  static_assert(std::is_same_v<decltype(it6), std::flat_map<long, float>>);
+  std::flat_map fr6(std::from_range, r3);
+  static_assert(std::is_same_v<decltype(fr6), std::flat_map<long, float>>);
+
+  __gnu_test::test_input_range<std::tuple<long, float>> r4(0, 0);
+  std::flat_map it7(r4.begin(), r4.begin());
+  static_assert(std::is_same_v<decltype(it7), std::flat_map<long, float>>);
+  std::flat_map fr7(std::from_range, r4);
+  static_assert(std::is_same_v<decltype(fr7), std::flat_map<long, float>>);
+}
 
 template<template<typename> class KeyContainer, template<typename> class MappedContainer>
 void
@@ -180,6 +243,16 @@ test06()
   VERIFY( std::ranges::equal(m | std::views::values, (int[]){2, 3, 4, 5, 6}) );
 }
 
+void
+test07()
+{
+  // PR libstdc++/119427 - std::erase_if(std::flat_foo) does not work
+  std::flat_map<int, int> m = {std::pair{1, 2}, {3, 4}, {5, 6}};
+  auto n = std::erase_if(m, [](auto x) { auto [k,v] = x; return k == 1 || v == 6; });
+  VERIFY( n == 2 );
+  VERIFY( std::ranges::equal(m, (std::pair<int,int>[]){{3,4}}) );
+}
+
 int
 main()
 {
@@ -192,4 +265,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }

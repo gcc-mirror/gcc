@@ -1,3 +1,329 @@
+2025-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* testsuite/lib/libphobos-dg.exp: Add load_lib of scanhtml.exp.
+
+2025-05-06  Sam James  <sam@gentoo.org>
+
+	* configure.tgt: Add sparc64-unknown-linux-gnu as a supported target.
+
+2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119761
+	* libdruntime/MERGE: Merge upstream druntime 09ed02ce56.
+	* libdruntime/Makefile.am (DRUNTIME_DISOURCES): Rename __builtins.di
+	to __importc_builtins.di.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/__builtins.di: Move to...
+	* libdruntime/__importc_builtins.di: ...here.
+
+2025-04-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 40ffbb364.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Call DRUNTIME_OS_FEATURES.
+	* libdruntime/Makefile.am (AM_DFLAGS): Add OS_DFLAGS.
+	* libdruntime/Makefile.in: Regenerate.
+	* m4/druntime/os.m4 (DRUNTIME_OS_FEATURES): Define.
+	* src/Makefile.am: Add OS_DFLAGS.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/testsuite_flags.in: Add OS_DFLAGS.
+
+2025-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 35977c802.
+	* src/Makefile.am (PHOBOS_DSOURCES): Add
+	std/internal/windows/bcrypt.d.
+	* src/Makefile.in: Regenerate.
+
+2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime c6863be720.
+	* src/MERGE: Merge upstream phobos 60034b56e.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 94950cae58.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Rename rt/invariant.d
+	to rt/invariant_.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/rt/invariant.d: Move to...
+	* libdruntime/rt/invariant_.d: ...here.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos d4c9efef1.
+
+2025-03-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 79cbde1ab.
+
+2025-03-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos cafe86453.
+
+2025-03-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime d2ee11364c.
+	* testsuite/libphobos.aa/test_aa.d: Add new test.
+	* testsuite/libphobos.betterc/test19933.d: Adjust imports.
+	* testsuite/libphobos.config/test22523.d: Likewise.
+	* testsuite/libphobos.exceptions/assert_fail.d: Adjust test.
+	* testsuite/libphobos.exceptions/chain.d: Adjust imports.
+	* testsuite/libphobos.exceptions/future_message.d: Likewise.
+	* testsuite/libphobos.exceptions/line_trace.d: Likewise.
+	* testsuite/libphobos.exceptions/long_backtrace_trunc.d: Likewise.
+	* testsuite/libphobos.exceptions/static_dtor.d: Likewise.
+	* testsuite/libphobos.gc/forkgc.d: Likewise.
+	* testsuite/libphobos.gc/precisegc.d: Likewise.
+	* testsuite/libphobos.gc/recoverfree.d: Likewise.
+	* testsuite/libphobos.hash/test_hash.d: Likewise.
+	* testsuite/libphobos.init_fini/custom_gc.d: Likewise.
+	* testsuite/libphobos.init_fini/thread_join.d: Likewise.
+	* testsuite/libphobos.thread/external_threads.d: Likewise.
+	* testsuite/libphobos.thread/fiber_guard_page.d: Likewise.
+	* testsuite/libphobos.thread/tlsgc_sections.d: Likewise.
+	* testsuite/libphobos.thread/tlsstack.d: Likewise.
+	* testsuite/libphobos.unittest/customhandler.d: Likewise.
+
+2025-03-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/Makefile.am (PHOBOS_DSOURCES): Add etc/c/odbc/odbc32.d,
+	etc/c/odbc/odbc64.d, etc/c/odbc/package.d, etc/c/odbc/sql.d,
+	etc/c/odbc/sqlext.d, etc/c/odbc/sqltypes.d, etc/c/odbc/sqlucode.d,
+	etc/c/sqlite3.d.
+	* src/Makefile.in: Regenerate.
+	* src/etc/c/odbc/odbc32.d: New file.
+	* src/etc/c/odbc/odbc64.d: New file.
+	* src/etc/c/odbc/package.d: New file.
+	* src/etc/c/odbc/sql.d: New file.
+	* src/etc/c/odbc/sqlext.d: New file.
+	* src/etc/c/odbc/sqltypes.d: New file.
+	* src/etc/c/odbc/sqlucode.d: New file.
+	* src/etc/c/sqlite3.d: New file.
+
+2025-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 603225372b.
+
+2025-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 53a1cc8d13.
+
+2025-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime ffbad272b6.
+
+2025-03-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime d29e3eca45.
+
+2025-03-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream b7e3b3b617.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_WINDOWS): Add
+	core/sys/windows/bcrypt.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcc/sections/elf.d (sizeofTLS): Give function the same
+	mangling as gcc.sections.sizeofTLS.
+	* libdruntime/gcc/sections/package.d: Import core.internal.traits.
+	(pinLoadedLibraries): Mangle as function from rt.sections_elf_shared.
+	(unpinLoadedLibraries): Likewise.
+	(inheritLoadedLibraries): Likewise.
+	(cleanupLoadedLibraries): Likewise.
+	(sizeOfTLS): Add forward declaration.
+
+2025-03-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 0faae92d6.
+	* testsuite/libphobos.phobos/std_array.d: Regenerate.
+	* testsuite/libphobos.phobos/std_conv.d: Regenerate.
+	* testsuite/libphobos.phobos/std_functional.d: Regenerate.
+	* testsuite/libphobos.phobos/std_sumtype.d: Regenerate.
+
+2025-02-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.unittest/unittest.exp: Use `dg-runtest' rather
+	than `dg-test'.  Set `libphobos_test_name'.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.phobos/shared/phobos-shared.exp: Require
+	is-effective-target run_expensive_tests.
+	* testsuite/libphobos.phobos/static/phobos-static.exp: Likewise.
+	* testsuite/libphobos.phobos/phobos.exp: New test.
+	* testsuite/libphobos.phobos/std_algorithm_comparison.d: New test.
+	* testsuite/libphobos.phobos/std_algorithm_iteration.d: New test.
+	* testsuite/libphobos.phobos/std_algorithm_mutation.d: New test.
+	* testsuite/libphobos.phobos/std_algorithm_searching.d: New test.
+	* testsuite/libphobos.phobos/std_algorithm_setops.d: New test.
+	* testsuite/libphobos.phobos/std_algorithm_sorting.d: New test.
+	* testsuite/libphobos.phobos/std_array.d: New test.
+	* testsuite/libphobos.phobos/std_ascii.d: New test.
+	* testsuite/libphobos.phobos/std_base64.d: New test.
+	* testsuite/libphobos.phobos/std_bigint.d: New test.
+	* testsuite/libphobos.phobos/std_bitmanip.d: New test.
+	* testsuite/libphobos.phobos/std_checkedint.d: New test.
+	* testsuite/libphobos.phobos/std_complex.d: New test.
+	* testsuite/libphobos.phobos/std_concurrency.d: New test.
+	* testsuite/libphobos.phobos/std_container_array.d: New test.
+	* testsuite/libphobos.phobos/std_container_binaryheap.d: New test.
+	* testsuite/libphobos.phobos/std_container_dlist.d: New test.
+	* testsuite/libphobos.phobos/std_container_rbtree.d: New test.
+	* testsuite/libphobos.phobos/std_container_slist.d: New test.
+	* testsuite/libphobos.phobos/std_container_util.d: New test.
+	* testsuite/libphobos.phobos/std_conv.d: New test.
+	* testsuite/libphobos.phobos/std_csv.d: New test.
+	* testsuite/libphobos.phobos/std_datetime_date.d: New test.
+	* testsuite/libphobos.phobos/std_datetime_interval.d: New test.
+	* testsuite/libphobos.phobos/std_datetime_package.d: New test.
+	* testsuite/libphobos.phobos/std_datetime_stopwatch.d: New test.
+	* testsuite/libphobos.phobos/std_datetime_systime.d: New test.
+	* testsuite/libphobos.phobos/std_datetime_timezone.d: New test.
+	* testsuite/libphobos.phobos/std_demangle.d: New test.
+	* testsuite/libphobos.phobos/std_digest_crc.d: New test.
+	* testsuite/libphobos.phobos/std_digest_hmac.d: New test.
+	* testsuite/libphobos.phobos/std_digest_md.d: New test.
+	* testsuite/libphobos.phobos/std_digest_murmurhash.d: New test.
+	* testsuite/libphobos.phobos/std_digest_package.d: New test.
+	* testsuite/libphobos.phobos/std_digest_ripemd.d: New test.
+	* testsuite/libphobos.phobos/std_digest_sha.d: New test.
+	* testsuite/libphobos.phobos/std_encoding.d: New test.
+	* testsuite/libphobos.phobos/std_exception.d: New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_affix_allocator.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_aligned_block_list.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_allocator_list.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_ascending_page_allocator.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_bitmapped_block.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_bucketizer.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_fallback_allocator.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_free_list.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_kernighan_ritchie.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_quantizer.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_region.d: New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_scoped_allocator.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_segregator.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_building_blocks_stats_collector.d:
+	New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_common.d: New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_gc_allocator.d: New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_mallocator.d: New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_package.d: New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_showcase.d: New test.
+	* testsuite/libphobos.phobos/std_experimental_allocator_typed.d: New test.
+	* testsuite/libphobos.phobos/std_file.d: New test.
+	* testsuite/libphobos.phobos/std_format_package.d: New test.
+	* testsuite/libphobos.phobos/std_format_read.d: New test.
+	* testsuite/libphobos.phobos/std_format_spec.d: New test.
+	* testsuite/libphobos.phobos/std_format_write.d: New test.
+	* testsuite/libphobos.phobos/std_functional.d: New test.
+	* testsuite/libphobos.phobos/std_getopt.d: New test.
+	* testsuite/libphobos.phobos/std_int128.d: New test.
+	* testsuite/libphobos.phobos/std_internal_cstring.d: New test.
+	* testsuite/libphobos.phobos/std_internal_scopebuffer.d: New test.
+	* testsuite/libphobos.phobos/std_json.d: New test.
+	* testsuite/libphobos.phobos/std_logger_core.d: New test.
+	* testsuite/libphobos.phobos/std_logger_nulllogger.d: New test.
+	* testsuite/libphobos.phobos/std_math_algebraic.d: New test.
+	* testsuite/libphobos.phobos/std_math_exponential.d: New test.
+	* testsuite/libphobos.phobos/std_math_hardware.d: New test.
+	* testsuite/libphobos.phobos/std_math_operations.d: New test.
+	* testsuite/libphobos.phobos/std_math_remainder.d: New test.
+	* testsuite/libphobos.phobos/std_math_rounding.d: New test.
+	* testsuite/libphobos.phobos/std_math_traits.d: New test.
+	* testsuite/libphobos.phobos/std_math_trigonometry.d: New test.
+	* testsuite/libphobos.phobos/std_meta.d: New test.
+	* testsuite/libphobos.phobos/std_mmfile.d: New test.
+	* testsuite/libphobos.phobos/std_numeric.d: New test.
+	* testsuite/libphobos.phobos/std_outbuffer.d: New test.
+	* testsuite/libphobos.phobos/std_package.d: New test.
+	* testsuite/libphobos.phobos/std_parallelism.d: New test.
+	* testsuite/libphobos.phobos/std_path.d: New test.
+	* testsuite/libphobos.phobos/std_random.d: New test.
+	* testsuite/libphobos.phobos/std_range_interfaces.d: New test.
+	* testsuite/libphobos.phobos/std_range_package.d: New test.
+	* testsuite/libphobos.phobos/std_range_primitives.d: New test.
+	* testsuite/libphobos.phobos/std_regex_package.d: New test.
+	* testsuite/libphobos.phobos/std_signals.d: New test.
+	* testsuite/libphobos.phobos/std_socket.d: New test.
+	* testsuite/libphobos.phobos/std_stdio.d: New test.
+	* testsuite/libphobos.phobos/std_string.d: New test.
+	* testsuite/libphobos.phobos/std_sumtype.d: New test.
+	* testsuite/libphobos.phobos/std_traits.d: New test.
+	* testsuite/libphobos.phobos/std_typecons.d: New test.
+	* testsuite/libphobos.phobos/std_typetuple.d: New test.
+	* testsuite/libphobos.phobos/std_uni_package.d: New test.
+	* testsuite/libphobos.phobos/std_uri.d: New test.
+	* testsuite/libphobos.phobos/std_utf.d: New test.
+	* testsuite/libphobos.phobos/std_uuid.d: New test.
+	* testsuite/libphobos.phobos/std_variant.d: New test.
+	* testsuite/libphobos.phobos/std_zlib.d: New test.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* scripts/.gitignore: Add tests_extractor.
+	* scripts/README: Document tests_extractor.d.
+	* scripts/tests_extractor.d: New file.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.druntime_shared/druntime_shared.exp: Move to...
+	* testsuite/libphobos.druntime/shared/druntime-shared.exp: ...here.
+	* testsuite/libphobos.druntime/druntime.exp: Move to...
+	* testsuite/libphobos.druntime/static/druntime-static.exp: ...here.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Move to...
+	* testsuite/libphobos.phobos/shared/phobos-shared.exp: ...here.
+	* testsuite/libphobos.phobos/phobos.exp: Move to...
+	* testsuite/libphobos.phobos/static/phobos-static.exp: ...here.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am: Update comment.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am: Update comment.
+	* src/Makefile.in: Regenerate.
+	* scripts/.gitignore: New file.
+	* scripts/README: New file.
+	* scripts/gen_druntime_sources.d: New file.
+	* scripts/gen_phobos_sources.d: New file.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118654
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove CET_DFLAGS.
+	* libdruntime/Makefile.am: Replace CET_DFLAGS with CET_FLAGS.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/core/thread/fiber/package.d: Replace CET with GNU_CET.
+	* src/Makefile.am: Replace CET_DFLAGS with CET_FLAGS.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/testsuite_flags.in: Replace CET_DFLAGS with CET_FLAGS.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/Makefile.am (check_p_subno): Remove variable.
+	(check_p_subdirs): Increase default parallel slots to 128.
+	* testsuite/Makefile.in: Regenerate.
+
 2025-02-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR d/111628

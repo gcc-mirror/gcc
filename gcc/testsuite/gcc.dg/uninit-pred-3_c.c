@@ -23,6 +23,6 @@ int foo (int n, int m, int r)
 
   if (r > 0)
     if (flag < 0)
-      blah(v); /* {dg-bogus "uninitialized" "bogus warning" } */
+      blah(v); /* { dg-bogus "uninitialized" "bogus warning" } */
   return 0;
 }

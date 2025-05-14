@@ -23,11 +23,11 @@
 #ifndef _AVX10_2_512MINMAXINTRIN_H_INCLUDED
 #define _AVX10_2_512MINMAXINTRIN_H_INCLUDED
 
-#if !defined (__AVX10_2_512__)
+#if !defined (__AVX10_2__)
 #pragma GCC push_options
-#pragma GCC target("avx10.2-512")
-#define __DISABLE_AVX10_2_512__
-#endif /* __AVX10_2_512__ */
+#pragma GCC target("avx10.2")
+#define __DISABLE_AVX10_2__
+#endif /* __AVX10_2__ */
 
 #ifdef __OPTIMIZE__
 extern __inline __m512bh
@@ -481,9 +481,9 @@ _mm512_maskz_minmax_round_ps (__mmask16 __U, __m512 __A, __m512 __B,
 
 #endif
 
-#ifdef __DISABLE_AVX10_2_512__
-#undef __DISABLE_AVX10_2_512__
+#ifdef __DISABLE_AVX10_2__
+#undef __DISABLE_AVX10_2__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX10_2_512__ */
+#endif /* __DISABLE_AVX10_2__ */
 
 #endif /* _AVX10_2_512MINMAXINTRIN_H_INCLUDED */

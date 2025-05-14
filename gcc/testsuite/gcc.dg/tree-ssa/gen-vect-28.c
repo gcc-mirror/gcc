@@ -9,7 +9,8 @@
 
 /* unaligned store.  */
 
-int main_1 (int off)
+int __attribute__((noipa))
+main_1 (int off)
 {
   int i;
   char ia[N+OFF];

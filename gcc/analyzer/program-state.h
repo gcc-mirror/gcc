@@ -30,11 +30,23 @@ namespace ana {
 class extrinsic_state
 {
 public:
-  extrinsic_state (auto_delete_vec <state_machine> &checkers,
+  extrinsic_state (std::vector<std::unique_ptr<state_machine>> &&checkers,
 		   engine *eng,
 		   logger *logger = NULL)
-  : m_checkers (checkers), m_logger (logger), m_engine (eng)
+  : m_checkers (std::move (checkers)),
+    m_logger (logger),
+    m_engine (eng)
   {
+  }
+
+  // For use in selftests that use just one state machine
+  extrinsic_state (std::unique_ptr<state_machine> sm,
+		   engine *eng,
+		   logger *logger = NULL)
+  : m_logger (logger),
+    m_engine (eng)
+  {
+    m_checkers.push_back (std::move (sm));
   }
 
   const state_machine &get_sm (int idx) const
@@ -47,7 +59,7 @@ public:
     return m_checkers[idx]->get_name ();
   }
 
-  unsigned get_num_checkers () const { return m_checkers.length (); }
+  unsigned get_num_checkers () const { return m_checkers.size (); }
 
   logger *get_logger () const { return m_logger; }
 
@@ -64,7 +76,7 @@ public:
 
 private:
   /* The state machines.  */
-  auto_delete_vec <state_machine> &m_checkers;
+  std::vector<std::unique_ptr<state_machine>> m_checkers;
 
   logger *m_logger;
   engine *m_engine;
@@ -242,12 +254,12 @@ public:
 
   void push_call (exploded_graph &eg,
 		  exploded_node *enode,
-		  const gcall *call_stmt,
+		  const gcall &call_stmt,
 		  uncertainty_t *uncertainty);
 
   void returning_call (exploded_graph &eg,
 		       exploded_node *enode,
-		       const gcall *call_stmt,
+		       const gcall &call_stmt,
 		       uncertainty_t *uncertainty);
 
 
@@ -298,7 +310,7 @@ public:
   bool replay_call_summary (call_summary_replay &r,
 			    const program_state &summary);
 
-  void impl_call_analyzer_dump_state (const gcall *call,
+  void impl_call_analyzer_dump_state (const gcall &call,
 				      const extrinsic_state &ext_state,
 				      region_model_context *ctxt);
 

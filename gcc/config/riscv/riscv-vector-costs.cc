@@ -217,6 +217,35 @@ compute_local_program_points (
 				     "program point %d: %G", info.point,
 				     gsi_stmt (si));
 		}
+
+	      /* If the statement is part of a pattern, also add the other
+		 pattern statements.  */
+	      gimple_seq pattern_def_seq;
+	      if (STMT_VINFO_IN_PATTERN_P (stmt_info)
+		  && (pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info)))
+		{
+		  gimple_stmt_iterator si2;
+
+		  for (si2 = gsi_start (pattern_def_seq);
+		       !gsi_end_p (si2);
+		       gsi_next (&si2))
+		    {
+		      stmt_vec_info pattern_def_stmt_info
+			= vinfo->lookup_stmt (gsi_stmt (si2));
+		      if (STMT_VINFO_RELEVANT_P (pattern_def_stmt_info)
+			  || STMT_VINFO_LIVE_P (pattern_def_stmt_info))
+			{
+			  stmt_point info = {point, gsi_stmt (si2),
+			      pattern_def_stmt_info};
+			  program_points.safe_push (info);
+			  point++;
+			  if (dump_enabled_p ())
+			    dump_printf_loc (MSG_NOTE, vect_location,
+					     "program point %d: %G",
+					     info.point, gsi_stmt (si2));
+			}
+		    }
+		}
 	    }
 	  program_points_per_bb.put (bb, program_points);
 	}
@@ -1092,7 +1121,7 @@ costs::adjust_stmt_cost (enum vect_cost_for_stmt kind, loop_vec_info loop,
     {
     case scalar_to_vec:
       stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->FR2VR
-		    : costs->regmove->GR2VR);
+		    : get_gr2vr_cost ());
       break;
     case vec_to_scalar:
       stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->VR2FR

@@ -1,0 +1,39 @@
+The D language scripts in this directory are used during the syncing of
+libphobos with upstream.  They can be built with the command:
+
+    dub build --single name-of-script.d
+
+Or when dub isn't available:
+
+    gdc -o name-of-script name-of-script.d [any other dependencies].d
+
+Scripts:
+
+gen_druntime_sources.d
+
+    Generates source file definitions for libphobos/libdruntime/Makefile.am.
+    Ran from the libdruntime directory and append output to Makefile.am.
+
+    Example:
+
+	cd libdruntime && ../scripts/gen_druntime_sources >> Makefile.am
+
+gen_phobos_sources.d
+
+    Generates source file definitions for libphobos/src/Makefile.am.  Ran from
+    the libphobos/src directory and append output to Makefile.am.
+
+    Example:
+
+	cd src && ../scripts/gen_phobos_sources >> Makefile.am
+
+tests_extractor.d
+
+    Searches the given input directory recursively for public unittest blocks
+    (annotated with three slashes). The tests will be extracted as one file for
+    each source file to the output directory.  Used to regenerate all tests
+    cases in testsuite/libphobos.phobos.
+
+    Example:
+
+	./tests_extractor -i ../libphobos/src -o ../testsuite/libphobos.phobos

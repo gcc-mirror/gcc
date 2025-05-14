@@ -1686,8 +1686,8 @@ __gnat_is_vms_v7 (void)
 #include <sys/ucontext.h>
 #include <unistd.h>
 
-#ifdef __CHERI__
 static void
+#ifdef __CHERI__
 __gnat_error_handler (int sig,
 		      siginfo_t *si,
 		      void *ucontext ATTRIBUTE_UNUSED)

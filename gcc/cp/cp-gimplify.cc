@@ -519,7 +519,7 @@ cp_fold_immediate (tree *tp, mce_value manifestly_const_eval,
 
   cp_fold_data data (flags);
   int save_errorcount = errorcount;
-  tree r = cp_walk_tree_without_duplicates (tp, cp_fold_immediate_r, &data);
+  tree r = cp_walk_tree (tp, cp_fold_immediate_r, &data, NULL);
   if (errorcount > save_errorcount)
     return integer_one_node;
   return r;
@@ -1199,12 +1199,16 @@ cp_build_init_expr_for_ctor (tree call, tree init)
   tree s = build_fold_indirect_ref_loc (loc, a);
   init = cp_build_init_expr (s, init);
   if (return_this)
-    init = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (call), init,
-		    fold_convert_loc (loc, TREE_TYPE (call), a));
+    {
+      init = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (call), init,
+			 fold_convert_loc (loc, TREE_TYPE (call), a));
+      suppress_warning (init);
+    }
   return init;
 }
 
-/* A subroutine of cp_fold_r to handle immediate functions.  */
+/* A walk_tree callback for cp_fold_function and cp_fully_fold_init to handle
+   immediate functions.  */
 
 static tree
 cp_fold_immediate_r (tree *stmt_p, int *walk_subtrees, void *data_)
@@ -1250,7 +1254,19 @@ cp_fold_immediate_r (tree *stmt_p, int *walk_subtrees, void *data_)
       if (!ADDR_EXPR_DENOTES_CALL_P (stmt))
 	decl = TREE_OPERAND (stmt, 0);
       break;
+    case IF_STMT:
+      if (IF_STMT_CONSTEVAL_P (stmt))
+	{
+	  if (!data->pset.add (stmt))
+	    cp_walk_tree (&ELSE_CLAUSE (stmt), cp_fold_immediate_r, data_,
+			  NULL);
+	  *walk_subtrees = 0;
+	  return NULL_TREE;
+	}
+      /* FALLTHRU */
     default:
+      if (data->pset.add (stmt))
+	*walk_subtrees = 0;
       return NULL_TREE;
     }
 
@@ -1370,44 +1386,7 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
   tree stmt = *stmt_p;
   enum tree_code code = TREE_CODE (stmt);
 
-  if (cxx_dialect >= cxx20)
-    {
-      /* Unfortunately we must handle code like
-	   false ? bar () : 42
-	 where we have to check bar too.  The cp_fold call below could
-	 fold the ?: into a constant before we've checked it.  */
-      if (code == COND_EXPR)
-	{
-	  auto then_fn = cp_fold_r, else_fn = cp_fold_r;
-	  /* See if we can figure out if either of the branches is dead.  If it
-	     is, we don't need to do everything that cp_fold_r does.  */
-	  cp_walk_tree (&TREE_OPERAND (stmt, 0), cp_fold_r, data, nullptr);
-	  if (integer_zerop (TREE_OPERAND (stmt, 0)))
-	    then_fn = cp_fold_immediate_r;
-	  else if (integer_nonzerop (TREE_OPERAND (stmt, 0)))
-	    else_fn = cp_fold_immediate_r;
-
-	  if (TREE_OPERAND (stmt, 1))
-	    cp_walk_tree (&TREE_OPERAND (stmt, 1), then_fn, data,
-			  nullptr);
-	  if (TREE_OPERAND (stmt, 2))
-	    cp_walk_tree (&TREE_OPERAND (stmt, 2), else_fn, data,
-			  nullptr);
-	  *walk_subtrees = 0;
-	  /* Don't return yet, still need the cp_fold below.  */
-	}
-      else
-	cp_fold_immediate_r (stmt_p, walk_subtrees, data);
-    }
-
   *stmt_p = stmt = cp_fold (*stmt_p, data->flags);
-
-  /* For certain trees, like +foo(), the cp_fold above will remove the +,
-     and the subsequent tree walk would go straight down to the CALL_EXPR's
-     operands, meaning that cp_fold_immediate_r would never see the
-     CALL_EXPR.  Ew :(.  */
-  if (TREE_CODE (stmt) == CALL_EXPR && code != CALL_EXPR)
-    cp_fold_immediate_r (stmt_p, walk_subtrees, data);
 
   if (data->pset.add (stmt))
     {
@@ -1504,7 +1483,9 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	  *walk_subtrees = 0;
 	  if (!flag_no_inline)
 	    {
-	      tree folded = maybe_constant_init (init, TARGET_EXPR_SLOT (stmt));
+	      tree folded = maybe_constant_init (init, TARGET_EXPR_SLOT (stmt),
+						 (data->flags & ff_mce_false
+						  ? mce_false : mce_unknown));
 	      if (folded != init && TREE_CONSTANT (folded))
 		init = folded;
 	    }
@@ -1537,6 +1518,16 @@ cp_fold_function (tree fndecl)
      been constant-evaluated already if possible, so we can safely
      pass ff_mce_false.  */
   cp_fold_data data (ff_genericize | ff_mce_false);
+  /* Do cp_fold_immediate_r in separate whole IL walk instead of during
+     cp_fold_r, as otherwise expressions using results of immediate functions
+     might not be folded as cp_fold is called on those before cp_fold_r is
+     called on their argument.  */
+  if (cxx_dialect >= cxx20)
+    {
+      cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_immediate_r,
+		    &data, NULL);
+      data.pset.empty ();
+    }
   cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &data, NULL);
 
   /* This is merely an optimization: if FNDECL has no i-e expressions,
@@ -1717,6 +1708,11 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case RETURN_EXPR:
       if (TREE_OPERAND (stmt, 0))
 	{
+	  if (error_operand_p (TREE_OPERAND (stmt, 0))
+	      && warn_return_type)
+	    /* Suppress -Wreturn-type for this function.  */
+	    suppress_warning (current_function_decl, OPT_Wreturn_type);
+
 	  if (is_invisiref_parm (TREE_OPERAND (stmt, 0)))
 	    /* Don't dereference an invisiref RESULT_DECL inside a
 	       RETURN_EXPR.  */
@@ -2275,6 +2271,18 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case BIT_CAST_EXPR:
       *stmt_p = build1_loc (EXPR_LOCATION (stmt), VIEW_CONVERT_EXPR,
 			    TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
+      break;
+
+    case MODIFY_EXPR:
+      /* Mark stores to parts of complex automatic non-addressable
+	 variables as DECL_NOT_GIMPLE_REG_P for -O0.  This can't be
+	 done during gimplification.  See PR119120.  */
+      if ((TREE_CODE (TREE_OPERAND (stmt, 0)) == REALPART_EXPR
+	   || TREE_CODE (TREE_OPERAND (stmt, 0)) == IMAGPART_EXPR)
+	  && !optimize
+	  && DECL_P (TREE_OPERAND (TREE_OPERAND (stmt, 0), 0))
+	  && is_gimple_reg (TREE_OPERAND (TREE_OPERAND (stmt, 0), 0)))
+	DECL_NOT_GIMPLE_REG_P (TREE_OPERAND (TREE_OPERAND (stmt, 0), 0)) = 1;
       break;
 
     default:
@@ -2910,6 +2918,11 @@ cp_fully_fold_init (tree x)
     return x;
   x = cp_fully_fold (x, mce_false);
   cp_fold_data data (ff_mce_false);
+  if (cxx_dialect >= cxx20)
+    {
+      cp_walk_tree (&x, cp_fold_immediate_r, &data, NULL);
+      data.pset.empty ();
+    }
   cp_walk_tree (&x, cp_fold_r, &data, NULL);
   return x;
 }

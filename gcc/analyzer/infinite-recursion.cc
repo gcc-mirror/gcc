@@ -18,28 +18,14 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "fold-const.h"
-#include "gcc-rich-location.h"
-#include "alloc-pool.h"
-#include "fibonacci_heap.h"
-#include "shortest-paths.h"
-#include "diagnostic-core.h"
-#include "diagnostic-event-id.h"
-#include "diagnostic-path.h"
-#include "function.h"
-#include "pretty-print.h"
-#include "sbitmap.h"
-#include "bitmap.h"
-#include "tristate.h"
-#include "ordered-hash-map.h"
-#include "selftest.h"
-#include "json.h"
-#include "analyzer/analyzer.h"
+#include "analyzer/common.h"
+
+#include "cfg.h"
+#include "gimple-iterator.h"
+#include "gimple-pretty-print.h"
+#include "cgraph.h"
+#include "digraph.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
@@ -49,17 +35,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/diagnostic-manager.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "gimple-pretty-print.h"
-#include "cgraph.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/program-state.h"
 #include "analyzer/exploded-graph.h"
-#include "make-unique.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/feasible-graph.h"
 #include "diagnostic-format-sarif.h"
@@ -170,14 +148,15 @@ public:
       {
 	gcc_assert (m_prev_entry_event == NULL);
 	std::unique_ptr<checker_event> prev_entry_event
-	  = make_unique <recursive_function_entry_event> (dst_point,
-							  *this, false);
+	  = std::make_unique <recursive_function_entry_event> (dst_point,
+							       *this, false);
 	m_prev_entry_event = prev_entry_event.get ();
 	emission_path->add_event (std::move (prev_entry_event));
       }
     else if (eedge.m_dest == m_new_entry_enode)
       emission_path->add_event
-	(make_unique<recursive_function_entry_event> (dst_point, *this, true));
+	(std::make_unique<recursive_function_entry_event>
+	   (dst_point, *this, true));
     else
       pending_diagnostic::add_function_entry_event (eedge, emission_path);
   }
@@ -193,7 +172,7 @@ public:
   {
     gcc_assert (m_new_entry_enode);
     emission_path->add_event
-      (make_unique<warning_event>
+      (std::make_unique<warning_event>
        (event_loc_info (m_new_entry_enode->get_supernode
 			  ()->get_start_location (),
 			m_callee_fndecl,
@@ -645,7 +624,7 @@ exploded_graph::detect_infinite_recursion (exploded_node *enode)
 			 nullptr);
   get_diagnostic_manager ().add_diagnostic
     (ploc,
-     make_unique<infinite_recursion_diagnostic> (prev_entry_enode,
-						 enode,
-						 fndecl));
+     std::make_unique<infinite_recursion_diagnostic> (prev_entry_enode,
+						      enode,
+						      fndecl));
 }

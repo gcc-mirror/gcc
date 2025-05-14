@@ -185,6 +185,44 @@ test03()
     }
 }
 
+void
+test_pr101587()
+{
+  short in[1]{};
+  __gnu_test::test_contiguous_range r(in); // difference_type is integer-like
+  long out[1];
+  std::span<long> o(out); // difference_type is ptrdiff_t
+  ranges::uninitialized_move(r, o);
+  ranges::uninitialized_move_n(ranges::begin(r), 0, o.begin(), o.end());
+
+  struct Iter
+  {
+    using value_type = long;
+    using difference_type = std::ranges::__detail::__max_diff_type;
+
+    long& operator*() const { return *p; }
+
+    Iter& operator++() { ++p; return *this; }
+    Iter operator++(int) { return Iter{p++}; }
+
+    difference_type operator-(Iter i) const { return p - i.p; }
+    bool operator==(const Iter&) const = default;
+
+    long* p = nullptr;
+  };
+  static_assert(std::sized_sentinel_for<Iter, Iter>);
+
+  std::ranges::subrange<Iter> rmax(Iter{out+0}, Iter{out+1});
+  // Check with integer-like class type for output range:
+  std::ranges::uninitialized_move(in, rmax);
+  std::ranges::uninitialized_move_n(in+0, 1, rmax.begin(), rmax.end());
+
+  int to[1];
+  // And for input range:
+  std::ranges::uninitialized_copy(rmax, to);
+  std::ranges::uninitialized_copy_n(rmax.begin(), 1, to+0, to+1);
+}
+
 int
 main()
 {
@@ -198,4 +236,6 @@ main()
 
   test02<false>();
   test02<true>();
+
+  test_pr101587();
 }

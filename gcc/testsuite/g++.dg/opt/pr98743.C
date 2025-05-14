@@ -1,6 +1,6 @@
 // Test for value-initialization via {}
 // { dg-do run { target c++11 } }
-/* { dg-options "-Og -fno-early-inlining -finline-small-functions -fpack-struct" */
+/* { dg-options "-Og -fno-early-inlining -finline-small-functions -fpack-struct" } */
 void * operator new (__SIZE_TYPE__, void *p) { return p; }
 void * operator new[] (__SIZE_TYPE__, void *p) { return p; }
 

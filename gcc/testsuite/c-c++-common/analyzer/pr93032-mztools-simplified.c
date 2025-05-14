@@ -1,4 +1,5 @@
 /* { dg-do "compile" } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 /* Minimal replacement of system headers.  */
 #define NULL ((void *) 0)

@@ -152,6 +152,9 @@ static machine_mode curr_operand_mode[MAX_RECOG_OPERANDS];
    (e.g. constant) and whose subreg is given operand of the current
    insn.  VOIDmode in all other cases.  */
 static machine_mode original_subreg_reg_mode[MAX_RECOG_OPERANDS];
+/* The first call insn after curr_insn within the EBB during inherit_in_ebb
+   or NULL outside of that function.  */
+static rtx_insn *first_call_insn;
 
 
 
@@ -6373,12 +6376,26 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
   lra_process_new_insns (as_a <rtx_insn *> (usage_insn),
 			 after_p ? NULL : restore,
 			 after_p ? restore : NULL,
-			 call_save_p
-			 ?  "Add reg<-save" : "Add reg<-split");
-  lra_process_new_insns (insn, before_p ? save : NULL,
-			 before_p ? NULL : save,
-			 call_save_p
-			 ?  "Add save<-reg" : "Add split<-reg");
+			 call_save_p ? "Add reg<-save" : "Add reg<-split");
+  if (call_save_p
+      && first_call_insn != NULL
+      && BLOCK_FOR_INSN (first_call_insn) != BLOCK_FOR_INSN (insn))
+    /* PR116028: If original_regno is a pseudo that has been assigned a
+       callee-saved hard register, then emit the spill insn before the call
+       insn 'first_call_insn' instead of adjacent to 'insn'.  If 'insn'
+       and 'first_call_insn' belong to the same EBB but to two separate
+       BBs, and if 'insn' is present in the entry BB, then generating the
+       spill insn in the entry BB can prevent shrink wrap from happening.
+       This is because the spill insn references the stack pointer and
+       hence the prolog gets generated in the entry BB itself.  It is
+       also more efficient to generate the spill before
+       'first_call_insn' as the spill now occurs only in the path
+       containing the call.  */
+    lra_process_new_insns (first_call_insn, save, NULL, "Add save<-reg");
+  else
+    lra_process_new_insns (insn, before_p ? save : NULL,
+			   before_p ? NULL : save,
+			   call_save_p ? "Add save<-reg" : "Add split<-reg");
   if (nregs > 1 || original_regno < FIRST_PSEUDO_REGISTER)
     /* If we are trying to split multi-register.  We should check
        conflicts on the next assignment sub-pass.  IRA can allocate on
@@ -6484,7 +6501,7 @@ split_if_necessary (int regno, machine_mode mode,
 		&& (INSN_UID (XEXP (next_usage_insns, 0)) < max_uid)))
 	&& need_for_split_p (potential_reload_hard_regs, regno + i)
 	&& split_reg (before_p, regno + i, insn, next_usage_insns, NULL))
-    res = true;
+      res = true;
   return res;
 }
 
@@ -7074,6 +7091,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	      last_call_for_abi[callee_abi.id ()] = calls_num;
 	      full_and_partial_call_clobbers
 		|= callee_abi.full_and_partial_reg_clobbers ();
+	      first_call_insn = curr_insn;
 	      if ((cheap = find_reg_note (curr_insn,
 					  REG_RETURNED, NULL_RTX)) != NULL_RTX
 		  && ((cheap = XEXP (cheap, 0)), true)
@@ -7142,6 +7160,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		    {
 		      bool before_p;
 		      rtx_insn *use_insn = curr_insn;
+		      rtx_insn *prev_insn = PREV_INSN (curr_insn);
 
 		      before_p = (JUMP_P (curr_insn)
 				  || (CALL_P (curr_insn) && reg->type == OP_IN));
@@ -7156,7 +7175,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 			  change_p = true;
 			  /* Invalidate. */
 			  usage_insns[src_regno].check = 0;
-			  if (before_p)
+			  if (before_p && PREV_INSN (curr_insn) != prev_insn)
 			    use_insn = PREV_INSN (curr_insn);
 			}
 		      if (NONDEBUG_INSN_P (curr_insn))
@@ -7278,6 +7297,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	    }
 	}
     }
+  first_call_insn = NULL;
   return change_p;
 }
 

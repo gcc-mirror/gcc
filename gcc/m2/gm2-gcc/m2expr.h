@@ -245,6 +245,7 @@ EXTERN int m2expr_GetCstInteger (tree cst);
 EXTERN tree m2expr_calcNbits (location_t location, tree min, tree max);
 EXTERN bool m2expr_OverflowZType (location_t location, const char *str,
 				  unsigned int base, bool issueError);
+EXTERN tree m2expr_BuildSystemTBitSize (location_t location, tree type);
 EXTERN void m2expr_init (location_t location);
 
 #undef EXTERN

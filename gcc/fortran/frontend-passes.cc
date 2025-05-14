@@ -5340,6 +5340,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    {
 
 	    case EXEC_BLOCK:
+	    case EXEC_CHANGE_TEAM:
 	      WALK_SUBCODE (co->ext.block.ns->code);
 	      if (co->ext.block.assoc)
 		{
@@ -5799,7 +5800,8 @@ check_against_globals (gfc_symbol *sym)
   char buf  [200];
 
   if (sym->attr.if_source != IFSRC_IFBODY || sym->attr.flavor != FL_PROCEDURE
-      || sym->attr.generic || sym->error)
+      || sym->attr.generic || sym->error || sym->attr.abstract
+      || sym->attr.dummy)
     return;
 
   if (sym->binding_label)

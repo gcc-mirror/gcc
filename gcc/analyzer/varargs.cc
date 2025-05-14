@@ -18,18 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "make-unique.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "diagnostic-core.h"
-#include "diagnostic-path.h"
-#include "analyzer/analyzer.h"
+#include "analyzer/common.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
@@ -167,10 +157,10 @@ get_va_list_diag_arg (tree va_list_tree)
 static const svalue *
 get_va_copy_arg (const region_model *model,
 		 region_model_context *ctxt,
-		 const gcall *call,
+		 const gcall &call,
 		 unsigned arg_idx)
 {
-  tree arg = gimple_call_arg (call, arg_idx);
+  tree arg = gimple_call_arg (&call, arg_idx);
   const svalue *arg_sval = model->get_rvalue (arg, ctxt);
   if (const svalue *cast = arg_sval->maybe_undo_cast ())
     arg_sval = cast;
@@ -225,16 +215,16 @@ public:
 
 private:
   void on_va_start (sm_context &sm_ctxt, const supernode *node,
-		    const gcall *call) const;
+		    const gcall &call) const;
   void on_va_copy (sm_context &sm_ctxt, const supernode *node,
-		   const gcall *call) const;
+		   const gcall &call) const;
   void on_va_arg (sm_context &sm_ctxt, const supernode *node,
-		  const gcall *call) const;
+		  const gcall &call) const;
   void on_va_end (sm_context &sm_ctxt, const supernode *node,
-		  const gcall *call) const;
+		  const gcall &call) const;
   void check_for_ended_va_list (sm_context &sm_ctxt,
 				const supernode *node,
-				const gcall *call,
+				const gcall &call,
 				const svalue *arg,
 				const char *usage_fnname) const;
 };
@@ -256,10 +246,12 @@ va_list_state_machine::on_stmt (sm_context &sm_ctxt,
 				const supernode *node,
 				const gimple *stmt) const
 {
-  if (const gcall *call = dyn_cast <const gcall *> (stmt))
+  if (const gcall *call_stmt = dyn_cast <const gcall *> (stmt))
     {
-      if (gimple_call_internal_p (call)
-	  && gimple_call_internal_fn (call) == IFN_VA_ARG)
+      const gcall &call = *call_stmt;
+
+      if (gimple_call_internal_p (call_stmt)
+	  && gimple_call_internal_fn (call_stmt) == IFN_VA_ARG)
 	{
 	  on_va_arg (sm_ctxt, node, call);
 	  return false;
@@ -267,7 +259,7 @@ va_list_state_machine::on_stmt (sm_context &sm_ctxt,
 
       if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
 	if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
-	    && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
+	    && gimple_builtin_call_types_compatible_p (&call, callee_fndecl))
 	  switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
 	    {
 	    default:
@@ -293,9 +285,9 @@ va_list_state_machine::on_stmt (sm_context &sm_ctxt,
    IDX to CALL.  */
 
 static const svalue *
-get_stateful_arg (sm_context &sm_ctxt, const gcall *call, unsigned arg_idx)
+get_stateful_arg (sm_context &sm_ctxt, const gcall &call, unsigned arg_idx)
 {
-  tree ap = gimple_call_arg (call, arg_idx);
+  tree ap = gimple_call_arg (&call, arg_idx);
   if (ap
       && POINTER_TYPE_P (TREE_TYPE (ap)))
     {
@@ -542,14 +534,14 @@ private:
 void
 va_list_state_machine::on_va_start (sm_context &sm_ctxt,
 				    const supernode *,
-				    const gcall *call) const
+				    const gcall &call) const
 {
   const svalue *arg = get_stateful_arg (sm_ctxt, call, 0);
   if (arg)
     {
       /* Transition from start state to "started".  */
-      if (sm_ctxt.get_state (call, arg) == m_start)
-	sm_ctxt.set_next_state (call, arg, m_started);
+      if (sm_ctxt.get_state (&call, arg) == m_start)
+	sm_ctxt.set_next_state (&call, arg, m_started);
     }
 }
 
@@ -558,13 +550,13 @@ va_list_state_machine::on_va_start (sm_context &sm_ctxt,
 void
 va_list_state_machine::check_for_ended_va_list (sm_context &sm_ctxt,
 						const supernode *node,
-						const gcall *call,
+						const gcall &call,
 						const svalue *arg,
 						const char *usage_fnname) const
 {
-  if (sm_ctxt.get_state (call, arg) == m_ended)
-    sm_ctxt.warn (node, call, arg,
-		  make_unique<va_list_use_after_va_end>
+  if (sm_ctxt.get_state (&call, arg) == m_ended)
+    sm_ctxt.warn (node, &call, arg,
+		  std::make_unique<va_list_use_after_va_end>
 		    (*this, arg, NULL_TREE, usage_fnname));
 }
 
@@ -574,7 +566,7 @@ va_list_state_machine::check_for_ended_va_list (sm_context &sm_ctxt,
 
 static const svalue *
 get_stateful_va_copy_arg (sm_context &sm_ctxt,
-			  const gcall *call,
+			  const gcall &call,
 			  unsigned arg_idx)
 {
   if (const program_state *new_state = sm_ctxt.get_new_program_state ())
@@ -591,7 +583,7 @@ get_stateful_va_copy_arg (sm_context &sm_ctxt,
 void
 va_list_state_machine::on_va_copy (sm_context &sm_ctxt,
 				   const supernode *node,
-				   const gcall *call) const
+				   const gcall &call) const
 {
   const svalue *src_arg = get_stateful_va_copy_arg (sm_ctxt, call, 1);
   if (src_arg)
@@ -601,8 +593,8 @@ va_list_state_machine::on_va_copy (sm_context &sm_ctxt,
   if (dst_arg)
     {
       /* Transition from start state to "started".  */
-      if (sm_ctxt.get_state (call, dst_arg) == m_start)
-	sm_ctxt.set_next_state (call, dst_arg, m_started);
+      if (sm_ctxt.get_state (&call, dst_arg) == m_start)
+	sm_ctxt.set_next_state (&call, dst_arg, m_started);
     }
 }
 
@@ -611,7 +603,7 @@ va_list_state_machine::on_va_copy (sm_context &sm_ctxt,
 void
 va_list_state_machine::on_va_arg (sm_context &sm_ctxt,
 				  const supernode *node,
-				  const gcall *call) const
+				  const gcall &call) const
 {
   const svalue *arg = get_stateful_arg (sm_ctxt, call, 0);
   if (arg)
@@ -623,15 +615,15 @@ va_list_state_machine::on_va_arg (sm_context &sm_ctxt,
 void
 va_list_state_machine::on_va_end (sm_context &sm_ctxt,
 				  const supernode *node,
-				  const gcall *call) const
+				  const gcall &call) const
 {
   const svalue *arg = get_stateful_arg (sm_ctxt, call, 0);
   if (arg)
     {
-      state_t s = sm_ctxt.get_state (call, arg);
+      state_t s = sm_ctxt.get_state (&call, arg);
       /* Transition from "started" to "ended".  */
       if (s == m_started)
-	sm_ctxt.set_next_state (call, arg, m_ended);
+	sm_ctxt.set_next_state (&call, arg, m_ended);
       else if (s == m_ended)
 	check_for_ended_va_list (sm_ctxt, node, call, arg, "va_end");
     }
@@ -643,17 +635,17 @@ va_list_state_machine::on_va_end (sm_context &sm_ctxt,
 std::unique_ptr<pending_diagnostic>
 va_list_state_machine::on_leak (tree var) const
 {
-  return make_unique<va_list_leak> (*this, nullptr, var);
+  return std::make_unique<va_list_leak> (*this, nullptr, var);
 }
 
 } // anonymous namespace
 
 /* Internal interface to this file. */
 
-state_machine *
+std::unique_ptr<state_machine>
 make_va_list_state_machine (logger *logger)
 {
-  return new va_list_state_machine (logger);
+  return std::make_unique<va_list_state_machine> (logger);
 }
 
 /* Handler for "__builtin_va_start".  */
@@ -757,13 +749,13 @@ kf_va_copy::impl_call_pre (const call_details &cd) const
 
 static int
 get_num_variadic_arguments (tree callee_fndecl,
-			    const gcall *call_stmt)
+			    const gcall &call_stmt)
 {
   int num_positional = 0;
   for (tree iter_parm = DECL_ARGUMENTS (callee_fndecl); iter_parm;
        iter_parm = DECL_CHAIN (iter_parm))
     num_positional++;
-  return gimple_call_num_args (call_stmt) - num_positional;
+  return gimple_call_num_args (&call_stmt) - num_positional;
 }
 
 /* An abstract subclass of pending_diagnostic for diagnostics relating
@@ -817,12 +809,12 @@ public:
 	const program_point &src_point = src_node->get_point ();
 	const int src_stack_depth = src_point.get_stack_depth ();
 	const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
-	const gcall *call_stmt = as_a <const gcall *> (last_stmt);
+	const gcall &call_stmt = *as_a <const gcall *> (last_stmt);
 	int num_variadic_arguments
 	  = get_num_variadic_arguments (dst_node->get_function ()->decl,
 					call_stmt);
 	emission_path->add_event
-	  (make_unique<va_arg_call_event>
+	  (std::make_unique<va_arg_call_event>
 	   (eedge,
 	    event_loc_info (last_stmt ? last_stmt->location : UNKNOWN_LOCATION,
 			    src_point.get_fndecl (),
@@ -1078,7 +1070,7 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
 		  else
 		    {
 		      if (ctxt)
-			ctxt->warn (make_unique <va_arg_type_mismatch>
+			ctxt->warn (std::make_unique <va_arg_type_mismatch>
 				      (va_list_tree,
 				       arg_reg,
 				       lhs_type,
@@ -1089,8 +1081,9 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
 	      else
 		{
 		  if (ctxt)
-		    ctxt->warn (make_unique <va_list_exhausted> (va_list_tree,
-								 arg_reg));
+		    ctxt->warn
+		      (std::make_unique <va_list_exhausted> (va_list_tree,
+							     arg_reg));
 		  saw_problem = true;
 		}
 	    }
@@ -1139,10 +1132,10 @@ public:
 void
 register_varargs_builtins (known_function_manager &kfm)
 {
-  kfm.add (BUILT_IN_VA_START, make_unique<kf_va_start> ());
-  kfm.add (BUILT_IN_VA_COPY, make_unique<kf_va_copy> ());
-  kfm.add (IFN_VA_ARG, make_unique<kf_va_arg> ());
-  kfm.add (BUILT_IN_VA_END, make_unique<kf_va_end> ());
+  kfm.add (BUILT_IN_VA_START, std::make_unique<kf_va_start> ());
+  kfm.add (BUILT_IN_VA_COPY, std::make_unique<kf_va_copy> ());
+  kfm.add (IFN_VA_ARG, std::make_unique<kf_va_arg> ());
+  kfm.add (BUILT_IN_VA_END, std::make_unique<kf_va_end> ());
 }
 
 } // namespace ana

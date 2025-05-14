@@ -1046,6 +1046,7 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 		    && type < IT_DIRECTIVE_HWM
 		    && (pfile->line_table->highest_location
 			!= LINE_MAP_MAX_LOCATION - 1));
+
   if (decrement)
     pfile->line_table->highest_location--;
 

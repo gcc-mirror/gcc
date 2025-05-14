@@ -2,7 +2,7 @@
 
 #include <arm_sve.h>
 
-#pragma GCC target ("arch=armv8.2-a+ssve-fp8fma")
+#pragma GCC target ("arch=armv8.2-a+sve2+ssve-fp8fma")
 
 void
 f1 (svfloat16_t f16, svmfloat8_t f8, fpm_t fpm, 

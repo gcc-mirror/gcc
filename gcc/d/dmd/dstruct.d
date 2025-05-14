@@ -3,12 +3,12 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/struct.html, Structs, Unions)
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dstruct.d, _dstruct.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dstruct.d, _dstruct.d)
  * Documentation:  https://dlang.org/phobos/dmd_dstruct.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/dstruct.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/dstruct.d
  */
 
 module dmd.dstruct;
@@ -116,9 +116,10 @@ extern (C++) class StructDeclaration : AggregateDeclaration
     import dmd.common.bitfields : generateBitFields;
     mixin(generateBitFields!(BitFields, ushort));
 
-    extern (D) this(const ref Loc loc, Identifier id, bool inObject)
+    extern (D) this(Loc loc, Identifier id, bool inObject)
     {
         super(loc, id);
+        this.dsym = DSYM.structDeclaration;
         zeroInit = false; // assume false until we do semantic processing
         ispod = ThreeState.none;
         // For forward references
@@ -131,7 +132,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         }
     }
 
-    static StructDeclaration create(const ref Loc loc, Identifier id, bool inObject)
+    static StructDeclaration create(Loc loc, Identifier id, bool inObject)
     {
         return new StructDeclaration(loc, id, inObject);
     }
@@ -374,11 +375,6 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         return postblit || hasCopyCtor;
     }
 
-    override final inout(StructDeclaration) isStructDeclaration() inout @nogc nothrow pure @safe
-    {
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -540,9 +536,10 @@ bool _isZeroInit(Expression exp)
  */
 extern (C++) final class UnionDeclaration : StructDeclaration
 {
-    extern (D) this(const ref Loc loc, Identifier id)
+    extern (D) this(Loc loc, Identifier id)
     {
         super(loc, id, false);
+        this.dsym = DSYM.unionDeclaration;
     }
 
     override UnionDeclaration syntaxCopy(Dsymbol s)
@@ -556,11 +553,6 @@ extern (C++) final class UnionDeclaration : StructDeclaration
     override const(char)* kind() const
     {
         return "union";
-    }
-
-    override inout(UnionDeclaration) isUnionDeclaration() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

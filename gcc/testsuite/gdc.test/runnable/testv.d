@@ -83,39 +83,6 @@ void test3()
     printf("%d\n", i);
 }
 
-/*********************************************************/
-
-class Foo4
-{
-    int a;
-    float f;
-    double d;
-
-    this(int a, float f, double d)
-    {
-        this.a = a;
-        this.f = f;
-        this.d = d;
-    }
-}
-
-int sum4(Foo4 f ...)
-{
-    return cast(int)(f.a + f.f + f.d);
-}
-
-void test4()
-{
-    int i;
-    Foo4 foo = new Foo4(1, 2f, 3.0);
-
-    i = sum4(foo);
-    assert(i == 1+2+3);
-    i = sum4(4, 5f, 6.0);
-    assert(i == 4+5+6);
-
-    printf("%d\n", i);
-}
 
 /*********************************************************/
 
@@ -139,7 +106,6 @@ int main()
     test1();
     test2();
     test3();
-    test4();
     test5();
 
     printf("Success\n");

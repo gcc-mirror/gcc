@@ -1,7 +1,6 @@
 /* Verify that VLA definitions with an unknown upper bound don't trigger
    -Wvla-larger-than= warnings by default.
    { dg-do compile }
-   { dg-require-effective-target alloca }
    { dg-options "-O2 -Wall" } */
 
 void f (void *, ...);

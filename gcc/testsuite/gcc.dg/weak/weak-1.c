@@ -4,6 +4,7 @@
 /* { dg-skip-if "" { *-*-mingw* } } */
 /* NVPTX's definition of weak looks different to normal.  */
 /* { dg-skip-if "" { nvptx-*-* } } */
+/* { dg-skip-if PR119369 { amdgcn-*-* } } */
 
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?a" } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?b" } } */

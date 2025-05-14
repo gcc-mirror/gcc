@@ -16,6 +16,6 @@ shared static this()
 
 void main()
 {
-    import core.stdc.stdio;
+    import core.stdc.stdio : fprintf, stderr;
     fprintf(stderr, "main\n");
 }

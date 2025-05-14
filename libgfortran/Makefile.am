@@ -149,6 +149,7 @@ intrinsics/spread_generic.c \
 intrinsics/string_intrinsics.c \
 intrinsics/rand.c \
 intrinsics/random.c \
+intrinsics/reduce.c \
 intrinsics/reshape_generic.c \
 intrinsics/reshape_packed.c \
 intrinsics/selected_int_kind.f90 \
@@ -399,6 +400,12 @@ generated/maxloc1_16_i2.c \
 generated/maxloc1_4_i4.c \
 generated/maxloc1_8_i4.c \
 generated/maxloc1_16_i4.c \
+generated/maxloc1_4_i8.c \
+generated/maxloc1_8_i8.c \
+generated/maxloc1_16_i8.c \
+generated/maxloc1_4_i16.c \
+generated/maxloc1_8_i16.c \
+generated/maxloc1_16_i16.c \
 generated/maxloc1_4_m1.c \
 generated/maxloc1_8_m1.c \
 generated/maxloc1_16_m1.c \
@@ -413,7 +420,7 @@ generated/maxloc1_8_m8.c \
 generated/maxloc1_16_m8.c \
 generated/maxloc1_4_m16.c \
 generated/maxloc1_8_m16.c \
-generated/maxloc1_16_i16.c \
+generated/maxloc1_16_m16.c \
 generated/maxloc1_4_r4.c \
 generated/maxloc1_8_r4.c \
 generated/maxloc1_16_r4.c \

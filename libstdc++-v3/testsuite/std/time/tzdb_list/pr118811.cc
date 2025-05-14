@@ -1,7 +1,7 @@
 // { dg-do run { target c++20 } }
 // { dg-require-effective-target tzdb }
 // { dg-require-effective-target cxx11_abi }
-// { dg-require-static-libstdcxx }
+// { dg-require-static-libstdcxx "" }
 // { dg-additional-options "-static-libstdc++" }
 
 #include <chrono>

@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv64gc_zfh_xtheadvector -mabi=lp64d -O2 -save-temps" { target { rv64 } } } */
 
 #include <math.h>
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 static vfloat32m8_t atan2_ps(vfloat32m8_t a, vfloat32m8_t b, size_t vl)
 {

@@ -1061,6 +1061,9 @@ public:
       return *this;
     }
 
+  profile_count operator* (const sreal &num) const;
+  profile_count operator*= (const sreal &num);
+
   profile_count operator/ (int64_t den) const
     {
       return apply_scale (1, den);

@@ -18,6 +18,7 @@
 
 #include "rust-ast.h"
 #include "rust-macro-expand.h"
+#include "rust-macro.h"
 
 namespace Rust {
 class SubstituteCtx
@@ -25,6 +26,7 @@ class SubstituteCtx
   std::vector<std::unique_ptr<AST::Token>> &input;
   std::vector<std::unique_ptr<AST::Token>> &macro;
   std::map<std::string, MatchedFragmentContainer *> &fragments;
+  AST::MacroRulesDefinition &definition;
 
   /**
    * Find the repetition amount to use when expanding a repetition, and
@@ -40,9 +42,26 @@ class SubstituteCtx
 public:
   SubstituteCtx (std::vector<std::unique_ptr<AST::Token>> &input,
 		 std::vector<std::unique_ptr<AST::Token>> &macro,
-		 std::map<std::string, MatchedFragmentContainer *> &fragments)
-    : input (input), macro (macro), fragments (fragments)
+		 std::map<std::string, MatchedFragmentContainer *> &fragments,
+		 AST::MacroRulesDefinition &definition)
+    : input (input), macro (macro), fragments (fragments),
+      definition (definition)
   {}
+
+  /**
+   * Special-case the $crate metavar to expand to the name of the crate in which
+   * the macro was defined.
+   *
+   * https://doc.rust-lang.org/reference/macros-by-example.html#r-macro.decl.hygiene.crate
+   *
+   *
+   * @param expanded Reference to a vector upon which expanded tokens will be
+   * pushed
+   *
+   * @return True if the substitution succeeded
+   */
+  bool
+  substitute_dollar_crate (std::vector<std::unique_ptr<AST::Token>> &expanded);
 
   /**
    * Substitute a metavariable by its given fragment in a transcribing context,
@@ -52,7 +71,7 @@ public:
    * @param expanded Reference to a vector upon which expanded tokens will be
    * pushed
    *
-   * @return True iff the substitution succeeded
+   * @return True if the substitution succeeded
    */
   bool substitute_metavar (std::unique_ptr<AST::Token> &metavar,
 			   std::vector<std::unique_ptr<AST::Token>> &expanded);

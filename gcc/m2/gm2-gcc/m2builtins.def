@@ -24,12 +24,6 @@ DEFINITION MODULE FOR "C" m2builtins ;
 FROM CDataTypes IMPORT CharStar, ConstCharStar ;
 FROM gcctypes IMPORT location_t, tree ;
 
-EXPORT QUALIFIED GetBuiltinConst, GetBuiltinConstType,
-                 GetBuiltinTypeInfoType, GetBuiltinTypeInfo,
-                 BuiltinExists, BuildBuiltinTree,
-                 BuiltinMemCopy, BuiltinMemSet, BuiltInAlloca,
-		 BuiltInIsfinite ;
-
 
 (*
    GetBuiltinConst - returns the gcc tree of a built in constant, name.
@@ -122,6 +116,13 @@ PROCEDURE BuiltInAlloca (location: location_t; n: tree) : tree ;
 *)
 
 PROCEDURE BuiltInIsfinite (location: location_t; e: tree) : tree ;
+
+
+(*
+   BuiltinStrNCopy - copy at most n characters from src to dest.
+*)
+
+PROCEDURE BuiltinStrNCopy (location: location_t; dest, src, n: tree) : tree ;
 
 
 END m2builtins.

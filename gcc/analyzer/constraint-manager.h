@@ -25,10 +25,10 @@ namespace ana {
 
 class constraint_manager;
 
-enum bound_kind
+enum class bound_kind
 {
-  BK_LOWER,
-  BK_UPPER
+  lower,
+  upper
 };
 
 /* One of the end-points of a range.  */

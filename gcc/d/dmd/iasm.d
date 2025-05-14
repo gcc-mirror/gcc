@@ -3,12 +3,12 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/iasm.html, Inline Assembler)
  *
- *              Copyright (C) 2018-2024 by The D Language Foundation, All Rights Reserved
+ *              Copyright (C) 2018-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/iasm.d, _iasm.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/iasm.d, _iasm.d)
  * Documentation:  https://dlang.org/phobos/dmd_iasm.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/iasm.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/iasm.d
  */
 
 module dmd.iasm;
@@ -39,7 +39,7 @@ else
 
 /************************ AsmStatement ***************************************/
 
-Statement asmSemantic(AsmStatement s, Scope *sc)
+Statement asmSemantic(AsmStatement s, Scope* sc)
 {
     //printf("AsmStatement.semantic()\n");
 
@@ -89,7 +89,7 @@ Statement asmSemantic(AsmStatement s, Scope *sc)
 
 /************************ CAsmDeclaration ************************************/
 
-void asmSemantic(CAsmDeclaration ad, Scope *sc)
+void asmSemantic(CAsmDeclaration ad, Scope* sc)
 {
     version (NoBackend)
     {

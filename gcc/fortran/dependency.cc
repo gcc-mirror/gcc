@@ -944,8 +944,12 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 	   types), not in characters.  */
 	return subarray_p;
 
-      case REF_COMPONENT:
       case REF_INQUIRY:
+	/* Within an array reference, inquiry references of complex
+	   variables generally need a temporary.  */
+	return subarray_p;
+
+      case REF_COMPONENT:
 	break;
       }
 
@@ -1250,7 +1254,8 @@ check_data_pointer_types (gfc_expr *expr1, gfc_expr *expr2)
   sym2 = expr2->symtree->n.sym;
 
   /* Keep it simple for now.  */
-  if (sym1->ts.type == BT_DERIVED && sym2->ts.type == BT_DERIVED)
+  if (sym1->ts.type == BT_DERIVED && sym2->ts.type == BT_DERIVED
+      && sym1->ts.u.derived == sym2->ts.u.derived)
     return false;
 
   if (sym1->attr.pointer)
@@ -1852,7 +1857,7 @@ contains_forall_index_p (gfc_expr *expr)
     case EXPR_STRUCTURE:
     case EXPR_ARRAY:
       for (c = gfc_constructor_first (expr->value.constructor);
-	   c; gfc_constructor_next (c))
+	   c; c = gfc_constructor_next (c))
 	if (contains_forall_index_p (c->expr))
 	  return true;
       break;
@@ -1873,6 +1878,7 @@ contains_forall_index_p (gfc_expr *expr)
 	break;
 
       case REF_COMPONENT:
+      case REF_INQUIRY:
 	break;
 
       case REF_SUBSTRING:
@@ -1887,6 +1893,88 @@ contains_forall_index_p (gfc_expr *expr)
 
   return false;
 }
+
+
+/* Traverse expr, checking all EXPR_VARIABLE symbols for their
+   implied_index attribute.  Return true if any variable may be
+   used as an implied-do index.  It is safe to pessimistically
+   return true, and assume a dependency.  */
+
+bool
+gfc_contains_implied_index_p (gfc_expr *expr)
+{
+  gfc_actual_arglist *arg;
+  gfc_constructor *c;
+  gfc_ref *ref;
+  int i;
+
+  if (!expr)
+    return false;
+
+  switch (expr->expr_type)
+    {
+    case EXPR_VARIABLE:
+      if (expr->symtree->n.sym->attr.implied_index)
+	return true;
+      break;
+
+    case EXPR_OP:
+      if (gfc_contains_implied_index_p (expr->value.op.op1)
+	  || gfc_contains_implied_index_p (expr->value.op.op2))
+	return true;
+      break;
+
+    case EXPR_FUNCTION:
+      for (arg = expr->value.function.actual; arg; arg = arg->next)
+	if (gfc_contains_implied_index_p (arg->expr))
+	  return true;
+      break;
+
+    case EXPR_CONSTANT:
+    case EXPR_NULL:
+    case EXPR_SUBSTRING:
+      break;
+
+    case EXPR_STRUCTURE:
+    case EXPR_ARRAY:
+      for (c = gfc_constructor_first (expr->value.constructor);
+	   c; c = gfc_constructor_next (c))
+	if (gfc_contains_implied_index_p (c->expr))
+	  return true;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  for (ref = expr->ref; ref; ref = ref->next)
+    switch (ref->type)
+      {
+      case REF_ARRAY:
+	for (i = 0; i < ref->u.ar.dimen; i++)
+	  if (gfc_contains_implied_index_p (ref->u.ar.start[i])
+	      || gfc_contains_implied_index_p (ref->u.ar.end[i])
+	      || gfc_contains_implied_index_p (ref->u.ar.stride[i]))
+	    return true;
+	break;
+
+      case REF_COMPONENT:
+      case REF_INQUIRY:
+	break;
+
+      case REF_SUBSTRING:
+	if (gfc_contains_implied_index_p (ref->u.ss.start)
+	    || gfc_contains_implied_index_p (ref->u.ss.end))
+	  return true;
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+  return false;
+}
+
 
 /* Determines overlapping for two single element array references.  */
 

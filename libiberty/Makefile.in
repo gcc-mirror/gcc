@@ -136,10 +136,11 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	hashtab.c hex.c							\
 	index.c insque.c						\
 	lbasename.c							\
+	ldirname.c							\
 	lrealpath.c							\
 	make-relative-prefix.c						\
-	make-temp-file.c md5.c memchr.c memcmp.c memcpy.c memmem.c	\
-	 memmove.c mempcpy.c memset.c mkstemps.c			\
+	make-temp-file.c md5.c memchr.c memrchr.c memcmp.c memcpy.c     \
+	memmem.c memmove.c mempcpy.c memset.c mkstemps.c		\
 	objalloc.c obstack.c						\
 	partition.c pexecute.c						\
 	 pex-common.c pex-djgpp.c pex-msdos.c pex-one.c			\
@@ -179,7 +180,7 @@ REQUIRED_OFILES =							\
 	./fnmatch.$(objext) ./fopen_unlocked.$(objext)			\
 	./getopt.$(objext) ./getopt1.$(objext) ./getpwd.$(objext)	\
 	./getruntime.$(objext) ./hashtab.$(objext) ./hex.$(objext)	\
-	./lbasename.$(objext) ./lrealpath.$(objext)			\
+	./lbasename.$(objext) ./ldirname.$(objext) ./lrealpath.$(objext)\
 	./make-relative-prefix.$(objext) ./make-temp-file.$(objext)	\
 	./objalloc.$(objext)						\
 	./obstack.$(objext)						\
@@ -212,8 +213,8 @@ CONFIGURED_OFILES = ./asprintf.$(objext) ./atexit.$(objext)		\
 	./getcwd.$(objext) ./getpagesize.$(objext)			\
 	 ./gettimeofday.$(objext)					\
 	./index.$(objext) ./insque.$(objext)				\
-	./memchr.$(objext) ./memcmp.$(objext) ./memcpy.$(objext) 	\
-	./memmem.$(objext) ./memmove.$(objext)				\
+	./memchr.$(objext) ./memrchr.$(objext) ./memcmp.$(objext) 	\
+	./memcpy.$(objext) ./memmem.$(objext) ./memmove.$(objext)	\
 	 ./mempcpy.$(objext) ./memset.$(objext) ./mkstemps.$(objext)	\
 	./pex-djgpp.$(objext) ./pex-msdos.$(objext)			\
 	 ./pex-unix.$(objext) ./pex-win32.$(objext)			\
@@ -965,6 +966,17 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/lbasename.c $(OUTPUT_OPTION)
 
+./ldirname.$(objext): $(srcdir)/ldirname.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/filenames.h $(INCDIR)/hashtab.h $(INCDIR)/libiberty.h \
+	$(INCDIR)/safe-ctype.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/ldirname.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/ldirname.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/ldirname.c $(OUTPUT_OPTION)
+
 ./lrealpath.$(objext): $(srcdir)/lrealpath.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
 	if [ x"$(PICFLAG)" != x ]; then \
@@ -1012,6 +1024,15 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/memchr.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/memchr.c $(OUTPUT_OPTION)
+
+./memrchr.$(objext): $(srcdir)/memrchr.c $(INCDIR)/ansidecl.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/memrchr.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/memrchr.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/memrchr.c $(OUTPUT_OPTION)
 
 ./memcmp.$(objext): $(srcdir)/memcmp.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \

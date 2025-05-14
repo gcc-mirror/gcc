@@ -1,4 +1,4 @@
-# Configure script for libada.
+# Configure script for gnattools
 #   Copyright 2003, 2004, 2009, 2012 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
@@ -96,6 +96,20 @@ if test "x$GCC" = "xyes"; then
   warn_cflags='$(GCC_WARN_CFLAGS)'
 fi
 AC_SUBST(warn_cflags)
+
+# Enable --enable-host-pie
+AC_ARG_ENABLE(host-pie,
+[AS_HELP_STRING([--enable-host-pie],
+		[build host code as PIE])],
+[PICFLAG=-fPIE; LD_PICFLAG=-pie], [PICFLAG=-fno-PIE; LD_PICFLAG=-no-pie])
+AC_SUBST(PICFLAG)
+
+# Enable --enable-host-bind-now
+AC_ARG_ENABLE(host-bind-now,
+[AS_HELP_STRING([--enable-host-bind-now],
+       [link host code as BIND_NOW])],
+[LD_PICFLAG="$LD_PICFLAG -Wl,-z,now"], [])
+AC_SUBST(LD_PICFLAG)
 
 # Determine what to build for 'gnattools'.  Test after the above,
 # because testing for CC sets the final value of cross_compiling, even

@@ -218,6 +218,7 @@
 	  case UNSPEC_DTPOFF:
 	  case UNSPEC_GOTNTPOFF:
 	  case UNSPEC_NTPOFF:
+	  case UNSPEC_SECREL32:
 	    return true;
 	  default:
 	    break;
@@ -1267,6 +1268,14 @@
        (match_operand 0 "vector_memory_operand")
        (match_code "const_vector")))
 
+; Return true when OP is register_operand, vector_memory_operand,
+; const_vector zero or const_vector all ones.
+(define_predicate "vector_or_0_or_1s_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "vector_memory_operand")
+       (match_operand 0 "const0_operand")
+       (match_operand 0 "int_float_vector_all_ones_operand")))
+
 (define_predicate "bcst_mem_operand"
   (and (match_code "vec_duplicate")
        (and (match_test "TARGET_AVX512F")
@@ -1332,6 +1341,12 @@
 (define_predicate "nonimm_or_0_operand"
   (ior (match_operand 0 "nonimmediate_operand")
        (match_operand 0 "const0_operand")))
+
+; Return true when OP is a nonimmediate or zero or all ones.
+(define_predicate "nonimm_or_0_or_1s_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_operand 0 "const0_operand")
+       (match_operand 0 "int_float_vector_all_ones_operand")))
 
 ;; Return true for RTX codes that force SImode address.
 (define_predicate "SImode_address_operand"
@@ -1629,7 +1644,7 @@
 ;; Return true if this comparison only requires testing one flag bit.
 ;; VCOMX/VUCOMX set ZF, SF, OF, differently from COMI/UCOMI.
 (define_predicate "ix86_trivial_fp_comparison_operator"
-  (if_then_else (match_test "TARGET_AVX10_2_256")
+  (if_then_else (match_test "TARGET_AVX10_2")
 		(match_code "gt,ge,unlt,unle,eq,uneq,ne,ltgt,ordered,unordered")
 		(match_code "gt,ge,unlt,unle,uneq,ltgt,ordered,unordered")))
 

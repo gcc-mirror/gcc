@@ -73,7 +73,7 @@ package
     {
         version = AlignFiberStackTo16Byte;
 
-        version (CET)
+        version (GNU_CET)
         {
             // fiber_switchContext does not support shadow stack from
             // Intel CET.  So use ucontext implementation.
@@ -94,7 +94,7 @@ package
     {
         version = AlignFiberStackTo16Byte;
 
-        version (CET)
+        version (GNU_CET)
         {
             // fiber_switchContext does not support shadow stack from
             // Intel CET.  So use ucontext implementation.

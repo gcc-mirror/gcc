@@ -135,7 +135,11 @@ DEFTREECODE (OFFSET_TYPE, "offset_type", tcc_type, 0)
 DEFTREECODE (ENUMERAL_TYPE, "enumeral_type", tcc_type, 0)
 
 /* Boolean type (true or false are the only values).  Looks like an
-   INTEGRAL_TYPE.  */
+   INTEGER_TYPE, but must be dealt with specially because TYPE_PRECISION
+   may be arbitrary despite the restricted set of valid values (in other
+   words, boolean types with TYPE_PRECISION > 1 exist in some languages).
+   Similarly, TYPE_UNSIGNED may be false for components of vector masks,
+   as well as for boolean types in languages other than C.  */
 DEFTREECODE (BOOLEAN_TYPE, "boolean_type", tcc_type, 0)
 
 /* Integer types in all languages, including char in C.
@@ -313,7 +317,9 @@ DEFTREECODE (STRING_CST, "string_cst", tcc_constant, 0)
    of the raw data, plus RAW_DATA_OWNER for owner of the
    data.  That can be either a STRING_CST, used e.g. when writing
    PCH header, or another RAW_DATA_CST representing data owned by
-   libcpp and representing the original range (if possible).
+   libcpp and representing the original range (if possible)
+   or NULL_TREE if it is the RAW_DATA_OWNER of other RAW_DATA_CST
+   nodes (and represents data owned by libcpp).
    TREE_TYPE is the type of each of the RAW_DATA_LENGTH elements.  */
 DEFTREECODE (RAW_DATA_CST, "raw_data_cst", tcc_constant, 0)
 
@@ -505,6 +511,14 @@ DEFTREECODE (OBJ_TYPE_REF, "obj_type_ref", tcc_expression, 3)
    one for each index in the range.  (If the corresponding field VALUE
    has side-effects, they are evaluated once for each element.  Wrap the
    value in a SAVE_EXPR if you want to evaluate side effects only once.)
+   If the index is INTEGER_CST or NULL_TREE and value RAW_DATA_CST, it is
+   a short-hand for RAW_DATA_LENGTH consecutive nodes, first at the given
+   index or current location, each node being
+   build_int_cst (TREE_TYPE (value), TYPE_UNSIGNED (TREE_TYPE (value))
+		  ? (HOST_WIDE_INT) RAW_DATA_UCHAR_ELT (value, n)
+		  : (HOST_WIDE_INT) RAW_DATA_SCHAR_ELT (value, n)) at index
+   tree_to_uhwi (index) + n (or current location + n) for n from 0 to
+   RAW_DATA_LENGTH (value) - 1.
 
    Components that aren't present are cleared as per the C semantics,
    unless the CONSTRUCTOR_NO_CLEARING flag is set, in which case their

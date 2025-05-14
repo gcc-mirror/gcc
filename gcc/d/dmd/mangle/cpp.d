@@ -4,12 +4,12 @@
  * This is the POSIX side of the implementation.
  * It exports two functions to C++, `toCppMangleItanium` and `cppTypeInfoMangleItanium`.
  *
- * Copyright: Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors: Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/cppmangle.d, _cppmangle.d)
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/cpp.d, _cppmangle.d)
  * Documentation:  https://dlang.org/phobos/dmd_cppmangle.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/cppmangle.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/mangle/cpp.d
  *
  * References:
  *  Follows Itanium C++ ABI 1.86 section 5.1
@@ -60,11 +60,11 @@ package CppOperator isCppOperator(const scope Identifier id)
 {
     with (Id) with (CppOperator)
     {
-        return (id == _cast)      ? Cast     :
-               (id == assign)     ? Assign   :
-               (id == eq)         ? Eq       :
-               (id == index)      ? Index    :
-               (id == call)       ? Call     :
+        return (id == opCast)     ? Cast     :
+               (id == opAssign)   ? Assign   :
+               (id == opEquals)   ? Eq       :
+               (id == opIndex)    ? Index    :
+               (id == opCall)     ? Call     :
                (id == opUnary)    ? Unary    :
                (id == opBinary)   ? Binary   :
                (id == opOpAssign) ? OpAssign :
@@ -435,10 +435,10 @@ private final class CppMangleVisitor : Visitor
         // 4. null pointer: std::nullptr_t (since C++11)
         if (t.ty == Tvoid || t.ty == Tbool)
             return true;
-        else if (t.ty == Tnull && global.params.cplusplus >= CppStdRevision.cpp11)
+        if (t.ty == Tnull && global.params.cplusplus >= CppStdRevision.cpp11)
             return true;
-        else
-            return t.isTypeBasic() && (t.isIntegral() || t.isReal());
+
+        return t.isTypeBasic() && (t.isIntegral() || t.isReal());
     }
 
     /******************************
@@ -1102,13 +1102,13 @@ private final class CppMangleVisitor : Visitor
                 buf.writestring(ctor.isCpCtor ? "C2" : "C1");
             else if (d.isAggregateDtor())
                 buf.writestring("D1");
-            else if (d.ident && d.ident == Id.assign)
+            else if (d.ident && d.ident == Id.opAssign)
                 buf.writestring("aS");
-            else if (d.ident && d.ident == Id.eq)
+            else if (d.ident && d.ident == Id.opEquals)
                 buf.writestring("eq");
-            else if (d.ident && d.ident == Id.index)
+            else if (d.ident && d.ident == Id.opIndex)
                 buf.writestring("ix");
-            else if (d.ident && d.ident == Id.call)
+            else if (d.ident && d.ident == Id.opCall)
                 buf.writestring("cl");
             else
                 source_name(d, true);
@@ -1939,21 +1939,21 @@ extern(C++):
         //printf("enum id = '%s'\n", id.toChars());
         if (id == Id.__c_long)
             return writeBasicType(t, 0, 'l');
-        else if (id == Id.__c_ulong)
+        if (id == Id.__c_ulong)
             return writeBasicType(t, 0, 'm');
-        else if (id == Id.__c_char)
+        if (id == Id.__c_char)
             return writeBasicType(t, 0, 'c');
-        else if (id == Id.__c_wchar_t)
+        if (id == Id.__c_wchar_t)
             return writeBasicType(t, 0, 'w');
-        else if (id == Id.__c_longlong)
+        if (id == Id.__c_longlong)
             return writeBasicType(t, 0, 'x');
-        else if (id == Id.__c_ulonglong)
+        if (id == Id.__c_ulonglong)
             return writeBasicType(t, 0, 'y');
-        else if (id == Id.__c_complex_float)
+        if (id == Id.__c_complex_float)
             return Type.tcomplex32.accept(this);
-        else if (id == Id.__c_complex_double)
+        if (id == Id.__c_complex_double)
             return Type.tcomplex64.accept(this);
-        else if (id == Id.__c_complex_real)
+        if (id == Id.__c_complex_real)
             return Type.tcomplex80.accept(this);
 
         doSymbol(t);
@@ -2362,8 +2362,7 @@ private bool isNamespaceEqual (CPPNamespaceDeclaration a, Nspace b, size_t idx =
     // We need to see if there's more ident enclosing
     if (auto pb = b.toParent().isNspace())
         return isNamespaceEqual(a.cppnamespace, pb);
-    else
-        return a.cppnamespace is null;
+    return a.cppnamespace is null;
 }
 
 /// Returns:

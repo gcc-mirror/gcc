@@ -2,12 +2,12 @@
 TEST_OUTPUT:
 ---
 fail_compilation/diag12829.d(15): Error: function `diag12829.test1` is `@nogc` yet allocates closure for `test1()` with the GC
-fail_compilation/diag12829.d(18):        delegate `diag12829.test1.__lambda_L18_C33` closes over variable `x`
+fail_compilation/diag12829.d(18):        delegate `() { int y = x; }` closes over variable `x`
 fail_compilation/diag12829.d(17):        `x` declared here
-fail_compilation/diag12829.d(22):        function `diag12829.test1.bar` closes over variable `x`
+fail_compilation/diag12829.d(22):        function `bar` closes over variable `x`
 fail_compilation/diag12829.d(17):        `x` declared here
 fail_compilation/diag12829.d(29): Error: function `diag12829.test2` is `@nogc` yet allocates closure for `test2()` with the GC
-fail_compilation/diag12829.d(34):        function `diag12829.test2.S.foo` closes over variable `x`
+fail_compilation/diag12829.d(34):        function `foo` closes over variable `x`
 fail_compilation/diag12829.d(31):        `x` declared here
 ---
 */

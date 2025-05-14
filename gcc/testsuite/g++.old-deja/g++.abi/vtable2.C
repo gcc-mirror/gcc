@@ -1,4 +1,4 @@
-// { dg-do run  }
+// { dg-do run }
 // { dg-options "-Wno-attribute-alias -fno-strict-aliasing" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 

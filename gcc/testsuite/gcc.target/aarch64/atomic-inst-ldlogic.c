@@ -101,54 +101,54 @@ TEST (xor_load_notreturn, XOR_LOAD_NORETURN)
 
 /* Load-OR.  */
 
-/* { dg-final { scan-assembler-times "ldsetb\t" 8} } */
-/* { dg-final { scan-assembler-times "ldsetab\t" 16} } */
-/* { dg-final { scan-assembler-times "ldsetlb\t" 8} } */
-/* { dg-final { scan-assembler-times "ldsetalb\t" 16} } */
+/* { dg-final { scan-assembler-times "ldsetb\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldsetab\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldsetlb\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldsetalb\t" 16 } } */
 
-/* { dg-final { scan-assembler-times "ldseth\t" 8} } */
-/* { dg-final { scan-assembler-times "ldsetah\t" 16} } */
-/* { dg-final { scan-assembler-times "ldsetlh\t" 8} } */
-/* { dg-final { scan-assembler-times "ldsetalh\t" 16} } */
+/* { dg-final { scan-assembler-times "ldseth\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldsetah\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldsetlh\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldsetalh\t" 16 } } */
 
-/* { dg-final { scan-assembler-times "ldset\t" 16} } */
-/* { dg-final { scan-assembler-times "ldseta\t" 32} } */
-/* { dg-final { scan-assembler-times "ldsetl\t" 16} } */
-/* { dg-final { scan-assembler-times "ldsetal\t" 32} } */
+/* { dg-final { scan-assembler-times "ldset\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldseta\t" 32 } } */
+/* { dg-final { scan-assembler-times "ldsetl\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldsetal\t" 32 } } */
 
 /* Load-AND.  */
 
-/* { dg-final { scan-assembler-times "ldclrb\t" 8} } */
-/* { dg-final { scan-assembler-times "ldclrab\t" 16} } */
-/* { dg-final { scan-assembler-times "ldclrlb\t" 8} } */
-/* { dg-final { scan-assembler-times "ldclralb\t" 16} } */
+/* { dg-final { scan-assembler-times "ldclrb\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldclrab\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldclrlb\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldclralb\t" 16 } } */
 
-/* { dg-final { scan-assembler-times "ldclrh\t" 8} } */
-/* { dg-final { scan-assembler-times "ldclrah\t" 16} } */
-/* { dg-final { scan-assembler-times "ldclrlh\t" 8} } */
-/* { dg-final { scan-assembler-times "ldclralh\t" 16} } */
+/* { dg-final { scan-assembler-times "ldclrh\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldclrah\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldclrlh\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldclralh\t" 16 } } */
 
-/* { dg-final { scan-assembler-times "ldclr\t" 16} */
-/* { dg-final { scan-assembler-times "ldclra\t" 32} } */
-/* { dg-final { scan-assembler-times "ldclrl\t" 16} } */
-/* { dg-final { scan-assembler-times "ldclral\t" 32} } */
+/* { dg-final { scan-assembler-times "ldclr\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldclra\t" 32 } } */
+/* { dg-final { scan-assembler-times "ldclrl\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldclral\t" 32 } } */
 
 /* Load-XOR.  */
 
-/* { dg-final { scan-assembler-times "ldeorb\t" 8} } */
-/* { dg-final { scan-assembler-times "ldeorab\t" 16} } */
-/* { dg-final { scan-assembler-times "ldeorlb\t" 8} } */
-/* { dg-final { scan-assembler-times "ldeoralb\t" 16} } */
+/* { dg-final { scan-assembler-times "ldeorb\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldeorab\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldeorlb\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldeoralb\t" 16 } } */
 
-/* { dg-final { scan-assembler-times "ldeorh\t" 8} } */
-/* { dg-final { scan-assembler-times "ldeorah\t" 16} } */
-/* { dg-final { scan-assembler-times "ldeorlh\t" 8} } */
-/* { dg-final { scan-assembler-times "ldeoralh\t" 16} } */
+/* { dg-final { scan-assembler-times "ldeorh\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldeorah\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldeorlh\t" 8 } } */
+/* { dg-final { scan-assembler-times "ldeoralh\t" 16 } } */
 
-/* { dg-final { scan-assembler-times "ldeor\t" 16} */
-/* { dg-final { scan-assembler-times "ldeora\t" 32} } */
-/* { dg-final { scan-assembler-times "ldeorl\t" 16} } */
-/* { dg-final { scan-assembler-times "ldeoral\t" 32} } */
+/* { dg-final { scan-assembler-times "ldeor\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldeora\t" 32 } } */
+/* { dg-final { scan-assembler-times "ldeorl\t" 16 } } */
+/* { dg-final { scan-assembler-times "ldeoral\t" 32 } } */
 
 /* { dg-final { scan-assembler-not "ldaxr\t" } } */
 /* { dg-final { scan-assembler-not "stlxr\t" } } */

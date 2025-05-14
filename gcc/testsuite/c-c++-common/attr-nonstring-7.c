@@ -56,7 +56,7 @@ test_memarray_cstidx_idx (const char *s)
   /* The destination below is represented as &MEM[(void *)&a + 20B] and
      which (in general) doesn't make it possible to determine what member
      it refers to.  */
-  strncpy (p, s, sizeof b[1].a - 4);   /* { dg-bogus "-Wstringop-truncation" "" { xfail *-*-*} } */
+  strncpy (p, s, sizeof b[1].a - 4);   /* { dg-bogus "-Wstringop-truncation" } */
   return b;
 }
 

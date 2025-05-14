@@ -158,7 +158,7 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 /* Set flags of NEW_NODE and its decl.  NEW_NODE is a newly created private
    clone or its thunk.  */
 
-static void
+void
 set_new_clone_decl_and_node_flags (cgraph_node *new_node)
 {
   DECL_EXTERNAL (new_node->decl) = 0;
@@ -307,12 +307,20 @@ cgraph_node::expand_all_artificial_thunks ()
       e = e->next_caller;
 }
 
+/* Dump information about creation of a call graph node clone to the dump file
+   created by the -fdump-ipa-clones option.  ORIGINAL is the function being
+   cloned, CLONE is the new clone.  SUFFIX is a string that helps identify the
+   reason for cloning, often it is the suffix used by a particular IPA pass to
+   create unique function names.  SUFFIX can be NULL and in that case the
+   dumping will not take place, which must be the case only for helper clones
+   which will never be emitted to the output.  */
+
 void
 dump_callgraph_transformation (const cgraph_node *original,
 			       const cgraph_node *clone,
 			       const char *suffix)
 {
-  if (symtab->ipa_clones_dump_file)
+  if (suffix && symtab->ipa_clones_dump_file)
     {
       fprintf (symtab->ipa_clones_dump_file,
 	       "Callgraph clone;%s;%d;%s;%d;%d;%s;%d;%s;%d;%d;%s\n",
@@ -358,8 +366,13 @@ localize_profile (cgraph_node *n)
 
    If the new node is being inlined into another one, NEW_INLINED_TO should be
    the outline function the new one is (even indirectly) inlined to.  All hooks
-   will see this in node's inlined_to, when invoked.  Can be NULL if the
+   will see this in node's inlined_to, when invoked.  Should be NULL if the
    node is not inlined.
+
+   SUFFIX is string that is appended to the original name, it should only be
+   NULL if NEW_INLINED_TO is not NULL or if the clone being created is
+   temporary and a record about it should not be added into the ipa-clones dump
+   file.
 
    If PARAM_ADJUSTMENTS is non-NULL, the parameter manipulation information
    will be overwritten by the new structure.  Otherwise the new node will
@@ -994,11 +1007,12 @@ cgraph_node::create_version_clone (tree new_decl,
    TREE_MAP is a mapping of tree nodes we want to replace with
    new ones (according to results of prior analysis).
 
-   If non-NULL ARGS_TO_SKIP determine function parameters to remove
-   from new version.
-   If SKIP_RETURN is true, the new version will return void.
+   If non-NULL PARAM_ADJUSTMENTS determine how function formal parameters
+   should be modified in the new version and if it should return void.
    If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
    If non_NULL NEW_ENTRY determine new entry BB of the clone.
+   SUFFIX is a string that will be used to create a new name for the new
+   function.
 
    If TARGET_ATTRIBUTES is non-null, when creating a new declaration,
    add the attributes to DECL_ATTRIBUTES.  And call valid_attribute_p

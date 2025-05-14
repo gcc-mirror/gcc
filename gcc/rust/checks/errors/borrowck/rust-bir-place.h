@@ -32,14 +32,36 @@ namespace Rust {
 namespace BIR {
 
 /** A unique identifier for a place in the BIR. */
-using PlaceId = uint32_t;
+struct PlaceId
+{
+  uint32_t value;
+  // some overloads for comparision
+  bool operator== (const PlaceId &rhs) const { return value == rhs.value; }
+  bool operator!= (const PlaceId &rhs) const { return !(operator== (rhs)); }
+  bool operator< (const PlaceId &rhs) const { return value < rhs.value; }
+  bool operator> (const PlaceId &rhs) const { return value > rhs.value; }
+  bool operator<= (const PlaceId &rhs) const { return !(operator> (rhs)); }
+  bool operator>= (const PlaceId &rhs) const { return !(operator< (rhs)); }
+};
 
-static constexpr PlaceId INVALID_PLACE = 0;
-static constexpr PlaceId RETURN_VALUE_PLACE = 1;
+static constexpr PlaceId INVALID_PLACE = {0};
+static constexpr PlaceId RETURN_VALUE_PLACE = {1};
 static constexpr PlaceId FIRST_VARIABLE_PLACE = RETURN_VALUE_PLACE;
 
 using Variance = TyTy::VarianceAnalysis::Variance;
-using LoanId = uint32_t;
+
+/** A unique identifier for a loan in the BIR. */
+struct LoanId
+{
+  uint32_t value;
+  // some overloads for comparision
+  bool operator== (const LoanId &rhs) const { return value == rhs.value; }
+  bool operator!= (const LoanId &rhs) const { return !(operator== (rhs)); }
+  bool operator< (const LoanId &rhs) const { return value < rhs.value; }
+  bool operator> (const LoanId &rhs) const { return value > rhs.value; }
+  bool operator<= (const LoanId &rhs) const { return !(operator> (rhs)); }
+  bool operator>= (const LoanId &rhs) const { return !(operator< (rhs)); }
+};
 
 /**
  * Representation of lvalues and constants in BIR.
@@ -143,13 +165,25 @@ public:
   }
 };
 
-using ScopeId = uint32_t;
+struct ScopeId
+{
+  uint32_t value;
+  ScopeId next_scope_id () const { return {value + 1}; }
+  // some overloads for comparision
+  bool operator== (const ScopeId &rhs) const { return value == rhs.value; }
+  bool operator!= (const ScopeId &rhs) const { return !(operator== (rhs)); }
+  bool operator< (const ScopeId &rhs) const { return value < rhs.value; }
+  bool operator> (const ScopeId &rhs) const { return value > rhs.value; }
+  bool operator<= (const ScopeId &rhs) const { return !(operator> (rhs)); }
+  bool operator>= (const ScopeId &rhs) const { return !(operator< (rhs)); }
+};
 
-static constexpr ScopeId INVALID_SCOPE = std::numeric_limits<ScopeId>::max ();
+static constexpr ScopeId INVALID_SCOPE
+  = {std::numeric_limits<uint32_t>::max ()};
 /** Arguments and return value are in the root scope. */
-static constexpr ScopeId ROOT_SCOPE = 0;
+static constexpr ScopeId ROOT_SCOPE = {0};
 /** Top-level local variables are in the top-level scope. */
-static constexpr ScopeId TOP_LEVEL_SCOPE = 1;
+static constexpr ScopeId TOP_LEVEL_SCOPE = {1};
 
 struct Scope
 {
@@ -162,21 +196,58 @@ struct Loan
 {
   Mutability mutability;
   PlaceId place;
+  location_t location;
 };
+
+// I is the index type, T is the contained type
+template <typename I, typename T> class IndexVec
+{
+  std::vector<T> internal_vector;
+
+  typedef decltype (std::declval<I> ().value) size_type;
+  static constexpr auto MAX_INDEX = std::numeric_limits<size_type>::max ();
+
+public:
+  IndexVec () = default;
+  IndexVec (size_t size) { internal_vector.reserve (size); }
+
+  T &at (I pid) { return internal_vector[pid.value]; }
+  const T &at (I pid) const { return internal_vector[pid.value]; }
+  T &operator[] (I pid) { return internal_vector[pid.value]; }
+  const T &operator[] (I pid) const { return internal_vector[pid.value]; }
+
+  void push_back (T &&param) { internal_vector.push_back (std::move (param)); }
+  template <typename... Args> void emplace_back (Args &&... args)
+  {
+    internal_vector.emplace_back (std::forward<Args> (args)...);
+  }
+
+  size_type size () const
+  {
+    rust_assert (internal_vector.size () < MAX_INDEX);
+    return static_cast<size_type> (internal_vector.size ());
+  }
+
+  std::vector<T> &get_vector () { return internal_vector; }
+};
+
+using Scopes = IndexVec<ScopeId, Scope>;
+using Loans = IndexVec<LoanId, Loan>;
+using Places = IndexVec<PlaceId, Place>;
 
 /** Allocated places and keeps track of paths. */
 class PlaceDB
 {
 private:
   // Possible optimizations: separate variables to speedup lookup.
-  std::vector<Place> places;
+  Places places;
   std::unordered_map<TyTy::BaseType *, PlaceId> constants_lookup;
-  std::vector<Scope> scopes;
-  ScopeId current_scope = 0;
+  Scopes scopes;
+  ScopeId current_scope = ROOT_SCOPE;
 
-  std::vector<Loan> loans;
+  Loans loans;
 
-  Polonius::Origin next_free_region = 1;
+  FreeRegion next_free_region = {1};
 
 public:
   PlaceDB ()
@@ -190,22 +261,24 @@ public:
   Place &operator[] (PlaceId id) { return places.at (id); }
   const Place &operator[] (PlaceId id) const { return places.at (id); }
 
-  decltype (places)::const_iterator begin () const { return places.begin (); }
-  decltype (places)::const_iterator end () const { return places.end (); }
-
   size_t size () const { return places.size (); }
 
-  const std::vector<Loan> &get_loans () const { return loans; }
+  const Loans &get_loans () const { return loans; }
+  const Loan &get_loan (LoanId loan_id) const { return loans.at (loan_id); }
 
   ScopeId get_current_scope_id () const { return current_scope; }
 
-  const std::vector<Scope> &get_scopes () const { return scopes; }
+  const Scopes &get_scopes () const { return scopes; }
 
   const Scope &get_current_scope () const { return scopes[current_scope]; }
 
   const Scope &get_scope (ScopeId id) const { return scopes[id]; }
 
-  FreeRegion get_next_free_region () { return next_free_region++; }
+  FreeRegion get_next_free_region ()
+  {
+    ++next_free_region.value;
+    return {next_free_region.value - 1};
+  }
 
   FreeRegion peek_next_free_region () const { return next_free_region; }
 
@@ -213,7 +286,7 @@ public:
 
   ScopeId push_new_scope ()
   {
-    ScopeId new_scope = scopes.size ();
+    ScopeId new_scope = {scopes.size ()};
     scopes.emplace_back ();
     scopes[new_scope].parent = current_scope;
     scopes[current_scope].children.push_back (new_scope);
@@ -227,12 +300,12 @@ public:
     return current_scope;
   }
 
-  PlaceId add_place (Place &&place, PlaceId last_sibling = 0)
+  PlaceId add_place (Place &&place, PlaceId last_sibling = INVALID_PLACE)
   {
     places.emplace_back (std::forward<Place &&> (place));
-    PlaceId new_place = places.size () - 1;
+    PlaceId new_place = {places.size () - 1};
     Place &new_place_ref = places[new_place]; // Intentional shadowing.
-    if (last_sibling == 0)
+    if (last_sibling == INVALID_PLACE)
       places[new_place_ref.path.parent].path.first_child = new_place;
     else
       places[last_sibling].path.next_sibling = new_place;
@@ -244,29 +317,33 @@ public:
     auto variances = Resolver::TypeCheckContext::get ()
 		       ->get_variance_analysis_ctx ()
 		       .query_type_variances (new_place_ref.tyty);
-    std::vector<Polonius::Origin> regions;
-    for (size_t i = 0; i < variances.size (); i++)
-      regions.push_back (next_free_region++);
+    FreeRegions regions;
+    for (size_t i = 0; i < variances.size (); ++i)
+      {
+	regions.push_back (next_free_region);
+	++next_free_region.value;
+      }
 
-    new_place_ref.regions.set_from (std::move (regions));
+    new_place_ref.regions = regions;
 
     return new_place;
   }
 
   PlaceId add_variable (NodeId id, TyTy::BaseType *tyty)
   {
-    return add_place ({Place::VARIABLE, id, {}, is_type_copy (tyty), tyty}, 0);
+    return add_place ({Place::VARIABLE, id, {}, is_type_copy (tyty), tyty},
+		      INVALID_PLACE);
   }
 
   WARN_UNUSED_RESULT PlaceId lookup_or_add_path (Place::Kind kind,
 						 TyTy::BaseType *tyty,
 						 PlaceId parent, size_t id = 0)
   {
-    PlaceId current = 0;
-    if (parent < places.size ())
+    PlaceId current = INVALID_PLACE;
+    if (parent.value < places.size ())
       {
 	current = places[parent].path.first_child;
-	while (current != 0)
+	while (current != INVALID_PLACE)
 	  {
 	    if (places[current].kind == kind
 		&& places[current].variable_or_field_index == id)
@@ -277,14 +354,16 @@ public:
 	    current = places[current].path.next_sibling;
 	  }
       }
-    return add_place ({kind, (uint32_t) id, Place::Path{parent, 0, 0},
+    return add_place ({kind, (uint32_t) id,
+		       Place::Path{parent, INVALID_PLACE, INVALID_PLACE},
 		       is_type_copy (tyty), tyty},
 		      current);
   }
 
   PlaceId add_temporary (TyTy::BaseType *tyty)
   {
-    return add_place ({Place::TEMPORARY, 0, {}, is_type_copy (tyty), tyty}, 0);
+    return add_place ({Place::TEMPORARY, 0, {}, is_type_copy (tyty), tyty},
+		      INVALID_PLACE);
   }
 
   PlaceId get_constant (TyTy::BaseType *tyty)
@@ -299,22 +378,22 @@ public:
   {
     PlaceId current = FIRST_VARIABLE_PLACE;
 
-    while (current != places.size ())
+    while (current.value != places.size ())
       {
 	if (places[current].kind == Place::VARIABLE
 	    && places[current].variable_or_field_index == id)
 	  return current;
-	current++;
+	++current.value;
       }
     return INVALID_PLACE;
   }
 
   LoanId add_loan (Loan &&loan)
   {
-    LoanId id = loans.size ();
+    LoanId id = {loans.size ()};
     loans.push_back (std::forward<Loan &&> (loan));
-    PlaceId borrowed_place = loans.rbegin ()->place;
-    places[loans.rbegin ()->place].borrowed_by.push_back (id);
+    PlaceId borrowed_place = loans.get_vector ().rbegin ()->place;
+    places[loans.get_vector ().rbegin ()->place].borrowed_by.push_back (id);
     if (places[borrowed_place].kind == Place::DEREF)
       {
 	places[places[borrowed_place].path.parent].borrowed_by.push_back (id);
@@ -337,7 +416,7 @@ public:
 
   void set_next_free_region (Polonius::Origin next_free_region)
   {
-    this->next_free_region = next_free_region;
+    this->next_free_region.value = next_free_region;
   }
 
   PlaceId lookup_or_add_variable (NodeId id, TyTy::BaseType *tyty)
@@ -346,8 +425,7 @@ public:
     if (lookup != INVALID_PLACE)
       return lookup;
 
-    add_place ({Place::VARIABLE, id, {}, is_type_copy (tyty), tyty});
-    return places.size () - 1;
+    return add_place ({Place::VARIABLE, id, {}, is_type_copy (tyty), tyty});
   };
 
   template <typename FN> void for_each_path_from_root (PlaceId var, FN fn) const
@@ -413,6 +491,7 @@ private:
       case TyTy::PROJECTION: // TODO: DUNNO
       case TyTy::CLOSURE:    // TODO: DUNNO
       case TyTy::DYNAMIC:    // TODO: dunno
+      case TyTy::OPAQUE:
 	return false;
       }
     rust_unreachable ();

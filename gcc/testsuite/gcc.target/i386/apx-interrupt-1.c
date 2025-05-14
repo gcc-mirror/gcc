@@ -66,7 +66,7 @@ void foo (void *frame)
 /* { dg-final { scan-assembler-times {\t\.cfi_offset 132, -120} 1 } } */
 /* { dg-final { scan-assembler-times {\t\.cfi_offset 131, -128} 1 } } */
 /* { dg-final { scan-assembler-times {\t\.cfi_offset 130, -136} 1 } } */
-/* { dg-final { scan-assembler-times ".cfi_restore" 15} } */
+/* { dg-final { scan-assembler-times ".cfi_restore" 31 } } */
 /* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*%(?:e|r)ax" 1 } } */
 /* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*%(?:e|r)bx" 1 } } */
 /* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*%(?:e|r)cx" 1 } } */

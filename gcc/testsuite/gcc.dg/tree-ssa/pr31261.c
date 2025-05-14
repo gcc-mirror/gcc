@@ -14,8 +14,8 @@ f2 (long int b)
   return (16 + (b & 7)) & 15;
 }
 
-char
-f3 (char c)
+signed char
+f3 (signed char c)
 {
   return -(c & 63) & 31;
 }
@@ -34,7 +34,7 @@ f5 (int e)
 
 /* { dg-final { scan-tree-dump-times "return -a \& 7;" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "return b \& 7;" 1 "original" } } */
-/* { dg-final { scan-tree-dump-times "return \\(char\\) -\\(unsigned char\\) c \& 31;" 1 "original" } } */
+/* { dg-final { scan-tree-dump-times "return \\(signed char\\) -\\(unsigned char\\) c \& 31;" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "return \\(int\\) \\(12 - \\(unsigned int\\) d\\) \& 7;" 1 "original" { target { ! int16 } } } } */
 /* { dg-final { scan-tree-dump-times "return \\(int\\) \\(12 - \\(unsigned short\\) d\\) \& 7;" 1 "original" { target { int16 } } } } */
 /* { dg-final { scan-tree-dump-times "return 12 - \\(e \& 7\\) \& 15;" 1 "original" } } */

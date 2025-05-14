@@ -75,7 +75,7 @@ types
    * @param type Reference to an explicit type used in a statement, expression
    * 		or parameter
    */
-  void check_type_privacy (const HIR::Type *type);
+  void check_type_privacy (const HIR::Type &type);
 
   virtual void visit (HIR::StructExprFieldIdentifier &field);
   virtual void visit (HIR::StructExprFieldIdentifierValue &field);
@@ -121,11 +121,11 @@ types
   virtual void visit (HIR::WhileLetLoopExpr &expr);
   virtual void visit (HIR::IfExpr &expr);
   virtual void visit (HIR::IfExprConseqElse &expr);
-  virtual void visit (HIR::IfLetExpr &expr);
-  virtual void visit (HIR::IfLetExprConseqElse &expr);
   virtual void visit (HIR::MatchExpr &expr);
   virtual void visit (HIR::AwaitExpr &expr);
   virtual void visit (HIR::AsyncBlockExpr &expr);
+  virtual void visit (HIR::InlineAsm &expr);
+  virtual void visit (HIR::LlvmInlineAsm &expr);
 
   virtual void visit (HIR::EnumItemTuple &);
   virtual void visit (HIR::EnumItemStruct &);

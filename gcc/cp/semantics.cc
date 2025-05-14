@@ -1181,10 +1181,13 @@ finish_expr_stmt (tree expr)
         expr = error_mark_node;
 
       /* Simplification of inner statement expressions, compound exprs,
-	 etc can result in us already having an EXPR_STMT.  */
+	 etc can result in us already having an EXPR_STMT or other statement
+	 tree.  Don't wrap them in EXPR_STMT.  */
       if (TREE_CODE (expr) != CLEANUP_POINT_EXPR)
 	{
-	  if (TREE_CODE (expr) != EXPR_STMT)
+	  if (TREE_CODE (expr) != EXPR_STMT
+	      && !STATEMENT_CLASS_P (expr)
+	      && TREE_CODE (expr) != STATEMENT_LIST)
 	    expr = build_stmt (loc, EXPR_STMT, expr);
 	  expr = maybe_cleanup_point_expr_void (expr);
 	}
@@ -3083,6 +3086,7 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
 	}
       else if (processing_template_decl)
 	{
+	  /* Not finish_expr_stmt because we don't want convert_to_void.  */
 	  expr = build_stmt (input_location, EXPR_STMT, expr);
 	  expr = add_stmt (expr);
 	  /* Mark the last statement so that we can recognize it as such at
@@ -3322,6 +3326,14 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (*args))
 	{
+	  if (koenig_p
+	      && TREE_CODE (orig_fn) == FUNCTION_DECL
+	      && !fndecl_built_in_p (orig_fn))
+	    /* For an ADL-enabled call where unqualified lookup found a
+	       single non-template function, wrap it in an OVERLOAD so that
+	       later substitution doesn't overeagerly mark the function as
+	       used.  */
+	    orig_fn = ovl_make (orig_fn, NULL_TREE);
 	  result = build_min_nt_call_vec (orig_fn, *args);
 	  SET_EXPR_LOCATION (result, cp_expr_loc_or_input_loc (fn));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
@@ -4529,6 +4541,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
   tree lambda_stack = NULL_TREE;
   tree lambda_expr = NULL_TREE;
   tree initializer = convert_from_reference (decl);
+  tree var = strip_normal_capture_proxy (decl);
 
   /* Mark it as used now even if the use is ill-formed.  */
   if (!mark_used (decl, complain))
@@ -4540,9 +4553,6 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
   if (containing_function && LAMBDA_FUNCTION_P (containing_function))
     {
       /* Check whether we've already built a proxy.  */
-      tree var = decl;
-      while (is_normal_capture_proxy (var))
-	var = DECL_CAPTURED_VARIABLE (var);
       tree d = retrieve_local_specialization (var);
 
       if (d && d != decl && is_capture_proxy (d))
@@ -4602,8 +4612,8 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
   /* Only an odr-use of an outer automatic variable causes an
      error, and a constant variable can decay to a prvalue
      constant without odr-use.  So don't complain yet.  */
-  else if (!odr_use && decl_constant_var_p (decl))
-    return decl;
+  else if (!odr_use && decl_constant_var_p (var))
+    return var;
   else if (lambda_expr)
     {
       if (complain & tf_error)
@@ -4758,6 +4768,7 @@ finish_id_expression_1 (tree id_expression,
 	 body, except inside an unevaluated context (i.e. decltype).  */
       if (TREE_CODE (decl) == PARM_DECL
 	  && DECL_CONTEXT (decl) == NULL_TREE
+	  && !CONSTRAINT_VAR_P (decl)
 	  && !cp_unevaluated_operand
 	  && !processing_contract_condition
 	  && !processing_omp_trait_property_expr)
@@ -5119,23 +5130,33 @@ finish_underlying_type (tree type)
 static tree
 finish_type_pack_element (tree idx, tree types, tsubst_flags_t complain)
 {
-  idx = maybe_constant_value (idx);
-  if (TREE_CODE (idx) != INTEGER_CST || !INTEGRAL_TYPE_P (TREE_TYPE (idx)))
+  idx = maybe_constant_value (idx, NULL_TREE, mce_true);
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (idx)))
     {
       if (complain & tf_error)
-	error ("pack index is not an integral constant");
+	error ("pack index has non-integral type %qT", TREE_TYPE (idx));
+      return error_mark_node;
+    }
+  if (TREE_CODE (idx) != INTEGER_CST)
+    {
+      if (complain & tf_error)
+	{
+	  error ("pack index is not an integral constant");
+	  cxx_constant_value (idx);
+	}
       return error_mark_node;
     }
   if (tree_int_cst_sgn (idx) < 0)
     {
       if (complain & tf_error)
-	error ("pack index is negative");
+	error ("pack index %qE is negative", idx);
       return error_mark_node;
     }
   if (wi::to_widest (idx) >= TREE_VEC_LENGTH (types))
     {
       if (complain & tf_error)
-	error ("pack index is out of range");
+	error ("pack index %qE is out of range for pack of length %qd",
+	       idx, TREE_VEC_LENGTH (types));
       return error_mark_node;
     }
   return TREE_VEC_ELT (types, tree_to_shwi (idx));
@@ -5535,7 +5556,7 @@ expand_or_defer_fn_1 (tree fn)
 	 need it anymore.  */
       if (!DECL_DECLARED_CONSTEXPR_P (fn)
 	  && !(module_maybe_has_cmi_p () && vague_linkage_p (fn)))
-	DECL_SAVED_TREE (fn) = NULL_TREE;
+	DECL_SAVED_TREE (fn) = void_node;
       return false;
     }
 
@@ -7499,17 +7520,17 @@ cp_oacc_check_attachments (tree c)
 /* Update OMP_CLAUSE_INIT_PREFER_TYPE in case template substitution
    happened.  */
 
-static void
-cp_omp_init_prefer_type_update (tree c)
+tree
+cp_finish_omp_init_prefer_type (tree pref_type)
 {
   if (processing_template_decl
-      || OMP_CLAUSE_INIT_PREFER_TYPE (c) == NULL_TREE
-      || TREE_CODE (OMP_CLAUSE_INIT_PREFER_TYPE (c)) != TREE_LIST)
-    return;
+      || pref_type == NULL_TREE
+      || TREE_CODE (pref_type) != TREE_LIST)
+    return pref_type;
 
-  tree t = TREE_PURPOSE (OMP_CLAUSE_INIT_PREFER_TYPE (c));
+  tree t = TREE_PURPOSE (pref_type);
   char *str = const_cast<char *> (TREE_STRING_POINTER (t));
-  tree fr_list = TREE_VALUE (OMP_CLAUSE_INIT_PREFER_TYPE (c));
+  tree fr_list = TREE_VALUE (pref_type);
   int len = TREE_VEC_LENGTH (fr_list);
   int cnt = 0;
 
@@ -7535,7 +7556,7 @@ cp_omp_init_prefer_type_update (tree c)
 		  || !tree_fits_shwi_p (value))
 		error_at (loc,
 			  "expected string literal or "
-			  "constant integer expression instead of %qE", value); // FIXME of 'qE' and no 'loc'?
+			  "constant integer expression instead of %qE", value);
 	      else
 		{
 		  HOST_WIDE_INT n = tree_to_shwi (value);
@@ -7564,7 +7585,7 @@ cp_omp_init_prefer_type_update (tree c)
       if (cnt >= len)
 	break;
     }
-  OMP_CLAUSE_INIT_PREFER_TYPE (c) = t;
+  return t;
 }
 
 /* For all elements of CLAUSES, validate them vs OpenMP constraints.
@@ -9723,7 +9744,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 	case OMP_CLAUSE_INIT:
 	  init_seen = true;
-	  cp_omp_init_prefer_type_update (c);
+	  OMP_CLAUSE_INIT_PREFER_TYPE (c)
+	    = cp_finish_omp_init_prefer_type (OMP_CLAUSE_INIT_PREFER_TYPE (c));
 	  if (!OMP_CLAUSE_INIT_TARGETSYNC (c))
 	    init_no_targetsync_clause = c;
 	  /* FALLTHRU */

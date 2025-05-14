@@ -1,4 +1,3 @@
-/* { dg-require-effective-target alloca } */
 const int a = 3;
 const int b = 50;
 

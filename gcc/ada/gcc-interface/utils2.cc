@@ -1628,11 +1628,12 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 		= size_binop (PLUS_EXPR, offset,
 			      size_int (bits_to_bytes_round_down (bitpos)));
 
-	      /* Take the address of INNER, convert it to a pointer to our type
-		 and add the offset.  */
-	      inner = build_unary_op (ADDR_EXPR,
-				      build_pointer_type (TREE_TYPE (operand)),
-				      inner);
+	      /* Take the address of INNER, formally convert it to a pointer
+		 to the operand type, and finally add the offset.  */
+	      inner = build_unary_op (ADDR_EXPR, NULL_TREE, inner);
+	      inner
+		= fold_convert (build_pointer_type (TREE_TYPE (operand)),
+				inner);
 	      result = build_binary_op (POINTER_PLUS_EXPR, TREE_TYPE (inner),
 					inner, offset);
 	      break;

@@ -3,12 +3,12 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/function.html, Functions)
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/funcsem.d, _funcsem.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/funcsem.d, _funcsem.d)
  * Documentation:  https://dlang.org/phobos/dmd_funcsem.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/funcsem.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/funcsem.d
  */
 
 module dmd.funcsem;
@@ -1275,6 +1275,7 @@ extern (D) void declareThis(FuncDeclaration fd, Scope* sc)
     const bool dualCtx = (fd.toParent2() != fd.toParentLocal());
     if (dualCtx)
         fd.hasDualContext = true;
+
     auto ad = fd.isThis();
     if (!dualCtx && !ad && !fd.isNested())
     {
@@ -1333,7 +1334,7 @@ extern (D) void declareThis(FuncDeclaration fd, Scope* sc)
  * Check that this function type is properly resolved.
  * If not, report "forward reference error" and return true.
  */
-extern (D) bool checkForwardRef(FuncDeclaration fd, const ref Loc loc)
+extern (D) bool checkForwardRef(FuncDeclaration fd, Loc loc)
 {
     if (!functionSemantic(fd))
         return true;
@@ -1369,7 +1370,7 @@ int findVtblIndex(FuncDeclaration fd, Dsymbol[] vtbl)
     import dmd.typesem : covariant;
 
     FuncDeclaration mismatch = null;
-    StorageClass mismatchstc = 0;
+    STC mismatchstc = STC.none;
     int mismatchvi = -1;
     int exactvi = -1;
     int bestvi = -1;
@@ -1401,7 +1402,7 @@ int findVtblIndex(FuncDeclaration fd, Dsymbol[] vtbl)
             continue;
         }
 
-        StorageClass stc = 0;
+        STC stc = STC.none;
         const cov = fd.type.covariant(fdv.type, &stc);
         //printf("\tbaseclass cov = %d\n", cov);
         final switch (cov)
@@ -1428,7 +1429,7 @@ int findVtblIndex(FuncDeclaration fd, Dsymbol[] vtbl)
     }
     if (fd._linkage == LINK.cpp && bestvi != -1)
     {
-        StorageClass stc = 0;
+        STC stc = STC.none;
         FuncDeclaration fdv = vtbl[bestvi].isFuncDeclaration();
         assert(fdv && fdv.ident == fd.ident);
         if (fd.type.covariant(fdv.type, &stc, /*cppCovariant=*/true) == Covariant.no)
@@ -1526,7 +1527,7 @@ enum FuncResolveFlag : ubyte
  * Returns:
  *      if match is found, then function symbol, else null
  */
-FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
+FuncDeclaration resolveFuncCall(Loc loc, Scope* sc, Dsymbol s,
     Objects* tiargs, Type tthis, ArgumentList argumentList, FuncResolveFlag flags)
 {
     //printf("resolveFuncCall() %s\n", s.toChars());
@@ -1809,7 +1810,7 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
  *      declaration =    the declaration to print overload candidates for
  *      showDeprecated = If `false`, `deprecated` function won't be shown
  */
-private void printCandidates(Decl)(const ref Loc loc, Decl declaration, bool showDeprecated)
+private void printCandidates(Decl)(Loc loc, Decl declaration, bool showDeprecated)
 {
     // max num of overloads to print (-v or -verror-supplements overrides this).
     const uint DisplayLimit = global.params.v.errorSupplementCount();
@@ -2146,7 +2147,7 @@ L1:
  * 4. If there's no candidates, it's "no match" and returns null with error report.
  *      e.g. If 'tthis' is const but there's no const methods.
  */
-FuncDeclaration overloadModMatch(FuncDeclaration thisfd, const ref Loc loc, Type tthis, ref bool hasOverloads)
+FuncDeclaration overloadModMatch(FuncDeclaration thisfd, Loc loc, Type tthis, ref bool hasOverloads)
 {
     //printf("FuncDeclaration::overloadModMatch('%s')\n", toChars());
     MatchAccumulator m;
@@ -2246,7 +2247,7 @@ FuncDeclaration overloadModMatch(FuncDeclaration thisfd, const ref Loc loc, Type
  *      -1      increase nesting by 1 (`target` is nested within 'fd')
  *      LevelError  error
  */
-int getLevelAndCheck(FuncDeclaration fd, const ref Loc loc, Scope* sc, FuncDeclaration target,
+int getLevelAndCheck(FuncDeclaration fd, Loc loc, Scope* sc, FuncDeclaration target,
                      Declaration decl)
 {
     int level = fd.getLevel(target, sc.intypeof);
@@ -2315,7 +2316,7 @@ bool canInferAttributes(FuncDeclaration fd, Scope* sc)
  *    then mark it as a delegate.
  * Returns true if error occurs.
  */
-bool checkNestedFuncReference(FuncDeclaration fd, Scope* sc, const ref Loc loc)
+bool checkNestedFuncReference(FuncDeclaration fd, Scope* sc, Loc loc)
 {
     //printf("FuncDeclaration::checkNestedFuncReference() %s\n", toPrettyChars());
     if (auto fld = fd.isFuncLiteralDeclaration())
@@ -2648,7 +2649,7 @@ void buildEnsureRequire(FuncDeclaration thisfd)
         tf.isNogc = f.isNogc;
         tf.purity = f.purity;
         tf.trust = f.trust;
-        auto fd = new FuncDeclaration(loc, loc, Id.require, STC.undefined_, tf);
+        auto fd = new FuncDeclaration(loc, loc, Id.require, STC.none, tf);
         fd.fbody = thisfd.frequire;
         Statement s1 = new ExpStatement(loc, fd);
         Expression e = new CallExp(loc, new VarExp(loc, fd, false), thisfd.fdrequireParams);
@@ -2689,7 +2690,7 @@ void buildEnsureRequire(FuncDeclaration thisfd)
         tf.isNogc = f.isNogc;
         tf.purity = f.purity;
         tf.trust = f.trust;
-        auto fd = new FuncDeclaration(loc, loc, Id.ensure, STC.undefined_, tf);
+        auto fd = new FuncDeclaration(loc, loc, Id.ensure, STC.none, tf);
         fd.fbody = thisfd.fensure;
         Statement s1 = new ExpStatement(loc, fd);
         Expression e = new CallExp(loc, new VarExp(loc, fd, false), thisfd.fdensureParams);

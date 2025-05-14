@@ -21,8 +21,52 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+module;
+
+#include <stdbit.h>
+#include <stdckdint.h>
+
 export module std.compat;
 export import std;
+
+#ifdef __STDC_VERSION_STDBIT_H__
+// <stdbit.h>
+export
+{
+#define _GLIBCXX_STDBIT_FUNC(F) \
+  using __gnu_cxx::F ## _uc; \
+  using __gnu_cxx::F ## _us; \
+  using __gnu_cxx::F ## _ui; \
+  using __gnu_cxx::F ## _ul; \
+  using __gnu_cxx::F ## _ull; \
+  using __gnu_cxx::F
+_GLIBCXX_STDBIT_FUNC(stdc_leading_zeros);
+_GLIBCXX_STDBIT_FUNC(stdc_leading_ones);
+_GLIBCXX_STDBIT_FUNC(stdc_trailing_zeros);
+_GLIBCXX_STDBIT_FUNC(stdc_trailing_ones);
+_GLIBCXX_STDBIT_FUNC(stdc_first_leading_zero);
+_GLIBCXX_STDBIT_FUNC(stdc_first_leading_one);
+_GLIBCXX_STDBIT_FUNC(stdc_first_trailing_zero);
+_GLIBCXX_STDBIT_FUNC(stdc_first_trailing_one);
+_GLIBCXX_STDBIT_FUNC(stdc_count_zeros);
+_GLIBCXX_STDBIT_FUNC(stdc_count_ones);
+_GLIBCXX_STDBIT_FUNC(stdc_has_single_bit);
+_GLIBCXX_STDBIT_FUNC(stdc_bit_width);
+_GLIBCXX_STDBIT_FUNC(stdc_bit_floor);
+_GLIBCXX_STDBIT_FUNC(stdc_bit_ceil);
+#undef _GLIBCXX_STDBIT_FUNC
+}
+#endif
+
+#ifdef __STDC_VERSION_STDCKDINT_H__
+// <stdckdint.h>
+export
+{
+  using __gnu_cxx::ckd_add;
+  using __gnu_cxx::ckd_sub;
+  using __gnu_cxx::ckd_mul;
+}
+#endif
 
 #define STD_COMPAT 1
 

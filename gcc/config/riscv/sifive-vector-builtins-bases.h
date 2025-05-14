@@ -23,6 +23,8 @@
 
 namespace riscv_vector {
 
+static const unsigned int CP_USE_COPROCESSORS = 1U << 6;
+
 namespace bases {
 extern const function_base *const sf_vqmacc;
 extern const function_base *const sf_vqmaccu;
@@ -30,6 +32,7 @@ extern const function_base *const sf_vqmaccsu;
 extern const function_base *const sf_vqmaccus;
 extern const function_base *const sf_vfnrclip_x_f_qf;
 extern const function_base *const sf_vfnrclip_xu_f_qf;
+extern const function_base *const sf_vc;
 }
 
 } // end namespace riscv_vector

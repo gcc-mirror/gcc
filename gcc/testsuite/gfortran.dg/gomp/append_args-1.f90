@@ -49,7 +49,7 @@ contains
   end subroutine
 
   subroutine f2a ()
-    !$omp declare variant (f1b) append_args ( interop ( prefer_type ( "cuda", "hip" ) ) , interop(target)) &
+    !$omp declare variant (f1b) append_args ( interop ( target, prefer_type ( "cuda", "hip" ) ) , interop(target)) &
     !$omp&     append_args ( interop ( target , targetsync) ) match(construct={dispatch})   ! { dg-error "'append_args' clause at .1. specified more than once" }
   end subroutine
 
@@ -60,17 +60,17 @@ contains
   end subroutine
 
   subroutine f2c (x,y)
-    !$omp declare variant (fop) , append_args ( interop ( prefer_type ( "cuda", "hip" ) ) , interop(target)) , &
+    !$omp declare variant (fop) , append_args ( interop ( target, prefer_type ( "cuda", "hip" ) ) , interop(target)) , &
     !$omp&     adjust_args (need_device_ptr : x, y )   ! { dg-error "the 'adjust_args' clause at .1. can only be specified if the 'dispatch' selector of the construct selector set appears in the 'match' clause" } 
     type(c_ptr) :: x, y
     value :: y
   end subroutine
 
   subroutine f2d ()
-    !$omp declare variant (f1d) append_args ( interop ( prefer_type ( "cuda", "hip" ) ) , interop(target)) ,  ! { dg-error "111: expected 'match', 'adjust_args' or 'append_args' at .1." }
+    !$omp declare variant (f1d) append_args ( interop ( target, prefer_type ( "cuda", "hip" ) ) , interop(target)) ,  ! { dg-error "119: expected 'match', 'adjust_args' or 'append_args' at .1." }
   end subroutine
 
   subroutine f2e ()
-    !$omp declare variant (f1e) append_args ( interop ( prefer_type ( "cuda", "hip" ) ) , interop(target) interop(targetsync))  ! { dg-error "Expected ',' or '\\)' at .1." }
+    !$omp declare variant (f1e) append_args ( interop ( target, prefer_type ( "cuda", "hip" ) ) , interop(target) interop(targetsync))  ! { dg-error "Expected ',' or '\\)' at .1." }
   end subroutine
 end

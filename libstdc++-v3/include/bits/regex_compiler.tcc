@@ -598,7 +598,7 @@ namespace __detail
   template<typename _TraitsT, bool __icase, bool __collate>
     bool
     _BracketMatcher<_TraitsT, __icase, __collate>::
-    _M_apply(_CharT __ch, false_type) const
+    _M_apply(_CharT __ch) const
     {
       return [this, __ch]
       {

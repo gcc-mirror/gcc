@@ -514,15 +514,9 @@ ifcombine_mark_ssa_name_walk (tree *t, int *, void *data_)
 static inline void
 ifcombine_rewrite_to_defined_overflow (gimple_stmt_iterator gsi)
 {
-  gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi));
-  if (!ass)
+  if (!gimple_needing_rewrite_undefined (gsi_stmt (gsi)))
     return;
-  tree lhs = gimple_assign_lhs (ass);
-  if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-       || POINTER_TYPE_P (TREE_TYPE (lhs)))
-      && arith_code_with_undefined_signed_overflow
-      (gimple_assign_rhs_code (ass)))
-    rewrite_to_defined_overflow (&gsi);
+  rewrite_to_defined_unconditional (&gsi);
 }
 
 

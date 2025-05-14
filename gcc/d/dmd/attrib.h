@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -29,12 +29,7 @@ class AttribDeclaration : public Dsymbol
 public:
     Dsymbols *decl;     // array of Dsymbol's
     const char *kind() const override;
-    bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     bool hasPointers() override final;
-    bool hasStaticCtorOrDtor() override final;
-    void checkCtorConstInit() override final;
-    AttribDeclaration *isAttribDeclaration() override { return this; }
-
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -44,8 +39,6 @@ public:
     StorageClass stc;
 
     StorageClassDeclaration *syntaxCopy(Dsymbol *s) override;
-    bool oneMember(Dsymbol *&ps, Identifier *ident) override final;
-    StorageClassDeclaration *isStorageClassDeclaration() override { return this; }
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -65,9 +58,8 @@ class LinkDeclaration final : public AttribDeclaration
 public:
     LINK linkage;
 
-    static LinkDeclaration *create(const Loc &loc, LINK p, Dsymbols *decl);
+    static LinkDeclaration *create(Loc loc, LINK p, Dsymbols *decl);
     LinkDeclaration *syntaxCopy(Dsymbol *s) override;
-    const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -77,7 +69,6 @@ public:
     CPPMANGLE cppmangle;
 
     CPPMangleDeclaration *syntaxCopy(Dsymbol *s) override;
-    const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -87,7 +78,6 @@ public:
     Expression *exp;
 
     CPPNamespaceDeclaration *syntaxCopy(Dsymbol *s) override;
-    const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -100,7 +90,6 @@ public:
     VisibilityDeclaration *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
     const char *toPrettyChars(bool unused) override;
-    VisibilityDeclaration *isVisibilityDeclaration() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -125,7 +114,6 @@ public:
 
     AnonDeclaration *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
-    AnonDeclaration *isAnonDeclaration() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -146,7 +134,6 @@ public:
     Dsymbols *elsedecl; // array of Dsymbol's for else block
 
     ConditionalDeclaration *syntaxCopy(Dsymbol *s) override;
-    bool oneMember(Dsymbol *&ps, Identifier *ident) override final;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -158,7 +145,6 @@ public:
     d_bool onStack;
 
     StaticIfDeclaration *syntaxCopy(Dsymbol *s) override;
-    StaticIfDeclaration *isStaticIfDeclaration() override { return this; }
     const char *kind() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -173,7 +159,6 @@ public:
     Dsymbols *cache;
 
     StaticForeachDeclaration *syntaxCopy(Dsymbol *s) override;
-    bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     const char *kind() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -183,7 +168,6 @@ class ForwardingAttribDeclaration final : public AttribDeclaration
 public:
     ForwardingScopeDsymbol *sym;
 
-    ForwardingAttribDeclaration *isForwardingAttribDeclaration() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 

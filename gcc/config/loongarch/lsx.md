@@ -87,7 +87,6 @@
   UNSPEC_LSX_VSSRLRN
   UNSPEC_LSX_VLDI
   UNSPEC_LSX_VSHUF_B
-  UNSPEC_LSX_VLDX
   UNSPEC_LSX_VSTX
   UNSPEC_LSX_VEXTL_QU_DU
   UNSPEC_LSX_VSETEQZ_V
@@ -2744,18 +2743,6 @@
   "ISA_HAS_LSX"
   "vshuf.b\t%w0,%w1,%w2,%w3"
   [(set_attr "type" "simd_shf")
-   (set_attr "mode" "V16QI")])
-
-(define_insn "lsx_vldx"
-  [(set (match_operand:V16QI 0 "register_operand" "=f")
-	(unspec:V16QI [(match_operand:DI 1 "register_operand" "r")
-		       (match_operand:DI 2 "reg_or_0_operand" "rJ")]
-		      UNSPEC_LSX_VLDX))]
-  "ISA_HAS_LSX"
-{
-  return "vldx\t%w0,%1,%z2";
-}
-  [(set_attr "type" "simd_load")
    (set_attr "mode" "V16QI")])
 
 (define_insn "lsx_vstx"

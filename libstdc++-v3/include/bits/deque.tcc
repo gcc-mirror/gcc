@@ -584,6 +584,51 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template <typename _Tp, typename _Alloc>
+    template <typename _InputIterator, typename _Sentinel>
+      void
+      deque<_Tp, _Alloc>::
+      _M_range_prepend(_InputIterator __first, _Sentinel __last,
+		      size_type __n)
+      {
+	 iterator __new_start = _M_reserve_elements_at_front(__n);
+	 __try
+	   {
+	     std::__uninitialized_copy_a(_GLIBCXX_MOVE(__first), __last,
+					 __new_start, _M_get_Tp_allocator());
+	     this->_M_impl._M_start = __new_start;
+	   }
+	 __catch(...)
+	   {
+	     _M_destroy_nodes(__new_start._M_node,
+			      this->_M_impl._M_start._M_node);
+	     __throw_exception_again;
+	   }
+      }
+
+  template <typename _Tp, typename _Alloc>
+    template <typename _InputIterator, typename _Sentinel>
+      void
+      deque<_Tp, _Alloc>::
+      _M_range_append(_InputIterator __first, _Sentinel __last,
+		      size_type __n)
+     {
+       iterator __new_finish = _M_reserve_elements_at_back(__n);
+       __try
+	{
+	  std::__uninitialized_copy_a(_GLIBCXX_MOVE(__first), __last,
+				      this->_M_impl._M_finish,
+				      _M_get_Tp_allocator());
+	  this->_M_impl._M_finish = __new_finish;
+	}
+      __catch(...)
+	{
+	  _M_destroy_nodes(this->_M_impl._M_finish._M_node + 1,
+			   __new_finish._M_node + 1);
+	  __throw_exception_again;
+	}
+     }
+
+  template <typename _Tp, typename _Alloc>
     template <typename _InputIterator>
       void
       deque<_Tp, _Alloc>::
@@ -605,38 +650,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  return;
 
 	if (__pos._M_cur == this->_M_impl._M_start._M_cur)
-	  {
-	    iterator __new_start = _M_reserve_elements_at_front(__n);
-	    __try
-	      {
-		std::__uninitialized_copy_a(__first, __last, __new_start,
-					    _M_get_Tp_allocator());
-		this->_M_impl._M_start = __new_start;
-	      }
-	    __catch(...)
-	      {
-		_M_destroy_nodes(__new_start._M_node,
-				 this->_M_impl._M_start._M_node);
-		__throw_exception_again;
-	      }
-	  }
+	  _M_range_prepend(__first, __last, __n);
 	else if (__pos._M_cur == this->_M_impl._M_finish._M_cur)
-	  {
-	    iterator __new_finish = _M_reserve_elements_at_back(__n);
-	    __try
-	      {
-		std::__uninitialized_copy_a(__first, __last,
-					    this->_M_impl._M_finish,
-					    _M_get_Tp_allocator());
-		this->_M_impl._M_finish = __new_finish;
-	      }
-	    __catch(...)
-	      {
-		_M_destroy_nodes(this->_M_impl._M_finish._M_node + 1,
-				 __new_finish._M_node + 1);
-		__throw_exception_again;
-	      }
-	  }
+	  _M_range_append(__first, __last, __n);
 	else
 	  _M_insert_aux(__pos, __first, __last, __n);
       }
@@ -856,6 +872,157 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    }
 	}
       }
+
+#if __glibcxx_containers_ranges // C++ >= 23
+  template<ranges::forward_range _Rg>
+    auto __advance_dist(_Rg& __rg)
+    {
+      struct _Res
+	{
+	  ranges::iterator_t<_Rg> __last;
+	  ranges::range_difference_t<_Rg> __size;
+	};
+      if constexpr (ranges::common_range<_Rg>)
+	return _Res{ranges::end(__rg), ranges::distance(__rg)};
+      else if constexpr (ranges::sized_range<_Rg>)
+	{
+	  auto const __n = ranges::distance(__rg);
+	  auto __it = ranges::begin(__rg);
+	  if constexpr (ranges::random_access_range<_Rg>)
+	    __it += __n;
+	  else
+	    ranges::advance(__it, ranges::end(__rg));
+	  return _Res{__it, __n};
+	}
+      else
+	{
+	  auto __it = ranges::begin(__rg);
+	  auto const __last = ranges::end(__rg);
+	  ranges::range_difference_t<_Rg> __n(0);
+	  for (; __it != __last; ++__it)
+	    ++__n;
+	  return _Res{__it, __n};
+	}
+    }
+
+  template<typename _Tp, typename _Alloc>
+    template<__detail::__container_compatible_range<_Tp> _Rg>
+      auto
+      deque<_Tp, _Alloc>::
+      insert_range(const_iterator __pos, _Rg&& __rg)
+      -> iterator
+      {
+	if (__pos == cend())
+	  {
+	    const auto __ins_idx = size();
+	    append_range(std::forward<_Rg>(__rg));
+	    return begin() + __ins_idx;
+	  }
+
+	if (__pos == cbegin())
+	  {
+	    prepend_range(std::forward<_Rg>(__rg));
+	    return begin();
+	  }
+
+	const auto __ins_idx = __pos - cbegin();
+	if constexpr (ranges::forward_range<_Rg>)
+	  {
+	    auto [__last, __n] = __advance_dist(__rg);
+	    if (__n != 0) [[likely]]
+	      _M_insert_aux(__pos._M_const_cast(),
+			    ranges::begin(__rg), __last,
+			    __n);
+	  }
+	else
+	  {
+	    auto __first = ranges::begin(__rg);
+	    const auto __last = ranges::end(__rg);
+	    for (auto __it = __pos._M_const_cast(); __first != __last;
+		 (void)++__first, ++__it)
+	      __it = _M_emplace_aux(__it, *__first);
+	  }
+	return begin() + __ins_idx;
+      }
+
+   template<typename _Tp, typename _Alloc>
+     template<__detail::__container_compatible_range<_Tp> _Rg>
+       void
+       deque<_Tp, _Alloc>::
+       prepend_range(_Rg&& __rg)
+       {
+	 if (empty())
+	   append_range(std::forward<_Rg>(__rg));
+	 else if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	   {
+	     const size_type __n(ranges::distance(__rg));
+	     if (__n != 0) [[likely]]
+	       _M_range_prepend(ranges::begin(__rg), ranges::end(__rg), __n);
+	   }
+	 else
+	   {
+	     struct _Guard_elts_front
+	       {
+		 deque& __self;
+		 size_type __n = 0;
+
+		 ~_Guard_elts_front()
+		   {
+		     if (__n > 0)
+		       __self._M_erase_at_begin(__self.begin() + __n);
+		   }
+	       };
+
+	     _Guard_elts_front __guard{*this};
+	     auto __first = ranges::begin(__rg);
+	     const auto __last = ranges::end(__rg);
+	     for (; __first != __last; (void)++__first, ++__guard.__n)
+	       emplace_front(*__first);
+
+	     for (auto __fins = begin(), __lins = begin() + __guard.__n;
+		  __fins != __lins && __fins != --__lins; ++__fins)
+	       std::iter_swap(__fins, __lins);
+
+	     __guard.__n = 0;
+	   }
+       }
+
+   template<typename _Tp, typename _Alloc>
+     template<__detail::__container_compatible_range<_Tp> _Rg>
+       void
+       deque<_Tp, _Alloc>::
+       append_range(_Rg&& __rg)
+       {
+	 if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	   {
+	     const size_type __n(ranges::distance(__rg));
+	     if (__n != 0) [[likely]]
+	       _M_range_append(ranges::begin(__rg), ranges::end(__rg), __n);
+	   }
+	 else
+	   {
+	     struct _Guard_elts_back
+	       {
+		 deque& __self;
+		 size_type __n = __self.size();
+
+		 ~_Guard_elts_back()
+		   {
+		     if (__n < __self.size())
+		       __self._M_erase_at_end(__self.begin() + __n);
+		   }
+	       };
+
+	     _Guard_elts_back __guard{*this};
+	     auto __first = ranges::begin(__rg);
+	     const auto __last = ranges::end(__rg);
+	     for (; __first != __last; (void)++__first)
+	       emplace_back(*__first);
+
+	     __guard.__n = size();
+	   }
+	}
+#endif // containers_ranges
 
    template<typename _Tp, typename _Alloc>
      void

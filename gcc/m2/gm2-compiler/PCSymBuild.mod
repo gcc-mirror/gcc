@@ -64,7 +64,7 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr, ProcedureKind,
                         GetFromOuterModule,
                         CheckForEnumerationInCurrentModule,
                         GetMode, PutVariableAtAddress, ModeOfAddr, SkipType,
-                        IsSet, PutConstSet,
+                        IsSet, PutConstSet, IsType,
                         IsConst, IsConstructor, PutConst, PutConstructor,
                         PopValue, PushValue,
                         MakeTemporary, PutVar,
@@ -1408,9 +1408,10 @@ END TypeToMeta ;
 
 
 (*
-   buildConstFunction - we are only concerned about resolving the return type o
+   buildConstFunction - we are only concerned about resolving the return type of
                         a function, so we can ignore all parameters - except
-                        the first one in the case of VAL(type, foo).
+                        the first one in the case of VAL(type, foo)
+                        and the type of bar in MIN (bar) and MAX (bar).
                         buildConstFunction uses a unary exprNode to represent
                         a function.
 *)
@@ -1866,11 +1867,11 @@ BEGIN
             THEN
                IF (func=Min) OR (func=Max)
                THEN
-                  IF IsSet (sym)
+                  IF IsSet (sym) OR (IsType (sym) AND IsSet (SkipType (sym)))
                   THEN
-                     type := SkipType(GetType(sym))
+                     type := GetType (SkipType (sym))
                   ELSE
-                     (* sym is the type required for MAX, MIN and VAL *)
+                     (* sym is the type required for MAX, MIN and VAL.  *)
                      type := sym
                   END
                ELSE

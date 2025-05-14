@@ -1476,37 +1476,40 @@ if (is(T == float) || is(T == double)
 
     assertCTFEable!(
     {
-        // log2 is broken for x87-reals on some computers in CTFE
-        // the following tests excludes these computers from the tests
-        // (https://issues.dlang.org/show_bug.cgi?id=21757)
-        enum test = cast(int) log2(3.05e2312L);
-        static if (real.mant_dig == 64 && test == 7681)
+        static if (real.mant_dig == 64) // 80 bit reals
         {
-            auto f = FormatSpec!dchar("");
-            f.spec = 'e';
-            assert(printFloat(real.infinity, f) == "inf");
-            assert(printFloat(10.0L, f) == "1.000000e+01");
-            assert(printFloat(2.6080L, f) == "2.608000e+00");
-            assert(printFloat(3.05e2312L, f) == "3.050000e+2312");
+            // log2 is broken for x87-reals on some computers in CTFE
+            // the following tests excludes these computers from the tests
+            // (https://issues.dlang.org/show_bug.cgi?id=21757)
+            enum test = cast(int) log2(3.05e2312L);
+            static if (test == 7681)
+            {
+                auto f = FormatSpec!dchar("");
+                f.spec = 'e';
+                assert(printFloat(real.infinity, f) == "inf");
+                assert(printFloat(10.0L, f) == "1.000000e+01");
+                assert(printFloat(2.6080L, f) == "2.608000e+00");
+                assert(printFloat(3.05e2312L, f) == "3.050000e+2312");
 
-            f.precision = 60;
-            assert(printFloat(2.65e-54L, f) ==
-                   "2.650000000000000000059009987400547013941028940935296547599415e-54");
+                f.precision = 60;
+                assert(printFloat(2.65e-54L, f) ==
+                       "2.650000000000000000059009987400547013941028940935296547599415e-54");
 
-            /*
-             commented out, because CTFE is currently too slow for 5000 digits with extreme values
+                /*
+                 commented out, because CTFE is currently too slow for 5000 digits with extreme values
 
-            f.precision = 5000;
-            auto result2 = printFloat(1.2119e-4822L, f);
-            assert(result2.length == 5008);
-            assert(result2[$ - 20 .. $] == "60729486595339e-4822");
-            auto result3 = printFloat(real.min_normal, f);
-            assert(result3.length == 5008);
-            assert(result3[$ - 20 .. $] == "20781410082267e-4932");
-            auto result4 = printFloat(real.min_normal.nextDown, f);
-            assert(result4.length == 5008);
-            assert(result4[$ - 20 .. $] == "81413263331006e-4932");
-             */
+                f.precision = 5000;
+                auto result2 = printFloat(1.2119e-4822L, f);
+                assert(result2.length == 5008);
+                assert(result2[$ - 20 .. $] == "60729486595339e-4822");
+                auto result3 = printFloat(real.min_normal, f);
+                assert(result3.length == 5008);
+                assert(result3[$ - 20 .. $] == "20781410082267e-4932");
+                auto result4 = printFloat(real.min_normal.nextDown, f);
+                assert(result4.length == 5008);
+                assert(result4[$ - 20 .. $] == "81413263331006e-4932");
+                 */
+            }
         }
     });
 }
@@ -2149,39 +2152,42 @@ if (is(T == float) || is(T == double)
 
     assertCTFEable!(
     {
-        // log2 is broken for x87-reals on some computers in CTFE
-        // the following tests excludes these computers from the tests
-        // (https://issues.dlang.org/show_bug.cgi?id=21757)
-        enum test = cast(int) log2(3.05e2312L);
-        static if (real.mant_dig == 64 && test == 7681)
+        static if (real.mant_dig == 64) // 80 bit reals
         {
-            auto f = FormatSpec!dchar("");
-            f.spec = 'f';
-            assert(printFloat(real.infinity, f) == "inf");
-            assert(printFloat(10.0L, f) == "10.000000");
-            assert(printFloat(2.6080L, f) == "2.608000");
-            auto result1 = printFloat(3.05e2312L, f);
-            assert(result1.length == 2320);
-            assert(result1[0 .. 20] == "30499999999999999999");
+            // log2 is broken for x87-reals on some computers in CTFE
+            // the following tests excludes these computers from the tests
+            // (https://issues.dlang.org/show_bug.cgi?id=21757)
+            enum test = cast(int) log2(3.05e2312L);
+            static if (test == 7681)
+            {
+                auto f = FormatSpec!dchar("");
+                f.spec = 'f';
+                assert(printFloat(real.infinity, f) == "inf");
+                assert(printFloat(10.0L, f) == "10.000000");
+                assert(printFloat(2.6080L, f) == "2.608000");
+                auto result1 = printFloat(3.05e2312L, f);
+                assert(result1.length == 2320);
+                assert(result1[0 .. 20] == "30499999999999999999");
 
-            f.precision = 60;
-            assert(printFloat(2.65e-54L, f) ==
-                   "0.000000000000000000000000000000000000000000000000000002650000");
+                f.precision = 60;
+                assert(printFloat(2.65e-54L, f) ==
+                       "0.000000000000000000000000000000000000000000000000000002650000");
 
-            /*
-             commented out, because CTFE is currently too slow for 5000 digits with extreme values
+                /*
+                 commented out, because CTFE is currently too slow for 5000 digits with extreme values
 
-            f.precision = 5000;
-            auto result2 = printFloat(1.2119e-4822L, f);
-            assert(result2.length == 5002);
-            assert(result2[$ - 20 .. $] == "60076763752233836613");
-            auto result3 = printFloat(real.min_normal, f);
-            assert(result3.length == 5002);
-            assert(result3[$ - 20 .. $] == "47124010882722980874");
-            auto result4 = printFloat(real.min_normal.nextDown, f);
-            assert(result4.length == 5002);
-            assert(result4[$ - 20 .. $] == "52925846892214823939");
-             */
+                f.precision = 5000;
+                auto result2 = printFloat(1.2119e-4822L, f);
+                assert(result2.length == 5002);
+                assert(result2[$ - 20 .. $] == "60076763752233836613");
+                auto result3 = printFloat(real.min_normal, f);
+                assert(result3.length == 5002);
+                assert(result3[$ - 20 .. $] == "47124010882722980874");
+                auto result4 = printFloat(real.min_normal.nextDown, f);
+                assert(result4.length == 5002);
+                assert(result4[$ - 20 .. $] == "52925846892214823939");
+                 */
+            }
         }
     });
 }
@@ -2830,37 +2836,40 @@ if (is(T == float) || is(T == double)
 
     assertCTFEable!(
     {
-        // log2 is broken for x87-reals on some computers in CTFE
-        // the following tests excludes these computers from the tests
-        // (https://issues.dlang.org/show_bug.cgi?id=21757)
-        enum test = cast(int) log2(3.05e2312L);
-        static if (real.mant_dig == 64 && test == 7681)
+        static if (real.mant_dig == 64) // 80 bit reals
         {
-            auto f = FormatSpec!dchar("");
-            f.spec = 'g';
-            assert(printFloat(real.infinity, f) == "inf");
-            assert(printFloat(10.0L, f) == "10");
-            assert(printFloat(2.6080L, f) == "2.608");
-            assert(printFloat(3.05e2312L, f) == "3.05e+2312");
+            // log2 is broken for x87-reals on some computers in CTFE
+            // the following tests excludes these computers from the tests
+            // (https://issues.dlang.org/show_bug.cgi?id=21757)
+            enum test = cast(int) log2(3.05e2312L);
+            static if (test == 7681)
+            {
+                auto f = FormatSpec!dchar("");
+                f.spec = 'g';
+                assert(printFloat(real.infinity, f) == "inf");
+                assert(printFloat(10.0L, f) == "10");
+                assert(printFloat(2.6080L, f) == "2.608");
+                assert(printFloat(3.05e2312L, f) == "3.05e+2312");
 
-            f.precision = 60;
-            assert(printFloat(2.65e-54L, f) ==
-                   "2.65000000000000000005900998740054701394102894093529654759941e-54");
+                f.precision = 60;
+                assert(printFloat(2.65e-54L, f) ==
+                       "2.65000000000000000005900998740054701394102894093529654759941e-54");
 
-            /*
-             commented out, because CTFE is currently too slow for 5000 digits with extreme values
+                /*
+                 commented out, because CTFE is currently too slow for 5000 digits with extreme values
 
-            f.precision = 5000;
-            auto result2 = printFloat(1.2119e-4822L, f);
-            assert(result2.length == 5007);
-            assert(result2[$ - 20 .. $] == "26072948659534e-4822");
-            auto result3 = printFloat(real.min_normal, f);
-            assert(result3.length == 5007);
-            assert(result3[$ - 20 .. $] == "72078141008227e-4932");
-            auto result4 = printFloat(real.min_normal.nextDown, f);
-            assert(result4.length == 5007);
-            assert(result4[$ - 20 .. $] == "48141326333101e-4932");
-             */
+                f.precision = 5000;
+                auto result2 = printFloat(1.2119e-4822L, f);
+                assert(result2.length == 5007);
+                assert(result2[$ - 20 .. $] == "26072948659534e-4822");
+                auto result3 = printFloat(real.min_normal, f);
+                assert(result3.length == 5007);
+                assert(result3[$ - 20 .. $] == "72078141008227e-4932");
+                auto result4 = printFloat(real.min_normal.nextDown, f);
+                assert(result4.length == 5007);
+                assert(result4[$ - 20 .. $] == "48141326333101e-4932");
+                 */
+            }
         }
     });
 }

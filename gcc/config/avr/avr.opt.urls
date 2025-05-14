@@ -26,6 +26,9 @@ UrlSuffix(gcc/AVR-Options.html#index-mskip-bug)
 mrmw
 UrlSuffix(gcc/AVR-Options.html#index-mrmw)
 
+muse-nonzero-bits
+UrlSuffix(gcc/AVR-Options.html#index-muse-nonzero-bits)
+
 mshort-calls
 UrlSuffix(gcc/AVR-Options.html#index-mshort-calls)
 

@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fstack-clash-protection --param stack-clash-protection-guard-size=16" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
-/* { dg-require-effective-target alloca } */
 
 #define SIZE 100
 #include "stack-check-alloca.h"

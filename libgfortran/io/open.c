@@ -912,6 +912,16 @@ st_open (st_parameter_open *opp)
 	      library_end ();
 	      return;
 	    }
+
+	  if (u->s == NULL)
+	    {
+	      unlock_unit (u);
+	      generate_error (&opp->common, LIBERROR_BAD_OPTION,
+			"Unit number is negative and unit was not already "
+			"opened with OPEN(NEWUNIT=...)");
+	      library_end ();
+	      return;
+	    }
 	}
 
       if (u == NULL)

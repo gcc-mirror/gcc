@@ -29,6 +29,10 @@ void fail21849c()
     string s = "
 ß-utf"; undefined_identifier;
 }
+
+// Test correct context with line directive present
+// https://github.com/dlang/dmd/issues/20929
+#line 32
 void fail21849d()
 {
     string s = "

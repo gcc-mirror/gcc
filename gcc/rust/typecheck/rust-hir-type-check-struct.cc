@@ -24,18 +24,18 @@
 namespace Rust {
 namespace Resolver {
 
-TypeCheckStructExpr::TypeCheckStructExpr (HIR::Expr *e)
+TypeCheckStructExpr::TypeCheckStructExpr (HIR::Expr &e)
   : TypeCheckBase (),
-    resolved (new TyTy::ErrorType (e->get_mappings ().get_hirid ())),
+    resolved (new TyTy::ErrorType (e.get_mappings ().get_hirid ())),
     struct_path_resolved (nullptr),
-    variant (&TyTy::VariantDef::get_error_node ())
+    variant (&TyTy::VariantDef::get_error_node ()), parent (e)
 {}
 
 TyTy::BaseType *
-TypeCheckStructExpr::Resolve (HIR::StructExprStructFields *expr)
+TypeCheckStructExpr::Resolve (HIR::StructExprStructFields &expr)
 {
   TypeCheckStructExpr resolver (expr);
-  resolver.resolve (*expr);
+  resolver.resolve (expr);
   return resolver.resolved;
 }
 
@@ -43,7 +43,7 @@ void
 TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 {
   TyTy::BaseType *struct_path_ty
-    = TypeCheckExpr::Resolve (&struct_expr.get_struct_name ());
+    = TypeCheckExpr::Resolve (struct_expr.get_struct_name ());
   if (struct_path_ty->get_kind () != TyTy::TypeKind::ADT)
     {
       rust_error_at (struct_expr.get_struct_name ().get_locus (),
@@ -56,17 +56,18 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
   if (struct_expr.has_struct_base ())
     {
       TyTy::BaseType *base_resolved
-	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get ());
+	= TypeCheckExpr::Resolve (struct_expr.get_struct_base ().get_base ());
       TyTy::BaseType *base_unify = unify_site (
-	struct_expr.struct_base->base_struct->get_mappings ().get_hirid (),
+	struct_expr.get_struct_base ().get_base ().get_mappings ().get_hirid (),
 	TyTy::TyWithLocation (struct_path_resolved),
 	TyTy::TyWithLocation (base_resolved),
-	struct_expr.struct_base->base_struct->get_locus ());
+	struct_expr.get_struct_base ().get_base ().get_locus ());
 
       if (base_unify->get_kind () != struct_path_ty->get_kind ())
 	{
-	  rust_fatal_error (struct_expr.struct_base->base_struct->get_locus (),
-			    "incompatible types for base struct reference");
+	  rust_error_at (
+	    struct_expr.get_struct_base ().get_base ().get_locus (),
+	    "incompatible types for base struct reference");
 	  return;
 	}
 
@@ -81,7 +82,16 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
       bool ok = context->lookup_variant_definition (
 	struct_expr.get_struct_name ().get_mappings ().get_hirid (),
 	&variant_id);
-      rust_assert (ok);
+      if (!ok)
+	{
+	  rich_location r (line_table, struct_expr.get_locus ());
+	  r.add_range (struct_expr.get_struct_name ().get_locus ());
+	  rust_error_at (
+	    struct_expr.get_struct_name ().get_locus (), ErrorCode::E0574,
+	    "expected a struct, variant or union type, found enum %qs",
+	    struct_path_resolved->get_name ().c_str ());
+	  return;
+	}
 
       ok = struct_path_resolved->lookup_variant_by_id (variant_id, &variant);
       rust_assert (ok);
@@ -117,29 +127,14 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 	  break;
 	}
 
-      if (!ok)
-	{
-	  return;
-	}
-
-      if (resolved_field_value_expr == nullptr)
-	{
-	  rust_fatal_error (field->get_locus (),
-			    "failed to resolve type for field");
-	  ok = false;
-	  break;
-	}
-
-      context->insert_type (field->get_mappings (), resolved_field_value_expr);
+      if (ok)
+	context->insert_type (field->get_mappings (),
+			      resolved_field_value_expr);
     }
 
-  // something failed setting up the fields
+  // something failed setting up the fields and error's emitted
   if (!ok)
-    {
-      rust_error_at (struct_expr.get_locus (),
-		     "constructor type resolution failure");
-      return;
-    }
+    return;
 
   // check the arguments are all assigned and fix up the ordering
   std::vector<std::string> missing_field_names;
@@ -190,26 +185,29 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 	  for (auto &missing : missing_fields)
 	    {
 	      HIR::Expr *receiver
-		= struct_expr.struct_base->base_struct->clone_expr_impl ();
+		= struct_expr.get_struct_base ().get_base ().clone_expr_impl ();
 
 	      HIR::StructExprField *implicit_field = nullptr;
 
 	      AST::AttrVec outer_attribs;
-	      auto crate_num = mappings->get_current_crate ();
-	      Analysis::NodeMapping mapping (
-		crate_num,
-		struct_expr.struct_base->base_struct->get_mappings ()
-		  .get_nodeid (),
-		mappings->get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
+	      auto crate_num = mappings.get_current_crate ();
+	      Analysis::NodeMapping mapping (crate_num,
+					     struct_expr.get_struct_base ()
+					       .get_base ()
+					       .get_mappings ()
+					       .get_nodeid (),
+					     mappings.get_next_hir_id (
+					       crate_num),
+					     UNKNOWN_LOCAL_DEFID);
 
 	      HIR::Expr *field_value = new HIR::FieldAccessExpr (
 		mapping, std::unique_ptr<HIR::Expr> (receiver), missing,
 		std::move (outer_attribs),
-		struct_expr.struct_base->base_struct->get_locus ());
+		struct_expr.get_struct_base ().get_base ().get_locus ());
 
 	      implicit_field = new HIR::StructExprFieldIdentifierValue (
 		mapping, missing, std::unique_ptr<HIR::Expr> (field_value),
-		struct_expr.struct_base->base_struct->get_locus ());
+		struct_expr.get_struct_base ().get_base ().get_locus ());
 
 	      size_t field_index;
 	      bool ok = variant->lookup_field (missing, nullptr, &field_index);
@@ -267,8 +265,11 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
 				   &field_index);
   if (!ok)
     {
-      rust_error_at (field.get_locus (), "unknown field");
-      return true;
+      rich_location r (line_table, parent.get_locus ());
+      r.add_range (field.get_locus ());
+      rust_error_at (r, ErrorCode::E0560, "unknown field %qs",
+		     field.field_name.as_string ().c_str ());
+      return false;
     }
 
   auto it = adtFieldIndexToField.find (field_index);
@@ -284,8 +285,8 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       return false;
     }
 
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ().get ());
-  location_t value_locus = field.get_value ()->get_locus ();
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
+  location_t value_locus = field.get_value ().get_locus ();
 
   HirId coercion_site_id = field.get_mappings ().get_hirid ();
   resolved_field_value_expr
@@ -313,8 +314,11 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
   bool ok = variant->lookup_field (field_name, &field_type, &field_index);
   if (!ok)
     {
-      rust_error_at (field.get_locus (), "unknown field");
-      return true;
+      rich_location r (line_table, parent.get_locus ());
+      r.add_range (field.get_locus ());
+      rust_error_at (r, ErrorCode::E0560, "unknown field %qs",
+		     field_name.c_str ());
+      return false;
     }
 
   auto it = adtFieldIndexToField.find (field_index);
@@ -330,8 +334,8 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       return false;
     }
 
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ().get ());
-  location_t value_locus = field.get_value ()->get_locus ();
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
+  location_t value_locus = field.get_value ().get_locus ();
 
   HirId coercion_site_id = field.get_mappings ().get_hirid ();
   resolved_field_value_expr
@@ -385,7 +389,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
 			    HIR::GenericArgs::create_empty ());
   HIR::PathInExpression expr (mappings_copy2, {seg}, field.get_locus (), false,
 			      {});
-  TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr);
+  TyTy::BaseType *value = TypeCheckExpr::Resolve (expr);
   location_t value_locus = expr.get_locus ();
 
   HirId coercion_site_id = field.get_mappings ().get_hirid ();

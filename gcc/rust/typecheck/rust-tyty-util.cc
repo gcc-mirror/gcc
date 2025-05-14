@@ -44,18 +44,18 @@ TyVar::get_tyty () const
 TyVar
 TyVar::get_implicit_infer_var (location_t locus)
 {
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
 
-  InferType *infer = new InferType (mappings->get_next_hir_id (),
+  InferType *infer = new InferType (mappings.get_next_hir_id (),
 				    InferType::InferTypeKind::GENERAL,
 				    InferType::TypeHint::Default (), locus);
-  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
+  context->insert_type (Analysis::NodeMapping (mappings.get_current_crate (),
 					       UNKNOWN_NODEID,
 					       infer->get_ref (),
 					       UNKNOWN_LOCAL_DEFID),
 			infer);
-  mappings->insert_location (infer->get_ref (), locus);
+  mappings.insert_location (infer->get_ref (), locus);
 
   return TyVar (infer->get_ref ());
 }
@@ -87,15 +87,15 @@ TyVar::clone () const
 TyVar
 TyVar::monomorphized_clone () const
 {
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
 
   // this needs a new hirid
   TyTy::BaseType *c = get_tyty ()->monomorphized_clone ();
-  c->set_ref (mappings->get_next_hir_id ());
+  c->set_ref (mappings.get_next_hir_id ());
 
   // insert it
-  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
+  context->insert_type (Analysis::NodeMapping (mappings.get_current_crate (),
 					       UNKNOWN_NODEID, c->get_ref (),
 					       UNKNOWN_LOCAL_DEFID),
 			c);
@@ -109,8 +109,8 @@ TyWithLocation::TyWithLocation (BaseType *ty, location_t locus)
 
 TyWithLocation::TyWithLocation (BaseType *ty) : ty (ty)
 {
-  auto mappings = Analysis::Mappings::get ();
-  locus = mappings->lookup_location (ty->get_ref ());
+  auto &mappings = Analysis::Mappings::get ();
+  locus = mappings.lookup_location (ty->get_ref ());
 }
 
 } // namespace TyTy

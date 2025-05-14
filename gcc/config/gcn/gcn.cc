@@ -6587,8 +6587,8 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
   if (avgpr % vgpr_block_size)
     avgpr += vgpr_block_size - (avgpr % vgpr_block_size);
 
-  fputs ("\t.rodata\n"
-	 "\t.p2align\t6\n"
+  switch_to_section (readonly_data_section);
+  fputs ("\t.p2align\t6\n"
 	 "\t.amdhsa_kernel\t", file);
   assemble_name (file, name);
   fputs ("\n", file);
@@ -6707,7 +6707,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
   fputs ("        .end_amdgpu_metadata\n", file);
 #endif
 
-  fputs ("\t.text\n", file);
+  switch_to_section (current_function_section ());
   fputs ("\t.align\t256\n", file);
   fputs ("\t.type\t", file);
   assemble_name (file, name);
@@ -6925,6 +6925,20 @@ gcn_asm_output_symbol_ref (FILE *file, rtx x)
 	  && AS_LDS_P (TYPE_ADDR_SPACE (TREE_TYPE (decl))))
 	fputs ("@abs32", file);
     }
+}
+
+void
+gcn_asm_weaken_decl (FILE *stream, tree decl, const char *name,
+		     const char *value)
+{
+  if (!value
+      && DECL_EXTERNAL (decl))
+    /* Don't emit weak undefined symbols; see PR119369.  */
+    return;
+  if (value)
+    ASM_OUTPUT_WEAK_ALIAS (stream, name, value);
+  else
+    ASM_WEAKEN_LABEL (stream, name);
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.
@@ -7894,8 +7908,6 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_LEGITIMATE_CONSTANT_P gcn_legitimate_constant_p
 #undef  TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION gcn_libc_has_function
-#undef  TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_true
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG gcn_md_reorg
 #undef  TARGET_MEMORY_MOVE_COST

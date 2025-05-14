@@ -29,6 +29,7 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "diagnostic-core.h"
 #include "cfghooks.h"
 #include "cfganal.h"
 #include "df.h"
@@ -2205,9 +2206,6 @@ memento_t::apply (const ply_t &p)
     }
   else if (p.size == 1)
     {
-      int x = values[p.regno];
-      int y = values[p.arg];
-
       switch (p.code)
 	{
 	default:
@@ -2234,29 +2232,42 @@ memento_t::apply (const ply_t &p)
 	    gcc_unreachable ();
 	  break;
 
-#define DO_ARITH(n_args, code, expr)					\
+#define DO_ARITH1(code, expr)						\
 	  case code:							\
 	    gcc_assert (knows (p.regno));				\
-	    if (n_args == 2)						\
-	      gcc_assert (knows (p.arg));				\
-	    set_value (p.regno, expr);					\
+	    {								\
+	      const int x = values[p.regno];				\
+	      set_value (p.regno, expr);				\
+	    }								\
 	    break
 
-	  DO_ARITH (1, NEG, -x);
-	  DO_ARITH (1, NOT, ~x);
-	  DO_ARITH (1, PRE_INC, x + 1);
-	  DO_ARITH (1, PRE_DEC, x - 1);
-	  DO_ARITH (1, ROTATE, (x << 4) | (x >> 4));
-	  DO_ARITH (1, ASHIFT, x << 1);
-	  DO_ARITH (1, LSHIFTRT, x >> 1);
-	  DO_ARITH (1, ASHIFTRT, (x >> 1) | (x & 0x80));
+#define DO_ARITH2(code, expr)						\
+	  case code:							\
+	    gcc_assert (knows (p.regno));				\
+	    gcc_assert (knows (p.arg));					\
+	    {								\
+	      const int x = values[p.regno];				\
+	      const int y = values[p.arg];				\
+	      set_value (p.regno, expr);				\
+	    }								\
+	    break
 
-	  DO_ARITH (2, AND, x & y);
-	  DO_ARITH (2, IOR, x | y);
-	  DO_ARITH (2, XOR, x ^ y);
-	  DO_ARITH (2, PLUS, x + y);
-	  DO_ARITH (2, MINUS, x - y);
-#undef DO_ARITH
+	  DO_ARITH1 (NEG, -x);
+	  DO_ARITH1 (NOT, ~x);
+	  DO_ARITH1 (PRE_INC, x + 1);
+	  DO_ARITH1 (PRE_DEC, x - 1);
+	  DO_ARITH1 (ROTATE, (x << 4) | (x >> 4));
+	  DO_ARITH1 (ASHIFT, x << 1);
+	  DO_ARITH1 (LSHIFTRT, x >> 1);
+	  DO_ARITH1 (ASHIFTRT, (x >> 1) | (x & 0x80));
+
+	  DO_ARITH2 (AND, x & y);
+	  DO_ARITH2 (IOR, x | y);
+	  DO_ARITH2 (XOR, x ^ y);
+	  DO_ARITH2 (PLUS, x + y);
+	  DO_ARITH2 (MINUS, x - y);
+#undef DO_ARITH1
+#undef DO_ARITH2
 	}
     } // size == 1
   else
@@ -4838,6 +4849,70 @@ avr_pass_fuse_add::execute1 (function *func)
 
 
 //////////////////////////////////////////////////////////////////////////////
+// Split insns with nonzero_bits() after combine.
+
+static const pass_data avr_pass_data_split_nzb =
+{
+  RTL_PASS,	    // type
+  "",		    // name (will be patched)
+  OPTGROUP_NONE,    // optinfo_flags
+  TV_DF_SCAN,	    // tv_id
+  0,		    // properties_required
+  0,		    // properties_provided
+  0,		    // properties_destroyed
+  0,		    // todo_flags_start
+  0		    // todo_flags_finish
+};
+
+class avr_pass_split_nzb : public rtl_opt_pass
+{
+public:
+  avr_pass_split_nzb (gcc::context *ctxt, const char *name)
+    : rtl_opt_pass (avr_pass_data_split_nzb, ctxt)
+  {
+    this->name = name;
+  }
+
+  unsigned int execute (function *) final override
+  {
+    if (avropt_use_nonzero_bits)
+      split_nzb_insns ();
+    return 0;
+  }
+
+  void split_nzb_insns ();
+
+}; // avr_pass_split_nzb
+
+
+void
+avr_pass_split_nzb::split_nzb_insns ()
+{
+  rtx_insn *next;
+
+  for (rtx_insn *insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+
+      if (INSN_P (insn)
+	  && single_set (insn)
+	  && get_attr_nzb (insn) == NZB_YES)
+	{
+	  rtx_insn *last = try_split (PATTERN (insn), insn, 1 /*last*/);
+
+	  // The nonzero_bits() insns *must* split.  If not: ICE.
+	  if (last == insn)
+	    {
+	      debug_rtx (insn);
+	      internal_error ("failed to split insn");
+	    }
+	}
+    }
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
 // Split shift insns after peephole2 / befor avr-fuse-move.
 
 static const pass_data avr_pass_data_split_after_peephole2 =
@@ -5633,6 +5708,12 @@ rtl_opt_pass *
 make_avr_pass_casesi (gcc::context *ctxt)
 {
   return new avr_pass_casesi (ctxt, "avr-casesi");
+}
+
+rtl_opt_pass *
+make_avr_pass_split_nzb (gcc::context *ctxt)
+{
+  return new avr_pass_split_nzb (ctxt, "avr-split-nzb");
 }
 
 // Try to replace 2 cbranch insns with 1 comparison and 2 branches.

@@ -1,3 +1,3 @@
-/* { dg-do compile }
-   { dg-require-effective-target alloca } */
+/* { dg-do compile } */
+
 #include "../../Warray-bounds-41.c"

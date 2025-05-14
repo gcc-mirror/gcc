@@ -18,20 +18,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "diagnostic.h"
-#include "intl.h"
-#include "analyzer/analyzer.h"
+#include "analyzer/common.h"
+
 #include "tree-pretty-print.h"
 #include "diagnostic-event-id.h"
 #include "tree-dfa.h"
-#include "make-unique.h"
+#include "intl.h"
 
 #if ENABLE_ANALYZER
 
@@ -227,11 +219,11 @@ std::unique_ptr<json::value>
 tree_to_json (tree node)
 {
   if (!node)
-    return ::make_unique<json::literal> (json::JSON_NULL);
+    return std::make_unique<json::literal> (json::JSON_NULL);
 
   pretty_printer pp;
   dump_generic_node (&pp, node, 0, TDF_VOPS|TDF_MEMSYMS, false);
-  return ::make_unique<json::string> (pp_formatted_text (&pp));
+  return std::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* Generate a JSON value for EVENT_ID.
@@ -246,10 +238,10 @@ diagnostic_event_id_to_json (const diagnostic_event_id_t &event_id)
     {
       pretty_printer pp;
       pp_printf (&pp, "%@", &event_id);
-      return ::make_unique<json::string> (pp_formatted_text (&pp));
+      return std::make_unique<json::string> (pp_formatted_text (&pp));
     }
   else
-    return ::make_unique<json::literal> (json::JSON_NULL);
+    return std::make_unique<json::literal> (json::JSON_NULL);
 }
 
 /* Generate a JSON value for OFFSET.
@@ -261,7 +253,7 @@ bit_offset_to_json (const bit_offset_t &offset)
 {
   pretty_printer pp;
   pp_wide_int_large (&pp, offset, SIGNED);
-  return ::make_unique<json::string> (pp_formatted_text (&pp));
+  return std::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* Generate a JSON value for OFFSET.
@@ -273,7 +265,7 @@ byte_offset_to_json (const byte_offset_t &offset)
 {
   pretty_printer pp;
   pp_wide_int_large (&pp, offset, SIGNED);
-  return ::make_unique<json::string> (pp_formatted_text (&pp));
+  return std::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* Workaround for lack of const-correctness of ssa_default_def.  */
@@ -298,12 +290,12 @@ get_ssa_default_def (const function &fun, tree var)
    If LOOK_IN_STD is true, then also look for within std:: for the name.  */
 
 bool
-is_special_named_call_p (const gcall *call, const char *funcname,
+is_special_named_call_p (const gcall &call, const char *funcname,
 			 unsigned int num_args, bool look_in_std)
 {
   gcc_assert (funcname);
 
-  tree fndecl = gimple_call_fndecl (call);
+  tree fndecl = gimple_call_fndecl (&call);
   if (!fndecl)
     return false;
 
@@ -396,7 +388,7 @@ is_std_named_call_p (const_tree fndecl, const char *funcname)
 
 bool
 is_named_call_p (const_tree fndecl, const char *funcname,
-		 const gcall *call, unsigned int num_args)
+		 const gcall &call, unsigned int num_args)
 {
   gcc_assert (fndecl);
   gcc_assert (funcname);
@@ -404,7 +396,7 @@ is_named_call_p (const_tree fndecl, const char *funcname,
   if (!is_named_call_p (fndecl, funcname))
     return false;
 
-  if (gimple_call_num_args (call) != num_args)
+  if (gimple_call_num_args (&call) != num_args)
     return false;
 
   return true;
@@ -414,7 +406,7 @@ is_named_call_p (const_tree fndecl, const char *funcname,
 
 bool
 is_std_named_call_p (const_tree fndecl, const char *funcname,
-		     const gcall *call, unsigned int num_args)
+		     const gcall &call, unsigned int num_args)
 {
   gcc_assert (fndecl);
   gcc_assert (funcname);
@@ -422,7 +414,7 @@ is_std_named_call_p (const_tree fndecl, const char *funcname,
   if (!is_std_named_call_p (fndecl, funcname))
     return false;
 
-  if (gimple_call_num_args (call) != num_args)
+  if (gimple_call_num_args (&call) != num_args)
     return false;
 
   return true;
@@ -431,12 +423,12 @@ is_std_named_call_p (const_tree fndecl, const char *funcname,
 /* Return true if stmt is a setjmp or sigsetjmp call.  */
 
 bool
-is_setjmp_call_p (const gcall *call)
+is_setjmp_call_p (const gcall &call)
 {
   if (is_special_named_call_p (call, "setjmp", 1)
       || is_special_named_call_p (call, "sigsetjmp", 2))
     /* region_model::on_setjmp requires a pointer.  */
-    if (POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, 0))))
+    if (POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (&call, 0))))
       return true;
 
   return false;
@@ -445,16 +437,36 @@ is_setjmp_call_p (const gcall *call)
 /* Return true if stmt is a longjmp or siglongjmp call.  */
 
 bool
-is_longjmp_call_p (const gcall *call)
+is_longjmp_call_p (const gcall &call)
 {
   if (is_special_named_call_p (call, "longjmp", 2)
       || is_special_named_call_p (call, "siglongjmp", 2))
     /* exploded_node::on_longjmp requires a pointer for the initial
        argument.  */
-    if (POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, 0))))
+    if (POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (&call, 0))))
       return true;
 
   return false;
+}
+
+bool
+is_cxa_throw_p (const gcall &call)
+{
+  tree fndecl = gimple_call_fndecl (&call);
+  if (!fndecl)
+    return false;
+
+  return is_named_call_p (fndecl, "__cxa_throw");
+}
+
+bool
+is_cxa_rethrow_p (const gcall &call)
+{
+  tree fndecl = gimple_call_fndecl (&call);
+  if (!fndecl)
+    return false;
+
+  return is_named_call_p (fndecl, "__cxa_rethrow");
 }
 
 /* For a CALL that matched is_special_named_call_p or is_named_call_p for
@@ -462,9 +474,9 @@ is_longjmp_call_p (const gcall *call)
    diagnostics (stripping the leading underscores).  */
 
 const char *
-get_user_facing_name (const gcall *call)
+get_user_facing_name (const gcall &call)
 {
-  tree fndecl = gimple_call_fndecl (call);
+  tree fndecl = gimple_call_fndecl (&call);
   gcc_assert (fndecl);
 
   tree identifier = DECL_NAME (fndecl);

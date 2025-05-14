@@ -1,8 +1,8 @@
 // { dg-options "-O0" }
 // { dg-shouldfail "segv or bus error" }
 import core.thread;
-import core.sys.posix.signal;
-import core.sys.posix.sys.mman;
+import core.sys.posix.signal : MINSIGSTKSZ;
+import core.sys.posix.sys.mman : MAP_ANON, MAP_PRIVATE, mmap, PROT_READ, PROT_WRITE;
 
 version (LDC) import ldc.attributes;
 else struct optStrategy { string a; }

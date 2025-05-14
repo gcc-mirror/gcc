@@ -1,7 +1,6 @@
 /* PR c/27301 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -std=gnu89" } */
-/* { dg-require-effective-target alloca } */
 
 void
 foo (void *ptr, long n)

@@ -1994,7 +1994,8 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
 
   auto ignore = ignore_changing_insns (changes);
   for (unsigned i = 0; i < changes.length (); i++)
-    gcc_assert (rtl_ssa::restrict_movement (*changes[i], ignore));
+    gcc_assert (changes[i]->move_range.singleton ()
+		&& rtl_ssa::restrict_movement (*changes[i], ignore));
 
   // Check the pair pattern is recog'd.
   if (!rtl_ssa::recog (attempt, *pair_change, ignore))
@@ -3084,7 +3085,8 @@ pair_fusion::try_promote_writeback (insn_info *insn, bool load_p)
 
   auto ignore = ignore_changing_insns (changes);
   for (unsigned i = 0; i < ARRAY_SIZE (changes); i++)
-    gcc_assert (rtl_ssa::restrict_movement (*changes[i], ignore));
+    gcc_assert (changes[i]->move_range.singleton ()
+		&& rtl_ssa::restrict_movement (*changes[i], ignore));
 
   if (!rtl_ssa::recog (attempt, pair_change, ignore))
     {

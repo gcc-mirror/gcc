@@ -18,38 +18,19 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "diagnostic-core.h"
-#include "gimple-pretty-print.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "diagnostic-core.h"
-#include "graphviz.h"
-#include "options.h"
-#include "cgraph.h"
-#include "tree-dfa.h"
-#include "stringpool.h"
-#include "convert.h"
-#include "target.h"
-#include "fold-const.h"
-#include "tree-pretty-print.h"
-#include "diagnostic-color.h"
-#include "bitmap.h"
-#include "analyzer/analyzer.h"
-#include "analyzer/analyzer-logging.h"
+#include "analyzer/common.h"
+
 #include "ordered-hash-map.h"
 #include "options.h"
 #include "cgraph.h"
 #include "cfg.h"
 #include "digraph.h"
-#include "analyzer/supergraph.h"
 #include "sbitmap.h"
+#include "fold-const.h"
+#include "tree-ssa.h"
+
+#include "analyzer/analyzer-logging.h"
+#include "analyzer/supergraph.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
@@ -58,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/sm.h"
 #include "analyzer/program-state.h"
 #include "text-art/dump.h"
-#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -567,15 +547,12 @@ region::can_have_initial_svalue_p () const
 
 	    case SSA_NAME:
 	      {
+		/* Some SSA names have an implicit default defined value.  */
 		tree ssa_name = decl;
-		/* SSA names that are the default defn of a PARM_DECL
-		   have initial_svalues; other SSA names don't.  */
-		if (SSA_NAME_IS_DEFAULT_DEF (ssa_name)
-		    && SSA_NAME_VAR (ssa_name)
-		    && TREE_CODE (SSA_NAME_VAR (ssa_name)) == PARM_DECL)
-		  return true;
-		else
-		  return false;
+		if (SSA_NAME_IS_DEFAULT_DEF (ssa_name))
+		  return ssa_defined_default_def_p (ssa_name);
+		/* Others don't.  */
+		return false;
 	      }
 	    }
 	}
@@ -1039,7 +1016,7 @@ std::unique_ptr<json::value>
 region::to_json () const
 {
   label_text desc = get_desc (true);
-  auto reg_js = ::make_unique<json::string> (desc.get ());
+  auto reg_js = std::make_unique<json::string> (desc.get ());
   return reg_js;
 }
 

@@ -93,6 +93,15 @@ PROCEDURE TryDeclareConstant (tokenno: CARDINAL; sym: CARDINAL) ;
 
 
 (*
+   TryDeclareType - try and declare a type.  If sym is a
+                    type try and declare it, if we cannot
+                    then enter it into the to do list.
+*)
+
+PROCEDURE TryDeclareType (type: CARDINAL) ;
+
+
+(*
    TryDeclareConstructor - try and declare a constructor.  If, sym, is a
                            constructor try and declare it, if we cannot
                            then enter it into the to do list.

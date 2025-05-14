@@ -19,6 +19,9 @@
 #include "rust-name-resolver.h"
 #include "rust-ast-full.h"
 
+// for flag_name_resolution_2_0
+#include "options.h"
+
 namespace Rust {
 namespace Resolver {
 
@@ -274,10 +277,10 @@ Scope::decl_was_declared_here (NodeId def) const
 
 Resolver::Resolver ()
   : mappings (Analysis::Mappings::get ()), tyctx (TypeCheckContext::get ()),
-    name_scope (Scope (mappings->get_current_crate ())),
-    type_scope (Scope (mappings->get_current_crate ())),
-    label_scope (Scope (mappings->get_current_crate ())),
-    macro_scope (Scope (mappings->get_current_crate ())),
+    name_scope (Scope (mappings.get_current_crate ())),
+    type_scope (Scope (mappings.get_current_crate ())),
+    label_scope (Scope (mappings.get_current_crate ())),
+    macro_scope (Scope (mappings.get_current_crate ())),
     global_type_node_id (UNKNOWN_NODEID), unit_ty_node_id (UNKNOWN_NODEID)
 {
   generate_builtins ();
@@ -383,34 +386,34 @@ void
 Resolver::generate_builtins ()
 {
   auto u8
-    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U8);
+    = new TyTy::UintType (mappings.get_next_hir_id (), TyTy::UintType::U8);
   auto u16
-    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U16);
+    = new TyTy::UintType (mappings.get_next_hir_id (), TyTy::UintType::U16);
   auto u32
-    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U32);
+    = new TyTy::UintType (mappings.get_next_hir_id (), TyTy::UintType::U32);
   auto u64
-    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U64);
+    = new TyTy::UintType (mappings.get_next_hir_id (), TyTy::UintType::U64);
   auto u128
-    = new TyTy::UintType (mappings->get_next_hir_id (), TyTy::UintType::U128);
-  auto i8 = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I8);
+    = new TyTy::UintType (mappings.get_next_hir_id (), TyTy::UintType::U128);
+  auto i8 = new TyTy::IntType (mappings.get_next_hir_id (), TyTy::IntType::I8);
   auto i16
-    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I16);
+    = new TyTy::IntType (mappings.get_next_hir_id (), TyTy::IntType::I16);
   auto i32
-    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I32);
+    = new TyTy::IntType (mappings.get_next_hir_id (), TyTy::IntType::I32);
   auto i64
-    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I64);
+    = new TyTy::IntType (mappings.get_next_hir_id (), TyTy::IntType::I64);
   auto i128
-    = new TyTy::IntType (mappings->get_next_hir_id (), TyTy::IntType::I128);
-  auto rbool = new TyTy::BoolType (mappings->get_next_hir_id ());
+    = new TyTy::IntType (mappings.get_next_hir_id (), TyTy::IntType::I128);
+  auto rbool = new TyTy::BoolType (mappings.get_next_hir_id ());
   auto f32
-    = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F32);
+    = new TyTy::FloatType (mappings.get_next_hir_id (), TyTy::FloatType::F32);
   auto f64
-    = new TyTy::FloatType (mappings->get_next_hir_id (), TyTy::FloatType::F64);
-  auto usize = new TyTy::USizeType (mappings->get_next_hir_id ());
-  auto isize = new TyTy::ISizeType (mappings->get_next_hir_id ());
-  auto char_tyty = new TyTy::CharType (mappings->get_next_hir_id ());
-  auto str = new TyTy::StrType (mappings->get_next_hir_id ());
-  auto never = new TyTy::NeverType (mappings->get_next_hir_id ());
+    = new TyTy::FloatType (mappings.get_next_hir_id (), TyTy::FloatType::F64);
+  auto usize = new TyTy::USizeType (mappings.get_next_hir_id ());
+  auto isize = new TyTy::ISizeType (mappings.get_next_hir_id ());
+  auto char_tyty = new TyTy::CharType (mappings.get_next_hir_id ());
+  auto str = new TyTy::StrType (mappings.get_next_hir_id ());
+  auto never = new TyTy::NeverType (mappings.get_next_hir_id ());
 
   setup_builtin ("u8", u8);
   setup_builtin ("u16", u16);
@@ -429,11 +432,13 @@ Resolver::generate_builtins ()
   setup_builtin ("isize", isize);
   setup_builtin ("char", char_tyty);
   setup_builtin ("str", str);
-  setup_builtin ("!", never);
+
+  // never type
+  NodeId never_node_id = setup_builtin ("!", never);
+  set_never_type_node_id (never_node_id);
 
   // unit type ()
-  TyTy::TupleType *unit_tyty
-    = TyTy::TupleType::get_unit_type (mappings->get_next_hir_id ());
+  TyTy::TupleType *unit_tyty = TyTy::TupleType::get_unit_type ();
   std::vector<std::unique_ptr<AST::Type> > elems;
   AST::TupleType *unit_type
     = new AST::TupleType (std::move (elems), BUILTINS_LOCATION);
@@ -443,7 +448,7 @@ Resolver::generate_builtins ()
   set_unit_type_node_id (unit_type->get_node_id ());
 }
 
-void
+NodeId
 Resolver::setup_builtin (const std::string &name, TyTy::BaseType *tyty)
 {
   AST::PathIdentSegment seg (name, BUILTINS_LOCATION);
@@ -455,15 +460,20 @@ Resolver::setup_builtin (const std::string &name, TyTy::BaseType *tyty)
     = new AST::TypePath (::std::move (segs), BUILTINS_LOCATION, false);
   builtins.push_back (builtin_type);
   tyctx->insert_builtin (tyty->get_ref (), builtin_type->get_node_id (), tyty);
-  mappings->insert_node_to_hir (builtin_type->get_node_id (), tyty->get_ref ());
-  mappings->insert_canonical_path (
+  mappings.insert_node_to_hir (builtin_type->get_node_id (), tyty->get_ref ());
+  mappings.insert_canonical_path (
     builtin_type->get_node_id (),
     CanonicalPath::new_seg (builtin_type->get_node_id (), name));
+
+  return builtin_type->get_node_id ();
 }
 
 void
 Resolver::insert_resolved_name (NodeId refId, NodeId defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
+  rust_assert (resolved_names.find (refId) == resolved_names.end ());
+
   resolved_names[refId] = defId;
   get_name_scope ().append_reference_for_def (refId, defId);
   insert_captured_item (defId);
@@ -472,6 +482,7 @@ Resolver::insert_resolved_name (NodeId refId, NodeId defId)
 bool
 Resolver::lookup_resolved_name (NodeId refId, NodeId *defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_names.find (refId);
   if (it == resolved_names.end ())
     return false;
@@ -483,8 +494,8 @@ Resolver::lookup_resolved_name (NodeId refId, NodeId *defId)
 void
 Resolver::insert_resolved_type (NodeId refId, NodeId defId)
 {
-  // auto it = resolved_types.find (refId);
-  // rust_assert (it == resolved_types.end ());
+  rust_assert (!flag_name_resolution_2_0);
+  rust_assert (resolved_types.find (refId) == resolved_types.end ());
 
   resolved_types[refId] = defId;
   get_type_scope ().append_reference_for_def (refId, defId);
@@ -493,6 +504,7 @@ Resolver::insert_resolved_type (NodeId refId, NodeId defId)
 bool
 Resolver::lookup_resolved_type (NodeId refId, NodeId *defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_types.find (refId);
   if (it == resolved_types.end ())
     return false;
@@ -504,6 +516,7 @@ Resolver::lookup_resolved_type (NodeId refId, NodeId *defId)
 void
 Resolver::insert_resolved_label (NodeId refId, NodeId defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_labels.find (refId);
   rust_assert (it == resolved_labels.end ());
 
@@ -514,6 +527,7 @@ Resolver::insert_resolved_label (NodeId refId, NodeId defId)
 bool
 Resolver::lookup_resolved_label (NodeId refId, NodeId *defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_labels.find (refId);
   if (it == resolved_labels.end ())
     return false;
@@ -525,6 +539,7 @@ Resolver::lookup_resolved_label (NodeId refId, NodeId *defId)
 void
 Resolver::insert_resolved_macro (NodeId refId, NodeId defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_macros.find (refId);
   rust_assert (it == resolved_macros.end ());
 
@@ -535,6 +550,7 @@ Resolver::insert_resolved_macro (NodeId refId, NodeId defId)
 bool
 Resolver::lookup_resolved_macro (NodeId refId, NodeId *defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = resolved_macros.find (refId);
   if (it == resolved_macros.end ())
     return false;
@@ -546,6 +562,7 @@ Resolver::lookup_resolved_macro (NodeId refId, NodeId *defId)
 void
 Resolver::insert_resolved_misc (NodeId refId, NodeId defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = misc_resolved_items.find (refId);
   rust_assert (it == misc_resolved_items.end ());
 
@@ -555,6 +572,7 @@ Resolver::insert_resolved_misc (NodeId refId, NodeId defId)
 bool
 Resolver::lookup_resolved_misc (NodeId refId, NodeId *defId)
 {
+  rust_assert (!flag_name_resolution_2_0);
   auto it = misc_resolved_items.find (refId);
   if (it == misc_resolved_items.end ())
     return false;
@@ -657,6 +675,8 @@ Resolver::decl_needs_capture (NodeId decl_rib_node_id,
 const std::set<NodeId> &
 Resolver::get_captures (NodeId id) const
 {
+  rust_assert (!flag_name_resolution_2_0);
+
   auto it = closures_capture_mappings.find (id);
   rust_assert (it != closures_capture_mappings.end ());
   return it->second;

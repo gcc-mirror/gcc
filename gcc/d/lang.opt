@@ -320,9 +320,16 @@ Enum(extern_stdcpp) String(c++17) Value(201703)
 EnumValue
 Enum(extern_stdcpp) String(c++20) Value(202002)
 
+EnumValue
+Enum(extern_stdcpp) String(c++23) Value(202302)
+
 fignore-unknown-pragmas
 D
 Ignore unsupported pragmas.
+
+finclude-imports
+D RejectNegative
+Include imported modules in the compilation.
 
 finvariants
 D Var(flag_invariants)

@@ -1,0 +1,5 @@
+Next line should be "UNDERSCORE evaluates to TRUE"
+UNDERSCORE evaluates to TRUE
+Next line should be "NOT UNDERSCORE evaluates to FALSE"
+NOT UNDERSCORE evaluates to FALSE
+

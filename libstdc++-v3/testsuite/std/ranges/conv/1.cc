@@ -12,6 +12,7 @@
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 #include <testsuite_iterators.h>
+#include <unordered_map>
 
 void
 test_p1206r7_examples()
@@ -466,6 +467,38 @@ test_composition()
   auto str = adaptor(" ");
 }
 
+constexpr bool
+test_pr119282()
+{
+  // PR libstdc++/119282
+  auto v = std::array{1, 2, 3}
+    | std::views::transform([](auto x) { return std::array{x}; })
+    | std::views::join
+    | std::ranges::to<std::vector>();
+  VERIFY( std::ranges::size(v) == 3 );
+  return true;
+}
+
+void
+test_lwg2713()
+{
+  using Alloc = __gnu_test::uneq_allocator<std::pair<const int, const char*>>;
+  const Alloc alloc(303);
+  const std::map<int, const char*> m{{1, "one"}, {2, "two"}, {3, "three"}};
+  namespace ranges = std::ranges;
+
+  // Call constructors with bucket count
+  auto m1 = m | ranges::to<std::unordered_map>(0, alloc);
+  VERIFY( m1.get_allocator() == alloc );
+  auto m2 = m | ranges::to<std::unordered_multimap>(0, alloc);
+  VERIFY( m2.get_allocator() == alloc );
+  // These call constructors added in lwg2713
+  auto m3 = m | ranges::to<std::unordered_map>(alloc);
+  VERIFY( m3.get_allocator() == alloc );
+  auto m4 = m | ranges::to<std::unordered_multimap>(alloc);
+  VERIFY( m4.get_allocator() == alloc );
+}
+
 int main()
 {
   test_p1206r7_examples();
@@ -475,9 +508,11 @@ int main()
   test_2_1_3();
   test_2_1_4();
   test_2_2();
+  test_lwg2713();
   test_lwg3984();
   test_nodiscard();
   test_constexpr();
   test_sfinae();
   test_composition();
+  static_assert(test_pr119282());
 }

@@ -17,7 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-derive-copy.h"
-#include "rust-ast-full.h"
+#include "rust-hir-map.h"
+#include "rust-path.h"
 
 namespace Rust {
 namespace AST {
@@ -37,43 +38,48 @@ DeriveCopy::go (Item &item)
 }
 
 std::unique_ptr<Item>
-DeriveCopy::copy_impl (std::string name)
+DeriveCopy::copy_impl (
+  std::string name,
+  const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
-  // `$crate::core::marker::Copy` instead
-  auto segments = std::vector<std::unique_ptr<TypePathSegment>> ();
-  segments.emplace_back (builder.type_path_segment ("Copy"));
-  auto copy = TypePath (std::move (segments), loc);
+  // we should have two of these, so we don't run into issues with
+  // two paths sharing a node id
+  auto copy_bound = builder.type_path (LangItem::Kind::COPY);
+  auto copy_trait_path = builder.type_path (LangItem::Kind::COPY);
 
-  return std::unique_ptr<Item> (
-    new TraitImpl (copy, /* unsafe */ false,
-		   /* exclam */ false, /* trait items */ {},
-		   /* generics */ {}, builder.single_type_path (name),
-		   WhereClause::create_empty (), Visibility::create_private (),
-		   {}, {}, loc));
+  auto generics = setup_impl_generics (name, type_generics,
+				       builder.trait_bound (copy_bound));
+
+  return builder.trait_impl (copy_trait_path, std::move (generics.self_type),
+			     {}, std::move (generics.impl));
 }
 
 void
 DeriveCopy::visit_struct (StructStruct &item)
 {
-  expanded = copy_impl (item.get_struct_name ().as_string ());
+  expanded = copy_impl (item.get_struct_name ().as_string (),
+			item.get_generic_params ());
 }
 
 void
 DeriveCopy::visit_tuple (TupleStruct &item)
 {
-  expanded = copy_impl (item.get_struct_name ().as_string ());
+  expanded = copy_impl (item.get_struct_name ().as_string (),
+			item.get_generic_params ());
 }
 
 void
 DeriveCopy::visit_enum (Enum &item)
 {
-  expanded = copy_impl (item.get_identifier ().as_string ());
+  expanded = copy_impl (item.get_identifier ().as_string (),
+			item.get_generic_params ());
 }
 
 void
 DeriveCopy::visit_union (Union &item)
 {
-  expanded = copy_impl (item.get_identifier ().as_string ());
+  expanded = copy_impl (item.get_identifier ().as_string (),
+			item.get_generic_params ());
 }
 
 } // namespace AST

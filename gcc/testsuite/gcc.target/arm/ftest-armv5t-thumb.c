@@ -1,6 +1,4 @@
 /* { dg-do compile } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-march=*" } { "-march=armv5t" } } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" } { "" } } */
 /* { dg-require-effective-target arm_arch_v5t_thumb_ok } */
 /* { dg-options "-mthumb" } */
 /* { dg-add-options arm_arch_v5t } */
@@ -13,5 +11,10 @@
 
 #define NEED_ARM_ARCH_ISA_THUMB
 #define VALUE_ARM_ARCH_ISA_THUMB 1
+
+/* Not in the Thumb ISA, but does exist in Arm state.  A call to the library
+   function should result in using that instruction in Arm state.  */
+#define NEED_ARM_FEATURE_CLZ
+#define VALUE_ARM_FEATURE_CLZ 1
 
 #include "ftest-support.h"

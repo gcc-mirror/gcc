@@ -31,8 +31,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-Og)
 Oz
 UrlSuffix(gcc/Optimize-Options.html#index-Oz)
 
-Q
-UrlSuffix(gcc/Developer-Options.html#index-Q)
+; skipping UrlSuffix for 'Q' due to multiple URLs:
+;   duplicate: 'gcc/Developer-Options.html#index-Q-1'
+;   duplicate: 'gcc/Overall-Options.html#index-Q'
 
 Qn
 UrlSuffix(gcc/System-V-Options.html#index-Qn)
@@ -156,6 +157,12 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-unsafe-loop-optimizations)
 
 Wmissing-noreturn
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-noreturn)
+
+Wmusttail-local-addr
+UrlSuffix(gcc/Warning-Options.html#index-Wno-musttail-local-addr)
+
+Wmaybe-musttail-local-addr
+UrlSuffix(gcc/Warning-Options.html#index-Wmaybe-musttail-local-addr)
 
 Wodr
 UrlSuffix(gcc/Warning-Options.html#index-Wno-odr)
@@ -288,6 +295,12 @@ UrlSuffix(gcc/Warning-Options.html#index-Wcoverage-invalid-line-number)
 
 Wcoverage-too-many-conditions
 UrlSuffix(gcc/Warning-Options.html#index-Wcoverage-too-many-conditions)
+
+fpath-coverage-limit=
+UrlSuffix(gcc/Instrumentation-Options.html#index-fpath-coverage-limit)
+
+Wcoverage-too-many-paths
+UrlSuffix(gcc/Warning-Options.html#index-Wcoverage-too-many-paths)
 
 Wmissing-profile
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-profile)
@@ -488,6 +501,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fcse-follow-jumps)
 
 fcse-skip-blocks
 UrlSuffix(gcc/Optimize-Options.html#index-fcse-skip-blocks)
+
+fcx-method=
+UrlSuffix(gcc/Optimize-Options.html#index-fcx-method)
 
 fcx-limited-range
 UrlSuffix(gcc/Optimize-Options.html#index-fcx-limited-range)
@@ -856,6 +872,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fipa-bit-cp)
 fipa-modref
 UrlSuffix(gcc/Optimize-Options.html#index-fipa-modref)
 
+fipa-reorder-for-locality
+UrlSuffix(gcc/Optimize-Options.html#index-fipa-reorder-for-locality)
+
 fipa-profile
 UrlSuffix(gcc/Optimize-Options.html#index-fipa-profile)
 
@@ -934,6 +953,12 @@ UrlSuffix(gcc/Optimize-Options.html#index-flto)
 
 flto=
 UrlSuffix(gcc/Optimize-Options.html#index-flto)
+
+flto-incremental=
+UrlSuffix(gcc/Optimize-Options.html#index-flto-incremental)
+
+flto-incremental-cache-size=
+UrlSuffix(gcc/Optimize-Options.html#index-flto-incremental-cache-size)
 
 flto-partition=
 UrlSuffix(gcc/Optimize-Options.html#index-flto-partition)
@@ -1030,6 +1055,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-foptimize-crc)
 
 foptimize-sibling-calls
 UrlSuffix(gcc/Optimize-Options.html#index-foptimize-sibling-calls)
+
+fpath-coverage
+UrlSuffix(gcc/Instrumentation-Options.html#index-fpath-coverage)
 
 fpartial-inlining
 UrlSuffix(gcc/Optimize-Options.html#index-fpartial-inlining)
@@ -1437,6 +1465,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-ftree-coalesce-vars)
 
 ftree-copy-prop
 UrlSuffix(gcc/Optimize-Options.html#index-ftree-copy-prop)
+
+ftree-cselim
+UrlSuffix(gcc/Optimize-Options.html#index-ftree-cselim)
 
 ftree-switch-conversion
 UrlSuffix(gcc/Optimize-Options.html#index-ftree-switch-conversion)

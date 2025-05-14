@@ -1,5 +1,4 @@
 /* PR c/82210 */
-/* { dg-require-effective-target alloca } */
 
 void
 foo (int size)

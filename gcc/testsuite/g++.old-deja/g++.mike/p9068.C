@@ -1,4 +1,4 @@
-// { dg-do assemble  }
+// { dg-do assemble }
 // prms-id: 9068
 
 struct ostream {

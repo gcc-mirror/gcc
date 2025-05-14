@@ -1218,7 +1218,7 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
   align = 1;
   saw_equiv = false;
 
-  if (var_list->attr.omp_allocate)
+  if (var_list && var_list->attr.omp_allocate)
     gfc_error ("Sorry, !$OMP allocate for COMMON block variable %qs at %L "
 	       "not supported", common->name, &common->where);
 

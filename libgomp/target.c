@@ -146,7 +146,8 @@ resolve_device (int device_id, bool remapped)
      called, which must be done before using default_device_var.  */
   int num_devices = gomp_get_num_devices ();
 
-  if (remapped && device_id == GOMP_DEVICE_ICV)
+  if ((remapped && device_id == GOMP_DEVICE_ICV)
+      || device_id == GOMP_DEVICE_DEFAULT_OMP_61)
     {
       struct gomp_task_icv *icv = gomp_icv (false);
       device_id = icv->default_device_var;
@@ -2092,8 +2093,9 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
 			    tgt->list[i].length);
       if (do_remove)
 	{
-	  struct target_mem_desc *k_tgt = k->tgt;
-	  bool is_tgt_unmapped = gomp_remove_var (devicep, k);
+	  struct target_mem_desc *k_tgt __attribute__((unused)) = k->tgt;
+	  bool is_tgt_unmapped __attribute__((unused))
+	    = gomp_remove_var (devicep, k);
 	  /* It would be bad if TGT got unmapped while we're still iterating
 	     over its LIST_COUNT, and also expect to use it in the following
 	     code.  */
@@ -5135,45 +5137,78 @@ omp_get_num_interop_properties (const omp_interop_t interop
 }
 
 omp_intptr_t
-omp_get_interop_int (const omp_interop_t interop __attribute__ ((unused)),
+omp_get_interop_int (const omp_interop_t interop,
 		     omp_interop_property_t property_id,
 		     omp_interop_rc_t *ret_code)
 {
-  if (ret_code == NULL)
-    return 0;
+  struct interop_obj_t *obj = (struct interop_obj_t *) interop;
+  struct gomp_device_descr *devicep;
+
   if (property_id < omp_ipr_first || property_id >= 0)
-    *ret_code = omp_irc_out_of_range;
-  else
-    *ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
-  return 0;
+    {
+      if (ret_code)
+	*ret_code = omp_irc_out_of_range;
+      return 0;
+    }
+  if (obj == NULL
+      || (devicep = resolve_device (obj->device_num, false)) == NULL
+      || devicep->get_interop_int_func == NULL)
+    {
+      if (ret_code)
+	*ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
+      return 0;
+    }
+  return devicep->get_interop_int_func (obj, property_id, ret_code);
 }
 
 void *
-omp_get_interop_ptr (const omp_interop_t interop __attribute__ ((unused)),
+omp_get_interop_ptr (const omp_interop_t interop,
 		     omp_interop_property_t property_id,
 		     omp_interop_rc_t *ret_code)
 {
-  if (ret_code == NULL)
-    return NULL;
+  struct interop_obj_t *obj = (struct interop_obj_t *) interop;
+  struct gomp_device_descr *devicep;
+
   if (property_id < omp_ipr_first || property_id >= 0)
-    *ret_code = omp_irc_out_of_range;
-  else
-    *ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
-  return NULL;
+    {
+      if (ret_code)
+	*ret_code = omp_irc_out_of_range;
+      return 0;
+    }
+  if (obj == NULL
+      || (devicep = resolve_device (obj->device_num, false)) == NULL
+      || devicep->get_interop_int_func == NULL)
+    {
+      if (ret_code)
+	*ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
+      return 0;
+    }
+  return devicep->get_interop_ptr_func (obj, property_id, ret_code);
 }
 
 const char *
-omp_get_interop_str (const omp_interop_t interop __attribute__ ((unused)),
+omp_get_interop_str (const omp_interop_t interop,
 		     omp_interop_property_t property_id,
 		     omp_interop_rc_t *ret_code)
 {
-  if (ret_code == NULL)
-    return NULL;
+  struct interop_obj_t *obj = (struct interop_obj_t *) interop;
+  struct gomp_device_descr *devicep;
+
   if (property_id < omp_ipr_first || property_id >= 0)
-    *ret_code = omp_irc_out_of_range;
-  else
-    *ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
-  return NULL;
+    {
+      if (ret_code)
+	*ret_code = omp_irc_out_of_range;
+      return 0;
+    }
+  if (obj == NULL
+      || (devicep = resolve_device (obj->device_num, false)) == NULL
+      || devicep->get_interop_int_func == NULL)
+    {
+      if (ret_code)
+	*ret_code = omp_irc_empty;  /* Assume omp_interop_none.  */
+      return 0;
+    }
+  return devicep->get_interop_str_func (obj, property_id, ret_code);
 }
 
 const char *
@@ -5193,18 +5228,24 @@ omp_get_interop_type_desc (const omp_interop_t interop,
 			   omp_interop_property_t property_id)
 {
   static const char *desc[omp_ipr_fr_id - omp_ipr_device_num + 1]
-    = {"omp_interop_t",	/* fr_id */
-       "const char*",	/* fr_name */
+    = {"omp_interop_t", /* fr_id */
+       "const char *",	/* fr_name */
        "int",		/* vendor */
        "const char *",	/* vendor_name */
        "int"};		/* device_num */
+
+  struct interop_obj_t *obj = (struct interop_obj_t *) interop;
+  struct gomp_device_descr *devicep;
+
   if (property_id > omp_ipr_fr_id || property_id < omp_ipr_first)
     return NULL;
-  if (interop == omp_interop_none)
+  if (obj == NULL
+      || (devicep = resolve_device (obj->device_num, false)) == NULL
+      || devicep->get_interop_int_func == NULL)
     return NULL;
   if (property_id >= omp_ipr_device_num)
     return desc[omp_ipr_fr_id - property_id];
-  return NULL;  /* FIXME: Call plugin.  */
+  return devicep->get_interop_type_desc_func (obj, property_id);
 }
 
 const char *
@@ -5234,6 +5275,120 @@ ialias (omp_get_interop_str)
 ialias (omp_get_interop_name)
 ialias (omp_get_interop_type_desc)
 ialias (omp_get_interop_rc_desc)
+
+struct interop_data_t
+{
+  int device_num, n_init, n_use, n_destroy;
+  struct interop_obj_t ***init;
+  struct interop_obj_t **use;
+  struct interop_obj_t ***destroy;
+  const int *target_targetsync;
+  const char **prefer_type;
+};
+
+static void
+gomp_interop_internal (void *data)
+{
+  struct interop_data_t *args = (struct interop_data_t *) data;
+  struct gomp_device_descr *devicep;
+
+  /* Destroy objects to free resources.  */
+  for (int i = 0; i < args->n_destroy; i++)
+    {
+      struct interop_obj_t **obj = args->destroy[i];
+      if (*obj == NULL /* omp_interop_none */)
+	continue;
+      devicep = resolve_device ((*obj)->device_num, false);
+      if (devicep != NULL && devicep->interop_func)
+	devicep->interop_func (*obj, devicep->target_id,
+			       gomp_interop_flag_destroy, false, NULL);
+      free (*obj);
+      *obj = NULL;
+    }
+
+  /* Init streams next to give 'use' more time for completion.  */
+  if (args->n_init)
+    {
+      devicep = resolve_device (args->device_num, false);
+      for (int i = 0; i < args->n_init; i++)
+	{
+	  struct interop_obj_t **obj = args->init[i];
+	  bool targetsync
+	    = (args->target_targetsync[i] & GOMP_INTEROP_TARGETSYNC);
+	  const char *prefer_type
+	    = (args->prefer_type ? args->prefer_type[i] : NULL);
+	  if (devicep == NULL || !devicep->interop_func)
+	    {
+	      *obj = NULL;
+	      continue;
+	    }
+	  *obj =
+	    (struct interop_obj_t *) calloc (1, sizeof (struct interop_obj_t));
+	  (*obj)->device_num = devicep->target_id;
+	  devicep->interop_func (*obj, devicep->target_id,
+				 gomp_interop_flag_init, targetsync,
+				 prefer_type);
+	}
+    }
+
+  for (int i = 0; i < args->n_use; i++)
+    {
+      struct interop_obj_t *obj = args->use[i];
+      if (obj == NULL)
+	continue;
+      devicep = resolve_device (obj->device_num, false);
+      if (devicep != NULL && devicep->interop_func)
+	devicep->interop_func (obj, devicep->target_id,
+			       gomp_interop_flag_use, false, NULL);
+    }
+}
+
+/* Process the OpenMP interop directive. 'init' and 'destroy' take an array
+   of 'omp_interop_t *', 'use' an array of 'omp_interop_t', where
+   'omp_interop_t' is internally 'struct interop_obj_t *';
+   'flags' is used for the 'nowait' clause.  */
+
+void
+GOMP_interop (int device_num, int n_init, struct interop_obj_t ***init,
+	      const int *target_targetsync, const char **prefer_type, int n_use,
+	      struct interop_obj_t **use, int n_destroy,
+	      struct interop_obj_t ***destroy, unsigned int flags,
+	      void **depend)
+{
+  struct interop_data_t args;
+  args.device_num = device_num;
+  args.n_init = n_init;
+  args.n_use = n_use;
+  args.n_destroy = n_destroy;
+  args.init = init;
+  args.target_targetsync = target_targetsync;
+  args.prefer_type = prefer_type;
+  args.use = use;
+  args.destroy = destroy;
+
+  /* No need to create a task for 'init' as that should be fast. */
+  bool use_task = false;
+  if (flags & GOMP_INTEROP_FLAG_NOWAIT)
+    {
+      for (int i = 0; i < n_use && !use_task; i++)
+	if (args.use[i])
+	  use_task |= args.use[i]->stream != NULL;
+      for (int i = 0; i < n_destroy && !use_task; i++)
+	if (*args.destroy[i])
+	  use_task |= (*args.destroy[i])->stream != NULL;
+    }
+
+  if (use_task)
+    GOMP_task (gomp_interop_internal, &args, NULL, sizeof (args),
+	       __alignof__ (args), true, depend ? GOMP_TASK_FLAG_DEPEND : 0,
+	       depend, 0, NULL);
+  else
+    {
+      gomp_interop_internal (&args);
+      if (depend)
+	GOMP_taskwait_depend (depend);
+    }
+}
 
 static const char *
 gomp_get_uid_for_device (struct gomp_device_descr *devicep, int device_num)
@@ -5343,6 +5498,14 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (host2dev);
   DLSYM_OPT (memcpy2d, memcpy2d);
   DLSYM_OPT (memcpy3d, memcpy3d);
+  if (DLSYM_OPT (interop, interop))
+    {
+      DLSYM (get_interop_int);
+      DLSYM (get_interop_ptr);
+      DLSYM (get_interop_str);
+      DLSYM (get_interop_type_desc);
+    }
+
   device->capabilities = device->get_caps_func ();
   if (device->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
     {

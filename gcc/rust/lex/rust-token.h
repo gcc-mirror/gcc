@@ -21,7 +21,6 @@
 
 #include "rust-system.h"
 #include "rust-linemap.h"
-#include "rust-make-unique.h"
 #include "rust-unicode.h"
 
 namespace Rust {
@@ -128,6 +127,7 @@ enum PrimitiveCoreType
   RS_TOKEN (STRING_LITERAL, "string literal")                                  \
   RS_TOKEN (CHAR_LITERAL, "character literal")                                 \
   RS_TOKEN (BYTE_STRING_LITERAL, "byte string literal")                        \
+  RS_TOKEN (RAW_STRING_LITERAL, "raw string literal")                          \
   RS_TOKEN (BYTE_CHAR_LITERAL, "byte character literal")                       \
   RS_TOKEN (LIFETIME, "lifetime") /* TODO: improve token type */               \
   /* Have "interpolated" tokens (whatever that means)? identifer, path, type,  \
@@ -267,7 +267,7 @@ private:
     : token_id (token_id), locus (location), type_hint (CORETYPE_UNKNOWN)
   {
     // Normalize identifier tokens
-    str = Rust::make_unique<std::string> (
+    str = std::make_unique<std::string> (
       nfc_normalize_token_string (location, token_id, paramStr));
   }
 
@@ -284,7 +284,7 @@ private:
     : token_id (token_id), locus (location), type_hint (CORETYPE_UNKNOWN)
   {
     // Normalize identifier tokens
-    str = Rust::make_unique<std::string> (
+    str = std::make_unique<std::string> (
       nfc_normalize_token_string (location, token_id,
 				  paramCodepoint.as_string ()));
   }
@@ -295,7 +295,7 @@ private:
     : token_id (token_id), locus (location), type_hint (parType)
   {
     // Normalize identifier tokens
-    str = Rust::make_unique<std::string> (
+    str = std::make_unique<std::string> (
       nfc_normalize_token_string (location, token_id, paramStr));
   }
 
@@ -377,6 +377,12 @@ public:
     return TokenPtr (new Token (BYTE_STRING_LITERAL, locus, std::move (str)));
   }
 
+  // Makes and returns a new TokenPtr of type RAW_STRING_LITERAL.
+  static TokenPtr make_raw_string (location_t locus, std::string &&str)
+  {
+    return TokenPtr (new Token (RAW_STRING_LITERAL, locus, std::move (str)));
+  }
+
   // Makes and returns a new TokenPtr of type INNER_DOC_COMMENT.
   static TokenPtr make_inner_doc_comment (location_t locus, std::string &&str)
   {
@@ -450,6 +456,7 @@ return *str;
       case STRING_LITERAL:
       case BYTE_CHAR_LITERAL:
       case BYTE_STRING_LITERAL:
+      case RAW_STRING_LITERAL:
 	return true;
       default:
 	return false;

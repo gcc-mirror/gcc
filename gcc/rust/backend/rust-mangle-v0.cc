@@ -25,7 +25,6 @@
 #include "rust-unicode.h"
 #include "rust-punycode.h"
 #include "rust-compile-type.h"
-#include <sstream>
 
 namespace Rust {
 namespace Compile {
@@ -279,16 +278,17 @@ v0_type_path (V0Path path, std::string ident)
 }
 
 static V0Path
-v0_function_path (V0Path path, Rust::Compile::Context *ctx,
-		  const TyTy::BaseType *ty, HIR::Function *fn,
-		  std::string ident)
+v0_function_path (
+  V0Path path, Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
+  const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+  std::string ident)
 {
   V0Path v0path;
   v0path.prefix = "N";
   v0path.ns = "v";
   v0path.path = path.as_string ();
   v0path.ident = ident;
-  if (!fn->get_generic_params ().empty ())
+  if (!generic_params.empty ())
     {
       v0path.generic_prefix = "I";
       v0path.generic_postfix = v0_generic_args (ctx, ty) + "E";
@@ -327,7 +327,7 @@ v0_inherent_or_trait_impl_path (Rust::Compile::Context *ctx,
   // lookup impl type
   TyTy::BaseType *impl_ty = nullptr;
   ok = ctx->get_tyctx ()->lookup_type (
-    impl_block->get_type ()->get_mappings ().get_hirid (), &impl_ty);
+    impl_block->get_type ().get_mappings ().get_hirid (), &impl_ty);
   rust_assert (ok);
 
   // FIXME: dummy value for now
@@ -341,7 +341,7 @@ v0_inherent_or_trait_impl_path (Rust::Compile::Context *ctx,
 
       TyTy::BaseType *trait_ty = nullptr;
       ok = ctx->get_tyctx ()->lookup_type (
-	impl_block->get_trait_ref ()->get_mappings ().get_hirid (), &trait_ty);
+	impl_block->get_trait_ref ().get_mappings ().get_hirid (), &trait_ty);
       rust_assert (ok);
 
       v0path.trait_type = v0_type_prefix (ctx, trait_ty);
@@ -369,34 +369,30 @@ static std::string
 v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	 const Resolver::CanonicalPath &cpath)
 {
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
   V0Path v0path = {};
 
   cpath.iterate_segs ([&] (const Resolver::CanonicalPath &seg) {
-    HirId hir_id;
-    bool ok = mappings->lookup_node_to_hir (seg.get_node_id (), &hir_id);
-    if (!ok)
+    tl::optional<HirId> hid = mappings.lookup_node_to_hir (seg.get_node_id ());
+    if (!hid.has_value ())
       {
 	// FIXME: generic arg in canonical path? (e.g. <i32> in crate::S<i32>)
 	rust_unreachable ();
       }
 
-    HirId parent_impl_id = UNKNOWN_HIRID;
-    HIR::ImplItem *impl_item
-      = mappings->lookup_hir_implitem (hir_id, &parent_impl_id);
-    HIR::TraitItem *trait_item = mappings->lookup_hir_trait_item (hir_id);
-    HIR::Item *item = mappings->lookup_hir_item (hir_id);
-    HIR::Expr *expr = mappings->lookup_hir_expr (hir_id);
+    auto hir_id = hid.value ();
 
-    if (impl_item != nullptr)
+    if (auto impl_item = mappings.lookup_hir_implitem (hir_id))
       {
-	switch (impl_item->get_impl_item_type ())
+	switch (impl_item->first->get_impl_item_type ())
 	  {
 	    case HIR::ImplItem::FUNCTION: {
-	      HIR::Function *fn = static_cast<HIR::Function *> (impl_item);
-	      v0path = v0_function_path (v0path, ctx, ty, fn,
-					 v0_identifier (seg.get ()));
+	      HIR::Function *fn
+		= static_cast<HIR::Function *> (impl_item->first);
+	      v0path
+		= v0_function_path (v0path, ctx, ty, fn->get_generic_params (),
+				    v0_identifier (seg.get ()));
 	    }
 	    break;
 	  case HIR::ImplItem::CONSTANT:
@@ -408,13 +404,15 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	    break;
 	  }
       }
-    else if (trait_item != nullptr)
+    else if (auto trait_item = mappings.lookup_hir_trait_item (hir_id))
       {
-	switch (trait_item->get_item_kind ())
+	switch (trait_item.value ()->get_item_kind ())
 	  {
 	    case HIR::TraitItem::FUNC: {
-	      HIR::Function *fn = static_cast<HIR::Function *> (impl_item);
-	      v0path = v0_function_path (v0path, ctx, ty, fn,
+	      auto fn = static_cast<HIR::TraitItemFunc *> (*trait_item);
+	      rust_unreachable ();
+	      v0path = v0_function_path (v0path, ctx, ty,
+					 fn->get_decl ().get_generic_params (),
 					 v0_identifier (seg.get ()));
 	    }
 	    break;
@@ -427,13 +425,14 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	    break;
 	  }
       }
-    else if (item != nullptr)
-      switch (item->get_item_kind ())
+    else if (auto item = mappings.lookup_hir_item (hir_id))
+      switch (item.value ()->get_item_kind ())
 	{
 	  case HIR::Item::ItemKind::Function: {
-	    HIR::Function *fn = static_cast<HIR::Function *> (item);
-	    v0path = v0_function_path (v0path, ctx, ty, fn,
-				       v0_identifier (seg.get ()));
+	    HIR::Function *fn = static_cast<HIR::Function *> (*item);
+	    v0path
+	      = v0_function_path (v0path, ctx, ty, fn->get_generic_params (),
+				  v0_identifier (seg.get ()));
 	  }
 	  break;
 	case HIR::Item::ItemKind::Module:
@@ -452,7 +451,7 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	case HIR::Item::ItemKind::Impl:
 	  // Trait impl or inherent impl.
 	  {
-	    HIR::ImplBlock *impl_block = static_cast<HIR::ImplBlock *> (item);
+	    HIR::ImplBlock *impl_block = static_cast<HIR::ImplBlock *> (*item);
 	    v0path = v0_inherent_or_trait_impl_path (ctx, impl_block);
 	  }
 	  break;
@@ -465,9 +464,9 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 				  cpath.get ().c_str ());
 	  break;
 	}
-    else if (expr != nullptr)
+    else if (auto expr = mappings.lookup_hir_expr (hir_id))
       {
-	rust_assert (expr->get_expression_type ()
+	rust_assert (expr.value ()->get_expression_type ()
 		     == HIR::Expr::ExprType::Closure);
 	// Use HIR ID as disambiguator.
 	v0path = v0_closure (v0path, hir_id);
@@ -490,7 +489,7 @@ v0_mangle_item (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
   rust_debug ("Start mangling: %s", path.get ().c_str ());
 
   // TODO: get Instanciating CrateNum
-  // auto mappings = Analysis::Mappings::get ();
+  // auto &mappings = Analysis::Mappings::get ();
   // std::string crate_name;
   // bool ok = mappings->get_crate_name (path.get_crate_num (), crate_name);
   // rust_assert (ok);

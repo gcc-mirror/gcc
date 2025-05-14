@@ -45,19 +45,19 @@ public:
     auto hirid = resolver.translated->get_mappings ().get_hirid ();
     auto defid = resolver.translated->get_mappings ().get_defid ();
 
-    resolver.mappings->insert_defid_mapping (defid, resolver.translated);
-    resolver.mappings->insert_location (hirid,
-					resolver.translated->get_locus ());
+    resolver.mappings.insert_defid_mapping (defid, resolver.translated);
+    resolver.mappings.insert_location (hirid,
+				       resolver.translated->get_locus ());
 
     return resolver.translated;
   }
 
   void visit (AST::EnumItem &item) override
   {
-    auto crate_num = mappings->get_current_crate ();
+    auto crate_num = mappings.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   mappings->get_next_localdef_id (crate_num));
+				   mappings.get_next_hir_id (crate_num),
+				   mappings.get_next_localdef_id (crate_num));
 
     if (item.has_visibility ())
       rust_error_at (item.get_locus (),
@@ -69,10 +69,10 @@ public:
 
   void visit (AST::EnumItemTuple &item) override
   {
-    auto crate_num = mappings->get_current_crate ();
+    auto crate_num = mappings.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   mappings->get_next_localdef_id (crate_num));
+				   mappings.get_next_hir_id (crate_num),
+				   mappings.get_next_localdef_id (crate_num));
 
     if (item.has_visibility ())
       rust_error_at (item.get_locus (),
@@ -85,11 +85,10 @@ public:
 	HIR::Visibility vis = translate_visibility (field.get_visibility ());
 	HIR::Type *type = ASTLoweringType::translate (field.get_field_type ());
 
-	auto crate_num = mappings->get_current_crate ();
+	auto crate_num = mappings.get_current_crate ();
 	Analysis::NodeMapping field_mapping (
-	  crate_num, field.get_node_id (),
-	  mappings->get_next_hir_id (crate_num),
-	  mappings->get_next_localdef_id (crate_num));
+	  crate_num, field.get_node_id (), mappings.get_next_hir_id (crate_num),
+	  mappings.get_next_localdef_id (crate_num));
 
 	HIR::TupleField translated_field (field_mapping,
 					  std::unique_ptr<HIR::Type> (type),
@@ -106,10 +105,10 @@ public:
 
   void visit (AST::EnumItemStruct &item) override
   {
-    auto crate_num = mappings->get_current_crate ();
+    auto crate_num = mappings.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   mappings->get_next_localdef_id (crate_num));
+				   mappings.get_next_hir_id (crate_num),
+				   mappings.get_next_localdef_id (crate_num));
 
     if (item.has_visibility ())
       rust_error_at (item.get_locus (),
@@ -122,11 +121,10 @@ public:
 	HIR::Visibility vis = translate_visibility (field.get_visibility ());
 	HIR::Type *type = ASTLoweringType::translate (field.get_field_type ());
 
-	auto crate_num = mappings->get_current_crate ();
+	auto crate_num = mappings.get_current_crate ();
 	Analysis::NodeMapping field_mapping (
-	  crate_num, field.get_node_id (),
-	  mappings->get_next_hir_id (crate_num),
-	  mappings->get_next_localdef_id (crate_num));
+	  crate_num, field.get_node_id (), mappings.get_next_hir_id (crate_num),
+	  mappings.get_next_localdef_id (crate_num));
 
 	HIR::StructField translated_field (field_mapping,
 					   field.get_field_name (),
@@ -148,10 +146,10 @@ public:
 
   void visit (AST::EnumItemDiscriminant &item) override
   {
-    auto crate_num = mappings->get_current_crate ();
+    auto crate_num = mappings.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   mappings->get_next_localdef_id (crate_num));
+				   mappings.get_next_hir_id (crate_num),
+				   mappings.get_next_localdef_id (crate_num));
 
     if (item.has_visibility ())
       rust_error_at (item.get_locus (),

@@ -149,7 +149,6 @@ public:
   void dump (FILE *) const;
 
   bool member_p (const wide_int &val) const;
-  void adjust_range (irange &r) const;
 
   // Convenience functions for nonzero bitmask compatibility.
   wide_int get_nonzero_bits () const;

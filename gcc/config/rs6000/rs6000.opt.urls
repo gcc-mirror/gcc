@@ -98,6 +98,9 @@ UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mminimal-toc)
 mfull-toc
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mfull-toc)
 
+msplit-patch-nops
+UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-msplit-patch-nops)
+
 mvrsave
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mvrsave)
 

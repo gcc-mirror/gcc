@@ -994,6 +994,8 @@ package(dmd.visitor) mixin template ParseVisitMethods(AST)
     override void visit(AST.NewExp e)
     {
         //printf("Visiting NewExp\n");
+        if (e.placement)
+            e.placement.accept(this);
         if (e.thisexp)
             e.thisexp.accept(this);
         visitType(e.newtype);
@@ -1003,6 +1005,8 @@ package(dmd.visitor) mixin template ParseVisitMethods(AST)
     override void visit(AST.NewAnonClassExp e)
     {
         //printf("Visiting NewAnonClassExp\n");
+        if (e.placement)
+            e.placement.accept(this);
         if (e.thisexp)
             e.thisexp.accept(this);
         visitArgs(e.arguments.peekSlice());

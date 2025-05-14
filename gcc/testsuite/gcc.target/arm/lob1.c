@@ -1,7 +1,7 @@
 /* Check that GCC generates Armv8.1-M low over head loop instructions
    for some simple loops.  */
 /* { dg-do run } */
-/* { dg-require-effective-target arm_v8_1_lob_ok } */
+/* { dg-require-effective-target arm_v8_1m_lob_hw } */
 /* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" } } */
 /* { dg-options "-march=armv8.1-m.main -mthumb -O3 --save-temps" } */
 #include <stdlib.h>

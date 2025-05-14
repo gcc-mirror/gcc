@@ -1,13 +1,13 @@
 ! { dg-do run }
 ! { dg-options "-fcoarray=single" }
 !
-! Tests if team_number intrinsic fucntion works
+! Tests if team_number intrinsic function works
 !
   use iso_fortran_env, only : team_type
   implicit none
-  type(team_type) team
+  type(team_type) :: team
   integer, parameter :: standard_initial_value=-1
-  integer new_team
+  integer :: new_team
 
   if (team_number()/=standard_initial_value) STOP 1
 

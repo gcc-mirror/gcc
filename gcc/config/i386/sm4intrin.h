@@ -67,9 +67,9 @@ _mm256_sm4rnds4_epi32 (__m256i __A, __m256i __B)
 #pragma GCC pop_options
 #endif /* __DISABLE_SM4__ */
 
-#if !defined (__SM4__) || !defined (__AVX10_2_512__)
+#if !defined (__SM4__) || !defined (__AVX10_2__)
 #pragma GCC push_options
-#pragma GCC target("sm4,avx10.2-512")
+#pragma GCC target("sm4,avx10.2")
 #define __DISABLE_SM4_512__
 #endif /* __SM4_512__ */
 

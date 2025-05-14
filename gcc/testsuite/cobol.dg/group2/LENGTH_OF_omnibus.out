@@ -1,0 +1,15 @@
+using LENGTH OF
+Length of desc1: 50
+Length of desc1-entry: 5
+Length of desc1-entry(1): 5
+Length of desc2: 50
+Length of desc2-table: 5
+Length of desc2-entry: 5
+Length of desc2-entry(1): 5
+Length of desc3: 750
+Length of desc3-outer: 150
+Length of desc3-outer(1): 150
+Length of desc3-outer-txt: 7
+Length of desc3-inner: 13
+Length of desc3-inner(1): 13
+

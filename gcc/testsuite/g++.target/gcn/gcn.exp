@@ -1,0 +1,56 @@
+# Specific regression driver for GCN.
+#   Copyright (C) 2000-2025 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# G++ testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't a GCN target.
+if ![istarget amdgcn*-*-*] then {
+  return
+}
+
+# Load support procs.
+load_lib g++-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CXXFLAGS
+if ![info exists DEFAULT_CXXFLAGS] then {
+    set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
+}
+
+# Initialize `dg'.
+dg-init
+
+# Recursively find files in $dir and subdirs, do not walk into subdirs
+# that contain their own .exp file.
+proc find-cxx-tests { dir suffix } {
+    set tests [lsort [glob -nocomplain -directory $dir "*.$suffix" ]]
+    foreach subdir [lsort [glob -nocomplain -type d -directory $dir *]] {
+	if { [glob -nocomplain -directory $subdir *.exp] eq "" } {
+	    eval lappend tests [find-cxx-tests $subdir $suffix]
+	}
+    }
+    return $tests
+}
+
+set tests [find-cxx-tests $srcdir/$subdir {C}]
+
+# Main loop.
+g++-dg-runtest $tests "" $DEFAULT_CXXFLAGS
+
+
+# All done.
+dg-finish

@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostic.h"
 #include "lazy-diagnostic-path.h"
-#include "make-unique.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "simple-diagnostic-path.h"
@@ -92,7 +91,8 @@ class test_lazy_path : public lazy_diagnostic_path
 {
 public:
   test_lazy_path (pretty_printer &pp)
-  : m_pp (pp)
+  : lazy_diagnostic_path (m_logical_loc_mgr),
+    m_pp (pp)
   {
   }
   std::unique_ptr<diagnostic_path> make_inner_path () const final override
@@ -100,12 +100,15 @@ public:
     tree fntype_void_void
       = build_function_type_array (void_type_node, 0, NULL);
     tree fndecl_foo = build_fn_decl ("foo", fntype_void_void);
-    auto path = ::make_unique<simple_diagnostic_path> (&m_pp);
+    auto path
+      = std::make_unique<simple_diagnostic_path> (m_logical_loc_mgr,
+						  &m_pp);
     path->add_event (UNKNOWN_LOCATION, fndecl_foo, 0, "first %qs", "free");
     path->add_event (UNKNOWN_LOCATION, fndecl_foo, 0, "double %qs", "free");
     return path;
   }
 private:
+  const tree_logical_location_manager m_logical_loc_mgr;
   pretty_printer &m_pp;
 };
 
@@ -167,7 +170,7 @@ test_emission (pretty_printer *event_pp)
      is skipped.  */
   {
     test_diagnostic_context dc;
-    dc.set_option_manager (::make_unique<all_warnings_disabled> (), 0);
+    dc.set_option_manager (std::make_unique<all_warnings_disabled> (), 0);
 
     test_rich_location rich_loc (*event_pp);
     ASSERT_FALSE (rich_loc.m_path.generated_p ());

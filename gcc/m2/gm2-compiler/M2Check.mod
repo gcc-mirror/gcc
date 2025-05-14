@@ -768,6 +768,7 @@ END checkVarEquivalence ;
 PROCEDURE checkConstMeta (result: status; tinfo: tInfo;
                           left, right: CARDINAL) : status ;
 VAR
+   typeLeft,
    typeRight: CARDINAL ;
 BEGIN
    Assert (IsConst (left)) ;
@@ -797,6 +798,16 @@ BEGIN
          THEN
             RETURN doCheckPair (result, tinfo, Char, typeRight)
          END
+      END
+   ELSIF IsTyped (left) AND IsTyped (right)
+   THEN
+      typeRight := GetDType (right) ;
+      typeLeft := GetDType (left) ;
+      IF IsZRCType (typeLeft) AND IsUnbounded (typeRight)
+      THEN
+         RETURN false
+      ELSE
+         RETURN doCheckPair (result, tinfo, typeLeft, typeRight)
       END
    END ;
    RETURN result
@@ -862,7 +873,19 @@ END checkSubrangeTypeEquivalence ;
 
 
 (*
-   isZRC -
+   IsZRCType - return TRUE if type is a ZType, RType or a CType.
+*)
+
+PROCEDURE IsZRCType (type: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN (type = CType) OR (type = ZType) OR (type = RType)
+END IsZRCType ;
+
+
+(*
+   isZRC - return TRUE if zrc is a ZType, RType or a CType
+           and sym is either a complex type when zrc = CType
+           or is not a composite type when zrc is a RType or ZType.
 *)
 
 PROCEDURE isZRC (zrc, sym: CARDINAL) : BOOLEAN ;

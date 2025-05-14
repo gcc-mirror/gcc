@@ -2899,6 +2899,37 @@ private:
   }
 } fop_div;
 
+// Implement fold for a cast from float to an int.
+bool
+operator_cast::fold_range (irange &, tree, const frange &,
+			   const irange &, relation_trio) const
+{
+  return false;
+}
+
+// Implement op1_range for a cast from float to an int.
+bool
+operator_cast::op1_range (frange &, tree, const irange &,
+			  const irange &, relation_trio) const
+{
+  return false;
+}
+
+// Implement fold for a cast from int to a float.
+bool
+operator_cast::fold_range (frange &, tree, const irange &,
+			   const frange &, relation_trio) const
+{
+  return false;
+}
+
+// Implement op1_range for a cast from int to a float.
+bool
+operator_cast::op1_range (irange &, tree, const frange &,
+			  const frange &, relation_trio) const
+{
+  return false;
+}
 
 // Initialize any float operators to the primary table
 

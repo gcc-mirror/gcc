@@ -607,7 +607,7 @@ is_gimple_mem_rhs_or_call (tree t)
   else
     return (is_gimple_val (t)
 	    || is_gimple_lvalue (t)
-	    || TREE_CLOBBER_P (t)
+	    || (TREE_CODE (t) == CONSTRUCTOR && CONSTRUCTOR_NELTS (t) == 0)
 	    || TREE_CODE (t) == CALL_EXPR);
 }
 
@@ -2395,7 +2395,7 @@ warn_switch_unreachable_and_auto_init_r (gimple_stmt_iterator *gsi_p,
 	  const char *var_name_str = TREE_STRING_POINTER (var_name);
 
 	  warning_at (gimple_location (stmt), OPT_Wtrivial_auto_var_init,
-		      "%qs cannot be initialized with"
+		      "%qs cannot be initialized with "
 		      "%<-ftrivial-auto-var_init%>",
 		      var_name_str);
 	  break;
@@ -3872,29 +3872,492 @@ find_supercontext (void)
   return NULL_TREE;
 }
 
+/* OpenMP: Handle the append_args and adjust_args clauses of
+   declare_variant for EXPR, which is a CALL_EXPR whose CALL_EXPR_FN
+   is the variant, within a dispatch construct with clauses DISPATCH_CLAUSES.
+   WANT_VALUE and POINTERIZE are as for expand_variant_call_expr.
+
+   'append_args' causes interop objects are added after the last regular
+   (nonhidden, nonvariadic) arguments of the variant function.
+   'adjust_args' with need_device_{addr,ptr} converts the pointer target of
+   a pointer from a host to a device address. This uses either the default
+   device or the passed device number, which then sets the default device
+   address.  */
+static tree
+modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
+			      bool want_value, bool pointerize)
+{
+  location_t loc = EXPR_LOCATION (expr);
+  tree fndecl = get_callee_fndecl (expr);
+
+  /* Skip processing if we don't get the expected call form.  */
+  if (!fndecl)
+    return expr;
+
+  tree init_code = NULL_TREE;
+  tree cleanup = NULL_TREE;
+  tree clobbers = NULL_TREE;
+  int nargs = call_expr_nargs (expr);
+  tree dispatch_device_num = NULL_TREE;
+  tree dispatch_interop = NULL_TREE;
+  tree dispatch_append_args = NULL_TREE;
+  int nfirst_args = 0;
+  tree dispatch_adjust_args_list
+    = lookup_attribute ("omp declare variant variant args",
+			DECL_ATTRIBUTES (fndecl));
+
+  if (dispatch_adjust_args_list)
+    {
+      dispatch_adjust_args_list = TREE_VALUE (dispatch_adjust_args_list);
+      dispatch_append_args = TREE_CHAIN (dispatch_adjust_args_list);
+      if (TREE_PURPOSE (dispatch_adjust_args_list) == NULL_TREE
+	  && TREE_VALUE (dispatch_adjust_args_list) == NULL_TREE)
+	dispatch_adjust_args_list = NULL_TREE;
+    }
+  if (dispatch_append_args)
+    {
+      nfirst_args = tree_to_shwi (TREE_PURPOSE (dispatch_append_args));
+      dispatch_append_args = TREE_VALUE (dispatch_append_args);
+    }
+  dispatch_device_num = omp_find_clause (dispatch_clauses, OMP_CLAUSE_DEVICE);
+  if (dispatch_device_num)
+    dispatch_device_num = OMP_CLAUSE_DEVICE_ID (dispatch_device_num);
+  dispatch_interop = omp_find_clause (dispatch_clauses, OMP_CLAUSE_INTEROP);
+  int nappend = 0, ninterop = 0;
+  for (tree t = dispatch_append_args; t; t = TREE_CHAIN (t))
+    nappend++;
+
+  /* FIXME: error checking should be taken out of this function and
+     handled before any attempt at filtering or resolution happens.
+     Otherwise whether or not diagnostics appear is determined by
+     GCC internals, how good the front ends are at constant-folding,
+     the split between early/late resolution, etc instead of the code
+     as written by the user.  */
+  if (dispatch_interop)
+    for (tree t = dispatch_interop; t; t = TREE_CHAIN (t))
+      if (OMP_CLAUSE_CODE (t) == OMP_CLAUSE_INTEROP)
+	ninterop++;
+  if (dispatch_interop && !dispatch_device_num)
+    {
+      gcc_checking_assert (ninterop > 1);
+      error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
+		"the %<device%> clause must be present if the %<interop%> "
+		"clause has more than one list item");
+    }
+  if (nappend < ninterop)
+    {
+      error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
+		"number of list items in %<interop%> clause (%d) "
+		"exceeds the number of %<append_args%> items (%d) for "
+		"%<declare variant%> candidate %qD", ninterop, nappend, fndecl);
+      inform (dispatch_append_args
+	      ? EXPR_LOCATION (TREE_PURPOSE (dispatch_append_args))
+	      : DECL_SOURCE_LOCATION (fndecl),
+	      "%<declare variant%> candidate %qD declared here", fndecl);
+      ninterop = nappend;
+    }
+  if (dispatch_append_args)
+    {
+      tree *buffer = XALLOCAVEC (tree, nargs + nappend);
+      tree arg = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+      /* Copy the first arguments; insert then the interop objects,
+	 and then copy the rest (nargs - nfirst_args) args.  */
+      int i;
+      for (i = 0; i < nfirst_args; i++)
+	{
+	  arg = TREE_CHAIN (arg);
+	  buffer[i] = CALL_EXPR_ARG (expr, i);
+	}
+      int j = ninterop;
+      for (tree t = dispatch_interop; t && j > 0; t = TREE_CHAIN (t))
+	if (OMP_CLAUSE_CODE (t) == OMP_CLAUSE_INTEROP)
+	  buffer[i + --j] = OMP_CLAUSE_DECL (t);
+      gcc_checking_assert (j == 0);
+
+      /* Do we need to create additional interop objects?  */
+      if (ninterop < nappend)
+	{
+	  if (dispatch_device_num == NULL_TREE)
+	    /* Not remapping device number.  */
+	    dispatch_device_num = build_int_cst (integer_type_node,
+						 GOMP_DEVICE_DEFAULT_OMP_61);
+	  int nnew = nappend - ninterop;
+	  tree nobjs = build_int_cst (integer_type_node, nnew);
+	  tree a, t;
+
+	  /* Skip to the append_args clause for the first constructed
+	     interop argument.  */
+	  tree apparg = dispatch_append_args;
+	  for (j = 0; j < ninterop; j++)
+	    apparg = TREE_CHAIN (apparg);
+
+	  /* omp_interop_t *objs[n]; */
+	  tree objtype = build_pointer_type (pointer_sized_int_node);
+	  t = build_array_type_nelts (objtype, nnew);
+	  tree objs = create_tmp_var (t, "interopobjs");
+
+	  /* int target_tgtsync[n]; */
+	  t = build_array_type_nelts (integer_type_node, nnew);
+	  tree target_tgtsync = create_tmp_var (t, "tgt_tgtsync");
+
+	  /* Scan first to determine if we need a prefer_type array.  */
+	  tree prefer_type = NULL_TREE;
+	  tree prefer_type_type = NULL_TREE;
+	  for (j = ninterop, a = apparg; j < nappend; j++, a = TREE_CHAIN (a))
+	    if (TREE_VALUE (a) != NULL_TREE)
+	      {
+		/* const char *prefer_type[n];  */
+		t = build_qualified_type (char_type_node, TYPE_QUAL_CONST);
+		prefer_type_type = build_pointer_type (t);
+		t = build_array_type_nelts (prefer_type_type, nnew);
+		prefer_type = create_tmp_var (t, "pref_type");
+		break;
+	      }
+
+	  /* Initialize the arrays, generating temp vars and clobbers for
+	     the interobject objects.  (The constructed array holding the
+	     pointers to these objects shouldn't need clobbering as there's
+	     no reason for GOMP_interop to modify its contents.)  */
+	  for (j = ninterop, a = apparg; j < nappend; j++, a = TREE_CHAIN (a))
+	    {
+	      /* The allocated temporaries for the interop objects
+		 have type omp_interop_t, which is an integer type that
+		 can encode a pointer.  */
+	      tree objvar = create_tmp_var (pointer_sized_int_node, "interop");
+	      buffer[i + j] = objvar;
+	      TREE_ADDRESSABLE (objvar) = 1;
+	      /* Generate a clobber for the temporary for when we're done
+		 with it.  */
+	      tree c = build_clobber (pointer_sized_int_node,
+				      CLOBBER_OBJECT_END);
+	      c = build2 (MODIFY_EXPR, pointer_sized_int_node, objvar, c);
+	      if (clobbers)
+		clobbers = build2 (COMPOUND_EXPR, TREE_TYPE (clobbers),
+				   c, clobbers);
+	      else
+		clobbers = c;
+
+	      /* objs[offset] = &objvar;  */
+	      tree offset = build_int_cst (integer_type_node, j - ninterop);
+	      tree init = build4 (ARRAY_REF, objtype, objs, offset,
+				  NULL_TREE, NULL_TREE);
+	      init = build2 (MODIFY_EXPR, objtype, init,
+			     build_fold_addr_expr (objvar));
+	      if (init_code)
+		init_code = build2 (COMPOUND_EXPR, TREE_TYPE (init),
+				    init_code, init);
+	      else
+		init_code = init;
+
+	      /* target_tgtsync[offset] = tgt;
+		 (Don't blame me, I didn't design the encoding of this
+		 info into the dispatch interop clause data structure,
+		 but the runtime wants a bit mask.)  */
+	      tree tree_tgt = TREE_OPERAND (TREE_PURPOSE (a), 0);
+	      int tgt = 0;
+	      if (TREE_PURPOSE (tree_tgt) == boolean_true_node)
+		tgt |= GOMP_INTEROP_TARGET;
+	      if (TREE_VALUE (tree_tgt) == boolean_true_node)
+		tgt |= GOMP_INTEROP_TARGETSYNC;
+	      init = build4 (ARRAY_REF, integer_type_node,
+			     target_tgtsync, offset, NULL_TREE, NULL_TREE);
+	      init = build2 (MODIFY_EXPR, integer_type_node, init,
+			     build_int_cst (integer_type_node, tgt));
+	      init_code = build2 (COMPOUND_EXPR, TREE_TYPE (init),
+				  init_code, init);
+
+	      if (prefer_type)
+		{
+		  tree pref = TREE_VALUE (a);
+		  if (pref == NULL_TREE)
+		    pref = null_pointer_node;
+		  else
+		    pref = build_fold_addr_expr (pref);
+		  init = build4 (ARRAY_REF, prefer_type_type, prefer_type,
+				 offset, NULL_TREE, NULL_TREE);
+		  init = build2 (MODIFY_EXPR, prefer_type_type, init,
+				 pref);
+		  init_code = build2 (COMPOUND_EXPR, TREE_TYPE (init),
+				      init_code, init);
+		}
+	    }
+
+	  objs = build_fold_addr_expr (objs);
+	  target_tgtsync = build_fold_addr_expr (target_tgtsync);
+	  prefer_type = prefer_type ? build_fold_addr_expr (prefer_type)
+				    : null_pointer_node;
+	  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_INTEROP);
+	  tree create
+	    = build_call_expr_loc (loc, fn, 11, dispatch_device_num,
+				   nobjs, objs, target_tgtsync, prefer_type,
+				   integer_zero_node, null_pointer_node,
+				   integer_zero_node, null_pointer_node,
+				   integer_zero_node, null_pointer_node);
+	  if (init_code)
+	    init_code = build2 (COMPOUND_EXPR, TREE_TYPE (create),
+				init_code, create);
+	  else
+	    init_code = create;
+
+	  cleanup
+	    = build_call_expr_loc (loc, fn, 11, dispatch_device_num,
+				   integer_zero_node, null_pointer_node,
+				   null_pointer_node, null_pointer_node,
+				   integer_zero_node, null_pointer_node,
+				   nobjs, objs,
+				   integer_zero_node, null_pointer_node);
+	  if (clobbers)
+	    cleanup = build2 (COMPOUND_EXPR, TREE_TYPE (clobbers),
+			      cleanup, clobbers);
+	}
+
+      for (j = 0; j < nappend; j++)
+	{
+	  /* Fortran permits by-reference or by-value for the dummy arg
+	     and by-value, by-reference, ptr by-reference as actual
+	     argument. Handle this.  */
+	  tree obj = buffer[i + j];  // interop object
+	  tree a2 = TREE_VALUE (arg);  // parameter type
+	  if (POINTER_TYPE_P (TREE_TYPE (obj))
+	      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (obj))))
+	    {
+	      tree t = TREE_TYPE (TREE_TYPE (obj));
+	      gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (t)));
+	      obj = fold_build1 (INDIRECT_REF, t, obj);
+	    }
+	  if (POINTER_TYPE_P (TREE_TYPE (obj))
+	      && INTEGRAL_TYPE_P (a2))
+	    {
+	      tree t = TREE_TYPE (TREE_TYPE (obj));
+	      gcc_checking_assert (INTEGRAL_TYPE_P (t));
+	      obj = fold_build1 (INDIRECT_REF, t, obj);
+	    }
+	  else if (INTEGRAL_TYPE_P (TREE_TYPE (obj))
+		   && POINTER_TYPE_P (a2))
+	    {
+	      gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (a2)));
+	      obj = build_fold_addr_expr (obj);
+	    }
+	  else if (!INTEGRAL_TYPE_P (a2)
+		   || !INTEGRAL_TYPE_P (TREE_TYPE (obj)))
+	    {
+	      tree t = TREE_TYPE (obj);
+	      gcc_checking_assert (POINTER_TYPE_P (t)
+				   && POINTER_TYPE_P (a2)
+				   && INTEGRAL_TYPE_P (TREE_TYPE (t))
+				   && INTEGRAL_TYPE_P (TREE_TYPE (a2)));
+	    }
+	  buffer[i + j] = obj;
+	  arg = TREE_CHAIN (arg);
+	}
+      i += nappend;
+      for (j = nfirst_args; j < nargs; j++)
+	buffer[i++] = CALL_EXPR_ARG (expr, j);
+      nargs += nappend;
+      tree call = expr;
+      expr = build_call_array_loc (EXPR_LOCATION (expr), TREE_TYPE (call),
+				   CALL_EXPR_FN (call), nargs, buffer);
+
+      /* Copy all CALL_EXPR flags.  */
+      CALL_EXPR_STATIC_CHAIN (expr) = CALL_EXPR_STATIC_CHAIN (call);
+      CALL_EXPR_TAILCALL (expr) = CALL_EXPR_TAILCALL (call);
+      CALL_EXPR_RETURN_SLOT_OPT (expr)
+	= CALL_EXPR_RETURN_SLOT_OPT (call);
+      CALL_FROM_THUNK_P (expr) = CALL_FROM_THUNK_P (call);
+      SET_EXPR_LOCATION (expr, EXPR_LOCATION (call));
+      CALL_EXPR_VA_ARG_PACK (expr) = CALL_EXPR_VA_ARG_PACK (call);
+    }
+
+  /* Nothing to do for adjust_args?  */
+  if (!dispatch_adjust_args_list || !TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
+    goto add_cleanup;
+
+  /* Handle adjust_args.  */
+  for (int i = 0; i < nargs; i++)
+    {
+      tree *arg_p = &CALL_EXPR_ARG (expr, i);
+
+      /* Nothing to do if arg is constant null pointer.  */
+      if (integer_zerop (*arg_p))
+	continue;
+
+      bool need_device_ptr = false;
+      bool need_device_addr = false;
+      for (int need_addr = 0; need_addr <= 1; need_addr++)
+	for (tree arg = (need_addr
+			 ? TREE_VALUE (dispatch_adjust_args_list)
+			 : TREE_PURPOSE (dispatch_adjust_args_list));
+	     arg != NULL; arg = TREE_CHAIN (arg))
+	  {
+	    if (TREE_VALUE (arg)
+		&& TREE_CODE (TREE_VALUE (arg)) == INTEGER_CST
+		&& wi::eq_p (i, wi::to_wide (TREE_VALUE (arg))))
+	      {
+		if (need_addr)
+		  need_device_addr = true;
+		else
+		  need_device_ptr = true;
+		break;
+	      }
+	  }
+
+      if (need_device_ptr || need_device_addr)
+	{
+	  bool is_device_ptr = false;
+	  bool has_device_addr = false;
+
+	  for (tree c = dispatch_clauses; c; c = TREE_CHAIN (c))
+	    {
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR
+		  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
+		{
+		  tree decl1 = DECL_NAME (OMP_CLAUSE_DECL (c));
+		  tree decl2 = tree_strip_nop_conversions (*arg_p);
+		  if (TREE_CODE (decl2) == ADDR_EXPR)
+		    decl2 = TREE_OPERAND (decl2, 0);
+		  if (VAR_P (decl2) || TREE_CODE (decl2) == PARM_DECL)
+		    {
+		      decl2 = DECL_NAME (decl2);
+		      if (decl1 == decl2
+			  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR)
+			{
+			  if (need_device_addr)
+			    warning_at (OMP_CLAUSE_LOCATION (c),
+					OPT_Wopenmp,
+					"%<is_device_ptr%> for %qD does"
+					" not imply %<has_device_addr%> "
+					"required for %<need_device_addr%>",
+					OMP_CLAUSE_DECL (c));
+			  is_device_ptr = true;
+			  break;
+			}
+		      else if (decl1 == decl2)
+			{
+			  if (need_device_ptr)
+			    warning_at (OMP_CLAUSE_LOCATION (c),
+					OPT_Wopenmp,
+					"%<has_device_addr%> for %qD does"
+					" not imply %<is_device_ptr%> "
+					"required for %<need_device_ptr%>",
+					OMP_CLAUSE_DECL (c));
+			  has_device_addr = true;
+			  break;
+			}
+		    }
+		}
+	    }
+
+	  if ((need_device_ptr && !is_device_ptr)
+	      || (need_device_addr && !has_device_addr))
+	    {
+	      if (dispatch_device_num == NULL_TREE)
+		{
+		  // device_num = omp_get_default_device ()
+		  tree fn
+		    = builtin_decl_explicit (BUILT_IN_OMP_GET_DEFAULT_DEVICE);
+		  tree call = build_call_expr (fn, 0);
+		  dispatch_device_num = create_tmp_var_raw (TREE_TYPE (call));
+		  tree init
+		    = build4 (TARGET_EXPR, TREE_TYPE (call),
+			      dispatch_device_num, call, NULL_TREE, NULL_TREE);
+		  if (init_code)
+		    init_code = build2 (COMPOUND_EXPR, TREE_TYPE (init),
+					init_code, init);
+		  else
+		    init_code = init;
+		}
+
+	      // We want to emit the following statement:
+	      //   mapped_arg = omp_get_mapped_ptr (arg,
+	      // 		device_num)
+	      // but arg has to be the actual pointer, not a
+	      // reference or a conversion expression.
+	      tree actual_ptr
+		= ((TREE_CODE (*arg_p) == ADDR_EXPR)
+		   ? TREE_OPERAND (*arg_p, 0)
+		   : *arg_p);
+	      if (TREE_CODE (actual_ptr) == NOP_EXPR
+		  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (actual_ptr, 0)))
+		      == REFERENCE_TYPE))
+		{
+		  actual_ptr = TREE_OPERAND (actual_ptr, 0);
+		  actual_ptr = build1 (INDIRECT_REF,
+				       TREE_TYPE (actual_ptr),
+				       actual_ptr);
+		}
+	      tree fn = builtin_decl_explicit (BUILT_IN_OMP_GET_MAPPED_PTR);
+	      tree mapped_arg = build_call_expr_loc (loc, fn, 2, actual_ptr,
+						     dispatch_device_num);
+
+	      if (TREE_CODE (*arg_p) == ADDR_EXPR
+		  || (TREE_CODE (TREE_TYPE (actual_ptr)) == REFERENCE_TYPE))
+		mapped_arg = build_fold_addr_expr (mapped_arg);
+	      else if (TREE_CODE (*arg_p) == NOP_EXPR)
+		mapped_arg = build1 (NOP_EXPR, TREE_TYPE (*arg_p),
+				     mapped_arg);
+	      *arg_p = mapped_arg;
+	    }
+	}
+    }
+
+ add_cleanup:
+  if (cleanup)
+    {
+      tree result = NULL_TREE;
+      if (want_value && pointerize)
+	{
+	  tree tmp = create_tmp_var (build_pointer_type (TREE_TYPE (expr)),
+				     "cleanuptmp");
+	  result = build_simple_mem_ref (tmp);
+	  expr = build2 (INIT_EXPR, TREE_TYPE (tmp), tmp,
+			 build_fold_addr_expr (expr));
+	}
+      else if (want_value)
+	{
+	  tree tmp = create_tmp_var (TREE_TYPE (expr), "cleanuptmp");
+	  result = tmp;
+	  expr = build2 (INIT_EXPR, TREE_TYPE (tmp), tmp, expr);
+	}
+      if (init_code)
+	expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init_code, expr);
+      expr = build2 (TRY_FINALLY_EXPR, void_type_node, expr, cleanup);
+
+      if (result)
+	expr = build2 (COMPOUND_EXPR, TREE_TYPE (result), expr, result);
+    }
+  else if (init_code)
+    expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init_code, expr);
+
+  return expr;
+}
 
 /* Helper function for gimplify_call_expr: handle "declare variant"
-   resolution and expansion.  Arguments are as for gimplify_call_expr.
-   If *EXPR_P is unchanged, the return value should be ignored and the
-   normal gimplify_call_expr handling should be applied.  Otherwise GS_OK
-   is returned if the new *EXPR_P is something that needs to be further
-   gimplified.  */
+   resolution and expansion of the CALL_EXPR EXPR.  WANT_VALUE is true
+   if the result value of the call is needed; POINTERIZE is true if it
+   also needs to be pointerized.  If OMP_DISPATCH_P is true, apply
+   associated transformations using DISPATCH_CLAUSES.
+   This function may return either the original call or some other
+   expression such as a conditional to select one of multiple calls.
 
-static enum gimplify_status
-gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
-			    fallback_t fallback)
+   FIXME: this function is written to be independent of gimplifier internals
+   so that it could be moved to omp-general.cc and invoked from the
+   front ends instead, per PR115076.  */
+
+static tree
+expand_variant_call_expr (tree expr, bool want_value, bool pointerize,
+			  bool omp_dispatch_p, tree dispatch_clauses)
 {
   /* If we've already processed this call, stop now.  This can happen
      if the variant call resolves to the original function, or to
      a dynamic conditional that includes the default call to the original
      function.  */
   gcc_assert (omp_resolved_variant_calls != NULL);
-  if (omp_resolved_variant_calls->contains (*expr_p))
-    return GS_OK;
+  if (omp_resolved_variant_calls->contains (expr))
+    return expr;
 
-  tree fndecl = get_callee_fndecl (*expr_p);
-  tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
-  location_t loc = EXPR_LOCATION (*expr_p);
+  tree fndecl = get_callee_fndecl (expr);
+  tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (expr));
+  location_t loc = EXPR_LOCATION (expr);
   tree construct_context = omp_get_construct_context ();
   vec<struct omp_variant> all_candidates
     = omp_declare_variant_candidates (fndecl, construct_context);
@@ -3921,28 +4384,34 @@ gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
 	      /* We should only get the original function back as the
 		 default.  */
 	      gcc_assert (!tail);
-	      omp_resolved_variant_calls->add (*expr_p);
-	      tail = *expr_p;
+	      omp_resolved_variant_calls->add (expr);
+	      tail = expr;
 	    }
 	  else
 	    {
 	      /* For the final static selector, we can re-use the old
-		 CALL_EXPR and just replace the function.  Otherwise,
+		 CALL_EXPR and just replace the function, unless it may
+		 need dispatch argument modification.  Otherwise,
 		 make a copy of it.  */
-	      tree thiscall = tail ? unshare_expr (*expr_p) : *expr_p;
+	      tree thiscall = (tail || omp_dispatch_p
+			       ? unshare_expr (expr) : expr);
 	      CALL_EXPR_FN (thiscall) = build1 (ADDR_EXPR, fnptrtype,
 						candidates[i].alternative);
+	      if (omp_dispatch_p)
+		thiscall = modify_call_for_omp_dispatch (thiscall,
+							 dispatch_clauses,
+							 want_value,
+							 pointerize);
 	      if (!tail)
 		tail = thiscall;
 	      else
-		tail = build3 (COND_EXPR, TREE_TYPE (*expr_p),
+		tail = build3 (COND_EXPR, TREE_TYPE (expr),
 			       omp_dynamic_cond (candidates[i].selector,
 						 find_supercontext ()),
 			       thiscall, tail);
 	    }
 	}
-      *expr_p = tail;
-      return GS_OK;
+      return tail;
     }
 
   /* If we couldn't resolve the variant call now, expand it into a loop using
@@ -3953,30 +4422,21 @@ gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
       /* If we need a usable return value, we need a temporary
 	 and an assignment in each alternative.  This logic was borrowed
 	 from gimplify_cond_expr.  */
-      tree type = TREE_TYPE (*expr_p);
-      bool want_value = (fallback != fb_none && !VOID_TYPE_P (type));
-      bool pointerize = false;
+      tree type = TREE_TYPE (expr);
       tree tmp = NULL_TREE, result = NULL_TREE;
 
       if (want_value)
 	{
-	  /* If either an rvalue is ok or we do not require an lvalue,
-	     create the temporary.  But we cannot do that if the type is
-	     addressable.  */
-	  if (((fallback & fb_rvalue) || !(fallback & fb_lvalue))
-	      && !TREE_ADDRESSABLE (type))
+	  if (pointerize)
 	    {
-	      tmp = create_tmp_var (type, "iftmp");
-	      result = tmp;
-	    }
-
-	  /* Otherwise, only create and copy references to the values.  */
-	  else
-	    {
-	      pointerize = true;
 	      type = build_pointer_type (type);
 	      tmp = create_tmp_var (type, "iftmp");
 	      result = build_simple_mem_ref_loc (loc, tmp);
+	    }
+	  else
+	    {
+	      tmp = create_tmp_var (type, "iftmp");
+	      result = tmp;
 	    }
 	}
 
@@ -3989,17 +4449,22 @@ gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
 	  tree thiscall;
 
 	  /* We need to turn the decl from the candidate into a function
-	     call and possible assignment, gimplify it, and stuff that in
+	     call and possible assignment, and stuff that in
 	     the directive seq of the gomp_variant.  */
 	  if (decl == fndecl)
 	    {
-	      thiscall = *expr_p;
-	      omp_resolved_variant_calls->add (*expr_p);
+	      thiscall = expr;
+	      omp_resolved_variant_calls->add (expr);
 	    }
 	  else
 	    {
-	      thiscall = unshare_expr (*expr_p);
+	      thiscall = unshare_expr (expr);
 	      CALL_EXPR_FN (thiscall) = build1 (ADDR_EXPR, fnptrtype, decl);
+	      if (omp_dispatch_p)
+		thiscall = modify_call_for_omp_dispatch (thiscall,
+							 dispatch_clauses,
+							 want_value,
+							 pointerize);
 	    }
 	  if (pointerize)
 	    thiscall = build_fold_addr_expr_loc (loc, thiscall);
@@ -4011,13 +4476,52 @@ gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
       cgraph_node::get (cfun->decl)->has_omp_variant_constructs = 1;
       tree expansion = expand_late_variant_directive (all_candidates,
 						      construct_context);
-      for (tree_stmt_iterator tsi = tsi_start (expansion); !tsi_end_p (tsi);
-	   tsi_delink (&tsi))
-	gimplify_stmt (tsi_stmt_ptr (tsi), pre_p);
-      *expr_p = result;
-      return GS_ALL_DONE;
+      if (result)
+	expansion = build2 (COMPOUND_EXPR, TREE_TYPE (result),
+			    expansion, result);
+      return expansion;
     }
 }
+
+/* Wrapper around expand_variant_call_expr to interface with gimplifier
+   state.  EXPR and OMP_DISPATCH_P are as for expand_variant_call_expr,
+   FALLBACK is used to compute the WANT_VALUE and POINTERIZE arguments.  */
+static tree
+gimplify_variant_call_expr (tree expr, fallback_t fallback,
+			    bool omp_dispatch_p)
+{
+  tree type = TREE_TYPE (expr);
+  bool want_value = (fallback != fb_none && !VOID_TYPE_P (type));
+  bool pointerize = false;
+  /* If the result value must be an lvalue or the result type must
+     live in memory, then we have to pointerize it if we need a temporary.  */
+  if (want_value
+      && ((!(fallback & fb_rvalue) && (fallback & fb_lvalue))
+	  || TREE_ADDRESSABLE (type)))
+    pointerize = true;
+
+  return expand_variant_call_expr (expr, want_value, pointerize,
+				   omp_dispatch_p,
+				   (omp_dispatch_p
+				    ? gimplify_omp_ctxp->clauses
+				    : NULL_TREE));
+}
+
+
+/* Helper function for gimplify_call_expr, called via walk_tree.
+   Find used user labels.  */
+
+static tree
+find_used_user_labels (tree *tp, int *, void *)
+{
+  if (TREE_CODE (*tp) == LABEL_EXPR
+      && !DECL_ARTIFICIAL (LABEL_EXPR_LABEL (*tp))
+      && DECL_NAME (LABEL_EXPR_LABEL (*tp))
+      && TREE_USED (LABEL_EXPR_LABEL (*tp)))
+    return *tp;
+  return NULL_TREE;
+}
+
 
 /* Gimplify the CALL_EXPR node *EXPR_P into the GIMPLE sequence PRE_P.
    WANT_VALUE is true if the result of the call is desired.  */
@@ -4030,8 +4534,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
   enum gimplify_status ret;
   int i, nargs;
   gcall *call;
-  bool builtin_va_start_p = false, omp_dispatch_p = false,
-       variant_substituted_p = false;
+  bool builtin_va_start_p = false, omp_dispatch_p = false;
   location_t loc = EXPR_LOCATION (*expr_p);
 
   gcc_assert (TREE_CODE (*expr_p) == CALL_EXPR);
@@ -4047,8 +4550,13 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
       enum internal_fn ifn = CALL_EXPR_IFN (*expr_p);
       if (ifn == IFN_GOMP_DISPATCH)
 	{
-	  gcc_assert (gimplify_omp_ctxp->code == OMP_DISPATCH);
+	  gcc_assert (flag_openmp
+		      && gimplify_omp_ctxp
+		      && gimplify_omp_ctxp->code == OMP_DISPATCH);
 	  *expr_p = CALL_EXPR_ARG (*expr_p, 0);
+	  gcc_assert (TREE_CODE (*expr_p) == CALL_EXPR);
+	  if (! EXPR_HAS_LOCATION (*expr_p))
+	    SET_EXPR_LOCATION (*expr_p, input_location);
 	  omp_dispatch_p = true;
 	}
       else
@@ -4075,8 +4583,14 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 						   fndecl, 0));
 		  return GS_OK;
 		}
-	      /* If not optimizing, ignore the assumptions.  */
-	      if (!optimize || seen_error ())
+	      /* If not optimizing, ignore the assumptions unless there
+		 are used user labels in it.  */
+	      if ((!optimize
+		   && !walk_tree_without_duplicates (&CALL_EXPR_ARG (*expr_p,
+								     0),
+						     find_used_user_labels,
+						     NULL))
+		  || seen_error ())
 		{
 		  *expr_p = NULL_TREE;
 		  return GS_ALL_DONE;
@@ -4202,7 +4716,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
   /* Remember the original function pointer type.  */
   fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 
-  /* Handle "declare variant" substitution.  */
+  /* Handle "declare variant" resolution and arglist processing.  */
   if (flag_openmp
       && fndecl
       && cfun
@@ -4212,33 +4726,15 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 			   DECL_ATTRIBUTES (fndecl)))
     {
       tree orig = *expr_p;
-      enum gimplify_status ret
-	= gimplify_variant_call_expr (expr_p, pre_p, fallback);
+      *expr_p = gimplify_variant_call_expr (*expr_p, fallback,
+					    omp_dispatch_p);
+
       /* This may resolve to the same call, or the call expr with just
 	 the function replaced, in which case we should just continue to
 	 gimplify it normally.  Otherwise, if we get something else back,
 	 stop here and re-gimplify the whole replacement expr.  */
       if (*expr_p != orig)
-	{
-	  /* FIXME: The dispatch construct argument-munging code below
-	     breaks when variant substitution returns a conditional
-	     instead of just a (possibly modified) CALL_EXPR.  The "right"
-	     solution is probably to move the argument-munging to
-	     a separate function called from gimplify_variant_call_expr,
-	     where we generate the new calls.  That would also be more
-	     satisfying from an engineering perspective as it would get
-	     the large blob of complicated OpenMP-specific code out of
-	     general function gimplification here.  See PR 118457.  */
-	  if (omp_dispatch_p
-	      && gimplify_omp_ctxp != NULL
-	      && !gimplify_omp_ctxp->in_call_args)
-	    sorry_at (EXPR_LOCATION (orig),
-		      "late or dynamic variant resolution required for "
-		      "call in a %<dispatch%> construct");
-	  return ret;
-	}
-      if (get_callee_fndecl (*expr_p) != fndecl)
-	variant_substituted_p = true;
+	return GS_OK;
     }
 
   /* There is a sequence point before the call, so any side effects in
@@ -4309,199 +4805,6 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
      vars there.  */
   bool returns_twice = call_expr_flags (*expr_p) & ECF_RETURNS_TWICE;
 
-  tree dispatch_device_num = NULL_TREE;
-  tree dispatch_adjust_args_list = NULL_TREE;
-  /* OpenMP: Handle the append_args and adjust_args clauses of declare_variant.
-     This is active if enclosed in 'omp dispatch' but only for the outermost
-     function call, which is therefore enclosed in IFN_GOMP_DISPATCH.
-
-     'append_args' cause's interop objects are added after the last regular
-     (nonhidden, nonvariadic) arguments of the variant function.
-     'adjust_args' with need_device_{addr,ptr} converts the pointer target of
-     a pointer from a host to a device address. This uses either the default
-     device or the passed device number, which then sets the default device
-     address.
-
-     FIXME: This code should be moved into an extra function,
-     cf. above + PR118457.  */
-  if (flag_openmp
-      && omp_dispatch_p
-      && gimplify_omp_ctxp != NULL
-      && !gimplify_omp_ctxp->in_call_args
-      && EXPR_P (CALL_EXPR_FN (*expr_p))
-      && DECL_P (TREE_OPERAND (CALL_EXPR_FN (*expr_p), 0)))
-    {
-      tree dispatch_interop = NULL_TREE;
-      tree dispatch_append_args = NULL_TREE;
-      int nfirst_args = 0;
-      if (variant_substituted_p)
-	dispatch_adjust_args_list
-	  = lookup_attribute ("omp declare variant variant args",
-			      DECL_ATTRIBUTES (fndecl));
-      if (dispatch_adjust_args_list)
-	{
-	  dispatch_adjust_args_list = TREE_VALUE (dispatch_adjust_args_list);
-	  dispatch_append_args = TREE_CHAIN (dispatch_adjust_args_list);
-	  if (TREE_PURPOSE (dispatch_adjust_args_list) == NULL_TREE
-	      && TREE_VALUE (dispatch_adjust_args_list) == NULL_TREE)
-	    dispatch_adjust_args_list = NULL_TREE;
-	}
-      if (dispatch_append_args)
-	{
-	  nfirst_args = tree_to_shwi (TREE_PURPOSE (dispatch_append_args));
-	  dispatch_append_args = TREE_VALUE (dispatch_append_args);
-	}
-      dispatch_device_num = omp_find_clause (gimplify_omp_ctxp->clauses,
-					     OMP_CLAUSE_DEVICE);
-      if (dispatch_device_num)
-	dispatch_device_num = OMP_CLAUSE_DEVICE_ID (dispatch_device_num);
-      if (gimplify_omp_ctxp->clauses)
-	dispatch_interop = omp_find_clause (gimplify_omp_ctxp->clauses,
-					    OMP_CLAUSE_INTEROP);
-      /* Already processed?  */
-      if (dispatch_interop
-	  && OMP_CLAUSE_DECL (dispatch_interop) == NULL_TREE)
-	dispatch_interop = dispatch_append_args = NULL_TREE;
-
-      int nappend = 0, ninterop = 0;
-      for (tree t = dispatch_append_args; t; t = TREE_CHAIN (t))
-	nappend++;
-      if (dispatch_interop && !variant_substituted_p)
-	{
-	  error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
-		    "unexpected %<interop%> clause as invoked procedure %qD is "
-		    "not variant substituted", fndecl);
-	  inform (DECL_SOURCE_LOCATION (fndecl),
-		  "%qD declared here", fndecl);
-	  dispatch_interop = NULL_TREE;
-	}
-      else if (dispatch_interop)
-	{
-	  for (tree t = dispatch_interop; t; t = TREE_CHAIN (t))
-	    if (OMP_CLAUSE_CODE (t) == OMP_CLAUSE_INTEROP)
-	      ninterop++;
-	  if (nappend < ninterop)
-	    {
-	      error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
-			"number of list items in %<interop%> clause (%d) "
-			"exceeds the number of %<append_args%> items (%d) for "
-			"%<declare variant%> candidate %qD",
-			ninterop, nappend, fndecl);
-	      inform (dispatch_append_args
-		      ? EXPR_LOCATION (TREE_PURPOSE (dispatch_append_args))
-		      : DECL_SOURCE_LOCATION (fndecl),
-		      "%<declare variant%> candidate %qD declared here",
-		      fndecl);
-	    }
-	}
-      if (dispatch_interop && !dispatch_device_num)
-	{
-	  gcc_checking_assert (ninterop > 1);
-	  error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
-		    "the %<device%> clause must be present if the %<interop%> "
-		    "clause has more than one list item");
-	}
-      if (dispatch_append_args && nappend != ninterop)
-	{
-	  sorry_at (EXPR_LOCATION (TREE_PURPOSE (dispatch_append_args)),
-		    "%<append_args%> clause not yet supported for %qD, except "
-		    "when specifying all %d objects in the %<interop%> clause "
-		    "of the %<dispatch%> directive", fndecl, nappend);
-	  inform (gimplify_omp_ctxp->location,
-		    "required by %<dispatch%> construct");
-	}
-      else if (dispatch_append_args)
-	{
-	  tree *buffer = XALLOCAVEC (tree, nargs + nappend);
-	  tree arg = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-	  /* Copy the first arguments; insert then the interop objects,
-	     and then copy the rest (nargs - nfirst_args) args.  */
-	  int i;
-	  for (i = 0; i < nfirst_args; i++)
-	    {
-	      arg = TREE_CHAIN (arg);
-	      buffer[i] = CALL_EXPR_ARG (*expr_p, i);
-	    }
-	  int j = nappend;
-	  for (tree t = dispatch_interop;
-	       t; t = TREE_CHAIN (t))
-	    if (OMP_CLAUSE_CODE (t) == OMP_CLAUSE_INTEROP)
-	      buffer[i + --j] = OMP_CLAUSE_DECL (t);
-	  gcc_checking_assert (j == 0);
-	  for (j = 0; j < nappend; j++)
-	    {
-	      /* Fortran permits by-reference or by-value for the dummy arg
-		 and by-value, by-reference, ptr by-reference as actual
-		 argument. Handle this.  */
-	      tree obj = buffer[i + j];  // interop object
-	      tree a2 = TREE_VALUE (arg);  // parameter type
-	      if (POINTER_TYPE_P (TREE_TYPE (obj))
-		  && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (obj))))
-		{
-		  gcc_checking_assert (INTEGRAL_TYPE_P (
-		    TREE_TYPE (TREE_TYPE (TREE_TYPE (obj)))));
-		  obj = fold_build1 (INDIRECT_REF,
-				     TREE_TYPE (TREE_TYPE (obj)), obj);
-		}
-	      if (POINTER_TYPE_P (TREE_TYPE (obj))
-		  && INTEGRAL_TYPE_P (a2))
-		{
-		  gcc_checking_assert (INTEGRAL_TYPE_P (
-		    TREE_TYPE (TREE_TYPE (obj))));
-		  obj = fold_build1 (INDIRECT_REF,
-				     TREE_TYPE (TREE_TYPE (obj)), obj);
-		}
-	      else if (INTEGRAL_TYPE_P (TREE_TYPE (obj))
-		       && POINTER_TYPE_P (a2))
-		{
-		  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (a2)));
-		  obj = build_fold_addr_expr (obj);
-		}
-	      else if (!INTEGRAL_TYPE_P (a2)
-		       || !INTEGRAL_TYPE_P (TREE_TYPE (obj)))
-		{
-		  gcc_checking_assert (
-		    POINTER_TYPE_P (TREE_TYPE (obj))
-		    && POINTER_TYPE_P (a2)
-		    && INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (obj)))
-		    && INTEGRAL_TYPE_P (TREE_TYPE (a2)));
-		}
-	      buffer[i + j] = obj;
-	      arg = TREE_CHAIN (arg);
-	    }
-	  i += nappend;
-	  for (j = nfirst_args; j < nargs; j++)
-	    buffer[i++] = CALL_EXPR_ARG (*expr_p, j);
-	  nargs += nappend;
-	  tree call = *expr_p;
-	  *expr_p = build_call_array_loc (loc, TREE_TYPE (call),
-					  CALL_EXPR_FN (call),
-					  nargs, buffer);
-
-	  /* Copy all CALL_EXPR flags.  */
-	  CALL_EXPR_STATIC_CHAIN (*expr_p) = CALL_EXPR_STATIC_CHAIN (call);
-	  CALL_EXPR_TAILCALL (*expr_p) = CALL_EXPR_TAILCALL (call);
-	  CALL_EXPR_RETURN_SLOT_OPT (*expr_p)
-	    = CALL_EXPR_RETURN_SLOT_OPT (call);
-	  CALL_FROM_THUNK_P (*expr_p) = CALL_FROM_THUNK_P (call);
-	  SET_EXPR_LOCATION (*expr_p, EXPR_LOCATION (call));
-	  CALL_EXPR_VA_ARG_PACK (*expr_p) = CALL_EXPR_VA_ARG_PACK (call);
-	  ret = gimplify_expr (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
-			       is_gimple_call_addr, fb_rvalue);
-	  if (ret == GS_ERROR)
-	    return GS_ERROR;
-
-	  /* Mark as already processed.  */
-	  if (dispatch_interop)
-	    OMP_CLAUSE_DECL (dispatch_interop) = NULL_TREE;
-	  else
-	    {
-	      tree t = build_omp_clause (loc, OMP_CLAUSE_INTEROP);
-	      TREE_CHAIN (t) = gimplify_omp_ctxp->clauses;
-	      gimplify_omp_ctxp->clauses = t;
-	    }
-	}
-    }
 
   /* Gimplify the function arguments.  */
   if (nargs > 0)
@@ -4517,165 +4820,6 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 	  if ((i != 1) || !builtin_va_start_p)
 	    {
 	      tree *arg_p = &CALL_EXPR_ARG (*expr_p, i);
-	      if (dispatch_adjust_args_list && !integer_zerop (*arg_p))
-		{
-		  tree arg_types = TYPE_ARG_TYPES (
-		    TREE_TYPE (TREE_OPERAND (CALL_EXPR_FN (*expr_p), 0)));
-
-		  if (arg_types != NULL_TREE)
-		    {
-		      bool need_device_ptr = false;
-		      bool need_device_addr = false;
-		      for (int need_addr = 0; need_addr <= 1; need_addr++)
-			for (tree arg = need_addr
-					? TREE_VALUE (
-					    dispatch_adjust_args_list)
-					: TREE_PURPOSE (
-					    dispatch_adjust_args_list);
-			     arg != NULL; arg = TREE_CHAIN (arg))
-			  {
-			    if (TREE_VALUE (arg)
-				&& TREE_CODE (TREE_VALUE (arg)) == INTEGER_CST
-				&& wi::eq_p (i, wi::to_wide (TREE_VALUE (arg))))
-			      {
-				if (need_addr)
-				  need_device_addr = true;
-				else
-				  need_device_ptr = true;
-				break;
-			      }
-			  }
-
-		      if (need_device_ptr || need_device_addr)
-			{
-			  bool is_device_ptr = false;
-			  bool has_device_addr = false;
-
-			  for (tree c = gimplify_omp_ctxp->clauses; c;
-			       c = TREE_CHAIN (c))
-			    {
-			      if ((OMP_CLAUSE_CODE (c)
-				   == OMP_CLAUSE_IS_DEVICE_PTR)
-				  || (OMP_CLAUSE_CODE (c)
-				      == OMP_CLAUSE_HAS_DEVICE_ADDR))
-				{
-				  tree decl1 = DECL_NAME (OMP_CLAUSE_DECL (c));
-				  tree decl2
-				    = tree_strip_nop_conversions (*arg_p);
-				  if (TREE_CODE (decl2) == ADDR_EXPR)
-				    decl2 = TREE_OPERAND (decl2, 0);
-				  if (VAR_P (decl2)
-				      || TREE_CODE (decl2) == PARM_DECL)
-				    {
-				      decl2 = DECL_NAME (decl2);
-				      if (decl1 == decl2
-					  && (OMP_CLAUSE_CODE (c)
-					      == OMP_CLAUSE_IS_DEVICE_PTR))
-					{
-					  if (need_device_addr)
-					    warning_at (
-					      OMP_CLAUSE_LOCATION (c),
-					      OPT_Wopenmp,
-					      "%<is_device_ptr%> for %qD does"
-					      " not imply %<has_device_addr%> "
-					      "required for "
-					      "%<need_device_addr%>",
-					       OMP_CLAUSE_DECL (c));
-					  is_device_ptr = true;
-					  break;
-					}
-				      else if (decl1 == decl2)
-					{
-					  if (need_device_ptr)
-					    warning_at (
-					      OMP_CLAUSE_LOCATION (c),
-					      OPT_Wopenmp,
-					      "%<has_device_addr%> for %qD does"
-					      " not imply %<is_device_ptr%> "
-					      "required for "
-					      "%<need_device_ptr%>",
-					      OMP_CLAUSE_DECL (c));
-					  has_device_addr = true;
-					  break;
-					}
-				    }
-				}
-			    }
-
-			  if (variant_substituted_p
-			      && ((need_device_ptr && !is_device_ptr)
-				  || (need_device_addr && !has_device_addr)))
-			    {
-			      if (dispatch_device_num == NULL_TREE)
-				{
-				  // device_num = omp_get_default_device ()
-				  tree fn = builtin_decl_explicit (
-				    BUILT_IN_OMP_GET_DEFAULT_DEVICE);
-				  gcall *call = gimple_build_call (fn, 0);
-				  dispatch_device_num = create_tmp_var (
-				    gimple_call_return_type (call));
-				  gimple_call_set_lhs (call,
-						       dispatch_device_num);
-				  gimplify_seq_add_stmt (pre_p, call);
-				}
-
-			      // We want to emit the following statement:
-			      //   mapped_arg = omp_get_mapped_ptr (arg,
-			      // 		device_num)
-			      // but arg has to be the actual pointer, not a
-			      // reference or a conversion expression.
-			      tree actual_ptr
-				= (TREE_CODE (*arg_p) == ADDR_EXPR)
-				    ? TREE_OPERAND (*arg_p, 0)
-				    : *arg_p;
-			      if (TREE_CODE (actual_ptr) == NOP_EXPR
-				  && TREE_CODE (
-				       TREE_TYPE (TREE_OPERAND (actual_ptr, 0)))
-				       == REFERENCE_TYPE)
-				{
-				  actual_ptr = TREE_OPERAND (actual_ptr, 0);
-				  actual_ptr = build1 (INDIRECT_REF,
-						       TREE_TYPE (actual_ptr),
-						       actual_ptr);
-				}
-			      gimplify_arg (&actual_ptr, pre_p, loc);
-			      gimplify_arg (&dispatch_device_num, pre_p, loc);
-			      tree fn = builtin_decl_explicit (
-				BUILT_IN_OMP_GET_MAPPED_PTR);
-			      call = gimple_build_call (fn, 2, actual_ptr,
-							dispatch_device_num);
-			      tree mapped_arg = create_tmp_var (
-				gimple_call_return_type (call));
-			      gimple_call_set_lhs (call, mapped_arg);
-			      gimplify_seq_add_stmt (pre_p, call);
-
-			      // gimplify_call_expr might be called several
-			      // times on the same call, which would result in
-			      // duplicated calls to omp_get_default_device and
-			      // omp_get_mapped_ptr. To prevent that, we mark
-			      // already mapped arguments as device pointers.
-			      gcc_checking_assert (gimplify_omp_ctxp->code
-						   == OMP_DISPATCH);
-			      tree c
-				= build_omp_clause (input_location,
-						    OMP_CLAUSE_IS_DEVICE_PTR);
-			      OMP_CLAUSE_DECL (c) = mapped_arg;
-			      OMP_CLAUSE_CHAIN (c) = gimplify_omp_ctxp->clauses;
-			      gimplify_omp_ctxp->clauses = c;
-
-			      if (TREE_CODE (*arg_p) == ADDR_EXPR
-				  || TREE_CODE (TREE_TYPE (actual_ptr))
-				       == REFERENCE_TYPE)
-				mapped_arg = build_fold_addr_expr (mapped_arg);
-			      else if (TREE_CODE (*arg_p) == NOP_EXPR)
-				mapped_arg
-				  = build1 (NOP_EXPR, TREE_TYPE (*arg_p),
-					    mapped_arg);
-			      *arg_p = mapped_arg;
-			    }
-			}
-		    }
-		}
 
 	      if (gimplify_omp_ctxp && gimplify_omp_ctxp->code == OMP_DISPATCH)
 		gimplify_omp_ctxp->in_call_args = true;
@@ -7810,6 +7954,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  /* Turn the in/out constraint into an output constraint.  */
 	  char *p = xstrdup (constraint);
 	  p[0] = '=';
+	  TREE_PURPOSE (link) = unshare_expr (TREE_PURPOSE (link));
 	  TREE_VALUE (TREE_PURPOSE (link)) = build_string (constraint_len, p);
 
 	  /* And add a matching input constraint.  */
@@ -9081,11 +9226,18 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 			  | GOVD_MAP_ALLOC_ONLY)) == flags)
 	    {
 	      tree type = TREE_TYPE (decl);
+	      location_t loc = DECL_SOURCE_LOCATION (decl);
 
 	      if (gimplify_omp_ctxp->target_firstprivatize_array_bases
 		  && omp_privatize_by_reference (decl))
 		type = TREE_TYPE (type);
-	      if (!omp_mappable_type (type))
+
+	      if (!verify_type_context (loc, TCTX_OMP_MAP_IMP_REF, type))
+		/* Check if TYPE can appear in a target region.
+		   verify_type_context has already issued an error if it
+		   can't.  */
+		nflags |= GOVD_MAP | GOVD_EXPLICIT;
+	      else if (!omp_mappable_type (type))
 		{
 		  error ("%qD referenced in target region does not have "
 			 "a mappable type", decl);
@@ -9160,7 +9312,8 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
       && (flags & (GOVD_SEEN | GOVD_LOCAL)) == GOVD_SEEN
       && DECL_SIZE (decl))
     {
-      if (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+      tree size;
+      if (!poly_int_tree_p (DECL_SIZE (decl)))
 	{
 	  splay_tree_node n2;
 	  tree t = DECL_VALUE_EXPR (decl);
@@ -9171,16 +9324,14 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	  n2->value |= GOVD_SEEN;
 	}
       else if (omp_privatize_by_reference (decl)
-	       && TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)))
-	       && (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))))
-		   != INTEGER_CST))
+	       && (size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))))
+	       && !poly_int_tree_p (size))
 	{
 	  splay_tree_node n2;
-	  tree t = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)));
-	  gcc_assert (DECL_P (t));
-	  n2 = splay_tree_lookup (ctx->variables, (splay_tree_key) t);
+	  gcc_assert (DECL_P (size));
+	  n2 = splay_tree_lookup (ctx->variables, (splay_tree_key) size);
 	  if (n2)
-	    omp_notice_variable (ctx, t, true);
+	    omp_notice_variable (ctx, size, true);
 	}
     }
 
@@ -12816,12 +12967,44 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
       unsigned int flags;
       tree decl;
       auto_vec<omp_addr_token *, 10> addr_tokens;
+      tree op = NULL_TREE;
+      location_t loc = OMP_CLAUSE_LOCATION (c);
 
       if (grp_end && c == OMP_CLAUSE_CHAIN (grp_end))
 	{
 	  grp_start_p = NULL;
 	  grp_end = NULL_TREE;
 	}
+
+      if (code == OMP_TARGET
+	  || code == OMP_TARGET_DATA
+	  || code == OMP_TARGET_ENTER_DATA
+	  || code == OMP_TARGET_EXIT_DATA)
+	/* Do some target-specific type checks for map operands.  */
+	switch (OMP_CLAUSE_CODE (c))
+	  {
+	  case OMP_CLAUSE_MAP:
+	    op = OMP_CLAUSE_OPERAND (c, 0);
+	    verify_type_context (loc, TCTX_OMP_MAP, TREE_TYPE (op));
+	    break;
+	  case OMP_CLAUSE_PRIVATE:
+	    op = OMP_CLAUSE_OPERAND (c, 0);
+	    verify_type_context (loc, TCTX_OMP_PRIVATE, TREE_TYPE (op));
+	    break;
+	  case OMP_CLAUSE_FIRSTPRIVATE:
+	    op = OMP_CLAUSE_OPERAND (c, 0);
+	    verify_type_context (loc, TCTX_OMP_FIRSTPRIVATE, TREE_TYPE (op));
+	    break;
+	  case OMP_CLAUSE_IS_DEVICE_PTR:
+	  case OMP_CLAUSE_USE_DEVICE_ADDR:
+	  case OMP_CLAUSE_USE_DEVICE_PTR:
+	  case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	    op = OMP_CLAUSE_OPERAND (c, 0);
+	    verify_type_context (loc, TCTX_OMP_DEVICE_ADDR, TREE_TYPE (op));
+	    break;
+	  default:
+	    break;
+	  }
 
       switch (OMP_CLAUSE_CODE (c))
 	{
@@ -13888,6 +14071,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INTEROP:
+	case OMP_CLAUSE_INIT:
+	case OMP_CLAUSE_USE:
+	case OMP_CLAUSE_DESTROY:
 	  break;
 
 	case OMP_CLAUSE_ORDER:
@@ -14007,7 +14193,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      && (code == OMP_TARGET || code == OMP_TASK || code == OMP_TASKLOOP))
 	    warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
 			"allocator with access trait set to %<thread%> "
-			"results in undfined behavior for %qs directive",
+			"results in undefined behavior for %qs directive",
 			code == OMP_TARGET ? "target"
 					   : (code == OMP_TASK
 					      ? "task" : "taskloop"));
@@ -14437,7 +14623,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
       if ((gimplify_omp_ctxp->region_type & ORT_ACC) == 0)
 	OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (clause) = 1;
       if (DECL_SIZE (decl)
-	  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+	  && !poly_int_tree_p (DECL_SIZE (decl)))
 	{
 	  tree decl2 = DECL_VALUE_EXPR (decl);
 	  gcc_assert (INDIRECT_REF_P (decl2));
@@ -15178,7 +15364,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  if (!DECL_P (decl))
 	    break;
 	  if (DECL_SIZE (decl)
-	      && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+	      && !poly_int_tree_p (DECL_SIZE (decl)))
 	    {
 	      tree decl2 = DECL_VALUE_EXPR (decl);
 	      gcc_assert (INDIRECT_REF_P (decl2));
@@ -18515,6 +18701,21 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
   return gimple_build_omp_ordered (body, OMP_ORDERED_CLAUSES (expr));
 }
 
+/* Gimplify an OMP_INTEROP statement.  */
+
+static enum gimplify_status
+gimplify_omp_interop (tree *expr_p, gimple_seq *pre_p)
+{
+  tree expr = *expr_p;
+
+  gimplify_scan_omp_clauses (&OMP_INTEROP_CLAUSES (expr), pre_p, ORT_TASK,
+			     OMP_INTEROP);
+  gimple *stmt = gimple_build_omp_interop (OMP_INTEROP_CLAUSES (expr));
+  gimplify_seq_add_stmt (pre_p, stmt);
+  *expr_p = NULL_TREE;
+  return GS_ALL_DONE;
+}
+
 /* Callback for walk_tree to find an IFN_GOMP_DISPATCH.  */
 
 static tree
@@ -18659,6 +18860,11 @@ gimplify_omp_dispatch (tree *expr_p, gimple_seq *pre_p)
 	    DECL_NAME (base_fndecl));
 	}
 
+      /* We are not actually going to expand the variant call or use
+	 the result of omp_get_dynamic candidates here; only check that
+	 it does not trivially resolve to a call to the base function
+	 so that we can avoid some extra work in building code that's
+	 not needed in that case.  */
       tree construct_context = omp_get_construct_context ();
       vec<struct omp_variant> all_candidates
 	= omp_declare_variant_candidates (base_fndecl, construct_context);
@@ -19983,9 +20189,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 
 	case OMP_INTEROP:
-	  sorry_at (EXPR_LOCATION (*expr_p),
-		    "%<#pragma omp interop%> not yet supported");
-	  ret = GS_ERROR;
+	  ret = gimplify_omp_interop (expr_p, pre_p);
 	  break;
 	case OMP_ATOMIC:
 	case OMP_ATOMIC_READ:

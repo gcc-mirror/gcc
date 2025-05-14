@@ -2028,7 +2028,7 @@ struct GTY(()) tree_decl_non_common {
 
 /* Classify a special function declaration type.  */
 
-enum function_decl_type
+enum class function_decl_type : unsigned
 {
   NONE,
   OPERATOR_NEW,

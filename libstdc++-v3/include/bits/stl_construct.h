@@ -144,6 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _T1>
+    _GLIBCXX26_CONSTEXPR
     inline void
     _Construct_novalue(_T1* __p)
     { ::new(static_cast<void*>(__p)) _T1; }

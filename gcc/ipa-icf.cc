@@ -233,16 +233,6 @@ void sem_item::set_hash (hashval_t hash)
 
 hash_map<const_tree, hashval_t> sem_item::m_type_hash_cache;
 
-/* Semantic function constructor that uses STACK as bitmap memory stack.  */
-
-sem_function::sem_function (bitmap_obstack *stack)
-  : sem_item (FUNC, stack), memory_access_types (), m_alias_sets_hash (0),
-    m_checker (NULL), m_compared_func (NULL)
-{
-  bb_sizes.create (0);
-  bb_sorted.create (0);
-}
-
 sem_function::sem_function (cgraph_node *node, bitmap_obstack *stack)
   : sem_item (FUNC, node, stack), memory_access_types (),
     m_alias_sets_hash (0), m_checker (NULL), m_compared_func (NULL)
@@ -1367,7 +1357,6 @@ sem_function::init (ipa_icf_gimple::func_checker *checker)
   gcc_assert (SSANAMES (func));
 
   ssa_names_size = SSANAMES (func)->length ();
-  node = node;
 
   decl = fndecl;
   region_tree = func->eh->region_tree;
@@ -1645,10 +1634,6 @@ sem_function::bb_dict_test (vec<int> *bb_dict, int source, int target)
     }
   else
     return (*bb_dict)[source] == target;
-}
-
-sem_variable::sem_variable (bitmap_obstack *stack): sem_item (VAR, stack)
-{
 }
 
 sem_variable::sem_variable (varpool_node *node, bitmap_obstack *stack)

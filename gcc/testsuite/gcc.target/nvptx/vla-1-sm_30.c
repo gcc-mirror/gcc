@@ -7,6 +7,6 @@ void sink(void *);
 void f(int s)
 {
   char a[s];
-  /* { dg-message {sorry, unimplemented: target cannot support alloca} {} { target *-*-* } .-1 } */
+  /* { dg-message {sorry, unimplemented: dynamic stack allocation not supported} {} { target *-*-* } .-1 } */
   sink(a);
 }

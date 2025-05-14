@@ -48,11 +48,16 @@ public:
 
   std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
 
+  const std::vector<LifetimeParam> &get_for_lifetimes () const
+  {
+    return for_lifetimes;
+  }
+
   TraitBound (TypePath type_path, location_t locus, bool in_parens = false,
 	      bool opening_question_mark = false,
 	      std::vector<LifetimeParam> for_lifetimes
 	      = std::vector<LifetimeParam> ())
-    : TypeParamBound (Analysis::Mappings::get ()->get_next_node_id ()),
+    : TypeParamBound (Analysis::Mappings::get ().get_next_node_id ()),
       in_parens (in_parens), opening_question_mark (opening_question_mark),
       for_lifetimes (std::move (for_lifetimes)),
       type_path (std::move (type_path)), locus (locus)
@@ -80,6 +85,11 @@ public:
 
   bool is_in_parens () const { return in_parens; }
   bool has_opening_question_mark () const { return opening_question_mark; }
+
+  TypeParamBoundType get_bound_type () const override
+  {
+    return TypeParamBound::TypeParamBoundType::TRAIT;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -532,7 +542,7 @@ protected:
 class ReferenceType : public TypeNoBounds
 {
   // bool has_lifetime; // TODO: handle in lifetime or something?
-  Lifetime lifetime;
+  tl::optional<Lifetime> lifetime;
 
   bool has_mut;
   std::unique_ptr<TypeNoBounds> type;
@@ -543,11 +553,12 @@ public:
   bool is_mut () const { return has_mut; }
 
   // Returns whether the reference has a lifetime.
-  bool has_lifetime () const { return !lifetime.is_error (); }
+  bool has_lifetime () const { return lifetime.has_value (); }
 
   // Constructor
   ReferenceType (bool is_mut, std::unique_ptr<TypeNoBounds> type_no_bounds,
-		 location_t locus, Lifetime lifetime = Lifetime::elided ())
+		 location_t locus,
+		 tl::optional<Lifetime> lifetime = Lifetime::elided ())
     : lifetime (std::move (lifetime)), has_mut (is_mut),
       type (std::move (type_no_bounds)), locus (locus)
   {}
@@ -588,7 +599,8 @@ public:
 
   bool get_has_mut () const { return has_mut; }
 
-  Lifetime &get_lifetime () { return lifetime; }
+  Lifetime &get_lifetime () { return lifetime.value (); }
+  const Lifetime &get_lifetime () const { return lifetime.value (); }
 
   TypeNoBounds &get_base_type () { return *type; }
 

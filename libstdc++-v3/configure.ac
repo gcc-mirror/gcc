@@ -572,6 +572,9 @@ GLIBCXX_EMERGENCY_EH_ALLOC
 # For src/c++20/tzdb.cc defaults.
 GLIBCXX_ZONEINFO_DIR
 
+# For std::chrono formatters to use tm::tm_zone
+GLIBCXX_STRUCT_TM_TM_ZONE
+
 # For src/c++11/shared_ptr.cc alignment.
 GLIBCXX_CHECK_ALIGNAS_CACHELINE
 

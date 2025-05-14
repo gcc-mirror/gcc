@@ -14,7 +14,6 @@ module m
     real function repl1(); end  ! { dg-note "'declare variant' candidate 'repl1' declared here" }
 
     real function base1()
-! { dg-note "'base1' declared here" "" { target *-*-* } .-1 }
       !$omp declare variant(repl1) match(construct={dispatch})
     end
 
@@ -23,7 +22,6 @@ module m
       type(c_ptr), value :: x1, x2
     end
     subroutine base2 (x, y)
-! { dg-note "'base2' declared here" "" { target *-*-* } .-1 }
       import
       type(c_ptr), value :: x, y
       !$omp declare variant(repl2) match(construct={dispatch}) adjust_args(need_device_ptr : y)
@@ -43,7 +41,6 @@ real function dupl (a, b)
 
   !$omp dispatch device(9) interop ( obj1, obj2) nocontext(.true.)
     call base2 (a, b)
-  ! { dg-error "unexpected 'interop' clause as invoked procedure 'base2' is not variant substituted" "" { target *-*-* } .-1 }
   dupl = x
 end
 
@@ -62,7 +59,6 @@ real function test (a, b)
 
   !$omp dispatch novariants(.true.) interop(obj2, obj1) device(0)
     y = base1 ()
-  ! { dg-error "unexpected 'interop' clause as invoked procedure 'base1' is not variant substituted" "" { target *-*-* } .-1 }
 
   !$omp dispatch interop(obj2, obj1) device(3)
     call base2 (a, b)
@@ -70,7 +66,6 @@ real function test (a, b)
 
   !$omp dispatch interop(obj2) nocontext(.true.)
     call base2 (a, b)
-  ! { dg-error "unexpected 'interop' clause as invoked procedure 'base2' is not variant substituted" "" { target *-*-* } .-1 }
   test = x + y
 end
 end module

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -58,10 +58,10 @@ struct Scope final
     VarDeclaration  *varDecl;   // variable we are in during semantic2
     Dsymbol *parent;            // parent to use
     LabelStatement *slabel;     // enclosing labelled statement
-    SwitchStatement *sw;        // enclosing switch statement
+    SwitchStatement *switchStatement; // enclosing switch statement
     Statement *tryBody;         // enclosing _body of TryCatchStatement or TryFinallyStatement
-    TryFinallyStatement *tf;    // enclosing try finally statement
-    ScopeGuardStatement *os;       // enclosing scope(xxx) statement
+    TryFinallyStatement *tryFinally; // enclosing try finally statement
+    ScopeGuardStatement *scopeGuard; // enclosing scope(xxx) statement
     Statement *sbreak;          // enclosing statement that supports "break"
     Statement *scontinue;       // enclosing statement that supports "continue"
     ForeachStatement *fes;      // if nested function for ForeachStatement, this is it
@@ -142,5 +142,5 @@ struct Scope final
                                 // do not set wasRead for it
     StructDeclaration *argStruct; // elimiate recursion when looking for rvalue construction
 
-    Dsymbol *search(const Loc &loc, Identifier *ident, Dsymbol *&pscopesym, SearchOptFlags flags = (SearchOptFlags)SearchOpt::all);
+    Dsymbol *search(Loc loc, Identifier *ident, Dsymbol *&pscopesym, SearchOptFlags flags = (SearchOptFlags)SearchOpt::all);
 };

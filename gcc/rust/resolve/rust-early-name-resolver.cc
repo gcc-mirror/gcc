@@ -17,7 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-early-name-resolver.h"
-#include "rust-ast-full.h"
+#include "rust-pattern.h"
 #include "rust-name-resolver.h"
 #include "rust-macro-builtins.h"
 #include "rust-attribute-values.h"
@@ -53,7 +53,7 @@ EarlyNameResolver::accumulate_escaped_macros (AST::Module &module)
   scoped (module.get_node_id (), [&module, &escaped_macros, this] {
     for (auto &item : module.get_items ())
       {
-	if (item->get_ast_kind () == AST::Kind::MODULE)
+	if (item->get_item_kind () == AST::Item::Kind::Module)
 	  {
 	    auto &module = *static_cast<AST::Module *> (item.get ());
 	    auto new_macros = accumulate_escaped_macros (module);
@@ -64,7 +64,7 @@ EarlyNameResolver::accumulate_escaped_macros (AST::Module &module)
 	    continue;
 	  }
 
-	if (item->get_ast_kind () == AST::Kind::MACRO_RULES_DEFINITION)
+	if (item->get_item_kind () == AST::Item::Kind::MacroRulesDefinition)
 	  escaped_macros.emplace_back (item->clone_item ());
       }
   });
@@ -74,7 +74,7 @@ EarlyNameResolver::accumulate_escaped_macros (AST::Module &module)
 
 EarlyNameResolver::EarlyNameResolver ()
   : current_scope (UNKNOWN_NODEID), resolver (*Resolver::get ()),
-    mappings (*Analysis::Mappings::get ())
+    mappings (Analysis::Mappings::get ())
 {}
 
 void
@@ -113,7 +113,7 @@ EarlyNameResolver::visit (AST::Crate &crate)
       {
 	auto new_macros = std::vector<std::unique_ptr<AST::Item>> ();
 
-	if (item->get_ast_kind () == AST::Kind::MODULE)
+	if (item->get_item_kind () == AST::Item::Kind::Module)
 	  new_macros = accumulate_escaped_macros (
 	    *static_cast<AST::Module *> (item.get ()));
 
@@ -156,9 +156,10 @@ EarlyNameResolver::visit (AST::ConstGenericParam &)
 void
 EarlyNameResolver::visit (AST::PathInExpression &path)
 {
-  for (auto &segment : path.get_segments ())
-    if (segment.has_generic_args ())
-      resolve_generic_args (segment.get_generic_args ());
+  if (!path.is_lang_item ())
+    for (auto &segment : path.get_segments ())
+      if (segment.has_generic_args ())
+	resolve_generic_args (segment.get_generic_args ());
 }
 
 void
@@ -300,7 +301,7 @@ EarlyNameResolver::visit (AST::Module &module)
       {
 	auto new_macros = std::vector<std::unique_ptr<AST::Item>> ();
 
-	if (item->get_ast_kind () == AST::Kind::MODULE)
+	if (item->get_item_kind () == AST::Item::Kind::Module)
 	  new_macros = accumulate_escaped_macros (
 	    *static_cast<AST::Module *> (item.get ()));
 
@@ -353,6 +354,8 @@ EarlyNameResolver::visit (AST::TraitItemType &)
 void
 EarlyNameResolver::visit (AST::Trait &trait)
 {
+  // shouldn't need to visit trait.get_implicit_self ()
+
   for (auto &generic : trait.get_generic_params ())
     generic->accept_vis (*this);
 
@@ -425,8 +428,7 @@ EarlyNameResolver::visit (AST::MacroRulesDefinition &rules_def)
    * we could be inserting the same macro def over and over again until we
    * implement some optimizations */
   // FIXME: ARTHUR: Remove that lookup and add proper optimizations instead
-  AST::MacroRulesDefinition *tmp = nullptr;
-  if (mappings.lookup_macro_def (rules_def.get_node_id (), &tmp))
+  if (mappings.lookup_macro_def (rules_def.get_node_id ()))
     return;
 
   mappings.insert_macro_def (&rules_def);
@@ -475,17 +477,16 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
   bool found = resolver.get_macro_scope ().lookup (seg, &resolved_node);
   if (!found)
     {
-      rust_error_at (invoc.get_locus (), "unknown macro: [%s]",
+      rust_error_at (invoc.get_locus (), ErrorCode::E0433,
+		     "could not resolve macro invocation %qs",
 		     seg.get ().c_str ());
       return;
     }
 
   // lookup the rules
-  AST::MacroRulesDefinition *rules_def = nullptr;
-  bool ok = mappings.lookup_macro_def (resolved_node, &rules_def);
-  rust_assert (ok);
+  auto rules_def = mappings.lookup_macro_def (resolved_node);
 
-  auto &outer_attrs = rules_def->get_outer_attrs ();
+  auto &outer_attrs = rules_def.value ()->get_outer_attrs ();
   bool is_builtin
     = std::any_of (outer_attrs.begin (), outer_attrs.end (),
 		   [] (AST::Attribute attr) {
@@ -495,22 +496,21 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
 
   if (is_builtin)
     {
-      auto builtin_kind
-	= builtin_macro_from_string (rules_def->get_rule_name ().as_string ());
+      auto builtin_kind = builtin_macro_from_string (
+	rules_def.value ()->get_rule_name ().as_string ());
       invoc.map_to_builtin (builtin_kind.value ());
     }
 
-  auto attributes = rules_def->get_outer_attrs ();
+  auto attributes = rules_def.value ()->get_outer_attrs ();
 
   /* Since the EarlyNameResolver runs multiple time (fixed point algorithm)
    * we could be inserting the same macro def over and over again until we
    * implement some optimizations */
   // FIXME: ARTHUR: Remove that lookup and add proper optimizations instead
-  AST::MacroRulesDefinition *tmp_def = nullptr;
-  if (mappings.lookup_macro_invocation (invoc, &tmp_def))
+  if (mappings.lookup_macro_invocation (invoc))
     return;
 
-  mappings.insert_macro_invocation (invoc, rules_def);
+  mappings.insert_macro_invocation (invoc, *rules_def);
 }
 
 // FIXME: ARTHUR: Do we need to resolve these as well here?
@@ -560,30 +560,6 @@ EarlyNameResolver::visit (AST::TupleStructPattern &pattern)
 {
   pattern.get_items ().accept_vis (*this);
 }
-
-void
-EarlyNameResolver::visit (AST::TraitBound &)
-{}
-
-void
-EarlyNameResolver::visit (AST::ImplTraitType &)
-{}
-
-void
-EarlyNameResolver::visit (AST::TraitObjectType &)
-{}
-
-void
-EarlyNameResolver::visit (AST::ParenthesisedType &)
-{}
-
-void
-EarlyNameResolver::visit (AST::ImplTraitTypeOneBound &)
-{}
-
-void
-EarlyNameResolver::visit (AST::TraitObjectTypeOneBound &)
-{}
 
 void
 EarlyNameResolver::visit (AST::TupleType &)

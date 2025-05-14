@@ -409,7 +409,10 @@ diagnostic subsystem that all diagnostics issued within the lifetime
 of the @code{auto_diagnostic_group} are related.  For example,
 @option{-fdiagnostics-format=json} will treat the first diagnostic
 emitted within the group as a top-level diagnostic, and all subsequent
-diagnostics within the group as its children.
+diagnostics within the group as its children.  Also, if a warning in the
+group is inhibited at nesting depth D, all subsequent notes at that depth
+or deeper will be inhibited as well, until an error or another warning
+is emitted, the depth decreases below D, or the group is popped.
 
 @subsection Quoting
 Text should be quoted by either using the @samp{q} modifier in a directive

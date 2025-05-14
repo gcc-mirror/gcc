@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "digraph.h"
+#include "except.h"
 
 using namespace ana;
 
@@ -42,6 +43,9 @@ class superedge;
     class return_superedge;
   class cfg_superedge;
     class switch_cfg_superedge;
+    class eh_dispatch_cfg_superedge;
+      class eh_dispatch_try_cfg_superedge;
+      class eh_dispatch_allowed_cfg_superedge;
 class supercluster;
 class dot_annotator;
 
@@ -126,7 +130,7 @@ public:
     return *const_cast <bb_to_node_t &> (m_bb_to_initial_node).get (bb);
   }
 
-  /* Get the supernode containing the second half of the gcall *
+  /* Get the supernode containing the second half of the gcall &
      at an interprocedural call, within the caller.  */
   supernode *get_caller_next_node (cgraph_edge *edge) const
   {
@@ -330,6 +334,9 @@ class superedge : public dedge<supergraph_traits>
   virtual cfg_superedge *dyn_cast_cfg_superedge () { return NULL; }
   virtual const cfg_superedge *dyn_cast_cfg_superedge () const { return NULL; }
   virtual const switch_cfg_superedge *dyn_cast_switch_cfg_superedge () const { return NULL; }
+  virtual const eh_dispatch_cfg_superedge *dyn_cast_eh_dispatch_cfg_superedge () const { return nullptr; }
+  virtual const eh_dispatch_try_cfg_superedge *dyn_cast_eh_dispatch_try_cfg_superedge () const { return nullptr; }
+  virtual const eh_dispatch_allowed_cfg_superedge *dyn_cast_eh_dispatch_allowed_cfg_superedge () const { return nullptr; }
   virtual callgraph_superedge *dyn_cast_callgraph_superedge () { return NULL; }
   virtual const callgraph_superedge *dyn_cast_callgraph_superedge () const { return NULL; }
   virtual call_superedge *dyn_cast_call_superedge () { return NULL; }
@@ -415,7 +422,7 @@ class callgraph_superedge : public superedge
   function *get_caller_function () const;
   tree get_callee_decl () const;
   tree get_caller_decl () const;
-  gcall *get_call_stmt () const;
+  const gcall &get_call_stmt () const;
   tree get_arg_for_parm (tree parm, callsite_expr *out) const;
   tree get_parm_for_arg (tree arg, callsite_expr *out) const;
   tree map_expr_from_caller_to_callee (tree caller_expr,
@@ -592,6 +599,164 @@ is_a_helper <const switch_cfg_superedge *>::test (const superedge *sedge)
 
 namespace ana {
 
+/* A subclass for edges from eh_dispatch statements, retaining enough
+   information to identify the various types being caught, vs the
+   "unhandled type" case, and for adding labels when rendering
+   via graphviz.
+   This is abstract; there are concrete subclasses based on the type
+   of the eh_region.  */
+
+class eh_dispatch_cfg_superedge : public cfg_superedge
+{
+ public:
+  static std::unique_ptr<eh_dispatch_cfg_superedge>
+  make (supernode *src,
+	supernode *dest,
+	::edge e,
+	const geh_dispatch *eh_dispatch_stmt);
+
+  const eh_dispatch_cfg_superedge *dyn_cast_eh_dispatch_cfg_superedge () const
+    final override
+  {
+    return this;
+  }
+
+  const geh_dispatch *
+  get_eh_dispatch_stmt () const
+  {
+    return m_eh_dispatch_stmt;
+  }
+
+  const eh_status &get_eh_status () const;
+  eh_region get_eh_region () const { return m_eh_region; }
+
+  virtual bool
+  apply_constraints (region_model *model,
+		     region_model_context *ctxt,
+		     tree exception_type,
+		     std::unique_ptr<rejected_constraint> *out) const = 0;
+
+protected:
+  eh_dispatch_cfg_superedge (supernode *src, supernode *dst, ::edge e,
+			     const geh_dispatch *eh_dispatch_stmt,
+			     eh_region eh_reg);
+
+private:
+  const geh_dispatch *m_eh_dispatch_stmt;
+  eh_region m_eh_region;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const eh_dispatch_cfg_superedge *>::test (const superedge *sedge)
+{
+  return sedge->dyn_cast_eh_dispatch_cfg_superedge () != NULL;
+}
+
+namespace ana {
+
+/* A concrete subclass for edges from an eh_dispatch statements
+   for ERT_TRY regions.  */
+
+class eh_dispatch_try_cfg_superedge : public eh_dispatch_cfg_superedge
+{
+ public:
+  eh_dispatch_try_cfg_superedge (supernode *src, supernode *dst, ::edge e,
+				 const geh_dispatch *eh_dispatch_stmt,
+				 eh_region eh_reg,
+				 eh_catch ehc)
+  : eh_dispatch_cfg_superedge (src, dst, e, eh_dispatch_stmt, eh_reg),
+    m_eh_catch (ehc)
+  {
+    gcc_assert (eh_reg->type == ERT_TRY);
+  }
+
+  const eh_dispatch_try_cfg_superedge *
+  dyn_cast_eh_dispatch_try_cfg_superedge () const final override
+  {
+    return this;
+  }
+
+  void dump_label_to_pp (pretty_printer *pp,
+			 bool user_facing) const final override;
+
+  eh_catch get_eh_catch () const { return m_eh_catch; }
+
+  bool
+  apply_constraints (region_model *model,
+		     region_model_context *ctxt,
+		     tree exception_type,
+		     std::unique_ptr<rejected_constraint> *out)
+    const final override;
+
+private:
+  eh_catch m_eh_catch;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const eh_dispatch_try_cfg_superedge *>::test (const superedge *sedge)
+{
+  return sedge->dyn_cast_eh_dispatch_try_cfg_superedge () != NULL;
+}
+
+namespace ana {
+
+/* A concrete subclass for edges from an eh_dispatch statements
+   for ERT_ALLOWED_EXCEPTIONS regions.  */
+
+class eh_dispatch_allowed_cfg_superedge : public eh_dispatch_cfg_superedge
+{
+ public:
+  enum eh_kind
+  {
+    expected,
+    unexpected
+  };
+
+  eh_dispatch_allowed_cfg_superedge (supernode *src, supernode *dst, ::edge e,
+				     const geh_dispatch *eh_dispatch_stmt,
+				     eh_region eh_reg);
+
+  const eh_dispatch_allowed_cfg_superedge *
+  dyn_cast_eh_dispatch_allowed_cfg_superedge () const final override
+  {
+    return this;
+  }
+
+  void dump_label_to_pp (pretty_printer *pp,
+			 bool user_facing) const final override;
+
+  bool
+  apply_constraints (region_model *model,
+		     region_model_context *ctxt,
+		     tree exception_type,
+		     std::unique_ptr<rejected_constraint> *out)
+    const final override;
+
+  enum eh_kind get_eh_kind () const { return m_kind; }
+
+private:
+  enum eh_kind m_kind;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const eh_dispatch_allowed_cfg_superedge *>::test (const superedge *sedge)
+{
+  return sedge->dyn_cast_eh_dispatch_allowed_cfg_superedge () != NULL;
+}
+
+namespace ana {
 /* Base class for adding additional content to the .dot output
    for a supergraph.  */
 

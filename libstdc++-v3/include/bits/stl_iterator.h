@@ -2511,17 +2511,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	[[nodiscard]]
 	friend constexpr iter_difference_t<_It2>
 	operator-(const counted_iterator& __x,
-		  const counted_iterator<_It2>& __y)
+		  const counted_iterator<_It2>& __y) noexcept
 	{ return __y._M_length - __x._M_length; }
 
       [[nodiscard]]
       friend constexpr iter_difference_t<_It>
-      operator-(const counted_iterator& __x, default_sentinel_t)
+      operator-(const counted_iterator& __x, default_sentinel_t) noexcept
       { return -__x._M_length; }
 
       [[nodiscard]]
       friend constexpr iter_difference_t<_It>
-      operator-(default_sentinel_t, const counted_iterator& __y)
+      operator-(default_sentinel_t, const counted_iterator& __y) noexcept
       { return __y._M_length; }
 
       constexpr counted_iterator&
@@ -2548,19 +2548,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	[[nodiscard]]
 	friend constexpr bool
 	operator==(const counted_iterator& __x,
-		   const counted_iterator<_It2>& __y)
+		   const counted_iterator<_It2>& __y) noexcept
 	{ return __x._M_length == __y._M_length; }
 
       [[nodiscard]]
       friend constexpr bool
-      operator==(const counted_iterator& __x, default_sentinel_t)
+      operator==(const counted_iterator& __x, default_sentinel_t) noexcept
       { return __x._M_length == 0; }
 
       template<common_with<_It> _It2>
 	[[nodiscard]]
 	friend constexpr strong_ordering
 	operator<=>(const counted_iterator& __x,
-		    const counted_iterator<_It2>& __y)
+		    const counted_iterator<_It2>& __y) noexcept
 	{ return __y._M_length <=> __x._M_length; }
 
       [[nodiscard]]
@@ -2881,30 +2881,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	&& three_way_comparable_with<_It, _It2>
       { return _M_current <=> __y; }
 
-    template<__detail::__not_a_const_iterator _It2>
+    template<__detail::__not_a_const_iterator _It2, same_as<_It> _It3>
       friend constexpr bool
-      operator<(const _It2& __x, const basic_const_iterator& __y)
+      operator<(const _It2& __x, const basic_const_iterator<_It3>& __y)
       noexcept(noexcept(__x < __y._M_current))
       requires random_access_iterator<_It> && totally_ordered_with<_It, _It2>
       { return __x < __y._M_current; }
 
-    template<__detail::__not_a_const_iterator _It2>
+    template<__detail::__not_a_const_iterator _It2, same_as<_It> _It3>
       friend constexpr bool
-      operator>(const _It2& __x, const basic_const_iterator& __y)
+      operator>(const _It2& __x, const basic_const_iterator<_It3>& __y)
       noexcept(noexcept(__x > __y._M_current))
       requires random_access_iterator<_It> && totally_ordered_with<_It, _It2>
       { return __x > __y._M_current; }
 
-    template<__detail::__not_a_const_iterator _It2>
+    template<__detail::__not_a_const_iterator _It2, same_as<_It> _It3>
       friend constexpr bool
-      operator<=(const _It2& __x, const basic_const_iterator& __y)
+      operator<=(const _It2& __x, const basic_const_iterator<_It3>& __y)
       noexcept(noexcept(__x <= __y._M_current))
       requires random_access_iterator<_It> && totally_ordered_with<_It, _It2>
       { return __x <= __y._M_current; }
 
-    template<__detail::__not_a_const_iterator _It2>
+    template<__detail::__not_a_const_iterator _It2, same_as<_It> _It3>
       friend constexpr bool
-      operator>=(const _It2& __x, const basic_const_iterator& __y)
+      operator>=(const _It2& __x, const basic_const_iterator<_It3>& __y)
       noexcept(noexcept(__x >= __y._M_current))
       requires random_access_iterator<_It> && totally_ordered_with<_It, _It2>
       { return __x >= __y._M_current; }
@@ -2933,10 +2933,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       noexcept(noexcept(_M_current - __y))
       { return _M_current - __y; }
 
-    template<__detail::__not_a_const_iterator _Sent>
+    template<__detail::__not_a_const_iterator _Sent, same_as<_It> _It2>
       requires sized_sentinel_for<_Sent, _It>
       friend constexpr difference_type
-      operator-(const _Sent& __x, const basic_const_iterator& __y)
+      operator-(const _Sent& __x, const basic_const_iterator<_It2>& __y)
       noexcept(noexcept(__x - __y._M_current))
       { return __x - __y._M_current; }
 
@@ -3086,8 +3086,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_deduction_guides >= 201606
   // These helper traits are used for deduction guides
   // of associative containers.
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4223. Deduction guides for maps are mishandling tuples and references
   template<typename _InputIterator>
-    using __iter_key_t = remove_const_t<
+    using __iter_key_t = __remove_cvref_t<
 #ifdef __glibcxx_tuple_like // >= C++23
       tuple_element_t<0, typename iterator_traits<_InputIterator>::value_type>>;
 #else
@@ -3095,11 +3098,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _InputIterator>
-    using __iter_val_t
+    using __iter_val_t = __remove_cvref_t<
 #ifdef __glibcxx_tuple_like // >= C++23
-      = tuple_element_t<1, typename iterator_traits<_InputIterator>::value_type>;
+      tuple_element_t<1, typename iterator_traits<_InputIterator>::value_type>>;
 #else
-      = typename iterator_traits<_InputIterator>::value_type::second_type;
+      typename iterator_traits<_InputIterator>::value_type::second_type>;
 #endif
 
   template<typename _T1, typename _T2>

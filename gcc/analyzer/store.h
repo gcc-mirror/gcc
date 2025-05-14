@@ -666,7 +666,7 @@ public:
 				 store_manager *mgr);
 
   void mark_as_escaped ();
-  void on_unknown_fncall (const gcall *call, store_manager *mgr,
+  void on_unknown_fncall (const gcall &call, store_manager *mgr,
 			  const conjured_purge &p);
   void on_asm (const gasm *stmt, store_manager *mgr,
 	       const conjured_purge &p);
@@ -800,7 +800,7 @@ public:
 			   model_merger *merger);
 
   void mark_as_escaped (const region *base_reg);
-  void on_unknown_fncall (const gcall *call, store_manager *mgr,
+  void on_unknown_fncall (const gcall &call, store_manager *mgr,
 			  const conjured_purge &p);
   bool escaped_p (const region *reg) const;
 

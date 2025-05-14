@@ -40,6 +40,40 @@ ggc_round_alloc_size (size_t requested_size)
   return requested_size;
 }
 
+#ifdef HAVE_ATTRIBUTE_ALIAS
+extern "C" void *
+ggc_internal_alloc_ (size_t size, void (*f)(void *), size_t, size_t
+		     MEM_STAT_DECL)
+{
+  gcc_assert (!f); // ggc-none doesn't support finalizers
+  return xmalloc (size);
+}
+
+extern "C" void *
+ggc_internal_cleared_alloc_ (size_t size, void (*f)(void *), size_t, size_t
+			     MEM_STAT_DECL)
+{
+  gcc_assert (!f); // ggc-none doesn't support finalizers
+  return xcalloc (size, 1);
+}
+
+extern void *
+ggc_internal_alloc (size_t size, void (*f)(void *), size_t s,
+				size_t n MEM_STAT_DECL)
+     __attribute__((__alias__ ("ggc_internal_alloc_")));
+extern void *
+ggc_internal_alloc_no_dtor (size_t size, void (*f)(void *), size_t s,
+			    size_t n MEM_STAT_DECL)
+     __attribute__((__alias__ ("ggc_internal_alloc_")));
+extern void *
+ggc_internal_cleared_alloc (size_t size, void (*f)(void *),
+			    size_t s, size_t n MEM_STAT_DECL)
+     __attribute__((__alias__ ("ggc_internal_cleared_alloc_")));
+extern void *
+ggc_internal_cleared_alloc_no_dtor (size_t size, void (*f)(void *),
+				    size_t s, size_t n MEM_STAT_DECL)
+     __attribute__((__alias__ ("ggc_internal_cleared_alloc_")));
+#else
 void *
 ggc_internal_alloc (size_t size, void (*f)(void *), size_t, size_t
 		    MEM_STAT_DECL)
@@ -55,6 +89,21 @@ ggc_internal_cleared_alloc (size_t size, void (*f)(void *), size_t, size_t
   gcc_assert (!f); // ggc-none doesn't support finalizers
   return xcalloc (size, 1);
 }
+
+void *
+ggc_internal_alloc_no_dtor (size_t size, void (*f)(void *), size_t s,
+			    size_t n MEM_STAT_DECL)
+{
+  return ggc_internal_alloc (size, f, s, n PASS_MEM_STAT);
+}
+
+void *
+ggc_internal_cleared_alloc_no_dtor (size_t size, void (*f)(void *),
+				    size_t s, size_t n MEM_STAT_DECL)
+{
+  return ggc_internal_cleared_alloc (size, f, s, n PASS_MEM_STAT);
+}
+#endif
 
 void *
 ggc_realloc_stat (void *x, size_t size MEM_STAT_DECL)

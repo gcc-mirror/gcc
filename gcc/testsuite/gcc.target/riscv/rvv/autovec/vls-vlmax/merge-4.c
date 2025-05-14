@@ -119,4 +119,4 @@ merge10 (vnx16df x, vnx16df y, vnx16df *out)
   *(vnx16df*)out = v;
 }
 
-/* dg-final scan-assembler-times {\tvmerge.vvm} 11 */
+/* { dg-final { scan-assembler-times {\tvmerge.vvm} 11 } } */

@@ -370,6 +370,18 @@ test_wchar()
   // P2909R4 Fix formatting of code units as integers (Dude, where’s my char?)
   s = std::format(L"{:d} {:d}", wchar_t(-1), char(-1));
   VERIFY( s.find('-') == std::wstring::npos );
+
+  auto ws = std::format(L"{:L}", 0.5);
+  VERIFY( ws == L"0.5" );
+  // The default C locale.
+  std::locale cloc = std::locale::classic();
+  // PR libstdc++/119671 use-after-free formatting floating-point to wstring
+  ws = std::format(cloc, L"{:L}", 0.5);
+  VERIFY( ws == L"0.5" );
+  // A locale with no name, but with the same facets as the C locale.
+  std::locale locx(cloc, &std::use_facet<std::ctype<char>>(cloc));
+  ws = std::format(locx, L"{:L}", 0.5);
+  VERIFY( ws == L"0.5" );
 }
 
 void
@@ -501,9 +513,14 @@ test_unicode()
 {
   // Similar to sC example in test_std_examples, but not from the standard.
   // Verify that the character "🤡" has estimated field width 2,
-  // rather than estimated field width equal to strlen("🤡"), which would be 4.
+  // rather than estimated field width equal to strlen("🤡"), which would be 4,
+  // or just width 1 for single character.
   std::string sC = std::format("{:*<3}", "🤡");
   VERIFY( sC == "🤡*" );
+  std::wstring wsC = std::format(L"{:*<3}", L"🤡");
+  VERIFY( wsC == L"🤡*" );
+  wsC = std::format(L"{:*<3}", L'🤡');
+  VERIFY( wsC == L"🤡*" );
 
   // Verify that "£" has estimated field width 1, not strlen("£") == 2.
   std::string sL = std::format("{:*<3}", "£");

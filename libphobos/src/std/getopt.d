@@ -610,6 +610,23 @@ private template optionValidator(A...)
     alias optionValidator = message;
 }
 
+private auto getoptTo(R)(string option, string value,
+        size_t idx, string file = __FILE__, size_t line = __LINE__)
+{
+    import std.conv : to, ConvException;
+    import std.format : format;
+    try
+    {
+        return to!R(value);
+    }
+    catch (ConvException e)
+    {
+        throw new ConvException(format("Argument '%s' at position '%u' could "
+            ~ "not be converted to type '%s' as required by option '%s'.",
+            value, idx, R.stringof, option), e, file, line);
+    }
+}
+
 @safe pure unittest
 {
     alias P = void*;
@@ -859,12 +876,18 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
         // (and potentially args[i + 1] too, but that comes later)
         args = args[0 .. i] ~ args[i + 1 .. $];
 
-        static if (is(typeof(*receiver) == bool))
+        static if (is(typeof(*receiver)))
+            alias Target = typeof(*receiver);
+        else
+            // delegate
+            alias Target = void;
+
+        static if (is(Target == bool))
         {
             if (val.length)
             {
                 // parse '--b=true/false'
-                *receiver = to!(typeof(*receiver))(val);
+                *receiver = getoptTo!(Target)(option, val, i);
             }
             else
             {
@@ -877,34 +900,41 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
             import std.exception : enforce;
             // non-boolean option, which might include an argument
             enum isCallbackWithLessThanTwoParameters =
-                (is(typeof(receiver) == delegate) || is(typeof(*receiver) == function)) &&
+                (is(R == delegate) || is(Target == function)) &&
                 !is(typeof(receiver("", "")));
             if (!isCallbackWithLessThanTwoParameters && !(val.length) && !incremental)
             {
                 // Eat the next argument too.  Check to make sure there's one
                 // to be eaten first, though.
                 enforce!GetOptException(i < args.length,
-                    "Missing value for argument " ~ a ~ ".");
+                        "Missing value for argument " ~ a ~ ".");
                 val = args[i];
                 args = args[0 .. i] ~ args[i + 1 .. $];
             }
-            static if (is(typeof(*receiver) == enum))
+            static if (is(Target == enum) ||
+                    is(Target == string))
             {
-                *receiver = to!(typeof(*receiver))(val);
+                *receiver = getoptTo!Target(option, val, i);
             }
-            else static if (is(typeof(*receiver) : real))
+            else static if (is(Target : real))
             {
                 // numeric receiver
-                if (incremental) ++*receiver;
-                else *receiver = to!(typeof(*receiver))(val);
+                if (incremental)
+                {
+                    ++*receiver;
+                }
+                else
+                {
+                    *receiver = getoptTo!Target(option, val, i);
+                }
             }
-            else static if (is(typeof(*receiver) == string))
+            else static if (is(Target == string))
             {
                 // string receiver
-                *receiver = to!(typeof(*receiver))(val);
+                *receiver = getoptTo!(Target)(option, val, i);
             }
-            else static if (is(typeof(receiver) == delegate) ||
-                            is(typeof(*receiver) == function))
+            else static if (is(R == delegate) ||
+                    is(Target == function))
             {
                 static if (is(typeof(receiver("", "")) : void))
                 {
@@ -928,23 +958,25 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
                     receiver();
                 }
             }
-            else static if (isArray!(typeof(*receiver)))
+            else static if (isArray!(Target))
             {
                 // array receiver
                 import std.range : ElementEncodingType;
-                alias E = ElementEncodingType!(typeof(*receiver));
+                alias E = ElementEncodingType!(Target);
 
                 if (arraySep == "")
                 {
-                    *receiver ~= to!E(val);
+                    *receiver ~= getoptTo!E(option, val, i);
                 }
                 else
                 {
-                    foreach (elem; val.splitter(arraySep).map!(a => to!E(a))())
-                        *receiver ~= elem;
+                    foreach (elem; val.splitter(arraySep))
+                    {
+                        *receiver ~= getoptTo!E(option, elem, i);
+                    }
                 }
             }
-            else static if (isAssociativeArray!(typeof(*receiver)))
+            else static if (isAssociativeArray!(Target))
             {
                 // hash receiver
                 alias K = typeof(receiver.keys[0]);
@@ -961,7 +993,7 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
                         ~ to!string(assignChar) ~ "' in argument '" ~ input ~ "'.");
                     auto key = input[0 .. j];
                     auto value = input[j + 1 .. $];
-                    return tuple(to!K(key), to!V(value));
+                    return tuple(getoptTo!K("", key, 0), getoptTo!V("", value, 0));
                 }
 
                 static void setHash(Range)(R receiver, Range range)
@@ -976,7 +1008,7 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
                     setHash(receiver, val.splitter(arraySep));
             }
             else
-                static assert(false, "getopt does not know how to handle the type " ~ typeof(receiver).stringof);
+                static assert(false, "getopt does not know how to handle the type " ~ R.stringof);
         }
     }
 
@@ -1061,6 +1093,18 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
     getopt(args, "values|v", &values);
     assert(values == ["foo":0, "bar":1, "baz":2], to!string(values));
 }
+
+// https://github.com/dlang/phobos/issues/10680
+@safe unittest
+{
+    arraySep = ",";
+    scope(exit) arraySep = "";
+    const(string)[] s;
+    string[] args = ["program.name", "-s", "a", "-s", "b", "-s", "c,d,e"];
+    getopt(args, "values|s", &s);
+    assert(s == ["a", "b", "c", "d", "e"]);
+}
+
 
 /**
    The option character (default '-').
@@ -1945,4 +1989,60 @@ void defaultGetoptFormatter(Output)(Output output, string text, Option[] opt, st
     string wanted = "Some Text\n\t\t-f  --foo \nHelp\n\t\t-h --help \nThis help "
         ~ "information.\n";
     assert(wanted == helpMsg);
+}
+
+
+@safe unittest
+{
+    import std.conv : ConvException;
+    import std.string : indexOf;
+
+    enum UniqueIdentifer {
+        a,
+        b
+    }
+
+    UniqueIdentifer a;
+
+    auto args = ["prog", "--foo", "HELLO"];
+    try
+    {
+        auto t = getopt(args, "foo|f", &a);
+        assert(false, "Must not be reached, as \"HELLO\" cannot be converted"
+            ~ " to enum A.");
+    }
+    catch (ConvException e)
+    {
+        string str = () @trusted { return e.toString(); }();
+        assert(str.indexOf("HELLO") != -1);
+        assert(str.indexOf("UniqueIdentifer") != -1);
+        assert(str.indexOf("foo") != -1);
+    }
+}
+
+@safe unittest
+{
+    import std.conv : ConvException;
+    import std.string : indexOf;
+
+    int a;
+
+    auto args = ["prog", "--foo", "HELLO"];
+    try
+    {
+        auto t = getopt(args, "foo|f", &a);
+        assert(false, "Must not be reached, as \"HELLO\" cannot be converted"
+            ~ " to an int");
+    }
+    catch (ConvException e)
+    {
+        string str = () @trusted { return e.toString(); }();
+        assert(str.indexOf("HELLO") != -1);
+        assert(str.indexOf("int") != -1);
+        assert(str.indexOf("foo") != -1);
+    }
+
+    args = ["prog", "--foo", "1337"];
+    getopt(args, "foo|f", &a);
+    assert(a == 1337);
 }

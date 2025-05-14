@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gcv -mabi=lp64d -O2 -fno-schedule-insns -fdump-rtl-vsetvl-details" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 vuint16m1_t
 foo (vuint16m1_t a, vuint16m1_t b, size_t avl)

@@ -37,6 +37,7 @@ void check (int *a, int *res, int len, int sval)
   if (sum != sval)
     abort ();
 
+#pragma GCC novector
   for (i = 0; i < len; i++)
     if (a[i] != res[i])
       abort ();

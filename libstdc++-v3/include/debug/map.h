@@ -133,6 +133,25 @@ namespace __debug
 		__gnu_debug::__base(__last), __a)
 	{ }
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Construct a map from a range.
+       * @since C++23
+       */
+      template<std::__detail::__container_compatible_range<value_type> _Rg>
+	map(std::from_range_t __t, _Rg&& __rg,
+	    const _Compare& __c,
+	    const allocator_type& __a = allocator_type())
+	: _Base(__t, std::forward<_Rg>(__rg), __c, __a)
+	{ }
+
+      template<std::__detail::__container_compatible_range<value_type> _Rg>
+	map(std::from_range_t __t, _Rg&& __rg,
+	    const allocator_type& __a = allocator_type())
+	: _Base(__t, std::forward<_Rg>(__rg), __a)
+	{ }
+#endif
+
       ~map() = default;
 #endif
 
@@ -740,6 +759,23 @@ namespace __debug
     map(initializer_list<pair<_Key, _Tp>>, _Allocator)
     -> map<_Key, _Tp, less<_Key>, _Allocator>;
 
+#if __glibcxx_containers_ranges // C++ >= 23
+  template<ranges::input_range _Rg,
+	   __not_allocator_like _Compare = less<__detail::__range_key_type<_Rg>>,
+	   __allocator_like _Alloc =
+	      std::allocator<__detail::__range_to_alloc_type<_Rg>>>
+    map(from_range_t, _Rg&&, _Compare = _Compare(), _Alloc = _Alloc())
+      -> map<__detail::__range_key_type<_Rg>,
+	     __detail::__range_mapped_type<_Rg>,
+	     _Compare, _Alloc>;
+
+  template<ranges::input_range _Rg, __allocator_like _Alloc>
+    map(from_range_t, _Rg&&, _Alloc)
+      -> map<__detail::__range_key_type<_Rg>,
+	     __detail::__range_mapped_type<_Rg>,
+	     less<__detail::__range_key_type<_Rg>>,
+	     _Alloc>;
+#endif
 #endif // deduction guides
 
   template<typename _Key, typename _Tp,

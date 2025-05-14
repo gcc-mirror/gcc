@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -181,7 +181,7 @@ class ExpStatement : public Statement
 public:
     Expression *exp;
 
-    static ExpStatement *create(const Loc &loc, Expression *exp);
+    static ExpStatement *create(Loc loc, Expression *exp);
     ExpStatement *syntaxCopy() override;
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -213,7 +213,7 @@ class CompoundStatement : public Statement
 public:
     Statements *statements;
 
-    static CompoundStatement *create(const Loc &loc, Statement *s1, Statement *s2);
+    static CompoundStatement *create(Loc loc, Statement *s1, Statement *s2);
     CompoundStatement *syntaxCopy() override;
     ReturnStatement *endsWithReturnStatement() override final;
     Statement *last() override final;
@@ -613,7 +613,7 @@ public:
     Statement *tryBody;   // set to enclosing TryCatchStatement or TryFinallyStatement if in _body portion
     d_bool bodyFallsThru;   // true if _body falls through to finally
 
-    static TryFinallyStatement *create(const Loc &loc, Statement *body, Statement *finalbody);
+    static TryFinallyStatement *create(Loc loc, Statement *body, Statement *finalbody);
     TryFinallyStatement *syntaxCopy() override;
     bool hasBreak() const override;
     bool hasContinue() const override;

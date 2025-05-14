@@ -71,3 +71,6 @@ stamp-*
 /gmp*
 /isl*
 /gettext*
+
+# ADDITIONS from GCCRS front-end
+libgrust/*/target/

@@ -1,7 +1,6 @@
 /* PR middle-end/27945 */
 /* { dg-do run } */
 /* { dg-options "" } */
-/* { dg-require-effective-target alloca } */
 
 extern int printf (const char *, ...);
 extern void abort ();

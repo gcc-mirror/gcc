@@ -392,17 +392,173 @@ not contain any imports, macro definitions or macro invocations. You can look at
 this pass's documentation for more details on this resolution process.
 
 **/
+
+/**
+ * Intended for use by ForeverStack to store Nodes
+ * Unlike ForeverStack, does not store a cursor reference
+ * Intended to make path resolution in multiple namespaces simpler
+ **/
+class ForeverStackStore
+{
+public:
+  ForeverStackStore (NodeId crate_id) : root (Rib::Kind::Normal, crate_id)
+  {
+    rust_assert (root.is_root ());
+    rust_assert (root.is_leaf ());
+  }
+
+private:
+  /**
+   * A link between two Nodes in our trie data structure. This class represents
+   * the edges of the graph
+   */
+  class Link
+  {
+  public:
+    Link (NodeId id, tl::optional<Identifier> path) : id (id), path (path) {}
+
+    bool compare (const Link &other) const { return id < other.id; }
+
+    NodeId id;
+    tl::optional<Identifier> path;
+  };
+
+  /* Link comparison class, which we use in a Node's `children` map */
+  class LinkCmp
+  {
+  public:
+    bool operator() (const Link &lhs, const Link &rhs) const
+    {
+      return lhs.compare (rhs);
+    }
+  };
+
+public:
+  class Node;
+
+  struct DfsResult
+  {
+    Node &first;
+    std::string second;
+  };
+
+  struct ConstDfsResult
+  {
+    const Node &first;
+    std::string second;
+  };
+
+  /* Should we keep going upon seeing a Rib? */
+  enum class KeepGoing
+  {
+    Yes,
+    No,
+  };
+
+  class Node
+  {
+  private:
+    friend class ForeverStackStore::ForeverStackStore;
+
+    Node (Rib::Kind rib_kind, NodeId id, tl::optional<Node &> parent)
+      : value_rib (rib_kind), type_rib (rib_kind), label_rib (rib_kind),
+	macro_rib (rib_kind), id (id), parent (parent)
+    {}
+    Node (Rib::Kind rib_kind, NodeId id) : Node (rib_kind, id, tl::nullopt) {}
+    Node (Rib::Kind rib_kind, NodeId id, Node &parent)
+      : Node (rib_kind, id, tl::optional<Node &> (parent))
+    {}
+
+  public:
+    Node (const Node &) = default;
+    Node (Node &&) = default;
+    Node &operator= (const Node &) = delete;
+    Node &operator= (Node &&) = default;
+
+    bool is_root () const;
+    bool is_leaf () const;
+
+    NodeId get_id () const;
+
+    Node &insert_child (NodeId id, tl::optional<Identifier> path,
+			Rib::Kind kind);
+
+    tl::optional<Node &> get_child (const Identifier &path);
+    tl::optional<const Node &> get_child (const Identifier &path) const;
+
+    tl::optional<Node &> get_parent ();
+    tl::optional<const Node &> get_parent () const;
+
+    // finds the identifier, if any, used to link
+    // this node's parent to this node
+    tl::optional<const Identifier &> get_parent_path () const;
+
+    Rib &get_rib (Namespace ns);
+    const Rib &get_rib (Namespace ns) const;
+
+    tl::expected<NodeId, DuplicateNameError> insert (const Identifier &name,
+						     NodeId node, Namespace ns);
+    tl::expected<NodeId, DuplicateNameError>
+    insert_shadowable (const Identifier &name, NodeId node, Namespace ns);
+    tl::expected<NodeId, DuplicateNameError>
+    insert_globbed (const Identifier &name, NodeId node, Namespace ns);
+
+    void reverse_iter (std::function<KeepGoing (Node &)> lambda);
+    void reverse_iter (std::function<KeepGoing (const Node &)> lambda) const;
+
+    void child_iter (std::function<KeepGoing (
+		       NodeId, tl::optional<const Identifier &>, Node &)>
+		       lambda);
+    void child_iter (std::function<KeepGoing (
+		       NodeId, tl::optional<const Identifier &>, const Node &)>
+		       lambda) const;
+
+    Node &find_closest_module ();
+    const Node &find_closest_module () const;
+
+    tl::optional<Node &> dfs_node (NodeId to_find);
+    tl::optional<const Node &> dfs_node (NodeId to_find) const;
+
+  private:
+    // per-namespace ribs
+    Rib value_rib;
+    Rib type_rib;
+    Rib label_rib;
+    Rib macro_rib;
+    // all linked nodes
+    std::map<Link, Node, LinkCmp> children;
+
+    NodeId id; // The node id of the Node's scope
+
+    tl::optional<Node &> parent; // `None` only if the node is a root
+  };
+
+  Node &get_root ();
+  const Node &get_root () const;
+
+  tl::optional<Node &> get_node (NodeId node_id);
+  tl::optional<const Node &> get_node (NodeId node_id) const;
+
+private:
+  Node root;
+};
+
 template <Namespace N> class ForeverStack
 {
 public:
   ForeverStack ()
-    // FIXME: Is that valid? Do we use the root? If yes, we should give the
-    // crate's node id to ForeverStack's constructor
     : root (Node (Rib (Rib::Kind::Normal), UNKNOWN_NODEID)),
+      lang_prelude (Node (Rib (Rib::Kind::Prelude), UNKNOWN_NODEID, root)),
+      extern_prelude (Node (Rib (Rib::Kind::Prelude), UNKNOWN_NODEID)),
       cursor_reference (root)
   {
     rust_assert (root.is_root ());
     rust_assert (root.is_leaf ());
+
+    // TODO: Should we be using the forever stack root as the crate scope?
+    // TODO: Is this how we should be getting the crate node id?
+    auto &mappings = Analysis::Mappings::get ();
+    root.id = *mappings.crate_num_to_nodeid (mappings.get_current_crate ());
   }
 
   /**
@@ -416,7 +572,7 @@ public:
    * @param path An optional path if the Rib was created due to a "named"
    *        lexical scope, like a module's.
    */
-  void push (Rib rib, NodeId id, tl::optional<Identifier> path = {});
+  void push (Rib::Kind rib_kind, NodeId id, tl::optional<Identifier> path = {});
 
   /**
    * Pop the innermost Rib from the stack
@@ -437,6 +593,9 @@ public:
    */
   tl::expected<NodeId, DuplicateNameError> insert (Identifier name, NodeId id);
 
+  tl::expected<NodeId, DuplicateNameError> insert_variant (Identifier name,
+							   NodeId id);
+
   /**
    * Insert a new shadowable definition in the innermost `Rib` in this stack
    *
@@ -451,6 +610,22 @@ public:
    */
   tl::expected<NodeId, DuplicateNameError> insert_shadowable (Identifier name,
 							      NodeId id);
+
+  /**
+   * Insert a new glob-originated definition in the innermost `Rib` in this
+   * stack
+   *
+   * @param name The name of the definition
+   * @param id Its NodeId
+   *
+   * @return `DuplicateNameError` if that node was already present in the Rib,
+   * the node's `NodeId` otherwise.
+   *
+   * @aborts if there are no `Rib`s inserted in the current map, this function
+   *         aborts the program.
+   */
+  tl::expected<NodeId, DuplicateNameError> insert_globbed (Identifier name,
+							   NodeId id);
 
   /**
    * Insert a new definition at the root of this stack
@@ -484,6 +659,8 @@ public:
    * the current map, an empty one otherwise.
    */
   tl::optional<Rib::Definition> get (const Identifier &name);
+  tl::optional<Rib::Definition> get_lang_prelude (const Identifier &name);
+  tl::optional<Rib::Definition> get_lang_prelude (const std::string &name);
 
   /**
    * Resolve a path to its definition in the current `ForeverStack`
@@ -494,15 +671,25 @@ public:
    *         current map, an empty one otherwise.
    */
   template <typename S>
-  tl::optional<Rib::Definition> resolve_path (const std::vector<S> &segments);
+  tl::optional<Rib::Definition> resolve_path (
+    const std::vector<S> &segments, bool has_opening_scope_resolution,
+    std::function<void (const S &, NodeId)> insert_segment_resolution,
+    std::vector<Error> &collect_errors);
 
   // FIXME: Documentation
-  tl::optional<Resolver::CanonicalPath> to_canonical_path (NodeId id);
+  tl::optional<Resolver::CanonicalPath> to_canonical_path (NodeId id) const;
 
   // FIXME: Documentation
   tl::optional<Rib &> to_rib (NodeId rib_id);
+  tl::optional<const Rib &> to_rib (NodeId rib_id) const;
 
-  std::string as_debug_string ();
+  std::string as_debug_string () const;
+
+  /**
+   * Used to check if a module is a descendant of another module
+   * Intended for use in the privacy checker
+   */
+  bool is_module_descendant (NodeId parent, NodeId child) const;
 
 private:
   /**
@@ -539,6 +726,7 @@ private:
     {}
 
     bool is_root () const;
+    bool is_prelude () const;
     bool is_leaf () const;
 
     void insert_child (Link link, Node child);
@@ -563,21 +751,36 @@ private:
 
   /* Reverse iterate on `Node`s from the cursor, in an outwards fashion */
   void reverse_iter (std::function<KeepGoing (Node &)> lambda);
+  void reverse_iter (std::function<KeepGoing (const Node &)> lambda) const;
 
   /* Reverse iterate on `Node`s from a specified one, in an outwards fashion */
   void reverse_iter (Node &start, std::function<KeepGoing (Node &)> lambda);
+  void reverse_iter (const Node &start,
+		     std::function<KeepGoing (const Node &)> lambda) const;
 
   Node &cursor ();
   const Node &cursor () const;
   void update_cursor (Node &new_cursor);
 
+  /* The forever stack's actual nodes */
   Node root;
+  /*
+   * A special prelude node used currently for resolving language builtins
+   * It has the root node as a parent, and acts as a "special case" for name
+   * resolution
+   */
+  Node lang_prelude;
+  /*
+   * The extern prelude, used for resolving external crates
+   */
+  Node extern_prelude;
+
   std::reference_wrapper<Node> cursor_reference;
 
   void stream_rib (std::stringstream &stream, const Rib &rib,
-		   const std::string &next, const std::string &next_next);
+		   const std::string &next, const std::string &next_next) const;
   void stream_node (std::stringstream &stream, unsigned indentation,
-		    const Node &node);
+		    const Node &node) const;
 
   /* Helper types and functions for `resolve_path` */
 
@@ -587,13 +790,22 @@ private:
   Node &find_closest_module (Node &starting_point);
 
   template <typename S>
-  tl::optional<SegIterator<S>>
-  find_starting_point (const std::vector<S> &segments, Node &starting_point);
+  tl::optional<SegIterator<S>> find_starting_point (
+    const std::vector<S> &segments,
+    std::reference_wrapper<Node> &starting_point,
+    std::function<void (const S &, NodeId)> insert_segment_resolution,
+    std::vector<Error> &collect_errors);
 
   template <typename S>
-  tl::optional<Node &> resolve_segments (Node &starting_point,
-					 const std::vector<S> &segments,
-					 SegIterator<S> iterator);
+  tl::optional<Node &> resolve_segments (
+    Node &starting_point, const std::vector<S> &segments,
+    SegIterator<S> iterator,
+    std::function<void (const S &, NodeId)> insert_segment_resolution,
+    std::vector<Error> &collect_errors);
+
+  tl::optional<Rib::Definition> resolve_final_segment (Node &final_node,
+						       std::string &seg_name,
+						       bool is_lower_self);
 
   /* Helper functions for forward resolution (to_canonical_path, to_rib...) */
   struct DfsResult
@@ -601,11 +813,39 @@ private:
     Node &first;
     std::string second;
   };
+  struct ConstDfsResult
+  {
+    const Node &first;
+    std::string second;
+  };
 
   // FIXME: Documentation
   tl::optional<DfsResult> dfs (Node &starting_point, NodeId to_find);
+  tl::optional<ConstDfsResult> dfs (const Node &starting_point,
+				    NodeId to_find) const;
   // FIXME: Documentation
   tl::optional<Rib &> dfs_rib (Node &starting_point, NodeId to_find);
+  tl::optional<const Rib &> dfs_rib (const Node &starting_point,
+				     NodeId to_find) const;
+  // FIXME: Documentation
+  tl::optional<Node &> dfs_node (Node &starting_point, NodeId to_find);
+  tl::optional<const Node &> dfs_node (const Node &starting_point,
+				       NodeId to_find) const;
+
+public:
+  bool forward_declared (NodeId definition, NodeId usage)
+  {
+    if (peek ().kind != Rib::Kind::ForwardTypeParamBan)
+      return false;
+
+    const auto &definition_rib = dfs_rib (cursor (), definition);
+
+    if (!definition_rib)
+      return false;
+
+    return (definition_rib
+	    && definition_rib.value ().kind == Rib::Kind::ForwardTypeParamBan);
+  }
 };
 
 } // namespace Resolver2_0

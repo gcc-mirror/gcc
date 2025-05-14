@@ -89,6 +89,7 @@ AC_ARG_WITH(cross-host,
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
+
 AC_CHECK_HEADER([math.h],
 	       [AC_DEFINE([HAVE_MATH_H], [1], [have math.h])])
 
@@ -101,6 +102,49 @@ AC_CHECK_HEADERS(getopt.h limits.h stddef.h string.h strings.h \
 		 pwd.h direct.h dirent.h signal.h malloc.h langinfo.h \
                  pthread.h stdarg.h stdio.h sys/types.h termios.h \
                  netinet/in.h netdb.h sys/uio.h sys/stat.h wchar.h)
+
+AC_STRUCT_TIMEZONE
+
+AC_CHECK_MEMBER([struct tm.tm_year],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM, [1], [struct tm was found])],
+		[], [[#include <time.h>]])
+AC_CHECK_MEMBER([struct tm.tm_year],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM_YEAR, [1], [struct tm.tm_year was found])],
+		[], [[#include <time.h>]])
+AC_CHECK_MEMBER([struct tm.tm_mon],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM_MON, [1], [struct tm.tm_mon was found])],
+		[], [[#include <time.h>]])
+AC_CHECK_MEMBER([struct tm.tm_mday],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM_MDAY, [1], [struct tm.tm_mday was found])],
+		[], [[#include <time.h>]])
+AC_CHECK_MEMBER([struct tm.tm_hour],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM_HOUR, [1], [struct tm.tm_hour was found])],
+		[], [[#include <time.h>]])
+AC_CHECK_MEMBER([struct tm.tm_min],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM_MIN, [1], [struct tm.tm_min was found])],
+		[], [[#include <time.h>]])
+AC_CHECK_MEMBER([struct tm.tm_sec],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM_SEC, [1], [struct tm.tm_sec was found])],
+		[], [[#include <time.h>]])
+AC_CHECK_MEMBER([struct tm.tm_year],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM_YEAR, [1], [struct tm.tm_year was found])],
+		[], [[#include <time.h>]])
+AC_CHECK_MEMBER([struct tm.tm_yday],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM_YDAY, [1], [struct tm.tm_yday was found])],
+		[], [[#include <time.h>]])
+AC_CHECK_MEMBER([struct tm.tm_wday],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM_WDAY, [1], [struct tm.tm_wday was found])],
+		[], [[#include <time.h>]])
+AC_CHECK_MEMBER([struct tm.tm_isdst],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TM_ISDST, [1], [struct tm.tm_isdst was found])],
+		[], [[#include <time.h>]])
+
+AC_CHECK_MEMBER([struct timeval.tv_sec],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TIMEVAL, [1], [struct timeval was found])])
+AC_CHECK_MEMBER([struct timeval.tv_sec],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TIMEVAL_TV_SEC, [1], [struct timeval.tv_sec was found])])
+AC_CHECK_MEMBER([struct timeval.tv_usec],
+	        [AC_DEFINE(WE_HAVE_STRUCT_TIMEVAL_TV_USEC, [1], [struct timeval.tv_usec was found])])
 
 AC_CANONICAL_HOST
 ACX_NONCANONICAL_HOST

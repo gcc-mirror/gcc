@@ -4,7 +4,6 @@
 // Test just twice, once with -O0 non-fortified, once with -O2 fortified.
 // { dg-skip-if "" { *-*-* }  { "*" } { "-O0" "-O2" } }
 // { dg-skip-if "" { *-*-* }  { "-flto" } { "" } }
-// { dg-require-effective-target alloca }
 
 extern "C" {
 

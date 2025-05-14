@@ -2,7 +2,6 @@
    macro in a system header), and that the output looks correct.  */
 
 /* { dg-additional-options "-fdiagnostics-path-format=inline-events -fdiagnostics-show-caret -fanalyzer-fine-grained" } */
-/* { dg-require-effective-target alloca } */
 
 #include <stdint.h>
 #include "../../gcc.dg/analyzer/test-alloca.h"

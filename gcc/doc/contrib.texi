@@ -269,6 +269,10 @@ maintaining @code{complex<>}, sanity checking and disbursement, configuration
 architecture, libio maintenance, and early math work.
 
 @item
+Robert J. Dubner for his work on the COBOL front end, mating the
+parser output to the GENERIC tree.
+
+@item
 Fran@,{c}ois Dumont for his work on libstdc++-v3, especially maintaining and
 improving @code{debug-mode} and associative and unordered containers.
 
@@ -603,6 +607,10 @@ many other diagnostics fixes and improvements.
 @item
 Dave Love for his ongoing work with the Fortran front end and
 runtime libraries.
+
+@item
+James K. Lowden for his work on the COBOL front end, mainly the parser
+and CDF.
 
 @item
 Martin von L@"owis for internal consistency checking infrastructure,

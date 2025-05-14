@@ -1,6 +1,7 @@
 /* { dg-skip-if "no strndup in libc" { *-*-darwin[789]* *-*-darwin10* hppa*-*-hpux* *-*-mingw* *-*-vxworks* } } */
 /* { dg-additional-options "-D_POSIX_C_SOURCE=200809L" } */
 /* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 #include <string.h>
 #include <stdlib.h>

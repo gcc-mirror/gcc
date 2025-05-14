@@ -54,6 +54,8 @@ EXTERN tree m2builtins_BuildBuiltinTree (location_t location, char *name);
 EXTERN tree m2builtins_BuiltInHugeVal (location_t location);
 EXTERN tree m2builtins_BuiltInHugeValShort (location_t location);
 EXTERN tree m2builtins_BuiltInHugeValLong (location_t location);
+EXTERN tree m2builtins_BuiltinStrNCopy (location_t location, tree dest, tree src, tree n);
+
 EXTERN void m2builtins_init (location_t location);
 
 #undef EXTERN

@@ -1,4 +1,4 @@
-// { dg-output "macro\nmacro\nmacro\nmacro\n" }
+// { dg-output "macro\r*\nmacro\r*\nmacro\r*\nmacro\r*\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }

@@ -10,9 +10,6 @@
  * Source:    $(DRUNTIMESRC core/thread/osthread.d)
  */
 
-/* NOTE: This file has been patched from the original DMD distribution to
- * work with the GDC compiler.
- */
 module core.thread.osthread;
 
 import core.atomic;
@@ -36,10 +33,6 @@ else version (TVOS)
     version = Darwin;
 else version (WatchOS)
     version = Darwin;
-
-version (Shared)
-    version (GNU)
-        version = GNUShared;
 
 version (D_InlineAsm_X86)
 {
@@ -482,16 +475,8 @@ class Thread : ThreadBase
 
                 version (Shared)
                 {
-                    version (GNU)
-                    {
-                        auto libs = externDFunc!("gcc.sections.pinLoadedLibraries",
-                                                 void* function() @nogc nothrow)();
-                    }
-                    else
-                    {
-                        auto libs = externDFunc!("rt.sections_elf_shared.pinLoadedLibraries",
-                                                 void* function() @nogc nothrow)();
-                    }
+                    auto libs = externDFunc!("rt.sections_elf_shared.pinLoadedLibraries",
+                                             void* function() @nogc nothrow)();
 
                     auto ps = cast(void**).malloc(2 * size_t.sizeof);
                     if (ps is null) onOutOfMemoryError();
@@ -499,16 +484,8 @@ class Thread : ThreadBase
                     ps[1] = cast(void*)libs;
                     if ( pthread_create( &m_addr, &attr, &thread_entryPoint, ps ) != 0 )
                     {
-                        version (GNU)
-                        {
-                            externDFunc!("gcc.sections.unpinLoadedLibraries",
-                                         void function(void*) @nogc nothrow)(libs);
-                        }
-                        else
-                        {
-                            externDFunc!("rt.sections_elf_shared.unpinLoadedLibraries",
-                                         void function(void*) @nogc nothrow)(libs);
-                        }
+                        externDFunc!("rt.sections_elf_shared.unpinLoadedLibraries",
+                                     void function(void*) @nogc nothrow)(libs);
                         .free(ps);
                         onThreadError( "Error creating thread" );
                     }
@@ -1562,7 +1539,7 @@ private extern(D) void* getStackBottom() nothrow @nogc
             else version (X86_64)
                 asm pure nothrow @nogc { "movq %%gs:8, %0;" : "=r" (bottom); }
             else
-                static assert(false, "Platform not supported.");
+                static assert(false, "Architecture not supported.");
 
             return bottom;
         }
@@ -2146,8 +2123,8 @@ version (Windows)
 
             obj.initDataStorage();
 
-            Thread.setThis(obj);
-            Thread.add(obj);
+            Thread.registerThis(obj);
+
             scope (exit)
             {
                 Thread.remove(obj);
@@ -2232,12 +2209,7 @@ else version (Posix)
 
             // loadedLibraries need to be inherited from parent thread
             // before initilizing GC for TLS (rt_tlsgc_init)
-            version (GNUShared)
-            {
-                externDFunc!("gcc.sections.inheritLoadedLibraries",
-                             void function(void*) @nogc nothrow)(loadedLibraries);
-            }
-            else version (Shared)
+            version (Shared)
             {
                 externDFunc!("rt.sections_elf_shared.inheritLoadedLibraries",
                              void function(void*) @nogc nothrow)(loadedLibraries);
@@ -2246,8 +2218,9 @@ else version (Posix)
             obj.initDataStorage();
 
             atomicStore!(MemoryOrder.raw)(obj.m_isRunning, true);
-            Thread.setThis(obj); // allocates lazy TLS (see Issue 11981)
-            Thread.add(obj);     // can only receive signals from here on
+
+            Thread.registerThis(obj); // can only receive signals from here on
+
             scope (exit)
             {
                 Thread.remove(obj);
@@ -2319,12 +2292,7 @@ else version (Posix)
                     append( t );
                 }
                 rt_moduleTlsDtor();
-                version (GNUShared)
-                {
-                    externDFunc!("gcc.sections.cleanupLoadedLibraries",
-                                 void function() @nogc nothrow)();
-                }
-                else version (Shared)
+                version (Shared)
                 {
                     externDFunc!("rt.sections_elf_shared.cleanupLoadedLibraries",
                                  void function() @nogc nothrow)();
@@ -2801,16 +2769,8 @@ private size_t adjustStackSize(size_t sz) nothrow @nogc
     version (CRuntime_Glibc)
     {
         // On glibc, TLS uses the top of the stack, so add its size to the requested size
-        version (GNU)
-        {
-            sz += externDFunc!("gcc.sections.elf.sizeOfTLS",
-                               size_t function() @nogc nothrow)();
-        }
-        else
-        {
-            sz += externDFunc!("rt.sections_elf_shared.sizeOfTLS",
-                               size_t function() @nogc nothrow)();
-        }
+        sz += externDFunc!("rt.sections_elf_shared.sizeOfTLS",
+                           size_t function() @nogc nothrow)();
     }
 
     // stack size must be a multiple of pageSize

@@ -13,12 +13,17 @@
 module rt.lifetime;
 
 import core.attribute : weak;
-import core.memory;
+import core.checkedint : mulu;
+import core.exception : onFinalizeError, onOutOfMemoryError, onUnicodeError;
 import core.internal.gc.blockmeta : PAGESIZE;
-debug(PRINTF) import core.stdc.stdio;
+import core.memory;
+import core.stdc.stdlib : malloc;
+import core.stdc.string : memcpy, memset;
 static import rt.tlsgc;
 
-alias BlkInfo = GC.BlkInfo;
+debug (PRINTF) import core.stdc.stdio : printf;
+debug (VALGRIND) import etc.valgrind.valgrind;
+
 alias BlkAttr = GC.BlkAttr;
 
 // for now, all GC array functions are not exposed via core.memory.
@@ -81,8 +86,6 @@ Returns: newly created object
 */
 extern (C) Object _d_newclass(const ClassInfo ci) @weak
 {
-    import core.stdc.stdlib;
-    import core.exception : onOutOfMemoryError;
     void* p;
     auto init = ci.initializer;
 
@@ -221,7 +224,7 @@ private uint __typeAttrs(const scope TypeInfo ti, void *copyAttrsFrom = null) pu
     if (typeid(ti) is typeid(TypeInfo_Struct)) {
         auto sti = cast(TypeInfo_Struct)cast(void*)ti;
         if (sti.xdtor)
-            attrs |= BlkAttr.STRUCTFINAL | BlkAttr.FINALIZE;
+            attrs |= BlkAttr.FINALIZE;
     }
     return attrs;
 }
@@ -268,7 +271,6 @@ extern(C) void _d_arrayshrinkfit(const TypeInfo ti, void[] arr) nothrow
             }
             catch (Exception e)
             {
-                import core.exception : onFinalizeError;
                 onFinalizeError(sti, e);
             }
         }
@@ -336,9 +338,6 @@ in
 }
 do
 {
-    import core.stdc.string;
-    import core.exception : onOutOfMemoryError;
-
     auto isshared = typeid(ti) is typeid(TypeInfo_Shared);
     auto tinext = unqualify(ti.next);
     auto size = tinext.tsize;
@@ -368,8 +367,6 @@ do
     }
     else
     {
-        import core.checkedint : mulu;
-
         bool overflow = false;
         size_t reqsize = mulu(size, newcapacity, overflow);
         if (!overflow)
@@ -444,8 +441,6 @@ Returns: newly allocated array
 */
 extern (C) void[] _d_newarrayU(const scope TypeInfo ti, size_t length) pure nothrow @weak
 {
-    import core.exception : onOutOfMemoryError;
-
     auto tinext = unqualify(ti.next);
     auto size = tinext.tsize;
 
@@ -475,8 +470,6 @@ extern (C) void[] _d_newarrayU(const scope TypeInfo ti, size_t length) pure noth
     }
     else
     {
-        import core.checkedint : mulu;
-
         bool overflow = false;
         size = mulu(size, length, overflow);
         if (!overflow)
@@ -497,8 +490,6 @@ Lcontinue:
 /// ditto
 extern (C) void[] _d_newarrayT(const TypeInfo ti, size_t length) pure nothrow @weak
 {
-    import core.stdc.string;
-
     void[] result = _d_newarrayU(ti, length);
     auto tinext = unqualify(ti.next);
     auto size = tinext.tsize;
@@ -533,7 +524,6 @@ extern (C) void[] _d_newarrayiT(const TypeInfo ti, size_t length) pure nothrow @
 
     default:
     {
-        import core.stdc.string;
         immutable sz = init.length;
         for (size_t u = 0; u < size * length; u += sz)
             memcpy(result.ptr + u, init.ptr, sz);
@@ -616,21 +606,16 @@ extern (C) CollectHandler rt_getCollectHandler()
 /**
  *
  */
-extern (C) int rt_hasFinalizerInSegment(void* p, size_t size, uint attr, scope const(void)[] segment) nothrow
+extern (C) int rt_hasFinalizerInSegment(void* p, size_t size, TypeInfo typeInfo, scope const(void)[] segment) nothrow
 {
     if (!p)
         return false;
 
-    if (attr & BlkAttr.STRUCTFINAL)
+    if (typeInfo !is null)
     {
-        import core.internal.gc.blockmeta;
-        auto info = BlkInfo(
-            base: p,
-            size: size,
-            attr: attr
-        );
+        assert(typeid(typeInfo) is typeid(TypeInfo_Struct));
 
-        auto ti = cast(TypeInfo_Struct)cast(void*)__getBlockFinalizerInfo(info);
+        auto ti = cast(TypeInfo_Struct)cast(void*)typeInfo;
         return cast(size_t)(cast(void*)ti.xdtor - segment.ptr) < segment.length;
     }
 
@@ -649,8 +634,6 @@ extern (C) int rt_hasFinalizerInSegment(void* p, size_t size, uint attr, scope c
 
     return false;
 }
-
-debug (VALGRIND) import etc.valgrind.valgrind;
 
 void finalize_array(void* p, size_t size, const TypeInfo_Struct si)
 {
@@ -676,7 +659,6 @@ void finalize_struct(void* p, TypeInfo_Struct ti) nothrow
     }
     catch (Exception e)
     {
-        import core.exception : onFinalizeError;
         onFinalizeError(ti, e);
     }
 }
@@ -717,7 +699,6 @@ extern (C) void rt_finalize2(void* p, bool det = true, bool resetMemory = true) 
     }
     catch (Exception e)
     {
-        import core.exception : onFinalizeError;
         onFinalizeError(*pc, e);
     }
     finally
@@ -732,40 +713,31 @@ extern (C) void rt_finalize(void* p, bool det = true) nothrow
     rt_finalize2(p, det, true);
 }
 
-extern (C) void rt_finalizeFromGC(void* p, size_t size, uint attr) nothrow
+extern (C) void rt_finalizeFromGC(void* p, size_t size, uint attr, TypeInfo typeInfo) nothrow
 {
     // to verify: reset memory necessary?
-    if (!(attr & BlkAttr.STRUCTFINAL)) {
+    if (typeInfo is null) {
         rt_finalize2(p, false, false); // class
         return;
     }
 
-    // get the struct typeinfo from the block, and the used size.
-    import core.internal.gc.blockmeta;
-    auto info = BlkInfo(
-            base: p,
-            size: size,
-            attr: attr
-    );
+    assert(typeid(typeInfo) is typeid(TypeInfo_Struct));
 
-    auto si = cast(TypeInfo_Struct)cast(void*)__getBlockFinalizerInfo(info);
+    auto si = cast(TypeInfo_Struct)cast(void*)typeInfo;
 
-    if (attr & BlkAttr.APPENDABLE)
+    try
     {
-        auto usedsize = __arrayAllocLength(info);
-        auto arrptr = __arrayStart(info);
-        try
+        if (attr & BlkAttr.APPENDABLE)
         {
-            finalize_array(arrptr, usedsize, si);
+            finalize_array(p, size, si);
         }
-        catch (Exception e)
-        {
-            import core.exception : onFinalizeError;
-            onFinalizeError(si, e);
-        }
+        else
+            finalize_struct(p, si); // struct
     }
-    else
-        finalize_struct(p, si); // struct
+    catch (Exception e)
+    {
+        onFinalizeError(si, e);
+    }
 }
 
 
@@ -801,9 +773,6 @@ in
 }
 do
 {
-    import core.stdc.string;
-    import core.exception : onOutOfMemoryError;
-
     debug(PRINTF)
     {
         //printf("_d_arraysetlengthT(p = %p, sizeelem = %d, newlength = %d)\n", p, sizeelem, newlength);
@@ -848,7 +817,6 @@ do
     }
     else
     {
-        import core.checkedint : mulu;
         const size_t newsize = mulu(sizeelem, newlength, overflow);
     }
     if (overflow)
@@ -911,9 +879,6 @@ in
 }
 do
 {
-    import core.stdc.string;
-    import core.exception : onOutOfMemoryError;
-
     debug(PRINTF)
     {
         //printf("_d_arraysetlengthT(p = %p, sizeelem = %d, newlength = %d)\n", p, sizeelem, newlength);
@@ -958,7 +923,6 @@ do
     }
     else
     {
-        import core.checkedint : mulu;
         const size_t newsize = mulu(sizeelem, newlength, overflow);
     }
     if (overflow)
@@ -1111,8 +1075,6 @@ Returns: `px` after being appended to
 extern (C)
 byte[] _d_arrayappendcTX(const TypeInfo ti, return scope ref byte[] px, size_t n) @weak
 {
-    import core.stdc.string;
-    import core.exception : onOutOfMemoryError;
     // This is a cut&paste job from _d_arrayappendT(). Should be refactored.
 
     // Short circuit if no data is being appended.
@@ -1218,7 +1180,6 @@ extern (C) void[] _d_arrayappendcd(ref byte[] x, dchar c) @weak
     }
     else
     {
-        import core.exception : onUnicodeError;
         onUnicodeError("Invalid UTF-8 sequence", 0);      // invalid utf character
     }
 
@@ -1608,7 +1569,7 @@ deprecated unittest
 
     dtorCount = 0;
     const(S1)[] carr1 = new const(S1)[5];
-    BlkInfo blkinf1 = GC.query(carr1.ptr);
+    auto blkinf1 = GC.query(carr1.ptr);
     GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
     assert(dtorCount == 5);
     GC.free(blkinf1.base);
@@ -1620,22 +1581,19 @@ deprecated unittest
     assert(dtorCount == 4); // destructors run explicitely?
 
     dtorCount = 0;
-    BlkInfo blkinf = GC.query(arr2.ptr);
+    auto blkinf = GC.query(arr2.ptr);
     GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
     assert(dtorCount == 6);
     GC.free(blkinf.base);
 
     // associative arrays
-    import rt.aaA : entryDtor;
-    // throw away all existing AA entries with dtor
-    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
-
     S1[int] aa1;
     aa1[0] = S1(0);
     aa1[1] = S1(1);
     dtorCount = 0;
     aa1 = null;
-    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
+    auto dtor1 = typeid(TypeInfo_AssociativeArray.Entry!(int, S1)).xdtor;
+    GC.runFinalizers((cast(char*)dtor1)[0..1]);
     assert(dtorCount == 2);
 
     int[S1] aa2;
@@ -1644,7 +1602,8 @@ deprecated unittest
     aa2[S1(2)] = 2;
     dtorCount = 0;
     aa2 = null;
-    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
+    auto dtor2 = typeid(TypeInfo_AssociativeArray.Entry!(S1, int)).xdtor;
+    GC.runFinalizers((cast(char*)dtor2)[0..1]);
     assert(dtorCount == 3);
 
     S1[2][int] aa3;
@@ -1652,7 +1611,8 @@ deprecated unittest
     aa3[1] = [S1(1),S1(3)];
     dtorCount = 0;
     aa3 = null;
-    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
+    auto dtor3 = typeid(TypeInfo_AssociativeArray.Entry!(int, S1[2])).xdtor;
+    GC.runFinalizers((cast(char*)dtor3)[0..1]);
     assert(dtorCount == 4);
 }
 

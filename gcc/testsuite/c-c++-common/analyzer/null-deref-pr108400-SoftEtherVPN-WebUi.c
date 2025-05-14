@@ -60,7 +60,7 @@ void WuExpireSessionKey(WEBUI *wu)
 
 	for(i=0; i<LIST_NUM(wu->Contexts); i++)
 	{
-		STRMAP_ENTRY *entry = (STRMAP_ENTRY*)LIST_DATA(wu->Contexts, i);
+		STRMAP_ENTRY *entry = (STRMAP_ENTRY*)LIST_DATA(wu->Contexts, i); /* { dg-message "'entry' is NULL" } */
 		WU_CONTEXT *context = (WU_CONTEXT*)entry->Value; /* { dg-bogus "dereference of NULL 'entry'" "PR analyzer/108400" { xfail *-*-* } } */
 		if(context->ExpireDate < Tick64())
 		{

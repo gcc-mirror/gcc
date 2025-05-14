@@ -1037,32 +1037,20 @@ get_available_features (struct __processor_model *cpu_model,
     {
       __cpuid_count (0x24, 0, eax, ebx, ecx, edx);
       version = ebx & 0xff;
-      if (ebx & bit_AVX10_256)
-	switch (version)
-	  {
-	  case 2:
-	    set_feature (FEATURE_AVX10_2_256);
-	    /* Fall through.  */
-	  case 1:
-	    set_feature (FEATURE_AVX10_1_256);
-	    break;
-	  default:
-	    set_feature (FEATURE_AVX10_1_256);
-	    break;
-	  }
-      if (ebx & bit_AVX10_512)
-	switch (version)
-	  {
-	  case 2:
-	    set_feature (FEATURE_AVX10_2_512);
-	    /* Fall through.  */
-	  case 1:
-	    set_feature (FEATURE_AVX10_1_512);
-	    break;
-	  default:
-	    set_feature (FEATURE_AVX10_1_512);
-	    break;
-	  }
+      switch (version)
+	{
+	case 2:
+	  set_feature (FEATURE_AVX10_2);
+	  /* Fall through.  */
+	case 1:
+	  set_feature (FEATURE_AVX10_1);
+	  set_feature (FEATURE_AVX10_1_256);
+	  break;
+	default:
+	  set_feature (FEATURE_AVX10_1);
+	  set_feature (FEATURE_AVX10_1_256);
+	  break;
+	}
     }
 
   /* Check cpuid level of extended features.  */

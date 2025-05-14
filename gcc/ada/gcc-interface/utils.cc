@@ -3286,30 +3286,6 @@ tree
 create_param_decl (tree name, tree type)
 {
   tree param_decl = build_decl (input_location, PARM_DECL, name, type);
-
-  /* Honor TARGET_PROMOTE_PROTOTYPES like the C compiler, as not doing so
-     can lead to various ABI violations.  */
-  if (targetm.calls.promote_prototypes (NULL_TREE)
-      && INTEGRAL_TYPE_P (type)
-      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-    {
-      /* We have to be careful about biased types here.  Make a subtype
-	 of integer_type_node with the proper biasing.  */
-      if (TREE_CODE (type) == INTEGER_TYPE
-	  && TYPE_BIASED_REPRESENTATION_P (type))
-	{
-	  tree subtype
-	    = make_unsigned_type (TYPE_PRECISION (integer_type_node));
-	  TREE_TYPE (subtype) = integer_type_node;
-	  TYPE_BIASED_REPRESENTATION_P (subtype) = 1;
-	  SET_TYPE_RM_MIN_VALUE (subtype, TYPE_MIN_VALUE (type));
-	  SET_TYPE_RM_MAX_VALUE (subtype, TYPE_MAX_VALUE (type));
-	  type = subtype;
-	}
-      else
-	type = integer_type_node;
-    }
-
   DECL_ARG_TYPE (param_decl) = type;
   return param_decl;
 }
@@ -5259,12 +5235,27 @@ convert (tree type, tree expr)
 	      : size_zero_node;
 	  tree byte_diff = size_diffop (type_pos, etype_pos);
 
-	  expr = build1 (NOP_EXPR, type, expr);
+	  expr = fold_convert (type, expr);
 	  if (integer_zerop (byte_diff))
 	    return expr;
 
 	  return build_binary_op (POINTER_PLUS_EXPR, type, expr,
 				  fold_convert (sizetype, byte_diff));
+	}
+
+      /* If converting from a thin pointer with zero offset from the base to
+	 a pointer to the array, add the offset of the array field.  */
+      if (TYPE_IS_THIN_POINTER_P (etype)
+	  && !TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)))
+	{
+	  tree arr_field = DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (etype)));
+
+	  if (TREE_TYPE (type) == TREE_TYPE (arr_field))
+	    {
+	      expr = fold_convert (type, expr);
+	      return build_binary_op (POINTER_PLUS_EXPR, type, expr,
+				      byte_position (arr_field));
+	    }
 	}
 
       /* If converting fat pointer to normal or thin pointer, get the pointer

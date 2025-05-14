@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "diagnostic-event-id.h"
 #include "diagnostic-highlight-colors.h"
-#include "make-unique.h"
 #include "selftest.h"
 
 #if HAVE_ICONV
@@ -1640,7 +1639,7 @@ push_back_any_text (pp_token_list *tok_list,
    %@: diagnostic_event_id_ptr, for which event_id->known_p () must be true.
    %.*s: a substring the length of which is specified by an argument
 	 integer.
-   %Ns: likewise, but length specified as constant in the format string.
+   %.Ns: likewise, but length specified as constant in the format string.
    Flag 'q': quote formatted text (must come immediately after '%').
    %Z: Requires two arguments - array of int, and len. Prints elements
    of the array.
@@ -2521,7 +2520,7 @@ pretty_printer::~pretty_printer ()
 std::unique_ptr<pretty_printer>
 pretty_printer::clone () const
 {
-  return ::make_unique<pretty_printer> (*this);
+  return std::make_unique<pretty_printer> (*this);
 }
 
 /* Append a string delimited by START and END to the output area of
@@ -3542,7 +3541,7 @@ test_custom_tokens_1 ()
 
     void add_to_phase_2 (pp_markup::context &ctxt) final override
     {
-      auto val_ptr = make_unique<value> (*this);
+      auto val_ptr = std::make_unique<value> (*this);
       ctxt.m_formatted_token_list->push_back<pp_token_custom_data>
 	(std::move (val_ptr));
     }
@@ -3622,7 +3621,7 @@ test_custom_tokens_2 ()
 
     void add_to_phase_2 (pp_markup::context &ctxt) final override
     {
-      auto val_ptr = make_unique<value> (*this);
+      auto val_ptr = std::make_unique<value> (*this);
       ctxt.m_formatted_token_list->push_back<pp_token_custom_data>
 	(std::move (val_ptr));
     }

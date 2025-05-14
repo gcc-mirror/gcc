@@ -65,28 +65,36 @@ namespace __gnu_test
   template<typename _Tp>
     struct KeyExtractor
     {
-      static _Tp get_key(const _Tp& val)
+      static const _Tp& get_key(const _Tp& val)
       { return val; }
     };
 
   template<typename _Tp1, typename _Tp2>
-    struct KeyExtractor<std::pair<const _Tp1, _Tp2>>
+    struct KeyExtractor<std::pair<_Tp1, _Tp2>>
     {
-      static _Tp1 get_key(const std::pair<const _Tp1, _Tp2>& val)
+      static const _Tp1& get_key(const std::pair<_Tp1, _Tp2>& val)
       { return val.first; }
     };
 
   template<typename _Tp>
-    void use_erased_local_iterator()
+    void fill_container(_Tp& c)
     {
       typedef _Tp cont_type;
       typedef typename cont_type::value_type cont_val_type;
       typedef typename CopyableValueType<cont_val_type>::value_type val_type;
       generate_unique<val_type> gu;
 
-      cont_type c;
       for (size_t i = 0; i != 5; ++i)
 	c.insert(gu.build());
+    }
+
+  template<typename _Tp>
+    void use_erased_local_iterator()
+    {
+      typedef _Tp cont_type;
+      typedef typename cont_type::value_type cont_val_type;
+      cont_type c;
+      fill_container(c);
 
       typename cont_type::local_iterator it, end;
       for (size_t i = 0; i != c.bucket_count(); ++i)
@@ -96,22 +104,18 @@ namespace __gnu_test
 	if (it != end)
 	  break;
       }
-      typename cont_type::key_type key = KeyExtractor<cont_val_type>::get_key(*it);
+
+      const auto& key = KeyExtractor<cont_val_type>::get_key(*it);
       c.erase(key);
       VERIFY( it != end );
   }
 
   template<typename _Tp>
-    void use_invalid_local_iterator()
+    typename _Tp::local_iterator
+    fill_and_get_local_iterator(_Tp& c)
     {
       typedef _Tp cont_type;
-      typedef typename cont_type::value_type cont_val_type;
-      typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      generate_unique<val_type> gu;
-
-      cont_type c;
-      for (size_t i = 0; i != 5; ++i)
-	c.insert(gu.build());
+      fill_container(c);
 
       typename cont_type::local_iterator it;
       for (size_t i = 0; i != c.bucket_count(); ++i)
@@ -120,22 +124,107 @@ namespace __gnu_test
 	if (it != c.end(i))
 	  break;
       }
-      cont_val_type val = *it;
+
+      return it;
+    }
+
+  template<typename _Tp>
+    void use_invalid_local_iterator()
+    {
+      typedef _Tp cont_type;
+      cont_type c;
+      auto it = fill_and_get_local_iterator(c);
+
+      const auto& val = *it;
       c.clear();
       VERIFY( *it == val );
+    }
+
+  template<typename _Tp>
+    void invalid_local_iterator_arrow_operator()
+    {
+      typedef _Tp cont_type;
+      cont_type c;
+      auto it = fill_and_get_local_iterator(c);
+
+      const auto& val = *it;
+      c.clear();
+      VERIFY( *it.operator->() == val );
+    }
+
+  template<typename _Tp>
+    void invalid_local_iterator_copy_construction()
+    {
+      typedef _Tp cont_type;
+      cont_type c;
+      auto it = fill_and_get_local_iterator(c);
+
+      const auto& val = *it;
+      c.clear();
+      typename cont_type::local_iterator lit(it);
+      VERIFY( *lit == val );
+    }
+
+  template<typename _Tp>
+    void invalid_local_iterator_move_construction()
+    {
+      typedef _Tp cont_type;
+      cont_type c;
+      auto it = fill_and_get_local_iterator(c);
+
+      const auto& val = *it;
+      c.clear();
+      typename cont_type::local_iterator lit(std::move(it));
+      VERIFY( *lit == val );
+    }
+
+  template<typename _Tp>
+    void invalid_local_iterator_copy_assignment()
+    {
+      typedef _Tp cont_type;
+      cont_type c;
+      auto it = fill_and_get_local_iterator(c);
+
+      const auto& val = *it;
+      c.clear();
+      typename cont_type::local_iterator lit;
+      lit = it;
+      VERIFY( *lit == val );
+    }
+
+  template<typename _Tp>
+    void invalid_local_iterator_move_assignment()
+    {
+      typedef _Tp cont_type;
+      cont_type c;
+      auto it = fill_and_get_local_iterator(c);
+
+      const auto& val = *it;
+      c.clear();
+      typename cont_type::local_iterator lit;
+      lit = std::move(it);
+      VERIFY( *lit == val );
+    }
+
+  template<typename _Tp>
+    void invalid_local_iterator_const_conversion()
+    {
+      typedef _Tp cont_type;
+      cont_type c;
+      auto it = fill_and_get_local_iterator(c);
+
+      const auto& val = *it;
+      c.clear();
+      typename cont_type::const_local_iterator clit(it);
+      VERIFY( *clit == val );
     }
 
   template<typename _Tp>
     void invalid_local_iterator_pre_increment()
     {
       typedef _Tp cont_type;
-      typedef typename cont_type::value_type cont_val_type;
-      typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      generate_unique<val_type> gu;
-
       cont_type c;
-      for (size_t i = 0; i != 5; ++i)
-	c.insert(gu.build());
+      fill_container(c);
 
       auto lit = c.begin(0);
       for (size_t i = 0; i != 6; ++i)
@@ -146,13 +235,8 @@ namespace __gnu_test
     void invalid_local_iterator_post_increment()
     {
       typedef _Tp cont_type;
-      typedef typename cont_type::value_type cont_val_type;
-      typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      generate_unique<val_type> gu;
-
       cont_type c;
-      for (size_t i = 0; i != 5; ++i)
-	c.insert(gu.build());
+      fill_container(c);
 
       auto lit = c.begin(0);
       for (size_t i = 0; i != 6; ++i)
@@ -163,13 +247,8 @@ namespace __gnu_test
     void invalid_local_iterator_compare()
     {
       typedef _Tp cont_type;
-      typedef typename cont_type::value_type cont_val_type;
-      typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      generate_unique<val_type> gu;
-
       cont_type c;
-      for (size_t i = 0; i != 5; ++i)
-	c.insert(gu.build());
+      fill_container(c);
 
       typename cont_type::local_iterator it1, it2;
       size_t i;
@@ -194,13 +273,8 @@ namespace __gnu_test
     void invalid_local_iterator_range()
     {
       typedef _Tp cont_type;
-      typedef typename cont_type::value_type cont_val_type;
-      typedef typename CopyableValueType<cont_val_type>::value_type val_type;
-      generate_unique<val_type> gu;
-
       cont_type c;
-      for (size_t i = 0; i != 5; ++i)
-	c.insert(gu.build());
+      fill_container(c);
 
       typename cont_type::local_iterator it, end;
       for (size_t i = 0; i != c.bucket_count(); ++i)

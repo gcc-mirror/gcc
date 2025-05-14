@@ -18,18 +18,18 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "intl.h"
-#include "diagnostic.h"
-#include "analyzer/analyzer.h"
+#include "analyzer/common.h"
+
 #include "diagnostic-event-id.h"
+#include "cpplib.h"
+#include "digraph.h"
+#include "ordered-hash-map.h"
+#include "cfg.h"
+#include "gimple-iterator.h"
+#include "cgraph.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
-#include "diagnostic-event-id.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/diagnostic-manager.h"
@@ -37,20 +37,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
-#include "cpplib.h"
-#include "digraph.h"
-#include "ordered-hash-map.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "cgraph.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/program-state.h"
 #include "analyzer/exploded-graph.h"
-#include "diagnostic-path.h"
 #include "analyzer/checker-path.h"
-#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -195,7 +185,7 @@ pending_diagnostic::add_function_entry_event (const exploded_edge &eedge,
 {
   const exploded_node *dst_node = eedge.m_dest;
   const program_point &dst_point = dst_node->get_point ();
-  emission_path->add_event (make_unique<function_entry_event> (dst_point));
+  emission_path->add_event (std::make_unique<function_entry_event> (dst_point));
 }
 
 /* Base implementation of pending_diagnostic::add_call_event.
@@ -210,12 +200,12 @@ pending_diagnostic::add_call_event (const exploded_edge &eedge,
   const int src_stack_depth = src_point.get_stack_depth ();
   const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
   emission_path->add_event
-    (make_unique<call_event> (eedge,
-			      event_loc_info (last_stmt
-					      ? last_stmt->location
-					      : UNKNOWN_LOCATION,
-					      src_point.get_fndecl (),
-					      src_stack_depth)));
+    (std::make_unique<call_event> (eedge,
+				   event_loc_info (last_stmt
+						   ? last_stmt->location
+						   : UNKNOWN_LOCATION,
+						   src_point.get_fndecl (),
+						   src_stack_depth)));
 }
 
 /* Base implementation of pending_diagnostic::add_region_creation_events.
@@ -228,12 +218,13 @@ pending_diagnostic::add_region_creation_events (const region *reg,
 						checker_path &emission_path)
 {
   emission_path.add_event
-    (make_unique<region_creation_event_memory_space> (reg->get_memory_space (),
-						      loc_info));
+    (std::make_unique<region_creation_event_memory_space>
+       (reg->get_memory_space (),
+	loc_info));
 
   if (capacity)
     emission_path.add_event
-      (make_unique<region_creation_event_capacity> (capacity, loc_info));
+      (std::make_unique<region_creation_event_capacity> (capacity, loc_info));
 }
 
 /* Base implementation of pending_diagnostic::add_final_event.
@@ -247,7 +238,7 @@ pending_diagnostic::add_final_event (const state_machine *sm,
 				     checker_path *emission_path)
 {
   emission_path->add_event
-    (make_unique<warning_event>
+    (std::make_unique<warning_event>
      (loc_info,
       enode,
       sm, var, state));

@@ -37,4 +37,4 @@ int
 f7 (void)
 {
   return f1 (); /* { dg-error "void value not ignored as it ought to be" } */
-} /* { dg-warning "control reaches end of non-void\[^\n\r\]*-Wreturn-type" } */
+} /* { dg-bogus "control reaches end of non-void\[^\n\r\]*-Wreturn-type" } */

@@ -1,3 +1,24 @@
+2025-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* math/expq.c (C): Fix up THREEp96 constant.
+
+2025-04-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/119408
+	* configure.ac: When checking for __float128 support, determine
+	whether the current architecture is LoongArch.  If so, return false.
+	* configure: Regenerate.
+	Sigend-off-by: Xi Ruoyao <xry111@xry111.site>
+	Sigend-off-by: Jakub Jelinek <jakub@redhat.com>
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* strtod/strtod_l.c (____STRTOF_INTERNAL): Avoid old-style function
+	definitions.
+	* printf/addmul_1.c (mpn_addmul_1): Likewise.
+	* printf/mul_1.c (mpn_mul_1): Likewise.
+	* printf/submul_1.c (mpn_submul_1): Likewise.
+
 2025-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* libquadmath.texi: Bump @copying's copyright year.

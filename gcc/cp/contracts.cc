@@ -895,10 +895,17 @@ cp_contract_assertion_p (const_tree attr)
 void
 remove_contract_attributes (tree fndecl)
 {
+  if (!flag_contracts)
+    return;
+
   tree list = NULL_TREE;
   for (tree p = DECL_ATTRIBUTES (fndecl); p; p = TREE_CHAIN (p))
     if (!cxx_contract_attribute_p (p))
-      list = tree_cons (TREE_PURPOSE (p), TREE_VALUE (p), list);
+      {
+	tree nl = copy_node (p);
+	TREE_CHAIN (nl) = list;
+	list = nl;
+      }
   DECL_ATTRIBUTES (fndecl) = nreverse (list);
 }
 

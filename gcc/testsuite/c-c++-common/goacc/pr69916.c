@@ -1,4 +1,4 @@
-/* {  dg-additional-options "-O2" } */
+/* { dg-additional-options "-O2" } */
 
 /* PR 69916, an loop determined to be empty sometime after omp-lower
    and before oacc-device-lower can evaporate leading to no GOACC_LOOP

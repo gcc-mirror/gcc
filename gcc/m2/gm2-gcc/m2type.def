@@ -996,4 +996,12 @@ PROCEDURE IsAddress (type: tree) : BOOLEAN ;
 PROCEDURE SameRealType (a, b: tree) : BOOLEAN ;
 
 
+(*
+   IsGccStrictTypeEquivalent - return true if left and right and
+                               all their contents have the same type.
+*)
+
+PROCEDURE IsGccStrictTypeEquivalent (left, right: tree) : BOOLEAN ;
+
+
 END m2type.

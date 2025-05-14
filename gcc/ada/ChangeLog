@@ -1,3 +1,103 @@
+2025-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/120104
+	* exp_ch3.adb (Expand_Freeze_Record_Type): For a controlled tagged
+	type, freeze only the controlled primitives that are present.
+
+2025-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112958
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) [x86 FreeBSD]: Add specific
+	version of s-dorepr.adb.
+	* libgnat/s-dorepr__freebsd.adb: New file.
+
+2025-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112958
+	* init.c (__gnat_error_handler) [__FreeBSD__]: Fix typo.
+
+2025-04-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/112877
+	* gcc-interface/utils.cc (create_param_decl): Remove the
+	targetm.calls.promote_prototypes call.
+
+2025-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gnatvsn.ads: Bump Library_Version to 16.
+
+2025-04-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/119643
+	* sem_ch8.adb (Inherit_Renamed_Profile): Add guard against the
+	peculiarities of Natural and Positive.
+
+2025-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (convert) <POINTER_TYPE>: Use fold_convert
+	to convert between thin pointers.  If the source is a thin pointer
+	with zero offset from the base and the target is a pointer to its
+	array, displace the pointer after converting it.
+	* gcc-interface/utils2.cc (build_unary_op) <ATTR_ADDR_EXPR>: Use
+	fold_convert to convert the address before displacing it.
+
+2025-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-ngcoar.adb (Eigensystem): Adjust notation and fix the
+	layout of the real symmetric matrix in the main comment.  Adjust
+	the layout of the associated code accordingly and correctly turn
+	the 2Nx1 real vectors into Nx1 complex ones.
+	(Eigenvalues): Minor similar tweaks.
+	* libgnat/a-ngrear.adb (Jacobi): Minor tweaks in the main comment.
+	Adjust notation and corresponding parameter names of functions.
+	Fix call to Unit_Matrix routine.  Adjust the comment describing
+	the various kinds of iterations to match the implementation.
+
+2025-03-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/s-tasini.adb (Tasking_Runtime_Initialize): Add pragma
+	Linker_Constructor for the procedure.
+
+2025-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/119440
+	* gcc-interface/Make-lang.in (GCC_LINK): Filter out -pie in stage 1
+	(GCC_LLINK): Likewise.
+	* gcc-interface/Makefile.in (COMPILER): Delete and replace by CC.
+	(COMPILER_FLAGS): Delete.
+	(ALL_COMPILERFLAGS): Delete and replace by ALL_CFLAGS.
+	(ALL_ADAFLAGS): Move around.
+	(enable_host_pie): New substituted variable.
+	(LD_PICFLAG): Likewise.  Do not add it to TOOLS_LIBS.
+	(LIBIBERTY): Test enable_host_pie.
+	(LIBGNAT): Likewise and use libgnat_pic.a if yes.
+	(TOOLS_FLAGS_TO_PASS): Pass $(PICFLAG) under CFLAGS & $(LD_PICFLAG)
+	under LDFLAGS.  Also pass through ADA_CFLAGS.
+	(common-tools): Add $(ALL_CFLAGS) $(ADA_CFLAGS) to the --GCC string
+	of $(GNATLINK) commands.
+	(../../gnatdll$(exeext)): Likewise.
+	(gnatmake-re): Likewise.
+	(gnatlink-re): Likewise.
+	(gnatlib-shared-dual): Remove all the object files at the end.
+
+2025-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.adb (Gnat_Free_Software): Fix message formatting.
+
+2025-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Record_Subtype>: Set
+	the may_alias attribute if a specific GCC type is built.
+
+2025-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (N_Formal_Package_Declaration): Use
+	N_Declaration instead of Node_Kind as ancestor.
+	* sem_ch12.adb (Get_Formal_Entity): Remove obsolete alternative.
+	(Instantiate_Formal_Package): Take into account the abbreviated
+	instances in the main loop running over the actuals of the local
+	package created for the formal package.
+
 2025-02-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/118731

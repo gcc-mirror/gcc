@@ -11,7 +11,8 @@ contains
     character(*), allocatable, intent(out) :: str
 !  Note: Star ^ should have been a colon (:)
 
-    allocate (character(n)::str)
+!   allocate (character(n)::str) ! original invalid version from pr82367
+    allocate (character(*)::str) ! corrected (see F2003:C626 and pr119338)
 
   end subroutine
 

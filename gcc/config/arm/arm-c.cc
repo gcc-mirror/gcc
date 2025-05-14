@@ -373,13 +373,6 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   builtin_define (arm_arch_name);
   if (arm_arch_xscale)
     builtin_define ("__XSCALE__");
-  if (arm_arch_iwmmxt)
-    {
-      builtin_define ("__IWMMXT__");
-      builtin_define ("__ARM_WMMX");
-    }
-  if (arm_arch_iwmmxt2)
-    builtin_define ("__IWMMXT2__");
   /* ARMv6KZ was originally identified as the misspelled __ARM_ARCH_6ZK__.  To
      preserve the existing behavior, the misspelled feature macro must still be
      defined.  */

@@ -59,7 +59,13 @@
 
 #define __glibcxx_want_constexpr_complex
 #define __glibcxx_want_complex_udls
+#define __glibcxx_want_tuple_like
 #include <bits/version.h>
+
+#if __glibcxx_tuple_like >= 202311 // >= C++26
+# include <bits/utility.h> // for tuple_element_t
+# include <bits/stl_pair.h> // for __is_tuple_like_v
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -123,6 +129,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Return complex hyperbolic tangent of @a z.
   template<typename _Tp> complex<_Tp> tanh(const complex<_Tp>&);
 
+#if __glibcxx_tuple_like >= 202311L // >= C++26
+  template<typename _Tp>
+    struct tuple_size<complex<_Tp>>
+    : public integral_constant<size_t, 2> { };
+  template<typename _Tp>
+    struct tuple_element<0, complex<_Tp>>
+    { using type = _Tp; };
+  template<typename _Tp>
+    struct tuple_element<1, complex<_Tp>>
+    { using type = _Tp; };
+  template<typename _Tp>
+    inline constexpr bool __is_tuple_like_v<complex<_Tp>> = true;
+#endif // __glibcxx_tuple_like >= 202311
 
   // 26.2.2  Primary template class complex
   /**
@@ -243,6 +262,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _GLIBCXX_CONSTEXPR complex __rep() const
       { return *this; }
+
+#if __glibcxx_tuple_like >= 202311L // >= C++26
+    template<typename _Cp>
+      [[__gnu__::__always_inline__]]
+      constexpr auto&
+      __get_part(this _Cp& __z, size_t __i) noexcept
+      {
+	return __i == 0 ? __z._M_real : __z._M_imag;
+      }
+#endif
 
     private:
       _Tp _M_real;
@@ -607,6 +636,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     imag(const complex<_Tp>& __z)
     { return __z.imag(); }
 #endif
+
+#if __glibcxx_tuple_like >= 202311L // >= C++26
+  template<size_t _Int, typename _Tp>
+    [[nodiscard,__gnu__::__always_inline__]]
+    constexpr _Tp&
+    get(complex<_Tp>& __z) noexcept
+    {
+      static_assert(_Int < 2);
+      return __z.__get_part(_Int);
+    }
+
+  template<size_t _Int, typename _Tp>
+    [[nodiscard,__gnu__::__always_inline__]]
+    constexpr _Tp&&
+    get(complex<_Tp>&& __z) noexcept
+    {
+      static_assert(_Int < 2);
+      return std::move(__z.__get_part(_Int));
+    }
+
+  template<size_t _Int, typename _Tp>
+    [[nodiscard,__gnu__::__always_inline__]]
+    constexpr const _Tp&
+    get(const complex<_Tp>& __z) noexcept
+    {
+      static_assert(_Int < 2);
+      return __z.__get_part(_Int);
+    }
+
+  template<size_t _Int, typename _Tp>
+    [[nodiscard,__gnu__::__always_inline__]]
+    constexpr const _Tp&&
+    get(const complex<_Tp>&& __z) noexcept
+    {
+      static_assert(_Int < 2);
+      return std::move(__z.__get_part(_Int));
+    }
+#endif // __glibcxx_tuple_like >= 202311
 
 #if _GLIBCXX_USE_C99_COMPLEX
 #if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
@@ -1348,6 +1415,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	                 : std::pow(complex<_Tp>(__x), __y);
     }
 
+#if __glibcxx_tuple_like >= 202311L // >= C++26
+#define _GLIBCXX26_DECLARE_COMPLEX_TUPLE_HELPER_ACCESSOR \
+  template<typename _Cp> \
+    [[__gnu__::__always_inline__]] \
+    constexpr auto& \
+    __get_part(this _Cp& __z, size_t __i) noexcept \
+    { \
+      return __i == 0 ? __real__ __z._M_value \
+	              : __imag__ __z._M_value; \
+    }
+#else
+#define _GLIBCXX26_DECLARE_COMPLEX_TUPLE_HELPER_ACCESSOR
+#endif
+
   /// 26.2.3  complex specializations
   /// complex<float> specialization
   template<>
@@ -1500,6 +1581,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       _GLIBCXX_CONSTEXPR _ComplexT __rep() const { return _M_value; }
+
+      _GLIBCXX26_DECLARE_COMPLEX_TUPLE_HELPER_ACCESSOR
 
     private:
       _ComplexT _M_value;
@@ -1657,6 +1740,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       _GLIBCXX_CONSTEXPR _ComplexT __rep() const { return _M_value; }
+
+      _GLIBCXX26_DECLARE_COMPLEX_TUPLE_HELPER_ACCESSOR
 
     private:
       _ComplexT _M_value;
@@ -1817,6 +1902,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _GLIBCXX_CONSTEXPR _ComplexT __rep() const { return _M_value; }
 
+      _GLIBCXX26_DECLARE_COMPLEX_TUPLE_HELPER_ACCESSOR
+
     private:
       _ComplexT _M_value;
     };
@@ -1971,10 +2058,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr _ComplexT __rep() const { return _M_value; }
 
+      _GLIBCXX26_DECLARE_COMPLEX_TUPLE_HELPER_ACCESSOR
+
     private:
       _ComplexT _M_value;
     };
 #endif
+
+#undef _GLIBCXX26_DECLARE_COMPLEX_TUPLE_HELPER_ACCESSOR
 
 #if __cplusplus <= 202002L
   // These bits have to be at the end of this file, so that the

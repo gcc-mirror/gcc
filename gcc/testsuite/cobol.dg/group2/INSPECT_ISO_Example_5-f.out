@@ -1,0 +1,9 @@
+  INPUT                C0 C1 C2 OUTPUT
+  -------------------- -- -- -- ----------------
+  ABABBCAB             00 01 06 ABABBCXY
+* ABABBCAB             00 01 06 ABABBCXY
+  ABDBABC              00 00 01 AVDBABC
+* ABDBABC              00 00 01 AVDBABC
+  BCABCABD             01 00 00 BCABCAVD
+* BCABCABD             01 00 00 BCABCAVD
+

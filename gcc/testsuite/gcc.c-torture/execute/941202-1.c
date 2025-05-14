@@ -1,4 +1,3 @@
-/* { dg-skip-if "requires alloca" { ! alloca } { "-O0" } { "" } } */
 /* { dg-additional-options "-std=gnu89" } */
 g (x, y)
 {

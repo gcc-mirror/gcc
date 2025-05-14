@@ -84,6 +84,7 @@
   [UNSPEC_STRLEN
    UNSPEC_CPYMEM
    UNSPEC_INDEX_JMP
+   UNSPEC_NZB
    UNSPEC_FMUL
    UNSPEC_FMULS
    UNSPEC_FMULSU
@@ -173,6 +174,10 @@
    insert_bits, insv_notbit, insv, set_some,
    add_set_ZN, add_set_N, cmp_uext, cmp_sext, cmp_lsr,
    no"
+  (const_string "no"))
+
+(define_attr "nzb"
+  "yes, no"
   (const_string "no"))
 
 ;; Flavours of instruction set architecture (ISA), used in enabled attribute
@@ -713,6 +718,8 @@
   "&& reload_completed"
   [(parallel [(set (reg:MOVMODE REG_22)
                    (match_dup 0))
+              (clobber (reg:QI REG_21))
+              (clobber (reg:HI REG_Z))
               (clobber (reg:CC REG_CC))])]
   {
     operands[0] = SET_SRC (single_set (curr_insn));
@@ -722,6 +729,8 @@
   [(set (reg:MOVMODE REG_22)
         (mem:MOVMODE (lo_sum:PSI (reg:QI REG_21)
                                  (reg:HI REG_Z))))
+   (clobber (reg:QI REG_21))
+   (clobber (reg:HI REG_Z))
    (clobber (reg:CC REG_CC))]
   "reload_completed
    && (avr_load_libgcc_insn_p (insn, ADDR_SPACE_MEMX, true)
@@ -10915,6 +10924,216 @@
     avr_emit_skip_clear (operands[0], operands[3], NE, operands[1], 0);
     DONE;
   })
+
+;; Patterns for -muse-nonzero-bits use nonzero_bits() in their condition,
+;; which makes possible some more optimizations.
+;;    Since combine may add clobber of REG_CC, we must make sure that there are
+;; no other routes to synthesize such patterns.  We use an UNSPEC for that.
+;;    As insns are not supposed to use stuff like nonzero_bits() in their
+;; condition, we split the insns right after reload.  For CFG reasons we have
+;; to do the splits by hand in avr_pass_split_nzb.  All insns that must be
+;; split by that pass must have insn attribute "nzb" set to "yes".  Moreover,
+;; the insns to split must be single_sets and must not touch control flow.
+
+(define_code_attr nzb_constr_rdr [(and "r") (ior "d") (xor "r")])
+(define_code_attr nzb_use1_nnr   [(and "n") (ior "n") (xor "r")])
+
+(define_insn_and_split "*nzb=1.<code>.zerox_split"
+  [(set (match_operand:QI 0 "register_operand")
+        (bitop:QI (zero_extract:QI (match_operand:QI 1 "register_operand")
+                                   (const_int 1)
+                                   (match_operand:QI 2 "const_0_to_7_operand"))
+                  (match_operand:QI 3 "register_operand")))]
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed
+   && (<CODE> == IOR || <CODE> == XOR
+       || nonzero_bits (operands[3], QImode) == 1)"
+  { gcc_unreachable (); }
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (bitop:QI (zero_extract:QI (match_dup 1)
+                                              (const_int 1)
+                                              (match_dup 2))
+                             (unspec:QI [(match_dup 3)
+                                         ] UNSPEC_NZB)))
+              (use (const_int 1))
+              (clobber (reg:CC REG_CC))])]
+  ""
+  [(set_attr "nzb" "yes")])
+
+(define_insn "*nzb=1.<code>.zerox"
+  [(set (match_operand:QI 0 "register_operand"                "=<nzb_constr_rdr>")
+        (bitop:QI (zero_extract:QI (match_operand:QI 1 "register_operand"     "r")
+                                   (const_int 1)
+                                   (match_operand:QI 2 "const_0_to_7_operand" "n"))
+                  (unspec:QI [(match_operand:QI 3 "register_operand"          "0")
+                              ] UNSPEC_NZB)))
+   (use (match_operand:QI 4 "nonmemory_operand" "<nzb_use1_nnr>"))
+   (clobber (reg:CC REG_CC))]
+  "optimize && avropt_use_nonzero_bits"
+  {
+    if (<CODE> == AND)
+      return "sbrs %1,%2\;clr %0";
+    else if (<CODE> == IOR)
+      return "sbrc %1,%2\;ori %0,1";
+    else if (<CODE> == XOR)
+      return "sbrc %1,%2\;eor %0,%4";
+    else
+      gcc_unreachable ();
+  }
+  [(set_attr "length" "2")])
+
+(define_insn_and_split "*nzb=1.<code>.lsr_split"
+  [(set (match_operand:QI 0 "register_operand")
+        (bitop:QI (lshiftrt:QI (match_operand:QI 1 "register_operand")
+                               (match_operand:QI 2 "const_0_to_7_operand"))
+                  (match_operand:QI 3 "register_operand")))]
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed
+   && avr_nonzero_bits_lsr_operands_p (<CODE>, operands)"
+  { gcc_unreachable (); }
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (bitop:QI (zero_extract:QI (match_dup 1)
+                                              (const_int 1)
+                                              (match_dup 2))
+                             (unspec:QI [(match_dup 3)
+                                        ] UNSPEC_NZB)))
+              (use (const_int 1))
+              (clobber (reg:CC REG_CC))])]
+  ""
+  [(set_attr "nzb" "yes")])
+
+(define_insn_and_split "*nzb=1.<code>.zerox.not_split"
+  [(set (match_operand:QI 0 "register_operand")
+        (bitop:QI (zero_extract:QI (xor:QI (match_operand:QI 1 "register_operand")
+                                           (match_operand:QI 4 "const_int_operand"))
+                                   (const_int 1)
+                                   (match_operand:QI 2 "const_0_to_7_operand"))
+                  (match_operand:QI 3 "register_operand")))]
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed
+   && INTVAL (operands[2]) == exact_log2 (0xff & INTVAL (operands[4]))
+   && (<CODE> == IOR
+       || nonzero_bits (operands[3], QImode) == 1)"
+  { gcc_unreachable (); }
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed"
+  ; "*nzb=1.<code>.zerox.not"
+  [(parallel [(set (match_dup 0)
+                   (bitop:QI (zero_extract:QI (not:QI (match_dup 1))
+                                              (const_int 1)
+                                              (match_dup 2))
+                             (unspec:QI [(match_dup 3)
+                                         ] UNSPEC_NZB)))
+              (use (const_int 1))
+              (clobber (reg:CC REG_CC))])]
+  ""
+  [(set_attr "nzb" "yes")])
+
+(define_insn_and_split "*nzb=1.<code>.lsr.not_split"
+  [(set (match_operand:QI 0 "register_operand")
+        (bitop:QI (lshiftrt:QI (xor:QI (match_operand:QI 1 "register_operand")
+                                       (match_operand:QI 4 "const_int_operand"))
+                               (match_operand:QI 2 "const_0_to_7_operand"))
+                  (match_operand:QI 3 "register_operand")))]
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed
+   && INTVAL (operands[2]) == exact_log2 (0xff & INTVAL (operands[4]))
+   && avr_nonzero_bits_lsr_operands_p (<CODE>, operands)"
+  { gcc_unreachable (); }
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed"
+  ; "*nzb=1.<code>.zerox.not"
+  [(parallel [(set (match_dup 0)
+                   (bitop:QI (zero_extract:QI (not:QI (match_dup 1))
+                                              (const_int 1)
+                                              (match_dup 2))
+                             (unspec:QI [(match_dup 3)
+                                         ] UNSPEC_NZB)))
+              (use (const_int 1))
+              (clobber (reg:CC REG_CC))])]
+  ""
+  [(set_attr "nzb" "yes")])
+
+(define_insn_and_split "*nzb=1.<code>.ge0_split"
+  [(set (match_operand:QI 0 "register_operand")
+        (bitop:QI (ge:QI (match_operand:QI 1 "register_operand")
+                         (const_int 0))
+                  (match_operand:QI 2 "register_operand")))]
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed
+   && (<CODE> == IOR || <CODE> == XOR
+       || nonzero_bits (operands[2], QImode) == 1)"
+  { gcc_unreachable (); }
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed"
+  ; "*nzb=1.<code>.zerox.not"
+  [(parallel [(set (match_dup 0)
+                   (bitop:QI (zero_extract:QI (not:QI (match_dup 1))
+                                              (const_int 1)
+                                              (const_int 7))
+                             (unspec:QI [(match_dup 2)
+                                         ] UNSPEC_NZB)))
+              (use (const_int 1))
+              (clobber (reg:CC REG_CC))])]
+  ""
+  [(set_attr "nzb" "yes")])
+
+(define_insn "*nzb=1.<code>.zerox.not"
+  [(set (match_operand:QI 0 "register_operand"                    "=<nzb_constr_rdr>")
+        (bitop:QI (zero_extract:QI (not:QI (match_operand:QI 1 "register_operand" "r"))
+                                   (const_int 1)
+                                   (match_operand:QI 2 "const_0_to_7_operand"     "n"))
+                  (unspec:QI [(match_operand:QI 3 "register_operand"              "0")
+                              ] UNSPEC_NZB)))
+   (use (match_operand:QI 4 "nonmemory_operand" "<nzb_use1_nnr>"))
+   (clobber (reg:CC REG_CC))]
+  "optimize && avropt_use_nonzero_bits"
+  {
+    if (<CODE> == AND)
+      return "sbrc %1,%2\;clr %0";
+    else if (<CODE> == IOR)
+      return "sbrs %1,%2\;ori %0,1";
+    else if (<CODE> == XOR)
+      return "sbrs %1,%2\;eor %0,%4";
+    else
+      gcc_unreachable ();
+  }
+  [(set_attr "length" "2")])
+
+(define_insn_and_split "*nzb=1.ior.ashift_split"
+  [(set (match_operand:QI 0 "register_operand"                       "=d")
+        (ior:QI (ashift:QI (match_operand:QI 1 "register_operand"     "r")
+                           (match_operand:QI 2 "const_0_to_7_operand" "n"))
+                (match_operand:QI 3 "register_operand"                "0")))]
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed
+   && nonzero_bits (operands[1], QImode) == 1"
+  { gcc_unreachable (); }
+  "optimize && avropt_use_nonzero_bits
+   && !reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (unspec:QI [(ior:QI (ashift:QI (match_dup 1)
+                                                  (match_dup 2))
+                                       (match_dup 3))
+                               ] UNSPEC_NZB))
+              (clobber (reg:CC REG_CC))])]
+  ""
+  [(set_attr "nzb" "yes")])
+
+(define_insn "*nzb=1.ior.ashift"
+  [(set (match_operand:QI 0 "register_operand"                                   "=d")
+        (unspec:QI [(ior:QI (ashift:QI (match_operand:QI 1 "register_operand"     "r")
+                                       (match_operand:QI 2 "const_0_to_7_operand" "n"))
+                            (match_operand:QI 3 "register_operand"                "0"))
+                    ] UNSPEC_NZB))
+   (clobber (reg:CC REG_CC))]
+  "optimize && avropt_use_nonzero_bits"
+  "sbrc %1,0\;ori %0,1<<%2"
+  [(set_attr "length" "2")])
 
 
 ;; Work around PR115307: Early passes expand isinf/f/l to a bloat.

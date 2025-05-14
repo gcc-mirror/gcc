@@ -1,4 +1,4 @@
-// { dg-do assemble  }
+// { dg-do assemble }
 // g++ 1.37.1 bug 900519_13
 
 // If multiple inheritance creates a situation in which a given name is

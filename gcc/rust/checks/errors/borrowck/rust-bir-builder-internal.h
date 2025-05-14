@@ -76,8 +76,8 @@ struct BuilderContext
   Resolver::Resolver &resolver;
 
   // BIR output
-  std::vector<BasicBlock> basic_blocks;
-  size_t current_bb = 0;
+  BasicBlocks basic_blocks;
+  BasicBlockId current_bb = ENTRY_BASIC_BLOCK;
 
   /**
    * Allocation and lookup of places (variables, temporaries, paths, and
@@ -156,7 +156,7 @@ protected:
 
     auto place_id = ctx.place_db.add_variable (nodeid, ty);
 
-    if (ctx.place_db.get_current_scope_id () != 0)
+    if (ctx.place_db.get_current_scope_id () != INVALID_SCOPE)
       push_storage_live (place_id);
 
     if (user_type_annotation)
@@ -170,7 +170,7 @@ protected:
   void pop_scope ()
   {
     auto &scope = ctx.place_db.get_current_scope ();
-    if (ctx.place_db.get_current_scope_id () != 0)
+    if (ctx.place_db.get_current_scope_id () != INVALID_SCOPE)
       {
 	std::for_each (scope.locals.rbegin (), scope.locals.rend (),
 		       [&] (PlaceId place) { push_storage_dead (place); });
@@ -206,7 +206,7 @@ protected:
   FreeRegions bind_regions (std::vector<TyTy::Region> regions,
 			    FreeRegions parent_free_regions)
   {
-    std::vector<FreeRegion> free_regions;
+    FreeRegions free_regions;
     for (auto &region : regions)
       {
 	if (region.is_early_bound ())
@@ -215,7 +215,7 @@ protected:
 	  }
 	else if (region.is_static ())
 	  {
-	    free_regions.push_back (0);
+	    free_regions.push_back (STATIC_FREE_REGION);
 	  }
 	else if (region.is_anonymous ())
 	  {
@@ -231,87 +231,95 @@ protected:
 	    rust_unreachable ();
 	  }
       }
-    // This is necesarry because of clash of current gcc and gcc4.8.
-    FreeRegions free_regions_final{std::move (free_regions)};
-    return free_regions_final;
+    return free_regions;
   }
 
 protected: // Helpers to add BIR statements
-  void push_assignment (PlaceId lhs, AbstractExpr *rhs)
+  void push_assignment (PlaceId lhs, AbstractExpr *rhs, location_t location)
   {
-    ctx.get_current_bb ().statements.emplace_back (lhs, rhs);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_assignment (lhs, rhs, location));
     translated = lhs;
   }
 
-  void push_assignment (PlaceId lhs, PlaceId rhs)
+  void push_assignment (PlaceId lhs, PlaceId rhs, location_t location)
   {
-    push_assignment (lhs, new Assignment (rhs));
+    push_assignment (lhs, new Assignment (rhs), location);
   }
 
-  void push_tmp_assignment (AbstractExpr *rhs, TyTy::BaseType *tyty)
+  void push_tmp_assignment (AbstractExpr *rhs, TyTy::BaseType *tyty,
+			    location_t location)
   {
     PlaceId tmp = ctx.place_db.add_temporary (tyty);
     push_storage_live (tmp);
-    push_assignment (tmp, rhs);
+    push_assignment (tmp, rhs, location);
   }
 
-  void push_tmp_assignment (PlaceId rhs)
+  void push_tmp_assignment (PlaceId rhs, location_t location)
   {
-    push_tmp_assignment (new Assignment (rhs), ctx.place_db[rhs].tyty);
+    push_tmp_assignment (new Assignment (rhs), ctx.place_db[rhs].tyty,
+			 location);
   }
 
-  void push_switch (PlaceId switch_val,
+  void push_switch (PlaceId switch_val, location_t location,
 		    std::initializer_list<BasicBlockId> destinations = {})
   {
-    auto copy = move_place (switch_val);
-    ctx.get_current_bb ().statements.emplace_back (Statement::Kind::SWITCH,
-						   copy);
+    auto copy = move_place (switch_val, location);
+    ctx.get_current_bb ().statements.push_back (Statement::make_switch (copy));
     ctx.get_current_bb ().successors.insert (
       ctx.get_current_bb ().successors.end (), destinations);
   }
 
   void push_goto (BasicBlockId bb)
   {
-    ctx.get_current_bb ().statements.emplace_back (Statement::Kind::GOTO);
+    ctx.get_current_bb ().statements.push_back (Statement::make_goto ());
     if (bb != INVALID_BB) // INVALID_BB means the goto will be resolved later.
       ctx.get_current_bb ().successors.push_back (bb);
   }
 
   void push_storage_live (PlaceId place)
   {
-    ctx.get_current_bb ().statements.emplace_back (
-      Statement::Kind::STORAGE_LIVE, place);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_storage_live (place));
   }
 
   void push_storage_dead (PlaceId place)
   {
-    ctx.get_current_bb ().statements.emplace_back (
-      Statement::Kind::STORAGE_DEAD, place);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_storage_dead (place));
   }
 
   void push_user_type_ascription (PlaceId place, TyTy::BaseType *ty)
   {
-    ctx.get_current_bb ().statements.emplace_back (
-      Statement::Kind::USER_TYPE_ASCRIPTION, place, ty);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_user_type_ascription (place, ty));
   }
 
   void push_fake_read (PlaceId place)
   {
-    ctx.get_current_bb ().statements.emplace_back (Statement::Kind::FAKE_READ,
-						   place);
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_fake_read (place));
   }
 
-  PlaceId borrow_place (PlaceId place_id, TyTy::BaseType *ty)
+  void push_return (location_t location)
+  {
+    ctx.get_current_bb ().statements.push_back (
+      Statement::make_return (location));
+  }
+
+  PlaceId borrow_place (PlaceId place_id, TyTy::BaseType *ty,
+			location_t location)
   {
     auto mutability = ty->as<const TyTy::ReferenceType> ()->mutability ();
-    auto loan = ctx.place_db.add_loan ({mutability, place_id});
-    push_tmp_assignment (new BorrowExpr (place_id, loan,
-					 ctx.place_db.get_next_free_region ()),
-			 ty);
+    auto loan = ctx.place_db.add_loan ({mutability, place_id, location});
+    push_tmp_assignment (
+      new BorrowExpr (place_id, loan,
+		      ctx.place_db.get_next_free_region ().value),
+      ty, location);
     return translated;
   }
 
-  PlaceId move_place (PlaceId arg)
+  PlaceId move_place (PlaceId arg, location_t location)
   {
     auto &place = ctx.place_db[arg];
 
@@ -319,34 +327,38 @@ protected: // Helpers to add BIR statements
       return arg;
 
     if (place.tyty->is<TyTy::ReferenceType> ())
-      return reborrow_place (arg);
+      return reborrow_place (arg, location);
 
     if (place.is_rvalue ())
       return arg;
 
-    push_tmp_assignment (arg);
+    push_tmp_assignment (arg, location);
     return translated;
   }
 
-  PlaceId reborrow_place (PlaceId arg)
+  PlaceId reborrow_place (PlaceId arg, location_t location)
   {
     auto ty = ctx.place_db[arg].tyty->as<TyTy::ReferenceType> ();
     return borrow_place (ctx.place_db.lookup_or_add_path (Place::DEREF,
 							  ty->get_base (), arg),
-			 ty);
+			 ty, location);
   }
 
-  template <typename T> void move_all (T &args)
+  template <typename T>
+  void move_all (T &args, std::vector<location_t> locations)
   {
-    std::transform (args.begin (), args.end (), args.begin (),
-		    [this] (PlaceId arg) { return move_place (arg); });
+    rust_assert (args.size () == locations.size ());
+    std::transform (args.begin (), args.end (), locations.begin (),
+		    args.begin (), [this] (PlaceId arg, location_t location) {
+		      return move_place (arg, location);
+		    });
   }
 
 protected: // CFG helpers
   BasicBlockId new_bb ()
   {
     ctx.basic_blocks.emplace_back ();
-    return ctx.basic_blocks.size () - 1;
+    return {ctx.basic_blocks.size () - 1};
   }
 
   BasicBlockId start_new_consecutive_bb ()
@@ -477,12 +489,15 @@ protected: // Implicit conversions.
   {
     if (ctx.place_db[translated].tyty->get_kind () != TyTy::REF)
       {
+	// FIXME: not sure how to fetch correct location for this
+	// this function is unused yet, so can ignore for now
 	auto ty = ctx.place_db[translated].tyty;
 	translated
 	  = borrow_place (translated,
 			  new TyTy::ReferenceType (ty->get_ref (),
 						   TyTy::TyVar (ty->get_ref ()),
-						   Mutability::Imm));
+						   Mutability::Imm),
+			  UNKNOWN_LOCATION);
       }
   }
 };
@@ -531,16 +546,16 @@ protected:
    * @param can_panic mark that expression can panic to insert jump to
    * cleanup.
    */
-  void return_expr (AbstractExpr *expr, TyTy::BaseType *ty,
+  void return_expr (AbstractExpr *expr, TyTy::BaseType *ty, location_t location,
 		    bool can_panic = false)
   {
     if (expr_return_place != INVALID_PLACE)
       {
-	push_assignment (expr_return_place, expr);
+	push_assignment (expr_return_place, expr, location);
       }
     else
       {
-	push_tmp_assignment (expr, ty);
+	push_tmp_assignment (expr, ty, location);
       }
 
     if (can_panic)
@@ -556,12 +571,12 @@ protected:
   }
 
   /** Mark place to be a result of processed subexpression. */
-  void return_place (PlaceId place, bool can_panic = false)
+  void return_place (PlaceId place, location_t location, bool can_panic = false)
   {
     if (expr_return_place != INVALID_PLACE)
       {
 	// Return place is already allocated, no need to defer assignment.
-	push_assignment (expr_return_place, place);
+	push_assignment (expr_return_place, place, location);
       }
     else
       {
@@ -585,14 +600,16 @@ protected:
     translated = ctx.place_db.get_constant (lookup_type (expr));
   }
 
-  PlaceId return_borrowed (PlaceId place_id, TyTy::BaseType *ty)
+  PlaceId return_borrowed (PlaceId place_id, TyTy::BaseType *ty,
+			   location_t location)
   {
     // TODO: deduplicate with borrow_place
     auto loan = ctx.place_db.add_loan (
-      {ty->as<const TyTy::ReferenceType> ()->mutability (), place_id});
+      {ty->as<const TyTy::ReferenceType> ()->mutability (), place_id,
+       location});
     return_expr (new BorrowExpr (place_id, loan,
-				 ctx.place_db.get_next_free_region ()),
-		 ty);
+				 ctx.place_db.get_next_free_region ().value),
+		 ty, location);
     return translated;
   }
 

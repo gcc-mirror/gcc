@@ -8,7 +8,7 @@
 /*
 ** le16:
 **	sub	w([0-9]+), w0, #1
-**	and	w([0-9]+), w0, w\1
+**	and	w([0-9]+), (?:w0, w\1|w\1, w0)
 **	tst	w\2, 65535
 **	cset	w0, eq
 **	ret
@@ -21,7 +21,7 @@ unsigned le16 (const unsigned short a) {
 /*
 ** gt16:
 **	sub	w([0-9]+), w0, #1
-**	and	w([0-9]+), w0, w\1
+**	and	w([0-9]+), (?:w0, w\1|w\1, w0)
 **	tst	w\2, 65535
 **	cset	w0, ne
 **	ret

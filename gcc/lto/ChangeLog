@@ -1,3 +1,19 @@
+2025-04-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* lto-partition.cc (add_node_references_to_partition): Define.
+	(create_partition): Likewise.
+	(lto_locality_map): Likewise.
+	(lto_promote_cross_file_statics): Add extra dumping.
+	* lto-partition.h (lto_locality_map): Declare prototype.
+	* lto.cc (do_whole_program_analysis): Handle
+	flag_ipa_reorder_for_locality.
+
+2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91299
+	* lto-symtab.cc (lto_symtab_merge_symbols): Set DECL_EXTERNAL
+	only after calling get_availability.
+
 2025-02-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/118125

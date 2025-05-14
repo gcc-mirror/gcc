@@ -15989,7 +15989,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   old_CXXFLAGS="$CXXFLAGS"
 
-  # Do link tests if possible, instead asm tests, limited to some platforms
+  # Do link tests if possible, otherwise asm tests. Limited to some platforms
   # see discussion in PR target/40134, PR libstdc++/40133 and the thread
   # starting at http://gcc.gnu.org/ml/gcc-patches/2009-07/msg00322.html
   atomic_builtins_link_tests=no
@@ -16002,326 +16002,77 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
     esac
   fi
 
-  if test x$atomic_builtins_link_tests = xyes; then
+  if test "$atomic_builtins_link_tests" = yes; then
 
-  # Do link tests.
+    # Do link tests.
 
-  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+    CXXFLAGS="$CXXFLAGS -fno-exceptions"
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for bool" >&5
-$as_echo_n "checking for atomic builtins for bool... " >&6; }
-if ${glibcxx_cv_atomic_bool+:} false; then :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for _Atomic_word" >&5
+$as_echo_n "checking for atomic builtins for _Atomic_word... " >&6; }
+if ${glibcxx_cv_atomic_word+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-
-    if test x$gcc_no_link = xyes; then
+  if test x$gcc_no_link = xyes; then
   as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
+#include "${glibcxx_srcdir}/config/$atomic_word_dir/atomic_word.h"
 int
 main ()
 {
-typedef bool atomic_type;
-       atomic_type c1;
-       atomic_type c2;
-       atomic_type c3(0);
-       // N.B. __atomic_fetch_add is not supported for bool.
-       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-				   __ATOMIC_RELAXED);
-       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-       __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
+_Atomic_word a = 0, b;
+		      b = __atomic_fetch_add(&a, 1, __ATOMIC_ACQ_REL);
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_atomic_bool=yes
+  glibcxx_cv_atomic_word=yes
 else
-  glibcxx_cv_atomic_bool=no
+  glibcxx_cv_atomic_word=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_bool" >&5
-$as_echo "$glibcxx_cv_atomic_bool" >&6; }
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for short" >&5
-$as_echo_n "checking for atomic builtins for short... " >&6; }
-if ${glibcxx_cv_atomic_short+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-typedef short atomic_type;
-       atomic_type c1;
-       atomic_type c2;
-       atomic_type c3(0);
-       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-				   __ATOMIC_RELAXED);
-       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-       __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_atomic_short=yes
-else
-  glibcxx_cv_atomic_short=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_short" >&5
-$as_echo "$glibcxx_cv_atomic_short" >&6; }
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for int" >&5
-$as_echo_n "checking for atomic builtins for int... " >&6; }
-if ${glibcxx_cv_atomic_int+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-typedef int atomic_type;
-       atomic_type c1;
-       atomic_type c2;
-       atomic_type c3(0);
-       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-				   __ATOMIC_RELAXED);
-       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-       __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_atomic_int=yes
-else
-  glibcxx_cv_atomic_int=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_int" >&5
-$as_echo "$glibcxx_cv_atomic_int" >&6; }
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for long long" >&5
-$as_echo_n "checking for atomic builtins for long long... " >&6; }
-if ${glibcxx_cv_atomic_long_long+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-typedef long long atomic_type;
-       atomic_type c1;
-       atomic_type c2;
-       atomic_type c3(0);
-       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-				   __ATOMIC_RELAXED);
-       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-       __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_atomic_long_long=yes
-else
-  glibcxx_cv_atomic_long_long=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_long_long" >&5
-$as_echo "$glibcxx_cv_atomic_long_long" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_word" >&5
+$as_echo "$glibcxx_cv_atomic_word" >&6; }
 
   else
+    # Do asm tests.
 
-  # Do asm tests.
+    # Compile unoptimized.
+    CXXFLAGS='-O0 -S'
 
-  # Compile unoptimized.
-  CXXFLAGS='-O0 -S'
-
-  # Fake what AC_TRY_COMPILE does.
+    # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16185 "configure"
+#line 16051 "configure"
+#include "${glibcxx_srcdir}/config/$atomic_word_dir/atomic_word.h"
 int main()
 {
-  typedef bool atomic_type;
-  atomic_type c1;
-  atomic_type c2;
-  atomic_type c3(0);
-  // N.B. __atomic_fetch_add is not supported for bool.
-  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-			      __ATOMIC_RELAXED);
-  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-  __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  return 0;
+  _Atomic_word a = 0, b;
+  b = __atomic_fetch_add(&a, 1, __ATOMIC_ACQ_REL);
 }
 EOF
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for bool" >&5
-$as_echo_n "checking for atomic builtins for bool... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for _Atomic_word" >&5
+$as_echo_n "checking for atomic builtins for _Atomic_word... " >&6; }
     if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
       if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
-	glibcxx_cv_atomic_bool=no
+	glibcxx_cv_atomic_word=no
       else
-	glibcxx_cv_atomic_bool=yes
+	glibcxx_cv_atomic_word=yes
       fi
     fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_bool" >&5
-$as_echo "$glibcxx_cv_atomic_bool" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_word" >&5
+$as_echo "$glibcxx_cv_atomic_word" >&6; }
     rm -f conftest*
-
-    cat > conftest.$ac_ext << EOF
-#line 16220 "configure"
-int main()
-{
-  typedef short atomic_type;
-  atomic_type c1;
-  atomic_type c2;
-  atomic_type c3(0);
-  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-			      __ATOMIC_RELAXED);
-  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-  __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  return 0;
-}
-EOF
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for short" >&5
-$as_echo_n "checking for atomic builtins for short... " >&6; }
-    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
-	glibcxx_cv_atomic_short=no
-      else
-	glibcxx_cv_atomic_short=yes
-      fi
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_short" >&5
-$as_echo "$glibcxx_cv_atomic_short" >&6; }
-    rm -f conftest*
-
-    cat > conftest.$ac_ext << EOF
-#line 16255 "configure"
-int main()
-{
-  // NB: _Atomic_word not necessarily int.
-  typedef int atomic_type;
-  atomic_type c1;
-  atomic_type c2;
-  atomic_type c3(0);
-  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-			      __ATOMIC_RELAXED);
-  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-  __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  return 0;
-}
-EOF
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for int" >&5
-$as_echo_n "checking for atomic builtins for int... " >&6; }
-    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
-	glibcxx_cv_atomic_int=no
-      else
-	glibcxx_cv_atomic_int=yes
-      fi
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_int" >&5
-$as_echo "$glibcxx_cv_atomic_int" >&6; }
-    rm -f conftest*
-
-    cat > conftest.$ac_ext << EOF
-#line 16291 "configure"
-int main()
-{
-  typedef long long atomic_type;
-  atomic_type c1;
-  atomic_type c2;
-  atomic_type c3(0);
-  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-			      __ATOMIC_RELAXED);
-  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-  __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  return 0;
-}
-EOF
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for long long" >&5
-$as_echo_n "checking for atomic builtins for long long... " >&6; }
-    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
-	glibcxx_cv_atomic_long_long=no
-      else
-	glibcxx_cv_atomic_long_long=yes
-      fi
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_long_long" >&5
-$as_echo "$glibcxx_cv_atomic_long_long" >&6; }
-    rm -f conftest*
-
   fi
 
   CXXFLAGS="$old_CXXFLAGS"
@@ -16332,14 +16083,12 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-  # Set atomicity_dir to builtins if all but the long long test above passes,
+  # Set atomicity_dir to builtins if the test above passes,
   # or if the builtins were already chosen (e.g. by configure.host).
-  if { test "$glibcxx_cv_atomic_bool" = yes \
-     && test "$glibcxx_cv_atomic_short" = yes \
-     && test "$glibcxx_cv_atomic_int" = yes; } \
+  if test "$glibcxx_cv_atomic_word" = yes \
      || test "$atomicity_dir" = "cpu/generic/atomicity_builtins"; then
 
-$as_echo "#define _GLIBCXX_ATOMIC_BUILTINS 1" >>confdefs.h
+$as_echo "#define _GLIBCXX_ATOMIC_WORD_BUILTINS 1" >>confdefs.h
 
     atomicity_dir=cpu/generic/atomicity_builtins
   fi
@@ -16394,10 +16143,11 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
                 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-    #if defined __riscv
+    #if defined __AMDGCN__ || defined __nvptx__
+    /* Yes, please.  */
+    #elif defined __riscv
     # error "Defaulting to mutex-based locks for ABI compatibility"
-    #endif
-    #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
+    #elif ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
     # error "No 2-byte compare-and-swap"
     #elif ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
     # error "No 4-byte compare-and-swap"
@@ -16444,7 +16194,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16447 "configure"
+#line 16197 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16486,7 +16236,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16489 "configure"
+#line 16239 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -19450,9 +19200,11 @@ fi
 	     as_fn_error $? "compiler flags start with a -" "$LINENO" 5 ;;
       esac
     done
+
+    # Append the additional flags to any that came from 'configure.host'.
+    EXTRA_CXX_FLAGS="$EXTRA_CXX_FLAGS $enable_cxx_flags"
   fi
 
-  EXTRA_CXX_FLAGS="$enable_cxx_flags"
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $EXTRA_CXX_FLAGS" >&5
 $as_echo "$EXTRA_CXX_FLAGS" >&6; }
 
@@ -53785,8 +53537,117 @@ fi
 
   BACKTRACE_CPPFLAGS="-D_GNU_SOURCE"
 
-  # libbacktrace only needs atomics for int, which we've already tested
-  if test "$glibcxx_cv_atomic_int" = "yes"; then
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  old_CXXFLAGS="$CXXFLAGS"
+
+  # libbacktrace's own configure.ac only tests atomics for int,
+  # but the code actually uses atomics for size_t and pointers as well.
+  if test "$atomic_builtins_link_tests" = yes; then
+
+    CXXFLAGS='-O0'
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for libbacktrace" >&5
+$as_echo_n "checking for atomic builtins for libbacktrace... " >&6; }
+if ${glibcxx_cv_libbacktrace_atomics+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+	    int i = 0;
+	    int* p = &i;
+	    __SIZE_TYPE__ s = 0;
+	    // backtrace_atomic_load_pointer
+	    void* vp = __atomic_load_n(&p, __ATOMIC_ACQUIRE);
+	    // backtrace_atomic_load_int
+	    int i2 = __atomic_load_n(&i, __ATOMIC_ACQUIRE);
+	    // backtrace_atomic_store_pointer
+	    __atomic_store_n(&p, &i, __ATOMIC_RELEASE);
+	    // backtrace_atomic_store_size_t
+	    __atomic_store_n(&s, s, __ATOMIC_RELEASE);
+	    // backtrace_atomic_store_int
+	    __atomic_store_n(&i, i, __ATOMIC_RELEASE);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_libbacktrace_atomics=yes
+else
+  glibcxx_cv_libbacktrace_atomics=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_libbacktrace_atomics" >&5
+$as_echo "$glibcxx_cv_libbacktrace_atomics" >&6; }
+
+  else
+    # Do asm tests.
+
+    CXXFLAGS='-O0 -S'
+
+    cat > conftest.$ac_ext << EOF
+#line 53604 "configure"
+#include <stddef.h>
+int main()
+{
+  int i = 0;
+  int* p = &i;
+  __SIZE_TYPE__ s = 0;
+  // backtrace_atomic_load_pointer
+  void* vp = __atomic_load_n(&p, __ATOMIC_ACQUIRE);
+  // backtrace_atomic_load_int
+  int i2 = __atomic_load_n(&i, __ATOMIC_ACQUIRE);
+  // backtrace_atomic_store_pointer
+  __atomic_store_n(&p, &i, __ATOMIC_RELEASE);
+  // backtrace_atomic_store_size_t
+  __atomic_store_n(&s, s, __ATOMIC_RELEASE);
+  // backtrace_atomic_store_int
+  __atomic_store_n(&i, i, __ATOMIC_RELEASE);
+}
+EOF
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for libbacktrace" >&5
+$as_echo_n "checking for atomic builtins for libbacktrace... " >&6; }
+    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
+	glibcxx_cv_libbacktrace_atomics=no
+      else
+	glibcxx_cv_libbacktrace_atomics=yes
+      fi
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_libbacktrace_atomics" >&5
+$as_echo "$glibcxx_cv_libbacktrace_atomics" >&6; }
+    rm -f conftest*
+  fi
+
+  CXXFLAGS="$old_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+  if test "$glibcxx_cv_libbacktrace_atomics" = yes; then
     BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_ATOMIC_FUNCTIONS=1"
   fi
 
@@ -54421,6 +54282,65 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
   fi
+
+
+# For std::chrono formatters to use tm::tm_zone
+
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++20"
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tm_zone member of struct tm" >&5
+$as_echo_n "checking for tm_zone member of struct tm... " >&6; }
+if ${glibcxx_cv_tm_zone+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <time.h>
+
+int
+main ()
+{
+struct tm t{}; t.tm_zone = (char*)0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_tm_zone=yes
+else
+  glibcxx_cv_tm_zone=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_tm_zone" >&5
+$as_echo "$glibcxx_cv_tm_zone" >&6; }
+
+  if test $glibcxx_cv_tm_zone = yes; then
+
+$as_echo "#define _GLIBCXX_USE_STRUCT_TM_TM_ZONE 1" >>confdefs.h
+
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 
 # For src/c++11/shared_ptr.cc alignment.

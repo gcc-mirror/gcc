@@ -20,4 +20,7 @@ test (uint16_t *__restrict f, uint32_t *__restrict d, uint64_t *__restrict e,
     }
 }
 
-/* { dg-final { scan-assembler-times "vsetvli\tzero,\s*\[a-z0-9\]+,\s*e16,\s*m1,\s*ta,\s*ma" 4 } } */
+/* { dg-final { scan-assembler-times "vsetvli\tzero,\s*\[a-z0-9\]+,\s*e16,\s*m\[1248\],\s*ta,\s*ma" 1 } } */
+/* { dg-final { scan-assembler-times "vsetvli\tzero,\s*\[a-z0-9\]+,\s*e32,\s*m\[1248\],\s*ta,\s*ma" 1 } } */
+/* { dg-final { scan-assembler-times "vsetvli\tzero,\s*\[a-z0-9\]+,\s*e64,\s*m\[1248\],\s*ta,\s*ma" 1 } } */
+/* { dg-final { scan-assembler-times "vsetivli\tzero,\s*\[0-9\]+,\s*e64,\s*m\[1248\],\s*ta,\s*ma" 1 } } */

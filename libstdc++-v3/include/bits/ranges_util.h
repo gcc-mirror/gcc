@@ -35,6 +35,9 @@
 # include <bits/utility.h>
 # include <bits/invoke.h>
 # include <bits/cpp_type_traits.h> // __can_use_memchr_for_find
+#if __glibcxx_tuple_like // >= C++23
+# include <bits/stl_pair.h> // __pair_like, __is_tuple_like_v
+#endif
 
 #ifdef __glibcxx_ranges
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -51,9 +54,12 @@ namespace ranges
 	&& same_as<iterator_t<_Range>, iterator_t<const _Range>>
 	&& same_as<sentinel_t<_Range>, sentinel_t<const _Range>>;
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 4112. has-arrow should required operator->() to be const-qualified
     template<typename _It>
       concept __has_arrow = input_iterator<_It>
-	&& (is_pointer_v<_It> || requires(_It __it) { __it.operator->(); });
+	&& (is_pointer_v<_It>
+	      || requires(const _It __it) { __it.operator->(); });
 
     using std::__detail::__different_from;
   } // namespace __detail
@@ -244,7 +250,7 @@ namespace ranges
 
     template<typename _Tp, typename _Up, typename _Vp>
       concept __pair_like_convertible_from
-	= !range<_Tp> && !is_reference_v<_Vp> && __pair_like<_Tp>
+	= !range<_Tp> && !is_reference_v<_Tp> && __pair_like<_Tp>
 	&& constructible_from<_Tp, _Up, _Vp>
 	&& __convertible_to_non_slicing<_Up, tuple_element_t<0, _Tp>>
 	&& convertible_to<_Vp, tuple_element_t<1, _Tp>>;

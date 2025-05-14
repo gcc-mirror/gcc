@@ -6,9 +6,9 @@
 #endif
 
 int a =
-#embed __FILE__ limit (1) // { dg-warning "'#embed' is a GCC extension" }
+#embed __FILE__ limit (1) // { dg-warning "'#embed' before C\\\+\\\+26 is a GCC extension" "" { target c++23_down } }
 ;
 int b =
 (__extension__
-#embed __FILE__ limit (1) // { dg-warning "'#embed' is a GCC extension" }
+#embed __FILE__ limit (1) // { dg-warning "'#embed' before C\\\+\\\+26 is a GCC extension" "" { target c++23_down } }
 );

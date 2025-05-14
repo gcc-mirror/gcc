@@ -7,5 +7,5 @@ int nonconst ();
 int foo ()
 {
   return blah < // { dg-error "not declared" }
-    nonconst (), nonconst (); // { dg-error "call to non-.constexpr. function" }
+    nonconst (), nonconst ();
 }

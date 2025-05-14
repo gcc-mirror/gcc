@@ -65,7 +65,10 @@
 #if __cplusplus >= 202002L
 # include <compare>
 #endif
-#if __cplusplus > 202002L
+#if __glibcxx_concepts // C++ >= C++20
+# include <bits/ranges_base.h>          // ranges::distance
+#endif
+#if __glibcxx_containers_ranges // C++ >= 23
 # include <bits/ranges_algobase.h>      // ranges::copy
 # include <bits/ranges_util.h>          // ranges::subrange
 #endif
@@ -404,7 +407,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
       }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       // Called by insert_range, and indirectly by assign_range, append_range.
       // Initializes new elements in storage at __ptr and updates __ptr to
       // point after the last new element.
@@ -515,29 +518,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return _S_nothrow_relocate(__is_move_insertable<_Tp_alloc_type>{});
       }
 
-      static pointer
-      _S_do_relocate(pointer __first, pointer __last, pointer __result,
-		     _Tp_alloc_type& __alloc, true_type) noexcept
-      {
-	return std::__relocate_a(__first, __last, __result, __alloc);
-      }
-
-      static pointer
-      _S_do_relocate(pointer, pointer, pointer __result,
-		     _Tp_alloc_type&, false_type) noexcept
-      { return __result; }
-
       static _GLIBCXX20_CONSTEXPR pointer
       _S_relocate(pointer __first, pointer __last, pointer __result,
 		  _Tp_alloc_type& __alloc) noexcept
       {
-#if __cpp_if_constexpr
-	// All callers have already checked _S_use_relocate() so just do it.
-	return std::__relocate_a(__first, __last, __result, __alloc);
-#else
-	using __do_it = __bool_constant<_S_use_relocate()>;
-	return _S_do_relocate(__first, __last, __result, __alloc, __do_it{});
-#endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	if constexpr (_S_use_relocate())
+	  return std::__relocate_a(__first, __last, __result, __alloc);
+	else
+	  return __result;
+#pragma GCC diagnostic pop
       }
 #endif // C++11
 
@@ -706,8 +697,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	     const allocator_type& __a = allocator_type())
       : _Base(__a)
       {
-	_M_range_initialize(__l.begin(), __l.end(),
-			    random_access_iterator_tag());
+	_M_range_initialize_n(__l.begin(), __l.end(), __l.size());
       }
 #endif
 
@@ -735,6 +725,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       const allocator_type& __a = allocator_type())
 	: _Base(__a)
 	{
+#if __glibcxx_concepts // C++ >= C++20
+	  if constexpr (sized_sentinel_for<_InputIterator, _InputIterator>
+			  || forward_iterator<_InputIterator>)
+	    {
+	      const auto __n
+		= static_cast<size_type>(ranges::distance(__first, __last));
+	      _M_range_initialize_n(__first, __last, __n);
+	      return;
+	    }
+	  else
+#endif
 	  _M_range_initialize(__first, __last,
 			      std::__iterator_category(__first));
 	}
@@ -750,43 +751,29 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a vector from a range.
+       * @param __rg A range of values that are convertible to `bool`.
        * @since C++23
        */
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	constexpr
 	vector(from_range_t, _Rg&& __rg, const _Alloc& __a = _Alloc())
-	: _Base(__a)
+	: vector(__a)
 	{
 	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
 	    {
-	      const auto __n = size_type(ranges::distance(__rg));
-	      pointer __start =
-		this->_M_allocate(_S_check_init_len(__n,
-						    _M_get_Tp_allocator()));
-	      _Guard_alloc __guard(__start, __n, *this);
-	      this->_M_impl._M_finish = this->_M_impl._M_start = __start;
-	      this->_M_impl._M_end_of_storage = __start + __n;
-	      _Base::_M_append_range(__rg);
-	      (void) __guard._M_release();
+	      const auto __n = static_cast<size_type>(ranges::distance(__rg));
+	      _M_range_initialize_n(ranges::begin(__rg), ranges::end(__rg),
+				    __n);
 	    }
 	  else
 	    {
-	      // If an exception is thrown ~_Base() will deallocate storage,
-	      // but will not destroy elements. This RAII type destroys them.
-	      struct _Clear
-	      {
-		~_Clear() { if (_M_this) _M_this->clear(); }
-		vector* _M_this;
-	      } __guard{this};
-
 	      auto __first = ranges::begin(__rg);
 	      const auto __last = ranges::end(__rg);
 	      for (; __first != __last; ++__first)
 		emplace_back(*__first);
-	      __guard._M_this = nullptr;
 	    }
 	}
 #endif
@@ -927,9 +914,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Assign a range to the vector.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @pre `__rg` and `*this` do not overlap.
        * @since C++23
        */
       template<__detail::__container_compatible_range<_Tp> _Rg>
@@ -981,7 +970,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		}
 	    }
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
       /// Get a copy of the memory allocation object.
       using _Base::get_allocator;
@@ -1647,9 +1636,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Insert a range into the vector.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @return An iterator that points to the first new element inserted,
+       *         or to `__pos` if `__rg` is an empty range.
+       * @pre `__rg` and `*this` do not overlap.
        * @since C++23
        */
       template<__detail::__container_compatible_range<_Tp> _Rg>
@@ -1658,29 +1651,113 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        * @brief Append a range at the end of the vector.
+       * @param __rg A range of values that are convertible to `value_type`.
        * @since C++23
        */
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	constexpr void
 	append_range(_Rg&& __rg)
 	{
+	  // N.B. __rg may overlap with *this, so we must copy from __rg before
+	  // existing elements or iterators referring to *this are invalidated.
+	  // e.g. in v.append_range(views::concat(v, foo)) rg overlaps v.
 	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
 	    {
 	      const auto __n = size_type(ranges::distance(__rg));
-	      reserve(size() + __n);
-	      _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
-	      _Base::_M_append_range(__rg);
-	      _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
+
+	      // If there is no existing storage, there are no iterators that
+	      // can be referring to our storage, so it's safe to allocate now.
+	      if (capacity() == 0)
+		reserve(__n);
+
+	      const auto __sz = size();
+	      const auto __capacity = capacity();
+	      if ((__capacity - __sz) >= __n)
+		{
+		  _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
+		  _Base::_M_append_range(__rg);
+		  _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
+		  return;
+		}
+
+	      const size_type __len = _M_check_len(__n, "vector::append_range");
+
+	      pointer __old_start = this->_M_impl._M_start;
+	      pointer __old_finish = this->_M_impl._M_finish;
+
+	      allocator_type& __a = _M_get_Tp_allocator();
+	      const pointer __start = this->_M_allocate(__len);
+	      const pointer __mid = __start + __sz;
+	      const pointer __back = __mid + __n;
+	      _Guard_alloc __guard(__start, __len, *this);
+	      std::__uninitialized_copy_a(ranges::begin(__rg),
+					  ranges::end(__rg),
+					  __mid, __a);
+
+	      if constexpr (_S_use_relocate())
+		_S_relocate(__old_start, __old_finish, __start, __a);
+	      else
+		{
+		  // RAII type to destroy initialized elements.
+		  struct _Guard_elts
+		  {
+		    pointer _M_first, _M_last;  // Elements to destroy
+		    _Tp_alloc_type& _M_alloc;
+
+		    constexpr
+		    _Guard_elts(pointer __f, pointer __l, _Tp_alloc_type& __a)
+		    : _M_first(__f), _M_last(__l), _M_alloc(__a)
+		    { }
+
+		    constexpr
+		    ~_Guard_elts()
+		    { std::_Destroy(_M_first, _M_last, _M_alloc); }
+
+		    _Guard_elts(_Guard_elts&&) = delete;
+		  };
+		  _Guard_elts __guard_elts{__mid, __back, __a};
+
+		  std::__uninitialized_move_a(__old_start, __old_finish,
+					      __start, __a);
+
+		  // Let old elements get destroyed by __guard_elts:
+		  __guard_elts._M_first = __old_start;
+		  __guard_elts._M_last = __old_finish;
+		}
+
+	      // Now give ownership of old storage to __guard:
+	      __guard._M_storage = __old_start;
+	      __guard._M_len = __capacity;
+	      // Finally, take ownership of new storage:
+	      this->_M_impl._M_start = __start;
+	      this->_M_impl._M_finish = __back;
+	      this->_M_impl._M_end_of_storage = __start + __len;
 	    }
 	  else
 	    {
 	      auto __first = ranges::begin(__rg);
 	      const auto __last = ranges::end(__rg);
-	      for (; __first != __last; ++__first)
+
+	      // Fill up to the end of current capacity.
+	      for (auto __free = capacity() - size();
+		   __first != __last && __free > 0;
+		   ++__first, (void) --__free)
 		emplace_back(*__first);
+
+	      if (__first == __last)
+		return;
+
+	      // Copy the rest of the range to a new vector.
+	      vector __tmp(_M_get_Tp_allocator());
+	      for (; __first != __last; ++__first)
+		__tmp.emplace_back(*__first);
+	      reserve(_M_check_len(__tmp.size(), "vector::append_range"));
+	      ranges::subrange __r(std::make_move_iterator(__tmp.begin()),
+				   std::make_move_iterator(__tmp.end()));
+	      append_range(__r); // This will take the fast path above.
 	    }
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
       /**
        *  @brief  Remove element at given position.
@@ -1882,15 +1959,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
 			    std::forward_iterator_tag)
 	{
-	  const size_type __n = std::distance(__first, __last);
-	  pointer __start =
+	  _M_range_initialize_n(__first, __last,
+				std::distance(__first, __last));
+	}
+
+      template<typename _Iterator, typename _Sentinel>
+	_GLIBCXX20_CONSTEXPR
+	void
+	_M_range_initialize_n(_Iterator __first, _Sentinel __last,
+			      size_type __n)
+	{
+	  pointer __start = this->_M_impl._M_start =
 	    this->_M_allocate(_S_check_init_len(__n, _M_get_Tp_allocator()));
-	  _Guard_alloc __guard(__start, __n, *this);
-	  this->_M_impl._M_finish = std::__uninitialized_copy_a
-	    (__first, __last, __start, _M_get_Tp_allocator());
-	  this->_M_impl._M_start = __start;
-	  (void) __guard._M_release();
 	  this->_M_impl._M_end_of_storage = __start + __n;
+	  this->_M_impl._M_finish
+	      = std::__uninitialized_copy_a(_GLIBCXX_MOVE(__first), __last,
+					    __start, _M_get_Tp_allocator());
 	}
 
       // Called by the first initialize_dispatch above and by the
@@ -2217,7 +2301,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     vector(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> vector<_ValT, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   typename _Alloc = allocator<ranges::range_value_t<_Rg>>>
     vector(from_range_t, _Rg&&, _Alloc = _Alloc())

@@ -1,7 +1,6 @@
 /* PR middle-end/59011 */
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
-/* { dg-require-effective-target alloca } */
 
 void
 foo (int m)

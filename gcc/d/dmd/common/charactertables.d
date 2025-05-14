@@ -3,12 +3,12 @@
  *
  * Supports UAX31, C99, C11 and least restrictive (All).
  *
- * Copyright: Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:   $(LINK2 https://cattermole.co.nz, Richard (Rikki) Andrew Cattermole)
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/common/charactertables.d, common/charactertables.d)
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/common/charactertables.d, common/charactertables.d)
  * Documentation: https://dlang.org/phobos/dmd_common_charactertables.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/common/charactertables.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/common/charactertables.d
  */
 module dmd.common.charactertables;
 
@@ -42,7 +42,8 @@ struct IdentifierCharLookup
         // Awful solution to require these lambdas.
         // However without them the extern(C++) ABI issues crop up for isInRange,
         //  and then it can't access the tables.
-        final switch(table) {
+        final switch(table)
+        {
             case IdentifierTable.UAX31:
                 return IdentifierCharLookup(
                         (c) => isInRange!UAX31_Start(c),

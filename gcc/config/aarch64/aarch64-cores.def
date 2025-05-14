@@ -173,6 +173,22 @@ AARCH64_CORE("cortex-a76.cortex-a55",  cortexa76cortexa55, cortexa53, V8_2A,  (F
 AARCH64_CORE("cortex-r82", cortexr82, cortexa53, V8R, (), cortexa53, 0x41, 0xd15, -1)
 AARCH64_CORE("cortex-r82ae", cortexr82ae, cortexa53, V8R, (), cortexa53, 0x41, 0xd14, -1)
 
+/* Apple (A12 and M) cores.
+   Known part numbers as listed in other public sources.
+   Placeholders for schedulers, generic_armv8_a for costs.
+   A12 seems mostly 8.3, M1 is 8.5 without BTI, M2 and M3 are 8.6
+   From measurements made so far the odd-number core IDs are performance.  */
+AARCH64_CORE("apple-a12", applea12, cortexa53, V8_3A,  (), generic_armv8_a, 0x61, 0x12, -1)
+AARCH64_CORE("apple-m1", applem1_0, cortexa57, V8_5A,  (), generic_armv8_a, 0x61, AARCH64_BIG_LITTLE (0x21, 0x20), -1)
+AARCH64_CORE("apple-m1", applem1_1, cortexa57, V8_5A,  (), generic_armv8_a, 0x61, AARCH64_BIG_LITTLE (0x23, 0x22), -1)
+AARCH64_CORE("apple-m1", applem1_2, cortexa57, V8_5A,  (), generic_armv8_a, 0x61, AARCH64_BIG_LITTLE (0x25, 0x24), -1)
+AARCH64_CORE("apple-m1", applem1_3, cortexa57, V8_5A,  (), generic_armv8_a, 0x61, AARCH64_BIG_LITTLE (0x29, 0x28), -1)
+AARCH64_CORE("apple-m2", applem2_0, cortexa57, V8_6A,  (), generic_armv8_a, 0x61, AARCH64_BIG_LITTLE (0x31, 0x30), -1)
+AARCH64_CORE("apple-m2", applem2_1, cortexa57, V8_6A,  (), generic_armv8_a, 0x61, AARCH64_BIG_LITTLE (0x33, 0x32), -1)
+AARCH64_CORE("apple-m2", applem2_2, cortexa57, V8_6A,  (), generic_armv8_a, 0x61, AARCH64_BIG_LITTLE (0x35, 0x34), -1)
+AARCH64_CORE("apple-m2", applem2_3, cortexa57, V8_6A,  (), generic_armv8_a, 0x61, AARCH64_BIG_LITTLE (0x39, 0x38), -1)
+AARCH64_CORE("apple-m3", applem3_0, cortexa57, V8_6A,  (), generic_armv8_a, 0x61, AARCH64_BIG_LITTLE (0x49, 0x48), -1)
+
 /* Armv9.0-A Architecture Processors.  */
 
 /* Arm ('A') cores. */
@@ -206,6 +222,9 @@ AARCH64_CORE("neoverse-v3", neoversev3, cortexa57, V9_2A, (SVE2_BITPERM, RNG, LS
 AARCH64_CORE("neoverse-v3ae", neoversev3ae, cortexa57, V9_2A, (SVE2_BITPERM, RNG, LS64, MEMTAG, PROFILE), neoversev3ae, 0x41, 0xd83, -1)
 
 AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
+
+/* NVIDIA ('N') cores. */
+AARCH64_CORE("olympus", olympus, cortexa57, V9_2A, (SVE2_BITPERM, RNG, LS64, MEMTAG, PROFILE, FAMINMAX, FP8FMA, FP8DOT2, FP8DOT4, LUT, SVE2_AES, SVE2_SHA3, SVE2_SM4), neoversev3, 0x4e, 0x10, -1)
 
 /* Generic Architecture Processors.  */
 AARCH64_CORE("generic",  generic, cortexa53, V8A,  (), generic, 0x0, 0x0, -1)

@@ -31,7 +31,7 @@ $(BOOKTABLE ,
     $(TR $(TD $(LREF RandomAccessFinite))
         $(TD Wrapper for finite random-access ranges.
     ))
-    $(TR $(TD $(LREF RandomAccessAssignable))
+    $(TR $(TD $(LREF RandomFiniteAssignable))
         $(TD Wrapper for finite random-access ranges with assignable elements.
     ))
     $(TR $(TD $(LREF RandomAccessInfinite))

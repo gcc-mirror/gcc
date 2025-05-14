@@ -222,6 +222,14 @@
 # endif
 #endif
 
+#ifndef _GLIBCXX26_CONSTEXPR
+# if __cplusplus >= 202400L
+#  define _GLIBCXX26_CONSTEXPR constexpr
+# else
+#  define _GLIBCXX26_CONSTEXPR
+# endif
+#endif
+
 #ifndef _GLIBCXX17_INLINE
 # if __cplusplus >= 201703L
 #  define _GLIBCXX17_INLINE inline
@@ -253,7 +261,7 @@
 # if __cpp_exceptions
 #  define _GLIBCXX_THROW_OR_ABORT(_EXC) (throw (_EXC))
 # else
-#  define _GLIBCXX_THROW_OR_ABORT(_EXC) (__builtin_abort())
+#  define _GLIBCXX_THROW_OR_ABORT(_EXC) (__builtin_abort(), (void)(_EXC))
 # endif
 #endif
 

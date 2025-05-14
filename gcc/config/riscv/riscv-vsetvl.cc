@@ -685,7 +685,7 @@ invalid_opt_bb_p (basic_block cfg_bb)
   /* We only do LCM optimizations on blocks that are post dominated by
      EXIT block, that is, we don't do LCM optimizations on infinite loop.  */
   FOR_EACH_EDGE (e, ei, cfg_bb->succs)
-    if (e->flags & EDGE_FAKE)
+    if ((e->flags & EDGE_FAKE) || (e->flags & EDGE_ABNORMAL))
       return true;
 
   return false;
@@ -779,6 +779,36 @@ enum class avl_demand_type : unsigned
   non_zero_avl = demand_flags::DEMAND_NON_ZERO_AVL_P,
   ignore_avl = demand_flags::DEMAND_EMPTY_P,
 };
+
+/* Go through all uses of INSN looking for a single use of register REG.
+   Return true if we find
+    - Uses in a non-RVV insn
+    - More than one use in an RVV insn
+    - A single use in the VL operand of an RVV insn
+   and false otherwise.
+   A single use in the AVL operand does not count as use as we take care of
+   those separately in the pass.  */
+
+static bool
+reg_used (insn_info *insn, rtx reg)
+{
+  unsigned int regno = REGNO (reg);
+  const hash_set<use_info *> vl_uses = get_all_real_uses (insn, regno);
+  for (use_info *use : vl_uses)
+    {
+      gcc_assert (use->insn ()->is_real ());
+      rtx_insn *rinsn = use->insn ()->rtl ();
+      if (!has_vl_op (rinsn)
+	  || count_regno_occurrences (rinsn, regno) != 1)
+	return true;
+
+      rtx avl = ::get_avl (rinsn);
+      if (!avl || !REG_P (avl) || regno != REGNO (avl))
+	return true;
+    }
+  return false;
+}
+
 
 class vsetvl_info
 {
@@ -1142,27 +1172,7 @@ public:
 
     /* Determine if dest operand(vl) has been used by non-RVV instructions.  */
     if (dest_vl)
-      {
-	const hash_set<use_info *> vl_uses
-	  = get_all_real_uses (get_insn (), REGNO (dest_vl));
-	for (use_info *use : vl_uses)
-	  {
-	    gcc_assert (use->insn ()->is_real ());
-	    rtx_insn *rinsn = use->insn ()->rtl ();
-	    if (!has_vl_op (rinsn)
-		|| count_regno_occurrences (rinsn, REGNO (dest_vl)) != 1)
-	      {
-		m_vl_used_by_non_rvv_insn = true;
-		break;
-	      }
-	    rtx avl = ::get_avl (rinsn);
-	    if (!avl || !REG_P (avl) || REGNO (dest_vl) != REGNO (avl))
-	      {
-		m_vl_used_by_non_rvv_insn = true;
-		break;
-	      }
-	  }
-      }
+      m_vl_used_by_non_rvv_insn = reg_used (get_insn (), dest_vl);
 
     /* Collect the read vl insn for the fault-only-first rvv loads.  */
     if (fault_first_load_p (insn->rtl ()))
@@ -1368,6 +1378,35 @@ public:
   }
   void set_empty_info () { global_info.set_empty (); }
 };
+
+/* Same as REG_USED () but looks for a single use in an RVV insn's AVL
+   operand.  */
+static bool
+reg_single_use_in_avl (insn_info *insn, rtx reg)
+{
+  if (!reg)
+    return false;
+  unsigned int regno = REGNO (reg);
+  const hash_set<use_info *> vl_uses = get_all_real_uses (insn, regno);
+  for (use_info *use : vl_uses)
+    {
+      gcc_assert (use->insn ()->is_real ());
+      rtx_insn *rinsn = use->insn ()->rtl ();
+      if (!has_vl_op (rinsn)
+	  || count_regno_occurrences (rinsn, regno) != 1)
+	return false;
+
+      vsetvl_info info = vsetvl_info (use->insn ());
+
+      if (!info.has_nonvlmax_reg_avl ())
+	return false;
+
+      rtx avl = info.get_avl ();
+      if (avl && REG_P (avl) && regno == REGNO (avl))
+	return true;
+    }
+  return false;
+}
 
 /* Demand system is the RVV-based VSETVL info analysis tools wrapper.
    It defines compatible rules for SEW/LMUL, POLICY and AVL.
@@ -1729,9 +1768,11 @@ private:
   }
   inline void use_max_sew (vsetvl_info &prev, const vsetvl_info &next)
   {
-    int max_sew = MAX (prev.get_sew (), next.get_sew ());
-    prev.set_sew (max_sew);
-    prev.set_ratio (calculate_ratio (prev.get_sew (), prev.get_vlmul ()));
+    bool prev_sew_larger = prev.get_sew () >= next.get_sew ();
+    const vsetvl_info from = prev_sew_larger ? prev : next;
+    prev.set_sew (from.get_sew ());
+    prev.set_vlmul (from.get_vlmul ());
+    prev.set_ratio (from.get_ratio ());
     use_min_of_max_sew (prev, next);
   }
   inline void use_next_sew_lmul (vsetvl_info &prev, const vsetvl_info &next)
@@ -2657,6 +2698,7 @@ pre_vsetvl::compute_lcm_local_properties ()
   m_avout = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), num_exprs);
 
   bitmap_vector_clear (m_avloc, last_basic_block_for_fn (cfun));
+  bitmap_vector_clear (m_kill, last_basic_block_for_fn (cfun));
   bitmap_vector_clear (m_antloc, last_basic_block_for_fn (cfun));
   bitmap_vector_ones (m_transp, last_basic_block_for_fn (cfun));
 
@@ -2708,6 +2750,10 @@ pre_vsetvl::compute_lcm_local_properties ()
 
       if (invalid_opt_bb_p (bb->cfg_bb ()))
 	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "\n --- skipping bb %u due to weird edge",
+		     bb->index ());
+
 	  bitmap_clear (m_antloc[bb_index]);
 	  bitmap_clear (m_transp[bb_index]);
 	}
@@ -2795,8 +2841,18 @@ pre_vsetvl::fuse_local_vsetvl_info ()
 		     64 into 32.  */
 		  prev_info.set_max_sew (
 		    MIN (prev_info.get_max_sew (), curr_info.get_max_sew ()));
-		  if (!curr_info.vl_used_by_non_rvv_insn_p ()
-		      && vsetvl_insn_p (curr_info.get_insn ()->rtl ()))
+
+		  /* If we fuse and the current, to be deleted vsetvl has uses
+		     of its VL as AVL operand in other vsetvls those will be
+		     orphaned.  Therefore only delete if that's not the case.
+		     */
+		  rtx cur_dest = curr_info.has_vl ()
+		    ? curr_info.get_vl ()
+		    : NULL_RTX;
+
+		  if (vsetvl_insn_p (curr_info.get_insn ()->rtl ())
+		      && !reg_single_use_in_avl (curr_info.get_insn (),
+						 cur_dest))
 		    m_delete_list.safe_push (curr_info);
 
 		  if (curr_info.get_read_vl_insn ())
@@ -2970,6 +3026,18 @@ pre_vsetvl::earliest_fuse_vsetvl_info (int iter)
 		    }
 		  continue;
 		}
+
+	      /* We cannot lift a vsetvl into the source block if the block is
+		 not transparent WRT to it.
+		 This is too restrictive for blocks where a register's use only
+		 feeds into vsetvls and no regular insns.  One example is the
+		 test rvv/vsetvl/avl_single-68.c which is currently XFAILed for
+		 that reason.
+		 In order to support this case we'd need to check the vsetvl's
+		 AVL operand's uses in the source block and make sure they are
+		 only used in other vsetvls.  */
+	      if (!bitmap_bit_p (m_transp[eg->src->index], expr_index))
+		continue;
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{

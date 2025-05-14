@@ -4,8 +4,7 @@
    warnings are issued for calls to user-defined functions with attribute
    access and with non-constant out-of-bounds arguments.
    { dg-do compile }
-   { dg-options "-O2 -Wall" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall" } */
 
 #include "range.h"
 

@@ -1,7 +1,7 @@
 /* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "-O3 -ansi -pedantic-errors -std=gnu99" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 size_t __attribute__ ((noinline))
 sumation (size_t sum0, size_t sum1, size_t sum2, size_t sum3, size_t sum4,

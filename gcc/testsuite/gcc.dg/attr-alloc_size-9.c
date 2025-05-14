@@ -3,7 +3,6 @@
    with attribute malloc.  This means that the pointer they return
    can be assumed not to alias any other valid pointer.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
 void sink (void*);

@@ -96,7 +96,7 @@ static void record_key_method_defined (tree);
 static tree create_array_type_for_decl (tree, tree, tree, location_t);
 static tree get_atexit_node (void);
 static tree get_dso_handle_node (void);
-static tree start_cleanup_fn (tree, bool);
+static tree start_cleanup_fn (tree, bool, bool);
 static void end_cleanup_fn (void);
 static tree cp_make_fname_decl (location_t, tree, int);
 static void initialize_predefined_identifiers (void);
@@ -2536,8 +2536,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	}
 
       /* Propagate purviewness and importingness as with
-	 set_instantiating_module.  */
-      if (modules_p () && DECL_LANG_SPECIFIC (new_result))
+	 set_instantiating_module, unless newdecl is a friend injection.  */
+      if (modules_p () && DECL_LANG_SPECIFIC (new_result)
+	  && !(TREE_CODE (new_result) == FUNCTION_DECL
+	       && DECL_UNIQUE_FRIEND_P (new_result)))
 	{
 	  if (DECL_MODULE_PURVIEW_P (new_result))
 	    DECL_MODULE_PURVIEW_P (old_result) = true;
@@ -5334,6 +5336,8 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
       decl = pushdecl_outermost_localscope (decl);
       if (decl != error_mark_node)
 	add_decl_expr (decl);
+      else
+	gcc_assert (seen_error ());
     }
   else
     {
@@ -8664,6 +8668,9 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 		    = build_int_cst (TREE_TYPE (nargs),
 				     tree_to_uhwi (TREE_PURPOSE (nargs)) + 1);
 		}
+	      for (tree t = append_args_list; t; t = TREE_CHAIN (t))
+		TREE_VALUE (t)
+		  = cp_finish_omp_init_prefer_type (TREE_VALUE (t));
 	      DECL_ATTRIBUTES (variant) = tree_cons (
 		get_identifier ("omp declare variant variant args"),
 		TREE_VALUE (adjust_args_list), DECL_ATTRIBUTES (variant));
@@ -8904,6 +8911,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  TREE_TYPE (decl) = error_mark_node;
 	  return;
 	}
+
+      /* Now that we have a type, try these again.  */
+      layout_decl (decl, 0);
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
 
       /* Update the type of the corresponding TEMPLATE_DECL to match.  */
@@ -9389,8 +9399,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      tree guard = NULL_TREE;
 	      if (cleanups || cleanup)
 		{
-		  guard = force_target_expr (boolean_type_node,
-					     boolean_false_node, tf_none);
+		  guard = get_internal_target_expr (boolean_false_node);
 		  add_stmt (guard);
 		  guard = TARGET_EXPR_SLOT (guard);
 		}
@@ -9419,8 +9428,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		     popped that all, so push those extra cleanups around
 		     the whole sequence with a guard variable.  */
 		  gcc_assert (TREE_CODE (sl) == STATEMENT_LIST);
-		  guard = force_target_expr (integer_type_node,
-					     integer_zero_node, tf_none);
+		  guard = get_internal_target_expr (integer_zero_node);
 		  add_stmt (guard);
 		  guard = TARGET_EXPR_SLOT (guard);
 		  for (unsigned i = 0; i < n_extra_cleanups; ++i)
@@ -10385,7 +10393,7 @@ get_dso_handle_node (void)
    is passed to the cleanup function, otherwise no argument is passed.  */
 
 static tree
-start_cleanup_fn (tree decl, bool ob_parm)
+start_cleanup_fn (tree decl, bool ob_parm, bool omp_target)
 {
   push_to_top_level ();
 
@@ -10396,7 +10404,7 @@ start_cleanup_fn (tree decl, bool ob_parm)
   gcc_checking_assert (HAS_DECL_ASSEMBLER_NAME_P (decl));
   const char *dname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   dname = targetm.strip_name_encoding (dname);
-  char *name = ACONCAT (("__tcf", dname, NULL));
+  char *name = ACONCAT ((omp_target ? "__omp_tcf" : "__tcf", dname, NULL));
 
   tree fntype = TREE_TYPE (ob_parm ? get_cxa_atexit_fn_ptr_type ()
 				   : get_atexit_fn_ptr_type ());
@@ -10423,6 +10431,15 @@ start_cleanup_fn (tree decl, bool ob_parm)
     }
 
   fndecl = pushdecl (fndecl, /*hidden=*/true);
+  if (omp_target)
+    {
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("omp declare target"), NULL_TREE,
+		     DECL_ATTRIBUTES (fndecl));
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("omp declare target nohost"), NULL_TREE,
+		     DECL_ATTRIBUTES (fndecl));
+    }
   start_preparsed_function (fndecl, NULL_TREE, SF_PRE_PARSED);
 
   pop_lang_context ();
@@ -10444,7 +10461,7 @@ end_cleanup_fn (void)
    static storage duration.  */
 
 tree
-register_dtor_fn (tree decl)
+register_dtor_fn (tree decl, bool omp_target)
 {
   tree cleanup;
   tree addr;
@@ -10490,7 +10507,7 @@ register_dtor_fn (tree decl)
       build_cleanup (decl);
 
       /* Now start the function.  */
-      cleanup = start_cleanup_fn (decl, ob_parm);
+      cleanup = start_cleanup_fn (decl, ob_parm, omp_target);
 
       /* Now, recompute the cleanup.  It may contain SAVE_EXPRs that refer
 	 to the original function, rather than the anonymous one.  That
@@ -14040,6 +14057,19 @@ grokdeclarator (const cp_declarator *declarator,
 		    else
 		      error_at (typespec_loc,
 				"invalid use of %<decltype(auto)%>");
+		    return error_mark_node;
+		  }
+		else if (is_constrained_auto (type))
+		  {
+		    if (funcdecl_p)
+		      error_at (typespec_loc,
+				"%qs function with trailing return type "
+				"has constrained %<auto%> type specifier "
+				"rather than plain %<auto%>",
+				name);
+		    else
+		      error_at (typespec_loc,
+				"invalid use of constrained %<auto%> type");
 		    return error_mark_node;
 		  }
 		tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node);
@@ -19440,7 +19470,8 @@ finish_function (bool inline_p)
       && !cp_function_chain->can_throw
       && !flag_non_call_exceptions
       && !decl_replaceable_p (fndecl,
-			      opt_for_fn (fndecl, flag_semantic_interposition)))
+			      opt_for_fn (fndecl, flag_semantic_interposition))
+      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (fndecl)))
     TREE_NOTHROW (fndecl) = 1;
 
  cleanup:
@@ -19819,14 +19850,14 @@ cp_tree_node_structure (union lang_tree_node * t)
 {
   switch (TREE_CODE (&t->generic))
     {
-    case ARGUMENT_PACK_SELECT:  return TS_CP_ARGUMENT_PACK_SELECT;
+    case ARGUMENT_PACK_SELECT:	return TS_CP_ARGUMENT_PACK_SELECT;
     case BASELINK:		return TS_CP_BASELINK;
-    case CONSTRAINT_INFO:       return TS_CP_CONSTRAINT_INFO;
+    case CONSTRAINT_INFO:	return TS_CP_CONSTRAINT_INFO;
     case DEFERRED_NOEXCEPT:	return TS_CP_DEFERRED_NOEXCEPT;
     case DEFERRED_PARSE:	return TS_CP_DEFERRED_PARSE;
     case IDENTIFIER_NODE:	return TS_CP_IDENTIFIER;
     case LAMBDA_EXPR:		return TS_CP_LAMBDA_EXPR;
-    case BINDING_VECTOR:		return TS_CP_BINDING_VECTOR;
+    case BINDING_VECTOR:	return TS_CP_BINDING_VECTOR;
     case OVERLOAD:		return TS_CP_OVERLOAD;
     case PTRMEM_CST:		return TS_CP_PTRMEM;
     case STATIC_ASSERT:		return TS_CP_STATIC_ASSERT;
@@ -19834,6 +19865,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case TEMPLATE_INFO:		return TS_CP_TEMPLATE_INFO;
     case TEMPLATE_PARM_INDEX:	return TS_CP_TPI;
     case TRAIT_EXPR:		return TS_CP_TRAIT_EXPR;
+    case TU_LOCAL_ENTITY:	return TS_CP_TU_LOCAL_ENTITY;
     case USERDEF_LITERAL:	return TS_CP_USERDEF_LITERAL;
     default:			return TS_CP_GENERIC;
     }

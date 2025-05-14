@@ -106,8 +106,7 @@ TEST_CMP (greaterthanqual, >=, int16x8_t, float16x8_t)
 /* { dg-final { scan-assembler-times {vdiv\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 13 } }  */
 
 /* For float16_t.  */
-/* { dg-final { scan-assembler-times {vcmp\.f32\ts[0-9]+, s[0-9]+} 2 } }  */
-/* { dg-final { scan-assembler-times {vcmpe\.f32\ts[0-9]+, s[0-9]+} 4 } }  */
+/* { dg-final { scan-assembler-times {vcmp\.f32\ts[0-9]+, s[0-9]+} 6 } }  */
 
 /* For float16x4_t.  */
 /* { dg-final { scan-assembler-times {vceq\.f16\td[0-9]+, d[0-9]+} 2 } }  */

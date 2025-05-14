@@ -67,7 +67,7 @@ gfc_invalid_boz (const char *msg, locus *loc)
       return false;
     }
 
-  const char *hint = _(" [see %<-fno-allow-invalid-boz%>]");
+  const char *hint = _(" [see %<-fallow-invalid-boz%>]");
   size_t len = strlen (msg) + strlen (hint) + 1;
   char *msg2 = (char *) alloca (len);
   strcpy (msg2, msg);
@@ -1809,6 +1809,23 @@ gfc_check_atomic_ref (gfc_expr *value, gfc_expr *atom, gfc_expr *stat)
   return gfc_check_atomic (atom, 1, value, 0, stat, 2);
 }
 
+bool
+team_type_check (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_DERIVED || !e->ts.u.derived
+      || e->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
+      || e->ts.u.derived->intmod_sym_id != ISOFORTRAN_TEAM_TYPE)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L shall be of type "
+		 "%<team_type%> from the intrinsic module "
+		 "%<ISO_FORTRAN_ENV%>",
+		 gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
+		 &e->where);
+      return false;
+    }
+
+  return true;
+}
 
 bool
 gfc_check_image_status (gfc_expr *image, gfc_expr *team)
@@ -1818,14 +1835,7 @@ gfc_check_image_status (gfc_expr *image, gfc_expr *team)
       || !positive_check (0, image))
     return false;
 
-  if (team)
-    {
-      gfc_error ("%qs argument of %qs intrinsic at %L not yet supported",
-		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
-		 &team->where);
-      return false;
-    }
-  return true;
+  return !team || (scalar_check (team, 0) && team_type_check (team, 0));
 }
 
 
@@ -1905,10 +1915,25 @@ gfc_check_get_team (gfc_expr *level)
 {
   if (level)
     {
-      gfc_error ("%qs argument of %qs intrinsic at %L not yet supported",
-		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
-		 &level->where);
-      return false;
+      int l;
+
+      if (!type_check (level, 0, BT_INTEGER) || !scalar_check (level, 0))
+	return false;
+
+      /* When level is a constant, try to extract it.  If not, the runtime has
+	 to check.  */
+      if (gfc_extract_int (level, &l, 0))
+	return true;
+
+      if (l < GFC_CAF_INITIAL_TEAM || l > GFC_CAF_CURRENT_TEAM)
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L shall specify one of "
+		     "the INITIAL_TEAM, PARENT_TEAM or CURRENT_TEAM constants "
+		     "from the intrinsic module ISO_FORTRAN_ENV",
+		     gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		     &level->where);
+	  return false;
+	}
     }
   return true;
 }
@@ -2442,30 +2467,23 @@ gfc_check_co_broadcast (gfc_expr *a, gfc_expr *source_image, gfc_expr *stat,
 }
 
 
-bool
-gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
-		     gfc_expr *stat, gfc_expr *errmsg)
+/* Helper function for character arguments in gfc_check_[co_]reduce.  */
+
+static unsigned long
+get_ul_from_cst_cl (const gfc_charlen *cl)
+{
+  return cl && cl->length && cl->length->expr_type == EXPR_CONSTANT
+	 ? mpz_get_ui (cl->length->value.integer) : 0;
+};
+
+
+/* Checks shared between co_reduce and reduce.  */
+static bool
+check_operation (gfc_expr *op, gfc_expr *a, bool is_co_reduce)
 {
   symbol_attribute attr;
   gfc_formal_arglist *formal;
   gfc_symbol *sym;
-
-  if (a->ts.type == BT_CLASS)
-    {
-      gfc_error ("The A argument at %L of CO_REDUCE shall not be polymorphic",
-		 &a->where);
-      return false;
-    }
-
-  if (gfc_expr_attr (a).alloc_comp)
-    {
-      gfc_error ("Support for the A argument at %L with allocatable components"
-                 " is not yet implemented", &a->where);
-      return false;
-    }
-
-  if (!check_co_collective (a, result_image, stat, errmsg, true))
-    return false;
 
   if (!gfc_resolve_expr (op))
     return false;
@@ -2483,8 +2501,9 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
       /* None of the intrinsics fulfills the criteria of taking two arguments,
 	 returning the same type and kind as the arguments and being permitted
 	 as actual argument.  */
-      gfc_error ("Intrinsic function %s at %L is not permitted for CO_REDUCE",
-		 op->symtree->n.sym->name, &op->where);
+      gfc_error ("Intrinsic function %s at %L is not permitted for %s",
+		 op->symtree->n.sym->name, &op->where,
+		 is_co_reduce ? "CO_REDUCE" : "REDUCE");
       return false;
     }
 
@@ -2510,12 +2529,14 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 
   if (!gfc_compare_types (&a->ts, &sym->result->ts))
     {
-      gfc_error ("The A argument at %L has type %s but the function passed as "
-		 "OPERATION at %L returns %s",
+      gfc_error ("The %s argument at %L has type %s but the function passed "
+		 "as OPERATION at %L returns %s",
+		 is_co_reduce ? "A" : "ARRAY",
 		 &a->where, gfc_typename (a), &op->where,
 		 gfc_typename (&sym->result->ts));
       return false;
     }
+
   if (!gfc_compare_types (&a->ts, &formal->sym->ts)
       || !gfc_compare_types (&a->ts, &formal->next->sym->ts))
     {
@@ -2567,42 +2588,59 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 
   if (a->ts.type == BT_CHARACTER)
     {
-      gfc_charlen *cl;
       unsigned long actual_size, formal_size1, formal_size2, result_size;
 
-      cl = a->ts.u.cl;
-      actual_size = cl && cl->length && cl->length->expr_type == EXPR_CONSTANT
-		     ? mpz_get_ui (cl->length->value.integer) : 0;
-
-      cl = formal->sym->ts.u.cl;
-      formal_size1 = cl && cl->length && cl->length->expr_type == EXPR_CONSTANT
-		     ? mpz_get_ui (cl->length->value.integer) : 0;
-
-      cl = formal->next->sym->ts.u.cl;
-      formal_size2 = cl && cl->length && cl->length->expr_type == EXPR_CONSTANT
-		     ? mpz_get_ui (cl->length->value.integer) : 0;
-
-      cl = sym->ts.u.cl;
-      result_size = cl && cl->length && cl->length->expr_type == EXPR_CONSTANT
-		    ? mpz_get_ui (cl->length->value.integer) : 0;
+      actual_size = get_ul_from_cst_cl (a->ts.u.cl);
+      formal_size1 = get_ul_from_cst_cl (formal->sym->ts.u.cl);
+      formal_size2 = get_ul_from_cst_cl (formal->next->sym->ts.u.cl);
+      result_size = get_ul_from_cst_cl (sym->ts.u.cl);
 
       if (actual_size
 	  && ((formal_size1 && actual_size != formal_size1)
 	       || (formal_size2 && actual_size != formal_size2)))
 	{
-	  gfc_error ("The character length of the A argument at %L and of the "
-		     "arguments of the OPERATION at %L shall be the same",
-		     &a->where, &op->where);
+	  gfc_error ("The character length of the %s argument at %L and of "
+		     "the arguments of the OPERATION at %L shall be the same",
+		     is_co_reduce ? "A" : "ARRAY", &a->where, &op->where);
 	  return false;
 	}
+
       if (actual_size && result_size && actual_size != result_size)
 	{
-	  gfc_error ("The character length of the A argument at %L and of the "
-		     "function result of the OPERATION at %L shall be the same",
+	  gfc_error ("The character length of the %s argument at %L and of "
+		     "the function result of the OPERATION at %L shall be the "
+		     "same", is_co_reduce ? "A" : "ARRAY",
 		     &a->where, &op->where);
 	  return false;
 	}
     }
+  return true;
+}
+
+
+bool
+gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
+		     gfc_expr *stat, gfc_expr *errmsg)
+{
+  if (a->ts.type == BT_CLASS)
+    {
+      gfc_error ("The A argument at %L of CO_REDUCE shall not be polymorphic",
+		 &a->where);
+      return false;
+    }
+
+  if (gfc_expr_attr (a).alloc_comp)
+    {
+      gfc_error ("Support for the A argument at %L with allocatable components"
+		 " is not yet implemented", &a->where);
+      return false;
+    }
+
+  if (!check_co_collective (a, result_image, stat, errmsg, true))
+    return false;
+
+  if (!check_operation (op, a, true))
+    return false;
 
   return true;
 }
@@ -3797,7 +3835,8 @@ gfc_check_lcobound (gfc_expr *coarray, gfc_expr *dim, gfc_expr *kind)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
@@ -4670,8 +4709,18 @@ gfc_check_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask)
 
 
 bool
-gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
+gfc_check_move_alloc (gfc_expr *from, gfc_expr *to, gfc_expr *stat,
+		      gfc_expr *errmsg)
 {
+  struct sync_stat sync_stat = {stat, errmsg};
+
+  if ((stat || errmsg)
+      && !gfc_notify_std (GFC_STD_F2008, "STAT= or ERRMSG= at %L not supported",
+			  &to->where))
+    return false;
+
+  gfc_resolve_sync_stat (&sync_stat);
+
   if (!variable_check (from, 0, false))
     return false;
   if (!allocatable_check (from, 0))
@@ -5130,6 +5179,62 @@ gfc_check_real (gfc_expr *a, gfc_expr *kind)
 
   if (!numeric_check (a, 0))
     return false;
+
+  return true;
+}
+
+
+bool
+gfc_check_reduce (gfc_expr *array, gfc_expr *operation, gfc_expr *dim,
+		  gfc_expr *mask, gfc_expr *identity, gfc_expr *ordered)
+{
+  if (array->ts.type == BT_CLASS)
+    {
+      gfc_error ("The ARRAY argument at %L of REDUCE shall not be polymorphic",
+		 &array->where);
+      return false;
+    }
+
+  if (!check_operation (operation, array, false))
+    return false;
+
+  if (dim && (dim->rank || dim->ts.type != BT_INTEGER))
+    {
+      gfc_error ("The DIM argument at %L, if present, must be an integer "
+		 "scalar", &dim->where);
+      return false;
+    }
+
+  if (mask && (array->rank != mask->rank || mask->ts.type != BT_LOGICAL))
+    {
+      gfc_error ("The MASK argument at %L, if present, must be a logical "
+		 "array with the same rank as ARRAY", &mask->where);
+      return false;
+    }
+
+  if (mask
+      && !gfc_check_conformance (array, mask,
+				 _("arguments '%s' and '%s' for intrinsic %s"),
+				 "ARRAY", "MASK", "REDUCE"))
+    return false;
+
+  if (mask && !identity)
+    gfc_warning (0, "MASK present at %L without IDENTITY", &mask->where);
+
+  if (ordered && (ordered->rank || ordered->ts.type != BT_LOGICAL))
+    {
+      gfc_error ("The ORDERED argument at %L, if present, must be a logical "
+		 "scalar", &ordered->where);
+      return false;
+    }
+
+  if (identity && (identity->rank
+		   || !gfc_compare_types (&array->ts, &identity->ts)))
+    {
+      gfc_error ("The IDENTITY argument at %L, if present, must be a scalar "
+		 "with the same type as ARRAY", &identity->where);
+      return false;
+    }
 
   return true;
 }
@@ -5850,30 +5955,40 @@ gfc_check_c_sizeof (gfc_expr *arg)
 bool
 gfc_check_c_associated (gfc_expr *c_ptr_1, gfc_expr *c_ptr_2)
 {
-  if (c_ptr_1->ts.type != BT_DERIVED
-      || c_ptr_1->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING
-      || (c_ptr_1->ts.u.derived->intmod_sym_id != ISOCBINDING_PTR
-	  && c_ptr_1->ts.u.derived->intmod_sym_id != ISOCBINDING_FUNPTR))
+  if (c_ptr_1)
     {
-      gfc_error ("Argument C_PTR_1 at %L to C_ASSOCIATED shall have the "
-		 "type TYPE(C_PTR) or TYPE(C_FUNPTR)", &c_ptr_1->where);
-      return false;
+      if (c_ptr_1->expr_type == EXPR_FUNCTION && c_ptr_1->ts.type == BT_VOID)
+	return true;
+
+      if (c_ptr_1->ts.type != BT_DERIVED
+	  || c_ptr_1->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING
+	  || (c_ptr_1->ts.u.derived->intmod_sym_id != ISOCBINDING_PTR
+	      && c_ptr_1->ts.u.derived->intmod_sym_id != ISOCBINDING_FUNPTR))
+	{
+	  gfc_error ("Argument C_PTR_1 at %L to C_ASSOCIATED shall have the "
+		     "type TYPE(C_PTR) or TYPE(C_FUNPTR)", &c_ptr_1->where);
+	  return false;
+	}
     }
 
   if (!scalar_check (c_ptr_1, 0))
     return false;
 
-  if (c_ptr_2
-      && (c_ptr_2->ts.type != BT_DERIVED
+  if (c_ptr_2)
+    {
+      if (c_ptr_2->expr_type == EXPR_FUNCTION && c_ptr_2->ts.type == BT_VOID)
+	return true;
+
+      if (c_ptr_2->ts.type != BT_DERIVED
 	  || c_ptr_2->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING
 	  || (c_ptr_1->ts.u.derived->intmod_sym_id
-	      != c_ptr_2->ts.u.derived->intmod_sym_id)))
-    {
-      gfc_error ("Argument C_PTR_2 at %L to C_ASSOCIATED shall have the "
-		 "same type as C_PTR_1: %s instead of %s", &c_ptr_1->where,
-		 gfc_typename (&c_ptr_1->ts),
-		 gfc_typename (&c_ptr_2->ts));
-      return false;
+	      != c_ptr_2->ts.u.derived->intmod_sym_id))
+	{
+	  gfc_error ("Argument C_PTR_2 at %L to C_ASSOCIATED shall have the "
+		   "same type as C_PTR_1: %s instead of %s", &c_ptr_1->where,
+		   gfc_typename (&c_ptr_1->ts), gfc_typename (&c_ptr_2->ts));
+	  return false;
+	}
     }
 
   if (c_ptr_2 && !scalar_check (c_ptr_2, 1))
@@ -6461,13 +6576,15 @@ gfc_check_stat_sub (gfc_expr *name, gfc_expr *array, gfc_expr *status)
 
 
 bool
-gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
+gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub,
+		       gfc_expr *team_or_team_number)
 {
   mpz_t nelems;
 
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
@@ -6481,12 +6598,8 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
       return false;
     }
 
-  if (sub->ts.type != BT_INTEGER)
-    {
-      gfc_error ("Type of %s argument of IMAGE_INDEX at %L shall be INTEGER",
-		 gfc_current_intrinsic_arg[1]->name, &sub->where);
-      return false;
-    }
+  if (!type_check (sub, 1, BT_INTEGER))
+    return false;
 
   if (gfc_array_size (sub, &nelems))
     {
@@ -6501,47 +6614,46 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
       mpz_clear (nelems);
     }
 
+  if (team_or_team_number)
+    {
+      if (!type_check2 (team_or_team_number, 2, BT_DERIVED, BT_INTEGER)
+	  || !scalar_check (team_or_team_number, 2))
+	return false;
+
+      /* Check team is of team_type.  */
+      if (team_or_team_number->ts.type == BT_DERIVED
+	  && !team_type_check (team_or_team_number, 2))
+	return false;
+    }
+
   return true;
 }
 
-
 bool
-gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
+gfc_check_num_images (gfc_expr *team_or_team_number)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
-  if (distance)
-    {
-      if (!type_check (distance, 0, BT_INTEGER))
-	return false;
+  if (!team_or_team_number)
+    return true;
 
-      if (!nonnegative_check ("DISTANCE", distance))
-	return false;
+  if (!gfc_notify_std (GFC_STD_F2008,
+		       "%<team%> or %<team_number%> argument to %qs at %L",
+		       gfc_current_intrinsic, &team_or_team_number->where))
+    return false;
 
-      if (!scalar_check (distance, 0))
-	return false;
+  if (!type_check2 (team_or_team_number, 0, BT_DERIVED, BT_INTEGER)
+      || !scalar_check (team_or_team_number, 0))
+    return false;
 
-      if (!gfc_notify_std (GFC_STD_F2018, "DISTANCE= argument to "
-			   "NUM_IMAGES at %L", &distance->where))
-	return false;
-    }
-
-   if (failed)
-    {
-      if (!type_check (failed, 1, BT_LOGICAL))
-	return false;
-
-      if (!scalar_check (failed, 1))
-	return false;
-
-      if (!gfc_notify_std (GFC_STD_F2018, "FAILED= argument to "
-			   "NUM_IMAGES at %L", &failed->where))
-	return false;
-    }
+  if (team_or_team_number->ts.type == BT_DERIVED
+      && !team_type_check (team_or_team_number, 0))
+    return false;
 
   return true;
 }
@@ -6552,98 +6664,126 @@ gfc_check_team_number (gfc_expr *team)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
-  if (team)
-    {
-      if (team->ts.type != BT_DERIVED
-	  || team->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
-	  || team->ts.u.derived->intmod_sym_id != ISOFORTRAN_TEAM_TYPE)
-	 {
-	   gfc_error ("TEAM argument at %L to the intrinsic TEAM_NUMBER "
-	   	      "shall be of type TEAM_TYPE", &team->where);
-	   return false;
-	 }
-    }
-  else
-    return true;
-
-  return true;
+  return !team || (scalar_check (team, 0) && team_type_check (team, 0));
 }
 
 
 bool
-gfc_check_this_image (gfc_expr *coarray, gfc_expr *dim, gfc_expr *distance)
+gfc_check_this_image (gfc_actual_arglist *args)
 {
+  gfc_expr *coarray, *dim, *team, *cur;
+
+  coarray = dim = team = NULL;
+
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
-  if (coarray == NULL && dim == NULL && distance == NULL)
+  /* Shortcut when no arguments are given.  */
+  if (!args->expr && !args->next->expr && !args->next->next->expr)
     return true;
+
+  cur = args->expr;
+
+  if (cur)
+    {
+      gfc_push_suppress_errors ();
+      if (coarray_check (cur, 0))
+	coarray = cur;
+      else if (scalar_check (cur, 2) && team_type_check (cur, 2))
+	team = cur;
+      else
+	{
+	  gfc_pop_suppress_errors ();
+	  gfc_error ("First argument of %<this_image%> intrinsic at %L must be "
+		     "a coarray "
+		     "variable or an object of type %<team_type%> from the "
+		     "intrinsic module "
+		     "%<ISO_FORTRAN_ENV%>",
+		     &cur->where);
+	  return false;
+	}
+      gfc_pop_suppress_errors ();
+    }
+
+  cur = args->next->expr;
+  if (cur)
+    {
+      gfc_push_suppress_errors ();
+      if (dim_check (cur, 1, true) && cur->corank == 0)
+	dim = cur;
+      else if (scalar_check (cur, 2) && team_type_check (cur, 2))
+	{
+	  if (team)
+	    {
+	      gfc_pop_suppress_errors ();
+	      goto team_type_error;
+	    }
+	  team = cur;
+	}
+      else
+	{
+	  gfc_pop_suppress_errors ();
+	  gfc_error ("Second argument of %<this_image%> intrinsic at %L must "
+		     "be an %<INTEGER%> "
+		     "typed scalar or an object of type %<team_type%> from the "
+		     "intrinsic "
+		     "module %<ISO_FORTRAN_ENV%>",
+		     &cur->where);
+	  return false;
+	}
+      gfc_pop_suppress_errors ();
+    }
+
+  cur = args->next->next->expr;
+  if (cur)
+    {
+      if (team_type_check (cur, 2) && scalar_check (cur, 2))
+	{
+	  if (team)
+	    goto team_type_error;
+	  team = cur;
+	}
+      else
+	return false;
+    }
 
   if (dim != NULL && coarray == NULL)
     {
-      gfc_error ("DIM argument without COARRAY argument not allowed for "
-		 "THIS_IMAGE intrinsic at %L", &dim->where);
+      gfc_error ("%<dim%> argument without %<coarray%> argument not allowed "
+		 "for %<this_image%> intrinsic at %L",
+		 &dim->where);
       return false;
     }
 
-  if (distance && (coarray || dim))
-    {
-      gfc_error ("The DISTANCE argument may not be specified together with the "
-		 "COARRAY or DIM argument in intrinsic at %L",
-		 &distance->where);
-      return false;
-    }
-
-  /* Assume that we have "this_image (distance)".  */
-  if (coarray && !gfc_is_coarray (coarray) && coarray->ts.type == BT_INTEGER)
-    {
-      if (dim)
-	{
-	  gfc_error ("Unexpected DIM argument with noncoarray argument at %L",
-		     &coarray->where);
-	  return false;
-	}
-      distance = coarray;
-    }
-
-  if (distance)
-    {
-      if (!type_check (distance, 2, BT_INTEGER))
-	return false;
-
-      if (!nonnegative_check ("DISTANCE", distance))
-	return false;
-
-      if (!scalar_check (distance, 2))
-	return false;
-
-      if (!gfc_notify_std (GFC_STD_F2018, "DISTANCE= argument to "
-			   "THIS_IMAGE at %L", &distance->where))
-	return false;
-
-      return true;
-    }
-
-  if (!coarray_check (coarray, 0))
+  if (dim && !dim_corank_check (dim, coarray))
     return false;
 
-  if (dim != NULL)
-    {
-      if (!dim_check (dim, 1, false))
-       return false;
+  if (team
+      && !gfc_notify_std (GFC_STD_F2018,
+			  "%<team%> argument to %<this_image%> at %L",
+			  &team->where))
+    return false;
 
-      if (!dim_corank_check (dim, coarray))
-       return false;
-    }
-
+  args->expr = coarray;
+  args->next->expr = dim;
+  args->next->next->expr = team;
   return true;
+
+team_type_error:
+  gfc_error (
+    "At most one argument of type %<team_type%> from the intrinsic module "
+    "%<ISO_FORTRAN_ENV%> to %<this_image%> at %L allowed",
+    &cur->where);
+  return false;
 }
 
 /* Calculate the sizes for transfer, used by gfc_check_transfer and also
@@ -6842,7 +6982,8 @@ gfc_check_ucobound (gfc_expr *coarray, gfc_expr *dim, gfc_expr *kind)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 

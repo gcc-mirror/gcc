@@ -9,6 +9,9 @@
 }
 
 /* { dg-begin-multiline-output "" }
+In JSON object '/runs/0/results/0/message':
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
     6 |       { "message": { "text" : "the {0} {1} fox jumps over the {2} dog", "arguments": ["quick", "brown"] } }
       |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    { dg-end-multiline-output "" }  */

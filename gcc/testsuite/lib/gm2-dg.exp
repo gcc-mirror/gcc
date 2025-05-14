@@ -65,7 +65,7 @@ proc gm2-dg-runtest { testcases flags default-extra-flags } {
 	if [expr [search_for $test "dg-do run"]] {
 	    set option_list $TORTURE_OPTIONS
 	} else {
-	    set option_list [list { -O } ]
+	    set option_list [list { -O -O2 } ]
 	}
 
 	set nshort [file tail [file dirname $test]]/[file tail $test]
@@ -77,3 +77,38 @@ proc gm2-dg-runtest { testcases flags default-extra-flags } {
     }
 }
 
+
+# Check if frontend has been configured with option.
+# This checks a configure build option was used and not
+# the availability of a compiler command line option.
+
+proc gm2-dg-frontend-configure-check { option } {
+    global GCC_UNDER_TEST
+
+    # ignore any arguments after the command
+    set compiler [lindex $GCC_UNDER_TEST 0]
+
+    if ![is_remote host] {
+	set compiler_name [which $compiler]
+    } else {
+	set compiler_name $compiler
+    }
+
+    # verify that the compiler exists
+    if { $compiler_name != 0 } then {
+	set tmp [remote_exec host "$compiler -v"]
+	set status [lindex $tmp 0]
+	set output [lindex $tmp 1]
+	regexp "Configured with.*\[\n\r\]" $output config
+	set option "*${option}*"
+	if { [string match $option $config] } {
+	    return 1
+	} else {
+	    return 0
+	}
+    } else {
+	# compiler does not exist (this should have already been detected)
+	warning "$compiler does not exist"
+	return 0
+    }
+}

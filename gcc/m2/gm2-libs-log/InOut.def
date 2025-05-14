@@ -45,7 +45,7 @@ VAR
 
 (*
    OpenInput - reads a string from stdin as the filename for reading.
-               If the filename ends with `.' then it appends the defext
+               If the filename ends with '.' then it appends the defext
                extension. The global variable Done is set if all
                was successful.
 *)
@@ -63,7 +63,7 @@ PROCEDURE CloseInput ;
 
 (*
    OpenOutput - reads a string from stdin as the filename for writing.
-                If the filename ends with `.' then it appends the defext
+                If the filename ends with '.' then it appends the defext
                 extension. The global variable Done is set if all
                 was successful.
 *)

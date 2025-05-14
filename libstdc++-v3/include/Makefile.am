@@ -39,6 +39,7 @@ std_freestanding = \
 	${std_srcdir}/generator \
 	${std_srcdir}/iterator \
 	${std_srcdir}/limits \
+	${std_srcdir}/mdspan \
 	${std_srcdir}/memory \
 	${std_srcdir}/numbers \
 	${std_srcdir}/numeric \
@@ -196,6 +197,7 @@ bits_headers = \
 	${bits_srcdir}/cow_string.h \
 	${bits_srcdir}/deque.tcc \
 	${bits_srcdir}/erase_if.h \
+	${bits_srcdir}/formatfwd.h \
 	${bits_srcdir}/forward_list.h \
 	${bits_srcdir}/forward_list.tcc \
 	${bits_srcdir}/fs_dir.h \
@@ -912,6 +914,8 @@ c_compatibility_headers = \
 	${c_compatibility_srcdir}/tgmath.h \
 	${c_compatibility_srcdir}/math.h \
 	${c_compatibility_srcdir}/stdatomic.h \
+	${c_compatibility_srcdir}/stdbit.h \
+	${c_compatibility_srcdir}/stdckdint.h \
 	${c_compatibility_srcdir}/stdlib.h
 endif
 

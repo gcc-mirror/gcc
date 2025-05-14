@@ -34,14 +34,41 @@ namespace AST {
 class DeriveVisitor : public AST::ASTVisitor
 {
 public:
-  static std::unique_ptr<Item> derive (Item &item, const Attribute &derive,
-				       BuiltinMacro to_derive);
+  /**
+   * Expand a built-in derive macro on an item. This may generate multiple items
+   * which all need to be integrated to the existing AST
+   */
+  static std::vector<std::unique_ptr<Item>>
+  derive (Item &item, const Attribute &derive, BuiltinMacro to_derive);
 
 protected:
   DeriveVisitor (location_t loc);
 
   location_t loc;
   Builder builder;
+
+  struct ImplGenerics
+  {
+    /* The type we are deriving the impl for */
+    std::unique_ptr<Type> self_type;
+
+    /* Generics for the impl itself */
+    std::vector<std::unique_ptr<GenericParam>> impl;
+  };
+
+  /**
+   * Create the generic parameters for a derive impl block. Derived impl blocks
+   * will often share the same structure of reusing the exact same bounds as
+   * their original type, plus adding an extra one for the trait we are
+   * deriving. For example, when deriving `Clone` on `Foo<T>`, you want to make
+   * sure that you implement `Clone` only if `T: Clone` - so you add an extra
+   * `Clone` bound to all of your generics.
+   */
+  ImplGenerics setup_impl_generics (
+    const std::string &type_name,
+    const std::vector<std::unique_ptr<GenericParam>> &type_generics,
+    tl::optional<std::unique_ptr<TypeParamBound>> &&extra_bound
+    = tl::nullopt) const;
 
 private:
   // the 4 "allowed" visitors, which a derive-visitor can specify and override
@@ -130,6 +157,7 @@ private:
   virtual void visit (RangeFromToInclExpr &expr) override final{};
   virtual void visit (RangeToInclExpr &expr) override final{};
   virtual void visit (ReturnExpr &expr) override final{};
+  virtual void visit (BoxExpr &expr) override final{};
   virtual void visit (UnsafeBlockExpr &expr) override final{};
   virtual void visit (LoopExpr &expr) override final{};
   virtual void visit (WhileLoopExpr &expr) override final{};
@@ -142,6 +170,8 @@ private:
   virtual void visit (MatchExpr &expr) override final{};
   virtual void visit (AwaitExpr &expr) override final{};
   virtual void visit (AsyncBlockExpr &expr) override final{};
+  virtual void visit (InlineAsm &expr) override final{};
+  virtual void visit (LlvmInlineAsm &expr) override final{};
   virtual void visit (TypeParam &param) override final{};
   virtual void visit (LifetimeWhereClauseItem &item) override final{};
   virtual void visit (TypeBoundWhereClauseItem &item) override final{};

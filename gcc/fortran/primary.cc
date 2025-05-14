@@ -2893,6 +2893,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   gfc_symbol *sym;
   gfc_component *comp;
   bool has_inquiry_part;
+  bool has_substring_ref = false;
 
   if (expr->expr_type != EXPR_VARIABLE
       && expr->expr_type != EXPR_FUNCTION
@@ -2955,7 +2956,12 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
   has_inquiry_part = false;
   for (ref = expr->ref; ref; ref = ref->next)
-    if (ref->type == REF_INQUIRY)
+    if (ref->type == REF_SUBSTRING)
+      {
+	has_substring_ref = true;
+	optional = false;
+      }
+    else if (ref->type == REF_INQUIRY)
       {
 	has_inquiry_part = true;
 	optional = false;
@@ -3003,9 +3009,8 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	    *ts = comp->ts;
 	    /* Don't set the string length if a substring reference
 	       follows.  */
-	    if (ts->type == BT_CHARACTER
-		&& ref->next && ref->next->type == REF_SUBSTRING)
-		ts->u.cl = NULL;
+	    if (ts->type == BT_CHARACTER && has_substring_ref)
+	      ts->u.cl = NULL;
 	  }
 
 	if (comp->ts.type == BT_CLASS)
@@ -4298,6 +4303,8 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
   locus where, old_loc;
   match m;
 
+  *result = NULL;
+
   /* Since nothing has any business being an lvalue in a module
      specification block, an interface block or a contains section,
      we force the changed_symbols mechanism to work by setting
@@ -4389,7 +4396,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
     case FL_PROCEDURE:
       /* Check for a nonrecursive function result variable.  */
       if (sym->attr.function
-	  && !sym->attr.external
+	  && (!sym->attr.external || sym->abr_modproc_decl)
 	  && sym->result == sym
 	  && (gfc_is_function_return_value (sym, gfc_current_ns)
 	      || (sym->attr.entry

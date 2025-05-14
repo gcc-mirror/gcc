@@ -291,7 +291,7 @@ AC_SUBST_FILE(host_makefile_frag)
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h spawn.h)
+AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h spawn.h libgen.h)
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 
@@ -370,6 +370,7 @@ funcs="$funcs gettimeofday"
 funcs="$funcs index"
 funcs="$funcs insque"
 funcs="$funcs memchr"
+funcs="$funcs memrchr"
 funcs="$funcs memcmp"
 funcs="$funcs memcpy"
 funcs="$funcs memmem"
@@ -436,7 +437,7 @@ if test "x" = "y"; then
     ffs __fsetlocking \
     getcwd getpagesize getrlimit getrusage getsysinfo gettimeofday \
     index insque \
-    memchr memcmp memcpy memmem memmove memset mkstemps \
+    memchr memrchr memcmp memcpy memmem memmove memset mkstemps \
     on_exit \
     pipe2 posix_spawn posix_spawnp psignal \
     pstat_getdynamic pstat_getstatic putenv \
@@ -555,7 +556,7 @@ if test -n "${with_target_subdir}"; then
 
     for f in atexit basename bcmp bcopy bsearch bzero calloc clock ffs \
              getcwd getpagesize getrusage gettimeofday \
-             index insque memchr memcmp memcpy memmove memset psignal \
+             index insque memchr memrchr memcmp memcpy memmove memset psignal \
              putenv random rename rindex sbrk setenv stpcpy strcasecmp \
              strchr strdup strerror strncasecmp strrchr strstr strtod \
              strtol strtoul sysconf times tmpnam vfprintf vprintf \
@@ -723,7 +724,12 @@ if test -z "${setobjs}"; then
     [AC_MSG_RESULT([no])])
 
   AC_CHECK_FUNCS($checkfuncs)
-  AC_CHECK_DECLS([basename(char *), ffs, asprintf, vasprintf, snprintf, vsnprintf])
+  AC_CHECK_DECLS([basename(char *)], [], [], [
+AC_INCLUDES_DEFAULT
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif])
+  AC_CHECK_DECLS([ffs, asprintf, vasprintf, snprintf, vsnprintf])
   AC_CHECK_DECLS([calloc, getenv, getopt, malloc, realloc])
   case "${host}" in
       *-*-darwin*) ;; # Darwin's sbrk implementation is deprecated.

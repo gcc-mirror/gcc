@@ -733,15 +733,17 @@ const unsigned int AARCH64_BUILTIN_CLASS = (1 << AARCH64_BUILTIN_SHIFT) - 1;
 
 /* RAII class for enabling enough features to define built-in types
    and implement the arm_neon.h pragma.  */
-class aarch64_simd_switcher
+class aarch64_target_switcher
 {
 public:
-  aarch64_simd_switcher (aarch64_feature_flags extra_flags = 0);
-  ~aarch64_simd_switcher ();
+  aarch64_target_switcher (aarch64_feature_flags flags = 0);
+  ~aarch64_target_switcher ();
 
 private:
   aarch64_feature_flags m_old_asm_isa_flags;
   bool m_old_general_regs_only;
+  tree m_old_target_pragma;
+  bool m_old_have_regs_of_mode[MAX_MACHINE_MODE];
 };
 
 /* Represents the ISA requirements of an intrinsic function, or of some
@@ -1024,6 +1026,8 @@ rtx aarch64_ptrue_reg (machine_mode, unsigned int);
 rtx aarch64_ptrue_reg (machine_mode, machine_mode);
 rtx aarch64_pfalse_reg (machine_mode);
 bool aarch64_sve_same_pred_for_ptest_p (rtx *, rtx *);
+void aarch64_emit_load_store_through_mode (rtx, rtx, machine_mode);
+bool aarch64_expand_maskloadstore (rtx *, machine_mode);
 void aarch64_emit_sve_pred_move (rtx, rtx, rtx);
 void aarch64_expand_sve_mem_move (rtx, rtx, machine_mode);
 bool aarch64_maybe_expand_sve_subreg_move (rtx, rtx);
@@ -1051,6 +1055,7 @@ void aarch64_subvti_scratch_regs (rtx, rtx, rtx *,
 				  rtx *, rtx *, rtx *);
 void aarch64_expand_subvti (rtx, rtx, rtx,
 			    rtx, rtx, rtx, rtx, bool);
+int aarch64_exact_log2_inverse (unsigned int, rtx);
 
 
 /* Initialize builtins for SIMD intrinsics.  */
@@ -1190,6 +1195,7 @@ void aarch64_set_asm_isa_flags (aarch64_feature_flags);
 void aarch64_set_asm_isa_flags (gcc_options *, aarch64_feature_flags);
 bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
 			     const struct cl_decoded_option *, location_t);
+aarch64_feature_flags aarch64_get_required_features (aarch64_feature_flags);
 void aarch64_print_hint_for_extensions (const char *);
 void aarch64_print_hint_for_arch (const char *);
 void aarch64_print_hint_for_core (const char *);
@@ -1257,6 +1263,7 @@ void aarch64_restore_za (rtx);
 void aarch64_expand_crc_using_pmull (scalar_mode, scalar_mode, rtx *);
 void aarch64_expand_reversed_crc_using_pmull (scalar_mode, scalar_mode, rtx *);
 
+void aarch64_expand_fp_spaceship (rtx, rtx, rtx, rtx);
 
 extern bool aarch64_gcs_enabled ();
 

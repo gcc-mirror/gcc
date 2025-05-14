@@ -1,9 +1,10 @@
 /* PR target/68674 */
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_neon_ok } */
-/* { dg-require-effective-target arm_fp_ok } */
+/* { dg-require-effective-target arm_arch_v7a_ok } */
+/* { dg-require-effective-target arm_libc_fp_abi_ok } */
 /* { dg-options "-O2" } */
-/* { dg-add-options arm_fp } */
+/* { dg-add-options arm_arch_v7a } */
+/* { dg-add-options arm_libc_fp_abi } */
 
 #pragma GCC target ("fpu=vfp")
 

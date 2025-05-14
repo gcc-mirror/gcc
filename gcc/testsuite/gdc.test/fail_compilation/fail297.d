@@ -1,7 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail297.d(30): Error: incompatible types for `(Bar()) + (baz())`: `Bar` and `const(Bar)`
+fail_compilation/fail297.d(31): Error: operator `+` is not defined for type `Bar`
+fail_compilation/fail297.d(25):        perhaps overload the operator with `auto opBinary(string op : "+")(const(Bar) rhs) {}`
 ---
 */
 

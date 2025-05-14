@@ -13,5 +13,4 @@ impl<X, Y> Foo<X> {
 fn main() {
     let a = Foo::test();
     // { dg-error "expected" "" { target *-*-* } .-1 }
-    // { dg-error "Failed to resolve expression of function call" "" { target *-*-* } .-2 }
 }

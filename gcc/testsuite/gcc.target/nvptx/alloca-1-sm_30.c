@@ -7,5 +7,5 @@ void sink(void *);
 void f(void)
 {
   sink(__builtin_alloca(123));
-  /* { dg-message {sorry, unimplemented: target cannot support alloca} {} { target *-*-* } .-1 } */
+  /* { dg-message {sorry, unimplemented: dynamic stack allocation not supported} {} { target *-*-* } .-1 } */
 }

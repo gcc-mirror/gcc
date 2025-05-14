@@ -861,6 +861,8 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/deque \
                          include/expected \
                          include/filesystem \
+                         include/flat_map \
+                         include/flat_set \
                          include/forward_list \
                          include/format \
                          include/fstream \
@@ -878,6 +880,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/list \
                          include/locale \
                          include/map \
+                         include/mdspan \
                          include/memory \
                          include/memory_resource \
                          include/mutex \
@@ -906,6 +909,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/string_view \
                          include/syncstream \
                          include/system_error \
+                         include/text_encoding \
                          include/thread \
                          include/tuple \
                          include/typeindex \
@@ -942,6 +946,8 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/cwchar \
                          include/cuchar \
                          include/cwctype \
+                         include/stdbit.h \
+                         include/stdckdint.h \
                          include/ \
                          include/bits \
                          include/@host_alias@/bits \

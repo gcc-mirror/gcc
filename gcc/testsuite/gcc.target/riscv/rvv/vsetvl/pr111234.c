@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mrvv-vector-bits=scalable -march=rv64gcv -mabi=lp64d -O3" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 void
 f (vint32m1_t *in, vint64m2_t *out, vbool32_t *m, int b)

@@ -41,7 +41,7 @@ public:
     item.accept_vis (resolver);
 
     NodeId current_module = resolver.resolver->peek_current_module_scope ();
-    resolver.mappings->insert_child_item_to_parent_module_mapping (
+    resolver.mappings.insert_child_item_to_parent_module_mapping (
       item.get_node_id (), current_module);
   }
 
@@ -58,12 +58,12 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, module.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, mod);
-    mappings->insert_module_child (current_module, module.get_node_id ());
+    mappings.insert_module_child_item (current_module, mod);
+    mappings.insert_module_child (current_module, module.get_node_id ());
 
     resolver->push_new_module_scope (module.get_node_id ());
     for (auto &item : module.get_items ())
@@ -71,7 +71,7 @@ public:
 
     resolver->pop_module_scope ();
 
-    mappings->insert_canonical_path (module.get_node_id (), cpath);
+    mappings.insert_canonical_path (module.get_node_id (), cpath);
   }
 
   void visit (AST::TypeAlias &alias) override
@@ -88,12 +88,12 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, alias.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, talias);
-    mappings->insert_canonical_path (alias.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, talias);
+    mappings.insert_canonical_path (alias.get_node_id (), cpath);
   }
 
   void visit (AST::TupleStruct &struct_decl) override
@@ -110,12 +110,12 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, struct_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (struct_decl.get_node_id (), cpath);
   }
 
   void visit (AST::Enum &enum_decl) override
@@ -132,7 +132,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, enum_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     resolver->push_new_module_scope (enum_decl.get_node_id ());
@@ -142,8 +142,8 @@ public:
     resolver->pop_module_scope ();
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (enum_decl.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (enum_decl.get_node_id (), cpath);
   }
 
   void visit (AST::EnumItem &item) override
@@ -158,14 +158,14 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_module_child (current_module, item.get_node_id ());
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_module_child (current_module, item.get_node_id ());
   }
 
   void visit (AST::EnumItemTuple &item) override
@@ -180,14 +180,14 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_module_child (current_module, item.get_node_id ());
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_module_child (current_module, item.get_node_id ());
   }
 
   void visit (AST::EnumItemStruct &item) override
@@ -202,14 +202,14 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_module_child (current_module, item.get_node_id ());
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_module_child (current_module, item.get_node_id ());
   }
 
   void visit (AST::EnumItemDiscriminant &item) override
@@ -224,14 +224,14 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_module_child (current_module, item.get_node_id ());
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_module_child (current_module, item.get_node_id ());
   }
 
   void visit (AST::StructStruct &struct_decl) override
@@ -242,18 +242,25 @@ public:
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
-    resolver->get_type_scope ().insert (
-      path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
-      Rib::ItemType::Type,
-      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
-	rich_location r (line_table, struct_decl.get_locus ());
-	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
-      });
+    auto duplicate_item
+      = [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
+      rich_location r (line_table, struct_decl.get_locus ());
+      r.add_range (locus);
+      redefined_error (r);
+    };
+
+    resolver->get_type_scope ().insert (path, struct_decl.get_node_id (),
+					struct_decl.get_locus (), false,
+					Rib::ItemType::Type, duplicate_item);
+
+    if (struct_decl.is_unit_struct ())
+      resolver->get_name_scope ().insert (path, struct_decl.get_node_id (),
+					  struct_decl.get_locus (), false,
+					  Rib::ItemType::Type, duplicate_item);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (struct_decl.get_node_id (), cpath);
   }
 
   void visit (AST::Union &union_decl) override
@@ -270,12 +277,12 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, union_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (union_decl.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (union_decl.get_node_id (), cpath);
   }
 
   void visit (AST::StaticItem &var) override
@@ -290,12 +297,12 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, var.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (var.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (var.get_node_id (), cpath);
   }
 
   void visit (AST::ConstantItem &constant) override
@@ -311,12 +318,12 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, constant.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (constant.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (constant.get_node_id (), cpath);
   }
 
   void visit (AST::Function &function) override
@@ -333,12 +340,12 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, function.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (function.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (function.get_node_id (), cpath);
   }
 
   void visit (AST::InherentImpl &impl_block) override
@@ -381,7 +388,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, impl_block.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     for (auto &impl_item : impl_block.get_impl_items ())
@@ -401,15 +408,15 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, trait.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     for (auto &item : trait.get_trait_items ())
       ResolveTopLevelTraitItems::go (item.get (), path, cpath);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (trait.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (trait.get_node_id (), cpath);
   }
 
   void visit (AST::ExternBlock &extern_block) override
@@ -428,26 +435,22 @@ public:
     NodeId resolved_crate = UNKNOWN_NODEID;
     if (extern_crate.references_self ())
       {
-	CrateNum crate_num = mappings->get_current_crate ();
-	bool ok = mappings->crate_num_to_nodeid (crate_num, resolved_crate);
-	rust_assert (ok);
+	CrateNum crate_num = mappings.get_current_crate ();
+	resolved_crate = mappings.crate_num_to_nodeid (crate_num).value ();
       }
     else
       {
-	CrateNum found_crate_num = UNKNOWN_CRATENUM;
-	bool found
-	  = mappings->lookup_crate_name (extern_crate.get_referenced_crate (),
-					 found_crate_num);
-	if (!found)
+	auto cnum
+	  = mappings.lookup_crate_name (extern_crate.get_referenced_crate ());
+	if (!cnum)
 	  {
 	    rust_error_at (extern_crate.get_locus (), "unknown crate %qs",
 			   extern_crate.get_referenced_crate ().c_str ());
 	    return;
 	  }
-
-	bool ok
-	  = mappings->crate_num_to_nodeid (found_crate_num, resolved_crate);
-	if (!ok)
+	if (auto resolved = mappings.crate_num_to_nodeid (*cnum))
+	  resolved_crate = resolved.value ();
+	else
 	  {
 	    rust_internal_error_at (extern_crate.get_locus (),
 				    "failed to resolve crate to nodeid");
@@ -477,7 +480,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, extern_crate.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
   }
 

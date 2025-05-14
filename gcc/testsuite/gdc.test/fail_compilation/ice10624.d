@@ -1,9 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice10624.d(38): Error: need member function `opCmp()` for struct `Tuple!(Msg)` to compare
-fail_compilation/ice10624.d(48): Error: template instance `ice10624.Variant.handler!(Tuple!(Msg))` error instantiating
-fail_compilation/ice10624.d(21):        instantiated from here: `opAssign!(Tuple!(Msg))`
+fail_compilation/ice10624.d(39): Error: no operator `<` for type `Tuple`
+fail_compilation/ice10624.d(13):        perhaps overload it with `int opCmp(Tuple!(Msg) other) const {}`
+fail_compilation/ice10624.d(49): Error: template instance `ice10624.Variant.handler!(Tuple!(Msg))` error instantiating
+fail_compilation/ice10624.d(22):        instantiated from here: `opAssign!(Tuple!(Msg))`
 ---
 */
 

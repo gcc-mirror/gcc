@@ -18,42 +18,28 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "gimple-pretty-print.h"
+#include "analyzer/common.h"
+
+#include "diagnostic-event-id.h"
 #include "gcc-rich-location.h"
-#include "ordered-hash-map.h"
-#include "options.h"
-#include "cgraph.h"
-#include "function.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "digraph.h"
-#include "analyzer/analyzer.h"
+#include "gimple-pretty-print.h"
+#include "sbitmap.h"
+#include "selftest.h"
+#include "shortest-paths.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/program-point.h"
-#include "sbitmap.h"
-#include "bitmap.h"
-#include "selftest.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/sm.h"
 #include "analyzer/program-state.h"
-#include "diagnostic-event-id.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/diagnostic-manager.h"
-#include "shortest-paths.h"
 #include "analyzer/exploded-graph.h"
 #include "analyzer/analysis-plan.h"
 #include "analyzer/inlining-iterator.h"
-#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -316,7 +302,7 @@ program_point::dump () const
 std::unique_ptr<json::object>
 program_point::to_json () const
 {
-  auto point_obj = ::make_unique<json::object> ();
+  auto point_obj = std::make_unique<json::object> ();
 
   point_obj->set_string ("kind", point_kind_to_string (get_kind ()));
 

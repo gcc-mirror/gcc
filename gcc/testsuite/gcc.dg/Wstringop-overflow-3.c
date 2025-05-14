@@ -1,7 +1,6 @@
 /* PR tree-optimization/84238 */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-require-effective-target alloca } */
 
 char a[1];
 int b;

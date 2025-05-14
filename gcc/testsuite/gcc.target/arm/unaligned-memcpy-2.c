@@ -1,24 +1,27 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target arm_unaligned } */
-/* { dg-options "-O2" } */
+/* { dg-do run } */
+/* { dg-options "-O2 -save-temps" } */
 
 #include <string.h>
 
-char dest[16] = { 0 };
+char dest[16] __attribute__((aligned(8))) = { 0 } ;
+char input[17] __attribute__ ((aligned(8))) = "abcdefghijklmnop";
 
-void aligned_dest (char *src)
+void __attribute__ ((noinline,noclone)) aligned_dest (char *src)
 {
   memcpy (dest, src, 15);
 }
 
-/* Expect a multi-word store for the main part of the copy, but subword
-   loads/stores for the remainder.  */
+int main ()
+{
+  int i;
+  aligned_dest (input+1);
+  for (i = 0; i < 15; i++)
+    if (dest[i] != input[i+1])
+      __builtin_abort ();
+  if (dest[15] != 0)
+    __builtin_abort ();
+  return 0;
+}
 
-/* { dg-final { scan-assembler-times "ldmia" 0 } } */
-/* { dg-final { scan-assembler-times "ldrd" 0 } } */
-/* { dg-final { scan-assembler-times "stmia" 1 { target { ! { arm_prefer_ldrd_strd } } } } } */
-/* { dg-final { scan-assembler-times "strd" 1 { target { arm_prefer_ldrd_strd } } } } */
-/* { dg-final { scan-assembler-times "ldrh" 1 } } */
-/* { dg-final { scan-assembler-times "strh" 1 } } */
-/* { dg-final { scan-assembler-times "ldrb" 1 } } */
-/* { dg-final { scan-assembler-times "strb" 1 } } */
+/* Check that we don't use any instructions that assume an aligned source.  */
+/* { dg-final { scan-assembler-not {(ldm(ia)?\tr[0-9]|ldrd\t.*\[r[0-9]|vldr)} } } */

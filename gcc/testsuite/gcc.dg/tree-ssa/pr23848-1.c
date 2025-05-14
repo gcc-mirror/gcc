@@ -1,7 +1,6 @@
 /* PR middle-end/23848 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-require-effective-target alloca } */
 
 void bar1 (char *, int);
 void foo1 (int size)

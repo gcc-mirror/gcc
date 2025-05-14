@@ -1,4 +1,5 @@
 /* Adapted from gcc.dg/Wmismatched-dealloc.c.  */
+/* { dg-additional-options "-fno-exceptions" } */
 
 #define A(...) __attribute__ ((malloc (__VA_ARGS__)))
 

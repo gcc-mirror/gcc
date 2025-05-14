@@ -27,13 +27,13 @@ integer(1) :: o1
 integer, parameter :: mykind = mod (omp_interop_kind, 100) ! remove saving the 'comes from c_int' info
 real(mykind) :: or
 
-!$omp interop init (op)      ! { dg-error "'op' at \\(1\\) in 'INIT' clause must be a scalar integer variable of 'omp_interop_kind' kind" }
+!$omp interop init (target : op)      ! { dg-error "'op' at \\(1\\) in 'INIT' clause must be a scalar integer variable of 'omp_interop_kind' kind" }
                              ! { dg-error "Object 'op' is not a variable at \\(1\\)" "" { target *-*-* } .-1 }
-!$omp interop init (ointent) ! { dg-error "'ointent' at \\(1\\) in 'INIT' clause must be definable" }
-!$omp interop init (od)      ! { dg-error "'od' at \\(1\\) in 'INIT' clause must be a scalar integer variable of 'omp_interop_kind' kind" }
-!$omp interop init (od(1))   ! { dg-error "Syntax error in OpenMP variable list" }
-!$omp interop init (o1)      ! { dg-error "'o1' at \\(1\\) in 'INIT' clause must be a scalar integer variable of 'omp_interop_kind' kind" }
-!$omp interop init (or)      ! { dg-error "'or' at \\(1\\) in 'INIT' clause must be a scalar integer variable of 'omp_interop_kind' kind" }
+!$omp interop init (target : ointent) ! { dg-error "'ointent' at \\(1\\) in 'INIT' clause must be definable" }
+!$omp interop init (target : od)      ! { dg-error "'od' at \\(1\\) in 'INIT' clause must be a scalar integer variable of 'omp_interop_kind' kind" }
+!$omp interop init (target : od(1))   ! { dg-error "Syntax error in OpenMP variable list" }
+!$omp interop init (target: o1)      ! { dg-error "'o1' at \\(1\\) in 'INIT' clause must be a scalar integer variable of 'omp_interop_kind' kind" }
+!$omp interop init (target: or)      ! { dg-error "'or' at \\(1\\) in 'INIT' clause must be a scalar integer variable of 'omp_interop_kind' kind" }
 
 !$omp interop use (op)      ! { dg-error "'op' at \\(1\\) in 'USE' clause must be a scalar integer variable of 'omp_interop_kind' kind" }
                             ! { dg-error "Object 'op' is not a variable at \\(1\\)" "" { target *-*-* } .-1 }
@@ -60,21 +60,21 @@ implicit none
 integer(omp_interop_kind) :: obj1, obj2, obj3, obj4, obj5
 integer :: x
 
-!$omp interop init ( prefer_type( {fr(1_"") }) : obj1) ! { dg-error "Expected constant scalar integer expression or non-empty default-kind character literal" }
-!$omp interop init ( prefer_type( {fr(1_"hip") , attr(omp_ifr_cuda) }) : obj1) ! { dg-error "Expected default-kind character literal" }
+!$omp interop init ( target, prefer_type( {fr(1_"") }) : obj1) ! { dg-error "Expected constant scalar integer expression or non-empty default-kind character literal" }
+!$omp interop init ( target, prefer_type( {fr(1_"hip") , attr(omp_ifr_cuda) }) : obj1) ! { dg-error "Expected default-kind character literal" }
 
-!$omp interop init ( prefer_type( {fr(1_"hip") , attr("myooption") }) : obj1) ! { dg-error "Character literal at .1. must start with 'ompx_'" }
-!$omp interop init ( prefer_type( {fr(1_"hip") , attr("ompx_option") , attr("ompx_") } ) : obj1)
-!$omp interop init ( prefer_type( {fr(1_"hip") , attr("ompx_option") }, { attr("ompx_") } ) : obj1)
-!$omp interop init ( prefer_type( {fr(1_"hip") , attr("ompx_option") }  { attr("ompx_") } ) : obj1) ! { dg-error "Expected ',' or '\\)'" }
-!$omp interop init ( prefer_type( {fr(1_"hip") , attr("ompx_option")   ) : obj1) ! { dg-error "Expected ',' or '\}'" }
+!$omp interop init ( target, prefer_type( {fr(1_"hip") , attr("myooption") }) : obj1) ! { dg-error "Character literal at .1. must start with 'ompx_'" }
+!$omp interop init ( target, prefer_type( {fr(1_"hip") , attr("ompx_option") , attr("ompx_") } ) : obj1)
+!$omp interop init ( target, prefer_type( {fr(1_"hip") , attr("ompx_option") }, { attr("ompx_") } ) : obj1)
+!$omp interop init ( target, prefer_type( {fr(1_"hip") , attr("ompx_option") }  { attr("ompx_") } ) : obj1) ! { dg-error "Expected ',' or '\\)'" }
+!$omp interop init ( target, prefer_type( {fr(1_"hip") , attr("ompx_option")   ) : obj1) ! { dg-error "Expected ',' or '\}'" }
 
-!$omp interop init ( prefer_type( {fr(1_"hip") attr("ompx_option")   ) : obj1) ! { dg-error "Expected ',' or '\}'" }
-!$omp interop init ( prefer_type( {fr(1_"hip")}), prefer_type("cuda") : obj1) ! { dg-error "Duplicate 'prefer_type' modifier" }
+!$omp interop init ( target, prefer_type( {fr(1_"hip") attr("ompx_option")   ) : obj1) ! { dg-error "Expected ',' or '\}'" }
+!$omp interop init ( target, prefer_type( {fr(1_"hip")}), prefer_type("cuda") : obj1) ! { dg-error "Duplicate 'prefer_type' modifier" }
 
-!$omp interop init ( prefer_type( {attr("ompx_option1,ompx_option2")   ) : obj1) ! { dg-error "Unexpected null or ',' character in character literal" }
+!$omp interop init ( target, prefer_type( {attr("ompx_option1,ompx_option2")   ) : obj1) ! { dg-error "Unexpected null or ',' character in character literal" }
 
 !$omp interop init ( targetsync other ) : obj1)  ! { dg-error "Expected ',' or ':'" }
-!$omp interop init ( prefer_type( {fr(1_"cuda") } ), other : obj1)  ! { dg-error "Expected 'target' or 'targetsync'" }
-!$omp interop init ( prefer_type( {fr(1_"cuda") } ), obj1)  ! { dg-error "Expected 'target' or 'targetsync'" }
+!$omp interop init ( target, prefer_type( {fr(1_"cuda") } ), other : obj1)  ! { dg-error "Expected 'prefer_type', 'target', or 'targetsync'" }
+!$omp interop init ( target, prefer_type( {fr(1_"cuda") } ), obj1)  ! { dg-error "Expected 'prefer_type', 'target', or 'targetsync'" }
 end

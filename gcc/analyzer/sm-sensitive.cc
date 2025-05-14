@@ -19,19 +19,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#include "system.h"
-#include "coretypes.h"
-#include "make-unique.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "options.h"
-#include "diagnostic-core.h"
-#include "diagnostic-path.h"
-#include "analyzer/analyzer.h"
+#include "analyzer/common.h"
+
 #include "diagnostic-event-id.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
@@ -196,8 +187,8 @@ sensitive_state_machine::warn_for_any_exposure (sm_context &sm_ctxt,
     {
       tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
       sm_ctxt.warn (node, stmt, arg,
-		    make_unique<exposure_through_output_file> (*this,
-							       diag_arg));
+		    std::make_unique<exposure_through_output_file> (*this,
+								    diag_arg));
     }
 }
 
@@ -210,9 +201,9 @@ sensitive_state_machine::on_stmt (sm_context &sm_ctxt,
 				  const gimple *stmt) const
 {
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
+    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (*call))
       {
-	if (is_named_call_p (callee_fndecl, "getpass", call, 1))
+	if (is_named_call_p (callee_fndecl, "getpass", *call, 1))
 	  {
 	    tree lhs = gimple_call_lhs (call);
 	    if (lhs)
@@ -230,7 +221,7 @@ sensitive_state_machine::on_stmt (sm_context &sm_ctxt,
 	      }
 	    return true;
 	  }
-	else if (is_named_call_p (callee_fndecl, "fwrite", call, 4))
+	else if (is_named_call_p (callee_fndecl, "fwrite", *call, 4))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
 	    warn_for_any_exposure (sm_ctxt, node, stmt, arg);
@@ -251,10 +242,10 @@ sensitive_state_machine::can_purge_p (state_t s ATTRIBUTE_UNUSED) const
 
 /* Internal interface to this file. */
 
-state_machine *
+std::unique_ptr<state_machine>
 make_sensitive_state_machine (logger *logger)
 {
-  return new sensitive_state_machine (logger);
+  return std::make_unique<sensitive_state_machine> (logger);
 }
 
 } // namespace ana

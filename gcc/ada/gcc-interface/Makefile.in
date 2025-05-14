@@ -91,10 +91,11 @@ LS = ls
 RANLIB = @RANLIB@
 RANLIB_FLAGS = @ranlib_flags@
 AWK = @AWK@
-PICFLAG = @PICFLAG@
 
-COMPILER = $(CC)
-COMPILER_FLAGS = $(CFLAGS)
+# Should we build position-independent host code?
+enable_host_pie = @enable_host_pie@
+PICFLAG = @PICFLAG@
+LD_PICFLAG = @LD_PICFLAG@
 
 SHELL = @SHELL@
 PWD_COMMAND = $${PWDCMD-pwd}
@@ -119,7 +120,6 @@ GNATLIBCFLAGS = -g -O2
 GNATLIBCFLAGS_FOR_C = \
   -W -Wall $(GNATLIBCFLAGS) -fexceptions -DIN_RTS -DHAVE_GETIPINFO
 PICFLAG_FOR_TARGET = @PICFLAG_FOR_TARGET@
-ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS)
 THREAD_KIND = native
 THREADSLIB =
 GMEM_LIB =
@@ -230,11 +230,9 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS)
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS)
 
-# Used with $(COMPILER).
-ALL_COMPILERFLAGS = $(ALL_CFLAGS)
+ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS)
 
-# This is where we get libiberty.a from.
-ifneq ($(findstring $(PICFLAG),-fPIC -fPIE),)
+ifneq ($(enable_host_pie),)
 LIBIBERTY = ../../libiberty/pic/libiberty.a
 else
 LIBIBERTY = ../../libiberty/libiberty.a
@@ -254,9 +252,6 @@ TOOLS_LIBS = ../version.o ../link.o ../targext.o ../../ggc-none.o \
   ../../libcommon-target.a ../../libcommon.a ../../../libcpp/libcpp.a \
   $(LIBGNAT) $(LIBINTL) $(LIBICONV) ../$(LIBBACKTRACE) ../$(LIBIBERTY) \
   $(SYSLIBS) $(TGT_LIB)
-
-# Add -no-pie to TOOLS_LIBS since some of them are compiled with -fno-PIE.
-TOOLS_LIBS += @LD_PICFLAG@
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -293,8 +288,7 @@ ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 	$(CC) -c -x assembler $< $(OUTPUT_OPTION)
 
 .c.o:
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
-	  $(INCLUDES) $< $(OUTPUT_OPTION)
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 .adb.o:
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
@@ -382,13 +376,18 @@ endif
 
 include $(fsrcdir)/ada/Makefile.rtl
 
+ifneq ($(enable_host_pie),)
+LIBGNAT=../$(RTSDIR)/libgnat_pic.a
+else
 LIBGNAT=../$(RTSDIR)/libgnat.a
+endif
 
 TOOLS_FLAGS_TO_PASS=		\
 	"CC=$(CC)" 		\
-	"CFLAGS=$(CFLAGS)"	\
-	"LDFLAGS=$(LDFLAGS)"	\
+	"CFLAGS=$(CFLAGS) $(PICFLAG)"	\
+	"LDFLAGS=$(LDFLAGS) $(LD_PICFLAG)"	\
 	"ADAFLAGS=$(ADAFLAGS)"	\
+	"ADA_CFLAGS=$(ADA_CFLAGS)"	\
 	"INCLUDES=$(INCLUDES_FOR_SUBDIR)"\
 	"ADA_INCLUDES=$(ADA_INCLUDES) $(ADA_INCLUDES_FOR_SUBDIR)"\
 	"libsubdir=$(libsubdir)"	\
@@ -469,32 +468,41 @@ common-tools: ../stamp-tools
 	  gnatchop gnatcmd gnatkr gnatls gnatprep gnatname \
 	  gnatclean -bargs $(ADA_INCLUDES) $(GNATBIND_FLAGS)
 	$(GNATLINK) -v gnatcmd -o ../../gnat$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatchop -o ../../gnatchop$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatkr -o ../../gnatkr$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatls -o ../../gnatls$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatprep -o ../../gnatprep$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatname -o ../../gnatname$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	   --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatclean -o ../../gnatclean$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 
 ../../gnatdll$(exeext): ../stamp-tools
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatdll --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatdll
 	$(GNATLINK) -v gnatdll -o $@ \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 
 gnatmake-re: ../stamp-tools
-	$(GNATMAKE) -j0 $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"
+	$(GNATMAKE) -j0 $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatmake --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatmake
 	$(GNATLINK) -v gnatmake -o ../../gnatmake$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 
 # Note the use of the "mv" command in order to allow gnatlink to be linked
 # with the former version of gnatlink itself which cannot override itself.
@@ -504,7 +512,8 @@ gnatlink-re: ../stamp-tools gnatmake-re
 	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatlink --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlink
 	$(GNATLINK) -v gnatlink -o ../../gnatlinknew$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
+	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(MV)  ../../gnatlinknew$(exeext)  ../../gnatlink$(exeext)
 
 # Needs to be built with CC=gcc
@@ -731,6 +740,14 @@ gnatlib-shared-dual:
 	$(MV) libgnat_pic$(arext) $(RTSDIR)
 	$(MV) libgnarl_pic$(arext) $(RTSDIR)
 
+	# Remove all the object files. They cannot be reused because they have
+	# been generated for the static library and the shared library will be
+	# the first to be rebuilt. Moreover, this will prevent gnatmake to pick
+	# them instead of the prescribed version of the library when the tools
+	# are built for a native compiler.
+	$(RM) $(addprefix $(RTSDIR)/,$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS))
+	$(RM) $(addprefix $(RTSDIR)/,$(GNATRTL_TASKING_OBJS))
+
 gnatlib-shared-dual-win32:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
@@ -890,15 +907,13 @@ b_gnatl.adb : $(GNATLINK_OBJS)
 	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatl.adb gnatlink.ali
 
 b_gnatl.o : b_gnatl.adb
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN \
-	    $< $(OUTPUT_OPTION)
+	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN $< $(OUTPUT_OPTION)
 
 b_gnatm.adb : $(GNATMAKE_OBJS)
 	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatm.adb gnatmake.ali
 
 b_gnatm.o : b_gnatm.adb
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN \
-	    $< $(OUTPUT_OPTION)
+	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN $< $(OUTPUT_OPTION)
 
 # Provide a `toolexeclibdir' definition for when `gnat-install-lib' is
 # wired through gcc/ in a configuration with top-level libada disabled.
@@ -916,7 +931,7 @@ ADA_RTL_DSO_DIR = $(toolexeclibdir)
 # some targets.
 
 tracebak.o  : tracebak.c
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
 	      $(INCLUDES) $(NO_OMIT_ADAFLAGS) $< $(OUTPUT_OPTION)
 
 adadecode.o : adadecode.c adadecode.h
@@ -944,33 +959,33 @@ terminals.o : terminals.c
 vx_stack_info.o : vx_stack_info.c
 
 raise-gcc.o : raise-gcc.c raise.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 		-iquote $(srcdir) -iquote $(ftop_srcdir)/libgcc \
 		$(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 cio.o     : cio.c
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 init.o    : init.c adaint.h raise.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 init-vxsim.o : init-vxsim.c
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 initialize.o : initialize.c raise.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 link.o : link.c
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 		$(ALL_CPPFLAGS) $(INCLUDES_FOR_SUBDIR) \
 		$< $(OUTPUT_OPTION)
 
 targext.o : targext.c
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 		-iquote $(srcdir) \
 		$(ALL_CPPFLAGS) $(INCLUDES_FOR_SUBDIR) \
 		$< $(OUTPUT_OPTION)

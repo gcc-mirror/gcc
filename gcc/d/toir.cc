@@ -1058,13 +1058,8 @@ public:
 
 	if (sle != NULL)
 	  {
-	    StructDeclaration *sd = type->baseElemOf ()->isTypeStruct ()->sym;
 	    sle->sym = build_address (this->func_->shidden);
 	    using_rvo_p = true;
-
-	    /* Fill any alignment holes in the return slot using memset.  */
-	    if (!identity_compare_p (sd) || sd->isUnionDeclaration ())
-	      add_stmt (build_memset_call (this->func_->shidden));
 	  }
 
 	if (using_rvo_p == true)

@@ -544,6 +544,20 @@ static const rvv_type_info crypto_sew64_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of signed integer will be registered for Sifive Xsfvcp intrinsic*/
+/* functions.  */
+static const rvv_type_info x2_u_ops[] = {
+#define DEF_RVV_X2_U_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of signed integer will be registered for Sifive Xsfvcp intrinsic*/
+/* functions.  */
+static const rvv_type_info x2_wu_ops[] = {
+#define DEF_RVV_X2_WU_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 /* A list of signed integer will be registered for intrinsic
  * functions.  */
 static const rvv_type_info qmacc_ops[] = {
@@ -805,7 +819,7 @@ static CONSTEXPR const rvv_arg_type_info bf_wwxv_args[]
 static CONSTEXPR const rvv_arg_type_info m_args[]
   = {rvv_arg_type_info (RVV_BASE_mask), rvv_arg_type_info_end};
 
-/* A list of args for vector_type func (scalar_type) function.  */
+/* A list of args for vector_type func (scalar_type/sf.vc) function.  */
 static CONSTEXPR const rvv_arg_type_info x_args[]
   = {rvv_arg_type_info (RVV_BASE_scalar), rvv_arg_type_info_end};
 
@@ -1053,6 +1067,161 @@ static CONSTEXPR const rvv_arg_type_info scalar_ptr_index_args[]
 static CONSTEXPR const rvv_arg_type_info scalar_ptr_size_args[]
   = {rvv_arg_type_info (RVV_BASE_scalar_ptr),
      rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.x) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_x_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.v.x) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_v_x_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.i) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_i_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+
+/* A list of args for vector_type func (sf.vc.i) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_v_i_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.vv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_vv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.v.vv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_v_vv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.xv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_xv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.v.xv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_v_xv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.iv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_iv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.v.iv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_v_iv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.fv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_fv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar_float),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.v.fv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_v_fv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar_float),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.vvv/sf.vc.v.vvv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_vvv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.xvv/sf.vc.v.xvv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_xvv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.ivv/sf.vc.v.ivv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_ivv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_unsigned_vector),
+     rvv_arg_type_info (RVV_BASE_unsigned_vector),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.fvv/sf.vc.v.fvv) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_fvv_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar_float),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.vvw/sf.vc.v.vvw) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_vvw_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_x2_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.xvw/sf.vc.v.xvw) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_xvw_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_x2_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.ivw/sf.vc.v.ivw) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_ivw_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_x2_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (sf.vc.fvw/sf.vc.v.fvw) function.  */
+static CONSTEXPR const rvv_arg_type_info sf_vc_fvw_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar),
+     rvv_arg_type_info (RVV_BASE_x2_vector),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_scalar_float),
      rvv_arg_type_info_end};
 
 /* A list of none preds that will be registered for intrinsic functions.  */
@@ -3006,6 +3175,174 @@ static CONSTEXPR const rvv_op_info u_vvvv_crypto_sew64_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vvv_args /* Args */};
 
+static CONSTEXPR const rvv_op_info sf_vc_x_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_x,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_x_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_x_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_v_x,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     sf_vc_v_x_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_i_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_i,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_i_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_i_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_v_i,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     sf_vc_v_i_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_vv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_vv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_vv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_vv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_v_vv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     sf_vc_v_vv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_xv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_xv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_xv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_xv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_v_xv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     sf_vc_v_xv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_iv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_iv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_iv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_iv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_v_iv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     sf_vc_v_iv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_fv_ops
+  = {wextu_ops,					     /* Types */
+     OP_TYPE_fv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_fv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_fv_ops
+  = {wextu_ops,					     /* Types */
+     OP_TYPE_v_fv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     sf_vc_v_fv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_vvv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_vvv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_vvv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_vvv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_v_vvv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     sf_vc_vvv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_xvv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_xvv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_xvv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_xvv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_v_xvv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     sf_vc_xvv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_ivv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_ivv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_ivv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_ivv_ops
+  = {full_v_u_ops,					     /* Types */
+     OP_TYPE_v_ivv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     sf_vc_ivv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_fvv_ops
+  = {wextu_ops,					     /* Types */
+     OP_TYPE_fvv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_fvv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_fvv_ops
+  = {wextu_ops,					     /* Types */
+     OP_TYPE_v_fvv,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     sf_vc_fvv_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_vvw_ops
+  = {x2_u_ops,					     /* Types */
+     OP_TYPE_vvw,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_vvw_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_vvw_ops
+  = {x2_u_ops,					     /* Types */
+     OP_TYPE_v_vvw,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_x2_vector), /* Return type */
+     sf_vc_vvw_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_xvw_ops
+  = {x2_u_ops,					     /* Types */
+     OP_TYPE_xvw,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_xvw_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_xvw_ops
+  = {x2_u_ops,					     /* Types */
+     OP_TYPE_v_xvw,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_x2_vector), /* Return type */
+     sf_vc_xvw_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_ivw_ops
+  = {x2_u_ops,					     /* Types */
+     OP_TYPE_ivw,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_ivw_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_ivw_ops
+  = {x2_u_ops,					     /* Types */
+     OP_TYPE_v_ivw,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_x2_vector), /* Return type */
+     sf_vc_ivw_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_fvw_ops
+  = {x2_wu_ops,					     /* Types */
+     OP_TYPE_fvw,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     sf_vc_fvw_args /* Args */};
+
+static CONSTEXPR const rvv_op_info sf_vc_v_fvw_ops
+  = {x2_wu_ops,					     /* Types */
+     OP_TYPE_v_fvw,					     /* Suffix */
+     rvv_arg_type_info (RVV_BASE_x2_vector), /* Return type */
+     sf_vc_fvw_args /* Args */};
+
 /* A list of all RVV base function types.  */
 static CONSTEXPR const function_type_info function_types[] = {
 #define DEF_RVV_TYPE_INDEX(                                                    \
@@ -3022,7 +3359,7 @@ static CONSTEXPR const function_type_info function_types[] = {
   SIGNED_EEW16_LMUL1_INTERPRET, SIGNED_EEW32_LMUL1_INTERPRET,                  \
   SIGNED_EEW64_LMUL1_INTERPRET, UNSIGNED_EEW8_LMUL1_INTERPRET,                 \
   UNSIGNED_EEW16_LMUL1_INTERPRET, UNSIGNED_EEW32_LMUL1_INTERPRET,              \
-  UNSIGNED_EEW64_LMUL1_INTERPRET, X2_VLMUL_EXT, X4_VLMUL_EXT, X8_VLMUL_EXT,    \
+  UNSIGNED_EEW64_LMUL1_INTERPRET, X2, X2_VLMUL_EXT, X4_VLMUL_EXT, X8_VLMUL_EXT,\
   X16_VLMUL_EXT, X32_VLMUL_EXT, X64_VLMUL_EXT, TUPLE_SUBPART)                  \
   {                                                                            \
     VECTOR_TYPE_##VECTOR,                                                      \
@@ -3087,6 +3424,7 @@ static CONSTEXPR const function_type_info function_types[] = {
     VECTOR_TYPE_##UNSIGNED_EEW16_LMUL1_INTERPRET,                              \
     VECTOR_TYPE_##UNSIGNED_EEW32_LMUL1_INTERPRET,                              \
     VECTOR_TYPE_##UNSIGNED_EEW64_LMUL1_INTERPRET,                              \
+    VECTOR_TYPE_##X2,                                                          \
     VECTOR_TYPE_##X2_VLMUL_EXT,                                                \
     VECTOR_TYPE_##X4_VLMUL_EXT,                                                \
     VECTOR_TYPE_##X8_VLMUL_EXT,                                                \
@@ -3600,6 +3938,24 @@ rvv_arg_type_info::get_xfqf_float_type (vector_type_index type_idx) const
     return NULL_TREE;
 }
 
+tree
+rvv_arg_type_info::get_scalar_float_type (vector_type_index type_idx) const
+{
+  /* Convert vint types to their corresponding scalar float types.
+     Note:
+     - According to riscv-vector-builtins-types.def, the index of an unsigned
+       type is always one greater than its corresponding signed type.
+     - Conversion for vint8 types is not required.  */
+  if (type_idx >= VECTOR_TYPE_vint16mf4_t && type_idx <= VECTOR_TYPE_vuint16m8_t)
+    return builtin_types[VECTOR_TYPE_vfloat16m1_t].scalar;
+  else if (type_idx >= VECTOR_TYPE_vint32mf2_t && type_idx <= VECTOR_TYPE_vuint32m8_t)
+    return builtin_types[VECTOR_TYPE_vfloat32m1_t].scalar;
+  else if (type_idx >= VECTOR_TYPE_vint64m1_t && type_idx <= VECTOR_TYPE_vuint64m8_t)
+    return builtin_types[VECTOR_TYPE_vfloat64m1_t].scalar;
+  else
+    return NULL_TREE;
+}
+
 vector_type_index
 rvv_arg_type_info::get_function_type_index (vector_type_index type_idx) const
 {
@@ -3758,7 +4114,7 @@ function_instance::modifies_global_state_p () const
     return true;
 
   /* Handle direct modifications of global state.  */
-  return flags & (CP_WRITE_MEMORY | CP_WRITE_CSR);
+  return flags & (CP_WRITE_MEMORY | CP_WRITE_CSR | CP_USE_COPROCESSORS);
 }
 
 /* Return true if calls to the function could raise a signal.  */
@@ -4724,7 +5080,11 @@ bool
 verify_type_context (location_t loc, type_context_kind context, const_tree type,
 		     bool silent_p)
 {
-  if (!sizeless_type_p (type))
+  const_tree tmp = type;
+  if (omp_type_context (context) && POINTER_TYPE_P (type))
+    tmp = strip_pointer_types (tmp);
+
+  if (!sizeless_type_p (tmp))
     return true;
 
   switch (context)
@@ -4795,6 +5155,34 @@ verify_type_context (location_t loc, type_context_kind context, const_tree type,
       if (!silent_p)
 	error_at (loc, "capture by copy of RVV type %qT", type);
 
+      return false;
+
+    case TCTX_OMP_MAP:
+      if (!silent_p)
+	error_at (loc, "RVV type %qT not allowed in %<map%> clause", type);
+      return false;
+
+    case TCTX_OMP_MAP_IMP_REF:
+      if (!silent_p)
+	error ("cannot reference %qT object types in %<target%> region", type);
+      return false;
+
+    case TCTX_OMP_PRIVATE:
+      if (!silent_p)
+	error_at (loc, "RVV type %qT not allowed in"
+		  " %<target%> %<private%> clause", type);
+      return false;
+
+    case TCTX_OMP_FIRSTPRIVATE:
+      if (!silent_p)
+	error_at (loc, "RVV type %qT not allowed in"
+		  " %<target%> %<firstprivate%> clause", type);
+      return false;
+
+    case TCTX_OMP_DEVICE_ADDR:
+      if (!silent_p)
+	error_at (loc, "RVV type %qT not allowed in"
+		  " %<target%> device clauses", type);
       return false;
     }
 

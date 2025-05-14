@@ -2117,7 +2117,7 @@
     (plusminusmultdiv:VBF_32_64
       (match_operand:VBF_32_64 1 "nonimmediate_operand")
       (match_operand:VBF_32_64 2 "nonimmediate_operand")))]
-  "TARGET_AVX10_2_256"
+  "TARGET_AVX10_2"
 {
   rtx op0 = gen_reg_rtx (V8BFmode);
   rtx op1 = lowpart_subreg (V8BFmode,
@@ -2176,7 +2176,7 @@
     (smaxmin:VBF_32_64
       (match_operand:VBF_32_64 1 "nonimmediate_operand")
       (match_operand:VBF_32_64 2 "nonimmediate_operand")))]
-  "TARGET_AVX10_2_256"
+  "TARGET_AVX10_2"
 {
   rtx op0 = gen_reg_rtx (V8BFmode);
   rtx op1 = lowpart_subreg (V8BFmode,
@@ -2208,7 +2208,7 @@
 (define_expand "sqrt<mode>2"
   [(set (match_operand:VBF_32_64 0 "register_operand")
 	(sqrt:VBF_32_64 (match_operand:VBF_32_64 1 "vector_operand")))]
-  "TARGET_AVX10_2_256"
+  "TARGET_AVX10_2"
 {
   rtx op0 = gen_reg_rtx (V8BFmode);
   rtx op1 = lowpart_subreg (V8BFmode,
@@ -2369,7 +2369,7 @@
 	(match_operator:QI 1 ""
 	  [(match_operand:VBF_32_64 2 "register_operand")
 	   (match_operand:VBF_32_64 3 "nonimmediate_operand")]))]
-  "TARGET_AVX10_2_256"
+  "TARGET_AVX10_2"
 {
   rtx op2 = lowpart_subreg (V8BFmode,
 			     force_reg (<MODE>mode, operands[2]), <MODE>mode);
@@ -2788,7 +2788,7 @@
 	  (match_operand:VBF_32_64 1 "nonimmediate_operand")
 	  (match_operand:VBF_32_64 2 "nonimmediate_operand")
 	  (match_operand:VBF_32_64 3 "nonimmediate_operand")))]
-  "TARGET_AVX10_2_256"
+  "TARGET_AVX10_2"
 {
   rtx op0 = gen_reg_rtx (V8BFmode);
   rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
@@ -2808,7 +2808,7 @@
 	  (match_operand:VBF_32_64   2 "nonimmediate_operand")
 	  (neg:VBF_32_64
 	    (match_operand:VBF_32_64 3 "nonimmediate_operand"))))]
-  "TARGET_AVX10_2_256"
+  "TARGET_AVX10_2"
 {
   rtx op0 = gen_reg_rtx (V8BFmode);
   rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
@@ -2828,7 +2828,7 @@
 	    (match_operand:VBF_32_64 1 "nonimmediate_operand"))
 	  (match_operand:VBF_32_64   2 "nonimmediate_operand")
 	  (match_operand:VBF_32_64   3 "nonimmediate_operand")))]
-  "TARGET_AVX10_2_256"
+  "TARGET_AVX10_2"
 {
   rtx op0 = gen_reg_rtx (V8BFmode);
   rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
@@ -2849,7 +2849,7 @@
 	  (match_operand:VBF_32_64   2 "nonimmediate_operand")
 	  (neg:VBF_32_64
 	    (match_operand:VBF_32_64 3 "nonimmediate_operand"))))]
-  "TARGET_AVX10_2_256"
+  "TARGET_AVX10_2"
 {
   rtx op0 = gen_reg_rtx (V8BFmode);
   rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);

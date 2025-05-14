@@ -89,7 +89,7 @@ template <typename aj, typename cm> struct cg<aj, cm> { typedef aj cn; };
 namespace ai {
 template <typename cj, int> cj cp;
 template <typename bu, typename cj, int> void cl(bu *cr, cj cs) { ct(cr, cs); }
-typedef __attribute__((altivec(vector__))) double co;
+typedef double co __attribute__ ((vector_size (16)));
 void ct(double *cr, co cs) { *(co *)cr = cs; }
 struct cq {
   co q;

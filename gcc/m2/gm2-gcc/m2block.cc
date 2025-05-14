@@ -28,6 +28,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2options.h"
 #include "m2tree.h"
 #include "m2treelib.h"
+#include "m2pp.h"
 
 /* For each binding contour we allocate a binding_level structure
    which records the entities defined or declared in that contour.
@@ -667,8 +668,7 @@ m2block_GetErrorNode (void)
   return error_mark_node;
 }
 
-/* GetGlobals - returns a list of global variables, functions,
-   constants.  */
+/* GetGlobals returns a list of global variables, functions and constants.  */
 
 tree
 m2block_GetGlobals (void)
@@ -685,7 +685,7 @@ m2block_GetGlobalContext (void)
   return global_binding_level->context;
 }
 
-/* do_add_stmt - t is a statement.  Add it to the statement-tree.  */
+/* do_add_stmt t is a statement.  Add it to the statement-tree.  */
 
 static tree
 do_add_stmt (tree t)
@@ -695,27 +695,14 @@ do_add_stmt (tree t)
   return t;
 }
 
-/* flush_pending_note - flushes a pending_statement note if
-   necessary.  */
+/* flush_pending_note flushes a pending_statement note if necessary.  */
 
 static void
 flush_pending_note (void)
 {
   if (pending_statement && (M2Options_GetM2g ()))
     {
-#if 0
-      /* --fixme-- we need a machine independant way to generate a nop.  */
-      tree instr = m2decl_BuildStringConstant ("nop", 3);
-      tree string
-          = resolve_asm_operand_names (instr, NULL_TREE, NULL_TREE, NULL_TREE);
-      tree note = build_stmt (pending_location, ASM_EXPR, string, NULL_TREE,
-                              NULL_TREE, NULL_TREE, NULL_TREE);
-
-      ASM_BASIC_P (note) = false;
-      ASM_VOLATILE_P (note) = false;
-#else
       tree note = build_empty_stmt (pending_location);
-#endif
       pending_statement = false;
       do_add_stmt (note);
     }

@@ -2069,6 +2069,18 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
          of the container and so conflict with other accesses to the container).
       </para>
 
+      <para>
+	 The Copy-On-Write <classname>std::string</classname> implementation
+	 used before GCC 5 (and with
+	 <link linkend="manual.intro.using.abi">_GLIBCXX_USE_CXX11_ABI=0</link>)
+	 is not a standard container and does not conform to the data race
+	 avoidance rules described above. For the Copy-On-Write
+	 <classname>std::string</classname>, non-const member functions such as
+	 <function>begin()</function> are considered to be modifying accesses
+	 and so must not be used concurrently with any other accesses to the
+	 same object.
+      </para>
+
       <para>Programs which follow the rules above will not encounter data
          races in library code, even when using library types which share
          state between distinct objects.  In the example below the

@@ -759,15 +759,17 @@ fold_using_range::range_of_range_op (vrange &r,
 		}
 	      if (gimple_range_ssa_p (op1))
 		{
-		  rel = handler.lhs_op1_relation (r, range1, range2, rel);
-		  if (rel != VREL_VARYING)
-		    src.register_relation (s, rel, lhs, op1);
+		  relation_kind rel2 = handler.lhs_op1_relation (r, range1,
+								 range2, rel);
+		  if (rel2 != VREL_VARYING)
+		    src.register_relation (s, rel2, lhs, op1);
 		}
 	      if (gimple_range_ssa_p (op2))
 		{
-		  rel = handler.lhs_op2_relation (r, range1, range2, rel);
-		  if (rel != VREL_VARYING)
-		    src.register_relation (s, rel, lhs, op2);
+		  relation_kind rel2 = handler.lhs_op2_relation (r, range1,
+								 range2, rel);
+		  if (rel2 != VREL_VARYING)
+		    src.register_relation (s, rel2, lhs, op2);
 		}
 	    }
 	  // Check for an existing BB, as we maybe asked to fold an

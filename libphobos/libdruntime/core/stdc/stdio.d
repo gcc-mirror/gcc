@@ -1303,54 +1303,118 @@ version (MinGW)
 }
 else version (CRuntime_Glibc)
 {
-    ///
-    pragma(printf)
-    int fprintf(FILE* stream, scope const char* format, scope const ...);
-    ///
-    pragma(scanf)
-    int __isoc99_fscanf(FILE* stream, scope const char* format, scope ...);
-    ///
-    alias fscanf = __isoc99_fscanf;
-    ///
-    pragma(printf)
-    int sprintf(scope char* s, scope const char* format, scope const ...);
-    ///
-    pragma(scanf)
-    int __isoc99_sscanf(scope const char* s, scope const char* format, scope ...);
-    ///
-    alias sscanf = __isoc99_sscanf;
-    ///
-    pragma(printf)
-    int vfprintf(FILE* stream, scope const char* format, va_list arg);
-    ///
-    pragma(scanf)
-    int __isoc99_vfscanf(FILE* stream, scope const char* format, va_list arg);
-    ///
-    alias vfscanf = __isoc99_vfscanf;
-    ///
-    pragma(printf)
-    int vsprintf(scope char* s, scope const char* format, va_list arg);
-    ///
-    pragma(scanf)
-    int __isoc99_vsscanf(scope const char* s, scope const char* format, va_list arg);
-    ///
-    alias vsscanf = __isoc99_vsscanf;
-    ///
-    pragma(printf)
-    int vprintf(scope const char* format, va_list arg);
-    ///
-    pragma(scanf)
-    int __isoc99_vscanf(scope const char* format, va_list arg);
-    ///
-    alias vscanf = __isoc99_vscanf;
-    ///
-    pragma(printf)
-    int printf(scope const char* format, scope const ...);
-    ///
-    pragma(scanf)
-    int __isoc99_scanf(scope const char* format, scope ...);
-    ///
-    alias scanf = __isoc99_scanf;
+    static if (PPCUseIEEE128)
+    {
+        ///
+        pragma(printf)
+        int __fprintfieee128(FILE* stream, scope const char* format, scope const ...);
+        ///
+        alias fprintf = __fprintfieee128;
+        ///
+        pragma(scanf)
+        int __isoc99_fscanfieee128(FILE* stream, scope const char* format, scope ...);
+        ///
+        alias fscanf = __isoc99_fscanfieee128;
+        ///
+        pragma(printf)
+        int __sprintfieee128(scope char* s, scope const char* format, scope const ...);
+        ///
+        alias sprintf = __sprintfieee128;
+        ///
+        pragma(scanf)
+        int __isoc99_sscanfieee128(scope const char* s, scope const char* format, scope ...);
+        ///
+        alias sscanf = __isoc99_sscanfieee128;
+        ///
+        pragma(printf)
+        int vfprintf(FILE* stream, scope const char* format, va_list arg);
+        ///
+        pragma(scanf)
+        int __isoc99_vfscanfieee128(FILE* stream, scope const char* format, va_list arg);
+        ///
+        alias vfscanf = __isoc99_vfscanfieee128;
+        ///
+        pragma(printf)
+        int __vsprintfieee128(scope char* s, scope const char* format, va_list arg);
+        ///
+        alias vsprintf = __vsprintfieee128;
+        ///
+        pragma(scanf)
+        int __isoc99_vsscanfieee128(scope const char* s, scope const char* format, va_list arg);
+        ///
+        alias vsscanf = __isoc99_vsscanfieee128;
+        ///
+        pragma(printf)
+        int __vprintfieee128(scope const char* format, va_list arg);
+        ///
+        alias vprintf = __vprintfieee128;
+        ///
+        pragma(scanf)
+        int __isoc99_vfscanfieee128(scope const char* format, va_list arg);
+        ///
+        alias vscanf = __isoc99_vfscanfieee128;
+        ///
+        pragma(printf)
+        int __printfieee128(scope const char* format, scope const ...);
+        ///
+        alias printf = __printfieee128;
+        ///
+        pragma(scanf)
+        int __isoc99_scanfieee128(scope const char* format, scope ...);
+        ///
+        alias scanf = __isoc99_scanfieee128;
+    }
+    else
+    {
+        ///
+        pragma(printf)
+        int fprintf(FILE* stream, scope const char* format, scope const ...);
+        ///
+        pragma(scanf)
+        int __isoc99_fscanf(FILE* stream, scope const char* format, scope ...);
+        ///
+        alias fscanf = __isoc99_fscanf;
+        ///
+        pragma(printf)
+        int sprintf(scope char* s, scope const char* format, scope const ...);
+        ///
+        pragma(scanf)
+        int __isoc99_sscanf(scope const char* s, scope const char* format, scope ...);
+        ///
+        alias sscanf = __isoc99_sscanf;
+        ///
+        pragma(printf)
+        int vfprintf(FILE* stream, scope const char* format, va_list arg);
+        ///
+        pragma(scanf)
+        int __isoc99_vfscanf(FILE* stream, scope const char* format, va_list arg);
+        ///
+        alias vfscanf = __isoc99_vfscanf;
+        ///
+        pragma(printf)
+        int vsprintf(scope char* s, scope const char* format, va_list arg);
+        ///
+        pragma(scanf)
+        int __isoc99_vsscanf(scope const char* s, scope const char* format, va_list arg);
+        ///
+        alias vsscanf = __isoc99_vsscanf;
+        ///
+        pragma(printf)
+        int vprintf(scope const char* format, va_list arg);
+        ///
+        pragma(scanf)
+        int __isoc99_vscanf(scope const char* format, va_list arg);
+        ///
+        alias vscanf = __isoc99_vscanf;
+        ///
+        pragma(printf)
+        int printf(scope const char* format, scope const ...);
+        ///
+        pragma(scanf)
+        int __isoc99_scanf(scope const char* format, scope ...);
+        ///
+        alias scanf = __isoc99_scanf;
+    }
 }
 else
 {
@@ -1544,12 +1608,28 @@ else version (CRuntime_Glibc)
     int  fileno(FILE *);
   }
 
-    ///
-    pragma(printf)
-    int  snprintf(scope char* s, size_t n, scope const char* format, scope const ...);
-    ///
-    pragma(printf)
-    int  vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
+    static if (PPCUseIEEE128)
+    {
+        ///
+        pragma(printf)
+        int  __snprintfieee128(scope char* s, size_t n, scope const char* format, scope const ...);
+        ///
+        alias snprintf = __snprintfieee128;
+        ///
+        pragma(printf)
+        int  __vsnprintfieee128(scope char* s, size_t n, scope const char* format, va_list arg);
+        ///
+        alias vsnprintf = __vsnprintfieee128;
+    }
+    else
+    {
+        ///
+        pragma(printf)
+        int  snprintf(scope char* s, size_t n, scope const char* format, scope const ...);
+        ///
+        pragma(printf)
+        int  vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
+    }
 
     //
     // Gnu under-the-hood C I/O functions. Uses _iobuf* for the unshared

@@ -159,8 +159,8 @@ for cmodel in cmodels:
              "e.g. rv32imafd-ilp32--" % cfg)
       sys.exit(1)
 
-    # Compact code model only support rv64.
-    if cmodel == "compact" and arch.startswith("rv32"):
+    # Large code model only support rv64.
+    if cmodel == "large" and arch.startswith("rv32"):
       continue
 
     arch = arch_canonicalize (arch, args.misa_spec)

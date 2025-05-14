@@ -13,104 +13,91 @@
 
 /*
 ** callee_s8:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1b	z0\.b, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (s8, svint8_t)
 
 /*
 ** callee_u8:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1b	z0\.b, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (u8, svuint8_t)
 
 /*
 ** callee_mf8:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1b	z0\.b, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (mf8, svmfloat8_t)
 
 /*
 ** callee_s16:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1h	z0\.h, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (s16, svint16_t)
 
 /*
 ** callee_u16:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1h	z0\.h, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (u16, svuint16_t)
 
 /*
 ** callee_f16:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1h	z0\.h, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (f16, svfloat16_t)
 
 /*
 ** callee_bf16:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1h	z0\.h, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (bf16, svbfloat16_t)
 
 /*
 ** callee_s32:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1w	z0\.s, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (s32, svint32_t)
 
 /*
 ** callee_u32:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1w	z0\.s, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (u32, svuint32_t)
 
 /*
 ** callee_f32:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1w	z0\.s, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (f32, svfloat32_t)
 
 /*
 ** callee_s64:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1d	z0\.d, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (s64, svint64_t)
 
 /*
 ** callee_u64:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1d	z0\.d, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (u64, svuint64_t)
 
 /*
 ** callee_f64:
-**	ptrue	(p[0-7])\.b, vl16
-**	ld1d	z0\.d, \1/z, \[x0\]
+**	ldr	q0, \[x0\]
 **	ret
 */
 CALLEE (f64, svfloat64_t)

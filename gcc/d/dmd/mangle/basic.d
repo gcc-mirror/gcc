@@ -1,11 +1,11 @@
 /**
  * Defines the building blocks for creating the mangled names for basic types.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/basicmangle.d, _basicmangle.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/basic.d, _basicmangle.d)
  * Documentation:  https://dlang.org/phobos/dmd_basicmangle.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/basicmangle.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/mangle/basic.d
  */
 module dmd.mangle.basic;
 

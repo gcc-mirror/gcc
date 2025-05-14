@@ -244,7 +244,7 @@ namespace __debug
 	     const allocator_type& __a = allocator_type())
       : _Base(__l, __a) { }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a vector from a range.
        * @since C++23
@@ -871,17 +871,17 @@ namespace __debug
       const _Base&
       _M_base() const _GLIBCXX_NOEXCEPT { return *this; }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<std::__detail::__container_compatible_range<_Tp> _Rg>
 	constexpr void
 	assign_range(_Rg&& __rg)
 	{
-	  auto __old_begin = _Base::begin();
+	  auto __old_capacity = _Base::capacity();
 	  auto __old_size = _Base::size();
 	  _Base::assign_range(__rg);
 	  if (!std::__is_constant_evaluated())
 	    {
-	      if (_Base::begin() != __old_begin)
+	      if (_Base::capacity() != __old_capacity)
 		this->_M_invalidate_all();
 	      else if (_Base::size() < __old_size)
 		this->_M_invalidate_after_nth(_Base::size());
@@ -893,12 +893,11 @@ namespace __debug
 	constexpr iterator
 	insert_range(const_iterator __pos, _Rg&& __rg)
 	{
-	  auto __old_begin = _Base::begin();
-	  auto __old_size = _Base::size();
+	  auto __old_capacity = _Base::capacity();
 	  auto __res = _Base::insert_range(__pos.base(), __rg);
 	  if (!std::__is_constant_evaluated())
 	    {
-	      if (_Base::begin() != __old_begin)
+	      if (_Base::capacity() != __old_capacity)
 		this->_M_invalidate_all();
 	      this->_M_update_guaranteed_capacity();
 	    }
@@ -909,12 +908,11 @@ namespace __debug
 	constexpr void
 	append_range(_Rg&& __rg)
 	{
-	  auto __old_begin = _Base::begin();
-	  auto __old_size = _Base::size();
+	  auto __old_capacity = _Base::capacity();
 	  _Base::append_range(__rg);
 	  if (!std::__is_constant_evaluated())
 	    {
-	      if (_Base::begin() != __old_begin)
+	      if (_Base::capacity() != __old_capacity)
 		this->_M_invalidate_all();
 	      this->_M_update_guaranteed_capacity();
 	    }
@@ -1001,7 +999,7 @@ namespace __debug
     vector(size_t, _Tp, _Allocator = _Allocator())
       -> vector<_Tp, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   typename _Alloc = allocator<ranges::range_value_t<_Rg>>>
     vector(from_range_t, _Rg&&, _Alloc = _Alloc())

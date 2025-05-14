@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "Not available for ARCv1" { arc700 || arc6xx } } */
 /* { dg-options "-O2 -mirq-ctrl-saved=r0-ilink" } */
-/* { dg-require-effective-target alloca } */
 
 /* Check if ilink is recognized. Check how FP and BLINK are saved.
    BLINK is saved last on the stack because the IRQ autosave will do

@@ -242,6 +242,7 @@ is ignored and no user-defined procedure with the same name as any
 intrinsic is called except when it is explicitly declared @code{EXTERNAL}.
 
 @opindex fallow-argument-mismatch
+@cindex argument mismatch
 @item -fallow-argument-mismatch
 Some code contains calls to external procedures with mismatches
 between the calls and the procedure definition, or with mismatches
@@ -1067,6 +1068,15 @@ the expression after conversion. Implied by @option{-Wall}.
 @item -Wconversion-extra
 Warn about implicit conversions between different types and kinds. This
 option does @emph{not} imply @option{-Wconversion}.
+
+@opindex Wexternal-argument-mismatch
+@cindex warnings, argument mismatch
+@cindex argment mismatch, warnings
+@item -Wexternal-argument-mismatch
+Warn about argument mismatches for dummy external procedures.  This is
+implied by @option{-fc-prototypes-external} because generation of a
+valid C23 interface is not possible in such a case.  Also implied
+by @option{-Wall}.
 
 @opindex Wextra
 @cindex extra warnings

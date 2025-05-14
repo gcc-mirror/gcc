@@ -200,6 +200,26 @@ TypeCastRules::cast_rules ()
 	  }
 	  break;
 
+	  case TyTy::TypeKind::FLOAT: {
+	    // can only do this for number types not char
+	    bool from_char
+	      = from.get_ty ()->get_kind () == TyTy::TypeKind::CHAR;
+	    if (!from_char)
+	      return TypeCoercionRules::CoercionResult{{},
+						       to.get_ty ()->clone ()};
+	  }
+	  break;
+
+	  case TyTy::TypeKind::POINTER: {
+	    // char can't be casted as a ptr
+	    bool from_char
+	      = from.get_ty ()->get_kind () == TyTy::TypeKind::CHAR;
+	    if (!from_char)
+	      return TypeCoercionRules::CoercionResult{{},
+						       to.get_ty ()->clone ()};
+	  }
+	  break;
+
 	case TyTy::TypeKind::INFER:
 	case TyTy::TypeKind::USIZE:
 	case TyTy::TypeKind::ISIZE:
@@ -215,6 +235,12 @@ TypeCastRules::cast_rules ()
     case TyTy::TypeKind::FLOAT:
       switch (to.get_ty ()->get_kind ())
 	{
+	case TyTy::TypeKind::USIZE:
+	case TyTy::TypeKind::ISIZE:
+	case TyTy::TypeKind::UINT:
+	case TyTy::TypeKind::INT:
+	  return TypeCoercionRules::CoercionResult{{}, to.get_ty ()->clone ()};
+
 	case TyTy::TypeKind::FLOAT:
 	  return TypeCoercionRules::CoercionResult{{}, to.get_ty ()->clone ()};
 
@@ -244,11 +270,24 @@ TypeCastRules::cast_rules ()
     case TyTy::TypeKind::POINTER:
       switch (to.get_ty ()->get_kind ())
 	{
+	case TyTy::TypeKind::USIZE:
+	case TyTy::TypeKind::ISIZE:
+	case TyTy::TypeKind::UINT:
+	  case TyTy::TypeKind::INT: {
+	    // refs should not cast to numeric type
+	    bool from_ptr
+	      = from.get_ty ()->get_kind () == TyTy::TypeKind::POINTER;
+	    if (from_ptr)
+	      {
+		return TypeCoercionRules::CoercionResult{
+		  {}, to.get_ty ()->clone ()};
+	      }
+	  }
+	  break;
+
 	case TyTy::TypeKind::REF:
 	case TyTy::TypeKind::POINTER:
 	  return check_ptr_ptr_cast ();
-
-	  // FIXME can you cast a pointer to a integral type?
 
 	default:
 	  return TypeCoercionRules::CoercionResult::get_error ();

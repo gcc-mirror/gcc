@@ -210,6 +210,9 @@
 /* Define to 1 if you have the `putc_unlocked' function. */
 #undef HAVE_PUTC_UNLOCKED
 
+/* Define to 1 if you have the `setlocale' function. */
+#undef HAVE_SETLOCALE
+
 /* Define to 1 if you can assemble SSSE3 insns. */
 #undef HAVE_SSSE3
 

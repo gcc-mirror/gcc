@@ -262,9 +262,8 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mevex512",	OPTION_MASK_ISA2_EVEX512 },
   { "-musermsr",	OPTION_MASK_ISA2_USER_MSR },
   { "-mavx10.1-256",	OPTION_MASK_ISA2_AVX10_1_256 },
-  { "-mavx10.1-512",	OPTION_MASK_ISA2_AVX10_1_512 },
-  { "-mavx10.2-256",	OPTION_MASK_ISA2_AVX10_2_256 },
-  { "-mavx10.2-512",	OPTION_MASK_ISA2_AVX10_2_512 },
+  { "-mavx10.1",	OPTION_MASK_ISA2_AVX10_1 },
+  { "-mavx10.2",	OPTION_MASK_ISA2_AVX10_2 },
   { "-mamx-avx512",	OPTION_MASK_ISA2_AMX_AVX512 },
   { "-mamx-tf32",	OPTION_MASK_ISA2_AMX_TF32 },
   { "-mamx-transpose",	OPTION_MASK_ISA2_AMX_TRANSPOSE },
@@ -1135,10 +1134,9 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("evex512", OPT_mevex512),
     IX86_ATTR_ISA ("usermsr", OPT_musermsr),
     IX86_ATTR_ISA ("avx10.1-256", OPT_mavx10_1_256),
-    IX86_ATTR_ISA ("avx10.1-512", OPT_mavx10_1_512),
-    IX86_ATTR_ISA ("avx10.2-256", OPT_mavx10_2_256),
+    IX86_ATTR_ISA ("avx10.1", OPT_mavx10_1),
+    IX86_ATTR_ISA ("avx10.1-512", OPT_mavx10_1),
     IX86_ATTR_ISA ("avx10.2", OPT_mavx10_2),
-    IX86_ATTR_ISA ("avx10.2-512", OPT_mavx10_2),
     IX86_ATTR_ISA ("amx-avx512", OPT_mamx_avx512),
     IX86_ATTR_ISA ("amx-tf32", OPT_mamx_tf32),
     IX86_ATTR_ISA ("amx-transpose", OPT_mamx_transpose),
@@ -2676,7 +2674,7 @@ ix86_option_override_internal (bool main_args_p,
      2. Both AVX10.1-256 and AVX512 w/o 512 bit vector width are enabled with no
 	explicit disable on other AVX512 features.
      3. Both AVX10.1 and AVX512 are disabled.  */
-  if (TARGET_AVX10_1_512_P (opts->x_ix86_isa_flags2))
+  if (TARGET_AVX10_1_P (opts->x_ix86_isa_flags2))
     {
       if (opts->x_ix86_no_avx512_explicit
 	  && (((~(avx512_isa_flags & opts->x_ix86_isa_flags)
@@ -2686,7 +2684,9 @@ ix86_option_override_internal (bool main_args_p,
 		   & ((avx512_isa_flags2 | OPTION_MASK_ISA2_EVEX512)
 		      & opts->x_ix86_isa_flags2_explicit)))))
 	warning (0, "%<-mno-evex512%> or %<-mno-avx512XXX%> cannot disable "
-		    "AVX10 instructions when AVX10.1-512 is available");
+		    "AVX10 instructions when AVX10.1-512 is available in GCC 15, "
+		    "behavior will change to it will disable that part of "
+		    "AVX512 instructions since GCC 16");
     }
   else if (TARGET_AVX10_1_256_P (opts->x_ix86_isa_flags2))
     {
@@ -2722,18 +2722,21 @@ ix86_option_override_internal (bool main_args_p,
 			& (avx512_isa_flags2
 			   & opts->x_ix86_isa_flags2_explicit)))))
 	warning (0, "%<-mno-avx512XXX%> cannot disable AVX10 instructions "
-		    "when AVX10 is available");
+		    "when AVX10 is available in GCC 15, behavior will change "
+		    "to it will disable that part of AVX512 instructions since "
+		    "GCC 16");
     }
   else if (TARGET_AVX512F_P (opts->x_ix86_isa_flags)
 	   && (OPTION_MASK_ISA_AVX512F & opts->x_ix86_isa_flags_explicit))
     {
       if (opts->x_ix86_no_avx10_1_explicit
-	  && ((OPTION_MASK_ISA2_AVX10_1_256 | OPTION_MASK_ISA2_AVX10_1_512)
+	  && ((OPTION_MASK_ISA2_AVX10_1_256 | OPTION_MASK_ISA2_AVX10_1)
 	      & opts->x_ix86_isa_flags2_explicit))
 	{
-	  warning (0, "%<-mno-avx10.1-256, -mno-avx10.1-512%> "
-		      "cannot disable AVX512 instructions when "
-		      "%<-mavx512XXX%>");
+	  warning (0, "%<-mno-avx10.1-256, -mno-avx10.1-512%> cannot disable "
+		      "AVX512 instructions when %<-mavx512XXX%> in GCC 15, "
+		      "behavior will change to it will disable all the "
+		      "instructions in GCC 16");
 	  /* Reset those unset AVX512 flags set by AVX10 options when AVX10 is
 	     disabled.  */
 	  if (OPTION_MASK_ISA2_AVX10_1_256 & opts->x_ix86_isa_flags2_explicit)
@@ -2753,7 +2756,7 @@ ix86_option_override_internal (bool main_args_p,
   /* Set EVEX512 if one of the following conditions meets:
      1. AVX512 is enabled while EVEX512 is not explicitly set/unset.
      2. AVX10.1-512 is enabled.  */
-  if (TARGET_AVX10_1_512_P (opts->x_ix86_isa_flags2)
+  if (TARGET_AVX10_1_P (opts->x_ix86_isa_flags2)
       || (TARGET_AVX512F_P (opts->x_ix86_isa_flags)
 	  && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_EVEX512)))
     opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_EVEX512;
@@ -2818,8 +2821,8 @@ ix86_option_override_internal (bool main_args_p,
   if (flag_nop_mcount)
     error ("%<-mnop-mcount%> is not compatible with this target");
 #endif
-  if (flag_nop_mcount && flag_pic)
-    error ("%<-mnop-mcount%> is not implemented for %<-fPIC%>");
+  if (flag_nop_mcount && flag_pic && !flag_plt)
+    error ("%<-mnop-mcount%> is not implemented for %<-fno-plt%>");
 
   /* Accept -msseregparm only if at least SSE support is enabled.  */
   if (TARGET_SSEREGPARM_P (opts->x_target_flags)

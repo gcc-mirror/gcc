@@ -1,4 +1,3 @@
-/* { dg-require-effective-target alloca } */
 /* { dg-additional-options "-fpermissive" } */
 int N = 1;
 void foo() {} /* Necessary to trigger the original ICE.  */

@@ -85,9 +85,18 @@ plugin_init (struct plugin_name_args *plugin_info,
     error_at (UNKNOWN_LOCATION, "missing plugin argument");
 
   /* With 64-bit locations, the thresholds are larger, so shift the base
-     location argument accordingly.  */
+     location argument accordingly, basically remap the GCC 14 32-bit
+     location_t argument values to 64-bit location_t counterparts.  There
+     is one exception for values slightly before the 32-bit location_t
+     LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES (0x50000000).  In that case
+     remap them to the same amount before the 64-bit location_t
+     LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES -
+     ((location_t) 0x50000000) << 31.  */
   gcc_assert (sizeof (location_t) == sizeof (uint64_t));
-  base_location = 1 + ((base_location - 1) << 31);
+  if (base_location >= 0x4f000000 && base_location <= 0x4fffffff)
+    base_location += (((location_t) 0x50000000) << 31) - 0x50000000;
+  else
+    base_location = 1 + ((base_location - 1) << 31);
 
   register_callback (plugin_info->base_name,
 		     PLUGIN_PRAGMAS,
@@ -107,7 +116,7 @@ plugin_init (struct plugin_name_args *plugin_info,
       break;
 
     default:
-      error_at (UNKNOWN_LOCATION, "unrecognized value for plugin argument");
+      break;
     }
 
   return 0;

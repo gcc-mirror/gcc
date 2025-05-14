@@ -1,8 +1,7 @@
 /* PR middle-end/95667 - unintended warning for memset writing across multiple
    members
    { dg-do compile }
-   { dg-options "-O2 -Wall" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall" } */
 
 extern void sink (void*);
 

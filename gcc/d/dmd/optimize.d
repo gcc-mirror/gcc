@@ -1,12 +1,12 @@
 /**
  * Perform constant folding.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/optimize.d, _optimize.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/optimize.d, _optimize.d)
  * Documentation:  https://dlang.org/phobos/dmd_optimize.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/optimize.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/optimize.d
  */
 
 module dmd.optimize;
@@ -751,6 +751,7 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
 
     void visitNew(NewExp e)
     {
+        expOptimize(e.placement, WANTvalue);
         expOptimize(e.thisexp, WANTvalue);
         // Optimize parameters
         if (e.arguments)
@@ -1002,7 +1003,7 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         }
     }
 
-    extern (D) void shift_optimize(BinExp e, UnionExp function(const ref Loc, Type, Expression, Expression) shift)
+    extern (D) void shift_optimize(BinExp e, UnionExp function(Loc, Type, Expression, Expression) shift)
     {
         if (binOptimize(e, result))
             return;

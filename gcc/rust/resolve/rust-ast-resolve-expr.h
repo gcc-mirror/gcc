@@ -20,7 +20,9 @@
 #define RUST_AST_RESOLVE_EXPR_H
 
 #include "rust-ast-resolve-base.h"
+#include "rust-ast.h"
 #include "rust-ast-resolve-pattern.h"
+#include "rust-expr.h"
 
 namespace Rust {
 namespace Resolver {
@@ -54,6 +56,8 @@ public:
   void visit (AST::IfLetExpr &expr) override;
   void visit (AST::IfLetExprConseqElse &expr) override;
   void visit (AST::BlockExpr &expr) override;
+  void visit (AST::InlineAsm &expr) override;
+  void visit (AST::LlvmInlineAsm &expr) override;
   void visit (AST::UnsafeBlockExpr &expr) override;
   void visit (AST::ArrayElemsValues &elems) override;
   void visit (AST::ArrayExpr &expr) override;
@@ -78,6 +82,7 @@ public:
   void visit (AST::RangeFromToInclExpr &expr) override;
   void visit (AST::ClosureExprInner &expr) override;
   void visit (AST::ClosureExprInnerTyped &expr) override;
+  void visit (AST::ErrorPropagationExpr &expr) override;
 
 protected:
   void resolve_closure_param (AST::ClosureParam &param,

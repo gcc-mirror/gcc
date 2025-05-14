@@ -27,7 +27,7 @@ namespace Compile {
 class CompileStructExprField : private HIRCompileBase
 {
 public:
-  static tree Compile (HIR::StructExprField *field, Context *ctx);
+  static tree Compile (HIR::StructExprField &field, Context *ctx);
 
 protected:
   void visit (HIR::StructExprFieldIdentifierValue &field);

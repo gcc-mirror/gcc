@@ -206,8 +206,8 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 
 	  /* We don't support vector destinations or destinations
 	     wider than DImode.  */
-	  scalar_int_mode outer_mode;
-	  if (!is_a <scalar_int_mode> (GET_MODE (x), &outer_mode)
+	  scalar_mode outer_mode;
+	  if (!is_a <scalar_mode> (GET_MODE (x), &outer_mode)
 	      || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
 	    {
 	      /* Skip the subrtxs of this destination.  There is
@@ -239,7 +239,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	      /* The inner mode might be larger, just punt for
 		 that case.  Remember, we can not just continue to process
 		 the inner RTXs due to the STRICT_LOW_PART.  */
-	      if (!is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
+	      if (!is_a <scalar_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
 		  || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
 		{
 		  /* Skip the subrtxs of the STRICT_LOW_PART.  We can't
@@ -293,7 +293,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 subreg and restart within the SET processing rather than
 		 the top of the loop which just complicates the flow even
 		 more.  */
-	      if (!is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
+	      if (!is_a <scalar_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
 		  || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
 		{
 		  skipped_dest = true;
@@ -1089,16 +1089,9 @@ ext_dce_rd_transfer_n (int bb_index)
 
   ext_dce_process_bb (bb);
 
-  /* We may have narrowed the set of live objects at the start
-     of this block.  If so, update the bitmaps and indicate to
-     the generic dataflow code that something changed.  */
-  if (!bitmap_equal_p (&livein[bb_index], livenow))
-    {
-      bitmap_copy (&livein[bb_index], livenow);
-      return true;
-    }
-
-  return false;
+  /* We only allow widening the set of objects live at the start
+     of a block.  Otherwise we run the risk of not converging.  */
+  return bitmap_ior_into (&livein[bb_index], livenow);
 }
 
 /* Dummy function for the df_simple_dataflow API.  */

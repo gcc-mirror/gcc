@@ -1,5 +1,4 @@
 /* { dg-additional-options "-fdiagnostics-text-art-charset=unicode" } */
-/* { dg-require-effective-target alloca } */
 
 #include <stdlib.h>
 #include <stdint.h>

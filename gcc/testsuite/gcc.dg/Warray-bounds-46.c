@@ -3,8 +3,7 @@
    Test to verify that past-the-end accesses by string functions to member
    arrays by-reference objects are diagnosed.
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-unused-local-typedefs -Wno-stringop-overflow -ftrack-macro-expansion=0" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall -Wno-unused-local-typedefs -Wno-stringop-overflow -ftrack-macro-expansion=0" } */
 
 #define SA(expr) typedef int StaticAssert [2 * !!(expr) - 1]
 

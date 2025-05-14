@@ -1486,11 +1486,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __future_base::_Task_state<_Fn, _Alloc, _Res(_Args...)> final
     : __future_base::_Task_state_base<_Res(_Args...)>
     {
+#ifdef __cpp_lib_is_invocable // C++ >= 17
+      static_assert(is_invocable_r_v<_Res, _Fn&, _Args...>);
+#else
+      static_assert(__is_invocable<_Fn&, _Args...>::value,
+		    "_Fn& is invocable with _Args...");
+#endif
+
       template<typename _Fn2>
 	_Task_state(_Fn2&& __fn, const _Alloc& __a)
 	: _Task_state_base<_Res(_Args...)>(__a),
 	  _M_impl(std::forward<_Fn2>(__fn), __a)
 	{ }
+
+      template<typename _Fn2>
+	static shared_ptr<_Task_state_base<_Res(_Args...)>>
+	_S_create(_Fn2&& __fn, const _Alloc& __a)
+	{
+	  return std::allocate_shared<_Task_state>(__a,
+						   std::forward<_Fn2>(__fn),
+						   __a);
+	}
 
     private:
       virtual void
@@ -1515,7 +1531,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       virtual shared_ptr<_Task_state_base<_Res(_Args...)>>
-      _M_reset();
+      _M_reset()
+      { return _S_create(std::move(_M_impl._M_fn), _M_impl); }
 
       struct _Impl : _Alloc
       {
@@ -1525,38 +1542,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Fn _M_fn;
       } _M_impl;
     };
-
-  template<typename _Signature, typename _Fn,
-	   typename _Alloc = std::allocator<int>>
-    shared_ptr<__future_base::_Task_state_base<_Signature>>
-    __create_task_state(_Fn&& __fn, const _Alloc& __a = _Alloc())
-    {
-      typedef typename decay<_Fn>::type _Fn2;
-      typedef __future_base::_Task_state<_Fn2, _Alloc, _Signature> _State;
-      return std::allocate_shared<_State>(__a, std::forward<_Fn>(__fn), __a);
-    }
-
-  template<typename _Fn, typename _Alloc, typename _Res, typename... _Args>
-    shared_ptr<__future_base::_Task_state_base<_Res(_Args...)>>
-    __future_base::_Task_state<_Fn, _Alloc, _Res(_Args...)>::_M_reset()
-    {
-      return __create_task_state<_Res(_Args...)>(std::move(_M_impl._M_fn),
-						 static_cast<_Alloc&>(_M_impl));
-    }
   /// @endcond
 
   /// packaged_task
   template<typename _Res, typename... _ArgTypes>
     class packaged_task<_Res(_ArgTypes...)>
     {
-      typedef __future_base::_Task_state_base<_Res(_ArgTypes...)> _State_type;
+      using _State_type = __future_base::_Task_state_base<_Res(_ArgTypes...)>;
       shared_ptr<_State_type>                   _M_state;
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3039. Unnecessary decay in thread and packaged_task
       template<typename _Fn, typename _Fn2 = __remove_cvref_t<_Fn>>
-	using __not_same
-	  = typename enable_if<!is_same<packaged_task, _Fn2>::value>::type;
+	using __not_same = __enable_if_t<!is_same<packaged_task, _Fn2>::value>;
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4154. The Mandates for std::packaged_task's constructor
+      // from a callable entity should consider decaying.
+      template<typename _Fn, typename _Alloc = std::allocator<int>>
+	using _Task_state
+	  = __future_base::_Task_state<__decay_t<_Fn>, _Alloc,
+				       _Res(_ArgTypes...)>;
 
     public:
       // Construction and destruction
@@ -1565,8 +1571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Fn, typename = __not_same<_Fn>>
 	explicit
 	packaged_task(_Fn&& __fn)
-	: _M_state(
-	    __create_task_state<_Res(_ArgTypes...)>(std::forward<_Fn>(__fn)))
+	: _M_state(_Task_state<_Fn>::_S_create(std::forward<_Fn>(__fn), {}))
 	{ }
 
 #if __cplusplus < 201703L
@@ -1576,8 +1581,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 2921. packaged_task and type-erased allocators
       template<typename _Fn, typename _Alloc, typename = __not_same<_Fn>>
 	packaged_task(allocator_arg_t, const _Alloc& __a, _Fn&& __fn)
-	: _M_state(__create_task_state<_Res(_ArgTypes...)>(
-		   std::forward<_Fn>(__fn), __a))
+	: _M_state(_Task_state<_Fn, _Alloc>::_S_create(std::forward<_Fn>(__fn),
+						       __a))
 	{ }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS

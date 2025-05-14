@@ -46,6 +46,10 @@
 #define ASM_OUTPUT_LABEL(FILE,NAME) \
   do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0)
 
+/* Used in lieu of '../elfos.h:ASM_WEAKEN_LABEL'.  */
+#define ASM_WEAKEN_DECL(STREAM, DECL, NAME, VALUE) \
+  gcn_asm_weaken_decl ((STREAM), (DECL), (NAME), (VALUE))
+
 #define ASM_OUTPUT_LABELREF(FILE, NAME) \
   asm_fprintf (FILE, "%U%s", default_strip_name_encoding (NAME))
 

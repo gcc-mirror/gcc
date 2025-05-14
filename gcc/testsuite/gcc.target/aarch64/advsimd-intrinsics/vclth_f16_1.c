@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-require-effective-target arm_v8_2a_fp16_scalar_hw } */
 /* { dg-add-options arm_v8_2a_fp16_scalar }  */
 /* { dg-skip-if "" { arm*-*-* } } */

@@ -208,8 +208,13 @@ gimple_infer_range::gimple_infer_range (gimple *s, range_query *q,
 		  continue;
 		if (integer_nonzerop (arg2))
 		  add_nonzero (arg);
-		// FIXME: Can one query here whether arg2 has
-		// nonzero range if it is a SSA_NAME?
+		else
+		  {
+		    value_range r (TREE_TYPE (arg2));
+		    if (q->range_of_expr (r, arg2, s)
+			&& !r.contains_p (build_zero_cst (TREE_TYPE (arg2))))
+		      add_nonzero (arg);
+		  }
 	      }
 	  }
       // Fallthru and walk load/store ops now.

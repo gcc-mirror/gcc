@@ -18,39 +18,22 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "diagnostic-core.h"
-#include "gimple-pretty-print.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "diagnostic-core.h"
-#include "graphviz.h"
-#include "options.h"
-#include "cgraph.h"
-#include "tree-dfa.h"
-#include "stringpool.h"
-#include "convert.h"
-#include "target.h"
-#include "fold-const.h"
+#include "analyzer/common.h"
+
 #include "tree-pretty-print.h"
-#include "bitmap.h"
-#include "analyzer/analyzer.h"
+#include "gimple-pretty-print.h"
+#include "fold-const.h"
+#include "diagnostic.h"
+#include "tree-diagnostic.h"
+
+#include "text-art/dump.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/svalue.h"
 #include "analyzer/region-model.h"
-#include "diagnostic.h"
-#include "tree-diagnostic.h"
-#include "make-unique.h"
-#include "text-art/dump.h"
 
 #if ENABLE_ANALYZER
 
@@ -107,7 +90,7 @@ std::unique_ptr<json::value>
 svalue::to_json () const
 {
   label_text desc = get_desc (true);
-  auto sval_js = ::make_unique<json::string> (desc.get ());
+  auto sval_js = std::make_unique<json::string> (desc.get ());
   return sval_js;
 }
 
@@ -467,8 +450,21 @@ cmp_csts_same_type (const_tree cst1, const_tree cst2)
     case INTEGER_CST:
       return tree_int_cst_compare (cst1, cst2);
     case STRING_CST:
-      return strcmp (TREE_STRING_POINTER (cst1),
-		     TREE_STRING_POINTER (cst2));
+      if (TREE_STRING_LENGTH (cst1) < TREE_STRING_LENGTH (cst2))
+	return -1;
+      if (TREE_STRING_LENGTH (cst1) > TREE_STRING_LENGTH (cst2))
+	return 1;
+      return memcmp (TREE_STRING_POINTER (cst1),
+		     TREE_STRING_POINTER (cst2),
+		     TREE_STRING_LENGTH (cst1));
+    case RAW_DATA_CST:
+      if (RAW_DATA_LENGTH (cst1) < RAW_DATA_LENGTH (cst2))
+	return -1;
+      if (RAW_DATA_LENGTH (cst1) > RAW_DATA_LENGTH (cst2))
+	return 1;
+      return memcmp (RAW_DATA_POINTER (cst1),
+		     RAW_DATA_POINTER (cst2),
+		     RAW_DATA_LENGTH (cst1));
     case REAL_CST:
       /* Impose an arbitrary but deterministic order.  */
       return memcmp (TREE_REAL_CST_PTR (cst1),
@@ -559,8 +555,8 @@ svalue::cmp_ptr (const svalue *sval1, const svalue *sval2)
       {
 	const poisoned_svalue *poisoned_sval1 = (const poisoned_svalue *)sval1;
 	const poisoned_svalue *poisoned_sval2 = (const poisoned_svalue *)sval2;
-	return (poisoned_sval1->get_poison_kind ()
-		- poisoned_sval2->get_poison_kind ());
+	return (static_cast<int> (poisoned_sval1->get_poison_kind ())
+		- static_cast<int> (poisoned_sval2->get_poison_kind ()));
       }
       break;
     case SK_SETJMP:
@@ -862,6 +858,19 @@ svalue::maybe_get_deref_base_region () const
 	  }
 	}
     }
+}
+
+/* If this svalue is a pointer to the typeinfo instance for a particular
+   type, return that type.  Otherwise return NULL_TREE.  */
+
+tree
+svalue::maybe_get_type_from_typeinfo () const
+{
+  if (const region *reg = maybe_get_region ())
+    if (const decl_region *decl_reg = reg->dyn_cast_decl_region ())
+      return TREE_TYPE (DECL_NAME (decl_reg->get_decl ()));
+
+  return NULL_TREE;
 }
 
 /* class region_svalue : public svalue.  */
@@ -1221,13 +1230,13 @@ poison_kind_to_str (enum poison_kind kind)
     {
     default:
       gcc_unreachable ();
-    case POISON_KIND_UNINIT:
+    case poison_kind::uninit:
       return "uninit";
-    case POISON_KIND_FREED:
+    case poison_kind::freed:
       return "freed";
-    case POISON_KIND_DELETED:
+    case poison_kind::deleted:
       return "deleted";
-    case POISON_KIND_POPPED_STACK:
+    case poison_kind::popped_stack:
       return "popped stack";
     }
 }

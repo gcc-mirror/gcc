@@ -20,6 +20,7 @@ PRINT "hello world!";
 const int line_num = __LINE__ - 2;
 
 #include <assert.h>
+#include <string.h>
 
 int
 main ()
@@ -61,6 +62,17 @@ main ()
 
   diagnostic_finish (d, "can't find %qs", "foo");
   /* end quoted source */
+
+  /* Verify that the accessors work.  */
+  assert (diagnostic_logical_location_get_kind (logical_loc)
+	  == DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION);
+  assert (!diagnostic_logical_location_get_parent (logical_loc));
+  assert (!strcmp (diagnostic_logical_location_get_short_name (logical_loc),
+		   "test_short_name"));
+  assert (!strcmp (diagnostic_logical_location_get_fully_qualified_name (logical_loc),
+		   "test_qualified_name"));
+  assert (!strcmp (diagnostic_logical_location_get_decorated_name (logical_loc),
+		   "test_decorated_name"));
 
   /* Verify that creating a diagnostic_logical_location with equal values 
      yields the same instance.  */

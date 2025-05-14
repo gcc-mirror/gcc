@@ -308,9 +308,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	    const __uctype __uerange = __urange + 1; // __urange can be zero
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
 #if defined __UINT64_TYPE__ && defined __UINT32_TYPE__
 #if __SIZEOF_INT128__
-	    if _GLIBCXX17_CONSTEXPR (__urngrange == __UINT64_MAX__)
+	    if constexpr (__urngrange == __UINT64_MAX__)
 	      {
 		// __urng produces values that use exactly 64-bits,
 		// so use 128-bit integers to downscale to desired range.
@@ -320,7 +322,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else
 #endif
-	    if _GLIBCXX17_CONSTEXPR (__urngrange == __UINT32_MAX__)
+	    if constexpr (__urngrange == __UINT32_MAX__)
 	      {
 		// __urng produces values that use exactly 32-bits,
 		// so use 64-bit integers to downscale to desired range.
@@ -338,6 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		while (__ret >= __past);
 		__ret /= __scaling;
 	      }
+#pragma GCC diagnostic pop
 	  }
 	else if (__urngrange < __urange)
 	  {

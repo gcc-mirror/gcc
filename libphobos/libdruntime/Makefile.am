@@ -25,7 +25,8 @@ D_EXTRA_DFLAGS=-fpreview=dip1000 -fpreview=fieldwise -fpreview=dtorfields \
 # D flags for compilation
 AM_DFLAGS= \
 	$(phobos_lt_pic_flag) $(phobos_compiler_shared_flag) \
-	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_DFLAGS)
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_FLAGS) \
+	$(OS_DFLAGS)
 
 # Flags for other kinds of sources
 AM_CFLAGS=$(CET_FLAGS)
@@ -167,7 +168,7 @@ install-data-local:
 	done
 
 # Source file definitions. Boring stuff, auto-generated with
-# https://gist.github.com/jpf91/8ad1dbc9902d6ad876313f134c6527d1
+# libphobos/scripts/gen_druntime_sources.d
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
 
@@ -222,7 +223,7 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
 	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arraycat.d rt/cast_.d \
 	rt/config.d rt/critical_.d rt/deh.d rt/dmain2.d rt/ehalloc.d \
-	rt/invariant.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
+	rt/invariant_.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
 	rt/profilegc.d rt/sections.d rt/tlsgc.d rt/util/typeinfo.d \
 	rt/util/utility.d
 
@@ -361,13 +362,14 @@ DRUNTIME_DSOURCES_SOLARIS = core/sys/solaris/dlfcn.d \
 DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/aclapi.d core/sys/windows/aclui.d \
 	core/sys/windows/basetsd.d core/sys/windows/basetyps.d \
-	core/sys/windows/cderr.d core/sys/windows/cguid.d \
-	core/sys/windows/com.d core/sys/windows/comcat.d \
-	core/sys/windows/commctrl.d core/sys/windows/commdlg.d \
-	core/sys/windows/core.d core/sys/windows/cpl.d \
-	core/sys/windows/cplext.d core/sys/windows/custcntl.d \
-	core/sys/windows/dbghelp.d core/sys/windows/dbghelp_types.d \
-	core/sys/windows/dbt.d core/sys/windows/dde.d core/sys/windows/ddeml.d \
+	core/sys/windows/bcrypt.d core/sys/windows/cderr.d \
+	core/sys/windows/cguid.d core/sys/windows/com.d \
+	core/sys/windows/comcat.d core/sys/windows/commctrl.d \
+	core/sys/windows/commdlg.d core/sys/windows/core.d \
+	core/sys/windows/cpl.d core/sys/windows/cplext.d \
+	core/sys/windows/custcntl.d core/sys/windows/dbghelp.d \
+	core/sys/windows/dbghelp_types.d core/sys/windows/dbt.d \
+	core/sys/windows/dde.d core/sys/windows/ddeml.d \
 	core/sys/windows/dhcpcsdk.d core/sys/windows/dlgs.d \
 	core/sys/windows/dll.d core/sys/windows/docobj.d \
 	core/sys/windows/errorrep.d core/sys/windows/exdisp.d \
@@ -443,4 +445,4 @@ DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/winuser.d core/sys/windows/winver.d \
 	core/sys/windows/wtsapi32.d core/sys/windows/wtypes.d
 
-DRUNTIME_DISOURCES = __builtins.di __main.di
+DRUNTIME_DISOURCES = __importc_builtins.di __main.di

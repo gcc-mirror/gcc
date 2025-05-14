@@ -1950,52 +1950,55 @@ if (isFloatingPoint!T)
 
     alias F = floatTraits!real;
 
-    // log2 is broken for x87-reals on some computers in CTFE
-    // the following test excludes these computers from the test
-    // (https://issues.dlang.org/show_bug.cgi?id=21757)
-    enum test = cast(int) log2(3.05e2312L);
-    static if (F.realFormat == RealFormat.ieeeExtended && test == 7681)
+    static if (F.realFormat == RealFormat.ieeeExtended)
     {
-        enum r1 = 1.0L;
-        enum bp1 = extractBitpattern(r1);
-        static assert(bp1.mantissa == 0x8000_0000_0000_0000L);
-        static assert(bp1.exponent == 0);
-        static assert(bp1.negative == false);
+        // log2 is broken for x87-reals on some computers in CTFE
+        // the following test excludes these computers from the test
+        // (https://issues.dlang.org/show_bug.cgi?id=21757)
+        enum test = cast(int) log2(3.05e2312L);
+        static if (test == 7681)
+        {
+            enum r1 = 1.0L;
+            enum bp1 = extractBitpattern(r1);
+            static assert(bp1.mantissa == 0x8000_0000_0000_0000L);
+            static assert(bp1.exponent == 0);
+            static assert(bp1.negative == false);
 
-        enum r2 = real.max;
-        enum bp2 = extractBitpattern(r2);
-        static assert(bp2.mantissa == 0xffff_ffff_ffff_ffffL);
-        static assert(bp2.exponent == 16383);
-        static assert(bp2.negative == false);
+            enum r2 = real.max;
+            enum bp2 = extractBitpattern(r2);
+            static assert(bp2.mantissa == 0xffff_ffff_ffff_ffffL);
+            static assert(bp2.exponent == 16383);
+            static assert(bp2.negative == false);
 
-        enum r3 = -1.5432e-3333L;
-        enum bp3 = extractBitpattern(r3);
-        static assert(bp3.mantissa == 0xc768_a2c7_a616_cc22L);
-        static assert(bp3.exponent == -11072);
-        static assert(bp3.negative == true);
+            enum r3 = -1.5432e-3333L;
+            enum bp3 = extractBitpattern(r3);
+            static assert(bp3.mantissa == 0xc768_a2c7_a616_cc22L);
+            static assert(bp3.exponent == -11072);
+            static assert(bp3.negative == true);
 
-        enum r4 = 0.0L.nextUp;
-        enum bp4 = extractBitpattern(r4);
-        static assert(bp4.mantissa == 0x0000_0000_0000_0001L);
-        static assert(bp4.exponent == -16382);
-        static assert(bp4.negative == false);
+            enum r4 = 0.0L.nextUp;
+            enum bp4 = extractBitpattern(r4);
+            static assert(bp4.mantissa == 0x0000_0000_0000_0001L);
+            static assert(bp4.exponent == -16382);
+            static assert(bp4.negative == false);
 
-        enum r5 = -real.infinity;
-        enum bp5 = extractBitpattern(r5);
-        static assert(bp5.mantissa == 0);
-        static assert(bp5.exponent == 16384);
-        static assert(bp5.negative == true);
+            enum r5 = -real.infinity;
+            enum bp5 = extractBitpattern(r5);
+            static assert(bp5.mantissa == 0);
+            static assert(bp5.exponent == 16384);
+            static assert(bp5.negative == true);
 
-        enum r6 = real.nan;
-        enum bp6 = extractBitpattern(r6);
-        static assert(bp6.mantissa != 0); // we don't guarantee payloads
-        static assert(bp6.exponent == 16384);
-        static assert(bp6.negative == false);
+            enum r6 = real.nan;
+            enum bp6 = extractBitpattern(r6);
+            static assert(bp6.mantissa != 0); // we don't guarantee payloads
+            static assert(bp6.exponent == 16384);
+            static assert(bp6.negative == false);
 
-        enum r7 = nextDown(0x1p+16383L);
-        enum bp7 = extractBitpattern(r7);
-        static assert(bp7.mantissa == 0xffff_ffff_ffff_ffffL);
-        static assert(bp7.exponent == 16382);
-        static assert(bp7.negative == false);
+            enum r7 = nextDown(0x1p+16383L);
+            enum bp7 = extractBitpattern(r7);
+            static assert(bp7.mantissa == 0xffff_ffff_ffff_ffffL);
+            static assert(bp7.exponent == 16382);
+            static assert(bp7.negative == false);
+        }
     }
 }

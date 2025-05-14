@@ -37,6 +37,8 @@ public:
 
   bool have_generic_args () const;
 
+  static bool valid_type (TyTy::BaseType *base);
+
   void visit (TyTy::FnType &type) override;
   void visit (TyTy::ADTType &type) override;
   void visit (TyTy::PlaceholderType &type) override;
@@ -63,6 +65,7 @@ public:
   void visit (TyTy::NeverType &) override { rust_unreachable (); }
   void visit (TyTy::DynamicObjectType &) override { rust_unreachable (); }
   void visit (TyTy::ClosureType &) override { rust_unreachable (); }
+  void visit (TyTy::OpaqueType &) override { rust_unreachable (); }
 
 private:
   SubstMapper (HirId ref, HIR::GenericArgs *generics,
@@ -107,6 +110,7 @@ public:
   void visit (TyTy::StrType &type) override;
   void visit (TyTy::NeverType &type) override;
   void visit (TyTy::DynamicObjectType &type) override;
+  void visit (TyTy::OpaqueType &type) override;
 
 private:
   SubstMapperInternal (HirId ref, TyTy::SubstitutionArgumentMappings &mappings);
@@ -146,6 +150,7 @@ public:
   void visit (TyTy::PlaceholderType &) override { rust_unreachable (); }
   void visit (TyTy::ProjectionType &) override { rust_unreachable (); }
   void visit (TyTy::DynamicObjectType &) override { rust_unreachable (); }
+  void visit (TyTy::OpaqueType &type) override { rust_unreachable (); }
 
 private:
   SubstMapperFromExisting (TyTy::BaseType *concrete, TyTy::BaseType *receiver);
@@ -185,6 +190,7 @@ public:
   void visit (const TyTy::PlaceholderType &) override {}
   void visit (const TyTy::ProjectionType &) override {}
   void visit (const TyTy::DynamicObjectType &) override {}
+  void visit (const TyTy::OpaqueType &type) override {}
 
 private:
   GetUsedSubstArgs ();

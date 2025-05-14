@@ -3,12 +3,12 @@
  *
  * Specification: C11
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/cparse.d, _cparse.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/cparse.d, _cparse.d)
  * Documentation:  https://dlang.org/phobos/dmd_cparse.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/cparse.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/cparse.d
  */
 
 module dmd.cparse;
@@ -1445,8 +1445,10 @@ final class CParser(AST) : Parser!AST
         auto e = cparseOrExp();
         while (token.value == TOK.andAnd)
         {
+            e = new AST.CastExp(loc, e, AST.Type.tbool);
             nextToken();
             auto e2 = cparseOrExp();
+            e2 = new AST.CastExp(loc, e2, AST.Type.tbool);
             e = new AST.LogicalExp(loc, EXP.andAnd, e, e2);
         }
         return e;
@@ -1465,8 +1467,10 @@ final class CParser(AST) : Parser!AST
         auto e = cparseAndAndExp();
         while (token.value == TOK.orOr)
         {
+            e = new AST.CastExp(loc, e, AST.Type.tbool);
             nextToken();
             auto e2 = cparseAndAndExp();
+            e2 = new AST.CastExp(loc, e2, AST.Type.tbool);
             e = new AST.LogicalExp(loc, EXP.orOr, e, e2);
         }
         return e;
@@ -1686,7 +1690,7 @@ final class CParser(AST) : Parser!AST
     private AST.Expression cparseStatementExpression()
     {
         AST.ParameterList parameterList;
-        StorageClass stc = 0;
+        STC stc = STC.none;
         const loc = token.loc;
         auto symbolsSave = symbols;
         symbols = new AST.Dsymbols();
@@ -1710,7 +1714,7 @@ final class CParser(AST) : Parser!AST
         }
 
         auto tf = new AST.TypeFunction(parameterList, null, LINK.d, stc);
-        auto fd = new AST.FuncLiteralDeclaration(loc, token.loc, tf, TOK.delegate_, null, null, 0);
+        auto fd = new AST.FuncLiteralDeclaration(loc, token.loc, tf, TOK.delegate_, null, null, STC.none);
         fd.fbody = fbody;
 
         auto fe = new AST.FuncExp(loc, fd);
@@ -2006,7 +2010,7 @@ final class CParser(AST) : Parser!AST
                     //printf("AliasDeclaration %s %s\n", id.toChars(), dt.toChars());
                     auto ad = new AST.AliasDeclaration(token.loc, id, dt);
                     if (id == idt)
-                        ad.adFlags |= ad.hidden; // do not print when generating .di files
+                        ad.hidden = true; // do not print when generating .di files
                     s = ad;
                 }
 
@@ -2046,7 +2050,7 @@ final class CParser(AST) : Parser!AST
                         error("no initializer for function declaration");
                     if (specifier.scw & SCW.x_Thread_local)
                         error("functions cannot be `_Thread_local`"); // C11 6.7.1-4
-                    StorageClass stc = specifiersToSTC(level, specifier);
+                    STC stc = specifiersToSTC(level, specifier);
                     stc &= ~STC.gshared;        // no gshared functions
                     auto fd = new AST.FuncDeclaration(token.loc, Loc.initial, id, stc, dt, specifier.noreturn);
                     specifiersToFuncDeclaration(fd, specifier);
@@ -2088,8 +2092,7 @@ final class CParser(AST) : Parser!AST
                     {
                         auto str = asmName.peekString();
                         p.mangleOverride = str;
-//                      p.adFlags |= AST.VarDeclaration.nounderscore;
-                        p.adFlags |= 4; // cannot get above line to compile on Ubuntu
+                        p.noUnderscore = true;
                     }
                 }
                 s = applySpecifier(s, specifier);
@@ -2234,7 +2237,7 @@ final class CParser(AST) : Parser!AST
         auto body = cparseStatement(ParseStatementFlags.curly);  // don't start a new scope; continue with parameter scope
         typedefTab.pop();                                        // end of function scope
 
-        StorageClass stc = specifiersToSTC(LVL.global, specifier);
+        STC stc = specifiersToSTC(LVL.global, specifier);
         stc &= ~STC.gshared;    // no gshared functions
         auto fd = new AST.FuncDeclaration(locFunc, prevloc, id, stc, ft, specifier.noreturn);
         specifiersToFuncDeclaration(fd, specifier);
@@ -2990,7 +2993,7 @@ final class CParser(AST) : Parser!AST
                             if (isStatic || mod)
                                 error("static or type qualifier used outside of function prototype");
                         }
-                        if (ts.isTypeSArray() || ts.isTypeDArray())
+                        if (ts.isStaticOrDynamicArray())
                         {
                             /* C11 6.7.6.2-1: type qualifiers and 'static' shall only appear
                              * in the outermost array type derivation.
@@ -3019,7 +3022,7 @@ final class CParser(AST) : Parser!AST
 
                         auto parameterList = cparseParameterList();
                         const lkg = specifier.mod & MOD.x__stdcall ? LINK.windows : linkage;
-                        StorageClass stc = specifier._nothrow ? STC.nothrow_ : 0;
+                        STC stc = specifier._nothrow ? STC.nothrow_ : STC.none;
                         if (specifier._pure)
                             stc |= STC.pure_;
                         stc |= defaultStorageClasses;
@@ -3175,7 +3178,7 @@ final class CParser(AST) : Parser!AST
     {
         auto parameters = new AST.Parameters();
         AST.VarArg varargs = AST.VarArg.none;
-        StorageClass varargsStc;
+        STC varargsStc;
 
         check(TOK.leftParenthesis);
         if (token.value == TOK.void_ && peekNext() == TOK.rightParenthesis) // func(void)
@@ -3538,7 +3541,7 @@ final class CParser(AST) : Parser!AST
             break;
         }
         nextToken();
-        auto s = new AST.CompoundAsmStatement(loc, statements, 0);
+        auto s = new AST.CompoundAsmStatement(loc, statements, STC.none);
         return s;
     }
 
@@ -3923,7 +3926,7 @@ final class CParser(AST) : Parser!AST
                     cparseGnuAttributes(specifierx);
                 }
 
-                auto em = new AST.EnumMember(mloc, ident, value, null, 0, null, null);
+                auto em = new AST.EnumMember(mloc, ident, value, null, STC.none, null, null);
                 members.push(em);
 
                 if (token.value == TOK.comma)
@@ -5163,9 +5166,9 @@ final class CParser(AST) : Parser!AST
      * Returns:
      *  corresponding D storage class
      */
-    StorageClass specifiersToSTC(LVL level, const ref Specifier specifier)
+    STC specifiersToSTC(LVL level, const ref Specifier specifier)
     {
-        StorageClass stc;
+        STC stc;
         if (specifier.scw & SCW.x_Thread_local)
         {
             if (level == LVL.global)
@@ -5527,6 +5530,12 @@ final class CParser(AST) : Parser!AST
             if (pt && *pt)
                 t = *pt;
         }
+        if (t.mcache && t.mcache.typedefIdent)
+        {
+            t = t.copy();
+            t.mcache = null;
+        }
+        t.getMcache().typedefIdent = id;
         auto tab = cast(void*[void*])(typedefTab[$ - 1]);
         tab[cast(void*)id] = cast(void*)t;
         typedefTab[$ - 1] = cast(void*)tab;
@@ -5620,7 +5629,7 @@ final class CParser(AST) : Parser!AST
      * Params:
      *  startloc = location to use for error messages
      */
-    private void uupragmaDirective(const ref Loc startloc)
+    private void uupragmaDirective(Loc startloc)
     {
         const loc = startloc;
         nextToken();    // move past __pragma
@@ -5668,7 +5677,7 @@ final class CParser(AST) : Parser!AST
      * the preprocessed output. Ignore them.
      * Upon return, p is at start of next line.
      */
-    private void pragmaDirective(const ref Loc loc)
+    private void pragmaDirective(Loc loc)
     {
         Token n;
         scan(&n);
@@ -5689,7 +5698,7 @@ final class CParser(AST) : Parser!AST
      *  startloc = location to use for error messages
      *  useScan = use scan() to retrieve next token, instead of nextToken()
      */
-    private void pragmaPack(const ref Loc startloc, bool useScan)
+    private void pragmaPack(Loc startloc, bool useScan)
     {
         const loc = startloc;
 
@@ -5889,7 +5898,7 @@ final class CParser(AST) : Parser!AST
      * Params:
      *  startloc = location to use for error messages
      */
-    private void pragmaAttribute(const ref Loc startloc)
+    private void pragmaAttribute(Loc startloc)
     {
         const loc = startloc;
 
@@ -6200,8 +6209,8 @@ final class CParser(AST) : Parser!AST
                             if (token.value != TOK.endOfFile)
                                 break;
                             auto ret = new AST.ReturnStatement(exp.loc, exp);
-                            auto parameterList = AST.ParameterList(new AST.Parameters(), VarArg.none, 0);
-                            StorageClass stc = STC.auto_;
+                            auto parameterList = AST.ParameterList(new AST.Parameters(), VarArg.none, STC.none);
+                            STC stc = STC.auto_;
                             auto tf = new AST.TypeFunction(parameterList, null, LINK.d, stc);
                             auto fd = new AST.FuncDeclaration(exp.loc, exp.loc, id, stc, tf, 0);
                             fd.fbody = ret;
@@ -6246,7 +6255,7 @@ final class CParser(AST) : Parser!AST
 
                                 if (token.value != TOK.identifier)
                                     break Lswitch;
-                                auto param = new AST.Parameter(token.loc, 0, null, token.ident, null, null);
+                                auto param = new AST.Parameter(token.loc, STC.none, null, token.ident, null, null);
                                 parameters.push(param);
                                 nextToken();
                                 if (token.value == TOK.comma)
@@ -6261,7 +6270,7 @@ final class CParser(AST) : Parser!AST
 
                             //auto pstart = p;
                             nextToken();
-                            auto parameterList = AST.ParameterList(parameters, varargs, 0);
+                            auto parameterList = AST.ParameterList(parameters, varargs, STC.none);
                             /* Create a type for each parameter. Add it to the template parameter list,
                              * and the parameter list.
                              */
@@ -6292,7 +6301,7 @@ final class CParser(AST) : Parser!AST
 
                             // Generate function
                             auto ret = new AST.ReturnStatement(exp.loc, exp);
-                            StorageClass stc = STC.auto_;
+                            STC stc = STC.auto_;
                             auto tf = new AST.TypeFunction(parameterList, null, LINK.d, stc);
                             auto fd = new AST.FuncDeclaration(exp.loc, exp.loc, id, stc, tf, 0);
                             fd.fbody = ret;
@@ -6324,7 +6333,6 @@ final class CParser(AST) : Parser!AST
             while (*p)
                 ++p;
             ++p; // advance to start of next line
-            scanloc.linnum = scanloc.linnum + 1;
         }
 
         if (newSymbols.length)

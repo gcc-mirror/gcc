@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mbwx" } */
+/* { dg-options "-mbwx -mno-safe-partial" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 typedef unsigned int __attribute__ ((mode (QI))) int08_t;

@@ -274,6 +274,10 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
   AC_CACHE_CHECK([whether we have a usable _Float128 type],
                  libgfor_cv_have_float128, [
    GCC_TRY_COMPILE_OR_LINK([
+    #ifdef __loongarch__
+    #error On LoongArch we should use long double instead; __float128 is only for porting existing code easier.
+    #endif
+
     _Float128 foo (_Float128 x)
     {
      _Complex _Float128 z1, z2;

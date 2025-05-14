@@ -1,7 +1,7 @@
 // P1091R3
 // { dg-do run { target c++11 } }
 // { dg-options "" }
-// { dg-require-effective-target tls }
+// { dg-require-effective-target tls_runtime }
 // { dg-add-options tls }
 
 namespace std {

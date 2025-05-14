@@ -1,14 +1,14 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail18143.d(20): Error: variable `fail18143.S.a` cannot modify parameter `this` in contract
-fail_compilation/fail18143.d(21): Error: variable `fail18143.S.a` cannot modify parameter `this` in contract
-fail_compilation/fail18143.d(25): Error: variable `fail18143.S.a` cannot modify parameter `this` in contract
-fail_compilation/fail18143.d(26): Error: variable `fail18143.S.a` cannot modify parameter `this` in contract
-fail_compilation/fail18143.d(35): Error: variable `fail18143.C.a` cannot modify parameter `this` in contract
-fail_compilation/fail18143.d(36): Error: variable `fail18143.C.a` cannot modify parameter `this` in contract
-fail_compilation/fail18143.d(40): Error: variable `fail18143.C.a` cannot modify parameter `this` in contract
-fail_compilation/fail18143.d(41): Error: variable `fail18143.C.a` cannot modify parameter `this` in contract
+fail_compilation/fail18143.d(20): Error: cannot modify member variable `fail18143.S.a` in contract
+fail_compilation/fail18143.d(21): Error: cannot modify member variable `fail18143.S.a` in contract
+fail_compilation/fail18143.d(25): Error: cannot modify member variable `fail18143.S.a` in contract
+fail_compilation/fail18143.d(26): Error: cannot modify member variable `fail18143.S.a` in contract
+fail_compilation/fail18143.d(35): Error: cannot modify member variable `fail18143.C.a` in contract
+fail_compilation/fail18143.d(36): Error: cannot modify member variable `fail18143.C.a` in contract
+fail_compilation/fail18143.d(40): Error: cannot modify member variable `fail18143.C.a` in contract
+fail_compilation/fail18143.d(41): Error: cannot modify member variable `fail18143.C.a` in contract
 ---
 */
 

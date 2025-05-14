@@ -36,13 +36,13 @@ public:
   // Constructor for a literal pattern
   LiteralPattern (Literal lit, location_t locus)
     : lit (std::move (lit)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   LiteralPattern (std::string val, Literal::LitType type, location_t locus,
 		  PrimitiveCoreType type_hint)
     : lit (Literal (std::move (val), type, type_hint)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   location_t get_locus () const override final { return locus; }
@@ -90,7 +90,7 @@ public:
 		     std::unique_ptr<Pattern> to_bind = nullptr)
     : Pattern (), variable_ident (std::move (ident)), is_ref (is_ref),
       is_mut (is_mut), to_bind (std::move (to_bind)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   IdentifierPattern (NodeId node_id, Identifier ident, location_t locus,
@@ -175,7 +175,7 @@ public:
   std::string as_string () const override { return std::string (1, '_'); }
 
   WildcardPattern (location_t locus)
-    : locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
+    : locus (locus), node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   location_t get_locus () const override final { return locus; }
@@ -204,7 +204,7 @@ public:
   std::string as_string () const override { return ".."; }
 
   RestPattern (location_t locus)
-    : locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
+    : locus (locus), node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   location_t get_locus () const override final { return locus; }
@@ -368,13 +368,22 @@ protected:
   }
 };
 
+enum class RangeKind
+{
+  INCLUDED,
+  ELLIPSIS,
+  EXCLUDED,
+};
+
+RangeKind
+tokenid_to_rangekind (TokenId id);
 // AST node for matching within a certain range (range pattern)
 class RangePattern : public Pattern
 {
   std::unique_ptr<RangePatternBound> lower;
   std::unique_ptr<RangePatternBound> upper;
 
-  bool has_ellipsis_syntax;
+  RangeKind range_kind;
 
   /* location only stored to avoid a dereference - lower pattern should give
    * correct location so maybe change in future */
@@ -386,18 +395,18 @@ public:
 
   // Constructor
   RangePattern (std::unique_ptr<RangePatternBound> lower,
-		std::unique_ptr<RangePatternBound> upper, location_t locus,
-		bool has_ellipsis_syntax = false)
+		std::unique_ptr<RangePatternBound> upper, RangeKind range_kind,
+		location_t locus)
     : lower (std::move (lower)), upper (std::move (upper)),
-      has_ellipsis_syntax (has_ellipsis_syntax), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      range_kind (range_kind), locus (locus),
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Copy constructor with clone
   RangePattern (RangePattern const &other)
     : lower (other.lower->clone_range_pattern_bound ()),
       upper (other.upper->clone_range_pattern_bound ()),
-      has_ellipsis_syntax (other.has_ellipsis_syntax), locus (other.locus),
+      range_kind (other.range_kind), locus (other.locus),
       node_id (other.node_id)
   {}
 
@@ -406,7 +415,7 @@ public:
   {
     lower = other.lower->clone_range_pattern_bound ();
     upper = other.upper->clone_range_pattern_bound ();
-    has_ellipsis_syntax = other.has_ellipsis_syntax;
+    range_kind = other.range_kind;
     locus = other.locus;
     node_id = other.node_id;
 
@@ -419,11 +428,16 @@ public:
 
   location_t get_locus () const override final { return locus; }
 
-  bool get_has_ellipsis_syntax () { return has_ellipsis_syntax; }
+  bool get_has_ellipsis_syntax () const
+  {
+    return range_kind == RangeKind::ELLIPSIS;
+  }
 
-  bool get_has_lower_bound () { return lower != nullptr; }
+  RangeKind get_range_kind () const { return range_kind; }
 
-  bool get_has_upper_bound () { return upper != nullptr; }
+  bool get_has_lower_bound () const { return lower != nullptr; }
+
+  bool get_has_upper_bound () const { return upper != nullptr; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -469,7 +483,7 @@ public:
 		    bool ref_has_two_amps, location_t locus)
     : has_two_amps (ref_has_two_amps), is_mut (is_mut_reference),
       pattern (std::move (pattern)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Copy constructor requires clone
@@ -612,7 +626,7 @@ public:
 			      std::vector<Attribute> outer_attribs,
 			      location_t locus)
     : StructPatternField (std::move (outer_attribs), locus,
-			  Analysis::Mappings::get ()->get_next_node_id ()),
+			  Analysis::Mappings::get ().get_next_node_id ()),
       index (index), tuple_pattern (std::move (tuple_pattern))
   {}
 
@@ -692,7 +706,7 @@ public:
 			      std::vector<Attribute> outer_attrs,
 			      location_t locus)
     : StructPatternField (std::move (outer_attrs), locus,
-			  Analysis::Mappings::get ()->get_next_node_id ()),
+			  Analysis::Mappings::get ().get_next_node_id ()),
       ident (std::move (ident)), ident_pattern (std::move (ident_pattern))
   {}
 
@@ -771,7 +785,7 @@ public:
   StructPatternFieldIdent (Identifier ident, bool is_ref, bool is_mut,
 			   std::vector<Attribute> outer_attrs, location_t locus)
     : StructPatternField (std::move (outer_attrs), locus,
-			  Analysis::Mappings::get ()->get_next_node_id ()),
+			  Analysis::Mappings::get ().get_next_node_id ()),
       has_ref (is_ref), has_mut (is_mut), ident (std::move (ident))
   {}
 
@@ -926,7 +940,7 @@ public:
 		 StructPatternElements elems
 		 = StructPatternElements::create_empty ())
     : path (std::move (struct_path)), elems (std::move (elems)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
+      node_id (Analysis::Mappings::get ().get_next_node_id ()), locus (locus)
   {}
 
   /* TODO: constructor to construct via elements included in
@@ -1146,7 +1160,7 @@ public:
   TupleStructPattern (PathInExpression tuple_struct_path,
 		      std::unique_ptr<TupleStructItems> items)
     : path (std::move (tuple_struct_path)), items (std::move (items)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {
     rust_assert (this->items != nullptr);
   }
@@ -1395,7 +1409,7 @@ public:
 
   TuplePattern (std::unique_ptr<TuplePatternItems> items, location_t locus)
     : items (std::move (items)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {
     rust_assert (this->items != nullptr);
   }
@@ -1462,7 +1476,7 @@ public:
 
   GroupedPattern (std::unique_ptr<Pattern> pattern_in_parens, location_t locus)
     : pattern_in_parens (std::move (pattern_in_parens)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Copy constructor uses clone
@@ -1521,7 +1535,7 @@ public:
 
   SlicePattern (std::vector<std::unique_ptr<Pattern>> items, location_t locus)
     : items (std::move (items)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Copy constructor with vector clone
@@ -1588,7 +1602,7 @@ public:
 
   AltPattern (std::vector<std::unique_ptr<Pattern>> alts, location_t locus)
     : alts (std::move (alts)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Copy constructor with vector clone
@@ -1643,7 +1657,7 @@ protected:
 };
 
 // Moved definition to rust-path.h
-class PathPattern;
+class Path;
 
 // Forward decls for paths (defined in rust-path.h)
 class PathInExpression;

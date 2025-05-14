@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-require-effective-target alloca } */
 
 int y;
 extern int foo (int, ...) __attribute__((pure));

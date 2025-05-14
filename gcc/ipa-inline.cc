@@ -121,6 +121,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "ipa-strub.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
 
 /* Inliner uses greedy algorithm to inline calls in a priority order.
    Badness is used as the key in a Fibonacci heap which roughly corresponds
@@ -585,7 +587,7 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, int flags)
 		      || check_maybe_down (flag_unsafe_math_optimizations)
 		      || check_maybe_down (flag_finite_math_only)
 		      || check_maybe_up (flag_signaling_nans)
-		      || check_maybe_down (flag_cx_limited_range)
+		      || check_maybe_up (flag_complex_method)
 		      || check_maybe_up (flag_signed_zeros)
 		      || check_maybe_down (flag_associative_math)
 		      || check_maybe_down (flag_reciprocal_math)
@@ -699,7 +701,7 @@ can_early_inline_edge_p (struct cgraph_edge *e)
     }
   gcc_assert (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->caller->decl))
 	      && gimple_in_ssa_p (DECL_STRUCT_FUNCTION (callee->decl)));
-  if ((profile_arc_flag || condition_coverage_flag)
+  if (coverage_instrumentation_p ()
       && ((lookup_attribute ("no_profile_instrument_function",
 			    DECL_ATTRIBUTES (caller->decl)) == NULL_TREE)
 	  != (lookup_attribute ("no_profile_instrument_function",
@@ -929,6 +931,18 @@ inlining_speedup (struct cgraph_edge *edge,
   return speedup;
 }
 
+/* Return expected speedup of the callee function alone
+   (i.e. not estimate of call overhead and also no scalling
+    by call frequency.  */
+
+static sreal
+callee_speedup (struct cgraph_edge *e)
+{
+  sreal unspec_time;
+  sreal spec_time = estimate_edge_time (e, &unspec_time);
+  return unspec_time - spec_time;
+}
+
 /* Return true if the speedup for inlining E is bigger than
    param_inline_min_speedup.  */
 
@@ -966,28 +980,39 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
   if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
     want_inline = false;
   else if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
-    ;
+    return true;
   else if (!DECL_DECLARED_INLINE_P (callee->decl)
 	   && !opt_for_fn (e->caller->decl, flag_inline_small_functions))
     {
       e->inline_failed = CIF_FUNCTION_NOT_INLINE_CANDIDATE;
       want_inline = false;
     }
+
+  /* Early return before lookup of summaries.  */
+  if (!want_inline)
+    {
+      if (report)
+	report_inline_failed_reason (e);
+      return false;
+    }
+
+  ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
+  ipa_call_summary *call_info = ipa_call_summaries->get (e);
+
   /* Do fast and conservative check if the function can be good
      inline candidate.  */
-  else if ((!DECL_DECLARED_INLINE_P (callee->decl)
-	   && (!e->count.ipa ().initialized_p () || !e->maybe_hot_p ()))
-	   && ipa_fn_summaries->get (callee)->min_size
-		- ipa_call_summaries->get (e)->call_stmt_size
-	      > inline_insns_auto (e->caller, true, true))
+  if ((!DECL_DECLARED_INLINE_P (callee->decl)
+      && (!e->count.ipa ().initialized_p ()
+	  || !e->maybe_hot_p (callee_info->time)))
+      && callee_info->min_size - call_info->call_stmt_size
+	 > inline_insns_auto (e->caller, true, true))
     {
       e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
       want_inline = false;
     }
   else if ((DECL_DECLARED_INLINE_P (callee->decl)
 	    || e->count.ipa ().nonzero_p ())
-	   && ipa_fn_summaries->get (callee)->min_size
-		- ipa_call_summaries->get (e)->call_stmt_size
+	   && callee_info->min_size - call_info->call_stmt_size
 	      > inline_insns_single (e->caller, true, true))
     {
       e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
@@ -1058,7 +1083,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
  	    }
 	}
       /* If call is cold, do not inline when function body would grow. */
-      else if (!e->maybe_hot_p ()
+      else if (!e->maybe_hot_p (callee_speedup (e))
 	       && (growth >= inline_insns_single (e->caller, false, false)
 		   || growth_positive_p (callee, e, growth)))
 	{
@@ -1840,7 +1865,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	{
 	  /* We need original clone to copy around.  */
 	  master_clone = node->create_clone (node->decl, node->count,
-	    false, vNULL, true, NULL, NULL);
+	    false, vNULL, true, NULL, NULL, NULL);
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
 	      clone_inlined_nodes (e, true, false, NULL);
@@ -1941,23 +1966,30 @@ heap_edge_removal_hook (struct cgraph_edge *e, void *data)
 bool
 speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining)
 {
-  /* If we have already decided to inline the edge, it seems useful.  */
-  if (!e->inline_failed)
+  /* If we have already decided to inline the edge, it seems useful.
+     Also if ipa-cp or other pass worked hard enough to produce a clone,
+     we already decided this is a good idea.  */
+  if (!e->inline_failed
+      || e->callee->clone_of)
     return true;
 
   enum availability avail;
   struct cgraph_node *target = e->callee->ultimate_alias_target (&avail,
-								 e->caller);
+								 e->callee);
 
   gcc_assert (e->speculative && !e->indirect_unknown_callee);
 
-  if (!e->maybe_hot_p ())
+  /* Even if calll statement is not hot, we can still have useful speculation
+     in cases where a lot of time is spent is callee.
+     Do not check maybe_hot_p.  */
+  if (!e->count.nonzero_p ())
     return false;
 
   /* See if IP optimizations found something potentially useful about the
-     function.  For now we look only for CONST/PURE flags.  Almost everything
-     else we propagate is useless.  */
-  if (avail >= AVAIL_AVAILABLE)
+     function.  Do this only if the call seems hot since this is about
+     optimizing the code surrounding call site rahter than improving
+     callee.  */
+  if (avail >= AVAIL_AVAILABLE && e->maybe_hot_p ())
     {
       int ecf_flags = flags_from_decl_or_type (target->decl);
       if (ecf_flags & ECF_CONST)
@@ -1972,12 +2004,18 @@ speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining)
 		->ecf_flags & ECF_PURE))
 	    return true;
         }
+      else if (get_modref_function_summary (target))
+	return true;
     }
   /* If we did not managed to inline the function nor redirect
      to an ipa-cp clone (that are seen by having local flag set),
      it is probably pointless to inline it unless hardware is missing
-     indirect call predictor.  */
-  if (!anticipate_inlining && !target->local)
+     indirect call predictor.
+
+     At this point we know we will not dispatch into faster version of
+     callee, so if call itself is not hot, we definitely can give up
+     speculating.  */
+  if (!anticipate_inlining && (!target->local || !e->maybe_hot_p ()))
     return false;
   /* For overwritable targets there is not much to do.  */
   if (!can_inline_edge_p (e, false)

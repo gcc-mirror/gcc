@@ -24,6 +24,8 @@
 #include "rust-ast-lower-type.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-struct-field-expr.h"
+#include "rust-expr.h"
+#include "rust-hir-expr.h"
 
 namespace Rust {
 namespace HIR {
@@ -81,10 +83,10 @@ ASTLowering::go ()
 	items.push_back (std::unique_ptr<HIR::Item> (translated));
     }
 
-  auto mappings = Analysis::Mappings::get ();
-  auto crate_num = mappings->get_current_crate ();
+  auto &mappings = Analysis::Mappings::get ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, astCrate.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   return std::unique_ptr<HIR::Crate> (
@@ -95,14 +97,22 @@ ASTLowering::go ()
 void
 ASTLoweringBlock::visit (AST::BlockExpr &expr)
 {
-  auto label = lower_loop_label (expr.get_label ());
+  tl::optional<HIR::LoopLabel> label;
+  if (expr.has_label ())
+    label = lower_loop_label (expr.get_label ());
+  else
+    label = tl::nullopt;
 
   std::vector<std::unique_ptr<HIR::Stmt>> block_stmts;
   bool block_did_terminate = false;
 
   for (auto &s : expr.get_statements ())
     {
-      if (s->get_ast_kind () == AST::Kind::MACRO_INVOCATION)
+      // FIXME: We basically need to do that check for *every* single node in
+      // the AST. this isn't realistic and this should be turned into an
+      // optional, debug-visitor instead, which goes through the entire AST and
+      // checks if any of the nodes are macro invocations
+      if (s->get_stmt_kind () == AST::Stmt::Kind::MacroInvocation)
 	rust_fatal_error (
 	  s->get_locus (),
 	  "macro invocations should not get lowered to HIR - At "
@@ -137,9 +147,9 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
     }
 
   bool tail_reachable = !block_did_terminate;
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
   translated
     = new HIR::BlockExpr (mapping, std::move (block_stmts),
@@ -160,9 +170,9 @@ ASTLoweringIfBlock::visit (AST::IfExpr &expr)
   HIR::BlockExpr *block
     = ASTLoweringBlock::translate (expr.get_if_block (), &ignored_terminated);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::IfExpr (mapping, std::unique_ptr<HIR::Expr> (condition),
@@ -187,9 +197,9 @@ ASTLoweringIfBlock::visit (AST::IfExprConseqElse &expr)
 
   terminated = if_block_terminated && else_block_termianted;
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::IfExprConseqElse (
@@ -198,62 +208,144 @@ ASTLoweringIfBlock::visit (AST::IfExprConseqElse &expr)
     std::unique_ptr<HIR::ExprWithBlock> (else_block), expr.get_locus ());
 }
 
+/**
+ *  Lowers the common part "if let 'pattern' = 'expr' { 'if_block' }" of
+ *  IfLetExpr[ConseqElse]:
+ *  - 'expr' is lowered into *BRANCH_VALUE
+ *  - 'pattern' + 'if_block' are lowered and resulting ARM pushed in MATCH_ARMS
+ *  - 'KASE_ELSE_EXPR' is the lowered HIR to be used in the else part.
+ *
+ *  Looks like:
+ *
+ *  match (expr) {
+ *    pattern => {if_block}
+ *    _ => kase_else_expr
+ *  }
+ *
+ */
 void
-ASTLoweringIfLetBlock::visit (AST::IfLetExpr &expr)
+ASTLoweringIfLetBlock::desugar_iflet (AST::IfLetExpr &expr,
+				      HIR::Expr **branch_value,
+				      HIR::Expr *kase_else_expr,
+				      std::vector<HIR::MatchCase> &match_arms)
 {
-  std::vector<std::unique_ptr<HIR::Pattern>> patterns;
+  HIR::Expr *kase_expr;
+  std::vector<std::unique_ptr<HIR::Pattern>> match_arm_patterns;
+
+  *branch_value = ASTLoweringExpr::translate (expr.get_value_expr ());
+  kase_expr = ASTLoweringExpr::translate (expr.get_if_block ());
+
+  // (stable) if let only accepts a single pattern, but (unstable) if let chains
+  // need more than one pattern.
+  // We don't support if let chains, so only support a single pattern.
+  rust_assert (expr.get_patterns ().size () == 1);
+
   for (auto &pattern : expr.get_patterns ())
     {
       HIR::Pattern *ptrn = ASTLoweringPattern::translate (*pattern);
-      patterns.push_back (std::unique_ptr<HIR::Pattern> (ptrn));
+      match_arm_patterns.push_back (std::unique_ptr<HIR::Pattern> (ptrn));
     }
-  HIR::Expr *value_ptr = ASTLoweringExpr::translate (expr.get_value_expr ());
 
-  bool ignored_terminated = false;
-  HIR::BlockExpr *block
-    = ASTLoweringBlock::translate (expr.get_if_block (), &ignored_terminated);
+  // The match arm corresponding to the if let pattern when it matches.
+  HIR::MatchArm arm (std::move (match_arm_patterns), expr.get_locus (), nullptr,
+		     {});
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  translated = new HIR::IfLetExpr (mapping, std::move (patterns),
-				   std::unique_ptr<HIR::Expr> (value_ptr),
-				   std::unique_ptr<HIR::BlockExpr> (block),
-				   expr.get_locus ());
+  HIR::MatchCase kase (std::move (mapping), std::move (arm),
+		       std::unique_ptr<HIR::Expr> (kase_expr));
+  match_arms.push_back (std::move (kase));
+
+  // The default match arm when the if let pattern does not match
+  std::vector<std::unique_ptr<HIR::Pattern>> match_arm_patterns_wildcard;
+  Analysis::NodeMapping mapping_default (crate_num, expr.get_node_id (),
+					 mappings.get_next_hir_id (crate_num),
+					 UNKNOWN_LOCAL_DEFID);
+
+  std::unique_ptr<HIR::WildcardPattern> wc
+    = std::unique_ptr<HIR::WildcardPattern> (
+      new HIR::WildcardPattern (mapping_default, expr.get_locus ()));
+
+  match_arm_patterns_wildcard.push_back (std::move (wc));
+
+  HIR::MatchArm arm_default (std::move (match_arm_patterns_wildcard),
+			     expr.get_locus (), nullptr, {});
+
+  HIR::MatchCase kase_else (std::move (mapping_default),
+			    std::move (arm_default),
+			    std::unique_ptr<HIR::Expr> (kase_else_expr));
+  match_arms.push_back (std::move (kase_else));
+}
+
+void
+ASTLoweringIfLetBlock::visit (AST::IfLetExpr &expr)
+{
+  // Desugar:
+  //   if let Some(y) = some_value {
+  //     bar();
+  //   }
+  //
+  //   into:
+  //
+  //   match some_value {
+  //     Some(y) => {bar();},
+  //     _ => ()
+  //   }
+
+  HIR::Expr *branch_value;
+
+  std::vector<HIR::MatchCase> match_arms;
+  auto crate_num = mappings.get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings.get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  HIR::TupleExpr *unit
+    = new HIR::TupleExpr (mapping, {}, {}, {}, expr.get_locus ());
+
+  desugar_iflet (expr, &branch_value, unit, match_arms);
+
+  translated
+    = new HIR::MatchExpr (mapping, std::unique_ptr<HIR::Expr> (branch_value),
+			  std::move (match_arms), {}, {}, expr.get_locus ());
 }
 
 void
 ASTLoweringIfLetBlock::visit (AST::IfLetExprConseqElse &expr)
 {
-  std::vector<std::unique_ptr<HIR::Pattern>> patterns;
-  for (auto &pattern : expr.get_patterns ())
-    {
-      HIR::Pattern *ptrn = ASTLoweringPattern::translate (*pattern);
-      patterns.push_back (std::unique_ptr<HIR::Pattern> (ptrn));
-    }
-  HIR::Expr *value_ptr = ASTLoweringExpr::translate (expr.get_value_expr ());
+  // desugar:
+  //   if let Some(y) = some_value {
+  //     bar();
+  //   } else {
+  //     baz();
+  //   }
+  //
+  //   into
+  //   match some_value {
+  //     Some(y) => {bar();},
+  //     _ => {baz();}
+  //   }
+  //
 
-  bool ignored_terminated = false;
-  HIR::BlockExpr *block
-    = ASTLoweringBlock::translate (expr.get_if_block (), &ignored_terminated);
+  HIR::Expr *branch_value;
+  std::vector<HIR::MatchCase> match_arms;
 
-  HIR::ExprWithBlock *else_block
-    = ASTLoweringExprWithBlock::translate (expr.get_else_block (),
-					   &ignored_terminated);
+  HIR::Expr *kase_else_expr
+    = ASTLoweringExpr::translate (expr.get_else_block ());
 
-  rust_assert (else_block);
+  desugar_iflet (expr, &branch_value, kase_else_expr, match_arms);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  translated = new HIR::IfLetExprConseqElse (
-    mapping, std::move (patterns), std::unique_ptr<HIR::Expr> (value_ptr),
-    std::unique_ptr<HIR::BlockExpr> (block),
-    std::unique_ptr<HIR::ExprWithBlock> (else_block), expr.get_locus ());
+  translated
+    = new HIR::MatchExpr (mapping, std::unique_ptr<HIR::Expr> (branch_value),
+			  std::move (match_arms), {}, {}, expr.get_locus ());
 }
 
 // rust-ast-lower-struct-field-expr.h
@@ -263,9 +355,9 @@ ASTLowerStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
 {
   HIR::Expr *value = ASTLoweringExpr::translate (field.get_value ());
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::StructExprFieldIdentifierValue (
@@ -278,9 +370,9 @@ ASTLowerStructExprField::visit (AST::StructExprFieldIndexValue &field)
 {
   HIR::Expr *value = ASTLoweringExpr::translate (field.get_value ());
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated
@@ -292,9 +384,9 @@ ASTLowerStructExprField::visit (AST::StructExprFieldIndexValue &field)
 void
 ASTLowerStructExprField::visit (AST::StructExprFieldIdentifier &field)
 {
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated
@@ -310,13 +402,16 @@ ASTLoweringExprWithBlock::visit (AST::WhileLoopExpr &expr)
   HIR::BlockExpr *loop_block
     = ASTLoweringBlock::translate (expr.get_loop_block (), &terminated);
 
-  HIR::LoopLabel loop_label = lower_loop_label (expr.get_loop_label ());
+  tl::optional<HIR::LoopLabel> loop_label;
+  if (expr.has_loop_label ())
+    loop_label = lower_loop_label (expr.get_loop_label ());
+
   HIR::Expr *loop_condition
     = ASTLoweringExpr::translate (expr.get_predicate_expr (), &terminated);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated
@@ -330,24 +425,7 @@ ASTLoweringExprWithBlock::visit (AST::WhileLoopExpr &expr)
 void
 ASTLoweringExprWithBlock::visit (AST::ForLoopExpr &expr)
 {
-  // TODO FIXME
-
-  // HIR::BlockExpr *loop_block
-  //   = ASTLoweringBlock::translate (expr.get_loop_block ().get (),
-  //   &terminated);
-  // HIR::LoopLabel loop_label = lower_loop_label (expr.get_loop_label ());
-  // HIR::Expr *iterator_expr
-  //   = ASTLoweringExpr::translate (expr.get_iterator_expr ().get (),
-  //       			  &terminated);
-  // HIR::Pattern *loop_pattern
-  //   = ASTLoweringPattern::translate (expr.get_pattern ().get ());
-
-  // auto crate_num = mappings->get_current_crate ();
-  // Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-  //       			 mappings->get_next_hir_id (crate_num),
-  //       			 UNKNOWN_LOCAL_DEFID);
-
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 void
@@ -380,9 +458,9 @@ ASTLoweringExprWithBlock::visit (AST::MatchExpr &expr)
 			 std::unique_ptr<HIR::Expr> (kase_guard_expr),
 			 match_case.get_arm ().get_outer_attrs ());
 
-      auto crate_num = mappings->get_current_crate ();
+      auto crate_num = mappings.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				     mappings->get_next_hir_id (crate_num),
+				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       HIR::MatchCase kase (std::move (mapping), std::move (arm),
@@ -390,9 +468,9 @@ ASTLoweringExprWithBlock::visit (AST::MatchExpr &expr)
       match_arms.push_back (std::move (kase));
     }
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated
@@ -406,6 +484,18 @@ ASTLoweringExprWithBlock::visit (AST::MatchExpr &expr)
 void
 ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
 {
+  auto crate_num = mappings.get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings.get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  if (expr.is_lang_item ())
+    {
+      translated = new HIR::PathInExpression (mapping, expr.get_lang_item (),
+					      expr.get_locus (), false);
+      return;
+    }
+
   std::vector<HIR::PathExprSegment> path_segments;
   auto &segments = expr.get_segments ();
   for (auto &s : segments)
@@ -414,12 +504,8 @@ ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
 
       // insert the mappings for the segment
       HIR::PathExprSegment *lowered_seg = &path_segments.back ();
-      mappings->insert_hir_path_expr_seg (lowered_seg);
+      mappings.insert_hir_path_expr_seg (lowered_seg);
     }
-  auto crate_num = mappings->get_current_crate ();
-  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::PathInExpression (mapping, std::move (path_segments),
 					  expr.get_locus (),
@@ -435,9 +521,9 @@ ASTLoweringBase::lower_qual_path_type (AST::QualifiedPathType &qualified_type)
 	? ASTLowerTypePath::translate (qualified_type.get_as_type_path ())
 	: nullptr;
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, qualified_type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   return HIR::QualifiedPathType (mapping, std::unique_ptr<HIR::Type> (type),
@@ -459,12 +545,12 @@ ASTLowerQualPathInExpression::visit (AST::QualifiedPathInExpression &expr)
 
       // insert the mappings for the segment
       HIR::PathExprSegment *lowered_seg = &path_segments.back ();
-      mappings->insert_hir_path_expr_seg (lowered_seg);
+      mappings.insert_hir_path_expr_seg (lowered_seg);
     }
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::QualifiedPathInExpression (mapping, qual_path_type,

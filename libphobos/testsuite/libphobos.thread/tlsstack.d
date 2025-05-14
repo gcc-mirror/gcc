@@ -1,6 +1,6 @@
 module core.thread.test; // needs access to getStackTop()/getStackBottom()
 
-import core.stdc.stdio;
+import core.stdc.stdio : printf;
 import core.thread;
 
 ubyte[16384] data;

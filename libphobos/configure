@@ -655,6 +655,7 @@ DCFG_HAVE_LIBATOMIC
 DCFG_HAVE_64BIT_ATOMICS
 DCFG_HAVE_ATOMIC_BUILTINS
 DCFG_HAVE_QSORT_R
+OS_DFLAGS
 OS_LINK_SPEC
 DCFG_DLPI_TLS_MODID
 DRUNTIME_OS_MINFO_BRACKETING_FALSE
@@ -731,7 +732,6 @@ CFLAGS_FOR_BUILD
 CC_FOR_BUILD
 AR
 DCFG_ENABLE_CET
-CET_DFLAGS
 CET_FLAGS
 RANLIB
 MAINT
@@ -5667,16 +5667,13 @@ fi
 # To ensure that runtime code for CET is compiled in, add in D version flags.
 if test x$enable_cet = xyes; then :
 
-  CET_DFLAGS="$CET_FLAGS -fversion=CET"
   DCFG_ENABLE_CET=true
 
 else
 
-  CET_DFLAGS=
   DCFG_ENABLE_CET=false
 
 fi
-
 
 
 # This should be inherited in the recursive make, but ensure it is defined.
@@ -11867,7 +11864,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11870 "configure"
+#line 11867 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11973,7 +11970,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11976 "configure"
+#line 11973 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14718,6 +14715,54 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
       fi
       ;;
   esac
+
+
+
+
+  OS_DFLAGS=
+
+  case "$druntime_cv_target_os" in
+    linux*)  druntime_target_os_parsed="linux"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for getrandom" >&5
+$as_echo_n "checking for getrandom... " >&6; }
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/syscall.h>
+#include <unistd.h>
+int
+main ()
+{
+
+        syscall (__NR_getrandom);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+         OS_DFLAGS=-fversion=linux_legacy_emulate_getrandom
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+      ;;
+  esac
+
 
 
 

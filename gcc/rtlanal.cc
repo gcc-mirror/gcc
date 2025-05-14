@@ -3252,6 +3252,7 @@ may_trap_p_1 (const_rtx x, unsigned flags)
 	return true;
       break;
 
+    case PARALLEL:
     case NEG:
     case ABS:
     case SUBREG:
@@ -5771,7 +5772,7 @@ pattern_cost (rtx pat, bool speed)
     return 0;
 
   cost = set_src_cost (SET_SRC (set), GET_MODE (SET_DEST (set)), speed);
-  return cost > 0 ? cost : COSTS_N_INSNS (1);
+  return MAX (COSTS_N_INSNS (1), cost);
 }
 
 /* Calculate the cost of a single instruction.  A return value of zero

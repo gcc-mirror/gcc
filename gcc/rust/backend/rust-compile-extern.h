@@ -34,16 +34,10 @@ class CompileExternItem : public HIRCompileBase,
 public:
   static tree compile (HIR::ExternalItem *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
-		       bool is_query_mode = false,
 		       location_t ref_locus = UNDEF_LOCATION)
   {
     CompileExternItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
-
-    if (is_query_mode && compiler.reference == error_mark_node)
-      rust_internal_error_at (ref_locus, "failed to compile extern item: %s",
-			      item->as_string ().c_str ());
-
     return compiler.reference;
   }
 
@@ -134,10 +128,8 @@ public:
     if (fntype->get_abi () == ABI::RUST)
       {
 	// then we need to get the canonical path of it and mangle it
-	const Resolver::CanonicalPath *canonical_path = nullptr;
-	bool ok = ctx->get_mappings ()->lookup_canonical_path (
-	  function.get_mappings ().get_nodeid (), &canonical_path);
-	rust_assert (ok);
+	auto canonical_path = ctx->get_mappings ().lookup_canonical_path (
+	  function.get_mappings ().get_nodeid ());
 
 	ir_symbol_name = canonical_path->get () + fntype->subst_as_string ();
 	asm_name = ctx->mangle_item (fntype, *canonical_path);

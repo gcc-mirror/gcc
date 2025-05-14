@@ -2443,6 +2443,8 @@ extern void get_full_rtx_cost (rtx, machine_mode, enum rtx_code, int,
 			       struct full_rtx_costs *);
 extern bool native_encode_rtx (machine_mode, rtx, vec<target_unit> &,
 			       unsigned int, unsigned int);
+extern wide_int native_decode_int (const vec<target_unit> &, unsigned int,
+				   unsigned int, unsigned int);
 extern rtx native_decode_rtx (machine_mode, const vec<target_unit> &,
 			      unsigned int);
 extern rtx native_decode_vector_rtx (machine_mode, const vec<target_unit> &,

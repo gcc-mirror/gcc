@@ -69,7 +69,7 @@ DefaultASTVisitor::visit (AST::Lifetime &lifetime)
 void
 DefaultASTVisitor::visit (AST::LifetimeParam &lifetime_param)
 {
-  visit (lifetime_param.get_outer_attribute ());
+  visit_outer_attrs (lifetime_param);
   visit (lifetime_param.get_lifetime ());
   for (auto &lifetime_bound : lifetime_param.get_lifetime_bounds ())
     visit (lifetime_bound);
@@ -78,19 +78,21 @@ DefaultASTVisitor::visit (AST::LifetimeParam &lifetime_param)
 void
 DefaultASTVisitor::visit (AST::ConstGenericParam &const_param)
 {
-  visit (const_param.get_outer_attribute ());
+  visit_outer_attrs (const_param);
   if (const_param.has_type ())
     visit (const_param.get_type ());
   if (const_param.has_default_value ())
-    visit (const_param.get_default_value ());
+    visit (const_param.get_default_value_unchecked ());
 }
 
 void
 DefaultASTVisitor::visit (AST::PathInExpression &path)
 {
   visit_outer_attrs (path);
-  for (auto &segment : path.get_segments ())
-    visit (segment);
+
+  if (!path.is_lang_item ())
+    for (auto &segment : path.get_segments ())
+      visit (segment);
 }
 
 void
@@ -106,7 +108,8 @@ DefaultASTVisitor::visit (GenericArgsBinding &binding)
 void
 DefaultASTVisitor::visit (AST::TypePathSegmentGeneric &segment)
 {
-  visit (segment.get_generic_args ());
+  if (segment.has_generic_args ())
+    visit (segment.get_generic_args ());
 }
 
 void
@@ -390,6 +393,7 @@ DefaultASTVisitor::visit (AST::StructExprStructFields &expr)
 {
   visit_outer_attrs (expr);
   visit_inner_attrs (expr);
+  visit (expr.get_struct_name ());
   if (expr.has_struct_base ())
     visit (expr.get_struct_base ());
   for (auto &field : expr.get_fields ())
@@ -401,6 +405,7 @@ DefaultASTVisitor::visit (AST::StructExprStructBase &expr)
 {
   visit_outer_attrs (expr);
   visit_inner_attrs (expr);
+  visit (expr.get_struct_name ());
   visit (expr.get_struct_base ());
 }
 
@@ -473,7 +478,8 @@ void
 DefaultASTVisitor::visit (AST::ContinueExpr &expr)
 {
   visit_outer_attrs (expr);
-  visit (expr.get_label ());
+  if (expr.has_label ())
+    visit (expr.get_label_unchecked ());
 }
 
 void
@@ -481,7 +487,7 @@ DefaultASTVisitor::visit (AST::BreakExpr &expr)
 {
   visit_outer_attrs (expr);
   if (expr.has_label ())
-    visit (expr.get_label ());
+    visit (expr.get_label_unchecked ());
 
   if (expr.has_break_expr ())
     visit (expr.get_break_expr ());
@@ -532,6 +538,13 @@ DefaultASTVisitor::visit (AST::ReturnExpr &expr)
 }
 
 void
+DefaultASTVisitor::visit (AST::BoxExpr &expr)
+{
+  visit_outer_attrs (expr);
+  visit (expr.get_boxed_expr ());
+}
+
+void
 DefaultASTVisitor::visit (AST::UnsafeBlockExpr &expr)
 {
   visit_outer_attrs (expr);
@@ -548,7 +561,8 @@ void
 DefaultASTVisitor::visit (AST::LoopExpr &expr)
 {
   visit_outer_attrs (expr);
-  visit (expr.get_loop_label ());
+  if (expr.has_loop_label ())
+    visit (expr.get_loop_label ());
   visit (expr.get_loop_block ());
 }
 
@@ -556,8 +570,9 @@ void
 DefaultASTVisitor::visit (AST::WhileLoopExpr &expr)
 {
   visit_outer_attrs (expr);
+  if (expr.has_loop_label ())
+    visit (expr.get_loop_label ());
   visit (expr.get_predicate_expr ());
-  visit (expr.get_loop_label ());
   visit (expr.get_loop_block ());
 }
 
@@ -567,8 +582,8 @@ DefaultASTVisitor::visit (AST::WhileLetLoopExpr &expr)
   visit_outer_attrs (expr);
   for (auto &pattern : expr.get_patterns ())
     visit (pattern);
-  visit (expr.get_scrutinee_expr ());
   visit (expr.get_loop_label ());
+  visit (expr.get_scrutinee_expr ());
   visit (expr.get_loop_block ());
 }
 
@@ -578,7 +593,8 @@ DefaultASTVisitor::visit (AST::ForLoopExpr &expr)
   visit_outer_attrs (expr);
   visit (expr.get_pattern ());
   visit (expr.get_iterator_expr ());
-  visit (expr.get_loop_label ());
+  if (expr.has_loop_label ())
+    visit (expr.get_loop_label ());
   visit (expr.get_loop_block ());
 }
 
@@ -656,9 +672,62 @@ DefaultASTVisitor::visit (AST::AsyncBlockExpr &expr)
 }
 
 void
+DefaultASTVisitor::visit (AST::InlineAsm &expr)
+{
+  visit_outer_attrs (expr);
+  using RegisterType = AST::InlineAsmOperand::RegisterType;
+  for (auto &operand : expr.get_operands ())
+    {
+      switch (operand.get_register_type ())
+	{
+	  case RegisterType::In: {
+	    visit (operand.get_in ().expr);
+	    break;
+	  }
+	  case RegisterType::Out: {
+	    visit (operand.get_out ().expr);
+	    break;
+	  }
+	  case RegisterType::InOut: {
+	    visit (operand.get_in_out ().expr);
+	    break;
+	  }
+	  case RegisterType::SplitInOut: {
+	    auto split = operand.get_split_in_out ();
+	    visit (split.in_expr);
+	    visit (split.out_expr);
+	    break;
+	  }
+	  case RegisterType::Const: {
+	    visit (operand.get_const ().anon_const.expr);
+	    break;
+	  }
+	  case RegisterType::Sym: {
+	    visit (operand.get_sym ().expr);
+	    break;
+	  }
+	  case RegisterType::Label: {
+	    visit (operand.get_label ().expr);
+	    break;
+	  }
+	}
+    }
+}
+
+void
+DefaultASTVisitor::visit (AST::LlvmInlineAsm &expr)
+{
+  for (auto &output : expr.get_outputs ())
+    visit (output.expr);
+
+  for (auto &input : expr.get_inputs ())
+    visit (input.expr);
+}
+
+void
 DefaultASTVisitor::visit (AST::TypeParam &param)
 {
-  visit (param.get_outer_attribute ());
+  visit_outer_attrs (param);
   for (auto &bound : param.get_type_param_bounds ())
     visit (bound);
   if (param.has_type ())
@@ -759,7 +828,15 @@ DefaultASTVisitor::visit (AST::UseTreeRebind &use_tree)
 void
 DefaultASTVisitor::visit (AST::UseDeclaration &use_decl)
 {
+  visit (use_decl.get_visibility ());
   visit (use_decl.get_tree ());
+}
+
+void
+DefaultASTVisitor::visit_function_params (AST::Function &function)
+{
+  for (auto &param : function.get_function_params ())
+    visit (param);
 }
 
 void
@@ -770,10 +847,9 @@ DefaultASTVisitor::visit (AST::Function &function)
   visit (function.get_qualifiers ());
   for (auto &generic : function.get_generic_params ())
     visit (generic);
-  if (function.has_self_param ())
-    visit (function.get_self_param ());
-  for (auto &param : function.get_function_params ())
-    visit (param);
+
+  visit_function_params (function);
+
   if (function.has_return_type ())
     visit (function.get_return_type ());
   if (function.has_where_clause ())
@@ -936,6 +1012,8 @@ DefaultASTVisitor::visit (AST::Trait &trait)
 
   visit_inner_attrs (trait);
 
+  visit (trait.get_implicit_self ());
+
   for (auto &generic : trait.get_generic_params ())
     visit (generic);
 
@@ -976,6 +1054,7 @@ DefaultASTVisitor::visit (AST::TraitImpl &impl)
   if (impl.has_where_clause ())
     visit (impl.get_where_clause ());
   visit (impl.get_type ());
+  visit (impl.get_trait_path ());
   visit_inner_attrs (impl);
   for (auto &item : impl.get_impl_items ())
     visit (item);
@@ -994,14 +1073,6 @@ DefaultASTVisitor::visit (AST::ExternalStaticItem &item)
   visit_outer_attrs (item);
   visit (item.get_visibility ());
   visit (item.get_type ());
-}
-
-void
-DefaultASTVisitor::visit (AST::NamedFunctionParam &param)
-{
-  visit_outer_attrs (param);
-  if (!param.is_variadic ())
-    visit (param.get_type ());
 }
 
 void
@@ -1392,33 +1463,33 @@ DefaultASTVisitor::visit (AST::VariadicParam &param)
 void
 ContextualASTVisitor::visit (AST::Crate &crate)
 {
-  push_context (Context::CRATE);
+  ctx.enter (Kind::CRATE);
   DefaultASTVisitor::visit (crate);
-  pop_context ();
+  ctx.exit ();
 }
 
 void
 ContextualASTVisitor::visit (AST::InherentImpl &impl)
 {
-  push_context (Context::INHERENT_IMPL);
+  ctx.enter (Kind::INHERENT_IMPL);
   DefaultASTVisitor::visit (impl);
-  pop_context ();
+  ctx.exit ();
 }
 
 void
 ContextualASTVisitor::visit (AST::TraitImpl &impl)
 {
-  push_context (Context::TRAIT_IMPL);
+  ctx.enter (Kind::TRAIT_IMPL);
   DefaultASTVisitor::visit (impl);
-  pop_context ();
+  ctx.exit ();
 }
 
 void
 ContextualASTVisitor::visit (AST::Trait &trait)
 {
-  push_context (Context::TRAIT);
+  ctx.enter (Kind::TRAIT);
   DefaultASTVisitor::visit (trait);
-  pop_context ();
+  ctx.exit ();
 }
 
 } // namespace AST

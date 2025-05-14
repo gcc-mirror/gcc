@@ -12,4 +12,4 @@ int variable;
 
 /* { dg-final { scan-file cmdlne-dM-M.i "(^|\\n)#define foo bar($|\\n)" } }
    { dg-final { scan-file-not cmdlne-dM-M.i "variable" } }
-   { dg-final { scan-file cmdlne-dM-M.i "(^|\\n)cmdlne-dM-M\[^\\n\]*:( *\\\\\\n)?\[^\\n\]*cmdlne-dM-M.c"} } */
+   { dg-final { scan-file cmdlne-dM-M.i "(^|\\n)cmdlne-dM-M\[^\\n\]*:( *\\\\\\n)?\[^\\n\]*cmdlne-dM-M.c" } } */

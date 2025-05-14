@@ -22,6 +22,8 @@
 #include "optional.h"
 #include "rust-forever-stack.h"
 #include "rust-hir-map.h"
+#include "rust-rib.h"
+#include "rust-stacked-contexts.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -155,6 +157,62 @@ public:
   NodeId id;
 };
 
+struct Binding
+{
+  enum class Kind
+  {
+    Product,
+    Or,
+  } kind;
+
+  std::unordered_set<Identifier> set;
+
+  Binding (Binding::Kind kind) : kind (kind) {}
+};
+
+/**
+ * Used to identify the source of a binding, and emit the correct error message.
+ */
+enum class BindingSource
+{
+  Match,
+  Let,
+  For,
+  /* Closure param or function param */
+  Param
+};
+
+class BindingLayer
+{
+  BindingSource source;
+  std::vector<Binding> bindings;
+
+  bool bind_test (Identifier ident, Binding::Kind kind);
+
+public:
+  void push (Binding::Kind kind);
+
+  BindingLayer (BindingSource source);
+
+  /**
+   * Identifies if the identifier has been used in a product binding context.
+   * eg. `let (a, a) = test();`
+   */
+  bool is_and_bound (Identifier ident);
+
+  /**
+   * Identifies if the identifier has been used in a or context.
+   * eg. `let (a, 1) | (a, 2) = test()`
+   */
+  bool is_or_bound (Identifier ident);
+
+  void insert_ident (Identifier ident);
+
+  void merge ();
+
+  BindingSource get_source () const;
+};
+
 // Now our resolver, which keeps track of all the `ForeverStack`s we could want
 class NameResolutionContext
 {
@@ -171,8 +229,14 @@ public:
   tl::expected<NodeId, DuplicateNameError> insert (Identifier name, NodeId id,
 						   Namespace ns);
 
+  tl::expected<NodeId, DuplicateNameError> insert_variant (Identifier name,
+							   NodeId id);
+
   tl::expected<NodeId, DuplicateNameError>
   insert_shadowable (Identifier name, NodeId id, Namespace ns);
+
+  tl::expected<NodeId, DuplicateNameError>
+  insert_globbed (Identifier name, NodeId id, Namespace ns);
 
   /**
    * Run a lambda in a "scoped" context, meaning that a new `Rib` will be pushed
@@ -181,8 +245,8 @@ public:
    * function. This variant of the function enters a new scope in *all*
    * namespaces, while the second variant enters a scope in *one* namespace.
    *
-   * @param rib New `Rib` to create when entering this scope. A function `Rib`,
-   *        or an item `Rib`... etc
+   * @param rib_kind New `Rib` to create when entering this scope. A function
+   *        `Rib`, or an item `Rib`... etc
    * @param scope_id node ID of the scope we are entering, e.g the block's
    *        `NodeId`.
    * @param lambda Function to run within that scope
@@ -192,9 +256,10 @@ public:
    */
   // FIXME: Do we want to handle something in particular for expected within the
   // scoped lambda?
-  void scoped (Rib rib, NodeId scope_id, std::function<void (void)> lambda,
+  void scoped (Rib::Kind rib_kind, NodeId scope_id,
+	       std::function<void (void)> lambda,
 	       tl::optional<Identifier> path = {});
-  void scoped (Rib rib, Namespace ns, NodeId scope_id,
+  void scoped (Rib::Kind rib_kind, Namespace ns, NodeId scope_id,
 	       std::function<void (void)> lambda,
 	       tl::optional<Identifier> path = {});
 
@@ -204,12 +269,127 @@ public:
   ForeverStack<Namespace::Labels> labels;
 
   Analysis::Mappings &mappings;
+  StackedContexts<BindingLayer> bindings;
 
   // TODO: Rename
   // TODO: Use newtype pattern for Usage and Definition
   void map_usage (Usage usage, Definition definition);
 
-  tl::optional<NodeId> lookup (NodeId usage);
+  tl::optional<NodeId> lookup (NodeId usage) const;
+
+  template <typename S>
+  tl::optional<Rib::Definition>
+  resolve_path (const std::vector<S> &segments,
+		bool has_opening_scope_resolution,
+		std::vector<Error> &collect_errors, Namespace ns)
+  {
+    std::function<void (const S &, NodeId)> insert_segment_resolution
+      = [this] (const S &seg, NodeId id) {
+	  auto seg_id = unwrap_segment_node_id (seg);
+	  if (resolved_nodes.find (Usage (seg_id)) == resolved_nodes.end ())
+	    map_usage (Usage (seg_id), Definition (id));
+	};
+    switch (ns)
+      {
+      case Namespace::Values:
+	return values.resolve_path (segments, has_opening_scope_resolution,
+				    insert_segment_resolution, collect_errors);
+      case Namespace::Types:
+	return types.resolve_path (segments, has_opening_scope_resolution,
+				   insert_segment_resolution, collect_errors);
+      case Namespace::Macros:
+	return macros.resolve_path (segments, has_opening_scope_resolution,
+				    insert_segment_resolution, collect_errors);
+      case Namespace::Labels:
+	return labels.resolve_path (segments, has_opening_scope_resolution,
+				    insert_segment_resolution, collect_errors);
+      default:
+	rust_unreachable ();
+      }
+  }
+
+  template <typename S, typename... Args>
+  tl::optional<Rib::Definition>
+  resolve_path (const std::vector<S> &segments,
+		bool has_opening_scope_resolution,
+		tl::optional<std::vector<Error> &> collect_errors,
+		Namespace ns_first, Args... ns_args)
+  {
+    std::initializer_list<Namespace> namespaces = {ns_first, ns_args...};
+
+    for (auto ns : namespaces)
+      {
+	std::vector<Error> collect_errors_inner;
+	if (auto ret = resolve_path (segments, has_opening_scope_resolution,
+				     collect_errors_inner, ns))
+	  return ret;
+	if (!collect_errors_inner.empty ())
+	  {
+	    if (collect_errors.has_value ())
+	      {
+		std::move (collect_errors_inner.begin (),
+			   collect_errors_inner.end (),
+			   std::back_inserter (collect_errors.value ()));
+	      }
+	    else
+	      {
+		for (auto &e : collect_errors_inner)
+		  e.emit ();
+	      }
+	    return tl::nullopt;
+	  }
+      }
+
+    return tl::nullopt;
+  }
+
+  template <typename... Args>
+  tl::optional<Rib::Definition>
+  resolve_path (const AST::SimplePath &path,
+		tl::optional<std::vector<Error> &> collect_errors,
+		Namespace ns_first, Args... ns_args)
+  {
+    return resolve_path (path.get_segments (),
+			 path.has_opening_scope_resolution (), collect_errors,
+			 ns_first, ns_args...);
+  }
+
+  template <typename... Args>
+  tl::optional<Rib::Definition>
+  resolve_path (const AST::PathInExpression &path,
+		tl::optional<std::vector<Error> &> collect_errors,
+		Namespace ns_first, Args... ns_args)
+  {
+    return resolve_path (path.get_segments (), path.opening_scope_resolution (),
+			 collect_errors, ns_first, ns_args...);
+  }
+
+  template <typename... Args>
+  tl::optional<Rib::Definition>
+  resolve_path (const AST::TypePath &path,
+		tl::optional<std::vector<Error> &> collect_errors,
+		Namespace ns_first, Args... ns_args)
+  {
+    return resolve_path (path.get_segments (),
+			 path.has_opening_scope_resolution_op (),
+			 collect_errors, ns_first, ns_args...);
+  }
+
+  template <typename P, typename... Args>
+  tl::optional<Rib::Definition> resolve_path (const P &path, Namespace ns_first,
+					      Args... ns_args)
+  {
+    return resolve_path (path, tl::nullopt, ns_first, ns_args...);
+  }
+
+  template <typename P, typename... Args>
+  tl::optional<Rib::Definition>
+  resolve_path (const P &path_segments, bool has_opening_scope_resolution,
+		Namespace ns_first, Args... ns_args)
+  {
+    return resolve_path (path_segments, has_opening_scope_resolution,
+			 tl::nullopt, ns_first, ns_args...);
+  }
 
 private:
   /* Map of "usage" nodes which have been resolved to a "definition" node */

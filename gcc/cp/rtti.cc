@@ -186,7 +186,7 @@ build_headof (tree exp)
 
 /* Get a bad_cast node for the program to throw...
 
-   See libstdc++/exception.cc for __throw_bad_cast */
+   See 'libstdc++-v3/libsupc++/eh_aux_runtime.cc' for '__cxa_bad_cast'.  */
 
 static tree
 throw_bad_cast (void)
@@ -198,14 +198,13 @@ throw_bad_cast (void)
       fn = get_global_binding (name);
       if (!fn)
 	fn = push_throw_library_fn
-	  (name, build_function_type_list (ptr_type_node, NULL_TREE));
+	  (name, build_function_type_list (void_type_node, NULL_TREE));
     }
 
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
 }
 
-/* Return an expression for "__cxa_bad_typeid()".  The expression
-   returned is an lvalue of type "const std::type_info".  */
+/* See 'libstdc++-v3/libsupc++/eh_aux_runtime.cc' for '__cxa_bad_typeid'.  */
 
 static tree
 throw_bad_typeid (void)
@@ -216,11 +215,8 @@ throw_bad_typeid (void)
       tree name = get_identifier ("__cxa_bad_typeid");
       fn = get_global_binding (name);
       if (!fn)
-	{
-	  tree t = build_reference_type (const_type_info_type_node);
-	  t = build_function_type_list (t, NULL_TREE);
-	  fn = push_throw_library_fn (name, t);
-	}
+	fn = push_throw_library_fn
+	  (name, build_function_type_list (void_type_node, NULL_TREE));
     }
 
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
@@ -259,7 +255,7 @@ get_void_tinfo_ptr (tree type)
    otherwise return the static type of the expression.  */
 
 static tree
-get_tinfo_decl_dynamic (tree exp, tsubst_flags_t complain)
+get_tinfo_ptr_dynamic (tree exp, tsubst_flags_t complain)
 {
   tree type;
   tree t;
@@ -299,7 +295,7 @@ get_tinfo_decl_dynamic (tree exp, tsubst_flags_t complain)
     /* Otherwise return the type_info for the static type of the expr.  */
     t = get_tinfo_ptr (type);
 
-  return cp_build_fold_indirect_ref (t);
+  return t;
 }
 
 static bool
@@ -369,7 +365,7 @@ build_typeid (tree exp, tsubst_flags_t complain)
       exp = cp_build_fold_indirect_ref (exp);
     }
 
-  exp = get_tinfo_decl_dynamic (exp, complain);
+  exp = get_tinfo_ptr_dynamic (exp, complain);
 
   if (exp == error_mark_node)
     return error_mark_node;
@@ -383,7 +379,7 @@ build_typeid (tree exp, tsubst_flags_t complain)
   else
     mark_type_use (initial_expr);
 
-  return exp;
+  return cp_build_fold_indirect_ref (exp);
 }
 
 /* Generate the NTBS name of a type.  If MARK_PRIVATE, put a '*' in front so that
@@ -1322,18 +1318,9 @@ get_pseudo_ti_index (tree type)
 static tinfo_s *
 get_tinfo_desc (unsigned ix)
 {
-  unsigned len = tinfo_descs->length ();
-
-  if (len <= ix)
-    {
-      /* too short, extend.  */
-      len = ix + 1 - len;
-      vec_safe_reserve (tinfo_descs, len);
-      tinfo_s elt;
-      elt.type = elt.vtable = elt.name = NULL_TREE;
-      while (len--)
-	tinfo_descs->quick_push (elt);
-    }
+  if (tinfo_descs->length () <= ix)
+    /* too short, extend.  */
+    vec_safe_grow_cleared (tinfo_descs, ix + 1);
 
   tinfo_s *res = &(*tinfo_descs)[ix];
 

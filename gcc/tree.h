@@ -2999,12 +2999,11 @@ extern tree vector_element_bits_tree (const_tree);
   (DECL_P (DECL)		\
    && (lookup_attribute ("persistent", DECL_ATTRIBUTES (DECL)) != NULL_TREE))
 
-/* For function local variables of COMPLEX and VECTOR types,
-   indicates that the variable is not aliased, and that all
-   modifications to the variable have been adjusted so that
-   they are killing assignments.  Thus the variable may now
-   be treated as a GIMPLE register, and use real instead of
-   virtual ops in SSA form.  */
+/* For function local variables indicates that the variable
+   should not be treated as a GIMPLE register.  In particular
+   this means that partial definitions can appear and the
+   variable cannot be written into SSA form and instead uses
+   virtual operands to represent the use-def dataflow.  */
 #define DECL_NOT_GIMPLE_REG_P(DECL) \
   DECL_COMMON_CHECK (DECL)->decl_common.not_gimple_reg_flag
 
@@ -3425,12 +3424,12 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
 {
   if (set)
     {
-      gcc_assert (FUNCTION_DECL_DECL_TYPE (decl) == NONE
+      gcc_assert (FUNCTION_DECL_DECL_TYPE (decl) == function_decl_type::NONE
 		  || FUNCTION_DECL_DECL_TYPE (decl) == t);
       FUNCTION_DECL_DECL_TYPE (decl) = t;
     }
   else if (FUNCTION_DECL_DECL_TYPE (decl) == t)
-    FUNCTION_DECL_DECL_TYPE (decl) = NONE;
+    FUNCTION_DECL_DECL_TYPE (decl) = function_decl_type::NONE;
 }
 
 /* Nonzero in a FUNCTION_DECL means this function is a replaceable
@@ -3442,21 +3441,25 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
    C++ operator new, meaning that it returns a pointer for which we
    should not use type based aliasing.  */
 #define DECL_IS_OPERATOR_NEW_P(NODE) \
-  (FUNCTION_DECL_DECL_TYPE (FUNCTION_DECL_CHECK (NODE)) == OPERATOR_NEW)
+  (FUNCTION_DECL_DECL_TYPE (FUNCTION_DECL_CHECK (NODE)) \
+   == function_decl_type::OPERATOR_NEW)
 
 #define DECL_IS_REPLACEABLE_OPERATOR_NEW_P(NODE) \
   (DECL_IS_OPERATOR_NEW_P (NODE) && DECL_IS_REPLACEABLE_OPERATOR (NODE))
 
 #define DECL_SET_IS_OPERATOR_NEW(NODE, VAL) \
-  set_function_decl_type (FUNCTION_DECL_CHECK (NODE), OPERATOR_NEW, VAL)
+  set_function_decl_type (FUNCTION_DECL_CHECK (NODE), \
+			  function_decl_type::OPERATOR_NEW, VAL)
 
 /* Nonzero in a FUNCTION_DECL means this function should be treated as
    C++ operator delete.  */
 #define DECL_IS_OPERATOR_DELETE_P(NODE) \
-  (FUNCTION_DECL_DECL_TYPE (FUNCTION_DECL_CHECK (NODE)) == OPERATOR_DELETE)
+  (FUNCTION_DECL_DECL_TYPE (FUNCTION_DECL_CHECK (NODE)) \
+   == function_decl_type::OPERATOR_DELETE)
 
 #define DECL_SET_IS_OPERATOR_DELETE(NODE, VAL) \
-  set_function_decl_type (FUNCTION_DECL_CHECK (NODE), OPERATOR_DELETE, VAL)
+  set_function_decl_type (FUNCTION_DECL_CHECK (NODE), \
+			  function_decl_type::OPERATOR_DELETE, VAL)
 
 /* Nonzero in a FUNCTION_DECL means this function may return more
    than once.  */
@@ -3604,10 +3607,12 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 
 /* In FUNCTION_DECL, this is set if this function is a lambda function.  */
 #define DECL_LAMBDA_FUNCTION_P(NODE) \
-  (FUNCTION_DECL_DECL_TYPE (FUNCTION_DECL_CHECK (NODE)) == LAMBDA_FUNCTION)
+  (FUNCTION_DECL_DECL_TYPE (FUNCTION_DECL_CHECK (NODE)) \
+   == function_decl_type::LAMBDA_FUNCTION)
 
 #define DECL_SET_LAMBDA_FUNCTION(NODE, VAL) \
-  set_function_decl_type (FUNCTION_DECL_CHECK (NODE), LAMBDA_FUNCTION, VAL)
+  set_function_decl_type (FUNCTION_DECL_CHECK (NODE), \
+			  function_decl_type::LAMBDA_FUNCTION, VAL)
 
 /* In FUNCTION_DECL that represent an virtual method this is set when
    the method is final.  */
@@ -5043,6 +5048,17 @@ inline tree
 strip_array_types (tree type)
 {
   while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  return type;
+}
+
+/* Recursively traverse down pointer type layers to pointee type.  */
+
+inline const_tree
+strip_pointer_types (const_tree type)
+{
+  while (POINTER_TYPE_P (type))
     type = TREE_TYPE (type);
 
   return type;

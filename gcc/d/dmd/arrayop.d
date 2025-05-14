@@ -3,12 +3,12 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/arrays.html#array-operations, Array Operations)
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/arrayop.d, _arrayop.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/arrayop.d, _arrayop.d)
  * Documentation:  https://dlang.org/phobos/dmd_arrayop.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/arrayop.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/arrayop.d
  */
 
 module dmd.arrayop;
@@ -44,12 +44,12 @@ bool isArrayOpValid(Expression e)
     if (e.op == EXP.arrayLiteral)
     {
         Type t = e.type.toBasetype();
-        while (t.ty == Tarray || t.ty == Tsarray)
+        while (t.isStaticOrDynamicArray())
             t = t.nextOf().toBasetype();
         return (t.ty != Tvoid);
     }
     Type tb = e.type.toBasetype();
-    if (tb.ty == Tarray || tb.ty == Tsarray)
+    if (tb.isStaticOrDynamicArray())
     {
         if (isUnaArrayOp(e.op))
         {
@@ -80,7 +80,7 @@ bool isNonAssignmentArrayOp(Expression e)
         return isNonAssignmentArrayOp(e.isSliceExp().e1);
 
     Type tb = e.type.toBasetype();
-    if (tb.ty == Tarray || tb.ty == Tsarray)
+    if (tb.isStaticOrDynamicArray())
     {
         return (isUnaArrayOp(e.op) || isBinArrayOp(e.op));
     }
@@ -119,7 +119,7 @@ Expression arrayOp(BinExp e, Scope* sc)
 {
     //printf("BinExp.arrayOp() %s\n", e.toChars());
     Type tb = e.type.toBasetype();
-    assert(tb.ty == Tarray || tb.ty == Tsarray);
+    assert(tb.isStaticOrDynamicArray());
     Type tbn = tb.nextOf().toBasetype();
     if (tbn.ty == Tvoid)
     {
@@ -346,7 +346,7 @@ bool isArrayOpOperand(Expression e)
     if (e.op == EXP.arrayLiteral)
     {
         Type t = e.type.toBasetype();
-        while (t.ty == Tarray || t.ty == Tsarray)
+        while (t.isStaticOrDynamicArray())
             t = t.nextOf().toBasetype();
         return (t.ty != Tvoid);
     }

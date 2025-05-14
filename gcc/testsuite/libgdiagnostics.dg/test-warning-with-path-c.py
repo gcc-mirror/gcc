@@ -51,10 +51,8 @@ def test_sarif_output_for_warning_with_path(sarif):
 
     assert len(location['logicalLocations']) == 1
     logical_loc = location['logicalLocations'][0]
-    assert logical_loc['name'] == 'make_a_list_of_random_ints_badly'
+    assert logical_loc['index'] == 0
     assert logical_loc['fullyQualifiedName'] == 'make_a_list_of_random_ints_badly'
-    assert logical_loc['decoratedName'] == 'make_a_list_of_random_ints_badly'
-    assert logical_loc['kind'] == 'function'
 
     assert len(result['codeFlows']) == 1
     assert len(result['codeFlows'][0]['threadFlows']) == 1
@@ -106,3 +104,13 @@ def test_sarif_output_for_warning_with_path(sarif):
         == "when calling 'PyList_Append', passing NULL from (1) as argument 1"
     assert tfl_2['nestingLevel'] == 0
     assert tfl_2['executionOrder'] == 3
+
+    # Check theRun.logicalLocations
+    assert 'logicalLocations' in run
+    assert len(run['logicalLocations']) == 1
+    logical_loc = run['logicalLocations'][0]
+    assert logical_loc['name'] == 'make_a_list_of_random_ints_badly'
+    assert logical_loc['fullyQualifiedName'] == 'make_a_list_of_random_ints_badly'
+    assert logical_loc['decoratedName'] == 'make_a_list_of_random_ints_badly'
+    assert logical_loc['kind'] == 'function'
+    assert logical_loc['index'] == 0

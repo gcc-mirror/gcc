@@ -1,9 +1,9 @@
-/* { dg-do compile { target { ! riscv_abi_e } } } */
+/* { dg-do compile { target { { ! riscv_abi_e } && rv64 } } } */
 /* { dg-add-options riscv_v } */
-/* { dg-additional-options "-std=gnu99 -O3 -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-additional-options "-std=gnu99 -O3 -fno-schedule-insns -fno-schedule-insns2 -Wno-pedantic" } */
 
 #include <stdint.h>
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 /*
 ** vwadd_wx_i64m8_m:

@@ -1852,21 +1852,6 @@ coro_build_frame_access_expr (tree coro_ref, tree member_id, bool preserve_ref,
   return expr;
 }
 
-/* Helpers to build EXPR_STMT and void-cast EXPR_STMT, common ops.  */
-
-static tree
-coro_build_expr_stmt (tree expr, location_t loc)
-{
-  return maybe_cleanup_point_expr_void (build_stmt (loc, EXPR_STMT, expr));
-}
-
-static tree
-coro_build_cvt_void_expr_stmt (tree expr, location_t loc)
-{
-  tree t = build1 (CONVERT_EXPR, void_type_node, expr);
-  return coro_build_expr_stmt (t, loc);
-}
-
 /* Helpers to build an artificial var, with location LOC, NAME and TYPE, in
    CTX, and with initializer INIT.  */
 
@@ -2582,8 +2567,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree hfa = build_new_method_call (ash, hfa_m, &args, NULL_TREE, LOOKUP_NORMAL,
 				    NULL, tf_warning_or_error);
   r = cp_build_init_expr (ash, hfa);
-  r = coro_build_cvt_void_expr_stmt (r, loc);
-  add_stmt (r);
+  finish_expr_stmt (r);
   release_tree_vector (args);
 
   /* Now we know the real promise, and enough about the frame layout to
@@ -2678,8 +2662,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
      we must tail call them.  However, some targets do not support indirect
      tail calls to arbitrary callees.  See PR94359.  */
   CALL_EXPR_TAILCALL (resume) = true;
-  resume = coro_build_cvt_void_expr_stmt (resume, loc);
-  add_stmt (resume);
+  finish_expr_stmt (resume);
 
   r = build_stmt (loc, RETURN_EXPR, NULL);
   gcc_checking_assert (maybe_cleanup_point_expr_void (r) == r);
@@ -5161,6 +5144,7 @@ cp_coroutine_transform::build_ramp_function ()
 
   /* Used for return objects in the RESULT slot.  */
   tree ret_val_dtor = NULL_TREE;
+  tree retval = NULL_TREE;
 
   /* [dcl.fct.def.coroutine] / 7
      The expression promise.get_return_object() is used to initialize the
@@ -5189,6 +5173,21 @@ cp_coroutine_transform::build_ramp_function ()
       /* Check for bad things.  */
       if (!r || r == error_mark_node)
 	return false;
+      if (!aggregate_value_p (fn_return_type, orig_fn_decl)
+	  && TREE_CODE (r) == INIT_EXPR)
+	{
+	  /* If fn_return_type doesn't need to be returned in memory, normally
+	     gimplify_return_expr redirects the INIT_EXPR to a temporary.  But
+	     r isn't wrapped in the RETURN_EXPR, so we need to do the
+	     redirection here as well.  See PR118874.  */
+	  tree temp = create_temporary_var (fn_return_type);
+	  add_decl_expr (temp);
+	  retval = copy_node (r);
+	  TREE_OPERAND (r, 0) = temp;
+	  TREE_OPERAND (retval, 1) = temp;
+	}
+      else
+	retval = DECL_RESULT (orig_fn_decl);
     }
 
   finish_expr_stmt (r);
@@ -5215,7 +5214,7 @@ cp_coroutine_transform::build_ramp_function ()
   /* The ramp is done, we just need the return statement, which we build from
      the return object we constructed before we called the actor.  */
 
-  r = void_ramp_p ? NULL_TREE : DECL_RESULT (orig_fn_decl);
+  r = retval;
 
   /* The reminder of finish_return_expr ().  */
   r = build_stmt (loc, RETURN_EXPR, r);

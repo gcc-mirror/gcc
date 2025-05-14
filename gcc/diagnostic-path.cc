@@ -181,8 +181,8 @@ diagnostic_path::get_first_event_in_a_function (unsigned *out_idx) const
   for (unsigned i = 0; i < num; i++)
     {
       const diagnostic_event &event = get_event (i);
-      if (const logical_location *logical_loc = event.get_logical_location ())
-	if (logical_loc->function_p ())
+      if (logical_location logical_loc = event.get_logical_location ())
+	if (m_logical_loc_mgr.function_p (logical_loc))
 	  {
 	    *out_idx = i;
 	    return true;
@@ -409,8 +409,10 @@ class per_thread_summary
 {
 public:
   per_thread_summary (const diagnostic_path &path,
+		      const logical_location_manager &logical_loc_mgr,
 		      label_text name, unsigned swimlane_idx)
   : m_path (path),
+    m_logical_loc_mgr (logical_loc_mgr),
     m_name (std::move (name)),
     m_swimlane_idx (swimlane_idx),
     m_last_event (nullptr),
@@ -437,6 +439,7 @@ private:
   friend struct event_range;
 
   const diagnostic_path &m_path;
+  const logical_location_manager &m_logical_loc_mgr;
 
   const label_text m_name;
 
@@ -703,7 +706,7 @@ struct event_range
 
   const diagnostic_path &m_path;
   const diagnostic_event &m_initial_event;
-  const logical_location *m_logical_loc;
+  logical_location m_logical_loc;
   int m_stack_depth;
   unsigned m_start_idx;
   unsigned m_end_idx;
@@ -729,6 +732,10 @@ struct path_summary
 		bool colorize = false,
 		bool show_event_links = true);
 
+  const logical_location_manager &get_logical_location_manager () const
+  {
+    return m_logical_loc_mgr;
+  }
   unsigned get_num_ranges () const { return m_ranges.length (); }
   bool multithreaded_p () const { return m_per_thread_summary.length () > 1; }
 
@@ -740,6 +747,7 @@ struct path_summary
     return **slot;
   }
 
+  const logical_location_manager &m_logical_loc_mgr;
   auto_delete_vec <event_range> m_ranges;
   auto_delete_vec <per_thread_summary> m_per_thread_summary;
   hash_map<int_hash<diagnostic_thread_id_t, -1, -2>,
@@ -756,6 +764,7 @@ private:
     const diagnostic_thread &thread = path.get_thread (tid);
     per_thread_summary *pts
       = new per_thread_summary (path,
+				m_logical_loc_mgr,
 				thread.get_name (false),
 				m_per_thread_summary.length ());
     m_thread_id_to_events.put (tid, pts);
@@ -792,6 +801,7 @@ path_summary::path_summary (const path_print_policy &policy,
 			    bool check_rich_locations,
 			    bool colorize,
 			    bool show_event_links)
+: m_logical_loc_mgr (path.get_logical_location_manager ())
 {
   const unsigned num_events = path.num_events ();
 
@@ -872,6 +882,7 @@ public:
   void
   print_swimlane_for_event_range (diagnostic_text_output_format &text_output,
 				  pretty_printer *pp,
+				  const logical_location_manager &logical_loc_mgr,
 				  event_range *range,
 				  diagnostic_source_effect_info *effect_info)
   {
@@ -916,9 +927,10 @@ public:
 	    m_cur_indent += 5;
 	  }
       }
-    if (const logical_location *logical_loc = range->m_logical_loc)
+    if (range->m_logical_loc)
       {
-	label_text name (logical_loc->get_name_for_path_output ());
+	label_text name
+	  (logical_loc_mgr.get_name_for_path_output (range->m_logical_loc));
 	if (name.get ())
 	  pp_printf (pp, "%qs: ", name.get ());
       }
@@ -1113,7 +1125,9 @@ print_path_summary_as_text (const path_summary &ps,
 	 of this range.  */
       diagnostic_source_effect_info effect_info;
       effect_info.m_leading_in_edge_column = last_out_edge_column;
-      tep.print_swimlane_for_event_range (text_output, pp, range, &effect_info);
+      tep.print_swimlane_for_event_range (text_output, pp,
+					  ps.get_logical_location_manager (),
+					  range, &effect_info);
       last_out_edge_column = effect_info.m_trailing_out_edge_column;
     }
 }
@@ -1155,6 +1169,7 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
     case DPF_SEPARATE_EVENTS:
       {
 	/* A note per event.  */
+	auto &logical_loc_mgr = path.get_logical_location_manager ();
 	for (unsigned i = 0; i < num_events; i++)
 	  {
 	    const diagnostic_event &event = path.get_event (i);
@@ -1166,10 +1181,11 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
 		/* -fdiagnostics-path-format=separate-events doesn't print
 		   fndecl information, so with -fdiagnostics-show-path-depths
 		   print the fndecls too, if any.  */
-		if (const logical_location *logical_loc
+		if (logical_location logical_loc
 		      = event.get_logical_location ())
 		  {
-		    label_text name (logical_loc->get_name_for_path_output ());
+		    label_text name
+		      (logical_loc_mgr.get_name_for_path_output (logical_loc));
 		    inform (event.get_location (),
 			    "%@ %e (fndecl %qs, depth %i)",
 			    &event_id, &e_event_desc,

@@ -5,7 +5,10 @@
 
 /* { dg-additional-options "-Ofast" } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { ! "arm*-*-*" } } } } */
+/* Complex numbers read x and x+1, which on non-load lanes targets require partial loops.  */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { { ! "arm*-*-*" } && vect_load_lanes } } } } */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { { "arm*-*-*" } || { ! vect_load_lanes } } } } } */
+
 
 #include <complex.h>
 

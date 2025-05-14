@@ -21,12 +21,19 @@ load_lib g++-dg.exp
 load_lib gcov.exp
 
 global GXX_UNDER_TEST
+global GCOV_UNDER_TEST
 
-# Find gcov in the same directory as $GXX_UNDER_TEST.
-if { ![is_remote host] && [string match "*/*" [lindex $GXX_UNDER_TEST 0]] } {
-    set GCOV [file dirname [lindex $GXX_UNDER_TEST 0]]/[gcc-transform-out-of-tree gcov]
+# Find gcov in the same directory as $GXX_UNDER_TEST, unless
+# GCOV_UNDER_TEST is defined.
+
+if ![info exists GCOV_UNDER_TEST] {
+    if { ![is_remote host] && [string match "*/*" [lindex $GXX_UNDER_TEST 0]] } {
+	set GCOV [file dirname [lindex $GXX_UNDER_TEST 0]]/[gcc-transform-out-of-tree gcov]
+    } else {
+	set GCOV [gcc-transform-out-of-tree gcov]
+    }
 } else {
-    set GCOV [gcc-transform-out-of-tree gcov]
+    set GCOV $GCOV_UNDER_TEST
 }
 
 # Initialize harness.

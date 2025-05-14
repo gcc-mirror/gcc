@@ -1547,14 +1547,15 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	}
       else
 	{
-	  if (tree_to_uhwi (idx) < low)
+	  unsigned tidx = tree_to_uhwi (idx);
+	  if (tidx < low)
 	    {
 	      t = handle_operand (rhs1, idx);
 	      if (m_first)
 		m_data[save_data_cnt + 2]
 		  = build_int_cst (NULL_TREE, m_data_cnt);
 	    }
-	  else if (tree_to_uhwi (idx) < high)
+	  else if (tidx < high)
 	    {
 	      t = handle_operand (rhs1, size_int (low));
 	      if (m_first)
@@ -1587,7 +1588,9 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 		m_data_cnt = tree_to_uhwi (m_data[save_data_cnt + 2]);
 	      if (TYPE_UNSIGNED (rhs_type))
 		t = build_zero_cst (m_limb_type);
-	      else if (m_bb && m_data[save_data_cnt])
+	      else if (m_bb
+		       && m_data[save_data_cnt]
+		       && ((tidx & 1) == 0 || tidx != low + 1))
 		t = m_data[save_data_cnt];
 	      else
 		t = m_data[save_data_cnt + 1];
@@ -5916,7 +5919,8 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
 				 ssa_conflicts *graph, bitmap names,
 				 void (*def) (live_track *, tree,
 					      ssa_conflicts *),
-				 void (*use) (live_track *, tree))
+				 void (*use) (live_track *, tree),
+				 void (*clear) (live_track *, tree))
 {
   bool muldiv_p = false;
   tree lhs = NULL_TREE;
@@ -5933,6 +5937,25 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
 	    {
 	      if (!bitmap_bit_p (names, SSA_NAME_VERSION (lhs)))
 		return;
+
+	      /* A copy between 2 partitions does not introduce an interference
+		 by itself.  If they did, you would never be able to coalesce
+		 two things which are copied.  If the two variables really do
+		 conflict, they will conflict elsewhere in the program.
+
+		 This is handled by simply removing the SRC of the copy from
+		 the live list, and processing the stmt normally.
+
+		 Don't do this if lhs is not in names though, in such cases
+		 it is actually used at some point later in the basic
+		 block.  */
+	      if (gimple_assign_copy_p (stmt))
+		{
+		  tree rhs1 = gimple_assign_rhs1 (stmt);
+		  if (TREE_CODE (rhs1) == SSA_NAME)
+		    clear (live, rhs1);
+		}
+
 	      switch (gimple_assign_rhs_code (stmt))
 		{
 		case MULT_EXPR:
@@ -6624,10 +6647,28 @@ gimple_lower_bitint (void)
 	  bitmap_set_bit (large_huge.m_names, SSA_NAME_VERSION (s));
 	  if (has_single_use (s))
 	    {
-	      if (!large_huge.m_single_use_names)
-		large_huge.m_single_use_names = BITMAP_ALLOC (NULL);
-	      bitmap_set_bit (large_huge.m_single_use_names,
-			      SSA_NAME_VERSION (s));
+	      tree s2 = s;
+	      /* The coalescing hook special cases SSA_NAME copies.
+		 Make sure not to mark in m_single_use_names single
+		 use SSA_NAMEs copied from non-single use SSA_NAMEs.  */
+	      while (gimple_assign_copy_p (SSA_NAME_DEF_STMT (s2)))
+		{
+		  s2 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (s2));
+		  if (TREE_CODE (s2) != SSA_NAME)
+		    break;
+		  if (!has_single_use (s2))
+		    {
+		      s2 = NULL_TREE;
+		      break;
+		    }
+		}
+	      if (s2)
+		{
+		  if (!large_huge.m_single_use_names)
+		    large_huge.m_single_use_names = BITMAP_ALLOC (NULL);
+		  bitmap_set_bit (large_huge.m_single_use_names,
+				  SSA_NAME_VERSION (s));
+		}
 	    }
 	  if (SSA_NAME_VAR (s)
 	      && ((TREE_CODE (SSA_NAME_VAR (s)) == PARM_DECL

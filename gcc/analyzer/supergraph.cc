@@ -18,42 +18,23 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "tm.h"
-#include "toplev.h"
-#include "hash-table.h"
-#include "vec.h"
-#include "ggc.h"
-#include "basic-block.h"
-#include "function.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "gimple-fold.h"
-#include "tree-eh.h"
-#include "gimple-expr.h"
-#include "is-a.h"
+#include "analyzer/common.h"
+
 #include "timevar.h"
 #include "gimple-pretty-print.h"
-#include "tree-pretty-print.h"
-#include "graphviz.h"
-#include "cgraph.h"
-#include "tree-dfa.h"
-#include "bitmap.h"
-#include "cfganal.h"
-#include "function.h"
-#include "analyzer/analyzer.h"
 #include "ordered-hash-map.h"
 #include "options.h"
 #include "cgraph.h"
 #include "cfg.h"
 #include "digraph.h"
 #include "tree-cfg.h"
+#include "tree-dfa.h"
+#include "cfganal.h"
+#include "except.h"
+
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-logging.h"
-#include "make-unique.h"
+#include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
 
@@ -465,11 +446,11 @@ supergraph::dump_dot (const char *path, const dump_args_t &dump_args) const
 std::unique_ptr<json::object>
 supergraph::to_json () const
 {
-  auto sgraph_obj = ::make_unique<json::object> ();
+  auto sgraph_obj = std::make_unique<json::object> ();
 
   /* Nodes.  */
   {
-    auto nodes_arr = ::make_unique<json::array> ();
+    auto nodes_arr = std::make_unique<json::array> ();
     unsigned i;
     supernode *n;
     FOR_EACH_VEC_ELT (m_nodes, i, n)
@@ -479,7 +460,7 @@ supergraph::to_json () const
 
   /* Edges.  */
   {
-    auto edges_arr = ::make_unique<json::array> ();
+    auto edges_arr = std::make_unique<json::array> ();
     unsigned i;
     superedge *n;
     FOR_EACH_VEC_ELT (m_edges, i, n)
@@ -511,21 +492,25 @@ supergraph::add_node (function *fun, basic_block bb, gcall *returning_call,
 /* Create a new cfg_superedge from SRC to DEST for the underlying CFG edge E,
    adding it to this supergraph.
 
-   If the edge is for a switch statement, create a switch_cfg_superedge
-   subclass.  */
+   If the edge is for a switch or eh_dispatch statement, create a
+   switch_cfg_superedge or eh_dispatch_cfg_superedge subclass,
+   respectively  */
 
 cfg_superedge *
 supergraph::add_cfg_edge (supernode *src, supernode *dest, ::edge e)
 {
-  /* Special-case switch edges.  */
+  /* Special-case switch and eh_dispatch edges.  */
   gimple *stmt = src->get_last_stmt ();
-  cfg_superedge *new_edge;
+  std::unique_ptr<cfg_superedge> new_edge;
   if (stmt && stmt->code == GIMPLE_SWITCH)
-    new_edge = new switch_cfg_superedge (src, dest, e);
+    new_edge = std::make_unique<switch_cfg_superedge> (src, dest, e);
+  else if (stmt && stmt->code == GIMPLE_EH_DISPATCH)
+    new_edge = eh_dispatch_cfg_superedge::make (src, dest, e,
+						as_a <geh_dispatch *> (stmt));
   else
-    new_edge = new cfg_superedge (src, dest, e);
-  add_edge (new_edge);
-  return new_edge;
+    new_edge = std::make_unique<cfg_superedge> (src, dest, e);
+  add_edge (new_edge.get ());
+  return new_edge.release ();
 }
 
 /* Create and add a call_superedge representing an interprocedural call
@@ -720,7 +705,7 @@ supernode::dump_dot_id (pretty_printer *pp) const
 std::unique_ptr<json::object>
 supernode::to_json () const
 {
-  auto snode_obj = ::make_unique<json::object> ();
+  auto snode_obj = std::make_unique<json::object> ();
 
   snode_obj->set_integer ("idx", m_index);
   snode_obj->set_integer ("bb_idx", m_bb->index);
@@ -737,7 +722,7 @@ supernode::to_json () const
 
   /* Phi nodes.  */
   {
-    auto phi_arr = ::make_unique<json::array> ();
+    auto phi_arr = std::make_unique<json::array> ();
     for (gphi_iterator gpi = const_cast<supernode *> (this)->start_phis ();
 	 !gsi_end_p (gpi); gsi_next (&gpi))
       {
@@ -752,7 +737,7 @@ supernode::to_json () const
 
   /* Statements.  */
   {
-    auto stmt_arr = ::make_unique<json::array> ();
+    auto stmt_arr = std::make_unique<json::array> ();
     int i;
     gimple *stmt;
     FOR_EACH_VEC_ELT (m_stmts, i, stmt)
@@ -983,7 +968,7 @@ superedge::dump_dot (graphviz_out *gv, const dump_args_t &) const
 std::unique_ptr<json::object>
 superedge::to_json () const
 {
-  auto sedge_obj = ::make_unique<json::object> ();
+  auto sedge_obj = std::make_unique<json::object> ();
   sedge_obj->set_string ("kind", edge_kind_to_string (m_kind));
   sedge_obj->set_integer ("src_idx", m_src->m_index);
   sedge_obj->set_integer ("dst_idx", m_dest->m_index);
@@ -1030,6 +1015,7 @@ label_text
 superedge::get_description (bool user_facing) const
 {
   pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
   dump_label_to_pp (&pp, user_facing);
   return label_text::take (xstrdup (pp_formatted_text (&pp)));
 }
@@ -1098,6 +1084,8 @@ cfg_superedge::get_phi_arg (const gphi *phi) const
   size_t index = get_phi_arg_idx ();
   return gimple_phi_arg_def (phi, index);
 }
+
+/* class switch_cfg_superedge : public cfg_superedge.  */
 
 switch_cfg_superedge::switch_cfg_superedge (supernode *src,
 					    supernode *dst,
@@ -1206,6 +1194,203 @@ switch_cfg_superedge::implicitly_created_default_p () const
   return EXPR_LOCATION (case_label) == UNKNOWN_LOCATION;
 }
 
+/* class eh_dispatch_cfg_superedge : public cfg_superedge.  */
+
+/* Given an ERT_TRY region, get the eh_catch corresponding to
+   the label of DST_SNODE, if any.  */
+
+static eh_catch
+get_catch (eh_region eh_reg, supernode *dst_snode)
+{
+  gcc_assert (eh_reg->type == ERT_TRY);
+
+  tree dst_snode_label = dst_snode->get_label ();
+  if (!dst_snode_label)
+    return nullptr;
+
+  for (eh_catch iter = eh_reg->u.eh_try.first_catch;
+       iter;
+       iter = iter->next_catch)
+    if (iter->label == dst_snode_label)
+      return iter;
+
+  return nullptr;
+}
+
+std::unique_ptr<eh_dispatch_cfg_superedge>
+eh_dispatch_cfg_superedge::make (supernode *src_snode,
+				 supernode *dst_snode,
+				 ::edge e,
+				 const geh_dispatch *eh_dispatch_stmt)
+{
+  const eh_status *eh = src_snode->get_function ()->eh;
+  gcc_assert (eh);
+  int region_idx = gimple_eh_dispatch_region (eh_dispatch_stmt);
+  gcc_assert (region_idx > 0);
+  gcc_assert ((*eh->region_array)[region_idx]);
+  eh_region eh_reg = (*eh->region_array)[region_idx];
+  gcc_assert (eh_reg);
+  switch (eh_reg->type)
+    {
+    default:
+      gcc_unreachable ();
+    case ERT_CLEANUP:
+      // TODO
+      gcc_unreachable ();
+      break;
+    case ERT_TRY:
+      {
+	eh_catch ehc = get_catch (eh_reg, dst_snode);
+	return std::make_unique<eh_dispatch_try_cfg_superedge>
+	  (src_snode, dst_snode,
+	   e, eh_dispatch_stmt,
+	   eh_reg, ehc);
+      }
+      break;
+    case ERT_ALLOWED_EXCEPTIONS:
+      return std::make_unique<eh_dispatch_allowed_cfg_superedge>
+	(src_snode, dst_snode,
+	 e, eh_dispatch_stmt,
+	 eh_reg);
+      break;
+    case ERT_MUST_NOT_THROW:
+      // TODO
+      gcc_unreachable ();
+      break;
+    }
+}
+
+eh_dispatch_cfg_superedge::
+eh_dispatch_cfg_superedge (supernode *src,
+			   supernode *dst,
+			   ::edge e,
+			   const geh_dispatch *eh_dispatch_stmt,
+			   eh_region eh_reg)
+: cfg_superedge (src, dst, e),
+  m_eh_dispatch_stmt (eh_dispatch_stmt),
+  m_eh_region (eh_reg)
+{
+  gcc_assert (m_eh_region);
+}
+
+const eh_status &
+eh_dispatch_cfg_superedge::get_eh_status () const
+{
+  const eh_status *eh = m_src->get_function ()->eh;
+  gcc_assert (eh);
+  return *eh;
+}
+
+// class eh_dispatch_try_cfg_superedge : public eh_dispatch_cfg_superedge
+
+/* Implementation of superedge::dump_label_to_pp for CFG superedges for
+   "eh_dispatch" statements for ERT_TRY regions.  */
+
+void
+eh_dispatch_try_cfg_superedge::dump_label_to_pp (pretty_printer *pp,
+						 bool user_facing) const
+{
+  if (!user_facing)
+    pp_string (pp, "ERT_TRY: ");
+  if (m_eh_catch)
+    {
+      bool first = true;
+      for (tree iter = m_eh_catch->type_list; iter; iter = TREE_CHAIN (iter))
+	{
+	  if (!first)
+	    pp_string (pp, ", ");
+	  pp_printf (pp, "on catch %qT", TREE_VALUE (iter));
+	  first = false;
+	}
+    }
+  else
+    pp_string (pp, "on uncaught exception");
+}
+
+bool
+eh_dispatch_try_cfg_superedge::
+apply_constraints (region_model *model,
+		   region_model_context *ctxt,
+		   tree exception_type,
+		   std::unique_ptr<rejected_constraint> *out) const
+{
+  return model->apply_constraints_for_eh_dispatch_try
+    (*this, ctxt, exception_type, out);
+}
+
+// class eh_dispatch_allowed_cfg_superedge : public eh_dispatch_cfg_superedge
+
+eh_dispatch_allowed_cfg_superedge::
+eh_dispatch_allowed_cfg_superedge (supernode *src, supernode *dst, ::edge e,
+				   const geh_dispatch *eh_dispatch_stmt,
+				   eh_region eh_reg)
+: eh_dispatch_cfg_superedge (src, dst, e, eh_dispatch_stmt, eh_reg)
+{
+  gcc_assert (eh_reg->type == ERT_ALLOWED_EXCEPTIONS);
+
+  /* We expect two sibling out-edges at an eh_dispatch from such a region:
+
+     - one to a bb without a gimple label, with a resx,
+     for exceptions of expected types
+
+     - one to a bb with a gimple label, with a call to __cxa_unexpected,
+     for exceptions of unexpected types.
+
+     Set m_kind for this edge accordingly.  */
+  gcc_assert (e->src->succs->length () == 2);
+  tree label_for_unexpected_exceptions = eh_reg->u.allowed.label;
+  tree label_for_dest_enode = dst->get_label ();
+  if (label_for_dest_enode == label_for_unexpected_exceptions)
+    m_kind = eh_kind::unexpected;
+  else
+    {
+      gcc_assert (label_for_dest_enode == nullptr);
+      m_kind = eh_kind::expected;
+    }
+}
+
+void
+eh_dispatch_allowed_cfg_superedge::dump_label_to_pp (pretty_printer *pp,
+						     bool user_facing) const
+{
+  if (!user_facing)
+    {
+      switch (m_kind)
+	{
+	default:
+	  gcc_unreachable ();
+	case eh_dispatch_allowed_cfg_superedge::eh_kind::expected:
+	  pp_string (pp, "expected: ");
+	  break;
+	case eh_dispatch_allowed_cfg_superedge::eh_kind::unexpected:
+	  pp_string (pp, "unexpected: ");
+	  break;
+	}
+      pp_string (pp, "ERT_ALLOWED_EXCEPTIONS: ");
+      eh_region eh_reg = get_eh_region ();
+      bool first = true;
+      for (tree iter = eh_reg->u.allowed.type_list; iter;
+	   iter = TREE_CHAIN (iter))
+	{
+	  if (!first)
+	    pp_string (pp, ", ");
+	  pp_printf (pp, "%qT", TREE_VALUE (iter));
+	  first = false;
+	}
+    }
+}
+
+bool
+eh_dispatch_allowed_cfg_superedge::
+apply_constraints (region_model *model,
+		   region_model_context *ctxt,
+		   tree exception_type,
+		   std::unique_ptr<rejected_constraint> *out) const
+{
+  return model->apply_constraints_for_eh_dispatch_allowed
+    (*this, ctxt, exception_type, out);
+}
+
 /* Implementation of superedge::dump_label_to_pp for interprocedural
    superedges.  */
 
@@ -1261,13 +1446,13 @@ callgraph_superedge::get_callee_decl () const
 
 /* Get the gcall * of this interprocedural call/return edge.  */
 
-gcall *
+const gcall &
 callgraph_superedge::get_call_stmt () const
 {
   if (m_cedge)
-    return m_cedge->call_stmt;
+    return *m_cedge->call_stmt;
 
-  return m_src->get_final_call ();
+  return *m_src->get_final_call ();
 }
 
 /* Get the calling fndecl at this interprocedural call/return edge.  */
@@ -1289,19 +1474,19 @@ callgraph_superedge::get_arg_for_parm (tree parm_to_find,
   gcc_assert  (TREE_CODE (parm_to_find) == PARM_DECL);
 
   tree callee = get_callee_decl ();
-  const gcall *call_stmt = get_call_stmt ();
+  const gcall &call_stmt = get_call_stmt ();
 
   unsigned i = 0;
   for (tree iter_parm = DECL_ARGUMENTS (callee); iter_parm;
        iter_parm = DECL_CHAIN (iter_parm), ++i)
     {
-      if (i >= gimple_call_num_args (call_stmt))
+      if (i >= gimple_call_num_args (&call_stmt))
 	return NULL_TREE;
       if (iter_parm == parm_to_find)
 	{
 	  if (out)
 	    *out = callsite_expr::from_zero_based_param (i);
-	  return gimple_call_arg (call_stmt, i);
+	  return gimple_call_arg (&call_stmt, i);
 	}
     }
 
@@ -1319,15 +1504,15 @@ callgraph_superedge::get_parm_for_arg (tree arg_to_find,
 				       callsite_expr *out) const
 {
   tree callee = get_callee_decl ();
-  const gcall *call_stmt = get_call_stmt ();
+  const gcall &call_stmt = get_call_stmt ();
 
   unsigned i = 0;
   for (tree iter_parm = DECL_ARGUMENTS (callee); iter_parm;
        iter_parm = DECL_CHAIN (iter_parm), ++i)
     {
-      if (i >= gimple_call_num_args (call_stmt))
+      if (i >= gimple_call_num_args (&call_stmt))
 	return NULL_TREE;
-      tree param = gimple_call_arg (call_stmt, i);
+      tree param = gimple_call_arg (&call_stmt, i);
       if (arg_to_find == param)
 	{
 	  if (out)
@@ -1353,7 +1538,7 @@ callgraph_superedge::map_expr_from_caller_to_callee (tree caller_expr,
   if (parm)
     return parm;
   /* Otherwise try return value.  */
-  if (caller_expr == gimple_call_lhs (get_call_stmt ()))
+  if (caller_expr == gimple_call_lhs (&get_call_stmt ()))
     {
       if (out)
 	*out = callsite_expr::from_return_value ();
@@ -1388,7 +1573,7 @@ callgraph_superedge::map_expr_from_callee_to_caller (tree callee_expr,
     {
       if (out)
 	*out = callsite_expr::from_return_value ();
-      return gimple_call_lhs (get_call_stmt ());
+      return gimple_call_lhs (&get_call_stmt ());
     }
 
   return NULL_TREE;

@@ -1,4 +1,4 @@
-/* { dg-do compile */
+/* { dg-do compile } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx" } */
 /* { dg-require-effective-target powerpc_vsx } */
 

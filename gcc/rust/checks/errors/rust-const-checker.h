@@ -128,11 +128,12 @@ private:
   virtual void visit (WhileLetLoopExpr &expr) override;
   virtual void visit (IfExpr &expr) override;
   virtual void visit (IfExprConseqElse &expr) override;
-  virtual void visit (IfLetExpr &expr) override;
-  virtual void visit (IfLetExprConseqElse &expr) override;
   virtual void visit (MatchExpr &expr) override;
   virtual void visit (AwaitExpr &expr) override;
   virtual void visit (AsyncBlockExpr &expr) override;
+  virtual void visit (InlineAsm &expr) override;
+  virtual void visit (LlvmInlineAsm &expr) override;
+
   virtual void visit (TypeParam &param) override;
   virtual void visit (ConstGenericParam &param) override;
   virtual void visit (LifetimeWhereClauseItem &item) override;
@@ -191,7 +192,6 @@ private:
   virtual void visit (ImplTraitType &type) override;
   virtual void visit (TraitObjectType &type) override;
   virtual void visit (ParenthesisedType &type) override;
-  virtual void visit (ImplTraitTypeOneBound &type) override;
   virtual void visit (TupleType &type) override;
   virtual void visit (NeverType &type) override;
   virtual void visit (RawPointerType &type) override;

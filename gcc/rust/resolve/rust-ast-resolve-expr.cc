@@ -22,7 +22,8 @@
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-path.h"
-#include "diagnostic.h"
+#include "rust-expr.h"
+#include "rust-ice-finalizer.h"
 
 namespace Rust {
 namespace Resolver {
@@ -95,50 +96,16 @@ ResolveExpr::visit (AST::MethodCallExpr &expr)
 }
 
 void
+ResolveExpr::visit (AST::ErrorPropagationExpr &expr)
+{
+  ResolveExpr::go (expr.get_propagating_expr (), prefix, canonical_prefix);
+}
+
+void
 ResolveExpr::visit (AST::AssignmentExpr &expr)
 {
   ResolveExpr::go (expr.get_left_expr (), prefix, canonical_prefix);
   ResolveExpr::go (expr.get_right_expr (), prefix, canonical_prefix);
-}
-
-/* The "break rust" Easter egg.
-
-   Backstory: once upon a time, there used to be a bug in rustc: it would ICE
-   during typechecking on a 'break' with an expression outside of a loop.  The
-   issue has been reported [0] and fixed [1], but in recognition of this, as a
-   special Easter egg, "break rust" was made to intentionally cause an ICE.
-
-   [0]: https://github.com/rust-lang/rust/issues/43162
-   [1]: https://github.com/rust-lang/rust/pull/43745
-
-   This was made in a way that does not break valid programs: namely, it only
-   happens when the 'break' is outside of a loop (so invalid anyway).
-
-   GCC Rust supports this essential feature as well, but in a slightly
-   different way.  Instead of delaying the error until type checking, we emit
-   it here in the resolution phase.  We, too, only do this to programs that
-   are already invalid: we only emit our funny ICE if the name "rust" (which
-   must be immediately inside a break-with-a-value expression) fails to
-   resolve.  Note that "break (rust)" does not trigger our ICE, only using
-   "break rust" directly does, and only if there's no "rust" in scope.  We do
-   this in the same way regardless of whether the "break" is outside of a loop
-   or inside one.
-
-   As a GNU extension, we also support "break gcc", much to the same effect,
-   subject to the same rules.  */
-
-/* The finalizer for our funny ICE.  This prints a custom message instead of
-   the default bug reporting instructions, as there is no bug to report.  */
-
-static void ATTRIBUTE_NORETURN
-funny_ice_text_finalizer (diagnostic_text_output_format &text_output,
-			  const diagnostic_info *diagnostic,
-			  diagnostic_t diag_kind)
-{
-  gcc_assert (diag_kind == DK_ICE_NOBT);
-  default_diagnostic_text_finalizer (text_output, diagnostic, diag_kind);
-  fnotice (stderr, "You have broken GCC Rust. This is a feature.\n");
-  exit (ICE_EXIT_CODE);
 }
 
 void
@@ -242,7 +209,7 @@ ResolveExpr::visit (AST::IfLetExpr &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   // We know expr.get_patterns () has one pattern at most
   // so there's no reason to handle it like an AltPattern.
@@ -272,7 +239,7 @@ ResolveExpr::visit (AST::IfLetExprConseqElse &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   // We know expr.get_patterns () has one pattern at most
   // so there's no reason to handle it like an AltPattern.
@@ -301,7 +268,7 @@ ResolveExpr::visit (AST::BlockExpr &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   if (expr.has_label ())
     {
@@ -320,7 +287,7 @@ ResolveExpr::visit (AST::BlockExpr &expr)
 	CanonicalPath::new_seg (label.get_node_id (), label_name),
 	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
 	[&] (const CanonicalPath &, NodeId, location_t locus) -> void {
-	  rust_error_at (label.get_locus (), "label redefined multiple times");
+	  rust_error_at (label.get_locus (), "label defined multiple times");
 	  rust_error_at (locus, "was defined here");
 	});
     }
@@ -345,6 +312,71 @@ ResolveExpr::visit (AST::BlockExpr &expr)
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
   resolver->get_label_scope ().pop ();
+}
+
+void
+translate_operand (AST::InlineAsm &expr, const CanonicalPath &prefix,
+		   const CanonicalPath &canonical_prefix)
+{
+  const auto &operands = expr.get_operands ();
+  using RegisterType = AST::InlineAsmOperand::RegisterType;
+  for (auto &operand : operands)
+    {
+      switch (operand.get_register_type ())
+	{
+	  case RegisterType::In: {
+	    auto in = operand.get_in ();
+	    ResolveExpr::go (*in.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::Out: {
+	    auto out = operand.get_out ();
+	    ResolveExpr::go (*out.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::InOut: {
+	    auto in_out = operand.get_in_out ();
+	    ResolveExpr::go (*in_out.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::SplitInOut: {
+	    auto split_in_out = operand.get_split_in_out ();
+	    ResolveExpr::go (*split_in_out.in_expr, prefix, canonical_prefix);
+	    ResolveExpr::go (*split_in_out.out_expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::Const: {
+	    auto anon_const = operand.get_const ().anon_const;
+	    ResolveExpr::go (*anon_const.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::Sym: {
+	    auto sym = operand.get_sym ();
+	    ResolveExpr::go (*sym.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	  case RegisterType::Label: {
+	    auto label = operand.get_label ();
+	    ResolveExpr::go (*label.expr, prefix, canonical_prefix);
+	    break;
+	  }
+	}
+    }
+}
+void
+ResolveExpr::visit (AST::InlineAsm &expr)
+{
+  translate_operand (expr, prefix, canonical_prefix);
+}
+
+void
+ResolveExpr::visit (AST::LlvmInlineAsm &expr)
+{
+  for (auto &output : expr.get_outputs ())
+    ResolveExpr::go (*output.expr, prefix, canonical_prefix);
+
+  for (auto &input : expr.get_inputs ())
+    ResolveExpr::go (*input.expr, prefix, canonical_prefix);
 }
 
 void
@@ -438,7 +470,7 @@ ResolveExpr::visit (AST::LoopExpr &expr)
 	CanonicalPath::new_seg (expr.get_node_id (), label_name),
 	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
 	[&] (const CanonicalPath &, NodeId, location_t locus) -> void {
-	  rust_error_at (label.get_locus (), "label redefined multiple times");
+	  rust_error_at (label.get_locus (), "label defined multiple times");
 	  rust_error_at (locus, "was defined here");
 	});
     }
@@ -450,7 +482,7 @@ ResolveExpr::visit (AST::BreakExpr &expr)
 {
   if (expr.has_label ())
     {
-      auto label = expr.get_label ().get_lifetime ();
+      auto label = expr.get_label_unchecked ().get_lifetime ();
       if (label.get_lifetime_type () != AST::Lifetime::LifetimeType::NAMED)
 	{
 	  rust_error_at (label.get_locus (),
@@ -465,8 +497,8 @@ ResolveExpr::visit (AST::BreakExpr &expr)
 	    &resolved_node))
 	{
 	  rust_error_at (label.get_locus (), ErrorCode::E0426,
-			 "use of undeclared label %qs in %<break%>",
-			 label.get_lifetime_name ().c_str ());
+			 "use of undeclared label %qs",
+			 label.as_string ().c_str ());
 	  return;
 	}
       resolver->insert_resolved_label (label.get_node_id (), resolved_node);
@@ -476,14 +508,15 @@ ResolveExpr::visit (AST::BreakExpr &expr)
     {
       bool funny_error = false;
       auto &break_expr = expr.get_break_expr ();
-      if (break_expr.get_ast_kind () == AST::Kind::IDENTIFIER)
+      if (break_expr.get_expr_kind () == AST::Expr::Kind::Identifier)
 	{
-	  /* This is a break with an expression, and the expression is just a
-	     single identifier.  See if the identifier is either "rust" or
-	     "gcc", in which case we have "break rust" or "break gcc", and so
-	     may need to emit our funny error.  We cannot yet emit the error
-	     here though, because the identifier may still be in scope, and
-	     ICE'ing on valid programs would not be very funny.  */
+	  /* This is a break with an expression, and the expression is
+	     just a single identifier.  See if the identifier is either
+	     "rust" or "gcc", in which case we have "break rust" or "break
+	     gcc", and so may need to emit our funny error.  We cannot yet
+	     emit the error here though, because the identifier may still
+	     be in scope, and ICE'ing on valid programs would not be very
+	     funny.  */
 	  std::string ident
 	    = static_cast<AST::IdentifierExpr &> (break_expr).as_string ();
 	  if (ident == "rust" || ident == "gcc")
@@ -513,7 +546,7 @@ ResolveExpr::visit (AST::WhileLoopExpr &expr)
 	CanonicalPath::new_seg (label.get_node_id (), label_name),
 	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
 	[&] (const CanonicalPath &, NodeId, location_t locus) -> void {
-	  rust_error_at (label.get_locus (), "label redefined multiple times");
+	  rust_error_at (label.get_locus (), "label defined multiple times");
 	  rust_error_at (locus, "was defined here");
 	});
     }
@@ -542,7 +575,7 @@ ResolveExpr::visit (AST::ForLoopExpr &expr)
 	CanonicalPath::new_seg (label.get_node_id (), label_name),
 	label_lifetime_node_id, label.get_locus (), false, Rib::ItemType::Label,
 	[&] (const CanonicalPath &, NodeId, location_t locus) -> void {
-	  rust_error_at (label.get_locus (), "label redefined multiple times");
+	  rust_error_at (label.get_locus (), "label defined multiple times");
 	  rust_error_at (locus, "was defined here");
 	});
     }
@@ -554,7 +587,7 @@ ResolveExpr::visit (AST::ForLoopExpr &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   // resolve the expression
   PatternDeclaration::go (expr.get_pattern (), Rib::ItemType::Var);
@@ -572,7 +605,7 @@ ResolveExpr::visit (AST::ContinueExpr &expr)
 {
   if (expr.has_label ())
     {
-      auto label = expr.get_label ();
+      auto label = expr.get_label_unchecked ();
       if (label.get_lifetime_type () != AST::Lifetime::LifetimeType::NAMED)
 	{
 	  rust_error_at (label.get_locus (),
@@ -586,9 +619,9 @@ ResolveExpr::visit (AST::ContinueExpr &expr)
 				    label.get_lifetime_name ()),
 	    &resolved_node))
 	{
-	  rust_error_at (expr.get_label ().get_locus (), ErrorCode::E0426,
-			 "use of undeclared label %qs in %<continue%>",
-			 label.get_lifetime_name ().c_str ());
+	  rust_error_at (expr.get_label_unchecked ().get_locus (),
+			 ErrorCode::E0426, "use of undeclared label %qs",
+			 label.as_string ().c_str ());
 	  return;
 	}
       resolver->insert_resolved_label (label.get_node_id (), resolved_node);
@@ -620,7 +653,7 @@ ResolveExpr::visit (AST::MatchExpr &expr)
       resolver->get_label_scope ().push (scope_node_id);
       resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
       resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-      resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+      resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
       // resolve
       AST::MatchArm &arm = match_case.get_arm ();
@@ -689,7 +722,7 @@ ResolveExpr::visit (AST::ClosureExprInner &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   std::vector<PatternBinding> bindings
     = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
@@ -719,7 +752,7 @@ ResolveExpr::visit (AST::ClosureExprInnerTyped &expr)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   std::vector<PatternBinding> bindings
     = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};

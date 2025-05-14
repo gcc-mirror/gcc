@@ -25,7 +25,7 @@ __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _Tp>
 reduce(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, _Tp __init,
        _BinaryOperation __binary_op)
 {
-    return transform_reduce(std::forward<_ExecutionPolicy>(__exec), __first, __last, __init, __binary_op,
+    return transform_reduce(std::forward<_ExecutionPolicy>(__exec), __first, __last, std::move(__init), __binary_op,
                             __pstl::__internal::__no_op());
 }
 
@@ -33,7 +33,7 @@ template <class _ExecutionPolicy, class _ForwardIterator, class _Tp>
 __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, _Tp>
 reduce(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIterator __last, _Tp __init)
 {
-    return transform_reduce(std::forward<_ExecutionPolicy>(__exec), __first, __last, __init, std::plus<_Tp>(),
+    return transform_reduce(std::forward<_ExecutionPolicy>(__exec), __first, __last, std::move(__init), std::plus<_Tp>(),
                             __pstl::__internal::__no_op());
 }
 
@@ -58,7 +58,7 @@ transform_reduce(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _Forward
 
     typedef typename iterator_traits<_ForwardIterator1>::value_type _InputType;
     return __pstl::__internal::__pattern_transform_reduce(__dispatch_tag, std::forward<_ExecutionPolicy>(__exec),
-                                                          __first1, __last1, __first2, __init, std::plus<_InputType>(),
+                                                          __first1, __last1, __first2, std::move(__init), std::plus<_InputType>(),
                                                           std::multiplies<_InputType>());
 }
 
@@ -70,7 +70,7 @@ transform_reduce(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _Forward
 {
     auto __dispatch_tag = __pstl::__internal::__select_backend(__exec, __first1, __first2);
     return __pstl::__internal::__pattern_transform_reduce(__dispatch_tag, std::forward<_ExecutionPolicy>(__exec),
-                                                          __first1, __last1, __first2, __init, __binary_op1,
+                                                          __first1, __last1, __first2, std::move(__init), __binary_op1,
                                                           __binary_op2);
 }
 
@@ -81,7 +81,7 @@ transform_reduce(_ExecutionPolicy&& __exec, _ForwardIterator __first, _ForwardIt
 {
     auto __dispatch_tag = __pstl::__internal::__select_backend(__exec, __first);
     return __pstl::__internal::__pattern_transform_reduce(__dispatch_tag, std::forward<_ExecutionPolicy>(__exec),
-                                                          __first, __last, __init, __binary_op, __unary_op);
+                                                          __first, __last, std::move(__init), __binary_op, __unary_op);
 }
 
 // [exclusive.scan]
@@ -139,7 +139,7 @@ inclusive_scan(_ExecutionPolicy&& __exec, _ForwardIterator1 __first, _ForwardIte
                _ForwardIterator2 __result, _BinaryOperation __binary_op, _Tp __init)
 {
     return transform_inclusive_scan(std::forward<_ExecutionPolicy>(__exec), __first, __last, __result, __binary_op,
-                                    __pstl::__internal::__no_op(), __init);
+                                    __pstl::__internal::__no_op(), std::move(__init));
 }
 
 // [transform.exclusive.scan]
@@ -154,7 +154,7 @@ transform_exclusive_scan(_ExecutionPolicy&& __exec, _ForwardIterator1 __first, _
     auto __dispatch_tag = __pstl::__internal::__select_backend(__exec, __first, __result);
 
     return __pstl::__internal::__pattern_transform_scan(__dispatch_tag, std::forward<_ExecutionPolicy>(__exec), __first,
-                                                        __last, __result, __unary_op, __init, __binary_op,
+                                                        __last, __result, __unary_op, std::move(__init), __binary_op,
                                                         /*inclusive=*/std::false_type());
 }
 
@@ -170,7 +170,7 @@ transform_inclusive_scan(_ExecutionPolicy&& __exec, _ForwardIterator1 __first, _
     auto __dispatch_tag = __pstl::__internal::__select_backend(__exec, __first, __result);
 
     return __pstl::__internal::__pattern_transform_scan(__dispatch_tag, std::forward<_ExecutionPolicy>(__exec), __first,
-                                                        __last, __result, __unary_op, __init, __binary_op,
+                                                        __last, __result, __unary_op, std::move(__init), __binary_op,
                                                         /*inclusive=*/std::true_type());
 }
 

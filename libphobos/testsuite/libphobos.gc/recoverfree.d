@@ -1,5 +1,4 @@
 // https://issues.dlang.org/show_bug.cgi?id=20438
-import core.stdc.stdio;
 import core.memory;
 
 void main()

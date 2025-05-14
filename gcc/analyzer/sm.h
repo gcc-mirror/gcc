@@ -235,7 +235,7 @@ public:
      Use in preference to gimple_call_fndecl (and gimple_call_addr_fndecl),
      since it can look through function pointer assignments and
      other callback handling.  */
-  virtual tree get_fndecl_for_call (const gcall *call) = 0;
+  virtual tree get_fndecl_for_call (const gcall &call) = 0;
 
   /* Get the old state of VAR at STMT.  */
   virtual state_machine::state_t get_state (const gimple *stmt,
@@ -341,17 +341,17 @@ protected:
 /* The various state_machine subclasses are hidden in their respective
    implementation files.  */
 
-extern void make_checkers (auto_delete_vec <state_machine> &out,
-			   logger *logger);
+extern std::vector<std::unique_ptr<state_machine>>
+make_checkers (logger *logger);
 
-extern state_machine *make_malloc_state_machine (logger *logger);
-extern state_machine *make_fileptr_state_machine (logger *logger);
-extern state_machine *make_taint_state_machine (logger *logger);
-extern state_machine *make_sensitive_state_machine (logger *logger);
-extern state_machine *make_signal_state_machine (logger *logger);
-extern state_machine *make_pattern_test_state_machine (logger *logger);
-extern state_machine *make_va_list_state_machine (logger *logger);
-extern state_machine *make_fd_state_machine (logger *logger);
+extern std::unique_ptr<state_machine> make_malloc_state_machine (logger *);
+extern std::unique_ptr<state_machine> make_fileptr_state_machine (logger *);
+extern std::unique_ptr<state_machine> make_taint_state_machine (logger *);
+extern std::unique_ptr<state_machine> make_sensitive_state_machine (logger *);
+extern std::unique_ptr<state_machine> make_signal_state_machine (logger *);
+extern std::unique_ptr<state_machine> make_pattern_test_state_machine (logger *);
+extern std::unique_ptr<state_machine> make_va_list_state_machine (logger *);
+extern std::unique_ptr<state_machine> make_fd_state_machine (logger *);
 
 } // namespace ana
 

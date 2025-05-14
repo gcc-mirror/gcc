@@ -28,7 +28,7 @@ namespace Resolver {
 class TypeCheckEnumItem : public TypeCheckBase
 {
 public:
-  static TyTy::VariantDef *Resolve (HIR::EnumItem *item,
+  static TyTy::VariantDef *Resolve (HIR::EnumItem &item,
 				    int64_t last_discriminant);
 
 protected:

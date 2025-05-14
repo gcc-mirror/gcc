@@ -20,6 +20,22 @@ static_assert(std::is_same_v<
 	      std::unordered_set<int>>);
 
 static_assert(std::is_same_v<
+	      decltype(std::unordered_set{{1, 2, 3}}),
+	      std::unordered_set<int>>);
+
+static_assert(std::is_same_v<
+	      decltype(std::unordered_set{{1, 2, 3},
+		    std::allocator<int>{}}),
+	      std::unordered_set<int>>);
+
+static_assert(std::is_same_v<
+	      decltype(std::unordered_set{{1, 2, 3},
+		    SimpleAllocator<int>{}}),
+	      std::unordered_set<int, std::hash<int>,
+	      std::equal_to<int>,
+	      SimpleAllocator<int>>>);
+
+static_assert(std::is_same_v<
 	      decltype(std::unordered_set{{1, 2, 3},
 		    {}}),
 	      std::unordered_set<int>>);
@@ -90,6 +106,18 @@ void f()
 		decltype(std::unordered_set(x.begin(), x.end(),
 		      {})),
 		std::unordered_set<int>>);
+
+  static_assert(std::is_same_v<
+		decltype(std::unordered_set{x.begin(), x.end(),
+		      std::allocator<int>{}}),
+		std::unordered_set<int>>);
+
+  static_assert(std::is_same_v<
+		decltype(std::unordered_set{x.begin(), x.end(),
+		      SimpleAllocator<int>{}}),
+		std::unordered_set<int, std::hash<int>,
+		std::equal_to<int>,
+		SimpleAllocator<int>>>);
 
   static_assert(std::is_same_v<
 		decltype(std::unordered_set{x.begin(), x.end(), 1}),

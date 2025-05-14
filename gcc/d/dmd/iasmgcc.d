@@ -1,12 +1,12 @@
 /**
  * Inline assembler for the GCC D compiler.
  *
- *              Copyright (C) 2018-2024 by The D Language Foundation, All Rights Reserved
+ *              Copyright (C) 2018-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     Iain Buclaw
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/iasmgcc.d, _iasmgcc.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/iasmgcc.d, _iasmgcc.d)
  * Documentation:  https://dlang.org/phobos/dmd_iasmgcc.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/iasmgcc.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/iasmgcc.d
  */
 
 module dmd.iasmgcc;
@@ -37,17 +37,17 @@ import dmd.statementsem;
  * Returns:
  *      the completed gcc asm statement, or null if errors occurred
  */
-public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
+public Statement gccAsmSemantic(GccAsmStatement s, Scope* sc)
 {
     //printf("GccAsmStatement.semantic()\n");
     const bool doUnittests = global.params.parsingUnittestsRequired();
     scope p = new Parser!ASTCodegen(sc._module, ";", false, global.errorSink, &global.compileEnv, doUnittests);
 
     // Make a safe copy of the token list before parsing.
-    Token *toklist = null;
+    Token* toklist = null;
     Token **ptoklist = &toklist;
 
-    for (Token *token = s.tokens; token; token = token.next)
+    for (Token* token = s.tokens; token; token = token.next)
     {
         *ptoklist = p.allocateToken();
         memcpy(*ptoklist, token, Token.sizeof);
@@ -55,7 +55,8 @@ public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
         *ptoklist = null;
     }
     p.token = *toklist;
-    p.scanloc = s.loc;
+    p.baseLoc.startLine = s.loc.linnum;
+    p.linnum = s.loc.linnum;
 
     // Parse the gcc asm statement.
     const errors = global.errors;
@@ -126,7 +127,7 @@ public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
  *      ad  = asm declaration
  *      sc = the scope where the asm declaration is located
  */
-public void gccAsmSemantic(CAsmDeclaration ad, Scope *sc)
+public void gccAsmSemantic(CAsmDeclaration ad, Scope* sc)
 {
     import dmd.typesem : pointerTo;
     ad.code = semanticString(sc, ad.code, "asm definition");
@@ -254,9 +255,9 @@ Lerror:
  * Returns:
  *      array of parsed clobber expressions
  */
-Expressions *parseExtAsmClobbers(Parser)(Parser p)
+Expressions* parseExtAsmClobbers(Parser)(Parser p)
 {
-    Expressions *clobbers;
+    Expressions* clobbers;
 
     while (1)
     {
@@ -305,9 +306,9 @@ Lerror:
  * Returns:
  *      array of parsed goto labels
  */
-Identifiers *parseExtAsmGotoLabels(Parser)(Parser p)
+Identifiers* parseExtAsmGotoLabels(Parser)(Parser p)
 {
-    Identifiers *labels;
+    Identifiers* labels;
 
     while (1)
     {

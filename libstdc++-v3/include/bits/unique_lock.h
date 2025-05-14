@@ -126,14 +126,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       unique_lock& operator=(unique_lock&& __u) noexcept
       {
-	if(_M_owns)
-	  unlock();
-
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 4172. unique_lock self-move-assignment is broken
 	unique_lock(std::move(__u)).swap(*this);
-
-	__u._M_device = 0;
-	__u._M_owns = false;
-
 	return *this;
       }
 

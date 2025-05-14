@@ -4,7 +4,7 @@
 
 void **g;
 
-extern void unknown_fn (void);
+extern void unknown_fn (void) __attribute__((nothrow));
 
 /* Without a call to unknown_fn.  */
 

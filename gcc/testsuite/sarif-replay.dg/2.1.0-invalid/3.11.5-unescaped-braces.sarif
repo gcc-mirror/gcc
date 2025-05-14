@@ -10,6 +10,9 @@
 }
 
 /* { dg-begin-multiline-output "" }
+In JSON property '/runs/0/results/0/message/text':
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
     6 |       { "message": { "text" : "before {} after" },
       |                               ^~~~~~~~~~~~~~~~~
    { dg-end-multiline-output ""  }  */

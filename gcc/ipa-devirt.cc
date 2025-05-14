@@ -1259,11 +1259,19 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       || TREE_CODE (t1) == OFFSET_TYPE
       || POINTER_TYPE_P (t1))
     {
-      if (TYPE_PRECISION (t1) != TYPE_PRECISION (t2))
+      if (!VECTOR_TYPE_P (t1) && TYPE_PRECISION (t1) != TYPE_PRECISION (t2))
 	{
 	  warn_odr (t1, t2, NULL, NULL, warn, warned,
 		    G_("a type with different precision is defined "
 		       "in another translation unit"));
+	  return false;
+	}
+      if (VECTOR_TYPE_P (t1)
+	  && maybe_ne (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2)))
+	{
+	  warn_odr (t1, t2, NULL, NULL, warn, warned,
+		    G_("a vector type with different number of elements "
+		       "is defined in another translation unit"));
 	  return false;
 	}
       if (TYPE_UNSIGNED (t1) != TYPE_UNSIGNED (t2))

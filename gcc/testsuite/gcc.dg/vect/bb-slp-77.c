@@ -71,4 +71,4 @@ void test(const int n, float * restrict s, const void * restrict vx, const void 
     *s = sumf;
 }
 
-/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1"  { target { { vect_int_mult && vect_element_align } && { ! { powerpc*-*-* x86_64-*-* i?86-*-* } } } } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1"  { target { { vect_int_mult && vect_element_align } && { ! { powerpc*-*-* x86_64-*-* i?86-*-* loongarch*-*-* s390*-*-* } } } } } } */

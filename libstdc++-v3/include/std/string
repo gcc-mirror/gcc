@@ -60,6 +60,7 @@
 #define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_constexpr_char_traits
 #define __glibcxx_want_constexpr_string
+#define __glibcxx_want_containers_ranges
 #define __glibcxx_want_erase_if
 #define __glibcxx_want_nonmember_container_access
 #define __glibcxx_want_string_resize_and_overwrite

@@ -265,14 +265,17 @@ am__objects_8 = generated/maxloc1_4_i1.lo generated/maxloc1_8_i1.lo \
 	generated/maxloc1_16_i1.lo generated/maxloc1_4_i2.lo \
 	generated/maxloc1_8_i2.lo generated/maxloc1_16_i2.lo \
 	generated/maxloc1_4_i4.lo generated/maxloc1_8_i4.lo \
-	generated/maxloc1_16_i4.lo generated/maxloc1_4_m1.lo \
+	generated/maxloc1_16_i4.lo generated/maxloc1_4_i8.lo \
+	generated/maxloc1_8_i8.lo generated/maxloc1_16_i8.lo \
+	generated/maxloc1_4_i16.lo generated/maxloc1_8_i16.lo \
+	generated/maxloc1_16_i16.lo generated/maxloc1_4_m1.lo \
 	generated/maxloc1_8_m1.lo generated/maxloc1_16_m1.lo \
 	generated/maxloc1_4_m2.lo generated/maxloc1_8_m2.lo \
 	generated/maxloc1_16_m2.lo generated/maxloc1_4_m4.lo \
 	generated/maxloc1_8_m4.lo generated/maxloc1_16_m4.lo \
 	generated/maxloc1_4_m8.lo generated/maxloc1_8_m8.lo \
 	generated/maxloc1_16_m8.lo generated/maxloc1_4_m16.lo \
-	generated/maxloc1_8_m16.lo generated/maxloc1_16_i16.lo \
+	generated/maxloc1_8_m16.lo generated/maxloc1_16_m16.lo \
 	generated/maxloc1_4_r4.lo generated/maxloc1_8_r4.lo \
 	generated/maxloc1_16_r4.lo generated/maxloc1_4_r8.lo \
 	generated/maxloc1_8_r8.lo generated/maxloc1_16_r8.lo \
@@ -612,7 +615,7 @@ am__objects_59 = intrinsics/associated.lo intrinsics/abort.lo \
 	intrinsics/move_alloc.lo intrinsics/pack_generic.lo \
 	intrinsics/selected_char_kind.lo intrinsics/size.lo \
 	intrinsics/spread_generic.lo intrinsics/string_intrinsics.lo \
-	intrinsics/rand.lo intrinsics/random.lo \
+	intrinsics/rand.lo intrinsics/random.lo intrinsics/reduce.lo \
 	intrinsics/reshape_generic.lo intrinsics/reshape_packed.lo \
 	intrinsics/selected_int_kind.lo \
 	intrinsics/selected_real_kind.lo intrinsics/trigd.lo \
@@ -1028,7 +1031,7 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/move_alloc.c intrinsics/pack_generic.c \
 	intrinsics/selected_char_kind.c intrinsics/size.c \
 	intrinsics/spread_generic.c intrinsics/string_intrinsics.c \
-	intrinsics/rand.c intrinsics/random.c \
+	intrinsics/rand.c intrinsics/random.c intrinsics/reduce.c \
 	intrinsics/reshape_generic.c intrinsics/reshape_packed.c \
 	intrinsics/selected_int_kind.f90 \
 	intrinsics/selected_real_kind.f90 intrinsics/trigd.c \
@@ -1205,6 +1208,12 @@ generated/maxloc1_16_i2.c \
 generated/maxloc1_4_i4.c \
 generated/maxloc1_8_i4.c \
 generated/maxloc1_16_i4.c \
+generated/maxloc1_4_i8.c \
+generated/maxloc1_8_i8.c \
+generated/maxloc1_16_i8.c \
+generated/maxloc1_4_i16.c \
+generated/maxloc1_8_i16.c \
+generated/maxloc1_16_i16.c \
 generated/maxloc1_4_m1.c \
 generated/maxloc1_8_m1.c \
 generated/maxloc1_16_m1.c \
@@ -1219,7 +1228,7 @@ generated/maxloc1_8_m8.c \
 generated/maxloc1_16_m8.c \
 generated/maxloc1_4_m16.c \
 generated/maxloc1_8_m16.c \
-generated/maxloc1_16_i16.c \
+generated/maxloc1_16_m16.c \
 generated/maxloc1_4_r4.c \
 generated/maxloc1_8_r4.c \
 generated/maxloc1_16_r4.c \
@@ -2311,6 +2320,18 @@ generated/maxloc1_8_i4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxloc1_16_i4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_4_i8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_8_i8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_16_i8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_4_i16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_8_i16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_16_i16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxloc1_4_m1.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxloc1_8_m1.lo: generated/$(am__dirstamp) \
@@ -2339,7 +2360,7 @@ generated/maxloc1_4_m16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxloc1_8_m16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
-generated/maxloc1_16_i16.lo: generated/$(am__dirstamp) \
+generated/maxloc1_16_m16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxloc1_4_r4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
@@ -3476,6 +3497,8 @@ intrinsics/rand.lo: intrinsics/$(am__dirstamp) \
 	intrinsics/$(DEPDIR)/$(am__dirstamp)
 intrinsics/random.lo: intrinsics/$(am__dirstamp) \
 	intrinsics/$(DEPDIR)/$(am__dirstamp)
+intrinsics/reduce.lo: intrinsics/$(am__dirstamp) \
+	intrinsics/$(DEPDIR)/$(am__dirstamp)
 intrinsics/reshape_generic.lo: intrinsics/$(am__dirstamp) \
 	intrinsics/$(DEPDIR)/$(am__dirstamp)
 intrinsics/reshape_packed.lo: intrinsics/$(am__dirstamp) \
@@ -4195,7 +4218,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_i4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_m16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_m2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_m4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_m8.Plo@am__quote@
@@ -4207,8 +4232,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_s1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_i1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_i4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_m1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_m16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_m2.Plo@am__quote@
@@ -4222,8 +4249,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_s1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_i1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_i4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_m1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_m16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_m2.Plo@am__quote@
@@ -4591,6 +4620,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/perror.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/rand.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/random.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/reduce.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/rename.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/reshape_generic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/reshape_packed.Plo@am__quote@

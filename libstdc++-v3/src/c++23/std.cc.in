@@ -599,7 +599,9 @@ export namespace std
   using std::atomic_schar;
   using std::atomic_short;
   using std::atomic_signal_fence;
+#ifdef __cpp_lib_atomic_lock_free_type_aliases
   using std::atomic_signed_lock_free;
+#endif
   using std::atomic_size_t;
   using std::atomic_store;
   using std::atomic_store_explicit;
@@ -622,7 +624,9 @@ export namespace std
   using std::atomic_uintptr_t;
   using std::atomic_ullong;
   using std::atomic_ulong;
+#ifdef __cpp_lib_atomic_lock_free_type_aliases
   using std::atomic_unsigned_lock_free;
+#endif
   using std::atomic_ushort;
   using std::atomic_wait;
   using std::atomic_wait_explicit;
@@ -924,6 +928,13 @@ export namespace std
   using std::sqrt;
   using std::tan;
   using std::tanh;
+#if __cpp_lib_tuple_like >= 202311L
+  using std::tuple_element;
+  using std::tuple_element_t;
+  using std::tuple_size;
+  using std::tuple_size_v;
+  using std::get;
+#endif
 }
 export namespace std::inline literals::inline complex_literals
 {
@@ -1308,8 +1319,7 @@ export namespace std
   using std::format_to_n;
   using std::format_to_n_result;
   using std::formatted_size;
-// FIXME __cpp_lib_format_ranges
-#if __cplusplus > 202002L
+#if __cpp_lib_format_ranges
   using std::formattable;
 #endif
   using std::formatter;
@@ -1325,6 +1335,11 @@ export namespace std
   using std::wformat_context;
   using std::wformat_parse_context;
   using std::wformat_string;
+#ifdef __cpp_lib_format_ranges
+  using std::format_kind;
+  using std::range_format;
+  using std::range_formatter;
+#endif
 }
 
 // <forward_list>
@@ -1818,7 +1833,14 @@ export namespace std
   }
 }
 
-// FIXME <mdspan>
+// <mdspan>
+#if __glibcxx_mdspan
+export namespace std
+{
+  using std::extents;
+  // FIXME layout_*, default_accessor and mdspan
+}
+#endif
 
 // 20.2 <memory>
 export namespace std
@@ -2383,14 +2405,24 @@ export namespace std
     using ranges::enumerate_view;
     namespace views { using views::enumerate; }
 #endif
-#if __cpp_lib_ranges_to_container // C++ >= 23
-    using ranges::to;
-#endif // __cpp_lib_ranges_to_container
 #if __cpp_lib_ranges_concat // C++ >= C++26
     using ranges::concat_view;
     namespace views { using views::concat; }
 #endif
+#if __cpp_lib_ranges_cache_latest // C++ >= C++26
+    using ranges::cache_latest_view;
+    namespace views { using views::cache_latest; }
+#endif
+#if __glibcxx_ranges_to_input // C++ >= 26
+    using ranges::to_input_view;
+    namespace views { using views::to_input; }
+#endif
   }
+#if __glibcxx_ranges_to_container // C++ >= 23
+  namespace ranges { using ranges::to; }
+  using std::from_range_t;
+  using std::from_range;
+#endif
 }
 
 // <ratio>
@@ -3082,6 +3114,7 @@ export namespace std
 #if __cpp_lib_is_layout_compatible
   using std::is_corresponding_member;
   using std::is_layout_compatible;
+  using std::is_layout_compatible_v;
 #endif
 #if __cpp_lib_is_pointer_interconvertible
   using std::is_pointer_interconvertible_base_of;

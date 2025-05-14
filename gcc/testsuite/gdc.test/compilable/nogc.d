@@ -36,9 +36,6 @@ void foo_compiles() {}
     static assert(!__traits(compiles, new Struct()));
     static assert(!__traits(compiles, new Object()));
 
-    int* p;
-    static assert(!__traits(compiles, delete p));
-
     int[int] aa;
     static assert( __traits(compiles, aa[0]));
     static assert(!__traits(compiles, (aa[0] = 10)));

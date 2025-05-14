@@ -2,9 +2,9 @@
 TEST_OUTPUT:
 ---
 fail_compilation/fail20616.d(16): Error: undefined identifier `$`
-fail_compilation/fail20616.d(16):        Aggregate declaration 'X()' does not define 'opDollar'
+fail_compilation/fail20616.d(13):        perhaps define `opDollar` for `X`
 fail_compilation/fail20616.d(18): Error: undefined identifier `$`
-fail_compilation/fail20616.d(18):        Aggregate declaration 'b' does not define 'opDollar'
+fail_compilation/fail20616.d(13):        perhaps define `opDollar` for `X`
 ---
 */
 module fail20616;

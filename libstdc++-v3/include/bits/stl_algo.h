@@ -1447,6 +1447,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
   /// move-assign an element onto itself.
   template<typename _ForwardIterator, typename _Pointer, typename _Predicate,
 	   typename _Distance>
+    _GLIBCXX26_CONSTEXPR
     _ForwardIterator
     __stable_partition_adaptive(_ForwardIterator __first,
 				_ForwardIterator __last,
@@ -1507,6 +1508,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     }
 
   template<typename _ForwardIterator, typename _Predicate>
+    _GLIBCXX26_CONSTEXPR
     _ForwardIterator
     __stable_partition(_ForwardIterator __first, _ForwardIterator __last,
 		       _Predicate __pred)
@@ -1521,11 +1523,25 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       typedef typename iterator_traits<_ForwardIterator>::difference_type
 	_DistanceType;
 
+      const _DistanceType __len = std::distance(__first, __last);
+
+#if __glibcxx_constexpr_algorithms >= 202306L // >= C++26
+      if consteval {
+	// Simulate a _Temporary_buffer of length 1:
+	_ValueType __buf = std::move(*__first);
+	*__first = std::move(__buf);
+	return std::__stable_partition_adaptive(__first, __last, __pred,
+						__len,
+						&__buf,
+						_DistanceType(1));
+      }
+#endif
+
       _Temporary_buffer<_ForwardIterator, _ValueType>
-	__buf(__first, std::distance(__first, __last));
+	__buf(__first, __len);
       return
 	std::__stable_partition_adaptive(__first, __last, __pred,
-					 _DistanceType(__buf.requested_size()),
+					 __len,
 					 __buf.begin(),
 					 _DistanceType(__buf.size()));
     }
@@ -1548,6 +1564,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    *  relative ordering after calling @p stable_partition().
   */
   template<typename _ForwardIterator, typename _Predicate>
+    _GLIBCXX26_CONSTEXPR
     inline _ForwardIterator
     stable_partition(_ForwardIterator __first, _ForwardIterator __last,
 		     _Predicate __pred)
@@ -2415,6 +2432,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
   /// This is a helper function for the merge routines.
   template<typename _BidirectionalIterator, typename _Distance,
 	   typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     void
     __merge_without_buffer(_BidirectionalIterator __first,
 			   _BidirectionalIterator __middle,
@@ -2464,6 +2482,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     }
 
   template<typename _BidirectionalIterator, typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     void
     __inplace_merge(_BidirectionalIterator __first,
 		    _BidirectionalIterator __middle,
@@ -2482,6 +2501,12 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       const _DistanceType __len2 = std::distance(__middle, __last);
 
 #if _GLIBCXX_HOSTED
+# if __glibcxx_constexpr_algorithms >= 202306L // >= C++26
+      if consteval {
+	return std::__merge_without_buffer
+	  (__first, __middle, __last, __len1, __len2, __comp);
+      }
+# endif
       typedef _Temporary_buffer<_BidirectionalIterator, _ValueType> _TmpBuf;
       // __merge_adaptive will use a buffer for the smaller of
       // [first,middle) and [middle,last).
@@ -2522,6 +2547,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    *  distance(__first,__last).
   */
   template<typename _BidirectionalIterator>
+    _GLIBCXX26_CONSTEXPR
     inline void
     inplace_merge(_BidirectionalIterator __first,
 		  _BidirectionalIterator __middle,
@@ -2563,6 +2589,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    *  the function used for the initial sort.
   */
   template<typename _BidirectionalIterator, typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     inline void
     inplace_merge(_BidirectionalIterator __first,
 		  _BidirectionalIterator __middle,
@@ -2723,6 +2750,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
   /// This is a helper function for the stable sorting routines.
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     void
     __inplace_stable_sort(_RandomAccessIterator __first,
 			  _RandomAccessIterator __last, _Compare __comp)
@@ -4971,6 +4999,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     }
 
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     inline void
     __stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
 		  _Compare __comp)
@@ -4984,6 +5013,12 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	return;
 
 #if _GLIBCXX_HOSTED
+# if __glibcxx_constexpr_algorithms >= 202306L // >= C++26
+      if consteval {
+	return std::__inplace_stable_sort(__first, __last, __comp);
+      }
+# endif
+
       typedef _Temporary_buffer<_RandomAccessIterator, _ValueType> _TmpBuf;
       // __stable_sort_adaptive sorts the range in two halves,
       // so the buffer only needs to fit half the range at once.
@@ -5021,6 +5056,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  ordering after calling @p stable_sort().
   */
   template<typename _RandomAccessIterator>
+    _GLIBCXX26_CONSTEXPR
     inline void
     stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
@@ -5055,6 +5091,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  relative ordering after calling @p stable_sort().
   */
   template<typename _RandomAccessIterator, typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     inline void
     stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
 		_Compare __comp)

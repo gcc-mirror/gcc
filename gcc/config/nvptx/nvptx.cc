@@ -220,6 +220,8 @@ first_ptx_version_supporting_sm (enum ptx_isa sm)
       return PTX_VERSION_4_1;
     case PTX_ISA_SM53:
       return PTX_VERSION_4_2;
+    case PTX_ISA_SM61:
+      return PTX_VERSION_5_0;
     case PTX_ISA_SM70:
       return PTX_VERSION_6_0;
     case PTX_ISA_SM75:
@@ -245,6 +247,9 @@ default_ptx_version_option (void)
      warp convergence.  */
   res = MAX (res, PTX_VERSION_6_0);
 
+  /* Pick at least 6.3, to enable PTX '.alias'.  */
+  res = MAX (res, PTX_VERSION_6_3);
+
   /* For sm_52+, pick at least 7.3, to enable PTX 'alloca'.  */
   if (ptx_isa_option >= PTX_ISA_SM52)
     res = MAX (res, PTX_VERSION_7_3);
@@ -265,6 +270,8 @@ ptx_version_to_string (enum ptx_version v)
       return "4.1";
     case PTX_VERSION_4_2:
       return "4.2";
+    case PTX_VERSION_5_0:
+      return "5.0";
     case PTX_VERSION_6_0:
       return "6.0";
     case PTX_VERSION_6_3:
@@ -291,6 +298,8 @@ ptx_version_to_number (enum ptx_version v, bool major_p)
       return major_p ? 4 : 1;
     case PTX_VERSION_4_2:
       return major_p ? 4 : 2;
+    case PTX_VERSION_5_0:
+      return major_p ? 5 : 0;
     case PTX_VERSION_6_0:
       return major_p ? 6 : 0;
     case PTX_VERSION_6_3:
@@ -467,9 +476,7 @@ nvptx_encode_section_info (tree decl, rtx rtl, int first)
     {
       nvptx_data_area area = DATA_AREA_GENERIC;
 
-      if (TREE_CONSTANT (decl))
-	area = DATA_AREA_CONST;
-      else if (VAR_P (decl))
+      if (VAR_P (decl))
 	{
 	  if (lookup_attribute ("shared", DECL_ATTRIBUTES (decl)))
 	    {
@@ -479,7 +486,7 @@ nvptx_encode_section_info (tree decl, rtx rtl, int first)
 		       " memory is not supported", decl);
 	    }
 	  else
-	    area = TREE_READONLY (decl) ? DATA_AREA_CONST : DATA_AREA_GLOBAL;
+	    area = DATA_AREA_GLOBAL;
 	}
 
       SET_SYMBOL_DATA_AREA (XEXP (rtl, 0), area);
@@ -1758,6 +1765,27 @@ nvptx_output_set_softstack (unsigned src_regno)
     }
   return "";
 }
+
+/* Output a fake PTX 'alloca'.  */
+
+const char *
+nvptx_output_fake_ptx_alloca (void)
+{
+#define FAKE_PTX_ALLOCA_NAME "__GCC_nvptx__PTX_alloca_not_supported"
+  static tree decl;
+  if (!decl)
+    {
+      tree alloca_type = TREE_TYPE (builtin_decl_explicit (BUILT_IN_ALLOCA));
+      decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
+			 get_identifier (FAKE_PTX_ALLOCA_NAME), alloca_type);
+      DECL_EXTERNAL (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+      nvptx_record_needed_fndecl (decl);
+    }
+  return "\tcall\t(%0), " FAKE_PTX_ALLOCA_NAME ", (%1);";
+#undef FAKE_PTX_ALLOCA_NAME
+}
+
 /* Output a return instruction.  Also copy the return value to its outgoing
    location.  */
 
@@ -2337,7 +2365,25 @@ nvptx_assemble_integer (rtx x, unsigned int size, int ARG_UNUSED (aligned_p))
     {
       gcc_checking_assert (!init_frag.active);
       /* Just use the default machinery; it's not getting used, anyway.  */
-      return default_assemble_integer (x, size, aligned_p);
+      bool ok = default_assemble_integer (x, size, aligned_p);
+      /* ..., but a few cases need special handling.  */
+      switch (GET_CODE (x))
+	{
+	case SYMBOL_REF:
+	  /* The default machinery won't work: we don't define the necessary
+	     operations; don't use them outside of this.  */
+	  gcc_checking_assert (!ok);
+	  {
+	    /* Just emit something; it's not getting used, anyway.  */
+	    const char *op = "\t.symbol_ref\t";
+	    ok = (assemble_integer_with_op (op, x), true);
+	  }
+	  break;
+
+	default:
+	  break;
+	}
+      return ok;
     }
 
   gcc_checking_assert (init_frag.active);
@@ -2573,7 +2619,7 @@ nvptx_asm_declare_constant_name (FILE *file, const char *name,
   fprintf (file, "\t");
 
   tree type = TREE_TYPE (exp);
-  nvptx_assemble_decl_begin (file, name, ".const", type, obj_size,
+  nvptx_assemble_decl_begin (file, name, ".global", type, obj_size,
 			     TYPE_ALIGN (type));
 }
 
@@ -7689,6 +7735,30 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
 {
   if (nvptx_alias == 0 || !TARGET_PTX_6_3)
     {
+      /* Symbol aliases are not supported here.  */
+
+#ifdef ACCEL_COMPILER
+      if (DECL_CXX_CONSTRUCTOR_P (name)
+	  || DECL_CXX_DESTRUCTOR_P (name))
+	{
+	  /* ..., but symbol aliases are supported and used in the host system,
+	     via 'gcc/cp/optimize.cc:can_alias_cdtor'.  */
+
+	  gcc_assert (!lookup_attribute ("weak", DECL_ATTRIBUTES (name)));
+	  gcc_assert (TREE_CODE (name) == FUNCTION_DECL);
+
+	  /* In this specific case, use PTX '.alias', if available, even for
+	     (default) '-mno-alias'.  */
+	  if (TARGET_PTX_6_3)
+	    {
+	      DECL_ATTRIBUTES (name)
+		= tree_cons (get_identifier ("symbol alias handled"),
+			     NULL_TREE, DECL_ATTRIBUTES (name));
+	      goto emit_ptx_alias;
+	    }
+	}
+#endif
+
       /* Copied from assemble_alias.  */
       error_at (DECL_SOURCE_LOCATION (name),
 		"alias definitions not supported in this configuration");
@@ -7720,7 +7790,23 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
       return;
     }
 
+#ifdef ACCEL_COMPILER
+ emit_ptx_alias:
+#endif
+
   cgraph_node *cnode = cgraph_node::get (name);
+#ifdef ACCEL_COMPILER
+  /* For nvptx offloading, make sure to emit C++ constructor, destructor aliases [PR97106]
+
+     For some reason (yet to be analyzed), they're not 'cnode->referred_to_p ()'.
+     (..., or that's not the right approach at all;
+     <https://inbox.sourceware.org/87v7rx8lbx.fsf@euler.schwinge.ddns.net>
+     "Re: [committed][nvptx] Use .alias directive for mptx >= 6.3").  */
+  if (DECL_CXX_CONSTRUCTOR_P (name)
+      || DECL_CXX_DESTRUCTOR_P (name))
+    ;
+  else
+#endif
   if (!cnode->referred_to_p ())
     /* Prevent "Internal error: reference to deleted section".  */
     return;
@@ -7825,8 +7911,6 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
 #define TARGET_ASM_DECLARE_CONSTANT_NAME nvptx_asm_declare_constant_name
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
 #define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_const_rtx_true
-#undef TARGET_ASM_NEED_VAR_DECL_BEFORE_USE
-#define TARGET_ASM_NEED_VAR_DECL_BEFORE_USE true
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG nvptx_reorg

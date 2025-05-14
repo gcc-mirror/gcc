@@ -1,4 +1,3 @@
-/* { dg-skip-if "requires alloca" { ! alloca } { "-O0" } { "" } } */
 /* Verify that alloca storage is sufficiently aligned.  */
 /* ??? May fail if BIGGEST_ALIGNMENT > STACK_BOUNDARY.  Which, I guess
    can only happen on !STRICT_ALIGNMENT targets.  */

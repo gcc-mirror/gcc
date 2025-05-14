@@ -17,6 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-lower-type.h"
+#include "rust-hir-map.h"
+#include "rust-hir-path.h"
+#include "rust-hir-type.h"
+#include "rust-path.h"
+#include "rust-pattern.h"
 
 namespace Rust {
 namespace HIR {
@@ -33,8 +38,8 @@ ASTLowerTypePath::translate (AST::TypePath &type)
 void
 ASTLowerTypePath::visit (AST::TypePathSegmentFunction &segment)
 {
-  auto crate_num = mappings->get_current_crate ();
-  auto hirid = mappings->get_next_hir_id (crate_num);
+  auto crate_num = mappings.get_current_crate ();
+  auto hirid = mappings.get_next_hir_id (crate_num);
   Analysis::NodeMapping mapping (crate_num, segment.get_node_id (), hirid,
 				 UNKNOWN_LOCAL_DEFID);
 
@@ -64,16 +69,25 @@ ASTLowerTypePath::visit (AST::TypePathSegmentFunction &segment)
 void
 ASTLowerTypePath::visit (AST::TypePathSegment &segment)
 {
-  auto crate_num = mappings->get_current_crate ();
-  auto hirid = mappings->get_next_hir_id (crate_num);
+  auto crate_num = mappings.get_current_crate ();
+  auto hirid = mappings.get_next_hir_id (crate_num);
   Analysis::NodeMapping mapping (crate_num, segment.get_node_id (), hirid,
 				 UNKNOWN_LOCAL_DEFID);
 
-  HIR::PathIdentSegment ident (segment.get_ident_segment ().as_string ());
-  translated_segment
-    = new HIR::TypePathSegment (std::move (mapping), ident,
-				segment.get_separating_scope_resolution (),
-				segment.get_locus ());
+  if (segment.is_lang_item ())
+    {
+      translated_segment = new HIR::TypePathSegment (std::move (mapping),
+						     segment.get_lang_item (),
+						     segment.get_locus ());
+    }
+  else
+    {
+      HIR::PathIdentSegment ident (segment.get_ident_segment ().as_string ());
+      translated_segment
+	= new HIR::TypePathSegment (std::move (mapping), ident,
+				    segment.get_separating_scope_resolution (),
+				    segment.get_locus ());
+    }
 }
 
 void
@@ -81,21 +95,31 @@ ASTLowerTypePath::visit (AST::TypePathSegmentGeneric &segment)
 {
   std::vector<HIR::GenericArgsBinding> binding_args; // TODO
 
-  std::string segment_name = segment.get_ident_segment ().as_string ();
-  bool has_separating_scope_resolution
-    = segment.get_separating_scope_resolution ();
-
   auto generic_args = lower_generic_args (segment.get_generic_args ());
 
-  auto crate_num = mappings->get_current_crate ();
-  auto hirid = mappings->get_next_hir_id (crate_num);
+  auto crate_num = mappings.get_current_crate ();
+  auto hirid = mappings.get_next_hir_id (crate_num);
   Analysis::NodeMapping mapping (crate_num, segment.get_node_id (), hirid,
 				 UNKNOWN_LOCAL_DEFID);
 
-  translated_segment
-    = new HIR::TypePathSegmentGeneric (std::move (mapping), segment_name,
-				       has_separating_scope_resolution,
-				       generic_args, segment.get_locus ());
+  if (segment.is_lang_item ())
+    {
+      translated_segment
+	= new HIR::TypePathSegmentGeneric (std::move (mapping),
+					   segment.get_lang_item (),
+					   generic_args, segment.get_locus ());
+    }
+  else
+    {
+      std::string segment_name = segment.get_ident_segment ().as_string ();
+      bool has_separating_scope_resolution
+	= segment.get_separating_scope_resolution ();
+
+      translated_segment
+	= new HIR::TypePathSegmentGeneric (std::move (mapping), segment_name,
+					   has_separating_scope_resolution,
+					   generic_args, segment.get_locus ());
+    }
 }
 
 void
@@ -113,10 +137,10 @@ ASTLowerTypePath::visit (AST::TypePath &path)
 	std::unique_ptr<HIR::TypePathSegment> (translated_segment));
     }
 
-  auto crate_num = mappings->get_current_crate ();
-  auto hirid = mappings->get_next_hir_id (crate_num);
+  auto crate_num = mappings.get_current_crate ();
+  auto hirid = mappings.get_next_hir_id (crate_num);
   Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_localdef_id (crate_num));
 
   translated
     = new HIR::TypePath (std::move (mapping), std::move (translated_segments),
@@ -136,16 +160,23 @@ ASTLowerQualifiedPathInType::translate (AST::QualifiedPathInType &type)
 void
 ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
 {
-  auto crate_num = mappings->get_current_crate ();
-  auto hirid = mappings->get_next_hir_id (crate_num);
+  auto crate_num = mappings.get_current_crate ();
+  auto hirid = mappings.get_next_hir_id (crate_num);
   Analysis::NodeMapping qual_mappings (
     crate_num, path.get_qualified_path_type ().get_node_id (), hirid,
     UNKNOWN_LOCAL_DEFID);
 
   HIR::Type *qual_type
     = ASTLoweringType::translate (path.get_qualified_path_type ().get_type ());
-  HIR::TypePath *qual_trait = ASTLowerTypePath::translate (
-    path.get_qualified_path_type ().get_as_type_path ());
+
+  HIR::TypePath *qual_trait = nullptr;
+  if (!path.get_qualified_path_type ().is_error ())
+    {
+      AST::QualifiedPathType &qualifier = path.get_qualified_path_type ();
+      if (qualifier.has_as_clause ())
+	qual_trait
+	  = ASTLowerTypePath::translate (qualifier.get_as_type_path ());
+    }
 
   HIR::QualifiedPathType qual_path_type (
     qual_mappings, std::unique_ptr<HIR::Type> (qual_type),
@@ -170,7 +201,7 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
     }
 
   Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_localdef_id (crate_num));
   translated = new HIR::QualifiedPathInType (std::move (mapping),
 					     std::move (qual_path_type),
 					     std::move (associated_segment),
@@ -185,8 +216,8 @@ ASTLoweringType::translate (AST::Type &type, bool default_to_static_lifetime)
   type.accept_vis (resolver);
 
   rust_assert (resolver.translated != nullptr);
-  resolver.mappings->insert_hir_type (resolver.translated);
-  resolver.mappings->insert_location (
+  resolver.mappings.insert_hir_type (resolver.translated);
+  resolver.mappings.insert_location (
     resolver.translated->get_mappings ().get_hirid (),
     resolver.translated->get_locus ());
 
@@ -244,10 +275,10 @@ ASTLoweringType::visit (AST::BareFunctionType &fntype)
 						default_to_static_lifetime);
     }
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, fntype.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated = new HIR::BareFunctionType (
     std::move (mapping), std::move (lifetime_params), std::move (qualifiers),
@@ -266,10 +297,10 @@ ASTLoweringType::visit (AST::TupleType &tuple)
       elems.push_back (std::unique_ptr<HIR::Type> (t));
     }
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, tuple.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated = new HIR::TupleType (std::move (mapping), std::move (elems),
 				   tuple.get_locus ());
@@ -295,10 +326,10 @@ ASTLoweringType::visit (AST::ArrayType &type)
 				  default_to_static_lifetime);
   HIR::Expr *array_size = ASTLoweringExpr::translate (type.get_size_expr ());
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated
     = new HIR::ArrayType (mapping, std::unique_ptr<HIR::Type> (translated_type),
@@ -316,10 +347,10 @@ ASTLoweringType::visit (AST::ReferenceType &type)
     = ASTLoweringType::translate (type.get_base_type (),
 				  default_to_static_lifetime);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated = new HIR::ReferenceType (mapping,
 				       type.get_has_mut () ? Mutability::Mut
@@ -335,10 +366,10 @@ ASTLoweringType::visit (AST::RawPointerType &type)
     = ASTLoweringType::translate (type.get_type_pointed_to (),
 				  default_to_static_lifetime);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated
     = new HIR::RawPointerType (mapping,
@@ -357,10 +388,10 @@ ASTLoweringType::visit (AST::SliceType &type)
     = ASTLoweringType::translate (type.get_elem_type (),
 				  default_to_static_lifetime);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated
     = new HIR::SliceType (mapping, std::unique_ptr<HIR::Type> (base_type),
@@ -370,10 +401,10 @@ ASTLoweringType::visit (AST::SliceType &type)
 void
 ASTLoweringType::visit (AST::InferredType &type)
 {
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated = new HIR::InferredType (mapping, type.get_locus ());
 }
@@ -381,10 +412,10 @@ ASTLoweringType::visit (AST::InferredType &type)
 void
 ASTLoweringType::visit (AST::NeverType &type)
 {
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated = new HIR::NeverType (mapping, type.get_locus ());
 }
@@ -397,10 +428,10 @@ ASTLoweringType::visit (AST::TraitObjectTypeOneBound &type)
     = ASTLoweringTypeBounds::translate (type.get_trait_bound ());
   bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (translated_bound));
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated = new HIR::TraitObjectType (mapping, std::move (bounds),
 					 type.get_locus (), type.is_dyn ());
@@ -419,13 +450,67 @@ ASTLoweringType::visit (AST::TraitObjectType &type)
 	std::unique_ptr<HIR::TypeParamBound> (translated_bound));
     }
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated = new HIR::TraitObjectType (mapping, std::move (bounds),
 					 type.get_locus (), type.is_dyn ());
+}
+
+void
+ASTLoweringType::visit (AST::ParenthesisedType &type)
+{
+  auto *inner = ASTLoweringType::translate (*type.get_type_in_parens (),
+					    default_to_static_lifetime);
+
+  auto crate_num = mappings.get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
+
+  // FIXME: Do we actually need to know if a type is parenthesized in the HIR?
+  // or can we just use the type in parens?
+  translated
+    = new HIR::ParenthesisedType (mapping, std::unique_ptr<HIR::Type> (inner),
+				  type.get_locus ());
+}
+
+void
+ASTLoweringType::visit (AST::ImplTraitType &type)
+{
+  std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
+  for (auto &bound : type.get_type_param_bounds ())
+    {
+      auto b = ASTLoweringTypeBounds::translate (*bound.get ());
+      bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (b));
+    }
+
+  auto crate_num = mappings.get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
+
+  translated
+    = new HIR::ImplTraitType (mapping, std::move (bounds), type.get_locus ());
+}
+
+void
+ASTLoweringType::visit (AST::ImplTraitTypeOneBound &type)
+{
+  std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
+
+  auto b = ASTLoweringTypeBounds::translate (type.get_trait_bound ());
+  bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (b));
+
+  auto crate_num = mappings.get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
+
+  translated
+    = new HIR::ImplTraitType (mapping, std::move (bounds), type.get_locus ());
 }
 
 HIR::GenericParam *
@@ -435,9 +520,9 @@ ASTLowerGenericParam::translate (AST::GenericParam &param)
   param.accept_vis (resolver);
 
   rust_assert (resolver.translated != nullptr);
-  resolver.mappings->insert_location (
+  resolver.mappings.insert_location (
     resolver.translated->get_mappings ().get_hirid (), param.get_locus ());
-  resolver.mappings->insert_hir_generic_param (resolver.translated);
+  resolver.mappings.insert_hir_generic_param (resolver.translated);
 
   return resolver.translated;
 }
@@ -445,33 +530,34 @@ ASTLowerGenericParam::translate (AST::GenericParam &param)
 void
 ASTLowerGenericParam::visit (AST::LifetimeParam &param)
 {
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
+  AST::Lifetime lifetime = param.get_lifetime ();
   Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
-  HIR::Lifetime lt (mapping, param.get_lifetime ().get_lifetime_type (),
-		    param.get_lifetime ().get_lifetime_name (),
-		    param.get_lifetime ().get_locus ());
+  HIR::Lifetime lt (mapping, lifetime.get_lifetime_type (),
+		    lifetime.get_lifetime_name (), lifetime.get_locus ());
 
   translated = new HIR::LifetimeParam (mapping, lt, param.get_locus (),
-				       std::vector<Lifetime> ());
+				       std::vector<Lifetime> (),
+				       param.get_outer_attrs ());
 }
 
 void
 ASTLowerGenericParam::visit (AST::ConstGenericParam &param)
 {
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   auto type = ASTLoweringType::translate (param.get_type ());
 
   HIR::Expr *default_expr = nullptr;
   if (param.has_default_value ())
     default_expr = ASTLoweringExpr::translate (
-      param.get_default_value ().get_expression ());
+      param.get_default_value_unchecked ().get_expression ());
 
   translated = new HIR::ConstGenericParam (param.get_name ().as_string (),
 					   std::unique_ptr<Type> (type),
@@ -482,7 +568,6 @@ ASTLowerGenericParam::visit (AST::ConstGenericParam &param)
 void
 ASTLowerGenericParam::visit (AST::TypeParam &param)
 {
-  AST::Attribute outer_attr = AST::Attribute::create_empty ();
   std::vector<std::unique_ptr<HIR::TypeParamBound>> type_param_bounds;
   if (param.has_type_param_bounds ())
     {
@@ -494,19 +579,21 @@ ASTLowerGenericParam::visit (AST::TypeParam &param)
 	}
     }
 
-  HIR::Type *type = param.has_type ()
-		      ? ASTLoweringType::translate (param.get_type ())
-		      : nullptr;
+  tl::optional<std::unique_ptr<HIR::Type>> type = tl::nullopt;
+  if (param.has_type ())
+    type
+      = tl::optional<std::unique_ptr<HIR::Type>> (std::unique_ptr<HIR::Type> (
+	ASTLoweringType::translate (param.get_type ())));
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated
     = new HIR::TypeParam (mapping, param.get_type_representation (),
 			  param.get_locus (), std::move (type_param_bounds),
-			  std::unique_ptr<Type> (type), std::move (outer_attr));
+			  std::move (type), param.get_outer_attrs ());
 }
 
 HIR::TypeParamBound *
@@ -516,7 +603,7 @@ ASTLoweringTypeBounds::translate (AST::TypeParamBound &type)
   type.accept_vis (resolver);
 
   rust_assert (resolver.translated != nullptr);
-  resolver.mappings->insert_location (
+  resolver.mappings.insert_location (
     resolver.translated->get_mappings ().get_hirid (),
     resolver.translated->get_locus ());
 
@@ -537,9 +624,9 @@ ASTLoweringTypeBounds::visit (AST::TraitBound &bound)
   AST::TypePath &ast_trait_path = bound.get_type_path ();
   HIR::TypePath *trait_path = ASTLowerTypePath::translate (ast_trait_path);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, bound.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   BoundPolarity polarity = bound.has_opening_question_mark ()
@@ -565,7 +652,7 @@ ASTLowerWhereClauseItem::translate (AST::WhereClauseItem &item)
 
   rust_assert (compiler.translated != nullptr);
   // FIXME
-  // compiler.mappings->insert_location (
+  // compiler.mappings.insert_location (
   //   compiler.translated->get_mappings ().get_hirid (),
   //   compiler.translated->get_locus ());
 
@@ -583,9 +670,9 @@ ASTLowerWhereClauseItem::visit (AST::LifetimeWhereClauseItem &item)
       lifetime_bounds.push_back (std::move (ll));
     }
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::LifetimeWhereClauseItem (mapping, std::move (l),
@@ -616,9 +703,9 @@ ASTLowerWhereClauseItem::visit (AST::TypeBoundWhereClauseItem &item)
       type_param_bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (b));
     }
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated

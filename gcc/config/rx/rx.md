@@ -2541,10 +2541,17 @@
 	(unspec_volatile:SI [(match_operand:BLK 1 "memory_operand")     ;; String1
 			     (match_operand:BLK 2 "memory_operand")]    ;; String2
 			    UNSPEC_CMPSTRN))
-   (use (match_operand:SI                       3 "register_operand"))  ;; Max Length
+   (use (match_operand:SI                       3 "nonmemory_operand")) ;; Max Length
    (match_operand:SI                            4 "immediate_operand")] ;; Known Align
   "rx_allow_string_insns"
   {
+    bool const_len = CONST_INT_P (operands[3]);
+    if (const_len && operands[3] == CONST0_RTX (SImode))
+      {
+	emit_move_insn (operands[0], CONST0_RTX (SImode));
+	DONE;
+      }
+
     rtx str1 = gen_rtx_REG (SImode, 1);
     rtx str2 = gen_rtx_REG (SImode, 2);
     rtx len  = gen_rtx_REG (SImode, 3);
@@ -2552,6 +2559,13 @@
     emit_move_insn (str1, force_operand (XEXP (operands[1], 0), NULL_RTX));
     emit_move_insn (str2, force_operand (XEXP (operands[2], 0), NULL_RTX));
     emit_move_insn (len, operands[3]);
+
+    /* Set flags in case len is zero */
+    if (!const_len)
+      {
+	emit_insn (gen_setpsw (GEN_INT ('C')));
+	emit_insn (gen_setpsw (GEN_INT ('Z')));
+      }
 
     emit_insn (gen_rx_cmpstrn (operands[0], operands[1], operands[2]));
     DONE;
@@ -2590,9 +2604,7 @@
    (clobber (reg:SI 3))
    (clobber (reg:CC CC_REG))]
   "rx_allow_string_insns"
-  "setpsw  z		; Set flags in case len is zero
-   setpsw  c
-   scmpu		; Perform the string comparison
+  "scmpu		; Perform the string comparison
    mov     #-1, %0      ; Set up -1 result (which cannot be created
                         ; by the SC insn)
    bnc	   ?+		; If Carry is not set skip over

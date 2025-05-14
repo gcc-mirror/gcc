@@ -20,7 +20,6 @@
 #define RUST_FMT_H
 
 #include "rust-system.h"
-#include <cstddef>
 
 // FIXME: How to encode Option?
 
@@ -259,10 +258,16 @@ struct FormatArgsHandle
   RustString rust_string;
 };
 
+enum ParseMode
+{
+  Format = 0,
+  InlineAsm,
+};
+
 extern "C" {
 
 FormatArgsHandle
-collect_pieces (const char *input, bool append_newline);
+collect_pieces (const char *input, bool append_newline, ParseMode parse_mode);
 
 FormatArgsHandle
 clone_pieces (const FormatArgsHandle &);
@@ -275,7 +280,8 @@ void destroy_pieces (FormatArgsHandle);
 
 struct Pieces
 {
-  static Pieces collect (const std::string &to_parse, bool append_newline);
+  static Pieces collect (const std::string &to_parse, bool append_newline,
+			 ffi::ParseMode parse_mode);
   ~Pieces ();
 
   Pieces (const Pieces &other);

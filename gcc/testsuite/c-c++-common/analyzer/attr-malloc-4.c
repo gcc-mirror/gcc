@@ -2,7 +2,7 @@
 
 struct foo;
 extern void foo_release (struct foo *)
-  __attribute__((nonnull));
+  __attribute__((nonnull, nothrow));
 extern struct foo *foo_acquire (void)
   __attribute__ ((malloc (foo_release)));
 

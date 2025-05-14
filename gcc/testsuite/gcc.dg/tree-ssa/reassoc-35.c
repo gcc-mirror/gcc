@@ -22,4 +22,4 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Optimizing range tests" 1 "reassoc1"} }*/
+/* { dg-final { scan-tree-dump-times "Optimizing range tests" 1 "reassoc1" } } */

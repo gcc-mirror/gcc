@@ -3,12 +3,12 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/ddoc.html, Documentation Generator)
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/doc.d, _doc.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/doc.d, _doc.d)
  * Documentation:  https://dlang.org/phobos/dmd_doc.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/doc.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/doc.d
  */
 
 module dmd.doc;
@@ -433,10 +433,7 @@ void gendocfile(Module m, const char[] ddoctext, const char* datetime, ErrorSink
     OutBuffer buf;
     if (m.filetype == FileType.ddoc)
     {
-        const ploc = m.md ? &m.md.loc : &m.loc;
-        Loc loc = *ploc;
-        if (!loc.filename)
-            loc.filename = srcfilename.ptr;
+        Loc loc = m.md ? m.md.loc : m.loc;
 
         size_t commentlen = m.comment ? strlen(cast(char*)m.comment) : 0;
         Dsymbols a;
@@ -694,9 +691,7 @@ bool emitAnchorName(ref OutBuffer buf, Dsymbol s, Scope* sc, bool includeParent)
     }
     else
     {
-        /* We just want the identifier, not overloads like TemplateDeclaration::toChars.
-         * We don't want the template parameter list and constraints. */
-        buf.writestring(s.Dsymbol.toChars());
+        buf.writestring(s.ident ? s.ident.toString : "__anonymous");
     }
     return true;
 }
@@ -799,7 +794,11 @@ void emitAnchor(ref OutBuffer buf, Dsymbol s, Scope* sc, bool forHeader = false)
     }
     else
     {
-        auto symbolName = ident.toString();
+        // buf.writestring("<<<");
+        // buf.writestring(typeof(ident).stringof);
+        // buf.writestring(">>>");
+        // auto symbolName = ident.toString();
+        auto symbolName = ident.toChars().toDString();
         buf.printf("$(%.*s %.*s", cast(int) macroName.length, macroName.ptr,
             cast(int) symbolName.length, symbolName.ptr);
 
@@ -2062,9 +2061,9 @@ string toLowercase(string s) pure @safe
 // TODO: maybe unicode lowercase, somehow
         if (c >= 'A' && c <= 'Z')
         {
-            if (!lower.length) {
+            if (!lower.length)
                 lower.reserve(s.length);
-            }
+
             lower ~= s[lower.length..i];
             c += 'a' - 'A';
             lower ~= c;
@@ -2624,7 +2623,7 @@ Parameter isFunctionParameter(Dsymbols* a, const(char)[] p) @safe
 
 /****************************************************
  */
-Parameter isEponymousFunctionParameter(Dsymbols *a, const(char)[] p) @safe
+Parameter isEponymousFunctionParameter(Dsymbols* a, const(char)[] p) @safe
 {
     foreach (Dsymbol dsym; *a)
     {
@@ -3603,7 +3602,7 @@ struct MarkdownLinkReferences
         auto id = Identifier.lookup(ids[0].ptr, ids[0].length);
         if (id)
         {
-            auto loc = Loc();
+            auto loc = Loc.initial;
             Dsymbol pscopesym;
             auto symbol = _scope.search(loc, id, pscopesym, SearchOpt.ignoreErrors);
             for (size_t i = 1; symbol && i < ids.length; ++i)
@@ -4096,9 +4095,8 @@ size_t endRowAndTable(ref OutBuffer buf, size_t iStart, size_t iEnd, ref Markdow
  */
 void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t offset)
 {
-    const incrementLoc = loc.linnum == 0 ? 1 : 0;
-    loc.linnum = loc.linnum + incrementLoc;
-    loc.charnum = 0;
+    loc.nextLine();
+
     //printf("highlightText()\n");
     bool leadingBlank = true;
     size_t iParagraphStart = offset;
@@ -4202,7 +4200,7 @@ void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, size_t of
             lineQuoted = false;
             tableRowDetected = false;
             iLineStart = i + 1;
-            loc.linnum = loc.linnum + incrementLoc;
+            loc.nextLine();
 
             // update the paragraph start if we just entered a macro
             if (previousMacroLevel < macroLevel && iParagraphStart < iLineStart)

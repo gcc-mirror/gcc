@@ -147,8 +147,16 @@ version (CRuntime_Microsoft)
 }
 else
 {
-    /// Added to Bionic since Lollipop.
-    real strtold(scope inout(char)* nptr, scope inout(char)** endptr);
+    static if (PPCUseIEEE128)
+    {
+        real __strtoieee128(scope inout(char)* nptr, scope inout(char)** endptr);
+        alias strtold = __strtoieee128;
+    }
+    else
+    {
+        /// Added to Bionic since Lollipop.
+        real strtold(scope inout(char)* nptr, scope inout(char)** endptr);
+    }
 }
 
 // No unsafe pointer manipulation.

@@ -1,6 +1,6 @@
-import core.gc.registry;
 import core.gc.gcinterface;
-import core.stdc.stdlib;
+import core.gc.registry;
+import core.stdc.stdlib : calloc, malloc, realloc;
 
 static import core.memory;
 

@@ -104,16 +104,16 @@ Adjuster::try_unsize_type (TyTy::BaseType *ty)
   if (!is_valid_type)
     return Adjustment::get_error ();
 
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
   auto context = TypeCheckContext::get ();
 
   const auto ref_base = static_cast<const TyTy::ArrayType *> (ty);
   auto slice_elem = ref_base->get_element_type ();
 
   auto slice
-    = new TyTy::SliceType (mappings->get_next_hir_id (), ty->get_ident ().locus,
+    = new TyTy::SliceType (mappings.get_next_hir_id (), ty->get_ident ().locus,
 			   TyTy::TyVar (slice_elem->get_ref ()));
-  context->insert_implicit_type (slice);
+  context->insert_implicit_type (slice->get_ref (), slice);
 
   return Adjustment (Adjustment::AdjustmentType::UNSIZE, ty, slice);
 }
@@ -125,16 +125,15 @@ resolve_operator_overload_fn (
   Adjustment::AdjustmentType *requires_ref_adjustment)
 {
   auto context = TypeCheckContext::get ();
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
   // look up lang item for arithmetic type
   std::string associated_item_name = LangItem::ToString (lang_item_type);
-  DefId respective_lang_item_id = UNKNOWN_DEFID;
-  bool lang_item_defined
-    = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
+  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
 
   if (!lang_item_defined)
     return false;
+  DefId &respective_lang_item_id = lang_item_defined.value ();
 
   // we might be in a static or const context and unknown is fine
   TypeCheckContextItem current_context = TypeCheckContextItem::get_error ();
@@ -210,7 +209,7 @@ resolve_operator_overload_fn (
 	       == 0)
 	{
 	  TraitReference *trait_reference
-	    = TraitResolver::Lookup (*parent->get_trait_ref ().get ());
+	    = TraitResolver::Lookup (parent->get_trait_ref ());
 	  if (!trait_reference->is_error ())
 	    {
 	      TyTy::BaseType *lookup = nullptr;
@@ -293,7 +292,7 @@ resolve_operator_overload_fn (
 	  rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
 	  fn = static_cast<TyTy::FnType *> (lookup);
 
-	  location_t unify_locus = mappings->lookup_location (lhs->get_ref ());
+	  location_t unify_locus = mappings.lookup_location (lhs->get_ref ());
 	  unify_site (lhs->get_ref (),
 		      TyTy::TyWithLocation (fn->get_self_type ()),
 		      TyTy::TyWithLocation (adjusted_self), unify_locus);

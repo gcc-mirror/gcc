@@ -1066,11 +1066,7 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
 	fprintf (dump_file, "tree could trap...\n");
       return false;
     }
-  else if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-	    || POINTER_TYPE_P (TREE_TYPE (lhs)))
-	   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs))
-	   && arith_code_with_undefined_signed_overflow
-				(gimple_assign_rhs_code (stmt)))
+  else if (gimple_needing_rewrite_undefined (stmt))
     /* We have to rewrite stmts with undefined overflow.  */
     need_to_rewrite_undefined = true;
 
@@ -2830,7 +2826,6 @@ predicate_statements (loop_p loop)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gassign *stmt = dyn_cast <gassign *> (gsi_stmt (gsi));
-	  tree lhs;
 	  if (!stmt)
 	    ;
 	  else if (is_false_predicate (cond)
@@ -2886,13 +2881,8 @@ predicate_statements (loop_p loop)
 
 	      gsi_replace (&gsi, new_stmt, true);
 	    }
-	  else if (((lhs = gimple_assign_lhs (stmt)), true)
-		   && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-		       || POINTER_TYPE_P (TREE_TYPE (lhs)))
-		   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs))
-		   && arith_code_with_undefined_signed_overflow
-						(gimple_assign_rhs_code (stmt)))
-	    rewrite_to_defined_overflow (&gsi);
+	  else if (gimple_needing_rewrite_undefined (stmt))
+	    rewrite_to_defined_unconditional (&gsi);
 	  else if (gimple_vdef (stmt))
 	    {
 	      tree lhs = gimple_assign_lhs (stmt);
@@ -2946,7 +2936,7 @@ predicate_statements (loop_p loop)
 	      gsi_replace (&gsi, new_call, true);
 	    }
 
-	  lhs = gimple_get_lhs (gsi_stmt (gsi));
+	  tree lhs = gimple_get_lhs (gsi_stmt (gsi));
 	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	    ssa_names.add (lhs);
 	  gsi_next (&gsi);

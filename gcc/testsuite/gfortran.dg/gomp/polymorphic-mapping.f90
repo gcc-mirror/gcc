@@ -10,36 +10,20 @@ pa => ca
 
 !        11111111112222222222333333333344
 !2345678901234567890123456789012345678901
-!$omp target enter data map(c, ca, p, pa)
-! { dg-warning "29:Mapping polymorphic list item at .1. is unspecified behavior \\\[-Wopenmp\\\]" "" { target *-*-* } .-1 }
-! { dg-warning "32:Mapping polymorphic list item at .1. is unspecified behavior \\\[-Wopenmp\\\]" "" { target *-*-* } .-2 }
-! { dg-warning "36:Mapping polymorphic list item at .1. is unspecified behavior \\\[-Wopenmp\\\]" "" { target *-*-* } .-3 }
-! { dg-warning "39:Mapping polymorphic list item at .1. is unspecified behavior \\\[-Wopenmp\\\]" "" { target *-*-* } .-4 }
-
-!        11111111112222222222333333333344
-!2345678901234567890123456789012345678901
-!$omp target firstprivate(ca)  ! { dg-warning "27:FIRSTPRIVATE with polymorphic list item at .1. is unspecified behavior \\\[-Wopenmp\\\]" }
+!$omp target firstprivate(ca)  ! { dg-error "27:Polymorphic list item 'ca' at .1. in FIRSTPRIVATE clause has unspecified behavior and unsupported" }
 !$omp end target
 
-!$omp target parallel do firstprivate(ca)  ! { dg-warning "39:FIRSTPRIVATE with polymorphic list item at .1. is unspecified behavior \\\[-Wopenmp\\\]" }
+!$omp target parallel do firstprivate(ca)  ! { dg-error "39:Polymorphic list item 'ca' at .1. in FIRSTPRIVATE clause has unspecified behavior and unsupported" }
 do x = 0, 5
 end do
 
-!$omp target parallel do private(ca)  ! OK; should map declared type
+!$omp target parallel do private(ca)  ! { dg-error "34:Polymorphic list item 'ca' at .1. in PRIVATE clause has unspecified behavior and unsupported" }
 do x = 0, 5
 end do
 
-!$omp target private(ca)  ! OK; should map declared type
+!$omp target private(ca)  ! { dg-error "22:Polymorphic list item 'ca' at .1. in PRIVATE clause has unspecified behavior and unsupported" }
 block
 end block
-
-!        11111111112222222222333333333344
-!2345678901234567890123456789012345678901
-!$omp target update from(c,ca), to(p,pa)
-! { dg-warning "26:Mapping polymorphic list item at .1. is unspecified behavior \\\[-Wopenmp\\\]" "" { target *-*-* } .-1 }
-! { dg-warning "28:Mapping polymorphic list item at .1. is unspecified behavior \\\[-Wopenmp\\\]" "" { target *-*-* } .-2 }
-! { dg-warning "36:Mapping polymorphic list item at .1. is unspecified behavior \\\[-Wopenmp\\\]" "" { target *-*-* } .-3 }
-! { dg-warning "38:Mapping polymorphic list item at .1. is unspecified behavior \\\[-Wopenmp\\\]" "" { target *-*-* } .-4 }
 
 ! -------------------------
 

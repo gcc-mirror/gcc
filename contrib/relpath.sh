@@ -59,9 +59,9 @@ while [ "${to#$from}" = "$to" ]; do
     from=$(dirname $from);
     back=../$back
 
-    if [ "$from" = "/" ]; then
-	echo $to
-	exit 0
+    if [ "$from" = / ] && [ "${to#/}" = "$to" ]; then
+	echo no common ancestor between $1 and $2 >&2
+	exit 1
     elif [ "$from" = . ]; then
 	echo no common ancestor between $1 and $2 >&2
 	exit 1

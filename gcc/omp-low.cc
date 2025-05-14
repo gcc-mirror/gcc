@@ -1461,7 +1461,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  else
 	    install_var_field (decl, false, 11, ctx);
 	  if (DECL_SIZE (decl)
-	      && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+	      && !poly_int_tree_p (DECL_SIZE (decl)))
 	    {
 	      tree decl2 = DECL_VALUE_EXPR (decl);
 	      gcc_assert (INDIRECT_REF_P (decl2));
@@ -1790,6 +1790,11 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    install_var_local (decl, ctx);
 	  break;
 
+	case OMP_CLAUSE_INIT:
+	case OMP_CLAUSE_USE:
+	case OMP_CLAUSE_DESTROY:
+	  break;
+
 	case OMP_CLAUSE__CACHE_:
 	case OMP_CLAUSE_NOHOST:
 	default:
@@ -1986,6 +1991,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE__CONDTEMP_:
+	case OMP_CLAUSE_INIT:
+	case OMP_CLAUSE_USE:
+	case OMP_CLAUSE_DESTROY:
 	  break;
 
 	case OMP_CLAUSE__CACHE_:
@@ -4209,6 +4217,10 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_DISPATCH:
       ctx = new_omp_context (stmt, ctx);
       scan_omp (gimple_omp_body_ptr (stmt), ctx);
+      break;
+
+    case GIMPLE_OMP_INTEROP:
+      ctx = new_omp_context (stmt, ctx);
       break;
 
     case GIMPLE_OMP_SECTIONS:
@@ -14331,6 +14343,222 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     }
 }
 
+/* Generate code to implement the action-clauses (destroy, init, use) of an
+   OpenMP interop construct.  */
+
+static void
+lower_omp_interop_action_clauses (gimple_seq *seq, vec<tree> &objs,
+				  vec<tree> *interop_types = NULL,
+				  vec<tree> *prefer_types = NULL)
+{
+  if (objs.length () == 0)
+    return;
+
+  enum omp_clause_code action = OMP_CLAUSE_CODE (objs[0]);
+  if (action == OMP_CLAUSE_INIT)
+    gcc_checking_assert (objs.length () == interop_types->length ()
+			 && objs.length () == prefer_types->length ());
+  else
+    gcc_assert (prefer_types == NULL && interop_types == NULL);
+
+  tree ret_objs = NULL_TREE, ret_interop_types = NULL_TREE,
+       ret_prefer_types = NULL_TREE;
+
+  /* Build an array of interop objects. */
+
+  tree type_obj_pref = build_array_type_nelts (ptr_type_node, objs.length ());
+  ret_objs = create_tmp_var (type_obj_pref, "interopobjs");
+
+  bool have_pref_type = false;
+  if (action == OMP_CLAUSE_INIT)
+    {
+      for (tree pref_type : prefer_types)
+	if (pref_type != NULL_TREE)
+	  {
+	    have_pref_type = true;
+	    break;
+	  }
+      tree type_tgtsync
+	= build_array_type_nelts (integer_type_node, objs.length ());
+      ret_interop_types = create_tmp_var (type_tgtsync, "tgt_tgtsync");
+      if (have_pref_type)
+	ret_prefer_types = create_tmp_var (type_obj_pref, "pref_type");
+      else
+	{
+	  ret_prefer_types = null_pointer_node;
+	  prefer_types->truncate (0);
+	}
+    }
+
+  for (size_t i = 0; !objs.is_empty (); i++)
+    {
+      tree offset = build_int_cst (integer_type_node, i);
+      tree init = build4 (ARRAY_REF, ptr_type_node, ret_objs, offset, NULL_TREE,
+			  NULL_TREE);
+      tree obj = OMP_CLAUSE_DECL (objs.pop ());
+      if (TREE_CODE (TREE_TYPE (obj)) == REFERENCE_TYPE)
+	obj = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (obj)), obj);
+      if (action != OMP_CLAUSE_USE
+	  && TREE_CODE (TREE_TYPE (obj)) != POINTER_TYPE)
+	/* For modifying actions, we need a pointer. */
+	obj = build_fold_addr_expr (obj);
+      else if (action == OMP_CLAUSE_USE
+	       && TREE_CODE (TREE_TYPE (obj)) == POINTER_TYPE)
+	/* For use action, we need the value. */
+	obj = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (obj)), obj);
+      init = build2 (MODIFY_EXPR, ptr_type_node, init,
+		     fold_convert (ptr_type_node, obj));
+      gimplify_and_add (init, seq);
+
+      if (action == OMP_CLAUSE_INIT)
+	{
+	  init = build4 (ARRAY_REF, integer_type_node, ret_interop_types,
+			 offset, NULL_TREE, NULL_TREE);
+	  init = build2 (MODIFY_EXPR, integer_type_node, init,
+			 interop_types->pop ());
+	  gimplify_and_add (init, seq);
+
+	  if (have_pref_type)
+	    {
+	      tree prefer_type = prefer_types->pop ();
+	      tree pref = (prefer_type == NULL_TREE
+			     ? null_pointer_node
+			     : build_fold_addr_expr (prefer_type));
+	      init = build4 (ARRAY_REF, ptr_type_node, ret_prefer_types, offset,
+			     NULL_TREE, NULL_TREE);
+	      init = build2 (MODIFY_EXPR, ptr_type_node, init, pref);
+	      gimplify_and_add (init, seq);
+	    }
+	}
+    }
+  if (action == OMP_CLAUSE_INIT)
+    {
+      if (have_pref_type)
+	ret_prefer_types = build_fold_addr_expr (ret_prefer_types);
+      ret_interop_types = build_fold_addr_expr (ret_interop_types);
+    }
+  ret_objs = build_fold_addr_expr (ret_objs);
+
+  gcc_assert (objs.is_empty ()
+	      && (!interop_types || interop_types->is_empty ())
+	      && (!prefer_types || prefer_types->is_empty ()));
+
+  objs.safe_push (ret_objs);
+  if (action == OMP_CLAUSE_INIT)
+    {
+      interop_types->safe_push (ret_interop_types);
+      prefer_types->safe_push (ret_prefer_types);
+    }
+}
+
+/* Lower code for an OpenMP interop directive.  */
+
+static void
+lower_omp_interop (gimple_stmt_iterator *gsi_p, omp_context *ctx)
+{
+  push_gimplify_context ();
+
+  tree block = make_node (BLOCK);
+  gbind *bind = gimple_build_bind (NULL, NULL, block);
+  gimple_seq bind_body = NULL;
+
+  /* Emit call to GOMP_interop:
+      void
+      GOMP_interop (int device_num, int n_init, omp_interop_t **init,
+		    const void *target_targetsync, const void *prefer_type,
+		    int n_use, omp_interop_t *use, int n_destroy,
+		    omp_interop_t **destroy, unsigned int flags,
+		    void **depend)  */
+
+  tree flags = NULL_TREE;
+  tree depend = null_pointer_node;
+  tree device_num = NULL_TREE;
+
+  auto_vec<tree> init_objs, use_objs, destroy_objs, prefer_type,
+    target_targetsync;
+  gimple_seq dep_ilist = NULL, dep_olist = NULL;
+  tree clauses = gimple_omp_interop_clauses (gsi_stmt (*gsi_p));
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      switch (OMP_CLAUSE_CODE (c))
+	{
+	case OMP_CLAUSE_INIT:
+	  {
+	    init_objs.safe_push (c);
+	    int target_targetsync_bits = 0;
+	    if (OMP_CLAUSE_INIT_TARGET (c))
+	      target_targetsync_bits |= GOMP_INTEROP_TARGET;
+	    if (OMP_CLAUSE_INIT_TARGETSYNC (c))
+	      target_targetsync_bits |= GOMP_INTEROP_TARGETSYNC;
+	    tree t = build_int_cst (integer_type_node, target_targetsync_bits);
+	    target_targetsync.safe_push (t);
+	    prefer_type.safe_push (OMP_CLAUSE_INIT_PREFER_TYPE (c));
+	  }
+	  break;
+	case OMP_CLAUSE_USE:
+	  use_objs.safe_push (c);
+	  break;
+	case OMP_CLAUSE_DESTROY:
+	  destroy_objs.safe_push (c);
+	  break;
+	case OMP_CLAUSE_NOWAIT:
+	  flags = build_int_cst (integer_type_node, GOMP_INTEROP_FLAG_NOWAIT);
+	  break;
+	case OMP_CLAUSE_DEPEND:
+	  {
+	    tree *cp = gimple_omp_interop_clauses_ptr (gsi_stmt (*gsi_p));
+	    lower_depend_clauses (cp, &dep_ilist, &dep_olist);
+	    depend = OMP_CLAUSE_DECL (*cp);
+	  }
+	  break;
+	case OMP_CLAUSE_DEVICE:
+	  device_num = OMP_CLAUSE_DEVICE_ID (c);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  if (flags == NULL_TREE)
+    flags = build_int_cst (integer_type_node, 0);
+
+  if (device_num == NULL_TREE)
+    device_num = build_int_cst (integer_type_node, GOMP_DEVICE_DEFAULT_OMP_61);
+
+  tree n_init = build_int_cst (integer_type_node, init_objs.length ());
+  tree n_use = build_int_cst (integer_type_node, use_objs.length ());
+  tree n_destroy = build_int_cst (integer_type_node, destroy_objs.length ());
+
+  lower_omp_interop_action_clauses (&bind_body, init_objs, &target_targetsync,
+				    &prefer_type);
+  lower_omp_interop_action_clauses (&bind_body, use_objs);
+  lower_omp_interop_action_clauses (&bind_body, destroy_objs);
+
+  gimple_seq_add_seq (&bind_body, dep_ilist);
+  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_INTEROP);
+  tree init_arg = init_objs.length () ? init_objs.pop () : null_pointer_node;
+  tree target_targetsync_arg = target_targetsync.length ()
+				 ? target_targetsync.pop ()
+				 : null_pointer_node;
+  tree prefer_type_arg
+    = prefer_type.length () ? prefer_type.pop () : null_pointer_node;
+  tree use_arg = use_objs.length () ? use_objs.pop () : null_pointer_node;
+  tree destroy_arg
+    = destroy_objs.length () ? destroy_objs.pop () : null_pointer_node;
+  gcall *call
+    = gimple_build_call (fn, 11, device_num, n_init, init_arg,
+			 target_targetsync_arg, prefer_type_arg, n_use, use_arg,
+			 n_destroy, destroy_arg, flags, depend);
+  gimple_seq_add_stmt (&bind_body, call);
+  gimple_seq_add_seq (&bind_body, dep_olist);
+
+  gsi_replace (gsi_p, bind, true);
+  gimple_bind_set_body (bind, bind_body);
+  pop_gimplify_context (bind);
+  gimple_bind_append_vars (bind, ctx->block_vars);
+  BLOCK_VARS (block) = ctx->block_vars;
+}
+
 /* Expand code for an OpenMP teams directive.  */
 
 static void
@@ -14613,6 +14841,11 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       ctx = maybe_lookup_ctx (stmt);
       gcc_assert (ctx);
       lower_omp_dispatch (gsi_p, ctx);
+      break;
+    case GIMPLE_OMP_INTEROP:
+      ctx = maybe_lookup_ctx (stmt);
+      gcc_assert (ctx);
+      lower_omp_interop (gsi_p, ctx);
       break;
     case GIMPLE_OMP_SINGLE:
       ctx = maybe_lookup_ctx (stmt);

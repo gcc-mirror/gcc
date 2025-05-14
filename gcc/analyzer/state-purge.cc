@@ -18,26 +18,21 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
+#include "analyzer/common.h"
+
 #include "timevar.h"
-#include "tree-ssa-alias.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "stringpool.h"
+#include "gimple-pretty-print.h"
 #include "tree-vrp.h"
 #include "gimple-ssa.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-phinodes.h"
 #include "options.h"
 #include "ssa-iterators.h"
-#include "diagnostic-core.h"
-#include "gimple-pretty-print.h"
-#include "analyzer/analyzer.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
+#include "cgraph.h"
+
 #include "analyzer/call-string.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/program-point.h"
@@ -45,8 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/state-purge.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
-#include "gimple-walk.h"
-#include "cgraph.h"
 
 #if ENABLE_ANALYZER
 
@@ -737,7 +730,7 @@ state_purge_per_decl::process_worklists (const state_purge_map &map,
       worklist.safe_push (iter);
 
     region_model model (mgr);
-    model.push_frame (get_function (), NULL, NULL);
+    model.push_frame (get_function (), nullptr, nullptr, nullptr);
 
     /* Process worklist by walking backwards until we reach a stmt
        that fully overwrites the decl.  */

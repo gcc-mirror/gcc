@@ -2,7 +2,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wall -Wno-array-bounds -Wno-sizeof-array-argument -Wno-stringop-overflow -Wno-stringop-overread" } */
 /* { dg-options "-Wall -Wno-array-bounds -Wno-sizeof-array-argument -Wno-c++-compat -Wno-stringop-overflow -Wno-stringop-overread" { target c } } */
-/* { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 #ifdef __cplusplus

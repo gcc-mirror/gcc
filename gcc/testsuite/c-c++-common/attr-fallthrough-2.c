@@ -21,8 +21,8 @@ fn (int i)
   case 3:
     bar (1);
     __attribute__((fallthrough)) /* { dg-warning "not followed" "" { target c } } */
-  case 4: /* { dg-error "expected" } */
-    bar (1);
+  case 4: /* { dg-error "expected" "" { target c } } */
+    bar (1); /* { dg-warning "'fallthrough' attribute ignored" "" { target c++ } .-1 } */
     __attribute__((fallthrough)) 1;
     /* { dg-error "expected" "" { target c } .-1 } */
     /* { dg-warning "not followed" "" { target *-*-* } .-2 } */

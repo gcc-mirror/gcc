@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tm.h"
 #include "function.h"
-#include "toplev.h"
 #include "target.h"
 #include "stringpool.h"
 #include "stor-layout.h"
@@ -704,18 +703,13 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
       TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (type);
       TYPE_SIZE (t) = TYPE_SIZE (type);
       TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (type);
-      TYPE_PACKED (type) = TYPE_PACKED (type);
+      TYPE_PACKED (t) = TYPE_PACKED (type);
       SET_TYPE_ALIGN (t, TYPE_ALIGN (type));
       TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (type);
     }
 
-  /* Finish debugging output for this type.  */
-  rest_of_type_compilation (type, TYPE_FILE_SCOPE_P (type));
+  /* Complete any other forward-referenced fields of this aggregate type.  */
   finish_incomplete_fields (type);
-
-  /* Finish processing of TYPE_DECL.  */
-  rest_of_decl_compilation (TYPE_NAME (type),
-			    DECL_FILE_SCOPE_P (TYPE_NAME (type)), 0);
 }
 
 /* Returns true if the class or struct type TYPE has already been layed out by
@@ -1185,13 +1179,28 @@ public:
 
 	layout_type (t->ctype);
 
-	/* Finish debugging output for this type.  */
-	rest_of_type_compilation (t->ctype, TYPE_FILE_SCOPE_P (t->ctype));
-	finish_incomplete_fields (t->ctype);
+	/* Fix up all forward-referenced variants of this enum type.  */
+	for (tree v = TYPE_MAIN_VARIANT (t->ctype); v;
+	     v = TYPE_NEXT_VARIANT (v))
+	  {
+	    if (v == t->ctype)
+	      continue;
 
-	/* Finish processing of TYPE_DECL.  */
-	rest_of_decl_compilation (TYPE_NAME (t->ctype),
-				  DECL_FILE_SCOPE_P (TYPE_NAME (t->ctype)), 0);
+	    TYPE_VALUES (v) = TYPE_VALUES (t->ctype);
+	    TYPE_LANG_SPECIFIC (v) = TYPE_LANG_SPECIFIC (t->ctype);
+	    TYPE_MIN_VALUE (v) = TYPE_MIN_VALUE (t->ctype);
+	    TYPE_MAX_VALUE (v) = TYPE_MAX_VALUE (t->ctype);
+	    TYPE_UNSIGNED (v) = TYPE_UNSIGNED (t->ctype);
+	    TYPE_SIZE (v) = TYPE_SIZE (t->ctype);
+	    TYPE_SIZE_UNIT (v) = TYPE_SIZE_UNIT (t->ctype);
+	    SET_TYPE_MODE (v, TYPE_MODE (t->ctype));
+	    TYPE_PRECISION (v) = TYPE_PRECISION (t->ctype);
+	    SET_TYPE_ALIGN (v, TYPE_ALIGN (t->ctype));
+	    TYPE_USER_ALIGN (v) = TYPE_USER_ALIGN (t->ctype);
+	  }
+
+	/* Complete forward-referenced fields of this enum type.  */
+	finish_incomplete_fields (t->ctype);
       }
   }
 
@@ -1278,7 +1287,8 @@ public:
     build_type_decl (basetype, t->sym);
     set_visibility_for_decl (basetype, t->sym);
     apply_user_attributes (t->sym, basetype);
-    finish_aggregate_type (t->sym->structsize, t->sym->alignsize, basetype);
+    /* The underlying record type of classes are packed.  */
+    finish_aggregate_type (t->sym->structsize, 1, basetype);
 
     /* Classes only live in memory, so always set the TREE_ADDRESSABLE bit.  */
     for (tree tv = basetype; tv != NULL_TREE; tv = TYPE_NEXT_VARIANT (tv))

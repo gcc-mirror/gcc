@@ -30,11 +30,11 @@ namespace ana {
 class call_info : public custom_edge_info
 {
 public:
-  void print (pretty_printer *pp) const final override;
+  void print (pretty_printer *pp) const override;
   void add_events_to_path (checker_path *emission_path,
-			   const exploded_edge &eedge) const final override;
+			   const exploded_edge &eedge) const override;
 
-  const gcall *get_call_stmt () const { return m_call_stmt; }
+  const gcall &get_call_stmt () const { return m_call_stmt; }
   tree get_fndecl () const { return m_fndecl; }
 
   virtual void print_desc (pretty_printer &pp) const = 0;
@@ -47,7 +47,7 @@ protected:
   call_info (const call_details &cd, const function &called_fn);
 
 private:
-  const gcall *m_call_stmt;
+  const gcall &m_call_stmt;
   tree m_fndecl;
 };
 

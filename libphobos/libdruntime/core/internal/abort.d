@@ -6,7 +6,7 @@ module core.internal.abort;
  */
 void abort(scope string msg, scope string filename = __FILE__, size_t line = __LINE__) @nogc nothrow @safe
 {
-    import core.stdc.stdlib: c_abort = abort;
+    import core.stdc.stdlib : c_abort = abort;
     // use available OS system calls to print the message to stderr
     version (Posix)
     {

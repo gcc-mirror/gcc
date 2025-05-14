@@ -1,8 +1,7 @@
 /* PR middle-end/91647 - missing -Warray-bounds accessing a zero-length array
    of a declared object
    { dg-do "compile" }
-   { dg-options "-O2 -Wall -fno-tree-vectorize" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall -fno-tree-vectorize" } */
 
 typedef __INT16_TYPE__ int16_t;
 typedef __INT32_TYPE__ int32_t;

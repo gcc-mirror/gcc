@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mrvv-vector-bits=scalable -march=rv64gc_zve32f -mabi=lp64d -O3 -mrvv-vector-bits=zvl" } */
+/* { dg-options "-mrvv-vector-bits=scalable -march=rv64gc_zve32f -mabi=lp64d -O3 -mrvv-vector-bits=zvl -fno-thread-jumps" } */
 
 int d0, sj, v0, rp, zi;
 
@@ -38,4 +38,4 @@ ka:
   goto ka;
 }
 
-/* { dg-final { scan-assembler-times {vsetivli\tzero,\s*1} 2 } } */
+/* { dg-final { scan-assembler-times {vsetivli\tzero,\s*1} 1 } } */

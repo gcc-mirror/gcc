@@ -141,7 +141,7 @@ build_sources() {
 		 "in gcc-${RELEASE_MAJOR}/index.html"
 
     sed -n -e "/^${thischanges}/,/^${previndex}/p" NEWS |\
-	   grep -q "^[[:blank:]]*GCC ${RELEASE_MAJOR}.${RELEASE_MINOR}" ||\
+	   grep -q "^[[:blank:]]*\(\[[0-9]\{1,\}\][[:blank:]]*\)\{0,1\}GCC ${RELEASE_MAJOR}.${RELEASE_MINOR}" ||\
 	   error "GCC ${RELEASE_MAJOR}.${RELEASE_MINOR} not mentioned "\
 		 "in gcc-${RELEASE_MAJOR}/changes.html"
 
@@ -266,10 +266,28 @@ EOF
 	'' | 0* | *[!0-9]*) num_cpus=1;;
       esac
     fi
+    enable_langs=c,c++,lto
+    if [ -f ${SOURCE_DIRECTORY}/gcc/m2/Make-lang.in ]; then
+      enable_langs=$enable_langs,m2
+    fi
     contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ${OBJECT_DIRECTORY} \
-      -c "--enable-generated-files-in-srcdir --disable-multilib" \
+      -c "--enable-languages=$enable_langs --enable-generated-files-in-srcdir --disable-multilib" \
       -m "-j$num_cpus" build || \
       error "Could not rebuild GCC"
+    cd ${OBJECT_DIRECTORY}/gcc
+    all_languages=`sed -n -e '/"all_languages"/s/^.*=//p' config.status \
+		   | sed -e 's/"//g'`
+    for lang in $all_languages; do
+      make $lang.srcextra $lang.srcinfo $lang.srcman || \
+	error "Could not build GCC $lang source extras"
+    done
+    if [ -d ${SOURCE_DIRECTORY}/libffi/doc ]; then
+      makeinfo --split-size=5000000  -I ${SOURCE_DIRECTORY}/gcc/doc/include \
+	-I ${SOURCE_DIRECTORY}/libffi/doc/ -o ${SOURCE_DIRECTORY}/libffi/doc/libffi.info \
+	${SOURCE_DIRECTORY}/libffi/doc/libffi.texi || \
+	error "Could not build libffi.info"
+    fi
+    cd ${SOURCE_DIRECTORY}
   fi
 
   # Move message catalogs to source directory.

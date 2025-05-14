@@ -395,45 +395,57 @@ ENDF  __mulhi3
 
 #if defined (L_umulhisi3)
 DEFUN __umulhisi3
+#ifdef __AVR_TINY__
+    ;; Save callee saved regs.
+    push    B0
+    push    B1
+#endif /* AVR_TINY */
     wmov    B0, 24
     ;; Zero-extend B
     clr     B2
     clr     B3
     ;; Zero-extend A
     wmov    A2, B2
+#ifdef __AVR_TINY__
+    ;; Clear hi16 of the result so we can use __mulsi3_helper.
+    wmov    CC2, B2
+    XJMP    __mulsi3_helper
+#else
     XJMP    __mulsi3
+#endif /* AVR_TINY? */
 ENDF __umulhisi3
 #endif /* L_umulhisi3 */
 
 #if defined (L_mulhisi3)
 DEFUN __mulhisi3
+#ifdef __AVR_TINY__
+    ;; Save callee saved regs.
+    push    B0
+    push    B1
+#endif /* AVR_TINY */
     wmov    B0, 24
     ;; Sign-extend B
     lsl     r25
     sbc     B2, B2
     mov     B3, B2
-#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
-    ;; Sign-extend A
-    clr     A2
-    sbrc    A1, 7
-    com     A2
-    mov     A3, A2
-    XJMP __mulsi3
-#else /*  no __AVR_ERRATA_SKIP_JMP_CALL__ */
     ;; Zero-extend A and __mulsi3 will run at least twice as fast
     ;; compared to a sign-extended A.
     clr     A2
     clr     A3
+    ;; Clear hi16 of the result so we can use __mulsi3_helper.
+    wmov    CC2, A2
     sbrs    A1, 7
-    XJMP __mulsi3
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
+    rjmp 1f
+#else
+    XJMP    __mulsi3_helper
+#endif /* ERRATA_SKIP */
     ;; If  A < 0  then perform the  B * 0xffff.... before the
     ;; very multiplication by initializing the high part of the
     ;; result CC with -B.
-    wmov    CC2, A2
     sub     CC2, B0
     sbc     CC3, B1
-    XJMP __mulsi3_helper
-#endif /*  __AVR_ERRATA_SKIP_JMP_CALL__ */
+1:  XJMP    __mulsi3_helper
 ENDF __mulhisi3
 #endif /* L_mulhisi3 */
 
@@ -581,19 +593,12 @@ DEFUN __umulhisi3
     mul     A1, B1
     movw    C2, r0
     mul     A0, B1
-#ifdef __AVR_HAVE_JMP_CALL__
-    ;; This function is used by many other routines, often multiple times.
-    ;; Therefore, if the flash size is not too limited, avoid the RCALL
-    ;; and inverst 6 Bytes to speed things up.
     add     C1, r0
     adc     C2, r1
     clr     __zero_reg__
     adc     C3, __zero_reg__
-#else
-    rcall   1f
-#endif
     mul     A1, B0
-1:  add     C1, r0
+    add     C1, r0
     adc     C2, r1
     clr     __zero_reg__
     adc     C3, __zero_reg__

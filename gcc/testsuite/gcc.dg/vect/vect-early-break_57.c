@@ -5,8 +5,9 @@
 
 /* { dg-additional-options "-Ofast" } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
-/* { dg-final { scan-tree-dump "epilog loop required" "vect" } } */
+/* Multiple loads of different alignments, we can't peel this. */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump-not "epilog loop required" "vect" } } */
 
 void abort ();
 

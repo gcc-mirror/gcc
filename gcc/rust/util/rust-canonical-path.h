@@ -46,7 +46,9 @@ namespace Resolver {
 class CanonicalPath
 {
 public:
-  CanonicalPath (const CanonicalPath &other) : segs (other.segs) {}
+  CanonicalPath (const CanonicalPath &other)
+    : segs (other.segs), crate_num (other.crate_num)
+  {}
 
   CanonicalPath &operator= (const CanonicalPath &other)
   {

@@ -46,7 +46,7 @@ NameResolution::NameResolution ()
   : resolver (Resolver::get ()), mappings (Analysis::Mappings::get ())
 {
   // these are global
-  resolver->get_type_scope ().push (mappings->get_next_node_id ());
+  resolver->get_type_scope ().push (mappings.get_next_node_id ());
   resolver->insert_builtin_types (resolver->get_type_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
 }
@@ -62,10 +62,11 @@ void
 NameResolution::go (AST::Crate &crate)
 {
   // lookup current crate name
-  CrateNum cnum = mappings->get_current_crate ();
-  std::string crate_name;
-  bool ok = mappings->get_crate_name (cnum, crate_name);
-  rust_assert (ok);
+  CrateNum cnum = mappings.get_current_crate ();
+
+  // Clones the crate name instead of references due to gcc's possibly
+  // dangling references warnings
+  const auto crate_name = mappings.get_crate_name (cnum).value ();
 
   // setup the ribs
   NodeId scope_node_id = crate.get_node_id ();
@@ -74,7 +75,7 @@ NameResolution::go (AST::Crate &crate)
   resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
   // get the root segment
   CanonicalPath crate_prefix

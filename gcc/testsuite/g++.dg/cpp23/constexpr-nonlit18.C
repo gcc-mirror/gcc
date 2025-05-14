@@ -24,7 +24,7 @@ f3 ()
 }
 
 constexpr int
-f4 ()					// { dg-message "declared here" "" { target c++20_down } }
+f4 ()
 {					// { dg-message "is not usable as a 'constexpr' function because:" "" { target c++23 } .-1 }
   static const int a = f1 (1);		// { dg-error "'a' defined 'static' in 'constexpr' function only available with" "" { target c++20_down } }
   return 0;				// { dg-error "'a' defined 'static' in 'constexpr' context" "" { target c++23 } .-1 }

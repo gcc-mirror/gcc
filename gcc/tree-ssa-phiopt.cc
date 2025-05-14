@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dce.h"
-#include "calls.h"
 #include "tree-ssa-loop-niter.h"
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
@@ -403,12 +402,15 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
       if (dominated_by_p (CDI_DOMINATORS, gimple_bb (phi), gimple_bb (arg0_def_stmt)))
 	return false;
 
-      /* Only handle if arg1 is a INTEGER_CST and one that fits
-	 into the new type or if it is the same precision.  */
+      /* If arg1 is an INTEGER_CST, fold it to new type if it fits, or else
+	 if the bits will not be modified during the conversion, except for
+	 boolean types whose precision is not 1 (see int_fits_type_p).  */
       if (!INTEGRAL_TYPE_P (TREE_TYPE (new_arg0))
 	  || !(int_fits_type_p (arg1, TREE_TYPE (new_arg0))
 	       || (TYPE_PRECISION (TREE_TYPE (new_arg0))
-		   == TYPE_PRECISION (TREE_TYPE (arg1)))))
+		   == TYPE_PRECISION (TREE_TYPE (arg1))
+		   && (TREE_CODE (TREE_TYPE (new_arg0)) != BOOLEAN_TYPE
+		       || TYPE_PRECISION (TREE_TYPE (new_arg0)) == 1))))
 	return false;
 
       /* For the INTEGER_CST case, we are just moving the
@@ -547,8 +549,7 @@ phiopt_early_allow (gimple_seq &seq, gimple_match_op &op)
   tree_code code = (tree_code)op.code;
 
   /* For non-empty sequence, only allow one statement
-     except for MIN/MAX, allow max 2 statements,
-     each with MIN/MAX.  */
+     a MIN/MAX and an original MIN/MAX.  */
   if (!gimple_seq_empty_p (seq))
     {
       if (code == MIN_EXPR || code == MAX_EXPR)
@@ -563,18 +564,7 @@ phiopt_early_allow (gimple_seq &seq, gimple_match_op &op)
 	  code = gimple_assign_rhs_code (stmt);
 	  return code == MIN_EXPR || code == MAX_EXPR;
 	}
-      /* Check to make sure op was already a SSA_NAME.  */
-      if (code != SSA_NAME)
-	return false;
-      if (!gimple_seq_singleton_p (seq))
-	return false;
-      gimple *stmt = gimple_seq_first_stmt (seq);
-      /* Only allow assignments.  */
-      if (!is_gimple_assign (stmt))
-	return false;
-      if (gimple_assign_lhs (stmt) != op.ops[0])
-	return false;
-      code = gimple_assign_rhs_code (stmt);
+      return false;
     }
 
   switch (code)
@@ -848,33 +838,13 @@ move_stmt (gimple *stmt, gimple_stmt_iterator *gsi, auto_bitmap &inserted_exprs)
   // Mark the name to be renamed if there is one.
   bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
   gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt);
-  gsi_move_before (&gsi1, gsi);
+  gsi_move_before (&gsi1, gsi, GSI_NEW_STMT);
   reset_flow_sensitive_info (name);
 
   /* Rewrite some code which might be undefined when
      unconditionalized. */
-  if (gimple_assign_single_p (stmt))
-    {
-      tree rhs = gimple_assign_rhs1 (stmt);
-      /* VCE from integral types to another integral types but with
-	 different precisions need to be changed into casts
-	 to be well defined when unconditional. */
-      if (gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR
-	  && INTEGRAL_TYPE_P (TREE_TYPE (name))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (rhs, 0))))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "rewriting stmt with maybe undefined VCE ");
-	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-	    }
-	  tree new_rhs = TREE_OPERAND (rhs, 0);
-	  gcc_assert (is_gimple_val (new_rhs));
-	  gimple_assign_set_rhs_code (stmt, NOP_EXPR);
-	  gimple_assign_set_rhs1 (stmt, new_rhs);
-	  update_stmt (stmt);
-	}
-    }
+  if (gimple_needing_rewrite_undefined (stmt))
+    rewrite_to_defined_unconditional (gsi);
 }
 
 /* RAII style class to temporarily remove flow sensitive
@@ -1330,6 +1300,10 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 		&& jump_function_from_stmt (&arg1, stmt)))
 	empty_or_with_defined_p = false;
     }
+
+  /* The middle bb is not empty if there are any phi nodes. */
+  if (phi_nodes (middle_bb))
+    empty_or_with_defined_p = false;
 
   /* We need to know which is the true edge and which is the false
       edge so that we know if have abs or negative abs.  */
@@ -3552,8 +3526,14 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
       /* If LHS is an access to a local variable without address-taken
 	 (or when we allow data races) and known not to trap, we could
 	 always safely move down the store.  */
+      tree base;
       if (ref_can_have_store_data_races (lhs)
-	  || tree_could_trap_p (lhs))
+	  || tree_could_trap_p (lhs)
+	  /* tree_could_trap_p is a predicate for rvalues, so check
+	     for readonly memory explicitly.  */
+	  || ((base = get_base_address (lhs))
+	      && DECL_P (base)
+	      && TREE_READONLY (base)))
 	return false;
     }
 

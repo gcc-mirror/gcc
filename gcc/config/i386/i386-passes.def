@@ -35,5 +35,6 @@ along with GCC; see the file COPYING3.  If not see
      PR116174.  */
   INSERT_PASS_BEFORE (pass_shorten_branches, 1, pass_align_tight_loops);
 
+  INSERT_PASS_AFTER (pass_late_combine, 1, pass_remove_redundant_vector_load);
   INSERT_PASS_AFTER (pass_late_combine, 1, pass_remove_partial_avx_dependency);
   INSERT_PASS_AFTER (pass_rtl_ifcvt, 1, pass_apx_nf_convert);

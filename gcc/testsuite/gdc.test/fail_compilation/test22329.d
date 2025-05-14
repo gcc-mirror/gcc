@@ -4,9 +4,10 @@
 TEST_OUTPUT:
 ---
 fail_compilation/imports/imp22329.d(3): Error: no property `values` for type `test22329.Foo`
-fail_compilation/test22329.d(13):        struct `Foo` defined here
-fail_compilation/imports/imp22329.d(3): Error: incompatible types for `(arg) + (1)`: `Foo` and `int`
-fail_compilation/test22329.d(21): Error: template instance `imp22329.func!(Foo)` error instantiating
+fail_compilation/test22329.d(14):        struct `Foo` defined here
+fail_compilation/imports/imp22329.d(3): Error: operator `+` is not defined for type `Foo`
+fail_compilation/test22329.d(14):        perhaps overload the operator with `auto opBinary(string op : "+")(int rhs) {}`
+fail_compilation/test22329.d(22): Error: template instance `imp22329.func!(Foo)` error instantiating
 ---
 */
 

@@ -2,7 +2,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/fail16689.d(3): Error: static assert:  "false"
-fail_compilation/fail16689.d(6):        instantiated from here: `Issue16689!()`
+fail_compilation/fail16689.d(6):        instantiated from here: `mixin Issue16689!();`
 ---
 */
 #line 1

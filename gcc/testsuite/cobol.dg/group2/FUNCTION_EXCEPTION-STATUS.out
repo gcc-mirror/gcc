@@ -1,0 +1,3 @@
+EXCEPTION STATUS before bad open: " "
+EXCEPTION STATUS  after bad open: "EC-I-O-PERMANENT-ERROR"
+

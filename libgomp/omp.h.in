@@ -432,4 +432,136 @@ extern const char *omp_get_uid_from_device (int) __GOMP_NOTHROW;
 }
 #endif
 
+#if __cplusplus >= 201103L
+
+/* std::__throw_bad_alloc and std::__throw_bad_array_new_length.  */
+#include <bits/functexcept.h>
+
+namespace omp
+{
+namespace allocator
+{
+
+namespace __detail
+{
+
+template<typename __T, omp_allocator_handle_t __Handle>
+struct __allocator_templ
+{
+  using value_type = __T;
+  using pointer = __T*;
+  using const_pointer = const __T*;
+  using size_type = __SIZE_TYPE__;
+  using difference_type = __PTRDIFF_TYPE__;
+
+  __T*
+  allocate (size_type __n)
+  {
+    if (__SIZE_MAX__ / sizeof(__T) < __n)
+      std::__throw_bad_array_new_length ();
+    void *__p = omp_aligned_alloc (alignof(__T), __n * sizeof(__T), __Handle);
+    if (!__p)
+      std::__throw_bad_alloc ();
+    return static_cast<__T*>(__p);
+  }
+
+  void
+  deallocate (__T *__p, size_type) __GOMP_NOTHROW
+  {
+    omp_free (static_cast<void*>(__p), __Handle);
+  }
+};
+
+template<typename __T, typename __U, omp_allocator_handle_t __Handle>
+constexpr bool
+operator== (const __allocator_templ<__T, __Handle>&,
+	    const __allocator_templ<__U, __Handle>&) __GOMP_NOTHROW
+{
+  return true;
+}
+
+template<typename __T, omp_allocator_handle_t __Handle,
+	 typename __U, omp_allocator_handle_t __UHandle>
+constexpr bool
+operator== (const __allocator_templ<__T, __Handle>&,
+	    const __allocator_templ<__U, __UHandle>&) __GOMP_NOTHROW
+{
+  return false;
+}
+
+template<typename __T, typename __U, omp_allocator_handle_t __Handle>
+constexpr bool
+operator!= (const __allocator_templ<__T, __Handle>&,
+	    const __allocator_templ<__U, __Handle>&) __GOMP_NOTHROW
+{
+  return false;
+}
+
+template<typename __T, omp_allocator_handle_t __Handle,
+	 typename __U, omp_allocator_handle_t __UHandle>
+constexpr bool
+operator!= (const __allocator_templ<__T, __Handle>&,
+	    const __allocator_templ<__U, __UHandle>&) __GOMP_NOTHROW
+{
+  return true;
+}
+
+} /* namespace __detail */
+
+template<typename __T>
+struct null_allocator
+  : __detail::__allocator_templ<__T, omp_null_allocator> {};
+
+template<typename __T>
+struct default_mem
+  : __detail::__allocator_templ<__T, omp_default_mem_alloc> {};
+
+template<typename __T>
+struct large_cap_mem
+  : __detail::__allocator_templ<__T, omp_large_cap_mem_alloc> {};
+
+template<typename __T>
+struct const_mem
+  : __detail::__allocator_templ<__T, omp_const_mem_alloc> {};
+
+template<typename __T>
+struct high_bw_mem
+  : __detail::__allocator_templ<__T, omp_high_bw_mem_alloc> {};
+
+template<typename __T>
+struct low_lat_mem
+  : __detail::__allocator_templ<__T, omp_low_lat_mem_alloc> {};
+
+template<typename __T>
+struct cgroup_mem
+  : __detail::__allocator_templ<__T, omp_cgroup_mem_alloc> {};
+
+template<typename __T>
+struct pteam_mem
+  : __detail::__allocator_templ<__T, omp_pteam_mem_alloc> {};
+
+template<typename __T>
+struct thread_mem
+  : __detail::__allocator_templ<__T, omp_thread_mem_alloc> {};
+
+} /* namespace allocator */
+
+} /* namespace omp */
+
+namespace ompx
+{
+
+namespace allocator
+{
+
+template<typename __T>
+struct gnu_pinned_mem
+  : omp::allocator::__detail::__allocator_templ<__T, ompx_gnu_pinned_mem_alloc> {};
+
+} /* namespace allocator */
+
+} /* namespace ompx */
+
+#endif /* __cplusplus */
+
 #endif /* _OMP_H */

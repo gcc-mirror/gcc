@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "json-parsing.h"
 #include "pretty-print.h"
 #include "math.h"
-#include "make-unique.h"
 #include "selftest.h"
 
 using namespace json;
@@ -1037,7 +1036,7 @@ lexer::make_error (const char *msg)
   location_map::range r;
   r.m_start = p;
   r.m_end = p;
-  return ::make_unique<error> (r, xstrdup (msg));
+  return std::make_unique<error> (r, xstrdup (msg));
 }
 
 /* parser's ctor.  */
@@ -1092,7 +1091,7 @@ parser::parse_value (int depth)
 
     case TOK_STRING:
       {
-	auto val = ::make_unique<string> (tok->u.string);
+	auto val = std::make_unique<string> (tok->u.string);
 	m_lexer.consume ();
 	maybe_record_range (val.get (), tok->range);
 	return parser_result_t (std::move (val));
@@ -1103,7 +1102,7 @@ parser::parse_value (int depth)
 
     case TOK_FLOAT_NUMBER:
       {
-	auto val = ::make_unique<float_number> (tok->u.float_number);
+	auto val = std::make_unique<float_number> (tok->u.float_number);
 	m_lexer.consume ();
 	maybe_record_range (val.get (), tok->range);
 	return parser_result_t (std::move (val));
@@ -1111,7 +1110,7 @@ parser::parse_value (int depth)
 
     case TOK_INTEGER_NUMBER:
       {
-	auto val = ::make_unique<integer_number> (tok->u.integer_number);
+	auto val = std::make_unique<integer_number> (tok->u.integer_number);
 	m_lexer.consume ();
 	maybe_record_range (val.get (), tok->range);
 	return parser_result_t (std::move (val));
@@ -1119,7 +1118,7 @@ parser::parse_value (int depth)
 
     case TOK_TRUE:
       {
-	auto val = ::make_unique<literal> (JSON_TRUE);
+	auto val = std::make_unique<literal> (JSON_TRUE);
 	m_lexer.consume ();
 	maybe_record_range (val.get (), tok->range);
 	return parser_result_t (std::move (val));
@@ -1127,7 +1126,7 @@ parser::parse_value (int depth)
 
     case TOK_FALSE:
       {
-	auto val = ::make_unique<literal> (JSON_FALSE);
+	auto val = std::make_unique<literal> (JSON_FALSE);
 	m_lexer.consume ();
 	maybe_record_range (val.get (), tok->range);
 	return parser_result_t (std::move (val));
@@ -1135,7 +1134,7 @@ parser::parse_value (int depth)
 
     case TOK_NULL:
       {
-	auto val = ::make_unique<literal> (JSON_NULL);
+	auto val = std::make_unique<literal> (JSON_NULL);
 	m_lexer.consume ();
 	maybe_record_range (val.get (), tok->range);
 	return parser_result_t (std::move (val));
@@ -1160,7 +1159,7 @@ parser::parse_object (int depth)
 
   require (TOK_OPEN_CURLY);
 
-  auto obj = ::make_unique<object> ();
+  auto obj = std::make_unique<object> ();
 
   const token *tok = m_lexer.peek ();
   if (tok->id == TOK_CLOSE_CURLY)
@@ -1223,7 +1222,7 @@ parser::parse_array (int depth)
   if (auto err = require (TOK_OPEN_SQUARE))
     return parser_result_t (std::move (err));
 
-  auto arr = ::make_unique<array> ();
+  auto arr = std::make_unique<array> ();
 
   const token *tok = m_lexer.peek ();
   if (tok->id == TOK_CLOSE_SQUARE)
@@ -1340,7 +1339,7 @@ parser::error_at (const location_map::range &r, const char *fmt, ...)
   char *formatted_msg = xvasprintf (fmt, ap);
   va_end (ap);
 
-  return ::make_unique<error> (r, formatted_msg);
+  return std::make_unique<error> (r, formatted_msg);
 }
 
 /* Record that JV has range R within the input file.  */

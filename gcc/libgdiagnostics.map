@@ -73,3 +73,13 @@ LIBGDIAGNOSTICS_ABI_0
 
   local: *;
 };
+
+# Add accessors for diagnostic_logical_location.
+LIBGDIAGNOSTICS_ABI_1 {
+  global:
+    diagnostic_logical_location_get_kind;
+    diagnostic_logical_location_get_parent;
+    diagnostic_logical_location_get_short_name;
+    diagnostic_logical_location_get_fully_qualified_name;
+    diagnostic_logical_location_get_decorated_name;
+} LIBGDIAGNOSTICS_ABI_0;

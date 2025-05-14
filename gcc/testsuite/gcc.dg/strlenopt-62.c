@@ -1,7 +1,6 @@
 /* PR tree-optimization/90662 - strlen of a string in a vla plus offset
    not folded
    { dg-do compile }
-   { dg-require-effective-target alloca }
    { dg-options "-O2 -Wall -fdump-tree-gimple -fdump-tree-optimized" } */
 
 #include "strlenopt.h"
@@ -22,7 +21,7 @@ typedef __INT32_TYPE__   int32_t;
 /* Macro to emit a call to funcation named
      call_in_true_branch_not_eliminated_on_line_NNN()
    for each call that's expected to be eliminated.  The dg-final
-   scan-tree-dump-time directive at the bottom of the test verifies
+   scan-tree-dump-times directive at the bottom of the test verifies
    that no such call appears in output.  */
 #define ELIM(expr) \
   if (!(expr)) FAIL (in_true_branch_not_eliminated, __COUNTER__); else (void)0

@@ -1,4 +1,3 @@
-/* { dg-skip-if "requires alloca" { ! alloca } { "-O0" } { "" } } */
 extern void dynreplace_trampoline(void);
 extern void dynreplace_trampoline_endlabel(void);
 int dynreplace_add_trampoline(void)

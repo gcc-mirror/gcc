@@ -492,7 +492,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_FALSE@	$(am__append_1)
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_TRUE@libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup \
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_TRUE@	$(am__append_1)
-@BUILD_LOGLIB_TRUE@libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags)
+@BUILD_LOGLIB_TRUE@libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags) -lm
 @BUILD_LOGLIB_TRUE@BUILT_SOURCES = ../libm2pim/SYSTEM.def
 @BUILD_LOGLIB_TRUE@M2LIBDIR = /m2/m2log/
 all: $(BUILT_SOURCES)

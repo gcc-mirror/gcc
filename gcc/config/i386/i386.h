@@ -179,6 +179,7 @@ struct processor_costs {
   const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
 	    zmm_move;
   const int sse_to_integer;	/* cost of moving SSE register to integer.  */
+  const int integer_to_sse;	/* cost of moving integer register to SSE. */
   const int gather_static, gather_per_elt; /* Cost of gather load is computed
 				   as static + per_item * nelts. */
   const int scatter_static, scatter_per_elt; /* Cost of gather store is
@@ -207,6 +208,16 @@ struct processor_costs {
   const int divsd;		/* cost of DIVSD instructions.  */
   const int sqrtss;		/* cost of SQRTSS instructions.  */
   const int sqrtsd;		/* cost of SQRTSD instructions.  */
+  const int cvtss2sd;		/* cost SSE FP conversions,
+				   such as CVTSS2SD.  */
+  const int vcvtps2pd256;	/* cost 256bit packed FP conversions,
+				   such as VCVTPD2PS with larger reg in ymm.  */
+  const int vcvtps2pd512;	/* cost 512bit packed FP conversions,
+				   such as VCVTPD2PS with larger reg in zmm.  */
+  const int cvtsi2ss;		/* cost of CVTSI2SS instruction.  */
+  const int cvtss2si;		/* cost of CVT(T)SS2SI instruction.  */
+  const int cvtpi2ps;		/* cost of CVTPI2PS instruction.  */
+  const int cvtps2pi;		/* cost of CVT(T)PS2PI instruction.  */
   const int reassoc_int, reassoc_fp, reassoc_vec_int, reassoc_vec_fp;
 				/* Specify reassociation width for integer,
 				   fp, vector integer and vector fp
@@ -432,6 +443,12 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS]
 #define TARGET_FUSE_ALU_AND_BRANCH \
 	ix86_tune_features[X86_TUNE_FUSE_ALU_AND_BRANCH]
+#define TARGET_FUSE_ALU_AND_BRANCH_MEM \
+	ix86_tune_features[X86_TUNE_FUSE_ALU_AND_BRANCH_MEM]
+#define TARGET_FUSE_ALU_AND_BRANCH_MEM_IMM \
+	ix86_tune_features[X86_TUNE_FUSE_ALU_AND_BRANCH_MEM_IMM]
+#define TARGET_FUSE_ALU_AND_BRANCH_RIP_RELATIVE\
+	ix86_tune_features[X86_TUNE_FUSE_ALU_AND_BRANCH_RIP_RELATIVE]
 #define TARGET_FUSE_MOV_AND_ALU \
 	ix86_tune_features[X86_TUNE_FUSE_MOV_AND_ALU]
 #define TARGET_OPT_AGU ix86_tune_features[X86_TUNE_OPT_AGU]
@@ -455,6 +472,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
     ix86_tune_features[X86_TUNE_ADJUST_UNROLL]
 #define TARGET_AVOID_FALSE_DEP_FOR_BMI \
 	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_BMI]
+#define TARGET_AVOID_FALSE_DEP_FOR_TZCNT \
+	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_TZCNT]
+#define TARGET_AVOID_FALSE_DEP_FOR_BLS \
+	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_BLS]
 #define TARGET_ONE_IF_CONV_INSN \
 	ix86_tune_features[X86_TUNE_ONE_IF_CONV_INSN]
 #define TARGET_AVOID_MFENCE ix86_tune_features[X86_TUNE_AVOID_MFENCE]
@@ -515,6 +536,7 @@ extern unsigned char ix86_prefetch_sse;
 #define TARGET_GNU2_TLS		(ix86_tls_dialect == TLS_DIALECT_GNU2)
 #define TARGET_ANY_GNU_TLS	(TARGET_GNU_TLS || TARGET_GNU2_TLS)
 #define TARGET_SUN_TLS		0
+#define TARGET_WIN32_TLS	0
 
 #ifndef TARGET_64BIT_DEFAULT
 #define TARGET_64BIT_DEFAULT 0
@@ -1166,7 +1188,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P(MODE)                          \
   ((SSE_FLOAT_MODE_P (MODE) && TARGET_SSE_MATH)                         \
    || (TARGET_AVX512FP16 && (MODE) == HFmode)                           \
-   || (TARGET_AVX10_2_256 && (MODE) == BFmode))
+   || (TARGET_AVX10_2 && (MODE) == BFmode))
 
 #define FMA4_VEC_FLOAT_MODE_P(MODE) \
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
@@ -1466,12 +1488,6 @@ enum reg_class
    or could index an array.  */
 
 #define REGNO_REG_CLASS(REGNO) (regclass_map[(REGNO)])
-
-/* When this hook returns true for MODE, the compiler allows
-   registers explicitly used in the rtl to be used as spill registers
-   but prevents the compiler from extending the lifetime of these
-   registers.  */
-#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 #define QI_REG_P(X) (REG_P (X) && QI_REGNO_P (REGNO (X)))
 #define QI_REGNO_P(N) IN_RANGE ((N), FIRST_QI_REG, LAST_QI_REG)
@@ -2445,11 +2461,11 @@ constexpr wide_int_bitmask PTA_DIAMONDRAPIDS = PTA_SKYLAKE | PTA_PKU | PTA_SHA
   | PTA_WBNOINVD | PTA_CLWB | PTA_MOVDIRI | PTA_MOVDIR64B | PTA_ENQCMD
   | PTA_CLDEMOTE | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK
   | PTA_AMX_TILE | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR | PTA_AVXVNNI
-  | PTA_AMX_FP16 | PTA_PREFETCHI | PTA_AMX_COMPLEX | PTA_AVX10_1_512
-  | PTA_AVXIFMA | PTA_AVXNECONVERT | PTA_AVXVNNIINT16 | PTA_AVXVNNIINT8
-  | PTA_CMPCCXADD | PTA_SHA512 | PTA_SM3 | PTA_SM4 | PTA_AVX10_2_512
-  | PTA_APX_F | PTA_AMX_AVX512 | PTA_AMX_FP8 | PTA_AMX_TF32 | PTA_AMX_TRANSPOSE
-  | PTA_MOVRS | PTA_AMX_MOVRS | PTA_USER_MSR;
+  | PTA_AMX_FP16 | PTA_PREFETCHI | PTA_AMX_COMPLEX | PTA_AVX10_1_256
+  | PTA_AVX10_1 | PTA_AVXIFMA | PTA_AVXNECONVERT | PTA_AVXVNNIINT16
+  | PTA_AVXVNNIINT8 | PTA_CMPCCXADD | PTA_SHA512 | PTA_SM3 | PTA_SM4
+  | PTA_AVX10_2 | PTA_APX_F | PTA_AMX_AVX512 | PTA_AMX_FP8 | PTA_AMX_TF32
+  | PTA_AMX_TRANSPOSE | PTA_MOVRS | PTA_AMX_MOVRS | PTA_USER_MSR;
 
 constexpr wide_int_bitmask PTA_BDVER1 = PTA_64BIT | PTA_MMX | PTA_SSE
   | PTA_SSE2 | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3

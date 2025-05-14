@@ -1,22 +1,26 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target arm_unaligned } */
-/* { dg-options "-O2" } */
+/* { dg-do run } */
+/* { dg-options "-O2 -save-temps" } */
 
 #include <string.h>
 
-char src[16] = { 0 };
-char dest[16] = { 0 };
+char src[16] __attribute__ ((aligned(8))) = "abcdefghijklmnop";
+char dest[16] __attribute__ ((aligned(8))) = { 0 };
 
-void aligned_both (void)
+void __attribute__ ((noinline,noclone))
+aligned_both (void)
 {
-  memcpy (dest, src, 15);
+  memcpy (dest, src, 16);
 }
 
-/* We know both src and dest to be aligned: expect multiword loads/stores.  */
+int main ()
+{
+  int i;
+  aligned_both ();
+  for (i = 0; i < 16; i++)
+    if (dest[i] != src[i])
+      __builtin_abort ();
+  return 0;
+}
 
-/* { dg-final { scan-assembler-times "ldm" 1 { target { ! { arm_prefer_ldrd_strd } } } } } */
-/* { dg-final { scan-assembler-times "stmia" 1 { target { ! { arm_prefer_ldrd_strd } } } } } */
-/* { dg-final { scan-assembler "ldrd" { target { arm_prefer_ldrd_strd } } } } */
-/* { dg-final { scan-assembler-times "ldm" 0 { target { arm_prefer_ldrd_strd } } } } */
-/* { dg-final { scan-assembler "strd" { target { arm_prefer_ldrd_strd } } } } */
-/* { dg-final { scan-assembler-times "stm" 0 { target { arm_prefer_ldrd_strd } } } } */
+/* There should be no 'unaligned' comments.  */
+/* { dg-final { scan-assembler-not "@ unaligned" } } */

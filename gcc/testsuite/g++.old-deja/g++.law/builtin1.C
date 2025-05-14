@@ -1,6 +1,5 @@
 // { dg-do run  }
 // { dg-options "" }
-// { dg-require-effective-target alloca }
 // GROUPS passed builtins
 // Apparently not in g++ bug snapshot (was originally sent to bug-gcc)
 // Message-Id: <m0p74Fh-0002fCC@neal.ctd.comsat.com>

@@ -67,7 +67,7 @@ void test_use_after_free (void)
 void test_use_without_check (size_t sz)
 {
   char *buf = (char *) wrapped_malloc (sz); /* { dg-message "this call could return NULL" } */
-  memset (buf, 'x', sz); /* { dg-warning "use of possibly-NULL 'buf' where non-null expected" } */
+  memset (buf, 'x', 4); /* { dg-warning "use of possibly-NULL 'buf' where non-null expected" } */
   wrapped_free (buf);
 }
 

@@ -1,5 +1,5 @@
 struct Foo<A = i321>(A);
-// { dg-error "failed to resolve TypePath: i321" "" { target *-*-* } .-1 }
+// { dg-error "could not resolve type path .i321." "" { target *-*-* } .-1 }
 
 fn main() {
     let a;

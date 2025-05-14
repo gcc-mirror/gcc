@@ -52,7 +52,7 @@ isBuiltin (FuncDeclaration *fd)
    Return result; NULL if cannot evaluate it.  */
 
 Expression *
-eval_builtin (const Loc &loc, FuncDeclaration *fd, Expressions *arguments)
+eval_builtin (Loc loc, FuncDeclaration *fd, Expressions *arguments)
 {
   if (fd->builtin == BUILTIN::unimp)
     return NULL;
@@ -79,11 +79,11 @@ eval_builtin (const Loc &loc, FuncDeclaration *fd, Expressions *arguments)
 /* Build and return typeinfo type for TYPE.  */
 
 Type *
-getTypeInfoType (const Loc &loc, Type *type, Scope *sc)
+getTypeInfoType (Loc loc, Type *type, Scope *sc)
 {
   gcc_assert (type->ty != TY::Terror);
   check_typeinfo_type (loc, sc);
-  create_typeinfo (type, sc ? sc->_module->importedFrom : NULL);
+  create_typeinfo (type, sc);
   return type->vtinfo->type;
 }
 

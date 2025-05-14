@@ -163,8 +163,12 @@ public:
   Scope &get_macro_scope () { return macro_scope; }
 
   NodeId get_global_type_node_id () { return global_type_node_id; }
+
   void set_unit_type_node_id (NodeId id) { unit_ty_node_id = id; }
   NodeId get_unit_type_node_id () { return unit_ty_node_id; }
+
+  void set_never_type_node_id (NodeId id) { never_ty_node_id = id; }
+  NodeId get_never_type_node_id () { return never_ty_node_id; }
 
   void push_new_module_scope (NodeId module_id)
   {
@@ -200,6 +204,41 @@ public:
   void insert_captured_item (NodeId id);
   const std::set<NodeId> &get_captures (NodeId id) const;
 
+  std::string as_debug_string () const
+  {
+    std::stringstream ss;
+
+    ss << "Names:\n";
+    for (auto &n : name_ribs)
+      {
+	ss << "\tNodeID: " << n.first << " Rib: " << n.second->debug_str ()
+	   << "\n";
+      }
+    ss << "Types:\n";
+    for (auto &n : type_ribs)
+      {
+	ss << "\tNodeID: " << n.first << " Rib: " << n.second->debug_str ()
+	   << "\n";
+      }
+    ss << "Macros:\n";
+
+    for (auto &n : macro_ribs)
+      {
+	ss << "\tNodeID: " << n.first << " Rib: " << n.second->debug_str ()
+	   << "\n";
+      }
+
+    ss << "Labels:\n";
+
+    for (auto &n : label_ribs)
+      {
+	ss << "\tNodeID: " << n.first << " Rib: " << n.second->debug_str ()
+	   << "\n";
+      }
+
+    return ss.str ();
+  }
+
 protected:
   bool decl_needs_capture (NodeId decl_rib_node_id, NodeId closure_rib_node_id,
 			   const Scope &scope);
@@ -208,9 +247,9 @@ private:
   Resolver ();
 
   void generate_builtins ();
-  void setup_builtin (const std::string &name, TyTy::BaseType *tyty);
+  NodeId setup_builtin (const std::string &name, TyTy::BaseType *tyty);
 
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
   TypeCheckContext *tyctx;
 
   std::vector<AST::Type *> builtins;
@@ -222,6 +261,7 @@ private:
 
   NodeId global_type_node_id;
   NodeId unit_ty_node_id;
+  NodeId never_ty_node_id;
 
   // map a AST Node to a Rib
   std::map<NodeId, Rib *> name_ribs;

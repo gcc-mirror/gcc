@@ -122,8 +122,6 @@ CONST
    UnboundedAddressName = "_m2_contents" ;
    UnboundedHighName    = "_m2_high_%d" ;
 
-   BreakSym             = 203 ;
-
 TYPE
    ProcAnyBoolean = PROCEDURE (CARDINAL, ProcedureKind) : BOOLEAN ;
    ProcAnyCardinal = PROCEDURE (CARDINAL, ProcedureKind) : CARDINAL ;
@@ -930,6 +928,7 @@ VAR
                                       (* passes and reduce duplicate        *)
                                       (* errors.                            *)
    ConstLitArray     : Indexing.Index ;
+   BreakSym          : CARDINAL ;     (* Allows interactive debugging.      *)
 
 
 (*
@@ -1032,11 +1031,34 @@ END FinalSymbol ;
 
 
 (*
-   stop - a debugger convenience hook.
+   gdbhook - a debugger convenience hook.
 *)
 
-PROCEDURE stop ;
-END stop ;
+PROCEDURE gdbhook ;
+END gdbhook ;
+
+
+(*
+   BreakWhenSymCreated - to be called interactively by gdb.
+*)
+
+PROCEDURE BreakWhenSymCreated (sym: CARDINAL) ;
+BEGIN
+   BreakSym := sym
+END BreakWhenSymCreated ;
+
+
+(*
+   CheckBreak - if sym = BreakSym then call gdbhook.
+*)
+
+PROCEDURE CheckBreak (sym: CARDINAL) ;
+BEGIN
+   IF sym = BreakSym
+   THEN
+      gdbhook
+   END
+END CheckBreak ;
 
 
 (*
@@ -1053,10 +1075,7 @@ BEGIN
       SymbolType := DummySym
    END ;
    PutIndice(Symbols, sym, pSym) ;
-   IF sym = BreakSym
-   THEN
-      stop
-   END ;
+   CheckBreak (sym) ;
    INC(FreeSymbol)
 END NewSym ;
 
@@ -1660,6 +1679,18 @@ PROCEDURE Init ;
 VAR
    pCall: PtrToCallFrame ;
 BEGIN
+   BreakWhenSymCreated (NulSym) ;  (* Disable the intereactive sym watch.  *)
+   (* To examine the symbol table when a symbol is created run cc1gm2 from gdb
+      and set a break point on gdbhook.
+      (gdb) break gdbhook
+      (gdb) run
+      Now below interactively call BreakWhenSymCreated with the symbol
+      under investigation.  *)
+   gdbhook ;
+   (* Now is the time to interactively call gdb, for example:
+      (gdb) print BreakWhenSymCreated (1234)
+      (gdb) cont
+      and you will arrive at gdbhook when this symbol is created.  *)
    AnonymousName := 0 ;
    CurrentError := NIL ;
    InitTree (ConstLitPoolTree) ;
@@ -3959,10 +3990,7 @@ VAR
 BEGIN
    tok := CheckTok (tok, 'procedure') ;
    Sym := DeclareSym(tok, ProcedureName) ;
-   IF Sym = BreakSym
-   THEN
-      stop
-   END ;
+   CheckBreak (Sym) ;
    IF NOT IsError(Sym)
    THEN
       pSym := GetPsym(Sym) ;
@@ -6926,6 +6954,89 @@ END GetNthParamAny ;
 
 
 (*
+   GetNthParamChoice - returns the parameter definition from
+                       sym:ParamNo:kind or NulSym.
+*)
+
+PROCEDURE GetNthParamChoice (sym: CARDINAL; ParamNo: CARDINAL;
+                             kind: ProcedureKind) : CARDINAL ;
+BEGIN
+   IF GetProcedureParametersDefined (sym, kind)
+   THEN
+      RETURN GetNthParam (sym, kind, ParamNo)
+   ELSE
+      RETURN NulSym
+   END
+END GetNthParamChoice ;
+
+
+(*
+   GetNthParamOrdered - returns the parameter definition from list {a, b, c}
+                        in order.
+                        sym:ParamNo:{a,b,c} or NulSym.
+*)
+
+PROCEDURE GetNthParamOrdered (sym: CARDINAL; ParamNo: CARDINAL;
+                              a, b, c: ProcedureKind) : CARDINAL ;
+VAR
+   param: CARDINAL ;
+BEGIN
+   param := GetNthParamChoice (sym, ParamNo, a) ;
+   IF param = NulSym
+   THEN
+      param := GetNthParamChoice (sym, ParamNo, b) ;
+      IF param = NulSym
+      THEN
+         param := GetNthParamChoice (sym, ParamNo, c)
+      END
+   END ;
+   RETURN param
+END GetNthParamOrdered ;
+
+
+(*
+   GetNthParamAnyClosest - returns the nth parameter from the order
+                           proper procedure, forward declaration
+                           or definition module procedure.
+                           It chooses the parameter which is closest
+                           in source terms to currentmodule.
+                           The same module will return using the order
+                           proper procedure, forward procedure, definition module.
+                           Whereas an imported procedure will choose from
+                           DefProcedure, ProperProcedure, ForwardProcedure.
+*)
+
+PROCEDURE GetNthParamAnyClosest (sym: CARDINAL; ParamNo: CARDINAL;
+                                 currentmodule: CARDINAL) : CARDINAL ;
+BEGIN
+   IF GetOuterModuleScope (currentmodule) = GetOuterModuleScope (sym)
+   THEN
+      (* Same module.  *)
+      RETURN GetNthParamOrdered (sym, ParamNo,
+                                 ProperProcedure, ForwardProcedure, DefProcedure)
+   ELSE
+      (* Procedure is imported.  *)
+      RETURN GetNthParamOrdered (sym, ParamNo,
+                                 DefProcedure, ProperProcedure, ForwardProcedure)
+   END
+END GetNthParamAnyClosest ;
+
+
+(*
+   GetOuterModuleScope - returns the outer module symbol scope for sym.
+*)
+
+PROCEDURE GetOuterModuleScope (sym: CARDINAL) : CARDINAL ;
+BEGIN
+   WHILE NOT (IsDefImp (sym) OR
+              (IsModule (sym) AND (GetScope (sym) = NulSym))) DO
+      sym := GetScope (sym)
+   END ;
+   RETURN sym
+END GetOuterModuleScope ;
+
+
+(*
    The Following procedures fill in the symbol table with the
    symbol entities.
 *)
@@ -7154,6 +7265,7 @@ VAR
    pSym: PtrToSymbol ;
 BEGIN
    pSym := GetPsym(Sym) ;
+   CheckBreak (Sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 

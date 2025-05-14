@@ -202,6 +202,8 @@ public:
   const FormatArguments &get_arguments () const { return arguments; }
   virtual location_t get_locus () const override;
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::FormatArgs; }
+
 private:
   location_t loc;
   // FIXME: This probably needs to be a separate type - it is one in rustc's

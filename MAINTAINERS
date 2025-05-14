@@ -162,6 +162,8 @@ Ada front end           Arnaud Charlet          <charlet@adacore.com>
 Ada front end           Eric Botcazou           <ebotcazou@libertysurf.fr>
 Ada front end           Marc Poulhiès           <poulhies@adacore.com>
 Ada front end           Pierre-Marie de Rodat   <derodat@adacore.com>
+COBOL front end         Robert Dubner           <rdubner@symas.com>
+COBOL front end         James K. Lowden         <jklowden@cobolworx.com>
 c++                     Jason Merrill           <jason@redhat.com>
 c++                     Nathan Sidwell          <nathan@acm.org>
 D front end             Iain Buclaw             <ibuclaw@gdcproject.org>
@@ -394,7 +396,7 @@ Tobias Burnus                   burnus          <tburnus@baylibre.com>
 Adam Butcher                    abutcher        <adam@jessamine.co.uk>
 Andrew Cagney                   cagney          <cagney@gnu.org>
 Paolo Carlini                   paolo           <paolo.carlini@oracle.com>
-Andrew Carlotti                 acarlotti       <andrew.carlotti@arm.com>
+Alice Carlotti                  acarlotti       <alice.carlotti@arm.com>
 Daniel Carrera                  dcarrera        <dcarrera@gmail.com>
 Stephane Carrez                 ciceron         <stcarrez@nerim.fr>
 Gabriel Charette                gchare          <gchare@google.com>
@@ -428,6 +430,7 @@ Ludovic Courtès                 ludo            <ludo@gnu.org>
 Cary Coutant                    -               <ccoutant@gmail.com>
 Lawrence Crowl                  crowl           <crowl@google.com>
 Lili Cui                        -               <lili.cui@intel.com>
+Giuseppe D'Angelo               peppe           <giuseppe.dangelo@kdab.com>
 Palmer Dabbelt                  palmer          <palmer@dabbelt.com>
 Ian Dall                        iandall         <ian@beware.dropbear.id.au>
 David Daney                     daney           <david.daney@caviumnetworks.com>
@@ -569,6 +572,7 @@ Teresa Johnson                  tejohnson       <tejohnson@google.com>
 Kean Johnston                   -               <jkj@sco.com>
 Phillip Jordan                  pmj             <phillip.m.jordan@gmail.com>
 Tim Josling                     timjosling      <tej@melbpc.org.au>
+Tomasz Kamiński                 tkaminsk        <tkaminsk@redhat.com>
 Victor Kaplansky                victork         <victork@il.ibm.com>
 Evgeny Karpov                   -               <evgeny.karpov@microsoft.com>
 Filip Kastl                     pheeck          <fkastl@suse.cz>
@@ -858,6 +862,7 @@ Ville Voutilainen               ville           <ville.voutilainen@gmail.com>
 Tom de Vries                    vries           <tdevries@suse.de>
 Nenad Vukicevic                 nenadv          <nenad@intrepid.com>
 Dmitry Vyukov                   dvyukov         <dvyukov@google.com>
+Waffl3x                         waffl3x         <waffl3x@baylibre.com>
 Jonathan Wakely                 redi            <jwakely@redhat.com>
 Krister Walfridsson             kristerw        <krister.walfridsson@gmail.com>
 Feng Wang                       -               <wangfeng@eswincomputing.com>
@@ -892,7 +897,7 @@ Canqun Yang                     canqun          <canqun@nudt.edu.cn>
 Fei Yang                        fyang           <felix.yang@huawei.com>
 Jeffrey Yasskin                 jyasskin        <jyasskin@google.com>
 Joey Ye                         jye2            <joey.ye@arm.com>
-Kwok Cheung Yeung               -               <kcyeung@baylibre.com>
+Kwok Cheung Yeung               kcy             <kcyeung@baylibre.com>
 Jonathan Yong                   jyong           <10walls@gmail.com>
 Greta Yorsh                     gretay          <greta.yorsh@arm.com>
 Kirill Yukhin                   kyukhin         <kirill.yukhin@gmail.com>
@@ -929,6 +934,7 @@ information.
 
 Soumya AR                                       <soumyaa@nvidia.com>
 Juergen Christ                                  <jchrist@linux.ibm.com>
+Giuseppe D'Angelo                               <giuseppe.dangelo@kdab.com>
 Robin Dapp                                      <rdapp.gcc@gmail.com>
 Robin Dapp                                      <rdapp@ventanamicro.com>
 Aldy Hernandez                                  <aldy@quesejoda.com>

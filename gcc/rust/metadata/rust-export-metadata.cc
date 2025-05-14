@@ -56,10 +56,8 @@ void
 ExportContext::emit_trait (const HIR::Trait &trait)
 {
   // lookup the AST node for this
-  AST::Item *item = nullptr;
-  bool ok
-    = mappings->lookup_ast_item (trait.get_mappings ().get_nodeid (), &item);
-  rust_assert (ok);
+  AST::Item *item
+    = mappings.lookup_ast_item (trait.get_mappings ().get_nodeid ()).value ();
 
   std::stringstream oss;
   AST::Dump dumper (oss);
@@ -72,9 +70,8 @@ void
 ExportContext::emit_function (const HIR::Function &fn)
 {
   // lookup the AST node for this
-  AST::Item *item = nullptr;
-  bool ok = mappings->lookup_ast_item (fn.get_mappings ().get_nodeid (), &item);
-  rust_assert (ok);
+  AST::Item *item
+    = mappings.lookup_ast_item (fn.get_mappings ().get_nodeid ()).value ();
 
   // is this a CFG macro or not
   if (item->is_marked_for_strip ())
@@ -119,9 +116,7 @@ ExportContext::emit_macro (NodeId macro)
   std::stringstream oss;
   AST::Dump dumper (oss);
 
-  AST::Item *item;
-  auto ok = mappings->lookup_ast_item (macro, &item);
-  rust_assert (ok);
+  AST::Item *item = mappings.lookup_ast_item (macro).value ();
 
   dumper.go (*item);
 
@@ -166,7 +161,7 @@ private:
 };
 
 PublicInterface::PublicInterface (HIR::Crate &crate)
-  : crate (crate), mappings (*Analysis::Mappings::get ()), context ()
+  : crate (crate), mappings (Analysis::Mappings::get ()), context ()
 {}
 
 void
@@ -239,7 +234,7 @@ PublicInterface::write_to_path (const std::string &path) const
 {
   // validate path contains correct extension
   const std::string expected_file_name = expected_metadata_filename ();
-  const char *path_base_name = basename (path.c_str ());
+  const char *path_base_name = lbasename (path.c_str ());
   if (strcmp (path_base_name, expected_file_name.c_str ()) != 0)
     {
       rust_error_at (UNDEF_LOCATION,
@@ -363,9 +358,9 @@ PublicInterface::is_crate_public (const HIR::VisItem &item)
 std::string
 PublicInterface::expected_metadata_filename ()
 {
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
-  const std::string current_crate_name = mappings->get_current_crate_name ();
+  const std::string current_crate_name = mappings.get_current_crate_name ();
   return current_crate_name + extension_path;
 }
 

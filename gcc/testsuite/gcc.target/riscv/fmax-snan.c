@@ -10,4 +10,4 @@ fmax (double x, double y)
 
 /* { dg-final { scan-assembler-not "\tfmax\\.d\t" } } */
 /* { dg-final { scan-assembler-not "\tfge\\.d\t" } } */
-/* { dg-final { scan-assembler "\t(call|tail)\tfmax\t" } } */
+/* { dg-final { scan-assembler "\t(call|tail)\tfmax(?:@plt)?\t" } } */

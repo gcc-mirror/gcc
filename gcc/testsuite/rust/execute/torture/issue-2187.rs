@@ -1,4 +1,4 @@
-/* { dg-output "L1\n\L2\nL3\nL4" } */
+/* { dg-output "L1\r*\n\L2\r*\nL3\r*\nL4" } */
 extern "C" {
     fn printf(s: *const i8, ...);
 }
@@ -20,4 +20,3 @@ L4\0";
 
     0
 }
-

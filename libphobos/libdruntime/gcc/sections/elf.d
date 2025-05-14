@@ -181,7 +181,7 @@ alias ScanDG = void delegate(void* pbeg, void* pend) nothrow;
 version (Shared)
 {
     import gcc.sections : pinLoadedLibraries, unpinLoadedLibraries,
-           inheritLoadedLibraries, cleanupLoadedLibraries;
+           inheritLoadedLibraries, cleanupLoadedLibraries, sizeOfTLS;
 
     /***
      * Called once per thread; returns array of thread local storage ranges
@@ -213,6 +213,7 @@ version (Shared)
         }
     }
 
+    pragma(mangle, gcc.sections.sizeOfTLS.mangleof)
     size_t sizeOfTLS() nothrow @nogc
     {
         auto tdsos = initTLSRanges();
@@ -295,6 +296,8 @@ version (Shared)
 }
 else
 {
+    import gcc.sections : sizeOfTLS;
+
     /***
      * Called once per thread; returns array of thread local storage ranges
      */
@@ -328,6 +331,7 @@ else
         }
     }
 
+    pragma(mangle, gcc.sections.sizeOfTLS.mangleof)
     size_t sizeOfTLS() nothrow @nogc
     {
         auto rngs = initTLSRanges();

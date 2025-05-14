@@ -51,6 +51,7 @@ int main ()
   foo (a1, b);
   bar (a2, b);
 
+#pragma GCC novector
   for (i = 0; i < ARR_SIZE; i++)
     if (a1[i] != a2[i])
       return 1;

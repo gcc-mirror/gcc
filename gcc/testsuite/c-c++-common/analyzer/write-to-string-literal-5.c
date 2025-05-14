@@ -2,7 +2,7 @@
    notes) works.  */
 
 /* { dg-additional-options "-fanalyzer-show-duplicate-count" } */
-/* { dg-require-effective-target alloca } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
 

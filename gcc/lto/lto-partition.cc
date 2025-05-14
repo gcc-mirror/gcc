@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "lto-partition.h"
+#include "ipa-locality-cloning.h"
 
 #include <limits>
 
@@ -1418,6 +1419,126 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
     }
 }
 
+/* Add all references of NODE into PARTITION.  */
+
+static void
+add_node_references_to_partition (ltrans_partition partition, symtab_node *node)
+{
+  struct ipa_ref *ref = NULL;
+  varpool_node *vnode;
+  for (int j = 0; node->iterate_reference (j, ref); j++)
+    if (is_a <varpool_node *> (ref->referred))
+      {
+	vnode = dyn_cast <varpool_node *> (ref->referred);
+	if (!symbol_partitioned_p (vnode)
+	    && !vnode->no_reorder
+	    && vnode->get_partitioning_class () == SYMBOL_PARTITION)
+	  {
+	    add_symbol_to_partition (partition, vnode);
+	    if (dump_file)
+	      fprintf (dump_file, "Varpool Node: %s\n", vnode->dump_asm_name ());
+	    add_node_references_to_partition (partition, vnode);
+	  }
+      }
+
+  for (int j = 0; node->iterate_referring (j, ref); j++)
+    if (is_a <varpool_node *> (ref->referring))
+      {
+	vnode = dyn_cast <varpool_node *> (ref->referring);
+	gcc_assert (vnode->definition);
+	if (!symbol_partitioned_p (vnode)
+	    && !vnode->no_reorder
+	    && !vnode->can_remove_if_no_refs_p ()
+	    && vnode->get_partitioning_class () == SYMBOL_PARTITION)
+	  {
+	    add_symbol_to_partition (partition, vnode);
+	    if (dump_file)
+	      fprintf (dump_file, "Varpool Node: %s\n", vnode->dump_asm_name ());
+	    add_node_references_to_partition (partition, vnode);
+	  }
+      }
+  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+    {
+      struct cgraph_edge *e;
+
+      /* Add all inline clones and callees that are duplicated.  */
+      for (e = cnode->callees; e; e = e->next_callee)
+	if (e->callee->get_partitioning_class () == SYMBOL_DUPLICATE)
+	  add_node_references_to_partition (partition, e->callee);
+
+      /* Add all thunks associated with the function.  */
+      for (e = cnode->callers; e; e = e->next_caller)
+	if (e->caller->thunk && !e->caller->inlined_to)
+	  add_node_references_to_partition (partition, e->caller);
+    }
+
+}
+
+/* Create and return the created partition of name NAME.  */
+
+static ltrans_partition
+create_partition (int &npartitions, const char *name)
+{
+  npartitions++;
+  return new_partition (name);
+}
+
+/* Partitioning for code locality.
+   The partitioning plan (and prerequisite cloning) will have been done by the
+   IPA locality cloning pass.  This function just implements that plan by
+   assigning those partitions to ltrans_parititions.  */
+
+void
+lto_locality_map (int max_partition_size)
+{
+  symtab_node *snode;
+  int npartitions = 0;
+
+  auto_vec<varpool_node *> varpool_order;
+  struct cgraph_node *node;
+
+  if (locality_partitions.length () == 0)
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Locality partition: falling back to balanced "
+		   "model\n");
+	}
+      lto_balanced_map (param_lto_partitions, param_max_partition_size);
+      return;
+    }
+  ltrans_partition partition = nullptr;
+  for (auto part : locality_partitions)
+    {
+      partition = create_partition (npartitions, "");
+      for (unsigned j = 0; j < part->nodes.length (); j++)
+	{
+	  node = part->nodes[j];
+	  if (symbol_partitioned_p (node))
+	    continue;
+
+	  add_symbol_to_partition (partition, node);
+	  add_node_references_to_partition (partition, node);
+	}
+    }
+
+  int64_t partition_size = max_partition_size;
+  /* All other unpartitioned symbols.  */
+  FOR_EACH_SYMBOL (snode)
+    {
+      if (snode->get_partitioning_class () == SYMBOL_PARTITION
+	  && !symbol_partitioned_p (snode))
+	{
+	  if (partition->insns > partition_size)
+	    partition = create_partition (npartitions, "");
+
+	  add_symbol_to_partition (partition, snode);
+	  if (dump_file)
+	    fprintf (dump_file, "Un-ordered Node: %s\n", snode->dump_asm_name ());
+	}
+    }
+}
+
 /* Return true if we must not change the name of the NODE.  The name as
    extracted from the corresponding decl should be passed in NAME.  */
 
@@ -1732,7 +1853,12 @@ lto_promote_cross_file_statics (void)
     {
       ltrans_partition part
 	= ltrans_partitions[i];
+      if (dump_file)
+	fprintf (dump_file, "lto_promote_cross_file_statics for part %s %p\n",
+		 part->name, (void *)part->encoder);
       part->encoder = compute_ltrans_boundary (part->encoder);
+      if (dump_file)
+	fprintf (dump_file, "new encoder %p\n", (void *)part->encoder);
     }
 
   lto_clone_numbers = new hash_map<const char *, unsigned>;

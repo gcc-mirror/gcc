@@ -31,16 +31,16 @@ EXPORT UNQUALIFIED pexecute ;
    THIS_PNAME is name of the calling program (i.e. argv[0]).
 
    TEMP_BASE is the path name, sans suffix, of a temporary file to use
-   if needed.  This is currently only needed for MSDOS ports that don't use
-   GO32 (do any still exist?).  Ports that don't need it can pass NULL.
+   if needed.  This is currently only needed for MSDOS ports that dont use
+   GO32 (do any still exist?).  Ports that dont need it can pass NULL.
 
    (FLAGS & PEXECUTE_SEARCH) is non-zero if $PATH should be searched
-   (??? It's not clear that GCC passes this flag correctly).
+   (??? Its not clear that GCC passes this flag correctly).
    (FLAGS & PEXECUTE_FIRST) is nonzero for the first process in chain.
    (FLAGS & PEXECUTE_FIRST) is nonzero for the last process in chain.
    FIRST_LAST could be simplified to only mark the last of a chain of processes
    but that requires the caller to always mark the last one (and not give up
-   early if some error occurs).  It's more robust to require the caller to
+   early if some error occurs).  Its more robust to require the caller to
    mark both ends of the chain.
 
    The result is the pid on systems like Unix where we fork/exec and on systems
@@ -52,20 +52,20 @@ EXPORT UNQUALIFIED pexecute ;
 
    Upon failure, ERRMSG_FMT and ERRMSG_ARG are set to the text of the error
    message with an optional argument (if not needed, ERRMSG_ARG is set to
-   NULL), and -1 is returned.  `errno' is available to the caller to use.
+   NULL), and -1 is returned.  errno is available to the caller to use.
 
    pwait: cover function for wait.
 
    PID is the process id of the task to wait for.
-   STATUS is the `status' argument to wait.
+   STATUS is the status argument to wait.
    FLAGS is currently unused (allows future enhancement without breaking
    upward compatibility).  Pass 0 for now.
 
    The result is the pid of the child reaped,
    or -1 for failure (errno says why).
 
-   On systems that don't support waiting for a particular child, PID is
-   ignored.  On systems like MSDOS that don't really multitask pwait
+   On systems that dont support waiting for a particular child, PID is
+   ignored.  On systems like MSDOS that dont really multitask pwait
    is just a mechanism to provide a consistent interface for the caller.
 
    pfinish: finish generation of script

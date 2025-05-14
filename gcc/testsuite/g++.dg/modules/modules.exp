@@ -269,6 +269,7 @@ proc module-init { src } {
     set std_prefix "-std=c++"
     global extra_tool_flags
     set extra_tool_flags {}
+    global MOD_STD_LIST
 
     foreach op $tmp {
 	switch [lindex $op 0] {
@@ -288,13 +289,16 @@ proc module-init { src } {
 	}
     }
 
-    if { !$have_std } {
-	global MOD_STD_LIST
+    if { $have_std } {
+	lappend option_list ""
+    } elseif { [string match "*xtreme*" $src] } {
+	# Only run the xtreme tests once.
+	set x [lindex $MOD_STD_LIST end]
+	lappend option_list "${std_prefix}$x"
+    } else {
 	foreach x $MOD_STD_LIST {
 	    lappend option_list "${std_prefix}$x"
 	}
-    } else {
-	lappend option_list ""
     }
 
     return $option_list

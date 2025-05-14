@@ -349,6 +349,7 @@ namespace std
     partition(_BIter, _BIter, _Predicate);
 
   template<typename _BIter, typename _Predicate>
+    _GLIBCXX26_CONSTEXPR
     _BIter
     stable_partition(_BIter, _BIter, _Predicate);
 
@@ -365,10 +366,12 @@ namespace std
     sort(_RAIter, _RAIter, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX26_CONSTEXPR
     void
     stable_sort(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     void
     stable_sort(_RAIter, _RAIter, _Compare);
 
@@ -456,10 +459,12 @@ namespace std
     merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
 
   template<typename _BIter>
+    _GLIBCXX26_CONSTEXPR
     void
     inplace_merge(_BIter, _BIter, _BIter);
 
   template<typename _BIter, typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     void
     inplace_merge(_BIter, _BIter, _BIter, _Compare);
 

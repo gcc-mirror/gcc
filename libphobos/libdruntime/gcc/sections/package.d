@@ -42,11 +42,32 @@ else version (SectionsPeCoff)
 else
     static assert(0, "unimplemented");
 
+import core.internal.traits : externDFunc;
+
 version (Shared)
 {
-    // interface for core.thread to inherit loaded libraries
-    void* pinLoadedLibraries() nothrow @nogc;
-    void unpinLoadedLibraries(void* p) nothrow @nogc;
-    void inheritLoadedLibraries(void* p) nothrow @nogc;
-    void cleanupLoadedLibraries() nothrow @nogc;
+    // interface for core.thread.osthread to inherit loaded libraries
+    pragma(mangle, externDFunc!("rt.sections_elf_shared.pinLoadedLibraries",
+                                void* function() @nogc nothrow).mangleof)
+    void* pinLoadedLibraries() @nogc nothrow;
+
+    pragma(mangle, externDFunc!("rt.sections_elf_shared.unpinLoadedLibraries",
+                                void function(void*) @nogc nothrow).mangleof)
+    void unpinLoadedLibraries(void* p) @nogc nothrow;
+
+    pragma(mangle, externDFunc!("rt.sections_elf_shared.inheritLoadedLibraries",
+                                void function(void*) @nogc nothrow).mangleof)
+    void inheritLoadedLibraries(void* p) @nogc nothrow;
+
+    pragma(mangle, externDFunc!("rt.sections_elf_shared.cleanupLoadedLibraries",
+                                void function() @nogc nothrow).mangleof)
+    void cleanupLoadedLibraries() @nogc nothrow;
+}
+
+version (SectionsElf)
+{
+    // interface for core.thread.osthread to adjust stack size
+    pragma(mangle, externDFunc!("rt.sections_elf_shared.sizeOfTLS",
+                                size_t function() @nogc nothrow).mangleof)
+    size_t sizeOfTLS() @nogc nothrow;
 }

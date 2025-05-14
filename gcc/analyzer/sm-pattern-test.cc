@@ -20,19 +20,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "make-unique.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
+#include "analyzer/common.h"
+
 #include "tree-pretty-print.h"
-#include "diagnostic-path.h"
-#include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
@@ -140,7 +132,7 @@ pattern_test_state_machine::on_condition (sm_context &sm_ctxt,
   if (tree lhs_expr = sm_ctxt.get_diagnostic_tree (lhs))
     {
       sm_ctxt.warn (node, stmt, lhs_expr,
-		    make_unique<pattern_match> (lhs_expr, op, rhs_cst));
+		    std::make_unique<pattern_match> (lhs_expr, op, rhs_cst));
     }
 }
 
@@ -154,10 +146,10 @@ pattern_test_state_machine::can_purge_p (state_t s ATTRIBUTE_UNUSED) const
 
 /* Internal interface to this file. */
 
-state_machine *
+std::unique_ptr<state_machine>
 make_pattern_test_state_machine (logger *logger)
 {
-  return new pattern_test_state_machine (logger);
+  return std::make_unique<pattern_test_state_machine> (logger);
 }
 
 } // namespace ana

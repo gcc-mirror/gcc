@@ -94,6 +94,9 @@ The @code{libffi} library, used as part of the Go runtime library.
 @item libgcc
 The GCC runtime library.
 
+@item libgcobol
+The COBOL runtime library.
+
 @item libgfortran
 The Fortran runtime library.
 
@@ -1128,6 +1131,11 @@ by the specified floating-point factor.
 @subsubsection Skip a test for some targets
 
 @table @code
+@item @{ dg-do-if @var{action} @{ @var{selector} @} @}
+Same as dg-do if the selector matches and the test hasn't already been
+marked as unsupported.  Use it to override an action on a target while
+leaving the default action alone for other targets.
+
 @item @{ dg-skip-if @var{comment} @{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]] @}
 Arguments @var{include-opts} and @var{exclude-opts} are lists in which
 each element is a string of zero or more GCC options.
@@ -1307,6 +1315,10 @@ Prune messages matching @var{regexp} from the test output.
 @item @{ dg-output @var{regexp} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive compares @var{regexp} to the combined output
 that the test executable writes to @file{stdout} and @file{stderr}.
+
+@item @{ dg-output-file @var{file} [@{ target/xfail @var{selector} @}] @}
+Compares the content of @var{file} against the combined output that the
+test executable writes to @file{stdout} and @file{stderr}.
 @end table
 
 @subsubsection Specify environment variables for a test
@@ -2030,10 +2042,6 @@ ARM target uses emulated floating point operations.
 ARM target supports @code{-mfpu=vfp -mfloat-abi=hard}.
 Some multilibs may be incompatible with these options.
 
-@item arm_iwmmxt_ok
-ARM target supports @code{-mcpu=iwmmxt}.
-Some multilibs may be incompatible with this option.
-
 @item arm_neon
 ARM target supports generating NEON instructions.
 
@@ -2614,17 +2622,14 @@ Target supports the execution of @code{avx} instructions.
 @item avx10.1-256
 Target supports the execution of @code{avx10.1-256} instructions.
 
+@item avx10.1
+Target supports the execution of @code{avx10.1} instructions.
+
 @item avx10.1-512
 Target supports the execution of @code{avx10.1-512} instructions.
 
 @item avx10.2
-Target supports the execution of @code{avx10.2-512} instructions.
-
-@item avx10.2-256
-Target supports the execution of @code{avx10.2-256} instructions.
-
-@item avx10.2-512
-Target supports the execution of @code{avx10.2-512} instructions.
+Target supports the execution of @code{avx10.2} instructions.
 
 @item avx2
 Target supports compiling @code{avx2} instructions.
@@ -2793,6 +2798,9 @@ Target supports the execution of @code{user_msr} instructions.
 @item vect_cmdline_needed
 Target requires a command line argument to enable a SIMD instruction set.
 
+@item x86
+Target is ia32 or x86_64.
+
 @item xorsign
 Target supports the xorsign optab expansion.
 
@@ -2945,6 +2953,9 @@ Target supports @code{sysconf}.
 @item trampolines
 Target supports trampolines.
 
+@item variadic_mi_thunk
+Target supports C++ virtual variadic function calls with multiple inheritance.
+
 @item two_plus_gigs
 Target supports linking programs with 2+GiB of data.
 
@@ -2999,6 +3010,9 @@ Note that this is orthogonal to effective-target @code{exceptions_enabled}.
 @item exceptions_enabled
 Testing configuration has exception handling enabled.
 Note that this is orthogonal to effective-target @code{exceptions}.
+
+@item using_sjlj_exceptions
+Target uses @code{setjmp} and @code{longjmp} for implementing exceptions.
 
 @item fgraphite
 Target supports Graphite optimizations.

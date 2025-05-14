@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fanalyzer-verbosity=2" } */
+/* { dg-additional-options "-fanalyzer-verbosity=2 -fno-exceptions" } */
 
 typedef struct FILE   FILE;
 

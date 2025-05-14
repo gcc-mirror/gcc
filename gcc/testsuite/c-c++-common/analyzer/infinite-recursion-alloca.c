@@ -1,5 +1,3 @@
-/* { dg-require-effective-target alloca } */
-
 typedef __SIZE_TYPE__ size_t;
 
 int test_alloca_1 (void)

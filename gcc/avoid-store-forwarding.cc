@@ -238,10 +238,15 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
 	{
 	  start_sequence ();
 
-	  rtx ext0 = gen_rtx_ZERO_EXTEND (GET_MODE (dest), it->mov_reg);
-	  if (ext0)
+	  machine_mode dest_mode = GET_MODE (dest);
+	  rtx base_reg = it->mov_reg;
+	  if (known_gt (GET_MODE_BITSIZE (dest_mode),
+			GET_MODE_BITSIZE (GET_MODE (it->mov_reg))))
+	    base_reg = gen_rtx_ZERO_EXTEND (dest_mode, it->mov_reg);
+
+	  if (base_reg)
 	    {
-	      rtx_insn *move0 = emit_move_insn (dest, ext0);
+	      rtx_insn *move0 = emit_move_insn (dest, base_reg);
 	      if (recog_memoized (move0) >= 0)
 		{
 		  insns = get_insns ();

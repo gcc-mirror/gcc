@@ -1,8 +1,6 @@
 /* { dg-do compile { target c++11 } } */
 /* { dg-additional-options "-fdump-tree-original" }  */
 
-/* { dg-prune-output "sorry, unimplemented: '#pragma omp interop' not yet supported" }  */
-
 /* The following definitions are in omp_lib, which cannot be included
    in gcc/testsuite/  */
 
@@ -43,14 +41,14 @@ f ()
   constexpr T3 ifr_level_zero = (T3) (omp_ifr_sycl + 2);
   constexpr T3 ifr_invalid = (T3) 99;
 
-  #pragma omp interop init ( obj1, obj2) use (obj3) destroy(obj4) init(obj5) destroy(obj6) use(obj7)   /* { dg-message "'#pragma omp interop' not yet supported" }  */
-  /* { dg-final { scan-tree-dump-times "#pragma omp interop use\\(obj7\\) destroy\\(obj6\\) init\\(obj5\\) destroy\\(obj4\\) use\\(obj3\\) init\\(obj2\\) init\\(obj1\\)\[\r\n\]" 2 "original" } }  */
+#pragma omp interop init (target: obj1, obj2) use (obj3) destroy(obj4) init(targetsync:obj5) destroy(obj6) use(obj7)   
+  /* { dg-final { scan-tree-dump-times "#pragma omp interop use\\(obj7\\) destroy\\(obj6\\) init\\(targetsync: obj5\\) destroy\\(obj4\\) use\\(obj3\\) init\\(target: obj2\\) init\\(target: obj1\\)\[\r\n\]" 2 "original" } }  */
 
-  #pragma omp interop nowait init (targetsync : obj1, obj2) use (obj3) destroy(obj4) init(target, targetsync : obj5) destroy(obj6) use(obj7) depend(inout: x)  /* { dg-message "'#pragma omp interop' not yet supported" }  */
+  #pragma omp interop nowait init (targetsync : obj1, obj2) use (obj3) destroy(obj4) init(target, targetsync : obj5) destroy(obj6) use(obj7) depend(inout: x)  
   /* { dg-final { scan-tree-dump-times "#pragma omp interop depend\\(inout:x\\) use\\(obj7\\) destroy\\(obj6\\) init\\(target, targetsync: obj5\\) destroy\\(obj4\\) use\\(obj3\\) init\\(targetsync: obj2\\) init\\(targetsync: obj1\\) nowait\[\r\n\]" 2 "original" } }  */
 
-  #pragma omp interop init ( obj1, obj2) init (target: obj3) init(targetsync : obj4) init(target,targetsync: obj5)  /* { dg-message "'#pragma omp interop' not yet supported" }  */
-  /* { dg-final { scan-tree-dump-times "#pragma omp interop init\\(target, targetsync: obj5\\) init\\(targetsync: obj4\\) init\\(target: obj3\\) init\\(obj2\\) init\\(obj1\\)\[\r\n\]" 2 "original" } }  */
+#pragma omp interop init (target: obj1, obj2) init (target: obj3) init(targetsync : obj4) init(target,targetsync: obj5)  
+  /* { dg-final { scan-tree-dump-times "#pragma omp interop init\\(target, targetsync: obj5\\) init\\(targetsync: obj4\\) init\\(target: obj3\\) init\\(target: obj2\\) init\\(target: obj1\\)\[\r\n\]" 2 "original" } }  */
 
   /* --------------------------------------------  */
 
@@ -64,7 +62,7 @@ f ()
      { dg-final { scan-tree-dump-times "#pragma omp interop init\\(prefer_type\\(\{fr\\(\"<unknown>\"\\)\}, \{fr\\(\"<unknown>\"\\)\}, \{fr\\(\"cuda\"\\)\}, \{fr\\(\"cuda_driver\"\\)\}, \{fr\\(\"hsa\"\\)\}, \{fr\\(\"<unknown>\"\\)\}, \{fr\\(\"<unknown>\"\\)\}\\), target: obj2\\) init\\(prefer_type\\(\{fr\\(\"<unknown>\"\\)\}, \{fr\\(\"<unknown>\"\\)\}, \{fr\\(\"cuda\"\\)\}, \{fr\\(\"cuda_driver\"\\)\}, \{fr\\(\"hsa\"\\)\}, \{fr\\(\"<unknown>\"\\)\}, \{fr\\(\"<unknown>\"\\)\}\\), target: obj1\\)\[\r\n\]" 2 "original" } }
   */
 
-  #pragma omp interop init (target, prefer_type(ifr_cuda, ifr_cuda+1, "hsa", "myPrivateInterop", ifr_cuda-2) : obj1, obj2) init (target: obj3) init(prefer_type(ifr_hip, "sycl", ifr_opencl), targetsync : obj4, obj7) init(target,prefer_type("level_zero", ifr_level_zero+0),targetsync: obj5)  /* { dg-message "'#pragma omp interop' not yet supported" }  */
+  #pragma omp interop init (target, prefer_type(ifr_cuda, ifr_cuda+1, "hsa", "myPrivateInterop", ifr_cuda-2) : obj1, obj2) init (target: obj3) init(prefer_type(ifr_hip, "sycl", ifr_opencl), targetsync : obj4, obj7) init(target,prefer_type("level_zero", ifr_level_zero+0),targetsync: obj5)  
   /*
      { dg-warning "unknown foreign runtime identifier 'myPrivateInterop' \\\[-Wopenmp\\\]" "" { target *-*-* } .-2 }
      { dg-warning "unknown foreign runtime identifier '-1' \\\[-Wopenmp\\\]" "" { target *-*-* } .-3 }
@@ -74,7 +72,7 @@ f ()
 
 /* -------------------------------------------- */
 
-  #pragma omp interop init ( target, prefer_type( {fr("hip"), attr("ompx_gnu_prio:1", "ompx_gnu_debug")}, {attr("ompx_gnu_nicest"), attr("ompx_something")}) : obj1, obj2) init ( prefer_type( {fr("cuda")}, {fr(ifr_cuda_driver), attr("ompx_nix")}, {fr("best")}), targetsync : obj3, obj4) nowait use(obj5)  /* { dg-message "'#pragma omp interop' not yet supported" }  */
+  #pragma omp interop init ( target, prefer_type( {fr("hip"), attr("ompx_gnu_prio:1", "ompx_gnu_debug")}, {attr("ompx_gnu_nicest"), attr("ompx_something")}) : obj1, obj2) init ( prefer_type( {fr("cuda")}, {fr(ifr_cuda_driver), attr("ompx_nix")}, {fr("best")}), targetsync : obj3, obj4) nowait use(obj5)  
   /*
      { dg-warning "unknown foreign runtime identifier 'best' \\\[-Wopenmp\\\]" "" { target *-*-* } .-2 }
 

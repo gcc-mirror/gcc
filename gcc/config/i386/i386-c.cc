@@ -734,20 +734,15 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
   if (isa_flag2 & OPTION_MASK_ISA2_USER_MSR)
     def_or_undef (parse_in, "__USER_MSR__");
   if (isa_flag2 & OPTION_MASK_ISA2_AVX10_1_256)
-    {
-      def_or_undef (parse_in, "__AVX10_1_256__");
-      def_or_undef (parse_in, "__AVX10_1__");
-    }
-  if (isa_flag2 & OPTION_MASK_ISA2_AVX10_1_512)
-    def_or_undef (parse_in, "__AVX10_1_512__");
+    def_or_undef (parse_in, "__AVX10_1_256__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AVX10_1)
+    def_or_undef (parse_in, "__AVX10_1__");
   if (isa_flag2 & OPTION_MASK_ISA2_APX_F)
     def_or_undef (parse_in, "__APX_F__");
   if (ix86_apx_inline_asm_use_gpr32)
     def_or_undef (parse_in, "__APX_INLINE_ASM_USE_GPR32__");
-  if (isa_flag2 & OPTION_MASK_ISA2_AVX10_2_256)
-    def_or_undef (parse_in, "__AVX10_2_256__");
-  if (isa_flag2 & OPTION_MASK_ISA2_AVX10_2_512)
-    def_or_undef (parse_in, "__AVX10_2_512__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AVX10_2)
+    def_or_undef (parse_in, "__AVX10_2__");
   if (isa_flag2 & OPTION_MASK_ISA2_AMX_AVX512)
     def_or_undef (parse_in, "__AMX_AVX512__");
   if (isa_flag2 & OPTION_MASK_ISA2_AMX_TF32)

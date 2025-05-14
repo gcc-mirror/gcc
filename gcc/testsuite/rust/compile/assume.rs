@@ -1,3 +1,5 @@
+#![feature(intrinsics)]
+
 mod intrinsics {
     extern "rust-intrinsic" {
         pub fn assume(value: bool);

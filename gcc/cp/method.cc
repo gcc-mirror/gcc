@@ -1597,7 +1597,7 @@ build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
 	      /* Some other array, will need runtime loop.  */
 	      else
 		{
-		  idx = force_target_expr (sizetype, maxval, complain);
+		  idx = get_internal_target_expr (maxval);
 		  loop_indexes = tree_cons (idx, NULL_TREE, loop_indexes);
 		}
 	      expr_type = TREE_TYPE (expr_type);

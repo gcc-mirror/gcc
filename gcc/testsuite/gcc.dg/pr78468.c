@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-O2 -fno-inline" } */
 
 /* Test that targets correctly round the size of the outgoing arguments

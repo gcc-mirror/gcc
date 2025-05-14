@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-march=gfx908" { target amdgcn*-*-* } } */
 
 #ifndef N
 #define N 803
@@ -23,4 +24,5 @@ unsigned test4(unsigned x)
  return ret;
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" { target vect_load_lanes } } } */
+/* { dg-final { scan-tree-dump-not "vectorized 1 loops in function" "vect" { target { ! vect_load_lanes } } } } */

@@ -2363,14 +2363,9 @@ loongarch_index_address_p (rtx addr, machine_mode mode ATTRIBUTE_UNUSED)
   return true;
 }
 
-/* Return the number of instructions needed to load or store a value
-   of mode MODE at address X.  Return 0 if X isn't valid for MODE.
-   Assume that multiword moves may need to be split into word moves
-   if MIGHT_SPLIT_P, otherwise assume that a single load or store is
-   enough.  */
-
-int
-loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
+static int
+loongarch_address_insns_1 (rtx x, machine_mode mode, bool might_split_p,
+			   int reg_reg_cost)
 {
   struct loongarch_address_info addr;
   int factor;
@@ -2405,7 +2400,7 @@ loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
 	return factor;
 
       case ADDRESS_REG_REG:
-	return factor * la_addr_reg_reg_cost;
+	return factor * reg_reg_cost;
 
       case ADDRESS_CONST_INT:
 	return lsx_p ? 0 : factor;
@@ -2418,6 +2413,18 @@ loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
 	  : factor * loongarch_symbol_insns (addr.symbol_type, mode);
       }
   return 0;
+}
+
+/* Return the number of instructions needed to load or store a value
+   of mode MODE at address X.  Return 0 if X isn't valid for MODE.
+   Assume that multiword moves may need to be split into word moves
+   if MIGHT_SPLIT_P, otherwise assume that a single load or store is
+   enough.  */
+
+int
+loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
+{
+  return loongarch_address_insns_1 (x, mode, might_split_p, 1);
 }
 
 /* Return true if X fits within an unsigned field of BITS bits that is
@@ -3746,6 +3753,17 @@ loongarch_set_reg_reg_cost (machine_mode mode)
     }
 }
 
+/* Implement TARGET_ADDRESS_COST.  */
+
+static int
+loongarch_address_cost (rtx addr, machine_mode mode,
+			addr_space_t as ATTRIBUTE_UNUSED,
+			bool speed ATTRIBUTE_UNUSED)
+{
+  return loongarch_address_insns_1 (addr, mode, false,
+				    la_addr_reg_reg_cost);
+}
+
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
@@ -3814,7 +3832,7 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  *total = COSTS_N_INSNS (2);
 	  return true;
 	}
-      cost = loongarch_address_insns (addr, mode, true);
+      cost = loongarch_address_cost (addr, mode, true, speed);
       if (cost > 0)
 	{
 	  *total = COSTS_N_INSNS (cost + 1);
@@ -4401,16 +4419,6 @@ loongarch_vector_costs::finish_cost (const vector_costs *scalar_costs)
   vector_costs::finish_cost (scalar_costs);
 }
 
-/* Implement TARGET_ADDRESS_COST.  */
-
-static int
-loongarch_address_cost (rtx addr, machine_mode mode,
-			addr_space_t as ATTRIBUTE_UNUSED,
-			bool speed ATTRIBUTE_UNUSED)
-{
-  return loongarch_address_insns (addr, mode, false);
-}
-
 /* Implement TARGET_INSN_COST.  */
 
 static int
@@ -4567,8 +4575,22 @@ loongarch_reassoc_shift_bitwise (bool is_and, rtx shamt, rtx mask,
   if (ctz_hwi (INTVAL (mask)) < INTVAL (shamt))
     return NULL_RTX;
 
+  /* When trying alsl.w, deliberately ignore the high bits.  */
+  mask = gen_int_mode (UINTVAL (mask), mode);
+
   rtx new_mask = simplify_const_binary_operation (LSHIFTRT, mode, mask,
 						  shamt);
+
+  /* Do an arithmetic shift for checking ins_zero_bitmask_operand or -1:
+     ashiftrt (0xffffffff00000000, 2) is 0xffffffff60000000 which is an
+     ins_zero_bitmask_operand, but lshiftrt will produce
+     0x3fffffff60000000.  */
+  rtx new_mask_1 = simplify_const_binary_operation (ASHIFTRT, mode, mask,
+						    shamt);
+
+  if (is_and && const_m1_operand (new_mask_1, mode))
+    return new_mask_1;
+
   if (const_uns_arith_operand (new_mask, mode))
     return new_mask;
 
@@ -4578,13 +4600,7 @@ loongarch_reassoc_shift_bitwise (bool is_and, rtx shamt, rtx mask,
   if (low_bitmask_operand (new_mask, mode))
     return new_mask;
 
-  /* Do an arithmetic shift for checking ins_zero_bitmask_operand:
-     ashiftrt (0xffffffff00000000, 2) is 0xffffffff60000000 which is an
-     ins_zero_bitmask_operand, but lshiftrt will produce
-     0x3fffffff60000000.  */
-  new_mask = simplify_const_binary_operation (ASHIFTRT, mode, mask,
-					      shamt);
-  return ins_zero_bitmask_operand (new_mask, mode) ? new_mask : NULL_RTX;
+  return ins_zero_bitmask_operand (new_mask_1, mode) ? new_mask_1 : NULL_RTX;
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  */
@@ -11190,6 +11206,16 @@ loongarch_asm_code_end (void)
 #undef DUMP_FEATURE
 }
 
+/* Target hook for c_mode_for_suffix.  */
+static machine_mode
+loongarch_c_mode_for_suffix (char suffix)
+{
+  if (suffix == 'q')
+    return TFmode;
+
+  return VOIDmode;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -11460,6 +11486,9 @@ loongarch_asm_code_end (void)
 
 #undef TARGET_OPTION_VALID_ATTRIBUTE_P
 #define TARGET_OPTION_VALID_ATTRIBUTE_P loongarch_option_valid_attribute_p
+
+#undef TARGET_C_MODE_FOR_SUFFIX
+#define TARGET_C_MODE_FOR_SUFFIX loongarch_c_mode_for_suffix
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

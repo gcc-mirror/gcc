@@ -1,7 +1,6 @@
 /* PR tree-optimization/82588 - missing -Warray-bounds on an excessively
    large index
    { dg-do compile }
-   { dg-require-effective-target alloca }
    { dg-options "-O2 -Warray-bounds -ftrack-macro-expansion=0" }  */
 
 #define SIZE_MAX  __SIZE_MAX__

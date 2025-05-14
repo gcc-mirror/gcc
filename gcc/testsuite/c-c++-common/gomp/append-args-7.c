@@ -20,14 +20,14 @@ void g1(...) { }
 void f2(...) { }
 /* { dg-error "argument 1 of 'f2' must be of 'omp_interop_t'" "" { target c } .-1 }  */
 /* { dg-error "argument 1 of 'void f2\\(\\.\\.\\.\\)' must be of 'omp_interop_t'" "" { target c++ } .-2 }  */
-#pragma omp declare variant(f2) append_args(interop(target), interop(prefer_type("cuda"))) \
+#pragma omp declare variant(f2) append_args(interop(target), interop(target, prefer_type("cuda"))) \
                                 match(construct={dispatch})
 void g2(...) { }
 /* { dg-note "'append_args' specified here" "" { target *-*-* } .-3 }  */
 
 
 void f3(omp_interop_t, omp_interop_t, ...) { }
-#pragma omp declare variant(f3) append_args(interop(target), interop(prefer_type("cuda"))) \
+#pragma omp declare variant(f3) append_args(interop(target), interop(target, prefer_type("cuda"))) \
                                 match(construct={dispatch})
 void g3(...) { }
 

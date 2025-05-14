@@ -66,6 +66,9 @@
 #if __cplusplus > 201703L
 # include <compare>
 #endif
+#if __cplusplus > 202002L
+# include <bits/ranges_algobase.h>  // ranges::copy
+#endif
 
 #include <debug/assertions.h>
 
@@ -1019,6 +1022,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Construct a deque from a range.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	deque(from_range_t, _Rg&& __rg, const allocator_type& __a = _Alloc())
+	: deque(__a)
+	{ append_range(std::forward<_Rg>(__rg)); }
+#endif
+
       /**
        *  The dtor only erases the elements, and note that if the elements
        *  themselves are pointers, the pointed-to memory is not touched in any
@@ -1134,6 +1149,53 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       assign(initializer_list<value_type> __l)
       { _M_assign_aux(__l.begin(), __l.end(), random_access_iterator_tag()); }
 #endif
+
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Assign a range to the deque.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @pre `__rg` and `*this` do not overlap.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	constexpr void
+	assign_range(_Rg&& __rg)
+	{
+	  static_assert(assignable_from<_Tp&, ranges::range_reference_t<_Rg>>);
+
+	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	    {
+	      const size_type __n(ranges::distance(__rg));
+	      if (__n <= size())
+		{
+		  auto __res = ranges::copy(__rg, begin());
+		  return _M_erase_at_end(__res.out);
+		}
+
+	      auto __rest = ranges::copy_n(ranges::begin(__rg), size(),
+					   begin()).in;
+	      _M_range_append(std::move(__rest), ranges::end(__rg),
+			      __n - size());
+	    }
+	  else
+	    {
+	      auto __first = ranges::begin(__rg);
+	      const auto __last = ranges::end(__rg);
+	      for (iterator  __it = begin(), __end = end();
+		   __it != __end; (void)++__first, ++__it)
+		{
+		  if (__first == __last)
+		    return _M_erase_at_end(__it);
+
+		  *__it = *__first;
+		}
+
+	      for (; __first != __last; ++__first)
+		emplace_back(*__first);
+	    }
+	}
+#endif // containers_ranges
+
 
       /// Get a copy of the memory allocation object.
       _GLIBCXX_NODISCARD
@@ -1762,6 +1824,38 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Insert a range into the deque.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @pre `__rg` and `*this` do not overlap.
+       * @return An iterator that points to the first new element inserted,
+       *         or to `__pos` if `__rg` is an empty range.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	iterator
+	insert_range(const_iterator __pos, _Rg&& __rg);
+
+      /**
+       * @brief Prepend a range at the begining of the deque.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	prepend_range(_Rg&& __rg);
+
+      /**
+       * @brief Append a range at the end of the deque.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	append_range(_Rg&& __rg);
+#endif // containers_ranges
+
       /**
        *  @brief  Remove element at given position.
        *  @param  __position  Iterator pointing to element to be erased.
@@ -2036,6 +2130,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
+      // insert [__first, __last) at the front, assumes distance(__first, __last) is n
+      template<typename _InputIterator, typename _Sentinel>
+      void _M_range_prepend(_InputIterator __first, _Sentinel __last,
+			    size_type __n);
+
+      // insert [__first, __last) at the back, assumes distance(__first, __last) is n
+      template<typename _InputIterator, typename _Sentinel>
+      void _M_range_append(_InputIterator __first, _Sentinel __last,
+			   size_type __n);
+
       // called by the second insert_dispatch above
       template<typename _InputIterator>
 	void
@@ -2281,6 +2385,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   typename = _RequireAllocator<_Allocator>>
     deque(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> deque<_ValT, _Allocator>;
+
+#if __glibcxx_containers_ranges // C++ >= 23
+  template<ranges::input_range _Rg,
+	   typename _Alloc = allocator<ranges::range_value_t<_Rg>>>
+    deque(from_range_t, _Rg&&, _Alloc = _Alloc())
+      -> deque<ranges::range_value_t<_Rg>, _Alloc>;
+#endif
 #endif
 
   /**

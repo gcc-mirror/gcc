@@ -1,9 +1,8 @@
 /* { dg-do compile  } */
 /* { dg-options "-O2 -Wno-shift-count-overflow" } */
-/* { dg-final { scan-assembler-times {(?n)shrd[ql]?[\t ]*\$2} 4 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times {(?n)shrdl?[\t ]*\$2} 2 { target ia32 } } } */
-/* { dg-final { scan-assembler-times {(?n)shldl?[\t ]*\$2} 1 { target ia32 } } } */
-/* { dg-final { scan-assembler-times {(?n)shld[ql]?[\t ]*\$2} 2 { target { ! ia32 } } } } */
+/* { dg-additional-options "-mno-sse -mno-mmx" { target ia32 } } */
+/* { dg-final { scan-assembler-times {(?n)shrd[ql]?[\t ]*\$2} 4 } } */
+/* { dg-final { scan-assembler-times {(?n)shld[ql]?[\t ]*\$2} 2 } } */
 
 typedef unsigned long long u64;
 typedef unsigned int   u32;

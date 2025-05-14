@@ -28,7 +28,6 @@
 namespace Rust {
 namespace Polonius {
 
-/** A point in the control flow graph. */
 struct FullPoint
 {
   uint32_t bb;
@@ -36,7 +35,7 @@ struct FullPoint
   bool mid;
 
   /** Expands a compressed `Point` into its components.
-   * See `Point` docs for encoding details.
+   * See `Point` docs for encoding details in ./rust-polonius-ffi.h
    */
   explicit FullPoint (Point point)
     : bb (extract_bb (point)), stmt (extract_stmt (point)),
@@ -46,7 +45,24 @@ struct FullPoint
   static uint32_t extract_bb (Point point) { return point >> 16; }
   static uint32_t extract_stmt (Point point)
   {
-    return (point & ~(1 << 16)) >> 1;
+    // Point is a 32 bit unsigned integer
+    // 16               15              1
+    // xxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx x
+    // ^~~~~~~~~~~~~~~~ ^~~~~~~~~~~~~~~ ^
+    // |                |               |
+    // basic_block      |               start/mid
+    //                  statement
+    // the left most 16 bits store the basic block number
+    // the right most bit, represents the start/mid status
+    // the remaining 15 bits between these two represent the statement number
+    // which we need to extract in this fucntion
+    //
+    // firstly we can get rid of right most bit by performing left shift once
+    auto hide_left_most_bit = point >> 1;
+    // now we only need the 15 bits on the right
+    // we can mask the remaining bits by performing bitwise AND with fifteen
+    // 1's which in hexadecimal is 0x7FFF
+    return hide_left_most_bit & 0x7FFF;
   }
   static bool extract_mid (Point point) { return point & 1; }
 
@@ -148,7 +164,7 @@ struct Facts
   void dump_var_used_at (std::ostream &os) const
   {
     for (auto &e : var_used_at)
-      os << e.first - 1 << " " << FullPoint (e.second) << "\n";
+      os << e.first << " " << FullPoint (e.second) << "\n";
   }
 
   void dump_var_defined_at (std::ostream &os) const
@@ -223,8 +239,32 @@ struct Facts
  *
  * Output is not yet implemented and is only dumped to stdout.
  */
-extern "C" void
+extern "C" FFI::Output
 polonius_run (FFI::FactsView input, bool dump_enabled);
+
+// Helper functions for FFIVector to be used on Rust side
+extern "C" {
+
+FFI::FFIVector<size_t> *
+FFIVector__new ();
+
+FFI::FFIVectorPair *
+FFIVector__new_vec_pair ();
+
+FFI::FFIVectorTriple *
+FFIVector__new_vec_triple ();
+
+void
+FFIVector__push (FFI::FFIVector<size_t> *vector, size_t element);
+
+void
+FFIVector__push_vec_pair (FFI::FFIVectorPair *vector,
+			  FFI::Pair<size_t, FFI::FFIVector<size_t> *> element);
+
+void
+FFIVector__push_vec_triple (FFI::FFIVectorTriple *vector,
+			    FFI::Triple<size_t, size_t, size_t> element);
+}
 
 } // namespace Polonius
 } // namespace Rust

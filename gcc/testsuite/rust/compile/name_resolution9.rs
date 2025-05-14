@@ -6,11 +6,11 @@ pub mod foo {
             super::super::super::foo!(); // { dg-error "too many leading .super. keywords" }
                                          // { dg-error "could not resolve macro invocation" "" { target *-*-* } .-1 }
 
-            super::crate::foo!(); // { dg-error "leading path segment .crate. can only be used" }
+            super::crate::foo!(); // { dg-error ".crate. in paths can only be used" }
                                   // { dg-error "could not resolve macro invocation" "" { target *-*-* } .-1 }
 
 			
-            crate::foo::bar::super::foo!(); // { dg-error "leading path segment .super. can only be used" }
+            crate::foo::bar::super::foo!(); // { dg-error ".super. in paths can only be used" }
 		                                    // { dg-error "could not resolve macro invocation" "" { target *-*-* } .-1 }
         }
     }

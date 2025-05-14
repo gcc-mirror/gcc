@@ -23,7 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "diagnostic.h" /* for ATTRIBUTE_GCC_DIAG.  */
 #include "diagnostic-event-id.h"
+#include "logical-location.h"
 
+class sarif_builder;
 class sarif_object;
 
 /* A diagnostic_path is an optional additional piece of metadata associated
@@ -149,8 +151,8 @@ class diagnostic_event
   /* Print a localized (and possibly colorized) description of this event.  */
   virtual void print_desc (pretty_printer &pp) const = 0;
 
-  /* Get a logical_location for this event, or nullptr if there is none.  */
-  virtual const logical_location *get_logical_location () const = 0;
+  /* Get a logical location for this event, or null if there is none.  */
+  virtual logical_location get_logical_location () const = 0;
 
   virtual meaning get_meaning () const = 0;
 
@@ -163,7 +165,8 @@ class diagnostic_event
   /* Hook for SARIF output to allow for adding diagnostic-specific
      properties to the threadFlowLocation object's property bag.  */
   virtual void
-  maybe_add_sarif_properties (sarif_object &/*thread_flow_loc_obj*/) const
+  maybe_add_sarif_properties (sarif_builder &,
+			      sarif_object &/*thread_flow_loc_obj*/) const
   {
   }
 
@@ -203,8 +206,21 @@ class diagnostic_path
   bool interprocedural_p () const;
   bool multithreaded_p () const;
 
+  const logical_location_manager &get_logical_location_manager () const
+  {
+    return m_logical_loc_mgr;
+  }
+
+protected:
+  diagnostic_path (const logical_location_manager &logical_loc_mgr)
+  : m_logical_loc_mgr (logical_loc_mgr)
+  {
+  }
+
 private:
   bool get_first_event_in_a_function (unsigned *out_idx) const;
+
+  const logical_location_manager &m_logical_loc_mgr;
 };
 
 /* Concrete subclasses of the above can be found in

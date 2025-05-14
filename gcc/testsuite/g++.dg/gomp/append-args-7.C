@@ -64,7 +64,7 @@ template<typename T, typename T2, typename T3>
 void repl2(T, T2, T3, T3);
 #pragma omp declare variant(repl2) match(construct={dispatch}) adjust_args(need_device_ptr : y) \
         append_args(interop(target, targetsync, prefer_type(1)), \
-                    interop(prefer_type({fr(3), attr("ompx_nop")},{fr(2)},{attr("ompx_all")})))
+                    interop(target, targetsync, prefer_type({fr(3), attr("ompx_nop")},{fr(2)},{attr("ompx_all")})))
 template<typename T, typename T2>
 void base2(T x, T2 y);
 

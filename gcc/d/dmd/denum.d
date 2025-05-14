@@ -3,12 +3,12 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/enum.html, Enums)
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/denum.d, _denum.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/denum.d, _denum.d)
  * Documentation:  https://dlang.org/phobos/dmd_denum.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/denum.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/denum.d
  * References:  https://dlang.org/spec/enum.html
  */
 
@@ -64,12 +64,13 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
 
     Symbol* sinit;
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type memtype)
+    extern (D) this(Loc loc, Identifier ident, Type memtype)
     {
         super(loc, ident);
         //printf("EnumDeclaration() %p %s : %s\n", this, toChars(), memtype.toChars());
         type = new TypeEnum(this);
         this.memtype = memtype;
+        this.dsym = DSYM.enumDeclaration;
         visibility = Visibility(Visibility.Kind.undefined);
     }
 
@@ -79,13 +80,6 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         auto ed = new EnumDeclaration(loc, ident, memtype ? memtype.syntaxCopy() : null);
         ScopeDsymbol.syntaxCopy(ed);
         return ed;
-    }
-
-    override bool oneMember(out Dsymbol ps, Identifier ident)
-    {
-        if (isAnonymous())
-            return Dsymbol.oneMembers(members, ps, ident);
-        return Dsymbol.oneMember(ps, ident);
     }
 
     override Type getType()
@@ -120,11 +114,6 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         return isSpecialEnumIdent(ident) && memtype;
     }
 
-    override inout(EnumDeclaration) isEnumDeclaration() inout
-    {
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -154,15 +143,16 @@ extern (C++) final class EnumMember : VarDeclaration
 
     EnumDeclaration ed;
 
-    extern (D) this(const ref Loc loc, Identifier id, Expression value, Type origType)
+    extern (D) this(Loc loc, Identifier id, Expression value, Type origType)
     {
         super(loc, null, id ? id : Id.empty, new ExpInitializer(loc, value));
         this.origValue = value;
         this.origType = origType;
+        this.dsym = DSYM.enumMember;
     }
 
     extern(D) this(Loc loc, Identifier id, Expression value, Type memtype,
-        StorageClass stc, UserAttributeDeclaration uad, DeprecatedDeclaration dd)
+        STC stc, UserAttributeDeclaration uad, DeprecatedDeclaration dd)
     {
         this(loc, id, value, memtype);
         storage_class = stc;
@@ -185,11 +175,6 @@ extern (C++) final class EnumMember : VarDeclaration
     override const(char)* kind() const
     {
         return "enum member";
-    }
-
-    override inout(EnumMember) isEnumMember() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

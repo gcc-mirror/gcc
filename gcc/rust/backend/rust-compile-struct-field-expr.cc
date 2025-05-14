@@ -27,22 +27,22 @@ CompileStructExprField::CompileStructExprField (Context *ctx)
 {}
 
 tree
-CompileStructExprField::Compile (HIR::StructExprField *field, Context *ctx)
+CompileStructExprField::Compile (HIR::StructExprField &field, Context *ctx)
 {
   CompileStructExprField compiler (ctx);
-  switch (field->get_kind ())
+  switch (field.get_kind ())
     {
     case HIR::StructExprField::StructExprFieldKind::IDENTIFIER:
-      compiler.visit (static_cast<HIR::StructExprFieldIdentifier &> (*field));
+      compiler.visit (static_cast<HIR::StructExprFieldIdentifier &> (field));
       break;
 
     case HIR::StructExprField::StructExprFieldKind::IDENTIFIER_VALUE:
       compiler.visit (
-	static_cast<HIR::StructExprFieldIdentifierValue &> (*field));
+	static_cast<HIR::StructExprFieldIdentifierValue &> (field));
       break;
 
     case HIR::StructExprField::StructExprFieldKind::INDEX_VALUE:
-      compiler.visit (static_cast<HIR::StructExprFieldIndexValue &> (*field));
+      compiler.visit (static_cast<HIR::StructExprFieldIndexValue &> (field));
       break;
     }
   return compiler.translated;
@@ -51,13 +51,13 @@ CompileStructExprField::Compile (HIR::StructExprField *field, Context *ctx)
 void
 CompileStructExprField::visit (HIR::StructExprFieldIdentifierValue &field)
 {
-  translated = CompileExpr::Compile (field.get_value ().get (), ctx);
+  translated = CompileExpr::Compile (field.get_value (), ctx);
 }
 
 void
 CompileStructExprField::visit (HIR::StructExprFieldIndexValue &field)
 {
-  translated = CompileExpr::Compile (field.get_value ().get (), ctx);
+  translated = CompileExpr::Compile (field.get_value (), ctx);
 }
 
 void
@@ -74,7 +74,7 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
 			    HIR::GenericArgs::create_empty ());
   HIR::PathInExpression expr (mappings_copy2, {seg}, field.get_locus (), false,
 			      {});
-  translated = CompileExpr::Compile (&expr, ctx);
+  translated = CompileExpr::Compile (expr, ctx);
 }
 
 } // namespace Compile

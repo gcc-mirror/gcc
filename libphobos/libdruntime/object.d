@@ -1324,8 +1324,16 @@ class TypeInfo_AssociativeArray : TypeInfo
     override @property inout(TypeInfo) next() nothrow pure inout { return value; }
     override @property uint flags() nothrow pure const { return 1; }
 
+    // TypeInfo entry is generated from the type of this template to help rt/aaA.d
+    static struct Entry(K, V)
+    {
+        K key;
+        V value;
+    }
+
     TypeInfo value;
     TypeInfo key;
+    TypeInfo entry;
 
     override @property size_t talign() nothrow pure const
     {
@@ -3769,15 +3777,10 @@ template RTInfoImpl(size_t[] pointerBitmap)
     immutable size_t[pointerBitmap.length] RTInfoImpl = pointerBitmap[];
 }
 
-template NoPointersBitmapPayload(size_t N)
-{
-    enum size_t[N] NoPointersBitmapPayload = 0;
-}
-
 template RTInfo(T)
 {
     enum pointerBitmap = __traits(getPointerBitmap, T);
-    static if (pointerBitmap[1 .. $] == NoPointersBitmapPayload!(pointerBitmap.length - 1))
+    static if (pointerBitmap[1 .. $] == size_t[pointerBitmap.length - 1].init)
         enum RTInfo = rtinfoNoPointers;
     else
         enum RTInfo = RTInfoImpl!(pointerBitmap).ptr;

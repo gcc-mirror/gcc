@@ -12,7 +12,7 @@ mod intrinsics {
     }
 }
 
-pub fn main () -> i32 {
-    abort();
+pub fn main() -> i32 {
+    crate::intrinsics::abort();
     0
 }

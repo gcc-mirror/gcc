@@ -6263,6 +6263,9 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
 {
   bool warned_p = false;
 
+  if (c_inhibit_evaluation_warnings)
+    return warned_p;
+
   /* Check for null being passed in a pointer argument that must be
      non-null.  In C++, this includes the this pointer.  We also need
      to do this if format checking is enabled.  */

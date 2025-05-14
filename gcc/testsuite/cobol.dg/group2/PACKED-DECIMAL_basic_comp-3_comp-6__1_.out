@@ -1,0 +1,29 @@
+check lengths of comp-3
+1 should be 1
+2 should be 2
+2 should be 2
+3 should be 3
+3 should be 3
+4 should be 4
+check lengths of comp-6
+1 should be 1
+1 should be 1
+2 should be 2
+2 should be 2
+3 should be 3
+3 should be 3
+results of MOVE TO COMP-3
+1
+21
+321
+4321
+54321
+654321
+results of MOVE TO COMP-6
+1
+21
+321
+4321
+54321
+654321
+

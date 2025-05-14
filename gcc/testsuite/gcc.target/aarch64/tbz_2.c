@@ -20,7 +20,7 @@ void g1(int x)
 
 /* 
 ** g2:
-** 	tbnz	x0, 0, .L[0-9]+
+** 	tbnz	[wx]0, 0, .L[0-9]+
 ** 	ret
 ** 	...
 */
@@ -32,7 +32,7 @@ void g2(int x)
 
 /* 
 ** g3:
-** 	tbnz	x0, 3, .L[0-9]+
+** 	tbnz	[wx]0, 3, .L[0-9]+
 ** 	ret
 ** 	...
 */
@@ -44,7 +44,7 @@ void g3(int x)
 
 /* 
 ** g4:
-** 	tbnz	w0, #31, .L[0-9]+
+** 	tbnz	[wx]0, #31, .L[0-9]+
 ** 	ret
 ** 	...
 */
@@ -56,7 +56,7 @@ void g4(int x)
 
 /* 
 ** g5:
-** 	tst	w0, 255
+** 	tst	[wx]0, 255
 ** 	bne	.L[0-9]+
 ** 	ret
 ** 	...
@@ -69,7 +69,7 @@ void g5(char x)
 
 /* 
 ** g6:
-** 	tbnz	x0, 0, .L[0-9]+
+** 	tbnz	[wx]0, 0, .L[0-9]+
 ** 	ret
 ** 	...
 */
@@ -81,7 +81,7 @@ void g6(char x)
 
 /* 
 ** g7:
-** 	tst	x0, 3
+** 	tst	[wx]0, 3
 ** 	bne	.L[0-9]+
 ** 	ret
 ** 	...
@@ -94,7 +94,7 @@ void g7(char x)
 
 /* 
 ** g8:
-** 	tbnz	x0, 7, .L[0-9]+
+** 	tbnz	[wx]0, 7, .L[0-9]+
 ** 	ret
 ** 	...
 */
@@ -106,7 +106,7 @@ void g8(char x)
 
 /* 
 ** g9:
-** 	tbnz	w0, 0, .L[0-9]+
+** 	tbnz	[wx]0, 0, .L[0-9]+
 ** 	ret
 ** 	...
 */
@@ -118,7 +118,7 @@ void g9(bool x)
 
 /* 
 ** g10:
-** 	tbnz	w0, 0, .L[0-9]+
+** 	tbnz	[wx]0, 0, .L[0-9]+
 ** 	ret
 ** 	...
 */

@@ -1,5 +1,6 @@
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
 /* { dg-skip-if "requires hosted libstdc++ for stdlib size_t" { ! hostedlib } } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 #include <stdlib.h>
 #include "analyzer-decls.h"

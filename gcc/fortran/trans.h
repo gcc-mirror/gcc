@@ -139,9 +139,9 @@ enum gfc_coarray_regtype
   GFC_CAF_EVENT_STATIC,
   GFC_CAF_EVENT_ALLOC,
   GFC_CAF_COARRAY_ALLOC_REGISTER_ONLY,
-  GFC_CAF_COARRAY_ALLOC_ALLOCATE_ONLY
+  GFC_CAF_COARRAY_ALLOC_ALLOCATE_ONLY,
+  GFC_CAF_COARRAY_MAP_EXISTING
 };
-
 
 /* Describes the action to take on _caf_deregister.  Keep in sync with
    gcc/fortran/trans.h.  The negative values are not valid for the library and
@@ -774,12 +774,13 @@ void gfc_allocate_using_malloc (stmtblock_t *, tree, tree, tree,
 				tree = NULL_TREE);
 
 /* Generate code to deallocate an array.  */
-tree gfc_deallocate_with_status (tree, tree, tree, tree, tree, bool,
-				 gfc_expr *, int, tree = NULL_TREE,
-				 tree a = NULL_TREE, tree c = NULL_TREE);
-tree gfc_deallocate_scalar_with_status (tree, tree, tree, bool, gfc_expr*,
+tree gfc_deallocate_with_status (tree, tree, tree, tree, tree, bool, gfc_expr *,
+				 int, tree = NULL_TREE, tree a = NULL_TREE,
+				 tree c = NULL_TREE, bool u = false);
+tree gfc_deallocate_scalar_with_status (tree, tree, tree, bool, gfc_expr *,
 					gfc_typespec, tree = NULL_TREE,
-					bool c = false);
+					bool c = false, bool u = false,
+					tree = NULL_TREE, tree = NULL_TREE);
 
 /* Generate code to call realloc().  */
 tree gfc_call_realloc (stmtblock_t *, tree, tree);
@@ -804,6 +805,8 @@ tree gfc_build_library_function_decl_with_spec (tree name, const char *spec,
 						tree rettype, int nargs, ...);
 
 /* Process the local variable decls of a block construct.  */
+void gfc_start_saved_local_decls ();
+void gfc_stop_saved_local_decls ();
 void gfc_process_block_locals (gfc_namespace*);
 
 /* Output initialization/clean-up code that was deferred.  */
@@ -837,6 +840,10 @@ tree gfc_omp_clause_assign_op (tree, tree, tree);
 tree gfc_omp_clause_linear_ctor (tree, tree, tree, tree);
 tree gfc_omp_clause_dtor (tree, tree);
 void gfc_omp_finish_clause (tree, gimple_seq *, bool);
+bool gfc_omp_deep_mapping_p (const gimple *, tree);
+tree gfc_omp_deep_mapping_cnt (const gimple *, tree, gimple_seq *);
+void gfc_omp_deep_mapping (const gimple *, tree, unsigned HOST_WIDE_INT, tree,
+			   tree, tree, tree, tree, gimple_seq *);
 bool gfc_omp_allocatable_p (tree);
 bool gfc_omp_scalar_p (tree, bool);
 bool gfc_omp_scalar_target_p (tree);

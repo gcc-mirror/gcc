@@ -74,18 +74,20 @@ private:
 class Mappings
 {
 public:
-  static Mappings *get ();
+  static Mappings &get ();
   ~Mappings ();
 
   CrateNum get_next_crate_num (const std::string &name);
   void set_current_crate (CrateNum crateNum);
   CrateNum get_current_crate () const;
-  bool get_crate_name (CrateNum crate_num, std::string &name) const;
+  tl::optional<const std::string &> get_crate_name (CrateNum crate_num) const;
+
+  tl::optional<CrateNum> lookup_crate_num (NodeId node_id) const;
   void set_crate_name (CrateNum crate_num, const std::string &name);
-  std::string get_current_crate_name () const;
-  bool lookup_crate_name (const std::string &crate_name,
-			  CrateNum &resolved_crate_num) const;
-  bool crate_num_to_nodeid (const CrateNum &crate_num, NodeId &node_id) const;
+  const std::string &get_current_crate_name () const;
+  tl::optional<CrateNum>
+  lookup_crate_name (const std::string &crate_name) const;
+  tl::optional<NodeId> crate_num_to_nodeid (const CrateNum &crate_num) const;
   bool node_is_crate (NodeId node_id) const;
 
   NodeId get_next_node_id ();
@@ -106,77 +108,83 @@ public:
   bool is_local_hirid_crate (HirId crateNum);
 
   void insert_defid_mapping (DefId id, HIR::Item *item);
-  HIR::Item *lookup_defid (DefId id);
+  tl::optional<HIR::Item *> lookup_defid (DefId id);
   void insert_defid_mapping (DefId id, HIR::TraitItem *item);
-  HIR::TraitItem *lookup_trait_item_defid (DefId id);
+  tl::optional<HIR::TraitItem *> lookup_trait_item_defid (DefId id);
 
   void insert_local_defid_mapping (CrateNum crateNum, LocalDefId id,
 				   HIR::Item *item);
-  HIR::Item *lookup_local_defid (CrateNum crateNum, LocalDefId id);
+  tl::optional<HIR::Item *> lookup_local_defid (CrateNum crateNum,
+						LocalDefId id);
 
   void insert_hir_item (HIR::Item *item);
-  HIR::Item *lookup_hir_item (HirId id);
+  tl::optional<HIR::Item *> lookup_hir_item (HirId id);
 
   void insert_hir_enumitem (HIR::Enum *parent, HIR::EnumItem *item);
   std::pair<HIR::Enum *, HIR::EnumItem *> lookup_hir_enumitem (HirId id);
 
   void insert_hir_trait_item (HIR::TraitItem *item);
-  HIR::TraitItem *lookup_hir_trait_item (HirId id);
+  tl::optional<HIR::TraitItem *> lookup_hir_trait_item (HirId id);
 
   void insert_hir_extern_block (HIR::ExternBlock *block);
-  HIR::ExternBlock *lookup_hir_extern_block (HirId id);
+  tl::optional<HIR::ExternBlock *> lookup_hir_extern_block (HirId id);
 
   void insert_hir_extern_item (HIR::ExternalItem *item, HirId parent_block);
-  HIR::ExternalItem *lookup_hir_extern_item (HirId id, HirId *parent_block);
+
+  // std::pair<hir_extern_item, parent hirid>
+  tl::optional<std::pair<HIR::ExternalItem *, HirId>>
+  lookup_hir_extern_item (HirId id);
 
   void insert_hir_impl_block (HIR::ImplBlock *item);
-  HIR::ImplBlock *lookup_hir_impl_block (HirId id);
-  bool lookup_impl_block_type (HirId id, HIR::ImplBlock **impl_block);
+  tl::optional<HIR::ImplBlock *> lookup_hir_impl_block (HirId id);
+  tl::optional<HIR::ImplBlock *> lookup_impl_block_type (HirId id);
 
   void insert_module (HIR::Module *module);
-  HIR::Module *lookup_module (HirId id);
+  tl::optional<HIR::Module *> lookup_module (HirId id);
 
   void insert_hir_implitem (HirId parent_impl_id, HIR::ImplItem *item);
-  HIR::ImplItem *lookup_hir_implitem (HirId id, HirId *parent_impl_id);
+  // Optional<ImpItem, ParentImpl Hir id>
+  tl::optional<std::pair<HIR::ImplItem *, HirId>>
+  lookup_hir_implitem (HirId id);
 
   void insert_hir_expr (HIR::Expr *expr);
-  HIR::Expr *lookup_hir_expr (HirId id);
+  tl::optional<HIR::Expr *> lookup_hir_expr (HirId id);
 
   void insert_hir_path_expr_seg (HIR::PathExprSegment *expr);
-  HIR::PathExprSegment *lookup_hir_path_expr_seg (HirId id);
+  tl::optional<HIR::PathExprSegment *> lookup_hir_path_expr_seg (HirId id);
 
   void insert_hir_generic_param (HIR::GenericParam *expr);
-  HIR::GenericParam *lookup_hir_generic_param (HirId id);
+  tl::optional<HIR::GenericParam *> lookup_hir_generic_param (HirId id);
 
   void insert_hir_type (HIR::Type *type);
-  HIR::Type *lookup_hir_type (HirId id);
+  tl::optional<HIR::Type *> lookup_hir_type (HirId id);
 
   void insert_hir_stmt (HIR::Stmt *stmt);
-  HIR::Stmt *lookup_hir_stmt (HirId id);
+  tl::optional<HIR::Stmt *> lookup_hir_stmt (HirId id);
 
   void insert_hir_param (HIR::FunctionParam *type);
-  HIR::FunctionParam *lookup_hir_param (HirId id);
+  tl::optional<HIR::FunctionParam *> lookup_hir_param (HirId id);
 
   void insert_hir_self_param (HIR::SelfParam *type);
-  HIR::SelfParam *lookup_hir_self_param (HirId id);
+  tl::optional<HIR::SelfParam *> lookup_hir_self_param (HirId id);
 
   void insert_hir_struct_field (HIR::StructExprField *type);
-  HIR::StructExprField *lookup_hir_struct_field (HirId id);
+  tl::optional<HIR::StructExprField *> lookup_hir_struct_field (HirId id);
 
   void insert_hir_pattern (HIR::Pattern *pattern);
-  HIR::Pattern *lookup_hir_pattern (HirId id);
+  tl::optional<HIR::Pattern *> lookup_hir_pattern (HirId id);
 
   void walk_local_defids_for_crate (CrateNum crateNum,
 				    std::function<bool (HIR::Item *)> cb);
 
   void insert_node_to_hir (NodeId id, HirId ref);
-  bool lookup_node_to_hir (NodeId id, HirId *ref);
-  bool lookup_hir_to_node (HirId id, NodeId *ref);
+  tl::optional<HirId> lookup_node_to_hir (NodeId id);
+  tl::optional<NodeId> lookup_hir_to_node (HirId id);
 
   void insert_location (HirId id, location_t locus);
   location_t lookup_location (HirId id);
 
-  bool resolve_nodeid_to_stmt (NodeId id, HIR::Stmt **stmt);
+  tl::optional<HIR::Stmt *> resolve_nodeid_to_stmt (NodeId id);
 
   std::set<HirId> &get_hirids_within_crate (CrateNum crate)
   {
@@ -205,11 +213,7 @@ public:
   void iterate_trait_items (
     std::function<bool (HIR::TraitItem *item, HIR::Trait *)> cb);
 
-  bool is_impl_item (HirId id)
-  {
-    HirId parent_impl_block_id = UNKNOWN_HIRID;
-    return lookup_hir_implitem (id, &parent_impl_block_id) != nullptr;
-  }
+  bool is_impl_item (HirId id) { return lookup_hir_implitem (id).has_value (); }
 
   void insert_trait_item_mapping (HirId trait_item_id, HIR::Trait *trait)
   {
@@ -227,8 +231,7 @@ public:
 
   void insert_canonical_path (NodeId id, const Resolver::CanonicalPath path)
   {
-    const Resolver::CanonicalPath *p = nullptr;
-    if (lookup_canonical_path (id, &p))
+    if (auto p = lookup_canonical_path (id))
       {
 	// if we have already stored a canonical path this is ok so long as
 	// this new path is equal or is smaller that the existing one but in
@@ -245,45 +248,35 @@ public:
     paths.emplace (id, std::move (path));
   }
 
-  bool lookup_canonical_path (NodeId id, const Resolver::CanonicalPath **path)
+  tl::optional<const Resolver::CanonicalPath &>
+  lookup_canonical_path (NodeId id)
   {
     auto it = paths.find (id);
     if (it == paths.end ())
-      return false;
+      return tl::nullopt;
 
-    *path = &it->second;
-    return true;
+    return it->second;
   }
 
-  void insert_lang_item (LangItem::Kind item_type, DefId id)
-  {
-    auto it = lang_item_mappings.find (item_type);
-    rust_assert (it == lang_item_mappings.end ());
+  void insert_lang_item (LangItem::Kind item_type, DefId id);
+  tl::optional<DefId &> lookup_lang_item (LangItem::Kind item_type);
 
-    lang_item_mappings[item_type] = id;
-  }
-
-  bool lookup_lang_item (LangItem::Kind item_type, DefId *id)
-  {
-    auto it = lang_item_mappings.find (item_type);
-    if (it == lang_item_mappings.end ())
-      return false;
-
-    *id = it->second;
-    return true;
-  }
+  void insert_lang_item_node (LangItem::Kind item_type, NodeId node_id);
+  tl::optional<NodeId &> lookup_lang_item_node (LangItem::Kind item_type);
+  NodeId get_lang_item_node (LangItem::Kind item_type);
 
   // This will fatal_error when this lang item does not exist
   DefId get_lang_item (LangItem::Kind item_type, location_t locus);
 
   void insert_macro_def (AST::MacroRulesDefinition *macro);
 
-  bool lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def);
+  tl::optional<AST::MacroRulesDefinition *> lookup_macro_def (NodeId id);
+  tl::optional<CrateNum> lookup_macro_def_crate (NodeId id);
 
   void insert_macro_invocation (AST::MacroInvocation &invoc,
 				AST::MacroRulesDefinition *def);
-  bool lookup_macro_invocation (AST::MacroInvocation &invoc,
-				AST::MacroRulesDefinition **def);
+  tl::optional<AST::MacroRulesDefinition *>
+  lookup_macro_invocation (AST::MacroInvocation &invoc);
 
   void insert_exported_macro (AST::MacroRulesDefinition &def);
   std::vector<NodeId> &get_exported_macros ();
@@ -326,7 +319,7 @@ public:
 					       AttributeProcMacro def);
 
   void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
-  bool lookup_visibility (NodeId id, Privacy::ModuleVisibility &def);
+  tl::optional<Privacy::ModuleVisibility &> lookup_visibility (NodeId id);
 
   void insert_ast_module (AST::Module *);
   tl::optional<AST::Module *> lookup_ast_module (NodeId id);
@@ -345,12 +338,17 @@ public:
   bool node_is_module (NodeId query);
 
   void insert_ast_item (AST::Item *item);
-  bool lookup_ast_item (NodeId id, AST::Item **result);
+  tl::optional<AST::Item *> lookup_ast_item (NodeId id);
 
   HIR::ImplBlock *lookup_builtin_marker ();
 
-  HIR::TraitItem *lookup_trait_item_lang_item (LangItem::Kind item,
-					       location_t locus);
+  tl::optional<HIR::TraitItem *>
+  lookup_trait_item_lang_item (LangItem::Kind item, location_t locus);
+
+  void insert_auto_trait (HIR::Trait *trait);
+  std::vector<HIR::Trait *> &get_auto_traits ();
+  void add_capture (NodeId closure, NodeId definition);
+  tl::optional<std::vector<NodeId>> lookup_captures (NodeId closure);
 
 private:
   Mappings ();
@@ -389,8 +387,16 @@ private:
   std::map<HirId, HIR::GenericParam *> hirGenericParamMappings;
   std::map<HirId, HIR::Trait *> hirTraitItemsToTraitMappings;
   std::map<HirId, HIR::Pattern *> hirPatternMappings;
+
+  // FIXME: Add documentation
+  std::vector<HIR::Trait *> auto_traits;
+
+  // We need to have two maps here, as lang-items need to be used for both AST
+  // passes and HIR passes. Thus those two maps are created at different times.
   std::map<LangItem::Kind, DefId> lang_item_mappings;
-  std::map<NodeId, const Resolver::CanonicalPath> paths;
+  std::map<LangItem::Kind, NodeId> lang_item_nodes;
+
+  std::map<NodeId, Resolver::CanonicalPath> paths;
   std::map<NodeId, location_t> locations;
   std::map<NodeId, HirId> nodeIdToHirMappings;
   std::map<HirId, NodeId> hirIdToNodeMappings;
@@ -399,7 +405,8 @@ private:
   std::map<CrateNum, std::set<HirId>> hirNodesWithinCrate;
 
   // MBE macros
-  std::map<NodeId, AST::MacroRulesDefinition *> macroMappings;
+  std::map<NodeId, std::pair<AST::MacroRulesDefinition *, CrateNum>>
+    macroMappings;
   std::map<NodeId, AST::MacroRulesDefinition *> macroInvocations;
   std::vector<NodeId> exportedMacros;
 
@@ -433,6 +440,9 @@ private:
 
   // AST mappings
   std::map<NodeId, AST::Item *> ast_item_mappings;
+
+  // Closure AST NodeId -> vector of Definition node ids
+  std::unordered_map<NodeId, std::vector<NodeId>> captures;
 };
 
 } // namespace Analysis

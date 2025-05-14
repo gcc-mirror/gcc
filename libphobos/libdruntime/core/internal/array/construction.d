@@ -13,7 +13,7 @@ import core.internal.traits : Unqual;
 
 debug(PRINTF)
 {
-    import core.stdc.stdio;
+    import core.stdc.stdio : printf;
 }
 
 /**
@@ -46,7 +46,6 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from, char* ma
     import core.lifetime : copyEmplace;
     import core.stdc.string : memcpy;
     import core.stdc.stdint : uintptr_t;
-    debug(PRINTF) import core.stdc.stdio : printf;
 
     debug(PRINTF) printf("_d_arrayctor(from = %p,%zd) size = %zd\n", from.ptr, from.length, T.sizeof);
 
@@ -471,7 +470,7 @@ version (D_ProfileGC)
     /**
     * TraceGC wrapper around $(REF _d_newitemT, core,lifetime).
     */
-    T[] _d_newarrayTTrace(T)(string file, int line, string funcname, size_t length, bool isShared) @trusted
+    T[] _d_newarrayTTrace(T)(size_t length, bool isShared, string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted
     {
         version (D_TypeInfo)
         {
@@ -603,7 +602,7 @@ version (D_ProfileGC)
     /**
     * TraceGC wrapper around $(REF _d_newarraymT, core,internal,array,construction).
     */
-    Tarr _d_newarraymTXTrace(Tarr : U[], T, U)(string file, int line, string funcname, size_t[] dims, bool isShared=false) @trusted
+    Tarr _d_newarraymTXTrace(Tarr : U[], T, U)(size_t[] dims, bool isShared=false, string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted
     {
         version (D_TypeInfo)
         {

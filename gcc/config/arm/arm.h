@@ -137,13 +137,6 @@ emission of floating point pcs attributes.  */
 #define TARGET_MAYBE_HARD_FLOAT (arm_float_abi != ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point calling convention.  */
 #define TARGET_HARD_FLOAT_ABI		(arm_float_abi == ARM_FLOAT_ABI_HARD)
-#define TARGET_IWMMXT			(arm_arch_iwmmxt)
-#define TARGET_IWMMXT2			(arm_arch_iwmmxt2)
-#define TARGET_REALLY_IWMMXT		(TARGET_IWMMXT && TARGET_32BIT \
-					 && !TARGET_GENERAL_REGS_ONLY)
-#define TARGET_REALLY_IWMMXT2		(TARGET_IWMMXT2 && TARGET_32BIT \
-					 && !TARGET_GENERAL_REGS_ONLY)
-#define TARGET_IWMMXT_ABI (TARGET_32BIT && arm_abi == ARM_ABI_IWMMXT)
 #define TARGET_ARM                      (! TARGET_THUMB)
 #define TARGET_EITHER			1 /* (TARGET_ARM | TARGET_THUMB) */
 #define TARGET_BACKTRACE	        (crtl->is_leaf \
@@ -526,12 +519,6 @@ extern int arm_ld_sched;
 /* Nonzero if this chip is a StrongARM.  */
 extern int arm_tune_strongarm;
 
-/* Nonzero if this chip supports Intel XScale with Wireless MMX technology.  */
-extern int arm_arch_iwmmxt;
-
-/* Nonzero if this chip supports Intel Wireless MMX2 technology.  */
-extern int arm_arch_iwmmxt2;
-
 /* Nonzero if this chip is an XScale.  */
 extern int arm_arch_xscale;
 
@@ -855,10 +842,6 @@ extern const int arm_arch_cde_coproc_bits[];
   1,1,1,1,1,1,1,1,		\
   1,1,1,1,1,1,1,1,		\
   1,1,1,1,1,1,1,1,		\
-  /* IWMMXT regs.  */		\
-  1,1,1,1,1,1,1,1,		\
-  1,1,1,1,1,1,1,1,		\
-  1,1,1,1,			\
   /* Specials.  */		\
   1,1,1,1,1,1,1,1		\
 }
@@ -885,10 +868,6 @@ extern const int arm_arch_cde_coproc_bits[];
   1,1,1,1,1,1,1,1,		\
   1,1,1,1,1,1,1,1,		\
   1,1,1,1,1,1,1,1,		\
-  /* IWMMXT regs.  */		\
-  1,1,1,1,1,1,1,1,		\
-  1,1,1,1,1,1,1,1,		\
-  1,1,1,1,			\
   /* Specials.  */		\
   1,1,1,1,1,1,1,1		\
 }
@@ -1010,23 +989,11 @@ extern const int arm_arch_cde_coproc_bits[];
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM	SP_REGNUM
 
-#define FIRST_IWMMXT_REGNUM	(LAST_HI_VFP_REGNUM + 1)
-#define LAST_IWMMXT_REGNUM	(FIRST_IWMMXT_REGNUM + 15)
-
-/* Need to sync with WCGR in iwmmxt.md.  */
-#define FIRST_IWMMXT_GR_REGNUM	(LAST_IWMMXT_REGNUM + 1)
-#define LAST_IWMMXT_GR_REGNUM	(FIRST_IWMMXT_GR_REGNUM + 3)
-
-#define IS_IWMMXT_REGNUM(REGNUM) \
-  (((REGNUM) >= FIRST_IWMMXT_REGNUM) && ((REGNUM) <= LAST_IWMMXT_REGNUM))
-#define IS_IWMMXT_GR_REGNUM(REGNUM) \
-  (((REGNUM) >= FIRST_IWMMXT_GR_REGNUM) && ((REGNUM) <= LAST_IWMMXT_GR_REGNUM))
-
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM	102
+#define FRAME_POINTER_REGNUM	(CC_REGNUM + 2)
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM	103
+#define ARG_POINTER_REGNUM	(FRAME_POINTER_REGNUM + 1)
 
 #define FIRST_VFP_REGNUM	16
 #define D7_VFP_REGNUM		(FIRST_VFP_REGNUM + 15)
@@ -1067,9 +1034,8 @@ extern const int arm_arch_cde_coproc_bits[];
 
 /* The number of hard registers is 16 ARM + 1 CC + 1 SFP + 1 AFP
    + 1 APSRQ + 1 APSRGE + 1 VPR + 1 Pseudo register to save PAC.  */
-/* Intel Wireless MMX Technology registers add 16 + 4 more.  */
 /* VFP (VFP3) adds 32 (64) + 1 VFPCC.  */
-#define FIRST_PSEUDO_REGISTER   108
+#define FIRST_PSEUDO_REGISTER   88
 
 #define DWARF_PAC_REGNUM 143
 
@@ -1085,9 +1051,6 @@ extern const int arm_arch_cde_coproc_bits[];
 #ifndef SUBTARGET_FRAME_POINTER_REQUIRED
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
 #endif
-
-#define VALID_IWMMXT_REG_MODE(MODE) \
- (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
 
 /* Modes valid for Neon D registers.  */
 #define VALID_NEON_DREG_MODE(MODE) \
@@ -1168,9 +1131,9 @@ extern const int arm_arch_cde_coproc_bits[];
 /* The conditions under which vector modes are supported for general
    arithmetic by any vector extension.  */
 
-#define ARM_HAVE_V8QI_ARITH (ARM_HAVE_NEON_V8QI_ARITH || TARGET_REALLY_IWMMXT)
-#define ARM_HAVE_V4HI_ARITH (ARM_HAVE_NEON_V4HI_ARITH || TARGET_REALLY_IWMMXT)
-#define ARM_HAVE_V2SI_ARITH (ARM_HAVE_NEON_V2SI_ARITH || TARGET_REALLY_IWMMXT)
+#define ARM_HAVE_V8QI_ARITH (ARM_HAVE_NEON_V8QI_ARITH)
+#define ARM_HAVE_V4HI_ARITH (ARM_HAVE_NEON_V4HI_ARITH)
+#define ARM_HAVE_V2SI_ARITH (ARM_HAVE_NEON_V2SI_ARITH)
 
 #define ARM_HAVE_V16QI_ARITH (ARM_HAVE_NEON_V16QI_ARITH || TARGET_HAVE_MVE)
 #define ARM_HAVE_V8HI_ARITH (ARM_HAVE_NEON_V8HI_ARITH || TARGET_HAVE_MVE)
@@ -1204,9 +1167,9 @@ extern const int arm_arch_cde_coproc_bits[];
 /* The conditions under which vector modes are supported by load/store
    instructions by any vector extension.  */
 
-#define ARM_HAVE_V8QI_LDST (ARM_HAVE_NEON_V8QI_LDST || TARGET_REALLY_IWMMXT)
-#define ARM_HAVE_V4HI_LDST (ARM_HAVE_NEON_V4HI_LDST || TARGET_REALLY_IWMMXT)
-#define ARM_HAVE_V2SI_LDST (ARM_HAVE_NEON_V2SI_LDST || TARGET_REALLY_IWMMXT)
+#define ARM_HAVE_V8QI_LDST (ARM_HAVE_NEON_V8QI_LDST)
+#define ARM_HAVE_V4HI_LDST (ARM_HAVE_NEON_V4HI_LDST)
+#define ARM_HAVE_V2SI_LDST (ARM_HAVE_NEON_V2SI_LDST)
 
 #define ARM_HAVE_V16QI_LDST (ARM_HAVE_NEON_V16QI_LDST || TARGET_HAVE_MVE)
 #define ARM_HAVE_V8HI_LDST (ARM_HAVE_NEON_V8HI_LDST || TARGET_HAVE_MVE)
@@ -1238,8 +1201,6 @@ extern int arm_regs_in_sequence[];
    function.  */
 
 #define VREG(X)  (FIRST_VFP_REGNUM + (X))
-#define WREG(X)  (FIRST_IWMMXT_REGNUM + (X))
-#define WGREG(X) (FIRST_IWMMXT_GR_REGNUM + (X))
 
 #define REG_ALLOC_ORDER				\
 {						\
@@ -1265,12 +1226,6 @@ extern int arm_regs_in_sequence[];
   VREG(20), VREG(21), VREG(22), VREG(23),	\
   VREG(24), VREG(25), VREG(26), VREG(27),	\
   VREG(28), VREG(29), VREG(30), VREG(31),	\
-  /* IWMMX registers.  */			\
-  WREG(0),  WREG(1),  WREG(2),  WREG(3),	\
-  WREG(4),  WREG(5),  WREG(6),  WREG(7),	\
-  WREG(8),  WREG(9),  WREG(10), WREG(11),	\
-  WREG(12), WREG(13), WREG(14), WREG(15),	\
-  WGREG(0), WGREG(1), WGREG(2), WGREG(3),	\
   /* Registers not for general use.  */		\
   CC_REGNUM, VFPCC_REGNUM,			\
   FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM,	\
@@ -1315,8 +1270,6 @@ enum reg_class
   VFP_LO_REGS,
   VFP_HI_REGS,
   VFP_REGS,
-  IWMMXT_REGS,
-  IWMMXT_GR_REGS,
   CC_REG,
   VFPCC_REG,
   SFP_REG,
@@ -1346,8 +1299,6 @@ enum reg_class
   "VFP_LO_REGS",	\
   "VFP_HI_REGS",	\
   "VFP_REGS",		\
-  "IWMMXT_REGS",	\
-  "IWMMXT_GR_REGS",	\
   "CC_REG",		\
   "VFPCC_REG",		\
   "SFP_REG",		\
@@ -1363,29 +1314,27 @@ enum reg_class
    of length N_REG_CLASSES.  */
 #define REG_CLASS_CONTENTS						\
 {									\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000000 }, /* NO_REGS  */	\
-  { 0x000000FF, 0x00000000, 0x00000000, 0x00000000 }, /* LO_REGS */	\
-  { 0x00002000, 0x00000000, 0x00000000, 0x00000000 }, /* STACK_REG */	\
-  { 0x000020FF, 0x00000000, 0x00000000, 0x00000000 }, /* BASE_REGS */	\
-  { 0x00005F00, 0x00000000, 0x00000000, 0x00000000 }, /* HI_REGS */	\
-  { 0x0000100F, 0x00000000, 0x00000000, 0x00000000 }, /* CALLER_SAVE_REGS */ \
-  { 0x00005555, 0x00000000, 0x00000000, 0x00000000 }, /* EVEN_REGS.  */ \
-  { 0x00005FFF, 0x00000000, 0x00000000, 0x00000000 }, /* GENERAL_REGS */ \
-  { 0x00007FFF, 0x00000000, 0x00000000, 0x00000000 }, /* CORE_REGS */	\
-  { 0xFFFF0000, 0x00000000, 0x00000000, 0x00000000 }, /* VFP_D0_D7_REGS  */ \
-  { 0xFFFF0000, 0x0000FFFF, 0x00000000, 0x00000000 }, /* VFP_LO_REGS  */ \
-  { 0x00000000, 0xFFFF0000, 0x0000FFFF, 0x00000000 }, /* VFP_HI_REGS  */ \
-  { 0xFFFF0000, 0xFFFFFFFF, 0x0000FFFF, 0x00000000 }, /* VFP_REGS  */	\
-  { 0x00000000, 0x00000000, 0xFFFF0000, 0x00000000 }, /* IWMMXT_REGS */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x0000000F }, /* IWMMXT_GR_REGS */ \
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000010 }, /* CC_REG */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000020 }, /* VFPCC_REG */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000040 }, /* SFP_REG */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000080 }, /* AFP_REG */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000400 }, /* VPR_REG.  */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000800 }, /* PAC_REG.  */	\
-  { 0x00005FFF, 0x00000000, 0x00000000, 0x00000400 }, /* GENERAL_AND_VPR_REGS.  */ \
-  { 0xFFFF7FFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x0000040F }  /* ALL_REGS.  */	\
+  { 0x00000000, 0x00000000, 0x00000000 }, /* NO_REGS  */		\
+  { 0x000000FF, 0x00000000, 0x00000000 }, /* LO_REGS */			\
+  { 0x00002000, 0x00000000, 0x00000000 }, /* STACK_REG */		\
+  { 0x000020FF, 0x00000000, 0x00000000 }, /* BASE_REGS */		\
+  { 0x00005F00, 0x00000000, 0x00000000 }, /* HI_REGS */			\
+  { 0x0000100F, 0x00000000, 0x00000000 }, /* CALLER_SAVE_REGS */	\
+  { 0x00005555, 0x00000000, 0x00000000 }, /* EVEN_REGS.  */		\
+  { 0x00005FFF, 0x00000000, 0x00000000 }, /* GENERAL_REGS */		\
+  { 0x00007FFF, 0x00000000, 0x00000000 }, /* CORE_REGS */		\
+  { 0xFFFF0000, 0x00000000, 0x00000000 }, /* VFP_D0_D7_REGS  */		\
+  { 0xFFFF0000, 0x0000FFFF, 0x00000000 }, /* VFP_LO_REGS  */		\
+  { 0x00000000, 0xFFFF0000, 0x0000FFFF }, /* VFP_HI_REGS  */		\
+  { 0xFFFF0000, 0xFFFFFFFF, 0x0000FFFF }, /* VFP_REGS  */		\
+  { 0x00000000, 0x00000000, 0x00010000 }, /* CC_REG */			\
+  { 0x00000000, 0x00000000, 0x00020000 }, /* VFPCC_REG */		\
+  { 0x00000000, 0x00000000, 0x00040000 }, /* SFP_REG */			\
+  { 0x00000000, 0x00000000, 0x00080000 }, /* AFP_REG */			\
+  { 0x00000000, 0x00000000, 0x00400000 }, /* VPR_REG.  */		\
+  { 0x00000000, 0x00000000, 0x00800000 }, /* PAC_REG.  */		\
+  { 0x00005FFF, 0x00000000, 0x00400000 }, /* GENERAL_AND_VPR_REGS.  */	\
+  { 0xFFFF7FFF, 0xFFFFFFFF, 0x0040FFFF }  /* ALL_REGS.  */		\
 }
 
 #define FP_SYSREGS \
@@ -1460,39 +1409,34 @@ extern const char *fp_sysreg_names[NB_FP_SYSREGS];
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
    NO_REGS is returned.  */
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)		\
-  /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */ \
-  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))			\
-   ? coproc_secondary_reload_class (MODE, X, FALSE)		\
-   : (TARGET_IWMMXT && (CLASS) == IWMMXT_REGS)			\
-   ? coproc_secondary_reload_class (MODE, X, TRUE)		\
-   : TARGET_32BIT						\
-   ? (((MODE) == HImode && ! arm_arch4 && true_regnum (X) == -1) \
-    ? GENERAL_REGS : NO_REGS)					\
-   : THUMB_SECONDARY_OUTPUT_RELOAD_CLASS (CLASS, MODE, X))
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)			\
+  /* Restrict which direct reloads are allowed for VFP regs.  */	\
+  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))				\
+   ? coproc_secondary_reload_class (MODE, X, FALSE)			\
+   : (TARGET_32BIT							\
+      ? (((MODE) == HImode && ! arm_arch4 && true_regnum (X) == -1)	\
+	 ? GENERAL_REGS							\
+	 : NO_REGS)							\
+      : THUMB_SECONDARY_OUTPUT_RELOAD_CLASS (CLASS, MODE, X)))
 
 /* If we need to load shorts byte-at-a-time, then we need a scratch.  */
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)		\
-  /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */ \
-  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))			\
-    ? coproc_secondary_reload_class (MODE, X, FALSE) :		\
-    (TARGET_IWMMXT && (CLASS) == IWMMXT_REGS) ?			\
-    coproc_secondary_reload_class (MODE, X, TRUE) :		\
-   (TARGET_32BIT ?						\
-    (((CLASS) == IWMMXT_REGS || (CLASS) == IWMMXT_GR_REGS)	\
-     && CONSTANT_P (X))						\
-    ? GENERAL_REGS :						\
-    (((MODE) == HImode && ! arm_arch4				\
-      && (MEM_P (X)					\
-	  || ((REG_P (X) || GET_CODE (X) == SUBREG)	\
-	      && true_regnum (X) == -1)))			\
-     ? GENERAL_REGS : NO_REGS)					\
-    : THUMB_SECONDARY_INPUT_RELOAD_CLASS (CLASS, MODE, X)))
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)			\
+  /* Restrict which direct reloads are allowed for VFP regs.  */	\
+  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))				\
+   ? coproc_secondary_reload_class (MODE, X, FALSE)			\
+   : (TARGET_32BIT							\
+      ? (((MODE) == HImode						\
+	  && ! arm_arch4						\
+	  && (MEM_P (X)							\
+	      || ((REG_P (X) || GET_CODE (X) == SUBREG)			\
+		  && true_regnum (X) == -1)))				\
+	 ? GENERAL_REGS							\
+	 : NO_REGS)							\
+      : THUMB_SECONDARY_INPUT_RELOAD_CLASS (CLASS, MODE, X)))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
-   ARM regs are UNITS_PER_WORD bits.
-   FIXME: Is this true for iWMMX?  */
+   ARM regs are UNITS_PER_WORD bits.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)  \
   (CLASS == VPR_REG)		      \
   ? CEIL (GET_MODE_SIZE (MODE), 2)    \
@@ -1672,7 +1616,6 @@ enum arm_pcs
 {
   ARM_PCS_AAPCS,	/* Base standard AAPCS.  */
   ARM_PCS_AAPCS_VFP,	/* Use VFP registers for floating point values.  */
-  ARM_PCS_AAPCS_IWMMXT, /* Use iWMMXT registers for vectors.  */
   /* This must be the last AAPCS variant.  */
   ARM_PCS_AAPCS_LOCAL,	/* Private call within this compilation unit.  */
   ARM_PCS_ATPCS,	/* ATPCS.  */
@@ -1690,8 +1633,6 @@ typedef struct
 {
   /* This is the number of registers of arguments scanned so far.  */
   int nregs;
-  /* This is the number of iWMMXt register arguments scanned so far.  */
-  int iwmmxt_nregs;
   int named_count;
   int nargs;
   /* Which procedure call variant to use for this call.  */
@@ -1739,9 +1680,7 @@ typedef struct
 #define FUNCTION_ARG_REGNO_P(REGNO)					\
    (IN_RANGE ((REGNO), 0, 3)						\
     || (TARGET_AAPCS_BASED && TARGET_HARD_FLOAT				\
-	&& IN_RANGE ((REGNO), FIRST_VFP_REGNUM, FIRST_VFP_REGNUM + 15))	\
-    || (TARGET_IWMMXT_ABI						\
-	&& IN_RANGE ((REGNO), FIRST_IWMMXT_REGNUM, FIRST_IWMMXT_REGNUM + 9)))
+	&& IN_RANGE ((REGNO), FIRST_VFP_REGNUM, FIRST_VFP_REGNUM + 15)))
 
 
 /* If your target environment doesn't prefix user functions with an
@@ -2257,12 +2196,16 @@ extern int making_const_table;
 
 #define SELECT_CC_MODE(OP, X, Y)  arm_select_cc_mode (OP, X, Y)
 
-#define REVERSIBLE_CC_MODE(MODE) 1
+/* Floating-point modes cannot be reversed unless we don't care about
+   NaNs.  */
+#define REVERSIBLE_CC_MODE(MODE)			\
+  (flag_finite_math_only				\
+   || !((MODE) == CCFPmode || (MODE) == CCFPEmode))
 
 #define REVERSE_CONDITION(CODE,MODE) \
   (((MODE) == CCFPmode || (MODE) == CCFPEmode) \
-   ? reverse_condition_maybe_unordered (code) \
-   : reverse_condition (code))
+   ? reverse_condition_maybe_unordered (CODE) \
+   : reverse_condition (CODE))
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)

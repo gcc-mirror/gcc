@@ -1,5 +1,4 @@
 // { dg-options "-Wsequence-point -fdiagnostics-show-caret" }
-// { dg-require-effective-target alloca }
 
 void *libiberty_concat_ptr;
 extern unsigned long concat_length (const char *, ...);

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -58,7 +58,6 @@ public:
 class DVCondition : public Condition
 {
 public:
-    unsigned level;
     Identifier *ident;
     Module *mod;
 
@@ -72,7 +71,6 @@ public:
     static void addGlobalIdent(const char *ident);
 
     int include(Scope *sc) override;
-    DebugCondition *isDebugCondition() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -83,7 +81,6 @@ public:
     static void addPredefinedGlobalIdent(const char *ident);
 
     int include(Scope *sc) override;
-    VersionCondition *isVersionCondition() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 

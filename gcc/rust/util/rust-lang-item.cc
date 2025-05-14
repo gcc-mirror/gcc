@@ -46,6 +46,7 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"shr_assign", Kind::SHR_ASSIGN},
   {"deref", Kind::DEREF},
   {"deref_mut", Kind::DEREF_MUT},
+  {"receiver", Kind::RECEIVER},
   {"index", Kind::INDEX},
   {"index_mut", Kind::INDEX_MUT},
   {"RangeFull", Kind::RANGE_FULL},
@@ -62,6 +63,7 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"copy", Kind::COPY},
   {"clone", Kind::CLONE},
   {"sized", Kind::SIZED},
+  {"sync", Kind::SYNC},
   {"slice_alloc", Kind::SLICE_ALLOC},
   {"slice_u8_alloc", Kind::SLICE_U8_ALLOC},
   {"str_alloc", Kind::STR_ALLOC},
@@ -91,6 +93,32 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"str", Kind::STR},
   {"f32_runtime", Kind::F32_RUNTIME},
   {"f64_runtime", Kind::F64_RUNTIME},
+
+  {"Some", Kind::OPTION_SOME},
+  {"None", Kind::OPTION_NONE},
+
+  {"Ok", Kind::RESULT_OK},
+  {"Err", Kind::RESULT_ERR},
+
+  {"into_iter", Kind::INTOITER_INTOITER},
+  {"next", Kind::ITERATOR_NEXT},
+
+  {"eq", Kind::EQ},
+  {"partial_ord", Kind::PARTIAL_ORD},
+
+  {"try", Kind::TRY},
+  {"into_result", Kind::TRY_INTO_RESULT},
+  {"from_error", Kind::TRY_FROM_ERROR},
+  {"from_ok", Kind::TRY_FROM_OK},
+
+  {"from", Kind::FROM_FROM},
+
+  {"structural_peq", Kind::STRUCTURAL_PEQ},
+  {"structural_teq", Kind::STRUCTURAL_TEQ},
+
+  {"discriminant_kind", Kind::DISCRIMINANT_KIND},
+  {"discriminant_type", Kind::DISCRIMINANT_TYPE},
+  {"manually_drop", Kind::MANUALLY_DROP},
 }};
 
 tl::optional<LangItem::Kind>
@@ -106,6 +134,12 @@ LangItem::ToString (LangItem::Kind type)
 {
   auto str = LangItem::lang_items.lookup (type);
   return str.value ();
+}
+
+std::string
+LangItem::PrettyString (LangItem::Kind type)
+{
+  return "#[lang = \"" + LangItem::ToString (type) + "\"]";
 }
 
 LangItem::Kind
@@ -133,6 +167,47 @@ LangItem::OperatorToLangItem (ArithmeticOrLogicalOperator op)
       return LangItem::Kind::SHL;
     case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
       return LangItem::Kind::SHR;
+    }
+
+  rust_unreachable ();
+}
+
+LangItem::Kind
+LangItem::ComparisonToLangItem (ComparisonOperator op)
+{
+  switch (op)
+    {
+    case ComparisonOperator::NOT_EQUAL:
+    case ComparisonOperator::EQUAL:
+      return LangItem::Kind::EQ;
+
+    case ComparisonOperator::GREATER_THAN:
+    case ComparisonOperator::LESS_THAN:
+    case ComparisonOperator::GREATER_OR_EQUAL:
+    case ComparisonOperator::LESS_OR_EQUAL:
+      return LangItem::Kind::PARTIAL_ORD;
+    }
+
+  rust_unreachable ();
+}
+
+std::string
+LangItem::ComparisonToSegment (ComparisonOperator op)
+{
+  switch (op)
+    {
+    case ComparisonOperator::NOT_EQUAL:
+      return "ne";
+    case ComparisonOperator::EQUAL:
+      return "eq";
+    case ComparisonOperator::GREATER_THAN:
+      return "gt";
+    case ComparisonOperator::LESS_THAN:
+      return "lt";
+    case ComparisonOperator::GREATER_OR_EQUAL:
+      return "ge";
+    case ComparisonOperator::LESS_OR_EQUAL:
+      return "le";
     }
 
   rust_unreachable ();
@@ -180,6 +255,15 @@ LangItem::NegationOperatorToLangItem (NegationOperator op)
     }
 
   rust_unreachable ();
+}
+
+bool
+LangItem::IsEnumVariant (LangItem::Kind type)
+{
+  const static std::set<LangItem::Kind> enum_variants
+    = {Kind::OPTION_NONE, Kind::OPTION_SOME, Kind::RESULT_OK, Kind::RESULT_ERR};
+
+  return enum_variants.find (type) != enum_variants.end ();
 }
 
 } // namespace Rust

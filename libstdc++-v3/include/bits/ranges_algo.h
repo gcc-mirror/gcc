@@ -1842,6 +1842,7 @@ namespace ranges
     template<random_access_iterator _Iter, sentinel_for<_Iter> _Sent,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<_Iter, _Comp, _Proj>
+      _GLIBCXX26_CONSTEXPR
       _Iter
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
@@ -1855,6 +1856,7 @@ namespace ranges
     template<random_access_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
+      _GLIBCXX26_CONSTEXPR
       borrowed_iterator_t<_Range>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
@@ -2387,6 +2389,7 @@ namespace ranges
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       requires permutable<_Iter>
+      _GLIBCXX26_CONSTEXPR
       subrange<_Iter>
       operator()(_Iter __first, _Sent __last,
 		 _Pred __pred, _Proj __proj = {}) const
@@ -2402,6 +2405,7 @@ namespace ranges
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires permutable<iterator_t<_Range>>
+      _GLIBCXX26_CONSTEXPR
       borrowed_subrange_t<_Range>
       operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
       {
@@ -2596,6 +2600,7 @@ namespace ranges
 	     typename _Comp = ranges::less,
 	     typename _Proj = identity>
       requires sortable<_Iter, _Comp, _Proj>
+      _GLIBCXX26_CONSTEXPR
       _Iter
       operator()(_Iter __first, _Iter __middle, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
@@ -2609,6 +2614,7 @@ namespace ranges
     template<bidirectional_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
+      _GLIBCXX26_CONSTEXPR
       borrowed_iterator_t<_Range>
       operator()(_Range&& __r, iterator_t<_Range> __middle,
 		 _Comp __comp = {}, _Proj __proj = {}) const

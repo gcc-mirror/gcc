@@ -1,0 +1,149 @@
+# Copyright (C) 2021-2024 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Run compile tests with name resolution 2.0 enabled
+
+# Load support procs.
+load_lib rust-dg.exp
+
+# These tests don't run runtest_file_p consistently if it
+# doesn't return the same values, so disable parallelization
+# of this *.exp file.  The first parallel runtest to reach
+# this will run all the tests serially.
+if ![gcc_parallel_test_run_p compile] {
+    return
+}
+gcc_parallel_test_enable 0
+
+# Initialize `dg'.
+dg-init
+
+namespace eval rust-nr2-ns {
+    # Exclude tests which aren't passing yet
+    # These should be removed from the exclude file over time
+
+    set exclude_fh [open $srcdir/$subdir/exclude r]
+    set exclude_raw [lsort [split [read $exclude_fh] "\n"]]
+    close $exclude_fh
+    unset exclude_fh
+
+    set exclude ""
+    foreach ent $exclude_raw {
+        if [regexp {^[^#].*} $ent] {
+            lappend exclude $ent
+	}
+    }
+    unset exclude_raw
+
+    # Run tests in directories
+    # Manually specifying these, in case some other test file
+    # does something weird
+    set test_dirs {{} {macros builtin} {macros mbe} {macros proc} {torture}}
+
+    set tests_expect_ok ""
+    set tests_expect_err ""
+
+    set compile_dir [list {*}[file split $srcdir] {*}[file split $subdir]]
+    set compile_dir [lreplace $compile_dir end end]
+
+    foreach test_dir $test_dirs {
+        foreach test [lsort [glob -nocomplain -tails -directory [file join {*}$compile_dir {*}$test_dir] *.rs]] {
+	    # use '/' as the path seperator for entries in the exclude file
+	    set test_lbl [join [list {*}$test_dir $test] "/"]
+	    set idx [lsearch -exact -sorted $exclude $test_lbl]
+	    if {$idx == -1} {
+	        if {[runtest_file_p $runtests [file join {*}$compile_dir {*}$test_dir $test]]} {
+		    lappend tests_expect_ok [list {*}$test_dir $test]
+		}
+	    } else {
+	        if {[runtest_file_p $runtests [file join {*}$compile_dir {*}$test_dir $test]]} {
+		    lappend tests_expect_err [list {*}$test_dir $test]
+		}
+		set exclude [lreplace $exclude $idx $idx]
+	    }
+	}
+    }
+
+    # Generate failures for unmatched tests in the exclude list
+    foreach ent $exclude {
+        fail "$ent: could not exclude test"
+    }
+    unset exclude
+
+    # run a test while catching record_test calls
+    set record_test_out ""
+    proc try_test { test } {
+        variable record_test_out
+	rename ::record_test record_test_old
+
+	proc ::record_test { type msg args } {
+	    namespace eval ::rust-nr2-ns {
+		set type [uplevel 1 {set type}]
+		set msg [uplevel 1 {set msg}]
+		variable record_test_out
+		switch $type {
+		    FAIL {
+			lappend record_test_out [list $type $msg]
+		    }
+		    XPASS {
+			lappend record_test_out [list $type $msg]
+		    }
+		}
+            }
+	}
+
+        namespace eval :: {
+	    set saved-dg-do-what-default ${dg-do-what-default}
+	    set dg-do-what-default "compile"
+            dg-runtest [list [uplevel 1 {set test}]] "-frust-name-resolution-2.0" ""
+	    set dg-do-what-default ${saved-dg-do-what-default}
+	}
+
+        rename ::record_test ""
+	rename record_test_old ::record_test
+
+	set record_test_cache $record_test_out
+        set record_test_out ""
+	return $record_test_cache
+    }
+
+    # check for unexpected failures
+    foreach test $tests_expect_ok {
+        set fails [try_test [file join {*}$compile_dir {*}$test]]
+	if {[llength $fails] != 0} {
+	    foreach ent $fails {
+		record_test [lindex $ent 0] "on nr2: [lindex $ent 1]"
+	    }
+	} else {
+	    record_test PASS "[file join {*}$test] on nr2"
+	}
+    }
+
+    #check for unexpected successes
+    foreach test $tests_expect_err {
+        set fails [try_test [file join {*}$compile_dir {*}$test]]
+	if {[llength $fails] == 0} {
+	    record_test XPASS "[file join {*}$test] on nr2"
+	} else {
+	    record_test XFAIL "[file join {*}$test] on nr2 was rightfully excluded"
+	}
+    }
+}
+
+# All done.
+dg-finish
+
+gcc_parallel_test_enable 1

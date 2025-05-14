@@ -1,3 +1,38 @@
+2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc_release: Allow optional \[[0-9]+\] before GCC major.minor
+	in the NEWS file.
+
+2025-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Snapshots from trunk are now GCC 16 related.
+	Add GCC 15 snapshots from the respective branch.
+
+2025-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR web/119227
+	* update_web_docs_git: Rename mdoc2pdf_html to cobol_mdoc2pdf_html,
+	perform mkdir -p $DOCSDIR/gcobol gcobol, remove $d/ from pdf and in
+	html replace it with gcobol/; update uses of the renamed function.
+
+2025-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/119510
+	* gcc_release: Use --enable-languages=c,c++,lto and if m2 is available,
+	with,m2 appended to that.  Check for all possible languages and run
+	make $lang.srcextra $lang.srcinfo $lang.srcman for those.  Add
+	libffi/doc/libffi.info.
+
+2025-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR other/119510
+	* gcc_release: Use --enable-languages=default,cobol
+	when building generated files.
+
+2025-03-11  James K. Lowden  <jklowden@symas.com>
+
+	* update_web_docs_git: Add libgcobol module and cobol language.
+
 2024-12-03  David Malcolm  <dmalcolm@redhat.com>
 
 	PR web/117883

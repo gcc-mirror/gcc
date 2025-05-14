@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-exceptions" } */
+
 int open(const char *, int mode);
 void close(int fd);
 #define O_RDONLY 0

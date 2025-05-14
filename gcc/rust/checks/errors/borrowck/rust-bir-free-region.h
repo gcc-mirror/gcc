@@ -24,7 +24,19 @@
 
 namespace Rust {
 
-using FreeRegion = size_t;
+struct FreeRegion
+{
+  size_t value;
+  // some overloads for comparision
+  bool operator== (const FreeRegion &rhs) const { return value == rhs.value; }
+  bool operator!= (const FreeRegion &rhs) const { return !(operator== (rhs)); }
+  bool operator< (const FreeRegion &rhs) const { return value < rhs.value; }
+  bool operator> (const FreeRegion &rhs) const { return value > rhs.value; }
+  bool operator<= (const FreeRegion &rhs) const { return !(operator> (rhs)); }
+  bool operator>= (const FreeRegion &rhs) const { return !(operator< (rhs)); }
+};
+
+static constexpr FreeRegion STATIC_FREE_REGION = {0};
 
 class FreeRegions
 {
@@ -38,14 +50,6 @@ public:
   FreeRegion &operator[] (size_t i) { return regions.at (i); }
   const FreeRegion &operator[] (size_t i) const { return regions.at (i); }
   const std::vector<FreeRegion> &get_regions () const { return regions; }
-  void set_from (std::vector<Rust::Polonius::Origin> &&regions)
-  {
-    this->regions.clear ();
-    for (auto &region : regions)
-      {
-	this->regions.push_back ({region});
-      }
-  }
 
   WARN_UNUSED_RESULT FreeRegions prepend (FreeRegion region) const
   {
@@ -54,6 +58,9 @@ public:
     return FreeRegions (std::move (new_regions));
   }
 
+  void push_back (FreeRegion region) { regions.push_back (region); }
+
+  FreeRegions () {}
   FreeRegions (std::vector<FreeRegion> &&regions) : regions (regions) {}
 
   WARN_UNUSED_RESULT std::string to_string () const
@@ -61,7 +68,7 @@ public:
     std::stringstream result;
     for (auto &region : regions)
       {
-	result << region;
+	result << region.value;
 	result << ", ";
       }
     // Remove the last ", " from the string.
@@ -83,19 +90,20 @@ public:
 
   WARN_UNUSED_RESULT FreeRegion get_next_free_region () const
   {
-    return next_free_region++;
+    ++next_free_region.value;
+    return {next_free_region.value - 1};
   }
 
   FreeRegions bind_regions (std::vector<TyTy::Region> regions,
 			    FreeRegions parent_free_regions)
   {
-    std::vector<FreeRegion> free_regions;
+    FreeRegions free_regions;
     for (auto &region : regions)
       {
 	if (region.is_early_bound ())
 	  free_regions.push_back (parent_free_regions[region.get_index ()]);
 	else if (region.is_static ())
-	  free_regions.push_back (0);
+	  free_regions.push_back (STATIC_FREE_REGION);
 	else if (region.is_anonymous ())
 	  free_regions.push_back (get_next_free_region ());
 	else if (region.is_named ())
@@ -106,9 +114,7 @@ public:
 	    rust_unreachable ();
 	  }
       }
-    // This is necesarry because of clash of current gcc and gcc4.8.
-    FreeRegions free_regions_final{std::move (free_regions)};
-    return free_regions_final;
+    return free_regions;
   }
 };
 

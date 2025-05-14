@@ -3,12 +3,12 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/objc_interface.html, Interfacing to Objective-C)
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/objc.d, _objc.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/objc.d, _objc.d)
  * Documentation:  https://dlang.org/phobos/dmd_objc.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/objc.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/objc.d
  */
 
 module dmd.objc;
@@ -714,8 +714,8 @@ extern(C++) private final class Supported : Objc
     {
         if (cd.classKind == ClassKind.objc && fd.isStatic && !cd.objc.isMeta)
             return cd.objc.metaclass;
-        else
-            return cd;
+
+        return cd;
     }
 
     override void addToClassMethodList(FuncDeclaration fd, ClassDeclaration cd) const
@@ -805,11 +805,10 @@ extern(C++) private final class Supported : Objc
         {
             if (classDeclaration.baseClass)
                 return getRuntimeMetaclass(classDeclaration.baseClass);
-            else
-                return classDeclaration;
+
+            return classDeclaration;
         }
-        else
-            return classDeclaration.objc.metaclass;
+        return classDeclaration.objc.metaclass;
     }
 
     override void addSymbols(AttribDeclaration attribDeclaration,

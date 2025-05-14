@@ -1278,6 +1278,19 @@ gimple_build_omp_dispatch (gimple_seq body, tree clauses)
   return p;
 }
 
+/* Build a GIMPLE_OMP_INTEROP statement.
+
+   CLAUSES are any of the OMP interop construct's clauses.  */
+
+gimple *
+gimple_build_omp_interop (tree clauses)
+{
+  gimple *p = gimple_alloc (GIMPLE_OMP_INTEROP, 0);
+  gimple_omp_interop_set_clauses (p, clauses);
+
+  return p;
+}
+
 /* Build a GIMPLE_OMP_TARGET statement.
 
    BODY is the sequence of statements that will be executed.
@@ -2205,6 +2218,11 @@ gimple_copy (gimple *stmt)
 	  gimple_omp_dispatch_set_clauses (copy, t);
 	  goto copy_omp_body;
 
+	case GIMPLE_OMP_INTEROP:
+	  t = unshare_expr (gimple_omp_interop_clauses (stmt));
+	  gimple_omp_interop_set_clauses (copy, t);
+	  break;
+
 	case GIMPLE_OMP_TARGET:
 	  {
 	    gomp_target *omp_target_stmt = as_a <gomp_target *> (stmt);
@@ -2898,15 +2916,7 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
 	return true;
       tree arg = gimple_call_arg (stmt, i);
       tree type = TREE_VALUE (targs);
-      if (!useless_type_conversion_p (type, TREE_TYPE (arg))
-	  /* char/short integral arguments are promoted to int
-	     by several frontends if targetm.calls.promote_prototypes
-	     is true.  Allow such promotion too.  */
-	  && !(INTEGRAL_TYPE_P (type)
-	       && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
-	       && targetm.calls.promote_prototypes (TREE_TYPE (fndecl))
-	       && useless_type_conversion_p (integer_type_node,
-					     TREE_TYPE (arg))))
+      if (!useless_type_conversion_p (type, TREE_TYPE (arg)))
 	return false;
       targs = TREE_CHAIN (targs);
     }

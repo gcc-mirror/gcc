@@ -2,7 +2,7 @@
 
 #include <arm_sme.h>
 
-#pragma GCC target "+sme2"
+#pragma GCC target "+sve2+sme2"
 
 void
 f1 (svint8_t s8, svint8x2_t s8x2, svint8x3_t s8x3, svint8x4_t s8x4,

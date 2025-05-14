@@ -133,6 +133,18 @@ extern const char *dos_lbasename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRIB
 
 extern const char *unix_lbasename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_NONNULL(1);
 
+/* A dirname () that is always compiled in.  */
+
+extern char *ldirname (const char *) ATTRIBUTE_NONNULL(1);
+
+/* Same, but assumes DOS semantics regardless of host.  */
+
+extern char *dos_ldirname (const char *) ATTRIBUTE_NONNULL(1);
+
+/* Same, but assumes Unix semantics regardless of host.  */
+
+extern char *unix_ldirname (const char *) ATTRIBUTE_NONNULL(1);
+
 /* A well-defined realpath () that is always compiled in.  */
 
 extern char *lrealpath (const char *);
@@ -201,6 +213,16 @@ extern int ffs(int);
 
 #if defined (HAVE_DECL_MKSTEMPS) && !HAVE_DECL_MKSTEMPS
 extern int mkstemps(char *, int);
+#endif
+
+#if defined (HAVE_DECL_MKSTEMPS) && !HAVE_DECL_MKSTEMPS
+extern int mkstemps(char *, int);
+#endif
+
+/* Make memrchr available on systems that do not have it.  */
+#if !defined (__GNU_LIBRARY__ ) && !defined (__linux__) && \
+    !defined (HAVE_MEMRCHR)
+extern void *memrchr(const void *, int, size_t);
 #endif
 
 /* Get the working directory.  The result is cached, so don't call

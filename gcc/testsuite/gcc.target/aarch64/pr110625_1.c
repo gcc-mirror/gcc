@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Ofast -mcpu=neoverse-n2 -fdump-tree-vect-details -fno-tree-slp-vectorize" } */
-/* { dg-final { scan-tree-dump-not "reduction latency = 8" "vect" } } */
+/* { dg-final { scan-tree-dump {Vector issue estimate:(?:(?!Cost model).)*reduction latency = 2\n} "vect" } } */
 
 /* Do not increase the vector body cost due to the incorrect reduction latency
     Original vector body cost = 51

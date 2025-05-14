@@ -1810,6 +1810,34 @@
    (set_attr "type" "multiple")]
 )
 
+;; Re-split an LEU/GEU sequence if combine tries to oversimplify a 3-plus
+;; insn sequence.  Beware of the early-clobber of operand0
+(define_split
+ [(set (match_operand:SI 0 "s_register_operand")
+       (leu:SI (match_operand:SI 1 "s_register_operand")
+	       (match_operand:SI 2 "s_register_operand")))]
+ "TARGET_THUMB1
+  && !reg_overlap_mentioned_p (operands[0], operands[1])
+  && !reg_overlap_mentioned_p (operands[0], operands[2])"
+ [(set (match_dup 0) (const_int 0))
+  (set (match_dup 0) (plus:SI (plus:SI (match_dup 0) (match_dup 0))
+			      (geu:SI (match_dup 2) (match_dup 1))))]
+ {}
+)
+
+(define_split
+ [(set (match_operand:SI 0 "s_register_operand")
+       (geu:SI (match_operand:SI 1 "s_register_operand")
+	       (match_operand:SI 2 "thumb1_cmp_operand")))]
+ "TARGET_THUMB1
+  && !reg_overlap_mentioned_p (operands[0], operands[1])
+  && !reg_overlap_mentioned_p (operands[0], operands[2])"
+ [(set (match_dup 0) (const_int 0))
+  (set (match_dup 0) (plus:SI (plus:SI (match_dup 0) (match_dup 0))
+			      (geu:SI (match_dup 1) (match_dup 2))))]
+ {}
+)
+
 
 (define_insn "*thumb_jump"
   [(set (pc)

@@ -1,4 +1,4 @@
-/* { dg-do compile */
+/* { dg-do compile } */
 /* { dg-options "-O2 -fdump-ipa-cp" } */
 int test3(int);
 __attribute__ ((noinline))

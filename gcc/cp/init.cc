@@ -2810,8 +2810,7 @@ diagnose_uninitialized_cst_or_ref_member (tree type, bool using_new, bool compla
 }
 
 /* Call __cxa_bad_array_new_length to indicate that the size calculation
-   overflowed.  Pretend it returns sizetype so that it plays nicely in the
-   COND_EXPR.  */
+   overflowed.  */
 
 tree
 throw_bad_array_new_length (void)
@@ -2823,7 +2822,7 @@ throw_bad_array_new_length (void)
       fn = get_global_binding (name);
       if (!fn)
 	fn = push_throw_library_fn
-	  (name, build_function_type_list (sizetype, NULL_TREE));
+	  (name, build_function_type_list (void_type_node, NULL_TREE));
     }
 
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
@@ -3406,7 +3405,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	errval = throw_bad_array_new_length ();
       if (outer_nelts_check != NULL_TREE)
 	size = build3 (COND_EXPR, sizetype, outer_nelts_check, size, errval);
-      size = cp_fully_fold (size);
+      size = fold_to_constant (size);
       /* Create the argument list.  */
       vec_safe_insert (*placement, 0, size);
       /* Do name-lookup to find the appropriate operator.  */
@@ -3463,7 +3462,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	    outer_nelts_check = NULL_TREE;
 	}
 
-      size = cp_fully_fold (size);
+      size = fold_to_constant (size);
       /* If size is zero e.g. due to type having zero size, try to
 	 preserve outer_nelts for constant expression evaluation
 	 purposes.  */
@@ -4748,7 +4747,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 itself.  But that breaks when gimplify_target_expr adds a clobber
 	 cleanup that runs before the build_vec_init cleanup.  */
       if (cleanup_flags)
-	vec_safe_push (*cleanup_flags, build_tree_list (iterator, maxindex));
+	vec_safe_push (*cleanup_flags,
+		       build_tree_list (rval, build_zero_cst (ptype)));
     }
 
   /* Should we try to create a constant initializer?  */
@@ -4802,7 +4802,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  tree baseref = build1 (INDIRECT_REF, type, base);
 	  tree one_init;
 
-	  num_initialized_elts++;
+	  if (field && TREE_CODE (field) == RANGE_EXPR)
+	    num_initialized_elts += range_expr_nelts (field);
+	  else
+	    num_initialized_elts++;
 
 	  /* We need to see sub-array TARGET_EXPR before cp_fold_r so we can
 	     handle cleanup flags properly.  */

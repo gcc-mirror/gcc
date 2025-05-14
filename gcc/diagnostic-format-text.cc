@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-format-text.h"
 #include "diagnostic-buffer.h"
 #include "text-art/theme.h"
-#include "make-unique.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
    that (intentionally) don't follow GCC diagnostic conventions.  */
@@ -193,7 +192,7 @@ diagnostic_text_output_format::set_buffer (diagnostic_per_format_buffer *base)
 std::unique_ptr<diagnostic_per_format_buffer>
 diagnostic_text_output_format::make_per_format_buffer ()
 {
-  return ::make_unique<diagnostic_text_format_buffer> (*this);
+  return std::make_unique<diagnostic_text_format_buffer> (*this);
 }
 
 /* Implementation of diagnostic_output_format::on_report_diagnostic vfunc

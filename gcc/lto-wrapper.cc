@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts-diagnostic.h"
 #include "opt-suggestions.h"
 #include "opts-jobserver.h"
-#include "make-unique.h"
 #include "lto-ltrans-cache.h"
 
 /* Environment variable, used for passing the names of offload targets from GCC

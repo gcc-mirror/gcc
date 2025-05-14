@@ -1,0 +1,22 @@
+SINGLE TABLE
+04
+03
+02
+01
+LOWER LEVEL TABLE
+04
+03
+02
+01
+MULTY KEY SORT
+06  AbCde  The
+05  abc    cow
+05  abcde  eats
+04  zyx    grass
+03  abcde  and
+02  12345  mooos
+02  12346  the
+01  AbCde  whole
+01  abcde  day
+01  zyx    .
+

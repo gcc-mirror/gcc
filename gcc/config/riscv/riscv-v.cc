@@ -1171,437 +1171,509 @@ expand_vector_init_trailing_same_elem (rtx target,
 }
 
 static void
-expand_const_vector (rtx target, rtx src)
+expand_const_vec_duplicate (rtx target, rtx src, rtx elt)
 {
   machine_mode mode = GET_MODE (target);
   rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
-  rtx elt;
-  if (const_vec_duplicate_p (src, &elt))
+
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
     {
-      if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
-	{
-	  gcc_assert (rtx_equal_p (elt, const0_rtx)
-		      || rtx_equal_p (elt, const1_rtx));
-	  rtx ops[] = {result, src};
-	  emit_vlmax_insn (code_for_pred_mov (mode), UNARY_MASK_OP, ops);
-	}
+      gcc_assert (rtx_equal_p (elt, const0_rtx)
+		  || rtx_equal_p (elt, const1_rtx));
+
+      rtx ops[] = {result, src};
+      emit_vlmax_insn (code_for_pred_mov (mode), UNARY_MASK_OP, ops);
+    }
+  else if (valid_vec_immediate_p (src))
+    {
       /* Element in range -16 ~ 15 integer or 0.0 floating-point,
 	 we use vmv.v.i instruction.  */
-      else if (valid_vec_immediate_p (src))
+      rtx ops[] = {result, src};
+      emit_vlmax_insn (code_for_pred_mov (mode), UNARY_OP, ops);
+    }
+  else
+    {
+      /* Emit vec_duplicate<mode> split pattern before RA so that
+	 we could have a better optimization opportunity in LICM
+	 which will hoist vmv.v.x outside the loop and in fwprop && combine
+	 which will transform 'vv' into 'vx' instruction.
+
+	 The reason we don't emit vec_duplicate<mode> split pattern during
+	 RA since the split stage after RA is a too late stage to generate
+	 RVV instruction which need an additional register (We can't
+	 allocate a new register after RA) for VL operand of vsetvl
+	 instruction (vsetvl a5, zero).  */
+      if (lra_in_progress)
 	{
-	  rtx ops[] = {result, src};
-	  emit_vlmax_insn (code_for_pred_mov (mode), UNARY_OP, ops);
+	  rtx ops[] = {result, elt};
+	  emit_vlmax_insn (code_for_pred_broadcast (mode), UNARY_OP, ops);
 	}
       else
 	{
-	  /* Emit vec_duplicate<mode> split pattern before RA so that
-	     we could have a better optimization opportunity in LICM
-	     which will hoist vmv.v.x outside the loop and in fwprop && combine
-	     which will transform 'vv' into 'vx' instruction.
+	  struct expand_operand ops[2];
+	  enum insn_code icode = optab_handler (vec_duplicate_optab, mode);
+	  gcc_assert (icode != CODE_FOR_nothing);
+	  create_output_operand (&ops[0], result, mode);
+	  create_input_operand (&ops[1], elt, GET_MODE_INNER (mode));
+	  expand_insn (icode, 2, ops);
+	  result = ops[0].value;
+	}
+    }
 
-	     The reason we don't emit vec_duplicate<mode> split pattern during
-	     RA since the split stage after RA is a too late stage to generate
-	     RVV instruction which need an additional register (We can't
-	     allocate a new register after RA) for VL operand of vsetvl
-	     instruction (vsetvl a5, zero).  */
-	  if (lra_in_progress)
-	    {
-	      rtx ops[] = {result, elt};
-	      emit_vlmax_insn (code_for_pred_broadcast (mode), UNARY_OP, ops);
-	    }
-	  else
-	    {
-	      struct expand_operand ops[2];
-	      enum insn_code icode = optab_handler (vec_duplicate_optab, mode);
-	      gcc_assert (icode != CODE_FOR_nothing);
-	      create_output_operand (&ops[0], result, mode);
-	      create_input_operand (&ops[1], elt, GET_MODE_INNER (mode));
-	      expand_insn (icode, 2, ops);
-	      result = ops[0].value;
-	    }
+  if (result != target)
+    emit_move_insn (target, result);
+}
+
+static void
+expand_const_vec_series (rtx target, rtx base, rtx step)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
+
+  expand_vec_series (result, base, step);
+
+  if (result != target)
+    emit_move_insn (target, result);
+}
+
+
+/* We handle the case that we can find a vector container to hold
+   element bitsize = NPATTERNS * ele_bitsize.
+
+     NPATTERNS = 8, element width = 8
+       v = { 0, 1, 2, 3, 4, 5, 6, 7, ... }
+     In this case, we can combine NPATTERNS element into a larger
+     element.  Use element width = 64 and broadcast a vector with
+     all element equal to 0x0706050403020100.  */
+
+static void
+expand_const_vector_duplicate_repeating (rtx target, rvv_builder *builder)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
+  rtx ele = builder->get_merged_repeating_sequence ();
+  rtx dup;
+
+  if (lra_in_progress)
+    {
+      dup = gen_reg_rtx (builder->new_mode ());
+      rtx ops[] = {dup, ele};
+      emit_vlmax_insn (code_for_pred_broadcast (builder->new_mode ()),
+		       UNARY_OP, ops);
+    }
+  else
+    dup = expand_vector_broadcast (builder->new_mode (), ele);
+
+  emit_move_insn (result, gen_lowpart (mode, dup));
+
+  if (result != target)
+    emit_move_insn (target, result);
+}
+
+/* We handle the case that we can't find a vector container to hold
+   element bitsize = NPATTERNS * ele_bitsize.
+
+     NPATTERNS = 8, element width = 16
+       v = { 0, 1, 2, 3, 4, 5, 6, 7, ... }
+     Since NPATTERNS * element width = 128, we can't find a container
+     to hold it.
+
+     In this case, we use NPATTERNS merge operations to generate such
+     vector.  */
+
+static void
+expand_const_vector_duplicate_default (rtx target, rvv_builder *builder)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
+  unsigned int nbits = builder->npatterns () - 1;
+
+  /* Generate vid = { 0, 1, 2, 3, 4, 5, 6, 7, ... }.  */
+  rtx vid = gen_reg_rtx (builder->int_mode ());
+  rtx op[] = {vid};
+  emit_vlmax_insn (code_for_pred_series (builder->int_mode ()), NULLARY_OP, op);
+
+  /* Generate vid_repeat = { 0, 1, ... nbits, ... }  */
+  rtx vid_repeat = gen_reg_rtx (builder->int_mode ());
+  rtx and_ops[] = {vid_repeat, vid,
+		   gen_int_mode (nbits, builder->inner_int_mode ())};
+  emit_vlmax_insn (code_for_pred_scalar (AND, builder->int_mode ()), BINARY_OP,
+		   and_ops);
+
+  rtx tmp1 = gen_reg_rtx (builder->mode ());
+  rtx dup_ops[] = {tmp1, builder->elt (0)};
+  emit_vlmax_insn (code_for_pred_broadcast (builder->mode ()), UNARY_OP,
+		   dup_ops);
+
+  for (unsigned int i = 1; i < builder->npatterns (); i++)
+    {
+      /* Generate mask according to i.  */
+      rtx mask = gen_reg_rtx (builder->mask_mode ());
+      rtx const_vec = gen_const_vector_dup (builder->int_mode (), i);
+      expand_vec_cmp (mask, EQ, vid_repeat, const_vec);
+
+      /* Merge scalar to each i.  */
+      rtx tmp2 = gen_reg_rtx (builder->mode ());
+      rtx merge_ops[] = {tmp2, tmp1, builder->elt (i), mask};
+      insn_code icode = code_for_pred_merge_scalar (builder->mode ());
+      emit_vlmax_insn (icode, MERGE_OP, merge_ops);
+      tmp1 = tmp2;
+    }
+
+  emit_move_insn (result, tmp1);
+
+  if (result != target)
+    emit_move_insn (target, result);
+}
+
+/* Handle the case with repeating sequence that NELTS_PER_PATTERN = 1
+   E.g.  NPATTERNS = 4, v = { 0, 2, 6, 7, ... }
+	 NPATTERNS = 8, v = { 0, 2, 6, 7, 19, 20, 8, 7 ... }
+	 The elements within NPATTERNS are not necessary regular.  */
+static void
+expand_const_vector_duplicate (rtx target, rvv_builder *builder)
+{
+  if (builder->can_duplicate_repeating_sequence_p ())
+    return expand_const_vector_duplicate_repeating (target, builder);
+  else
+    return expand_const_vector_duplicate_default (target, builder);
+}
+
+static void
+expand_const_vector_single_step_npatterns (rtx target, rvv_builder *builder)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
+
+  /* Describe the case by choosing NPATTERNS = 4 as an example.  */
+  insn_code icode;
+
+  /* Step 1: Generate vid = { 0, 1, 2, 3, 4, 5, 6, 7, ... }.  */
+  rtx vid = gen_reg_rtx (builder->mode ());
+  rtx vid_ops[] = {vid};
+  icode = code_for_pred_series (builder->mode ());
+  emit_vlmax_insn (icode, NULLARY_OP, vid_ops);
+
+  if (builder->npatterns_all_equal_p ())
+    {
+      /* Generate the variable-length vector following this rule:
+	 { a, a, a + step, a + step, a + step * 2, a + step * 2, ...}
+	   E.g. { 0, 0, 8, 8, 16, 16, ... } */
+
+      /* We want to create a pattern where value[idx] = floor (idx /
+	 NPATTERNS). As NPATTERNS is always a power of two we can
+	 rewrite this as = idx & -NPATTERNS.  */
+      /* Step 2: VID AND -NPATTERNS:
+	 { 0&-4, 1&-4, 2&-4, 3 &-4, 4 &-4, 5 &-4, 6 &-4, 7 &-4, ... } */
+      rtx imm = gen_int_mode (-builder->npatterns (), builder->inner_mode ());
+      rtx tmp1 = gen_reg_rtx (builder->mode ());
+      rtx and_ops[] = {tmp1, vid, imm};
+      icode = code_for_pred_scalar (AND, builder->mode ());
+      emit_vlmax_insn (icode, BINARY_OP, and_ops);
+
+      /* Step 3: Convert to step size 1.  */
+      rtx tmp2 = gen_reg_rtx (builder->mode ());
+      /* log2 (npatterns) to get the shift amount to convert
+	 Eg.  { 0, 0, 0, 0, 4, 4, ... }
+	 into { 0, 0, 0, 0, 1, 1, ... }.  */
+      HOST_WIDE_INT shift_amt = exact_log2 (builder->npatterns ());
+      rtx shift = gen_int_mode (shift_amt, builder->inner_mode ());
+      rtx shift_ops[] = {tmp2, tmp1, shift};
+      icode = code_for_pred_scalar (ASHIFTRT, builder->mode ());
+      emit_vlmax_insn (icode, BINARY_OP, shift_ops);
+
+      /* Step 4: Multiply to step size n.  */
+      HOST_WIDE_INT step_size =
+	INTVAL (builder->elt (builder->npatterns ()))
+	  - INTVAL (builder->elt (0));
+      rtx tmp3 = gen_reg_rtx (builder->mode ());
+      if (pow2p_hwi (step_size))
+	{
+	  /* Power of 2 can be handled with a left shift.  */
+	  HOST_WIDE_INT shift = exact_log2 (step_size);
+	  rtx shift_amount = gen_int_mode (shift, Pmode);
+	  insn_code icode = code_for_pred_scalar (ASHIFT, mode);
+	  rtx ops[] = {tmp3, tmp2, shift_amount};
+	  emit_vlmax_insn (icode, BINARY_OP, ops);
+	}
+      else
+	{
+	  rtx mult_amt = gen_int_mode (step_size, builder->inner_mode ());
+	  insn_code icode = code_for_pred_scalar (MULT, builder->mode ());
+	  rtx ops[] = {tmp3, tmp2, mult_amt};
+	  emit_vlmax_insn (icode, BINARY_OP, ops);
 	}
 
-      if (result != target)
-	emit_move_insn (target, result);
-      return;
+      /* Step 5: Add starting value to all elements.  */
+      HOST_WIDE_INT init_val = INTVAL (builder->elt (0));
+      if (init_val == 0)
+	emit_move_insn (result, tmp3);
+      else
+	{
+	  rtx dup = gen_const_vector_dup (builder->mode (), init_val);
+	  rtx add_ops[] = {result, tmp3, dup};
+	  icode = code_for_pred (PLUS, builder->mode ());
+	  emit_vlmax_insn (icode, BINARY_OP, add_ops);
+	}
     }
+  else
+    {
+      /* Generate the variable-length vector following this rule:
+	{ a, b, a + step, b + step, a + step*2, b + step*2, ... }  */
+      if (builder->npatterns_vid_diff_repeated_p ())
+	{
+	  /* Case 1: For example as below:
+	     {3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8... }
+	     We have 3 - 0 = 3 equals 7 - 4 = 3, the sequence is
+	     repeated as below after minus vid.
+	     {3, 1, -1, -3, 3, 1, -1, -3...}
+	     Then we can simplify the diff code gen to at most
+	     npatterns().  */
+	  rvv_builder v (builder->mode (), builder->npatterns (), 1);
+
+	  /* Step 1: Generate diff = TARGET - VID.  */
+	  for (unsigned int i = 0; i < v.npatterns (); ++i)
+	    {
+	      poly_int64 diff = rtx_to_poly_int64 (builder->elt (i)) - i;
+	      v.quick_push (gen_int_mode (diff, v.inner_mode ()));
+	    }
+
+	  /* Step 2: Generate result = VID + diff.  */
+	  rtx vec = v.build ();
+	  rtx add_ops[] = {result, vid, vec};
+	  emit_vlmax_insn (code_for_pred (PLUS, builder->mode ()), BINARY_OP,
+			   add_ops);
+	}
+      else
+	{
+	  /* Case 2: For example as below:
+	     { -4, 4, -4 + 1, 4 + 1, -4 + 2, 4 + 2, -4 + 3, 4 + 3, ... }
+	   */
+	  rvv_builder v (builder->mode (), builder->npatterns (), 1);
+
+	  /* Step 1: Generate { a, b, a, b, ... }  */
+	  for (unsigned int i = 0; i < v.npatterns (); ++i)
+	    v.quick_push (builder->elt (i));
+	  rtx new_base = v.build ();
+
+	  /* Step 2: Generate tmp1 = VID >> LOG2 (NPATTERNS).  */
+	  rtx shift_count = gen_int_mode (exact_log2 (builder->npatterns ()),
+					  builder->inner_mode ());
+	  rtx tmp1 = gen_reg_rtx (builder->mode ());
+	  rtx shift_ops[] = {tmp1, vid, shift_count};
+	  emit_vlmax_insn (code_for_pred_scalar (LSHIFTRT, builder->mode ()),
+			   BINARY_OP, shift_ops);
+
+	  /* Step 3: Generate tmp2 = tmp1 * step.  */
+	  rtx tmp2 = gen_reg_rtx (builder->mode ());
+	  rtx step
+	    = simplify_binary_operation (MINUS, builder->inner_mode (),
+					 builder->elt (v.npatterns()),
+					 builder->elt (0));
+	  expand_vec_series (tmp2, const0_rtx, step, tmp1);
+
+	  /* Step 4: Generate result = tmp2 + new_base.  */
+	  rtx add_ops[] = {result, tmp2, new_base};
+	  emit_vlmax_insn (code_for_pred (PLUS, builder->mode ()), BINARY_OP,
+			   add_ops);
+	}
+    }
+
+  if (result != target)
+    emit_move_insn (target, result);
+}
+
+static void
+expand_const_vector_interleaved_stepped_npatterns (rtx target, rtx src,
+						   rvv_builder *builder)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
+  rtx base1 = builder->elt (0);
+  rtx base2 = builder->elt (1);
+
+  poly_int64 step1 = rtx_to_poly_int64 (builder->elt (builder->npatterns ()))
+    - rtx_to_poly_int64 (base1);
+  poly_int64 step2 =
+    rtx_to_poly_int64 (builder->elt (builder->npatterns () + 1))
+      - rtx_to_poly_int64 (base2);
+
+  /* For { 1, 0, 2, 0, ... , n - 1, 0 }, we can use larger EEW
+     integer vector mode to generate such vector efficiently.
+
+     E.g. EEW = 16, { 2, 0, 4, 0, ... }
+
+     can be interpreted into:
+
+     EEW = 32, { 2, 4, ... }.
+
+     Both the series1 and series2 may overflow before taking the IOR
+     to generate the final result.  However, only series1 matters
+     because the series2 will shift before IOR, thus the overflow
+     bits will never pollute the final result.
+
+     For now we forbid the negative steps and overflow, and they
+     will fall back to the default merge way to generate the
+     const_vector.  */
+
+  unsigned int new_smode_bitsize = builder->inner_bits_size () * 2;
+  scalar_int_mode new_smode;
+  machine_mode new_mode;
+  poly_uint64 new_nunits = exact_div (GET_MODE_NUNITS (builder->mode ()), 2);
+
+  poly_int64 base1_poly = rtx_to_poly_int64 (base1);
+  bool overflow_smode_p = false;
+
+  if (!step1.is_constant ())
+    overflow_smode_p = true;
+  else
+    {
+      int elem_count = XVECLEN (src, 0);
+      uint64_t step1_val = step1.to_constant ();
+      uint64_t base1_val = base1_poly.to_constant ();
+      uint64_t elem_val = base1_val + (elem_count - 1) * step1_val;
+
+      if ((elem_val >> builder->inner_bits_size ()) != 0)
+	overflow_smode_p = true;
+    }
+
+  if (known_ge (step1, 0) && known_ge (step2, 0)
+      && int_mode_for_size (new_smode_bitsize, 0).exists (&new_smode)
+      && get_vector_mode (new_smode, new_nunits).exists (&new_mode)
+      && !overflow_smode_p)
+    {
+      rtx tmp1 = gen_reg_rtx (new_mode);
+      base1 = gen_int_mode (base1_poly, new_smode);
+      expand_vec_series (tmp1, base1, gen_int_mode (step1, new_smode));
+
+      if (rtx_equal_p (base2, const0_rtx) && known_eq (step2, 0))
+	/* { 1, 0, 2, 0, ... }.  */
+	emit_move_insn (result, gen_lowpart (mode, tmp1));
+      else if (known_eq (step2, 0))
+	{
+	  /* { 1, 1, 2, 1, ... }.  */
+	  rtx scalar = expand_simple_binop (
+	    Xmode, ASHIFT, gen_int_mode (rtx_to_poly_int64 (base2), Xmode),
+	    gen_int_mode (builder->inner_bits_size (), Xmode), NULL_RTX, false,
+	    OPTAB_DIRECT);
+	  scalar = simplify_gen_subreg (new_smode, scalar, Xmode, 0);
+	  rtx tmp2 = gen_reg_rtx (new_mode);
+	  rtx ior_ops[] = {tmp2, tmp1, scalar};
+	  emit_vlmax_insn (code_for_pred_scalar (IOR, new_mode), BINARY_OP,
+			   ior_ops);
+	  emit_move_insn (result, gen_lowpart (mode, tmp2));
+	}
+      else
+	{
+	  /* { 1, 3, 2, 6, ... }.  */
+	  rtx tmp2 = gen_reg_rtx (new_mode);
+	  base2 = gen_int_mode (rtx_to_poly_int64 (base2), new_smode);
+	  expand_vec_series (tmp2, base2, gen_int_mode (step2, new_smode));
+	  rtx shifted_tmp2;
+	  rtx shift = gen_int_mode (builder->inner_bits_size (), Xmode);
+	  if (lra_in_progress)
+	    {
+	      shifted_tmp2 = gen_reg_rtx (new_mode);
+	      rtx shift_ops[] = {shifted_tmp2, tmp2, shift};
+	      emit_vlmax_insn (code_for_pred_scalar (ASHIFT, new_mode),
+			       BINARY_OP, shift_ops);
+	    }
+	  else
+	    shifted_tmp2 = expand_simple_binop (new_mode, ASHIFT, tmp2, shift,
+						NULL_RTX, false, OPTAB_DIRECT);
+	  rtx tmp3 = gen_reg_rtx (new_mode);
+	  rtx ior_ops[] = {tmp3, tmp1, shifted_tmp2};
+	  emit_vlmax_insn (code_for_pred (IOR, new_mode), BINARY_OP, ior_ops);
+	  emit_move_insn (result, gen_lowpart (mode, tmp3));
+	}
+    }
+  else
+    {
+      rtx vid = gen_reg_rtx (mode);
+      expand_vec_series (vid, const0_rtx, const1_rtx);
+      /* Transform into { 0, 0, 1, 1, 2, 2, ... }.  */
+      rtx shifted_vid;
+      if (lra_in_progress)
+	{
+	  shifted_vid = gen_reg_rtx (mode);
+	  rtx shift = gen_int_mode (1, Xmode);
+	  rtx shift_ops[] = {shifted_vid, vid, shift};
+	  emit_vlmax_insn (code_for_pred_scalar (ASHIFT, mode), BINARY_OP,
+			   shift_ops);
+	}
+      else
+	shifted_vid = expand_simple_binop (mode, LSHIFTRT, vid, const1_rtx,
+					   NULL_RTX, false, OPTAB_DIRECT);
+      rtx tmp1 = gen_reg_rtx (mode);
+      rtx tmp2 = gen_reg_rtx (mode);
+      expand_vec_series (tmp1, base1,
+			 gen_int_mode (step1, builder->inner_mode ()),
+			 shifted_vid);
+      expand_vec_series (tmp2, base2,
+			 gen_int_mode (step2, builder->inner_mode ()),
+			 shifted_vid);
+
+      /* Transform into { 0, 1, 0, 1, 0, 1, ... }.  */
+      rtx and_vid = gen_reg_rtx (mode);
+      rtx and_ops[] = {and_vid, vid, const1_rtx};
+      emit_vlmax_insn (code_for_pred_scalar (AND, mode), BINARY_OP, and_ops);
+      rtx mask = gen_reg_rtx (builder->mask_mode ());
+      expand_vec_cmp (mask, EQ, and_vid, CONST1_RTX (mode));
+
+      rtx ops[] = {result, tmp1, tmp2, mask};
+      emit_vlmax_insn (code_for_pred_merge (mode), MERGE_OP, ops);
+    }
+
+  if (result != target)
+    emit_move_insn (target, result);
+}
+
+static void
+expand_const_vector_stepped (rtx target, rtx src, rvv_builder *builder)
+{
+  gcc_assert (GET_MODE_CLASS (GET_MODE (target)) == MODE_VECTOR_INT);
+
+  if (builder->single_step_npatterns_p ())
+    return expand_const_vector_single_step_npatterns (target, builder);
+  else if (builder->interleaved_stepped_npatterns_p ())
+    return expand_const_vector_interleaved_stepped_npatterns (target, src,
+							      builder);
+
+  /* TODO: We will enable more variable-length vector in the future.  */
+  gcc_unreachable ();
+}
+
+static void
+expand_const_vector (rtx target, rtx src)
+{
+  rtx elt;
+  if (const_vec_duplicate_p (src, &elt))
+    return expand_const_vec_duplicate (target, src, elt);
 
   /* Support scalable const series vector.  */
   rtx base, step;
   if (const_vec_series_p (src, &base, &step))
-    {
-      expand_vec_series (result, base, step);
-
-      if (result != target)
-	emit_move_insn (target, result);
-      return;
-    }
+    return expand_const_vec_series(target, base, step);
 
   /* Handle variable-length vector.  */
   unsigned int nelts_per_pattern = CONST_VECTOR_NELTS_PER_PATTERN (src);
   unsigned int npatterns = CONST_VECTOR_NPATTERNS (src);
-  rvv_builder builder (mode, npatterns, nelts_per_pattern);
+  rvv_builder builder (GET_MODE (target), npatterns, nelts_per_pattern);
+
   for (unsigned int i = 0; i < nelts_per_pattern; i++)
     {
       for (unsigned int j = 0; j < npatterns; j++)
 	builder.quick_push (CONST_VECTOR_ELT (src, i * npatterns + j));
     }
+
   builder.finalize ();
 
   if (CONST_VECTOR_DUPLICATE_P (src))
-    {
-      /* Handle the case with repeating sequence that NELTS_PER_PATTERN = 1
-	 E.g. NPATTERNS = 4, v = { 0, 2, 6, 7, ... }
-	      NPATTERNS = 8, v = { 0, 2, 6, 7, 19, 20, 8, 7 ... }
-	The elements within NPATTERNS are not necessary regular.  */
-      if (builder.can_duplicate_repeating_sequence_p ())
-	{
-	  /* We handle the case that we can find a vector container to hold
-	     element bitsize = NPATTERNS * ele_bitsize.
-
-	       NPATTERNS = 8, element width = 8
-		 v = { 0, 1, 2, 3, 4, 5, 6, 7, ... }
-	       In this case, we can combine NPATTERNS element into a larger
-	       element. Use element width = 64 and broadcast a vector with
-	       all element equal to 0x0706050403020100.  */
-	  rtx ele = builder.get_merged_repeating_sequence ();
-	  rtx dup;
-	  if (lra_in_progress)
-	    {
-	      dup = gen_reg_rtx (builder.new_mode ());
-	      rtx ops[] = {dup, ele};
-	      emit_vlmax_insn (code_for_pred_broadcast
-			       (builder.new_mode ()), UNARY_OP, ops);
-	    }
-	  else
-	    dup = expand_vector_broadcast (builder.new_mode (), ele);
-	  emit_move_insn (result, gen_lowpart (mode, dup));
-	}
-      else
-	{
-	  /* We handle the case that we can't find a vector container to hold
-	     element bitsize = NPATTERNS * ele_bitsize.
-
-	       NPATTERNS = 8, element width = 16
-		 v = { 0, 1, 2, 3, 4, 5, 6, 7, ... }
-	       Since NPATTERNS * element width = 128, we can't find a container
-	       to hold it.
-
-	       In this case, we use NPATTERNS merge operations to generate such
-	       vector.  */
-	  unsigned int nbits = npatterns - 1;
-
-	  /* Generate vid = { 0, 1, 2, 3, 4, 5, 6, 7, ... }.  */
-	  rtx vid = gen_reg_rtx (builder.int_mode ());
-	  rtx op[] = {vid};
-	  emit_vlmax_insn (code_for_pred_series (builder.int_mode ()),
-			    NULLARY_OP, op);
-
-	  /* Generate vid_repeat = { 0, 1, ... nbits, ... }  */
-	  rtx vid_repeat = gen_reg_rtx (builder.int_mode ());
-	  rtx and_ops[] = {vid_repeat, vid,
-			   gen_int_mode (nbits, builder.inner_int_mode ())};
-	  emit_vlmax_insn (code_for_pred_scalar (AND, builder.int_mode ()),
-			    BINARY_OP, and_ops);
-
-	  rtx tmp1 = gen_reg_rtx (builder.mode ());
-	  rtx dup_ops[] = {tmp1, builder.elt (0)};
-	  emit_vlmax_insn (code_for_pred_broadcast (builder.mode ()), UNARY_OP,
-			    dup_ops);
-	  for (unsigned int i = 1; i < builder.npatterns (); i++)
-	    {
-	      /* Generate mask according to i.  */
-	      rtx mask = gen_reg_rtx (builder.mask_mode ());
-	      rtx const_vec = gen_const_vector_dup (builder.int_mode (), i);
-	      expand_vec_cmp (mask, EQ, vid_repeat, const_vec);
-
-	      /* Merge scalar to each i.  */
-	      rtx tmp2 = gen_reg_rtx (builder.mode ());
-	      rtx merge_ops[] = {tmp2, tmp1, builder.elt (i), mask};
-	      insn_code icode = code_for_pred_merge_scalar (builder.mode ());
-	      emit_vlmax_insn (icode, MERGE_OP, merge_ops);
-	      tmp1 = tmp2;
-	    }
-	  emit_move_insn (result, tmp1);
-	}
-    }
+    return expand_const_vector_duplicate (target, &builder);
   else if (CONST_VECTOR_STEPPED_P (src))
-    {
-      gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_INT);
-      if (builder.single_step_npatterns_p ())
-	{
-	  /* Describe the case by choosing NPATTERNS = 4 as an example.  */
-	  insn_code icode;
+    return expand_const_vector_stepped (target, src, &builder);
 
-	  /* Step 1: Generate vid = { 0, 1, 2, 3, 4, 5, 6, 7, ... }.  */
-	  rtx vid = gen_reg_rtx (builder.mode ());
-	  rtx vid_ops[] = {vid};
-	  icode = code_for_pred_series (builder.mode ());
-	  emit_vlmax_insn (icode, NULLARY_OP, vid_ops);
-
-	  if (builder.npatterns_all_equal_p ())
-	    {
-	      /* Generate the variable-length vector following this rule:
-		 { a, a, a + step, a + step, a + step * 2, a + step * 2, ...}
-		   E.g. { 0, 0, 8, 8, 16, 16, ... } */
-
-	      /* We want to create a pattern where value[idx] = floor (idx /
-		 NPATTERNS). As NPATTERNS is always a power of two we can
-		 rewrite this as = idx & -NPATTERNS.  */
-	      /* Step 2: VID AND -NPATTERNS:
-		 { 0&-4, 1&-4, 2&-4, 3 &-4, 4 &-4, 5 &-4, 6 &-4, 7 &-4, ... }
-	      */
-	      rtx imm
-		= gen_int_mode (-builder.npatterns (), builder.inner_mode ());
-	      rtx tmp1 = gen_reg_rtx (builder.mode ());
-	      rtx and_ops[] = {tmp1, vid, imm};
-	      icode = code_for_pred_scalar (AND, builder.mode ());
-	      emit_vlmax_insn (icode, BINARY_OP, and_ops);
-
-	      /* Step 3: Convert to step size 1.  */
-	      rtx tmp2 = gen_reg_rtx (builder.mode ());
-	      /* log2 (npatterns) to get the shift amount to convert
-		 Eg.  { 0, 0, 0, 0, 4, 4, ... }
-		 into { 0, 0, 0, 0, 1, 1, ... }.  */
-	      HOST_WIDE_INT shift_amt = exact_log2 (builder.npatterns ()) ;
-	      rtx shift = gen_int_mode (shift_amt, builder.inner_mode ());
-	      rtx shift_ops[] = {tmp2, tmp1, shift};
-	      icode = code_for_pred_scalar (ASHIFTRT, builder.mode ());
-	      emit_vlmax_insn (icode, BINARY_OP, shift_ops);
-
-	      /* Step 4: Multiply to step size n.  */
-	      HOST_WIDE_INT step_size =
-		INTVAL (builder.elt (builder.npatterns ()))
-		- INTVAL (builder.elt (0));
-	      rtx tmp3 = gen_reg_rtx (builder.mode ());
-	      if (pow2p_hwi (step_size))
-		{
-		  /* Power of 2 can be handled with a left shift.  */
-		  HOST_WIDE_INT shift = exact_log2 (step_size);
-		  rtx shift_amount = gen_int_mode (shift, Pmode);
-		  insn_code icode = code_for_pred_scalar (ASHIFT, mode);
-		  rtx ops[] = {tmp3, tmp2, shift_amount};
-		  emit_vlmax_insn (icode, BINARY_OP, ops);
-		}
-	      else
-		{
-		  rtx mult_amt = gen_int_mode (step_size, builder.inner_mode ());
-		  insn_code icode = code_for_pred_scalar (MULT, builder.mode ());
-		  rtx ops[] = {tmp3, tmp2, mult_amt};
-		  emit_vlmax_insn (icode, BINARY_OP, ops);
-		}
-
-	      /* Step 5: Add starting value to all elements.  */
-	      HOST_WIDE_INT init_val = INTVAL (builder.elt (0));
-	      if (init_val == 0)
-		emit_move_insn (result, tmp3);
-	      else
-		{
-		  rtx dup = gen_const_vector_dup (builder.mode (), init_val);
-		  rtx add_ops[] = {result, tmp3, dup};
-		  icode = code_for_pred (PLUS, builder.mode ());
-		  emit_vlmax_insn (icode, BINARY_OP, add_ops);
-		}
-	    }
-	  else
-	    {
-	      /* Generate the variable-length vector following this rule:
-		{ a, b, a + step, b + step, a + step*2, b + step*2, ... }  */
-
-	      if (builder.npatterns_vid_diff_repeated_p ())
-		{
-		  /* Case 1: For example as below:
-		     {3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8... }
-		     We have 3 - 0 = 3 equals 7 - 4 = 3, the sequence is
-		     repeated as below after minus vid.
-		     {3, 1, -1, -3, 3, 1, -1, -3...}
-		     Then we can simplify the diff code gen to at most
-		     npatterns().  */
-		  rvv_builder v (builder.mode (), builder.npatterns (), 1);
-
-		  /* Step 1: Generate diff = TARGET - VID.  */
-		  for (unsigned int i = 0; i < v.npatterns (); ++i)
-		    {
-		     poly_int64 diff = rtx_to_poly_int64 (builder.elt (i)) - i;
-		     v.quick_push (gen_int_mode (diff, v.inner_mode ()));
-		    }
-
-		  /* Step 2: Generate result = VID + diff.  */
-		  rtx vec = v.build ();
-		  rtx add_ops[] = {result, vid, vec};
-		  emit_vlmax_insn (code_for_pred (PLUS, builder.mode ()),
-				   BINARY_OP, add_ops);
-		}
-	      else
-		{
-		  /* Case 2: For example as below:
-		     { -4, 4, -4 + 1, 4 + 1, -4 + 2, 4 + 2, -4 + 3, 4 + 3, ... }
-		   */
-		  rvv_builder v (builder.mode (), builder.npatterns (), 1);
-
-		  /* Step 1: Generate { a, b, a, b, ... }  */
-		  for (unsigned int i = 0; i < v.npatterns (); ++i)
-		    v.quick_push (builder.elt (i));
-		  rtx new_base = v.build ();
-
-		  /* Step 2: Generate tmp1 = VID >> LOG2 (NPATTERNS).  */
-		  rtx shift_count
-		    = gen_int_mode (exact_log2 (builder.npatterns ()),
-				    builder.inner_mode ());
-		  rtx tmp1 = gen_reg_rtx (builder.mode ());
-		  rtx shift_ops[] = {tmp1, vid, shift_count};
-		  emit_vlmax_insn (code_for_pred_scalar
-				   (LSHIFTRT, builder.mode ()), BINARY_OP,
-				   shift_ops);
-
-		  /* Step 3: Generate tmp2 = tmp1 * step.  */
-		  rtx tmp2 = gen_reg_rtx (builder.mode ());
-		  rtx step
-		    = simplify_binary_operation (MINUS, builder.inner_mode (),
-						 builder.elt (v.npatterns()),
-						 builder.elt (0));
-		  expand_vec_series (tmp2, const0_rtx, step, tmp1);
-
-		  /* Step 4: Generate result = tmp2 + new_base.  */
-		  rtx add_ops[] = {result, tmp2, new_base};
-		  emit_vlmax_insn (code_for_pred (PLUS, builder.mode ()),
-				   BINARY_OP, add_ops);
-		}
-	    }
-	}
-      else if (builder.interleaved_stepped_npatterns_p ())
-	{
-	  rtx base1 = builder.elt (0);
-	  rtx base2 = builder.elt (1);
-	  poly_int64 step1
-	    = rtx_to_poly_int64 (builder.elt (builder.npatterns ()))
-	      - rtx_to_poly_int64 (base1);
-	  poly_int64 step2
-	    = rtx_to_poly_int64 (builder.elt (builder.npatterns () + 1))
-	      - rtx_to_poly_int64 (base2);
-
-	  /* For { 1, 0, 2, 0, ... , n - 1, 0 }, we can use larger EEW
-	     integer vector mode to generate such vector efficiently.
-
-	     E.g. EEW = 16, { 2, 0, 4, 0, ... }
-
-	     can be interpreted into:
-
-		  EEW = 32, { 2, 4, ... }.
-
-	     This only works as long as the larger type does not overflow
-	     as we can't guarantee a zero value for each second element
-	     of the sequence with smaller EEW.
-	     ??? For now we assume that no overflow happens with positive
-	     steps and forbid negative steps altogether.  */
-	  unsigned int new_smode_bitsize = builder.inner_bits_size () * 2;
-	  scalar_int_mode new_smode;
-	  machine_mode new_mode;
-	  poly_uint64 new_nunits
-	    = exact_div (GET_MODE_NUNITS (builder.mode ()), 2);
-	  if (known_ge (step1, 0) && known_ge (step2, 0)
-	      && int_mode_for_size (new_smode_bitsize, 0).exists (&new_smode)
-	      && get_vector_mode (new_smode, new_nunits).exists (&new_mode))
-	    {
-	      rtx tmp1 = gen_reg_rtx (new_mode);
-	      base1 = gen_int_mode (rtx_to_poly_int64 (base1), new_smode);
-	      expand_vec_series (tmp1, base1, gen_int_mode (step1, new_smode));
-
-	      if (rtx_equal_p (base2, const0_rtx) && known_eq (step2, 0))
-		/* { 1, 0, 2, 0, ... }.  */
-		emit_move_insn (result, gen_lowpart (mode, tmp1));
-	      else if (known_eq (step2, 0))
-		{
-		  /* { 1, 1, 2, 1, ... }.  */
-		  rtx scalar = expand_simple_binop (
-		    Xmode, ASHIFT,
-		    gen_int_mode (rtx_to_poly_int64 (base2), Xmode),
-		    gen_int_mode (builder.inner_bits_size (), Xmode),
-		    NULL_RTX, false, OPTAB_DIRECT);
-		  scalar = simplify_gen_subreg (new_smode, scalar, Xmode, 0);
-		  rtx tmp2 = gen_reg_rtx (new_mode);
-		  rtx ior_ops[] = {tmp2, tmp1, scalar};
-		  emit_vlmax_insn (code_for_pred_scalar (IOR, new_mode),
-				   BINARY_OP, ior_ops);
-		  emit_move_insn (result, gen_lowpart (mode, tmp2));
-		}
-	      else
-		{
-		  /* { 1, 3, 2, 6, ... }.  */
-		  rtx tmp2 = gen_reg_rtx (new_mode);
-		  base2 = gen_int_mode (rtx_to_poly_int64 (base2), new_smode);
-		  expand_vec_series (tmp2, base2,
-				     gen_int_mode (step2, new_smode));
-		  rtx shifted_tmp2;
-		  rtx shift = gen_int_mode (builder.inner_bits_size (), Xmode);
-		  if (lra_in_progress)
-		    {
-		      shifted_tmp2 = gen_reg_rtx (new_mode);
-		      rtx shift_ops[] = {shifted_tmp2, tmp2, shift};
-		      emit_vlmax_insn (code_for_pred_scalar
-				       (ASHIFT, new_mode), BINARY_OP,
-				       shift_ops);
-		    }
-		  else
-		    shifted_tmp2 = expand_simple_binop (new_mode, ASHIFT, tmp2,
-							shift, NULL_RTX, false,
-							OPTAB_DIRECT);
-		  rtx tmp3 = gen_reg_rtx (new_mode);
-		  rtx ior_ops[] = {tmp3, tmp1, shifted_tmp2};
-		  emit_vlmax_insn (code_for_pred (IOR, new_mode), BINARY_OP,
-				   ior_ops);
-		  emit_move_insn (result, gen_lowpart (mode, tmp3));
-		}
-	    }
-	  else
-	    {
-	      rtx vid = gen_reg_rtx (mode);
-	      expand_vec_series (vid, const0_rtx, const1_rtx);
-	      /* Transform into { 0, 0, 1, 1, 2, 2, ... }.  */
-	      rtx shifted_vid;
-	      if (lra_in_progress)
-		{
-		  shifted_vid = gen_reg_rtx (mode);
-		  rtx shift = gen_int_mode (1, Xmode);
-		  rtx shift_ops[] = {shifted_vid, vid, shift};
-		  emit_vlmax_insn (code_for_pred_scalar
-				   (ASHIFT, mode), BINARY_OP,
-				   shift_ops);
-		}
-	      else
-		shifted_vid = expand_simple_binop (mode, LSHIFTRT, vid,
-						   const1_rtx, NULL_RTX,
-						   false, OPTAB_DIRECT);
-	      rtx tmp1 = gen_reg_rtx (mode);
-	      rtx tmp2 = gen_reg_rtx (mode);
-	      expand_vec_series (tmp1, base1,
-				 gen_int_mode (step1, builder.inner_mode ()),
-				 shifted_vid);
-	      expand_vec_series (tmp2, base2,
-				 gen_int_mode (step2, builder.inner_mode ()),
-				 shifted_vid);
-
-	      /* Transform into { 0, 1, 0, 1, 0, 1, ... }.  */
-	      rtx and_vid = gen_reg_rtx (mode);
-	      rtx and_ops[] = {and_vid, vid, const1_rtx};
-	      emit_vlmax_insn (code_for_pred_scalar (AND, mode), BINARY_OP,
-			       and_ops);
-	      rtx mask = gen_reg_rtx (builder.mask_mode ());
-	      expand_vec_cmp (mask, EQ, and_vid, CONST1_RTX (mode));
-
-	      rtx ops[] = {result, tmp1, tmp2, mask};
-	      emit_vlmax_insn (code_for_pred_merge (mode), MERGE_OP, ops);
-	    }
-	}
-      else
-	/* TODO: We will enable more variable-length vector in the future.  */
-	gcc_unreachable ();
-    }
-  else
-    gcc_unreachable ();
-
-  if (result != target)
-    emit_move_insn (target, result);
+  gcc_unreachable ();
 }
 
 /* Get the frm mode with given CONST_INT rtx, the default mode is
@@ -1760,13 +1832,15 @@ get_vlmul (machine_mode mode)
       int inner_size = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
       if (size < TARGET_MIN_VLEN)
 	{
+	  /* Follow rule LMUL >= SEW / ELEN.  */
+	  int elen = TARGET_VECTOR_ELEN_64 ? 1 : 2;
 	  int factor = TARGET_MIN_VLEN / size;
 	  if (inner_size == 8)
-	    factor = MIN (factor, 8);
+	    factor = MIN (factor, 8 / elen);
 	  else if (inner_size == 16)
-	    factor = MIN (factor, 4);
+	    factor = MIN (factor, 4 / elen);
 	  else if (inner_size == 32)
-	    factor = MIN (factor, 2);
+	    factor = MIN (factor, 2 / elen);
 	  else if (inner_size == 64)
 	    factor = MIN (factor, 1);
 	  else

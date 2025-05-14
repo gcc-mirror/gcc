@@ -18,44 +18,23 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "diagnostic-core.h"
-#include "graphviz.h"
-#include "options.h"
-#include "cgraph.h"
-#include "tree-dfa.h"
-#include "stringpool.h"
-#include "convert.h"
-#include "target.h"
-#include "fold-const.h"
-#include "tree-pretty-print.h"
-#include "diagnostic-color.h"
-#include "bitmap.h"
-#include "selftest.h"
-#include "analyzer/analyzer.h"
-#include "analyzer/analyzer-logging.h"
+#include "analyzer/common.h"
+
 #include "ordered-hash-map.h"
-#include "options.h"
 #include "cfg.h"
-#include "analyzer/supergraph.h"
 #include "sbitmap.h"
+#include "stor-layout.h"
+
+#include "text-art/tree-widget.h"
+
+#include "analyzer/analyzer-logging.h"
+#include "analyzer/supergraph.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
-#include "stor-layout.h"
-#include "text-art/tree-widget.h"
-#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -234,7 +213,7 @@ bit_range::dump () const
 std::unique_ptr<json::object>
 bit_range::to_json () const
 {
-  auto obj = ::make_unique<json::object> ();
+  auto obj = std::make_unique<json::object> ();
   obj->set ("start_bit_offset",
 	    bit_offset_to_json (m_start_bit_offset));
   obj->set ("size_in_bits",
@@ -508,7 +487,7 @@ byte_range::dump () const
 std::unique_ptr<json::object>
 byte_range::to_json () const
 {
-  auto obj = ::make_unique<json::object> ();
+  auto obj = std::make_unique<json::object> ();
   obj->set ("start_byte_offset",
 	    byte_offset_to_json (m_start_byte_offset));
   obj->set ("size_in_bytes",
@@ -773,7 +752,7 @@ binding_map::dump (bool simple) const
 std::unique_ptr<json::object>
 binding_map::to_json () const
 {
-  auto map_obj = ::make_unique<json::object> ();
+  auto map_obj = std::make_unique<json::object> ();
 
   auto_vec <const binding_key *> binding_keys;
   for (map_t::iterator iter = m_map.begin ();
@@ -903,6 +882,37 @@ get_subregion_within_ctor (const region *parent_reg, tree index,
     case FIELD_DECL:
       return mgr->get_field_region (parent_reg, index);
     }
+}
+
+/* Get the child region of PARENT_REG based upon (INDEX, VALUE) within a
+   CONSTRUCTOR.   */
+
+static const region *
+get_subregion_within_ctor_for_ctor_pair (const region *parent_reg,
+					 tree index,
+					 tree value,
+					 region_model_manager *mgr)
+{
+  if (TREE_CODE (index) == INTEGER_CST
+      && TREE_CODE (value) == RAW_DATA_CST)
+    {
+      /* Special-case; see tree.def's description of CONSTRUCTOR.
+	 We have RAW_DATA_LENGTH of bytes, starting at INDEX's start.  */
+      const region *start_reg
+	= get_subregion_within_ctor (parent_reg, index, mgr);
+      /* Build a bit range, relative to PARENT_REG.  */
+      region_offset start_offset = start_reg->get_offset (mgr);
+
+      if (!start_offset.concrete_p ())
+	return nullptr;
+      bit_offset_t start_bit_offset = start_offset.get_bit_offset ();
+      int length = RAW_DATA_LENGTH (value);
+      bit_range bits (start_bit_offset, length * BITS_PER_UNIT);
+
+      return mgr->get_bit_range (parent_reg, NULL_TREE, bits);
+    }
+
+  return get_subregion_within_ctor (parent_reg, index, mgr);
 }
 
 /* Get the svalue for VAL, a non-CONSTRUCTOR value within a CONSTRUCTOR.  */
@@ -1035,7 +1045,9 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
 					      tree index, tree val)
 {
   const region *child_reg
-    = get_subregion_within_ctor (parent_reg, index, mgr);
+    = get_subregion_within_ctor_for_ctor_pair (parent_reg, index, val, mgr);
+  if (!child_reg)
+    return false;
   if (TREE_CODE (val) == CONSTRUCTOR)
     return apply_ctor_to_region (child_reg, val, mgr);
   else
@@ -1422,7 +1434,7 @@ binding_cluster::validate () const
 std::unique_ptr<json::object>
 binding_cluster::to_json () const
 {
-  auto cluster_obj = ::make_unique<json::object> ();
+  auto cluster_obj = std::make_unique<json::object> ();
 
   cluster_obj->set_bool ("escaped", m_escaped);
   cluster_obj->set_bool ("touched", m_touched);
@@ -2175,7 +2187,7 @@ binding_cluster::mark_as_escaped ()
    Use P to purge state involving conjured_svalues.  */
 
 void
-binding_cluster::on_unknown_fncall (const gcall *call,
+binding_cluster::on_unknown_fncall (const gcall &call,
 				    store_manager *mgr,
 				    const conjured_purge &p)
 {
@@ -2188,7 +2200,7 @@ binding_cluster::on_unknown_fncall (const gcall *call,
 	  /* Bind it to a new "conjured" value using CALL.  */
 	  const svalue *sval
 	    = mgr->get_svalue_manager ()->get_or_create_conjured_svalue
-	    (m_base_region->get_type (), call, m_base_region, p);
+	    (m_base_region->get_type (), &call, m_base_region, p);
 	  bind (mgr, m_base_region, sval);
 	}
 
@@ -2639,7 +2651,7 @@ store::validate () const
 std::unique_ptr<json::object>
 store::to_json () const
 {
-  auto store_obj = ::make_unique<json::object> ();
+  auto store_obj = std::make_unique<json::object> ();
 
   /* Sort into some deterministic order.  */
   auto_vec<const region *> base_regions;
@@ -2662,7 +2674,7 @@ store::to_json () const
     {
       gcc_assert (parent_reg);
 
-      auto clusters_in_parent_reg_obj = ::make_unique<json::object> ();
+      auto clusters_in_parent_reg_obj = std::make_unique<json::object> ();
 
       const region *base_reg;
       unsigned j;
@@ -3226,7 +3238,7 @@ store::mark_as_escaped (const region *base_reg)
    (either in this fncall, or in a prior one).  */
 
 void
-store::on_unknown_fncall (const gcall *call, store_manager *mgr,
+store::on_unknown_fncall (const gcall &call, store_manager *mgr,
 			  const conjured_purge &p)
 {
   m_called_unknown_fn = true;

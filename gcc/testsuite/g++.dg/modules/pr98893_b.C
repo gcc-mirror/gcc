@@ -7,4 +7,4 @@ int main() {
 }
 
 // { dg-final { scan-assembler {__tcf_ZZ3foovE1a:} } }
-// { dg-final { scan-assembler {__tcf_ZL1b:} } }
+// { dg-final { scan-assembler {__tcf_ZL1b:} { xfail hppa*-*-hpux* } } }

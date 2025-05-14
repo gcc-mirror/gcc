@@ -5,7 +5,7 @@ fail_compilation/misc1.d(109): Error: `5` has no effect
 fail_compilation/misc1.d(110): Error: `1 + 2` has no effect
 fail_compilation/misc1.d(111): Error: `x` has no effect
 fail_compilation/misc1.d(117): Deprecation: `1 * 1` has no effect
-fail_compilation/misc1.d(118): Deprecation: `__lambda_L118_C34` has no effect
+fail_compilation/misc1.d(118): Deprecation: `() { j++; d++; }` has no effect
 fail_compilation/misc1.d(124): Deprecation: `false` has no effect
 fail_compilation/misc1.d(127): Deprecation: `*sp++` has no effect
 fail_compilation/misc1.d(128): Deprecation: `j` has no effect

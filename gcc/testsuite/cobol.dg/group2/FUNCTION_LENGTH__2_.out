@@ -1,0 +1,22 @@
+using FUNCTION LENGTH
+function length(desc1): 50
+function length(desc1-entry): 50
+function length(desc1-entry(1)): 5
+function length(desc2): 50
+function length(desc2-table): 50
+function length(desc2-entry): 5
+function length(desc2-entry(1)): 5
+function length(desc3): 750
+function length(desc3-outer): 750
+function length(desc3-outer(1)): 150
+function length(desc3-outer-txt): 7
+function length(desc3-inner): 143
+function length(desc3-inner(1)): 13
+After changing desc3-lim from 5 to 3...
+function length(desc3): 450
+function length(desc3-outer): 450
+function length(desc3-outer(1)): 150
+function length(desc3-outer-txt): 7
+function length(desc3-inner): 143
+function length(desc3-inner(1)): 13
+

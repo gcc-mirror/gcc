@@ -355,6 +355,10 @@ DEFGSCODE(GIMPLE_OMP_SCOPE, "gimple_omp_scope", GSS_OMP_SINGLE_LAYOUT)
    CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
 DEFGSCODE(GIMPLE_OMP_DISPATCH, "gimple_omp_dispatch", GSS_OMP_SINGLE_LAYOUT)
 
+/* GIMPLE_OMP_INTEROP <CLAUSES> represents #pragma omp interop
+   CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
+DEFGSCODE(GIMPLE_OMP_INTEROP, "gimple_omp_interop", GSS_OMP_SINGLE_LAYOUT)
+
 /* OMP_SECTION <BODY> represents #pragma omp section.
    BODY is the sequence of statements in the section body.  */
 DEFGSCODE(GIMPLE_OMP_SECTION, "gimple_omp_section", GSS_OMP)

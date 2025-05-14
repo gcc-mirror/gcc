@@ -44,7 +44,7 @@ struct Impl
     Bucket[] buckets;
     uint used;
     uint deleted;
-    TypeInfo_Struct entryTI;
+    const(TypeInfo) entryTI;
     uint firstUsed;
     immutable uint keysz;
     immutable uint valsz;
@@ -75,15 +75,6 @@ private size_t mix(size_t h) @safe pure nothrow @nogc
     return h;
 }
 
-struct Entry(K, V)
-{
-    // can make this const, because we aren't really going to use it aside from
-    // construction.
-    const K key;
-    V value;
-}
-
-
 // create a binary-compatible AA structure that can be used directly as an
 // associative array.
 // NOTE: this must only be called during CTFE
@@ -92,7 +83,7 @@ AAShell makeAA(K, V)(V[K] src) @trusted
     assert(__ctfe, "makeAA Must only be called at compile time");
     immutable srclen = src.length;
     assert(srclen <= uint.max);
-    alias E = Entry!(K, V);
+    alias E = TypeInfo_AssociativeArray.Entry!(K, V);
     if (srclen == 0)
         return AAShell.init;
     // first, determine the size that would be used if we grew the bucket list

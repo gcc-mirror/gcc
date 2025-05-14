@@ -23,4 +23,5 @@ unsigned test4(unsigned x, unsigned n)
  return ret;
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" } } */
+/* cannot safely vectorize this due due to the group misalignment.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 0 "vect" } } */

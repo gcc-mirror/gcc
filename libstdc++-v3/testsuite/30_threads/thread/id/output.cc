@@ -118,8 +118,38 @@ test02()
   VERIFY( ws1.length() == len );
 #endif
 
+  out.str("");
+  out << i;
+  s1 = out.str();
+  len = s1.size();
+  out.str("");
+
+  // with width
+  s2 = std::format("{0:{1}}", i, len + 2);
+  VERIFY( s2 == ("  " + s1) );
+  // with align + width
+  s2 = std::format("{0:>{1}}", i, len + 2);
+  VERIFY( s2 == ("  " + s1) );
+  s2 = std::format("{0:<{1}}", i, len + 2);
+  VERIFY( s2 == (s1 + "  ") );
+  // with fill-and-align + width
+  s2 = std::format("{0:x^{1}}", i, len + 5);
+  VERIFY( s2 == ("xx" + s1 + "xxx") );
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  static_assert( std::is_default_constructible_v<std::formatter<std::thread::id, wchar_t>> );
+  ws1 = std::format(L"{}", i);
+  VERIFY( ws1.length() == len );
+#endif
+
   t1.join();
   t2.join();
+
+  static_assert( std::formattable<std::thread::id, char> );
+  static_assert( std::formattable<std::thread::id, wchar_t> );
+  static_assert( !std::formattable<std::thread::id, char16_t> );
+  static_assert( !std::formattable<std::thread::id, int> );
+ 
 #elif __cplusplus >= 202302L
 # error "Feature-test macro for formatters has wrong value in <thread>"
 #endif

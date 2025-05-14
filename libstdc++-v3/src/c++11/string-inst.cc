@@ -40,7 +40,8 @@
 // replaced by constrained function templates, so that we instantiate the
 // pre-C++17 definitions.
 // This also causes the instantiation of the non-standard C++0x-era
-// insert(iterator, initializer_list<C>) overload, see PR libstdc++/83328
+// insert(iterator, initializer_list<C>) overload, see PR libstdc++/83328,
+// and overloads of _S_copy_chars for string iterators and pointers.
 #define _GLIBCXX_DEFINING_STRING_INSTANTIATIONS 1
 
 #include <string>
@@ -90,6 +91,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template
     void
     S::_M_construct(const C*, const C*, forward_iterator_tag);
+
+  template
+    void
+    S::_M_construct<false>(const C*, size_t);
+
+  template
+    void
+    S::_M_construct<true>(const C*, size_t);
 
 #else // !_GLIBCXX_USE_CXX11_ABI
 

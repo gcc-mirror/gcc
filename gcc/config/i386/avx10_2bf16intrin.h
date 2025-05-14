@@ -28,11 +28,11 @@
 #ifndef _AVX10_2BF16INTRIN_H_INCLUDED
 #define _AVX10_2BF16INTRIN_H_INCLUDED
 
-#if !defined(__AVX10_2_256__)
+#if !defined(__AVX10_2__)
 #pragma GCC push_options
 #pragma GCC target("avx10.2")
-#define __DISABLE_AVX10_2_256__
-#endif /* __AVX10_2_256__ */
+#define __DISABLE_AVX10_2__
+#endif /* __AVX10_2__ */
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -1327,9 +1327,9 @@ _mm_comineq_sbh (__m128bh __A, __m128bh __B)
   return __builtin_ia32_vcomisbf16neq (__A, __B);
 }
 
-#ifdef __DISABLE_AVX10_2_256__
-#undef __DISABLE_AVX10_2_256__
+#ifdef __DISABLE_AVX10_2__
+#undef __DISABLE_AVX10_2__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX10_2_256__ */
+#endif /* __DISABLE_AVX10_2__ */
 
 #endif /* __AVX10_2BF16INTRIN_H_INCLUDED */

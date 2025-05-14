@@ -14,14 +14,15 @@ typedef enum omp_interop_t __GOMP_UINTPTR_T_ENUM
 
 void f1(omp_interop_t) { }
 #pragma omp declare variant(f1) match(construct={dispatch}) \
-                                append_args(interop(prefer_type({attr("ompx_fun")})))
+  append_args(interop(target, prefer_type({attr("ompx_fun")})))
 void g1(void);
 
 
 int f2(omp_interop_t, omp_interop_t);
-#pragma omp declare variant(f2) append_args(interop(prefer_type("cuda")), \
-                                            interop(prefer_type({fr("hsa")}),target)) \
-                                match(construct={dispatch})
+#pragma omp declare variant(f2) \
+  append_args(interop(target, prefer_type("cuda")),			\
+	      interop(prefer_type({fr("hsa")}),target))			\
+  match(construct={dispatch})
 int g2(void) { return 5; }
 
 int foo (omp_interop_t obj1)

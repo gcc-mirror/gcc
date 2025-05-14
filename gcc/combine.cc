@@ -309,6 +309,7 @@ static int *uid_insn_cost;
 struct insn_link {
   rtx_insn *insn;
   unsigned int regno;
+  int insn_count;
   struct insn_link *next;
 };
 
@@ -342,6 +343,7 @@ alloc_insn_link (rtx_insn *insn, unsigned int regno, struct insn_link *next)
 					  sizeof (struct insn_link));
   l->insn = insn;
   l->regno = regno;
+  l->insn_count = 0;
   l->next = next;
   return l;
 }
@@ -454,7 +456,7 @@ static bool merge_outer_ops (enum rtx_code *, HOST_WIDE_INT *, enum rtx_code,
 static rtx simplify_shift_const_1 (enum rtx_code, machine_mode, rtx, int);
 static rtx simplify_shift_const (rtx, enum rtx_code, machine_mode, rtx,
 				 int);
-static int recog_for_combine (rtx *, rtx_insn *, rtx *);
+static int recog_for_combine (rtx *, rtx_insn *, rtx *, unsigned = 0, unsigned = 0);
 static rtx gen_lowpart_for_combine (machine_mode, rtx);
 static enum rtx_code simplify_compare_const (enum rtx_code, machine_mode,
 					     rtx *, rtx *);
@@ -472,7 +474,8 @@ static void move_deaths (rtx, rtx, int, rtx_insn *, rtx *);
 static bool reg_bitfield_target_p (rtx, rtx);
 static void distribute_notes (rtx, rtx_insn *, rtx_insn *, rtx_insn *,
 			      rtx, rtx, rtx);
-static void distribute_links (struct insn_link *);
+static void distribute_links (struct insn_link *, rtx_insn * = nullptr,
+			      int limit = INT_MAX);
 static void mark_used_regs_combine (rtx);
 static void record_promoted_value (rtx_insn *, rtx);
 static bool unmentioned_reg_p (rtx, rtx);
@@ -515,18 +518,22 @@ target_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1,
 
 /* Try to split PATTERN found in INSN.  This returns NULL_RTX if
    PATTERN cannot be split.  Otherwise, it returns an insn sequence.
+   Updates OLD_NREGS with the max number of regs before the split
+   and NEW_NREGS after the split.
    This is a wrapper around split_insns which ensures that the
    reg_stat vector is made larger if the splitter creates a new
    register.  */
 
 static rtx_insn *
-combine_split_insns (rtx pattern, rtx_insn *insn)
+combine_split_insns (rtx pattern, rtx_insn *insn,
+		     unsigned int *old_nregs,
+		     unsigned int *new_regs)
 {
   rtx_insn *ret;
   unsigned int nregs;
-
+  *old_nregs = max_reg_num ();
   ret = split_insns (pattern, insn);
-  nregs = max_reg_num ();
+  *new_regs = nregs = max_reg_num ();
   if (nregs > reg_stat.length ())
     reg_stat.safe_grow_cleared (nregs, true);
   return ret;
@@ -808,7 +815,7 @@ do_SUBST_LINK (struct insn_link **into, struct insn_link *newval)
 #define SUBST_LINK(oldval, newval) do_SUBST_LINK (&oldval, newval)
 
 /* Subroutine of try_combine.  Determine whether the replacement patterns
-   NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to insn_cost
+   NEWPAT, NEWI2PAT and NEWOTHERPAT are more expensive according to insn_cost
    than the original sequence I0, I1, I2, I3 and undobuf.other_insn.  Note
    that I0, I1 and/or NEWI2PAT may be NULL_RTX.  Similarly, NEWOTHERPAT and
    undobuf.other_insn may also both be NULL_RTX.  Return false if the cost
@@ -3566,12 +3573,13 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     {
       rtx parallel, *split;
       rtx_insn *m_split_insn;
+      unsigned int old_nregs, new_nregs;
 
       /* See if the MD file can split NEWPAT.  If it can't, see if letting it
 	 use I2DEST as a scratch register will help.  In the latter case,
 	 convert I2DEST to the mode of the source of NEWPAT if we can.  */
 
-      m_split_insn = combine_split_insns (newpat, i3);
+      m_split_insn = combine_split_insns (newpat, i3, &old_nregs, &new_nregs);
 
       /* We can only use I2DEST as a scratch reg if it doesn't overlap any
 	 inputs of NEWPAT.  */
@@ -3599,7 +3607,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 				       gen_rtvec (2, newpat,
 						  gen_rtx_CLOBBER (VOIDmode,
 								   i2dest)));
-	  m_split_insn = combine_split_insns (parallel, i3);
+	  m_split_insn = combine_split_insns (parallel, i3, &old_nregs, &new_nregs);
 
 	  /* If that didn't work, try changing the mode of I2DEST if
 	     we can.  */
@@ -3624,7 +3632,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 			   gen_rtvec (2, newpat,
 				      gen_rtx_CLOBBER (VOIDmode,
 						       ni2dest))));
-	      m_split_insn = combine_split_insns (parallel, i3);
+	      m_split_insn = combine_split_insns (parallel, i3, &old_nregs, &new_nregs);
 
 	      if (m_split_insn == 0
 		  && REGNO (i2dest) >= FIRST_PSEUDO_REGISTER)
@@ -3647,13 +3655,14 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       if (m_split_insn == 0 && newpat_vec_with_clobbers)
 	{
 	  parallel = gen_rtx_PARALLEL (VOIDmode, newpat_vec_with_clobbers);
-	  m_split_insn = combine_split_insns (parallel, i3);
+	  m_split_insn = combine_split_insns (parallel, i3, &old_nregs, &new_nregs);
 	}
 
       if (m_split_insn && NEXT_INSN (m_split_insn) == NULL_RTX)
 	{
 	  rtx m_split_pat = PATTERN (m_split_insn);
-	  insn_code_number = recog_for_combine (&m_split_pat, i3, &new_i3_notes);
+	  insn_code_number = recog_for_combine (&m_split_pat, i3, &new_i3_notes,
+						old_nregs, new_nregs);
 	  if (insn_code_number >= 0)
 	    newpat = m_split_pat;
 	}
@@ -3678,7 +3687,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	      && (next_nonnote_nondebug_insn (i2) == i3
 		  || ! reg_used_between_p (SET_DEST (i2set), i2, i3)))
 	    insn_code_number = recog_for_combine (&newi3pat, i3,
-						  &new_i3_notes);
+						  &new_i3_notes,
+						  old_nregs, new_nregs);
 	  if (insn_code_number >= 0)
 	    newpat = newi3pat;
 
@@ -4005,37 +4015,39 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       rtx set1 = XVECEXP (newpat, 0, 1);
 
       /* Normally, it doesn't matter which of the two is done first, but
-	 one which uses any regs/memory set in between i2 and i3 can't
-	 be first.  The PARALLEL might also have been pre-existing in i3,
-	 so we need to make sure that we won't wrongly hoist a SET to i2
-	 that would conflict with a death note present in there, or would
-	 have its dest modified between i2 and i3.  */
-      if (!modified_between_p (SET_SRC (set1), i2, i3)
-	  && !(REG_P (SET_DEST (set1))
-	       && find_reg_note (i2, REG_DEAD, SET_DEST (set1)))
-	  && !(GET_CODE (SET_DEST (set1)) == SUBREG
-	       && find_reg_note (i2, REG_DEAD,
-				 SUBREG_REG (SET_DEST (set1))))
-	  && !modified_between_p (SET_DEST (set1), i2, i3)
+	 one which uses any regs/memory set or used in between i2 and i3
+	 can't be first.  The PARALLEL might also have been pre-existing
+	 in i3, so we need to make sure that we won't wrongly hoist a SET
+	 to i2 that would conflict with a death note present in there, or
+	 would have its dest modified or used between i2 and i3.  */
+      if ((set_noop_p (set1)
+	   || (!modified_between_p (SET_SRC (set1), i2, i3)
+	       && !(REG_P (SET_DEST (set1))
+		    && find_reg_note (i2, REG_DEAD, SET_DEST (set1)))
+	       && !(GET_CODE (SET_DEST (set1)) == SUBREG
+		    && find_reg_note (i2, REG_DEAD,
+				      SUBREG_REG (SET_DEST (set1))))
+	       && SET_DEST (set1) != pc_rtx
+	       && !reg_used_between_p (SET_DEST (set1), i2, i3)))
 	  /* If I3 is a jump, ensure that set0 is a jump so that
 	     we do not create invalid RTL.  */
-	  && (!JUMP_P (i3) || SET_DEST (set0) == pc_rtx)
-	 )
+	  && (!JUMP_P (i3) || SET_DEST (set0) == pc_rtx))
 	{
 	  newi2pat = set1;
 	  newpat = set0;
 	}
-      else if (!modified_between_p (SET_SRC (set0), i2, i3)
-	       && !(REG_P (SET_DEST (set0))
-		    && find_reg_note (i2, REG_DEAD, SET_DEST (set0)))
-	       && !(GET_CODE (SET_DEST (set0)) == SUBREG
-		    && find_reg_note (i2, REG_DEAD,
-				      SUBREG_REG (SET_DEST (set0))))
-	       && !modified_between_p (SET_DEST (set0), i2, i3)
+      else if ((set_noop_p (set0)
+		|| (!modified_between_p (SET_SRC (set0), i2, i3)
+		    && !(REG_P (SET_DEST (set0))
+			 && find_reg_note (i2, REG_DEAD, SET_DEST (set0)))
+		    && !(GET_CODE (SET_DEST (set0)) == SUBREG
+			 && find_reg_note (i2, REG_DEAD,
+					   SUBREG_REG (SET_DEST (set0))))
+		    && SET_DEST (set0) != pc_rtx
+		    && !reg_used_between_p (SET_DEST (set0), i2, i3)))
 	       /* If I3 is a jump, ensure that set1 is a jump so that
 		  we do not create invalid RTL.  */
-	       && (!JUMP_P (i3) || SET_DEST (set1) == pc_rtx)
-	      )
+	       && (!JUMP_P (i3) || SET_DEST (set1) == pc_rtx))
 	{
 	  newi2pat = set0;
 	  newpat = set1;
@@ -4117,8 +4129,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	}
     }
 
-  /* Only allow this combination if insn_cost reports that the
-     replacement instructions are cheaper than the originals.  */
+  /* Reject this combination if insn_cost reports that the replacement
+     instructions are more expensive than the originals.  */
   if (!combine_validate_cost (i0, i1, i2, i3, newpat, newi2pat, other_pat))
     {
       undo_all ();
@@ -4201,16 +4213,13 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       adjust_for_new_dest (i3);
     }
 
-  /* If I2 didn't change, this is not a combination (but a simplification or
-     canonicalisation with context), which should not be done here.  Doing
-     it here explodes the algorithm.  Don't.  */
-  if (rtx_equal_p (newi2pat, PATTERN (i2)))
-    {
-      if (dump_file)
-	fprintf (dump_file, "i2 didn't change, not doing this\n");
-      undo_all ();
-      return 0;
-    }
+  bool only_i3_changed = !i0 && !i1 && rtx_equal_p (newi2pat, PATTERN (i2));
+
+  /* If only i3 has changed, any split of the combined instruction just
+     restored i2 to its original state.  No destinations moved from i3
+     to i2.  */
+  if (only_i3_changed)
+    split_i2i3 = false;
 
   /* We now know that we can do this combination.  Merge the insns and
      update the status of registers and LOG_LINKS.  */
@@ -4586,10 +4595,15 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 			    NULL_RTX, NULL_RTX, NULL_RTX);
       }
 
-    distribute_links (i3links);
-    distribute_links (i2links);
-    distribute_links (i1links);
-    distribute_links (i0links);
+    if (only_i3_changed)
+      distribute_links (i3links, i3, param_max_combine_search_insns);
+    else
+      {
+	distribute_links (i3links);
+	distribute_links (i2links, i2);
+	distribute_links (i1links);
+	distribute_links (i0links);
+      }
 
     if (REG_P (i2dest))
       {
@@ -4778,6 +4792,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   combine_successes++;
   undo_commit ();
 
+  if (only_i3_changed)
+    return i3;
+
   rtx_insn *ret = newi2pat ? i2 : i3;
   if (added_links_insn && DF_INSN_LUID (added_links_insn) < DF_INSN_LUID (ret))
     ret = added_links_insn;
@@ -4915,8 +4932,9 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 					    MEM_ADDR_SPACE (x)))
 	{
 	  rtx reg = regno_reg_rtx[FIRST_PSEUDO_REGISTER];
+	  unsigned int old_nregs, new_nregs;
 	  rtx_insn *seq = combine_split_insns (gen_rtx_SET (reg, XEXP (x, 0)),
-					       subst_insn);
+					       subst_insn, &old_nregs, &new_nregs);
 
 	  /* This should have produced two insns, each of which sets our
 	     placeholder.  If the source of the second is a valid address,
@@ -5262,6 +5280,12 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	  SUBST (XEXP (x, 0), XEXP (x, 1));
 	  SUBST (XEXP (x, 1), tem);
 	}
+      /* Many targets have a `(and (not X) Y)` and/or `(ior (not X) Y)` instructions.
+	 Split at that insns.  However if this is
+	 the SET_SRC, we likely do not have such an instruction and it's
+	 worthless to try this split.  */
+      if (!set_src && GET_CODE (XEXP (x, 0)) == NOT)
+	return loc;
       break;
 
     case PLUS:
@@ -11418,7 +11442,8 @@ simplify_shift_const (rtx x, enum rtx_code code, machine_mode result_mode,
    return value.  */
 
 static int
-recog_for_combine_1 (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
+recog_for_combine_1 (rtx *pnewpat, rtx_insn *insn, rtx *pnotes,
+		     unsigned old_nregs, unsigned new_nregs)
 {
   rtx pat = *pnewpat;
   rtx pat_without_clobbers;
@@ -11534,6 +11559,9 @@ recog_for_combine_1 (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
   if (insn_code_number >= 0
       && insn_code_number != NOOP_MOVE_INSN_CODE)
     {
+      /* Create the reg dead notes if needed for the regs that were created via split.   */
+      for (; old_nregs < new_nregs; old_nregs++)
+	notes = alloc_reg_note (REG_DEAD, regno_reg_rtx[old_nregs], notes);
       old_pat = PATTERN (insn);
       old_notes = REG_NOTES (insn);
       old_icode = INSN_CODE (insn);
@@ -11705,15 +11733,18 @@ change_zero_ext (rtx pat)
 
    PNOTES is a pointer to a location where any REG_UNUSED notes added for
    the CLOBBERs are placed.
+   If OLD_NREGS != NEW_NREGS, then PNOTES also includes REG_DEAD notes added.
 
    The value is the final insn code from the pattern ultimately matched,
    or -1.  */
 
 static int
-recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
+recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes,
+		   unsigned int old_nregs, unsigned int new_nregs)
 {
   rtx pat = *pnewpat;
-  int insn_code_number = recog_for_combine_1 (pnewpat, insn, pnotes);
+  int insn_code_number = recog_for_combine_1 (pnewpat, insn, pnotes,
+					      old_nregs, new_nregs);
   if (insn_code_number >= 0 || check_asm_operands (pat))
     return insn_code_number;
 
@@ -11755,7 +11786,8 @@ recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
 
   if (changed)
     {
-      insn_code_number = recog_for_combine_1 (pnewpat, insn, pnotes);
+      insn_code_number = recog_for_combine_1 (pnewpat, insn, pnotes,
+					      old_nregs, new_nregs);
 
       if (insn_code_number < 0)
 	undo_to_marker (marker);
@@ -14523,14 +14555,15 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	  /* Otherwise, if this register is used by I3, then this register
 	     now dies here, so we must put a REG_DEAD note here unless there
 	     is one already.  */
-	  else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3))
-		   && ! (REG_P (XEXP (note, 0))
-			 ? find_regno_note (i3, REG_DEAD,
-					    REGNO (XEXP (note, 0)))
-			 : find_reg_note (i3, REG_DEAD, XEXP (note, 0))))
+	  else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
 	    {
-	      PUT_REG_NOTE_KIND (note, REG_DEAD);
-	      place = i3;
+	      if (! (REG_P (XEXP (note, 0))
+		     ? find_regno_note (i3, REG_DEAD, REGNO (XEXP (note, 0)))
+		     : find_reg_note (i3, REG_DEAD, XEXP (note, 0))))
+		{
+		  PUT_REG_NOTE_KIND (note, REG_DEAD);
+		  place = i3;
+		}
 	    }
 
 	  /* A SET or CLOBBER of the REG_UNUSED reg has been removed,
@@ -14967,10 +15000,15 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 
 /* Similarly to above, distribute the LOG_LINKS that used to be present on
    I3, I2, and I1 to new locations.  This is also called to add a link
-   pointing at I3 when I3's destination is changed.  */
+   pointing at I3 when I3's destination is changed.
+
+   If START is nonnull and an insn, we know that the next location for each
+   link is no earlier than START.  LIMIT is the maximum number of nondebug
+   instructions that can be scanned when looking for the next use of a
+   definition.  */
 
 static void
-distribute_links (struct insn_link *links)
+distribute_links (struct insn_link *links, rtx_insn *start, int limit)
 {
   struct insn_link *link, *next_link;
 
@@ -15036,7 +15074,13 @@ distribute_links (struct insn_link *links)
 	 I3 to I2.  Also note that not much searching is typically done here
 	 since most links don't point very far away.  */
 
-      for (insn = NEXT_INSN (link->insn);
+      int count = 0;
+      insn = start;
+      if (!insn || NOTE_P (insn))
+	insn = NEXT_INSN (link->insn);
+      else
+	count = link->insn_count;
+      for (;
 	   (insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 		     || BB_HEAD (this_basic_block->next_bb) != insn));
 	   insn = NEXT_INSN (insn))
@@ -15056,6 +15100,11 @@ distribute_links (struct insn_link *links)
 	  }
 	else if (INSN_P (insn) && reg_set_p (reg, insn))
 	  break;
+	else if (count >= limit)
+	  break;
+	else
+	  count += 1;
+      link->insn_count = count;
 
       /* If we found a place to put the link, place it there unless there
 	 is already a link to the same insn as LINK at that point.  */

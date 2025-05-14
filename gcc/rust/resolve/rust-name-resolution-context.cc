@@ -23,8 +23,67 @@
 namespace Rust {
 namespace Resolver2_0 {
 
+BindingLayer::BindingLayer (BindingSource source) : source (source)
+{
+  push (Binding::Kind::Product);
+}
+
+bool
+BindingLayer::bind_test (Identifier ident, Binding::Kind kind)
+{
+  for (auto &bind : bindings)
+    {
+      if (bind.set.find (ident) != bind.set.cend () && bind.kind == kind)
+	{
+	  return true;
+	}
+    }
+  return false;
+}
+
+void
+BindingLayer::push (Binding::Kind kind)
+{
+  bindings.push_back (Binding (kind));
+}
+
+bool
+BindingLayer::is_and_bound (Identifier ident)
+{
+  return bind_test (ident, Binding::Kind::Product);
+}
+
+bool
+BindingLayer::is_or_bound (Identifier ident)
+{
+  return bind_test (ident, Binding::Kind::Or);
+}
+
+void
+BindingLayer::insert_ident (Identifier ident)
+{
+  bindings.back ().set.insert (ident);
+}
+
+void
+BindingLayer::merge ()
+{
+  auto last_binding = bindings.back ();
+  bindings.pop_back ();
+  for (auto &value : last_binding.set)
+    {
+      bindings.back ().set.insert (value);
+    }
+}
+
+BindingSource
+BindingLayer::get_source () const
+{
+  return source;
+}
+
 NameResolutionContext::NameResolutionContext ()
-  : mappings (*Analysis::Mappings::get ())
+  : mappings (Analysis::Mappings::get ())
 {}
 
 tl::expected<NodeId, DuplicateNameError>
@@ -46,6 +105,12 @@ NameResolutionContext::insert (Identifier name, NodeId id, Namespace ns)
 }
 
 tl::expected<NodeId, DuplicateNameError>
+NameResolutionContext::insert_variant (Identifier name, NodeId id)
+{
+  return types.insert_variant (name, id);
+}
+
+tl::expected<NodeId, DuplicateNameError>
 NameResolutionContext::insert_shadowable (Identifier name, NodeId id,
 					  Namespace ns)
 {
@@ -64,6 +129,24 @@ NameResolutionContext::insert_shadowable (Identifier name, NodeId id,
     }
 }
 
+tl::expected<NodeId, DuplicateNameError>
+NameResolutionContext::insert_globbed (Identifier name, NodeId id, Namespace ns)
+{
+  switch (ns)
+    {
+    case Namespace::Values:
+      return values.insert_globbed (name, id);
+    case Namespace::Types:
+      return types.insert_globbed (name, id);
+    case Namespace::Macros:
+      return macros.insert_globbed (name, id);
+    case Namespace::Labels:
+    default:
+      // return labels.insert (name, id);
+      rust_unreachable ();
+    }
+}
+
 void
 NameResolutionContext::map_usage (Usage usage, Definition definition)
 {
@@ -74,7 +157,7 @@ NameResolutionContext::map_usage (Usage usage, Definition definition)
 }
 
 tl::optional<NodeId>
-NameResolutionContext::lookup (NodeId usage)
+NameResolutionContext::lookup (NodeId usage) const
 {
   auto it = resolved_nodes.find (Usage (usage));
 
@@ -85,13 +168,14 @@ NameResolutionContext::lookup (NodeId usage)
 }
 
 void
-NameResolutionContext::scoped (Rib rib, NodeId id,
+NameResolutionContext::scoped (Rib::Kind rib_kind, NodeId id,
 			       std::function<void (void)> lambda,
 			       tl::optional<Identifier> path)
 {
-  values.push (rib, id, path);
-  types.push (rib, id, path);
-  macros.push (rib, id, path);
+  // NOTE: You must be at the root node when pushing the prelude rib.
+  values.push (rib_kind, id, path);
+  types.push (rib_kind, id, path);
+  macros.push (rib_kind, id, path);
   // labels.push (rib, id);
 
   lambda ();
@@ -103,17 +187,21 @@ NameResolutionContext::scoped (Rib rib, NodeId id,
 }
 
 void
-NameResolutionContext::scoped (Rib rib, Namespace ns, NodeId scope_id,
+NameResolutionContext::scoped (Rib::Kind rib_kind, Namespace ns,
+			       NodeId scope_id,
 			       std::function<void (void)> lambda,
 			       tl::optional<Identifier> path)
 {
+  // This could work... I'm not sure why you would want to do this though.
+  rust_assert (rib_kind != Rib::Kind::Prelude);
+
   switch (ns)
     {
     case Namespace::Values:
-      values.push (rib, scope_id, path);
+      values.push (rib_kind, scope_id, path);
       break;
     case Namespace::Types:
-      types.push (rib, scope_id, path);
+      types.push (rib_kind, scope_id, path);
       break;
     case Namespace::Labels:
     case Namespace::Macros:

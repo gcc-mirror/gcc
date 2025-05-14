@@ -518,15 +518,17 @@ scalar_chain::build (bitmap candidates, unsigned insn_uid, bitmap disallowed)
    instead of using a scalar one.  */
 
 int
-general_scalar_chain::vector_const_cost (rtx exp)
+general_scalar_chain::vector_const_cost (rtx exp, basic_block bb)
 {
   gcc_assert (CONST_INT_P (exp));
 
   if (standard_sse_constant_p (exp, vmode))
     return ix86_cost->sse_op;
+  if (optimize_bb_for_size_p (bb))
+    return COSTS_N_BYTES (8);
   /* We have separate costs for SImode and DImode, use SImode costs
      for smaller modes.  */
-  return ix86_cost->sse_load[smode == DImode ? 1 : 0];
+  return COSTS_N_INSNS (ix86_cost->sse_load[smode == DImode ? 1 : 0]) / 2;
 }
 
 /* Compute a gain for chain conversion.  */
@@ -547,7 +549,7 @@ general_scalar_chain::compute_convert_gain ()
      smaller modes than SImode the int load/store costs need to be
      adjusted as well.  */
   unsigned sse_cost_idx = smode == DImode ? 1 : 0;
-  unsigned m = smode == DImode ? (TARGET_64BIT ? 1 : 2) : 1;
+  int m = smode == DImode ? (TARGET_64BIT ? 1 : 2) : 1;
 
   EXECUTE_IF_SET_IN_BITMAP (insns, 0, insn_uid, bi)
     {
@@ -555,26 +557,55 @@ general_scalar_chain::compute_convert_gain ()
       rtx def_set = single_set (insn);
       rtx src = SET_SRC (def_set);
       rtx dst = SET_DEST (def_set);
+      basic_block bb = BLOCK_FOR_INSN (insn);
       int igain = 0;
 
       if (REG_P (src) && REG_P (dst))
-	igain += 2 * m - ix86_cost->xmm_move;
+	{
+	  if (optimize_bb_for_size_p (bb))
+	    /* reg-reg move is 2 bytes, while SSE 3.  */
+	    igain += COSTS_N_BYTES (2 * m - 3);
+	  else
+	    /* Move costs are normalized to reg-reg move having cost 2.  */
+	    igain += COSTS_N_INSNS (2 * m - ix86_cost->xmm_move) / 2;
+	}
       else if (REG_P (src) && MEM_P (dst))
-	igain
-	  += m * ix86_cost->int_store[2] - ix86_cost->sse_store[sse_cost_idx];
+	{
+	  if (optimize_bb_for_size_p (bb))
+	    /* Integer load/store is 3+ bytes and SSE 4+.  */
+	    igain += COSTS_N_BYTES (3 * m - 4);
+	  else
+	    igain
+	      += COSTS_N_INSNS (m * ix86_cost->int_store[2]
+				- ix86_cost->sse_store[sse_cost_idx]) / 2;
+	}
       else if (MEM_P (src) && REG_P (dst))
-	igain += m * ix86_cost->int_load[2] - ix86_cost->sse_load[sse_cost_idx];
+	{
+	  if (optimize_bb_for_size_p (bb))
+	    igain += COSTS_N_BYTES (3 * m - 4);
+	  else
+	    igain += COSTS_N_INSNS (m * ix86_cost->int_load[2]
+				    - ix86_cost->sse_load[sse_cost_idx]) / 2;
+	}
       else
 	{
 	  /* For operations on memory operands, include the overhead
 	     of explicit load and store instructions.  */
 	  if (MEM_P (dst))
-	    igain += optimize_insn_for_size_p ()
-		     ? -COSTS_N_BYTES (8)
-		     : (m * (ix86_cost->int_load[2]
-			     + ix86_cost->int_store[2])
-			- (ix86_cost->sse_load[sse_cost_idx] +
-			   ix86_cost->sse_store[sse_cost_idx]));
+	    {
+	      if (optimize_bb_for_size_p (bb))
+		/* ??? This probably should account size difference
+		   of SSE and integer load rather than full SSE load.  */
+		igain -= COSTS_N_BYTES (8);
+	      else
+		{
+		  int cost = (m * (ix86_cost->int_load[2]
+				   + ix86_cost->int_store[2])
+			     - (ix86_cost->sse_load[sse_cost_idx] +
+				ix86_cost->sse_store[sse_cost_idx]));
+		  igain += COSTS_N_INSNS (cost) / 2;
+		}
+	    }
 
 	  switch (GET_CODE (src))
 	    {
@@ -595,7 +626,7 @@ general_scalar_chain::compute_convert_gain ()
 	      igain += ix86_cost->shift_const - ix86_cost->sse_op;
 
 	      if (CONST_INT_P (XEXP (src, 0)))
-		igain -= vector_const_cost (XEXP (src, 0));
+		igain -= vector_const_cost (XEXP (src, 0), bb);
 	      break;
 
 	    case ROTATE:
@@ -631,16 +662,17 @@ general_scalar_chain::compute_convert_gain ()
 		igain += m * ix86_cost->add;
 
 	      if (CONST_INT_P (XEXP (src, 0)))
-		igain -= vector_const_cost (XEXP (src, 0));
+		igain -= vector_const_cost (XEXP (src, 0), bb);
 	      if (CONST_INT_P (XEXP (src, 1)))
-		igain -= vector_const_cost (XEXP (src, 1));
+		igain -= vector_const_cost (XEXP (src, 1), bb);
 	      if (MEM_P (XEXP (src, 1)))
 		{
-		  if (optimize_insn_for_size_p ())
+		  if (optimize_bb_for_size_p (bb))
 		    igain -= COSTS_N_BYTES (m == 2 ? 3 : 5);
 		  else
-		    igain += m * ix86_cost->int_load[2]
-			     - ix86_cost->sse_load[sse_cost_idx];
+		    igain += COSTS_N_INSNS
+			       (m * ix86_cost->int_load[2]
+				 - ix86_cost->sse_load[sse_cost_idx]) / 2;
 		}
 	      break;
 
@@ -698,7 +730,7 @@ general_scalar_chain::compute_convert_gain ()
 	    case CONST_INT:
 	      if (REG_P (dst))
 		{
-		  if (optimize_insn_for_size_p ())
+		  if (optimize_bb_for_size_p (bb))
 		    {
 		      /* xor (2 bytes) vs. xorps (3 bytes).  */
 		      if (src == const0_rtx)
@@ -722,14 +754,14 @@ general_scalar_chain::compute_convert_gain ()
 		      /* DImode can be immediate for TARGET_64BIT
 			 and SImode always.  */
 		      igain += m * COSTS_N_INSNS (1);
-		      igain -= vector_const_cost (src);
+		      igain -= vector_const_cost (src, bb);
 		    }
 		}
 	      else if (MEM_P (dst))
 		{
 		  igain += (m * ix86_cost->int_store[2]
 			    - ix86_cost->sse_store[sse_cost_idx]);
-		  igain -= vector_const_cost (src);
+		  igain -= vector_const_cost (src, bb);
 		}
 	      break;
 
@@ -737,13 +769,14 @@ general_scalar_chain::compute_convert_gain ()
 	      if (XVECEXP (XEXP (src, 1), 0, 0) == const0_rtx)
 		{
 		  // movd (4 bytes) replaced with movdqa (4 bytes).
-		  if (!optimize_insn_for_size_p ())
-		    igain += ix86_cost->sse_to_integer - ix86_cost->xmm_move;
+		  if (!optimize_bb_for_size_p (bb))
+		    igain += COSTS_N_INSNS (ix86_cost->sse_to_integer
+					    - ix86_cost->xmm_move) / 2;
 		}
 	      else
 		{
 		  // pshufd; movd replaced with pshufd.
-		  if (optimize_insn_for_size_p ())
+		  if (optimize_bb_for_size_p (bb))
 		    igain += COSTS_N_BYTES (4);
 		  else
 		    igain += ix86_cost->sse_to_integer;
@@ -769,11 +802,11 @@ general_scalar_chain::compute_convert_gain ()
   /* Cost the integer to sse and sse to integer moves.  */
   if (!optimize_function_for_size_p (cfun))
     {
-      cost += n_sse_to_integer * ix86_cost->sse_to_integer;
+      cost += n_sse_to_integer * COSTS_N_INSNS (ix86_cost->sse_to_integer) / 2;
       /* ???  integer_to_sse but we only have that in the RA cost table.
 	      Assume sse_to_integer/integer_to_sse are the same which they
 	      are at the moment.  */
-      cost += n_integer_to_sse * ix86_cost->sse_to_integer;
+      cost += n_integer_to_sse * COSTS_N_INSNS (ix86_cost->integer_to_sse) / 2;
     }
   else if (TARGET_64BIT || smode == SImode)
     {
@@ -1508,13 +1541,13 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
    with numerous special cases.  */
 
 static int
-timode_immed_const_gain (rtx cst)
+timode_immed_const_gain (rtx cst, basic_block bb)
 {
   /* movabsq vs. movabsq+vmovq+vunpacklqdq.  */
   if (CONST_WIDE_INT_P (cst)
       && CONST_WIDE_INT_NUNITS (cst) == 2
       && CONST_WIDE_INT_ELT (cst, 0) == CONST_WIDE_INT_ELT (cst, 1))
-    return optimize_insn_for_size_p () ? -COSTS_N_BYTES (9)
+    return optimize_bb_for_size_p (bb) ? -COSTS_N_BYTES (9)
 				       : -COSTS_N_INSNS (2);
   /* 2x movabsq ~ vmovdqa.  */
   return 0;
@@ -1546,33 +1579,34 @@ timode_scalar_chain::compute_convert_gain ()
       rtx src = SET_SRC (def_set);
       rtx dst = SET_DEST (def_set);
       HOST_WIDE_INT op1val;
+      basic_block bb = BLOCK_FOR_INSN (insn);
       int scost, vcost;
       int igain = 0;
 
       switch (GET_CODE (src))
 	{
 	case REG:
-	  if (optimize_insn_for_size_p ())
+	  if (optimize_bb_for_size_p (bb))
 	    igain = MEM_P (dst) ? COSTS_N_BYTES (6) : COSTS_N_BYTES (3);
 	  else
 	    igain = COSTS_N_INSNS (1);
 	  break;
 
 	case MEM:
-	  igain = optimize_insn_for_size_p () ? COSTS_N_BYTES (7)
+	  igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (7)
 					      : COSTS_N_INSNS (1);
 	  break;
 
 	case CONST_INT:
 	  if (MEM_P (dst)
 	      && standard_sse_constant_p (src, V1TImode))
-	    igain = optimize_insn_for_size_p () ? COSTS_N_BYTES (11) : 1;
+	    igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (11) : 1;
 	  break;
 
 	case CONST_WIDE_INT:
 	  /* 2 x mov vs. vmovdqa.  */
 	  if (MEM_P (dst))
-	    igain = optimize_insn_for_size_p () ? COSTS_N_BYTES (3)
+	    igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (3)
 						: COSTS_N_INSNS (1);
 	  break;
 
@@ -1587,14 +1621,14 @@ timode_scalar_chain::compute_convert_gain ()
 	  if (!MEM_P (dst))
 	    igain = COSTS_N_INSNS (1);
 	  if (CONST_SCALAR_INT_P (XEXP (src, 1)))
-	    igain += timode_immed_const_gain (XEXP (src, 1));
+	    igain += timode_immed_const_gain (XEXP (src, 1), bb);
 	  break;
 
 	case ASHIFT:
 	case LSHIFTRT:
 	  /* See ix86_expand_v1ti_shift.  */
 	  op1val = INTVAL (XEXP (src, 1));
-	  if (optimize_insn_for_size_p ())
+	  if (optimize_bb_for_size_p (bb))
 	    {
 	      if (op1val == 64 || op1val == 65)
 		scost = COSTS_N_BYTES (5);
@@ -1628,7 +1662,7 @@ timode_scalar_chain::compute_convert_gain ()
 	case ASHIFTRT:
 	  /* See ix86_expand_v1ti_ashiftrt.  */
 	  op1val = INTVAL (XEXP (src, 1));
-	  if (optimize_insn_for_size_p ())
+	  if (optimize_bb_for_size_p (bb))
 	    {
 	      if (op1val == 64 || op1val == 127)
 		scost = COSTS_N_BYTES (7);
@@ -1706,7 +1740,7 @@ timode_scalar_chain::compute_convert_gain ()
 	case ROTATERT:
 	  /* See ix86_expand_v1ti_rotate.  */
 	  op1val = INTVAL (XEXP (src, 1));
-	  if (optimize_insn_for_size_p ())
+	  if (optimize_bb_for_size_p (bb))
 	    {
 	      scost = COSTS_N_BYTES (13);
 	      if ((op1val & 31) == 0)
@@ -1738,16 +1772,16 @@ timode_scalar_chain::compute_convert_gain ()
 	    {
 	      if (GET_CODE (XEXP (src, 0)) == AND)
 		/* and;and;or (9 bytes) vs. ptest (5 bytes).  */
-		igain = optimize_insn_for_size_p() ? COSTS_N_BYTES (4)
-						   : COSTS_N_INSNS (2);
+		igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (4)
+						    : COSTS_N_INSNS (2);
 	      /* or (3 bytes) vs. ptest (5 bytes).  */
-	      else if (optimize_insn_for_size_p ())
+	      else if (optimize_bb_for_size_p (bb))
 		igain = -COSTS_N_BYTES (2);
 	    }
 	  else if (XEXP (src, 1) == const1_rtx)
 	    /* and;cmp -1 (7 bytes) vs. pcmpeqd;pxor;ptest (13 bytes).  */
-	    igain = optimize_insn_for_size_p() ? -COSTS_N_BYTES (6)
-					       : -COSTS_N_INSNS (1);
+	    igain = optimize_bb_for_size_p (bb) ? -COSTS_N_BYTES (6)
+						: -COSTS_N_INSNS (1);
 	  break;
 
 	default:
@@ -3034,6 +3068,39 @@ ix86_rpad_gate ()
 	  && optimize_function_for_speed_p (cfun));
 }
 
+/* Generate a vector set, DEST = SRC, at entry of the nearest dominator
+   for basic block map BBS, which is in the fake loop that contains the
+   whole function, so that there is only a single vector set in the
+   whole function.   */
+
+static void
+ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs)
+{
+  basic_block bb = nearest_common_dominator_for_set (CDI_DOMINATORS, bbs);
+  while (bb->loop_father->latch
+	 != EXIT_BLOCK_PTR_FOR_FN (cfun))
+    bb = get_immediate_dominator (CDI_DOMINATORS,
+				  bb->loop_father->header);
+
+  rtx set = gen_rtx_SET (dest, src);
+
+  rtx_insn *insn = BB_HEAD (bb);
+  while (insn && !NONDEBUG_INSN_P (insn))
+    {
+      if (insn == BB_END (bb))
+	{
+	  insn = NULL;
+	  break;
+	}
+      insn = NEXT_INSN (insn);
+    }
+
+  if (insn == BB_HEAD (bb))
+    emit_insn_before (set, insn);
+  else
+    emit_insn_after (set, insn ? PREV_INSN (insn) : BB_END (bb));
+}
+
 /* At entry of the nearest common dominator for basic blocks with
    conversions/rcp/sqrt/rsqrt/round, generate a single
 	vxorps %xmmN, %xmmN, %xmmN
@@ -3155,7 +3222,6 @@ remove_partial_avx_dependency (void)
 	  /* Generate an XMM vector SET.  */
 	  set = gen_rtx_SET (vec, src);
 	  set_insn = emit_insn_before (set, insn);
-	  df_insn_rescan (set_insn);
 
 	  if (cfun->can_throw_non_call_exceptions)
 	    {
@@ -3188,35 +3254,10 @@ remove_partial_avx_dependency (void)
       calculate_dominance_info (CDI_DOMINATORS);
       loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-      /* Generate a vxorps at entry of the nearest dominator for basic
-	 blocks with conversions, which is in the fake loop that
-	 contains the whole function, so that there is only a single
-	 vxorps in the whole function.   */
-      bb = nearest_common_dominator_for_set (CDI_DOMINATORS,
-					     convert_bbs);
-      while (bb->loop_father->latch
-	     != EXIT_BLOCK_PTR_FOR_FN (cfun))
-	bb = get_immediate_dominator (CDI_DOMINATORS,
-				      bb->loop_father->header);
+      ix86_place_single_vector_set (v4sf_const0,
+				    CONST0_RTX (V4SFmode),
+				    convert_bbs);
 
-      set = gen_rtx_SET (v4sf_const0, CONST0_RTX (V4SFmode));
-
-      insn = BB_HEAD (bb);
-      while (insn && !NONDEBUG_INSN_P (insn))
-	{
-	  if (insn == BB_END (bb))
-	    {
-	      insn = NULL;
-	      break;
-	    }
-	  insn = NEXT_INSN (insn);
-	}
-      if (insn == BB_HEAD (bb))
-	set_insn = emit_insn_before (set, insn);
-      else
-	set_insn = emit_insn_after (set,
-				    insn ? PREV_INSN (insn) : BB_END (bb));
-      df_insn_rescan (set_insn);
       loop_optimizer_finalize ();
 
       if (!control_flow_insns.is_empty ())
@@ -3286,6 +3327,270 @@ rtl_opt_pass *
 make_pass_remove_partial_avx_dependency (gcc::context *ctxt)
 {
   return new pass_remove_partial_avx_dependency (ctxt);
+}
+
+/* Return a machine mode suitable for vector SIZE.  */
+
+static machine_mode
+ix86_get_vector_load_mode (unsigned int size)
+{
+  machine_mode mode;
+  if (size == 64)
+    mode = V64QImode;
+  else if (size == 32)
+    mode = V32QImode;
+  else if (size == 16)
+    mode = V16QImode;
+  else if (size == 8)
+    mode = V8QImode;
+  else if (size == 4)
+    mode = V4QImode;
+  else if (size == 2)
+    mode = V2QImode;
+  else
+    gcc_unreachable ();
+  return mode;
+}
+
+/* Replace the source operand of instructions in VECTOR_INSNS with
+   VECTOR_CONST in VECTOR_MODE.  */
+
+static void
+replace_vector_const (machine_mode vector_mode, rtx vector_const,
+		      auto_bitmap &vector_insns)
+{
+  bitmap_iterator bi;
+  unsigned int id;
+
+  EXECUTE_IF_SET_IN_BITMAP (vector_insns, 0, id, bi)
+    {
+      rtx_insn *insn = DF_INSN_UID_GET (id)->insn;
+
+      /* Get the single SET instruction.  */
+      rtx set = single_set (insn);
+      rtx src = SET_SRC (set);
+      machine_mode mode = GET_MODE (src);
+
+      rtx replace;
+      /* Replace the source operand with VECTOR_CONST.  */
+      if (SUBREG_P (src) || mode == vector_mode)
+	replace = vector_const;
+      else
+	{
+	  unsigned int size = GET_MODE_SIZE (mode);
+	  if (size < ix86_regmode_natural_size (mode))
+	    {
+	      /* If the mode size is smaller than its natural size,
+		 first insert an extra move with a QI vector SUBREG
+		 of the same size to avoid validate_subreg failure.  */
+	      machine_mode vmode = ix86_get_vector_load_mode (size);
+	      rtx vreg;
+	      if (mode == vmode)
+		vreg = vector_const;
+	      else
+		{
+		  vreg = gen_reg_rtx (vmode);
+		  rtx vsubreg = gen_rtx_SUBREG (vmode, vector_const, 0);
+		  rtx pat = gen_rtx_SET (vreg, vsubreg);
+		  emit_insn_before (pat, insn);
+		}
+	      replace = gen_rtx_SUBREG (mode, vreg, 0);
+	    }
+	  else
+	    replace = gen_rtx_SUBREG (mode, vector_const, 0);
+	}
+
+      SET_SRC (set) = replace;
+      /* Drop possible dead definitions.  */
+      PATTERN (insn) = set;
+      INSN_CODE (insn) = -1;
+      recog_memoized (insn);
+      df_insn_rescan (insn);
+    }
+}
+
+/* At entry of the nearest common dominator for basic blocks with vector
+   CONST0_RTX and integer CONSTM1_RTX uses, generate a single widest
+   vector set instruction for all CONST0_RTX and integer CONSTM1_RTX
+   uses.
+
+   NB: We want to generate only a single widest vector set to cover the
+   whole function.  The LCM algorithm isn't appropriate here since it
+   may place a vector set inside the loop.  */
+
+static unsigned int
+remove_redundant_vector_load (void)
+{
+  timevar_push (TV_MACH_DEP);
+
+  auto_bitmap zero_bbs;
+  auto_bitmap m1_bbs;
+  auto_bitmap zero_insns;
+  auto_bitmap m1_insns;
+
+  basic_block bb;
+  rtx_insn *insn;
+  unsigned HOST_WIDE_INT zero_count = 0;
+  unsigned HOST_WIDE_INT m1_count = 0;
+  unsigned int zero_size = 0;
+  unsigned int m1_size = 0;
+
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  rtx set = single_set (insn);
+	  if (!set)
+	    continue;
+
+	  /* Record single set vector instruction with CONST0_RTX and
+	     CONSTM1_RTX source.  Record basic blocks with CONST0_RTX and
+	     CONSTM1_RTX.  Count CONST0_RTX and CONSTM1_RTX.  Record the
+	     maximum size of CONST0_RTX and CONSTM1_RTX.  */
+
+	  rtx dest = SET_DEST (set);
+	  machine_mode mode = GET_MODE (dest);
+	  /* Skip non-vector instruction.  */
+	  if (!VECTOR_MODE_P (mode))
+	    continue;
+
+	  rtx src = SET_SRC (set);
+	  /* Skip non-vector load instruction.  */
+	  if (!REG_P (dest) && !SUBREG_P (dest))
+	    continue;
+
+	  if (src == CONST0_RTX (mode))
+	    {
+	      /* Record vector instruction with CONST0_RTX.  */
+	      bitmap_set_bit (zero_insns, INSN_UID (insn));
+
+	      /* Record the maximum vector size.  */
+	      if (zero_size < GET_MODE_SIZE (mode))
+		zero_size = GET_MODE_SIZE (mode);
+
+	      /* Record the basic block with CONST0_RTX.  */
+	      bitmap_set_bit (zero_bbs, bb->index);
+	      zero_count++;
+	    }
+	  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+		   && src == CONSTM1_RTX (mode))
+	    {
+	      /* Record vector instruction with CONSTM1_RTX.  */
+	      bitmap_set_bit (m1_insns, INSN_UID (insn));
+
+	      /* Record the maximum vector size.  */
+	      if (m1_size < GET_MODE_SIZE (mode))
+		m1_size = GET_MODE_SIZE (mode);
+
+	      /* Record the basic block with CONSTM1_RTX.  */
+	      bitmap_set_bit (m1_bbs, bb->index);
+	      m1_count++;
+	    }
+	}
+    }
+
+  if (zero_count > 1 || m1_count > 1)
+    {
+      machine_mode zero_mode, m1_mode;
+      rtx vector_const0, vector_constm1;
+
+      if (zero_count > 1)
+	{
+	  zero_mode = ix86_get_vector_load_mode (zero_size);
+	  vector_const0 = gen_reg_rtx (zero_mode);
+	  replace_vector_const (zero_mode, vector_const0, zero_insns);
+	}
+      else
+	{
+	  zero_mode = VOIDmode;
+	  vector_const0 = nullptr;
+	}
+
+      if (m1_count > 1)
+	{
+	  m1_mode = ix86_get_vector_load_mode (m1_size);
+	  vector_constm1 = gen_reg_rtx (m1_mode);
+	  replace_vector_const (m1_mode, vector_constm1, m1_insns);
+	}
+      else
+	{
+	  m1_mode = VOIDmode;
+	  vector_constm1 = nullptr;
+	}
+
+      /* (Re-)discover loops so that bb->loop_father can be used in the
+	 analysis below.  */
+      calculate_dominance_info (CDI_DOMINATORS);
+      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
+      if (vector_const0)
+	ix86_place_single_vector_set (vector_const0,
+				      CONST0_RTX (zero_mode),
+				      zero_bbs);
+
+      if (vector_constm1)
+	ix86_place_single_vector_set (vector_constm1,
+				      CONSTM1_RTX (m1_mode),
+				      m1_bbs);
+
+      loop_optimizer_finalize ();
+
+      df_process_deferred_rescans ();
+    }
+
+  df_clear_flags (DF_DEFER_INSN_RESCAN);
+
+  timevar_pop (TV_MACH_DEP);
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_remove_redundant_vector_load =
+{
+  RTL_PASS, /* type */
+  "rrvl", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_remove_redundant_vector_load : public rtl_opt_pass
+{
+public:
+  pass_remove_redundant_vector_load (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_remove_redundant_vector_load, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *fun) final override
+    {
+      return (TARGET_SSE2
+	      && optimize
+	      && optimize_function_for_speed_p (fun));
+    }
+
+  unsigned int execute (function *) final override
+    {
+      return remove_redundant_vector_load ();
+    }
+}; // class pass_remove_redundant_vector_load
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_remove_redundant_vector_load (gcc::context *ctxt)
+{
+  return new pass_remove_redundant_vector_load (ctxt);
 }
 
 /* Convert legacy instructions that clobbers EFLAGS to APX_NF

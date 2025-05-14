@@ -80,7 +80,9 @@
 						    (match_operand:DI 3 "consecutive_bits_operand")) 0)
 				 (subreg:SI (match_operand:DI 4 "register_operand") 0))))]
   "TARGET_64BIT && TARGET_ZBA
-   && riscv_shamt_matches_mask_p (INTVAL (operands[2]), INTVAL (operands[3]))"
+   && riscv_shamt_matches_mask_p (INTVAL (operands[2]), INTVAL (operands[3]))
+   /* Ensure the mask includes all the bits in SImode.  */
+   && ((INTVAL (operands[3]) & (HOST_WIDE_INT_1U << 31)) != 0)"
   [(set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 4)))
    (set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 0) 0)))])
 
@@ -421,39 +423,40 @@
   "rolw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
-(define_insn_and_split "*<bitmanip_optab><GPR:mode>3_mask"
-  [(set (match_operand:GPR     0 "register_operand" "= r")
-        (bitmanip_rotate:GPR
-            (match_operand:GPR 1 "register_operand" "  r")
-            (match_operator 4 "subreg_lowpart_operator"
-             [(and:GPR2
-               (match_operand:GPR2 2 "register_operand"  "r")
-               (match_operand 3 "<GPR:shiftm1>" "<GPR:shiftm1p>"))])))]
+(define_insn "*<bitmanip_optab><mode>3_mask"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(bitmanip_rotate:X
+	  (match_operand:X 1 "register_operand" "r")
+	  (match_operator 4 "subreg_lowpart_operator"
+	    [(and:X (match_operand:X 2 "register_operand"  "r")
+		    (match_operand 3 "<X:shiftm1>" "<X:shiftm1p>"))])))]
   "TARGET_ZBB || TARGET_ZBKB"
-  "#"
-  "&& 1"
-  [(set (match_dup 0)
-        (bitmanip_rotate:GPR (match_dup 1)
-                             (match_dup 2)))]
-  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  "<bitmanip_insn>\t%0,%1,%2"
   [(set_attr "type" "bitmanip")
-   (set_attr "mode" "<GPR:MODE>")])
+   (set_attr "mode" "<X:MODE>")])
 
-(define_insn_and_split "*<bitmanip_optab>si3_sext_mask"
-  [(set (match_operand:DI     0 "register_operand" "= r")
-  (sign_extend:DI (bitmanip_rotate:SI
-            (match_operand:SI 1 "register_operand" "  r")
-            (match_operator 4 "subreg_lowpart_operator"
-             [(and:GPR
-               (match_operand:GPR 2 "register_operand"  "r")
-               (match_operand 3 "const_si_mask_operand"))]))))]
+(define_insn "*<bitmanip_optab>3_mask_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(bitmanip_rotate:SI
+	  (match_operand:SI 1 "register_operand" "r")
+	  (match_operator 3 "subreg_lowpart_operator"
+	    [(and:X (match_operand:SI 2 "register_operand"  "r")
+		    (const_int 31))])))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
-  "#"
-  "&& 1"
-  [(set (match_dup 0)
-  (sign_extend:DI (bitmanip_rotate:SI (match_dup 1)
-                           (match_dup 2))))]
-  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  "<bitmanip_insn>w\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "SI")])
+
+(define_insn "*<bitmanip_optab>si3_sext_mask"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (bitmanip_rotate:SI
+	    (match_operand:SI 1 "register_operand" "r")
+	    (match_operator 3 "subreg_lowpart_operator"
+	      [(and:X (match_operand:GPR 2 "register_operand"  "r")
+		      (const_int 31))]))))]
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
+  "<bitmanip_insn>w\t%0,%1,%2"
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "DI")])
 
@@ -906,6 +909,24 @@
   "bext\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+;; We do not define SHIFT_COUNT_TRUNCATED, so we have to have variants
+;; that mask/extend the count if we want to eliminate those ops
+;;      
+;; We could (in theory) use GPR for the various modes, but I haven't
+;; seen those cases appear in practice.  Without a testcase I've
+;; elected to keep the modes X which is easy to reason about.
+(define_insn "*bext<mode>_mask_pos"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(zero_extract:X (match_operand:X 1 "register_operand" "r")
+			(const_int 1)
+			(and:X
+			  (match_operand:X 2 "register_operand" "r")
+			  (match_operand 3 "const_int_operand"))))]
+  "(TARGET_ZBS
+    && INTVAL (operands[3]) + 1 == GET_MODE_BITSIZE (<MODE>mode))"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
 ;; This is a bext followed by a seqz.  Normally this would be a 3->2 split
 ;; But the and-not pattern with a constant operand is a define_insn_and_split,
 ;; so this looks like a 2->2 split, which combine rejects.  So implement it
@@ -1017,17 +1038,17 @@
   [(set (match_operand:X 0 "register_operand" "=r")
 	(any_or:X (match_operand:X 1 "register_operand" "r")
 	          (match_operand:X 2 "uimm_extra_bit_or_twobits" "i")))]
-  "TARGET_ZBS"
+  "TARGET_ZBS && !single_bit_mask_operand (operands[2], VOIDmode)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (<or_optab>:X (match_dup 1) (match_dup 3)))
    (set (match_dup 0) (<or_optab>:X (match_dup 0) (match_dup 4)))]
 {
-	unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
-	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
+  unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
+  unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
 
-	operands[3] = GEN_INT (bits &~ topbit);
-	operands[4] = GEN_INT (topbit);
+  operands[3] = GEN_INT (bits &~ topbit);
+  operands[4] = GEN_INT (topbit);
 }
 [(set_attr "type" "bitmanip")])
 
@@ -1036,17 +1057,17 @@
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (match_operand:X 1 "register_operand" "r")
 	       (match_operand:X 2 "not_uimm_extra_bit_or_nottwobits" "i")))]
-  "TARGET_ZBS"
+  "TARGET_ZBS && !not_single_bit_mask_operand (operands[2], VOIDmode)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (and:X (match_dup 1) (match_dup 3)))
    (set (match_dup 0) (and:X (match_dup 0) (match_dup 4)))]
 {
-	unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
-	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (~bits);
+  unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
+  unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (~bits);
 
-	operands[3] = GEN_INT (bits | topbit);
-	operands[4] = GEN_INT (~topbit);
+  operands[3] = GEN_INT (bits | topbit);
+  operands[4] = GEN_INT (~topbit);
 }
 [(set_attr "type" "bitmanip")])
 
@@ -1201,7 +1222,7 @@
      we can't keep it in 64 bit variable.)
      then use clmul instruction to implement the CRC,
      otherwise (TARGET_ZBKB) generate table based using brev.  */
-  if ((TARGET_ZBKC || TARGET_ZBC) && <ANYI:MODE>mode < word_mode)
+  if ((TARGET_ZBKC || TARGET_ZBC || TARGET_ZVBC) && <ANYI:MODE>mode < word_mode)
     expand_reversed_crc_using_clmul (<ANYI:MODE>mode, <ANYI1:MODE>mode,
 				     operands);
   else if (TARGET_ZBKB)
@@ -1233,7 +1254,8 @@
 		      (match_operand:SUBX 3)]
 		      UNSPEC_CRC))]
   /* We don't support the case when data's size is bigger than CRC's size.  */
-  "(TARGET_ZBKC || TARGET_ZBC) && <SUBX:MODE>mode >= <SUBX1:MODE>mode"
+  "(TARGET_ZBKC || TARGET_ZBC || TARGET_ZVBC)
+   && <SUBX:MODE>mode >= <SUBX1:MODE>mode"
 {
   /* If we have the ZBC or ZBKC extension (ie, clmul) and
      it is possible to store the quotient within a single variable
@@ -1243,3 +1265,115 @@
   expand_crc_using_clmul (<SUBX:MODE>mode, <SUBX1:MODE>mode, operands);
   DONE;
 })
+
+;; If we have an XOR/IOR with a constant operand (C) and the we can
+;; synthesize ~C more efficiently than C, then synthesize ~C and use
+;; xnor/orn instead.
+;;
+;; The same can be done for AND, but mvconst_internal's issues get in
+;; the way.  That's future work.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(any_or:X (match_operand:X 1 "register_operand")
+		  (match_operand:X 2 "const_int_operand")))
+   (clobber (match_operand:X 3 "register_operand"))]
+  "TARGET_ZBB
+   && (riscv_const_insns (operands[2], true)
+       > riscv_const_insns (GEN_INT (~INTVAL (operands[2])), true))"
+  [(const_int 0)]
+{
+  /* Get the inverted constant into the temporary register.  */
+  riscv_emit_move (operands[3], GEN_INT (~INTVAL (operands[2])));
+
+  /* For xnor, the NOT operation is in a different position.  So
+     we have to customize the split code we generate a bit.
+
+     It is expected that AND will be handled like IOR in the future.  */
+  if (<CODE> == XOR)
+    {
+      rtx x = gen_rtx_XOR (<X:MODE>mode, operands[1], operands[3]);
+      x = gen_rtx_NOT (<X:MODE>mode, x);
+      emit_insn (gen_rtx_SET (operands[0], x));
+    }
+  else
+    {
+      rtx x = gen_rtx_NOT (<X:MODE>mode, operands[3]);
+      x = gen_rtx_IOR (<X:MODE>mode, x, operands[1]);
+      emit_insn (gen_rtx_SET (operands[0], x));
+    }
+  DONE;
+})
+
+;; More forms of single bit extraction.  The RISC-V port does not
+;; define SHIFT_COUNT_TRUNCATED so we need forms where the bit position
+;; is masked.
+;;
+;; We could in theory use this for rv32 as well, but it probably does
+;; not occur in practice.  The bit position would need to be QI/HI mode,
+;; otherwise we would not need the zero extension.
+;;
+;; One could also argue that the zero extension is redundant and should
+;; have been optimized away during RTL simplification.
+(define_insn "*bextdi_position_ze_masked"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extract:DI (match_operand:DI 1 "register_operand" "r")
+			 (const_int 1)
+			 (zero_extend:DI
+			  (and:SI (match_operand:SI 2 "register_operand" "r")
+				  (const_int 63)))))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+;; Same as above, but without the extraneous zero_extend.
+(define_insn "*bextdi_position_ze_masked"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(zero_extract:X
+	  (match_operand:X 1 "register_operand" "r")
+	  (const_int 1)
+	  (and:X (match_operand:SI 2 "register_operand" "r")
+		 (match_operand:SI 3 "bitpos_mask_operand" "n"))))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+
+;; Single bit extraction by first shifting it into the sign bit, then
+;; shifting it down to the low bit.
+(define_insn "*bext<mode>_position_masked"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(lshiftrt:X (ashift:X (match_operand:X 1 "register_operand" "r")
+			      (match_operand:QI 2 "register_operand" "r"))
+		    (match_operand:X 3 "bitpos_mask_operand" "n")))]
+  "TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+;; Single bit extraction by shifting into the low bit, but with the
+;; position formed with a subreg of a mask.
+(define_insn "*bext<mode>_position_masked_subreg"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(lshiftrt:X
+	 (ashift:X (match_operand:X 1 "register_operand" "r")
+		   (subreg:QI
+		    (and:X (match_operand:X 2 "register_operand" "r")
+			   (match_operand:X 3 "bitpos_mask_operand" "n")) 0))
+	 (match_operand:X 4 "bitpos_mask_operand" "n")))]
+  "TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
+;; This has shown up in testing.  In particular we end up with an
+;; immediate input.  We can load that into a register and target
+;; one of the above bext patterns.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (lshiftrt:X (match_operand 1 "immediate_operand")
+			   (match_operand:QI 2 "register_operand"))
+	       (const_int 1)))
+   (clobber (match_operand:X 3 "register_operand"))]
+  ""
+  [(set (match_dup 3) (match_dup 1))
+   (set (match_dup 0) (zero_extract:X (match_dup 3)
+				      (const_int 1)
+				      (zero_extend:X (match_dup 2))))])

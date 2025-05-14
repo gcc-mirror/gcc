@@ -273,10 +273,6 @@ The size of translation unit that IPA-CP pass considers large.
 Common Joined UInteger Var(param_ipa_cp_value_list_size) Init(8) Param Optimization
 Maximum size of a list of values associated with each parameter for interprocedural constant propagation.
 
--param=ipa-cp-profile-count-base=
-Common Joined UInteger Var(param_ipa_cp_profile_count_base) Init(10) IntegerRange(0, 100) Param Optimization
-When using profile feedback, use the edge at this percentage position in frequency histogram as the bases for IPA-CP heuristics.
-
 -param=ipa-jump-function-lookups=
 Common Joined UInteger Var(param_ipa_jump_function_lookups) Init(8) Param Optimization
 Maximum number of statements visited during jump function offset discovery.
@@ -469,6 +465,33 @@ Minimal size of a partition for LTO (in estimated instructions).
 Common Joined UInteger Var(param_lto_partitions) Init(128) IntegerRange(1, 65536) Param
 Number of partitions the program should be split to.
 
+Enum
+Name(lto_locality_cloning_model) Type(enum lto_locality_cloning_model) UnknownError(unknown LTO partitioning model %qs)
+
+EnumValue
+Enum(lto_locality_cloning_model) String(no) Value(LTO_LOCALITY_NO_CLONING)
+
+EnumValue
+Enum(lto_locality_cloning_model) String(non_interposable) Value(LTO_LOCALITY_NON_INTERPOSABLE_CLONING)
+
+EnumValue
+Enum(lto_locality_cloning_model) String(maximal) Value(LTO_LOCALITY_MAXIMAL_CLONING)
+
+-param=lto-partition-locality-cloning=
+Common Joined RejectNegative Enum(lto_locality_cloning_model) Var(flag_lto_locality_cloning) Init(LTO_LOCALITY_MAXIMAL_CLONING) Optimization
+
+-param=lto-partition-locality-frequency-cutoff=
+Common Joined UInteger Var(param_lto_locality_frequency) Init(1) IntegerRange(0, 65536) Param Optimization
+The denominator n of fraction 1/n of the execution frequency of callee to be cloned for a particular caller. Special value of 0 dictates to always clone without a cut-off.
+
+-param=lto-partition-locality-size-cutoff=
+Common Joined UInteger Var(param_lto_locality_size) Init(1000) IntegerRange(1, 65536) Param Optimization
+Size cut-off for callee including inlined calls to be cloned for a particular caller.
+
+-param=lto-max-locality-partition=
+Common Joined UInteger Var(param_max_locality_partition_size) Init(1000000) Param
+Maximal size of a locality partition for LTO (in estimated instructions). Value of 0 results in default value being used.
+
 -param=max-average-unrolled-insns=
 Common Joined UInteger Var(param_max_average_unrolled_insns) Init(80) Param Optimization
 The maximum number of instructions to consider to unroll in a loop on average.
@@ -476,6 +499,10 @@ The maximum number of instructions to consider to unroll in a loop on average.
 -param=max-combine-insns=
 Common Joined UInteger Var(param_max_combine_insns) Init(4) IntegerRange(2, 4) Param Optimization
 The maximum number of insns combine tries to combine.
+
+-param=max-combine-search-insns=
+Common Joined UInteger Var(param_max_combine_search_insns) Init(3000) Param Optimization
+The maximum number of instructions that combine searches in order to find the next use of a particular register.
 
 -param=max-completely-peel-loop-nest-depth=
 Common Joined UInteger Var(param_max_unroll_iterations) Init(8) Param Optimization
@@ -1225,10 +1252,6 @@ The maximum factor which the loop vectorizer applies to the cost of statements i
 -param=vect-induction-float=
 Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRange(0, 1) Param Optimization
 Enable loop vectorization of floating point inductions.
-
--param=vect-force-slp=
-Common Joined UInteger Var(param_vect_force_slp) Init(1) IntegerRange(0, 1) Param Optimization
-Force the use of SLP when vectorizing, fail if not possible.
 
 -param=vrp-block-limit=
 Common Joined UInteger Var(param_vrp_block_limit) Init(150000) Optimization Param

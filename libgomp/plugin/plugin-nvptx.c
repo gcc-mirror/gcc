@@ -35,7 +35,9 @@
 #include "openacc.h"
 #include "config.h"
 #include "symcat.h"
+#define _LIBGOMP_PLUGIN_INCLUDE 1
 #include "libgomp-plugin.h"
+#undef _LIBGOMP_PLUGIN_INCLUDE
 #include "oacc-plugin.h"
 #include "gomp-constants.h"
 #include "oacc-int.h"
@@ -2425,6 +2427,320 @@ nvptx_stacks_acquire (struct ptx_device *ptx_dev, size_t size, int num)
   return (void *) ptx_dev->omp_stacks.ptr;
 }
 
+void
+GOMP_OFFLOAD_interop (struct interop_obj_t *obj, int ord,
+		      enum gomp_interop_flag action, bool targetsync,
+		      const char *prefer_type)
+{
+  obj->fr = omp_ifr_cuda;
+
+  if (action == gomp_interop_flag_destroy)
+    {
+      if (obj->stream)
+	CUDA_CALL_ASSERT (cuStreamDestroy, obj->stream);
+      return;
+    }
+  if (action == gomp_interop_flag_use)
+    {
+      if (obj->stream)
+	CUDA_CALL_ASSERT (cuStreamSynchronize, obj->stream);
+      return;
+    }
+
+  /* Check for the preferred type; cf. parser in C/C++/Fortran or
+     dump_omp_init_prefer_type for the format.
+     Accept the first '{...}' block that specifies a 'fr' that we support.
+     Currently, no 'attr(...)' are supported.  */
+  if (prefer_type)
+    while (prefer_type[0] == (char) GOMP_INTEROP_IFR_SEPARATOR)
+      {
+	bool found = false;
+	/* '{' item block starts.  */
+	prefer_type++;
+	/* 'fr(...)' block  */
+	while (prefer_type[0] != (char) GOMP_INTEROP_IFR_SEPARATOR)
+	  {
+	    omp_interop_fr_t fr = (omp_interop_fr_t) prefer_type[0];
+	    if (fr == omp_ifr_cuda
+		|| fr == omp_ifr_cuda_driver
+		|| fr == omp_ifr_hip)
+	      {
+		obj->fr = fr;
+		found = true;
+	      }
+	    prefer_type++;
+	  }
+	prefer_type++;
+	/* 'attr(...)' block  */
+	while (prefer_type[0] != '\0')
+	  {
+	    /* const char *attr = prefer_type;  */
+	    prefer_type += strlen (prefer_type) + 1;
+	  }
+	prefer_type++;
+	/* end of '}'.  */
+	if (found)
+	  break;
+      }
+
+  struct ptx_device *ptx_dev = obj->device_data = ptx_devices[ord];
+
+  if (targetsync)
+    {
+      CUstream stream = NULL;
+      CUdevice cur_ctx_dev;
+      CUresult res = CUDA_CALL_NOCHECK (cuCtxGetDevice, &cur_ctx_dev);
+      if (res != CUDA_SUCCESS && res != CUDA_ERROR_INVALID_CONTEXT)
+	GOMP_PLUGIN_fatal ("cuCtxGetDevice error: %s", cuda_error (res));
+      if (res != CUDA_ERROR_INVALID_CONTEXT && ptx_dev->dev == cur_ctx_dev)
+	CUDA_CALL_ASSERT (cuStreamCreate, &stream, CU_STREAM_DEFAULT);
+      else
+	{
+	  CUcontext old_ctx;
+	  assert (ptx_dev->ctx);
+	  CUDA_CALL_ASSERT (cuCtxPushCurrent, ptx_dev->ctx);
+	  CUDA_CALL_ASSERT (cuStreamCreate, &stream, CU_STREAM_DEFAULT);
+	  if (res != CUDA_ERROR_INVALID_CONTEXT)
+	    CUDA_CALL_ASSERT (cuCtxPopCurrent, &old_ctx);
+	}
+      obj->stream = stream;
+    }
+}
+
+
+intptr_t
+GOMP_OFFLOAD_get_interop_int (struct interop_obj_t *obj,
+			      omp_interop_property_t property_id,
+			      omp_interop_rc_t *ret_code)
+{
+  if (obj->fr != omp_ifr_cuda
+      && obj->fr != omp_ifr_cuda_driver
+      && obj->fr != omp_ifr_hip)
+    {
+      if (ret_code)
+	*ret_code = omp_irc_no_value;  /* Hmm. */
+      return 0;
+    }
+  switch (property_id)
+    {
+    case omp_ipr_fr_id:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return obj->fr;
+    case omp_ipr_fr_name:
+      if (ret_code)
+	*ret_code = omp_irc_type_str;
+      return 0;
+    case omp_ipr_vendor:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return 11; /* nvidia */
+    case omp_ipr_vendor_name:
+      if (ret_code)
+	*ret_code = omp_irc_type_str;
+      return 0;
+    case omp_ipr_device_num:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return obj->device_num;
+    case omp_ipr_platform:
+      if (ret_code)
+	*ret_code = omp_irc_no_value;
+      return 0;
+    case omp_ipr_device:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return ((struct ptx_device *) obj->device_data)->dev;
+    case omp_ipr_device_context:
+      if (ret_code && obj->fr == omp_ifr_cuda)
+	*ret_code = omp_irc_no_value;
+      else if (ret_code)
+	*ret_code = omp_irc_type_ptr;
+      return 0;
+    case omp_ipr_targetsync:
+      if (!obj->stream)
+	{
+	  if (ret_code)
+	    *ret_code = omp_irc_no_value;
+	  return 0;
+	}
+      /* ptr fits into (u)intptr_t */
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return (uintptr_t) obj->stream;
+    default:
+      break;
+    }
+  __builtin_unreachable ();
+  return 0;
+}
+
+void *
+GOMP_OFFLOAD_get_interop_ptr (struct interop_obj_t *obj,
+			      omp_interop_property_t property_id,
+			      omp_interop_rc_t *ret_code)
+{
+  if (obj->fr != omp_ifr_cuda
+      && obj->fr != omp_ifr_cuda_driver
+      && obj->fr != omp_ifr_hip)
+    {
+      if (ret_code)
+	*ret_code = omp_irc_no_value;  /* Hmm. */
+      return 0;
+    }
+  switch (property_id)
+    {
+    case omp_ipr_fr_id:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_fr_name:
+      if (ret_code)
+	*ret_code = omp_irc_type_str;
+      return NULL;
+    case omp_ipr_vendor:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_vendor_name:
+      if (ret_code)
+	*ret_code = omp_irc_type_str;
+      return NULL;
+    case omp_ipr_device_num:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_platform:
+      if (ret_code)
+	*ret_code = omp_irc_no_value;
+      return NULL;
+    case omp_ipr_device:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_device_context:
+      if (obj->fr == omp_ifr_cuda)
+	{
+	  if (ret_code)
+	    *ret_code = omp_irc_no_value;
+	  return NULL;
+	}
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return ((struct ptx_device *) obj->device_data)->ctx;
+    case omp_ipr_targetsync:
+      if (!obj->stream)
+	{
+	  if (ret_code)
+	    *ret_code = omp_irc_no_value;
+	  return NULL;
+	}
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return obj->stream;
+    default:
+      break;
+    }
+  __builtin_unreachable ();
+  return NULL;
+}
+
+const char *
+GOMP_OFFLOAD_get_interop_str (struct interop_obj_t *obj,
+			      omp_interop_property_t property_id,
+			      omp_interop_rc_t *ret_code)
+{
+  if (obj->fr != omp_ifr_cuda
+      && obj->fr != omp_ifr_cuda_driver
+      && obj->fr != omp_ifr_hip)
+    {
+      if (ret_code)
+	*ret_code = omp_irc_no_value;  /* Hmm. */
+      return 0;
+    }
+  switch (property_id)
+    {
+    case omp_ipr_fr_id:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_fr_name:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      if (obj->fr == omp_ifr_cuda)
+	return "cuda";
+      if (obj->fr == omp_ifr_cuda_driver)
+	return "cuda_driver";
+      if (obj->fr == omp_ifr_hip)
+	return "hip";
+      break;
+    case omp_ipr_vendor:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_vendor_name:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return "nvidia";
+    case omp_ipr_device_num:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_platform:
+      if (ret_code)
+	*ret_code = omp_irc_no_value;
+      return NULL;
+    case omp_ipr_device:
+      if (ret_code)
+	*ret_code = omp_irc_type_ptr;
+      return NULL;
+    case omp_ipr_device_context:
+      if (ret_code && obj->fr == omp_ifr_cuda)
+	*ret_code = omp_irc_no_value;
+      else if (ret_code)
+	*ret_code = omp_irc_type_ptr;
+      return NULL;
+    case omp_ipr_targetsync:
+      if (ret_code && !obj->stream)
+	*ret_code = omp_irc_no_value;
+      else if (ret_code)
+	*ret_code = omp_irc_type_ptr;
+      return NULL;
+    default:
+      break;
+    }
+  __builtin_unreachable ();
+  return NULL;
+}
+
+const char *
+GOMP_OFFLOAD_get_interop_type_desc (struct interop_obj_t *obj,
+				    omp_interop_property_t property_id)
+{
+  _Static_assert (omp_ipr_targetsync == omp_ipr_first,
+		  "omp_ipr_targetsync == omp_ipr_first");
+  _Static_assert (omp_ipr_platform - omp_ipr_first + 1 == 4,
+		  "omp_ipr_platform - omp_ipr_first + 1 == 4");
+  static const char *desc_cuda[] = {"N/A",		/* platform */
+				    "int",		/* device */
+				    "N/A",		/* device_context */
+				    "cudaStream_t"};	/* targetsync */
+  static const char *desc_cuda_driver[] = {"N/A",	/* platform */
+					   "CUdevice",	/* device */
+					   "CUcontext",	/* device_context */
+					   "CUstream"};	/* targetsync */
+  static const char *desc_hip[] = {"N/A",		/* platform */
+				   "hipDevice_t",	/* device */
+				   "hipCtx_t",		/* device_context */
+				   "hipStream_t"};	/* targetsync */
+  if (obj->fr == omp_ifr_cuda)
+    return desc_cuda[omp_ipr_platform - property_id];
+  if (obj->fr == omp_ifr_cuda_driver)
+    return desc_cuda_driver[omp_ipr_platform - property_id];
+  else
+    return desc_hip[omp_ipr_platform - property_id];
+  return NULL;
+}
 
 void
 GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)

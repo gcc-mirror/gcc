@@ -1349,7 +1349,7 @@ do_embed (cpp_reader *pfile)
 {
   int angle_brackets;
   struct cpp_embed_params params = {};
-  bool ok;
+  bool ok, warned = false;
   const char *fname = NULL;
 
   /* Tell the lexer this is an embed directive.  */
@@ -1366,12 +1366,17 @@ do_embed (cpp_reader *pfile)
   if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, embed))
     {
       if (CPP_OPTION (pfile, cplusplus))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "%<#%s%> is a GCC extension", "embed");
+	warned = cpp_pedwarning (pfile, CPP_W_CXX26_EXTENSIONS,
+				 "%<#%s%> before C++26 is a GCC extension",
+				 "embed");
       else
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "%<#%s%> before C23 is a GCC extension", "embed");
+	warned = cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				 "%<#%s%> before C23 is a GCC extension",
+				 "embed");
     }
+  if (!warned && CPP_OPTION (pfile, cpp_warn_c11_c23_compat) > 0)
+    cpp_warning (pfile, CPP_W_C11_C23_COMPAT,
+		 "%<#%s%> is a C23 feature", "embed");
 
   fname = parse_include (pfile, &angle_brackets, NULL, &params.loc);
   if (!fname)

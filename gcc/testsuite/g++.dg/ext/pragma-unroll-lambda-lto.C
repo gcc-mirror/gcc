@@ -10,6 +10,7 @@ inline Iter
 my_find(Iter first, Iter last, Pred pred)
 {
 #pragma GCC unroll 4
+#pragma GCC novector
     while (first != last && !pred(*first))
         ++first;
     return first;

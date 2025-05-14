@@ -1861,7 +1861,7 @@ ranger_cache::apply_inferred_ranges (gimple *s)
   bool update = true;
 
   basic_block bb = gimple_bb (s);
-  gimple_infer_range infer(s);
+  gimple_infer_range infer(s, this);
   if (infer.num () == 0)
     return;
 

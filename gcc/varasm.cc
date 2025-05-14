@@ -5827,10 +5827,13 @@ output_constructor_regular_field (oc_local_state *local)
 	     and the FE splits them into dynamic initialization.  */
 	  gcc_checking_assert (fieldsize >= fldsize);
 	  /* Given a non-empty initialization, this field had better
-	     be last.  Given a flexible array member, the next field
-	     on the chain is a TYPE_DECL of the enclosing struct.  */
+	     be last except in unions.  Given a flexible array member, the next
+	     field on the chain is a TYPE_DECL of the enclosing struct.  */
 	  const_tree next = DECL_CHAIN (local->field);
-	  gcc_assert (!fieldsize || !next || TREE_CODE (next) != FIELD_DECL);
+	  gcc_assert (!fieldsize
+		      || !next
+		      || TREE_CODE (next) != FIELD_DECL
+		      || TREE_CODE (local->type) == UNION_TYPE);
 	}
       else
 	fieldsize = tree_to_uhwi (DECL_SIZE_UNIT (local->field));
@@ -6522,7 +6525,12 @@ do_assemble_alias (tree decl, tree target)
 		  IDENTIFIER_POINTER (target));
 # endif
   /* If symbol aliases aren't actually supported...  */
-  if (!TARGET_SUPPORTS_ALIASES)
+  if (!TARGET_SUPPORTS_ALIASES
+# ifdef ACCEL_COMPILER
+      /* ..., and unless special-cased...  */
+      && !lookup_attribute ("symbol alias handled", DECL_ATTRIBUTES (decl))
+# endif
+      )
     /* ..., 'ASM_OUTPUT_DEF{,_FROM_DECLS}' better have raised an error.  */
     gcc_checking_assert (seen_error ());
 #elif defined (ASM_OUTPUT_WEAK_ALIAS) || defined (ASM_WEAKEN_DECL)

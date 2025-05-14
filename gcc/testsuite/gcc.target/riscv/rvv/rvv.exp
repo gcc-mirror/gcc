@@ -132,5 +132,22 @@ foreach op $AUTOVEC_TEST_OPTS {
     "$op" ""
 }
 
+# vx_vf tests
+set AUTOVEC_TEST_OPTS [list \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=zvl -mrvv-max-lmul=m1 -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=zvl -mrvv-max-lmul=m2 -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=zvl -mrvv-max-lmul=m4 -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=zvl -mrvv-max-lmul=m8 -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=zvl -mrvv-max-lmul=dynamic -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=scalable -mrvv-max-lmul=m1 -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=scalable -mrvv-max-lmul=m2 -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=scalable -mrvv-max-lmul=m4 -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=scalable -mrvv-max-lmul=m8 -ffast-math} \
+  {-ftree-vectorize -O3 -mrvv-vector-bits=scalable -mrvv-max-lmul=dynamic -ffast-math} ]
+foreach op $AUTOVEC_TEST_OPTS {
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vx_vf/*.\[cS\]]] \
+    "$op" ""
+}
+
 # All done.
 dg-finish

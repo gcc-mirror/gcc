@@ -16,6 +16,9 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-diagnostics.h"
+#include "rust-hir-map.h"
+#include "rust-hir-path.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-item.h"
@@ -24,6 +27,7 @@
 #include "rust-hir-path-probe.h"
 #include "rust-type-util.h"
 #include "rust-hir-type-bounds.h"
+#include "rust-hir-item.h"
 #include "rust-session-manager.h"
 #include "rust-immutable-name-resolution-context.h"
 
@@ -34,8 +38,7 @@ void
 TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 {
   HIR::QualifiedPathType qual_path_type = expr.get_path_type ();
-  TyTy::BaseType *root
-    = TypeCheckType::Resolve (qual_path_type.get_type ().get ());
+  TyTy::BaseType *root = TypeCheckType::Resolve (qual_path_type.get_type ());
   if (root->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
@@ -48,8 +51,8 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
     }
 
   // Resolve the trait now
-  std::unique_ptr<HIR::TypePath> &trait_path_ref = qual_path_type.get_trait ();
-  TraitReference *trait_ref = TraitResolver::Resolve (*trait_path_ref.get ());
+  HIR::TypePath &trait_path_ref = qual_path_type.get_trait ();
+  TraitReference *trait_ref = TraitResolver::Resolve (trait_path_ref);
   if (trait_ref->is_error ())
     return;
 
@@ -64,8 +67,7 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 
   // get the predicate for the bound
   auto specified_bound
-    = get_predicate_from_bound (*trait_path_ref.get (),
-				qual_path_type.get_type ().get ());
+    = get_predicate_from_bound (trait_path_ref, qual_path_type.get_type ());
   if (specified_bound.is_error ())
     return;
 
@@ -155,9 +157,20 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
   bool fully_resolved = expr.get_segments ().size () <= 1;
   if (fully_resolved)
     {
-      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-				      root_resolved_node_id);
-      context->insert_receiver (expr.get_mappings ().get_hirid (), root);
+      if (flag_name_resolution_2_0)
+	{
+	  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+	    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+
+	  nr_ctx.map_usage (Resolver2_0::Usage (
+			      expr.get_mappings ().get_nodeid ()),
+			    Resolver2_0::Definition (root_resolved_node_id));
+	}
+      else
+	{
+	  resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+					  root_resolved_node_id);
+	}
       return;
     }
 
@@ -169,20 +182,72 @@ void
 TypeCheckExpr::visit (HIR::PathInExpression &expr)
 {
   NodeId resolved_node_id = UNKNOWN_NODEID;
-  size_t offset = -1;
-  TyTy::BaseType *tyseg = resolve_root_path (expr, &offset, &resolved_node_id);
-  if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
-    return;
-
-  bool fully_resolved = offset == expr.get_segments ().size ();
-  if (fully_resolved)
+  if (expr.is_lang_item ())
     {
-      infered = tyseg;
-      return;
-    }
+      auto lookup
+	= Analysis::Mappings::get ().get_lang_item_node (expr.get_lang_item ());
+      auto hir_id = mappings.lookup_node_to_hir (lookup);
 
-  resolve_segments (resolved_node_id, expr.get_segments (), offset, tyseg,
-		    expr.get_mappings (), expr.get_locus ());
+      // We can type resolve the path in expression easily as it is a lang
+      // item path, but we still need to setup the various generics and
+      // substitutions
+
+      // FIXME: We probably need to check *if* the type needs substitutions
+      // or not
+      if (LangItem::IsEnumVariant (expr.get_lang_item ()))
+	{
+	  std::pair<HIR::Enum *, HIR::EnumItem *> enum_item_lookup
+	    = mappings.lookup_hir_enumitem (*hir_id);
+	  bool enum_item_ok = enum_item_lookup.first != nullptr
+			      && enum_item_lookup.second != nullptr;
+	  rust_assert (enum_item_ok);
+
+	  HirId variant_id
+	    = enum_item_lookup.second->get_mappings ().get_hirid ();
+
+	  HIR::EnumItem *enum_item = enum_item_lookup.second;
+	  resolved_node_id = enum_item->get_mappings ().get_nodeid ();
+
+	  // insert the id of the variant we are resolved to
+	  context->insert_variant_definition (expr.get_mappings ().get_hirid (),
+					      variant_id);
+
+	  query_type (variant_id, &infered);
+	  infered = SubstMapper::InferSubst (infered, expr.get_locus ());
+	}
+      else
+	{
+	  TyTy::BaseType *resolved = nullptr;
+	  context->lookup_type (*hir_id, &resolved);
+
+	  rust_assert (resolved);
+
+	  query_type (*hir_id, &infered);
+
+	  infered = SubstMapper::InferSubst (resolved, expr.get_locus ());
+	}
+
+      // FIXME: also we probably need to insert resolved types in the name
+      // resolver here
+    }
+  else
+    {
+      size_t offset = -1;
+      TyTy::BaseType *tyseg
+	= resolve_root_path (expr, &offset, &resolved_node_id);
+      if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
+	return;
+
+      bool fully_resolved = offset == expr.get_segments ().size ();
+      if (fully_resolved)
+	{
+	  infered = tyseg;
+	  return;
+	}
+
+      resolve_segments (resolved_node_id, expr.get_segments (), offset, tyseg,
+			expr.get_mappings (), expr.get_locus ());
+    }
 }
 
 TyTy::BaseType *
@@ -204,12 +269,13 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 
       if (flag_name_resolution_2_0)
 	{
-	  auto nr_ctx
+	  auto &nr_ctx
 	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
 	  // assign the ref_node_id if we've found something
-	  nr_ctx.lookup (expr.get_mappings ().get_nodeid ())
-	    .map ([&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
+	  nr_ctx.lookup (ast_node_id).map ([&ref_node_id] (NodeId resolved) {
+	    ref_node_id = resolved;
+	  });
 	}
       else if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
 	resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
@@ -229,8 +295,8 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	}
 
       // node back to HIR
-      HirId ref;
-      if (!mappings->lookup_node_to_hir (ref_node_id, &ref))
+      tl::optional<HirId> hid = mappings.lookup_node_to_hir (ref_node_id);
+      if (!hid.has_value ())
 	{
 	  rust_error_at (seg.get_locus (), "456 reverse lookup failure");
 	  rust_debug_loc (seg.get_locus (),
@@ -241,9 +307,13 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 
 	  return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	}
+      auto ref = hid.value ();
 
-      auto seg_is_module = (nullptr != mappings->lookup_module (ref));
-      auto seg_is_crate = mappings->is_local_hirid_crate (ref);
+      auto seg_is_module = mappings.lookup_module (ref).has_value ();
+      auto seg_is_crate = mappings.is_local_hirid_crate (ref);
+      auto seg_is_pattern = mappings.lookup_hir_pattern (ref).has_value ();
+      auto seg_is_self = is_root && !have_more_segments
+			 && seg.get_segment ().as_string () == "self";
       if (seg_is_module || seg_is_crate)
 	{
 	  // A::B::C::this_is_a_module::D::E::F
@@ -266,7 +336,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       TyTy::BaseType *lookup = nullptr;
       if (!query_type (ref, &lookup))
 	{
-	  if (is_root)
+	  if (is_root || root_tyty == nullptr)
 	    {
 	      rust_error_at (expr.get_locus (), ErrorCode::E0425,
 			     "cannot find value %qs in this scope",
@@ -279,7 +349,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 
       // is it an enum item?
       std::pair<HIR::Enum *, HIR::EnumItem *> enum_item_lookup
-	= mappings->lookup_hir_enumitem (ref);
+	= mappings.lookup_hir_enumitem (ref);
       bool is_enum_item = enum_item_lookup.first != nullptr
 			  && enum_item_lookup.second != nullptr;
       if (is_enum_item)
@@ -320,7 +390,8 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	  if (lookup->get_kind () == TyTy::TypeKind::ERROR)
 	    return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	}
-      else if (lookup->needs_generic_substitutions ())
+      else if (lookup->needs_generic_substitutions () && !seg_is_pattern
+	       && !seg_is_self)
 	{
 	  lookup = SubstMapper::InferSubst (lookup, expr.get_locus ());
 	}
@@ -342,12 +413,13 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 {
   NodeId resolved_node_id = root_resolved_node_id;
   TyTy::BaseType *prev_segment = tyseg;
-  bool reciever_is_generic = prev_segment->get_kind () == TyTy::TypeKind::PARAM;
+  bool receiver_is_generic = prev_segment->get_kind () == TyTy::TypeKind::PARAM;
+  bool receiver_is_dyn = prev_segment->get_kind () == TyTy::TypeKind::DYNAMIC;
 
   for (size_t i = offset; i < segments.size (); i++)
     {
       HIR::PathExprSegment &seg = segments.at (i);
-      bool probe_impls = !reciever_is_generic;
+      bool probe_impls = !receiver_is_generic;
 
       // probe the path is done in two parts one where we search impls if no
       // candidate is found then we search extensions from traits
@@ -389,7 +461,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 
 	  HirId variant_id = variant->get_id ();
 	  std::pair<HIR::Enum *, HIR::EnumItem *> enum_item_lookup
-	    = mappings->lookup_hir_enumitem (variant_id);
+	    = mappings.lookup_hir_enumitem (variant_id);
 	  bool enum_item_ok = enum_item_lookup.first != nullptr
 			      && enum_item_lookup.second != nullptr;
 	  rust_assert (enum_item_ok);
@@ -422,7 +494,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	    }
 	}
 
-      if (associated_impl_block != nullptr)
+      if (associated_impl_block != nullptr && !receiver_is_dyn)
 	{
 	  // associated types
 	  HirId impl_block_id
@@ -455,7 +527,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	    {
 	      // we need to setup with apropriate bounds
 	      HIR::TypePath &bound_path
-		= *associated->get_impl_block ()->get_trait_ref ().get ();
+		= associated->get_impl_block ()->get_trait_ref ();
 	      const auto &trait_ref = *TraitResolver::Resolve (bound_path);
 	      rust_assert (!trait_ref.is_error ());
 
@@ -463,8 +535,8 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 		= impl_block_ty->lookup_predicate (trait_ref.get_defid ());
 	      if (!predicate.is_error ())
 		impl_block_ty
-		  = associated->setup_associated_types (prev_segment,
-							predicate);
+		  = associated->setup_associated_types (prev_segment, predicate,
+							nullptr, false);
 	    }
 	}
 
@@ -479,7 +551,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
 	    return;
 	}
-      else if (tyseg->needs_generic_substitutions () && !reciever_is_generic)
+      else if (tyseg->needs_generic_substitutions () && !receiver_is_generic)
 	{
 	  location_t locus = seg.get_locus ();
 	  tyseg = SubstMapper::InferSubst (tyseg, locus);
@@ -489,18 +561,17 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
     }
 
   rust_assert (resolved_node_id != UNKNOWN_NODEID);
-  if (tyseg->needs_generic_substitutions () && !reciever_is_generic)
+  if (flag_name_resolution_2_0)
     {
-      location_t locus = segments.back ().get_locus ();
-      tyseg = SubstMapper::InferSubst (tyseg, locus);
-      if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
-	return;
+      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+
+      nr_ctx.map_usage (Resolver2_0::Usage (expr_mappings.get_nodeid ()),
+			Resolver2_0::Definition (resolved_node_id));
     }
-
-  context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
-
   // name scope first
-  if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
+  else if (resolver->get_name_scope ().decl_was_declared_here (
+	     resolved_node_id))
     {
       resolver->insert_resolved_name (expr_mappings.get_nodeid (),
 				      resolved_node_id);

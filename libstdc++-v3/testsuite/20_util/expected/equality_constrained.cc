@@ -4,7 +4,7 @@
 
 #ifndef __cpp_lib_constrained_equality
 # error "Feature-test macro for constrained_equality missing in <expected>"
-#elif __cpp_lib_constrained_equality < 202411L // TODO: use final value
+#elif __cpp_lib_constrained_equality < 202411L
 # error "Feature-test macro for constrained_equality has wrong value"
 #endif
 

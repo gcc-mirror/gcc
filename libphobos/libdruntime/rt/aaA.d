@@ -66,13 +66,13 @@ private:
         if ((ti.key.flags | ti.value.flags) & 1)
             flags |= Flags.hasPointers;
 
-        entryTI = fakeEntryTI(this, ti.key, ti.value);
+        entryTI = ti.entry;
     }
 
     Bucket[] buckets;
     uint used;
     uint deleted;
-    TypeInfo_Struct entryTI;
+    const(TypeInfo) entryTI;
     uint firstUsed;
     immutable uint keysz;
     immutable uint valsz;
@@ -229,15 +229,6 @@ private void* allocEntry(scope const Impl* aa, scope const void* pkey)
     return res;
 }
 
-package void entryDtor(void* p, const TypeInfo_Struct sti)
-{
-    // key and value type info stored after the TypeInfo_Struct by tiEntry()
-    auto sizeti = __traits(classInstanceSize, TypeInfo_Struct);
-    auto extra = cast(const(TypeInfo)*)(cast(void*) sti + sizeti);
-    extra[0].destroy(p);
-    extra[1].destroy(p + talign(extra[0].tsize, extra[1].talign));
-}
-
 private bool hasDtor(const TypeInfo ti) pure nothrow
 {
     import rt.lifetime : unqualify;
@@ -258,132 +249,6 @@ private immutable(void)* getRTInfo(const TypeInfo ti) pure nothrow
     return isNoClass ? ti.rtInfo() : rtinfoHasPointers;
 }
 
-// build type info for Entry with additional key and value fields
-TypeInfo_Struct fakeEntryTI(ref Impl aa, const TypeInfo keyti, const TypeInfo valti) nothrow
-{
-    import rt.lifetime : unqualify;
-
-    auto kti = unqualify(keyti);
-    auto vti = unqualify(valti);
-
-    // figure out whether RTInfo has to be generated (indicated by rtisize > 0)
-    enum pointersPerWord = 8 * (void*).sizeof * (void*).sizeof;
-    auto rtinfo = rtinfoNoPointers;
-    size_t rtisize = 0;
-    immutable(size_t)* keyinfo = void;
-    immutable(size_t)* valinfo = void;
-    if (aa.flags & Impl.Flags.hasPointers)
-    {
-        // classes are references
-        keyinfo = cast(immutable(size_t)*) getRTInfo(keyti);
-        valinfo = cast(immutable(size_t)*) getRTInfo(valti);
-
-        if (keyinfo is rtinfoHasPointers && valinfo is rtinfoHasPointers)
-            rtinfo = rtinfoHasPointers;
-        else
-            rtisize = 1 + (aa.valoff + aa.valsz + pointersPerWord - 1) / pointersPerWord;
-    }
-    bool entryHasDtor = hasDtor(kti) || hasDtor(vti);
-    if (rtisize == 0 && !entryHasDtor)
-        return null;
-
-    // save kti and vti after type info for struct
-    enum sizeti = __traits(classInstanceSize, TypeInfo_Struct);
-    void* p = GC.malloc(sizeti + (2 + rtisize) * (void*).sizeof);
-    import core.stdc.string : memcpy;
-
-    memcpy(p, __traits(initSymbol, TypeInfo_Struct).ptr, sizeti);
-
-    auto ti = cast(TypeInfo_Struct) p;
-    auto extra = cast(TypeInfo*)(p + sizeti);
-    extra[0] = cast() kti;
-    extra[1] = cast() vti;
-
-    static immutable tiMangledName = "S2rt3aaA__T5EntryZ";
-    ti.mangledName = tiMangledName;
-
-    ti.m_RTInfo = rtisize > 0 ? rtinfoEntry(aa, keyinfo, valinfo, cast(size_t*)(extra + 2), rtisize) : rtinfo;
-    ti.m_flags = ti.m_RTInfo is rtinfoNoPointers ? cast(TypeInfo_Struct.StructFlags)0 : TypeInfo_Struct.StructFlags.hasPointers;
-
-    // we don't expect the Entry objects to be used outside of this module, so we have control
-    // over the non-usage of the callback methods and other entries and can keep these null
-    // xtoHash, xopEquals, xopCmp, xtoString and xpostblit
-    immutable entrySize = aa.valoff + aa.valsz;
-    ti.m_init = (cast(ubyte*) null)[0 .. entrySize]; // init length, but not ptr
-
-    if (entryHasDtor)
-    {
-        // xdtor needs to be built from the dtors of key and value for the GC
-        ti.xdtorti = &entryDtor;
-        ti.m_flags |= TypeInfo_Struct.StructFlags.isDynamicType;
-    }
-
-    ti.m_align = cast(uint) max(kti.talign, vti.talign);
-
-    return ti;
-}
-
-// build appropriate RTInfo at runtime
-immutable(void)* rtinfoEntry(ref Impl aa, immutable(size_t)* keyinfo,
-    immutable(size_t)* valinfo, size_t* rtinfoData, size_t rtinfoSize) pure nothrow
-{
-    enum bitsPerWord = 8 * size_t.sizeof;
-
-    rtinfoData[0] = aa.valoff + aa.valsz;
-    rtinfoData[1..rtinfoSize] = 0;
-
-    void copyKeyInfo(string src)()
-    {
-        size_t pos = 1;
-        size_t keybits = aa.keysz / (void*).sizeof;
-        while (keybits >= bitsPerWord)
-        {
-            rtinfoData[pos] = mixin(src);
-            keybits -= bitsPerWord;
-            pos++;
-        }
-        if (keybits > 0)
-            rtinfoData[pos] = mixin(src) & ((size_t(1) << keybits) - 1);
-    }
-
-    if (keyinfo is rtinfoHasPointers)
-        copyKeyInfo!"~size_t(0)"();
-    else if (keyinfo !is rtinfoNoPointers)
-        copyKeyInfo!"keyinfo[pos]"();
-
-    void copyValInfo(string src)()
-    {
-        size_t bitpos = aa.valoff / (void*).sizeof;
-        size_t pos = 1;
-        size_t dstpos = 1 + bitpos / bitsPerWord;
-        size_t begoff = bitpos % bitsPerWord;
-        size_t valbits = aa.valsz / (void*).sizeof;
-        size_t endoff = (bitpos + valbits) % bitsPerWord;
-        for (;;)
-        {
-            const bits = bitsPerWord - begoff;
-            size_t s = mixin(src);
-            rtinfoData[dstpos] |= s << begoff;
-            if (begoff > 0 && valbits > bits)
-                rtinfoData[dstpos+1] |= s >> bits;
-            if (valbits < bitsPerWord)
-                break;
-            valbits -= bitsPerWord;
-            dstpos++;
-            pos++;
-        }
-        if (endoff > 0)
-            rtinfoData[dstpos] &= (size_t(1) << endoff) - 1;
-    }
-
-    if (valinfo is rtinfoHasPointers)
-        copyValInfo!"~size_t(0)"();
-    else if (valinfo !is rtinfoNoPointers)
-        copyValInfo!"valinfo[pos]"();
-
-    return cast(immutable(void)*) rtinfoData;
-}
-
 unittest
 {
     void test(K, V)()
@@ -402,12 +267,10 @@ unittest
         if (valrti is rtinfoNoPointers && keyrti is rtinfoNoPointers)
         {
             assert(!(impl.flags & Impl.Flags.hasPointers));
-            assert(impl.entryTI is null);
         }
         else if (valrti is rtinfoHasPointers && keyrti is rtinfoHasPointers)
         {
             assert(impl.flags & Impl.Flags.hasPointers);
-            assert(impl.entryTI is null);
         }
         else
         {
@@ -977,7 +840,10 @@ unittest
     aa1 = null;
     aa2 = null;
     aa3 = null;
-    GC.runFinalizers((cast(char*)&entryDtor)[0 .. 1]);
+    auto dtor1 = typeid(TypeInfo_AssociativeArray.Entry!(int, T)).xdtor;
+    GC.runFinalizers((cast(char*)dtor1)[0 .. 1]);
+    auto dtor2 = typeid(TypeInfo_AssociativeArray.Entry!(T, int)).xdtor;
+    GC.runFinalizers((cast(char*)dtor2)[0 .. 1]);
     assert(T.dtor == 6 && T.postblit == 2);
 }
 

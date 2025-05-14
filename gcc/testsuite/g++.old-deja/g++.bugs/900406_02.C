@@ -1,4 +1,4 @@
-// { dg-do run  }
+// { dg-do run }
 // g++ bug 900406_02
 
 // g++ fails to correctly parse some type specifications within casts.

@@ -1,7 +1,6 @@
 /* PR middle-end/91582 - missing heap overflow detection for strcpy
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-array-bounds -ftrack-macro-expansion=0" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall -Wno-array-bounds -ftrack-macro-expansion=0" } */
 
 #include "range.h"
 

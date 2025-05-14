@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "insn-opinit.h"
 #include "recog.h"
+#include "tm-constrs.h"
 
 /* Return the maximum number of instructions a cpu can issue.  */
 
@@ -80,6 +81,14 @@ ix86_issue_rate (void)
     case PROCESSOR_YONGFENG:
     case PROCESSOR_SHIJIDADAO:
     case PROCESSOR_GENERIC:
+    /* For znver5 decoder can handle 4 or 8 instructions per cycle,
+       op cache 12 instruction/cycle, dispatch 8 instructions
+       integer rename 8 instructions and Fp 6 instructions.
+
+       The scheduler, without understanding out of order nature of the CPU
+       is not going to be able to use more than 4 instructions since that
+       is limits of the decoders.  */
+    case PROCESSOR_ZNVER5:
       return 4;
 
     case PROCESSOR_ICELAKE_CLIENT:
@@ -90,13 +99,6 @@ ix86_issue_rate (void)
       return 5;
 
     case PROCESSOR_SAPPHIRERAPIDS:
-    /* For znver5 decoder can handle 4 or 8 instructions per cycle,
-       op cache 12 instruction/cycle, dispatch 8 instructions
-       integer rename 8 instructions and Fp 6 instructions.
-
-       The scheduler, without understanding out of order nature of the CPU
-       is unlikely going to be able to fill all of these.  */
-    case PROCESSOR_ZNVER5:
       return 6;
 
     default:
@@ -571,6 +573,9 @@ ix86_macro_fusion_p ()
   return TARGET_FUSE_CMP_AND_BRANCH;
 }
 
+/* Check whether MOV is a reg-reg move and ALU is an
+   ALU operation that allows macro-op fusion.  */
+
 static bool
 ix86_fuse_mov_alu_p (rtx_insn *mov, rtx_insn *alu)
 {
@@ -593,6 +598,16 @@ ix86_fuse_mov_alu_p (rtx_insn *mov, rtx_insn *alu)
   rtx set2 = XVECEXP (PATTERN (alu), 0, 0);
   if (GET_CODE (set2) != SET)
     return false;
+  /* If this is instruction setting both compare and normal
+     register, the first set always sets flags, while
+     second set writes to the output operan.  Pick
+     the second set.  */
+  if (GET_CODE (SET_SRC (set2)) == COMPARE)
+    {
+      set2 = XVECEXP (PATTERN (alu), 0, 1);
+      if (GET_CODE (set2) != SET)
+	return false;
+    }
   /* Match one of:
      ADD ADC AND XOR OR SUB SBB INC DEC NOT SAL SHL SHR SAR
      We also may add insn attribute to handle some of sporadic
@@ -619,7 +634,7 @@ ix86_fuse_mov_alu_p (rtx_insn *mov, rtx_insn *alu)
       && !REG_P (op1)
       && !x86_64_immediate_operand (op1, VOIDmode))
     return false;
-  /* Only one of two paramters must be move destination.  */
+  /* Only one of two parameters must be move destination.  */
   if (op1 && REG_P (op1) && REGNO (op1) == REGNO (reg))
     return false;
   return true;
@@ -635,10 +650,11 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
   if (TARGET_FUSE_MOV_AND_ALU
       && ix86_fuse_mov_alu_p (condgen, condjmp))
     return true;
-  rtx src, dest;
+  rtx src, imm = NULL_RTX;
   enum rtx_code ccode;
   rtx compare_set = NULL_RTX, test_if, cond;
   rtx alu_set = NULL_RTX, addr = NULL_RTX;
+  rtx alu_clobber = NULL_RTX;
   enum attr_type condgen_type;
 
   if (!any_condjump_p (condjmp))
@@ -664,6 +680,9 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
       alu_set = XVECEXP (PATTERN (condgen), 0, 1);
       goto handle_stack_protect_test;
     }
+  /* ??? zen5 can fuse cmp, test, sub, add, inc, dec, or, and xor.
+     Cores can not fuse or and xor which will pass the test below
+     since type is ALU.  */
   else if (condgen_type != TYPE_TEST
 	   && condgen_type != TYPE_ICMP
 	   && condgen_type != TYPE_INCDEC
@@ -687,6 +706,11 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
 	    else
 	      alu_set = XVECEXP (pat, 0, i);
 	  }
+	/* We also possibly generated ALU instruction only to set
+	   flags.  In this case there will be clobber.  */
+	else if (GET_CODE (XVECEXP (pat, 0, i)) == CLOBBER
+	    && GENERAL_REG_P (XEXP (XVECEXP (pat, 0, i), 0)))
+	  alu_clobber = XVECEXP (pat, 0, i);
     }
   if (compare_set == NULL_RTX)
     return false;
@@ -694,19 +718,30 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
   if (GET_CODE (src) != COMPARE)
     return false;
 
-  /* Macro-fusion for cmp/test MEM-IMM + conditional jmp is not
-     supported.  */
-  if ((MEM_P (XEXP (src, 0)) && CONST_INT_P (XEXP (src, 1)))
-      || (MEM_P (XEXP (src, 1)) && CONST_INT_P (XEXP (src, 0))))
-    return false;
-
-  /* No fusion for RIP-relative address.  */
+  /* Check for memory operand.  */
   if (MEM_P (XEXP (src, 0)))
     addr = XEXP (XEXP (src, 0), 0);
   else if (MEM_P (XEXP (src, 1)))
     addr = XEXP (XEXP (src, 1), 0);
+  /* Some CPUs, i.e. tigerlake and cooperlake does not fuse
+     ALU with memory operand.  */
+  if (addr && !TARGET_FUSE_ALU_AND_BRANCH_MEM)
+    return false;
+  if (CONST_INT_P (XEXP (src, 0)))
+    imm = XEXP (src, 0);
+  else if (CONST_INT_P (XEXP (src, 1)))
+    imm = XEXP (src, 1);
+  /* Check that the instruction really has immediate.
+     In particular compare with 0 is done using test with no immediate.  */
+  if (imm && !get_attr_length_immediate (condgen))
+    imm = NULL;
+  /* Macro-fusion for cmp/test MEM-IMM + conditional jmp is not
+     supported.   */
+  if (addr && imm && !TARGET_FUSE_ALU_AND_BRANCH_MEM_IMM)
+    return false;
 
-  if (addr)
+  /* No fusion for RIP-relative address.   */
+  if (addr && !TARGET_FUSE_ALU_AND_BRANCH_RIP_RELATIVE)
     {
       ix86_address parts;
       int ok = ix86_decompose_address (addr, &parts);
@@ -715,6 +750,12 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
       if (ix86_rip_relative_addr_p (&parts))
 	return false;
     }
+  /* Znver5 supports fussion fusion with their reg/reg, reg/imm and
+     reg/mem forms. They are also supported when the instruction has an
+     immediate and displacement that meets the criteria of 4 byte displacement
+     and 2 byte immediate or the case of 2 byte displacement and 4 byte
+     immediate.  We do not know the displacement size, so we ignore this
+     limitation.  */
 
  handle_stack_protect_test:
   test_if = SET_SRC (pc_set (condjmp));
@@ -730,20 +771,19 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
     return true;
 
   /* The following is the case that macro-fusion for alu + jmp.  */
-  if (!TARGET_FUSE_ALU_AND_BRANCH || !alu_set)
+  if (!TARGET_FUSE_ALU_AND_BRANCH || (!alu_set && !alu_clobber))
     return false;
 
   /* No fusion for alu op with memory destination operand.  */
-  dest = SET_DEST (alu_set);
-  if (MEM_P (dest))
+  if (alu_set && MEM_P (SET_DEST (alu_set)))
     return false;
 
+
   /* Macro-fusion for inc/dec + unsigned conditional jump is not
-     supported.  */
-  if (condgen_type == TYPE_INCDEC
-      && (ccode == GEU || ccode == GTU || ccode == LEU || ccode == LTU))
-    return false;
+     supported on some CPUs while supported on others (znver5 and core_avx512).
+     We however never generate it, so we do not need a specific tune for it.  */
+  gcc_checking_assert (!(condgen_type == TYPE_INCDEC
+		       && (ccode == GEU || ccode == GTU || ccode == LEU || ccode == LTU)));
 
   return true;
 }
-

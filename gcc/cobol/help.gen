@@ -1,0 +1,15 @@
+#! /usr/bin/awk -f
+
+BEGIN {
+    print "puts("
+}
+
+/^ {5}[-][[:alnum:]-]+/, /[.]  / {
+    gsub(/[.]  .+/, ".  ")
+    gsub(/^   /, "");
+    print "\t\"" $0 "\\n\""
+}
+
+END {
+    print ");"
+}

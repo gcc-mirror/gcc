@@ -53,21 +53,25 @@ renumber_places (const Function &func, std::vector<PlaceId> &place_map)
 {
   // Renumbering places to avoid gaps in the place id space.
   // This is needed to match MIR's shape.
-  size_t next_out_id = 0;
+  PlaceId next_out_id = INVALID_PLACE;
 
-  for (size_t in_id = FIRST_VARIABLE_PLACE; in_id < func.place_db.size ();
-       ++in_id)
+  for (PlaceId in_id = FIRST_VARIABLE_PLACE;
+       in_id.value < func.place_db.size (); ++in_id.value)
     {
       const Place &place = func.place_db[in_id];
       if (place.kind == Place::VARIABLE || place.kind == Place::TEMPORARY)
-	place_map[in_id] = next_out_id++;
+	{
+	  place_map[in_id.value] = next_out_id;
+	  ++next_out_id.value;
+	}
+
       else
-	place_map[in_id] = INVALID_PLACE;
+	place_map[in_id.value] = INVALID_PLACE;
     }
 }
 
 void
-simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
+simplify_cfg (Function &func, IndexVec<BasicBlockId, BasicBlockId> &bb_fold_map)
 {
   // The BIR builder can generate many useless basic blocks, which contain only
   // a goto.
@@ -78,7 +82,7 @@ simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
     {
       stabilized = true;
       // BB0 cannot be folded as it is an entry block.
-      for (size_t i = 1; i < func.basic_blocks.size (); ++i)
+      for (BasicBlockId i = {1}; i.value < func.basic_blocks.size (); ++i.value)
 	{
 	  const BasicBlock &bb = func.basic_blocks[bb_fold_map[i]];
 	  if (bb.statements.empty () && bb.is_goto_terminated ())
@@ -93,7 +97,11 @@ simplify_cfg (Function &func, std::vector<BasicBlockId> &bb_fold_map)
 		  rust_inform (UNKNOWN_LOCATION,
 			       "Continuing with an unfolded CFG.");
 		  // Reverting the fold map to the original state.
-		  std::iota (bb_fold_map.begin (), bb_fold_map.end (), 0);
+		  for (BasicBlockId i = ENTRY_BASIC_BLOCK;
+		       i.value < bb_fold_map.size (); ++i.value)
+		    {
+		      bb_fold_map[i] = i;
+		    }
 		  stabilized = true;
 		  break;
 		}
@@ -108,29 +116,35 @@ void
 Dump::go (bool enable_simplify_cfg)
 {
   // To avoid mutation of the BIR, we use indirection through bb_fold_map.
-  std::iota (bb_fold_map.begin (), bb_fold_map.end (), 0);
-
-  std::iota (place_map.begin (), place_map.end (), 0);
+  for (BasicBlockId i = ENTRY_BASIC_BLOCK; i.value < bb_fold_map.size ();
+       ++i.value)
+    {
+      bb_fold_map[i] = i;
+    }
+  for (PlaceId i = INVALID_PLACE; i.value < place_map.size (); ++i.value)
+    {
+      place_map[i] = i;
+    }
 
   if (enable_simplify_cfg)
     simplify_cfg (func, bb_fold_map);
 
-  renumber_places (func, place_map);
+  // renumber_places (func, place_map);
 
   stream << "fn " << name << "(";
   print_comma_separated (stream, func.arguments, [this] (PlaceId place_id) {
-    stream << "_" << place_map[place_id] << ": "
+    stream << "_" << place_map[place_id].value << ": "
 	   << get_tyty_name (func.place_db[place_id].tyty);
   });
   stream << ") -> " << get_tyty_name (func.place_db[RETURN_VALUE_PLACE].tyty);
   stream << " {\n";
 
   // Print locals declaration.
-  visit_scope (0);
+  visit_scope (ROOT_SCOPE);
 
   // Print BBs.
-  for (statement_bb = 0; statement_bb < func.basic_blocks.size ();
-       ++statement_bb)
+  for (statement_bb = ENTRY_BASIC_BLOCK;
+       statement_bb.value < func.basic_blocks.size (); ++statement_bb.value)
     {
       if (bb_fold_map[statement_bb] != statement_bb)
 	continue; // This BB was folded.
@@ -143,7 +157,8 @@ Dump::go (bool enable_simplify_cfg)
 
       BasicBlock &bb = func.basic_blocks[statement_bb];
       stream << "\n";
-      stream << indentation << "bb" << bb_fold_map[statement_bb] << ": {\n";
+      stream << indentation << "bb" << bb_fold_map[statement_bb].value
+	     << ": {\n";
       size_t i = 0;
       for (auto &stmt : bb.statements)
 	{
@@ -153,7 +168,8 @@ Dump::go (bool enable_simplify_cfg)
 	}
       if (!bb_terminated)
 	stream << indentation << indentation << "goto -> bb"
-	       << bb_fold_map[bb.successors.at (0)] << ";\t\t" << i++ << "\n";
+	       << bb_fold_map[bb.successors.at (0)].value << ";\t\t" << i++
+	       << "\n";
 
       stream << indentation << "}\n";
     }
@@ -178,7 +194,7 @@ Dump::visit (const Statement &stmt)
       stream << ") -> [";
       print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
 			     [this] (BasicBlockId succ) {
-			       stream << "bb" << bb_fold_map[succ];
+			       stream << "bb" << bb_fold_map[succ].value;
 			     });
       stream << "]";
       bb_terminated = true;
@@ -188,8 +204,9 @@ Dump::visit (const Statement &stmt)
       bb_terminated = true;
       break;
     case Statement::Kind::GOTO:
-      stream << "goto -> bb"
-	     << bb_fold_map[func.basic_blocks[statement_bb].successors.at (0)];
+      stream
+	<< "goto -> bb"
+	<< bb_fold_map[func.basic_blocks[statement_bb].successors.at (0)].value;
       bb_terminated = true;
       break;
     case Statement::Kind::STORAGE_DEAD:
@@ -214,6 +231,8 @@ Dump::visit (const Statement &stmt)
       visit_place (stmt.get_place ());
       stream << ")";
       break;
+    default:
+      rust_internal_error_at (UNKNOWN_LOCATION, "Unknown statement kind.");
     }
   statement_place = INVALID_PLACE;
 }
@@ -226,7 +245,7 @@ Dump::visit_place (PlaceId place_id)
     {
     case Place::TEMPORARY:
     case Place::VARIABLE:
-      stream << "_" << place_map[place_id];
+      stream << "_" << place_map[place_id].value;
       break;
     case Place::DEREF:
       stream << "(";
@@ -251,7 +270,8 @@ Dump::visit_place (PlaceId place_id)
       stream << "const " << get_tyty_name (place.tyty);
       break;
     case Place::INVALID:
-      stream << "_INVALID";
+      if (place_id == INVALID_PLACE)
+	stream << "_INVALID";
     }
 }
 
@@ -259,7 +279,7 @@ void
 Dump::visit_move_place (PlaceId place_id)
 {
   const Place &place = func.place_db[place_id];
-  if (!place.is_constant ())
+  if (place.should_be_moved ())
     stream << "move ";
   visit_place (place_id);
 }
@@ -267,7 +287,11 @@ Dump::visit_move_place (PlaceId place_id)
 void
 Dump::visit (const BorrowExpr &expr)
 {
-  stream << "&";
+  stream << "&"
+	 << "'?" << expr.get_origin () << " ";
+  if (func.place_db.get_loan (expr.get_loan_id ()).mutability
+      == Mutability::Mut)
+    stream << "mut ";
   visit_place (expr.get_place ());
 }
 
@@ -304,7 +328,7 @@ Dump::visit (const CallExpr &expr)
   stream << ") -> [";
   print_comma_separated (stream, func.basic_blocks[statement_bb].successors,
 			 [this] (BasicBlockId succ) {
-			   stream << "bb" << bb_fold_map[succ];
+			   stream << "bb" << bb_fold_map[succ].value;
 			 });
   stream << "]";
   bb_terminated = true;
@@ -352,20 +376,28 @@ Dump::visit_scope (ScopeId id, size_t depth)
   if (scope.locals.empty () && scope.children.empty ())
     return;
 
-  if (id > 1)
-    indent (depth) << "scope " << id - 1 << " {\n";
+  if (id.value > 1)
+    indent (depth) << "scope " << id.value - 1 << " {\n";
 
   for (auto &local : scope.locals)
     {
       indent (depth + 1) << "let _";
-      stream << place_map[local] << ": "
+      stream << place_map[local].value << ": "
 	     << get_tyty_name (func.place_db[local].tyty);
-      stream << ";\n";
+      stream << ";\t";
+
+      stream << "[";
+      print_comma_separated (stream,
+			     func.place_db[local].regions.get_regions (),
+			     [this] (FreeRegion region_id) {
+			       stream << "'?" << region_id.value;
+			     });
+      stream << "]\n";
     }
   for (auto &child : scope.children)
-    visit_scope (child, (id >= 1) ? depth + 1 : depth);
+    visit_scope (child, (id.value >= 1) ? depth + 1 : depth);
 
-  if (id > 1)
+  if (id.value > 1)
     indent (depth) << "}\n";
 }
 

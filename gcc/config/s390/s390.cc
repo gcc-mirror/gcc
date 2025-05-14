@@ -342,7 +342,7 @@ const struct s390_processor processor_table[] =
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
   { "z15",    "arch13", PROCESSOR_8561_Z15,    &zEC12_cost,  13 },
   { "z16",    "arch14", PROCESSOR_3931_Z16,    &zEC12_cost,  14 },
-  { "arch15", "arch15", PROCESSOR_ARCH15,      &zEC12_cost,  15 },
+  { "z17",    "arch15", PROCESSOR_9175_Z17,    &zEC12_cost,  15 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -916,7 +916,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
       if ((bflags & B_VXE3) && !TARGET_VXE3)
 	{
-	  error ("Builtin %qF requires arch15 or higher", fndecl);
+	  error ("Builtin %qF requires z17 or higher", fndecl);
 	  return const0_rtx;
 	}
     }
@@ -3898,6 +3898,26 @@ s390_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 		       bool in ATTRIBUTE_UNUSED)
 {
   return 2;
+}
+
+/* Implement TARGET_INSN_COST.  */
+
+static int
+s390_insn_cost (rtx_insn *insn, bool speed)
+{
+  /* For stores also consider the destination.  Penalize if the address
+     contains a SYMBOL_REF since this has to be fixed up by reload.  */
+  rtx pat = single_set (insn);
+  if (pat && MEM_P (SET_DEST (pat)))
+    {
+      rtx mem = SET_DEST (pat);
+      rtx addr = XEXP (mem, 0);
+      int penalty = contains_symbol_ref_p (addr) ? COSTS_N_INSNS (1) : 0;
+      int src_cost = set_src_cost (SET_SRC (pat), GET_MODE (mem), speed);
+      src_cost = src_cost > 0 ? src_cost : COSTS_N_INSNS (1);
+      return penalty + src_cost;
+    }
+  return pattern_cost (PATTERN (insn), speed);
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
@@ -7190,6 +7210,82 @@ s390_expand_mask_and_shift (rtx val, machine_mode mode, rtx count)
 			      NULL_RTX, 1, OPTAB_DIRECT);
 }
 
+/* Expand optab cstoreti4.  */
+
+void
+s390_expand_cstoreti4 (rtx dst, rtx cmp, rtx op1, rtx op2)
+{
+  rtx_code code = GET_CODE (cmp);
+
+  if (TARGET_VXE3)
+    {
+      rtx cond = s390_emit_compare (GET_MODE (cmp), code, op1, op2);
+      emit_insn (gen_movsicc (dst, cond, const1_rtx, const0_rtx));
+      return;
+    }
+
+  /* Prior VXE3 emulate the comparison.  For an (in)equality test exploit
+     VECTOR COMPARE EQUAL.  For a relational test, first compare the high part
+     via VECTOR ELEMENT COMPARE (LOGICAL).  If the high part does not equal,
+     then consume the CC immediatelly by a subsequent LOAD ON CONDITION.
+     Otherweise, if the high part equals, then perform a subsequent VECTOR
+     COMPARE HIGH LOGICAL followed by a LOAD ON CONDITION.  */
+
+  op1 = force_reg (V2DImode, simplify_gen_subreg (V2DImode, op1, TImode, 0));
+  op2 = force_reg (V2DImode, simplify_gen_subreg (V2DImode, op2, TImode, 0));
+
+  if (code == EQ || code == NE)
+    {
+      s390_expand_vec_compare_cc (dst, code, op1, op2, code == EQ);
+      return;
+    }
+
+  /* Normalize code into either GE(U) or GT(U).  */
+  if (code == LT || code == LE || code == LTU || code == LEU)
+    {
+      std::swap (op1, op2);
+      code = swap_condition (code);
+    }
+
+  /* For (un)signed comparisons
+     - high(op1) >= high(op2) instruction VECG op1, op2 sets CC1
+       if the relation does _not_ hold.
+     - high(op1) >  high(op2) instruction VECG op2, op1 sets CC1
+       if the relation holds.  */
+  if (code == GT || code == GTU)
+    std::swap (op1, op2);
+  machine_mode cc_mode = (code == GEU || code == GTU) ? CCUmode : CCSmode;
+  rtx lane0 = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, const0_rtx));
+  emit_insn (
+    gen_rtx_SET (gen_rtx_REG (cc_mode, CC_REGNUM),
+		 gen_rtx_COMPARE (cc_mode,
+				  gen_rtx_VEC_SELECT (DImode, op1, lane0),
+				  gen_rtx_VEC_SELECT (DImode, op2, lane0))));
+  rtx ccs_reg = gen_rtx_REG (CCSmode, CC_REGNUM);
+  rtx lab = gen_label_rtx ();
+  s390_emit_jump (lab, gen_rtx_NE (VOIDmode, ccs_reg, const0_rtx));
+  /* At this point we have that high(op1) == high(op2).  Thus, test the low
+     part, now.  For unsigned comparisons
+     - low(op1) >= low(op2) instruction VCHLGS op2, op1 sets CC1
+       if the relation does _not_ hold.
+     - low(op1) >  low(op2) instruction VCHLGS op1, op2 sets CC1
+       if the relation holds.  */
+  std::swap (op1, op2);
+  emit_insn (gen_rtx_PARALLEL (
+    VOIDmode,
+    gen_rtvec (2,
+	       gen_rtx_SET (gen_rtx_REG (CCVIHUmode, CC_REGNUM),
+			    gen_rtx_COMPARE (CCVIHUmode, op1, op2)),
+	       gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (V2DImode)))));
+  emit_label (lab);
+  /* For (un)signed comparison >= any CC except CC1 means that the relation
+     holds.  For (un)signed comparison > only CC1 means that the relation
+     holds.  */
+  rtx_code cmp_code = (code == GE || code == GEU) ? UNGE : LT;
+  rtx cond = gen_rtx_fmt_ee (cmp_code, CCSmode, ccs_reg, const0_rtx);
+  emit_insn (gen_movsicc (dst, cond, const1_rtx, const0_rtx));
+}
+
 /* Generate a vector comparison COND of CMP_OP1 and CMP_OP2 and store
    the result in TARGET.  */
 
@@ -7290,9 +7386,9 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 /* Expand the comparison CODE of CMP1 and CMP2 and copy 1 or 0 into
    TARGET if either all (ALL_P is true) or any (ALL_P is false) of the
    elements in CMP1 and CMP2 fulfill the comparison.
-   This function is only used to emit patterns for the vx builtins and
-   therefore only handles comparison codes required by the
-   builtins.  */
+   This function is only used in s390_expand_cstoreti4 and to emit patterns for
+   the vx builtins and therefore only handles comparison codes required by
+   those.  */
 void
 s390_expand_vec_compare_cc (rtx target, enum rtx_code code,
 			    rtx cmp1, rtx cmp2, bool all_p)
@@ -8216,6 +8312,21 @@ s390_delegitimize_address (rtx orig_x)
 	  && (XINT (y, 1) == UNSPEC_GOTOFF
 	      || XINT (y, 1) == UNSPEC_PLTOFF))
 	return plus_constant (Pmode, XVECEXP (y, 0, 0), offset);
+    }
+
+  if (GET_CODE (x) == CONST)
+    {
+      /* Extract the symbol ref from:
+	 (const:DI (unspec:DI [(symbol_ref:DI ("foo"))]
+				       UNSPEC_PLT/GOTENT))  */
+
+      y = XEXP (x, 0);
+      if (GET_CODE (y) == UNSPEC
+	  && (XINT (y, 1) == UNSPEC_GOTENT
+	      || XINT (y, 1) == UNSPEC_PLT31))
+	return XVECEXP (y, 0, 0);
+      else
+	return orig_x;
     }
 
   if (GET_CODE (x) != MEM)
@@ -9169,7 +9280,7 @@ s390_issue_rate (void)
     case PROCESSOR_3906_Z14:
     case PROCESSOR_8561_Z15:
     case PROCESSOR_3931_Z16:
-    case PROCESSOR_ARCH15:
+    case PROCESSOR_9175_Z17:
     default:
       return 1;
     }
@@ -11138,8 +11249,8 @@ s390_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	}
       break;
     case ADDR_REGS:
-      if (FRAME_REGNO_P (regno) && mode == Pmode)
-	return true;
+      if (FRAME_REGNO_P (regno))
+	return mode == Pmode;
 
       /* fallthrough */
     case GENERAL_REGS:
@@ -14461,7 +14572,21 @@ s390_call_saved_register_used (tree call_expr)
 
 	  for (reg = 0; reg < nregs; reg++)
 	    if (!call_used_or_fixed_reg_p (reg + REGNO (parm_rtx)))
-	      return true;
+	      {
+		rtx parm;
+		/* Allow passing through unmodified value from caller,
+		   see PR119873.  */
+		if (TREE_CODE (parameter) == SSA_NAME
+		    && SSA_NAME_IS_DEFAULT_DEF (parameter)
+		    && SSA_NAME_VAR (parameter)
+		    && TREE_CODE (SSA_NAME_VAR (parameter)) == PARM_DECL
+		    && (parm = DECL_INCOMING_RTL (SSA_NAME_VAR (parameter)))
+		    && REG_P (parm)
+		    && REGNO (parm) == REGNO (parm_rtx)
+		    && REG_NREGS (parm) == REG_NREGS (parm_rtx))
+		  break;
+		return true;
+	      }
 	}
       else if (GET_CODE (parm_rtx) == PARALLEL)
 	{
@@ -14475,7 +14600,17 @@ s390_call_saved_register_used (tree call_expr)
 	      gcc_assert (REG_NREGS (r) == 1);
 
 	      if (!call_used_or_fixed_reg_p (REGNO (r)))
-		return true;
+		{
+		  rtx parm;
+		  if (TREE_CODE (parameter) == SSA_NAME
+		      && SSA_NAME_IS_DEFAULT_DEF (parameter)
+		      && SSA_NAME_VAR (parameter)
+		      && TREE_CODE (SSA_NAME_VAR (parameter)) == PARM_DECL
+		      && (parm = DECL_INCOMING_RTL (SSA_NAME_VAR (parameter)))
+		      && rtx_equal_p (parm_rtx, parm))
+		    break;
+		  return true;
+		}
 	    }
 	}
     }
@@ -14508,8 +14643,9 @@ s390_function_ok_for_sibcall (tree decl, tree exp)
     return false;
 
   /* Register 6 on s390 is available as an argument register but unfortunately
-     "caller saved". This makes functions needing this register for arguments
-     not suitable for sibcalls.  */
+     "caller saved".  This makes functions needing this register for arguments
+     not suitable for sibcalls, unless the same value is passed from the
+     caller.  */
   return !s390_call_saved_register_used (exp);
 }
 
@@ -15597,7 +15733,6 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     case PROCESSOR_3931_Z16:
-    case PROCESSOR_ARCH15:
       if (get_attr_z16_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z16_expanded (insn))
@@ -15607,6 +15742,18 @@ s390_get_sched_attrmask (rtx_insn *insn)
       if (get_attr_z16_groupalone (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
       if (get_attr_z16_groupoftwo (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
+      break;
+    case PROCESSOR_9175_Z17:
+      if (get_attr_z17_cracked (insn))
+	mask |= S390_SCHED_ATTR_MASK_CRACKED;
+      if (get_attr_z17_expanded (insn))
+	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
+      if (get_attr_z17_endgroup (insn))
+	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
+      if (get_attr_z17_groupalone (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
+      if (get_attr_z17_groupoftwo (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     default:
@@ -15656,7 +15803,6 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
 	mask |= 1 << 3;
       break;
     case PROCESSOR_3931_Z16:
-    case PROCESSOR_ARCH15:
       *units = 4;
       if (get_attr_z16_unit_lsu (insn))
 	mask |= 1 << 0;
@@ -15665,6 +15811,17 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
       if (get_attr_z16_unit_fxb (insn))
 	mask |= 1 << 2;
       if (get_attr_z16_unit_vfu (insn))
+	mask |= 1 << 3;
+      break;
+    case PROCESSOR_9175_Z17:
+      *units = 4;
+      if (get_attr_z17_unit_lsu (insn))
+	mask |= 1 << 0;
+      if (get_attr_z17_unit_fxa (insn))
+	mask |= 1 << 1;
+      if (get_attr_z17_unit_fxb (insn))
+	mask |= 1 << 2;
+      if (get_attr_z17_unit_vfu (insn))
 	mask |= 1 << 3;
       break;
     default:
@@ -15680,7 +15837,8 @@ s390_is_fpd (rtx_insn *insn)
     return false;
 
   return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn)
-    || get_attr_z15_unit_fpd (insn) || get_attr_z16_unit_fpd (insn);
+    || get_attr_z15_unit_fpd (insn) || get_attr_z16_unit_fpd (insn)
+    || get_attr_z17_unit_fpd (insn);
 }
 
 static bool
@@ -15690,7 +15848,8 @@ s390_is_fxd (rtx_insn *insn)
     return false;
 
   return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn)
-    || get_attr_z15_unit_fxd (insn) || get_attr_z16_unit_fxd (insn);
+    || get_attr_z15_unit_fxd (insn) || get_attr_z16_unit_fxd (insn)
+    || get_attr_z17_unit_fxd (insn);
 }
 
 /* Returns TRUE if INSN is a long-running instruction.  */
@@ -18355,6 +18514,8 @@ s390_c_mode_for_floating_type (enum tree_index ti)
 
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P s390_cannot_copy_insn_p
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST s390_insn_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS s390_rtx_costs
 #undef TARGET_ADDRESS_COST

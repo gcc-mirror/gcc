@@ -567,6 +567,7 @@ avr_option_override (void)
   {
     opt_pass *extra_peephole2
       = g->get_passes ()->get_pass_peephole2 ()->clone ();
+    extra_peephole2->name = "avr-peep2-after-fuse-move";
     register_pass_info peep2_2_info
       = { extra_peephole2, "avr-fuse-move", 1, PASS_POS_INSERT_AFTER };
 
@@ -2750,10 +2751,19 @@ avr_print_operand (FILE *file, rtx x, int code)
 		  fprintf (file, HOST_WIDE_INT_PRINT_HEX, ival - sfr0);
 	      }
 	    else
-	      output_operand_lossage
-		("bad I/O address 0x" HOST_WIDE_INT_PRINT_HEX_PURE
-		 " outside of valid range [0x%x, 0x%x] for %%i operand",
-		 ival, sfr0, sfr0 + 0x3f);
+	      {
+		char buf[17];
+		/* Printed indirectly through buffer, as
+		   output_operand_lossage is translatable but uses printf
+		   format strings, so HOST_WIDE_INT_PRINT_HEX_PURE macro can't
+		   be used there to make translation possible and how exactly
+		   can be HOST_WIDE_INT printed is host dependent.  */
+		snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_HEX_PURE,
+			  ival);
+		output_operand_lossage ("bad I/O address 0x%s outside of "
+					"valid range [0x%x, 0x%x] for %%i "
+					"operand", buf, sfr0, sfr0 + 0x3f);
+	      }
 	  }
 	  break; // CONST_INT
 
@@ -11727,6 +11737,23 @@ avr_handle_isr_attribute (tree node, tree *attrs, const char *name)
 }
 
 
+/* Helper for `avr_insert_attributes'.
+   Return the section name from attribute "section" in attribute list ATTRS.
+   When no "section" attribute is present, then return nullptr.  */
+
+static const char *
+avr_attrs_section_name (tree attrs)
+{
+  if (tree a_sec = lookup_attribute ("section", attrs))
+    if (TREE_VALUE (a_sec))
+      if (tree t_section_name = TREE_VALUE (TREE_VALUE (a_sec)))
+	if (TREE_CODE (t_section_name) == STRING_CST)
+	  return TREE_STRING_POINTER (t_section_name);
+
+  return nullptr;
+}
+
+
 /* Implement `TARGET_INSERT_ATTRIBUTES'.  */
 
 static void
@@ -11759,25 +11786,31 @@ avr_insert_attributes (tree node, tree *attributes)
 			       NULL, *attributes);
     }
 
+  const char *section_name = avr_attrs_section_name (*attributes);
+
+  // When the function is in an .initN or .finiN section, then add "used"
+  // since such functions are never called.
+  if (section_name
+      && strlen (section_name) == strlen (".init*")
+      && IN_RANGE (section_name[5], '0', '9')
+      && (startswith (section_name, ".init")
+	  || startswith (section_name, ".fini"))
+      && !lookup_attribute ("used", *attributes))
+    {
+      *attributes = tree_cons (get_identifier ("used"), NULL, *attributes);
+    }
+
 #if defined WITH_AVRLIBC
   if (avropt_call_main == 0
       && TREE_CODE (node) == FUNCTION_DECL
       && MAIN_NAME_P (DECL_NAME (node)))
     {
-      const char *s_section_name = nullptr;
+      bool in_init9_p = section_name && !strcmp (section_name, ".init9");
 
-      if (tree a_sec = lookup_attribute ("section", *attributes))
-	if (TREE_VALUE (a_sec))
-	  if (tree t_section_name = TREE_VALUE (TREE_VALUE (a_sec)))
-	    if (TREE_CODE (t_section_name) == STRING_CST)
-	      s_section_name = TREE_STRING_POINTER (t_section_name);
-
-      bool in_init9_p = s_section_name && !strcmp (s_section_name, ".init9");
-
-      if (s_section_name && !in_init9_p)
+      if (section_name && !in_init9_p)
 	{
 	  warning (OPT_Wattributes, "%<section(\"%s\")%> attribute on main"
-		   " function inhibits %<-mno-call-main%>", s_section_name);
+		   " function inhibits %<-mno-call-main%>", section_name);
 	}
       else
 	{
@@ -12673,6 +12706,50 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	  return true;
 	}
     }
+
+  // Insns with nonzero_bits() == 1 in the condition.
+  if (avropt_use_nonzero_bits
+      && mode == QImode
+      && (code == AND || code == IOR || code == XOR)
+      && REG_P (XEXP (x, 1)))
+    {
+      // "*nzb=1.<code>.lsr_split"
+      // "*nzb=1.<code>.lsr.not_split"
+      bool is_nzb = (GET_CODE (XEXP (x, 0)) == LSHIFTRT
+		     && (REG_P (XEXP (XEXP (x, 0), 0))
+			 || GET_CODE (XEXP (XEXP (x, 0), 0)) == XOR)
+		     && const_0_to_7_operand (XEXP (XEXP (x, 0), 1), QImode));
+      // "*nzb=1.<code>.zerox_split"
+      // "*nzb=1.<code>.zerox.not_split"
+      is_nzb |= (GET_CODE (XEXP (x, 0)) == ZERO_EXTRACT
+		 && (REG_P (XEXP (XEXP (x, 0), 0))
+		     || GET_CODE (XEXP (XEXP (x, 0), 0)) == XOR)
+		 && const1_operand (XEXP (XEXP (x, 0), 1), QImode)
+		 && const_0_to_7_operand (XEXP (XEXP (x, 0), 2), QImode));
+      // "*nzb=1.<code>.ge0_split"
+      is_nzb |= (GET_CODE (XEXP (x, 0)) == GE
+		 && REG_P (XEXP (XEXP (x, 0), 0))
+		 && const0_operand (XEXP (XEXP (x, 0), 1), QImode));
+      if (is_nzb)
+	{
+	  *total = COSTS_N_INSNS (code == XOR ? 3 : 2);
+	  return true;
+	}
+    }
+
+  // Insn "*nzb=1.ior.ashift_split" with nonzero_bits() == 1 in the condition.
+  if (avropt_use_nonzero_bits
+      && mode == QImode
+      && code == IOR
+      && REG_P (XEXP (x, 1))
+      && GET_CODE (XEXP (x, 0)) == ASHIFT
+      && REG_P (XEXP (XEXP (x, 0), 0))
+      && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
+    {
+      *total = COSTS_N_INSNS (2);
+      return true;
+    }
+
 
   switch (code)
     {
@@ -13651,6 +13728,28 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	}
       *total += avr_operand_rtx_cost (XEXP (x, 0), mode, code, 0, speed);
       return true;
+
+    case GE:
+      if (mode == QImode
+	  && REG_P (XEXP (x, 0))
+	  && XEXP (x, 1) == const0_rtx)
+	{
+	  *total = COSTS_N_INSNS (3);
+	  return true;
+	}
+      break;
+
+    case ZERO_EXTRACT:
+      if (mode == QImode
+	  && REG_P (XEXP (x, 0))
+	  && XEXP (x, 1) == const1_rtx
+	  && CONST_INT_P (XEXP (x, 2)))
+	{
+	  int bpos = INTVAL (XEXP (x, 2));
+	  *total = COSTS_N_INSNS (bpos == 0 ? 1 : bpos == 1 ? 2 : 3);
+	  return true;
+	}
+      break;
 
     case COMPARE:
       switch (GET_MODE (XEXP (x, 0)))
@@ -15136,6 +15235,46 @@ avr_emit3_fix_outputs (rtx (*gen)(rtx,rtx,rtx), rtx *op,
   lock = false;
 
   return avr_move_fixed_operands (op, hreg, opmask);
+}
+
+
+/* A helper for the insn condition of "*nzb=1.<code>.lsr[.not]_split"
+   where <code> is AND, IOR or XOR.  Return true when
+
+      OP[0] <code>= OP[1] >> OP[2]
+
+   can be performed by means of the code of "*nzb=1.<code>.zerox", i.e.
+
+      OP[0] <code>= OP[1].OP[2]
+
+   For example, when OP[0] is in { 0, 1 }, then  R24 &= R10.4
+   can be performed by means of  SBRS R10,4  $  CLR R24.
+   Notice that the constraint of OP[3] is "0".  */
+
+bool
+avr_nonzero_bits_lsr_operands_p (rtx_code code, rtx *op)
+{
+  if (reload_completed)
+    return false;
+
+  const auto offs = INTVAL (op[2]);
+  const auto op1_non0 = nonzero_bits (op[1], QImode);
+  const auto op3_non0 = nonzero_bits (op[3], QImode);
+
+  switch (code)
+    {
+    default:
+      gcc_unreachable ();
+
+    case IOR:
+    case XOR:
+      return op1_non0 >> offs == 1;
+
+    case AND:
+      return op3_non0 == 1;
+    }
+
+  return false;
 }
 
 

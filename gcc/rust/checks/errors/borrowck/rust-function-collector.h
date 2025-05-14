@@ -56,13 +56,13 @@ protected:
   void visit (HIR::Function &function) override
   {
     functions.push_back (&function);
-    function.get_definition ()->accept_vis (*this);
+    function.get_definition ().accept_vis (*this);
   }
 
   void visit (HIR::ClosureExpr &closure) override
   {
     closures.push_back (&closure);
-    closure.get_expr ()->accept_vis (*this);
+    closure.get_expr ().accept_vis (*this);
   }
 
   // TODO: recurse for nested closures and functions.
@@ -119,11 +119,11 @@ public:
   void visit (HIR::WhileLetLoopExpr &expr) override {}
   void visit (HIR::IfExpr &expr) override {}
   void visit (HIR::IfExprConseqElse &expr) override {}
-  void visit (HIR::IfLetExpr &expr) override {}
-  void visit (HIR::IfLetExprConseqElse &expr) override {}
   void visit (HIR::MatchExpr &expr) override {}
   void visit (HIR::AwaitExpr &expr) override {}
   void visit (HIR::AsyncBlockExpr &expr) override {}
+  void visit (HIR::InlineAsm &expr) override {}
+  void visit (HIR::LlvmInlineAsm &expr) override {}
   void visit (HIR::TypeParam &param) override {}
   void visit (HIR::ConstGenericParam &param) override {}
   void visit (HIR::LifetimeWhereClauseItem &item) override {}
@@ -181,7 +181,6 @@ public:
   void visit (HIR::ImplTraitType &type) override {}
   void visit (HIR::TraitObjectType &type) override {}
   void visit (HIR::ParenthesisedType &type) override {}
-  void visit (HIR::ImplTraitTypeOneBound &type) override {}
   void visit (HIR::TupleType &type) override {}
   void visit (HIR::NeverType &type) override {}
   void visit (HIR::RawPointerType &type) override {}

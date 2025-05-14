@@ -1,4 +1,5 @@
 /* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 /* A toy re-implementation of CPython's object model.  */
 

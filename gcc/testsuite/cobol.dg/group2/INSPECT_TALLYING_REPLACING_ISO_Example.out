@@ -1,0 +1,13 @@
+Counts are: 03 01 01 00 05
+Should be:  03 01 01 00 05
+Result is "TUXYXVWRXYZZPZ"
+Should be "TUXYXVWRXYZZPZ"
+Counts are: 02 00 00 01 01
+Should be:  02 00 00 01 01
+Result is "SXYXYZ"
+Should be "SXYXYZ"
+Counts are: 00 01 00 02 00
+Should be:  00 01 00 02 00
+Result is "SSVW"
+Should be "SSVW"
+

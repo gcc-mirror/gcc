@@ -2,7 +2,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/fail6334.d(13): Error: static assert:  `0` is false
-fail_compilation/fail6334.d(11):        instantiated from here: `T2!()`
+fail_compilation/fail6334.d(11):        instantiated from here: `mixin T2!();`
 ---
 */
 

@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "gimple-walk.h"
 #include "attribs.h"
+#include "diagnostic-core.h"
 
 /* The differences between High GIMPLE and Low GIMPLE are the
    following:
@@ -78,6 +79,10 @@ struct lower_data
   bool cannot_fallthru;
 };
 
+/* Bitmap of LABEL_DECL uids for user labels moved into assume outlined
+   functions.  */
+static bitmap assume_labels;
+
 static void lower_stmt (gimple_stmt_iterator *, struct lower_data *);
 static void lower_gimple_bind (gimple_stmt_iterator *, struct lower_data *);
 static void lower_try_catch (gimple_stmt_iterator *, struct lower_data *);
@@ -85,6 +90,29 @@ static void lower_gimple_return (gimple_stmt_iterator *, struct lower_data *);
 static void lower_builtin_setjmp (gimple_stmt_iterator *);
 static void lower_builtin_posix_memalign (gimple_stmt_iterator *);
 static void lower_builtin_assume_aligned (gimple_stmt_iterator *);
+
+
+/* Helper function for lower_function_body, called via walk_gimple_seq.
+   Diagnose uses of user labels defined inside of assume attribute
+   expressions.  */
+
+static tree
+diagnose_assume_labels (tree *tp, int *, void *data)
+{
+  if (TREE_CODE (*tp) == LABEL_DECL
+      && !DECL_ARTIFICIAL (*tp)
+      && DECL_NAME (*tp)
+      && bitmap_bit_p (assume_labels, DECL_UID (*tp)))
+    {
+      struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+      auto_diagnostic_group d;
+      error_at (gimple_location (gsi_stmt (wi->gsi)),
+		"reference to label %qD defined inside of %<assume%> "
+		"attribute expression from outside of the attribute", *tp);
+      inform (DECL_SOURCE_LOCATION (*tp), "%qD defined here", *tp);
+    }
+  return NULL_TREE;
+}
 
 
 /* Lower the body of current_function_decl from High GIMPLE into Low
@@ -168,6 +196,15 @@ lower_function_body (void)
   /* Once the old body has been lowered, replace it with the new
      lowered sequence.  */
   gimple_set_body (current_function_decl, lowered_body);
+
+  if (assume_labels)
+    {
+      struct walk_stmt_info wi;
+
+      memset (&wi, 0, sizeof (wi));
+      walk_gimple_seq (lowered_body, NULL, diagnose_assume_labels, &wi);
+      BITMAP_FREE (assume_labels);
+    }
 
   gcc_assert (data.block == DECL_INITIAL (current_function_decl));
   BLOCK_SUBBLOCKS (data.block)
@@ -335,6 +372,12 @@ find_assumption_locals_r (gimple_stmt_iterator *gsi_p, bool *,
       {
 	tree label = gimple_label_label (as_a <glabel *> (stmt));
 	data->id.decl_map->put (label, label);
+	if (DECL_NAME (label) && !DECL_ARTIFICIAL (label))
+	  {
+	    if (assume_labels == NULL)
+	      assume_labels = BITMAP_ALLOC (NULL);
+	    bitmap_set_bit (assume_labels, DECL_UID (label));
+	  }
 	break;
       }
     case GIMPLE_RETURN:
@@ -747,6 +790,7 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     case GIMPLE_OMP_FOR:
     case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_DISPATCH:
+    case GIMPLE_OMP_INTEROP:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SECTIONS_SWITCH:
     case GIMPLE_OMP_SECTION:

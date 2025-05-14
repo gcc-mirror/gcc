@@ -2,10 +2,11 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_int } */
-
+/* { dg-additional-options "-march=gfx908" { target amdgcn*-*-* } } */
 /* { dg-additional-options "-Ofast" } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target vect_load_lanes } } } */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_load_lanes } } } } */
 
 #ifndef N
 #define N 803

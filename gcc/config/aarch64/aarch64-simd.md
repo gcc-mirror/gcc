@@ -1193,12 +1193,14 @@
 (define_insn "aarch64_simd_vec_set_zero<mode>"
   [(set (match_operand:VALL_F16 0 "register_operand" "=w")
 	(vec_merge:VALL_F16
-	    (match_operand:VALL_F16 1 "aarch64_simd_imm_zero" "")
-	    (match_operand:VALL_F16 3 "register_operand" "0")
+	    (match_operand:VALL_F16 1 "register_operand" "0")
+	    (match_operand:VALL_F16 3 "aarch64_simd_imm_zero" "")
 	    (match_operand:SI 2 "immediate_operand" "i")))]
-  "TARGET_SIMD && exact_log2 (INTVAL (operands[2])) >= 0"
+  "TARGET_SIMD && aarch64_exact_log2_inverse (<nunits>, operands[2]) >= 0"
   {
-    int elt = ENDIAN_LANE_N (<nunits>, exact_log2 (INTVAL (operands[2])));
+    int elt = ENDIAN_LANE_N (<nunits>,
+			     aarch64_exact_log2_inverse (<nunits>,
+							 operands[2]));
     operands[2] = GEN_INT ((HOST_WIDE_INT) 1 << elt);
     return "ins\\t%0.<Vetype>[%p2], <vwcore>zr";
   }

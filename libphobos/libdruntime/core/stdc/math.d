@@ -4284,404 +4284,651 @@ else
     double  acos(double x);
     ///
     float   acosf(float x);
-    ///
-    real    acosl(real x);
 
     ///
     double  asin(double x);
     ///
     float   asinf(float x);
-    ///
-    real    asinl(real x);
 
     ///
     pure double  atan(double x);
     ///
     pure float   atanf(float x);
-    ///
-    pure real    atanl(real x);
 
     ///
     double  atan2(double y, double x);
     ///
     float   atan2f(float y, float x);
-    ///
-    real    atan2l(real y, real x);
 
     ///
     pure double  cos(double x);
     ///
     pure float   cosf(float x);
-    ///
-    pure real    cosl(real x);
 
     ///
     pure double  sin(double x);
     ///
     pure float   sinf(float x);
-    ///
-    pure real    sinl(real x);
 
     ///
     pure double  tan(double x);
     ///
     pure float   tanf(float x);
-    ///
-    pure real    tanl(real x);
 
     ///
     double  acosh(double x);
     ///
     float   acoshf(float x);
-    ///
-    real    acoshl(real x);
 
     ///
     pure double  asinh(double x);
     ///
     pure float   asinhf(float x);
-    ///
-    pure real    asinhl(real x);
 
     ///
     double  atanh(double x);
     ///
     float   atanhf(float x);
-    ///
-    real    atanhl(real x);
 
     ///
     double  cosh(double x);
     ///
     float   coshf(float x);
-    ///
-    real    coshl(real x);
 
     ///
     double  sinh(double x);
     ///
     float   sinhf(float x);
-    ///
-    real    sinhl(real x);
 
     ///
     pure double  tanh(double x);
     ///
     pure float   tanhf(float x);
-    ///
-    pure real    tanhl(real x);
 
     ///
     double  exp(double x);
     ///
     float   expf(float x);
-    ///
-    real    expl(real x);
 
     ///
     double  exp2(double x);
     ///
     float   exp2f(float x);
-    ///
-    real    exp2l(real x);
 
     ///
     double  expm1(double x);
     ///
     float   expm1f(float x);
-    ///
-    real    expm1l(real x);
 
     ///
     pure double  frexp(double value, int* exp);
     ///
     pure float   frexpf(float value, int* exp);
-    ///
-    pure real    frexpl(real value, int* exp);
 
     ///
     int     ilogb(double x);
     ///
     int     ilogbf(float x);
-    ///
-    int     ilogbl(real x);
 
     ///
     double  ldexp(double x, int exp);
     ///
     float   ldexpf(float x, int exp);
-    ///
-    real    ldexpl(real x, int exp);
 
     ///
     double  log(double x);
     ///
     float   logf(float x);
-    ///
-    real    logl(real x);
 
     ///
     double  log10(double x);
     ///
     float   log10f(float x);
-    ///
-    real    log10l(real x);
 
     ///
     double  log1p(double x);
     ///
     float   log1pf(float x);
-    ///
-    real    log1pl(real x);
 
     ///
     double  log2(double x);
     ///
     float   log2f(float x);
-    ///
-    real    log2l(real x);
 
     ///
     double  logb(double x);
     ///
     float   logbf(float x);
-    ///
-    real    logbl(real x);
 
     ///
     pure double  modf(double value, double* iptr);
     ///
     pure float   modff(float value, float* iptr);
-    ///
-    pure real    modfl(real value, real *iptr);
 
     ///
     double  scalbn(double x, int n);
     ///
     float   scalbnf(float x, int n);
-    ///
-    real    scalbnl(real x, int n);
 
     ///
     double  scalbln(double x, c_long n);
     ///
     float   scalblnf(float x, c_long n);
-    ///
-    real    scalblnl(real x, c_long n);
 
     ///
     pure double  cbrt(double x);
     ///
     pure float   cbrtf(float x);
-    ///
-    pure real    cbrtl(real x);
 
     ///
     pure double  fabs(double x);
-    version (CRuntime_Microsoft)
-    {
-    }
-    else
-    {
-        ///
-        pure float   fabsf(float x);
-        ///
-        pure real    fabsl(real x);
-    }
 
     ///
     double  hypot(double x, double y);
     ///
     float   hypotf(float x, float y);
-    ///
-    real    hypotl(real x, real y);
 
     ///
     double  pow(double x, double y);
     ///
     float   powf(float x, float y);
-    ///
-    real    powl(real x, real y);
 
     ///
     double  sqrt(double x);
     ///
     float   sqrtf(float x);
-    ///
-    real    sqrtl(real x);
 
     ///
     pure double  erf(double x);
     ///
     pure float   erff(float x);
-    ///
-    pure real    erfl(real x);
 
     ///
     double  erfc(double x);
     ///
     float   erfcf(float x);
-    ///
-    real    erfcl(real x);
 
     ///
     double  lgamma(double x);
     ///
     float   lgammaf(float x);
-    ///
-    real    lgammal(real x);
 
     ///
     double  tgamma(double x);
     ///
     float   tgammaf(float x);
-    ///
-    real    tgammal(real x);
 
     ///
     pure double  ceil(double x);
     ///
     pure float   ceilf(float x);
-    ///
-    pure real    ceill(real x);
 
     ///
     pure double  floor(double x);
     ///
     pure float   floorf(float x);
-    ///
-    pure real    floorl(real x);
 
     ///
     pure double  nearbyint(double x);
     ///
     pure float   nearbyintf(float x);
-    ///
-    pure real    nearbyintl(real x);
 
     ///
     pure double  rint(double x);
     ///
     pure float   rintf(float x);
-    ///
-    pure real    rintl(real x);
 
     ///
     c_long  lrint(double x);
     ///
     c_long  lrintf(float x);
-    ///
-    c_long  lrintl(real x);
 
     ///
     long    llrint(double x);
     ///
     long    llrintf(float x);
-    ///
-    long    llrintl(real x);
 
     ///
     pure double  round(double x);
     ///
     pure float   roundf(float x);
-    ///
-    pure real    roundl(real x);
 
     ///
     c_long  lround(double x);
     ///
     c_long  lroundf(float x);
-    ///
-    c_long  lroundl(real x);
 
     ///
     long    llround(double x);
     ///
     long    llroundf(float x);
-    ///
-    long    llroundl(real x);
 
     ///
     pure double  trunc(double x);
     ///
     pure float   truncf(float x);
-    ///
-    pure real    truncl(real x);
 
     ///
     double  fmod(double x, double y);
     ///
     float   fmodf(float x, float y);
-    ///
-    real    fmodl(real x, real y);
 
     ///
     double  remainder(double x, double y);
     ///
     float   remainderf(float x, float y);
-    ///
-    real    remainderl(real x, real y);
 
     ///
     double  remquo(double x, double y, int* quo);
     ///
     float   remquof(float x, float y, int* quo);
-    ///
-    real    remquol(real x, real y, int* quo);
 
     ///
     pure double  copysign(double x, double y);
     ///
     pure float   copysignf(float x, float y);
-    ///
-    pure real    copysignl(real x, real y);
 
     ///
     pure double  nan(char* tagp);
     ///
     pure float   nanf(char* tagp);
-    ///
-    pure real    nanl(char* tagp);
 
     ///
     double  nextafter(double x, double y);
     ///
     float   nextafterf(float x, float y);
     ///
-    real    nextafterl(real x, real y);
-
-    ///
-    double  nexttoward(double x, real y);
-    ///
-    float   nexttowardf(float x, real y);
-    ///
-    real    nexttowardl(real x, real y);
 
     ///
     double  fdim(double x, double y);
     ///
     float   fdimf(float x, float y);
-    ///
-    real    fdiml(real x, real y);
 
     ///
     pure double  fmax(double x, double y);
     ///
     pure float   fmaxf(float x, float y);
-    ///
-    pure real    fmaxl(real x, real y);
+
 
     ///
     pure double  fmin(double x, double y);
     ///
     pure float   fminf(float x, float y);
-    ///
-    pure real    fminl(real x, real y);
+
 
     ///
     pure double  fma(double x, double y, double z);
     ///
     pure float   fmaf(float x, float y, float z);
-    ///
-    pure real    fmal(real x, real y, real z);
+
+
+    static if (PPCUseIEEE128) {
+        ///
+        real    __acosieee128(real x);
+        ///
+        alias acosl = __acosieee128;
+        ///
+        real    __asinieee128(real x);
+        ///
+        alias asinl = __asinieee128;
+        ///
+        pure real    __atanieee128(real x);
+        ///
+        alias atanl = __atanieee128;
+        ///
+        real    __atan2ieee128(real y, real x);
+        ///
+        alias atan2l = __atan2ieee128;
+        ///
+        pure real    __cosieee128(real x);
+        ///
+        alias cosl = __cosieee128;
+        ///
+        pure real    __sinieee128(real x);
+        ///
+        alias sinl = __sinieee128;
+        ///
+        pure real    __tanieee128(real x);
+        ///
+        alias tanl = __tanieee128;
+        ///
+        real    __acoshieee128(real x);
+        ///
+        alias acoshl = __acoshieee128;
+        ///
+        pure real    __asinhieee128(real x);
+        ///
+        alias asinhl = __asinhieee128;
+        ///
+        real    __atanhieee128(real x);
+        ///
+        alias atanhl = __atanhieee128;
+        ///
+        real    __coshieee128(real x);
+        ///
+        alias coshl = __coshieee128;
+        ///
+        real    __sinhieee128(real x);
+        ///
+        alias sinhl = __sinhieee128;
+        ///
+        pure real    __tanhieee128(real x);
+        ///
+        alias tanhl = __tanhieee128;
+        ///
+        real    __expieee128(real x);
+        ///
+        alias expl = __expieee128;
+        ///
+        real    __exp2ieee128(real x);
+        ///
+        alias exp2l = __exp2ieee128;
+        ///
+        real    __expm1ieee128(real x);
+        ///
+        alias expm1l = __expm1ieee128;
+        ///
+        pure real    __frexpieee128(real value, int* exp);
+        ///
+        alias frexpl = __frexpieee128;
+        ///
+        int     __ilogbieee128(real x);
+        ///
+        alias ilogbl = __ilogbieee128;
+        ///
+        real    __ldexpieee128(real x, int exp);
+        ///
+        alias ldexpl = __ldexpieee128;
+        ///
+        real    __logieee128(real x);
+        ///
+        alias logl = __logieee128;
+        ///
+        real    __log10ieee128(real x);
+        ///
+        alias log10l = __log10ieee128;
+        ///
+        real    __log1pieee128(real x);
+        ///
+        alias log1pl = __log1pieee128;
+        ///
+        real    __log2ieee128(real x);
+        ///
+        alias log2l = __log2ieee128;
+        ///
+        real    __logbieee128(real x);
+        ///
+        alias logbl = __logbieee128;
+        ///
+        pure real    __modfieee128(real value, real *iptr);
+        ///
+        alias modfl = __modfieee128;
+        ///
+        real    __scalbnieee128(real x, int n);
+        ///
+        alias scalbnl = __scalbnieee128;
+        ///
+        real    __scalblnieee128(real x, c_long n);
+        ///
+        alias scalblnl = __scalblnieee128;
+        ///
+        pure real    __cbrtieee128(real x);
+        ///
+        alias cbrtl = __cbrtieee128;
+        ///
+        pure float   fabsf(float x);
+        ///
+        pure real    __fabsieee128(real x);
+        ///
+        alias fabsl = __fabsieee128;
+        ///
+        real    __hypotieee128(real x, real y);
+        ///
+        alias hypotl = __hypotieee128;
+        ///
+        real    __powieee128(real x, real y);
+        ///
+        alias powl = __powieee128;
+        ///
+        real    __sqrtieee128(real x);
+        ///
+        alias sqrtl = __sqrtieee128;
+        ///
+        pure real    __erfieee128(real x);
+        ///
+        alias erfl = __erfieee128;
+        ///
+        real    __erfcieee128(real x);
+        ///
+        alias erfcl = __erfcieee128;
+        ///
+        real    __lgammaieee128(real x);
+        ///
+        alias lgammal = __lgammaieee128;
+        ///
+        real    __tgammaieee128(real x);
+        ///
+        alias tgammal = __tgammaieee128;
+        ///
+        pure real    __ceilieee128(real x);
+        ///
+        alias ceill = __ceilieee128;
+        ///
+        pure real    __floorieee128(real x);
+        ///
+        alias floorl = __floorieee128;
+        ///
+        pure real    __nearbyintieee128(real x);
+        ///
+        alias nearbyintl = __nearbyintieee128;
+        ///
+        pure real    __rintieee128(real x);
+        ///
+        alias rintl = __rintieee128;
+        ///
+        c_long  __lrintieee128(real x);
+        ///
+        alias lrintl = __lrintieee128;
+        ///
+        long    __llrintieee128(real x);
+        ///
+        alias llrintl = __llrintieee128;
+        ///
+        pure real    __roundieee128(real x);
+        ///
+        alias roundl = __roundieee128;
+        ///
+        c_long  __lroundieee128(real x);
+        ///
+        alias lroundl = __lroundieee128;
+        ///
+        long    __llroundieee128(real x);
+        ///
+        alias llroundl = __llroundieee128;
+        ///
+        pure real    __truncieee128(real x);
+        ///
+        alias truncl = __truncieee128;
+        ///
+        real    __fmodieee128(real x, real y);
+        ///
+        alias fmodl = __fmodieee128;
+        ///
+        real    __remainderieee128(real x, real y);
+        ///
+        alias remainderl = __remainderieee128;
+        ///
+        real    __remquoieee128(real x, real y, int* quo);
+        ///
+        alias remquol = __remquoieee128;
+        ///
+        pure real    __copysignieee128(real x, real y);
+        ///
+        alias copysignl = __copysignieee128;
+        ///
+        pure real    __nanieee128(char* tagp);
+        ///
+        alias nanl = __nanieee128;
+        ///
+        real    __nextafterieee128(real x, real y);
+        ///
+        alias nextafterl = __nextafterieee128;
+        ///
+        double  __nexttoward_to_ieee128(double x, real y);
+        ///
+        alias nexttoward = __nexttoward_to_ieee128;
+        ///
+        float   __nexttowardf_to_ieee128(float x, real y);
+        ///
+        alias nexttowardf = __nexttowardf_to_ieee128;
+        ///
+        real    __nexttowardieee128(real x, real y);
+        ///
+        alias nexttowardl = __nexttowardieee128;
+        ///
+        real    __fdimieee128(real x, real y);
+        ///
+        alias fdiml = __fdimieee128;
+        ///
+        pure real    __fmaxieee128(real x, real y);
+        ///
+        alias fmaxl = __fmaxieee128;
+        ///
+        pure real    __fminieee128(real x, real y);
+        ///
+        alias fminl = __fminieee128;
+        ///
+        pure real    __fmaieee128(real x, real y, real z);
+        ///
+        alias fmal = __fmaieee128;
+    }
+    else
+    {
+        ///
+        real    acosl(real x);
+        ///
+        real    asinl(real x);
+        ///
+        pure real    atanl(real x);
+        ///
+        real    atan2l(real y, real x);
+        ///
+        pure real    cosl(real x);
+        ///
+        pure real    sinl(real x);
+        ///
+        pure real    tanl(real x);
+        ///
+        real    acoshl(real x);
+        ///
+        pure real    asinhl(real x);
+        ///
+        real    atanhl(real x);
+        ///
+        real    coshl(real x);
+        ///
+        real    sinhl(real x);
+        ///
+        pure real    tanhl(real x);
+        ///
+        real    expl(real x);
+        ///
+        real    exp2l(real x);
+        ///
+        real    expm1l(real x);
+        ///
+        pure real    frexpl(real value, int* exp);
+        ///
+        int     ilogbl(real x);
+        ///
+        real    ldexpl(real x, int exp);
+        ///
+        real    logl(real x);
+        ///
+        real    log10l(real x);
+        ///
+        real    log1pl(real x);
+        ///
+        real    log2l(real x);
+        ///
+        real    logbl(real x);
+        ///
+        pure real    modfl(real value, real *iptr);
+        ///
+        real    scalbnl(real x, int n);
+        ///
+        real    scalblnl(real x, c_long n);
+        ///
+        pure real    cbrtl(real x);
+        version (CRuntime_Microsoft)
+        {
+        }
+        else
+        {
+            ///
+            pure float   fabsf(float x);
+            ///
+            pure real    fabsl(real x);
+        }
+        ///
+        real    hypotl(real x, real y);
+        ///
+        real    powl(real x, real y);
+        ///
+        real    sqrtl(real x);
+        ///
+        pure real    erfl(real x);
+        ///
+        real    erfcl(real x);
+        ///
+        real    lgammal(real x);
+        ///
+        real    tgammal(real x);
+        ///
+        pure real    ceill(real x);
+        ///
+        pure real    floorl(real x);
+        ///
+        pure real    nearbyintl(real x);
+        ///
+        pure real    rintl(real x);
+        ///
+        c_long  lrintl(real x);
+        ///
+        long    llrintl(real x);
+        ///
+        pure real    roundl(real x);
+        ///
+        c_long  lroundl(real x);
+        ///
+        long    llroundl(real x);
+        ///
+        pure real    truncl(real x);
+        ///
+        real    fmodl(real x, real y);
+        ///
+        real    remainderl(real x, real y);
+        ///
+        real    remquol(real x, real y, int* quo);
+        ///
+        pure real    copysignl(real x, real y);
+        ///
+        pure real    nanl(char* tagp);
+        ///
+        real    nextafterl(real x, real y);
+        ///
+        double  nexttoward(double x, real y);
+        ///
+        float   nexttowardf(float x, real y);
+        ///
+        real    nexttowardl(real x, real y);
+        ///
+        real    fdiml(real x, real y);
+        ///
+        pure real    fmaxl(real x, real y);
+        ///
+        pure real    fminl(real x, real y);
+        ///
+        pure real    fmal(real x, real y, real z);
+    }
 }

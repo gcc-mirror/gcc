@@ -143,6 +143,8 @@ grs_langhook_init_options_struct (struct gcc_options *opts)
   opts->x_warn_unused_result = 1;
   /* lets warn for infinite recursion*/
   opts->x_warn_infinite_recursion = 1;
+  /* Enable exception handling (aka `panic!` in Rust) */
+  opts->x_flag_exceptions = 1;
 
   // nothing yet - used by frontends to change specific options for the language
   Rust::Session::get_instance ().init_options ();

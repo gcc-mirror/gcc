@@ -1,0 +1,61 @@
+# Copyright (C) 2019-2025 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Immediately exit if we can't run target executables.
+if { ![isnative] } {
+    return
+}
+
+# Skip running test if phobos was not built on the target.
+if { ![is-effective-target d_runtime_has_std_library] } {
+    return
+}
+
+# Skip running test if not doing expensive tests.
+if { ![is-effective-target run_expensive_tests] } {
+    return
+}
+
+# Gather a list of all tests.
+set tests [lsort [filter_libphobos_unittests [find $srcdir/../src "*.d"]]]
+
+set version_flags "-fversion=StdUnittest"
+
+if { [is-effective-target linux_pre_2639] } {
+    lappend version_flags "-fversion=Linux_Pre_2639"
+}
+
+set libphobos_skip_tests {
+    # Skip curl tests if library is not available
+    { libphobos.phobos/static/etc/c/curl.d { ! libcurl_available } }
+    { libphobos.phobos/static/std/net/curl.d { ! libcurl_available } }
+    # Skip concurrency.d test: SEGVs or hangs on macOS 13+ (PR d/111628).
+    { libphobos.phobos/static/std/concurrency.d { x86_64-apple-darwin2[2-9]* } }
+}
+
+# Initialize dg.
+dg-init
+
+# Main loop.
+foreach test $tests {
+    set libphobos_test_name "$subdir/[dg-trim-dirname $srcdir/../src $test]"
+    dg-runtest $test "-static-libphobos" \
+	"-Wno-deprecated -fmain -fbuilding-libphobos-tests $version_flags"
+    set libphobos_test_name ""
+}
+
+# All done.
+dg-finish

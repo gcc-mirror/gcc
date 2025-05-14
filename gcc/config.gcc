@@ -273,6 +273,7 @@ esac
 # Obsolete configurations.
 case ${target} in
      ia64*-*-hpux* | ia64*-*-*vms* | ia64*-*-elf*	\
+   | m32c*-*-*						\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -450,8 +451,7 @@ i[34567]86-*-* | x86_64-*-*)
 		       avxvnniint8intrin.h avxneconvertintrin.h
 		       cmpccxaddintrin.h amxfp16intrin.h prfchiintrin.h
 		       raointintrin.h amxcomplexintrin.h avxvnniint16intrin.h
-		       sm3intrin.h sha512intrin.h sm4intrin.h
-		       usermsrintrin.h avx10_2roundingintrin.h
+		       sm3intrin.h sha512intrin.h sm4intrin.h usermsrintrin.h
 		       avx10_2mediaintrin.h avx10_2-512mediaintrin.h
 		       avx10_2convertintrin.h avx10_2-512convertintrin.h
 		       avx10_2bf16intrin.h avx10_2-512bf16intrin.h
@@ -551,7 +551,7 @@ pru-*-*)
 riscv*)
 	cpu_type=riscv
 	extra_objs="riscv-builtins.o riscv-c.o riscv-sr.o riscv-shorten-memrefs.o riscv-selftests.o riscv-string.o"
-	extra_objs="${extra_objs} riscv-v.o riscv-vsetvl.o riscv-vector-costs.o riscv-avlprop.o"
+	extra_objs="${extra_objs} riscv-v.o riscv-vsetvl.o riscv-vector-costs.o riscv-avlprop.o riscv-vect-permconst.o"
 	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o sifive-vector-builtins-bases.o"
 	extra_objs="${extra_objs} thead.o riscv-target-attr.o riscv-zicfilp.o"
 	d_target_objs="riscv-d.o"
@@ -2541,6 +2541,20 @@ riscv*-*-linux*)
 	gcc_cv_initfini_array=yes
 	with_tls=${with_tls:-trad}
 	;;
+riscv*-*-gnu*)
+	tm_file="elfos.h gnu-user.h gnu.h glibc-stdint.h ${tm_file} riscv/gnu.h"
+	tmake_file="${tmake_file} riscv/t-riscv"
+	gnu_ld=yes
+	gas=yes
+	case $target in
+	riscv32be-*|riscv64be-*)
+		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+		;;
+	esac
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 riscv*-*-elf* | riscv*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
 	case ${target} in
@@ -4445,7 +4459,7 @@ case "${target}" in
 
 		case "$with_abi" in
 		"" \
-		| apcs-gnu | atpcs | aapcs | iwmmxt | aapcs-linux )
+		| apcs-gnu | atpcs | aapcs | aapcs-linux )
 			#OK
 			;;
 		*)
@@ -5644,6 +5658,7 @@ case "${target}" in
 			#TODO 'sm_[...]' list per 'nvptx-sm.def'.
 			sm_30 | sm_35 | sm_37 \
 			| sm_52 | sm_53 \
+			| sm_61 \
 			| sm_70 | sm_75 \
 			| sm_80 | sm_89 )
 				TM_MULTILIB_CONFIG="$TM_MULTILIB_CONFIG $nvptx_multilib"
@@ -5757,7 +5772,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | z15 | z16 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12 | arch13 | arch14 | arch15 )
+			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | z15 | z16 | z17 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12 | arch13 | arch14 | arch15 )
 				# OK
 				;;
 			*)

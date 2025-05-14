@@ -19,7 +19,7 @@
 
 TEST_ALL (ADD_LOOP)
 
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.b, vl8\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.h, vl8\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tldr\td[0-9]+, \[x0\]} 1 } } */
+/* { dg-final { scan-assembler-times {\tldr\tq[0-9]+, \[x0\]} 1 } } */
 /* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.s,} 2 } } */
 /* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.d,} 2 } } */

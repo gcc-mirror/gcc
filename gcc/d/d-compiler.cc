@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 
 #include "dmd/compiler.h"
+#include "dmd/errors.h"
 #include "dmd/expression.h"
 #include "dmd/identifier.h"
 #include "dmd/module.h"
@@ -164,7 +165,39 @@ Compiler::onParseModule (Module *m)
    driver intends on compiling the import.  */
 
 bool
-Compiler::onImport (Module *)
+Compiler::onImport (Module *m)
 {
-  return false;
+  if (!includeImports)
+    return false;
+
+  if (m->filetype != FileType::d && m->filetype != FileType::c)
+    return false;
+
+  /* All imports modules are included except those in the runtime library.  */
+  ModuleDeclaration *md = m->md;
+  if (md && md->id)
+    {
+      if (md->packages.length >= 1)
+	{
+	  if (!strcmp (md->packages.ptr[0]->toChars (), "core")
+	      || !strcmp (md->packages.ptr[0]->toChars (), "std")
+	      || !strcmp (md->packages.ptr[0]->toChars (), "gcc")
+	      || !strcmp (md->packages.ptr[0]->toChars (), "etc"))
+	    return false;
+	}
+      else if (!strcmp (md->id->toChars (), "object"))
+	return false;
+    }
+  else if (m->ident)
+    {
+      if (!strcmp (m->ident->toChars (), "object"))
+	return false;
+    }
+
+  /* This import will be compiled.  */
+  if (global.params.v.verbose)
+    message ("compileimport (%s)", m->srcfile.toChars ());
+
+  compiledImports.push (m);
+  return true;
 }

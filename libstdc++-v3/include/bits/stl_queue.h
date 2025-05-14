@@ -61,10 +61,18 @@
 #if __cplusplus >= 201103L
 # include <bits/uses_allocator.h>
 #endif
+#if __glibcxx_containers_ranges // C++ >= 23
+# include <ranges> // ranges::to
+# include <bits/ranges_algobase.h> // ranges::copy
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#if __glibcxx_format_ranges
+  template<typename, typename> class formatter;
+#endif
 
   /**
    *  @brief  A standard container giving FIFO behavior.
@@ -209,6 +217,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: c(__first, __last, __a) { }
 #endif
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Construct a queue from a range.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	queue(from_range_t, _Rg&& __rg)
+	: c(ranges::to<_Sequence>(std::forward<_Rg>(__rg)))
+	{ }
+
+      /**
+       * @brief Construct a queue from a range.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg,
+	       typename _Alloc>
+	queue(from_range_t, _Rg&& __rg, const _Alloc& __a)
+	: c(ranges::to<_Sequence>(std::forward<_Rg>(__rg), __a))
+	{ }
+#endif
+
       /**
        *  Returns true if the %queue is empty.
        */
@@ -301,6 +330,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	push_range(_Rg&& __rg)
+	{
+	  if constexpr (requires { c.append_range(std::forward<_Rg>(__rg)); })
+	    c.append_range(std::forward<_Rg>(__rg));
+	  else
+	    ranges::copy(__rg, std::back_inserter(c));
+	}
+#endif
+
       /**
        *  @brief  Removes first element.
        *
@@ -332,6 +373,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	swap(c, __q.c);
       }
 #endif // __cplusplus >= 201103L
+
+#if __glibcxx_format_ranges
+      friend class formatter<queue<_Tp, _Sequence>, char>;
+      friend class formatter<queue<_Tp, _Sequence>, wchar_t>;
+#endif
     };
 
 #if __cpp_deduction_guides >= 201606
@@ -358,6 +404,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename = _RequireAllocator<_Allocator>>
     queue(_InputIterator, _InputIterator, _Allocator)
     -> queue<_ValT, deque<_ValT, _Allocator>>;
+#endif
+
+#if __glibcxx_containers_ranges // C++ >= 23
+  template<ranges::input_range _Rg>
+    queue(from_range_t, _Rg&&) -> queue<ranges::range_value_t<_Rg>>;
+
+  template<ranges::input_range _Rg, __allocator_like _Alloc>
+    queue(from_range_t, _Rg&&, _Alloc)
+    -> queue<ranges::range_value_t<_Rg>,
+	     deque<ranges::range_value_t<_Rg>, _Alloc>>;
 #endif
 #endif
 
@@ -719,6 +775,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 #endif
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Construct a priority_queue from a range.
+       * @since C++23
+       *
+       * @{
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	priority_queue(from_range_t, _Rg&& __rg,
+		       const _Compare& __x = _Compare())
+	: c(ranges::to<_Sequence>(std::forward<_Rg>(__rg))), comp(__x)
+	{ std::make_heap(c.begin(), c.end(), comp); }
+
+      template<__detail::__container_compatible_range<_Tp> _Rg, typename _Alloc>
+	priority_queue(from_range_t, _Rg&& __rg, const _Compare& __x,
+		       const _Alloc& __a)
+	: c(ranges::to<_Sequence>(std::forward<_Rg>(__rg), __a)), comp(__x)
+	{ std::make_heap(c.begin(), c.end(), comp); }
+
+      template<__detail::__container_compatible_range<_Tp> _Rg, typename _Alloc>
+	priority_queue(from_range_t, _Rg&& __rg, const _Alloc& __a)
+	: c(ranges::to<_Sequence>(std::forward<_Rg>(__rg), __a)), comp()
+	{ std::make_heap(c.begin(), c.end(), comp); }
+      /// @}
+#endif
+
       /**
        *  Returns true if the %queue is empty.
        */
@@ -776,6 +858,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 #endif
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	push_range(_Rg&& __rg)
+	{
+	  if constexpr (requires { c.append_range(std::forward<_Rg>(__rg)); })
+	    c.append_range(std::forward<_Rg>(__rg));
+	  else
+	    ranges::copy(__rg, std::back_inserter(c));
+	  std::make_heap(c.begin(), c.end(), comp);
+	}
+#endif
+
       /**
        *  @brief  Removes first element.
        *
@@ -812,6 +907,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	swap(comp, __pq.comp);
       }
 #endif // __cplusplus >= 201103L
+
+#if __glibcxx_format_ranges
+      friend class formatter<priority_queue<_Tp, _Sequence, _Compare>, char>;
+      friend class formatter<priority_queue<_Tp, _Sequence, _Compare>, wchar_t>;
+#endif
     };
 
 #if __cpp_deduction_guides >= 201606
@@ -837,6 +937,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename = _RequireNotAllocator<_Container>>
     priority_queue(_Compare, _Container, _Allocator)
     -> priority_queue<typename _Container::value_type, _Container, _Compare>;
+
+#if __glibcxx_containers_ranges // C++ >= 23
+  template<ranges::input_range _Rg,
+	   __not_allocator_like _Compare = less<ranges::range_value_t<_Rg>>,
+	   __allocator_like _Alloc = std::allocator<ranges::range_value_t<_Rg>>>
+    priority_queue(from_range_t, _Rg&&, _Compare = _Compare(),
+                   _Alloc = _Alloc())
+      -> priority_queue<ranges::range_value_t<_Rg>,
+			vector<ranges::range_value_t<_Rg>, _Alloc>,
+			_Compare>;
+
+  template<ranges::input_range _Rg, __allocator_like _Alloc>
+    priority_queue(from_range_t, _Rg&&, _Alloc)
+      -> priority_queue<ranges::range_value_t<_Rg>,
+			vector<ranges::range_value_t<_Rg>, _Alloc>>;
+#endif
 #endif
 
   // No equality/comparison operators are provided for priority_queue.

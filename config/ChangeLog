@@ -1,3 +1,7 @@
+2025-04-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* bootstrap-lto-locality.mk: New file.
+
 2024-11-25  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* mt-nios2-elf: Deleted.

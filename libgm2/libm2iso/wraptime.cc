@@ -58,7 +58,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* InitTimeval returns a newly created opaque type.  */
 
-#if defined(HAVE_STRUCT_TIMEVAL) && defined(HAVE_MALLOC_H)
+#if defined(WE_HAVE_STRUCT_TIMEVAL) && defined(HAVE_MALLOC_H)
 extern "C" struct timeval *
 EXPORT(InitTimeval) (void)
 {
@@ -85,7 +85,7 @@ EXPORT(KillTimeval) (void *tv)
 
 /* InitTimezone returns a newly created opaque type.  */
 
-#if defined(HAVE_STRUCT_TIMEZONE) && defined(HAVE_MALLOC_H)
+#if defined(HAVE_STRUCT_TM_TM_ZONE) && defined(HAVE_MALLOC_H)
 extern "C" struct timezone *
 EXPORT(InitTimezone) (void)
 {
@@ -102,14 +102,20 @@ EXPORT(InitTimezone) (void)
 /* KillTimezone - deallocates the memory associated with an opaque
    type.  */
 
+#if defined(HAVE_STRUCT_TM_TM_ZONE) && defined(HAVE_MALLOC_H)
 extern "C" struct timezone *
 EXPORT(KillTimezone) (struct timezone *tv)
 {
-#if defined(HAVE_MALLOC_H)
   free (tv);
-#endif
   return NULL;
 }
+#else
+extern "C" void *
+EXPORT(KillTimezone) (void *tv)
+{
+  return NULL;
+}
+#endif
 
 /* InitTM - returns a newly created opaque type.  */
 
@@ -141,7 +147,7 @@ EXPORT(KillTM) (struct tm *tv)
 /* gettimeofday - calls gettimeofday(2) with the same parameters, tv,
    and, tz.  It returns 0 on success.  */
 
-#if defined(HAVE_STRUCT_TIMEZONE) && defined(HAVE_GETTIMEOFDAY)
+#if defined(HAVE_STRUCT_TM_TM_ZONE) && defined(HAVE_GETTIMEOFDAY)
 extern "C" int
 EXPORT(gettimeofday) (void *tv, struct timezone *tz)
 {
@@ -158,7 +164,7 @@ EXPORT(gettimeofday) (void *tv, void *tz)
 /* settimeofday - calls settimeofday(2) with the same parameters, tv,
    and, tz.  It returns 0 on success.  */
 
-#if defined(HAVE_STRUCT_TIMEZONE) && defined(HAVE_SETTIMEOFDAY)
+#if defined(HAVE_STRUCT_TM_TM_ZONE) && defined(HAVE_SETTIMEOFDAY)
 extern "C" int
 EXPORT(settimeofday) (void *tv, struct timezone *tz)
 {
@@ -175,7 +181,7 @@ EXPORT(settimeofday) (void *tv, void *tz)
 /* wraptime_GetFractions - returns the tv_usec field inside the
    timeval structure.  */
 
-#if defined(HAVE_STRUCT_TIMEVAL)
+#if defined(WE_HAVE_STRUCT_TIMEVAL_TV_USEC)
 extern "C" unsigned int
 EXPORT(GetFractions) (struct timeval *tv)
 {
@@ -194,7 +200,7 @@ EXPORT(GetFractions) (void *tv)
    this procedure function expects, timeval, as its first parameter
    and not a time_t (as expected by the posix equivalent).  */
 
-#if defined(HAVE_STRUCT_TIMEVAL)
+#if defined(WE_HAVE_STRUCT_TIMEVAL_TV_SEC)
 extern "C" struct tm *
 EXPORT(localtime_r) (struct timeval *tv, struct tm *m)
 {
@@ -210,7 +216,7 @@ EXPORT(localtime_r) (void *tv, struct tm *m)
 
 /* wraptime_GetYear - returns the year from the structure, m.  */
 
-#if defined(HAVE_STRUCT_TM)
+#if defined(WE_HAVE_STRUCT_TM_YEAR)
 extern "C" unsigned int
 EXPORT(GetYear) (struct tm *m)
 {
@@ -226,7 +232,7 @@ EXPORT(GetYear) (void *m)
 
 /* wraptime_GetMonth - returns the month from the structure, m.  */
 
-#if defined(HAVE_STRUCT_TM)
+#if defined(WE_HAVE_STRUCT_TM_MON)
 extern "C" unsigned int
 EXPORT(GetMonth) (struct tm *m)
 {
@@ -243,7 +249,7 @@ EXPORT(GetMonth) (void *m)
 /* wraptime_GetDay - returns the day of the month from the structure,
    m.  */
 
-#if defined(HAVE_STRUCT_TM)
+#if defined(WE_HAVE_STRUCT_TM_MDAY)
 extern "C" unsigned int
 EXPORT(GetDay) (struct tm *m)
 {
@@ -260,7 +266,7 @@ EXPORT(GetDay) (void *m)
 /* wraptime_GetHour - returns the hour of the day from the structure,
    m.  */
 
-#if defined(HAVE_STRUCT_TM)
+#if defined(WE_HAVE_STRUCT_TM_HOUR)
 extern "C" unsigned int
 EXPORT(GetHour) (struct tm *m)
 {
@@ -277,7 +283,7 @@ EXPORT(GetHour) (void *m)
 /* wraptime_GetMinute - returns the minute within the hour from the
    structure, m.  */
 
-#if defined(HAVE_STRUCT_TM)
+#if defined(WE_HAVE_STRUCT_TM_MIN)
 extern "C" unsigned int
 EXPORT(GetMinute) (struct tm *m)
 {
@@ -295,7 +301,7 @@ EXPORT(GetMinute) (void *m)
    structure, m.  The return value will always be in the range 0..59.
    A leap minute of value 60 will be truncated to 59.  */
 
-#if defined(HAVE_STRUCT_TM)
+#if defined(WE_HAVE_STRUCT_TM_SEC)
 extern "C" unsigned int
 EXPORT(GetSecond) (struct tm *m)
 {
@@ -314,7 +320,7 @@ EXPORT(GetSecond) (void *m)
 
 /* wraptime_GetSummerTime - returns true if summer time is in effect.  */
 
-#if defined(HAVE_STRUCT_TIMEZONE)
+#if defined(HAVE_STRUCT_TM_TM_ZONE)
 extern "C" bool
 EXPORT(GetSummerTime) (struct timezone *tz)
 {
@@ -330,7 +336,7 @@ EXPORT(GetSummerTime) (void *tz)
 
 /* wraptime_GetDST - returns the number of minutes west of GMT.  */
 
-#if defined(HAVE_STRUCT_TIMEZONE)
+#if defined(HAVE_STRUCT_TM_TM_ZONE)
 extern "C" int
 EXPORT(GetDST) (struct timezone *tz)
 {
@@ -350,7 +356,7 @@ EXPORT(GetDST) (void *tz)
 
 /* SetTimezone - set the timezone field inside timeval, tv.  */
 
-#if defined(HAVE_STRUCT_TIMEZONE)
+#if defined(HAVE_STRUCT_TM_TM_ZONE)
 extern "C" void
 EXPORT(SetTimezone) (struct timezone *tz, int zone, int minuteswest)
 {
@@ -367,22 +373,40 @@ EXPORT(SetTimezone) (void *tz, int zone, int minuteswest)
 /* SetTimeval - sets the fields in tm, t, with: second, minute, hour,
    day, month, year, fractions.  */
 
-#if defined(HAVE_STRUCT_TIMEVAL)
+#if defined(WE_HAVE_STRUCT_TM)
 extern "C" void
 EXPORT(SetTimeval) (struct tm *t, unsigned int second, unsigned int minute,
 		    unsigned int hour, unsigned int day, unsigned int month,
 		    unsigned int year, unsigned int yday, unsigned int wday,
 		    unsigned int isdst)
 {
+#if defined(WE_HAVE_STRUCT_TM_SEC)
   t->tm_sec = second;
+#endif
+#if defined(WE_HAVE_STRUCT_TM_MIN)
   t->tm_min = minute;
+#endif
+#if defined(WE_HAVE_STRUCT_TM_HOUR)
   t->tm_hour = hour;
+#endif
+#if defined(WE_HAVE_STRUCT_TM_MDAY)
   t->tm_mday = day;
+#endif
+#if defined(WE_HAVE_STRUCT_TM_MON)
   t->tm_mon = month;
+#endif
+#if defined(WE_HAVE_STRUCT_TM_YEAR)
   t->tm_year = year;
+#endif
+#if defined(WE_HAVE_STRUCT_TM_YDAY)
   t->tm_yday = yday;
+#endif
+#if defined(WE_HAVE_STRUCT_TM_WDAY)
   t->tm_wday = wday;
+#endif
+#if defined(WE_HAVE_STRUCT_TM_ISDST)
   t->tm_isdst = isdst;
+#endif
 }
 #else
 extern "C" void

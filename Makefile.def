@@ -209,6 +209,7 @@ target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
 target_modules = { module= libitm; lib_path=.libs; };
 target_modules = { module= libatomic; bootstrap=true; lib_path=.libs; };
 target_modules = { module= libgrust; };
+target_modules = { module= libgcobol; };
 
 // These are (some of) the make targets to be done in each subdirectory.
 // Not all; these are the ones which don't have special options.
@@ -655,6 +656,7 @@ lang_env_dependencies = { module=libgcc; no_gcc=true; no_c=true; };
 // built newlib on some targets (e.g. Cygwin).  It still needs
 // a dependency on libgcc for native targets to configure.
 lang_env_dependencies = { module=libiberty; no_c=true; };
+lang_env_dependencies = { module=libgcobol; cxx=true; };
 
 dependencies = { module=configure-target-fastjar; on=configure-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-zlib; };
@@ -690,6 +692,8 @@ dependencies = { module=install-target-libvtv; on=install-target-libgcc; };
 dependencies = { module=install-target-libitm; on=install-target-libgcc; };
 dependencies = { module=install-target-libobjc; on=install-target-libgcc; };
 dependencies = { module=install-target-libstdc++-v3; on=install-target-libgcc; };
+dependencies = { module=install-target-libgcobol; on=install-target-libstdc++-v3; };
+dependencies = { module=install-target-libgcobol; on=install-target-libquadmath; };
 
 // Target modules in the 'src' repository.
 lang_env_dependencies = { module=libtermcap; };
@@ -703,6 +707,7 @@ dependencies = { module=configure-target-newlib; on=all-ld; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libquadmath; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libbacktrace; };
 dependencies = { module=configure-target-libgo; on=all-target-libbacktrace; };
+dependencies = { module=configure-target-libgcobol; on=all-target-libquadmath; };
 
 languages = { language=c;	gcc-check-target=check-gcc; };
 languages = { language=c++;	gcc-check-target=check-c++;
@@ -727,6 +732,8 @@ languages = { language=d;	gcc-check-target=check-d;
 				lib-check-target=check-target-libphobos; };
 languages = { language=jit;	gcc-check-target=check-jit; };
 languages = { language=rust;	gcc-check-target=check-rust; };
+languages = { language=cobol;	gcc-check-target=check-cobol;
+				lib-check-target=check-target-libgcobol; };
 
 // Toplevel bootstrap
 bootstrap_stage = { id=1 ; };

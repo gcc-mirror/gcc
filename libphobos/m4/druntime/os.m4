@@ -121,6 +121,33 @@ AC_DEFUN([DRUNTIME_OS_SOURCES],
 ])
 
 
+# DRUNTIME_OS_FEATURES
+# -----------------------
+# Perform various feature checks on the target platform.
+AC_DEFUN([DRUNTIME_OS_FEATURES],
+[
+  AC_REQUIRE([DRUNTIME_OS_DETECT])
+  OS_DFLAGS=
+
+  case "$druntime_cv_target_os" in
+    linux*)  druntime_target_os_parsed="linux"
+      AC_MSG_CHECKING([for getrandom])
+      AC_LANG_PUSH([C])
+      AC_TRY_COMPILE([#include <sys/syscall.h>
+#include <unistd.h>],[
+        syscall (__NR_getrandom);
+      ],
+        [AC_MSG_RESULT([yes])],
+        [AC_MSG_RESULT([no])
+         OS_DFLAGS=-fversion=linux_legacy_emulate_getrandom])
+      AC_LANG_POP([C])
+      ;;
+  esac
+
+  AC_SUBST(OS_DFLAGS)
+])
+
+
 # DRUNTIME_OS_ARM_EABI_UNWINDER
 # ------------------------
 # Check if using ARM unwinder and substitute DCFG_ARM_EABI_UNWINDER

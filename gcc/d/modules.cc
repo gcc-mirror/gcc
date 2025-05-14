@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "cgraph.h"
 #include "stor-layout.h"
+#include "debug.h"
 #include "toplev.h"
 #include "target.h"
 #include "common/common-target.h"
@@ -143,13 +144,13 @@ get_internal_fn (tree ident, const Visibility &visibility)
       name = IDENTIFIER_POINTER (s);
     }
 
-  FuncDeclaration *fd = FuncDeclaration::genCfunc (NULL, Type::tvoid,
-						   Identifier::idPool (name));
+  FuncDeclaration *fd = dmd::genCfunc (NULL, Type::tvoid,
+				       Identifier::idPool (name));
   fd->isGenerated (true);
-  fd->loc = Loc (mod->srcfile.toChars (), 1, 0);
+  fd->loc = Loc::singleFilename (mod->srcfile.toChars ());
   fd->parent = mod;
   fd->visibility = visibility;
-  fd->semanticRun = PASS::semantic3done;
+  fd->semanticRun (PASS::semantic3done);
 
   return fd;
 }
@@ -667,7 +668,7 @@ layout_moduleinfo (Module *decl)
 
       CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, size_int (aimports_dim));
       CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE,
-			      build_constructor (satype, elms));
+			      build_padded_constructor (satype, elms));
     }
 
   if (flags & MIlocalClasses)
@@ -684,7 +685,7 @@ layout_moduleinfo (Module *decl)
 
       CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, size_int (aclasses.length));
       CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE,
-			      build_constructor (satype, elms));
+			      build_padded_constructor (satype, elms));
     }
 
   if (flags & MIname)
@@ -926,6 +927,14 @@ d_finish_compilation (tree *vec, int len)
 {
   /* Complete all generated thunks.  */
   symtab->process_same_body_aliases ();
+
+  /* Output debug information for all type declarations in this unit.  */
+  for (int i = 0; i < len; i++)
+    {
+      tree decl = vec[i];
+      if (TREE_CODE (decl) == TYPE_DECL)
+	debug_hooks->type_decl (decl, false);
+    }
 
   /* Process all file scopes in this compilation, and the external_scope,
      through wrapup_global_declarations.  */

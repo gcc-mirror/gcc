@@ -18,45 +18,31 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "diagnostic-core.h"
+#include "analyzer/common.h"
+
 #include "gimple-pretty-print.h"
+#include "sbitmap.h"
+#include "ordered-hash-map.h"
 #include "fold-const.h"
-#include "diagnostic-path.h"
-#include "options.h"
-#include "cgraph.h"
-#include "cfg.h"
-#include "digraph.h"
-#include "diagnostic-event-id.h"
-#include "analyzer/analyzer.h"
+#include "gimple-iterator.h"
+#include "inlining-iterator.h"
+#include "tree-logical-location.h"
+#include "diagnostic-format-sarif.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
-#include "sbitmap.h"
-#include "bitmap.h"
-#include "ordered-hash-map.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/program-state.h"
 #include "analyzer/checker-path.h"
-#include "gimple-iterator.h"
-#include "inlining-iterator.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/constraint-manager.h"
 #include "analyzer/checker-event.h"
 #include "analyzer/exploded-graph.h"
-#include "diagnostic-format-sarif.h"
-#include "tree-logical-location.h"
 
 #if ENABLE_ANALYZER
 
@@ -71,40 +57,46 @@ event_kind_to_string (enum event_kind ek)
     {
     default:
       gcc_unreachable ();
-    case EK_DEBUG:
-      return "EK_DEBUG";
-    case EK_CUSTOM:
-      return "EK_CUSTOM";
-    case EK_STMT:
-      return "EK_STMT";
-    case EK_REGION_CREATION:
-      return "EK_REGION_CREATION";
-    case EK_FUNCTION_ENTRY:
-      return "EK_FUNCTION_ENTRY";
-    case EK_STATE_CHANGE:
-      return "EK_STATE_CHANGE";
-    case EK_START_CFG_EDGE:
-      return "EK_START_CFG_EDGE";
-    case EK_END_CFG_EDGE:
-      return "EK_END_CFG_EDGE";
-    case EK_CALL_EDGE:
-      return "EK_CALL_EDGE";
-    case EK_RETURN_EDGE:
-      return "EK_RETURN_EDGE";
-    case EK_START_CONSOLIDATED_CFG_EDGES:
-      return "EK_START_CONSOLIDATED_CFG_EDGES";
-    case EK_END_CONSOLIDATED_CFG_EDGES:
-      return "EK_END_CONSOLIDATED_CFG_EDGES";
-    case EK_INLINED_CALL:
-      return "EK_INLINED_CALL";
-    case EK_SETJMP:
-      return "EK_SETJMP";
-    case EK_REWIND_FROM_LONGJMP:
-      return "EK_REWIND_FROM_LONGJMP";
-    case EK_REWIND_TO_SETJMP:
-      return "EK_REWIND_TO_SETJMP";
-    case EK_WARNING:
-      return "EK_WARNING";
+    case event_kind::debug:
+      return "debug";
+    case event_kind::custom:
+      return "custom";
+    case event_kind::stmt:
+      return "stmt";
+    case event_kind::region_creation:
+      return "region_creation";
+    case event_kind::function_entry:
+      return "function_entry";
+    case event_kind::state_change:
+      return "state_change";
+    case event_kind::start_cfg_edge:
+      return "start_cfg_edge";
+    case event_kind::end_cfg_edge:
+      return "end_cfg_edge";
+    case event_kind::catch_:
+      return "catch";
+    case event_kind::call_edge:
+      return "call_edge";
+    case event_kind::return_edge:
+      return "return_edge";
+    case event_kind::start_consolidated_cfg_edges:
+      return "start_consolidated_cfg_edges";
+    case event_kind::end_consolidated_cfg_edges:
+      return "end_consolidated_cfg_edges";
+    case event_kind::inlined_call:
+      return "inlined_call";
+    case event_kind::setjmp_:
+      return "setjmp";
+    case event_kind::rewind_from_longjmp:
+      return "rewind_from_longjmp";
+    case event_kind::rewind_to_setjmp:
+      return "rewind_to_setjmp";
+    case event_kind::throw_:
+      return "throw";
+    case event_kind::unwind:
+      return "unwind";
+    case event_kind::warning:
+      return "warning";
     }
 }
 
@@ -120,7 +112,8 @@ checker_event::checker_event (enum event_kind kind,
   m_original_depth (loc_info.m_depth),
   m_effective_depth (loc_info.m_depth),
   m_pending_diagnostic (NULL), m_emission_id (),
-  m_logical_loc (loc_info.m_fndecl)
+  m_logical_loc
+    (tree_logical_location_manager::key_from_tree (loc_info.m_fndecl))
 {
   /* Update effective fndecl and depth if inlining has been recorded.  */
   if (flag_analyzer_undo_inlining)
@@ -130,7 +123,8 @@ checker_event::checker_event (enum event_kind kind,
 	{
 	  m_effective_fndecl = info.get_inner_fndecl ();
 	  m_effective_depth += info.get_extra_frames ();
-	  m_logical_loc = tree_logical_location (m_effective_fndecl);
+	  m_logical_loc
+	    = tree_logical_location_manager::key_from_tree (m_effective_fndecl);
 	}
     }
 }
@@ -149,7 +143,8 @@ checker_event::get_meaning () const
 
 void
 checker_event::
-maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const
+maybe_add_sarif_properties (sarif_builder &builder,
+			    sarif_object &thread_flow_loc_obj) const
 {
   sarif_property_bag &props = thread_flow_loc_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/checker_event/"
@@ -158,12 +153,11 @@ maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const
   props.set_string (PROPERTY_PREFIX "kind", event_kind_to_string (m_kind));
 
   if (m_original_fndecl != m_effective_fndecl)
-    {
-      tree_logical_location logical_loc (m_original_fndecl);
-      props.set<sarif_logical_location>
-	(PROPERTY_PREFIX "original_fndecl",
-	 make_sarif_logical_location_object (logical_loc));
-    }
+    props.set_logical_location
+      (PROPERTY_PREFIX "original_fndecl",
+       builder,
+       tree_logical_location_manager::key_from_tree (m_original_fndecl));
+
   if (m_original_depth != m_effective_depth)
     props.set_integer (PROPERTY_PREFIX "original_depth", m_original_depth);
 #undef PROPERTY_PREFIX
@@ -258,7 +252,7 @@ precanned_custom_event::print_desc (pretty_printer &pp) const
 
 statement_event::statement_event (const gimple *stmt, tree fndecl, int depth,
 				  const program_state &dst_state)
-: checker_event (EK_STMT,
+: checker_event (event_kind::stmt,
 		 event_loc_info (gimple_location (stmt), fndecl, depth)),
   m_stmt (stmt),
   m_dst_state (dst_state)
@@ -279,7 +273,7 @@ statement_event::print_desc (pretty_printer &pp) const
 /* class region_creation_event : public checker_event.  */
 
 region_creation_event::region_creation_event (const event_loc_info &loc_info)
-: checker_event (EK_REGION_CREATION, loc_info)
+: checker_event (event_kind::region_creation, loc_info)
 {
 }
 
@@ -351,7 +345,7 @@ region_creation_event_debug::print_desc (pretty_printer &pp) const
 /* class function_entry_event : public checker_event.  */
 
 function_entry_event::function_entry_event (const program_point &dst_point)
-: checker_event (EK_FUNCTION_ENTRY,
+: checker_event (event_kind::function_entry,
 		 event_loc_info (dst_point.get_supernode
 				   ()->get_start_location (),
 				 dst_point.get_fndecl (),
@@ -393,7 +387,7 @@ state_change_event::state_change_event (const supernode *node,
 					const svalue *origin,
 					const program_state &dst_state,
 					const exploded_node *enode)
-: checker_event (EK_STATE_CHANGE,
+: checker_event (event_kind::state_change,
 		 event_loc_info (stmt->location,
 				 node->m_fun->decl,
 				 stack_depth)),
@@ -510,10 +504,11 @@ state_change_event::get_meaning () const
    for superedge_event.  */
 
 void
-superedge_event::maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj)
+superedge_event::maybe_add_sarif_properties (sarif_builder &builder,
+					     sarif_object &thread_flow_loc_obj)
   const
 {
-  checker_event::maybe_add_sarif_properties (thread_flow_loc_obj);
+  checker_event::maybe_add_sarif_properties (builder, thread_flow_loc_obj);
   sarif_property_bag &props = thread_flow_loc_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/superedge_event/"
   if (m_sedge)
@@ -741,7 +736,7 @@ start_cfg_edge_event::maybe_describe_condition (bool can_colorize,
       && zerop (rhs))
     {
       if (gcall *call = dyn_cast <gcall *> (SSA_NAME_DEF_STMT (lhs)))
-	if (is_special_named_call_p (call, "strcmp", 2))
+	if (is_special_named_call_p (*call, "strcmp", 2))
 	  {
 	    if (op == EQ_EXPR)
 	      return label_text::borrow ("when the strings are equal");
@@ -804,7 +799,7 @@ start_cfg_edge_event::should_print_expr_p (tree expr)
 
 call_event::call_event (const exploded_edge &eedge,
 			const event_loc_info &loc_info)
-: superedge_event (EK_CALL_EDGE, eedge, loc_info)
+: superedge_event (event_kind::call_edge, eedge, loc_info)
 {
   if (eedge.m_sedge)
     gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CALL);
@@ -880,7 +875,7 @@ call_event::get_callee_fndecl () const
 
 return_event::return_event (const exploded_edge &eedge,
 			    const event_loc_info &loc_info)
-: superedge_event (EK_RETURN_EDGE, eedge, loc_info)
+: superedge_event (event_kind::return_edge, eedge, loc_info)
 {
   if (eedge.m_sedge)
     gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_RETURN);
@@ -1116,6 +1111,50 @@ rewind_to_setjmp_event::prepare_for_emission (checker_path *path,
   checker_event::prepare_for_emission (path, pd, emission_id);
   path->get_setjmp_event (m_rewind_info->get_enode_origin (),
 			  &m_original_setjmp_event_id);
+}
+
+/* class throw_event : public checker_event.  */
+
+/* class explicit_throw_event : public throw_event.  */
+void
+explicit_throw_event::print_desc (pretty_printer &pp) const
+{
+  if (m_is_rethrow)
+    {
+      if (m_type)
+	pp_printf (&pp, "rethrowing exception of type %qT here...", m_type);
+      else
+	pp_printf (&pp, "rethrowing exception here...");
+    }
+  else
+    {
+      if (m_type)
+	pp_printf (&pp, "throwing exception of type %qT here...", m_type);
+      else
+	pp_printf (&pp, "throwing exception here...");
+    }
+}
+
+/* class throw_from_call_to_external_fn_event : public throw_event.  */
+
+void
+throw_from_call_to_external_fn_event::print_desc (pretty_printer &pp) const
+{
+  if (m_fndecl)
+    pp_printf (&pp, "if %qD throws an exception...", m_fndecl);
+  else
+    pp_printf (&pp, "if the called function throws an exception...");
+}
+
+// class unwind_event : public checker_event
+
+void
+unwind_event::print_desc (pretty_printer &pp) const
+{
+  if (m_num_frames > 1)
+    pp_printf (&pp, "unwinding %i stack frames", m_num_frames);
+  else
+    pp_printf (&pp, "unwinding stack frame");
 }
 
 /* class warning_event : public checker_event.  */

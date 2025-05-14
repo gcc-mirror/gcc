@@ -168,7 +168,7 @@ PathProbeType::Probe (const TyTy::BaseType *receiver,
   if (!probe_bounds)
     return probe.candidates;
 
-  if (!probe.is_reciever_generic ())
+  if (!probe.is_receiver_generic ())
     {
       std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> probed_bounds
 	= TypeBoundsProbe::Probe (receiver);
@@ -212,8 +212,8 @@ PathProbeType::visit (HIR::TypeAlias &alias)
     {
       HirId tyid = alias.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
-      bool ok = query_type (tyid, &ty);
-      rust_assert (ok);
+      if (!query_type (tyid, &ty))
+	return;
 
       PathProbeCandidate::ImplItemCandidate impl_item_candidate{&alias,
 								current_impl};
@@ -232,8 +232,8 @@ PathProbeType::visit (HIR::ConstantItem &constant)
     {
       HirId tyid = constant.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
-      bool ok = query_type (tyid, &ty);
-      rust_assert (ok);
+      if (!query_type (tyid, &ty))
+	return;
 
       PathProbeCandidate::ImplItemCandidate impl_item_candidate{&constant,
 								current_impl};
@@ -252,8 +252,8 @@ PathProbeType::visit (HIR::Function &function)
     {
       HirId tyid = function.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
-      bool ok = query_type (tyid, &ty);
-      rust_assert (ok);
+      if (!query_type (tyid, &ty))
+	return;
 
       PathProbeCandidate::ImplItemCandidate impl_item_candidate{&function,
 								current_impl};
@@ -277,7 +277,7 @@ PathProbeType::process_enum_item_for_candiates (const TyTy::ADTType *adt)
   PathProbeCandidate::EnumItemCandidate enum_item_candidate{adt, v};
   PathProbeCandidate candidate{PathProbeCandidate::CandidateType::ENUM_VARIANT,
 			       receiver->clone (),
-			       mappings->lookup_location (adt->get_ty_ref ()),
+			       mappings.lookup_location (adt->get_ty_ref ()),
 			       enum_item_candidate};
   candidates.insert (std::move (candidate));
 }
@@ -285,7 +285,7 @@ PathProbeType::process_enum_item_for_candiates (const TyTy::ADTType *adt)
 void
 PathProbeType::process_impl_items_for_candidates ()
 {
-  mappings->iterate_impl_items (
+  mappings.iterate_impl_items (
     [&] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
       process_impl_item_candidate (id, item, impl);
       return true;
@@ -297,7 +297,7 @@ PathProbeType::process_impl_item_candidate (HirId id, HIR::ImplItem *item,
 					    HIR::ImplBlock *impl)
 {
   current_impl = impl;
-  HirId impl_ty_id = impl->get_type ()->get_mappings ().get_hirid ();
+  HirId impl_ty_id = impl->get_type ().get_mappings ().get_hirid ();
   TyTy::BaseType *impl_block_ty = nullptr;
   if (!query_type (impl_ty_id, &impl_block_ty))
     return;
@@ -346,7 +346,7 @@ PathProbeType::process_associated_trait_for_candidates (
 
   const TyTy::TypeBoundPredicate p (*trait_ref, BoundPolarity::RegularBound,
 				    UNDEF_LOCATION);
-  TyTy::TypeBoundPredicateItem item (&p, trait_item_ref);
+  TyTy::TypeBoundPredicateItem item (p, trait_item_ref);
 
   TyTy::BaseType *trait_item_tyty = item.get_raw_item ()->get_tyty ();
   if (receiver->get_kind () != TyTy::DYNAMIC)
@@ -433,7 +433,7 @@ PathProbeType::union_bounds (
 }
 
 bool
-PathProbeType::is_reciever_generic () const
+PathProbeType::is_receiver_generic () const
 {
   const TyTy::BaseType *root = receiver->get_root ();
   bool receiver_is_type_param = root->get_kind () == TyTy::TypeKind::PARAM;
@@ -465,15 +465,14 @@ PathProbeImplTrait::Probe (const TyTy::BaseType *receiver,
 void
 PathProbeImplTrait::process_trait_impl_items_for_candidates ()
 {
-  mappings->iterate_impl_items (
+  mappings.iterate_impl_items (
     [&] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
       // just need to check if this is an impl block for this trait the next
       // function checks the receiver
       if (!impl->has_trait_ref ())
 	return true;
 
-      TraitReference *resolved
-	= TraitResolver::Lookup (*(impl->get_trait_ref ().get ()));
+      TraitReference *resolved = TraitResolver::Lookup (impl->get_trait_ref ());
       if (!trait_reference->is_equal (*resolved))
 	return true;
 

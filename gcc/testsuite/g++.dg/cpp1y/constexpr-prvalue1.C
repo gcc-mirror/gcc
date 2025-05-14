@@ -1,6 +1,6 @@
 // PR c++/116416
 // { dg-do compile { target c++14 } }
-// { dg-options "-O" }
+// { dg-options "-O -fdump-tree-original" }
 
 struct Str {
   constexpr Str() {}
@@ -17,14 +17,16 @@ extern void callback(Str str);
 void
 func1()
 {
-    callback(Str{"Test"});
+    callback(Str{"Test1"});
 }
 void
 func2()
 {
-    Str str{"Test"};
+    Str str{"Test2"};
     callback(str);
 }
 
-// Check that we don't call Str::Str(char const*)
-// { dg-final { scan-assembler-not "_ZN3StrC1EPKc" } }
+// Check that the front end folds both the temporary initializer and
+// that of 'str'.
+// { dg-final { scan-tree-dump "{.str=\\(const char \\*\\) \"Test1\", .length=5}" "original" } }
+// { dg-final { scan-tree-dump "{.str=\\(const char \\*\\) \"Test2\", .length=5}" "original" } }

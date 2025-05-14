@@ -1,4 +1,4 @@
-/* Subclasses of logical_location with knowledge of "tree".
+/* Subclass of logical_location_manager with knowledge of "tree".
    Copyright (C) 2022-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
@@ -27,50 +27,67 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "intl.h"
 
-/* class compiler_logical_location : public logical_location.  */
-
-/* Get a string for DECL suitable for use by the SARIF logicalLocation
-   "name" property (SARIF v2.1.0 section 3.33.4).  */
-
-const char *
-compiler_logical_location::get_short_name_for_tree (tree decl)
+static void
+assert_valid_tree (const_tree node)
 {
-  gcc_assert (decl);
-  return identifier_to_locale (lang_hooks.decl_printable_name (decl, 0));
+  gcc_assert (node);
+  gcc_assert (DECL_P (node) || TYPE_P (node));
+  gcc_assert (TREE_CODE (node) != TRANSLATION_UNIT_DECL);
 }
 
-/* Get a string for DECL suitable for use by the SARIF logicalLocation
-   "fullyQualifiedName" property (SARIF v2.1.0 section 3.33.5).  */
+/* class tree_logical_location_manager : public logical_location_manager.  */
 
 const char *
-compiler_logical_location::get_name_with_scope_for_tree (tree decl)
+tree_logical_location_manager::get_short_name (key k) const
 {
-  gcc_assert (decl);
-  return identifier_to_locale (lang_hooks.decl_printable_name (decl, 1));
+  tree node = tree_from_key (k);
+  assert_valid_tree (node);
+
+  if (DECL_P (node))
+    return identifier_to_locale (lang_hooks.decl_printable_name (node, 0));
+  if (TYPE_P (node))
+    return IDENTIFIER_POINTER (TYPE_IDENTIFIER (node));
+  return nullptr;
 }
 
-/* Get a string for DECL suitable for use by the SARIF logicalLocation
-   "decoratedName" property (SARIF v2.1.0 section 3.33.6).  */
+const char *
+tree_logical_location_manager::get_name_with_scope (key k) const
+{
+  tree node = tree_from_key (k);
+  assert_valid_tree (node);
+
+  if (DECL_P (node))
+    return identifier_to_locale (lang_hooks.decl_printable_name (node, 1));
+  if (TYPE_P (node))
+    return nullptr;
+  return nullptr;
+}
 
 const char *
-compiler_logical_location::get_internal_name_for_tree (tree decl)
+tree_logical_location_manager::get_internal_name (key k) const
 {
-  gcc_assert (decl);
-  if (HAS_DECL_ASSEMBLER_NAME_P (decl))
-    if (tree id = DECL_ASSEMBLER_NAME (decl))
-      return IDENTIFIER_POINTER (id);
+  tree node = tree_from_key (k);
+  assert_valid_tree (node);
+
+  if (DECL_P (node))
+    {
+      if (HAS_DECL_ASSEMBLER_NAME_P (node)
+	  && TREE_CODE (node) != NAMESPACE_DECL) // FIXME
+	if (tree id = DECL_ASSEMBLER_NAME (node))
+	  return IDENTIFIER_POINTER (id);
+    }
+  else if (TYPE_P (node))
+    return nullptr;
   return NULL;
 }
 
-/* Get what kind of SARIF logicalLocation DECL is (if any).  */
-
 enum logical_location_kind
-compiler_logical_location::get_kind_for_tree (tree decl)
+tree_logical_location_manager::get_kind (key k) const
 {
-  if (!decl)
-    return LOGICAL_LOCATION_KIND_UNKNOWN;
+  tree node = tree_from_key (k);
+  assert_valid_tree (node);
 
-  switch (TREE_CODE (decl))
+  switch (TREE_CODE (node))
     {
     default:
       return LOGICAL_LOCATION_KIND_UNKNOWN;
@@ -80,94 +97,51 @@ compiler_logical_location::get_kind_for_tree (tree decl)
       return LOGICAL_LOCATION_KIND_PARAMETER;
     case VAR_DECL:
       return LOGICAL_LOCATION_KIND_VARIABLE;
+    case NAMESPACE_DECL:
+      return LOGICAL_LOCATION_KIND_NAMESPACE;
+
+    case RECORD_TYPE:
+      return LOGICAL_LOCATION_KIND_TYPE;
     }
 }
 
 label_text
-compiler_logical_location::get_name_for_tree_for_path_output (tree decl)
+tree_logical_location_manager::get_name_for_path_output (key k) const
 {
-  gcc_assert (decl);
-  const char *n = DECL_NAME (decl)
-    ? identifier_to_locale (lang_hooks.decl_printable_name (decl, 2))
-    : _("<anonymous>");
-  return label_text::borrow (n);
+  tree node = tree_from_key (k);
+  assert_valid_tree (node);
+
+  if (DECL_P (node))
+    {
+      const char *n = DECL_NAME (node)
+	? identifier_to_locale (lang_hooks.decl_printable_name (node, 2))
+	: _("<anonymous>");
+      return label_text::borrow (n);
+    }
+  else if (TYPE_P (node))
+    return label_text ();
+  return label_text ();
 }
 
-/* class tree_logical_location : public compiler_logical_location.  */
-
-/* Implementation of the logical_location vfuncs, using m_decl.  */
-
-const char *
-tree_logical_location::get_short_name () const
+logical_location
+tree_logical_location_manager::get_parent (key k) const
 {
-  gcc_assert (m_decl);
-  return get_short_name_for_tree (m_decl);
-}
+  tree node = tree_from_key (k);
+  assert_valid_tree (node);
 
-const char *
-tree_logical_location::get_name_with_scope () const
-{
-  gcc_assert (m_decl);
-  return get_name_with_scope_for_tree (m_decl);
-}
-
-const char *
-tree_logical_location::get_internal_name () const
-{
-  gcc_assert (m_decl);
-  return get_internal_name_for_tree (m_decl);
-}
-
-enum logical_location_kind
-tree_logical_location::get_kind () const
-{
-  gcc_assert (m_decl);
-  return get_kind_for_tree (m_decl);
-}
-
-label_text
-tree_logical_location::get_name_for_path_output () const
-{
-  gcc_assert (m_decl);
-  return get_name_for_tree_for_path_output (m_decl);
-}
-
-/* class current_fndecl_logical_location : public compiler_logical_location.  */
-
-/* Implementation of the logical_location vfuncs, using
-   current_function_decl.  */
-
-const char *
-current_fndecl_logical_location::get_short_name () const
-{
-  gcc_assert (current_function_decl);
-  return get_short_name_for_tree (current_function_decl);
-}
-
-const char *
-current_fndecl_logical_location::get_name_with_scope () const
-{
-  gcc_assert (current_function_decl);
-  return get_name_with_scope_for_tree (current_function_decl);
-}
-
-const char *
-current_fndecl_logical_location::get_internal_name () const
-{
-  gcc_assert (current_function_decl);
-  return get_internal_name_for_tree (current_function_decl);
-}
-
-enum logical_location_kind
-current_fndecl_logical_location::get_kind () const
-{
-  gcc_assert (current_function_decl);
-  return get_kind_for_tree (current_function_decl);
-}
-
-label_text
-current_fndecl_logical_location::get_name_for_path_output () const
-{
-  gcc_assert (current_function_decl);
-  return get_name_for_tree_for_path_output (current_function_decl);
+  if (DECL_P (node))
+    {
+      if (!DECL_CONTEXT (node))
+	return logical_location ();
+      if (TREE_CODE (DECL_CONTEXT (node)) == TRANSLATION_UNIT_DECL)
+	return logical_location ();
+      return key_from_tree (DECL_CONTEXT (node));
+    }
+  else if (TYPE_P (node))
+    {
+      if (!TYPE_CONTEXT (node))
+	return logical_location ();
+      return key_from_tree (TYPE_CONTEXT (node));
+    }
+  return logical_location ();
 }

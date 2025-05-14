@@ -207,13 +207,13 @@ AARCH64_FMV_FEATURE("sve2-sm4", SVE_SM4, (SVE2_SM4))
 
 AARCH64_OPT_EXTENSION("sve2p1", SVE2p1, (SVE2), (), (), "sve2p1")
 
-AARCH64_OPT_FMV_EXTENSION("sme", SME, (BF16, SVE2), (), (), "sme")
+AARCH64_OPT_FMV_EXTENSION("sme", SME, (BF16, FCMA, F16, F16FML), (), (), "sme")
 
 AARCH64_OPT_EXTENSION("memtag", MEMTAG, (), (), (), "")
 
 AARCH64_OPT_FMV_EXTENSION("sb", SB, (), (), (), "sb")
 
-AARCH64_OPT_FMV_EXTENSION("predres", PREDRES, (), (), (), "")
+AARCH64_OPT_EXTENSION("predres", PREDRES, (), (), (), "")
 
 AARCH64_OPT_EXTENSION("ssbs", SSBS, (), (), (), "ssbs")
 

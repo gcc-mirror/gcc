@@ -36,7 +36,8 @@ namespace selftest {
 /* class test_diagnostic_path : public diagnostic_path.  */
 
 test_diagnostic_path::test_diagnostic_path (pretty_printer *event_pp)
-: m_event_pp (event_pp)
+: diagnostic_path (m_test_logical_loc_mgr),
+  m_event_pp (event_pp)
 {
   add_thread ("main");
 }
@@ -75,12 +76,8 @@ bool
 test_diagnostic_path::same_function_p (int event_idx_a,
 				       int event_idx_b) const
 {
-  const char *name_a = m_events[event_idx_a]->get_function_name ();
-  const char *name_b = m_events[event_idx_b]->get_function_name ();
-
-  if (name_a && name_b)
-    return 0 == strcmp (name_a, name_b);
-  return name_a == name_b;
+  return (m_events[event_idx_a]->get_logical_location ()
+	  == m_events[event_idx_b]->get_logical_location ());
 }
 
 diagnostic_thread_id_t
@@ -121,7 +118,10 @@ test_diagnostic_path::add_event (location_t loc,
   va_end (ap);
 
   test_diagnostic_event *new_event
-    = new test_diagnostic_event (loc, funcname, depth, pp_formatted_text (pp));
+    = new test_diagnostic_event (loc,
+				 logical_location_from_funcname (funcname),
+				 depth,
+				 pp_formatted_text (pp));
   m_events.safe_push (new_event);
 
   pp_clear_output_area (pp);
@@ -154,8 +154,11 @@ test_diagnostic_path::add_thread_event (diagnostic_thread_id_t thread_id,
   va_end (ap);
 
   test_diagnostic_event *new_event
-    = new test_diagnostic_event (loc, funcname, depth, pp_formatted_text (pp),
-				   thread_id);
+    = new test_diagnostic_event (loc,
+				 logical_location_from_funcname (funcname),
+				 depth,
+				 pp_formatted_text (pp),
+				 thread_id);
   m_events.safe_push (new_event);
 
   pp_clear_output_area (pp);
@@ -203,18 +206,24 @@ test_diagnostic_path::add_call (const char *caller_name,
   add_entry (callee_name, caller_stack_depth + 1, thread_id);
 }
 
+logical_location
+test_diagnostic_path::logical_location_from_funcname (const char *funcname)
+{
+  return m_test_logical_loc_mgr.logical_location_from_funcname (funcname);
+}
+
 /* struct test_diagnostic_event.  */
 
 /* test_diagnostic_event's ctor.  */
 
 test_diagnostic_event::
 test_diagnostic_event (location_t loc,
-			 const char *funcname,
-			 int depth,
-			 const char *desc,
-			 diagnostic_thread_id_t thread_id)
+		       logical_location logical_loc,
+		       int depth,
+		       const char *desc,
+		       diagnostic_thread_id_t thread_id)
 : m_loc (loc),
-  m_logical_loc (LOGICAL_LOCATION_KIND_FUNCTION, funcname),
+  m_logical_loc (logical_loc),
   m_depth (depth), m_desc (xstrdup (desc)),
   m_connected_to_next_event (false),
   m_thread_id (thread_id)

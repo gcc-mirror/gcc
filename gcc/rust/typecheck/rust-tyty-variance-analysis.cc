@@ -52,7 +52,7 @@ CrateCtx::query_type_regions (BaseType *type)
   return private_ctx->query_type_regions (type);
 }
 
-std::vector<size_t>
+FreeRegions
 CrateCtx::query_field_regions (const ADTType *parent, size_t variant_index,
 			       size_t field_index,
 			       const FreeRegions &parent_regions)
@@ -238,7 +238,7 @@ GenericTyVisitorCtx::process_type (ADTType &ty)
   first_lifetime = lookup_or_add_type (ty.get_orig_ref ());
   first_type = first_lifetime + ty.get_used_arguments ().get_regions ().size ();
 
-  for (const auto &param : ty.get_substs ())
+  for (auto &param : ty.get_substs ())
     param_names.push_back (
       param.get_generic_param ().get_type_representation ().as_string ());
 
@@ -332,7 +332,7 @@ GenericTyPerCrateCtx::query_generic_variance (const ADTType &type)
   return result;
 }
 
-std::vector<size_t>
+FreeRegions
 GenericTyPerCrateCtx::query_field_regions (const ADTType *parent,
 					   size_t variant_index,
 					   size_t field_index,
@@ -537,7 +537,7 @@ TyVisitorCtx::add_constraints_from_generic_args (HirId ref,
     }
 }
 
-std::vector<size_t>
+FreeRegions
 FieldVisitorCtx::collect_regions (BaseType &ty)
 {
   // Segment the regions into ranges for each type parameter. Type parameter

@@ -308,7 +308,7 @@ d.srcman: doc/gdc.1
 check-d: check-gdc
 lang_checks += check-gdc
 lang_checks_parallelized += check-gdc
-check_gdc_parallelize = 10
+check_gdc_parallelize = 128
 
 # No D-specific selftests.
 selftest-d:

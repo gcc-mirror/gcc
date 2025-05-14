@@ -1,12 +1,12 @@
 /**
  * Flow analysis for Ownership/Borrowing
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/ob.d, _ob.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/ob.d, _ob.d)
  * Documentation:  https://dlang.org/phobos/dmd_escape.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/ob.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/ob.d
  * References:  https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md Argument Ownership and Function Calls
  */
 
@@ -1336,7 +1336,7 @@ void genKill(ref ObState obstate, ObNode* ob)
         }
     }
 
-    void dgReadVar(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable)
+    void dgReadVar(Loc loc, ObNode* ob, VarDeclaration v, bool mutable)
     {
         if (log)
             printf("dgReadVar() %s %d\n", v.toChars(), mutable);
@@ -1351,12 +1351,12 @@ void genKill(ref ObState obstate, ObNode* ob)
         {
             alias visit = typeof(super).visit;
             extern (D) void delegate(ObNode*, VarDeclaration, Expression, bool) dgWriteVar;
-            extern (D) void delegate(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable) dgReadVar;
+            extern (D) void delegate(Loc loc, ObNode* ob, VarDeclaration v, bool mutable) dgReadVar;
             ObNode* ob;
             ObState* obstate;
 
             extern (D) this(void delegate(ObNode*, VarDeclaration, Expression, bool) dgWriteVar,
-                            void delegate(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable) dgReadVar,
+                            void delegate(Loc loc, ObNode* ob, VarDeclaration v, bool mutable) dgReadVar,
                             ObNode* ob, ref ObState obstate) scope
             {
                 this.dgWriteVar = dgWriteVar;
@@ -1683,7 +1683,7 @@ void genKill(ref ObState obstate, ObNode* ob)
             override void visit(ArrayLiteralExp e)
             {
                 Type tb = e.type.toBasetype();
-                if (tb.ty == Tsarray || tb.ty == Tarray)
+                if (tb.isStaticOrDynamicArray())
                 {
                     if (e.basis)
                         e.basis.accept(this);
@@ -1723,6 +1723,8 @@ void genKill(ref ObState obstate, ObNode* ob)
 
             override void visit(NewExp e)
             {
+                if (e.placement)
+                    e.placement.accept(this);
                 if (e.arguments)
                 {
                     foreach (ex; *e.arguments)
@@ -2085,7 +2087,7 @@ void checkObErrors(ref ObState obstate)
         }
     }
 
-    void dgReadVar(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[] gen)
+    void dgReadVar(Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[] gen)
     {
         if (log) printf("dgReadVar() %s\n", v.toChars());
         const vi = obstate.vars.find(v);
@@ -2103,12 +2105,12 @@ void checkObErrors(ref ObState obstate)
         {
             alias visit = typeof(super).visit;
             extern (D) void delegate(ObNode*, PtrVarState[], VarDeclaration, Expression) dgWriteVar;
-            extern (D) void delegate(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[]) dgReadVar;
+            extern (D) void delegate(Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[]) dgReadVar;
             PtrVarState[] cpvs;
             ObNode* ob;
             ObState* obstate;
 
-            extern (D) this(void delegate(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[]) dgReadVar,
+            extern (D) this(void delegate(Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[]) dgReadVar,
                             void delegate(ObNode*, PtrVarState[], VarDeclaration, Expression) dgWriteVar,
                             PtrVarState[] cpvs, ObNode* ob, ref ObState obstate) scope
             {
@@ -2424,7 +2426,7 @@ void checkObErrors(ref ObState obstate)
             override void visit(ArrayLiteralExp e)
             {
                 Type tb = e.type.toBasetype();
-                if (tb.ty == Tsarray || tb.ty == Tarray)
+                if (tb.isStaticOrDynamicArray())
                 {
                     if (e.basis)
                         e.basis.accept(this);
@@ -2464,6 +2466,9 @@ void checkObErrors(ref ObState obstate)
 
             override void visit(NewExp e)
             {
+                if (e.placement)
+                    e.placement.accept(this);
+
                 if (e.arguments)
                 {
                     foreach (ex; *e.arguments)

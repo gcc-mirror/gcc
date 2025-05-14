@@ -1,6 +1,5 @@
 /* PR middle-end/30494 */
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 
 int
 foo (int n)

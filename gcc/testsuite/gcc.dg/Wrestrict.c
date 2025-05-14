@@ -1,7 +1,6 @@
 /* Test to verify that VLAs are handled gracefully by -Wrestrict
    { dg-do compile }
-   { dg-options "-O2 -Wrestrict" }
-   { dg-require-effective-target alloca }  */
+   { dg-options "-O2 -Wrestrict" } */
 
 typedef __SIZE_TYPE__ size_t;
 

@@ -40,12 +40,13 @@ TEST_LOOP (double, 3.0)
 /* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.s, #2\.0e\+0\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.d, #3\.0e\+0\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.b, vl32\n} 11 } } */
+/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.b, vl32\n} 9 { target aarch64_big_endian } } } */
 
-/* { dg-final { scan-assembler-times {\tst1b\tz[0-9]+\.b,} 2 } } */
-/* { dg-final { scan-assembler-times {\tst1h\tz[0-9]+\.h,} 3 } } */
-/* { dg-final { scan-assembler-times {\tst1w\tz[0-9]+\.s,} 3 } } */
-/* { dg-final { scan-assembler-times {\tst1d\tz[0-9]+\.d,} 3 } } */
+/* { dg-final { scan-assembler-times {\tst1h\tz[0-9]+\.h,} 3 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times {\tst1w\tz[0-9]+\.s,} 3 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times {\tst1d\tz[0-9]+\.d,} 3 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times {\tstr\tz[0-9]+, \[x0\]} 2 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times {\tstr\tz[0-9]+, \[x0\]} 11 { target aarch64_little_endian } } } */
 
 /* { dg-final { scan-assembler-not {\twhile} } } */
 /* { dg-final { scan-assembler-not {\tb} } } */

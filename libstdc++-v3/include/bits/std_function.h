@@ -135,13 +135,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static _Functor*
 	_M_get_pointer(const _Any_data& __source) noexcept
 	{
-	  if _GLIBCXX17_CONSTEXPR (__stored_locally)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	  if constexpr (__stored_locally)
 	    {
 	      const _Functor& __f = __source._M_access<_Functor>();
 	      return const_cast<_Functor*>(std::__addressof(__f));
 	    }
 	  else // have stored a pointer
 	    return __source._M_access<_Functor*>();
+#pragma GCC diagnostic pop
 	}
 
       private:
@@ -311,21 +314,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_manager(_Any_data&, const _Any_data&, _Manager_operation)
       { return false; }
     };
-
-  // Avoids instantiating ill-formed specializations of _Function_handler
-  // in std::function<_Signature>::target<_Functor>().
-  // e.g. _Function_handler<Sig, void()> and _Function_handler<Sig, void>
-  // would be ill-formed.
-  template<typename _Signature, typename _Functor,
-	   bool __valid = is_object<_Functor>::value>
-    struct _Target_handler
-    : _Function_handler<_Signature, typename remove_cv<_Functor>::type>
-    { };
-
-  template<typename _Signature, typename _Functor>
-    struct _Target_handler<_Signature, _Functor, false>
-    : _Function_handler<void, void>
-    { };
 
   /**
    *  @brief Polymorphic function wrapper.
@@ -644,13 +632,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const _Functor*
 	target() const noexcept
 	{
-	  if _GLIBCXX17_CONSTEXPR (is_object<_Functor>::value)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	  if constexpr (is_object<_Functor>::value)
 	    {
-	      // For C++11 and C++14 if-constexpr is not used above, so
-	      // _Target_handler avoids ill-formed _Function_handler types.
-	      using _Handler = _Target_handler<_Res(_ArgTypes...), _Functor>;
-
-	      if (_M_manager == &_Handler::_M_manager
+	      if (_M_manager == &_Handler<_Functor>::_M_manager
 #if __cpp_rtti
 		  || (_M_manager && typeid(_Functor) == target_type())
 #endif
@@ -661,6 +647,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  return __ptr._M_access<const _Functor*>();
 		}
 	    }
+#pragma GCC diagnostic pop
 	  return nullptr;
 	}
       /// @}

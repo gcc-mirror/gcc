@@ -1,0 +1,136 @@
+; lang.opt -- Options for the gcc Cobol front end.
+
+; Copyright (C) 2021-2025 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+; See the GCC internals manual for a description of this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+Language
+Cobol
+
+D
+Cobol Joined Separate
+; Documented in c.opt
+
+E
+Cobol
+; Documented in c.opt
+
+I
+Cobol Joined Separate
+;;  -I <dir>	Add copybook search directory
+; Documented in c.opt
+
+dialect
+Cobol Joined Separate Enum(dialect_type) EnumBitSet Var(cobol_dialect)
+Accept COBOL constructs used by non-ISO compilers
+
+Enum
+Name(dialect_type) Type(int) UnknownError(Unrecognized COBOL dialect name: %qs)
+
+EnumValue
+Enum(dialect_type) String(gcc) Value(0x04) Canonical
+
+EnumValue
+Enum(dialect_type) String(ibm) Value(0x01)
+
+EnumValue
+Enum(dialect_type) String(mf)  Value(0x02)
+
+EnumValue
+Enum(dialect_type) String(gnu) Value(0x04)
+
+fcobol-exceptions
+Cobol Joined Separate Var(cobol_exceptions)
+-fcobol-exceptions=<n>	Enable some exceptions by default
+
+copyext
+Cobol Joined Separate Var(cobol_copyext) Init(0)
+Define alternative implicit copybook filename extension
+
+fdefaultbyte
+Cobol RejectNegative Joined Separate UInteger Var(cobol_default_byte)
+Set Working-Storage data items to the supplied value
+
+fflex-debug
+Cobol Var(yy_flex_debug, 1) Init(0)
+Enable Cobol lex debugging
+
+ffixed-form
+Cobol RejectNegative
+Assume that the source file is fixed form.
+
+ffree-form
+Cobol RejectNegative
+Assume that the source file is free form.
+
+findicator-column
+Cobol RejectNegative Joined Separate UInteger Var(indicator_column) Init(0) IntegerRange(0, 8)
+-findicator-column=<n>	Column after which Region A begins
+
+finternal-ebcdic
+Cobol Var(cobol_ebcdic, 1) Init(0)
+-finternal-ebcdic	Internal processing is in EBCDIC Code Page 1140
+
+fstatic-call
+Cobol Var(cobol_static_call, 1) Init(1)
+Enable/disable static linkage for CALL literals
+
+ftrace-debug
+Cobol Var(cobol_trace_debug, 1) Init(0)
+Enable Cobol parser debugging
+
+fyacc-debug
+Cobol Var(yy_debug, 1) Init(0)
+Enable Cobol yacc debugging
+
+preprocess
+Cobol Joined Separate Var(cobol_preprocess)
+preprocess <source_filter> before compiling
+
+iprefix
+Cobol Joined Separate
+; Documented in C
+
+include
+Cobol Joined Separate
+; Documented in C
+
+isysroot
+Cobol Joined Separate
+; Documented in C
+
+isystem
+Cobol Joined Separate
+; Documented in C
+
+main
+Cobol
+-main	The first program-id in the next source file is called by a generated main() entry point
+
+main=
+Cobol Joined Var(cobol_main_string)
+-main=<source_file> source_file/PROGRAM-ID is called by the generated main()
+
+nomain
+Cobol
+-nomain	No main() function is created from COBOL source files
+
+; This comment is to ensure we retain the blank line above.

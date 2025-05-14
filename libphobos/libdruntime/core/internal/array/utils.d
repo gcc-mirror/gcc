@@ -53,18 +53,6 @@ version (D_ProfileGC)
             string name = } ~ "`" ~ Type ~ "`;" ~ q{
 
             // FIXME: use rt.tracegc.accumulator when it is accessable in the future.
-            version (tracegc)
-        } ~ "{\n" ~ q{
-                import core.stdc.stdio;
-
-                printf("%sTrace file = '%.*s' line = %d function = '%.*s' type = %.*s\n",
-                } ~ "\"" ~ Hook ~ "\".ptr," ~ q{
-                    file.length, file.ptr,
-                    line,
-                    funcname.length, funcname.ptr,
-                    name.length, name.ptr
-                );
-            } ~ "}\n" ~ q{
             ulong currentlyAllocated = gcStatsPure().allocatedInCurrentThread;
 
             scope(exit)
@@ -99,7 +87,7 @@ version (D_ProfileGC)
      *  purity, and throwabilty checks. To prevent breaking existing code, this function template
      *  is temporarily declared `@trusted pure` until the implementation can be brought up to modern D expectations.
     */
-    auto _d_HookTraceImpl(T, alias Hook, string errorMessage)(string file, int line, string funcname, Parameters!Hook parameters) @trusted pure
+    auto _d_HookTraceImpl(T, alias Hook, string errorMessage)(Parameters!Hook parameters, string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted pure
     {
         version (D_TypeInfo)
         {
@@ -159,7 +147,7 @@ void[] __arrayAlloc(T)(size_t arrSize) @trusted
      * so the GC can't finalize them.
      */
     static if (typeInfoSize)
-        attr |= BlkAttr.STRUCTFINAL | BlkAttr.FINALIZE;
+        attr |= BlkAttr.FINALIZE;
     static if (!hasIndirections!T)
         attr |= BlkAttr.NO_SCAN;
 

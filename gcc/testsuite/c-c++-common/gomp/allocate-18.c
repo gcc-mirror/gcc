@@ -36,16 +36,16 @@ test1 ()
    x[0] = 1;
 
   #pragma omp target allocate(omp_thread_mem_alloc: x) firstprivate(x) /* uses_allocators(omp_thread_mem_alloc) */
-   /* { dg-warning "allocator with access trait set to 'thread' results in undfined behavior for 'target' directive \\\[-Wopenmp\\\]" "" { target *-*-* } .-1 } */
+   /* { dg-warning "allocator with access trait set to 'thread' results in undefined behavior for 'target' directive \\\[-Wopenmp\\\]" "" { target *-*-* } .-1 } */
    x[0] = 1;
 
   #pragma omp taskloop allocate(omp_thread_mem_alloc: x) firstprivate(x)
-   /* { dg-warning "allocator with access trait set to 'thread' results in undfined behavior for 'taskloop' directive \\\[-Wopenmp\\\]" "" { target *-*-* } .-1 } */
+   /* { dg-warning "allocator with access trait set to 'thread' results in undefined behavior for 'taskloop' directive \\\[-Wopenmp\\\]" "" { target *-*-* } .-1 } */
    for (int i = 0; i < 5; i++)
      x[i] = i;
 
   #pragma omp parallel master taskloop simd allocate(omp_thread_mem_alloc: x) firstprivate(x)
-   /* { dg-warning "allocator with access trait set to 'thread' results in undfined behavior for 'taskloop' directive \\\[-Wopenmp\\\]" "" { target *-*-* } .-1 } */
+   /* { dg-warning "allocator with access trait set to 'thread' results in undefined behavior for 'taskloop' directive \\\[-Wopenmp\\\]" "" { target *-*-* } .-1 } */
    for (int i = 0; i < 5; i++)
      x[i] = i;
 
@@ -53,7 +53,7 @@ test1 ()
   #pragma omp masked
   {
     #pragma omp task allocate(omp_thread_mem_alloc: x) firstprivate(x)
-      /* { dg-warning "allocator with access trait set to 'thread' results in undfined behavior for 'task' directive \\\[-Wopenmp\\\]" "" { target *-*-* } .-1 } */
+      /* { dg-warning "allocator with access trait set to 'thread' results in undefined behavior for 'task' directive \\\[-Wopenmp\\\]" "" { target *-*-* } .-1 } */
       x[0] = 1;
   }
 }

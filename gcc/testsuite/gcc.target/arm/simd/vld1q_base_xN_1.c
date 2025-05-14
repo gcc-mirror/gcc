@@ -1,6 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-save-temps -O2" } */
+/* { dg-options "-save-temps -O2 -Wpointer-sign" } */
 /* { dg-add-options arm_neon } */
 
 #include "arm_neon.h"

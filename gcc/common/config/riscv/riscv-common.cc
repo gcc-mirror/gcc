@@ -115,6 +115,9 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zicfiss", "zimop"},
   {"zicfilp", "zicsr"},
 
+  {"zclsd", "zilsd"},
+  {"zclsd", "zca"},
+
   {"zk", "zkn"},
   {"zk", "zkr"},
   {"zk", "zkt"},
@@ -137,6 +140,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zve64f", "f"},
   {"zve64d", "d"},
 
+  {"zve32x", "zicsr"},
   {"zve32x", "zvl32b"},
   {"zve32f", "zve32x"},
   {"zve32f", "zvl32b"},
@@ -213,10 +217,41 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zcmp", "zca"},
   {"zcmt", "zca"},
   {"zcmt", "zicsr"},
-  {"zcf", "f",
+  {"zce", "zcf",
    [] (const riscv_subset_list *subset_list) -> bool
    {
      return subset_list->xlen () == 32 && subset_list->lookup ("f");
+   }},
+  {"zca", "c",
+   [] (const riscv_subset_list *subset_list) -> bool
+   {
+     /* For RV32 Zca implies C for one of these combinations of
+	extensions: Zca, F_Zca_Zcf and FD_Zca_Zcf_Zcd.  */
+     if (subset_list->xlen () == 32)
+       {
+	 if (subset_list->lookup ("d"))
+	   return subset_list->lookup ("zcf") && subset_list->lookup ("zcd");
+
+	 if (subset_list->lookup ("f"))
+	   return subset_list->lookup ("zcf");
+
+	 return true;
+       }
+
+     /* For RV64 Zca implies C for one of these combinations of
+	extensions: Zca and FD_Zca_Zcd (Zcf is not available
+	for RV64).  */
+     if (subset_list->xlen () == 64)
+       {
+	 if (subset_list->lookup ("d"))
+	   return subset_list->lookup ("zcd");
+
+	 return true;
+       }
+
+     /* Do nothing for future RV128 specification. Behaviour
+	for this case is not yet well defined.  */
+     return false;
    }},
 
   {"smaia", "ssaia"},
@@ -226,6 +261,10 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"sscofpmf", "zicsr"},
   {"ssstateen", "zicsr"},
   {"sstc", "zicsr"},
+
+  {"ssnpm", "zicsr"},
+  {"smnpm", "zicsr"},
+  {"smmpm", "zicsr"},
 
   {"xsfvcp", "zve32x"},
 
@@ -240,6 +279,12 @@ struct riscv_ext_version
   enum riscv_isa_spec_class isa_spec_class;
   int major_version;
   int minor_version;
+};
+
+struct riscv_profiles
+{
+  const char *profile_name;
+  const char *profile_string;
 };
 
 /* All standard extensions defined in all supported ISA spec.  */
@@ -295,6 +340,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zalrsc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zabha", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zacas", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zama16b", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zba", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbb", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -337,6 +383,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"zicntr", ISA_SPEC_CLASS_NONE, 2, 0},
   {"zihpm",  ISA_SPEC_CLASS_NONE, 2, 0},
+
+  {"zilsd",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zclsd",  ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zk",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkn",   ISA_SPEC_CLASS_NONE, 1, 0},
@@ -400,6 +449,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zcmp", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zcmt", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"sdtrig",  ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"smaia",     ISA_SPEC_CLASS_NONE, 1, 0},
   {"smepmp",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"smstateen", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -408,7 +459,16 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"sscofpmf",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"ssstateen", ISA_SPEC_CLASS_NONE, 1, 0},
   {"sstc",      ISA_SPEC_CLASS_NONE, 1, 0},
+  {"ssstrict",  ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"ssnpm",     ISA_SPEC_CLASS_NONE, 1, 0},
+  {"smnpm",     ISA_SPEC_CLASS_NONE, 1, 0},
+  {"smmpm",     ISA_SPEC_CLASS_NONE, 1, 0},
+  {"sspm",      ISA_SPEC_CLASS_NONE, 1, 0},
+  {"supm",      ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"svade",   ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svadu",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"svinval", ISA_SPEC_CLASS_NONE, 1, 0},
   {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
   {"svpbmt",  ISA_SPEC_CLASS_NONE, 1, 0},
@@ -462,6 +522,47 @@ static const struct riscv_ext_version riscv_combine_info[] =
   {"zvksg", ISA_SPEC_CLASS_NONE, 1, 0},
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
+};
+
+/* This table records the mapping form RISC-V Profiles into march string.  */
+static const riscv_profiles riscv_profiles_table[] =
+{
+  /* RVI20U only contains the base extension 'i' as mandatory extension.  */
+  {"rvi20u64", "rv64i"},
+  {"rvi20u32", "rv32i"},
+
+  /* RVA20U contains the 'i,m,a,f,d,c,zicsr,zicntr,ziccif,ziccrse,ziccamoa,
+     zicclsm,za128rs' as mandatory extensions.  */
+  {"rva20u64", "rv64imafdc_zicsr_zicntr_ziccif_ziccrse_ziccamoa"
+   "_zicclsm_za128rs"},
+
+  /* RVA22U contains the 'i,m,a,f,d,c,zicsr,zihintpause,zba,zbb,zbs,zicntr,
+     zihpm,ziccif,ziccrse,ziccamoa, zicclsm,zic64b,za64rs,zicbom,zicbop,zicboz,
+     zfhmin,zkt' as mandatory extensions.  */
+  {"rva22u64", "rv64imafdc_zicsr_zicntr_ziccif_ziccrse_ziccamoa"
+   "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
+   "_zicboz_zfhmin_zkt"},
+
+  /* RVA23 contains all mandatory base ISA for RVA22U64 and the new extension
+     'v,zihintntl,zvfhmin,zvbb,zvkt,zicond,zimop,zcmop,zfa,zawrs' as mandatory
+     extensions.  */
+  {"rva23u64", "rv64imafdcv_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
+   "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
+   "_zicboz_zfhmin_zkt_zvfhmin_zvbb_zvkt_zihintntl_zicond_zimop_zcmop_zcb"
+   "_zfa_zawrs"},
+
+  /* RVB23 contains all mandatory base ISA for RVA22U64 and the new extension
+     'zihintntl,zicond,zimop,zcmop,zfa,zawrs' as mandatory
+     extensions.  */
+  {"rvb23u64", "rv64imafdc_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
+   "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
+   "_zicboz_zfhmin_zkt_zihintntl_zicond_zimop_zcmop_zcb"
+   "_zfa_zawrs"},
+
+  /* Currently we do not define S/M mode Profiles in gcc part.  */
+
+  /* Terminate the list.  */
+  {NULL, NULL}
 };
 
 static const riscv_cpu_info riscv_cpu_tables[] =
@@ -1071,6 +1172,52 @@ riscv_subset_list::parsing_subset_version (const char *ext,
   return p;
 }
 
+/* Parsing RISC-V Profiles in -march string.
+   Return string with mandatory extensions of Profiles.  */
+std::string
+riscv_subset_list::parse_profiles (const char *arch)
+{
+  /* Checking if input string contains a Profiles.
+    There are two cases use Profiles in -march option:
+
+    1. Only use Profiles in '-march' as input
+    2. Mixed Profiles with other extensions
+
+    Use '_' to split Profiles and other extension.  */
+    std::string p(arch);
+    const size_t p_len = p.size();
+
+    for (int i = 0; riscv_profiles_table[i].profile_name != nullptr; ++i)
+    {
+      const std::string& p_name = riscv_profiles_table[i].profile_name;
+      const std::string& p_str = riscv_profiles_table[i].profile_string;
+      size_t pos = p.find(p_name);
+      /* Find profile at the begin.  */
+      if (pos == 0 && pos + p_name.size() <= p_len)
+	{
+	  size_t after_pos = pos + p_name.size();
+	  std::string after_part = p.substr(after_pos);
+
+	  /* If there're only profile, return the profile_string directly.  */
+	  if (after_part[0] == '\0')
+	    return p_str;
+
+	  /* If isn't '_' after profile, need to add it and mention the user.  */
+	  if (after_part[0] != '_')
+	  {
+	    warning_at (m_loc, 0, "Should use \"%c\" to contact Profiles with other "
+				  "extensions", '_');
+	    return p_str + "_" + after_part;
+	  }
+
+	  /* Return 'profiles_additional' extensions.  */
+	  return p_str + after_part;
+	}
+    }
+  /* Not found profile, return directly.  */
+  return p;
+}
+
 /* Parsing function for base extensions, rv[32|64][i|e|g]
 
    Return Value:
@@ -1097,8 +1244,8 @@ riscv_subset_list::parse_base_ext (const char *p)
     }
   else
     {
-      error_at (m_loc, "%<-march=%s%>: ISA string must begin with rv32 or rv64",
-		m_arch);
+      error_at (m_loc, "%<-march=%s%>: ISA string must begin with rv32, rv64 "
+		"or Profiles", m_arch);
       return NULL;
     }
 
@@ -1308,6 +1455,34 @@ riscv_subset_list::check_conflict_ext ()
   if (lookup ("zcf") && m_xlen == 64)
     error_at (m_loc, "%<-march=%s%>: zcf extension supports in rv32 only",
 	      m_arch);
+  
+  if (lookup ("zilsd") && m_xlen == 64)
+    error_at (m_loc, "%<-march=%s%>: zilsd extension supports in rv32 only",
+	      m_arch);
+
+  if (lookup ("zclsd") && m_xlen == 64)
+    error_at (m_loc, "%<-march=%s%>: zclsd extension supports in rv32 only",
+	      m_arch);
+
+  if (lookup ("ssnpm") && m_xlen == 32)
+    error_at (m_loc, "%<-march=%s%>: ssnpm extension supports in rv64 only",
+	      m_arch);
+
+  if (lookup ("smnpm") && m_xlen == 32)
+    error_at (m_loc, "%<-march=%s%>: smnpm extension supports in rv64 only",
+	      m_arch);
+
+  if (lookup ("smmpm") && m_xlen == 32)
+    error_at (m_loc, "%<-march=%s%>: smmpm extension supports in rv64 only",
+	      m_arch);
+
+  if (lookup ("sspm") && m_xlen == 32)
+    error_at (m_loc, "%<-march=%s%>: sspm extension supports in rv64 only",
+	      m_arch);
+
+  if (lookup ("supm") && m_xlen == 32)
+    error_at (m_loc, "%<-march=%s%>: supm extension supports in rv64 only",
+	      m_arch);
 
   if (lookup ("zfinx") && lookup ("f"))
     error_at (m_loc,
@@ -1489,8 +1664,10 @@ riscv_subset_list::parse (const char *arch, location_t loc)
     return NULL;
 
   riscv_subset_list *subset_list = new riscv_subset_list (arch, loc);
+
   const char *p = arch;
-  p = subset_list->parse_base_ext (p);
+  std::string a = subset_list->parse_profiles(p);
+  p = subset_list->parse_base_ext (a.c_str());
   if (p == NULL)
     goto fail;
 
@@ -1620,6 +1797,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("zalrsc",  x_riscv_za_subext, MASK_ZALRSC),
   RISCV_EXT_FLAG_ENTRY ("zabha",   x_riscv_za_subext, MASK_ZABHA),
   RISCV_EXT_FLAG_ENTRY ("zacas",   x_riscv_za_subext, MASK_ZACAS),
+  RISCV_EXT_FLAG_ENTRY ("zama16b", x_riscv_za_subext, MASK_ZAMA16B),
 
   RISCV_EXT_FLAG_ENTRY ("zba", x_riscv_zb_subext, MASK_ZBA),
   RISCV_EXT_FLAG_ENTRY ("zbb", x_riscv_zb_subext, MASK_ZBB),
@@ -1648,6 +1826,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("ziccif",      x_riscv_zi_subext, MASK_ZICCIF),
   RISCV_EXT_FLAG_ENTRY ("zicclsm",     x_riscv_zi_subext, MASK_ZICCLSM),
   RISCV_EXT_FLAG_ENTRY ("ziccrse",     x_riscv_zi_subext, MASK_ZICCRSE),
+  RISCV_EXT_FLAG_ENTRY ("zilsd",       x_riscv_zi_subext, MASK_ZILSD),
 
   RISCV_EXT_FLAG_ENTRY ("zicboz", x_riscv_zicmo_subext, MASK_ZICBOZ),
   RISCV_EXT_FLAG_ENTRY ("zicbom", x_riscv_zicmo_subext, MASK_ZICBOM),
@@ -1731,10 +1910,19 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("zcd",  x_riscv_zc_subext, MASK_ZCD),
   RISCV_EXT_FLAG_ENTRY ("zcmp", x_riscv_zc_subext, MASK_ZCMP),
   RISCV_EXT_FLAG_ENTRY ("zcmt", x_riscv_zc_subext, MASK_ZCMT),
+  RISCV_EXT_FLAG_ENTRY ("zclsd", x_riscv_zc_subext, MASK_ZCLSD),
 
-  RISCV_EXT_FLAG_ENTRY ("svinval", x_riscv_sv_subext, MASK_SVINVAL),
-  RISCV_EXT_FLAG_ENTRY ("svnapot", x_riscv_sv_subext, MASK_SVNAPOT),
-  RISCV_EXT_FLAG_ENTRY ("svvptc", x_riscv_sv_subext, MASK_SVVPTC),
+  RISCV_EXT_FLAG_ENTRY ("svade",       x_riscv_sv_subext, MASK_SVADE),
+  RISCV_EXT_FLAG_ENTRY ("svadu",       x_riscv_sv_subext, MASK_SVADU),
+  RISCV_EXT_FLAG_ENTRY ("svinval",     x_riscv_sv_subext, MASK_SVINVAL),
+  RISCV_EXT_FLAG_ENTRY ("svnapot",     x_riscv_sv_subext, MASK_SVNAPOT),
+  RISCV_EXT_FLAG_ENTRY ("svvptc",      x_riscv_sv_subext, MASK_SVVPTC),
+
+  RISCV_EXT_FLAG_ENTRY ("ssnpm", x_riscv_ss_subext, MASK_SSNPM),
+  RISCV_EXT_FLAG_ENTRY ("smnpm", x_riscv_sm_subext, MASK_SMNPM),
+  RISCV_EXT_FLAG_ENTRY ("smmpm", x_riscv_sm_subext, MASK_SMMPM),
+  RISCV_EXT_FLAG_ENTRY ("sspm", x_riscv_ss_subext, MASK_SSPM),
+  RISCV_EXT_FLAG_ENTRY ("supm", x_riscv_su_subext, MASK_SUPM),
 
   RISCV_EXT_FLAG_ENTRY ("ztso", x_riscv_ztso_subext, MASK_ZTSO),
 

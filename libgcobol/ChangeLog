@@ -1,0 +1,372 @@
+2025-05-11  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119377
+	* common-defs.h: (struct cbl_declaratives_t): Change "bool global" to
+	"uint32_t global".
+
+2025-05-10  Robert Dubner  <rdubner@symas.com>
+
+	* common-defs.h (ec_cmp): Delete "getenv("match_declarative")" calls.
+	(enabled_exception_match): Delete "getenv("match_declarative")" calls.
+	* libgcobol.cc: Eliminate __gg__odo_violation.
+
+2025-05-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Handle --enable-libgcobol.
+	Let it override LIBGCOBOL_SUPPORTED.
+	* configure: Regenerate.
+
+2025-05-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for program_invocation_short_name and
+	and getprogname().
+	* libgcobol.cc (default_exception_handler): When the platform
+	has program_invocation_short_name, use it otherwise fall
+	back to using getprogname() or a constant string (if neither
+	interface is available).
+
+2025-05-05  Robert Dubner  <rdubner@symas.com>
+
+	* charmaps.cc: Add #include <vector>.
+	* common-defs.h (COMMON_DEFS_H_): Add #include <stdio.h>.
+	(enum cbl_file_mode_t): Add file_mode_any_e.
+	(enum file_stmt_t): Created.
+	(cbl_file_mode_str): Add case for file_mode_any_e.
+	(ec_cmp): Exceptions.
+	(struct cbl_enabled_exception_t): Likewise.
+	(struct cbl_declarative_t): Likewise.
+	(class cbl_enabled_exceptions_array_t): Likewise.
+	(class cbl_enabled_exceptions_t): Likewise.
+	(struct cbl_enabled_exceptions_array_t): Likewise.
+	(enabled_exception_match): Likewise.
+	* constants.cc: Add #include <vector>.
+	* exceptl.h (struct cbl_exception_t): Removed.
+	(struct cbl_declarative_t): Removed.
+	(class ec_status_t): Removed.
+	* gcobolio.h: Add symbol_table_index to cblc_file_t.
+	* gfileio.cc: Add #include <vector>
+	(establish_status): Comment.
+	(__io__file_init): Handle symbol_table_index.
+	(__io__file_delete): Set file->prior_op.
+	(__io__file_rewrite): Likewise.
+	(__io__file_read): Likewise.
+	(__io__file_open): Likewise.
+	(__io__file_close): Likewise.
+	* gmath.cc: Include #include <vector>.
+	* intrinsic.cc: Include #include <vector>.
+	* libgcobol.cc: Multiple modifications for exceptions.
+	* valconv.cc: #include <vector>.
+
+2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119364
+	* valconv.cc (__gg__realloc_if_necessary): Use (new_size>>16)>>16;
+	instead of new_size>>32; to avoid warnings on 32-bit hosts.
+	* common-defs.h (enum cbl_field_attr_t): Use uint64_t
+	as underlying type rather than size_t.
+	* gcobolio.h (cblc_field_t): Change attr member type from size_t
+	to unsigned long long.
+
+2025-04-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Check for struct tm.tm_zone.
+	* configure, config.h.in: Regenerate.
+	* intrinsic.cc (__gg__formatted_current_date): Guard tm.tm_zone
+	use with HAVE_STRUCT_TM_TM_ZONE.
+
+2025-04-15  Andreas Schwab  <schwab@suse.de>
+
+	* configure.tgt: Set LIBGCOBOL_SUPPORTED for riscv64-*-linux* with
+	64-bit multilib.
+
+2025-04-15  Jakub Jelinek  <jakub@redhat.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR cobol/119244
+	* acinclude.m4 (LIBGCOBOL_CHECK_FLOAT128): Ensure
+	libgcob_cv_have_float128 is not yes on targets with IEEE quad
+	long double.  Don't check for --as-needed nor set LIBQUADSPEC
+	on targets which USE_IEC_60559.
+	* libgcobol-fp.h (FP128_FMT, strtofp128, strfromfp128): Define.
+	* intrinsic.cc (strtof128): Don't redefine.
+	(WEIRD_TRANSCENDENT_RETURN_VALUE): Use GCOB_FP128_LITERAL macro.
+	(__gg__numval_f): Use strtofp128 instead of strtof128.
+	* libgcobol.cc (strtof128): Don't redefine.
+	(format_for_display_internal): Use strfromfp128 instead of
+	strfromf128 or quadmath_snprintf and use FP128_FMT in the format
+	string.
+	(get_float128, __gg__compare_2, __gg__move, __gg__move_literala):
+	Use strtofp128 instead of strtof128.
+	* configure: Regenerate.
+
+2025-04-14  Andreas Schwab  <schwab@suse.de>
+
+	* libgcobol.cc (__gg__float64_from_128): Mark literal as float128
+	literal.
+
+2025-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* valconv.cc (__gg__string_to_numeric_edited): Use strchr instead
+	of index.
+
+2025-04-12  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119694
+	* gfileio.cc: Eliminate getenv() calls.
+	* libgcobol.cc: Likewise.
+
+2025-04-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Enable for x86_64 Darwin.
+
+2025-04-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119244
+	* Makefile.am: Add support for libquadmath.
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Add support for libquadmath.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Configure libquadmath support.
+	* gmath.cc: Use GCOB_FP128 to represent the configured
+	128b floating point type.  Use FP128_FUNC to represent
+	the naming of intrinsics in the configure 128b floating
+	point type. Render literals with GCOB_FP128_LITERAL.
+	* intrinsic.cc: Likewise.
+	* libgcobol.cc: Likewise.
+	* libgcobol.h: Likewise.
+	* libgcobol-fp.h: New file.
+	* gfileio.cc: Include libgcobol-fp.h.
+	* libgcobol.spec.in: Add libquadmath configure output.
+
+2025-04-09  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119682
+	* common-defs.h: Define the REFER_T_REFMOD constant.
+	* intrinsic.cc: (__gg__max): Change the calls to __gg__compare_2(),
+	(__gg__min): Likewise, (__gg__ord_min): Likewise,
+	(__gg__ord_max): Likewise.
+	* libgcobol.cc: (__gg__compare_2): Change definition of calling
+	parameters, eliminate separate flag bit for ALL and ADDRESS_OF,
+	change comparison of alphanumeric to numeric when the numeric
+	is a refmod.
+	* libgcobol.h: Change declaration of __gg__compare_2.
+
+2025-04-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Add libgcobol.spec and dependency.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add libgcobol.spec handling.
+	* libgcobol.spec.in: New file.
+
+2025-04-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.am: Use the configured LIBS and extra_ldflags.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Shift configure to use c++. Order tests for tools
+	and environment before other tests.
+
+2025-04-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Use $(LIBM) to add the math lib when
+	it is needed.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check if the target wants libm.
+
+2025-04-04  Bob Dubner  <rdubner@symas.com>
+
+	* charmaps.h: Change __gg__data_return_code to 'short' type.
+	* constants.cc: Likewise.
+
+2025-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for availability of strfromf32 and
+	strfromf64.
+	* libgcobol.cc (strfromf32, strfromf64): New.
+
+2025-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119295
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Configure random_r and friends
+	* intrinsic.cc (__gg__random): Use random_r when available.
+	(__gg__random_next): Likewise.
+
+2025-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gfileio.cc: Include config.h.
+	* gmath.cc: Likewise.
+	* io.cc: Likewise.
+	* libgcobol.cc: Likewise.
+
+2025-04-02  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119521
+	* intrinsic.cc: (__gg__reverse): Trim final result for intermediate_e.
+	* libgcobol.cc: (__gg__adjust_dest_size): Abort on attempt to increase
+	the size of a result.  (__gg__module_name): Formatting.
+	__gg__reverse(): Resize only intermediates
+
+2025-03-28  Bob Dubner  <rdubner@symas.com>
+
+	* charmaps.cc:Eliminate "#include libgcobol.h".
+	Change comment about _Float128.
+	* common-defs.h: Change comment about _Float128. Receive
+	#defines from libgcobol.h.
+	* constants.cc: Eliminate #include libgcobol.h. Eliminate other
+	unneeded #includes.
+	* ec.h: Receive declarations from libgcobol.h.
+	* gcobolio.h: Likewise.
+	* gfileio.cc: (__gg__file_init): Use file_flag_none_e instead of
+	zero in assignment.  (__gg__file_reopen): Likewise.
+	(__io__file_open): Likewise.
+	* gfileio.h: Receive declarations from libgcobol.h.
+	* libgcobol.h: Numerous declarations moved elsewhere.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* charmaps.cc (__gg__raw_to_ascii): Use auto for complicated
+	nested type.
+	(__gg__raw_to_ebcdic): Likewise.
+	(__gg__console_to_ascii): Likewise.
+	(__gg__console_to_ebcdic): Likewise.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* intrinsic.cc (is_zulu_format): Qualify toupper and cast
+	argument to unsigned char.
+	(fill_cobol_tm): Likewise.
+	(iscasematch): Likewise for to lower.
+	(numval): Qualify calls to tolower.
+	(__gg__lower_case): Use lambda expression for
+	tolower call.
+	(__gg__upper_case): Likewise for toupper call.
+	* libgcobol.cc (mangler_core): Cast tolower argument to unsigned
+	char.
+	* valconv.cc (__gg__string_to_numeric_edited): Cast to upper
+	arguments to unsigned char.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* common-defs.h (cbl_enabled_exceptions_t::operator=): Define as
+	defaulted.
+
+2025-03-23  Bob Dubner  <rdubner@symas.com>
+
+	* Makefile.am: Incorporate AM_CXXFLAGS = $(CXXFLAGS_FOR_TARGET).
+	* Makefile.in: Regenerated.
+
+2025-03-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Use LIBICONV.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for iconv support.
+
+2025-03-17  Bob Dubner  <rdubner@symas.com>
+
+	* charmaps.cc: Remove unused headers
+	* libgcobol.h: Likewise.
+	* valconv.cc: Likewise.
+
+2025-03-14  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.am: Define gcc_version.
+	* configure.ac: Execute GCC_BASE_VER.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* charmaps.cc: Fix typo in comment.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* config.h.in: Regenerate.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119216
+	* configure.tgt: On fully unsupported targets set UNSUPPORTED=1.
+	* configure.ac: Add AC_CHECK_SIZEOF([void *]), source in
+	configure.tgt and set BUILD_LIBGCOBOL also based on
+	LIBGCOBOL_SUPPORTED.
+	* Makefile.am (toolexeclib_LTLIBRARIES): Conditionalize on
+	BUILD_LIBGCOBOL.
+	(AM_CFLAGS): Rename to ...
+	(AM_CXXFLAGS): ... this.
+	(%.lo: %.cc): Use $(AM_CXXFLAGS) rather than $(AM_CFLAGS).
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am: Remove tons of VAR = @VAR@ style lines.
+	(libgcobol.la): Remove.
+	(libgcobol_la_LFLAGS): Remove.
+	(all): Remove.
+	(.PHONY): Remove.
+	(install): Remove.
+	(%.lo: %.c): Remove.
+	(doc): Remove.
+	(install-html install-pdf install-info): Remove.
+	* Makefile.in: Regenerate.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.tgt: Remove x86_64-*-linux*x32 special case.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.tgt: Only set LIBGCOBOL_SUPPORTED for lp64
+	multilibs of powerpc64le-*-linux* and x86_64-*-linux*.  Handle
+	i?86-*-linux* the same as x86_64-*-linux*.
+
+2025-03-11  James K. Lowden  <jklowden@symas.com>
+
+	* Makefile.am: New file.
+	* Makefile.in: Autogenerate.
+	* acinclude.m4: Likewise.
+	* aclocal.m4: Likewise.
+	* configure.ac: New file.
+	* configure: Autogenerate.
+	* configure.tgt: New file.
+	* README: New file.
+	* charmaps.cc: New file.
+	* config.h.in: New file.
+	* constants.cc: New file.
+	* gfileio.cc: New file.
+	* gmath.cc: New file.
+	* io.cc: New file.
+	* valconv.cc: New file.
+	* charmaps.h: New file.
+	* common-defs.h: New file.
+	* ec.h: New file.
+	* exceptl.h: New file.
+	* gcobolio.h: New file.
+	* gfileio.h: New file.
+	* gmath.h: New file.
+	* io.h: New file.
+	* libgcobol.h: New file.
+	* valconv.h: New file.
+	* libgcobol.cc: New file.
+	* intrinsic.cc: New file.
+
+
+Copyright (C) 2025 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

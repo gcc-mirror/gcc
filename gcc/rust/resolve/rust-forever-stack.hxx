@@ -20,7 +20,9 @@
 #include "rust-ast.h"
 #include "rust-diagnostics.h"
 #include "rust-forever-stack.h"
+#include "rust-edition.h"
 #include "rust-rib.h"
+#include "rust-unwrap-segment.h"
 #include "optional.h"
 
 namespace Rust {
@@ -31,6 +33,13 @@ bool
 ForeverStack<N>::Node::is_root () const
 {
   return !parent.has_value ();
+}
+
+template <Namespace N>
+bool
+ForeverStack<N>::Node::is_prelude () const
+{
+  return rib.kind == Rib::Kind::Prelude;
 }
 
 template <Namespace N>
@@ -52,15 +61,26 @@ ForeverStack<N>::Node::insert_child (Link link, Node child)
 
 template <Namespace N>
 void
-ForeverStack<N>::push (Rib rib, NodeId id, tl::optional<Identifier> path)
+ForeverStack<N>::push (Rib::Kind rib_kind, NodeId id,
+		       tl::optional<Identifier> path)
 {
-  push_inner (rib, Link (id, path));
+  push_inner (rib_kind, Link (id, path));
 }
 
 template <Namespace N>
 void
 ForeverStack<N>::push_inner (Rib rib, Link link)
 {
+  if (rib.kind == Rib::Kind::Prelude)
+    {
+      // If you push_inner into the prelude from outside the root, you will pop
+      // back into the root, which could screw up a traversal.
+      rust_assert (&cursor_reference.get () == &root);
+      // Prelude doesn't have an access path
+      rust_assert (!link.path);
+      update_cursor (this->lang_prelude);
+      return;
+    }
   // If the link does not exist, we create it and emplace a new `Node` with the
   // current node as its parent. `unordered_map::emplace` returns a pair with
   // the iterator and a boolean. If the value already exists, the iterator
@@ -133,6 +153,16 @@ ForeverStack<N>::insert_shadowable (Identifier name, NodeId node)
 
 template <Namespace N>
 tl::expected<NodeId, DuplicateNameError>
+ForeverStack<N>::insert_globbed (Identifier name, NodeId node)
+{
+  auto &innermost_rib = peek ();
+
+  return insert_inner (innermost_rib, name.as_string (),
+		       Rib::Definition::Globbed (node));
+}
+
+template <Namespace N>
+tl::expected<NodeId, DuplicateNameError>
 ForeverStack<N>::insert_at_root (Identifier name, NodeId node)
 {
   auto &root_rib = root.rib;
@@ -161,6 +191,14 @@ ForeverStack<Namespace::Labels>::insert (Identifier name, NodeId node)
 		       Rib::Definition::Shadowable (node));
 }
 
+template <>
+inline tl::expected<NodeId, DuplicateNameError>
+ForeverStack<Namespace::Types>::insert_variant (Identifier name, NodeId node)
+{
+  return insert_inner (peek (), name.as_string (),
+		       Rib::Definition::NonShadowable (node, true));
+}
+
 template <Namespace N>
 Rib &
 ForeverStack<N>::peek ()
@@ -184,8 +222,36 @@ ForeverStack<N>::reverse_iter (std::function<KeepGoing (Node &)> lambda)
 
 template <Namespace N>
 void
+ForeverStack<N>::reverse_iter (
+  std::function<KeepGoing (const Node &)> lambda) const
+{
+  return reverse_iter (cursor (), lambda);
+}
+
+template <Namespace N>
+void
 ForeverStack<N>::reverse_iter (Node &start,
 			       std::function<KeepGoing (Node &)> lambda)
+{
+  auto *tmp = &start;
+
+  while (true)
+    {
+      auto keep_going = lambda (*tmp);
+      if (keep_going == KeepGoing::No)
+	return;
+
+      if (tmp->is_root ())
+	return;
+
+      tmp = &tmp->parent.value ();
+    }
+}
+
+template <Namespace N>
+void
+ForeverStack<N>::reverse_iter (
+  const Node &start, std::function<KeepGoing (const Node &)> lambda) const
 {
   auto *tmp = &start;
 
@@ -235,10 +301,12 @@ ForeverStack<N>::get (const Identifier &name)
 
     return candidate.map_or (
       [&resolved_definition] (Rib::Definition found) {
-	// for most namespaces, we do not need to care about various ribs - they
-	// are available from all contexts if defined in the current scope, or
-	// an outermore one. so if we do have a candidate, we can return it
-	// directly and stop iterating
+	if (found.is_variant ())
+	  return KeepGoing::Yes;
+	// for most namespaces, we do not need to care about various ribs -
+	// they are available from all contexts if defined in the current
+	// scope, or an outermore one. so if we do have a candidate, we can
+	// return it directly and stop iterating
 	resolved_definition = found;
 
 	return KeepGoing::No;
@@ -248,6 +316,20 @@ ForeverStack<N>::get (const Identifier &name)
   });
 
   return resolved_definition;
+}
+
+template <Namespace N>
+tl::optional<Rib::Definition>
+ForeverStack<N>::get_lang_prelude (const Identifier &name)
+{
+  return lang_prelude.rib.get (name.as_string ());
+}
+
+template <Namespace N>
+tl::optional<Rib::Definition>
+ForeverStack<N>::get_lang_prelude (const std::string &name)
+{
+  return lang_prelude.rib.get (name);
 }
 
 template <>
@@ -316,12 +398,13 @@ ForeverStack<N>::find_closest_module (Node &starting_point)
  * segments */
 template <typename S>
 static inline bool
-check_leading_kw_at_start (const S &segment, bool condition)
+check_leading_kw_at_start (std::vector<Error> &collect_errors, const S &segment,
+			   bool condition)
 {
   if (condition)
-    rust_error_at (
+    collect_errors.emplace_back (
       segment.get_locus (), ErrorCode::E0433,
-      "leading path segment %qs can only be used at the beginning of a path",
+      "%qs in paths can only be used in start position",
       segment.as_string ().c_str ());
 
   return condition;
@@ -335,52 +418,61 @@ check_leading_kw_at_start (const S &segment, bool condition)
 template <Namespace N>
 template <typename S>
 tl::optional<typename std::vector<S>::const_iterator>
-ForeverStack<N>::find_starting_point (const std::vector<S> &segments,
-				      Node &starting_point)
+ForeverStack<N>::find_starting_point (
+  const std::vector<S> &segments, std::reference_wrapper<Node> &starting_point,
+  std::function<void (const S &, NodeId)> insert_segment_resolution,
+  std::vector<Error> &collect_errors)
 {
   auto iterator = segments.begin ();
 
-  // If we need to do path segment resolution, then we start
-  // at the closest module. In order to resolve something like `foo::bar!()`, we
-  // need to get back to the surrounding module, and look for a child module
-  // named `foo`.
-  if (segments.size () > 1)
-    starting_point = find_closest_module (starting_point);
-
   for (; !is_last (iterator, segments); iterator++)
     {
-      auto &seg = *iterator;
-      auto is_self_or_crate
+      auto &outer_seg = *iterator;
+
+      if (unwrap_segment_get_lang_item (outer_seg).has_value ())
+	break;
+
+      auto &seg = unwrap_type_segment (outer_seg);
+      bool is_self_or_crate
 	= seg.is_crate_path_seg () || seg.is_lower_self_seg ();
 
       // if we're after the first path segment and meet `self` or `crate`, it's
       // an error - we should only be seeing `super` keywords at this point
-      if (check_leading_kw_at_start (seg, !is_start (iterator, segments)
-					    && is_self_or_crate))
+      if (check_leading_kw_at_start (collect_errors, seg,
+				     !is_start (iterator, segments)
+				       && is_self_or_crate))
 	return tl::nullopt;
 
       if (seg.is_crate_path_seg ())
 	{
 	  starting_point = root;
+	  insert_segment_resolution (outer_seg, starting_point.get ().id);
 	  iterator++;
 	  break;
 	}
       if (seg.is_lower_self_seg ())
 	{
-	  // do nothing and exit
+	  // insert segment resolution and exit
+	  starting_point = find_closest_module (starting_point);
+	  insert_segment_resolution (outer_seg, starting_point.get ().id);
 	  iterator++;
 	  break;
 	}
       if (seg.is_super_path_seg ())
 	{
-	  if (starting_point.is_root ())
+	  starting_point = find_closest_module (starting_point);
+	  if (starting_point.get ().is_root ())
 	    {
-	      rust_error_at (seg.get_locus (), ErrorCode::E0433,
-			     "too many leading %<super%> keywords");
+	      collect_errors.emplace_back (
+		seg.get_locus (), ErrorCode::E0433,
+		"too many leading %<super%> keywords");
 	      return tl::nullopt;
 	    }
 
-	  starting_point = find_closest_module (starting_point.parent.value ());
+	  starting_point
+	    = find_closest_module (starting_point.get ().parent.value ());
+
+	  insert_segment_resolution (outer_seg, starting_point.get ().id);
 	  continue;
 	}
 
@@ -398,73 +490,223 @@ template <typename S>
 tl::optional<typename ForeverStack<N>::Node &>
 ForeverStack<N>::resolve_segments (
   Node &starting_point, const std::vector<S> &segments,
-  typename std::vector<S>::const_iterator iterator)
+  typename std::vector<S>::const_iterator iterator,
+  std::function<void (const S &, NodeId)> insert_segment_resolution,
+  std::vector<Error> &collect_errors)
 {
-  auto *current_node = &starting_point;
+  Node *current_node = &starting_point;
   for (; !is_last (iterator, segments); iterator++)
     {
-      auto &seg = *iterator;
-      auto str = seg.as_string ();
+      auto &outer_seg = *iterator;
+
+      if (auto lang_item = unwrap_segment_get_lang_item (outer_seg))
+	{
+	  NodeId seg_id = Analysis::Mappings::get ().get_lang_item_node (
+	    lang_item.value ());
+	  current_node = &dfs_node (root, seg_id).value ();
+
+	  insert_segment_resolution (outer_seg, seg_id);
+	  continue;
+	}
+
+      auto &seg = unwrap_type_segment (outer_seg);
+      std::string str = seg.as_string ();
       rust_debug ("[ARTHUR]: resolving segment part: %s", str.c_str ());
 
       // check that we don't encounter *any* leading keywords afterwards
-      if (check_leading_kw_at_start (seg, seg.is_crate_path_seg ()
-					    || seg.is_super_path_seg ()
-					    || seg.is_lower_self_seg ()))
+      if (check_leading_kw_at_start (collect_errors, seg,
+				     seg.is_crate_path_seg ()
+				       || seg.is_super_path_seg ()
+				       || seg.is_lower_self_seg ()))
 	return tl::nullopt;
 
       tl::optional<typename ForeverStack<N>::Node &> child = tl::nullopt;
 
-      for (auto &kv : current_node->children)
+      /*
+       * On every iteration this loop either
+       *
+       * 1. terminates
+       *
+       * 2. decreases the depth of the node pointed to by current_node until
+       *    current_node reaches the root
+       *
+       * 3. If the root node is reached, and we were not able to resolve the
+       *    segment, we search the prelude rib for the segment, by setting
+       *    current_node to point to the prelude, and toggling the
+       *    searched_prelude boolean to true. If current_node is the prelude
+       *    rib, and searched_prelude is true, we will exit.
+       *
+       * This ensures termination.
+       *
+       */
+      bool searched_prelude = false;
+      while (true)
 	{
-	  auto &link = kv.first;
-
-	  if (link.path.map_or (
-		[&str] (Identifier path) {
-		  auto &path_str = path.as_string ();
-		  return str == path_str;
-		},
-		false))
+	  // may set the value of child
+	  for (auto &kv : current_node->children)
 	    {
-	      child = kv.second;
+	      auto &link = kv.first;
+
+	      if (link.path.map_or (
+		    [&str] (Identifier path) {
+		      auto &path_str = path.as_string ();
+		      return str == path_str;
+		    },
+		    false))
+		{
+		  child = kv.second;
+		  break;
+		}
+	    }
+
+	  if (child.has_value ())
+	    {
 	      break;
 	    }
+
+	  if (N == Namespace::Types)
+	    {
+	      auto rib_lookup = current_node->rib.get (seg.as_string ());
+	      if (rib_lookup && !rib_lookup->is_ambiguous ())
+		{
+		  insert_segment_resolution (outer_seg,
+					     rib_lookup->get_node_id ());
+		  return tl::nullopt;
+		}
+	    }
+
+	  if (current_node->is_root () && !searched_prelude)
+	    {
+	      searched_prelude = true;
+	      current_node = &lang_prelude;
+	      continue;
+	    }
+
+	  if (!is_start (iterator, segments)
+	      || current_node->rib.kind == Rib::Kind::Module
+	      || current_node->is_prelude ())
+	    {
+	      return tl::nullopt;
+	    }
+
+	  current_node = &current_node->parent.value ();
 	}
 
-      if (!child.has_value ())
-	{
-	  rust_error_at (seg.get_locus (), ErrorCode::E0433,
-			 "failed to resolve path segment %qs", str.c_str ());
-	  return tl::nullopt;
-	}
-
+      // if child didn't contain a value
+      // the while loop above should have return'd or kept looping
       current_node = &child.value ();
+      insert_segment_resolution (outer_seg, current_node->id);
     }
 
   return *current_node;
 }
 
+template <>
+inline tl::optional<Rib::Definition>
+ForeverStack<Namespace::Types>::resolve_final_segment (Node &final_node,
+						       std::string &seg_name,
+						       bool is_lower_self)
+{
+  if (is_lower_self)
+    return Rib::Definition::NonShadowable (final_node.id);
+  else
+    return final_node.rib.get (seg_name);
+}
+
+template <Namespace N>
+tl::optional<Rib::Definition>
+ForeverStack<N>::resolve_final_segment (Node &final_node, std::string &seg_name,
+					bool is_lower_self)
+{
+  return final_node.rib.get (seg_name);
+}
+
 template <Namespace N>
 template <typename S>
 tl::optional<Rib::Definition>
-ForeverStack<N>::resolve_path (const std::vector<S> &segments)
+ForeverStack<N>::resolve_path (
+  const std::vector<S> &segments, bool has_opening_scope_resolution,
+  std::function<void (const S &, NodeId)> insert_segment_resolution,
+  std::vector<Error> &collect_errors)
 {
   // TODO: What to do if segments.empty() ?
 
+  // handle paths with opening scopes
+  std::function<void (void)> cleanup_current = [] () {};
+  if (has_opening_scope_resolution)
+    {
+      Node *last_current = &cursor_reference.get ();
+      if (get_rust_edition () == Edition::E2015)
+	cursor_reference = root;
+      else
+	cursor_reference = extern_prelude;
+      cleanup_current
+	= [this, last_current] () { cursor_reference = *last_current; };
+    }
+
   // if there's only one segment, we just use `get`
   if (segments.size () == 1)
-    return get (segments.back ().as_string ());
+    {
+      auto &seg = segments.front ();
+      if (auto lang_item = unwrap_segment_get_lang_item (seg))
+	{
+	  NodeId seg_id = Analysis::Mappings::get ().get_lang_item_node (
+	    lang_item.value ());
 
-  auto starting_point = cursor ();
+	  insert_segment_resolution (seg, seg_id);
+	  cleanup_current ();
+	  // TODO: does NonShadowable matter?
+	  return Rib::Definition::NonShadowable (seg_id);
+	}
 
-  return find_starting_point (segments, starting_point)
-    .and_then ([this, &segments, &starting_point] (
-		 typename std::vector<S>::const_iterator iterator) {
-      return resolve_segments (starting_point, segments, iterator);
-    })
-    .and_then ([&segments] (Node final_node) {
-      return final_node.rib.get (segments.back ().as_string ());
-    });
+      tl::optional<Rib::Definition> res
+	= get (unwrap_type_segment (segments.back ()).as_string ());
+
+      if (!res)
+	res = get_lang_prelude (
+	  unwrap_type_segment (segments.back ()).as_string ());
+
+      if (res && !res->is_ambiguous ())
+	insert_segment_resolution (segments.back (), res->get_node_id ());
+      cleanup_current ();
+      return res;
+    }
+
+  std::reference_wrapper<Node> starting_point = cursor ();
+
+  auto res
+    = find_starting_point (segments, starting_point, insert_segment_resolution,
+			   collect_errors)
+	.and_then (
+	  [this, &segments, &starting_point, &insert_segment_resolution,
+	   &collect_errors] (typename std::vector<S>::const_iterator iterator) {
+	    return resolve_segments (starting_point.get (), segments, iterator,
+				     insert_segment_resolution, collect_errors);
+	  })
+	.and_then ([this, &segments, &insert_segment_resolution] (
+		     Node &final_node) -> tl::optional<Rib::Definition> {
+	  // leave resolution within impl blocks to type checker
+	  if (final_node.rib.kind == Rib::Kind::TraitOrImpl)
+	    return tl::nullopt;
+
+	  auto &seg = unwrap_type_segment (segments.back ());
+	  std::string seg_name = seg.as_string ();
+
+	  // assuming this can't be a lang item segment
+	  tl::optional<Rib::Definition> res
+	    = resolve_final_segment (final_node, seg_name,
+				     seg.is_lower_self_seg ());
+	  // Ok we didn't find it in the rib, Lets try the prelude...
+	  if (!res)
+	    res = get_lang_prelude (seg_name);
+
+	  if (res && !res->is_ambiguous ())
+	    insert_segment_resolution (segments.back (), res->get_node_id ());
+
+	  return res;
+	});
+  cleanup_current ();
+  return res;
 }
 
 template <Namespace N>
@@ -474,9 +716,48 @@ ForeverStack<N>::dfs (ForeverStack<N>::Node &starting_point, NodeId to_find)
   auto values = starting_point.rib.get_values ();
 
   for (auto &kv : values)
-    for (auto id : kv.second.ids)
-      if (id == to_find)
-	return {{starting_point, kv.first}};
+    {
+      for (auto id : kv.second.ids_shadowable)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+      for (auto id : kv.second.ids_non_shadowable)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+      for (auto id : kv.second.ids_globbed)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+    }
+
+  for (auto &child : starting_point.children)
+    {
+      auto candidate = dfs (child.second, to_find);
+
+      if (candidate.has_value ())
+	return candidate;
+    }
+
+  return tl::nullopt;
+}
+
+template <Namespace N>
+tl::optional<typename ForeverStack<N>::ConstDfsResult>
+ForeverStack<N>::dfs (const ForeverStack<N>::Node &starting_point,
+		      NodeId to_find) const
+{
+  auto values = starting_point.rib.get_values ();
+
+  for (auto &kv : values)
+    {
+      for (auto id : kv.second.ids_shadowable)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+      for (auto id : kv.second.ids_non_shadowable)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+      for (auto id : kv.second.ids_globbed)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+    }
 
   for (auto &child : starting_point.children)
     {
@@ -491,20 +772,20 @@ ForeverStack<N>::dfs (ForeverStack<N>::Node &starting_point, NodeId to_find)
 
 template <Namespace N>
 tl::optional<Resolver::CanonicalPath>
-ForeverStack<N>::to_canonical_path (NodeId id)
+ForeverStack<N>::to_canonical_path (NodeId id) const
 {
   // find the id in the current forever stack, starting from the root,
   // performing either a BFS or DFS once the Node containing the ID is found, go
   // back up to the root (parent().parent().parent()...) accumulate link
   // segments reverse them that's your canonical path
 
-  return dfs (root, id).map ([this, id] (DfsResult tuple) {
+  return dfs (root, id).map ([this, id] (ConstDfsResult tuple) {
     auto containing_node = tuple.first;
     auto name = tuple.second;
 
     auto segments = std::vector<Resolver::CanonicalPath> ();
 
-    reverse_iter (containing_node, [&segments] (Node &current) {
+    reverse_iter (containing_node, [&segments] (const Node &current) {
       if (current.is_root ())
 	return KeepGoing::No;
 
@@ -516,7 +797,7 @@ ForeverStack<N>::to_canonical_path (NodeId id)
 	  auto &link = kv.first;
 	  auto &child = kv.second;
 
-	  if (link.id == child.id)
+	  if (current.id == child.id)
 	    {
 	      outer_link = &link;
 	      break;
@@ -534,7 +815,12 @@ ForeverStack<N>::to_canonical_path (NodeId id)
       return KeepGoing::Yes;
     });
 
-    auto path = Resolver::CanonicalPath::create_empty ();
+    auto &mappings = Analysis::Mappings::get ();
+    CrateNum crate_num = mappings.lookup_crate_num (root.id).value ();
+    auto path = Resolver::CanonicalPath::new_seg (
+      root.id, mappings.get_crate_name (crate_num).value ());
+    path.set_crate_num (crate_num);
+
     for (const auto &segment : segments)
       path = path.append (segment);
 
@@ -549,12 +835,50 @@ template <Namespace N>
 tl::optional<Rib &>
 ForeverStack<N>::dfs_rib (ForeverStack<N>::Node &starting_point, NodeId to_find)
 {
+  return dfs_node (starting_point, to_find).map ([] (Node &x) -> Rib & {
+    return x.rib;
+  });
+}
+
+template <Namespace N>
+tl::optional<const Rib &>
+ForeverStack<N>::dfs_rib (const ForeverStack<N>::Node &starting_point,
+			  NodeId to_find) const
+{
+  return dfs_node (starting_point, to_find)
+    .map ([] (const Node &x) -> const Rib & { return x.rib; });
+}
+
+template <Namespace N>
+tl::optional<typename ForeverStack<N>::Node &>
+ForeverStack<N>::dfs_node (ForeverStack<N>::Node &starting_point,
+			   NodeId to_find)
+{
   if (starting_point.id == to_find)
-    return starting_point.rib;
+    return starting_point;
 
   for (auto &child : starting_point.children)
     {
-      auto candidate = dfs_rib (child.second, to_find);
+      auto candidate = dfs_node (child.second, to_find);
+
+      if (candidate.has_value ())
+	return candidate;
+    }
+
+  return tl::nullopt;
+}
+
+template <Namespace N>
+tl::optional<const typename ForeverStack<N>::Node &>
+ForeverStack<N>::dfs_node (const ForeverStack<N>::Node &starting_point,
+			   NodeId to_find) const
+{
+  if (starting_point.id == to_find)
+    return starting_point;
+
+  for (auto &child : starting_point.children)
+    {
+      auto candidate = dfs_node (child.second, to_find);
 
       if (candidate.has_value ())
 	return candidate;
@@ -571,18 +895,29 @@ ForeverStack<N>::to_rib (NodeId rib_id)
 }
 
 template <Namespace N>
+tl::optional<const Rib &>
+ForeverStack<N>::to_rib (NodeId rib_id) const
+{
+  return dfs_rib (root, rib_id);
+}
+
+template <Namespace N>
 void
 ForeverStack<N>::stream_rib (std::stringstream &stream, const Rib &rib,
 			     const std::string &next,
-			     const std::string &next_next)
+			     const std::string &next_next) const
 {
+  std::string rib_kind = Rib::kind_to_string (rib.kind);
+  stream << next << "rib [" << rib_kind << "]: {";
   if (rib.get_values ().empty ())
     {
-      stream << next << "rib: {},\n";
+      stream << "}\n";
       return;
     }
-
-  stream << next << "rib: {\n";
+  else
+    {
+      stream << "\n";
+    }
 
   for (const auto &kv : rib.get_values ())
     stream << next_next << kv.first << ": " << kv.second.to_string () << "\n";
@@ -593,7 +928,7 @@ ForeverStack<N>::stream_rib (std::stringstream &stream, const Rib &rib,
 template <Namespace N>
 void
 ForeverStack<N>::stream_node (std::stringstream &stream, unsigned indentation,
-			      const ForeverStack<N>::Node &node)
+			      const ForeverStack<N>::Node &node) const
 {
   auto indent = std::string (indentation, ' ');
   auto next = std::string (indentation + 4, ' ');
@@ -625,13 +960,20 @@ ForeverStack<N>::stream_node (std::stringstream &stream, unsigned indentation,
 
 template <Namespace N>
 std::string
-ForeverStack<N>::as_debug_string ()
+ForeverStack<N>::as_debug_string () const
 {
   std::stringstream stream;
 
   stream_node (stream, 0, root);
 
   return stream.str ();
+}
+
+template <Namespace N>
+bool
+ForeverStack<N>::is_module_descendant (NodeId parent, NodeId child) const
+{
+  return dfs_node (dfs_node (root, parent).value (), child).has_value ();
 }
 
 // FIXME: Can we add selftests?

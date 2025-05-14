@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "rust-path.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
@@ -118,7 +119,7 @@ ConstGenericParam::as_string () const
   str += "const " + name.as_string () + ": " + type->as_string ();
 
   if (has_default_value ())
-    str += " = " + get_default_value ().as_string ();
+    str += " = " + get_default_value_unchecked ().as_string ();
 
   return str;
 }
@@ -135,8 +136,11 @@ PathExprSegment::as_string () const
 }
 
 std::string
-PathPattern::as_string () const
+Path::as_string () const
 {
+  // FIXME: Impl for lang items
+  rust_assert (kind == Kind::Regular);
+
   std::string str;
 
   for (const auto &segment : segments)
@@ -149,8 +153,10 @@ PathPattern::as_string () const
 }
 
 SimplePath
-PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
+Path::convert_to_simple_path (bool with_opening_scope_resolution) const
 {
+  rust_assert (kind == Kind::Regular);
+
   if (!has_segments ())
     return SimplePath::create_empty ();
 
@@ -197,7 +203,7 @@ PathInExpression::as_string () const
   if (has_opening_scope_resolution)
     str = "::";
 
-  return str + PathPattern::as_string ();
+  return str + Path::as_string ();
 }
 
 std::string
@@ -297,7 +303,7 @@ TypePathFunction::as_string () const
 std::string
 QualifiedPathInExpression::as_string () const
 {
-  return path_type.as_string () + "::" + PathPattern::as_string ();
+  return path_type.as_string () + "::" + Path::as_string ();
 }
 
 std::string

@@ -1,5 +1,6 @@
-import core.sys.posix.pthread;
 import core.memory;
+import core.sys.posix.pthread : pthread_create, pthread_join;
+import core.sys.posix.sys.types : pthread_t;
 import core.thread;
 
 extern (C) void  rt_moduleTlsCtor();

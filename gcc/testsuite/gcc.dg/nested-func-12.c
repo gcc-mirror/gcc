@@ -1,7 +1,6 @@
 /* PR target/88620 */
 /* { dg-do run } */
 /* { dg-options "-Ofast --param ipa-cp-eval-threshold=0 -fno-guess-branch-probability -fno-inline-small-functions" } */
-/* { dg-require-effective-target alloca } */
 
 void
 foo (int n)

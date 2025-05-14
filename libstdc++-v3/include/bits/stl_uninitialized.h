@@ -226,6 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Like std::copy, but does not require an initialized output range.
   */
   template<typename _InputIterator, typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline _ForwardIterator
     uninitialized_copy(_InputIterator __first, _InputIterator __last,
 		       _ForwardIterator __result)
@@ -256,6 +257,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Src = decltype(std::__niter_base(__first));
       using _ValT = typename iterator_traits<_ForwardIterator>::value_type;
 
+#if __glibcxx_raw_memory_algorithms >= 202411L // >= C++26
+      if consteval {
+	return std::__do_uninit_copy(__first, __last, __result);
+      }
+#endif
       if constexpr (!__is_trivially_constructible(_ValT, decltype(*__first)))
 	return std::__do_uninit_copy(__first, __last, __result);
       else if constexpr (__memcpyable<_Dest, _Src>::__value)
@@ -381,6 +387,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Like std::fill, but does not require an initialized output range.
   */
   template<typename _ForwardIterator, typename _Tp>
+    _GLIBCXX26_CONSTEXPR
     inline void
     uninitialized_fill(_ForwardIterator __first, _ForwardIterator __last,
 		       const _Tp& __x)
@@ -400,6 +407,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
+#if __glibcxx_raw_memory_algorithms >= 202411L // >= C++26
+      if consteval {
+	return std::__do_uninit_fill(__first, __last, __x);
+      }
+#endif
       if constexpr (__is_byte<_ValueType>::__value)
 	if constexpr (is_same<_ValueType, _Tp>::value
 			|| is_integral<_Tp>::value)
@@ -509,6 +521,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Like std::fill_n, but does not require an initialized output range.
   */
   template<typename _ForwardIterator, typename _Size, typename _Tp>
+    _GLIBCXX26_CONSTEXPR
     inline _ForwardIterator
     uninitialized_fill_n(_ForwardIterator __first, _Size __n, const _Tp& __x)
     {
@@ -522,6 +535,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_ValueType;
 
 #if __cplusplus >= 201103L
+#if __glibcxx_raw_memory_algorithms >= 202411L // >= C++26
+      if consteval {
+	return std::__do_uninit_fill_n(__first, __n, __x);
+      }
+#endif
       if constexpr (__is_byte<_ValueType>::__value)
 	if constexpr (is_integral<_Tp>::value)
 	  if constexpr (is_integral<_Size>::value)
@@ -815,6 +833,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __uninitialized_default_1
     {
       template<typename _ForwardIterator>
+        _GLIBCXX26_CONSTEXPR
         static void
         __uninit_default(_ForwardIterator __first, _ForwardIterator __last)
         {
@@ -829,6 +848,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __uninitialized_default_1<true>
     {
       template<typename _ForwardIterator>
+        _GLIBCXX26_CONSTEXPR
         static void
         __uninit_default(_ForwardIterator __first, _ForwardIterator __last)
         {
@@ -882,6 +902,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __uninitialized_default
   // Fills [first, last) with value-initialized value_types.
   template<typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline void
     __uninitialized_default(_ForwardIterator __first,
 			    _ForwardIterator __last)
@@ -979,6 +1000,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __uninitialized_default_novalue_1
     {
       template<typename _ForwardIterator>
+	_GLIBCXX26_CONSTEXPR
 	static void
 	__uninit_default_novalue(_ForwardIterator __first,
 				 _ForwardIterator __last)
@@ -994,6 +1016,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __uninitialized_default_novalue_1<true>
     {
       template<typename _ForwardIterator>
+        _GLIBCXX26_CONSTEXPR
         static void
         __uninit_default_novalue(_ForwardIterator, _ForwardIterator)
 	{
@@ -1004,6 +1027,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __uninitialized_default_novalue_n_1
     {
       template<typename _ForwardIterator, typename _Size>
+	_GLIBCXX26_CONSTEXPR
 	static _ForwardIterator
 	__uninit_default_novalue_n(_ForwardIterator __first, _Size __n)
 	{
@@ -1019,6 +1043,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __uninitialized_default_novalue_n_1<true>
     {
       template<typename _ForwardIterator, typename _Size>
+        _GLIBCXX26_CONSTEXPR
 	static _ForwardIterator
 	__uninit_default_novalue_n(_ForwardIterator __first, _Size __n)
 	{ return std::next(__first, __n); }
@@ -1027,6 +1052,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __uninitialized_default_novalue
   // Fills [first, last) with default-initialized value_types.
   template<typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline void
     __uninitialized_default_novalue(_ForwardIterator __first,
 				    _ForwardIterator __last)
@@ -1042,6 +1068,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __uninitialized_default_novalue_n
   // Fills [first, first + n) with default-initialized value_types.
   template<typename _ForwardIterator, typename _Size>
+    _GLIBCXX26_CONSTEXPR
     inline _ForwardIterator
     __uninitialized_default_novalue_n(_ForwardIterator __first, _Size __n)
     {
@@ -1055,6 +1082,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _InputIterator, typename _Size,
 	   typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     _ForwardIterator
     __uninitialized_copy_n(_InputIterator __first, _Size __n,
 			   _ForwardIterator __result, input_iterator_tag)
@@ -1068,6 +1096,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _RandomAccessIterator, typename _Size,
 	   typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline _ForwardIterator
     __uninitialized_copy_n(_RandomAccessIterator __first, _Size __n,
 			   _ForwardIterator __result,
@@ -1076,6 +1105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _InputIterator, typename _Size,
 	   typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     pair<_InputIterator, _ForwardIterator>
     __uninitialized_copy_n_pair(_InputIterator __first, _Size __n,
 				_ForwardIterator __result, input_iterator_tag)
@@ -1089,6 +1119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _RandomAccessIterator, typename _Size,
 	   typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline pair<_RandomAccessIterator, _ForwardIterator>
     __uninitialized_copy_n_pair(_RandomAccessIterator __first, _Size __n,
 			   _ForwardIterator __result,
@@ -1112,6 +1143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Like copy_n(), but does not require an initialized output range.
   */
   template<typename _InputIterator, typename _Size, typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline _ForwardIterator
     uninitialized_copy_n(_InputIterator __first, _Size __n,
 			 _ForwardIterator __result)
@@ -1120,6 +1152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
   template<typename _InputIterator, typename _Size, typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline pair<_InputIterator, _ForwardIterator>
     __uninitialized_copy_n_pair(_InputIterator __first, _Size __n,
 			      _ForwardIterator __result)
@@ -1139,6 +1172,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++17
   */
   template <typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline void
     uninitialized_default_construct(_ForwardIterator __first,
 				    _ForwardIterator __last)
@@ -1154,6 +1188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++17
   */
   template <typename _ForwardIterator, typename _Size>
+    _GLIBCXX26_CONSTEXPR
     inline _ForwardIterator
     uninitialized_default_construct_n(_ForwardIterator __first, _Size __count)
     {
@@ -1167,6 +1202,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++17
   */
   template <typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline void
     uninitialized_value_construct(_ForwardIterator __first,
 				  _ForwardIterator __last)
@@ -1182,6 +1218,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++17
   */
   template <typename _ForwardIterator, typename _Size>
+    _GLIBCXX26_CONSTEXPR
     inline _ForwardIterator
     uninitialized_value_construct_n(_ForwardIterator __first, _Size __count)
     {
@@ -1197,6 +1234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++17
   */
   template <typename _InputIterator, typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline _ForwardIterator
     uninitialized_move(_InputIterator __first, _InputIterator __last,
 		       _ForwardIterator __result)
@@ -1215,6 +1253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @since C++17
   */
   template <typename _InputIterator, typename _Size, typename _ForwardIterator>
+    _GLIBCXX26_CONSTEXPR
     inline pair<_InputIterator, _ForwardIterator>
     uninitialized_move_n(_InputIterator __first, _Size __count,
 			 _ForwardIterator __result)

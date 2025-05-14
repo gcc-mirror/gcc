@@ -1084,13 +1084,22 @@ c_common_post_options (const char **pfilename)
 
   /* Change flag_abi_version to be the actual current ABI level, for the
      benefit of c_cpp_builtins, and to make comparison simpler.  */
-  const int latest_abi_version = 20;
-  /* Generate compatibility aliases for ABI v13 (8.2) by default.  */
-  const int abi_compat_default = 13;
+  const int latest_abi_version = 21;
+  /* Possibly different for non-default ABI fixes within a release.  */
+  const int default_abi_version = latest_abi_version;
+  /* Generate compatibility aliases for ABI v18 (GCC 13) by default.  */
+  const int abi_compat_default = 18;
+
+  if (flag_abi_version > latest_abi_version)
+    warning (0, "%<-fabi-version=%d%> is not supported, using =%d",
+	     flag_abi_version, latest_abi_version);
+
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_abi_version, default_abi_version);
 
 #define clamp(X) if (X == 0 || X > latest_abi_version) X = latest_abi_version
   clamp (flag_abi_version);
-  clamp (warn_abi_version);
+  /* Don't clamp warn_abi_version, let it be 0 or out of bounds.  */
   clamp (flag_abi_compat_version);
 #undef clamp
 
@@ -1101,23 +1110,16 @@ c_common_post_options (const char **pfilename)
     flag_abi_compat_version = warn_abi_version;
   else if (warn_abi_version == -1 && flag_abi_compat_version == -1)
     {
-      warn_abi_version = latest_abi_version;
-      if (flag_abi_version == latest_abi_version)
-	{
-	  auto_diagnostic_group d;
-	  if (warning (OPT_Wabi, "%<-Wabi%> won%'t warn about anything"))
-	    {
-	      inform (input_location, "%<-Wabi%> warns about differences "
-		      "from the most up-to-date ABI, which is also used "
-		      "by default");
-	      inform (input_location, "use e.g. %<-Wabi=11%> to warn about "
-		      "changes from GCC 7");
-	    }
-	  flag_abi_compat_version = abi_compat_default;
-	}
+      warn_abi_version = 0;
+      if (flag_abi_version == default_abi_version)
+	flag_abi_compat_version = abi_compat_default;
       else
 	flag_abi_compat_version = latest_abi_version;
     }
+
+  /* Allow warnings vs ABI versions beyond what we currently support.  */
+  if (warn_abi_version == 0)
+    warn_abi_version = 1000;
 
   /* By default, enable the new inheriting constructor semantics along with ABI
      11.  New and old should coexist fine, but it is a change in what

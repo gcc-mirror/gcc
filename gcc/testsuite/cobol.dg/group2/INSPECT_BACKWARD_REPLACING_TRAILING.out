@@ -1,0 +1,10 @@
+Starting with                                     "AAAAsomeABthingBBBB"...
+After inspect          replacing      ALL A by X: "XXXXsomeXBthingBBBB"
+After inspect          replacing TRAILING A by X: "AAAAsomeABthingBBBB"
+After inspect backward replacing      ALL A by X: "XXXXsomeXBthingBBBB"
+After inspect backward replacing TRAILING A by X: "XXXXsomeABthingBBBB"
+After inspect          replacing      ALL B by X: "AAAAsomeAXthingXXXX"
+After inspect          replacing TRAILING B by X: "AAAAsomeABthingXXXX"
+After inspect backward replacing      ALL B by X: "AAAAsomeAXthingXXXX"
+After inspect backward replacing TRAILING B by X: "AAAAsomeABthingBBBB"
+

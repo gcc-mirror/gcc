@@ -381,7 +381,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
 
     <para>
       The testsuite will create a number of files in the directory in
-      which you run this command,.  Some of those files might use the
+      which you run this command.  Some of those files might use the
       same name as files created by other testsuites (like the ones
       for GCC and G++), so you should not try to run all the
       testsuites in parallel from the same directory.
@@ -589,11 +589,11 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
       tests multiple times in different variations. For example, to run the
       entire testsuite three times using <option>-O3</option> but with
       different <option>-std</option> options:
-<programlisting>    make check 'RUNTESTFLAGS=--target_board=unix/-O3\"{-std=gnu++98,-std=gnu++11,-std=gnu++14}\"'</programlisting>
+<programlisting>    make check 'RUNTESTFLAGS=--target_board=unix/-O3\"{-std=gnu++98,-std=gnu++11,-std=gnu++17}\"'</programlisting>
       N.B. that set of variations could also be written as
       <literal>unix/-O3\"{-std=gnu++98,-std=gnu++11,}\"</literal> so that
       the third variation would use the default for <option>-std</option>
-      (which is <option>-std=gnu++14</option> as of GCC 6).
+      (which is <option>-std=gnu++17</option> as of GCC 11).
     </para>
 
     <para>

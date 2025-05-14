@@ -1,4 +1,3 @@
-/* { dg-require-effective-target alloca } */
 typedef const int cint;
 typedef struct {
 } Bounds;

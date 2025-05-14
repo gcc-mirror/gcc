@@ -1,3 +1,19 @@
+2025-04-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	* fileline.c (hpux_get_executable_path): New.
+	(fileline_initialize): Add pass to get hpux executable path.
+
+2025-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/119680
+	* configure.ac (--enable-host-pie): Handle by setting PIC_FLAG
+	to -fPIE.
+	* configure: Regenerate.
+
+2025-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* atomic.c (backtrace_atomic_store_int): Use int for old value.
+
 2025-02-10  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_uncompress_lzma_block): Add casts to avoid

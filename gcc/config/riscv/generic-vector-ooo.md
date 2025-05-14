@@ -141,3 +141,7 @@
   (eq_attr "type" "rdvlenb,rdvl")
   "vxu_ooo_issue,vxu_ooo_issue")
 
+;; Vector sf_vcp.
+(define_insn_reservation "vec_sf_vcp" 2
+  (eq_attr "type" "sf_vc,sf_vc_se")
+  "vxu_ooo_issue")

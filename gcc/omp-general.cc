@@ -4185,7 +4185,7 @@ omp_parse_pointer (tree *expr0, bool *has_offset)
   return false;
 }
 
-static bool
+static void
 omp_parse_access_method (tree *expr0, enum access_method_kinds *kind)
 {
   tree expr = *expr0;
@@ -4216,18 +4216,17 @@ omp_parse_access_method (tree *expr0, enum access_method_kinds *kind)
   STRIP_NOPS (expr);
 
   *expr0 = expr;
-  return true;
 }
 
-static bool
+static void
 omp_parse_access_methods (vec<omp_addr_token *> &addr_tokens, tree *expr0)
 {
   tree expr = *expr0;
   enum access_method_kinds kind;
   tree am_expr;
 
-  if (omp_parse_access_method (&expr, &kind))
-    am_expr = expr;
+  omp_parse_access_method (&expr, &kind);
+  am_expr = expr;
 
   if (TREE_CODE (expr) == INDIRECT_REF
       || TREE_CODE (expr) == MEM_REF
@@ -4237,7 +4236,6 @@ omp_parse_access_methods (vec<omp_addr_token *> &addr_tokens, tree *expr0)
   addr_tokens.safe_push (new omp_addr_token (kind, am_expr));
 
   *expr0 = expr;
-  return true;
 }
 
 static bool omp_parse_structured_expr (vec<omp_addr_token *> &, tree *);
@@ -4355,8 +4353,7 @@ omp_parse_expr (vec<omp_addr_token *> &addr_tokens, tree expr)
   using namespace omp_addr_tokenizer;
   auto_vec<omp_addr_token *> expr_access_tokens;
 
-  if (!omp_parse_access_methods (expr_access_tokens, &expr))
-    return false;
+  omp_parse_access_methods (expr_access_tokens, &expr);
 
   if (omp_parse_structured_expr (addr_tokens, &expr))
     ;

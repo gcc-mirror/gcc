@@ -1,3 +1,8 @@
+2025-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* testsuite/lib/libvtv-dg.exp: Add load_lib of scanhtml.exp.
+
 2024-11-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/libvtv.exp: Add

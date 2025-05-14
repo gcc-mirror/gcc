@@ -43,6 +43,7 @@ extern enum reg_class alpha_preferred_reload_class (rtx, enum reg_class);
 extern void alpha_set_memflags (rtx, rtx);
 extern bool alpha_split_const_mov (machine_mode, rtx *);
 extern bool alpha_expand_mov (machine_mode, rtx *);
+extern bool alpha_expand_mov_safe_bwa (machine_mode, rtx *);
 extern bool alpha_expand_mov_nobwx (machine_mode, rtx *);
 extern void alpha_expand_movmisalign (machine_mode, rtx *);
 extern void alpha_emit_floatuns (rtx[]);
@@ -53,12 +54,16 @@ extern void alpha_expand_unaligned_load (rtx, rtx, HOST_WIDE_INT,
 					 HOST_WIDE_INT, int);
 extern void alpha_expand_unaligned_store (rtx, rtx, HOST_WIDE_INT,
 					  HOST_WIDE_INT);
+extern void alpha_expand_unaligned_store_safe_partial (rtx, rtx, HOST_WIDE_INT,
+						       HOST_WIDE_INT,
+						       HOST_WIDE_INT);
 extern int alpha_expand_block_move (rtx []);
 extern int alpha_expand_block_clear (rtx []);
 extern rtx alpha_expand_zap_mask (HOST_WIDE_INT);
 extern void alpha_expand_builtin_vector_binop (rtx (*)(rtx, rtx, rtx),
 					       machine_mode,
 					       rtx, rtx, rtx);
+extern rtx alpha_emit_unlikely_jump (rtx, rtx);
 extern void alpha_expand_builtin_establish_vms_condition_handler (rtx, rtx);
 extern void alpha_expand_builtin_revert_vms_condition_handler (rtx);
 

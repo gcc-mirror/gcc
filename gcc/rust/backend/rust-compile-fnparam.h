@@ -29,9 +29,9 @@ class CompileFnParam : private HIRCompileBase, protected HIR::HIRPatternVisitor
 {
 public:
   static Bvariable *compile (Context *ctx, tree fndecl,
-			     HIR::FunctionParam *param, tree decl_type,
+			     HIR::FunctionParam &param, tree decl_type,
 			     location_t locus);
-  static Bvariable *compile (Context *ctx, tree fndecl, HIR::Pattern *param,
+  static Bvariable *compile (Context *ctx, tree fndecl, HIR::Pattern &param,
 			     tree decl_type, location_t locus);
 
   void visit (HIR::IdentifierPattern &pattern) override;
@@ -47,12 +47,12 @@ public:
   void visit (HIR::QualifiedPathInExpression &) override {}
   void visit (HIR::RangePattern &) override {}
   void visit (HIR::SlicePattern &) override {}
-  void visit (HIR::TuplePattern &) override {}
+  void visit (HIR::TuplePattern &) override;
 
 private:
   CompileFnParam (Context *ctx, tree fndecl, tree decl_type, location_t locus);
 
-  tree create_tmp_param_var (tree decl_type);
+  Bvariable *create_tmp_param_var (tree decl_type);
 
   tree fndecl;
   tree decl_type;

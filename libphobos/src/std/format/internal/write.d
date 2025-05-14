@@ -902,13 +902,14 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 {
     import std.math.exponential : log2;
 
-    // log2 is broken for x87-reals on some computers in CTFE
-    // the following test excludes these computers from the test
-    // (https://issues.dlang.org/show_bug.cgi?id=21757)
-    enum test = cast(int) log2(3.05e2312L);
-    static if (real.mant_dig == 64 && test == 7681) // 80 bit reals
+    static if (real.mant_dig == 64) // 80 bit reals
     {
-        static assert(format!"%e"(real.max) == "1.189731e+4932");
+        // log2 is broken for x87-reals on some computers in CTFE
+        // the following test excludes these computers from the test
+        // (https://issues.dlang.org/show_bug.cgi?id=21757)
+        enum test = cast(int) log2(3.05e2312L);
+        static if (test == 7681)
+            static assert(format!"%e"(real.max) == "1.189731e+4932");
     }
 }
 

@@ -9,5 +9,7 @@ uint64_t f2(uint64_t *ptr, int n) {
   return res;
 }
 
-/* { dg-final { scan-assembler-times {\tld1d\tz[0-9]+\.d,} 5 } } */
+/* { dg-final { scan-assembler-times {\tld1d\tz[0-9]+\.d,} 5 {target aarch64_big_endian} } } */
+/* { dg-final { scan-assembler-times {\tld1d\tz[0-9]+\.d,} 1 {target aarch64_little_endian} } } */
+/* { dg-final { scan-assembler-times {\tldr\tz[0-9]+,} 4 {target aarch64_little_endian} } } */
 /* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.d,} 8 } } */

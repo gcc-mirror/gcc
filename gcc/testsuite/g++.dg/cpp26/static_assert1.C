@@ -69,10 +69,11 @@ static_assert (false, M {});	// { dg-warning "'static_assert' with non-string me
 				// { dg-error "static assertion failed: test" "" { target *-*-* } .-1 }
 #if  __cpp_constexpr_dynamic_alloc >= 201907L
 struct N { constexpr int size () const { return 3; }
-	   constexpr const char *data () const { return new char[3] { 'b', 'a', 'd' }; } }; // { dg-error "'\\\* N\\\(\\\).N::data\\\(\\\)' is not a constant expression because allocated storage has not been deallocated" "" { target c++20 } }
+	   constexpr const char *data () const { return new char[3] { 'b', 'a', 'd' }; } };
 static_assert (true, N {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target { c++20 && c++23_down } } }
 static_assert (false, N {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target { c++20 && c++23_down } } }
 				// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++20 } .-1 }
+				// { dg-error "'\\\* N\\\(\\\).N::data\\\(\\\)' is not a constant expression because allocated storage has not been deallocated" "" { target c++20 } .-2 }
 #endif
 constexpr const char a[] = { 't', 'e', 's', 't' };
 struct O { constexpr int size () const { return 4; }

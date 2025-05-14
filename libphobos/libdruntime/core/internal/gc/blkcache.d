@@ -44,8 +44,7 @@ else
 {
     if (!__blkcache_storage)
     {
-        import core.stdc.stdlib;
-        import core.stdc.string;
+        import core.stdc.stdlib : calloc;
         import core.thread.threadbase;
         auto tBase = ThreadBase.getThis();
         if (tBase is null)
@@ -68,7 +67,7 @@ else
 {
     if (__blkcache_storage)
     {
-        import core.stdc.stdlib;
+        import core.stdc.stdlib : free;
         import core.thread.threadbase;
         auto tBase = ThreadBase.getThis();
         if (tBase !is null)

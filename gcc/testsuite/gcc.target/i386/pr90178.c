@@ -4,6 +4,7 @@
 int*
 find_ptr (int* mem, int sz, int val)
 {
+#pragma GCC novector
   for (int i = 0; i < sz; i++)
     if (mem[i] == val) 
       return &mem[i];

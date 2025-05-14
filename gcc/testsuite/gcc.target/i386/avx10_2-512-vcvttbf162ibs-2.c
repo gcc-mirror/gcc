@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2-512" } */
-/* { dg-require-effective-target avx10_2_512 } */
+/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2" } */
+/* { dg-require-effective-target avx10_2 } */
 
 #ifndef AVX10_2
 #define AVX10_2
@@ -50,9 +50,9 @@ TEST (void)
   for (i = 0; i < SIZE; i++)
     res2.a[i] = DEFAULT_VALUE;
 
-  res1.x = INTRINSIC (_ipcvttbf16_epi16) (s.x);
-  res2.x = INTRINSIC (_mask_ipcvttbf16_epi16) (res2.x, mask, s.x);
-  res3.x = INTRINSIC (_maskz_ipcvttbf16_epi16) (mask, s.x);
+  res1.x = INTRINSIC (_ipcvtts_bf16_epi8) (s.x);
+  res2.x = INTRINSIC (_mask_ipcvtts_bf16_epi8) (res2.x, mask, s.x);
+  res3.x = INTRINSIC (_maskz_ipcvtts_bf16_epi8) (mask, s.x);
 
   CALC (s.a, res_ref);
 

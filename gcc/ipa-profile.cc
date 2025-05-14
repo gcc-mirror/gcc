@@ -882,13 +882,6 @@ ipa_profile (void)
 				     "Not speculating: "
 				     "probability is too low.\n");
 			}
-		      else if (!e->maybe_hot_p ())
-			{
-			  nuseless++;
-			  if (dump_file)
-			    fprintf (dump_file,
-				     "Not speculating: call is cold.\n");
-			}
 		      else if (n2->get_availability () <= AVAIL_INTERPOSABLE
 			       && n2->can_be_discarded_p ())
 			{

@@ -659,7 +659,8 @@ c_struct_hasher::hash (tree type)
   inchash::hash hstate;
 
   hstate.add_int (TREE_CODE (type));
-  hstate.add_object (TYPE_NAME (type));
+  tree tag = c_type_tag (type);
+  hstate.add_object (tag);
 
   return hstate.end ();
 }
@@ -2073,7 +2074,7 @@ static tree
 previous_tag (tree type)
 {
   struct c_binding *b = NULL;
-  tree name = TYPE_NAME (type);
+  tree name = c_type_tag (type);
 
   if (name)
     b = I_TAG_BINDING (name);
@@ -2788,6 +2789,9 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 		  break;
 		}
 	}
+
+      /* Make sure we refer to the same type as the olddecl.  */
+      DECL_ORIGINAL_TYPE (newdecl) = DECL_ORIGINAL_TYPE (olddecl);
     }
 
   /* Merge the data types specified in the two decls.  */
@@ -4543,10 +4547,11 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
     = get_c_stdlib_header_for_name (IDENTIFIER_POINTER (name));
 
   if (header_hint)
-    return name_hint (NULL,
-		      new suggest_missing_header (loc,
-						  IDENTIFIER_POINTER (name),
-						  header_hint));
+    return name_hint
+      (nullptr,
+       std::make_unique<suggest_missing_header> (loc,
+						 IDENTIFIER_POINTER (name),
+						 header_hint));
 
   /* Next, look for exact matches for builtin defines that would have been
      defined if the user had passed a command-line option (e.g. -fopenmp
@@ -4554,10 +4559,11 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
   diagnostic_option_id option_id
     = get_option_for_builtin_define (IDENTIFIER_POINTER (name));
   if (option_id.m_idx > 0)
-    return name_hint (nullptr,
-		      new suggest_missing_option (loc,
-						  IDENTIFIER_POINTER (name),
-						  option_id));
+    return name_hint
+      (nullptr,
+       std::make_unique<suggest_missing_option> (loc,
+						 IDENTIFIER_POINTER (name),
+						 option_id));
 
   /* Only suggest names reserved for the implementation if NAME begins
      with an underscore.  */
@@ -5714,26 +5720,6 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	;
       else if (declspecs->storage_class != csc_static)
 	DECL_EXTERNAL (decl) = !DECL_EXTERNAL (decl);
-    }
-
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && targetm.calls.promote_prototypes (TREE_TYPE (decl)))
-    {
-      struct c_declarator *ce = declarator;
-
-      if (ce->kind == cdk_pointer)
-	ce = declarator->declarator;
-      if (ce->kind == cdk_function)
-	{
-	  tree args = ce->u.arg_info->parms;
-	  for (; args; args = DECL_CHAIN (args))
-	    {
-	      tree type = TREE_TYPE (args);
-	      if (type && INTEGRAL_TYPE_P (type)
-		  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-		DECL_ARG_TYPE (args) = c_type_promotes_to (type);
-	    }
-	}
     }
 
   if (TREE_CODE (decl) == FUNCTION_DECL
@@ -9846,7 +9832,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  && TREE_CODE (vistype) == TREE_CODE (t)
 	  && !C_TYPE_BEING_DEFINED (vistype))
 	{
-	  TYPE_STUB_DECL (vistype) = TYPE_STUB_DECL (t);
+	  TYPE_STUB_DECL (t) = TYPE_STUB_DECL (vistype);
 	  if (c_type_variably_modified_p (t))
 	    {
 	      error ("redefinition of struct or union %qT with variably "
@@ -10321,7 +10307,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
 	  && TREE_CODE (vistype) == TREE_CODE (enumtype)
 	  && !C_TYPE_BEING_DEFINED (vistype))
 	{
-	  TYPE_STUB_DECL (vistype) = TYPE_STUB_DECL (enumtype);
+	  TYPE_STUB_DECL (enumtype) = TYPE_STUB_DECL (vistype);
 	  if (!comptypes_same_p (enumtype, vistype))
 	    error("conflicting redefinition of enum %qT", enumtype);
 	}
@@ -11175,13 +11161,6 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 		     useful for argument types like uid_t.  */
 		  DECL_ARG_TYPE (parm) = TREE_TYPE (parm);
 
-		  if (targetm.calls.promote_prototypes (TREE_TYPE (current_function_decl))
-		      && INTEGRAL_TYPE_P (TREE_TYPE (parm))
-		      && (TYPE_PRECISION (TREE_TYPE (parm))
-			  < TYPE_PRECISION (integer_type_node)))
-		    DECL_ARG_TYPE (parm)
-		      = c_type_promotes_to (TREE_TYPE (parm));
-
 		  /* ??? Is it possible to get here with a
 		     built-in prototype or will it always have
 		     been diagnosed as conflicting with an
@@ -11408,19 +11387,6 @@ finish_function (location_t end_loc)
 
   if (c_dialect_objc ())
     objc_finish_function ();
-
-  if (TREE_CODE (fndecl) == FUNCTION_DECL
-      && targetm.calls.promote_prototypes (TREE_TYPE (fndecl)))
-    {
-      tree args = DECL_ARGUMENTS (fndecl);
-      for (; args; args = DECL_CHAIN (args))
-	{
-	  tree type = TREE_TYPE (args);
-	  if (INTEGRAL_TYPE_P (type)
-	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-	    DECL_ARG_TYPE (args) = c_type_promotes_to (type);
-	}
-    }
 
   if (DECL_INITIAL (fndecl) && DECL_INITIAL (fndecl) != error_mark_node)
     BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
@@ -13895,7 +13861,8 @@ c_get_loop_names (tree before_labels, bool switch_p, tree *last_p)
 	      ++ret;
 	    }
 	}
-      else if (TREE_CODE (stmt) != CASE_LABEL_EXPR)
+      else if (TREE_CODE (stmt) != CASE_LABEL_EXPR
+	       && TREE_CODE (stmt) != DEBUG_BEGIN_STMT)
 	break;
     }
   if (last)

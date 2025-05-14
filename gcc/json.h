@@ -73,6 +73,49 @@ enum kind
   JSON_NULL
 };
 
+namespace pointer { // json::pointer
+
+/* Implementation of JSON pointer (RFC 6901).  */
+
+/* A token within a JSON pointer, expressing the parent of a particular
+   JSON value, and how it is descended from that parent.
+
+   A JSON pointer can be built as a list of these tokens.  */
+
+struct token
+{
+  enum class kind
+  {
+    root_value,
+    object_member,
+    array_index
+  };
+
+  token ();
+  token (json::object &parent, const char *member);
+  token (json::array &parent, size_t index);
+  token (const token &other) = delete;
+  token (token &&other) = delete;
+
+  ~token ();
+
+  token &
+  operator= (const token &other) = delete;
+
+  token &
+  operator= (token &&other);
+
+  json::value *m_parent;
+  union u
+  {
+    char *u_member;
+    size_t u_index;
+  } m_data;
+  enum kind m_kind;
+};
+
+} // namespace json::pointer
+
 /* Base class of JSON value.  */
 
 class value
@@ -84,6 +127,14 @@ class value
 
   void dump (FILE *, bool formatted) const;
   void DEBUG_FUNCTION dump () const;
+
+  virtual object *dyn_cast_object () { return nullptr; }
+
+  static int compare (const json::value &val_a, const json::value &val_b);
+
+  const pointer::token &get_pointer_token () const { return m_pointer_token; }
+
+  pointer::token m_pointer_token;
 };
 
 /* Subclass of value for objects: a collection of key/value pairs
@@ -99,6 +150,8 @@ class object : public value
 
   enum kind get_kind () const final override { return JSON_OBJECT; }
   void print (pretty_printer *pp, bool formatted) const final override;
+
+  object *dyn_cast_object () final override { return this; }
 
   bool is_empty () const { return m_map.is_empty (); }
 
@@ -126,6 +179,8 @@ class object : public value
 
   /* Set to literal true/false.  */
   void set_bool (const char *key, bool v);
+
+  static int compare (const json::object &obj_a, const json::object &obj_b);
 
  private:
   typedef hash_map <char *, value *,

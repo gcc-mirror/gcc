@@ -1444,7 +1444,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, "%sl", names_big[REGNO (x)]);
 	  break;
 	case CONST_INT:
-	  fprintf (file, "#%ld", (-INTVAL (x)) & 0xff);
+	  fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, (-INTVAL (x)) & 0xff);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1457,7 +1457,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, "%sh", names_big[REGNO (x)]);
 	  break;
 	case CONST_INT:
-	  fprintf (file, "#%ld", ((-INTVAL (x)) & 0xff00) >> 8);
+	  fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, ((-INTVAL (x)) & 0xff00) >> 8);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1465,7 +1465,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
       break;
     case 'G':
       gcc_assert (GET_CODE (x) == CONST_INT);
-      fprintf (file, "#%ld", 0xff & (-INTVAL (x)));
+      fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, 0xff & (-INTVAL (x)));
       break;
     case 'S':
       if (GET_CODE (x) == REG)
@@ -1542,7 +1542,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	  h8300_print_operand (file, x, 0);
 	  break;
 	case CONST_INT:
-	  fprintf (file, "#%ld", ((INTVAL (x) >> 16) & 0xffff));
+	  fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, ((INTVAL (x) >> 16) & 0xffff));
 	  break;
 	case CONST_DOUBLE:
 	  {
@@ -1567,7 +1567,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	  h8300_print_operand (file, x, 0);
 	  break;
 	case CONST_INT:
-	  fprintf (file, "#%ld", INTVAL (x) & 0xffff);
+	  fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffff);
 	  break;
 	case CONST_DOUBLE:
 	  {
@@ -1621,7 +1621,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
       break;
     case 's':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%ld", (INTVAL (x)) & 0xff);
+	fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, (INTVAL (x)) & 0xff);
       else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 0));
       else
@@ -1629,7 +1629,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
       break;
     case 't':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%ld", (INTVAL (x) >> 8) & 0xff);
+	fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, (INTVAL (x) >> 8) & 0xff);
       else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 1));
       else
@@ -1637,7 +1637,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
       break;
     case 'w':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%ld", INTVAL (x) & 0xff);
+	fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xff);
       else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 0));
       else
@@ -1645,7 +1645,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
       break;
     case 'x':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%ld", (INTVAL (x) >> 8) & 0xff);
+	fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, (INTVAL (x) >> 8) & 0xff);
       else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 1));
       else
@@ -1653,7 +1653,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
       break;
     case 'y':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%ld", (INTVAL (x) >> 16) & 0xff);
+	fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, (INTVAL (x) >> 16) & 0xff);
       else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 0));
       else
@@ -1661,7 +1661,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
       break;
     case 'z':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%ld", (INTVAL (x) >> 24) & 0xff);
+	fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, (INTVAL (x) >> 24) & 0xff);
       else if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 1));
       else
@@ -5410,6 +5410,14 @@ h8300_init_libfuncs (void)
   set_optab_libfunc (udiv_optab, HImode, "__udivhi3");
   set_optab_libfunc (smod_optab, HImode, "__modhi3");
   set_optab_libfunc (umod_optab, HImode, "__umodhi3");
+
+/* The comment below comes from config/mmix/mmix.cc.
+
+   Unfortunately, by default __builtin_ffs is expanded to ffs for
+   targets where INT_TYPE_SIZE < BITS_PER_WORD.  That together with
+   newlib since 2017-07-04 implementing ffs as __builtin_ffs leads to
+   (newlib) ffs recursively calling itself.  */
+  set_optab_libfunc (ffs_optab, HImode, "__ffshi2");
 }
 
 /* Worker function for TARGET_FUNCTION_VALUE.

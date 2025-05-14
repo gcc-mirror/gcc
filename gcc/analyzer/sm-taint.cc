@@ -20,20 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "make-unique.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "options.h"
-#include "diagnostic-core.h"
-#include "diagnostic-path.h"
-#include "analyzer/analyzer.h"
-#include "analyzer/analyzer-logging.h"
+#include "analyzer/common.h"
+
 #include "gimple-iterator.h"
 #include "ordered-hash-map.h"
 #include "cgraph.h"
@@ -42,6 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "fold-const.h"
+#include "diagnostic-format-sarif.h"
+#include "gcc-urlifier.h"
+
+#include "analyzer/analyzer-logging.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
@@ -51,8 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-state.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/constraint-manager.h"
-#include "diagnostic-format-sarif.h"
-#include "gcc-urlifier.h"
 
 #if ENABLE_ANALYZER
 
@@ -140,7 +130,7 @@ private:
 
   void check_for_tainted_size_arg (sm_context &sm_ctxt,
 				   const supernode *node,
-				   const gcall *call,
+				   const gcall &call,
 				   tree callee_fndecl) const;
   void check_for_tainted_divisor (sm_context &sm_ctxt,
 				  const supernode *node,
@@ -1099,9 +1089,9 @@ taint_state_machine::on_stmt (sm_context &sm_ctxt,
 			       const gimple *stmt) const
 {
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
+    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (*call))
       {
-	if (is_named_call_p (callee_fndecl, "fread", call, 4))
+	if (is_named_call_p (callee_fndecl, "fread", *call, 4))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
 
@@ -1117,14 +1107,14 @@ taint_state_machine::on_stmt (sm_context &sm_ctxt,
 
 	/* External function with "access" attribute. */
 	if (sm_ctxt.unknown_side_effects_p ())
-	  check_for_tainted_size_arg (sm_ctxt, node, call, callee_fndecl);
+	  check_for_tainted_size_arg (sm_ctxt, node, *call, callee_fndecl);
 
 	if (is_assertion_failure_handler_p (callee_fndecl)
 	    && sm_ctxt.get_global_state () == m_tainted_control_flow)
 	  {
 	    sm_ctxt.warn (node, call, NULL_TREE,
-			  make_unique<tainted_assertion> (*this, NULL_TREE,
-							  callee_fndecl));
+			  std::make_unique<tainted_assertion> (*this, NULL_TREE,
+							       callee_fndecl));
 	  }
       }
   // TODO: ...etc; many other sources of untrusted data
@@ -1433,7 +1423,7 @@ taint_state_machine::combine_states (state_t s0, state_t s1) const
 void
 taint_state_machine::check_for_tainted_size_arg (sm_context &sm_ctxt,
 						 const supernode *node,
-						 const gcall *call,
+						 const gcall &call,
 						 tree callee_fndecl) const
 {
   tree fntype = TREE_TYPE (callee_fndecl);
@@ -1464,17 +1454,17 @@ taint_state_machine::check_for_tainted_size_arg (sm_context &sm_ctxt,
       if (access->sizarg == UINT_MAX)
 	continue;
 
-      tree size_arg = gimple_call_arg (call, access->sizarg);
+      tree size_arg = gimple_call_arg (&call, access->sizarg);
 
-      state_t state = sm_ctxt.get_state (call, size_arg);
+      state_t state = sm_ctxt.get_state (&call, size_arg);
       enum bounds b;
       if (get_taint (state, TREE_TYPE (size_arg), &b))
 	{
 	  const char* const access_str =
 	    TREE_STRING_POINTER (access->to_external_string ());
 	  tree diag_size = sm_ctxt.get_diagnostic_tree (size_arg);
-	  sm_ctxt.warn (node, call, size_arg,
-			make_unique<tainted_access_attrib_size>
+	  sm_ctxt.warn (node, &call, size_arg,
+			std::make_unique<tainted_access_attrib_size>
 			(*this, diag_size, b,
 			 callee_fndecl,
 			 access->sizarg,
@@ -1518,8 +1508,9 @@ taint_state_machine::check_for_tainted_divisor (sm_context &sm_ctxt,
 	return;
 
       tree diag_divisor = sm_ctxt.get_diagnostic_tree (divisor_expr);
-      sm_ctxt.warn (node, assign, divisor_expr,
-		    make_unique <tainted_divisor> (*this, diag_divisor, b));
+      sm_ctxt.warn
+	(node, assign, divisor_expr,
+	 std::make_unique <tainted_divisor> (*this, diag_divisor, b));
       sm_ctxt.set_next_state (assign, divisor_sval, m_stop);
     }
 }
@@ -1528,10 +1519,10 @@ taint_state_machine::check_for_tainted_divisor (sm_context &sm_ctxt,
 
 /* Internal interface to this file. */
 
-state_machine *
+std::unique_ptr<state_machine>
 make_taint_state_machine (logger *logger)
 {
-  return new taint_state_machine (logger);
+  return std::make_unique<taint_state_machine> (logger);
 }
 
 /* A closed concrete range.  */
@@ -1682,8 +1673,8 @@ region_model::check_region_for_taint (const region *reg,
 		if (index_can_be_out_of_bounds_p (element_reg))
 		  {
 		    tree arg = get_representative_tree (index);
-		    ctxt->warn (make_unique<tainted_array_index> (taint_sm,
-								  arg, b));
+		    ctxt->warn (std::make_unique<tainted_array_index> (taint_sm,
+								       arg, b));
 		  }
 		else if (ctxt->get_logger ())
 		  ctxt->get_logger ()->log ("rejecting tainted_array_index as"
@@ -1709,8 +1700,8 @@ region_model::check_region_for_taint (const region *reg,
 	    if (taint_sm.get_taint (state, effective_type, &b))
 	      {
 		tree arg = get_representative_tree (offset);
-		ctxt->warn (make_unique<tainted_offset> (taint_sm, arg, b,
-							 offset));
+		ctxt->warn (std::make_unique<tainted_offset> (taint_sm, arg, b,
+							      offset));
 	      }
 	  }
 	  break;
@@ -1727,7 +1718,7 @@ region_model::check_region_for_taint (const region *reg,
 	    if (taint_sm.get_taint (state, size_sval->get_type (), &b))
 	      {
 		tree arg = get_representative_tree (size_sval);
-		ctxt->warn (make_unique<tainted_size> (taint_sm, arg, b));
+		ctxt->warn (std::make_unique<tainted_size> (taint_sm, arg, b));
 	      }
 	  }
 	  break;
@@ -1773,7 +1764,7 @@ region_model::check_dynamic_size_for_taint (enum memory_space mem_space,
   if (taint_sm.get_taint (state, size_in_bytes->get_type (), &b))
     {
       tree arg = get_representative_tree (size_in_bytes);
-      ctxt->warn (make_unique<tainted_allocation_size>
+      ctxt->warn (std::make_unique<tainted_allocation_size>
 		    (taint_sm, arg, size_in_bytes, b, mem_space));
     }
 }

@@ -300,8 +300,8 @@
 #define B_VXE2  (1 << 4)  /* Builtins requiring the z15 vector extensions.  */
 #define B_DEP   (1 << 5)  /* Builtin has been deprecated and a warning should be issued.  */
 #define B_NNPA  (1 << 6)  /* Builtins requiring the NNPA Facility.  */
-#define B_VXE3  (1 << 7)  /* Builtins requiring the arch15 vector extensions.  */
-#define B_ARCH15 (1 << 8) /* Builtins requiring arch15.  */
+#define B_VXE3  (1 << 7)  /* Builtins requiring the z17 vector extensions.  */
+#define B_Z17   (1 << 8) /* Builtins requiring z17.  */
 
 /* B_DEF defines a standard (not overloaded) builtin
    B_DEF (<builtin name>, <RTL expander name>, <function attributes>, <builtin flags>, <operand flags, see above>, <fntype>)
@@ -3318,8 +3318,8 @@ B_DEF      (s390_vcnf,                   vcnf_v8hi,         0,                  
 
 /* arch 15 builtins */
 
-B_DEF      (s390_bdepg,                 bdepg,              0,                  B_ARCH15,           0,                  BT_FN_ULONG_ULONG_ULONG)
-B_DEF      (s390_bextg,                 bextg,              0,                  B_ARCH15,           0,                  BT_FN_ULONG_ULONG_ULONG)
+B_DEF      (s390_bdepg,                 bdepg,              0,                  B_Z17,              0,                  BT_FN_ULONG_ULONG_ULONG)
+B_DEF      (s390_bextg,                 bextg,              0,                  B_Z17,              0,                  BT_FN_ULONG_ULONG_ULONG)
 
 OB_DEF     (s390_vec_blend,             s390_vec_blend_s8,  s390_vec_blend_dbl, B_VXE3,             BT_FN_OV4SI_OV4SI_OV4SI_OV4SI)
 OB_DEF_VAR (s390_vec_blend_s8,          s390_vblendb,       0,                  0,                  BT_OV_V16QI_V16QI_V16QI_V16QI)

@@ -963,6 +963,29 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
   return;
 }
 
+/* A mapping between an identifier to a tree code for binary operations. */
+static const std::pair<const char *, tree_code> gimple_binary_identifier_code[] =
+  {
+    {"__MULT_HIGHPART", MULT_HIGHPART_EXPR},
+    {"__UNLT", UNLT_EXPR},
+    {"__UNLE", UNLE_EXPR},
+    {"__UNGT", UNGT_EXPR},
+    {"__UNGE", UNGE_EXPR},
+    {"__UNEQ", UNEQ_EXPR},
+    {"__UNORDERED", UNORDERED_EXPR},
+    {"__ORDERED", ORDERED_EXPR},
+    {"__LTGT", LTGT_EXPR},
+    {"__FLOOR_DIV", FLOOR_DIV_EXPR},
+    {"__ROUND_DIV", ROUND_DIV_EXPR},
+    {"__EXACT_DIV", EXACT_DIV_EXPR},
+    {"__CEIL_DIV", CEIL_DIV_EXPR},
+    {"__FLOOR_MOD", FLOOR_MOD_EXPR},
+    {"__ROUND_MOD", ROUND_MOD_EXPR},
+    {"__CEIL_MOD", CEIL_MOD_EXPR},
+    {"__ROTATE_LEFT", LROTATE_EXPR},
+    {"__ROTATE_RIGHT", RROTATE_EXPR},
+  };
+
 /* Parse gimple binary expr.
 
    gimple-binary-expression:
@@ -1061,86 +1084,16 @@ c_parser_gimple_binary_expression (gimple_parser &parser, tree ret_type)
     case CPP_NAME:
       {
 	tree id = c_parser_peek_token (parser)->value;
-	if (strcmp (IDENTIFIER_POINTER (id), "__MULT_HIGHPART") == 0)
+	for (auto &p : gimple_binary_identifier_code)
 	  {
-	    code = MULT_HIGHPART_EXPR;
-	    break;
+	    if (strcmp (IDENTIFIER_POINTER (id), p.first) == 0)
+	      {
+		code = p.second;
+		break;
+	      }
 	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__UNLT") == 0)
-	  {
-	    code = UNLT_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__UNLE") == 0)
-	  {
-	    code = UNLE_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__UNGT") == 0)
-	  {
-	    code = UNGT_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__UNGE") == 0)
-	  {
-	    code = UNGE_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__UNEQ") == 0)
-	  {
-	    code = UNEQ_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__UNORDERED") == 0)
-	  {
-	    code = UNORDERED_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__ORDERED") == 0)
-	  {
-	    code = ORDERED_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__LTGT") == 0)
-	  {
-	    code = LTGT_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__FLOOR_DIV") == 0)
-	  {
-	    code = FLOOR_DIV_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__ROUND_DIV") == 0)
-	  {
-	    code = ROUND_DIV_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__EXACT_DIV") == 0)
-	  {
-	    code = EXACT_DIV_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__CEIL_DIV") == 0)
-	  {
-	    code = CEIL_DIV_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__FLOOR_MOD") == 0)
-	  {
-	    code = FLOOR_MOD_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__ROUND_MOD") == 0)
-	  {
-	    code = ROUND_MOD_EXPR;
-	    break;
-	  }
-	else if (strcmp (IDENTIFIER_POINTER (id), "__CEIL_MOD") == 0)
-	  {
-	    code = CEIL_MOD_EXPR;
-	    break;
-	  }
+	if (code != ERROR_MARK)
+	  break;
       }
       /* Fallthru.  */
     default:

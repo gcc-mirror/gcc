@@ -1,12 +1,12 @@
 /**
  * Semantic analysis of initializers.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/initsem.d, _initsem.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/initsem.d, _initsem.d)
  * Documentation:  https://dlang.org/phobos/dmd_initsem.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/initsem.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/initsem.d
  */
 
 module dmd.initsem;
@@ -439,7 +439,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
             Type typeb = se.type.toBasetype();
             TY tynto = tb.nextOf().ty;
             if (!se.committed &&
-                (typeb.ty == Tarray || typeb.ty == Tsarray) && tynto.isSomeChar &&
+                typeb.isStaticOrDynamicArray() && tynto.isSomeChar &&
                 se.numberOfCodeUnits(tynto) < tb.isTypeSArray().dim.toInteger())
             {
                 i.exp = se.castTo(sc, t);
@@ -489,7 +489,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
                 else
                     i.exp = e.optimize(WANTvalue);
             }
-            else if (search_function(sd, Id.call))
+            else if (search_function(sd, Id.opCall))
             {
                 /* https://issues.dlang.org/show_bug.cgi?id=1547
                  *
@@ -499,7 +499,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
                  *  i.exp = typeof(sd).opCall(arguments)
                  */
 
-                Expression e = typeDotIdExp(i.loc, sd.type, Id.call);
+                Expression e = typeDotIdExp(i.loc, sd.type, Id.opCall);
                 e = new CallExp(i.loc, e, i.exp);
                 e = e.expressionSemantic(sc);
                 e = resolveProperties(sc, e);
@@ -585,7 +585,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
             const errors = global.startGagging();
             i.exp = i.exp.implicitCastTo(sc, t);
             if (global.endGagging(errors))
-                error(currExp.loc, "cannot implicitly convert expression `%s` of type `%s` to `%s`", currExp.toChars(), et.toChars(), t.toChars());
+                error(currExp.loc, "cannot implicitly convert expression `%s` of type `%s` to `%s`", currExp.toErrMsg(), et.toChars(), t.toChars());
         }
         }
     L1:

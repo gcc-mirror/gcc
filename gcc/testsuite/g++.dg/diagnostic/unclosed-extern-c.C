@@ -9,5 +9,5 @@ void bar (void);
 // { dg-message "1: 'extern .C.' linkage started here" "" { target *-*-* } open_extern_c }
 
 void test (void);
-// { message "12: to match this '.'" "" { target *-*-* } open_extern_c }
+// { dg-message "12: to match this '.'" "" { target *-*-* } open_extern_c }
 /* { dg-error "18:expected '.' at end of input" "" { target *-*-* } .-2 } */

@@ -26,108 +26,46 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-void
-GlobbingVisitor::go (AST::Module *module)
-{
-  for (auto &i : module->get_items ())
-    visit (i);
-}
-
-void
-GlobbingVisitor::visit (AST::Module &module)
-{
-  if (module.get_visibility ().is_public ())
-    ctx.insert_shadowable (module.get_name (), module.get_node_id (),
-			   Namespace::Types);
-}
-
-void
-GlobbingVisitor::visit (AST::MacroRulesDefinition &macro)
-{
-  if (macro.get_visibility ().is_public ())
-    ctx.insert_shadowable (macro.get_rule_name (), macro.get_node_id (),
-			   Namespace::Macros);
-}
-
-void
-GlobbingVisitor::visit (AST::Function &function)
-{
-  if (function.get_visibility ().is_public ())
-    ctx.insert_shadowable (function.get_function_name (),
-			   function.get_node_id (), Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::StaticItem &static_item)
-{
-  if (static_item.get_visibility ().is_public ())
-    ctx.insert_shadowable (static_item.get_identifier (),
-			   static_item.get_node_id (), Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::StructStruct &struct_item)
-{
-  if (struct_item.get_visibility ().is_public ())
-    {
-      ctx.insert_shadowable (struct_item.get_identifier (),
-			     struct_item.get_node_id (), Namespace::Types);
-      if (struct_item.is_unit_struct ())
-	ctx.insert_shadowable (struct_item.get_identifier (),
-			       struct_item.get_node_id (), Namespace::Values);
-    }
-}
-
-void
-GlobbingVisitor::visit (AST::TupleStruct &tuple_struct)
-{
-  if (tuple_struct.get_visibility ().is_public ())
-    {
-      ctx.insert_shadowable (tuple_struct.get_identifier (),
-			     tuple_struct.get_node_id (), Namespace::Types);
-
-      ctx.insert_shadowable (tuple_struct.get_identifier (),
-			     tuple_struct.get_node_id (), Namespace::Values);
-    }
-}
-
-void
-GlobbingVisitor::visit (AST::Enum &enum_item)
-{
-  if (enum_item.get_visibility ().is_public ())
-    ctx.insert_shadowable (enum_item.get_identifier (),
-			   enum_item.get_node_id (), Namespace::Types);
-}
-
-void
-GlobbingVisitor::visit (AST::Union &union_item)
-{
-  if (union_item.get_visibility ().is_public ())
-    ctx.insert_shadowable (union_item.get_identifier (),
-			   union_item.get_node_id (), Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::ConstantItem &const_item)
-{
-  if (const_item.get_visibility ().is_public ())
-    ctx.insert_shadowable (const_item.get_identifier (),
-			   const_item.get_node_id (), Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::ExternCrate &crate)
-{}
-
-void
-GlobbingVisitor::visit (AST::UseDeclaration &use)
-{
-  // Handle cycles ?
-}
-
 TopLevel::TopLevel (NameResolutionContext &resolver)
-  : DefaultResolver (resolver)
+  : DefaultResolver (resolver), dirty (false)
 {}
+
+template <typename T>
+void
+TopLevel::insert_enum_variant_or_error_out (const Identifier &identifier,
+					    const T &node)
+{
+  insert_enum_variant_or_error_out (identifier, node.get_locus (),
+				    node.get_node_id ());
+}
+
+void
+TopLevel::check_multiple_insertion_error (
+  tl::expected<NodeId, DuplicateNameError> result, const Identifier &identifier,
+  const location_t &locus, const NodeId node_id)
+{
+  if (result)
+    dirty = true;
+  else if (result.error ().existing != node_id)
+    {
+      rich_location rich_loc (line_table, locus);
+      rich_loc.add_range (node_locations[result.error ().existing]);
+
+      rust_error_at (rich_loc, ErrorCode::E0428, "%qs defined multiple times",
+		     identifier.as_string ().c_str ());
+    }
+}
+void
+TopLevel::insert_enum_variant_or_error_out (const Identifier &identifier,
+					    const location_t &locus,
+					    const NodeId node_id)
+{
+  // keep track of each node's location to provide useful errors
+  node_locations.emplace (node_id, locus);
+
+  auto result = ctx.insert_variant (identifier, node_id);
+  check_multiple_insertion_error (result, identifier, locus, node_id);
+}
 
 template <typename T>
 void
@@ -146,15 +84,7 @@ TopLevel::insert_or_error_out (const Identifier &identifier,
   node_locations.emplace (node_id, locus);
 
   auto result = ctx.insert (identifier, node_id, ns);
-
-  if (!result && result.error ().existing != node_id)
-    {
-      rich_location rich_loc (line_table, locus);
-      rich_loc.add_range (node_locations[result.error ().existing]);
-
-      rust_error_at (rich_loc, ErrorCode::E0428, "%qs defined multiple times",
-		     identifier.as_string ().c_str ());
-    }
+  check_multiple_insertion_error (result, identifier, locus, node_id);
 }
 
 void
@@ -174,40 +104,79 @@ TopLevel::visit (AST::Module &module)
 {
   insert_or_error_out (module.get_name (), module, Namespace::Types);
 
-  auto sub_visitor = [this, &module] () {
-    for (auto &item : module.get_items ())
-      item->accept_vis (*this);
-  };
+  // Parse the module's items if they haven't been expanded and the file
+  // should be parsed (i.e isn't hidden behind an untrue or impossible cfg
+  // directive
+  // TODO: make sure this is right
+  // TODO: avoid loading items if cfg attributes are present?
+  //       might not be needed if this runs after early resolution?
+  // This was copied from the old early resolver method
+  // 'accumulate_escaped_macros'
+  if (module.get_kind () == AST::Module::UNLOADED)
+    {
+      module.load_items ();
 
-  ctx.scoped (Rib::Kind::Module, module.get_node_id (), sub_visitor,
-	      module.get_name ());
+      // If the module was previously unloaded, then we don't want to visit it
+      // this time around as the CfgStrip hasn't run on its inner items yet.
+      // Skip it for now, mark the visitor as dirty and try again
 
-  if (Analysis::Mappings::get ()->lookup_ast_module (module.get_node_id ())
+      dirty = true;
+
+      return;
+    }
+
+  DefaultResolver::visit (module);
+
+  if (Analysis::Mappings::get ().lookup_ast_module (module.get_node_id ())
       == tl::nullopt)
-    Analysis::Mappings::get ()->insert_ast_module (&module);
+    Analysis::Mappings::get ().insert_ast_module (&module);
 }
 
 void
 TopLevel::visit (AST::Trait &trait)
 {
-  // FIXME: This Self injection is dodgy. It even lead to issues with metadata
-  // export in the past (#2349). We cannot tell appart injected parameters from
-  // regular ones. Dumping generic parameters highlights this Self in metadata,
-  // during debug or proc macro collection. This is clearly a hack.
-  //
-  // For now I'll keep it here in the new name resolver even if it should
-  // probably not be there. We need to find another way to solve this.
-  // Maybe an additional attribute to Trait ?
-  //
-  // From old resolver:
-  //// we need to inject an implicit self TypeParam here
-  //// FIXME: which location should be used for Rust::Identifier `Self`?
-  AST::TypeParam *implicit_self
-    = new AST::TypeParam ({"Self"}, trait.get_locus ());
-  trait.insert_implict_self (
-    std::unique_ptr<AST::GenericParam> (implicit_self));
+  insert_or_error_out (trait.get_identifier (), trait, Namespace::Types);
 
   DefaultResolver::visit (trait);
+}
+
+void
+TopLevel::visit (AST::InherentImpl &impl)
+{
+  auto inner_fn = [this, &impl] () {
+    insert_or_error_out (Identifier ("Self", impl.get_type ().get_locus ()),
+			 impl.get_type (), Namespace::Types);
+
+    // We do want to visit with the default visitor instead of default resolver
+    // because we don't want to insert the scope twice.
+    AST::DefaultASTVisitor::visit (impl);
+  };
+
+  ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn);
+}
+
+void
+TopLevel::visit (AST::TraitImpl &impl)
+{
+  auto inner_fn = [this, &impl] () {
+    insert_or_error_out (Identifier ("Self", impl.get_type ().get_locus ()),
+			 impl.get_type (), Namespace::Types);
+
+    // We do want to visit using the default visitor instead of default resolver
+    // because we don't want to insert the scope twice.
+    AST::DefaultASTVisitor::visit (impl);
+  };
+
+  ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn);
+}
+
+void
+TopLevel::visit (AST::TraitItemType &trait_item)
+{
+  insert_or_error_out (trait_item.get_identifier ().as_string (), trait_item,
+		       Namespace::Types);
+
+  DefaultResolver::visit (trait_item);
 }
 
 template <typename PROC_MACRO>
@@ -230,17 +199,23 @@ insert_macros (std::vector<PROC_MACRO> &macros, NameResolutionContext &ctx)
 void
 TopLevel::visit (AST::ExternCrate &crate)
 {
-  CrateNum num;
-  rust_assert (Analysis::Mappings::get ()->lookup_crate_name (
-    crate.get_referenced_crate (), num));
+  auto &mappings = Analysis::Mappings::get ();
+  auto num_opt = mappings.lookup_crate_name (crate.get_referenced_crate ());
 
-  auto attribute_macros
-    = Analysis::Mappings::get ()->lookup_attribute_proc_macros (num);
+  if (!num_opt)
+    {
+      rust_error_at (crate.get_locus (), "unknown crate %qs",
+		     crate.get_referenced_crate ().c_str ());
+      return;
+    }
 
-  auto bang_macros = Analysis::Mappings::get ()->lookup_bang_proc_macros (num);
+  CrateNum num = *num_opt;
 
-  auto derive_macros
-    = Analysis::Mappings::get ()->lookup_derive_proc_macros (num);
+  auto attribute_macros = mappings.lookup_attribute_proc_macros (num);
+
+  auto bang_macros = mappings.lookup_bang_proc_macros (num);
+
+  auto derive_macros = mappings.lookup_derive_proc_macros (num);
 
   auto sub_visitor = [&] () {
     // TODO: Find a way to keep this part clean without the double dispatch.
@@ -248,19 +223,19 @@ TopLevel::visit (AST::ExternCrate &crate)
       {
 	insert_macros (derive_macros.value (), ctx);
 	for (auto &macro : derive_macros.value ())
-	  Analysis::Mappings::get ()->insert_derive_proc_macro_def (macro);
+	  mappings.insert_derive_proc_macro_def (macro);
       }
     if (attribute_macros.has_value ())
       {
 	insert_macros (attribute_macros.value (), ctx);
 	for (auto &macro : attribute_macros.value ())
-	  Analysis::Mappings::get ()->insert_attribute_proc_macro_def (macro);
+	  mappings.insert_attribute_proc_macro_def (macro);
       }
     if (bang_macros.has_value ())
       {
 	insert_macros (bang_macros.value (), ctx);
 	for (auto &macro : bang_macros.value ())
-	  Analysis::Mappings::get ()->insert_bang_proc_macro_def (macro);
+	  mappings.insert_bang_proc_macro_def (macro);
       }
   };
 
@@ -309,12 +284,11 @@ TopLevel::visit (AST::MacroRulesDefinition &macro)
   if (macro.get_kind () == AST::MacroRulesDefinition::MacroKind::DeclMacro)
     insert_or_error_out (macro.get_rule_name (), macro, Namespace::Macros);
 
-  auto mappings = Analysis::Mappings::get ();
-  AST::MacroRulesDefinition *tmp = nullptr;
-  if (mappings->lookup_macro_def (macro.get_node_id (), &tmp))
+  auto &mappings = Analysis::Mappings::get ();
+  if (mappings.lookup_macro_def (macro.get_node_id ()))
     return;
 
-  mappings->insert_macro_def (&macro);
+  mappings.insert_macro_def (&macro);
 }
 
 void
@@ -327,34 +301,35 @@ TopLevel::visit (AST::Function &function)
 }
 
 void
-TopLevel::visit (AST::BlockExpr &expr)
+TopLevel::visit (AST::StaticItem &static_item)
 {
-  // extracting the lambda from the `scoped` call otherwise the code looks like
-  // a hot turd thanks to our .clang-format
+  insert_or_error_out (static_item.get_identifier (), static_item,
+		       Namespace::Values);
 
-  auto sub_vis = [this, &expr] () {
-    for (auto &stmt : expr.get_statements ())
-      stmt->accept_vis (*this);
-
-    if (expr.has_tail_expr ())
-      expr.get_tail_expr ().accept_vis (*this);
-  };
-
-  ctx.scoped (Rib::Kind::Normal, expr.get_node_id (), sub_vis);
+  DefaultResolver::visit (static_item);
 }
 
 void
-TopLevel::visit (AST::StaticItem &static_item)
+TopLevel::visit (AST::ExternalStaticItem &static_item)
 {
-  auto sub_vis
-    = [this, &static_item] () { static_item.get_expr ().accept_vis (*this); };
+  insert_or_error_out (static_item.get_identifier ().as_string (), static_item,
+		       Namespace::Values);
 
-  ctx.scoped (Rib::Kind::Item, static_item.get_node_id (), sub_vis);
+  DefaultResolver::visit (static_item);
 }
 
 void
 TopLevel::visit (AST::StructStruct &struct_item)
 {
+  auto generic_vis = [this, &struct_item] () {
+    for (auto &g : struct_item.get_generic_params ())
+      {
+	g->accept_vis (*this);
+      }
+  };
+
+  ctx.scoped (Rib::Kind::Item, struct_item.get_node_id (), generic_vis);
+
   insert_or_error_out (struct_item.get_struct_name (), struct_item,
 		       Namespace::Types);
 
@@ -367,6 +342,23 @@ TopLevel::visit (AST::StructStruct &struct_item)
 }
 
 void
+TopLevel::visit (AST::TypeParam &type_param)
+{
+  insert_or_error_out (type_param.get_type_representation (), type_param,
+		       Namespace::Types);
+
+  DefaultResolver::visit (type_param);
+}
+
+void
+TopLevel::visit (AST::ConstGenericParam &const_param)
+{
+  insert_or_error_out (const_param.get_name (), const_param, Namespace::Values);
+
+  DefaultResolver::visit (const_param);
+}
+
+void
 TopLevel::visit (AST::TupleStruct &tuple_struct)
 {
   insert_or_error_out (tuple_struct.get_struct_name (), tuple_struct,
@@ -374,24 +366,26 @@ TopLevel::visit (AST::TupleStruct &tuple_struct)
 
   insert_or_error_out (tuple_struct.get_struct_name (), tuple_struct,
 		       Namespace::Values);
+
+  DefaultResolver::visit (tuple_struct);
 }
 
 void
 TopLevel::visit (AST::EnumItem &variant)
 {
-  insert_or_error_out (variant.get_identifier (), variant, Namespace::Types);
+  insert_enum_variant_or_error_out (variant.get_identifier (), variant);
 }
 
 void
 TopLevel::visit (AST::EnumItemTuple &variant)
 {
-  insert_or_error_out (variant.get_identifier (), variant, Namespace::Types);
+  insert_enum_variant_or_error_out (variant.get_identifier (), variant);
 }
 
 void
 TopLevel::visit (AST::EnumItemStruct &variant)
 {
-  insert_or_error_out (variant.get_identifier (), variant, Namespace::Types);
+  insert_enum_variant_or_error_out (variant.get_identifier (), variant);
 }
 
 void
@@ -406,13 +400,7 @@ TopLevel::visit (AST::Enum &enum_item)
   insert_or_error_out (enum_item.get_identifier (), enum_item,
 		       Namespace::Types);
 
-  auto field_vis = [this, &enum_item] () {
-    for (auto &variant : enum_item.get_variants ())
-      variant->accept_vis (*this);
-  };
-
-  ctx.scoped (Rib::Kind::Item /* FIXME: Is that correct? */,
-	      enum_item.get_node_id (), field_vis, enum_item.get_identifier ());
+  DefaultResolver::visit (enum_item);
 }
 
 void
@@ -420,6 +408,8 @@ TopLevel::visit (AST::Union &union_item)
 {
   insert_or_error_out (union_item.get_identifier (), union_item,
 		       Namespace::Types);
+
+  DefaultResolver::visit (union_item);
 }
 
 void
@@ -428,187 +418,16 @@ TopLevel::visit (AST::ConstantItem &const_item)
   insert_or_error_out (const_item.get_identifier (), const_item,
 		       Namespace::Values);
 
-  auto expr_vis
-    = [this, &const_item] () { const_item.get_expr ().accept_vis (*this); };
-
-  ctx.scoped (Rib::Kind::ConstantItem, const_item.get_node_id (), expr_vis);
+  DefaultResolver::visit (const_item);
 }
 
-bool
-TopLevel::handle_use_glob (AST::SimplePath &glob)
+void
+TopLevel::visit (AST::TypeAlias &type_item)
 {
-  auto resolved = ctx.types.resolve_path (glob.get_segments ());
-  if (!resolved.has_value ())
-    return false;
+  insert_or_error_out (type_item.get_new_type_name (), type_item,
+		       Namespace::Types);
 
-  auto result
-    = Analysis::Mappings::get ()->lookup_ast_module (resolved->get_node_id ());
-
-  if (!result.has_value ())
-    return false;
-
-  GlobbingVisitor gvisitor (ctx);
-  gvisitor.go (result.value ());
-
-  return true;
-}
-
-bool
-TopLevel::handle_use_dec (AST::SimplePath &path)
-{
-  auto locus = path.get_final_segment ().get_locus ();
-  auto declared_name = path.get_final_segment ().as_string ();
-
-  // in what namespace do we perform path resolution? All of them? see which one
-  // matches? Error out on ambiguities?
-  // so, apparently, for each one that matches, add it to the proper namespace
-  // :(
-
-  auto found = false;
-
-  auto resolve_and_insert
-    = [this, &found, &declared_name, locus] (Namespace ns,
-					     const AST::SimplePath &path) {
-	tl::optional<Rib::Definition> resolved = tl::nullopt;
-
-	// FIXME: resolve_path needs to return an `expected<NodeId, Error>` so
-	// that we can improve it with hints or location or w/ever. and maybe
-	// only emit it the first time.
-	switch (ns)
-	  {
-	  case Namespace::Values:
-	    resolved = ctx.values.resolve_path (path.get_segments ());
-	    break;
-	  case Namespace::Types:
-	    resolved = ctx.types.resolve_path (path.get_segments ());
-	    break;
-	  case Namespace::Macros:
-	    resolved = ctx.macros.resolve_path (path.get_segments ());
-	    break;
-	  case Namespace::Labels:
-	    // TODO: Is that okay?
-	    rust_unreachable ();
-	  }
-
-	// FIXME: Ugly
-	(void) resolved.map ([this, &found, &declared_name, locus, ns,
-			      path] (Rib::Definition def) {
-	  found = true;
-
-	  // what do we do with the id?
-	  insert_or_error_out (declared_name, locus, def.get_node_id (), ns);
-	  auto result = node_forwarding.find (def.get_node_id ());
-	  if (result != node_forwarding.cend ()
-	      && result->second != path.get_node_id ())
-	    rust_error_at (path.get_locus (), "%qs defined multiple times",
-			   declared_name.c_str ());
-	  else // No previous thing has inserted this into our scope
-	    node_forwarding.insert ({def.get_node_id (), path.get_node_id ()});
-
-	  return def.get_node_id ();
-	});
-      };
-
-  resolve_and_insert (Namespace::Values, path);
-  resolve_and_insert (Namespace::Types, path);
-  resolve_and_insert (Namespace::Macros, path);
-
-  return found;
-}
-
-bool
-TopLevel::handle_rebind (std::pair<AST::SimplePath, AST::UseTreeRebind> &rebind)
-{
-  auto &path = rebind.first;
-
-  location_t locus = UNKNOWN_LOCATION;
-  std::string declared_name;
-
-  switch (rebind.second.get_new_bind_type ())
-    {
-    case AST::UseTreeRebind::NewBindType::IDENTIFIER:
-      declared_name = rebind.second.get_identifier ().as_string ();
-      locus = rebind.second.get_identifier ().get_locus ();
-      break;
-    case AST::UseTreeRebind::NewBindType::NONE:
-      declared_name = path.get_final_segment ().as_string ();
-      locus = path.get_final_segment ().get_locus ();
-      break;
-    case AST::UseTreeRebind::NewBindType::WILDCARD:
-      rust_unreachable ();
-      break;
-    }
-
-  // in what namespace do we perform path resolution? All
-  // of them? see which one matches? Error out on
-  // ambiguities? so, apparently, for each one that
-  // matches, add it to the proper namespace
-  // :(
-  auto found = false;
-
-  auto resolve_and_insert = [this, &found, &declared_name,
-			     locus] (Namespace ns,
-				     const AST::SimplePath &path) {
-    tl::optional<Rib::Definition> resolved = tl::nullopt;
-    tl::optional<Rib::Definition> resolved_bind = tl::nullopt;
-
-    std::vector<AST::SimplePathSegment> declaration_v
-      = {AST::SimplePathSegment (declared_name, locus)};
-    // FIXME: resolve_path needs to return an `expected<NodeId, Error>` so
-    // that we can improve it with hints or location or w/ever. and maybe
-    // only emit it the first time.
-    switch (ns)
-      {
-      case Namespace::Values:
-	resolved = ctx.values.resolve_path (path.get_segments ());
-	resolved_bind = ctx.values.resolve_path (declaration_v);
-	break;
-      case Namespace::Types:
-	resolved = ctx.types.resolve_path (path.get_segments ());
-	resolved_bind = ctx.types.resolve_path (declaration_v);
-	break;
-      case Namespace::Macros:
-	resolved = ctx.macros.resolve_path (path.get_segments ());
-	resolved_bind = ctx.macros.resolve_path (declaration_v);
-	break;
-      case Namespace::Labels:
-	// TODO: Is that okay?
-	rust_unreachable ();
-      }
-
-    resolved.map ([this, &found, &declared_name, locus, ns, path,
-		   &resolved_bind] (Rib::Definition def) {
-      found = true;
-
-      insert_or_error_out (declared_name, locus, def.get_node_id (), ns);
-      if (resolved_bind.has_value ())
-	{
-	  auto bind_def = resolved_bind.value ();
-	  // what do we do with the id?
-	  auto result = node_forwarding.find (bind_def.get_node_id ());
-	  if (result != node_forwarding.cend ()
-	      && result->second != path.get_node_id ())
-	    rust_error_at (path.get_locus (), "%qs defined multiple times",
-			   declared_name.c_str ());
-	}
-      else
-	{
-	  // No previous thing has inserted this into our scope
-	  node_forwarding.insert ({def.get_node_id (), path.get_node_id ()});
-	}
-      return def.get_node_id ();
-    });
-  };
-
-  // do this for all namespaces (even Labels?)
-
-  resolve_and_insert (Namespace::Values, path);
-  resolve_and_insert (Namespace::Types, path);
-  resolve_and_insert (Namespace::Macros, path);
-
-  // TODO: No labels? No, right?
-
-  return found;
+  DefaultResolver::visit (type_item);
 }
 
 static void
@@ -728,6 +547,8 @@ flatten_glob (const AST::UseTreeGlob &glob, std::vector<AST::SimplePath> &paths,
 {
   if (glob.has_path ())
     paths.emplace_back (glob.get_path ());
+  else
+    paths.emplace_back (AST::SimplePath ({}, false, glob.get_locus ()));
 }
 
 void
@@ -738,6 +559,10 @@ TopLevel::visit (AST::UseDeclaration &use)
   auto rebind_path
     = std::vector<std::pair<AST::SimplePath, AST::UseTreeRebind>> ();
 
+  auto &values_rib = ctx.values.peek ();
+  auto &types_rib = ctx.types.peek ();
+  auto &macros_rib = ctx.macros.peek ();
+
   // FIXME: How do we handle `use foo::{self}` imports? Some beforehand cleanup?
   // How do we handle module imports in general? Should they get added to all
   // namespaces?
@@ -745,21 +570,22 @@ TopLevel::visit (AST::UseDeclaration &use)
   const auto &tree = use.get_tree ();
   flatten (tree.get (), paths, glob_path, rebind_path, this->ctx);
 
-  for (auto &path : paths)
-    if (!handle_use_dec (path))
-      rust_error_at (path.get_final_segment ().get_locus (), ErrorCode::E0433,
-		     "unresolved import %qs", path.as_string ().c_str ());
+  auto imports = std::vector<ImportKind> ();
 
-  for (auto &glob : glob_path)
-    if (!handle_use_glob (glob))
-      rust_error_at (glob.get_final_segment ().get_locus (), ErrorCode::E0433,
-		     "unresolved import %qs", glob.as_string ().c_str ());
+  for (auto &&path : paths)
+    imports.emplace_back (
+      ImportKind::Simple (std::move (path), values_rib, types_rib, macros_rib));
 
-  for (auto &rebind : rebind_path)
-    if (!handle_rebind (rebind))
-      rust_error_at (rebind.first.get_final_segment ().get_locus (),
-		     ErrorCode::E0433, "unresolved import %qs",
-		     rebind.first.as_string ().c_str ());
+  for (auto &&glob : glob_path)
+    imports.emplace_back (
+      ImportKind::Glob (std::move (glob), values_rib, types_rib, macros_rib));
+
+  for (auto &&rebind : rebind_path)
+    imports.emplace_back (
+      ImportKind::Rebind (std::move (rebind.first), std::move (rebind.second),
+			  values_rib, types_rib, macros_rib));
+
+  imports_to_resolve.insert ({use.get_node_id (), std::move (imports)});
 }
 
 } // namespace Resolver2_0

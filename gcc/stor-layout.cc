@@ -2591,16 +2591,21 @@ layout_type (tree type)
 	/* Several boolean vector elements may fit in a single unit.  */
 	if (VECTOR_BOOLEAN_TYPE_P (type)
 	    && type->type_common.mode != BLKmode)
-	  TYPE_SIZE_UNIT (type)
-	    = size_int (GET_MODE_SIZE (type->type_common.mode));
+	  {
+	    TYPE_SIZE_UNIT (type)
+	      = size_int (GET_MODE_SIZE (type->type_common.mode));
+	    TYPE_SIZE (type)
+	      = bitsize_int (GET_MODE_BITSIZE (type->type_common.mode));
+	  }
 	else
-	  TYPE_SIZE_UNIT (type) = int_const_binop (MULT_EXPR,
-						   TYPE_SIZE_UNIT (innertype),
-						   size_int (nunits));
-	TYPE_SIZE (type) = int_const_binop
-	  (MULT_EXPR,
-	   bits_from_bytes (TYPE_SIZE_UNIT (type)),
-	   bitsize_int (BITS_PER_UNIT));
+	  {
+	    TYPE_SIZE_UNIT (type)
+	      = size_int (GET_MODE_SIZE (SCALAR_TYPE_MODE (innertype))
+			  * nunits);
+	    TYPE_SIZE (type)
+	      = bitsize_int (GET_MODE_BITSIZE (SCALAR_TYPE_MODE (innertype))
+			     * nunits);
+	  }
 
 	/* For vector types, we do not default to the mode's alignment.
 	   Instead, query a target hook, defaulting to natural alignment.

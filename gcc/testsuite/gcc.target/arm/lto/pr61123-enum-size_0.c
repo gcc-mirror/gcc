@@ -1,5 +1,6 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options { { -fno-short-enums -Wl,-Ur,--no-enum-size-warning -Os -nostdlib -flto } } } */
+/* { dg-lto-options { { -fno-short-enums -Os -flto } } } */
+/* { dg-extra-ld-options "-flinker-output=nolto-rel -Wl,-Ur,--no-enum-size-warning -nostdlib" } */
 
 #include <stdlib.h>
 

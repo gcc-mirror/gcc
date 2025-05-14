@@ -1,4 +1,4 @@
-// { dg-do assemble  }
+// { dg-do assemble }
 // g++ 1.37.1 bug 900330_02
 
 // The C++ Reference Manual says in section 13.1:

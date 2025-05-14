@@ -1,0 +1,56 @@
+#   Copyright (C) 2004-2025 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib cobol-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_COBFLAGS
+if ![info exists DEFAULT_COBFLAGS] then {
+    set DEFAULT_COBFLAGS " "
+}
+
+# Initialize `dg'.
+dg-init
+
+global cobol_test_path
+set cobol_test_path $srcdir/$subdir
+
+set all_flags $DEFAULT_COBFLAGS
+
+# Recursively find files in $dir and subdirs, do not walk into subdirs 
+# that contain their own .exp file.
+proc find-cob-tests { dir suffix } {
+    set tests [lsort [glob -nocomplain -directory $dir "*.$suffix" ]]
+    foreach subdir [lsort [glob -nocomplain -type d -directory $dir *]] {
+        if { [glob -nocomplain -directory $subdir *.exp] eq "" } {
+            eval lappend tests [find-cob-tests $subdir $suffix]
+        }
+    }
+    return $tests
+}
+
+set tests [find-cob-tests $srcdir/$subdir {cob}]
+
+# Main loop.
+if [check_effective_target_cobol] {
+    cobol-dg-runtest $tests "" $all_flags
+}
+
+# All done.
+dg-finish

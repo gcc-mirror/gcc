@@ -11,9 +11,6 @@
  * Standards: ISO/IEC 9899:1999 (E)
  */
 
-/* NOTE: This file has been patched from the original DMD distribution to
- * work with the GDC compiler.
- */
 module core.stdc.config;
 
 version (StdDdoc)
@@ -673,3 +670,8 @@ package(core) template muslRedirTime64Mangle(string name, string redirectedName)
     else
         enum muslRedirTime64Mangle = name;
 }
+
+version (PPC64)
+    enum PPCUseIEEE128 = real.mant_dig == 113;
+else
+    enum PPCUseIEEE128 = false;

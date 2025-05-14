@@ -3,12 +3,12 @@
  *
  * Not to be confused with the `scope` storage class.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dscope.d, _dscope.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dscope.d, _dscope.d)
  * Documentation:  https://dlang.org/phobos/dmd_dscope.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/dscope.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/dscope.d
  */
 
 module dmd.dscope;
@@ -131,10 +131,10 @@ extern (C++) struct Scope
     VarDeclaration varDecl;         /// variable we are in during semantic2
     Dsymbol parent;                 /// parent to use
     LabelStatement slabel;          /// enclosing labelled statement
-    SwitchStatement sw;             /// enclosing switch statement
+    SwitchStatement switchStatement;/// enclosing switch statement
     Statement tryBody;              /// enclosing _body of TryCatchStatement or TryFinallyStatement
-    TryFinallyStatement tf;         /// enclosing try finally statement
-    ScopeGuardStatement os;            /// enclosing scope(xxx) statement
+    TryFinallyStatement tryFinally; /// enclosing try finally statement
+    ScopeGuardStatement scopeGuard; /// enclosing scope(xxx) statement
     Statement sbreak;               /// enclosing statement that supports "break"
     Statement scontinue;            /// enclosing statement that supports "continue"
     ForeachStatement fes;           /// if nested function for ForeachStatement, this is it
@@ -176,7 +176,7 @@ extern (C++) struct Scope
     Visibility visibility = Visibility(Visibility.Kind.public_);
     int explicitVisibility;         /// set if in an explicit visibility attribute
 
-    StorageClass stc;               /// storage class
+    STC stc;                        /// storage class
 
     DeprecatedDeclaration depdecl;  /// customized deprecation message
 
@@ -382,7 +382,7 @@ extern (C++) struct Scope
      *   loc = for error messages
      *   ctorflow = flow results to merge in
      */
-    extern (D) void merge(const ref Loc loc, const ref CtorFlow ctorflow)
+    extern (D) void merge(Loc loc, const ref CtorFlow ctorflow)
     {
         if (!mergeCallSuper(this.ctorflow.callSuper, ctorflow.callSuper))
             error(loc, "one path skips constructor");
@@ -422,7 +422,7 @@ extern (C++) struct Scope
      * Returns:
      *  symbol if found, null if not
      */
-    extern (C++) Dsymbol search(const ref Loc loc, Identifier ident, out Dsymbol pscopesym, SearchOptFlags flags = SearchOpt.all)
+    extern (C++) Dsymbol search(Loc loc, Identifier ident, out Dsymbol pscopesym, SearchOptFlags flags = SearchOpt.all)
     {
         version (LOGSEARCH)
         {

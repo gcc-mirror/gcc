@@ -2,7 +2,7 @@
 // { dg-do compile { target c++20 } }
 // { dg-add-options tls }
 // { dg-require-alias "" }
-// { dg-require-effective-target tls_runtime }
+// { dg-require-effective-target tls }
 // { dg-final { scan-assembler-not "_ZTH17mythreadlocalvar1" } }
 // { dg-final { scan-assembler "_ZTH17mythreadlocalvar2" } }
 // { dg-final { scan-assembler-not "_ZTH17mythreadlocalvar3" } }

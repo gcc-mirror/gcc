@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fno-exceptions" } */
 /* { dg-additional-options "-fanalyzer-verbose-state-changes" } */
 
 typedef struct FILE   FILE;

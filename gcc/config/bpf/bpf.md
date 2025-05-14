@@ -121,12 +121,11 @@
   [(match_operand:DI 0 "general_operand" "")
    (match_operand:DI 1 "general_operand" "")]
   ""
-  "
 {
-  error (\"BPF does not support dynamic stack allocation\");
+  sorry ("dynamic stack allocation not supported");
   emit_insn (gen_nop ());
   DONE;
-}")
+})
 
 ;;;; Arithmetic/Logical
 

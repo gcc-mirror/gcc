@@ -1,4 +1,5 @@
 /* { dg-additional-options "-O3" } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 #include "analyzer-decls.h"
 

@@ -1,7 +1,6 @@
 /* PR middle-end/98578 - ICE warning on uninitialized VLA access
    { dg-do compile }
-   { dg-options "-O2 -Wall -fno-ipa-modref" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall -fno-ipa-modref" } */
 
 void* malloc (__SIZE_TYPE__);
 
@@ -15,20 +14,20 @@ void vla_n (int n, int i)
      as *a1), but definitely not as *a1[I].  This is a bug in VLA
      formatting.  */
   T (a1[0]);        // { dg-warning "'a1\\\[0]' is used uninitialized" "pr98587" { xfail *-*-* } }
-                    // { dg-warning "'\\*a1\\\[0]' is used uninitialized" "spurious star" { target *-*-* } .-1 }
-  T (a1[1]);        // { dg-warning "a1\\\[1]' is used uninitialized" }
-  T (a1[i]);        // { dg-warning "a1\\\[i]' is used uninitialized" }
+                    // { dg-warning "'\\*a1\\\[0]' is used uninitialized" "spurious star" { target *-*-* xfail { ! alloca } } .-1 }
+  T (a1[1]);        // { dg-warning "a1\\\[1]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a1[i]);        // { dg-warning "a1\\\[i]' is used uninitialized" "" { xfail { ! alloca } } }
 }
 
 void vla_n_2 (int n, int i)
 {
   int a2[n][2];
 
-  T (a2[0][0]);   // { dg-warning "a2\\\[0]\\\[0]' is used uninitialized" }
-  T (a2[2][1]);   // { dg-warning "a2\\\[2]\\\[1]' is used uninitialized" }
-  T (a2[3][i]);   // { dg-warning "a2\\\[3]\\\[i]' is used uninitialized" }
-  T (a2[i][0]);   // { dg-warning "a2\\\[i]\\\[0]' is used uninitialized" }
-  T (a2[i][i]);   // { dg-warning "a2\\\[i]\\\[i]' is used uninitialized" }
+  T (a2[0][0]);   // { dg-warning "a2\\\[0]\\\[0]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[2][1]);   // { dg-warning "a2\\\[2]\\\[1]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[3][i]);   // { dg-warning "a2\\\[3]\\\[i]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[i][0]);   // { dg-warning "a2\\\[i]\\\[0]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[i][i]);   // { dg-warning "a2\\\[i]\\\[i]' is used uninitialized" "" { xfail { ! alloca } } }
 }
 
 
@@ -36,11 +35,11 @@ void vla_3_n (int n, int i)
 {
   int a2[3][n];
 
-  T (a2[0][0]);     // { dg-warning "a2\\\[0]\\\[0]' is used uninitialized" }
-  T (a2[1][2]);     // { dg-warning "a2\\\[1]\\\[2]' is used uninitialized" }
-  T (a2[2][i]);     // { dg-warning "a2\\\[2]\\\[i]' is used uninitialized" }
-  T (a2[i][3]);     // { dg-warning "a2\\\[i]\\\[3]' is used uninitialized" }
-  T (a2[i][i]);     // { dg-warning "a2\\\[i]\\\[i]' is used uninitialized" }
+  T (a2[0][0]);     // { dg-warning "a2\\\[0]\\\[0]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[1][2]);     // { dg-warning "a2\\\[1]\\\[2]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[2][i]);     // { dg-warning "a2\\\[2]\\\[i]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[i][3]);     // { dg-warning "a2\\\[i]\\\[3]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[i][i]);     // { dg-warning "a2\\\[i]\\\[i]' is used uninitialized" "" { xfail { ! alloca } } }
 }
 
 
@@ -48,11 +47,11 @@ void vla_n_n (int n, int i)
 {
   int a2[n][n];
 
-  T (a2[0][0]);     // { dg-warning "a2\\\[0]\\\[0]' is used uninitialized" }
-  T (a2[4][5]);     // { dg-warning "a2\\\[4]\\\[5]' is used uninitialized" }
-  T (a2[6][i]);     // { dg-warning "a2\\\[6]\\\[i]' is used uninitialized" }
-  T (a2[i][7]);     // { dg-warning "a2\\\[i]\\\[7]' is used uninitialized" }
-  T (a2[i][i]);     // { dg-warning "a2\\\[i]\\\[i]' is used uninitialized" }
+  T (a2[0][0]);     // { dg-warning "a2\\\[0]\\\[0]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[4][5]);     // { dg-warning "a2\\\[4]\\\[5]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[6][i]);     // { dg-warning "a2\\\[6]\\\[i]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[i][7]);     // { dg-warning "a2\\\[i]\\\[7]' is used uninitialized" "" { xfail { ! alloca } } }
+  T (a2[i][i]);     // { dg-warning "a2\\\[i]\\\[i]' is used uninitialized" "" { xfail { ! alloca } } }
 }
 
 

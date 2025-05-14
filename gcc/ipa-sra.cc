@@ -2242,7 +2242,11 @@ isra_analyze_call (cgraph_edge *cs)
 	  BITMAP_FREE (analyzed);
 	}
     }
-  else
+  /* Don't set m_return_ignored for musttail calls.  The tailc/musttail passes
+     compare the returned value against the IPA-VRP return value range if
+     it is a singleton, but if the call is changed to something which doesn't
+     return anything, it will always fail.  */
+  else if (!gimple_call_must_tail_p (call_stmt))
     csum->m_return_ignored = true;
 }
 
@@ -3640,15 +3644,19 @@ enum acc_prop_kind {ACC_PROP_DONT, ACC_PROP_COPY, ACC_PROP_CERTAIN};
 
 /* Attempt to propagate all definite accesses from ARG_DESC to PARAM_DESC,
    (which belongs to CALLER) if they would not violate some constraint there.
-   If successful, return NULL, otherwise return the string reason for failure
-   (which can be written to the dump file).  DELTA_OFFSET is the known offset
-   of the actual argument withing the formal parameter (so of ARG_DESCS within
-   PARAM_DESCS), ARG_SIZE is the size of the actual argument or zero, if not
-   known. In case of success, set *CHANGE_P to true if propagation actually
-   changed anything.  */
+   CALLER_IPCP_TS describes the caller, PARAM_IDX is the index of the parameter
+   described by PARAM_DESC.  If successful, return NULL, otherwise return the
+   string reason for failure (which can be written to the dump file).
+   DELTA_OFFSET is the known offset of the actual argument withing the formal
+   parameter (so of ARG_DESCS within PARAM_DESCS), ARG_SIZE is the size of the
+   actual argument or zero, if not known. In case of success, set *CHANGE_P to
+   true if propagation actually changed anything.  */
 
 static const char *
-pull_accesses_from_callee (cgraph_node *caller, isra_param_desc *param_desc,
+pull_accesses_from_callee (cgraph_node *caller,
+			   ipcp_transformation *caller_ipcp_ts,
+			   int param_idx,
+			   isra_param_desc *param_desc,
 			   isra_param_desc *arg_desc,
 			   unsigned delta_offset, unsigned arg_size,
 			   bool *change_p)
@@ -3673,6 +3681,17 @@ pull_accesses_from_callee (cgraph_node *caller, isra_param_desc *param_desc,
 	continue;
 
       unsigned offset = argacc->unit_offset + delta_offset;
+
+      if (caller_ipcp_ts && !AGGREGATE_TYPE_P (argacc->type))
+	{
+	  ipa_argagg_value_list avl (caller_ipcp_ts);
+	  tree value = avl.get_value (param_idx, offset);
+	  if (value && ((tree_to_uhwi (TYPE_SIZE (TREE_TYPE (value)))
+			 / BITS_PER_UNIT)
+			!= argacc->unit_size))
+	    return " propagated access would conflict with an IPA-CP constant";
+	}
+
       /* Given that accesses are initially stored according to increasing
 	 offset and decreasing size in case of equal offsets, the following
 	 searches could be written more efficiently if we kept the ordering
@@ -3781,6 +3800,8 @@ param_splitting_across_edge (cgraph_edge *cs)
   cgraph_node *callee = cs->callee->function_symbol (&availability);
   isra_func_summary *from_ifs = func_sums->get (cs->caller);
   gcc_checking_assert (from_ifs && from_ifs->m_parameters);
+  ipcp_transformation *caller_ipcp_ts
+    = ipcp_get_transformation_summary (cs->caller);
 
   isra_call_summary *csum = call_sums->get (cs);
   gcc_checking_assert (csum);
@@ -3851,8 +3872,8 @@ param_splitting_across_edge (cgraph_edge *cs)
 	  else
 	    {
 	      const char *pull_failure
-		= pull_accesses_from_callee (cs->caller, param_desc, arg_desc,
-					     0, 0, &res);
+		= pull_accesses_from_callee (cs->caller, caller_ipcp_ts, idx,
+					     param_desc, arg_desc, 0, 0, &res);
 	      if (pull_failure)
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3913,7 +3934,8 @@ param_splitting_across_edge (cgraph_edge *cs)
 	  else
 	    {
 	      const char *pull_failure
-		= pull_accesses_from_callee (cs->caller, param_desc, arg_desc,
+		= pull_accesses_from_callee (cs->caller, caller_ipcp_ts, idx,
+					     param_desc, arg_desc,
 					     ipf->unit_offset,
 					     ipf->unit_size, &res);
 	      if (pull_failure)

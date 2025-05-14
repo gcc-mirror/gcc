@@ -143,6 +143,8 @@ public:
 				   different modes.  */
 };
 
+static bool in_loop_pipeline;
+
 /* We use six bits per loop in the ref->dep_loop bitmap to record
    the dep_kind x dep_state combinations.  */
 
@@ -1241,6 +1243,22 @@ compute_invariantness (basic_block bb)
 
       if (lim_data->cost >= LIM_EXPENSIVE)
 	set_profitable_level (stmt);
+      /* When we run before PRE and PRE is active hoist all expressions
+	 to the always executed loop since PRE would do so anyway
+	 and we can preserve range info while PRE cannot.  */
+      else if (flag_tree_pre && !in_loop_pipeline
+	       && outermost)
+	{
+	  class loop *mloop = lim_data->max_loop;
+	  if (loop_depth (outermost) > loop_depth (mloop))
+	    {
+	      mloop = outermost;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "  constraining to loop depth %d\n\n\n",
+			 loop_depth (mloop));
+	    }
+	  set_level (stmt, bb->loop_father, mloop);
+	}
     }
 }
 
@@ -1401,15 +1419,11 @@ move_computations_worker (basic_block bb)
          when the target loop header is executed and the stmt may
 	 invoke undefined integer or pointer overflow rewrite it to
 	 unsigned arithmetic.  */
-      if (is_gimple_assign (stmt)
-	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt)))
-	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (gimple_assign_lhs (stmt)))
-	  && arith_code_with_undefined_signed_overflow
-	       (gimple_assign_rhs_code (stmt))
+      if (gimple_needing_rewrite_undefined (stmt)
 	  && (!ALWAYS_EXECUTED_IN (bb)
 	      || !(ALWAYS_EXECUTED_IN (bb) == level
 		   || flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
-	gsi_insert_seq_on_edge (e, rewrite_to_defined_overflow (stmt));
+	gsi_insert_seq_on_edge (e, rewrite_to_defined_unconditional (stmt));
       else
 	gsi_insert_on_edge (e, stmt);
     }
@@ -3759,7 +3773,7 @@ public:
 unsigned int
 pass_lim::execute (function *fun)
 {
-  bool in_loop_pipeline = scev_initialized_p ();
+  in_loop_pipeline = scev_initialized_p ();
   if (!in_loop_pipeline)
     loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
 

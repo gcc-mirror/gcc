@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/nspace.h"
 #include "dmd/target.h"
 #include "dmd/template.h"
+#include "dmd/typinf.h"
 
 #include "tree.h"
 #include "tree-iterator.h"
@@ -255,18 +256,18 @@ public:
 
   void visit (Module *d) final override
   {
-    if (d->semanticRun >= PASS::obj)
+    if (d->semanticRun () >= PASS::obj)
       return;
 
     build_module_tree (d);
-    d->semanticRun = PASS::obj;
+    d->semanticRun (PASS::obj);
   }
 
   /* Write the imported symbol to debug.  */
 
   void visit (Import *d) final override
   {
-    if (d->semanticRun >= PASS::obj)
+    if (d->semanticRun () >= PASS::obj)
       return;
 
     /* Implements import declarations by telling the debug back-end we are
@@ -319,7 +320,7 @@ public:
 					      false, false);
       }
 
-    d->semanticRun = PASS::obj;
+    d->semanticRun (PASS::obj);
   }
 
   /* Finish a top-level `asm` definition.  */
@@ -471,7 +472,7 @@ public:
 
   void visit (StructDeclaration *d) final override
   {
-    if (d->semanticRun >= PASS::obj)
+    if (d->semanticRun () >= PASS::obj)
       return;
 
     if (d->type->ty == TY::Terror)
@@ -519,7 +520,7 @@ public:
     if (d->xhash)
       this->build_dsymbol (d->xhash);
 
-    d->semanticRun = PASS::obj;
+    d->semanticRun (PASS::obj);
   }
 
   /* Finish semantic analysis of functions in vtbl for class CD.  */
@@ -541,7 +542,7 @@ public:
 	  has_errors = true;
 
 	/* No name hiding to check for.  */
-	if (!d->isFuncHidden (fd) || fd->isFuture ())
+	if (!dmd::isFuncHidden (d, fd) || fd->isFuture ())
 	  continue;
 
 	/* The function fd is hidden from the view of the class.
@@ -587,7 +588,7 @@ public:
 
   void visit (ClassDeclaration *d) final override
   {
-    if (d->semanticRun >= PASS::obj)
+    if (d->semanticRun () >= PASS::obj)
       return;
 
     if (d->type->ty == TY::Terror)
@@ -616,7 +617,7 @@ public:
 
     /* Generate C symbols.  */
     d->csym = get_classinfo_decl (d);
-    Dsymbol *vtblsym = d->vtblSymbol ();
+    Dsymbol *vtblsym = dmd::vtblSymbol (d);
     vtblsym->csym = get_vtable_decl (d);
     tree sinit = aggregate_initializer_decl (d);
 
@@ -650,10 +651,10 @@ public:
       }
 
     DECL_INITIAL (vtblsym->csym)
-      = build_constructor (TREE_TYPE (vtblsym->csym), elms);
+      = build_padded_constructor (TREE_TYPE (vtblsym->csym), elms);
     d_finish_decl (vtblsym->csym);
 
-    d->semanticRun = PASS::obj;
+    d->semanticRun (PASS::obj);
   }
 
   /* Write out compiler generated TypeInfo and vtables for the given interface
@@ -661,7 +662,7 @@ public:
 
   void visit (InterfaceDeclaration *d) final override
   {
-    if (d->semanticRun >= PASS::obj)
+    if (d->semanticRun () >= PASS::obj)
       return;
 
     if (d->type->ty == TY::Terror)
@@ -696,7 +697,7 @@ public:
     DECL_INITIAL (d->csym) = layout_classinfo (d);
     d_finish_decl (d->csym);
 
-    d->semanticRun = PASS::obj;
+    d->semanticRun (PASS::obj);
   }
 
   /* Write out compiler generated TypeInfo and initializer for the given
@@ -704,10 +705,10 @@ public:
 
   void visit (EnumDeclaration *d) final override
   {
-    if (d->semanticRun >= PASS::obj)
+    if (d->semanticRun () >= PASS::obj)
       return;
 
-    if (d->errors || d->type->ty == TY::Terror)
+    if (d->errors () || d->type->ty == TY::Terror)
       {
 	error_at (make_location_t (d->loc),
 		  "had semantic errors when compiling");
@@ -735,7 +736,7 @@ public:
 	d_finish_decl (d->sinit);
       }
 
-    d->semanticRun = PASS::obj;
+    d->semanticRun (PASS::obj);
   }
 
   /* Finish up a variable declaration and push it into the current scope.
@@ -743,7 +744,7 @@ public:
 
   void visit (VarDeclaration *d) final override
   {
-    if (d->semanticRun >= PASS::obj)
+    if (d->semanticRun () >= PASS::obj)
       return;
 
     if (d->type->ty == TY::Terror)
@@ -790,6 +791,12 @@ public:
       }
     else if (d->isDataseg ())
       {
+	/* When the front-end type size is invalid, an error has already been
+	   given for the declaration or type.  */
+	dinteger_t size = dmd::size (d->type, d->loc);
+	if (size == SIZE_INVALID)
+	  return;
+
 	tree decl = get_symbol_decl (d);
 
 	/* Only need to build the VAR_DECL for extern declarations.  */
@@ -803,9 +810,7 @@ public:
 	  return;
 
 	/* How big a symbol can be should depend on back-end.  */
-	tree size = build_integer_cst (dmd::size (d->type, d->loc),
-				       build_ctype (Type::tsize_t));
-	if (!valid_constant_size_p (size))
+	if (!valid_constant_size_p (build_integer_cst (size, size_type_node)))
 	  {
 	    error_at (make_location_t (d->loc), "size is too large");
 	    return;
@@ -834,8 +839,9 @@ public:
 	  }
 
 	/* Frontend should have already caught this.  */
-	gcc_assert (!integer_zerop (size)
-		    || d->type->toBasetype ()->isTypeSArray ());
+	gcc_assert ((size != 0 && size != SIZE_INVALID)
+		    || d->type->toBasetype ()->isTypeSArray ()
+		    || d->isCsymbol ());
 
 	d_finish_decl (decl);
 
@@ -888,7 +894,7 @@ public:
 	  }
       }
 
-    d->semanticRun = PASS::obj;
+    d->semanticRun (PASS::obj);
   }
 
   /* Generate and compile a static TypeInfo declaration, but only if it is
@@ -896,16 +902,16 @@ public:
 
   void visit (TypeInfoDeclaration *d) final override
   {
-    if (d->semanticRun >= PASS::obj)
+    if (d->semanticRun () >= PASS::obj)
       return;
 
-    if (speculative_type_p (d->tinfo))
+    if (dmd::isSpeculativeType (d->tinfo))
       return;
 
     tree t = get_typeinfo_decl (d);
     DECL_INITIAL (t) = layout_typeinfo (d);
     d_finish_decl (t);
-    d->semanticRun = PASS::obj;
+    d->semanticRun (PASS::obj);
   }
 
   /* Finish up a function declaration and compile it all the way
@@ -914,7 +920,7 @@ public:
   void visit (FuncDeclaration *d) final override
   {
     /* Already generated the function.  */
-    if (d->semanticRun >= PASS::obj)
+    if (d->semanticRun () >= PASS::obj)
       return;
 
     /* Don't emit any symbols from gcc.attributes module.  */
@@ -956,7 +962,7 @@ public:
       }
 
     /* Ensure all semantic passes have run.  */
-    if (d->semanticRun < PASS::semantic3)
+    if (d->semanticRun () < PASS::semantic3)
       {
 	gcc_assert (!doing_semantic_analysis_p);
 
@@ -970,8 +976,8 @@ public:
       return;
 
     /* Start generating code for this function.  */
-    gcc_assert (d->semanticRun == PASS::semantic3done);
-    d->semanticRun = PASS::obj;
+    gcc_assert (d->semanticRun () == PASS::semantic3done);
+    d->semanticRun (PASS::obj);
 
     /* Duplicated FuncDeclarations map to the same symbol.  Check if this
        is the one declaration which will be emitted.  */
@@ -1114,7 +1120,7 @@ build_decl_tree (Dsymbol *d)
   if (d->loc.filename ())
     input_location = make_location_t (d->loc);
   else
-    input_location = make_location_t (Loc ("<no_file>", 1, 0));
+    input_location = make_location_t (Loc::singleFilename ("<no_file>"));
 
   DeclVisitor v = DeclVisitor ();
   v.build_dsymbol (d);
@@ -1178,7 +1184,7 @@ maybe_build_decl_tree (Declaration *decl)
 
   /* Still running semantic analysis on declaration, or it has already had its
      code generated.  */
-  if (doing_semantic_analysis_p || decl->semanticRun >= PASS::obj)
+  if (doing_semantic_analysis_p || decl->semanticRun () >= PASS::obj)
     return decl->csym;
 
   if (error_operand_p (decl->csym))
@@ -1323,7 +1329,7 @@ get_symbol_decl (Declaration *decl)
       /* `const` applies to data that cannot be changed by the const reference
 	 to that data. It may, however, be changed by another reference to that
 	 same data.  */
-      if (vd->isConst () && !vd->isDataseg ())
+      if (vd->isConst () && !vd->isResult () && !vd->isDataseg ())
 	TREE_READONLY (decl->csym) = 1;
     }
 
@@ -2211,7 +2217,7 @@ get_vtable_decl (ClassDeclaration *decl)
      will have a different type.  However the back-end seems to accept this.  */
   tree type = build_ctype (dmd::sarrayOf (Type::tvoidptr, decl->vtbl.length));
 
-  Dsymbol *vtblsym = decl->vtblSymbol ();
+  Dsymbol *vtblsym = dmd::vtblSymbol (decl);
   vtblsym->csym = declare_extern_var (ident, type);
   DECL_LANG_SPECIFIC (vtblsym->csym) = build_lang_decl (NULL);
 
@@ -2392,6 +2398,12 @@ aggregate_initializer_decl (AggregateDeclaration *decl)
       SET_DECL_ALIGN (sinit, sd->alignment.get () * BITS_PER_UNIT);
       DECL_USER_ALIGN (sinit) = true;
     }
+  else if (sd == NULL)
+    {
+      /* Alignment of class is determined its biggest field alignment.  */
+      SET_DECL_ALIGN (sinit, decl->alignsize * BITS_PER_UNIT);
+      DECL_USER_ALIGN (sinit) = true;
+    }
 
   decl->sinit = sinit;
   return sinit;
@@ -2402,7 +2414,7 @@ aggregate_initializer_decl (AggregateDeclaration *decl)
 tree
 layout_class_initializer (ClassDeclaration *cd)
 {
-  NewExp *ne = NewExp::create (cd->loc, NULL, cd->type, NULL);
+  NewExp *ne = NewExp::create (cd->loc, NULL, NULL, cd->type, NULL);
   ne->type = cd->type;
 
   Expression *e = dmd::ctfeInterpret (ne);

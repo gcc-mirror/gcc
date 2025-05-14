@@ -74,7 +74,7 @@ Port::strupr (char *s)
 bool
 Port::isFloat32LiteralOutOfRange (const char *buffer)
 {
-  real_t r;
+  real_t r = {};
 
   real_from_string3 (&r.rv (), buffer, TYPE_MODE (float_type_node));
 
@@ -87,7 +87,7 @@ Port::isFloat32LiteralOutOfRange (const char *buffer)
 bool
 Port::isFloat64LiteralOutOfRange (const char *buffer)
 {
-  real_t r;
+  real_t r = {};
 
   real_from_string3 (&r.rv (), buffer, TYPE_MODE (double_type_node));
 

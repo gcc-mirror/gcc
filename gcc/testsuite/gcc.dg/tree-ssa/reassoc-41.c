@@ -18,4 +18,4 @@ f2 (double y)
   return (-1.2 * __builtin_copysign (1.1, y));
 }
 
-/* { dg-final { scan-tree-dump-times "Optimizing copysign" 2 "reassoc1"} }*/
+/* { dg-final { scan-tree-dump-times "Optimizing copysign" 2 "reassoc1" } } */

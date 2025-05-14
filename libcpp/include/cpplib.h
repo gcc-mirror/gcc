@@ -749,6 +749,7 @@ enum cpp_warning_reason {
   CPP_W_CXX17_EXTENSIONS,
   CPP_W_CXX20_EXTENSIONS,
   CPP_W_CXX23_EXTENSIONS,
+  CPP_W_CXX26_EXTENSIONS,
   CPP_W_EXPANSION_TO_DEFINED,
   CPP_W_BIDIRECTIONAL,
   CPP_W_INVALID_UTF8,
@@ -1167,6 +1168,8 @@ extern const char *cpp_probe_header_unit (cpp_reader *, const char *file,
    charsets.  */
 extern const char *cpp_get_narrow_charset_name (cpp_reader *) ATTRIBUTE_PURE;
 extern const char *cpp_get_wide_charset_name (cpp_reader *) ATTRIBUTE_PURE;
+
+extern location_t cpp_get_diagnostic_override_loc (const cpp_reader *);
 
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the

@@ -1,11 +1,11 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test21062.d(16): Error: no identifier for declarator `bool`
+fail_compilation/test21062.d(16): Error: variable name expected after type `bool`, not `synchronized`
 fail_compilation/test21062.d(16):        `synchronized` is a keyword, perhaps append `_` to make it an identifier
-fail_compilation/test21062.d(17): Error: no identifier for declarator `ubyte*`
+fail_compilation/test21062.d(17): Error: variable name expected after type `ubyte*`, not `out`
 fail_compilation/test21062.d(17):        `out` is a keyword, perhaps append `_` to make it an identifier
-fail_compilation/test21062.d(21): Error: no identifier for declarator `uint`
+fail_compilation/test21062.d(21): Error: variable name expected after type `uint`, not `in`
 fail_compilation/test21062.d(21):        `in` is a keyword, perhaps append `_` to make it an identifier
 ---
 */

@@ -1,6 +1,5 @@
 // PR c++/28903
 // { dg-options "" }
-// { dg-require-effective-target alloca }
 
 template <class>
 struct View 

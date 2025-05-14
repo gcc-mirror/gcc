@@ -50,7 +50,7 @@ endif
 s-mddeps: s-aarch64-tune-md
 
 aarch64-builtins.o: $(srcdir)/config/aarch64/aarch64-builtins.cc $(CONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(SYSTEM_H) coretypes.h $(TM_H) $(REGS_H) \
   $(RTL_H) $(TREE_H) expr.h $(TM_P_H) $(RECOG_H) langhooks.h \
   $(DIAGNOSTIC_CORE_H) $(OPTABS_H) \
   $(srcdir)/config/aarch64/aarch64-simd-builtins.def \
@@ -69,7 +69,7 @@ aarch64-sve-builtins.o: $(srcdir)/config/aarch64/aarch64-sve-builtins.cc \
   $(TM_P_H) memmodel.h insn-codes.h $(OPTABS_H) $(RECOG_H) $(DIAGNOSTIC_H) \
   $(EXPR_H) $(BASIC_BLOCK_H) $(FUNCTION_H) fold-const.h $(GIMPLE_H) \
   gimple-iterator.h gimplify.h explow.h $(EMIT_RTL_H) tree-vector-builder.h \
-  stor-layout.h $(REG_H) alias.h gimple-fold.h langhooks.h \
+  stor-layout.h alias.h gimple-fold.h langhooks.h \
   stringpool.h \
   $(srcdir)/config/aarch64/aarch64-sve-builtins.h \
   $(srcdir)/config/aarch64/aarch64-sve-builtins-shapes.h \

@@ -2220,6 +2220,8 @@ struct GTY(()) language_function {
 
   BOOL_BITFIELD invalid_constexpr : 1;
   BOOL_BITFIELD throwing_cleanup : 1;
+  /* True if we gave any errors in this function.  */
+  BOOL_BITFIELD erroneous : 1;
 
   hash_table<named_label_hash> *x_named_labels;
 
@@ -2503,6 +2505,7 @@ struct GTY(()) lang_type {
   unsigned unique_obj_representations_set : 1;
   bool erroneous : 1;
   bool non_pod_aggregate : 1;
+  bool non_aggregate_pod : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -2511,7 +2514,7 @@ struct GTY(()) lang_type {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 3;
+  unsigned dummy : 2;
 
   tree primary_base;
   vec<tree_pair_s, va_gc> *vcall_indices;
@@ -2838,6 +2841,11 @@ struct GTY(()) lang_type {
    with a hash_set only filled in when abi_version_crosses (17).  */
 #define CLASSTYPE_NON_POD_AGGREGATE(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->non_pod_aggregate)
+
+/* True if this class is layout-POD though it's not an aggregate in C++20 and
+   above (c++/120012).  This could also be a hash_set.  */
+#define CLASSTYPE_NON_AGGREGATE_POD(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->non_aggregate_pod)
 
 /* Additional macros for inheritance information.  */
 
@@ -6787,8 +6795,14 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   /* The location where the template is instantiated.  */
   location_t locus;
 
-  /* errorcount + sorrycount when we pushed this level.  */
-  unsigned short errors;
+  /* errorcount + sorrycount when we pushed this level.  If the value
+     overflows, it will always seem like we currently have more errors, so we
+     will limit template recursion even from non-erroneous templates.  In a TU
+     with over 32k errors, that's fine.  */
+  unsigned short errors : 15;
+
+  /* set in pop_tinst_level if there have been errors since we pushed.  */
+  bool had_errors : 1;
 
   /* Count references to this object.  If refcount reaches
      refcount_infinity value, we don't increment or decrement the
@@ -7076,6 +7090,7 @@ extern tree in_class_defaulted_default_constructor (tree);
 extern bool user_provided_p			(tree);
 extern bool type_has_user_provided_constructor  (tree);
 extern bool type_has_non_user_provided_default_constructor (tree);
+extern bool type_has_converting_constructor	(tree);
 extern bool vbase_has_user_provided_move_assign (tree);
 extern tree default_init_uninitialized_part (tree);
 extern bool trivial_default_constructor_is_constexpr (tree);
@@ -7113,6 +7128,7 @@ extern tree convert_to_reference		(tree, tree, int, int, tree,
 						 tsubst_flags_t);
 extern tree convert_from_reference		(tree);
 extern tree force_rvalue			(tree, tsubst_flags_t);
+extern tree force_lvalue			(tree, tsubst_flags_t);
 extern tree ocp_convert				(tree, tree, int, int,
 						 tsubst_flags_t);
 extern tree cp_convert				(tree, tree, tsubst_flags_t);
@@ -7235,7 +7251,7 @@ extern int wrapup_namespace_globals		();
 extern tree create_implicit_typedef		(tree, tree);
 extern int local_variable_p			(const_tree);
 extern tree get_cxa_atexit_fn_ptr_type		();
-extern tree register_dtor_fn			(tree);
+extern tree register_dtor_fn			(tree, bool = false);
 extern tmpl_spec_kind current_tmpl_spec_kind	(int);
 extern tree cxx_builtin_function		(tree decl);
 extern tree cxx_builtin_function_ext_scope	(tree decl);
@@ -7651,7 +7667,6 @@ extern void cp_finish_omp_range_for (tree, tree);
 extern bool cp_maybe_parse_omp_decl (tree, tree);
 extern bool parsing_nsdmi (void);
 extern bool parsing_function_declarator ();
-extern bool parsing_default_capturing_generic_lambda_in_template (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
 extern location_t defparse_location (tree);
 extern void maybe_show_extern_c_location (void);
@@ -7726,6 +7741,7 @@ extern tree fn_type_unification			(tree, tree, tree,
 						 tree, unification_kind_t, int,
 						 struct conversion **,
 						 bool, bool);
+extern void setup_explicit_instantiation_definition_linkage (tree);
 extern void mark_decl_instantiated		(tree, int);
 extern int more_specialized_fn			(tree, tree, int);
 extern tree type_targs_deducible_from		(tree, tree);
@@ -8090,6 +8106,7 @@ extern tree omp_reduction_id			(enum tree_code, tree, tree);
 extern tree cp_remove_omp_priv_cleanup_stmt	(tree *, int *, void *);
 extern bool cp_check_omp_declare_reduction	(tree);
 extern void finish_omp_declare_simd_methods	(tree);
+extern tree cp_finish_omp_init_prefer_type	(tree);
 extern tree finish_omp_clauses			(tree, enum c_omp_region_type);
 extern tree push_omp_privatization_clauses	(bool);
 extern void pop_omp_privatization_clauses	(tree);
@@ -8149,6 +8166,7 @@ extern void insert_capture_proxy		(tree);
 extern void insert_pending_capture_proxies	(void);
 extern bool is_capture_proxy			(tree);
 extern bool is_normal_capture_proxy             (tree);
+extern tree strip_normal_capture_proxy		(tree);
 extern bool is_constant_capture_proxy           (tree);
 extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree, int);
@@ -8657,6 +8675,8 @@ extern tree mangle_decomp			(tree, vec<tree> &);
 extern void mangle_module_substitution		(int);
 extern int mangle_module_component		(tree id, bool partition);
 extern tree mangle_module_global_init		(int);
+extern unsigned HOST_WIDE_INT range_expr_nelts	(tree);
+extern bool equal_abi_tags			(tree, tree);
 
 /* in dump.cc */
 extern bool cp_dump_tree			(void *, tree);
@@ -8867,6 +8887,7 @@ extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE, mce_value = mce_unknown);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
+extern tree maybe_constant_init			(tree, tree, mce_value);
 extern tree fold_non_dependent_expr		(tree,
 						 tsubst_flags_t = tf_warning_or_error,
 						 bool = false, tree = NULL_TREE);

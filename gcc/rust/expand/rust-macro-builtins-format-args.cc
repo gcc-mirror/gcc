@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+#include "rust-ast-fragment.h"
+#include "rust-fmt.h"
 #include "rust-macro-builtins-helpers.h"
 #include "rust-expand-format-args.h"
 
@@ -53,6 +55,8 @@ format_args_parse_arguments (AST::MacroInvocData &invoc)
   if (parser.peek_current_token ()->get_id () == STRING_LITERAL)
     format_expr = parser.parse_literal_expr ();
 
+  rust_assert (format_expr);
+
   // TODO(Arthur): Clean this up - if we haven't parsed a string literal but a
   // macro invocation, what do we do here? return a tl::unexpected?
   auto format_str = static_cast<AST::LiteralExpr &> (*format_expr)
@@ -78,6 +82,11 @@ format_args_parse_arguments (AST::MacroInvocData &invoc)
   while (parser.peek_current_token ()->get_id () != last_token_id)
     {
       parser.skip_token (COMMA);
+
+      // Check in case of an extraneous comma in the args list, which is
+      // allowed - format_args!("fmt", arg, arg2,)
+      if (parser.peek_current_token ()->get_id () == last_token_id)
+	break;
 
       if (parser.peek_current_token ()->get_id () == IDENTIFIER
 	  && parser.peek (1)->get_id () == EQUAL)
@@ -116,6 +125,7 @@ format_args_parse_arguments (AST::MacroInvocData &invoc)
 tl::optional<AST::Fragment>
 MacroBuiltin::format_args_handler (location_t invoc_locus,
 				   AST::MacroInvocData &invoc,
+				   AST::InvocKind semicolon,
 				   AST::FormatArgs::Newline nl)
 {
   auto input = format_args_parse_arguments (invoc);
@@ -160,7 +170,8 @@ MacroBuiltin::format_args_handler (location_t invoc_locus,
   if (append_newline)
     fmt_str += '\n';
 
-  auto pieces = Fmt::Pieces::collect (fmt_str, append_newline);
+  auto pieces = Fmt::Pieces::collect (fmt_str, append_newline,
+				      Fmt::ffi::ParseMode::Format);
 
   // TODO:
   // do the transformation into an AST::FormatArgs node

@@ -1,5 +1,4 @@
 /* { dg-additional-options "-Wno-unused-but-set-variable" } */
-/* { dg-require-effective-target alloca } */
 
 #include <string.h>
 #include <stdlib.h>

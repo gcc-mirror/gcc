@@ -27,6 +27,11 @@
 
 namespace Rust {
 namespace Resolver {
+inline void
+redefined_error (const rich_location &loc)
+{
+  rust_error_at (loc, "redefined multiple times");
+}
 
 class ResolverBase : public AST::ASTVisitor
 {
@@ -89,6 +94,7 @@ public:
   void visit (AST::RangeFullExpr &);
   void visit (AST::RangeFromToInclExpr &);
   void visit (AST::RangeToInclExpr &);
+  void visit (AST::BoxExpr &);
   void visit (AST::ReturnExpr &);
   void visit (AST::UnsafeBlockExpr &);
   void visit (AST::LoopExpr &);
@@ -103,6 +109,8 @@ public:
   void visit (AST::MatchExpr &);
   void visit (AST::AwaitExpr &);
   void visit (AST::AsyncBlockExpr &);
+  void visit (AST::InlineAsm &);
+  void visit (AST::LlvmInlineAsm &);
 
   void visit (AST::TypeParam &);
 
@@ -212,7 +220,7 @@ protected:
   bool resolve_visibility (const AST::Visibility &vis);
 
   Resolver *resolver;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
   NodeId resolved_node;
 };
 

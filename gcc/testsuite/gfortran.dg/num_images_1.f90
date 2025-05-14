@@ -5,5 +5,5 @@
 program foo
    implicit none
    integer k5
-   k5 = num_images(failed=.false.) ! { dg-error "argument to NUM_IMAGES" }
+   k5 = num_images(failed=.false.) ! { dg-error "Cannot find keyword named 'failed' in call to 'num_images'" }
 end program foo

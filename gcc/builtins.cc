@@ -176,8 +176,8 @@ static tree fold_builtin_iseqsig (location_t, tree, tree);
 static tree fold_builtin_varargs (location_t, tree, tree*, int);
 
 static tree fold_builtin_strpbrk (location_t, tree, tree, tree, tree);
-static tree fold_builtin_strspn (location_t, tree, tree, tree);
-static tree fold_builtin_strcspn (location_t, tree, tree, tree);
+static tree fold_builtin_strspn (location_t, tree, tree, tree, tree);
+static tree fold_builtin_strcspn (location_t, tree, tree, tree, tree);
 
 static rtx expand_builtin_object_size (tree);
 static rtx expand_builtin_memory_chk (tree, rtx, machine_mode,
@@ -6362,7 +6362,7 @@ expand_builtin_fork_or_exec (tree fn, tree exp, rtx target, int ignore)
   tree call;
 
   /* If we are not profiling, just call the function.  */
-  if (!profile_arc_flag && !condition_coverage_flag)
+  if (!coverage_instrumentation_p ())
     return NULL_RTX;
 
   /* Otherwise call the wrapper.  This should be equivalent for the rest of
@@ -10804,10 +10804,10 @@ fold_builtin_2 (location_t loc, tree expr, tree fndecl, tree arg0, tree arg1)
       return fold_builtin_modf (loc, arg0, arg1, type);
 
     case BUILT_IN_STRSPN:
-      return fold_builtin_strspn (loc, expr, arg0, arg1);
+      return fold_builtin_strspn (loc, expr, arg0, arg1, type);
 
     case BUILT_IN_STRCSPN:
-      return fold_builtin_strcspn (loc, expr, arg0, arg1);
+      return fold_builtin_strcspn (loc, expr, arg0, arg1, type);
 
     case BUILT_IN_STRPBRK:
       return fold_builtin_strpbrk (loc, expr, arg0, arg1, type);
@@ -11308,7 +11308,7 @@ fold_builtin_strpbrk (location_t loc, tree, tree s1, tree s2, tree type)
    form of the builtin function call.  */
 
 static tree
-fold_builtin_strspn (location_t loc, tree expr, tree s1, tree s2)
+fold_builtin_strspn (location_t loc, tree expr, tree s1, tree s2, tree type)
 {
   if (!validate_arg (s1, POINTER_TYPE)
       || !validate_arg (s2, POINTER_TYPE))
@@ -11324,8 +11324,7 @@ fold_builtin_strspn (location_t loc, tree expr, tree s1, tree s2)
   if ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))
     /* Evaluate and ignore both arguments in case either one has
        side-effects.  */
-    return omit_two_operands_loc (loc, size_type_node, size_zero_node,
-				  s1, s2);
+    return omit_two_operands_loc (loc, type, size_zero_node, s1, s2);
   return NULL_TREE;
 }
 
@@ -11348,7 +11347,7 @@ fold_builtin_strspn (location_t loc, tree expr, tree s1, tree s2)
    form of the builtin function call.  */
 
 static tree
-fold_builtin_strcspn (location_t loc, tree expr, tree s1, tree s2)
+fold_builtin_strcspn (location_t loc, tree expr, tree s1, tree s2, tree type)
 {
   if (!validate_arg (s1, POINTER_TYPE)
       || !validate_arg (s2, POINTER_TYPE))
@@ -11364,8 +11363,7 @@ fold_builtin_strcspn (location_t loc, tree expr, tree s1, tree s2)
     {
       /* Evaluate and ignore argument s2 in case it has
 	 side-effects.  */
-      return omit_one_operand_loc (loc, size_type_node,
-				   size_zero_node, s2);
+      return omit_one_operand_loc (loc, type, size_zero_node, s2);
     }
 
   /* If the second argument is "", return __builtin_strlen(s1).  */
@@ -11379,7 +11377,8 @@ fold_builtin_strcspn (location_t loc, tree expr, tree s1, tree s2)
       if (!fn)
 	return NULL_TREE;
 
-      return build_call_expr_loc (loc, fn, 1, s1);
+      return fold_convert_loc (loc, type,
+			       build_call_expr_loc (loc, fn, 1, s1));
     }
   return NULL_TREE;
 }

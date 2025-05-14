@@ -37,7 +37,7 @@ template void function_tmpl<ok_inst_tag>();
 template <> void function_tmpl<ok_inst_tag*>() {}
 
 
-// The initializer for a variable or variable template
+// The initializer for a (non-inline) variable or variable template
 export int var
   = (internal_t{}, internal_tmpl_t<int>{},
      internal_ovl(internal_x), internal_tmpl<int>(), 0);
@@ -53,8 +53,14 @@ template <typename T> int var_tmpl<T*>  // { dg-warning "refers to TU-local enti
 template int var_tmpl<ok_inst_tag>;
 template <> int var_tmpl<ok_inst_tag*> = 0;
 
+export int* ptr = &internal_x;
+export template <typename T> int* ptr_tmpl = &internal_x;  // { dg-warning "refers to TU-local entity" }
+
 export int& constant_ref = internal_x;
 static_assert (&constant_ref == &internal_x);
+
+// Support exposures in inline vars with dynamic initialisers
+export inline int dynamic_var = (internal_ovl(internal_x), 0);
 
 
 // Friend declarations in a class definition

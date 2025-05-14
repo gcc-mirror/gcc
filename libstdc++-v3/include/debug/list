@@ -160,7 +160,7 @@ namespace __debug
 		__gnu_debug::__base(__last), __a)
 	{ }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	list(from_range_t, _Rg&& __rg, const _Allocator& __a = _Allocator())
 	: _Base(std::from_range, std::forward<_Rg>(__rg), __a)
@@ -214,7 +214,7 @@ namespace __debug
 	  this->_M_invalidate_all();
 	}
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	void
 	assign_range(_Rg&& __rg)
@@ -434,7 +434,7 @@ namespace __debug
       using _Base::emplace_front;
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       using _Base::prepend_range;
       using _Base::append_range;
 #endif
@@ -549,7 +549,7 @@ namespace __debug
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	iterator
 	insert_range(const_iterator __position, _Rg&& __rg)
@@ -970,7 +970,7 @@ namespace __debug
     list(size_t, _Tp, _Allocator = _Allocator())
       -> list<_Tp, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   typename _Allocator = allocator<ranges::range_value_t<_Rg>>>
     list(from_range_t, _Rg&&, _Allocator = _Allocator())

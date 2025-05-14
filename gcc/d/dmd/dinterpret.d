@@ -3,12 +3,12 @@
  *
  * Specification: ($LINK2 https://dlang.org/spec/function.html#interpretation, Compile Time Function Execution (CTFE))
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dinterpret.d, _dinterpret.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dinterpret.d, _dinterpret.d)
  * Documentation:  https://dlang.org/phobos/dmd_dinterpret.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/dinterpret.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/dinterpret.d
  */
 
 module dmd.dinterpret;
@@ -758,7 +758,7 @@ private Expression interpretFunction(UnionExp* pue, FuncDeclaration fd, InterSta
 }
 
 /// used to collect coverage information in ctfe
-void incUsageCtfe(InterState* istate, const ref Loc loc)
+void incUsageCtfe(InterState* istate, Loc loc)
 {
     if (global.params.ctfe_cov && istate)
     {
@@ -1885,7 +1885,7 @@ public:
         // Check for taking an address of a shared variable.
         // If the shared variable is an array, the offset might not be zero.
         Type fromType = null;
-        if (e.var.type.ty == Tarray || e.var.type.ty == Tsarray)
+        if (e.var.type.isStaticOrDynamicArray())
         {
             fromType = (cast(TypeArray)e.var.type).next;
         }
@@ -1900,7 +1900,7 @@ public:
         Expression val = getVarExp(e.loc, istate, e.var, goal);
         if (exceptionOrCant(val))
             return;
-        if (val.type.ty == Tarray || val.type.ty == Tsarray)
+        if (val.type.isStaticOrDynamicArray())
         {
             // Check for unsupported type painting operations
             Type elemtype = (cast(TypeArray)val.type).next;
@@ -1989,13 +1989,15 @@ public:
             Declaration decl = ve.var;
 
             // We cannot take the address of an imported symbol at compile time
-            if (decl.isImportedSymbol()) {
+            if (decl.isImportedSymbol())
+            {
                 error(e.loc, "cannot take address of imported symbol `%s` at compile time", decl.toChars());
                 result = CTFEExp.cantexp;
                 return;
             }
 
-            if (decl.isDataseg()) {
+            if (decl.isDataseg())
+            {
                 // Normally this is already done by optimize()
                 // Do it here in case optimize(WANTvalue) wasn't run before CTFE
                 emplaceExp!(SymOffExp)(pue, e.loc, e.e1.isVarExp().var, 0);
@@ -2052,7 +2054,7 @@ public:
         }
     }
 
-    static Expression getVarExp(const ref Loc loc, InterState* istate, Declaration d, CTFEGoal goal)
+    static Expression getVarExp(Loc loc, InterState* istate, Declaration d, CTFEGoal goal)
     {
         Expression e = CTFEExp.cantexp;
         if (VarDeclaration v = d.isVarDeclaration())
@@ -2752,7 +2754,7 @@ public:
 
     // Create an array literal of type 'newtype' with dimensions given by
     // 'arguments'[argnum..$]
-    static Expression recursivelyCreateArrayLiteral(UnionExp* pue, const ref Loc loc, Type newtype, InterState* istate, Expressions* arguments, int argnum)
+    static Expression recursivelyCreateArrayLiteral(UnionExp* pue, Loc loc, Type newtype, InterState* istate, Expressions* arguments, int argnum)
     {
         Expression lenExpr = interpret(pue, (*arguments)[argnum], istate);
         if (exceptionOrCantInterpret(lenExpr))
@@ -2792,6 +2794,13 @@ public:
         debug (LOG)
         {
             printf("%s NewExp::interpret() %s\n", e.loc.toChars(), e.toChars());
+        }
+
+        if (e.placement)
+        {
+            error(e.placement.loc, "`new ( %s )` PlacementExpression cannot be evaluated at compile time", e.placement.toChars());
+            result = CTFEExp.cantexp;
+            return;
         }
 
         Expression epre = interpret(pue, e.argprefix, istate, CTFEGoal.Nothing);
@@ -3005,8 +3014,8 @@ public:
         }
     }
 
-    private alias fp_t = extern (D) UnionExp function(const ref Loc loc, Type, Expression, Expression);
-    private alias fp2_t = extern (D) bool function(const ref Loc loc, EXP, Expression, Expression);
+    private alias fp_t = extern (D) UnionExp function(Loc loc, Type, Expression, Expression);
+    private alias fp2_t = extern (D) bool function(Loc loc, EXP, Expression, Expression);
 
     extern (D) private void interpretCommon(BinExp e, fp_t fp)
     {
@@ -3354,7 +3363,7 @@ public:
             // a[] = e can have const e. So we compare the naked types.
             Type tdst = e1.type.toBasetype();
             Type tsrc = e.e2.type.toBasetype();
-            while (tdst.ty == Tsarray || tdst.ty == Tarray)
+            while (tdst.isStaticOrDynamicArray())
             {
                 tdst = (cast(TypeArray)tdst).next.toBasetype();
                 if (tsrc.equivalent(tdst))
@@ -4302,7 +4311,7 @@ public:
                 Expression assignTo(ArrayLiteralExp ae, size_t lwr, size_t upr)
                 {
                     Expressions* w = ae.elements;
-                    assert(ae.type.ty == Tsarray || ae.type.ty == Tarray || ae.type.ty == Tpointer);
+                    assert(ae.type.isStaticOrDynamicArray() || ae.type.ty == Tpointer);
                     bool directblk = (cast(TypeNext)ae.type).next.equivalent(newval.type);
                     for (size_t k = lwr; k < upr; k++)
                     {
@@ -5040,7 +5049,7 @@ public:
             auto ce = e.e2.isCallExp();
             assert(ce);
 
-            auto ne = new NewExp(e.loc, null, e.type, ce.arguments);
+            auto ne = new NewExp(e.loc, null, null, e.type, ce.arguments);
             ne.type = e.e1.type;
 
             result = interpret(ne, istate);
@@ -5804,8 +5813,7 @@ public:
             auto expTb = exp.type.toBasetype();
 
             if (exp.type.implicitConvTo(tbNext) >= MATCH.convert &&
-                (tb.ty == Tarray || tb.ty == Tsarray) &&
-                (expTb.ty == Tarray || expTb.ty == Tsarray))
+                tb.isStaticOrDynamicArray() && expTb.isStaticOrDynamicArray())
                 return new ArrayLiteralExp(exp.loc, e.type, exp);
             return exp;
         }
@@ -5921,7 +5929,7 @@ public:
 
             bool castToSarrayPointer = false;
             bool castBackFromVoid = false;
-            if (e1.type.ty == Tarray || e1.type.ty == Tsarray || e1.type.ty == Tpointer)
+            if (e1.type.isStaticOrDynamicArray() || e1.type.ty == Tpointer)
             {
                 // Check for unsupported type painting operations
                 // For slices, we need the type being sliced,
@@ -6101,7 +6109,7 @@ public:
 
         // Disallow array type painting, except for conversions between built-in
         // types of identical size.
-        if ((e.to.ty == Tsarray || e.to.ty == Tarray) && (e1.type.ty == Tsarray || e1.type.ty == Tarray) && !isSafePointerCast(e1.type.nextOf(), e.to.nextOf()))
+        if (e.to.isStaticOrDynamicArray() && e1.type.isStaticOrDynamicArray() && !isSafePointerCast(e1.type.nextOf(), e.to.nextOf()))
         {
             auto se = e1.isStringExp();
             // Allow casting a hex string literal to short[], int[] or long[]
@@ -6531,7 +6539,7 @@ public:
 
 /// Interpret `throw <exp>` found at the specified location `loc`
 private
-void interpretThrow(ref Expression result, Expression exp, const ref Loc loc, InterState* istate)
+void interpretThrow(ref Expression result, Expression exp, Loc loc, InterState* istate)
 {
     incUsageCtfe(istate, loc);
 
@@ -6672,7 +6680,7 @@ Expressions* copyArrayOnWrite(Expressions* exps, Expressions* original)
     true if it is safe to return, false if an error was generated.
  */
 private
-bool stopPointersEscaping(const ref Loc loc, Expression e)
+bool stopPointersEscaping(Loc loc, Expression e)
 {
     import dmd.typesem : hasPointers;
     if (!e.type.hasPointers())
@@ -6722,7 +6730,7 @@ bool stopPointersEscaping(const ref Loc loc, Expression e)
 
 // Check all elements of an array for escaping local variables. Return false if error
 private
-bool stopPointersEscapingFromArray(const ref Loc loc, Expressions* elems)
+bool stopPointersEscapingFromArray(Loc loc, Expressions* elems)
 {
     foreach (e; *elems)
     {
@@ -6786,7 +6794,7 @@ ThrownExceptionExp chainExceptions(ThrownExceptionExp oldest, ThrownExceptionExp
  * 1. all slices must be resolved.
  * 2. all .ownedByCtfe set to OwnedBy.code
  */
-private Expression scrubReturnValue(const ref Loc loc, Expression e)
+private Expression scrubReturnValue(Loc loc, Expression e)
 {
     /* Returns: true if e is void,
      * or is an array literal or struct literal of void elements.
@@ -7506,7 +7514,7 @@ private Expression foreachApplyUtf(UnionExp* pue, InterState* istate, Expression
 /* If this is a built-in function, return the interpreted result,
  * Otherwise, return NULL.
  */
-private Expression evaluateIfBuiltin(UnionExp* pue, InterState* istate, const ref Loc loc, FuncDeclaration fd, Expressions* arguments, Expression pthis)
+private Expression evaluateIfBuiltin(UnionExp* pue, InterState* istate, Loc loc, FuncDeclaration fd, Expressions* arguments, Expression pthis)
 {
     Expression e = null;
     size_t nargs = arguments ? arguments.length : 0;

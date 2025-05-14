@@ -1708,12 +1708,15 @@ cgraph_update_edges_for_call_stmt (gimple *old_stmt, tree old_decl,
   cgraph_node *node;
 
   gcc_checking_assert (orig);
+  gcc_assert (!orig->thunk);
   cgraph_update_edges_for_call_stmt_node (orig, old_stmt, old_decl, new_stmt);
   if (orig->clones)
     for (node = orig->clones; node != orig;)
       {
-	cgraph_update_edges_for_call_stmt_node (node, old_stmt, old_decl,
-						new_stmt);
+	/* Do not attempt to adjust bodies of yet unexpanded thunks.  */
+	if (!node->thunk)
+	  cgraph_update_edges_for_call_stmt_node (node, old_stmt, old_decl,
+						  new_stmt);
 	if (node->clones)
 	  node = node->clones;
 	else if (node->next_sibling_clone)
@@ -2981,13 +2984,22 @@ cgraph_edge::cannot_lead_to_return_p (void)
     return callee->cannot_return_p ();
 }
 
-/* Return true if the edge may be considered hot.  */
+/* Return true if the edge after scaling it profile by SCALE
+   may be considered hot.  */
 
 bool
-cgraph_edge::maybe_hot_p (void)
+cgraph_edge::maybe_hot_p (sreal scale)
 {
-  if (!maybe_hot_count_p (NULL, count.ipa ()))
+  /* Never consider calls in functions optimized for size hot.  */
+  if (opt_for_fn (caller->decl, optimize_size))
     return false;
+
+  /* If reliable IPA count is available, just use it.  */
+  profile_count c = count.ipa ();
+  if (c.reliable_p ())
+    return maybe_hot_count_p (NULL, c * scale);
+
+  /* See if we can determine hotness using caller frequency.  */
   if (caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
       || (callee
 	  && callee->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED))
@@ -2996,23 +3008,40 @@ cgraph_edge::maybe_hot_p (void)
       && (callee
 	  && callee->frequency <= NODE_FREQUENCY_EXECUTED_ONCE))
     return false;
-  if (opt_for_fn (caller->decl, optimize_size))
-    return false;
+  /* ??? This may make sense for hot functions determined by
+     user attribute, but if function is hot by profile, it may
+     contains non-hot calls.  In most practical cases this case
+     is handled by the reliable ipa count above, but i.e. after
+     inlining function with no profile to function with profile
+     we get here.. */
   if (caller->frequency == NODE_FREQUENCY_HOT)
     return true;
+
+  /* Use IPA count and if it s not available appy local heuristics.  */
+  if (c.initialized_p ())
+    return maybe_hot_count_p (NULL, c * scale);
   if (!count.initialized_p ())
     return true;
   cgraph_node *where = caller->inlined_to ? caller->inlined_to : caller;
   if (!where->count.initialized_p ())
-    return false;
+    return true;
+  c = count * scale;
   if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE)
     {
-      if (count * 2 < where->count * 3)
+      if (c * 2 < where->count * 3)
 	return false;
     }
-  else if (count * param_hot_bb_frequency_fraction < where->count)
+  else if (c * param_hot_bb_frequency_fraction < where->count)
     return false;
   return true;
+}
+
+/* Return true if the edge may be considered hot.  */
+
+bool
+cgraph_edge::maybe_hot_p ()
+{
+  return maybe_hot_p (1);
 }
 
 /* Worker for cgraph_can_remove_if_no_direct_calls_p.  */

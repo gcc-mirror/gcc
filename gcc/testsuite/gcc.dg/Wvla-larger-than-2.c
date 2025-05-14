@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target stdint_types } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-O2 -Wvla-larger-than=40" } */
 
 #include <stdint.h>

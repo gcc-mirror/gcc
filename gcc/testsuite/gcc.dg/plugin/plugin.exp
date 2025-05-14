@@ -76,8 +76,6 @@ set plugin_test_list [list \
 	  crash-test-ice-in-header-sarif-2.1.c \
 	  crash-test-ice-in-header-sarif-2.2.c \
 	  crash-test-write-though-null-sarif.c } \
-    { diagnostic_plugin_xhtml_format.cc \
-	  diagnostic-test-xhtml-1.c } \
     { diagnostic_group_plugin.cc \
 	  diagnostic-group-test-1.c } \
     { diagnostic_plugin_test_show_locus.cc \
@@ -138,7 +136,9 @@ set plugin_test_list [list \
     { location_overflow_plugin.cc \
 	  location-overflow-test-1.c \
 	  location-overflow-test-2.c \
-	  location-overflow-test-pr83173.c } \
+	  location-overflow-test-pr83173.c \
+	  location-overflow-test-pr116047.c \
+	  location-overflow-test-pr120061.c } \
     { must_tail_call_plugin.cc \
 	  must-tail-call-1.c \
 	  must-tail-call-2.c } \

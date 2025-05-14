@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-Walloca-larger-than=2000 -O2 -ftrack-macro-expansion=0" } */
 
 #define alloca __builtin_alloca

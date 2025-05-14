@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "optional.h"
 #include "rust-ast-lower-item.h"
 #include "rust-ast-lower-stmt.h"
 #include "rust-ast-lower-type.h"
@@ -35,10 +36,10 @@ ASTLoweringStmt::translate (AST::Stmt *stmt, bool *terminated)
     return nullptr;
 
   *terminated = resolver.terminated;
-  resolver.mappings->insert_location (
+  resolver.mappings.insert_location (
     resolver.translated->get_mappings ().get_hirid (),
     resolver.translated->get_locus ());
-  resolver.mappings->insert_hir_stmt (resolver.translated);
+  resolver.mappings.insert_hir_stmt (resolver.translated);
 
   return resolver.translated;
 }
@@ -48,9 +49,9 @@ ASTLoweringStmt::visit (AST::ExprStmt &stmt)
 {
   HIR::Expr *expr = ASTLoweringExpr::translate (stmt.get_expr (), &terminated);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
   translated
     = new HIR::ExprStmt (mapping, std::unique_ptr<HIR::Expr> (expr),
@@ -68,22 +69,33 @@ ASTLoweringStmt::visit (AST::LetStmt &stmt)
 {
   HIR::Pattern *variables
     = ASTLoweringPattern::translate (stmt.get_pattern (), true);
-  HIR::Type *type = stmt.has_type ()
-		      ? ASTLoweringType::translate (stmt.get_type ())
-		      : nullptr;
-  HIR::Expr *init_expression
-    = stmt.has_init_expr () ? ASTLoweringExpr::translate (stmt.get_init_expr ())
-			    : nullptr;
 
-  auto crate_num = mappings->get_current_crate ();
+  tl::optional<std::unique_ptr<Type>> type = tl::nullopt;
+
+  if (stmt.has_type ())
+    type
+      = std::unique_ptr<Type> (ASTLoweringType::translate (stmt.get_type ()));
+
+  tl::optional<std::unique_ptr<HIR::Expr>> init_expr = tl::nullopt;
+  tl::optional<std::unique_ptr<HIR::Expr>> else_expr = tl::nullopt;
+
+  if (stmt.has_init_expr ())
+    init_expr = std::unique_ptr<HIR::Expr> (
+      ASTLoweringExpr::translate (stmt.get_init_expr ()));
+
+  if (stmt.has_else_expr ())
+    else_expr = std::unique_ptr<HIR::Expr> (
+      ASTLoweringExpr::translate (stmt.get_else_expr ()));
+
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
   translated
     = new HIR::LetStmt (mapping, std::unique_ptr<HIR::Pattern> (variables),
-			std::unique_ptr<HIR::Expr> (init_expression),
-			std::unique_ptr<HIR::Type> (type),
-			stmt.get_outer_attrs (), stmt.get_locus ());
+			std::move (init_expr), std::move (else_expr),
+			std::move (type), stmt.get_outer_attrs (),
+			stmt.get_locus ());
 }
 
 void
@@ -113,10 +125,10 @@ ASTLoweringStmt::visit (AST::Enum &enum_decl)
 void
 ASTLoweringStmt::visit (AST::EmptyStmt &empty)
 {
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, empty.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated = new HIR::EmptyStmt (mapping, empty.get_locus ());
 }
@@ -155,6 +167,12 @@ void
 ASTLoweringStmt::visit (AST::TraitImpl &impl_block)
 {
   translated = ASTLoweringItem::translate (impl_block);
+}
+
+void
+ASTLoweringStmt::visit (AST::StaticItem &var)
+{
+  translated = ASTLoweringItem::translate (var);
 }
 
 } // namespace HIR

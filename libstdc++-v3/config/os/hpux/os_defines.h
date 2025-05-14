@@ -52,12 +52,9 @@
 
    Also note that the compiler defines _INCLUDE_LONGLONG for C++
    unconditionally, which makes intmax_t and uintmax_t long long
-   types.
+   types.  */
 
-   We also force _GLIBCXX_USE_LONG_LONG here so that we don't have
-   to bastardize configure to deal with this sillyness.  */
-
-#ifdef __cplusplus
+#if __cplusplus >= 201103L
 namespace std
 {
   extern "C"
@@ -76,8 +73,6 @@ namespace std
   }
 } // namespace std
 #endif // __cplusplus
-
-#define _GLIBCXX_USE_LONG_LONG 1
 
 // HPUX on IA64 requires vtable to be 64 bit aligned even at 32 bit
 // mode.  We need to pad the vtable structure to achieve this.

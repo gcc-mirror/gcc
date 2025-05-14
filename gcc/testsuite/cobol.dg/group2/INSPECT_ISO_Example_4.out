@@ -1,0 +1,5 @@
+  INPUT                C0 C1 OUTPUT
+  -------------------- -- -- ----------------
+  ABABABABC            01 ABABXYABC
+* ABABABABC            01 ABABXYABC
+

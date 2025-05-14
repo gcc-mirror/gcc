@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-Walloca-larger-than=123 -O2" } */
 /* { dg-xfail-if "Currently broken but Andrew's work should fix this" { *-*-* } } */
 

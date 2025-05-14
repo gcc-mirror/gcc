@@ -3610,9 +3610,10 @@ parse_params (cpp_reader *pfile, unsigned *n_ptr, bool *variadic_ptr)
 	  if (!prev_ident)
 	    {
 	      /* An ISO bare ellipsis.  */
-	      _cpp_save_parameter (pfile, nparms,
-				   pfile->spec_nodes.n__VA_ARGS__,
-				   pfile->spec_nodes.n__VA_ARGS__);
+	      if (!_cpp_save_parameter (pfile, nparms,
+					pfile->spec_nodes.n__VA_ARGS__,
+					pfile->spec_nodes.n__VA_ARGS__))
+		goto out;
 	      nparms++;
 	      pfile->state.va_args_ok = 1;
 	      if (! CPP_OPTION (pfile, c99)

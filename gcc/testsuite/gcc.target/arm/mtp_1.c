@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target tls_native } */
+/* { dg-require-effective-target arm32 } */
 /* { dg-options "-O -mtp=cp15" } */
 
 #include "mtp.c"

@@ -36,7 +36,7 @@ fn main() {
     // cf. rustc 1.72.0: _RNvNtCshIBIgX6Bzox_10v0_mangle18module_a3bar
     module_a::bar();
 
-    // { dg-final { scan-assembler "_R.*NvNtNtC10v0_mangle18module_a8module_b3baz" } }
+    // { dg-final { scan-assembler "_R.*NvNtNtC.*10v0_mangle18module_a8module_b3baz" } }
     // cf. rustc 1.72.0: _RNvNtNtCshIBIgX6Bzox_10v0_mangle18module_a8module_b3baz
     module_a::module_b::baz();
 

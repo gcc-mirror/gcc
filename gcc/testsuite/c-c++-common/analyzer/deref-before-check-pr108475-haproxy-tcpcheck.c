@@ -1,6 +1,7 @@
 /* Reduced from haproxy-2.7.1: src/tcpcheck.c.  */
 
 /* { dg-additional-options "-Wno-analyzer-too-complex" } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 typedef __SIZE_TYPE__ size_t;
 

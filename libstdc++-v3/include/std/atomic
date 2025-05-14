@@ -51,6 +51,7 @@
 
 #include <bits/atomic_base.h>
 #include <cstdint>
+#include <type_traits>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -189,14 +190,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cpp_lib_atomic_wait
   };
 
-/// @cond undocumented
-#if __cpp_lib_atomic_value_initialization
-# define _GLIBCXX20_INIT(I) = I
-#else
-# define _GLIBCXX20_INIT(I)
-#endif
-/// @endcond
-
   /**
    *  @brief Generic atomic type, primary class template.
    *
@@ -216,7 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr int _S_alignment
         = _S_min_alignment > alignof(_Tp) ? _S_min_alignment : alignof(_Tp);
 
-      alignas(_S_alignment) _Tp _M_i _GLIBCXX20_INIT(_Tp());
+      alignas(_S_alignment) _Tp _M_i;
 
       static_assert(__is_trivially_copyable(_Tp),
 		    "std::atomic requires a trivially copyable type");
@@ -232,7 +225,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
     public:
+#if __cpp_lib_atomic_value_initialization
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4169. std::atomic<T>'s default constructor should be constrained
+      constexpr atomic() noexcept(is_nothrow_default_constructible_v<_Tp>)
+	requires is_default_constructible_v<_Tp>
+	: _M_i()
+      {}
+#else
       atomic() = default;
+#endif
+
       ~atomic() noexcept = default;
       atomic(const atomic&) = delete;
       atomic& operator=(const atomic&) = delete;
@@ -414,7 +417,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cpp_lib_atomic_wait
 
     };
-#undef _GLIBCXX20_INIT
 
   /// Partial specialization for pointer types.
   template<typename _Tp>

@@ -1,6 +1,5 @@
 /* PR tree-optimization/79972 */
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-Walloca -Wvla-larger-than=10000" } */
 
 int

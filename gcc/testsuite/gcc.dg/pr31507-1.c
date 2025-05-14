@@ -1,7 +1,6 @@
 /* PR target/31507 */
 /* { dg-do run } */
 /* { dg-options "-Os -fno-omit-frame-pointer" } */
-/* { dg-require-effective-target alloca } */
 
 extern void abort (void);
 

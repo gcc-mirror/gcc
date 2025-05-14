@@ -28,7 +28,7 @@ namespace Resolver {
 class TypeCheckPattern : public TypeCheckBase, public HIR::HIRPatternVisitor
 {
 public:
-  static TyTy::BaseType *Resolve (HIR::Pattern *pattern,
+  static TyTy::BaseType *Resolve (HIR::Pattern &pattern,
 				  TyTy::BaseType *parent);
 
   void visit (HIR::PathInExpression &pattern) override;
@@ -47,9 +47,10 @@ public:
 private:
   TypeCheckPattern (TyTy::BaseType *parent);
 
-  TyTy::BaseType *typecheck_range_pattern_bound (
-    std::unique_ptr<Rust::HIR::RangePatternBound> &bound,
-    Analysis::NodeMapping mappings, location_t locus);
+  TyTy::BaseType *
+  typecheck_range_pattern_bound (Rust::HIR::RangePatternBound &bound,
+				 Analysis::NodeMapping mappings,
+				 location_t locus);
 
   void emit_pattern_size_error (const HIR::Pattern &pattern,
 				size_t expected_field_count,
@@ -62,7 +63,7 @@ private:
 class ClosureParamInfer : private TypeCheckBase, private HIR::HIRPatternVisitor
 {
 public:
-  static TyTy::BaseType *Resolve (HIR::Pattern *pattern);
+  static TyTy::BaseType *Resolve (HIR::Pattern &pattern);
 
   void visit (HIR::PathInExpression &pattern) override;
   void visit (HIR::StructPattern &pattern) override;

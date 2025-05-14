@@ -2,8 +2,8 @@
 TEST_OUTPUT:
 ---
 fail_compilation/attributediagnostic_nothrow.d(19): Error: function `attributediagnostic_nothrow.layer1` is not `nothrow`
-fail_compilation/attributediagnostic_nothrow.d(20):        which calls `attributediagnostic_nothrow.layer0`
-fail_compilation/attributediagnostic_nothrow.d(21):        which calls `attributediagnostic_nothrow.gc`
+fail_compilation/attributediagnostic_nothrow.d(20):        which calls `layer0`
+fail_compilation/attributediagnostic_nothrow.d(21):        which calls `gc`
 fail_compilation/attributediagnostic_nothrow.d(25):        and executing an `asm` statement without a `nothrow` annotation makes it fail to infer `nothrow`
 fail_compilation/attributediagnostic_nothrow.d(19): Error: function `attributediagnostic_nothrow.layer2` may throw but is marked as `nothrow`
 fail_compilation/attributediagnostic_nothrow.d(41): Error: function `attributediagnostic_nothrow.gc1` is not `nothrow`

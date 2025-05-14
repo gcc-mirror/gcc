@@ -1,4 +1,5 @@
-  /* { dg-additional-options "-fanalyzer-verbose-state-changes" } */
+/* { dg-additional-options "-fno-exceptions" } */
+/* { dg-additional-options "-fanalyzer-verbose-state-changes" } */
 int open(const char *, int mode);
 void close(int fd);
 

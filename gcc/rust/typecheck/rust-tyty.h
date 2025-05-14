@@ -28,6 +28,7 @@
 #include "rust-tyty-subst.h"
 #include "rust-tyty-region.h"
 #include "rust-system.h"
+#include "rust-hir.h"
 
 namespace Rust {
 
@@ -72,6 +73,7 @@ enum TypeKind
   PROJECTION,
   DYNAMIC,
   CLOSURE,
+  OPAQUE,
   // there are more to add...
   ERROR
 };
@@ -135,6 +137,9 @@ public:
   void inherit_bounds (
     const std::vector<TyTy::TypeBoundPredicate> &specified_bounds);
 
+  // contains_infer checks if there is an inference variable inside the type
+  const TyTy::BaseType *contains_infer () const;
+
   // is_unit returns whether this is just a unit-struct
   bool is_unit () const;
 
@@ -173,6 +178,7 @@ public:
 
   bool has_substitutions_defined () const;
   bool needs_generic_substitutions () const;
+  const SubstitutionArgumentMappings &get_subst_argument_mappings () const;
 
   std::string mangle_string () const
   {
@@ -248,7 +254,7 @@ protected:
   std::set<HirId> combined;
   RustIdent ident;
 
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 };
 
 /** Unified interface for all function-like types. */
@@ -406,6 +412,39 @@ private:
   HIR::GenericParam &param;
 };
 
+class OpaqueType : public BaseType
+{
+public:
+  static constexpr auto KIND = TypeKind::OPAQUE;
+
+  OpaqueType (location_t locus, HirId ref,
+	      std::vector<TypeBoundPredicate> specified_bounds,
+	      std::set<HirId> refs = std::set<HirId> ());
+
+  OpaqueType (location_t locus, HirId ref, HirId ty_ref,
+	      std::vector<TypeBoundPredicate> specified_bounds,
+	      std::set<HirId> refs = std::set<HirId> ());
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+
+  BaseType *clone () const final override;
+
+  bool can_resolve () const;
+
+  BaseType *resolve () const;
+
+  std::string get_name () const override final;
+
+  bool is_equal (const BaseType &other) const override;
+
+  OpaqueType *handle_substitions (SubstitutionArgumentMappings &mappings);
+};
+
 class StructFieldType
 {
 public:
@@ -447,7 +486,7 @@ public:
 	     std::vector<TyVar> fields = std::vector<TyVar> (),
 	     std::set<HirId> refs = std::set<HirId> ());
 
-  static TupleType *get_unit_type (HirId ref);
+  static TupleType *get_unit_type ();
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -509,6 +548,8 @@ public:
   void apply_generic_arguments (HIR::GenericArgs *generic_args,
 				bool has_associated_self);
 
+  void apply_argument_mappings (SubstitutionArgumentMappings &arguments);
+
   bool contains_item (const std::string &search) const;
 
   TypeBoundPredicateItem
@@ -540,6 +581,14 @@ public:
 
   bool is_equal (const TypeBoundPredicate &other) const;
 
+  bool validate_type_implements_super_traits (TyTy::BaseType &self,
+					      HIR::Type &impl_type,
+					      HIR::Type &trait) const;
+
+  bool validate_type_implements_this (TyTy::BaseType &self,
+				      HIR::Type &impl_type,
+				      HIR::Type &trait) const;
+
 private:
   struct mark_is_error
   {
@@ -551,6 +600,36 @@ private:
   location_t locus;
   bool error_flag;
   BoundPolarity polarity;
+  std::vector<TyTy::TypeBoundPredicate> super_traits;
+};
+
+class TypeBoundPredicateItem
+{
+public:
+  TypeBoundPredicateItem (const TypeBoundPredicate parent,
+			  const Resolver::TraitItemReference *trait_item_ref);
+
+  TypeBoundPredicateItem (const TypeBoundPredicateItem &other);
+
+  TypeBoundPredicateItem &operator= (const TypeBoundPredicateItem &other);
+
+  static TypeBoundPredicateItem error ();
+
+  bool is_error () const;
+
+  BaseType *get_tyty_for_receiver (const TyTy::BaseType *receiver);
+
+  const Resolver::TraitItemReference *get_raw_item () const;
+
+  bool needs_implementation () const;
+
+  const TypeBoundPredicate *get_parent () const;
+
+  location_t get_locus () const;
+
+private:
+  TypeBoundPredicate parent;
+  const Resolver::TraitItemReference *trait_item_ref;
 };
 
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html
@@ -567,15 +646,12 @@ public:
   static std::string variant_type_string (VariantType type);
 
   VariantDef (HirId id, DefId defid, std::string identifier, RustIdent ident,
-	      HIR::Expr *discriminant);
+	      tl::optional<std::unique_ptr<HIR::Expr>> &&discriminant);
 
   VariantDef (HirId id, DefId defid, std::string identifier, RustIdent ident,
-	      VariantType type, HIR::Expr *discriminant,
+	      VariantType type,
+	      tl::optional<std::unique_ptr<HIR::Expr>> &&discriminant,
 	      std::vector<StructFieldType *> fields);
-
-  VariantDef (const VariantDef &other);
-
-  VariantDef &operator= (const VariantDef &other);
 
   static VariantDef &get_error_node ();
   bool is_error () const;
@@ -597,7 +673,10 @@ public:
   bool lookup_field (const std::string &lookup, StructFieldType **field_lookup,
 		     size_t *index) const;
 
-  HIR::Expr *get_discriminant () const;
+  bool has_discriminant () const;
+
+  HIR::Expr &get_discriminant ();
+  const HIR::Expr &get_discriminant () const;
 
   std::string as_string () const;
 
@@ -615,8 +694,10 @@ private:
   std::string identifier;
   RustIdent ident;
   VariantType type;
+
   // can either be a structure or a discriminant value
-  HIR::Expr *discriminant;
+  tl::optional<std::unique_ptr<HIR::Expr>> discriminant;
+
   std::vector<StructFieldType *> fields;
 };
 
@@ -633,59 +714,56 @@ public:
     ENUM
   };
 
+  enum ReprKind
+  {
+    RUST,
+    C,
+    INT,
+    ALIGN,
+    PACKED,
+    // TRANSPARENT,
+    // SIMD,
+    // ...
+  };
+
   // Representation options, specified via attributes e.g. #[repr(packed)]
   struct ReprOptions
   {
-    // bool is_c;
-    // bool is_transparent;
-    //...
+    ReprKind repr_kind = ReprKind::RUST;
 
     // For align and pack: 0 = unspecified. Nonzero = byte alignment.
     // It is an error for both to be nonzero, this should be caught when
     // parsing the #[repr] attribute.
     unsigned char align = 0;
     unsigned char pack = 0;
+    BaseType *repr = nullptr;
   };
 
-  ADTType (HirId ref, std::string identifier, RustIdent ident, ADTKind adt_kind,
+  ADTType (DefId id, HirId ref, std::string identifier, RustIdent ident,
+	   ADTKind adt_kind, std::vector<VariantDef *> variants,
+	   std::vector<SubstitutionParamMapping> subst_refs,
+	   SubstitutionArgumentMappings generic_arguments
+	   = SubstitutionArgumentMappings::error (),
+	   RegionConstraints region_constraints = RegionConstraints{},
+	   std::set<HirId> refs = std::set<HirId> ());
+
+  ADTType (DefId id, HirId ref, HirId ty_ref, std::string identifier,
+	   RustIdent ident, ADTKind adt_kind,
 	   std::vector<VariantDef *> variants,
 	   std::vector<SubstitutionParamMapping> subst_refs,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
-	   RegionConstraints region_constraints = {},
-	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::ADT, ident, refs),
-      SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
-		       region_constraints),
-      identifier (identifier), variants (variants), adt_kind (adt_kind)
-  {}
+	   RegionConstraints region_constraints = RegionConstraints{},
+	   std::set<HirId> refs = std::set<HirId> ());
 
-  ADTType (HirId ref, HirId ty_ref, std::string identifier, RustIdent ident,
-	   ADTKind adt_kind, std::vector<VariantDef *> variants,
-	   std::vector<SubstitutionParamMapping> subst_refs,
-	   SubstitutionArgumentMappings generic_arguments
-	   = SubstitutionArgumentMappings::error (),
-	   RegionConstraints region_constraints = {},
-	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ADT, ident, refs),
-      SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
-		       region_constraints),
-      identifier (identifier), variants (variants), adt_kind (adt_kind)
-  {}
-
-  ADTType (HirId ref, HirId ty_ref, std::string identifier, RustIdent ident,
-	   ADTKind adt_kind, std::vector<VariantDef *> variants,
+  ADTType (DefId id, HirId ref, HirId ty_ref, std::string identifier,
+	   RustIdent ident, ADTKind adt_kind,
+	   std::vector<VariantDef *> variants,
 	   std::vector<SubstitutionParamMapping> subst_refs, ReprOptions repr,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
-	   RegionConstraints region_constraints = {},
-	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ADT, ident, refs),
-      SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
-		       region_constraints),
-      identifier (identifier), variants (variants), adt_kind (adt_kind),
-      repr (repr)
-  {}
+	   RegionConstraints region_constraints = RegionConstraints{},
+	   std::set<HirId> refs = std::set<HirId> ());
 
   ADTKind get_adt_kind () const { return adt_kind; }
 
@@ -715,6 +793,8 @@ public:
   {
     return identifier + subst_as_string ();
   }
+
+  DefId get_id () const;
 
   BaseType *clone () const final override;
 
@@ -761,10 +841,44 @@ public:
   handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
 private:
+  DefId id;
   std::string identifier;
   std::vector<VariantDef *> variants;
   ADTType::ADTKind adt_kind;
   ReprOptions repr;
+};
+
+class FnParam
+{
+public:
+  FnParam (std::unique_ptr<HIR::Pattern> pattern, BaseType *type)
+    : pattern (std::move (pattern)), type (type)
+  {}
+
+  FnParam (const FnParam &) = delete;
+  FnParam (FnParam &&) = default;
+  FnParam &operator= (FnParam &&) = default;
+
+  HIR::Pattern &get_pattern () { return *pattern; }
+  const HIR::Pattern &get_pattern () const { return *pattern; }
+
+  bool has_pattern () { return pattern != nullptr; }
+  BaseType *get_type () const { return type; }
+  void set_type (BaseType *new_type) { type = new_type; }
+
+  FnParam clone () const
+  {
+    return FnParam (pattern->clone_pattern (), type->clone ());
+  }
+
+  FnParam monomorphized_clone () const
+  {
+    return FnParam (pattern->clone_pattern (), type->monomorphized_clone ());
+  }
+
+private:
+  std::unique_ptr<HIR::Pattern> pattern;
+  BaseType *type;
 };
 
 class FnType : public CallableTypeInterface, public SubstitutionRef
@@ -778,9 +892,8 @@ public:
   static const uint8_t FNTYPE_IS_VARADIC_FLAG = 0X04;
 
   FnType (HirId ref, DefId id, std::string identifier, RustIdent ident,
-	  uint8_t flags, ABI abi,
-	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,
-	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
+	  uint8_t flags, ABI abi, std::vector<FnParam> params, BaseType *type,
+	  std::vector<SubstitutionParamMapping> subst_refs,
 	  SubstitutionArgumentMappings substitution_argument_mappings,
 	  RegionConstraints region_constraints,
 	  std::set<HirId> refs = std::set<HirId> ())
@@ -795,8 +908,7 @@ public:
   }
 
   FnType (HirId ref, HirId ty_ref, DefId id, std::string identifier,
-	  RustIdent ident, uint8_t flags, ABI abi,
-	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,
+	  RustIdent ident, uint8_t flags, ABI abi, std::vector<FnParam> params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  SubstitutionArgumentMappings substitution_argument_mappings,
 	  RegionConstraints region_constraints,
@@ -804,12 +916,15 @@ public:
     : CallableTypeInterface (ref, ty_ref, TypeKind::FNDEF, ident, refs),
       SubstitutionRef (std::move (subst_refs), substitution_argument_mappings,
 		       region_constraints),
-      params (params), type (type), flags (flags), identifier (identifier),
-      id (id), abi (abi)
+      params (std::move (params)), type (type), flags (flags),
+      identifier (identifier), id (id), abi (abi)
   {
     LocalDefId local_def_id = id.localDefId;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
   }
+
+  FnType (const FnType &) = delete;
+  FnType (FnType &&) = default;
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -844,28 +959,16 @@ public:
   BaseType *get_self_type () const
   {
     rust_assert (is_method ());
-    return param_at (0).second;
+    return param_at (0).get_type ();
   }
 
-  std::vector<std::pair<HIR::Pattern *, BaseType *>> &get_params ()
-  {
-    return params;
-  }
+  std::vector<FnParam> &get_params () { return params; }
 
-  const std::vector<std::pair<HIR::Pattern *, BaseType *>> &get_params () const
-  {
-    return params;
-  }
+  const std::vector<FnParam> &get_params () const { return params; }
 
-  std::pair<HIR::Pattern *, BaseType *> &param_at (size_t idx)
-  {
-    return params.at (idx);
-  }
+  FnParam &param_at (size_t idx) { return params.at (idx); }
 
-  const std::pair<HIR::Pattern *, BaseType *> &param_at (size_t idx) const
-  {
-    return params.at (idx);
-  }
+  const FnParam &param_at (size_t idx) const { return params.at (idx); }
 
   BaseType *clone () const final override;
 
@@ -882,7 +985,7 @@ public:
 
   WARN_UNUSED_RESULT BaseType *get_param_type_at (size_t index) const override
   {
-    return param_at (index).second;
+    return param_at (index).get_type ();
   }
 
   WARN_UNUSED_RESULT BaseType *get_return_type () const override
@@ -891,7 +994,7 @@ public:
   }
 
 private:
-  std::vector<std::pair<HIR::Pattern *, BaseType *>> params;
+  std::vector<FnParam> params;
   BaseType *type;
   uint8_t flags;
   std::string identifier;
@@ -1505,9 +1608,9 @@ class PlaceholderType : public BaseType
 public:
   static constexpr auto KIND = TypeKind::PLACEHOLDER;
 
-  PlaceholderType (std::string symbol, HirId ref,
+  PlaceholderType (std::string symbol, DefId id, HirId ref,
 		   std::set<HirId> refs = std::set<HirId> ());
-  PlaceholderType (std::string symbol, HirId ref, HirId ty_ref,
+  PlaceholderType (std::string symbol, DefId id, HirId ref, HirId ty_ref,
 		   std::set<HirId> refs = std::set<HirId> ());
 
   void accept_vis (TyVisitor &vis) override;
@@ -1533,8 +1636,11 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
+  DefId get_def_id () const;
+
 private:
   std::string symbol;
+  DefId defId;
 };
 
 class ProjectionType : public BaseType, public SubstitutionRef

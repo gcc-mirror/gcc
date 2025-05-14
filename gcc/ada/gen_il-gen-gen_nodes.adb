@@ -1309,7 +1309,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Formal_Modular_Type_Definition, Node_Kind);
    Cc (N_Formal_Ordinary_Fixed_Point_Definition, Node_Kind);
 
-   Cc (N_Formal_Package_Declaration, Node_Kind,
+   Cc (N_Formal_Package_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
         Sy (Name, Node_Id, Default_Empty),
         Sy (Generic_Associations, List_Id, Default_No_List),

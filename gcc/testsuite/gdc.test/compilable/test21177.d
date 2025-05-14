@@ -1,5 +1,6 @@
 // https://issues.dlang.org/show_bug.cgi?id=21177
 /*
+REQUIRED_ARGS: -verrors=simple
 DISABLED: win
 TEST_OUTPUT:
 ---

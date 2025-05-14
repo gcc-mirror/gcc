@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-exceptions" } */
+
 #include <stdio.h>
 
 #define INI_MAX_LINE 200

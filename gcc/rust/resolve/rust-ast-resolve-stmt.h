@@ -55,7 +55,7 @@ public:
 					constant.get_identifier ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (constant.get_node_id (), cpath);
+    mappings.insert_canonical_path (constant.get_node_id (), cpath);
 
     resolver->get_name_scope ().insert (
       path, constant.get_node_id (), constant.get_locus (), false,
@@ -63,7 +63,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, constant.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     ResolveType::go (constant.get_type ());
@@ -73,9 +73,10 @@ public:
   void visit (AST::LetStmt &stmt) override
   {
     if (stmt.has_init_expr ())
-      {
-	ResolveExpr::go (stmt.get_init_expr (), prefix, canonical_prefix);
-      }
+      ResolveExpr::go (stmt.get_init_expr (), prefix, canonical_prefix);
+
+    if (stmt.has_else_expr ())
+      ResolveExpr::go (stmt.get_else_expr (), prefix, canonical_prefix);
 
     PatternDeclaration::go (stmt.get_pattern (), Rib::ItemType::Var);
     if (stmt.has_type ())
@@ -89,7 +90,7 @@ public:
 				struct_decl.get_identifier ().as_string ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
+    mappings.insert_canonical_path (struct_decl.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
@@ -97,17 +98,15 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, struct_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId scope_node_id = struct_decl.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
 
     if (struct_decl.has_generics ())
-      {
-	for (auto &generic : struct_decl.get_generic_params ())
-	  ResolveGenericParam::go (*generic, prefix, canonical_prefix);
-      }
+      ResolveGenericParams::go (struct_decl.get_generic_params (), prefix,
+				canonical_prefix);
 
     for (AST::TupleField &field : struct_decl.get_fields ())
       ResolveType::go (field.get_field_type ());
@@ -122,7 +121,7 @@ public:
 				enum_decl.get_identifier ().as_string ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (enum_decl.get_node_id (), cpath);
+    mappings.insert_canonical_path (enum_decl.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, enum_decl.get_node_id (), enum_decl.get_locus (), false,
@@ -130,17 +129,15 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, enum_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId scope_node_id = enum_decl.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
 
     if (enum_decl.has_generics ())
-      {
-	for (auto &generic : enum_decl.get_generic_params ())
-	  ResolveGenericParam::go (*generic, prefix, canonical_prefix);
-      }
+      ResolveGenericParams::go (enum_decl.get_generic_params (), prefix,
+				canonical_prefix);
 
     for (auto &variant : enum_decl.get_variants ())
       ResolveStmt::go (*variant, path, canonical_prefix, path);
@@ -155,14 +152,14 @@ public:
 			      item.get_identifier ().as_string ()));
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     // Done, no fields.
@@ -175,14 +172,14 @@ public:
 			      item.get_identifier ().as_string ()));
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     for (auto &field : item.get_tuple_fields ())
@@ -201,14 +198,14 @@ public:
 			      item.get_identifier ().as_string ()));
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     for (auto &field : item.get_struct_fields ())
@@ -227,14 +224,14 @@ public:
 			      item.get_identifier ().as_string ()));
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     // Done, no fields.
@@ -247,7 +244,7 @@ public:
 				struct_decl.get_identifier ().as_string ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
+    mappings.insert_canonical_path (struct_decl.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
@@ -255,17 +252,15 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, struct_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId scope_node_id = struct_decl.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
 
     if (struct_decl.has_generics ())
-      {
-	for (auto &generic : struct_decl.get_generic_params ())
-	  ResolveGenericParam::go (*generic, prefix, canonical_prefix);
-      }
+      ResolveGenericParams::go (struct_decl.get_generic_params (), prefix,
+				canonical_prefix);
 
     for (AST::StructField &field : struct_decl.get_fields ())
       {
@@ -285,7 +280,7 @@ public:
 				union_decl.get_identifier ().as_string ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (union_decl.get_node_id (), cpath);
+    mappings.insert_canonical_path (union_decl.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, union_decl.get_node_id (), union_decl.get_locus (), false,
@@ -293,15 +288,15 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, union_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId scope_node_id = union_decl.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
 
     if (union_decl.has_generics ())
-      for (auto &generic : union_decl.get_generic_params ())
-	ResolveGenericParam::go (*generic, prefix, canonical_prefix);
+      ResolveGenericParams::go (union_decl.get_generic_params (), prefix,
+				canonical_prefix);
 
     for (AST::StructField &field : union_decl.get_variants ())
       {
@@ -321,7 +316,7 @@ public:
 				function.get_function_name ().as_string ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (function.get_node_id (), cpath);
+    mappings.insert_canonical_path (function.get_node_id (), cpath);
 
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,
@@ -329,7 +324,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, function.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	redefined_error (r);
       });
 
     NodeId scope_node_id = function.get_node_id ();
@@ -338,11 +333,11 @@ public:
     resolver->get_label_scope ().push (scope_node_id);
     resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
     resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-    resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+    resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
     if (function.has_generics ())
-      for (auto &generic : function.get_generic_params ())
-	ResolveGenericParam::go (*generic, prefix, canonical_prefix);
+      ResolveGenericParams::go (function.get_generic_params (), prefix,
+				canonical_prefix);
 
     if (function.has_return_type ())
       ResolveType::go (function.get_return_type ());
@@ -388,6 +383,7 @@ public:
   void visit (AST::Trait &trait) override;
   void visit (AST::InherentImpl &impl_block) override;
   void visit (AST::TraitImpl &impl_block) override;
+  void visit (AST::StaticItem &var) override;
 
 private:
   ResolveStmt (const CanonicalPath &prefix,

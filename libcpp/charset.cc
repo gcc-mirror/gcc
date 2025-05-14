@@ -2244,7 +2244,7 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
       from++;
       extend_char_range (&char_range, loc_reader);
       if (from == limit || *from != '{')
-	cpp_error (pfile, CPP_DL_ERROR, "%<\\o%> not followed by %<}%>");
+	cpp_error (pfile, CPP_DL_ERROR, "%<\\o%> not followed by %<{%>");
       else
 	{
 	  from++;

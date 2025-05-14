@@ -89,6 +89,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef _PTRDIFF_T_
 #endif
 
+/* When modular code is enabled with macOS SDKs from version 15, the
+   include guards are set in the includers of this code, rather than as
+   part of it.  This means the we must unset them or the intended code
+   here will be bypassed (resulting in undefined values).  */
 #if defined (__APPLE__)
 # if defined(__has_feature) && __has_feature(modules)
 #  if defined (__need_ptrdiff_t)
@@ -455,18 +459,16 @@ typedef struct {
 #endif
 #endif /* C++11.  */
 
-#if (defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L)
+#if defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L
 #ifndef _GCC_NULLPTR_T
 #define _GCC_NULLPTR_T
   typedef __typeof__(nullptr) nullptr_t;
-/* ??? This doesn't define __STDC_VERSION_STDDEF_H__ yet.  */
 #endif
-#endif /* C23.  */
-
-#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#ifndef __STDC_VERSION_STDDEF_H__
 #define unreachable() (__builtin_unreachable ())
 #define __STDC_VERSION_STDDEF_H__	202311L
 #endif
+#endif /* C23.  */
 
 #endif /* _STDDEF_H was defined this time */
 

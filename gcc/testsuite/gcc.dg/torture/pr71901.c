@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 
 typedef struct { int _mp_size; } mpz_t[1];
 int a, b;

@@ -188,16 +188,13 @@ FOO2 (int64_t, imul, *)
 /* { dg-final { scan-assembler-times "not(?:l|w|q)\[^\n\r]%(?:|r|e)di, %(?:|r|e)ax" 4 } } */
 /* { dg-final { scan-assembler-times "andb\[^\n\r]*1, \\(%(?:r|e)di\\), %al" 1 } } */
 /* { dg-final { scan-assembler-times "and(?:l|w|q)\[^\n\r]*1, \\(%(?:r|e)di\\), %(?:|r|e)ax" 3 } } */
-/* { dg-final { scan-assembler-times "and(?:l|w|q)\[^\n\r]%(?:|r|e)di, %(?:|r|e)si, %(?:|r|e)ax" 2 } } */
-/* { dg-final { scan-assembler-times "and(?:l|w|q)\[^\n\r]%(?:|r|e)si, %(?:|r|e)di, %(?:|r|e)ax" 2 } } */
+/* { dg-final { scan-assembler-times "and(?:l|w|q)\[^\n\r]%(?:|r|e)si, %(?:|r|e)di, %(?:|r|e)ax" 4 } } */
 /* { dg-final { scan-assembler-times "orb\[^\n\r]*1, \\(%(?:r|e)di\\), %al" 2} } */
 /* { dg-final { scan-assembler-times "or(?:l|w|q)\[^\n\r]*1, \\(%(?:r|e)di\\), %(?:|r|e)ax" 6 } } */
-/* { dg-final { scan-assembler-times "or(?:l|w|q)\[^\n\r]%(?:|r|e)di, %(?:|r|e)si, %(?:|r|e)ax" 4 } } */
-/* { dg-final { scan-assembler-times "or(?:l|w|q)\[^\n\r]%(?:|r|e)si, %(?:|r|e)di, %(?:|r|e)ax" 4 } } */
+/* { dg-final { scan-assembler-times "or(?:l|w|q)\[^\n\r]%(?:|r|e)si, %(?:|r|e)di, %(?:|r|e)ax" 8 } } */
 /* { dg-final { scan-assembler-times "xorb\[^\n\r]*1, \\(%(?:r|e)di\\), %al" 1 } } */
 /* { dg-final { scan-assembler-times "xor(?:l|w|q)\[^\n\r]*1, \\(%(?:r|e)di\\), %(?:|r|e)ax" 3 } } */
-/* { dg-final { scan-assembler-times "xor(?:l|w|q)\[^\n\r]%(?:|r|e)di, %(?:|r|e)si, %(?:|r|e)ax" 2 } } */
-/* { dg-final { scan-assembler-times "xor(?:l|w|q)\[^\n\r]%(?:|r|e)si, %(?:|r|e)di, %(?:|r|e)ax" 2 } } */
+/* { dg-final { scan-assembler-times "xor(?:l|w|q)\[^\n\r]%(?:|r|e)si, %(?:|r|e)di, %(?:|r|e)ax" 4 } } */
 /* { dg-final { scan-assembler-times "sal(?:b|l|w|q)\[^\n\r]*1, \\(%(?:r|e)di\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "sal(?:l|w|q)\[^\n\r]*7, %(?:|r|e)di, %(?:|r|e)ax" 4 } } */
 /* { dg-final { scan-assembler-times "sar(?:b|l|w|q)\[^\n\r]*1, \\(%(?:r|e)di\\), %(?:|r|e)a(?:x|l)" 4 } } */

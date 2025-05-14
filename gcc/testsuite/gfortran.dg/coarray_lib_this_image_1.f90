@@ -19,8 +19,8 @@ end
 ! { dg-final { scan-tree-dump-times "bar \\(real\\(kind=4\\)\\\[2\\\] \\* restrict x, void \\* restrict caf_token.., integer\\(kind=\[48\]\\) caf_offset..\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "mylcobound = 5;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "parm...dim\\\[1\\\].lbound = 5;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "myucobound =\[^\n\r\]* parm...dim\\\[1\\\].lbound \\+ \[^\n\r]*_gfortran_caf_num_images \\(0, -1\\).? \\+ -?\[0-9\]+\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "myucobound =\[^\n\r\]* parm...dim\\\[1\\\].lbound \\+ \[^\n\r]*_gfortran_caf_num_images \\(0B, 0B\\).? \\+ -?\[0-9\]+\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "mylbound = 1;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "mythis_image = _gfortran_caf_this_image \\(0\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "mythis_image = _gfortran_caf_this_image \\(0B\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "bar \\(x, caf_token.., 0\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_init \\(&argc, &argv\\);" 1 "original" } }

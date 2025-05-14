@@ -19,6 +19,7 @@
 #include "rust-cfg-strip.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
+#include "rust-path.h"
 #include "rust-session-manager.h"
 #include "rust-attribute-values.h"
 
@@ -190,6 +191,26 @@ CfgStrip::maybe_strip_struct_fields (std::vector<AST::StructField> &fields)
 	rust_error_at (type.get_locus (), "cannot strip type in this position");
 
       // if nothing else happens, increment
+      ++it;
+    }
+}
+
+void
+CfgStrip::maybe_strip_struct_expr_fields (
+  std::vector<std::unique_ptr<AST::StructExprField>> &fields)
+{
+  for (auto it = fields.begin (); it != fields.end ();)
+    {
+      auto &field = *it;
+
+      auto &field_attrs = field->get_outer_attrs ();
+      expand_cfg_attrs (field_attrs);
+      if (fails_cfg_with_expand (field_attrs))
+	{
+	  it = fields.erase (it);
+	  continue;
+	}
+
       ++it;
     }
 }
@@ -414,10 +435,13 @@ CfgStrip::visit (AST::PathInExpression &path)
       return;
     }
 
-  for (auto &segment : path.get_segments ())
+  if (!path.is_lang_item ())
     {
-      if (segment.has_generic_args ())
-	maybe_strip_generic_args (segment.get_generic_args ());
+      for (auto &segment : path.get_segments ())
+	{
+	  if (segment.has_generic_args ())
+	    maybe_strip_generic_args (segment.get_generic_args ());
+	}
     }
 }
 
@@ -962,6 +986,8 @@ CfgStrip::visit (AST::StructExprStructFields &expr)
 		       "cannot strip expression in this position - outer "
 		       "attributes not allowed");
     }
+
+  maybe_strip_struct_expr_fields (expr.get_fields ());
 }
 
 void
@@ -1852,6 +1878,10 @@ CfgStrip::visit (AST::StructStruct &struct_item)
     }
 
   AST::DefaultASTVisitor::visit (struct_item);
+
+  /* strip struct fields if required - this is presumably
+   * allowed by spec */
+  maybe_strip_struct_fields (struct_item.get_fields ());
 }
 void
 CfgStrip::visit (AST::TupleStruct &tuple_struct)

@@ -191,6 +191,9 @@ public:
   }
 
 private:
+  const logical_location_manager &
+  get_logical_location_manager () const;
+
   void build_emission_path (const path_builder &pb,
 			    const exploded_path &epath,
 			    checker_path *emission_path) const;
@@ -229,6 +232,7 @@ private:
   void prune_interproc_events (checker_path *path) const;
   void prune_system_headers (checker_path *path) const;
   void consolidate_conditions (checker_path *path) const;
+  void consolidate_unwind_events (checker_path *path) const;
   void finish_pruning (checker_path *path) const;
 
   engine *m_eng;

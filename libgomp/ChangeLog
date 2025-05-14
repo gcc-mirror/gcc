@@ -1,3 +1,450 @@
+2025-05-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/interop-cuda-full.c: Use 'link' instead
+	of 'run' when the default device is "! offload_device_nvptx".
+	* testsuite/libgomp.c/interop-cuda-libonly.c: Likewise.
+	* testsuite/libgomp.c/interop-hip-nvidia-full.c: Likewise.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-headers.c: Likewise.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-hip-header.c: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-full.F90: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-no-module.F90: Likewise.
+	* testsuite/libgomp.c/interop-hip-amd-full.c: Use 'link' instead
+	of 'run' when the default device is "! offload_device_gcn".
+	* testsuite/libgomp.c/interop-hip-amd-no-hip-header.c: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-amd-full.F90: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-amd-no-module.F90: Likewise.
+
+2025-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* testsuite/lib/libgomp.exp: Add load_lib of scanhtml.exp.
+
+2025-05-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/map-alloc-comp-9.f90: Process differently
+	when USE_USM_REQUIREMENT is set.
+	* testsuite/libgomp.fortran/map-alloc-comp-9-usm.f90: New test.
+
+2025-05-06  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* testsuite/libgomp.c-target/aarch64/udr-sve.c: Fix test.
+
+2025-05-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/interop-hsa.c: GCN offloading only.
+
+2025-05-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-8a.f90: New test.
+
+2025-04-25  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c/interop-hsa.c: New test.
+
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119853
+	PR target/119854
+	* target-cxa-dso-dtor.c: New.
+	* config/accel/target-cxa-dso-dtor.c: Likewise.
+	* Makefile.am (libgomp_la_SOURCES): Add it.
+	* Makefile.in: Regenerate.
+	* testsuite/libgomp.c++/target-cdtor-1.C: New.
+	* testsuite/libgomp.c++/target-cdtor-2.C: Likewise.
+
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/target-cdtor-1.c: New.
+
+2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119737
+	* testsuite/libgomp.c++/target-exceptions-throw-1.C: Remove
+	PR119737 XFAILing.
+	* testsuite/libgomp.c++/target-exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2.C: Likewise.
+
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Adjust for
+	'targetm.arm_eabi_unwinder'.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-nvptx.C:
+	Likewise.
+
+2025-04-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_gomp_hip_header_nvidia): Compile with
+	"-Wno-deprecated-declarations".
+	* testsuite/libgomp.c/interop-hip-nvidia-full.c: Likewise.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-full.c: Likewise.
+	* testsuite/libgomp.c/interop-hipblas.h: Add workarounds
+	when using the HIP headers with __HIP_PLATFORM_NVIDIA__.
+
+2025-04-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/lib/libgomp.exp (check_effective_target_openacc_cublas,
+	check_effective_target_openacc_cudart): Update description as
+	the check requires more.
+	(check_effective_target_openacc_libcuda,
+	check_effective_target_openacc_libcublas,
+	check_effective_target_openacc_libcudart,
+	check_effective_target_gomp_hip_header_amd,
+	check_effective_target_gomp_hip_header_nvidia,
+	check_effective_target_gomp_hipfort_module,
+	check_effective_target_gomp_libamdhip64,
+	check_effective_target_gomp_libhipblas): New.
+	* testsuite/libgomp.c-c++-common/interop-2.c: New test.
+	* testsuite/libgomp.c/interop-cublas-full.c: New test.
+	* testsuite/libgomp.c/interop-cublas-libonly.c: New test.
+	* testsuite/libgomp.c/interop-cuda-full.c: New test.
+	* testsuite/libgomp.c/interop-cuda-libonly.c: New test.
+	* testsuite/libgomp.c/interop-hip-amd-full.c: New test.
+	* testsuite/libgomp.c/interop-hip-amd-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hip-nvidia-full.c: New test.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-headers.c: New test.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hip.h: New test.
+	* testsuite/libgomp.c/interop-hipblas-amd-full.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-amd-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-full.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-no-headers.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hipblas.h: New test.
+	* testsuite/libgomp.fortran/interop-hip-amd-full.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip-amd-no-module.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-full.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-no-module.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip.h: New test.
+
+2025-04-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/target-enter-data-8.f90: New test.
+
+2025-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/119849
+	* testsuite/libgomp.c++/allocator-1.C (test_inequality, main): Guard
+	ompx::allocator::gnu_pinned_mem uses with #ifdef __gnu_linux__.
+	* testsuite/libgomp.c++/allocator-2.C (main): Likewise.
+
+2025-04-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (gcn interop, nvptx interop): For HIP with C/C++, add
+	a note about setting a preprocessor define.
+
+2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Remove
+	'ALWAYS_INLINE' workaround.
+
+2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/106445
+	* testsuite/libgomp.c++/pr106445-1.C: New.
+	* testsuite/libgomp.c++/pr106445-1-O0.C: Likewise.
+
+2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/97106
+	* testsuite/libgomp.c++/pr96390.C: Un-XFAIL nvptx offloading.
+	* testsuite/libgomp.c-c++-common/pr96390.c: Adjust.
+
+2025-04-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (gcn, nvptx): Mention self_maps clause
+	besides unified_shared_memory in the requirements item.
+
+2025-04-15  waffl3x  <waffl3x@baylibre.com>
+
+	* omp.h.in: Add omp::allocator::* and ompx::allocator::* allocators.
+	(__detail::__allocator_templ<T, omp_allocator_handle_t>):
+	New struct template.
+	(null_allocator<T>): New struct template.
+	(default_mem<T>): Likewise.
+	(large_cap_mem<T>): Likewise.
+	(const_mem<T>): Likewise.
+	(high_bw_mem<T>): Likewise.
+	(low_lat_mem<T>): Likewise.
+	(cgroup_mem<T>): Likewise.
+	(pteam_mem<T>): Likewise.
+	(thread_mem<T>): Likewise.
+	(ompx::allocator::gnu_pinned_mem<T>): Likewise.
+	* testsuite/libgomp.c++/allocator-1.C: New test.
+	* testsuite/libgomp.c++/allocator-2.C: New test.
+
+2025-04-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (5.0 Impl. Status): Mark mapping alloc comps as 'Y'.
+	* testsuite/libgomp.fortran/allocatable-comp.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-3.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-4.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-5.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-6.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-7.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-8.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-9.f90: New test.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2-offload-sorry-GCN.C:
+	Set '-foffload-options=-mno-fake-exceptions'.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2.C: Adjust.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-O0.C: New.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-throw-3.C: New.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-3.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-throw-2.C: New.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-GCN.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-nvptx.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2-offload-sorry-GCN.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2-offload-sorry-nvptx.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-throw-1.C: New.
+	* testsuite/libgomp.c++/target-exceptions-throw-1-O0.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-1.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-3.C: New.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-3.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2.C: New.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2-offload-sorry-GCN.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2-offload-sorry-nvptx.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2-offload-sorry-GCN.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2-offload-sorry-nvptx.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-1.C: New.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-1.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: New.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-nvptx.C:
+	Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/119692
+	* testsuite/libgomp.c++/pr119692-1-1.C: New.
+	* testsuite/libgomp.c++/pr119692-1-2.C: Likewise.
+	* testsuite/libgomp.c++/pr119692-1-3.C: Likewise.
+	* testsuite/libgomp.c++/pr119692-1-4.C: Likewise.
+	* testsuite/libgomp.c++/pr119692-1-5.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-3.C: Likewise.
+
+2025-04-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* testsuite/libgomp.c-target/aarch64/firstprivate.c: Add +sve pragma.
+	* testsuite/libgomp.c-target/aarch64/lastprivate.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/private.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/shared.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/simd-aligned.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/simd-nontemporal.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/threadprivate.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/udr-sve.c: Add an -march option.
+	(for_reduction): Use "+=" in the reduction loop.
+
+2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/119662
+	* testsuite/libgomp.c/append-args-fr-1.c: New test.
+	* testsuite/libgomp.c/append-args-fr.h: New test.
+
+2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	* Makefile.am (%.mod): Add -Wno-c-binding-type.
+	* Makefile.in: Regenerate.
+
+2025-04-08  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* testsuite/libgomp.c-target/aarch64/aarch64.exp: Test driver.
+	* testsuite/libgomp.c-target/aarch64/firstprivate.c: New test.
+	* testsuite/libgomp.c-target/aarch64/lastprivate.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/private.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/shared.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/simd-aligned.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/simd-nontemporal.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/threadprivate.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/udr-sve.c: Likewise.
+
+2025-04-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (omp_target_memcpy_rect_async,
+	omp_target_memcpy_rect): Add @ref to 'Offload-Target Specifics'.
+	(AMD Radeon (GCN)): Document how memcpy_rect is implemented.
+	(nvptx): Move item about memcpy_rect item down; use present tense.
+
+2025-03-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR driver/101544
+	* testsuite/libgomp.c++/pr101544-1-O0.C: Remove
+	'-foffload-options=-lstdc++'.
+	* testsuite/libgomp.c++/pr101544-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr101544-1.C: Likewise.
+
+2025-03-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP 5.1): Add @ref to offload-target specifics
+	for 'interop'.
+	(OpenMP 6.0): Mark dispatch's interop clause as implemented.
+	(omp_get_interop_int, omp_get_interop_str,
+	omp_get_interop_ptr, omp_get_interop_type_desc): Add @ref to
+	Offload-Target Specifics; change ret_code argument type to
+	'omp_interop_rc_t *'.
+	(Offload-Target Specifics): Document the supported OpenMP
+	interop foreign runtimes on AMD and Nvidia GPUs.
+
+2025-03-25  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP 5.1): Mark append_args as fully supported.
+
+2025-03-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* target.c (gomp_interop_internal): Set the 'device_num' member
+	when initializing an interop object.
+
+2025-03-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_interop): Set context for
+	stream creation to use the specified device.
+
+2025-03-24  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR libgomp/96835
+	* testsuite/libgomp.c++/pr96835-1.C: New.
+	* testsuite/libgomp.c++/pr96835-1-O0.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr96835-1.C: Likewise.
+
+2025-03-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/101544
+	* testsuite/libgomp.c++/pr101544-1.C: New.
+	* testsuite/libgomp.c++/pr101544-1-O0.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr101544-1.C: Likewise.
+
+2025-03-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/get-mapped-ptr-1.f90: Use -6
+	not -5 as non-conforming device number.
+
+2025-03-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (_LIBGOMP_PLUGIN_INCLUDE): Define.
+	(struct hsa_runtime_fn_info): Add two queue functions.
+	(hipError_t, hipCtx_t, hipStream_s, hipStream_t): New types.
+	(struct hip_runtime_fn_info): New.
+	(hip_runtime_lib, hip_fns): New global vars.
+	(init_environment_variables): Handle hip_runtime_lib.
+	(init_hsa_runtime_functions): Load the two queue functions.
+	(init_hip_runtime_functions, GOMP_OFFLOAD_interop,
+	GOMP_OFFLOAD_get_interop_int, GOMP_OFFLOAD_get_interop_ptr,
+	GOMP_OFFLOAD_get_interop_str,
+	GOMP_OFFLOAD_get_interop_type_desc): New.
+	* plugin/plugin-nvptx.c (_LIBGOMP_PLUGIN_INCLUDE): Define.
+	(GOMP_OFFLOAD_interop, GOMP_OFFLOAD_get_interop_int,
+	GOMP_OFFLOAD_get_interop_ptr, GOMP_OFFLOAD_get_interop_str,
+	GOMP_OFFLOAD_get_interop_type_desc): New.
+	* testsuite/libgomp.c/interop-fr-1.c: New test.
+	* testsuite/libgomp.c-c++-common/get-mapped-ptr-1.c: Use -6
+	not -5 as non-conforming device number.
+
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* icv-device.c (omp_set_default_device): Check
+	GOMP_DEVICE_DEFAULT_OMP_61.
+	* libgomp-plugin.h (struct interop_obj_t): New.
+	(enum gomp_interop_flag): New.
+	(GOMP_OFFLOAD_interop): Declare.
+	(GOMP_OFFLOAD_get_interop_int): Declare.
+	(GOMP_OFFLOAD_get_interop_ptr): Declare.
+	(GOMP_OFFLOAD_get_interop_str): Declare.
+	(GOMP_OFFLOAD_get_interop_type_desc): Declare.
+	* libgomp.h (_LIBGOMP_OMP_LOCK_DEFINED): Define.
+	(struct gomp_device_descr): Add interop_func, get_interop_int_func,
+	get_interop_ptr_func, get_interop_str_func, get_interop_type_desc_func.
+	* libgomp.map: Add GOMP_interop.
+	* libgomp_g.h (GOMP_interop): Declare.
+	* target.c (resolve_device): Handle GOMP_DEVICE_DEFAULT_OMP_61.
+	(omp_get_interop_int): Replace stub with actual implementation.
+	(omp_get_interop_ptr): Likewise.
+	(omp_get_interop_str): Likewise.
+	(omp_get_interop_type_desc): Likewise.
+	(struct interop_data_t): Define.
+	(gomp_interop_internal): New function.
+	(GOMP_interop): Likewise.
+	(gomp_load_plugin_for_device): Load symbols for get_interop_int,
+	get_interop_ptr, get_interop_str and get_interop_type_desc.
+	* testsuite/libgomp.c-c++-common/interop-1.c: New test.
+
+2025-03-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Add
+	-fdiagnostics-plain-output to additional_flags; remove
+	-fno-diagnostics-show-caret and -fdiagnostics-color=never.
+
+2025-03-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* testsuite/libgomp.fortran/declare-variant-mod-1-use.f90: Moved
+	from gcc/testsuite/gfortran.dg/gomp/.
+	* testsuite/libgomp.fortran/declare-variant-mod-1.f90: Likewise.
+
+2025-02-22  shynur  <shynur@outlook.com>
+
+	* oacc-mem.c (acc_unmap_data, goacc_exit_datum_1, find_group_last,
+	goacc_enter_data_internal): Add '__attribute__((unused))'.
+	* target.c (gomp_unmap_vars_internal): Likewise.
+
 2025-02-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/188574

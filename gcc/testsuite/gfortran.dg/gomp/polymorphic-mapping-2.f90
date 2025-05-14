@@ -9,7 +9,7 @@ allocate( t :: c, ca(5))
 p => c
 pa => ca
 
-!$omp target  !  { dg-warning "Implicit mapping of polymorphic variable 'ca' is unspecified behavior \\\[-Wopenmp\\\]" }
+!$omp target  !  { dg-warning "Mapping of polymorphic list item 'ca' is unspecified behavior \\\[-Wopenmp\\\]" }
   ll = allocated(ca)
 !$omp end target 
 

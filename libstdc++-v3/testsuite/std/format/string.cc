@@ -113,11 +113,14 @@ test_format_spec()
   VERIFY( ! is_format_string_for("{:0c}", 'c') );
   VERIFY( ! is_format_string_for("{:0s}", true) );
 
-  // Dynamic width arg must be an integer type.
+  // Dynamic width arg must be a standar integer type.
   VERIFY( ! is_format_string_for("{:{}d}", 1, 1.5) );
   VERIFY( ! is_format_string_for("{:{}d}", 1, true) );
   VERIFY( ! is_format_string_for("{:{}d}", 1, "str") );
   VERIFY( ! is_format_string_for("{:{}d}", 1, nullptr) );
+#ifdef __SIZEOF_INT128__
+  VERIFY( ! is_format_string_for("{:{}d}", 1, static_cast<__int128>(1)) );
+#endif
 
   // Precision only valid for string and floating-point types.
   VERIFY( ! is_format_string_for("{:.3d}", 1) );
@@ -126,11 +129,14 @@ test_format_spec()
   VERIFY( ! is_format_string_for("{:3.3s}", 'c') );
   VERIFY( ! is_format_string_for("{:3.3p}", nullptr) );
 
-  // Dynamic precision arg must be an integer type.
+  // Dynamic precision arg must be a standard integer type.
   VERIFY( ! is_format_string_for("{:.{}f}", 1.0, 1.5) );
   VERIFY( ! is_format_string_for("{:.{}f}", 1.0, true) );
   VERIFY( ! is_format_string_for("{:.{}f}", 1.0, "str") );
   VERIFY( ! is_format_string_for("{:.{}f}", 1.0, nullptr) );
+#ifdef __SIZEOF_INT128__
+  VERIFY( ! is_format_string_for("{:{}f}", 1.0, static_cast<unsigned __int128>(1)) );
+#endif
 
   // Invalid presentation types for integers.
   VERIFY( ! is_format_string_for("{:f}", 1) );

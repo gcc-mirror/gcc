@@ -688,7 +688,7 @@ convert_for_rvalue (tree expr, Type *etype, Type *totype)
 	      CONSTRUCTOR_APPEND_ELT (elms, index, value);
 	    }
 
-	  return build_constructor (build_ctype (totype), elms);
+	  return build_padded_constructor (build_ctype (totype), elms);
 	}
     }
 
@@ -788,7 +788,7 @@ convert_for_assignment (Expression *expr, Type *totype, bool literalp)
 	  TypeSArray *sa_type = tbtype->isTypeSArray ();
 	  uinteger_t count = sa_type->dim->toUInteger ();
 
-	  tree ctor = build_constructor (build_ctype (totype), NULL);
+	  tree ctor = build_padded_constructor (build_ctype (totype), NULL);
 	  if (count)
 	    {
 	      vec <constructor_elt, va_gc> *ce = NULL;

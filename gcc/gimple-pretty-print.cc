@@ -1755,6 +1755,25 @@ dump_gimple_omp_dispatch (pretty_printer *buffer, const gimple *gs, int spc,
     }
 }
 
+/* Dump a GIMPLE_OMP_INTEROP tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_interop (pretty_printer *buffer, const gimple *gs, int spc,
+			 dump_flags_t flags)
+{
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <CLAUSES <", gs);
+      dump_omp_clauses (buffer, gimple_omp_interop_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp interop");
+      dump_omp_clauses (buffer, gimple_omp_interop_clauses (gs), spc, flags);
+    }
+}
+
 /* Dump a GIMPLE_OMP_TARGET tuple on the pretty_printer PP.  */
 
 static void
@@ -2836,6 +2855,10 @@ pp_gimple_stmt_1 (pretty_printer *pp, const gimple *gs, int spc,
 
     case GIMPLE_OMP_DISPATCH:
       dump_gimple_omp_dispatch(pp, gs, spc, flags);
+      break;
+
+    case GIMPLE_OMP_INTEROP:
+      dump_gimple_omp_interop (pp, gs, spc, flags);
       break;
 
     case GIMPLE_OMP_MASTER:

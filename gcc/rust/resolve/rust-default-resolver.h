@@ -42,120 +42,31 @@ public:
   // First, our lexical scope expressions - these visit their sub nodes, always
   // these nodes create new scopes and ribs - they are often used to declare new
   // variables, such as a for loop's iterator, or a function's arguments
-  void visit (AST::BlockExpr &);
-  void visit (AST::Module &);
-  void visit (AST::Function &);
-  void visit (AST::ForLoopExpr &);
-  void visit (AST::Trait &);
-  void visit (AST::InherentImpl &);
-  void visit (AST::TraitImpl &);
+  void visit (AST::BlockExpr &) override;
+  void visit (AST::Module &) override;
+  void visit (AST::Function &) override;
+  void visit (AST::ForLoopExpr &expr) override;
+  void visit (AST::Trait &) override;
+  void visit (AST::InherentImpl &) override;
+  void visit (AST::TraitImpl &) override;
+
+  void visit (AST::TypeParam &) override;
 
   // type dec nodes, which visit their fields or variants by default
-  void visit (AST::StructStruct &);
-  void visit (AST::Enum &);
+  void visit (AST::StructStruct &) override;
+  void visit (AST::TupleStruct &) override;
+  void visit (AST::Enum &) override;
+  void visit (AST::Union &) override;
+  void visit (AST::TypeAlias &) override;
 
   // Visitors that visit their expression node(s)
-  void visit (AST::StructExprFieldIdentifierValue &);
-  void visit (AST::StructExprFieldIndexValue &);
-  void visit (AST::ClosureExprInner &);
-  void visit (AST::ClosureExprInnerTyped &);
-  void visit (AST::ContinueExpr &);
-  void visit (AST::RangeFromToExpr &);
-  void visit (AST::RangeFromExpr &);
-  void visit (AST::RangeToExpr &);
-  void visit (AST::RangeFromToInclExpr &);
-  void visit (AST::RangeToInclExpr &);
-  void visit (AST::ReturnExpr &);
-  void visit (AST::LoopExpr &);
-  void visit (AST::WhileLoopExpr &);
-  void visit (AST::WhileLetLoopExpr &);
-  void visit (AST::IfExpr &);
-  void visit (AST::IfExprConseqElse &);
-  void visit (AST::IfLetExpr &);
-  void visit (AST::IfLetExprConseqElse &);
-  void visit (AST::MatchExpr &);
-  void visit (AST::AwaitExpr &);
-  void visit (AST::AsyncBlockExpr &);
+  void visit (AST::ClosureExprInner &) override;
+  void visit (AST::ClosureExprInnerTyped &) override;
+  void visit (AST::MatchExpr &) override;
 
   // Leaf visitors, which do nothing by default
-  void visit (AST::DelimTokenTree &);
-  void visit (AST::AttrInputMetaItemContainer &);
-  void visit (AST::IdentifierExpr &);
-  void visit (AST::LifetimeParam &);
-  void visit (AST::ConstGenericParam &);
-  void visit (AST::PathInExpression &);
-  void visit (AST::TypePathSegmentGeneric &);
-  void visit (AST::TypePathSegmentFunction &);
-  void visit (AST::TypePath &);
-  void visit (AST::QualifiedPathInExpression &);
-  void visit (AST::QualifiedPathInType &);
-  void visit (AST::LiteralExpr &);
-  void visit (AST::AttrInputLiteral &);
-  void visit (AST::AttrInputMacro &);
-  void visit (AST::MetaItemLitExpr &);
-  void visit (AST::MetaItemPathLit &);
-  void visit (AST::StructExprStruct &);
-  void visit (AST::StructExprStructFields &);
-  void visit (AST::StructExprStructBase &);
-  void visit (AST::TypeParam &);
-  void visit (AST::LifetimeWhereClauseItem &);
-  void visit (AST::TypeBoundWhereClauseItem &);
-  void visit (AST::ExternCrate &);
-  void visit (AST::UseTreeGlob &);
-  void visit (AST::UseTreeList &);
-  void visit (AST::UseTreeRebind &);
-  void visit (AST::UseDeclaration &);
-  void visit (AST::TypeAlias &);
-  void visit (AST::EnumItem &);
-  void visit (AST::EnumItemTuple &);
-  void visit (AST::EnumItemStruct &);
-  void visit (AST::EnumItemDiscriminant &);
-  void visit (AST::ConstantItem &);
-  void visit (AST::StaticItem &);
-  void visit (AST::TraitItemConst &);
-  void visit (AST::TraitItemType &);
-  void visit (AST::ExternalTypeItem &);
-  void visit (AST::ExternalStaticItem &);
-  void visit (AST::MacroMatchRepetition &);
-  void visit (AST::MacroMatcher &);
-  void visit (AST::MacroRulesDefinition &);
-  void visit (AST::MacroInvocation &);
-  void visit (AST::MetaItemPath &);
-  void visit (AST::MetaItemSeq &);
-  void visit (AST::MetaListPaths &);
-  void visit (AST::MetaListNameValueStr &);
-  void visit (AST::RangePatternBoundPath &);
-  void visit (AST::RangePatternBoundQualPath &);
-  void visit (AST::RangePattern &);
-  void visit (AST::ReferencePattern &);
-  void visit (AST::StructPatternFieldTuplePat &);
-  void visit (AST::StructPatternFieldIdentPat &);
-  void visit (AST::StructPatternFieldIdent &);
-  void visit (AST::StructPattern &);
-  void visit (AST::TupleStructItemsNoRange &);
-  void visit (AST::TupleStructItemsRange &);
-  void visit (AST::TupleStructPattern &);
-  void visit (AST::TuplePatternItemsMultiple &);
-  void visit (AST::TuplePatternItemsRanged &);
-  void visit (AST::TuplePattern &);
-  void visit (AST::GroupedPattern &);
-  void visit (AST::SlicePattern &);
-  void visit (AST::AltPattern &);
-  void visit (AST::EmptyStmt &);
-  void visit (AST::TraitBound &);
-  void visit (AST::ImplTraitType &);
-  void visit (AST::TraitObjectType &);
-  void visit (AST::ParenthesisedType &);
-  void visit (AST::ImplTraitTypeOneBound &);
-  void visit (AST::TraitObjectTypeOneBound &);
-  void visit (AST::TupleType &);
-  void visit (AST::ReferenceType &);
-  void visit (AST::ArrayType &);
-  void visit (AST::SliceType &);
-  void visit (AST::BareFunctionType &);
-  void visit (AST::FunctionParam &);
-  void visit (AST::VariadicParam &);
-  void visit (AST::SelfParam &);
+  void visit (AST::ConstantItem &) override;
+  void visit (AST::StaticItem &) override;
 
 protected:
   DefaultResolver (NameResolutionContext &ctx) : ctx (ctx) {}

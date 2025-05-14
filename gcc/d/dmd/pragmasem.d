@@ -6,9 +6,9 @@
  * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/pragmasem.d, _pragmasem.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/pragmasem.d, _pragmasem.d)
  * Documentation:  https://dlang.org/phobos/dmd_pragmasem.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/pragmasem.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/pragmasem.d
  */
 
 module dmd.pragmasem;
@@ -567,7 +567,7 @@ private bool pragmaMsgSemantic(Loc loc, Scope* sc, Expressions* args)
         return false;
 
     buf.writestring("\n");
-    fprintf(stderr, buf.extractChars);
+    fprintf(stderr, "%s", buf.extractChars);
     return true;
 }
 

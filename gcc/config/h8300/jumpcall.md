@@ -146,9 +146,9 @@
 (define_insn_and_split ""
   [(set (pc)
 	(if_then_else (match_operator 3 "eqne_operator"
-			[(zero_extract:QHSI (match_operand:QHSI 1 "register_operand" "r")
-					    (const_int 1)
-					    (match_operand 2 "const_int_operand" "n"))
+			[(zero_extract:HSI (match_operand:HSI 1 "register_operand" "r")
+					   (const_int 1)
+					   (match_operand 2 "const_int_operand" "n"))
 			 (const_int 0)])
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
@@ -156,7 +156,7 @@
   "#"
   "&& reload_completed"
   [(set (reg:CCZ CC_REG)
-	(eq (zero_extract:QHSI (match_dup 1) (const_int 1) (match_dup 2))
+	(eq (zero_extract:HSI (match_dup 1) (const_int 1) (match_dup 2))
 	    (const_int 0)))
    (set (pc)
 	(if_then_else (match_op_dup 3 [(reg:CCZ CC_REG) (const_int 0)])

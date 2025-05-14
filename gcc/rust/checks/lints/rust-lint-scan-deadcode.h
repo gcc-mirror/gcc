@@ -53,10 +53,9 @@ public:
     HirId hirId = function.get_mappings ().get_hirid ();
     if (should_warn (hirId) && !function.get_visibility ().is_public ())
       {
-	if (mappings->is_impl_item (hirId))
+	if (mappings.is_impl_item (hirId))
 	  {
-	    HIR::ImplBlock *implBlock
-	      = mappings->lookup_associated_impl (hirId);
+	    HIR::ImplBlock *implBlock = mappings.lookup_associated_impl (hirId);
 	    if (!implBlock->has_trait_ref ())
 	      {
 		rust_warning_at (
@@ -94,7 +93,8 @@ public:
 	  {
 	    HirId field_hir_id = field.get_mappings ().get_hirid ();
 	    if (should_warn (field_hir_id)
-		&& !field.get_visibility ().is_public ())
+		&& !field.get_visibility ().is_public ()
+		&& field.get_field_name ().as_string ().at (0) != '_')
 	      {
 		rust_warning_at (field.get_locus (), 0,
 				 "field is never read: %qs",
@@ -136,7 +136,7 @@ public:
 private:
   std::set<HirId> live_symbols;
   Resolver::Resolver *resolver;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 
   ScanDeadcode (std::set<HirId> &live_symbols)
     : live_symbols (live_symbols), resolver (Resolver::Resolver::get ()),

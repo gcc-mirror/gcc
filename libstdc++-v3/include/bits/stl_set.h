@@ -60,6 +60,9 @@
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #endif
+#if __glibcxx_containers_ranges // C++ >= 23
+# include <bits/ranges_base.h> // ranges::begin, ranges::distance etc.
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -274,6 +277,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    const allocator_type& __a)
 	: _M_t(_Key_alloc_type(__a))
 	{ _M_t._M_insert_range_unique(__first, __last); }
+
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Builds a %set from a range.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Key> _Rg>
+	set(from_range_t, _Rg&& __rg,
+	    const _Compare& __comp,
+	    const _Alloc& __a = _Alloc())
+	: _M_t(__comp, _Key_alloc_type(__a))
+	{ insert_range(std::forward<_Rg>(__rg)); }
+
+      /// Allocator-extended range constructor.
+      template<__detail::__container_compatible_range<_Key> _Rg>
+	set(from_range_t, _Rg&& __rg, const _Alloc& __a = _Alloc())
+	: _M_t(_Key_alloc_type(__a))
+	{ insert_range(std::forward<_Rg>(__rg)); }
+#endif
 
       /**
        *  The dtor only erases the elements, and note that if the elements
@@ -581,6 +603,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { this->insert(__l.begin(), __l.end()); }
 #endif
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       *  @brief Inserts a range of elements.
+       *  @since C++23
+       *  @param  __rg An input range of elements that can be converted to
+       *               the set's value type.
+       */
+      template<__detail::__container_compatible_range<_Key> _Rg>
+	void
+	insert_range(_Rg&& __rg)
+	{
+	  auto __first = ranges::begin(__rg);
+	  const auto __last = ranges::end(__rg);
+	  using _Rv = remove_cvref_t<ranges::range_reference_t<_Rg>>;
+	  for (; __first != __last; ++__first)
+	    if constexpr (is_same_v<_Rv, _Key>)
+	      _M_t._M_insert_unique(*__first);
+	    else
+	      _M_t._M_emplace_unique(*__first);
+	}
+#endif
+
 #ifdef __glibcxx_node_extract // >= C++17
       /// Extract a node.
       node_type
@@ -684,7 +728,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       size_type
       erase(const key_type& __x)
-      { return _M_t.erase(__x); }
+      { return _M_t._M_erase_unique(__x); }
 
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -970,6 +1014,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     set(initializer_list<_Key>, _Allocator)
     -> set<_Key, less<_Key>, _Allocator>;
 
+#if __glibcxx_containers_ranges // C++ >= 23
+  template<ranges::input_range _Rg,
+	   __not_allocator_like _Compare = less<ranges::range_value_t<_Rg>>,
+	   __allocator_like _Alloc = std::allocator<ranges::range_value_t<_Rg>>>
+    set(from_range_t, _Rg&&, _Compare = _Compare(), _Alloc = _Alloc())
+      -> set<ranges::range_value_t<_Rg>, _Compare, _Alloc>;
+
+  template<ranges::input_range _Rg, __allocator_like _Alloc>
+    set(from_range_t, _Rg&&, _Alloc)
+      -> set<ranges::range_value_t<_Rg>, less<ranges::range_value_t<_Rg>>, _Alloc>;
+#endif
 #endif // deduction guides
 
   /**

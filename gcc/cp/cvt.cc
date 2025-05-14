@@ -575,6 +575,19 @@ force_rvalue (tree expr, tsubst_flags_t complain)
   return expr;
 }
 
+/* Force EXPR to be an lvalue, if it isn't already.  */
+
+tree
+force_lvalue (tree expr, tsubst_flags_t complain)
+{
+  if (!lvalue_p (expr))
+    {
+      expr = cp_build_addr_expr (expr, complain);
+      expr = cp_build_indirect_ref (input_location, expr, RO_ARROW, complain);
+    }
+  return expr;
+}
+
 
 /* If EXPR and ORIG are INTEGER_CSTs, return a version of EXPR that has
    TREE_OVERFLOW set only if it is set in ORIG.  Otherwise, return EXPR

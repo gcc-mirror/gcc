@@ -303,7 +303,8 @@ C++ ObjC++ Var(warn_abi_tag) Warning
 Warn if a subobject has an abi_tag attribute that the complete object type does not have.
 
 Wpsabi
-C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Warning Undocumented LangEnabledBy(C ObjC C++ ObjC++,Wabi)
+C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Warning LangEnabledBy(C ObjC C++ ObjC++,Wabi)
+Warn about code affected by incompatible psABI changes.
 
 Wabsolute-value
 C ObjC Var(warn_absolute_value) Warning EnabledBy(Wextra)
@@ -513,7 +514,7 @@ C++ ObjC++ Var(warn_cxx23_extensions) Warning Init(1) CppReason(CPP_W_CXX23_EXTE
 Warn about C++23 constructs in code compiled with an older standard.
 
 Wc++26-extensions
-C++ ObjC++ Var(warn_cxx26_extensions) Warning Init(1)
+C++ ObjC++ Var(warn_cxx26_extensions) Warning Init(1) CppReason(CPP_W_CXX26_EXTENSIONS)
 Warn about C++26 constructs in code compiled with an older standard.
 
 Wcalloc-transposed-args
@@ -666,7 +667,7 @@ type and the other is of a floating-point type.
 
 Wdeprecated-literal-operator
 C++ ObjC++ Var(warn_deprecated_literal_operator) Warning
-Warn about deprecated space between "" and suffix in a user-defined literal operator.
+Warn about deprecated space between \"\" and suffix in a user-defined literal operator.
 
 Wdeprecated-non-prototype
 C ObjC Var(warn_deprecated_non_prototype) Init(-1) Warning
@@ -1550,7 +1551,7 @@ C ObjC Var(warn_unsuffixed_float_constants) Warning
 Warn about unsuffixed float constants.
 
 Wunterminated-string-initialization
-C ObjC Var(warn_unterminated_string_initialization) Warning LangEnabledBy(C ObjC,Wextra || Wc++-compat)
+C ObjC Var(warn_unterminated_string_initialization) Warning LangEnabledBy(C ObjC,Wextra)
 Warn about character arrays initialized as unterminated character sequences with a string literal.
 
 Wunused

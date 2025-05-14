@@ -177,8 +177,9 @@ struct loongarch_align {
   const char *function;	/* default value for -falign-functions */
   const char *loop;	/* default value for -falign-loops */
   const char *jump;	/* default value for -falign-jumps */
+  const char *label;	/* default value for -falign-labels */
 
-  loongarch_align () : function (nullptr), loop (nullptr), jump (nullptr) {}
+  loongarch_align () : function (nullptr), loop (nullptr), jump (nullptr), label (nullptr) {}
 
   loongarch_align function_ (const char *_function)
   {
@@ -195,6 +196,12 @@ struct loongarch_align {
   loongarch_align jump_ (const char *_jump)
   {
     jump = _jump;
+    return *this;
+  }
+
+  loongarch_align label_ (const char *_label)
+  {
+    label = _label;
     return *this;
   }
 };

@@ -20,7 +20,7 @@ procedure(sub), pointer :: fsub
 integer, external :: noCsub
 procedure(integer), pointer :: fint
 
-cp = c_funloc (sub) ! { dg-error "Cannot convert TYPE.c_funptr. to TYPE.c_ptr." })
+cp = c_funloc (sub) ! { dg-error "Cannot convert TYPE.c_funptr. to TYPE.c_ptr." }
 cfp = c_loc (int)   ! { dg-error "Cannot convert TYPE.c_ptr. to TYPE.c_funptr." }
 
 call c_f_pointer (cfp, int)     ! { dg-error "Argument CPTR at .1. to C_F_POINTER shall have the type TYPE.C_PTR." }

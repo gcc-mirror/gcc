@@ -1,7 +1,6 @@
 /* PR rtl-optimization/100225 */
 /* { dg-do compile } */
 /* { dg-options "-O1 -fmodulo-sched" } */
-/* { dg-require-effective-target alloca } */
 
 void
 vorbis_synthesis_lapout (void);

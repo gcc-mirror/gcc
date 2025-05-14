@@ -10,10 +10,10 @@ func (int a, int b);
 **sum:
 **	...
 **	cm.mvsa01	s1,s2
-**	call	func
+**	call	func(?:@plt)?
 **	mv	s0,a0
 **	cm.mva01s	s1,s2
-**	call	func
+**	call	func(?:@plt)?
 **	...
 */
 int

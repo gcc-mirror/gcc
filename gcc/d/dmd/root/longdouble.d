@@ -43,7 +43,7 @@ pure:
     extern (D) longdouble opAssign(T)(T r)
         if (is (T : longdouble))
     {
-        this.realvalue = r.realvalue; 
+        this.realvalue = r.realvalue;
         return this;
     }
 

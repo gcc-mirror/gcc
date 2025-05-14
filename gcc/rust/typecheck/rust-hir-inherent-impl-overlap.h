@@ -33,7 +33,7 @@ public:
     OverlappingImplItemPass pass;
 
     // generate mappings
-    pass.mappings->iterate_impl_items (
+    pass.mappings.iterate_impl_items (
       [&] (HirId id, HIR::ImplItem *impl_item, HIR::ImplBlock *impl) -> bool {
 	// ignoring trait-impls might need thought later on
 	if (impl->has_trait_ref ())
@@ -54,7 +54,7 @@ public:
     //   impl-type -> [ (item, name), ... ]
     // }
 
-    HirId impl_type_id = impl->get_type ()->get_mappings ().get_hirid ();
+    HirId impl_type_id = impl->get_type ().get_mappings ().get_hirid ();
     TyTy::BaseType *impl_type = nullptr;
     bool ok = query_type (impl_type_id, &impl_type);
     if (!ok)

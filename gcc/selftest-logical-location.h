@@ -30,24 +30,49 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace selftest {
 
-/* Concrete subclass of logical_location for use in selftests.  */
+/* Concrete subclass of logical_location_manager for use in selftests.  */
 
-class test_logical_location : public logical_location
+class test_logical_location_manager : public logical_location_manager
 {
 public:
-  test_logical_location (enum logical_location_kind kind,
-			 const char *name);
-  virtual const char *get_short_name () const final override;
-  virtual const char *get_name_with_scope () const final override;
-  virtual const char *get_internal_name () const final override;
-  virtual enum logical_location_kind get_kind () const final override;
-  virtual label_text get_name_for_path_output () const final override;
+  ~test_logical_location_manager ();
 
-  const char *get_name () const { return m_name; }
+  const char *get_short_name (key) const final override;
+  const char *get_name_with_scope (key) const final override;
+  const char *get_internal_name (key) const final override;
+  enum logical_location_kind get_kind (key) const final override;
+  label_text get_name_for_path_output (key) const final override;
+  key get_parent (key) const final override
+  {
+    return key ();
+  }
 
- private:
-  enum logical_location_kind m_kind;
-  const char *m_name;
+  logical_location
+  logical_location_from_funcname (const char *funcname);
+
+private:
+  struct item
+  {
+    item (enum logical_location_kind kind,
+	  const char *name)
+    : m_kind (kind),
+      m_name (name)
+    {
+    }
+
+    enum logical_location_kind m_kind;
+    const char *m_name;
+  };
+
+  const item *
+  item_from_funcname (const char *funcname);
+
+  static const item *item_from_key (logical_location k)
+  {
+    return k.cast_to<const item *> ();
+  }
+
+  hash_map<nofree_string_hash, item *> m_name_to_item_map;
 };
 
 } // namespace selftest

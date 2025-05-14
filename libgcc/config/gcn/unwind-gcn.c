@@ -25,6 +25,33 @@
 #include "unwind.h"
 
 _Unwind_Reason_Code
+_Unwind_RaiseException(struct _Unwind_Exception *exc __attribute__ ((__unused__)))
+{
+  __builtin_abort ();
+  return 0;
+}
+
+void
+_Unwind_DeleteException (struct _Unwind_Exception *exc)
+{
+  if (exc->exception_cleanup)
+    (*exc->exception_cleanup) (_URC_FOREIGN_EXCEPTION_CAUGHT, exc);
+}
+
+void
+_Unwind_Resume (struct _Unwind_Exception *exc __attribute__ ((__unused__)))
+{
+  __builtin_abort ();
+}
+
+_Unwind_Reason_Code
+_Unwind_Resume_or_Rethrow (struct _Unwind_Exception *exc __attribute__ ((__unused__)))
+{
+  __builtin_abort ();
+  return 0;
+}
+
+_Unwind_Reason_Code
 _Unwind_Backtrace(_Unwind_Trace_Fn trace, void * trace_argument)
 {
   return 0;

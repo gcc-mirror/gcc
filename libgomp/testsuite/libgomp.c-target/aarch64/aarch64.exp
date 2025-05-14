@@ -1,0 +1,57 @@
+# Copyright (C) 2006-2025 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Load support procs.
+load_lib libgomp-dg.exp
+load_gcc_lib gcc-dg.exp
+
+# Exit immediately if this isn't an AArch64 target.
+if {![istarget aarch64*-*-*] } then {
+  return
+}
+
+lappend ALWAYS_CFLAGS "compiler=$GCC_UNDER_TEST"
+
+if { [check_effective_target_aarch64_sve] } {
+    set sve_flags ""
+} else {
+    set sve_flags "-march=armv8.2-a+sve"
+}
+
+# Initialize `dg'.
+dg-init
+
+#if ![check_effective_target_fopenmp] {
+#  return
+#}
+
+# Turn on OpenMP.
+lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
+
+# Gather a list of all tests.
+set tests [lsort [find $srcdir/$subdir *.c]]
+
+set ld_library_path $always_ld_library_path
+append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+set_ld_library_path_env_vars
+
+# Main loop.
+dg-runtest $tests "" $sve_flags
+
+# All done.
+dg-finish

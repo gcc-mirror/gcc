@@ -85,8 +85,10 @@ class name_hint
 public:
   name_hint () : m_suggestion (NULL), m_deferred () {}
 
-  name_hint (const char *suggestion, deferred_diagnostic *deferred)
-  : m_suggestion (suggestion), m_deferred (deferred)
+  name_hint (const char *suggestion,
+	     std::unique_ptr<deferred_diagnostic> deferred)
+  : m_suggestion (suggestion),
+    m_deferred (std::move (deferred))
   {
   }
 

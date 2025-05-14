@@ -1,3 +1,5 @@
+#![feature(intrinsics)]
+
 #[lang = "sized"]
 pub trait Sized {}
 

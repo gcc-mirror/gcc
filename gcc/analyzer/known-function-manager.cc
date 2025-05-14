@@ -18,17 +18,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "analyzer/analyzer.h"
+#include "analyzer/common.h"
+
 #include "diagnostic-core.h"
-#include "analyzer/analyzer-logging.h"
 #include "stringpool.h"
-#include "basic-block.h"
-#include "gimple.h"
+
+#include "analyzer/analyzer-logging.h"
 #include "analyzer/known-function-manager.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-details.h"
@@ -108,7 +103,7 @@ known_function_manager::get_match (tree fndecl, const call_details &cd) const
     {
       if (const known_function *candidate
 	  = get_normal_builtin (DECL_FUNCTION_CODE (fndecl)))
-	if (gimple_builtin_call_types_compatible_p (cd.get_call_stmt (),
+	if (gimple_builtin_call_types_compatible_p (&cd.get_call_stmt (),
 						    fndecl))
 	  return candidate;
     }

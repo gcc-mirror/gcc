@@ -733,7 +733,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-#ifdef __cpp_lib_scoped_lock // C++ >= 17 && hosted && gthread
+#ifdef __cpp_lib_scoped_lock // C++ >= 17
   /** @brief A scoped lock type for multiple lockable objects.
    *
    * A scoped_lock controls mutex ownership within a scope, releasing

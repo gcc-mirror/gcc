@@ -142,8 +142,8 @@ DEF_D_RUNTIME (CXA_END_CATCH, "__cxa_end_catch", RT(VOID), P0(), 0)
 
 /* When invariant() contracts are turned on, used after testing whether a
    class != null for validating the state of a class.  */
-DEF_D_RUNTIME (INVARIANT, "_D9invariant12_d_invariantFC6ObjectZv", RT(VOID),
-	       P1(OBJECT), 0)
+DEF_D_RUNTIME (INVARIANT, "_D2rt10invariant_12_d_invariantFC6ObjectZv",
+	       RT(VOID), P1(OBJECT), 0)
 
 #undef P0
 #undef P1

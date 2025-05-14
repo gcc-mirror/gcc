@@ -1,9 +1,9 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-add-options riscv_v } */
-/* { dg-additional-options "-std=gnu99" } */
+/* { dg-additional-options "-std=gnu99 -Wno-pedantic" } */
 
 #include <stdint.h>
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 vfloat64m8_t
 test_vfwadd_wf_f64m8_m (vbool8_t vm, vfloat64m8_t vs2, float rs1, size_t vl)

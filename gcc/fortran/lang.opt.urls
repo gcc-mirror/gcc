@@ -97,6 +97,9 @@ LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wconversion-
 Wdo-subscript
 LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wdo-subscript)
 
+Wexternal-argument-mismatch
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wexternal-argument-mismatch)
+
 Wextra
 UrlSuffix(gcc/Warning-Options.html#index-Wextra) LangUrlSuffix_D(gdc/Warnings.html#index-Wextra) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wextra)
 

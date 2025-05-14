@@ -1299,7 +1299,7 @@ WhileStatement := "WHILE"                                                  % Bui
 		                                                           % BuildStmtNote (0) %
                              "DO"                                          % BuildDoWhile %
                                   StatementSequence                        % BuildStmtNote (0) %
-				                    "END"                  % DisplayStack ; BuildEndWhile %
+				                    "END"                  % DisplayStack ; BuildEndWhile (-1) %
                 =:
 
 RepeatStatement := "REPEAT"

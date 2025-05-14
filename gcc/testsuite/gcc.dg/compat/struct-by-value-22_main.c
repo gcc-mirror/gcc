@@ -1,4 +1,5 @@
-/* { dg-require-effective-target alloca } */
+/* { dg-require-effective-target alloca }
+   See 'struct-by-value-22_y.c'.  */
 /* { dg-skip-if "limited code space" { pdp11-*-* } } */
 
 /* Test variable sized function argument passing.

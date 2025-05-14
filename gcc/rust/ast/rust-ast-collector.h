@@ -210,7 +210,6 @@ public:
   void visit (TupleField &field);
   void visit (StructField &field);
   void visit (SimplePathSegment &segment);
-  void visit (NamedFunctionParam &param);
   void visit (MacroRule &rule);
   void visit (WhereClause &rule);
   void visit (std::vector<LifetimeParam> &for_lifetimes);
@@ -288,6 +287,7 @@ public:
   void visit (RangeFromToInclExpr &expr);
   void visit (RangeToInclExpr &expr);
   void visit (ReturnExpr &expr);
+  void visit (BoxExpr &expr);
   void visit (UnsafeBlockExpr &expr);
   void visit (LoopExpr &expr);
   void visit (WhileLoopExpr &expr);
@@ -302,7 +302,8 @@ public:
   void visit (MatchExpr &expr);
   void visit (AwaitExpr &expr);
   void visit (AsyncBlockExpr &expr);
-
+  void visit (InlineAsm &expr);
+  void visit (LlvmInlineAsm &expr);
   // rust-item.h
   void visit (TypeParam &param);
   void visit (LifetimeWhereClauseItem &item);

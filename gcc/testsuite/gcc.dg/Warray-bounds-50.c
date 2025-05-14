@@ -1,7 +1,6 @@
 /* PR middle-end/92349 - ICE in -Warray-bounds on a VLA member
    { dg-do compile }
-   { dg-options "-O2 -Wall" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall" } */
 
 typedef __SIZE_TYPE__ size_t;
 

@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-name-hint.h"
 #include "attribs.h"
 #include "pretty-print-format-impl.h"
-#include "make-unique.h"
 #include "diagnostic-format-text.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
@@ -308,7 +307,8 @@ dump_module_suffix (cxx_pretty_printer *pp, tree decl)
 	return;
     }
 
-  if (unsigned m = get_originating_module (decl))
+  int m = get_originating_module (decl, /*global=-1*/true);
+  if (m > 0)
     if (const char *n = module_name (m, false))
       {
 	pp_character (pp, '@');
@@ -3787,18 +3787,18 @@ cp_print_error_function (diagnostic_text_output_format &text_output,
 		    {
 		      if (text_output.show_column_p () && s.column != 0)
 			pp_printf (pp,
-				   _("    inlined from %qD at %r%s:%d:%d%R"),
+				   G_("    inlined from %qD at %r%s:%d:%d%R"),
 				   fndecl,
 				   "locus", s.file, s.line, s.column);
 		      else
 			pp_printf (pp,
-				   _("    inlined from %qD at %r%s:%d%R"),
+				   G_("    inlined from %qD at %r%s:%d%R"),
 				   fndecl,
 				   "locus", s.file, s.line);
 
 		    }
 		  else
-		    pp_printf (pp, _("    inlined from %qD"),
+		    pp_printf (pp, G_("    inlined from %qD"),
 			       fndecl);
 		}
 	    }
@@ -3824,22 +3824,22 @@ function_category (tree fn)
       && DECL_FUNCTION_MEMBER_P (fn))
     {
       if (DECL_STATIC_FUNCTION_P (fn))
-	return _("In static member function %qD");
+	return G_("In static member function %qD");
       else if (DECL_COPY_CONSTRUCTOR_P (fn))
-	return _("In copy constructor %qD");
+	return G_("In copy constructor %qD");
       else if (DECL_CONSTRUCTOR_P (fn))
-	return _("In constructor %qD");
+	return G_("In constructor %qD");
       else if (DECL_DESTRUCTOR_P (fn))
-	return _("In destructor %qD");
+	return G_("In destructor %qD");
       else if (LAMBDA_FUNCTION_P (fn))
-	return _("In lambda function");
+	return G_("In lambda function");
       else if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
-	return _("In explicit object member function %qD");
+	return G_("In explicit object member function %qD");
       else
-	return _("In member function %qD");
+	return G_("In member function %qD");
     }
   else
-    return _("In function %qD");
+    return G_("In function %qD");
 }
 
 /* Disable warnings about missing quoting in GCC diagnostics for
@@ -3866,8 +3866,8 @@ print_instantiation_full_context (diagnostic_text_output_format &text_output)
       char *indent = text_output.build_indent_prefix (true);
       pp_verbatim (text_output.get_printer (),
 		   p->list_p ()
-		   ? _("%s%s%sIn substitution of %qS:\n")
-		   : _("%s%s%sIn instantiation of %q#D:\n"),
+		   ? G_("%s%s%sIn substitution of %qS:\n")
+		   : G_("%s%s%sIn instantiation of %q#D:\n"),
 		   indent,
 		   show_file ? LOCATION_FILE (location) : "",
 		   show_file ? ": " : "",
@@ -3887,10 +3887,10 @@ print_location (diagnostic_text_output_format &text_output,
   expanded_location xloc = expand_location (loc);
   pretty_printer *const pp = text_output.get_printer ();
   if (text_output.show_column_p ())
-    pp_verbatim (pp, _("%r%s:%d:%d:%R   "),
+    pp_verbatim (pp, G_("%r%s:%d:%d:%R   "),
 		 "locus", xloc.file, xloc.line, xloc.column);
   else
-    pp_verbatim (pp, _("%r%s:%d:%R   "),
+    pp_verbatim (pp, G_("%r%s:%d:%R   "),
 		 "locus", xloc.file, xloc.line);
 }
 
@@ -3983,22 +3983,22 @@ print_instantiation_partial_context_line (diagnostic_text_output_format &text_ou
       if (t->list_p ())
 	pp_verbatim (pp,
 		     recursive_p
-		     ? _("recursively required by substitution of %qS\n")
-		     : _("required by substitution of %qS\n"),
+		     ? G_("recursively required by substitution of %qS\n")
+		     : G_("required by substitution of %qS\n"),
 		     t->get_node ());
       else
 	pp_verbatim (pp,
 		     recursive_p
-		     ? _("recursively required from %q#D\n")
-		     : _("required from %q#D\n"),
+		     ? G_("recursively required from %q#D\n")
+		     : G_("required from %q#D\n"),
 		     t->get_node ());
     }
   else
     {
       pp_verbatim (pp,
 		   recursive_p
-		   ? _("recursively required from here\n")
-		   : _("required from here\n"));
+		   ? G_("recursively required from here\n")
+		   : G_("required from here\n"));
     }
 }
 
@@ -4048,8 +4048,8 @@ print_instantiation_partial_context (diagnostic_text_output_format &text_output,
 	{
 	  auto_context_line sentinel (text_output, loc);
 	  pp_verbatim (text_output.get_printer (),
-		       _("[ skipping %d instantiation contexts,"
-			 " use -ftemplate-backtrace-limit=0 to disable ]\n"),
+		       G_("[ skipping %d instantiation contexts,"
+			  " use -ftemplate-backtrace-limit=0 to disable ]\n"),
 		       skip);
 	  do {
 	    loc = t->locus;
@@ -4100,7 +4100,7 @@ maybe_print_constexpr_context (diagnostic_text_output_format &text_output)
       pretty_printer *const pp = text_output.get_printer ();
       auto_context_line sentinel (text_output, EXPR_LOCATION (t));
       pp_verbatim (pp,
-		   _("in %<constexpr%> expansion of %qs"),
+		   G_("in %<constexpr%> expansion of %qs"),
 		   s);
       pp_newline (pp);
     }
@@ -4113,7 +4113,7 @@ print_constrained_decl_info (diagnostic_text_output_format &text_output,
 {
   auto_context_line sentinel (text_output, DECL_SOURCE_LOCATION (decl));
   pretty_printer *const pp = text_output.get_printer ();
-  pp_verbatim (pp, "required by the constraints of %q#D\n", decl);
+  pp_verbatim (pp, G_("required by the constraints of %q#D\n"), decl);
 }
 
 static void
@@ -4128,7 +4128,7 @@ print_concept_check_info (diagnostic_text_output_format &text_output,
 
   cxx_pretty_printer *const pp
     = (cxx_pretty_printer *)text_output.get_printer ();
-  pp_verbatim (pp, "required for the satisfaction of %qE", expr);
+  pp_verbatim (pp, G_("required for the satisfaction of %qE"), expr);
   if (map && map != error_mark_node)
     {
       tree subst_map = tsubst_parameter_mapping (map, args, tf_none, NULL_TREE);
@@ -4150,7 +4150,7 @@ print_constraint_context_head (diagnostic_text_output_format &text_output,
     {
       auto_context_line sentinel (text_output, input_location);
       pretty_printer *const pp = text_output.get_printer ();
-      pp_verbatim (pp, "required for constraint satisfaction\n");
+      pp_verbatim (pp, G_("required for constraint satisfaction\n"));
       return NULL_TREE;
     }
   if (DECL_P (src))
@@ -4179,11 +4179,10 @@ print_requires_expression_info (diagnostic_text_output_format &text_output,
   auto_context_line sentinel (text_output, cp_expr_loc_or_input_loc (expr));
   cxx_pretty_printer *const pp
     = static_cast <cxx_pretty_printer *> (text_output.get_printer ());
-  pp_verbatim (pp, "in requirements ");
 
   tree parms = TREE_OPERAND (expr, 0);
-  if (parms)
-    pp_verbatim (pp, "with ");
+  pp_verbatim (pp, parms ? G_("in requirements with ")
+			 : G_("in requirements "));
   while (parms)
     {
       pp_verbatim (pp, "%q#D", parms);

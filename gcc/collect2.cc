@@ -1035,9 +1035,10 @@ main (int argc, char **argv)
       lto_mode = LTO_MODE_LTO;
   }
 
-  /* -fno-profile-arcs -fno-condition-coverage -fno-test-coverage
+  /* -fno-profile-arcs -fno-condition-coverage -fno-path-coverage
+     -fno-test-coverage
      -fno-branch-probabilities -fno-exceptions -w -fno-whole-program */
-  num_c_args += 7;
+  num_c_args += 8;
 
   c_argv = XCNEWVEC (char *, num_c_args);
   c_ptr = CONST_CAST2 (const char **, char **, c_argv);
@@ -1234,6 +1235,7 @@ main (int argc, char **argv)
   obstack_free (&temporary_obstack, temporary_firstobj);
   *c_ptr++ = "-fno-profile-arcs";
   *c_ptr++ = "-fno-condition-coverage";
+  *c_ptr++ = "-fno-path-coverage";
   *c_ptr++ = "-fno-test-coverage";
   *c_ptr++ = "-fno-branch-probabilities";
   *c_ptr++ = "-fno-exceptions";

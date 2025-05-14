@@ -93,9 +93,9 @@ test_5 (_Float16 *a, _Float16 *b, _Float16 *out, unsigned count)
 /*
 ** test_6:
 ** ...
-** call\s+__extendhfsf2
+** call\s+__extendhfsf2(?:@plt)?
 ** ...
-** call\s+__truncsfhf2
+** call\s+__truncsfhf2(?:@plt)?
 ** ...
 */
 void

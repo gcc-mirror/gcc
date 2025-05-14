@@ -49,7 +49,9 @@ public:
     for (auto &param : function.get_function_params ())
       handle_param (param);
 
-    handle_body (*function.get_definition ());
+    handle_body (function.get_definition ());
+    auto region_hir_map
+      = map_region_to_hir (function.get_generic_params (), ctx.fn_free_regions);
 
     return Function{
       std::move (ctx.place_db),
@@ -57,6 +59,7 @@ public:
       std::move (ctx.basic_blocks),
       std::move (ctx.fn_free_regions),
       std::move (universal_region_bounds),
+      std::move (region_hir_map),
       function.get_locus (),
     };
   }
@@ -65,15 +68,15 @@ private:
   /** Instantiate `num_lifetime_params` free regions. */
   void handle_lifetime_params (size_t num_lifetime_params)
   {
-    std::vector<FreeRegion> function_free_regions;
+    FreeRegions regions;
     for (size_t i = 0; i < num_lifetime_params; i++)
       {
-	function_free_regions.push_back (ctx.place_db.get_next_free_region ());
+	regions.push_back (ctx.place_db.get_next_free_region ());
       }
 
     rust_debug ("\tctx.fn_free_region={%s}",
 		ctx.fn_free_regions.to_string ().c_str ());
-    ctx.fn_free_regions.set_from (std::move (function_free_regions));
+    ctx.fn_free_regions = regions;
   }
 
   void handle_lifetime_param_constraints (
@@ -91,8 +94,8 @@ private:
 	  ctx.fn_free_regions[bound.second.get_index ()]);
 
 	auto last_bound = universal_region_bounds.back ();
-	rust_debug ("\t\t %lu: %lu", (unsigned long) last_bound.first,
-		    (unsigned long) last_bound.second);
+	rust_debug ("\t\t %lu: %lu", (unsigned long) last_bound.first.value,
+		    (unsigned long) last_bound.second.value);
       }
 
     // TODO: handle type_region constraints
@@ -115,14 +118,14 @@ private:
 
   void handle_param (HIR::FunctionParam &param)
   {
-    auto param_type = lookup_type (*param.get_param_name ());
+    auto param_type = lookup_type (param.get_param_name ());
 
     auto &pattern = param.get_param_name ();
-    if (pattern->get_pattern_type () == HIR::Pattern::IDENTIFIER
-	&& !static_cast<HIR::IdentifierPattern &> (*pattern).get_is_ref ())
+    if (pattern.get_pattern_type () == HIR::Pattern::IDENTIFIER
+	&& !static_cast<HIR::IdentifierPattern &> (pattern).get_is_ref ())
       {
 	// Avoid useless temporary variable for parameter to look like MIR.
-	translated = declare_variable (pattern->get_mappings ());
+	translated = declare_variable (pattern.get_mappings ());
 	ctx.arguments.push_back (translated);
       }
     else
@@ -130,10 +133,8 @@ private:
 	translated = ctx.place_db.add_temporary (param_type);
 	ctx.arguments.push_back (translated);
 	PatternBindingBuilder (ctx, translated, tl::nullopt)
-	  .go (*param.get_param_name ());
+	  .go (param.get_param_name ());
       }
-
-    rust_assert (param.get_type () != nullptr);
 
     // Set parameter place to use functions regions, not the fresh ones.
     ctx.place_db[translated].regions
@@ -152,10 +153,34 @@ private:
 	  {
 	    push_assignment (RETURN_VALUE_PLACE,
 			     ctx.place_db.get_constant (
-			       ctx.place_db[RETURN_VALUE_PLACE].tyty));
+			       ctx.place_db[RETURN_VALUE_PLACE].tyty),
+			     body.get_end_locus ());
 	  }
-	ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN);
+	auto return_location = body.has_expr ()
+				 ? body.get_final_expr ().get_locus ()
+				 : body.get_end_locus ();
+	push_return (return_location);
       }
+  }
+
+  // Maps named lifetime parameters to their respective HIR node
+  const std::unordered_map<Polonius::Origin, HIR::LifetimeParam *>
+  map_region_to_hir (
+    const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+    const FreeRegions &regions)
+  {
+    std::unordered_map<Polonius::Origin, HIR::LifetimeParam *> result;
+    size_t region_index = 0;
+    for (auto &generic_param : generic_params)
+      {
+	if (generic_param->get_kind ()
+	    == HIR::GenericParam::GenericKind::LIFETIME)
+	  {
+	    result[regions[region_index++].value]
+	      = static_cast<HIR::LifetimeParam *> (generic_param.get ());
+	  }
+      }
+    return result;
   }
 };
 

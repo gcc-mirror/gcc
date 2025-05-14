@@ -2863,6 +2863,7 @@ target_libraries="target-libgcc \
 		target-libgfortran \
 		target-libffi \
 		target-libobjc \
+		target-libgcobol \
 		target-libada \
 		target-libgm2 \
 		target-libgo \
@@ -3430,10 +3431,6 @@ if test "${ENABLE_LIBSTDCXX}" = "default" ; then
       # VxWorks uses the Dinkumware C++ library.
       noconfigdirs="$noconfigdirs target-libstdc++-v3"
       ;;
-    amdgcn*-*-*)
-      # Not ported/fails to build when using newlib.
-      noconfigdirs="$noconfigdirs target-libstdc++-v3"
-      ;;
     arm*-wince-pe*)
       # the C++ libraries don't build on top of CE's C libraries
       noconfigdirs="$noconfigdirs target-libstdc++-v3"
@@ -3537,6 +3534,26 @@ $as_echo "yes" >&6; }
     fi
 fi
 
+# Disable libgcobol on unsupported systems.
+# For testing, you can override this with --enable-libgcobol.
+if test -d ${srcdir}/libgcobol; then
+    if test x$enable_libgcobol = x; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libgcobol support" >&5
+$as_echo_n "checking for libgcobol support... " >&6; }
+	if (srcdir=${srcdir}/libgcobol; \
+		. ${srcdir}/configure.tgt; \
+		test -n "$UNSUPPORTED")
+	then
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	    noconfigdirs="$noconfigdirs target-libgcobol"
+	else
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	fi
+    fi
+fi
+
 # Disable Fortran for some systems.
 case "${target}" in
   mmix-*-*)
@@ -3545,6 +3562,38 @@ case "${target}" in
     ;;
   bpf-*-*)
     unsupported_languages="$unsupported_languages fortran"
+    ;;
+esac
+
+# Always enable COBOL for --enable-languages=*cobol*
+# Otherwise, enable COBOL only for known architectures
+case ,${enable_languages}, in
+  *,cobol,*)
+    case ,${enable_languages}, in
+      *,c++,*)
+        ;;
+      *)
+        # We have an explicit cobol, but no c++.  We need c++, because cobol
+        # requires libstdc++
+        enable_languages="$enable_languages,c++"
+        ;;
+    esac
+    ;;
+  *)
+    case "${target}" in
+      aarch64-*-linux*|x86_64-*-linux*)
+        ;;
+      *-*-*)
+        unsupported_languages="$unsupported_languages cobol"
+        ;;
+    esac
+    case "${host}" in
+      aarch64-*-linux*|x86_64-*-linux*)
+        ;;
+      *-*-*)
+        unsupported_languages="$unsupported_languages cobol"
+        ;;
+    esac
     ;;
 esac
 
@@ -4092,7 +4141,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gprof"
     ;;
   nvptx*-*-*)
-    noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3"
+    noconfigdirs="$noconfigdirs target-libssp"
     ;;
   sh-*-*)
     case "${target}" in
@@ -10339,6 +10388,16 @@ case ,${enable_languages}, in
         # Disable target libgrust if we're not building target libstdc++.
         noconfigdirs="$noconfigdirs target-libgrust"
         ;;
+      *)
+	case "${target}" in
+	  amdgcn*-*-* \
+	  | nvptx*-*-* )
+	    # Build fails in 'libgrust/libproc_macro_internal/':
+	    #     sorry, unimplemented: exception handling not supported
+	    noconfigdirs="$noconfigdirs target-libgrust"
+	    ;;
+	esac
+	;;
     esac
     ;;
 esac
@@ -19019,7 +19078,101 @@ $as_echo "pre-installed" >&6; }
   fi
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target c++" >&5
+case $target in
+  *-*-darwin*)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target c++" >&5
+$as_echo_n "checking where to find the target c++... " >&6; }
+if test "x${build}" != "x${host}" ; then
+  if expr "x$CXX_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $CXX_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  else
+    # Canadian cross, just use what we found
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+else
+  ok=yes
+  case " ${configdirs} " in
+    *" gcc "*) ;;
+    *) ok=no ;;
+  esac
+  case ,${enable_languages}, in
+    *,c++,*) ;;
+    *) ok=no ;;
+  esac
+  if test $ok = yes; then
+    # An in-tree tool is available and we can use it
+    CXX_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/xg++ -B$$r/$(HOST_SUBDIR)/gcc/ -nostdinc++ `if test -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/scripts/testsuite_flags; then $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/scripts/testsuite_flags --build-includes; else echo -funconfigured-libstdc++-v3 ; fi` -B$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -B$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs -B$$r/$(TARGET_SUBDIR)/libstdc++-v3/libsupc++/.libs'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
+$as_echo "just compiled" >&6; }
+  elif expr "x$CXX_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $CXX_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  elif test "x$target" = "x$host"; then
+    # We can use an host tool
+    CXX_FOR_TARGET='$(CXX)'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
+$as_echo "host tool" >&6; }
+  else
+    # We need a cross tool
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target c++ for libstdc++" >&5
+$as_echo_n "checking where to find the target c++ for libstdc++... " >&6; }
+if test "x${build}" != "x${host}" ; then
+  if expr "x$RAW_CXX_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $RAW_CXX_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  else
+    # Canadian cross, just use what we found
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+else
+  ok=yes
+  case " ${configdirs} " in
+    *" gcc "*) ;;
+    *) ok=no ;;
+  esac
+  case ,${enable_languages}, in
+    *,c++,*) ;;
+    *) ok=no ;;
+  esac
+  if test $ok = yes; then
+    # An in-tree tool is available and we can use it
+    RAW_CXX_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/xgcc -shared-libgcc -B$$r/$(HOST_SUBDIR)/gcc -nostdinc++ -B$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -B$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs -B$$r/$(TARGET_SUBDIR)/libstdc++-v3/libsupc++/.libs'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
+$as_echo "just compiled" >&6; }
+  elif expr "x$RAW_CXX_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $RAW_CXX_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  elif test "x$target" = "x$host"; then
+    # We can use an host tool
+    RAW_CXX_FOR_TARGET='$(CXX)'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
+$as_echo "host tool" >&6; }
+  else
+    # We need a cross tool
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+fi
+
+  ;;
+  *)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target c++" >&5
 $as_echo_n "checking where to find the target c++... " >&6; }
 if test "x${build}" != "x${host}" ; then
   if expr "x$CXX_FOR_TARGET" : "x/" > /dev/null; then
@@ -19064,7 +19217,7 @@ $as_echo "pre-installed" >&6; }
   fi
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target c++ for libstdc++" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target c++ for libstdc++" >&5
 $as_echo_n "checking where to find the target c++ for libstdc++... " >&6; }
 if test "x${build}" != "x${host}" ; then
   if expr "x$RAW_CXX_FOR_TARGET" : "x/" > /dev/null; then
@@ -19109,6 +19262,8 @@ $as_echo "pre-installed" >&6; }
   fi
 fi
 
+  ;;
+esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target dlltool" >&5
 $as_echo_n "checking where to find the target dlltool... " >&6; }
 if test "x${build}" != "x${host}" ; then
@@ -19968,6 +20123,7 @@ compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
 compare_exclusions="$compare_exclusions | gcc/m2/gm2-compiler-boot/M2Version*"
 compare_exclusions="$compare_exclusions | gcc/m2/gm2-compiler-boot/SYSTEM*"
 compare_exclusions="$compare_exclusions | gcc/m2/gm2version*"
+compare_exclusions="$compare_exclusions | gcc/cobol/parse\$(objext)"
 case "$target" in
   hppa*64*-*-hpux*) ;;
   powerpc*-ibm-aix*) compare_exclusions="$compare_exclusions | *libgomp*\$(objext)" ;;

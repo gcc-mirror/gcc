@@ -1,7 +1,6 @@
 /* PR middle-end/82063 - issues with arguments enabled by -Wall
    Verify that alloca() calls in loops are not diagnosed by default.
    { dg-do compile }
-   { dg-require-effective-target alloca }
    { dg-options "-O2 -ftrack-macro-expansion=0" } */
 
 extern void* alloca (__SIZE_TYPE__);

@@ -2251,37 +2251,9 @@ irange::invert ()
     verify_range ();
 }
 
-// Remove trailing ranges that this bitmask indicates can't exist.
-
-void
-irange_bitmask::adjust_range (irange &r) const
-{
-  if (unknown_p () || r.undefined_p ())
-    return;
-
-  int_range_max range;
-  tree type = r.type ();
-  int prec = TYPE_PRECISION (type);
-  // If there are trailing zeros, create a range representing those bits.
-  gcc_checking_assert (m_mask != 0);
-  int z = wi::ctz (m_mask);
-  if (z)
-    {
-      wide_int ub = (wi::one (prec) << z) - 1;
-      range = int_range<5> (type, wi::zero (prec), ub);
-      // Then remove the specific value these bits contain from the range.
-      wide_int value = m_value & ub;
-      range.intersect (int_range<2> (type, value, value, VR_ANTI_RANGE));
-      // Inverting produces a list of ranges which can be valid.
-      range.invert ();
-      // And finally select R from only those valid values.
-      r.intersect (range);
-      return;
-    }
-}
-
-// If the mask can be trivially converted to a range, do so and
-// return TRUE.
+// If the mask can be trivially converted to a range, do so.
+// Otherwise attempt to remove the lower bits from the range.
+// Return true if the range changed in any way.
 
 bool
 irange::set_range_from_bitmask ()
@@ -2326,13 +2298,38 @@ irange::set_range_from_bitmask ()
       set_zero (type ());
       return true;
     }
-  return false;
+
+  // If the mask doesn't have any trailing zero, return.
+  int z = wi::ctz (m_bitmask.mask ());
+  if (!z)
+    return false;
+
+  // Remove trailing ranges that this bitmask indicates can't exist.
+  int_range_max mask_range;
+  int prec = TYPE_PRECISION (type ());
+  wide_int ub = (wi::one (prec) << z) - 1;
+  mask_range = int_range<2> (type (), wi::zero (prec), ub);
+
+  // Then remove the specific value these bits contain from the range.
+  wide_int value = m_bitmask.value () & ub;
+  mask_range.intersect (int_range<2> (type (), value, value, VR_ANTI_RANGE));
+
+  // Inverting produces a list of ranges which can be valid.
+  mask_range.invert ();
+
+  // And finally select R from only those valid values.
+  intersect (mask_range);
+  return true;
 }
 
 void
 irange::update_bitmask (const irange_bitmask &bm)
 {
   gcc_checking_assert (!undefined_p ());
+
+  // If masks are the same, there is no change.
+  if (m_bitmask == bm)
+    return;
 
   // Drop VARYINGs with known bits to a plain range.
   if (m_kind == VR_VARYING && !bm.unknown_p ())
@@ -2408,7 +2405,7 @@ irange::intersect_bitmask (const irange &r)
 {
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
-  if (m_bitmask == r.m_bitmask)
+  if (r.m_bitmask.unknown_p () || m_bitmask == r.m_bitmask)
     return false;
 
   irange_bitmask bm = get_bitmask ();
@@ -2427,7 +2424,6 @@ irange::intersect_bitmask (const irange &r)
 
   if (!set_range_from_bitmask ())
     normalize_kind ();
-  m_bitmask.adjust_range (*this);
   if (flag_checking)
     verify_range ();
   return true;
@@ -2447,7 +2443,7 @@ irange::union_bitmask (const irange &r)
   irange_bitmask bm = get_bitmask ();
   irange_bitmask save = bm;
   bm.union_ (r.get_bitmask ());
-  if (save == bm)
+  if (save == bm && (!bm.unknown_p () || m_bitmask.unknown_p ()))
     return false;
 
   m_bitmask = bm;

@@ -161,6 +161,7 @@ typedef struct diagnostic_logical_location diagnostic_logical_location;
 
 enum diagnostic_logical_location_kind_t
 {
+ /* Kinds within executable code.  */
   DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION,
   DIAGNOSTIC_LOGICAL_LOCATION_KIND_MEMBER,
   DIAGNOSTIC_LOGICAL_LOCATION_KIND_MODULE,
@@ -168,7 +169,22 @@ enum diagnostic_logical_location_kind_t
   DIAGNOSTIC_LOGICAL_LOCATION_KIND_TYPE,
   DIAGNOSTIC_LOGICAL_LOCATION_KIND_RETURN_TYPE,
   DIAGNOSTIC_LOGICAL_LOCATION_KIND_PARAMETER,
-  DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE,
+
+  /* Kinds within XML or HTML documents.  */
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_ELEMENT,
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_ATTRIBUTE,
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_TEXT,
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_COMMENT,
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION,
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_DTD,
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_DECLARATION,
+
+  /* Kinds within JSON documents.  */
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT,
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY,
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY,
+  DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE
 };
 
 /* A "diagnostic" is an opaque bundle of state for a particular
@@ -486,6 +502,32 @@ diagnostic_manager_debug_dump_logical_location (const diagnostic_manager *diag_m
   LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1)
   LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL (2)
   LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (3);
+
+/* Accessors for logical locations (added in LIBGDIAGNOSTICS_ABI_1;
+   you can test for their presence using
+   #ifdef LIBDIAGNOSTICS_HAVE_LOGICAL_LOCATION_ACCESSORS
+*/
+#define LIBDIAGNOSTICS_HAVE_LOGICAL_LOCATION_ACCESSORS
+
+extern enum diagnostic_logical_location_kind_t
+diagnostic_logical_location_get_kind (const diagnostic_logical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
+extern const diagnostic_logical_location *
+diagnostic_logical_location_get_parent (const diagnostic_logical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
+extern const char *
+diagnostic_logical_location_get_short_name (const diagnostic_logical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
+extern const char *
+diagnostic_logical_location_get_fully_qualified_name (const diagnostic_logical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
+
+extern const char *
+diagnostic_logical_location_get_decorated_name (const diagnostic_logical_location *loc)
+  LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (1);
 
 /* Diagnostic groups.  */
 

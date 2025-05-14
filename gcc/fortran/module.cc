@@ -4381,75 +4381,58 @@ static const mstring omp_declare_simd_clauses[] =
     minit (NULL, -1)
 };
 
-/* Handle !$omp declare simd.  */
+/* Handle OpenMP's declare-simd clauses.  */
 
 static void
-mio_omp_declare_simd (gfc_namespace *ns, gfc_omp_declare_simd **odsp)
+mio_omp_declare_simd_clauses (gfc_omp_clauses **clausesp)
 {
   if (iomode == IO_OUTPUT)
     {
-      if (*odsp == NULL)
-	return;
-    }
-  else if (peek_atom () != ATOM_LPAREN)
-    return;
+      gfc_omp_clauses *clauses = *clausesp;
+      gfc_omp_namelist *n;
 
-  gfc_omp_declare_simd *ods = *odsp;
-
-  mio_lparen ();
-  if (iomode == IO_OUTPUT)
-    {
       write_atom (ATOM_NAME, "OMP_DECLARE_SIMD");
-      if (ods->clauses)
+      if (clauses->inbranch)
+	mio_name (0, omp_declare_simd_clauses);
+      if (clauses->notinbranch)
+	mio_name (1, omp_declare_simd_clauses);
+      if (clauses->simdlen_expr)
 	{
-	  gfc_omp_namelist *n;
-
-	  if (ods->clauses->inbranch)
-	    mio_name (0, omp_declare_simd_clauses);
-	  if (ods->clauses->notinbranch)
-	    mio_name (1, omp_declare_simd_clauses);
-	  if (ods->clauses->simdlen_expr)
-	    {
-	      mio_name (2, omp_declare_simd_clauses);
-	      mio_expr (&ods->clauses->simdlen_expr);
-	    }
-	  for (n = ods->clauses->lists[OMP_LIST_UNIFORM]; n; n = n->next)
-	    {
-	      mio_name (3, omp_declare_simd_clauses);
-	      mio_symbol_ref (&n->sym);
-	    }
-	  for (n = ods->clauses->lists[OMP_LIST_LINEAR]; n; n = n->next)
-	    {
-	      if (n->u.linear.op == OMP_LINEAR_DEFAULT)
-		mio_name (4, omp_declare_simd_clauses);
-	      else
-		mio_name (32 + n->u.linear.op, omp_declare_simd_clauses);
-	      mio_symbol_ref (&n->sym);
-	      mio_expr (&n->expr);
-	    }
-	  for (n = ods->clauses->lists[OMP_LIST_ALIGNED]; n; n = n->next)
-	    {
-	      mio_name (5, omp_declare_simd_clauses);
-	      mio_symbol_ref (&n->sym);
-	      mio_expr (&n->expr);
-	    }
+	  mio_name (2, omp_declare_simd_clauses);
+	  mio_expr (&clauses->simdlen_expr);
+	}
+      for (n = clauses->lists[OMP_LIST_UNIFORM]; n; n = n->next)
+	{
+	  mio_name (3, omp_declare_simd_clauses);
+	  mio_symbol_ref (&n->sym);
+	}
+      for (n = clauses->lists[OMP_LIST_LINEAR]; n; n = n->next)
+	{
+	  if (n->u.linear.op == OMP_LINEAR_DEFAULT)
+	    mio_name (4, omp_declare_simd_clauses);
+	  else
+	    mio_name (32 + n->u.linear.op, omp_declare_simd_clauses);
+	  mio_symbol_ref (&n->sym);
+	  mio_expr (&n->expr);
+	}
+      for (n = clauses->lists[OMP_LIST_ALIGNED]; n; n = n->next)
+	{
+	  mio_name (5, omp_declare_simd_clauses);
+	  mio_symbol_ref (&n->sym);
+	  mio_expr (&n->expr);
 	}
     }
   else
     {
-      gfc_omp_namelist **ptrs[3] = { NULL, NULL, NULL };
+      if (peek_atom () != ATOM_NAME)
+	return;
 
-      require_atom (ATOM_NAME);
-      *odsp = ods = gfc_get_omp_declare_simd ();
-      ods->where = gfc_current_locus;
-      ods->proc_name = ns->proc_name;
-      if (peek_atom () == ATOM_NAME)
-	{
-	  ods->clauses = gfc_get_omp_clauses ();
-	  ptrs[0] = &ods->clauses->lists[OMP_LIST_UNIFORM];
-	  ptrs[1] = &ods->clauses->lists[OMP_LIST_LINEAR];
-	  ptrs[2] = &ods->clauses->lists[OMP_LIST_ALIGNED];
-	}
+      gfc_omp_namelist **ptrs[3] = { NULL, NULL, NULL };
+      gfc_omp_clauses *clauses = *clausesp = gfc_get_omp_clauses ();
+      ptrs[0] = &clauses->lists[OMP_LIST_UNIFORM];
+      ptrs[1] = &clauses->lists[OMP_LIST_LINEAR];
+      ptrs[2] = &clauses->lists[OMP_LIST_ALIGNED];
+
       while (peek_atom () == ATOM_NAME)
 	{
 	  gfc_omp_namelist *n;
@@ -4457,9 +4440,9 @@ mio_omp_declare_simd (gfc_namespace *ns, gfc_omp_declare_simd **odsp)
 
 	  switch (t)
 	    {
-	    case 0: ods->clauses->inbranch = true; break;
-	    case 1: ods->clauses->notinbranch = true; break;
-	    case 2: mio_expr (&ods->clauses->simdlen_expr); break;
+	    case 0: clauses->inbranch = true; break;
+	    case 1: clauses->notinbranch = true; break;
+	    case 2: mio_expr (&clauses->simdlen_expr); break;
 	    case 3:
 	    case 4:
 	    case 5:
@@ -4481,12 +4464,309 @@ mio_omp_declare_simd (gfc_namespace *ns, gfc_omp_declare_simd **odsp)
 	    }
 	}
     }
+}
+
+
+/* Handle !$omp declare simd.  */
+
+static void
+mio_omp_declare_simd (gfc_namespace *ns, gfc_omp_declare_simd **odsp)
+{
+  if (iomode == IO_OUTPUT)
+    {
+      if (*odsp == NULL)
+	{
+	  if (ns->omp_declare_variant)
+	    {
+	      mio_lparen ();
+	      mio_rparen ();
+	    }
+	  return;
+	}
+    }
+  else if (peek_atom () != ATOM_LPAREN)
+    return;
+
+  gfc_omp_declare_simd *ods = *odsp;
+
+  mio_lparen ();
+  if (iomode == IO_OUTPUT)
+    {
+      if (ods->clauses)
+	mio_omp_declare_simd_clauses (&ods->clauses);
+    }
+  else
+    {
+      if (peek_atom () == ATOM_RPAREN)
+	{
+	  mio_rparen ();
+	  return;
+	}
+
+      require_atom (ATOM_NAME);
+      *odsp = ods = gfc_get_omp_declare_simd ();
+      ods->where = gfc_current_locus;
+      ods->proc_name = ns->proc_name;
+      mio_omp_declare_simd_clauses (&ods->clauses);
+    }
 
   mio_omp_declare_simd (ns, &ods->next);
 
   mio_rparen ();
 }
 
+/* Handle !$omp declare variant.  */
+
+static void
+mio_omp_declare_variant (gfc_namespace *ns, gfc_omp_declare_variant **odvp)
+{
+  if (iomode == IO_OUTPUT)
+    {
+      if (*odvp == NULL)
+	return;
+    }
+  else if (peek_atom () != ATOM_LPAREN)
+    return;
+
+  gfc_omp_declare_variant *odv;
+
+  mio_lparen ();
+  if (iomode == IO_OUTPUT)
+    {
+      odv = *odvp;
+      write_atom (ATOM_NAME, "OMP_DECLARE_VARIANT");
+      gfc_symtree *st;
+      st = (odv->base_proc_symtree
+	    ? odv->base_proc_symtree
+	    : gfc_find_symtree (ns->sym_root, ns->proc_name->name));
+      mio_symtree_ref (&st);
+      st = (st->n.sym->attr.if_source == IFSRC_IFBODY
+	    && st->n.sym->formal_ns == ns
+	    ? gfc_find_symtree (ns->parent->sym_root,
+				odv->variant_proc_symtree->name)
+	    : odv->variant_proc_symtree);
+      mio_symtree_ref (&st);
+
+      mio_lparen ();
+      write_atom (ATOM_NAME, "SEL");
+      for (gfc_omp_set_selector *set = odv->set_selectors; set; set = set->next)
+	{
+	  int set_code = set->code;
+	  mio_integer (&set_code);
+	  mio_lparen ();
+	  for (gfc_omp_selector *sel = set->trait_selectors; sel;
+	       sel = sel->next)
+	    {
+	      int sel_code = sel->code;
+	      mio_integer (&sel_code);
+	      mio_expr (&sel->score);
+	      mio_lparen ();
+	      for (gfc_omp_trait_property *prop = sel->properties; prop;
+		   prop = prop->next)
+		{
+		  int kind = prop->property_kind;
+		  mio_integer (&kind);
+		  int is_name = prop->is_name;
+		  mio_integer (&is_name);
+		  switch (prop->property_kind)
+		    {
+		    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
+		    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
+		      mio_expr (&prop->expr);
+		      break;
+		    case OMP_TRAIT_PROPERTY_ID:
+		      write_atom (ATOM_STRING, prop->name);
+		      break;
+		    case OMP_TRAIT_PROPERTY_NAME_LIST:
+		      if (prop->is_name)
+			write_atom (ATOM_STRING, prop->name);
+		      else
+			mio_expr (&prop->expr);
+		      break;
+		    case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
+		      {
+			/* Currently only declare simd.  */
+			mio_lparen ();
+			mio_omp_declare_simd_clauses (&prop->clauses);
+			mio_rparen ();
+		      }
+		      break;
+		    default:
+		      gcc_unreachable ();
+		    }
+		}
+	      mio_rparen ();
+	    }
+	  mio_rparen ();
+	}
+      mio_rparen ();
+
+      mio_lparen ();
+      write_atom (ATOM_NAME, "ADJ");
+      for (gfc_omp_namelist *arg = odv->adjust_args_list; arg; arg = arg->next)
+	{
+	  int need_ptr = arg->u.adj_args.need_ptr;
+	  int need_addr = arg->u.adj_args.need_addr;
+	  int range_start = arg->u.adj_args.range_start;
+	  int omp_num_args_plus = arg->u.adj_args.omp_num_args_plus;
+	  int omp_num_args_minus = arg->u.adj_args.omp_num_args_minus;
+	  mio_integer (&need_ptr);
+	  mio_integer (&need_addr);
+	  mio_integer (&range_start);
+	  mio_integer (&omp_num_args_plus);
+	  mio_integer (&omp_num_args_minus);
+	  mio_expr (&arg->expr);
+	}
+      mio_rparen ();
+
+      mio_lparen ();
+      write_atom (ATOM_NAME, "APP");
+      for (gfc_omp_namelist *arg = odv->append_args_list; arg; arg = arg->next)
+	{
+	  int target = arg->u.init.target;
+	  int targetsync = arg->u.init.targetsync;
+	  mio_integer (&target);
+	  mio_integer (&targetsync);
+	  mio_integer (&arg->u.init.len);
+	  gfc_char_t *p = XALLOCAVEC (gfc_char_t, arg->u.init.len);
+	  for (int i = 0; i < arg->u.init.len; i++)
+	    p[i] = arg->u2.init_interop[i];
+	  mio_allocated_wide_string (p, arg->u.init.len);
+	}
+      mio_rparen ();
+    }
+  else
+    {
+      if (peek_atom () == ATOM_RPAREN)
+	{
+	  mio_rparen ();
+	  return;
+	}
+
+      require_atom (ATOM_NAME);
+      odv = *odvp = gfc_get_omp_declare_variant ();
+      odv->where = gfc_current_locus;
+
+      mio_symtree_ref (&odv->base_proc_symtree);
+      mio_symtree_ref (&odv->variant_proc_symtree);
+
+      mio_lparen ();
+      require_atom (ATOM_NAME);  /* SEL */
+      gfc_omp_set_selector **set = &odv->set_selectors;
+      while (peek_atom () != ATOM_RPAREN)
+	{
+	  *set = gfc_get_omp_set_selector ();
+	  int set_code;
+	  mio_integer (&set_code);
+	  (*set)->code = (enum omp_tss_code) set_code;
+
+	  mio_lparen ();
+	  gfc_omp_selector **sel = &(*set)->trait_selectors;
+	  while (peek_atom () != ATOM_RPAREN)
+	    {
+	      *sel = gfc_get_omp_selector ();
+	      int sel_code = 0;
+	      mio_integer (&sel_code);
+	      (*sel)->code = (enum omp_ts_code) sel_code;
+	      mio_expr (&(*sel)->score);
+
+	      mio_lparen ();
+	      gfc_omp_trait_property **prop = &(*sel)->properties;
+	      while (peek_atom () != ATOM_RPAREN)
+		{
+		  *prop = gfc_get_omp_trait_property ();
+		  int kind = 0, is_name = 0;
+		  mio_integer (&kind);
+		  mio_integer (&is_name);
+		  (*prop)->property_kind = (enum omp_tp_type) kind;
+		  (*prop)->is_name = is_name;
+		  switch ((*prop)->property_kind)
+		    {
+		    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
+		    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
+		      mio_expr (&(*prop)->expr);
+		      break;
+		    case OMP_TRAIT_PROPERTY_ID:
+		      (*prop)->name = read_string ();
+		      break;
+		    case OMP_TRAIT_PROPERTY_NAME_LIST:
+		      if ((*prop)->is_name)
+			(*prop)->name = read_string ();
+		      else
+			mio_expr (&(*prop)->expr);
+		      break;
+		    case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
+		      {
+			/* Currently only declare simd.  */
+			mio_lparen ();
+			mio_omp_declare_simd_clauses (&(*prop)->clauses);
+			mio_rparen ();
+		      }
+		      break;
+		    default:
+		      gcc_unreachable ();
+		    }
+		  prop = &(*prop)->next;
+		}
+	      mio_rparen ();
+	      sel = &(*sel)->next;
+	    }
+	  mio_rparen ();
+	  set = &(*set)->next;
+	}
+      mio_rparen ();
+
+      mio_lparen ();
+      require_atom (ATOM_NAME);  /* ADJ */
+      gfc_omp_namelist **nl = &odv->adjust_args_list;
+      while (peek_atom () != ATOM_RPAREN)
+	{
+	  *nl = gfc_get_omp_namelist ();
+	  (*nl)->where = gfc_current_locus;
+	  int need_ptr, need_addr, range_start;
+	  int omp_num_args_plus, omp_num_args_minus;
+	  mio_integer (&need_ptr);
+	  mio_integer (&need_addr);
+	  mio_integer (&range_start);
+	  mio_integer (&omp_num_args_plus);
+	  mio_integer (&omp_num_args_minus);
+	  (*nl)->u.adj_args.need_ptr = need_ptr;
+	  (*nl)->u.adj_args.need_addr = need_addr;
+	  (*nl)->u.adj_args.range_start = range_start;
+	  (*nl)->u.adj_args.omp_num_args_plus = omp_num_args_minus;
+	  (*nl)->u.adj_args.omp_num_args_plus = omp_num_args_minus;
+	  mio_expr (&(*nl)->expr);
+	  nl = &(*nl)->next;
+	}
+      mio_rparen ();
+
+      mio_lparen ();
+      require_atom (ATOM_NAME);  /* APP */
+      nl = &odv->append_args_list;
+      while (peek_atom () != ATOM_RPAREN)
+	{
+	  *nl = gfc_get_omp_namelist ();
+	  (*nl)->where = gfc_current_locus;
+	  int target, targetsync;
+	  mio_integer (&target);
+	  mio_integer (&targetsync);
+	  mio_integer (&(*nl)->u.init.len);
+	  (*nl)->u.init.target = target;
+	  (*nl)->u.init.targetsync = targetsync;
+	  const gfc_char_t *p = XALLOCAVEC (gfc_char_t, (*nl)->u.init.len); // FIXME: memory handling?
+	  (*nl)->u2.init_interop = XCNEWVEC (char,  (*nl)->u.init.len);
+	  p = mio_allocated_wide_string (NULL, (*nl)->u.init.len);
+	  for (int i = 0; i < (*nl)->u.init.len; i++)
+	    (*nl)->u2.init_interop[i] = p[i];
+	  nl = &(*nl)->next;
+	}
+      mio_rparen ();
+    }
+
+  mio_omp_declare_variant (ns, &odv->next);
+
+  mio_rparen ();
+}
 
 static const mstring omp_declare_reduction_stmt[] =
 {
@@ -4665,7 +4945,14 @@ mio_symbol (gfc_symbol *sym)
   if (sym->formal_ns
       && sym->formal_ns->proc_name == sym
       && sym->formal_ns->entries == NULL)
-    mio_omp_declare_simd (sym->formal_ns, &sym->formal_ns->omp_declare_simd);
+    {
+      mio_omp_declare_simd (sym->formal_ns, &sym->formal_ns->omp_declare_simd);
+      mio_omp_declare_variant (sym->formal_ns,
+			       &sym->formal_ns->omp_declare_variant);
+    }
+  else if ((iomode == IO_OUTPUT && sym->ns->proc_name == sym)
+	   || (iomode == IO_INPUT && peek_atom () == ATOM_LPAREN))
+    mio_omp_declare_variant (sym->ns, &sym->ns->omp_declare_variant);
 
   mio_rparen ();
 }

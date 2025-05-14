@@ -1,6 +1,6 @@
 /* PR middle-end/99612 - Missing warning on incorrect memory order without
    -Wsystem-headers
-   Verify warings for basic atomic functions with no optimization.
+   Verify warnings for basic atomic functions with no optimization.
    { dg-do compile { target c++11 } }
    { dg-options "-O0 -Wall" } */
 

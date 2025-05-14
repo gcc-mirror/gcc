@@ -330,7 +330,15 @@
   {
     poly_int64 nunits = GET_MODE_NUNITS (<MODE>mode);
     machine_mode mode = riscv_vector::get_vector_mode (QImode, nunits).require ();
-    rtx dup = expand_vector_broadcast (mode, operands[1]);
+
+    /* The 1-bit mask is in a QImode register, make sure we only use the last
+       bit.  See also PR119114 and the respective vec_init expander.  */
+    rtx tmp = gen_reg_rtx (Xmode);
+    emit_insn
+      (gen_rtx_SET (tmp, gen_rtx_AND (Xmode, gen_lowpart (Xmode, operands[1]),
+				      CONST1_RTX (Xmode))));
+
+    rtx dup = expand_vector_broadcast (mode, gen_lowpart (QImode, tmp));
     riscv_vector::expand_vec_cmp (operands[0], NE, dup, CONST0_RTX (mode));
     DONE;
   }
@@ -405,16 +413,28 @@
 
 ;; Provide a vec_init for mask registers by initializing
 ;; a QImode vector and comparing it against 0.
+;; As we need to ignore all but the lowest bit apply an AND mask
+;; before doing the comparison.
 (define_expand "vec_init<mode>qi"
   [(match_operand:VB 0 "register_operand")
    (match_operand 1 "")]
   "TARGET_VECTOR"
   {
+    /* Expand into a QImode vector.  */
     machine_mode qimode = riscv_vector::get_vector_mode
 	(QImode, GET_MODE_NUNITS (<MODE>mode)).require ();
     rtx tmp = gen_reg_rtx (qimode);
     riscv_vector::expand_vec_init (tmp, operands[1]);
-    riscv_vector::expand_vec_cmp (operands[0], NE, tmp, CONST0_RTX (qimode));
+
+    /* & 0x1.  */
+    insn_code icode = code_for_pred (AND, qimode);
+    rtx tmp2 = gen_reg_rtx (qimode);
+    rtx ones = gen_const_vec_duplicate (qimode, GEN_INT (1));
+    rtx ops[] = {tmp2, tmp, ones};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops);
+
+    /* Compare against zero.  */
+    riscv_vector::expand_vec_cmp (operands[0], NE, tmp2, CONST0_RTX (qimode));
     DONE;
   }
 )
@@ -2963,7 +2983,8 @@
   [(match_operand:V_VLSI 0 "register_operand")
    (match_operand:V_VLSI 1 "register_operand")
    (match_operand:V_VLSI 2 "register_operand")]
-  "TARGET_VECTOR"
+  ;; Disabled until PR119224 is resolved
+  "TARGET_VECTOR && 0"
   {
     rtx max = gen_reg_rtx (<MODE>mode);
     insn_code icode = code_for_pred (UMAX, <MODE>mode);

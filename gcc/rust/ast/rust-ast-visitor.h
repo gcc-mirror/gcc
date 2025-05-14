@@ -24,7 +24,9 @@
 #include "rust-ast-full-decls.h"
 #include "rust-ast.h"
 #include "rust-item.h"
+#include "rust-path.h"
 #include "rust-system.h"
+#include "rust-stacked-contexts.h"
 
 namespace Rust {
 namespace AST {
@@ -112,6 +114,7 @@ public:
   virtual void visit (RangeFromToInclExpr &expr) = 0;
   virtual void visit (RangeToInclExpr &expr) = 0;
   virtual void visit (ReturnExpr &expr) = 0;
+  virtual void visit (BoxExpr &expr) = 0;
   virtual void visit (UnsafeBlockExpr &expr) = 0;
   virtual void visit (LoopExpr &expr) = 0;
   virtual void visit (WhileLoopExpr &expr) = 0;
@@ -127,6 +130,8 @@ public:
   virtual void visit (MatchExpr &expr) = 0;
   virtual void visit (AwaitExpr &expr) = 0;
   virtual void visit (AsyncBlockExpr &expr) = 0;
+  virtual void visit (InlineAsm &expr) = 0;
+  virtual void visit (LlvmInlineAsm &expr) = 0;
 
   // rust-item.h
   virtual void visit (TypeParam &param) = 0;
@@ -237,9 +242,10 @@ public:
 class DefaultASTVisitor : public ASTVisitor
 {
 public:
+  virtual void visit_function_params (AST::Function &function);
+
   virtual void visit (AST::Crate &crate);
 
-protected:
   virtual void visit (AST::Token &tok) override;
   virtual void visit (AST::DelimTokenTree &delim_tok_tree) override;
   virtual void visit (AST::AttrInputMetaItemContainer &input) override;
@@ -297,6 +303,7 @@ protected:
   virtual void visit (AST::RangeFromToInclExpr &expr) override;
   virtual void visit (AST::RangeToInclExpr &expr) override;
   virtual void visit (AST::ReturnExpr &expr) override;
+  virtual void visit (AST::BoxExpr &expr) override;
   virtual void visit (AST::UnsafeBlockExpr &expr) override;
   virtual void visit (AST::LoopExpr &expr) override;
   virtual void visit (AST::WhileLoopExpr &expr) override;
@@ -309,6 +316,9 @@ protected:
   virtual void visit (AST::MatchExpr &expr) override;
   virtual void visit (AST::AwaitExpr &expr) override;
   virtual void visit (AST::AsyncBlockExpr &expr) override;
+  virtual void visit (InlineAsm &expr) override;
+  virtual void visit (LlvmInlineAsm &expr) override;
+
   virtual void visit (AST::TypeParam &param) override;
   virtual void visit (AST::LifetimeWhereClauseItem &item) override;
   virtual void visit (AST::TypeBoundWhereClauseItem &item) override;
@@ -418,7 +428,6 @@ protected:
   virtual void visit (AST::WhereClause &where);
   virtual void visit (AST::StructField &field);
   virtual void visit (AST::TupleField &field);
-  virtual void visit (AST::NamedFunctionParam &param);
   virtual void visit (AST::MacroRule &rule);
   virtual void visit (AST::MacroInvocData &data);
   virtual void visit (AST::MacroTranscriber &transcriber);
@@ -443,7 +452,7 @@ protected:
 class ContextualASTVisitor : public DefaultASTVisitor
 {
 protected:
-  enum class Context
+  enum class Kind
   {
     FUNCTION,
     INHERENT_IMPL,
@@ -452,6 +461,7 @@ protected:
     MODULE,
     CRATE,
   };
+
   using DefaultASTVisitor::visit;
 
   virtual void visit (AST::Crate &crate) override;
@@ -467,11 +477,7 @@ protected:
     DefaultASTVisitor::visit (item);
   }
 
-  std::vector<Context> context;
-
-  void push_context (Context ctx) { context.push_back (ctx); }
-
-  void pop_context () { context.pop_back (); }
+  StackedContexts<Kind> ctx;
 };
 
 } // namespace AST

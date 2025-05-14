@@ -133,6 +133,25 @@ namespace __debug
 		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __a) { }
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Construct a multiset from a range.
+       * @since C++23
+       */
+      template<std::__detail::__container_compatible_range<value_type> _Rg>
+	multiset(std::from_range_t __t, _Rg&& __rg,
+		 const _Compare& __c,
+		 const allocator_type& __a = allocator_type())
+	: _Base(__t, std::forward<_Rg>(__rg), __c, __a)
+	{ }
+
+      template<std::__detail::__container_compatible_range<value_type> _Rg>
+	multiset(std::from_range_t __t, _Rg&& __rg,
+		 const allocator_type& __a = allocator_type())
+	: _Base(__t, std::forward<_Rg>(__rg), __a)
+	{ }
+#endif
+
       ~multiset() = default;
 #endif
 
@@ -594,6 +613,17 @@ namespace __debug
     multiset(initializer_list<_Key>, _Allocator)
     -> multiset<_Key, less<_Key>, _Allocator>;
 
+#if __glibcxx_containers_ranges // C++ >= 23
+  template<ranges::input_range _Rg,
+	   __not_allocator_like _Compare = less<ranges::range_value_t<_Rg>>,
+	   __allocator_like _Alloc = std::allocator<ranges::range_value_t<_Rg>>>
+    multiset(from_range_t, _Rg&&, _Compare = _Compare(), _Alloc = _Alloc())
+      -> multiset<ranges::range_value_t<_Rg>, _Compare, _Alloc>;
+
+  template<ranges::input_range _Rg, __allocator_like _Alloc>
+    multiset(from_range_t, _Rg&&, _Alloc)
+      -> multiset<ranges::range_value_t<_Rg>, less<ranges::range_value_t<_Rg>>, _Alloc>;
+#endif
 #endif // deduction guides
 
   template<typename _Key, typename _Compare, typename _Allocator>

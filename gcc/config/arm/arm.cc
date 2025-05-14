@@ -948,12 +948,6 @@ int arm_ld_sched = 0;
 /* Nonzero if this chip is a StrongARM.  */
 int arm_tune_strongarm = 0;
 
-/* Nonzero if this chip supports Intel Wireless MMX technology.  */
-int arm_arch_iwmmxt = 0;
-
-/* Nonzero if this chip supports Intel Wireless MMX2 technology.  */
-int arm_arch_iwmmxt2 = 0;
-
 /* Nonzero if this chip is an XScale.  */
 int arm_arch_xscale = 0;
 
@@ -2970,11 +2964,6 @@ arm_option_check_internal (struct gcc_options *opts)
 {
   int flags = opts->x_target_flags;
 
-  /* iWMMXt and NEON are incompatible.  */
-  if (TARGET_IWMMXT
-      && bitmap_bit_p (arm_active_target.isa, isa_bit_neon))
-    error ("iWMMXt and NEON are incompatible");
-
   /* Make sure that the processor choice does not conflict with any of the
      other command line choices.  */
   if (TARGET_ARM_P (flags)
@@ -2996,10 +2985,6 @@ arm_option_check_internal (struct gcc_options *opts)
       && (TARGET_DEFAULT & MASK_APCS_FRAME))
     warning (0, "%<-g%> with %<-mno-apcs-frame%> may not give sensible "
 	     "debugging");
-
-  /* iWMMXt unsupported under Thumb mode.  */
-  if (TARGET_THUMB_P (flags) && TARGET_IWMMXT)
-    error ("iWMMXt unsupported under Thumb mode");
 
   if (TARGET_HARD_TP && TARGET_THUMB1_P (flags))
     error ("cannot use %<-mtp=cp15%> with 16-bit Thumb");
@@ -3928,8 +3913,6 @@ arm_option_reconfigure_globals (void)
   arm_arch_thumb1 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
   arm_arch_thumb2 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb2);
   arm_arch_xscale = bitmap_bit_p (arm_active_target.isa, isa_bit_xscale);
-  arm_arch_iwmmxt = bitmap_bit_p (arm_active_target.isa, isa_bit_iwmmxt);
-  arm_arch_iwmmxt2 = bitmap_bit_p (arm_active_target.isa, isa_bit_iwmmxt2);
   arm_arch_thumb_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_tdiv);
   arm_arch_arm_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_adiv);
   arm_arch_crc = bitmap_bit_p (arm_active_target.isa, isa_bit_crc32);
@@ -3997,12 +3980,6 @@ arm_options_perform_arch_sanity_checks (void)
   if (arm_arch5t)
     target_flags &= ~MASK_INTERWORK;
 
-  if (TARGET_IWMMXT && !ARM_DOUBLEWORD_ALIGN)
-    error ("iwmmxt requires an AAPCS compatible ABI for proper operation");
-
-  if (TARGET_IWMMXT_ABI && !TARGET_IWMMXT)
-    error ("iwmmxt abi requires an iwmmxt capable cpu");
-
   /* BPABI targets use linker tricks to allow interworking on cores
      without thumb support.  */
   if (TARGET_INTERWORK
@@ -4043,9 +4020,7 @@ arm_options_perform_arch_sanity_checks (void)
 
   if (TARGET_AAPCS_BASED)
     {
-      if (arm_abi == ARM_ABI_IWMMXT)
-	arm_pcs_default = ARM_PCS_AAPCS_IWMMXT;
-      else if (TARGET_HARD_FLOAT_ABI)
+      if (TARGET_HARD_FLOAT_ABI)
 	{
 	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
 	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2)
@@ -4552,11 +4527,6 @@ use_return_insn (int iscond, rtx sibling)
      since this also requires an insn.  */
   if (TARGET_VFP_BASE)
     for (regno = FIRST_VFP_REGNUM; regno <= LAST_VFP_REGNUM; regno++)
-      if (reg_needs_saving_p (regno))
-	return 0;
-
-  if (TARGET_REALLY_IWMMXT)
-    for (regno = FIRST_IWMMXT_REGNUM; regno <= LAST_IWMMXT_REGNUM; regno++)
       if (reg_needs_saving_p (regno))
 	return 0;
 
@@ -6048,9 +6018,6 @@ arm_libcall_value_1 (machine_mode mode)
 {
   if (TARGET_AAPCS_BASED)
     return aapcs_libcall_value (mode);
-  else if (TARGET_IWMMXT_ABI
-	   && arm_vector_mode_supported_p (mode))
-    return gen_rtx_REG (mode, FIRST_IWMMXT_REGNUM);
   else
     return gen_rtx_REG (mode, ARG_REGISTER (1));
 }
@@ -6083,9 +6050,7 @@ arm_function_value_regno_p (const unsigned int regno)
       || (TARGET_32BIT
 	  && TARGET_AAPCS_BASED
 	  && TARGET_HARD_FLOAT
-	  && regno == FIRST_VFP_REGNUM)
-      || (TARGET_IWMMXT_ABI
-	  && regno == FIRST_IWMMXT_REGNUM))
+	  && regno == FIRST_VFP_REGNUM))
     return true;
 
   return false;
@@ -6102,8 +6067,6 @@ arm_apply_result_size (void)
     {
       if (TARGET_HARD_FLOAT_ABI)
 	size += 32;
-      if (TARGET_IWMMXT_ABI)
-	size += 8;
     }
 
   return size;
@@ -6265,7 +6228,6 @@ const struct pcs_attribute_arg
 #if 0
     /* We could recognize these, but changes would be needed elsewhere
      * to implement them.  */
-    {"aapcs-iwmmxt", ARM_PCS_AAPCS_IWMMXT},
     {"atpcs", ARM_PCS_ATPCS},
     {"apcs", ARM_PCS_APCS},
 #endif
@@ -7195,26 +7157,12 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
 
   /* On the ARM, the offset starts at 0.  */
   pcum->nregs = 0;
-  pcum->iwmmxt_nregs = 0;
   pcum->can_split = true;
 
   /* Varargs vectors are treated the same as long long.
      named_count avoids having to change the way arm handles 'named' */
   pcum->named_count = 0;
   pcum->nargs = 0;
-
-  if (TARGET_REALLY_IWMMXT && fntype)
-    {
-      tree fn_arg;
-
-      for (fn_arg = TYPE_ARG_TYPES (fntype);
-	   fn_arg;
-	   fn_arg = TREE_CHAIN (fn_arg))
-	pcum->named_count += 1;
-
-      if (! pcum->named_count)
-	pcum->named_count = INT_MAX;
-    }
 }
 
 /* Return 2 if double word alignment is required for argument passing,
@@ -7308,22 +7256,6 @@ arm_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
       return pcum->aapcs_reg;
     }
 
-  /* Varargs vectors are treated the same as long long.
-     named_count avoids having to change the way arm handles 'named' */
-  if (TARGET_IWMMXT_ABI
-      && arm_vector_mode_supported_p (arg.mode)
-      && pcum->named_count > pcum->nargs + 1)
-    {
-      if (pcum->iwmmxt_nregs <= 9)
-	return gen_rtx_REG (arg.mode,
-			    pcum->iwmmxt_nregs + FIRST_IWMMXT_REGNUM);
-      else
-	{
-	  pcum->can_split = false;
-	  return NULL_RTX;
-	}
-    }
-
   /* Put doubleword aligned quantities in even register pairs.  */
   if ((pcum->nregs & 1) && ARM_DOUBLEWORD_ALIGN)
     {
@@ -7383,9 +7315,6 @@ arm_arg_partial_bytes (cumulative_args_t pcum_v, const function_arg_info &arg)
       return pcum->aapcs_partial;
     }
 
-  if (TARGET_IWMMXT_ABI && arm_vector_mode_supported_p (arg.mode))
-    return 0;
-
   if (NUM_ARG_REGS > nregs
       && (NUM_ARG_REGS < nregs + ARM_NUM_REGS2 (arg.mode, arg.type))
       && pcum->can_split)
@@ -7422,12 +7351,7 @@ arm_function_arg_advance (cumulative_args_t pcum_v,
   else
     {
       pcum->nargs += 1;
-      if (arm_vector_mode_supported_p (arg.mode)
-	  && pcum->named_count > pcum->nargs
-	  && TARGET_IWMMXT_ABI)
-	pcum->iwmmxt_nregs += 1;
-      else
-	pcum->nregs += ARM_NUM_REGS2 (arg.mode, arg.type);
+      pcum->nregs += ARM_NUM_REGS2 (arg.mode, arg.type);
     }
 }
 
@@ -8086,8 +8010,8 @@ legitimate_pic_operand_p (rtx x)
 
 /* Record that the current function needs a PIC register.  If PIC_REG is null,
    a new pseudo is allocated as PIC register, otherwise PIC_REG is used.  In
-   both case cfun->machine->pic_reg is initialized if we have not already done
-   so.  COMPUTE_NOW decide whether and where to set the PIC register.  If true,
+   both cases cfun->machine->pic_reg is initialized if we have not already done
+   so.  COMPUTE_NOW decides whether and where to set the PIC register.  If true,
    PIC register is reloaded in the current position of the instruction stream
    irregardless of whether it was loaded before.  Otherwise, it is only loaded
    if not already done so (crtl->uses_pic_offset_table is null).  Note that
@@ -8107,6 +8031,7 @@ require_pic_register (rtx pic_reg, bool compute_now)
   if (!crtl->uses_pic_offset_table || compute_now)
     {
       gcc_assert (can_create_pseudo_p ()
+		  || (arm_pic_register != INVALID_REGNUM)
 		  || (pic_reg != NULL_RTX
 		      && REG_P (pic_reg)
 		      && GET_MODE (pic_reg) == Pmode));
@@ -8905,12 +8830,6 @@ arm_legitimate_index_p (machine_mode mode, rtx index, RTX_CODE outer,
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
 
-  if (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (mode))
-    return (code == CONST_INT
-	    && INTVAL (index) < 1024
-	    && INTVAL (index) > -1024
-	    && (INTVAL (index) & 3) == 0);
-
   if (GET_MODE_SIZE (mode) <= 4
       && ! (arm_arch4
 	    && (mode == HImode
@@ -8989,17 +8908,6 @@ thumb2_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
 	       (coprocessor).  */
 	    && INTVAL (index) > -256
 	    && (INTVAL (index) & 3) == 0);
-
-  if (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (mode))
-    {
-      /* For DImode assume values will usually live in core regs
-	 and only allow LDRD addressing modes.  */
-      if (!TARGET_LDRD || mode != DImode)
-	return (code == CONST_INT
-		&& INTVAL (index) < 1024
-		&& INTVAL (index) > -1024
-		&& (INTVAL (index) & 3) == 0);
-    }
 
   /* For quad modes, we restrict the constant offset to be slightly less
      than what the instruction format permits.  We do this because for
@@ -12462,11 +12370,6 @@ arm_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
       if ((IS_VFP_CLASS (from) && !IS_VFP_CLASS (to))
 	  || (!IS_VFP_CLASS (from) && IS_VFP_CLASS (to)))
 	return 15;
-      else if ((from == IWMMXT_REGS && to != IWMMXT_REGS)
-	       || (from != IWMMXT_REGS && to == IWMMXT_REGS))
-	return 4;
-      else if (from == IWMMXT_GR_REGS || to == IWMMXT_GR_REGS)
-	return 20;
       else
 	return 2;
     }
@@ -16210,14 +16113,16 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	case UNGT:
 	case UNGE:
 	case UNEQ:
-	case LTGT:
 	  return CCFPmode;
 
 	case LT:
 	case LE:
 	case GT:
 	case GE:
-	  return CCFPEmode;
+	case LTGT:
+	  return (flag_finite_math_only
+		  ? CCFPmode
+		  : CCFPEmode);
 
 	default:
 	  gcc_unreachable ();
@@ -17580,8 +17485,7 @@ struct minipool_node
   rtx value;
   /* The mode of value.  */
   machine_mode mode;
-  /* The size of the value.  With iWMMXt enabled
-     sizes > 4 also imply an alignment of 8-bytes.  */
+  /* The size of the value.  */
   int fix_size;
 };
 
@@ -20244,9 +20148,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 		}
 	      else
 		{
-		  /* Use a single insn if we can.
-		     FIXME: IWMMXT allows offsets larger than ldrd can
-		     handle, fix these up with a pair of ldr.  */
+		  /* Use a single insn if we can.  */
 		  if (can_ldrd
 		      && (TARGET_THUMB2
 		      || !CONST_INT_P (otherops[2])
@@ -20271,9 +20173,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	    }
 	  else
 	    {
-	      /* Use a single insn if we can.
-		 FIXME: IWMMXT allows offsets larger than ldrd can handle,
-		 fix these up with a pair of ldr.  */
+	      /* Use a single insn if we can.  */
 	      if (can_ldrd
 		  && (TARGET_THUMB2
 		  || !CONST_INT_P (otherops[2])
@@ -20511,8 +20411,6 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  otherops[1] = XEXP (XEXP (XEXP (operands[0], 0), 1), 0);
 	  otherops[2] = XEXP (XEXP (XEXP (operands[0], 0), 1), 1);
 
-	  /* IWMMXT allows offsets larger than strd can handle,
-	     fix these up with a pair of str.  */
 	  if (!TARGET_THUMB2
 	      && CONST_INT_P (otherops[2])
 	      && (INTVAL(otherops[2]) <= -256
@@ -21449,34 +21347,6 @@ arm_compute_save_core_reg_mask (void)
   if (cfun->machine->lr_save_eliminated)
     save_reg_mask &= ~ (1 << LR_REGNUM);
 
-  if (TARGET_REALLY_IWMMXT
-      && ((bit_count (save_reg_mask)
-	   + ARM_NUM_INTS (crtl->args.pretend_args_size +
-			   arm_compute_static_chain_stack_bytes())
-	   ) % 2) != 0)
-    {
-      /* The total number of registers that are going to be pushed
-	 onto the stack is odd.  We need to ensure that the stack
-	 is 64-bit aligned before we start to save iWMMXt registers,
-	 and also before we start to create locals.  (A local variable
-	 might be a double or long long which we will load/store using
-	 an iWMMXt instruction).  Therefore we need to push another
-	 ARM register, so that the stack will be 64-bit aligned.  We
-	 try to avoid using the arg registers (r0 -r3) as they might be
-	 used to pass values in a tail call.  */
-      for (reg = 4; reg <= 12; reg++)
-	if ((save_reg_mask & (1 << reg)) == 0)
-	  break;
-
-      if (reg <= 12)
-	save_reg_mask |= (1 << reg);
-      else
-	{
-	  cfun->machine->sibcall_blocked = 1;
-	  save_reg_mask |= (1 << 3);
-	}
-    }
-
   /* We may need to push an additional register for use initializing the
      PIC base register.  */
   if (TARGET_THUMB2 && IS_NESTED (func_type) && flag_pic
@@ -21684,19 +21554,17 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 
       if ((live_regs_mask & (1 << IP_REGNUM)) == (1 << IP_REGNUM))
 	{
-	  /* There are three possible reasons for the IP register
-	     being saved.  1) a stack frame was created, in which case
-	     IP contains the old stack pointer, or 2) an ISR routine
-	     corrupted it, or 3) it was saved to align the stack on
-	     iWMMXt.  In case 1, restore IP into SP, otherwise just
-	     restore IP.  */
+	  /* There are two possible reasons for the IP register being saved.
+	     1) a stack frame was created, in which case IP contains the old
+	     stack pointer, or 2) an ISR routine corrupted it.  In case 1,
+	     restore IP into SP, otherwise just restore IP.  */
 	  if (frame_pointer_needed)
 	    {
 	      live_regs_mask &= ~ (1 << IP_REGNUM);
 	      live_regs_mask |=   (1 << SP_REGNUM);
 	    }
 	  else
-	    gcc_assert (IS_INTERRUPT (func_type) || TARGET_REALLY_IWMMXT);
+	    gcc_assert (IS_INTERRUPT (func_type));
 	}
 
       /* On some ARM architectures it is faster to use LDR rather than
@@ -23148,8 +23016,6 @@ arm_compute_frame_layout (void)
 
   if (TARGET_32BIT)
     {
-      unsigned int regno;
-
       offsets->saved_regs_mask = arm_compute_save_core_reg_mask ();
       core_saved = bit_count (offsets->saved_regs_mask) * 4;
       saved = core_saved;
@@ -23157,16 +23023,6 @@ arm_compute_frame_layout (void)
       /* We know that SP will be doubleword aligned on entry, and we must
 	 preserve that condition at any subroutine call.  We also require the
 	 soft frame pointer to be doubleword aligned.  */
-
-      if (TARGET_REALLY_IWMMXT)
-	{
-	  /* Check for the call-saved iWMMXt registers.  */
-	  for (regno = FIRST_IWMMXT_REGNUM;
-	       regno <= LAST_IWMMXT_REGNUM;
-	       regno++)
-	    if (reg_needs_saving_p (regno))
-	      saved += 8;
-	}
 
       func_type = arm_current_func_type ();
       /* Space for saved VFP registers.  */
@@ -23383,18 +23239,6 @@ arm_save_coproc_regs(void)
   int saved_size = 0;
   unsigned reg;
   unsigned start_reg;
-  rtx insn;
-
-  if (TARGET_REALLY_IWMMXT)
-  for (reg = LAST_IWMMXT_REGNUM; reg >= FIRST_IWMMXT_REGNUM; reg--)
-    if (reg_needs_saving_p (reg))
-      {
-	insn = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
-	insn = gen_rtx_MEM (V2SImode, insn);
-	insn = emit_set_insn (insn, gen_rtx_REG (V2SImode, reg));
-	RTX_FRAME_RELATED_P (insn) = 1;
-	saved_size += 8;
-      }
 
   if (TARGET_VFP_BASE)
     {
@@ -24553,42 +24397,9 @@ arm_print_operand (FILE *stream, rtx x, int code)
       return;
 
     case 'U':
-      if (!REG_P (x)
-	  || REGNO (x) < FIRST_IWMMXT_GR_REGNUM
-	  || REGNO (x) > LAST_IWMMXT_GR_REGNUM)
-	/* Bad value for wCG register number.  */
-	{
-	  output_operand_lossage ("invalid operand for code '%c'", code);
-	  return;
-	}
-
-      else
-	fprintf (stream, "%d", REGNO (x) - FIRST_IWMMXT_GR_REGNUM);
-      return;
-
-      /* Print an iWMMXt control register name.  */
     case 'w':
-      if (!CONST_INT_P (x)
-	  || INTVAL (x) < 0
-	  || INTVAL (x) >= 16)
-	/* Bad value for wC register number.  */
-	{
-	  output_operand_lossage ("invalid operand for code '%c'", code);
-	  return;
-	}
-
-      else
-	{
-	  static const char * wc_reg_names [16] =
-	    {
-	      "wCID",  "wCon",  "wCSSF", "wCASF",
-	      "wC4",   "wC5",   "wC6",   "wC7",
-	      "wCGR0", "wCGR1", "wCGR2", "wCGR3",
-	      "wC12",  "wC13",  "wC14",  "wC15"
-	    };
-
-	  fputs (wc_reg_names [INTVAL (x)], stream);
-	}
+      /* Former iWMMXT support, removed after GCC-15.  */
+      output_operand_lossage ("obsolete iWMMXT format code '%c'", code);
       return;
 
     /* Print the high single-precision register of a VFP double-precision
@@ -25923,15 +25734,6 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       return false;
     }
 
-  if (TARGET_REALLY_IWMMXT)
-    {
-      if (IS_IWMMXT_GR_REGNUM (regno))
-	return mode == SImode;
-
-      if (IS_IWMMXT_REGNUM (regno))
-	return VALID_IWMMXT_REG_MODE (mode);
-    }
-
   /* We allow almost any value to be stored in the general registers.
      Restrict doubleword quantities to even register pairs in ARM state
      so that we can use ldrd. The same restriction applies for MVE
@@ -26036,12 +25838,6 @@ arm_regno_class (int regno)
       else
         return VFP_HI_REGS;
     }
-
-  if (IS_IWMMXT_REGNUM (regno))
-    return IWMMXT_REGS;
-
-  if (IS_IWMMXT_GR_REGNUM (regno))
-    return IWMMXT_GR_REGS;
 
   return NO_REGS;
 }
@@ -27960,27 +27756,6 @@ arm_expand_epilogue_apcs_frame (bool really_return)
                                     gen_rtx_REG (SImode, IP_REGNUM));
     }
 
-  if (TARGET_IWMMXT)
-    {
-      /* The frame pointer is guaranteed to be non-double-word aligned, as
-         it is set to double-word-aligned old_stack_pointer - 4.  */
-      rtx_insn *insn;
-      int lrm_count = (num_regs % 2) ? (num_regs + 2) : (num_regs + 1);
-
-      for (i = LAST_IWMMXT_REGNUM; i >= FIRST_IWMMXT_REGNUM; i--)
-	if (reg_needs_saving_p (i))
-          {
-            rtx addr = gen_frame_mem (V2SImode,
-                                 plus_constant (Pmode, hard_frame_pointer_rtx,
-                                                - lrm_count * 4));
-            insn = emit_insn (gen_movsi (gen_rtx_REG (V2SImode, i), addr));
-            REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
-                                               gen_rtx_REG (V2SImode, i),
-                                               NULL_RTX);
-            lrm_count += 2;
-          }
-    }
-
   /* saved_regs_mask should contain IP which contains old stack pointer
      at the time of activation creation.  Since SP and IP are adjacent registers,
      we can restore the value directly into SP.  */
@@ -28192,23 +27967,6 @@ arm_expand_epilogue (bool really_return)
                                     (end_reg - (i + 2)) / 2,
                                     stack_pointer_rtx);
     }
-
-  if (TARGET_IWMMXT)
-    for (i = FIRST_IWMMXT_REGNUM; i <= LAST_IWMMXT_REGNUM; i++)
-      if (reg_needs_saving_p (i))
-        {
-          rtx_insn *insn;
-          rtx addr = gen_rtx_MEM (V2SImode,
-                                  gen_rtx_POST_INC (SImode,
-                                                    stack_pointer_rtx));
-          set_mem_alias_set (addr, get_frame_alias_set ());
-          insn = emit_insn (gen_movsi (gen_rtx_REG (V2SImode, i), addr));
-          REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
-                                             gen_rtx_REG (V2SImode, i),
-                                             NULL_RTX);
-	  arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD,
-				       stack_pointer_rtx, stack_pointer_rtx);
-        }
 
   if (saved_regs_mask)
     {
@@ -29850,7 +29608,7 @@ arm_vector_mode_supported_p (machine_mode mode)
       || mode == V8BFmode))
     return true;
 
-  if ((TARGET_NEON || TARGET_IWMMXT)
+  if (TARGET_NEON
       && ((mode == V2SImode)
 	  || (mode == V4HImode)
 	  || (mode == V8QImode)))
@@ -29942,19 +29700,6 @@ arm_preferred_simd_mode (scalar_mode mode)
       default:;
       }
 
-  if (TARGET_REALLY_IWMMXT)
-    switch (mode)
-      {
-      case E_SImode:
-	return V2SImode;
-      case E_HImode:
-	return V4HImode;
-      case E_QImode:
-	return V8QImode;
-
-      default:;
-      }
-
   if (TARGET_HAVE_MVE)
     switch (mode)
       {
@@ -30035,12 +29780,6 @@ arm_debugger_regno (unsigned int regno)
       else
 	return 256 + (regno - FIRST_VFP_REGNUM) / 2;
     }
-
-  if (IS_IWMMXT_GR_REGNUM (regno))
-    return 104 + regno - FIRST_IWMMXT_GR_REGNUM;
-
-  if (IS_IWMMXT_REGNUM (regno))
-    return 112 + regno - FIRST_IWMMXT_REGNUM;
 
   if (IS_PAC_REGNUM (regno))
     return DWARF_PAC_REGNUM;
@@ -30628,95 +30367,6 @@ arm_output_shift(rtx * operands, int set_flags)
   return "";
 }
 
-/* Output assembly for a WMMX immediate shift instruction.  */
-const char *
-arm_output_iwmmxt_shift_immediate (const char *insn_name, rtx *operands, bool wror_or_wsra)
-{
-  int shift = INTVAL (operands[2]);
-  char templ[50];
-  machine_mode opmode = GET_MODE (operands[0]);
-
-  gcc_assert (shift >= 0);
-
-  /* If the shift value in the register versions is > 63 (for D qualifier),
-     31 (for W qualifier) or 15 (for H qualifier).  */
-  if (((opmode == V4HImode) && (shift > 15))
-	|| ((opmode == V2SImode) && (shift > 31))
-	|| ((opmode == DImode) && (shift > 63)))
-  {
-    if (wror_or_wsra)
-      {
-        sprintf (templ, "%s\t%%0, %%1, #%d", insn_name, 32);
-        output_asm_insn (templ, operands);
-        if (opmode == DImode)
-          {
-	    sprintf (templ, "%s\t%%0, %%0, #%d", insn_name, 32);
-	    output_asm_insn (templ, operands);
-          }
-      }
-    else
-      {
-        /* The destination register will contain all zeros.  */
-        sprintf (templ, "wzero\t%%0");
-        output_asm_insn (templ, operands);
-      }
-    return "";
-  }
-
-  if ((opmode == DImode) && (shift > 32))
-    {
-      sprintf (templ, "%s\t%%0, %%1, #%d", insn_name, 32);
-      output_asm_insn (templ, operands);
-      sprintf (templ, "%s\t%%0, %%0, #%d", insn_name, shift - 32);
-      output_asm_insn (templ, operands);
-    }
-  else
-    {
-      sprintf (templ, "%s\t%%0, %%1, #%d", insn_name, shift);
-      output_asm_insn (templ, operands);
-    }
-  return "";
-}
-
-/* Output assembly for a WMMX tinsr instruction.  */
-const char *
-arm_output_iwmmxt_tinsr (rtx *operands)
-{
-  int mask = INTVAL (operands[3]);
-  int i;
-  char templ[50];
-  int units = mode_nunits[GET_MODE (operands[0])];
-  gcc_assert ((mask & (mask - 1)) == 0);
-  for (i = 0; i < units; ++i)
-    {
-      if ((mask & 0x01) == 1)
-        {
-          break;
-        }
-      mask >>= 1;
-    }
-  gcc_assert (i < units);
-  {
-    switch (GET_MODE (operands[0]))
-      {
-      case E_V8QImode:
-	sprintf (templ, "tinsrb%%?\t%%0, %%2, #%d", i);
-	break;
-      case E_V4HImode:
-	sprintf (templ, "tinsrh%%?\t%%0, %%2, #%d", i);
-	break;
-      case E_V2SImode:
-	sprintf (templ, "tinsrw%%?\t%%0, %%2, #%d", i);
-	break;
-      default:
-	gcc_unreachable ();
-	break;
-      }
-    output_asm_insn (templ, operands);
-  }
-  return "";
-}
-
 /* Output an arm casesi dispatch sequence.  Used by arm_casesi_internal insn.
    Responsible for the handling of switch statements in arm.  */
 const char *
@@ -31087,26 +30737,6 @@ arm_conditional_register_usage (void)
 	}
       if (TARGET_HAVE_MVE)
 	fixed_regs[VPR_REGNUM] = 0;
-    }
-
-  if (TARGET_REALLY_IWMMXT && !TARGET_GENERAL_REGS_ONLY)
-    {
-      regno = FIRST_IWMMXT_GR_REGNUM;
-      /* The 2002/10/09 revision of the XScale ABI has wCG0
-         and wCG1 as call-preserved registers.  The 2002/11/21
-         revision changed this so that all wCG registers are
-         scratch registers.  */
-      for (regno = FIRST_IWMMXT_GR_REGNUM;
-	   regno <= LAST_IWMMXT_GR_REGNUM; ++ regno)
-	fixed_regs[regno] = 0;
-      /* The XScale ABI has wR0 - wR9 as scratch registers,
-	 the rest as call-preserved registers.  */
-      for (regno = FIRST_IWMMXT_REGNUM;
-	   regno <= LAST_IWMMXT_REGNUM; ++ regno)
-	{
-	  fixed_regs[regno] = 0;
-	  call_used_regs[regno] = regno < FIRST_IWMMXT_REGNUM + 10;
-	}
     }
 
   if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)

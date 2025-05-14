@@ -210,10 +210,10 @@ EXTERN tree m2type_gm2_type_for_size (unsigned int bits, int unsignedp);
 EXTERN tree m2type_BuildProcTypeParameterDeclaration (location_t location,
                                                       tree type,
                                                       bool isreference);
-EXTERN int m2type_IsAddress (tree type);
+EXTERN bool m2type_IsAddress (tree type);
 EXTERN tree m2type_GetCardinalAddressType (void);
 EXTERN bool m2type_SameRealType (tree a, tree b);
-
+EXTERN bool m2type_IsGccStrictTypeEquivalent (tree left, tree right);
 
 #undef EXTERN
 #endif /* m2type_h  */

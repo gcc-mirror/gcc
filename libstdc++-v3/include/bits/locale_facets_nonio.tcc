@@ -1656,7 +1656,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       const size_t __maxlen = 128;
       char_type __res[__maxlen];
 
-      // NB: In IEE 1003.1-200x, and perhaps other locale models, it
+      // NB: In IEEE 1003.1-200x, and perhaps other locale models, it
       // is possible that the format character will be longer than one
       // character. Possibilities include 'E' or 'O' followed by a
       // format character: if __mod is not the default argument, assume

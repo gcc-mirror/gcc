@@ -1,12 +1,12 @@
 /**
  * Performs the semantic2 stage, which deals with initializer expressions.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/semantic2.d, _semantic2.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/semantic2.d, _semantic2.d)
  * Documentation:  https://dlang.org/phobos/dmd_semantic2.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/semantic2.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/semantic2.d
  */
 
 module dmd.semantic2;
@@ -852,6 +852,8 @@ private extern(C++) final class StaticAAVisitor : SemanticTimeTransitiveVisitor
         loweredExp = loweredExp.ctfeInterpret();
 
         aaExp.lowering = loweredExp;
+
+        semanticTypeInfo(sc, loweredExp.type);
     }
 
     // https://issues.dlang.org/show_bug.cgi?id=24602

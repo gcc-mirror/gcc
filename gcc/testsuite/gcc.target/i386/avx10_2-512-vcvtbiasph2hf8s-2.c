@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2-512" } */
-/* { dg-require-effective-target avx10_2_512 } */
+/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2" } */
+/* { dg-require-effective-target avx10_2 } */
 
 #ifndef AVX10_2
 #define AVX10_2
@@ -60,16 +60,16 @@ TEST (void)
 
   CALC (res_ref, src1.a, src2.a);
 
-  res1.x = INTRINSIC (_cvtbiassph_hf8) (src1.x, src2.x);
+  res1.x = INTRINSIC (_cvts_biasph_hf8) (src1.x, src2.x);
   if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res1, res_ref))
     abort ();
 
-  res2.x = INTRINSIC (_mask_cvtbiassph_hf8) (res2.x, mask, src1.x, src2.x);
+  res2.x = INTRINSIC (_mask_cvts_biasph_hf8) (res2.x, mask, src1.x, src2.x);
   MASK_MERGE (i_b) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res2, res_ref))
     abort ();
 
-  res3.x = INTRINSIC (_maskz_cvtbiassph_hf8) (mask, src1.x, src2.x);
+  res3.x = INTRINSIC (_maskz_cvts_biasph_hf8) (mask, src1.x, src2.x);
   MASK_ZERO (i_b) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res3, res_ref))
     abort ();

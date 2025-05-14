@@ -1,6 +1,6 @@
 /* { dg-do compile }  */
 /* { dg-additional-options "-fdump-tree-optimized" } */
-/* { dg-additional-options "-DDEVICE_ARCH=x86_64 -DDEVICE_ISA=mmx -mmmx" { target { x86_64-*-* && { ! ia32 } } } } */
+/* { dg-additional-options "-DDEVICE_ARCH=x86_64 -DDEVICE_ISA=mmx -mmmx" { target { x86 && lp64 } } } */
 
 #include <stdlib.h>
 

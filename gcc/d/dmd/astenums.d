@@ -1,11 +1,11 @@
 /**
  * Defines enums common to dmd and dmd as parse library.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/astenums.d, _astenums.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/astenums.d, _astenums.d)
  * Documentation:  https://dlang.org/phobos/dmd_astenums.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/astenums.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/astenums.d
  */
 
 module dmd.astenums;
@@ -50,7 +50,7 @@ alias MOD = ubyte;
 
 enum STC : ulong  // transfer changes to declaration.h
 {
-    undefined_          = 0,
+    none                = 0,
 
     static_             = 1,   /// `static`
     extern_             = 2,   /// `extern`
@@ -143,6 +143,9 @@ enum STC : ulong  // transfer changes to declaration.h
 
 }
 
+// Alias for C++ interface functions which use plain integer instead of enum class,
+// since C++ enum class doesn't support | & and conversion to bool. Maybe this can
+// be refactored to a struct with operator overloads or bit fields at some point.
 alias StorageClass = ulong;
 
 /********

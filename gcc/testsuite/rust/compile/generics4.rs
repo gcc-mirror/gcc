@@ -6,7 +6,6 @@ struct GenericStruct<T>(T, usize);
 fn main() {
     let a2;
     a2 = GenericStruct::<i8, i32>(1, 456); // { dg-error "generic item takes at most 1 type arguments but 2 were supplied" }
-                                           // { dg-error {Failed to resolve expression of function call} "" { target *-*-* } .-1 }
 
     let b2: i32 = a2.0;
     // { dg-error {Expected Tuple or ADT got: T\?} "" { target *-*-* } .-1 }

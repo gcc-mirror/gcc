@@ -25,6 +25,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "expected.h"
 
 namespace Rust {
+
+class ParseLifetimeParamError
+{
+};
+
+class ParseLifetimeError
+{
+};
+enum class ParseLoopLabelError
+{
+  NOT_LOOP_LABEL,
+  MISSING_COLON,
+};
+enum ParseSelfError
+{
+  SELF_PTR,
+  PARSING,
+  NOT_SELF,
+};
+
 /* HACK: used to resolve the expression-or-statement problem at the end of a
  * block by allowing either to be returned (technically). Tagged union would
  * probably take up the same amount of space. */
@@ -95,12 +115,6 @@ struct ParseRestrictions
   bool allow_close_after_expr_stmt = false;
 };
 
-enum ParseSelfError
-{
-  SELF_PTR,
-  PARSING,
-  NOT_SELF,
-};
 // Parser implementation for gccrs.
 // TODO: if updated to C++20, ManagedTokenSource would be useful as a concept
 template <typename ManagedTokenSource> class Parser
@@ -148,7 +162,7 @@ public:
 
   std::unique_ptr<AST::BlockExpr>
   parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		    AST::LoopLabel label = AST::LoopLabel::error (),
+		    tl::optional<AST::LoopLabel> = tl::nullopt,
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
 
   bool is_macro_rules_def (const_TokenPtr t);
@@ -212,7 +226,7 @@ private:
   AST::TypePath parse_type_path ();
   std::unique_ptr<AST::TypePathSegment> parse_type_path_segment ();
   AST::PathIdentSegment parse_path_ident_segment ();
-  AST::GenericArg parse_generic_arg ();
+  tl::optional<AST::GenericArg> parse_generic_arg ();
   AST::GenericArgs parse_path_generic_args ();
   AST::GenericArgsBinding parse_generic_args_binding ();
   AST::TypePathFunction parse_type_path_function (location_t locus);
@@ -277,7 +291,8 @@ private:
     ParseFunction parsing_function, EndTokenPred is_end_token,
     std::string error_msg = "failed to parse generic param in generic params")
     -> std::vector<decltype (parsing_function ())>;
-  AST::LifetimeParam parse_lifetime_param ();
+  tl::expected<AST::LifetimeParam, ParseLifetimeParamError>
+  parse_lifetime_param ();
   std::vector<std::unique_ptr<AST::TypeParam>> parse_type_params ();
   template <typename EndTokenPred>
   std::vector<std::unique_ptr<AST::TypeParam>>
@@ -306,14 +321,11 @@ private:
   std::vector<AST::Lifetime> parse_lifetime_bounds ();
   template <typename EndTokenPred>
   std::vector<AST::Lifetime> parse_lifetime_bounds (EndTokenPred is_end_token);
-  AST::Lifetime parse_lifetime (bool allow_elided);
+  tl::expected<AST::Lifetime, ParseLifetimeError>
+  parse_lifetime (bool allow_elided);
   AST::Lifetime lifetime_from_token (const_TokenPtr tok);
   std::unique_ptr<AST::ExternalTypeItem>
   parse_external_type_item (AST::Visibility vis, AST::AttrVec outer_attrs);
-  AST::NamedFunctionParam parse_named_function_param ();
-  template <typename EndTokenPred>
-  std::vector<AST::NamedFunctionParam>
-  parse_named_function_params (EndTokenPred is_end_token);
 
   std::unique_ptr<AST::TypeAlias> parse_type_alias (AST::Visibility vis,
 						    AST::AttrVec outer_attrs);
@@ -592,18 +604,18 @@ private:
 		     location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::LoopExpr>
   parse_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		   AST::LoopLabel label = AST::LoopLabel::error (),
+		   tl::optional<AST::LoopLabel> label = tl::nullopt,
 		   location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::WhileLoopExpr>
   parse_while_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-			 AST::LoopLabel label = AST::LoopLabel::error (),
+			 tl::optional<AST::LoopLabel> label = tl::nullopt,
 			 location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::WhileLetLoopExpr>
   parse_while_let_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-			     AST::LoopLabel label = AST::LoopLabel::error ());
+			     tl::optional<AST::LoopLabel> label = tl::nullopt);
   std::unique_ptr<AST::ForLoopExpr>
   parse_for_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		       AST::LoopLabel label = AST::LoopLabel::error ());
+		       tl::optional<AST::LoopLabel> label = tl::nullopt);
   std::unique_ptr<AST::MatchExpr>
   parse_match_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
@@ -613,7 +625,8 @@ private:
   std::unique_ptr<AST::Expr> parse_labelled_loop_expr (const_TokenPtr tok,
 						       AST::AttrVec outer_attrs
 						       = AST::AttrVec ());
-  AST::LoopLabel parse_loop_label (const_TokenPtr tok);
+  tl::expected<AST::LoopLabel, ParseLoopLabelError>
+  parse_loop_label (const_TokenPtr tok);
   std::unique_ptr<AST::AsyncBlockExpr>
   parse_async_block_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
   std::unique_ptr<AST::GroupedExpr> parse_grouped_expr (AST::AttrVec outer_attrs
@@ -622,6 +635,9 @@ private:
 							= AST::AttrVec ());
   AST::ClosureParam parse_closure_param ();
 
+  std::unique_ptr<AST::BoxExpr> parse_box_expr (AST::AttrVec outer_attrs,
+						location_t pratt_parsed_loc
+						= UNKNOWN_LOCATION);
   // When given a pratt_parsed_loc, use it as the location of the
   // first token parsed in the expression (the parsing of that first
   // token should be skipped).

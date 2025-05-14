@@ -1,3 +1,20 @@
+2025-03-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119283
+	* libiberty.h (memrchr): New.
+
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* gomp-constants.h (GOMP_DEVICE_DEFAULT_OMP_61, GOMP_INTEROP_TARGET,
+	GOMP_INTEROP_TARGETSYNC, GOMP_INTEROP_FLAG_NOWAIT): Define.
+
+2025-03-18  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* libiberty.h (ldirname): New function declaration.
+	(dos_ldirname): Likewise.
+	(unix_ldirname): Likewise.
+
 2025-02-11  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* dwarf2.def (DW_CFA_AARCH64_negate_ra_state_with_pc): Define.

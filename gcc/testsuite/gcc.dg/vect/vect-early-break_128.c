@@ -3,7 +3,8 @@
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_int } */
 
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" } } */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { target { vect_partial_vectors && vect_load_lanes } } } } */
+/* { dg-final { scan-tree-dump-not "vectorizing stmts using SLP" "vect" { target { { ! vect_partial_vectors } || { ! vect_load_lanes } } } } } */
 /* { dg-final { scan-tree-dump "Loop contains only SLP stmts" "vect" } } */
 
 #ifndef N

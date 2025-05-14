@@ -4133,6 +4133,33 @@ compute_avail (function *fun)
 		      vec<vn_reference_op_s> operands
 			= vn_reference_operands_for_lookup (rhs1);
 		      vn_reference_t ref;
+
+		      /* We handle &MEM[ptr + 5].b[1].c as
+			 POINTER_PLUS_EXPR.  */
+		      if (operands[0].opcode == ADDR_EXPR
+			  && operands.last ().opcode == SSA_NAME)
+			{
+			  tree ops[2];
+			  if (vn_pp_nary_for_addr (operands, ops))
+			    {
+			      vn_nary_op_t nary;
+			      vn_nary_op_lookup_pieces (2, POINTER_PLUS_EXPR,
+							TREE_TYPE (rhs1), ops,
+							&nary);
+			      operands.release ();
+			      if (nary && !nary->predicated_values)
+				{
+				  unsigned value_id = nary->value_id;
+				  if (value_id_constant_p (value_id))
+				    continue;
+				  result = get_or_alloc_expr_for_nary
+				      (nary, value_id, gimple_location (stmt));
+				  break;
+				}
+			      continue;
+			    }
+			}
+
 		      vn_reference_lookup_pieces (gimple_vuse (stmt), set,
 						  base_set, TREE_TYPE (rhs1),
 						  operands, &ref, VN_WALK);

@@ -1,7 +1,6 @@
 /* PR29970*/
 /* { dg-do run } */
 /* { dg-options "-Wall -O0" } */
-/* { dg-require-effective-target alloca } */
 
 int foo(void)
 {

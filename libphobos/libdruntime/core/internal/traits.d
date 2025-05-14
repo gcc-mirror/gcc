@@ -545,7 +545,7 @@ template hasIndirections(T)
     else static if (__traits(isAssociativeArray, T) || is(T == class) || is(T == interface))
         enum hasIndirections = true;
     else static if (is(T == E[N], E, size_t N))
-        enum hasIndirections = T.sizeof && (is(E == void) || hasIndirections!(BaseElemOf!E));
+        enum hasIndirections = T.sizeof && (is(immutable E == immutable void) || hasIndirections!(BaseElemOf!E));
     else static if (isFunctionPointer!T)
         enum hasIndirections = false;
     else
@@ -703,6 +703,40 @@ template hasIndirections(T)
     }
 
     A!int dummy;
+}
+
+// https://github.com/dlang/dmd/issues/20812
+@safe unittest
+{
+    static assert(!hasIndirections!void);
+    static assert(!hasIndirections!(const void));
+    static assert(!hasIndirections!(inout void));
+    static assert(!hasIndirections!(immutable void));
+    static assert(!hasIndirections!(shared void));
+
+    static assert( hasIndirections!(void*));
+    static assert( hasIndirections!(const void*));
+    static assert( hasIndirections!(inout void*));
+    static assert( hasIndirections!(immutable void*));
+    static assert( hasIndirections!(shared void*));
+
+    static assert( hasIndirections!(void[]));
+    static assert( hasIndirections!(const void[]));
+    static assert( hasIndirections!(inout void[]));
+    static assert( hasIndirections!(immutable void[]));
+    static assert( hasIndirections!(shared void[]));
+
+    static assert( hasIndirections!(void[42]));
+    static assert( hasIndirections!(const void[42]));
+    static assert( hasIndirections!(inout void[42]));
+    static assert( hasIndirections!(immutable void[42]));
+    static assert( hasIndirections!(shared void[42]));
+
+    static assert(!hasIndirections!(void[0]));
+    static assert(!hasIndirections!(const void[0]));
+    static assert(!hasIndirections!(inout void[0]));
+    static assert(!hasIndirections!(immutable void[0]));
+    static assert(!hasIndirections!(shared void[0]));
 }
 
 template hasUnsharedIndirections(T)

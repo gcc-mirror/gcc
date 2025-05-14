@@ -32,6 +32,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
 namespace __detail
 {
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
@@ -217,7 +219,7 @@ namespace __detail
 	}
       else // Non-greedy mode
 	{
-	  if (__dfs_mode)
+	  if constexpr (__dfs_mode)
 	    {
 	      // vice-versa.
 	      _M_dfs(__match_mode, __state._M_next);
@@ -322,7 +324,7 @@ namespace __detail
 
       if (_M_current == _M_end)
 	return;
-      if (__dfs_mode)
+      if constexpr (__dfs_mode)
 	{
 	  if (__state._M_matches(*_M_current))
 	    {
@@ -393,7 +395,7 @@ namespace __detail
     void _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_handle_backref(_Match_mode __match_mode, _StateIdT __i)
     {
-      __glibcxx_assert(__dfs_mode);
+      static_assert(__dfs_mode, "this should never be instantiated");
 
       const auto& __state = _M_nfa[__i];
       auto& __submatch = _M_cur_results[__state._M_backref_index];
@@ -426,7 +428,7 @@ namespace __detail
     void _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_handle_accept(_Match_mode __match_mode, _StateIdT)
     {
-      if _GLIBCXX17_CONSTEXPR (__dfs_mode)
+      if constexpr (__dfs_mode)
 	{
 	  __glibcxx_assert(!_M_has_sol);
 	  if (__match_mode == _Match_mode::_Exact)
@@ -529,7 +531,11 @@ namespace __detail
 	case _S_opcode_match:
 	  _M_handle_match(__match_mode, __i); break;
 	case _S_opcode_backref:
-	  _M_handle_backref(__match_mode, __i); break;
+	  if constexpr (__dfs_mode)
+	    _M_handle_backref(__match_mode, __i);
+	  else
+	    __builtin_unreachable();
+	  break;
 	case _S_opcode_accept:
 	  _M_handle_accept(__match_mode, __i); break;
 	case _S_opcode_alternative:
@@ -564,6 +570,7 @@ namespace __detail
       return __left_is_word != __right_is_word;
     }
 } // namespace __detail
+#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

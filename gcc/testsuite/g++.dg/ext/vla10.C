@@ -1,6 +1,5 @@
 // PR c++/48446
 // { dg-options "" }
-// { dg-require-effective-target alloca }
 
 template<typename T>
 struct A

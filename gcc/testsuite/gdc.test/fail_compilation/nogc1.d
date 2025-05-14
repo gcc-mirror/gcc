@@ -57,23 +57,3 @@ fail_compilation/nogc1.d(55): Error: allocating with `new` causes a GC allocatio
     scope Object o1 = new Object();     // no error
     scope o2 = new Object();            // no error
 }
-
-/***************** DeleteExp *******************/
-
-/*
-TEST_OUTPUT:
----
-fail_compilation/nogc1.d(76): Error: the `delete` keyword is obsolete
-fail_compilation/nogc1.d(76):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
-fail_compilation/nogc1.d(77): Error: the `delete` keyword is obsolete
-fail_compilation/nogc1.d(77):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
-fail_compilation/nogc1.d(78): Error: the `delete` keyword is obsolete
-fail_compilation/nogc1.d(78):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
----
-*/
-@nogc void testDelete(int* p, Object o, S1* s)
-{
-    delete p;
-    delete o;
-    delete s;
-}

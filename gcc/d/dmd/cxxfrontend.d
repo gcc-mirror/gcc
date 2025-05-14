@@ -1,12 +1,12 @@
 /**
  * Contains C++ interfaces for interacting with DMD as a library.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/cxxfrontend.d, _cxxfrontend.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/cxxfrontend.d, _cxxfrontend.d)
  * Documentation:  https://dlang.org/phobos/dmd_cxxfrontend.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/cxxfrontend.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/cxxfrontend.d
  */
 module dmd.cxxfrontend;
 
@@ -15,6 +15,8 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.attrib;
 import dmd.common.outbuffer : OutBuffer;
+import dmd.dclass : ClassDeclaration;
+import dmd.declaration : TypeInfoDeclaration;
 import dmd.denum : EnumDeclaration;
 import dmd.dmodule /*: Module*/;
 import dmd.dscope : Scope;
@@ -153,7 +155,7 @@ void addMember(Dsymbol dsym, Scope* sc, ScopeDsymbol sds)
     return dmd.dsymbolsem.addMember(dsym, sc, sds);
 }
 
-Dsymbol search(Dsymbol d, const ref Loc loc, Identifier ident, SearchOptFlags
+Dsymbol search(Dsymbol d, Loc loc, Identifier ident, SearchOptFlags
                flags = SearchOpt.all)
 {
     import dmd.dsymbolsem;
@@ -176,6 +178,18 @@ Dsymbols* include(Dsymbol d, Scope* sc)
 {
     import dmd.dsymbolsem;
     return dmd.dsymbolsem.include(d, sc);
+}
+
+bool isFuncHidden(ClassDeclaration cd, FuncDeclaration fd)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.isFuncHidden(cd, fd);
+}
+
+Dsymbol vtblSymbol(ClassDeclaration cd)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.vtblSymbol(cd);
 }
 
 /***********************************************************
@@ -233,7 +247,7 @@ void genCppHdrFiles(ref Modules ms)
 /***********************************************************
  * enumsem.d
  */
-Expression getDefaultValue(EnumDeclaration ed, const ref Loc loc)
+Expression getDefaultValue(EnumDeclaration ed, Loc loc)
 {
     import dmd.enumsem;
     return dmd.enumsem.getDefaultValue(ed, loc);
@@ -256,11 +270,24 @@ Expression expressionSemantic(Expression e, Scope* sc)
     return dmd.expressionsem.expressionSemantic(e, sc);
 }
 
-bool fill(StructDeclaration sd, const ref Loc loc,
+bool fill(StructDeclaration sd, Loc loc,
           ref Expressions elements, bool ctorinit)
 {
     import dmd.expressionsem;
     return dmd.expressionsem.fill(sd, loc, elements, ctorinit);
+}
+
+/***********************************************************
+ * func.d
+ */
+FuncDeclaration genCfunc(Parameters* fparams, Type treturn, const(char)* name, StorageClass stc = STC.none)
+{
+    return FuncDeclaration.genCfunc(fparams, treturn, name, cast(STC) stc);
+}
+
+FuncDeclaration genCfunc(Parameters* fparams, Type treturn, Identifier id, StorageClass stc = STC.none)
+{
+    return FuncDeclaration.genCfunc(fparams, treturn, id, cast(STC) stc);
 }
 
 /***********************************************************
@@ -338,13 +365,13 @@ const(char)* parametersTypeToChars(ParameterList pl)
 /***********************************************************
  * iasm.d
  */
-Statement asmSemantic(AsmStatement s, Scope *sc)
+Statement asmSemantic(AsmStatement s, Scope* sc)
 {
     import dmd.iasm;
     return dmd.iasm.asmSemantic(s, sc);
 }
 
-void asmSemantic(CAsmDeclaration d, Scope *sc)
+void asmSemantic(CAsmDeclaration d, Scope* sc)
 {
     import dmd.iasm;
     return dmd.iasm.asmSemantic(d, sc);
@@ -353,13 +380,13 @@ void asmSemantic(CAsmDeclaration d, Scope *sc)
 /***********************************************************
  * iasmgcc.d
  */
-Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
+Statement gccAsmSemantic(GccAsmStatement s, Scope* sc)
 {
     import dmd.iasmgcc;
     return dmd.iasmgcc.gccAsmSemantic(s, sc);
 }
 
-void gccAsmSemantic(CAsmDeclaration d, Scope *sc)
+void gccAsmSemantic(CAsmDeclaration d, Scope* sc)
 {
     import dmd.iasmgcc;
     return dmd.iasmgcc.gccAsmSemantic(d, sc);
@@ -470,13 +497,13 @@ bool hasPointers(Type t)
     return dmd.typesem.hasPointers(t);
 }
 
-Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
+Type typeSemantic(Type type, Loc loc, Scope* sc)
 {
     import dmd.typesem;
     return dmd.typesem.typeSemantic(type, loc, sc);
 }
 
-Type trySemantic(Type type, const ref Loc loc, Scope* sc)
+Type trySemantic(Type type, Loc loc, Scope* sc)
 {
     import dmd.typesem;
     return dmd.typesem.trySemantic(type, loc, sc);
@@ -494,7 +521,7 @@ Type merge2(Type type)
     return dmd.typesem.merge2(type);
 }
 
-Expression defaultInit(Type mt, const ref Loc loc, const bool isCfile = false)
+Expression defaultInit(Type mt, Loc loc, const bool isCfile = false)
 {
     import dmd.typesem;
     return dmd.typesem.defaultInit(mt, loc, isCfile);
@@ -510,10 +537,10 @@ Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool
                     cppCovariant = false)
 {
     import dmd.typesem;
-    return dmd.typesem.covariant(src, t, pstc, cppCovariant);
+    return dmd.typesem.covariant(src, t, cast(STC*) pstc, cppCovariant);
 }
 
-bool isZeroInit(Type t, const ref Loc loc)
+bool isZeroInit(Type t, Loc loc)
 {
     import dmd.typesem;
     return dmd.typesem.isZeroInit(t, loc);
@@ -642,7 +669,7 @@ Type addMod(Type type, MOD mod)
 Type addStorageClass(Type type, StorageClass stc)
 {
     import dmd.typesem;
-    return dmd.typesem.addStorageClass(type, stc);
+    return dmd.typesem.addStorageClass(type, cast(STC) stc);
 }
 
 Type pointerTo(Type type)
@@ -663,7 +690,7 @@ uinteger_t size(Type type)
     return dmd.typesem.size(type);
 }
 
-uinteger_t size(Type type, const ref Loc loc)
+uinteger_t size(Type type, Loc loc)
 {
     import dmd.typesem;
     return dmd.typesem.size(type, loc);
@@ -684,7 +711,7 @@ MATCH constConv(Type from, Type to)
 /***********************************************************
  * typinf.d
  */
-bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
+bool genTypeInfo(Expression e, Loc loc, Type torig, Scope* sc)
 {
     import dmd.typinf;
     return dmd.typinf.genTypeInfo(e, loc, torig, sc);
@@ -700,6 +727,18 @@ bool builtinTypeInfo(Type t)
 {
     import dmd.typinf;
     return dmd.typinf.builtinTypeInfo(t);
+}
+
+Type makeNakedAssociativeArray(TypeAArray t)
+{
+    import dmd.typinf;
+    return dmd.typinf.makeNakedAssociativeArray(t);
+}
+
+TypeInfoDeclaration getTypeInfoAssocArrayDeclaration(TypeAArray t, Scope* sc)
+{
+    import dmd.typinf;
+    return dmd.typinf.getTypeInfoAssocArrayDeclaration(t, sc);
 }
 
 version (IN_LLVM)

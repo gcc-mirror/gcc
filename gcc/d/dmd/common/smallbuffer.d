@@ -1,12 +1,12 @@
 /**
  * Common string functions including filename manipulation.
  *
- * Copyright: Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:   Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/common/smallbuffer.d, common/_smallbuffer.d)
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/common/smallbuffer.d, common/_smallbuffer.d)
  * Documentation: https://dlang.org/phobos/dmd_common_smallbuffer.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/common/smallbuffer
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/common/smallbuffer.d
  */
 module dmd.common.smallbuffer;
 

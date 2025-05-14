@@ -1272,8 +1272,10 @@ reload (rtx_insn *first, int global)
 
   inserted = fixup_abnormal_edges ();
 
-  /* We've possibly turned single trapping insn into multiple ones.  */
-  if (cfun->can_throw_non_call_exceptions)
+  /* Split basic blocks if we've possibly turned single trapping insn
+     into multiple ones or otherwise the backend requested to do so.  */
+  if (cfun->can_throw_non_call_exceptions
+      || cfun->split_basic_blocks_after_reload)
     {
       auto_sbitmap blocks (last_basic_block_for_fn (cfun));
       bitmap_ones (blocks);

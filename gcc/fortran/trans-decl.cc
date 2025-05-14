@@ -2481,7 +2481,7 @@ module_sym:
 	  // We need DECL_ARGUMENTS to put attributes on, in case some arguments
 	  // need adjustment
 	  create_function_arglist (sym->formal_ns->proc_name);
-	  gfc_trans_omp_declare_variant (sym->formal_ns);
+	  gfc_trans_omp_declare_variant (sym->formal_ns, sym->ns);
 	}
     }
 
@@ -3269,7 +3269,7 @@ gfc_create_function_decl (gfc_namespace * ns, bool global)
      be declared in a parent namespace, so this needs to be called even if
      there are no local directives.  */
   if (flag_openmp)
-    gfc_trans_omp_declare_variant (ns);
+    gfc_trans_omp_declare_variant (ns, NULL);
 }
 
 /* Return the decl used to hold the function return value.  If
@@ -4043,9 +4043,9 @@ gfc_build_builtin_function_decls (void)
       gfor_fndecl_caf_finalize = gfc_build_library_function_decl (
 	get_identifier (PREFIX("caf_finalize")), void_type_node, 0);
 
-      gfor_fndecl_caf_this_image = gfc_build_library_function_decl (
-	get_identifier (PREFIX("caf_this_image")), integer_type_node,
-	1, integer_type_node);
+      gfor_fndecl_caf_this_image = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("caf_this_image")), ". r ", integer_type_node,
+	1, pvoid_type_node);
 
       gfor_fndecl_caf_num_images = gfc_build_library_function_decl (
 	get_identifier (PREFIX("caf_num_images")), integer_type_node,
@@ -4201,42 +4201,36 @@ gfc_build_builtin_function_decls (void)
 	    void_type_node, 3, pvoid_type_node, ppvoid_type_node,
 	    integer_type_node);
 
-      gfor_fndecl_caf_form_team
-	= gfc_build_library_function_decl_with_spec (
-	    get_identifier (PREFIX("caf_form_team")), ". . W . ",
-	    void_type_node, 3, integer_type_node, ppvoid_type_node,
-	    integer_type_node);
+      gfor_fndecl_caf_form_team = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("caf_form_team")), ". r w r w w w ",
+	void_type_node, 6, integer_type_node, ppvoid_type_node, pint_type,
+	pint_type, pchar_type_node, size_type_node);
 
-      gfor_fndecl_caf_change_team
-	= gfc_build_library_function_decl_with_spec (
-	    get_identifier (PREFIX("caf_change_team")), ". w . ",
-	    void_type_node, 2, ppvoid_type_node,
-	    integer_type_node);
+      gfor_fndecl_caf_change_team = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("caf_change_team")), ". r w w w ",
+	void_type_node, 4, pvoid_type_node, pint_type, pchar_type_node,
+	size_type_node);
 
-      gfor_fndecl_caf_end_team
-	= gfc_build_library_function_decl (
-	    get_identifier (PREFIX("caf_end_team")), void_type_node, 0);
+      gfor_fndecl_caf_end_team = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("caf_end_team")), ". w w w ", void_type_node, 3,
+	pint_type, pchar_type_node, size_type_node);
 
-      gfor_fndecl_caf_get_team
-	= gfc_build_library_function_decl (
-	    get_identifier (PREFIX("caf_get_team")),
-	    void_type_node, 1, integer_type_node);
+      gfor_fndecl_caf_get_team = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("caf_get_team")), ". r ", pvoid_type_node, 1,
+	pint_type);
 
-      gfor_fndecl_caf_sync_team
-	= gfc_build_library_function_decl_with_spec (
-	    get_identifier (PREFIX("caf_sync_team")), ". r . ",
-	    void_type_node, 2, ppvoid_type_node,
-	    integer_type_node);
+      gfor_fndecl_caf_sync_team = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("caf_sync_team")), ". r w w w ", void_type_node,
+	4, pvoid_type_node, pint_type, pchar_type_node, size_type_node);
 
       gfor_fndecl_caf_team_number
       	= gfc_build_library_function_decl_with_spec (
 	    get_identifier (PREFIX("caf_team_number")), ". r ",
       	    integer_type_node, 1, integer_type_node);
 
-      gfor_fndecl_caf_image_status
-	= gfc_build_library_function_decl_with_spec (
-	    get_identifier (PREFIX("caf_image_status")), ". . r ",
-	    integer_type_node, 2, integer_type_node, ppvoid_type_node);
+      gfor_fndecl_caf_image_status = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("caf_image_status")), ". r r ",
+	integer_type_node, 2, integer_type_node, ppvoid_type_node);
 
       gfor_fndecl_caf_stopped_images
 	= gfc_build_library_function_decl_with_spec (
@@ -6546,7 +6540,7 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	    message = _("Actual string length does not match the declared one"
 			" for dummy argument '%s' (%ld/%ld)");
 	  }
-	else if (fsym->as && fsym->as->rank != 0)
+	else if ((fsym->as && fsym->as->rank != 0) || fsym->attr.artificial)
 	  continue;
 	else
 	  {
@@ -6920,6 +6914,7 @@ add_clause (gfc_symbol *sym, gfc_omp_map_op map_op)
 
   n = gfc_get_omp_namelist ();
   n->sym = sym;
+  n->where = sym->declared_at;
   n->u.map.op = map_op;
 
   if (!module_oacc_clauses)
@@ -8084,13 +8079,13 @@ gfc_generate_function_code (gfc_namespace * ns)
 		   || sym->result->ts.u.derived->attr.alloc_comp
 		   || sym->result->ts.u.derived->attr.pointer_comp))
 	      || (sym->result->ts.type == BT_CLASS
-		  && (CLASS_DATA (sym)->attr.allocatable
-		      || CLASS_DATA (sym)->attr.class_pointer
+		  && (CLASS_DATA (sym->result)->attr.allocatable
+		      || CLASS_DATA (sym->result)->attr.class_pointer
 		      || CLASS_DATA (sym->result)->attr.alloc_comp
 		      || CLASS_DATA (sym->result)->attr.pointer_comp))))
 	{
 	  artificial_result_decl = true;
-	  result = gfc_get_fake_result_decl (sym, 0);
+	  result = gfc_get_fake_result_decl (sym->result, 0);
 	}
 
       if (result != NULL_TREE && sym->attr.function && !sym->attr.pointer)
@@ -8361,23 +8356,17 @@ gfc_generate_block_data (gfc_namespace * ns)
   rest_of_decl_compilation (decl, 1, 0);
 }
 
-
-/* Process the local variables of a BLOCK construct.  */
+void
+gfc_start_saved_local_decls ()
+{
+  gcc_checking_assert (current_function_decl != NULL_TREE);
+  saved_local_decls = NULL_TREE;
+}
 
 void
-gfc_process_block_locals (gfc_namespace* ns)
+gfc_stop_saved_local_decls ()
 {
-  tree decl;
-
-  saved_local_decls = NULL_TREE;
-  has_coarray_vars_or_accessors = caf_accessor_head != NULL;
-
-  generate_local_vars (ns);
-
-  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars_or_accessors)
-    generate_coarray_init (ns);
-
-  decl = nreverse (saved_local_decls);
+  tree decl = nreverse (saved_local_decls);
   while (decl)
     {
       tree next;
@@ -8388,6 +8377,21 @@ gfc_process_block_locals (gfc_namespace* ns)
       decl = next;
     }
   saved_local_decls = NULL_TREE;
+}
+
+/* Process the local variables of a BLOCK construct.  */
+
+void
+gfc_process_block_locals (gfc_namespace* ns)
+{
+  gfc_start_saved_local_decls ();
+  has_coarray_vars_or_accessors = caf_accessor_head != NULL;
+
+  generate_local_vars (ns);
+
+  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars_or_accessors)
+    generate_coarray_init (ns);
+  gfc_stop_saved_local_decls ();
 }
 
 

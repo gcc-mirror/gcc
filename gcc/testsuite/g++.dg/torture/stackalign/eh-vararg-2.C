@@ -1,7 +1,6 @@
 /* { dg-options "-Wno-abi" {target arm_eabi} } */
 /* { dg-do run } */
 /* { dg-skip-if "Stack alignment is too small" { hppa*-*-hpux* } } */
-/* { dg-require-effective-target alloca } */
 
 #include <stdarg.h>
 #include "check.h"

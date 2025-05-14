@@ -8,5 +8,5 @@ int f();
 std::packaged_task<const int&()> task(f);
 // { dg-error "dangling reference" "" { target { c++14_down } } 0 }
 // { dg-error "reference to temporary" "" { target { c++14_down } } 0 }
-// { dg-error "no matching function" "" { target c++17 } 0 }
-// { dg-error "enable_if" "" { target c++17 } 0 }
+// { dg-error "static assertion failed" "" { target c++17 } 0 }
+// { dg-error "note: .*std::is_invocable_r" "" { target c++17 } 0 }

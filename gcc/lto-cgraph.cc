@@ -229,6 +229,8 @@ lto_set_symtab_encoder_in_partition (lto_symtab_encoder_t encoder,
 				     symtab_node *node)
 {
   int index = lto_symtab_encoder_encode (encoder, node);
+  if (dump_file)
+    fprintf(dump_file, "Node %s, index %d\n", node->asm_name(), index);
   encoder->nodes[index].in_partition = true;
 }
 
@@ -1301,7 +1303,7 @@ input_node (struct lto_file_decl_data *file_data,
     {
       node = dyn_cast<cgraph_node *> (nodes[clone_ref])->create_clone (fn_decl,
 	profile_count::uninitialized (), false,
-	vNULL, false, NULL, NULL);
+	vNULL, false, NULL, NULL, NULL);
     }
   else
     {

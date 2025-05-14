@@ -17,5 +17,5 @@ bar ()
   return ((void **) &s)[0];	// { dg-error "reinterpret_cast" }
 }
 
-constexpr auto x = foo ();
-constexpr auto y = bar ();
+constexpr auto x = foo (); // { dg-error "called in a constant expression" }
+constexpr auto y = bar (); // { dg-error "called in a constant expression" }

@@ -81,6 +81,7 @@
 #define __glibcxx_want_algorithm_default_value_type
 #define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_constexpr_vector
+#define __glibcxx_want_containers_ranges
 #define __glibcxx_want_erase_if
 #define __glibcxx_want_incomplete_container_elements
 #define __glibcxx_want_nonmember_container_access
@@ -156,5 +157,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __cpp_lib_erase_if
+
+#ifdef __glibcxx_format_ranges // C++ >= 20 && HOSTED
+#include <bits/formatfwd.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  // Standard does not constrain accepted _CharT and declares it as formatter
+  // of Tp that statisfies is-vector-bool-reference<T>,
+  template<__format::__char _CharT>
+    struct formatter<_GLIBCXX_STD_C::_Bit_reference, _CharT>
+    {
+      // Standard declares this as template accepting unconstrained
+      // ParseContext type.
+      constexpr typename basic_format_parse_context<_CharT>::iterator
+      parse(basic_format_parse_context<_CharT>& __pc)
+      { return _M_f.template _M_parse<bool>(__pc); }
+
+      // Standard declares this as template accepting unconstrained
+      // FormatContext type.
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(const _GLIBCXX_STD_C::_Bit_reference& __u,
+	       basic_format_context<_Out, _CharT>& __fc) const
+	{ return _M_f.format(static_cast<bool>(__u), __fc); }
+
+    private:
+      __format::__formatter_int<_CharT> _M_f;
+    };
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // __glibcxx_format_ranges
 
 #endif /* _GLIBCXX_VECTOR */

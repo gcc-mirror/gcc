@@ -9,12 +9,10 @@
 
 module core.internal.parseoptions;
 
-import core.stdc.stdlib;
-import core.stdc.stdio;
-import core.stdc.ctype;
-import core.stdc.string;
-import core.vararg;
 import core.internal.traits : externDFunc, hasUDA;
+import core.stdc.ctype : isdigit, isspace;
+import core.stdc.stdio : fprintf, snprintf, sscanf, stderr;
+import core.vararg;
 
 
 @nogc nothrow:

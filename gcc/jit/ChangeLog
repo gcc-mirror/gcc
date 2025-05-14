@@ -1,3 +1,16 @@
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.cc: Drop include of "make-unique.h".
+	Replace uses of ::make_unique with std::make_unique.
+
+2025-03-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libgccjit.exports: Add symbols for ABI 28 to 34.
+
+2025-03-13  Matthias Klose  <doko@ubuntu.com>
+
+	* Make-lang.in (LIBGCCJIT_VERSION_NUM): Move to ../Makefile.in.
+
 2025-02-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

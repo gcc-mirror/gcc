@@ -45,15 +45,21 @@
 #include <initializer_list>
 #endif
 
-#if __cplusplus >= 201703L
+#include <bits/version.h>
+
+#ifdef __glibcxx_string_view // >= C++17
 # include <string_view>
+#endif
+
+#if __glibcxx_containers_ranges // C++ >= 23
+# include <bits/ranges_algobase.h>      // ranges::copy
+# include <bits/ranges_util.h>          // ranges::subrange
 #endif
 
 #if __cplusplus > 202302L
 # include <charconv>
 #endif
 
-#include <bits/version.h>
 
 #if ! _GLIBCXX_USE_CXX11_ABI
 # include "cow_string.h"
@@ -146,7 +152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return __p;
       }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       // A helper type for avoiding boiler-plate.
       typedef basic_string_view<_CharT, _Traits> __sv_type;
 
@@ -341,6 +347,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       _M_construct(size_type __req, _CharT __c);
 
+      // Construct using block of memory of known size.
+      // If _Terminated is true assume that source is already 0 terminated.
+      template<bool _Terminated>
+	_GLIBCXX20_CONSTEXPR
+	void
+	_M_construct(const _CharT *__c, size_type __n);
+
       _GLIBCXX20_CONSTEXPR
       allocator_type&
       _M_get_allocator()
@@ -460,6 +473,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  traits_type::assign(__d, __n, __c);
       }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
       // _S_copy_chars is a separate template to permit specialization
       // to optimize for the common case of pointers as iterators.
       template<class _Iterator>
@@ -467,31 +482,69 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
         static void
         _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
         {
+#if __cplusplus >= 201103L
+	  using _IterBase = decltype(std::__niter_base(__k1));
+	  if constexpr (__or_<is_same<_IterBase, _CharT*>,
+			      is_same<_IterBase, const _CharT*>>::value)
+	    _S_copy(__p, std::__niter_base(__k1), __k2 - __k1);
+#if __cpp_lib_concepts
+	  else if constexpr (requires {
+			       requires contiguous_iterator<_Iterator>;
+			       { std::to_address(__k1) }
+				 -> convertible_to<const _CharT*>;
+			     })
+	    {
+	      const auto __d = __k2 - __k1;
+	      (void) (__k1 + __d); // See P3349R1
+	      _S_copy(__p, std::to_address(__k1), static_cast<size_type>(__d));
+	    }
+#endif
+	  else
+#endif
 	  for (; __k1 != __k2; ++__k1, (void)++__p)
-	    traits_type::assign(*__p, *__k1); // These types are off.
+	    traits_type::assign(*__p, static_cast<_CharT>(*__k1));
 	}
+#pragma GCC diagnostic pop
 
-      _GLIBCXX20_CONSTEXPR
+#if __cplusplus < 201103L || defined _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
       static void
-      _S_copy_chars(_CharT* __p, iterator __k1, iterator __k2) _GLIBCXX_NOEXCEPT
+      _S_copy_chars(_CharT* __p, iterator __k1, iterator __k2)
       { _S_copy_chars(__p, __k1.base(), __k2.base()); }
 
-      _GLIBCXX20_CONSTEXPR
       static void
       _S_copy_chars(_CharT* __p, const_iterator __k1, const_iterator __k2)
-      _GLIBCXX_NOEXCEPT
       { _S_copy_chars(__p, __k1.base(), __k2.base()); }
 
-      _GLIBCXX20_CONSTEXPR
       static void
-      _S_copy_chars(_CharT* __p, _CharT* __k1, _CharT* __k2) _GLIBCXX_NOEXCEPT
+      _S_copy_chars(_CharT* __p, _CharT* __k1, _CharT* __k2)
       { _S_copy(__p, __k1, __k2 - __k1); }
 
-      _GLIBCXX20_CONSTEXPR
       static void
       _S_copy_chars(_CharT* __p, const _CharT* __k1, const _CharT* __k2)
-      _GLIBCXX_NOEXCEPT
       { _S_copy(__p, __k1, __k2 - __k1); }
+#endif
+
+#if __glibcxx_containers_ranges // C++ >= 23
+      // pre: __n == ranges::distance(__rg). __p+[0,__n) is a valid range.
+      template<typename _Rg>
+	static constexpr void
+	_S_copy_range(pointer __p, _Rg&& __rg, size_type __n)
+	{
+	  if constexpr (requires {
+			  requires ranges::contiguous_range<_Rg>;
+			  { ranges::data(std::forward<_Rg>(__rg)) }
+			    -> convertible_to<const _CharT*>;
+			})
+	    _S_copy(__p, ranges::data(std::forward<_Rg>(__rg)), __n);
+	  else
+	    {
+	      auto __first = ranges::begin(__rg);
+	      const auto __last = ranges::end(__rg);
+	      for (; __first != __last; ++__first)
+		traits_type::assign(*__p++, static_cast<_CharT>(*__first));
+	    }
+	}
+#endif
 
       _GLIBCXX20_CONSTEXPR
       static int
@@ -561,8 +614,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       : _M_dataplus(_M_local_data(),
 		    _Alloc_traits::_S_select_on_copy(__str._M_get_allocator()))
       {
-	_M_construct(__str._M_data(), __str._M_data() + __str.length(),
-		     std::forward_iterator_tag());
+	_M_construct<true>(__str._M_data(), __str.length());
       }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -710,6 +762,33 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__str._M_set_length(0);
       }
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Construct a string from a range.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_CharT> _Rg>
+	constexpr
+	basic_string(from_range_t, _Rg&& __rg, const _Alloc& __a = _Alloc())
+	: basic_string(__a)
+	{
+	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	    {
+	      const auto __n = static_cast<size_type>(ranges::distance(__rg));
+	      reserve(__n);
+	      _S_copy_range(_M_data(), std::forward<_Rg>(__rg), __n);
+	      _M_set_length(__n);
+	    }
+	  else
+	    {
+	      auto __first = ranges::begin(__rg);
+	      const auto __last = ranges::end(__rg);
+	      for (; __first != __last; ++__first)
+		push_back(*__first);
+	    }
+	}
+#endif
+
       /**
        *  @brief  Construct string from an initializer %list.
        *  @param  __l  std::initializer_list of characters.
@@ -782,7 +861,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 	}
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Construct string from a substring of a string_view.
        *  @param  __t   Source object convertible to string view.
@@ -938,7 +1017,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 #endif // C++11
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Set value to string constructed from a string_view.
        *  @param  __svt  An object convertible to string_view.
@@ -1433,7 +1512,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return this->append(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Append a string_view.
        *  @param __svt  An object convertible to string_view to be appended.
@@ -1519,6 +1598,58 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       append(size_type __n, _CharT __c)
       { return _M_replace_aux(this->size(), size_type(0), __n, __c); }
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Append a range to the string.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @since C++23
+       *
+       * The range `__rg` is allowed to overlap with `*this`.
+       */
+      template<__detail::__container_compatible_range<_CharT> _Rg>
+	constexpr basic_string&
+	append_range(_Rg&& __rg)
+	{
+	  // N.B. __rg may overlap with *this, so we must copy from __rg before
+	  // existing elements or iterators referring to *this are invalidated.
+	  // e.g. in s.append_range(views::concat(s, str)), rg overlaps s.
+	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	    {
+	      const auto __len = size_type(ranges::distance(__rg));
+
+	      // Don't care if this addition wraps around, we check it below:
+	      const size_type __newlen = size() + __len;
+
+	      if ((capacity() - size()) >= __len)
+		_S_copy_range(_M_data() + size(), std::forward<_Rg>(__rg),
+			      __len);
+	      else
+		{
+		  _M_check_length(0, __len, "basic_string::append_range");
+		  basic_string __s(_M_get_allocator());
+		  __s.reserve(__newlen);
+		  _S_copy_range(__s._M_data() + size(), std::forward<_Rg>(__rg),
+				__len);
+		  _S_copy(__s._M_data(), _M_data(), size());
+		  if (!_M_is_local())
+		    _M_destroy(_M_allocated_capacity);
+		  _M_data(__s._M_data());
+		  _M_capacity(__s._M_allocated_capacity);
+		  __s._M_data(__s._M_local_data());
+		  __s._M_length(0);
+		}
+	      _M_set_length(__newlen); // adds null-terminator
+	    }
+	  else
+	    {
+	      basic_string __s(from_range, std::forward<_Rg>(__rg),
+			       _M_get_allocator());
+	      append(__s);
+	    }
+	  return *this;
+	}
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Append an initializer_list of characters.
@@ -1550,7 +1681,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
         append(_InputIterator __first, _InputIterator __last)
         { return this->replace(end(), end(), __first, __last); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view
       /**
        *  @brief  Append a string_view.
        *  @param __svt  An object convertible to string_view to be appended.
@@ -1778,6 +1909,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{ return this->replace(begin(), end(), __first, __last); }
 #endif
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Assign a range to the string.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @since C++23
+       *
+       * The range `__rg` is allowed to overlap with `*this`.
+       */
+      template<__detail::__container_compatible_range<_CharT> _Rg>
+	constexpr basic_string&
+	assign_range(_Rg&& __rg)
+	{
+	  basic_string __s(from_range, std::forward<_Rg>(__rg),
+			   _M_get_allocator());
+	  assign(std::move(__s));
+	  return *this;
+	}
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Set value to an initializer_list of characters.
@@ -1803,7 +1953,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 #endif // C++11
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Set value from a string_view.
        *  @param __svt  The source object convertible to string_view.
@@ -1925,6 +2075,37 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
         void
         insert(iterator __p, _InputIterator __beg, _InputIterator __end)
         { this->replace(__p, __p, __beg, __end); }
+#endif
+
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Insert a range into the string.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @since C++23
+       *
+       * The range `__rg` is allowed to overlap with `*this`.
+       */
+      template<__detail::__container_compatible_range<_CharT> _Rg>
+	constexpr iterator
+	insert_range(const_iterator __p, _Rg&& __rg)
+	{
+	  auto __pos = __p - cbegin();
+
+	  if constexpr (ranges::forward_range<_Rg>)
+	    if (ranges::empty(__rg))
+	      return begin() + __pos;
+
+
+	  if (__p == cend())
+	    append_range(std::forward<_Rg>(__rg));
+	  else
+	    {
+	      basic_string __s(from_range, std::forward<_Rg>(__rg),
+			       _M_get_allocator());
+	      insert(__pos, __s);
+	    }
+	  return begin() + __pos;
+	}
 #endif
 
 #if __cplusplus >= 201103L
@@ -2084,7 +2265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return iterator(_M_data() + __pos);
       }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Position in string to insert at.
@@ -2515,6 +2696,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 			     __k1.base(), __k2 - __k1);
       }
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Replace part of the string with a range.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @since C++23
+       *
+       * The range `__rg` is allowed to overlap with `*this`.
+       */
+      template<__detail::__container_compatible_range<_CharT> _Rg>
+	constexpr basic_string&
+	replace_with_range(const_iterator __i1, const_iterator __i2, _Rg&& __rg)
+	{
+	  if (__i1 == cend())
+	    append_range(std::forward<_Rg>(__rg));
+	  else
+	    {
+	      basic_string __s(from_range, std::forward<_Rg>(__rg),
+			       _M_get_allocator());
+	      replace(__i1, __i2, __s);
+	    }
+	  return *this;
+	}
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Replace range of characters with initializer_list.
@@ -2536,7 +2741,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return this->replace(__i1, __i2, __l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __pos  The position to replace at.
@@ -2735,7 +2940,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -2801,7 +3006,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->rfind(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find last position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -2885,7 +3090,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_first_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find position of a character of a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -2974,7 +3179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_last_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find last position of a character of string.
        *  @param __svt  An object convertible to string_view containing
@@ -3062,7 +3267,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_first_not_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find position of a character not in a string_view.
        *  @param __svt  A object convertible to string_view containing
@@ -3149,7 +3354,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { return this->find_last_not_of(__str.data(), __pos, __str.size()); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find last position of a character not in a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -3265,7 +3470,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return __r;
       }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Compare to a string_view.
        *  @param __svt An object convertible to string_view to compare against.
@@ -3592,6 +3797,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		 typename basic_string<_CharT, _Traits, _Allocator>::size_type,
 		 const _Allocator& = _Allocator())
       -> basic_string<_CharT, _Traits, _Allocator>;
+
+#if __glibcxx_containers_ranges // C++ >= 23
+  template<ranges::input_range _Rg,
+	   typename _Allocator = allocator<ranges::range_value_t<_Rg>>>
+    basic_string(from_range_t, _Rg&&, _Allocator = _Allocator())
+      -> basic_string<ranges::range_value_t<_Rg>,
+		      char_traits<ranges::range_value_t<_Rg>>,
+		      _Allocator>;
+#endif
 _GLIBCXX_END_NAMESPACE_CXX11
 #endif
 
@@ -3724,21 +3938,23 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
 	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
     {
-#if _GLIBCXX_USE_CXX11_ABI
-      using _Alloc_traits = allocator_traits<_Alloc>;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+      // Return value must use __lhs.get_allocator(), but if __rhs has equal
+      // allocator then we can choose which parameter to modify in-place.
       bool __use_rhs = false;
-      if _GLIBCXX17_CONSTEXPR (typename _Alloc_traits::is_always_equal{})
+      if constexpr (allocator_traits<_Alloc>::is_always_equal::value)
 	__use_rhs = true;
       else if (__lhs.get_allocator() == __rhs.get_allocator())
 	__use_rhs = true;
       if (__use_rhs)
-#endif
 	{
 	  const auto __size = __lhs.size() + __rhs.size();
 	  if (__size > __lhs.capacity() && __size <= __rhs.capacity())
 	    return std::move(__rhs.insert(0, __lhs));
 	}
       return std::move(__lhs.append(__rhs));
+#pragma GCC diagnostic pop
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -4599,7 +4815,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   constexpr
 #endif
   inline wstring
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
   __to_wstring_numeric(string_view __s)
 #else
   __to_wstring_numeric(const string& __s)
@@ -4802,7 +5018,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // inline namespace literals
 #endif // __glibcxx_string_udls
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_variant // >= C++17
   namespace __detail::__variant
   {
     template<typename> struct _Never_valueless_alt; // see <variant>

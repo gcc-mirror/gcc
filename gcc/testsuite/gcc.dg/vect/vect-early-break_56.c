@@ -4,6 +4,7 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-add-options bind_pic_locally } */
 /* { dg-require-effective-target vect_early_break_hw } */
+/* { dg-require-effective-target vect_partial_vectors } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -98,5 +99,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 2 "vect" { xfail { vect_early_break && { ! vect_hw_misalign } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail { vect_early_break && { ! vect_hw_misalign } } } } } */
 

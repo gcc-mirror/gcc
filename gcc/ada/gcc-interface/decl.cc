@@ -3651,6 +3651,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      TYPE_PACKED (gnu_type) = TYPE_PACKED (gnu_base_type);
 	      TYPE_REVERSE_STORAGE_ORDER (gnu_type)
 		= Reverse_Storage_Order (gnat_entity);
+
+	      /* Do the same for subtypes as for the base type, since pointers
+		 to them may symmetrically also point to the latter.  */
+	      prepend_one_attribute
+		(&attr_list, ATTR_MACHINE_ATTRIBUTE,
+		 get_identifier ("may_alias"), NULL_TREE,
+		 gnat_entity);
+
 	      process_attributes (&gnu_type, &attr_list, true, gnat_entity);
 
 	      /* Set the size, alignment and alias set of the type to match

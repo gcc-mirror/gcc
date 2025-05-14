@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -Wno-stringop-overread" } */
-/* { dg-require-effective-target alloca } */
 /* { dg-additional-options "-DSKIP_STRNDUP" { target { ! strndup } } } */
 
 #include "builtin-object-size-common.h"

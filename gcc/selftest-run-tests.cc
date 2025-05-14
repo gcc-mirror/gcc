@@ -92,11 +92,13 @@ selftest::run_tests ()
   digraph_cc_tests ();
   tristate_cc_tests ();
   ipa_modref_tree_cc_tests ();
+  selftest_logical_location_cc_tests ();
 
   /* Higher-level tests, or for components that other selftests don't
      rely on.  */
   diagnostic_color_cc_tests ();
   diagnostic_show_locus_cc_tests ();
+  diagnostic_format_html_cc_tests ();
   diagnostic_format_json_cc_tests ();
   diagnostic_format_sarif_cc_tests ();
   edit_context_cc_tests ();
@@ -109,6 +111,7 @@ selftest::run_tests ()
   lazy_diagnostic_path_cc_tests ();
   attribs_cc_tests ();
   opts_diagnostic_cc_tests ();
+  path_coverage_cc_tests ();
 
   /* This one relies on most of the above.  */
   function_tests_cc_tests ();

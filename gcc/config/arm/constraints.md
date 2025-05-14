@@ -19,11 +19,12 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;; The following register constraints have been used:
-;; - in ARM/Thumb-2 state: t, w, x, y, z
+;; - in ARM/Thumb-2 state: t, w, x
 ;; - in Thumb state: h, b
 ;; - in both states: l, c, k, q, Cs, Ts, US
 ;; In ARM state, 'l' is an alias for 'r'
 ;; 'f' and 'v' were previously used for FPA and MAVERICK registers.
+;; 'y' and 'z' were previously used for iWMMX registers (removed after gcc-15)
 
 ;; The following normal constraints have been used:
 ;; in ARM/Thumb-2 state: G, I, j, J, K, L, M
@@ -39,7 +40,7 @@
 ;; in all states: Pg
 
 ;; The following memory constraints have been used:
-;; in ARM/Thumb-2 state: Uh, Ut, Uv, Uy, Un, Um, Us, Uo, Up, Uf, Ux, Ul, Uz
+;; in ARM/Thumb-2 state: Uh, Ut, Uv, Un, Um, Us, Uo, Up, Uf, Ux, Ul, Uz
 ;; in ARM state: Uq
 ;; in Thumb state: Uu, Uw
 ;; in all states: Q
@@ -111,13 +112,6 @@
 
 (define_register_constraint "x" "TARGET_32BIT ? VFP_D0_D7_REGS : NO_REGS"
  "The VFP registers @code{d0}-@code{d7}.")
-
-(define_register_constraint "y" "TARGET_REALLY_IWMMXT ? IWMMXT_REGS : NO_REGS"
- "The Intel iWMMX co-processor registers.")
-
-(define_register_constraint "z"
- "TARGET_REALLY_IWMMXT ? IWMMXT_GR_REGS : NO_REGS"
- "The Intel iWMMX GR registers.")
 
 (define_register_constraint "l" "TARGET_THUMB ? LO_REGS : GENERAL_REGS"
  "In Thumb state the core registers @code{r0}-@code{r7}.")
@@ -477,12 +471,6 @@
       (match_test "TARGET_HAVE_MVE
                    ? arm_coproc_mem_operand_no_writeback (op)
                    : neon_vector_mem_operand (op, 2, true)")))
-
-(define_memory_constraint "Uy"
- "@internal
-  In ARM/Thumb-2 state a valid iWMMX load/store address."
- (and (match_code "mem")
-      (match_test "TARGET_32BIT && arm_coproc_mem_operand (op, TRUE)")))
 
 (define_memory_constraint "Un"
  "@internal

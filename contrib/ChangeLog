@@ -1,3 +1,69 @@
+2025-05-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* check_GNU_style_lib.py: Remove literal prefix.
+
+2025-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config-list.mk: Update FreeBSD targets to version 13.
+
+2025-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk: Add m32c*-*-* to the list of obsoleted targets.
+
+2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 15.
+
+2025-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (active_refs): Add
+	releases/gcc-15.
+
+2025-04-11  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* unicode/README: Mentioned DerivedGeneralCategory.txt.
+	* unicode/gen_libstdcxx_unicode_data.py: Generation __escape_edges
+	table from DerivedGeneralCategory.txt. Update file name in comments.
+	* unicode/DerivedGeneralCategory.txt: Copy of file distributed by
+	Unicode Consortium.
+
+2025-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/116163
+	* dg-lint/dg-lint: New file.
+	* dg-lint/libgdiagnostics.py: New file.
+	* dg-lint/test-1.c: New file.
+	* dg-lint/test-2.c: New file.
+
+2025-03-17  Sahil Yeole  <sahilyeole93@gmail.com>
+
+	* update-copyright.py: Add libgrust folder.
+
+2025-03-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gcc-changelog/git_repository.py (parse_git_revisions): Destroy the
+	Repo object by calling repo.close() at the end of the function.
+
+2025-03-12  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/119081
+	* relpath.sh: Give relative path even at /.
+
+2025-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-git-customization.sh: Delete outdated commands for
+	migrating from very old git setups.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_commit.py (bug_components): Add cobol.
+
+2025-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations):
+	Add gcc/cobol and libgcobol entries.
+
 2025-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py (GCCFilter): Ignore gen-evolution.awk and

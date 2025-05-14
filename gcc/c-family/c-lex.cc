@@ -248,7 +248,12 @@ cb_def_pragma (cpp_reader *pfile, location_t loc)
     {
       const unsigned char *space, *name;
       const cpp_token *s;
-      location_t fe_loc = loc;
+
+      /* If we are processing a _Pragma, LOC is not a valid location, but libcpp
+	 will provide a good location via this function instead.  */
+      location_t fe_loc = cpp_get_diagnostic_override_loc (pfile);
+      if (fe_loc == UNKNOWN_LOCATION)
+	fe_loc = loc;
 
       space = name = (const unsigned char *) "";
 

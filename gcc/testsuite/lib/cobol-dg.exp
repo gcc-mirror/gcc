@@ -1,0 +1,96 @@
+#   Copyright (C) 2004-2025 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib gcc-dg.exp
+load_lib torture-options.exp
+
+# Define cobol callbacks for dg.exp.
+
+proc cobol-dg-test { prog do_what extra_tool_flags } {
+    set result \
+	[gcc-dg-test-1 cobol_target_compile $prog $do_what $extra_tool_flags]
+    
+    set comp_output [lindex $result 0]
+    set output_file [lindex $result 1]
+
+    return [list $comp_output $output_file]
+}
+
+proc cobol-dg-prune { system text } {
+    # cobol prints an extra stray error at the end when compilation fails
+    regsub -all "(^|\n)cobol1: error: failed compiling \[^\n\]*" $text "" text
+    return [gcc-dg-prune $system $text]
+}
+
+# Utility routines.
+
+# Modified dg-runtest that can cycle through a list of optimization options
+# as c-torture does.
+proc cobol-dg-runtest { testcases flags default-extra-flags } {
+    global runtests
+    global torture_with_loops
+
+    # Some callers initialize torture testing themselves; don't override those.
+    set existing_torture_init [torture-init-done]
+    if { $existing_torture_init == 0 } {
+	torture-init
+    }
+    # Some callers set torture options themselves; don't override those.
+    set existing_torture_options [torture-options-exist]
+    if { $existing_torture_options == 0 } {
+	global DG_TORTURE_OPTIONS
+	set-torture-options $DG_TORTURE_OPTIONS
+    }
+    dump-torture-options
+
+    foreach test $testcases {
+	# If we're only testing specific files and this isn't one of
+	# them, skip it.
+	if ![runtest_file_p $runtests $test] {
+	    continue
+        }
+
+	# look if this is dg-do run test, in which case
+	# we cycle through the option list, otherwise we don't
+	if [expr [search_for $test "dg-do run"]] {
+	    set option_list $torture_with_loops
+	} else {
+	    set option_list [list { -O } ]
+	}
+
+	set nshort [file tail [file dirname $test]]/[file tail $test]
+
+	foreach flags_t $option_list {
+	    verbose "Testing $nshort, $flags $flags_t" 1
+	    dg-test $test "$flags $flags_t" ${default-extra-flags}
+	}
+    }
+
+    if { $existing_torture_init == 0 } {
+	torture-finish
+    }
+}
+
+proc check_effective_target_cobol {} {
+    # Check if the COBOL FE can compile trivial programs.
+    return [check_no_compiler_messages cobol assembly {
+*> COBOL
+IDENTIFICATION DIVISION.
+PROGRAM-ID. pass.
+PROCEDURE DIVISION.
+    STOP RUN.
+    }]
+}

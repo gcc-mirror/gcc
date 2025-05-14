@@ -583,7 +583,7 @@ name_lookup::preserve_state ()
   if (previous)
     {
       unsigned length = vec_safe_length (previous->scopes);
-      vec_safe_reserve (previous->scopes, length * 2);
+      vec_safe_reserve (previous->scopes, length);
       for (unsigned ix = length; ix--;)
 	{
 	  tree decl = (*previous->scopes)[ix];
@@ -2012,8 +2012,8 @@ get_class_binding_direct (tree klass, tree name, bool want_type)
 static void
 maybe_lazily_declare (tree klass, tree name)
 {
-  /* See big comment anout module_state::write_pendings regarding adding a check
-     bit.  */
+  /* See big comment about module_state::write_pendings regarding adding
+     a check bit.  */
   if (modules_p ())
     lazy_load_pendings (TYPE_NAME (klass));
 
@@ -3777,6 +3777,10 @@ check_module_override (tree decl, tree mvec, bool hiding,
      any reachable declaration, so we should check for overriding here too.  */
   bool any_reachable = deduction_guide_p (decl);
 
+  /* DECL might have an originating module if it's an instantiation of a
+     friend; we want to look at all reachable decls in that module.  */
+  unsigned decl_mod = get_originating_module (decl);
+
   if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
     {
       cluster++;
@@ -3789,18 +3793,15 @@ check_module_override (tree decl, tree mvec, bool hiding,
 	/* Are we importing this module?  */
 	if (cluster->indices[jx].span != 1)
 	  continue;
-	if (!cluster->indices[jx].base)
+	unsigned cluster_mod = cluster->indices[jx].base;
+	if (!cluster_mod)
 	  continue;
-	if (!any_reachable
-	    && !bitmap_bit_p (imports, cluster->indices[jx].base))
+	bool c_any_reachable = (any_reachable || cluster_mod == decl_mod);
+	if (!c_any_reachable && !bitmap_bit_p (imports, cluster_mod))
 	  continue;
 	/* Is it loaded? */
 	if (cluster->slots[jx].is_lazy ())
-	  {
-	    gcc_assert (cluster->indices[jx].span == 1);
-	    lazy_load_binding (cluster->indices[jx].base,
-			       scope, name, &cluster->slots[jx]);
-	  }
+	  lazy_load_binding (cluster_mod, scope, name, &cluster->slots[jx]);
 	tree bind = cluster->slots[jx];
 	if (!bind)
 	  /* Errors could cause there to be nothing.  */
@@ -3812,7 +3813,7 @@ check_module_override (tree decl, tree mvec, bool hiding,
 	    /* If there was a matching STAT_TYPE here then xref_tag
 	       should have found it, but we need to check anyway because
 	       a conflicting using-declaration may exist.  */
-	    if (any_reachable)
+	    if (c_any_reachable)
 	      {
 		type = STAT_TYPE (bind);
 		bind = STAT_DECL (bind);
@@ -4175,22 +4176,6 @@ mergeable_namespace_slots (tree ns, tree name, bool is_attached, tree *vec)
   *vec = *mslot;
 
   return vslot;
-}
-
-/* Retrieve the bindings for an existing mergeable entity in namespace
-   NS slot NAME.  Returns NULL if no such bindings exists.  */
-
-static tree
-get_mergeable_namespace_binding (tree ns, tree name, bool is_attached)
-{
-  tree *mslot = find_namespace_slot (ns, name, false);
-  if (!mslot || !*mslot || TREE_CODE (*mslot) != BINDING_VECTOR)
-    return NULL_TREE;
-
-  tree *vslot = get_fixed_binding_slot
-    (mslot, name, is_attached ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL,
-     false);
-  return vslot ? *vslot : NULL_TREE;
 }
 
 /* DECL is a new mergeable namespace-scope decl.  Add it to the
@@ -4568,26 +4553,43 @@ lookup_imported_hidden_friend (tree friend_tmpl)
 
   tree inner = DECL_TEMPLATE_RESULT (friend_tmpl);
   if (!DECL_LANG_SPECIFIC (inner)
-      || !DECL_MODULE_IMPORT_P (inner))
+      || !DECL_MODULE_ENTITY_P (inner))
     return NULL_TREE;
 
-  lazy_load_pendings (friend_tmpl);
-
-  tree bind = get_mergeable_namespace_binding
-    (current_namespace, DECL_NAME (inner), DECL_MODULE_ATTACH_P (inner));
-  if (!bind)
+  tree name = DECL_NAME (inner);
+  tree *slot = find_namespace_slot (current_namespace, name, false);
+  if (!slot || !*slot || TREE_CODE (*slot) != BINDING_VECTOR)
     return NULL_TREE;
 
-  /* We're only interested in declarations coming from the same module
-     of the friend class we're attempting to instantiate.  */
-  int m = get_originating_module (friend_tmpl);
+  /* We're only interested in declarations attached to the same module
+     as the friend class we're attempting to instantiate.  */
+  int m = get_originating_module (friend_tmpl, /*global=-1*/true);
   gcc_assert (m != 0);
+
+  /* First check whether there's a reachable declaration attached to the module
+     we're looking for.  */
+  if (m > 0)
+    if (binding_slot *mslot = search_imported_binding_slot (slot, m))
+      {
+	if (mslot->is_lazy ())
+	  lazy_load_binding (m, current_namespace, name, mslot);
+	for (ovl_iterator iter (*mslot); iter; ++iter)
+	  if (DECL_CLASS_TEMPLATE_P (*iter))
+	    return *iter;
+      }
+
+  /* Otherwise, look in the mergeable slots for this name, in case an importer
+     has already instantiated this declaration.  */
+  tree *vslot = get_fixed_binding_slot
+    (slot, name, m > 0 ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL, false);
+  if (!vslot || !*vslot)
+    return NULL_TREE;
 
   /* There should be at most one class template from the module we're
      looking for, return it.  */
-  for (ovl_iterator iter (bind); iter; ++iter)
+  for (ovl_iterator iter (*vslot); iter; ++iter)
     if (DECL_CLASS_TEMPLATE_P (*iter)
-	&& get_originating_module (*iter) == m)
+	&& get_originating_module (*iter, true) == m)
       return *iter;
 
   return NULL_TREE;
@@ -5103,10 +5105,8 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
   if (b->kind == sk_namespace)
     /* At namespace scope we should not see an identifier type value.  */
     gcc_checking_assert (!REAL_IDENTIFIER_TYPE_VALUE (id)
-			 /* We could be pushing a friend underneath a template
-			    parm (ill-formed).  */
-			 || (TEMPLATE_PARM_P
-			     (TYPE_NAME (REAL_IDENTIFIER_TYPE_VALUE (id)))));
+			 /* But we might end up here with ill-formed input.  */
+			 || seen_error ());
   else
     {
       /* Push the current type value, so we can restore it later  */
@@ -5207,9 +5207,11 @@ pushdecl_outermost_localscope (tree x)
   cp_binding_level *b = NULL;
   auto_cond_timevar tv (TV_NAME_LOOKUP);
 
-  /* Find the scope just inside the function parms.  */
-  for (cp_binding_level *n = current_binding_level;
-       n->kind != sk_function_parms; n = b->level_chain)
+  /* Find the block scope just inside the function parms.  */
+  cp_binding_level *n = current_binding_level;
+  while (n && n->kind != sk_block)
+    n = n->level_chain;
+  for (; n && n->kind != sk_function_parms; n = b->level_chain)
     b = n;
 
   return b ? do_pushdecl_with_scope (x, b) : error_mark_node;
@@ -7085,13 +7087,16 @@ namespace_hints::convert_candidates_to_name_hint ()
       /* Clean up CANDIDATES.  */
       m_candidates.release ();
       return name_hint (expr_to_string (candidate),
-			new show_candidate_location (m_loc, candidate));
+			std::make_unique<show_candidate_location> (m_loc,
+								   candidate));
     }
   else if (m_candidates.length () > 1)
     /* If we have more than one candidate, issue a name_hint without a single
        "suggestion", but with a deferred diagnostic that lists the
        various candidates.  This takes ownership of m_candidates.  */
-    return name_hint (NULL, new suggest_alternatives (m_loc, m_candidates));
+    return name_hint (NULL,
+		      std::make_unique<suggest_alternatives> (m_loc,
+							      m_candidates));
 
   /* Otherwise, m_candidates ought to be empty, so no cleanup is necessary.  */
   gcc_assert (m_candidates.length () == 0);
@@ -7111,10 +7116,11 @@ name_hint
 namespace_hints::maybe_decorate_with_limit (name_hint hint)
 {
   if (m_limited)
-    return name_hint (hint.suggestion (),
-		      new namespace_limit_reached (m_loc, m_limit,
-						   m_name,
-						   hint.take_deferred ()));
+    return name_hint
+      (hint.suggestion (),
+       std::make_unique<namespace_limit_reached> (m_loc, m_limit,
+						  m_name,
+						  hint.take_deferred ()));
   else
     return hint;
 }
@@ -7191,10 +7197,11 @@ suggest_alternatives_for_1 (location_t location, tree name,
   diagnostic_option_id option_id
     = get_option_for_builtin_define (IDENTIFIER_POINTER (name));
   if (option_id.m_idx > 0)
-    return name_hint (nullptr,
-		      new suggest_missing_option (location,
-						  IDENTIFIER_POINTER (name),
-						  option_id));
+    return name_hint
+      (nullptr,
+       std::make_unique<suggest_missing_option> (location,
+						 IDENTIFIER_POINTER (name),
+						 option_id));
 
   /* Otherwise, consider misspellings.  */
   if (!suggest_misspellings)
@@ -7322,8 +7329,9 @@ maybe_suggest_missing_std_header (location_t location, tree name)
   if (!header_hint)
     return name_hint ();
 
-  return name_hint (NULL, new missing_std_header (location, name_str,
-						  header_hint));
+  return name_hint (nullptr,
+		    std::make_unique<missing_std_header> (location, name_str,
+							  header_hint));
 }
 
 /* Attempt to generate a name_hint that suggests a missing header file
@@ -7705,12 +7713,12 @@ class macro_use_before_def : public deferred_diagnostic
  public:
   /* Factory function.  Return a new macro_use_before_def instance if
      appropriate, or return NULL. */
-  static macro_use_before_def *
+  static std::unique_ptr<macro_use_before_def>
   maybe_make (location_t use_loc, cpp_hashnode *macro)
   {
     location_t def_loc = cpp_macro_definition_location (macro);
     if (def_loc == UNKNOWN_LOCATION)
-      return NULL;
+      return nullptr;
 
     /* We only want to issue a note if the macro was used *before* it was
        defined.
@@ -7718,12 +7726,11 @@ class macro_use_before_def : public deferred_diagnostic
        used, leaving it unexpanded (e.g. by using the wrong argument
        count).  */
     if (!linemap_location_before_p (line_table, use_loc, def_loc))
-      return NULL;
+      return nullptr;
 
-    return new macro_use_before_def (use_loc, macro);
+    return std::make_unique<macro_use_before_def> (use_loc, macro);
   }
 
- private:
   /* Ctor.  LOC is the location of the usage.  MACRO is the
      macro that was used.  */
   macro_use_before_def (location_t loc, cpp_hashnode *macro)
@@ -7790,10 +7797,11 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
   const char *header_hint
     = get_cp_stdlib_header_for_name (IDENTIFIER_POINTER (name));
   if (header_hint)
-    return name_hint (NULL,
-		      new suggest_missing_header (loc,
-						  IDENTIFIER_POINTER (name),
-						  header_hint));
+    return name_hint
+      (nullptr,
+       std::make_unique<suggest_missing_header> (loc,
+						 IDENTIFIER_POINTER (name),
+						 header_hint));
 
   best_match <tree, const char *> bm (name);
 
@@ -8679,6 +8687,9 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
 
 static GTY((deletable)) struct saved_scope *free_saved_scope;
 
+/* Temporarily make the current scope the global namespace, saving away
+   the current scope for pop_from_top_level.  */
+
 void
 push_to_top_level (void)
 {
@@ -8720,18 +8731,19 @@ push_to_top_level (void)
     store_class_bindings (previous_class_level->class_shadowed,
 			  &s->old_bindings);
 
-  /* Have to include the global scope, because class-scope decls
-     aren't listed anywhere useful.  */
+  /* Save and clear any IDENTIFIER_BINDING from local scopes.  */
   for (; b; b = b->level_chain)
     {
       tree t;
 
-      /* Template IDs are inserted into the global level. If they were
-	 inserted into namespace level, finish_file wouldn't find them
-	 when doing pending instantiations. Therefore, don't stop at
-	 namespace level, but continue until :: .  */
-      if (global_scope_p (b))
-	break;
+      /* We don't need to consider namespace scopes, they don't affect
+	 IDENTIFIER_BINDING.  */
+      if (b->kind == sk_namespace)
+	{
+	  /* Jump straight to '::'.  */
+	  b = NAMESPACE_LEVEL (global_namespace);
+	  break;
+	}
 
       store_bindings (b->names, &s->old_bindings);
       /* We also need to check class_shadowed to save class-level type

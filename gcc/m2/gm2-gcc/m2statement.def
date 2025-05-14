@@ -314,4 +314,16 @@ PROCEDURE SetEndLocation (location: location_t) ;
 PROCEDURE BuildBuiltinCallTree (func: tree) : tree ;
 
 
+(*
+   CopyByField - copy expr to des, if des is a record, union or an array
+                 then check fields for GCC type equivalence and if necessary
+                 call __builtin_strncpy and __builtin_memcpy.
+                 This can occur if an expr contains a constant string
+                 which is to be assigned into a field declared as
+                 an ARRAY [0..n] OF CHAR.
+*)
+
+PROCEDURE CopyByField (location: location_t; des, expr: tree) ;
+
+
 END m2statement.

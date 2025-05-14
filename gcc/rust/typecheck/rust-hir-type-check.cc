@@ -19,10 +19,15 @@
 #include "rust-hir-type-check.h"
 #include "rust-hir-full.h"
 #include "rust-hir-inherent-impl-overlap.h"
+#include "rust-hir-pattern.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-pattern.h"
 #include "rust-hir-type-check-struct-field.h"
+#include "rust-immutable-name-resolution-context.h"
+
+// for flag_name_resolution_2_0
+#include "options.h"
 
 extern bool
 saw_errors (void);
@@ -136,11 +141,10 @@ TyTy::BaseType *
 TraitItemReference::get_type_from_constant (
   /*const*/ HIR::TraitItemConst &constant) const
 {
-  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ().get ());
+  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
   if (constant.has_expr ())
     {
-      TyTy::BaseType *expr
-	= TypeCheckExpr::Resolve (constant.get_expr ().get ());
+      TyTy::BaseType *expr = TypeCheckExpr::Resolve (constant.get_expr ());
 
       return unify_site (constant.get_mappings ().get_hirid (),
 			 TyTy::TyWithLocation (type),
@@ -161,36 +165,9 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   HIR::TraitFunctionDecl &function = fn.get_decl ();
   if (function.has_generics ())
     {
-      for (auto &generic_param : function.get_generic_params ())
-	{
-	  switch (generic_param.get ()->get_kind ())
-	    {
-	      case HIR::GenericParam::GenericKind::LIFETIME: {
-		auto lifetime_param
-		  = static_cast<HIR::LifetimeParam &> (*generic_param);
-
-		context->intern_and_insert_lifetime (
-		  lifetime_param.get_lifetime ());
-		// TODO: Handle lifetime bounds
-	      }
-	      break;
-	    case HIR::GenericParam::GenericKind::CONST:
-	      // FIXME: Skipping Lifetime and Const completely until better
-	      // handling.
-	      break;
-
-	      case HIR::GenericParam::GenericKind::TYPE: {
-		auto param_type
-		  = TypeResolveGenericParam::Resolve (generic_param.get ());
-		context->insert_type (generic_param->get_mappings (),
-				      param_type);
-
-		substitutions.push_back (TyTy::SubstitutionParamMapping (
-		  static_cast<HIR::TypeParam &> (*generic_param), param_type));
-	      }
-	      break;
-	    }
-	}
+      TypeCheckBase::ResolveGenericParams (function.get_generic_params (),
+					   substitutions, false /*is_foreign*/,
+					   ABI::RUST);
     }
 
   if (function.has_where_clause ())
@@ -202,11 +179,10 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 
   TyTy::BaseType *ret_type = nullptr;
   if (!function.has_return_type ())
-    ret_type = TyTy::TupleType::get_unit_type (fn.get_mappings ().get_hirid ());
+    ret_type = TyTy::TupleType::get_unit_type ();
   else
     {
-      auto resolved
-	= TypeCheckType::Resolve (function.get_return_type ().get ());
+      auto resolved = TypeCheckType::Resolve (function.get_return_type ());
       if (resolved->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (fn.get_locus (), "failed to resolve return type");
@@ -215,33 +191,35 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 
       ret_type = resolved->clone ();
       ret_type->set_ref (
-	function.get_return_type ()->get_mappings ().get_hirid ());
+	function.get_return_type ().get_mappings ().get_hirid ());
     }
 
-  std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
+  std::vector<TyTy::FnParam> params;
+
   if (function.is_method ())
     {
       // these are implicit mappings and not used
-      auto mappings = Analysis::Mappings::get ();
-      auto crate_num = mappings->get_current_crate ();
-      Analysis::NodeMapping mapping (crate_num, mappings->get_next_node_id (),
-				     mappings->get_next_hir_id (crate_num),
+      auto &mappings = Analysis::Mappings::get ();
+      auto crate_num = mappings.get_current_crate ();
+      Analysis::NodeMapping mapping (crate_num, mappings.get_next_node_id (),
+				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       // add the synthetic self param at the front, this is a placeholder
       // for compilation to know parameter names. The types are ignored
       // but we reuse the HIR identifier pattern which requires it
-      HIR::SelfParam &self_param = function.get_self ();
-      HIR::IdentifierPattern *self_pattern = new HIR::IdentifierPattern (
-	mapping, {"self"}, self_param.get_locus (), self_param.is_ref (),
-	self_param.is_mut () ? Mutability::Mut : Mutability::Imm,
-	std::unique_ptr<HIR::Pattern> (nullptr));
+      HIR::SelfParam &self_param = function.get_self_unchecked ();
+      std::unique_ptr<HIR::Pattern> self_pattern
+	= std::make_unique<HIR::IdentifierPattern> (HIR::IdentifierPattern (
+	  mapping, {"self"}, self_param.get_locus (), self_param.is_ref (),
+	  self_param.is_mut () ? Mutability::Mut : Mutability::Imm,
+	  std::unique_ptr<HIR::Pattern> (nullptr)));
       // might have a specified type
       TyTy::BaseType *self_type = nullptr;
       if (self_param.has_type ())
 	{
-	  std::unique_ptr<HIR::Type> &specified_type = self_param.get_type ();
-	  self_type = TypeCheckType::Resolve (specified_type.get ());
+	  HIR::Type &specified_type = self_param.get_type ();
+	  self_type = TypeCheckType::Resolve (specified_type);
 	}
       else
 	{
@@ -283,26 +261,38 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	}
 
       context->insert_type (self_param.get_mappings (), self_type);
-      params.push_back (
-	std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern, self_type));
+      params.push_back (TyTy::FnParam (std::move (self_pattern), self_type));
     }
 
   for (auto &param : function.get_function_params ())
     {
       // get the name as well required for later on
-      auto param_tyty = TypeCheckType::Resolve (param.get_type ().get ());
-      params.push_back (std::pair<HIR::Pattern *, TyTy::BaseType *> (
-	param.get_param_name ().get (), param_tyty));
-
+      auto param_tyty = TypeCheckType::Resolve (param.get_type ());
       context->insert_type (param.get_mappings (), param_tyty);
-      TypeCheckPattern::Resolve (param.get_param_name ().get (), param_tyty);
+      TypeCheckPattern::Resolve (param.get_param_name (), param_tyty);
+      // FIXME: Should we take the name ? Use a shared pointer instead ?
+      params.push_back (
+	TyTy::FnParam (param.get_param_name ().clone_pattern (), param_tyty));
     }
 
-  auto mappings = Analysis::Mappings::get ();
-  const CanonicalPath *canonical_path = nullptr;
-  bool ok = mappings->lookup_canonical_path (fn.get_mappings ().get_nodeid (),
-					     &canonical_path);
-  rust_assert (ok);
+  auto &mappings = Analysis::Mappings::get ();
+
+  tl::optional<CanonicalPath> canonical_path;
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      canonical_path
+	= nr_ctx.values.to_canonical_path (fn.get_mappings ().get_nodeid ());
+    }
+  else
+    {
+      canonical_path
+	= mappings.lookup_canonical_path (fn.get_mappings ().get_nodeid ());
+    }
+
+  rust_assert (canonical_path);
 
   RustIdent ident{*canonical_path, fn.get_locus ()};
   auto resolved = new TyTy::FnType (

@@ -5,12 +5,12 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/float.html#fp_const_folding, Floating Point Constant Folding)
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/constfold.d, _constfold.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/constfold.d, _constfold.d)
  * Documentation:  https://dlang.org/phobos/dmd_constfold.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/constfold.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/constfold.d
  */
 
 module dmd.constfold;
@@ -107,7 +107,7 @@ UnionExp Not(Type type, Expression e1)
     return ue;
 }
 
-UnionExp Add(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Add(Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     static if (LOG)
@@ -212,7 +212,7 @@ UnionExp Add(const ref Loc loc, Type type, Expression e1, Expression e2)
     return ue;
 }
 
-UnionExp Min(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Min(Loc loc, Type type, Expression e1, Expression e2)
 {
     // Compute e1-e2 as e1+(-e2)
     UnionExp neg = Neg(e2.type, e2);
@@ -220,7 +220,7 @@ UnionExp Min(const ref Loc loc, Type type, Expression e1, Expression e2)
     return ue;
 }
 
-UnionExp Mul(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Mul(Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     if (type.isFloating())
@@ -269,7 +269,7 @@ UnionExp Mul(const ref Loc loc, Type type, Expression e1, Expression e2)
     return ue;
 }
 
-UnionExp Div(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Div(Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     if (type.isFloating())
@@ -344,7 +344,7 @@ UnionExp Div(const ref Loc loc, Type type, Expression e1, Expression e2)
     return ue;
 }
 
-UnionExp Mod(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Mod(Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     if (type.isFloating())
@@ -409,7 +409,7 @@ UnionExp Mod(const ref Loc loc, Type type, Expression e1, Expression e2)
     return ue;
 }
 
-UnionExp Pow(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Pow(Loc loc, Type type, Expression e1, Expression e2)
 {
     //printf("Pow()\n");
     UnionExp ue;
@@ -489,14 +489,14 @@ UnionExp Pow(const ref Loc loc, Type type, Expression e1, Expression e2)
     return ue;
 }
 
-UnionExp Shl(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Shl(Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     emplaceExp!(IntegerExp)(&ue, loc, e1.toInteger() << e2.toInteger(), type);
     return ue;
 }
 
-UnionExp Shr(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Shr(Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     dinteger_t value = e1.toInteger();
@@ -542,7 +542,7 @@ UnionExp Shr(const ref Loc loc, Type type, Expression e1, Expression e2)
     return ue;
 }
 
-UnionExp Ushr(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Ushr(Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     dinteger_t value = e1.toInteger();
@@ -582,21 +582,21 @@ UnionExp Ushr(const ref Loc loc, Type type, Expression e1, Expression e2)
     return ue;
 }
 
-UnionExp And(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp And(Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     emplaceExp!(IntegerExp)(&ue, loc, e1.toInteger() & e2.toInteger(), type);
     return ue;
 }
 
-UnionExp Or(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Or(Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     emplaceExp!(IntegerExp)(&ue, loc, e1.toInteger() | e2.toInteger(), type);
     return ue;
 }
 
-UnionExp Xor(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Xor(Loc loc, Type type, Expression e1, Expression e2)
 {
     //printf("Xor(linnum = %d, e1 = %s, e2 = %s)\n", loc.linnum, e1.toChars(), e2.toChars());
     UnionExp ue = void;
@@ -606,7 +606,7 @@ UnionExp Xor(const ref Loc loc, Type type, Expression e1, Expression e2)
 
 /* Also returns EXP.cantExpression if cannot be computed.
  */
-UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Equal(EXP op, Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     int cmp = 0;
@@ -804,7 +804,7 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
     return ue;
 }
 
-UnionExp Identity(EXP op, const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Identity(EXP op, Loc loc, Type type, Expression e1, Expression e2)
 {
     //printf("Identity %s %s\n", e1.toChars(), e2.toChars());
     UnionExp ue = void;
@@ -849,7 +849,7 @@ UnionExp Identity(EXP op, const ref Loc loc, Type type, Expression e1, Expressio
     return ue;
 }
 
-UnionExp Cmp(EXP op, const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Cmp(EXP op, Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     dinteger_t n;
@@ -913,7 +913,7 @@ UnionExp Cmp(EXP op, const ref Loc loc, Type type, Expression e1, Expression e2)
  *  to: type to cast to
  *  type: type to paint the result
  */
-UnionExp Cast(const ref Loc loc, Type type, Type to, Expression e1)
+UnionExp Cast(Loc loc, Type type, Type to, Expression e1)
 {
     UnionExp ue = void;
     Type tb = to.toBasetype();
@@ -1396,7 +1396,7 @@ private Expressions* copyElements(Expression e1, Expression e2 = null)
 
 /* Also return EXP.cantExpression if this fails
  */
-UnionExp Cat(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp Cat(Loc loc, Type type, Expression e1, Expression e2)
 {
     UnionExp ue = void;
     Expression e = CTFEExp.cantexp;

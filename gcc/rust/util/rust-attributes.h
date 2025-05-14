@@ -25,6 +25,12 @@
 namespace Rust {
 namespace Analysis {
 
+class Attributes
+{
+public:
+  static bool is_known (const std::string &attribute_path);
+};
+
 enum CompilerPass
 {
   UNKNOWN,
@@ -34,7 +40,12 @@ enum CompilerPass
   HIR_LOWERING,
   TYPE_CHECK,
   STATIC_ANALYSIS,
-  CODE_GENERATION
+  CODE_GENERATION,
+
+  // External Rust tooling attributes, like #[rustfmt::skip]
+  EXTERNAL,
+
+  // Do we need to add something here for const fns?
 };
 
 struct BuiltinAttrDefinition

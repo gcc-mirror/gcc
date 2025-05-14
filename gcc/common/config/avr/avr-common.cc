@@ -42,6 +42,7 @@ static const struct default_options avr_option_optimization_table[] =
     { OPT_LEVELS_2_PLUS, OPT_mfuse_move_, NULL, 23 },
     { OPT_LEVELS_2_PLUS, OPT_msplit_bit_shift, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_msplit_ldst, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_muse_nonzero_bits, NULL, 1 },
     // Stick to the "old" placement of the subreg lowering pass.
     { OPT_LEVELS_1_PLUS, OPT_fsplit_wide_types_early, NULL, 1 },
     /* Allow optimizer to introduce store data races. This used to be the

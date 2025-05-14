@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=x86-64-v3 -mavx10.2-512 -O2" } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2 -O2" } */
 /* { dg-final { scan-assembler-times "vpdpbssd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vpdpbssd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\\n\\r]*%zmm\[0-9\]+\[^\\n\\r\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vpdpbssd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\\n\\r]*%zmm\[0-9\]+\[^\\n\\r\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
@@ -52,7 +52,7 @@ volatile __m512i x,y,z,z1;
 volatile __mmask16 m16;
 volatile __mmask32 m32;
 
-void avx10_2_512_test (void)
+void avx10_2_test (void)
 {
   x = _mm512_dpbssd_epi32 (x, y, z);
   x = _mm512_mask_dpbssd_epi32 (x, m16, y, z);

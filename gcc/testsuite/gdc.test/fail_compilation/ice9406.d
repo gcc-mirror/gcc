@@ -1,8 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice9406.d(22): Error: `s1.mixin Mixin!() t1;
-` has no effect
+fail_compilation/ice9406.d(21): Error: `s1.mixin Mixin!() t1;` has no effect
 ---
 */
 

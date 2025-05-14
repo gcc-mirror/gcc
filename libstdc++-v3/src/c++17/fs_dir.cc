@@ -144,7 +144,7 @@ struct fs::_Dir : _Dir_base
   }
 
   bool
-  do_unlink(bool is_directory, error_code& ec) const noexcept
+  do_unlink([[maybe_unused]] bool is_directory, error_code& ec) const noexcept
   {
 #if _GLIBCXX_HAVE_UNLINKAT
     const auto atp = current();

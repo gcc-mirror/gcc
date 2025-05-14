@@ -1,11 +1,11 @@
 /**
  * Read a file from disk and store it in memory.
  *
- * Copyright: Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/file_manager.d, _file_manager.d)
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/file_manager.d, _file_manager.d)
  * Documentation:  https://dlang.org/phobos/dmd_file_manager.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/file_manager.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/file_manager.d
  */
 
 module dmd.file_manager;
@@ -16,7 +16,6 @@ import dmd.root.stringtable : StringTable;
 import dmd.root.file : File, Buffer;
 import dmd.root.filename : FileName, isDirSeparator;
 import dmd.root.string : toDString;
-import dmd.errors;
 import dmd.globals;
 import dmd.identifier;
 import dmd.location;
@@ -101,8 +100,10 @@ private struct PathCache
          */
         bool exists = true;
         auto st = PathStack(filespec);
-        while (st.up) {
-            if (auto cached = pathStatus.lookup(st.cur)) {
+        while (st.up)
+        {
+            if (auto cached = pathStatus.lookup(st.cur))
+            {
                 exists = cached.value;
                 break;
             }
@@ -112,7 +113,8 @@ private struct PathCache
          * Once a directory is found to not exist, all the directories
          * to the right of it do not exist
          */
-        while (st.down) {
+        while (st.down)
+        {
             if (!exists)
                 pathStatus.insert(st.cur, false);
             else
@@ -181,9 +183,6 @@ nothrow:
         scope(exit) FileName.free(sdi.ptr);
 
         const sd = FileName.forceExt(filename, mars_ext);
-        // Special file name representing `stdin`, always assume its presence
-        if (sd == "__stdin.d")
-            return sd;
         if (checkLocal && FileName.exists(sd) == 1)
             return sd;
         scope(exit) FileName.free(sd.ptr);
@@ -218,17 +217,19 @@ nothrow:
 
             const(char)[] n = FileName.combine(p, sdi);
 
-            if (!pathCache.pathExists(n)) {
+            if (!pathCache.pathExists(n))
+            {
                 FileName.free(n.ptr);
                 continue; // no need to check for anything else.
             }
-            if (FileName.exists(n) == 1) {
+            if (FileName.exists(n) == 1)
                 return n;
-            }
+
             FileName.free(n.ptr);
 
             n = FileName.combine(p, sd);
-            if (FileName.exists(n) == 1) {
+            if (FileName.exists(n) == 1)
+            {
                 whichPathFoundThis = pathIndex;
                 return n;
             }
@@ -241,14 +242,16 @@ nothrow:
             if (pathCache.isExistingPath(n))
             {
                 const n2i = FileName.combine(n, package_di);
-                if (FileName.exists(n2i) == 1) {
+                if (FileName.exists(n2i) == 1)
+                {
                     whichPathFoundThis = pathIndex;
                     return n2i;
                 }
 
                 FileName.free(n2i.ptr);
                 const n2 = FileName.combine(n, package_d);
-                if (FileName.exists(n2) == 1) {
+                if (FileName.exists(n2) == 1)
+                {
                     whichPathFoundThis = pathIndex;
                     return n2;
                 }
@@ -272,14 +275,16 @@ nothrow:
             const p = entry.path.toDString();
 
             const(char)[] n = FileName.combine(p, si);
-            if (FileName.exists(n) == 1) {
+            if (FileName.exists(n) == 1)
+            {
                 whichPathFoundThis = pathIndex;
                 return n;
             }
             FileName.free(n.ptr);
 
             n = FileName.combine(p, sc);
-            if (FileName.exists(n) == 1) {
+            if (FileName.exists(n) == 1)
+            {
                 whichPathFoundThis = pathIndex;
                 return n;
             }
@@ -303,20 +308,12 @@ nothrow:
         if (auto val = files.lookup(name))      // if `name` is cached
             return val.value;                   // return its contents
 
-        OutBuffer buf;
-        if (name == "__stdin.d")                // special name for reading from stdin
-        {
-            if (readFromStdin(buf))
-                fatal();
-        }
-        else
-        {
-            if (FileName.exists(name) != 1) // if not an ordinary file
-                return null;
+        if (FileName.exists(name) != 1) // if not an ordinary file
+            return null;
 
-            if (File.read(name, buf))
-                return null;        // failed
-        }
+        OutBuffer buf;
+        if (File.read(name, buf))
+            return null;        // failed
 
         buf.write32(0);         // terminating dchar 0
 
@@ -341,37 +338,4 @@ nothrow:
         auto val = files.insert(filename.toString, buffer);
         return val == null ? null : val.value;
     }
-}
-
-private bool readFromStdin(ref OutBuffer sink) nothrow
-{
-    import core.stdc.stdio;
-    import dmd.errors;
-
-    enum BufIncrement = 128 * 1024;
-
-    for (size_t j; 1; ++j)
-    {
-        char[] buffer = sink.allocate(BufIncrement);
-
-        // Fill up buffer
-        size_t filled = 0;
-        do
-        {
-            filled += fread(buffer.ptr + filled, 1, buffer.length - filled, stdin);
-            if (ferror(stdin))
-            {
-                import core.stdc.errno;
-                error(Loc.initial, "cannot read from stdin, errno = %d", errno);
-                return true;
-            }
-            if (feof(stdin)) // successful completion
-            {
-                sink.setsize(j * BufIncrement + filled);
-                return false;
-            }
-        } while (filled < BufIncrement);
-    }
-
-    assert(0);
 }

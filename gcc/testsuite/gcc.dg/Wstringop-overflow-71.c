@@ -2,8 +2,7 @@
    a larger scalar into a smaller array
    Verify warnings for overflow by stores of results of built-in functions.
    { dg-do compile }
-   { dg-options "-O2" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2" } */
 
 typedef __INT16_TYPE__ int16_t;
 typedef __SIZE_TYPE__  size_t;

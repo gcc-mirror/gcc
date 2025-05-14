@@ -3,7 +3,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/fail20073.d(20): Error: cannot implicitly convert expression `s` of type `S` to `string`
-fail_compilation/fail20073.d(21): Error: cannot implicitly convert expression `s` of type `S` to `string`
+fail_compilation/fail20073.d(21): Error: return value `s` of type `S` does not match return type `string`, and cannot be implicitly converted
 ---
 */
 

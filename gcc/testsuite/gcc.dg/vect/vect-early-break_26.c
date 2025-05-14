@@ -41,4 +41,6 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 2 "vect" } } */
+/* This will fail because we cannot SLP the load groups yet.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 2 "vect" { target { vect_partial_vectors && vect_load_lanes } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 1 "vect" { target { { ! vect_partial_vectors } || { ! vect_load_lanes } } } } } */

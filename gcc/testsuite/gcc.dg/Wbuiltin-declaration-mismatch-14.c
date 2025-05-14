@@ -45,8 +45,14 @@ int test_builtin_calls (size_t n)
   r += strcmp ((char*)0, "");               // { dg-warning "\\\[-Wnonnull]" }
   r += strcmp ("", (char*)0);               // { dg-warning "\\\[-Wnonnull]" }
 
-  r += strncmp ((char*)0, "", n);           // { dg-warning "\\\[-Wnonnull]" }
-  r += strncmp ("", (char*)0, n);           // { dg-warning "\\\[-Wnonnull]" }
+  r += strncmp ((char*)0, "", 1);           // { dg-warning "\\\[-Wnonnull]" }
+  r += strncmp ("", (char*)0, 1);           // { dg-warning "\\\[-Wnonnull]" }
+
+  r += strncmp ((char*)0, "", n);
+  r += strncmp ("", (char*)0, n);
+
+  r += strncmp ((char*)0, "", 0);
+  r += strncmp ("", (char*)0, 0);
 
   return r;
 }

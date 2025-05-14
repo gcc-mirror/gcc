@@ -53,12 +53,6 @@ bool in_lto_p = false
 Variable
 enum incremental_link flag_incremental_link = INCREMENTAL_LINK_NONE
 
-; 0 means straightforward implementation of complex divide acceptable.
-; 1 means wide ranges of inputs must work for complex divide.
-; 2 means C99-like requirements for complex multiply and divide.
-Variable
-int flag_complex_method = 1
-
 Variable
 int flag_default_complex_method = 1
 
@@ -614,11 +608,11 @@ Warn when an optimization pass is disabled.
 
 Werror
 Common Var(warnings_are_errors)
-Treat all warnings as errors.
+Turn all warnings into errors.
 
 Werror=
 Common Joined
-Treat specified warning as error.
+Turn the specified warning into an error.
 
 Wextra
 Common Var(extra_warnings) Warning
@@ -692,6 +686,14 @@ Does nothing. Preserved for backward compatibility.
 
 Wmissing-noreturn
 Common Warning Alias(Wsuggest-attribute=noreturn)
+
+Wmusttail-local-addr
+Common Var(warn_musttail_local_addr) Init(1) Warning
+Warn about passing a pointer/reference to a local or temporary variable to a musttail call argument.
+
+Wmaybe-musttail-local-addr
+Common Var(warn_maybe_musttail_local_addr) Warning EnabledBy(Wextra)
+Warn about pointer/reference to a local or temporary variable possibly escaping to a musttail call.
 
 Wodr
 Common Var(warn_odr_violations) Init(1) Warning
@@ -885,6 +887,18 @@ Common Var(warn_too_many_conditions) Init(1) Warning
 Warn when a conditional has too many terms and condition coverage profiling
 gives up instrumenting the expression.
 
+fpath-coverage-limit=
+Common RejectNegative Joined UInteger Var(path_coverage_limit) Init(250000)
+-fpath-coverage-limit=<number> Don't instrument functions path count exceeding
+<number>.
+
+Wcoverage-too-many-paths
+Common Var(warn_too_many_paths) Init(1) Warning
+Warn if a function exceeds the number of paths (controlled by
+-fpath-coverage-limit) and path coverage give up instrumenting the function.
+The limit is approximate and conservative and coverage might give up even if
+the actual number is slightly below the limit.
+
 Wmissing-profile
 Common Var(warn_missing_profile) Init(1) Warning
 Warn in case profiles in -fprofile-use do not exist.
@@ -1040,6 +1054,10 @@ Driver Undocumented
 ;
 ; 20: Fix mangling of lambdas in static data member initializers.
 ;     Default in G++ 15.
+;
+; 21: Fix noexcept lambda capture pruning.
+;     Fix C++20 layout of base with all explicitly defaulted constructors.
+;     Default in G++ 16.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
@@ -1292,12 +1310,30 @@ fcse-skip-blocks
 Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
+fcx-method=
+Common Joined RejectNegative Enum(complex_method) Var(flag_complex_method) Optimization SetByCombined
+
+Enum
+Name(complex_method) Type(int)
+
+; straightforward implementation of complex divide acceptable.
+EnumValue
+Enum(complex_method) String(limited-range) Value(0)
+
+; wide ranges of inputs must work for complex divide.
+EnumValue
+Enum(complex_method) String(fortran) Value(1)
+
+; C99-like requirements for complex multiply and divide.
+EnumValue
+Enum(complex_method) String(stdc) Value(2)
+
 fcx-limited-range
-Common Var(flag_cx_limited_range) Optimization SetByCombined
+Common Alias(fcx-method=,limited-range,stdc)
 Omit range reduction step when performing complex division.
 
 fcx-fortran-rules
-Common Var(flag_cx_fortran_rules) Optimization
+Common Alias(fcx-method=,fortran,stdc)
 Complex multiplication and division follow Fortran rules.
 
 fdata-sections
@@ -2035,6 +2071,7 @@ Enum(ilsop_fn) String(memset) Value(ILSOP_MEMSET) Set(4)
 
 fcf-protection
 Common RejectNegative Alias(fcf-protection=,full)
+Equivalent to -fcf-protection=full.
 
 fcf-protection=
 Common Joined RejectNegative Enum(cf_protection_level) EnumSet Var(flag_cf_protection) Init(CF_NONE)
@@ -2094,6 +2131,10 @@ Perform interprocedural bitwise constant propagation.
 fipa-modref
 Common Var(flag_ipa_modref) Optimization
 Perform interprocedural modref analysis.
+
+fipa-reorder-for-locality
+Common Var(flag_ipa_reorder_for_locality) Init(0) Optimization
+Perform reordering and cloning of functions to maximize locality.
 
 fipa-profile
 Common Var(flag_ipa_profile) Init(0) Optimization
@@ -2453,6 +2494,10 @@ Does nothing. Preserved for backward compatibility.
 foptimize-sibling-calls
 Common Var(flag_optimize_sibling_calls) Optimization
 Optimize sibling and tail recursive calls.
+
+fpath-coverage
+Common Var(path_coverage_flag)
+Insert path profiling code.
 
 fpartial-inlining
 Common Var(flag_partial_inlining) Optimization
@@ -3781,7 +3826,7 @@ Common Alias(Wpedantic)
 
 pedantic-errors
 Common Var(flag_pedantic_errors)
-Like -pedantic but issue them as errors.
+Like -pedantic but issue errors instead of warnings.
 
 pg
 Driver
@@ -3891,6 +3936,10 @@ Driver
 static-libgfortran
 Driver
 ; Documented for Fortran, but always accepted by driver.
+
+static-libgcobol
+Driver
+; Documented for COBOL, but always accepted by driver.
 
 static-libgm2
 Driver

@@ -109,6 +109,25 @@ public:
   : m_inner (logical_loc)
   {}
 
+  operator bool() { return m_inner != nullptr; }
+
+  // Various accessors
+  enum diagnostic_logical_location_kind_t get_kind () const;
+  logical_location get_parent () const;
+  const char *get_short_name () const;
+  const char *get_fully_qualified_name () const;
+  const char *get_decorated_name () const;
+
+  bool operator== (const logical_location &other) const
+  {
+    return m_inner == other.m_inner;
+  }
+
+  bool operator!= (const logical_location &other) const
+  {
+    return m_inner != other.m_inner;
+  }
+
   const diagnostic_logical_location *m_inner;
 };
 
@@ -383,6 +402,51 @@ inline file
 physical_location::get_file () const
 {
   return file (diagnostic_physical_location_get_file (m_inner));
+}
+
+// class logical_location
+
+inline enum diagnostic_logical_location_kind_t
+logical_location::get_kind () const
+{
+  // m_inner must be non-null
+  return diagnostic_logical_location_get_kind (m_inner);
+}
+
+inline logical_location
+logical_location::get_parent () const
+{
+  if (m_inner)
+    return diagnostic_logical_location_get_parent (m_inner);
+  else
+    return nullptr;
+}
+
+inline const char *
+logical_location::get_short_name () const
+{
+  if (m_inner)
+    return diagnostic_logical_location_get_short_name (m_inner);
+  else
+    return nullptr;
+}
+
+inline const char *
+logical_location::get_fully_qualified_name () const
+{
+  if (m_inner)
+    return diagnostic_logical_location_get_fully_qualified_name (m_inner);
+  else
+    return nullptr;
+}
+
+inline const char *
+logical_location::get_decorated_name () const
+{
+  if (m_inner)
+    return diagnostic_logical_location_get_decorated_name (m_inner);
+  else
+    return nullptr;
 }
 
 // class execution_path

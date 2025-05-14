@@ -61,6 +61,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+
   template<typename _Tp, typename _Alloc>
     _GLIBCXX20_CONSTEXPR
     void
@@ -74,11 +77,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  const size_type __old_size = size();
 	  pointer __tmp;
 #if __cplusplus >= 201103L
-	  if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
+	  if constexpr (_S_use_relocate())
 	    {
 	      __tmp = this->_M_allocate(__n);
-	      _S_relocate(this->_M_impl._M_start, this->_M_impl._M_finish,
-			  __tmp, _M_get_Tp_allocator());
+	      std::__relocate_a(this->_M_impl._M_start, this->_M_impl._M_finish,
+				__tmp, _M_get_Tp_allocator());
 	    }
 	  else
 #endif
@@ -98,6 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
 	}
     }
+#pragma GCC diagnostic pop
 
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
@@ -444,6 +448,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
     template<typename... _Args>
@@ -488,14 +494,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
 #if __cplusplus >= 201103L
-	if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
+	if constexpr (_S_use_relocate())
 	  {
 	    // Relocation cannot throw.
-	    __new_finish = _S_relocate(__old_start, __position.base(),
-				       __new_start, _M_get_Tp_allocator());
+	    __new_finish = std::__relocate_a(__old_start, __position.base(),
+					     __new_start,
+					     _M_get_Tp_allocator());
 	    ++__new_finish;
-	    __new_finish = _S_relocate(__position.base(), __old_finish,
-				       __new_finish, _M_get_Tp_allocator());
+	    __new_finish = std::__relocate_a(__position.base(), __old_finish,
+					     __new_finish,
+					     _M_get_Tp_allocator());
 	  }
 	else
 #endif
@@ -593,11 +601,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
 #if __cplusplus >= 201103L
-	if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
+	if constexpr (_S_use_relocate())
 	  {
 	    // Relocation cannot throw.
-	    __new_finish = _S_relocate(__old_start, __old_finish,
-				       __new_start, _M_get_Tp_allocator());
+	    __new_finish = std::__relocate_a(__old_start, __old_finish,
+					     __new_start,
+					     _M_get_Tp_allocator());
 	    ++__new_finish;
 	  }
 	else
@@ -645,6 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       this->_M_impl._M_finish = __new_finish;
       this->_M_impl._M_end_of_storage = __new_start + __len;
     }
+#pragma GCC diagnostic pop
 
   template<typename _Tp, typename _Alloc>
     _GLIBCXX20_CONSTEXPR
@@ -751,6 +761,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
 #if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
   template<typename _Tp, typename _Alloc>
     _GLIBCXX20_CONSTEXPR
     void
@@ -768,6 +780,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	  if (__navail >= __n)
 	    {
+	      if (!this->_M_impl._M_finish)
+		__builtin_unreachable();
+
 	      _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 	      this->_M_impl._M_finish =
 		std::__uninitialized_default_n_a(this->_M_impl._M_finish,
@@ -791,10 +806,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		std::__uninitialized_default_n_a(__new_start + __size, __n,
 						 _M_get_Tp_allocator());
 
-		if _GLIBCXX17_CONSTEXPR (_S_use_relocate())
+		if constexpr (_S_use_relocate())
 		  {
-		    _S_relocate(__old_start, __old_finish,
-				__new_start, _M_get_Tp_allocator());
+		    std::__relocate_a(__old_start, __old_finish,
+				      __new_start, _M_get_Tp_allocator());
 		  }
 		else
 		  {
@@ -839,6 +854,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    }
 	}
     }
+#pragma GCC diagnostic pop
 
   template<typename _Tp, typename _Alloc>
     _GLIBCXX20_CONSTEXPR
@@ -974,7 +990,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
       }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<typename _Tp, typename _Alloc>
     template<__detail::__container_compatible_range<_Tp> _Rg>
       constexpr auto
@@ -1094,10 +1110,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    return begin() + __ins_idx;
 	  }
 	else
-	  return insert_range(__pos, vector(from_range, std::move(__rg),
+	  return insert_range(__pos, vector(from_range, std::forward<_Rg>(__rg),
 					    _M_get_Tp_allocator()));
       }
-#endif // ranges_to_container
+#endif // containers_ranges
 
   // vector<bool>
   template<typename _Alloc>
@@ -1106,9 +1122,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     vector<bool, _Alloc>::
     _M_reallocate(size_type __n)
     {
+      const iterator __begin = begin(), __end = end();
+      if (size_type(__end - __begin) > __n)
+	__builtin_unreachable();
       _Bit_pointer __q = this->_M_allocate(__n);
       iterator __start(std::__addressof(*__q), 0);
-      iterator __finish(_M_copy_aligned(begin(), end(), __start));
+      iterator __finish(_M_copy_aligned(__begin, __end, __start));
       this->_M_deallocate();
       this->_M_impl._M_start = __start;
       this->_M_impl._M_finish = __finish;
@@ -1134,11 +1153,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  const size_type __len = 
 	    _M_check_len(__n, "vector<bool>::_M_fill_insert");
+	  iterator __begin = begin(), __end = end();
 	  _Bit_pointer __q = this->_M_allocate(__len);
 	  iterator __start(std::__addressof(*__q), 0);
-	  iterator __i = _M_copy_aligned(begin(), __position, __start);
+	  iterator __i = _M_copy_aligned(__begin, __position, __start);
 	  std::fill(__i, __i + difference_type(__n), __x);
-	  iterator __finish = std::copy(__position, end(),
+	  iterator __finish = std::copy(__position, __end,
 					__i + difference_type(__n));
 	  this->_M_deallocate();
 	  this->_M_impl._M_end_of_storage = __q + _S_nword(__len);

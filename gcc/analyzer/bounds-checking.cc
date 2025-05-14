@@ -17,21 +17,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "make-unique.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
+#include "analyzer/common.h"
+
 #include "intl.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "diagnostic-core.h"
 #include "diagnostic-diagram.h"
 #include "diagnostic-format-sarif.h"
-#include "analyzer/analyzer.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/region-model.h"
 #include "analyzer/checker-event.h"
@@ -105,9 +96,9 @@ public:
        so we don't need an event for that.  */
     if (byte_capacity)
       emission_path.add_event
-	(make_unique<oob_region_creation_event_capacity> (byte_capacity,
-							  loc_info,
-							  *this));
+	(std::make_unique<oob_region_creation_event_capacity> (byte_capacity,
+							       loc_info,
+							       *this));
   }
 
   void maybe_add_sarif_properties (sarif_object &result_obj)
@@ -116,7 +107,7 @@ public:
     sarif_property_bag &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/out_of_bounds/"
     props.set_string (PROPERTY_PREFIX "dir",
-		      get_dir () == DIR_READ ? "read" : "write");
+		      get_dir () == access_direction::read ? "read" : "write");
     props.set (PROPERTY_PREFIX "model", m_model.to_json ());
     props.set (PROPERTY_PREFIX "region", m_reg->to_json ());
     props.set (PROPERTY_PREFIX "diag_arg", tree_to_json (m_diag_arg));
@@ -298,9 +289,9 @@ public:
   {
     if (m_byte_bound && TREE_CODE (m_byte_bound) == INTEGER_CST)
       emission_path.add_event
-	(make_unique<oob_region_creation_event_capacity> (m_byte_bound,
-							  loc_info,
-							  *this));
+	(std::make_unique<oob_region_creation_event_capacity> (m_byte_bound,
+							       loc_info,
+							       *this));
   }
 
   void maybe_add_sarif_properties (sarif_object &result_obj)
@@ -505,7 +496,7 @@ public:
       }
   }
 
-  enum access_direction get_dir () const final override { return DIR_WRITE; }
+  enum access_direction get_dir () const final override { return access_direction::write; }
 };
 
 /* Concrete subclass to complain about buffer over-reads.  */
@@ -689,7 +680,7 @@ public:
       }
   }
 
-  enum access_direction get_dir () const final override { return DIR_READ; }
+  enum access_direction get_dir () const final override { return access_direction::read; }
 };
 
 /* Concrete subclass to complain about buffer underwrites.  */
@@ -817,7 +808,7 @@ public:
       }
   }
 
-  enum access_direction get_dir () const final override { return DIR_WRITE; }
+  enum access_direction get_dir () const final override { return access_direction::write; }
 };
 
 /* Concrete subclass to complain about buffer under-reads.  */
@@ -945,7 +936,7 @@ public:
       }
   }
 
-  enum access_direction get_dir () const final override { return DIR_READ; }
+  enum access_direction get_dir () const final override { return access_direction::read; }
 };
 
 /* Abstract class to complain about out-of-bounds read/writes where
@@ -1116,7 +1107,7 @@ public:
     return true;
   }
 
-  enum access_direction get_dir () const final override { return DIR_WRITE; }
+  enum access_direction get_dir () const final override { return access_direction::write; }
 };
 
 /* Concrete subclass to complain about over-reads with symbolic values.  */
@@ -1243,7 +1234,7 @@ public:
     return true;
   }
 
-  enum access_direction get_dir () const final override { return DIR_READ; }
+  enum access_direction get_dir () const final override { return access_direction::read; }
 };
 
 const svalue *
@@ -1427,24 +1418,26 @@ region_model::check_symbolic_bounds (const region *base_reg,
 	default:
 	  gcc_unreachable ();
 	  break;
-	case DIR_READ:
+	case access_direction::read:
 	  gcc_assert (sval_hint == nullptr);
-	  ctxt->warn (make_unique<symbolic_buffer_over_read> (*this,
-							      sized_offset_reg,
-							      diag_arg,
-							      offset_tree,
-							      num_bytes_tree,
-							      capacity_tree));
+	  ctxt->warn
+	    (std::make_unique<symbolic_buffer_over_read> (*this,
+							  sized_offset_reg,
+							  diag_arg,
+							  offset_tree,
+							  num_bytes_tree,
+							  capacity_tree));
 	  return false;
 	  break;
-	case DIR_WRITE:
-	  ctxt->warn (make_unique<symbolic_buffer_overflow> (*this,
-							     sized_offset_reg,
-							     diag_arg,
-							     offset_tree,
-							     num_bytes_tree,
-							     capacity_tree,
-							     sval_hint));
+	case access_direction::write:
+	  ctxt->warn
+	    (std::make_unique<symbolic_buffer_overflow> (*this,
+							 sized_offset_reg,
+							 diag_arg,
+							 offset_tree,
+							 num_bytes_tree,
+							 capacity_tree,
+							 sval_hint));
 	  return false;
 	  break;
 	}
@@ -1535,18 +1528,20 @@ region_model::check_region_bounds (const region *reg,
 	default:
 	  gcc_unreachable ();
 	  break;
-	case DIR_READ:
+	case access_direction::read:
 	  gcc_assert (sval_hint == nullptr);
-	  ctxt->warn (make_unique<concrete_buffer_under_read> (*this, reg,
-							       diag_arg,
-							       bits_outside));
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_under_read> (*this, reg,
+							   diag_arg,
+							   bits_outside));
 	  oob_safe = false;
 	  break;
-	case DIR_WRITE:
-	  ctxt->warn (make_unique<concrete_buffer_underwrite> (*this,
-							       reg, diag_arg,
-							       bits_outside,
-							       sval_hint));
+	case access_direction::write:
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_underwrite> (*this,
+							   reg, diag_arg,
+							   bits_outside,
+							   sval_hint));
 	  oob_safe = false;
 	  break;
 	}
@@ -1571,20 +1566,22 @@ region_model::check_region_bounds (const region *reg,
 	default:
 	  gcc_unreachable ();
 	  break;
-	case DIR_READ:
+	case access_direction::read:
 	  gcc_assert (sval_hint == nullptr);
-	  ctxt->warn (make_unique<concrete_buffer_over_read> (*this,
-							      reg, diag_arg,
-							      bits_outside,
-							      bit_bound));
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_over_read> (*this,
+							  reg, diag_arg,
+							  bits_outside,
+							  bit_bound));
 	  oob_safe = false;
 	  break;
-	case DIR_WRITE:
-	  ctxt->warn (make_unique<concrete_buffer_overflow> (*this,
-							     reg, diag_arg,
-							     bits_outside,
-							     bit_bound,
-							     sval_hint));
+	case access_direction::write:
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_overflow> (*this,
+							 reg, diag_arg,
+							 bits_outside,
+							 bit_bound,
+							 sval_hint));
 	  oob_safe = false;
 	  break;
 	}

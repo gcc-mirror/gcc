@@ -1,7 +1,7 @@
 /* { dg-do compile { target { aarch64*-*-* } } } */
-/* { dg-additional-options "-march=armv8.2-a+sve -fdump-tree-ifcvt-raw -Ofast" { target { aarch64*-*-* } } } */
+/* { dg-additional-options "-march=armv8.2-a+sve -fdump-tree-ifcvt -Ofast" { target { aarch64*-*-* } } } */
 
-extern int __attribute__ ((simd, const)) fn (int);
+extern int __attribute__ ((simd, const)) fn (float);
 
 const int N = 20;
 const float lim = 101.0;
@@ -26,6 +26,4 @@ int main (void)
   return (0);
 }
 
-/* { dg-final { scan-tree-dump {gimple_assign <gt_expr, _12, _1, 1.01e\+2, NULL>} ifcvt } } */
-/* { dg-final { scan-tree-dump {gimple_assign <bit_not_expr, _34, _12, NULL, NULL>} ifcvt } } */
-/* { dg-final { scan-tree-dump {gimple_call <.MASK_CALL, _3, fn, _2, _34>} ifcvt } } */
+/* { dg-final { scan-tree-dump {(_\d+) = (_\d+) > 1.01e\+2;\n\s*(_\d+) = ~\1;\n\s*_\d+ = .MASK_CALL \(fn, \2, \3\);} ifcvt } } */

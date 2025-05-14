@@ -22,8 +22,11 @@
 #include "rust-lint-marklive.h"
 #include "options.h"
 #include "rust-hir-full.h"
+#include "rust-hir-map.h"
+#include "rust-hir-path.h"
 #include "rust-name-resolver.h"
 #include "rust-immutable-name-resolution-context.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace Analysis {
@@ -85,20 +88,11 @@ MarkLive::go (HIR::Crate &)
       HirId hirId = worklist.back ();
       worklist.pop_back ();
       scannedSymbols.emplace (hirId);
-      HIR::Item *item = mappings->lookup_hir_item (hirId);
       liveSymbols.emplace (hirId);
-      if (item != nullptr)
-	{
-	  item->accept_vis (*this);
-	}
-      else
-	{ // the item maybe inside a trait impl
-	  HirId parent_impl_id = UNKNOWN_HIRID;
-	  HIR::ImplItem *implItem
-	    = mappings->lookup_hir_implitem (hirId, &parent_impl_id);
-	  if (implItem != nullptr)
-	    implItem->accept_vis (*this);
-	}
+      if (auto item = mappings.lookup_hir_item (hirId))
+	item.value ()->accept_vis (*this);
+      else if (auto implItem = mappings.lookup_hir_implitem (hirId))
+	implItem->first->accept_vis (*this);
     }
 }
 
@@ -107,43 +101,38 @@ MarkLive::visit (HIR::PathInExpression &expr)
 {
   // We should iterate every path segment in order to mark the struct which
   // is used in expression like Foo::bar(), we should mark the Foo alive.
-  expr.iterate_path_segments ([&] (HIR::PathExprSegment &seg) -> bool {
-    return visit_path_segment (seg);
-  });
+  if (!expr.is_lang_item ())
+    expr.iterate_path_segments ([&] (HIR::PathExprSegment &seg) -> bool {
+      return visit_path_segment (seg);
+    });
 
   // after iterate the path segments, we should mark functions and associated
   // functions alive.
   NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
   NodeId ref_node_id = UNKNOWN_NODEID;
-  find_ref_node_id (ast_node_id, ref_node_id);
+
+  if (expr.is_lang_item ())
+    ref_node_id
+      = Analysis::Mappings::get ().get_lang_item_node (expr.get_lang_item ());
+  else
+    find_ref_node_id (ast_node_id, ref_node_id);
 
   // node back to HIR
-  HirId ref;
-  bool ok = mappings->lookup_node_to_hir (ref_node_id, &ref);
-  rust_assert (ok);
+  tl::optional<HirId> hid = mappings.lookup_node_to_hir (ref_node_id);
+  rust_assert (hid.has_value ());
+  auto ref = hid.value ();
 
   // it must resolve to some kind of HIR::Item or HIR::InheritImplItem
-  HIR::Item *resolved_item = mappings->lookup_hir_item (ref);
-  if (resolved_item != nullptr)
-    {
-      mark_hir_id (resolved_item->get_mappings ().get_hirid ());
-    }
-  else
-    {
-      HirId parent_impl_id = UNKNOWN_HIRID;
-      HIR::ImplItem *resolved_item
-	= mappings->lookup_hir_implitem (ref, &parent_impl_id);
-      if (resolved_item != nullptr)
-	{
-	  mark_hir_id (resolved_item->get_impl_mappings ().get_hirid ());
-	}
-    }
+  if (auto resolved_item = mappings.lookup_hir_item (ref))
+    mark_hir_id (resolved_item.value ()->get_mappings ().get_hirid ());
+  else if (auto resolved_item = mappings.lookup_hir_implitem (ref))
+    mark_hir_id (resolved_item->first->get_impl_mappings ().get_hirid ());
 }
 
 void
 MarkLive::visit (HIR::MethodCallExpr &expr)
 {
-  expr.get_receiver ()->accept_vis (*this);
+  expr.get_receiver ().accept_vis (*this);
   visit_path_segment (expr.get_method_name ());
   for (auto &argument : expr.get_arguments ())
     argument->accept_vis (*this);
@@ -154,10 +143,10 @@ MarkLive::visit (HIR::MethodCallExpr &expr)
   find_ref_node_id (ast_node_id, ref_node_id);
 
   // node back to HIR
-  HirId ref;
-  bool ok = mappings->lookup_node_to_hir (ref_node_id, &ref);
-  rust_assert (ok);
-  mark_hir_id (ref);
+  if (auto hid = mappings.lookup_node_to_hir (ref_node_id))
+    mark_hir_id (*hid);
+  else
+    rust_unreachable ();
 }
 
 bool
@@ -174,30 +163,41 @@ MarkLive::visit_path_segment (HIR::PathExprSegment seg)
   //
   // We should mark them alive all and ignoring other kind of segments.
   // If the segment we dont care then just return false is fine
-  if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      if (auto id = nr_ctx.lookup (ast_node_id))
+	ref_node_id = *id;
+      else
+	return false;
+    }
+  else if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
     {
       if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
 	return false;
     }
-  HirId ref;
-  bool ok = mappings->lookup_node_to_hir (ref_node_id, &ref);
-  rust_assert (ok);
-  mark_hir_id (ref);
-  return true;
+  if (auto hid = mappings.lookup_node_to_hir (ref_node_id))
+    {
+      mark_hir_id (*hid);
+      return true;
+    }
+  rust_unreachable ();
 }
 
 void
 MarkLive::visit (HIR::FieldAccessExpr &expr)
 {
   // visit receiver at first
-  expr.get_receiver_expr ()->accept_vis (*this);
+  expr.get_receiver_expr ().accept_vis (*this);
 
   // resolve the receiver back to ADT type
   TyTy::BaseType *receiver = nullptr;
   if (!tyctx->lookup_type (
-	expr.get_receiver_expr ()->get_mappings ().get_hirid (), &receiver))
+	expr.get_receiver_expr ().get_mappings ().get_hirid (), &receiver))
     {
-      rust_error_at (expr.get_receiver_expr ()->get_locus (),
+      rust_error_at (expr.get_receiver_expr ().get_locus (),
 		     "unresolved type for receiver");
     }
 
@@ -229,7 +229,7 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
   rust_assert (ok);
   if (index >= variant->num_fields ())
     {
-      rust_error_at (expr.get_receiver_expr ()->get_locus (),
+      rust_error_at (expr.get_receiver_expr ().get_locus (),
 		     "cannot access struct %s by index: %lu",
 		     adt->get_name ().c_str (), (unsigned long) index);
       return;
@@ -244,19 +244,32 @@ void
 MarkLive::visit (HIR::TupleIndexExpr &expr)
 {
   // TODO: unused tuple field detection
-  expr.get_tuple_expr ()->accept_vis (*this);
+  expr.get_tuple_expr ().accept_vis (*this);
 }
 
 void
 MarkLive::visit (HIR::TypeAlias &alias)
 {
-  NodeId ast_node_id;
-  resolver->lookup_resolved_type (
-    alias.get_type_aliased ()->get_mappings ().get_nodeid (), &ast_node_id);
-  HirId hir_id;
-  bool ok = mappings->lookup_node_to_hir (ast_node_id, &hir_id);
-  rust_assert (ok);
-  mark_hir_id (hir_id);
+  NodeId ast_node_id = UNKNOWN_NODEID;
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      if (auto id = nr_ctx.lookup (
+	    alias.get_type_aliased ().get_mappings ().get_nodeid ()))
+	ast_node_id = *id;
+    }
+  else
+    {
+      resolver->lookup_resolved_type (
+	alias.get_type_aliased ().get_mappings ().get_nodeid (), &ast_node_id);
+    }
+
+  if (auto hid = mappings.lookup_node_to_hir (ast_node_id))
+    mark_hir_id (*hid);
+  else
+    rust_unreachable ();
 }
 
 void
@@ -274,7 +287,7 @@ MarkLive::find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id)
 {
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       nr_ctx.lookup (ast_node_id).map ([&ref_node_id] (NodeId resolved) {

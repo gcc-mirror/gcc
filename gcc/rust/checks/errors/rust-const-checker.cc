@@ -21,13 +21,18 @@
 #include "rust-hir-expr.h"
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
+#include "rust-system.h"
+#include "rust-immutable-name-resolution-context.h"
+
+// for flag_name_resolution_2_0
+#include "options.h"
 
 namespace Rust {
 namespace HIR {
 
 ConstChecker::ConstChecker ()
   : resolver (*Resolver::Resolver::get ()),
-    mappings (*Analysis::Mappings::get ())
+    mappings (Analysis::Mappings::get ())
 {}
 
 void
@@ -156,72 +161,72 @@ ConstChecker::visit (LiteralExpr &)
 void
 ConstChecker::visit (BorrowExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (DereferenceExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (ErrorPropagationExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (NegationExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (ArithmeticOrLogicalExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (ComparisonExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (LazyBooleanExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (TypeCastExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (AssignmentExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (CompoundAssignmentExpr &expr)
 {
-  expr.get_lhs ()->accept_vis (*this);
-  expr.get_rhs ()->accept_vis (*this);
+  expr.get_lhs ().accept_vis (*this);
+  expr.get_rhs ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (GroupedExpr &expr)
 {
-  expr.get_expr_in_parens ()->accept_vis (*this);
+  expr.get_expr_in_parens ().accept_vis (*this);
 }
 
 void
@@ -234,11 +239,11 @@ ConstChecker::visit (ArrayElemsValues &elems)
 void
 ConstChecker::visit (ArrayElemsCopied &elems)
 {
-  elems.get_elem_to_copy ()->accept_vis (*this);
+  elems.get_elem_to_copy ().accept_vis (*this);
 
   const_context.enter (elems.get_mappings ().get_hirid ());
 
-  elems.get_num_copies_expr ()->accept_vis (*this);
+  elems.get_num_copies_expr ().accept_vis (*this);
 
   const_context.exit ();
 }
@@ -246,14 +251,14 @@ ConstChecker::visit (ArrayElemsCopied &elems)
 void
 ConstChecker::visit (ArrayExpr &expr)
 {
-  expr.get_internal_elements ()->accept_vis (*this);
+  expr.get_internal_elements ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (ArrayIndexExpr &expr)
 {
-  expr.get_array_expr ()->accept_vis (*this);
-  expr.get_index_expr ()->accept_vis (*this);
+  expr.get_array_expr ().accept_vis (*this);
+  expr.get_index_expr ().accept_vis (*this);
 }
 
 void
@@ -266,7 +271,7 @@ ConstChecker::visit (TupleExpr &expr)
 void
 ConstChecker::visit (TupleIndexExpr &expr)
 {
-  expr.get_tuple_expr ()->accept_vis (*this);
+  expr.get_tuple_expr ().accept_vis (*this);
 }
 
 void
@@ -280,13 +285,13 @@ ConstChecker::visit (StructExprFieldIdentifier &)
 void
 ConstChecker::visit (StructExprFieldIdentifierValue &field)
 {
-  field.get_value ()->accept_vis (*this);
+  field.get_value ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (StructExprFieldIndexValue &field)
 {
-  field.get_value ()->accept_vis (*this);
+  field.get_value ().accept_vis (*this);
 }
 
 void
@@ -307,24 +312,23 @@ ConstChecker::check_function_call (HirId fn_id, location_t locus)
     return;
 
   auto maybe_fn = mappings.lookup_hir_item (fn_id);
-  if (maybe_fn && maybe_fn->get_item_kind () != Item::ItemKind::Function)
+  if (maybe_fn
+      && maybe_fn.value ()->get_item_kind () != Item::ItemKind::Function)
     return;
 
   // There are const extern functions (intrinsics)
   // TODO: Should we check the ABI is only "rust intrinsics"? Is that handled
   // elsewhere?
-  HirId parent_block;
-  auto maybe_extern_item
-    = mappings.lookup_hir_extern_item (fn_id, &parent_block);
+  auto maybe_extern_item = mappings.lookup_hir_extern_item (fn_id);
   if (maybe_extern_item
-      && maybe_extern_item->get_extern_kind ()
+      && maybe_extern_item->first->get_extern_kind ()
 	   != ExternalItem::ExternKind::Function)
     return;
 
   auto is_error = false;
   if (maybe_fn)
     {
-      auto fn = static_cast<Function *> (maybe_fn);
+      auto fn = static_cast<Function *> (*maybe_fn);
       if (!fn->get_qualifiers ().is_const ())
 	is_error = true;
     }
@@ -332,7 +336,8 @@ ConstChecker::check_function_call (HirId fn_id, location_t locus)
   if (maybe_extern_item)
     {
       {
-	auto fn = static_cast<ExternalFunctionItem *> (maybe_extern_item);
+	auto fn
+	  = static_cast<ExternalFunctionItem *> (maybe_extern_item->first);
 	if (!is_const_extern_fn (*fn))
 	  is_error = true;
       }
@@ -347,29 +352,43 @@ ConstChecker::check_function_call (HirId fn_id, location_t locus)
 void
 ConstChecker::visit (CallExpr &expr)
 {
-  if (!expr.get_fnexpr ())
+  if (!expr.has_fnexpr ())
     return;
 
-  NodeId ast_node_id = expr.get_fnexpr ()->get_mappings ().get_nodeid ();
+  NodeId ast_node_id = expr.get_fnexpr ().get_mappings ().get_nodeid ();
   NodeId ref_node_id;
-  HirId definition_id;
 
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      if (auto id = nr_ctx.lookup (ast_node_id))
+	ref_node_id = *id;
+      else
+	return;
+    }
   // We don't care about types here
-  if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
+  else if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
     return;
 
-  rust_assert (mappings.lookup_node_to_hir (ref_node_id, &definition_id));
+  if (auto definition_id = mappings.lookup_node_to_hir (ref_node_id))
+    {
+      check_function_call (*definition_id, expr.get_locus ());
 
-  check_function_call (definition_id, expr.get_locus ());
-
-  for (auto &arg : expr.get_arguments ())
-    arg->accept_vis (*this);
+      for (auto &arg : expr.get_arguments ())
+	arg->accept_vis (*this);
+    }
+  else
+    {
+      rust_unreachable ();
+    }
 }
 
 void
 ConstChecker::visit (MethodCallExpr &expr)
 {
-  expr.get_receiver ()->accept_vis (*this);
+  expr.get_receiver ().accept_vis (*this);
 
   for (auto &arg : expr.get_arguments ())
     arg->accept_vis (*this);
@@ -378,13 +397,13 @@ ConstChecker::visit (MethodCallExpr &expr)
 void
 ConstChecker::visit (FieldAccessExpr &expr)
 {
-  expr.get_receiver_expr ()->accept_vis (*this);
+  expr.get_receiver_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (ClosureExpr &expr)
 {
-  expr.get_expr ()->accept_vis (*this);
+  expr.get_expr ().accept_vis (*this);
 }
 
 void
@@ -394,7 +413,7 @@ ConstChecker::visit (BlockExpr &expr)
     stmt->accept_vis (*this);
 
   if (expr.has_expr ())
-    expr.get_final_expr ()->accept_vis (*this);
+    expr.get_final_expr ().accept_vis (*this);
 }
 
 void
@@ -405,26 +424,26 @@ void
 ConstChecker::visit (BreakExpr &expr)
 {
   if (expr.has_break_expr ())
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (RangeFromToExpr &expr)
 {
-  expr.get_from_expr ()->accept_vis (*this);
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_from_expr ().accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (RangeFromExpr &expr)
 {
-  expr.get_from_expr ()->accept_vis (*this);
+  expr.get_from_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (RangeToExpr &expr)
 {
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
@@ -434,8 +453,8 @@ ConstChecker::visit (RangeFullExpr &)
 void
 ConstChecker::visit (RangeFromToInclExpr &expr)
 {
-  expr.get_from_expr ()->accept_vis (*this);
-  expr.get_to_expr ()->accept_vis (*this);
+  expr.get_from_expr ().accept_vis (*this);
+  expr.get_to_expr ().accept_vis (*this);
 }
 
 void
@@ -448,73 +467,57 @@ void
 ConstChecker::visit (ReturnExpr &expr)
 {
   if (expr.has_return_expr ())
-    expr.get_expr ()->accept_vis (*this);
+    expr.get_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (UnsafeBlockExpr &expr)
 {
-  expr.get_block_expr ()->accept_vis (*this);
+  expr.get_block_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (LoopExpr &expr)
 {
-  expr.get_loop_block ()->accept_vis (*this);
+  expr.get_loop_block ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (WhileLoopExpr &expr)
 {
-  expr.get_predicate_expr ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
+  expr.get_predicate_expr ().accept_vis (*this);
+  expr.get_loop_block ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (WhileLetLoopExpr &expr)
 {
-  expr.get_cond ()->accept_vis (*this);
-  expr.get_loop_block ()->accept_vis (*this);
+  expr.get_cond ().accept_vis (*this);
+  expr.get_loop_block ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (IfExpr &expr)
 {
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
+  expr.get_if_condition ().accept_vis (*this);
+  expr.get_if_block ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (IfExprConseqElse &expr)
 {
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-  expr.get_else_block ()->accept_vis (*this);
-}
-
-void
-ConstChecker::visit (IfLetExpr &expr)
-{
-  expr.get_scrutinee_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-}
-
-void
-ConstChecker::visit (IfLetExprConseqElse &expr)
-{
-  expr.get_scrutinee_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-
-  // TODO: Visit else expression
+  expr.get_if_condition ().accept_vis (*this);
+  expr.get_if_block ().accept_vis (*this);
+  expr.get_else_block ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (MatchExpr &expr)
 {
-  expr.get_scrutinee_expr ()->accept_vis (*this);
+  expr.get_scrutinee_expr ().accept_vis (*this);
 
   for (auto &match_arm : expr.get_match_cases ())
-    match_arm.get_expr ()->accept_vis (*this);
+    match_arm.get_expr ().accept_vis (*this);
 }
 
 void
@@ -528,6 +531,14 @@ ConstChecker::visit (AsyncBlockExpr &)
 {
   // TODO: Visit block expression
 }
+
+void
+ConstChecker::visit (InlineAsm &)
+{}
+
+void
+ConstChecker::visit (LlvmInlineAsm &)
+{}
 
 void
 ConstChecker::visit (TypeParam &)
@@ -583,9 +594,9 @@ ConstChecker::visit (Function &function)
 				ConstGenericCtx::Function);
 
   for (auto &param : function.get_function_params ())
-    param.get_type ()->accept_vis (*this);
+    param.get_type ().accept_vis (*this);
 
-  function.get_definition ()->accept_vis (*this);
+  function.get_definition ().accept_vis (*this);
 
   if (const_fn)
     const_context.exit ();
@@ -629,7 +640,7 @@ ConstChecker::visit (EnumItemDiscriminant &item)
 {
   const_context.enter (item.get_mappings ().get_hirid ());
 
-  item.get_discriminant_expression ()->accept_vis (*this);
+  item.get_discriminant_expression ().accept_vis (*this);
 
   const_context.exit ();
 }
@@ -639,6 +650,9 @@ ConstChecker::visit (Enum &enum_item)
 {
   check_default_const_generics (enum_item.get_generic_params (),
 				ConstGenericCtx::Enum);
+
+  for (auto &item : enum_item.get_variants ())
+    item->accept_vis (*this);
 }
 
 void
@@ -653,7 +667,7 @@ ConstChecker::visit (ConstantItem &const_item)
 {
   const_context.enter (const_item.get_mappings ().get_hirid ());
 
-  const_item.get_expr ()->accept_vis (*this);
+  const_item.get_expr ().accept_vis (*this);
 
   const_context.exit ();
 }
@@ -663,7 +677,7 @@ ConstChecker::visit (StaticItem &static_item)
 {
   const_context.enter (static_item.get_mappings ().get_hirid ());
 
-  static_item.get_expr ()->accept_vis (*this);
+  static_item.get_expr ().accept_vis (*this);
 
   const_context.exit ();
 }
@@ -671,15 +685,15 @@ ConstChecker::visit (StaticItem &static_item)
 void
 ConstChecker::visit (TraitItemFunc &item)
 {
-  if (item.has_block_defined ())
-    item.get_block_expr ()->accept_vis (*this);
+  if (item.has_definition ())
+    item.get_block_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (TraitItemConst &item)
 {
   if (item.has_expr ())
-    item.get_expr ()->accept_vis (*this);
+    item.get_expr ().accept_vis (*this);
 }
 
 void
@@ -814,13 +828,13 @@ void
 ConstChecker::visit (LetStmt &stmt)
 {
   if (stmt.has_init_expr ())
-    stmt.get_init_expr ()->accept_vis (*this);
+    stmt.get_init_expr ().accept_vis (*this);
 }
 
 void
 ConstChecker::visit (ExprStmt &stmt)
 {
-  stmt.get_expr ()->accept_vis (*this);
+  stmt.get_expr ().accept_vis (*this);
 }
 
 void
@@ -837,10 +851,6 @@ ConstChecker::visit (TraitObjectType &)
 
 void
 ConstChecker::visit (ParenthesisedType &)
-{}
-
-void
-ConstChecker::visit (ImplTraitTypeOneBound &)
 {}
 
 void
@@ -868,7 +878,7 @@ ConstChecker::visit (ArrayType &type)
 {
   const_context.enter (type.get_mappings ().get_hirid ());
 
-  type.get_size_expr ()->accept_vis (*this);
+  type.get_size_expr ().accept_vis (*this);
 
   const_context.exit ();
 }

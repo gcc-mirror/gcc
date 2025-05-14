@@ -311,3 +311,13 @@
   "Shifting immediate for SIMD shufflei3."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, -64, -1)")))
+
+(define_constraint "Ou01"
+  "A 1-bit unsigned immediate."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 1)")))
+
+(define_constraint "Ou02"
+  "A 2-bit unsigned immediate."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 3)")))

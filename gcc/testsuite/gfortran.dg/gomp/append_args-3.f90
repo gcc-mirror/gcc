@@ -33,7 +33,7 @@ contains
     integer(omp_interop_kind), value :: o_value
   end
   subroutine sub_no_arg ()
-    !$omp declare variant (vsub_no_arg ) match(construct={dispatch}) append_args (interop(targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (vsub_no_arg ) match(construct={dispatch}) append_args (interop(targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
   end
 
   integer(c_int) function vfun_cbind(arg2_int, arg2_str, o2_dummy, o2_value) bind(C)

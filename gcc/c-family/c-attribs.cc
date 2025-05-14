@@ -651,7 +651,9 @@ const struct scoped_attribute_specs c_common_gnu_attribute_table =
 /* Attributes also recognized in the clang:: namespace.  */
 const struct attribute_spec c_common_clang_attributes[] = {
   { "flag_enum",	      0, 0, false, true, false, false,
-			      handle_flag_enum_attribute, NULL }
+			      handle_flag_enum_attribute, NULL },
+  { "musttail",		      0, 0, false, false, false,
+			      false, handle_musttail_attribute, NULL }
 };
 
 const struct scoped_attribute_specs c_common_clang_attribute_table =
@@ -5117,8 +5119,9 @@ handle_nonstring_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  /* Accept the attribute on arrays and pointers to all three
-	     narrow character types.  */
-	  tree eltype = TREE_TYPE (type);
+	     narrow character types, including multi-dimensional arrays
+	     or pointers to them.  */
+	  tree eltype = strip_array_types (TREE_TYPE (type));
 	  eltype = TYPE_MAIN_VARIANT (eltype);
 	  if (eltype == char_type_node
 	      || eltype == signed_char_type_node

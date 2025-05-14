@@ -1,4 +1,4 @@
-/* { dg-do run {target avx512fp16} } */
+/* { dg-do run { target avx512fp16 } } */
 /* { dg-options "-O2 -mavx512fp16" } */
 
 static void do_test (void);

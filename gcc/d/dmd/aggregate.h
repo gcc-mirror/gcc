@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -45,7 +45,9 @@ namespace dmd
 {
     FuncDeclaration *search_toString(StructDeclaration *sd);
     void semanticTypeInfoMembers(StructDeclaration *sd);
-    bool fill(StructDeclaration* sd, const Loc &loc, Expressions &elements, bool ctorinit);
+    bool fill(StructDeclaration* sd, Loc loc, Expressions &elements, bool ctorinit);
+    bool isFuncHidden(ClassDeclaration* cd, FuncDeclaration* fd);
+    Dsymbol* vtblSymbol(ClassDeclaration *cd);
 }
 
 enum class ClassKind : uint8_t
@@ -119,7 +121,7 @@ public:
 
     virtual Scope *newScope(Scope *sc);
     virtual void finalizeSize() = 0;
-    uinteger_t size(const Loc &loc) override final;
+    uinteger_t size(Loc loc) override final;
     Type *getType() override final;
     bool isDeprecated() const override final; // is aggregate deprecated?
     bool isNested() const;
@@ -135,7 +137,6 @@ public:
     // Back end
     void *sinit;
 
-    AggregateDeclaration *isAggregateDeclaration() override final { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -168,7 +169,7 @@ public:
 private:
     uint16_t bitFields;
 public:
-    static StructDeclaration *create(const Loc &loc, Identifier *id, bool inObject);
+    static StructDeclaration *create(Loc loc, Identifier *id, bool inObject);
     StructDeclaration *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
     void finalizeSize() override final;
@@ -191,7 +192,6 @@ public:
     bool requestTypeInfo() const;
     bool requestTypeInfo(bool v);
 
-    StructDeclaration *isStructDeclaration() override final { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 
     unsigned numArgTypes() const;
@@ -205,7 +205,6 @@ public:
     UnionDeclaration *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
 
-    UnionDeclaration *isUnionDeclaration() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -278,7 +277,7 @@ public:
     ObjcClassDeclaration objc;          // Data for a class declaration that is needed for the Objective-C integration
     Symbol *cpp_type_info_ptr_sym;      // cached instance of class Id.cpp_type_info_ptr
 
-    static ClassDeclaration *create(const Loc &loc, Identifier *id, BaseClasses *baseclasses, Dsymbols *members, bool inObject);
+    static ClassDeclaration *create(Loc loc, Identifier *id, BaseClasses *baseclasses, Dsymbols *members, bool inObject);
     const char *toPrettyChars(bool QualifyTypes = false) override;
     ClassDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;
@@ -290,7 +289,6 @@ public:
     bool isBaseInfoComplete();
     void finalizeSize() override;
     bool hasMonitor();
-    bool isFuncHidden(FuncDeclaration *fd);
     bool isCOMclass() const;
     virtual bool isCOMinterface() const;
     bool isCPPclass() const;
@@ -303,9 +301,7 @@ public:
 
     // Back end
     Dsymbol *vtblsym;
-    Dsymbol *vtblSymbol();
 
-    ClassDeclaration *isClassDeclaration() override final { return (ClassDeclaration *)this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -320,6 +316,5 @@ public:
     bool isCPPinterface() const override;
     bool isCOMinterface() const override;
 
-    InterfaceDeclaration *isInterfaceDeclaration() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };

@@ -20,6 +20,7 @@
 #define RUST_MACRO_EXPAND_H
 
 #include "optional.h"
+#include "rust-ast-fragment.h"
 #include "rust-buffered-queue.h"
 #include "rust-parse.h"
 #include "rust-token.h"
@@ -317,12 +318,12 @@ struct MacroExpander
   /* Expands a macro invocation - possibly make both
    * have similar duck-typed interface and use templates?*/
   // should this be public or private?
-  void expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon);
+  void expand_invoc (AST::MacroInvocation &invoc, AST::InvocKind semicolon);
 
   // Expands a single declarative macro.
   AST::Fragment expand_decl_macro (location_t locus, AST::MacroInvocData &invoc,
 				   AST::MacroRulesDefinition &rules_def,
-				   bool semicolon);
+				   AST::InvocKind semicolon);
 
   bool depth_exceeds_recursion_limit () const;
 
@@ -330,9 +331,10 @@ struct MacroExpander
 		       AST::DelimTokenTree &invoc_token_tree);
 
   AST::Fragment transcribe_rule (
-    AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
+    AST::MacroRulesDefinition &definition, AST::MacroRule &match_rule,
+    AST::DelimTokenTree &invoc_token_tree,
     std::map<std::string, MatchedFragmentContainer *> &matched_fragments,
-    bool semicolon, ContextType ctx);
+    AST::InvocKind invoc_kind, ContextType ctx);
 
   bool match_fragment (Parser<MacroInvocLexer> &parser,
 		       AST::MacroMatchFragment &fragment);
@@ -411,7 +413,7 @@ struct MacroExpander
   AST::Fragment expand_derive_proc_macro (T &item, AST::SimplePath &path)
   {
     tl::optional<CustomDeriveProcMacro &> macro
-      = mappings->lookup_derive_proc_macro_invocation (path);
+      = mappings.lookup_derive_proc_macro_invocation (path);
     if (!macro.has_value ())
       {
 	rust_error_at (path.get_locus (), "macro not found");
@@ -434,7 +436,7 @@ struct MacroExpander
 					AST::MacroInvocation &invocation)
   {
     tl::optional<BangProcMacro &> macro
-      = mappings->lookup_bang_proc_macro_invocation (invocation);
+      = mappings.lookup_bang_proc_macro_invocation (invocation);
     if (!macro.has_value ())
       {
 	rust_error_at (invocation.get_locus (), "macro not found");
@@ -456,7 +458,7 @@ struct MacroExpander
   AST::Fragment expand_attribute_proc_macro (T &item, AST::SimplePath &path)
   {
     tl::optional<AttributeProcMacro &> macro
-      = mappings->lookup_attribute_proc_macro_invocation (path);
+      = mappings.lookup_attribute_proc_macro_invocation (path);
     if (!macro.has_value ())
       {
 	rust_error_at (path.get_locus (), "macro not found");
@@ -512,7 +514,7 @@ private:
 
 public:
   Resolver::Resolver *resolver;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 };
 
 } // namespace Rust

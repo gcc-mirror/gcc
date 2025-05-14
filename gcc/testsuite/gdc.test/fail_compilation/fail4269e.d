@@ -2,7 +2,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/fail4269e.d(10): Error: semicolon needed to end declaration of `Y` instead of `X5`
-fail_compilation/fail4269e.d(10): Error: no identifier for declarator `X5`
+fail_compilation/fail4269e.d(10): Error: variable name expected after type `X5`, not `;`
 ---
 */
 

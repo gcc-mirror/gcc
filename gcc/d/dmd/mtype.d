@@ -1,12 +1,12 @@
 /**
  * Defines a D type.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/mtype.d, _mtype.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mtype.d, _mtype.d)
  * Documentation:  https://dlang.org/phobos/dmd_mtype.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/mtype.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/mtype.d
  */
 
 module dmd.mtype;
@@ -232,9 +232,9 @@ unittest
 /************************************
  * Convert MODxxxx to STCxxx
  */
-StorageClass ModToStc(uint mod) pure nothrow @nogc @safe
+STC ModToStc(uint mod) pure nothrow @nogc @safe
 {
-    StorageClass stc = 0;
+    STC stc = STC.none;
     if (mod & MODFlags.immutable_)
         stc |= STC.immutable_;
     if (mod & MODFlags.const_)
@@ -299,12 +299,15 @@ extern (C++) abstract class Type : ASTNode
         Type wcto;      // MODFlags.wildconst
         Type swto;      // MODFlags.shared_ | MODFlags.wild
         Type swcto;     // MODFlags.shared_ | MODFlags.wildconst
+        Type pto;       // merged pointer to this type
+        Type rto;       // reference to this type
+        Type arrayof;   // array of this type
+
+        // ImportC: store the name of the typedef resolving to this type
+        // So `uint8_t x;` will be printed as `uint8_t x;` and not as the resolved `ubyte x;`
+        Identifier typedefIdent;
     }
     Mcache* mcache;
-
-    Type pto;       // merged pointer to this type
-    Type rto;       // reference to this type
-    Type arrayof;   // array of this type
 
     TypeInfoDeclaration vtinfo;     // TypeInfo object for this Type
 
@@ -762,9 +765,6 @@ extern (C++) abstract class Type : ASTNode
         memcpy(cast(void*)t, cast(void*)this, sz);
         // t.mod = NULL;  // leave mod unchanged
         t.deco = null;
-        t.arrayof = null;
-        t.pto = null;
-        t.rto = null;
         t.vtinfo = null;
         t.ctype = null;
         t.mcache = null;
@@ -1108,7 +1108,7 @@ extern (C++) abstract class Type : ASTNode
      * Apply STCxxxx bits to existing type.
      * Use *before* semantic analysis is run.
      */
-    extern (D) final Type addSTC(StorageClass stc)
+    extern (D) final Type addSTC(STC stc)
     {
         Type t = this;
         if (t.isImmutable())
@@ -1295,17 +1295,15 @@ extern (C++) abstract class Type : ASTNode
             {
                 if (t.isWildConst())
                     return MODFlags.wild;
-                else
-                    return MODFlags.wildconst;
+                return MODFlags.wildconst;
             }
-            else if (isWild())
+            if (isWild())
                 return MODFlags.wild;
-            else if (isConst())
+            if (isConst())
                 return MODFlags.const_;
-            else if (isMutable())
+            if (isMutable())
                 return MODFlags.mutable;
-            else
-                assert(0);
+            assert(0);
         }
         return 0;
     }
@@ -1329,7 +1327,7 @@ extern (C++) abstract class Type : ASTNode
      * Use when we prefer the default initializer to be a literal,
      * rather than a global immutable variable.
      */
-    Expression defaultInitLiteral(const ref Loc loc)
+    Expression defaultInitLiteral(Loc loc)
     {
         static if (LOGDEFAULTINIT)
         {
@@ -1523,6 +1521,8 @@ extern (C++) abstract class Type : ASTNode
         inout(TypeTraits)     isTypeTraits()     { return ty == Ttraits    ? cast(typeof(return))this : null; }
         inout(TypeNoreturn)   isTypeNoreturn()   { return ty == Tnoreturn  ? cast(typeof(return))this : null; }
         inout(TypeTag)        isTypeTag()        { return ty == Ttag       ? cast(typeof(return))this : null; }
+
+        extern (D) bool isStaticOrDynamicArray() const { return ty == Tarray || ty == Tsarray; }
     }
 
     override void accept(Visitor v)
@@ -1572,7 +1572,7 @@ extern (C++) final class TypeError : Type
         return this;
     }
 
-    override Expression defaultInitLiteral(const ref Loc loc)
+    override Expression defaultInitLiteral(Loc loc)
     {
         return ErrorExp.get();
     }
@@ -2118,7 +2118,7 @@ extern (C++) final class TypeVector : Type
         return false;
     }
 
-    override Expression defaultInitLiteral(const ref Loc loc)
+    override Expression defaultInitLiteral(Loc loc)
     {
         //printf("TypeVector::defaultInitLiteral()\n");
         assert(basetype.ty == Tsarray);
@@ -2219,7 +2219,7 @@ extern (C++) final class TypeSArray : TypeArray
         return next.alignment();
     }
 
-    override Expression defaultInitLiteral(const ref Loc loc)
+    override Expression defaultInitLiteral(Loc loc)
     {
         static if (LOGDEFAULTINIT)
         {
@@ -2488,6 +2488,7 @@ extern (C++) final class TypeFunction : TypeNext
         bool isInOutQual;      /// inout on the qualifier
         bool isCtor;           /// the function is a constructor
         bool isReturnScope;    /// `this` is returned by value
+        bool isRvalue;         /// returned reference should be treated as rvalue
     }
 
     import dmd.common.bitfields : generateBitFields;
@@ -2499,7 +2500,7 @@ extern (C++) final class TypeFunction : TypeNext
     byte inuse;
     ArgumentList inferenceArguments; // function arguments to determine `auto ref` in type semantic
 
-    extern (D) this(ParameterList pl, Type treturn, LINK linkage, StorageClass stc = 0) @safe
+    extern (D) this(ParameterList pl, Type treturn, LINK linkage, STC stc = STC.none) @safe
     {
         super(Tfunction, treturn);
         //if (!treturn) *(char*)0=0;
@@ -2531,6 +2532,8 @@ extern (C++) final class TypeFunction : TypeNext
             this.isScopeQual = true;
         if (stc & STC.scopeinferred)
             this.isScopeInferred = true;
+        if (stc & STC.rvalue)
+            this.isRvalue = true;
 
         this.trust = TRUST.default_;
         if (stc & STC.safe)
@@ -2541,9 +2544,9 @@ extern (C++) final class TypeFunction : TypeNext
             this.trust = TRUST.trusted;
     }
 
-    static TypeFunction create(Parameters* parameters, Type treturn, ubyte varargs, LINK linkage, StorageClass stc = 0) @safe
+    static TypeFunction create(Parameters* parameters, Type treturn, ubyte varargs, LINK linkage, StorageClass stc = STC.none) @safe
     {
-        return new TypeFunction(ParameterList(parameters, cast(VarArg)varargs), treturn, linkage, stc);
+        return new TypeFunction(ParameterList(parameters, cast(VarArg)varargs), treturn, linkage, cast(STC) stc);
     }
 
     override const(char)* kind() const
@@ -2567,6 +2570,7 @@ extern (C++) final class TypeFunction : TypeNext
         t.isScopeQual = isScopeQual;
         t.isReturnInferred = isReturnInferred;
         t.isScopeInferred = isScopeInferred;
+        t.isRvalue = isRvalue;
         t.isInOutParam = isInOutParam;
         t.isInOutQual = isInOutQual;
         t.trust = trust;
@@ -2814,7 +2818,7 @@ extern (C++) final class TypeTraits : Type
     /// Cached type/symbol after semantic analysis.
     RootObject obj;
 
-    final extern (D) this(const ref Loc loc, TraitsExp exp) @safe
+    final extern (D) this(Loc loc, TraitsExp exp) @safe
     {
         super(Ttraits);
         this.loc = loc;
@@ -2851,7 +2855,7 @@ extern (C++) final class TypeMixin : Type
     Expressions* exps;
     RootObject obj; // cached result of semantic analysis.
 
-    extern (D) this(const ref Loc loc, Expressions* exps) @safe
+    extern (D) this(Loc loc, Expressions* exps) @safe
     {
         super(Tmixin);
         this.loc = loc;
@@ -2959,16 +2963,13 @@ extern (C++) final class TypeIdentifier : TypeQualified
 {
     Identifier ident;
 
-    // The symbol representing this identifier, before alias resolution
-    Dsymbol originalSymbol;
-
-    extern (D) this(const ref Loc loc, Identifier ident)
+    extern (D) this(Loc loc, Identifier ident)
     {
         super(Tident, loc);
         this.ident = ident;
     }
 
-    static TypeIdentifier create(const ref Loc loc, Identifier ident)
+    static TypeIdentifier create(Loc loc, Identifier ident)
     {
         return new TypeIdentifier(loc, ident);
     }
@@ -2999,7 +3000,7 @@ extern (C++) final class TypeInstance : TypeQualified
 {
     TemplateInstance tempinst;
 
-    extern (D) this(const ref Loc loc, TemplateInstance tempinst)
+    extern (D) this(Loc loc, TemplateInstance tempinst)
     {
         super(Tinstance, loc);
         this.tempinst = tempinst;
@@ -3032,7 +3033,7 @@ extern (C++) final class TypeTypeof : TypeQualified
     Expression exp;
     int inuse;
 
-    extern (D) this(const ref Loc loc, Expression exp)
+    extern (D) this(Loc loc, Expression exp)
     {
         super(Ttypeof, loc);
         this.exp = exp;
@@ -3062,7 +3063,7 @@ extern (C++) final class TypeTypeof : TypeQualified
  */
 extern (C++) final class TypeReturn : TypeQualified
 {
-    extern (D) this(const ref Loc loc)
+    extern (D) this(Loc loc)
     {
         super(Treturn, loc);
     }
@@ -3132,7 +3133,7 @@ extern (C++) final class TypeStruct : Type
      * Use when we prefer the default initializer to be a literal,
      * rather than a global immutable variable.
      */
-    override Expression defaultInitLiteral(const ref Loc loc)
+    override Expression defaultInitLiteral(Loc loc)
     {
         static if (LOGDEFAULTINIT)
         {
@@ -3551,7 +3552,7 @@ extern (C++) final class TypeTuple : Type
         {
             Expression e = (*exps)[i];
             assert(e.type.ty != Ttuple);
-            auto arg = new Parameter(e.loc, STC.undefined_, e.type, null, null, null);
+            auto arg = new Parameter(e.loc, STC.none, e.type, null, null, null);
             (*arguments)[i] = arg;
         }
         this.arguments = arguments;
@@ -3576,15 +3577,15 @@ extern (C++) final class TypeTuple : Type
     {
         super(Ttuple);
         arguments = new Parameters();
-        arguments.push(new Parameter(Loc.initial, 0, t1, null, null, null));
+        arguments.push(new Parameter(Loc.initial, STC.none, t1, null, null, null));
     }
 
     extern (D) this(Type t1, Type t2)
     {
         super(Ttuple);
         arguments = new Parameters();
-        arguments.push(new Parameter(Loc.initial, 0, t1, null, null, null));
-        arguments.push(new Parameter(Loc.initial, 0, t2, null, null, null));
+        arguments.push(new Parameter(Loc.initial, STC.none, t1, null, null, null));
+        arguments.push(new Parameter(Loc.initial, STC.none, t2, null, null, null));
     }
 
     static TypeTuple create() @safe
@@ -3769,7 +3770,7 @@ extern (C++) final class TypeTag : Type
                             ///   struct S { int a; } s1, *s2;
     MOD mod;                /// modifiers to apply after type is resolved (only MODFlags.const_ at the moment)
 
-    extern (D) this(const ref Loc loc, TOK tok, Identifier id, structalign_t packalign, Type base, Dsymbols* members) @safe
+    extern (D) this(Loc loc, TOK tok, Identifier id, structalign_t packalign, Type base, Dsymbols* members) @safe
     {
         //printf("TypeTag ctor %s %p\n", id ? id.toChars() : "null".ptr, this);
         super(Ttag);
@@ -3809,11 +3810,11 @@ extern (C++) struct ParameterList
 {
     /// The raw (unexpanded) formal parameters, possibly containing tuples.
     Parameters* parameters;
-    StorageClass stc;                   // storage class of ...
+    STC stc;                   // storage class of ...
     VarArg varargs = VarArg.none;
     bool hasIdentifierList;             // true if C identifier-list style
 
-    this(Parameters* parameters, VarArg varargs = VarArg.none, StorageClass stc = 0) @safe
+    this(Parameters* parameters, VarArg varargs = VarArg.none, STC stc = STC.none) @safe
     {
         this.parameters = parameters;
         this.varargs = varargs;
@@ -3870,7 +3871,8 @@ extern (C++) struct ParameterList
         foreach (_, p1; cast() this)
         {
             auto p2 = other[idx++];
-            if (!p2 || p1 != p2) {
+            if (!p2 || p1 != p2)
+            {
                 diff = true;
                 break;
             }
@@ -3911,13 +3913,13 @@ extern (C++) final class Parameter : ASTNode
     import dmd.attrib : UserAttributeDeclaration;
 
     Loc loc;
-    StorageClass storageClass;
+    STC storageClass;
     Type type;
     Identifier ident;
     Expression defaultArg;
     UserAttributeDeclaration userAttribDecl; // user defined attributes
 
-    extern (D) this(const ref Loc loc, StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
+    extern (D) this(Loc loc, STC storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
     {
         this.loc = loc;
         this.type = type;
@@ -3927,9 +3929,9 @@ extern (C++) final class Parameter : ASTNode
         this.userAttribDecl = userAttribDecl;
     }
 
-    static Parameter create(const ref Loc loc, StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
+    static Parameter create(Loc loc, StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
     {
-        return new Parameter(loc, storageClass, type, ident, defaultArg, userAttribDecl);
+        return new Parameter(loc, cast(STC) storageClass, type, ident, defaultArg, userAttribDecl);
     }
 
     Parameter syntaxCopy()
@@ -3949,7 +3951,7 @@ extern (C++) final class Parameter : ASTNode
     Type isLazyArray()
     {
         Type tb = type.toBasetype();
-        if (tb.ty == Tsarray || tb.ty == Tarray)
+        if (tb.isStaticOrDynamicArray())
         {
             Type tel = (cast(TypeArray)tb).next.toBasetype();
             if (auto td = tel.isTypeDelegate())
@@ -4059,7 +4061,7 @@ extern (C++) final class Parameter : ASTNode
 
     /***************************************
      * Expands tuples in args in depth first order. Calls
-     * dg(void *ctx, size_t argidx, Parameter *arg) for each Parameter.
+     * dg(void* ctx, size_t argidx, Parameter* arg) for each Parameter.
      * If dg returns !=0, stops and returns that value else returns 0.
      * Use this function to avoid the O(N + N^2/2) complexity of
      * calculating dim and calling N times getNth.
@@ -4141,21 +4143,21 @@ extern (C++) final class Parameter : ASTNode
     bool isCovariant(bool returnByRef, const Parameter p)
         const pure nothrow @nogc @safe
     {
-        ulong thisSTC = this.storageClass;
-        ulong otherSTC = p.storageClass;
+        STC thisSTC = this.storageClass;
+        STC otherSTC = p.storageClass;
 
         if (thisSTC & STC.constscoperef)
             thisSTC |= STC.scope_;
         if (otherSTC & STC.constscoperef)
             otherSTC |= STC.scope_;
 
-        const mask = STC.ref_ | STC.out_ | STC.lazy_ | (((thisSTC | otherSTC) & STC.constscoperef) ? STC.in_ : 0);
+        const mask = STC.ref_ | STC.out_ | STC.lazy_ | (((thisSTC | otherSTC) & STC.constscoperef) ? STC.in_ : STC.none);
         if ((thisSTC & mask) != (otherSTC & mask))
             return false;
         return isCovariantScope(returnByRef, thisSTC, otherSTC);
     }
 
-    extern (D) static bool isCovariantScope(bool returnByRef, StorageClass from, StorageClass to) pure nothrow @nogc @safe
+    extern (D) static bool isCovariantScope(bool returnByRef, STC from, STC to) pure nothrow @nogc @safe
     {
         // Workaround for failing covariance when finding a common type of delegates,
         // some of which have parameters with inferred scope
@@ -4318,10 +4320,10 @@ void attributesApply(const TypeFunction tf, void delegate(string) dg, TRUSTforma
 AggregateDeclaration isAggregate(Type t)
 {
     t = t.toBasetype();
-    if (t.ty == Tclass)
-        return (cast(TypeClass)t).sym;
-    if (t.ty == Tstruct)
-        return (cast(TypeStruct)t).sym;
+    if (auto tc = t.isTypeClass())
+        return tc.sym;
+    if (auto ts = t.isTypeStruct())
+        return ts.sym;
     return null;
 }
 
@@ -4336,27 +4338,27 @@ AggregateDeclaration isAggregate(Type t)
 bool isIndexableNonAggregate(Type t)
 {
     t = t.toBasetype();
-    return (t.ty == Tpointer || t.ty == Tsarray || t.ty == Tarray || t.ty == Taarray ||
+    return (t.ty == Tpointer || t.isStaticOrDynamicArray() || t.ty == Taarray ||
             t.ty == Ttuple || t.ty == Tvector);
 }
 
 /***************************************
  * Computes how a parameter may be returned.
- * Shrinking the representation is necessary because StorageClass is so wide
+ * Shrinking the representation is necessary because STC is so wide
  * Params:
  *   stc = storage class of parameter
  * Returns:
  *   value from enum ScopeRef
  */
-ScopeRef buildScopeRef(StorageClass stc) pure nothrow @nogc @safe
+ScopeRef buildScopeRef(STC stc) pure nothrow @nogc @safe
 {
     if (stc & STC.out_)
         stc |= STC.ref_;        // treat `out` and `ref` the same
 
     ScopeRef result;
-    final switch (stc & (STC.ref_ | STC.scope_ | STC.return_))
+    switch (stc & (STC.ref_ | STC.scope_ | STC.return_))
     {
-        case 0:                        result = ScopeRef.None;        break;
+        case STC.none:           result = ScopeRef.None;        break;
 
         /* can occur in case test/compilable/testsctreturn.d
          * related to https://issues.dlang.org/show_bug.cgi?id=20149
@@ -4374,6 +4376,8 @@ ScopeRef buildScopeRef(StorageClass stc) pure nothrow @nogc @safe
             result = stc & STC.returnScope ? ScopeRef.Ref_ReturnScope
                                            : ScopeRef.ReturnRef_Scope;
             break;
+        default:
+            assert(0);
     }
     return result;
 }

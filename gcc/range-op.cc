@@ -164,6 +164,8 @@ dispatch_trio (unsigned lhs, unsigned op1, unsigned op2)
 // These are the supported dispatch patterns. These map to the parameter list
 // of the routines in range_operator.  Note the last 3 characters are
 // shorthand for the LHS, OP1, and OP2 range discriminator class.
+// Reminder, single operand instructions use the LHS type for op2, even if
+// unused. so FLOAT = INT would be RO_FIF.
 
 const unsigned RO_III =	dispatch_trio (VR_IRANGE, VR_IRANGE, VR_IRANGE);
 const unsigned RO_IFI = dispatch_trio (VR_IRANGE, VR_FRANGE, VR_IRANGE);
@@ -246,6 +248,10 @@ range_op_handler::fold_range (vrange &r, tree type,
 	return m_operator->fold_range (as_a <frange> (r), type,
 				       as_a <irange> (lh),
 				       as_a <irange> (rh), rel);
+      case RO_FIF:
+	return m_operator->fold_range (as_a <frange> (r), type,
+				       as_a <irange> (lh),
+				       as_a <frange> (rh), rel);
       case RO_PPP:
 	return m_operator->fold_range (as_a <prange> (r), type,
 				       as_a <prange> (lh),
@@ -292,6 +298,10 @@ range_op_handler::op1_range (vrange &r, tree type,
 	return m_operator->op1_range (as_a <irange> (r), type,
 				      as_a <irange> (lhs),
 				      as_a <irange> (op2), rel);
+      case RO_IFF:
+	return m_operator->op1_range (as_a <irange> (r), type,
+				      as_a <frange> (lhs),
+				      as_a <frange> (op2), rel);
       case RO_PPP:
 	return m_operator->op1_range (as_a <prange> (r), type,
 				      as_a <prange> (lhs),
@@ -312,6 +322,10 @@ range_op_handler::op1_range (vrange &r, tree type,
 	return m_operator->op1_range (as_a <frange> (r), type,
 				      as_a <irange> (lhs),
 				      as_a <frange> (op2), rel);
+      case RO_FII:
+	return m_operator->op1_range (as_a <frange> (r), type,
+				      as_a <irange> (lhs),
+				      as_a <irange> (op2), rel);
       case RO_FFF:
 	return m_operator->op1_range (as_a <frange> (r), type,
 				      as_a <frange> (lhs),
@@ -389,6 +403,10 @@ range_op_handler::lhs_op1_relation (const vrange &lhs,
       case RO_PII:
 	return m_operator->lhs_op1_relation (as_a <prange> (lhs),
 					     as_a <irange> (op1),
+					     as_a <irange> (op2), rel);
+      case RO_PPI:
+	return m_operator->lhs_op1_relation (as_a <prange> (lhs),
+					     as_a <prange> (op1),
 					     as_a <irange> (op2), rel);
       case RO_IFF:
 	return m_operator->lhs_op1_relation (as_a <irange> (lhs),
@@ -756,6 +774,30 @@ range_operator::fold_range (irange &r, tree type,
   update_bitmask (r, lh, rh);
   return true;
 }
+
+
+bool
+range_operator::fold_range (frange &, tree, const irange &,
+			   const frange &, relation_trio) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_range (irange &, tree, const frange &,
+			  const frange &, relation_trio) const
+{
+  return false;
+}
+
+bool
+range_operator::op1_range (frange &, tree, const irange &,
+			  const irange &, relation_trio) const
+{
+  return false;
+}
+
+
 
 // The default for op1_range is to return false.
 
@@ -2220,6 +2262,13 @@ operator_mult::op1_range (irange &r, tree type,
   wide_int offset;
   if (op2.singleton_p (offset) && offset != 0)
     return range_op_handler (TRUNC_DIV_EXPR).fold_range (r, type, lhs, op2);
+
+  //  ~[0, 0] = op1 * op2  defines op1 and op2 as non-zero.
+  if (!lhs.contains_p (wi::zero (TYPE_PRECISION (lhs.type ()))))
+    {
+      r.set_nonzero (type);
+      return true;
+    }
   return false;
 }
 
@@ -2408,8 +2457,11 @@ operator_widen_mult_unsigned::wi_fold (irange &r, tree type,
 class operator_div : public cross_product_operator
 {
   using range_operator::update_bitmask;
+  using range_operator::op2_range;
 public:
   operator_div (tree_code div_kind) { m_code = div_kind; }
+  bool op2_range (irange &r, tree type, const irange &lhs, const irange &,
+		  relation_trio) const;
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
@@ -2428,6 +2480,19 @@ static operator_div op_trunc_div (TRUNC_DIV_EXPR);
 static operator_div op_floor_div (FLOOR_DIV_EXPR);
 static operator_div op_round_div (ROUND_DIV_EXPR);
 static operator_div op_ceil_div (CEIL_DIV_EXPR);
+
+// Set OP2 to non-zero if the LHS isn't UNDEFINED.
+bool
+operator_div::op2_range (irange &r, tree type, const irange &lhs,
+			 const irange &, relation_trio) const
+{
+  if (!lhs.undefined_p ())
+    {
+      r.set_nonzero (type);
+      return true;
+    }
+  return false;
+}
 
 bool
 operator_div::wi_op_overflows (wide_int &res, tree type,

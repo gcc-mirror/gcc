@@ -1,0 +1,18 @@
+# Compile tests, no torture testing.
+#
+# These tests should all pass.
+
+# Load support procs.
+load_lib gm2-dg.exp
+
+gm2_init_pim4 $srcdir/$subdir
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] "" ""
+
+# All done.
+dg-finish

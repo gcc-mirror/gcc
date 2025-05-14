@@ -1058,19 +1058,21 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    is
       N : constant Natural := Length (A);
 
-      --  For a Hermitian matrix C, we convert the eigenvalue problem to a
-      --  real symmetric one: if C = A + i * B, then the (N, N) complex
+      --  For a Hermitian matrix A, we convert the eigenvalue problem to a
+      --  real symmetric one: if A = X + i * Y, then the (N, N) complex
       --  eigenvalue problem:
-      --     (A + i * B) * (u + i * v) = Lambda * (u + i * v)
+      --
+      --     (X + i * Y) * (u + i * v) = Lambda * (u + i * v)
       --
       --  is equivalent to the (2 * N, 2 * N) real eigenvalue problem:
-      --     [  A, B ] [ u ] = Lambda * [ u ]
-      --     [ -B, A ] [ v ]            [ v ]
       --
-      --  Note that the (2 * N, 2 * N) matrix above is symmetric, as
-      --  Transpose (A) = A and Transpose (B) = -B if C is Hermitian.
+      --     [ X, -Y ] [ u ] = Lambda * [ u ]
+      --     [ Y,  X ] [ v ]            [ v ]
+      --
+      --  Note that the (2 * N, 2 * N) matrix M above is symmetric, because
+      --  Transpose (X) = X and Transpose (Y) = -Y as A is Hermitian.
 
-      --  We solve this eigensystem using the real-valued algorithms. The final
+      --  We solve this eigensystem using the real-valued algorithm. The final
       --  result will have every eigenvalue twice, so in the sorted output we
       --  just pick every second value, with associated eigenvector u + i * v.
 
@@ -1085,10 +1087,8 @@ package body Ada.Numerics.Generic_Complex_Arrays is
                C : constant Complex :=
                  (A (A'First (1) + (J - 1), A'First (2) + (K - 1)));
             begin
-               M (J, K) := Re (C);
-               M (J + N, K + N) := Re (C);
-               M (J + N, K) := Im (C);
-               M (J, K + N) := -Im (C);
+               M (J,     K) := Re (C); M (J,     K + N) := -Im (C);
+               M (J + N, K) := Im (C); M (J + N, K + N) := Re (C);
             end;
          end loop;
       end loop;
@@ -1103,10 +1103,9 @@ package body Ada.Numerics.Generic_Complex_Arrays is
 
             for K in 1 .. N loop
                declare
-                  Row : constant Integer := Vectors'First (2) + (K - 1);
+                  Row : constant Integer := Vectors'First (1) + (K - 1);
                begin
-                  Vectors (Row, Col) :=
-                    (Vecs (J * 2, Col), Vecs (J * 2, Col + N));
+                  Vectors (Row, Col) := (Vecs (K, 2 * J), Vecs (K + N, 2 * J));
                end;
             end loop;
          end;
@@ -1118,13 +1117,14 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    -----------------
 
    function Eigenvalues (A : Complex_Matrix) return Real_Vector is
+      N : constant Natural := Length (A);
+
       --  See Eigensystem for a description of the algorithm
 
-      N : constant Natural := Length (A);
-      R : Real_Vector (A'Range (1));
-
       M    : Real_Matrix (1 .. 2 * N, 1 .. 2 * N);
+      R    : Real_Vector (A'Range (1));
       Vals : Real_Vector (1 .. 2 * N);
+
    begin
       for J in 1 .. N loop
          for K in 1 .. N loop
@@ -1132,10 +1132,8 @@ package body Ada.Numerics.Generic_Complex_Arrays is
                C : constant Complex :=
                  (A (A'First (1) + (J - 1), A'First (2) + (K - 1)));
             begin
-               M (J, K) := Re (C);
-               M (J + N, K + N) := Re (C);
-               M (J + N, K) := Im (C);
-               M (J, K + N) := -Im (C);
+               M (J,     K) := Re (C); M (J,     K + N) := -Im (C);
+               M (J + N, K) := Im (C); M (J + N, K + N) := Re (C);
             end;
          end loop;
       end loop;

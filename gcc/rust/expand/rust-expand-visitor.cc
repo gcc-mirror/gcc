@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-expand-visitor.h"
+#include "rust-ast-fragment.h"
 #include "rust-proc-macro.h"
 #include "rust-attributes.h"
 #include "rust-ast.h"
@@ -42,7 +43,7 @@ ExpandVisitor::go (AST::Crate &crate)
   visit (crate);
 }
 
-static std::unique_ptr<AST::Item>
+static std::vector<std::unique_ptr<AST::Item>>
 builtin_derive_item (AST::Item &item, const AST::Attribute &derive,
 		     BuiltinMacro to_derive)
 {
@@ -166,10 +167,10 @@ ExpandVisitor::expand_inner_items (
 
   for (auto it = items.begin (); it != items.end (); it++)
     {
-      auto &item = *it;
-      if (item->has_outer_attrs ())
+      Rust::AST::Item &item = **it;
+      if (item.has_outer_attrs ())
 	{
-	  auto &attrs = item->get_outer_attrs ();
+	  auto &attrs = item.get_outer_attrs ();
 
 	  for (auto attr_it = attrs.begin (); attr_it != attrs.end ();
 	       /* erase => No increment*/)
@@ -188,17 +189,19 @@ ExpandVisitor::expand_inner_items (
 			to_derive.get ().as_string ());
 		      if (maybe_builtin.has_value ())
 			{
-			  auto new_item
-			    = builtin_derive_item (*item, current,
+			  auto new_items
+			    = builtin_derive_item (item, current,
 						   maybe_builtin.value ());
-			  // this inserts the derive *before* the item - is it a
-			  // problem?
-			  it = items.insert (it, std::move (new_item));
+
+			  for (auto &&new_item : new_items)
+			    it = items.insert (it, std::move (new_item));
 			}
 		      else
 			{
+			  // Macro is not a builtin, so it must be a
+			  // user-defined derive macro.
 			  auto new_items
-			    = derive_item (*item, to_derive, expander);
+			    = derive_item (item, to_derive, expander);
 			  std::move (new_items.begin (), new_items.end (),
 				     std::inserter (items, it));
 			}
@@ -214,7 +217,7 @@ ExpandVisitor::expand_inner_items (
 		    {
 		      attr_it = attrs.erase (attr_it);
 		      auto new_items
-			= expand_item_attribute (*item, current.get_path (),
+			= expand_item_attribute (item, current.get_path (),
 						 expander);
 		      it = items.erase (it);
 		      std::move (new_items.begin (), new_items.end (),
@@ -274,12 +277,14 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 			to_derive.get ().as_string ());
 		      if (maybe_builtin.has_value ())
 			{
-			  auto new_item
+			  auto new_items
 			    = builtin_derive_item (item, current,
 						   maybe_builtin.value ());
+
 			  // this inserts the derive *before* the item - is it a
 			  // problem?
-			  it = stmts.insert (it, std::move (new_item));
+			  for (auto &&new_item : new_items)
+			    it = stmts.insert (it, std::move (new_item));
 			}
 		      else
 			{
@@ -467,20 +472,26 @@ void
 ExpandVisitor::visit (AST::MacroInvocation &macro_invoc)
 {
   // TODO: Can we do the AST fragment replacing here? Probably not, right?
-  expander.expand_invoc (macro_invoc, macro_invoc.has_semicolon ());
+  expander.expand_invoc (macro_invoc, macro_invoc.has_semicolon ()
+					? AST::InvocKind::Semicoloned
+					: AST::InvocKind::Expr);
 }
 
 void
 ExpandVisitor::visit (AST::PathInExpression &path)
 {
-  for (auto &segment : path.get_segments ())
-    if (segment.has_generic_args ())
-      expand_generic_args (segment.get_generic_args ());
+  if (!path.is_lang_item ())
+    for (auto &segment : path.get_segments ())
+      if (segment.has_generic_args ())
+	expand_generic_args (segment.get_generic_args ());
 }
 
 void
 ExpandVisitor::visit (AST::TypePathSegmentGeneric &segment)
-{}
+{
+  if (segment.has_generic_args ())
+    expand_generic_args (segment.get_generic_args ());
+}
 
 void
 ExpandVisitor::visit (AST::TypePathSegmentFunction &segment)
@@ -714,6 +725,12 @@ ExpandVisitor::visit (AST::TypeBoundWhereClauseItem &item)
 }
 
 void
+ExpandVisitor::visit (AST::Module &module)
+{
+  expand_inner_items (module.get_items ());
+}
+
+void
 ExpandVisitor::visit (AST::ExternCrate &crate)
 {}
 
@@ -851,7 +868,7 @@ ExpandVisitor::visit (AST::Trait &trait)
 
   std::function<std::unique_ptr<AST::AssociatedItem> (AST::SingleASTNode)>
     extractor
-    = [] (AST::SingleASTNode node) { return node.take_trait_item (); };
+    = [] (AST::SingleASTNode node) { return node.take_assoc_item (); };
 
   expand_macro_children (MacroExpander::ContextType::TRAIT,
 			 trait.get_trait_items (), extractor);
@@ -878,7 +895,8 @@ ExpandVisitor::visit (AST::InherentImpl &impl)
     expand_where_clause (impl.get_where_clause ());
 
   std::function<std::unique_ptr<AST::AssociatedItem> (AST::SingleASTNode)>
-    extractor = [] (AST::SingleASTNode node) { return node.take_impl_item (); };
+    extractor
+    = [] (AST::SingleASTNode node) { return node.take_assoc_item (); };
 
   expand_macro_children (MacroExpander::ContextType::IMPL,
 			 impl.get_impl_items (), extractor);
@@ -906,7 +924,7 @@ ExpandVisitor::visit (AST::TraitImpl &impl)
 
   std::function<std::unique_ptr<AST::AssociatedItem> (AST::SingleASTNode)>
     extractor
-    = [] (AST::SingleASTNode node) { return node.take_trait_impl_item (); };
+    = [] (AST::SingleASTNode node) { return node.take_assoc_item (); };
 
   expand_macro_children (MacroExpander::ContextType::TRAIT_IMPL,
 			 impl.get_impl_items (), extractor);

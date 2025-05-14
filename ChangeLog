@@ -1,3 +1,103 @@
+2025-04-28  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* MAINTAINERS (kcy): Add gcc.gnu.org username.
+
+2025-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR cobol/119217
+	* configure.ac: Restrict cobol to aarch64-*-linux*,
+	x86_64-*-linux*.
+	Fix indentation.
+	* configure: Regenerate.
+
+2025-04-16  Waffl3x  <waffl3x@baylibre.com>
+
+	* MAINTAINERS: Add myself.
+
+2025-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Use -B instead of -L to specifiy the C++ runtime
+	paths on Darwin.
+
+2025-03-31  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* MAINTAINERS: Update my name.
+
+2025-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/119513
+	* configure.ac (compare_exclusions): Add gcc/cobol/parse\$(objext).
+	* configure: Regenerated.
+
+2025-03-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119244
+	* Makefile.def: libgcobol configure depends on libquadmath build.
+	* Makefile.in: Regenerate.
+
+2025-03-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libitm/88319
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Add CXX_FOR_TARGET to NORMAL_TARGET_EXPORTS.
+
+2025-03-23  James K. Lowden  <jklowden@cobolworx.com>
+
+	* MAINTAINERS: Add myself.
+
+2025-03-17  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* .gitignore: Add libgrust target folders to the ignore list.
+
+2025-03-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/92713
+	PR target/101544
+	* configure.ac [GCN, nvptx] (noconfigdirs): Don't add
+	'target-libstdc++-v3'.  Add 'target-libgrust'.
+	* configure: Regenerate.
+
+2025-03-13  Matthias Klose  <doko@ubuntu.com>
+
+	* config-ml.in (multi-do): Remove extra argument from subst macro.
+
+2025-03-12  Robert Dubner  <rdubner@symas.com>
+
+	* MAINTAINERS: Remove extraneous entries for "Robert Dubner"
+
+2025-03-11  Bob Dubner  <rdubner@symas.com>
+
+	* MAINTAINERS: Add myself.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119216
+	* configure.ac: Check for UNSUPPORTED set by libgcobol/configure.tgt
+	rather than LIBGCOBOL_SUPPORTED.
+	* configure: Regenerate.
+
+2025-03-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Do not build COBOL on Darwin by default,
+	even for --enable-languages=all.
+
+2025-03-11  James K. Lowden  <jklowden@symas.com>
+
+	* Makefile.def: Add libgcobol module and cobol language.
+	* Makefile.in: Regenerate.
+	* configure.ac: Add libgcobol module and cobol language.
+	* configure: Regenerate.
+
+2025-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* MAINTAINERS: Add myself.
+
+2025-02-28  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* MAINTAINERS: Added myself as write after approval and DCO.
+
 2025-02-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* configure.ac (unsupported_languages) [GCN, nvptx]: Add 'ada'.

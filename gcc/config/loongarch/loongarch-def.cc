@@ -107,12 +107,12 @@ array_tune<loongarch_cache> loongarch_cpu_cache =
 
 static inline loongarch_align la464_align ()
 {
-  return loongarch_align ().function_ ("32").loop_ ("16").jump_ ("16");
+  return loongarch_align ().function_ ("32").loop_ ("8").jump_ ("32").label_ ("8");
 }
 
 static inline loongarch_align la664_align ()
 {
-  return loongarch_align ().function_ ("8").loop_ ("8").jump_ ("32");
+  return loongarch_align ().function_ ("16").loop_ ("16").jump_ ("32").label_ ("8");
 }
 
 array_tune<loongarch_align> loongarch_cpu_align =

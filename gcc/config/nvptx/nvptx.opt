@@ -88,10 +88,10 @@ march-map=sm_60
 Target RejectNegative Alias(misa=,sm_53)
 
 march-map=sm_61
-Target RejectNegative Alias(misa=,sm_53)
+Target RejectNegative Alias(misa=,sm_61)
 
 march-map=sm_62
-Target RejectNegative Alias(misa=,sm_53)
+Target RejectNegative Alias(misa=,sm_61)
 
 march-map=sm_70
 Target RejectNegative Alias(misa=,sm_70)
@@ -134,6 +134,9 @@ EnumValue
 Enum(ptx_version) String(4.2) Value(PTX_VERSION_4_2)
 
 EnumValue
+Enum(ptx_version) String(5.0) Value(PTX_VERSION_5_0)
+
+EnumValue
 Enum(ptx_version) String(6.0) Value(PTX_VERSION_6_0)
 
 EnumValue
@@ -167,3 +170,26 @@ Target Var(nvptx_alias) Init(0) Undocumented
 
 mexperimental
 Target Var(nvptx_experimental) Init(0) Undocumented
+
+mfake-exceptions
+Target Var(fake_exceptions) Init(0) Undocumented
+; With '-mfake-exceptions' enabled, the user-visible behavior in presence of
+; exception handling constructs changes such that the compile-time
+; 'sorry, unimplemented: exception handling not supported' is skipped, code
+; generation proceeds, and instead, exception handling constructs 'abort' at
+; run time.  (..., or don't, if they're in dead code.)
+
+mfake-ptx-alloca
+Target Var(nvptx_fake_ptx_alloca) Init(0) Undocumented
+; With '-mfake-ptx-alloca' enabled, the user-visible behavior changes only
+; for configurations where PTX 'alloca' is not available.  Rather than a
+; compile-time 'sorry, unimplemented: dynamic stack allocation not supported'
+; in presence of dynamic stack allocation, with '-mfake-ptx-alloca' enabled,
+; compilation, assembly, and linking succeeds, as does execution, in case that
+; 'alloca' is not attempted (if only used in error code paths, for example),
+; and a run-time failure only in case that 'alloca' is actually attempted.
+; 
+; This is meant to be used in scenarios where large volumes of code are
+; compiled, a small fraction of which runs into dynamic stack allocation, but
+; these parts are not important for specific use cases, and we'd thus like the
+; build to succeed, and error out just upon actual, very rare use of 'alloca'.

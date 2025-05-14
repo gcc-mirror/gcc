@@ -127,6 +127,10 @@ s390_host_detect_local_cpu (int argc, const char **argv)
 	    case 0x3932:
 	      cpu = "arch14";
 	      break;
+	    case 0x9175:
+	    case 0x9176:
+	      cpu = "arch15";
+	      break;
 	    default:
 	      cpu = "arch15";
 	      break;

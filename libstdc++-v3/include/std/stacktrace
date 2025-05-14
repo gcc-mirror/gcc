@@ -559,7 +559,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      if constexpr (is_same_v<allocator_type, allocator<value_type>>)
 		{
-		  // For std::allocator we use nothrow-new directly so we
+		  // Use non-throwing __get_temporary_buffer, so that we
 		  // don't need to handle exceptions from __alloc.allocate(n).
 		  auto __p = __detail::__get_temporary_buffer<value_type>(__n);
 		  if (__p == nullptr) [[unlikely]]

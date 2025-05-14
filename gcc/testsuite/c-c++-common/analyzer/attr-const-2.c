@@ -1,5 +1,5 @@
 extern int const_p (int) __attribute__((const));
-extern void do_stuff (void);
+extern void do_stuff (void) __attribute__((nothrow));
 
 void test (int a)
 {

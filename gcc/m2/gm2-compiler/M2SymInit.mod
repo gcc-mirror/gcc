@@ -202,16 +202,23 @@ BEGIN
       desc^.sym := sym ;
       desc^.type := GetSType (sym) ;
       desc^.initialized := FALSE ;
-      IF IsRecord (desc^.type)
+      (* An unknown symbol will have no type.  *)
+      IF desc^.type = NulSym
       THEN
-         desc^.kind := record ;
-         desc^.rec.fieldDesc := Indexing.InitIndex (1) ;
-         PopulateFields (desc, desc^.type)
-      ELSE
          desc^.kind := scalar ;
-         IF IsArray (desc^.type)
+         desc^.initialized := TRUE   (* For now we don't attempt to handle array types.  *)
+      ELSE
+         IF IsRecord (desc^.type)
          THEN
-            desc^.initialized := TRUE   (* For now we don't attempt to handle array types.  *)
+            desc^.kind := record ;
+            desc^.rec.fieldDesc := Indexing.InitIndex (1) ;
+            PopulateFields (desc, desc^.type)
+         ELSE
+            desc^.kind := scalar ;
+            IF IsArray (desc^.type)
+            THEN
+               desc^.initialized := TRUE   (* For now we don't attempt to handle array types.  *)
+            END
          END
       END
    END

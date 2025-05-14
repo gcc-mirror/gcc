@@ -2,6 +2,7 @@
 #define RUST_AST_EXPR_H
 
 #include "rust-ast.h"
+#include "rust-common.h"
 #include "rust-path.h"
 #include "rust-macro.h"
 #include "rust-operators.h"
@@ -14,7 +15,7 @@ namespace AST {
 
 // Loop label expression AST node used with break and continue expressions
 // TODO: inline?
-class LoopLabel /*: public Node*/
+class LoopLabel /*: public Visitable*/
 {
   Lifetime label; // or type LIFETIME_OR_LABEL
   location_t locus;
@@ -26,15 +27,10 @@ public:
 
   LoopLabel (Lifetime loop_label, location_t locus = UNDEF_LOCATION)
     : label (std::move (loop_label)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Returns whether the LoopLabel is in an error state.
-  bool is_error () const { return label.is_error (); }
-
-  // Creates an error state LoopLabel.
-  static LoopLabel error () { return LoopLabel (Lifetime::error ()); }
-
   location_t get_locus () const { return locus; }
 
   Lifetime &get_lifetime () { return label; }
@@ -115,6 +111,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Literal; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -302,7 +300,7 @@ protected:
 class OperatorExpr : public ExprWithoutBlock
 {
   // TODO: create binary and unary operator subclasses?
-public:
+private:
   location_t locus;
 
 protected:
@@ -364,24 +362,28 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Operator; }
 };
 
 /* Unary prefix & or &mut (or && and &&mut) borrow operator. Cannot be
  * overloaded. */
 class BorrowExpr : public OperatorExpr
 {
-  bool is_mut;
+  Mutability mutability;
+  bool raw_borrow;
   bool double_borrow;
 
 public:
   std::string as_string () const override;
 
-  BorrowExpr (std::unique_ptr<Expr> borrow_lvalue, bool is_mut_borrow,
-	      bool is_double_borrow, std::vector<Attribute> outer_attribs,
-	      location_t locus)
+  BorrowExpr (std::unique_ptr<Expr> borrow_lvalue, Mutability mutability,
+	      bool raw_borrow, bool is_double_borrow,
+	      std::vector<Attribute> outer_attribs, location_t locus)
     : OperatorExpr (std::move (borrow_lvalue), std::move (outer_attribs),
 		    locus),
-      is_mut (is_mut_borrow), double_borrow (is_double_borrow)
+      mutability (mutability), raw_borrow (raw_borrow),
+      double_borrow (is_double_borrow)
   {}
 
   void accept_vis (ASTVisitor &vis) override;
@@ -393,9 +395,14 @@ public:
     return *main_or_left_expr;
   }
 
-  bool get_is_mut () const { return is_mut; }
+  bool get_is_mut () const { return mutability == Mutability::Mut; }
+
+  Mutability get_mutability () const { return mutability; }
 
   bool get_is_double_borrow () const { return double_borrow; }
+  bool is_raw_borrow () const { return raw_borrow; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Borrow; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -427,6 +434,8 @@ public:
     return *main_or_left_expr;
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Dereference; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -456,6 +465,11 @@ public:
   {
     rust_assert (main_or_left_expr != nullptr);
     return *main_or_left_expr;
+  }
+
+  Expr::Kind get_expr_kind () const override
+  {
+    return Expr::Kind::ErrorPropagation;
   }
 
 protected:
@@ -500,6 +514,8 @@ public:
     rust_assert (main_or_left_expr != nullptr);
     return *main_or_left_expr;
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Negation; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -589,6 +605,11 @@ public:
   void visit_lhs (ASTVisitor &vis) { main_or_left_expr->accept_vis (vis); }
   void visit_rhs (ASTVisitor &vis) { right_expr->accept_vis (vis); }
 
+  Expr::Kind get_expr_kind () const override
+  {
+    return Expr::Kind::ArithmeticOrLogical;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -675,6 +696,8 @@ public:
   }
 
   ExprType get_kind () { return expr_type; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Comparison; }
 
   /* TODO: implement via a function call to std::cmp::PartialEq::eq(&op1, &op2)
    * maybe? */
@@ -764,6 +787,8 @@ public:
 
   ExprType get_kind () { return expr_type; }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::LazyBoolean; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -825,6 +850,8 @@ public:
     rust_assert (type_to_convert_to != nullptr);
     return *type_to_convert_to;
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::TypeCast; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -903,6 +930,8 @@ public:
     rust_assert (right_expr != nullptr);
     return *right_expr;
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Assignment; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -988,6 +1017,11 @@ public:
   {
     rust_assert (right_expr != nullptr);
     return right_expr;
+  }
+
+  Expr::Kind get_expr_kind () const override
+  {
+    return Expr::Kind::CompoundAssignment;
   }
 
 protected:
@@ -1084,6 +1118,8 @@ public:
     return expr_in_parens;
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Grouped; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1113,7 +1149,7 @@ public:
   NodeId get_node_id () const { return node_id; }
 
 protected:
-  ArrayElems () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+  ArrayElems () : node_id (Analysis::Mappings::get ().get_next_node_id ()) {}
 
   // pure virtual clone implementation
   virtual ArrayElems *clone_array_elems_impl () const = 0;
@@ -1313,6 +1349,8 @@ public:
     return internal_elements;
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Array; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1418,6 +1456,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::ArrayIndex; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1514,6 +1554,8 @@ public:
 
   bool is_unit () const { return tuple_elems.size () == 0; }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Tuple; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1601,6 +1643,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::TupleIndex; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1644,6 +1688,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Struct; }
 };
 
 // Actual AST node of the struct creator (with no fields). Not abstract!
@@ -1758,13 +1804,26 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
+  const std::vector<AST::Attribute> &get_outer_attrs () const
+  {
+    return outer_attrs;
+  }
+
+  std::vector<AST::Attribute> &get_outer_attrs () { return outer_attrs; }
+
 protected:
   // pure virtual clone implementation
   virtual StructExprField *clone_struct_expr_field_impl () const = 0;
 
-  StructExprField () : node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  StructExprField () : node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
+  StructExprField (AST::AttrVec outer_attrs)
+    : outer_attrs (std::move (outer_attrs)),
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
+  {}
+
+  AST::AttrVec outer_attrs;
   NodeId node_id;
 };
 
@@ -1775,9 +1834,10 @@ class StructExprFieldIdentifier : public StructExprField
   location_t locus;
 
 public:
-  StructExprFieldIdentifier (Identifier field_identifier, location_t locus)
-    : StructExprField (), field_name (std::move (field_identifier)),
-      locus (locus)
+  StructExprFieldIdentifier (Identifier field_identifier,
+			     AST::AttrVec outer_attrs, location_t locus)
+    : StructExprField (std::move (outer_attrs)),
+      field_name (std::move (field_identifier)), locus (locus)
   {}
 
   std::string as_string () const override { return field_name.as_string (); }
@@ -1804,19 +1864,22 @@ class StructExprFieldWithVal : public StructExprField
   std::unique_ptr<Expr> value;
 
 protected:
-  StructExprFieldWithVal (std::unique_ptr<Expr> field_value)
-    : StructExprField (), value (std::move (field_value))
+  StructExprFieldWithVal (std::unique_ptr<Expr> field_value,
+			  AST::AttrVec outer_attrs)
+    : StructExprField (std::move (outer_attrs)), value (std::move (field_value))
   {}
 
   // Copy constructor requires clone
   StructExprFieldWithVal (StructExprFieldWithVal const &other)
-    : value (other.value->clone_expr ())
+    : StructExprField (other.get_outer_attrs ()),
+      value (other.value->clone_expr ())
   {}
 
   // Overload assignment operator to clone unique_ptr
   StructExprFieldWithVal &operator= (StructExprFieldWithVal const &other)
   {
     value = other.value->clone_expr ();
+    outer_attrs = other.get_outer_attrs ();
 
     return *this;
   }
@@ -1845,8 +1908,15 @@ class StructExprFieldIdentifierValue : public StructExprFieldWithVal
 public:
   StructExprFieldIdentifierValue (Identifier field_identifier,
 				  std::unique_ptr<Expr> field_value,
+				  AST::AttrVec outer_attrs, location_t locus)
+    : StructExprFieldWithVal (std::move (field_value), std::move (outer_attrs)),
+      field_name (std::move (field_identifier)), locus (locus)
+  {}
+
+  StructExprFieldIdentifierValue (Identifier field_identifier,
+				  std::unique_ptr<Expr> field_value,
 				  location_t locus)
-    : StructExprFieldWithVal (std::move (field_value)),
+    : StructExprFieldWithVal (std::move (field_value), {}),
       field_name (std::move (field_identifier)), locus (locus)
   {}
 
@@ -1876,9 +1946,9 @@ class StructExprFieldIndexValue : public StructExprFieldWithVal
 public:
   StructExprFieldIndexValue (TupleIndex tuple_index,
 			     std::unique_ptr<Expr> field_value,
-			     location_t locus)
-    : StructExprFieldWithVal (std::move (field_value)), index (tuple_index),
-      locus (locus)
+			     AST::AttrVec outer_attrs, location_t locus)
+    : StructExprFieldWithVal (std::move (field_value), std::move (outer_attrs)),
+      index (tuple_index), locus (locus)
   {}
 
   std::string as_string () const override;
@@ -2093,6 +2163,8 @@ public:
     return *function;
   }
 
+  std::unique_ptr<Expr> &get_function_expr_ptr () { return function; }
+
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
@@ -2100,6 +2172,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Call; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2204,6 +2278,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::MethodCall; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2288,6 +2364,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::FieldAccess; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2424,6 +2502,8 @@ public:
   }
 
   bool get_has_move () const { return has_move; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Closure; }
 };
 
 // Represents a non-type-specified closure expression AST node
@@ -2505,7 +2585,7 @@ class BlockExpr : public ExprWithBlock
   std::vector<Attribute> inner_attrs;
   std::vector<std::unique_ptr<Stmt> > statements;
   std::unique_ptr<Expr> expr;
-  LoopLabel label;
+  tl::optional<LoopLabel> label;
   location_t start_locus;
   location_t end_locus;
   bool marked_for_strip = false;
@@ -2522,8 +2602,9 @@ public:
   BlockExpr (std::vector<std::unique_ptr<Stmt> > block_statements,
 	     std::unique_ptr<Expr> block_expr,
 	     std::vector<Attribute> inner_attribs,
-	     std::vector<Attribute> outer_attribs, LoopLabel label,
-	     location_t start_locus, location_t end_locus)
+	     std::vector<Attribute> outer_attribs,
+	     tl::optional<LoopLabel> label, location_t start_locus,
+	     location_t end_locus)
     : outer_attrs (std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
@@ -2642,8 +2723,10 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  bool has_label () { return !label.is_error (); }
-  LoopLabel &get_label () { return label; }
+  bool has_label () { return label.has_value (); }
+  LoopLabel &get_label () { return label.value (); }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Block; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2761,7 +2844,7 @@ protected:
 class ContinueExpr : public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
-  Lifetime label;
+  tl::optional<Lifetime> label;
   location_t locus;
 
   // TODO: find another way to store this to save memory?
@@ -2771,11 +2854,11 @@ public:
   std::string as_string () const override;
 
   // Returns true if the continue expr has a label.
-  bool has_label () const { return !label.is_error (); }
+  bool has_label () const { return label.has_value (); }
 
   // Constructor for a ContinueExpr with a label.
-  ContinueExpr (Lifetime label, std::vector<Attribute> outer_attribs,
-		location_t locus)
+  ContinueExpr (tl::optional<Lifetime> label,
+		std::vector<Attribute> outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)), label (std::move (label)),
       locus (locus)
   {}
@@ -2796,7 +2879,13 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  Lifetime &get_label () { return label; }
+  Lifetime &get_label_unchecked () { return label.value (); }
+  const Lifetime &get_label_unchecked () const { return label.value (); }
+
+  tl::optional<Lifetime> &get_label () { return label; }
+  const tl::optional<Lifetime> &get_label () const { return label; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Continue; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2812,7 +2901,7 @@ protected:
 class BreakExpr : public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
-  LoopLabel label;
+  tl::optional<LoopLabel> label;
   std::unique_ptr<Expr> break_expr;
   location_t locus;
 
@@ -2823,14 +2912,15 @@ public:
   std::string as_string () const override;
 
   // Returns whether the break expression has a label or not.
-  bool has_label () const { return !label.is_error (); }
+  bool has_label () const { return label.has_value (); }
 
   /* Returns whether the break expression has an expression used in the break or
    * not. */
   bool has_break_expr () const { return break_expr != nullptr; }
 
   // Constructor for a break expression
-  BreakExpr (LoopLabel break_label, std::unique_ptr<Expr> expr_in_break,
+  BreakExpr (tl::optional<LoopLabel> break_label,
+	     std::unique_ptr<Expr> expr_in_break,
 	     std::vector<Attribute> outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)), label (std::move (break_label)),
       break_expr (std::move (expr_in_break)), locus (locus)
@@ -2892,7 +2982,13 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  LoopLabel &get_label () { return label; }
+  LoopLabel &get_label_unchecked () { return label.value (); }
+  const LoopLabel &get_label_unchecked () const { return label.value (); }
+
+  tl::optional<LoopLabel> &get_label () { return label; }
+  const tl::optional<LoopLabel> &get_label () const { return label; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Break; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2908,6 +3004,10 @@ class RangeExpr : public ExprWithoutBlock
 {
   location_t locus;
 
+  // Some visitors still check for attributes on RangeExprs, and they will need
+  // to be supported in the future - so keep that for now
+  std::vector<Attribute> empty_attributes = {};
+
 protected:
   // outer attributes not allowed before range expressions
   RangeExpr (location_t locus) : locus (locus) {}
@@ -2917,15 +3017,13 @@ public:
 
   std::vector<Attribute> &get_outer_attrs () override final
   {
-    // RangeExpr cannot have any outer attributes
-    rust_assert (false);
+    return empty_attributes;
   }
 
   // should never be called - error if called
-  void set_outer_attrs (std::vector<Attribute> /* new_attrs */) override
-  {
-    rust_assert (false);
-  }
+  void set_outer_attrs (std::vector<Attribute> /* new_attrs */) override {}
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Range; }
 };
 
 // Range from (inclusive) and to (exclusive) expression AST node object
@@ -3310,6 +3408,81 @@ protected:
   }
 };
 
+class BoxExpr : public ExprWithoutBlock
+{
+  std::unique_ptr<Expr> expr;
+  std::vector<Attribute> outer_attrs;
+  location_t locus;
+
+public:
+  BoxExpr (std::unique_ptr<Expr> expr, std::vector<Attribute> outer_attrs,
+	   location_t locus)
+    : expr (std::move (expr)), outer_attrs (outer_attrs), locus (locus)
+  {}
+
+  // Copy constructor with clone
+  BoxExpr (BoxExpr const &other)
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs),
+      locus (other.locus)
+  {
+    // guard to protect from null pointer dereference
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr ();
+  }
+
+  BoxExpr &operator= (BoxExpr const &other)
+  {
+    ExprWithoutBlock::operator= (other);
+    locus = other.locus;
+    outer_attrs = other.outer_attrs;
+
+    // guard to protect from null pointer dereference
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr ();
+    else
+      expr = nullptr;
+
+    return *this;
+  }
+
+  // move constructors
+  BoxExpr (BoxExpr &&other) = default;
+  BoxExpr &operator= (BoxExpr &&other) = default;
+
+  location_t get_locus () const override final { return locus; }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  void mark_for_strip () override { expr = nullptr; }
+  bool is_marked_for_strip () const override { return expr == nullptr; }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  {
+    outer_attrs = std::move (new_attrs);
+  }
+
+  std::string as_string () const override;
+
+  Expr &get_boxed_expr ()
+  {
+    rust_assert (expr != nullptr);
+    return *expr;
+  }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Box; }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  BoxExpr *clone_expr_without_block_impl () const override
+  {
+    return new BoxExpr (*this);
+  }
+};
+
 // Return expression AST node representation
 class ReturnExpr : public ExprWithoutBlock
 {
@@ -3387,6 +3560,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Return; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3470,6 +3645,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::UnsafeBlock; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3485,7 +3662,7 @@ class BaseLoopExpr : public ExprWithBlock
 protected:
   // protected to allow subclasses better use of them
   std::vector<Attribute> outer_attrs;
-  LoopLabel loop_label;
+  tl::optional<LoopLabel> loop_label;
   std::unique_ptr<BlockExpr> loop_block;
 
 private:
@@ -3494,7 +3671,7 @@ private:
 protected:
   // Constructor for BaseLoopExpr
   BaseLoopExpr (std::unique_ptr<BlockExpr> loop_block, location_t locus,
-		LoopLabel loop_label = LoopLabel::error (),
+		tl::optional<LoopLabel> loop_label = tl::nullopt,
 		std::vector<Attribute> outer_attribs
 		= std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attribs)),
@@ -3534,9 +3711,10 @@ protected:
   BaseLoopExpr &operator= (BaseLoopExpr &&other) = default;
 
 public:
-  bool has_loop_label () const { return !loop_label.is_error (); }
+  bool has_loop_label () const { return loop_label.has_value (); }
 
-  LoopLabel &get_loop_label () { return loop_label; }
+  LoopLabel &get_loop_label () { return loop_label.value (); }
+  const LoopLabel &get_loop_label () const { return loop_label.value (); }
 
   location_t get_locus () const override final { return locus; }
 
@@ -3558,6 +3736,18 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Loop; }
+
+  enum class Kind
+  {
+    Loop,
+    While,
+    WhileLet,
+    For
+  };
+
+  virtual Kind get_loop_kind () const = 0;
 };
 
 // 'Loop' expression (i.e. the infinite loop) AST node
@@ -3568,13 +3758,18 @@ public:
 
   // Constructor for LoopExpr
   LoopExpr (std::unique_ptr<BlockExpr> loop_block, location_t locus,
-	    LoopLabel loop_label = LoopLabel::error (),
+	    tl::optional<LoopLabel> loop_label = tl::nullopt,
 	    std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
     : BaseLoopExpr (std::move (loop_block), locus, std::move (loop_label),
 		    std::move (outer_attribs))
   {}
 
   void accept_vis (ASTVisitor &vis) override;
+
+  BaseLoopExpr::Kind get_loop_kind () const override
+  {
+    return BaseLoopExpr::Kind::Loop;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3596,7 +3791,7 @@ public:
   // Constructor for while loop with loop label
   WhileLoopExpr (std::unique_ptr<Expr> loop_condition,
 		 std::unique_ptr<BlockExpr> loop_block, location_t locus,
-		 LoopLabel loop_label = LoopLabel::error (),
+		 tl::optional<LoopLabel> loop_label = tl::nullopt,
 		 std::vector<Attribute> outer_attribs
 		 = std::vector<Attribute> ())
     : BaseLoopExpr (std::move (loop_block), locus, std::move (loop_label),
@@ -3634,6 +3829,11 @@ public:
     return *condition;
   }
 
+  BaseLoopExpr::Kind get_loop_kind () const override
+  {
+    return BaseLoopExpr::Kind::While;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3657,7 +3857,7 @@ public:
   WhileLetLoopExpr (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 		    std::unique_ptr<Expr> scrutinee,
 		    std::unique_ptr<BlockExpr> loop_block, location_t locus,
-		    LoopLabel loop_label = LoopLabel::error (),
+		    tl::optional<LoopLabel> loop_label = tl::nullopt,
 		    std::vector<Attribute> outer_attribs
 		    = std::vector<Attribute> ())
     : BaseLoopExpr (std::move (loop_block), locus, std::move (loop_label),
@@ -3717,6 +3917,11 @@ public:
     return match_arm_patterns;
   }
 
+  BaseLoopExpr::Kind get_loop_kind () const override
+  {
+    return BaseLoopExpr::Kind::WhileLet;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3739,7 +3944,7 @@ public:
   ForLoopExpr (std::unique_ptr<Pattern> loop_pattern,
 	       std::unique_ptr<Expr> iterator_expr,
 	       std::unique_ptr<BlockExpr> loop_body, location_t locus,
-	       LoopLabel loop_label = LoopLabel::error (),
+	       tl::optional<LoopLabel> loop_label = tl::nullopt,
 	       std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
     : BaseLoopExpr (std::move (loop_body), locus, std::move (loop_label),
 		    std::move (outer_attribs)),
@@ -3784,6 +3989,11 @@ public:
   {
     rust_assert (pattern != nullptr);
     return *pattern;
+  }
+
+  BaseLoopExpr::Kind get_loop_kind () const override
+  {
+    return BaseLoopExpr::Kind::For;
   }
 
 protected:
@@ -3908,6 +4118,8 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::If; }
 
 protected:
   // Base clone function but still concrete as concrete base class
@@ -4102,6 +4314,8 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::IfLet; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4298,7 +4512,7 @@ private:
 public:
   MatchCase (MatchArm arm, std::unique_ptr<Expr> expr)
     : arm (std::move (arm)), expr (std::move (expr)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   MatchCase (const MatchCase &other)
@@ -4432,6 +4646,8 @@ public:
   const std::vector<MatchCase> &get_match_cases () const { return match_arms; }
   std::vector<MatchCase> &get_match_cases () { return match_arms; }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Match; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -4510,6 +4726,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Await; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4593,6 +4811,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::AsyncBlock; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -4603,7 +4823,7 @@ protected:
 };
 
 // Inline-assembly specific options
-enum class InlineAsmOptions
+enum class InlineAsmOption
 {
   PURE = 1 << 0,
   NOMEM = 1 << 1,
@@ -4619,7 +4839,24 @@ enum class InlineAsmOptions
 struct AnonConst
 {
   NodeId id;
-  std::unique_ptr<Expr> value;
+  std::unique_ptr<Expr> expr;
+  AnonConst (NodeId id, std::unique_ptr<Expr> expr)
+    : id (id), expr (std::move (expr))
+  {
+    rust_assert (this->expr != nullptr);
+  }
+  AnonConst (const AnonConst &other)
+  {
+    id = other.id;
+    expr = other.expr->clone_expr ();
+  }
+
+  AnonConst operator= (const AnonConst &other)
+  {
+    id = other.id;
+    expr = other.expr->clone_expr ();
+    return *this;
+  }
 };
 
 struct InlineAsmRegOrRegClass
@@ -4640,13 +4877,39 @@ struct InlineAsmRegOrRegClass
     std::string Symbol;
   };
 
+  Type type;
+  struct Reg reg;
+  struct RegClass reg_class;
+
   Identifier name;
   location_t locus;
 };
 
-struct InlineAsmOperand
+struct LlvmOperand
 {
-  enum RegisterType
+  std::string constraint;
+  std::unique_ptr<Expr> expr;
+
+  LlvmOperand (std::string constraint, std::unique_ptr<Expr> &&expr)
+    : constraint (constraint), expr (std::move (expr))
+  {}
+
+  LlvmOperand (const LlvmOperand &other)
+    : constraint (other.constraint), expr (other.expr->clone_expr ())
+  {}
+  LlvmOperand &operator= (const LlvmOperand &other)
+  {
+    constraint = other.constraint;
+    expr = other.expr->clone_expr ();
+
+    return *this;
+  }
+};
+
+class InlineAsmOperand
+{
+public:
+  enum class RegisterType
   {
     In,
     Out,
@@ -4654,46 +4917,339 @@ struct InlineAsmOperand
     SplitInOut,
     Const,
     Sym,
+    Label,
   };
 
-  struct In
+  class Register
   {
-    InlineAsmRegOrRegClass reg;
+  public:
+    Register () {}
+    virtual ~Register () = default;
+
+    std::unique_ptr<Register> clone () const
+    {
+      return std::unique_ptr<Register> (clone_impl ());
+    }
+
+  protected:
+    virtual Register *clone_impl () const = 0;
+  };
+
+  class In : public Register
+  {
+  public:
+    tl::optional<InlineAsmRegOrRegClass> reg;
     std::unique_ptr<Expr> expr;
+
+    In (tl::optional<struct InlineAsmRegOrRegClass> &reg,
+	std::unique_ptr<Expr> expr)
+      : reg (reg), expr (std::move (expr))
+    {
+      rust_assert (this->expr != nullptr);
+    }
+
+    In (const In &other)
+    {
+      reg = other.reg;
+
+      expr = other.expr->clone_expr ();
+    }
+
+    In operator= (const In &other)
+    {
+      reg = other.reg;
+      expr = other.expr->clone_expr ();
+
+      return *this;
+    }
+
+  private:
+    In *clone_impl () const { return new In (*this); }
   };
 
-  struct Out
+  class Out : public Register
   {
-    InlineAsmRegOrRegClass reg;
+  public:
+    tl::optional<InlineAsmRegOrRegClass> reg;
     bool late;
     std::unique_ptr<Expr> expr; // can be null
+
+    Out (tl::optional<struct InlineAsmRegOrRegClass> &reg, bool late,
+	 std::unique_ptr<Expr> expr)
+      : reg (reg), late (late), expr (std::move (expr))
+    {
+      rust_assert (this->expr != nullptr);
+    }
+
+    Out (const Out &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr->clone_expr ();
+    }
+
+    Out operator= (const Out &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr->clone_expr ();
+      return *this;
+    }
+
+  private:
+    Out *clone_impl () const { return new Out (*this); }
   };
 
-  struct InOut
+  class InOut : public Register
   {
-    InlineAsmRegOrRegClass reg;
+  public:
+    tl::optional<InlineAsmRegOrRegClass> reg;
     bool late;
     std::unique_ptr<Expr> expr; // this can't be null
+
+    InOut (tl::optional<struct InlineAsmRegOrRegClass> &reg, bool late,
+	   std::unique_ptr<Expr> expr)
+      : reg (reg), late (late), expr (std::move (expr))
+    {
+      rust_assert (this->expr != nullptr);
+    }
+
+    InOut (const InOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr->clone_expr ();
+    }
+
+    InOut operator= (const InOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr->clone_expr ();
+
+      return *this;
+    }
+
+  private:
+    InOut *clone_impl () const { return new InOut (*this); }
   };
 
-  struct SplitInOut
+  class SplitInOut : public Register
   {
-    InlineAsmRegOrRegClass reg;
+  public:
+    tl::optional<InlineAsmRegOrRegClass> reg;
     bool late;
     std::unique_ptr<Expr> in_expr;
     std::unique_ptr<Expr> out_expr; // could be null
+
+    SplitInOut (tl::optional<struct InlineAsmRegOrRegClass> &reg, bool late,
+		std::unique_ptr<Expr> in_expr, std::unique_ptr<Expr> out_expr)
+      : reg (reg), late (late), in_expr (std::move (in_expr)),
+	out_expr (std::move (out_expr))
+    {
+      rust_assert (this->in_expr != nullptr);
+      rust_assert (this->out_expr != nullptr);
+    }
+
+    SplitInOut (const SplitInOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      in_expr = other.in_expr->clone_expr ();
+      out_expr = other.out_expr->clone_expr ();
+    }
+
+    SplitInOut operator= (const SplitInOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      in_expr = other.in_expr->clone_expr ();
+      out_expr = other.out_expr->clone_expr ();
+
+      return *this;
+    }
+
+  private:
+    SplitInOut *clone_impl () const { return new SplitInOut (*this); }
   };
 
-  struct Const
+  class Const : public Register
   {
+  public:
     AnonConst anon_const;
+
+  private:
+    Const *clone_impl () const { return new Const (*this); }
   };
 
-  struct Sym
+  class Sym : public Register
   {
-    std::unique_ptr<Expr> sym;
+  public:
+    std::unique_ptr<Expr> expr;
+
+    Sym (std::unique_ptr<Expr> expr) : expr (std::move (expr))
+    {
+      rust_assert (this->expr != nullptr);
+    }
+    Sym (const Sym &other)
+    {
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+    }
+
+    Sym operator= (const Sym &other)
+    {
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+      return *this;
+    }
+
+  private:
+    Sym *clone_impl () const { return new Sym (*this); }
   };
+
+  class Label : public Register
+  {
+  public:
+    std::string label_name;
+    std::unique_ptr<Expr> expr;
+
+    Label (tl::optional<std::string> label_name, std::unique_ptr<Expr> expr)
+      : expr (std::move (expr))
+    {
+      rust_assert (this->expr != nullptr);
+      if (label_name.has_value ())
+	this->label_name = label_name.value ();
+    }
+    Label (const Label &other)
+    {
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+    }
+
+    Label operator= (const Label &other)
+    {
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+      return *this;
+    }
+
+  private:
+    Label *clone_impl () const { return new Label (*this); }
+  };
+
+  InlineAsmOperand (const InlineAsmOperand &other)
+    : register_type (other.register_type), locus (other.locus),
+      reg (other.reg->clone ())
+  {}
+
+  InlineAsmOperand (const In &reg, location_t locus)
+    : register_type (RegisterType::In), locus (locus), reg (new In (reg))
+  {}
+  InlineAsmOperand (const Out &reg, location_t locus)
+    : register_type (RegisterType::Out), locus (locus), reg (new Out (reg))
+  {}
+  InlineAsmOperand (const InOut &reg, location_t locus)
+    : register_type (RegisterType::InOut), locus (locus), reg (new InOut (reg))
+  {}
+  InlineAsmOperand (const SplitInOut &reg, location_t locus)
+    : register_type (RegisterType::SplitInOut), locus (locus),
+      reg (new SplitInOut (reg))
+  {}
+  InlineAsmOperand (const Const &reg, location_t locus)
+    : register_type (RegisterType::Const), locus (locus), reg (new Const (reg))
+  {}
+  InlineAsmOperand (const Sym &reg, location_t locus)
+    : register_type (RegisterType::Sym), locus (locus), reg (new Sym (reg))
+  {}
+  InlineAsmOperand (const Label &reg, location_t locus)
+    : register_type (RegisterType::Label), locus (locus), reg (new Label (reg))
+  {}
+
+  location_t get_locus () const { return locus; }
+  RegisterType get_register_type () const { return register_type; }
+
+  // Potentially fail immediately if you don't use get_register_type() to
+  // inspect the RegisterType first before calling the following functions Check
+  // first
+  In &get_in ()
+  {
+    rust_assert (register_type == RegisterType::In);
+    return static_cast<In &> (*reg);
+  }
+  const In &get_in () const
+  {
+    rust_assert (register_type == RegisterType::In);
+    return static_cast<const In &> (*reg);
+  }
+
+  Out &get_out ()
+  {
+    rust_assert (register_type == RegisterType::Out);
+    return static_cast<Out &> (*reg);
+  }
+  const Out &get_out () const
+  {
+    rust_assert (register_type == RegisterType::Out);
+    return static_cast<const Out &> (*reg);
+  }
+
+  InOut &get_in_out ()
+  {
+    rust_assert (register_type == RegisterType::InOut);
+    return static_cast<InOut &> (*reg);
+  }
+  const InOut &get_in_out () const
+  {
+    rust_assert (register_type == RegisterType::InOut);
+    return static_cast<const InOut &> (*reg);
+  }
+
+  SplitInOut &get_split_in_out ()
+  {
+    rust_assert (register_type == RegisterType::SplitInOut);
+    return static_cast<SplitInOut &> (*reg);
+  }
+  const SplitInOut &get_split_in_out () const
+  {
+    rust_assert (register_type == RegisterType::SplitInOut);
+    return static_cast<const SplitInOut &> (*reg);
+  }
+
+  Const &get_const ()
+  {
+    rust_assert (register_type == RegisterType::Const);
+    return static_cast<Const &> (*reg);
+  }
+  const Const &get_const () const
+  {
+    rust_assert (register_type == RegisterType::Const);
+    return static_cast<Const &> (*reg);
+  }
+
+  Sym &get_sym ()
+  {
+    rust_assert (register_type == RegisterType::Sym);
+    return static_cast<Sym &> (*reg);
+  }
+  const Sym &get_sym () const
+  {
+    rust_assert (register_type == RegisterType::Sym);
+    return static_cast<const Sym &> (*reg);
+  }
+
+  Label &get_label ()
+  {
+    rust_assert (register_type == RegisterType::Label);
+    return static_cast<Label &> (*reg);
+  }
+  const Label &get_label () const
+  {
+    rust_assert (register_type == RegisterType::Label);
+    return static_cast<const Label &> (*reg);
+  }
+
+private:
+  RegisterType register_type;
+
   location_t locus;
+  std::unique_ptr<Register> reg;
 };
 
 struct InlineAsmPlaceHolder
@@ -4706,11 +5262,8 @@ struct InlineAsmPlaceHolder
 struct InlineAsmTemplatePiece
 {
   bool is_placeholder;
-  union
-  {
-    std::string string;
-    InlineAsmPlaceHolder placeholder;
-  };
+  std::string string;
+  InlineAsmPlaceHolder placeholder;
 };
 
 struct TupleClobber
@@ -4723,21 +5276,151 @@ struct TupleClobber
 struct TupleTemplateStr
 {
   // as gccrs still doesn't contain a symbol class I have put them as strings
-  std::string symbol;
-  std::string optional_symbol;
   location_t loc;
+  std::string symbol;
+
+  location_t get_locus () { return loc; }
+  TupleTemplateStr (location_t loc, const std::string &symbol)
+    : loc (loc), symbol (symbol)
+  {}
 };
 
 // Inline Assembly Node
 class InlineAsm : public ExprWithoutBlock
 {
+private:
+  location_t locus;
+  // TODO: Not sure how outer_attrs plays with InlineAsm, I put it here in order
+  // to override, very hacky.
+  std::vector<Attribute> outer_attrs;
+
 public:
+  // https://github.com/rust-lang/rust/blob/55cac26a9ef17da1c9c77c0816e88e178b7cc5dd/compiler/rustc_builtin_macros/src/asm.rs#L56C1-L64C7
+  //   let mut args = AsmArgs {
+  //     templates: vec![first_template],
+  //     operands: vec![],
+  //     named_args: Default::default(),
+  //     reg_args: Default::default(),
+  //     clobber_abis: Vec::new(),
+  //     options: ast::InlineAsmOptions::empty(),
+  //     options_spans: vec![],
+  // };
   std::vector<InlineAsmTemplatePiece> template_;
   std::vector<TupleTemplateStr> template_strs;
   std::vector<InlineAsmOperand> operands;
-  TupleClobber clobber_abi;
-  InlineAsmOptions options;
+  std::map<std::string, int> named_args;
+  std::set<int> reg_args;
+  std::vector<TupleClobber> clobber_abi;
+  std::set<InlineAsmOption> options;
+
   std::vector<location_t> line_spans;
+
+  bool is_global_asm;
+
+  InlineAsm (location_t locus, bool is_global_asm)
+    : locus (locus), is_global_asm (is_global_asm)
+  {}
+
+  void accept_vis (ASTVisitor &vis) override;
+  std::string as_string () const override { return "InlineAsm AST Node"; }
+
+  location_t get_locus () const override { return locus; }
+
+  void mark_for_strip () override {}
+
+  bool is_marked_for_strip () const override { return false; }
+
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> v) override { outer_attrs = v; }
+
+  std::vector<InlineAsmTemplatePiece> get_template_ () { return template_; }
+
+  std::vector<TupleTemplateStr> get_template_strs () { return template_strs; }
+
+  std::vector<InlineAsmOperand> get_operands () { return operands; }
+
+  std::vector<TupleClobber> get_clobber_abi () { return clobber_abi; }
+
+  std::set<InlineAsmOption> get_options () { return options; }
+
+  InlineAsm *clone_expr_without_block_impl () const override
+  {
+    return new InlineAsm (*this);
+  }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::InlineAsm; }
+};
+
+class LlvmInlineAsm : public ExprWithoutBlock
+{
+  // llvm_asm!("" :         : "r"(&mut dummy) : "memory" : "volatile");
+  //           Asm, Outputs, Inputs,            Clobbers, Options,
+
+public:
+  enum class Dialect
+  {
+    Att,
+    Intel,
+  };
+
+private:
+  location_t locus;
+  std::vector<Attribute> outer_attrs;
+  std::vector<LlvmOperand> inputs;
+  std::vector<LlvmOperand> outputs;
+  std::vector<TupleTemplateStr> templates;
+  std::vector<TupleClobber> clobbers;
+  bool volatility;
+  bool align_stack;
+  Dialect dialect;
+
+public:
+  LlvmInlineAsm (location_t locus) : locus (locus) {}
+
+  Dialect get_dialect () { return dialect; }
+
+  location_t get_locus () const override { return locus; }
+
+  void mark_for_strip () override {}
+
+  bool is_marked_for_strip () const override { return false; }
+
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  std::string as_string () const override { return "InlineAsm AST Node"; }
+
+  void set_outer_attrs (std::vector<Attribute> v) override { outer_attrs = v; }
+
+  LlvmInlineAsm *clone_expr_without_block_impl () const override
+  {
+    return new LlvmInlineAsm (*this);
+  }
+
+  std::vector<TupleTemplateStr> &get_templates () { return templates; }
+
+  Expr::Kind get_expr_kind () const override
+  {
+    return Expr::Kind::LlvmInlineAsm;
+  }
+
+  void set_align_stack (bool align_stack) { this->align_stack = align_stack; }
+  bool is_stack_aligned () { return align_stack; }
+
+  void set_volatile (bool volatility) { this->volatility = volatility; }
+  bool is_volatile () { return volatility; }
+
+  void set_dialect (Dialect dialect) { this->dialect = dialect; }
+
+  void set_inputs (std::vector<LlvmOperand> operands) { inputs = operands; }
+  void set_outputs (std::vector<LlvmOperand> operands) { outputs = operands; }
+
+  std::vector<LlvmOperand> &get_inputs () { return inputs; }
+  std::vector<LlvmOperand> &get_outputs () { return outputs; }
+
+  std::vector<TupleClobber> &get_clobbers () { return clobbers; }
 };
 
 } // namespace AST

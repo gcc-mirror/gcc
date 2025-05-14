@@ -2025,8 +2025,12 @@
 ;; Like vwcore, but for the container mode rather than the element mode.
 (define_mode_attr vccore [(VNx16QI "w") (VNx8QI "w") (VNx4QI "w") (VNx2QI "x")
 			  (VNx8HI "w") (VNx4HI "w") (VNx2HI "x")
+			  (VNx8HF "w") (VNx4HF "w") (VNx2HF "x")
+			  (VNx8BF "w") (VNx4BF "w") (VNx2BF "x")
 			  (VNx4SI "w") (VNx2SI "x")
-			  (VNx2DI "x")])
+			  (VNx4SF "w") (VNx2SF "x")
+			  (VNx2DI "x")
+			  (VNx2DF "x")])
 
 ;; Double vector types for ALLX.
 (define_mode_attr Vallxd [(QI "8b") (HI "4h") (SI "2s")])

@@ -9,7 +9,7 @@ int v[42];
 void foo (void) {}
 
 /* Not all targets can use %cN even in non-pic code.  */
-#if defined(__riscv)
+#if defined(__riscv) || defined(__loongarch__)
 asm ("# %0 %1 %2 %cc3 %cc4 %5 %% %="
 #else
 asm ("# %0 %1 %2 %c3 %c4 %5 %% %="

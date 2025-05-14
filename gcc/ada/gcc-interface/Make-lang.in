@@ -271,8 +271,14 @@ GCC_LINKERFLAGS = $(filter-out -Werror, $(ALL_LINKERFLAGS))
 GCC_LDFLAGS = $(LDFLAGS)
 endif
 
-GCC_LINK=$(LINKER) $(GCC_LINKERFLAGS) $(GCC_LDFLAGS)
+# Do not link with -pie during stage #1 because the base libgnat.a is not PIC
+ifeq ($(STAGE1),True)
+GCC_LINK= $(filter-out -pie, $(LINKER)  $(GCC_LINKERFLAGS) $(GCC_LDFLAGS))
+GCC_LLINK=$(filter-out -pie, $(LLINKER) $(GCC_LINKERFLAGS) $(GCC_LDFLAGS))
+else
+GCC_LINK= $(LINKER)  $(GCC_LINKERFLAGS) $(GCC_LDFLAGS)
 GCC_LLINK=$(LLINKER) $(GCC_LINKERFLAGS) $(GCC_LDFLAGS)
+endif
 
 # Lists of files for various purposes.
 

@@ -103,7 +103,7 @@ backtrace_atomic_store_size_t (size_t *p, size_t v)
 void
 backtrace_atomic_store_int (int *p, int v)
 {
-  size_t old;
+  int old;
 
   old = *p;
   while (!__sync_bool_compare_and_swap (p, old, v))

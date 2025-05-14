@@ -562,8 +562,7 @@ struct JSONValue
         else static if (is(T : string))
         {
             type_tag = JSONType.string;
-            string t = arg;
-            () @trusted { store.str = t; }();
+            store = Store(str: arg);
         }
         // https://issues.dlang.org/show_bug.cgi?id=15884
         else static if (isSomeString!T)
@@ -572,7 +571,7 @@ struct JSONValue
             // FIXME: std.Array.Array(Range) is not deduced as 'pure'
             () @trusted {
                 import std.utf : byUTF;
-                store.str = cast(immutable)(arg.byUTF!char.array);
+                store = Store(str: cast(immutable)(arg.byUTF!char.array));
             }();
         }
         else static if (is(T : bool))
@@ -582,17 +581,17 @@ struct JSONValue
         else static if (is(T : ulong) && isUnsigned!T)
         {
             type_tag = JSONType.uinteger;
-            store.uinteger = arg;
+            store = Store(uinteger: arg);
         }
         else static if (is(T : long))
         {
             type_tag = JSONType.integer;
-            store.integer = arg;
+            store = Store(integer: arg);
         }
         else static if (isFloatingPoint!T)
         {
             type_tag = JSONType.float_;
-            store.floating = arg;
+            store = Store(floating: arg);
         }
         else static if (is(T : Value[Key], Key, Value))
         {
@@ -600,45 +599,34 @@ struct JSONValue
             type_tag = JSONType.object;
             static if (is(Value : JSONValue))
             {
-                JSONValue[string] t = arg;
-                () @trusted {
-                    store.object.isOrdered = false;
-                    store.object.unordered = t;
-                }();
+                store = Store(object: Store.Object(false, unordered: arg));
             }
             else
             {
                 JSONValue[string] aa;
                 foreach (key, value; arg)
                     aa[key] = JSONValue(value);
-                () @trusted {
-                    store.object.isOrdered = false;
-                    store.object.unordered = aa;
-                }();
+                store = Store(object: Store.Object(false, unordered: aa));
             }
         }
         else static if (is(T : OrderedObjectMember[]))
         {
             type_tag = JSONType.object;
-            () @trusted {
-                store.object.isOrdered = true;
-                store.object.ordered = arg;
-            }();
+            store = Store(object: Store.Object(true, ordered: arg));
         }
         else static if (isArray!T)
         {
             type_tag = JSONType.array;
             static if (is(ElementEncodingType!T : JSONValue))
             {
-                JSONValue[] t = arg;
-                () @trusted { store.array = t; }();
+                store = Store(array: arg);
             }
             else
             {
                 JSONValue[] new_arg = new JSONValue[arg.length];
                 foreach (i, e; arg)
                     new_arg[i] = JSONValue(e);
-                () @trusted { store.array = new_arg; }();
+                store = Store(array: new_arg);
             }
         }
         else static if (is(T : JSONValue))
@@ -658,14 +646,14 @@ struct JSONValue
         type_tag = JSONType.array;
         static if (is(ElementEncodingType!T : JSONValue))
         {
-            store.array = arg;
+            store = Store(array: arg);
         }
         else
         {
             JSONValue[] new_arg = new JSONValue[arg.length];
             foreach (i, e; arg)
                 new_arg[i] = JSONValue(e);
-            store.array = new_arg;
+            store = Store(array: new_arg);
         }
     }
 
@@ -1616,13 +1604,13 @@ if (isSomeFiniteCharInputRange!T)
                 if (isFloat)
                 {
                     value.type_tag = JSONType.float_;
-                    value.store.floating = parse!double(data);
+                    value.store = JSONValue.Store(floating: parse!double(data));
                 }
                 else
                 {
                     if (isNegative)
                     {
-                        value.store.integer = parse!long(data);
+                        value.store = JSONValue.Store(integer: parse!long(data));
                         value.type_tag = JSONType.integer;
                     }
                     else
@@ -1631,12 +1619,12 @@ if (isSomeFiniteCharInputRange!T)
                         ulong u = parse!ulong(data);
                         if (u & (1UL << 63))
                         {
-                            value.store.uinteger = u;
+                            value.store = JSONValue.Store(uinteger: u);
                             value.type_tag = JSONType.uinteger;
                         }
                         else
                         {
-                            value.store.integer = u;
+                            value.store = JSONValue.Store(integer: u);
                             value.type_tag = JSONType.integer;
                         }
                     }

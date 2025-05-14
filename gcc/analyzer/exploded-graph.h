@@ -206,20 +206,24 @@ class exploded_node : public dnode<eg_traits>
      This allows us to distinguish enodes that were merged during
      worklist-handling, and thus never had process_node called on them
      (in favor of processing the merged node).  */
-  enum status
+  enum class status
   {
     /* Node is in the worklist.  */
-    STATUS_WORKLIST,
+    worklist,
 
     /* Node has had exploded_graph::process_node called on it.  */
-    STATUS_PROCESSED,
+    processed,
+
+    /* Node was excluded from worklist on creation.
+       e.g. for handling exception-unwinding.  */
+    special,
 
     /* Node was left unprocessed due to merger; it won't have had
        exploded_graph::process_node called on it.  */
-    STATUS_MERGER,
+    merger,
 
     /* Node was processed by maybe_process_run_of_before_supernode_enodes.  */
-    STATUS_BULK_MERGED
+    bulk_merged
   };
   static const char * status_to_str (enum status s);
 
@@ -282,7 +286,7 @@ class exploded_node : public dnode<eg_traits>
 
   on_stmt_flags replay_call_summaries (exploded_graph &eg,
 				       const supernode *snode,
-				       const gcall *call_stmt,
+				       const gcall &call_stmt,
 				       program_state *state,
 				       path_context *path_ctxt,
 				       const function &called_fn,
@@ -290,11 +294,11 @@ class exploded_node : public dnode<eg_traits>
 				       region_model_context *ctxt);
   void replay_call_summary (exploded_graph &eg,
 			    const supernode *snode,
-			    const gcall *call_stmt,
+			    const gcall &call_stmt,
 			    program_state *state,
 			    path_context *path_ctxt,
 			    const function &called_fn,
-			    call_summary *summary,
+			    call_summary &summary,
 			    region_model_context *ctxt);
 
   bool on_edge (exploded_graph &eg,
@@ -303,9 +307,18 @@ class exploded_node : public dnode<eg_traits>
 		program_state *next_state,
 		uncertainty_t *uncertainty);
   void on_longjmp (exploded_graph &eg,
-		   const gcall *call,
+		   const gcall &call,
 		   program_state *new_state,
 		   region_model_context *ctxt);
+  void on_throw (exploded_graph &eg,
+		 const gcall &call,
+		 program_state *new_state,
+		 bool is_rethrow,
+		 region_model_context *ctxt);
+  void on_resx (exploded_graph &eg,
+		const gresx &resx,
+		program_state *new_state,
+		region_model_context *ctxt);
 
   void detect_leaks (exploded_graph &eg);
 
@@ -333,10 +346,10 @@ class exploded_node : public dnode<eg_traits>
   void dump_succs_and_preds (FILE *outf) const;
 
   enum status get_status () const { return m_status; }
-  void set_status (enum status status)
+  void set_status (enum status s)
   {
-    gcc_assert (m_status == STATUS_WORKLIST);
-    m_status = status;
+    gcc_assert (m_status == status::worklist);
+    m_status = s;
   }
 
   void add_diagnostic (const saved_diagnostic *sd)
@@ -424,7 +437,7 @@ private:
 class dynamic_call_info_t : public custom_edge_info
 {
 public:
-  dynamic_call_info_t (const gcall *dynamic_call,
+  dynamic_call_info_t (const gcall &dynamic_call,
   		       const bool is_returning_call = false)
   : m_dynamic_call (dynamic_call),
     m_is_returning_call (is_returning_call)
@@ -445,7 +458,7 @@ public:
   void add_events_to_path (checker_path *emission_path,
 			   const exploded_edge &eedge) const final override;
 private:
-  const gcall *m_dynamic_call;
+  const gcall &m_dynamic_call;
   const bool m_is_returning_call;
 };
 
@@ -457,7 +470,7 @@ class rewind_info_t : public custom_edge_info
 {
 public:
   rewind_info_t (const setjmp_record &setjmp_record,
-		 const gcall *longjmp_call)
+		 const gcall &longjmp_call)
   : m_setjmp_record (setjmp_record),
     m_longjmp_call (longjmp_call)
   {}
@@ -486,12 +499,12 @@ public:
     return origin_point;
   }
 
-  const gcall *get_setjmp_call () const
+  const gcall &get_setjmp_call () const
   {
-    return m_setjmp_record.m_setjmp_call;
+    return *m_setjmp_record.m_setjmp_call;
   }
 
-  const gcall *get_longjmp_call () const
+  const gcall &get_longjmp_call () const
   {
     return m_longjmp_call;
   }
@@ -503,7 +516,7 @@ public:
 
 private:
   setjmp_record m_setjmp_record;
-  const gcall *m_longjmp_call;
+  const gcall &m_longjmp_call;
 };
 
 /* Statistics about aspects of an exploded_graph.  */
@@ -817,7 +830,7 @@ public:
   bool maybe_process_run_of_before_supernode_enodes (exploded_node *node);
   void process_node (exploded_node *node);
 
-  bool maybe_create_dynamic_call (const gcall *call,
+  bool maybe_create_dynamic_call (const gcall &call,
                                   tree fn_decl,
                                   exploded_node *node,
                                   program_state next_state,
@@ -827,7 +840,8 @@ public:
 
   exploded_node *get_or_create_node (const program_point &point,
 				     const program_state &state,
-				     exploded_node *enode_for_diag);
+				     exploded_node *enode_for_diag,
+				     bool add_to_worklist = true);
   exploded_edge *add_edge (exploded_node *src, exploded_node *dest,
 			   const superedge *sedge, bool could_do_work,
 			   std::unique_ptr<custom_edge_info> custom = NULL);
@@ -880,6 +894,10 @@ public:
   }
 
   void on_escaped_function (tree fndecl);
+
+  void unwind_from_exception (exploded_node &enode,
+			      const gimple *stmt,
+			      region_model_context *ctxt);
 
   /* In infinite-loop.cc */
   void detect_infinite_loops ();

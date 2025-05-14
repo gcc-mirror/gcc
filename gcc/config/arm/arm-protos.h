@@ -190,8 +190,6 @@ extern void arm_output_multireg_pop (rtx *, bool, rtx, bool, bool);
 extern void arm_set_return_address (rtx, rtx);
 extern int arm_eliminable_register (rtx);
 extern const char *arm_output_shift(rtx *, int);
-extern const char *arm_output_iwmmxt_shift_immediate (const char *, rtx *, bool);
-extern const char *arm_output_iwmmxt_tinsr (rtx *);
 extern unsigned int arm_sync_loop_insns (rtx , rtx *);
 extern int arm_attr_length_push_multi(rtx, rtx);
 extern int arm_attr_length_pop_multi(rtx *, bool, bool);
@@ -474,12 +472,6 @@ extern int arm_ld_sched;
 
 /* Nonzero if this chip is a StrongARM.  */
 extern int arm_tune_strongarm;
-
-/* Nonzero if this chip supports Intel Wireless MMX technology.  */
-extern int arm_arch_iwmmxt;
-
-/* Nonzero if this chip supports Intel Wireless MMX2 technology.  */
-extern int arm_arch_iwmmxt2;
 
 /* Nonzero if this chip is an XScale.  */
 extern int arm_arch_xscale;

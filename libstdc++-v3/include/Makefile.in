@@ -397,6 +397,7 @@ std_freestanding = \
 	${std_srcdir}/generator \
 	${std_srcdir}/iterator \
 	${std_srcdir}/limits \
+	${std_srcdir}/mdspan \
 	${std_srcdir}/memory \
 	${std_srcdir}/numbers \
 	${std_srcdir}/numeric \
@@ -549,6 +550,7 @@ bits_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/cow_string.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/deque.tcc \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/erase_if.h \
+@GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/formatfwd.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/forward_list.h \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/forward_list.tcc \
 @GLIBCXX_HOSTED_TRUE@	${bits_srcdir}/fs_dir.h \
@@ -1249,6 +1251,8 @@ c_compatibility_builddir = .
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/tgmath.h \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/math.h \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdatomic.h \
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdbit.h \
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdckdint.h \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdlib.h
 
 @GLIBCXX_C_HEADERS_C_STD_TRUE@c_compatibility_headers = 

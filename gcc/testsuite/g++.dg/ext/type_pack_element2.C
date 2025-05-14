@@ -2,7 +2,7 @@
 
 int p;
 
-using type = __type_pack_element<&p, int>;      // { dg-error "not an integral constant" }
+using type = __type_pack_element<&p, int>;      // { dg-error "non-integral type" }
 using type = __type_pack_element<1, int>;       // { dg-error "out of range" }
 using type = __type_pack_element<2, int, char>; // { dg-error "out of range" }
 using type = __type_pack_element<-1, int>;      // { dg-error "negative" }

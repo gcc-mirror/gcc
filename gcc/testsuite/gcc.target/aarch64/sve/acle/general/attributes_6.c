@@ -29,7 +29,7 @@ test_add (fixed_int8_t x, fixed_int8_t y)
 }
 
 /*
-** test_add_gnu:
+** test_add_gnu: {target aarch64_big_endian }
 ** (
 **	add	(z[0-9]+\.b), (?:z0\.b, z1\.b|z1\.b, z0\.b)
 **	ptrue	(p[0-7])\.b, vl32
@@ -39,6 +39,12 @@ test_add (fixed_int8_t x, fixed_int8_t y)
 **	add	(z[0-9]+)\.b, (?:z0\.b, z1\.b|z1\.b, z0\.b)
 **	st1b	\4, \3, \[x8\]
 ** )
+**	ret
+*/
+/*
+** test_add_gnu: {target aarch64_little_endian }
+**	add	(z[0-9]+)\.b, (?:z0\.b, z1\.b|z1\.b, z0\.b)
+**	str	\1, \[x8\]
 **	ret
 */
 gnu_int8_t

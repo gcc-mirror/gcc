@@ -51,6 +51,7 @@ public:
   virtual void visit (ProjectionType &type) = 0;
   virtual void visit (DynamicObjectType &type) = 0;
   virtual void visit (ClosureType &type) = 0;
+  virtual void visit (OpaqueType &type) = 0;
 };
 
 class TyConstVisitor
@@ -80,6 +81,7 @@ public:
   virtual void visit (const ProjectionType &type) = 0;
   virtual void visit (const DynamicObjectType &type) = 0;
   virtual void visit (const ClosureType &type) = 0;
+  virtual void visit (const OpaqueType &type) = 0;
 };
 
 } // namespace TyTy

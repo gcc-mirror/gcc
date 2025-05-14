@@ -3012,6 +3012,7 @@ public:
   bool read_definition (tree decl);
 
 private:
+  void check_abi_tags (tree existing, tree decl, tree &eattr, tree &dattr);
   bool is_matching_decl (tree existing, tree decl, bool is_typedef);
   static bool install_implicit_member (tree decl);
   bool read_function_def (tree decl, tree maybe_template);
@@ -3613,8 +3614,10 @@ void slurping::release_macros ()
 /* Flags for extensions that end up being streamed.  */
 
 enum streamed_extensions {
-  SE_OPENMP = 1 << 0,
-  SE_BITS = 1
+  SE_OPENMP_SIMD = 1 << 0,
+  SE_OPENMP = 1 << 1,
+  SE_OPENACC = 1 << 2,
+  SE_BITS = 3
 };
 
 /* Counter indices.  */
@@ -5276,6 +5279,53 @@ trees_in::tree_list (bool has_purpose)
 
   return res;
 }
+
+#define CASE_OMP_SIMD_CODE \
+    case OMP_SIMD:			\
+    case OMP_STRUCTURED_BLOCK:		\
+    case OMP_LOOP:			\
+    case OMP_ORDERED:			\
+    case OMP_TILE:			\
+    case OMP_UNROLL
+#define CASE_OMP_CODE \
+    case OMP_PARALLEL:			\
+    case OMP_TASK:			\
+    case OMP_FOR:			\
+    case OMP_DISTRIBUTE:		\
+    case OMP_TASKLOOP:			\
+    case OMP_TEAMS:			\
+    case OMP_TARGET_DATA:		\
+    case OMP_TARGET:			\
+    case OMP_SECTIONS:			\
+    case OMP_CRITICAL:			\
+    case OMP_SINGLE:			\
+    case OMP_SCOPE:			\
+    case OMP_TASKGROUP:			\
+    case OMP_MASKED:			\
+    case OMP_DISPATCH:			\
+    case OMP_INTEROP:			\
+    case OMP_MASTER:			\
+    case OMP_TARGET_UPDATE:		\
+    case OMP_TARGET_ENTER_DATA:		\
+    case OMP_TARGET_EXIT_DATA:		\
+    case OMP_METADIRECTIVE:		\
+    case OMP_ATOMIC:			\
+    case OMP_ATOMIC_READ:		\
+    case OMP_ATOMIC_CAPTURE_OLD:	\
+    case OMP_ATOMIC_CAPTURE_NEW
+#define CASE_OACC_CODE \
+    case OACC_PARALLEL:			\
+    case OACC_KERNELS:			\
+    case OACC_SERIAL:			\
+    case OACC_DATA:			\
+    case OACC_HOST_DATA:		\
+    case OACC_LOOP:			\
+    case OACC_CACHE:			\
+    case OACC_DECLARE:			\
+    case OACC_ENTER_DATA:		\
+    case OACC_EXIT_DATA:		\
+    case OACC_UPDATE
+
 /* Start tree write.  Write information to allocate the receiving
    node.  */
 
@@ -5311,12 +5361,47 @@ trees_out::start (tree t, bool code_streamed)
       break;
 
     case OMP_CLAUSE:
-      state->extensions |= SE_OPENMP;
       u (OMP_CLAUSE_CODE (t));
+      break;
+
+    CASE_OMP_SIMD_CODE:
+      state->extensions |= SE_OPENMP_SIMD;
+      break;
+
+    CASE_OMP_CODE:
+      state->extensions |= SE_OPENMP;
+      break;
+
+    CASE_OACC_CODE:
+      state->extensions |= SE_OPENACC;
       break;
 
     case STRING_CST:
       str (TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
+      break;
+
+    case RAW_DATA_CST:
+      if (RAW_DATA_OWNER (t) == NULL_TREE)
+	{
+	  /* Stream RAW_DATA_CST with no owner (i.e. data pointing
+	     into libcpp buffers) as something we can stream in as
+	     STRING_CST which owns the data.  */
+	  u (0);
+	  /* Can't use str (RAW_DATA_POINTER (t), RAW_DATA_LENGTH (t));
+	     here as there isn't a null termination after it.  */
+	  z (RAW_DATA_LENGTH (t));
+	  if (RAW_DATA_LENGTH (t))
+	    if (void *ptr = buf (RAW_DATA_LENGTH (t) + 1))
+	      {
+		memcpy (ptr, RAW_DATA_POINTER (t), RAW_DATA_LENGTH (t));
+		((char *) ptr)[RAW_DATA_LENGTH (t)] = '\0';
+	      }
+	}
+      else
+	{
+	  gcc_assert (RAW_DATA_LENGTH (t));
+	  u (RAW_DATA_LENGTH (t));
+	}
       break;
 
     case VECTOR_CST:
@@ -5383,13 +5468,25 @@ trees_in::start (unsigned code)
       break;
 
     case OMP_CLAUSE:
-      {
-	if (!(state->extensions & SE_OPENMP))
-	  goto fail;
+      t = build_omp_clause (UNKNOWN_LOCATION, omp_clause_code (u ()));
+      break;
 
-	unsigned omp_code = u ();
-	t = build_omp_clause (UNKNOWN_LOCATION, omp_clause_code (omp_code));
-      }
+    CASE_OMP_SIMD_CODE:
+      if (!(state->extensions & SE_OPENMP_SIMD))
+	goto fail;
+      t = make_node (tree_code (code));
+      break;
+
+    CASE_OMP_CODE:
+      if (!(state->extensions & SE_OPENMP))
+	goto fail;
+      t = make_node (tree_code (code));
+      break;
+
+    CASE_OACC_CODE:
+      if (!(state->extensions & SE_OPENACC))
+	goto fail;
+      t = make_node (tree_code (code));
       break;
 
     case STRING_CST:
@@ -5397,6 +5494,24 @@ trees_in::start (unsigned code)
 	size_t l;
 	const char *chars = str (&l);
 	t = build_string (l, chars);
+      }
+      break;
+
+    case RAW_DATA_CST:
+      {
+	size_t l = u ();
+	if (l == 0)
+	  {
+	    /* Stream in RAW_DATA_CST with no owner as STRING_CST
+	       which owns the data.  */
+	    const char *chars = str (&l);
+	    t = build_string (l, chars);
+	  }
+	else
+	  {
+	    t = make_node (RAW_DATA_CST);
+	    RAW_DATA_LENGTH (t) = l;
+	  }
       }
       break;
 
@@ -5425,6 +5540,50 @@ trees_in::start (unsigned code)
     }
 
   return t;
+}
+
+/* The kinds of interface an importer could have for a decl.  */
+
+enum class importer_interface {
+  unknown,	  /* The definition may or may not need to be emitted.  */
+  always_import,  /* The definition can always be found in another TU.  */
+  always_emit,	  /* The definition must be emitted in the importer's TU. */
+};
+
+/* Returns what kind of interface an importer will have of DECL.  */
+
+static importer_interface
+get_importer_interface (tree decl)
+{
+  /* Internal linkage entities must be emitted in each importer if
+     there is a definition available.  */
+  if (!TREE_PUBLIC (decl))
+    return importer_interface::always_emit;
+
+  /* Entities that aren't vague linkage are either not definitions or
+     will be emitted in this TU, so importers can just refer to an
+     external definition.  */
+  if (!vague_linkage_p (decl))
+    return importer_interface::always_import;
+
+  /* For explicit instantiations, importers can always rely on there
+     being a definition in another TU, unless this is a definition
+     in a header module: in which case the importer will always need
+     to emit it.  */
+  if (DECL_LANG_SPECIFIC (decl)
+      && DECL_EXPLICIT_INSTANTIATION (decl))
+    return (header_module_p () && !DECL_EXTERNAL (decl)
+	    ? importer_interface::always_emit
+	    : importer_interface::always_import);
+
+  /* A gnu_inline function is never emitted in any TU.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_DECLARED_INLINE_P (decl)
+      && lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl)))
+    return importer_interface::always_import;
+
+  /* Everything else has vague linkage.  */
+  return importer_interface::unknown;
 }
 
 /* The structure streamers access the raw fields, because the
@@ -5543,10 +5702,11 @@ trees_out::core_bools (tree t, bits_out& bits)
 
       {
 	/* This is DECL_INTERFACE_KNOWN: We should redetermine whether
-	   we need to import or export any vtables or typeinfo objects
-	   on stream-in.  */
+	   we need to import or export any vague-linkage entities on
+	   stream-in.  */
 	bool interface_known = t->decl_common.lang_flag_5;
-	if (VAR_P (t) && (DECL_VTABLE_OR_VTT_P (t) || DECL_TINFO_P (t)))
+	if (interface_known
+	    && get_importer_interface (t) == importer_interface::unknown)
 	  interface_known = false;
 	WB (interface_known);
       }
@@ -5580,8 +5740,8 @@ trees_out::core_bools (tree t, bits_out& bits)
 		is_external = true;
 	      gcc_fallthrough ();
 	    case FUNCTION_DECL:
-	      if (TREE_PUBLIC (t)
-		  && !vague_linkage_p (t))
+	      if (get_importer_interface (t)
+		  == importer_interface::always_import)
 		is_external = true;
 	      break;
 	    }
@@ -5643,7 +5803,7 @@ trees_out::core_bools (tree t, bits_out& bits)
       WB (t->function_decl.replaceable_operator);
 
       /* decl_type is a (misnamed) 2 bit discriminator.	 */
-      unsigned kind = t->function_decl.decl_type;
+      unsigned kind = (unsigned)t->function_decl.decl_type;
       WB ((kind >> 0) & 1);
       WB ((kind >> 1) & 1);
     }
@@ -6311,6 +6471,22 @@ trees_out::core_vals (tree t)
       /* Streamed during start.  */
       break;
 
+    case RAW_DATA_CST:
+      if (RAW_DATA_OWNER (t) == NULL_TREE)
+	break; /* Streamed as STRING_CST during start.  */
+      WT (RAW_DATA_OWNER (t));
+      if (streaming_p ())
+	{
+	  if (TREE_CODE (RAW_DATA_OWNER (t)) == RAW_DATA_CST)
+	    z (RAW_DATA_POINTER (t) - RAW_DATA_POINTER (RAW_DATA_OWNER (t)));
+	  else if (TREE_CODE (RAW_DATA_OWNER (t)) == STRING_CST)
+	    z (RAW_DATA_POINTER (t)
+	       - TREE_STRING_POINTER (RAW_DATA_OWNER (t)));
+	  else
+	    gcc_unreachable ();
+	}
+      break;
+
     case VECTOR_CST:
       for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
 	WT (VECTOR_CST_ENCODED_ELT (t, ix));
@@ -6845,6 +7021,13 @@ trees_in::core_vals (tree t)
       /* Streamed during start.  */
       break;
 
+    case RAW_DATA_CST:
+      RT (RAW_DATA_OWNER (t));
+      gcc_assert (TREE_CODE (RAW_DATA_OWNER (t)) == STRING_CST
+		  && TREE_STRING_LENGTH (RAW_DATA_OWNER (t)));
+      RAW_DATA_POINTER (t) = TREE_STRING_POINTER (RAW_DATA_OWNER (t)) + z ();
+      break;
+
     case VECTOR_CST:
       for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
 	RT (VECTOR_CST_ENCODED_ELT (t, ix));
@@ -7203,7 +7386,7 @@ trees_out::lang_decl_vals (tree t)
 	    WU (lang->u.fn.ovl_op_code);
 	}
 
-      if (DECL_CLASS_SCOPE_P (t))
+      if (DECL_CLASS_SCOPE_P (t) || DECL_UNIQUE_FRIEND_P (t))
 	WT (lang->u.fn.context);
 
       if (lang->u.fn.thunk_p)
@@ -7287,7 +7470,7 @@ trees_in::lang_decl_vals (tree t)
 	    lang->u.fn.ovl_op_code = code;
 	}
 
-      if (DECL_CLASS_SCOPE_P (t))
+      if (DECL_CLASS_SCOPE_P (t) || DECL_UNIQUE_FRIEND_P (t))
 	RT (lang->u.fn.context);
 
       if (lang->u.fn.thunk_p)
@@ -8650,8 +8833,11 @@ trees_in::decl_value ()
 	  tree etype = TREE_TYPE (existing);
 
 	  /* Handle separate declarations with different attributes.  */
+	  tree &dattr = TYPE_ATTRIBUTES (type);
 	  tree &eattr = TYPE_ATTRIBUTES (etype);
-	  eattr = merge_attributes (eattr, TYPE_ATTRIBUTES (type));
+	  check_abi_tags (existing, decl, eattr, dattr);
+	  // TODO: handle other conflicting type attributes
+	  eattr = merge_attributes (eattr, dattr);
 
 	  /* When merging a partial specialisation, the existing decl may have
 	     had its TYPE_CANONICAL adjusted.  If so we should use structural
@@ -8818,25 +9004,28 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	if (streaming_p ())
 	  i (tt_parm);
 	tree_node (DECL_CONTEXT (decl));
-	if (streaming_p ())
-	  {
-	    /* That must have put this in the map.  */
-	    walk_kind ref = ref_node (decl);
-	    if (ref != WK_none)
-	      // FIXME:OPTIMIZATION We can wander into bits of the
-	      // template this was instantiated from.  For instance
-	      // deferred noexcept and default parms.  Currently we'll
-	      // end up cloning those bits of tree.  It would be nice
-	      // to reference those specific nodes.  I think putting
-	      // those things in the map when we reference their
-	      // template by name.  See the note in add_indirects.
-	      return true;
 
-	    dump (dumper::TREE)
-	      && dump ("Wrote %s reference %N",
-		       TREE_CODE (decl) == PARM_DECL ? "parameter" : "result",
-		       decl);
-	  }
+	/* That must have put this in the map.  */
+	walk_kind ref = ref_node (decl);
+	if (ref != WK_none)
+	  // FIXME:OPTIMIZATION We can wander into bits of the
+	  // template this was instantiated from, for instance
+	  // deferred noexcept and default parms, or references
+	  // to parms from earlier forward-decls (PR c++/119608).
+	  //
+	  // Currently we'll end up cloning those bits of tree. 
+	  // It would be nice to reference those specific nodes.
+	  // I think putting those things in the map when we
+	  // reference their template by name.
+	  //
+	  // See the note in add_indirects.
+	  return true;
+
+	if (streaming_p ())
+	  dump (dumper::TREE)
+	    && dump ("Wrote %s reference %N",
+		     TREE_CODE (decl) == PARM_DECL ? "parameter" : "result",
+		     decl);
       }
       return false;
 
@@ -9560,6 +9749,15 @@ trees_out::has_tu_local_dep (tree decl) const
     decl = TYPE_NAME (DECL_CONTEXT (decl));
 
   depset *dep = dep_hash->find_dependency (decl);
+  if (!dep)
+    {
+      /* This might be the DECL_TEMPLATE_RESULT of a TEMPLATE_DECL
+	 which we found was TU-local and gave up early.  */
+      int use_tpl = -1;
+      if (tree ti = node_template_info (decl, use_tpl))
+	dep = dep_hash->find_dependency (TI_TEMPLATE (ti));
+    }
+
   return dep && dep->is_tu_local ();
 }
 
@@ -11820,6 +12018,51 @@ trees_in::binfo_mergeable (tree *type)
   return u ();
 }
 
+/* DECL is a just streamed declaration with attributes DATTR that should
+   have matching ABI tags as EXISTING's attributes EATTR.  Check that the
+   ABI tags match, and report an error if not.  */
+
+void
+trees_in::check_abi_tags (tree existing, tree decl, tree &eattr, tree &dattr)
+{
+  tree etags = lookup_attribute ("abi_tag", eattr);
+  tree dtags = lookup_attribute ("abi_tag", dattr);
+  if ((etags == nullptr) != (dtags == nullptr)
+      || (etags && !attribute_value_equal (etags, dtags)))
+    {
+      if (etags)
+	etags = TREE_VALUE (etags);
+      if (dtags)
+	dtags = TREE_VALUE (dtags);
+
+      /* We only error if mangling wouldn't consider the tags equivalent.  */
+      if (!equal_abi_tags (etags, dtags))
+	{
+	  auto_diagnostic_group d;
+	  if (dtags)
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "mismatching abi tags for %qD with tags %qE",
+		      decl, dtags);
+	  else
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "mismatching abi tags for %qD with no tags", decl);
+	  if (etags)
+	    inform (DECL_SOURCE_LOCATION (existing),
+		    "existing declaration here with tags %qE", etags);
+	  else
+	    inform (DECL_SOURCE_LOCATION (existing),
+		    "existing declaration here with no tags");
+	}
+
+      /* Always use the existing abi_tags as the canonical set so that
+	 later processing doesn't get confused.  */
+      if (dtags)
+	dattr = remove_attribute ("abi_tag", dattr);
+      if (etags)
+	duplicate_one_attribute (&dattr, eattr, "abi_tag");
+    }
+}
+
 /* DECL is a just streamed mergeable decl that should match EXISTING.  Check
    it does and issue an appropriate diagnostic if not.  Merge any
    bits from DECL to EXISTING.  This is stricter matching than
@@ -11847,6 +12090,8 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
       gcc_checking_assert (TREE_CODE (e_inner) == TREE_CODE (d_inner));
     }
 
+  // FIXME: do more precise errors at point of mismatch
+  const char *mismatch_msg = nullptr;
   if (TREE_CODE (d_inner) == FUNCTION_DECL)
     {
       tree e_ret = fndecl_declared_return_type (existing);
@@ -11856,13 +12101,20 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	  && LAMBDA_TYPE_P (DECL_CONTEXT (d_inner)))
 	/* This has a recursive type that will compare different.  */;
       else if (!same_type_p (d_ret, e_ret))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting type for imported declaration %#qD");
+	  goto mismatch;
+	}
 
       tree e_type = TREE_TYPE (e_inner);
       tree d_type = TREE_TYPE (d_inner);
 
       if (DECL_EXTERN_C_P (d_inner) != DECL_EXTERN_C_P (e_inner))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting language linkage for imported "
+			    "declaration %#qD");
+	  goto mismatch;
+	}
 
       for (tree e_args = TYPE_ARG_TYPES (e_type),
 	     d_args = TYPE_ARG_TYPES (d_type);
@@ -11870,10 +12122,18 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	   e_args = TREE_CHAIN (e_args), d_args = TREE_CHAIN (d_args))
 	{
 	  if (!(e_args && d_args))
-	    goto mismatch;
+	    {
+	      mismatch_msg = G_("conflicting argument list for imported "
+				"declaration %#qD");
+	      goto mismatch;
+	    }
 
 	  if (!same_type_p (TREE_VALUE (d_args), TREE_VALUE (e_args)))
-	    goto mismatch;
+	    {
+	      mismatch_msg = G_("conflicting argument types for imported "
+				"declaration %#qD");
+	      goto mismatch;
+	    }
 	}
 
       /* If EXISTING has an undeduced or uninstantiated exception
@@ -11882,7 +12142,7 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	 instantiate it in the middle of loading.   */
       tree e_spec = TYPE_RAISES_EXCEPTIONS (e_type);
       tree d_spec = TYPE_RAISES_EXCEPTIONS (d_type);
-      if (DEFERRED_NOEXCEPT_SPEC_P (e_spec))
+      if (DECL_MAYBE_DELETED (e_inner) || DEFERRED_NOEXCEPT_SPEC_P (e_spec))
 	{
 	  if (!DEFERRED_NOEXCEPT_SPEC_P (d_spec)
 	      || (UNEVALUATED_NOEXCEPT_SPEC_P (e_spec)
@@ -11904,9 +12164,14 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 		}
 	    }
 	}
-      else if (!DEFERRED_NOEXCEPT_SPEC_P (d_spec)
+      else if (!DECL_MAYBE_DELETED (d_inner)
+	       && !DEFERRED_NOEXCEPT_SPEC_P (d_spec)
 	       && !comp_except_specs (d_spec, e_spec, ce_type))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting %<noexcept%> specifier for "
+			    "imported declaration %#qD");
+	  goto mismatch;
+	}
 
       /* Similarly if EXISTING has an undeduced return type, but DECL's
 	 is already deduced.  */
@@ -11920,20 +12185,48 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	}
       else if (type_uses_auto (d_ret)
 	       && !same_type_p (TREE_TYPE (d_type), TREE_TYPE (e_type)))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting deduced return type for "
+			    "imported declaration %#qD");
+	  goto mismatch;
+	}
+
+      /* Similarly if EXISTING has undeduced constexpr, but DECL's
+	 is already deduced.  */
+      if (DECL_MAYBE_DELETED (e_inner) && !DECL_MAYBE_DELETED (d_inner)
+	  && DECL_DECLARED_CONSTEXPR_P (d_inner))
+	DECL_DECLARED_CONSTEXPR_P (e_inner) = true;
+      else if (!DECL_MAYBE_DELETED (e_inner) && DECL_MAYBE_DELETED (d_inner))
+	/* Nothing to do.  */;
+      else if (DECL_DECLARED_CONSTEXPR_P (e_inner)
+	       != DECL_DECLARED_CONSTEXPR_P (d_inner))
+	{
+	  mismatch_msg = G_("conflicting %<constexpr%> for imported "
+			    "declaration %#qD");
+	  goto mismatch;
+	}
+
+      /* Don't synthesize a defaulted function if we're importing one
+	 we've already determined.  */
+      if (!DECL_MAYBE_DELETED (d_inner))
+	DECL_MAYBE_DELETED (e_inner) = false;
     }
   else if (is_typedef)
     {
       if (!DECL_ORIGINAL_TYPE (e_inner)
 	  || !same_type_p (DECL_ORIGINAL_TYPE (d_inner),
 			   DECL_ORIGINAL_TYPE (e_inner)))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting imported declaration %q#D");
+	  goto mismatch;
+	}
     }
   /* Using cp_tree_equal because we can meet TYPE_ARGUMENT_PACKs
      here. I suspect the entities that directly do that are things
      that shouldn't go to duplicate_decls (FIELD_DECLs etc).   */
   else if (!cp_tree_equal (TREE_TYPE (decl), TREE_TYPE (existing)))
     {
+      mismatch_msg = G_("conflicting type for imported declaration %#qD");
     mismatch:
       if (DECL_IS_UNDECLARED_BUILTIN (existing))
 	/* Just like duplicate_decls, presum the user knows what
@@ -11946,11 +12239,9 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	   equality isn't feasible in general for local entities.  */;
       else
 	{
-	  // FIXME:QOI Might be template specialization from a module,
-	  // not necessarily global module
+	  gcc_checking_assert (mismatch_msg);
 	  auto_diagnostic_group d;
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "conflicting global module declaration %#qD", decl);
+	  error_at (DECL_SOURCE_LOCATION (decl), mismatch_msg, decl);
 	  inform (DECL_SOURCE_LOCATION (existing),
 		  "existing declaration %#qD", existing);
 	  return false;
@@ -12013,9 +12304,27 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 
   if (TREE_CODE (d_inner) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (d_inner))
-    DECL_DECLARED_INLINE_P (e_inner) = true;
+    {
+      DECL_DECLARED_INLINE_P (e_inner) = true;
+      if (!DECL_SAVED_TREE (e_inner)
+	  && lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (d_inner))
+	  && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (e_inner)))
+	{
+	  DECL_INTERFACE_KNOWN (e_inner)
+	    |= DECL_INTERFACE_KNOWN (d_inner);
+	  DECL_DISREGARD_INLINE_LIMITS (e_inner)
+	    |= DECL_DISREGARD_INLINE_LIMITS (d_inner);
+	  // TODO: we will eventually want to merge all decl attributes
+	  duplicate_one_attribute (&DECL_ATTRIBUTES (e_inner),
+				   DECL_ATTRIBUTES (d_inner), "gnu_inline");
+	}
+    }
   if (!DECL_EXTERNAL (d_inner))
     DECL_EXTERNAL (e_inner) = false;
+
+  if (VAR_OR_FUNCTION_DECL_P (d_inner))
+    check_abi_tags (existing, decl,
+		    DECL_ATTRIBUTES (e_inner), DECL_ATTRIBUTES (d_inner));
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
@@ -12421,9 +12730,10 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 void
 trees_out::write_var_def (tree decl)
 {
-  /* The initializer of a variable or variable template is ignored for
-     determining exposures.  */
-  auto ovr = make_temp_override (dep_hash->ignore_tu_local, VAR_P (decl));
+  /* The initializer of a non-inline variable or variable template is
+     ignored for determining exposures.  */
+  auto ovr = make_temp_override (dep_hash->ignore_tu_local,
+				 VAR_P (decl) && !DECL_INLINE_VAR_P (decl));
 
   tree init = DECL_INITIAL (decl);
   tree_node (init);
@@ -12470,6 +12780,7 @@ trees_in::read_var_def (tree decl, tree maybe_template)
   bool installing = maybe_dup && !initialized;
   if (installing)
     {
+      DECL_INITIAL (decl) = init;
       if (DECL_EXTERNAL (decl))
 	DECL_NOT_REALLY_EXTERN (decl) = true;
       if (VAR_P (decl))
@@ -12477,13 +12788,18 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 	  DECL_INITIALIZED_P (decl) = true;
 	  if (maybe_dup && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (maybe_dup))
 	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
+	  tentative_decl_linkage (decl);
+	  if (DECL_EXPLICIT_INSTANTIATION (decl)
+	      && !DECL_EXTERNAL (decl))
+	    setup_explicit_instantiation_definition_linkage (decl);
 	  if (DECL_IMPLICIT_INSTANTIATION (decl)
+	      || (DECL_EXPLICIT_INSTANTIATION (decl)
+		  && !DECL_EXTERNAL (decl))
 	      || (DECL_CLASS_SCOPE_P (decl)
 		  && !DECL_VTABLE_OR_VTT_P (decl)
 		  && !DECL_TEMPLATE_INFO (decl)))
 	    note_vague_linkage_variable (decl);
 	}
-      DECL_INITIAL (decl) = init;
       if (!dyn_init)
 	;
       else if (CP_DECL_THREAD_LOCAL_P (decl))
@@ -13331,16 +13647,35 @@ bool
 depset::hash::is_tu_local_entity (tree decl, bool explain/*=false*/)
 {
   gcc_checking_assert (DECL_P (decl));
+  location_t loc = DECL_SOURCE_LOCATION (decl);
+  tree type = TREE_TYPE (decl);
 
-  /* An explicit type alias is not an entity, and so is never TU-local.
-     Neither are the built-in declarations of 'int' and such.  */
+  /* Only types, functions, variables, and template (specialisations)
+     can be TU-local.  */
+  if (TREE_CODE (decl) != TYPE_DECL
+      && TREE_CODE (decl) != FUNCTION_DECL
+      && TREE_CODE (decl) != VAR_DECL
+      && TREE_CODE (decl) != TEMPLATE_DECL)
+    return false;
+
+  /* An explicit type alias is not an entity; we don't want to stream
+     such aliases if they refer to TU-local entities, so propagate this
+     from the original type. The built-in declarations of 'int' and such
+     are never TU-local.  */
   if (TREE_CODE (decl) == TYPE_DECL
       && !DECL_SELF_REFERENCE_P (decl)
       && !DECL_IMPLICIT_TYPEDEF_P (decl))
-    return false;
-
-  location_t loc = DECL_SOURCE_LOCATION (decl);
-  tree type = TREE_TYPE (decl);
+    {
+      tree orig = DECL_ORIGINAL_TYPE (decl);
+      if (orig && TYPE_NAME (orig))
+	{
+	  if (explain)
+	    inform (loc, "%qD is an alias of TU-local type %qT", decl, orig);
+	  return is_tu_local_entity (TYPE_NAME (orig), explain);
+	}
+      else
+	return false;
+    }
 
   /* Check specializations first for slightly better explanations.  */
   int use_tpl = -1;
@@ -13432,19 +13767,31 @@ depset::hash::is_tu_local_entity (tree decl, bool explain/*=false*/)
 
      We consider types with names for linkage purposes as having names, since
      these aren't really TU-local.  */
-  if (TREE_CODE (decl) == TYPE_DECL
+  tree inner = STRIP_TEMPLATE (decl);
+  if (inner
+      && TREE_CODE (inner) == TYPE_DECL
       && TYPE_ANON_P (type)
-      && !DECL_SELF_REFERENCE_P (decl)
+      && !DECL_SELF_REFERENCE_P (inner)
       /* An enum with an enumerator name for linkage.  */
       && !(UNSCOPED_ENUM_P (type) && TYPE_VALUES (type)))
     {
       tree main_decl = TYPE_MAIN_DECL (type);
-      if (!DECL_CLASS_SCOPE_P (main_decl)
-	  && !decl_function_context (main_decl)
-	  /* LAMBDA_EXPR_EXTRA_SCOPE will be set for lambdas defined in
-	     contexts where they would not be TU-local.  */
-	  && !(LAMBDA_TYPE_P (type)
-	       && LAMBDA_TYPE_EXTRA_SCOPE (type)))
+      if (LAMBDA_TYPE_P (type))
+	{
+	  /* A lambda expression is, in practice, TU-local iff it has no
+	     mangling scope.  This currently doesn't line up exactly with
+	     the standard's definition due to some ABI issues, but it's
+	     pretty close, and avoids other issues down the line.  */
+	  if (!LAMBDA_TYPE_EXTRA_SCOPE (type))
+	    {
+	      if (explain)
+		inform (loc, "%qT has no name and cannot be differentiated "
+			"from similar lambdas in other TUs", type);
+	      return true;
+	    }
+	}
+      else if (!DECL_CLASS_SCOPE_P (main_decl)
+	       && !decl_function_context (main_decl))
 	{
 	  if (explain)
 	    inform (loc, "%qT has no name and is not defined within a class, "
@@ -13715,9 +14062,10 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 		     streaming the definition in such cases.  */
 		  dep->clear_flag_bit<DB_DEFN_BIT> ();
 
-		  if (DECL_DECLARED_CONSTEXPR_P (decl))
-		    /* Also, a constexpr variable initialized to a TU-local
-		       value is an exposure.  */
+		  if (DECL_DECLARED_CONSTEXPR_P (decl)
+		      || DECL_INLINE_VAR_P (decl))
+		    /* A constexpr variable initialized to a TU-local value,
+		       or an inline value (PR c++/119996), is an exposure.  */
 		    dep->set_flag_bit<DB_EXPOSURE_BIT> ();
 		}
 	    }
@@ -13748,6 +14096,35 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
   return dep;
 }
 
+/* Whether REF is an exposure of a member type of SOURCE.
+
+   This comes up with exposures of class-scope lambdas, that we currently
+   treat as TU-local due to ABI reasons.  In such a case the type of the
+   lambda will be exposed in two places, first by the class type it is in
+   the TYPE_FIELDS list of, and second by the actual member declaring that
+   lambda.  We only want the second case to warn.  */
+
+static bool
+is_exposure_of_member_type (depset *source, depset *ref)
+{
+  gcc_checking_assert (source->refs_tu_local () && ref->is_tu_local ());
+  tree source_entity = STRIP_TEMPLATE (source->get_entity ());
+  tree ref_entity = STRIP_TEMPLATE (ref->get_entity ());
+
+  if (source_entity
+      && ref_entity
+      && DECL_IMPLICIT_TYPEDEF_P (source_entity)
+      && DECL_IMPLICIT_TYPEDEF_P (ref_entity)
+      && DECL_CLASS_SCOPE_P (ref_entity)
+      && DECL_CONTEXT (ref_entity) == TREE_TYPE (source_entity))
+    {
+      gcc_checking_assert (LAMBDA_TYPE_P (TREE_TYPE (ref_entity)));
+      return true;
+    }
+  else
+    return false;
+}
+
 /* DEP is a newly discovered dependency.  Append it to current's
    depset.  */
 
@@ -13760,7 +14137,7 @@ depset::hash::add_dependency (depset *dep)
   if (dep->is_tu_local ())
     {
       current->set_flag_bit<DB_REFS_TU_LOCAL_BIT> ();
-      if (!ignore_tu_local)
+      if (!ignore_tu_local && !is_exposure_of_member_type (current, dep))
 	current->set_flag_bit<DB_EXPOSURE_BIT> ();
     }
 
@@ -14446,9 +14823,16 @@ depset::hash::find_dependencies (module_state *module)
 		}
 	      walker.end ();
 
+	      /* If we see either a class template or a deduction guide, make
+		 sure to add all visible deduction guides.  We need to check
+		 both in case they have been added in separate modules, or
+		 one is in the GMF and would have otherwise been discarded.  */
 	      if (!is_key_order ()
 		  && DECL_CLASS_TEMPLATE_P (decl))
 		add_deduction_guides (decl);
+	      if (!is_key_order ()
+		  && deduction_guide_p (decl))
+		add_deduction_guides (TYPE_NAME (TREE_TYPE (TREE_TYPE (decl))));
 
 	      if (!is_key_order ()
 		  && TREE_CODE (decl) == TEMPLATE_DECL
@@ -14633,7 +15017,9 @@ depset::hash::finalize_dependencies ()
 	  tree decl = dep->get_entity ();
 
 	  for (depset *rdep : dep->deps)
-	    if (!rdep->is_binding () && rdep->is_tu_local ())
+	    if (!rdep->is_binding ()
+		&& rdep->is_tu_local ()
+		&& !is_exposure_of_member_type (dep, rdep))
 	      {
 		// FIXME:QOI Better location information?  We're
 		// losing, so it doesn't matter about efficiency
@@ -14647,12 +15033,24 @@ depset::hash::finalize_dependencies ()
 		break;
 	      }
 
-	  if (!explained && VAR_P (decl) && DECL_DECLARED_CONSTEXPR_P (decl))
+	  if (!explained
+	      && VAR_P (decl)
+	      && (DECL_DECLARED_CONSTEXPR_P (decl)
+		  || DECL_INLINE_VAR_P (decl)))
 	    {
 	      auto_diagnostic_group d;
-	      error_at (DECL_SOURCE_LOCATION (decl),
-			"%qD is declared %<constexpr%> and is initialized to "
-			"a TU-local value", decl);
+	      if (DECL_DECLARED_CONSTEXPR_P (decl))
+		error_at (DECL_SOURCE_LOCATION (decl),
+			  "%qD is declared %<constexpr%> and is initialized to "
+			  "a TU-local value", decl);
+	      else
+		{
+		  /* This can only occur with references.  */
+		  gcc_checking_assert (TYPE_REF_P (TREE_TYPE (decl)));
+		  error_at (DECL_SOURCE_LOCATION (decl),
+			    "%qD is a reference declared %<inline%> and is "
+			    "constant-initialized to a TU-local value", decl);
+		}
 	      bool informed = is_tu_local_value (decl, DECL_INITIAL (decl),
 						 /*explain=*/true);
 	      gcc_checking_assert (informed);
@@ -15402,8 +15800,13 @@ module_state::write_readme (elf_out *to, cpp_reader *reader, const char *dialect
   readme.printf ("source: %s", main_input_filename);
   readme.printf ("dialect: %s", dialect);
   if (extensions)
-    readme.printf ("extensions: %s",
-		   extensions & SE_OPENMP ? "-fopenmp" : "");
+    readme.printf ("extensions: %s%s%s",
+		   extensions & SE_OPENMP ? "-fopenmp"
+		   : extensions & SE_OPENMP_SIMD ? "-fopenmp-simd" : "",
+		   (extensions & SE_OPENACC)
+		   && (extensions & (SE_OPENMP | SE_OPENMP_SIMD))
+		   ? " " : "",
+		   extensions & SE_OPENACC ? "-fopenacc" : "");
 
   /* The following fields could be expected to change between
      otherwise identical compilations.  Consider a distributed build
@@ -16329,6 +16732,12 @@ module_state::read_cluster (unsigned snum)
       cfun->language->returns_abnormally = pdata.returns_abnormally;
       cfun->language->infinite_loop = pdata.infinite_loop;
 
+      /* Make sure we emit explicit instantiations.
+	 FIXME do we want to do this in expand_or_defer_fn instead?  */
+      if (DECL_EXPLICIT_INSTANTIATION (decl)
+	  && !DECL_EXTERNAL (decl))
+	setup_explicit_instantiation_definition_linkage (decl);
+
       if (abstract)
 	;
       else if (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
@@ -16340,12 +16749,16 @@ module_state::read_cluster (unsigned snum)
 	  cfun->returns_pcc_struct = aggr;
 #endif
 	  cfun->returns_struct = aggr;
+	  expand_or_defer_fn (decl);
 
-	  if (DECL_COMDAT (decl))
-	    // FIXME: Comdat grouping?
-	    comdat_linkage (decl);
-	  note_vague_linkage_fn (decl);
-	  cgraph_node::finalize_function (decl, true);
+	  /* If we first see this function after at_eof, it doesn't get
+	     note_vague_linkage_fn from tentative_decl_linkage, so the loop in
+	     c_parse_final_cleanups won't consider it.  But with DECL_COMDAT we
+	     can just clear DECL_EXTERNAL and let cgraph decide.
+	     FIXME handle this outside module.cc after GCC 15.  */
+	  if (at_eof && DECL_COMDAT (decl) && DECL_EXTERNAL (decl)
+	      && DECL_NOT_REALLY_EXTERN (decl))
+	    DECL_EXTERNAL (decl) = false;
 	}
 
     }
@@ -16433,8 +16846,9 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
       depset *b = spaces[ix];
       tree ns = b->get_entity ();
 
+      /* This could be an anonymous namespace even for a named module,
+	 since we can still emit no-linkage decls.  */
       gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL);
-      gcc_checking_assert (TREE_PUBLIC (ns) || header_module_p ());
 
       unsigned flags = 0;
       if (TREE_PUBLIC (ns))
@@ -18824,22 +19238,11 @@ post_load_processing ()
       dump () && dump ("Post-load processing of %N", decl);
 
       gcc_checking_assert (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl));
-
-      if (DECL_COMDAT (decl))
-	comdat_linkage (decl);
-      if (!TREE_ASM_WRITTEN (decl))
-	{
-	  /* Cloning can cause loading -- specifically operator delete for
-	     the deleting dtor.  */
-	  if (maybe_clone_body (decl))
-	    TREE_ASM_WRITTEN (decl) = 1;
-	  else
-	    {
-	      /* We didn't clone the cdtor, make sure we emit it.  */
-	      note_vague_linkage_fn (decl);
-	      cgraph_node::finalize_function (decl, true);
-	    }
-	}
+      expand_or_defer_fn (decl);
+      /* As in module_state::read_cluster.  */
+      if (at_eof && DECL_COMDAT (decl) && DECL_EXTERNAL (decl)
+	  && DECL_NOT_REALLY_EXTERN (decl))
+	DECL_EXTERNAL (decl) = false;
     }
 
   cfun = old_cfun;
@@ -19166,12 +19569,22 @@ module_state::read_config (module_state_config &config)
      too.  */
   {
     unsigned ext = cfg.u ();
-    unsigned allowed = (flag_openmp ? SE_OPENMP : 0);
+    unsigned allowed = (flag_openmp ? SE_OPENMP | SE_OPENMP_SIMD : 0);
+    if (flag_openmp_simd)
+      allowed |= SE_OPENMP_SIMD;
+    if (flag_openacc)
+      allowed |= SE_OPENACC;
 
     if (unsigned bad = ext & ~allowed)
       {
 	if (bad & SE_OPENMP)
 	  error_at (loc, "module contains OpenMP, use %<-fopenmp%> to enable");
+	else if (bad & SE_OPENMP_SIMD)
+	  error_at (loc, "module contains OpenMP, use %<-fopenmp%> or "
+			 "%<-fopenmp-simd%> to enable");
+	if (bad & SE_OPENACC)
+	  error_at (loc, "module contains OpenACC, use %<-fopenacc%> to "
+			 "enable");
 	cfg.set_overrun ();
 	goto done;
       }
@@ -20105,20 +20518,24 @@ get_originating_module_decl (tree decl)
   return decl;
 }
 
+/* If DECL is imported, return which module imported it, or 0 for the current
+   module.  Except that if GLOBAL_M1, return -1 for decls attached to the
+   global module.  */
+
 int
-get_originating_module (tree decl, bool for_mangle)
+get_originating_module (tree decl, bool global_m1)
 {
   tree owner = get_originating_module_decl (decl);
   tree not_tmpl = STRIP_TEMPLATE (owner);
 
   if (!DECL_LANG_SPECIFIC (not_tmpl))
-    return for_mangle ? -1 : 0;
+    return global_m1 ? -1 : 0;
 
-  if (for_mangle && !DECL_MODULE_ATTACH_P (not_tmpl))
+  if (global_m1 && !DECL_MODULE_ATTACH_P (not_tmpl))
     return -1;
 
   int mod = !DECL_MODULE_IMPORT_P (not_tmpl) ? 0 : get_importing_module (owner);
-  gcc_checking_assert (!for_mangle || !(*modules)[mod]->is_header ());
+  gcc_checking_assert (!global_m1 || !(*modules)[mod]->is_header ());
   return mod;
 }
 
@@ -20394,13 +20811,25 @@ check_module_decl_linkage (tree decl)
   /* An internal-linkage declaration cannot be generally be exported.
      But it's OK to export any declaration from a header unit, including
      internal linkage declarations.  */
-  if (!header_module_p ()
-      && DECL_MODULE_EXPORT_P (decl)
-      && decl_linkage (decl) == lk_internal)
+  if (!header_module_p () && DECL_MODULE_EXPORT_P (decl))
     {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"exporting declaration %qD with internal linkage", decl);
-      DECL_MODULE_EXPORT_P (decl) = false;
+      /* Let's additionally treat any exported declaration within an
+	 internal namespace as exporting a declaration with internal
+	 linkage, as this would also implicitly export the internal
+	 linkage namespace.  */
+      if (decl_internal_context_p (decl))
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "exporting declaration %qD declared in unnamed namespace",
+		    decl);
+	  DECL_MODULE_EXPORT_P (decl) = false;
+	}
+      else if (decl_linkage (decl) == lk_internal)
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "exporting declaration %qD with internal linkage", decl);
+	  DECL_MODULE_EXPORT_P (decl) = false;
+	}
     }
 }
 

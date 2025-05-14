@@ -31,8 +31,9 @@ namespace ana {
 class checker_path : public diagnostic_path
 {
 public:
-  checker_path (logger *logger)
-  : diagnostic_path (),
+  checker_path (const logical_location_manager &logical_loc_mgr,
+		logger *logger)
+  : diagnostic_path (logical_loc_mgr),
     m_thread ("main"),
     m_logger (logger)
   {}

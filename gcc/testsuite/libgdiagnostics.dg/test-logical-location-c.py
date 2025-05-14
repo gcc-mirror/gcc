@@ -31,7 +31,16 @@ def test_sarif_output_with_logical_location(sarif):
 
     assert len(location['logicalLocations']) == 1
     logical_loc = location['logicalLocations'][0]
+    assert logical_loc['index'] == 0
+    assert logical_loc['fullyQualifiedName'] == 'test_qualified_name'
+
+    # Check theRun.logicalLocations
+    assert 'logicalLocations' in run
+    assert len(run['logicalLocations']) == 1
+    logical_loc = run['logicalLocations'][0]
     assert logical_loc['name'] == 'test_short_name'
     assert logical_loc['fullyQualifiedName'] == 'test_qualified_name'
     assert logical_loc['decoratedName'] == 'test_decorated_name'
     assert logical_loc['kind'] == 'function'
+    assert logical_loc['index'] == 0
+

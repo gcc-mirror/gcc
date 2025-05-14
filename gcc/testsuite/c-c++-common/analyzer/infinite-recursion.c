@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-exceptions" } */
+
 extern void marker_A(void);
 extern void marker_B(void);
 extern void marker_C(void);

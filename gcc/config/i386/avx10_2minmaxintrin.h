@@ -23,11 +23,11 @@
 #ifndef _AVX10_2MINMAXINTRIN_H_INCLUDED
 #define _AVX10_2MINMAXINTRIN_H_INCLUDED
 
-#if !defined(__AVX10_2_256__)
+#if !defined(__AVX10_2__)
 #pragma GCC push_options
 #pragma GCC target("avx10.2")
-#define __DISABLE_AVX10_2_256__
-#endif /* __AVX10_2_256__ */
+#define __DISABLE_AVX10_2__
+#endif /* __AVX10_2__ */
 
 #ifdef __OPTIMIZE__
 extern __inline __m128bh
@@ -143,10 +143,10 @@ extern __inline __m256d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_minmax_pd (__m256d __A, __m256d __B, const int __C)
 {
-  return (__m256d) __builtin_ia32_minmaxpd256_mask_round (
+  return (__m256d) __builtin_ia32_minmaxpd256_mask (
 		   (__v4df) __A, (__v4df) __B, __C,
 		   (__v4df) (__m256d) _mm256_undefined_pd (),
-		   (__mmask8) -1, _MM_FROUND_CUR_DIRECTION);
+		   (__mmask8) -1);
 }
 
 extern __inline __m256d
@@ -154,50 +154,19 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_minmax_pd (__m256d __W, __mmask8 __U, __m256d __A, __m256d __B,
 		       const int __C)
 {
-  return (__m256d) __builtin_ia32_minmaxpd256_mask_round (
+  return (__m256d) __builtin_ia32_minmaxpd256_mask (
 		   (__v4df) __A, (__v4df) __B, __C, (__v4df) __W,
-		   (__mmask8) __U, _MM_FROUND_CUR_DIRECTION);
+		   (__mmask8) __U);
 }
 
 extern __inline __m256d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_minmax_pd (__mmask8 __U, __m256d __A, __m256d __B, const int __C)
 {
-  return (__m256d) __builtin_ia32_minmaxpd256_mask_round (
+  return (__m256d) __builtin_ia32_minmaxpd256_mask (
 		   (__v4df) __A, (__v4df) __B, __C,
 		   (__v4df) (__m256d) _mm256_setzero_pd (),
-		   (__mmask8) __U, _MM_FROUND_CUR_DIRECTION);
-}
-
-extern __inline __m256d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_minmax_round_pd (__m256d __A, __m256d __B, const int __C, const int __R)
-{
-  return (__m256d) __builtin_ia32_minmaxpd256_mask_round (
-		   (__v4df) __A, (__v4df) __B, __C,
-		   (__v4df) (__m256d) _mm256_undefined_pd (),
-		   (__mmask8) -1, __R);
-}
-
-extern __inline __m256d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_minmax_round_pd (__m256d __W, __mmask8 __U, __m256d __A,
-			     __m256d __B, const int __C, const int __R)
-{
-  return (__m256d) __builtin_ia32_minmaxpd256_mask_round (
-		   (__v4df) __A, (__v4df) __B, __C, (__v4df) __W,
-		   (__mmask8) __U, __R);
-}
-
-extern __inline __m256d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_minmax_round_pd (__mmask8 __U, __m256d __A, __m256d __B,
-			      const int __C, const int __R)
-{
-  return (__m256d) __builtin_ia32_minmaxpd256_mask_round (
-		   (__v4df) __A, (__v4df) __B, __C,
-		   (__v4df) (__m256d) _mm256_setzero_pd (),
-		   (__mmask8) __U, __R);
+		   (__mmask8) __U);
 }
 
 extern __inline __m128h
@@ -240,10 +209,10 @@ extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_minmax_ph (__m256h __A, __m256h __B, const int __C)
 {
-  return (__m256h) __builtin_ia32_minmaxph256_mask_round (
+  return (__m256h) __builtin_ia32_minmaxph256_mask (
 		  (__v16hf) __A, (__v16hf) __B, __C,
 		  (__v16hf) (__m256h) _mm256_undefined_ph (),
-		  (__mmask16) -1, _MM_FROUND_CUR_DIRECTION);
+		  (__mmask16) -1);
 }
 
 extern __inline __m256h
@@ -251,50 +220,19 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_minmax_ph (__m256h __W, __mmask16 __U, __m256h __A, __m256h __B,
 		       const int __C)
 {
-  return (__m256h) __builtin_ia32_minmaxph256_mask_round (
+  return (__m256h) __builtin_ia32_minmaxph256_mask (
 		  (__v16hf) __A, (__v16hf) __B, __C, (__v16hf) __W,
-		  (__mmask16) __U, _MM_FROUND_CUR_DIRECTION);
+		  (__mmask16) __U);
 }
 
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_minmax_ph (__mmask16 __U, __m256h __A, __m256h __B, const int __C)
 {
-  return (__m256h) __builtin_ia32_minmaxph256_mask_round (
+  return (__m256h) __builtin_ia32_minmaxph256_mask (
 		  (__v16hf) __A, (__v16hf) __B, __C,
 		  (__v16hf) (__m256h) _mm256_setzero_ph (),
-		  (__mmask16) __U, _MM_FROUND_CUR_DIRECTION);
-}
-
-extern __inline __m256h
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_minmax_round_ph (__m256h __A, __m256h __B, const int __C, const int __R)
-{
-  return (__m256h) __builtin_ia32_minmaxph256_mask_round (
-		  (__v16hf) __A, (__v16hf) __B, __C,
-		  (__v16hf) (__m256h) _mm256_undefined_ph (),
-		  (__mmask16) -1, __R);
-}
-
-extern __inline __m256h
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_minmax_round_ph (__m256h __W, __mmask16 __U, __m256h __A,
-			     __m256h __B, const int __C, const int __R)
-{
-  return (__m256h) __builtin_ia32_minmaxph256_mask_round (
-		  (__v16hf) __A, (__v16hf) __B, __C, (__v16hf) __W,
-		  (__mmask16) __U, __R);
-}
-
-extern __inline __m256h
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_minmax_round_ph (__mmask16 __U, __m256h __A, __m256h __B,
-			      const int __C, const int __R)
-{
-  return (__m256h) __builtin_ia32_minmaxph256_mask_round (
-		  (__v16hf) __A, (__v16hf) __B, __C,
-		  (__v16hf) (__m256h) _mm256_setzero_ph (),
-		  (__mmask16) __U, __R);
+		  (__mmask16) __U);
 }
 
 extern __inline __m128
@@ -337,10 +275,10 @@ extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_minmax_ps (__m256 __A, __m256 __B, const int __C)
 {
-  return (__m256) __builtin_ia32_minmaxps256_mask_round (
+  return (__m256) __builtin_ia32_minmaxps256_mask (
 		  (__v8sf) __A, (__v8sf) __B, __C,
 		  (__v8sf) (__m256) _mm256_undefined_ps (),
-		  (__mmask8) -1, _MM_FROUND_CUR_DIRECTION);
+		  (__mmask8) -1);
 }
 
 extern __inline __m256
@@ -348,50 +286,19 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_minmax_ps (__m256 __W, __mmask8 __U, __m256 __A, __m256 __B,
 		       const int __C)
 {
-  return (__m256) __builtin_ia32_minmaxps256_mask_round (
+  return (__m256) __builtin_ia32_minmaxps256_mask (
 		  (__v8sf) __A, (__v8sf) __B, __C, (__v8sf) __W,
-		  (__mmask8) __U, _MM_FROUND_CUR_DIRECTION);
+		  (__mmask8) __U);
 }
 
 extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_minmax_ps (__mmask8 __U, __m256 __A, __m256 __B, const int __C)
 {
-  return (__m256) __builtin_ia32_minmaxps256_mask_round (
+  return (__m256) __builtin_ia32_minmaxps256_mask (
 		  (__v8sf) __A, (__v8sf) __B, __C,
 		  (__v8sf) (__m256) _mm256_setzero_ps (),
-		  (__mmask8) __U, _MM_FROUND_CUR_DIRECTION);
-}
-
-extern __inline __m256
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_minmax_round_ps (__m256 __A, __m256 __B, const int __C, const int __R)
-{
-  return (__m256) __builtin_ia32_minmaxps256_mask_round (
-		  (__v8sf) __A, (__v8sf) __B, __C,
-		  (__v8sf) (__m256) _mm256_undefined_ps (),
-		  (__mmask8) -1, __R);
-}
-
-extern __inline __m256
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_minmax_round_ps (__m256 __W, __mmask8 __U, __m256 __A, __m256 __B,
-			     const int __C, const int __R)
-{
-  return (__m256) __builtin_ia32_minmaxps256_mask_round (
-		  (__v8sf) __A, (__v8sf) __B, __C, (__v8sf) __W,
-		  (__mmask8) __U, __R);
-}
-
-extern __inline __m256
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_minmax_round_ps (__mmask8 __U, __m256 __A, __m256 __B,
-			      const int __C, const int __R)
-{
-  return (__m256) __builtin_ia32_minmaxps256_mask_round (
-		  (__v8sf) __A, (__v8sf) __B, __C,
-		  (__v8sf) (__m256) _mm256_setzero_ps (),
-		  (__mmask8) __U, __R);
+		  (__mmask8) __U);
 }
 
 extern __inline __m128d
@@ -697,56 +604,27 @@ _mm_maskz_minmax_round_ss (__mmask8 __U, __m128 __A, __m128 __B,
 	  				      (__mmask8) (U)))
 
 #define _mm256_minmax_pd(A, B, C)					      \
-  ((__m256d) __builtin_ia32_minmaxpd256_mask_round ((__v4df) (A),	      \
-						    (__v4df) (B),	      \
-						    (int) (C),		      \
-						    (__v4df) (__m256d)	      \
-						    _mm256_undefined_pd (),   \
-						    (__mmask8) (-1),	      \
-						    _MM_FROUND_CUR_DIRECTION))
+  ((__m256d) __builtin_ia32_minmaxpd256_mask ((__v4df) (A),		      \
+					      (__v4df) (B),		      \
+					      (int) (C),		      \
+					      (__v4df) (__m256d)	      \
+					      _mm256_undefined_pd (),	      \
+					      (__mmask8) (-1)))
 
 #define _mm256_mask_minmax_pd(W, U, A, B, C)				      \
-  ((__m256d) __builtin_ia32_minmaxpd256_mask_round ((__v4df) (A),	      \
-						    (__v4df) (B),	      \
-						    (int) (C),		      \
-						    (__v4df) (__m256d) (W),   \
-						    (__mmask8) (U),	      \
-						    _MM_FROUND_CUR_DIRECTION))
+  ((__m256d) __builtin_ia32_minmaxpd256_mask ((__v4df) (A),		      \
+					      (__v4df) (B),		      \
+					      (int) (C),		      \
+					      (__v4df) (__m256d) (W),	      \
+					      (__mmask8) (U)))
 
 #define _mm256_maskz_minmax_pd(U, A, B, C)				      \
-  ((__m256d) __builtin_ia32_minmaxpd256_mask_round ((__v4df) (A),	      \
-						    (__v4df) (B),	      \
-						    (int) (C),		      \
-						    (__v4df) (__m256d)	      \
-						    _mm256_setzero_pd (),     \
-						    (__mmask8) (U),	      \
-						    _MM_FROUND_CUR_DIRECTION))
-
-#define _mm256_minmax_round_pd(A, B, C, R)				      \
-  ((__m256d) __builtin_ia32_minmaxpd256_mask_round ((__v4df) (A),	      \
-						    (__v4df) (B),	      \
-						    (int) (C),		      \
-						    (__v4df) (__m256d)	      \
-						    _mm256_undefined_pd (),   \
-						    (__mmask8) (-1),	      \
-						    (int) (R)))
-
-#define _mm256_mask_minmax_round_pd(W, U, A, B, C, R)			      \
-  ((__m256d) __builtin_ia32_minmaxpd256_mask_round ((__v4df) (A),	      \
-						    (__v4df) (B),	      \
-						    (int) (C),		      \
-						    (__v4df) (__m256d) (W),   \
-						    (__mmask8) (U),	      \
-						    (int) (R)))
-
-#define _mm256_maskz_minmax_round_pd(U, A, B, C, R)			      \
-  ((__m256d) __builtin_ia32_minmaxpd256_mask_round ((__v4df) (A),	      \
-						    (__v4df) (B),	      \
-						    (int) (C),		      \
-						    (__v4df) (__m256d)	      \
-						    _mm256_setzero_pd (),     \
-						    (__mmask8) (U),	      \
-						    (int) (R)))
+  ((__m256d) __builtin_ia32_minmaxpd256_mask ((__v4df) (A),		      \
+					      (__v4df) (B),		      \
+					      (int) (C),		      \
+					      (__v4df) (__m256d)	      \
+					      _mm256_setzero_pd (),	      \
+					      (__mmask8) (U)))
 
 #define _mm_minmax_ph(A, B, C)						      \
   ((__m128h) __builtin_ia32_minmaxph128_mask ((__v8hf) (A),		      \
@@ -772,56 +650,27 @@ _mm_maskz_minmax_round_ss (__mmask8 __U, __m128 __A, __m128 __B,
 					      (__mmask8) (U)))
 
 #define _mm256_minmax_ph(A, B, C)					      \
-  ((__m256h) __builtin_ia32_minmaxph256_mask_round ((__v16hf) (A),	      \
-						    (__v16hf) (B),	      \
-						    (int) (C),		      \
-						    (__v16hf) (__m256h)	      \
-						    _mm256_undefined_ph (),   \
-						    (__mmask16) (-1),	      \
-						    _MM_FROUND_CUR_DIRECTION))
+  ((__m256h) __builtin_ia32_minmaxph256_mask ((__v16hf) (A),		      \
+					      (__v16hf) (B),		      \
+					      (int) (C),		      \
+					      (__v16hf) (__m256h)	      \
+					      _mm256_undefined_ph (),	      \
+					      (__mmask16) (-1)))
 
 #define _mm256_mask_minmax_ph(W, U, A, B, C)				      \
-  ((__m256h) __builtin_ia32_minmaxph256_mask_round ((__v16hf) (A),	      \
-						    (__v16hf) (B),	      \
-						    (int) (C),		      \
-						    (__v16hf) (__m256h) (W),  \
-						    (__mmask16) (U),	      \
-						    _MM_FROUND_CUR_DIRECTION))
+  ((__m256h) __builtin_ia32_minmaxph256_mask ((__v16hf) (A),		      \
+					      (__v16hf) (B),		      \
+					      (int) (C),		      \
+					      (__v16hf) (__m256h) (W),	      \
+					      (__mmask16) (U)))
 
 #define _mm256_maskz_minmax_ph(U, A, B, C)				      \
-  ((__m256h) __builtin_ia32_minmaxph256_mask_round ((__v16hf) (A),	      \
-						    (__v16hf) (B),	      \
-						    (int) (C),		      \
-						    (__v16hf) (__m256h)	      \
-						    _mm256_setzero_ph (),     \
-						    (__mmask16) (U),	      \
-						    _MM_FROUND_CUR_DIRECTION))
-
-#define _mm256_minmax_round_ph(A, B, C, R)				      \
-  ((__m256h) __builtin_ia32_minmaxph256_mask_round ((__v16hf) (A),	      \
-						    (__v16hf) (B),	      \
-						    (int) (C),		      \
-						    (__v16hf) (__m256h)	      \
-						    _mm256_undefined_ph (),   \
-						    (__mmask16) (-1),	      \
-						    (int) (R)))
-
-#define _mm256_mask_minmax_round_ph(W, U, A, B, C, R)			      \
-  ((__m256h) __builtin_ia32_minmaxph256_mask_round ((__v16hf) (A),	      \
-						    (__v16hf) (B),	      \
-						    (int) (C),		      \
-						    (__v16hf) (__m256h) (W),  \
-						    (__mmask16) (U),	      \
-						    (int) (R)))
-
-#define _mm256_maskz_minmax_round_ph(U, A, B, C, R)			      \
-  ((__m256h) __builtin_ia32_minmaxph256_mask_round ((__v16hf) (A),	      \
-						    (__v16hf) (B),	      \
-						    (int) (C),		      \
-						    (__v16hf) (__m256h)	      \
-						    _mm256_setzero_ph (),     \
-						    (__mmask16) (U),	      \
-						    (int) (R)))
+  ((__m256h) __builtin_ia32_minmaxph256_mask ((__v16hf) (A),		      \
+					      (__v16hf) (B),		      \
+					      (int) (C),		      \
+					      (__v16hf) (__m256h)	      \
+					      _mm256_setzero_ph (),	      \
+					      (__mmask16) (U)))
 
 #define _mm_minmax_ps(A, B, C)						      \
   ((__m128) __builtin_ia32_minmaxps128_mask ((__v4sf) (A),		      \
@@ -847,56 +696,27 @@ _mm_maskz_minmax_round_ss (__mmask8 __U, __m128 __A, __m128 __B,
 					     (__mmask8) (U)))
 
 #define _mm256_minmax_ps(A, B, C)					      \
-  ((__m256) __builtin_ia32_minmaxps256_mask_round ((__v8sf) (A),	      \
-						   (__v8sf) (B),	      \
-						   (int) (C),		      \
-						   (__v8sf) (__m256)	      \
-						   _mm256_undefined_ps (),    \
-						   (__mmask8) (-1),	      \
-						   _MM_FROUND_CUR_DIRECTION))
+  ((__m256) __builtin_ia32_minmaxps256_mask ((__v8sf) (A),		      \
+					     (__v8sf) (B),		      \
+					     (int) (C),			      \
+					     (__v8sf) (__m256)		      \
+					     _mm256_undefined_ps (),	      \
+					     (__mmask8) (-1)))
 
 #define _mm256_mask_minmax_ps(W, U, A, B, C)				      \
-  ((__m256) __builtin_ia32_minmaxps256_mask_round ((__v8sf) (A),	      \
-						   (__v8sf) (B),	      \
-						   (int) (C),		      \
-						   (__v8sf) (__m256) (W),     \
-						   (__mmask8) (U),	      \
-						   _MM_FROUND_CUR_DIRECTION))
+  ((__m256) __builtin_ia32_minmaxps256_mask ((__v8sf) (A),		      \
+					     (__v8sf) (B),		      \
+					     (int) (C),			      \
+					     (__v8sf) (__m256) (W),	      \
+					     (__mmask8) (U)))
 
 #define _mm256_maskz_minmax_ps(U, A, B, C)				      \
-  ((__m256) __builtin_ia32_minmaxps256_mask_round ((__v8sf) (A),	      \
-						   (__v8sf) (B),	      \
-						   (int) (C),		      \
-						   (__v8sf) (__m256)	      \
-						   _mm256_setzero_ps (),      \
-						   (__mmask8) (U),	      \
-						   _MM_FROUND_CUR_DIRECTION))
-
-#define _mm256_minmax_round_ps(A, B, C, R)				      \
-  ((__m256) __builtin_ia32_minmaxps256_mask_round ((__v8sf) (A),	      \
-						   (__v8sf) (B),	      \
-						   (int) (C),		      \
-						   (__v8sf) (__m256)	      \
-						   _mm256_undefined_ps (),    \
-						   (__mmask8) (-1),	      \
-						   (int) (R)))
-
-#define _mm256_mask_minmax_round_ps(W, U, A, B, C, R)			      \
-  ((__m256) __builtin_ia32_minmaxps256_mask_round ((__v8sf) (A),	      \
-						   (__v8sf) (B),	      \
-						   (int) (C),		      \
-						   (__v8sf) (__m256) (W),     \
-						   (__mmask8) (U),	      \
-						   (int) (R)))
-
-#define _mm256_maskz_minmax_round_ps(U, A, B, C, R)			      \
-  ((__m256) __builtin_ia32_minmaxps256_mask_round ((__v8sf) (A),	      \
-						   (__v8sf) (B),	      \
-						   (int) (C),		      \
-						   (__v8sf) (__m256)	      \
-						   _mm256_setzero_ps (),      \
-						   (__mmask8) (U),	      \
-						   (int) (R)))
+  ((__m256) __builtin_ia32_minmaxps256_mask ((__v8sf) (A),		      \
+					     (__v8sf) (B),		      \
+					     (int) (C),			      \
+					     (__v8sf) (__m256)		      \
+					     _mm256_setzero_ps (),	      \
+					     (__mmask8) (U)))
 
 #define _mm_minmax_round_sd(A, B, C, R)					      \
   ((__m128d) __builtin_ia32_minmaxsd_mask_round ((__v2df) (A),		      \
@@ -1056,9 +876,9 @@ _mm_maskz_minmax_round_ss (__mmask8 __U, __m128 __A, __m128 __B,
 
 #endif
 
-#ifdef __DISABLE_AVX10_2_256__
-#undef __DISABLE_AVX10_2_256__
+#ifdef __DISABLE_AVX10_2__
+#undef __DISABLE_AVX10_2__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX10_2_256__ */
+#endif /* __DISABLE_AVX10_2__ */
 
 #endif /* _AVX10_2MINMAXINTRIN_H_INCLUDED */

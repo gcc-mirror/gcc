@@ -3,7 +3,7 @@
 
 struct S {
   int *s;
-  constexpr S () : s(new int) {}	// { dg-error "is not a constant expression because allocated storage has not been deallocated" }
+  constexpr S () : s(new int) {}
   S (const S &) = delete;
   S &operator= (const S &) = delete;
   constexpr ~S () { delete s; }
@@ -17,3 +17,4 @@ foo (S v)
 }
 
 static_assert (foo (S ()));	// { dg-error "non-constant condition for static assertion" }
+// { dg-error "is not a constant expression because allocated storage has not been deallocated" "" { target *-*-* } .-1 }

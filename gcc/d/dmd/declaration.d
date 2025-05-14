@@ -2,12 +2,12 @@
  * Miscellaneous declarations, including typedef, alias, variable declarations including the
  * implicit this declaration, type tuples, ClassInfo, ModuleInfo and various TypeInfos.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/declaration.d, _declaration.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/declaration.d, _declaration.d)
  * Documentation:  https://dlang.org/phobos/dmd_declaration.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/declaration.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/declaration.d
  */
 
 module dmd.declaration;
@@ -54,6 +54,7 @@ else version = MARS;
  */
 void ObjectNotFound(Loc loc, Identifier id)
 {
+    global.gag = 0; // never gag the fatal error
     error(loc, "`%s` not found. object.d may be incorrectly installed or corrupt.", id.toChars());
     version (IN_LLVM)
     {
@@ -86,30 +87,34 @@ extern (C++) abstract class Declaration : Dsymbol
 {
     Type type;
     Type originalType;  // before semantic analysis
-    StorageClass storage_class = STC.undefined_;
-    Visibility visibility;
-    LINK _linkage = LINK.default_; // may be `LINK.system`; use `resolvedLinkage()` to resolve it
-    short inuse;          // used to detect cycles
-
-    ubyte adFlags;         // control re-assignment of AliasDeclaration (put here for packing reasons)
-      enum wasRead    = 1; // set if AliasDeclaration was read
-      enum ignoreRead = 2; // ignore any reads of AliasDeclaration
-      enum nounderscore = 4; // don't prepend _ to mangled name
-      enum hidden       = 8; // don't print this in .di files
-      enum nrvo = 0x10;      /// forward to fd.nrvo_var when generating code
-
+    STC storage_class = STC.none;
     // overridden symbol with pragma(mangle, "...")
     const(char)[] mangleOverride;
+    Visibility visibility;
+    short inuse;          // used to detect cycles
 
-    final extern (D) this(Identifier ident) @safe
+    private extern (D) static struct BitFields
     {
-        super(ident);
+        LINK _linkage = LINK.default_; // may be `LINK.system`; use `resolvedLinkage()` to resolve it
+        bool wasRead;      // set if AliasDeclaration was read
+        bool ignoreRead;   // ignore any reads of AliasDeclaration
+        bool noUnderscore; // don't prepend _ to mangled name
+        bool hidden;       // don't print this in .di files
+        bool nrvo;         /// forward to fd.nrvo_var when generating code
+    }
+
+    import dmd.common.bitfields;
+    mixin(generateBitFields!(BitFields, ubyte));
+
+    final extern (D) this(DSYM tag, Identifier ident) @safe
+    {
+        super(tag, ident);
         visibility = Visibility(Visibility.Kind.undefined);
     }
 
-    final extern (D) this(const ref Loc loc, Identifier ident) @safe
+    final extern (D) this(DSYM tag, Loc loc, Identifier ident) @safe
     {
-        super(loc, ident);
+        super(tag, loc, ident);
         visibility = Visibility(Visibility.Kind.undefined);
     }
 
@@ -118,7 +123,7 @@ extern (C++) abstract class Declaration : Dsymbol
         return "declaration";
     }
 
-    override final uinteger_t size(const ref Loc loc)
+    override final uinteger_t size(Loc loc)
     {
         assert(type);
         const sz = type.size();
@@ -269,11 +274,6 @@ extern (C++) abstract class Declaration : Dsymbol
         return visibility;
     }
 
-    override final inout(Declaration) isDeclaration() inout pure nothrow @nogc @safe
-    {
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -289,9 +289,9 @@ extern (C++) final class TupleDeclaration : Declaration
     bool isexp;             // true: expression tuple
     bool building;          // it's growing in AliasAssign semantic
 
-    extern (D) this(const ref Loc loc, Identifier ident, Objects* objects) @safe
+    extern (D) this(Loc loc, Identifier ident, Objects* objects) @safe
     {
-        super(loc, ident);
+        super(DSYM.tupleDeclaration, loc, ident);
         this.objects = objects;
     }
 
@@ -345,7 +345,7 @@ extern (C++) final class TupleDeclaration : Declaration
                 }
                 else
                 {
-                    auto arg = new Parameter(Loc.initial, 0, t, null, null, null);
+                    auto arg = new Parameter(Loc.initial, STC.none, t, null, null, null);
                 }
                 (*args)[i] = arg;
                 if (!t.deco)
@@ -419,11 +419,6 @@ extern (C++) final class TupleDeclaration : Declaration
         return 0;
     }
 
-    override inout(TupleDeclaration) isTupleDeclaration() inout
-    {
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -440,24 +435,24 @@ extern (C++) final class AliasDeclaration : Declaration
     Dsymbol overnext;   // next in overload list
     Dsymbol _import;    // !=null if unresolved internal alias for selective import
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type type) @safe
+    extern (D) this(Loc loc, Identifier ident, Type type) @safe
     {
-        super(loc, ident);
+        super(DSYM.aliasDeclaration, loc, ident);
         //debug printf("AliasDeclaration(id = '%s', type = `%s`, %p)\n", ident.toChars(), dmd.hdrgen.toChars(type), type.isTypeIdentifier());
         this.type = type;
         assert(type);
     }
 
-    extern (D) this(const ref Loc loc, Identifier ident, Dsymbol s) @safe
+    extern (D) this(Loc loc, Identifier ident, Dsymbol s) @safe
     {
-        super(loc, ident);
+        super(DSYM.aliasDeclaration, loc, ident);
         //debug printf("AliasDeclaration(id = '%s', s = `%s`)\n", ident.toChars(), s.toChars());
         assert(s != this);
         this.aliassym = s;
         assert(s);
     }
 
-    static AliasDeclaration create(const ref Loc loc, Identifier id, Type type) @safe
+    static AliasDeclaration create(Loc loc, Identifier id, Type type) @safe
     {
         return new AliasDeclaration(loc, id, type);
     }
@@ -628,8 +623,8 @@ extern (C++) final class AliasDeclaration : Declaration
             return aliassym;
         }
         // Reading the AliasDeclaration
-        if (!(adFlags & ignoreRead))
-            adFlags |= wasRead;                 // can never assign to this AliasDeclaration again
+        if (!this.ignoreRead)
+            this.wasRead = true;                 // can never assign to this AliasDeclaration again
 
         if (inuse == 1 && type && _scope)
         {
@@ -727,11 +722,6 @@ extern (C++) final class AliasDeclaration : Declaration
             aliassym && aliassym.isOverloadable();
     }
 
-    override inout(AliasDeclaration) isAliasDeclaration() inout
-    {
-        return this;
-    }
-
     /** Returns: `true` if this instance was created to make a template parameter
     visible in the scope of a template body, `false` otherwise */
     extern (D) bool isAliasedTemplateParameter() const
@@ -754,7 +744,7 @@ extern (C++) final class OverDeclaration : Declaration
 
     extern (D) this(Identifier ident, Dsymbol s) @safe
     {
-        super(ident);
+        super(DSYM.overDeclaration, ident);
         this.aliassym = s;
     }
 
@@ -810,11 +800,6 @@ extern (C++) final class OverDeclaration : Declaration
             }
         });
         return result;
-    }
-
-    override inout(OverDeclaration) isOverDeclaration() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -882,7 +867,7 @@ extern (C++) class VarDeclaration : Declaration
     byte canassign;                 // it can be assigned to
     ubyte isdataseg;                // private data for isDataseg 0 unset, 1 true, 2 false
 
-    final extern (D) this(const ref Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.undefined_)
+    final extern (D) this(Loc loc, Type type, Identifier ident, Initializer _init, STC storage_class = STC.none)
     in
     {
         assert(ident);
@@ -890,7 +875,7 @@ extern (C++) class VarDeclaration : Declaration
     do
     {
         //printf("VarDeclaration('%s')\n", ident.toChars());
-        super(loc, ident);
+        super(DSYM.varDeclaration, loc, ident);
         debug
         {
             if (!type && !_init)
@@ -907,9 +892,9 @@ extern (C++) class VarDeclaration : Declaration
         this.storage_class = storage_class;
     }
 
-    static VarDeclaration create(const ref Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.undefined_)
+    static VarDeclaration create(Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.none)
     {
-        return new VarDeclaration(loc, type, ident, _init, storage_class);
+        return new VarDeclaration(loc, type, ident, _init, cast(STC) storage_class);
     }
 
     override VarDeclaration syntaxCopy(Dsymbol s)
@@ -1124,16 +1109,6 @@ extern (C++) class VarDeclaration : Declaration
         return e;
     }
 
-    override final void checkCtorConstInit()
-    {
-        version (none)
-        {
-            /* doesn't work if more than one static ctor */
-            if (ctorinit == 0 && isCtorinit() && !isField())
-                error("missing initializer in static constructor for const variable");
-        }
-    }
-
     /************************************
      * Check to see if this variable is actually in an enclosing function
      * rather than the current one.
@@ -1222,12 +1197,6 @@ extern (C++) class VarDeclaration : Declaration
         return s;
     }
 
-    // Eliminate need for dynamic_cast
-    override final inout(VarDeclaration) isVarDeclaration() inout
-    {
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -1244,10 +1213,10 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
     uint fieldWidth;
     uint bitOffset;
 
-    final extern (D) this(const ref Loc loc, Type type, Identifier ident, Expression width)
+    final extern (D) this(Loc loc, Type type, Identifier ident, Expression width)
     {
         super(loc, type, ident, null);
-
+        this.dsym = DSYM.bitFieldDeclaration;
         this.width = width;
         this.storage_class |= STC.field;
     }
@@ -1259,11 +1228,6 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
         auto bf = new BitFieldDeclaration(loc, type ? type.syntaxCopy() : null, ident, width.syntaxCopy());
         bf.comment = comment;
         return bf;
-    }
-
-    override final inout(BitFieldDeclaration) isBitFieldDeclaration() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -1305,17 +1269,11 @@ extern (C++) final class SymbolDeclaration : Declaration
 {
     AggregateDeclaration dsym;
 
-    extern (D) this(const ref Loc loc, AggregateDeclaration dsym) @safe
+    extern (D) this(Loc loc, AggregateDeclaration dsym) @safe
     {
-        super(loc, dsym.ident);
+        super(DSYM.symbolDeclaration, loc, dsym.ident);
         this.dsym = dsym;
         storage_class |= STC.const_;
-    }
-
-    // Eliminate need for dynamic_cast
-    override inout(SymbolDeclaration) isSymbolDeclaration() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -1362,6 +1320,7 @@ extern (C++) class TypeInfoDeclaration : VarDeclaration
     final extern (D) this(Type tinfo)
     {
         super(Loc.initial, Type.dtypeinfo.type, tinfo.getTypeInfoIdent(), null);
+        this.dsym = DSYM.typeInfoDeclaration;
         this.tinfo = tinfo;
         storage_class = STC.static_ | STC.gshared;
         visibility = Visibility(Visibility.Kind.public_);
@@ -1377,21 +1336,6 @@ extern (C++) class TypeInfoDeclaration : VarDeclaration
     override final TypeInfoDeclaration syntaxCopy(Dsymbol s)
     {
         assert(0); // should never be produced by syntax
-    }
-
-    override final const(char)* toChars() const
-    {
-        //printf("TypeInfoDeclaration::toChars() tinfo = %s\n", tinfo.toChars());
-        OutBuffer buf;
-        buf.writestring("typeid(");
-        buf.writestring(tinfo.toChars());
-        buf.writeByte(')');
-        return buf.extractChars();
-    }
-
-    override final inout(TypeInfoDeclaration) isTypeInfoDeclaration() inout @nogc nothrow pure @safe
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -1554,6 +1498,8 @@ extern (C++) final class TypeInfoStaticArrayDeclaration : TypeInfoDeclaration
  */
 extern (C++) final class TypeInfoAssociativeArrayDeclaration : TypeInfoDeclaration
 {
+    Type entry; // type of TypeInfo_AssociativeArray.Entry!(t.index, t.next)
+
     extern (D) this(Type tinfo)
     {
         super(tinfo);
@@ -1805,20 +1751,16 @@ extern (C++) final class TypeInfoVectorDeclaration : TypeInfoDeclaration
  */
 extern (C++) final class ThisDeclaration : VarDeclaration
 {
-    extern (D) this(const ref Loc loc, Type t)
+    extern (D) this(Loc loc, Type t)
     {
         super(loc, t, Id.This, null);
+        this.dsym = DSYM.thisDeclaration;
         storage_class |= STC.nodtor;
     }
 
     override ThisDeclaration syntaxCopy(Dsymbol s)
     {
         assert(0); // should never be produced by syntax
-    }
-
-    override inout(ThisDeclaration) isThisDeclaration() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

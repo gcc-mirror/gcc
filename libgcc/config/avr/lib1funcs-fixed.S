@@ -31,14 +31,6 @@
 ;; Fixed point library routines for AVR
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-#if defined __AVR_TINY__
-#define __zero_reg__ r17
-#define __tmp_reg__ r16
-#else                                                                                                                                              
-#define __zero_reg__ r1
-#define __tmp_reg__ r0
-#endif
-
 .section .text.libgcc.fixed, "ax", @progbits
 
 #ifndef __AVR_TINY__
@@ -251,6 +243,7 @@ DEFUN __fractsfusa
 ENDF __fractsfusa
 #endif  /* L_fractsfusa */
 
+#endif /* ! AVR_TINY */
 
 ;; For multiplication the functions here are called directly from
 ;; avr-fixed.md instead of using the standard libcall mechanisms.
@@ -295,8 +288,14 @@ DEFUN   __mulhq3
     rol     r25
     brvs    1f
     ;; Round
+#ifndef __AVR_TINY__
     sbrc    r23, 7
     adiw    r24, 1
+#else
+    lsl     r23
+    adc     r24, __zero_reg__
+    adc     r25, __zero_reg__
+#endif /* AVR_TINY? */
     ret
 1:  ;; Overflow.  TR 18037 requires  (-1)^2  not to overflow
     ldi     r24, lo8 (0x7fff)
@@ -315,8 +314,14 @@ ENDF __mulhq3
 DEFUN   __muluhq3
     XCALL   __umulhisi3
     ;; Round
+#ifndef __AVR_TINY__
     sbrc    r23, 7
     adiw    r24, 1
+#else
+    lsl     r23
+    adc     r24, __zero_reg__
+    adc     r25, __zero_reg__
+#endif /* AVR_TINY? */
     ret
 ENDF __muluhq3
 #endif  /* L_muluhq3 */
@@ -361,8 +366,14 @@ DEFUN   __muluha3_round
     mov     r25, r24
     mov     r24, r23
     ;; Round
+#ifndef __AVR_TINY__
     sbrc    r22, 7
     adiw    r24, 1
+#else
+    lsl     r22
+    adc     r24, __zero_reg__
+    adc     r25, __zero_reg__
+#endif /* AVR_TINY? */
     ret
 ENDF __muluha3_round
 #endif  /* L_muluha3_round */
@@ -371,6 +382,8 @@ ENDF __muluha3_round
 /*******************************************************
     Fixed  Multiplication  16.16 x 16.16
 *******************************************************/
+
+#ifndef __AVR_TINY__
 
 ;; Bits outside the result (below LSB), used in the signed version
 #define GUARD __tmp_reg__
@@ -679,6 +692,8 @@ ENDF __mulusa3_round
 
 #undef GUARD
 
+#endif /* ! AVR_TINY */
+
 /***********************************************************
     Fixed  unsigned saturated Multiplication  8.8 x 8.8
 ***********************************************************/
@@ -762,8 +777,14 @@ DEFUN __ssmulha3
     ;; SS =  0  -->  0x7fff
     ldi     C3, 0x7f
     ldi     C2, 0xff
+#ifndef __AVR_TINY__
     sbrc    SS, 7
     adiw    C2, 1
+#else
+    lsl     SS
+    adc     C2, __zero_reg__
+    adc     C3, __zero_reg__
+#endif /* AVR_TINY? */
     ret
 ENDF  __ssmulha3
 #endif /* L_ssmulha3 */
@@ -777,6 +798,8 @@ ENDF  __ssmulha3
 /***********************************************************
     Fixed  unsigned saturated Multiplication  16.16 x 16.16
 ***********************************************************/
+
+#ifndef __AVR_TINY__
 
 #define C0  18
 #define C1  C0+1
@@ -883,6 +906,8 @@ ENDF  __ssmulsa3
 #undef C7
 #undef SS
 
+#endif /* ! AVR_TINY */
+
 /*******************************************************
       Fractional Division 8 / 8
 *******************************************************/
@@ -962,8 +987,8 @@ ENDF __divqq_helper
 
 #if defined (L_divhq3)
 DEFUN   __divhq3
-    mov     r0, r_divdH
-    eor     r0, r_divH
+    mov     __tmp_reg__, r_divdH
+    eor     __tmp_reg__, r_divH
     sbrs    r_divH, 7
     rjmp    1f
     NEG2    r_divL
@@ -1027,8 +1052,8 @@ ENDF __udivuha3_common
 *******************************************************/
 #if defined (L_divha3)
 DEFUN   __divha3
-    mov     r0, r_divdH
-    eor     r0, r_divH
+    mov     __tmp_reg__, r_divdH
+    eor     __tmp_reg__, r_divH
     sbrs    r_divH, 7
     rjmp    1f
     NEG2    r_divL
@@ -1040,7 +1065,7 @@ DEFUN   __divha3
     XCALL   __udivuha3
     lsr     r_quoH  ; adjust to 7 fractional bits
     ror     r_quoL
-    sbrs    r0, 7   ; negate result if needed
+    sbrs    __tmp_reg__, 7  ; negate result if needed
     ret
     NEG2    r_quoL
     ret
@@ -1068,6 +1093,8 @@ ENDF __udivuha3
 /*******************************************************
     Fixed Division 16.16 / 16.16
 *******************************************************/
+
+#ifndef __AVR_TINY__
 
 #define r_arg1L  24    /* arg1 gets passed already in place */
 #define r_arg1H  25
@@ -1171,6 +1198,8 @@ ENDF __udivusa3
 #undef  r_divHH
 #undef  r_cnt
 
+#endif /* ! AVR_TINY */
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Saturation, 1 Byte
@@ -1206,7 +1235,7 @@ ENDF __ssabs_1
 DEFUN __ssneg_2
     NEG2    A0
     brvc 0f
-    sbiw    A0, 1
+    wsubi   A0, 1
 0:  ret
 ENDF __ssneg_2
 #endif /* L_ssneg_2 */
@@ -1227,6 +1256,8 @@ ENDF __ssabs_2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Saturation, 4 Bytes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#ifndef __AVR_TINY__
 
 ;; First Argument and Return Register
 #define A0  22
@@ -1412,6 +1443,8 @@ ENDF __sssub_8
 #undef B5
 #undef B6
 #undef B7
+
+#endif /* ! AVR_TINY */
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1612,6 +1645,8 @@ ENDF  __round_u2_const
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rounding, 4 Bytes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#ifndef __AVR_TINY__
 
 #define A0 18
 #define A1 A0 + 1
@@ -1915,6 +1950,7 @@ ENDF  __round_x8
 #undef RP
 #undef FBITm1
 
+#endif /* ! AVR_TINY */
 
 ;; Supply implementations / symbols for the bit-banging functions
 ;; __builtin_avr_bitsfx and __builtin_avr_fxbits
@@ -1923,5 +1959,3 @@ DEFUN __ret
     ret
 ENDF  __ret
 #endif /* L_ret */
-
-#endif /* if not __AVR_TINY__ */

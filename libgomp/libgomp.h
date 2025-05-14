@@ -43,7 +43,14 @@
 
 #include "config.h"
 #include <stdint.h>
+
+/* Include omp.h by parts.  */
+#include "omp-lock.h"
+#define _LIBGOMP_OMP_LOCK_DEFINED 1
+#include "omp.h.in"
+
 #include "libgomp-plugin.h"
+
 #include "gomp-constants.h"
 
 #ifdef HAVE_PTHREAD_H
@@ -1419,6 +1426,11 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_can_run) *can_run_func;
   __typeof (GOMP_OFFLOAD_run) *run_func;
   __typeof (GOMP_OFFLOAD_async_run) *async_run_func;
+  __typeof (GOMP_OFFLOAD_interop) *interop_func;
+  __typeof (GOMP_OFFLOAD_get_interop_int) *get_interop_int_func;
+  __typeof (GOMP_OFFLOAD_get_interop_ptr) *get_interop_ptr_func;
+  __typeof (GOMP_OFFLOAD_get_interop_str) *get_interop_str_func;
+  __typeof (GOMP_OFFLOAD_get_interop_type_desc) *get_interop_type_desc_func;
 
   /* Splay tree containing information about mapped memory regions.  */
   struct splay_tree_s mem_map;
@@ -1500,11 +1512,6 @@ gomp_work_share_init_done (void)
 
 /* Now that we're back to default visibility, include the globals.  */
 #include "libgomp_g.h"
-
-/* Include omp.h by parts.  */
-#include "omp-lock.h"
-#define _LIBGOMP_OMP_LOCK_DEFINED 1
-#include "omp.h.in"
 
 #if !defined (HAVE_ATTRIBUTE_VISIBILITY) \
     || !defined (HAVE_ATTRIBUTE_ALIAS) \

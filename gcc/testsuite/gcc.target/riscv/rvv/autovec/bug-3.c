@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gcv_zvl512b -mabi=lp64d -mrvv-max-lmul=m8 -mrvv-vector-bits=scalable -fno-vect-cost-model -O2 -ffast-math" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #define N 16
 
@@ -25,7 +26,15 @@ _Complex float res[N] =
       -740.0F + 2488.0iF, -760.0F + 2638.0iF,
       -780.0F + 2792.0iF, -800.0F + 2950.0iF };
 
-
+/*
+** foo:
+** ...
+** csrr\s+[atx][0-9]+,\s*vlenb
+** slli\s+[atx][0-9]+,\s*[atx][0-9],\s*1
+** ...
+** slli\s+[atx][0-9]+,\s*[atx][0-9],\s*32
+** ...
+*/
 void
 foo (void)
 {
@@ -36,4 +45,3 @@ foo (void)
 }
 
 /* { dg-final { scan-assembler-not {li\s+[a-x0-9]+,\s*0} } } */
-/* { dg-final { scan-assembler-times {slli\s+[a-x0-9]+,\s*[a-x0-9]+,\s*33} 1 } } */

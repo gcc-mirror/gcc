@@ -1,5 +1,5 @@
 // PR c++/13438
-// {  dg-options "-fshow-column" }
+// { dg-options "-fshow-column" }
 
 struct A { friend typename struct B; };
 

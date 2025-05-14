@@ -1,7 +1,7 @@
 /* Verify that overloaded built-ins for vec_perm with long long
    inputs produce the right code.  */
 
-/* { dg-do compile {target lp64} } */
+/* { dg-do compile { target lp64 } } */
 // 'long long' in Altivec types is invalid without -mvsx.
 /* { dg-options "-mvsx -O2" } */
 /* { dg-require-effective-target powerpc_vsx } */

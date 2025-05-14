@@ -3133,8 +3133,10 @@ gfc_simplify_get_team (gfc_expr *level ATTRIBUTE_UNUSED)
   if (flag_coarray == GFC_FCOARRAY_SINGLE)
     {
       gfc_expr *result;
-      result = gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind, &gfc_current_locus);
-      result->rank = 0;
+      result = gfc_get_null_expr (&gfc_current_locus);
+      result->ts.type = BT_DERIVED;
+      gfc_find_symbol ("team_type", gfc_current_ns, 1, &result->ts.u.derived);
+
       return result;
     }
 
@@ -6727,7 +6729,7 @@ gfc_simplify_null (gfc_expr *mold)
 
 
 gfc_expr *
-gfc_simplify_num_images (gfc_expr *distance ATTRIBUTE_UNUSED, gfc_expr *failed)
+gfc_simplify_num_images (gfc_expr *team_or_team_number ATTRIBUTE_UNUSED)
 {
   gfc_expr *result;
 
@@ -6740,16 +6742,9 @@ gfc_simplify_num_images (gfc_expr *distance ATTRIBUTE_UNUSED, gfc_expr *failed)
   if (flag_coarray != GFC_FCOARRAY_SINGLE)
     return NULL;
 
-  if (failed && failed->expr_type != EXPR_CONSTANT)
-    return NULL;
-
   /* FIXME: gfc_current_locus is wrong.  */
   result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
 				  &gfc_current_locus);
-
-  if (failed && failed->value.logical != 0)
-    mpz_set_si (result->value.integer, 0);
-  else
     mpz_set_si (result->value.integer, 1);
 
   return result;
@@ -8925,7 +8920,8 @@ gfc_simplify_trim (gfc_expr *e)
 
 
 gfc_expr *
-gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
+gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub,
+			  gfc_expr *team_or_team_number ATTRIBUTE_UNUSED)
 {
   gfc_expr *result;
   gfc_ref *ref;
@@ -9067,14 +9063,13 @@ gfc_simplify_image_status (gfc_expr *image, gfc_expr *team ATTRIBUTE_UNUSED)
 
 gfc_expr *
 gfc_simplify_this_image (gfc_expr *coarray, gfc_expr *dim,
-			 gfc_expr *distance ATTRIBUTE_UNUSED)
+			 gfc_expr *team ATTRIBUTE_UNUSED)
 {
   if (flag_coarray != GFC_FCOARRAY_SINGLE)
     return NULL;
 
-  /* If no coarray argument has been passed or when the first argument
-     is actually a distance argument.  */
-  if (coarray == NULL || !gfc_is_coarray (coarray))
+  /* If no coarray argument has been passed.  */
+  if (coarray == NULL)
     {
       gfc_expr *result;
       /* FIXME: gfc_current_locus is wrong.  */

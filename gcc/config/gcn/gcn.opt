@@ -101,3 +101,11 @@ Enum(gcn_preferred_vectorization_factor) String(32) Value(32)
 
 EnumValue
 Enum(gcn_preferred_vectorization_factor) String(64) Value(64)
+
+mfake-exceptions
+Target Var(fake_exceptions) Init(0) Undocumented
+; With '-mfake-exceptions' enabled, the user-visible behavior in presence of
+; exception handling constructs changes such that the compile-time
+; 'sorry, unimplemented: exception handling not supported' is skipped, code
+; generation proceeds, and instead, exception handling constructs 'abort' at
+; run time.  (..., or don't, if they're in dead code.)

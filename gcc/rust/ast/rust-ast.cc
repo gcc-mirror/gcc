@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-ast.h"
 #include "optional.h"
 #include "rust-builtin-ast-nodes.h"
+#include "rust-common.h"
+#include "rust-expr.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
@@ -270,8 +272,8 @@ Attribute::get_traits_to_derive ()
 		      case AST::MetaItem::ItemKind::Word: {
 			auto word = static_cast<AST::MetaWord *> (meta_item);
 			// Convert current word to path
-			current
-			  = make_unique<AST::MetaItemPath> (AST::MetaItemPath (
+			current = std::make_unique<AST::MetaItemPath> (
+			  AST::MetaItemPath (
 			    AST::SimplePath (word->get_ident ())));
 			auto path
 			  = static_cast<AST::MetaItemPath *> (current.get ());
@@ -309,7 +311,8 @@ Attribute::get_traits_to_derive ()
 
 // Copy constructor must deep copy attr_input as unique pointer
 Attribute::Attribute (Attribute const &other)
-  : path (other.path), locus (other.locus)
+  : path (other.path), locus (other.locus),
+    inner_attribute (other.inner_attribute)
 {
   // guard to protect from null pointer dereference
   if (other.attr_input != nullptr)
@@ -322,6 +325,7 @@ Attribute::operator= (Attribute const &other)
 {
   path = other.path;
   locus = other.locus;
+  inner_attribute = other.inner_attribute;
   // guard to protect from null pointer dereference
   if (other.attr_input != nullptr)
     attr_input = other.attr_input->clone_attr_input ();
@@ -1064,7 +1068,7 @@ Function::Function (Function const &other)
   : VisItem (other), ExternalItem (other.get_node_id ()),
     qualifiers (other.qualifiers), function_name (other.function_name),
     where_clause (other.where_clause), locus (other.locus),
-    is_default (other.is_default),
+    has_default (other.has_default),
     is_external_function (other.is_external_function)
 {
   // guard to prevent null dereference (always required)
@@ -1096,7 +1100,7 @@ Function::operator= (Function const &other)
   // visibility = other.visibility->clone_visibility();
   // outer_attrs = other.outer_attrs;
   locus = other.locus;
-  is_default = other.is_default;
+  has_default = other.has_default;
   is_external_function = other.is_external_function;
 
   // guard to prevent null dereference (always required)
@@ -1570,15 +1574,34 @@ BorrowExpr::as_string () const
 
   std::string str ("&");
 
-  if (double_borrow)
-    str += "&";
+  if (raw_borrow)
+    {
+      str += "raw ";
+      str += get_is_mut () ? "const " : "mut ";
+    }
+  else
+    {
+      if (double_borrow)
+	str += "&";
 
-  if (is_mut)
-    str += "mut ";
-
+      if (get_is_mut ())
+	str += "mut ";
+    }
   str += main_or_left_expr->as_string ();
 
   return str;
+}
+
+std::string
+BoxExpr::as_string () const
+{
+  return "box " + expr->as_string ();
+}
+
+void
+BoxExpr::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
 }
 
 std::string
@@ -1608,7 +1631,7 @@ ContinueExpr::as_string () const
   std::string str ("continue ");
 
   if (has_label ())
-    str += label.as_string ();
+    str += get_label_unchecked ().as_string ();
 
   return str;
 }
@@ -2072,7 +2095,7 @@ WhileLoopExpr::as_string () const
   if (!has_loop_label ())
     str += "none";
   else
-    str += loop_label.as_string ();
+    str += get_loop_label ().as_string ();
 
   str += "\n Conditional expr: " + condition->as_string ();
 
@@ -2092,7 +2115,7 @@ WhileLetLoopExpr::as_string () const
   if (!has_loop_label ())
     str += "none";
   else
-    str += loop_label.as_string ();
+    str += get_loop_label ().as_string ();
 
   str += "\n Match arm patterns: ";
   if (match_arm_patterns.empty ())
@@ -2123,7 +2146,7 @@ LoopExpr::as_string () const
   if (!has_loop_label ())
     str += "none";
   else
-    str += loop_label.as_string ();
+    str += get_loop_label ().as_string ();
 
   str += "\n Loop block: " + loop_block->as_string ();
 
@@ -2160,7 +2183,7 @@ BreakExpr::as_string () const
   std::string str ("break ");
 
   if (has_label ())
-    str += label.as_string () + " ";
+    str += get_label_unchecked ().as_string () + " ";
 
   if (has_break_expr ())
     str += break_expr->as_string ();
@@ -2387,11 +2410,11 @@ LifetimeParam::as_string () const
 {
   std::string str ("LifetimeParam: ");
 
-  str += "\n Outer attribute: ";
+  str += "\n Outer attribute:";
   if (!has_outer_attribute ())
     str += "none";
-  else
-    str += outer_attr.as_string ();
+  for (auto &attr : outer_attrs)
+    str += " " + attr.as_string ();
 
   str += "\n Lifetime: " + lifetime.as_string ();
 
@@ -2462,9 +2485,6 @@ MacroMatchRepetition::as_string () const
 std::string
 Lifetime::as_string () const
 {
-  if (is_error ())
-    return "error lifetime";
-
   switch (lifetime_type)
     {
     case NAMED:
@@ -2483,11 +2503,11 @@ TypeParam::as_string () const
 {
   std::string str ("TypeParam: ");
 
-  str += "\n Outer attribute: ";
+  str += "\n Outer attribute:";
   if (!has_outer_attribute ())
     str += "none";
-  else
-    str += outer_attr.as_string ();
+  for (auto &attr : outer_attrs)
+    str += " " + attr.as_string ();
 
   str += "\n Identifier: " + type_representation.as_string ();
 
@@ -2522,7 +2542,7 @@ ForLoopExpr::as_string () const
   if (!has_loop_label ())
     str += "none";
   else
-    str += loop_label.as_string ();
+    str += get_loop_label ().as_string ();
 
   str += "\n Pattern: " + pattern->as_string ();
 
@@ -2589,7 +2609,7 @@ ReferenceType::as_string () const
   std::string str ("&");
 
   if (has_lifetime ())
-    str += lifetime.as_string () + " ";
+    str += get_lifetime ().as_string () + " ";
 
   if (has_mut)
     str += "mut ";
@@ -2975,22 +2995,6 @@ ExternalStaticItem::as_string () const
 }
 
 std::string
-NamedFunctionParam::as_string () const
-{
-  std::string str = append_attributes (outer_attrs, OUTER);
-
-  if (has_name ())
-    str += "\n" + name;
-
-  if (is_variadic ())
-    str += "...";
-  else
-    str += "\n Type: " + param_type->as_string ();
-
-  return str;
-}
-
-std::string
 TraitItemConst::as_string () const
 {
   // TODO: rewrite to work with non-linearisable exprs
@@ -3063,7 +3067,7 @@ SelfParam::as_string () const
       else if (has_lifetime ())
 	{
 	  // ref and lifetime
-	  std::string str = "&" + lifetime.as_string () + " ";
+	  std::string str = "&" + get_lifetime ().as_string () + " ";
 
 	  if (is_mut)
 	    str += "mut ";
@@ -3485,6 +3489,7 @@ AttributeParser::parse_meta_item_inner ()
 	case STRING_LITERAL:
 	case BYTE_CHAR_LITERAL:
 	case BYTE_STRING_LITERAL:
+	case RAW_STRING_LITERAL:
 	case INT_LITERAL:
 	case FLOAT_LITERAL:
 	case TRUE_LITERAL:
@@ -3766,6 +3771,10 @@ AttributeParser::parse_literal ()
     case BYTE_STRING_LITERAL:
       skip_token ();
       return Literal (tok->as_string (), Literal::BYTE_STRING,
+		      tok->get_type_hint ());
+    case RAW_STRING_LITERAL:
+      skip_token ();
+      return Literal (tok->as_string (), Literal::RAW_STRING,
 		      tok->get_type_hint ());
     case INT_LITERAL:
       skip_token ();
@@ -4258,7 +4267,7 @@ BlockExpr::normalize_tail_expr ()
 
 	  if (!stmt.is_semicolon_followed ())
 	    {
-	      expr = std::move (stmt.take_expr ());
+	      expr = stmt.take_expr ();
 	      statements.pop_back ();
 	    }
 	}
@@ -4631,6 +4640,18 @@ AwaitExpr::accept_vis (ASTVisitor &vis)
 
 void
 AsyncBlockExpr::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+InlineAsm::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+LlvmInlineAsm::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

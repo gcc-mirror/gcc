@@ -906,19 +906,59 @@ size_must_be_zero_p (tree size)
 static bool
 optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree len)
 {
+  ao_ref read;
   gimple *stmt = gsi_stmt (*gsip);
   if (gimple_has_volatile_ops (stmt))
     return false;
 
-  tree vuse = gimple_vuse (stmt);
-  if (vuse == NULL || TREE_CODE (vuse) != SSA_NAME)
-    return false;
 
-  gimple *defstmt = SSA_NAME_DEF_STMT (vuse);
   tree src2 = NULL_TREE, len2 = NULL_TREE;
   poly_int64 offset, offset2;
   tree val = integer_zero_node;
+  bool len_was_null = len == NULL_TREE;
+  if (len == NULL_TREE)
+    len = (TREE_CODE (src) == COMPONENT_REF
+	   ? DECL_SIZE_UNIT (TREE_OPERAND (src, 1))
+	   : TYPE_SIZE_UNIT (TREE_TYPE (src)));
+  if (len == NULL_TREE
+      || !poly_int_tree_p (len))
+    return false;
+
+  ao_ref_init (&read, src);
+  tree vuse = gimple_vuse (stmt);
+  gimple *defstmt;
+  do {
+    if (vuse == NULL || TREE_CODE (vuse) != SSA_NAME)
+      return false;
+    defstmt = SSA_NAME_DEF_STMT (vuse);
+    if (is_a <gphi*>(defstmt))
+      return false;
+
+    /* If the len was null, then we can use TBBA. */
+    if (stmt_may_clobber_ref_p_1 (defstmt, &read,
+				  /* tbaa_p = */ len_was_null))
+      break;
+    vuse = gimple_vuse (defstmt);
+  } while (true);
+
   if (gimple_store_p (defstmt)
+      && gimple_assign_single_p (defstmt)
+      && TREE_CODE (gimple_assign_rhs1 (defstmt)) == STRING_CST
+      && !gimple_clobber_p (defstmt))
+    {
+      tree str = gimple_assign_rhs1 (defstmt);
+      src2 = gimple_assign_lhs (defstmt);
+      /* The string must contain all null char's for now.  */
+      for (int i = 0; i < TREE_STRING_LENGTH (str); i++)
+	{
+	  if (TREE_STRING_POINTER (str)[i] != 0)
+	    {
+	      src2 = NULL_TREE;
+	      break;
+	    }
+	}
+    }
+  else if (gimple_store_p (defstmt)
       && gimple_assign_single_p (defstmt)
       && TREE_CODE (gimple_assign_rhs1 (defstmt)) == CONSTRUCTOR
       && !gimple_clobber_p (defstmt))
@@ -939,17 +979,11 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
   if (src2 == NULL_TREE)
     return false;
 
-  if (len == NULL_TREE)
-    len = (TREE_CODE (src) == COMPONENT_REF
-	   ? DECL_SIZE_UNIT (TREE_OPERAND (src, 1))
-	   : TYPE_SIZE_UNIT (TREE_TYPE (src)));
   if (len2 == NULL_TREE)
     len2 = (TREE_CODE (src2) == COMPONENT_REF
 	    ? DECL_SIZE_UNIT (TREE_OPERAND (src2, 1))
 	    : TYPE_SIZE_UNIT (TREE_TYPE (src2)));
-  if (len == NULL_TREE
-      || !poly_int_tree_p (len)
-      || len2 == NULL_TREE
+  if (len2 == NULL_TREE
       || !poly_int_tree_p (len2))
     return false;
 
@@ -6212,14 +6246,33 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 					  false, NULL_TREE)))
 	gimple_cond_set_condition (cond_stmt, code, ops[0], ops[1]);
       else if (code == SSA_NAME)
-	gimple_cond_set_condition (cond_stmt, NE_EXPR, ops[0],
-				   build_zero_cst (TREE_TYPE (ops[0])));
+	{
+	  /* If setting the gimple cond to the same thing,
+	     return false as nothing changed.  */
+	  if (gimple_cond_code (cond_stmt) == NE_EXPR
+	      && operand_equal_p (gimple_cond_lhs (cond_stmt), ops[0])
+	      && integer_zerop (gimple_cond_rhs (cond_stmt)))
+	    return false;
+	  gimple_cond_set_condition (cond_stmt, NE_EXPR, ops[0],
+				     build_zero_cst (TREE_TYPE (ops[0])));
+	}
       else if (code == INTEGER_CST)
 	{
+	  /* Make into the canonical form `1 != 0` and `0 != 0`.
+	     If already in the canonical form return false
+	     saying nothing has been done.  */
 	  if (integer_zerop (ops[0]))
-	    gimple_cond_make_false (cond_stmt);
+	    {
+	      if (gimple_cond_false_canonical_p (cond_stmt))
+		return false;
+	      gimple_cond_make_false (cond_stmt);
+	    }
 	  else
-	    gimple_cond_make_true (cond_stmt);
+	    {
+	      if (gimple_cond_true_canonical_p (cond_stmt))
+		return false;
+	      gimple_cond_make_true (cond_stmt);
+	    }
 	}
       else if (!inplace)
 	{
@@ -8300,6 +8353,8 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	ll_and_mask &= sign;
       if (l_xor)
 	{
+	  if (ll_bitsize != lr_bitsize)
+	    return 0;
 	  if (!lr_and_mask.get_precision ())
 	    lr_and_mask = sign;
 	  else
@@ -8313,7 +8368,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   if (rsignbit)
     {
       wide_int sign = wi::mask (rl_bitsize - 1, true, rl_bitsize);
-      if (rsignbit > rl_bitsize && ll_unsignedp)
+      if (rsignbit > rl_bitsize && rl_unsignedp)
 	sign <<= 1;
       if (!rl_and_mask.get_precision ())
 	rl_and_mask = sign;
@@ -8321,6 +8376,8 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	rl_and_mask &= sign;
       if (r_xor)
 	{
+	  if (rl_bitsize != rr_bitsize)
+	    return 0;
 	  if (!rr_and_mask.get_precision ())
 	    rr_and_mask = sign;
 	  else
@@ -8728,7 +8785,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       wide_int lr_mask, rr_mask;
       if (lr_and_mask.get_precision ())
 	lr_mask = wi::lshift (wide_int::from (lr_and_mask, rnprec, UNSIGNED),
-			  xlr_bitpos);
+			      xlr_bitpos);
       else
 	lr_mask = wi::shifted_mask (xlr_bitpos, lr_bitsize, false, rnprec);
       if (rr_and_mask.get_precision ())
@@ -10535,7 +10592,7 @@ gimple_fold_indirect_ref (tree t)
    integer types involves undefined behavior on overflow and the
    operation can be expressed with unsigned arithmetic.  */
 
-bool
+static bool
 arith_code_with_undefined_signed_overflow (tree_code code)
 {
   switch (code)
@@ -10552,6 +10609,42 @@ arith_code_with_undefined_signed_overflow (tree_code code)
     }
 }
 
+/* Return true if STMT has an operation that operates on a signed
+   integer types involves undefined behavior on overflow and the
+   operation can be expressed with unsigned arithmetic.
+   Also returns true if STMT is a VCE that needs to be rewritten
+   if moved to be executed unconditionally.   */
+
+bool
+gimple_needing_rewrite_undefined (gimple *stmt)
+{
+  if (!is_gimple_assign (stmt))
+    return false;
+  tree lhs = gimple_assign_lhs (stmt);
+  if (!lhs)
+    return false;
+  tree lhs_type = TREE_TYPE (lhs);
+  if (!INTEGRAL_TYPE_P (lhs_type)
+      && !POINTER_TYPE_P (lhs_type))
+    return false;
+  tree rhs = gimple_assign_rhs1 (stmt);
+  /* VCE from integral types to a integral types but with
+     a smaller precision need to be changed into casts
+     to be well defined. */
+  if (gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR
+      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (rhs, 0)))
+      && is_gimple_val (TREE_OPERAND (rhs, 0))
+      && TYPE_PRECISION (lhs_type)
+	  < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (rhs, 0))))
+    return true;
+  if (!TYPE_OVERFLOW_UNDEFINED (lhs_type))
+    return false;
+  if (!arith_code_with_undefined_signed_overflow
+	(gimple_assign_rhs_code (stmt)))
+    return false;
+  return true;
+}
+
 /* Rewrite STMT, an assignment with a signed integer or pointer arithmetic
    operation that can be transformed to unsigned arithmetic by converting
    its operand, carrying out the operation in the corresponding unsigned
@@ -10563,19 +10656,39 @@ arith_code_with_undefined_signed_overflow (tree_code code)
    contain a modified form of STMT itself.  */
 
 static gimple_seq
-rewrite_to_defined_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
-			     bool in_place)
+rewrite_to_defined_unconditional (gimple_stmt_iterator *gsi, gimple *stmt,
+				  bool in_place)
 {
+  gcc_assert (gimple_needing_rewrite_undefined (stmt));
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "rewriting stmt with undefined signed "
-	       "overflow ");
+      fprintf (dump_file, "rewriting stmt for being uncondtional defined");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
-
+  gimple_seq stmts = NULL;
+  /* VCE from integral types to another integral types but with
+     smaller precisions need to be changed into casts
+     to be well defined. */
+  if (gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)
+    {
+      tree rhs = gimple_assign_rhs1 (stmt);
+      tree new_rhs = TREE_OPERAND (rhs, 0);
+      gcc_assert (TYPE_PRECISION (TREE_TYPE (rhs))
+		  < TYPE_PRECISION (TREE_TYPE (new_rhs)));
+      gcc_assert (is_gimple_val (new_rhs));
+      gimple_assign_set_rhs_code (stmt, NOP_EXPR);
+      gimple_assign_set_rhs1 (stmt, new_rhs);
+      if (in_place)
+	  update_stmt (stmt);
+      else
+	{
+	  gimple_set_modified (stmt, true);
+	  gimple_seq_add_stmt (&stmts, stmt);
+	}
+      return stmts;
+    }
   tree lhs = gimple_assign_lhs (stmt);
   tree type = unsigned_type_for (TREE_TYPE (lhs));
-  gimple_seq stmts = NULL;
   if (gimple_assign_rhs_code (stmt) == ABS_EXPR)
     gimple_assign_set_rhs_code (stmt, ABSU_EXPR);
   else
@@ -10610,15 +10723,15 @@ rewrite_to_defined_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 }
 
 void
-rewrite_to_defined_overflow (gimple_stmt_iterator *gsi)
+rewrite_to_defined_unconditional (gimple_stmt_iterator *gsi)
 {
-  rewrite_to_defined_overflow (gsi, gsi_stmt (*gsi), true);
+  rewrite_to_defined_unconditional (gsi, gsi_stmt (*gsi), true);
 }
 
 gimple_seq
-rewrite_to_defined_overflow (gimple *stmt)
+rewrite_to_defined_unconditional (gimple *stmt)
 {
-  return rewrite_to_defined_overflow (nullptr, stmt, false);
+  return rewrite_to_defined_unconditional (nullptr, stmt, false);
 }
 
 /* The valueization hook we use for the gimple_build API simplification.

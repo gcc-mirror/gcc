@@ -2,28 +2,12 @@
 RUN_OUTPUT:
 ---
 i = 1
-Writer.opShl(char[])
-BinaryWriter.opShl(int)
-a + 1 = 2
-1 + a = 2
-a + b = 3
-b + a = 3
 i = 64
 12
 534
-A::opShl(int 4)
-4A::opShl(char[])
- A::opShl(int 12)
-12A::opShl(char[])
-
-B::opShl_r(A)
 Success
 ---
 */
-
-// Test operator overloading
-// Ignore deprecation warnings for D1 style operator overloading
-// TRANSFORM_OUTPUT: remove_lines("Deprecation: `op")
 
 import core.stdc.stdio;
 
@@ -996,20 +980,11 @@ struct S14343b
 
 void test14343()
 {
-    {
-        S14343a s, t;
+    S14343a s, t;
 
-        t = s;  // OK
-        ++s;    // OK
-        s++;    // OK <- Error: cannot modify struct s S with immutable members
-    }
-    {
-        S14343b s;
-        ++s;
-        assert(s.i == 1);
-        s++;
-        assert(s.i == 2);
-    }
+    t = s;  // OK
+    ++s;    // OK
+    s++;    // OK <- Error: cannot modify struct s S with immutable members
 }
 
 /**************************************/
@@ -1081,20 +1056,13 @@ void test20475()
 /**************************************/
 int main()
 {
-    test1();
-    test2();
-    test3();
     test4();
     test5();
     test6();
     test7();
-    test8();
     test9();
-    test10();
     test11();
     test12();
-    test13();
-    test14();
     test15();
     test1547();
     test4953a();

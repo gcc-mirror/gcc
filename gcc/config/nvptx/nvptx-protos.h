@@ -55,6 +55,7 @@ extern rtx nvptx_expand_compare (rtx);
 extern const char *nvptx_ptx_type_from_mode (machine_mode, bool);
 extern const char *nvptx_output_mov_insn (rtx, rtx);
 extern const char *nvptx_output_call_insn (rtx_insn *, rtx, rtx);
+extern const char *nvptx_output_fake_ptx_alloca (void);
 extern const char *nvptx_output_return (void);
 extern const char *nvptx_output_set_softstack (unsigned);
 extern const char *nvptx_output_simt_enter (rtx, rtx, rtx);

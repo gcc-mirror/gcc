@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O" } */
-/* { dg-require-effective-target alloca } */
 
 void foo(void)
 {

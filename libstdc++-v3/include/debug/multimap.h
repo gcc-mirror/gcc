@@ -133,6 +133,25 @@ namespace __debug
 		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __a) { }
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      /**
+       * @brief Construct a multimap from a range.
+       * @since C++23
+       */
+      template<std::__detail::__container_compatible_range<value_type> _Rg>
+	multimap(std::from_range_t __t, _Rg&& __rg,
+		 const _Compare& __c,
+		 const allocator_type& __a = allocator_type())
+	: _Base(__t, std::forward<_Rg>(__rg), __c, __a)
+	{ }
+
+      template<std::__detail::__container_compatible_range<value_type> _Rg>
+	multimap(std::from_range_t __t, _Rg&& __rg,
+		 const allocator_type& __a = allocator_type())
+	: _Base(__t, std::forward<_Rg>(__rg), __a)
+	{ }
+#endif
+
       ~multimap() = default;
 #endif
 
@@ -622,6 +641,23 @@ namespace __debug
     multimap(initializer_list<pair<_Key, _Tp>>, _Allocator)
     -> multimap<_Key, _Tp, less<_Key>, _Allocator>;
 
+#if __glibcxx_containers_ranges // C++ >= 23
+  template<ranges::input_range _Rg,
+	   __not_allocator_like _Compare = less<__detail::__range_key_type<_Rg>>,
+	   __allocator_like _Alloc =
+	      std::allocator<__detail::__range_to_alloc_type<_Rg>>>
+    multimap(from_range_t, _Rg&&, _Compare = _Compare(), _Alloc = _Alloc())
+      -> multimap<__detail::__range_key_type<_Rg>,
+		  __detail::__range_mapped_type<_Rg>,
+		  _Compare, _Alloc>;
+
+  template<ranges::input_range _Rg, __allocator_like _Alloc>
+    multimap(from_range_t, _Rg&&, _Alloc)
+      -> multimap<__detail::__range_key_type<_Rg>,
+		  __detail::__range_mapped_type<_Rg>,
+		  less<__detail::__range_key_type<_Rg>>,
+		  _Alloc>;
+#endif
 #endif
 
   template<typename _Key, typename _Tp,

@@ -28,15 +28,14 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_SEH
 #define TARGET_SEH  (TARGET_64BIT_MS_ABI && flag_unwind_tables)
 
+#undef PREFERRED_STACK_BOUNDARY_DEFAULT
+#define PREFERRED_STACK_BOUNDARY_DEFAULT \
+  (TARGET_64BIT ? 128 : MIN_STACK_BOUNDARY)
+
 /* Win64 with SEH cannot represent DRAP stack frames.  Disable its use.
    Force the use of different mechanisms to allocate aligned local data.  */
 #undef MAX_STACK_ALIGNMENT
 #define MAX_STACK_ALIGNMENT  (TARGET_SEH ? 128 : MAX_OFILE_ALIGNMENT)
-
-/* 32-bit Windows aligns the stack on a 4-byte boundary but SSE instructions
-   may require 16-byte alignment.  */
-#undef STACK_REALIGN_DEFAULT
-#define STACK_REALIGN_DEFAULT TARGET_SSE
 
 /* Support hooks for SEH.  */
 #undef  TARGET_ASM_UNWIND_EMIT

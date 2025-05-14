@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=x86-64-v3 -mavx10.2-512 -O2" } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2 -O2" } */
 /* { dg-final { scan-assembler-times "vaddbf16\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vaddbf16\[ \\t\]+%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\{%k\[0-9\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vaddbf16\[ \\t\]+%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1 } } */
@@ -71,7 +71,7 @@ volatile __m512bh res, x1, x2;
 volatile __mmask32 m32;
 
 void extern
-avx10_2_512_test (void)
+avx10_2_test (void)
 {
   res = _mm512_add_pbh (x1, x2);
   res = _mm512_mask_add_pbh (res, m32, x1, x2);

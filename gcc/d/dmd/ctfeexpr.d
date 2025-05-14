@@ -1,12 +1,12 @@
 /**
  * CTFE for expressions involving pointers, slices, array concatenation etc.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/ctfeexpr.d, _ctfeexpr.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/ctfeexpr.d, _ctfeexpr.d)
  * Documentation:  https://dlang.org/phobos/dmd_ctfeexpr.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/ctfeexpr.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/ctfeexpr.d
  */
 
 module dmd.ctfeexpr;
@@ -522,7 +522,7 @@ uinteger_t resolveArrayLength(Expression e)
  * Returns:
  *      Constructed ArrayLiteralExp
  */
-ArrayLiteralExp createBlockDuplicatedArrayLiteral(UnionExp* pue, const ref Loc loc, Type type, Expression elem, size_t dim)
+ArrayLiteralExp createBlockDuplicatedArrayLiteral(UnionExp* pue, Loc loc, Type type, Expression elem, size_t dim)
 {
     if (type.ty == Tsarray && type.nextOf().ty == Tsarray && elem.type.ty != Tsarray)
     {
@@ -553,7 +553,7 @@ ArrayLiteralExp createBlockDuplicatedArrayLiteral(UnionExp* pue, const ref Loc l
  * Helper for NewExp
  * Create a string literal consisting of 'value' duplicated 'dim' times.
  */
-StringExp createBlockDuplicatedStringLiteral(UnionExp* pue, const ref Loc loc, Type type, dchar value, size_t dim, ubyte sz)
+StringExp createBlockDuplicatedStringLiteral(UnionExp* pue, Loc loc, Type type, dchar value, size_t dim, ubyte sz)
 {
     auto s = cast(char*)mem.xcalloc(dim, sz);
     foreach (elemi; 0 .. dim)
@@ -688,7 +688,7 @@ Expression getAggregateFromPointer(Expression e, dinteger_t* ofs)
     if (auto ie = e.isIndexExp())
     {
         // Note that each AA element is part of its own memory block
-        if ((ie.e1.type.ty == Tarray || ie.e1.type.ty == Tsarray || ie.e1.op == EXP.string_ || ie.e1.op == EXP.arrayLiteral) && ie.e2.op == EXP.int64)
+        if ((ie.e1.type.isStaticOrDynamicArray() || ie.e1.op == EXP.string_ || ie.e1.op == EXP.arrayLiteral) && ie.e2.op == EXP.int64)
         {
             *ofs = ie.e2.toInteger();
             return ie.e1;
@@ -697,7 +697,7 @@ Expression getAggregateFromPointer(Expression e, dinteger_t* ofs)
     if (auto se = e.isSliceExp())
     {
         if (se && e.type.toBasetype().ty == Tsarray &&
-           (se.e1.type.ty == Tarray || se.e1.type.ty == Tsarray || se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral) && se.lwr.op == EXP.int64)
+           (se.e1.type.isStaticOrDynamicArray() || se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral) && se.lwr.op == EXP.int64)
         {
             *ofs = se.lwr.toInteger();
             return se.e1;
@@ -741,7 +741,7 @@ bool pointToSameMemoryBlock(Expression agg1, Expression agg2)
 }
 
 // return e1 - e2 as an integer, or error if not possible
-Expression pointerDifference(UnionExp* pue, const ref Loc loc, Type type, Expression e1, Expression e2)
+Expression pointerDifference(UnionExp* pue, Loc loc, Type type, Expression e1, Expression e2)
 {
     dinteger_t ofs1, ofs2;
     Expression agg1 = getAggregateFromPointer(e1, &ofs1);
@@ -774,7 +774,7 @@ Expression pointerDifference(UnionExp* pue, const ref Loc loc, Type type, Expres
 
 // Return eptr op e2, where eptr is a pointer, e2 is an integer,
 // and op is EXP.add or EXP.min
-Expression pointerArithmetic(UnionExp* pue, const ref Loc loc, EXP op, Type type, Expression eptr, Expression e2)
+Expression pointerArithmetic(UnionExp* pue, Loc loc, EXP op, Type type, Expression eptr, Expression e2)
 {
     if (eptr.type.nextOf().ty == Tvoid)
     {
@@ -1052,7 +1052,7 @@ bool realCmp(EXP op, real_t r1, real_t r2) @safe nothrow
  * Returns:
  *      -1,0,1
  */
-private int ctfeCmpArrays(const ref Loc loc, Expression e1, Expression e2, uinteger_t len)
+private int ctfeCmpArrays(Loc loc, Expression e1, Expression e2, uinteger_t len)
 {
     // Resolve slices, if necessary
     uinteger_t lo1 = 0;
@@ -1138,7 +1138,7 @@ private bool isArray(const Expression e) @safe nothrow
  * For strings, return <0 if e1 < e2, 0 if e1==e2, >0 if e1 > e2.
  * For all other types, return 0 if e1 == e2, !=0 if e1 != e2.
  */
-private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool identity = false)
+private int ctfeRawCmp(Loc loc, Expression e1, Expression e2, bool identity = false)
 {
     if (e1.op == EXP.classReference || e2.op == EXP.classReference)
     {
@@ -1310,13 +1310,13 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
 }
 
 /// Evaluate ==, !=.  Resolves slices before comparing. Returns 0 or 1
-bool ctfeEqual(const ref Loc loc, EXP op, Expression e1, Expression e2)
+bool ctfeEqual(Loc loc, EXP op, Expression e1, Expression e2)
 {
     return !ctfeRawCmp(loc, e1, e2) ^ (op == EXP.notEqual);
 }
 
 /// Evaluate is, !is.  Resolves slices before comparing. Returns 0 or 1
-bool ctfeIdentity(const ref Loc loc, EXP op, Expression e1, Expression e2)
+bool ctfeIdentity(Loc loc, EXP op, Expression e1, Expression e2)
 {
     //printf("ctfeIdentity %s %s\n", e1.toChars(), e2.toChars());
     //printf("ctfeIdentity op = '%s', e1 = %s %s, e2 = %s %s\n", EXPtoString(op).ptr,
@@ -1348,7 +1348,7 @@ bool ctfeIdentity(const ref Loc loc, EXP op, Expression e1, Expression e2)
 }
 
 /// Evaluate >,<=, etc. Resolves slices before comparing. Returns 0 or 1
-bool ctfeCmp(const ref Loc loc, EXP op, Expression e1, Expression e2)
+bool ctfeCmp(Loc loc, EXP op, Expression e1, Expression e2)
 {
     Type t1 = e1.type.toBasetype();
     Type t2 = e2.type.toBasetype();
@@ -1365,7 +1365,7 @@ bool ctfeCmp(const ref Loc loc, EXP op, Expression e1, Expression e2)
         return intSignedCmp(op, e1.toInteger(), e2.toInteger());
 }
 
-UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
+UnionExp ctfeCat(Loc loc, Type type, Expression e1, Expression e2)
 {
     Type t1 = e1.type.toBasetype();
     Type t2 = e2.type.toBasetype();
@@ -1459,7 +1459,7 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
 /*  Given an AA literal 'ae', and a key 'e2':
  *  Return ae[e2] if present, or NULL if not found.
  */
-Expression findKeyInAA(const ref Loc loc, AssocArrayLiteralExp ae, Expression e2)
+Expression findKeyInAA(Loc loc, AssocArrayLiteralExp ae, Expression e2)
 {
     /* Search the keys backwards, in case there are duplicate keys
      */
@@ -1480,7 +1480,7 @@ Expression findKeyInAA(const ref Loc loc, AssocArrayLiteralExp ae, Expression e2
  * dynamic arrays, and strings. We know that e1 is an
  * interpreted CTFE expression, so it cannot have side-effects.
  */
-Expression ctfeIndex(UnionExp* pue, const ref Loc loc, Type type, Expression e1, uinteger_t indx)
+Expression ctfeIndex(UnionExp* pue, Loc loc, Type type, Expression e1, uinteger_t indx)
 {
     //printf("ctfeIndex(e1 = %s)\n", e1.toChars());
     assert(e1.type);
@@ -1509,7 +1509,7 @@ Expression ctfeIndex(UnionExp* pue, const ref Loc loc, Type type, Expression e1,
     assert(0);
 }
 
-Expression ctfeCast(UnionExp* pue, const ref Loc loc, Type type, Type to, Expression e, bool explicitCast = false)
+Expression ctfeCast(UnionExp* pue, Loc loc, Type type, Type to, Expression e, bool explicitCast = false)
 {
     Expression paint()
     {
@@ -1529,11 +1529,9 @@ Expression ctfeCast(UnionExp* pue, const ref Loc loc, Type type, Type to, Expres
                                   : tclass.implicitConvTo(to.mutableOf());
         if (match)
             return paint();
-        else
-        {
-            emplaceExp!(NullExp)(pue, loc, to);
-            return pue.exp();
-        }
+
+        emplaceExp!(NullExp)(pue, loc, to);
+        return pue.exp();
     }
 
     // Allow TypeInfo type painting
@@ -1651,7 +1649,7 @@ void assignInPlace(Expression dest, Expression src)
 }
 
 // Given an AA literal aae,  set aae[index] = newval and return newval.
-Expression assignAssocArrayElement(const ref Loc loc, AssocArrayLiteralExp aae, Expression index, Expression newval)
+Expression assignAssocArrayElement(Loc loc, AssocArrayLiteralExp aae, Expression index, Expression newval)
 {
     /* Create new associative array literal reflecting updated key/value
      */
@@ -1681,7 +1679,7 @@ Expression assignAssocArrayElement(const ref Loc loc, AssocArrayLiteralExp aae, 
 /// Given array literal oldval of type ArrayLiteralExp or StringExp, of length
 /// oldlen, change its length to newlen. If the newlen is longer than oldlen,
 /// all new elements will be set to the default initializer for the element type.
-Expression changeArrayLiteralLength(UnionExp* pue, const ref Loc loc, TypeArray arrayType, Expression oldval, size_t oldlen, size_t newlen)
+Expression changeArrayLiteralLength(UnionExp* pue, Loc loc, TypeArray arrayType, Expression oldval, size_t oldlen, size_t newlen)
 {
     Type elemType = arrayType.next;
     assert(elemType);
@@ -1843,7 +1841,7 @@ bool isCtfeValueValid(Expression newval)
             const SliceExp se = newval.isSliceExp();
             assert(se.lwr && se.lwr.op == EXP.int64);
             assert(se.upr && se.upr.op == EXP.int64);
-            return (tb.ty == Tarray || tb.ty == Tsarray) && (se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral);
+            return tb.isStaticOrDynamicArray() && (se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral);
         }
 
         case EXP.void_:

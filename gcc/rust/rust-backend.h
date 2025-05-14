@@ -133,11 +133,11 @@ function_ptr_type (tree result, const std::vector<tree> &praameters,
 
 // Get a struct type.
 tree
-struct_type (const std::vector<typed_identifier> &fields);
+struct_type (const std::vector<typed_identifier> &fields, bool layout = true);
 
 // Get a union type.
 tree
-union_type (const std::vector<typed_identifier> &fields);
+union_type (const std::vector<typed_identifier> &fields, bool layout = true);
 
 // Get an array type.
 tree
@@ -496,7 +496,7 @@ write_global_definitions (const std::vector<tree> &type_decls,
 // TODO: make static
 
 tree
-fill_in_fields (tree, const std::vector<typed_identifier> &);
+fill_in_fields (tree, const std::vector<typed_identifier> &, bool);
 
 tree fill_in_array (tree, tree, tree);
 

@@ -69,11 +69,11 @@ class call_summary_replay
 public:
   call_summary_replay (const call_details &cd,
 		       const function &called_fn,
-		       call_summary *m_summary,
+		       call_summary &summary,
 		       const extrinsic_state &ext_state);
 
   const call_details &get_call_details () const { return m_cd; }
-  const gcall *get_call_stmt () const { return m_cd.get_call_stmt (); }
+  const gcall &get_call_stmt () const { return m_cd.get_call_stmt (); }
   region_model_manager *get_manager () const { return m_cd.get_manager (); }
   store_manager *get_store_manager () const
   {
@@ -102,7 +102,7 @@ private:
   const region *convert_region_from_summary_1 (const region *);
 
   const call_details &m_cd;
-  call_summary *m_summary;
+  call_summary &m_summary;
   const extrinsic_state &m_ext_state;
 
   // Mapping from svalues in summary to svalues for callsite:

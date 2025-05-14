@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -48,7 +48,6 @@ class ThrownExceptionExp final : public Expression
 {
 public:
     ClassReferenceExp *thrown; // the thing being tossed
-    const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -58,6 +57,4 @@ public:
 
 class CTFEExp final : public Expression
 {
-public:
-    const char *toChars() const override;
 };

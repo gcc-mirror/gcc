@@ -20,52 +20,38 @@
 #define RUST_COMPILE_RESOLVE_PATH
 
 #include "rust-compile-base.h"
-#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Compile {
 
-class ResolvePathRef : public HIRCompileBase, public HIR::HIRPatternVisitor
+class ResolvePathRef : public HIRCompileBase
 {
 public:
-  static tree Compile (HIR::QualifiedPathInExpression &expr, Context *ctx)
-  {
-    ResolvePathRef resolver (ctx);
-    expr.accept_vis (resolver);
-    return resolver.resolved;
-  }
+  static tree Compile (HIR::QualifiedPathInExpression &expr, Context *ctx);
 
-  static tree Compile (HIR::PathInExpression &expr, Context *ctx)
-  {
-    ResolvePathRef resolver (ctx);
-    expr.accept_vis (resolver);
-    return resolver.resolved;
-  }
+  static tree Compile (HIR::PathInExpression &expr, Context *ctx);
 
-  void visit (HIR::PathInExpression &expr) override;
-  void visit (HIR::QualifiedPathInExpression &expr) override;
+  ResolvePathRef (Context *ctx);
 
-  // Empty visit for unused Pattern HIR nodes.
-  void visit (HIR::IdentifierPattern &) override {}
-  void visit (HIR::LiteralPattern &) override {}
-  void visit (HIR::RangePattern &) override {}
-  void visit (HIR::ReferencePattern &) override {}
-  void visit (HIR::SlicePattern &) override {}
-  void visit (HIR::AltPattern &) override {}
-  void visit (HIR::StructPattern &) override {}
-  void visit (HIR::TuplePattern &) override {}
-  void visit (HIR::TupleStructPattern &) override {}
-  void visit (HIR::WildcardPattern &) override {}
+  /**
+   * Generic visitor for both PathInExpression and QualifiedPathInExpression
+   */
+  template <typename T> tree resolve_path_like (T &expr);
 
-  ResolvePathRef (Context *ctx)
-    : HIRCompileBase (ctx), resolved (error_mark_node)
-  {}
-
+  /**
+   * Inner implementation of `resolve` - resolution with an already known NodeId
+   */
+  tree resolve_with_node_id (const HIR::PathIdentSegment &final_segment,
+			     const Analysis::NodeMapping &mappings,
+			     location_t locus, bool is_qualified_path,
+			     NodeId resolved_node_id);
+  /**
+   * Resolve a mappings' NodeId and call into `resolve_with_node_id` which
+   * performs the rest of the path resolution
+   */
   tree resolve (const HIR::PathIdentSegment &final_segment,
 		const Analysis::NodeMapping &mappings, location_t locus,
 		bool is_qualified_path);
-
-  tree resolved;
 
 private:
   tree

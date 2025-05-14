@@ -8,5 +8,5 @@ mod foo {
 }
 
 fn main() {
-    baz!(); // { dg-error "unknown macro: .baz." }
+    baz!(); // { dg-error "could not resolve macro invocation .baz." }
 }

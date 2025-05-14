@@ -5,19 +5,19 @@
 constexpr int *
 f1 ()
 {
-  return new int (2);		// { dg-error "is not a constant expression because it refers to a result of" }
+  return new int (2);		// { dg-message "allocated here" }
 }
 
-constexpr auto v1 = f1 ();
+constexpr auto v1 = f1 (); // { dg-error "is not a constant expression because it refers to a result of" }
 
 constexpr bool
 f2 ()
 {
-  int *p = new int (3);		// { dg-error "is not a constant expression because allocated storage has not been deallocated" }
+  int *p = new int (3);		// { dg-message "allocated here" }
   return false;
 }
 
-constexpr auto v2 = f2 ();
+constexpr auto v2 = f2 (); // { dg-error "is not a constant expression because allocated storage has not been deallocated" }
 
 constexpr bool
 f3 ()
@@ -64,12 +64,12 @@ constexpr auto v6 = f6 (); 	// { dg-message "in 'constexpr' expansion of" }
 constexpr int *
 f7 ()
 {
-  int *p = new int (2);		// { dg-error "is not a constant expression because it refers to a result of" }
+  int *p = new int (2);		// { dg-message "allocated here" }
   delete p;
   return p;
 }
 
-constexpr auto v7 = f7 ();
+constexpr auto v7 = f7 (); // { dg-error "is not a constant expression because it refers to a result of" }
 
 constexpr bool
 f8_impl (int *p)

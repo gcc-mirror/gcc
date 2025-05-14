@@ -153,6 +153,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  noexcept
 	{ return _Recursive_awaiter { std::move(__r.range) }; }
 
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3899. co_yielding elements of an lvalue generator is
+	// unnecessarily inefficient
+	template<typename _R2, typename _V2, typename _A2, typename _U2>
+	requires std::same_as<_Yield2_t<_R2, _V2>, _Yielded>
+	auto
+	yield_value(ranges::elements_of<generator<_R2, _V2, _A2>&, _U2> __r)
+	  noexcept
+	{ return _Recursive_awaiter { std::move(__r.range) }; }
+
 	template<ranges::input_range _R, typename _Alloc>
 	requires convertible_to<ranges::range_reference_t<_R>, _Yielded>
 	auto

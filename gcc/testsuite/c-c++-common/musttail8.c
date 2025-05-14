@@ -10,8 +10,9 @@ int f2(void)
 
 int f3(int *);
 
-int f4(void)
+int f4(int *p)
 {
   int x;
-  [[gnu::musttail]] return f3(&x); /* { dg-error "\(refers to locals|other reasons\)" } */
+  (void) p;
+  [[gnu::musttail]] return f3(&x); /* { dg-warning "address of automatic variable 'x' passed to 'musttail' call argument" } */
 }

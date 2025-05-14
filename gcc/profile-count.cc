@@ -519,3 +519,26 @@ profile_probability::pow (int n) const
     }
   return ret;
 }
+profile_count
+profile_count::operator* (const sreal &num) const
+{
+  if (m_val == 0)
+    return *this;
+  if (!initialized_p ())
+    return uninitialized ();
+  sreal scaled = num * m_val;
+  gcc_checking_assert (scaled >= 0);
+  profile_count ret;
+  if (m_val > max_count)
+    ret.m_val = max_count;
+  else
+    ret.m_val = scaled.to_nearest_int ();
+  ret.m_quality = MIN (m_quality, ADJUSTED);
+  return ret;
+}
+
+profile_count
+profile_count::operator*= (const sreal &num)
+{
+  return *this * num;
+}

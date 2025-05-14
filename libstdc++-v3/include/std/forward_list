@@ -49,6 +49,7 @@
 
 #define __glibcxx_want_algorithm_default_value_type
 #define __glibcxx_want_allocator_traits_is_always_equal
+#define __glibcxx_want_containers_ranges
 #define __glibcxx_want_erase_if
 #define __glibcxx_want_incomplete_container_elements
 #define __glibcxx_want_list_remove_return_type
@@ -83,8 +84,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline typename forward_list<_Tp, _Alloc>::size_type
     erase(forward_list<_Tp, _Alloc>& __cont, const _Up& __value)
     {
-      using __elem_type = typename forward_list<_Tp, _Alloc>::value_type;
-      return std::erase_if(__cont, [&](__elem_type& __elem) {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4135. helper lambda of std::erase for list should specify return type
+      return std::erase_if(__cont, [&](const auto& __elem) -> bool {
 	  return __elem == __value;
       });
     }

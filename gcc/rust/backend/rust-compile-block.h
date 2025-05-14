@@ -28,7 +28,7 @@ namespace Compile {
 class CompileBlock : private HIRCompileBase
 {
 public:
-  static tree compile (HIR::BlockExpr *expr, Context *ctx, Bvariable *result);
+  static tree compile (HIR::BlockExpr &expr, Context *ctx, Bvariable *result);
 
 protected:
   void visit (HIR::BlockExpr &expr);
@@ -96,11 +96,11 @@ public:
   void visit (HIR::LoopExpr &) override {}
   void visit (HIR::WhileLoopExpr &) override {}
   void visit (HIR::WhileLetLoopExpr &) override {}
-  void visit (HIR::IfLetExpr &) override {}
-  void visit (HIR::IfLetExprConseqElse &) override {}
   void visit (HIR::MatchExpr &) override {}
   void visit (HIR::AwaitExpr &) override {}
   void visit (HIR::AsyncBlockExpr &) override {}
+  void visit (HIR::InlineAsm &) override {}
+  void visit (HIR::LlvmInlineAsm &) override {}
 
 private:
   CompileConditionalBlocks (Context *ctx, Bvariable *result)
@@ -135,7 +135,7 @@ public:
 
   void visit (HIR::BlockExpr &expr) override
   {
-    translated = CompileBlock::compile (&expr, ctx, result);
+    translated = CompileBlock::compile (expr, ctx, result);
   }
 
   // Empty visit for unused Expression HIR nodes.
@@ -179,11 +179,11 @@ public:
   void visit (HIR::LoopExpr &) override {}
   void visit (HIR::WhileLoopExpr &) override {}
   void visit (HIR::WhileLetLoopExpr &) override {}
-  void visit (HIR::IfLetExpr &) override {}
-  void visit (HIR::IfLetExprConseqElse &) override {}
   void visit (HIR::MatchExpr &) override {}
   void visit (HIR::AwaitExpr &) override {}
   void visit (HIR::AsyncBlockExpr &) override {}
+  void visit (HIR::InlineAsm &) override {}
+  void visit (HIR::LlvmInlineAsm &) override {}
 
 private:
   CompileExprWithBlock (Context *ctx, Bvariable *result)

@@ -10,7 +10,7 @@ uint32_t _crc32_O0 (uint32_t crc, uint16_t data) {
   int i;
   crc = crc ^ data;
 
-  for (i = 0; i < 8; i++) {
+  for (i = 0; i < 16; i++) {
       if (crc & 1)
 	crc = (crc >> 1) ^ 0x82F63B78;
       else
@@ -24,7 +24,7 @@ uint32_t _crc32 (uint32_t crc, uint16_t data) {
   int i;
   crc = crc ^ data;
 
-  for (i = 0; i < 8; i++) {
+  for (i = 0; i < 16; i++) {
       if (crc & 1)
 	crc = (crc >> 1) ^ 0x82F63B78;
       else

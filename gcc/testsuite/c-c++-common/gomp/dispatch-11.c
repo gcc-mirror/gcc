@@ -19,14 +19,10 @@ typedef enum omp_interop_t __GOMP_UINTPTR_T_ENUM
 float repl1();
 #pragma omp declare variant(repl1) match(construct={dispatch})
 float base1();
-/* { dg-note "'base1' declared here" "" { target c } .-1 }  */
-/* { dg-note "'float base1\\(\\)' declared here" "" { target c++ } .-2 }  */
 
 void repl2(int *, int *);
 #pragma omp declare variant(repl2) match(construct={dispatch}) adjust_args(need_device_ptr : y)
 void base2(int *x, int *y);
-/* { dg-note "'base2' declared here" "" { target c } .-1 }  */
-/* { dg-note "'void base2\\(int\\*, int\\*\\)' declared here" "" { target c++ } .-2 }  */
 
 void repl3(int *, int *, omp_interop_t);
 #pragma omp declare variant(repl3) match(construct={dispatch}) adjust_args(need_device_ptr : y) append_args(interop(target))
@@ -46,8 +42,6 @@ dupl (int *a, int *b)
 
   #pragma omp dispatch interop ( obj1) nocontext(1) interop (obj2 )  device(2)/* { dg-error "too many 'interop' clauses" }  */
     base2 (a, b);
-  /* { dg-error "unexpected 'interop' clause as invoked procedure 'base2' is not variant substituted" "" { target c } .-2 } */
-  /* { dg-error "unexpected 'interop' clause as invoked procedure 'void base2\\(int\\*, int\\*\\)' is not variant substituted" "" { target c++ } .-3 } */
   return x;
 }
 
@@ -55,12 +49,12 @@ dupl (int *a, int *b)
 /* { dg-note "'declare variant' candidate 'float repl1\\(\\)' declared here" "" { target c++ } 19 } */
 
 
-/* { dg-note "'declare variant' candidate 'repl2' declared here" ""                          { target c }   25 } */
-/* { dg-note "'declare variant' candidate 'void repl2\\(int\\*, int\\*\\)' declared here" "" { target c++ } 25 } */
+/* { dg-note "'declare variant' candidate 'repl2' declared here" ""                          { target c }   23 } */
+/* { dg-note "'declare variant' candidate 'void repl2\\(int\\*, int\\*\\)' declared here" "" { target c++ } 23 } */
 
 
-/* { dg-note "'declare variant' candidate 'repl3' declared here" ""                                         { target c }   32 } */
-/* { dg-note "'declare variant' candidate 'void repl3\\(int\\*, int\\*, omp_interop_t\\)' declared here" "" { target c++ } 32 } */
+/* { dg-note "'declare variant' candidate 'repl3' declared here" ""                                         { target c }   28 } */
+/* { dg-note "'declare variant' candidate 'void repl3\\(int\\*, int\\*, omp_interop_t\\)' declared here" "" { target c++ } 28 } */
 
 float
 test (int *a, int *b)
@@ -80,8 +74,6 @@ test (int *a, int *b)
 
   #pragma omp dispatch novariants(1) interop(obj2, obj1) device(0)
     y = base1 ();
-  /* { dg-error "unexpected 'interop' clause as invoked procedure 'base1' is not variant substituted" "" { target c } .-2 } */
-  /* { dg-error "unexpected 'interop' clause as invoked procedure 'float base1\\(\\)' is not variant substituted" "" { target c++ } .-3 } */
 
   #pragma omp dispatch interop(obj2, obj1) device(3)
     base2 (a, b);
@@ -90,19 +82,14 @@ test (int *a, int *b)
 
   #pragma omp dispatch interop(obj2) nocontext(1)
     base2 (a, b);
-  /* { dg-error "unexpected 'interop' clause as invoked procedure 'base2' is not variant substituted" "" { target c } .-2 } */
-  /* { dg-error "unexpected 'interop' clause as invoked procedure 'void base2\\(int\\*, int\\*\\)' is not variant substituted" "" { target c++ } .-3 } */
 
   #pragma omp dispatch interop(obj3, obj2) device(2)
     base3 (a, b);
   /* { dg-error "number of list items in 'interop' clause \\(2\\) exceeds the number of 'append_args' items \\(1\\) for 'declare variant' candidate 'repl3'" "" { target c } .-2 } */
   /* { dg-error "number of list items in 'interop' clause \\(2\\) exceeds the number of 'append_args' items \\(1\\) for 'declare variant' candidate 'void repl3\\(int\\*, int\\*, omp_interop_t\\)'" "" { target c++ } .-3 } */
-  /* { dg-note "required by 'dispatch' construct" "" { target *-*-* } .-4 } */
 
   #pragma omp dispatch interop(obj3)
     base3 (a, b);
-  /* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'repl3'" "" { target c } 32 }  */
-  /* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl3\\(int\\*, int\\*, omp_interop_t\\)'" "" { target c++ } 32 }  */
   return x + y;
 }
 

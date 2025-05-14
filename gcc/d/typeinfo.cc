@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/scope.h"
 #include "dmd/template.h"
 #include "dmd/target.h"
+#include "dmd/typinf.h"
 
 #include "tree.h"
 #include "fold-const.h"
@@ -488,14 +489,14 @@ class TypeInfoVisitor : public Visitor
 	CONSTRUCTOR_APPEND_ELT (v, size_int (3), size_int (b->offset));
 
 	/* Add to the array of interfaces.  */
-	value = build_constructor (vtbl_interface_type_node, v);
+	value = build_padded_constructor (vtbl_interface_type_node, v);
 	CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
       }
 
     tree domain = size_int (cd->vtblInterfaces->length - 1);
     tree arrtype = build_array_type (vtbl_interface_type_node,
 				     build_index_type (domain));
-    return build_constructor (arrtype, elms);
+    return build_padded_constructor (arrtype, elms);
   }
 
   /* Write out the interfacing vtable[] of base class BCD that will be accessed
@@ -541,7 +542,7 @@ class TypeInfoVisitor : public Visitor
 
     tree vtbldomain = build_index_type (size_int (id->vtbl.length - 1));
     tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
-    tree value = build_constructor (vtbltype, elms);
+    tree value = build_padded_constructor (vtbltype, elms);
     this->layout_field (value);
   }
 
@@ -728,7 +729,8 @@ public:
 	void **__vptr;
 	void *__monitor;
 	TypeInfo value;
-	TypeInfo key;  */
+	TypeInfo key;
+	TypeInfo entry;  */
 
   void visit (TypeInfoAssociativeArrayDeclaration *d) final override
   {
@@ -742,6 +744,12 @@ public:
 
     /* TypeInfo for index of type.  */
     this->layout_field (build_typeinfo (d->loc, ti->index));
+
+    /* TypeInfo for the key/value pair.  */
+    if (d->entry != NULL)
+      this->layout_field (build_typeinfo (d->loc, d->entry));
+    else
+      this->layout_field (null_pointer_node);
   }
 
   /* Layout of TypeInfo_Vector is:
@@ -1152,7 +1160,7 @@ public:
 	CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
 				build_typeinfo (d->loc, arg->type));
       }
-    tree ctor = build_constructor (build_ctype (satype), elms);
+    tree ctor = build_padded_constructor (build_ctype (satype), elms);
     tree decl = this->internal_reference (ctor);
 
     tree length = size_int (ti->arguments->length);
@@ -1550,7 +1558,7 @@ get_cpp_typeinfo_decl (ClassDeclaration *decl)
 /* Get the exact TypeInfo for TYPE, if it doesn't exist, create it.  */
 
 void
-create_typeinfo (Type *type, Module *mod)
+create_typeinfo (Type *type, Scope *sc)
 {
   if (!Type::dtypeinfo)
     create_frontend_tinfo_types ();
@@ -1558,6 +1566,9 @@ create_typeinfo (Type *type, Module *mod)
   /* Do this since not all Type's are merged.  */
   Type *t = dmd::merge2 (type);
   Identifier *ident;
+
+  if (TypeAArray *ta = t->isTypeAArray ())
+    t = dmd::makeNakedAssociativeArray (ta);
 
   if (!t->vtinfo)
     {
@@ -1636,9 +1647,11 @@ create_typeinfo (Type *type, Module *mod)
 	    {
 	      ident = Identifier::idPool ("TypeInfo_AssociativeArray");
 	      make_internal_typeinfo (tk, ident, ptr_type_node, ptr_type_node,
-				      NULL);
+				      ptr_type_node, NULL);
 	    }
-	  t->vtinfo = TypeInfoAssociativeArrayDeclaration::create (t);
+	  t->vtinfo = sc && have_typeinfo_p (Type::typeinfoassociativearray)
+	    ? dmd::getTypeInfoAssocArrayDeclaration (t->isTypeAArray (), sc)
+	    : TypeInfoAssociativeArrayDeclaration::create (t);
 	  break;
 
 	case TK_STRUCT_TYPE:
@@ -1711,6 +1724,7 @@ create_typeinfo (Type *type, Module *mod)
       if (!builtin_typeinfo_p (t))
 	{
 	  /* Find module that will go all the way to an object file.  */
+	  Module *mod = sc ? sc->_module->importedFrom : NULL;
 	  if (mod)
 	    mod->members->push (t->vtinfo);
 	  else
@@ -1722,115 +1736,6 @@ create_typeinfo (Type *type, Module *mod)
     type->vtinfo = t->vtinfo;
 
   gcc_assert (type->vtinfo != NULL);
-}
-
-/* Implements a visitor interface to check whether a type is speculative.
-   TypeInfo_Struct would reference the members of the struct it is representing
-   (e.g: opEquals via xopEquals field), so if it's instantiated in speculative
-   context, TypeInfo creation should also be stopped to avoid possible
-   `unresolved symbol' linker errors.  */
-
-class SpeculativeTypeVisitor : public Visitor
-{
-  using Visitor::visit;
-
-  bool result_;
-
-public:
-  SpeculativeTypeVisitor (void)
-  {
-    this->result_ = false;
-  }
-
-  bool result (void)
-  {
-    return this->result_;
-  }
-
-  void visit (Type *t) final override
-  {
-    Type *tb = t->toBasetype ();
-    if (tb != t)
-      tb->accept (this);
-  }
-
-  void visit (TypeNext *t) final override
-  {
-    if (t->next)
-      t->next->accept (this);
-  }
-
-  void visit (TypeBasic *) final override
-  {
-  }
-
-  void visit (TypeVector *t) final override
-  {
-    t->basetype->accept (this);
-  }
-
-  void visit (TypeAArray *t) final override
-  {
-    t->index->accept (this);
-    visit ((TypeNext *) t);
-  }
-
-  void visit (TypeFunction *t) final override
-  {
-    visit ((TypeNext *) t);
-  }
-
-  void visit (TypeStruct *t) final override
-  {
-    StructDeclaration *sd = t->sym;
-    if (TemplateInstance *ti = sd->isInstantiated ())
-      {
-	if (!ti->needsCodegen ())
-	  {
-	    if (ti->minst || sd->requestTypeInfo ())
-	      return;
-
-	    this->result_ |= true;
-	  }
-      }
-  }
-
-  void visit (TypeClass *t) final override
-  {
-    ClassDeclaration *cd = t->sym;
-    if (TemplateInstance *ti = cd->isInstantiated ())
-      {
-	if (!ti->needsCodegen () && !ti->minst)
-	  {
-	    this->result_ |= true;
-	  }
-      }
-  }
-
-  void visit (TypeTuple *t) final override
-  {
-    if (!t->arguments)
-      return;
-
-    for (size_t i = 0; i < t->arguments->length; i++)
-      {
-	Type *tprm = (*t->arguments)[i]->type;
-	if (tprm)
-	  tprm->accept (this);
-	if (this->result_)
-	  return;
-      }
-  }
-};
-
-/* Return true if type was instantiated in a speculative context.  */
-
-bool
-speculative_type_p (Type *t)
-{
-  SpeculativeTypeVisitor v = SpeculativeTypeVisitor ();
-  t->accept (&v);
-  return v.result ();
 }
 
 #include "gt-d-typeinfo.h"

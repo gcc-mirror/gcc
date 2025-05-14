@@ -5,7 +5,7 @@
 
 struct C { virtual void a(); };
 struct B { virtual void b(); };
-struct A : virtual B, C { virtual void c(); }; // { dg-error ".struct A. has virtual base classes" }
+struct A : virtual B, C { virtual void c(); }; // { dg-error "virtual base classes" }
 
 constexpr A a; // { dg-error "call" }
 

@@ -33,7 +33,7 @@ namespace Resolver {
 class TypeCheckStructExpr : public TypeCheckBase
 {
 public:
-  static TyTy::BaseType *Resolve (HIR::StructExprStructFields *expr);
+  static TyTy::BaseType *Resolve (HIR::StructExprStructFields &expr);
 
   // Helper for making any errors
   static Error
@@ -49,7 +49,7 @@ protected:
   bool visit (HIR::StructExprFieldIdentifier &field);
 
 private:
-  TypeCheckStructExpr (HIR::Expr *e);
+  TypeCheckStructExpr (HIR::Expr &e);
 
   // result
   TyTy::BaseType *resolved;
@@ -60,6 +60,9 @@ private:
   TyTy::BaseType *resolved_field_value_expr;
   std::set<std::string> fields_assigned;
   std::map<size_t, HIR::StructExprField *> adtFieldIndexToField;
+
+  // parent
+  HIR::Expr &parent;
 };
 
 } // namespace Resolver

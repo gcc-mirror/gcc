@@ -55,7 +55,7 @@ NR returns()
 /+
 TEST_OUTPUT:
 ---
-fail_compilation/noreturn2.d(64): Error: cannot implicitly convert expression `1` of type `int` to `noreturn`
+fail_compilation/noreturn2.d(64): Error: return value `1` of type `int` does not match return type `noreturn`, and cannot be implicitly converted
 ---
 +/
 

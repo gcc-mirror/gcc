@@ -30,10 +30,30 @@ namespace Rust {
 namespace BIR {
 
 struct BasicBlock;
+struct BasicBlockId;
+using BasicBlocks = IndexVec<BasicBlockId, BasicBlock>;
 class Statement;
 class AbstractExpr;
 
-using LoanId = uint32_t;
+/** Unique identifier for a basic block in the BIR. */
+struct BasicBlockId
+{
+  uint32_t value;
+  // some overloads for comparision
+  bool operator== (const BasicBlockId &rhs) const { return value == rhs.value; }
+  bool operator!= (const BasicBlockId &rhs) const
+  {
+    return !(operator== (rhs));
+  }
+  bool operator< (const BasicBlockId &rhs) const { return value < rhs.value; }
+  bool operator> (const BasicBlockId &rhs) const { return value > rhs.value; }
+  bool operator<= (const BasicBlockId &rhs) const { return !(operator> (rhs)); }
+  bool operator>= (const BasicBlockId &rhs) const { return !(operator< (rhs)); }
+};
+
+static constexpr BasicBlockId INVALID_BB
+  = {std::numeric_limits<uint32_t>::max ()};
+static constexpr BasicBlockId ENTRY_BASIC_BLOCK = {0};
 
 /**
  * Top-level entity of the Borrow-checker IR (BIR).
@@ -44,9 +64,10 @@ struct Function
 {
   PlaceDB place_db;
   std::vector<PlaceId> arguments;
-  std::vector<BasicBlock> basic_blocks;
+  BasicBlocks basic_blocks;
   FreeRegions universal_regions;
   std::vector<std::pair<FreeRegion, FreeRegion>> universal_region_bounds;
+  std::unordered_map<Polonius::Origin, HIR::LifetimeParam *> region_hir_map;
   location_t location;
 };
 
@@ -77,19 +98,50 @@ private:
   // otherwise: <unused>
   std::unique_ptr<AbstractExpr> expr;
   TyTy::BaseType *type;
+  // stores location of the actual expression from source code
+  // currently only available when kind is ASSIGNMENT | RETURN
+  // FIXME: Add location for other statement kinds
+  location_t location;
 
 public:
-  Statement (PlaceId lhs, AbstractExpr *rhs)
-    : kind (Kind::ASSIGNMENT), place (lhs), expr (rhs)
-  {}
+  static Statement make_assignment (PlaceId place, AbstractExpr *rhs,
+				    location_t location)
+  {
+    return Statement (Kind::ASSIGNMENT, place, rhs, nullptr, location);
+  }
+  static Statement make_switch (PlaceId place)
+  {
+    return Statement (Kind::SWITCH, place);
+  }
+  static Statement make_return (location_t location)
+  {
+    return Statement (Kind::RETURN, INVALID_PLACE, nullptr, nullptr, location);
+  }
+  static Statement make_goto () { return Statement (Kind::GOTO); }
+  static Statement make_storage_dead (PlaceId place)
+  {
+    return Statement (Kind::STORAGE_DEAD, place);
+  }
+  static Statement make_storage_live (PlaceId place)
+  {
+    return Statement (Kind::STORAGE_LIVE, place);
+  }
+  static Statement make_user_type_ascription (PlaceId place,
+					      TyTy::BaseType *type)
+  {
+    return Statement (Kind::USER_TYPE_ASCRIPTION, place, nullptr, type);
+  }
+  static Statement make_fake_read (PlaceId place)
+  {
+    return Statement (Kind::FAKE_READ, place);
+  }
 
-  explicit Statement (Kind kind, PlaceId place = INVALID_PLACE,
-		      AbstractExpr *expr = nullptr)
-    : kind (kind), place (place), expr (expr)
-  {}
-
-  explicit Statement (Kind kind, PlaceId place, TyTy::BaseType *type)
-    : kind (kind), place (place), type (type)
+private:
+  // compelete constructor, used by make_* functions
+  Statement (Kind kind, PlaceId place = INVALID_PLACE,
+	     AbstractExpr *rhs = nullptr, TyTy::BaseType *type = nullptr,
+	     location_t location = UNKNOWN_LOCATION)
+    : kind (kind), place (place), expr (rhs), type (type), location (location)
   {}
 
 public:
@@ -97,13 +149,8 @@ public:
   WARN_UNUSED_RESULT PlaceId get_place () const { return place; }
   WARN_UNUSED_RESULT AbstractExpr &get_expr () const { return *expr; }
   WARN_UNUSED_RESULT TyTy::BaseType *get_type () const { return type; }
+  WARN_UNUSED_RESULT location_t get_location () const { return location; }
 };
-
-/** Unique identifier for a basic block in the BIR. */
-using BasicBlockId = uint32_t;
-
-static constexpr BasicBlockId INVALID_BB
-  = std::numeric_limits<BasicBlockId>::max ();
 
 struct BasicBlock
 {
@@ -192,7 +239,7 @@ public:
       loan (loan_id), origin (lifetime)
   {}
   WARN_UNUSED_RESULT PlaceId get_place () const { return place; }
-  WARN_UNUSED_RESULT LoanId get_loan () const { return loan; }
+  WARN_UNUSED_RESULT LoanId get_loan_id () const { return loan; }
   WARN_UNUSED_RESULT Polonius::Origin get_origin () const { return origin; }
 };
 

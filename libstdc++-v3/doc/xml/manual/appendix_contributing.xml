@@ -895,7 +895,7 @@ indicate a place that may require attention for multi-thread safety.
 
       Examples:  <code>_M_num_elements  _M_initialize ()</code>
 
-      Static data members, constants, and enumerations: <literal>_S_.*</literal>
+      Static data and function members, constants, and enumerations: <literal>_S_.*</literal>
 
       Examples: <code>_S_max_elements  _S_default_value</code>
 

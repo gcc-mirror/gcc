@@ -98,8 +98,12 @@ public:
 					tree fndecl,
 					const vec<const svalue *> &inputs);
 
+  const svalue *maybe_get_char_from_cst (tree data_cst,
+					 tree byte_offset_cst);
   const svalue *maybe_get_char_from_string_cst (tree string_cst,
 						tree byte_offset_cst);
+  const svalue *maybe_get_char_from_raw_data_cst (tree raw_data_cst,
+						  tree byte_offset_cst);
 
   /* Dynamically-allocated svalue instances.
      The number of these within the analysis can grow arbitrarily.

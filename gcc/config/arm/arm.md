@@ -37,12 +37,12 @@
    (LR_REGNUM        14)	; Return address register
    (PC_REGNUM	     15)	; Program counter
    (LAST_ARM_REGNUM  15)	;
-   (CC_REGNUM       100)	; Condition code pseudo register
-   (VFPCC_REGNUM    101)	; VFP Condition code pseudo register
-   (APSRQ_REGNUM    104)	; Q bit pseudo register
-   (APSRGE_REGNUM   105)	; GE bits pseudo register
-   (VPR_REGNUM      106)	; Vector Predication Register - MVE register.
-   (RA_AUTH_CODE    107)	; Pseudo register to save PAC.
+   (CC_REGNUM        80)	; Condition code pseudo register
+   (VFPCC_REGNUM     81)	; VFP Condition code pseudo register
+   (APSRQ_REGNUM     84)	; Q bit pseudo register
+   (APSRGE_REGNUM    85)	; GE bits pseudo register
+   (VPR_REGNUM       86)	; Vector Predication Register - MVE register.
+   (RA_AUTH_CODE     87)	; Pseudo register to save PAC.
   ]
 )
 ;; 3rd operand to select_dominance_cc_mode
@@ -149,7 +149,7 @@
 ; This attribute is used to compute attribute "enabled",
 ; use type "any" to enable an alternative in all cases.
 (define_attr "arch" "any, a, t, 32, t1, t2, v6,nov6, v6t2, \
-		     v8mb, fix_vlldm, iwmmxt, iwmmxt2, armv6_or_vfpv3, \
+		     v8mb, fix_vlldm, armv6_or_vfpv3, \
 		     neon, mve"
   (const_string "any"))
 
@@ -195,10 +195,6 @@
 
 	 (and (eq_attr "arch" "fix_vlldm")
 	      (match_test "fix_vlldm"))
-	 (const_string "yes")
-
-	 (and (eq_attr "arch" "iwmmxt2")
-	      (match_test "TARGET_REALLY_IWMMXT2"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "armv6_or_vfpv3")
@@ -362,18 +358,7 @@
     alus_ext, alus_imm, alus_sreg,\
     alus_shift_imm, alus_shift_reg, bfm, csel, rev, logic_imm, logic_reg,\
     logic_shift_imm, logic_shift_reg, logics_imm, logics_reg,\
-    logics_shift_imm, logics_shift_reg, extend, shift_imm, float, fcsel,\
-    wmmx_wor, wmmx_wxor, wmmx_wand, wmmx_wandn, wmmx_wmov, wmmx_tmcrr,\
-    wmmx_tmrrc, wmmx_wldr, wmmx_wstr, wmmx_tmcr, wmmx_tmrc, wmmx_wadd,\
-    wmmx_wsub, wmmx_wmul, wmmx_wmac, wmmx_wavg2, wmmx_tinsr, wmmx_textrm,\
-    wmmx_wshufh, wmmx_wcmpeq, wmmx_wcmpgt, wmmx_wmax, wmmx_wmin, wmmx_wpack,\
-    wmmx_wunpckih, wmmx_wunpckil, wmmx_wunpckeh, wmmx_wunpckel, wmmx_wror,\
-    wmmx_wsra, wmmx_wsrl, wmmx_wsll, wmmx_wmadd, wmmx_tmia, wmmx_tmiaph,\
-    wmmx_tmiaxy, wmmx_tbcst, wmmx_tmovmsk, wmmx_wacc, wmmx_waligni,\
-    wmmx_walignr, wmmx_tandc, wmmx_textrc, wmmx_torc, wmmx_torvsc, wmmx_wsad,\
-    wmmx_wabs, wmmx_wabsdiff, wmmx_waddsubhx, wmmx_wsubaddhx, wmmx_wavg4,\
-    wmmx_wmulw, wmmx_wqmulm, wmmx_wqmulwm, wmmx_waddbhus, wmmx_wqmiaxy,\
-    wmmx_wmiaxy, wmmx_wmiawxy, wmmx_wmerge")
+    logics_shift_imm, logics_shift_reg, extend, shift_imm, float, fcsel")
 		(const_string "single")
 	        (const_string "multi")))
 
@@ -435,7 +420,6 @@
 	  (const_string "yes")
 	  (const_string "no"))))
 
-(include "marvell-f-iwmmxt.md")
 (include "arm-generic.md")
 (include "arm926ejs.md")
 (include "arm1020e.md")
@@ -2432,11 +2416,11 @@
 )
 
 (define_insn "<US>mull"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,&r,&r,&r")
 	(mult:SI
-	 (match_operand:SI 2 "s_register_operand" "%r,r")
-	 (match_operand:SI 3 "s_register_operand" "r,r")))
-   (set (match_operand:SI 1 "s_register_operand" "=r,&r")
+	 (match_operand:SI 2 "s_register_operand" "%r,r,r,r")
+	 (match_operand:SI 3 "s_register_operand" "r,r,0,1")))
+   (set (match_operand:SI 1 "s_register_operand" "=r,&r,&r,&r")
 	(truncate:SI
 	 (lshiftrt:DI
 	  (mult:DI (SE:DI (match_dup 2)) (SE:DI (match_dup 3)))
@@ -2445,7 +2429,7 @@
   "<US>mull%?\\t%0, %1, %2, %3"
   [(set_attr "type" "umull")
    (set_attr "predicable" "yes")
-   (set_attr "arch" "v6,nov6")]
+   (set_attr "arch" "v6,nov6,nov6,nov6")]
 )
 
 (define_expand "<Us>maddsidi4"
@@ -2893,14 +2877,12 @@
 ;; Split DImode and, ior, xor operations.  Simply perform the logical
 ;; operation on the upper and lower halves of the registers.
 ;; This is needed for atomic operations in arm_split_atomic_op.
-;; Avoid splitting IWMMXT instructions.
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
 	(match_operator:DI 6 "logical_binary_operator"
 	  [(match_operand:DI 1 "s_register_operand" "")
 	   (match_operand:DI 2 "s_register_operand" "")]))]
-  "TARGET_32BIT && reload_completed
-   && ! IS_IWMMXT_REGNUM (REGNO (operands[0]))"
+  "TARGET_32BIT && reload_completed"
   [(set (match_dup 0) (match_op_dup:SI 6 [(match_dup 1) (match_dup 2)]))
    (set (match_dup 3) (match_op_dup:SI 6 [(match_dup 4) (match_dup 5)]))]
   "
@@ -6345,7 +6327,6 @@
   "TARGET_32BIT
    && !(TARGET_HARD_FLOAT)
    && !(TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT)
-   && !TARGET_IWMMXT
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
   "*
@@ -6554,7 +6535,7 @@
 (define_insn "*arm_movsi_insn"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m")
 	(match_operand:SI 1 "general_operand"      "rk, I,K,j,mi,rk"))]
-  "TARGET_ARM && !TARGET_IWMMXT && !TARGET_HARD_FLOAT
+  "TARGET_ARM && !TARGET_HARD_FLOAT
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
@@ -13123,10 +13104,8 @@
   [(set_attr "conds" "unconditional")
    (set_attr "type" "nop")])
 
-;; Vector bits common to IWMMXT, Neon and MVE
+;; Vector bits common to Neon and MVE
 (include "vec-common.md")
-;; Load the Intel Wireless Multimedia Extension patterns
-(include "iwmmxt.md")
 ;; Load the VFP co-processor patterns
 (include "vfp.md")
 ;; Thumb-1 patterns

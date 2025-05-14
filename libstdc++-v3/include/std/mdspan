@@ -1,0 +1,309 @@
+// <mdspan> -*- C++ -*-
+
+// Copyright The GNU Toolchain Authors.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file mdspan
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_MDSPAN
+#define _GLIBCXX_MDSPAN 1
+
+#ifdef _GLIBCXX_SYSHDR
+#pragma GCC system_header
+#endif
+
+#include <span>
+#include <array>
+#include <type_traits>
+#include <limits>
+#include <utility>
+
+#define __glibcxx_want_mdspan
+#include <bits/version.h>
+
+#ifdef __glibcxx_mdspan
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  namespace __mdspan
+  {
+    template<typename _IndexType, array _Extents>
+      class _ExtentsStorage
+      {
+      public:
+	static consteval bool
+	_S_is_dyn(size_t __ext) noexcept
+	{ return __ext == dynamic_extent; }
+
+	template<typename _OIndexType>
+	  static constexpr _IndexType
+	  _S_int_cast(const _OIndexType& __other) noexcept
+	  { return _IndexType(__other); }
+
+	static constexpr size_t _S_rank = _Extents.size();
+
+	// For __r in [0, _S_rank], _S_dynamic_index[__r] is the number
+	// of dynamic extents up to (and not including) __r.
+	//
+	// If __r is the index of a dynamic extent, then
+	// _S_dynamic_index[__r] is the index of that extent in
+	// _M_dynamic_extents.
+	static constexpr auto _S_dynamic_index = [] consteval
+	{
+	  array<size_t, _S_rank+1> __ret;
+	  size_t __dyn = 0;
+	  for(size_t __i = 0; __i < _S_rank; ++__i)
+	    {
+	      __ret[__i] = __dyn;
+	      __dyn += _S_is_dyn(_Extents[__i]);
+	    }
+	  __ret[_S_rank] = __dyn;
+	  return __ret;
+	}();
+
+	static constexpr size_t _S_rank_dynamic = _S_dynamic_index[_S_rank];
+
+	// For __r in [0, _S_rank_dynamic), _S_dynamic_index_inv[__r] is the
+	// index of the __r-th dynamic extent in _Extents.
+	static constexpr auto _S_dynamic_index_inv = [] consteval
+	{
+	  array<size_t, _S_rank_dynamic> __ret;
+	  for (size_t __i = 0, __r = 0; __i < _S_rank; ++__i)
+	    if (_S_is_dyn(_Extents[__i]))
+	      __ret[__r++] = __i;
+	  return __ret;
+	}();
+
+	static constexpr size_t
+	_S_static_extent(size_t __r) noexcept
+	{ return _Extents[__r]; }
+
+	constexpr _IndexType
+	_M_extent(size_t __r) const noexcept
+	{
+	  auto __se = _Extents[__r];
+	  if (__se == dynamic_extent)
+	    return _M_dynamic_extents[_S_dynamic_index[__r]];
+	  else
+	    return __se;
+	}
+
+	template<size_t _OtherRank, typename _GetOtherExtent>
+	  constexpr void
+	  _M_init_dynamic_extents(_GetOtherExtent __get_extent) noexcept
+	  {
+	    for(size_t __i = 0; __i < _S_rank_dynamic; ++__i)
+	      {
+		size_t __di = __i;
+		if constexpr (_OtherRank != _S_rank_dynamic)
+		  __di = _S_dynamic_index_inv[__i];
+		_M_dynamic_extents[__i] = _S_int_cast(__get_extent(__di));
+	      }
+	  }
+
+	constexpr
+	_ExtentsStorage() noexcept = default;
+
+	template<typename _OIndexType, array _OExtents>
+	  constexpr
+	  _ExtentsStorage(const _ExtentsStorage<_OIndexType, _OExtents>&
+			  __other) noexcept
+	  {
+	    _M_init_dynamic_extents<_S_rank>([&__other](size_t __i)
+	      { return __other._M_extent(__i); });
+	  }
+
+	template<typename _OIndexType, size_t _Nm>
+	  constexpr
+	  _ExtentsStorage(span<const _OIndexType, _Nm> __exts) noexcept
+	  {
+	    _M_init_dynamic_extents<_Nm>(
+	      [&__exts](size_t __i) -> const _OIndexType&
+	      { return __exts[__i]; });
+	  }
+
+      private:
+	using _S_storage = __array_traits<_IndexType, _S_rank_dynamic>::_Type;
+	[[no_unique_address]] _S_storage _M_dynamic_extents;
+      };
+
+    template<typename _OIndexType, typename _SIndexType>
+      concept __valid_index_type =
+	is_convertible_v<_OIndexType, _SIndexType> &&
+	is_nothrow_constructible_v<_SIndexType, _OIndexType>;
+
+    template<size_t _Extent, typename _IndexType>
+      concept
+      __valid_static_extent = _Extent == dynamic_extent
+	|| _Extent <= numeric_limits<_IndexType>::max();
+  }
+
+  template<typename _IndexType, size_t... _Extents>
+    class extents
+    {
+      static_assert(is_integral_v<_IndexType>, "_IndexType must be integral.");
+      static_assert(
+	  (__mdspan::__valid_static_extent<_Extents, _IndexType> && ...),
+	  "Extents must either be dynamic or representable as _IndexType");
+
+    public:
+      using index_type = _IndexType;
+      using size_type = make_unsigned_t<index_type>;
+      using rank_type = size_t;
+
+      static constexpr rank_type
+      rank() noexcept { return _S_storage::_S_rank; }
+
+      static constexpr rank_type
+      rank_dynamic() noexcept { return _S_storage::_S_rank_dynamic; }
+
+      static constexpr size_t
+      static_extent(rank_type __r) noexcept
+      {
+	__glibcxx_assert(__r < rank());
+	if constexpr (rank() == 0)
+	  __builtin_trap();
+	else
+	  return _S_storage::_S_static_extent(__r);
+      }
+
+      constexpr index_type
+      extent(rank_type __r) const noexcept
+      {
+	__glibcxx_assert(__r < rank());
+	if constexpr (rank() == 0)
+	  __builtin_trap();
+	else
+	  return _M_dynamic_extents._M_extent(__r);
+      }
+
+      constexpr
+      extents() noexcept = default;
+
+    private:
+      static consteval bool
+      _S_is_less_dynamic(size_t __ext, size_t __oext)
+      { return (__ext != dynamic_extent) && (__oext == dynamic_extent); }
+
+      template<typename _OIndexType, size_t... _OExtents>
+	static consteval bool
+	_S_ctor_explicit()
+	{
+	  return (_S_is_less_dynamic(_Extents, _OExtents) || ...)
+	    || (numeric_limits<index_type>::max()
+		< numeric_limits<_OIndexType>::max());
+	}
+
+      template<size_t... _OExtents>
+	static consteval bool
+	_S_is_compatible_extents()
+	{
+	  if constexpr (sizeof...(_OExtents) != rank())
+	    return false;
+	  else
+	    return ((_OExtents == dynamic_extent || _Extents == dynamic_extent
+		     || _OExtents == _Extents) && ...);
+	}
+
+    public:
+      template<typename _OIndexType, size_t... _OExtents>
+	requires (_S_is_compatible_extents<_OExtents...>())
+	constexpr explicit(_S_ctor_explicit<_OIndexType, _OExtents...>())
+	extents(const extents<_OIndexType, _OExtents...>& __other) noexcept
+	: _M_dynamic_extents(__other._M_dynamic_extents)
+	{ }
+
+      template<__mdspan::__valid_index_type<index_type>... _OIndexTypes>
+	requires (sizeof...(_OIndexTypes) == rank()
+		  || sizeof...(_OIndexTypes) == rank_dynamic())
+	constexpr explicit extents(_OIndexTypes... __exts) noexcept
+	: _M_dynamic_extents(span<const _IndexType, sizeof...(_OIndexTypes)>(
+	    initializer_list{_S_storage::_S_int_cast(__exts)...}))
+	{ }
+
+      template<__mdspan::__valid_index_type<index_type> _OIndexType, size_t _Nm>
+	requires (_Nm == rank() || _Nm == rank_dynamic())
+	constexpr explicit(_Nm != rank_dynamic())
+	extents(span<_OIndexType, _Nm> __exts) noexcept
+	: _M_dynamic_extents(span<const _OIndexType, _Nm>(__exts))
+	{ }
+
+
+      template<__mdspan::__valid_index_type<index_type> _OIndexType, size_t _Nm>
+	requires (_Nm == rank() || _Nm == rank_dynamic())
+	constexpr explicit(_Nm != rank_dynamic())
+	extents(const array<_OIndexType, _Nm>& __exts) noexcept
+	: _M_dynamic_extents(span<const _OIndexType, _Nm>(__exts))
+	{ }
+
+      template<typename _OIndexType, size_t... _OExtents>
+	friend constexpr bool
+	operator==(const extents& __self,
+		   const extents<_OIndexType, _OExtents...>& __other) noexcept
+	{
+	  if constexpr (!_S_is_compatible_extents<_OExtents...>())
+	    return false;
+	  else
+	    {
+	      for (size_t __i = 0; __i < __self.rank(); ++__i)
+		if (!cmp_equal(__self.extent(__i), __other.extent(__i)))
+		  return false;
+	      return true;
+	    }
+	}
+
+    private:
+      using _S_storage = __mdspan::_ExtentsStorage<
+	_IndexType, array<size_t, sizeof...(_Extents)>{_Extents...}>;
+      [[no_unique_address]] _S_storage _M_dynamic_extents;
+
+      template<typename _OIndexType, size_t... _OExtents>
+	friend class extents;
+    };
+
+  namespace __mdspan
+  {
+    template<typename _IndexType, size_t... _Counts>
+      auto __build_dextents_type(integer_sequence<size_t, _Counts...>)
+	-> extents<_IndexType, ((void) _Counts, dynamic_extent)...>;
+
+    template<typename _Tp>
+      consteval size_t
+      __dynamic_extent() { return dynamic_extent; }
+  }
+
+  template<typename _IndexType, size_t _Rank>
+    using dextents = decltype(__mdspan::__build_dextents_type<_IndexType>(
+	make_index_sequence<_Rank>()));
+
+  template<typename... _Integrals>
+    requires (is_convertible_v<_Integrals, size_t> && ...)
+    explicit extents(_Integrals...) ->
+      extents<size_t, __mdspan::__dynamic_extent<_Integrals>()...>;
+
+_GLIBCXX_END_NAMESPACE_VERSION
+}
+#endif
+#endif

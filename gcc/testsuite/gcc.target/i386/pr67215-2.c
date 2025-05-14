@@ -13,8 +13,8 @@ foo (void)
     arr[i] = bar (128);
 }
 
-/* { dg-final { scan-assembler "call\[ \t\]*.bar@GOTPCREL" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "call\[ \t\]*.bar@GOT\\(" { target ia32 } } } */
-/* { dg-final { scan-assembler-not "mov(l|q)\[ \t\]*.bar@GOTPCREL" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-not "movl\[ \t\]*.bar@GOT\\(" { target ia32 } } } */
-/* { dg-final { scan-assembler-not "call\[ \t\]*.bar@PLT" } } */
+/* { dg-final { scan-assembler "call\[ \t\]+\\*bar@GOTPCREL" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "call\[ \t\]+\\*bar@GOT\\(" { target ia32 } } } */
+/* { dg-final { scan-assembler-not "mov(l|q)\[ \t\]+bar@GOTPCREL" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-not "movl\[ \t\]+bar@GOT\\(" { target ia32 } } } */
+/* { dg-final { scan-assembler-not "call\[ \t\]+\\*bar@PLT" } } */

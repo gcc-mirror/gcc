@@ -140,7 +140,7 @@ public:
 	    it = values.erase (it);
 	    for (auto &node : final_fragment.get_nodes ())
 	      {
-		auto new_node = extractor (node);
+		U new_node = extractor (node);
 		if (new_node != nullptr)
 		  {
 		    it = values.insert (it, std::move (new_node));
@@ -237,6 +237,7 @@ public:
   void visit (AST::TypeParam &param) override;
   void visit (AST::LifetimeWhereClauseItem &) override;
   void visit (AST::TypeBoundWhereClauseItem &item) override;
+  void visit (AST::Module &module) override;
   void visit (AST::ExternCrate &crate) override;
   void visit (AST::UseTreeGlob &) override;
   void visit (AST::UseTreeList &) override;

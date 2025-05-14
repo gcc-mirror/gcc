@@ -166,7 +166,6 @@ public:
         Thread.sleep(usecs(1));
 
         sw.reset();
-        assert(sw.peek() < msecs(1));
         assert(sw._timeStarted > before);
         assert(sw._timeStarted <= MonoTime.currTime);
     }

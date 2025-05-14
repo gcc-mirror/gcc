@@ -56,8 +56,7 @@
 			  vssegtux,vssegtox,vlsegdff,vandn,vbrev,vbrev8,vrev8,vcpop,vclz,vctz,vrol,\
 			  vror,vwsll,vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,\
 			  vaeskf1,vaeskf2,vaesz,vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c,\
-			  vfncvtbf16,vfwcvtbf16,vfwmaccbf16,\
-			  sf_vqmacc,sf_vfnrclip")
+			  vfncvtbf16,vfwcvtbf16,vfwmaccbf16,sf_vqmacc,sf_vfnrclip,sf_vc,sf_vc_se")
 	 (const_string "true")]
 	(const_string "false")))
 
@@ -1116,19 +1115,6 @@
    (set_attr "mode" "SI")]
  )
 
-;; The volatile fsrmsi restore is used for the exit point for the
-;; dynamic mode switching. It will generate one volatile fsrm a5
-;; which won't be eliminated.
-(define_insn "fsrmsi_restore_volatile"
-  [(set (reg:SI FRM_REGNUM)
-	(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
-			    UNSPECV_FRM_RESTORE_EXIT))]
-  "TARGET_VECTOR"
-  "fsrm\t%0"
-  [(set_attr "type" "wrfrm")
-   (set_attr "mode" "SI")]
-)
-
 ;; Read FRM
 (define_insn "frrmsi"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2136,17 +2122,33 @@
 	     (match_operand 7 "const_int_operand")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_duplicate:V_VLS
-	    (match_operand:<VEL> 3 "direct_broadcast_operand"))
+	  ;; (vec_duplicate:V_VLS ;; wrapper activated by wrap_vec_dup below.
+	  (match_operand:<VEL> 3 "direct_broadcast_operand") ;; )
 	  (match_operand:V_VLS 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
 {
   /* Transform vmv.v.x/vfmv.v.f (avl = 1) into vmv.s.x since vmv.s.x/vfmv.s.f
      has better chances to do vsetvl fusion in vsetvl pass.  */
+  bool wrap_vec_dup = true;
+  rtx vec_cst = NULL_RTX;
   if (riscv_vector::splat_to_scalar_move_p (operands))
     {
       operands[1] = riscv_vector::gen_scalar_move_mask (<VM>mode);
       operands[3] = force_reg (<VEL>mode, operands[3]);
+    }
+  else if (immediate_operand (operands[3], <VEL>mode)
+	   && (vec_cst = gen_const_vec_duplicate (<MODE>mode, operands[3]))
+	   && (/* -> pred_broadcast<mode>_zero */
+	       (vector_least_significant_set_mask_operand (operands[1],
+							   <VM>mode)
+		&& vector_const_0_operand (vec_cst, <MODE>mode))
+	       || (/* pred_broadcast<mode>_imm */
+		   vector_all_trues_mask_operand (operands[1], <VM>mode)
+		   && vector_const_int_or_double_0_operand (vec_cst,
+							    <MODE>mode))))
+    {
+      operands[3] = vec_cst;
+      wrap_vec_dup = false;
     }
   /* Handle vmv.s.x instruction (Wb1 mask) which has memory scalar.  */
   else if (satisfies_constraint_Wdm (operands[3]))
@@ -2191,6 +2193,8 @@
     ;
   else
     operands[3] = force_reg (<VEL>mode, operands[3]);
+  if (wrap_vec_dup)
+    operands[3] = gen_rtx_VEC_DUPLICATE (<MODE>mode, operands[3]);
 })
 
 (define_insn_and_split "*pred_broadcast<mode>"
@@ -3939,7 +3943,7 @@
 	  (any_extend:VWEXTI
 	    (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand" "   vr,   vr"))
 	  (match_operand:VWEXTI 2 "vector_merge_operand"         "   vu,    0")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
   "v<sz>ext.vf2\t%0,%3%p1"
   [(set_attr "type" "vext")
    (set_attr "mode" "<MODE>")])
@@ -3959,7 +3963,7 @@
 	  (any_extend:VQEXTI
 	    (match_operand:<V_QUAD_TRUNC> 3 "register_operand" "   vr,   vr"))
 	  (match_operand:VQEXTI 2 "vector_merge_operand"       "   vu,    0")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
   "v<sz>ext.vf4\t%0,%3%p1"
   [(set_attr "type" "vext")
    (set_attr "mode" "<MODE>")])
@@ -3979,7 +3983,7 @@
 	  (any_extend:VOEXTI
 	    (match_operand:<V_OCT_TRUNC> 3 "register_operand" "   vr,   vr"))
 	  (match_operand:VOEXTI 2 "vector_merge_operand"      "   vu,    0")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
   "v<sz>ext.vf8\t%0,%3%p1"
   [(set_attr "type" "vext")
    (set_attr "mode" "<MODE>")])

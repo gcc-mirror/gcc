@@ -1,6 +1,6 @@
 /* { dg-do assemble { target { aarch64*-*-* } } } */
+/* { dg-skip-if "no optimizations" { *-*-* } { "-O0" } { "" } } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
-/* { dg-options "-O2" } */
 /* { dg-add-options arm_v8_2a_bf16_neon }  */
 /* { dg-additional-options "-save-temps" } */
 

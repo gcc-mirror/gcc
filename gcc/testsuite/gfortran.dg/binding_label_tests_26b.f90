@@ -5,8 +5,8 @@
 !
 ! Contributed by Andrew Bensons <abensonca@gmail.com>
 
-module f    ! { dg-error "uses the same global identifier" }
-  use fg    ! { dg-error "uses the same global identifier" }
+module f
+  use fg
 end module
 
 ! { dg-final { cleanup-modules "fg f" } }

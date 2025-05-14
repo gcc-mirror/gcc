@@ -153,13 +153,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cpp_lib_byteswap
 
   /// @cond undocumented
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
 
   template<typename _Tp>
     constexpr _Tp
     __rotl(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
-      if _GLIBCXX17_CONSTEXPR ((_Nd & (_Nd - 1)) == 0)
+      if constexpr ((_Nd & (_Nd - 1)) == 0)
 	{
 	  // Variant for power of two _Nd which the compiler can
 	  // easily pattern match.
@@ -181,7 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __rotr(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
-      if _GLIBCXX17_CONSTEXPR ((_Nd & (_Nd - 1)) == 0)
+      if constexpr ((_Nd & (_Nd - 1)) == 0)
 	{
 	  // Variant for power of two _Nd which the compiler can
 	  // easily pattern match.
@@ -215,17 +217,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr auto _Nd_ul = __int_traits<unsigned long>::__digits;
       constexpr auto _Nd_u = __int_traits<unsigned>::__digits;
 
-      if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_u)
+      if constexpr (_Nd <= _Nd_u)
 	{
 	  constexpr int __diff = _Nd_u - _Nd;
 	  return __builtin_clz(__x) - __diff;
 	}
-      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ul)
+      else if constexpr (_Nd <= _Nd_ul)
 	{
 	  constexpr int __diff = _Nd_ul - _Nd;
 	  return __builtin_clzl(__x) - __diff;
 	}
-      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ull)
+      else if constexpr (_Nd <= _Nd_ull)
 	{
 	  constexpr int __diff = _Nd_ull - _Nd;
 	  return __builtin_clzll(__x) - __diff;
@@ -272,11 +274,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr auto _Nd_ul = __int_traits<unsigned long>::__digits;
       constexpr auto _Nd_u = __int_traits<unsigned>::__digits;
 
-      if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_u)
+      if constexpr (_Nd <= _Nd_u)
 	return __builtin_ctz(__x);
-      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ul)
+      else if constexpr (_Nd <= _Nd_ul)
 	return __builtin_ctzl(__x);
-      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ull)
+      else if constexpr (_Nd <= _Nd_ull)
 	return __builtin_ctzll(__x);
       else // (_Nd > _Nd_ull)
 	{
@@ -314,11 +316,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr auto _Nd_ul = __int_traits<unsigned long>::__digits;
       constexpr auto _Nd_u = __int_traits<unsigned>::__digits;
 
-      if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_u)
+      if constexpr (_Nd <= _Nd_u)
 	return __builtin_popcount(__x);
-      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ul)
+      else if constexpr (_Nd <= _Nd_ul)
 	return __builtin_popcountl(__x);
-      else if _GLIBCXX17_CONSTEXPR (_Nd <= _Nd_ull)
+      else if constexpr (_Nd <= _Nd_ull)
 	return __builtin_popcountll(__x);
       else // (_Nd > _Nd_ull)
 	{
@@ -357,7 +359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       using __promoted_type = decltype(__x << 1);
-      if _GLIBCXX17_CONSTEXPR (!is_same<__promoted_type, _Tp>::value)
+      if constexpr (!is_same<__promoted_type, _Tp>::value)
 	{
 	  // If __x undergoes integral promotion then shifting by _Nd is
 	  // not undefined. In order to make the shift undefined, so that
@@ -388,6 +390,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Nd - std::__countl_zero(__x);
     }
 
+#pragma GCC diagnostic pop
   /// @endcond
 
 #ifdef __cpp_lib_bitops // C++ >= 20

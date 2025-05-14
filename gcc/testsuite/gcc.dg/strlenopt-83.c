@@ -1,8 +1,7 @@
 /* PR tree-optimization/83821 - local aggregate initialization defeats
    strlen optimization
    { dg-do compile }
-   { dg-options "-O2 -Wall -fdump-tree-optimized" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
 
 #include "strlenopt.h"
 char *p_p2, *p_p5, *p_p9, *p_p14;

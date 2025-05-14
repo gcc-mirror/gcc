@@ -46,7 +46,6 @@ enum arm_abi_type
   ARM_ABI_APCS,
   ARM_ABI_ATPCS,
   ARM_ABI_AAPCS,
-  ARM_ABI_IWMMXT,
   ARM_ABI_AAPCS_LINUX
 };
 

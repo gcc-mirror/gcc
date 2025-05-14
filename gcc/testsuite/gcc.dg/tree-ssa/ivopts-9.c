@@ -5,6 +5,7 @@ int*
 foo (int* mem, unsigned char sz, int val)
 {
   unsigned char i;
+#pragma GCC novector
   for (i = 0; i < sz; i++)
     if (mem[i] == val) 
       return &mem[i];

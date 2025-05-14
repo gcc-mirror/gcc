@@ -1,4 +1,3 @@
-/* { dg-require-effective-target alloca } */
 #include "analyzer-decls.h"
 
 void test_1 (int n)

@@ -18,11 +18,57 @@
 
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-expr.h"
+#include "rust-canonical-path.h"
+#include "rust-type.h"
+#include "rust-hir-map.h"
 
 namespace Rust {
 namespace Resolver {
 
 // rust-ast-resolve-type.h
+
+NodeId
+ResolveType::go (AST::Type &type)
+{
+  ResolveType resolver;
+  type.accept_vis (resolver);
+  return resolver.resolved_node;
+}
+
+void
+ResolveType::visit (AST::BareFunctionType &fntype)
+{
+  for (auto &param : fntype.get_function_params ())
+    ResolveType::go (param.get_type ());
+
+  if (fntype.has_return_type ())
+    ResolveType::go (fntype.get_return_type ());
+}
+
+void
+ResolveType::visit (AST::TupleType &tuple)
+{
+  if (tuple.is_unit_type ())
+    {
+      resolved_node = resolver->get_unit_type_node_id ();
+      return;
+    }
+
+  for (auto &elem : tuple.get_elems ())
+    ResolveType::go (*elem);
+}
+
+void
+ResolveType::visit (AST::TypePath &path)
+{
+  ResolveRelativeTypePath::go (path, resolved_node);
+}
+
+void
+ResolveType::visit (AST::QualifiedPathInType &path)
+{
+  ResolveRelativeQualTypePath::go (path);
+}
 
 void
 ResolveType::visit (AST::ArrayType &type)
@@ -49,6 +95,12 @@ ResolveType::visit (AST::TraitObjectType &type)
 }
 
 void
+ResolveType::visit (AST::ParenthesisedType &type)
+{
+  resolved_node = ResolveType::go (*type.get_type_in_parens ());
+}
+
+void
 ResolveType::visit (AST::ReferenceType &type)
 {
   resolved_node = ResolveType::go (type.get_type_referenced ());
@@ -63,13 +115,13 @@ ResolveType::visit (AST::RawPointerType &type)
 void
 ResolveType::visit (AST::InferredType &)
 {
-  // FIXME
+  // nothing to do
 }
 
 void
 ResolveType::visit (AST::NeverType &)
 {
-  // FIXME
+  resolved_node = resolver->get_never_type_node_id ();
 }
 
 void
@@ -78,58 +130,82 @@ ResolveType::visit (AST::SliceType &type)
   resolved_node = ResolveType::go (type.get_elem_type ());
 }
 
+void
+ResolveType::visit (AST::ImplTraitType &type)
+{
+  for (auto &bound : type.get_type_param_bounds ())
+    ResolveTypeBound::go (*bound);
+}
+
+void
+ResolveType::visit (AST::ImplTraitTypeOneBound &type)
+{
+  ResolveTypeBound::go (type.get_trait_bound ());
+}
+
 // resolve relative type-paths
 
 bool
 ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 {
   auto resolver = Resolver::get ();
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
   NodeId module_scope_id = resolver->peek_current_module_scope ();
   NodeId previous_resolved_node_id = module_scope_id;
   for (size_t i = 0; i < path.get_segments ().size (); i++)
     {
       auto &segment = path.get_segments ().at (i);
-      const AST::PathIdentSegment &ident_seg = segment->get_ident_segment ();
       bool is_first_segment = i == 0;
+      NodeId crate_scope_id = resolver->peek_crate_module_scope ();
+      auto ident_string = segment->is_lang_item ()
+			    ? LangItem::PrettyString (segment->get_lang_item ())
+			    : segment->get_ident_segment ().as_string ();
+
       resolved_node_id = UNKNOWN_NODEID;
 
-      bool in_middle_of_path = i > 0;
-      if (in_middle_of_path && segment->is_lower_self_seg ())
+      if (segment->is_lang_item ())
 	{
-	  rust_error_at (segment->get_locus (), ErrorCode::E0433,
-			 "failed to resolve: %qs in paths can only be used "
-			 "in start position",
-			 segment->as_string ().c_str ());
-	  return false;
+	  resolved_node_id = Analysis::Mappings::get ().get_lang_item_node (
+	    segment->get_lang_item ());
+	  previous_resolved_node_id = resolved_node_id;
 	}
-
-      NodeId crate_scope_id = resolver->peek_crate_module_scope ();
-      if (segment->is_crate_path_seg ())
+      else
 	{
-	  // what is the current crate scope node id?
-	  module_scope_id = crate_scope_id;
-	  previous_resolved_node_id = module_scope_id;
-	  resolver->insert_resolved_name (segment->get_node_id (),
-					  module_scope_id);
-
-	  continue;
-	}
-      else if (segment->is_super_path_seg ())
-	{
-	  if (module_scope_id == crate_scope_id)
+	  bool in_middle_of_path = i > 0;
+	  if (in_middle_of_path && segment->is_lower_self_seg ())
 	    {
-	      rust_error_at (segment->get_locus (),
-			     "cannot use super at the crate scope");
+	      rust_error_at (segment->get_locus (), ErrorCode::E0433,
+			     "%qs in paths can only be used in start position",
+			     segment->as_string ().c_str ());
 	      return false;
 	    }
 
-	  module_scope_id = resolver->peek_parent_module_scope ();
-	  previous_resolved_node_id = module_scope_id;
-	  resolver->insert_resolved_name (segment->get_node_id (),
-					  module_scope_id);
-	  continue;
+	  if (segment->is_crate_path_seg ())
+	    {
+	      // what is the current crate scope node id?
+	      module_scope_id = crate_scope_id;
+	      previous_resolved_node_id = module_scope_id;
+	      resolver->insert_resolved_name (segment->get_node_id (),
+					      module_scope_id);
+
+	      continue;
+	    }
+	  else if (segment->is_super_path_seg ())
+	    {
+	      if (module_scope_id == crate_scope_id)
+		{
+		  rust_error_at (segment->get_locus (),
+				 "cannot use super at the crate scope");
+		  return false;
+		}
+
+	      module_scope_id = resolver->peek_parent_module_scope ();
+	      previous_resolved_node_id = module_scope_id;
+	      resolver->insert_resolved_name (segment->get_node_id (),
+					      module_scope_id);
+	      continue;
+	    }
 	}
 
       switch (segment->get_type ())
@@ -169,27 +245,48 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	  // name scope first
 	  NodeId resolved_node = UNKNOWN_NODEID;
 	  const CanonicalPath path
-	    = CanonicalPath::new_seg (segment->get_node_id (),
-				      ident_seg.as_string ());
+	    = CanonicalPath::new_seg (segment->get_node_id (), ident_string);
 	  if (resolver->get_type_scope ().lookup (path, &resolved_node))
 	    {
-	      resolver->insert_resolved_type (segment->get_node_id (),
-					      resolved_node);
+	      NodeId existing = UNKNOWN_NODEID;
+	      bool ok = resolver->lookup_resolved_type (segment->get_node_id (),
+							&existing);
+
+	      if (ok)
+		rust_assert (existing == resolved_node);
+	      else
+		resolver->insert_resolved_type (segment->get_node_id (),
+						resolved_node);
 	      resolved_node_id = resolved_node;
 	    }
 	  else if (resolver->get_name_scope ().lookup (path, &resolved_node))
 	    {
-	      resolver->insert_resolved_name (segment->get_node_id (),
-					      resolved_node);
+	      NodeId existing = UNKNOWN_NODEID;
+	      bool ok = resolver->lookup_resolved_name (segment->get_node_id (),
+							&existing);
+
+	      if (ok)
+		rust_assert (existing == resolved_node);
+	      else
+		resolver->insert_resolved_name (segment->get_node_id (),
+						resolved_node);
 	      resolved_node_id = resolved_node;
 	    }
-	  else if (segment->is_lower_self_seg ())
+	  else if (!segment->is_lang_item () && segment->is_lower_self_seg ())
 	    {
 	      // what is the current crate scope node id?
 	      module_scope_id = crate_scope_id;
 	      previous_resolved_node_id = module_scope_id;
-	      resolver->insert_resolved_name (segment->get_node_id (),
-					      module_scope_id);
+
+	      NodeId existing = UNKNOWN_NODEID;
+	      bool ok = resolver->lookup_resolved_name (segment->get_node_id (),
+							&existing);
+
+	      if (ok)
+		rust_assert (existing == module_scope_id);
+	      else
+		resolver->insert_resolved_name (segment->get_node_id (),
+						module_scope_id);
 
 	      continue;
 	    }
@@ -199,8 +296,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	  && previous_resolved_node_id == module_scope_id)
 	{
 	  tl::optional<CanonicalPath &> resolved_child
-	    = mappings->lookup_module_child (module_scope_id,
-					     ident_seg.as_string ());
+	    = mappings.lookup_module_child (module_scope_id, ident_string);
 	  if (resolved_child.has_value ())
 	    {
 	      NodeId resolved_node = resolved_child->get_node_id ();
@@ -208,15 +304,33 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 		    resolved_node))
 		{
 		  resolved_node_id = resolved_node;
-		  resolver->insert_resolved_name (segment->get_node_id (),
-						  resolved_node);
+
+		  NodeId existing = UNKNOWN_NODEID;
+		  bool ok
+		    = resolver->lookup_resolved_name (segment->get_node_id (),
+						      &existing);
+
+		  if (ok)
+		    rust_assert (existing == resolved_node);
+		  else
+		    resolver->insert_resolved_name (segment->get_node_id (),
+						    resolved_node);
 		}
 	      else if (resolver->get_type_scope ().decl_was_declared_here (
 			 resolved_node))
 		{
 		  resolved_node_id = resolved_node;
-		  resolver->insert_resolved_type (segment->get_node_id (),
-						  resolved_node);
+
+		  NodeId existing = UNKNOWN_NODEID;
+		  bool ok
+		    = resolver->lookup_resolved_type (segment->get_node_id (),
+						      &existing);
+
+		  if (ok)
+		    rust_assert (existing == resolved_node);
+		  else
+		    resolver->insert_resolved_type (segment->get_node_id (),
+						    resolved_node);
 		}
 	      else
 		{
@@ -231,8 +345,8 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       bool did_resolve_segment = resolved_node_id != UNKNOWN_NODEID;
       if (did_resolve_segment)
 	{
-	  if (mappings->node_is_module (resolved_node_id)
-	      || mappings->node_is_crate (resolved_node_id))
+	  if (mappings.node_is_module (resolved_node_id)
+	      || mappings.node_is_crate (resolved_node_id))
 	    {
 	      module_scope_id = resolved_node_id;
 	    }
@@ -241,8 +355,8 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       else if (is_first_segment)
 	{
 	  rust_error_at (segment->get_locus (), ErrorCode::E0412,
-			 "failed to resolve TypePath: %s in this scope",
-			 segment->as_string ().c_str ());
+			 "could not resolve type path %qs",
+			 segment->get_ident_segment ().as_string ().c_str ());
 	  return false;
 	}
     }
@@ -252,15 +366,29 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       // name scope first
       if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
 	{
-	  resolver->insert_resolved_name (path.get_node_id (),
-					  resolved_node_id);
+	  NodeId existing = UNKNOWN_NODEID;
+	  bool ok
+	    = resolver->lookup_resolved_name (path.get_node_id (), &existing);
+
+	  if (ok)
+	    rust_assert (existing == resolved_node_id);
+	  else
+	    resolver->insert_resolved_name (path.get_node_id (),
+					    resolved_node_id);
 	}
       // check the type scope
       else if (resolver->get_type_scope ().decl_was_declared_here (
 		 resolved_node_id))
 	{
-	  resolver->insert_resolved_type (path.get_node_id (),
-					  resolved_node_id);
+	  NodeId existing = UNKNOWN_NODEID;
+	  bool ok
+	    = resolver->lookup_resolved_type (path.get_node_id (), &existing);
+
+	  if (ok)
+	    rust_assert (existing == resolved_node_id);
+	  else
+	    resolver->insert_resolved_type (path.get_node_id (),
+					    resolved_node_id);
 	}
       else
 	{
@@ -376,8 +504,7 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
   if (resolved_node == UNKNOWN_NODEID)
     return;
 
-  const CanonicalPath *type_path = nullptr;
-  if (mappings->lookup_canonical_path (resolved_node, &type_path))
+  if (auto type_path = mappings.lookup_canonical_path (resolved_node))
     {
       auto &final_seg = path.get_segments ().back ();
       switch (final_seg->get_type ())
@@ -496,10 +623,74 @@ ResolveTypeToCanonicalPath::visit (AST::TraitObjectTypeOneBound &type)
 }
 
 void
-ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &)
+ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &type)
 {
-  // FIXME is this actually allowed? dyn A+B
-  rust_unreachable ();
+  rust_assert (!type.get_type_param_bounds ().empty ());
+
+  auto &first_bound = type.get_type_param_bounds ().front ();
+
+  // Is it allowed or even possible to have a lifetime bound as a first bound?
+  if (first_bound->get_bound_type () == AST::TraitBound::LIFETIME)
+    rust_unreachable ();
+
+  auto &trait = static_cast<AST::TraitBound &> (*first_bound);
+
+  CanonicalPath path = CanonicalPath::create_empty ();
+  bool ok = ResolveTypeToCanonicalPath::go (trait.get_type_path (), path);
+
+  // right?
+  rust_assert (ok);
+
+  auto slice_path = "<dyn " + path.get ();
+
+  for (size_t idx = 1; idx < type.get_type_param_bounds ().size (); idx++)
+    {
+      auto &additional_bound = type.get_type_param_bounds ()[idx];
+
+      std::string str;
+
+      switch (additional_bound->get_bound_type ())
+	{
+	  case AST::TypeParamBound::TRAIT: {
+	    auto bound_path = CanonicalPath::create_empty ();
+
+	    auto &bound_type_path
+	      = static_cast<AST::TraitBound &> (*additional_bound)
+		  .get_type_path ();
+	    bool ok
+	      = ResolveTypeToCanonicalPath::go (bound_type_path, bound_path);
+
+	    if (!ok)
+	      continue;
+
+	    str = bound_path.get ();
+	    break;
+	  }
+	case AST::TypeParamBound::LIFETIME:
+	  rust_unreachable ();
+	  break;
+	}
+      slice_path += " + " + str;
+    }
+
+  slice_path += ">";
+
+  result = CanonicalPath::new_seg (type.get_node_id (), slice_path);
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::NeverType &type)
+{
+  result = CanonicalPath::new_seg (type.get_node_id (), "!");
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::TupleType &type)
+{
+  if (!type.is_unit_type ())
+    rust_unreachable ();
+
+  result = CanonicalPath::new_seg (type.get_node_id (), "()");
 }
 
 ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()

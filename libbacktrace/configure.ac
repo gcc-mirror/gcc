@@ -175,11 +175,16 @@ else
   fi
 fi
 
+# Enable --enable-host-pie.
+AC_ARG_ENABLE(host-pie,
+[AS_HELP_STRING([--enable-host-pie],
+                [build host code as PIE])],
+[PIC_FLAG=-fPIE], [PIC_FLAG=])
 # Enable --enable-host-shared.
 AC_ARG_ENABLE(host-shared,
 [AS_HELP_STRING([--enable-host-shared],
 		[build host code as shared libraries])],
-[PIC_FLAG=-fPIC], [PIC_FLAG=])
+[PIC_FLAG=-fPIC])
 AC_SUBST(PIC_FLAG)
 
 # Enable Intel CET on Intel CET enabled host if jit is enabled.

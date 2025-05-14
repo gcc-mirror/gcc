@@ -1,0 +1,328 @@
+.ds lang COBOL
+.ds gcobol GCC\ \*[lang]\ Front-end
+.Dd \& March 2024
+.Dt GCOBOL 3\& "GCC \*[lang] Compiler"
+.Os Linux
+.Sh NAME
+.Nm gcobol
+.Nd \*[gcobol] I/O function API
+.Sh LIBRARY
+.Pa libgcobol
+.
+.Sh SYNOPSIS
+.In symbols.h
+.In io.h
+.In gcobolio.h
+.
+.Ft gcobol_io_t Fn gcobol_fileops
+.Bd -literal
+class gcobol_io_t {
+public:
+  static const char constexpr marquee[64];
+  typedef void (open_t)( cblc_file_t *file,
+                         char *filename,
+                         int mode_char,
+                         int is_quoted );
+  typedef void (close_t)( cblc_file_t *file,
+                          int how );
+  typedef void (start_t)( cblc_file_t *file,
+                          int relop, // needs enum
+                          int first_last_key,
+                          size_t length );
+  typedef void (read_t)( cblc_file_t *file,
+                         int where );
+  typedef void (write_t)( cblc_file_t *file,
+                          unsigned char  *data,
+                          size_t length,
+                          int after,
+                          int lines,
+                          int is_random );
+  typedef void (rewrite_t)( cblc_file_t *file,
+                            size_t length, bool is_random );
+  typedef void (delete_t)( cblc_file_t *file,
+                          bool is_random );
+  open_t      *Open;
+  close_t     *Close;
+  start_t     *Start;
+  read_t      *Read;
+  write_t     *Write;
+  rewrite_t   *Rewrite;
+  delete_t    *Delete;
+\0\0...
+};
+.Ed
+.
+.Sh DESCRIPTION
+.Nm
+supplies replaceable I/O functionality via
+.Fn gcobol_fileops .
+It returns a pointer to a structure of C function pointers that
+implement sequential, relative, and indexed file operations over files
+whose On Disk Format (ODF) is defined by
+.Nm .
+A user wishing to use another library that implements the same
+functionality over a different ODF must supply a different implementation of
+.Fn gcobol_fileops ,
+plus 7 functions, as described in this document.  The pointers to
+those user-implemented functions are placed in a C++ object of type
+.Vt gcobol_io_t
+and an instantiation of that type is returned by
+.Fn gcobol_fileops .
+The compiled program initializes I/O operations by calling that
+function the first time any file is opened.
+.Pp
+Each function takes as its first argument a pointer to a
+.Vt cblc_file_t
+object, which is analogous to a
+.Vt FILE
+object used in the C
+.Sy stdio
+functions.  The
+.Vt cblc_file_t
+structure acts as a communication area between the compiled program
+and the I/O library.  Any information needed about the file is kept
+there.  Notably, the outcome of any operation is stored in that
+structure in the
+.Va file_status
+member, not as a return code. Information about the
+.Em operation
+(as opposed to the
+.Em file )
+appear as parameters to the function.
+.Pp
+.Vt cblc_file_t
+has one member, not used by
+.Nm ,
+that is reserved for the user:
+.Dl Vt "void *" Pa implementation .
+.Pp
+User-supplied I/O functions may assign and dereference
+.Pa implementation .
+.Nm
+will preserve the value, but never references it.
+.Pp
+The 7 function pointers in
+.Vt gcobol_io_t
+are
+.Bl -hang -width Rewrite
+.It Open
+.Ft void
+.Fn open_t "cblc_file_t *file" "char *filename" "int mode_char" "int is_quoted"
+.br
+parameters:
+.Bl -tag -width mode_char -compact
+.It Ar filename
+is the filename, as known to the OS
+.It Ar mode_char
+is one of
+.Bl -hang -width MM -compact
+.It Sq r
+OPEN INPUT: read-only mode
+.It Sq w
+OPEN OUTPUT: create a new file or overwrite an existing one
+.It Sq a
+EXTEND: append to sequential file
+.It Sq +
+modify existing file
+.El
+.It Ar is_quoted
+If
+.Sy true ,
+.Ar filename
+is taken literally.  If
+.Sy false ,
+.Ar filename
+is interpreted as the name of an environment variable, the contents of
+which, if extant, are taken as the name of the file to be opened.  If
+no such variable exists, then
+.Ar filename
+is used verbatim.
+.El
+.It Close
+.Ft void
+.Fn close_t "cblc_file_t *file" "int how"
+.br
+parameters:
+.Bl -hang -width how -compact
+.It Ar how
+A value of 0x08 closes a
+.Dq REEL\ unit .
+Because no such thing is supported, the function sets the file status to
+.Dq 07 ,
+meaning
+.Em "not a tape" .
+.El
+.It Start
+.Ft void
+.Fn start_t "cblc_file_t *file" "int relop" "int first_last_key" "size_t length"
+.br
+parameters:
+.Bl -tag -width length -compact
+.It Ar relop
+is one of
+.Bl -hang -width LT -compact
+.It Li 0
+means
+.Sq <
+.It Li 1
+means
+.Sq <=
+.It Li 2
+means
+.Sq =
+.It Li 3
+means
+.Sq !=
+.It Li 4
+means
+.Sq >=
+.It Li 5
+means
+.Sq >
+.El
+.It Ar first_last_key
+is the key number (starting at 1) of the key within the
+.Vt cblc_file_t
+structure.
+.It Ar length
+is the size of the key (TODO: per the START statement?)
+.El
+.It Read
+.Ft void
+.Fn read_t "cblc_file_t *file" "int where"
+parameters:
+.Bl -tag -width where -compact
+.It Ar where
+.Bl -hang -width 000 -compact
+.It Li -2
+PREVIOUS
+.It Li -1
+NEXT
+.It Ar \0N
+represents a key number, starting with 1, in the
+.Vt cblc_file_t
+structure. The value of that key is used to find the record, and read it.
+.El
+.El
+.It Write
+.Ft void
+.Fn write_t "cblc_file_t *file" "unsigned char  *data" \
+"size_t length" "int after" "int lines" "int is_random"
+.br
+parameters:
+.Bl -hang -width is_random -compact
+.It Ar data
+address of in-memory buffer to write
+.It Ar length
+length of in-memory buffer to write
+.It Ar after
+has the value 1 if the
+.D1 "AFTER ADVANCING n LINES"
+phrase was present in the
+.Sy WRITE
+statement, else 0
+.It Ar lines
+may be one of
+.Bl -hang -width 00000 -compact
+.It Li -666
+ADVANCING PAGE
+.It Li \0\0-1
+no
+.Sy ADVANCING
+phrase appeared
+.It \0\0\00
+ADVANCING 0 LINES
+is valid
+.It \0\0>0
+the value of
+.Ar n
+in
+ADVANCING
+.Ar n
+LINES
+.El
+.It Ar is_random
+is
+.Sy true
+if the
+.Em "access mode"
+is RANDOM
+.El
+.It Rewrite
+.Ft void
+.Fn rewrite_t "cblc_file_t *file" "size_t length" "bool is_random"
+parameters:
+.Bl -hang -width is_random -compact
+.It Ar length
+number of bytes to write
+.It Ar is_random
+.Sy true
+if
+.Em "access mode"
+is RANDOM
+.El
+.It Delete
+.Ft void
+.Fn delete_t "cblc_file_t *file" "bool is_random"
+parameters:
+.Bl -hang -width is_random -compact
+.It Ar is_random
+.Sy true
+if
+.Em "access mode"
+is RANDOM
+.El
+.El
+.
+.Pp
+The library implements one function that the
+.Nm Ns
+-produced binary calls directly:
+.Bl -item
+.It
+.Ft gcobol_io_t *
+.Fn gcobol_fileops
+.br
+This function populates a
+.Vt gcobol_io_t
+object with the above function pointers.  The compiled binary begins
+by calling
+.Fn gcobol_fileops Ns ,
+and then uses the supplied pointers to effect I/O.
+.El
+.
+.\" The following commands should be uncommented and
+.\" used where appropriate.
+.\" .Sh IMPLEMENTATION NOTES
+.\" This next command is for sections 2, 3, and 9 only
+.\"     (function return values).
+.Sh RETURN VALUES
+I/O functions return
+.Sy void .
+.Fn gcobol_fileops
+returns
+.Vt gcobol_io_t* .
+.\" .Sh FILES
+.\" .Sh COMPATIBILITY
+.\" This next command is for sections 2, 3, 4, and 9 only
+.\"     (settings of the errno variable).
+.\" .Sh ERRORS
+.\" .Sh SEE ALSO
+.Sh STANDARDS
+The I/O library supplied by
+.Nm ,
+.Sy libgcobolio.so ,
+supports the I/O semantics defined by ISO \*[lang].
+It is not intended to be compatible with any other ODF. That is,
+.Sy libgcobolio.so
+cannot be used to exchange data with any other \*[lang] implementation.
+.Pp
+The purpose of the
+.Vt gcobol_io_t
+structure is to allow the use of other I/O implementations with other ODF representations.
+.\" .Sh HISTORY
+.\" .Sh AUTHORS
+.Sh CAVEATS
+The library is not well tested, not least because it is not implemented.
+.Sh BUGS
+The future is yet to come.

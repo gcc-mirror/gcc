@@ -31,23 +31,23 @@ The language-independent component of GCC includes the majority of the
 optimizers, as well as the ``back ends'' that generate machine code for
 various processors.
 
-@cindex COBOL
 @cindex Mercury
 The part of a compiler that is specific to a particular language is
 called the ``front end''.  In addition to the front ends that are
 integrated components of GCC, there are several other front ends that
-are maintained separately.  These support languages such as
-Mercury, and COBOL@.  To use these, they must be built together with
-GCC proper.
+are maintained separately.  These support languages such as Mercury.
+To use these, they must be built together with GCC proper.
 
-@cindex C++
-@cindex G++
 @cindex Ada
+@cindex C++
+@cindex COBOL
+@cindex G++
 @cindex GNAT
 Most of the compilers for languages other than C have their own names.
-The C++ compiler is G++, the Ada compiler is GNAT, and so on.  When we
-talk about compiling one of those languages, we might refer to that
-compiler by its own name, or as GCC@.  Either is correct.
+The C++ compiler is G++, the COBOL compiler is gcobol, the Ada
+compiler is GNAT, and so on.  When we talk about compiling one of
+those languages, we might refer to that compiler by its own name, or
+as GCC@.  Either is correct.
 
 @cindex compiler compared to C++ preprocessor
 @cindex intermediate C version, nonexistent

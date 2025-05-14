@@ -3,7 +3,7 @@
 static int *__attribute__((noinline))
 callee (void)
 {
-  return NULL;
+  return NULL; /* { dg-message "using NULL here" } */
 }
 
 void test_1 (void)

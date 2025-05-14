@@ -450,7 +450,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdebug:
-      global.params.debuglevel = value ? 1 : 0;
+      global.params.debugEnabled = value ? true : false;
       break;
 
     case OPT_fdebug_:
@@ -460,7 +460,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	  break;
 	}
 
-      error ("bad argument for %<-fdebug%>: %qs", arg);
+      error ("bad argument for %<-fdebug=%>: %qs", arg);
       break;
 
     case OPT_fdoc:
@@ -510,6 +510,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	case CppStdRevisionCpp14:
 	case CppStdRevisionCpp17:
 	case CppStdRevisionCpp20:
+	case CppStdRevisionCpp23:
 	  global.params.cplusplus = (CppStdRevision) value;
 	  break;
 
@@ -520,6 +521,10 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_fignore_unknown_pragmas:
       global.params.ignoreUnsupportedPragmas = value;
+      break;
+
+    case OPT_finclude_imports:
+      includeImports = true;
       break;
 
     case OPT_finvariants:
@@ -533,7 +538,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_fmodule_file_:
       global.params.modFileAliasStrings.push (arg);
       if (!strchr (arg, '='))
-	error ("bad argument for %<-fmodule-file%>: %qs", arg);
+	error ("bad argument for %<-fmodule-file=%>: %qs", arg);
       break;
 
     case OPT_fmoduleinfo:
@@ -700,7 +705,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	  break;
 	}
 
-      error ("bad argument for %<-fversion%>: %qs", arg);
+      error ("bad argument for %<-fversion=%>: %qs", arg);
       break;
 
     case OPT_H:
@@ -1084,9 +1089,9 @@ d_parse_file (void)
   /* Buffer for contents of .ddoc files.  */
   OutBuffer ddocbuf;
 
-  /* In this mode, the first file name is supposed to be a duplicate
-     of one of the input files.  */
-  if (d_option.fonly && strcmp (d_option.fonly, main_input_filename) != 0)
+  /* In this mode, the main input file is supposed to be the same as the one
+     given by -fonly=.  */
+  if (d_option.fonly && !endswith (main_input_filename, d_option.fonly))
     error ("%<-fonly=%> argument is different from first input file name");
 
   for (size_t i = 0; i < num_in_fnames; i++)
@@ -1113,7 +1118,7 @@ d_parse_file (void)
 
 	  if (count < 0)
 	    {
-	      error (Loc ("stdin", 0, 0), "%s", xstrerror (errno));
+	      error (Loc::singleFilename ("stdin"), "%s", xstrerror (errno));
 	      free (buffer);
 	      continue;
 	    }
@@ -1306,6 +1311,21 @@ d_parse_file (void)
 	message ("semantic3 %s", m->toChars ());
 
       dmd::semantic3 (m, NULL);
+    }
+
+  if (includeImports)
+    {
+      for (size_t i = 0; i < compiledImports.length; i++)
+	{
+	  Module *m = compiledImports[i];
+	  gcc_assert (m->isRoot ());
+
+	  if (global.params.v.verbose)
+	    message ("semantic3 %s", m->toChars ());
+
+	  dmd::semantic3 (m, NULL);
+	  modules.push (m);
+	}
     }
 
   Module::runDeferredSemantic3 ();

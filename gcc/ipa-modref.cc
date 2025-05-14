@@ -1753,8 +1753,7 @@ modref_access_analysis::analyze_store (gimple *stmt, tree, tree op, void *data)
     t->record_access_lto (t->m_summary_lto->stores, &r, a);
   if (t->m_always_executed
       && a.useful_for_kill_p ()
-      && (!cfun->can_throw_non_call_exceptions
-	  || !stmt_could_throw_p (cfun, stmt)))
+      && !stmt_could_throw_p (cfun, stmt))
     {
       if (dump_file)
 	fprintf (dump_file, "   - Recording kill\n");

@@ -3,12 +3,12 @@
  *
  * Specification: C11
  *
- * Copyright:   Copyright (C) 2021-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 2021-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/importc.d, _importc.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/importc.d, _importc.d)
  * Documentation:  https://dlang.org/phobos/dmd_importc.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/importc.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/importc.d
  */
 
 module dmd.importc;
@@ -166,7 +166,7 @@ Expression carraySemantic(ArrayExp ae, Scope* sc)
      * So, rewrite as an IndexExp if we can.
      */
     auto t1 = e1.type.toBasetype();
-    if (t1.isTypeDArray() || t1.isTypeSArray())
+    if (t1.isStaticOrDynamicArray())
     {
         e2 = e2.expressionSemantic(sc).arrayFuncConv(sc);
         // C doesn't do array bounds checking, so `true` turns it off
@@ -176,7 +176,7 @@ Expression carraySemantic(ArrayExp ae, Scope* sc)
     e1 = e1.arrayFuncConv(sc);   // e1 might still be a function call
     e2 = e2.expressionSemantic(sc);
     auto t2 = e2.type.toBasetype();
-    if (t2.isTypeDArray() || t2.isTypeSArray())
+    if (t2.isStaticOrDynamicArray())
     {
         return new IndexExp(ae.loc, e2, e1, true).expressionSemantic(sc); // swap operands
     }

@@ -1105,24 +1105,6 @@ namespace __detail
       _M_bucket_index(const _Hash_node_value<_Value, true>& __n,
 		      size_t __bkt_count) const noexcept
       { return _RangeHash{}(__n._M_hash_code, __bkt_count); }
-
-      void
-      _M_store_code(_Hash_node_code_cache<false>&, __hash_code) const
-      { }
-
-      void
-      _M_copy_code(_Hash_node_code_cache<false>&,
-		   const _Hash_node_code_cache<false>&) const
-      { }
-
-      void
-      _M_store_code(_Hash_node_code_cache<true>& __n, __hash_code __c) const
-      { __n._M_hash_code = __c; }
-
-      void
-      _M_copy_code(_Hash_node_code_cache<true>& __to,
-		   const _Hash_node_code_cache<true>& __from) const
-      { __to._M_hash_code = __from._M_hash_code; }
     };
 
   /// Partial specialization used when nodes contain a cached hash code.

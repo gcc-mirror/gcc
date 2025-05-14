@@ -1190,7 +1190,10 @@ canon_address (rtx mem,
       address = strip_offset_and_add (address, offset);
 
       if (ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (mem))
-	  && const_or_frame_p (address))
+	  && const_or_frame_p (address)
+	  /* Literal addresses can alias any base, avoid creating a
+	     group for them.  */
+	  && ! CONST_SCALAR_INT_P (address))
 	{
 	  group_info *group = get_group_info (address);
 

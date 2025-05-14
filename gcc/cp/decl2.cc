@@ -64,7 +64,7 @@ static tree start_partial_init_fini_fn (bool, unsigned, unsigned, bool);
 static void finish_partial_init_fini_fn (tree);
 static tree emit_partial_init_fini_fn (bool, unsigned, tree,
 				       unsigned, location_t, tree);
-static void one_static_initialization_or_destruction (bool, tree, tree);
+static void one_static_initialization_or_destruction (bool, tree, tree, bool);
 static void generate_ctor_or_dtor_function (bool, unsigned, tree, location_t,
 					    bool);
 static tree prune_vars_needing_no_initialization (tree *);
@@ -2841,16 +2841,28 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
       tpvis = type_visibility (TREE_TYPE (t));
       break;
 
+    case ADDR_EXPR:
+      t = TREE_OPERAND (t, 0);
+      if (VAR_P (t))
+	/* If a variable has its address taken, the lvalue-rvalue conversion is
+	   not applied, so skip that case.  */
+	goto addressable;
+      break;
+
     case VAR_DECL:
     case FUNCTION_DECL:
       if (decl_constant_var_p (t))
 	/* The ODR allows definitions in different TUs to refer to distinct
 	   constant variables with internal or no linkage, so such a reference
-	   shouldn't affect visibility (PR110323).  FIXME but only if the
-	   lvalue-rvalue conversion is applied.  We still want to restrict
-	   visibility according to the type of the declaration however.  */
-	tpvis = type_visibility (TREE_TYPE (t));
-      else if (! TREE_PUBLIC (t))
+	   shouldn't affect visibility if the lvalue-rvalue conversion is
+	   applied (PR110323).  We still want to restrict visibility according
+	   to the type of the declaration however.  */
+	{
+	  tpvis = type_visibility (TREE_TYPE (t));
+	  break;
+	}
+    addressable:
+      if (! TREE_PUBLIC (t))
 	tpvis = VISIBILITY_ANON;
       else
 	tpvis = DECL_VISIBILITY (t);
@@ -3148,7 +3160,9 @@ determine_visibility (tree decl)
 	      && !attr)
 	    {
 	      int depth = TMPL_ARGS_DEPTH (args);
-	      if (DECL_VISIBILITY_SPECIFIED (decl))
+	      if (DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (TI_TEMPLATE (tinfo)))
+		/* Class template args don't affect template friends.  */;
+	      else if (DECL_VISIBILITY_SPECIFIED (decl))
 		{
 		  /* A class template member with explicit visibility
 		     overrides the class visibility, so we need to apply
@@ -4418,7 +4432,8 @@ fix_temporary_vars_context_r (tree *node,
    are destroying it.  */
 
 static void
-one_static_initialization_or_destruction (bool initp, tree decl, tree init)
+one_static_initialization_or_destruction (bool initp, tree decl, tree init,
+					  bool omp_target)
 {
   /* If we are supposed to destruct and there's a trivial destructor,
      nothing has to be done.  */
@@ -4521,7 +4536,7 @@ one_static_initialization_or_destruction (bool initp, tree decl, tree init)
       /* If we're using __cxa_atexit, register a function that calls the
 	 destructor for the object.  */
       if (flag_use_cxa_atexit)
-	finish_expr_stmt (register_dtor_fn (decl));
+	finish_expr_stmt (register_dtor_fn (decl, omp_target));
     }
   else
     finish_expr_stmt (build_cleanup (decl));
@@ -4588,6 +4603,23 @@ decomp_finalize_var_list (tree sl, int save_stmts_are_full_exprs_p)
     }
 }
 
+/* Helper for emit_partial_init_fini_fn OpenMP target handling, called via
+   walk_tree.  Set DECL_CONTEXT on any automatic temporaries which still
+   have it NULL to id->src_fn, so that later copy_tree_body_r can remap those.
+   Otherwise DECL_CONTEXT would be set only during gimplification of the host
+   fn and when copy_tree_body_r doesn't remap those, we'd ICE during the
+   target fn gimplification because the same automatic VAR_DECL can't be
+   used in multiple functions (with the exception of nested functions).  */
+
+static tree
+set_context_for_auto_vars_r (tree *tp, int *, void *data)
+{
+  copy_body_data *id = (copy_body_data *) data;
+  if (auto_var_in_fn_p (*tp, NULL_TREE) && DECL_ARTIFICIAL (*tp))
+    DECL_CONTEXT (*tp) = id->src_fn;
+  return NULL_TREE;
+}
+
 /* Generate code to do the initialization or destruction of the decls in VARS,
    a TREE_LIST of VAR_DECL with static storage duration.
    Whether initialization or destruction is performed is specified by INITP.  */
@@ -4646,10 +4678,11 @@ emit_partial_init_fini_fn (bool initp, unsigned priority, tree vars,
 	  id.transform_new_cfg = true;
 	  id.transform_return_to_modify = false;
 	  id.eh_lp_nr = 0;
+	  walk_tree (&init, set_context_for_auto_vars_r, &id, NULL);
 	  walk_tree (&init, copy_tree_body_r, &id, NULL);
 	}
       /* Do one initialization or destruction.  */
-      one_static_initialization_or_destruction (initp, decl, init);
+      one_static_initialization_or_destruction (initp, decl, init, omp_target);
     }
   decomp_finalize_var_list (sl, save_stmts_are_full_exprs_p);
 
@@ -5204,7 +5237,8 @@ handle_tls_init (void)
       tree init = TREE_PURPOSE (vars);
       sl = decomp_handle_one_var (vars, sl, &saw_nonbase,
 				  save_stmts_are_full_exprs_p);
-      one_static_initialization_or_destruction (/*initp=*/true, var, init);
+      one_static_initialization_or_destruction (/*initp=*/true, var, init,
+						false);
 
       /* Output init aliases even with -fno-extern-tls-init.  */
       if (TARGET_SUPPORTS_ALIASES && TREE_PUBLIC (var))

@@ -4,7 +4,7 @@ struct Foo {
 }
 
 fn main() {
-    let a = Foo { 0: 10.0, 1: 20.0 }; // { dg-error "failed to resolve type for field" }
-    // { dg-error "unknown field" "" { target *-*-* } .-1 }
-    // { dg-prune-output "compilation terminated" }
+    let a = Foo { 0: 10.0, 1: 20.0 };
+    // { dg-error "unknown field .0. .E0560." "" { target *-*-* } .-1 }
+    // { dg-error "unknown field .1. .E0560." "" { target *-*-* } .-2 }
 }

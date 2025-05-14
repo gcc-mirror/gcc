@@ -66,7 +66,7 @@ static inline struct connection *__objt_conn(enum obj_type *t)
 static inline struct connection *objt_conn(enum obj_type *t)
 {
  if (!t || *t != OBJ_TYPE_CONN)
-   return (struct connection *) ((void *)0);
+   return (struct connection *) ((void *)0); /* { dg-message "using NULL here" } */
  return __objt_conn(t);
 }
 struct session {
@@ -85,7 +85,7 @@ smp_fetch_ssl_fc_has_early(const struct arg *args, struct sample *smp, const cha
  SSL *ssl;
  struct connection *conn;
 
- conn = objt_conn(smp->sess->origin);
+ conn = objt_conn(smp->sess->origin); /* { dg-message "return of NULL" } */
  ssl = ssl_sock_get_ssl_object(conn);
  if (!ssl)
   return 0;

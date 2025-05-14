@@ -41,7 +41,9 @@ namespace selftest {
 class test_diagnostic_event : public diagnostic_event
 {
  public:
-  test_diagnostic_event (location_t loc, const char *funcname, int depth,
+  test_diagnostic_event (location_t loc,
+			 logical_location logical_loc,
+			 int depth,
 			 const char *desc,
 			 diagnostic_thread_id_t thread_id = 0);
   ~test_diagnostic_event ();
@@ -52,12 +54,9 @@ class test_diagnostic_event : public diagnostic_event
   {
     pp_string (&pp, m_desc);
   }
-  const logical_location *get_logical_location () const final override
+  logical_location get_logical_location () const final override
   {
-    if (m_logical_loc.get_name ())
-      return &m_logical_loc;
-    else
-      return nullptr;
+    return m_logical_loc;
   }
   meaning get_meaning () const final override
   {
@@ -77,14 +76,9 @@ class test_diagnostic_event : public diagnostic_event
     m_connected_to_next_event = true;
   }
 
-  const char *get_function_name () const
-  {
-    return m_logical_loc.get_name ();
-  }
-
  private:
   location_t m_loc;
-  test_logical_location m_logical_loc;
+  logical_location m_logical_loc;
   int m_depth;
   char *m_desc; // has been formatted; doesn't get i18n-ed
   bool m_connected_to_next_event;
@@ -149,6 +143,10 @@ class test_diagnostic_path : public diagnostic_path
 		 diagnostic_thread_id_t thread_id = 0);
 
  private:
+  logical_location
+  logical_location_from_funcname (const char *funcname);
+
+  test_logical_location_manager m_test_logical_loc_mgr;
   auto_delete_vec<test_diagnostic_thread> m_threads;
   auto_delete_vec<test_diagnostic_event> m_events;
 

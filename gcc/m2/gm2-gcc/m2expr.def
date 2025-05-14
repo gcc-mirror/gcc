@@ -45,7 +45,7 @@ PROCEDURE init (location: location_t) ;
 
 (*
    CSTIntToString - return an integer string using base 10 and no padding.
-                    The string returned will have been malloc'd.
+                    The string returned will have been mallocd.
 *)
 
 PROCEDURE CSTIntToString (t: tree) : CharStar ;
@@ -743,6 +743,15 @@ PROCEDURE OverflowZType (location: location_t;
 *)
 
 PROCEDURE BuildCondIfExpression (condition, type, left, right: tree) : tree ;
+
+
+(*
+   BuildSystemTBitSize - return the minimum number of bits to represent type.
+                         This function is called when evaluating
+                         SYSTEM.TBITSIZE.
+*)
+
+PROCEDURE BuildSystemTBitSize (location: location_t; type: tree) : tree ;
 
 
 END m2expr.

@@ -1,7 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail3.d(41): Error: incompatible types for `(a) + (b)`: both operands are of type `vec2`
+fail_compilation/fail3.d(42): Error: operator `+` is not defined for type `vec2`
+fail_compilation/fail3.d(13):        perhaps overload the operator with `auto opBinary(string op : "+")(vec2 rhs) {}`
 ---
 */
 

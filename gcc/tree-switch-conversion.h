@@ -423,19 +423,9 @@ public:
      can build a bit test.  */
   static bool can_be_handled (unsigned HOST_WIDE_INT range, unsigned uniq);
 
-  /* Return true when cluster starting at START and ending at END (inclusive)
-     can build a bit test.  */
-  static bool can_be_handled (const vec<cluster *> &clusters, unsigned start,
-			      unsigned end);
-
   /* Return true when COUNT of cases of UNIQ labels is beneficial for bit test
      transformation.  */
   static bool is_beneficial (unsigned count, unsigned uniq);
-
-  /* Return true if cluster starting at START and ending at END (inclusive)
-     is profitable transformation.  */
-  static bool is_beneficial (const vec<cluster *> &clusters, unsigned start,
-			     unsigned end);
 
 /* Split the basic block at the statement pointed to by GSIP, and insert
    a branch to the target basic block of E_TRUE conditional on tree

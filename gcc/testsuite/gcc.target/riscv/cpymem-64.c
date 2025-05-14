@@ -95,7 +95,7 @@ COPY_ALIGNED_N(11)
 /*
 **copy_15:
 **    ...
-**    (call|tail)\tmemcpy
+**    (call|tail)\tmemcpy(?:@plt)?
 **    ...
 */
 COPY_N(15)
@@ -116,7 +116,7 @@ COPY_ALIGNED_N(15)
 /*
 **copy_27:
 **    ...
-**    (call|tail)\tmemcpy
+**    (call|tail)\tmemcpy(?:@plt)?
 **    ...
 */
 COPY_N(27)

@@ -45,8 +45,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define OBJECT_FORMAT_MACHO 1
 
-/* Suppress g++ attempt to link in the math library automatically. */
+/* Suppress language-specific specs attempt to link in libm automatically. */
 #define MATH_LIBRARY ""
+
+/* Likewise libdl.  */
+#define DL_LIBRARY ""
 
 /* We have atexit.  */
 
@@ -284,12 +287,17 @@ extern GTY(()) int darwin_ms_struct;
 #define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
 #endif
 
-#if LD64_HAS_PLATFORM_VERSION
-#define DARWIN_PLATFORM_ID \
-  "%{mmacosx-version-min=*: -platform_version macos %* 0.0} "
+#if LD64_HAS_MACOS_VERSION_MIN
+# define DARWIN_PLATFORM_ID \
+  "%{mmacosx-version-min=*:-macos_version_min %*} "
 #else
-#define DARWIN_PLATFORM_ID \
+# if LD64_HAS_PLATFORM_VERSION
+#  define DARWIN_PLATFORM_ID \
+  "%{mmacosx-version-min=*: -platform_version macos %* 0.0} "
+# else
+#  define DARWIN_PLATFORM_ID \
   "%{mmacosx-version-min=*:-macosx_version_min %*} "
+# endif
 #endif
 
 /* Code built with mdynamic-no-pic does not support PIE/PIC, so  we disallow
@@ -496,6 +504,7 @@ extern GTY(()) int darwin_ms_struct;
    %{static|static-libgcc|static-libgfortran:%:replace-outfile(-lgfortran libgfortran.a%s)}\
    %{static|static-libgcc|static-libquadmath:%:replace-outfile(-lquadmath libquadmath.a%s)}\
    %{static|static-libgcc|static-libphobos:%:replace-outfile(-lgphobos libgphobos.a%s)}\
+   %{static|static-libgcc|static-libgcobol:%:replace-outfile(-lgcobol libgcobol.a%s)}\
    %{static|static-libgcc|static-libstdc++|static-libgfortran:%:replace-outfile(-lgomp libgomp.a%s)}\
    %{static|static-libgcc|static-libstdc++:%:replace-outfile(-lstdc++ libstdc++.a%s)}\
    %{static|static-libgm2:%:replace-outfile(-lm2pim libm2pim.a%s)}\

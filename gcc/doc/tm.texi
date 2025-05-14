@@ -3047,14 +3047,6 @@ A target hook which can change allocno class for given pseudo from
   The default version of this target hook always returns given class.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE (int @var{hard_regno})
-A target hook which returns the callee-saved register @var{hard_regno}
-cost scale in epilogue and prologue used by IRA.
-
-The default version of this target hook returns 1 if optimizing for
-size, otherwise returns the entry block frequency.
-@end deftypefn
-
 @deftypefn {Target Hook} bool TARGET_LRA_P (void)
 A target hook which returns true if we use LRA instead of reload pass.
 
@@ -4781,10 +4773,6 @@ the @code{parallel} contains the whole return value, callers will use
 that element as the canonical location and ignore the others.  The m68k
 port uses this type of @code{parallel} to return pointers in both
 @samp{%a0} (the canonical location) and @samp{%d0}.
-
-If @code{TARGET_PROMOTE_FUNCTION_RETURN} returns true, you must apply
-the same promotion rules specified in @code{PROMOTE_MODE} if
-@var{valtype} is a scalar type.
 
 If the precise function being called is known, @var{func} is a tree
 node (@code{FUNCTION_DECL}) for it; otherwise, @var{func} is a null
@@ -7009,6 +6997,75 @@ secondary register in the conventional way but the default base value of
 4 is not correct for your machine, use this target hook to add some other
 value to the result of that function.  The arguments to that function
 are the same as to this target hook.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_CALLEE_SAVE_COST (spill_cost_type @var{cost_type}, unsigned int @var{hard_regno}, machine_mode @var{mode}, unsigned int @var{nregs}, int @var{mem_cost}, const HARD_REG_SET @var{&allocated_callee_regs}, bool @var{existing_spills_p})
+Return the one-off cost of saving or restoring callee-saved registers
+(also known as call-preserved registers or non-volatile registers).
+The parameters are as follows:
+
+@itemize
+@item
+@var{cost_type} is @samp{spill_cost_type::SAVE} for saving a register
+and @samp{spill_cost_type::RESTORE} for restoring a register.
+
+@item
+@var{hard_regno} and @var{mode} represent the whole register that
+the register allocator is considering using; of these,
+@var{nregs} registers are fully or partially callee-saved.
+
+@item
+@var{mem_cost} is the normal cost for storing (for saves)
+or loading (for restores) the @var{nregs} registers.
+
+@item
+@var{allocated_callee_regs} is the set of callee-saved registers
+that are already in use.
+
+@item
+@var{existing_spills_p} is true if the register allocator has
+already decided to spill registers to memory.
+@end itemize
+
+If @var{existing_spills_p} is false, the cost of a save should account
+for frame allocations in a way that is consistent with
+@code{TARGET_FRAME_ALLOCATION_COST}'s handling of allocations for spills.
+Similarly, the cost of a restore should then account for frame deallocations
+in a way that is consistent with @code{TARGET_FRAME_ALLOCATION_COST}'s
+handling of deallocations.
+
+Note that this hook should not attempt to apply a frequency scale
+to the cost: it is the caller's responsibility to do that where
+appropriate.
+
+The default implementation returns @var{mem_cost}, plus the allocation
+or deallocation cost returned by @code{TARGET_FRAME_ALLOCATION_COST},
+where appropriate.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_FRAME_ALLOCATION_COST (frame_cost_type @var{cost_type}, const HARD_REG_SET @var{&allocated_callee_regs})
+Return the cost of allocating or deallocating a frame for the sake of
+a spill; @var{cost_type} chooses between allocation and deallocation.
+The term ``spill'' here includes both forcing a pseudo register to memory
+and using caller-saved registers for pseudo registers that are live across
+a call.
+
+This hook is only called if the register allocator has not so far
+decided to spill.  The allocator may have decided to use callee-saved
+registers; if so, @var{allocated_callee_regs} is the set of callee-saved
+registers that the allocator has used.  There might also be other reasons
+why a stack frame is already needed; for example, @samp{get_frame_size ()}
+might be nonzero, or the target might already require a frame for
+target-specific reasons.
+
+When the register allocator uses this hook to cost spills, it also uses
+@code{TARGET_CALLEE_SAVE_COST} to cost new callee-saved registers, passing
+@samp{false} as the @var{existing_spills_p} argument.  The intention is to
+allow the target to apply an apples-for-apples comparison between the
+cost of using callee-saved registers and using spills in cases where the
+allocator has not yet committed to using both strategies.
+
+The default implementation returns 0.
 @end deftypefn
 
 @defmac BRANCH_COST (@var{speed_p}, @var{predictable_p})

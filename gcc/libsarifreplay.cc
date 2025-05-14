@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
-#include "make-unique.h"
 #include "libgdiagnostics++.h"
 #include "json-parsing.h"
 #include "intl.h"
@@ -51,7 +50,7 @@ read_file (const char *path, libgdiagnostics::manager &mgr)
     }
 
   /* Read content, allocating a buffer for it.  */
-  auto result = ::make_unique<std::vector<char>> ();
+  auto result = std::make_unique<std::vector<char>> ();
   char buf[4096];
   size_t iter_sz_in;
 
@@ -106,6 +105,82 @@ make_physical_location (libgdiagnostics::manager &mgr,
     = make_physical_location (mgr, f, range.m_end);
   return mgr.new_location_from_range (start, start, end);
 }
+
+static enum diagnostic_logical_location_kind_t
+get_logical_location_kind_for_json_kind (enum json::kind json_kind)
+{
+  switch (json_kind)
+    {
+    default:
+      gcc_unreachable ();
+
+    case json::JSON_OBJECT:
+      return DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT;
+
+    case json::JSON_ARRAY:
+      return DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY;
+
+    case json::JSON_INTEGER:
+    case json::JSON_FLOAT:
+    case json::JSON_STRING:
+    case json::JSON_TRUE:
+    case json::JSON_FALSE:
+    case json::JSON_NULL:
+      return DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY;
+      /* Perhaps this should be DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE,
+	 but then we need to more carefully track context.  */
+    }
+}
+
+static libgdiagnostics::logical_location
+make_logical_location_from_jv (libgdiagnostics::manager &mgr,
+			       const json::value &jv)
+{
+  libgdiagnostics::logical_location parent;
+  const json::pointer::token &pointer_token = jv.get_pointer_token ();
+
+  if (pointer_token.m_parent)
+    /* Recursively ensure that we have ancestor locations.  */
+    parent = make_logical_location_from_jv (mgr,
+					    *jv.m_pointer_token.m_parent);
+
+  std::string short_name;
+  std::string fully_qualified_name;
+  switch (pointer_token.m_kind)
+    {
+    default:
+      gcc_unreachable ();
+
+    case json::pointer::token::kind::root_value:
+      short_name = "";
+      fully_qualified_name = "";
+      break;
+
+    case json::pointer::token::kind::object_member:
+      short_name = pointer_token.m_data.u_member;
+      gcc_assert (parent.m_inner);
+      fully_qualified_name
+	= std::string (parent.get_fully_qualified_name ()) + "/" + short_name;
+      break;
+
+    case json::pointer::token::kind::array_index:
+      short_name = std::to_string (pointer_token.m_data.u_index);
+      gcc_assert (parent.m_inner);
+      fully_qualified_name
+	= std::string (parent.get_fully_qualified_name ()) + "/" + short_name;
+      break;
+    }
+
+  enum diagnostic_logical_location_kind_t kind
+    = get_logical_location_kind_for_json_kind (jv.get_kind ());
+
+  return mgr.new_logical_location (kind,
+				   parent,
+				   short_name.c_str (),
+				   fully_qualified_name.c_str (),
+				   nullptr);
+}
+
 
 enum class status
 {
@@ -417,6 +492,9 @@ private:
 				m_loaded_file,
 				m_json_location_map.get_range_for_value (jv));
     diag.set_location (loc_range);
+
+    diag.set_logical_location (make_logical_location_from_jv (m_control_mgr,
+							      jv));
 
     diag.finish_va (gmsgid, args);
   }
@@ -1350,7 +1428,7 @@ maybe_consume_embedded_link (const char *&iter_src)
     }
 
   iter_src = iter;
-  return ::make_unique<embedded_link> (std::move (result));
+  return std::make_unique<embedded_link> (std::move (result));
 }
 
 /* Lookup the plain text string within a result.message (§3.27.11),
@@ -2009,7 +2087,32 @@ handle_logical_location_object (const json::object &logical_loc_obj,
 	    { "parameter",
 	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_PARAMETER },
 	    { "variable",
-	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE } };
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE },
+
+	    { "element",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_ELEMENT },
+	    { "attribute",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_ATTRIBUTE },
+	    { "text",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_TEXT },
+	    { "comment",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_COMMENT },
+	    { "processingInstruction",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION },
+	    { "dtd",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_DTD },
+	    { "declaration",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_DECLARATION },
+
+	    { "object",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT },
+	    { "array",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY },
+	    { "property",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY },
+	    { "value",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE },
+      };
       auto result
 	= get_value_from_json_string<enum diagnostic_logical_location_kind_t>
 	    (*kind_str, kind_prop, kind_values, ARRAY_SIZE (kind_values));

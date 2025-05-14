@@ -151,6 +151,11 @@ namespace __unicode
       { return _M_curr(); }
 
       [[nodiscard]]
+      constexpr iter_difference_t<_Iter> 
+      _M_units() const requires forward_iterator<_Iter>
+      { return _M_to_increment; }
+
+      [[nodiscard]]
       constexpr value_type
       operator*() const { return _M_buf[_M_buf_index]; }
 
@@ -610,6 +615,18 @@ inline namespace __v16_0_0
   }
 
   // @pre c <= 0x10FFFF
+  constexpr bool
+  __should_escape_category(char32_t __c) noexcept
+  {
+    constexpr uint32_t __mask = 0x01;
+    auto* __end = std::end(__escape_edges);
+    auto* __p = std::lower_bound(__escape_edges, __end,
+				 (__c << 1u) + 2);
+    return __p[-1] & __mask;
+  }
+
+
+  // @pre c <= 0x10FFFF
   constexpr _Gcb_property
   __grapheme_cluster_break_property(char32_t __c) noexcept
   {
@@ -1038,6 +1055,8 @@ inline namespace __v16_0_0
 	    {
 	      string_view __s(__enc);
 	      if (__s.ends_with("//"))
+		__s.remove_suffix(2);
+	      if (__s.ends_with("LE") || __s.ends_with("BE"))
 		__s.remove_suffix(2);
 	      return __s == "16" || __s == "32";
 	    }

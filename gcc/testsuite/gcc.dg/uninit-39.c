@@ -1,8 +1,7 @@
 /* PR c/98592 - ICE in gimple_canonical_types_compatible_p while formatting
    a MEM_REF
    { dg-do compile }
-   { dg-options "-O2 -Wall" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall" } */
 
 void f (int);
 

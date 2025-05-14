@@ -58,9 +58,6 @@ EnumValue
 Enum(arm_abi_type) String(aapcs) Value(ARM_ABI_AAPCS)
 
 EnumValue
-Enum(arm_abi_type) String(iwmmxt) Value(ARM_ABI_IWMMXT)
-
-EnumValue
 Enum(arm_abi_type) String(aapcs-linux) Value(ARM_ABI_AAPCS_LINUX)
 
 mabort-on-noreturn

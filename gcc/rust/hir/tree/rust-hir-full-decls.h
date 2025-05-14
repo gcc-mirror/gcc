@@ -113,8 +113,6 @@ class WhileLoopExpr;
 class WhileLetLoopExpr;
 class IfExpr;
 class IfExprConseqElse;
-class IfLetExpr;
-class IfLetExprConseqElse;
 struct MatchArm;
 // class MatchCase;
 // class MatchCaseBlockExpr;
@@ -125,8 +123,10 @@ class AwaitExpr;
 class AsyncBlockExpr;
 class InlineAsmReg;
 class InlineAsmRegClass;
-struct InlineAsmRegOrRegClass;
+struct AnonConst;
+class InlineAsmOperand;
 class InlineAsm;
+class LlvmInlineAsm;
 
 // rust-stmt.h
 class EmptyStmt;
@@ -212,7 +212,6 @@ class TraitBound;
 class ImplTraitType;
 class TraitObjectType;
 class ParenthesisedType;
-class ImplTraitTypeOneBound;
 class TupleType;
 class NeverType;
 class RawPointerType;

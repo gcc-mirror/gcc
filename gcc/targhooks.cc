@@ -2083,6 +2083,33 @@ default_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 }
 
+/* The default implementation of TARGET_CALLEE_SAVE_COST.  */
+
+int
+default_callee_save_cost (spill_cost_type spill_type, unsigned int,
+			  machine_mode, unsigned int, int mem_cost,
+			  const HARD_REG_SET &callee_saved_regs,
+			  bool existing_spills_p)
+{
+  if (!existing_spills_p)
+    {
+      auto frame_type = (spill_type == spill_cost_type::SAVE
+			 ? frame_cost_type::ALLOCATION
+			 : frame_cost_type::DEALLOCATION);
+      mem_cost += targetm.frame_allocation_cost (frame_type,
+						 callee_saved_regs);
+    }
+  return mem_cost;
+}
+
+/* The default implementation of TARGET_FRAME_ALLOCATION_COST.  */
+
+int
+default_frame_allocation_cost (frame_cost_type, const HARD_REG_SET &)
+{
+  return 0;
+}
+
 /* The default implementation of TARGET_SLOW_UNALIGNED_ACCESS.  */
 
 bool

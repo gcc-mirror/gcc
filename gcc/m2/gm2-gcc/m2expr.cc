@@ -673,6 +673,7 @@ m2expr_BuildLRotate (location_t location, tree op1, tree nBits,
 
   op1 = m2expr_FoldAndStrip (op1);
   nBits = m2expr_FoldAndStrip (nBits);
+  nBits = m2convert_BuildConvert (location, TREE_TYPE (op1), nBits, needconvert);  
   t = m2expr_build_binary_op (location, LROTATE_EXPR, op1, nBits, needconvert);
   return m2expr_FoldAndStrip (t);
 }
@@ -688,6 +689,7 @@ m2expr_BuildRRotate (location_t location, tree op1, tree nBits,
 
   op1 = m2expr_FoldAndStrip (op1);
   nBits = m2expr_FoldAndStrip (nBits);
+  nBits = m2convert_BuildConvert (location, TREE_TYPE (op1), nBits, needconvert);
   t = m2expr_build_binary_op (location, RROTATE_EXPR, op1, nBits, needconvert);
   return m2expr_FoldAndStrip (t);
 }
@@ -801,18 +803,17 @@ m2expr_BuildLogicalRotate (location_t location, tree op1, tree op2, tree op3,
     {
       char *labelElseName = createUniqueLabel ();
       char *labelEndName = createUniqueLabel ();
-      tree is_less = m2expr_BuildLessThan (location,
-                                           m2convert_ToInteger (location, op3),
+      tree rotateCount = m2convert_ToInteger (location, op3);
+      tree is_less = m2expr_BuildLessThan (location, rotateCount,
                                            m2expr_GetIntegerZero (location));
 
       m2statement_DoJump (location, is_less, NULL, labelElseName);
-      res = m2expr_BuildLRLn (location, op2, op3, nBits, needconvert);
+      res = m2expr_BuildLRLn (location, op2, rotateCount, nBits, needconvert);
       m2statement_BuildAssignmentTree (location, op1, res);
       m2statement_BuildGoto (location, labelEndName);
       m2statement_DeclareLabel (location, labelElseName);
-      res = m2expr_BuildLRRn (location, op2,
-                              m2expr_BuildNegate (location, op3, needconvert),
-                              nBits, needconvert);
+      rotateCount = m2expr_BuildNegate (location, rotateCount, needconvert);
+      res = m2expr_BuildLRRn (location, op2, rotateCount, nBits, needconvert);
       m2statement_BuildAssignmentTree (location, op1, res);
       m2statement_DeclareLabel (location, labelEndName);
     }
@@ -2817,7 +2818,9 @@ m2expr_calcNbits (location_t location, tree min, tree max)
   return t;
 }
 
-/* BuildTBitSize return the minimum number of bits to represent, type.  */
+/* BuildTBitSize return the minimum number of bits to represent type.
+   This function is called internally by cc1gm2 to calculate the bits
+   size of a type and is used to position record fields.  */
 
 tree
 m2expr_BuildTBitSize (location_t location, tree type)
@@ -2846,6 +2849,19 @@ m2expr_BuildTBitSize (location_t location, tree type)
                                m2decl_BuildIntegerConstant (BITS_PER_UNIT),
                                false);
     }
+}
+
+/* BuildSystemTBitSize return the minimum number of bits to represent type.
+   This function is called when evaluating SYSTEM.TBITSIZE.  */
+
+tree
+m2expr_BuildSystemTBitSize (location_t location, tree type)
+{
+  enum tree_code code = TREE_CODE (type);
+  m2assert_AssertLocation (location);
+  if (code == TYPE_DECL)
+    return m2expr_BuildTBitSize (location, TREE_TYPE (type));
+  return TYPE_SIZE (type);
 }
 
 /* BuildSize build a SIZE function expression and returns the tree.  */

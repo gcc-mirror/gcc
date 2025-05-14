@@ -5,7 +5,7 @@
 
 /* { dg-additional-options "-Ofast" } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { ! ia32 } } } } */
 
 #include <stdbool.h>
 

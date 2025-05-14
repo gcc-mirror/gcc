@@ -1,5 +1,5 @@
 // { dg-do link }
-// { dg-require-static-libstdcxx }
+// { dg-require-static-libstdcxx "" }
 // { dg-require-sharedlib "" }
 // { dg-require-effective-target fpic }
 // { dg-options "-shared -fPIC -static-libgcc -static-libstdc++" }

@@ -61,6 +61,10 @@
 #
 # It possibly modifies the following variables:
 #
+#   EXTRA_CFLAGS           extra flags to pass when compiling C code
+#
+#   EXTRA_CXX_FLAGS        extra flags to pass when compiling C++ code
+#
 #   OPT_LDFLAGS            extra flags to pass when linking the library, of
 #                          the form '-Wl,blah'
 #                          (defaults to empty in acinclude.m4)
@@ -143,8 +147,14 @@ cpu_include_dir=cpu/${try_cpu}
 # Set specific CPU overrides for cpu_defines_dir. Most can just use generic.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_cpu}" in
+  amdgcn)
+    cpu_defines_dir=cpu/gcn
+    ;;
   arm*)
     cpu_defines_dir=cpu/arm
+    ;;
+  nvptx)
+    cpu_defines_dir=cpu/nvptx
     ;;
   powerpc* | rs6000)
     cpu_defines_dir=cpu/powerpc
@@ -170,7 +180,7 @@ esac
 
 
 # Set specific CPU overrides for atomicity_dir.
-# This can be over-ridden in GLIBCXX_ENABLE_ATOMIC_BUILTINS.
+# This can be overridden in GLIBCXX_ENABLE_ATOMIC_BUILTINS.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/atomicity.h ; then
   atomicity_dir=$cpu_include_dir
@@ -363,6 +373,11 @@ case "${host}" in
   arm*-*-freebsd*)
      port_specific_symbol_files="\$(srcdir)/../config/os/gnu-linux/arm-eabi-extra.ver"
      ;;
+  nvptx-*-none)
+    # For 'make all-target-libstdc++-v3', re 'alloca'/VLA usage:
+    EXTRA_CFLAGS="${EXTRA_CFLAGS} -mfake-ptx-alloca"
+    OPTIMIZE_CXXFLAGS="${OPTIMIZE_CXXFLAGS} -mfake-ptx-alloca"
+    ;;
   powerpc*-*-darwin*)
     port_specific_symbol_files="\$(srcdir)/../config/os/bsd/darwin/ppc-extra.ver"
     ;;
@@ -377,5 +392,29 @@ case "${host}" in
 	    ;;
     esac
     abi_baseline_subdir_switch=--print-multi-os-directory
+    ;;
+esac
+
+
+# Dumb down libstdc++ for certain configurations.
+# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
+case "${host}" in
+  amdgcn-*-amdhsa \
+  | nvptx-*-none )
+    # For 'make all-target-libstdc++-v3' and 'make check-target-libstdc++-v3',
+    # exception handling is not supported: in case that exception handling
+    # constructs survive compiler optimizations, the back ends error out:
+    #     sorry, unimplemented: exception handling not supported
+    EXTRA_CXX_FLAGS="${EXTRA_CXX_FLAGS} -fno-exceptions"
+
+    # For 'make all-target-libstdc++-v3' and 'make check-target-libstdc++-v3',
+    # RTTI is not supported.
+    EXTRA_CXX_FLAGS="${EXTRA_CXX_FLAGS} -fno-rtti"
+
+    # Cannot '#include' all newlib header files without explosion, for example:
+    #     error: 'jmp_buf' was not declared in this scope
+    # Just disable generation of PCH files here, instead of attempting to care
+    # for such special cases in some more complex way.
+    enable_libstdcxx_pch=no
     ;;
 esac

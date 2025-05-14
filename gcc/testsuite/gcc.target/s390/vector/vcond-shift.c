@@ -3,13 +3,13 @@
 /* { dg-do compile { target { s390*-*-* } } } */
 /* { dg-options "-O3 -march=z13 -mzarch" } */
 
-/* { dg-final { scan-assembler-times "vesraf\t%v.?,%v.?,31" 6 } } */
-/* { dg-final { scan-assembler-times "vesrah\t%v.?,%v.?,15" 6 } } */
-/* { dg-final { scan-assembler-times "vesrab\t%v.?,%v.?,7" 6 } } */
+/* { dg-final { scan-assembler-times "vesraf\t%v.?,%v.?,31" 4 } } */
+/* { dg-final { scan-assembler-times "vesrah\t%v.?,%v.?,15" 4 } } */
+/* { dg-final { scan-assembler-times "vesrab\t%v.?,%v.?,7" 4 } } */
 /* { dg-final { scan-assembler-not "vzero\t*" } } */
-/* { dg-final { scan-assembler-times "vesrlf\t%v.?,%v.?,31" 4 } } */
-/* { dg-final { scan-assembler-times "vesrlh\t%v.?,%v.?,15" 4 } } */
-/* { dg-final { scan-assembler-times "vesrlb\t%v.?,%v.?,7" 4 } } */
+/* { dg-final { scan-assembler-times "vesrlf\t%v.?,%v.?,31" 6 } } */
+/* { dg-final { scan-assembler-times "vesrlh\t%v.?,%v.?,15" 6 } } */
+/* { dg-final { scan-assembler-times "vesrlb\t%v.?,%v.?,7" 6 } } */
 
 /* Make it expand to two vector operations.  */
 #define ITER(X) (2 * (16 / sizeof (X[1])))

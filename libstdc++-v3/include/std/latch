@@ -62,7 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     constexpr explicit
     latch(ptrdiff_t __expected) noexcept
-    : _M_a(__expected)
+    : _M_counter(__expected)
     { __glibcxx_assert(__expected >= 0 && __expected <= max()); }
 
     ~latch() = default;
@@ -74,23 +74,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     count_down(ptrdiff_t __update = 1)
     {
       __glibcxx_assert(__update >= 0 && __update <= max());
-      auto const __old = __atomic_impl::fetch_sub(&_M_a, __update,
+      auto const __old = __atomic_impl::fetch_sub(&_M_counter, __update,
 						  memory_order::release);
       if (std::cmp_equal(__old, __update))
-	__atomic_impl::notify_all(&_M_a);
+	__atomic_impl::notify_all(&_M_counter);
       else
 	__glibcxx_assert(std::cmp_less(__update, __old));
     }
 
     _GLIBCXX_ALWAYS_INLINE bool
     try_wait() const noexcept
-    { return __atomic_impl::load(&_M_a, memory_order::acquire) == 0; }
+    { return __atomic_impl::load(&_M_counter, memory_order::acquire) == 0; }
 
     _GLIBCXX_ALWAYS_INLINE void
     wait() const noexcept
     {
       auto const __pred = [this] { return this->try_wait(); };
-      std::__atomic_wait_address(&_M_a, __pred);
+      std::__atomic_wait_address(&_M_counter, __pred);
     }
 
     _GLIBCXX_ALWAYS_INLINE void
@@ -102,7 +102,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   private:
     alignas(__detail::__platform_wait_alignment)
-      __detail::__platform_wait_t _M_a;
+      __detail::__platform_wait_t _M_counter;
   };
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

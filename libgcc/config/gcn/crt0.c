@@ -24,6 +24,28 @@ typedef long long size_t;
 /* Provide an entry point symbol to silence a linker warning.  */
 void _start() {}
 
+
+#define PR119369_fixed 0
+
+
+/* Host/device compatibility: '__cxa_finalize'.  Dummy; if necessary,
+   overridden via libgomp 'target-cxa-dso-dtor.c'.  */
+
+#if PR119369_fixed
+extern void __GCC_offload___cxa_finalize (void *) __attribute__((weak));
+#else
+void __GCC_offload___cxa_finalize (void *) __attribute__((weak));
+
+void __attribute__((weak))
+__GCC_offload___cxa_finalize (void *dso_handle __attribute__((unused)))
+{
+}
+#endif
+
+/* There are no DSOs; this is the main program.  */
+static void * const __dso_handle = 0;
+
+
 #ifdef USE_NEWLIB_INITFINI
 
 extern void __libc_init_array (void) __attribute__((weak));
@@ -38,6 +60,11 @@ void _init_array()
 __attribute__((amdgpu_hsa_kernel ()))
 void _fini_array()
 {
+#if PR119369_fixed
+  if (__GCC_offload___cxa_finalize)
+#endif
+    __GCC_offload___cxa_finalize (__dso_handle);
+
   __libc_fini_array ();
 }
 
@@ -70,6 +97,11 @@ void _init_array()
 __attribute__((amdgpu_hsa_kernel ()))
 void _fini_array()
 {
+#if PR119369_fixed
+  if (__GCC_offload___cxa_finalize)
+#endif
+    __GCC_offload___cxa_finalize (__dso_handle);
+
   size_t count;
   size_t i;
 

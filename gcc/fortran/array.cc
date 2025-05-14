@@ -51,6 +51,9 @@ gfc_copy_array_ref (gfc_array_ref *src)
       dest->stride[i] = gfc_copy_expr (src->stride[i]);
     }
 
+  dest->stat = gfc_copy_expr (src->stat);
+  dest->team = gfc_copy_expr (src->team);
+
   return dest;
 }
 
@@ -172,6 +175,76 @@ matched:
   return (saw_boz ? MATCH_ERROR : MATCH_YES);
 }
 
+/** Match one of TEAM=, TEAM_NUMBER= or STAT=.  */
+
+match
+match_team_or_stat (gfc_array_ref *ar)
+{
+  gfc_expr *tmp;
+  bool team_error = false;
+
+  if (gfc_match (" team = %e", &tmp) == MATCH_YES)
+    {
+      if (ar->team == NULL && ar->team_type == TEAM_UNSET)
+	{
+	  ar->team = tmp;
+	  ar->team_type = TEAM_TEAM;
+	}
+      else if (ar->team_type == TEAM_TEAM)
+	{
+	  gfc_error ("Duplicate TEAM= attribute in %C");
+	  return MATCH_ERROR;
+	}
+      else
+	team_error = true;
+    }
+  else if (gfc_match (" team_number = %e", &tmp) == MATCH_YES)
+    {
+      if (!gfc_notify_std (GFC_STD_F2018, "TEAM_NUMBER= not supported at %C"))
+	return MATCH_ERROR;
+      if (ar->team == NULL && ar->team_type == TEAM_UNSET)
+	{
+	  ar->team = tmp;
+	  ar->team_type = TEAM_NUMBER;
+	}
+      else if (ar->team_type == TEAM_NUMBER)
+	{
+	  gfc_error ("Duplicate TEAM_NUMBER= attribute in %C");
+	  return MATCH_ERROR;
+	}
+      else
+	team_error = true;
+    }
+  else if (gfc_match (" stat = %e", &tmp) == MATCH_YES)
+    {
+      if (ar->stat == NULL)
+	{
+	  if (gfc_is_coindexed (tmp))
+	    {
+	      gfc_error ("Expression in STAT= at %C must not be coindexed");
+	      gfc_free_expr (tmp);
+	      return MATCH_ERROR;
+	    }
+	  ar->stat = tmp;
+	}
+      else
+	{
+	  gfc_error ("Duplicate STAT= attribute in %C");
+	  return MATCH_ERROR;
+	}
+    }
+  else
+    return MATCH_NO;
+
+  if (ar->team && team_error)
+    {
+      gfc_error ("Only one of TEAM= or TEAM_NUMBER= may appear in a "
+		 "coarray reference at %C");
+      return MATCH_ERROR;
+    }
+
+  return MATCH_YES;
+}
 
 /* Match an array reference, whether it is the whole array or particular
    elements or a section.  If init is set, the reference has to consist
@@ -183,9 +256,6 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
 {
   match m;
   bool matched_bracket = false;
-  gfc_expr *tmp;
-  bool stat_just_seen = false;
-  bool team_just_seen = false;
 
   memset (ar, '\0', sizeof (*ar));
 
@@ -272,57 +342,14 @@ coarray:
 	return MATCH_ERROR;
     }
 
-  ar->stat = NULL;
+  ar->team_type = TEAM_UNSET;
 
-  for (ar->codimen = 0; ar->codimen + ar->dimen < GFC_MAX_DIMENSIONS; ar->codimen++)
+  for (ar->codimen = 0; ar->codimen + ar->dimen < GFC_MAX_DIMENSIONS;
+       ar->codimen++)
     {
       m = match_subscript (ar, init, true);
       if (m == MATCH_ERROR)
 	return MATCH_ERROR;
-
-      team_just_seen = false;
-      stat_just_seen = false;
-      if (gfc_match (" , team = %e", &tmp) == MATCH_YES && ar->team == NULL)
-	{
-	  ar->team = tmp;
-	  team_just_seen = true;
-	}
-
-      if (ar->team && !team_just_seen)
-	{
-	  gfc_error ("TEAM= attribute in %C misplaced");
-	  return MATCH_ERROR;
-	}
-
-      if (gfc_match (" , stat = %e",&tmp) == MATCH_YES && ar->stat == NULL)
-	{
-	  ar->stat = tmp;
-	  stat_just_seen = true;
-	}
-
-      if (ar->stat && !stat_just_seen)
-	{
-	  gfc_error ("STAT= attribute in %C misplaced");
-	  return MATCH_ERROR;
-	}
-
-      if (gfc_match_char (']') == MATCH_YES)
-	{
-	  ar->codimen++;
-	  if (ar->codimen < corank)
-	    {
-	      gfc_error ("Too few codimensions at %C, expected %d not %d",
-			 corank, ar->codimen);
-	      return MATCH_ERROR;
-	    }
-	  if (ar->codimen > corank)
-	    {
-	      gfc_error ("Too many codimensions at %C, expected %d not %d",
-			 corank, ar->codimen);
-	      return MATCH_ERROR;
-	    }
-	  return MATCH_YES;
-	}
 
       if (gfc_match_char (',') != MATCH_YES)
 	{
@@ -330,7 +357,9 @@ coarray:
 	    gfc_error ("Unexpected %<*%> for codimension %d of %d at %C",
 		       ar->codimen + 1, corank);
 	  else
-	    gfc_error ("Invalid form of coarray reference at %C");
+	    {
+	      goto image_selector;
+	    }
 	  return MATCH_ERROR;
 	}
       else if (ar->dimen_type[ar->codimen + ar->dimen] == DIMEN_STAR)
@@ -339,6 +368,15 @@ coarray:
 		     ar->codimen + 1, corank);
 	  return MATCH_ERROR;
 	}
+
+      m = match_team_or_stat (ar);
+      if (m == MATCH_ERROR)
+	return MATCH_ERROR;
+      else if (m == MATCH_YES)
+	goto image_selector;
+
+      if (gfc_match_char (']') == MATCH_YES)
+	goto rank_check;
 
       if (ar->codimen >= corank)
 	{
@@ -352,6 +390,40 @@ coarray:
 	     GFC_MAX_DIMENSIONS);
   return MATCH_ERROR;
 
+image_selector:
+  for (;;)
+    {
+      m = match_team_or_stat (ar);
+      if (m == MATCH_ERROR)
+	return MATCH_ERROR;
+
+      if (gfc_match_char (']') == MATCH_YES)
+	goto rank_check;
+
+      if (gfc_match_char (',') != MATCH_YES)
+	{
+	  gfc_error ("Invalid form of coarray reference at %C");
+	  return MATCH_ERROR;
+	}
+    }
+
+  return MATCH_ERROR;
+
+rank_check:
+  ar->codimen++;
+  if (ar->codimen < corank)
+    {
+      gfc_error ("Too few codimensions at %C, expected %d not %d", corank,
+		 ar->codimen);
+      return MATCH_ERROR;
+    }
+  if (ar->codimen > corank)
+    {
+      gfc_error ("Too many codimensions at %C, expected %d not %d", corank,
+		 ar->codimen);
+      return MATCH_ERROR;
+    }
+  return MATCH_YES;
 }
 
 

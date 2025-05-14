@@ -523,8 +523,16 @@ void testDestruction()
         new long[100];
     }
 
+    static void clobberStack()
+    {
+        ubyte[1024] clobber;
+        clobber[] = 0xff;
+    }
+
     import core.memory : GC;
     createGarbage();
+    // ensure there are no stale references on the stack
+    clobberStack();
     GC.collect();
 
     assert(Test.run);

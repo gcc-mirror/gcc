@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
-/* { dg-additional-options "-O1 -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-additional-options "-O1 -fno-schedule-insns -fno-schedule-insns2 -fno-pie" } */
 /* { dg-add-options riscv_v } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
@@ -109,4 +109,4 @@ void f3 ()
   memcpy (&a_a, &a_b, sizeof a_a);
 }
 
-/* { dg-final { scan-assembler-not {\m(tail|call)\s+memcpy\M} } } */
+/* { dg-final { scan-assembler-not {\m(tail|call)\s+memcpy(?:@plt)?\M} } } */

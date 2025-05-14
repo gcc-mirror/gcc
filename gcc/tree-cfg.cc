@@ -168,7 +168,7 @@ static edge gimple_try_redirect_by_replacing_jump (edge, basic_block);
 static inline bool stmt_starts_bb_p (gimple *, gimple *);
 static bool gimple_verify_flow_info (void);
 static void gimple_make_forwarder_block (edge);
-static gimple *first_non_label_stmt (basic_block);
+static gimple *first_non_label_nondebug_stmt (basic_block);
 static bool verify_gimple_transaction (gtransaction *);
 static bool call_can_make_abnormal_goto (gimple *);
 
@@ -1263,7 +1263,7 @@ assign_discriminators (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  gimple *first = first_non_label_stmt (e->dest);
+	  gimple *first = first_non_label_nondebug_stmt (e->dest);
 	  gimple *last = last_nondebug_stmt (e->dest);
 
 	  gimple *stmt_on_same_line = NULL;
@@ -2948,14 +2948,13 @@ first_stmt (basic_block bb)
   return stmt;
 }
 
-/* Return the first non-label statement in basic block BB.  */
+/* Return the first non-label/non-debug statement in basic block BB.  */
 
 static gimple *
-first_non_label_stmt (basic_block bb)
+first_non_label_nondebug_stmt (basic_block bb)
 {
-  gimple_stmt_iterator i = gsi_start_bb (bb);
-  while (!gsi_end_p (i) && gimple_code (gsi_stmt (i)) == GIMPLE_LABEL)
-    gsi_next (&i);
+  gimple_stmt_iterator i;
+  i = gsi_start_nondebug_after_labels_bb (bb);
   return !gsi_end_p (i) ? gsi_stmt (i) : NULL;
 }
 
@@ -5102,6 +5101,19 @@ verify_gimple_cond (gcond *stmt)
 	   || TREE_CODE (gimple_cond_false_label (stmt)) == LABEL_DECL))
     {
       error ("invalid labels in gimple cond");
+      return true;
+    }
+
+  tree lhs = gimple_cond_lhs (stmt);
+
+  /* GIMPLE_CONDs condition may not throw.  */
+  if (flag_exceptions
+      && cfun->can_throw_non_call_exceptions
+      && operation_could_trap_p (gimple_cond_code (stmt),
+				 FLOAT_TYPE_P (TREE_TYPE (lhs)),
+				 false, NULL_TREE))
+    {
+      error ("gimple cond condition cannot throw");
       return true;
     }
 
@@ -9800,18 +9812,20 @@ pass_warn_function_return::execute (function *fun)
 	   (e = ei_safe_edge (ei)); )
 	{
 	  last = *gsi_last_bb (e->src);
-	  if ((gimple_code (last) == GIMPLE_RETURN
-	       || gimple_call_builtin_p (last, BUILT_IN_RETURN))
-	      && location == UNKNOWN_LOCATION
-	      && ((location = LOCATION_LOCUS (gimple_location (last)))
-		  != UNKNOWN_LOCATION)
-	      && !optimize)
-	    break;
-	  /* When optimizing, replace return stmts in noreturn functions
+	  /* Warn about __builtin_return .*/
+	  if (gimple_call_builtin_p (last, BUILT_IN_RETURN)
+	      && location == UNKNOWN_LOCATION)
+	    {
+	      location = LOCATION_LOCUS (gimple_location (last));
+	      ei_next (&ei);
+	    }
+	  /* Replace return stmts in noreturn functions
 	     with __builtin_unreachable () call.  */
-	  if (optimize && gimple_code (last) == GIMPLE_RETURN)
+	  else if (gimple_code (last) == GIMPLE_RETURN)
 	    {
 	      location_t loc = gimple_location (last);
+	      if (location == UNKNOWN_LOCATION)
+	        location = LOCATION_LOCUS (loc);
 	      gimple *new_stmt = gimple_build_builtin_unreachable (loc);
 	      gimple_stmt_iterator gsi = gsi_for_stmt (last);
 	      gsi_replace (&gsi, new_stmt, true);

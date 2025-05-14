@@ -2078,7 +2078,7 @@ struct ProperCompare
 /**
 
 Hook that reserves a special value as a "Not a Number" representative. For
-signed integrals, the reserved value is `T.min`. For signed integrals, the
+signed integrals, the reserved value is `T.min`. For unsigned integrals, the
 reserved value is `T.max`.
 
 The default value of a $(D Checked!(X, WithNaN)) is its NaN value, so care must

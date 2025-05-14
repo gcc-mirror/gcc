@@ -1,0 +1,60 @@
+// { dg-do compile { target c++26 } }
+
+#include <algorithm>
+#include <memory>
+#include <span>
+#include <string>
+#include <vector>
+
+template<typename T>
+constexpr
+bool
+test01_impl(std::vector<T> input)
+{
+  static_assert(std::copy_constructible<T>);
+  static_assert(std::equality_comparable<T>);
+
+  const std::size_t input_size = input.size();
+  std::allocator<T> alloc;
+  T* ptr = alloc.allocate(input_size);
+
+  std::uninitialized_copy(input.begin(), input.end(), ptr);
+  if (!std::equal(input.begin(), input.end(), ptr, ptr + input_size))
+    return false;
+  std::destroy(ptr, ptr + input_size);
+
+  std::uninitialized_copy_n(input.begin(), input_size, ptr);
+  if (!std::equal(input.begin(), input.end(), ptr, ptr + input_size))
+    return false;
+  std::destroy_n(ptr, input_size);
+
+  std::span<T> output(ptr, ptr + input_size);
+  std::ranges::uninitialized_copy(input, output);
+  if (!std::ranges::equal(input, output))
+    return false;
+  std::ranges::destroy(output);
+
+  std::ranges::uninitialized_copy_n(input.begin(), input_size, ptr, ptr + input_size);
+  if (!std::ranges::equal(input.begin(), input.end(), ptr, ptr + input_size))
+    return false;
+  std::ranges::destroy_n(ptr, input_size);
+
+  alloc.deallocate(ptr, input_size);
+  return true;
+}
+
+constexpr
+bool
+test01()
+{
+  return
+    test01_impl<char>({'a', 'b', 'c'}) &&
+    test01_impl<int>({1, 2, 3, 4}) &&
+    test01_impl<double>({1.0, 2.0, 3.0, 4.0}) &&
+#if _GLIBCXX_USE_CXX11_ABI
+    test01_impl<std::string>({"a", "b", "cc", "dddd", "eeeeeeeeeeeeeeee"}) &&
+#endif
+    test01_impl<std::vector<int>>({ {0}, {0, 1}, {0, 1, 2}});
+}
+
+static_assert(test01());

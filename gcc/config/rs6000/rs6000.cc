@@ -15245,11 +15245,25 @@ rs6000_print_patchable_function_entry (FILE *file,
 {
   bool global_entry_needed_p = rs6000_global_entry_point_prologue_needed_p ();
   /* For a function which needs global entry point, we will emit the
-     patchable area before and after local entry point under the control of
-     cfun->machine->global_entry_emitted, see the handling in function
-     rs6000_output_function_prologue.  */
-  if (!global_entry_needed_p || cfun->machine->global_entry_emitted)
+     patchable area when it isn't split before and after local entry point
+     under the control of cfun->machine->global_entry_emitted, see the
+     handling in function rs6000_output_function_prologue.  */
+  if (!TARGET_SPLIT_PATCH_NOPS
+      && (!global_entry_needed_p || cfun->machine->global_entry_emitted))
     default_print_patchable_function_entry (file, patch_area_size, record_p);
+
+  /* For split patch nops we emit the before nops (from generic code)
+     in front of the global entry point and after the local entry point,
+     under the control of cfun->machine->stop_patch_area_print, see
+     rs6000_output_function_prologue and rs6000_elf_declare_function_name.  */
+  if (TARGET_SPLIT_PATCH_NOPS)
+    {
+      if (!cfun->machine->stop_patch_area_print)
+	default_print_patchable_function_entry (file, patch_area_size,
+						record_p);
+      else
+	gcc_assert (global_entry_needed_p);
+    }
 }
 
 enum rtx_code
@@ -21365,6 +21379,11 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
       fprintf (file, "\t.previous\n");
     }
   ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
+  /* At this time, the "before" NOPs have been already emitted.
+     For split nops stop generic code from printing the "after" NOPs and
+     emit them just after local entry ourself later.  */
+  if (rs6000_global_entry_point_prologue_needed_p ())
+    cfun->machine->stop_patch_area_print = true;
 }
 
 static void rs6000_elf_file_end (void) ATTRIBUTE_UNUSED;
@@ -25746,10 +25765,13 @@ rs6000_can_inline_p (tree caller, tree callee)
 	}
     }
 
-  /* Ignore -mpower8-fusion and -mpower10-fusion options for inlining
-     purposes.  */
-  callee_isa &= ~(OPTION_MASK_P8_FUSION | OPTION_MASK_P10_FUSION);
-  explicit_isa &= ~(OPTION_MASK_P8_FUSION | OPTION_MASK_P10_FUSION);
+  /* Ignore -mpower8-fusion, -mpower10-fusion and -msave-toc-indirect options
+     for inlining purposes.  */
+  HOST_WIDE_INT ignored_isas = (OPTION_MASK_P8_FUSION
+				| OPTION_MASK_P10_FUSION
+				| OPTION_MASK_SAVE_TOC_INDIRECT);
+  callee_isa &= ~ignored_isas;
+  explicit_isa &= ~ignored_isas;
 
   /* The callee's options must be a subset of the caller's options, i.e.
      a vsx function may inline an altivec function, but a no-vsx function

@@ -264,6 +264,13 @@ struct CompileOptions
   } compile_until
     = CompileStep::End;
 
+  enum class PanicStrategy
+  {
+    Unwind,
+    Abort,
+  } panic_strategy
+    = PanicStrategy::Unwind;
+
   bool dump_option_enabled (DumpOption option) const
   {
     return dump_options.find (option) != dump_options.end ();
@@ -320,6 +327,13 @@ struct CompileOptions
 
   const CompileStep &get_compile_until () const { return compile_until; }
 
+  void set_panic_strategy (int strategy)
+  {
+    panic_strategy = static_cast<PanicStrategy> (strategy);
+  }
+
+  const PanicStrategy &get_panic_strategy () const { return panic_strategy; }
+
   void set_metadata_output (const std::string &path)
   {
     metadata_output_path = path;
@@ -354,13 +368,12 @@ struct Session
   Linemap *linemap;
 
   // mappings
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 
 public:
   /* Get a reference to the static session instance */
   static Session &get_instance ();
 
-  Session () = default;
   ~Session () = default;
 
   /* This initializes the compiler session. Corresponds to langhook
@@ -377,7 +390,7 @@ public:
 		      const struct cl_option_handlers *handlers);
   void handle_input_files (int num_files, const char **files);
   void init_options ();
-  void handle_crate_name (const AST::Crate &parsed_crate);
+  void handle_crate_name (const char *filename, const AST::Crate &parsed_crate);
 
   /* This function saves the filename data into the session manager using the
    * `move` semantics, and returns a C-style string referencing the input
@@ -391,6 +404,7 @@ public:
   NodeId load_extern_crate (const std::string &crate_name, location_t locus);
 
 private:
+  Session () : mappings (Analysis::Mappings::get ()) {}
   void compile_crate (const char *filename);
   bool enable_dump (std::string arg);
 

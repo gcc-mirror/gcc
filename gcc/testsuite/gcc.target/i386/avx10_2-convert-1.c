@@ -1,14 +1,11 @@
 /* { dg-do compile } */
-/* { dg-options "-march=x86-64-v3 -mavx10.2-256 -O2" } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2 -O2" } */
 /* { dg-final { scan-assembler-times "vcvt2ps2phx\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvt2ps2phx\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvt2ps2phx\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvt2ps2phx\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvt2ps2phx\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvt2ps2phx\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vcvt2ps2phx\[ \\t\]+\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vcvt2ps2phx\[ \\t\]+\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vcvt2ps2phx\[ \\t\]+\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtbiasph2bf8\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+,\[^\{\n\]*%xmm\[0-9\]+,\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtbiasph2bf8\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+,\[^\{\n\]*%xmm\[0-9\]+,\[^\{\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtbiasph2bf8\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+,\[^\{\n\]*%xmm\[0-9\]+,\[^\{\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
@@ -124,9 +121,6 @@ avx10_2_test (void)
   y2 = _mm256_mask_cvtx2ps_ph (y2, m16, a2, b2);
   y2 = _mm256_maskz_cvtx2ps_ph (m16, a2, b2);
 
-  y2 = _mm256_cvtx_round2ps_ph (a2, b2, 8);
-  y2 = _mm256_mask_cvtx_round2ps_ph (y2, m16, a2, b2, 8);
-  y2 = _mm256_maskz_cvtx_round2ps_ph (m16, a2, b2, 8);
 }
 
 void extern
@@ -144,13 +138,13 @@ avx10_2_vcvtbiasph2bf8_test (void)
 void extern
 avx10_2_vcvtbiasph2bf8s_test (void)
 {
-  x128i = _mm_cvtbiassph_bf8 (x128i, x128h);
-  x128i = _mm_mask_cvtbiassph_bf8 (x128i, m8, x128i, x128h);
-  x128i = _mm_maskz_cvtbiassph_bf8 (m8, x128i, x128h);
+  x128i = _mm_cvts_biasph_bf8 (x128i, x128h);
+  x128i = _mm_mask_cvts_biasph_bf8 (x128i, m8, x128i, x128h);
+  x128i = _mm_maskz_cvts_biasph_bf8 (m8, x128i, x128h);
 
-  x128i = _mm256_cvtbiassph_bf8 (x256i, x256h);
-  x128i = _mm256_mask_cvtbiassph_bf8 (x128i, m16, x256i, x256h);
-  x128i = _mm256_maskz_cvtbiassph_bf8 (m16, x256i, x256h);
+  x128i = _mm256_cvts_biasph_bf8 (x256i, x256h);
+  x128i = _mm256_mask_cvts_biasph_bf8 (x128i, m16, x256i, x256h);
+  x128i = _mm256_maskz_cvts_biasph_bf8 (m16, x256i, x256h);
 }
 
 void extern
@@ -168,13 +162,13 @@ avx10_2_vcvtbiasph2hf8_test (void)
 void extern
 avx10_2_vcvtbiasph2hf8s_test (void)
 {
-  x128i = _mm_cvtbiassph_hf8 (x128i, x128h);
-  x128i = _mm_mask_cvtbiassph_hf8 (x128i, m8, x128i, x128h);
-  x128i = _mm_maskz_cvtbiassph_hf8 (m8, x128i, x128h);
+  x128i = _mm_cvts_biasph_hf8 (x128i, x128h);
+  x128i = _mm_mask_cvts_biasph_hf8 (x128i, m8, x128i, x128h);
+  x128i = _mm_maskz_cvts_biasph_hf8 (m8, x128i, x128h);
 
-  x128i = _mm256_cvtbiassph_hf8 (x256i, x256h);
-  x128i = _mm256_mask_cvtbiassph_hf8 (x128i, m16, x256i, x256h);
-  x128i = _mm256_maskz_cvtbiassph_hf8 (m16, x256i, x256h);
+  x128i = _mm256_cvts_biasph_hf8 (x256i, x256h);
+  x128i = _mm256_mask_cvts_biasph_hf8 (x128i, m16, x256i, x256h);
+  x128i = _mm256_maskz_cvts_biasph_hf8 (m16, x256i, x256h);
 }
 
 void extern
@@ -191,12 +185,12 @@ avx10_2_vcvt2ph2bf8_test (void)
 void extern
 avx10_2_vcvt2ph2bf8s_test (void)
 {
-  x128i = _mm_cvts2ph_bf8 (x128h, x128h);
-  x128i = _mm_mask_cvts2ph_bf8 (x128i, m16, x128h, x128h);
-  x128i = _mm_maskz_cvts2ph_bf8 (m16, x128h, x128h);
-  x256i = _mm256_cvts2ph_bf8 (x256h, x256h);
-  x256i = _mm256_mask_cvts2ph_bf8 (x256i, m32, x256h, x256h);
-  x256i = _mm256_maskz_cvts2ph_bf8 (m32, x256h, x256h);
+  x128i = _mm_cvts_2ph_bf8 (x128h, x128h);
+  x128i = _mm_mask_cvts_2ph_bf8 (x128i, m16, x128h, x128h);
+  x128i = _mm_maskz_cvts_2ph_bf8 (m16, x128h, x128h);
+  x256i = _mm256_cvts_2ph_bf8 (x256h, x256h);
+  x256i = _mm256_mask_cvts_2ph_bf8 (x256i, m32, x256h, x256h);
+  x256i = _mm256_maskz_cvts_2ph_bf8 (m32, x256h, x256h);
 }
 
 void extern
@@ -213,12 +207,12 @@ avx10_2_vcvt2ph2hf8_test (void)
 void extern
 avx10_2_vcvt2ph2hf8s_test (void)
 {
-  x128i = _mm_cvts2ph_hf8 (x128h, x128h);
-  x128i = _mm_mask_cvts2ph_hf8 (x128i, m16, x128h, x128h);
-  x128i = _mm_maskz_cvts2ph_hf8 (m16, x128h, x128h);
-  x256i = _mm256_cvts2ph_hf8 (x256h, x256h);
-  x256i = _mm256_mask_cvts2ph_hf8 (x256i, m32, x256h, x256h);
-  x256i = _mm256_maskz_cvts2ph_hf8 (m32, x256h, x256h);
+  x128i = _mm_cvts_2ph_hf8 (x128h, x128h);
+  x128i = _mm_mask_cvts_2ph_hf8 (x128i, m16, x128h, x128h);
+  x128i = _mm_maskz_cvts_2ph_hf8 (m16, x128h, x128h);
+  x256i = _mm256_cvts_2ph_hf8 (x256h, x256h);
+  x256i = _mm256_mask_cvts_2ph_hf8 (x256i, m32, x256h, x256h);
+  x256i = _mm256_maskz_cvts_2ph_hf8 (m32, x256h, x256h);
 }
 
 void extern
@@ -248,13 +242,13 @@ avx10_2_vcvtph2bf8_test (void)
 void extern
 avx10_2_vcvtph2bf8s_test (void)
 {
-  x128i = _mm_cvtsph_bf8 (x128h);
-  x128i = _mm_mask_cvtsph_bf8 (x128i, m8, x128h);
-  x128i = _mm_maskz_cvtsph_bf8 (m8, x128h);
+  x128i = _mm_cvts_ph_bf8 (x128h);
+  x128i = _mm_mask_cvts_ph_bf8 (x128i, m8, x128h);
+  x128i = _mm_maskz_cvts_ph_bf8 (m8, x128h);
 
-  x128i = _mm256_cvtsph_bf8 (x256h);
-  x128i = _mm256_mask_cvtsph_bf8 (x128i, m16, x256h);
-  x128i = _mm256_maskz_cvtsph_bf8 (m16, x256h);
+  x128i = _mm256_cvts_ph_bf8 (x256h);
+  x128i = _mm256_mask_cvts_ph_bf8 (x128i, m16, x256h);
+  x128i = _mm256_maskz_cvts_ph_bf8 (m16, x256h);
 }
 
 void extern
@@ -272,13 +266,13 @@ avx10_2_vcvtph2hf8_test (void)
 void extern
 avx10_2_vcvtph2hf8s_test (void)
 {
-  x128i = _mm_cvtsph_hf8 (x128h);
-  x128i = _mm_mask_cvtsph_hf8 (x128i, m8, x128h);
-  x128i = _mm_maskz_cvtsph_hf8 (m8, x128h);
+  x128i = _mm_cvts_ph_hf8 (x128h);
+  x128i = _mm_mask_cvts_ph_hf8 (x128i, m8, x128h);
+  x128i = _mm_maskz_cvts_ph_hf8 (m8, x128h);
 
-  x128i = _mm256_cvtsph_hf8 (x256h);
-  x128i = _mm256_mask_cvtsph_hf8 (x128i, m16, x256h);
-  x128i = _mm256_maskz_cvtsph_hf8 (m16, x256h);
+  x128i = _mm256_cvts_ph_hf8 (x256h);
+  x128i = _mm256_mask_cvts_ph_hf8 (x128i, m16, x256h);
+  x128i = _mm256_maskz_cvts_ph_hf8 (m16, x256h);
 }
 
 void extern
@@ -289,6 +283,6 @@ avx10_2_cvtbf8_fp16_test (void)
   y = _mm_maskz_cvtbf8_ph (m8, z3);
 
   y2 = _mm256_cvtbf8_ph (z3);
-  y2 = _mm256_mask_cvtbf8_ph (z2, m8, z3);
-  y2 = _mm256_maskz_cvtbf8_ph (m8, z3);
+  y2 = _mm256_mask_cvtbf8_ph (z2, m16, z3);
+  y2 = _mm256_maskz_cvtbf8_ph (m16, z3);
 }

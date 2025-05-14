@@ -31,7 +31,7 @@ namespace Resolver {
 class TypeCheckResolveGenericArguments : public TypeCheckBase
 {
 public:
-  static HIR::GenericArgs resolve (HIR::TypePathSegment *segment);
+  static HIR::GenericArgs resolve (HIR::TypePathSegment &segment);
 
   void visit (HIR::TypePathSegmentGeneric &generic);
 
@@ -46,7 +46,7 @@ private:
 class TypeCheckType : public TypeCheckBase, public HIR::HIRTypeVisitor
 {
 public:
-  static TyTy::BaseType *Resolve (HIR::Type *type);
+  static TyTy::BaseType *Resolve (HIR::Type &type);
 
   void visit (HIR::BareFunctionType &fntype) override;
   void visit (HIR::TupleType &tuple) override;
@@ -59,22 +59,12 @@ public:
   void visit (HIR::InferredType &type) override;
   void visit (HIR::NeverType &type) override;
   void visit (HIR::TraitObjectType &type) override;
+  void visit (HIR::ParenthesisedType &type) override;
+  void visit (HIR::ImplTraitType &type) override;
 
-  void visit (HIR::TypePathSegmentFunction &segment) override
-  { /* TODO */
-  }
-  void visit (HIR::TraitBound &bound) override
-  { /* TODO */
-  }
-  void visit (HIR::ImplTraitType &type) override
-  { /* TODO */
-  }
-  void visit (HIR::ParenthesisedType &type) override
-  { /* TODO */
-  }
-  void visit (HIR::ImplTraitTypeOneBound &type) override
-  { /* TODO */
-  }
+  // These dont need to be implemented as they are segments or part of types
+  void visit (HIR::TypePathSegmentFunction &segment) override {}
+  void visit (HIR::TraitBound &bound) override {}
 
 private:
   TypeCheckType (HirId id)
@@ -82,13 +72,17 @@ private:
   {}
 
   TyTy::BaseType *resolve_root_path (HIR::TypePath &path, size_t *offset,
-				     NodeId *root_resolved_node_id);
+				     bool *wasBigSelf);
 
   TyTy::BaseType *resolve_segments (
-    NodeId root_resolved_node_id, HirId expr_id,
-    std::vector<std::unique_ptr<HIR::TypePathSegment>> &segments, size_t offset,
-    TyTy::BaseType *tyseg, const Analysis::NodeMapping &expr_mappings,
-    location_t expr_locus);
+    HirId expr_id, std::vector<std::unique_ptr<HIR::TypePathSegment>> &segments,
+    size_t offset, TyTy::BaseType *tyseg,
+    const Analysis::NodeMapping &expr_mappings, location_t expr_locus,
+    bool tySegIsBigSelf);
+
+  bool resolve_associated_type (const std::string &search,
+				TypeCheckBlockContextItem &ctx,
+				TyTy::BaseType **result);
 
   TyTy::BaseType *translated;
 };
@@ -96,21 +90,28 @@ private:
 class TypeResolveGenericParam : public TypeCheckBase
 {
 public:
-  static TyTy::ParamType *Resolve (HIR::GenericParam *param,
+  static TyTy::ParamType *Resolve (HIR::GenericParam &param,
+				   bool resolve_trait_bounds = true,
 				   bool apply_sized = true);
+
+  static void ApplyAnyTraitBounds (HIR::TypeParam &param, TyTy::ParamType *pty);
 
 protected:
   void visit (HIR::TypeParam &param);
   void visit (HIR::LifetimeParam &param);
   void visit (HIR::ConstGenericParam &param);
 
+  void apply_trait_bounds (HIR::TypeParam &param, TyTy::ParamType *pty);
+
 private:
-  TypeResolveGenericParam (bool apply_sized)
-    : TypeCheckBase (), resolved (nullptr), apply_sized (apply_sized)
+  TypeResolveGenericParam (bool apply_sized, bool resolve_trait_bounds)
+    : TypeCheckBase (), resolved (nullptr), apply_sized (apply_sized),
+      resolve_trait_bounds (resolve_trait_bounds)
   {}
 
   TyTy::ParamType *resolved;
   bool apply_sized;
+  bool resolve_trait_bounds;
 };
 
 class ResolveWhereClauseItem : public TypeCheckBase

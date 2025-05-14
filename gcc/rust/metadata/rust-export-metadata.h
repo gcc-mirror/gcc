@@ -53,7 +53,7 @@ public:
   const std::string &get_interface_buffer () const;
 
 private:
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 
   std::vector<std::reference_wrapper<const HIR::Module>> module_stack;
   std::string public_interface_buffer;

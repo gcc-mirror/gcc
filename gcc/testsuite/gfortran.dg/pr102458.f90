@@ -9,7 +9,7 @@ end
 
 program p
   block
-    integer :: a(get_team()) = 1 ! { dg-error "Automatic array" }
+    integer :: a(get_team()) = 1 ! { dg-error "Automatic array | ISO_FORTRAN_ENV | must be of INTEGER" }
     print *, a
   end block
 end

@@ -20,6 +20,9 @@
 }
 
 /* { dg-begin-multiline-output "" }
+In JSON property '/runs/0/results/0/level':
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
    12 |           "level": "mostly harmless",
       |                    ^~~~~~~~~~~~~~~~~
    { dg-end-multiline-output "" } */

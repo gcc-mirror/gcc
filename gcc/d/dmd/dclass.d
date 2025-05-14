@@ -3,12 +3,12 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/class.html, Classes)
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dclass.d, _dclass.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dclass.d, _dclass.d)
  * Documentation:  https://dlang.org/phobos/dmd_dclass.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/dclass.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/dclass.d
  */
 
 module dmd.dclass;
@@ -23,7 +23,7 @@ import dmd.gluelayer;
 import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem : dsymbolSemantic, addMember, search, setFieldOffset;
+import dmd.dsymbolsem : dsymbolSemantic, addMember, setFieldOffset;
 import dmd.errors;
 import dmd.func;
 import dmd.id;
@@ -198,7 +198,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
 
     Symbol* cpp_type_info_ptr_sym;      // cached instance of class Id.cpp_type_info_ptr
 
-    final extern (D) this(const ref Loc loc, Identifier id, BaseClasses* baseclasses, Dsymbols* members, bool inObject)
+    final extern (D) this(Loc loc, Identifier id, BaseClasses* baseclasses, Dsymbols* members, bool inObject)
     {
         objc = ObjcClassDeclaration(this);
 
@@ -206,6 +206,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
             id = Identifier.generateAnonymousId("class");
 
         super(loc, id);
+        this.dsym = DSYM.classDeclaration;
 
         static immutable msg = "only object.d can define this reserved class name";
 
@@ -375,7 +376,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
         .error(loc, fmt, kind, toPrettyChars, arg);
     }
 
-    static ClassDeclaration create(const ref Loc loc, Identifier id, BaseClasses* baseclasses, Dsymbols* members, bool inObject)
+    static ClassDeclaration create(Loc loc, Identifier id, BaseClasses* baseclasses, Dsymbols* members, bool inObject)
     {
         return new ClassDeclaration(loc, id, baseclasses, members, inObject);
     }
@@ -611,40 +612,6 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
     final bool hasMonitor()
     {
         return classKind == ClassKind.d;
-    }
-
-    final bool isFuncHidden(FuncDeclaration fd)
-    {
-        import dmd.funcsem : overloadApply;
-        //printf("ClassDeclaration.isFuncHidden(class = %s, fd = %s)\n", toChars(), fd.toPrettyChars());
-        Dsymbol s = this.search(Loc.initial, fd.ident, SearchOpt.ignoreAmbiguous | SearchOpt.ignoreErrors);
-        if (!s)
-        {
-            //printf("not found\n");
-            /* Because, due to a hack, if there are multiple definitions
-             * of fd.ident, NULL is returned.
-             */
-            return false;
-        }
-        s = s.toAlias();
-        if (auto os = s.isOverloadSet())
-        {
-            foreach (sm; os.a)
-            {
-                auto fm = sm.isFuncDeclaration();
-                if (overloadApply(fm, s => fd == s.isFuncDeclaration()))
-                    return false;
-            }
-            return true;
-        }
-        else
-        {
-            auto f = s.isFuncDeclaration();
-            //printf("%s fdstart = %p\n", s.kind(), fdstart);
-            if (overloadApply(f, s => fd == s.isFuncDeclaration()))
-                return false;
-            return !fd.parent.isTemplateMixin();
-        }
     }
 
     /****************
@@ -921,29 +888,9 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
     // Back end
     Dsymbol vtblsym;
 
-    final Dsymbol vtblSymbol()
-    {
-        if (!vtblsym)
-        {
-            auto vtype = Type.tvoidptr.immutableOf().sarrayOf(vtbl.length);
-            auto var = new VarDeclaration(loc, vtype, Identifier.idPool("__vtbl"), null, STC.immutable_ | STC.static_);
-            var.addMember(null, this);
-            var.isdataseg = 1;
-            var._linkage = LINK.d;
-            var.semanticRun = PASS.semanticdone; // no more semantic wanted
-            vtblsym = var;
-        }
-        return vtblsym;
-    }
-
     extern (D) final bool isErrorException()
     {
         return errorException && (this == errorException || errorException.isBaseOf(this, null));
-    }
-
-    override final inout(ClassDeclaration) isClassDeclaration() inout @nogc nothrow pure @safe
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -956,9 +903,10 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
  */
 extern (C++) final class InterfaceDeclaration : ClassDeclaration
 {
-    extern (D) this(const ref Loc loc, Identifier id, BaseClasses* baseclasses)
+    extern (D) this(Loc loc, Identifier id, BaseClasses* baseclasses)
     {
         super(loc, id, baseclasses, null, false);
+        this.dsym = DSYM.interfaceDeclaration;
         if (id == Id.IUnknown) // IUnknown is the root of all COM interfaces
         {
             com = true;
@@ -1056,11 +1004,6 @@ extern (C++) final class InterfaceDeclaration : ClassDeclaration
     override bool isCOMinterface() const
     {
         return com;
-    }
-
-    override inout(InterfaceDeclaration) isInterfaceDeclaration() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

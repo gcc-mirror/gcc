@@ -418,6 +418,7 @@ static GTY (()) tree ldouble_ftype_ldouble;
 static GTY (()) tree gm2_alloca_node;
 static GTY (()) tree gm2_memcpy_node;
 static GTY (()) tree gm2_memset_node;
+static GTY (()) tree gm2_strncpy_node;
 static GTY (()) tree gm2_isfinite_node;
 static GTY (()) tree gm2_isnan_node;
 static GTY (()) tree gm2_huge_valf_node;
@@ -1040,6 +1041,18 @@ DoBuiltinMemCopy (location_t location, tree dest, tree src, tree bytes)
 }
 
 static tree
+DoBuiltinStrNCopy (location_t location, tree dest, tree src, tree bytes)
+{
+  tree functype = TREE_TYPE (gm2_strncpy_node);
+  tree rettype = TREE_TYPE (functype);
+  tree funcptr
+      = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_strncpy_node);
+  tree call
+      = m2treelib_DoCall3 (location, rettype, funcptr, dest, src, bytes);
+  return call;
+}
+
+static tree
 DoBuiltinAlloca (location_t location, tree bytes)
 {
   tree functype = TREE_TYPE (gm2_alloca_node);
@@ -1103,6 +1116,14 @@ m2builtins_BuiltInHugeValLong (location_t location)
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_huge_vall_node);
   tree call = m2treelib_DoCall0 (location, rettype, funcptr);
   return call;
+}
+
+/* BuiltinStrNCopy copy at most n chars from address src to dest.  */
+
+tree
+m2builtins_BuiltinStrNCopy (location_t location, tree dest, tree src, tree n)
+{
+  return DoBuiltinStrNCopy (location, dest, src, n);
 }
 
 static void
@@ -1580,6 +1601,7 @@ m2builtins_init (location_t location)
   gm2_alloca_node = find_builtin_tree ("__builtin_alloca");
   gm2_memcpy_node = find_builtin_tree ("__builtin_memcpy");
   gm2_memset_node = find_builtin_tree ("__builtin_memset");
+  gm2_strncpy_node = find_builtin_tree ("__builtin_strncpy");  
   gm2_huge_valf_node = find_builtin_tree ("__builtin_huge_valf");
   gm2_huge_val_node = find_builtin_tree ("__builtin_huge_val");
   gm2_huge_vall_node = find_builtin_tree ("__builtin_huge_vall");

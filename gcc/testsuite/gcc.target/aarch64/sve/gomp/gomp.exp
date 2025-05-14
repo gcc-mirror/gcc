@@ -1,0 +1,46 @@
+# Copyright (C) 2006-2025 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't an AArch64 target.
+if {![istarget aarch64*-*-*] } then {
+  return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+if ![check_effective_target_fopenmp] {
+  return
+}
+
+if { [check_effective_target_aarch64_sve] } {
+    set sve_flags ""
+} else {
+    set sve_flags "-march=armv8.2-a+sve"
+}
+
+# Main loop.
+dg-runtest [lsort [find $srcdir/$subdir *.c]] "$sve_flags -fopenmp" ""
+
+# All done.
+dg-finish

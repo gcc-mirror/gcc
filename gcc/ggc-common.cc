@@ -119,6 +119,25 @@ ggc_mark_roots (void)
 }
 
 /* Allocate a block of memory, then clear it.  */
+#ifdef HAVE_ATTRIBUTE_ALIAS
+extern "C" void *
+ggc_internal_cleared_alloc_ (size_t size, void (*f)(void *), size_t s, size_t n
+			     MEM_STAT_DECL)
+{
+  void *buf = ggc_internal_alloc (size, f, s, n PASS_MEM_STAT);
+  memset (buf, 0, size);
+  return buf;
+}
+
+extern void *
+ggc_internal_cleared_alloc (size_t size, void (*f)(void *), size_t s,
+			    size_t n MEM_STAT_DECL)
+     __attribute__((__alias__ ("ggc_internal_cleared_alloc_")));
+extern void *
+ggc_internal_cleared_alloc_no_dtor (size_t size, void (*f)(void *),
+				    size_t s, size_t n MEM_STAT_DECL)
+     __attribute__((__alias__ ("ggc_internal_cleared_alloc_")));
+#else
 void *
 ggc_internal_cleared_alloc (size_t size, void (*f)(void *), size_t s, size_t n
 			    MEM_STAT_DECL)
@@ -127,6 +146,17 @@ ggc_internal_cleared_alloc (size_t size, void (*f)(void *), size_t s, size_t n
   memset (buf, 0, size);
   return buf;
 }
+
+#ifdef __GNUC__
+__attribute__ ((__noinline__))
+#endif
+void *
+ggc_internal_cleared_alloc_no_dtor (size_t size, void (*f)(void *),
+				    size_t s, size_t n MEM_STAT_DECL)
+{
+  return ggc_internal_cleared_alloc (size, f, s, n PASS_MEM_STAT);
+}
+#endif
 
 /* Resize a block of memory, possibly re-allocating it.  */
 void *

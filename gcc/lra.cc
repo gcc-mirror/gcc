@@ -549,7 +549,7 @@ lra_asm_insn_error (rtx_insn *insn)
   if (JUMP_P (insn))
     {
       ira_nullify_asm_goto (insn);
-      lra_update_insn_regno_info (insn);
+      lra_invalidate_insn_data (insn);
     }
   else
     {
@@ -1730,6 +1730,12 @@ lra_rtx_hash (rtx x)
     case CONST_INT:
       return val + UINTVAL (x);
 
+    case SUBREG:
+      val += lra_rtx_hash (SUBREG_REG (x));
+      for (int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	val += SUBREG_BYTE (x).coeffs[i];
+      return val;
+
     default:
       break;
     }
@@ -2480,6 +2486,7 @@ lra (FILE *f, int verbose)
 	    lra_clear_live_ranges ();
 	  bool fails_p;
 	  lra_hard_reg_split_p = false;
+	  int split_fails_num = 0;
 	  do
 	    {
 	      /* We need live ranges for lra_assign -- so build them.
@@ -2493,7 +2500,7 @@ lra (FILE *f, int verbose)
 		 coalescing.  If inheritance pseudos were spilled, the
 		 memory-memory moves involving them will be removed by
 		 pass undoing inheritance.  */
-	      if (lra_simple_p)
+	      if (lra_simple_p || lra_hard_reg_split_p)
 		lra_assign (fails_p);
 	      else
 		{
@@ -2522,8 +2529,15 @@ lra (FILE *f, int verbose)
 		  if (live_p)
 		    lra_clear_live_ranges ();
 		  live_p = false;
-		  if (! lra_split_hard_reg_for ())
-		    break;
+		  /* See a comment for LRA_MAX_FAILED_SPLITS definition.  */
+		  bool last_failed_split_p
+		    = split_fails_num > LRA_MAX_FAILED_SPLITS;
+		  if (! lra_split_hard_reg_for (last_failed_split_p))
+		    {
+		      if (last_failed_split_p)
+			break;
+		      split_fails_num++;
+		    }
 		  lra_hard_reg_split_p = true;
 		}
 	    }
@@ -2601,8 +2615,10 @@ lra (FILE *f, int verbose)
 
   inserted_p = fixup_abnormal_edges ();
 
-  /* We've possibly turned single trapping insn into multiple ones.  */
-  if (cfun->can_throw_non_call_exceptions)
+  /* Split basic blocks if we've possibly turned single trapping insn
+     into multiple ones or otherwise the backend requested to do so.  */
+  if (cfun->can_throw_non_call_exceptions
+      || cfun->split_basic_blocks_after_reload)
     {
       auto_sbitmap blocks (last_basic_block_for_fn (cfun));
       bitmap_ones (blocks);

@@ -1,4 +1,3 @@
-/* { dg-require-effective-target alloca } */
 /* { dg-additional-options "-fpermissive" } */
 void f(void * a, double y)
 {

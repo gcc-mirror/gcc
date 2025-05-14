@@ -28,7 +28,7 @@ namespace Compile {
 class CompileExpr : private HIRCompileBase, protected HIR::HIRExpressionVisitor
 {
 public:
-  static tree Compile (HIR::Expr *expr, Context *ctx);
+  static tree Compile (HIR::Expr &expr, Context *ctx);
 
   void visit (HIR::TupleIndexExpr &expr) override;
   void visit (HIR::TupleExpr &expr) override;
@@ -68,6 +68,8 @@ public:
   void visit (HIR::RangeFullExpr &expr) override;
   void visit (HIR::RangeFromToInclExpr &expr) override;
   void visit (HIR::ClosureExpr &expr) override;
+  void visit (HIR::InlineAsm &expr) override;
+  void visit (HIR::LlvmInlineAsm &expr) override;
 
   // TODO
   void visit (HIR::ErrorPropagationExpr &) override {}
@@ -76,8 +78,6 @@ public:
   // TODO
   // these need to be sugared in the HIR to if statements and a match
   void visit (HIR::WhileLetLoopExpr &) override {}
-  void visit (HIR::IfLetExpr &) override {}
-  void visit (HIR::IfLetExprConseqElse &) override {}
 
   // lets not worry about async yet....
   void visit (HIR::AwaitExpr &) override {}
@@ -97,10 +97,12 @@ protected:
 			      TyTy::BaseType *receiver, TyTy::FnType *fntype,
 			      tree receiver_ref, location_t expr_locus);
 
-  tree resolve_operator_overload (LangItem::Kind lang_item_type,
-				  HIR::OperatorExprMeta expr, tree lhs,
-				  tree rhs, HIR::Expr *lhs_expr,
-				  HIR::Expr *rhs_expr);
+  tree resolve_operator_overload (
+    LangItem::Kind lang_item_type, HIR::OperatorExprMeta expr, tree lhs,
+    tree rhs, HIR::Expr &lhs_expr,
+    tl::optional<std::reference_wrapper<HIR::Expr>> rhs_expr,
+    HIR::PathIdentSegment specified_segment
+    = HIR::PathIdentSegment::create_error ());
 
   tree compile_bool_literal (const HIR::LiteralExpr &expr,
 			     const TyTy::BaseType *tyty);

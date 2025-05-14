@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias-compare.h"
 #include "builtins.h"
 #include "internal-fn.h"
+#include "ipa-utils.h"
 
 /* Broad overview of how alias analysis on gimple works:
 
@@ -4165,7 +4166,7 @@ attr_fnspec::verify ()
 }
 
 /* Return ture if TYPE1 and TYPE2 will always give the same answer
-   when compared wit hother types using same_type_for_tbaa_p.  */
+   when compared with other types using same_type_for_tbaa.  */
 
 static bool
 types_equal_for_same_type_for_tbaa_p (tree type1, tree type2,
@@ -4186,6 +4187,16 @@ types_equal_for_same_type_for_tbaa_p (tree type1, tree type2,
     return type1 == type2;
   else
     return TYPE_CANONICAL (type1) == TYPE_CANONICAL (type2);
+}
+
+/* Return ture if TYPE1 and TYPE2 will always give the same answer
+   when compared with other types using same_type_for_tbaa.  */
+
+bool
+types_equal_for_same_type_for_tbaa_p (tree type1, tree type2)
+{
+  return types_equal_for_same_type_for_tbaa_p (type1, type2,
+					       lto_streaming_expected_p ());
 }
 
 /* Compare REF1 and REF2 and return flags specifying their differences.
@@ -4355,12 +4366,13 @@ ao_compare::compare_ao_refs (ao_ref *ref1, ao_ref *ref2,
 	c1 = p1, nskipped1 = i;
       i++;
     }
+  i = 0;
   for (tree p2 = ref2->ref; handled_component_p (p2); p2 = TREE_OPERAND (p2, 0))
     {
       if (component_ref_to_zero_sized_trailing_array_p (p2))
 	end_struct_ref2 = p2;
       if (ends_tbaa_access_path_p (p2))
-	c2 = p2, nskipped1 = i;
+	c2 = p2, nskipped2 = i;
       i++;
     }
 

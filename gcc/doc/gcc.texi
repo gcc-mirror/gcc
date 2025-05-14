@@ -144,6 +144,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * C Implementation:: How GCC implements the ISO C specification.
 * C++ Implementation:: How GCC implements the ISO C++ specification.
 * C Extensions::    GNU extensions to the C language family.
+* Built-in Functions:: Library functions built in to GCC.
 * C++ Extensions::  GNU extensions to the C++ language.
 * Objective-C::     GNU Objective-C runtime features.
 * Compatibility::   Binary Compatibility

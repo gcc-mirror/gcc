@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu17 -O2 -fno-crossjumping" } */
-/* { dg-require-effective-target alloca } */
 
 int bar1 ();
 int bar2 ();

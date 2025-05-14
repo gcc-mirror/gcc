@@ -17,6 +17,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* SH has the same reversed quiet bit as MIPS.  */
+RESET_FLOAT_FORMAT (SF, mips_single_format);
+RESET_FLOAT_FORMAT (DF, mips_double_format);
+/* TFmode: IEEE quad floating point (software).  */
+FLOAT_MODE (TF, 16, mips_quad_format);
+
 /* Vector modes.  */
 VECTOR_MODE  (INT, QI, 2);    /*                 V2QI */
 VECTOR_MODES (INT, 4);        /*            V4QI V2HI */

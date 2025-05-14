@@ -12,7 +12,7 @@ OBJS=getopt.obj,obstack.obj,xexit.obj,xmalloc.obj,hex.obj,\
     asprintf.obj vasprintf.obj,mkstemps.obj,filename_cmp.obj,\
     concat.obj,getruntime.obj,getpagesize.obj,getpwd.obj,xstrerror.obj,\
     xmemdup.obj,xstrdup.obj,xatexit.obj,choose-temp.obj,fnmatch.obj,\
-    objalloc.obj,safe-ctype.obj,hashtab.obj,lbasename.obj,argv.obj,\
+    objalloc.obj,safe-ctype.obj,hashtab.obj,lbasename.obj,ldirname.obj,argv.obj,\
     lrealpath.obj,make-temp-file.obj,stpcpy.obj,unlink-if-ordinary.obj,\
     dwarfnames.obj
 

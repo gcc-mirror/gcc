@@ -1763,12 +1763,13 @@ find_reload_regno_insns (int regno, rtx_insn * &start, rtx_insn * &finish)
   return true;
 }
 
-/* Process reload pseudos which did not get a hard reg, split a hard
-   reg live range in live range of a reload pseudo, and then return
-   TRUE.  If we did not split a hard reg live range, report an error,
-   and return FALSE.  */
+/* Process reload pseudos which did not get a hard reg, split a hard reg live
+   range in live range of a reload pseudo, and then return TRUE.  Otherwise,
+   return FALSE.  When FAIL_P is TRUE and if we did not split a hard reg live
+   range for failed reload pseudos, report an error and modify related asm
+   insns.  */
 bool
-lra_split_hard_reg_for (void)
+lra_split_hard_reg_for (bool fail_p)
 {
   int i, regno;
   rtx_insn *insn, *first, *last;
@@ -1843,23 +1844,25 @@ lra_split_hard_reg_for (void)
       regno = u;
       bitmap_ior_into (&failed_reload_insns,
 		       &lra_reg_info[regno].insn_bitmap);
-      lra_setup_reg_renumber
-	(regno, ira_class_hard_regs[lra_get_allocno_class (regno)][0], false);
+      if (fail_p)
+	lra_setup_reg_renumber
+	  (regno, ira_class_hard_regs[lra_get_allocno_class (regno)][0], false);
     }
-  EXECUTE_IF_SET_IN_BITMAP (&failed_reload_insns, 0, u, bi)
-    {
-      insn = lra_insn_recog_data[u]->insn;
-      if (asm_noperands (PATTERN (insn)) >= 0)
-	{
-	  asm_p = true;
-	  lra_asm_insn_error (insn);
-	}
-      else if (!asm_p)
-	{
-	  error ("unable to find a register to spill");
-	  fatal_insn ("this is the insn:", insn);
-	}
-    }
+  if (fail_p)
+    EXECUTE_IF_SET_IN_BITMAP (&failed_reload_insns, 0, u, bi)
+      {
+	insn = lra_insn_recog_data[u]->insn;
+	if (asm_noperands (PATTERN (insn)) >= 0)
+	  {
+	    asm_p = true;
+	    lra_asm_insn_error (insn);
+	  }
+	else if (!asm_p)
+	  {
+	    error ("unable to find a register to spill");
+	    fatal_insn ("this is the insn:", insn);
+	  }
+      }
   bitmap_clear (&failed_reload_pseudos);
   bitmap_clear (&failed_reload_insns);
   return false;

@@ -258,7 +258,7 @@ The OpenMP 4.5 specification is fully supported.
       device memory mapped by an array section @tab P @tab
 @item Mapping of Fortran pointer and allocatable variables, including pointer
       and allocatable components of variables
-      @tab P @tab Mapping of vars with allocatable components unsupported
+      @tab Y @tab
 @item @code{defaultmap} extensions @tab Y @tab
 @item @code{declare mapper} directive @tab N @tab
 @item @code{omp_get_supported_active_levels} routine @tab Y @tab
@@ -293,8 +293,7 @@ The OpenMP 4.5 specification is fully supported.
 @item C/C++'s @code{declare variant} directive: elision support of
       preprocessed code @tab N @tab
 @item @code{declare variant}: new clauses @code{adjust_args} and
-      @code{append_args} @tab P @tab For @code{append_args}, all interop objects
-      must be specified in the @code{interop} clause of @code{dispatch}
+      @code{append_args} @tab Y @tab
 @item @code{dispatch} construct @tab Y @tab
 @item device-specific ICV settings with environment variables @tab Y @tab
 @item @code{assume} and @code{assumes} directives @tab Y @tab
@@ -314,7 +313,7 @@ The OpenMP 4.5 specification is fully supported.
       clauses @tab N @tab
 @item Indirect calls to the device version of a procedure or function in
       @code{target} regions @tab Y @tab
-@item @code{interop} directive @tab N @tab
+@item @code{interop} directive @tab Y @tab Cf. @ref{Offload-Target Specifics}
 @item @code{omp_interop_t} object support in runtime routines @tab Y @tab
 @item @code{nowait} clause in @code{taskwait} directive @tab Y @tab
 @item Extensions to the @code{atomic} directive @tab Y @tab
@@ -545,7 +544,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @tab N @tab
 @item Semicolon-separated list to @code{uses_allocators} @tab N @tab
 @item New @code{need_device_addr} modifier to @code{adjust_args} clause @tab N @tab
-@item @code{interop} clause to @code{dispatch} @tab N @tab
+@item @code{interop} clause to @code{dispatch} @tab Y @tab
 @item Scope requirement changes for @code{declare_target} @tab N @tab
 @item @code{message} and @code{severity} clauses to @code{parallel} directive
       @tab N @tab
@@ -2317,7 +2316,7 @@ the initial device.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_target_memcpy_rect_async}, @ref{omp_target_memcpy}
+@ref{omp_target_memcpy_rect_async}, @ref{omp_target_memcpy}, @ref{Offload-Target Specifics}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.6
@@ -2392,7 +2391,7 @@ the initial device.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_target_memcpy_rect}, @ref{omp_target_memcpy_async}
+@ref{omp_target_memcpy_rect}, @ref{omp_target_memcpy_async}, @ref{Offload-Target Specifics}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.8
@@ -3048,7 +3047,7 @@ the initial device is unspecified.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{omp_intptr_t omp_get_interop_int(const omp_interop_t interop,
-                                   omp_interop_property_t property_id, int *ret_code)}
+                                   omp_interop_property_t property_id, omp_interop_rc_t *ret_code)}
 @end multitable
 
 @item @emph{Fortran}:
@@ -3062,7 +3061,8 @@ the initial device is unspecified.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_get_interop_ptr}, @ref{omp_get_interop_str}, @ref{omp_get_interop_rc_desc}
+@ref{omp_get_interop_ptr}, @ref{omp_get_interop_str}, @ref{omp_get_interop_rc_desc},
+@ref{Offload-Target Specifics}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.2,
@@ -3093,7 +3093,7 @@ the initial device is unspecified.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{void *omp_get_interop_ptr(const omp_interop_t interop,
-                                   omp_interop_property_t property_id, int *ret_code)}
+                                   omp_interop_property_t property_id, omp_interop_rc_t *ret_code)}
 @end multitable
 
 @item @emph{Fortran}:
@@ -3107,7 +3107,8 @@ the initial device is unspecified.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_get_interop_int}, @ref{omp_get_interop_str}, @ref{omp_get_interop_rc_desc}
+@ref{omp_get_interop_int}, @ref{omp_get_interop_str}, @ref{omp_get_interop_rc_desc},
+@ref{Offload-Target Specifics}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.3,
@@ -3137,7 +3138,7 @@ the initial device is unspecified.
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{const char *omp_get_interop_str(const omp_interop_t interop,
-                                   omp_interop_property_t property_id, int *ret_code)}
+                                   omp_interop_property_t property_id, omp_interop_rc_t *ret_code)}
 @end multitable
 
 @item @emph{Fortran}:
@@ -3151,7 +3152,8 @@ the initial device is unspecified.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_get_interop_int}, @ref{omp_get_interop_ptr}, @ref{omp_get_interop_rc_desc}
+@ref{omp_get_interop_int}, @ref{omp_get_interop_ptr}, @ref{omp_get_interop_rc_desc},
+@ref{Offload-Target Specifics}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.4,
@@ -3234,7 +3236,8 @@ a null pointer is returned. The effect of running this routine in a
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_get_num_interop_properties}, @ref{omp_get_interop_name}
+@ref{omp_get_num_interop_properties}, @ref{omp_get_interop_name},
+@ref{Offload-Target Specifics}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.6,
@@ -6837,6 +6840,10 @@ The following sections present notes on the offload-target specifics
 @node AMD Radeon
 @section AMD Radeon (GCN)
 
+@menu
+* Foreign-runtime support for AMD GPUs::
+@end menu
+
 On the hardware side, there is the hierarchy (fine to coarse):
 @itemize
 @item work item (thread)
@@ -6881,7 +6888,7 @@ The implementation remark:
       @code{device(ancestor:1)}) are processed serially per @code{target} region
       such that the next reverse offload region is only executed after the previous
       one returned.
-@item OpenMP code that has a @code{requires} directive with
+@item OpenMP code that has a @code{requires} directive with @code{self_maps} or
       @code{unified_shared_memory} is only supported if all AMD GPUs have the
       @code{HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT} property; for
       discrete GPUs, this may require setting the @code{HSA_XNACK} environment
@@ -6904,6 +6911,11 @@ The implementation remark:
       @code{omp_thread_mem_alloc}, all use low-latency memory as first
       preference, and fall back to main graphics memory when the low-latency
       pool is exhausted.
+@item The OpenMP routines @code{omp_target_memcpy_rect} and
+      @code{omp_target_memcpy_rect_async} and the @code{target update}
+      directive for non-contiguous list items use the 3D memory-copy function
+      of the HSA library.  Higher dimensions call this functions in a loop and
+      are therefore supported.
 @item The unique identifier (UID), used with OpenMP's API UID routines, is the
       value returned by the HSA runtime library for @code{HSA_AMD_AGENT_INFO_UUID}.
       For GPUs, it is currently @samp{GPU-} followed by 16 lower-case hex digits,
@@ -6912,9 +6924,77 @@ The implementation remark:
 @end itemize
 
 
+@node Foreign-runtime support for AMD GPUs
+@subsection OpenMP @code{interop} -- Foreign-Runtime Support for AMD GPUs
+
+On AMD GPUs, the foreign runtimes are HIP (C++ Heterogeneous-Compute Interface
+for Portability) and HSA (Heterogeneous System Architecture),
+where HIP is the default.  The interop object is created using OpenMP's
+@code{interop} directive or, implicitly, when invoking a @code{declare variant}
+procedure that has the @code{append_args} clause.  In either case, the
+@code{prefer_type} modifier determines whether HIP or HSA is used.
+
+When specifying the @code{targetsync} modifier: For HIP, a stream is
+created using @code{hipStreamCreate}. For HSA, a queue is created of type
+@code{HSA_QUEUE_TYPE_MULTI} with a queue size of 64.
+
+Invoke the @ref{Interoperability Routines} on an interop object to obtain
+the following properties.  For properties with integral (int), pointer (ptr),
+or string (str) data type, call @code{omp_get_interop_int},
+@code{omp_get_interop_ptr}, or @code{omp_get_interop_str}, respectively.
+Note that @code{device_num} is the OpenMP device number
+while @code{device} is the HIP device number or HSA device handle.
+
+When using HIP with C and C++, the @code{__HIP_PLATFORM_AMD__} preprocessor
+macro must be defined before including the HIP header files.
+
+For the API routine call, add the prefix @code{omp_ipr_} to the property name;
+for instance:
+@smallexample
+omp_interop_rc_t ret;
+int device_num = omp_get_interop_int (my_interop_obj, omp_ipr_device_num, &ret);
+@end smallexample
+
+@noindent
+Available properties for an HIP interop object:
+
+@multitable @columnfractions .20 .35 .20 .20
+@headitem Property          @tab C data type             @tab API routine @tab value (if constant)
+@item @code{fr_id}          @tab @code{omp_interop_fr_t} @tab int         @tab @code{omp_fr_hip}
+@item @code{fr_name}        @tab @code{const char *}     @tab str         @tab @code{"hip"}
+@item @code{vendor}         @tab @code{int}              @tab int         @tab @code{1}
+@item @code{vendor_name}    @tab @code{const char *}     @tab str         @tab @code{"amd"}
+@item @code{device_num}     @tab @code{int}              @tab int         @tab
+@item @code{platform}       @tab N/A                     @tab             @tab
+@item @code{device}         @tab @code{hipDevice_t}      @tab int         @tab
+@item @code{device_context} @tab @code{hipCtx_t}         @tab ptr         @tab
+@item @code{targetsync}     @tab @code{hipStream_t}      @tab ptr         @tab
+@end multitable
+
+@noindent
+Available properties for an HSA interop object:
+
+@multitable @columnfractions .20 .35 .20 .20
+@headitem Property          @tab C data type             @tab API routine @tab value (if constant)
+@item @code{fr_id}          @tab @code{omp_interop_fr_t} @tab int         @tab @code{omp_fr_hsa}
+@item @code{fr_name}        @tab @code{const char *}     @tab str         @tab @code{"hsa"}
+@item @code{vendor}         @tab @code{int}              @tab int         @tab @code{1}
+@item @code{vendor_name}    @tab @code{const char *}     @tab str         @tab @code{"amd"}
+@item @code{device_num}     @tab @code{int}              @tab int         @tab
+@item @code{platform}       @tab N/A                     @tab             @tab
+@item @code{device}         @tab @code{hsa_agent *}      @tab ptr         @tab
+@item @code{device_context} @tab N/A                     @tab             @tab
+@item @code{targetsync}     @tab @code{hsa_queue *}      @tab ptr         @tab
+@end multitable
+
+
 
 @node nvptx
 @section nvptx
+
+@menu
+* Foreign-runtime support for Nvidia GPUs::
+@end menu
 
 On the hardware side, there is the hierarchy (fine to coarse):
 @itemize
@@ -6968,7 +7048,7 @@ The implementation remark:
       Per device, reverse offload regions are processed serially such that
       the next reverse offload region is only executed after the previous
       one returned.
-@item OpenMP code that has a @code{requires} directive with
+@item OpenMP code that has a @code{requires} directive with @code{self_maps} or
       @code{unified_shared_memory} runs on nvptx devices if and only if
       all of those support the @code{pageableMemoryAccess} property;@footnote{
       @uref{https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-requirements}}
@@ -6976,11 +7056,6 @@ The implementation remark:
       devices (``host fallback'').
 @item The default per-warp stack size is 128 kiB; see also @code{-msoft-stack}
       in the GCC manual.
-@item The OpenMP routines @code{omp_target_memcpy_rect} and
-      @code{omp_target_memcpy_rect_async} and the @code{target update}
-      directive for non-contiguous list items will use the 2D and 3D
-      memory-copy functions of the CUDA library.  Higher dimensions will
-      call those functions in a loop and are therefore supported.
 @item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
       the @code{access} trait is set to @code{cgroup}, and libgomp has
       been built for PTX ISA version 4.1 or higher (such as in GCC's
@@ -6998,6 +7073,11 @@ The implementation remark:
       @code{omp_thread_mem_alloc}, all use low-latency memory as first
       preference, and fall back to main graphics memory when the low-latency
       pool is exhausted.
+@item The OpenMP routines @code{omp_target_memcpy_rect} and
+      @code{omp_target_memcpy_rect_async} and the @code{target update}
+      directive for non-contiguous list items use the 2D and 3D memory-copy
+      functions of the CUDA library.  Higher dimensions call those functions
+      in a loop and are therefore supported.
 @item The unique identifier (UID), used with OpenMP's API UID routines, consists
       of the @samp{GPU-} prefix followed by the 16-bytes UUID as returned by
       the CUDA runtime library.  This UUID is output in grouped lower-case
@@ -7006,6 +7086,88 @@ The implementation remark:
       like @code{GPU-a8081c9e-f03e-18eb-1827-bf5ba95afa5d}.  The output
       matches the format used by @code{nvidia-smi}.
 @end itemize
+
+
+@node Foreign-runtime support for Nvidia GPUs
+@subsection OpenMP @code{interop} -- Foreign-Runtime Support for Nvidia GPUs
+
+On Nvidia GPUs, the foreign runtimes APIs are the CUDA runtime API, the CUDA
+driver API, and HIP, the C++ Heterogeneous-Compute Interface for Portability
+that is---on CUDA-based systems---a very thin layer on top of the CUDA API. By
+default, CUDA is used.  The interop object is created using OpenMP's
+@code{interop} directive or, implicitly, when invoking a @code{declare variant}
+procedure that has the @code{append_args} clause.  In either case, the
+@code{prefer_type} modifier determines whether CUDA, CUDA driver, or HSA is
+used.
+
+When specifying the @code{targetsync} modifier, a CUDA stream is created using
+the @code{CU_STREAM_DEFAULT} flag.
+
+Invoke the @ref{Interoperability Routines} on an interop object to obtain
+the following properties.  For properties with integral (int), pointer (ptr),
+or string (str) data type, call @code{omp_get_interop_int},
+@code{omp_get_interop_ptr}, or @code{omp_get_interop_str}, respectively.
+Note that @code{device_num} is the OpenMP device number while @code{device}
+is the CUDA, CUDA Driver, or HIP device number.
+
+When using HIP with C and C++, the @code{__HIP_PLATFORM_NVIDIA__} preprocessor
+macro must be defined before including the HIP header files.
+
+For the API routine call, add the prefix @code{omp_ipr_} to the property name;
+for instance:
+@smallexample
+omp_interop_rc_t ret;
+int device_num = omp_get_interop_int (my_interop_obj, omp_ipr_device_num, &ret);
+@end smallexample
+
+@noindent
+Available properties for a CUDA runtime API interop object:
+
+@multitable @columnfractions .20 .35 .20 .20
+@headitem Property          @tab C data type             @tab API routine @tab value (if constant)
+@item @code{fr_id}          @tab @code{omp_interop_fr_t} @tab int         @tab @code{omp_fr_cuda}
+@item @code{fr_name}        @tab @code{const char *}     @tab str         @tab @code{"cuda"}
+@item @code{vendor}         @tab @code{int}              @tab int         @tab @code{11}
+@item @code{vendor_name}    @tab @code{const char *}     @tab str         @tab @code{"nvidia"}
+@item @code{device_num}     @tab @code{int}              @tab int         @tab
+@item @code{platform}       @tab N/A                     @tab             @tab
+@item @code{device}         @tab @code{int}              @tab int         @tab
+@item @code{device_context} @tab N/A                     @tab             @tab
+@item @code{targetsync}     @tab @code{cudaStream_t}     @tab ptr         @tab
+@end multitable
+
+@noindent
+Available properties for a CUDA driver API interop object:
+
+@multitable @columnfractions .20 .35 .20 .20
+@headitem Property          @tab C data type             @tab API routine @tab value (if constant)
+@item @code{fr_id}          @tab @code{omp_interop_fr_t} @tab int         @tab @code{omp_fr_cuda_driver}
+@item @code{fr_name}        @tab @code{const char *}     @tab str         @tab @code{"cuda_driver"}
+@item @code{vendor}         @tab @code{int}              @tab int         @tab @code{11}
+@item @code{vendor_name}    @tab @code{const char *}     @tab str         @tab @code{"nvidia"}
+@item @code{device_num}     @tab @code{int}              @tab int         @tab
+@item @code{platform}       @tab N/A                     @tab             @tab
+@item @code{device}         @tab @code{CUdevice}         @tab int         @tab
+@item @code{device_context} @tab @code{CUcontext}        @tab ptr         @tab
+@item @code{targetsync}     @tab @code{CUstream}         @tab ptr         @tab
+@end multitable
+
+@noindent
+Available properties for an HIP interop object:
+
+@multitable @columnfractions .20 .35 .20 .20
+@headitem Property          @tab C data type             @tab API routine @tab value (if constant)
+@item @code{fr_id}          @tab @code{omp_interop_fr_t} @tab int         @tab @code{omp_fr_hip}
+@item @code{fr_name}        @tab @code{const char *}     @tab str         @tab @code{"hip"}
+@item @code{vendor}         @tab @code{int}              @tab int         @tab @code{11}
+@item @code{vendor_name}    @tab @code{const char *}     @tab str         @tab @code{"nvidia"}
+@item @code{device_num}     @tab @code{int}              @tab int         @tab
+@item @code{platform}       @tab N/A                     @tab             @tab
+@item @code{device}         @tab @code{hipDevice_t}      @tab int         @tab
+@item @code{device_context} @tab @code{hipCtx_t}         @tab ptr         @tab
+@item @code{targetsync}     @tab @code{hipStream_t}      @tab ptr         @tab
+@end multitable
+
 
 
 @c ---------------------------------------------------------------------

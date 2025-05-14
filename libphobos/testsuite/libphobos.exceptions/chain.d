@@ -1,7 +1,7 @@
 // Author: Ali Çehreli
 // See https://forum.dlang.org/post/o2n7f8$2p1t$1@digitalmars.com
 
-import core.stdc.stdio;
+import core.stdc.stdio : printf;
 
 class TestException : Exception
 {

@@ -29,7 +29,6 @@
 #include "diagnostic.h"
 #include "diagnostic-format-text.h"
 #include "context.h"
-#include "make-unique.h"
 
 int plugin_is_GPL_compatible;
 
@@ -230,7 +229,8 @@ plugin_init (struct plugin_name_args *plugin_info,
 
   diagnostic_text_starter (global_dc) = test_diagnostic_text_starter;
   diagnostic_start_span (global_dc) = test_diagnostic_start_span_fn;
-  global_dc->set_output_format (::make_unique<test_output_format> (*global_dc));
+  global_dc->set_output_format
+    (::std::make_unique<test_output_format> (*global_dc));
 
   pass_info.pass = new pass_test_groups (g);
   pass_info.reference_pass_name = "*warn_function_noreturn";

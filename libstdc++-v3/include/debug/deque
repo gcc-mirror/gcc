@@ -155,6 +155,13 @@ namespace __debug
 		__gnu_debug::__base(__last), __a)
 	{ }
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	deque(from_range_t, _Rg&& __rg, const _Allocator& __a = _Allocator())
+	: _Base(from_range, std::forward<_Rg>(__rg), __a)
+	{ }
+#endif
+
       deque(_Base_ref __x)
       : _Base(__x._M_ref) { }
 
@@ -208,6 +215,16 @@ namespace __debug
 	_Base::assign(__l);
 	this->_M_invalidate_all();
       }
+#endif
+
+#if __glibcxx_containers_ranges // C++ >= 23
+      template<std::__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	assign_range(_Rg&& __rg)
+	{
+	  _Base::assign_range(std::forward<_Rg>(__rg));
+	  this->_M_invalidate_all();
+	}
 #endif
 
       using _Base::get_allocator;
@@ -544,6 +561,33 @@ namespace __debug
 	}
 #endif
 
+#if __glibcxx_containers_ranges // C++ >= 23
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	iterator
+	insert_range(const_iterator __pos, _Rg&& __rg)
+	{
+	  auto __res = _Base::insert_range(__pos.base(), std::forward<_Rg>(__rg));
+	  this->_M_invalidate_all();
+	  return iterator(__res, this);
+	}
+
+      template<std::__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	prepend_range(_Rg&& __rg)
+	{
+	  _Base::prepend_range(std::forward<_Rg>(__rg));
+	  this->_M_invalidate_all();
+	}
+
+      template<std::__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	append_range(_Rg&& __rg)
+	{
+	  _Base::append_range(std::forward<_Rg>(__rg));
+	  this->_M_invalidate_all();
+	}
+#endif
+
       void
       pop_front() _GLIBCXX_NOEXCEPT
       {
@@ -667,6 +711,13 @@ namespace __debug
 	   typename = _RequireAllocator<_Allocator>>
     deque(size_t, _Tp, _Allocator = _Allocator())
       -> deque<_Tp, _Allocator>;
+
+#if __glibcxx_containers_ranges // C++ >= 23
+  template<ranges::input_range _Rg,
+	   typename _Alloc = allocator<ranges::range_value_t<_Rg>>>
+    deque(from_range_t, _Rg&&, _Alloc = _Alloc())
+      -> deque<ranges::range_value_t<_Rg>, _Alloc>;
+#endif
 #endif
 
   template<typename _Tp, typename _Alloc>

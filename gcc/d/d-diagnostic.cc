@@ -183,13 +183,14 @@ escape_d_format (const char *format)
    front-end, which does not get translated by the gcc diagnostic routines.  */
 
 static void ATTRIBUTE_GCC_DIAG(3,0)
-d_diagnostic_report_diagnostic (const Loc &loc, int opt, const char *format,
-				va_list ap, diagnostic_t kind, bool verbatim)
+d_diagnostic_report_diagnostic (const SourceLoc &loc, int opt,
+				const char *format, va_list ap,
+				diagnostic_t kind, bool verbatim)
 {
   va_list argp;
   va_copy (argp, ap);
 
-  if (loc.filename () || !verbatim)
+  if (loc.filename.length != 0 || !verbatim)
     {
       rich_location rich_loc (line_table, make_location_t (loc));
       diagnostic_info diagnostic;
@@ -220,8 +221,8 @@ d_diagnostic_report_diagnostic (const Loc &loc, int opt, const char *format,
    error count depending on how KIND is treated.  */
 
 void D_ATTRIBUTE_FORMAT(2,0) ATTRIBUTE_GCC_DIAG(2,0)
-verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
-	      const char *prefix1, const char *prefix2)
+verrorReport (const SourceLoc loc, const char *format, va_list ap,
+	      ErrorKind kind, const char *prefix1, const char *prefix2)
 {
   diagnostic_t diag_kind = DK_UNSPECIFIED;
   int opt = 0;
@@ -304,7 +305,7 @@ verrorReport (const Loc& loc, const char *format, va_list ap, ErrorKind kind,
    explicit location LOC.  This doesn't increase the global error count.  */
 
 void D_ATTRIBUTE_FORMAT(2,0) ATTRIBUTE_GCC_DIAG(2,0)
-verrorReportSupplemental (const Loc& loc, const char* format, va_list ap,
+verrorReportSupplemental (const SourceLoc loc, const char* format, va_list ap,
 			  ErrorKind kind)
 {
   if (kind == ErrorKind::error)

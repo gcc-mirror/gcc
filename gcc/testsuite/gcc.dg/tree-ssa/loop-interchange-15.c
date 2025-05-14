@@ -1,7 +1,6 @@
 /* PR tree-optimization/83337 */
 /* { dg-do run { target int32plus } } */
 /* { dg-options "-O2 -floop-interchange" } */
-/* { dg-require-effective-target alloca }  */
 /* { dg-skip-if "too big stack" { visium-*-* } } */
 
 /* Copied from graphite/interchange-5.c */

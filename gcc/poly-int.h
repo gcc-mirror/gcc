@@ -1906,6 +1906,25 @@ known_alignment (const poly_int<N, Ca> &a)
   return r & -r;
 }
 
+/* Return true if we can compute A & B at compile time, storing the
+   result in RES if so.  */
+
+template<unsigned int N, typename Ca, typename Cb, typename Cr>
+inline typename if_nonpoly<Cb, bool>::type
+can_and_p (const poly_int<N, Ca> &a, Cb b, Cr *result)
+{
+  /* Coefficients 1 and above must be a multiple of something greater
+     than ~B.  */
+  typedef POLY_INT_TYPE (Ca) int_type;
+  if (N >= 2)
+    for (unsigned int i = 1; i < N; i++)
+      if ((-(a.coeffs[i] & -a.coeffs[i]) & ~b) != int_type (0))
+	return false;
+  *result = a;
+  result->coeffs[0] &= b;
+  return true;
+}
+
 /* Return true if we can compute A | B at compile time, storing the
    result in RES if so.  */
 

@@ -17,8 +17,13 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-pattern.h"
+#include "rust-hir-pattern.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-type-util.h"
+#include "rust-immutable-name-resolution-context.h"
+
+// for flag_name_resolution_2_0
+#include "options.h"
 
 namespace Rust {
 namespace Resolver {
@@ -28,28 +33,135 @@ TypeCheckPattern::TypeCheckPattern (TyTy::BaseType *parent)
 {}
 
 TyTy::BaseType *
-TypeCheckPattern::Resolve (HIR::Pattern *pattern, TyTy::BaseType *parent)
+TypeCheckPattern::Resolve (HIR::Pattern &pattern, TyTy::BaseType *parent)
 {
   TypeCheckPattern resolver (parent);
-  pattern->accept_vis (resolver);
+  pattern.accept_vis (resolver);
 
   if (resolver.infered == nullptr)
-    return new TyTy::ErrorType (pattern->get_mappings ().get_hirid ());
+    return new TyTy::ErrorType (pattern.get_mappings ().get_hirid ());
 
-  resolver.context->insert_type (pattern->get_mappings (), resolver.infered);
+  resolver.context->insert_type (pattern.get_mappings (), resolver.infered);
   return resolver.infered;
 }
 
 void
 TypeCheckPattern::visit (HIR::PathInExpression &pattern)
 {
-  infered = TypeCheckExpr::Resolve (&pattern);
+  // Pattern must be enum variants, sturcts, constants, or associated constansts
+  TyTy::BaseType *pattern_ty = TypeCheckExpr::Resolve (pattern);
+
+  NodeId ref_node_id = UNKNOWN_NODEID;
+  bool maybe_item = false;
+
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      if (auto id = nr_ctx.lookup (pattern.get_mappings ().get_nodeid ()))
+	{
+	  ref_node_id = *id;
+	  maybe_item = true;
+	}
+    }
+  else
+    {
+      maybe_item |= resolver->lookup_resolved_name (
+	pattern.get_mappings ().get_nodeid (), &ref_node_id);
+      maybe_item |= resolver->lookup_resolved_type (
+	pattern.get_mappings ().get_nodeid (), &ref_node_id);
+    }
+
+  bool path_is_const_item = false;
+
+  if (maybe_item)
+    {
+      tl::optional<HirId> definition_id
+	= mappings.lookup_node_to_hir (ref_node_id);
+      rust_assert (definition_id.has_value ());
+      HirId def_id = definition_id.value ();
+
+      tl::optional<HIR::Item *> hir_item = mappings.lookup_hir_item (def_id);
+      // If the path refrerences an item, it must be constants or structs.
+      if (hir_item.has_value ())
+	{
+	  HIR::Item *item = hir_item.value ();
+	  if (item->get_item_kind () == HIR::Item::ItemKind::Constant)
+	    {
+	      path_is_const_item = true;
+	    }
+	  else if (item->get_item_kind () != HIR::Item::ItemKind::Struct)
+	    {
+	      HIR::Item *item = hir_item.value ();
+	      std::string item_kind
+		= HIR::Item::item_kind_string (item->get_item_kind ());
+
+	      std::string path_buf;
+	      for (size_t i = 0; i < pattern.get_segments ().size (); i++)
+		{
+		  HIR::PathExprSegment &seg = pattern.get_segments ().at (i);
+		  path_buf += seg.as_string ();
+		  if (i != pattern.get_segments ().size () - 1)
+		    path_buf += "::";
+		}
+
+	      rich_location rich_locus (
+		line_table, pattern.get_final_segment ().get_locus ());
+	      rich_locus.add_fixit_replace (
+		"not a unit struct, unit variant or constant");
+	      rust_error_at (rich_locus, ErrorCode::E0532,
+			     "expected unit struct, unit variant or constant, "
+			     "found %s %<%s%>",
+			     item_kind.c_str (), path_buf.c_str ());
+	      return;
+	    }
+	}
+    }
+
+  // If the path is a constructor, it must be a unit struct or unit variants.
+  if (!path_is_const_item && pattern_ty->get_kind () == TyTy::TypeKind::ADT)
+    {
+      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (pattern_ty);
+      rust_assert (adt->get_variants ().size () > 0);
+
+      TyTy::VariantDef *variant = adt->get_variants ().at (0);
+      if (adt->is_enum ())
+	{
+	  HirId variant_id = UNKNOWN_HIRID;
+	  bool ok = context->lookup_variant_definition (
+	    pattern.get_mappings ().get_hirid (), &variant_id);
+	  rust_assert (ok);
+
+	  ok = adt->lookup_variant_by_id (variant_id, &variant);
+	  rust_assert (ok);
+	}
+
+      if (variant->get_variant_type () != TyTy::VariantDef::VariantType::NUM)
+	{
+	  std::string variant_type = TyTy::VariantDef::variant_type_string (
+	    variant->get_variant_type ());
+
+	  rich_location rich_locus (line_table,
+				    pattern.get_final_segment ().get_locus ());
+	  rich_locus.add_fixit_replace (
+	    "not a unit struct, unit variant or constatnt");
+	  rust_error_at (rich_locus, ErrorCode::E0532,
+			 "expected unit struct, unit variant or constant, "
+			 "found %s variant %<%s::%s%>",
+			 variant_type.c_str (), adt->get_name ().c_str (),
+			 variant->get_identifier ().c_str ());
+	  return;
+	}
+
+      infered = pattern_ty;
+    }
 }
 
 void
 TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 {
-  TyTy::BaseType *pattern_ty = TypeCheckExpr::Resolve (&pattern.get_path ());
+  TyTy::BaseType *pattern_ty = TypeCheckExpr::Resolve (pattern.get_path ());
   if (pattern_ty->get_kind () != TyTy::TypeKind::ADT)
     {
       rust_error_at (
@@ -75,8 +187,8 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
       rust_assert (ok);
     }
 
-  // error[E0532]: expected tuple struct or tuple variant, found struct variant
-  // `Foo::D`, E0532 by rustc 1.49.0 , E0164 by rustc 1.71.0
+  // error[E0532]: expected tuple struct or tuple variant, found struct
+  // variant `Foo::D`, E0532 by rustc 1.49.0 , E0164 by rustc 1.71.0
   if (variant->get_variant_type () != TyTy::VariantDef::VariantType::TUPLE)
     {
       std::string variant_type
@@ -98,8 +210,8 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
   // error[E0023]: this pattern has 0 fields, but the corresponding tuple
   // variant has 1 field
 
-  std::unique_ptr<HIR::TupleStructItems> &items = pattern.get_items ();
-  switch (items->get_item_type ())
+  auto &items = pattern.get_items ();
+  switch (items.get_item_type ())
     {
       case HIR::TupleStructItems::RANGED: {
 	// TODO
@@ -109,7 +221,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 
       case HIR::TupleStructItems::MULTIPLE: {
 	HIR::TupleStructItemsNoRange &items_no_range
-	  = static_cast<HIR::TupleStructItemsNoRange &> (*items.get ());
+	  = static_cast<HIR::TupleStructItemsNoRange &> (items);
 
 	if (items_no_range.get_patterns ().size () != variant->num_fields ())
 	  {
@@ -135,6 +247,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 
 	    // setup the type on this pattern type
 	    context->insert_type (pattern->get_mappings (), fty);
+	    TypeCheckPattern::Resolve (*pattern, fty);
 	  }
       }
       break;
@@ -153,7 +266,7 @@ emit_invalid_field_error (location_t loc, Rust::TyTy::VariantDef *variant,
 void
 TypeCheckPattern::visit (HIR::StructPattern &pattern)
 {
-  TyTy::BaseType *pattern_ty = TypeCheckExpr::Resolve (&pattern.get_path ());
+  TyTy::BaseType *pattern_ty = TypeCheckExpr::Resolve (pattern.get_path ());
   if (pattern_ty->get_kind () != TyTy::TypeKind::ADT)
     {
       rust_error_at (pattern.get_locus (),
@@ -164,7 +277,15 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 
   infered = pattern_ty;
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
-  rust_assert (adt->number_of_variants () > 0);
+  if (adt->number_of_variants () == 0)
+    {
+      HIR::PathInExpression &path = pattern.get_path ();
+      const AST::SimplePath &sp = path.as_simple_path ();
+      rust_error_at (pattern.get_locus (), ErrorCode::E0574,
+		     "expected struct, variant or union type, found enum %qs",
+		     sp.as_string ().c_str ());
+      return;
+    }
 
   TyTy::VariantDef *variant = adt->get_variants ().at (0);
   if (adt->is_enum ())
@@ -172,14 +293,23 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
       HirId variant_id = UNKNOWN_HIRID;
       bool ok = context->lookup_variant_definition (
 	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
-      rust_assert (ok);
+      if (!ok)
+	{
+	  HIR::PathInExpression &path = pattern.get_path ();
+	  const AST::SimplePath &sp = path.as_simple_path ();
+	  rust_error_at (
+	    pattern.get_locus (), ErrorCode::E0574,
+	    "expected struct, variant or union type, found enum %qs",
+	    sp.as_string ().c_str ());
+	  return;
+	}
 
       ok = adt->lookup_variant_by_id (variant_id, &variant);
       rust_assert (ok);
     }
 
-  // error[E0532]: expected tuple struct or tuple variant, found struct variant
-  // `Foo::D`
+  // error[E0532]: expected tuple struct or tuple variant, found struct
+  // variant `Foo::D`
   if (variant->get_variant_type () != TyTy::VariantDef::VariantType::STRUCT)
     {
       std::string variant_type
@@ -197,10 +327,6 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
       return;
     }
 
-  // check the elements
-  // error[E0027]: pattern does not mention fields `x`, `y`
-  // error[E0026]: variant `Foo::D` does not have a field named `b`
-
   std::vector<std::string> named_fields;
   auto &struct_pattern_elems = pattern.get_struct_pattern_elems ();
   for (auto &field : struct_pattern_elems.get_struct_pattern_fields ())
@@ -215,7 +341,7 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 
 	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
 	    HIR::StructPatternFieldIdentPat &ident
-	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field.get ());
+	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field);
 
 	    TyTy::StructFieldType *field = nullptr;
 	    if (!variant->lookup_field (ident.get_identifier ().as_string (),
@@ -228,13 +354,13 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	    named_fields.push_back (ident.get_identifier ().as_string ());
 
 	    TyTy::BaseType *fty = field->get_field_type ();
-	    TypeCheckPattern::Resolve (ident.get_pattern ().get (), fty);
+	    TypeCheckPattern::Resolve (ident.get_pattern (), fty);
 	  }
 	  break;
 
 	  case HIR::StructPatternField::ItemType::IDENT: {
 	    HIR::StructPatternFieldIdent &ident
-	      = static_cast<HIR::StructPatternFieldIdent &> (*field.get ());
+	      = static_cast<HIR::StructPatternFieldIdent &> (*field);
 
 	    TyTy::StructFieldType *field = nullptr;
 	    if (!variant->lookup_field (ident.get_identifier ().as_string (),
@@ -254,31 +380,67 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	}
     }
 
-  if (named_fields.size () != variant->num_fields ())
+  // check the elements
+  if (adt->is_union ())
     {
-      std::map<std::string, bool> missing_names;
+      auto &struct_pattern_elems = pattern.get_struct_pattern_elems ();
+      if (struct_pattern_elems.get_struct_pattern_fields ().size () != 1)
+	rust_error_at (pattern.get_locus (),
+		       "union patterns should have exactly one field");
 
-      // populate with all fields
-      for (auto &field : variant->get_fields ())
-	missing_names[field->get_name ()] = true;
-
-      // then eliminate with named_fields
-      for (auto &named : named_fields)
-	missing_names.erase (named);
-
-      // then get the list of missing names
-      size_t i = 0;
-      std::string missing_fields_str;
-      for (auto it = missing_names.begin (); it != missing_names.end (); it++)
+      else
 	{
-	  bool has_next = (i + 1) < missing_names.size ();
-	  missing_fields_str += it->first + (has_next ? ", " : "");
-	  i++;
+	  switch (struct_pattern_elems.get_struct_pattern_fields ()
+		    .at (0)
+		    ->get_item_type ())
+	    {
+	    case HIR::StructPatternField::ItemType::IDENT:
+	    case HIR::StructPatternField::ItemType::IDENT_PAT:
+	      break;
+	      default: {
+		auto first_elem
+		  = struct_pattern_elems.get_struct_pattern_fields ()
+		      .at (0)
+		      ->as_string ();
+		rust_error_at (pattern.get_locus (),
+			       "%qs cannot be used in union patterns",
+			       first_elem.c_str ());
+	      }
+	    }
 	}
+    }
+  else
+    {
+      // Expects enum struct or struct struct.
+      // error[E0027]: pattern does not mention fields `x`, `y`
+      // error[E0026]: variant `Foo::D` does not have a field named `b`
+      if (named_fields.size () != variant->num_fields ())
+	{
+	  std::map<std::string, bool> missing_names;
 
-      rust_error_at (pattern.get_locus (), ErrorCode::E0027,
-		     "pattern does not mention fields %s",
-		     missing_fields_str.c_str ());
+	  // populate with all fields
+	  for (auto &field : variant->get_fields ())
+	    missing_names[field->get_name ()] = true;
+
+	  // then eliminate with named_fields
+	  for (auto &named : named_fields)
+	    missing_names.erase (named);
+
+	  // then get the list of missing names
+	  size_t i = 0;
+	  std::string missing_fields_str;
+	  for (auto it = missing_names.begin (); it != missing_names.end ();
+	       it++)
+	    {
+	      bool has_next = (i + 1) < missing_names.size ();
+	      missing_fields_str += it->first + (has_next ? ", " : "");
+	      i++;
+	    }
+
+	  rust_error_at (pattern.get_locus (), ErrorCode::E0027,
+			 "pattern does not mention fields %s",
+			 missing_fields_str.c_str ());
+	}
     }
 }
 
@@ -295,12 +457,11 @@ void
 TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 {
   std::unique_ptr<HIR::TuplePatternItems> items;
-  switch (pattern.get_items ()->get_item_type ())
+  switch (pattern.get_items ().get_item_type ())
     {
       case HIR::TuplePatternItems::ItemType::MULTIPLE: {
-	HIR::TuplePatternItemsMultiple &ref
-	  = *static_cast<HIR::TuplePatternItemsMultiple *> (
-	    pattern.get_items ().get ());
+	auto &ref = static_cast<HIR::TuplePatternItemsMultiple &> (
+	  pattern.get_items ());
 
 	auto resolved_parent = parent->destructure ();
 	if (resolved_parent->get_kind () != TyTy::TUPLE)
@@ -329,8 +490,7 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	    auto &p = patterns[i];
 	    TyTy::BaseType *par_type = par.get_field (i);
 
-	    TyTy::BaseType *elem
-	      = TypeCheckPattern::Resolve (p.get (), par_type);
+	    TyTy::BaseType *elem = TypeCheckPattern::Resolve (*p, par_type);
 	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
 	  }
 	infered = new TyTy::TupleType (pattern.get_mappings ().get_hirid (),
@@ -376,9 +536,18 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
 }
 
 void
-TypeCheckPattern::visit (HIR::IdentifierPattern &)
+TypeCheckPattern::visit (HIR::IdentifierPattern &pattern)
 {
-  infered = parent;
+  if (!pattern.get_is_ref ())
+    {
+      infered = parent;
+      return;
+    }
+
+  infered = new TyTy::ReferenceType (pattern.get_mappings ().get_hirid (),
+				     TyTy::TyVar (parent->get_ref ()),
+				     pattern.is_mut () ? Mutability::Mut
+						       : Mutability::Imm);
 }
 
 void
@@ -398,10 +567,10 @@ TypeCheckPattern::visit (HIR::ReferencePattern &pattern)
       return;
     }
 
-  TyTy::ReferenceType *ref_ty_ty = static_cast<TyTy::ReferenceType *> (parent);
+  auto &ref_ty_ty = static_cast<TyTy::ReferenceType &> (*parent);
   TyTy::BaseType *infered_base
-    = TypeCheckPattern::Resolve (pattern.get_referenced_pattern ().get (),
-				 ref_ty_ty->get_base ());
+    = TypeCheckPattern::Resolve (pattern.get_referenced_pattern (),
+				 ref_ty_ty.get_base ());
   infered = new TyTy::ReferenceType (pattern.get_mappings ().get_hirid (),
 				     TyTy::TyVar (infered_base->get_ref ()),
 				     pattern.is_mut () ? Mutability::Mut
@@ -421,7 +590,7 @@ TypeCheckPattern::emit_pattern_size_error (const HIR::Pattern &pattern,
 					   size_t got_field_count)
 {
   rich_location r (line_table, pattern.get_locus ());
-  r.add_range (mappings->lookup_location (parent->get_ref ()));
+  r.add_range (mappings.lookup_location (parent->get_ref ()));
   rust_error_at (r,
 		 "expected a tuple with %lu %s, found one "
 		 "with %lu %s",
@@ -433,15 +602,14 @@ TypeCheckPattern::emit_pattern_size_error (const HIR::Pattern &pattern,
 
 TyTy::BaseType *
 TypeCheckPattern::typecheck_range_pattern_bound (
-  std::unique_ptr<Rust::HIR::RangePatternBound> &bound,
-  Analysis::NodeMapping mappings, location_t locus)
+  Rust::HIR::RangePatternBound &bound, Analysis::NodeMapping mappings,
+  location_t locus)
 {
   TyTy::BaseType *resolved_bound = nullptr;
-  switch (bound->get_bound_type ())
+  switch (bound.get_bound_type ())
     {
       case HIR::RangePatternBound::RangePatternBoundType::LITERAL: {
-	HIR::RangePatternBoundLiteral &ref
-	  = *static_cast<HIR::RangePatternBoundLiteral *> (bound.get ());
+	auto &ref = static_cast<HIR::RangePatternBoundLiteral &> (bound);
 
 	HIR::Literal lit = ref.get_literal ();
 
@@ -450,18 +618,16 @@ TypeCheckPattern::typecheck_range_pattern_bound (
       break;
 
       case HIR::RangePatternBound::RangePatternBoundType::PATH: {
-	HIR::RangePatternBoundPath &ref
-	  = *static_cast<HIR::RangePatternBoundPath *> (bound.get ());
+	auto &ref = static_cast<HIR::RangePatternBoundPath &> (bound);
 
-	resolved_bound = TypeCheckExpr::Resolve (&ref.get_path ());
+	resolved_bound = TypeCheckExpr::Resolve (ref.get_path ());
       }
       break;
 
       case HIR::RangePatternBound::RangePatternBoundType::QUALPATH: {
-	HIR::RangePatternBoundQualPath &ref
-	  = *static_cast<HIR::RangePatternBoundQualPath *> (bound.get ());
+	auto &ref = static_cast<HIR::RangePatternBoundQualPath &> (bound);
 
-	resolved_bound = TypeCheckExpr::Resolve (&ref.get_qualified_path ());
+	resolved_bound = TypeCheckExpr::Resolve (ref.get_qualified_path ());
       }
       break;
     }
@@ -478,7 +644,7 @@ TypeCheckPattern::visit (HIR::AltPattern &pattern)
   std::vector<TyTy::BaseType *> types;
   for (auto &alt_pattern : alts)
     {
-      types.push_back (TypeCheckPattern::Resolve (alt_pattern.get (), parent));
+      types.push_back (TypeCheckPattern::Resolve (*alt_pattern, parent));
     }
 
   TyTy::BaseType *alt_pattern_type
@@ -497,16 +663,17 @@ TypeCheckPattern::visit (HIR::AltPattern &pattern)
 }
 
 TyTy::BaseType *
-ClosureParamInfer::Resolve (HIR::Pattern *pattern)
+ClosureParamInfer::Resolve (HIR::Pattern &pattern)
 {
   ClosureParamInfer resolver;
-  pattern->accept_vis (resolver);
+  pattern.accept_vis (resolver);
 
   if (resolver.infered->get_kind () != TyTy::TypeKind::ERROR)
     {
-      resolver.context->insert_implicit_type (resolver.infered);
-      resolver.mappings->insert_location (resolver.infered->get_ref (),
-					  pattern->get_locus ());
+      resolver.context->insert_implicit_type (resolver.infered->get_ref (),
+					      resolver.infered);
+      resolver.mappings.insert_location (resolver.infered->get_ref (),
+					 pattern.get_locus ());
     }
   return resolver.infered;
 }
@@ -537,7 +704,7 @@ void
 ClosureParamInfer::visit (HIR::ReferencePattern &pattern)
 {
   TyTy::BaseType *element
-    = ClosureParamInfer::Resolve (pattern.get_referenced_pattern ().get ());
+    = ClosureParamInfer::Resolve (pattern.get_referenced_pattern ());
 
   HirId id = pattern.get_mappings ().get_hirid ();
   infered = new TyTy::ReferenceType (id, TyTy::TyVar (element->get_ref ()),

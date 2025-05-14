@@ -3,7 +3,6 @@
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1999 -pedantic-errors -frounding-math" } */
-/* { dg-require-effective-target alloca } */
 
 void
 f (void)

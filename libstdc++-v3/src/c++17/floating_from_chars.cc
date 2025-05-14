@@ -1103,8 +1103,7 @@ namespace
 	// If the leading hexit is not '1', shift MANTISSA to make it so.
 	// This normalizes input like "4.08p0" into "1.02p2".
 	const unsigned leading_hexit = mantissa >> mantissa_bits;
-	const int leading_hexit_width
-	  = __bit_width((unsigned)leading_hexit); // FIXME: optimize?
+	const int leading_hexit_width = __bit_width(leading_hexit); // FIXME: optimize?
 	__glibcxx_assert(leading_hexit_width >= 1 && leading_hexit_width <= 4);
 	shift_mantissa(leading_hexit_width - 1);
 	// After this adjustment, we can assume the leading hexit is '1'.

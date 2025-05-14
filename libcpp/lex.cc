@@ -2711,8 +2711,9 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 		       || c == '!' || c == '=' || c == ','
 		       || c == '"' || c == '\''
 		       || ((c == '$' || c == '@' || c == '`')
-			   && CPP_OPTION (pfile, cplusplus)
-			   && CPP_OPTION (pfile, lang) > CLK_CXX23)))
+			   && (CPP_OPTION (pfile, cplusplus)
+			       ? CPP_OPTION (pfile, lang) > CLK_CXX23
+			       : CPP_OPTION (pfile, low_ucns)))))
 	    prefix[prefix_len++] = c;
 	  else
 	    {

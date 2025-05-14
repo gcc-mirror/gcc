@@ -222,6 +222,10 @@ Wanalyzer-tainted-size
 Common Var(warn_analyzer_tainted_size) Init(1) Warning
 Warn about code paths in which an unsanitized value is used as a size.
 
+Wanalyzer-throw-of-unexpected-type
+Common Var(warn_analyzer_throw_of_unexpected_type) Init(1) Warning
+Warn about code paths in which an exception of unexpected type is thrown.
+
 Wanalyzer-undefined-behavior-ptrdiff
 Common Var(warn_analyzer_undefined_behavior_ptrdiff) Init(1) Warning
 Warn about code paths in which pointer subtraction involves undefined behavior.

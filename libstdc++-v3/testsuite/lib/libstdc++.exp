@@ -648,6 +648,11 @@ proc v3_target_compile { source dest type options } {
     set v3_additional_files {}
 
     set comp_output [target_compile $source $dest $type $options]
+
+    # Strip versioned namespace from the compiler output,
+    # so that dg-error and dg-warning patterns can ignore it:
+    regsub -all "std::__8::" $comp_output "std::" comp_output
+
     if { $type == "executable" && $file_to_delete != "" } {
 	file delete $file_to_delete
 	if { [istarget *-*-darwin*] && [file exists $file_to_delete.dSYM] } {
@@ -1029,7 +1034,7 @@ proc check_v3_target_namedlocale { args } {
 	puts $f "using namespace std;"
 	puts $f "char *transform_locale(const char *name)"
 	puts $f "{"
-	puts $f "    char *result = new char\[50\];"
+	puts $f "    char *result = new char\[strlen(name)+6\];"
 	puts $f "    strcpy(result, name);"
 	puts $f "#if defined __FreeBSD__ || defined __DragonFly__ || defined __NetBSD__"
 	puts $f "    /* fall-through */"
@@ -1040,14 +1045,9 @@ proc check_v3_target_namedlocale { args } {
 	puts $f "#endif"
 	puts $f "    return result;"
 	puts $f "}"
-	puts $f "int main (int argc, char** argv)"
+	puts $f "int main ()"
 	puts $f "{"
-	puts $f "  if (argc < 2)"
-	puts $f "  {"
-	puts $f "    printf(\"locale support test not supported\\n\");"
-	puts $f "    return 1;"
-	puts $f "  }"
-	puts $f "  const char *namedloc = transform_locale(*(argv + 1));"
+	puts $f "  const char *namedloc = transform_locale(\"$args\");"
 	puts $f "  try"
 	puts $f "  {"
 	puts $f "    locale((const char*)namedloc);"
@@ -1071,7 +1071,7 @@ proc check_v3_target_namedlocale { args } {
 	  return 0
 	}
 
-	set result [${tool}_load "./$exe" "$args" ""]
+	set result [${tool}_load "./$exe" "" ""]
 	set status [lindex $result 0]
 
 	verbose "check_v3_target_namedlocale <$args>: status is <$status>" 2

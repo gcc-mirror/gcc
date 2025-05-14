@@ -1,4 +1,4 @@
-/* { dg-do compile */
+/* { dg-do compile } */
 /* { dg-additional-options "-fdump-tree-optimized" } */
 
 /* In configurations without offloading configured, we can resolve many

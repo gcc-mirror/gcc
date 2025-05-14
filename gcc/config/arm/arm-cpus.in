@@ -102,12 +102,6 @@ define feature armv8
 # ARMv8 CRC32 instructions.
 define feature crc32
 
-# XScale v2 (Wireless MMX).
-define feature iwmmxt
-
-# XScale Wireless MMX2.
-define feature iwmmxt2
-
 # Architecture rel 8.1.
 define feature armv8_1
 
@@ -778,18 +772,19 @@ begin arch armv9-a
  option bf16 add bf16 FP_ARMv8 DOTPROD
 end arch armv9-a
 
+# We no-longer support the iwmmxt{,2} extensions, so treat these like xscale.
 begin arch iwmmxt
- tune for iwmmxt
+ tune for xscale
  tune flags LDSCHED STRONG XSCALE
  base 5TE
- isa ARMv5te xscale iwmmxt
+ isa ARMv5te xscale
 end arch iwmmxt
 
 begin arch iwmmxt2
- tune for iwmmxt2
+ tune for xscale
  tune flags LDSCHED STRONG XSCALE
  base 5TE
- isa ARMv5te xscale iwmmxt iwmmxt2
+ isa ARMv5te xscale
 end arch iwmmxt2
 
 # CPU entries
@@ -924,22 +919,11 @@ end cpu arm10e
 
 begin cpu xscale
  tune flags LDSCHED XSCALE
+ alias iwmmxt iwmmxt2
  architecture armv5te
  isa xscale
  costs xscale
 end cpu xscale
-
-begin cpu iwmmxt
- tune flags LDSCHED XSCALE
- architecture iwmmxt
- costs xscale
-end cpu iwmmxt
-
-begin cpu iwmmxt2
- tune flags LDSCHED XSCALE
- architecture iwmmxt2
- costs xscale
-end cpu iwmmxt2
 
 begin cpu fa606te
  tune flags LDSCHED

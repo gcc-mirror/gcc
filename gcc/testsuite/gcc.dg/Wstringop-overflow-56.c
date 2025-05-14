@@ -1,8 +1,7 @@
 /* PR middle-end/92942 - missing -Wstringop-overflow for allocations with
    a negative lower bound size
    { dg-do compile }
-   { dg-options "-O2 -Wall" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall" } */
 
 #define SIZE_MAX        __SIZE_MAX__
 #define UINT8_MAX       __UINT8_MAX__

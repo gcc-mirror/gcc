@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "--param=asan-use-after-return=0" } */
 
 /* This testcase checks that allocas and VLAs inside loop are correctly unpoisoned.  */

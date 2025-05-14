@@ -1,3 +1,8 @@
+2025-03-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* t-libf7 (libgcc-objects): Only add objects when building
+	for non-AVRrc.
+
 2024-11-16  Georg-Johann Lay  <avr@gjlay.de>
 
 	* libf7.h (bool, true, false): Don't define in C23 or higher.

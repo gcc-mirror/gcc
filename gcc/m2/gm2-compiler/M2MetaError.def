@@ -73,7 +73,8 @@ FROM NameKey IMPORT Name ;
     {%kword}  the string word is unquoted and rendered as a keyword.
     {%C}      chain this error on the previous rooted error.
     {%R}      this error will be the root of the future chained errors.
-    {%n}      decimal number.  Not quoted.
+    {% n}     decimal number.  Not quoted.  There is no space between the
+              % and n (this has been added to hide this comment from gettext).
     {%N}      count (number), for example, 1st, 2nd, 3rd, 4th.  Not quoted.
     {%X}      push contents of the output string onto the string stack.
     {%Yname}  place contents of dictionary entry name onto the output string.
@@ -109,7 +110,8 @@ FROM NameKey IMPORT Name ;
     describe the symbol.  If ordinary text is copied then it is not quoted.
 
    The color strings are: "filename", "quote", "error", "warning", "note",
-                          "locus", "insert", "delete", "type", "range1", range2".
+                          "locus", "insert", "delete", "type", "range1",
+                          "range2".
 *)
 
 (*

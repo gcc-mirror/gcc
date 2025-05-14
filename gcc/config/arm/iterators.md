@@ -59,30 +59,25 @@
 ;; A list of modes which the VFP unit can handle
 (define_mode_iterator SDF [(SF "") (DF "TARGET_VFP_DOUBLE")])
 
-;; Integer element sizes implemented by IWMMXT.
-(define_mode_iterator VMMX [V2SI V4HI V8QI])
-
-(define_mode_iterator VMMX2 [V4HI V2SI])
-
 ;; Integer element sizes for shifts.
 (define_mode_iterator VSHFT [V4HI V2SI DI])
 
-;; Integer and float modes supported by Neon and IWMMXT.
+;; Integer and float modes supported by Neon.
 (define_mode_iterator VALL [V2DI V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
 
-;; Integer and float modes supported by Neon, IWMMXT and MVE.
+;; Integer and float modes supported by Neon and MVE.
 (define_mode_iterator VNIM1 [V16QI V8HI V4SI V4SF V2DI])
 
-;; Integer and float modes supported by Neon and IWMMXT but not MVE.
+;; Integer and float modes supported by Neon but not MVE.
 (define_mode_iterator VNINOTM1 [V2SI V4HI V8QI V2SF])
 
-;; Integer and float modes supported by Neon and IWMMXT, except V2DI.
+;; Integer and float modes supported by Neon, except V2DI.
 (define_mode_iterator VALLW [V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
 
-;; Integer modes supported by Neon and IWMMXT
+;; Integer modes supported by Neon
 (define_mode_iterator VINT [V2DI V2SI V4HI V8QI V4SI V8HI V16QI])
 
-;; Integer modes supported by Neon and IWMMXT, except V2DI
+;; Integer modes supported by Neon, except V2DI
 (define_mode_iterator VINTW [V2SI V4HI V8QI V4SI V8HI V16QI])
 
 ;; Double-width vector modes, on which we support arithmetic (no HF!)
@@ -1643,9 +1638,6 @@
 ;; Determine name of atomic compare and swap from success result mode.  This
 ;; distinguishes between 16-bit Thumb and 32-bit Thumb/ARM.
 (define_mode_attr arch [(CC_Z "32") (SI "t1")])
-
-;; Determine element size suffix from vector mode.
-(define_mode_attr MMX_char [(V8QI "b") (V4HI "h") (V2SI "w") (DI "d")])
 
 ;; vtbl<n> suffix for NEON vector modes.
 (define_mode_attr VTAB_n [(TI "2") (EI "3") (OI "4")])

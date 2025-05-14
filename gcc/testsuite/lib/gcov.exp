@@ -537,6 +537,112 @@ proc verify-filters { testname testcase file expected unexpected } {
     return [expr [llength $ex] + [llength $unex]]
 }
 
+proc verify-prime-paths { testname testcase file } {
+    set failed 0
+    set fd [open $file r]
+
+    set expected_n -1
+    set expected_m -1
+    set recording 0
+    set expected ""
+
+    while { [gets $fd line] >= 0 } {
+	regexp "^\[^:\]+: *(\[0-9\]+):" "$line" all lineno
+	set prefix "$testname line $lineno"
+
+	if {[regexp "BEGIN *paths" $line]} {
+	    set recording 1
+	    set expected ""
+	    set expected_covered ""
+	    set expected_n -1
+	    set expected_m -1
+	    set seen ""
+	    continue
+	}
+
+	if { $recording != 1 } {
+	    continue
+	}
+
+	if [regexp {summary: *(\d+)/(\d+)} $line _ n m] {
+	    set expected_n $n
+	    set expected_m $m
+	}
+
+	if [regexp "expect: *(.*)" $line all ln] {
+	    set cases ""
+	    set ln [regsub -all {\s+} $ln " "]
+	    foreach case [split  $ln " "] {
+		lappend cases $case
+	    }
+	    lappend expected $cases
+	}
+
+	if [regexp "expect covered: *(.*)" $line all ln] {
+	    set cases ""
+	    set ln [regsub -all {\s+} $ln " "]
+	    foreach case [split  $ln " "] {
+		lappend cases $case
+	    }
+	    lappend expected_covered $cases
+	}
+
+	if [regexp "END" $line] {
+	    if {$recording != 1} {
+		incr failed
+		fail "unexpected END at line $lineno, missing BEGIN"
+
+		# Abort the test if there is a mismatch, to avoid creating
+		# unecessary errors.  At this point the test itself is broken.
+		break
+	    }
+	    set recording 0
+
+	    if {[llength $expected] > 0} {
+		incr failed
+		fail "expected: '$expected'"
+	    }
+
+	    if {[llength $expected_covered] > 0} {
+		incr failed
+		fail "expected covered: '$expected_covered'"
+	    }
+	}
+
+	if [regexp {paths covered (\d+) of (\d+)} $line _ n m] {
+	    if { $n ne $expected_n || $m ne $expected_m } {
+		incr failed
+		fail "$prefix: expected $expected_n/$expected_m covered paths, was $n/$m"
+	    }
+	}
+
+	if [regexp {path *\d+ not covered: lines (.*)} $line _ path] {
+	    set pathl ""
+	    foreach ln [split $path " "] {
+		if [regexp {\s*(.*)\s*} $ln _ key] {
+		    lappend pathl $key
+		}
+	    }
+	    set i [lsearch $expected $pathl]
+	    set expected [lreplace $expected $i $i]
+	}
+
+	if [regexp {path *\d+ covered: lines (.*)} $line _ path] {
+	    set pathl ""
+	    foreach ln [split $path " "] {
+		if [regexp {\s*(.*)\s*} $ln _ key] {
+		    lappend pathl $key
+		}
+	    }
+	    set i [lsearch $expected_covered $pathl]
+	    set expected_covered [lreplace $expected_covered $i $i]
+	}
+    }
+
+    close $fd
+    return $failed
+}
+
 proc gcov-pytest-format-line { args } {
     global subdir
 
@@ -610,6 +716,7 @@ proc run-gcov { args } {
     set gcov_verify_calls 0
     set gcov_verify_branches 0
     set gcov_verify_conditions 0
+    set gcov_verify_prime_paths 0
     set gcov_verify_lines 1
     set gcov_verify_intermediate 0
     set gcov_verify_filters 0
@@ -627,6 +734,8 @@ proc run-gcov { args } {
 	  set gcov_verify_filters 1
 	  set verify_filters_expected [lindex $a 1]
 	  set verify_filters_unexpected [lindex $a 2]
+	} elseif { $a == "prime-paths" } {
+	  set gcov_verify_prime_paths 1
 	} elseif { $a == "intermediate" } {
 	  set gcov_verify_intermediate 1
 	  set gcov_verify_calls 0
@@ -707,6 +816,11 @@ proc run-gcov { args } {
     } else {
 	set cdfailed 0
     }
+    if { $gcov_verify_prime_paths } {
+	set ppfailed [verify-prime-paths $testname $testcase $testcase.gcov]
+    } else {
+	set ppfailed 0
+    }
     if { $gcov_verify_calls } {
 	set cfailed [verify-calls $testname $testcase $testcase.gcov]
     } else {
@@ -726,12 +840,12 @@ proc run-gcov { args } {
 
     # Report whether the gcov test passed or failed.  If there were
     # multiple failures then the message is a summary.
-    set tfailed [expr $lfailed + $bfailed + $cdfailed + $cfailed + $ifailed + $ffailed]
+    set tfailed [expr $lfailed + $bfailed + $cdfailed + $ppfailed + $cfailed + $ifailed + $ffailed]
     if { $xfailed } {
 	setup_xfail "*-*-*"
     }
     if { $tfailed > 0 } {
-	fail "$testname gcov: $lfailed failures in line counts, $bfailed in branch percentages, $cdfailed in condition/decision, $cfailed in return percentages, $ifailed in intermediate format, $ffailed failed in filters"
+	fail "$testname gcov: $lfailed failures in line counts, $bfailed in branch percentages, $cdfailed in condition/decision, $ppfailed in prime-paths, $cfailed in return percentages, $ifailed in intermediate format, $ffailed failed in filters"
 	if { $xfailed } {
 	    clean-gcov $testcase
 	}

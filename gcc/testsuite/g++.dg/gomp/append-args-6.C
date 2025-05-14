@@ -14,13 +14,13 @@ void f1(omp_interop_t &) { }
 /* { dg-error "argument 1 of 'f1' must be of 'omp_interop_t'" "" { target c } .-1 }  */
 /* { dg-note "initializing argument 1 of 'void f1\\(omp_interop_t&\\)'" "" { target c++ } .-2 }  */
 #pragma omp declare variant(f1) match(construct={dispatch}) \
-                                append_args(interop(prefer_type({attr("ompx_fun")})))
+	append_args(interop(targetsync, prefer_type({attr("ompx_fun")})))
 void g1(void);
 /* { dg-note "'append_args' specified here" "" { target c } .-2 }  */
 /* { dg-error "cannot bind non-const lvalue reference of type 'omp_interop_t&' to an rvalue of type 'omp_interop_t'" "" { target c++ } .-4 }  */
 
 int f2(omp_interop_t);
-#pragma omp declare variant(f2) append_args(interop(prefer_type("cuda"))) \
+#pragma omp declare variant(f2) append_args(interop(targetsync, prefer_type("cuda"))) \
                                 match(construct={dispatch})
 int g2(void) { return 5; }
 

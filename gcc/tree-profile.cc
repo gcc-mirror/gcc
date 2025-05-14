@@ -1908,7 +1908,7 @@ tree_profiling (void)
 	  thunk = true;
 	  /* When generate profile, expand thunk to gimple so it can be
 	     instrumented same way as other functions.  */
-	  if (profile_arc_flag || condition_coverage_flag)
+	  if (coverage_instrumentation_p ())
 	    expand_thunk (node, false, true);
 	  /* Read cgraph profile but keep function as thunk at profile-use
 	     time.  */
@@ -1953,7 +1953,7 @@ tree_profiling (void)
   release_profile_file_filtering ();
 
   /* Drop pure/const flags from instrumented functions.  */
-  if (profile_arc_flag || condition_coverage_flag || flag_test_coverage)
+  if (coverage_instrumentation_p () || flag_test_coverage)
     FOR_EACH_DEFINED_FUNCTION (node)
       {
 	if (!gimple_has_body_p (node->decl)
@@ -1985,7 +1985,7 @@ tree_profiling (void)
 
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
-      if (profile_arc_flag || condition_coverage_flag || flag_test_coverage)
+      if (coverage_instrumentation_p () || flag_test_coverage)
 	FOR_EACH_BB_FN (bb, cfun)
 	  {
 	    gimple_stmt_iterator gsi;
@@ -2070,7 +2070,7 @@ pass_ipa_tree_profile::gate (function *)
      disabled.  */
   return (!in_lto_p && !flag_auto_profile
 	  && (flag_branch_probabilities || flag_test_coverage
-	      || profile_arc_flag || condition_coverage_flag)
+	      || coverage_instrumentation_p ())
 	  && !seen_error ());
 }
 

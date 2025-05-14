@@ -18,27 +18,19 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "diagnostic-core.h"
-#include "analyzer/analyzer.h"
-#include "analyzer/analyzer-logging.h"
+#include "analyzer/common.h"
+
 #include "diagnostic.h"
 #include "tree-diagnostic.h" /* for default_tree_printer.  */
 #include "gimple-pretty-print.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "diagnostic-format-sarif.h"
+
+#include "analyzer/analyzer-logging.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-details.h"
 #include "analyzer/ranges.h"
-#include "stringpool.h"
-#include "attribs.h"
-#include "make-unique.h"
-#include "diagnostic-format-sarif.h"
 
 #if ENABLE_ANALYZER
 
@@ -48,13 +40,13 @@ namespace ana {
 
 /* call_details's ctor.  */
 
-call_details::call_details (const gcall *call, region_model *model,
+call_details::call_details (const gcall &call, region_model *model,
 			    region_model_context *ctxt)
 : m_call (call), m_model (model), m_ctxt (ctxt),
   m_lhs_type (NULL_TREE), m_lhs_region (NULL)
 {
   m_lhs_type = NULL_TREE;
-  if (tree lhs = gimple_call_lhs (call))
+  if (tree lhs = gimple_call_lhs (&call))
     {
       m_lhs_region = model->get_lvalue (lhs, ctxt);
       m_lhs_type = TREE_TYPE (lhs);
@@ -66,9 +58,11 @@ call_details::call_details (const gcall *call, region_model *model,
 
 call_details::call_details (const call_details &cd,
 			    region_model_context *ctxt)
+: m_call (cd.m_call), m_model (cd.m_model),
+  m_ctxt (ctxt),
+  m_lhs_type (cd.m_lhs_type),
+  m_lhs_region (cd.m_lhs_region)
 {
-  *this = cd;
-  m_ctxt = ctxt;
 }
 
 /* Get the manager from m_model.  */
@@ -252,7 +246,7 @@ call_details::set_any_lhs_with_defaults () const
 unsigned
 call_details::num_args () const
 {
-  return gimple_call_num_args (m_call);
+  return gimple_call_num_args (&m_call);
 }
 
 /* Return true if argument IDX is a size_t (or compatible with it).  */
@@ -268,7 +262,7 @@ call_details::arg_is_size_p (unsigned idx) const
 location_t
 call_details::get_location () const
 {
-  return m_call->location;
+  return m_call.location;
 }
 
 /* Get argument IDX at the callsite as a tree.  */
@@ -276,7 +270,7 @@ call_details::get_location () const
 tree
 call_details::get_arg_tree (unsigned idx) const
 {
-  return gimple_call_arg (m_call, idx);
+  return gimple_call_arg (&m_call, idx);
 }
 
 /* Get the type of argument IDX.  */
@@ -284,7 +278,7 @@ call_details::get_arg_tree (unsigned idx) const
 tree
 call_details::get_arg_type (unsigned idx) const
 {
-  return TREE_TYPE (gimple_call_arg (m_call, idx));
+  return TREE_TYPE (gimple_call_arg (&m_call, idx));
 }
 
 /* Get argument IDX at the callsite as an svalue.  */
@@ -340,7 +334,7 @@ void
 call_details::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   pp_string (pp, "gcall: ");
-  pp_gimple_stmt_1 (pp, m_call, 0 /* spc */, TDF_NONE /* flags */);
+  pp_gimple_stmt_1 (pp, &m_call, 0 /* spc */, TDF_NONE /* flags */);
   pp_newline (pp);
   pp_string (pp, "return region: ");
   if (m_lhs_region)
@@ -348,7 +342,7 @@ call_details::dump_to_pp (pretty_printer *pp, bool simple) const
   else
     pp_string (pp, "NULL");
   pp_newline (pp);
-  for (unsigned i = 0; i < gimple_call_num_args (m_call); i++)
+  for (unsigned i = 0; i < gimple_call_num_args (&m_call); i++)
     {
       const svalue *arg_sval = get_arg_svalue (i);
       pp_printf (pp, "arg %i: ", i);
@@ -366,6 +360,65 @@ call_details::dump (bool simple) const
   dump_to_pp (&pp, simple);
 }
 
+/* Dump a tree-like representation of this call to stderr.  */
+
+DEBUG_FUNCTION void
+call_details::dump () const
+{
+  text_art::dump (*this);
+}
+
+std::unique_ptr<text_art::tree_widget>
+call_details::make_dump_widget (const text_art::dump_widget_info &dwi) const
+{
+  using text_art::tree_widget;
+  std::unique_ptr<tree_widget> cd_widget
+    (tree_widget::from_fmt (dwi, nullptr, "Call Details"));
+
+  {
+    pretty_printer the_pp;
+    pretty_printer * const pp = &the_pp;
+    pp_format_decoder (pp) = default_tree_printer;
+    pp_string (pp, "gcall: ");
+    pp_gimple_stmt_1 (pp, &m_call, 0 /* spc */, TDF_NONE /* flags */);
+    cd_widget->add_child (tree_widget::make (dwi, pp));
+  }
+  {
+    pretty_printer the_pp;
+    pretty_printer * const pp = &the_pp;
+    pp_format_decoder (pp) = default_tree_printer;
+    pp_string (pp, "return region: ");
+    if (m_lhs_region)
+      m_lhs_region->dump_to_pp (pp, true);
+    else
+      pp_string (pp, "NULL");
+    auto w = tree_widget::make (dwi, pp);
+    if (m_lhs_region)
+      w->add_child (m_lhs_region->make_dump_widget (dwi));
+    cd_widget->add_child (std::move (w));
+  }
+  if (gimple_call_num_args (&m_call) > 0)
+    {
+      std::unique_ptr<tree_widget> args_widget
+	(tree_widget::from_fmt (dwi, nullptr, "Arguments"));
+      for (unsigned i = 0; i < gimple_call_num_args (&m_call); i++)
+	{
+	  pretty_printer the_pp;
+	  pretty_printer * const pp = &the_pp;
+	  pp_format_decoder (pp) = default_tree_printer;
+	  const svalue *arg_sval = get_arg_svalue (i);
+	  pp_printf (pp, "%i: ", i);
+	  arg_sval->dump_to_pp (pp, true);
+	  auto w = tree_widget::make (dwi, pp);
+	  w->add_child (arg_sval->make_dump_widget (dwi));
+	  args_widget->add_child (std::move (w));
+	}
+      cd_widget->add_child (std::move (args_widget));
+    }
+
+  return cd_widget;
+}
+
 /* Get a conjured_svalue for this call for REG,
    and purge any state already relating to that conjured_svalue.  */
 
@@ -373,7 +426,7 @@ const svalue *
 call_details::get_or_create_conjured_svalue (const region *reg) const
 {
   region_model_manager *mgr = m_model->get_manager ();
-  return mgr->get_or_create_conjured_svalue (reg->get_type (), m_call, reg,
+  return mgr->get_or_create_conjured_svalue (reg->get_type (), &m_call, reg,
 					     conjured_purge (m_model, m_ctxt));
 }
 
@@ -388,7 +441,7 @@ call_details::lookup_function_attribute (const char *attr_name) const
   if (tree fndecl = get_fndecl_for_call ())
     allocfntype = TREE_TYPE (fndecl);
   else
-    allocfntype = gimple_call_fntype (m_call);
+    allocfntype = gimple_call_fntype (&m_call);
 
   if (!allocfntype)
     return NULL_TREE;
@@ -540,10 +593,10 @@ call_details::complain_about_overlap (unsigned arg_idx_a,
   if (!byte_range_a.intersection (byte_range_b, *model).is_true ())
     return;
 
-  ctxt->warn (make_unique<overlapping_buffers> (get_fndecl_for_call (),
-						byte_range_a,
-						byte_range_b,
-						num_bytes_read_sval));
+  ctxt->warn (std::make_unique<overlapping_buffers> (get_fndecl_for_call (),
+						     byte_range_a,
+						     byte_range_b,
+						     num_bytes_read_sval));
 }
 
 } // namespace ana

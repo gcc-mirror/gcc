@@ -1,6 +1,4 @@
-! Using two spaces between dg-do and run is a hack to keep gfortran-dg-runtest
-! from cycling through optimization options for this expensive test.
-! { dg-do  run }
+! { dg-do run }
 ! { dg-options "-O3 -fcray-pointer -fbounds-check -fno-inline" }
 ! { dg-timeout-factor 4 }
 !

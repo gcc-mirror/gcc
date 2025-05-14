@@ -9,7 +9,7 @@ void f(__SIZE_TYPE__) {
 
 int main()
 {
-  int* const savepos = sizeof(*savepos) ? 0 : 0;  /* { dg-error "invalid conversion" "convert" { target c++11 }  } */
+  int* const savepos = sizeof(*savepos) ? 0 : 0;  /* { dg-error "invalid conversion" "convert" { target c++11 } } */
 
   f (sizeof (*savepos));
 

@@ -61,6 +61,7 @@ public:
   void visit (ProjectionType &) override { rust_unreachable (); }
   void visit (DynamicObjectType &) override { rust_unreachable (); }
   void visit (ClosureType &type) override { rust_unreachable (); }
+  void visit (OpaqueType &type) override { rust_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;
@@ -73,15 +74,13 @@ private:
   TypeCheckCallExpr (HIR::CallExpr &c, TyTy::VariantDef &variant,
 		     Resolver::TypeCheckContext *context)
     : resolved (new TyTy::ErrorType (c.get_mappings ().get_hirid ())), call (c),
-      variant (variant), context (context),
-      mappings (Analysis::Mappings::get ())
+      variant (variant), mappings (Analysis::Mappings::get ())
   {}
 
   BaseType *resolved;
   HIR::CallExpr &call;
   TyTy::VariantDef &variant;
-  Resolver::TypeCheckContext *context;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 };
 
 class Argument
@@ -131,7 +130,7 @@ protected:
   location_t receiver_locus;
   TyTy::BaseType *adjusted_self;
   Resolver::TypeCheckContext *context;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 };
 
 } // namespace TyTy

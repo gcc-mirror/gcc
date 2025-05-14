@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2-512" } */
+/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2" } */
 /* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
@@ -25,7 +25,7 @@ volatile __mmask16 m16;
 volatile __mmask8 m8;
 
 void extern
-avx10_2_512_test (void)
+avx10_2_test (void)
 {
   x1 = _mm512_minmax_pbh (x1, x1, 100);
   x1 = _mm512_mask_minmax_pbh (x1, m32, x1, x1, 100);

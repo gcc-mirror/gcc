@@ -276,6 +276,25 @@ typedef struct GTY(()) dw_loc_list_struct {
 
 struct GTY(()) dw_val_node {
   enum dw_val_class val_class;
+  /* On 64-bit host, there are 4 bytes of padding between val_class
+     and val_entry.  Reuse the padding for other content of
+     dw_loc_descr_node and dw_attr_struct.  */
+  union dw_val_node_parent
+    {
+      struct dw_val_loc_descr_node
+	{
+	  ENUM_BITFIELD (dwarf_location_atom) dw_loc_opc_v : 8;
+	  /* Used to distinguish DW_OP_addr with a direct symbol relocation
+	     from DW_OP_addr with a dtp-relative symbol relocation.  */
+	  unsigned int dw_loc_dtprel_v : 1;
+	  /* For DW_OP_pick, DW_OP_dup and DW_OP_over operations: true iff.
+	     it targets a DWARF prodecure argument.  In this case, it needs to be
+	     relocated according to the current frame offset.  */
+	  unsigned int dw_loc_frame_offset_rel_v : 1;
+	} u1;
+      int u2;
+      enum dwarf_attribute u3;
+    } GTY((skip)) u;
   struct addr_table_entry * GTY(()) val_entry;
   union dw_val_struct_union
     {
@@ -321,15 +340,15 @@ struct GTY(()) dw_val_node {
 
 struct GTY((chain_next ("%h.dw_loc_next"))) dw_loc_descr_node {
   dw_loc_descr_ref dw_loc_next;
-  ENUM_BITFIELD (dwarf_location_atom) dw_loc_opc : 8;
+#define dw_loc_opc dw_loc_oprnd1.u.u1.dw_loc_opc_v
   /* Used to distinguish DW_OP_addr with a direct symbol relocation
      from DW_OP_addr with a dtp-relative symbol relocation.  */
-  unsigned int dtprel : 1;
+#define dw_loc_dtprel dw_loc_oprnd1.u.u1.dw_loc_dtprel_v
   /* For DW_OP_pick, DW_OP_dup and DW_OP_over operations: true iff.
      it targets a DWARF prodecure argument.  In this case, it needs to be
      relocated according to the current frame offset.  */
-  unsigned int frame_offset_rel : 1;
-  int dw_loc_addr;
+#define dw_loc_frame_offset_rel dw_loc_oprnd1.u.u1.dw_loc_frame_offset_rel_v
+#define dw_loc_addr dw_loc_oprnd2.u.u2
   dw_val_node dw_loc_oprnd1;
   dw_val_node dw_loc_oprnd2;
 };
@@ -493,7 +512,7 @@ void dwarf2out_cc_finalize (void);
    Attributes are typically linked below the DIE they modify.  */
 
 typedef struct GTY(()) dw_attr_struct {
-  enum dwarf_attribute dw_attr;
+#define dw_attr dw_attr_val.u.u3
   dw_val_node dw_attr_val;
 }
 dw_attr_node;

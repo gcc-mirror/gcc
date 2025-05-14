@@ -3776,6 +3776,81 @@ are the same as to this target hook.",
  default_memory_move_cost)
 
 DEFHOOK
+(callee_save_cost,
+ "Return the one-off cost of saving or restoring callee-saved registers\n\
+(also known as call-preserved registers or non-volatile registers).\n\
+The parameters are as follows:\n\
+\n\
+@itemize\n\
+@item\n\
+@var{cost_type} is @samp{spill_cost_type::SAVE} for saving a register\n\
+and @samp{spill_cost_type::RESTORE} for restoring a register.\n\
+\n\
+@item\n\
+@var{hard_regno} and @var{mode} represent the whole register that\n\
+the register allocator is considering using; of these,\n\
+@var{nregs} registers are fully or partially callee-saved.\n\
+\n\
+@item\n\
+@var{mem_cost} is the normal cost for storing (for saves)\n\
+or loading (for restores) the @var{nregs} registers.\n\
+\n\
+@item\n\
+@var{allocated_callee_regs} is the set of callee-saved registers\n\
+that are already in use.\n\
+\n\
+@item\n\
+@var{existing_spills_p} is true if the register allocator has\n\
+already decided to spill registers to memory.\n\
+@end itemize\n\
+\n\
+If @var{existing_spills_p} is false, the cost of a save should account\n\
+for frame allocations in a way that is consistent with\n\
+@code{TARGET_FRAME_ALLOCATION_COST}'s handling of allocations for spills.\n\
+Similarly, the cost of a restore should then account for frame deallocations\n\
+in a way that is consistent with @code{TARGET_FRAME_ALLOCATION_COST}'s\n\
+handling of deallocations.\n\
+\n\
+Note that this hook should not attempt to apply a frequency scale\n\
+to the cost: it is the caller's responsibility to do that where\n\
+appropriate.\n\
+\n\
+The default implementation returns @var{mem_cost}, plus the allocation\n\
+or deallocation cost returned by @code{TARGET_FRAME_ALLOCATION_COST},\n\
+where appropriate.",
+ int, (spill_cost_type cost_type, unsigned int hard_regno,
+       machine_mode mode, unsigned int nregs, int mem_cost,
+       const HARD_REG_SET &allocated_callee_regs, bool existing_spills_p),
+ default_callee_save_cost)
+
+DEFHOOK
+(frame_allocation_cost,
+ "Return the cost of allocating or deallocating a frame for the sake of\n\
+a spill; @var{cost_type} chooses between allocation and deallocation.\n\
+The term ``spill'' here includes both forcing a pseudo register to memory\n\
+and using caller-saved registers for pseudo registers that are live across\n\
+a call.\n\
+\n\
+This hook is only called if the register allocator has not so far\n\
+decided to spill.  The allocator may have decided to use callee-saved\n\
+registers; if so, @var{allocated_callee_regs} is the set of callee-saved\n\
+registers that the allocator has used.  There might also be other reasons\n\
+why a stack frame is already needed; for example, @samp{get_frame_size ()}\n\
+might be nonzero, or the target might already require a frame for\n\
+target-specific reasons.\n\
+\n\
+When the register allocator uses this hook to cost spills, it also uses\n\
+@code{TARGET_CALLEE_SAVE_COST} to cost new callee-saved registers, passing\n\
+@samp{false} as the @var{existing_spills_p} argument.  The intention is to\n\
+allow the target to apply an apples-for-apples comparison between the\n\
+cost of using callee-saved registers and using spills in cases where the\n\
+allocator has not yet committed to using both strategies.\n\
+\n\
+The default implementation returns 0.",
+ int, (frame_cost_type cost_type, const HARD_REG_SET &allocated_callee_regs),
+ default_frame_allocation_cost)
+
+DEFHOOK
 (use_by_pieces_infrastructure_p,
  "GCC will attempt several strategies when asked to copy between\n\
 two areas of memory, or to set, clear or store to memory, for example\n\
@@ -5262,10 +5337,6 @@ that element as the canonical location and ignore the others.  The m68k\n\
 port uses this type of @code{parallel} to return pointers in both\n\
 @samp{%a0} (the canonical location) and @samp{%d0}.\n\
 \n\
-If @code{TARGET_PROMOTE_FUNCTION_RETURN} returns true, you must apply\n\
-the same promotion rules specified in @code{PROMOTE_MODE} if\n\
-@var{valtype} is a scalar type.\n\
-\n\
 If the precise function being called is known, @var{func} is a tree\n\
 node (@code{FUNCTION_DECL}) for it; otherwise, @var{func} is a null\n\
 pointer.  This makes it possible to use a different value-returning\n\
@@ -5713,18 +5784,6 @@ DEFHOOK
   The default version of this target hook always returns given class.",
  reg_class_t, (int, reg_class_t, reg_class_t),
  default_ira_change_pseudo_allocno_class)
-
-/* Scale of callee-saved register cost in epilogue and prologue used by
-   IRA.  */
-DEFHOOK
-(ira_callee_saved_register_cost_scale,
- "A target hook which returns the callee-saved register @var{hard_regno}\n\
-cost scale in epilogue and prologue used by IRA.\n\
-\n\
-The default version of this target hook returns 1 if optimizing for\n\
-size, otherwise returns the entry block frequency.",
- int, (int hard_regno),
- default_ira_callee_saved_register_cost_scale)
 
 /* Return true if we use LRA instead of reload.  */
 DEFHOOK

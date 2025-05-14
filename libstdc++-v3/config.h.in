@@ -643,8 +643,8 @@
    <cwchar> in namespace std for C++98. */
 #undef _GLIBCXX98_USE_C99_WCHAR
 
-/* Define if the compiler supports C++11 atomics. */
-#undef _GLIBCXX_ATOMIC_BUILTINS
+/* Define if the compiler supports native atomics for _Atomic_word. */
+#undef _GLIBCXX_ATOMIC_WORD_BUILTINS
 
 /* Define if global objects can be aligned to
    std::hardware_destructive_interference_size. */
@@ -887,6 +887,9 @@
 
 /* Define to restrict std::__basic_file<> to stdio APIs. */
 #undef _GLIBCXX_USE_STDIO_PURE
+
+/* Define if struct tm has a tm_zone member. */
+#undef _GLIBCXX_USE_STRUCT_TM_TM_ZONE
 
 /* Define if struct stat has timespec members. */
 #undef _GLIBCXX_USE_ST_MTIM

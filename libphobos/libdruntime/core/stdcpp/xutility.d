@@ -35,6 +35,7 @@ enum CppStdRevision : uint
     cpp14 = 201402,
     cpp17 = 201703,
     cpp20 = 202002,
+    cpp23 = 202302,
 }
 
 /**

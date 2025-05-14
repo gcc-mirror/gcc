@@ -917,7 +917,7 @@ build_list_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 	  t->rank = cr_exact;
 	  for (j = 0; j < (unsigned) RAW_DATA_LENGTH (val); ++j)
 	    {
-	      sub = subsubconvs[i];
+	      sub = subsubconvs[j];
 	      if (sub->rank > t->rank)
 		t->rank = sub->rank;
 	      if (sub->user_conv_p)
@@ -6672,6 +6672,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
   bool check_list_ctor = false;
   bool check_converting = false;
   unification_kind_t strict;
+  tree ne_context = NULL_TREE;
   tree ne_fns = NULL_TREE;
 
   if (!fns)
@@ -6718,6 +6719,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
       tree ne_name = ovl_op_identifier (false, NE_EXPR);
       if (DECL_CLASS_SCOPE_P (fn))
 	{
+	  ne_context = DECL_CONTEXT (fn);
 	  ne_fns = lookup_fnfields (TREE_TYPE ((*args)[0]), ne_name,
 				    1, tf_none);
 	  if (ne_fns == error_mark_node || ne_fns == NULL_TREE)
@@ -6727,8 +6729,9 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	}
       else
 	{
-	  tree context = decl_namespace_context (fn);
-	  ne_fns = lookup_qualified_name (context, ne_name, LOOK_want::NORMAL,
+	  ne_context = decl_namespace_context (fn);
+	  ne_fns = lookup_qualified_name (ne_context, ne_name,
+					  LOOK_want::NORMAL,
 					  /*complain*/false);
 	  if (ne_fns == error_mark_node
 	      || !is_overloaded_fn (ne_fns))
@@ -6827,8 +6830,26 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 
       /* When considering reversed operator==, if there's a corresponding
 	 operator!= in the same scope, it's not a rewrite target.  */
-      if (ne_fns)
+      if (ne_context)
 	{
+	  if (TREE_CODE (ne_context) == NAMESPACE_DECL)
+	    {
+	      /* With argument-dependent lookup, fns can span multiple
+		 namespaces; make sure we look in the fn's namespace for a
+		 corresponding operator!=.  */
+	      tree fn_ns = decl_namespace_context (fn);
+	      if (fn_ns != ne_context)
+		{
+		  ne_context = fn_ns;
+		  tree ne_name = ovl_op_identifier (false, NE_EXPR);
+		  ne_fns = lookup_qualified_name (ne_context, ne_name,
+						  LOOK_want::NORMAL,
+						  /*complain*/false);
+		  if (ne_fns == error_mark_node
+		      || !is_overloaded_fn (ne_fns))
+		    ne_fns = NULL_TREE;
+		}
+	    }
 	  bool found = false;
 	  for (lkp_iterator ne (ne_fns); !found && ne; ++ne)
 	    if (0 && !ne.using_p ()
@@ -9685,11 +9706,6 @@ type_passed_as (tree type)
   /* Pass classes with copy ctors by invisible reference.  */
   if (TREE_ADDRESSABLE (type))
     type = build_reference_type (type);
-  else if (targetm.calls.promote_prototypes (NULL_TREE)
-	   && INTEGRAL_TYPE_P (type)
-	   && COMPLETE_TYPE_P (type)
-	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
-    type = integer_type_node;
 
   return type;
 }
@@ -9725,11 +9741,6 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
   /* Pass classes with copy ctors by invisible reference.  */
   else if (TREE_ADDRESSABLE (type))
     val = build1 (ADDR_EXPR, build_reference_type (type), val);
-  else if (targetm.calls.promote_prototypes (NULL_TREE)
-	   && INTEGRAL_TYPE_P (type)
-	   && COMPLETE_TYPE_P (type)
-	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
-    val = cp_perform_integral_promotions (val, complain);
   if (complain & tf_warning)
     maybe_warn_parm_abi (type, cp_expr_loc_or_input_loc (val));
 
@@ -10827,10 +10838,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (is_really_empty_class (type, /*ignore_vptr*/true))
 	{
 	  /* Avoid copying empty classes, but ensure op= returns an lvalue even
-	     if the object argument isn't one. This isn't needed in other cases
-	     since MODIFY_EXPR is always considered an lvalue.  */
-	  to = cp_build_addr_expr (to, tf_none);
-	  to = cp_build_indirect_ref (input_location, to, RO_ARROW, complain);
+	     if the object argument isn't one.  */
+	  to = force_lvalue (to, complain);
 	  val = build2 (COMPOUND_EXPR, type, arg, to);
 	  suppress_warning (val, OPT_Wunused);
 	}
@@ -10851,6 +10860,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  tree array_type, alias_set;
 
 	  arg2 = TYPE_SIZE_UNIT (as_base);
+	  /* Ensure op= returns an lvalue even if the object argument isn't
+	     one.  */
+	  to = force_lvalue (to, complain);
 	  to = cp_stabilize_reference (to);
 	  arg0 = cp_build_addr_expr (to, complain);
 
@@ -13980,11 +13992,6 @@ perform_implicit_conversion_flags (tree type, tree expr,
   conversion *conv;
   location_t loc = cp_expr_loc_or_input_loc (expr);
 
-  if (TYPE_REF_P (type))
-    expr = mark_lvalue_use (expr);
-  else
-    expr = mark_rvalue_use (expr);
-
   if (error_operand_p (expr))
     return error_mark_node;
 
@@ -14911,7 +14918,7 @@ extend_temps_r (tree *tp, int *walk_subtrees, void *data)
 	  {
 	    tree set = build2 (MODIFY_EXPR, boolean_type_node,
 			       cur_cond_guard, boolean_true_node);
-	    op = add_stmt_to_compound (set, op);
+	    op = cp_build_compound_expr (set, op, tf_none);
 	  }
       };
       walk_arm (TREE_OPERAND (*tp, 1));

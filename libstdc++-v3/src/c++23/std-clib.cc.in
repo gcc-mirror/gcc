@@ -585,9 +585,9 @@ export C_LIB_NAMESPACE
   using std::strftime;
   using std::time;
   using std::time_t;
-  using std::timespec;
   using std::tm;
 #ifdef _GLIBCXX_HAVE_TIMESPEC_GET
+  using std::timespec;
   using std::timespec_get;
 #endif
 }

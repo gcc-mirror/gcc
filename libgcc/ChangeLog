@@ -1,3 +1,173 @@
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119853
+	PR target/119854
+	* config/gcn/crt0.c (_fini_array): Call
+	'__GCC_offload___cxa_finalize'.
+	* config/nvptx/gbl-ctors.c (__static_do_global_dtors): Likewise.
+
+2025-04-19  Jiaxun Yang  <jiaxun.yang@flygoat.com>
+
+	PR target/118257
+	* config/sh/sfp-machine.h (_FPU_GETCW): Implement with builtin.
+	(_FPU_SETCW): Likewise.
+	(FP_EX_ENABLE_SHIFT): Derive from arch spec.
+	(FP_EX_CAUSE_SHIFT): Likewise.
+	(FP_RND_MASK): Likewise.
+	(FP_EX_INVALID): Likewise.
+	(FP_EX_DIVZERO): Likewise.
+	(FP_EX_ALL): Likewise.
+	(FP_EX_OVERFLOW): Likewise.
+	(FP_EX_UNDERFLOW): Likewise.
+	(FP_EX_INEXACT): Likewise.
+	(_FP_DECL_EX): Declear default FCSR value.
+	(FP_RND_NEAREST): Derive from arch spec.
+	(FP_RND_ZERO): Likewise.
+	(FP_INIT_ROUNDMODE): Likewise.
+	(FP_ROUNDMODE): Likewise.
+	(FP_TRAPPING_EXCEPTIONS): Likewise.
+	(FP_HANDLE_EXCEPTIONS): Implement with _FPU_SETCW.
+
+2025-04-19  Jiaxun Yang  <jiaxun.yang@flygoat.com>
+
+	PR target/111814
+	* config/sh/sfp-machine.h (_FP_NANFRAC_B): Reverse signaling bit.
+	(_FP_NANFRAC_H): Likewise.
+	(_FP_NANFRAC_S): Likewise.
+	(_FP_NANFRAC_D): Likewise.
+	(_FP_NANFRAC_Q): Likewise.
+	(_FP_KEEPNANFRACP): Enable for target.
+	(_FP_QNANNEGATEDP): Enable for target.
+	(_FP_CHOOSENAN): Port from MIPS.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* config/gcn/unwind-gcn.c (_Unwind_Resume): New.
+	* config/nvptx/unwind-nvptx.c (_Unwind_Resume): Likewise.
+
+2025-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/119673
+	* config/i386/gthr-win32.h (__GTHREAD_ALWAYS_INLINE): New macro.
+	(__GTHREAD_INLINE): Likewise.
+	(__GTHR_W32_InterlockedCompareExchange): Delete.
+	(__gthread_active_p): Mark as __GTHREAD_INLINE instead of
+	static inline.
+	(__gthread_create): Likewise.
+	(__gthread_join): Likewise.
+	(__gthread_self): Likewise.
+	(__gthread_detach): Likewise.
+	(__gthread_equal): Likewise.
+	(__gthread_yield): Likewise.
+	(__gthread_once): Likewise.
+	(__gthread_key_create): Likewise.
+	(__gthread_key_delete): Likewise.
+	(__gthread_getspecific): Likewise.
+	(__gthread_setspecific): Likewise.
+	(__gthread_mutex_init_function): Likewise.
+	(__gthread_mutex_destroy): Likewise.
+	(__gthread_mutex_lock): Likewise.
+	(__gthread_mutex_trylock): Likewise.
+	(__gthread_mutex_timedlock): Likewise.
+	(__gthread_mutex_unlock): Likewise.
+	(__gthread_recursive_mutex_trylock): Likewise.
+	(__gthread_cond_init_function): Likewise.
+	(__gthread_cond_broadcast): Likewise.
+	(__gthread_cond_signal): Likewise.
+	(__gthread_cond_wait): Likewise.
+	(__gthread_cond_timedwait): Likewise.
+	(__GTHREAD_WIN32_INLINE): Likewise.
+	(__GTHREAD_WIN32_COND_INLINE): Likewise.
+	(__gthread_recursive_mutex_init_function): Likewise.
+	(__gthread_recursive_mutex_destroy): Likewise.
+	(__gthread_recursive_mutex_lock): Likewise.
+	(__gthread_recursive_mutex_unlock): Likewise.
+	(__gthread_cond_destroy): Likewise.
+	(__gthread_cond_wait_recursive): Likewise.
+
+2025-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/unwind-gcn.c (_Unwind_RaiseException)
+	(_Unwind_Resume_or_Rethrow): New.
+	* config/nvptx/unwind-nvptx.c (_Unwind_RaiseException)
+	(_Unwind_Resume_or_Rethrow): Likewise.
+
+2025-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/unwind-gcn.c (_Unwind_DeleteException): New.
+	* config/nvptx/unwind-nvptx.c (_Unwind_DeleteException): Likewise.
+
+2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/alloca.c: New.
+	* config/nvptx/t-nvptx (LIB2ADD): Add it.
+
+2025-04-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs.S (__mulhisi3, __umulhisi3): Use
+	__mulhisi3_helper for better performance on AVRrc.
+
+2025-04-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (LIB1ASMFUNCS): Add (and remove from
+	FUNCS_notiny): _mulhisi3, _umulhisi3, _mulqq3, _mulhq3, _muluhq3,
+	_mulha3, _muluha3 _muluha3_round, _usmuluha3, _ssmulha3,
+	_divqq3, _udivuqq3, _divqq_helper, _divhq3, _udivuhq3.
+	_divha3 _udivuha3, _ssneg_2, _ssabs_1, _ssabs_2,
+	_mask1, _ret, _roundqq3 _rounduqq3,
+	_round_s2, _round_u2, _round_2_const, _addmask_2.
+	* config/avr/lib1funcs.S (__umulhisi3, __mulhisi3): Make
+	work on AVRrc.
+	* config/avr/lib1funcs-fixed.S: Build 8-bit and 16-bit functions
+	on AVRrc, too.
+
+2025-04-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs.S (__umulhisi3) [Have MUL]: Reduce call
+	depth by 1.
+
+2025-03-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (LIB1ASMFUNCS, LIB2FUNCS_EXCLUDE):
+	Properly handle avrtiny.
+
+2025-03-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Revert:
+	2023-12-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c++-minimal/README: New.
+	* c++-minimal/guard.c: New.
+	* config/gcn/t-amdgcn (LIB2ADD): Add it.
+	* config/nvptx/t-nvptx (LIB2ADD): Likewise.
+
+2025-03-13  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/cpuinfo.c (__init_cpu_features_constructor):
+	Remove FEAT_PREDRES and FEAT_LS64* support.
+
+2025-03-10  Jakub Jelinek  <jakub@redhat.com>
+	    Michael Leuchtenburg  <michael@slashhome.org>
+
+	PR libgcc/119151
+	* unwind-dw2-btree.h (btree_split_inner): Add size argument.  If
+	left_fence is in the middle of [target,target + size - 1] range,
+	increase it to target + size - 1.
+	(btree_insert): Adjust btree_split_inner caller.  If fence is smaller
+	than base + size - 1, increase it and separator of the slot to
+	base + size - 1.
+
+2025-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2-btree.h: Formatting fixes.
+
+2025-03-01  Jan Dubiec  <jdx@o2.pl>
+
+	PR target/114222
+	* config/h8300/t-h8300: Add __ffshi2().
+	* config/h8300/ffshi2.c: New file.
+
 2025-02-18  Roman Kagan  <rkagan@amazon.de>
 
 	* config/i386/linux-unwind.h: Remove preprocessor

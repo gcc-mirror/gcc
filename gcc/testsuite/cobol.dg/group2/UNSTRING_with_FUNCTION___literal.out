@@ -1,0 +1,20 @@
+PRM(1) is The             :
+PRM(2) is Quick           :
+PRM(3) is Brown           :
+PRM(4) is Fox             :
+Now using UPPER-CASE
+PRM(1) is THE             :
+PRM(2) is QUICK           :
+PRM(3) is BROWN           :
+PRM(4) is FOX             :
+Now using Literal
+PRM(1) is Daddy           :
+PRM(2) is was             :
+PRM(3) is a               :
+PRM(4) is Rolling stone   :
+Now using Literal + LOWER-CASE
+PRM(1) is daddy           :
+PRM(2) is was             :
+PRM(3) is a               :
+PRM(4) is rolling stone   :
+

@@ -2,7 +2,6 @@
 // warn_placement_new_too_small
 // { dg-do compile }
 // { dg-additional-options "-Wplacement-new -Wno-pedantic" }
-// { dg-require-effective-target alloca }
 
 #define SIZE_MAX   __SIZE_MAX__
 #define DIFF_MAX   __PTRDIFF_MAX__

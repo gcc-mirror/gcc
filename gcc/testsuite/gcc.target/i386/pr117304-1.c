@@ -1,6 +1,7 @@
 /* PR target/117304 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512f -mno-evex512" } */
+/* { dg-warning "'-mevex512' will be deprecated in GCC 16 due to all machines 512 bit vector size supported" "" { target *-*-* } 0 } */
 
 typedef __attribute__((__vector_size__(32))) int __v8si;
 typedef __attribute__((__vector_size__(32))) unsigned int __v8su;

@@ -1,7 +1,5 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { arm*-*-* } } */
-/* { dg-options "-O3" } */
-
 
 #include <arm_neon.h>
 

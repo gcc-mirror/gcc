@@ -1,6 +1,6 @@
 // https://issues.dlang.org/show_bug.cgi?id=22523
 
-import core.stdc.stdio;
+import core.stdc.stdio : puts;
 
 int main()
 {

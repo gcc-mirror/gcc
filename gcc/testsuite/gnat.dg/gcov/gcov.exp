@@ -21,12 +21,19 @@ load_lib gnat-dg.exp
 load_lib gcov.exp
 
 global GCC_UNDER_TEST
+global GCOV_UNDER_TEST
 
-# For now find gcov in the same directory as $GCC_UNDER_TEST.
-if { ![is_remote host] && [string match "*/*" [lindex $GCC_UNDER_TEST 0]] } {
-    set GCOV [file dirname [lindex $GCC_UNDER_TEST 0]]/gcov
+# For now find gcov in the same directory as $GCC_UNDER_TEST, unless
+# GCOV_UNDER_TEST is defined.
+
+if ![info exists GCOV_UNDER_TEST] {
+    if { ![is_remote host] && [string match "*/*" [lindex $GCC_UNDER_TEST 0]] } {
+	set GCOV [file dirname [lindex $GCC_UNDER_TEST 0]]/gcov
+    } else {
+	set GCOV gcov
+    }
 } else {
-    set GCOV gcov
+    set GCOV $GCOV_UNDER_TEST
 }
 
 # Initialize harness.

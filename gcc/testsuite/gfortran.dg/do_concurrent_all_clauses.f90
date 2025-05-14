@@ -11,7 +11,6 @@ program do_concurrent_all_clauses
       shared(arr, squared, sum, max_val) &
       reduce(+:sum) & ! { dg-error "Variable 'sum' at \\(1\\) has already been specified in a locality-spec" }
       reduce(max:max_val) ! { dg-error "Variable 'max_val' at \\(1\\) has already been specified in a locality-spec" }
-    ! { dg-error "Sorry, LOCAL and LOCAL_INIT are not yet supported*" "" { target *-*-* } .-1 }
     block
       integer :: temp2
       temp = i * 2
@@ -19,7 +18,7 @@ program do_concurrent_all_clauses
       squared = i * i
       arr(i) = temp2 + squared
       sum = sum + arr(i)
-      max_val = max(max_val, arr(i)) ! { dg-error "Reference to impure function" }
+      max_val = max(max_val, arr(i))
     end block
   end do
   print *, arr, sum, max_val

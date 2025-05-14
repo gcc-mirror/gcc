@@ -1892,6 +1892,10 @@ This version is defined by the GNU D compiler.  If all you need to know is
 whether or not your D program is being compiled by GDC, or a non-GDC compiler,
 you can simply test @code{version(GNU)}.
 
+@item GNU_CET
+This version is defined when @option{-fcf-protection} is used.  The protection
+level is also set in @code{__traits(getTargetInfo, "CET")} (@pxref{Traits}).
+
 @item GNU_DWARF2_Exceptions
 @itemx GNU_SEH_Exceptions
 @itemx GNU_SjLj_Exceptions
@@ -2121,6 +2125,10 @@ recognize.  These are documented by the D language specification hosted at
 The following keys are recognized by GNU D.
 
 @table @code
+@item CET
+When @option{-fcf-protection} is used, the first bit is set to 1 for the value
+@code{branch} and the second bit is set to 1 for the value @code{return}.
+
 @item cppRuntimeLibrary
 The C++ runtime library affinity for this toolchain.
 

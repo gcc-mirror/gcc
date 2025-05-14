@@ -517,8 +517,7 @@ multi-do:
 		libsuffix_=`$${compiler} $${flags} --print-multi-os-directory`; \
 		if (cd ../$${dir}/$${lib}; $(MAKE) $(subst \
 				-B$(build_tooldir)/lib/, \
-				-B$(build_tooldir)/lib/$${libsuffix_}/ \
-				-B$(build_tooldir)/lib/, \
+				-B$(build_tooldir)/lib/$${libsuffix_}/, \
 				$(FLAGS_TO_PASS)) \
 				CFLAGS="$(CFLAGS) $${flags}" \
 				CCASFLAGS="$(CCASFLAGS) $${flags}" \

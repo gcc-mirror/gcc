@@ -945,6 +945,17 @@ cleanup_handler (void)
   if (!flto_incremental)
     for (i = 0; i < num_output_files; i++)
       maybe_unlink (output_files[i]);
+  else
+    {
+      /* Keep files in ltrans cache.  */
+      const char* suffix = ".ltrans.o";
+      for (i = 0; i < num_output_files; i++)
+	{
+	  int offset = strlen (output_files[i]) - strlen (suffix);
+	  if (offset < 0 || strcmp (output_files[i] + offset, suffix))
+	    maybe_unlink (output_files[i]);
+	}
+    }
 
   free_2 ();
   return LDPS_OK;

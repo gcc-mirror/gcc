@@ -1,6 +1,5 @@
 /* A test for various conversions of chrecs.  */
 
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
 void blas (signed char xxx);
@@ -22,6 +21,6 @@ void tst(void)
     blau ((unsigned char) i);
 }
 
-/* { dg-final { scan-tree-dump-times "& 255" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "= \\(signed char\\)" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "= \\(unsigned char\\)" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "= \\(signed char\\)" 3 "optimized" } } */
 

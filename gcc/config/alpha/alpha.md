@@ -4200,6 +4200,31 @@
 			    << INTVAL (operands[2])));
 })
 
+;; Multi-thread and async-signal safe variant.  Operand 0 is the aligned
+;; SImode MEM.  Operand 1 is the data to store. Operand 2 is the number
+;; of bits within the word that the value should be placed.  Operand 3 is
+;; the SImode status.  Operand 4 is a SImode temporary.
+
+(define_expand "aligned_store_safe_bwa"
+  [(set (match_operand:SI 3 "register_operand")
+	(unspec_volatile:SI
+	  [(match_operand:SI 0 "memory_operand")] UNSPECV_LL))
+   (set (subreg:DI (match_dup 3) 0)
+	(and:DI (subreg:DI (match_dup 3) 0) (match_dup 5)))
+   (set (subreg:DI (match_operand:SI 4 "register_operand") 0)
+	(ashift:DI (zero_extend:DI (match_operand 1 "register_operand"))
+		   (match_operand:DI 2 "const_int_operand")))
+   (set (subreg:DI (match_dup 3) 0)
+	(ior:DI (subreg:DI (match_dup 4) 0) (subreg:DI (match_dup 3) 0)))
+   (parallel [(set (subreg:DI (match_dup 3) 0)
+		   (unspec_volatile:DI [(const_int 0)] UNSPECV_SC))
+	      (set (match_dup 0) (match_dup 3))])]
+  ""
+{
+  operands[5] = GEN_INT (~(GET_MODE_MASK (GET_MODE (operands[1]))
+			   << INTVAL (operands[2])));
+})
+
 ;; For the unaligned byte and halfword cases, we use code similar to that
 ;; in the Architecture book, but reordered to lower the number of registers
 ;; required.  Operand 0 is the address.  Operand 1 is the data to store.
@@ -4227,6 +4252,31 @@
   ""
   "operands[5] = GEN_INT (GET_MODE_MASK (<MODE>mode));")
 
+;; Multi-thread and async-signal safe variant.  Operand 0 is the address.
+;; Operand 1 is the data to store.  Operand 2 is the aligned address.
+;; Operand 3 is the DImode status.  Operand 4 is a DImode temporary.
+
+(define_expand "@unaligned_store<mode>_safe_bwa"
+  [(set (match_operand:DI 3 "register_operand")
+	(unspec_volatile:DI
+	  [(mem:DI (match_operand:DI 2 "register_operand"))] UNSPECV_LL))
+   (set (match_dup 3)
+	(and:DI (not:DI
+		  (ashift:DI (match_dup 5)
+			     (ashift:DI (match_operand:DI 0 "register_operand")
+					(const_int 3))))
+		(match_dup 3)))
+   (set (match_operand:DI 4 "register_operand")
+	(ashift:DI (zero_extend:DI
+		     (match_operand:I12MODE 1 "register_operand"))
+		   (ashift:DI (match_dup 0) (const_int 3))))
+   (set (match_dup 3) (ior:DI (match_dup 4) (match_dup 3)))
+   (parallel [(set (match_dup 3)
+		   (unspec_volatile:DI [(const_int 0)] UNSPECV_SC))
+	      (set (mem:DI (match_dup 2)) (match_dup 3))])]
+  ""
+  "operands[5] = GEN_INT (GET_MODE_MASK (<MODE>mode));")
+
 ;; Here are the define_expand's for QI and HI moves that use the above
 ;; patterns.  We have the normal sets, plus the ones that need scratch
 ;; registers for reload.
@@ -4236,8 +4286,8 @@
 	(match_operand:I12MODE 1 "general_operand"))]
   ""
 {
-  if (TARGET_BWX
-      ? alpha_expand_mov (<MODE>mode, operands)
+  if (TARGET_BWX ? alpha_expand_mov (<MODE>mode, operands)
+      : TARGET_SAFE_BWA ? alpha_expand_mov_safe_bwa (<MODE>mode, operands)
       : alpha_expand_mov_nobwx (<MODE>mode, operands))
     DONE;
 })
@@ -4292,7 +4342,9 @@
 	  operands[1] = gen_lowpart (HImode, operands[1]);
 	do_aligned2:
 	  operands[0] = gen_lowpart (HImode, operands[0]);
-	  done = alpha_expand_mov_nobwx (HImode, operands);
+	  done = (TARGET_SAFE_BWA
+		  ? alpha_expand_mov_safe_bwa (HImode, operands)
+		  : alpha_expand_mov_nobwx (HImode, operands));
 	  gcc_assert (done);
 	  DONE;
 	}
@@ -4371,6 +4423,8 @@
     }
   else
     {
+      gcc_assert (!TARGET_SAFE_BWA);
+
       rtx addr = get_unaligned_address (operands[0]);
       rtx scratch1 = gen_rtx_REG (DImode, regno);
       rtx scratch2 = gen_rtx_REG (DImode, regno + 1);
@@ -4385,6 +4439,52 @@
       alpha_set_memflags (seq, operands[0]);
       emit_insn (seq);
     }
+  DONE;
+})
+
+(define_expand "@reload_out<mode>_safe_bwa"
+  [(parallel [(match_operand:RELOAD12 0 "any_memory_operand" "=m")
+	      (match_operand:RELOAD12 1 "register_operand" "r")
+	      (match_operand:OI 2 "register_operand" "=&r")])]
+  "!TARGET_BWX && TARGET_SAFE_BWA"
+{
+  unsigned regno = REGNO (operands[2]);
+
+  if (<MODE>mode == CQImode)
+    {
+      operands[0] = gen_lowpart (HImode, operands[0]);
+      operands[1] = gen_lowpart (HImode, operands[1]);
+    }
+
+  rtx addr = get_unaligned_address (operands[0]);
+  rtx status = gen_rtx_REG (DImode, regno);
+  rtx areg = gen_rtx_REG (DImode, regno + 1);
+  rtx aligned_addr = gen_rtx_REG (DImode, regno + 2);
+  rtx scratch = gen_rtx_REG (DImode, regno + 3);
+
+  if (REG_P (addr))
+    areg = addr;
+  else
+    emit_move_insn (areg, addr);
+  emit_move_insn (aligned_addr, gen_rtx_AND (DImode, areg, GEN_INT (-8)));
+
+  rtx label = gen_label_rtx ();
+  emit_label (label);
+  LABEL_NUSES (label) = 1;
+
+  rtx seq = gen_reload_out<reloadmode>_unaligned_safe_bwa (areg, operands[1],
+							   aligned_addr,
+							   status, scratch);
+  alpha_set_memflags (seq, operands[0]);
+  emit_insn (seq);
+
+  rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
+  rtx cond = gen_rtx_EQ (DImode, status, const0_rtx);
+  rtx jump = alpha_emit_unlikely_jump (cond, label_ref);
+  JUMP_LABEL (jump) = label;
+
+  cfun->split_basic_blocks_after_reload = 1;
+
   DONE;
 })
 
@@ -4420,10 +4520,55 @@
 {
   rtx aligned_mem, bitnum;
   get_aligned_mem (operands[0], &aligned_mem, &bitnum);
-  emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
-				operands[2], operands[3]));
+  if (TARGET_SAFE_BWA)
+    {
+      rtx label = gen_label_rtx ();
+      emit_label (label);
+      LABEL_NUSES (label) = 1;
+
+      rtx status = operands[2];
+      rtx temp = operands[3];
+      emit_insn (gen_aligned_store_safe_bwa (aligned_mem, operands[1], bitnum,
+					     status, temp));
+
+      rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
+      rtx cond = gen_rtx_EQ (DImode, gen_rtx_SUBREG (DImode, status, 0),
+			     const0_rtx);
+      rtx jump = alpha_emit_unlikely_jump (cond, label_ref);
+      JUMP_LABEL (jump) = label;
+
+      cfun->split_basic_blocks_after_reload = 1;
+    }
+  else
+    emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
+				  operands[2], operands[3]));
   DONE;
 })
+
+;; Operand 0 is the address.  Operand 1 is the data to store.  Operand 2
+;; is the aligned address.  Operand 3 is the DImode status.  Operand 4 is
+;; a DImode scratch.
+
+(define_expand "reload_out<mode>_unaligned_safe_bwa"
+  [(set (match_operand:DI 3 "register_operand")
+	(unspec_volatile:DI [(mem:DI (match_operand:DI 2 "register_operand"))]
+			    UNSPECV_LL))
+   (set (match_dup 3)
+	(and:DI (not:DI
+		  (ashift:DI (match_dup 5)
+			     (ashift:DI (match_operand:DI 0 "register_operand")
+					(const_int 3))))
+		(match_dup 3)))
+   (set (match_operand:DI 4 "register_operand")
+	(ashift:DI (zero_extend:DI
+		     (match_operand:I12MODE 1 "register_operand"))
+		   (ashift:DI (match_dup 0) (const_int 3))))
+   (set (match_dup 3) (ior:DI (match_dup 4) (match_dup 3)))
+   (parallel [(set (match_dup 3)
+		   (unspec_volatile:DI [(const_int 0)] UNSPECV_SC))
+	      (set (mem:DI (match_dup 2)) (match_dup 3))])]
+  ""
+  "operands[5] = GEN_INT (GET_MODE_MASK (<MODE>mode));")
 
 ;; Vector operations
 
@@ -4636,9 +4781,15 @@
 	  && INTVAL (operands[1]) != 64))
     FAIL;
 
-  alpha_expand_unaligned_store (operands[0], operands[3],
-				INTVAL (operands[1]) / 8,
-				INTVAL (operands[2]) / 8);
+  if (TARGET_SAFE_PARTIAL)
+    alpha_expand_unaligned_store_safe_partial (operands[0], operands[3],
+					       INTVAL (operands[1]) / 8,
+					       INTVAL (operands[2]) / 8,
+					       BITS_PER_UNIT);
+  else
+    alpha_expand_unaligned_store (operands[0], operands[3],
+				  INTVAL (operands[1]) / 8,
+				  INTVAL (operands[2]) / 8);
   DONE;
 })
 

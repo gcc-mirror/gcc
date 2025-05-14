@@ -3583,14 +3583,14 @@ bindings they are also accessible from Fortran.
 @cindex libgfortran initialization, set_args
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_set_args (int argc, char *argv[])}
+
 @item @emph{Description}:
 @code{_gfortran_set_args} saves the command-line arguments; this
 initialization is required if any of the command-line intrinsics
 is called.  Additionally, it shall be called if backtracing is
 enabled (see @code{_gfortran_set_options}).
-
-@item @emph{Syntax}:
-@code{void _gfortran_set_args (int argc, char *argv[])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3617,6 +3617,9 @@ int main (int argc, char *argv[])
 @cindex libgfortran initialization, set_options
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_set_options (int num, int options[])}
+
 @item @emph{Description}:
 @code{_gfortran_set_options} sets several flags related to the Fortran
 standard to be used, whether backtracing should be enabled
@@ -3625,9 +3628,6 @@ upward compatibility since the number of passed flags is specified; for
 non-passed flags, the default value is used.  See also
 @pxref{Code Gen Options}.  Please note that not all flags are actually
 used.
-
-@item @emph{Syntax}:
-@code{void _gfortran_set_options (int num, int options[])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3691,12 +3691,12 @@ GFC_FPE_ZERO | GFC_FPE_OVERFLOW | GFC_FPE_UNDERFLOW}.)
 @cindex libgfortran initialization, set_convert
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_set_convert (int conv)}
+
 @item @emph{Description}:
 @code{_gfortran_set_convert} set the representation of data for
 unformatted files.
-
-@item @emph{Syntax}:
-@code{void _gfortran_set_convert (int conv)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3724,12 +3724,12 @@ int main (int argc, char *argv[])
 @cindex libgfortran initialization, set_record_marker
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_set_record_marker (int val)}
+
 @item @emph{Description}:
 @code{_gfortran_set_record_marker} sets the length of record markers
 for unformatted files.
-
-@item @emph{Syntax}:
-@code{void _gfortran_set_record_marker (int val)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3756,13 +3756,13 @@ int main (int argc, char *argv[])
 @cindex libgfortran initialization, set_fpe
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_set_fpe (int val)}
+
 @item @emph{Description}:
 @code{_gfortran_set_fpe} enables floating point exception traps for
 the specified exceptions.  On most systems, this results in a
 @code{SIGFPE} signal being sent and the program being aborted.
-
-@item @emph{Syntax}:
-@code{void _gfortran_set_fpe (int val)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3793,13 +3793,13 @@ int main (int argc, char *argv[])
 @cindex libgfortran initialization, set_max_subrecord_length
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_set_max_subrecord_length (int val)}
+
 @item @emph{Description}:
 @code{_gfortran_set_max_subrecord_length} set the maximum length
 for a subrecord.  This option only makes sense for testing and
 debugging of unformatted I/O.
-
-@item @emph{Syntax}:
-@code{void _gfortran_set_max_subrecord_length (int val)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4173,7 +4173,7 @@ The references make up a single linked list of reference operations.  The
 the chain.  Component and array refs can be arbitrarily mixed as long as they
 comply to the Fortran standard.
 
-@emph{NOTES}
+@emph{Notes}:
 The member @code{STATIC_ARRAY_TYPE} is used only when the @code{TYPE} is
 @code{CAF_REF_STATIC_ARRAY}.  The member gives the type of the data referenced.
 Because no array descriptor is available for a descriptorless array and
@@ -4230,6 +4230,12 @@ future implementation of teams.  It is about to change without further notice.
 * _gfortran_caf_co_min:: Collective minimum reduction
 * _gfortran_caf_co_sum:: Collective summing reduction
 * _gfortran_caf_co_reduce:: Generic collective reduction
+* _gfortran_caf_form_team:: Team creation function
+* _gfortran_caf_change_team:: Team activation function
+* _gfortran_caf_end_team:: Team termination function
+* _gfortran_caf_sync_team:: Synchronize all images of a given team
+* _gfortran_caf_get_team:: Get the opaque handle of the specified team
+* _gfortran_caf_team_number:: Get the unique id of the given team
 @end menu
 
 
@@ -4238,15 +4244,15 @@ future implementation of teams.  It is about to change without further notice.
 @cindex Coarray, _gfortran_caf_init
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_init (int *argc, char ***argv)}
+
 @item @emph{Description}:
 This function is called at startup of the program before the Fortran main
 program, if the latter has been compiled with @option{-fcoarray=lib}.
 It takes as arguments the command-line arguments of the program.  It is
 permitted to pass two @code{NULL} pointers as argument; if non-@code{NULL},
 the library is permitted to modify the arguments.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_init (int *argc, char ***argv)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4256,7 +4262,7 @@ arguments passed to the program or @code{NULL}.
 command-line arguments or @code{NULL}.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 The function is modelled after the initialization function of the Message
 Passing Interface (MPI) specification.  Due to the way coarray registration
 works, it might not be the first call to the library.  If the main program is
@@ -4271,14 +4277,14 @@ does not rely on the passed arguments and whether the call has been done.
 @cindex Coarray, _gfortran_caf_finish
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_finish (void)}
+
 @item @emph{Description}:
 This function is called at the end of the Fortran main program, if it has
 been compiled with the @option{-fcoarray=lib} option.
 
-@item @emph{Syntax}:
-@code{void _gfortran_caf_finish (void)}
-
-@item @emph{NOTES}
+@item @emph{Notes}:
 For non-Fortran programs, it is recommended to call the function at the end
 of the main program.  To ensure that the shutdown is also performed for
 programs where this function is not explicitly invoked, for instance
@@ -4293,22 +4299,24 @@ using the STOP and ERROR STOP statements; those use different library calls.
 @cindex Coarray, _gfortran_caf_this_image
 
 @table @asis
-@item @emph{Description}:
-This function returns the current image number, which is a positive number.
+@item @emph{Synopsis}:
+@code{int _gfortran_caf_this_image (caf_team_t team)}
 
-@item @emph{Syntax}:
-@code{int _gfortran_caf_this_image (int distance)}
+@item @emph{Description}:
+Return the current image number in the @var{team}, or in the current team, if
+no @var{team} is given.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{distance} @tab As specified for the @code{this_image} intrinsic
-in TS18508.  Shall be a nonnegative number.
+@item @var{team} @tab intent(in), optional; The team this image's number is
+requested for.  If null, the image number in the current team is returned.
 @end multitable
 
-@item @emph{NOTES}
-If the Fortran intrinsic @code{this_image} is invoked without an argument, which
-is the only permitted form in Fortran 2008, GCC passes @code{0} as
-first argument.
+@item @emph{Notes}:
+Available since Fortran 2008 without argument; Since Fortran 2018 with optional
+team argument.  Fortran 2008 uses 0 as argument for team, which is permissible,
+because a team handle is always an opaque pointer, which as a special case can
+be null here.
 @end table
 
 
@@ -4317,26 +4325,30 @@ first argument.
 @cindex Coarray, _gfortran_caf_num_images
 
 @table @asis
-@item @emph{Description}:
-This function returns the number of images in the current team, if
-@var{distance} is 0 or the number of images in the parent team at the specified
-distance. If @var{failed} is -1, the function returns the number of all images at
-the specified distance; if it is 0, the function returns the number of
-nonfailed images, and if it is 1, it returns the number of failed images.
+@item @emph{Synopsis}:
+@code{int _gfortran_caf_num_images (caf_team_t team, int32_t *team_number)}
 
-@item @emph{Syntax}:
-@code{int _gfortran_caf_num_images(int distance, int failed)}
+@item @emph{Description}:
+This function returns the number of images in the team given by @var{team} or
+@var{team_number}, if either one is present.  If both are null, then the number
+of images in the current team is returned.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{distance} @tab the distance from this image to the ancestor.
-Shall be positive.
-@item @var{failed} @tab shall be -1, 0, or 1
+@item @var{team} @tab intent(in), optional; The team the number of images is
+requested for.  If null, the number of images in the current team is returned.
+@item @var{team_number} @tab intent(in), optional; The team id for which the
+number of teams is requested; if unset, then number of images in the current
+team is returned.
 @end multitable
 
-@item @emph{NOTES}
-This function follows TS18508. If the num_image intrinsic has no arguments,
-then the compiler passes @code{distance=0} and @code{failed=-1} to the function.
+@item @emph{Notes}:
+When both argument are given, then it is caf-library dependent which argument
+is examined first.  Current implementations prioritize the @var{team} argument,
+because it is easier to retrive the number of images from it.
+
+Fortran 2008 or later, with no arguments; Fortran 2018 or later with two
+arguments.
 @end table
 
 
@@ -4345,15 +4357,15 @@ then the compiler passes @code{distance=0} and @code{failed=-1} to the function.
 @cindex Coarray, _gfortran_caf_image_status
 
 @table @asis
+@item @emph{Synopsis}:
+@code{int _gfortran_caf_image_status (int image, caf_team_t * team)}
+
 @item @emph{Description}:
 Get the status of the image given by the id @var{image} of the team given by
 @var{team}.  Valid results are zero, for image is ok, @code{STAT_STOPPED_IMAGE}
 from the ISO_FORTRAN_ENV module to indicate that the image has been stopped and
 @code{STAT_FAILED_IMAGE} also from ISO_FORTRAN_ENV to indicate that the image
 has executed a @code{FAIL IMAGE} statement.
-
-@item @emph{Syntax}:
-@code{int _gfortran_caf_image_status (int image, caf_team_t * team)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4362,7 +4374,7 @@ has executed a @code{FAIL IMAGE} statement.
 performed.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function follows TS18508.  Because team-functionality is not yet
 implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
@@ -4373,15 +4385,15 @@ implemented a null pointer is passed for the @var{team} argument at the moment.
 @cindex Coarray, _gfortran_caf_failed_images
 
 @table @asis
+@item @emph{Synopsis}:
+@code{int _gfortran_caf_failed_images (caf_team_t * team, int * kind)}
+
 @item @emph{Description}:
 Get an array of image indexes in the current @var{team} that have failed.  The
 array is sorted ascendingly.  When @var{team} is not provided the current team
 is to be used.  When @var{kind} is provided then the resulting array is of that
 integer kind else it is of default integer kind.  The returns an unallocated
 size zero array when no images have failed.
-
-@item @emph{Syntax}:
-@code{int _gfortran_caf_failed_images (caf_team_t * team, int * kind)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4390,7 +4402,7 @@ performed.
 @item @var{image} @tab optional; the kind of the resulting integer array.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function follows TS18508.  Because team-functionality is not yet
 implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
@@ -4401,15 +4413,15 @@ implemented a null pointer is passed for the @var{team} argument at the moment.
 @cindex Coarray, _gfortran_caf_stopped_images
 
 @table @asis
+@item @emph{Synopsis}:
+@code{int _gfortran_caf_stopped_images (caf_team_t * team, int * kind)}
+
 @item @emph{Description}:
 Get an array of image indexes in the current @var{team} that have stopped.  The
 array is sorted ascendingly.  When @var{team} is not provided the current team
 is to be used.  When @var{kind} is provided then the resulting array is of that
 integer kind else it is of default integer kind.  The returns an unallocated
 size zero array when no images have failed.
-
-@item @emph{Syntax}:
-@code{int _gfortran_caf_stopped_images (caf_team_t * team, int * kind)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4418,7 +4430,7 @@ performed.
 @item @var{image} @tab optional; the kind of the resulting integer array.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function follows TS18508.  Because team-functionality is not yet
 implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
@@ -4429,6 +4441,11 @@ implemented a null pointer is passed for the @var{team} argument at the moment.
 @cindex Coarray, _gfortran_caf_register
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_register (size_t size, caf_register_t type,
+caf_token_t *token, gfc_descriptor_t *desc, int *stat, char *errmsg,
+size_t errmsg_len)}
+
 @item @emph{Description}:
 Registers memory for a coarray and creates a token to identify the coarray.  The
 routine is called for both coarrays with @code{SAVE} attribute and using an
@@ -4459,11 +4476,6 @@ is not used then.  On the contrary when
 in the @var{DESC}'s data-ptr is registered or allocate when the data-ptr is
 @code{NULL}.
 
-@item @emph{Syntax}:
-@code{void _gfortran_caf_register (size_t size, caf_register_t type,
-caf_token_t *token, gfc_descriptor_t *desc, int *stat, char *errmsg,
-size_t errmsg_len)}
-
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{size} @tab For normal coarrays, the byte size of the coarray to be
@@ -4478,7 +4490,7 @@ an error message; may be @code{NULL}
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 Nonallocatable coarrays have to be registered prior use from remote images.
 In order to guarantee this, they have to be registered before the main
 program. This can be achieved by creating constructor functions. That is what
@@ -4505,16 +4517,16 @@ be no event, e.g. zero.
 @cindex Coarray, _gfortran_caf_deregister
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_deregister (caf_token_t *token, caf_deregister_t type,
+int *stat, char *errmsg, size_t errmsg_len)}
+
 @item @emph{Description}:
 Called to free or deregister the memory of a coarray; the processor calls this
 function for automatic and explicit deallocation.  In case of an error, this
 function shall fail with an error message, unless the @var{STAT} variable is
 not null.  The library is only expected to free memory it allocated itself
 during a call to @code{_gfortran_caf_register}.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_deregister (caf_token_t *token, caf_deregister_t type,
-int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4529,7 +4541,7 @@ to an error message; may be NULL
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 For nonallocatable coarrays this function is never called.  If a cleanup is
 required, it has to be handled via the finish, stop and error stop functions,
 and via destructors.
@@ -4541,17 +4553,17 @@ and via destructors.
 @cindex Coarray, _gfortran_caf_register_accessor
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_register_accessor (const int hash,
+void (*accessor)(void **, int32_t *, void *, void *, size_t *,
+size_t *))}
+
 @item @emph{Description}:
 Identification of access funtions across images is done using a unique hash.
 For each given hash an accessor has to be registered.  This routine is expected
 to register an accessor function pointer for the given hash in nearly constant
 time.  I.e. it is expected to add the hash and accessor to a buffer and return.
 Sorting shall be done in @code{_gfortran_caf_register_accessors_finish}.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_register_accessor (const int hash,
-void (*accessor)(void **, int32_t *, void *, void *, size_t *,
-size_t *))}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4564,7 +4576,7 @@ size_t *opt_dst_charlen)}.  GFortran ensures that functions provided to
 @code{_gfortran_caf_register_accessor} adhere to this interface.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function is required to have a nearly constant runtime complexity, because
 it will be called to register multiple accessor in a sequence.  GFortran ensures
 that before the first remote accesses commences
@@ -4582,19 +4594,19 @@ done.  See also @ref{_gfortran_caf_register_accessors_finish} and
 @cindex Coarray, _gfortran_caf_register_accessors_finish
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_register_accessors_finish ()}
+
 @item @emph{Description}:
 Called to finalize registering of accessor functions.  This function is expected
 to prepare a lookup table that has fast lookup time for the hash supplied to
 @code{_gfortran_caf_get_remote_function_index} and constant access time for
 indexing operations.
 
-@item @emph{Syntax}:
-@code{void _gfortran_caf_register_accessors_finish ()}
-
 @item @emph{Arguments}:
 No arguments.
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function may be called multiple times with and without new hash-accessors-
 pairs being added.  The post-condition after each call has to be that hashes
 can be looked up quickly and indexing on the lookup table of hash-accessor-pairs
@@ -4607,6 +4619,9 @@ is a constant time operation.
 @cindex Coarray, _gfortran_caf_get_remote_function_index
 
 @table @asis
+@item @emph{Synopsis}:
+@code{int _gfortran_caf_get_remote_function_index (const int hash)}
+
 @item @emph{Description}:
 Return the index of the accessor in the lookup table build by
 @ref{_gfortran_caf_register_accessor} and
@@ -4622,9 +4637,6 @@ The GFortran compiler ensures that
 hash and the result be stored in a static variable to prevent future redundant
 lookups.
 
-@item @emph{Syntax}:
-@code{int _gfortran_caf_get_remote_function_index (const int hash)}
-
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{hash} @tab intent(in)  The hash of the accessor desired.
@@ -4634,7 +4646,7 @@ lookups.
 The zero based index to access the accessor funtion in a lookup table.
 On error, @code{-1} can be returned.
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 The function's complexity is expected to be significantly smaller than N,
 where N is the number of all accessors registered.  Although returning @code{-1}
 is valid, will this most likely crash the Fortran program when accessing the
@@ -4648,17 +4660,17 @@ message, when the hash could not be found.
 @cindex Coarray, _gfortran_caf_get_from_remote
 
 @table @asis
-@item @emph{Description}:
-Called to get a scalar, an array section or a whole array from a remote image
-identified by the @var{image_index}.
-
-@item @emph{Syntax}:
+@item @emph{Synopsis}:
 @code{void _gfortran_caf_get_from_remote (caf_token_t token,
 const gfc_descriptor_t *opt_src_desc, const size_t *opt_src_charlen,
 const int image_index, const size_t dst_size, void **dst_data,
 size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
 const bool may_realloc_dst, const int getter_index, void *get_data,
 const size_t get_data_size, int *stat, caf_team_t *team, int *team_number)}
+
+@item @emph{Description}:
+Called to get a scalar, an array section or a whole array from a remote image
+identified by the @var{image_index}.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4705,12 +4717,12 @@ structure.
 operation, i.e., zero on success and non-zero on error.  When @code{NULL} and an
 error occurs, then an error message is printed and the program is terminated.
 @item @var{team} @tab intent(in)  The opaque team handle as returned by
-@code{FORM TEAM}.  Unused at the moment.
+@code{FORM TEAM}.
 @item @var{team_number} @tab intent(in)  The number of the team this access is
-to be part of.  Unused at the moment.
+to be part of.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 It is permitted to have @code{image_index} equal the current image; the memory
 to get and the memory to store the data may (partially) overlap.  The
 implementation has to take care that it handles this case, e.g. using
@@ -4723,15 +4735,15 @@ implementation has to take care that it handles this case, e.g. using
 @cindex Coarray, _gfortran_caf_is_present_on_remote
 
 @table @asis
+@item @emph{Synopsis}:
+@code{int32_t _gfortran_caf_is_present_on_remote (caf_token_t token,
+const int image_index, const int is_present_index, void *add_data,
+const size_t add_data_size)}
+
 @item @emph{Description}:
 Check if an allocatable coarray or a component of a derived type coarray is
 allocated on the remote image identified by the @var{image_index}.  The check
 is done by calling routine on the remote side.
-
-@item @emph{Syntax}:
-@code{int32_t _gfortran_caf_is_present_on_remote (caf_token_t token,
-const int image_index, const int is_present_index, void *add_data,
-const size_t add_data_size)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4756,18 +4768,18 @@ structure.
 @cindex Coarray, _gfortran_caf_send_to_remote
 
 @table @asis
-@item @emph{Description}:
-Called to send a scalar, an array section or a whole array to a remote image
-identified by the @var{image_index}. The call modifies the memory of the remote
-image.
-
-@item @emph{Syntax}:
+@item @emph{Synopsis}:
 @code{void _gfortran_caf_send_to_remote (caf_token_t token,
 gfc_descriptor_t *opt_dst_desc, const size_t *opt_dst_charlen,
 const int image_index, const size_t src_size, const void *src_data,
 size_t *opt_src_charlen, const gfc_descriptor_t *opt_src_desc,
 const int setter_index, void *add_data, const size_t add_data_size, int *stat,
 caf_team_t *team, int *team_number)}
+
+@item @emph{Description}:
+Called to send a scalar, an array section or a whole array to a remote image
+identified by the @var{image_index}. The call modifies the memory of the remote
+image.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4806,12 +4818,12 @@ structure.
 operation, i.e., zero on success and non-zero on error.  When @code{NULL} and an
 error occurs, then an error message is printed and the program is terminated.
 @item @var{team} @tab intent(in)  The opaque team handle as returned by
-@code{FORM TEAM}.  Unused at the moment.
+@code{FORM TEAM}.
 @item @var{team_number} @tab intent(in)  The number of the team this access is
-to be part of.  Unused at the moment.
+to be part of.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 It is permitted to have @code{image_index} equal the current image; the memory
 to send the data to and the memory to read for the data may (partially) overlap.
 The implementation has to take care that it handles this case, e.g. using
@@ -4824,13 +4836,7 @@ The implementation has to take care that it handles this case, e.g. using
 @cindex Coarray, _gfortran_caf_transfer_between_remotes
 
 @table @asis
-@item @emph{Description}:
-Initiates a transfer of data from one remote image to another remote image.
-The call modifies the memory of the receiving remote image given by
-@code{dst_image_index}.  The @code{src_image_index}'s memory is not modified.
-The call returns when the transfer has commenced.
-
-@item @emph{Syntax}:
+@item @emph{Synopsis}:
 @code{void _gfortran_caf_transfer_between_remotes (caf_token_t dst_token,
 gfc_descriptor_t *opt_dst_desc, size_t *opt_dst_charlen,
 const int dst_image_index, const int dst_access_index, void *dst_add_data,
@@ -4841,6 +4847,12 @@ const size_t src_add_data_size, const size_t src_size,
 const bool scalar_transfer, int *dst_stat, int *src_stat, caf_team_t *dst_team,
 int *dst_team_number, caf_team_t *src_team, int *src_team_number)
 }
+
+@item @emph{Description}:
+Initiates a transfer of data from one remote image to another remote image.
+The call modifies the memory of the receiving remote image given by
+@code{dst_image_index}.  The @code{src_image_index}'s memory is not modified.
+The call returns when the transfer has commenced.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4906,16 +4918,16 @@ the operation on the sending side, i.e., zero on success and non-zero on error.
 When @code{NULL} and an error occurs, then an error message is printed and the
 program is terminated.
 @item @var{dst_team} @tab intent(in)  The opaque team handle as returned by
-@code{FORM TEAM}.  Unused at the moment.
+@code{FORM TEAM}.
 @item @var{dst_team_number} @tab intent(in)  The number of the team this access
-is to be part of.  Unused at the moment.
+is to be part of.
 @item @var{src_team} @tab intent(in)  The opaque team handle as returned by
-@code{FORM TEAM}.  Unused at the moment.
+@code{FORM TEAM}.
 @item @var{src_team_number} @tab intent(in)  The number of the team this access
-is to be part of.  Unused at the moment.
+is to be part of.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 It is permitted to have both @code{dst_image_index} and @code{src_image_index}
 equal the current image; the memory to send the data to and the memory to read
 for the data may (partially) overlap.  The implementation has to take care that
@@ -4929,17 +4941,17 @@ overlapping memory.
 @cindex Coarray, _gfortran_caf_sendget_by_ref
 
 @table @asis
-@item @emph{Description}:
-Called to send a scalar, an array section or a whole array from a remote image
-identified by the @var{src_image_index} to a remote image identified by the
-@var{dst_image_index}.
-
-@item @emph{Syntax}:
+@item @emph{Synopsis}:
 @code{void _gfortran_caf_sendget_by_ref (caf_token_t dst_token,
 int dst_image_index, caf_reference_t *dst_refs,
 caf_token_t src_token, int src_image_index, caf_reference_t *src_refs,
 int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat,
 int *src_stat, int dst_type, int src_type)}
+
+@item @emph{Description}:
+Called to send a scalar, an array section or a whole array from a remote image
+identified by the @var{src_image_index} to a remote image identified by the
+@var{dst_image_index}.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4978,7 +4990,7 @@ source is not an array, than the precise type, e.g. of a component in a
 derived type, is not known, but provided here.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 It is permitted to have the same image index for both @var{src_image_index} and
 @var{dst_image_index}; the memory of the send-to and the send-from might
 (partially) overlap in that case.  The implementation has to take care that it
@@ -5003,6 +5015,10 @@ error message why the operation is not permitted.
 @cindex Coarray, _gfortran_caf_lock
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
+int *acquired_lock, int *stat, char *errmsg, size_t errmsg_len)}
+
 @item @emph{Description}:
 Acquire a lock on the given image on a scalar locking variable or for the
 given array element for an array-valued variable.  If the @var{acquired_lock}
@@ -5010,10 +5026,6 @@ is @code{NULL}, the function returns after having obtained the lock.  If it is
 non-@code{NULL}, then @var{acquired_lock} is assigned the value true (one) when
 the lock could be obtained and false (zero) otherwise.  Locking a lock variable
 that has already been locked by the same image is an error.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
-int *acquired_lock, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5030,7 +5042,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function is also called for critical blocks; for those, the array index
 is always zero and the image index is one.  Libraries are permitted to use other
 images for critical-block locking variables.
@@ -5041,14 +5053,14 @@ images for critical-block locking variables.
 @cindex Coarray, _gfortran_caf_unlock
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_unlock (caf_token_t token, size_t index, int image_index,
+int *stat, char *errmsg, size_t errmsg_len)}
+
 @item @emph{Description}:
 Release a lock on the given image on a scalar locking variable or for the
 given array element for an array-valued variable. Unlocking a lock variable
 that is unlocked or has been locked by a different image is an error.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_unlock (caf_token_t token, size_t index, int image_index,
-int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5064,7 +5076,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function is also called for critical block; for those, the array index
 is always zero and the image index is one.  Libraries are permitted to use other
 images for critical-block locking variables.
@@ -5075,12 +5087,12 @@ images for critical-block locking variables.
 @cindex Coarray, _gfortran_caf_event_post
 
 @table @asis
-@item @emph{Description}:
-Increment the event count of the specified event variable.
-
-@item @emph{Syntax}:
+@item @emph{Synopsis}:
 @code{void _gfortran_caf_event_post (caf_token_t token, size_t index,
 int image_index, int *stat, char *errmsg, size_t errmsg_len)}
+
+@item @emph{Description}:
+Increment the event count of the specified event variable.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5095,7 +5107,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This acts like an atomic add of one to the remote image's event variable.
 The statement is an image-control statement but does not imply sync memory.
 Still, all preceding push communications of this image to the specified
@@ -5110,14 +5122,14 @@ image returns.
 @cindex Coarray, _gfortran_caf_event_wait
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_event_wait (caf_token_t token, size_t index,
+int until_count, int *stat, char *errmsg, size_t errmsg_len)}
+
 @item @emph{Description}:
 Wait until the event count has reached at least the specified
 @var{until_count}; if so, atomically decrement the event variable by this
 amount and return.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_event_wait (caf_token_t token, size_t index,
-int until_count, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5132,7 +5144,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function only operates on a local coarray. It acts like a loop checking
 atomically the value of the event variable, breaking if the value is greater
 or equal the requested number of counts. Before the function returns, the
@@ -5155,12 +5167,12 @@ image returns.
 @cindex Coarray, _gfortran_caf_event_query
 
 @table @asis
-@item @emph{Description}:
-Return the event count of the specified event variable.
-
-@item @emph{Syntax}:
+@item @emph{Synopsis}:
 @code{void _gfortran_caf_event_query (caf_token_t token, size_t index,
 int image_index, int *count, int *stat)}
+
+@item @emph{Description}:
+Return the event count of the specified event variable.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5174,7 +5186,7 @@ the event variable.
 @item @var{stat} @tab intent(out)  Stores the STAT=; may be NULL.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 The typical use is to check the local event variable to only call
 @code{event_wait} when the data is available. However, a coindexed variable
 is permitted; there is no ordering or synchronization implied.  It acts like
@@ -5188,14 +5200,14 @@ an atomic fetch of the value of the event variable.
 @cindex Coarray, _gfortran_caf_sync_all
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_sync_all (int *stat, char *errmsg, size_t errmsg_len)}
+
 @item @emph{Description}:
 Synchronization of all images in the current team; the program only continues
 on a given image after this function has been called on all images of the
 current team.  Additionally, it ensures that all pending data transfers of
 previous segment have completed.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_sync_all (int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5213,6 +5225,10 @@ an error message; may be NULL.
 @cindex Coarray, _gfortran_caf_sync_images
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_sync_images (int count, int images[], int *stat,
+char *errmsg, size_t errmsg_len)}
+
 @item @emph{Description}:
 Synchronization between the specified images; the program only continues on a
 given image after this function has been called on all images specified for
@@ -5220,10 +5236,6 @@ that image. Note that one image can wait for all other images in the current
 team (e.g. via @code{sync images(*)}) while those only wait for that specific
 image.  Additionally, @code{sync images} ensures that all pending data
 transfers of previous segments have completed.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_sync_images (int count, int images[], int *stat,
-char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5246,12 +5258,12 @@ an error message; may be NULL.
 @cindex Coarray, _gfortran_caf_sync_memory
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_sync_memory (int *stat, char *errmsg, size_t errmsg_len)}
+
 @item @emph{Description}:
 Acts as optimization barrier between different segments. It also ensures that
 all pending memory operations of this image have been completed.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_sync_memory (int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5261,7 +5273,8 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTE} A simple implementation could be
+@item @emph{Notes}:
+A simple implementation could be
 @code{__asm__ __volatile__ ("":::"memory")} to prevent code movements.
 @end table
 
@@ -5272,13 +5285,13 @@ an error message; may be NULL.
 @cindex Coarray, _gfortran_caf_error_stop
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_error_stop (int error)}
+
 @item @emph{Description}:
 Invoked for an @code{ERROR STOP} statement that has an integer argument.  The
 function should terminate the program with the specified exit code.
 
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_error_stop (int error)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5293,12 +5306,12 @@ function should terminate the program with the specified exit code.
 @cindex Coarray, _gfortran_caf_error_stop_str
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_error_stop (const char *string, size_t len)}
+
 @item @emph{Description}:
 Invoked for an @code{ERROR STOP} statement that has a string as argument.  The
 function should terminate the program with a nonzero-exit code.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_error_stop (const char *string, size_t len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5314,14 +5327,14 @@ function should terminate the program with a nonzero-exit code.
 @cindex Coarray, _gfortran_caf_fail_image
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_fail_image ()}
+
 @item @emph{Description}:
 Invoked for an @code{FAIL IMAGE} statement.  The function should terminate the
 current image.
 
-@item @emph{Syntax}:
-@code{void _gfortran_caf_fail_image ()}
-
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function follows TS18508.
 @end table
 
@@ -5332,12 +5345,12 @@ This function follows TS18508.
 @cindex Coarray, _gfortran_caf_atomic_define
 
 @table @asis
-@item @emph{Description}:
-Assign atomically a value to an integer or logical variable.
-
-@item @emph{Syntax}:
+@item @emph{Synopsis}:
 @code{void _gfortran_caf_atomic_define (caf_token_t token, size_t offset,
 int image_index, void *value, int *stat, int type, int kind)}
+
+@item @emph{Description}:
+Assign atomically a value to an integer or logical variable.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5361,12 +5374,12 @@ positive number; zero indicates the current image when used noncoindexed.
 @cindex Coarray, _gfortran_caf_atomic_ref
 
 @table @asis
-@item @emph{Description}:
-Reference atomically a value of a kind-4 integer or logical variable.
-
-@item @emph{Syntax}:
+@item @emph{Synopsis}:
 @code{void _gfortran_caf_atomic_ref (caf_token_t token, size_t offset,
 int image_index, void *value, int *stat, int type, int kind)}
+
+@item @emph{Description}:
+Reference atomically a value of a kind-4 integer or logical variable.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5391,15 +5404,15 @@ referenced variable.
 @cindex Coarray, _gfortran_caf_atomic_cas
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_atomic_cas (caf_token_t token, size_t offset,
+int image_index, void *old, void *compare, void *new_val, int *stat,
+int type, int kind)}
+
 @item @emph{Description}:
 Atomic compare and swap of a kind-4 integer or logical variable. Assigns
 atomically the specified value to the atomic variable, if the latter has
 the value specified by the passed condition value.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_atomic_cas (caf_token_t token, size_t offset,
-int image_index, void *old, void *compare, void *new_val, int *stat,
-int type, int kind)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5428,6 +5441,10 @@ atomic variable.
 @cindex Coarray, _gfortran_caf_atomic_op
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_atomic_op (int op, caf_token_t token, size_t offset,
+int image_index, void *value, void *old, int *stat, int type, int kind)}
+
 @item @emph{Description}:
 Apply an operation atomically to an atomic integer or logical variable.
 After the operation, @var{old} contains the value just before the operation,
@@ -5435,10 +5452,6 @@ which, respectively, adds (GFC_CAF_ATOMIC_ADD) atomically the @code{value} to
 the atomic integer variable or does a bitwise AND, OR or exclusive OR
 between the atomic variable and @var{value}; the result is then stored in the
 atomic variable.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_atomic_op (int op, caf_token_t token, size_t offset,
-int image_index, void *value, void *old, int *stat, int type, int kind)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5470,13 +5483,13 @@ atomic variable.
 @cindex Coarray, _gfortran_caf_co_broadcast
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_co_broadcast (gfc_descriptor_t *a,
+int source_image, int *stat, char *errmsg, size_t errmsg_len)}
+
 @item @emph{Description}:
 Distribute a value from a given image to all other images in the team. Has to
 be called collectively.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_co_broadcast (gfc_descriptor_t *a,
-int source_image, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5498,16 +5511,16 @@ an error message; may be NULL.
 @cindex Coarray, _gfortran_caf_co_max
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_co_max (gfc_descriptor_t *a, int result_image,
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
+
 @item @emph{Description}:
 Calculates for each array element of the variable @var{a} the maximum
 value for that element in the current team; if @var{result_image} has the
 value 0, the result shall be stored on all images, otherwise, only on the
 specified image. This function operates on numeric values and character
 strings.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_co_max (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5522,7 +5535,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
 all images except of the specified one become undefined; hence, the library may
 make use of this.
@@ -5535,16 +5548,16 @@ make use of this.
 @cindex Coarray, _gfortran_caf_co_min
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_co_min (gfc_descriptor_t *a, int result_image,
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
+
 @item @emph{Description}:
 Calculates for each array element of the variable @var{a} the minimum
 value for that element in the current team; if @var{result_image} has the
 value 0, the result shall be stored on all images, otherwise, only on the
 specified image. This function operates on numeric values and character
 strings.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_co_min (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5559,7 +5572,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
 all images except of the specified one become undefined; hence, the library may
 make use of this.
@@ -5572,15 +5585,15 @@ make use of this.
 @cindex Coarray, _gfortran_caf_co_sum
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_co_sum (gfc_descriptor_t *a, int result_image,
+int *stat, char *errmsg, size_t errmsg_len)}
+
 @item @emph{Description}:
 Calculates for each array element of the variable @var{a} the sum of all
 values for that element in the current team; if @var{result_image} has the
 value 0, the result shall be stored on all images, otherwise, only on the
 specified image.  This function operates on numeric values only.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_co_sum (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5594,7 +5607,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
 all images except of the specified one become undefined; hence, the library may
 make use of this.
@@ -5607,6 +5620,11 @@ make use of this.
 @cindex Coarray, _gfortran_caf_co_reduce
 
 @table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_co_reduce (gfc_descriptor_t *a,
+void * (*opr) (void *, void *), int opr_flags, int result_image,
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
+
 @item @emph{Description}:
 Calculates for each array element of the variable @var{a} the reduction
 value for that element in the current team; if @var{result_image} has the
@@ -5621,11 +5639,6 @@ string lengths shall be specified as hidden arguments;
 @code{GFC_CAF_ARG_VALUE} (4) whether the arguments shall be passed by value,
 @code{GFC_CAF_ARG_DESC} (8) whether the arguments shall be passed by descriptor.
 
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_co_reduce (gfc_descriptor_t *a,
-void * (*opr) (void *, void *), int opr_flags, int result_image,
-int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5642,7 +5655,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
 all images except of the specified one become undefined; hence, the library may
 make use of this.
@@ -5652,6 +5665,180 @@ by the result string length, next come the two string arguments, followed
 by the two hidden string length arguments.  With C binding, there are no hidden
 arguments and by-reference passing and either only a single character is passed
 or an array descriptor.
+@end table
+
+
+
+@node _gfortran_caf_form_team
+@subsection @code{_gfortran_caf_form_team} --- Team creation function
+@cindex Coarray, _gfortran_caf_form_team
+
+@table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_form_team (int team_id, caf_team_t *team,
+int *new_index, int *stat, char *errmsg, size_t errmsg_len)}
+
+@item @emph{Description}:
+Create a team.  All images giving the same @var{team_id} in a call to
+@code{FORM TEAM} will form a new team addressable by the opaque handle
+@var{team} which is of type @code{team_type} from the intrinsic module
+@ref{ISO_FORTRAN_ENV}.  In the team the image gets the image index given by
+@var{new_index} if present.  If @var{new_index} is absent, then an
+implementation specific index is assigned.
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{team_id} @tab intent(in)  A unique id for each team to form.  Images
+giving the same @var{team_id} in a call to @code{FORM TEAM} belong to the same
+team.
+@item @var{team} @tab intent(out)  The opaque pointer to the newly formed team
+@item @var{new_index} @tab intent(in)  If non-null gives the unique index of
+this image in the newly formed team.  When no @var{new_index} is given, the
+caf-library is free to choose a unique index.
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
+@end multitable
+
+@item @emph{Notes}:
+The id given in @var{team_id} has to be unique in all subsequent calls to
+@code{FORM TEAM} on the same image.  That id is the same used in
+@code{TEAM_NUMBER=} of coarray indexes, which motivates the uniqueness.
+
+The index given in @var{new_index} needs to be unique among all members of
+team to create.  Failing uniqueness may lead to misbehaviour, which depends
+on the caf-library's implementation.  The library is free to implement
+checks for this, which imposes overhead and therefore may be avoided.
+@end table
+
+
+
+@node _gfortran_caf_change_team
+@subsection @code{_gfortran_caf_change_team} --- Team activation function
+@cindex Coarray, _gfortran_caf_change_team
+
+@table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_change_team (caf_team_t team, int *stat, char *errmsg,
+size_t errmsg_len)}
+
+@item @emph{Description}:
+Actives the team given by @var{team}, which must be formed but not active
+yet.  This routine starts a new epoch on the coarray memory pool.  All
+coarrays registered from now on, will be freeed once the team is terminated.
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{team} @tab intent(inout)  The opaque pointer to an already formed
+team
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
+@end multitable
+
+@item @emph{Notes}:
+When an error occurs and @var{stat} is non-null, it will be set.  Nevertheless
+will the Fortran program continue with the first statement in the change team
+block.
+@end table
+
+
+
+@node _gfortran_caf_end_team
+@subsection @code{_gfortran_caf_end_team} --- Team termination function
+@cindex Coarray, _gfortran_caf_end_team
+
+@table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_end_team (int *stat, char *errmsg, size_t errmsg_len)}
+
+@item @emph{Description}:
+Terminates the last team changed to.  The coarray memory epoch is
+terminated and all coarrays allocated since the execution of @code{CHANGE TEAM}
+are freeed.
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_sync_team
+@subsection @code{_gfortran_caf_sync_team} --- Synchronize all images of a given team
+@cindex Coarray, _gfortran_caf_sync_team
+
+@table @asis
+@item @emph{Synopsis}:
+@code{void _gfortran_caf_sync_team (caf_team_t team, int *stat, char *errmsg,
+size_t errmsg_len)}
+
+@item @emph{Description}:
+Blocks execution of the image calling @code{SYNC TEAM} until all images of the
+team given by @var{team} have joined the synchronisation call.
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{team} @tab intent(in)  The opaque pointer to an active team
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_get_team
+@subsection @code{_gfortran_caf_get_team} --- Get the opaque handle of the specified team
+@cindex Coarray, _gfortran_caf_get_team
+
+@table @asis
+@item @emph{Synopsis}:
+@code{caf_team_t _gfortran_caf_get_team (int32_t *level)}
+
+@item @emph{Description}:
+Get the current team, when @var{level} is null, or the team specified by
+@var{level} set to @code{INITIAL_TEAM}, @code{PARENT_TEAM} or
+@code{CURRENT_TEAM} from the @code{ISO_FORTRAN_ENV} intrinsic module.  When
+being on the @code{INITIAL_TEAM} and requesting its @code{PARENT_TEAM}, then
+the initial team is returned.
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{level} @tab intent(in)  If set to one of the levels specified in
+the @code{ISO_FORTRAN_ENV} module, the function returns the handle of the given
+team.  Values different from the allowed ones lead to a runtime error.
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_team_number
+@subsection @code{_gfortran_caf_team_number} --- Get the unique id of the given team
+@cindex Coarray, _gfortran_caf_team_number
+
+@table @asis
+@item @emph{Synopsis}:
+@code{int _gfortran_caf_team_number (caf_team_t team)}
+
+@item @emph{Description}:
+The team id given when forming the team @ref{_gfortran_caf_form_team} of the
+team specified by @var{team}, if given, or of the current team, if @var{team}
+is absent.  It is a runtime error to specify a non-existing team.
+The team has to be formed, i.e., it is not necessary that it is changed
+into to get the team number.  The initial team has the team number @code{-1}.
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{team} @tab intent(in)  The team for which the team id is desired.
+@end multitable
 @end table
 
 

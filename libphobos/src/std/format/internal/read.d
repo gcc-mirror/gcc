@@ -24,7 +24,7 @@ package(std.format):
 
 void skipData(Range, Char)(ref Range input, scope const ref FormatSpec!Char spec)
 {
-    import std.ascii : isDigit;
+    import std.ascii : isDigit, isWhite;
     import std.range.primitives : empty, front, popFront;
 
     switch (spec.spec)
@@ -33,6 +33,9 @@ void skipData(Range, Char)(ref Range input, scope const ref FormatSpec!Char spec
         case 'd':
             if (input.front == '+' || input.front == '-') input.popFront();
             goto case 'u';
+        case 's':
+            while (!input.empty && !isWhite(input.front)) input.popFront();
+            break;
         case 'u':
             while (!input.empty && isDigit(input.front)) input.popFront();
             break;

@@ -8,7 +8,7 @@
 /*
 ** le32:
 **	sub	w([0-9]+), w0, #1
-**	tst	w0, w\1
+**	tst	(?:w0, w\1|w\1, w0)
 **	cset	w0, eq
 **	ret
 */
@@ -20,7 +20,7 @@ unsigned le32 (const unsigned int a) {
 /*
 ** gt32:
 **	sub	w([0-9]+), w0, #1
-**	tst	w0, w\1
+**	tst	(?:w0, w\1|w\1, w0)
 **	cset	w0, ne
 **	ret
 */

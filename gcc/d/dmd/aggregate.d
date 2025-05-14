@@ -4,12 +4,12 @@
  * Specification: $(LINK2 https://dlang.org/spec/struct.html, Structs, Unions),
  *                $(LINK2 https://dlang.org/spec/class.html, Class).
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/aggregate.d, _aggregate.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/aggregate.d, _aggregate.d)
  * Documentation:  https://dlang.org/phobos/dmd_aggregate.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/aggregate.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/aggregate.d
  */
 
 module dmd.aggregate;
@@ -96,7 +96,7 @@ struct MangleOverride
 extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
 {
     Type type;                  ///
-    StorageClass storage_class; ///
+    STC storage_class;          ///
     uint structsize;            /// size of struct
     uint alignsize;             /// size of struct for alignment purposes
     VarDeclarations fields;     /// VarDeclaration fields including flattened AnonDeclaration members
@@ -154,7 +154,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     bool disableNew;                /// disallow allocations using `new`
     Sizeok sizeok = Sizeok.none;    /// set when structsize contains valid data
 
-    final extern (D) this(const ref Loc loc, Identifier id)
+    final extern (D) this(Loc loc, Identifier id)
     {
         super(loc, id);
         visibility = Visibility(Visibility.Kind.public_);
@@ -189,7 +189,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
 
     abstract void finalizeSize();
 
-    override final uinteger_t size(const ref Loc loc)
+    override final uinteger_t size(Loc loc)
     {
         //printf("+AggregateDeclaration::size() %s, scope = %p, sizeok = %d\n", toChars(), _scope, sizeok);
         bool ok = determineSize(this, loc);
@@ -447,7 +447,8 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
                   s.isTemplateDeclaration() ||
                   s.isOverloadSet()))
             {
-                .error(s.loc, "%s `%s` is not a constructor; identifiers starting with `__` are reserved for the implementation", s.kind(), s.toPrettyChars());
+                error(s.loc, "%s name `__ctor` is not allowed", s.kind);
+                errorSupplemental(s.loc, "identifiers starting with `__` are reserved for internal use");
                 errors = true;
                 s = null;
             }
@@ -493,11 +494,6 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
 
     // Back end
     void* sinit;  /// initializer symbol
-
-    override final inout(AggregateDeclaration) isAggregateDeclaration() inout
-    {
-        return this;
-    }
 
     override void accept(Visitor v)
     {

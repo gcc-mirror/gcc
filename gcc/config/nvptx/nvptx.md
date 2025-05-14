@@ -1644,7 +1644,9 @@
   [(const_int 0)]
   ""
 {
-  sorry ("exception handling not supported");
+  if (!fake_exceptions)
+    sorry ("exception handling not supported");
+  DONE;
 })
 
 (define_expand "nonlocal_goto"
@@ -1671,15 +1673,8 @@
    (match_operand 1 "nvptx_register_operand")]
   ""
 {
-  if (!TARGET_SOFT_STACK
-      && TARGET_PTX_7_3
-      && TARGET_SM52)
+  if (!TARGET_SOFT_STACK)
     emit_insn (gen_nvptx_alloca (Pmode, operands[0], operands[1]));
-  else if (!TARGET_SOFT_STACK)
-    {
-      sorry ("target cannot support alloca");
-      emit_insn (gen_nop ());
-    }
   else if (TARGET_SOFT_STACK)
     {
       emit_move_insn (stack_pointer_rtx,
@@ -1696,19 +1691,30 @@
   [(set (match_operand:P 0 "nvptx_register_operand" "=R")
         (unspec:P [(match_operand:P 1 "nvptx_nonmemory_operand" "Ri")]
 		  UNSPEC_ALLOCA))]
-  "TARGET_PTX_7_3
-   && TARGET_SM52"
+  ""
   {
-    /* Convert the address from '.local' state space to generic.  That way,
-       we don't have to use 'st.local', 'ld.local', and can easily pass the
-       address to other "generic functions".
-       TODO 'gcc.target/nvptx/alloca-5.c' */
-    output_asm_insn ("{", NULL);
-    output_asm_insn ("\\t.reg%t0\\t%0_local;", operands);
-    output_asm_insn ("\\talloca%u0\\t%0_local, %1;", operands);
-    output_asm_insn ("\\tcvta.local%u0\\t%0, %0_local;", operands);
-    output_asm_insn ("}", NULL);
-    return "";
+    if (TARGET_PTX_7_3
+	&& TARGET_SM52)
+      {
+	/* Convert the address from '.local' state space to generic.  That way,
+	   we don't have to use 'st.local', 'ld.local', and can easily pass the
+	   address to other "generic functions".
+	   TODO 'gcc.target/nvptx/alloca-5.c' */
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t.reg%t0\\t%0_local;", operands);
+	output_asm_insn ("\\talloca%u0\\t%0_local, %1;", operands);
+	output_asm_insn ("\\tcvta.local%u0\\t%0, %0_local;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
+    else if (nvptx_fake_ptx_alloca)
+      return nvptx_output_fake_ptx_alloca ();
+    else
+      {
+	sorry_at (INSN_LOCATION (insn),
+		  "dynamic stack allocation not supported");
+	return "";
+      }
   }
   [(set_attr "predicable" "no")])
 
@@ -1731,6 +1737,7 @@
       gcc_checking_assert (REG_P (operands[0]));
       emit_insn (gen_nvptx_stacksave (Pmode, operands[0], operands[1]));
     }
+  /* We don't bother to special-case '-mfake-ptx-alloca' here.  */
   else
     {
       /* The concept of a '%stack' pointer doesn't apply like this.
@@ -1763,6 +1770,7 @@
       operands[1] = force_reg (Pmode, operands[1]);
       emit_insn (gen_nvptx_stackrestore (Pmode, operands[0], operands[1]));
     }
+  /* We don't bother to special-case '-mfake-ptx-alloca' here.  */
   else if (!TARGET_SOFT_STACK)
     ; /* See 'save_stack_block'.  */
   else if (TARGET_SOFT_STACK)

@@ -4,6 +4,7 @@
 // LWG 3944. Formatters converting sequences of char to sequences of wchar_t
 
 #include <format>
+#include <vector>
 
 void test_lwg3944()
 {
@@ -14,7 +15,6 @@ void test_lwg3944()
   std::format(L"{}",cstr); // { dg-error "here" }
 
   // Ill-formed in C++20
-  // In C++23 they give L"['h', 'e', 'l', 'l', 'o']"
   std::format(L"{}", "hello"); // { dg-error "here" }
   std::format(L"{}", std::string_view("hello")); // { dg-error "here" }
   std::format(L"{}", std::string("hello")); // { dg-error "here" }

@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-require-effective-target alloca } */
 
 int main ()
 {

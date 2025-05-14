@@ -1,3 +1,8 @@
+2025-03-06  Michal Jires  <mjires@suse.cz>
+
+	* lto-plugin.c (cleanup_handler): Keep only files in ltrans
+	cache.
+
 2025-01-15  Michal Jires  <mjires@suse.cz>
 
 	PR lto/118238

@@ -3,12 +3,12 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/lex.html#tokens, Tokens)
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/tokens.d, _tokens.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/tokens.d, _tokens.d)
  * Documentation:  https://dlang.org/phobos/dmd_tokens.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/tokens.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/tokens.d
  */
 
 module dmd.tokens;
@@ -48,7 +48,6 @@ enum TOK : ubyte
     false_,
     throw_,
     new_,
-    delete_,
     variable,
     slice,
     version_,
@@ -437,8 +436,10 @@ enum FirstCKeyword = TOK.inline;
 // Assert that all token enum members have consecutive values and
 // that none of them overlap
 static assert(() {
-    foreach (idx, enumName; __traits(allMembers, TOK)) {
-       static if (idx != __traits(getMember, TOK, enumName)) {
+    foreach (idx, enumName; __traits(allMembers, TOK))
+    {
+       static if (idx != __traits(getMember, TOK, enumName))
+       {
            pragma(msg, "Error: Expected TOK.", enumName, " to be ", idx, " but is ", __traits(getMember, TOK, enumName));
            static assert(0);
        }
@@ -459,7 +460,6 @@ private immutable TOK[] keywords =
     TOK.false_,
     TOK.cast_,
     TOK.new_,
-    TOK.delete_,
     TOK.throw_,
     TOK.module_,
     TOK.pragma_,
@@ -680,7 +680,6 @@ extern (C++) struct Token
         TOK.false_: "false",
         TOK.cast_: "cast",
         TOK.new_: "new",
-        TOK.delete_: "delete",
         TOK.throw_: "throw",
         TOK.module_: "module",
         TOK.pragma_: "pragma",
@@ -928,13 +927,18 @@ nothrow:
         return 0;
     }
 
-    extern(D) void appendInterpolatedPart(const ref OutBuffer buf) {
+    extern(D) void appendInterpolatedPart(const ref OutBuffer buf)
+    {
         appendInterpolatedPart(cast(const(char)*)buf[].ptr, buf.length);
     }
-    extern(D) void appendInterpolatedPart(const(char)[] str) {
+
+    extern(D) void appendInterpolatedPart(const(char)[] str)
+    {
         appendInterpolatedPart(str.ptr, str.length);
     }
-    extern(D) void appendInterpolatedPart(const(char)* ptr, size_t length) {
+
+    extern(D) void appendInterpolatedPart(const(char)* ptr, size_t length)
+    {
         assert(value == TOK.interpolated);
         if (interpolatedSet is null)
             interpolatedSet = new InterpolatedSet;

@@ -18,45 +18,31 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "diagnostic-core.h"
-#include "options.h"
-#include "cgraph.h"
-#include "tree-pretty-print.h"
-#include "bitmap.h"
-#include "analyzer/analyzer.h"
-#include "analyzer/analyzer-logging.h"
+#include "analyzer/common.h"
+
 #include "ordered-hash-map.h"
 #include "cfg.h"
 #include "digraph.h"
-#include "analyzer/supergraph.h"
 #include "sbitmap.h"
+#include "diagnostic-event-id.h"
+
+#include "analyzer/analyzer-logging.h"
+#include "analyzer/supergraph.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/constraint-manager.h"
-#include "diagnostic-event-id.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/region-model-reachability.h"
 #include "analyzer/analyzer-selftests.h"
 #include "analyzer/program-state.h"
-#include "diagnostic-path.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
 #include "analyzer/call-details.h"
 #include "analyzer/call-info.h"
-#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -70,6 +56,18 @@ custom_edge_info::update_state (program_state *state,
 				region_model_context *ctxt) const
 {
   return update_model (state->m_region_model, eedge, ctxt);
+}
+
+/* Base implementation of custom_edge_info::create_enode vfunc.  */
+
+exploded_node *
+custom_edge_info::create_enode (exploded_graph &eg,
+				const program_point &point,
+				program_state &&state,
+				exploded_node *enode_for_diag,
+				region_model_context *) const
+{
+  return eg.get_or_create_node (point, state, enode_for_diag);
 }
 
 /* class call_info : public custom_edge_info.  */
@@ -115,7 +113,7 @@ call_info::add_events_to_path (checker_path *emission_path,
   const int stack_depth = src_point.get_stack_depth ();
 
   emission_path->add_event
-    (make_unique<call_event> (event_loc_info (get_call_stmt ()->location,
+    (std::make_unique<call_event> (event_loc_info (get_call_stmt ().location,
 					      caller_fndecl,
 					      stack_depth),
 			      this));

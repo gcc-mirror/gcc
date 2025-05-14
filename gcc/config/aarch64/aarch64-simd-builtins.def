@@ -57,7 +57,7 @@
   VAR1 (BINOPP, pmull, 0, DEFAULT, v8qi)
   VAR1 (BINOPP, pmull_hi, 0, DEFAULT, v16qi)
   BUILTIN_VHSDF_HSDF (BINOP, fmulx, 0, FP)
-  BUILTIN_VHSDF_DF (UNOP, sqrt, 2, FP)
+  BUILTIN_VHSDF_HSDF (UNOP, sqrt, 2, FP)
   BUILTIN_VDQ_I (BINOP, addp, 0, DEFAULT)
   BUILTIN_VDQ_I (BINOPU, addp, 0, DEFAULT)
   BUILTIN_VDQ_BHSI (UNOP, clrsb, 2, DEFAULT)
@@ -847,9 +847,6 @@
   BUILTIN_VHSDF_HSDF (BINOP_USS, facle, 0, FP)
   BUILTIN_VHSDF_HSDF (BINOP_USS, facgt, 0, FP)
   BUILTIN_VHSDF_HSDF (BINOP_USS, facge, 0, FP)
-
-  /* Implemented by sqrt<mode>2.  */
-  VAR1 (UNOP, sqrt, 2, FP, hf)
 
   /* Implemented by <optab><mode>hf2.  */
   VAR1 (UNOP, floatdi, 2, FP, hf)

@@ -53,8 +53,10 @@ static const struct default_options aarch_option_optimization_table[] =
     { OPT_LEVELS_ALL, OPT_fomit_frame_pointer, NULL, 0 },
     /* Enable -fsched-pressure by default when optimizing.  */
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
-    /* Disable early scheduling due to high compile-time overheads.  */
+    /* Except for -O3 and higher, disable early scheduling due to high
+       compile-time overheads.  */
     { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },
+    { OPT_LEVELS_3_PLUS, OPT_fschedule_insns, NULL, 1 },
     /* Enable redundant extension instructions removal at -O2 and higher.  */
     { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_mearly_ra_, NULL, AARCH64_EARLY_RA_ALL },
@@ -157,6 +159,8 @@ struct aarch64_extension_info
   aarch64_feature_flags flags_on;
   /* If this feature is turned off, these bits also need to be turned off.  */
   aarch64_feature_flags flags_off;
+  /* If this feature remains enabled, these bits must also remain enabled.  */
+  aarch64_feature_flags flags_required;
 };
 
 /* ISA extensions in AArch64.  */
@@ -164,9 +168,10 @@ static constexpr aarch64_extension_info all_extensions[] =
 {
 #define AARCH64_OPT_EXTENSION(NAME, IDENT, C, D, E, FEATURE_STRING) \
   {NAME, AARCH64_FL_##IDENT, feature_deps::IDENT ().explicit_on, \
-   feature_deps::get_flags_off (feature_deps::root_off_##IDENT)},
+   feature_deps::get_flags_off (feature_deps::root_off_##IDENT), \
+   feature_deps::IDENT ().enable},
 #include "config/aarch64/aarch64-option-extensions.def"
-  {NULL, 0, 0, 0}
+  {NULL, 0, 0, 0, 0}
 };
 
 struct aarch64_arch_info
@@ -204,6 +209,18 @@ static constexpr aarch64_processor_info all_cores[] =
   {NULL, aarch64_no_cpu, aarch64_no_arch, 0}
 };
 
+/* Return the set of feature flags that are required to be enabled when the
+   features in FLAGS are enabled.  */
+
+aarch64_feature_flags
+aarch64_get_required_features (aarch64_feature_flags flags)
+{
+  const struct aarch64_extension_info *opt;
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    if (flags & opt->flag_canonical)
+      flags |= opt->flags_required;
+  return flags;
+}
 
 /* Print a list of CANDIDATES for an argument, and try to suggest a specific
    close match.  */

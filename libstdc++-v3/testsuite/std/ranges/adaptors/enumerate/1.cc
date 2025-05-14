@@ -91,6 +91,17 @@ test02()
     }
 }
 
+void
+test_lwg3912()
+{
+  int x[] = {1, 2, 3};
+  test_input_range<int> rx (x);
+  auto v = rx | views::enumerate;
+  auto iter = std::ranges::begin(v);
+  // LWG 3912. enumerate_view::iterator::operator- should be noexcept
+  static_assert( noexcept(iter - iter) );
+}
+
 int
 main()
 {

@@ -28,7 +28,7 @@ namespace ana {
 class call_details
 {
 public:
-  call_details (const gcall *call, region_model *model,
+  call_details (const gcall &call, region_model *model,
 		region_model_context *ctxt);
   call_details (const call_details &cd, region_model_context *ctxt);
 
@@ -55,7 +55,7 @@ public:
     return INTEGRAL_TYPE_P (get_arg_type (idx));
   }
 
-  const gcall *get_call_stmt () const { return m_call; }
+  const gcall &get_call_stmt () const { return m_call; }
   location_t get_location () const;
 
   tree get_arg_tree (unsigned idx) const;
@@ -68,6 +68,10 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const;
   void dump (bool simple) const;
+  void dump () const;
+
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi) const;
 
   const svalue *get_or_create_conjured_svalue (const region *) const;
 
@@ -86,7 +90,7 @@ public:
 			  const svalue *num_bytes_read_sval) const;
 
 private:
-  const gcall *m_call;
+  const gcall &m_call;
   region_model *m_model;
   region_model_context *m_ctxt;
   tree m_lhs_type;
@@ -110,13 +114,13 @@ public:
 
   bool operator== (const call_arg_details &other) const
   {
-    return (m_call == other.m_call
+    return (&m_call == &other.m_call
 	    && m_called_fndecl == other.m_called_fndecl
 	    && m_arg_idx == other.m_arg_idx
 	    && pending_diagnostic::same_tree_p (m_arg_expr, other.m_arg_expr));
   }
 
-  const gcall *m_call;
+  const gcall &m_call;
   tree m_called_fndecl;
   unsigned m_arg_idx; // 0-based
   tree m_arg_expr;

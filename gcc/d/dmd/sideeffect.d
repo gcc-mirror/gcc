@@ -1,12 +1,12 @@
 /**
  * Find side-effects of expressions.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/sideeffect.d, _sideeffect.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/sideeffect.d, _sideeffect.d)
  * Documentation:  https://dlang.org/phobos/dmd_sideeffect.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/sideeffect.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/sideeffect.d
  */
 
 module dmd.sideeffect;
@@ -20,6 +20,7 @@ import dmd.expressionsem;
 import dmd.func;
 import dmd.funcsem;
 import dmd.globals;
+import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
@@ -346,12 +347,13 @@ bool discardValue(Expression e)
         BinExp tmp = e.isBinExp();
         assert(tmp);
 
-        error(e.loc, "the result of the equality expression `%s` is discarded", e.toChars());
+        error(e.loc, "the result of the equality expression `%s` is discarded", e.toErrMsg());
         bool seenSideEffect = false;
         foreach(expr; [tmp.e1, tmp.e2])
         {
-            if (hasSideEffect(expr)) {
-                errorSupplemental(expr.loc, "note that `%s` may have a side effect", expr.toChars());
+            if (hasSideEffect(expr))
+            {
+                errorSupplemental(expr.loc, "note that `%s` may have a side effect", expr.toErrMsg());
                 seenSideEffect |= true;
             }
         }
@@ -359,7 +361,7 @@ bool discardValue(Expression e)
     default:
         break;
     }
-    error(e.loc, "`%s` has no effect", e.toChars());
+    error(e.loc, "`%s` has no effect", e.toErrMsg());
     return true;
 }
 
@@ -372,7 +374,7 @@ bool discardValue(Expression e)
  * Returns:
  *  Newly created temporary variable.
  */
-VarDeclaration copyToTemp(StorageClass stc, const char[] name, Expression e)
+VarDeclaration copyToTemp(STC stc, const char[] name, Expression e)
 {
     assert(name[0] == '_' && name[1] == '_');
     auto vd = new VarDeclaration(e.loc, e.type,
@@ -411,7 +413,7 @@ Expression extractSideEffect(Scope* sc, const char[] name,
         (sc.ctfe ? !hasSideEffect(e) : isTrivialExp(e)))
         return e;
 
-    auto vd = copyToTemp(0, name, e);
+    auto vd = copyToTemp(STC.none, name, e);
     vd.storage_class |= e.isLvalue() ? STC.ref_ : STC.rvalue;
 
     e0 = Expression.combine(e0, new DeclarationExp(vd.loc, vd)

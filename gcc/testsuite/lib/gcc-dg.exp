@@ -26,6 +26,7 @@ load_lib scanipa.exp
 load_lib scanwpaipa.exp
 load_lib scanlang.exp
 load_lib scansarif.exp
+load_lib scanhtml.exp
 load_lib timeout.exp
 load_lib timeout-dg.exp
 load_lib prune.exp
@@ -452,6 +453,13 @@ proc gcc-dg-prune { system text } {
 	}
     }
 
+    # If dynamic stack allocation is not supported, expectant tests are UNSUPPORTED.
+    if { ![check_effective_target_alloca] } {
+	if [regexp "(^|\n)\[^\n\]*: sorry, unimplemented: dynamic stack allocation not supported" $text] {
+	    return "::unsupported::dynamic stack allocation not supported"
+	}
+    }
+
     return $text
 }
 
@@ -466,6 +474,7 @@ if { [info procs ${tool}_load] != [list] \
 	global tool
 	global shouldfail
 	global set_target_env_var
+	global output-file
 
 	set saved_target_env_var [list]
 	if { [info exists set_target_env_var] \
@@ -490,6 +499,74 @@ if { [info procs ${tool}_load] != [list] \
 	}
 
 	set result [list [lindex $result 0] [prune_file_path [lindex $result 1]]]
+	if { [info exists output-file] && [lindex $result 0] eq "pass" } {
+	    if { [lindex ${output-file} 0] eq "F" } {
+		setup_xfail "*-*-*"
+	    }
+	    set output [lindex $result 1]
+	    set idx 0
+	    set linenum 1
+	    set outfile [open [lindex ${output-file} 1]]
+	    set do_fail 0
+	    set name [testname-for-summary]
+	    while { [gets $outfile line] >= 0 } {
+		if { $linenum != 1 } {
+		    set c [string index $output $idx]
+		    if { $c eq "\n" } {
+			set idx [expr $idx + 1]
+		    } elseif { $c eq "\r" } {
+			set idx [expr $idx + 1]
+			set c [string index $output $idx]
+			if { $c eq "\n" } {
+			    set idx [expr $idx + 1]
+			}
+		    } else {
+			set do_fail 1
+			fail "$name output file test"
+			send_log "Unexpected character $c on line [expr $linenum - 1] where new-line expected\n"
+			verbose "Failed test for output line [expr $linenum - 1]" 3
+			break
+		    }
+		}
+		set len [string length $line]
+		set output_line [string range $output $idx [expr $idx + $len - 1]]
+		if { $line ne $output_line } {
+		    set do_fail 1
+		    fail "$name output file test"
+		    send_log "Output line $linenum was:\n$output_line\nShould match (from [lindex ${output-file} 1]):\n$line\n"
+		    verbose "Failed test for output line $linenum $line" 3
+		    break
+		}
+		set idx [expr $idx + $len]
+		incr linenum
+	    }
+	    close $outfile
+	    if { $do_fail == 0 } {
+		set c [string index $output $idx]
+		if { $c eq "\n" } {
+		    set idx [expr $idx + 1]
+		} elseif { $c eq "\r" } {
+		    set idx [expr $idx + 1]
+		    set c [string index $output $idx]
+		    if { $c eq "\n" } {
+			set idx [expr $idx + 1]
+		    }
+		} else {
+		    incr linenum -1
+		}
+		set c [string index $output $idx]
+		if { $c ne "" } {
+		    fail "$name output file test"
+		    send_log "Unexpected character $c on line $linenum where and of output expected\n"
+		    verbose "Failed test for output line $linenum" 3
+		    break
+		} else {
+		    pass "$name output file test"
+		    verbose "Passed test for output file [lindex ${output-file} 1]" 3
+		}
+	    }
+	    unset output
+	}
 	return $result
     }
 }
@@ -566,6 +643,35 @@ proc restore-compiler-env-var { } {
 	    unsetenv $var
 	}
     }
+}
+
+# Indicate expected program output in a file.
+#
+proc dg-output-file { args } {
+    global output-file
+    global srcdir subdir
+
+    if { [llength $args] > 3 } {
+	error "[lindex $args 0]: too many arguments"
+    }
+
+    # Allow target dependent output.
+
+    if { ![info exists output-file] } {
+	set output-file "P"
+    }
+    set expected [lindex ${output-file} 0]
+    if { [llength $args] >= 3 } {
+	switch -- [dg-process-target [lindex $args 2]] {
+	    "N" { return }
+	    "S" { }
+	    "F" { set expected "F" }
+	    # Don't override a previous xfail.
+	    "P" { }
+	}
+    }
+
+    set output-file [list $expected $srcdir/$subdir/[lindex $args 1]]
 }
 
 # Utility routines.

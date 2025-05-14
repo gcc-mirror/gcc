@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target int128 } */
-/* { dg-require-effective-target alloca } */
 
 void foo();
 

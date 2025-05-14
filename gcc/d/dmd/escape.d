@@ -1,12 +1,12 @@
 /**
  * Most of the logic to implement scoped pointers and scoped references is here.
  *
- * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/escape.d, _escape.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/escape.d, _escape.d)
  * Documentation:  https://dlang.org/phobos/dmd_escape.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/escape.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/escape.d
  */
 
 module dmd.escape;
@@ -1607,7 +1607,7 @@ void escapeExp(Expression e, ref scope EscapeByResults er, int deref)
     void visitArrayLiteral(ArrayLiteralExp e)
     {
         Type tb = e.type.toBasetype();
-        if (tb.isTypeSArray() || tb.isTypeDArray())
+        if (tb.isStaticOrDynamicArray())
         {
             if (e.basis)
                 escapeExp(e.basis, er, deref);
@@ -1637,6 +1637,9 @@ void escapeExp(Expression e, ref scope EscapeByResults er, int deref)
 
     void visitNew(NewExp e)
     {
+        if (e.placement)
+            escapeExp(e.placement, er, deref);
+
         Type tb = e.newtype.toBasetype();
         if (tb.isTypeStruct() && !e.member && e.arguments)
         {
@@ -1863,9 +1866,9 @@ void escapeExp(Expression e, ref scope EscapeByResults er, int deref)
  * Returns:
  *      storage class for fd's `this`
  */
-StorageClass getThisStorageClass(FuncDeclaration fd)
+STC getThisStorageClass(FuncDeclaration fd)
 {
-    StorageClass stc;
+    STC stc;
     auto tf = fd.type.toBasetype().isTypeFunction();
     if (tf.isReturn)
         stc |= STC.return_;
@@ -2245,7 +2248,7 @@ private bool isTypesafeVariadicArray(VarDeclaration v)
     if (v.storage_class & STC.variadic)
     {
         Type tb = v.type.toBasetype();
-        if (tb.ty == Tarray || tb.ty == Tsarray)
+        if (tb.isStaticOrDynamicArray())
             return true;
     }
     return false;

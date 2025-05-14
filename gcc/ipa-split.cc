@@ -1473,6 +1473,8 @@ split_function (basic_block return_bb, class split_point *split_point,
 	args_to_pass[i] = arg;
       }
   call = gimple_build_call_vec (node->decl, args_to_pass);
+  if (cur_node->get_fun ()->has_musttail && !add_tsan_func_exit)
+    gimple_call_set_must_tail (call, true);
   gimple_set_block (call, DECL_INITIAL (current_function_decl));
   args_to_pass.release ();
 

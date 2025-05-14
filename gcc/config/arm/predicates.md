@@ -99,11 +99,21 @@
 })
 
 (define_predicate "vpr_register_operand"
-  (match_code "reg")
+  (match_code "reg,subreg")
 {
-  return REG_P (op)
+  if (SUBREG_P (op))
+    {
+      /* Only allow subregs if they are strictly type punning.	*/
+      if ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (op)))
+	   != GET_MODE_SIZE (GET_MODE (op)))
+	  || SUBREG_BYTE (op) != 0)
+	return false;
+      op = SUBREG_REG (op);
+    }
+
+  return (REG_P (op)
 	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
-	      || IS_VPR_REGNUM (REGNO (op)));
+	      || IS_VPR_REGNUM (REGNO (op))));
 })
 
 (define_predicate "imm_for_neon_inv_logic_operand"
@@ -796,14 +806,8 @@
 
 ;;-------------------------------------------------------------------------
 ;;
-;; iWMMXt predicates
-;;
-
-(define_predicate "imm_or_reg_operand"
-  (ior (match_operand 0 "immediate_operand")
-       (match_operand 0 "register_operand")))
-
 ;; Neon predicates
+;;
 
 (define_predicate "const_multiple_of_8_operand"
   (match_code "const_int")

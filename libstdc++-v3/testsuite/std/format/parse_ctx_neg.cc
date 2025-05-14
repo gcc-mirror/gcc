@@ -12,8 +12,9 @@ test_invalid()
   pc.check_dynamic_spec<bool, char, int, unsigned, long long,
 			unsigned long long, float, double, long double,
 			const char*, std::string_view, const void*>(0);
-  // For some reason, an empty pack of types is valid:
-  pc.check_dynamic_spec<>(0);
+
+  // LWG 4142. check_dynamic_spec should require at least one type
+  pc.check_dynamic_spec<>(0); // { dg-error "here" }
 
   pc.check_dynamic_spec<void>(0); // { dg-error "here" }
   // const void* is allowed, but void* is not
@@ -25,6 +26,7 @@ test_invalid()
   pc.check_dynamic_spec<char8_t>(0); // { dg-error "here" }
   // std::string_view is allowed, but std::string is not
   pc.check_dynamic_spec<std::string>(0); // { dg-error "here" }
+  // The types in the pack must be unique.
   pc.check_dynamic_spec<int, bool, int>(0); // { dg-error "here" }
 
   std::wformat_parse_context wpc(L"");
@@ -36,5 +38,5 @@ test_invalid()
   wpc.check_dynamic_spec<char32_t>(0); // { dg-error "here" }
 }
 
-// Each failure above will point to a call to this non-constexpr function:
-// { dg-error "__invalid_dynamic_spec" "" { target *-*-* } 0 }
+// Each failure above will trigger this static_assert:
+// { dg-error "allowed types" "" { target *-*-* } 0 }

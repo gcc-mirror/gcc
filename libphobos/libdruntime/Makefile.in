@@ -248,7 +248,7 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	gcc/unwind/generic.lo gcc/unwind/package.lo gcc/unwind/pe.lo \
 	object.lo rt/aApply.lo rt/aApplyR.lo rt/aaA.lo rt/adi.lo \
 	rt/arraycat.lo rt/cast_.lo rt/config.lo rt/critical_.lo \
-	rt/deh.lo rt/dmain2.lo rt/ehalloc.lo rt/invariant.lo \
+	rt/deh.lo rt/dmain2.lo rt/ehalloc.lo rt/invariant_.lo \
 	rt/lifetime.lo rt/memory.lo rt/minfo.lo rt/monitor_.lo \
 	rt/profilegc.lo rt/sections.lo rt/tlsgc.lo rt/util/typeinfo.lo \
 	rt/util/utility.lo
@@ -392,88 +392,88 @@ am__objects_19 = core/sys/linux/config.lo core/sys/linux/dlfcn.lo \
 am__objects_21 = core/sys/windows/accctrl.lo \
 	core/sys/windows/aclapi.lo core/sys/windows/aclui.lo \
 	core/sys/windows/basetsd.lo core/sys/windows/basetyps.lo \
-	core/sys/windows/cderr.lo core/sys/windows/cguid.lo \
-	core/sys/windows/com.lo core/sys/windows/comcat.lo \
-	core/sys/windows/commctrl.lo core/sys/windows/commdlg.lo \
-	core/sys/windows/core.lo core/sys/windows/cpl.lo \
-	core/sys/windows/cplext.lo core/sys/windows/custcntl.lo \
-	core/sys/windows/dbghelp.lo core/sys/windows/dbghelp_types.lo \
-	core/sys/windows/dbt.lo core/sys/windows/dde.lo \
-	core/sys/windows/ddeml.lo core/sys/windows/dhcpcsdk.lo \
-	core/sys/windows/dlgs.lo core/sys/windows/dll.lo \
-	core/sys/windows/docobj.lo core/sys/windows/errorrep.lo \
-	core/sys/windows/exdisp.lo core/sys/windows/exdispid.lo \
-	core/sys/windows/httpext.lo core/sys/windows/idispids.lo \
-	core/sys/windows/imagehlp.lo core/sys/windows/imm.lo \
-	core/sys/windows/intshcut.lo core/sys/windows/ipexport.lo \
-	core/sys/windows/iphlpapi.lo core/sys/windows/ipifcons.lo \
-	core/sys/windows/iprtrmib.lo core/sys/windows/iptypes.lo \
-	core/sys/windows/isguids.lo core/sys/windows/lm.lo \
-	core/sys/windows/lmaccess.lo core/sys/windows/lmalert.lo \
-	core/sys/windows/lmapibuf.lo core/sys/windows/lmat.lo \
-	core/sys/windows/lmaudit.lo core/sys/windows/lmbrowsr.lo \
-	core/sys/windows/lmchdev.lo core/sys/windows/lmconfig.lo \
-	core/sys/windows/lmcons.lo core/sys/windows/lmerr.lo \
-	core/sys/windows/lmerrlog.lo core/sys/windows/lmmsg.lo \
-	core/sys/windows/lmremutl.lo core/sys/windows/lmrepl.lo \
-	core/sys/windows/lmserver.lo core/sys/windows/lmshare.lo \
-	core/sys/windows/lmsname.lo core/sys/windows/lmstats.lo \
-	core/sys/windows/lmsvc.lo core/sys/windows/lmuse.lo \
-	core/sys/windows/lmuseflg.lo core/sys/windows/lmwksta.lo \
-	core/sys/windows/lzexpand.lo core/sys/windows/mapi.lo \
-	core/sys/windows/mciavi.lo core/sys/windows/mcx.lo \
-	core/sys/windows/mgmtapi.lo core/sys/windows/mmsystem.lo \
-	core/sys/windows/msacm.lo core/sys/windows/mshtml.lo \
-	core/sys/windows/mswsock.lo core/sys/windows/nb30.lo \
-	core/sys/windows/nddeapi.lo core/sys/windows/nspapi.lo \
-	core/sys/windows/ntdef.lo core/sys/windows/ntdll.lo \
-	core/sys/windows/ntldap.lo core/sys/windows/ntsecapi.lo \
-	core/sys/windows/ntsecpkg.lo core/sys/windows/oaidl.lo \
-	core/sys/windows/objbase.lo core/sys/windows/objfwd.lo \
-	core/sys/windows/objidl.lo core/sys/windows/objsafe.lo \
-	core/sys/windows/ocidl.lo core/sys/windows/odbcinst.lo \
-	core/sys/windows/ole.lo core/sys/windows/ole2.lo \
-	core/sys/windows/ole2ver.lo core/sys/windows/oleacc.lo \
-	core/sys/windows/oleauto.lo core/sys/windows/olectl.lo \
-	core/sys/windows/olectlid.lo core/sys/windows/oledlg.lo \
-	core/sys/windows/oleidl.lo core/sys/windows/pbt.lo \
-	core/sys/windows/powrprof.lo core/sys/windows/prsht.lo \
-	core/sys/windows/psapi.lo core/sys/windows/rapi.lo \
-	core/sys/windows/ras.lo core/sys/windows/rasdlg.lo \
-	core/sys/windows/raserror.lo core/sys/windows/rassapi.lo \
-	core/sys/windows/reason.lo core/sys/windows/regstr.lo \
-	core/sys/windows/richedit.lo core/sys/windows/richole.lo \
-	core/sys/windows/rpc.lo core/sys/windows/rpcdce.lo \
-	core/sys/windows/rpcdce2.lo core/sys/windows/rpcdcep.lo \
-	core/sys/windows/rpcndr.lo core/sys/windows/rpcnsi.lo \
-	core/sys/windows/rpcnsip.lo core/sys/windows/rpcnterr.lo \
-	core/sys/windows/schannel.lo core/sys/windows/sdkddkver.lo \
-	core/sys/windows/secext.lo core/sys/windows/security.lo \
-	core/sys/windows/servprov.lo core/sys/windows/setupapi.lo \
-	core/sys/windows/shellapi.lo core/sys/windows/shldisp.lo \
-	core/sys/windows/shlguid.lo core/sys/windows/shlobj.lo \
-	core/sys/windows/shlwapi.lo core/sys/windows/snmp.lo \
-	core/sys/windows/sql.lo core/sys/windows/sqlext.lo \
-	core/sys/windows/sqltypes.lo core/sys/windows/sqlucode.lo \
-	core/sys/windows/sspi.lo core/sys/windows/stacktrace.lo \
-	core/sys/windows/stat.lo core/sys/windows/stdc/malloc.lo \
-	core/sys/windows/stdc/time.lo core/sys/windows/subauth.lo \
-	core/sys/windows/threadaux.lo core/sys/windows/tlhelp32.lo \
-	core/sys/windows/tmschema.lo core/sys/windows/unknwn.lo \
-	core/sys/windows/uuid.lo core/sys/windows/vfw.lo \
-	core/sys/windows/w32api.lo core/sys/windows/winbase.lo \
-	core/sys/windows/winber.lo core/sys/windows/wincon.lo \
-	core/sys/windows/wincrypt.lo core/sys/windows/windef.lo \
-	core/sys/windows/windows.lo core/sys/windows/winerror.lo \
-	core/sys/windows/wingdi.lo core/sys/windows/winhttp.lo \
-	core/sys/windows/wininet.lo core/sys/windows/winioctl.lo \
-	core/sys/windows/winldap.lo core/sys/windows/winnetwk.lo \
-	core/sys/windows/winnls.lo core/sys/windows/winnt.lo \
-	core/sys/windows/winperf.lo core/sys/windows/winreg.lo \
-	core/sys/windows/winsock2.lo core/sys/windows/winspool.lo \
-	core/sys/windows/winsvc.lo core/sys/windows/winuser.lo \
-	core/sys/windows/winver.lo core/sys/windows/wtsapi32.lo \
-	core/sys/windows/wtypes.lo
+	core/sys/windows/bcrypt.lo core/sys/windows/cderr.lo \
+	core/sys/windows/cguid.lo core/sys/windows/com.lo \
+	core/sys/windows/comcat.lo core/sys/windows/commctrl.lo \
+	core/sys/windows/commdlg.lo core/sys/windows/core.lo \
+	core/sys/windows/cpl.lo core/sys/windows/cplext.lo \
+	core/sys/windows/custcntl.lo core/sys/windows/dbghelp.lo \
+	core/sys/windows/dbghelp_types.lo core/sys/windows/dbt.lo \
+	core/sys/windows/dde.lo core/sys/windows/ddeml.lo \
+	core/sys/windows/dhcpcsdk.lo core/sys/windows/dlgs.lo \
+	core/sys/windows/dll.lo core/sys/windows/docobj.lo \
+	core/sys/windows/errorrep.lo core/sys/windows/exdisp.lo \
+	core/sys/windows/exdispid.lo core/sys/windows/httpext.lo \
+	core/sys/windows/idispids.lo core/sys/windows/imagehlp.lo \
+	core/sys/windows/imm.lo core/sys/windows/intshcut.lo \
+	core/sys/windows/ipexport.lo core/sys/windows/iphlpapi.lo \
+	core/sys/windows/ipifcons.lo core/sys/windows/iprtrmib.lo \
+	core/sys/windows/iptypes.lo core/sys/windows/isguids.lo \
+	core/sys/windows/lm.lo core/sys/windows/lmaccess.lo \
+	core/sys/windows/lmalert.lo core/sys/windows/lmapibuf.lo \
+	core/sys/windows/lmat.lo core/sys/windows/lmaudit.lo \
+	core/sys/windows/lmbrowsr.lo core/sys/windows/lmchdev.lo \
+	core/sys/windows/lmconfig.lo core/sys/windows/lmcons.lo \
+	core/sys/windows/lmerr.lo core/sys/windows/lmerrlog.lo \
+	core/sys/windows/lmmsg.lo core/sys/windows/lmremutl.lo \
+	core/sys/windows/lmrepl.lo core/sys/windows/lmserver.lo \
+	core/sys/windows/lmshare.lo core/sys/windows/lmsname.lo \
+	core/sys/windows/lmstats.lo core/sys/windows/lmsvc.lo \
+	core/sys/windows/lmuse.lo core/sys/windows/lmuseflg.lo \
+	core/sys/windows/lmwksta.lo core/sys/windows/lzexpand.lo \
+	core/sys/windows/mapi.lo core/sys/windows/mciavi.lo \
+	core/sys/windows/mcx.lo core/sys/windows/mgmtapi.lo \
+	core/sys/windows/mmsystem.lo core/sys/windows/msacm.lo \
+	core/sys/windows/mshtml.lo core/sys/windows/mswsock.lo \
+	core/sys/windows/nb30.lo core/sys/windows/nddeapi.lo \
+	core/sys/windows/nspapi.lo core/sys/windows/ntdef.lo \
+	core/sys/windows/ntdll.lo core/sys/windows/ntldap.lo \
+	core/sys/windows/ntsecapi.lo core/sys/windows/ntsecpkg.lo \
+	core/sys/windows/oaidl.lo core/sys/windows/objbase.lo \
+	core/sys/windows/objfwd.lo core/sys/windows/objidl.lo \
+	core/sys/windows/objsafe.lo core/sys/windows/ocidl.lo \
+	core/sys/windows/odbcinst.lo core/sys/windows/ole.lo \
+	core/sys/windows/ole2.lo core/sys/windows/ole2ver.lo \
+	core/sys/windows/oleacc.lo core/sys/windows/oleauto.lo \
+	core/sys/windows/olectl.lo core/sys/windows/olectlid.lo \
+	core/sys/windows/oledlg.lo core/sys/windows/oleidl.lo \
+	core/sys/windows/pbt.lo core/sys/windows/powrprof.lo \
+	core/sys/windows/prsht.lo core/sys/windows/psapi.lo \
+	core/sys/windows/rapi.lo core/sys/windows/ras.lo \
+	core/sys/windows/rasdlg.lo core/sys/windows/raserror.lo \
+	core/sys/windows/rassapi.lo core/sys/windows/reason.lo \
+	core/sys/windows/regstr.lo core/sys/windows/richedit.lo \
+	core/sys/windows/richole.lo core/sys/windows/rpc.lo \
+	core/sys/windows/rpcdce.lo core/sys/windows/rpcdce2.lo \
+	core/sys/windows/rpcdcep.lo core/sys/windows/rpcndr.lo \
+	core/sys/windows/rpcnsi.lo core/sys/windows/rpcnsip.lo \
+	core/sys/windows/rpcnterr.lo core/sys/windows/schannel.lo \
+	core/sys/windows/sdkddkver.lo core/sys/windows/secext.lo \
+	core/sys/windows/security.lo core/sys/windows/servprov.lo \
+	core/sys/windows/setupapi.lo core/sys/windows/shellapi.lo \
+	core/sys/windows/shldisp.lo core/sys/windows/shlguid.lo \
+	core/sys/windows/shlobj.lo core/sys/windows/shlwapi.lo \
+	core/sys/windows/snmp.lo core/sys/windows/sql.lo \
+	core/sys/windows/sqlext.lo core/sys/windows/sqltypes.lo \
+	core/sys/windows/sqlucode.lo core/sys/windows/sspi.lo \
+	core/sys/windows/stacktrace.lo core/sys/windows/stat.lo \
+	core/sys/windows/stdc/malloc.lo core/sys/windows/stdc/time.lo \
+	core/sys/windows/subauth.lo core/sys/windows/threadaux.lo \
+	core/sys/windows/tlhelp32.lo core/sys/windows/tmschema.lo \
+	core/sys/windows/unknwn.lo core/sys/windows/uuid.lo \
+	core/sys/windows/vfw.lo core/sys/windows/w32api.lo \
+	core/sys/windows/winbase.lo core/sys/windows/winber.lo \
+	core/sys/windows/wincon.lo core/sys/windows/wincrypt.lo \
+	core/sys/windows/windef.lo core/sys/windows/windows.lo \
+	core/sys/windows/winerror.lo core/sys/windows/wingdi.lo \
+	core/sys/windows/winhttp.lo core/sys/windows/wininet.lo \
+	core/sys/windows/winioctl.lo core/sys/windows/winldap.lo \
+	core/sys/windows/winnetwk.lo core/sys/windows/winnls.lo \
+	core/sys/windows/winnt.lo core/sys/windows/winperf.lo \
+	core/sys/windows/winreg.lo core/sys/windows/winsock2.lo \
+	core/sys/windows/winspool.lo core/sys/windows/winsvc.lo \
+	core/sys/windows/winuser.lo core/sys/windows/winver.lo \
+	core/sys/windows/wtsapi32.lo core/sys/windows/wtypes.lo
 @DRUNTIME_OS_MINGW_TRUE@am__objects_22 = $(am__objects_21) \
 @DRUNTIME_OS_MINGW_TRUE@	config/mingw/libgdruntime_la-msvc.lo
 am__objects_23 = core/sys/solaris/dlfcn.lo core/sys/solaris/elf.lo \
@@ -625,7 +625,6 @@ CC = @CC@
 CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
 CC_FOR_BUILD = @CC_FOR_BUILD@
-CET_DFLAGS = @CET_DFLAGS@
 CET_FLAGS = @CET_FLAGS@
 CFLAGS = @CFLAGS@
 CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
@@ -677,6 +676,7 @@ NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
+OS_DFLAGS = @OS_DFLAGS@
 OS_LINK_SPEC = @OS_LINK_SPEC@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
@@ -784,7 +784,8 @@ D_EXTRA_DFLAGS = -fpreview=dip1000 -fpreview=fieldwise -fpreview=dtorfields \
 # D flags for compilation
 AM_DFLAGS = \
 	$(phobos_lt_pic_flag) $(phobos_compiler_shared_flag) \
-	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_DFLAGS)
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_FLAGS) \
+	$(OS_DFLAGS)
 
 
 # Flags for other kinds of sources
@@ -851,7 +852,7 @@ libgdruntime_convenience_la_DEPENDENCIES = $(libgdruntime_la_DEPENDENCIES)
 libgdruntime_convenience_la_LINK = $(libgdruntime_la_LINK)
 
 # Source file definitions. Boring stuff, auto-generated with
-# https://gist.github.com/jpf91/8ad1dbc9902d6ad876313f134c6527d1
+# libphobos/scripts/gen_druntime_sources.d
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
 DRUNTIME_CSOURCES = core/stdc/errno_.c etc/valgrind/valgrind_.c
@@ -904,7 +905,7 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
 	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arraycat.d rt/cast_.d \
 	rt/config.d rt/critical_.d rt/deh.d rt/dmain2.d rt/ehalloc.d \
-	rt/invariant.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
+	rt/invariant_.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
 	rt/profilegc.d rt/sections.d rt/tlsgc.d rt/util/typeinfo.d \
 	rt/util/utility.d
 
@@ -1042,13 +1043,14 @@ DRUNTIME_DSOURCES_SOLARIS = core/sys/solaris/dlfcn.d \
 DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/aclapi.d core/sys/windows/aclui.d \
 	core/sys/windows/basetsd.d core/sys/windows/basetyps.d \
-	core/sys/windows/cderr.d core/sys/windows/cguid.d \
-	core/sys/windows/com.d core/sys/windows/comcat.d \
-	core/sys/windows/commctrl.d core/sys/windows/commdlg.d \
-	core/sys/windows/core.d core/sys/windows/cpl.d \
-	core/sys/windows/cplext.d core/sys/windows/custcntl.d \
-	core/sys/windows/dbghelp.d core/sys/windows/dbghelp_types.d \
-	core/sys/windows/dbt.d core/sys/windows/dde.d core/sys/windows/ddeml.d \
+	core/sys/windows/bcrypt.d core/sys/windows/cderr.d \
+	core/sys/windows/cguid.d core/sys/windows/com.d \
+	core/sys/windows/comcat.d core/sys/windows/commctrl.d \
+	core/sys/windows/commdlg.d core/sys/windows/core.d \
+	core/sys/windows/cpl.d core/sys/windows/cplext.d \
+	core/sys/windows/custcntl.d core/sys/windows/dbghelp.d \
+	core/sys/windows/dbghelp_types.d core/sys/windows/dbt.d \
+	core/sys/windows/dde.d core/sys/windows/ddeml.d \
 	core/sys/windows/dhcpcsdk.d core/sys/windows/dlgs.d \
 	core/sys/windows/dll.d core/sys/windows/docobj.d \
 	core/sys/windows/errorrep.d core/sys/windows/exdisp.d \
@@ -1124,7 +1126,7 @@ DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/winuser.d core/sys/windows/winver.d \
 	core/sys/windows/wtsapi32.d core/sys/windows/wtypes.d
 
-DRUNTIME_DISOURCES = __builtins.di __main.di
+DRUNTIME_DISOURCES = __importc_builtins.di __main.di
 all: all-am
 
 .SUFFIXES:
@@ -1413,7 +1415,7 @@ rt/critical_.lo: rt/$(am__dirstamp)
 rt/deh.lo: rt/$(am__dirstamp)
 rt/dmain2.lo: rt/$(am__dirstamp)
 rt/ehalloc.lo: rt/$(am__dirstamp)
-rt/invariant.lo: rt/$(am__dirstamp)
+rt/invariant_.lo: rt/$(am__dirstamp)
 rt/lifetime.lo: rt/$(am__dirstamp)
 rt/memory.lo: rt/$(am__dirstamp)
 rt/minfo.lo: rt/$(am__dirstamp)
@@ -1768,6 +1770,7 @@ core/sys/windows/aclapi.lo: core/sys/windows/$(am__dirstamp)
 core/sys/windows/aclui.lo: core/sys/windows/$(am__dirstamp)
 core/sys/windows/basetsd.lo: core/sys/windows/$(am__dirstamp)
 core/sys/windows/basetyps.lo: core/sys/windows/$(am__dirstamp)
+core/sys/windows/bcrypt.lo: core/sys/windows/$(am__dirstamp)
 core/sys/windows/cderr.lo: core/sys/windows/$(am__dirstamp)
 core/sys/windows/cguid.lo: core/sys/windows/$(am__dirstamp)
 core/sys/windows/com.lo: core/sys/windows/$(am__dirstamp)

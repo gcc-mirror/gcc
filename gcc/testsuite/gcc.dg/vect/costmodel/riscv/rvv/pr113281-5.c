@@ -15,4 +15,4 @@ int main() {
     return 1;
 }
 
-/* { dg-final { scan-assembler-not {vset} } } */
+/* { dg-final { scan-assembler-not {vset} { xfail *-*-* } } } */

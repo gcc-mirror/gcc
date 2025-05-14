@@ -257,8 +257,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_ptr(__s.data()), _M_extent(__s.size())
 	{ }
 
-      ~span() noexcept = default;
-
       constexpr span&
       operator=(const span&) noexcept = default;
 

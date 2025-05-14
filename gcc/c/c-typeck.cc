@@ -116,8 +116,8 @@ static void push_member_name (tree);
 static int spelling_length (void);
 static char *print_spelling (char *);
 static void warning_init (location_t, int, const char *);
-static tree digest_init (location_t, tree, tree, tree, bool, bool, bool, bool,
-			 bool, bool);
+static tree digest_init (location_t, tree, tree, tree, tree, bool, bool, bool,
+			 bool, bool, bool);
 static void output_init_element (location_t, tree, tree, bool, tree, tree, bool,
 				 bool, struct obstack *);
 static void output_pending_init_elements (int, struct obstack *);
@@ -577,7 +577,7 @@ c_build_functype_attribute_variant (tree ntype, tree otype, tree attrs)
 }
 
 /* Given a type which could be a typedef name, make sure to return the
-   original type.  */
+   original type.  See set_underlying_type. */
 static const_tree
 c_type_original (const_tree t)
 {
@@ -590,6 +590,26 @@ c_type_original (const_tree t)
     t = DECL_ORIGINAL_TYPE (TYPE_NAME (t));
   return t;
 }
+
+/* Return the tag for a tagged type.  */
+tree
+c_type_tag (const_tree t)
+{
+  gcc_assert (RECORD_OR_UNION_TYPE_P (t) || TREE_CODE (t) == ENUMERAL_TYPE);
+  const_tree orig = c_type_original (t);
+  tree name = TYPE_NAME (orig);
+  if (!name)
+    return NULL_TREE;
+  if (TREE_CODE (name) == TYPE_DECL)
+    {
+      /* A TYPE_DECL added by add_decl_expr.  */
+      gcc_checking_assert (!DECL_NAME (name));
+      return NULL_TREE;
+    }
+  gcc_checking_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+  return name;
+}
+
 
 
 /* Return the composite type of two compatible types.
@@ -744,7 +764,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
       if (flag_isoc23 && !comptypes_same_p (t1, t2))
 	{
 	  /* Go to the original type to get the right tag.  */
-	  tree tag = TYPE_NAME (c_type_original (const_cast<tree> (t1)));
+	  tree tag = c_type_tag (t1);
 
 	  gcc_checking_assert (COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2));
 	  gcc_checking_assert (!tag || comptypes (t1, t2));
@@ -1807,13 +1827,7 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 {
   tree s1, s2;
 
-  /* We have to verify that the tags of the types are the same.  This
-     is harder than it looks because this may be a typedef, so we have
-     to go look at the original type.  */
-  t1 = c_type_original (t1);
-  t2 = c_type_original (t2);
-
-  if (TYPE_NAME (t1) != TYPE_NAME (t2))
+  if (c_type_tag (t1) != c_type_tag (t2))
     return false;
 
   /* When forming equivalence classes for TYPE_CANONICAL in C23, we treat
@@ -1824,7 +1838,7 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 
   /* Different types without tag are incompatible except as an anonymous
      field or when forming equivalence classes for TYPE_CANONICAL.  */
-  if (!data->anon_field && !data->equiv && NULL_TREE == TYPE_NAME (t1))
+  if (!data->anon_field && !data->equiv && NULL_TREE == c_type_tag (t1))
     return false;
 
   if (!data->anon_field && TYPE_STUB_DECL (t1) != TYPE_STUB_DECL (t2))
@@ -1932,6 +1946,9 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 		ft1 = DECL_BIT_FIELD_TYPE (s1);
 		ft2 = DECL_BIT_FIELD_TYPE (s2);
 	      }
+
+	    if (TREE_CODE (ft1) == ERROR_MARK || TREE_CODE (ft2) == ERROR_MARK)
+	      return false;
 
 	    data->anon_field = !DECL_NAME (s1);
 	    data->pointedto = false;
@@ -2996,12 +3013,16 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
   gcc_assert (c_flexible_array_member_type_p (TREE_TYPE (ref)));
   /* The result type of the call is a pointer to the flexible array type.  */
   tree result_type = c_build_pointer_type (TREE_TYPE (ref));
+  tree first_param
+    = c_fully_fold (array_to_pointer_conversion (loc, ref), false, NULL);
+  tree second_param
+    = c_fully_fold (counted_by_ref, false, NULL);
 
   tree call
     = build_call_expr_internal_loc (loc, IFN_ACCESS_WITH_SIZE,
 				    result_type, 6,
-				    array_to_pointer_conversion (loc, ref),
-				    counted_by_ref,
+				    first_param,
+				    second_param,
 				    build_int_cst (integer_type_node, 1),
 				    build_int_cst (counted_by_type, 0),
 				    build_int_cst (integer_type_node, -1),
@@ -4142,12 +4163,6 @@ convert_argument (location_t ploc, tree function, tree fundecl,
 					 val, origtype, ic_argpass,
 					 npc, fundecl, function,
 					 parmnum + 1, warnopt);
-
-  if (targetm.calls.promote_prototypes (fundecl ? TREE_TYPE (fundecl) : 0)
-      && INTEGRAL_TYPE_P (type)
-      && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
-    parmval = default_conversion (parmval);
-
   return parmval;
 }
 
@@ -4321,7 +4336,8 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree fntype,
 	  builtin_typetail = NULL_TREE;
 	}
 
-      if (!typetail && parmnum == 0 && !TYPE_NO_NAMED_ARGS_STDARG_P (fntype))
+      if (!typetail && parmnum == 0 && !TYPE_NO_NAMED_ARGS_STDARG_P (fntype)
+	  && !(fundecl && fndecl_built_in_p (fundecl)))
 	{
 	  auto_diagnostic_group d;
 	  bool warned;
@@ -4817,8 +4833,8 @@ pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
   if (current_function_decl != NULL_TREE
       && sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
     {
-      op0 = save_expr (op0);
-      op1 = save_expr (op1);
+      op0 = save_expr (c_fully_fold (op0, false, NULL));
+      op1 = save_expr (c_fully_fold (op1, false, NULL));
 
       tree tt = builtin_decl_explicit (BUILT_IN_ASAN_POINTER_SUBTRACT);
       *instrument_expr = build_call_expr_loc (loc, tt, 2, op0, op1);
@@ -6723,17 +6739,12 @@ c_safe_arg_type_equiv_p (tree t1, tree t2)
       && TREE_CODE (t2) == POINTER_TYPE)
     return true;
 
-  /* The signedness of the parameter matters only when an integral
-     type smaller than int is promoted to int, otherwise only the
-     precision of the parameter matters.
-     This check should make sure that the callee does not see
-     undefined values in argument registers.  */
+  /* Only the precision of the parameter matters.  This check should
+     make sure that the callee does not see undefined values in argument
+     registers.  */
   if (INTEGRAL_TYPE_P (t1)
       && INTEGRAL_TYPE_P (t2)
-      && TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-      && (TYPE_UNSIGNED (t1) == TYPE_UNSIGNED (t2)
-	  || !targetm.calls.promote_prototypes (NULL_TREE)
-	  || TYPE_PRECISION (t1) >= TYPE_PRECISION (integer_type_node)))
+      && TYPE_PRECISION (t1) == TYPE_PRECISION (t2))
     return true;
 
   return comptypes (t1, t2);
@@ -6844,7 +6855,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  t = build_constructor_single (type, field, t);
 	  if (!maybe_const)
 	    t = c_wrap_maybe_const (t, true);
-	  t = digest_init (loc, type, t,
+	  t = digest_init (loc, field, type, t,
 			   NULL_TREE, false, false, false, true, false, false);
 	  TREE_CONSTANT (t) = TREE_CONSTANT (value);
 	  return t;
@@ -8874,8 +8885,8 @@ store_init_value (location_t init_loc, tree decl, tree init, tree origtype)
     }
   bool constexpr_p = (VAR_P (decl)
 		      && C_DECL_DECLARED_CONSTEXPR (decl));
-  value = digest_init (init_loc, type, init, origtype, npc, int_const_expr,
-		       arith_const_expr, true,
+  value = digest_init (init_loc, decl, type, init, origtype, npc,
+		       int_const_expr, arith_const_expr, true,
 		       TREE_STATIC (decl) || constexpr_p, constexpr_p);
 
   /* Store the expression if valid; else report error.  */
@@ -9132,8 +9143,24 @@ check_constexpr_init (location_t loc, tree type, tree init,
       /* The initializer must be an integer constant expression,
 	 representable in the target type.  */
       if (!int_const_expr)
-	error_at (loc, "%<constexpr%> integer initializer is not an "
-		  "integer constant expression");
+	{
+	  if (TREE_CODE (init) == RAW_DATA_CST
+	      && TYPE_PRECISION (type) == CHAR_BIT)
+	    {
+	      if (!TYPE_UNSIGNED (type))
+		for (unsigned int i = 0;
+		     i < (unsigned) RAW_DATA_LENGTH (init); ++i)
+		  if (RAW_DATA_SCHAR_ELT (init, i) < 0)
+		    {
+		      error_at (loc, "%<constexpr%> initializer not "
+				"representable in type of object");
+		      break;
+		    }
+	    }
+	  else
+	    error_at (loc, "%<constexpr%> integer initializer is not an "
+		      "integer constant expression");
+	}
       else if (!int_fits_type_p (init, type))
 	error_at (loc, "%<constexpr%> initializer not representable in "
 		  "type of object");
@@ -9201,7 +9228,8 @@ check_constexpr_init (location_t loc, tree type, tree init,
 	      "type of object");
 }
 
-/* Digest the parser output INIT as an initializer for type TYPE.
+/* Digest the parser output INIT as an initializer for type TYPE
+   initializing DECL.
    Return a C expression of type TYPE to represent the initial value.
 
    If ORIGTYPE is not NULL_TREE, it is the original type of INIT.
@@ -9224,8 +9252,8 @@ check_constexpr_init (location_t loc, tree type, tree init,
    on initializers for 'constexpr' objects apply.  */
 
 static tree
-digest_init (location_t init_loc, tree type, tree init, tree origtype,
-    	     bool null_pointer_constant, bool int_const_expr,
+digest_init (location_t init_loc, tree decl, tree type, tree init,
+	     tree origtype, bool null_pointer_constant, bool int_const_expr,
 	     bool arith_const_expr, bool strict_string,
 	     bool require_constant, bool require_constexpr)
 {
@@ -9360,27 +9388,38 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	    {
 	      unsigned HOST_WIDE_INT len = TREE_STRING_LENGTH (inside_init);
-	      unsigned unit = TYPE_PRECISION (typ1) / BITS_PER_UNIT;
 
-	      /* Subtract the size of a single (possibly wide) character
-		 because it's ok to ignore the terminating null char
-		 that is counted in the length of the constant.  */
-	      if (compare_tree_int (TYPE_SIZE_UNIT (type), len - unit) < 0)
-		pedwarn_init (init_loc, 0,
-			      ("initializer-string for array of %qT "
-			       "is too long"), typ1);
-	      else if (warn_unterminated_string_initialization
-		       && compare_tree_int (TYPE_SIZE_UNIT (type), len) < 0)
-		warning_at (init_loc, OPT_Wunterminated_string_initialization,
-			    ("initializer-string for array of %qT "
-			     "is too long"), typ1);
 	      if (compare_tree_int (TYPE_SIZE_UNIT (type), len) < 0)
 		{
-		  unsigned HOST_WIDE_INT size
+		  unsigned HOST_WIDE_INT avail
 		    = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+		  unsigned unit = TYPE_PRECISION (typ1) / BITS_PER_UNIT;
 		  const char *p = TREE_STRING_POINTER (inside_init);
 
-		  inside_init = build_string (size, p);
+		  /* Construct truncated string.  */
+		  inside_init = build_string (avail, p);
+
+		  /* Subtract the size of a single (possibly wide) character
+		     because it may be ok to ignore the terminating NUL char
+		     that is counted in the length of the constant.  */
+		  if (len - unit > avail)
+		    pedwarn_init (init_loc, 0,
+				  "initializer-string for array of %qT "
+				  "is too long (%wu chars into %wu "
+				  "available)", typ1, len, avail);
+		  else if (warn_cxx_compat)
+		    warning_at (init_loc, OPT_Wc___compat,
+				"initializer-string for array of %qT "
+				"is too long for C++ (%wu chars into %wu "
+				"available)", typ1, len, avail);
+		  else if (warn_unterminated_string_initialization
+			   && get_attr_nonstring_decl (decl) == NULL_TREE)
+		    warning_at (init_loc,
+				OPT_Wunterminated_string_initialization,
+				"initializer-string for array of %qT "
+				"truncates NUL terminator but destination "
+				"lacks %qs attribute (%wu chars into %wu "
+				"available)", typ1, "nonstring", len, avail);
 		}
 	    }
 
@@ -10262,23 +10301,30 @@ pop_init_level (location_t loc, int implicit,
       && !TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)))
     {
       /* Silently discard empty initializations.  The parser will
-	 already have pedwarned for empty brackets.  */
+	 already have pedwarned for empty brackets for C17 and earlier.  */
       if (integer_zerop (constructor_unfilled_index))
 	constructor_type = NULL_TREE;
-      else
+      if (constructor_type || flag_isoc23)
 	{
-	  gcc_assert (!TYPE_SIZE (constructor_type));
+	  gcc_assert (!constructor_type || !TYPE_SIZE (constructor_type));
 
-	  if (constructor_depth > 2)
-	    error_init (loc, "initialization of flexible array member in a nested context");
-	  else
+	  if (constructor_depth <= 2)
 	    pedwarn_init (loc, OPT_Wpedantic,
 			  "initialization of a flexible array member");
+	  else if (constructor_type)
+	    error_init (loc, "initialization of flexible array member "
+			     "in a nested context");
+	  else
+	    pedwarn_init (loc, OPT_Wpedantic,
+			  "initialization of flexible array member "
+			  "in a nested context");
 
 	  /* We have already issued an error message for the existence
 	     of a flexible array member not at the end of the structure.
 	     Discard the initializer so that we do not die later.  */
-	  if (DECL_CHAIN (constructor_fields) != NULL_TREE)
+	  if (constructor_type
+	      && DECL_CHAIN (constructor_fields) != NULL_TREE
+	      && (!p->type || TREE_CODE (p->type) != UNION_TYPE))
 	    constructor_type = NULL_TREE;
 	}
     }
@@ -11405,7 +11451,11 @@ output_init_element (location_t loc, tree value, tree origtype,
   if (!require_constexpr_value
       || !npc
       || TREE_CODE (constructor_type) != POINTER_TYPE)
-    new_value = digest_init (loc, type, new_value, origtype, npc,
+    new_value = digest_init (loc,
+			     RECORD_OR_UNION_TYPE_P (constructor_type)
+			     ? field : constructor_fields
+			     ? constructor_fields : constructor_decl,
+			     type, new_value, origtype, npc,
 			     int_const_expr, arith_const_expr, strict_string,
 			     require_constant_value, require_constexpr_value);
   if (new_value == error_mark_node)
@@ -12124,6 +12174,42 @@ retry:
 	    warning (OPT_Wtraditional, "traditional C rejects initialization "
 		     "of unions");
 
+	  /* Error for non-static initialization of a flexible array member.  */
+	  if (fieldcode == ARRAY_TYPE
+	      && !require_constant_value
+	      && TYPE_SIZE (fieldtype) == NULL_TREE)
+	    {
+	      error_init (loc, "non-static initialization of a flexible "
+			  "array member");
+	      break;
+	    }
+
+	  /* Error for initialization of a flexible array member with
+	     a string constant if the structure is in an array.  E.g.:
+	     union U { int x; char y[]; };
+	     union U s[] = { { 1, "foo" } };
+	     is invalid.  */
+	  if (string_flag
+	      && fieldcode == ARRAY_TYPE
+	      && constructor_depth > 1
+	      && TYPE_SIZE (fieldtype) == NULL_TREE)
+	    {
+	      bool in_array_p = false;
+	      for (struct constructor_stack *p = constructor_stack;
+		   p && p->type; p = p->next)
+		if (TREE_CODE (p->type) == ARRAY_TYPE)
+		  {
+		    in_array_p = true;
+		    break;
+		  }
+	      if (in_array_p)
+		{
+		  error_init (loc, "initialization of flexible array "
+			      "member in a nested context");
+		  break;
+		}
+	    }
+
 	  /* Accept a string constant to initialize a subarray.  */
 	  if (value.value != NULL_TREE
 	      && fieldcode == ARRAY_TYPE
@@ -12727,7 +12813,12 @@ c_finish_return (location_t loc, tree retval, tree origtype, bool musttail_p)
 
       current_function_returns_value = 1;
       if (t == error_mark_node)
-	return NULL_TREE;
+	{
+	  /* Suppress -Wreturn-type for this function.  */
+	  if (warn_return_type)
+	    suppress_warning (current_function_decl, OPT_Wreturn_type);
+	  return NULL_TREE;
+	}
 
       save = in_late_binary_op;
       if (C_BOOLEAN_TYPE_P (TREE_TYPE (res))
@@ -14384,8 +14475,8 @@ build_binary_op (location_t location, enum tree_code code,
 	  && current_function_decl != NULL_TREE
 	  && sanitize_flags_p (SANITIZE_POINTER_COMPARE))
 	{
-	  op0 = save_expr (op0);
-	  op1 = save_expr (op1);
+	  op0 = save_expr (c_fully_fold (op0, false, NULL));
+	  op1 = save_expr (c_fully_fold (op1, false, NULL));
 
 	  tree tt = builtin_decl_explicit (BUILT_IN_ASAN_POINTER_COMPARE);
 	  instrument_expr = build_call_expr_loc (location, tt, 2, op0, op1);

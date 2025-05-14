@@ -880,6 +880,16 @@ path::operator+=(const path& p)
       return *this;
     }
 
+  // Handle p += p which would otherwise access dangling pointers after
+  // reallocating _M_cmpts and _M_pathname.
+  if (&p == this) [[unlikely]]
+    return *this += p.native();
+  // Handle p += *i where i is in [p.begin(),p.end()), for the same reason.
+  if (_M_type() == _Type::_Multi && p._M_type() != _Type::_Multi)
+    for (const path& cmpt : *this)
+      if (&cmpt == &p) [[unlikely]]
+	return *this += p.native();
+
 #if _GLIBCXX_FILESYSTEM_IS_WINDOWS
   if (_M_type() == _Type::_Root_name
       || (_M_type() == _Type::_Filename && _M_pathname.size() == 1))
