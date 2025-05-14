@@ -1415,6 +1415,9 @@ export namespace std
 #if __cpp_lib_copyable_function
   using std::copyable_function;
 #endif
+#if __cpp_lib_function_ref
+  using std::function_ref;
+#endif
   using std::multiplies;
   using std::negate;
   using std::not_equal_to;
@@ -3195,6 +3198,10 @@ export namespace std
   using std::make_integer_sequence;
   using std::move;
   using std::move_if_noexcept;
+#if __cpp_lib_function_ref
+  using std::nontype_t;
+  using std::nontype;
+#endif
   using std::pair;
   using std::swap;
   using std::operator==;

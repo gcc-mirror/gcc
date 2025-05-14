@@ -1757,6 +1757,14 @@ ftms = {
 };
 
 ftms = {
+  name = function_ref;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = out_ptr;
   values = {
     v = 202311;

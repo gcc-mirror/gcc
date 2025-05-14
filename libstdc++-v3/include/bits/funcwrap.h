@@ -1,4 +1,5 @@
-// Implementation of std::move_only_function and std::copyable_function -*- C++ -*-
+// Implementation of std::move_only_function, std::copyable_function
+// and std::function_ref  -*- C++ -*-
 
 // Copyright The GNU Toolchain Authors.
 //
@@ -36,7 +37,7 @@
 
 #include <bits/version.h>
 
-#if defined(__glibcxx_move_only_function) || defined(__glibcxx_copyable_function)
+#if __glibcxx_move_only_function || __glibcxx_copyable_function || __glibcxx_function_ref
 
 #include <bits/invoke.h>
 #include <bits/utility.h>
@@ -53,9 +54,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     union _Ptrs
     {
-      void* _M_obj;
+      const void* _M_obj;
       void (*_M_func)();
     };
+
+   template<typename _Tp>
+     [[__gnu__::__always_inline__]]
+     constexpr auto*
+     __cast_to(_Ptrs __ptrs) noexcept
+     {
+       using _Td = remove_reference_t<_Tp>;
+       if constexpr (is_function_v<_Td>)
+	 return reinterpret_cast<_Td*>(__ptrs._M_func);
+       else if constexpr (is_const_v<_Td>)
+	 return static_cast<_Td*>(__ptrs._M_obj);
+       else
+	 return static_cast<_Td*>(const_cast<void*>(__ptrs._M_obj));
+     }
 
    struct _Storage
    {
@@ -97,32 +112,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   ::new (_M_addr()) _Tp(std::forward<_Args>(__args)...);
        }
 
-     template<typename _Tp>
-       [[__gnu__::__always_inline__]]
-       _Tp*
-       _M_ptr() const noexcept
-       {
-	 if constexpr (!_S_stored_locally<remove_const_t<_Tp>>())
-	   return static_cast<_Tp*>(_M_ptrs._M_obj);
-	 else if constexpr (is_const_v<_Tp>)
-	   return static_cast<_Tp*>(_M_addr());
-	 else
-	   // _Manager and _Invoker pass _Storage by const&, even for mutable sources.
-	   return static_cast<_Tp*>(const_cast<void*>(_M_addr()));
-       }
-
-     template<typename _Ref>
-       [[__gnu__::__always_inline__]]
-       _Ref
-       _M_ref() const noexcept
-       {
-	 using _Tp = remove_reference_t<_Ref>;
-	 if constexpr (is_function_v<remove_pointer_t<_Tp>>)
-	   return reinterpret_cast<_Tp>(_M_ptrs._M_func);
-	 else
-	   return static_cast<_Ref>(*_M_ptr<_Tp>());
-       }
-
      // We want to have enough space to store a simple delegate type.
      struct _Delegate { void (_Storage::*__pfm)(); _Storage* __obj; };
      union {
@@ -143,6 +132,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 _S_storage()
 	 { return &_S_call_storage<_Adjust_target<_Tp>>; }
 
+       using __ptrs_func_t = _Ret(*)(_Ptrs, _Args...) noexcept(_Noex);
+       template<typename _Tp>
+	 static consteval __ptrs_func_t
+	 _S_ptrs()
+	 { return &_S_call_ptrs<_Adjust_target<_Tp>>; }
+
+#ifdef __glibcxx_function_ref // C++ >= 26
+       template<auto __fn>
+	 static _Ret
+	 _S_nttp(_Ptrs, _Args... __args) noexcept(_Noex)
+	 { return std::__invoke_r<_Ret>(__fn, std::forward<_Args>(__args)...); }
+
+       template<auto __fn, typename _Tp>
+	 static _Ret
+	 _S_bind_ptr(_Ptrs __ptrs, _Args... __args) noexcept(_Noex)
+	 {
+	   auto* __p = __polyfunc::__cast_to<_Tp>(__ptrs);
+	   return std::__invoke_r<_Ret>(__fn, __p,
+					std::forward<_Args>(__args)...);
+	 }
+
+       template<auto __fn, typename _Ref>
+	 static _Ret
+	 _S_bind_ref(_Ptrs __ptrs, _Args... __args) noexcept(_Noex)
+	 {
+	   auto* __p = __polyfunc::__cast_to<_Ref>(__ptrs);
+	   return std::__invoke_r<_Ret>(__fn, static_cast<_Ref>(*__p),
+					std::forward<_Args>(__args)...);
+	 }
+#endif // __glibcxx_function_ref
+
      private:
        template<typename _Tp, typename _Td = remove_cvref_t<_Tp>>
 	 using _Adjust_target =
@@ -152,8 +172,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 static _Ret
 	 _S_call_storage(const _Storage& __ref, _Args... __args) noexcept(_Noex)
 	 {
-	   return std::__invoke_r<_Ret>(__ref._M_ref<_Tp>(),
-					std::forward<_Args>(__args)...);
+	   _Ptrs __ptrs;
+	   if constexpr (is_function_v<remove_pointer_t<_Tp>>)
+	     __ptrs._M_func = __ref._M_ptrs._M_func;
+	   else if constexpr (!_Storage::_S_stored_locally<remove_cvref_t<_Tp>>())
+	     __ptrs._M_obj = __ref._M_ptrs._M_obj;
+	   else
+	     __ptrs._M_obj = __ref._M_addr();
+	   return _S_call_ptrs<_Tp>(__ptrs, std::forward<_Args>(__args)...);
+	 }
+
+       template<typename _Tp>
+	 static _Ret
+	 _S_call_ptrs(_Ptrs __ptrs, _Args... __args) noexcept(_Noex)
+	 {
+	   if constexpr (is_function_v<remove_pointer_t<_Tp>>)
+	     return std::__invoke_r<_Ret>(reinterpret_cast<_Tp>(__ptrs._M_func),
+					  std::forward<_Args>(__args)...);
+	   else
+	     {
+	       auto* __p = __polyfunc::__cast_to<_Tp>(__ptrs);
+	       return std::__invoke_r<_Ret>(static_cast<_Tp>(*__p),
+					    std::forward<_Args>(__args)...);
+	     }
 	 }
      };
 
@@ -184,6 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 return false;
      }
 
+#if __glibcxx_move_only_function || __glibcxx_copyable_function
    struct _Manager
    {
      enum class _Op
@@ -241,7 +283,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        switch (__op)
        {
 	 case _Op::_Address:
-	   __target._M_ptrs._M_obj = const_cast<void*>(__src->_M_addr());
+	   __target._M_ptrs._M_obj = __src->_M_addr();
 	   return;
 	 case _Op::_Move:
 	 case _Op::_Copy:
@@ -263,24 +305,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 switch (__op)
 	 {
 	   case _Op::_Address:
-	     __target._M_ptrs._M_obj = __src->_M_ptr<_Tp>();
+	     __target._M_ptrs._M_obj = __src->_M_addr();
 	     return;
 	   case _Op::_Move:
 	     {
-	       _Tp* __obj = __src->_M_ptr<_Tp>();
+	       _Tp* __obj = static_cast<_Tp*>(const_cast<void*>(__src->_M_addr()));
 	       ::new(__target._M_addr()) _Tp(std::move(*__obj));
 	       __obj->~_Tp();
 	     }
 	     return;
 	   case _Op::_Destroy:
-	     __target._M_ptr<_Tp>()->~_Tp();
+	     static_cast<_Tp*>(__target._M_addr())->~_Tp();
 	     return;
 	   case _Op::_Copy:
 	     if constexpr (_Provide_copy)
-	       ::new (__target._M_addr()) _Tp(__src->_M_ref<const _Tp&>());
-	     else
-	       __builtin_unreachable();
-	     return;
+	       {
+		 auto* __obj = static_cast<const _Tp*>(__src->_M_addr());
+		 ::new (__target._M_addr()) _Tp(*__obj);
+		 return;
+	       }
+	     __builtin_unreachable();
 	 }
        }
 
@@ -296,14 +340,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     __target._M_ptrs._M_obj = __src->_M_ptrs._M_obj;
 	     return;
 	   case _Op::_Destroy:
-	     delete __target._M_ptr<_Tp>();
+	     delete static_cast<const _Tp*>(__target._M_ptrs._M_obj);
 	     return;
 	   case _Op::_Copy:
 	     if constexpr (_Provide_copy)
-	       __target._M_ptrs._M_obj = new _Tp(__src->_M_ref<const _Tp&>());
-	     else
-	       __builtin_unreachable();
-	     return;
+	       {
+		 auto* __obj = static_cast<const _Tp*>(__src->_M_ptrs._M_obj);
+		 __target._M_ptrs._M_obj = new _Tp(*__obj);
+		 return;
+	       }
+	     __builtin_unreachable();
 	  }
 	}
    };
@@ -382,7 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      friend class _Cpy_base;
 #endif // __glibcxx_copyable_function
    };
-
+#endif // __glibcxx_copyable_function || __glibcxx_copyable_function
 } // namespace __polyfunc
   /// @endcond
 
@@ -468,6 +514,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }  // namespace __detail::__variant
 #endif // __glibcxx_copyable_function
 
+#ifdef __glibcxx_function_ref  // C++ >= 26
+  /// @cond undocumented
+  namespace __polyfunc
+  {
+    template<typename _Sig>
+      struct __skip_first_arg;
+
+    // Additional partial specializations are defined in bits/funcref_impl.h
+    template<bool _Noex, typename _Ret, typename _Arg, typename... _Args>
+      struct __skip_first_arg<_Ret(*)(_Arg, _Args...) noexcept(_Noex)>
+      { using type = _Ret(_Args...) noexcept(_Noex); };
+
+    template<typename _Fn, typename _Tr>
+      consteval auto
+      __deduce_funcref()
+      {
+	if constexpr (is_member_object_pointer_v<_Fn>)
+	  // TODO Consider reporting issue to make this noexcept
+	  return static_cast<invoke_result_t<_Fn, _Tr>(*)()>(nullptr);
+	else
+	  return static_cast<__skip_first_arg<_Fn>::type*>(nullptr);
+      }
+  } // namespace __polyfunc
+  /// @endcond
+
+  template<typename... _Signature>
+    class function_ref; // not defined
+
+  template<typename _Fn>
+    requires is_function_v<_Fn>
+    function_ref(_Fn*) -> function_ref<_Fn>;
+
+  template<auto __f, class _Fn = remove_pointer_t<decltype(__f)>>
+    requires is_function_v<_Fn>
+    function_ref(nontype_t<__f>) -> function_ref<_Fn>;
+
+  template<auto __f, typename _Tp, class _Fn = decltype(__f)>
+    requires is_member_pointer_v<_Fn> || is_function_v<remove_pointer_t<_Fn>>
+    function_ref(nontype_t<__f>, _Tp&&)
+      -> function_ref<
+	   remove_pointer_t<decltype(__polyfunc::__deduce_funcref<_Fn, _Tp&>())>>;
+
+#endif // __glibcxx_function_ref
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
@@ -503,5 +593,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #include "cpyfunc_impl.h"
 #endif // __glibcxx_copyable_function
 
-#endif // __glibcxx_copyable_function || __glibcxx_copyable_function
+#ifdef __glibcxx_function_ref  // C++ >= 26
+#include "funcref_impl.h"
+#define _GLIBCXX_MOF_CV const
+#include "funcref_impl.h"
+#endif // __glibcxx_function_ref
+
+#endif // move_only_function || copyable_function || function_ref
 #endif // _GLIBCXX_FUNCWRAP_H

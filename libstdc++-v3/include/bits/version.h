@@ -1958,6 +1958,16 @@
 #endif /* !defined(__cpp_lib_copyable_function) && defined(__glibcxx_want_copyable_function) */
 #undef __glibcxx_want_copyable_function
 
+#if !defined(__cpp_lib_function_ref)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_function_ref 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_function_ref)
+#   define __cpp_lib_function_ref 202306L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_function_ref) && defined(__glibcxx_want_function_ref) */
+#undef __glibcxx_want_function_ref
+
 #if !defined(__cpp_lib_out_ptr)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_out_ptr 202311L
