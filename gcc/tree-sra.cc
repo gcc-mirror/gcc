@@ -3871,8 +3871,10 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 	    }
 	  else
 	    {
-	      gassign *stmt;
+	      if (TREE_READONLY (access->base))
+		return false;
 
+	      gassign *stmt;
 	      if (access->grp_partial_lhs)
 		repl = force_gimple_operand_gsi (gsi, repl, true, NULL_TREE,
 						 true, GSI_SAME_STMT);
