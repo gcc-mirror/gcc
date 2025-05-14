@@ -1517,18 +1517,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   if (diagnostic->kind == DK_NOTE && context->inhibit_notes_p)
     return false;
 
-  if (context->lock > 0)
-    {
-      /* If we're reporting an ICE in the middle of some other error,
-	 try to flush out the previous error, then let this one
-	 through.  Don't do this more than once.  */
-      if ((diagnostic->kind == DK_ICE || diagnostic->kind == DK_ICE_NOBT)
-	  && context->lock == 1)
-	pp_newline_and_flush (context->printer);
-      else
-	error_recursion (context);
-    }
-
   /* If the user requested that warnings be treated as errors, so be
      it.  Note that we do this before the next block so that
      individual warnings can be overridden back to warnings with
@@ -1552,6 +1540,18 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   if (diagnostic->kind != DK_NOTE && diagnostic->kind != DK_ICE)
     diagnostic_check_max_errors (context);
+
+  if (context->lock > 0)
+    {
+      /* If we're reporting an ICE in the middle of some other error,
+	 try to flush out the previous error, then let this one
+	 through.  Don't do this more than once.  */
+      if ((diagnostic->kind == DK_ICE || diagnostic->kind == DK_ICE_NOBT)
+	  && context->lock == 1)
+	pp_newline_and_flush (context->printer);
+      else
+	error_recursion (context);
+    }
 
   context->lock++;
 
