@@ -1,3 +1,14 @@
+2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120253
+	* m2.flex (FIRST_COLUMN): New define.
+	(updatepos): Remove commented code.
+	(consumeLine): Assign column to FIRST_COLUMN.
+	(initLine): Ditto.
+	(m2flex_GetColumnNo): Return FIRST_COLUMN if currentLine is NULL.
+	(m2flex_GetLineNo): Rewrite for positive logic.
+	(m2flex_GetLocation): Ditto.
+
 2025-05-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/120117

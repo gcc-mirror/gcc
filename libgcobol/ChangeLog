@@ -1,3 +1,7 @@
+2025-05-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* libgcobol.cc [!LOG_PERROR] (LOG_PERROR): Provide fallback.
+
 2025-05-11  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119377

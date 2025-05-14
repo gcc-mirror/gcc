@@ -1,3 +1,159 @@
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/119903
+	* gimple-fold.cc (replace_stmt_with_simplification): Reject for
+	noncall exceptions replacing comparison with itself.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/118868
+	* tree-cfg.cc (verify_gimple_assign_unary): Allow pointers
+	but disallow aggregate types for PAREN_EXPR.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* cfgexpand.cc (vars_ssa_cache::operator()): Update the cache if the use is already
+	has a cache.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* cfgexpand.cc (vars_ssa_cache::operator()): Reverse the order of the going
+	through the update list.
+
+2025-05-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_nonlinear_induction):
+	Remove non-SLP path, use SLP_TREE_VECTYPE.
+	(vectorizable_induction): Likewise.  Drop ncopies variable
+	which is always 1.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_extra_ext_flag_table_t):
+	New.
+	(riscv_ext_flag_table): Rename to ...
+	(riscv_extra_ext_flag_table): this, and drop most of definitions
+	that can obtained from the flags field of the riscv_ext_info_t
+	structures.
+	(apply_extra_extension_flags): Use riscv_ext_info_t.
+	(riscv_ext_is_subset): Ditto.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_version_table):
+	Remove.
+	(standard_extensions_p): Use riscv_ext_info_t.
+	(get_default_version): Use riscv_ext_info_t.
+	(riscv_arch_help): Ditto.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_implied_info::riscv_implied_info_t): Remove unused
+	variant.
+	(struct riscv_implied_info_t): Remove unsued field.
+	(riscv_implied_info::match): Remove unused variant, and adjust
+	the logic.
+	(get_riscv_ext_info): New.
+	(riscv_implied_info): Remove.
+	(riscv_ext_info_t::apply_implied_ext): New.
+	(riscv_combine_info). Remove.
+	(riscv_subset_list::handle_implied_ext): Use riscv_ext_info_t
+	rather than riscv_implied_info.
+	(riscv_subset_list::check_implied_ext): Ditto.
+	(riscv_subset_list::handle_combine_ext): Use riscv_ext_info_t
+	rather than riscv_combine_info.
+	(riscv_minimal_hwprobe_feature_bits): Use riscv_ext_info_t
+	rather than riscv_implied_info.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_info_t): New
+	struct.
+	(opt_var_ref_t): Adjust order.
+	(cl_opt_var_ref_t): Ditto.
+	(riscv_ext_flag_table_t): Adjust order, and add a new construct
+	that not hold the extension name.
+	(riscv_version_t): New struct.
+	(riscv_implied_info_t): Adjust order, and add a new construct that not
+	hold the extension name.
+	(apply_extra_extension_flags): New function.
+	(riscv_ext_infos): New.
+	(riscv_implied_info): Adjust.
+	* config/riscv/riscv-opts.h (EXT_FLAG_MACRO): New macro.
+	(BITMASK_NOT_YET_ALLOCATED): New macro.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_can_inline_p): Drop
+	extension flags check from `target_flags`.
+	* config/riscv/riscv-subset.h (riscv_x_target_flags_isa_mask):
+	Remove.
+	* config/riscv/riscv.cc (riscv_x_target_flags_isa_mask): Remove.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/invoke.texi: Replace hand‑written extension table with
+	`@include riscv-ext.texi` to pull in auto‑generated entries.
+	* doc/riscv-ext.texi: New generated definition file
+	containing formatted documentation entries for each extension.
+	* Makefile.in: Add riscv-ext.texi to the list of files to be
+	processed by the Texinfo generator.
+	* config/riscv/gen-riscv-ext-texi.cc: New.
+	* config/riscv/t-riscv: Add rule for generating riscv-ext.texi.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/gen-riscv-ext-opt.cc: New.
+	* config/riscv/riscv.opt: Drop manual entries for target
+	options, and include riscv-ext.opt.
+	* config/riscv/riscv-ext.opt: New.
+	* config/riscv/riscv-ext.opt.urls: New.
+	* config.gcc: Add riscv-ext.opt to the list of target options files.
+	* common/config/riscv/riscv-common.cc (riscv_ext_flag_table): Adjsut target
+	option variable entry.
+	(riscv_set_arch_by_subset_list): Adjust target option variable.
+	* config/riscv/riscv-c.cc (riscv_ext_flag_table): Adjust target
+	option variable entry.
+	* config/riscv/riscv-vector-builtins.cc (pragma_intrinsic_flags):
+	Adjust variable name.
+	(riscv_pragma_intrinsic_flags_pollute): Adjust variable name.
+	(riscv_pragma_intrinsic_flags_restore): Ditto.
+	* config/riscv/t-riscv: Add the rule for generating
+	riscv-ext.opt.
+	* config/riscv/riscv-opts.h (TARGET_MIN_VLEN): Update.
+	(TARGET_MIN_VLEN_OPTS): Update.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-ext.def: New file; define extension metadata table.
+	* config/riscv/riscv-ext-corev.def: New.
+	* config/riscv/riscv-ext-sifive.def: New.
+	* config/riscv/riscv-ext-thead.def: New.
+	* config/riscv/riscv-ext-ventana.def: New.
+
+2025-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* diagnostic-format-html.cc: Include "diagnostic-format-text.h",
+	"pretty-print-urlifier.h" and "edit-context.h".
+	(html_builder::html_builder): Fix indentation in decl.
+	(html_builder::make_element_for_diagnostic): Split out metadata
+	code into make_element_for_metadata.  Call
+	make_element_for_source, make_element_for_path, and
+	make_element_for_patch.
+	(html_builder::make_element_for_source): New.
+	(html_builder::make_element_for_path): New.
+	(html_builder::make_element_for_patch): New.
+	(html_builder::make_metadata_element): New.
+	(html_builder::make_element_for_metadata): New.
+	(html_output_format::get_builder): New.
+	(selftest::test_html_diagnostic_context::get_builder): New.
+	(selftest::test_simple_log): Update test to print a quoted string,
+	and verify that it uses a "gcc-quoted-text" span.
+	(selftest::test_metadata): New.
+	(selftest::diagnostic_format_html_cc_tests): Call it.
+
 2025-05-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssanames.cc (set_bitmask): Use int_range_max for temps.

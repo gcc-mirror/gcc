@@ -1,3 +1,69 @@
+2025-05-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/113413
+	* gfortran.dg/dec_math.f90: Add comment that degree
+	functions are part of F2023.
+
+2025-05-13  Yuao Ma  <c8ef@outlook.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113413
+	* gfortran.dg/dec_math.f90: Add atand(y, x) testcase.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/119903
+	* g++.dg/tree-ssa/pr119903-1.C: New test.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/118868
+	* c-c++-common/pr118868-1.c: New test.
+
+2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120188
+	* gm2.dg/doc/examples/plugin/fail/doc-examples-plugin-fail.exp:
+	Remove call to gm2-dg-frontend-configure-check and replace with
+	tests for whether plugin variables exist.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120196
+	* gfortran.dg/pr120196.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_3.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_2.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+	    Daniil Kochergin  <daniil2472s@gmail.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_1.f90: New test.
+
+2025-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* gcc.dg/html-output/missing-semicolon.py: Verify that we don't
+	have an empty "gcc-annotated-source" and we do have a
+	"gcc-generated-patch".
+	* gcc.dg/plugin/diagnostic-test-metadata-html.c: New test.
+	* gcc.dg/plugin/diagnostic-test-metadata-html.py: New test script.
+	* gcc.dg/plugin/diagnostic-test-paths-2.c: Add
+	"-fdiagnostics-add-output=experimental-html" to options. Add
+	invocation of diagnostic-test-paths-2.py.
+	* gcc.dg/plugin/diagnostic-test-paths-2.py: New test script.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic-test-metadata-html.c.
+
 2025-05-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/tree-ssa/vrp124.c: New.

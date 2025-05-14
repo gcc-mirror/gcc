@@ -1,3 +1,9 @@
+2025-05-13  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/87778
+	* Make-generated.in: Remove -q gnatmake option.
+	* gcc-interface/Makefile.in: Likewise.
+
 2025-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/120104
