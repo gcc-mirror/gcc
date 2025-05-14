@@ -1026,10 +1026,19 @@ vect_transform_loops (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
     {
       if (GET_MODE_SIZE (loop_vinfo->vector_mode).is_constant (&bytes))
 	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			 "loop vectorized using %wu byte vectors\n", bytes);
+			 "%sloop vectorized using %s%wu byte vectors and"
+			 " unroll factor %u\n",
+			 LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+			 ? "epilogue " : "",
+			 LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+			 ? "masked " : "", bytes,
+			 (unsigned int) LOOP_VINFO_VECT_FACTOR
+						 (loop_vinfo).to_constant ());
       else
 	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			 "loop vectorized using variable length vectors\n");
+			 "%sloop vectorized using variable length vectors\n",
+			 LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+			 ? "epilogue " : "");
     }
 
   loop_p new_loop = vect_transform_loop (loop_vinfo,

@@ -9,5 +9,5 @@ void foo (int * __restrict a, int *b)
 
 /* We should vectorize the main loop with AVX512 and the epilog with SSE.  */
 
-/* { dg-final { scan-tree-dump "optimized: loop vectorized using 64 byte vectors" "vect" } } */
-/* { dg-final { scan-tree-dump "optimized: loop vectorized using 16 byte vectors" "vect" } } */
+/* { dg-final { scan-tree-dump "loop vectorized using 64 byte vectors" "vect" } } */
+/* { dg-final { scan-tree-dump "loop vectorized using 16 byte vectors" "vect" } } */
