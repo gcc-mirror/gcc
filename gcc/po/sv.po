@@ -32,7 +32,7 @@ msgstr ""
 "Project-Id-Version: gcc 15.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-04-23 19:27+0000\n"
-"PO-Revision-Date: 2025-05-10 14:36+0200\n"
+"PO-Revision-Date: 2025-05-14 22:41+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -2732,7 +2732,7 @@ msgstr "Varna för avslutande blanktecken på rader utom i råa stränglitterale
 #: c-family/c.opt:1523
 #, no-c-format
 msgid "Warn about trailing whitespace on lines except when in raw string literals.   Equivalent to Wtrailing-whitespace=blanks when enabled or Wtrailing-whitespace=none when disabled."
-msgstr "Varna för avslutande mellanrum på rader utom i råa strängliteraler. Ekvivalent med Wtrailing-whitespace=blanks när det är aktiverat eller Wtrailing-whitespace=none när det är avaktiverat."
+msgstr "Varna för avslutande mellanrum på rader utom i råa stränglitteraler. Ekvivalent med Wtrailing-whitespace=blanks när det är aktiverat eller Wtrailing-whitespace=none när det är avaktiverat."
 
 #: c-family/c.opt:1527
 #, no-c-format
@@ -3864,7 +3864,7 @@ msgstr "-finternal-ebcdic\tIntern bearbetning är i EBCDIC kodsida 1140"
 #: cobol/lang.opt:94
 #, no-c-format
 msgid "Enable/disable static linkage for CALL literals"
-msgstr "Aktivera/avaktivera statisk länkning för CALL-literaler"
+msgstr "Aktivera/avaktivera statisk länkning för CALL-litteraler"
 
 #: cobol/lang.opt:98
 #, no-c-format
@@ -4719,7 +4719,7 @@ msgstr "Det maximala djupet av exploderade noder som skall förekomma i en dot-d
 #: analyzer/analyzer.opt:59
 #, no-c-format
 msgid "The number of bytes at which to ellipsize string literals in analyzer text art diagrams."
-msgstr "Antalet byte vid vilket strängliteraler i textkonstdiagram från analyseraren skall ha ellips."
+msgstr "Antalet byte vid vilket stränglitteraler i textkonstdiagram från analyseraren skall ha ellips."
 
 #: analyzer/analyzer.opt:63
 #, no-c-format
@@ -6677,7 +6677,7 @@ msgstr "Parameter för att styra vilka återskrivningsmöjligheter vi försöker
 #: config/aarch64/aarch64.opt:437
 #, no-c-format
 msgid "Warn about usage of experimental Function Multi Versioning."
-msgstr "Varna för användning av experminetell funktionsmultiversionering."
+msgstr "Varna för användning av experimentell funktionsmultiversionering."
 
 #: config/linux.opt:24
 #, no-c-format
@@ -8848,7 +8848,7 @@ msgstr "Gör så att länkarens lättnadsmaskin antar att programräknaren slår
 #: config/avr/avr.opt:112
 #, no-c-format
 msgid "Optimization. Accumulate outgoing function arguments and acquire/release the needed stack space for outgoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf."
-msgstr "Optimering. Samla utgående funktionsargument och ta/släpp det nödvändiga stackutrymmet för utgående funktionsargument i funktionsprologen/-epilogen.  Utan denna flagga trycks utgående argument på stacken före anrop av en funktion och plockas efteråt.  Denna flagga kan medföra reducerad kodstorlek för funktioner som anropar många funktioner som får sina argument på stacken som, till exempel printf."
+msgstr "Optimering. Samla utgående funktionsargument och ta/släpp det nödvändiga stackutrymmet för utgående funktionsargument i funktionsprologen/-epilogen.  Utan denna flagga trycks utgående argument på stacken före anrop av en funktion och plockas efteråt.  Denna flagga kan medföra reducerad kodstorlek för funktioner som anropar många funktioner som får sina argument på stacken, som till exempel printf."
 
 #: config/avr/avr.opt:116
 #, no-c-format
@@ -8878,7 +8878,7 @@ msgstr "Enheten har sektionen .rodata placerad i RAM-området."
 #: config/avr/avr.opt:137
 #, no-c-format
 msgid "This option is used internally for multilib generation and selection. The device has no SPH special function register."
-msgstr "Denna flagga används internt för multilib-generering och -val. Enheten har inga speiciella SPH-fuktionsregister."
+msgstr "Denna flagga används internt för multilib-generering och -val. Enheten har inga speciella SPH-fuktionsregister."
 
 #: config/avr/avr.opt:141
 #, no-c-format
@@ -14856,7 +14856,7 @@ msgstr "Skriv en KÄLLFIL.opt-record.json-fil med detaljer om vilka optimeringar
 #: common.opt:2469
 #, no-c-format
 msgid "Detect loops calculating CRC and replace with faster implementation. If the target supports CRC instruction and the CRC loop uses the same polynomial as the one used in the CRC instruction, directly replace with the corresponding CRC instruction. Otherwise, if the target supports carry-less-multiplication instruction, generate CRC using it. If neither case applies, generate table-based CRC."
-msgstr "Upptäck slingor som beräknar CRC och ersätt dem med en snabbare implementation. Om målet stödjer en CRC-instruktion och CRC-slingan använder samma polynom smo det som används i CRC-instruktionen, ersätt då direkt med motsvarande CRC-instruktion. Annars, om målet stöjder en instruktion för minnesfri multiplikation, generera en CRC som använder det. Om inget av fallen är tillämpligt, generera tabellbaserad CRC."
+msgstr "Upptäck slingor som beräknar CRC och ersätt dem med en snabbare implementation. Om målet stödjer en CRC-instruktion och CRC-slingan använder samma polynom smo det som används i CRC-instruktionen, ersätt då direkt med motsvarande CRC-instruktion. Annars, om målet stödjer en instruktion för minnesfri multiplikation, generera en CRC som använder det. Om inget av fallen är tillämpligt, generera tabellbaserad CRC."
 
 #: common.opt:2483
 #, no-c-format
@@ -17528,7 +17528,7 @@ msgstr "Framtvinga användningen av SLP vid vektorisering, misslyckas om det int
 #: params.opt:1266
 #, no-c-format
 msgid "Maximum number of basic blocks before VRP switches to a fast model with less memory requirements."
-msgstr "Maximalt antal grundblock innan VRP byter till en snabb modell med mintre minneskrav."
+msgstr "Maximalt antal grundblock innan VRP byter till en snabb modell med mindre minneskrav."
 
 #: params.opt:1270
 #, no-c-format
@@ -17563,7 +17563,7 @@ msgstr "den anropade returnerar en post"
 
 #: calls.cc:2565
 msgid "target is not able to optimize the call into a sibling call"
-msgstr "målet kan inte optinera anropet till ett syskonanrop"
+msgstr "målet kan inte optimera anropet till ett syskonanrop"
 
 #: calls.cc:2574
 msgid "callee returns twice"
@@ -49107,7 +49107,7 @@ msgstr "%<detach%>-klausulens händelsehandtag har typen %qT istället för %<om
 #: cp/parser.cc:42940
 #, gcc-internal-format
 msgid "string literal must not contain %<\\0%>"
-msgstr "strängliteraler får inte innehålla %<\\0%>"
+msgstr "stränglitteraler får inte innehålla %<\\0%>"
 
 #: c/c-parser.cc:20581 c/c-parser.cc:20702 cp/parser.cc:42835
 #: cp/parser.cc:42975
@@ -52621,7 +52621,6 @@ msgstr "%s: regcomp: %s"
 msgid "logic error: missing inode for %s"
 msgstr "logikfel: saknad inod för %s"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104709
 #: cobol/util.cc:2141
 #, gcc-internal-format, gfc-internal-format
 msgid "failed compiling %s"
@@ -78141,7 +78140,6 @@ msgstr "HOLDS-uttryck vid %L måste vara ett skalärt logiskt uttryck"
 msgid "ORDERED clause parameter is less than COLLAPSE at %L"
 msgstr "ORDERED-klausulparameter är mindre än COLLAPSE vid %L"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=107122
 #: fortran/openmp.cc:8623
 #, gcc-internal-format, gfc-internal-format
 msgid "ORDER clause must not be used together with ORDERED at %L"
