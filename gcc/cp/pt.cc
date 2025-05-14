@@ -23529,13 +23529,13 @@ conversion_may_instantiate_p (tree to, tree from)
 
   /* Converting to a non-aggregate class type will consider its
      user-declared constructors, which might induce instantiation.  */
-  if (CLASS_TYPE_P (to)
+  if (CLASS_TYPE_P (complete_type (to))
       && type_has_converting_constructor (to))
     return true;
 
   /* Similarly, converting from a class type will consider its conversion
      functions.  */
-  if (CLASS_TYPE_P (from)
+  if (CLASS_TYPE_P (complete_type (from))
       && TYPE_HAS_CONVERSION (from))
     return true;
 
