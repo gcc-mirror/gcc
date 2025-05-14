@@ -2434,7 +2434,7 @@ irange::intersect_bitmask (const irange &r)
 {
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
-  if (r.m_bitmask.unknown_p () || m_bitmask == r.m_bitmask)
+  if (m_bitmask == r.m_bitmask)
     return false;
 
   irange_bitmask bm = get_bitmask ();
