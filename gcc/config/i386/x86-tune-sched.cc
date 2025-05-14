@@ -80,6 +80,7 @@ ix86_issue_rate (void)
     case PROCESSOR_ALDERLAKE:
     case PROCESSOR_YONGFENG:
     case PROCESSOR_SHIJIDADAO:
+    case PROCESSOR_SIERRAFOREST:
     case PROCESSOR_GENERIC:
     /* For znver5 decoder can handle 4 or 8 instructions per cycle,
        op cache 12 instruction/cycle, dispatch 8 instructions
@@ -99,6 +100,14 @@ ix86_issue_rate (void)
       return 5;
 
     case PROCESSOR_SAPPHIRERAPIDS:
+    case PROCESSOR_GRANITERAPIDS:
+    case PROCESSOR_GRANITERAPIDS_D:
+    case PROCESSOR_DIAMONDRAPIDS:
+    case PROCESSOR_GRANDRIDGE:
+    case PROCESSOR_CLEARWATERFOREST:
+    case PROCESSOR_ARROWLAKE:
+    case PROCESSOR_ARROWLAKE_S:
+    case PROCESSOR_PANTHERLAKE:
       return 6;
 
     default:
