@@ -47,9 +47,11 @@ irange_bitmask::irange_bitmask (tree type,
   else
     {
       wide_int xorv = min ^ max;
-      xorv = wi::mask (prec - wi::clz (xorv), false, prec);
-      m_value = wi::zero (prec);
-      m_mask = min | xorv;
+      // Mask will have leading zeros for all leading bits that are
+      // common, both zeros and ones.
+      m_mask = wi::mask (prec - wi::clz (xorv), false, prec);
+      // Now set value to those bits which are known, and zero the rest.
+      m_value = ~m_mask & min;
     }
 }
 
