@@ -4,9 +4,7 @@
 Specialized Needs Annexes
 *************************
 
-Ada 95, Ada 2005, and Ada 2012 define a number of Specialized Needs Annexes, which are not
-required in all implementations.  However, as described in this chapter,
-GNAT implements all of these annexes:
+Ada 95, Ada 2005, Ada 2012, and Ada 2022 define a number of Specialized Needs Annexes, which are not required in all implementations.  However, as described in this chapter, GNAT implements all of these annexes:
 
 *Systems Programming (Annex C)*
   The Systems Programming Annex is fully implemented.

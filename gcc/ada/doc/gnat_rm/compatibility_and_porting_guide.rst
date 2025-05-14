@@ -134,9 +134,9 @@ types will be portable.
 Compatibility with Ada 83
 =========================
 
-.. index:: Compatibility (between Ada 83 and Ada 95 / Ada 2005 / Ada 2012)
+.. index:: Compatibility (between Ada 83 and Ada 95 / Ada 2005 / Ada 2012 / Ada 2022)
 
-Ada 95 and the subsequent revisions Ada 2005 and Ada 2012
+Ada 95 and the subsequent revisions Ada 2005, Ada 2012, Ada 2022
 are highly upwards compatible with Ada 83.  In
 particular, the design intention was that the difficulties associated
 with moving from Ada 83 to later versions of the standard should be no greater
@@ -505,7 +505,7 @@ such an Ada 83 application is being ported to different target hardware (for
 example where the byte endianness has changed) then you will need to
 carefully examine the program logic; the porting effort will heavily depend
 on the robustness of the original design.  Moreover, Ada 95 (and thus
-Ada 2005 and Ada 2012) are sometimes
+Ada 2005, Ada 2012, and Ada 2022) are sometimes
 incompatible with typical Ada 83 compiler practices regarding implicit
 packing, the meaning of the Size attribute, and the size of access values.
 GNAT's approach to these issues is described in :ref:`Representation_Clauses`.

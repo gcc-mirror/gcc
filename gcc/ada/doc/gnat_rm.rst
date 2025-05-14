@@ -54,7 +54,6 @@ GNAT Reference Manual
    gnat_rm/interfacing_to_other_languages
    gnat_rm/specialized_needs_annexes
    gnat_rm/implementation_of_specific_ada_features
-   gnat_rm/implementation_of_ada_2012_features
    gnat_rm/implementation_of_ada_2022_features
    gnat_rm/gnat_language_extensions
    gnat_rm/security_hardening_features
