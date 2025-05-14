@@ -1,3 +1,12 @@
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118590
+	* typeck.cc (build_omp_array_section): If array_expr is type dependent
+	or a TYPE_DECL, build OMP_ARRAY_SECTION with NULL type.
+
 2025-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

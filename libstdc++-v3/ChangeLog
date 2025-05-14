@@ -1,3 +1,18 @@
+2025-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120198
+	* include/bits/version.def (scoped_lock): Do not depend on
+	gthreads or hosted.
+	* include/bits/version.h: Regenerate.
+	* include/std/mutex (scoped_lock): Update comment.
+	* testsuite/30_threads/scoped_lock/requirements/typedefs.cc:
+	Remove dg-require-gthreads and use custom lockable type instead
+	of std::mutex. Check that typedef is only present for a single
+	template argument.
+
 2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2023.xml: Update status of proposal
