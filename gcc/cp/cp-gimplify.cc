@@ -3347,8 +3347,6 @@ cp_fold (tree x, fold_flags_t flags)
 		|| id_equal (DECL_NAME (callee), "as_const")))
 	  {
 	    r = CALL_EXPR_ARG (x, 0);
-	    /* Check that the return and argument types are sane before
-	       folding.  */
 	    if (!same_type_p (TREE_TYPE (x), TREE_TYPE (r)))
 	      r = build_nop (TREE_TYPE (x), r);
 	    x = cp_fold (r, flags);
