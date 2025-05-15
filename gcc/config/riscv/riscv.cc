@@ -14227,7 +14227,7 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
 {
   /* Trivial cases that don't need synthesis.  */
   if (SMALL_OPERAND (INTVAL (operands[2]))
-     || ((TARGET_ZBS || TARGET_XTHEADBS || TARGET_ZBKB)
+     || ((TARGET_ZBS || TARGET_ZBKB)
 	 && single_bit_mask_operand (operands[2], word_mode)))
     return false;
 
@@ -14264,7 +14264,7 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
   /* If we're flipping all but a small number of bits we can pre-flip
      the outliers, then flip all the bits, which would restore those
      bits that were pre-flipped. */
-  if ((TARGET_ZBS || TARGET_XTHEADBS || TARGET_ZBKB)
+  if ((TARGET_ZBS || TARGET_ZBKB)
       && budget < 0
       && code == XOR
       && popcount_hwi (~INTVAL (operands[2])) < original_budget)
