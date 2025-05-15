@@ -2973,7 +2973,7 @@ namespace __format
     };
 #endif
 
-#if defined(__SIZEOF_FLOAT128__) && _GLIBCXX_FORMAT_F128 != 1
+#if defined(__SIZEOF_FLOAT128__) && _GLIBCXX_FORMAT_F128 > 1
   // Reuse __formatter_fp<C>::format<__format::__flt128_t, Out> for __float128.
   // This formatter is not declared if _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT is true,
   // as __float128 when present is same type as __ieee128, which may be same as
