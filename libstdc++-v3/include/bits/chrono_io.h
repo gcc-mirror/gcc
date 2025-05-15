@@ -766,6 +766,9 @@ namespace __format
 		  // sys_time with period greater or equal to days:
 		  if constexpr (is_convertible_v<_Tp, chrono::sys_days>)
 		    __os << _S_date(__t);
+		  // Or a local_time with period greater or equal to days:
+		  else if constexpr (is_convertible_v<_Tp, chrono::local_days>)
+		    __os << _S_date(__t);
 		  else // Or it's formatted as "{:L%F %T}":
 		    {
 		      auto __days = chrono::floor<chrono::days>(__t);
