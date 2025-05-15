@@ -24,7 +24,7 @@
         *> Even-numbered rows are modified by the INSPECT statements and contain
         *> the observed outputs
         Move ' ABABABABC           01ABABXYABC' to row(1).
-`
+
         compute rowlim = 2*rows - 1
 
         Display '  INPUT                C0 C1 OUTPUT'

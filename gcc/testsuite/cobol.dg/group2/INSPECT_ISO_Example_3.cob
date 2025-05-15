@@ -19,7 +19,7 @@
         Move ' ADDDDA              000005AZZZZZ'  to row(5).
         Move ' CDDDDC              000000CDDDDC'  to row(7).
         Move ' BDBBBDB             000300BDWWWDB' to row(9).
-`
+
         Display '  INPUT                C0 C1 C2 OUTPUT'
         Display '  -------------------- -- -- -- --------------------'
         Perform Example-3 with test after

@@ -1,6 +1,6 @@
-low-values  ""
-spaces      "            "
-zeros       "000000000000"
-quotes      """"""""""""""
-high-values "ÿÿÿÿÿÿÿÿÿÿÿÿ"
+low-values  "0x0000000000000000"
+spaces      "0x2020202020202020"
+zeros       "0x3030303030303030"
+quotes      "0x2222222222222222"
+high-values "0xffffffffffffffff"
 
