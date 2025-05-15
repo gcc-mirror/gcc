@@ -47,6 +47,7 @@
 #ifdef __vxworks
 #include "vxWorks.h"
 #include "version.h" /* for _WRS_VXWORKS_MAJOR */
+#include <string.h> /* for strncmp */
 #endif
 
 #ifdef __ANDROID__
