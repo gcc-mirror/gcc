@@ -1,3 +1,25 @@
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120125
+	* module.cc (trees_out::write_function_def): Only set
+	DECL_NOT_REALLY_EXTERN if the importer might need to emit it.
+	* optimize.cc (maybe_thunk_body): Don't assume 'fn' has a cgraph
+	node created.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119864
+	* decl2.cc (start_objects): Only use module initialized for
+	host.
+	(c_parse_final_cleanups): Don't always create an OMP offload
+	init function in modules.
+
 2025-05-12  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

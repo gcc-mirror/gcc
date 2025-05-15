@@ -1,3 +1,8 @@
+2025-05-14  Kyle Huey  <me@kylehuey.com>
+
+	* dwarf2out.cc (resolve_addr_in_expr): Propagate dtprel into the address
+	table when appropriate.
+
 2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
