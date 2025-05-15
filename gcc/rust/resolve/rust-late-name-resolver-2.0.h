@@ -50,7 +50,7 @@ public:
   void visit (AST::SelfParam &) override;
   void visit (AST::MatchArm &) override;
   void visit (AST::ForLoopExpr &) override;
-  void visit (AST::IfLetExpr &) override;
+  void visit_if_let_patterns (AST::IfLetExpr &) override;
 
   // resolutions
   void visit (AST::IdentifierExpr &) override;

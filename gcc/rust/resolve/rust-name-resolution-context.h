@@ -177,6 +177,7 @@ enum class BindingSource
 {
   Match,
   Let,
+  IfLet,
   For,
   /* Closure param or function param */
   Param
