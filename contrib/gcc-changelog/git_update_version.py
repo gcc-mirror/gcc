@@ -23,6 +23,8 @@ import datetime
 import logging
 import os
 import re
+import shutil
+import sys
 
 from git import Repo
 
@@ -62,14 +64,14 @@ def read_timestamp(path):
         return f.read()
 
 
-def prepend_to_changelog_files(repo, folder, git_commit, add_to_git):
+def prepend_to_changelog_files(repo, folder, git_commit, add_to_git, suffix):
     if not git_commit.success:
         logging.info(f"While processing {git_commit.info.hexsha}:")
         for error in git_commit.errors:
             logging.info(error)
         raise AssertionError()
     for entry, output in git_commit.to_changelog_entries(use_commit_ts=True):
-        full_path = os.path.join(folder, entry, 'ChangeLog')
+        full_path = os.path.join(folder, entry, 'ChangeLog' + suffix)
         logging.info('writing to %s' % full_path)
         if os.path.exists(full_path):
             with open(full_path) as f:
@@ -89,7 +91,10 @@ active_refs = ['master',
                'releases/gcc-12', 'releases/gcc-13', 'releases/gcc-14']
 
 parser = argparse.ArgumentParser(description='Update DATESTAMP and generate '
-                                 'ChangeLog entries')
+                                 'ChangeLog entries',
+                                 epilog='For vendor branches, only; e.g: -s .suffix '
+                                 '-x releases/gcc-15 -l '
+                                 '`git log -1 --pretty=format:%H --grep "Vendor Bump"`')
 parser.add_argument('-g', '--git-path', default='.',
                     help='Path to git repository')
 parser.add_argument('-p', '--push', action='store_true',
@@ -102,18 +107,31 @@ parser.add_argument('-c', '--current', action='store_true',
                     help='Modify current branch (--push argument is ignored)')
 parser.add_argument('-i', '--ignore', action='append',
                     help='list of commits to ignore')
+# Useful only for vendor branches
+parser.add_argument('-s', '--suffix', default="",
+                    help='suffix for the ChangeLog and DATESTAMP files')
+parser.add_argument('-l', '--last-commit',
+                    help='hash of the last DATESTAMP commit')
+parser.add_argument('-x', '--exclude-branch',
+                    help='commits to be ignored if in this branch')
 args = parser.parse_args()
 
 repo = Repo(args.git_path)
 origin = repo.remotes['origin']
 
 
-def update_current_branch(ref_name=None):
+def update_current_branch(ref_name=None, suffix="", last_commit_ref=None,
+                          exclude_branch=None):
     commit = repo.head.commit
     commit_count = 1
+    last_commit = (repo.commit(last_commit_ref)
+                   if last_commit_ref is not None else None)
     while commit:
-        if (commit.author.email == 'gccadmin@gcc.gnu.org'
-                and commit.message.strip() == 'Daily bump.'):
+        if last_commit is not None:
+            if last_commit == commit:
+                break
+        elif (commit.author.email == 'gccadmin@gcc.gnu.org'
+              and commit.message.strip() == 'Daily bump.'):
             break
         # We support merge commits but only with 2 parensts
         assert len(commit.parents) <= 2
@@ -122,6 +140,12 @@ def update_current_branch(ref_name=None):
 
     logging.info('%d revisions since last Daily bump' % commit_count)
     datestamp_path = os.path.join(args.git_path, 'gcc/DATESTAMP')
+    if suffix != "":
+        if not os.path.exists(datestamp_path + suffix):
+            logging.info('Create DATESTAMP%s by copying DATESTAMP' % suffix)
+            shutil.copyfile(datestamp_path, datestamp_path + suffix)
+        datestamp_path += suffix
+
     if (read_timestamp(datestamp_path) != current_timestamp
             or args.dry_mode or args.current):
         head = repo.head.commit
@@ -131,11 +155,12 @@ def update_current_branch(ref_name=None):
         if len(head.parents) == 2:
             head = head.parents[1]
         commits = parse_git_revisions(args.git_path, '%s..%s'
-                                      % (commit.hexsha, head.hexsha), ref_name)
+                                      % (commit.hexsha, head.hexsha), ref_name,
+                                      exclude_branch)
         commits = [c for c in commits if c.info.hexsha not in ignored_commits]
         for git_commit in reversed(commits):
             prepend_to_changelog_files(repo, args.git_path, git_commit,
-                                       not args.dry_mode)
+                                       not args.dry_mode, args.suffix)
         if args.dry_mode:
             diff = repo.git.diff('HEAD')
             patch = os.path.join(args.dry_mode,
@@ -168,8 +193,17 @@ if args.ignore is not None:
 
 if args.current:
     logging.info('=== Working on the current branch ===')
-    update_current_branch()
+    if args.suffix != "" and args.last_commit is None:
+        logging.error('--suffix requires --last-commit')
+        sys.exit(1)
+    update_current_branch(None, args.suffix, args.last_commit,
+                          args.exclude_branch)
 else:
+    if args.suffix != "" or args.last_commit is not None \
+       or update_current_branch is not None:
+        logging.error('--suffix, --last-commit and --exclude-branch '
+                      'require --current')
+        sys.exit(1)
     for ref in origin.refs:
         assert ref.name.startswith('origin/')
         name = ref.name[len('origin/'):]
@@ -182,7 +216,7 @@ else:
             branch.checkout()
             origin.pull(rebase=True)
             logging.info('branch pulled and checked out')
-            update_current_branch(name)
+            update_current_branch(name, args.suffix)
             assert not repo.index.diff(None)
             logging.info('branch is done')
             logging.info('')

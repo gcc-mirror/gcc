@@ -31,7 +31,8 @@ except ImportError:
 from git_commit import GitCommit, GitInfo, decode_path
 
 
-def parse_git_revisions(repo_path, revisions, ref_name=None):
+def parse_git_revisions(repo_path, revisions, ref_name=None,
+                        exclude_branch_name=None):
     repo = Repo(repo_path)
 
     def commit_to_info(commit):
@@ -67,6 +68,8 @@ def parse_git_revisions(repo_path, revisions, ref_name=None):
         except ValueError:
             return None
 
+    exclude_branch = (repo.commit(exclude_branch_name)
+                      if exclude_branch_name is not None else None)
     parsed_commits = []
     if '..' in revisions:
         commits = list(repo.iter_commits(revisions))
@@ -74,6 +77,8 @@ def parse_git_revisions(repo_path, revisions, ref_name=None):
         commits = [repo.commit(revisions)]
 
     for commit in commits:
+        if exclude_branch is not None and repo.is_ancestor(commit, exclude_branch):
+            continue
         git_commit = GitCommit(commit_to_info(commit.hexsha),
                                commit_to_info_hook=commit_to_info,
                                ref_name=ref_name)
