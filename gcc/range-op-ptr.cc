@@ -602,8 +602,14 @@ operator_cast::fold_range (prange &r, tree type,
   int_range<2> tmp = inner;
   tree pointer_uint_type = make_unsigned_type (TYPE_PRECISION (type));
   range_cast (tmp, pointer_uint_type);
-  r.set (type, tmp.lower_bound (), tmp.upper_bound ());
-  r.update_bitmask (tmp.get_bitmask ());
+  // Casts may cause ranges to become UNDEFINED based on bitmasks.
+  if (tmp.undefined_p ())
+    r.set_varying (type);
+  else
+    {
+      r.set (type, tmp.lower_bound (), tmp.upper_bound ());
+      r.update_bitmask (tmp.get_bitmask ());
+    }
   return true;
 }
 
