@@ -1376,7 +1376,8 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.commit_flag ();
       hstate.add_int (TYPE_PRECISION_RAW (t));
       hstate.add_int (TYPE_ALIGN (t));
-      hstate.add_int (TYPE_EMPTY_P (t));
+      if (!lto_stream_offload_p)
+	hstate.add_int (TYPE_EMPTY_P (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
