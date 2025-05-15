@@ -30,8 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This package is used to compute the Value attribute for enumeration types
---  other than those in packages Standard and System. See unit Exp_Imgv for
---  details of the format of constructed image tables.
+--  other than those in package Standard. See unit Exp_Imgv for details of the
+--  format of constructed image tables.
 
 generic
 
