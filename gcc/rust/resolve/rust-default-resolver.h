@@ -70,6 +70,8 @@ public:
   void visit (AST::TypeAlias &) override;
 
   // Visitors that visit their expression node(s)
+  virtual void visit_closure_params (AST::ClosureExpr &);
+  virtual void visit (AST::ClosureExpr &);
   void visit (AST::ClosureExprInner &) override;
   void visit (AST::ClosureExprInnerTyped &) override;
   void visit (AST::MatchExpr &) override;

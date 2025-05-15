@@ -69,8 +69,8 @@ public:
   void visit (AST::StructStruct &) override;
   void visit (AST::GenericArgs &) override;
   void visit (AST::GenericArg &);
-  void visit (AST::ClosureExprInner &) override;
-  void visit (AST::ClosureExprInnerTyped &) override;
+  void visit_closure_params (AST::ClosureExpr &) override;
+  void visit (AST::ClosureExpr &) override;
 
 private:
   void resolve_label (AST::Lifetime &lifetime);

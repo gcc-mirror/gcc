@@ -293,12 +293,32 @@ DefaultResolver::visit (AST::TypeAlias &type)
 }
 
 void
+DefaultResolver::visit_closure_params (AST::ClosureExpr &expr)
+{
+  for (auto &param : expr.get_params ())
+    visit (param);
+}
+
+void
+DefaultResolver::visit (AST::ClosureExpr &expr)
+{
+  auto expr_fn = [this, &expr] () {
+    visit_closure_params (expr);
+    visit (expr.get_definition_expr ());
+  };
+
+  visit_outer_attrs (expr);
+
+  ctx.scoped (Rib::Kind::Normal, expr.get_node_id (), expr_fn);
+}
+
+void
 DefaultResolver::visit (AST::ClosureExprInner &expr)
 {
   if (expr.is_marked_for_strip ())
     return;
 
-  AST::DefaultASTVisitor::visit (expr);
+  visit (static_cast<AST::ClosureExpr &> (expr));
 }
 
 void
@@ -307,7 +327,8 @@ DefaultResolver::visit (AST::ClosureExprInnerTyped &expr)
   if (expr.is_marked_for_strip ())
     return;
 
-  AST::DefaultASTVisitor::visit (expr);
+  visit (static_cast<AST::ClosureExpr &> (expr));
+  visit (expr.get_return_type ());
 }
 
 void

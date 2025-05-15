@@ -693,51 +693,27 @@ Late::visit (AST::GenericArg &arg)
   DefaultResolver::visit (arg);
 }
 
-template <class Closure>
-static void
-add_captures (Closure &closure, NameResolutionContext &ctx)
+void
+Late::visit_closure_params (AST::ClosureExpr &closure)
 {
+  ctx.bindings.enter (BindingSource::Param);
+
+  DefaultResolver::visit_closure_params (closure);
+
+  ctx.bindings.exit ();
+}
+
+void
+Late::visit (AST::ClosureExpr &expr)
+{
+  // add captures
   auto vals = ctx.values.peek ().get_values ();
   for (auto &val : vals)
     {
-      ctx.mappings.add_capture (closure.get_node_id (),
-				val.second.get_node_id ());
+      ctx.mappings.add_capture (expr.get_node_id (), val.second.get_node_id ());
     }
-}
 
-void
-Late::visit (AST::ClosureExprInner &closure)
-{
-  add_captures (closure, ctx);
-
-  visit_outer_attrs (closure);
-
-  ctx.bindings.enter (BindingSource::Param);
-
-  for (auto &param : closure.get_params ())
-    visit (param);
-
-  ctx.bindings.exit ();
-
-  visit (closure.get_definition_expr ());
-}
-
-void
-Late::visit (AST::ClosureExprInnerTyped &closure)
-{
-  add_captures (closure, ctx);
-
-  visit_outer_attrs (closure);
-
-  ctx.bindings.enter (BindingSource::Param);
-
-  for (auto &param : closure.get_params ())
-    visit (param);
-
-  ctx.bindings.exit ();
-
-  visit (closure.get_return_type ());
-  visit (closure.get_definition_expr ());
+  DefaultResolver::visit (expr);
 }
 
 } // namespace Resolver2_0
