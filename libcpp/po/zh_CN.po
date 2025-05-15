@@ -2,22 +2,24 @@
 # Copyright (C) 2005 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Meng Jie <zuxy.meng@gmail.com>, 2005-2010.
+# Boyuan Yang <073plan@gmail.com>, 2025.
+# Anbang LI <anbangli@foxmail.com>, 2025.
 # Zhanhaoxiang Zhang <zzhx2006@outlook.com>, 2024, 2025.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 15-b20250216\n"
+"Project-Id-Version: cpplib 15.1-b20250316\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-03-14 22:05+0000\n"
-"PO-Revision-Date: 2025-02-20 18:32+0800\n"
-"Last-Translator: Zhanhaoxiang Zhang <zzhx2006@outlook.com>\n"
+"PO-Revision-Date: 2025-05-15 12:47-0400\n"
+"Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.6\n"
 
 #: charset.cc:759
 #, gcc-internal-format, gfc-internal-format
@@ -49,12 +51,12 @@ msgstr "字符 0x%lx 在执行字符集中不是单字节的"
 
 #: charset.cc:1549
 msgid "universal character names are only valid in C++ and C99"
-msgstr "Unicode 字符名只在 C++ 和 C99 中有效"
+msgstr "通用字符名只在 C++ 和 C99 中有效"
 
 #: charset.cc:1553
 #, gcc-internal-format
 msgid "C99%'s universal character names are incompatible with C90"
-msgstr "C99 的 Unicode 字符名与 C90 不兼容"
+msgstr "C99 的通用字符名与 C90 不兼容"
 
 #: charset.cc:1556
 #, gcc-internal-format
@@ -64,29 +66,29 @@ msgstr "%<\\%c%> 的意义与在传统 C 中不同"
 #: charset.cc:1595
 #, gcc-internal-format
 msgid "%<\\N%> not followed by %<{%>"
-msgstr "%<\\N%> 后没有 %<{%>"
+msgstr "%<\\N%> 后面没有 %<{%>"
 
 #: charset.cc:1625
 msgid "empty named universal character escape sequence; treating it as separate tokens"
-msgstr "空的命名 Unicode 字符转义序列；将其视为独立 token 处理"
+msgstr "空命名通用字符转义序列; 将其视为单独的词元"
 
 #: charset.cc:1632
 msgid "empty named universal character escape sequence"
-msgstr "空的命名 Unicode 字符转义序列"
+msgstr "空的命名通用字符转义序列"
 
 #: charset.cc:1639
 msgid "named universal character escapes are only valid in C++23"
-msgstr "命名 Unicode 字符转义序列(named universal character escapes)仅在 C++23 中有效"
+msgstr "命名通用字符转义仅在 C++23 中有效"
 
 #: charset.cc:1659
 #, gcc-internal-format
 msgid "%<\\N{%.*s}%> is not a valid universal character; treating it as separate tokens"
-msgstr "%<\\N{%.*s}%> 不是一个有效的 Unicode 字符；将其视为独立 token 处理"
+msgstr "%<\\N{%.*s}%> 不是有效的通用字符; 将其视为独立的词元"
 
 #: charset.cc:1665
 #, gcc-internal-format
 msgid "%<\\N{%.*s}%> is not a valid universal character"
-msgstr "%<\\N{%.*s}%> 不是一个有效的 Unicode 字符"
+msgstr "%<\\N{%.*s}%> 不是一个有效的通用字符"
 
 #: charset.cc:1675
 #, gcc-internal-format
@@ -96,7 +98,7 @@ msgstr "你是说 %<\\N{%s}%> 吗？"
 #: charset.cc:1693
 #, gcc-internal-format
 msgid "%<\\N{%> not terminated with %<}%> after %.*s; treating it as separate tokens"
-msgstr "在 %.*s 之后 %<\\N{%> 未以 %<}%> 结束；将其视为独立 token 处理"
+msgstr "在 %.*s 之后 %<\\N{%> 未以 %<}%> 结束；将其视为独立词元"
 
 #: charset.cc:1702
 #, gcc-internal-format
@@ -110,7 +112,7 @@ msgstr "在 %<_cpp_valid_ucn%> 中但不是一个 UCN"
 
 #: charset.cc:1753
 msgid "empty delimited escape sequence; treating it as separate tokens"
-msgstr "空的带分隔符的转义序列；将其视为独立 token 处理"
+msgstr "空的带分隔符的转义序列；将其视为独立词元"
 
 #: charset.cc:1760 charset.cc:2163 charset.cc:2280
 msgid "empty delimited escape sequence"
@@ -128,12 +130,12 @@ msgstr "带分隔符的转义序列仅在 C2Y 中有效"
 #: charset.cc:1794
 #, gcc-internal-format
 msgid "%<\\u{%> not terminated with %<}%> after %.*s; treating it as separate tokens"
-msgstr "在 %.*s 之后 %<\\u{%> 未以 %<}%> 结束；将其视为独立 token 处理"
+msgstr "在 %.*s 之后 %<\\u{%> 未以 %<}%> 结束；将其视为独立词元"
 
 #: charset.cc:1806
 #, gcc-internal-format
 msgid "incomplete universal character name %.*s"
-msgstr "不完全的 Unicode 字符名 %.*s"
+msgstr "不完整的通用字符名 %.*s"
 
 #: charset.cc:1810
 #, gcc-internal-format
@@ -143,12 +145,12 @@ msgstr "在 %.*s 之后 %<\\u{%> 未以 %<}%> 结束"
 #: charset.cc:1818
 #, gcc-internal-format
 msgid "%.*s is not a valid universal character"
-msgstr "%.*s 不是一个有效的 Unicode 字符"
+msgstr "%.*s 不是一个有效的通用字符"
 
 #: charset.cc:1834 charset.cc:1838
 #, gcc-internal-format
 msgid "%.*s is not a valid universal character name before C23"
-msgstr "在C23之前，%.*s 不是一个有效的 Unicode 字符名"
+msgstr "在C23之前，%.*s 不是一个有效的通用字符名"
 
 #: charset.cc:1854 lex.cc:2096
 #, gcc-internal-format
@@ -158,17 +160,17 @@ msgstr "%<$%> 出现在标识符或数字中"
 #: charset.cc:1864
 #, gcc-internal-format
 msgid "universal character %.*s is not valid in an identifier"
-msgstr "Unicode 字符 %.*s 在标识符中无效"
+msgstr "通用字符 %.*s 在标识符中无效"
 
 #: charset.cc:1868
 #, gcc-internal-format
 msgid "universal character %.*s is not valid at the start of an identifier"
-msgstr "Unicode 字符 %.*s 在标识符开头无效"
+msgstr "通用字符 %.*s 在标识符开头无效"
 
 #: charset.cc:1875
 #, gcc-internal-format
 msgid "%.*s is outside the UCS codespace"
-msgstr "%.*s 超出了 UCS 码空间"
+msgstr "%.*s 在 UCS 码空间之外"
 
 #: charset.cc:1919 charset.cc:3072
 msgid "converting UCN to source character set"
@@ -186,7 +188,7 @@ msgstr "扩展字符 %.*s 在标识符中无效"
 #: charset.cc:2007
 #, gcc-internal-format
 msgid "extended character %.*s is not valid at the start of an identifier"
-msgstr "扩展字符 %.*s 在标识符开头无效"
+msgstr "扩展字符 %.*s 在标识符的开头无效"
 
 #: charset.cc:2129
 #, gcc-internal-format
@@ -208,10 +210,9 @@ msgid "hex escape sequence out of range"
 msgstr "16 进制转义序列越界"
 
 #: charset.cc:2247
-#, fuzzy, gcc-internal-format
-#| msgid "%<\\o%> not followed by %<}%>"
+#, gcc-internal-format
 msgid "%<\\o%> not followed by %<{%>"
-msgstr "%<\\o%> 后没有 %<}%>"
+msgstr "%<\\o%> 后面没有 %<{%>"
 
 #: charset.cc:2305
 #, gcc-internal-format
@@ -461,16 +462,14 @@ msgid "%<#embed%> not supported in traditional C"
 msgstr "在传统C中不支持 %<#embed%>"
 
 #: directives.cc:1370
-#, fuzzy, gcc-internal-format
-#| msgid "%<#%s%> before C++23 is a GCC extension"
+#, gcc-internal-format
 msgid "%<#%s%> before C++26 is a GCC extension"
-msgstr "%<#%s%> 在C++23以前是一个 GCC 扩展"
+msgstr "%<#%s%> 在 C++26 以前是一个 GCC 扩展"
 
 #: directives.cc:1379
-#, fuzzy, gcc-internal-format
-#| msgid "%<#%s%> is a GCC extension"
+#, gcc-internal-format
 msgid "%<#%s%> is a C23 feature"
-msgstr "%<#%s%> 是一个 GCC 扩展"
+msgstr "%<#%s%> 是一个 C23 特性"
 
 #: directives.cc:1436
 #, gcc-internal-format
