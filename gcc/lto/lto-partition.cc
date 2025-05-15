@@ -61,7 +61,7 @@ cmp_partitions_order (const void *a, const void *b)
     ordera = lto_symtab_encoder_deref (pa->encoder, 0)->order;
   if (lto_symtab_encoder_size (pb->encoder))
     orderb = lto_symtab_encoder_deref (pb->encoder, 0)->order;
-  return orderb - ordera;
+  return ordera - orderb;
 }
 
 /* Create new partition with name NAME.
@@ -398,7 +398,7 @@ node_cmp (const void *pa, const void *pb)
 {
   const symtab_node *a = *static_cast<const symtab_node * const *> (pa);
   const symtab_node *b = *static_cast<const symtab_node * const *> (pb);
-  return b->order - a->order;
+  return a->order - b->order;
 }
 
 /* Add all symtab nodes from NEXT_NODE to PARTITION in order.  */
