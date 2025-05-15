@@ -3,11 +3,15 @@
 
 /* Struct return.  Returned via pointer.  */
 
+typedef struct {} empty;  /* See 'gcc/doc/extend.texi', "Empty Structures".  */
 typedef struct {char a;} one;
 typedef struct {short a;} two;
 typedef struct {int a;} four;
 typedef struct {long long a;} eight;
 typedef struct {int a, b[12];} big;
+
+/* { dg-final { scan-assembler-times ".extern .func dcl_rempty \\(.param.u64 %\[_a-z0-9\]*\\);" 1 } } */
+empty dcl_rempty (void);
 
 /* { dg-final { scan-assembler-times ".extern .func dcl_rone \\(.param.u64 %\[_a-z0-9\]*\\);" 1 } } */
 one dcl_rone (void);
@@ -26,6 +30,7 @@ big dcl_rbig (void);
 
 void test_1 (void)
 {
+  dcl_rempty ();
   dcl_rone ();
   dcl_rtwo ();
   dcl_rfour ();
@@ -34,6 +39,12 @@ void test_1 (void)
 }
 
 #define M(T, v) ({T t; t.a = v; t;})
+
+/* { dg-final { scan-assembler-times ".visible .func dfn_rempty \\(.param.u64 %\[_a-z0-9\]*\\)(?:;|\[\r\n\]+\{)" 2 } } */
+empty dfn_rempty (void)
+{
+  return ({empty t; t;});
+}
 
 /* { dg-final { scan-assembler-times ".visible .func dfn_rone \\(.param.u64 %\[_a-z0-9\]*\\)(?:;|\[\r\n\]+\{)" 2 } } */
 one dfn_rone (void)
