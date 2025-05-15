@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "opts.h"
 #include "stor-layout.h"
+#include "hooks.h" /* For 'hook_bool_const_tree_false'.  */
 
 
 /* Read a STRING_CST from the string table in DATA_IN using input
@@ -386,7 +387,16 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (AGGREGATE_TYPE_P (expr))
     TYPE_TYPELESS_STORAGE (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_EMPTY_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (!lto_stream_offload_p)
+    TYPE_EMPTY_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  else
+    {
+      /* All offload targets use the default ('false') 'TARGET_EMPTY_RECORD_P'.
+	 If that ever changes, we'll have to properly initialize 'TYPE_EMPTY_P'
+	 here, see 'stor-layout.cc:finalize_type_size' and PR120308.  */
+      gcc_assert (targetm.calls.empty_record_p == hook_bool_const_tree_false);
+      TYPE_EMPTY_P (expr) = 0;
+    }
   if (FUNC_OR_METHOD_TYPE_P (expr))
     TYPE_NO_NAMED_ARGS_STDARG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (RECORD_OR_UNION_TYPE_P (expr))

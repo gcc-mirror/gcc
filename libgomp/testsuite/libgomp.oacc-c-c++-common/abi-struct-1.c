@@ -2,6 +2,7 @@
 
 /* See also '../libgomp.c-c++-common/target-abi-struct-1-O0.c'.  */
 
+typedef struct {} empty;  /* See 'gcc/doc/extend.texi', "Empty Structures".  */
 typedef struct {char a;} schar;
 typedef struct {short a;} sshort;
 typedef struct {int a;} sint;
@@ -11,6 +12,14 @@ typedef struct {int a, b[12];} sint_13;
 #pragma omp declare target
 
 #define M(T) ({T t; t.a = sizeof t; t;})
+
+static __SIZE_TYPE__ empty_a;
+#pragma acc declare create(empty_a)
+#pragma acc routine
+static empty rempty(void)
+{
+  return ({empty t; empty_a = sizeof t; t;});
+}
 
 #pragma acc routine
 static schar rschar(void)
@@ -40,6 +49,21 @@ static slonglong rslonglong(void)
 static sint_13 rsint_13(void)
 {
   return M(sint_13);
+}
+
+#pragma acc routine
+static void aempty(empty empty)
+{
+  (void) empty;
+
+  __SIZE_TYPE__ empty_a_exp;
+#ifndef __cplusplus
+  empty_a_exp = 0;
+#else
+  empty_a_exp = sizeof (char);
+#endif
+  if (empty_a != empty_a_exp)
+    __builtin_abort();
 }
 
 #pragma acc routine
@@ -85,6 +109,7 @@ int main()
 #pragma acc serial
   /* { dg-bogus {using 'vector_length \(32\)', ignoring 1} {} { target openacc_nvidia_accel_selected xfail *-*-* } .-1 } */
   {
+    aempty(rempty());
     aschar(rschar());
     asshort(rsshort());
     asint(rsint());
