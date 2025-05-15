@@ -523,6 +523,14 @@ forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
 					     type, rhs1, rhs2);
   if (tmp && useless_type_conversion_p (type, TREE_TYPE (tmp)))
     {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "  Replaced '");
+	  print_gimple_expr (dump_file, stmt, 0);
+	  fprintf (dump_file, "' with '");
+	  print_generic_expr (dump_file, tmp);
+	  fprintf (dump_file, "'\n");
+	}
       gimple_assign_set_rhs_from_tree (gsi, tmp);
       fold_stmt (gsi);
       update_stmt (gsi_stmt (*gsi));
