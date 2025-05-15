@@ -1,3 +1,18 @@
+2025-05-14  Kyle Huey  <me@kylehuey.com>
+
+	Backported from master:
+	2025-05-14  Kyle Huey  <me@kylehuey.com>
+
+	* dwarf2out.cc (resolve_addr_in_expr): Propagate dtprel into the address
+	table when appropriate.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116960
+	PR c++/119303
+	* diagnostic.cc (diagnostic_context::report_diagnostic): Check for
+	non-zero m_lock later, after checking diagnostic_enabled.
+
 2025-05-12  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:

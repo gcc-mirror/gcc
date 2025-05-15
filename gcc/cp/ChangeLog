@@ -1,3 +1,55 @@
+2025-05-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/113773
+	* coroutines.cc (coro_rewrite_function_body): Do not set
+	initial_await_resume_called here.
+	(morph_fn_to_coro): Set it here, and introduce a new flag
+	that indicates we have not yet reached the ramp return.
+	Gate the EH cleanups on both of these flags.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118245
+	* parser.cc (cp_parser_class_head): Remove lambda scope when
+	parsing base classes.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116379
+	* pt.cc (tsubst_expr) <COMPONENT_REF>: Use force_paren_expr to set
+	REF_PARENTHESIZED_P.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117501
+	* cp-gimplify.cc (cp_build_init_expr_for_ctor): New.
+	(cp_fold_immediate_r): Call it.
+	(cp_fold): Break out code into cp_build_init_expr_for_ctor.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117778
+	* parser.cc (cp_parser_late_return_type_opt): Maybe override
+	auto_is_implicit_function_template_parm_p.
+	(cp_parser_parameter_declaration): Move a make_temp_override below.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118775
+	* constexpr.cc (cxx_eval_call_expression): Check tree_fits_uhwi_p.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120125
+	* optimize.cc (maybe_thunk_body): Don't assume 'fn' has a cgraph
+	node created.
+
 2025-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

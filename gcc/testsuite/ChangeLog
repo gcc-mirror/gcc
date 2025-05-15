@@ -1,3 +1,68 @@
+2025-05-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/113773
+	* g++.dg/coroutines/torture/pr113773.C: New test.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118245
+	* g++.dg/modules/lambda-7_a.H: Expect the test to fail.
+	* g++.dg/modules/lambda-7_b.C: Likewise.
+	* g++.dg/modules/lambda-7_c.C: Likewise.
+	* g++.dg/cpp2a/lambda-uneval23.C: New test.
+
+2025-05-14  Joseph Myers  <josmyers@redhat.com>
+
+	Backported from master:
+	2024-11-18  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/112556
+	* gcc.dg/c11-null-pointer-constant-1.c,
+	gcc.dg/c23-null-pointer-constant-1.c: New tests.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116379
+	* g++.dg/cpp1y/decltype-auto9.C: New test.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117501
+	* g++.dg/cpp2a/consteval39.C: New test.
+	* g++.dg/cpp2a/consteval40.C: New test.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117778
+	* g++.dg/cpp1y/lambda-generic-117778.C: New test.
+	* g++.dg/cpp2a/abbrev-fn2.C: New test.
+	* g++.dg/cpp2a/abbrev-fn3.C: New test.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116960
+	PR c++/119303
+	* g++.dg/cpp2a/lambda-uneval26.C: New test.
+	* g++.dg/warn/undefined2.C: New test.
+
+2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118775
+	* g++.dg/cpp2a/constexpr-new24.C: New test.
+	* g++.dg/cpp2a/constexpr-new25.C: New test.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120125
+	* g++.dg/modules/clone-4_a.C: New test.
+	* g++.dg/modules/clone-4_b.C: New test.
+
 2025-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
