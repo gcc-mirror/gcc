@@ -1,0 +1,6 @@
+2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gcc-changelog/git_repository.py (parse_git_revisions): Optional
+	exclude_branch_name argument
+	* gcc-changelog/git_update_version.py: Add --suffix, --exclude-branch
+	and --last-commit to handle vendor branches.

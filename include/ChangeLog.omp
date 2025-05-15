@@ -1,0 +1,45 @@
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_TO_GRID,
+	GOMP_MAP_FROM_GRID, GOMP_MAP_GRID_DIM, GOMP_MAP_GRID_STRIDE map kinds.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_MAPPING_GROUP.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_UNSET,
+	GOMP_MAP_PUSH_MAPPER_NAME, GOMP_MAP_POP_MAPPER_NAME artificial mapping
+	clause types.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gomp-constants.h (GOMP_MAP_NONCONTIG_ARRAY_P): Tweak condition.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown   <julian@codesourcery.com>
+	    Kwok Cheung Yeung   <kcy@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gomp-constants.h (enum gomp_map_kind): Define
+	GOMP_MAP_DECLARE_{ALLOCATE,DEALLOCATE} and GOMP_MAP_FLAG_SPECIAL_4.
+
+2025-05-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR other/76739
+	* gomp-constants.h (GOMP_MAP_FLAG_SPECIAL_3): Define.
+	(enum gomp_map_kind): Add GOMP_MAP_NONCONTIG_ARRAY,
+	GOMP_MAP_NONCONTIG_ARRAY_TO, GOMP_MAP_NONCONTIG_ARRAY_FROM,
+	GOMP_MAP_NONCONTIG_ARRAY_TOFROM, GOMP_MAP_NONCONTIG_ARRAY_FORCE_TO,
+	GOMP_MAP_NONCONTIG_ARRAY_FORCE_FROM,
+	GOMP_MAP_NONCONTIG_ARRAY_FORCE_TOFROM,
+	GOMP_MAP_NONCONTIG_ARRAY_ALLOC, GOMP_MAP_NONCONTIG_ARRAY_FORCE_ALLOC,
+	GOMP_MAP_NONCONTIG_ARRAY_FORCE_PRESENT.
+	(GOMP_MAP_NONCONTIG_ARRAY_P): Define.

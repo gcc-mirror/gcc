@@ -1,0 +1,435 @@
+2025-05-15  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/adjust-args-10.c: Ignore the new sorry since the
+	lack of proper diagnostic is already xfail'ed.
+	* g++.dg/gomp/adjust-args-1.C: Adjust output patterns.
+	* g++.dg/gomp/adjust-args-17.C: New.
+	* gcc.dg/gomp/adjust-args-3.c: New.
+	* gfortran.dg/gomp/adjust-args-14.f90: Don't expect this to fail now.
+
+2025-05-15  waffl3x  <waffl3x@baylibre.com>
+
+	PR c++/119659
+	PR c++/118859
+	PR c++/119601
+	PR c++/119602
+	PR c++/119775
+	* c-c++-common/gomp/pr118579.c: Change error text.
+	* g++.dg/gomp/adjust-args-1.C: Fix error text, add dg-* directives.
+	* g++.dg/gomp/adjust-args-2.C: Add dg-* directives.
+	* g++.dg/gomp/append-args-1.C: Add dg-* directives.
+	* gcc.dg/gomp/adjust-args-1.c: Fix error text, add dg-* directives.
+	* gcc.dg/gomp/append-args-1.c: Fix error text, add dg-* directives.
+	* c-c++-common/gomp/adjust-args-7.c: New test.
+	* c-c++-common/gomp/adjust-args-8.c: New test.
+	* c-c++-common/gomp/adjust-args-9.c: New test.
+	* c-c++-common/gomp/adjust-args-10.c: New test.
+	* c-c++-common/gomp/adjust-args-11.c: New test.
+	* c-c++-common/gomp/adjust-args-12.c: New test.
+	* c-c++-common/gomp/adjust-args-13.c: New test.
+	* c-c++-common/gomp/adjust-args-14.c: New test.
+	* c-c++-common/gomp/adjust-args-15.c: New test.
+	* g++.dg/gomp/adjust-args-5.C: New test.
+	* g++.dg/gomp/adjust-args-6.C: New test.
+	* g++.dg/gomp/adjust-args-7.C: New test.
+	* g++.dg/gomp/adjust-args-8.C: New test.
+	* g++.dg/gomp/adjust-args-9.C: New test.
+	* g++.dg/gomp/adjust-args-10.C: New test.
+	* g++.dg/gomp/adjust-args-11.C: New test.
+	* g++.dg/gomp/adjust-args-12.C: New test.
+	* g++.dg/gomp/adjust-args-13.C: New test.
+	* g++.dg/gomp/adjust-args-14.C: New test.
+	* g++.dg/gomp/adjust-args-15.C: New test.
+	* g++.dg/gomp/adjust-args-16.C: New test.
+	* g++.dg/gomp/append-args-9.C: New test.
+	* g++.dg/gomp/append-args-10.C: New test.
+	* g++.dg/gomp/append-args-11.C: New test.
+	* g++.dg/gomp/append-args-omp-interop-t.h: New header.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* c-c++-common/gomp/target-map-iterators-3.c: Update expected Gimple
+	output.
+	* c-c++-common/gomp/target-map-iterators-5.c: New.
+	* c-c++-common/gomp/target-update-iterators-3.c: Update expected
+	Gimple output.
+	* gfortran.dg/gomp/target-map-iterators-3.f90: Likewise.
+	* gfortran.dg/gomp/target-map-iterators-5.f90: New.
+	* gfortran.dg/gomp/target-update-iterators-3.f90: Update expected
+	Gimple output.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs   <ams@baylibre.com>
+
+	* gfortran.dg/gomp/target-update-iterators-1.f90: New.
+	* gfortran.dg/gomp/target-update-iterators-2.f90: New.
+	* gfortran.dg/gomp/target-update-iterators-3.f90: New.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* gfortran.dg/gomp/target-map-iterators-1.f90: New.
+	* gfortran.dg/gomp/target-map-iterators-2.f90: New.
+	* gfortran.dg/gomp/target-map-iterators-3.f90: New.
+	* gfortran.dg/gomp/target-map-iterators-4.f90: New.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* gfortran.dg/gomp/target-enter-exit-data.f90: Revert expected tree
+	dumps.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* c-c++-common/gomp/target-update-iterators-1.c: New.
+	* c-c++-common/gomp/target-update-iterators-2.c: New.
+	* c-c++-common/gomp/target-update-iterators-3.c: New.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* c-c++-common/gomp/map-6.c (foo): Amend expected error message.
+	* c-c++-common/gomp/target-map-iterators-1.c: New.
+	* c-c++-common/gomp/target-map-iterators-2.c: New.
+	* c-c++-common/gomp/target-map-iterators-3.c: New.
+	* c-c++-common/gomp/target-map-iterators-4.c: New.
+
+2025-05-15  Chung-Lin Tang  <cltang@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/cpp/openacc-define-3.c: Adjust test.
+	* gfortran.dg/openacc-define-3.f90: Adjust test.
+
+2025-05-15  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* c-c++-common/goacc/readonly-2.c: Adjust test.
+	* c-c++-common/goacc/reduction-9.c: Adjust test.
+	* c-c++-common/goacc/reduction-11.c: New test.
+	* c-c++-common/goacc/reduction-12.c: New test.
+	* c-c++-common/goacc/reduction-13.c: New test.
+	* c-c++-common/goacc/reduction-14.c: New test.
+	* c-c++-common/goacc/reduction-15.c: New test.
+	* c-c++-common/goacc/reduction-16.c: New test.
+	* g++.dg/goacc/reductions-1.C: Adjust test.
+	* gfortran.dg/goacc/array-reduction.f90: Adjust test.
+	* gfortran.dg/goacc/enter-exit-data-2.f90: Adjust test.
+	* gfortran.dg/goacc/finalize-1.f: Adjust test.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Adjust test.
+	* gfortran.dg/goacc/pr70828.f90: Adjust test.
+	* gfortran.dg/goacc/reduction.f95: Adjust test.
+	* gfortran.dg/gomp/target-enter-exit-data.f90: Adjust test.
+
+2025-05-15  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/delim-declare-variant-1.c: New.
+	* c-c++-common/gomp/delim-declare-variant-2.c: New.
+	* c-c++-common/gomp/delim-declare-variant-3.c: New.
+	* c-c++-common/gomp/delim-declare-variant-4.c: New.
+	* c-c++-common/gomp/delim-declare-variant-5.c: New.
+	* c-c++-common/gomp/delim-declare-variant-6.c: New.
+	* c-c++-common/gomp/delim-declare-variant-7.c: New.
+
+2025-05-15  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    waffl3x  <waffl3x@baylibre.com>
+
+	* g++.dg/gomp/delim-declare-variant-1.C: New.
+	* g++.dg/gomp/delim-declare-variant-2.C: New.
+	* g++.dg/gomp/delim-declare-variant-3.C: New.
+	* g++.dg/gomp/delim-declare-variant-4.C: New.
+	* g++.dg/gomp/delim-declare-variant-5.C: New.
+	* g++.dg/gomp/delim-declare-variant-6.C: New.
+	* g++.dg/gomp/delim-declare-variant-7.C: New.
+	* g++.dg/gomp/delim-declare-variant-40.C: New.
+	* g++.dg/gomp/delim-declare-variant-41.C: New.
+	* g++.dg/gomp/delim-declare-variant-50.C: New.
+	* g++.dg/gomp/delim-declare-variant-51.C: New.
+	* g++.dg/gomp/delim-declare-variant-52.C: New.
+	* g++.dg/gomp/delim-declare-variant-70.C: New.
+	* g++.dg/gomp/delim-declare-variant-71.C: New.
+
+2025-05-15  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* c-c++-common/goacc/readonly-1.c: Adjust testcase.
+	* c-c++-common/goacc/readonly-2.c: New testcase.
+	* gfortran.dg/goacc/readonly-1.f90: Adjust testcase.
+	* gfortran.dg/pr67170.f90: Likewise.
+
+2025-05-15  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/uses_allocators-1.c: Adjust for this testcase
+	no longer failing with "sorry" in C++.
+	* g++.dg/gomp/allocate-15.C: Disable scan-assembler tests since
+	compilation fails with "sorry" before getting that far.
+	* g++.dg/gomp/allocate-16.C: Likewise.
+
+2025-05-15  waffl3x  <waffl3x@baylibre.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/allocate-allocator-handle.h: New header.
+	* c-c++-common/gomp/allocate-5.c: Remove dg-messages for 'sorry',
+	add dg-error for c++.
+	* c-c++-common/gomp/allocate-9.c: Include header, remove dg-messages
+	for 'sorry', add dg-notes for c++, minor refactoring.
+	* c-c++-common/gomp/allocate-10.c: Enable for c++.
+	* c-c++-common/gomp/allocate-11.c: Enable for c++, disable warning.
+	* c-c++-common/gomp/allocate-12.c: Enable for c++, add cases.
+	* c-c++-common/gomp/allocate-14.c: Enable for c++.
+	* c-c++-common/gomp/allocate-15.c: Enable for c++.
+	* c-c++-common/gomp/allocate-16.c: Enable for c++.
+	* c-c++-common/gomp/allocate-17.c: Remove dg-message for 'sorry'.
+	* c-c++-common/gomp/allocate-18.c: Include header, remove dg-message
+	for 'sorry'.
+	* c-c++-common/gomp/allocate-19.c: Remove xfails for c++, remove
+	dg-messages for 'sorry'.
+	* c-c++-common/gomp/allocate-20.c: New test.
+	* c-c++-common/gomp/directive-1.c: Remove dg-message for 'sorry'.
+	* g++.dg/gomp/allocate-allocator-handle.h: New header.
+	* g++.dg/gomp/allocate-5.C: New test.
+	* g++.dg/gomp/allocate-6.C: New test.
+	* g++.dg/gomp/allocate-7.C: New test.
+	* g++.dg/gomp/allocate-8.C: New test.
+	* g++.dg/gomp/allocate-9.C: New test.
+	* g++.dg/gomp/allocate-10.C: New test.
+	* g++.dg/gomp/allocate-11.C: New test.
+	* g++.dg/gomp/allocate-12.C: New test.
+	* g++.dg/gomp/allocate-13.C: New test.
+	* g++.dg/gomp/allocate-14.C: New test.
+	* g++.dg/gomp/allocate-15.C: New test.
+	* g++.dg/gomp/allocate-16.C: New test.
+	* g++.dg/gomp/allocate-17.C: New test.
+	* g++.dg/gomp/allocate-18.C: New test.
+	* g++.dg/gomp/allocate-19.C: New test.
+	* g++.dg/gomp/allocate-20.C: New test.
+	* g++.dg/gomp/allocate-21.C: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Andrew Stubbs   <ams@baylibre.com>
+	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/declare-mapper-17.c: New test.
+	* c-c++-common/gomp/declare-mapper-19.c: New test.
+	* gfortran.dg/gomp/declare-mapper-24.f90: New test.
+	* gfortran.dg/gomp/declare-mapper-26.f90: Uncomment 'target update'
+	part of test.
+	* gfortran.dg/gomp/declare-mapper-27.f90: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gfortran.dg/gomp/noncontig-updates-1.f90: New test.
+	* gfortran.dg/gomp/noncontig-updates-2.f90: New test.
+	* gfortran.dg/gomp/noncontig-updates-3.f90: New test.
+	* gfortran.dg/gomp/noncontig-updates-4.f90: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* gcc.dg/gomp/bad-array-shaping-c-1.c: New test.
+	* gcc.dg/gomp/bad-array-shaping-c-2.c: New test.
+	* gcc.dg/gomp/bad-array-shaping-c-3.c: New test.
+	* gcc.dg/gomp/bad-array-shaping-c-4.c: New test.
+	* gcc.dg/gomp/bad-array-shaping-c-5.c: New test.
+	* gcc.dg/gomp/bad-array-shaping-c-6.c: New test.
+	* gcc.dg/gomp/bad-array-shaping-c-7.c: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* g++.dg/gomp/array-shaping-1.C: New test.
+	* g++.dg/gomp/array-shaping-2.C: New test.
+	* g++.dg/gomp/bad-array-shaping-1.C: New test.
+	* g++.dg/gomp/bad-array-shaping-2.C: New test.
+	* g++.dg/gomp/bad-array-shaping-3.C: New test.
+	* g++.dg/gomp/bad-array-shaping-4.C: New test.
+	* g++.dg/gomp/bad-array-shaping-5.C: New test.
+	* g++.dg/gomp/bad-array-shaping-6.C: New test.
+	* g++.dg/gomp/bad-array-shaping-7.C: New test.
+	* g++.dg/gomp/bad-array-shaping-8.C: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-mapper-31.f90: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-mapper-26.f90: New test.
+	* gfortran.dg/gomp/declare-mapper-29.f90: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/gomp/declare-mapper-15.c: New test.
+	* c-c++-common/gomp/declare-mapper-16.c: New test.
+	* g++.dg/gomp/declare-mapper-1.C: Adjust expected scan output.
+	* gfortran.dg/gomp/declare-mapper-22.f90: New test.
+	* gfortran.dg/gomp/declare-mapper-23.f90: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-mapper-1.f90: New test.
+	* gfortran.dg/gomp/declare-mapper-5.f90: New test.
+	* gfortran.dg/gomp/declare-mapper-14.f90: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/gomp/declare-mapper-3.c: Enable for C.
+	* c-c++-common/gomp/declare-mapper-4.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-5.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-6.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-7.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-8.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-9.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-12.c: Enable for C.
+	* gcc.dg/gomp/declare-mapper-10.c: New test.
+	* gcc.dg/gomp/declare-mapper-11.c: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/gomp/map-6.c: Update error scan output.
+	* c-c++-common/gomp/declare-mapper-3.c: New test (only enabled for C++
+	for now).
+	* c-c++-common/gomp/declare-mapper-4.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-5.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-6.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-7.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-8.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-9.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-12.c: Likewise.
+	* g++.dg/gomp/declare-mapper-1.C: New test.
+	* g++.dg/gomp/declare-mapper-2.C: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/goacc/combined-reduction.c: Adjust scan output.
+	* c-c++-common/goacc/implied-copy-1.c: Likewise.
+	* c-c++-common/goacc/reduction-1.c: Adjust patterns.
+	* c-c++-common/goacc/reduction-2.c: Likewise.
+	* c-c++-common/goacc/reduction-3.c: Likewise.
+	* c-c++-common/goacc/reduction-4.c: Likewise.
+	* c-c++-common/goacc/reduction-10.c: Likewise.
+	* gfortran.dg/goacc/common-block-3.f90: Likewise.
+	* gfortran.dg/goacc/implied-copy-1.f90: Likewise.
+	* gfortran.dg/goacc/loop-tree-1.f90: Likewise.
+	* gfortran.dg/goacc/private-explicit-kernels-1.f95: Likewise.
+	* gfortran.dg/goacc/private-predetermined-kernels-1.f95: Likewise.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* gfortran.dg/goacc/assumed-size.f90: Don't expect error.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Paul-Antoine Arras  <parras@baylibre.com>
+	    Sandra Loosemore  <sandra@baylibre.com>
+
+	* c-c++-common/goacc/readonly-1.c: Adjust patterns.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/goacc/acc-data-chain.c: New test.
+	* gfortran.dg/goacc/pr70828.f90: Likewise.
+	* gfortran.dg/goacc/assumed-size.f90: Likewise.
+
+2025-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-1.f90: Add uses_allocators.
+	* gfortran.dg/gomp/scope-6.f90: Update dg-scan-tree-dump.
+	* c-c++-common/gomp/uses_allocators-1.c: New test.
+	* c-c++-common/gomp/uses_allocators-2.c: New test.
+	* gfortran.dg/gomp/uses_allocators-1.f90: New test.
+
+2025-05-15  Tobias Burnus  <tobias@codesourcery.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-2.c: Adjust xfails.
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr103836-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+
+2025-05-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-c++-common/gomp/clauses-2.c: Adjust testcase.
+	* c-c++-common/gomp/map-6.c: Adjust testcase.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown   <julian@codesourcery.com>
+	    Kwok Cheung Yeung   <kcy@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gfortran.dg/goacc/declare-allocatable-1.f90: New test.
+	* gfortran.dg/goacc/declare-3.f95: Adjust expected dump output.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Sandra Loosemore  <sandra@baylibre.com>
+
+	* gfortran.dg/goacc/privatization-1-compute-loop.f90: Add xfails.
+	* gfortran.dg/goacc/privatization-1-compute.f90: Likewise.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gfortran.dg/goacc/modules.f95: Remove xfail on bogus warnings.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang   <cltang@codesourcery.com>
+
+	* c-c++-common/goacc/reduction-10.c: New test.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/loop-auto-1.c: Adjust test case to conform to
+	the new behavior of the auto clause in OpenACC 2.5.
+	* c-c++-common/goacc/loop-auto-2.c: Likewise.
+	* gcc.dg/goacc/loop-processing-1.c: Likewise.
+	* c-c++-common/goacc/loop-auto-3.c: New test.
+	* gfortran.dg/goacc/loop-auto-1.f90: New test.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris   <jnorris@codesourcery.com>
+	    Tom de Vries   <tom@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* g++.dg/goacc/loop-1.c: New test.
+	* g++.dg/goacc/loop-2.c: New test.
+	* g++.dg/goacc/loop-3.c: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis   <cesar@codesourcery.com>
+	    Nathan Sidwell   <nathan@acm.org>
+
+	* c-c++-common/goacc/reduction-9.c: New.
+	* g++.dg/goacc/reductions-1.C: New.
+	* gcc.dg/goacc/loop-processing-1.c: Update.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris   <jnorris@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* c-c++-common/goacc/deviceptr-4.c: Update.
+	* gfortran.dg/goacc/loop-2-kernels-tile.f95: Update.
+	* gfortran.dg/goacc/loop-2-parallel-tile.f95: Update.
+	* gfortran.dg/goacc/loop-2-serial-tile.f95: Update.
+	* gfortran.dg/goacc/sie.f95: Update.
+	* gfortran.dg/goacc/tile-1.f90: Update.
+	* gfortran.dg/gomp/num-teams-2.f90: Update.
+	* gfortran.dg/gomp/pr67500.f90: Update.
+	* gfortran.dg/gomp/pr77516.f90: Update.
+
+2025-05-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR other/76739
+	* c-c++-common/goacc/data-clause-1.c (foo): Remove expected message.
+	* c-c++-common/goacc/noncontig_array-1.c: New test.
+	* g++.dg/goacc/data-clause-1.C (foo): Remove expected message.

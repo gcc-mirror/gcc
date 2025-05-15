@@ -1,0 +1,90 @@
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* c-omp.cc (omp_instantiate_mapper): Apply iterator to new clauses
+	generated from mapper.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* c-omp.cc (c_finish_omp_depobj): Use OMP_ITERATOR_DECL_P.
+
+2025-05-15  Chung-Lin Tang  <cltang@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Updated _OPENACC to "201811"
+	for OpenACC 2.7.
+
+2025-05-15  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* c-omp.cc (c_omp_address_inspector::expand_array_base):
+	Set OMP_CLAUSE_MAP_POINTS_TO_READONLY on pointer clause.
+	(c_omp_address_inspector::expand_component_selector): Likewise.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Andrew Stubbs   <ams@baylibre.com>
+	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-common.h (c_omp_region_type): Add C_ORT_UPDATE and C_ORT_OMP_UPDATE
+	codes.
+	* c-omp.cc (omp_basic_map_kind_name): New function.
+	(omp_instantiate_mapper): Add LOC parameter.  Add 'target update'
+	support.
+	(c_omp_instantiate_mappers): Add 'target update' support.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-omp.cc (c_omp_address_inspector::map_supported_p): Support
+	VIEW_CONVERT_EXPR and ADDR_EXPR codes.
+	(omp_expand_grid_dim): New function.
+	(omp_handle_noncontig_array): New function.
+	(c_omp_address_inspector:expand_array_base): Support noncontiguous
+	array updates.
+	(c_omp_address_inspector::expand_component_selector): Support
+	noncontiguous array updates.
+	* c-pretty-print.cc (c_pretty_printer::postfix_expression): Add
+	OMP_ARRAY_SECTION stride support.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-common.h (expand_array_base, expand_component_selector,
+	expand_map_clause): Adjust member declarations.
+	* c-omp.cc (omp_expand_access_chain): Pass and return pointer to
+	clause.
+	(c_omp_address_inspector::expand_array_base): Likewise.
+	(c_omp_address_inspector::expand_component_selector): Likewise.
+	(c_omp_address_inspector::expand_map_clause): Likewise.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-common.h (c_omp_region_type): Add C_ORT_EXIT_DATA,
+	C_ORT_OMP_EXIT_DATA.
+	(c_omp_instantiate_mappers): Add region type parameter.
+	* c-omp.cc (omp_split_map_kind, omp_join_map_kind,
+	omp_map_decayed_kind): New functions.
+	(omp_instantiate_mapper): Add ORT parameter.  Implement map kind decay
+	for instantiated mapper clauses.
+	(c_omp_instantiate_mappers): Add ORT parameter, pass to
+	omp_instantiate_mapper.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-common.h (c_omp_region_type): Add C_ORT_DECLARE_MAPPER and
+	C_ORT_OMP_DECLARE_MAPPER codes.
+	(omp_mapper_list): Add forward declaration.
+	(c_omp_find_nested_mappers, c_omp_instantiate_mappers): Add prototypes.
+	* c-omp.cc (c_omp_find_nested_mappers): New function.
+	(remap_mapper_decl_info): New struct.
+	(remap_mapper_decl_1, omp_instantiate_mapper,
+	c_omp_instantiate_mappers): New functions.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* c-omp.cc (c_omp_address_inspector::expand_array_base): Don't omit
+	pointer nodes for OpenACC.
+
+2025-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-omp.cc (c_omp_split_clauses): Hande uses_allocators.
+	* c-pragma.h (enum pragma_omp_clause): Add
+	PRAGMA_OMP_CLAUSE_USES_ALLOCATORS.

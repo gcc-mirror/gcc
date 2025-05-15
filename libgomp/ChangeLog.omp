@@ -1,0 +1,847 @@
+2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-05-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/interop-cuda-full.c: Use 'link' instead
+	of 'run' when the default device is "! offload_device_nvptx".
+	* testsuite/libgomp.c/interop-cuda-libonly.c: Likewise.
+	* testsuite/libgomp.c/interop-hip-nvidia-full.c: Likewise.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-headers.c: Likewise.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-hip-header.c: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-full.F90: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-no-module.F90: Likewise.
+	* testsuite/libgomp.c/interop-hip-amd-full.c: Use 'link' instead
+	of 'run' when the default device is "! offload_device_gcn".
+	* testsuite/libgomp.c/interop-hip-amd-no-hip-header.c: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-amd-full.F90: Likewise.
+	* testsuite/libgomp.fortran/interop-hip-amd-no-module.F90: Likewise.
+
+2025-05-15  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi: Mark need_device_addr as supported.
+	* testsuite/libgomp.c++/need-device-ptr.C: New.
+	* testsuite/libgomp.c-c++-common/dispatch-3.c: New.
+	* testsuite/libgomp.fortran/adjust-args-array-descriptor.f90: New.
+	* testsuite/libgomp.fortran/need-device-ptr.f90: New.
+
+2025-05-15  waffl3x  <waffl3x@baylibre.com>
+
+	PR c++/119659
+	PR c++/118859
+	PR c++/119601
+	PR c++/119602
+	PR c++/119775
+	* libgomp.texi: Set 'adjust args' variadic arguments support to Y.
+
+2025-05-15  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2025-04-25  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c/interop-hsa.c: New test.
+
+2025-05-15  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119853
+	PR target/119854
+	* target-cxa-dso-dtor.c: New.
+	* config/accel/target-cxa-dso-dtor.c: Likewise.
+	* Makefile.am (libgomp_la_SOURCES): Add it.
+	* Makefile.in: Regenerate.
+	* testsuite/libgomp.c++/target-cdtor-1.C: New.
+	* testsuite/libgomp.c++/target-cdtor-2.C: Likewise.
+
+2025-05-15  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/target-cdtor-1.c: New.
+
+2025-05-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+		    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119737
+	* testsuite/libgomp.c++/target-exceptions-throw-1.C: Remove
+	PR119737 XFAILing.
+	* testsuite/libgomp.c++/target-exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2.C: Likewise.
+
+2025-05-15  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Adjust for
+	'targetm.arm_eabi_unwinder'.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-nvptx.C:
+	Likewise.
+
+2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-04-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_gomp_hip_header_nvidia): Compile with
+	"-Wno-deprecated-declarations".
+	* testsuite/libgomp.c/interop-hip-nvidia-full.c: Likewise.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-full.c: Likewise.
+	* testsuite/libgomp.c/interop-hipblas.h: Add workarounds
+	when using the HIP headers with __HIP_PLATFORM_NVIDIA__.
+
+2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-04-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/lib/libgomp.exp (check_effective_target_openacc_cublas,
+	check_effective_target_openacc_cudart): Update description as
+	the check requires more.
+	(check_effective_target_openacc_libcuda,
+	check_effective_target_openacc_libcublas,
+	check_effective_target_openacc_libcudart,
+	check_effective_target_gomp_hip_header_amd,
+	check_effective_target_gomp_hip_header_nvidia,
+	check_effective_target_gomp_hipfort_module,
+	check_effective_target_gomp_libamdhip64,
+	check_effective_target_gomp_libhipblas): New.
+	* testsuite/libgomp.c-c++-common/interop-2.c: New test.
+	* testsuite/libgomp.c/interop-cublas-full.c: New test.
+	* testsuite/libgomp.c/interop-cublas-libonly.c: New test.
+	* testsuite/libgomp.c/interop-cuda-full.c: New test.
+	* testsuite/libgomp.c/interop-cuda-libonly.c: New test.
+	* testsuite/libgomp.c/interop-hip-amd-full.c: New test.
+	* testsuite/libgomp.c/interop-hip-amd-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hip-nvidia-full.c: New test.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-headers.c: New test.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hip.h: New test.
+	* testsuite/libgomp.c/interop-hipblas-amd-full.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-amd-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-full.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-no-headers.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hipblas.h: New test.
+	* testsuite/libgomp.fortran/interop-hip-amd-full.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip-amd-no-module.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-full.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-no-module.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip.h: New test.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* testsuite/libgomp.fortran/allocatable-comp-iterators.f90: Add test
+	for non-const iterator boundaries.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* testsuite/libgomp.fortran/allocatable-comp-iterators.f90: New.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.fortran/mapper-iterators-1.f90: New test.
+	* testsuite/libgomp.fortran/mapper-iterators-2.f90: New test.
+	* testsuite/libgomp.fortran/mapper-iterators-3.f90: New test.
+	* testsuite/libgomp.fortran/mapper-iterators-4.f90: New test.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/mapper-iterators-1.c: New test.
+	* testsuite/libgomp.c-c++-common/mapper-iterators-2.c: New test.
+	* testsuite/libgomp.c-c++-common/mapper-iterators-3.c: New test.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/target-map-iterators-4.c: New.
+	* testsuite/libgomp.c-c++-common/target-map-iterators-5.c: New.
+	* testsuite/libgomp.c-c++-common/target-update-iterators-4.c: New.
+	* testsuite/libgomp.fortran/target-map-iterators-4.f90: New.
+	* testsuite/libgomp.fortran/target-map-iterators-5.f90: New.
+	* testsuite/libgomp.fortran/target-update-iterators-4.f90: New.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs   <ams@baylibre.com>
+
+	* testsuite/libgomp.fortran/target-update-iterators-1.f90: New.
+	* testsuite/libgomp.fortran/target-update-iterators-2.f90: New.
+	* testsuite/libgomp.fortran/target-update-iterators-3.f90: New.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* target.c (kind_to_name): Handle GOMP_MAP_STRUCT and
+	GOMP_MAP_STRUCT_UNORD.
+	(gomp_add_map): New.
+	(gomp_merge_iterator_maps): Expand fields of a struct mapping
+	breadth-first.
+	* testsuite/libgomp.fortran/target-map-iterators-1.f90: New.
+	* testsuite/libgomp.fortran/target-map-iterators-2.f90: New.
+	* testsuite/libgomp.fortran/target-map-iterators-3.f90: New.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* target.c (gomp_update): Call gomp_merge_iterator_maps.  Free
+	allocated variables.
+	* testsuite/libgomp.c-c++-common/target-update-iterators-1.c: New.
+	* testsuite/libgomp.c-c++-common/target-update-iterators-2.c: New.
+	* testsuite/libgomp.c-c++-common/target-update-iterators-3.c: New.
+
+2025-05-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* target.c (kind_to_name): New.
+	(gomp_merge_iterator_maps): New.
+	(gomp_map_vars_internal): Call gomp_merge_iterator_maps.  Copy
+	address of only the first iteration to target vars.  Free allocated
+	variables.
+	* testsuite/libgomp.c-c++-common/target-map-iterators-1.c: New.
+	* testsuite/libgomp.c-c++-common/target-map-iterators-2.c: New.
+	* testsuite/libgomp.c-c++-common/target-map-iterators-3.c: New.
+
+2025-05-15  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-3.C: Adjust.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-3.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-3.C: Likewise.
+
+2025-05-15  Chung-Lin Tang  <cltang@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* acc_prof.h (_ACC_PROF_INFO_VERSION): Adjust to 201811.
+	* libgomp.texi (Enabling OpenACC): Adjust version
+	references to 2.7 from 2.6.
+	* openacc.f90 (module openacc): Adjust openacc_version to 201811.
+	* openacc_lib.h (openacc_version): Adjust openacc_version to 201811.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-version-1.c:
+	Adjust test value to 201811.
+	* testsuite/libgomp.oacc-fortran/openacc_version-1.f: Adjust
+	test value to 201811.
+	* testsuite/libgomp.oacc-fortran/openacc_version-2.f90: Likewise.
+
+2025-05-15  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-arrays-2.c: Adjust test.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-arrays-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-arrays-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-arrays-5.c: Likewise.
+
+2025-05-15  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction.h
+	(check_reduction_array_xx): New macro.
+	(operator_apply): Likewise.
+	(check_reduction_array_op): Likewise.
+	(check_reduction_arraysec_op): Likewise.
+	(function_apply): Likewise.
+	(check_reduction_array_macro): Likewise.
+	(check_reduction_arraysec_macro): Likewise.
+	(check_reduction_xxx_xx_all): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-arrays-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-arrays-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-arrays-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-arrays-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-arrays-5.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-structs-1.c: New test.
+	* testsuite/libgomp.oacc-fortran/reduction-10.f90: New test.
+	* testsuite/libgomp.oacc-fortran/reduction-11.f90: New test.
+	* testsuite/libgomp.oacc-fortran/reduction-12.f90: New test.
+	* testsuite/libgomp.oacc-fortran/reduction-13.f90: New test.
+	* testsuite/libgomp.oacc-fortran/reduction-14.f90: New test.
+	* testsuite/libgomp.oacc-fortran/reduction-15.f90: New test.
+	* testsuite/libgomp.oacc-fortran/reduction-16.f90: New test.
+
+2025-05-15  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/delim-declare-variant-1.c: New.
+
+2025-05-15  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    waffl3x  <waffl3x@baylibre.com>
+
+	* testsuite/libgomp.c++/delim-declare-variant-1.C: New.
+	* testsuite/libgomp.c++/delim-declare-variant-2.C: New.
+	* testsuite/libgomp.c++/delim-declare-variant-7.C: New.
+
+2025-05-15  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* target.c (omp_target_memcpy_rect_worker): Require unit strides
+	and matching element size.
+
+2025-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2025-05-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-8a.f90: New test.
+
+2025-05-15  waffl3x  <waffl3x@baylibre.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi: Document C++ support.
+	* testsuite/libgomp.c/allocate-4.c: Move to...
+	* testsuite/libgomp.c-c++-common/allocate-4.c: ...here.
+	* testsuite/libgomp.c/allocate-5.c: Move to...
+	* testsuite/libgomp.c-c++-common/allocate-5.c: ...here.
+	* testsuite/libgomp.c/allocate-6.c: Move to...
+	* testsuite/libgomp.c-c++-common/allocate-6.c: ...here.
+	* testsuite/libgomp.c++/allocate-2.C: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* target.c (omp_target_memcpy_rect_worker): Add 1D strided transfer
+	support.
+
+2025-05-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/target.c (GOMP_target_ext): Add "signal" field.
+	Fix atomics race condition.
+	* config/nvptx/libgomp-nvptx.h (REV_OFFLOAD_QUEUE_SIZE): New define.
+	(struct rev_offload): Implement ring buffer.
+	* config/nvptx/target.c (GOMP_target_ext): Likewise.
+	* env.c (initialize_env): Read GOMP_REVERSE_OFFLOAD_THREADS.
+	* libgomp-plugin.c (GOMP_PLUGIN_target_rev): Replace "aq" parameter
+	with "signal" and "use_aq".
+	* libgomp-plugin.h (GOMP_PLUGIN_target_rev): Likewise.
+	* libgomp.h (gomp_target_rev): Likewise.
+	* plugin/plugin-gcn.c (process_reverse_offload): Add "signal".
+	(console_output): Pass signal value through.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_openacc_async_construct):
+	Attach new threads to the numbered device.
+	Change the flag to CU_STREAM_NON_BLOCKING.
+	(GOMP_OFFLOAD_run): Implement ring-buffer and remove signalling.
+	* target.c (gomp_target_rev): Rename to ...
+	(gomp_target_rev_internal): ... this, and change "dev_num" to
+	"devicep".
+	(gomp_target_rev_worker_thread): New function.
+	(gomp_target_rev): New function (old name).
+	* libgomp.texi: Document GOMP_REVERSE_OFFLOAD_THREADS.
+	* testsuite/libgomp.c/reverse-offload-threads-1.c: New test.
+	* testsuite/libgomp.c/reverse-offload-threads-2.c: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Andrew Stubbs   <ams@baylibre.com>
+	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/declare-mapper-18.c: New test.
+	* testsuite/libgomp.fortran/declare-mapper-25.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-28.f90: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* libgomp.h (omp_noncontig_array_desc): Add span field.
+	* target.c (omp_target_memcpy_rect_worker): Add span parameter. Update
+	forward declaration. Handle span != element_size.
+	(gomp_update): Handle bias in descriptor's size slot.  Update calls to
+	omp_target_memcpy_rect_worker.
+	* testsuite/libgomp.fortran/noncontig-updates-1.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-2.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-3.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-4.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-5.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-6.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-7.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-8.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-9.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-10.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-11.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-12.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-13.f90: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/array-shaping-14.c: New test.
+	* testsuite/libgomp.c/array-shaping-1.c: New test.
+	* testsuite/libgomp.c/array-shaping-2.c: New test.
+	* testsuite/libgomp.c/array-shaping-3.c: New test.
+	* testsuite/libgomp.c/array-shaping-4.c: New test.
+	* testsuite/libgomp.c/array-shaping-5.c: New test.
+	* testsuite/libgomp.c/array-shaping-6.c: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.h (omp_noncontig_array_desc): New struct.
+	* target.c (omp_target_memcpy_rect_worker): Add stride array
+	parameter.  Forward declare.  Add STRIDES parameter and strided
+	update support.
+	(gomp_update): Add noncontiguous (strided/shaped) update support.
+	* testsuite/libgomp.c++/array-shaping-1.C: New test.
+	* testsuite/libgomp.c++/array-shaping-2.C: New test.
+	* testsuite/libgomp.c++/array-shaping-3.C: New test.
+	* testsuite/libgomp.c++/array-shaping-4.C: New test.
+	* testsuite/libgomp.c++/array-shaping-5.C: New test.
+	* testsuite/libgomp.c++/array-shaping-6.C: New test.
+	* testsuite/libgomp.c++/array-shaping-7.C: New test.
+	* testsuite/libgomp.c++/array-shaping-8.C: New test.
+	* testsuite/libgomp.c++/array-shaping-9.C: New test.
+	* testsuite/libgomp.c++/array-shaping-10.C: New test.
+	* testsuite/libgomp.c++/array-shaping-11.C: New test.
+	* testsuite/libgomp.c++/array-shaping-12.C: New test.
+	* testsuite/libgomp.c++/array-shaping-13.C: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.fortran/declare-mapper-30.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-4.f90: Adjust test for new
+	lookup behaviour.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.fortran/declare-mapper-2.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-3.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-4.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-6.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-7.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-8.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-9.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-10.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-11.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-12.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-13.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-15.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-17.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-18.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-19.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-20.f90: New test.
+	* testsuite/libgomp.fortran/declare-mapper-21.f90: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/declare-mapper-9.c: Enable for C.
+	* testsuite/libgomp.c-c++-common/declare-mapper-10.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-11.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-12.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-13.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-14.c: Likewise.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.c++/declare-mapper-1.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-2.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-3.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-4.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-5.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-6.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-7.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-8.C: New test.
+	* testsuite/libgomp.c-c++-common/declare-mapper-9.c: New test (only
+	enabled for C++ for now).
+	* testsuite/libgomp.c-c++-common/declare-mapper-10.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-11.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-12.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-13.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-14.c: Likewise.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/implicit-mapping-1.c: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/nonlexical-assumed-size-1.f90: New
+	test.
+	* testsuite/libgomp.oacc-fortran/nonlexical-assumed-size-2.f90: New
+	test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Paul-Antoine Arras  <parras@baylibre.com>
+	    Sandra Loosemore  <sandra@baylibre.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-directive.f90:
+	Remove xfails.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-runtime.f90:
+	Remove xfails.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1.f90:
+	Remove xfails.
+	* testsuite/libgomp.oacc-fortran/declare-create-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-create-2.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-create-3.f90: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr70828.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr70828-2.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr70828.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr70828-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr70828-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr70828-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr70828-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr70828-6.f90: Likewise.
+
+2025-05-15  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backported from master:
+	2023-05-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nvptx/team.c (__nvptx_omp_num_threads): New global variable in
+	shared memory.
+	* testsuite/libgomp.c-c++-common/for-17.c: New file.
+	* testsuite/libgomp.c-c++-common/for-18.c: New file.
+
+2025-05-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.texi (AMD Radeon, nvptx): Document OpenMP 'pinned'
+	memory.
+
+2025-05-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_unmap_vars_internal): Queue splay-tree keys for
+	removal after main loop.
+
+2025-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-enter-data-3a.f90: New test.
+
+2025-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-13.f90: Update test.
+
+2025-05-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c++/c++.exp (check_effective_target_c,
+	check_effective_target_c++): Add.
+	* testsuite/libgomp.c/c.exp (check_effective_target_c,
+	check_effective_target_c++): Add.
+	* testsuite/libgomp.fortran/uses_allocators_2.f90: Remove 'sorry'.
+	* testsuite/libgomp.c-c++-common/uses_allocators-1.c: New test.
+	* testsuite/libgomp.c-c++-common/uses_allocators-2.c: New test.
+	* testsuite/libgomp.c-c++-common/uses_allocators-3.c: New test.
+	* testsuite/libgomp.c-c++-common/uses_allocators-4.c: New test.
+	* testsuite/libgomp.fortran/uses_allocators_3.f90: New test.
+	* testsuite/libgomp.fortran/uses_allocators_4.f90: New test.
+	* testsuite/libgomp.fortran/uses_allocators_5.f90: New test.
+	* testsuite/libgomp.fortran/uses_allocators_6.f90: New test.
+
+2025-05-15  Andrew Stubbs  <ams@baylibre.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add usmpin-allocator.c.
+	* Makefile.in: Regenerate.
+	* config/linux/allocator.c: Include unistd.h.
+	(pin_ctx): New variable.
+	(ctxlock): New variable.
+	(linux_init_pin_ctx): New function.
+	(linux_memspace_alloc): Use usmpin-allocator for pinned memory.
+	(linux_memspace_free): Likewise.
+	(linux_memspace_realloc): Likewise.
+	* libgomp.h (usmpin_init_context): New prototype.
+	(usmpin_register_memory): New prototype.
+	(usmpin_alloc): New prototype.
+	(usmpin_free): New prototype.
+	(usmpin_realloc): New prototype.
+	* testsuite/libgomp.c/alloc-pinned-8.c: New test.
+	* usmpin-allocator.c: New file.
+
+2025-05-15  Andrew Stubbs  <ams@baylibre.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/linux/allocator.c: Include assert.h.
+	(using_device_for_page_locked): New variable.
+	(linux_memspace_alloc): Add init0 parameter. Support device pinning.
+	(linux_memspace_calloc): Set init0 to true.
+	(linux_memspace_free): Support device pinning.
+	(linux_memspace_realloc): Support device pinning.
+	(MEMSPACE_ALLOC): Set init0 to false.
+	* libgomp-plugin.h
+	(GOMP_OFFLOAD_page_locked_host_alloc): New prototype.
+	(GOMP_OFFLOAD_page_locked_host_free): Likewise.
+	* libgomp.h (gomp_page_locked_host_alloc): Likewise.
+	(gomp_page_locked_host_free): Likewise.
+	(struct gomp_device_descr): Add page_locked_host_alloc_func and
+	page_locked_host_free_func.
+	* libgomp.texi: Adjust the docs for the pinned trait.
+	* libgomp_g.h (GOMP_enable_pinned_mode): New prototype.
+	* plugin/plugin-nvptx.c
+	(GOMP_OFFLOAD_page_locked_host_alloc): New function.
+	(GOMP_OFFLOAD_page_locked_host_free): Likewise.
+	* target.c (device_for_page_locked): New variable.
+	(get_device_for_page_locked): New function.
+	(gomp_page_locked_host_alloc): Likewise.
+	(gomp_page_locked_host_free): Likewise.
+	(gomp_load_plugin_for_device): Add page_locked_host_alloc and
+	page_locked_host_free.
+	* testsuite/libgomp.c/alloc-pinned-1.c: Change expectations for NVPTX
+	devices.
+	* testsuite/libgomp.c/alloc-pinned-2.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-3.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-4.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-5.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-6.c: Likewise.
+
+2025-05-15  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/linux/allocator.c (always_pinned_mode): New variable.
+	(GOMP_enable_pinned_mode): New function.
+	(linux_memspace_alloc): Disable pinning when always_pinned_mode set.
+	(linux_memspace_calloc): Likewise.
+	(linux_memspace_free): Likewise.
+	(linux_memspace_realloc): Likewise.
+	* libgomp.map: Add GOMP_enable_pinned_mode.
+	* testsuite/libgomp.c/alloc-pinned-7.c: New test.
+	* testsuite/libgomp.c-c++-common/alloc-pinned-1.c: New test.
+
+2025-05-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/collapse-4.c: New.
+	* testsuite/libgomp.fortran/collapse5.f90: New.
+
+2025-05-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/bar.h (gomp_barrier_init): Limit thread count to the
+	actual physical number.
+	* config/gcn/team.c (gomp_team_start): Don't attempt to set up
+	threads that do not exist.
+
+2025-05-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_alloc): Remove early call to
+	nvptx_stacks_free.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Adjust for loop
+	lowering changes.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c: Likewise.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown   <julian@codesourcery.com>
+	    Kwok Cheung Yeung   <kcy@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Paul-Antoine Arras  <parras@baylibre.com>
+
+	* libgomp.h (gomp_acc_declare_allocate): Remove prototype.
+	* oacc-mem.c (gomp_acc_declare_allocate): New function.
+	(find_group_last): Handle GOMP_MAP_DECLARE_ALLOCATE and
+	GOMP_MAP_DECLARE_DEALLOCATE groupings.
+	(goacc_enter_data_internal): Fix kind check for
+	GOMP_MAP_DECLARE_ALLOCATE. Pass new pointer argument to
+	gomp_acc_declare_allocate.   Unlock mutex before calling
+	gomp_acc_declare_allocate and relock it afterwards.
+	(goacc_exit_data_internal): Unlock device mutex around
+	gomp_acc_declare_allocate call. Pass new pointer argument. Handle
+	group pointer mapping for deallocate.
+	* testsuite/libgomp.oacc-fortran/allocatable-scalar.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-directive.f90:
+	Adjust.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1-runtime.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-2.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-3.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-4.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-directive.f90:
+	Adjust.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1-runtime.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-array_descriptor-1.f90:
+	New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Sandra Loosemore  <sandra@baylibre.com>
+
+	* testsuite/libgomp.oacc-c++/privatized-ref-3.C: Add xfails.
+	* testsuite/libgomp.oacc-fortran/optional-private.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: Likewise.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* testsuite/libgomp.oacc-fortran/optional-reduction.f90: Remove
+	xfail on bogus warnings.
+	* testsuite/libgomp.oacc-fortran/parallel-reduction.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr70643.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-7.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reference-reductions.f90: Likewise.
+
+2025-05-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    Maciej W. Rozycki   <macro@codesourcery.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add
+	oacc-profiling-acc_register_library.c.
+	* Makefile.in: Regenerate.
+	* libgomp.texi: Remove paragraph about acc_register_library.
+	* oacc-init.c (get_property_any): Add profiling code.
+	* oacc-parallel.c (GOACC_parallel_keyed_internal): Set device_api for
+	profiling.
+	* oacc-profiling-acc_register_library.c: New file.
+	* oacc-profiling.c (goacc_profiling_initialize): Call
+	acc_register_library.  Avoid duplicate registration.
+	(acc_register_library): Remove.
+	* config/nvptx/oacc-profiling-acc_register_library.c:
+	New empty file.
+	* config/nvptx/oacc-profiling.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-dispatch-1.c: Remove
+	call to acc_register_library.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-valid_bytes-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-version-1.c: Likewise.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang   <cltang@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/privatize-reduction-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/privatize-reduction-2.c: New
+	test.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Adjust test case
+	to conform to the new behavior of the auto clause in OpenACC 2.5.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown   <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/firstprivate-int.C: New test.
+	* testsuite/libgomp.oacc-c-c++-common/firstprivate-int.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/data-firstprivate-1.c: XFAIL
+	execution test.
+	* testsuite/libgomp.oacc-fortran/firstprivate-int.f90: New test.
+
+2025-05-15  Nathan Sidwell  <nathan@acm.org>
+	    Tom de Vries   <tdevries@suse.de>
+	    Thomas Schwinge   <thomas@codesourcery.com>
+	    Julian Brown   <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-default-compile.c: New.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris   <jnorris@codesourcery.com>
+	    Tom de Vries   <tom@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.oacc-fortran/data-3.f90: Update parallel
+	regions to denote variables copyied in via acc enter data as
+	present.
+	* testsuite/libgomp.oacc-c-c++-common/subr.h: Reimplement.
+	* testsuite/libgomp.oacc-c-c++-common/subr.ptx: Regenerated PTX.
+	* testsuite/libgomp.oacc-c-c++-common/timer.h: Removed.
+	* testsuite/libgomp.oacc-c-c++-common/lib-69.c: Change async checks.
+	* testsuite/libgomp.oacc-c-c++-common/lib-70.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-72.c: Rework kernel i/f and
+	change async checks.
+	* testsuite/libgomp.oacc-c-c++-common/lib-73.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-74.c: Rework kernel i/f and
+	timing checks.
+	* testsuite/libgomp.oacc-c-c++-common/lib-75.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-76.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-78.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-79.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-81.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-82.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-93.c: New test.
+
+2025-05-15  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis   <cesar@codesourcery.com>
+	    Nathan Sidwell   <nathan@acm.org>
+
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-3.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-flt-2.c: New.
+	* testsuite/libgomp.oacc-fortran/reduction-9.f90: New.
+
+2025-05-15  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris   <jnorris@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* oacc-parallel.c (GOACC_parallel_keyed): Handle Fortran deviceptr
+	clause.
+	(GOACC_data_start): Likewise.
+	* testsuite/libgomp.oacc-fortran/deviceptr-1.f90: New test.
+
+2025-05-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/76739
+	* target.c (gomp_map_vars_internal): Pass pre-allocated 'ptrblock'
+	to 'goacc_noncontig_array_create_ptrblock'.
+	* oacc-parallel.c (goacc_noncontig_array_create_ptrblock): Adjust.
+	* oacc-int.h (goacc_noncontig_array_create_ptrblock): Adjust.
+
+2025-05-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/76739
+	* oacc-parallel.c (GOACC_parallel_keyed): Given OpenACC 'async',
+	defer 'free' of non-contiguous array support data structures.
+	* target.c (gomp_map_vars_internal): Likewise.
+
+2025-05-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/76739
+	* libgomp.h (goacc_map_vars): Add 'struct goacc_ncarray_info *'
+	formal parameter.
+	(gomp_map_vars_openacc): Remove.
+	* target.c (goacc_map_vars): Adjust.
+	(gomp_map_vars_openacc): Remove.
+	* oacc-mem.c (acc_map_data, goacc_enter_datum)
+	(goacc_enter_data_internal): Adjust.
+	* oacc-parallel.c (GOACC_parallel_keyed, GOACC_data_start):
+	Adjust.
+
+2025-05-15  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR other/76739
+	* libgomp.h (gomp_map_vars_openacc): New function declaration.
+	* libgomp_g.h (GOACC_data_start): Add variadic '...' to declaration.
+	* oacc-int.h (struct goacc_ncarray_dim): New struct declaration.
+	(struct goacc_ncarray_descr_type): Likewise.
+	(struct goacc_ncarray): Likewise.
+	(struct goacc_ncarray_info): Likewise.
+	(goacc_noncontig_array_create_ptrblock): New function declaration.
+	* oacc-parallel.c (goacc_noncontig_array_count_rows): New function.
+	(goacc_noncontig_array_compute_sizes): Likewise.
+	(goacc_noncontig_array_fill_rows_1): Likewise.
+	(goacc_noncontig_array_fill_rows): Likewise.
+	(goacc_process_noncontiguous_arrays): Likewise.
+	(goacc_noncontig_array_create_ptrblock): Likewise.
+	(GOACC_parallel_keyed): Use goacc_process_noncontiguous_arrays to
+	handle non-contiguous array descriptors at end of varargs, adjust
+	to use gomp_map_vars_openacc.
+	(GOACC_data_start): Likewise. Adjust function type to accept varargs.
+	* target.c (gomp_map_vars_internal): Add struct goacc_ncarray_info *
+	nca_info parameter, add handling code for non-contiguous arrays.
+	(gomp_map_vars_openacc): Add new function for specialization of
+	gomp_map_vars_internal for OpenACC structured region usage.
+	* testsuite/libgomp.oacc-c-c++-common/noncontig_array-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/noncontig_array-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/noncontig_array-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/noncontig_array-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/noncontig_array-utils.h: Support
+	header for new tests.
