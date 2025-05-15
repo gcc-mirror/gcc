@@ -25,7 +25,7 @@
         *> the observed outputs
         Move ' BBB                 0300ZZZ' to row(1).
         Move ' ABA                 0300ZZZ' to row(3).
-`
+
         compute rowlim = 2*rows - 1
 
         Display '  INPUT                C0 C1 OUTPUT'

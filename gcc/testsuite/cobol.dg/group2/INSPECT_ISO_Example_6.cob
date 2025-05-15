@@ -22,7 +22,7 @@
         *> Even-numbered rows are modified by the INSPECT statements and contain
         *> the observed outputs
         Move ' AC"AEBDFBCD#AB"D    AC"XEYXFYZX#AB"D' to row(1).
-`
+
         compute rowlim = 2*rows - 1
 
         Display '  INPUT                OUTPUT'

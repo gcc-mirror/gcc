@@ -27,7 +27,7 @@
         Move ' 415-245-1212        415-245-1212' to row(1).
         Move ' 415-CH5-1212        415-??5-1212' to row(3).
         Move ' 20%Numeric          20%???????' to row(5).
-`
+
         compute rowlim = 2*rows - 1
 
         Display '  INPUT                OUTPUT'

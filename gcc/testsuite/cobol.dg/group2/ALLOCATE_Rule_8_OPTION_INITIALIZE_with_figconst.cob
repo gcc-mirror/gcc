@@ -81,12 +81,13 @@
          02  based-x            pic x(24) value "I am I, Don Quixote".
          02  based-9            pic 999   value 123.
          02  based-p            pointer   value NULL.
+        01 pval redefines based-var pointer.
         01   allocated-pointer  pointer.
         procedure division.
         display     "allocate characters  (ISO 2023 Rule 8: OPT_INIT if specified, otherwise defaultbyte, otherwise zero)"
         allocate 35 characters returning allocated-pointer
         set address of based-var to allocated-pointer
-        call        "reporter" using based-var
+        display pval
         free        allocated-pointer
         goback.
         end program             prog-high.

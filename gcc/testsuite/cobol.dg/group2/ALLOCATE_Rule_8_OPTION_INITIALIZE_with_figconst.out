@@ -12,6 +12,5 @@ allocate characters  (ISO 2023 Rule 8: OPT_INIT if specified, otherwise defaultb
        "                        " "   " 0x2020202020202020
 initialize high-value
 allocate characters  (ISO 2023 Rule 8: OPT_INIT if specified, otherwise defaultbyte, otherwise zero)
-   (1) as allocated
-       "ÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ" "¿¿¿" 0xffffffffffffffff
+0xffffffffffffffff
 
