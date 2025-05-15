@@ -129,5 +129,5 @@ contains
     prt_spec = name
   end function new_prt_spec3
 end program main
-! { dg-final { scan-tree-dump-times "__builtin_malloc" 15 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_malloc" 16 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_free" 33 "original" } }
