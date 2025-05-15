@@ -3348,7 +3348,8 @@ aliases, the default is @option{-fno-extern-tls-init}.
 @item -ffold-simple-inlines
 @itemx -fno-fold-simple-inlines
 Permit the C++ frontend to fold calls to @code{std::move}, @code{std::forward},
-@code{std::addressof} and @code{std::as_const}.  In contrast to inlining, this
+@code{std::addressof}, @code{std::to_underlying}
+and @code{std::as_const}.  In contrast to inlining, this
 means no debug information will be generated for such calls.  Since these
 functions are rarely interesting to debug, this flag is enabled by default
 unless @option{-fno-inline} is active.
