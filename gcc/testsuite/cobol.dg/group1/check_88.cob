@@ -17,7 +17,7 @@
 *> { dg-output {.* Bundesstra.e                                (\n|\r\n|\r)} }
 *> { dg-output { (\n|\r\n|\r)} }
 *> { dg-output {There should be no spaces before the final quote(\n|\r\n|\r)} }
-*> { dg-output {".* Bundesstraße"(\n|\r\n|\r)} }
+*> { dg-output {".* Bundesstra.e"(\n|\r\n|\r)} }
 *> { dg-output { (\n|\r\n|\r)} }
 *> { dg-output {   IsLow   ""(\n|\r\n|\r)} }
 *> { dg-output {   IsZero  "000"(\n|\r\n|\r)} }
