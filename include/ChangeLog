@@ -1,3 +1,7 @@
+2025-05-14  Andreas Schwab  <schwab@suse.de>
+
+	* libiberty.h (mkstemps): Remove duplicate.
+
 2025-03-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR cobol/119283

@@ -1,3 +1,110 @@
+2025-05-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119125
+	* include/bits/move_only_function.h: Move to...
+	* include/bits/funcwrap.h: ...here.
+	* doc/doxygen/stdheader.cc (init_map): Replaced move_only_function.h
+	with funcwrap.h, and changed include guard to use feature test macro.
+	Move bits/version.h include before others.
+	* include/Makefile.am: Likewise.
+	* include/Makefile.in: Likewise.
+	* include/std/functional: Likewise.
+
+2025-05-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119125
+	* doc/doxygen/stdheader.cc: Addded cpyfunc_impl.h header.
+	* include/Makefile.am: Add bits cpyfunc_impl.h.
+	* include/Makefile.in: Add bits cpyfunc_impl.h.
+	* include/bits/cpyfunc_impl.h: New file.
+	* include/bits/mofunc_impl.h: Mention LWG 4255.
+	* include/bits/move_only_function.h: Update header description
+	and change guard to also check __glibcxx_copyable_function.
+	(_Manager::_Func): Remove noexcept.
+	(std::__is_polymorphic_function_v<move_only_function<_Tp>>)
+	(__variant::_Never_valueless_alt<std::move_only_function<_Signature...>>)
+	(move_only_function) [__glibcxx_move_only_function]: Adjust guard.
+	(std::__is_polymorphic_function_v<copyable_function<_Tp>>)
+	(__variant::_Never_valueless_alt<std::copyable_function<_Signature...>>)
+	(__polyfunc::_Cpy_base, std::copyable_function)
+	[__glibcxx_copyable_function]: Define.
+	* include/bits/version.def: Define copyable_function.
+	* include/bits/version.h: Regenerate.
+	* include/std/functional: Define __cpp_lib_copyable_function.
+	* src/c++23/std.cc.in (copyable_function)
+	[__cpp_lib_copyable_function]: Export.
+	* testsuite/20_util/copyable_function/call.cc: New test based on
+	move_only_function tests.
+	* testsuite/20_util/copyable_function/cons.cc: New test based on
+	move_only_function tests.
+	* testsuite/20_util/copyable_function/conv.cc: New test based on
+	move_only_function tests.
+	* testsuite/20_util/copyable_function/copy.cc: New test.
+	* testsuite/20_util/copyable_function/move.cc: New test based on
+	move_only_function tests.
+
+2025-05-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119125
+	* include/bits/mofunc_impl.h: (std::move_only_function): Adjusted for
+	changes in bits/move_only_function.h
+	(move_only_function::move_only_function(_Fn&&)): Special case
+	move_only_functions with same invoker.
+	(move_only_function::operator=(move_only_function&&)): Handle self
+	assigment.
+	* include/bits/move_only_function.h (__polyfunc::_Ptrs)
+	(__polyfunc::_Storage): Refactored from _Mo_func::_Storage.
+	(__polyfunc::__param_t): Moved from move_only_function::__param_t.
+	(__polyfunc::_Base_invoker, __polyfunc::_Invoke): Refactored from
+	move_only_function::_S_invoke.
+	(__polyfunc::_Manager): Refactored from _Mo_func::_S_manager.
+	(std::_Mofunc_base): Moved into __polyfunc::_Mo_base with parts
+	extracted to __polyfunc::_Storage and __polyfunc::_Manager.
+	(__polyfunc::__deref_as, __polyfunc::__invoker_of)
+	(__polyfunc::__base_of, __polyfunc::__is_invoker_convertible): Define.
+	(std::__is_move_only_function_v): Renamed to
+	__is_polymorphic_function_v.
+	(std::__is_polymorphic_function_v): Renamed from
+	__is_move_only_function_v.
+	* testsuite/20_util/move_only_function/call.cc: Test for
+	functions pointers.
+	* testsuite/20_util/move_only_function/conv.cc: New test.
+	* testsuite/20_util/move_only_function/move.cc: Tests for
+	self assigment.
+
+2025-05-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119246
+	* include/std/format (__format::__bflt16_t): Define.
+	(_GLIBCXX_FORMAT_F128): Separate value for cases where _Float128
+	is used.
+	(__format::__float128_t): Renamed to __format::__flt128_t.
+	(std::formatter<_Float128, _CharT>): Define always if there is
+	formattable 128bit float.
+	(std::formatter<__float128, _CharT>): Define.
+	(_Arg_type::_Arg_f128): Rename to _Arg_float128 and adjust value.
+	(_Arg_type::_Arg_ibm128): Change value to _Arg_ldbl.
+	(_Arg_type::_Arg_ieee128): Define as alias to _Arg_float128.
+	(_Arg_value::_M_f128): Replaced with _M_ieee128 and _M_float128.
+	(_Arg_value::_M_ieee128, _Arg_value::_M_float128)
+	(_Arg_value::_M_bf16, _Arg_value::_M_f16, _Arg_value::_M_f32)
+	(_Arg_value::_M_f64): Define.
+	(_Arg_value::_S_get, basic_format_arg::_S_to_enum): Handle __bflt16,
+	_Float16, _Float32, _Float64, and __float128 types.
+	(basic_format_arg::_S_to_arg_type): Preserve _bflt16, _Float16,
+	_Float32, _Float64 and __float128 types.
+	(basic_format_arg::_M_visit): Handle _Arg_float128, _Arg_ieee128,
+	_Arg_b16, _Arg_f16, _Arg_f32, _Arg_f64.
+	* testsuite/std/format/arguments/args.cc: Updated to illustrate
+	that extended floating point types use handles now. Added test
+	for __float128.
+	* testsuite/std/format/parse_ctx.cc: Extended test to cover class
+	to check_dynamic_spec with floating point types and handles.
+
+2025-05-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* include/std/utility (to_underlying): Add the __always_inline__ attribute.
+
 2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/119645

@@ -1,3 +1,16 @@
+2025-05-14  Tobias Burnus  <tburnus@baylibre.com>
+
+	* target.c (gomp_attach_pointer): Return bool; accept additional
+	bool to optionally silence the fatal pointee-not-found error.
+	(gomp_map_vars_internal): If the pointee could not be found,
+	check whether it was mapped as GOMP_MAP_ZERO_LEN_ARRAY_SECTION.
+	* libgomp.h (gomp_attach_pointer): Update prototype.
+	* oacc-mem.c (acc_attach_async, goacc_enter_data_internal): Update
+	calls.
+	* testsuite/libgomp.c/target-map-zero-sized.c: New test.
+	* testsuite/libgomp.c/target-map-zero-sized-2.c: New test.
+	* testsuite/libgomp.c/target-map-zero-sized-3.c: New test.
+
 2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/119692

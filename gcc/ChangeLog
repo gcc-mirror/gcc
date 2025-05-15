@@ -1,3 +1,132 @@
+2025-05-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (record_stmt_cost): Remove mixed
+	stmt_vec_info/SLP node inline overload.
+	* tree-vect-stmts.cc (vectorizable_store): For costing
+	vector stmts only pass SLP node to record_stmt_cost.
+	(vectorizable_load): Likewise.
+
+2025-05-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_get_store_cost): Compute vectype based
+	on whether we got SLP node or stmt_vec_info and use the full
+	record_stmt_cost API.
+	(vect_get_load_cost): Likewise.
+
+2025-05-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::riscv_subset_list): Init m_allow_adding_dup.
+
+2025-05-14  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension defs.
+	* config/riscv/riscv-ext.opt: Ditto.
+	* doc/riscv-ext.texi: Ditto.
+
+2025-05-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/t-riscv: Drop duplicate build rule for
+	riscv-ext.opt.
+
+2025-05-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-ext.opt.urls: Regenerate.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-cfgcleanup.cc (canonicalize_bool_cond): New function.
+	(cleanup_control_expr_graph): Call canonicalize_bool_cond for GIMPLE_COND.
+	* tree-cfgcleanup.h (canonicalize_bool_cond): New declaration.
+	* tree-ssa-forwprop.cc (forward_propagate_into_gimple_cond):
+	Call canonicalize_bool_cond.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple.h (gimple_cond_set_code): Add assert of the code
+	being a comparison.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (forward_propagate_into_gimple_cond): Assert
+	that gimple_cond_code is always a comparison.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-fold.cc (replace_stmt_with_simplification): Check cfun before
+	accessing cfun.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Move marking of to_purge bb
+	and marking of fixup statements to after the local optimizations.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Use `|=` for
+	changed on the local folding.
+
+2025-05-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (record_stmt_cost): Add overload with
+	only SLP node and no vector type.
+	* tree-vect-stmts.cc (record_stmt_cost): Use
+	SLP_TREE_REPRESENTATIVE for stmt_vec_info.
+	(vect_model_simple_cost): Do not get stmt_vec_info argument
+	and adjust.
+	(vectorizable_call): Adjust.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison_1): Likewise.
+	* tree-vect-slp.cc (vect_prologue_cost_for_slp): Use
+	full-blown record_stmt_cost.
+
+2025-05-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/120215
+	* config/i386/i386-features.cc
+	(scalar_chain::mark_dual_mode_def): Weight
+	cost of integer<->sse move with bb frequency when it's
+	optimized_for_speed_p.
+	(general_scalar_chain::compute_convert_gain): Ditto, and
+	adjust function prototype to return true/false when cost model
+	is profitable or not.
+	(timode_scalar_chain::compute_convert_gain): Ditto.
+	(convert_scalars_to_vector): Adjust after the upper two
+	function prototype are changed.
+	* config/i386/i386-features.h (class scalar_chain): Change
+	n_integer_to_sse/n_sse_to_integer to cost_sse_integer, and add
+	weighted_cost_sse_integer.
+	(class general_scalar_chain): Adjust prototype to return bool
+	intead of int.
+	(class timode_scalar_chain): Ditto.
+
+2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/111873
+	* tree-sra.cc (sra_modify_expr): When processing a load which has
+	a type-incompatible replacement, do not store the contents of the
+	replacement into the original aggregate when that aggregate is
+	const.
+
+2025-05-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md: Fix tf_to_fprx2 by using vlr instead of
+	ldr.
+
+2025-05-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/103771
+	* match.pd (cond_expr_convert_p): Extend the match to handle
+	scalar floating point type.
+	* tree-vect-patterns.cc
+	(vect_recog_cond_expr_convert_pattern): Handle floating point
+	type.
+
 2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/119903

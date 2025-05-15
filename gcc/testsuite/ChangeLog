@@ -1,3 +1,47 @@
+2025-05-14  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/120126
+	* g++.dg/cpp0x/lambda/lambda-ice33.C: New test.
+
+2025-05-14  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-55.c: New test.
+
+2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/pr120044-1.c: New test.
+	* gcc.dg/ipa/pr120044-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr114864.c: Likewise.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120125
+	* g++.dg/modules/clone-4_a.C: New test.
+	* g++.dg/modules/clone-4_b.C: New test.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119864
+	* g++.dg/modules/openmp-1.C: New test.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/tpl-friend-19_a.C: New test.
+	* g++.dg/modules/tpl-friend-19_b.C: New test.
+
+2025-05-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* g++.dg/opt/pr96780_cpp23.C: New.
+
+2025-05-14  Owen Avery  <powerboat9.gamer@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/ignore-virtual-move-assign.C: New test.
+
+2025-05-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr103771-4.c: New test.
+
 2025-05-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/113413
