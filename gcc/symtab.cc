@@ -989,10 +989,10 @@ symtab_node::dump_base (FILE *f)
 	     same_comdat_group->dump_asm_name ());
   if (next_sharing_asm_name)
     fprintf (f, "  next sharing asm name: %i\n",
-	     next_sharing_asm_name->order);
+	     next_sharing_asm_name->get_uid ());
   if (previous_sharing_asm_name)
     fprintf (f, "  previous sharing asm name: %i\n",
-	     previous_sharing_asm_name->order);
+	     previous_sharing_asm_name->get_uid ());
 
   if (address_taken)
     fprintf (f, "  Address is taken.\n");

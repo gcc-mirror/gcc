@@ -324,11 +324,11 @@ dump_callgraph_transformation (const cgraph_node *original,
     {
       fprintf (symtab->ipa_clones_dump_file,
 	       "Callgraph clone;%s;%d;%s;%d;%d;%s;%d;%s;%d;%d;%s\n",
-	       original->asm_name (), original->order,
+	       original->asm_name (), original->get_uid (),
 	       DECL_SOURCE_FILE (original->decl),
 	       DECL_SOURCE_LINE (original->decl),
 	       DECL_SOURCE_COLUMN (original->decl), clone->asm_name (),
-	       clone->order, DECL_SOURCE_FILE (clone->decl),
+	       clone->get_uid (), DECL_SOURCE_FILE (clone->decl),
 	       DECL_SOURCE_LINE (clone->decl), DECL_SOURCE_COLUMN (clone->decl),
 	       suffix);
 
