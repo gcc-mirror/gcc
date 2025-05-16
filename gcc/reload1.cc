@@ -7540,8 +7540,7 @@ emit_input_reload_insns (class insn_chain *chain, struct reload *rl,
     copy_reg_eh_region_note_forward (insn, get_insns (), NULL);
 
   /* End this sequence.  */
-  *where = get_insns ();
-  end_sequence ();
+  *where = end_sequence ();
 
   /* Update reload_override_in so that delete_address_reloads_1
      can see the actual register usage.  */

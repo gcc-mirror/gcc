@@ -3096,8 +3096,7 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 	saved_scalars++;
       }
 
-  rtx move_scalars = get_insns ();
-  end_sequence ();
+  rtx move_scalars = end_sequence ();
   start_sequence ();
 
   /* Ensure that all vector lanes are moved.  */
@@ -3232,8 +3231,7 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 	offset += size;
       }
 
-  rtx move_vectors = get_insns ();
-  end_sequence ();
+  rtx move_vectors = end_sequence ();
 
   if (prologue)
     {
@@ -3360,8 +3358,7 @@ gcn_expand_prologue ()
 						 + offsets->callee_saves))));
 	}
 
-      rtx_insn *seq = get_insns ();
-      end_sequence ();
+      rtx_insn *seq = end_sequence ();
 
       emit_insn (seq);
     }
@@ -5860,8 +5857,7 @@ gcn_restore_exec (rtx_insn *insn, rtx_insn *last_exec_def, int64_t curr_exec,
 	{
 	  start_sequence ();
 	  emit_move_insn (exec_save_reg, exec_reg);
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 
 	  emit_insn_after (seq, last_exec_def);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5877,8 +5873,7 @@ gcn_restore_exec (rtx_insn *insn, rtx_insn *last_exec_def, int64_t curr_exec,
   /* Restore EXEC register before the usage.  */
   start_sequence ();
   emit_move_insn (exec_reg, exec);
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
   emit_insn_before (seq, insn);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -6039,8 +6034,7 @@ gcn_md_reorg (void)
 	    {
 	      start_sequence ();
 	      emit_move_insn (exec_reg, GEN_INT (new_exec));
-	      rtx_insn *seq = get_insns ();
-	      end_sequence ();
+	      rtx_insn *seq = end_sequence ();
 	      emit_insn_before (seq, insn);
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))

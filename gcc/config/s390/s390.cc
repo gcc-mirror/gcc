@@ -5589,8 +5589,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	new_rtx = force_const_mem (Pmode, new_rtx);
 	emit_move_insn (r2, new_rtx);
 	s390_emit_tls_call_insn (r2, tls_call);
-	insn = get_insns ();
-	end_sequence ();
+	insn = end_sequence ();
 
 	new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_NTPOFF);
 	temp = gen_reg_rtx (Pmode);
@@ -5612,8 +5611,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	new_rtx = force_const_mem (Pmode, new_rtx);
 	emit_move_insn (r2, new_rtx);
 	s390_emit_tls_call_insn (r2, tls_call);
-	insn = get_insns ();
-	end_sequence ();
+	insn = end_sequence ();
 
 	new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx), UNSPEC_TLSLDM_NTPOFF);
 	temp = gen_reg_rtx (Pmode);
@@ -7869,8 +7867,7 @@ s390_two_part_insv (struct alignment_context *ac, rtx *seq1, rtx *seq2,
 			    const0_rtx, ins))
 	{
 	  *seq1 = NULL;
-	  *seq2 = get_insns ();
-	  end_sequence ();
+	  *seq2 = end_sequence ();
 	  return tmp;
 	}
       end_sequence ();
@@ -7879,13 +7876,11 @@ s390_two_part_insv (struct alignment_context *ac, rtx *seq1, rtx *seq2,
   /* Failed to use insv.  Generate a two part shift and mask.  */
   start_sequence ();
   tmp = s390_expand_mask_and_shift (ins, mode, ac->shift);
-  *seq1 = get_insns ();
-  end_sequence ();
+  *seq1 = end_sequence ();
 
   start_sequence ();
   tmp = expand_simple_binop (SImode, IOR, tmp, val, NULL_RTX, 1, OPTAB_DIRECT);
-  *seq2 = get_insns ();
-  end_sequence ();
+  *seq2 = end_sequence ();
 
   return tmp;
 }
@@ -11811,8 +11806,7 @@ s390_load_got (void)
 
   emit_move_insn (got_rtx, s390_got_symbol ());
 
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
   return insns;
 }
 
@@ -13579,8 +13573,7 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
       start_sequence ();
       emit_move_insn (reg, gen_rtx_REG (Pmode, 1));
-      seq = get_insns ();
-      end_sequence ();
+      seq = end_sequence ();
 
       push_topmost_sequence ();
       emit_insn_after (seq, entry_of_function ());

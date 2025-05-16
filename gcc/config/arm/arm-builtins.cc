@@ -2285,8 +2285,7 @@ constant_arg:
      builtin and error out if not.  */
   start_sequence ();
   emit_insn (pat);
-  insn = get_insns ();
-  end_sequence ();
+  insn = end_sequence ();
 
   if (recog_memoized (insn) < 0)
     error ("this builtin is not supported for this target");

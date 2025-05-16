@@ -1241,8 +1241,7 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
 					 LCT_CONST, Pmode,
 					 tga_op1, Pmode, tga_op2, Pmode);
 
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       if (GET_MODE (op0) != Pmode)
 	op0 = tga_ret;
@@ -1265,8 +1264,7 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
 					 LCT_CONST, Pmode,
 					 tga_op1, Pmode, tga_op2, Pmode);
 
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       tga_eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
 				UNSPEC_LD_BASE);
@@ -1879,8 +1877,7 @@ ia64_expand_compare (rtx *expr, rtx *op0, rtx *op1)
       emit_insn (gen_rtx_SET (cmp, gen_rtx_fmt_ee (ncode, BImode,
 						   ret, const0_rtx)));
 
-      rtx_insn *insns = get_insns ();
-      end_sequence ();
+      rtx_insn *insns = end_sequence ();
 
       emit_libcall_block (insns, cmp, cmp,
 			  gen_rtx_fmt_ee (code, BImode, *op0, *op1));
@@ -3174,8 +3171,7 @@ spill_restore_mem (rtx reg, HOST_WIDE_INT cfa_off)
 				 spill_fill_data.init_reg[iter],
 				 disp_rtx));
 
-	  seq = get_insns ();
-	  end_sequence ();
+	  seq = end_sequence ();
 	}
 
       /* Careful for being the first insn in a sequence.  */
@@ -11711,8 +11707,7 @@ expand_vec_perm_interleave_2 (struct expand_vec_perm_d *d)
      this *will* succeed.  For V8QImode or V2SImode it may not.  */
   start_sequence ();
   ok = expand_vec_perm_1 (&dfinal);
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
   if (!ok)
     return false;
   if (d->testing_p)

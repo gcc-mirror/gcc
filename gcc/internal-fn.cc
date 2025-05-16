@@ -5552,8 +5552,7 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
   do_pending_stack_adjust ();
   start_sequence ();
   expand_unary_optab_fn (fn, stmt, popcount_optab);
-  rtx_insn *popcount_insns = get_insns ();
-  end_sequence ();
+  rtx_insn *popcount_insns = end_sequence ();
   start_sequence ();
   rtx plhs = expand_normal (lhs);
   rtx pcmp = emit_store_flag (NULL_RTX, EQ, plhs, const1_rtx, lhsmode, 0, 0);
@@ -5564,8 +5563,7 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
       emit_insn (popcount_insns);
       return;
     }
-  rtx_insn *popcount_cmp_insns = get_insns ();
-  end_sequence ();
+  rtx_insn *popcount_cmp_insns = end_sequence ();
   start_sequence ();
   rtx op0 = expand_normal (arg);
   rtx argm1 = expand_simple_binop (mode, PLUS, op0, constm1_rtx, NULL_RTX,
@@ -5583,8 +5581,7 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
     cmp = emit_store_flag (NULL_RTX, GTU, argxorargm1, argm1, mode, 1, 1);
   if (cmp == NULL_RTX)
     goto fail;
-  rtx_insn *cmp_insns = get_insns ();
-  end_sequence ();
+  rtx_insn *cmp_insns = end_sequence ();
   unsigned popcount_cost = (seq_cost (popcount_insns, speed_p)
 			    + seq_cost (popcount_cmp_insns, speed_p));
   unsigned cmp_cost = seq_cost (cmp_insns, speed_p);
@@ -5612,8 +5609,7 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
 	    goto fail;
 	}
       emit_move_insn (plhs, cmp);
-      rtx_insn *all_insns = get_insns ();
-      end_sequence ();
+      rtx_insn *all_insns = end_sequence ();
       emit_insn (all_insns);
     }
 }

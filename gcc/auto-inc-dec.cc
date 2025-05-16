@@ -493,8 +493,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
     {
       start_sequence ();
       emit_move_insn (inc_insn.reg_res, inc_insn.reg0);
-      mov_insn = get_insns ();
-      end_sequence ();
+      mov_insn = end_sequence ();
       new_cost += seq_cost (mov_insn, speed);
     }
 

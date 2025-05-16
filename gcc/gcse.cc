@@ -2094,8 +2094,7 @@ prepare_copy_insn (rtx reg, rtx exp)
 	gcc_unreachable ();
     }
 
-  pat = get_insns ();
-  end_sequence ();
+  pat = end_sequence ();
 
   return pat;
 }

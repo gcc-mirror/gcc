@@ -351,8 +351,7 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
 
       start_sequence ();
       rtx_insn *insn = emit_insn (load_move);
-      rtx_insn *seq = get_insns ();
-      end_sequence ();
+      rtx_insn *seq = end_sequence ();
 
       if (recog_memoized (insn) < 0)
 	return false;

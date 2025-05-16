@@ -1640,8 +1640,7 @@ expand_builtin_apply_args (void)
 
     start_sequence ();
     temp = expand_builtin_apply_args_1 ();
-    rtx_insn *seq = get_insns ();
-    end_sequence ();
+    rtx_insn *seq = end_sequence ();
 
     apply_args_value = temp;
 
@@ -1863,8 +1862,7 @@ expand_builtin_return (rtx result)
 
 	push_to_sequence (call_fusage);
 	emit_use (reg);
-	call_fusage = get_insns ();
-	end_sequence ();
+	call_fusage = end_sequence ();
 	size += GET_MODE_SIZE (mode);
       }
 
@@ -2373,8 +2371,7 @@ expand_builtin_mathfn_ternary (tree exp, rtx target, rtx subtarget)
     }
 
   /* Output the entire sequence.  */
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
   emit_insn (insns);
 
   return result;
@@ -2466,8 +2463,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
       if (result != 0)
 	{
 	  /* Output the entire sequence.  */
-	  insns = get_insns ();
-	  end_sequence ();
+	  insns = end_sequence ();
 	  emit_insn (insns);
 	  return result;
 	}
@@ -3164,8 +3160,7 @@ expand_builtin_int_roundingfn (tree exp, rtx target)
   if (expand_sfix_optab (target, op0, builtin_optab))
     {
       /* Output the entire sequence.  */
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
       emit_insn (insns);
       return target;
     }
@@ -3308,8 +3303,7 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
       if (expand_sfix_optab (result, op0, builtin_optab))
 	{
 	  /* Output the entire sequence.  */
-	  insns = get_insns ();
-	  end_sequence ();
+	  insns = end_sequence ();
 	  emit_insn (insns);
 	  return result;
 	}
@@ -3477,8 +3471,7 @@ expand_builtin_strlen (tree exp, rtx target,
 #endif
       emit_move_insn (src_reg, pat);
     }
-  pat = get_insns ();
-  end_sequence ();
+  pat = end_sequence ();
 
   if (before_strlen)
     emit_insn_after (pat, before_strlen);
@@ -5183,8 +5176,7 @@ expand_builtin_saveregs (void)
   /* Do whatever the machine needs done in this case.  */
   val = targetm.calls.expand_builtin_saveregs ();
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   saveregs_value = val;
 
@@ -7624,8 +7616,7 @@ inline_string_cmp (rtx target, tree var_str, const char *const_str,
     }
 
   emit_label (ne_label);
-  rtx_insn *insns = get_insns ();
-  end_sequence ();
+  rtx_insn *insns = end_sequence ();
   emit_insn (insns);
 
   return result;

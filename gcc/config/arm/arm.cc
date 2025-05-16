@@ -8073,8 +8073,7 @@ require_pic_register (rtx pic_reg, bool compute_now)
 	      else
 		arm_load_pic_register (0UL, pic_reg);
 
-	      seq = get_insns ();
-	      end_sequence ();
+	      seq = end_sequence ();
 
 	      for (insn = seq; insn; insn = NEXT_INSN (insn))
 		if (INSN_P (insn))
@@ -9279,8 +9278,7 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 				     LCT_PURE, /* LCT_CONST?  */
 				     Pmode, reg, Pmode);
 
-  rtx_insn *insns = get_insns ();
-  end_sequence ();
+  rtx_insn *insns = end_sequence ();
 
   return insns;
 }
@@ -14905,8 +14903,7 @@ arm_gen_load_multiple_1 (int count, int *regs, rtx *mems, rtx basereg,
       if (wback_offset != 0)
 	emit_move_insn (basereg, plus_constant (Pmode, basereg, wback_offset));
 
-      seq = get_insns ();
-      end_sequence ();
+      seq = end_sequence ();
 
       return seq;
     }
@@ -14956,8 +14953,7 @@ arm_gen_store_multiple_1 (int count, int *regs, rtx *mems, rtx basereg,
       if (wback_offset != 0)
 	emit_move_insn (basereg, plus_constant (Pmode, basereg, wback_offset));
 
-      seq = get_insns ();
-      end_sequence ();
+      seq = end_sequence ();
 
       return seq;
     }
@@ -18845,8 +18841,7 @@ cmse_clear_registers (sbitmap to_clear_bitmap, uint32_t *padding_bits_to_clear,
 	      XVECEXP (par, 0, k++) = set;
 	      emit_use (reg);
 	    }
-	  use_seq = get_insns ();
-	  end_sequence ();
+	  use_seq = end_sequence ();
 
 	  emit_insn_after (use_seq, emit_insn (par));
 	}
@@ -18891,8 +18886,7 @@ cmse_clear_registers (sbitmap to_clear_bitmap, uint32_t *padding_bits_to_clear,
       rtx clobber = gen_rtx_CLOBBER (VOIDmode, ccreg);
       XVECEXP (par, 0, j) = clobber;
 
-      use_seq = get_insns ();
-      end_sequence ();
+      use_seq = end_sequence ();
 
       emit_insn_after (use_seq, emit_insn (par));
     }
@@ -19133,8 +19127,7 @@ cmse_nonsecure_call_inline_register_clear (void)
 	  cmse_clear_registers (to_clear_bitmap, padding_bits_to_clear,
 				NUM_ARG_REGS, ip_reg, clearing_reg);
 
-	  seq = get_insns ();
-	  end_sequence ();
+	  seq = end_sequence ();
 	  emit_insn_before (seq, insn);
 
 	  /* The AAPCS requires the callee to widen integral types narrower
@@ -35588,8 +35581,7 @@ arm_attempt_dlstp_transform (rtx label)
 	  emit_insn (PATTERN (insn));
 	}
     }
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   /* Re-write the entire BB contents with the transformed
      sequence.  */

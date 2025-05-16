@@ -837,8 +837,7 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp,
   if (prob.initialized_p ())
     add_reg_br_prob_note (jump, prob);
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   return seq;
 }
@@ -954,8 +953,7 @@ unroll_loop_runtime_iterations (class loop *loop)
 			       niter, gen_int_mode (max_unroll, desc->mode),
 			       NULL_RTX, 0, OPTAB_LIB_WIDEN);
 
-  init_code = get_insns ();
-  end_sequence ();
+  init_code = end_sequence ();
   unshare_all_rtl_in_chain (init_code);
 
   /* Precondition the loop.  */
@@ -1700,8 +1698,7 @@ insert_base_initialization (struct iv_to_split *ivts, rtx_insn *insn)
   expr = force_operand (expr, ivts->base_var);
   if (expr != ivts->base_var)
     emit_move_insn (ivts->base_var, expr);
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   emit_insn_before (seq, insn);
 }
@@ -1742,8 +1739,7 @@ split_iv (struct iv_to_split *ivts, rtx_insn *insn, unsigned delta)
   expr = force_operand (expr, var);
   if (expr != var)
     emit_move_insn (var, expr);
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
   emit_insn_before (seq, insn);
 
   if (validate_change (insn, loc, var, 0))
@@ -1761,8 +1757,7 @@ split_iv (struct iv_to_split *ivts, rtx_insn *insn, unsigned delta)
   src = force_operand (src, dest);
   if (src != dest)
     emit_move_insn (dest, src);
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   emit_insn_before (seq, insn);
   delete_insn (insn);
@@ -1890,8 +1885,7 @@ insert_var_expansion_initialization (struct var_to_expand *ve,
       gcc_unreachable ();
     }
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   emit_insn_after (seq, BB_END (place));
 }
@@ -1937,8 +1931,7 @@ combine_var_copies_in_loop_exit (struct var_to_expand *ve, basic_block place)
   expr = force_operand (sum, ve->reg);
   if (expr != ve->reg)
     emit_move_insn (ve->reg, expr);
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   insn = BB_HEAD (place);
   while (!NOTE_INSN_BASIC_BLOCK_P (insn))

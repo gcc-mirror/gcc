@@ -2692,8 +2692,7 @@ cris_split_movdx (rtx *operands)
   else
     internal_error ("unknown dest");
 
-  val = get_insns ();
-  end_sequence ();
+  val = end_sequence ();
   return val;
 }
 

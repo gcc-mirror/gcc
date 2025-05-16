@@ -124,8 +124,7 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
 
 	  targetm.mode_switching.emit (e, mode, cur_mode, live_at_edge);
 
-	  mode_set = get_insns ();
-	  end_sequence ();
+	  mode_set = end_sequence ();
 	  default_rtl_profile ();
 
 	  /* Do not bother to insert empty sequence.  */
@@ -1212,8 +1211,7 @@ optimize_mode_switching (void)
 
 		  targetm.mode_switching.emit (entity_map[j], ptr->mode,
 					       cur_mode, ptr->regs_live);
-		  mode_set = get_insns ();
-		  end_sequence ();
+		  mode_set = end_sequence ();
 
 		  /* Insert MODE_SET only if it is nonempty.  */
 		  if (mode_set != NULL_RTX)

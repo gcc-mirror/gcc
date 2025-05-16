@@ -1147,8 +1147,7 @@ resolve_simple_move (rtx set, rtx_insn *insn)
       resolve_simple_move (smove, minsn);
     }
 
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
 
   copy_reg_eh_region_note_forward (insn, insns, NULL_RTX);
 
@@ -1418,9 +1417,7 @@ resolve_shift_zext (rtx_insn *insn, bool speed_p)
 	emit_move_insn (dest_upper, upper_src);
     }
 
-  insns = get_insns ();
-
-  end_sequence ();
+  insns = end_sequence ();
 
   emit_insn_before (insns, insn);
 

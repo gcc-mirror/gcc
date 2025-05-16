@@ -2009,8 +2009,7 @@
 				gen_rtx_NE (CC_CCRmode, icr, const0_rtx),
 				gen_rtx_SET (dest, const0_rtx)));
 
-  operands[3] = get_insns ();
-  end_sequence ();
+  operands[3] = end_sequence ();
 }")
 
 ;; Reload CC_UNSmode for unsigned integer comparisons
@@ -2074,8 +2073,7 @@
 				gen_rtx_NE (CC_CCRmode, icr, const0_rtx),
 				gen_rtx_SET (dest, const0_rtx)));
 
-  operands[3] = get_insns ();
-  end_sequence ();
+  operands[3] = end_sequence ();
 }")
 
 ;; Reload CC_NZmode.  This is mostly the same as the CCmode and CC_UNSmode
@@ -2245,8 +2243,7 @@
 
   emit_insn (gen_andsi3 (int_op0, int_op0, GEN_INT (CC_MASK)));
 
-  operands[2] = get_insns ();
-  end_sequence ();
+  operands[2] = end_sequence ();
 }")
 
 ;; Move a gpr value to FCC.
@@ -2329,8 +2326,7 @@
 					    const0_rtx),
 				gen_rtx_SET (int_op0, const0_rtx)));
 
-  operands[2] = get_insns ();
-  end_sequence ();
+  operands[2] = end_sequence ();
 }")
 
 (define_split
@@ -2357,8 +2353,7 @@
   if (! ICR_P (REGNO (operands[0])))
     emit_insn (gen_movcc_ccr (operands[0], icr));
 
-  operands[2] = get_insns ();
-  end_sequence ();
+  operands[2] = end_sequence ();
 }")
 
 

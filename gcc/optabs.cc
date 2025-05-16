@@ -1760,8 +1760,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	    emit_move_insn (target_piece, x);
 	}
 
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       if (i == GET_MODE_BITSIZE (int_mode) / BITS_PER_WORD)
 	{
@@ -1839,8 +1838,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 				       outof_target, into_target,
 				       unsignedp, next_methods, shift_mask))
 	    {
-	      insns = get_insns ();
-	      end_sequence ();
+	      insns = end_sequence ();
 
 	      emit_insn (insns);
 	      return target;
@@ -1962,8 +1960,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	    emit_move_insn (outof_target, inter);
 	}
 
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       if (inter != 0)
 	{
@@ -2222,8 +2219,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 				       NULL_RTX, LCT_CONST, mode,
 				       op0, mode, op1x, op1_mode);
 
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       bool trapv = trapv_binoptab_p (binoptab);
       target = gen_reg_rtx (mode);
@@ -2564,8 +2560,7 @@ expand_twoval_binop_libfunc (optab binoptab, rtx op0, rtx op1,
   /* Get the part of VAL containing the value that we want.  */
   libval = simplify_gen_subreg (mode, libval, libval_mode,
 				targ0 ? 0 : GET_MODE_SIZE (mode));
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
   /* Move the into the desired location.  */
   emit_libcall_block (insns, targ0 ? targ0 : targ1, libval,
 		      gen_rtx_fmt_ee (code, mode, op0, op1));
@@ -2698,8 +2693,7 @@ expand_clrsb_using_clz (scalar_int_mode mode, rtx op0, rtx target)
 	goto fail;
     }
 
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
 
   add_equal_note (seq, temp, CLRSB, op0, NULL_RTX, mode);
   emit_insn (seq);
@@ -2797,8 +2791,7 @@ expand_doubleword_clz_ctz_ffs (scalar_int_mode mode, rtx op0, rtx target,
   emit_label (after_label);
   convert_move (target, result, true);
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   add_equal_note (seq, target, optab_to_code (unoptab), xop0, NULL_RTX, mode);
   emit_insn (seq);
@@ -2839,8 +2832,7 @@ expand_doubleword_popcount (scalar_int_mode mode, rtx op0, rtx target)
 
   t = expand_binop (word_mode, add_optab, t0, t1, target, 0, OPTAB_DIRECT);
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   add_equal_note (seq, t, POPCOUNT, op0, NULL_RTX, mode);
   emit_insn (seq);
@@ -3010,8 +3002,7 @@ expand_ctz (scalar_int_mode mode, rtx op0, rtx target)
       return 0;
     }
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   add_equal_note (seq, temp, CTZ, op0, NULL_RTX, mode);
   emit_insn (seq);
@@ -3088,8 +3079,7 @@ expand_ffs (scalar_int_mode mode, rtx op0, rtx target)
   if (!temp)
     goto fail;
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   add_equal_note (seq, temp, FFS, op0, NULL_RTX, mode);
   emit_insn (seq);
@@ -3166,8 +3156,7 @@ expand_absneg_bit (rtx_code code, machine_mode mode,
 	    emit_move_insn (targ_piece, op0_piece);
 	}
 
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       emit_insn (insns);
     }
@@ -3448,8 +3437,7 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 	    emit_move_insn (target_piece, x);
 	}
 
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       emit_insn (insns);
       return target;
@@ -3550,8 +3538,7 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 	 if the libcall is cse'd or moved.  */
       value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST, outmode,
 				       op0, mode);
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       target = gen_reg_rtx (outmode);
       bool trapv = trapv_unoptab_p (unoptab);
@@ -3999,8 +3986,7 @@ expand_copysign_bit (scalar_float_mode mode, rtx op0, rtx op1, rtx target,
 	    emit_move_insn (targ_piece, op0_piece);
 	}
 
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       emit_insn (insns);
     }
@@ -4951,8 +4937,7 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
   start_sequence ();
   value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
 				   cmp_mode, x, mode, y, mode);
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
 
   target = gen_reg_rtx (cmp_mode);
   emit_libcall_block (insns, target, value, equiv);
@@ -5690,8 +5675,7 @@ expand_float (rtx to, rtx from, int unsignedp)
 
       value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
 				       GET_MODE (to), from, GET_MODE (from));
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       emit_libcall_block (insns, target, value,
 			  gen_rtx_fmt_e (unsignedp ? UNSIGNED_FLOAT : FLOAT,
@@ -5927,8 +5911,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
 
       value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
 				       GET_MODE (to), from, GET_MODE (from));
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       emit_libcall_block (insns, target, value,
 			  gen_rtx_fmt_e (unsignedp ? UNSIGNED_FIX : FIX,
@@ -6019,8 +6002,7 @@ expand_fixed_convert (rtx to, rtx from, int uintp, int satp)
   start_sequence ();
   value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST, to_mode,
 				   from, from_mode);
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
 
   emit_libcall_block (insns, to, value,
 		      gen_rtx_fmt_e (optab_to_code (tab), to_mode, from));
@@ -6162,8 +6144,7 @@ gen_cond_trap (enum rtx_code code, rtx op1, rtx op2, rtx tcode)
     }
 
   emit_insn (insn);
-  insn = get_insns ();
-  end_sequence ();
+  insn = end_sequence ();
   return insn;
 }
 
@@ -7800,8 +7781,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
       if (result)
 	{
 	  /* PLUS worked so emit the insns and return.  */
-	  tmp = get_insns ();
-	  end_sequence ();
+	  tmp = end_sequence ();
 	  emit_insn (tmp);
           return result;
 	}
@@ -7880,8 +7860,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
       /* For after, copy the value now.  */
       if (!unused_result && after)
         emit_move_insn (target, t1);
-      insn = get_insns ();
-      end_sequence ();
+      insn = end_sequence ();
 
       if (t1 != NULL && expand_compare_and_swap_loop (mem, t0, t1, insn))
         return target;

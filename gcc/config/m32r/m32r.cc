@@ -1150,8 +1150,7 @@ gen_split_move_double (rtx operands[])
   else
     gcc_unreachable ();
 
-  val = get_insns ();
-  end_sequence ();
+  val = end_sequence ();
   return val;
 }
 

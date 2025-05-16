@@ -3784,8 +3784,7 @@ hwloop_optimize (hwloop_info loop)
 	}
     }
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   if (loop->incoming_src)
     {

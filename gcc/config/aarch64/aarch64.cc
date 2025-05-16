@@ -3201,8 +3201,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	  aarch64_emit_call_insn (gen_tlsgd_small_si (result, imm));
 	else
 	  aarch64_emit_call_insn (gen_tlsgd_small_di (result, imm));
-	insns = get_insns ();
-	end_sequence ();
+	insns = end_sequence ();
 
 	RTL_CONST_CALL_P (insns) = 1;
 	emit_libcall_block (insns, tmp_reg, result, imm);
@@ -24662,8 +24661,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
       rtx tmp_reg = gen_reg_rtx (GET_MODE (new_vals));
       aarch64_expand_vector_init (tmp_reg, new_vals);
       halves[i] = gen_rtx_SUBREG (mode, tmp_reg, 0);
-      rtx_insn *rec_seq = get_insns ();
-      end_sequence ();
+      rtx_insn *rec_seq = end_sequence ();
       costs[i] = seq_cost_ignoring_scalar_moves (rec_seq, !optimize_size);
       emit_insn (rec_seq);
     }
@@ -24675,8 +24673,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
     = (!optimize_size) ? std::max (costs[0], costs[1]) : costs[0] + costs[1];
   seq_total_cost += insn_cost (zip1_insn, !optimize_size);
 
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
 
   start_sequence ();
   aarch64_expand_vector_init_fallback (target, vals);
@@ -27803,8 +27800,7 @@ aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
       end_sequence ();
       return NULL_RTX;
     }
-  *prep_seq = get_insns ();
-  end_sequence ();
+  *prep_seq = end_sequence ();
 
   create_fixed_operand (&ops[0], op0);
   create_fixed_operand (&ops[1], op1);
@@ -27815,8 +27811,7 @@ aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
       end_sequence ();
       return NULL_RTX;
     }
-  *gen_seq = get_insns ();
-  end_sequence ();
+  *gen_seq = end_sequence ();
 
   return gen_rtx_fmt_ee (code, cc_mode,
 			 gen_rtx_REG (cc_mode, CC_REGNUM), const0_rtx);
@@ -27880,8 +27875,7 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
       end_sequence ();
       return NULL_RTX;
     }
-  *prep_seq = get_insns ();
-  end_sequence ();
+  *prep_seq = end_sequence ();
 
   target = gen_rtx_REG (cc_mode, CC_REGNUM);
   aarch64_cond = aarch64_get_condition_code_1 (cc_mode, cmp_code);
@@ -27920,8 +27914,7 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
       return NULL_RTX;
     }
 
-  *gen_seq = get_insns ();
-  end_sequence ();
+  *gen_seq = end_sequence ();
 
   return gen_rtx_fmt_ee (cmp_code, VOIDmode, target, const0_rtx);
 }
@@ -30506,8 +30499,7 @@ aarch64_mode_emit (int entity, int mode, int prev_mode, HARD_REG_SET live)
 					 aarch64_local_sme_state (prev_mode));
       break;
     }
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
 
   /* Get the set of clobbered registers that are currently live.  */
   HARD_REG_SET clobbers = {};
@@ -30917,8 +30909,7 @@ aarch64_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 	    emit_insn (REGNO (x) == ZA_REGNUM
 		       ? gen_aarch64_asm_update_za (id_rtx)
 		       : gen_aarch64_asm_update_zt0 (id_rtx));
-	    seq = get_insns ();
-	    end_sequence ();
+	    seq = end_sequence ();
 
 	    auto mode = REGNO (x) == ZA_REGNUM ? VNx16QImode : V8DImode;
 	    uses.safe_push (gen_rtx_REG (mode, REGNO (x)));
@@ -30953,8 +30944,7 @@ aarch64_switch_pstate_sm_for_landing_pad (basic_block bb)
   args_switch.emit_epilogue ();
   if (guard_label)
     emit_label (guard_label);
-  auto seq = get_insns ();
-  end_sequence ();
+  auto seq = end_sequence ();
 
   emit_insn_after (seq, bb_note (bb));
   return true;
@@ -30977,8 +30967,7 @@ aarch64_switch_pstate_sm_for_jump (rtx_insn *jump)
   aarch64_switch_pstate_sm (AARCH64_ISA_MODE_SM_ON, AARCH64_ISA_MODE_SM_OFF);
   if (guard_label)
     emit_label (guard_label);
-  auto seq = get_insns ();
-  end_sequence ();
+  auto seq = end_sequence ();
 
   emit_insn_before (seq, jump);
   return true;
@@ -31012,8 +31001,7 @@ aarch64_switch_pstate_sm_for_call (rtx_call_insn *call)
   args_switch.emit_epilogue ();
   if (args_guard_label)
     emit_label (args_guard_label);
-  auto args_seq = get_insns ();
-  end_sequence ();
+  auto args_seq = end_sequence ();
   emit_insn_before (args_seq, call);
 
   if (find_reg_note (call, REG_NORETURN, NULL_RTX))
@@ -31033,8 +31021,7 @@ aarch64_switch_pstate_sm_for_call (rtx_call_insn *call)
   return_switch.emit_epilogue ();
   if (return_guard_label)
     emit_label (return_guard_label);
-  auto result_seq = get_insns ();
-  end_sequence ();
+  auto result_seq = end_sequence ();
   emit_insn_after (result_seq, call);
   return true;
 }

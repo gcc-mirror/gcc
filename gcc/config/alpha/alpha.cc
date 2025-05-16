@@ -1036,8 +1036,7 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	    RTL_CONST_CALL_P (insn) = 1;
 	    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
 
-	    insn = get_insns ();
-	    end_sequence ();
+	    insn = end_sequence ();
 
 	    emit_libcall_block (insn, dest, r0, x);
 	    return dest;
@@ -1059,8 +1058,7 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	    RTL_CONST_CALL_P (insn) = 1;
 	    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
 
-	    insn = get_insns ();
-	    end_sequence ();
+	    insn = end_sequence ();
 
 	    eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
 				  UNSPEC_TLSLDM_CALL);
@@ -3214,8 +3212,7 @@ alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
   CALL_INSN_FUNCTION_USAGE (tmp) = usage;
   RTL_CONST_CALL_P (tmp) = 1;
 
-  tmp = get_insns ();
-  end_sequence ();
+  tmp = end_sequence ();
 
   emit_libcall_block (tmp, target, reg, equiv);
 }
@@ -5596,8 +5593,7 @@ alpha_gp_save_rtx (void)
       m = validize_mem (m);
       emit_move_insn (m, pic_offset_table_rtx);
 
-      seq = get_insns ();
-      end_sequence ();
+      seq = end_sequence ();
 
       /* We used to simply emit the sequence after entry_of_function.
 	 However this breaks the CFG if the first instruction in the

@@ -1559,8 +1559,7 @@ emit_common_heads_for_components (sbitmap components)
 	{
 	  start_sequence ();
 	  targetm.shrink_wrap.emit_prologue_components (pro);
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  record_prologue_seq (seq);
 
 	  emit_insn_after (seq, bb_note (bb));
@@ -1572,8 +1571,7 @@ emit_common_heads_for_components (sbitmap components)
 	{
 	  start_sequence ();
 	  targetm.shrink_wrap.emit_epilogue_components (epi);
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  record_epilogue_seq (seq);
 
 	  emit_insn_after (seq, bb_note (bb));
@@ -1659,8 +1657,7 @@ emit_common_tails_for_components (sbitmap components)
 	{
 	  start_sequence ();
 	  targetm.shrink_wrap.emit_epilogue_components (epi);
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  record_epilogue_seq (seq);
 
 	  if (control_flow_insn_p (last_insn))
@@ -1675,8 +1672,7 @@ emit_common_tails_for_components (sbitmap components)
 	{
 	  start_sequence ();
 	  targetm.shrink_wrap.emit_prologue_components (pro);
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  record_prologue_seq (seq);
 
 	  if (control_flow_insn_p (last_insn))
@@ -1740,8 +1736,7 @@ insert_prologue_epilogue_for_components (sbitmap components)
 	      /* Put the epilogue components in place.  */
 	      start_sequence ();
 	      targetm.shrink_wrap.emit_epilogue_components (epi);
-	      rtx_insn *seq = get_insns ();
-	      end_sequence ();
+	      rtx_insn *seq = end_sequence ();
 	      record_epilogue_seq (seq);
 
 	      if (e->flags & EDGE_SIBCALL)
@@ -1764,8 +1759,7 @@ insert_prologue_epilogue_for_components (sbitmap components)
 	      /* Put the prologue components in place.  */
 	      start_sequence ();
 	      targetm.shrink_wrap.emit_prologue_components (pro);
-	      seq = get_insns ();
-	      end_sequence ();
+	      seq = end_sequence ();
 	      record_prologue_seq (seq);
 
 	      insert_insn_on_edge (seq, e);

@@ -3419,8 +3419,7 @@ pre_vsetvl::emit_vsetvl ()
 	    }
 	  start_sequence ();
 	  insert_vsetvl_insn (EMIT_DIRECT, footer_info);
-	  rtx_insn *rinsn = get_insns ();
-	  end_sequence ();
+	  rtx_insn *rinsn = end_sequence ();
 	  default_rtl_profile ();
 	  insert_insn_on_edge (rinsn, eg);
 	  need_commit = true;
@@ -3451,8 +3450,7 @@ pre_vsetvl::emit_vsetvl ()
       start_sequence ();
 
       insert_vsetvl_insn (EMIT_DIRECT, info);
-      rtx_insn *rinsn = get_insns ();
-      end_sequence ();
+      rtx_insn *rinsn = end_sequence ();
       default_rtl_profile ();
 
       /* We should not get an abnormal edge here.  */

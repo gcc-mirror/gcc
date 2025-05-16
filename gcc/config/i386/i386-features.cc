@@ -948,8 +948,7 @@ scalar_chain::make_vector_copies (rtx_insn *insn, rtx reg)
   else
     emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
 			    gen_gpr_to_xmm_move_src (vmode, reg)));
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
   emit_conversion_insns (seq, insn);
 
   if (dump_file)
@@ -1016,8 +1015,7 @@ scalar_chain::convert_reg (rtx_insn *insn, rtx dst, rtx src)
   else
     emit_move_insn (dst, src);
 
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
   emit_conversion_insns (seq, insn);
 
   if (dump_file)
@@ -1112,8 +1110,7 @@ scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 	{
 	  start_sequence ();
 	  vec_cst = validize_mem (force_const_mem (vmode, vec_cst));
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  emit_insn_before (seq, insn);
 	}
 
@@ -1929,8 +1926,7 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
 	      src = validize_mem (force_const_mem (V1TImode, src));
 	      use_move = MEM_P (dst);
 	    }
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  if (seq)
 	    emit_insn_before (seq, insn);
 	  if (use_move)

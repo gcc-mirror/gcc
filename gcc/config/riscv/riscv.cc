@@ -2856,9 +2856,7 @@ riscv_call_tls_get_addr (rtx sym, rtx result)
 					 gen_int_mode (RISCV_CC_BASE, SImode)));
   RTL_CONST_CALL_P (insn) = 1;
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), a0);
-  insn = get_insns ();
-
-  end_sequence ();
+  insn = end_sequence ();
 
   return insn;
 }
@@ -12180,8 +12178,7 @@ riscv_frm_emit_after_bb_end (rtx_insn *cur_insn)
 	{
 	  start_sequence ();
 	  emit_insn (gen_frrmsi (DYNAMIC_FRM_RTL (cfun)));
-	  rtx_insn *backup_insn = get_insns ();
-	  end_sequence ();
+	  rtx_insn *backup_insn = end_sequence ();
 
 	  insert_insn_on_edge (backup_insn, eg);
 	}
@@ -12191,8 +12188,7 @@ riscv_frm_emit_after_bb_end (rtx_insn *cur_insn)
     {
       start_sequence ();
       emit_insn (gen_frrmsi (DYNAMIC_FRM_RTL (cfun)));
-      rtx_insn *backup_insn = get_insns ();
-      end_sequence ();
+      rtx_insn *backup_insn = end_sequence ();
 
       insert_insn_end_basic_block (backup_insn, bb);
     }

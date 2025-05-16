@@ -3976,8 +3976,7 @@ expand_asm_stmt (gasm *stmt)
 		  start_sequence ();
 		  duplicate_insn_chain (after_rtl_seq, after_rtl_end,
 					NULL, NULL);
-		  copy = get_insns ();
-		  end_sequence ();
+		  copy = end_sequence ();
 		}
 	      prepend_insn_to_edge (copy, e);
 	    }
@@ -7024,8 +7023,7 @@ pass_expand::execute (function *fun)
 
   var_ret_seq = expand_used_vars (forced_stack_vars);
 
-  var_seq = get_insns ();
-  end_sequence ();
+  var_seq = end_sequence ();
   timevar_pop (TV_VAR_EXPAND);
 
   /* Honor stack protection warnings.  */

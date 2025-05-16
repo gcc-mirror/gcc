@@ -814,8 +814,7 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
     {
       start_sequence ();
       emit_insn (gen_add3_insn (dest, src, srcoff));
-      new_insn = get_insns ();
-      end_sequence ();
+      new_insn = end_sequence ();
     }
   else
     new_insn = gen_move_insn (dest, src);
@@ -1827,8 +1826,7 @@ find_shift_sequence (poly_int64 access_bytes,
 			     gen_int_shift_amount (new_mode, shift),
 			     new_reg, 1, OPTAB_DIRECT);
 
-      shift_seq = get_insns ();
-      end_sequence ();
+      shift_seq = end_sequence ();
 
       if (target != new_reg || shift_seq == NULL)
 	continue;
@@ -2047,8 +2045,7 @@ replace_read (store_info *store_info, insn_info_t store_insn,
     }
   else
     read_reg = copy_to_mode_reg (read_mode, read_reg);
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
 
   if (insns != NULL_RTX)
     {

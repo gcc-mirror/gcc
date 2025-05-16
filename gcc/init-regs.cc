@@ -109,8 +109,7 @@ initialize_uninitialized_regs (void)
 		     CONST0_RTX defined.  */
 		  if (CONST0_RTX (GET_MODE (reg)))
 		    emit_move_insn (reg, CONST0_RTX (GET_MODE (reg)));
-		  move_insn = get_insns ();
-		  end_sequence ();
+		  move_insn = end_sequence ();
 		  emit_insn_before (move_insn, insn);
 		  if (dump_file)
 		    fprintf (dump_file,

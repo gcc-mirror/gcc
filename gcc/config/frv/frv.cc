@@ -4759,8 +4759,7 @@ frv_split_scc (rtx dest, rtx test, rtx cc_reg, rtx cr_reg, HOST_WIDE_INT value)
 				gen_rtx_SET (dest, const0_rtx)));
 
   /* Finish up, return sequence.  */
-  ret = get_insns ();
-  end_sequence ();
+  ret = end_sequence ();
   return ret;
 }
 
@@ -4931,8 +4930,7 @@ frv_split_cond_move (rtx operands[])
     }
 
   /* Finish up, return sequence.  */
-  ret = get_insns ();
-  end_sequence ();
+  ret = end_sequence ();
   return ret;
 }
 
@@ -5062,8 +5060,7 @@ frv_split_minmax (rtx operands[])
     }
 
   /* Finish up, return sequence.  */
-  ret = get_insns ();
-  end_sequence ();
+  ret = end_sequence ();
   return ret;
 }
 
@@ -5101,8 +5098,7 @@ frv_split_abs (rtx operands[])
 				  gen_rtx_SET (dest, src)));
 
   /* Finish up, return sequence.  */
-  ret = get_insns ();
-  end_sequence ();
+  ret = end_sequence ();
   return ret;
 }
 

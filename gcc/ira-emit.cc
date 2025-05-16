@@ -925,8 +925,7 @@ emit_move_list (move_t list, int freq)
       from = allocno_emit_reg (list->from);
       from_regno = REGNO (from);
       emit_move_insn (to, from);
-      list->insn = get_insns ();
-      end_sequence ();
+      list->insn = end_sequence ();
       for (insn = list->insn; insn != NULL_RTX; insn = NEXT_INSN (insn))
 	{
 	  /* The reload needs to have set up insn codes.  If the
@@ -984,8 +983,7 @@ emit_move_list (move_t list, int freq)
 	}
       ira_overall_cost += cost;
     }
-  result = get_insns ();
-  end_sequence ();
+  result = end_sequence ();
   return result;
 }
 

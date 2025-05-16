@@ -471,15 +471,13 @@ init_set_costs (void)
 
       start_sequence ();
       emit_move_insn (reg1, reg2);
-      seq = get_insns ();
-      end_sequence ();
+      seq = end_sequence ();
       target_reg_cost [speed] = seq_cost (seq, speed);
 
       start_sequence ();
       emit_move_insn (mem, reg1);
       emit_move_insn (reg2, mem);
-      seq = get_insns ();
-      end_sequence ();
+      seq = end_sequence ();
       target_spill_cost [speed] = seq_cost (seq, speed);
     }
   default_rtl_profile ();

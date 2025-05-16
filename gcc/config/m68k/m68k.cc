@@ -2763,8 +2763,7 @@ m68k_call_tls_get_addr (rtx x, rtx eqv, enum m68k_reloc reloc)
 				Pmode, x, Pmode);
   m68k_libcall_value_in_a0_p = false;
 
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
 
   gcc_assert (can_create_pseudo_p ());
   dest = gen_reg_rtx (Pmode);
@@ -2811,8 +2810,7 @@ m68k_call_m68k_read_tp (void)
   a0 = emit_library_call_value (m68k_get_m68k_read_tp (), NULL_RTX, LCT_PURE,
 				Pmode);
   m68k_libcall_value_in_a0_p = false;
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
 
   /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
      share the m68k_read_tp result with other IE/LE model accesses.  */
@@ -6799,8 +6797,7 @@ m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
 
   start_sequence ();
   emit_insn (gen_ib ());
-  sched_ib.insn = get_insns ();
-  end_sequence ();
+  sched_ib.insn = end_sequence ();
 }
 
 /* Scheduling pass is now finished.  Free/reset static variables.  */

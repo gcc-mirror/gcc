@@ -264,8 +264,7 @@ emit_partition_copy (rtx dest, rtx src, int unsignedsrcp, tree sizeexp)
     emit_move_insn (dest, src);
   do_pending_stack_adjust ();
 
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
 
   return seq;
 }
@@ -357,8 +356,7 @@ insert_value_copy_on_edge (edge e, int dest, tree src, location_t locus)
     emit_move_insn (dest_rtx, x);
   do_pending_stack_adjust ();
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   insert_insn_on_edge (seq, e);
 }

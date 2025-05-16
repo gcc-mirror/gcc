@@ -1123,8 +1123,7 @@ legitimize_tls_address (rtx addr)
 	else
 	  emit_insn (gen_tld_load (tmp, addr));
 	t1 = hppa_tls_call (tmp);
-	insn = get_insns ();
-	end_sequence ();
+	insn = end_sequence ();
 	t2 = gen_reg_rtx (Pmode);
 	emit_libcall_block (insn, t2, t1,
 			    gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),

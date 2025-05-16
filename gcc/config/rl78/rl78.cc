@@ -4953,8 +4953,7 @@ rl78_emit_libcall (const char *name, enum rtx_code code,
       gcc_unreachable ();
     }
 
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
   emit_libcall_block (insns, operands[0], ret, equiv);
   return ret;
 }

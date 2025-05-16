@@ -460,8 +460,7 @@ or1k_init_pic_reg (void)
       cfun->machine->set_got_insn =
 	emit_insn (gen_set_got_tmp (pic_offset_table_rtx));
 
-      rtx_insn *seq = get_insns ();
-      end_sequence ();
+      rtx_insn *seq = end_sequence ();
 
       edge entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
       insert_insn_on_edge (seq, entry_edge);

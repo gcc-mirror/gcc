@@ -5609,8 +5609,7 @@ ira (FILE *f)
 			 not put a note as commit_edges insertion will
 			 fail.  */
 		      emit_insn (gen_rtx_USE (VOIDmode, const1_rtx));
-		      rtx_insn *insns = get_insns ();
-		      end_sequence ();
+		      rtx_insn *insns = end_sequence ();
 		      insert_insn_on_edge (insns, e);
 		    }
 		break;

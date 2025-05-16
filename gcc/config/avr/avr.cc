@@ -1660,8 +1660,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
 							-size_cfa)));
 	    }
 
-	  fp_plus_insns = get_insns ();
-	  end_sequence ();
+	  fp_plus_insns = end_sequence ();
 
 	  /************  Method 2: Adjust Stack pointer  ************/
 
@@ -1693,8 +1692,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
 		  RTX_FRAME_RELATED_P (insn) = 1;
 		}
 
-	      sp_plus_insns = get_insns ();
-	      end_sequence ();
+	      sp_plus_insns = end_sequence ();
 
 	      /************ Use shortest method  ************/
 
@@ -2060,8 +2058,7 @@ avr_expand_epilogue (bool sibcall_p)
       emit_insn (gen_movhi_sp_r (stack_pointer_rtx, fp,
 				 GEN_INT (irq_state)));
 
-      rtx_insn *fp_plus_insns = get_insns ();
-      end_sequence ();
+      rtx_insn *fp_plus_insns = end_sequence ();
 
       /********** Method 2: Adjust Stack pointer  **********/
 
@@ -2072,8 +2069,7 @@ avr_expand_epilogue (bool sibcall_p)
 	  emit_move_insn (stack_pointer_rtx,
 			  plus_constant (Pmode, stack_pointer_rtx, size));
 
-	  rtx_insn *sp_plus_insns = get_insns ();
-	  end_sequence ();
+	  rtx_insn *sp_plus_insns = end_sequence ();
 
 	  /************ Use shortest method  ************/
 

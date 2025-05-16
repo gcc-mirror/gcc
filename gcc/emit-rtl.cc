@@ -4611,8 +4611,7 @@ reorder_insns (rtx_insn *from, rtx_insn *to, rtx_insn *after)
 
 	start_sequence ();
 	... emit the new instructions ...
-	insns_head = get_insns ();
-	end_sequence ();
+	insns_head = end_sequence ();
 
 	emit_insn_before (insns_head, SPOT);
 
@@ -5457,8 +5456,7 @@ gen_clobber (rtx x)
 
   start_sequence ();
   emit_clobber (x);
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
   return seq;
 }
 
@@ -5485,8 +5483,7 @@ gen_use (rtx x)
 
   start_sequence ();
   emit_use (x);
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
   return seq;
 }
 
