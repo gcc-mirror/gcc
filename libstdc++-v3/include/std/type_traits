@@ -464,6 +464,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_3>
     : public true_type { };
 #endif
+
+#if defined __SIZEOF_INT128__ && defined __STRICT_ANSI__
+  __extension__
+  template<>
+    struct __is_integral_helper<__int128>
+    : public true_type { };
+
+  __extension__
+  template<>
+    struct __is_integral_helper<unsigned __int128>
+    : public true_type { };
+#endif
+
   /// @endcond
 
   /// is_integral
@@ -1927,6 +1940,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_3>
     { using __type = unsigned __GLIBCXX_TYPE_INT_N_3; };
 #endif
+#if defined __SIZEOF_INT128__ && defined __STRICT_ANSI__
+  __extension__
+  template<>
+    struct __make_unsigned<__int128>
+    { using __type = unsigned __int128; };
+#endif
 
   // Select between integral and enum: not possible to be both.
   template<typename _Tp,
@@ -2086,6 +2105,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_3>
     { using __type = __GLIBCXX_TYPE_INT_N_3; };
+#endif
+#if defined __SIZEOF_INT128__ && defined __STRICT_ANSI__
+  __extension__
+  template<>
+    struct __make_signed<unsigned __int128>
+    { using __type = __int128; };
 #endif
 
   // Select between integral and enum: not possible to be both.

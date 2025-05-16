@@ -1854,20 +1854,6 @@ namespace __format
 					  __align, __nfill, __fill_char);
 	}
 
-#if defined __SIZEOF_INT128__ && defined __STRICT_ANSI__
-      template<typename _Tp>
-	using make_unsigned_t
-	  = typename __conditional_t<(sizeof(_Tp) <= sizeof(long long)),
-				     std::make_unsigned<_Tp>,
-				     type_identity<unsigned __int128>>::type;
-
-      // std::to_chars is not overloaded for int128 in strict mode.
-      template<typename _Int>
-	static to_chars_result
-	to_chars(char* __first, char* __last, _Int __value, int __base)
-	{ return std::__to_chars_i<_Int>(__first, __last, __value, __base); }
-#endif
-
       _Spec<_CharT> _M_spec{};
     };
 

@@ -65,7 +65,7 @@ namespace ranges
     public:
       __max_size_type() = default;
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	constexpr
 	__max_size_type(_Tp __i) noexcept
 	  : _M_val(__i), _M_msb(__i < 0)
@@ -74,7 +74,7 @@ namespace ranges
       constexpr explicit
       __max_size_type(const __max_diff_type& __d) noexcept;
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	constexpr explicit
 	operator _Tp() const noexcept
 	{ return _M_val; }
@@ -260,52 +260,52 @@ namespace ranges
 	return *this;
       }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator+=(_Tp& __a, const __max_size_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a + __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator-=(_Tp& __a, const __max_size_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a - __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator*=(_Tp& __a, const __max_size_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a * __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator/=(_Tp& __a, const __max_size_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a / __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator%=(_Tp& __a, const __max_size_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a % __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator&=(_Tp& __a, const __max_size_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a & __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator|=(_Tp& __a, const __max_size_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a | __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator^=(_Tp& __a, const __max_size_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a ^ __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator<<=(_Tp& __a, const __max_size_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a << __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator>>=(_Tp& __a, const __max_size_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a >> __b)); }
@@ -447,7 +447,7 @@ namespace ranges
     public:
       __max_diff_type() = default;
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	constexpr
 	__max_diff_type(_Tp __i) noexcept
 	  : _M_rep(__i)
@@ -458,7 +458,7 @@ namespace ranges
 	: _M_rep(__d)
       { }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	constexpr explicit
 	operator _Tp() const noexcept
 	{ return static_cast<_Tp>(_M_rep); }
@@ -591,52 +591,52 @@ namespace ranges
 	return *this;
       }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator+=(_Tp& __a, const __max_diff_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a + __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator-=(_Tp& __a, const __max_diff_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a - __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator*=(_Tp& __a, const __max_diff_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a * __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator/=(_Tp& __a, const __max_diff_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a / __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator%=(_Tp& __a, const __max_diff_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a % __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator&=(_Tp& __a, const __max_diff_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a & __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator|=(_Tp& __a, const __max_diff_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a | __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator^=(_Tp& __a, const __max_diff_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a ^ __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator<<=(_Tp& __a, const __max_diff_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a << __b)); }
 
-      template<typename _Tp> requires integral<_Tp> || __is_int128<_Tp>
+      template<typename _Tp> requires integral<_Tp>
 	friend constexpr _Tp&
 	operator>>=(_Tp& __a, const __max_diff_type& __b) noexcept
 	{ return (__a = static_cast<_Tp>(__a >> __b)); }

@@ -214,17 +214,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= make_signed_t<decltype(std::declval<_Tp>() - std::declval<_Tp>())>;
     };
 
-#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
-  // __int128 is incrementable even if !integral<__int128>
-  template<>
-    struct incrementable_traits<__int128>
-    { using difference_type = __int128; };
-
-  template<>
-    struct incrementable_traits<unsigned __int128>
-    { using difference_type = __int128; };
-#endif
-
   namespace __detail
   {
     // An iterator such that iterator_traits<_Iter> names a specialization
@@ -611,24 +600,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __max_diff_type;
     class __max_size_type;
 
-    __extension__
-    template<typename _Tp>
-      concept __is_signed_int128
-#if __SIZEOF_INT128__
-	= same_as<_Tp, __int128>;
-#else
-	= false;
-#endif
-
-    __extension__
-    template<typename _Tp>
-      concept __is_unsigned_int128
-#if __SIZEOF_INT128__
-	= same_as<_Tp, unsigned __int128>;
-#else
-	= false;
-#endif
-
     template<typename _Tp>
       concept __cv_bool = same_as<const volatile _Tp, const volatile bool>;
 
@@ -636,16 +607,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       concept __integral_nonbool = integral<_Tp> && !__cv_bool<_Tp>;
 
     template<typename _Tp>
-      concept __is_int128 = __is_signed_int128<_Tp> || __is_unsigned_int128<_Tp>;
-
-    template<typename _Tp>
       concept __is_integer_like = __integral_nonbool<_Tp>
-	|| __is_int128<_Tp>
 	|| same_as<_Tp, __max_diff_type> || same_as<_Tp, __max_size_type>;
 
     template<typename _Tp>
       concept __is_signed_integer_like = signed_integral<_Tp>
-	|| __is_signed_int128<_Tp>
 	|| same_as<_Tp, __max_diff_type>;
 
   } // namespace ranges::__detail

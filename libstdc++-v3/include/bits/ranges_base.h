@@ -81,16 +81,6 @@ namespace ranges
       __to_unsigned_like(_Tp __t) noexcept
       { return static_cast<make_unsigned_t<_Tp>>(__t); }
 
-#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
-    constexpr unsigned __int128
-    __to_unsigned_like(__int128 __t) noexcept
-    { return __t; }
-
-    constexpr unsigned __int128
-    __to_unsigned_like(unsigned __int128 __t) noexcept
-    { return __t; }
-#endif
-
     template<typename _Tp>
       using __make_unsigned_like_t
 	= decltype(__detail::__to_unsigned_like(std::declval<_Tp>()));
@@ -398,11 +388,6 @@ namespace ranges
 	      else
 		return static_cast<make_signed_t<__size_type>>(__size);
 	    }
-#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
-	  // For strict-ansi modes integral<__int128> is false
-	  else if constexpr (__detail::__is_int128<__size_type>)
-	    return static_cast<__int128>(__size);
-#endif
 	  else // Must be one of __max_diff_type or __max_size_type.
 	    return __detail::__max_diff_type(__size);
 	}

@@ -273,6 +273,12 @@ __INT_N(__GLIBCXX_TYPE_INT_N_2)
 __INT_N(__GLIBCXX_TYPE_INT_N_3)
 #endif
 
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+// In strict modes __GLIBCXX_TYPE_INT_N_0 is not defined for __int128,
+// but we want to always treat signed/unsigned __int128 as integral types.
+__INT_N(__int128)
+#endif
+
 #undef __INT_N
 
   //
@@ -543,17 +549,6 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
   template<>
     struct __memcpyable_integer<unsigned __GLIBCXX_TYPE_INT_N_3>
     { enum { __width = __GLIBCXX_BITSIZE_INT_N_3 }; };
-#endif
-
-#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
-  // In strict modes __is_integer<__int128> is false,
-  // but we want to allow memcpy between signed/unsigned __int128.
-  __extension__
-  template<>
-    struct __memcpyable_integer<__int128> { enum { __width = 128 }; };
-  __extension__
-  template<>
-    struct __memcpyable_integer<unsigned __int128> { enum { __width = 128 }; };
 #endif
 
 #if _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 && _GLIBCXX_LDOUBLE_IS_IEEE_BINARY64
