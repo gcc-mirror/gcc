@@ -31,6 +31,7 @@ package Exp_Ch5 is
    procedure Expand_N_Assignment_Statement      (N : Node_Id);
    procedure Expand_N_Block_Statement           (N : Node_Id);
    procedure Expand_N_Case_Statement            (N : Node_Id);
+   procedure Expand_N_Continue_Statement        (N : Node_Id);
    procedure Expand_N_Exit_Statement            (N : Node_Id);
    procedure Expand_N_Goto_When_Statement       (N : Node_Id);
    procedure Expand_N_If_Statement              (N : Node_Id);

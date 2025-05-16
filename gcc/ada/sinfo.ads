@@ -2312,6 +2312,15 @@ package Sinfo is
    --    entity of the original entity, operator, or subprogram being invoked,
    --    or the original variable being read or written.
 
+   --  Call_Or_Target_Loop
+   --    Present in continue statements. Set by Analyze_Continue_Statement and
+   --    used by Expand_Continue_Statement. If Analyze_Continue_Statement
+   --    concluded that its input node was in fact a call to a procedure named
+   --    "Continue", it contains the corresponding N_Procedure_Call_Statement
+   --    node. Otherwise it contains the E_Loop_Id of the loop the continue
+   --    statement applies to. Finally, if Analyze_Continue_Statement detects
+   --    an error, this field is set to Empty.
+
    --  Target_Type
    --    Used in an N_Validate_Unchecked_Conversion node to point to the target
    --    type entity for the unchecked conversion instantiation which gigi must
@@ -5206,6 +5215,23 @@ package Sinfo is
       --  Name (set to Empty if no loop name present)
       --  Condition (set to Empty if no WHEN part present)
       --  Next_Exit_Statement : Next exit on chain
+
+      ------------------------
+      -- Continue Statement --
+      ------------------------
+
+      --  This is a GNAT extension
+
+      --  CONTINUE_STATEMENT ::= continue [loop_NAME] [when CONDITION];
+
+      --  Gigi restriction: The expander ensures that the type of the Condition
+      --  field is always Standard.Boolean, even if the type in the source is
+      --  some non-standard boolean type.
+
+      --  N_Continue_Statement
+      --  Sloc points to CONTINUE
+      --  Name (set to Empty if no loop name present)
+      --  Condition (set to Empty if no WHEN part present)
 
       -------------------------
       -- 5.9  Goto Statement --

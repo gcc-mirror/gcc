@@ -137,6 +137,10 @@ package Sinfo.Utils is
    --  for the argument. This is Arg itself, or, in the case where Arg is a
    --  pragma argument association node, the expression from this node.
 
+   function Loop_Flow_Keyword (N : N_Loop_Flow_Statement_Id) return String;
+   --  Returns the keyword corresponding to N as a string, for use in
+   --  diagnostics.
+
    function Lowest_Common_Ancestor (N1, N2 : Node_Id) return Union_Id;
    --  Returns the list or node that is the lowest common ancestor of N1 and
    --  N2 in the syntax tree.

@@ -31,6 +31,7 @@ package Sem_Ch5 is
    procedure Analyze_Block_Statement              (N : Node_Id);
    procedure Analyze_Case_Statement               (N : Node_Id);
    procedure Analyze_Compound_Statement           (N : Node_Id);
+   procedure Analyze_Continue_Statement           (N : Node_Id);
    procedure Analyze_Exit_Statement               (N : Node_Id);
    procedure Analyze_Goto_Statement               (N : Node_Id);
    procedure Analyze_Goto_When_Statement          (N : Node_Id);

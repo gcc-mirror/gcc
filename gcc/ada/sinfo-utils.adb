@@ -347,6 +347,19 @@ package body Sinfo.Utils is
       end if;
    end Get_Pragma_Arg;
 
+   -----------------------
+   -- Loop_Flow_Keyword --
+   -----------------------
+
+   function Loop_Flow_Keyword (N : N_Loop_Flow_Statement_Id) return String is
+   begin
+      case Nkind (N) is
+         when N_Continue_Statement => return "continue";
+         when N_Exit_Statement => return "exit";
+         when others => pragma Assert (False);
+      end case;
+   end Loop_Flow_Keyword;
+
    procedure Destroy_Element (Elem : in out Union_Id);
    --  Does not do anything but is used to instantiate
    --  GNAT.Lists.Doubly_Linked_Lists.

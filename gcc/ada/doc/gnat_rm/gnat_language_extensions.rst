@@ -1777,3 +1777,19 @@ If an exception is raised in the finally part, it cannot be caught by the ``exce
 Abort/ATC (asynchronous transfer of control) cannot interrupt a finally block, nor prevent its
 execution, that is the finally block must be executed in full even if the containing task is
 aborted, or if the control is transferred out of the block.
+
+Continue statement
+------------------
+
+The ``continue`` keyword makes it possible to stop execution of a loop iteration
+and continue with the next one. A continue statement has the same syntax
+(except "exit" is replaced with "continue"), static semantics, and legality
+rules as an exit statement. The difference is in the dynamic semantics: where an
+exit statement would cause a transfer of control that completes the (implicitly
+or explicitly) specified loop_statement, a continue statement would instead
+cause a transfer of control that completes only the current iteration of that
+loop_statement, like a goto statement targeting a label following the last
+statement in the sequence of statements of the specified loop_statement.
+
+Note that ``continue`` is a keyword but it is not a reserved word. This is a
+configuration that does not exist in standard Ada.

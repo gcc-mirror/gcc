@@ -190,6 +190,9 @@ package body Exp_Ch5 is
    --  specification and Container is either the Container (for OF) or the
    --  iterator (for IN).
 
+   procedure Expand_Loop_Flow_Statement (N : N_Loop_Flow_Statement_Id);
+   --  Common processing for expansion of "loop flow" statements
+
    procedure Expand_Predicated_Loop (N : Node_Id);
    --  Expand for loop over predicated subtype
 
@@ -280,14 +283,11 @@ package body Exp_Ch5 is
           Statements => Stats,
           End_Label  => Empty);
 
-      --  If the contruct has a specified loop name, preserve it in the new
-      --  loop, for possible use in exit statements.
+      --  Preserve the construct's loop name in the new loop, for possible use
+      --  in exit statements.
 
-      if Present (Identifier (N))
-        and then Comes_From_Source (Identifier (N))
-      then
-         Set_Identifier (New_Loop, Identifier (N));
-      end if;
+      pragma Assert (Present (Identifier (N)));
+      Set_Identifier (New_Loop, Identifier (N));
    end Build_Formal_Container_Iteration;
 
    ------------------------------
@@ -4425,16 +4425,98 @@ package body Exp_Ch5 is
       end;
    end Expand_N_Case_Statement;
 
+   ---------------------------------
+   -- Expand_N_Continue_Statement --
+   ---------------------------------
+
+   procedure Expand_N_Continue_Statement (N : Node_Id) is
+      X : constant Node_Id := Call_Or_Target_Loop (N);
+
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Label : E_Label_Id;
+   begin
+      if No (X) then
+         return;
+      end if;
+
+      if Nkind (X) = N_Procedure_Call_Statement then
+         Replace (N, X);
+         Analyze (N);
+         return;
+      end if;
+
+      Expand_Loop_Flow_Statement (N);
+
+      declare
+         L : constant E_Loop_Id := Call_Or_Target_Loop (N);
+         M : constant Node_Id := Continue_Mark (L);
+         A : constant Node_Id := Next (M);
+      begin
+         if not (Present (A) and then Nkind (A) = N_Label) then
+            --  This is the first continue statement that is expanded for this
+            --  loop; we set up the label that the goto statement will target.
+            declare
+               P : constant Node_Id := Atree.Node_Parent (L);
+
+               Decl_List : constant List_Id :=
+                 (if Nkind (P) = N_Implicit_Label_Declaration
+                  then List_Containing (P)
+                  else Declarations (Parent (Parent (P))));
+
+               Label_Entity : constant Entity_Id :=
+                 Make_Defining_Identifier
+                   (Loc, New_External_Name (Chars (L), 'C'));
+               Label_Id     : constant N_Identifier_Id :=
+                 Make_Identifier (Loc, Chars (Label_Entity));
+               Label_Node   : constant N_Label_Id :=
+                 Make_Label (Loc, Label_Id);
+               Label_Decl   : constant N_Implicit_Label_Declaration_Id :=
+                 Make_Implicit_Label_Declaration
+                   (Loc, Label_Entity, Label_Node);
+            begin
+               Mutate_Ekind (Label_Entity, E_Label);
+               Set_Etype (Label_Entity, Standard_Void_Type);
+
+               Set_Entity (Label_Id, Label_Entity);
+               Set_Etype (Label_Id, Standard_Void_Type);
+
+               Insert_After (Node => Label_Node, After => M);
+
+               Append (Node => Label_Decl, To => Decl_List);
+
+               Label := Label_Entity;
+            end;
+         else
+            --  Some other continue statement for this loop was expanded
+            --  already, so we can reuse the label that is already set up.
+            Label := Entity (Identifier (A));
+         end if;
+      end;
+
+      declare
+         C       : constant Opt_N_Subexpr_Id := Condition (N);
+         Goto_St : constant N_Goto_Statement_Id :=
+           Make_Goto_Statement (Loc, New_Occurrence_Of (Label, Loc));
+
+         New_St : constant Node_Id :=
+           (if Present (C)
+            then Make_If_Statement (Sloc (N), C, New_List (Goto_St))
+            else Goto_St);
+      begin
+         Set_Parent (New_St, Parent (N));
+         Replace (N, New_St);
+      end;
+
+   end Expand_N_Continue_Statement;
+
    -----------------------------
    -- Expand_N_Exit_Statement --
    -----------------------------
 
-   --  The only processing required is to deal with a possible C/Fortran
-   --  boolean value used as the condition for the exit statement.
-
    procedure Expand_N_Exit_Statement (N : Node_Id) is
    begin
-      Adjust_Condition (Condition (N));
+      Expand_Loop_Flow_Statement (N);
    end Expand_N_Exit_Statement;
 
    ----------------------------------
@@ -5756,7 +5838,6 @@ package body Exp_Ch5 is
       Loc    : constant Source_Ptr := Sloc (N);
       Scheme : constant Node_Id    := Iteration_Scheme (N);
       Stmt   : Node_Id;
-
    begin
       --  Delete null loop
 
@@ -6042,6 +6123,18 @@ package body Exp_Ch5 is
 
       Process_Statements_For_Controlled_Objects (Stmt);
    end Expand_N_Loop_Statement;
+
+   --------------------------------
+   -- Expand_Loop_Flow_Statement --
+   --------------------------------
+
+   --  The only processing required is to deal with a possible C/Fortran
+   --  boolean value used as the condition for the statement.
+
+   procedure Expand_Loop_Flow_Statement (N : N_Loop_Flow_Statement_Id) is
+   begin
+      Adjust_Condition (Condition (N));
+   end Expand_Loop_Flow_Statement;
 
    ----------------------------
    -- Expand_Predicated_Loop --

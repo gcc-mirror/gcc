@@ -192,6 +192,9 @@ package body Sem is
          when N_Conditional_Entry_Call =>
             Analyze_Conditional_Entry_Call (N);
 
+         when N_Continue_Statement =>
+            Analyze_Continue_Statement (N);
+
          when N_Delay_Alternative =>
             Analyze_Delay_Alternative (N);
 

@@ -230,6 +230,9 @@ package body Expander is
                when N_Conditional_Entry_Call =>
                   Expand_N_Conditional_Entry_Call (N);
 
+               when N_Continue_Statement =>
+                  Expand_N_Continue_Statement (N);
+
                when N_Delay_Relative_Statement =>
                   Expand_N_Delay_Relative_Statement (N);
 

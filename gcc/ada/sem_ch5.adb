@@ -90,6 +90,12 @@ package body Sem_Ch5 is
    --  messages. This variable is recursively saved on entry to processing the
    --  construct, and restored on exit.
 
+   function Analyze_Loop_Flow_Statement
+     (N : N_Loop_Flow_Statement_Id) return Opt_E_Loop_Id;
+   --  Perform analysis that is common to continue statements and exit
+   --  statements. On success, the return value is the entity of the loop
+   --  referenced by the statement.
+
    function Has_Sec_Stack_Call (N : Node_Id) return Boolean;
    --  N is the node for an arbitrary construct. This function searches the
    --  construct N to see if it contains a function call that returns on the
@@ -1663,6 +1669,112 @@ package body Sem_Ch5 is
       end if;
    end Analyze_Case_Statement;
 
+   --------------------------------
+   -- Analyze_Continue_Statement --
+   --------------------------------
+
+   procedure Analyze_Continue_Statement (N : Node_Id) is
+      Ignore_Errors_On_Entry : constant Boolean := Get_Ignore_Errors;
+
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Nam : constant Node_Id := Name (N);
+      Cond : constant Node_Id := Condition (N);
+
+      function Make_Call return N_Procedure_Call_Statement_Id;
+      --  Build a node that corresponds to the procedure call interpretation of
+      --  N.
+
+      function Make_Stmt return N_Continue_Statement_Id;
+      --  Build a node that corresponds to the continue statement
+      --  interpretation of N.
+
+      function Make_Call return N_Procedure_Call_Statement_Id is
+      begin
+         return
+           Make_Procedure_Call_Statement
+             (Loc, Make_Identifier (Loc, Name_Continue));
+      end Make_Call;
+
+      function Make_Stmt return N_Continue_Statement_Id is
+      begin
+         return Make_Continue_Statement (Loc, Nam, Cond);
+      end Make_Stmt;
+
+      Continue_Is_Available : constant Boolean :=
+        Ada_Version = Ada_With_All_Extensions;
+
+      Maybe_Procedure_Call : constant Boolean :=
+        No (Name (N)) and then No (Condition (N));
+   begin
+      if Maybe_Procedure_Call and then Continue_Is_Available then
+         --  This is the tricky case. The idea is to do a kind of overload
+         --  resolution of a procedure call, but with "continue statement" as
+         --  an additional possible interpretation. To achieve this, we
+         --  temporarily replace N with a procedure call statement and analyze
+         --  it in "ignore errors" mode.
+         Replace (N, Make_Call);
+         Set_Ignore_Errors (True);
+         Analyze (N);
+         Set_Ignore_Errors (Ignore_Errors_On_Entry);
+
+         declare
+            C : constant N_Procedure_Call_Statement_Id := New_Copy (N);
+            --  C is the result of our procedure call interpretation analysis
+         begin
+            --  We restore N to a continue statement
+            Replace (N, Make_Stmt);
+
+            if Is_Overloaded (Name (C)) then
+               --  There are multiple valid procedure call interpretations; we
+               --  don't mention the possible interpretation as a continue
+               --  statement for now. It might be possible to add this in the
+               --  future.
+
+               Set_Call_Or_Target_Loop (N, Make_Call);
+            elsif Etype (C) = Any_Type then
+               --  There is no valid procedure call interpretation. We go for
+               --  the continue statement interpretation. It might not be valid
+               --  either, but we make the assumption that the user meant to
+               --  write a continue statement and not a procedure call and emit
+               --  error messages accordingly.
+
+               Set_Call_Or_Target_Loop (N, Analyze_Loop_Flow_Statement (N));
+            else
+               --  There is a unique valid procedure call interpretation. We
+               --  test whether the interpretation as a continue statement is
+               --  valid.
+
+               declare
+                  L : Opt_E_Loop_Id;
+               begin
+                  Set_Ignore_Errors (True);
+                  L := Analyze_Loop_Flow_Statement (N);
+                  Set_Ignore_Errors (Ignore_Errors_On_Entry);
+
+                  if Present (L) then
+                     --  If the continue statement interpretation makes sense,
+                     --  we post an ad hoc ambiguity error.
+                     Error_Msg_N
+                       ("ambiguity between continue statement and call", N);
+                  else
+                     Set_Call_Or_Target_Loop (N, Make_Call);
+                  end if;
+               end;
+            end if;
+         end;
+      elsif Maybe_Procedure_Call then
+         Set_Call_Or_Target_Loop (N, Make_Call);
+      elsif Continue_Is_Available then
+         Set_Call_Or_Target_Loop (N, Analyze_Loop_Flow_Statement (N));
+      else
+         Error_Msg_GNAT_Extension
+           (Extension         => "continue",
+            Loc               => Sloc (N),
+            Is_Core_Extension => False);
+      end if;
+   end Analyze_Continue_Statement;
+
    ----------------------------
    -- Analyze_Exit_Statement --
    ----------------------------
@@ -1682,99 +1794,16 @@ package body Sem_Ch5 is
    --    in a loop. The exit must be the last statement in the if-statement.
 
    procedure Analyze_Exit_Statement (N : Node_Id) is
-      Target   : constant Node_Id := Name (N);
-      Cond     : constant Node_Id := Condition (N);
-      Scope_Id : Entity_Id := Empty;  -- initialize to prevent warning
-      U_Name   : Entity_Id;
-      Kind     : Entity_Kind;
-
+      L : constant Opt_E_Loop_Id := Analyze_Loop_Flow_Statement (N);
    begin
-      if No (Cond) then
-         Check_Unreachable_Code (N);
+      if Present (L) then
+         Set_Has_Exit (L);
+
+         --  Chain exit statement to associated loop entity
+
+         Set_Next_Exit_Statement (N, First_Exit_Statement (L));
+         Set_First_Exit_Statement (L, N);
       end if;
-
-      if Present (Target) then
-         Analyze (Target);
-         U_Name := Entity (Target);
-
-         if not In_Open_Scopes (U_Name) or else Ekind (U_Name) /= E_Loop then
-            Error_Msg_N ("invalid loop name in exit statement", N);
-            return;
-
-         else
-            Set_Has_Exit (U_Name);
-         end if;
-
-      else
-         U_Name := Empty;
-      end if;
-
-      for J in reverse 0 .. Scope_Stack.Last loop
-         Scope_Id := Scope_Stack.Table (J).Entity;
-         Kind := Ekind (Scope_Id);
-
-         if Kind = E_Loop and then (No (Target) or else Scope_Id = U_Name) then
-            Set_Has_Exit (Scope_Id);
-            exit;
-
-         elsif Kind = E_Block
-           or else Kind = E_Loop
-           or else Kind = E_Return_Statement
-         then
-            null;
-
-         else
-            Error_Msg_N
-              ("cannot exit from program unit or accept statement", N);
-            return;
-         end if;
-      end loop;
-
-      Finally_Legality_Check : declare
-         --  The following value can actually be a block statement due to
-         --  expansion, but we call it Target_Loop_Statement because it was
-         --  originally a loop statement.
-         Target_Loop_Statement : constant Node_Id :=
-           (if Present (U_Name) then Label_Construct ((Parent (U_Name)))
-            else Empty);
-
-         X : Node_Id := N;
-      begin
-         while Present (X) loop
-            if Nkind (X) = N_Loop_Statement
-              and then (No (Target_Loop_Statement)
-                        or else X = Target_Loop_Statement)
-            then
-               exit;
-            elsif Nkind (Parent (X)) = N_Handled_Sequence_Of_Statements
-              and then Is_List_Member (X)
-              and then List_Containing (X) = Finally_Statements (Parent (X))
-            then
-               Error_Msg_N ("cannot exit out of finally part", N);
-               exit;
-            end if;
-            X := Parent (X);
-         end loop;
-      end Finally_Legality_Check;
-
-      --  Verify that if present the condition is a Boolean expression
-
-      if Present (Cond) then
-         Analyze_And_Resolve (Cond, Any_Boolean);
-         Check_Unset_Reference (Cond);
-      end if;
-
-      --  Chain exit statement to associated loop entity
-
-      Set_Next_Exit_Statement  (N, First_Exit_Statement (Scope_Id));
-      Set_First_Exit_Statement (Scope_Id, N);
-
-      --  Since the exit may take us out of a loop, any previous assignment
-      --  statement is not useless, so clear last assignment indications. It
-      --  is OK to keep other current values, since if the exit statement
-      --  does not exit, then the current values are still valid.
-
-      Kill_Current_Values (Last_Assignment_Only => True);
    end Analyze_Exit_Statement;
 
    ----------------------------
@@ -3997,6 +4026,18 @@ package body Sem_Ch5 is
          Set_Has_Created_Identifier (N);
       end if;
 
+      if No (Continue_Mark (Ent)) then
+         --  If Continue_Mark wasn't set on the loop entity, we know that N
+         --  does not come from the expansion of iterators that append
+         --  statements to advance the loop, so right after the last statement
+         --  in the list is where continue statements must jump to.
+         Set_Continue_Mark (Ent, Last (Statements (N)));
+      else
+         --  Otherwise, N somehow derives from another loop statement, the
+         --  analysis of which set Continue_Mark adequately already.
+         null;
+      end if;
+
       --  Determine whether the loop statement must be transformed prior to
       --  analysis, and if so, perform it. This early modification is needed
       --  when:
@@ -4205,6 +4246,105 @@ package body Sem_Ch5 is
          Check_Unreachable_Code (Stmt);
       end if;
    end Analyze_Loop_Statement;
+
+   ---------------------------------
+   -- Analyze_Loop_Flow_Statement --
+   ---------------------------------
+
+   function Analyze_Loop_Flow_Statement
+     (N : N_Loop_Flow_Statement_Id) return Opt_E_Loop_Id
+   is
+      Target   : constant Node_Id := Name (N);
+      Cond     : constant Node_Id := Condition (N);
+      Scope_Id : Entity_Id := Empty;
+      U_Name   : Entity_Id;
+      Kind     : Entity_Kind;
+
+      S : constant String := Loop_Flow_Keyword (N);
+   begin
+      if No (Cond) then
+         Check_Unreachable_Code (N);
+      end if;
+
+      if Present (Target) then
+         Analyze (Target);
+         U_Name := Entity (Target);
+
+         if not In_Open_Scopes (U_Name) or else Ekind (U_Name) /= E_Loop then
+            Error_Msg_N ("invalid loop name in " & S & " statement", N);
+            return Empty;
+         end if;
+
+      else
+         U_Name := Empty;
+      end if;
+
+      for J in reverse 0 .. Scope_Stack.Last loop
+         Scope_Id := Scope_Stack.Table (J).Entity;
+         Kind := Ekind (Scope_Id);
+
+         if Kind = E_Loop and then (No (Target) or else Scope_Id = U_Name) then
+            exit;
+
+         elsif Kind = E_Block
+           or else Kind = E_Loop
+           or else Kind = E_Return_Statement
+         then
+            null;
+
+         else
+            Error_Msg_N
+              ("cannot " & S & " from program unit or accept statement", N);
+            return Empty;
+         end if;
+      end loop;
+
+      Finally_Legality_Check :
+      declare
+         --  The following value can actually be a block statement due to
+         --  expansion, but we call it Target_Loop_Statement because it was
+         --  originally a loop statement.
+         Target_Loop_Statement : constant Node_Id :=
+           (if Present (U_Name)
+            then Label_Construct ((Parent (U_Name)))
+            else Empty);
+
+         X : Node_Id := N;
+      begin
+         while Present (X) loop
+            if Nkind (X) = N_Loop_Statement
+              and then (No (Target_Loop_Statement)
+                        or else X = Target_Loop_Statement)
+            then
+               exit;
+            elsif Nkind (Parent (X)) = N_Handled_Sequence_Of_Statements
+              and then Is_List_Member (X)
+              and then List_Containing (X) = Finally_Statements (Parent (X))
+            then
+               Error_Msg_N ("cannot " & S & " out of finally part", N);
+               exit;
+            end if;
+            X := Parent (X);
+         end loop;
+      end Finally_Legality_Check;
+
+      --  Verify that if present the condition is a Boolean expression
+
+      if Present (Cond) then
+         Analyze_And_Resolve (Cond, Any_Boolean);
+         Check_Unset_Reference (Cond);
+      end if;
+
+      --  Since the statement may take us out of the current iteration of the
+      --  loop, any previous assignment statement is not useless, so clear last
+      --  assignment indications. It is OK to keep other current values, since
+      --  if the statement does not stop the current iteration, then the
+      --  current values are still valid.
+
+      Kill_Current_Values (Last_Assignment_Only => True);
+
+      return Scope_Id;
+   end Analyze_Loop_Flow_Statement;
 
    ----------------------------
    -- Analyze_Null_Statement --

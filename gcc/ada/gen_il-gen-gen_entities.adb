@@ -1223,7 +1223,8 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_Loop, Entity_Kind,
        --  A loop identifier, created by an explicit or implicit label on a
        --  loop statement.
-       (Sm (First_Entity, Node_Id),
+       (Sm (Continue_Mark, Node_Id),
+        Sm (First_Entity, Node_Id),
         Sm (First_Exit_Statement, Node_Id),
         Sm (Has_Exit, Flag),
         Sm (Has_Loop_Entry_Attributes, Flag),
