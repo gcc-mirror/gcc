@@ -1,3 +1,68 @@
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116546
+	* range-op.cc (operator_bitwise_and::op1_range): Utilize bitmask
+	from the LHS to improve op1's bitmask.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116546
+	* value-range.cc (irange::intersect_bitmask): Allow unknown
+	bitmasks to be processed.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116546
+	* value-range.cc (irange_bitmask::irange_bitmask): Include
+	leading ones in the bitmask.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.cc (irange_bitmask::irange_bitmask): Rename from
+	get_bitmask_from_range and tweak.
+	(prange::set): Use new constructor.
+	(prange::intersect): Use new constructor.
+	(irange::get_bitmask): Likewise.
+	* value-range.h (irange_bitmask): New constructor prototype.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120277
+	* range-op-ptr.cc (operator_cast::fold_range): Check if the cast
+	if UNDEFINED before setting bounds.
+
+2025-05-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120223
+	* config/riscv/riscv.cc (synthesize_ior_xor): XTHEADBS does not have
+	single bit manipulations.
+
+2025-05-15  Alexander Monakov  <amonakov@ispras.ru>
+
+	* tree-cfg.cc (verify_gimple_assign_unary): Accept only
+	COMPLEX_TYPE for CONJ_EXPR.
+
+2025-05-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* fold-const.cc (tree_swap_operands_p): Put ADDR_EXPR last
+	instead of just is_gimple_invariant_address ones.
+	* match.pd (`a ptr+ b !=\== ADDR`, `ADDR !=/== ssa_name`):
+	Move the ADDR to the last operand. Update comment.
+
+2025-05-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.cc (vect_transform_loops): When diagnosing
+	a vectorized loop indicate whether we vectorized an epilogue,
+	whether we used masked vectors and what unroll factor was
+	used.
+
+2025-05-15  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::finish_cost):
+	Do not suggest a first epilogue mode for AVX512 sized
+	main loops with X86_TUNE_AVX512_TWO_EPILOGUES as that
+	interferes with using a masked epilogue.
+
 2025-05-14  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (record_stmt_cost): Remove mixed

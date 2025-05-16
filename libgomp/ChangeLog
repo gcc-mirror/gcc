@@ -1,3 +1,7 @@
+2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/alloc-comp-4.f90: New test.
+
 2025-05-14  Tobias Burnus  <tburnus@baylibre.com>
 
 	* target.c (gomp_attach_pointer): Return bool; accept additional

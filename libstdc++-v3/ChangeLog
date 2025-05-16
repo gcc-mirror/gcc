@@ -1,3 +1,46 @@
+2025-05-15  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan: Implement the mandate for extents as
+	signed or unsigned integer and not any interal type. Remove
+	leading underscores from names in static_assert message.
+	* testsuite/23_containers/mdspan/extents/class_mandates_neg.cc:
+	Check that extents<char,...> and extents<bool,...> are invalid.
+	Adjust dg-prune-output pattern.
+	* testsuite/23_containers/mdspan/extents/misc.cc: Update
+	tests to avoid `char` and `bool` as IndexType.
+
+2025-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120190
+	* include/std/format (format_kind): Adjust primary template to
+	not depend on itself.
+	* testsuite/std/format/ranges/format_kind_neg.cc: Adjust
+	expected errors. Check more invalid specializations.
+
+2025-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/complex (arg(T)): Use __builtin_signbit instead of
+	std::signbit.
+
+2025-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120235
+	* doc/html/*: Regenerate.
+	* doc/xml/manual/evolution.xml: Document deprecation.
+	* include/std/complex: Replace references to TR1 subclauses with
+	corresponding C++11 subclauses.
+	(fabs): Add deprecated attribute.
+	* testsuite/26_numerics/complex/fabs_neg.cc: New test.
+
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Add -Wabi.
+
+2025-05-15  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119246
+	* include/std/format: Updated check for _GLIBCXX_FORMAT_F128.
+
 2025-05-14  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/119125

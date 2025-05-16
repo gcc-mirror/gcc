@@ -1,3 +1,87 @@
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/coroutines/co-await-syntax-09-convert.C: Add -fcoroutines.
+	* g++.dg/coroutines/co-await-syntax-10.C
+	* g++.dg/coroutines/co-await-syntax-11.C
+	* g++.dg/coroutines/co-await-void_type.C
+	* g++.dg/coroutines/co-return-warning-1.C
+	* g++.dg/coroutines/ramp-return-a.C
+	* g++.dg/coroutines/ramp-return-c.C: Likewise.
+	* g++.dg/coroutines/coroutines.exp: Removed.
+	* lib/g++-dg.exp: Start at C++20 for coroutines/
+
+2025-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85750
+	* gfortran.dg/alloc_comp_auto_array_3.f90: Adjust scan counts.
+	* gfortran.dg/alloc_comp_class_3.f03: Remove bogus warnings.
+	* gfortran.dg/alloc_comp_class_4.f03: Likewise.
+	* gfortran.dg/allocate_with_source_14.f03: Adjust scan count.
+	* gfortran.dg/derived_constructor_comps_6.f90: Likewise.
+	* gfortran.dg/derived_result_5.f90: New test.
+
+2025-05-15  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/120251
+	* cobol.dg/group1/check_88.cob: One final regex "." instead of "ß"
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116546
+	* gcc.dg/pr116546.c: New.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120277
+	* gcc.dg/pr120277.c: New.
+
+2025-05-15  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/120251
+	* cobol.dg/group1/check_88.cob: Ignore characters above 0x80.
+	* cobol.dg/group2/ALLOCATE_Rule_8_OPTION_INITIALIZE_with_figconst.cob:
+	Output HIGH-VALUE as hex, rather than as characters.
+	* cobol.dg/group2/ALLOCATE_Rule_8_OPTION_INITIALIZE_with_figconst.out:
+	Likewise.
+	* cobol.dg/group2/INSPECT_CONVERTING_TO_figurative_constants.cob: Typo.
+	* cobol.dg/group2/INSPECT_CONVERTING_TO_figurative_constants.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_1.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_2.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_3.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_4.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_5-f.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_6.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_7.cob: Likewise.
+	* cobol.dg/group2/Multiple_INDEXED_BY_variables_with_the_same_name.cob: New test.
+	* cobol.dg/group2/Multiple_INDEXED_BY_variables_with_the_same_name.out: New test.
+
+2025-05-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120223
+	* gcc.target/riscv/pr120223.c: New test.
+
+2025-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120161
+	* g++.dg/template/unify13.C: New test.
+
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp (g++-std-flags): Factor out of g++-dg-runtest.
+	* g++.dg/modules/modules.exp: Use it instead of a copy.
+
+2025-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr110310.c: Adjust.
+
+2025-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-epilogues-1.c: New testcase.
+	* gcc.target/i386/vect-epilogues-2.c: Likewise.
+	* gcc.target/i386/vect-epilogues-3.c: Likewise.
+	* gcc.target/i386/vect-epilogues-4.c: Likewise.
+	* gcc.target/i386/vect-epilogues-5.c: Likewise.
+
 2025-05-14  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/120126

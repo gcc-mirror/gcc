@@ -1,3 +1,21 @@
+2025-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120161
+	* pt.cc (unify) <case RECORD_TYPE>: When comparing specializations
+	of a non-primary template, still perform a type comparison.
+
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (trees_out::lang_decl_bools): Stream implicit_constexpr.
+	(trees_in::lang_decl_bools): Likewise.
+	(trees_in::is_matching_decl): Check it.
+
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99599
+	* pt.cc (conversion_may_instantiate_p): Make sure
+	classes are complete.
+
 2025-05-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* cp-gimplify.cc (cp_fold): Remove a remnant comment.
