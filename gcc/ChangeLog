@@ -1,3 +1,24 @@
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117287
+	* Makefile.in (IBJS): Add tree-assume.o
+	* gimple-range-fold.cc (class fur_edge): Relocate to...
+	* gimple-range-fold.h (class fur_edge): Here.
+	* gimple-range.cc (assume_query::assume_range_p): Remove.
+	(assume_query::range_of_expr): Remove.
+	(assume_query::assume_query): Move to tree-assume.cc.
+	(assume_query::~assume_query): Remove.
+	(assume_query::calculate_op): Move to tree-assume.cc.
+	(assume_query::calculate_phi): Likewise.
+	(assume_query::check_taken_edge): Remove.
+	(assume_query::calculate_stmt): Move to tree-assume.cc.
+	(assume_query::dump): Remove.
+	* gimple-range.h (class assume_query): Move to tree-assume.cc
+	* tree-assume.cc: New
+	* tree-vrp.cc (struct pass_data_assumptions): Move to tree-assume.cc.
+	(class pass_assumptions): Likewise.
+	(make_pass_assumptions): Likewise.
+
 2025-05-13  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
