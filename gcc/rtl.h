@@ -3306,7 +3306,7 @@ extern rtx_insn *get_last_nonnote_insn (void);
 extern void start_sequence (void);
 extern void push_to_sequence (rtx_insn *);
 extern void push_to_sequence2 (rtx_insn *, rtx_insn *);
-extern void end_sequence (void);
+extern rtx_insn *end_sequence (void);
 #if TARGET_SUPPORTS_WIDE_INT == 0
 extern double_int rtx_to_double_int (const_rtx);
 #endif

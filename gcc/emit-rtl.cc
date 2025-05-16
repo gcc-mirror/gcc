@@ -5722,22 +5722,22 @@ pop_topmost_sequence (void)
   end_sequence ();
 }
 
-/* After emitting to a sequence, restore previous saved state.
-
-   To get the contents of the sequence just made, you must call
-   `get_insns' *before* calling here.
+/* After emitting to a sequence, restore the previous saved state and return
+   the start of the completed sequence.
 
    If the compiler might have deferred popping arguments while
    generating this sequence, and this sequence will not be immediately
    inserted into the instruction stream, use do_pending_stack_adjust
-   before calling get_insns.  That will ensure that the deferred
+   before calling this function.  That will ensure that the deferred
    pops are inserted into this sequence, and not into some random
    location in the instruction stream.  See INHIBIT_DEFER_POP for more
    information about deferred popping of arguments.  */
 
-void
+rtx_insn *
 end_sequence (void)
 {
+  rtx_insn *insns = get_insns ();
+
   struct sequence_stack *tem = get_current_sequence ()->next;
 
   set_first_insn (tem->first);
@@ -5747,6 +5747,8 @@ end_sequence (void)
   memset (tem, 0, sizeof (*tem));
   tem->next = free_sequence_stack;
   free_sequence_stack = tem;
+
+  return insns;
 }
 
 /* Return true if currently emitting into a sequence.  */
