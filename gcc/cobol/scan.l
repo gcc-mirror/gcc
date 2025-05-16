@@ -2124,7 +2124,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 			input_file_status.enter(filename);
 		}
 
-  {POP_FILE} 	{
+  {POP_FILE}{OSPC} 	{
 			yy_set_bol(true);
 			input_file_status.leave();
 		}

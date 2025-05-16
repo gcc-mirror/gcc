@@ -43,7 +43,6 @@
 #define SPACE ' '
 
 bool lexer_echo();
-
 bool is_reference_format();
 
 static inline bool isquote( char ch ) {

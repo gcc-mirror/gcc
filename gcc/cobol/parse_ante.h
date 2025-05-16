@@ -47,9 +47,6 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-extern void declarative_runtime_match(cbl_field_t *declaratives,
-                                      cbl_label_t *lave );
-
 extern YYLTYPE yylloc;
 
 extern int yylineno, yyleng, yychar;
@@ -73,7 +70,7 @@ void apply_declaratives();
 const char * keyword_str( int token );
 void labels_dump();
 
-cbl_dialect_t cbl_dialect;
+unsigned int cbl_dialects;
 size_t cbl_gcobol_features;
 
 static enum cbl_division_t current_division;
@@ -1035,7 +1032,7 @@ class current_tokens_t {
   int find( const cbl_name_t name, bool include_intrinsics ) {
     return tokens.find(name, include_intrinsics);
   }
-  bool equate( const YYLTYPE& loc, cbl_name_t keyword, const cbl_name_t alias ) {
+  bool equate( const YYLTYPE& loc, const cbl_name_t keyword, const cbl_name_t alias ) {
     int token; 
     if( 0 == (token = binary_integer_usage_of(keyword)) ) {
       if( 0 == (token = keyword_tok(keyword)) ) {
@@ -1054,7 +1051,7 @@ class current_tokens_t {
   bool undefine( const YYLTYPE& loc, cbl_name_t keyword ) {
     return tokens.undefine(loc, keyword);
   }
-  bool substitute( const YYLTYPE& loc, cbl_name_t keyword, const cbl_name_t alias ) {
+  bool substitute( const YYLTYPE& loc, const cbl_name_t keyword, const cbl_name_t alias ) {
     int token; 
     if( 0 == (token = binary_integer_usage_of(keyword)) ) {
       if( 0 == (token = keyword_tok(keyword)) ) {
@@ -1476,7 +1473,7 @@ class prog_descr_t {
   std::set<std::string> call_targets, subprograms;
  public:
   std::set<function_descr_t> function_repository;
-  size_t program_index, declaratives_index;
+  size_t program_index;
   cbl_label_t *declaratives_eval, *paragraph, *section;
   const char *collating_sequence;
   struct locale_t {
@@ -1494,7 +1491,6 @@ class prog_descr_t {
 
   prog_descr_t( size_t isymbol )
     : program_index(isymbol)
-    , declaratives_index(0)
     , declaratives_eval(NULL)
     , paragraph(NULL)
     , section(NULL)
@@ -2101,10 +2097,6 @@ static class current_t {
     assert(!programs.empty());
     return programs.top().program_index;
   }
-  size_t  program_declaratives(void) const {
-    if( programs.empty() ) return 0;
-    return programs.top().declaratives_index;
-  }
   const cbl_label_t * program(void) {
     return programs.empty()?
                 NULL : cbl_label_of(symbol_at(programs.top().program_index));
@@ -2118,12 +2110,16 @@ static class current_t {
 
   bool is_first_statement( const YYLTYPE& loc )  {
     if( ! in_declaratives && first_statement == 0 ) {
-      if( ! symbol_label_section_exists(program_index()) ) {
-        if( ! dialect_ibm() ) {
-          error_msg(loc,
-                    "Per ISO a program with DECLARATIVES must begin with a SECTION, "
-                    "requires -dialect ibm");
-        }
+      auto eval = programs.top().declaratives_eval;
+      if( eval ) {
+	size_t ilabel = symbol_index(symbol_elem_of(eval));
+	if( ! symbol_label_section_exists(ilabel) ) {
+	  if( ! dialect_ibm() ) {
+	    error_msg(loc,
+		      "Per ISO a program with DECLARATIVES must begin with a SECTION, "
+		      "requires -dialect ibm");
+	  }
+	}
       }
       first_statement = loc.first_line;
       return true;
@@ -2214,24 +2210,25 @@ static class current_t {
 
     declaratives.runtime.dcl = parser_compile_dcls(declaratives.encode());
 
-    size_t idcl = symbol_declaratives_add(program_index(), declaratives.as_list());
-    programs.top().declaratives_index = idcl;
-
     // Create section to evaluate declaratives.  Given them unique names so
     // that we can figure out what is going on in a trace or looking at the
     // assembly language.
-    static int eval_count=1;
-    char eval[32];
-    char lave[32];
+    static int eval_count = 1;
+    char eval[32], lave[32];
+    
     sprintf(eval, "_DECLARATIVES_EVAL%d", eval_count);
-    sprintf(lave, "_DECLARATIVES_LAVE%d", eval_count);
-    eval_count +=1 ;
+    sprintf(lave, "_DECLARATIVES_LAVE%d", eval_count++);
 
     struct cbl_label_t*& eval_label = programs.top().declaratives_eval;
     eval_label = label_add(LblSection, eval, yylineno);
     struct cbl_label_t * lave_label = label_add(LblSection, lave, yylineno);
+
     ast_enter_section(eval_label);
-    declarative_runtime_match(cbl_field_of(symbol_at(idcl)), lave_label);
+
+    declarative_runtime_match(declaratives.as_list(), lave_label);
+    
+    parser_label_label(lave_label);
+    
     return lave_label;
   }
 
@@ -2261,11 +2258,10 @@ static class current_t {
 
   /*
    * END DECLARATIVES causes:
-   *   1. Add DECLARATIVES symbol, containing criteria blob.
-   *   2. Create section _DECLARATIVES_EVAL
+   *   1. Create section _DECLARATIVES_EVAL
    *      and exit label _DECLARATIVES_LAVE
-   *   3. declarative_runtime_match generates runtime evaluation "ladder".
-   *   4. After a declarative is executed, control branches to the exit label.
+   *   2. declarative_runtime_match generates runtime evaluation "ladder".
+   *   3. After a declarative is executed, control branches to the exit label.
    *
    * After each verb, we call declaratives_evaluate,
    * which PERFORMs _DECLARATIVES_EVAL.

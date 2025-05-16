@@ -372,7 +372,7 @@ class enter_leave_t {
   enter_leave_t(parser_leave_file_f *leaving)
     : entering(NULL), leaving(leaving), filename(NULL) {}
 
-  void notify() {
+  void notify( unsigned int newlines = 0 ) {
     if( entering ) {
       cobol_filename(filename, 0);
       if( yy_flex_debug ) dbgmsg("starting line %4d of %s",
@@ -382,6 +382,7 @@ class enter_leave_t {
     }
     if( leaving ) {
       auto name = cobol_filename_restore();
+      yylineno += newlines;
       if( yy_flex_debug ) dbgmsg("resuming line %4d of %s",
                                  yylineno, name? name : "<none>");
       leaving();
@@ -392,17 +393,22 @@ class enter_leave_t {
 
 static class input_file_status_t {
   std::queue <enter_leave_t> inputs;
+  unsigned int trailing_newlines = 0;
  public:
   void enter(const char *filename) {
     inputs.push( enter_leave_t(parser_enter_file, filename) );
   }
   void leave() {
+    // Add the number of newlines following the POP to yylineno when it's restored. 
+    trailing_newlines = std::count(yytext, yytext + yyleng, '\n');
+    if( trailing_newlines && yy_flex_debug )
+      dbgmsg("adding %u lines after POP", trailing_newlines);
     inputs.push( parser_leave_file );
   }
   void notify() {
     while( ! inputs.empty() ) {
       auto enter_leave = inputs.front();
-      enter_leave.notify();
+      enter_leave.notify(trailing_newlines);
       inputs.pop();
     }
   }
