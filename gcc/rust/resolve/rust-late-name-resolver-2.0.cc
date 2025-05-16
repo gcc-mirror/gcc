@@ -34,7 +34,7 @@ namespace Rust {
 namespace Resolver2_0 {
 
 Late::Late (NameResolutionContext &ctx)
-  : DefaultResolver (ctx), funny_error (false)
+  : DefaultResolver (ctx), funny_error (false), block_big_self (false)
 {}
 
 static NodeId
@@ -474,6 +474,16 @@ Late::visit (AST::PathInExpression &expr)
 }
 
 void
+Late::visit_impl_type (AST::Type &type)
+{
+  // TODO: does this have to handle reentrancy?
+  rust_assert (!block_big_self);
+  block_big_self = true;
+  visit (type);
+  block_big_self = false;
+}
+
+void
 Late::visit (AST::TypePath &type)
 {
   // should we add type path resolution in `ForeverStack` directly? Since it's
@@ -482,6 +492,16 @@ Late::visit (AST::TypePath &type)
   // typepath-like path resolution? that sounds good
 
   DefaultResolver::visit (type);
+
+  // prevent "impl Self {}" and similar
+  if (type.get_segments ().size () == 1
+      && !type.get_segments ().front ()->is_lang_item ()
+      && type.get_segments ().front ()->is_big_self_seg () && block_big_self)
+    {
+      rust_error_at (type.get_locus (),
+		     "%<Self%> is not valid in the self type of an impl block");
+      return;
+    }
 
   // this *should* mostly work
   // TODO: make sure typepath-like path resolution (?) is working

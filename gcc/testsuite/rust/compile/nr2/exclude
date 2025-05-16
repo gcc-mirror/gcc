@@ -6,7 +6,6 @@ pub_restricted_2.rs
 issue-2905-2.rs
 torture/alt_patterns1.rs
 torture/name_resolve1.rs
-issue-3671.rs
 issue-3652.rs
 issue-1487.rs
 issue-2015.rs

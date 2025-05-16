@@ -51,6 +51,7 @@ public:
   void visit (AST::Trait &) override;
   // used to handle Self insertion in TopLevel
   virtual void maybe_insert_big_self (AST::Impl &) {}
+  virtual void visit_impl_type (AST::Type &type) { visit (type); }
   void visit (AST::InherentImpl &) override;
   void visit (AST::TraitImpl &) override;
 

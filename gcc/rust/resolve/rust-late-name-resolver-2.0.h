@@ -59,6 +59,7 @@ public:
   void visit (AST::ContinueExpr &) override;
   void visit (AST::LoopLabel &) override;
   void visit (AST::PathInExpression &) override;
+  void visit_impl_type (AST::Type &) override;
   void visit (AST::TypePath &) override;
   void visit (AST::Visibility &) override;
   void visit (AST::Trait &) override;
@@ -78,6 +79,9 @@ private:
   void setup_builtin_types ();
 
   bool funny_error;
+
+  /* used to prevent "impl Self {}", "impl (Self, i32) {}", etc */
+  bool block_big_self;
 };
 
 // TODO: Add missing mappings and data structures
