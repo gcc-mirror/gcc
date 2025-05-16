@@ -1,3 +1,31 @@
+2025-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118822
+	* c-common.h (WHILE_COND_CLEANUP): Change description in comment.
+	(FOR_COND_CLEANUP): Likewise.
+	* c-gimplify.cc (genericize_c_loop): Adjust for COND_CLEANUP
+	being CLEANUP_STMT/TRY_FINALLY_EXPR trailing nesting depth
+	instead of actual cleanup.
+
+2025-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/86769
+	* c-common.def (FOR_STMT): Add 2 operands and document them.
+	(WHILE_STMT): Likewise.
+	* c-common.h (WHILE_COND_PREP, WHILE_COND_CLEANUP): Define.
+	(FOR_COND_PREP, FOR_COND_CLEANUP): Define.
+	* c-gimplify.cc (genericize_c_loop): Add COND_PREP and COND_CLEANUP
+	arguments, handle them if they are non-NULL.
+	(genericize_for_stmt, genericize_while_stmt, genericize_do_stmt):
+	Adjust callers.
+
 2025-03-22  Martin Uecker  <uecker@tugraz.at>
 
 	Backported from master:

@@ -1,3 +1,38 @@
+2025-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118623
+	* gcc.c-torture/execute/pr118623.c: New test.
+
+2025-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118822
+	* g++.dg/expr/for9.C: New test.
+
+2025-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/86769
+	* g++.dg/diagnostic/redeclaration-7.C: New test.
+	* g++.dg/expr/for3.C: New test.
+	* g++.dg/expr/for4.C: New test.
+	* g++.dg/expr/for5.C: New test.
+	* g++.dg/expr/for6.C: New test.
+	* g++.dg/expr/for7.C: New test.
+	* g++.dg/expr/for8.C: New test.
+	* g++.dg/ext/stmtexpr27.C: New test.
+	* g++.dg/cpp2a/constexpr-86769.C: New test.
+	* g++.dg/cpp26/name-independent-decl7.C: New test.
+	* g++.dg/cpp26/name-independent-decl8.C: New test.
+
 2025-05-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/113773
