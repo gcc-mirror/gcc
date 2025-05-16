@@ -8868,7 +8868,9 @@ package body Exp_Ch7 is
       Typ    : Entity_Id;
       Op_Nam : Name_Id) return Node_Id
    is
-      Loc : constant Source_Ptr := Sloc (Addr);
+      Loc   : constant Source_Ptr := Sloc (Addr);
+      Dummy : constant Entity_Id  := RTE (RE_Storage_Offset);
+      --  Make sure System_Storage_Elements is loaded for RTU_Entity
 
    begin
       --  Generate:
