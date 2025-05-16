@@ -103,6 +103,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   abs(__GLIBCXX_TYPE_INT_N_3 __x) { return __x >= 0 ? __x : -__x; }
 #endif
 
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+  // In strict modes __GLIBCXX_TYPE_INT_N_0 is not defined for __int128,
+  // but we want to always define std::abs(__int128).
+  __extension__ inline _GLIBCXX_CONSTEXPR __int128
+  abs(__int128 __x) { return __x >= 0 ? __x : -__x; }
+#endif
+
 #if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
   constexpr _Float16
   abs(_Float16 __x)
@@ -137,7 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __gnu_cxx::__bfloat16_t(__builtin_fabsf(__x)); }
 #endif
 
-#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
+#if defined(_GLIBCXX_USE_FLOAT128)
   __extension__ inline _GLIBCXX_CONSTEXPR
   __float128
   abs(__float128 __x)
