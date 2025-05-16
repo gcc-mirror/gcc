@@ -26277,7 +26277,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_reencode (struct expand_vec_perm_d *d)
 {
-  expand_vec_perm_d newd;
+  expand_vec_perm_d newd = {};
 
   /* The subregs that we'd create are not supported for big-endian SVE;
      see aarch64_modes_compatible_p for details.  */
