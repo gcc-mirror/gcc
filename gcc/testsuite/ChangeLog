@@ -1,3 +1,11 @@
+2025-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120161
+	* g++.dg/template/unify13.C: New test.
+
 2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:

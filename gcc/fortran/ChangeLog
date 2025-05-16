@@ -1,3 +1,21 @@
+2025-05-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2025-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120139
+	* dump-parse-tree.cc (get_c_type_name): If no constant
+	size of an array exists, output an asterisk.
+
+2025-05-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2025-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120107
+	* dump-parse-tree.cc (write_type): Do not dump non-interoperable
+	types.
+
 2025-05-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/120163

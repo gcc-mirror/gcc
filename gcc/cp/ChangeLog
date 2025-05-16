@@ -1,3 +1,12 @@
+2025-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120161
+	* pt.cc (unify) <case RECORD_TYPE>: When comparing specializations
+	of a non-primary template, still perform a type comparison.
+
 2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:
