@@ -199,6 +199,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3 unsigned)
 #endif
 
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+  // In strict modes __GLIBCXX_TYPE_INT_N_0 is not defined for __int128,
+  // but we want to always treat signed/unsigned __int128 as integral types.
+  __extension__
+  _Cxx_hashtable_define_trivial_hash(__int128)
+  __extension__
+  _Cxx_hashtable_define_trivial_hash(__int128 unsigned)
+#endif
+
 #undef _Cxx_hashtable_define_trivial_hash
 
   struct _Hash_impl
