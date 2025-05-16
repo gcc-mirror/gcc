@@ -533,11 +533,13 @@ package body Repinfo is
                      List_Type_Info (E);
                   end if;
 
-               --  Note that formals are not annotated so we skip them here
+               --  Formals and renamings are not annotated, so we skip them
+               --  here.
 
                elsif Ekind (E) in E_Constant
                                 | E_Loop_Parameter
                                 | E_Variable
+                 and then Nkind (Parent (E)) /= N_Object_Renaming_Declaration
                then
                   if List_Representation_Info >= 2 then
                      List_Object_Info (E);
