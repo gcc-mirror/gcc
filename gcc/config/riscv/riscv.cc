@@ -11580,11 +11580,10 @@ riscv_gpr_save_operation_p (rtx op)
 	  /* Two CLOBBER and USEs, must check the order.  */
 	  unsigned expect_code = i < 3 ? CLOBBER : USE;
 	  if (GET_CODE (elt) != expect_code
-	      || !REG_P (XEXP (elt, 1))
-	      || (REGNO (XEXP (elt, 1)) != gpr_save_reg_order[i]))
+	      || !REG_P (XEXP (elt, 0))
+	      || (REGNO (XEXP (elt, 0)) != gpr_save_reg_order[i]))
 	    return false;
 	}
-	break;
     }
   return true;
 }
