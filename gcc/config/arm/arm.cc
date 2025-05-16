@@ -14891,8 +14891,6 @@ arm_gen_load_multiple_1 (int count, int *regs, rtx *mems, rtx basereg,
 
   if (!multiple_operation_profitable_p (false, count, 0))
     {
-      rtx seq;
-
       start_sequence ();
 
       for (i = 0; i < count; i++)
@@ -14901,9 +14899,7 @@ arm_gen_load_multiple_1 (int count, int *regs, rtx *mems, rtx basereg,
       if (wback_offset != 0)
 	emit_move_insn (basereg, plus_constant (Pmode, basereg, wback_offset));
 
-      seq = end_sequence ();
-
-      return seq;
+      return end_sequence ();
     }
 
   result = gen_rtx_PARALLEL (VOIDmode,
@@ -14941,8 +14937,6 @@ arm_gen_store_multiple_1 (int count, int *regs, rtx *mems, rtx basereg,
 
   if (!multiple_operation_profitable_p (false, count, 0))
     {
-      rtx seq;
-
       start_sequence ();
 
       for (i = 0; i < count; i++)
@@ -14951,9 +14945,7 @@ arm_gen_store_multiple_1 (int count, int *regs, rtx *mems, rtx basereg,
       if (wback_offset != 0)
 	emit_move_insn (basereg, plus_constant (Pmode, basereg, wback_offset));
 
-      seq = end_sequence ();
-
-      return seq;
+      return end_sequence ();
     }
 
   result = gen_rtx_PARALLEL (VOIDmode,

@@ -4760,12 +4760,9 @@ emit_move_insn (rtx x, rtx y)
 rtx_insn *
 gen_move_insn (rtx x, rtx y)
 {
-  rtx_insn *seq;
-
   start_sequence ();
   emit_move_insn_1 (x, y);
-  seq = end_sequence ();
-  return seq;
+  return end_sequence ();
 }
 
 /* If Y is representable exactly in a narrower mode, and the target can
