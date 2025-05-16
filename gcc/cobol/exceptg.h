@@ -36,8 +36,8 @@
 extern const char * ec_type_str( ec_type_t type );
 extern ec_disposition_t ec_type_disposition( ec_type_t type );
 
-extern void declarative_runtime_match(cbl_field_t *declaratives,
-                                      cbl_label_t *lave );
+extern void declarative_runtime_match( const std::list<cbl_declarative_t>& declaratives,
+				       cbl_label_t *lave );
 
 static inline ec_disposition_t
 ec_implemented( ec_disposition_t disposition ) {
@@ -95,9 +95,6 @@ class exception_turn_t {
   }
 
 };
-
-size_t symbol_declaratives_add( size_t program,
-                                const std::list<cbl_declarative_t>& dcls );
 
 #endif
 

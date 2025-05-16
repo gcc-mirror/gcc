@@ -100,8 +100,6 @@ symbol_type_str( enum symbol_type_t type )
     switch(type) {
     case SymFilename:
         return "SymFilename";
-    case SymFunction:
-        return "SymFunction";
     case SymField:
         return "SymField";
     case SymLabel:
@@ -1764,7 +1762,21 @@ struct input_file_t {
 
 class unique_stack : public std::stack<input_file_t>
 {
+  friend void cobol_set_pp_option(int opt);
+  bool option_m;
+  std::set<std::string> all_names;
+  
+  const char *
+  no_wd( const char *wd, const char *name ) {
+    int i;
+    for( i=0; wd[i] == name[i]; i++ ) i++;
+    if( wd[i] == '\0' && name[i] == '/' ) i++;
+    return yydebug? name : name + i;
+  }
+
  public:
+  unique_stack() : option_m(false) {}
+  
   bool push( const value_type& value ) {
     auto ok = std::none_of( c.cbegin(), c.cend(),
                             [value]( auto& that ) {
@@ -1772,6 +1784,7 @@ class unique_stack : public std::stack<input_file_t>
                                 } );
     if( ok ) {
       std::stack<input_file_t>::push(value);
+      all_names.insert(value.name);
       return true;
     }
     size_t n = c.size();
@@ -1792,12 +1805,23 @@ class unique_stack : public std::stack<input_file_t>
     }
     return false;
   }
-  const char *
-  no_wd( const char *wd, const char *name ) {
-    int i;
-    for( i=0; wd[i] == name[i]; i++ ) i++;
-    if( wd[i] == '\0' && name[i] == '/' ) i++;
-    return yydebug? name : name + i;
+  
+  void option( int opt ) { // capture other preprocessor options eventually
+    assert(opt == 'M');
+    option_m = true;
+  }
+  int option() const {
+    return option_m?  'M' : 0;
+  }
+
+  void print() const {
+    std::string input( top().name );
+    printf( "%s: ", input.c_str() );
+    for( auto name : all_names ) {
+      if( name != input ) 
+	printf( "\\\n\t%s ", name.c_str() );
+    }
+    printf("\n");
   }
 };
 
@@ -1806,6 +1830,12 @@ static unique_stack input_filenames;
 static std::map<std::string, ino_t> old_filenames;
 static const unsigned int sysp = 0;  // not a C header file, cf. line-map.h
 
+void cobol_set_pp_option(int opt) {
+  // capture other preprocessor options eventually
+  assert(opt == 'M');
+  input_filenames.option_m = true;
+}
+				  
 /*
  * Maintain a stack of input filenames.  Ensure the files are unique (by
  * inode), to prevent copybook cycles. Before pushing a new name, Record the
@@ -2136,6 +2166,11 @@ parse_file( const char filename[] )
   }
 
   parser_enter_file(filename);
+
+  if( input_filenames.option() == 'M' ) {
+    input_filenames.print();
+    return 0;
+  }
 
   cbl_timespec start;
 

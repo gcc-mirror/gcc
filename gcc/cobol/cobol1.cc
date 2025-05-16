@@ -20,15 +20,15 @@ along with GCC; see the file COPYING3.  If not see
 
 
 #include "cobol-system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "diagnostic.h"
-#include "opts.h"
-#include "debug.h"
-#include "langhooks.h"
-#include "langhooks-def.h"
-#include "target.h"
-#include "stringpool.h"
+#include <coretypes.h>
+#include <tree.h>
+#include <diagnostic.h>
+#include <opts.h>
+#include <debug.h>
+#include <langhooks.h>
+#include <langhooks-def.h>
+#include <target.h>
+#include <stringpool.h>
 #include "../../libgcobol/ec.h"
 #include "../../libgcobol/common-defs.h"
 #include "util.h"
@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "genapi.h"
 #include "../../libgcobol/exceptl.h"
 #include "exceptg.h"
-#include "util.h"
 #include "gengen.h"   // This has some GTY(()) markers
 #include "structs.h"  // This has some GTY(()) markers
 
@@ -355,6 +354,10 @@ cobol_langhook_handle_option (size_t scode,
             return true;
         case OPT_copyext:
             copybook_extension_add(cobol_copyext);
+            return true;
+
+        case OPT_M:
+	    cobol_set_pp_option('M');
             return true;
 
         case OPT_fstatic_call:

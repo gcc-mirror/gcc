@@ -154,4 +154,5 @@ void      build_array_of_treeplets( int ngroup,
 void      build_array_of_fourplets( int ngroup,
                                     size_t N,
                                     cbl_refer_t *refers);
+void      get_depending_on_value_from_odo(tree retval, cbl_field_t *odo);
 #endif

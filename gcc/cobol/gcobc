@@ -73,7 +73,7 @@ fi
 
 exit_status=0
 skip_arg=
-opts="$copydir ${dialect:--dialect mf} $includes"
+opts="-dialect gnu $copydir ${dialect:--dialect mf} $includes"
 mode=-shared
 
 incomparable="has no comparable gcobol option"

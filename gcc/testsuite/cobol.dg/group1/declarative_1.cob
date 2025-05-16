@@ -1,14 +1,14 @@
 *> { dg-do run }
 *> { dg-output {Turning EC\-ALL CHECKING OFF \-\- Expecting \+00\.00 from ACOS\(\-3\)(\n|\r\n|\r)} }
-*> { dg-output {      \+00\.00      TABL\(VSIX\) is 1(\n|\r\n|\r)} }
+*> { dg-output {      \+00\.00      TABL\(VSIX\) is 6(\n|\r\n|\r)} }
 *> { dg-output {Turning EC\-ARGUMENT\-FUNCTION CHECKING ON(\n|\r\n|\r)} }
 *> { dg-output {      Expecting \+0\.00 and DECLARATIVE FOR EC\-ARGUMENT\-FUNCTION(\n|\r\n|\r)} }
 *> { dg-output {      DECLARATIVE FOR EC\-ARGUMENT\-FUNCTION(\n|\r\n|\r)} }
-*> { dg-output {      \+00\.00      TABL\(VSIX\) is 1(\n|\r\n|\r)} }
+*> { dg-output {      \+00\.00      TABL\(VSIX\) is 6(\n|\r\n|\r)} }
 *> { dg-output {Turning EC\-ARGUMENT CHECKING ON(\n|\r\n|\r)} }
 *> { dg-output {      Expecting \+0\.00 and DECLARATIVE FOR EC\-ARGUMENT\-FUNCTION(\n|\r\n|\r)} }
 *> { dg-output {      DECLARATIVE FOR EC\-ARGUMENT\-FUNCTION(\n|\r\n|\r)} }
-*> { dg-output {      \+00\.00      TABL\(VSIX\) is 1(\n|\r\n|\r)} }
+*> { dg-output {      \+00\.00      TABL\(VSIX\) is 6(\n|\r\n|\r)} }
 *> { dg-output {Turning EC\-ALL CHECKING ON(\n|\r\n|\r)} }
 *> { dg-output {      Expecting \+0\.00 and DECLARATIVE EC\-ARGUMENT\-FUNCTION(\n|\r\n|\r)} }
 *> { dg-output {      Followed by DECLARATIVE EC\-ALL for TABL\(6\) access(\n|\r\n|\r)} }

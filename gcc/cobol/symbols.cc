@@ -487,9 +487,6 @@ symbol_elem_cmp( const void *K, const void *E )
   case SymDataSection:
     return k->elem.section.type == e->elem.section.type ? 0 : 1;
     break;
-  case SymFunction:
-    return strcmp(k->elem.function.name, e->elem.function.name);
-    break;
   case SymField:
     if( has_parent(k) && cbl_field_of(k)->parent != cbl_field_of(e)->parent ) {
       return 1;
@@ -1064,10 +1061,6 @@ symbols_dump( size_t first, bool header ) {
     case SymDataSection:
       s = xasprintf("%4" GCC_PRISZ "u %-18s line %d", (fmt_size_t)e->program,
                     cbl_section_of(e)->name(), cbl_section_of(e)->line);
-      break;
-    case SymFunction:
-      s = xasprintf("%4" GCC_PRISZ "u %-15s %s", (fmt_size_t)e->program,
-                    "Function", e->elem.function.name);
       break;
     case SymField: {
       auto field = cbl_field_of(e);
@@ -3749,39 +3742,27 @@ symbol_label_add( size_t program, cbl_label_t *input )
 }
 
 /*
- * Under ISO (and not IBM) Declaratives are followed by a Section name.  When
- * the first statement is parsed, verify, if Declaratives were used, that it
+ * Under ISO (and not IBM) Declaratives are followed by a Section name.  If
+ * Declaratives were used, when the first statement is parsed verify that it
  * was preceeded by a Section name.
  */
 bool
-symbol_label_section_exists( size_t program ) {
-  auto pblob = std::find_if( symbols_begin(program), symbols_end(),
-                               []( const auto& sym ) {
-                                 if( sym.type == SymField ) {
-                                   auto& f( sym.elem.field );
-                                   return f.type == FldBlob;
-                                 }
-                                 return false;
-                               } );
-  if( pblob == symbols_end() ) return true; // Section name not required
-
-  bool has_section = std::any_of( ++pblob, symbols_end(),
-                               []( const auto& sym ) {
-                                 if( sym.type == SymLabel ) {
+symbol_label_section_exists( size_t eval_label_index ) {
+  auto eval = symbols_begin(eval_label_index);
+  bool has_section = std::any_of( ++eval, symbols_end(),
+                               [program = eval->program]( const auto& sym ) {
+                                 if( program == sym.program && sym.type == SymLabel ) {
                                    auto& L(sym.elem.label);
-                                   if( L.type == LblSection ) {
-                                     if( L.name[0] != '_' ) { // not implicit
-                                       return true; // Section name exists
-                                     }
-                                   }
+				   // true if the symbol is an explicit label.
+                                   return L.type == LblSection &&  L.name[0] != '_'; 
                                  }
                                  return false;
                                } );
   if( yydebug && ! has_section ) {
-    symbols_dump(program, true);
+    symbols_dump(eval_label_index, true);
   }
-  // Return true if no Declaratives, because the (non-)requirement is met.
-  // Return false if Declaratives exist, because no Section name was found.
+  // Return true if a user-defined SECTION was found after the Declaratives
+  // label section. 
   return has_section;
 }
 

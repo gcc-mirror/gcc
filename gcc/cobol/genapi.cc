@@ -80,6 +80,8 @@ bool bSHOW_PARSE = getenv("GCOBOL_SHOW");
 bool show_parse_sol = true;
 int  show_parse_indent = 0;
 
+static bool sv_is_i_o = false;
+
 #define DEFAULT_LINE_NUMBER 2
 
 #ifdef LINE_TICK
@@ -933,8 +935,20 @@ array_of_long_long(const char *name, const std::vector<uint64_t>& vals)
  * Performs the matched declarative, and execution continues with the next
  * statement.
  */
-tree parser_compile_ecs( const std::vector<uint64_t>& ecs )
+tree
+parser_compile_ecs( const std::vector<uint64_t>& ecs )
   {
+  if( ecs.empty() )
+    {
+    SHOW_IF_PARSE(nullptr)
+      {
+      SHOW_PARSE_HEADER
+      SHOW_PARSE_TEXT("ecs is empty");
+      SHOW_PARSE_END
+      }
+    return NULL_TREE;
+    }
+
   char ach[32];
   static int counter = 1;
   sprintf(ach, "_ecs_table_%d", counter++);
@@ -968,12 +982,23 @@ tree parser_compile_ecs( const std::vector<uint64_t>& ecs )
  * invoked, and thus the set of active Declaratives.  By passing them for each
  * statement, code generation is relieved of referring to global variable.
  */
-tree parser_compile_dcls( const std::vector<uint64_t>& dcls )
+tree
+parser_compile_dcls( const std::vector<uint64_t>& dcls )
   {
+  if( dcls.empty() )
+    {
+    SHOW_IF_PARSE(nullptr)
+      {
+      SHOW_PARSE_HEADER
+      SHOW_PARSE_TEXT("dcls is empty");
+      SHOW_PARSE_END
+      }
+    return NULL_TREE;
+    }
+
   char ach[32];
   static int counter = 1;
   sprintf(ach, "_dcls_table_%d", counter++);
-
   tree retval =  array_of_long_long(ach, dcls);
   SHOW_IF_PARSE(nullptr)
     {
@@ -983,7 +1008,6 @@ tree parser_compile_dcls( const std::vector<uint64_t>& dcls )
     SHOW_PARSE_TEXT(ach);
     SHOW_PARSE_END
     }
-
   TRACE1
     {
     TRACE1_HEADER
@@ -1036,16 +1060,28 @@ parser_statement_begin( const cbl_name_t statement_name, tree ecs, tree dcls )
     gg_assign(var_decl_nop, build_int_cst_type(INT, 106));
     }
 
-  store_location_stuff(statement_name);
+  // At this point, if any exception is enabled, we store the location stuff.
+  // Each file I-O routine calls store_location_stuff explicitly, because
+  // those exceptions can't be defeated.
+
+  if( enabled_exceptions.size() )
+    {
+    store_location_stuff(statement_name);
+    }
+
   gg_set_current_line_number(CURRENT_LINE_NUMBER);
 
-  gg_call(VOID,
-          "__gg__set_exception_environment",
-          ecs  ? gg_get_address_of(ecs) : null_pointer_node,
-          dcls ? gg_get_address_of(dcls) : null_pointer_node,
-          NULL_TREE);
-  
+  // if( ecs || dcls || sv_is_i_o )
+    {
+    gg_call(VOID,
+            "__gg__set_exception_environment",
+            ecs  ? gg_get_address_of(ecs) : null_pointer_node,
+            dcls ? gg_get_address_of(dcls) : null_pointer_node,
+            NULL_TREE);
+    }
+
   gcc_assert( gg_trans_unit.function_stack.size() );
+  sv_is_i_o = false;
   }
 
 static void
@@ -1516,42 +1552,28 @@ gg_default_qualification(struct cbl_field_t * /*var*/)
 //  gg_attribute_bit_clear(var, refmod_e);
   }
 
-static void
-gg_get_depending_on_value(tree depending_on, cbl_field_t *current_sizer)
+static
+void
+depending_on_value(tree depending_on, cbl_field_t *current_sizer)
   {
   // We have to deal with the possibility of a DEPENDING_ON variable,
   // and we have to apply array bounds whether or not there is a DEPENDING_ON
   // variable:
 
-  tree occurs_lower = gg_define_variable(LONG, "_lower");
-  tree occurs_upper = gg_define_variable(LONG, "_upper");
-
-  gg_assign(occurs_lower, build_int_cst_type(LONG, current_sizer->occurs.bounds.lower));
-  gg_assign(occurs_upper, build_int_cst_type(LONG, current_sizer->occurs.bounds.upper));
+//  tree occurs_lower = gg_define_variable(LONG, "_lower");
+//  tree occurs_upper = gg_define_variable(LONG, "_upper");
+//
+//  gg_assign(occurs_lower, build_int_cst_type(LONG, current_sizer->occurs.bounds.lower));
+//  gg_assign(occurs_upper, build_int_cst_type(LONG, current_sizer->occurs.bounds.upper));
 
   if( current_sizer->occurs.depending_on )
     {
-    // Get the current value of the depending_on data-item:
-    tree value = gg_define_int128();
-    get_binary_value( value,
-                      NULL,
-                      cbl_field_of(symbol_at(current_sizer->occurs.depending_on)),
-                      size_t_zero_node);
-    gg_assign(depending_on, gg_cast(LONG, value));
-    IF( depending_on, lt_op, occurs_lower )
-    // depending_is can be no less than occurs_lower:
-      gg_assign(depending_on, occurs_lower );
-    ELSE
-      ENDIF
-    IF( depending_on, gt_op, occurs_upper )
-    // depending_is can be no greater than occurs_upper:
-      gg_assign(depending_on, occurs_upper );
-    ELSE
-      ENDIF
+    get_depending_on_value_from_odo(depending_on, current_sizer);
     }
   else
     {
-    gg_assign(depending_on, occurs_upper);
+    gg_assign(depending_on,
+              build_int_cst_type(LONG, current_sizer->occurs.bounds.upper));
     }
   }
 
@@ -5107,7 +5129,7 @@ parser_display_field(cbl_field_t *field)
  *  2.  ARG_VALUE_e, the ARGUMENT-VALUE
  *  3.  ENV_NAME_e, the ENVIRONMENT-NAME
  *  4.  ENV_VALUE_e, the ENVIRONMENT-VALUE
- * that need special care and feeding. 
+ * that need special care and feeding.
  */
 void
 parser_display( const struct cbl_special_name_t *upon,
@@ -5168,6 +5190,18 @@ parser_display( const struct cbl_special_name_t *upon,
       case SYSPCH_e:
         gg_assign(file_descriptor, integer_two_node);
         break;
+
+      case ENV_NAME_e:
+        // This Part I of the slightly absurd method of using DISPLAY...UPON
+        // to fetch, or set, environment variables.
+        gg_call(VOID,
+                "__gg__set_env_name",
+                gg_get_address_of(refs[0].field->var_decl_node),
+                refer_offset(refs[0]),
+                refer_size_source(refs[0]),
+                NULL_TREE);
+         return;
+         break;
 
       default:
         if( upon->os_filename[0] )
@@ -9281,6 +9315,7 @@ parser_file_open( struct cbl_file_t *file, int mode_char )
     quoted_name = true;
     }
 
+  sv_is_i_o = true;
   store_location_stuff("OPEN");
   gg_call(VOID,
           "__gg__file_open",
@@ -9332,6 +9367,7 @@ parser_file_close( struct cbl_file_t *file, file_close_how_t how )
   // We are done with the filename.  The library routine will free "filename"
   // memory and set it back to null
 
+  sv_is_i_o = true;
   store_location_stuff("CLOSE");
   gg_call(VOID,
           "__gg__file_close",
@@ -9417,6 +9453,7 @@ parser_file_read( struct cbl_file_t *file,
     where = 1;
     }
 
+  sv_is_i_o = true;
   store_location_stuff("READ");
   gg_call(VOID,
           "__gg__file_read",
@@ -9551,6 +9588,7 @@ parser_file_write( cbl_file_t *file,
     record_area = cbl_field_of(symbol_at(file->default_record));
     }
 
+  sv_is_i_o = true;
   store_location_stuff("WRITE");
   gg_call(VOID,
           "__gg__file_write",
@@ -9620,6 +9658,7 @@ parser_file_delete( struct cbl_file_t *file, bool /*sequentially*/ )
     SHOW_PARSE_END
     }
 
+  sv_is_i_o = true;
   store_location_stuff("DELETE");
   gg_call(VOID,
           "__gg__file_delete",
@@ -9676,6 +9715,7 @@ parser_file_rewrite(cbl_file_t *file,
     record_area = cbl_field_of(symbol_at(file->default_record));
     }
 
+  sv_is_i_o = true;
   store_location_stuff("REWRITE");
   gg_call(VOID,
           "__gg__file_rewrite",
@@ -9785,6 +9825,7 @@ parser_file_start(struct cbl_file_t *file,
                       refer_offset(length_ref));
     }
 
+  sv_is_i_o = true;
   store_location_stuff("START");
   gg_call(VOID,
           "__gg__file_start",
@@ -10320,6 +10361,7 @@ parser_intrinsic_subst( cbl_field_t *f,
     TRACE1_END
     }
 
+  sv_is_i_o = true;
   store_location_stuff("SUBSTITUTE");
   unsigned char *control_bytes = (unsigned char *)xmalloc(argc * sizeof(unsigned char));
   cbl_refer_t *arg1 = (cbl_refer_t *)xmalloc(argc * sizeof(cbl_refer_t));
@@ -10512,7 +10554,7 @@ parser_intrinsic_call_1( cbl_field_t *tgt,
     if( is_table(ref1.field) && !ref1.nsubscript )
       {
       static tree depending_on = gg_define_variable(LONG, "..pic1_dep");
-      gg_get_depending_on_value(depending_on, ref1.field);
+      depending_on_value(depending_on, ref1.field);
       gg_call(VOID,
               "__gg__int128_to_field",
               gg_get_address_of(tgt->var_decl_node),
@@ -10822,7 +10864,7 @@ parser_lsearch_start(   cbl_label_t *name,
       {
       // Extract the number of elements in that rightmost dimension.
       lsearch->limit = gg_define_variable(LONG);
-      gg_get_depending_on_value(lsearch->limit, current);
+      depending_on_value(lsearch->limit, current);
       break;
       }
     current = parent_of(current);
@@ -11059,7 +11101,7 @@ parser_bsearch_start(   cbl_label_t* name,
 
   // Assign the left and right values:
   gg_assign(bsearch->left, build_int_cst_type(LONG, 1));
-  gg_get_depending_on_value(bsearch->right, current);
+  depending_on_value(bsearch->right, current);
 
   // Create the variable that will take the compare result.
   bsearch->compare_result = gg_define_int();
@@ -11344,7 +11386,7 @@ parser_sort(cbl_refer_t tableref,
   tree ascending = gg_array_of_size_t( total_keys, flattened_ascending );
 
   tree depending_on = gg_define_variable(LONG, "_sort_size");
-  gg_get_depending_on_value(depending_on, table);
+  depending_on_value(depending_on, table);
 
   if( alphabet )
     {
@@ -13389,8 +13431,6 @@ store_location_stuff(const cbl_name_t statement_name)
   if( exception_location_active && !current_declarative_section_name() )
     {
     // We need to establish some stuff for EXCEPTION- function processing
-    gg_assign(var_decl_exception_source_file,
-              gg_string_literal(current_filename.back().c_str()));
 
     gg_assign(var_decl_exception_program_id,
               gg_string_literal(current_function->our_unmangled_name));
@@ -13522,7 +13562,7 @@ parser_pop_exception()
   {
   gg_call(VOID, "__gg__exception_pop", NULL_TREE);
   }
-  
+
 void
 parser_clear_exception()
   {

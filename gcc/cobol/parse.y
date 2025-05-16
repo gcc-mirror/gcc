@@ -1346,8 +1346,16 @@
     // more integer friendly.  Any integer value that can be expressed in 1
     // to MAX_FIXED_POINT_DIGITS digits is converted to a string without a
     // decimal point and no exponent.
+
     char *pdot = strchr(psz, '.');
+    gcc_assert(pdot);
     char *pe = strchr(psz, 'e');
+    if( !pe )
+      {
+      // The most likely cause of this is a "0.0" result.
+      strcpy(psz, "0");
+      return;
+      }
     char *pnz = pe-1;
     while(*pnz == '0')
       {
@@ -2277,7 +2285,9 @@ config_paragraphs: config_paragraph
 config_paragraph:
                 SPECIAL_NAMES '.'
         |       SPECIAL_NAMES '.' specials '.'
+        |       SOURCE_COMPUTER  '.' 
         |       SOURCE_COMPUTER  '.' NAME with_debug '.'
+        |       OBJECT_COMPUTER  '.' 
         |       OBJECT_COMPUTER  '.' NAME collating_sequence[name] '.'
                 {
                   if( $name ) {
@@ -4015,8 +4025,8 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   cbl_field_t *field = current_field();
 
 		  if( field->type == FldNumericBin5 &&
-		      field->data.capacity == 0  &&
-		      dialect_mf() )
+		      field->data.capacity == 0xFF  &&
+		      (dialect_gnu() || dialect_mf()) )
 		  { // PIC X COMP-X or COMP-9
 		    if( ! field->has_attr(all_x_e) ) {
 		      error_msg(@2, "COMP PICTURE requires all X's or all 9's");
@@ -4024,6 +4034,7 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
 		    }
 		  } else {
                     if( !field_type_update(field, FldAlphanumeric, @$) ) {
+		      dbgmsg("alnum_pic: %s", field_str(field));
                       YYERROR;
                     }
 		  }
@@ -4240,21 +4251,21 @@ usage_clause1:  usage BIT
 		      case FldAlphanumeric:   // PIC X COMP-5 or COMP-X
 			assert( field->data.digits == 0 );
 			assert( field->data.rdigits == 0 );
-		        if( dialect_mf() ) {
+		        if( (dialect_mf() || dialect_gnu()) ) {
                           field->type = $comp.type;
 			  field->clear_attr(signable_e);
 		        } else {
 			  error_msg(@comp, "numeric USAGE invalid "
 				           "with Alpnanumeric PICTURE");
-			  dialect_error(@1, "Alpnanumeric COMP-5 or COMP-X", "mf");
+			  dialect_error(@1, "Alpnanumeric COMP-5 or COMP-X", "mf or gnu");
 			  YYERROR;
 		        }
                         break;
 		      case FldNumericDisplay: // PIC 9 COMP-5 or COMP-X
 		        if( $comp.capacity == 0xFF ) { // comp-x is a bit like comp-5
 			  assert( field->data.digits == field->data.capacity );
-		          if( ! dialect_mf() ) {
-				  dialect_error(@1, "COMP-X", "mf");
+		          if( ! (dialect_mf() || dialect_gnu()) ) {
+				  dialect_error(@1, "COMP-X", "mf or gnu");
 		          }
 			}
                         field->type = $comp.type;
@@ -4321,21 +4332,21 @@ usage_clause1:  usage BIT
 		      case FldAlphanumeric:   // PIC X COMP-5 or COMP-X
 			assert( field->data.digits == 0 );
 			assert( field->data.rdigits == 0 );
-		        if( dialect_mf() ) {
+		        if( (dialect_mf() || dialect_gnu()) ) {
                           field->type = $comp.type;
 			  field->clear_attr(signable_e);
 		        } else {
 			  error_msg(@comp, "numeric USAGE invalid "
 				           "with Alpnanumeric PICTURE");
-			  dialect_error(@1, "Alpnanumeric COMP-5 or COMP-X", "mf");
+			  dialect_error(@1, "Alpnanumeric COMP-5 or COMP-X", "mf or gnu");
 			  YYERROR;
 		        }
                         break;
 		      case FldNumericDisplay: // PIC 9 COMP-5 or COMP-X
 		        if( $comp.capacity == 0xFF ) { // comp-x is a bit like comp-5
 			  assert( field->data.digits == field->data.capacity );
-		          if( ! dialect_mf() ) {
-				  dialect_error(@1, "COMP-X", "mf");
+		          if( ! (dialect_mf() || dialect_gnu()) ) {
+				  dialect_error(@1, "COMP-X", "mf or gnu");
 		          }
 			}
                         field->type = $comp.type;
@@ -5236,9 +5247,19 @@ acceptable:     device_name
                 {
                   $$ = special_of($1);
                   if( !$$ ) {
-                    error_msg(@NAME, "no such environment mnemonic name: %s", $NAME);
-                    YYERROR;
-                  }
+		    const special_name_t *special_type = cmd_or_env_special_of($NAME);
+		    if( !special_type ) {
+                      error_msg(@NAME, "no such special name '%s'", $NAME);
+                      YYERROR;
+		    }
+		    // Add the name now, as a convenience. 
+		    cbl_special_name_t special = { 0, *special_type };
+		    namcpy(@NAME, special.name, $NAME);
+
+		    symbol_elem_t *e = symbol_special_add(PROGRAM, &special);
+		    $$ = cbl_special_name_of(e);
+		  }
+		  assert($$);
                 }
                 ;
 
@@ -7114,9 +7135,21 @@ section_kw:     SECTION
                 {
                   if( $1 ) {
 		    if( *$1 == '-' ) {
-		      error_msg(@1, "SECTION segment %s is negative", $1);
+		      error_msg(@1, "SECTION segment %<%s%> is negative", $1);
                     } else {
-                      cbl_unimplementedw("SECTION segment %s was ignored", $1);
+		      if( dialect_ibm() ) {
+			int sectno;
+			sscanf($1, "%u", &sectno);
+			if( ! (0 <= sectno && sectno <= 99) ) {
+			  error_msg(@1, "SECTION segment %<%s%> must be 0-99", $1);
+			} else {
+			  if(false) { // stand-in for warning, someday.
+			    yywarn("SECTION segment %<%s%> was ignored", $1);
+			  }
+			}
+		      } else {
+			cbl_unimplemented("SECTION segment %<%s%> is not ISO syntax", $1);
+		      }
                     }
 		  }
                 }
@@ -7498,18 +7531,7 @@ perform_except:	perform_start
 		perform_ec_finally
 		END_PERFORM
                 {
-		  auto perf = perform_current();
-		  // produce blob, jumped over by FINALLY paragraph
-		  size_t iblob = symbol_declaratives_add( PROGRAM, perf->dcls );
-		  auto lave = perf->ec_labels.new_label(LblParagraph, "lave");
-		  auto handlers = cbl_field_of(symbol_at(iblob));
-
-		  // install blob
-		  parser_label_label(perf->ec_labels.init);
-		  declarative_runtime_match(handlers, lave);
-
-		  // uninstall blob
-		  parser_label_label(perf->ec_labels.fini);
+		  cbl_unimplemented("PERFORM Format 3");
                 }
 		;
 
@@ -12920,10 +12942,22 @@ mode_syntax_only() {
 
 void
 cobol_dialect_set( cbl_dialect_t dialect ) {
-  cbl_dialect = dialect;
-  if( dialect & dialect_ibm_e ) cobol_gcobol_feature_set(feature_embiggen_e);
+  switch(dialect) {
+  case dialect_gcc_e:
+    break;
+  case dialect_ibm_e:
+    cobol_gcobol_feature_set(feature_embiggen_e);
+    break;
+  case dialect_mf_e:
+    break;
+  case dialect_gnu_e:
+    if( 0 == (cbl_dialects & dialect) ) { // first time
+      tokens.equate(YYLTYPE(), "BINARY-DOUBLE", "BINARY-C-LONG");
+    }
+    break;
+  }    
+  cbl_dialects |= dialect;
 }
-cbl_dialect_t cobol_dialect() { return cbl_dialect; }
 
 static bool internal_ebcdic_locked = false;
 

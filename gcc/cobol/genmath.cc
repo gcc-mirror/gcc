@@ -756,12 +756,6 @@ parser_add( size_t nC, cbl_num_result_t *C,
     TRACE1_END
     }
 
-  tree compute_error = (tree)compute_error_p;
-  if( compute_error == NULL )
-    {
-    gg_assign(var_decl_default_compute_error, integer_zero_node);
-    compute_error = gg_get_address_of(var_decl_default_compute_error);
-    }
   bool handled = false;
 
   if( fast_add( nC, C,
@@ -772,6 +766,13 @@ parser_add( size_t nC, cbl_num_result_t *C,
     }
   else
     {
+    tree compute_error = (tree)compute_error_p;
+    if( compute_error == NULL )
+      {
+      gg_assign(var_decl_default_compute_error, integer_zero_node);
+      compute_error = gg_get_address_of(var_decl_default_compute_error);
+      }
+
     bool computation_is_float =    is_somebody_float(nA, A)
                                 || is_somebody_float(nC, C);
     // We now start deciding which arithmetic routine we are going to use:
@@ -1452,13 +1453,6 @@ parser_subtract(size_t nC, cbl_num_result_t *C, // C = B - A
 
   bool handled = false;
 
-  tree compute_error = (tree)compute_error_p;
-  if( compute_error == NULL )
-    {
-    gg_assign(var_decl_default_compute_error, integer_zero_node);
-    compute_error = gg_get_address_of(var_decl_default_compute_error);
-    }
-
   if( fast_subtract(nC, C,
                     nA, A,
                     nB, B,
@@ -1468,6 +1462,12 @@ parser_subtract(size_t nC, cbl_num_result_t *C, // C = B - A
     }
   else
     {
+    tree compute_error = (tree)compute_error_p;
+    if( compute_error == NULL )
+      {
+      gg_assign(var_decl_default_compute_error, integer_zero_node);
+      compute_error = gg_get_address_of(var_decl_default_compute_error);
+      }
     bool computation_is_float =    is_somebody_float(nA, A)
                                 || is_somebody_float(nC, C);
 
