@@ -3942,9 +3942,7 @@ avr_parallel_insn_from_insns (rtx_insn *i[5])
 			 PATTERN (i[3]), PATTERN (i[4]));
   start_sequence ();
   emit (gen_rtx_PARALLEL (VOIDmode, vec));
-  rtx_insn *insn = end_sequence ();
-
-  return insn;
+  return end_sequence ();
 }
 
 

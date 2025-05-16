@@ -2304,8 +2304,7 @@ asan_emit_allocas_unpoison (rtx top, rtx bot, rtx_insn *before)
 		     top, ptr_mode, bot, ptr_mode);
 
   do_pending_stack_adjust ();
-  rtx_insn *insns = end_sequence ();
-  return insns;
+  return end_sequence ();
 }
 
 /* Return true if DECL, a global var, might be overridden and needs
@@ -4737,8 +4736,7 @@ hwasan_emit_untag_frame (rtx dynamic, rtx vars)
 		     size_rtx, ptr_mode);
 
   do_pending_stack_adjust ();
-  rtx_insn *insns = end_sequence ();
-  return insns;
+  return end_sequence ();
 }
 
 /* Needs to be GTY(()), because cgraph_build_static_cdtor may

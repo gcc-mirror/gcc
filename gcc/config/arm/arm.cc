@@ -9278,9 +9278,7 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 				     LCT_PURE, /* LCT_CONST?  */
 				     Pmode, reg, Pmode);
 
-  rtx_insn *insns = end_sequence ();
-
-  return insns;
+  return end_sequence ();
 }
 
 static rtx

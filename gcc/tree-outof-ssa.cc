@@ -264,9 +264,7 @@ emit_partition_copy (rtx dest, rtx src, int unsignedsrcp, tree sizeexp)
     emit_move_insn (dest, src);
   do_pending_stack_adjust ();
 
-  rtx_insn *seq = end_sequence ();
-
-  return seq;
+  return end_sequence ();
 }
 
 /* Insert a copy instruction from partition SRC to DEST onto edge E.  */
