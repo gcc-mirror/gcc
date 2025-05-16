@@ -2470,21 +2470,20 @@ package body Exp_Ch4 is
 
          declare
             Op : constant Entity_Id := Find_Primitive_Eq (Comp_Type);
+
          begin
-            if Warn_On_Ignored_Equality
-              and then Present (Op)
+            if Present (Op)
               and then not In_Predefined_Unit (Base_Type (Comp_Type))
               and then not Is_Intrinsic_Subprogram (Op)
             then
                pragma Assert
                  (Is_First_Subtype (Outer_Type)
                    or else Is_Generic_Actual_Type (Outer_Type));
-               Error_Msg_Node_2 := Comp_Type;
-               Error_Msg_N
-                 ("?_q?""="" for type & uses predefined ""="" for }",
-                  Outer_Type);
-               Error_Msg_Sloc := Sloc (Op);
-               Error_Msg_N ("\?_q?""="" # is ignored here", Outer_Type);
+
+               Warn_On_Ignored_Equality_Operator
+                 (Typ      => Outer_Type,
+                  Comp_Typ => Comp_Type,
+                  Loc      => Sloc (Op));
             end if;
          end;
 

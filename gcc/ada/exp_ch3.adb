@@ -69,6 +69,7 @@ with Sem_Res;        use Sem_Res;
 with Sem_SCIL;       use Sem_SCIL;
 with Sem_Type;       use Sem_Type;
 with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
@@ -77,6 +78,7 @@ with Snames;         use Snames;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Validsw;        use Validsw;
+with Warnsw;         use Warnsw;
 
 package body Exp_Ch3 is
 
@@ -5157,6 +5159,32 @@ package body Exp_Ch3 is
          if Is_Library_Level_Entity (Typ) then
             Set_Is_Public (Op);
          end if;
+
+      --  Otherwise, the result is defined in terms of the primitive equals
+      --  operator (RM 4.5.2 (24/3)). Report a warning if some component of
+      --  the untagged record has defined a user-defined "=", because it can
+      --  be surprising that the predefined "=" takes precedence over it.
+      --  This warning is not reported when Build_Eq is True because the
+      --  expansion of the built body will call Expand_Composite_Equality
+      --  that will report it if necessary.
+
+      elsif Warn_On_Ignored_Equality then
+         Comp := First_Component (Typ);
+
+         while Present (Comp) loop
+            if Present (User_Defined_Eq (Etype (Comp)))
+              and then not Is_Record_Type (Etype (Comp))
+              and then not Is_Intrinsic_Subprogram
+                             (User_Defined_Eq (Etype (Comp)))
+            then
+               Warn_On_Ignored_Equality_Operator
+                 (Typ      => Typ,
+                  Comp_Typ => Etype (Comp),
+                  Loc      => Sloc (User_Defined_Eq (Etype (Comp))));
+            end if;
+
+            Next_Component (Comp);
+         end loop;
       end if;
    end Build_Untagged_Record_Equality;
 

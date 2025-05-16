@@ -3464,6 +3464,24 @@ package body Sem_Warn is
       end if;
    end Warn_On_Constant_Valid_Condition;
 
+   ---------------------------------------
+   -- Warn_On_Ignored_Equality_Operator --
+   ---------------------------------------
+
+   procedure Warn_On_Ignored_Equality_Operator
+     (Typ      : Entity_Id;
+      Comp_Typ : Entity_Id;
+      Loc      : Source_Ptr) is
+   begin
+      if Warn_On_Ignored_Equality then
+         Error_Msg_Node_2 := Comp_Typ;
+         Error_Msg_N ("?_q?""="" for type & uses predefined ""="" for }", Typ);
+
+         Error_Msg_Sloc := Loc;
+         Error_Msg_N ("\?_q?""="" # is ignored here", Typ);
+      end if;
+   end Warn_On_Ignored_Equality_Operator;
+
    -----------------------------
    -- Warn_On_Known_Condition --
    -----------------------------

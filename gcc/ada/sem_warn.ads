@@ -173,6 +173,15 @@ package Sem_Warn is
    --  Op assuming that its scalar operands are valid. Emit a warning when the
    --  result of the evaluation is True or False.
 
+   procedure Warn_On_Ignored_Equality_Operator
+     (Typ      : Entity_Id;
+      Comp_Typ : Entity_Id;
+      Loc      : Source_Ptr);
+   --  Typ is a composite type and Comp_Typ is the type of one of its
+   --  components. Output a warning notifying that the predefined "="
+   --  for Comp_Typ takes precedence over the user-defined equality
+   --  defined at the given location.
+
    procedure Warn_On_Known_Condition (C : Node_Id);
    --  C is a node for a boolean expression resulting from a relational
    --  or membership operation. If the expression has a compile time known
