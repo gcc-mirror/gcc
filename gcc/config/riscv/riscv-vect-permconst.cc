@@ -227,7 +227,7 @@ vector_permconst::process_bb (basic_block bb)
 	 normalize it to zero.
 
 	 XXX This violates structure sharing conventions.  */
-      rtvec_def *nvec = gen_rtvec (CONST_VECTOR_NUNITS (cvec).to_constant ());
+      rtvec_def *nvec = rtvec_alloc (CONST_VECTOR_NUNITS (cvec).to_constant ());
 
       for (i = 0; i < CONST_VECTOR_NUNITS (cvec).to_constant (); i++)
 	nvec->elem[i] = GEN_INT (INTVAL (CONST_VECTOR_ELT (cvec, i)) - bias);
