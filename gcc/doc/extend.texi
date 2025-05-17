@@ -14374,6 +14374,9 @@ a function call results in a compile-time error.
 @findex acoshf
 @findex acoshl
 @findex acosl
+@findex acospi
+@findex acospif
+@findex acospil
 @findex alloca
 @findex asin
 @findex asinf
@@ -14381,15 +14384,24 @@ a function call results in a compile-time error.
 @findex asinhf
 @findex asinhl
 @findex asinl
+@findex asinpi
+@findex asinpif
+@findex asinpil
 @findex atan
 @findex atan2
 @findex atan2f
 @findex atan2l
+@findex atan2pi
+@findex atan2pif
+@findex atan2pil
 @findex atanf
 @findex atanh
 @findex atanhf
 @findex atanhl
 @findex atanl
+@findex atanpi
+@findex atanpif
+@findex atanpil
 @findex bcmp
 @findex bzero
 @findex cabs
@@ -14453,6 +14465,9 @@ a function call results in a compile-time error.
 @findex coshf
 @findex coshl
 @findex cosl
+@findex cospi
+@findex cospif
+@findex cospil
 @findex cpow
 @findex cpowf
 @findex cpowl
@@ -14688,6 +14703,9 @@ a function call results in a compile-time error.
 @findex sinhf
 @findex sinhl
 @findex sinl
+@findex sinpi
+@findex sinpif
+@findex sinpil
 @findex snprintf
 @findex sprintf
 @findex sqrt
@@ -14722,6 +14740,9 @@ a function call results in a compile-time error.
 @findex tanhf
 @findex tanhl
 @findex tanl
+@findex tanpi
+@findex tanpif
+@findex tanpil
 @findex tgamma
 @findex tgammaf
 @findex tgammal
@@ -14764,7 +14785,10 @@ a particular case, a call to the library function is emitted.
 @opindex std
 Outside strict ISO C mode (@option{-ansi}, @option{-std=c90},
 @option{-std=c99} or @option{-std=c11}), the functions
-@code{_exit}, @code{alloca}, @code{bcmp}, @code{bzero},
+@code{_exit}, @code{alloca}, @code{acospi}, @code{acospif}, @code{acospil},
+@code{asinpi}, @code{asinpif}, @code{asinpil}, @code{atan2pi}, @code{atan2pif},
+@code{atan2pil}, @code{atanpi}, @code{atanpif}, @code{atanpil}, @code{bcmp},
+@code{bzero}, @code{cospi}, @code{cospif}, @code{cospil},
 @code{dcgettext}, @code{dgettext}, @code{dremf}, @code{dreml},
 @code{drem}, @code{exp10f}, @code{exp10l}, @code{exp10}, @code{ffsll},
 @code{ffsl}, @code{ffs}, @code{fprintf_unlocked},
@@ -14779,11 +14803,12 @@ Outside strict ISO C mode (@option{-ansi}, @option{-std=c90},
 @code{signbit}, @code{signbitf}, @code{signbitl}, @code{signbitd32},
 @code{signbitd64}, @code{signbitd128}, @code{significandf},
 @code{significandl}, @code{significand}, @code{sincosf},
-@code{sincosl}, @code{sincos}, @code{stpcpy}, @code{stpncpy},
-@code{strcasecmp}, @code{strdup}, @code{strfmon}, @code{strncasecmp},
-@code{strndup}, @code{strnlen}, @code{toascii}, @code{y0f}, @code{y0l},
-@code{y0}, @code{y1f}, @code{y1l}, @code{y1}, @code{ynf}, @code{ynl} and
-@code{yn}
+@code{sincosl}, @code{sincos}, @code{sinpif}, @code{sinpil}, @code{sinpi},
+@code{stpcpy}, @code{stpncpy}, @code{strcasecmp}, @code{strdup},
+@code{strfmon}, @code{strncasecmp}, @code{strndup}, @code{strnlen},
+@code{tanpif}, @code{tanpil}, @code{tanpi}, @code{toascii}, @code{y0f},
+@code{y0l}, @code{y0}, @code{y1f}, @code{y1l}, @code{y1}, @code{ynf},
+@code{ynl} and @code{yn}
 may be handled as built-in functions.
 All these functions have corresponding versions
 prefixed with @code{__builtin_}, which may be used even in strict C90
