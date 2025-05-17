@@ -14267,16 +14267,20 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
     {
       /* Pre-flipping bits we want to preserve.  */
       rtx input = operands[1];
+      rtx output = NULL_RTX;
       ival = ~INTVAL (operands[2]);
       while (ival)
 	{
 	  HOST_WIDE_INT tmpval = HOST_WIDE_INT_UC (1) << ctz_hwi (ival);
 	  rtx x = GEN_INT (tmpval);
 	  x = gen_rtx_XOR (word_mode, input, x);
-	  emit_insn (gen_rtx_SET (operands[0], x));
-	  input = operands[0];
+	  output = gen_reg_rtx (word_mode);
+	  emit_insn (gen_rtx_SET (output, x));
+	  input = output;
 	  ival &= ~tmpval;
 	}
+
+      gcc_assert (output);
 
       /* Now flip all the bits, which restores the bits we were
 	 preserving.  */
@@ -14300,23 +14304,29 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
       int msb = BITS_PER_WORD - 1 - clz_hwi (ival);
       if (msb - lsb + 1 <= 11)
 	{
+	  rtx output = gen_reg_rtx (word_mode);
+	  rtx input = operands[1];
+
 	  /* Rotate the source right by LSB bits.  */
 	  rtx x = GEN_INT (lsb);
-	  x = gen_rtx_ROTATERT (word_mode, operands[1], x);
-	  emit_insn (gen_rtx_SET (operands[0], x));
+	  x = gen_rtx_ROTATERT (word_mode, input, x);
+	  emit_insn (gen_rtx_SET (output, x));
+	  input = output;
 
 	  /* Shift the constant right by LSB bits.  */
 	  x = GEN_INT (ival >> lsb);
 
 	  /* Perform the IOR/XOR operation.  */
-	  x = gen_rtx_fmt_ee (code, word_mode, operands[0], x);
-	  emit_insn (gen_rtx_SET (operands[0], x));
+	  x = gen_rtx_fmt_ee (code, word_mode, input, x);
+	  output = gen_reg_rtx (word_mode);
+	  emit_insn (gen_rtx_SET (output, x));
+	  input = output;
 
 	  /* And rotate left to put everything back in place, we don't
 	     have rotate left by a constant, so use rotate right by
 	     an adjusted constant.  */
 	  x = GEN_INT (BITS_PER_WORD - lsb);
-	  x = gen_rtx_ROTATERT (word_mode, operands[1], x);
+	  x = gen_rtx_ROTATERT (word_mode, input, x);
 	  emit_insn (gen_rtx_SET (operands[0], x));
 	  return true;
 	}
@@ -14337,22 +14347,28 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
       if ((INTVAL (operands[2]) & HOST_WIDE_INT_UC (0x7ff)) != 0
 	  && msb - lsb + 1 <= 11)
 	{
+	  rtx output = gen_reg_rtx (word_mode);
+	  rtx input = operands[1];
+
 	  /* Rotate the source left by ROTCOUNT bits, we don't have
 	     rotate left by a constant, so use rotate right by an
 	     adjusted constant.  */
 	  rtx x = GEN_INT (BITS_PER_WORD - rotcount);
-	  x = gen_rtx_ROTATERT (word_mode, operands[1], x);
-	  emit_insn (gen_rtx_SET (operands[0], x));
+	  x = gen_rtx_ROTATERT (word_mode, input, x);
+	  emit_insn (gen_rtx_SET (output, x));
+	  input = output;
 
 	  /* We've already rotated the constant.  So perform the IOR/XOR
 	     operation.  */
 	  x = GEN_INT (ival);
-	  x = gen_rtx_fmt_ee (code, word_mode, operands[0], x);
-	  emit_insn (gen_rtx_SET (operands[0], x));
+	  x = gen_rtx_fmt_ee (code, word_mode, input, x);
+	  output = gen_reg_rtx (word_mode);
+	  emit_insn (gen_rtx_SET (output, x));
+	  input = output;
 
 	  /* And rotate right to put everything into its proper place.  */
 	  x = GEN_INT (rotcount);
-	  x = gen_rtx_ROTATERT (word_mode, operands[0], x);
+	  x = gen_rtx_ROTATERT (word_mode, input, x);
 	  emit_insn (gen_rtx_SET (operands[0], x));
 	  return true;
 	}
@@ -14374,6 +14390,7 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
   /* Synthesis is better than loading the constant.  */
   ival = INTVAL (operands[2]);
   rtx input = operands[1];
+  rtx output;
 
   /* Emit the [x]ori insn that sets the low 11 bits into
      the proper state.  */
@@ -14381,8 +14398,9 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
     {
       rtx x = GEN_INT (ival & HOST_WIDE_INT_UC (0x7ff));
       x = gen_rtx_fmt_ee (code, word_mode, input, x);
-      emit_insn (gen_rtx_SET (operands[0], x));
-      input = operands[0];
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
       ival &= ~HOST_WIDE_INT_UC (0x7ff);
     }
 
@@ -14396,10 +14414,12 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
       HOST_WIDE_INT tmpval = HOST_WIDE_INT_UC (1) << ctz_hwi (ival);
       rtx x = GEN_INT (tmpval);
       x = gen_rtx_fmt_ee (code, word_mode, input, x);
-      emit_insn (gen_rtx_SET (operands[0], x));
-      input = operands[0];
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
       ival &= ~tmpval;
     }
+  emit_move_insn (operands[0], output);
   return true;
 }
 
