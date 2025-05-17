@@ -1,3 +1,12 @@
+2025-05-16  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	Backported from master:
+	2025-04-19  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/alpha/alpha.cc
+	(alpha_get_mem_rtx_alignment_and_offset): Recurse into
+	COMPONENT_REF nodes.
+
 2025-05-14  Kyle Huey  <me@kylehuey.com>
 
 	* dwarf2out.cc (resolve_addr_in_expr): Propagate dtprel into the address

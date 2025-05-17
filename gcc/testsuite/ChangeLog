@@ -1,3 +1,11 @@
+2025-05-16  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	Backported from master:
+	2025-04-19  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/alpha/memcpy-nested-offset-long.c: New file.
+	* gcc.target/alpha/memcpy-nested-offset-quad.c: New file.
+
 2025-05-15  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
