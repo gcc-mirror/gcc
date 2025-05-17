@@ -1,3 +1,17 @@
+2025-05-16  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/type_traits (__is_invocable): Define in terms of
+	corresponding builtin if available.
+	(__is_nothrow_invocable): Likewise.
+	(is_invocable_v): Likewise.
+	(is_nothrow_invocable_v): Likewise.
+
+2025-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65909
+	* testsuite/lib/libstdc++.exp (check_v3_target_namedlocale):
+	Change name of formal argument to locale.
+
 2025-05-15  Luc Grosheintz  <luc.grosheintz@gmail.com>
 
 	* include/std/mdspan: Implement the mandate for extents as

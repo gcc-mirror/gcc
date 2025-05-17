@@ -1,3 +1,24 @@
+2025-05-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* cp-gimplify.cc (cp_fold): Do the conversion unconditionally, even for same-type cases.
+
+2025-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* typeck.cc (check_return_expr): Suppress conversions for NVRO
+	in coroutine ramp functions.
+
+2025-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* decl.cc (poplevel): Set BLOCK_OUTER_CURLY_BRACE_P on the
+	body block for functions with no subblocks.
+
+2025-05-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (importer_interface): Adjust flags.
+	(get_importer_interface): Rename flags.
+	(trees_out::core_bools): Clean up special casing.
+	(trees_out::write_function_def): Rename flag.
+
 2025-05-15  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/120161

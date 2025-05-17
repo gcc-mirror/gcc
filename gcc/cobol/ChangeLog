@@ -1,3 +1,75 @@
+2025-05-16  Robert Dubner  <rdubner@symas.com>
+
+	* cobol1.cc (cobol_langhook_handle_option): Eliminate OPT_M.
+	* except.cc (cbl_enabled_exception_t::dump): Formatting.
+	(symbol_declaratives_add): Remove.
+	(declarative_runtime_match): Change to no-blob processing.
+	* exceptg.h (declarative_runtime_match): Change declaration.
+	(symbol_declaratives_add): Remove declaration.
+	* gcobc: Dialect handling.
+	* genapi.cc (parser_compile_ecs): Formatting; add SHOW_IF_PARSE.
+	(parser_compile_dcls): Likewise.
+	(parser_statement_begin): Avoid unnecessary store_location_stuff() call.
+	(gg_get_depending_on_value): Streamline get_depending_on_value_from_odo().
+	(depending_on_value): Likewise.
+	(parser_display_field): Formatting.
+	(parser_display): Handle case ENV_NAME_e.
+	(parser_file_open): Avoid unnecessary store_location_stuff.
+	(parser_file_close): Likewise.
+	(parser_file_read): Likewise.
+	(parser_file_write): Likewise.
+	(parser_file_delete): Likewise.
+	(parser_file_rewrite): Likewise.
+	(parser_file_start): Likewise.
+	(parser_intrinsic_subst): Streamline get_depending_on_value_from_odo().
+	(parser_intrinsic_call_1): Likewise.
+	(parser_lsearch_start): Likewise.
+	(parser_bsearch_start): Likewise.
+	(parser_sort): Likewise.
+	(store_location_stuff): Avoid unnecessary assignments.
+	(parser_pop_exception): Formatting.
+	* genmath.cc (parser_add): Avoid var_decl_default_compute_error assignment
+	when doing fast_add().
+	(parser_subtract): Likewise.
+	* genutil.cc (REFER): Macro for analyzing code generation.
+	(get_integer_value): Use data_decl_node for integer value from FldLiteralN.
+	(get_data_offset): Streamline exception code processing.
+	(get_and_check_refstart_and_reflen): Likewise.
+	(get_depending_on_value_from_odo): Likewise.
+	(get_depending_on_value): Likewise.
+	(refer_is_clean): Formatting.
+	(refer_refmod_length): Streamline exception code processing.
+	(refer_fill_depends): Likewise.
+	(refer_offset): Likewise.
+	(refer_size_dest): Likewise.
+	(refer_size_source): Likewise.
+	* genutil.h (get_depending_on_value_from_odo): Likewise.
+	* lang-specs.h: Options definition.
+	* lang.opt: -M as in c.opt.
+	* lexio.h: Formatting.
+	* parse.y: Expand -dialect suggestions; SECTION SEGMENT messages.
+	* parse_ante.h (declarative_runtime_match): Dialect handling.
+	(labels_dump): Likewise.
+	(class current_tokens_t): Likewise.
+	(class prog_descr_t): Make program_index size_t to prevent padding bytes.
+	* scan.l: POP_FILE directive.
+	* scan_ante.h (class enter_leave_t): Better handle line number when
+	processing COPY statements.
+	* symbols.cc (symbol_elem_cmp): Eliminate SymFunction.
+	(symbols_dump): Likewise.
+	(symbol_label_section_exists): Likewise.
+	* symbols.h (NAME_MAX): Eliminate.  (Was part of SymFunction).
+	(dialect_is): Improve dialect handling.
+	(dialect_gcc): Likewise.
+	(dialect_ibm): Likewise.
+	(dialect_gnu): Likewise.
+	(enum symbol_type_t): Eliminate SymFunction.
+	* util.cc (symbol_type_str): Likewise.
+	(class unique_stack): Option -M handling.
+	(cobol_set_pp_option): Likewise.
+	(parse_file): Likewise.
+	* util.h (cobol_set_pp_option): Likewise.
+
 2025-05-10  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119337
