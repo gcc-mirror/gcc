@@ -5,6 +5,8 @@
 
 DEF_VX_BINARY_CASE_1(uint8_t, +, add, VX_BINARY_BODY_X16)
 DEF_VX_BINARY_CASE_1(uint8_t, -, sub, VX_BINARY_BODY_X16)
+DEF_VX_BINARY_REVERSE_CASE_1(uint8_t, -, rsub, VX_BINARY_REVERSE_BODY_X16);
 
 /* { dg-final { scan-assembler {vadd.vx} } } */
 /* { dg-final { scan-assembler {vsub.vx} } } */
+/* { dg-final { scan-assembler {vrsub.vx} } } */
