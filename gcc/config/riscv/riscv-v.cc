@@ -5498,6 +5498,55 @@ expand_vec_oct_sstrunc (rtx op_0, rtx op_1, machine_mode vec_mode,
   expand_vec_double_sstrunc (op_0, quad_rtx, quad_mode);
 }
 
+/* Expand the binary vx combine with the format like v2 = vop(vec_dup(x), v1).
+   Aka the first op comes from the vec_duplicate, and the second op is
+   the vector reg.  */
+
+void
+expand_vx_binary_vec_dup_vec (rtx op_0, rtx op_1, rtx op_2,
+			      rtx_code code, machine_mode mode)
+{
+  enum insn_code icode;
+
+  switch (code)
+    {
+    case PLUS:
+      icode = code_for_pred_scalar (code, mode);
+      break;
+    case MINUS:
+      icode = code_for_pred_sub_reverse_scalar (mode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  rtx ops[] = {op_0, op_1, op_2};
+  emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops);
+}
+
+/* Expand the binary vx combine with the format like v2 = vop(v1, vec_dup(x)).
+   Aka the second op comes from the vec_duplicate, and the first op is
+   the vector reg.  */
+
+void
+expand_vx_binary_vec_vec_dup (rtx op_0, rtx op_1, rtx op_2,
+			      rtx_code code, machine_mode mode)
+{
+  enum insn_code icode;
+
+  switch (code)
+    {
+    case MINUS:
+      icode = code_for_pred_scalar (code, mode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  rtx ops[] = {op_0, op_1, op_2};
+  emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops);
+}
+
 /* Vectorize popcount by the Wilkes-Wheeler-Gill algorithm that libgcc uses as
    well.  */
 void

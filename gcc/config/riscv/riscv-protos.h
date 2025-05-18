@@ -667,6 +667,8 @@ void expand_vec_oct_ustrunc (rtx, rtx, machine_mode, machine_mode,
 			     machine_mode);
 void expand_vec_oct_sstrunc (rtx, rtx, machine_mode, machine_mode,
 			     machine_mode);
+void expand_vx_binary_vec_dup_vec (rtx, rtx, rtx, rtx_code, machine_mode);
+void expand_vx_binary_vec_vec_dup (rtx, rtx, rtx, rtx_code, machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx), enum avl_type);
