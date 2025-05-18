@@ -1001,16 +1001,9 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
   if (seq)
     {
       // Mark the lhs of the new statements maybe for dce
-      gimple_stmt_iterator gsi1 = gsi_start (seq);
-      for (; !gsi_end_p (gsi1); gsi_next (&gsi1))
-	{
-	  gimple *stmt = gsi_stmt (gsi1);
-	  tree name = gimple_get_lhs (stmt);
-	  if (name && TREE_CODE (name) == SSA_NAME)
-	    bitmap_set_bit (exprs_maybe_dce, SSA_NAME_VERSION (name));
-	}
-    gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
-  }
+      mark_lhs_in_seq_for_dce (exprs_maybe_dce, seq);
+      gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
+    }
 
   /* If there was a statement to move, move it to right before
      the original conditional.  */

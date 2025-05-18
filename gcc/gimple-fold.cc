@@ -6020,7 +6020,7 @@ has_use_on_stmt (tree name, gimple *stmt)
 
 /* Add the lhs of each statement of SEQ to DCE_WORKLIST. */
 
-static void
+void
 mark_lhs_in_seq_for_dce (bitmap dce_worklist, gimple_seq seq)
 {
   if (!dce_worklist)
