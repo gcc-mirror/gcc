@@ -1,3 +1,45 @@
+2025-05-17  Yuao Ma  <c8ef@outlook.com>
+
+	* gcc.dg/builtins-1.c: Builtin codegen test.
+	* gcc.dg/c23-builtins-1.c: Builtin signature test.
+
+2025-05-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add more helper macros.
+	* gcc.target/riscv/sat/sat_arith_data.h: Add the test data
+	for scalar unsigned SAT_ADD.
+	* gcc.target/riscv/sat/sat_u_add-run-1-u16.c: Leverage the test
+	data from the shared header file.
+	* gcc.target/riscv/sat/sat_u_add-run-1-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-1-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-1-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-2-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-2-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-2-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-2-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-3-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-3-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-3-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-3-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-4-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-4-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-4-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-4-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-5-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-5-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-5-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-5-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-6-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-6-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-6-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-6-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u16-from-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u16-from-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u32-from-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u8-from-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u8-from-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u8-from-u64.c: Ditto
+
 2025-05-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
 
 	PR target/100165

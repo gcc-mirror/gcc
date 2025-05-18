@@ -1,3 +1,49 @@
+2025-05-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-vect-permconst.cc (vector_permconst:process_bb):
+	Use rtvec_alloc, not gen_rtvec since we don't want/need to initialize
+	the vector.
+
+2025-05-17  Yuao Ma  <c8ef@outlook.com>
+
+	* doc/extend.texi: Mention new builtins.
+
+2025-05-17  Yuao Ma  <c8ef@outlook.com>
+
+	* builtins.def (TRIG_TYPE): New.
+	(BUILT_IN_ACOSPI): New.
+	(BUILT_IN_ACOSPIF): New.
+	(BUILT_IN_ACOSPIL): New.
+	(BUILT_IN_ASINPI): New.
+	(BUILT_IN_ASINPIF): New.
+	(BUILT_IN_ASINPIL): New.
+	(BUILT_IN_ATANPI): New.
+	(BUILT_IN_ATANPIF): New.
+	(BUILT_IN_ATANPIL): New.
+	(BUILT_IN_COSPI): New.
+	(BUILT_IN_COSPIF): New.
+	(BUILT_IN_COSPIL): New.
+	(BUILT_IN_SINPI): New.
+	(BUILT_IN_SINPIF): New.
+	(BUILT_IN_SINPIL): New.
+	(BUILT_IN_TANPI): New.
+	(BUILT_IN_TANPIF): New.
+	(BUILT_IN_TANPIL): New.
+	(TRIG2_TYPE): New.
+	(BUILT_IN_ATAN2PI): New.
+	(BUILT_IN_ATAN2PIF): New.
+	(BUILT_IN_ATAN2PIL): New.
+
+2025-05-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (synthesize_ior_xor): Avoid writing
+	operands[0] more than once, use new pseudos instead.
+
+2025-05-17  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_gpr_save_operation_p): Remove
+	break and fixbug for elt index.
+
 2025-05-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
 
 	PR target/100165
