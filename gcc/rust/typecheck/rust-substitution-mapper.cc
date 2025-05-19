@@ -374,7 +374,7 @@ SubstMapperInternal::visit (TyTy::DynamicObjectType &type)
 void
 SubstMapperInternal::visit (TyTy::OpaqueType &type)
 {
-  resolved = type.handle_substitions (mappings);
+  resolved = type.clone ();
 }
 
 // SubstMapperFromExisting

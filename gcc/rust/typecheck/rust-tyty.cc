@@ -548,17 +548,14 @@ BaseType::destructure () const
 	{
 	  x = p->get ();
 	}
-      // else if (auto p = x->try_as<const OpaqueType> ())
-      //   {
-      //     auto pr = p->resolve ();
+      else if (auto p = x->try_as<const OpaqueType> ())
+	{
+	  auto pr = p->resolve ();
+	  if (pr == x)
+	    return pr;
 
-      //     rust_debug ("XXXXXX")
-
-      //     if (pr == x)
-      //       return pr;
-
-      //     x = pr;
-      //   }
+	  x = pr;
+	}
       else
 	{
 	  return x;
@@ -3643,28 +3640,7 @@ BaseType *
 OpaqueType::resolve () const
 {
   TyVar var (get_ty_ref ());
-  BaseType *r = var.get_tyty ();
-
-  while (r->get_kind () == TypeKind::OPAQUE)
-    {
-      OpaqueType *rr = static_cast<OpaqueType *> (r);
-      if (!rr->can_resolve ())
-	break;
-
-      TyVar v (rr->get_ty_ref ());
-      BaseType *n = v.get_tyty ();
-
-      // fix infinite loop
-      if (r == n)
-	break;
-
-      r = n;
-    }
-
-  if (r->get_kind () == TypeKind::OPAQUE && (r->get_ref () == r->get_ty_ref ()))
-    return TyVar (r->get_ty_ref ()).get_tyty ();
-
-  return r;
+  return var.get_tyty ();
 }
 
 bool
@@ -3674,39 +3650,7 @@ OpaqueType::is_equal (const BaseType &other) const
   if (can_resolve () != other2.can_resolve ())
     return false;
 
-  if (can_resolve ())
-    return resolve ()->can_eq (other2.resolve (), false);
-
   return bounds_compatible (other, UNDEF_LOCATION, false);
-}
-
-OpaqueType *
-OpaqueType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
-{
-  // SubstitutionArg arg = SubstitutionArg::error ();
-  // bool ok = subst_mappings.get_argument_for_symbol (this, &arg);
-  // if (!ok || arg.is_error ())
-  //   return this;
-
-  // OpaqueType *p = static_cast<OpaqueType *> (clone ());
-  // subst_mappings.on_param_subst (*p, arg);
-
-  // // there are two cases one where we substitute directly to a new PARAM and
-  // // otherwise
-  // if (arg.get_tyty ()->get_kind () == TyTy::TypeKind::PARAM)
-  //   {
-  //     p->set_ty_ref (arg.get_tyty ()->get_ref ());
-  //     return p;
-  //   }
-
-  // // this is the new subst that this needs to pass
-  // p->set_ref (mappings.get_next_hir_id ());
-  // p->set_ty_ref (arg.get_tyty ()->get_ref ());
-
-  // return p;
-
-  rust_unreachable ();
-  return nullptr;
 }
 
 // StrType

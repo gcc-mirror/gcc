@@ -755,7 +755,9 @@ TyTyResolveCompile::visit (const TyTy::DynamicObjectType &type)
 void
 TyTyResolveCompile::visit (const TyTy::OpaqueType &type)
 {
-  translated = error_mark_node;
+  rust_assert (type.can_resolve ());
+  auto underlying = type.resolve ();
+  translated = TyTyResolveCompile::compile (ctx, underlying, trait_object_mode);
 }
 
 tree

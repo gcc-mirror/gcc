@@ -251,7 +251,7 @@ TypeCheckCallExpr::visit (FnType &type)
     }
 
   type.monomorphize ();
-  resolved = type.get_return_type ()->clone ();
+  resolved = type.get_return_type ()->monomorphized_clone ();
 }
 
 void
