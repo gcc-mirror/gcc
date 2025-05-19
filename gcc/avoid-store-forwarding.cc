@@ -176,20 +176,28 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
   /* Memory sizes should be constants at this stage.  */
   HOST_WIDE_INT load_size = MEM_SIZE (load_mem).to_constant ();
 
-  /* If the stores cover all the bytes of the load without overlap then we can
-     eliminate the load entirely and use the computed value instead.  */
+  /* If the stores cover all the bytes of the load, then we can eliminate
+     the load entirely and use the computed value instead.
+     We can also eliminate stores on addresses that are overwritten
+     by later stores.  */
 
   sbitmap forwarded_bytes = sbitmap_alloc (load_size);
   bitmap_clear (forwarded_bytes);
 
   unsigned int i;
   store_fwd_info* it;
+  auto_vec<store_fwd_info> redundant_stores;
+  auto_vec<int> store_ind_to_remove;
   FOR_EACH_VEC_ELT (stores, i, it)
     {
       HOST_WIDE_INT store_size = MEM_SIZE (it->store_mem).to_constant ();
-      if (bitmap_bit_in_range_p (forwarded_bytes, it->offset,
-				 it->offset + store_size - 1))
-	break;
+      if (bitmap_all_bits_in_range_p (forwarded_bytes, it->offset,
+				      it->offset + store_size - 1))
+	{
+	  redundant_stores.safe_push (*it);
+	  store_ind_to_remove.safe_push (i);
+	  continue;
+	}
       bitmap_set_range (forwarded_bytes, it->offset, store_size);
     }
 
@@ -215,6 +223,15 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
 	fprintf (dump_file, "(Load elimination candidate)\n");
     }
 
+  /* Remove redundant stores from the vector.  Although this is quadratic,
+     there doesn't seem to be much point optimizing it.  The number of
+     redundant stores is expected to be low and the length of the list is
+     limited by a --param.  The dependence checking that we did earlier is
+     also quadratic in the size of this list.  */
+  store_ind_to_remove.reverse ();
+  for (int i : store_ind_to_remove)
+    stores.ordered_remove (i);
+
   rtx load = single_set (load_insn);
   rtx dest;
 
@@ -231,18 +248,16 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
     {
       it->mov_reg = gen_reg_rtx (GET_MODE (it->store_mem));
       rtx_insn *insns = NULL;
+      const bool has_zero_offset = it->offset == 0;
 
       /* If we're eliminating the load then find the store with zero offset
 	 and use it as the base register to avoid a bit insert if possible.  */
-      if (load_elim && it->offset == 0)
+      if (load_elim && has_zero_offset)
 	{
 	  start_sequence ();
 
-	  machine_mode dest_mode = GET_MODE (dest);
-	  rtx base_reg = it->mov_reg;
-	  if (known_gt (GET_MODE_BITSIZE (dest_mode),
-			GET_MODE_BITSIZE (GET_MODE (it->mov_reg))))
-	    base_reg = gen_rtx_ZERO_EXTEND (dest_mode, it->mov_reg);
+	  rtx base_reg = lowpart_subreg (GET_MODE (dest), it->mov_reg,
+					 GET_MODE (it->mov_reg));
 
 	  if (base_reg)
 	    {
@@ -380,6 +395,16 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
 	      print_rtl_single (dump_file, insn);
 	    }
 	}
+
+      if (redundant_stores.length () > 0)
+	{
+	  fprintf (dump_file, "\nRedundant stores that have been removed:\n");
+	  FOR_EACH_VEC_ELT (redundant_stores, i, it)
+	    {
+	      fprintf (dump_file, "  ");
+	      print_rtl_single (dump_file, it->store_insn);
+	    }
+	}
     }
 
   stats_sf_avoided++;
@@ -398,6 +423,10 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
       emit_insn_before (it->save_store_value_insn, it->store_insn);
       delete_insn (it->store_insn);
     }
+
+  /* Delete redundant stores.  */
+  FOR_EACH_VEC_ELT (redundant_stores, i, it)
+    delete_insn (it->store_insn);
 
   df_insn_rescan (load_insn);
 
