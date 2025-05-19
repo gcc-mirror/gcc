@@ -69,7 +69,6 @@ UnifyRules::commit (TyTy::BaseType *base, TyTy::BaseType *other,
 		    TyTy::BaseType *resolved)
 {
   TypeCheckContext &context = *TypeCheckContext::get ();
-  Analysis::Mappings &mappings = Analysis::Mappings::get ();
 
   TyTy::BaseType *b = base->destructure ();
   TyTy::BaseType *o = other->destructure ();
@@ -102,13 +101,8 @@ UnifyRules::commit (TyTy::BaseType *base, TyTy::BaseType *other,
 	    continue;
 
 	  // if any of the types are inference variables lets fix them
-	  if (ref_tyty->get_kind () == TyTy::TypeKind::INFER)
-	    {
-	      auto node = Analysis::NodeMapping (mappings.get_current_crate (),
-						 UNKNOWN_NODEID, ref,
-						 UNKNOWN_LOCAL_DEFID);
-	      context.insert_type (node, resolved->clone ());
-	    }
+	  if (ref_tyty->is<TyTy::InferType> ())
+	    context.insert_implicit_type (ref, resolved);
 	}
     }
 }
@@ -341,7 +335,7 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
 			      || r->get_infer_kind ()
 				   == TyTy::InferType::InferTypeKind::GENERAL;
 	      if (is_valid)
-		return rtype->clone ();
+		return rtype;
 	    }
 	    break;
 
@@ -351,7 +345,7 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
 		  || r->get_infer_kind ()
 		       == TyTy::InferType::InferTypeKind::GENERAL;
 	      if (is_valid)
-		return rtype->clone ();
+		return rtype;
 	    }
 	    break;
 	  }
@@ -369,7 +363,7 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
 	if (is_valid)
 	  {
 	    ltype->apply_primitive_type_hint (*rtype);
-	    return rtype->clone ();
+	    return rtype;
 	  }
       }
       break;
@@ -382,7 +376,7 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
 	if (is_valid)
 	  {
 	    ltype->apply_primitive_type_hint (*rtype);
-	    return rtype->clone ();
+	    return rtype;
 	  }
       }
       break;
