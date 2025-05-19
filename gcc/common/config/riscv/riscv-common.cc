@@ -215,7 +215,7 @@ static const std::unordered_map<std::string, riscv_ext_info_t> riscv_ext_infos
 };
 
 static const riscv_ext_info_t &
-get_riscv_ext_info (const std::string &ext)
+get_riscv_ext_info (const char * ext)
 {
   auto itr = riscv_ext_infos.find (ext);
   if (itr == riscv_ext_infos.end ())
@@ -1112,7 +1112,7 @@ riscv_subset_list::check_implied_ext ()
   for (itr = m_head; itr != NULL; itr = itr->next)
     {
       auto &ext = *itr;
-      auto &ext_info = get_riscv_ext_info (ext.name);
+      auto &ext_info = get_riscv_ext_info (ext.name.c_str ());
       for (auto &implied_ext : ext_info.implied_exts ())
 	{
 	  if (!implied_ext.match (this))
