@@ -468,6 +468,7 @@ get_tinfo_decl_direct (tree type, tree name, int pseudo_ix)
       DECL_IGNORED_P (d) = 1;
       TREE_READONLY (d) = 1;
       TREE_STATIC (d) = 1;
+      TREE_ADDRESSABLE (d) = 1;
       /* Tell equal_address_to that different tinfo decls never
 	 overlap.  */
       if (vec_safe_is_empty (unemitted_tinfo_decls))
