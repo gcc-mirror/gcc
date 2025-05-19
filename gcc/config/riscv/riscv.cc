@@ -14429,7 +14429,7 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
   /* Synthesis is better than loading the constant.  */
   ival = INTVAL (operands[2]);
   rtx input = operands[1];
-  rtx output;
+  rtx output = NULL_RTX;
 
   /* Emit the [x]ori insn that sets the low 11 bits into
      the proper state.  */
@@ -14458,6 +14458,8 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
       input = output;
       ival &= ~tmpval;
     }
+
+  gcc_assert (output);
   emit_move_insn (operands[0], output);
   return true;
 }
