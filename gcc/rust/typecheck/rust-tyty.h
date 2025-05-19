@@ -441,8 +441,6 @@ public:
   std::string get_name () const override final;
 
   bool is_equal (const BaseType &other) const override;
-
-  OpaqueType *handle_substitions (SubstitutionArgumentMappings &mappings);
 };
 
 class StructFieldType

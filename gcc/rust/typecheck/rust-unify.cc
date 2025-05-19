@@ -1788,59 +1788,51 @@ UnifyRules::expect_closure (TyTy::ClosureType *ltype, TyTy::BaseType *rtype)
 TyTy::BaseType *
 UnifyRules::expect_opaque (TyTy::OpaqueType *ltype, TyTy::BaseType *rtype)
 {
-  switch (rtype->get_kind ())
+  if (rtype->is<TyTy::OpaqueType> ())
     {
-      case TyTy::INFER: {
-	TyTy::InferType *r = static_cast<TyTy::InferType *> (rtype);
-	bool is_valid
-	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
-	if (is_valid)
-	  return ltype->clone ();
-      }
-      break;
+      TyTy::OpaqueType *ro = rtype->as<TyTy::OpaqueType> ();
+      if (!ltype->is_equal (*ro))
+	return new TyTy::ErrorType (0);
 
-      case TyTy::OPAQUE: {
-	auto &type = *static_cast<TyTy::OpaqueType *> (rtype);
-	if (ltype->num_specified_bounds () != type.num_specified_bounds ())
-	  {
+      if (ltype->can_resolve () && ro->can_resolve ())
+	{
+	  auto lr = ltype->resolve ();
+	  auto rr = ro->resolve ();
+
+	  auto res = UnifyRules::Resolve (TyTy::TyWithLocation (lr),
+					  TyTy::TyWithLocation (rr), locus,
+					  commit_flag, false /* emit_error */,
+					  infer_flag, commits, infers);
+	  if (res->get_kind () == TyTy::TypeKind::ERROR)
 	    return new TyTy::ErrorType (0);
-	  }
-
-	if (!ltype->bounds_compatible (type, locus, true))
-	  {
-	    return new TyTy::ErrorType (0);
-	  }
-
-	return ltype->clone ();
-      }
-      break;
-
-    case TyTy::CLOSURE:
-    case TyTy::SLICE:
-    case TyTy::PARAM:
-    case TyTy::POINTER:
-    case TyTy::STR:
-    case TyTy::ADT:
-    case TyTy::REF:
-    case TyTy::ARRAY:
-    case TyTy::FNDEF:
-    case TyTy::FNPTR:
-    case TyTy::TUPLE:
-    case TyTy::BOOL:
-    case TyTy::CHAR:
-    case TyTy::INT:
-    case TyTy::UINT:
-    case TyTy::FLOAT:
-    case TyTy::USIZE:
-    case TyTy::ISIZE:
-    case TyTy::NEVER:
-    case TyTy::PLACEHOLDER:
-    case TyTy::PROJECTION:
-    case TyTy::DYNAMIC:
-    case TyTy::ERROR:
-      return new TyTy::ErrorType (0);
+	}
+      else if (ltype->can_resolve ())
+	{
+	  auto lr = ltype->resolve ();
+	  ro->set_ty_ref (lr->get_ref ());
+	}
+      else if (ro->can_resolve ())
+	{
+	  auto rr = ro->resolve ();
+	  ltype->set_ty_ref (rr->get_ref ());
+	}
     }
-  return new TyTy::ErrorType (0);
+  else if (ltype->can_resolve ())
+    {
+      auto underly = ltype->resolve ();
+      auto res = UnifyRules::Resolve (TyTy::TyWithLocation (underly),
+				      TyTy::TyWithLocation (rtype), locus,
+				      commit_flag, false /* emit_error */,
+				      infer_flag, commits, infers);
+      if (res->get_kind () == TyTy::TypeKind::ERROR)
+	return new TyTy::ErrorType (0);
+    }
+  else
+    {
+      ltype->set_ty_ref (rtype->get_ref ());
+    }
+
+  return ltype;
 }
 
 } // namespace Resolver
