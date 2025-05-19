@@ -3,9 +3,11 @@
 
 #include "vx_binary.h"
 
-DEF_VX_BINARY_CASE_1(int16_t, +, add, VX_BINARY_BODY_X8)
-DEF_VX_BINARY_CASE_1(int16_t, -, sub, VX_BINARY_BODY_X8)
-DEF_VX_BINARY_REVERSE_CASE_1(int16_t, -, rsub, VX_BINARY_REVERSE_BODY_X8);
+#define T int16_t
+
+DEF_VX_BINARY_CASE_1_WRAP(T, +, add, VX_BINARY_BODY_X8)
+DEF_VX_BINARY_CASE_1_WRAP(T, -, sub, VX_BINARY_BODY_X8)
+DEF_VX_BINARY_REVERSE_CASE_1_WRAP(T, -, rsub, VX_BINARY_REVERSE_BODY_X8);
 
 /* { dg-final { scan-assembler-not {vadd.vx} } } */
 /* { dg-final { scan-assembler {vsub.vx} } } */
