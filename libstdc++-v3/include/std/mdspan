@@ -163,10 +163,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _IndexType, size_t... _Extents>
     class extents
     {
-      static_assert(is_integral_v<_IndexType>, "_IndexType must be integral.");
+      static_assert(__is_standard_integer<_IndexType>::value,
+		    "IndexType must be a signed or unsigned integer type");
       static_assert(
 	  (__mdspan::__valid_static_extent<_Extents, _IndexType> && ...),
-	  "Extents must either be dynamic or representable as _IndexType");
+	  "Extents must either be dynamic or representable as IndexType");
 
     public:
       using index_type = _IndexType;

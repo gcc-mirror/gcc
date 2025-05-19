@@ -458,24 +458,10 @@ struct cbl_enabled_exception_t {
 struct cbl_declarative_t {
   enum { files_max = 16 };
   size_t section; // implies program
-  uint32_t global;  // See the note below
+  bool global;
   ec_type_t type;
   uint32_t nfile, files[files_max];
   cbl_file_mode_t mode;
-
-/*  The ::global member originally was "bool global".  A bool, however, occupies
-    only one byte of storage.  The structure, in turn, is constructed on
-    four-byte boundaries for members, so there were three padding bytes between
-    the single byte of global and the ::type member.
-
-    When used to create a "blob", where the structure was treated as a stream
-    of bytes that were used to create a constructor for an array of bytes,
-    valgrind noticed that those three padding bytes were not initialized, and
-    generated the appropriate error message.  This made it hard to find other
-    problems.
-
-    Changing the declaration from "bool" to "uint32_t" seems to have eliminated
-    the valgrind error without affecting overall performance.  */
 
   cbl_declarative_t( cbl_file_mode_t mode = file_mode_none_e )
     : section(0), global(false)
@@ -524,7 +510,6 @@ struct cbl_declarative_t {
   constexpr cbl_declarative_t& operator=(const cbl_declarative_t&) = default;
 
   std::vector<uint64_t> encode() const;
-  void decode( const std::vector<uint64_t>& encoded );
 
   /*
    * Sort file names before file modes, and file modes before non-IO.

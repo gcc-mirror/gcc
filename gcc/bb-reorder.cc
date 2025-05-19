@@ -2287,8 +2287,7 @@ fix_crossing_unconditional_branches (void)
 	      start_sequence ();
 	      emit_move_insn (new_reg, label_addr);
 	      emit_indirect_jump (new_reg);
-	      indirect_jump_sequence = get_insns ();
-	      end_sequence ();
+	      indirect_jump_sequence = end_sequence ();
 
 	      /* Make sure every instruction in the new jump sequence has
 		 its basic block set to be cur_bb.  */

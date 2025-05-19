@@ -27,11 +27,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-metadata.h"
 #include "diagnostic-format.h"
 #include "diagnostic-format-html.h"
+#include "diagnostic-format-text.h"
 #include "diagnostic-output-file.h"
 #include "diagnostic-buffer.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "pretty-print-format-impl.h"
+#include "pretty-print-urlifier.h"
+#include "edit-context.h"
 #include "intl.h"
 
 namespace xml {
@@ -280,8 +283,8 @@ public:
   friend class diagnostic_html_format_buffer;
 
   html_builder (diagnostic_context &context,
-		 pretty_printer &pp,
-		 const line_maps *line_maps);
+		pretty_printer &pp,
+		const line_maps *line_maps);
 
   void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind,
@@ -303,10 +306,26 @@ public:
     m_printer = &pp;
   }
 
+  std::unique_ptr<xml::element>
+  make_element_for_metadata (const diagnostic_metadata &metadata);
+
+  std::unique_ptr<xml::element>
+  make_element_for_source (const diagnostic_info &diagnostic);
+
+  std::unique_ptr<xml::element>
+  make_element_for_path (const diagnostic_path &path);
+
+  std::unique_ptr<xml::element>
+  make_element_for_patch (const diagnostic_info &diagnostic);
+
 private:
   std::unique_ptr<xml::element>
   make_element_for_diagnostic (const diagnostic_info &diagnostic,
 			       diagnostic_t orig_diag_kind);
+
+  std::unique_ptr<xml::element>
+  make_metadata_element (label_text label,
+			 label_text url);
 
   diagnostic_context &m_context;
   pretty_printer *m_printer;
@@ -560,27 +579,10 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 
   if (diagnostic.metadata)
     {
-      int cwe = diagnostic.metadata->get_cwe ();
-      if (cwe)
-	{
-	  diag_element->add_text (label_text::borrow (" "));
-	  auto cwe_span = make_span (label_text::borrow ("gcc-cwe-metadata"));
-	  cwe_span->add_text (label_text::borrow ("["));
-	  {
-	    auto anchor = std::make_unique<xml::element> ("a", true);
-	    anchor->set_attr ("href", label_text::take (get_cwe_url (cwe)));
-	    pretty_printer pp;
-	    pp_printf (&pp, "CWE-%i", cwe);
-	    anchor->add_text
-	      (label_text::take (xstrdup (pp_formatted_text (&pp))));
-	    cwe_span->add_child (std::move (anchor));
-	  }
-	  cwe_span->add_text (label_text::borrow ("]"));
-	  diag_element->add_child (std::move (cwe_span));
-	}
+      diag_element->add_text (label_text::borrow (" "));
+      diag_element->add_child
+	(make_element_for_metadata (*diagnostic.metadata));
     }
-
-  // TODO: show any rules
 
   label_text option_text = label_text::take
     (m_context.make_option_name (diagnostic.option_id,
@@ -608,20 +610,122 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
       diag_element->add_child (std::move (option_span));
     }
 
-  {
-    auto pre = std::make_unique<xml::element> ("pre", true);
-    pre->set_attr ("class", label_text::borrow ("gcc-annotated-source"));
-    // TODO: ideally we'd like to capture elements within the following:
-    diagnostic_show_locus (&m_context, m_context.m_source_printing,
-			   diagnostic.richloc, diagnostic.kind,
-			   m_printer);
-    pre->add_text
-      (label_text::take (xstrdup (pp_formatted_text (m_printer))));
-    pp_clear_output_area (m_printer);
-    diag_element->add_child (std::move (pre));
-  }
+  /* Source (and fix-it hints).  */
+  if (auto source_element = make_element_for_source (diagnostic))
+    diag_element->add_child (std::move (source_element));
+
+  /* Execution path.  */
+  if (auto path = diagnostic.richloc->get_path ())
+    if (auto path_element = make_element_for_path (*path))
+      diag_element->add_child (std::move (path_element));
+
+  if (auto patch_element = make_element_for_patch (diagnostic))
+    diag_element->add_child (std::move (patch_element));
 
   return diag_element;
+}
+
+std::unique_ptr<xml::element>
+html_builder::make_element_for_source (const diagnostic_info &diagnostic)
+{
+  // TODO: ideally we'd like to capture elements within the following:
+  m_context.m_last_location = UNKNOWN_LOCATION;
+  pp_clear_output_area (m_printer);
+  diagnostic_show_locus (&m_context,
+			 m_context.m_source_printing,
+			 diagnostic.richloc, diagnostic.kind,
+			 m_printer);
+  auto text = label_text::take (xstrdup (pp_formatted_text (m_printer)));
+  pp_clear_output_area (m_printer);
+
+  if (strlen (text.get ()) == 0)
+    return nullptr;
+
+  auto pre = std::make_unique<xml::element> ("pre", true);
+  pre->set_attr ("class", label_text::borrow ("gcc-annotated-source"));
+  pre->add_text (std::move (text));
+  return pre;
+}
+
+std::unique_ptr<xml::element>
+html_builder::make_element_for_path (const diagnostic_path &path)
+{
+  m_context.m_last_location = UNKNOWN_LOCATION;
+  diagnostic_text_output_format text_format (m_context);
+  pp_show_color (text_format.get_printer ()) = false;
+  pp_buffer (text_format.get_printer ())->m_flush_p = false;
+  // TODO: ideally we'd like to capture elements within the following:
+  text_format.print_path (path);
+  auto text = label_text::take
+    (xstrdup (pp_formatted_text (text_format.get_printer ())));
+
+  if (strlen (text.get ()) == 0)
+    return nullptr;
+
+  auto pre = std::make_unique<xml::element> ("pre", true);
+  pre->set_attr ("class", label_text::borrow ("gcc-execution-path"));
+  pre->add_text (std::move (text));
+  return pre;
+}
+
+std::unique_ptr<xml::element>
+html_builder::make_element_for_patch (const diagnostic_info &diagnostic)
+{
+  edit_context ec (m_context.get_file_cache ());
+  ec.add_fixits (diagnostic.richloc);
+  if (char *diff = ec.generate_diff (true))
+    if (strlen (diff) > 0)
+      {
+	auto element = std::make_unique<xml::element> ("pre", true);
+	element->set_attr ("class", label_text::borrow ("gcc-generated-patch"));
+	element->add_text (label_text::take (diff));
+	return element;
+      }
+  return nullptr;
+}
+
+std::unique_ptr<xml::element>
+html_builder::make_metadata_element (label_text label,
+				     label_text url)
+{
+  auto item = make_span (label_text::borrow ("gcc-metadata-item"));
+  item->add_text (label_text::borrow ("["));
+  {
+    auto anchor = std::make_unique<xml::element> ("a", true);
+    anchor->set_attr ("href", std::move (url));
+    anchor->add_child (std::make_unique<xml::text> (std::move (label)));
+    item->add_child (std::move (anchor));
+  }
+  item->add_text (label_text::borrow ("]"));
+  return item;
+}
+
+std::unique_ptr<xml::element>
+html_builder::make_element_for_metadata (const diagnostic_metadata &metadata)
+{
+  auto span_metadata = make_span (label_text::borrow ("gcc-metadata"));
+
+  int cwe = metadata.get_cwe ();
+  if (cwe)
+    {
+      pretty_printer pp;
+      pp_printf (&pp, "CWE-%i", cwe);
+      label_text label = label_text::take (xstrdup (pp_formatted_text (&pp)));
+      label_text url = label_text::take (get_cwe_url (cwe));
+      span_metadata->add_child
+	(make_metadata_element (std::move (label), std::move (url)));
+    }
+
+  for (unsigned idx = 0; idx < metadata.get_num_rules (); ++idx)
+    {
+      auto &rule = metadata.get_rule (idx);
+      label_text label = label_text::take (rule.make_description ());
+      label_text url = label_text::take (rule.make_url ());
+      span_metadata->add_child
+	(make_metadata_element (std::move (label), std::move (url)));
+    }
+
+  return span_metadata;
 }
 
 /* Implementation of diagnostic_context::m_diagrams.m_emission_cb
@@ -733,6 +837,8 @@ public:
   {
     return m_builder.get_document ();
   }
+
+  html_builder &get_builder () { return m_builder; }
 
 protected:
   html_output_format (diagnostic_context &context,
@@ -852,6 +958,11 @@ public:
     return m_format->get_document ();
   }
 
+  html_builder &get_builder () const
+  {
+    return m_format->get_builder ();
+  }
+
 private:
   class html_buffered_output_format : public html_output_format
   {
@@ -880,7 +991,7 @@ test_simple_log ()
   test_html_diagnostic_context dc;
 
   rich_location richloc (line_table, UNKNOWN_LOCATION);
-  dc.report (DK_ERROR, richloc, nullptr, 0, "this is a test: %i", 42);
+  dc.report (DK_ERROR, richloc, nullptr, 0, "this is a test: %qs", "foo");
 
   const xml::document &doc  = dc.get_document ();
 
@@ -899,12 +1010,60 @@ test_simple_log ()
       "  <body>\n"
       "    <div class=\"gcc-diagnostic-list\">\n"
       "      <div class=\"gcc-diagnostic\">\n"
-      "        <span class=\"gcc-message\">this is a test: 42</span>\n"
-      "        <pre class=\"gcc-annotated-source\"></pre>\n"
+      "        <span class=\"gcc-message\">this is a test: `<span class=\"gcc-quoted-text\">foo</span>&apos;</span>\n"
       "      </div>\n"
       "    </div>\n"
       "  </body>\n"
       "</html>"));
+}
+
+static void
+test_metadata ()
+{
+  test_html_diagnostic_context dc;
+  html_builder &b = dc.get_builder ();
+
+  {
+    diagnostic_metadata metadata;
+    metadata.add_cwe (415);
+    auto element = b.make_element_for_metadata (metadata);
+    pretty_printer pp;
+    element->write_as_xml (&pp, 0, true);
+    ASSERT_STREQ
+      (pp_formatted_text (&pp),
+       "\n"
+       "<span class=\"gcc-metadata\">"
+       "<span class=\"gcc-metadata-item\">"
+       "["
+       "<a href=\"https://cwe.mitre.org/data/definitions/415.html\">"
+       "CWE-415"
+       "</a>"
+       "]"
+       "</span>"
+       "</span>");
+  }
+
+  {
+    diagnostic_metadata metadata;
+    diagnostic_metadata::precanned_rule rule ("MISC-42",
+					      "http://example.com");
+    metadata.add_rule (rule);
+    auto element = b.make_element_for_metadata (metadata);
+    pretty_printer pp;
+    element->write_as_xml (&pp, 0, true);
+    ASSERT_STREQ
+      (pp_formatted_text (&pp),
+       "\n"
+       "<span class=\"gcc-metadata\">"
+       "<span class=\"gcc-metadata-item\">"
+       "["
+       "<a href=\"http://example.com\">"
+       "MISC-42"
+       "</a>"
+       "]"
+       "</span>"
+       "</span>");
+  }
 }
 
 /* Run all of the selftests within this file.  */
@@ -912,7 +1071,9 @@ test_simple_log ()
 void
 diagnostic_format_html_cc_tests ()
 {
+  auto_fix_quotes fix_quotes;
   test_simple_log ();
+  test_metadata ();
 }
 
 } // namespace selftest

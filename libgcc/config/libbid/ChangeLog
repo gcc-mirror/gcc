@@ -1,3 +1,9 @@
+2025-05-15  liuhongt  <hongtao.liu@intel.com>
+
+	* bid128_string.c (MIN_DIGITS): New macro.
+	(bid128_from_string): Bug fix. Conversion from very long input
+	string to decimal.
+
 2024-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR libgcc/117537

@@ -3867,22 +3867,6 @@ verify_gimple_assign_unary (gassign *stmt)
 
       return false;
 
-    case NEGATE_EXPR:
-    case ABS_EXPR:
-    case BIT_NOT_EXPR:
-    case PAREN_EXPR:
-    case CONJ_EXPR:
-      /* Disallow pointer and offset types for many of the unary gimple. */
-      if (POINTER_TYPE_P (lhs_type)
-	  || TREE_CODE (lhs_type) == OFFSET_TYPE)
-	{
-	  error ("invalid types for %qs", code_name);
-	  debug_generic_expr (lhs_type);
-	  debug_generic_expr (rhs1_type);
-	  return true;
-	}
-      break;
-
     case ABSU_EXPR:
       if (!ANY_INTEGRAL_TYPE_P (lhs_type)
 	  || !TYPE_UNSIGNED (lhs_type)
@@ -3907,6 +3891,27 @@ verify_gimple_assign_unary (gassign *stmt)
 	  return true;
 	}
       return false;
+
+    case CONJ_EXPR:
+      if (TREE_CODE (lhs_type) != COMPLEX_TYPE)
+	{
+diagnose_unary_lhs:
+	  error ("invalid type for %qs", code_name);
+	  debug_generic_expr (lhs_type);
+	  return true;
+	}
+      break;
+
+    case NEGATE_EXPR:
+    case ABS_EXPR:
+    case BIT_NOT_EXPR:
+      if (POINTER_TYPE_P (lhs_type) || TREE_CODE (lhs_type) == OFFSET_TYPE)
+	goto diagnose_unary_lhs;
+      /* FALLTHRU */
+    case PAREN_EXPR:
+      if (AGGREGATE_TYPE_P (lhs_type))
+	goto diagnose_unary_lhs;
+      break;
 
     default:
       gcc_unreachable ();

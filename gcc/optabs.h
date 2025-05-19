@@ -244,11 +244,10 @@ extern void emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
 extern void emit_libcall_block (rtx_insn *, rtx, rtx, rtx);
 
 /* The various uses that a comparison can have; used by can_compare_p:
-   jumps, conditional moves, store flag operations.  */
+   jumps, store flag operations.  */
 enum can_compare_purpose
 {
   ccp_jump,
-  ccp_cmov,
   ccp_store_flag
 };
 
@@ -334,6 +333,10 @@ extern bool have_insn_for (enum rtx_code, machine_mode);
 
 /* Generate a conditional trap instruction.  */
 extern rtx_insn *gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
+
+/* Check whether the vec_perm can be interpreted as an and operation.  */
+extern rtx vec_perm_and_mask (machine_mode mode, const vec_perm_indices &sel,
+			      bool zero_op0_p);
 
 /* Generate code for VEC_PERM_EXPR.  */
 extern rtx expand_vec_perm_var (machine_mode, rtx, rtx, rtx, rtx);

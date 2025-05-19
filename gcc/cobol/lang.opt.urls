@@ -10,6 +10,9 @@ UrlSuffix(gcc/Preprocessor-Options.html#index-D-1)
 I
 UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Options.html#index-I)
 
+M
+UrlSuffix(gcc/Preprocessor-Options.html#index-M) LangUrlSuffix_D(gdc/Code-Generation.html#index-M)
+
 ffixed-form
 LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ffixed-form)
 

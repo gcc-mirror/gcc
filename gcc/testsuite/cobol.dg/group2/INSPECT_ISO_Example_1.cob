@@ -25,7 +25,7 @@
         Move ' EFABDBCGABEFGG      0301010005TUXYXVWRXYZZPZ' to row(1).
         Move ' BABABC              0200000101SXYXYZ'         to row(3).
         Move ' BBBC                0001000200SSVW'           to row(5).
-`
+
         compute rowlim = 2*rows - 1
 
         Display '  INPUT                C0 C1 C2 C3 C4 OUTPUT'

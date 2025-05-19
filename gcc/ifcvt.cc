@@ -877,8 +877,7 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, bool reversep,
 
       if (recog_memoized (insn) >= 0)
 	{
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  emit_insn (seq);
 
 	  if_info->cond_earliest = if_info->jump;
@@ -975,8 +974,7 @@ noce_emit_move_insn (rtx x, rtx y)
       insn = (OBJECT_P (y) || CONSTANT_P (y) || GET_CODE (y) == SUBREG)
 	     ? emit_move_insn (x, y)
 	     : emit_insn (gen_rtx_SET (x, y));
-      seq = get_insns ();
-      end_sequence ();
+      seq = end_sequence ();
 
       if (recog_memoized (insn) <= 0)
 	{
@@ -1748,8 +1746,7 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 
       if (recog_memoized (insn) >= 0)
 	{
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  emit_insn (seq);
 
 	  return x;

@@ -1,3 +1,8 @@
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.cc (c_common_post_options): Set flag_coroutines.
+	(set_std_cxx20, set_std_cxx23, set_std_cxx26): Not here.
+
 2025-05-03  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.cc (c_common_post_options): Let plain -Wabi warn

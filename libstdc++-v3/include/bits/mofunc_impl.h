@@ -62,8 +62,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename... _ArgTypes, bool _Noex>
     class move_only_function<_Res(_ArgTypes...) _GLIBCXX_MOF_CV
 			       _GLIBCXX_MOF_REF noexcept(_Noex)>
-    : _Mofunc_base
+    : __polyfunc::_Mo_base
     {
+      using _Base = __polyfunc::_Mo_base;
+      using _Invoker = __polyfunc::_Invoker<_Noex, _Res, _ArgTypes...>;
+      using _Signature = _Invoker::_Signature;
+
       template<typename _Tp>
 	using __callable
 	  = __conditional_t<_Noex,
@@ -87,7 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// Moves the target object, leaving the source empty.
       move_only_function(move_only_function&& __x) noexcept
-      : _Mofunc_base(static_cast<_Mofunc_base&&>(__x)),
+      : _Base(static_cast<_Base&&>(__x)),
 	_M_invoke(std::__exchange(__x._M_invoke, nullptr))
       { }
 
@@ -97,15 +101,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && (!__is_in_place_type_v<_Vt>) && __is_callable_from<_Vt>
 	move_only_function(_Fn&& __f) noexcept(_S_nothrow_init<_Vt, _Fn>())
 	{
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 4255. move_only_function constructor should recognize empty
+	  //       copyable_functions
 	  if constexpr (is_function_v<remove_pointer_t<_Vt>>
 			|| is_member_pointer_v<_Vt>
-			|| __is_move_only_function_v<_Vt>)
+			|| __is_polymorphic_function_v<_Vt>)
 	    {
 	      if (__f == nullptr)
 		return;
 	    }
-	  _M_init<_Vt>(std::forward<_Fn>(__f));
-	  _M_invoke = &_S_invoke<_Vt>;
+
+	  if constexpr (__is_polymorphic_function_v<_Vt>
+			  && __polyfunc::__is_invoker_convertible<_Vt, move_only_function>())
+	    {
+	      // Handle cases where _Fn is const reference to copyable_function,
+	      // by firstly creating temporary and moving from it.
+	      _Vt __tmp(std::forward<_Fn>(__f));
+	      _M_move(__polyfunc::__base_of(__tmp));
+	      _M_invoke = std::__exchange(__polyfunc::__invoker_of(__tmp), nullptr);
+	    }
+	  else
+	    {
+	      _M_init<_Vt>(std::forward<_Fn>(__f));
+	      _M_invoke = _Invoker::template _S_storage<_Vt _GLIBCXX_MOF_INV_QUALS>();
+	    }
 	}
 
       /// Stores a target object initialized from the arguments.
@@ -115,7 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	explicit
 	move_only_function(in_place_type_t<_Tp>, _Args&&... __args)
 	noexcept(_S_nothrow_init<_Tp, _Args...>())
-	: _M_invoke(&_S_invoke<_Tp>)
+	: _M_invoke(_Invoker::template _S_storage<_Tp _GLIBCXX_MOF_INV_QUALS>())
 	{
 	  static_assert(is_same_v<decay_t<_Tp>, _Tp>);
 	  _M_init<_Tp>(std::forward<_Args>(__args)...);
@@ -129,7 +149,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	move_only_function(in_place_type_t<_Tp>, initializer_list<_Up> __il,
 			   _Args&&... __args)
 	noexcept(_S_nothrow_init<_Tp, initializer_list<_Up>&, _Args...>())
-	: _M_invoke(&_S_invoke<_Tp>)
+	: _M_invoke(_Invoker::template _S_storage<_Tp _GLIBCXX_MOF_INV_QUALS>())
 	{
 	  static_assert(is_same_v<decay_t<_Tp>, _Tp>);
 	  _M_init<_Tp>(__il, std::forward<_Args>(__args)...);
@@ -139,8 +159,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       move_only_function&
       operator=(move_only_function&& __x) noexcept
       {
-	_Mofunc_base::operator=(static_cast<_Mofunc_base&&>(__x));
-	_M_invoke = std::__exchange(__x._M_invoke, nullptr);
+	// Standard requires support of self assigment, by specifying it as
+	// copy and swap.
+	if (this != std::addressof(__x)) [[likely]]
+	  {
+	    _Base::operator=(static_cast<_Base&&>(__x));
+	    _M_invoke = std::__exchange(__x._M_invoke, nullptr);
+	  }
 	return *this;
       }
 
@@ -148,7 +173,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       move_only_function&
       operator=(nullptr_t) noexcept
       {
-	_Mofunc_base::operator=(nullptr);
+	_M_reset();
 	_M_invoke = nullptr;
 	return *this;
       }
@@ -167,7 +192,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~move_only_function() = default;
 
       /// True if a target object is present, false otherwise.
-      explicit operator bool() const noexcept { return _M_invoke != nullptr; }
+      explicit operator bool() const noexcept
+      { return _M_invoke != nullptr; }
 
       /** Invoke the target object.
        *
@@ -181,14 +207,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(_ArgTypes... __args) _GLIBCXX_MOF_CV_REF noexcept(_Noex)
       {
 	__glibcxx_assert(*this != nullptr);
-	return _M_invoke(this, std::forward<_ArgTypes>(__args)...);
+	return _M_invoke(this->_M_storage, std::forward<_ArgTypes>(__args)...);
       }
 
       /// Exchange the target objects (if any).
       void
       swap(move_only_function& __x) noexcept
       {
-	_Mofunc_base::swap(__x);
+	_Base::swap(__x);
 	std::swap(_M_invoke, __x._M_invoke);
       }
 
@@ -203,25 +229,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __x._M_invoke == nullptr; }
 
     private:
-      template<typename _Tp>
-	using __param_t = __conditional_t<is_scalar_v<_Tp>, _Tp, _Tp&&>;
+      typename _Invoker::__storage_func_t _M_invoke = nullptr;
 
-      using _Invoker = _Res (*)(_Mofunc_base _GLIBCXX_MOF_CV*,
-				__param_t<_ArgTypes>...) noexcept(_Noex);
+      template<typename _Func>
+	friend auto&
+	__polyfunc::__invoker_of(_Func&) noexcept;
 
-      template<typename _Tp>
-	static _Res
-	_S_invoke(_Mofunc_base _GLIBCXX_MOF_CV* __self,
-		  __param_t<_ArgTypes>... __args) noexcept(_Noex)
-	{
-	  using _TpCv = _Tp _GLIBCXX_MOF_CV;
-	  using _TpInv = _Tp _GLIBCXX_MOF_INV_QUALS;
-	  return std::__invoke_r<_Res>(
-	      std::forward<_TpInv>(*_S_access<_TpCv>(__self)),
-	      std::forward<__param_t<_ArgTypes>>(__args)...);
-	}
+      template<typename _Func>
+	friend auto&
+	__polyfunc::__base_of(_Func&) noexcept;
 
-      _Invoker _M_invoke = nullptr;
+      template<typename _Dst, typename _Src>
+	friend consteval bool
+	__polyfunc::__is_invoker_convertible() noexcept;
     };
 
 #undef _GLIBCXX_MOF_CV_REF

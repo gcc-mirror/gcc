@@ -4556,6 +4556,9 @@ lookup_imported_hidden_friend (tree friend_tmpl)
       || !DECL_MODULE_ENTITY_P (inner))
     return NULL_TREE;
 
+  /* Load any templates matching FRIEND_TMPL from importers.  */
+  lazy_load_pendings (friend_tmpl);
+
   tree name = DECL_NAME (inner);
   tree *slot = find_namespace_slot (current_namespace, name, false);
   if (!slot || !*slot || TREE_CODE (*slot) != BINDING_VECTOR)

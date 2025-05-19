@@ -8036,7 +8036,7 @@ vect_prologue_cost_for_slp (slp_tree node,
 	 we are costing so avoid passing it down more than once.  Pass
 	 it to the first vec_construct or scalar_to_vec part since for those
 	 the x86 backend tries to account for GPR to XMM register moves.  */
-      record_stmt_cost (cost_vec, 1, kind,
+      record_stmt_cost (cost_vec, 1, kind, nullptr,
 			(kind != vector_load && !passed) ? node : nullptr,
 			vectype, 0, vect_prologue);
       if (kind != vector_load)

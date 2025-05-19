@@ -1040,8 +1040,7 @@ pru_expand_fp_compare (rtx comparison, machine_mode mode)
 
   cmp = emit_library_call_value (libfunc, 0, LCT_CONST, SImode,
 				 op0, op_mode, op1, op_mode);
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
 
   emit_libcall_block (insns, cmp, cmp,
 		      gen_rtx_fmt_ee (code, SImode, op0, op1));
@@ -2919,8 +2918,7 @@ pru_reorg_loop (rtx_insn *insns)
 	    LABEL_NUSES (end->label)++;
 
 	    /* Emit the whole sequence before the doloop_end.  */
-	    insn = get_insns ();
-	    end_sequence ();
+	    insn = end_sequence ();
 	    emit_insn_before (insn, end->insn);
 
 	    /* Delete the doloop_end.  */

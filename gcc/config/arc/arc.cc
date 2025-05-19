@@ -8218,8 +8218,7 @@ hwloop_optimize (hwloop_info loop)
   insn = emit_insn (gen_arc_lp (loop->start_label,
 				loop->end_label));
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   entry_after = BB_END (entry_bb);
   if (!single_succ_p (entry_bb) || vec_safe_length (loop->incoming) > 1

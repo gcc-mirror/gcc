@@ -471,8 +471,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 			    emit_move_insn (to, tof);
 			}
 		    }
-		  insns = get_insns ();
-		  end_sequence ();
+		  insns = end_sequence ();
 		  if (tof)
 		    {
 		      emit_insn (insns);
@@ -542,8 +541,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 		    emit_move_insn (to, tof);
 		}
 	      while (0);
-	      insns = get_insns ();
-	      end_sequence ();
+	      insns = end_sequence ();
 	      if (tof)
 		{
 		  emit_insn (insns);
@@ -562,8 +560,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
       start_sequence ();
       value = emit_library_call_value (libcall, NULL_RTX, LCT_CONST, to_mode,
 				       from, from_mode);
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
       emit_libcall_block (insns, to, value,
 			  tab == trunc_optab ? gen_rtx_FLOAT_TRUNCATE (to_mode,
 								       from)
@@ -736,8 +733,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 	    emit_move_insn (subword, fill_value);
 	}
 
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       emit_insn (insns);
       return;
@@ -4547,8 +4543,7 @@ emit_move_multi_word (machine_mode mode, rtx x, rtx y)
       last_insn = emit_move_insn (xpart, ypart);
     }
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   /* Show the output dies here.  This is necessary for SUBREGs
      of pseudos since we cannot track their lifetimes correctly;
@@ -4765,13 +4760,9 @@ emit_move_insn (rtx x, rtx y)
 rtx_insn *
 gen_move_insn (rtx x, rtx y)
 {
-  rtx_insn *seq;
-
   start_sequence ();
   emit_move_insn_1 (x, y);
-  seq = get_insns ();
-  end_sequence ();
-  return seq;
+  return end_sequence ();
 }
 
 /* If Y is representable exactly in a narrower mode, and the target can
@@ -9639,8 +9630,7 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
      and return.  */
   if (insn)
     {
-      rtx_insn *seq = get_insns ();
-      end_sequence ();
+      rtx_insn *seq = end_sequence ();
       emit_insn (seq);
       return convert_modes (orig_mode, mode, temp, 0);
     }
@@ -9707,12 +9697,10 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
       do_pending_stack_adjust ();
       start_sequence ();
       rtx uns_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 1);
-      rtx_insn *uns_insns = get_insns ();
-      end_sequence ();
+      rtx_insn *uns_insns = end_sequence ();
       start_sequence ();
       rtx sgn_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 0);
-      rtx_insn *sgn_insns = get_insns ();
-      end_sequence ();
+      rtx_insn *sgn_insns = end_sequence ();
       unsigned uns_cost = seq_cost (uns_insns, speed_p);
       unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
       bool was_tie = false;
@@ -10310,8 +10298,7 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 				      op0, op1, NULL_RTX, unsignedp);
 	      divmul_ret = expand_mult (mode, divmul_ret, op1, target,
 					unsignedp);
-	      rtx_insn *divmul_insns = get_insns ();
-	      end_sequence ();
+	      rtx_insn *divmul_insns = end_sequence ();
 	      start_sequence ();
 	      rtx modsub_ret
 		= expand_expr_divmod (TRUNC_MOD_EXPR, mode, treeop0, treeop1,
@@ -10320,8 +10307,7 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 						optab_default);
 	      modsub_ret = expand_binop (mode, this_optab, op0, modsub_ret,
 					 target, unsignedp, OPTAB_LIB_WIDEN);
-	      rtx_insn *modsub_insns = get_insns ();
-	      end_sequence ();
+	      rtx_insn *modsub_insns = end_sequence ();
 	      unsigned divmul_cost = seq_cost (divmul_insns, speed_p);
 	      unsigned modsub_cost = seq_cost (modsub_insns, speed_p);
 	      /* If costs are the same then use as tie breaker the other other
@@ -10563,8 +10549,7 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 	       and return.  */
 	    if (insn)
 	      {
-		rtx_insn *seq = get_insns ();
-		end_sequence ();
+		rtx_insn *seq = end_sequence ();
 		emit_insn (seq);
 		return target;
 	      }
@@ -10736,8 +10721,7 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 		    if (temp != dest_low)
 		      emit_move_insn (dest_low, temp);
 
-		    seq = get_insns ();
-		    end_sequence ();
+		    seq = end_sequence ();
 		    temp = target ;
 
 		    if (have_insn_for (ASHIFT, int_mode))
@@ -10749,8 +10733,7 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 							     target,
 							     unsignedp);
 
-			seq_old = get_insns ();
-			end_sequence ();
+			seq_old = end_sequence ();
 			if (seq_cost (seq, speed_p)
 			    >= seq_cost (seq_old, speed_p))
 			  {
@@ -13274,8 +13257,7 @@ maybe_optimize_pow2p_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
   start_sequence ();
   rtx mor = expand_expr_real_2 (&ops, NULL_RTX, TYPE_MODE (ops.type),
 				EXPAND_NORMAL);
-  rtx_insn *moinsns = get_insns ();
-  end_sequence ();
+  rtx_insn *moinsns = end_sequence ();
 
   unsigned mocost = seq_cost (moinsns, speed_p);
   mocost += rtx_cost (mor, mode, EQ, 0, speed_p);
@@ -13290,8 +13272,7 @@ maybe_optimize_pow2p_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
   start_sequence ();
   rtx mur = expand_expr_real_2 (&ops, NULL_RTX, TYPE_MODE (ops.type),
 				EXPAND_NORMAL);
-  rtx_insn *muinsns = get_insns ();
-  end_sequence ();
+  rtx_insn *muinsns = end_sequence ();
 
   unsigned mucost = seq_cost (muinsns, speed_p);
   mucost += rtx_cost (mur, mode, EQ, 0, speed_p);
@@ -13477,8 +13458,7 @@ maybe_optimize_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
   start_sequence ();
   rtx mor = expand_expr_real_2 (&ops, NULL_RTX, TYPE_MODE (ops.type),
 				EXPAND_NORMAL);
-  rtx_insn *moinsns = get_insns ();
-  end_sequence ();
+  rtx_insn *moinsns = end_sequence ();
 
   unsigned mocost = seq_cost (moinsns, speed_p);
   mocost += rtx_cost (mor, mode, EQ, 0, speed_p);
@@ -13498,8 +13478,7 @@ maybe_optimize_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
 
   start_sequence ();
   rtx mur = expand_normal (t);
-  rtx_insn *muinsns = get_insns ();
-  end_sequence ();
+  rtx_insn *muinsns = end_sequence ();
 
   unsigned mucost = seq_cost (muinsns, speed_p);
   mucost += rtx_cost (mur, mode, LE, 0, speed_p);

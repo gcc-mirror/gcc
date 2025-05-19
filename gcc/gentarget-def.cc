@@ -319,9 +319,7 @@ main (int argc, const char **argv)
   printf ("    return insn;\n");
   printf ("  start_sequence ();\n");
   printf ("  emit (x, false);\n");
-  printf ("  rtx_insn *res = get_insns ();\n");
-  printf ("  end_sequence ();\n");
-  printf ("  return res;\n");
+  printf ("  return end_sequence ();\n");
   printf ("}\n");
 
 #define DEF_TARGET_INSN(INSN, ARGS) \

@@ -30,7 +30,7 @@
         Move ' ABABBCAB            000106ABABBCXY' to row(1).
         Move ' ABDBABC             000001AVDBABC'  to row(3).
         Move ' BCABCABD            010000BCABCAVD' to row(5).
-`
+
         compute rowlim = 2*rows - 1
 
         Display '  INPUT                C0 C1 C2 OUTPUT'

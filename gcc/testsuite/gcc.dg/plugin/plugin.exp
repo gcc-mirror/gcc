@@ -105,6 +105,7 @@ set plugin_test_list [list \
 	  diagnostic-test-inlining-4.c } \
     { diagnostic_plugin_test_metadata.cc
 	  diagnostic-test-metadata.c \
+	  diagnostic-test-metadata-html.c \
 	  diagnostic-test-metadata-sarif.c } \
     { diagnostic_plugin_test_nesting.cc \
 	  diagnostic-test-nesting-text-plain.c \

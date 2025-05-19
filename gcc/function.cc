@@ -1355,8 +1355,7 @@ emit_initial_value_sets (void)
   start_sequence ();
   for (i = 0; i < ivs->num_entries; i++)
     emit_move_insn (ivs->entries[i].pseudo, ivs->entries[i].hard_reg);
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   emit_insn_at_entry (seq);
 }
@@ -1574,8 +1573,7 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	  if (x != new_rtx)
 	    emit_move_insn (new_rtx, x);
 
-	  seq = get_insns ();
-	  end_sequence ();
+	  seq = end_sequence ();
 
 	  emit_insn_before (seq, insn);
 	  delete_insn (insn);
@@ -1601,8 +1599,7 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	  if (x != SET_DEST (set))
 	    emit_move_insn (SET_DEST (set), x);
 
-	  seq = get_insns ();
-	  end_sequence ();
+	  seq = end_sequence ();
 
 	  emit_insn_before (seq, insn);
 	  delete_insn (insn);
@@ -1631,8 +1628,7 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	    {
 	      start_sequence ();
 	      emit_move_insn (SET_DEST (set), new_rtx);
-	      seq = get_insns ();
-	      end_sequence ();
+	      seq = end_sequence ();
 
 	      emit_insn_before (seq, insn);
 	      delete_insn (insn);
@@ -1692,8 +1688,7 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 		addr = force_reg (GET_MODE (addr), addr);
 		x = replace_equiv_address (x, addr, true);
 	      }
-	    seq = get_insns ();
-	    end_sequence ();
+	    seq = end_sequence ();
 	    if (seq)
 	      emit_insn_before (seq, insn);
 	  }
@@ -1718,8 +1713,7 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	      x = expand_simple_binop (GET_MODE (x), PLUS, new_rtx,
 				       gen_int_mode (offset, GET_MODE (x)),
 				       NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	      seq = get_insns ();
-	      end_sequence ();
+	      seq = end_sequence ();
 	      emit_insn_before (seq, insn);
 	    }
 	  break;
@@ -1735,8 +1729,7 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 		(GET_MODE (new_rtx), PLUS, new_rtx,
 		 gen_int_mode (offset, GET_MODE (new_rtx)),
 		 NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	      seq = get_insns ();
-	      end_sequence ();
+	      seq = end_sequence ();
 	      emit_insn_before (seq, insn);
 	    }
 	  x = simplify_gen_subreg (recog_data.operand_mode[i], new_rtx,
@@ -1761,8 +1754,7 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	    }
 	  else
 	    x = force_reg (insn_data[insn_code].operand[i].mode, x);
-	  seq = get_insns ();
-	  end_sequence ();
+	  seq = end_sequence ();
 	  if (seq)
 	    emit_insn_before (seq, insn);
 	}
@@ -5417,8 +5409,7 @@ expand_function_end (void)
 	      anti_adjust_stack_and_probe (max_frame_size, true);
 	    else
 	      probe_stack_range (STACK_OLD_CHECK_PROTECT, max_frame_size);
-	    seq = get_insns ();
-	    end_sequence ();
+	    seq = end_sequence ();
 	    set_insn_locations (seq, prologue_location);
 	    emit_insn_before (seq, stack_check_probe_note);
 	    break;
@@ -5597,8 +5588,7 @@ expand_function_end (void)
     {
       start_sequence ();
       clobber_return_register ();
-      rtx_insn *seq = get_insns ();
-      end_sequence ();
+      rtx_insn *seq = end_sequence ();
 
       emit_insn_after (seq, clobber_after);
     }
@@ -5630,8 +5620,7 @@ expand_function_end (void)
 
       start_sequence ();
       emit_stack_save (SAVE_FUNCTION, &tem);
-      rtx_insn *seq = get_insns ();
-      end_sequence ();
+      rtx_insn *seq = end_sequence ();
       emit_insn_before (seq, parm_birth_insn);
 
       emit_stack_restore (SAVE_FUNCTION, tem);
@@ -5663,8 +5652,7 @@ get_arg_pointer_save_area (void)
       start_sequence ();
       emit_move_insn (validize_mem (copy_rtx (ret)),
                       crtl->args.internal_arg_pointer);
-      rtx_insn *seq = get_insns ();
-      end_sequence ();
+      rtx_insn *seq = end_sequence ();
 
       push_topmost_sequence ();
       emit_insn_after (seq, entry_of_function ());
@@ -5853,8 +5841,7 @@ make_split_prologue_seq (void)
 
   start_sequence ();
   emit_insn (targetm.gen_split_stack_prologue ());
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
 
   record_insns (seq, NULL, &prologue_insn_hash);
   set_insn_locations (seq, prologue_location);
@@ -5890,8 +5877,7 @@ make_prologue_seq (void)
   if (!targetm.profile_before_prologue () && crtl->profile)
     emit_insn (gen_blockage ());
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
   set_insn_locations (seq, prologue_location);
 
   return seq;
@@ -5994,16 +5980,14 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
      all call used registers.  */
   gcc_assert (hard_reg_set_subset_p (zeroed_hardregs, all_call_used_regs));
 
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
   if (seq)
     {
       /* Emit the memory blockage and register clobber asm volatile before
 	 the whole sequence.  */
       start_sequence ();
       expand_asm_reg_clobber_mem_blockage (zeroed_hardregs);
-      rtx_insn *seq_barrier = get_insns ();
-      end_sequence ();
+      rtx_insn *seq_barrier = end_sequence ();
 
       emit_insn_before (seq_barrier, ret);
       emit_insn_before (seq, ret);
@@ -6272,8 +6256,7 @@ thread_prologue_and_epilogue_insns (void)
 	{
 	  start_sequence ();
 	  targetm.emit_epilogue_for_sibcall (as_a<rtx_call_insn *> (insn));
-	  ep_seq = get_insns ();
-	  end_sequence ();
+	  ep_seq = end_sequence ();
 	}
       else
 	ep_seq = targetm.gen_sibcall_epilogue ();
@@ -6282,8 +6265,7 @@ thread_prologue_and_epilogue_insns (void)
 	  start_sequence ();
 	  emit_note (NOTE_INSN_EPILOGUE_BEG);
 	  emit_insn (ep_seq);
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 
 	  /* Retain a map of the epilogue insns.  Used in life analysis to
 	     avoid getting rid of sibcall epilogue insns.  Do this before we
@@ -6972,8 +6954,7 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
 
       start_sequence ();
       emit_move_insn (output, copy_rtx (input));
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
       emit_insn_before (insns, insn);
 
       constraint = ASM_OPERANDS_OUTPUT_CONSTRAINT(SET_SRC(p_sets[match]));

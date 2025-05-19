@@ -2989,8 +2989,7 @@ compensate_edge (edge e)
 
       change_stack (after, &regstack, target_stack, EMIT_BEFORE);
 
-      seq = get_insns ();
-      end_sequence ();
+      seq = end_sequence ();
 
       set_insn_locations (seq, e->goto_locus);
       insert_insn_on_edge (seq, e);

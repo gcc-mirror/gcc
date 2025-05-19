@@ -1117,7 +1117,7 @@ header were added to the static library <filename>libstdc++exp.a</filename>.
 <section xml:id="api.rel_141"><info><title><constant>14</constant></title></info>
 
 <para>
-Deprecate the non-standard overload that allows <code>std::setfill</code>
+Deprecated the non-standard overload that allows <code>std::setfill</code>
 to be used with <code>std::basic_istream</code>.
 </para>
 
@@ -1150,6 +1150,13 @@ Nested <code>result_type</code> and <code>argument_type</code> removed from
 <classname>std::hash</classname> specializations for C++20.
 </para>
 
+</section>
+
+<section xml:id="api.rel_16"><info><title><constant>16</constant></title></info>
+<para>
+Deprecated the non-standard overload of <code>std::fabs</code> for
+<code>std::complex</code> arguments.
+</para>
 </section>
 
 </section>

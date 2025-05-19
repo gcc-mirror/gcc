@@ -490,7 +490,7 @@ to provide the symbols for the experimental C++ Contracts support.</p></div><div
 Symbols for the Filesystem TS and C++23 <code class="filename">&lt;stacktrace&gt;</code>
 header were added to the static library <code class="filename">libstdc++exp.a</code>.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_141"></a><code class="constant">14</code></h3></div></div></div><p>
-Deprecate the non-standard overload that allows <code class="code">std::setfill</code>
+Deprecated the non-standard overload that allows <code class="code">std::setfill</code>
 to be used with <code class="code">std::basic_istream</code>.
 </p><p>
   The extension allowing <code class="code">std::basic_string</code> to be instantiated
@@ -509,4 +509,7 @@ and removed in C++20:
 </p><p>
 Nested <code class="code">result_type</code> and <code class="code">argument_type</code> removed from
 <code class="classname">std::hash</code> specializations for C++20.
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_16"></a><code class="constant">16</code></h3></div></div></div><p>
+Deprecated the non-standard overload of <code class="code">std::fabs</code> for
+<code class="code">std::complex</code> arguments.
 </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="abi.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="backwards.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ABI Policy and Guidelines </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Backwards Compatibility</td></tr></table></div></body></html>

@@ -945,10 +945,7 @@ sh_treg_combine::make_not_reg_insn (rtx dst_reg, rtx src_reg) const
   else
     gcc_unreachable ();
 
-  rtx i = get_insns ();
-  end_sequence ();
-
-  return i;
+  return end_sequence ();
 }
 
 rtx_insn *

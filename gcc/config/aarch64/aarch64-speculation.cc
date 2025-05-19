@@ -160,9 +160,7 @@ aarch64_speculation_clobber_sp ()
   emit_insn (gen_rtx_SET (scratch, sp));
   emit_insn (gen_anddi3 (scratch, scratch, tracker));
   emit_insn (gen_rtx_SET (sp, scratch));
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
-  return seq;
+  return end_sequence ();
 }
 
 /* Generate a code sequence to establish the tracker variable from the
@@ -176,9 +174,7 @@ aarch64_speculation_establish_tracker ()
   rtx cc = aarch64_gen_compare_reg (EQ, sp, const0_rtx);
   emit_insn (gen_cstoredi_neg (tracker,
 			       gen_rtx_NE (CCmode, cc, const0_rtx), cc));
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
-  return seq;
+  return end_sequence ();
 }
 
 /* Main speculation tracking pass.  */
@@ -405,8 +401,7 @@ aarch64_do_track_speculation ()
 		    {
 		      start_sequence ();
 		      emit_insn (seq);
-		      seq = get_insns ();
-		      end_sequence ();
+		      seq = end_sequence ();
 		    }
 
 		  for (rtx_insn *list = seq; list; list = NEXT_INSN (list))

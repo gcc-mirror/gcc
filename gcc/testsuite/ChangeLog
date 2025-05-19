@@ -1,3 +1,645 @@
+2025-05-17  Yuao Ma  <c8ef@outlook.com>
+
+	* gcc.dg/builtins-1.c: Builtin codegen test.
+	* gcc.dg/c23-builtins-1.c: Builtin signature test.
+
+2025-05-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add more helper macros.
+	* gcc.target/riscv/sat/sat_arith_data.h: Add the test data
+	for scalar unsigned SAT_ADD.
+	* gcc.target/riscv/sat/sat_u_add-run-1-u16.c: Leverage the test
+	data from the shared header file.
+	* gcc.target/riscv/sat/sat_u_add-run-1-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-1-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-1-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-2-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-2-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-2-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-2-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-3-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-3-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-3-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-3-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-4-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-4-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-4-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-4-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-5-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-5-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-5-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-5-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-6-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-6-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-6-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-6-u8.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u16-from-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u16-from-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u32-from-u64.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u8-from-u16.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u8-from-u32.c: Ditto
+	* gcc.target/riscv/sat/sat_u_add-run-7-u8-from-u64.c: Ditto
+
+2025-05-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/100165
+	* gcc.target/aarch64/fmov-3-be.c: New test.
+	* gcc.target/aarch64/fmov-3-le.c: New test.
+	* gcc.target/aarch64/fmov-4-be.c: New test.
+	* gcc.target/aarch64/fmov-4-le.c: New test.
+	* gcc.target/aarch64/fmov-5-be.c: New test.
+	* gcc.target/aarch64/fmov-5-le.c: New test.
+
+2025-05-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/100165
+	* gcc.target/aarch64/fmov-1-be.c: New test.
+	* gcc.target/aarch64/fmov-1-le.c: New test.
+	* gcc.target/aarch64/fmov-2-be.c: New test.
+	* gcc.target/aarch64/fmov-2-le.c: New test.
+
+2025-05-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/100165
+	* gcc.target/aarch64/and-be.c: New test.
+	* gcc.target/aarch64/and-le.c: New test.
+
+2025-05-16  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group1/declarative_1.cob: Handle modified exception handling.
+
+2025-05-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/pr78408-1.c: Update scan to forwprop1 only.
+
+2025-05-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/coroutines/pr94760-mismatched-traits-and-promise-prev.C:
+	Remove { target c++17 }.
+
+2025-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Take
+	test name for the vx combine test data.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i16.c: Leverage
+	the test name to identify the test data.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-u8.c: Ditto.
+
+2025-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Add test cases
+	for vsub vx combine case 1 with GR2VR cost 2.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+
+2025-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Add test cases
+	for vsub vx combine case 1 with GR2VR cost 1.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+
+2025-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add test cases
+	for vsub vx combine case 1 with GR2VR cost 0.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+
+2025-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Add test cases
+	for vsub vx combine with GR2VR cost 15.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+
+2025-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Add test cases
+	for vsub vx combine with GR2VR cost 1.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Diito.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Diito.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Diito.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Diito.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Diito.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Diito.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Diito.
+
+2025-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add vector sub
+	vx combine asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for vector sub vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsub-run-1-u8.c: New test.
+
+2025-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add
+	type and op name to generate test function name.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-run-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Refine the
+	test helper macros to avoid conflict.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_run.h: Ditto.
+
+2025-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-i8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-1-u8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-i8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-2-u8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-i8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-3-u8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-i16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-i32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-i64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-i8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-u16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-u32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-u64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-4-u8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-i16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-i32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-i64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-i8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-u16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-u32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-u64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-5-u8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-i16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-i32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-i64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-i8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-u16.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-u32.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-u64.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vadd-6-u8.c: Move to...
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: ...here.
+
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/coroutines/co-await-syntax-09-convert.C: Add -fcoroutines.
+	* g++.dg/coroutines/co-await-syntax-10.C
+	* g++.dg/coroutines/co-await-syntax-11.C
+	* g++.dg/coroutines/co-await-void_type.C
+	* g++.dg/coroutines/co-return-warning-1.C
+	* g++.dg/coroutines/ramp-return-a.C
+	* g++.dg/coroutines/ramp-return-c.C: Likewise.
+	* g++.dg/coroutines/coroutines.exp: Removed.
+	* lib/g++-dg.exp: Start at C++20 for coroutines/
+
+2025-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85750
+	* gfortran.dg/alloc_comp_auto_array_3.f90: Adjust scan counts.
+	* gfortran.dg/alloc_comp_class_3.f03: Remove bogus warnings.
+	* gfortran.dg/alloc_comp_class_4.f03: Likewise.
+	* gfortran.dg/allocate_with_source_14.f03: Adjust scan count.
+	* gfortran.dg/derived_constructor_comps_6.f90: Likewise.
+	* gfortran.dg/derived_result_5.f90: New test.
+
+2025-05-15  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/120251
+	* cobol.dg/group1/check_88.cob: One final regex "." instead of "ß"
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116546
+	* gcc.dg/pr116546.c: New.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120277
+	* gcc.dg/pr120277.c: New.
+
+2025-05-15  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/120251
+	* cobol.dg/group1/check_88.cob: Ignore characters above 0x80.
+	* cobol.dg/group2/ALLOCATE_Rule_8_OPTION_INITIALIZE_with_figconst.cob:
+	Output HIGH-VALUE as hex, rather than as characters.
+	* cobol.dg/group2/ALLOCATE_Rule_8_OPTION_INITIALIZE_with_figconst.out:
+	Likewise.
+	* cobol.dg/group2/INSPECT_CONVERTING_TO_figurative_constants.cob: Typo.
+	* cobol.dg/group2/INSPECT_CONVERTING_TO_figurative_constants.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_1.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_2.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_3.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_4.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_5-f.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_6.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_7.cob: Likewise.
+	* cobol.dg/group2/Multiple_INDEXED_BY_variables_with_the_same_name.cob: New test.
+	* cobol.dg/group2/Multiple_INDEXED_BY_variables_with_the_same_name.out: New test.
+
+2025-05-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120223
+	* gcc.target/riscv/pr120223.c: New test.
+
+2025-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120161
+	* g++.dg/template/unify13.C: New test.
+
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp (g++-std-flags): Factor out of g++-dg-runtest.
+	* g++.dg/modules/modules.exp: Use it instead of a copy.
+
+2025-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr110310.c: Adjust.
+
+2025-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-epilogues-1.c: New testcase.
+	* gcc.target/i386/vect-epilogues-2.c: Likewise.
+	* gcc.target/i386/vect-epilogues-3.c: Likewise.
+	* gcc.target/i386/vect-epilogues-4.c: Likewise.
+	* gcc.target/i386/vect-epilogues-5.c: Likewise.
+
+2025-05-14  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/120126
+	* g++.dg/cpp0x/lambda/lambda-ice33.C: New test.
+
+2025-05-14  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-55.c: New test.
+
+2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/pr120044-1.c: New test.
+	* gcc.dg/ipa/pr120044-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr114864.c: Likewise.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120125
+	* g++.dg/modules/clone-4_a.C: New test.
+	* g++.dg/modules/clone-4_b.C: New test.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119864
+	* g++.dg/modules/openmp-1.C: New test.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/tpl-friend-19_a.C: New test.
+	* g++.dg/modules/tpl-friend-19_b.C: New test.
+
+2025-05-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* g++.dg/opt/pr96780_cpp23.C: New.
+
+2025-05-14  Owen Avery  <powerboat9.gamer@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/ignore-virtual-move-assign.C: New test.
+
+2025-05-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr103771-4.c: New test.
+
+2025-05-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/113413
+	* gfortran.dg/dec_math.f90: Add comment that degree
+	functions are part of F2023.
+
+2025-05-13  Yuao Ma  <c8ef@outlook.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113413
+	* gfortran.dg/dec_math.f90: Add atand(y, x) testcase.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/119903
+	* g++.dg/tree-ssa/pr119903-1.C: New test.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/118868
+	* c-c++-common/pr118868-1.c: New test.
+
+2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120188
+	* gm2.dg/doc/examples/plugin/fail/doc-examples-plugin-fail.exp:
+	Remove call to gm2-dg-frontend-configure-check and replace with
+	tests for whether plugin variables exist.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120196
+	* gfortran.dg/pr120196.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_3.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_2.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+	    Daniil Kochergin  <daniil2472s@gmail.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_1.f90: New test.
+
+2025-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* gcc.dg/html-output/missing-semicolon.py: Verify that we don't
+	have an empty "gcc-annotated-source" and we do have a
+	"gcc-generated-patch".
+	* gcc.dg/plugin/diagnostic-test-metadata-html.c: New test.
+	* gcc.dg/plugin/diagnostic-test-metadata-html.py: New test script.
+	* gcc.dg/plugin/diagnostic-test-paths-2.c: Add
+	"-fdiagnostics-add-output=experimental-html" to options. Add
+	invocation of diagnostic-test-paths-2.py.
+	* gcc.dg/plugin/diagnostic-test-paths-2.py: New test script.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add
+	diagnostic-test-metadata-html.c.
+
+2025-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp124.c: New.
+
+2025-05-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-9-u16-from-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-9-u16-from-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-9-u32-from-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-9-u8-from-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-9-u8-from-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-9-u8-from-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-run-9-u16-from-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-run-9-u16-from-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-run-9-u32-from-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-run-9-u8-from-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-run-9-u8-from-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_add-run-9-u8-from-u64.c: New test.
+
+2025-05-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat/sat_u_add-7-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-7-u16-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-7-u32-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-7-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-7-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-7-u8-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-7-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-7-u16-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-7-u32-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-7-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-7-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_add-run-7-u8-from-u64.c: New test.
+
+2025-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120012
+	* g++.dg/abi/base-defaulted2.C: New test.
+
+2025-05-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120188
+	* lib/gm2-dg.exp (gm2-dg-frontend-configure-check): New function.
+	(gm2-dg-runtest): Add -O2 to the option_list.
+	* gm2.dg/doc/examples/plugin/fail/assignvalue.mod: New test.
+	* gm2.dg/doc/examples/plugin/fail/doc-examples-plugin-fail.exp: New test.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/march-map=sm_61.c: Adjust.
+	* gcc.target/nvptx/march-map=sm_62.c: Likewise.
+	* gcc.target/nvptx/march=sm_61.c: New.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/mptx=5.0.c: New.
+
+2025-05-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/116445
+	* gcc.target/arm/unsigned-extend-2.c: Fix dg directives.
+
+2025-05-12  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/arch-ss-1.c: New test.
+	* gcc.target/riscv/arch-ss-2.c: New test.
+
+2025-05-12  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/arch-zilsd-1.c: New.
+	* gcc.target/riscv/arch-zilsd-2.c: New.
+	* gcc.target/riscv/arch-zilsd-3.c: New.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/ivopts.c: Remove test for iwmmxt
+	* lib/target-supports.exp
+	(check_effective_target_arm_iwmmxt_ok): Delete.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/mmx-1.c: Removed.
+	* gcc.target/arm/mmx-2.c: Removed.
+	* gcc.target/arm/pr64208.c: Removed.
+	* gcc.target/arm/pr79145.c: Removed.
+	* gcc.target/arm/pr99724.c: Removed.
+	* gcc.target/arm/pr99786.c: Removed.
+
+2025-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/120222
+	* gcc.dg/tree-ssa/gen-vect-28.c: Use noipa on main_1.
+
+2025-05-12  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-52.c: Fix regular expression.
+
+2025-05-12  Chao-ying Fu  <cfu@wavecomp.com>
+
+	* gcc.target/mips/pr54240.c: Scan phiopt2.
+
 2025-05-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.target/i386/pr91446.c: xfail.

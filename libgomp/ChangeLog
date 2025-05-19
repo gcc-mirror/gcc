@@ -1,3 +1,35 @@
+2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/alloc-comp-4.f90: New test.
+
+2025-05-14  Tobias Burnus  <tburnus@baylibre.com>
+
+	* target.c (gomp_attach_pointer): Return bool; accept additional
+	bool to optionally silence the fatal pointee-not-found error.
+	(gomp_map_vars_internal): If the pointee could not be found,
+	check whether it was mapped as GOMP_MAP_ZERO_LEN_ARRAY_SECTION.
+	* libgomp.h (gomp_attach_pointer): Update prototype.
+	* oacc-mem.c (acc_attach_async, goacc_enter_data_internal): Update
+	calls.
+	* testsuite/libgomp.c/target-map-zero-sized.c: New test.
+	* testsuite/libgomp.c/target-map-zero-sized-2.c: New test.
+	* testsuite/libgomp.c/target-map-zero-sized-3.c: New test.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119692
+	* testsuite/libgomp.c++/pr119692-1-4.C: '{ dg-timeout 10 }'.
+	* testsuite/libgomp.c++/pr119692-1-5.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-1.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2.C: Likewise.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-3-sm61.c: New.
+	* testsuite/libgomp.c/declare-variant-3.h: Adjust.
+
 2025-05-09  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.c/interop-cuda-full.c: Use 'link' instead

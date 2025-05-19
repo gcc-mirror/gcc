@@ -1,6 +1,7 @@
 // { dg-do run { target c++23 } }
 #include <mdspan>
 
+#include <cstdint>
 #include <testsuite_hooks.h>
 
 constexpr size_t dyn = std::dynamic_extent;
@@ -20,7 +21,6 @@ static_assert(std::is_same_v<std::extents<int, 1, 2>::rank_type, size_t>);
 static_assert(std::is_unsigned_v<std::extents<int, 2>::size_type>);
 static_assert(std::is_unsigned_v<std::extents<unsigned int, 2>::size_type>);
 
-static_assert(std::is_same_v<std::extents<char, 2>::index_type, char>);
 static_assert(std::is_same_v<std::extents<int, 2>::index_type, int>);
 static_assert(std::is_same_v<std::extents<unsigned int, 2>::index_type,
 	      unsigned int>);
@@ -49,7 +49,7 @@ static_assert(check_rank_return_types<int, 1>());
 
 // Check that the static extents don't take up space.
 static_assert(sizeof(std::extents<int, 1, dyn>) == sizeof(int));
-static_assert(sizeof(std::extents<char, 1, dyn>) == sizeof(char));
+static_assert(sizeof(std::extents<short, 1, dyn>) == sizeof(short));
 
 template<typename Extents>
 class Container
@@ -58,7 +58,7 @@ class Container
   [[no_unique_address]] std::extents<size_t> b0;
 };
 
-static_assert(sizeof(Container<std::extents<char, 1, 2>>) == sizeof(int));
+static_assert(sizeof(Container<std::extents<short, 1, 2>>) == sizeof(int));
 static_assert(sizeof(Container<std::extents<size_t, 1, 2>>) == sizeof(int));
 
 // operator=
@@ -103,7 +103,7 @@ test_deduction_all()
   test_deduction<0>();
   test_deduction<1>(1);
   test_deduction<2>(1.0, 2.0f);
-  test_deduction<3>(int(1), char(2), size_t(3));
+  test_deduction<3>(int(1), short(2), size_t(3));
   return true;
 }
 

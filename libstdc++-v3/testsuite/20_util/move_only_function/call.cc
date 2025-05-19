@@ -190,6 +190,19 @@ test04()
   VERIFY( std::move(std::as_const(f5))() == 3 );
 }
 
+void
+test05()
+{
+  int (*fp)() = [] { return 0; };
+  move_only_function<int()> f0{fp};
+  VERIFY( f0() == 0 );
+  VERIFY( std::move(f0)() == 0 );
+
+  const move_only_function<int() const> f1{fp};
+  VERIFY( f1() == 0 );
+  VERIFY( std::move(f1)() == 0 );
+}
+
 struct Incomplete;
 
 void
@@ -206,5 +219,6 @@ int main()
   test02();
   test03();
   test04();
+  test05();
   test_params();
 }

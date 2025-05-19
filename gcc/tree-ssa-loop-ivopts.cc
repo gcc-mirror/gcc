@@ -3883,8 +3883,7 @@ computation_cost (tree expr, bool speed)
   walk_tree (&expr, prepare_decl_rtl, &regno, NULL);
   start_sequence ();
   rslt = expand_expr (expr, NULL_RTX, TYPE_MODE (type), EXPAND_NORMAL);
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
   default_rtl_profile ();
   node->frequency = real_frequency;
 

@@ -31,25 +31,28 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-range.h"
 
-// Return the bitmask inherent in a range.
+// Return the bitmask inherent in a range :   TYPE [MIN, MAX].
+// This use to be get_bitmask_from_range ().
 
-static irange_bitmask
-get_bitmask_from_range (tree type,
-			const wide_int &min, const wide_int &max)
+irange_bitmask::irange_bitmask (tree type,
+				const wide_int &min, const wide_int &max)
 {
   unsigned prec = TYPE_PRECISION (type);
-
   // All the bits of a singleton are known.
   if (min == max)
     {
-      wide_int mask = wi::zero (prec);
-      wide_int value = min;
-      return irange_bitmask (value, mask);
+      m_mask = wi::zero (prec);
+      m_value = min;
     }
-
-  wide_int xorv = min ^ max;
-  xorv = wi::mask (prec - wi::clz (xorv), false, prec);
-  return irange_bitmask (wi::zero (prec), min | xorv);
+  else
+    {
+      wide_int xorv = min ^ max;
+      // Mask will have leading zeros for all leading bits that are
+      // common, both zeros and ones.
+      m_mask = wi::mask (prec - wi::clz (xorv), false, prec);
+      // Now set value to those bits which are known, and zero the rest.
+      m_value = ~m_mask & min;
+    }
 }
 
 void
@@ -469,7 +472,7 @@ prange::set (tree type, const wide_int &min, const wide_int &max,
     }
 
   m_kind = VR_RANGE;
-  m_bitmask = get_bitmask_from_range (type, min, max);
+  m_bitmask = irange_bitmask (type, min, max);
   if (flag_checking)
     verify_range ();
 }
@@ -583,7 +586,7 @@ prange::intersect (const vrange &v)
     }
 
   // Intersect all bitmasks: the old one, the new one, and the other operand's.
-  irange_bitmask new_bitmask = get_bitmask_from_range (m_type, m_min, m_max);
+  irange_bitmask new_bitmask (m_type, m_min, m_max);
   m_bitmask.intersect (new_bitmask);
   m_bitmask.intersect (r.m_bitmask);
   if (varying_compatible_p ())
@@ -2286,7 +2289,7 @@ irange::set_range_from_bitmask ()
       if (has_zero)
 	{
 	  int_range<2> zero;
-	  zero.set_zero (type ());
+	  zero.set_zero (m_type);
 	  union_ (zero);
 	}
       if (flag_checking)
@@ -2295,31 +2298,58 @@ irange::set_range_from_bitmask ()
     }
   else if (popcount == 0)
     {
-      set_zero (type ());
+      set_zero (m_type);
       return true;
     }
 
-  // If the mask doesn't have any trailing zero, return.
+  // If the mask doesn't have a trailing zero, theres nothing to filter.
   int z = wi::ctz (m_bitmask.mask ());
   if (!z)
     return false;
 
-  // Remove trailing ranges that this bitmask indicates can't exist.
-  int_range_max mask_range;
-  int prec = TYPE_PRECISION (type ());
-  wide_int ub = (wi::one (prec) << z) - 1;
-  mask_range = int_range<2> (type (), wi::zero (prec), ub);
+  int prec = TYPE_PRECISION (m_type);
+  wide_int value = m_bitmask.value ();
+  wide_int mask = m_bitmask.mask ();
 
-  // Then remove the specific value these bits contain from the range.
-  wide_int value = m_bitmask.value () & ub;
-  mask_range.intersect (int_range<2> (type (), value, value, VR_ANTI_RANGE));
+  // Remove the [0, X] values which the trailing-zero mask rules out.
+  // For example, if z == 4, the mask is 0xFFF0, and the lowest 4 bits
+  // define the range [0, 15]. Only one of which (value & low_mask) is allowed.
+  wide_int ub = (wi::one (prec) << z) - 1;  // Upper bound of affected range.
+  int_range_max mask_range (m_type, wi::zero (prec), ub);
 
-  // Inverting produces a list of ranges which can be valid.
+  // Remove the one valid value from the excluded range and form an anti-range.
+  wide_int allow = value & ub;
+  mask_range.intersect (int_range<2> (m_type, allow, allow, VR_ANTI_RANGE));
+
+  // Invert it to get the allowed values and intersect it with the main range.
   mask_range.invert ();
+  bool changed = intersect (mask_range);
 
-  // And finally select R from only those valid values.
-  intersect (mask_range);
-  return true;
+  // Now handle the rest of the domain — the upper side for positive values,
+  // or [-X, -1] for signed negatives.
+  // Compute the maximum value representable under the mask/value constraint.
+  ub = mask | value;
+
+  // If value is non-negative, adjust the upper limit to remove values above
+  // UB that conflict with known fixed bits.
+  if (TYPE_SIGN (m_type) == UNSIGNED || wi::clz (ub) > 0)
+    mask_range = int_range<1> (m_type, wi::zero (prec), ub);
+  else
+    {
+      // For signed negative values, find the lowest value with trailing zeros.
+      // This forms a range such as [-512, -1] for z=9.
+      wide_int lb = -(wi::one (prec) << z);
+      mask_range = int_range<2> (m_type, lb, wi::minus_one (prec));
+
+      // Remove the one allowed value from that set.
+      allow = value | lb;
+      mask_range.intersect (int_range<2> (m_type, allow, allow, VR_ANTI_RANGE));
+      mask_range.invert ();
+    }
+
+  // Make sure we call intersect, so do it first.
+  changed = intersect (mask_range) | changed;
+  return changed;
 }
 
 void
@@ -2369,8 +2399,7 @@ irange::get_bitmask () const
   // in the mask.
   //
   // See also the note in irange_bitmask::intersect.
-  irange_bitmask bm
-    = get_bitmask_from_range (type (), lower_bound (), upper_bound ());
+  irange_bitmask bm (type (), lower_bound (), upper_bound ());
   if (!m_bitmask.unknown_p ())
     bm.intersect (m_bitmask);
   return bm;
@@ -2405,7 +2434,7 @@ irange::intersect_bitmask (const irange &r)
 {
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
-  if (r.m_bitmask.unknown_p () || m_bitmask == r.m_bitmask)
+  if (m_bitmask == r.m_bitmask)
     return false;
 
   irange_bitmask bm = get_bitmask ();

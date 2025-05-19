@@ -296,9 +296,8 @@ scalar_chain::scalar_chain (enum machine_mode smode_, enum machine_mode vmode_)
   insns_conv = BITMAP_ALLOC (NULL);
   queue = NULL;
 
-  n_sse_to_integer = 0;
-  n_integer_to_sse = 0;
-
+  cost_sse_integer = 0;
+  weighted_cost_sse_integer = 0 ;
   max_visits = x86_stv_max_visits;
 }
 
@@ -337,19 +336,51 @@ scalar_chain::mark_dual_mode_def (df_ref def)
   /* Record the def/insn pair so we can later efficiently iterate over
      the defs to convert on insns not in the chain.  */
   bool reg_new = bitmap_set_bit (defs_conv, DF_REF_REGNO (def));
+  basic_block bb = BLOCK_FOR_INSN (DF_REF_INSN (def));
+  profile_count entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+  bool speed_p = optimize_bb_for_speed_p (bb);
+  int cost = 0;
+
   if (!bitmap_bit_p (insns, DF_REF_INSN_UID (def)))
     {
       if (!bitmap_set_bit (insns_conv, DF_REF_INSN_UID (def))
 	  && !reg_new)
 	return;
-      n_integer_to_sse++;
+
+      /* Cost integer to sse moves.  */
+      if (speed_p)
+	cost = COSTS_N_INSNS (ix86_cost->integer_to_sse) / 2;
+      else if (TARGET_64BIT || smode == SImode)
+	cost = COSTS_N_BYTES (4);
+      /* vmovd (4 bytes) + vpinsrd (6 bytes).  */
+      else if (TARGET_SSE4_1)
+	cost = COSTS_N_BYTES (10);
+      /* movd (4 bytes) + movd (4 bytes) + unpckldq (4 bytes).  */
+      else
+	cost = COSTS_N_BYTES (12);
     }
   else
     {
       if (!reg_new)
 	return;
-      n_sse_to_integer++;
+
+      /* Cost sse to integer moves.  */
+      if (speed_p)
+	cost = COSTS_N_INSNS (ix86_cost->sse_to_integer) / 2;
+      else if (TARGET_64BIT || smode == SImode)
+	cost = COSTS_N_BYTES (4);
+      /* vmovd (4 bytes) + vpextrd (6 bytes).  */
+      else if (TARGET_SSE4_1)
+	cost = COSTS_N_BYTES (10);
+      /* movd (4 bytes) + psrlq (5 bytes) + movd (4 bytes).  */
+      else
+	cost = COSTS_N_BYTES (13);
     }
+
+  if (speed_p)
+    weighted_cost_sse_integer += bb->count.to_sreal_scale (entry_count) * cost;
+
+  cost_sse_integer += cost;
 
   if (dump_file)
     fprintf (dump_file,
@@ -531,15 +562,15 @@ general_scalar_chain::vector_const_cost (rtx exp, basic_block bb)
   return COSTS_N_INSNS (ix86_cost->sse_load[smode == DImode ? 1 : 0]) / 2;
 }
 
-/* Compute a gain for chain conversion.  */
+/* Return true if it's cost profitable for chain conversion.  */
 
-int
+bool
 general_scalar_chain::compute_convert_gain ()
 {
   bitmap_iterator bi;
   unsigned insn_uid;
   int gain = 0;
-  int cost = 0;
+  sreal weighted_gain = 0;
 
   if (dump_file)
     fprintf (dump_file, "Computing gain for chain #%d...\n", chain_id);
@@ -559,10 +590,13 @@ general_scalar_chain::compute_convert_gain ()
       rtx dst = SET_DEST (def_set);
       basic_block bb = BLOCK_FOR_INSN (insn);
       int igain = 0;
+      profile_count entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+      bool speed_p = optimize_bb_for_speed_p (bb);
+      sreal bb_freq = bb->count.to_sreal_scale (entry_count);
 
       if (REG_P (src) && REG_P (dst))
 	{
-	  if (optimize_bb_for_size_p (bb))
+	  if (!speed_p)
 	    /* reg-reg move is 2 bytes, while SSE 3.  */
 	    igain += COSTS_N_BYTES (2 * m - 3);
 	  else
@@ -571,7 +605,7 @@ general_scalar_chain::compute_convert_gain ()
 	}
       else if (REG_P (src) && MEM_P (dst))
 	{
-	  if (optimize_bb_for_size_p (bb))
+	  if (!speed_p)
 	    /* Integer load/store is 3+ bytes and SSE 4+.  */
 	    igain += COSTS_N_BYTES (3 * m - 4);
 	  else
@@ -581,7 +615,7 @@ general_scalar_chain::compute_convert_gain ()
 	}
       else if (MEM_P (src) && REG_P (dst))
 	{
-	  if (optimize_bb_for_size_p (bb))
+	  if (!speed_p)
 	    igain += COSTS_N_BYTES (3 * m - 4);
 	  else
 	    igain += COSTS_N_INSNS (m * ix86_cost->int_load[2]
@@ -593,7 +627,7 @@ general_scalar_chain::compute_convert_gain ()
 	     of explicit load and store instructions.  */
 	  if (MEM_P (dst))
 	    {
-	      if (optimize_bb_for_size_p (bb))
+	      if (!speed_p)
 		/* ??? This probably should account size difference
 		   of SSE and integer load rather than full SSE load.  */
 		igain -= COSTS_N_BYTES (8);
@@ -667,7 +701,7 @@ general_scalar_chain::compute_convert_gain ()
 		igain -= vector_const_cost (XEXP (src, 1), bb);
 	      if (MEM_P (XEXP (src, 1)))
 		{
-		  if (optimize_bb_for_size_p (bb))
+		  if (!speed_p)
 		    igain -= COSTS_N_BYTES (m == 2 ? 3 : 5);
 		  else
 		    igain += COSTS_N_INSNS
@@ -730,7 +764,7 @@ general_scalar_chain::compute_convert_gain ()
 	    case CONST_INT:
 	      if (REG_P (dst))
 		{
-		  if (optimize_bb_for_size_p (bb))
+		  if (!speed_p)
 		    {
 		      /* xor (2 bytes) vs. xorps (3 bytes).  */
 		      if (src == const0_rtx)
@@ -769,14 +803,14 @@ general_scalar_chain::compute_convert_gain ()
 	      if (XVECEXP (XEXP (src, 1), 0, 0) == const0_rtx)
 		{
 		  // movd (4 bytes) replaced with movdqa (4 bytes).
-		  if (!optimize_bb_for_size_p (bb))
+		  if (!!speed_p)
 		    igain += COSTS_N_INSNS (ix86_cost->sse_to_integer
 					    - ix86_cost->xmm_move) / 2;
 		}
 	      else
 		{
 		  // pshufd; movd replaced with pshufd.
-		  if (optimize_bb_for_size_p (bb))
+		  if (!speed_p)
 		    igain += COSTS_N_BYTES (4);
 		  else
 		    igain += ix86_cost->sse_to_integer;
@@ -788,55 +822,34 @@ general_scalar_chain::compute_convert_gain ()
 	    }
 	}
 
+      if (speed_p)
+	weighted_gain += bb_freq * igain;
+      gain += igain;
+
       if (igain != 0 && dump_file)
 	{
-	  fprintf (dump_file, "  Instruction gain %d for ", igain);
+	  fprintf (dump_file, "  Instruction gain %d with bb_freq %.2f for",
+		   igain, bb_freq.to_double ());
 	  dump_insn_slim (dump_file, insn);
 	}
-      gain += igain;
     }
 
   if (dump_file)
-    fprintf (dump_file, "  Instruction conversion gain: %d\n", gain);
+    {
+      fprintf (dump_file, "  Instruction conversion gain: %d, \n",
+	       gain);
+      fprintf (dump_file, "  Registers conversion cost: %d\n",
+	       cost_sse_integer);
+      fprintf (dump_file, "  Weighted instruction conversion gain: %.2f, \n",
+	       weighted_gain.to_double ());
+      fprintf (dump_file, "  Weighted registers conversion cost: %.2f\n",
+	       weighted_cost_sse_integer.to_double ());
+    }
 
-  /* Cost the integer to sse and sse to integer moves.  */
-  if (!optimize_function_for_size_p (cfun))
-    {
-      cost += n_sse_to_integer * COSTS_N_INSNS (ix86_cost->sse_to_integer) / 2;
-      /* ???  integer_to_sse but we only have that in the RA cost table.
-	      Assume sse_to_integer/integer_to_sse are the same which they
-	      are at the moment.  */
-      cost += n_integer_to_sse * COSTS_N_INSNS (ix86_cost->integer_to_sse) / 2;
-    }
-  else if (TARGET_64BIT || smode == SImode)
-    {
-      cost += n_sse_to_integer * COSTS_N_BYTES (4);
-      cost += n_integer_to_sse * COSTS_N_BYTES (4);
-    }
-  else if (TARGET_SSE4_1)
-    {
-      /* vmovd (4 bytes) + vpextrd (6 bytes).  */
-      cost += n_sse_to_integer * COSTS_N_BYTES (10);
-      /* vmovd (4 bytes) + vpinsrd (6 bytes).  */
-      cost += n_integer_to_sse * COSTS_N_BYTES (10);
-    }
+  if (weighted_gain != weighted_cost_sse_integer)
+    return weighted_gain > weighted_cost_sse_integer;
   else
-    {
-      /* movd (4 bytes) + psrlq (5 bytes) + movd (4 bytes).  */
-      cost += n_sse_to_integer * COSTS_N_BYTES (13);
-      /* movd (4 bytes) + movd (4 bytes) + unpckldq (4 bytes).  */
-      cost += n_integer_to_sse * COSTS_N_BYTES (12);
-    }
-
-  if (dump_file)
-    fprintf (dump_file, "  Registers conversion cost: %d\n", cost);
-
-  gain -= cost;
-
-  if (dump_file)
-    fprintf (dump_file, "  Total gain: %d\n", gain);
-
-  return gain;
+    return gain > cost_sse_integer;;
 }
 
 /* Insert generated conversion instruction sequence INSNS
@@ -935,8 +948,7 @@ scalar_chain::make_vector_copies (rtx_insn *insn, rtx reg)
   else
     emit_insn (gen_rtx_SET (gen_rtx_SUBREG (vmode, vreg, 0),
 			    gen_gpr_to_xmm_move_src (vmode, reg)));
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
   emit_conversion_insns (seq, insn);
 
   if (dump_file)
@@ -1003,8 +1015,7 @@ scalar_chain::convert_reg (rtx_insn *insn, rtx dst, rtx src)
   else
     emit_move_insn (dst, src);
 
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
   emit_conversion_insns (seq, insn);
 
   if (dump_file)
@@ -1099,8 +1110,7 @@ scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 	{
 	  start_sequence ();
 	  vec_cst = validize_mem (force_const_mem (vmode, vec_cst));
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  emit_insn_before (seq, insn);
 	}
 
@@ -1553,21 +1563,22 @@ timode_immed_const_gain (rtx cst, basic_block bb)
   return 0;
 }
 
-/* Compute a gain for chain conversion.  */
+/* Return true it's cost profitable for for chain conversion.  */
 
-int
+bool
 timode_scalar_chain::compute_convert_gain ()
 {
   /* Assume that if we have to move TImode values between units,
      then transforming this chain isn't worth it.  */
-  if (n_sse_to_integer || n_integer_to_sse)
-    return -1;
+  if (cost_sse_integer)
+    return false;
 
   bitmap_iterator bi;
   unsigned insn_uid;
 
   /* Split ties to prefer V1TImode when not optimizing for size.  */
   int gain = optimize_size ? 0 : 1;
+  sreal weighted_gain  = 0;
 
   if (dump_file)
     fprintf (dump_file, "Computing gain for chain #%d...\n", chain_id);
@@ -1582,32 +1593,33 @@ timode_scalar_chain::compute_convert_gain ()
       basic_block bb = BLOCK_FOR_INSN (insn);
       int scost, vcost;
       int igain = 0;
+      profile_count entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+      bool speed_p = optimize_bb_for_speed_p (bb);
+      sreal bb_freq = bb->count.to_sreal_scale (entry_count);
 
       switch (GET_CODE (src))
 	{
 	case REG:
-	  if (optimize_bb_for_size_p (bb))
+	  if (!speed_p)
 	    igain = MEM_P (dst) ? COSTS_N_BYTES (6) : COSTS_N_BYTES (3);
 	  else
 	    igain = COSTS_N_INSNS (1);
 	  break;
 
 	case MEM:
-	  igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (7)
-					      : COSTS_N_INSNS (1);
+	  igain = !speed_p ? COSTS_N_BYTES (7) : COSTS_N_INSNS (1);
 	  break;
 
 	case CONST_INT:
 	  if (MEM_P (dst)
 	      && standard_sse_constant_p (src, V1TImode))
-	    igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (11) : 1;
+	    igain = !speed_p ? COSTS_N_BYTES (11) : 1;
 	  break;
 
 	case CONST_WIDE_INT:
 	  /* 2 x mov vs. vmovdqa.  */
 	  if (MEM_P (dst))
-	    igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (3)
-						: COSTS_N_INSNS (1);
+	    igain = !speed_p ? COSTS_N_BYTES (3) : COSTS_N_INSNS (1);
 	  break;
 
 	case NOT:
@@ -1628,7 +1640,7 @@ timode_scalar_chain::compute_convert_gain ()
 	case LSHIFTRT:
 	  /* See ix86_expand_v1ti_shift.  */
 	  op1val = INTVAL (XEXP (src, 1));
-	  if (optimize_bb_for_size_p (bb))
+	  if (!speed_p)
 	    {
 	      if (op1val == 64 || op1val == 65)
 		scost = COSTS_N_BYTES (5);
@@ -1662,7 +1674,7 @@ timode_scalar_chain::compute_convert_gain ()
 	case ASHIFTRT:
 	  /* See ix86_expand_v1ti_ashiftrt.  */
 	  op1val = INTVAL (XEXP (src, 1));
-	  if (optimize_bb_for_size_p (bb))
+	  if (!speed_p)
 	    {
 	      if (op1val == 64 || op1val == 127)
 		scost = COSTS_N_BYTES (7);
@@ -1740,7 +1752,7 @@ timode_scalar_chain::compute_convert_gain ()
 	case ROTATERT:
 	  /* See ix86_expand_v1ti_rotate.  */
 	  op1val = INTVAL (XEXP (src, 1));
-	  if (optimize_bb_for_size_p (bb))
+	  if (!speed_p)
 	    {
 	      scost = COSTS_N_BYTES (13);
 	      if ((op1val & 31) == 0)
@@ -1772,34 +1784,40 @@ timode_scalar_chain::compute_convert_gain ()
 	    {
 	      if (GET_CODE (XEXP (src, 0)) == AND)
 		/* and;and;or (9 bytes) vs. ptest (5 bytes).  */
-		igain = optimize_bb_for_size_p (bb) ? COSTS_N_BYTES (4)
-						    : COSTS_N_INSNS (2);
+		igain = !speed_p ? COSTS_N_BYTES (4) : COSTS_N_INSNS (2);
 	      /* or (3 bytes) vs. ptest (5 bytes).  */
-	      else if (optimize_bb_for_size_p (bb))
+	      else if (!speed_p)
 		igain = -COSTS_N_BYTES (2);
 	    }
 	  else if (XEXP (src, 1) == const1_rtx)
 	    /* and;cmp -1 (7 bytes) vs. pcmpeqd;pxor;ptest (13 bytes).  */
-	    igain = optimize_bb_for_size_p (bb) ? -COSTS_N_BYTES (6)
-						: -COSTS_N_INSNS (1);
+	    igain = !speed_p ? -COSTS_N_BYTES (6) : -COSTS_N_INSNS (1);
 	  break;
 
 	default:
 	  break;
 	}
 
+      gain += igain;
+      if (speed_p)
+	weighted_gain += bb_freq * igain;
+
       if (igain != 0 && dump_file)
 	{
-	  fprintf (dump_file, "  Instruction gain %d for ", igain);
+	  fprintf (dump_file, "  Instruction gain %d with bb_freq %.2f for ",
+		   igain, bb_freq.to_double ());
 	  dump_insn_slim (dump_file, insn);
 	}
-      gain += igain;
     }
 
   if (dump_file)
-    fprintf (dump_file, "  Total gain: %d\n", gain);
+    fprintf (dump_file, "  Total gain: %d, weighted gain %.2f\n",
+	     gain, weighted_gain.to_double ());
 
-  return gain;
+  if (weighted_gain > (sreal) 0)
+    return true;
+  else
+    return gain > 0;
 }
 
 /* Fix uses of converted REG in debug insns.  */
@@ -1908,8 +1926,7 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
 	      src = validize_mem (force_const_mem (V1TImode, src));
 	      use_move = MEM_P (dst);
 	    }
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  if (seq)
 	    emit_insn_before (seq, insn);
 	  if (use_move)
@@ -2595,7 +2612,7 @@ convert_scalars_to_vector (bool timode_p)
 	     conversions.  */
 	  if (chain->build (&candidates[i], uid, disallowed))
 	    {
-	      if (chain->compute_convert_gain () > 0)
+	      if (chain->compute_convert_gain ())
 		converted_insns += chain->convert ();
 	      else if (dump_file)
 		fprintf (dump_file, "Chain #%d conversion is not profitable\n",

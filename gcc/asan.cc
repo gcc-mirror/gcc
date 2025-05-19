@@ -1509,8 +1509,7 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
   gcc_assert ((len & 3) == 0);
   start_sequence ();
   clear_storage (shadow_mem, GEN_INT (len), BLOCK_OP_NORMAL);
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (CALL_P (insn))
       break;
@@ -2283,8 +2282,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   if (lab)
     emit_label (lab);
 
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
   return insns;
 }
 
@@ -2306,9 +2304,7 @@ asan_emit_allocas_unpoison (rtx top, rtx bot, rtx_insn *before)
 		     top, ptr_mode, bot, ptr_mode);
 
   do_pending_stack_adjust ();
-  rtx_insn *insns = get_insns ();
-  end_sequence ();
-  return insns;
+  return end_sequence ();
 }
 
 /* Return true if DECL, a global var, might be overridden and needs
@@ -4472,8 +4468,7 @@ hwasan_frame_base ()
 	= force_reg (Pmode,
 		     targetm.memtag.insert_random_tag (virtual_stack_vars_rtx,
 						       NULL_RTX));
-      hwasan_frame_base_init_seq = get_insns ();
-      end_sequence ();
+      hwasan_frame_base_init_seq = end_sequence ();
     }
 
   return hwasan_frame_base_ptr;
@@ -4741,9 +4736,7 @@ hwasan_emit_untag_frame (rtx dynamic, rtx vars)
 		     size_rtx, ptr_mode);
 
   do_pending_stack_adjust ();
-  rtx_insn *insns = get_insns ();
-  end_sequence ();
-  return insns;
+  return end_sequence ();
 }
 
 /* Needs to be GTY(()), because cgraph_build_static_cdtor may

@@ -376,11 +376,11 @@ do_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 
    Argument list:
       char *     name of function
-      int	whether function is elemental
-      int	If the function can be used as an actual argument [1]
-      bt	 return type of function
-      int	kind of return type of function
-      int	Fortran standard version
+      int        whether function is elemental
+      int        If the function can be used as an actual argument [1]
+      bt         return type of function
+      int        kind of return type of function
+      int        Fortran standard version
       check      pointer to check function
       simplify   pointer to simplification function
       resolve    pointer to resolution function
@@ -396,7 +396,7 @@ do_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 
 
  [1] Whether a function can or cannot be used as an actual argument is
-     determined by its presence on the 13.6 list in Fortran 2003.  The
+     determined by its presence in the 13.6 list in Fortran 2003.  The
      following intrinsics, which are GNU extensions, are considered allowed
      as actual arguments: ACOSH ATANH DACOSH DASINH DATANH DCONJG DIMAG
      ZABS ZCOS ZEXP ZLOG ZSIN ZSQRT.  */
@@ -3477,6 +3477,13 @@ add_functions (void)
   add_sym_1 ("atand", GFC_ISYM_ATAND, CLASS_ELEMENTAL, ACTUAL_YES,
 	     BT_REAL, dr, GFC_STD_F2023,
 	     gfc_check_fn_r, gfc_simplify_atand, gfc_resolve_trigd,
+	     x, BT_REAL, dr, REQUIRED);
+
+  /* Two-argument version of atand, equivalent to atan2d.  */
+  add_sym_2 ("atand", GFC_ISYM_ATAN2D, CLASS_ELEMENTAL, ACTUAL_YES,
+	     BT_REAL, dr, GFC_STD_F2023,
+	     gfc_check_atan2, gfc_simplify_atan2d, gfc_resolve_trigd2,
+	     y, BT_REAL, dr, REQUIRED,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_generic ("atand", GFC_ISYM_ATAND, GFC_STD_F2023);

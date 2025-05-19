@@ -3621,9 +3621,7 @@ mips_call_tls_get_addr (rtx sym, enum mips_symbol_type type, rtx v0)
 			   const0_rtx, NULL_RTX, false);
   RTL_CONST_CALL_P (insn) = 1;
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), a0);
-  insn = get_insns ();
-
-  end_sequence ();
+  insn = end_sequence ();
 
   return insn;
 }
@@ -15167,23 +15165,19 @@ mips_ls2_init_dfa_post_cycle_insn (void)
 {
   start_sequence ();
   emit_insn (gen_ls2_alu1_turn_enabled_insn ());
-  mips_ls2.alu1_turn_enabled_insn = get_insns ();
-  end_sequence ();
+  mips_ls2.alu1_turn_enabled_insn = end_sequence ();
 
   start_sequence ();
   emit_insn (gen_ls2_alu2_turn_enabled_insn ());
-  mips_ls2.alu2_turn_enabled_insn = get_insns ();
-  end_sequence ();
+  mips_ls2.alu2_turn_enabled_insn = end_sequence ();
 
   start_sequence ();
   emit_insn (gen_ls2_falu1_turn_enabled_insn ());
-  mips_ls2.falu1_turn_enabled_insn = get_insns ();
-  end_sequence ();
+  mips_ls2.falu1_turn_enabled_insn = end_sequence ();
 
   start_sequence ();
   emit_insn (gen_ls2_falu2_turn_enabled_insn ());
-  mips_ls2.falu2_turn_enabled_insn = get_insns ();
-  end_sequence ();
+  mips_ls2.falu2_turn_enabled_insn = end_sequence ();
 
   mips_ls2.alu1_core_unit_code = get_cpu_unit_code ("ls2_alu1_core");
   mips_ls2.alu2_core_unit_code = get_cpu_unit_code ("ls2_alu2_core");
@@ -19892,8 +19886,7 @@ mips16_split_long_branches (void)
 		emit_label (new_label);
 	      }
 
-	    jump_sequence = get_insns ();
-	    end_sequence ();
+	    jump_sequence = end_sequence ();
 
 	    emit_insn_after (jump_sequence, jump_insn);
 	    if (new_label)

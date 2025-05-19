@@ -1098,6 +1098,7 @@ vect_recog_cond_expr_convert_pattern (vec_info *vinfo,
   tree lhs, match[4], temp, type, new_lhs, op2;
   gimple *cond_stmt;
   gimple *pattern_stmt;
+  enum tree_code code = NOP_EXPR;
 
   if (!last_stmt)
     return NULL;
@@ -1110,6 +1111,11 @@ vect_recog_cond_expr_convert_pattern (vec_info *vinfo,
     return NULL;
 
   vect_pattern_detected ("vect_recog_cond_expr_convert_pattern", last_stmt);
+
+  if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (lhs)))
+    code = INTEGRAL_TYPE_P (TREE_TYPE (match[1])) ? FLOAT_EXPR : CONVERT_EXPR;
+  else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (match[1])))
+    code = FIX_TRUNC_EXPR;
 
   op2 = match[2];
   type = TREE_TYPE (match[1]);
@@ -1127,7 +1133,7 @@ vect_recog_cond_expr_convert_pattern (vec_info *vinfo,
   append_pattern_def_seq (vinfo, stmt_vinfo, cond_stmt,
 			  get_vectype_for_scalar_type (vinfo, type));
   new_lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
-  pattern_stmt = gimple_build_assign (new_lhs, NOP_EXPR, temp);
+  pattern_stmt = gimple_build_assign (new_lhs, code, temp);
   *type_out = STMT_VINFO_VECTYPE (stmt_vinfo);
 
   if (dump_enabled_p ())

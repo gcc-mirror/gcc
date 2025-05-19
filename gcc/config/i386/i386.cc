@@ -1795,8 +1795,7 @@ ix86_init_pic_reg (void)
       add_reg_note (insn, REG_CFA_FLUSH_QUEUE, NULL_RTX);
     }
 
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   insert_insn_on_edge (seq, entry_edge);
@@ -4739,8 +4738,7 @@ ix86_va_start (tree valist, rtx nextarg)
 
 	  start_sequence ();
 	  emit_move_insn (reg, gen_rtx_REG (Pmode, scratch_regno));
-	  seq = get_insns ();
-	  end_sequence ();
+	  seq = end_sequence ();
 
 	  push_topmost_sequence ();
 	  emit_insn_after (seq, entry_of_function ());
@@ -7981,8 +7979,7 @@ ix86_get_drap_rtx (void)
 
       start_sequence ();
       drap_vreg = copy_to_reg (arg_ptr);
-      seq = get_insns ();
-      end_sequence ();
+      seq = end_sequence ();
 
       insn = emit_insn_before (seq, NEXT_INSN (entry_of_function ()));
       if (!optimize)
@@ -12474,8 +12471,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	      start_sequence ();
 	      emit_call_insn
 		(gen_tls_global_dynamic_64 (Pmode, rax, x, caddr));
-	      insns = get_insns ();
-	      end_sequence ();
+	      insns = end_sequence ();
 
 	      if (GET_MODE (x) != Pmode)
 		x = gen_rtx_ZERO_EXTEND (Pmode, x);
@@ -12529,8 +12525,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	      start_sequence ();
 	      emit_call_insn
 		(gen_tls_local_dynamic_base_64 (Pmode, rax, caddr));
-	      insns = get_insns ();
-	      end_sequence ();
+	      insns = end_sequence ();
 
 	      /* Attach a unique REG_EQUAL, to allow the RTL optimizers to
 		 share the LD_BASE result with other LD model accesses.  */
@@ -24823,8 +24818,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 	}
     }
 
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
 
   if (saw_asm_flag)
     return seq;
@@ -26156,14 +26150,10 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
   /* When X86_TUNE_AVX512_TWO_EPILOGUES is enabled arrange for both
      a AVX2 and a SSE epilogue for AVX512 vectorized loops.  */
   if (loop_vinfo
+      && LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+      && GET_MODE_SIZE (loop_vinfo->vector_mode) == 32
       && ix86_tune_features[X86_TUNE_AVX512_TWO_EPILOGUES])
-    {
-      if (GET_MODE_SIZE (loop_vinfo->vector_mode) == 64)
-	m_suggested_epilogue_mode = V32QImode;
-      else if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
-	       && GET_MODE_SIZE (loop_vinfo->vector_mode) == 32)
-	m_suggested_epilogue_mode = V16QImode;
-    }
+    m_suggested_epilogue_mode = V16QImode;
   /* When a 128bit SSE vectorized epilogue still has a VF of 16 or larger
      enable a 64bit SSE epilogue.  */
   if (loop_vinfo

@@ -1,3 +1,955 @@
+2025-05-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-vect-permconst.cc (vector_permconst:process_bb):
+	Use rtvec_alloc, not gen_rtvec since we don't want/need to initialize
+	the vector.
+
+2025-05-17  Yuao Ma  <c8ef@outlook.com>
+
+	* doc/extend.texi: Mention new builtins.
+
+2025-05-17  Yuao Ma  <c8ef@outlook.com>
+
+	* builtins.def (TRIG_TYPE): New.
+	(BUILT_IN_ACOSPI): New.
+	(BUILT_IN_ACOSPIF): New.
+	(BUILT_IN_ACOSPIL): New.
+	(BUILT_IN_ASINPI): New.
+	(BUILT_IN_ASINPIF): New.
+	(BUILT_IN_ASINPIL): New.
+	(BUILT_IN_ATANPI): New.
+	(BUILT_IN_ATANPIF): New.
+	(BUILT_IN_ATANPIL): New.
+	(BUILT_IN_COSPI): New.
+	(BUILT_IN_COSPIF): New.
+	(BUILT_IN_COSPIL): New.
+	(BUILT_IN_SINPI): New.
+	(BUILT_IN_SINPIF): New.
+	(BUILT_IN_SINPIL): New.
+	(BUILT_IN_TANPI): New.
+	(BUILT_IN_TANPIF): New.
+	(BUILT_IN_TANPIL): New.
+	(TRIG2_TYPE): New.
+	(BUILT_IN_ATAN2PI): New.
+	(BUILT_IN_ATAN2PIF): New.
+	(BUILT_IN_ATAN2PIL): New.
+
+2025-05-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (synthesize_ior_xor): Avoid writing
+	operands[0] more than once, use new pseudos instead.
+
+2025-05-17  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_gpr_save_operation_p): Remove
+	break and fixbug for elt index.
+
+2025-05-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/100165
+	* config/aarch64/aarch64-protos.h (aarch64_output_fmov): New prototype.
+	(aarch64_simd_valid_and_imm_fmov): Likewise.
+	* config/aarch64/aarch64-simd.md (and<mode>3<vczle><vczbe>): Allow FMOV
+	codegen.
+	* config/aarch64/aarch64.cc (aarch64_simd_valid_and_imm_fmov): New.
+	(aarch64_output_fmov): Likewise.
+	* config/aarch64/constraints.md (Df): New constraint.
+	* config/aarch64/predicates.md (aarch64_reg_or_and_imm): Update
+	predicate to support FMOV codegen.
+
+2025-05-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/100165
+	* config/aarch64/aarch64.cc (aarch64_evpc_and): New.
+	(aarch64_expand_vec_perm_const_1): Call aarch64_evpc_and.
+	* optabs.cc (vec_perm_and_mask): New.
+	* optabs.h (vec_perm_and_mask): New prototype.
+
+2025-05-16  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	* config/aarch64/aarch64.cc (aarch64_evpc_reencode): Zero initialize
+	newd.
+
+2025-05-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (forward_propagate_into_comparison): Dump
+	when replacing statement.
+
+2025-05-16  Martin Jambor  <mjambor@suse.cz>
+	    Michal Jires  <mjires@suse.cz>
+
+	* cgraph.h (symtab_node): Make member function get_uid const.
+	* cgraphclones.cc (dump_callgraph_transformation): Dump m_uid of the
+	call graph nodes instead of order.
+	* cgraph.cc (cgraph_node::remove): Likewise.
+	* ipa-cp.cc (ipcp_lattice<valtype>::print): Likewise.
+	* ipa-sra.cc (ipa_sra_summarize_function): Likewise.
+	* symtab.cc (symtab_node::dump_base): Likewise.
+
+2025-05-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* doc/invoke.texi: Add to_underlying to -ffold-simple-inlines.
+
+2025-05-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/118603
+	* config/aarch64/driver-aarch64.cc (aarch64_cpu_data): Add cast to unsigned
+	to VARIANT of the define AARCH64_CORE.
+
+2025-05-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-protos.h (struct sve_vec_cost): Change gather_load_x32_cost
+	and gather_load_x64_cost fields to unsigned.
+
+2025-05-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (optimize_memcpy_to_memset): Add a limit on the alias walk.
+
+2025-05-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-fold.cc (optimize_memcpy_to_memset): Move to
+	tree-ssa-forwprop.cc.
+	(gimple_fold_builtin_memory_op): Remove call to
+	optimize_memcpy_to_memset.
+	(fold_stmt_1): Likewise.
+	* tree-ssa-forwprop.cc (optimize_memcpy_to_memset): Move from
+	gimple-fold.cc.
+	(simplify_builtin_call): Try to optimize memcpy/memset.
+	(pass_forwprop::execute): Try to optimize memcpy like assignment
+	from a previous memset.
+
+2025-05-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm.cc (arm_gen_load_multiple_1): Simplify use of
+	end_sequence.
+	(arm_gen_store_multiple_1): Likewise.
+	* expr.cc (gen_move_insn): Likewise.
+	* gentarget-def.cc (main): Likewise.
+
+2025-05-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* asan.cc (asan_emit_allocas_unpoison): Directly return the
+	result of end_sequence.
+	(hwasan_emit_untag_frame): Likewise.
+	* config/aarch64/aarch64-speculation.cc
+	(aarch64_speculation_clobber_sp): Likewise.
+	(aarch64_speculation_establish_tracker): Likewise.
+	* config/arm/arm.cc (arm_call_tls_get_addr): Likewise.
+	* config/avr/avr-passes.cc (avr_parallel_insn_from_insns): Likewise.
+	* config/sh/sh_treg_combine.cc
+	(sh_treg_combine::make_not_reg_insn): Likewise.
+	* tree-outof-ssa.cc (emit_partition_copy): Likewise.
+
+2025-05-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* asan.cc (asan_clear_shadow): Use the return value of end_sequence,
+	rather than calling get_insns separately.
+	(asan_emit_stack_protection, asan_emit_allocas_unpoison): Likewise.
+	(hwasan_frame_base, hwasan_emit_untag_frame): Likewise.
+	* auto-inc-dec.cc (attempt_change): Likewise.
+	* avoid-store-forwarding.cc (process_store_forwarding): Likewise.
+	* bb-reorder.cc (fix_crossing_unconditional_branches): Likewise.
+	* builtins.cc (expand_builtin_apply_args): Likewise.
+	(expand_builtin_return, expand_builtin_mathfn_ternary): Likewise.
+	(expand_builtin_mathfn_3, expand_builtin_int_roundingfn): Likewise.
+	(expand_builtin_int_roundingfn_2, expand_builtin_saveregs): Likewise.
+	(inline_string_cmp): Likewise.
+	* calls.cc (expand_call): Likewise.
+	* cfgexpand.cc (expand_asm_stmt, pass_expand::execute): Likewise.
+	* cfgloopanal.cc (init_set_costs): Likewise.
+	* cfgrtl.cc (insert_insn_on_edge, prepend_insn_to_edge): Likewise.
+	(rtl_lv_add_condition_to_bb): Likewise.
+	* config/aarch64/aarch64-speculation.cc
+	(aarch64_speculation_clobber_sp): Likewise.
+	(aarch64_speculation_establish_tracker): Likewise.
+	(aarch64_do_track_speculation): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_load_symref_appropriately)
+	(aarch64_expand_vector_init, aarch64_gen_ccmp_first): Likewise.
+	(aarch64_gen_ccmp_next, aarch64_mode_emit): Likewise.
+	(aarch64_md_asm_adjust): Likewise.
+	(aarch64_switch_pstate_sm_for_landing_pad): Likewise.
+	(aarch64_switch_pstate_sm_for_jump): Likewise.
+	(aarch64_switch_pstate_sm_for_call): Likewise.
+	* config/alpha/alpha.cc (alpha_legitimize_address_1): Likewise.
+	(alpha_emit_xfloating_libcall, alpha_gp_save_rtx): Likewise.
+	* config/arc/arc.cc (hwloop_optimize): Likewise.
+	* config/arm/aarch-common.cc (arm_md_asm_adjust): Likewise.
+	* config/arm/arm-builtins.cc: Likewise.
+	* config/arm/arm.cc (require_pic_register): Likewise.
+	(arm_call_tls_get_addr, arm_gen_load_multiple_1): Likewise.
+	(arm_gen_store_multiple_1, cmse_clear_registers): Likewise.
+	(cmse_nonsecure_call_inline_register_clear): Likewise.
+	(arm_attempt_dlstp_transform): Likewise.
+	* config/avr/avr-passes.cc (bbinfo_t::optimize_one_block): Likewise.
+	(avr_parallel_insn_from_insns): Likewise.
+	* config/avr/avr.cc (avr_prologue_setup_frame): Likewise.
+	(avr_expand_epilogue): Likewise.
+	* config/bfin/bfin.cc (hwloop_optimize): Likewise.
+	* config/c6x/c6x.cc (c6x_expand_compare): Likewise.
+	* config/cris/cris.cc (cris_split_movdx): Likewise.
+	* config/cris/cris.md: Likewise.
+	* config/csky/csky.cc (csky_call_tls_get_addr): Likewise.
+	* config/epiphany/resolve-sw-modes.cc
+	(pass_resolve_sw_modes::execute): Likewise.
+	* config/fr30/fr30.cc (fr30_move_double): Likewise.
+	* config/frv/frv.cc (frv_split_scc, frv_split_cond_move): Likewise.
+	(frv_split_minmax, frv_split_abs): Likewise.
+	* config/frv/frv.md: Likewise.
+	* config/gcn/gcn.cc (move_callee_saved_registers): Likewise.
+	(gcn_expand_prologue, gcn_restore_exec, gcn_md_reorg): Likewise.
+	* config/i386/i386-expand.cc
+	(ix86_expand_carry_flag_compare, ix86_expand_int_movcc): Likewise.
+	(ix86_vector_duplicate_value, expand_vec_perm_interleave2): Likewise.
+	(expand_vec_perm_vperm2f128_vblend): Likewise.
+	(expand_vec_perm_2perm_interleave): Likewise.
+	(expand_vec_perm_2perm_pblendv): Likewise.
+	(expand_vec_perm2_vperm2f128_vblend, ix86_gen_ccmp_first): Likewise.
+	(ix86_gen_ccmp_next): Likewise.
+	* config/i386/i386-features.cc
+	(scalar_chain::make_vector_copies): Likewise.
+	(scalar_chain::convert_reg, scalar_chain::convert_op): Likewise.
+	(timode_scalar_chain::convert_insn): Likewise.
+	* config/i386/i386.cc (ix86_init_pic_reg, ix86_va_start): Likewise.
+	(ix86_get_drap_rtx, legitimize_tls_address): Likewise.
+	(ix86_md_asm_adjust): Likewise.
+	* config/ia64/ia64.cc (ia64_expand_tls_address): Likewise.
+	(ia64_expand_compare, spill_restore_mem): Likewise.
+	(expand_vec_perm_interleave_2): Likewise.
+	* config/loongarch/loongarch.cc
+	(loongarch_call_tls_get_addr): Likewise.
+	* config/m32r/m32r.cc (gen_split_move_double): Likewise.
+	* config/m32r/m32r.md: Likewise.
+	* config/m68k/m68k.cc (m68k_call_tls_get_addr): Likewise.
+	(m68k_call_m68k_read_tp, m68k_sched_md_init_global): Likewise.
+	* config/m68k/m68k.md: Likewise.
+	* config/microblaze/microblaze.cc
+	(microblaze_call_tls_get_addr): Likewise.
+	* config/mips/mips.cc (mips_call_tls_get_addr): Likewise.
+	(mips_ls2_init_dfa_post_cycle_insn): Likewise.
+	(mips16_split_long_branches): Likewise.
+	* config/nvptx/nvptx.cc (nvptx_gen_shuffle): Likewise.
+	(nvptx_gen_shared_bcast, nvptx_propagate): Likewise.
+	(workaround_uninit_method_1, workaround_uninit_method_2): Likewise.
+	(workaround_uninit_method_3): Likewise.
+	* config/or1k/or1k.cc (or1k_init_pic_reg): Likewise.
+	* config/pa/pa.cc (legitimize_tls_address): Likewise.
+	* config/pru/pru.cc (pru_expand_fp_compare, pru_reorg_loop): Likewise.
+	* config/riscv/riscv-shorten-memrefs.cc
+	(pass_shorten_memrefs::transform): Likewise.
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::emit_vsetvl): Likewise.
+	* config/riscv/riscv.cc (riscv_call_tls_get_addr): Likewise.
+	(riscv_frm_emit_after_bb_end): Likewise.
+	* config/rl78/rl78.cc (rl78_emit_libcall): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_debug_legitimize_address): Likewise.
+	* config/s390/s390.cc (legitimize_tls_address): Likewise.
+	(s390_two_part_insv, s390_load_got, s390_va_start): Likewise.
+	* config/sh/sh_treg_combine.cc
+	(sh_treg_combine::make_not_reg_insn): Likewise.
+	* config/sparc/sparc.cc (sparc_legitimize_tls_address): Likewise.
+	(sparc_output_mi_thunk, sparc_init_pic_reg): Likewise.
+	* config/stormy16/stormy16.cc (xstormy16_split_cbranch): Likewise.
+	* config/xtensa/xtensa.cc (xtensa_copy_incoming_a7): Likewise.
+	(xtensa_expand_block_set_libcall): Likewise.
+	(xtensa_expand_block_set_unrolled_loop): Likewise.
+	(xtensa_expand_block_set_small_loop, xtensa_call_tls_desc): Likewise.
+	* dse.cc (emit_inc_dec_insn_before, find_shift_sequence): Likewise.
+	(replace_read): Likewise.
+	* emit-rtl.cc (reorder_insns, gen_clobber, gen_use): Likewise.
+	* except.cc (dw2_build_landing_pads, sjlj_mark_call_sites): Likewise.
+	(sjlj_emit_function_enter, sjlj_emit_function_exit): Likewise.
+	(sjlj_emit_dispatch_table): Likewise.
+	* expmed.cc (expmed_mult_highpart_optab, expand_sdiv_pow2): Likewise.
+	* expr.cc (convert_mode_scalar, emit_move_multi_word): Likewise.
+	(gen_move_insn, expand_cond_expr_using_cmove): Likewise.
+	(expand_expr_divmod, expand_expr_real_2): Likewise.
+	(maybe_optimize_pow2p_mod_cmp, maybe_optimize_mod_cmp): Likewise.
+	* function.cc (emit_initial_value_sets): Likewise.
+	(instantiate_virtual_regs_in_insn, expand_function_end): Likewise.
+	(get_arg_pointer_save_area, make_split_prologue_seq): Likewise.
+	(make_prologue_seq, gen_call_used_regs_seq): Likewise.
+	(thread_prologue_and_epilogue_insns): Likewise.
+	(match_asm_constraints_1): Likewise.
+	* gcse.cc (prepare_copy_insn): Likewise.
+	* ifcvt.cc (noce_emit_store_flag, noce_emit_move_insn): Likewise.
+	(noce_emit_cmove): Likewise.
+	* init-regs.cc (initialize_uninitialized_regs): Likewise.
+	* internal-fn.cc (expand_POPCOUNT): Likewise.
+	* ira-emit.cc (emit_move_list): Likewise.
+	* ira.cc (ira): Likewise.
+	* loop-doloop.cc (doloop_modify): Likewise.
+	* loop-unroll.cc (compare_and_jump_seq): Likewise.
+	(unroll_loop_runtime_iterations, insert_base_initialization): Likewise.
+	(split_iv, insert_var_expansion_initialization): Likewise.
+	(combine_var_copies_in_loop_exit): Likewise.
+	* lower-subreg.cc (resolve_simple_move,resolve_shift_zext): Likewise.
+	* lra-constraints.cc (match_reload, check_and_process_move): Likewise.
+	(process_addr_reg, insert_move_for_subreg): Likewise.
+	(process_address_1, curr_insn_transform): Likewise.
+	(inherit_reload_reg, process_invariant_for_inheritance): Likewise.
+	(inherit_in_ebb, remove_inheritance_pseudos): Likewise.
+	* lra-remat.cc (do_remat): Likewise.
+	* mode-switching.cc (commit_mode_sets): Likewise.
+	(optimize_mode_switching): Likewise.
+	* optabs.cc (expand_binop, expand_twoval_binop_libfunc): Likewise.
+	(expand_clrsb_using_clz, expand_doubleword_clz_ctz_ffs): Likewise.
+	(expand_doubleword_popcount, expand_ctz, expand_ffs): Likewise.
+	(expand_absneg_bit, expand_unop, expand_copysign_bit): Likewise.
+	(prepare_float_lib_cmp, expand_float, expand_fix): Likewise.
+	(expand_fixed_convert, gen_cond_trap): Likewise.
+	(expand_atomic_fetch_op): Likewise.
+	* ree.cc (combine_reaching_defs): Likewise.
+	* reg-stack.cc (compensate_edge): Likewise.
+	* reload1.cc (emit_input_reload_insns): Likewise.
+	* sel-sched-ir.cc (setup_nop_and_exit_insns): Likewise.
+	* shrink-wrap.cc (emit_common_heads_for_components): Likewise.
+	(emit_common_tails_for_components): Likewise.
+	(insert_prologue_epilogue_for_components): Likewise.
+	* tree-outof-ssa.cc (emit_partition_copy): Likewise.
+	(insert_value_copy_on_edge): Likewise.
+	* tree-ssa-loop-ivopts.cc (computation_cost): Likewise.
+
+2025-05-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (end_sequence): Return the sequence.
+	* emit-rtl.cc (end_sequence): Likewise.
+
+2025-05-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*<optab>_vx_<mode>): Add new
+	pattern to convert vec_duplicate + vsub.vv to vsub.vx.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Add minus as plus op.
+	* config/riscv/vector-iterators.md: Add minus to iterator
+	any_int_binop_no_shift_vx.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116546
+	* range-op.cc (operator_bitwise_and::op1_range): Utilize bitmask
+	from the LHS to improve op1's bitmask.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116546
+	* value-range.cc (irange::intersect_bitmask): Allow unknown
+	bitmasks to be processed.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/116546
+	* value-range.cc (irange_bitmask::irange_bitmask): Include
+	leading ones in the bitmask.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.cc (irange_bitmask::irange_bitmask): Rename from
+	get_bitmask_from_range and tweak.
+	(prange::set): Use new constructor.
+	(prange::intersect): Use new constructor.
+	(irange::get_bitmask): Likewise.
+	* value-range.h (irange_bitmask): New constructor prototype.
+
+2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120277
+	* range-op-ptr.cc (operator_cast::fold_range): Check if the cast
+	if UNDEFINED before setting bounds.
+
+2025-05-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120223
+	* config/riscv/riscv.cc (synthesize_ior_xor): XTHEADBS does not have
+	single bit manipulations.
+
+2025-05-15  Alexander Monakov  <amonakov@ispras.ru>
+
+	* tree-cfg.cc (verify_gimple_assign_unary): Accept only
+	COMPLEX_TYPE for CONJ_EXPR.
+
+2025-05-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* fold-const.cc (tree_swap_operands_p): Put ADDR_EXPR last
+	instead of just is_gimple_invariant_address ones.
+	* match.pd (`a ptr+ b !=\== ADDR`, `ADDR !=/== ssa_name`):
+	Move the ADDR to the last operand. Update comment.
+
+2025-05-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.cc (vect_transform_loops): When diagnosing
+	a vectorized loop indicate whether we vectorized an epilogue,
+	whether we used masked vectors and what unroll factor was
+	used.
+
+2025-05-15  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::finish_cost):
+	Do not suggest a first epilogue mode for AVX512 sized
+	main loops with X86_TUNE_AVX512_TWO_EPILOGUES as that
+	interferes with using a masked epilogue.
+
+2025-05-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (record_stmt_cost): Remove mixed
+	stmt_vec_info/SLP node inline overload.
+	* tree-vect-stmts.cc (vectorizable_store): For costing
+	vector stmts only pass SLP node to record_stmt_cost.
+	(vectorizable_load): Likewise.
+
+2025-05-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_get_store_cost): Compute vectype based
+	on whether we got SLP node or stmt_vec_info and use the full
+	record_stmt_cost API.
+	(vect_get_load_cost): Likewise.
+
+2025-05-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::riscv_subset_list): Init m_allow_adding_dup.
+
+2025-05-14  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension defs.
+	* config/riscv/riscv-ext.opt: Ditto.
+	* doc/riscv-ext.texi: Ditto.
+
+2025-05-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/t-riscv: Drop duplicate build rule for
+	riscv-ext.opt.
+
+2025-05-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-ext.opt.urls: Regenerate.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-cfgcleanup.cc (canonicalize_bool_cond): New function.
+	(cleanup_control_expr_graph): Call canonicalize_bool_cond for GIMPLE_COND.
+	* tree-cfgcleanup.h (canonicalize_bool_cond): New declaration.
+	* tree-ssa-forwprop.cc (forward_propagate_into_gimple_cond):
+	Call canonicalize_bool_cond.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple.h (gimple_cond_set_code): Add assert of the code
+	being a comparison.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (forward_propagate_into_gimple_cond): Assert
+	that gimple_cond_code is always a comparison.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-fold.cc (replace_stmt_with_simplification): Check cfun before
+	accessing cfun.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Move marking of to_purge bb
+	and marking of fixup statements to after the local optimizations.
+
+2025-05-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Use `|=` for
+	changed on the local folding.
+
+2025-05-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (record_stmt_cost): Add overload with
+	only SLP node and no vector type.
+	* tree-vect-stmts.cc (record_stmt_cost): Use
+	SLP_TREE_REPRESENTATIVE for stmt_vec_info.
+	(vect_model_simple_cost): Do not get stmt_vec_info argument
+	and adjust.
+	(vectorizable_call): Adjust.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison_1): Likewise.
+	* tree-vect-slp.cc (vect_prologue_cost_for_slp): Use
+	full-blown record_stmt_cost.
+
+2025-05-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/120215
+	* config/i386/i386-features.cc
+	(scalar_chain::mark_dual_mode_def): Weight
+	cost of integer<->sse move with bb frequency when it's
+	optimized_for_speed_p.
+	(general_scalar_chain::compute_convert_gain): Ditto, and
+	adjust function prototype to return true/false when cost model
+	is profitable or not.
+	(timode_scalar_chain::compute_convert_gain): Ditto.
+	(convert_scalars_to_vector): Adjust after the upper two
+	function prototype are changed.
+	* config/i386/i386-features.h (class scalar_chain): Change
+	n_integer_to_sse/n_sse_to_integer to cost_sse_integer, and add
+	weighted_cost_sse_integer.
+	(class general_scalar_chain): Adjust prototype to return bool
+	intead of int.
+	(class timode_scalar_chain): Ditto.
+
+2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/111873
+	* tree-sra.cc (sra_modify_expr): When processing a load which has
+	a type-incompatible replacement, do not store the contents of the
+	replacement into the original aggregate when that aggregate is
+	const.
+
+2025-05-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md: Fix tf_to_fprx2 by using vlr instead of
+	ldr.
+
+2025-05-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/103771
+	* match.pd (cond_expr_convert_p): Extend the match to handle
+	scalar floating point type.
+	* tree-vect-patterns.cc
+	(vect_recog_cond_expr_convert_pattern): Handle floating point
+	type.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/119903
+	* gimple-fold.cc (replace_stmt_with_simplification): Reject for
+	noncall exceptions replacing comparison with itself.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/118868
+	* tree-cfg.cc (verify_gimple_assign_unary): Allow pointers
+	but disallow aggregate types for PAREN_EXPR.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* cfgexpand.cc (vars_ssa_cache::operator()): Update the cache if the use is already
+	has a cache.
+
+2025-05-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* cfgexpand.cc (vars_ssa_cache::operator()): Reverse the order of the going
+	through the update list.
+
+2025-05-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_nonlinear_induction):
+	Remove non-SLP path, use SLP_TREE_VECTYPE.
+	(vectorizable_induction): Likewise.  Drop ncopies variable
+	which is always 1.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_extra_ext_flag_table_t):
+	New.
+	(riscv_ext_flag_table): Rename to ...
+	(riscv_extra_ext_flag_table): this, and drop most of definitions
+	that can obtained from the flags field of the riscv_ext_info_t
+	structures.
+	(apply_extra_extension_flags): Use riscv_ext_info_t.
+	(riscv_ext_is_subset): Ditto.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_version_table):
+	Remove.
+	(standard_extensions_p): Use riscv_ext_info_t.
+	(get_default_version): Use riscv_ext_info_t.
+	(riscv_arch_help): Ditto.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_implied_info::riscv_implied_info_t): Remove unused
+	variant.
+	(struct riscv_implied_info_t): Remove unsued field.
+	(riscv_implied_info::match): Remove unused variant, and adjust
+	the logic.
+	(get_riscv_ext_info): New.
+	(riscv_implied_info): Remove.
+	(riscv_ext_info_t::apply_implied_ext): New.
+	(riscv_combine_info). Remove.
+	(riscv_subset_list::handle_implied_ext): Use riscv_ext_info_t
+	rather than riscv_implied_info.
+	(riscv_subset_list::check_implied_ext): Ditto.
+	(riscv_subset_list::handle_combine_ext): Use riscv_ext_info_t
+	rather than riscv_combine_info.
+	(riscv_minimal_hwprobe_feature_bits): Use riscv_ext_info_t
+	rather than riscv_implied_info.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_ext_info_t): New
+	struct.
+	(opt_var_ref_t): Adjust order.
+	(cl_opt_var_ref_t): Ditto.
+	(riscv_ext_flag_table_t): Adjust order, and add a new construct
+	that not hold the extension name.
+	(riscv_version_t): New struct.
+	(riscv_implied_info_t): Adjust order, and add a new construct that not
+	hold the extension name.
+	(apply_extra_extension_flags): New function.
+	(riscv_ext_infos): New.
+	(riscv_implied_info): Adjust.
+	* config/riscv/riscv-opts.h (EXT_FLAG_MACRO): New macro.
+	(BITMASK_NOT_YET_ALLOCATED): New macro.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_can_inline_p): Drop
+	extension flags check from `target_flags`.
+	* config/riscv/riscv-subset.h (riscv_x_target_flags_isa_mask):
+	Remove.
+	* config/riscv/riscv.cc (riscv_x_target_flags_isa_mask): Remove.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/invoke.texi: Replace hand‑written extension table with
+	`@include riscv-ext.texi` to pull in auto‑generated entries.
+	* doc/riscv-ext.texi: New generated definition file
+	containing formatted documentation entries for each extension.
+	* Makefile.in: Add riscv-ext.texi to the list of files to be
+	processed by the Texinfo generator.
+	* config/riscv/gen-riscv-ext-texi.cc: New.
+	* config/riscv/t-riscv: Add rule for generating riscv-ext.texi.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/gen-riscv-ext-opt.cc: New.
+	* config/riscv/riscv.opt: Drop manual entries for target
+	options, and include riscv-ext.opt.
+	* config/riscv/riscv-ext.opt: New.
+	* config/riscv/riscv-ext.opt.urls: New.
+	* config.gcc: Add riscv-ext.opt to the list of target options files.
+	* common/config/riscv/riscv-common.cc (riscv_ext_flag_table): Adjsut target
+	option variable entry.
+	(riscv_set_arch_by_subset_list): Adjust target option variable.
+	* config/riscv/riscv-c.cc (riscv_ext_flag_table): Adjust target
+	option variable entry.
+	* config/riscv/riscv-vector-builtins.cc (pragma_intrinsic_flags):
+	Adjust variable name.
+	(riscv_pragma_intrinsic_flags_pollute): Adjust variable name.
+	(riscv_pragma_intrinsic_flags_restore): Ditto.
+	* config/riscv/t-riscv: Add the rule for generating
+	riscv-ext.opt.
+	* config/riscv/riscv-opts.h (TARGET_MIN_VLEN): Update.
+	(TARGET_MIN_VLEN_OPTS): Update.
+
+2025-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-ext.def: New file; define extension metadata table.
+	* config/riscv/riscv-ext-corev.def: New.
+	* config/riscv/riscv-ext-sifive.def: New.
+	* config/riscv/riscv-ext-thead.def: New.
+	* config/riscv/riscv-ext-ventana.def: New.
+
+2025-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* diagnostic-format-html.cc: Include "diagnostic-format-text.h",
+	"pretty-print-urlifier.h" and "edit-context.h".
+	(html_builder::html_builder): Fix indentation in decl.
+	(html_builder::make_element_for_diagnostic): Split out metadata
+	code into make_element_for_metadata.  Call
+	make_element_for_source, make_element_for_path, and
+	make_element_for_patch.
+	(html_builder::make_element_for_source): New.
+	(html_builder::make_element_for_path): New.
+	(html_builder::make_element_for_patch): New.
+	(html_builder::make_metadata_element): New.
+	(html_builder::make_element_for_metadata): New.
+	(html_output_format::get_builder): New.
+	(selftest::test_html_diagnostic_context::get_builder): New.
+	(selftest::test_simple_log): Update test to print a quoted string,
+	and verify that it uses a "gcc-quoted-text" span.
+	(selftest::test_metadata): New.
+	(selftest::diagnostic_format_html_cc_tests): Call it.
+
+2025-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssanames.cc (set_bitmask): Use int_range_max for temps.
+	* value-range.cc (irange::set_range_from_bitmask): Handle all
+	trailing zero values.
+
+2025-05-12  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add form 7 matching pattern for unsigned integer
+	SAT_ADD.
+
+2025-05-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64.md (cmov<mode>6): Remove.
+
+2025-05-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120230
+	* optabs.cc (can_compare_p): Remove support for ccp_cmov.
+	* optabs.def (cmov_optab): Remove.
+	* optabs.h (can_compare_purpose): Remove ccp_cmov.
+
+2025-05-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120231
+	* range-op-float.cc (operator_cast::fold_range): New variants.
+	(operator_cast::op1_range): Likewise.
+	* range-op-mixed.h (operator_cast::fold_range): Likewise.
+	(operator_cast::op1_range): Likewise
+	* range-op.cc (range_op_handler::fold_range): Add RO_FIF dispatch.
+	(range_op_handler::op1_range): Add RO_IFF and RO_FII patterns.
+	(range_operator::fold_range): Provide new variant default.
+	(range_operator::op1_range): Likewise.
+	* range-op.h (range_operator): Add new variant methods.
+
+2025-05-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120188
+	* doc/gm2.texi (Semantic checking): Add -fm2-plugin command line option.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-sm.def: Add '61'.
+	* config/nvptx/nvptx-gen.h: Regenerate.
+	* config/nvptx/nvptx-gen.opt: Likewise.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm): Adjust.
+	* config/nvptx/nvptx.opt (-march-map=sm_61, -march-map=sm_62):
+	Likewise.
+	* config.gcc: Likewise.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-march=sm_61'.
+	* config/nvptx/gen-multilib-matches-tests: Extend.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
+	'PTX_VERSION_5_0'.
+	* config/nvptx/nvptx.cc (ptx_version_to_string)
+	(ptx_version_to_number): Adjust.
+	* config/nvptx/nvptx.h (TARGET_PTX_5_0): New.
+	* config/nvptx/nvptx.opt (Enum(ptx_version)): Add 'EnumValue'
+	'5.0' for 'PTX_VERSION_5_0'.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-mptx=5.0'.
+
+2025-05-12  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::check_conflict_ext): New extension.
+	* config/riscv/riscv.opt: Ditto.
+
+2025-05-12  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::check_conflict_ext): New extension.
+	* config/riscv/riscv.opt: Ditto.
+
+2025-05-12  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer-out.cc (hash_tree): Hash TYPE_MODE_RAW.
+	When offloading hash modes as VOIDmode for aggregates
+	and vectors.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* doc/extend.texi: Remove the iwmmxt intrinsics.
+	* doc/md.texi: Remove the iwmmxt-related constraints.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/aout.h (REGISTER_NAMES): Remove iwmmxt registers.
+	* config/arm/arm.h (FIRST_IWMMXT_REGNUM): Delete.
+	(LAST_IWMMXT_REGNUM): Delete.
+	(FIRST_IWMMXT_GR_REGNUM): Delete.
+	(LAST_IWMMXT_GR_REGNUM): Delete.
+	(IS_IWMMXT_REGNUM):  Delete.
+	(IS_IWMMXT_GR_REGNUM): Delete.
+	(FRAME_POINTER_REGNUM): Define relative to CC_REGNUM.
+	(ARG_POINTER_REGNUM): Define relative to FRAME_POINTER_REGNUM.
+	(FIRST_PSEUDO_REGISTER): Adjust.
+	(WREG): Delete.
+	(WGREG): Delete.
+	(REG_ALLOC_ORDER): Remove iWMMX registers.
+	(enum reg_class): Remove iWMMX register classes.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS):  Remove iWMMX registers.
+	* config/arm/arm.md (CC_REGNUM): Adjust value.
+	(VFPCC_RENGUM): Likewise.
+	(APSRQ_REGNUM): Likewise.
+	(APSRGE_REGNUM): Likewise.
+	(VPR_REGNUM): Likewise.
+	(RA_AUTH_CODE): Likewise.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (feature iwmmxt, feature iwmmxt2):  Delete.
+	* config/arm/arm-protos.h (arm_output_iwmmxt_shift_immediate): Delete.
+	(arm_output_iwmmxt_tinsr): Delete.
+	(arm_arch_iwmmxt): Delete.
+	(arm_arch_iwmmxt2): Delete.
+	* config/arm/arm.h (TARGET_IWMMXT): Delete.
+	(TARGET_IWMMXT2): Delete.
+	(TARGET_REALLY_IWMMXT): Delete.
+	(TARGET_REALLY_IWMMXT2): Delete.
+	(VALID_IWMMXT_REG_MODE): Delete.
+	(ARM_HAVE_V8QI_ARITH): Remove iWMMXT.
+	(ARM_HAVE_V4HI_ARITH): Likewise.
+	(ARM_HAVE_V2SI_ARITH): Likewise.
+	(ARM_HAVE_V8QI_LDST): Likewise.
+	(ARM_HAVE_V4HI_LDST): Likewise.
+	(ARM_HAVE_V2SI_LDST): Likewise.
+	(SECONDARY_OUTPUT_RELOAD_CLASS):  Remove iWMMXT cases.
+	(SECONDARY_INPUT_RELOAD_CLASS): Likewise.
+	* config/arm/arm.cc (arm_arch_iwmmxt): Delete.
+	(arm_arch_iwmmxt2): Delete.
+	(arm_option_reconfigure_globals): Don't initialize them.
+	(arm_register_move_cost): Remove costs for iwmmxt.
+	(struct minipool_node):  Update comment.
+	(output_move_double): Likewise
+	(output_return_instruction): Likewise.
+	(arm_print_operand, cases 'U' and 'w'): Report an error if
+	used.
+	(arm_regno_class): Remove iWMMXT cases.
+	(arm_debugger_regno): Remove iWMMXT cases.
+	(arm_output_iwmmxt_shift_immediate): Delete.
+	(arm_output_iwmmxt_tinsr): Delete.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-c.cc (arm_cpu_builtins):  Remove predefines
+	for __IWWMXT__, __IWMMXT2__ and __ARM_WMMX.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/iterators.md (VMMX, VMMX2): Remove mode iterators.
+	(MMX_char): Remove mode iterator attribute.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (core_cycles): Remove iwmmxt attributes.
+	* config/arm/types.md (autodetect_type): Likewise.
+	* config/arm/marvell-f-iwmmxt.md: Removed.
+	* config/arm/t-arm: Remove marvell-f-iwmmxt.md
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.cc (arm_option_check_internal): Remove
+	IWMMXT check.
+	(arm_options_perform_arch_sanity_checks): Likewise.
+	(use_return_insn): Likewise.
+	(arm_init_cumulative_args): Likewise.
+	(arm_legitimate_index_p): Likewise.
+	(thumb2_legitimate_index_p): Likewise.
+	(arm_compute_save_core_reg_mask): Likewise.
+	(output_return_instruction): Likewise.
+	(arm_compute_frame_layout): Likewise.
+	(arm_save_coproc_regs): Likewise.
+	(arm_hard_regno_mode_ok): Likewise.
+	(arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise.
+	(arm_vector_mode_supported_p): Likewise.
+	(arm_preferred_simd_mode): Likewise.
+	(arm_conditional_register_usage): Likewise.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (arm, --with-abi): Remove iwmmxt abi option.
+	* config/arm/arm.opt (enum ARM_ABI_IWMMXT): Remove.
+	* config/arm/arm.h (TARGET_IWMMXT_ABI): Delete.
+	(enum arm_pcs): Remove ARM_PCS_AAPCS_IWMMXT.
+	(FUNCTION_ARG_REGNO_P): Remove IWMMXT ABI support.
+	(CUMULATIVE_ARGS): Remove iwmmxt_nregs.
+	* config/arm/arm.cc (arm_options_perform_arch_sanity_checks):
+	Remove IWMMXT ABI checks.
+	(arm_libcall_value_1): Likewise.
+	(arm_function_value_regno_p): Likewise.
+	(arm_apply_result_size): Remove adjustment for IWMMXT ABI.
+	(arm_function_arg): Remove IWMMXT ABI support.
+	(arm_arg_partial_bytes): Likewise.
+	(arm_function_arg_advance): Likewise.
+	(arm_init_cumulative_args): Don't initialize iwmmxt_nregs.
+	* doc/invoke.texi (arm -mabi): Remove mention of the iwmmxt
+	ABI option.
+	* config/arm/arm-opts.h (enum arm_abi_type): Remove ARM_ABI_IWMMXT.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md(attr arch): Remove iwmmxt and iwmmxt2.
+	Remove checks based on TARGET_REALLY_IWMMXT2 from all split
+	patterns.
+	(arm_movdi): Likewise.
+	(*arm_movt): Likewise.
+	(arch_enabled): Remove test for iwmmxt2.
+	* config/arm/constraints.md (y, z): Remove register constraints.
+	(Uy): Remove memory constraint.
+	* config/arm/thumb2.md (thumb2_pop_single): Remove check for
+	IWMMXT.
+	* config/arm/vec-common.md (mov<mode>): Remove check for IWMMXT.
+	(mul<mode>3): Likewise.
+	(xor<mode>3): Likewise.
+	(<absneg_str><mode>2): Likewise.
+	(@movmisalign<mode>): Likewise.
+	(@mve_<mve_insn>q_<supf><mode>): Likewise.
+	(vashl<mode>3): Likewise.
+	(vashr<mode>3): Likewise.
+	(vlshr<mode>3): Likewise.
+	(uavg<mode>3_ceil): Likewise.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md: Don't include iwmmxt.md.
+	* config/arm/t-arm (MD_INCLUDES): Remove iwmmxt*.md.
+	* config/arm/iwmmxt.md: Removed.
+	* config/arm/iwmmxt2.md: Removed.
+	* config/arm/unspecs.md: Remove comment referring to
+	iwmmxt2.md.
+	(enum unspec): Remove iWMMXt unspec values.
+	(enum unspecv): Likewise.
+	* config/arm/predicates.md (imm_or_reg_operand): Delete.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-builtins.cc (enum arm_builtins): Delete iWMMX
+	builtin values.
+	(bdesc_2arg): Likewise.
+	(bdesc_1arg): Likewise.
+	(arm_init_iwmmxt_builtins): Delete.
+	(arm_init_builtins): Don't call arm_init_iwmmxt_builtins.
+	(safe_vector_operand): Use __builtin_unreachable instead of emitting
+	an iwmmxt builtin.
+	(arm_general_expand_builtin): Remove iWMMX builtins support.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (arch iwmmxt): treat in the same
+	way as we would treat XScale.
+	(arch iwmmxt2): Likewise.
+	(cpu xscale): Add aliases for iwmmxt and iwmmxt2.
+	(cpu iwmmxt): Delete.
+	(cpu iwmmxt2): Delete.
+	* config/arm/arm-generic.md (load_ldsched_xscale): Remove references
+	to iwmmxt.
+	(load_ldsched): Likewise.
+	* config/arm/arm-tables.opt: Regenerated.
+	* config/arm/arm-tune.md: Regenerated.
+	* doc/sourcebuild.texi (arm_iwmmxt_ok): Delete.
+
+2025-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.h (SECONDARY_OUTPUT_RELOAD_CLASS): Add	parentheis
+	and re-indent.
+	(SECONDARY_INPUT_RELOAD_CLASS): Likewise.
+
+2025-05-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120228
+	* config/i386/i386-features.cc (ix86_place_single_vector_set):
+	Remove df_insn_rescan after emit_insn_*.
+	(remove_partial_avx_dependency): Likewise.
+	(replace_vector_const): Likewise.
+
 2025-05-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* config/i386/i386.cc (ix86_widen_mult_cost): Use sse_op to cost

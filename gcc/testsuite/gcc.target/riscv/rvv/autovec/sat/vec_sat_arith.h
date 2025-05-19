@@ -123,6 +123,22 @@ vec_sat_u_add_##T##_fmt_8 (T *out, T *op_1, T *op_2, unsigned limit) \
     }                                                                \
 }
 
+#define DEF_VEC_SAT_U_ADD_FMT_9(WT, T)                                      \
+void __attribute__((noinline))                                              \
+vec_sat_u_add_##WT##_##T##_fmt_9 (T *out, T *op_1, T *op_2, unsigned limit) \
+{                                                                           \
+  unsigned i;                                                               \
+  T max = -1;                                                               \
+  for (i = 0; i < limit; i++)                                               \
+    {                                                                       \
+      T x = op_1[i];                                                        \
+      T y = op_2[i];                                                        \
+      WT val = (WT)x + (WT)y;                                               \
+      out[i] = val > max ? max : (T)val;                                    \
+    }                                                                       \
+}
+#define DEF_VEC_SAT_U_ADD_FMT_9_WRAP(WT, T) DEF_VEC_SAT_U_ADD_FMT_9(WT, T)
+
 #define RUN_VEC_SAT_U_ADD_FMT_1(T, out, op_1, op_2, N) \
   vec_sat_u_add_##T##_fmt_1(out, op_1, op_2, N)
 
@@ -146,6 +162,21 @@ vec_sat_u_add_##T##_fmt_8 (T *out, T *op_1, T *op_2, unsigned limit) \
 
 #define RUN_VEC_SAT_U_ADD_FMT_8(T, out, op_1, op_2, N) \
   vec_sat_u_add_##T##_fmt_8(out, op_1, op_2, N)
+
+#define RUN_VEC_SAT_U_ADD_FMT_9_FROM_U16(T, out, op_1, op_2, N) \
+  vec_sat_u_add_uint16_t_##T##_fmt_9(out, op_1, op_2, N)
+#define RUN_VEC_SAT_U_ADD_FMT_9_FROM_U16_WRAP(T, out, op_1, op_2, N) \
+  RUN_VEC_SAT_U_ADD_FMT_9_FROM_U16(T, out, op_1, op_2, N)
+
+#define RUN_VEC_SAT_U_ADD_FMT_9_FROM_U32(T, out, op_1, op_2, N) \
+  vec_sat_u_add_uint32_t_##T##_fmt_9(out, op_1, op_2, N)
+#define RUN_VEC_SAT_U_ADD_FMT_9_FROM_U32_WRAP(T, out, op_1, op_2, N) \
+  RUN_VEC_SAT_U_ADD_FMT_9_FROM_U32(T, out, op_1, op_2, N)
+
+#define RUN_VEC_SAT_U_ADD_FMT_9_FROM_U64(T, out, op_1, op_2, N) \
+  vec_sat_u_add_uint64_t_##T##_fmt_9(out, op_1, op_2, N)
+#define RUN_VEC_SAT_U_ADD_FMT_9_FROM_U64_WRAP(T, out, op_1, op_2, N) \
+  RUN_VEC_SAT_U_ADD_FMT_9_FROM_U64(T, out, op_1, op_2, N)
 
 #define DEF_VEC_SAT_U_ADD_IMM_FMT_1(T, IMM)                          \
 T __attribute__((noinline))                                          \

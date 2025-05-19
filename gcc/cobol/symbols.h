@@ -46,11 +46,6 @@
 #include <string>
 #include <vector>
 
-// Provide fallback definition.
-#ifndef NAME_MAX
-#define NAME_MAX 255
-#endif
-
 #define PICTURE_MAX 64
 
 extern const char *numed_message;
@@ -62,19 +57,22 @@ enum cbl_dialect_t {
   dialect_gnu_e = 0x04,
 };
 
-extern cbl_dialect_t cbl_dialect;
+// Dialects may be combined. 
+extern unsigned int cbl_dialects;
 void cobol_dialect_set( cbl_dialect_t dialect );
-cbl_dialect_t dialect_is();
 
+// GCC dialect means no other dialects
 static inline bool dialect_gcc() {
-  return dialect_gcc_e  == cbl_dialect;
+  return dialect_gcc_e == cbl_dialects;
 }
-
 static inline bool dialect_ibm() {
-  return dialect_ibm_e == (cbl_dialect & dialect_ibm_e);
+  return dialect_ibm_e == (cbl_dialects & dialect_ibm_e);
 }
 static inline bool dialect_mf() {
-  return dialect_mf_e  == (cbl_dialect & dialect_mf_e );
+  return dialect_mf_e  == (cbl_dialects & dialect_mf_e );
+}
+static inline bool dialect_gnu() {
+  return dialect_gnu_e  == (cbl_dialects & dialect_gnu_e );
 }
 
 enum cbl_gcobol_feature_t {
@@ -220,7 +218,6 @@ bool decimal_is_comma();
 
 enum symbol_type_t {
   SymFilename,
-  SymFunction,
   SymField,
   SymLabel,                     // section, paragraph, or label
   SymSpecial,
@@ -1475,14 +1472,6 @@ struct cbl_alphabet_t {
   }
 };
 
-// a function pointer
-typedef void ( *cbl_function_ptr ) ( void );
-
-struct cbl_function_t {
-  char name[NAME_MAX];
-  cbl_function_ptr func;
-};
-
 static inline const char *
 file_org_str( enum cbl_file_org_t org ) {
   switch ( org ) {
@@ -1638,7 +1627,6 @@ struct symbol_elem_t {
   size_t program;
   union symbol_elem_u {
     char *filename;
-    cbl_function_t     function;
     cbl_field_t        field;
     cbl_label_t        label;
     cbl_special_name_t special;
@@ -1691,9 +1679,6 @@ struct symbol_elem_t {
     switch(type) {
     case SymFilename:
       elem.filename = that.elem.filename;
-      break;
-    case SymFunction:
-      elem.function = that.elem.function;
       break;
     case SymField:
       elem.field = that.elem.field;
@@ -1813,13 +1798,6 @@ symbolset_t symbol_program_callables( size_t program );
 const cbl_label_t * symbol_program_local( const char called[] );
 
 bool redefine_field( cbl_field_t *field );
-
-// Functions to correctly extract the underlying type.
-static inline struct cbl_function_t *
-cbl_function_of( struct symbol_elem_t *e ) {
-  assert(e->type == SymFunction);
-  return &e->elem.function;
-}
 
 static inline struct cbl_section_t *
 cbl_section_of( struct symbol_elem_t *e ) {

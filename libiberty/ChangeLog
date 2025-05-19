@@ -1,3 +1,8 @@
+2025-05-13  Andreas Schwab  <schwab@suse.de>
+
+	* regex.c (regex_compile): Don't write beyond array bounds when
+	collecting range expression.
+
 2025-03-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR cobol/119283

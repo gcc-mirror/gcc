@@ -1199,8 +1199,7 @@ match_reload (signed char out, signed char *ins, signed char *outs,
      accurate.  */
   narrow_reload_pseudo_class (in_rtx, goal_class);
   lra_emit_move (copy_rtx (new_in_reg), in_rtx);
-  *before = get_insns ();
-  end_sequence ();
+  *before = end_sequence ();
   /* Add the new pseudo to consider values of subsequent input reload
      pseudos.  */
   lra_assert (curr_insn_input_reloads_num < LRA_MAX_INSN_RELOADS);
@@ -1235,8 +1234,7 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	out_rtx = gen_rtx_STRICT_LOW_PART (VOIDmode, out_rtx);
       lra_emit_move (out_rtx, copy_rtx (new_out_reg));
       emit_insn (*after);
-      *after = get_insns ();
-      end_sequence ();
+      *after = end_sequence ();
     }
   *curr_id->operand_loc[out] = new_out_reg;
   lra_update_dup (curr_id, out);
@@ -1444,8 +1442,7 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
       emit_insn (GEN_FCN (sri.icode) (new_reg != NULL_RTX ? new_reg : dest,
 				      src, scratch_reg));
     }
-  before = get_insns ();
-  end_sequence ();
+  before = end_sequence ();
   lra_process_new_insns (curr_insn, before, NULL, "Inserting the move");
   if (new_reg != NULL_RTX)
     SET_SRC (curr_insn_set) = new_reg;
@@ -1612,8 +1609,7 @@ process_addr_reg (rtx *loc, bool check_only_p, rtx_insn **before, rtx_insn **aft
     {
       push_to_sequence (*before);
       lra_emit_move (new_reg, reg);
-      *before = get_insns ();
-      end_sequence ();
+      *before = end_sequence ();
     }
   *loc = new_reg;
   if (after != NULL)
@@ -1621,8 +1617,7 @@ process_addr_reg (rtx *loc, bool check_only_p, rtx_insn **before, rtx_insn **aft
       start_sequence ();
       lra_emit_move (before_p ? copy_rtx (reg) : reg, new_reg);
       emit_insn (*after);
-      *after = get_insns ();
-      end_sequence ();
+      *after = end_sequence ();
     }
   return true;
 }
@@ -1639,16 +1634,14 @@ insert_move_for_subreg (rtx_insn **before, rtx_insn **after, rtx origreg,
     {
       push_to_sequence (*before);
       lra_emit_move (newreg, origreg);
-      *before = get_insns ();
-      end_sequence ();
+      *before = end_sequence ();
     }
   if (after)
     {
       start_sequence ();
       lra_emit_move (origreg, newreg);
       emit_insn (*after);
-      *after = get_insns ();
-      end_sequence ();
+      *after = end_sequence ();
     }
 }
 
@@ -4036,8 +4029,7 @@ process_address_1 (int nop, bool check_only_p,
       lra_emit_move (new_reg, addr);
       *ad.inner = new_reg;
     }
-  *before = get_insns ();
-  end_sequence ();
+  *before = end_sequence ();
   return true;
 }
 
@@ -4446,8 +4438,7 @@ curr_insn_transform (bool check_only_p)
 	  push_to_sequence (before);
 	  before = emit_spill_move (true, new_reg, src);
 	  emit_insn (before);
-	  before = get_insns ();
-	  end_sequence ();
+	  before = end_sequence ();
 	  lra_process_new_insns (curr_insn, before, NULL, "Changing on");
 	  lra_set_insn_deleted (curr_insn);
 	}
@@ -4467,8 +4458,7 @@ curr_insn_transform (bool check_only_p)
 	  push_to_sequence (before);
 	  before = emit_spill_move (true, new_reg, src);
 	  emit_insn (before);
-	  before = get_insns ();
-	  end_sequence ();
+	  before = end_sequence ();
 	  lra_process_new_insns (curr_insn, before, NULL,
 				 "Inserting the sec. move");
 	}
@@ -4739,8 +4729,7 @@ curr_insn_transform (bool check_only_p)
 	      if (align_p)
 		emit_move_insn (new_reg, gen_rtx_AND (GET_MODE (new_reg), new_reg, XEXP (*loc, 1)));
 	    }
-	  before = get_insns ();
-	  end_sequence ();
+	  before = end_sequence ();
 	  *loc = new_reg;
 	  lra_update_dup (curr_id, i);
 	}
@@ -4813,8 +4802,7 @@ curr_insn_transform (bool check_only_p)
 	    {
 	      push_to_sequence (before);
 	      lra_emit_move (new_reg, old);
-	      before = get_insns ();
-	      end_sequence ();
+	      before = end_sequence ();
 	    }
 	  *loc = new_reg;
 	  if (type != OP_IN
@@ -4825,8 +4813,7 @@ curr_insn_transform (bool check_only_p)
 	      start_sequence ();
 	      lra_emit_move (type == OP_INOUT ? copy_rtx (old) : old, new_reg);
 	      emit_insn (after);
-	      after = get_insns ();
-	      end_sequence ();
+	      after = end_sequence ();
 	      *loc = new_reg;
 	    }
 	  for (j = 0; j < goal_alt_dont_inherit_ops_num; j++)
@@ -5968,8 +5955,7 @@ inherit_reload_reg (bool def_p, int original_regno,
     lra_emit_move (original_reg, new_reg);
   else
     lra_emit_move (new_reg, original_reg);
-  new_insns = get_insns ();
-  end_sequence ();
+  new_insns = end_sequence ();
   if (NEXT_INSN (new_insns) != NULL_RTX)
     {
       if (lra_dump_file != NULL)
@@ -6608,14 +6594,12 @@ process_invariant_for_inheritance (rtx dst_reg, rtx invariant_rtx)
 	  lra_reg_info[REGNO (new_reg)].restore_rtx = PATTERN (insn);
 	  start_sequence ();
 	  lra_emit_move (new_reg, dst_reg);
-	  new_insns = get_insns ();
-	  end_sequence ();
+	  new_insns = end_sequence ();
 	  lra_process_new_insns (curr_insn, NULL, new_insns,
 				 "Add invariant inheritance<-original");
 	  start_sequence ();
 	  lra_emit_move (SET_DEST (insn_set), new_reg);
-	  new_insns = get_insns ();
-	  end_sequence ();
+	  new_insns = end_sequence ();
 	  lra_process_new_insns (insn, NULL, new_insns,
 				 "Changing reload<-inheritance");
 	  lra_set_insn_deleted (insn);
@@ -7117,8 +7101,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		    {
 		      start_sequence ();
 		      emit_move_insn (cheap, copy_rtx (dest));
-		      restore = get_insns ();
-		      end_sequence ();
+		      restore = end_sequence ();
 		      lra_process_new_insns (curr_insn, NULL, restore,
 					     "Inserting call parameter restore");
 		      /* We don't need to save/restore of the pseudo from
@@ -7498,8 +7481,7 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 		  /* We cannot just change the source.  It might be
 		     an insn different from the move.  */
 		  emit_insn (lra_reg_info[sregno].restore_rtx);
-		  rtx_insn *new_insns = get_insns ();
-		  end_sequence ();
+		  rtx_insn *new_insns = end_sequence ();
 		  lra_assert (single_set (new_insns) != NULL
 			      && SET_DEST (set) == SET_DEST (single_set (new_insns)));
 		  lra_process_new_insns (curr_insn, NULL, new_insns,

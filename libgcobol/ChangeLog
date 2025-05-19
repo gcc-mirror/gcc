@@ -1,3 +1,13 @@
+2025-05-16  Robert Dubner  <rdubner@symas.com>
+
+	* common-defs.h (struct cbl_declarative_t): Eliminate blobl.
+	* libgcobol.cc (__gg__set_env_name): Code for ENVIRONMENT-NAME/VALUE.
+	(__gg__set_env_value): Likewise.
+
+2025-05-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* libgcobol.cc [!LOG_PERROR] (LOG_PERROR): Provide fallback.
+
 2025-05-11  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119377

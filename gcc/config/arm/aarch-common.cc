@@ -655,8 +655,7 @@ arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 	  emit_move_insn (dest, tmp);
 	}
     }
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
 
   return saw_asm_flag ? seq : NULL;
 }

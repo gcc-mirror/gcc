@@ -75,6 +75,11 @@
 
 #include "exceptl.h"
 
+/* BSD extension.  */
+#if !defined(LOG_PERROR)
+#define LOG_PERROR 0
+#endif
+
 #if !defined (HAVE_STRFROMF32)
 # if __FLT_MANT_DIG__ == 24 && __FLT_MAX_EXP__ == 128
 static int
@@ -13103,3 +13108,58 @@ __gg__set_exception_environment( uint64_t *ecs, uint64_t *dcls )
   prior.dcls = dcls;
   }
 
+static char *sv_envname = NULL;
+
+extern "C"
+void
+__gg__set_env_name( cblc_field_t   *var,
+                    size_t          offset,
+                    size_t          length )
+  {
+  free(sv_envname);
+  sv_envname = (char *)malloc(length+1);
+  memcpy(sv_envname, var->data+offset, length);
+  sv_envname[length] = '\0';
+  }
+
+extern "C"
+void
+__gg__set_env_value(cblc_field_t   *value,
+                    size_t          offset,
+                    size_t          length )
+  {
+  size_t name_length  = strlen(sv_envname);
+  size_t value_length = length;
+
+  static char   *env        = NULL;
+  static size_t  env_length = 0;
+  static char   *val        = NULL;
+  static size_t  val_length = 0;
+  if( env_length < name_length+1 )
+    {
+    env_length = name_length+1;
+    env = (char *)realloc(env, env_length);
+    }
+  if( val_length < value_length+1 )
+    {
+    val_length = value_length+1;
+    val = (char *)realloc(val, val_length);
+    }
+
+  // The name and the value arrive in the internal codeset:
+  memcpy(env, sv_envname, name_length);
+  env[name_length] = '\0';
+  memcpy(val, value->data+offset, value_length);
+  val[value_length] = '\0';
+
+  // Get rid of leading and trailing internal_space characters
+  char *trimmed_env = brute_force_trim(env);
+  char *trimmed_val = brute_force_trim(val);
+
+  // Conver them to the console codeset
+  __gg__internal_to_console_in_place(trimmed_env, strlen(trimmed_env));
+  __gg__internal_to_console_in_place(trimmed_val, strlen(trimmed_val));
+
+  // And now, anticlimactically, set the variable:
+  setenv(trimmed_env, trimmed_val, 1);
+  }

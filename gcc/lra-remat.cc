@@ -1180,8 +1180,7 @@ do_remat (void)
 
 		      start_sequence ();
 		      emit_insn (remat_pat);
-		      remat_insn = get_insns ();
-		      end_sequence ();
+		      remat_insn = end_sequence ();
 		      if (recog_memoized (remat_insn) < 0)
 			remat_insn = NULL;
 		      cand_sp_offset = cand_id->sp_offset;

@@ -290,8 +290,8 @@ struct sve_vec_cost : simd_vec_cost
 
   /* The cost of a gather load instruction.  The x32 value is for loads
      of 32-bit elements and the x64 value is for loads of 64-bit elements.  */
-  const int gather_load_x32_cost;
-  const int gather_load_x64_cost;
+  const unsigned int gather_load_x32_cost;
+  const unsigned int gather_load_x64_cost;
 
   /* Additional loop initialization cost of using a gather load instruction.  The x32
      value is for loads of 32-bit elements and the x64 value is for loads of
@@ -933,6 +933,7 @@ char *aarch64_output_simd_mov_imm (rtx, unsigned);
 char *aarch64_output_simd_orr_imm (rtx, unsigned);
 char *aarch64_output_simd_and_imm (rtx, unsigned);
 char *aarch64_output_simd_xor_imm (rtx, unsigned);
+char *aarch64_output_fmov (rtx);
 
 char *aarch64_output_sve_mov_immediate (rtx);
 char *aarch64_output_sve_ptrues (rtx);
@@ -948,6 +949,7 @@ bool aarch64_simd_scalar_immediate_valid_for_move (rtx, scalar_int_mode);
 bool aarch64_simd_shift_imm_p (rtx, machine_mode, bool);
 bool aarch64_sve_ptrue_svpattern_p (rtx, struct simd_immediate_info *);
 bool aarch64_simd_valid_and_imm (rtx);
+bool aarch64_simd_valid_and_imm_fmov (rtx, unsigned int * = NULL);
 bool aarch64_simd_valid_mov_imm (rtx);
 bool aarch64_simd_valid_orr_imm (rtx);
 bool aarch64_simd_valid_xor_imm (rtx);

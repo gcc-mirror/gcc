@@ -3938,8 +3938,7 @@ expmed_mult_highpart_optab (scalar_int_mode mode, rtx op0, rtx op1,
       wop1 = convert_modes (wider_mode, mode, op1, unsignedp);
       tem = expand_binop (wider_mode, smul_optab, wop0, wop1, 0,
 			  unsignedp, OPTAB_WIDEN);
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       if (tem)
 	{
@@ -4182,8 +4181,7 @@ expand_sdiv_pow2 (scalar_int_mode mode, rtx op0, HOST_WIDE_INT d)
 				     temp, temp2, mode, 0);
       if (temp2)
 	{
-	  rtx_insn *seq = get_insns ();
-	  end_sequence ();
+	  rtx_insn *seq = end_sequence ();
 	  emit_insn (seq);
 	  return expand_shift (RSHIFT_EXPR, mode, temp2, logd, NULL_RTX, 0);
 	}

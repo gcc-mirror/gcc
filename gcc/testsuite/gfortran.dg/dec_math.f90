@@ -5,6 +5,12 @@
 ! Test extra math intrinsics formerly offered by -fdec-math,
 ! now included with -std=gnu or -std=legacy.
 !
+! Since Fortran 2023, the degree trigonometric functions (sind, cosd, ...)
+! are part of the standard; additionally, Fortran 2023 added a two-argument
+! version of atand as alias for atan2d.
+!
+! Note that cotan and cotand are not part of Fortran 2023; hence, this file
+! still requires -std=gnu and cannot be compiled with -std=f2023.
 
 module dec_math
 
@@ -502,6 +508,69 @@ l_ox = atand (xl * l_i1)
 q_oa = atand (q_i1)
 q_oc = atand (1.55740772465490229237161656783428_16)
 q_ox = atand (xq * q_i1)
+#endif
+
+call cmpf(f_i1, f_oe,  f_oa, f_tol, "( ) fatand")
+call cmpf(f_i1, f_oe,  f_oc, f_tol, "(c) fatand")
+call cmpf(f_i1, f_oxe, f_ox, f_tol, "(x) fatand")
+call cmpd(d_i1, d_oe,  d_oa, d_tol, "( ) datand")
+call cmpd(d_i1, d_oe,  d_oc, d_tol, "(c) datand")
+call cmpd(d_i1, d_oxe, d_ox, d_tol, "(x) atand")
+#ifdef __GFC_REAL_10__
+call cmpl(l_i1, l_oe,  l_oa, l_tol, "( ) latand")
+call cmpl(l_i1, l_oe,  l_oc, l_tol, "(c) latand")
+call cmpl(l_i1, l_oxe, l_ox, l_tol, "(x) latand")
+#endif
+#ifdef __GFC_REAL_16__
+call cmpq(q_i1, q_oe,  q_oa, q_tol, "( ) qatand")
+call cmpq(q_i1, q_oe,  q_oc, q_tol, "(c) qatand")
+call cmpq(q_i1, q_oxe, q_ox, q_tol, "(x) qatand")
+#endif
+
+! Input
+f_i1 = 1.0_4
+f_i2 = 2.0_4
+d_i1 = 1.0_8
+d_i2 = 2.0_8
+#ifdef __GFC_REAL_10__
+l_i1 = 1.0_10
+l_i2 = 2.0_10
+#endif
+#ifdef __GFC_REAL_16__
+q_i1 = 1.0_16
+q_i2 = 2.0_16
+#endif
+
+! Expected
+f_oe  = r2d_f * atan2 (f_i1, f_i2)
+f_oxe = r2d_f * atan2 (xf * f_i1, f_i2)
+d_oe  = r2d_d * atan2 (d_i1, d_i2)
+d_oxe = r2d_d * atan2 (xd * d_i1, d_i2)
+#ifdef __GFC_REAL_10__
+l_oe  = r2d_l * atan2 (l_i1, l_i2)
+l_oxe = r2d_l * atan2 (xl * l_i1, l_i2)
+#endif
+#ifdef __GFC_REAL_16__
+q_oe  = r2d_q * atan2 (q_i1, q_i2)
+q_oxe = r2d_q * atan2 (xq * q_i1, q_i2)
+#endif
+
+! Actual
+f_oa = atand (f_i1, f_i2)
+f_oc = atand (1.0_4, 2.0_4)
+f_ox = atand (xf * f_i1, f_i2)
+d_oa = atand (d_i1, d_i2)
+d_oc = atand (1.0_8, 2.0_8)
+d_ox = atand (xd * d_i1, d_i2)
+#ifdef __GFC_REAL_10__
+l_oa = atand (l_i1, l_i2)
+l_oc = atand (1.0_10, 2.0_10)
+l_ox = atand (xl * l_i1, l_i2)
+#endif
+#ifdef __GFC_REAL_16__
+q_oa = atand (q_i1, q_i2)
+q_oc = atand (1.0_16, 2.0_16)
+q_ox = atand (xq * q_i1, q_i2)
 #endif
 
 call cmpf(f_i1, f_oe,  f_oa, f_tol, "( ) fatand")

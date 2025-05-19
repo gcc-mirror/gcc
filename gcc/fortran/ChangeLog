@@ -1,3 +1,61 @@
+2025-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85750
+	* resolve.cc (resolve_symbol): Reorder conditions when to apply
+	default-initializers.
+
+2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-openmp.cc (gfc_omp_deep_mapping_do): Handle SSA_NAME if
+	a def_stmt is available.
+
+2025-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120139
+	* dump-parse-tree.cc (get_c_type_name): If no constant
+	size of an array exists, output an asterisk.
+
+2025-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120107
+	* dump-parse-tree.cc (write_type): Do not dump non-interoperable
+	types.
+
+2025-05-14  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120225
+	* simplify.cc (gfc_simplify_cotand): Fix used argument in
+	mpfr_tanu call.
+
+2025-05-14  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120225
+	* simplify.cc: Include "trigd_fe.inc" only with MPFR < 4.2.0.
+	(rad2deg, rad2deg): Only define if MPFR < 4.2.0.
+	(gfc_simplify_acosd, gfc_simplify_asind, gfc_simplify_atand,
+	gfc_simplify_atan2d, gfc_simplify_cosd, gfc_simplify_tand,
+	gfc_simplify_cotand): Use mpfr_...u functions with MPFR >= 4.2.0.
+
+2025-05-13  Yuao Ma  <c8ef@outlook.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113413
+	* intrinsic.cc (do_check): Minor doc polish.
+	(add_functions): Add atand(y, x) mapping.
+	* intrinsic.texi: Update atand example.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+	    Daniil Kochergin  <daniil2472s@gmail.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120191
+	* trans-intrinsic.cc (strip_kind_from_actual): Remove.
+	(gfc_conv_intrinsic_minmaxloc): Don't call strip_kind_from_actual.
+	Free and clear kind_arg->expr if non-NULL.  Set back_arg->name to
+	"%VAL" instead of a loop looking for last argument.  Remove actual
+	variable, use array_arg instead.  Free and clear dim_arg->expr if
+	non-NULL for BT_CHARACTER cases instead of using a loop.
+
 2025-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/120163

@@ -189,8 +189,7 @@ pass_shorten_memrefs::transform (regno_map *m, basic_block bb)
 		}
 	    }
 	}
-      rtx_insn *seq = get_insns ();
-      end_sequence ();
+      rtx_insn *seq = end_sequence ();
       emit_insn_before (seq, insn);
     }
 }

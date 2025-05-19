@@ -3167,8 +3167,7 @@ bbinfo_t::optimize_one_block (bool &changed)
 		    || (bbinfo_t::try_split_any_p && od.try_split_any (this))
 		    || (bbinfo_t::try_mem0_p && od.try_mem0 (this)));
 
-      rtx_insn *new_insns = get_insns ();
-      end_sequence ();
+      rtx_insn *new_insns = end_sequence ();
 
       gcc_assert (found == (od.n_new_insns >= 0));
 
@@ -3943,10 +3942,7 @@ avr_parallel_insn_from_insns (rtx_insn *i[5])
 			 PATTERN (i[3]), PATTERN (i[4]));
   start_sequence ();
   emit (gen_rtx_PARALLEL (VOIDmode, vec));
-  rtx_insn *insn = get_insns ();
-  end_sequence ();
-
-  return insn;
+  return end_sequence ();
 }
 
 

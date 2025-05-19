@@ -5862,8 +5862,7 @@ setup_nop_and_exit_insns (void)
 
   start_sequence ();
   emit_insn (nop_pattern);
-  exit_insn = get_insns ();
-  end_sequence ();
+  exit_insn = end_sequence ();
   set_block_for_insn (exit_insn, EXIT_BLOCK_PTR_FOR_FN (cfun));
 }
 

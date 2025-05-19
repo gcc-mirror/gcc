@@ -3790,8 +3790,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  add_reg_note (last, REG_NOALIAS, temp);
 
 	  /* Write out the sequence.  */
-	  insns = get_insns ();
-	  end_sequence ();
+	  insns = end_sequence ();
 	  emit_insn (insns);
 	  valreg = temp;
 	}
@@ -4007,8 +4006,7 @@ expand_call (tree exp, rtx target, int ignore)
 
       targetm.calls.end_call_args (args_so_far);
 
-      insns = get_insns ();
-      end_sequence ();
+      insns = end_sequence ();
 
       if (pass == 0)
 	{

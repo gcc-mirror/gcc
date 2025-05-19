@@ -4762,8 +4762,7 @@ sparc_legitimize_tls_address (rtx addr)
 					     addr, const1_rtx));
 	use_reg (&CALL_INSN_FUNCTION_USAGE (insn), o0);
 	RTL_CONST_CALL_P (insn) = 1;
-	insn = get_insns ();
-	end_sequence ();
+	insn = end_sequence ();
 	emit_libcall_block (insn, ret, o0, addr);
 	break;
 
@@ -4782,8 +4781,7 @@ sparc_legitimize_tls_address (rtx addr)
 					      const1_rtx));
 	use_reg (&CALL_INSN_FUNCTION_USAGE (insn), o0);
 	RTL_CONST_CALL_P (insn) = 1;
-	insn = get_insns ();
-	end_sequence ();
+	insn = end_sequence ();
 	/* Attach a unique REG_EQUAL, to allow the RTL optimizers to
 	  share the LD_BASE result with other LD model accesses.  */
 	emit_libcall_block (insn, temp3, o0,
@@ -12530,8 +12528,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  if (!TARGET_VXWORKS_RTP)
 	    pic_offset_table_rtx = got_register_rtx;
 	  scratch = sparc_legitimize_pic_address (funexp, scratch);
-	  seq = get_insns ();
-	  end_sequence ();
+	  seq = end_sequence ();
 	  emit_and_preserve (seq, spill_reg, pic_offset_table_rtx);
 	}
       else if (TARGET_ARCH32)
@@ -12557,8 +12554,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	      spill_reg = gen_rtx_REG (DImode, 15);  /* %o7 */
 	      start_sequence ();
 	      sparc_emit_set_symbolic_const64 (scratch, funexp, spill_reg);
-	      seq = get_insns ();
-	      end_sequence ();
+	      seq = end_sequence ();
 	      emit_and_preserve (seq, spill_reg, 0);
 	      break;
 
@@ -13242,8 +13238,7 @@ sparc_init_pic_reg (void)
   load_got_register ();
   if (!TARGET_VXWORKS_RTP)
     emit_move_insn (pic_offset_table_rtx, got_register_rtx);
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   insert_insn_on_edge (seq, entry_edge);

@@ -45,11 +45,10 @@ contains
     type(c), value :: d
   end subroutine
 
-  type(c) function c_init()  ! { dg-warning "not set" }
+  type(c) function c_init()
   end function
 
   subroutine sub(d)
     type(u), value :: d
   end subroutine
 end program test_pr58586
-

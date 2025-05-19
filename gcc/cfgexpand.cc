@@ -766,7 +766,12 @@ vars_ssa_cache::operator() (tree name)
 
       /* If the cache exists for the use, don't try to recreate it. */
       if (exists (use))
-	continue;
+	{
+	  /* Update the cache here, this can reduce the number of
+	     times through the update loop below.  */
+	  update (old_name, use);
+	  continue;
+	}
 
       /* Create the cache bitmap for the use and also
 	 so we don't go into an infinite loop for some phi nodes with loops.  */
@@ -804,9 +809,11 @@ vars_ssa_cache::operator() (tree name)
   bool changed;
   do {
     changed = false;
-    for (auto &e : update_cache_list)
+    unsigned int i;
+    std::pair<tree,tree> *e;
+    FOR_EACH_VEC_ELT_REVERSE (update_cache_list, i, e)
       {
-	if (update (e.second, e.first))
+	if (update (e->second, e->first))
 	  changed = true;
       }
   } while (changed);
@@ -3969,8 +3976,7 @@ expand_asm_stmt (gasm *stmt)
 		  start_sequence ();
 		  duplicate_insn_chain (after_rtl_seq, after_rtl_end,
 					NULL, NULL);
-		  copy = get_insns ();
-		  end_sequence ();
+		  copy = end_sequence ();
 		}
 	      prepend_insn_to_edge (copy, e);
 	    }
@@ -7017,8 +7023,7 @@ pass_expand::execute (function *fun)
 
   var_ret_seq = expand_used_vars (forced_stack_vars);
 
-  var_seq = get_insns ();
-  end_sequence ();
+  var_seq = end_sequence ();
   timevar_pop (TV_VAR_EXPAND);
 
   /* Honor stack protection warnings.  */

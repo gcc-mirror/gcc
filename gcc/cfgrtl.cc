@@ -1982,8 +1982,7 @@ insert_insn_on_edge (rtx pattern, edge e)
 
   emit_insn (pattern);
 
-  e->insns.r = get_insns ();
-  end_sequence ();
+  e->insns.r = end_sequence ();
 }
 
 /* Like insert_insn_on_edge, but if there are already queued instructions
@@ -2001,8 +2000,7 @@ prepend_insn_to_edge (rtx pattern, edge e)
   emit_insn (pattern);
   emit_insn (e->insns.r);
 
-  e->insns.r = get_insns ();
-  end_sequence ();
+  e->insns.r = end_sequence ();
 }
 
 /* Update the CFG for the instructions queued on edge E.  */
@@ -5278,8 +5276,7 @@ rtl_lv_add_condition_to_bb (basic_block first_head ,
   jump = get_last_insn ();
   JUMP_LABEL (jump) = label;
   LABEL_NUSES (label)++;
-  seq = get_insns ();
-  end_sequence ();
+  seq = end_sequence ();
 
   /* Add the new cond, in the new head.  */
   emit_insn_after (seq, BB_END (cond_bb));

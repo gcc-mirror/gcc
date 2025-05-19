@@ -4555,38 +4555,6 @@
   [(set_attr "type" "csel")]
 )
 
-(define_expand "cmov<mode>6"
-  [(set (match_operand:GPI 0 "register_operand")
-	(if_then_else:GPI
-	 (match_operator 1 "aarch64_comparison_operator"
-	  [(match_operand:GPI 2 "register_operand")
-	   (match_operand:GPI 3 "aarch64_plus_operand")])
-	 (match_operand:GPI 4 "register_operand")
-	 (match_operand:GPI 5 "register_operand")))]
-  ""
-  "
-  operands[2] = aarch64_gen_compare_reg (GET_CODE (operands[1]), operands[2],
-				      operands[3]);
-  operands[3] = const0_rtx;
-  "
-)
-
-(define_expand "cmov<mode>6"
-  [(set (match_operand:GPF 0 "register_operand")
-	(if_then_else:GPF
-	 (match_operator 1 "aarch64_comparison_operator"
-	  [(match_operand:GPF 2 "register_operand")
-	   (match_operand:GPF 3 "aarch64_fp_compare_operand")])
-	 (match_operand:GPF 4 "register_operand")
-	 (match_operand:GPF 5 "register_operand")))]
-  ""
-  "
-  operands[2] = aarch64_gen_compare_reg (GET_CODE (operands[1]), operands[2],
-				      operands[3]);
-  operands[3] = const0_rtx;
-  "
-)
-
 (define_insn "*cmov<mode>_insn"
   [(set (match_operand:ALLI 0 "register_operand")
 	(if_then_else:ALLI

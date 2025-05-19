@@ -19161,11 +19161,9 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	   for nonzero bitpos.  */
 	if (list_ret == 0)
 	  return 0;
-	if (!multiple_p (bitpos, BITS_PER_UNIT, &bytepos)
-	    || !multiple_p (bitsize, BITS_PER_UNIT))
+	if (!multiple_p (bitpos, BITS_PER_UNIT, &bytepos))
 	  {
-	    expansion_failed (loc, NULL_RTX,
-			      "bitfield access");
+	    expansion_failed (loc, NULL_RTX, "bitfield access");
 	    return 0;
 	  }
 
@@ -19724,11 +19722,10 @@ loc_list_from_tree_1 (tree loc, int want_address,
       dw_die_ref type_die;
       dw_loc_descr_ref deref;
 
-      /* If the size is greater than DWARF2_ADDR_SIZE, bail out.  */
-      if (size > DWARF2_ADDR_SIZE || size == -1)
+      /* Bail out if the size is variable or greater than DWARF2_ADDR_SIZE.  */
+      if (size < 0 || size > DWARF2_ADDR_SIZE)
 	{
-	  expansion_failed (loc, NULL_RTX,
-			    "DWARF address size mismatch");
+	  expansion_failed (loc, NULL_RTX, "DWARF address size mismatch");
 	  return 0;
 	}
 
@@ -19755,6 +19752,33 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	  deref->dw_loc_oprnd2.v.val_die_ref.external = 0;
 	  add_loc_descr (&deref,
 			 new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0));
+	}
+
+      /* Deal with bit-fields whose size is not a multiple of a byte.  */
+      if (TREE_CODE (loc) == COMPONENT_REF
+	  && DECL_BIT_FIELD (TREE_OPERAND (loc, 1)))
+	{
+	  const unsigned HOST_WIDE_INT bitsize
+	    = tree_to_uhwi (DECL_SIZE (TREE_OPERAND (loc, 1)));
+	  if (bitsize < (unsigned HOST_WIDE_INT)size * BITS_PER_UNIT)
+	    {
+	      if (TYPE_UNSIGNED (TREE_TYPE (loc)))
+		{
+		  const unsigned HOST_WIDE_INT mask
+		    = (HOST_WIDE_INT_1U << bitsize) - 1;
+		  add_loc_descr (&deref, uint_loc_descriptor (mask));
+		  add_loc_descr (&deref, new_loc_descr (DW_OP_and, 0, 0));
+		}
+	      else
+		{
+		  const unsigned HOST_WIDE_INT shift
+		    = DWARF2_ADDR_SIZE * BITS_PER_UNIT - bitsize;
+		  add_loc_descr (&deref, uint_loc_descriptor (shift));
+		  add_loc_descr (&deref, new_loc_descr (DW_OP_shl, 0, 0));
+		  add_loc_descr (&deref, uint_loc_descriptor (shift));
+		  add_loc_descr (&deref, new_loc_descr (DW_OP_shra, 0, 0));
+		}
+	    }
 	}
 
       if (ret)

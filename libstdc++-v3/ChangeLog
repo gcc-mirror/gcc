@@ -1,3 +1,239 @@
+2025-05-16  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/type_traits (__is_invocable): Define in terms of
+	corresponding builtin if available.
+	(__is_nothrow_invocable): Likewise.
+	(is_invocable_v): Likewise.
+	(is_nothrow_invocable_v): Likewise.
+
+2025-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65909
+	* testsuite/lib/libstdc++.exp (check_v3_target_namedlocale):
+	Change name of formal argument to locale.
+
+2025-05-15  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan: Implement the mandate for extents as
+	signed or unsigned integer and not any interal type. Remove
+	leading underscores from names in static_assert message.
+	* testsuite/23_containers/mdspan/extents/class_mandates_neg.cc:
+	Check that extents<char,...> and extents<bool,...> are invalid.
+	Adjust dg-prune-output pattern.
+	* testsuite/23_containers/mdspan/extents/misc.cc: Update
+	tests to avoid `char` and `bool` as IndexType.
+
+2025-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120190
+	* include/std/format (format_kind): Adjust primary template to
+	not depend on itself.
+	* testsuite/std/format/ranges/format_kind_neg.cc: Adjust
+	expected errors. Check more invalid specializations.
+
+2025-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/complex (arg(T)): Use __builtin_signbit instead of
+	std::signbit.
+
+2025-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120235
+	* doc/html/*: Regenerate.
+	* doc/xml/manual/evolution.xml: Document deprecation.
+	* include/std/complex: Replace references to TR1 subclauses with
+	corresponding C++11 subclauses.
+	(fabs): Add deprecated attribute.
+	* testsuite/26_numerics/complex/fabs_neg.cc: New test.
+
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Add -Wabi.
+
+2025-05-15  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119246
+	* include/std/format: Updated check for _GLIBCXX_FORMAT_F128.
+
+2025-05-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119125
+	* include/bits/move_only_function.h: Move to...
+	* include/bits/funcwrap.h: ...here.
+	* doc/doxygen/stdheader.cc (init_map): Replaced move_only_function.h
+	with funcwrap.h, and changed include guard to use feature test macro.
+	Move bits/version.h include before others.
+	* include/Makefile.am: Likewise.
+	* include/Makefile.in: Likewise.
+	* include/std/functional: Likewise.
+
+2025-05-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119125
+	* doc/doxygen/stdheader.cc: Addded cpyfunc_impl.h header.
+	* include/Makefile.am: Add bits cpyfunc_impl.h.
+	* include/Makefile.in: Add bits cpyfunc_impl.h.
+	* include/bits/cpyfunc_impl.h: New file.
+	* include/bits/mofunc_impl.h: Mention LWG 4255.
+	* include/bits/move_only_function.h: Update header description
+	and change guard to also check __glibcxx_copyable_function.
+	(_Manager::_Func): Remove noexcept.
+	(std::__is_polymorphic_function_v<move_only_function<_Tp>>)
+	(__variant::_Never_valueless_alt<std::move_only_function<_Signature...>>)
+	(move_only_function) [__glibcxx_move_only_function]: Adjust guard.
+	(std::__is_polymorphic_function_v<copyable_function<_Tp>>)
+	(__variant::_Never_valueless_alt<std::copyable_function<_Signature...>>)
+	(__polyfunc::_Cpy_base, std::copyable_function)
+	[__glibcxx_copyable_function]: Define.
+	* include/bits/version.def: Define copyable_function.
+	* include/bits/version.h: Regenerate.
+	* include/std/functional: Define __cpp_lib_copyable_function.
+	* src/c++23/std.cc.in (copyable_function)
+	[__cpp_lib_copyable_function]: Export.
+	* testsuite/20_util/copyable_function/call.cc: New test based on
+	move_only_function tests.
+	* testsuite/20_util/copyable_function/cons.cc: New test based on
+	move_only_function tests.
+	* testsuite/20_util/copyable_function/conv.cc: New test based on
+	move_only_function tests.
+	* testsuite/20_util/copyable_function/copy.cc: New test.
+	* testsuite/20_util/copyable_function/move.cc: New test based on
+	move_only_function tests.
+
+2025-05-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119125
+	* include/bits/mofunc_impl.h: (std::move_only_function): Adjusted for
+	changes in bits/move_only_function.h
+	(move_only_function::move_only_function(_Fn&&)): Special case
+	move_only_functions with same invoker.
+	(move_only_function::operator=(move_only_function&&)): Handle self
+	assigment.
+	* include/bits/move_only_function.h (__polyfunc::_Ptrs)
+	(__polyfunc::_Storage): Refactored from _Mo_func::_Storage.
+	(__polyfunc::__param_t): Moved from move_only_function::__param_t.
+	(__polyfunc::_Base_invoker, __polyfunc::_Invoke): Refactored from
+	move_only_function::_S_invoke.
+	(__polyfunc::_Manager): Refactored from _Mo_func::_S_manager.
+	(std::_Mofunc_base): Moved into __polyfunc::_Mo_base with parts
+	extracted to __polyfunc::_Storage and __polyfunc::_Manager.
+	(__polyfunc::__deref_as, __polyfunc::__invoker_of)
+	(__polyfunc::__base_of, __polyfunc::__is_invoker_convertible): Define.
+	(std::__is_move_only_function_v): Renamed to
+	__is_polymorphic_function_v.
+	(std::__is_polymorphic_function_v): Renamed from
+	__is_move_only_function_v.
+	* testsuite/20_util/move_only_function/call.cc: Test for
+	functions pointers.
+	* testsuite/20_util/move_only_function/conv.cc: New test.
+	* testsuite/20_util/move_only_function/move.cc: Tests for
+	self assigment.
+
+2025-05-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119246
+	* include/std/format (__format::__bflt16_t): Define.
+	(_GLIBCXX_FORMAT_F128): Separate value for cases where _Float128
+	is used.
+	(__format::__float128_t): Renamed to __format::__flt128_t.
+	(std::formatter<_Float128, _CharT>): Define always if there is
+	formattable 128bit float.
+	(std::formatter<__float128, _CharT>): Define.
+	(_Arg_type::_Arg_f128): Rename to _Arg_float128 and adjust value.
+	(_Arg_type::_Arg_ibm128): Change value to _Arg_ldbl.
+	(_Arg_type::_Arg_ieee128): Define as alias to _Arg_float128.
+	(_Arg_value::_M_f128): Replaced with _M_ieee128 and _M_float128.
+	(_Arg_value::_M_ieee128, _Arg_value::_M_float128)
+	(_Arg_value::_M_bf16, _Arg_value::_M_f16, _Arg_value::_M_f32)
+	(_Arg_value::_M_f64): Define.
+	(_Arg_value::_S_get, basic_format_arg::_S_to_enum): Handle __bflt16,
+	_Float16, _Float32, _Float64, and __float128 types.
+	(basic_format_arg::_S_to_arg_type): Preserve _bflt16, _Float16,
+	_Float32, _Float64 and __float128 types.
+	(basic_format_arg::_M_visit): Handle _Arg_float128, _Arg_ieee128,
+	_Arg_b16, _Arg_f16, _Arg_f32, _Arg_f64.
+	* testsuite/std/format/arguments/args.cc: Updated to illustrate
+	that extended floating point types use handles now. Added test
+	for __float128.
+	* testsuite/std/format/parse_ctx.cc: Extended test to cover class
+	to check_dynamic_spec with floating point types and handles.
+
+2025-05-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* include/std/utility (to_underlying): Add the __always_inline__ attribute.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119645
+	* configure.host [GCN, nvptx] (atomicity_dir): Don't set.
+
+2025-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119714
+	PR libstdc++/112490
+	* include/std/expected (expected::operator==): Replace
+	non-dependent std::expected function parameter with a dependent
+	one of type expected<_Vp, _Er> where _Vp matches _Tp.
+	* testsuite/20_util/expected/119714.cc: New test.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120187
+	* include/c_global/ciso646: Only give deprecated warning for
+	C++20 and later.
+	* include/c_global/ccomplex: Add @since to Doxygen comment.
+	* include/c_global/cstdalign: Likewise.
+	* include/c_global/cstdbool: Likewise.
+	* include/c_global/ctgmath: Likewise.
+	* testsuite/18_support/headers/ciso646/macros.cc: Remove
+	dg-warning for c++17_only effective target.
+	* testsuite/18_support/headers/ciso646/macros-2.cc: New test.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2023.xml: Update status of proposals
+	implemented after GCC 14.2 release.
+	* doc/html/manual/status.html: Regenerate.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120198
+	* include/bits/version.def (scoped_lock): Do not depend on
+	gthreads or hosted.
+	* include/bits/version.h: Regenerate.
+	* include/std/mutex (scoped_lock): Update comment.
+	* testsuite/30_threads/scoped_lock/requirements/typedefs.cc:
+	Remove dg-require-gthreads and use custom lockable type instead
+	of std::mutex. Check that typedef is only present for a single
+	template argument.
+
+2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR libstdc++/70560
+	PR libstdc++/119667
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Use '__SIZE_TYPE__'
+	instead of 'size_t'.
+	* configure: Regenerate.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118260
+	* python/hook.in: Suppress output from gdb.execute calls to
+	register skips.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status for
+	std::to_chars and std::from_chars.
+	* doc/html/manual/*: Regenerate.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65909
+	* testsuite/lib/libstdc++.exp (check_v3_target_namedlocale):
+	Hardcode the locale name instead of passing it to the
+	executable. Do not hardcode buffer size for string.
+
 2025-05-10  Alexandre Oliva  <oliva@adacore.com>
 
 	* src/c++23/print.cc [__VXWORKS__]: Include ioLib.h.

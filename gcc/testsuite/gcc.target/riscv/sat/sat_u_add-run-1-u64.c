@@ -2,24 +2,14 @@
 /* { dg-additional-options "-std=c99" } */
 
 #include "sat_arith.h"
+#include "sat_arith_data.h"
 
-#define T              uint64_t
-#define RUN_SAT_BINARY RUN_SAT_U_ADD_FMT_1
+#define T1               uint64_t
+#define DATA             TEST_BINARY_DATA_WRAP(T1, usadd)
+#define T                TEST_BINARY_STRUCT_DECL(T1, usadd)
 
-DEF_SAT_U_ADD_FMT_1(T)
+DEF_SAT_U_ADD_FMT_1_WRAP(T1)
 
-T test_data[][3] = {
-  /*                arg_0,                 arg_1,                 expect */
-  {                     0,                     0,                      0, },
-  {                     0,                     1,                      1, },
-  {                     1,                     1,                      2, },
-  {                     0, 18446744073709551614u,  18446744073709551614u, },
-  {                     1, 18446744073709551614u,  18446744073709551615u, },
-  {                     2, 18446744073709551614u,  18446744073709551615u, },
-  {                     0, 18446744073709551615u,  18446744073709551615u, },
-  {                     1, 18446744073709551615u,  18446744073709551615u, },
-  {                     2, 18446744073709551615u,  18446744073709551615u, },
-  { 18446744073709551615u, 18446744073709551615u,  18446744073709551615u, },
-};
+#define RUN_BINARY(x, y) RUN_SAT_U_ADD_FMT_1_WRAP(T1, x, y)
 
-#include "scalar_sat_binary.h"
+#include "scalar_sat_binary_run_xxx.h"

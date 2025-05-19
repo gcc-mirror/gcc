@@ -598,8 +598,7 @@ doloop_modify (class loop *loop, class niter_desc *desc,
 	  /* Reset the counter to zero in the set_zero block.  */
 	  start_sequence ();
 	  convert_move (counter_reg, noloop, 0);
-	  sequence = get_insns ();
-	  end_sequence ();
+	  sequence = end_sequence ();
 	  emit_insn_after (sequence, BB_END (set_zero));
 
 	  set_immediate_dominator (CDI_DOMINATORS, set_zero,

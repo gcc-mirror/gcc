@@ -187,3 +187,44 @@ s-riscv-vector-type-indexer.gen.defs: build/genrvv-type-indexer$(build_exeext)
 	$(STAMP) s-riscv-vector-type-indexer.gen.defs
 
 genprog+=rvv-type-indexer
+
+RISCV_EXT_DEFS = \
+  $(srcdir)/config/riscv/riscv-ext.def \
+  $(srcdir)/config/riscv/riscv-ext-corev.def \
+  $(srcdir)/config/riscv/riscv-ext.def \
+  $(srcdir)/config/riscv/riscv-ext-sifive.def \
+  $(srcdir)/config/riscv/riscv-ext-thead.def \
+  $(srcdir)/config/riscv/riscv-ext-ventana.def
+
+$(srcdir)/config/riscv/riscv-ext.opt: $(RISCV_EXT_DEFS)
+
+build/gen-riscv-ext-opt$(build_exeext): $(srcdir)/config/riscv/gen-riscv-ext-opt.cc \
+	$(RISCV_EXT_DEFS)
+	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@
+
+s-riscv-ext.opt: build/gen-riscv-ext-opt$(build_exeext)
+	$(RUN_GEN) build/gen-riscv-ext-opt$(build_exeext) > tmp-riscv-ext.opt
+	$(SHELL) $(srcdir)/../move-if-change tmp-riscv-ext.opt $(srcdir)/config/riscv/riscv-ext.opt
+	$(STAMP) s-riscv-ext.opt
+
+build/gen-riscv-ext-texi$(build_exeext): $(srcdir)/config/riscv/gen-riscv-ext-texi.cc \
+	$(RISCV_EXT_DEFS)
+	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@
+
+
+$(srcdir)/doc/riscv-ext.texi: $(RISCV_EXT_DEFS)
+$(srcdir)/doc/riscv-ext.texi: s-riscv-ext.texi ; @true
+
+# Generate the doc when generating option file.
+$(srcdir)/config/riscv/riscv-ext.opt: s-riscv-ext.texi ; @true
+
+s-riscv-ext.texi: build/gen-riscv-ext-texi$(build_exeext)
+	$(RUN_GEN) build/gen-riscv-ext-texi$(build_exeext) > tmp-riscv-ext.texi
+	$(SHELL) $(srcdir)/../move-if-change tmp-riscv-ext.texi $(srcdir)/doc/riscv-ext.texi
+	$(STAMP) s-riscv-ext.texi
+
+# Run `riscv-regen' after you changed or added anything from riscv-ext*.def
+
+.PHONY: riscv-regen
+
+riscv-regen: s-riscv-ext.texi s-riscv-ext.opt

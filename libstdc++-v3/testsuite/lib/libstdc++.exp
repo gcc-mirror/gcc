@@ -586,6 +586,7 @@ proc v3_target_compile { source dest type options } {
     global tool
 
     lappend options "additional_flags=-fdiagnostics-plain-output"
+    lappend options "additional_flags=-Wabi=20";
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
@@ -1018,8 +1019,8 @@ proc check_v3_target_time { } {
     }]
 }
 
-proc check_v3_target_namedlocale { args } {
-    set key "et_namedlocale $args"
+proc check_v3_target_namedlocale { locale } {
+    set key "et_namedlocale $locale"
     return [check_v3_target_prop_cached $key {
 	global tool
 	# Set up, compile, and execute a C++ test program that tries to use
@@ -1047,7 +1048,7 @@ proc check_v3_target_namedlocale { args } {
 	puts $f "}"
 	puts $f "int main ()"
 	puts $f "{"
-	puts $f "  const char *namedloc = transform_locale(\"$args\");"
+	puts $f "  const char *namedloc = transform_locale(\"$locale\");"
 	puts $f "  try"
 	puts $f "  {"
 	puts $f "    locale((const char*)namedloc);"
@@ -1074,7 +1075,7 @@ proc check_v3_target_namedlocale { args } {
 	set result [${tool}_load "./$exe" "" ""]
 	set status [lindex $result 0]
 
-	verbose "check_v3_target_namedlocale <$args>: status is <$status>" 2
+	verbose "check_v3_target_namedlocale <$locale>: status is <$status>" 2
 
 	if { $status == "pass" } {
 	    return 1

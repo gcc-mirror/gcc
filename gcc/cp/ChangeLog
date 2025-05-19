@@ -1,3 +1,83 @@
+2025-05-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* cp-gimplify.cc (cp_fold): Do the conversion unconditionally, even for same-type cases.
+
+2025-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* typeck.cc (check_return_expr): Suppress conversions for NVRO
+	in coroutine ramp functions.
+
+2025-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* decl.cc (poplevel): Set BLOCK_OUTER_CURLY_BRACE_P on the
+	body block for functions with no subblocks.
+
+2025-05-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (importer_interface): Adjust flags.
+	(get_importer_interface): Rename flags.
+	(trees_out::core_bools): Clean up special casing.
+	(trees_out::write_function_def): Rename flag.
+
+2025-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120161
+	* pt.cc (unify) <case RECORD_TYPE>: When comparing specializations
+	of a non-primary template, still perform a type comparison.
+
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (trees_out::lang_decl_bools): Stream implicit_constexpr.
+	(trees_in::lang_decl_bools): Likewise.
+	(trees_in::is_matching_decl): Check it.
+
+2025-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99599
+	* pt.cc (conversion_may_instantiate_p): Make sure
+	classes are complete.
+
+2025-05-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* cp-gimplify.cc (cp_fold): Remove a remnant comment.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120125
+	* module.cc (trees_out::write_function_def): Only set
+	DECL_NOT_REALLY_EXTERN if the importer might need to emit it.
+	* optimize.cc (maybe_thunk_body): Don't assume 'fn' has a cgraph
+	node created.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119864
+	* decl2.cc (start_objects): Only use module initialized for
+	host.
+	(c_parse_final_cleanups): Don't always create an OMP offload
+	init function in modules.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.cc (lookup_imported_hidden_friend): Add back
+	lazy_load_pendings with comment.
+
+2025-05-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* cp-gimplify.cc (cp_fold): Add to_underlying.
+
+2025-05-14  Owen Avery  <powerboat9.gamer@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* method.cc (synthesized_method_walk): Check whether
+	-Wvirtual-move-assign is enabled at the location of a base
+	class's move assignment operator.
+
+2025-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120012
+	* class.cc (check_non_pod_aggregate): Check is_empty_class.
+
 2025-05-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120204

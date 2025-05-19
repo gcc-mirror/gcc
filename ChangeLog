@@ -1,3 +1,11 @@
+2025-05-16  Spencer Abson  <spencer.abson@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2025-05-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* MAINTAINERS: Marcus Shawcroft has resigned from the project.
+
 2025-04-28  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* MAINTAINERS (kcy): Add gcc.gnu.org username.

@@ -585,8 +585,7 @@ microblaze_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
                                      LCT_PURE, /* LCT_CONST?  */
                                      Pmode, reg, Pmode);
 
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
 
   return insns;
 }

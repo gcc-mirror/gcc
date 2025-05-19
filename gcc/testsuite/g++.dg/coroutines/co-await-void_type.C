@@ -1,4 +1,4 @@
-//  { dg-additional-options "-std=c++17 -fsyntax-only -w" }
+//  { dg-additional-options "-std=c++17 -fsyntax-only -fcoroutines -w" }
 
 #include <coroutine>
 

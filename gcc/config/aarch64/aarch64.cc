@@ -3201,8 +3201,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	  aarch64_emit_call_insn (gen_tlsgd_small_si (result, imm));
 	else
 	  aarch64_emit_call_insn (gen_tlsgd_small_di (result, imm));
-	insns = get_insns ();
-	end_sequence ();
+	insns = end_sequence ();
 
 	RTL_CONST_CALL_P (insns) = 1;
 	emit_libcall_block (insns, tmp_reg, result, imm);
@@ -23621,6 +23620,36 @@ aarch64_simd_valid_and_imm (rtx op)
   return aarch64_simd_valid_imm (op, NULL, AARCH64_CHECK_AND);
 }
 
+/* Return true if OP is a valid SIMD and immediate which allows the and to be
+   optimized as fmov.  If ELT_BITSIZE is nonnull, use it to return the number of
+   bits to move.  */
+bool
+aarch64_simd_valid_and_imm_fmov (rtx op, unsigned int *elt_bitsize)
+{
+  machine_mode mode = GET_MODE (op);
+  gcc_assert (!aarch64_sve_mode_p (mode));
+
+  auto_vec<target_unit, 16> buffer;
+  unsigned int n_bytes = GET_MODE_SIZE (mode).to_constant ();
+  buffer.reserve (n_bytes);
+
+  bool ok = native_encode_rtx (mode, op, buffer, 0, n_bytes);
+  gcc_assert (ok);
+
+  auto mask = native_decode_int (buffer, 0, n_bytes, n_bytes * BITS_PER_UNIT);
+  int set_bit = wi::exact_log2 (mask + 1);
+  if ((set_bit == 16 && TARGET_SIMD_F16INST)
+      || set_bit == 32
+      || set_bit == 64)
+    {
+      if (elt_bitsize)
+	*elt_bitsize = set_bit;
+      return true;
+    }
+
+  return false;
+}
+
 /* Return true if OP is a valid SIMD xor immediate for SVE.  */
 bool
 aarch64_simd_valid_xor_imm (rtx op)
@@ -24662,8 +24691,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
       rtx tmp_reg = gen_reg_rtx (GET_MODE (new_vals));
       aarch64_expand_vector_init (tmp_reg, new_vals);
       halves[i] = gen_rtx_SUBREG (mode, tmp_reg, 0);
-      rtx_insn *rec_seq = get_insns ();
-      end_sequence ();
+      rtx_insn *rec_seq = end_sequence ();
       costs[i] = seq_cost_ignoring_scalar_moves (rec_seq, !optimize_size);
       emit_insn (rec_seq);
     }
@@ -24675,8 +24703,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
     = (!optimize_size) ? std::max (costs[0], costs[1]) : costs[0] + costs[1];
   seq_total_cost += insn_cost (zip1_insn, !optimize_size);
 
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
 
   start_sequence ();
   aarch64_expand_vector_init_fallback (target, vals);
@@ -25757,6 +25784,26 @@ aarch64_float_const_representable_p (rtx x)
   return aarch64_real_float_const_representable_p (r);
 }
 
+/* Returns the string with the fmov instruction which is equivalent to an and
+   instruction with the SIMD immediate CONST_VECTOR.  */
+char*
+aarch64_output_fmov (rtx const_vector)
+{
+  bool is_valid;
+  static char templ[40];
+  char element_char;
+  unsigned int elt_bitsize;
+
+  is_valid = aarch64_simd_valid_and_imm_fmov (const_vector, &elt_bitsize);
+  gcc_assert (is_valid);
+
+  element_char = sizetochar (elt_bitsize);
+  snprintf (templ, sizeof (templ), "fmov\t%%%c0, %%%c1", element_char,
+	    element_char);
+
+  return templ;
+}
+
 /* Returns the string with the instruction for the SIMD immediate
  * CONST_VECTOR of MODE and WIDTH.  WHICH selects a move, and(bic) or orr.  */
 char*
@@ -26280,7 +26327,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_reencode (struct expand_vec_perm_d *d)
 {
-  expand_vec_perm_d newd;
+  expand_vec_perm_d newd = {};
 
   /* The subregs that we'd create are not supported for big-endian SVE;
      see aarch64_modes_compatible_p for details.  */
@@ -26889,6 +26936,40 @@ aarch64_evpc_ins (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize patterns suitable for the AND instructions.  */
+static bool
+aarch64_evpc_and (struct expand_vec_perm_d *d)
+{
+  /* Either d->op0 or d->op1 should be a vector of all zeros.  */
+  if (d->one_vector_p || (!d->zero_op0_p && !d->zero_op1_p))
+    return false;
+
+  machine_mode mode = d->vmode;
+  machine_mode sel_mode;
+  if (!related_int_vector_mode (mode).exists (&sel_mode))
+    return false;
+
+  insn_code and_code = optab_handler (and_optab, sel_mode);
+  rtx and_mask = vec_perm_and_mask (sel_mode, d->perm, d->zero_op0_p);
+  if (and_code == CODE_FOR_nothing || !and_mask)
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  class expand_operand ops[3];
+  rtx in = d->zero_op0_p ? d->op1 : d->op0;
+  create_output_operand (&ops[0], gen_lowpart (sel_mode, d->target), sel_mode);
+  create_input_operand (&ops[1], gen_lowpart (sel_mode, in), sel_mode);
+  create_input_operand (&ops[2], and_mask, sel_mode);
+  expand_insn (and_code, 3, ops);
+  rtx result = gen_lowpart (mode, ops[0].value);
+  if (!rtx_equal_p (d->target, result))
+    emit_move_insn (d->target, result);
+
+  return true;
+}
+
 static bool
 aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
@@ -26923,6 +27004,8 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  else if (aarch64_evpc_zip (d))
 	    return true;
 	  else if (aarch64_evpc_uzp (d))
+	    return true;
+	  else if (aarch64_evpc_and (d))
 	    return true;
 	  else if (aarch64_evpc_trn (d))
 	    return true;
@@ -27803,8 +27886,7 @@ aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
       end_sequence ();
       return NULL_RTX;
     }
-  *prep_seq = get_insns ();
-  end_sequence ();
+  *prep_seq = end_sequence ();
 
   create_fixed_operand (&ops[0], op0);
   create_fixed_operand (&ops[1], op1);
@@ -27815,8 +27897,7 @@ aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
       end_sequence ();
       return NULL_RTX;
     }
-  *gen_seq = get_insns ();
-  end_sequence ();
+  *gen_seq = end_sequence ();
 
   return gen_rtx_fmt_ee (code, cc_mode,
 			 gen_rtx_REG (cc_mode, CC_REGNUM), const0_rtx);
@@ -27880,8 +27961,7 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
       end_sequence ();
       return NULL_RTX;
     }
-  *prep_seq = get_insns ();
-  end_sequence ();
+  *prep_seq = end_sequence ();
 
   target = gen_rtx_REG (cc_mode, CC_REGNUM);
   aarch64_cond = aarch64_get_condition_code_1 (cc_mode, cmp_code);
@@ -27920,8 +28000,7 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
       return NULL_RTX;
     }
 
-  *gen_seq = get_insns ();
-  end_sequence ();
+  *gen_seq = end_sequence ();
 
   return gen_rtx_fmt_ee (cmp_code, VOIDmode, target, const0_rtx);
 }
@@ -30506,8 +30585,7 @@ aarch64_mode_emit (int entity, int mode, int prev_mode, HARD_REG_SET live)
 					 aarch64_local_sme_state (prev_mode));
       break;
     }
-  rtx_insn *seq = get_insns ();
-  end_sequence ();
+  rtx_insn *seq = end_sequence ();
 
   /* Get the set of clobbered registers that are currently live.  */
   HARD_REG_SET clobbers = {};
@@ -30917,8 +30995,7 @@ aarch64_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 	    emit_insn (REGNO (x) == ZA_REGNUM
 		       ? gen_aarch64_asm_update_za (id_rtx)
 		       : gen_aarch64_asm_update_zt0 (id_rtx));
-	    seq = get_insns ();
-	    end_sequence ();
+	    seq = end_sequence ();
 
 	    auto mode = REGNO (x) == ZA_REGNUM ? VNx16QImode : V8DImode;
 	    uses.safe_push (gen_rtx_REG (mode, REGNO (x)));
@@ -30953,8 +31030,7 @@ aarch64_switch_pstate_sm_for_landing_pad (basic_block bb)
   args_switch.emit_epilogue ();
   if (guard_label)
     emit_label (guard_label);
-  auto seq = get_insns ();
-  end_sequence ();
+  auto seq = end_sequence ();
 
   emit_insn_after (seq, bb_note (bb));
   return true;
@@ -30977,8 +31053,7 @@ aarch64_switch_pstate_sm_for_jump (rtx_insn *jump)
   aarch64_switch_pstate_sm (AARCH64_ISA_MODE_SM_ON, AARCH64_ISA_MODE_SM_OFF);
   if (guard_label)
     emit_label (guard_label);
-  auto seq = get_insns ();
-  end_sequence ();
+  auto seq = end_sequence ();
 
   emit_insn_before (seq, jump);
   return true;
@@ -31012,8 +31087,7 @@ aarch64_switch_pstate_sm_for_call (rtx_call_insn *call)
   args_switch.emit_epilogue ();
   if (args_guard_label)
     emit_label (args_guard_label);
-  auto args_seq = get_insns ();
-  end_sequence ();
+  auto args_seq = end_sequence ();
   emit_insn_before (args_seq, call);
 
   if (find_reg_note (call, REG_NORETURN, NULL_RTX))
@@ -31033,8 +31107,7 @@ aarch64_switch_pstate_sm_for_call (rtx_call_insn *call)
   return_switch.emit_epilogue ();
   if (return_guard_label)
     emit_label (return_guard_label);
-  auto result_seq = get_insns ();
-  end_sequence ();
+  auto result_seq = end_sequence ();
   emit_insn_after (result_seq, call);
   return true;
 }

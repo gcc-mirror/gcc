@@ -1,5 +1,3 @@
-// { dg-do compile  { target c++17 } }
-
 #include "coro.h"
 
 // Test that we get matching types to traits and promise param

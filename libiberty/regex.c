@@ -3468,7 +3468,7 @@ PREFIX(regex_compile) (const char *ARG_PREFIX(pattern),
 			PATFETCH (c);
 			if ((c == '.' && *p == ']') || p == pend)
 			  break;
-			if (c1 < sizeof (str))
+			if (c1 < sizeof (str) - 1)
 			  str[c1++] = c;
 			else
 			  /* This is in any case an invalid class name.  */

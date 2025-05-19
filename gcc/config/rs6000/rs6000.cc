@@ -9259,8 +9259,7 @@ rs6000_debug_legitimize_address (rtx x, rtx oldx, machine_mode mode)
 
   start_sequence ();
   ret = rs6000_legitimize_address (x, oldx, mode);
-  insns = get_insns ();
-  end_sequence ();
+  insns = end_sequence ();
 
   if (ret != x)
     {

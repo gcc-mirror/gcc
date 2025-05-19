@@ -903,8 +903,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
                                  REGNO (SET_DEST (set)));
       emit_move_insn (new_dst, new_src);
 
-      rtx_insn *insn = get_insns ();
-      end_sequence ();
+      rtx_insn *insn = end_sequence ();
       if (NEXT_INSN (insn))
 	return false;
       if (recog_memoized (insn) == -1)

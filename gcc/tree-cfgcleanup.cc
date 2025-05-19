@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-into-ssa.h"
 #include "tree-cfgcleanup.h"
+#include "gimple-pretty-print.h"
 
 
 /* The set of blocks in that at least one of the following changes happened:
@@ -122,6 +123,41 @@ convert_single_case_switch (gswitch *swtch, gimple_stmt_iterator &gsi)
   return true;
 }
 
+/* Canonicalize _Bool == 0 and _Bool != 1 to _Bool != 0 of STMT in BB by
+   swapping edges of the BB.  */
+bool
+canonicalize_bool_cond (gcond *stmt, basic_block bb)
+{
+  tree rhs1 = gimple_cond_lhs (stmt);
+  tree rhs2 = gimple_cond_rhs (stmt);
+  enum tree_code code = gimple_cond_code (stmt);
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return false;
+  if (TREE_CODE (TREE_TYPE (rhs1)) != BOOLEAN_TYPE
+      && (!INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+	   || TYPE_PRECISION (TREE_TYPE (rhs1)) != 1))
+    return false;
+
+  /* Canonicalize _Bool == 0 and _Bool != 1 to _Bool != 0 by swapping edges.  */
+  if (code == EQ_EXPR && !integer_zerop (rhs2))
+    return false;
+  if (code == NE_EXPR && !integer_onep (rhs2))
+    return false;
+
+  gimple_cond_set_code (stmt, NE_EXPR);
+  gimple_cond_set_rhs (stmt, build_zero_cst (TREE_TYPE (rhs1)));
+  EDGE_SUCC (bb, 0)->flags ^= (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
+  EDGE_SUCC (bb, 1)->flags ^= (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "  Swapped '");
+      print_gimple_expr (dump_file, stmt, 0);
+      fprintf (dump_file, "'\n");
+    }
+  return true;
+}
+
 /* Disconnect an unreachable block in the control expression starting
    at block BB.  */
 
@@ -144,6 +180,9 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
       if (gimple_code (stmt) == GIMPLE_SWITCH
 	  && convert_single_case_switch (as_a<gswitch *> (stmt), gsi))
 	stmt = gsi_stmt (gsi);
+
+      if (gimple_code (stmt) == GIMPLE_COND)
+	canonicalize_bool_cond (as_a<gcond*> (stmt), bb);
 
       fold_defer_overflow_warnings ();
       switch (gimple_code (stmt))

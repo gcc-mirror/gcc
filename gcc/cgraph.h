@@ -493,7 +493,7 @@ public:
   static inline void checking_verify_symtab_nodes (void);
 
   /* Get unique identifier of the node.  */
-  inline int get_uid ()
+  inline int get_uid () const
   {
     return m_uid;
   }

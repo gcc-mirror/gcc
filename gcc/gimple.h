@@ -3716,6 +3716,7 @@ gimple_cond_code (const gimple *gs)
 inline void
 gimple_cond_set_code (gcond *gs, enum tree_code code)
 {
+  gcc_gimple_checking_assert (TREE_CODE_CLASS (code) == tcc_comparison);
   gs->subcode = code;
 }
 
