@@ -1,3 +1,26 @@
+2025-05-18  Dimitar Dimitrov  <dimitar@dinux.eu>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119966
+	* emit-rtl.cc (validate_subreg): Do not exit immediately for
+	paradoxical subregs.  Filter subsequent tests which are
+	not valid for paradoxical subregs.
+
+2025-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.cc (loc_list_from_tree_1) <COMPONENT_REF>: Do not bail
+	out when the size is not a multiple of a byte.
+	Deal with bit-fields whose size is not a multiple of a byte when
+	dereferencing an address.
+
+2025-05-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-fold.cc (mark_lhs_in_seq_for_dce): Make
+	non-static.
+	* gimple-fold.h (mark_lhs_in_seq_for_dce): Declare.
+	* tree-ssa-phiopt.cc (match_simplify_replacement): Use
+	mark_lhs_in_seq_for_dce instead of manually looping.
+
 2025-05-17  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/riscv-vect-permconst.cc (vector_permconst:process_bb):

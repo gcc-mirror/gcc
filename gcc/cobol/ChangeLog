@@ -1,3 +1,7 @@
+2025-05-18  Mark Wielaard  <mark@klomp.org>
+
+	* lang.opt.urls: Regenerated.
+
 2025-05-16  Robert Dubner  <rdubner@symas.com>
 
 	* cobol1.cc (cobol_langhook_handle_option): Eliminate OPT_M.
