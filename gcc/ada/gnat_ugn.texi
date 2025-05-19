@@ -17664,6 +17664,9 @@ file with @code{gprconfig} and using it with @code{gprbuild}; see the
 can determine from the first line of the @code{.ali} file
 which version of GNAT built that file because it contains either
 @code{GNAT} or @code{GNAT-LLVM}.
+
+You can also explicitly select GNAT LLVM in your existing GPR project
+file by adding @code{for Toolchain_Name("Ada") use "GNAT_LLVM";}
 @end itemize
 
 

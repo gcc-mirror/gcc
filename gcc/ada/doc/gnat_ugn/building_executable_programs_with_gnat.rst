@@ -8128,6 +8128,9 @@ We provide two options that you can use to build code with GNAT LLVM:
   which version of GNAT built that file because it contains either
   :code:`GNAT` or :code:`GNAT-LLVM`.
 
+  You can also explicitly select GNAT LLVM in your existing GPR project
+  file by adding :code:`for Toolchain_Name("Ada") use "GNAT_LLVM";`
+
 .. only:: PRO
 
     If your project uses one of the libraries packaged with the GCC
