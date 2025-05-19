@@ -5724,9 +5724,13 @@ trees_out::core_bools (tree t, bits_out& bits)
 	   DECL_NOT_REALLY_EXTERN -> base.not_really_extern
 	     == that was a lie, it is here  */
 
-	/* decl_flag_1 is DECL_EXTERNAL. Things we emit here, might
-	   well be external from the POV of an importer.  */
 	bool is_external = t->decl_common.decl_flag_1;
+	/* maybe_emit_vtables relies on vtables being marked as
+	   DECL_EXTERNAL and DECL_NOT_REALLY_EXTERN before processing.  */
+	if (!is_external && VAR_P (t) && DECL_VTABLE_OR_VTT_P (t))
+	  is_external = true;
+	/* Things we emit here might well be external from the POV of an
+	   importer.  */
 	if (!is_external
 	    && VAR_OR_FUNCTION_DECL_P (t)
 	    && get_importer_interface (t) == importer_interface::external)
