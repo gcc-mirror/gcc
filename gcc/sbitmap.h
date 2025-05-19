@@ -289,6 +289,8 @@ extern bool bitmap_xor (sbitmap, const_sbitmap, const_sbitmap);
 extern bool bitmap_subset_p (const_sbitmap, const_sbitmap);
 extern bool bitmap_any_bit_in_range_p (const_sbitmap, unsigned int,
 				       unsigned int);
+extern bool bitmap_all_bits_in_range_p (const_sbitmap, unsigned int,
+					unsigned int);
 
 extern int bitmap_first_set_bit (const_sbitmap);
 extern int bitmap_last_set_bit (const_sbitmap);

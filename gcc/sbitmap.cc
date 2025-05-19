@@ -326,12 +326,13 @@ bitmap_set_range (sbitmap bmap, unsigned int start, unsigned int count)
   bmap->elms[start_word] |= mask;
 }
 
-/* Return TRUE if any bit between START and END inclusive is set within
-   the simple bitmap BMAP.  Return FALSE otherwise.  */
+/* Helper function for bitmap_any_bit_in_range_p and
+   bitmap_all_bits_in_range_p.  If ANY_INVERTED is true, the function checks
+   if any bit in the range is unset.  */
 
-bool
-bitmap_any_bit_in_range_p (const_sbitmap bmap, unsigned int start,
-			   unsigned int end)
+static bool
+bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start,
+		       unsigned int end, bool any_inverted)
 {
   gcc_checking_assert (start <= end);
   bitmap_check_index (bmap, end);
@@ -351,7 +352,8 @@ bitmap_any_bit_in_range_p (const_sbitmap bmap, unsigned int start,
 
       SBITMAP_ELT_TYPE low_mask = ((SBITMAP_ELT_TYPE)1 << start_bitno) - 1;
       SBITMAP_ELT_TYPE mask = high_mask - low_mask;
-      if (bmap->elms[start_word] & mask)
+      const SBITMAP_ELT_TYPE expected_partial = any_inverted ? mask : 0;
+      if ((bmap->elms[start_word] & mask) != expected_partial)
 	return true;
       start_word++;
     }
@@ -361,9 +363,10 @@ bitmap_any_bit_in_range_p (const_sbitmap bmap, unsigned int start,
 
   /* Now test words at a time until we hit a partial word.  */
   unsigned int nwords = (end_word - start_word);
+  const SBITMAP_ELT_TYPE expected = any_inverted ? ~(SBITMAP_ELT_TYPE)0 : 0;
   while (nwords)
     {
-      if (bmap->elms[start_word])
+      if (bmap->elms[start_word] != expected)
 	return true;
       start_word++;
       nwords--;
@@ -373,7 +376,28 @@ bitmap_any_bit_in_range_p (const_sbitmap bmap, unsigned int start,
   SBITMAP_ELT_TYPE mask = ~(SBITMAP_ELT_TYPE)0;
   if (end_bitno + 1 < SBITMAP_ELT_BITS)
     mask = ((SBITMAP_ELT_TYPE)1 << (end_bitno + 1)) - 1;
-  return (bmap->elms[start_word] & mask) != 0;
+  const SBITMAP_ELT_TYPE expected_partial = any_inverted ? mask : 0;
+  return (bmap->elms[start_word] & mask) != expected_partial;
+}
+
+/* Return TRUE if all bits between START and END inclusive are set within
+   the simple bitmap BMAP.  Return FALSE otherwise.  */
+
+bool
+bitmap_all_bits_in_range_p (const_sbitmap bmap, unsigned int start,
+			    unsigned int end)
+{
+  return !bitmap_bit_in_range_p (bmap, start, end, true);
+}
+
+/* Return TRUE if any bit between START and END inclusive is set within
+   the simple bitmap BMAP.  Return FALSE otherwise.  */
+
+bool
+bitmap_any_bit_in_range_p (const_sbitmap bmap, unsigned int start,
+			   unsigned int end)
+{
+  return bitmap_bit_in_range_p (bmap, start, end, false);
 }
 
 #if GCC_VERSION < 3400
