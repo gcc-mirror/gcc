@@ -965,7 +965,6 @@ is
 
       P, Q, R : Float_Type'Base;
       Y : constant Float_Type'Base := abs X;
-      G : constant Float_Type'Base := Y * Y;
 
       Float_Type_Digits_15_Or_More : constant Boolean :=
         Float_Type'Digits > 14;
@@ -983,10 +982,14 @@ is
       elsif Y < Half_Ln3
         and then Float_Type_Digits_15_Or_More
       then
-         P := (P2 * G + P1) * G + P0;
-         Q := ((Q3 * G + Q2) * G + Q1) * G + Q0;
-         R := G * (P / Q);
-         return X + X * R;
+         declare
+            G : constant Float_Type'Base := Y * Y;
+         begin
+            P := (P2 * G + P1) * G + P0;
+            Q := ((Q3 * G + Q2) * G + Q1) * G + Q0;
+            R := G * (P / Q);
+            return X + X * R;
+         end;
 
       else
          return Aux.Tanh (X);
