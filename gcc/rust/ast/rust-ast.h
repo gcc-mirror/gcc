@@ -83,6 +83,42 @@ public:
   virtual void accept_vis (ASTVisitor &vis) = 0;
 };
 
+/**
+ * Base function for reconstructing and asserting that the new NodeId is
+ * different from the old NodeId. It then wraps the given pointer into a unique
+ * pointer and returns it.
+ */
+template <typename T, typename F>
+std::unique_ptr<T>
+reconstruct (const T *instance, F method)
+{
+  auto *reconstructed = (instance->*method) ();
+
+  rust_assert (reconstructed->get_node_id () != instance->get_node_id ());
+
+  return std::unique_ptr<T> (reconstructed);
+}
+
+/**
+ * Reconstruct multiple items in a vector
+ */
+template <typename T, typename F>
+std::vector<std::unique_ptr<T>>
+reconstruct_vec (const std::vector<std::unique_ptr<T>> &to_reconstruct,
+		 F method)
+{
+  std::vector<std::unique_ptr<T>> reconstructed;
+
+  for (const auto &elt : to_reconstruct)
+    {
+      auto new_elt = (elt.get ()->*method) ();
+
+      reconstructed.emplace_back (std::move (new_elt));
+    }
+
+  return reconstructed;
+}
+
 // Delimiter types - used in macros and whatever.
 enum DelimType
 {
