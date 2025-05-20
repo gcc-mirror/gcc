@@ -6631,9 +6631,14 @@ proc add_options_for_arm_v8_1m_mve_fp { flags } {
 proc check_effective_target_arm_v8_1a_neon_ok_nocache { } {
     global et_arm_v8_1a_neon_flags
     set et_arm_v8_1a_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -6641,7 +6646,8 @@ proc check_effective_target_arm_v8_1a_neon_ok_nocache { } {
     # since AArch64 only needs the -march setting.
     foreach flags {"" "-mfpu=neon-fp-armv8" "-mfloat-abi=softfp" \
 		       "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"} {
-	foreach arches { "-mcpu=unset -march=armv8-a+rdma" "-mcpu=unset -march=armv8.1-a" } {
+	foreach arches [list "$cpu_unset -march=armv8-a+rdma" \
+			    "$cpu_unset -march=armv8.1-a" ] {
 	    if { [check_no_compiler_messages_nocache arm_v8_1a_neon_ok object {
 		#if !defined (__ARM_FEATURE_QRDMX)
 		#error "__ARM_FEATURE_QRDMX not defined"
@@ -6668,9 +6674,14 @@ proc check_effective_target_arm_v8_1a_neon_ok { } {
 proc check_effective_target_arm_v8_2a_fp16_scalar_ok_nocache { } {
     global et_arm_v8_2a_fp16_scalar_flags
     set et_arm_v8_2a_fp16_scalar_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -6682,8 +6693,8 @@ proc check_effective_target_arm_v8_2a_fp16_scalar_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_FP16_SCALAR_ARITHMETIC)
 	    #error "__ARM_FEATURE_FP16_SCALAR_ARITHMETIC not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.2-a+fp16"] } {
-	    set et_arm_v8_2a_fp16_scalar_flags "$flags -mcpu=unset -march=armv8.2-a+fp16"
+	} "$flags $cpu_unset -march=armv8.2-a+fp16"] } {
+	    set et_arm_v8_2a_fp16_scalar_flags "$flags $cpu_unset -march=armv8.2-a+fp16"
 	    return 1
 	}
     }
@@ -6703,9 +6714,14 @@ proc check_effective_target_arm_v8_2a_fp16_scalar_ok { } {
 proc check_effective_target_arm_v8_2a_fp16_neon_ok_nocache { } {
     global et_arm_v8_2a_fp16_neon_flags
     set et_arm_v8_2a_fp16_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -6717,8 +6733,8 @@ proc check_effective_target_arm_v8_2a_fp16_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
 	    #error "__ARM_FEATURE_FP16_VECTOR_ARITHMETIC not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.2-a+fp16"] } {
-	    set et_arm_v8_2a_fp16_neon_flags "$flags -mcpu=unset -march=armv8.2-a+fp16"
+	} "$flags $cpu_unset -march=armv8.2-a+fp16"] } {
+	    set et_arm_v8_2a_fp16_neon_flags "$flags $cpu_unset -march=armv8.2-a+fp16"
 	    return 1
 	}
     }
@@ -6738,9 +6754,14 @@ proc check_effective_target_arm_v8_2a_fp16_neon_ok { } {
 proc check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache { } {
     global et_arm_v8_2a_dotprod_neon_flags
     set et_arm_v8_2a_dotprod_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -6752,8 +6773,8 @@ proc check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_DOTPROD)
 	    #error "__ARM_FEATURE_DOTPROD not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.2-a+dotprod"] } {
-	    set et_arm_v8_2a_dotprod_neon_flags "$flags -mcpu=unset -march=armv8.2-a+dotprod"
+	} "$flags $cpu_unset -march=armv8.2-a+dotprod"] } {
+	    set et_arm_v8_2a_dotprod_neon_flags "$flags $cpu_unset -march=armv8.2-a+dotprod"
 	    return 1
 	}
     }
@@ -6827,9 +6848,14 @@ proc add_options_for_arm_v8_2a_dotprod_neon { flags } {
 proc check_effective_target_arm_v8_2a_i8mm_ok_nocache { } {
     global et_arm_v8_2a_i8mm_flags
     set et_arm_v8_2a_i8mm_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -6841,8 +6867,8 @@ proc check_effective_target_arm_v8_2a_i8mm_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_MATMUL_INT8)
 	    #error "__ARM_FEATURE_MATMUL_INT8 not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.2-a+i8mm"] } {
-	    set et_arm_v8_2a_i8mm_flags "$flags -mcpu=unset -march=armv8.2-a+i8mm"
+	} "$flags $cpu_unset -march=armv8.2-a+i8mm"] } {
+	    set et_arm_v8_2a_i8mm_flags "$flags $cpu_unset -march=armv8.2-a+i8mm"
 	    return 1
 	}
     }
@@ -6914,9 +6940,14 @@ proc add_options_for_arm_fp16fml_neon { flags } {
 proc check_effective_target_arm_v8_2a_bf16_neon_ok_nocache { } {
     global et_arm_v8_2a_bf16_neon_flags
     set et_arm_v8_2a_bf16_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     foreach flags {"" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" "-mfloat-abi=hard -mfpu=neon-fp-armv8" } {
@@ -6925,8 +6956,8 @@ proc check_effective_target_arm_v8_2a_bf16_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_BF16_VECTOR_ARITHMETIC)
 	    #error "__ARM_FEATURE_BF16_VECTOR_ARITHMETIC not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.2-a+bf16"] } {
-	    set et_arm_v8_2a_bf16_neon_flags "$flags -mcpu=unset -march=armv8.2-a+bf16"
+	} "$flags $cpu_unset -march=armv8.2-a+bf16"] } {
+	    set et_arm_v8_2a_bf16_neon_flags "$flags $cpu_unset -march=armv8.2-a+bf16"
 	    return 1
 	}
     }
@@ -13404,9 +13435,14 @@ proc check_effective_target_inff { } {
 proc check_effective_target_arm_v8_3a_complex_neon_ok_nocache { } {
     global et_arm_v8_3a_complex_neon_flags
     set et_arm_v8_3a_complex_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -13417,8 +13453,8 @@ proc check_effective_target_arm_v8_3a_complex_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_COMPLEX)
 	    #error "__ARM_FEATURE_COMPLEX not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.3-a"] } {
-	    set et_arm_v8_3a_complex_neon_flags "$flags -mcpu=unset -march=armv8.3-a"
+	} "$flags $cpu_unset -march=armv8.3-a"] } {
+	    set et_arm_v8_3a_complex_neon_flags "$flags $cpu_unset -march=armv8.3-a"
 	    return 1;
 	}
     }
@@ -13446,9 +13482,14 @@ proc add_options_for_arm_v8_3a_complex_neon { flags } {
 proc check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache { } {
     global et_arm_v8_3a_fp16_complex_neon_flags
     set et_arm_v8_3a_fp16_complex_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -13459,9 +13500,9 @@ proc check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_COMPLEX)
 	    #error "__ARM_FEATURE_COMPLEX not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.3-a+fp16"] } {
+	} "$flags $cpu_unset -march=armv8.3-a+fp16"] } {
 	    set et_arm_v8_3a_fp16_complex_neon_flags \
-			"$flags -mcpu=unset -march=armv8.3-a+fp16"
+			"$flags $cpu_unset -march=armv8.3-a+fp16"
 	    return 1;
 	}
     }
