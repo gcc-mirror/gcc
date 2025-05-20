@@ -1130,7 +1130,7 @@
     Libstdc++-v3 incorporates a lot of code from
     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/">the SGI STL</link>
     (the final merge was from
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171225062613/http://www.sgi.com/tech/stl/whats_new.html">release 3.3</link>).
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://web.archive.org/web/20171206110416/http://www.sgi.com/tech/stl/whats_new.html">release 3.3</link>).
     The code in libstdc++ contains many fixes and changes compared to the
     original SGI code.
     </para>
