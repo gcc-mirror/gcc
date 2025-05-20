@@ -8618,7 +8618,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    tree cookie_size = NULL_TREE;
 	    tree arg_size = NULL_TREE;
 	    if (TREE_CODE (elt_type) == RECORD_TYPE
-		&& TYPE_NAME (elt_type) == heap_identifier)
+		&& TYPE_IDENTIFIER (elt_type) == heap_identifier)
 	      {
 		tree fld1 = TYPE_FIELDS (elt_type);
 		tree fld2 = DECL_CHAIN (fld1);

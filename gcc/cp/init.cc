@@ -3010,7 +3010,6 @@ build_new_constexpr_heap_type (tree elt_type, tree cookie_size, tree itype2)
   tree atype1 = build_cplus_array_type (sizetype, itype1);
   tree atype2 = build_cplus_array_type (elt_type, itype2);
   tree rtype = cxx_make_type (RECORD_TYPE);
-  TYPE_NAME (rtype) = heap_identifier;
   tree fld1 = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE, atype1);
   tree fld2 = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE, atype2);
   DECL_FIELD_CONTEXT (fld1) = rtype;
@@ -3019,7 +3018,16 @@ build_new_constexpr_heap_type (tree elt_type, tree cookie_size, tree itype2)
   DECL_ARTIFICIAL (fld2) = true;
   TYPE_FIELDS (rtype) = fld1;
   DECL_CHAIN (fld1) = fld2;
+  TYPE_ARTIFICIAL (rtype) = true;
   layout_type (rtype);
+
+  tree decl = build_decl (UNKNOWN_LOCATION, TYPE_DECL, heap_identifier, rtype);
+  TYPE_NAME (rtype) = decl;
+  TYPE_STUB_DECL (rtype) = decl;
+  DECL_CONTEXT (decl) = NULL_TREE;
+  DECL_ARTIFICIAL (decl) = true;
+  layout_decl (decl, 0);
+
   return rtype;
 }
 

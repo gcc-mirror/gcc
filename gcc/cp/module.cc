@@ -9366,6 +9366,7 @@ trees_out::type_node (tree type)
 
   tree root = (TYPE_NAME (type)
 	       ? TREE_TYPE (TYPE_NAME (type)) : TYPE_MAIN_VARIANT (type));
+  gcc_checking_assert (root);
 
   if (type != root)
     {
@@ -9444,6 +9445,8 @@ trees_out::type_node (tree type)
 	|| TREE_CODE (type) == UNION_TYPE
 	|| TREE_CODE (type) == ENUMERAL_TYPE)
       {
+	gcc_checking_assert (DECL_P (name));
+
 	/* We can meet template parms that we didn't meet in the
 	   tpl_parms walk, because we're referring to a derived type
 	   that was previously constructed from equivalent template
