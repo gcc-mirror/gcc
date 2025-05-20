@@ -31163,12 +31163,12 @@ extension set if they weren't added explicitly.
 @item -mcpu=@var{processor-string}
 Use architecture of and optimize the output for the given processor, specified
 by particular CPU name.
-Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
-@samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34}, @samp{sifive-e76},
-@samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54}, @samp{sifive-s76},
-@samp{sifive-u54}, @samp{sifive-u74}, @samp{sifive-x280}, @samp{sifive-xp450},
-@samp{sifive-x670}, @samp{thead-c906}, @samp{tt-ascalon-d8}, @samp{xiangshan-nanhu},
-@samp{xt-c908}, @samp{xt-c908v}, @samp{xt-c910}, @samp{xt-c910v2},
+Permissible values for this option are: @samp{mips-p8700}, @samp{sifive-e20},
+@samp{sifive-e21}, @samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34},
+@samp{sifive-e76}, @samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54},
+@samp{sifive-s76}, @samp{sifive-u54}, @samp{sifive-u74}, @samp{sifive-x280},
+@samp{sifive-xp450}, @samp{sifive-x670}, @samp{thead-c906}, @samp{tt-ascalon-d8},
+@samp{xiangshan-nanhu}, @samp{xt-c908}, @samp{xt-c908v}, @samp{xt-c910}, @samp{xt-c910v2},
 @samp{xt-c920}, @samp{xt-c920v2}.
 
 Note that @option{-mcpu} does not override @option{-march} or @option{-mtune}.
@@ -31177,7 +31177,7 @@ Note that @option{-mcpu} does not override @option{-march} or @option{-mtune}.
 @item -mtune=@var{processor-string}
 Optimize the output for the given processor, specified by microarchitecture or
 particular CPU name.  Permissible values for this option are:
-@samp{generic-ooo}, @samp{rocket}, @samp{sifive-3-series},
+@samp{generic-ooo}, @samp{mips-p8700}, @samp{rocket}, @samp{sifive-3-series},
 @samp{sifive-5-series}, @samp{sifive-7-series}, @samp{size},
 @samp{sifive-p400-series}, @samp{sifive-p600-series}, and all valid options for
 @option{-mcpu=}.
