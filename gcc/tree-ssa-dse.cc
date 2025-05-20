@@ -842,7 +842,7 @@ live_bytes_read (ao_ref *use_ref, ao_ref *ref, sbitmap live)
 	return true;
 
       /* Now check if any of the remaining bits in use_ref are set in LIVE.  */
-      return bitmap_bit_in_range_p (live, start, (start + size - 1));
+      return bitmap_any_bit_in_range_p (live, start, (start + size - 1));
     }
   return true;
 }
