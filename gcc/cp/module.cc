@@ -9658,9 +9658,10 @@ trees_out::tree_value (tree t)
 
   if (DECL_P (t))
     /* No template, type, var or function, except anonymous
-       non-context vars.  */
+       non-context vars and types.  */
     gcc_checking_assert ((TREE_CODE (t) != TEMPLATE_DECL
-			  && TREE_CODE (t) != TYPE_DECL
+			  && (TREE_CODE (t) != TYPE_DECL
+			      || (DECL_ARTIFICIAL (t) && !DECL_CONTEXT (t)))
 			  && (TREE_CODE (t) != VAR_DECL
 			      || (!DECL_NAME (t) && !DECL_CONTEXT (t)))
 			  && TREE_CODE (t) != FUNCTION_DECL));
@@ -9674,7 +9675,7 @@ trees_out::tree_value (tree t)
       tree_node_bools (t);
     }
 
-  if  (TREE_CODE (t) == TREE_BINFO)
+  if (TREE_CODE (t) == TREE_BINFO)
     /* Binfos are decl-like and need merging information.  */
     binfo_mergeable (t);
 
@@ -9683,7 +9684,48 @@ trees_out::tree_value (tree t)
     dump (dumper::TREE)
       && dump ("Writing tree:%d %C:%N", tag, TREE_CODE (t), t);
 
+  int type_tag = 0;
+  tree type = NULL_TREE;
+  if (TREE_CODE (t) == TYPE_DECL)
+    {
+      type = TREE_TYPE (t);
+
+      /* We only support a limited set of features for uncontexted types;
+	 these are typically types created in the language-independent
+	 parts of the frontend (such as ubsan).  */
+      gcc_checking_assert (RECORD_OR_UNION_TYPE_P (type)
+			   && TYPE_MAIN_VARIANT (type) == type
+			   && TYPE_NAME (type) == t
+			   && TYPE_STUB_DECL (type) == t
+			   && !TYPE_VFIELD (type)
+			   && !TYPE_BINFO (type)
+			   && !CLASS_TYPE_P (type));
+
+      if (streaming_p ())
+	{
+	  start (type);
+	  tree_node_bools (type);
+	}
+
+      type_tag = insert (type, WK_value);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Writing type: %d %C:%N", type_tag,
+		   TREE_CODE (type), type);
+    }
+
   tree_node_vals (t);
+
+  if (type)
+    {
+      tree_node_vals (type);
+      tree_node (TYPE_SIZE (type));
+      tree_node (TYPE_SIZE_UNIT (type));
+      chained_decls (TYPE_FIELDS (type));
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Written type:%d %C:%N", type_tag, TREE_CODE (type), type);
+    }
 
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written tree:%d %C:%N", tag, TREE_CODE (t), t);
@@ -9723,12 +9765,46 @@ trees_in::tree_value ()
   dump (dumper::TREE)
     && dump ("Reading tree:%d %C", tag, TREE_CODE (t));
 
-  if (!tree_node_vals (t))
+  int type_tag = 0;
+  tree type = NULL_TREE;
+  if (TREE_CODE (t) == TYPE_DECL)
     {
+      type = start ();
+      if (!type || !tree_node_bools (type))
+	t = NULL_TREE;
+
+      type_tag = insert (type);
+      if (t)
+	dump (dumper::TREE)
+	  && dump ("Reading type:%d %C", type_tag, TREE_CODE (type));
+    }
+
+  if (!t)
+    {
+bail:
       back_refs[~tag] = NULL_TREE;
+      if (type_tag)
+	back_refs[~type_tag] = NULL_TREE;
       set_overrun ();
-      /* Bail.  */
       return NULL_TREE;
+    }
+
+  if (!tree_node_vals (t))
+    goto bail;
+
+  if (type)
+    {
+      if (!tree_node_vals (type))
+	goto bail;
+
+      TYPE_SIZE (type) = tree_node ();
+      TYPE_SIZE_UNIT (type) = tree_node ();
+      TYPE_FIELDS (type) = chained_decls ();
+      if (get_overrun ())
+	goto bail;
+
+      dump (dumper::TREE)
+	&& dump ("Read type:%d %C:%N", type_tag, TREE_CODE (type), type);
     }
 
   if (TREE_CODE (t) == LAMBDA_EXPR
@@ -9984,7 +10060,18 @@ trees_out::tree_node (tree t)
 		 PARM_DECLS.  It'd be nice if they had a
 		 distinguishing flag to double check.  */
 	      break;
+
+	    case TYPE_DECL:
+	      /* Some parts of the compiler need internal struct types;
+		 these types may not have an appropriate context to use.
+		 Walk the whole type (including its definition) by value.  */
+	      gcc_checking_assert (DECL_ARTIFICIAL (t)
+				   && TYPE_ARTIFICIAL (TREE_TYPE (t))
+				   && RECORD_OR_UNION_TYPE_P (TREE_TYPE (t))
+				   && !CLASS_TYPE_P (TREE_TYPE (t)));
+	      break;
 	    }
+	  mark_declaration (t, has_definition (t));
 	  goto by_value;
 	}
     }
@@ -11124,6 +11211,11 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	return MK_local_friend;
 
       gcc_checking_assert (TYPE_P (ctx));
+
+      /* Internal-only types will not need to dedup their members.  */
+      if (!DECL_CONTEXT (TYPE_NAME (ctx)))
+	return MK_unique;
+
       if (TREE_CODE (decl) == USING_DECL)
 	return MK_field;
 
