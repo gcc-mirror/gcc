@@ -6981,7 +6981,9 @@ package body Exp_Ch3 is
 
          --  Processing for objects that require finalization actions
 
-         if Needs_Finalization (Ret_Typ) then
+         if Needs_Finalization (Ret_Typ)
+           and then not Has_Relaxed_Finalization (Ret_Typ)
+         then
             declare
                Decls       : constant List_Id := New_List;
                Fin_Coll_Id : constant Entity_Id :=
