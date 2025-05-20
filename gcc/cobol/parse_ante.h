@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstring>
+#include <cstdio>
 
 #include <algorithm>
 #include <list>
@@ -109,7 +109,7 @@ void input_file_status_notify();
 int yylex(void);
 extern int yydebug;
 
-#include <stdarg.h>
+#include <cstdarg>
 
 const char *
 consistent_encoding_check( const YYLTYPE& loc, const char input[] ) {
@@ -223,7 +223,13 @@ namcpy(const YYLTYPE& loc, cbl_name_t tgt, const char *src ) {
 }
 
 cbl_field_t *
-new_alphanumeric( size_t capacity = MAXIMUM_ALPHA_LENGTH );
+new_alphanumeric( size_t capacity = MAXIMUM_ALPHA_LENGTH,
+		  const cbl_name_t name = nullptr );
+
+static inline cbl_field_t *
+new_alphanumeric( const cbl_name_t name ) {
+  return new_alphanumeric(MAXIMUM_ALPHA_LENGTH, name);
+}
 
 static inline cbl_refer_t *
 new_reference( enum cbl_field_type_t type, const char *initial ) {
@@ -2439,10 +2445,14 @@ char *
 normalize_picture( char picture[] );
 
 static inline cbl_field_t *
-new_tempnumeric(void) { return new_temporary(FldNumericBin5); }
+new_tempnumeric(const cbl_name_t name = nullptr) {
+  return new_temporary(FldNumericBin5, name);
+}
 
 static inline cbl_field_t *
-new_tempnumeric_float(void) { return new_temporary(FldFloat); }
+new_tempnumeric_float(const cbl_name_t name = nullptr) {
+  return new_temporary(FldFloat, name);
+}
 
 uint32_t
 type_capacity( enum cbl_field_type_t type, uint32_t digits );
@@ -3136,6 +3146,17 @@ current_field(cbl_field_t * field = NULL) {
   if( field ) local = field;
   gcc_assert(field_index(local));
   return local;
+}
+
+static void
+set_real_from_capacity( const YYLTYPE& loc,
+			cbl_field_t *field,
+			REAL_VALUE_TYPE *r ) {
+  if( field == current_field() ) {
+    error_msg(loc, "cannot define %s via self-reference", field->name);
+    return;
+  }
+  field->data.set_real_from_capacity(r);
 }
 
 static struct cbl_special_name_t *

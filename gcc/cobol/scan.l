@@ -275,7 +275,7 @@ PROCEDURE{SPC}DIVISION	{ yy_push_state(procedure_div);
   IS		{ pop_return IS; }
 
   OPTIONS		{ yy_pop_state(); myless(0); }
-  [[:blank:]]*(ENVIRONMENT|DATA|PROCEDURE)[[:blank:]]+DIVISION/.+\n {
+  [[:blank:]]*(ENVIRONMENT|DATA|PROCEDURE){SPC}DIVISION/[[:space:].] {
                                   yy_pop_state(); myless(0); }
   [[:blank:]]*AUTHOR[[:blank:].]+{EOL}? {
 				  // Might not have an EOL, but stop on one.

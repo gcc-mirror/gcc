@@ -27,16 +27,19 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <ctype.h>
-#include <errno.h>
+
 #include <fcntl.h>
-#include <math.h>
-#include <fenv.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
 #include <unistd.h>
+
+#include <cctype>
+#include <cerrno>
+#include <cmath>
+#include <cfenv>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+
 #include <algorithm>
 #include <vector>
 

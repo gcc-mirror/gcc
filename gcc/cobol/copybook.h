@@ -65,7 +65,7 @@ class copybook_elem_t {
     copybook_loc_t() : name(NULL) {}
   } source, library;
   bool suppress;
-  static const char *extensions;
+  static std::list<const char *> suffixes;
  public:
   struct { bool source, library; } literally;
   int  fd;
@@ -91,7 +91,6 @@ class copybook_elem_t {
   }
 
   int open_file( const char dir[], bool literally = false );
-  void extensions_add( const char ext[], const char alt[] );
 
   static inline bool is_quote( const char ch ) {
     return ch == '\'' || ch == '"';
@@ -185,12 +184,10 @@ class copybook_t {
     this->source(loc, name);
 
     for( auto dir : directories ) {
-      if( true ) {
-        dbgmsg("copybook_t::open '%s' OF '%s' %s",
-               book.source.name,
-               dir? dir: ".",
-               book.literally.source? ", literally" : "" );
-      }
+      dbgmsg("copybook_t::open '%s' OF '%s' %s",
+	     book.source.name,
+	     dir? dir: ".",
+	     book.literally.source? ", literally" : "" );
       if( (fd = book.open_file(dir, book.literally.source)) != -1 ) break;
     }
     return fd;

@@ -31,11 +31,12 @@
 #include "config.h"
 
 #include "io.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include <errno.h>
-#include <stdbool.h>
-#include <stdint.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cerrno>
+#include <cstdbool>
+#include <cstdint>
 
 /*
  * The Cobol runtime support is responsible to set the file status

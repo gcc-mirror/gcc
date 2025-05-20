@@ -421,7 +421,7 @@ size_t end_of_group( size_t igroup );
 
 static std::vector<size_t>
 symbol_match2( size_t program,
-               std::list<const char *> names, bool local = true )
+               const std::list<const char *>& names, bool local = true )
 {
   std::vector<size_t> fields;
 
@@ -488,7 +488,7 @@ symbol_match2( size_t program,
  * N-1.
  */
 static symbol_map_t
-symbol_match( size_t program, std::list<const char *> names ) {
+symbol_match( size_t program, const std::list<const char *>& names ) {
   auto matched = symbol_match2( program, names );
   symbol_map_t output;
 

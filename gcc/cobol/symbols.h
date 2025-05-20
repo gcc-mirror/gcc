@@ -32,11 +32,11 @@
 #else
 #define _SYMBOLS_H_
 
-#include <assert.h>
-#include <limits.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <climits>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 
 #include <algorithm>
 #include <list>
@@ -149,6 +149,7 @@ is_working_storage(uint32_t attr) {
   return 0 == (attr & (linkage_e | local_e));
 }
 
+int cbl_figconst_tok( const char *value );
 enum cbl_figconst_t cbl_figconst_of( const char *value );
 const char * cbl_figconst_str( cbl_figconst_t fig );
 
@@ -630,6 +631,8 @@ struct cbl_field_t {
     return level_str(level);
   }
 };
+
+const cbl_field_t * cbl_figconst_field_of( const char *value );
 
 // Necessary forward referencea
 struct cbl_label_t;
@@ -1191,7 +1194,7 @@ class temporaries_t {
 public:
   cbl_field_t * literal( const char value[], uint32_t len, cbl_field_attr_t attr  = none_e );
   cbl_field_t * reuse( cbl_field_type_t type );
-  cbl_field_t * acquire( cbl_field_type_t type );
+  cbl_field_t * acquire( cbl_field_type_t type, const cbl_name_t name = nullptr );
   cbl_field_t *  add( cbl_field_t *field );
   bool keep( cbl_field_t *field ) { return 1 == used[field->type].erase(field); }
   void dump() const;
@@ -2352,10 +2355,6 @@ struct symbol_elem_t *
 symbol_field_same_as( cbl_field_t *tgt, const cbl_field_t *src );
 
 size_t symbol_file_same_record_area( std::list<cbl_file_t*>& files );
-
-cbl_field_t *
-symbol_valid_udf_args( size_t function,
-                       std::list<cbl_refer_t> args = std::list<cbl_refer_t>() );
 
 bool symbol_currency_add( const char symbol[], const char sign[] = NULL );
 const char * symbol_currency( char symbol );

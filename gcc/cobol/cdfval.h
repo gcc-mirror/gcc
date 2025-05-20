@@ -32,9 +32,9 @@
 #ifndef _CDF_VAL_H_
 #define _CDF_VAL_H_
 
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdint>
+#include <cstdlib>
 
 bool scanner_parsing();
 

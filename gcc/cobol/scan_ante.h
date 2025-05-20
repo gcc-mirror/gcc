@@ -737,6 +737,10 @@ typed_name( const char name[] ) {
     {
       auto f = cbl_field_of(e);
       if( is_constant(f) ) {
+	if(  f->data.initial ) {
+	  int token = cbl_figconst_tok(f->data.initial);
+	  if( token ) return token;
+	}
         int token = datetime_format_of(f->data.initial);
         if( token ) {
           yylval.string = xstrdup(f->data.initial);

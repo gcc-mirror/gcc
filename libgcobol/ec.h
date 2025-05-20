@@ -33,7 +33,6 @@
 #define _CBL_EC_H_
 
 #include <set>
-#include <assert.h>
 
 #define  EC_ALL_E 0xFFFFFF00
 
