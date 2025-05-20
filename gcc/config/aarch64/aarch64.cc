@@ -14578,6 +14578,13 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	 we don't need to consider that here.  */
       if (x == const0_rtx)
 	*cost = 0;
+      /* If the outer is a COMPARE which is used by the middle-end
+	 and the constant fits how the cmp instruction allows, say the cost
+	 is the same as 1 insn.  */
+      else if (outer == COMPARE
+	       && (aarch64_uimm12_shift (INTVAL (x))
+		   || aarch64_uimm12_shift (-UINTVAL (x))))
+	*cost = COSTS_N_INSNS (1);
       else
 	{
 	  /* To an approximation, building any other constant is
