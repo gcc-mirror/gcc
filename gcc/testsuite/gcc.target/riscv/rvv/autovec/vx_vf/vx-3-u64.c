@@ -7,8 +7,10 @@
 
 DEF_VX_BINARY_CASE_0_WRAP(T, +, add)
 DEF_VX_BINARY_CASE_0(T, -, sub)
-DEF_VX_BINARY_REVERSE_CASE_0(T, -, rsub);
+DEF_VX_BINARY_REVERSE_CASE_0(T, -, rsub)
+DEF_VX_BINARY_CASE_0_WRAP(T, &, and)
 
 /* { dg-final { scan-assembler-not {vadd.vx} } } */
 /* { dg-final { scan-assembler-not {vsub.vx} } } */
 /* { dg-final { scan-assembler-not {vrsub.vx} } } */
+/* { dg-final { scan-assembler-not {vand.vx} } } */
