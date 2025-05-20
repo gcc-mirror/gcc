@@ -76,7 +76,7 @@ bitint_reduce_prec (const UBILtype **p, SItype prec)
 		  if (prec >= -1)
 		    return -2;
 #if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
-		  ++p;
+		  ++*p;
 #else
 		  --i;
 #endif
@@ -90,7 +90,7 @@ bitint_reduce_prec (const UBILtype **p, SItype prec)
 	      if (prec >= -1)
 		return -2;
 #if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
-	      ++p;
+	      ++*p;
 #else
 	      --i;
 #endif
@@ -101,7 +101,7 @@ bitint_reduce_prec (const UBILtype **p, SItype prec)
 	      if ((BILtype) mslimb >= 0)
 		{
 #if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
-		  --p;
+		  --*p;
 #endif
 		  return prec - 1;
 		}
@@ -130,7 +130,7 @@ bitint_reduce_prec (const UBILtype **p, SItype prec)
 	  if (prec == 0)
 	    return 1;
 #if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
-	  ++p;
+	  ++*p;
 #else
 	  --i;
 #endif
@@ -143,7 +143,7 @@ bitint_reduce_prec (const UBILtype **p, SItype prec)
       if (prec == 0)
 	return 1;
 #if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
-      ++p;
+      ++*p;
 #else
       --i;
 #endif
