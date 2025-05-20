@@ -756,22 +756,16 @@ private:
   std::vector<std::unique_ptr<MacroInvocation>> pending_eager_invocs;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   MacroInvocation *clone_pattern_impl () const final override
   {
     return clone_macro_invocation_impl ();
   }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   MacroInvocation *clone_expr_without_block_impl () const final override
   {
     return clone_macro_invocation_impl ();
   }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   MacroInvocation *clone_type_no_bounds_impl () const final override
   {
     return clone_macro_invocation_impl ();
@@ -786,6 +780,20 @@ public:
   /*virtual*/ MacroInvocation *clone_macro_invocation_impl () const
   {
     return new MacroInvocation (*this);
+  }
+
+  std::unique_ptr<MacroInvocation> reconstruct_macro_invocation () const
+  {
+    return nullptr;
+    //  return reconstruct (this,
+    // &MacroInvocation::reconstruct_macro_invocation_impl);
+  }
+
+  MacroInvocation *reconstruct_impl () const override
+  {
+    return new MacroInvocation (kind, builtin_kind, invoc_data, outer_attrs,
+				locus, is_semi_coloned,
+				reconstruct_vec (pending_eager_invocs));
   }
 
   void add_semicolon () override { is_semi_coloned = true; }
