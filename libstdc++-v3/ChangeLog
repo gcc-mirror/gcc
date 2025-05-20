@@ -1,3 +1,49 @@
+2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (_ZipTransform::operator()): Remove name of
+	unused parameter.
+	(chunk_view::_Iterator, stride_view::_Iterator): Likewise.
+	(join_with_view): Declare _Iterator and _Sentinel as class
+	instead of struct.
+	(repeat_view): Declare _Iterator as class instead of struct.
+
+2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120293
+	* include/bits/chrono_io.h (_M_format_to_ostream): Add special
+	case for local_time convertible to local_days.
+	* testsuite/std/time/clock/local/io.cc: Check formatting of
+	chrono::local_days.
+
+2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120029
+	* src/c++17/fs_path.cc (path::operator+=(const path&)): Handle
+	parameters that alias the path or one of its components.
+	* testsuite/27_io/filesystem/path/concat/120029.cc: New test.
+	* testsuite/experimental/filesystem/path/concat/120029.cc: New
+	test.
+
+2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120190
+	* include/std/format (format_kind): Adjust primary template to
+	not depend on itself.
+	* testsuite/std/format/ranges/format_kind_neg.cc: Adjust
+	expected errors. Check more invalid specializations.
+
 2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2025-05-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-openmp.cc (gfc_omp_deep_mapping_do): Handle SSA_NAME if
+	a def_stmt is available.
+
 2025-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
