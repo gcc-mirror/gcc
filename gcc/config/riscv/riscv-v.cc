@@ -5511,6 +5511,7 @@ expand_vx_binary_vec_dup_vec (rtx op_0, rtx op_1, rtx op_2,
   switch (code)
     {
     case PLUS:
+    case AND:
       icode = code_for_pred_scalar (code, mode);
       break;
     case MINUS:
@@ -5537,6 +5538,7 @@ expand_vx_binary_vec_vec_dup (rtx op_0, rtx op_1, rtx op_2,
   switch (code)
     {
     case MINUS:
+    case AND:
       icode = code_for_pred_scalar (code, mode);
       break;
     default:
