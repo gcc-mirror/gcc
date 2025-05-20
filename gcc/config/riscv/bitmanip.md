@@ -1,4 +1,4 @@
-;; Machine description for RISC-V Bit Manipulation operations.
+;); Machine description for RISC-V Bit Manipulation operations.
 ;; Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
@@ -68,23 +68,25 @@
   [(set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI (plus:SI (ashift:SI (subreg:SI (match_operand:DI 1 "register_operand") 0)
 						       (match_operand:QI 2 "imm123_operand"))
-				 (subreg:SI (match_operand:DI 3 "register_operand") 0))))]
+				 (subreg:SI (match_operand:DI 3 "register_operand") 0))))
+   (clobber (match_operand:DI 4 "register_operand"))]
   "TARGET_64BIT && TARGET_ZBA"
-  [(set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
-   (set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 0) 0)))])
+  [(set (match_dup 4) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
+   (set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 4) 0)))])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI (plus:SI (subreg:SI (and:DI (ashift:DI (match_operand:DI 1 "register_operand")
 							       (match_operand:QI 2 "imm123_operand"))
 						    (match_operand:DI 3 "consecutive_bits_operand")) 0)
-				 (subreg:SI (match_operand:DI 4 "register_operand") 0))))]
+				 (subreg:SI (match_operand:DI 4 "register_operand") 0))))
+   (clobber (match_operand:DI 5 "register_operand"))]
   "TARGET_64BIT && TARGET_ZBA
    && riscv_shamt_matches_mask_p (INTVAL (operands[2]), INTVAL (operands[3]))
    /* Ensure the mask includes all the bits in SImode.  */
    && ((INTVAL (operands[3]) & (HOST_WIDE_INT_1U << 31)) != 0)"
-  [(set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 4)))
-   (set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 0) 0)))])
+  [(set (match_dup 5) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 4)))
+   (set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 5) 0)))])
 
 ; Make sure that an andi followed by a sh[123]add remains a two instruction
 ; sequence--and is not torn apart into slli, slri, add.
@@ -195,13 +197,14 @@
 					     (match_operand:QI 2 "imm123_operand"))
 				  (match_operand 3 "consecutive_bits32_operand"))
 			  (match_operand:DI 4 "register_operand"))
-		 (match_operand 5 "immediate_operand")))]
+		 (match_operand 5 "immediate_operand")))
+   (clobber (match_operand:DI 6 "register_operand"))]
   "TARGET_64BIT && TARGET_ZBA"
-  [(set (match_dup 0)
+  [(set (match_dup 6)
 	(plus:DI (and:DI (ashift:DI (match_dup 1) (match_dup 2))
 			 (match_dup 3))
 		 (match_dup 4)))
-   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 5)))])
+   (set (match_dup 0) (plus:DI (match_dup 6) (match_dup 5)))])
 
 ;; ZBB extension.
 
@@ -846,18 +849,19 @@
 (define_insn_and_split "*bclri<mode>_nottwobits"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand:X 2 "const_nottwobits_not_arith_operand" "i")))]
+	       (match_operand:X 2 "const_nottwobits_not_arith_operand" "i")))
+   (clobber (match_scratch:X 3 "=&r"))]
   "TARGET_ZBS && !paradoxical_subreg_p (operands[1])"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (and:X (match_dup 1) (match_dup 3)))
-   (set (match_dup 0) (and:X (match_dup 0) (match_dup 4)))]
+  [(set (match_dup 3) (and:X (match_dup 1) (match_dup 4)))
+   (set (match_dup 0) (and:X (match_dup 3) (match_dup 5)))]
 {
-	unsigned HOST_WIDE_INT bits = ~UINTVAL (operands[2]);
-	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
+  unsigned HOST_WIDE_INT bits = ~UINTVAL (operands[2]);
+  unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
 
-	operands[3] = GEN_INT (~bits | topbit);
-	operands[4] = GEN_INT (~topbit);
+  operands[4] = GEN_INT (~bits | topbit);
+  operands[5] = GEN_INT (~topbit);
 }
 [(set_attr "type" "bitmanip")])
 
@@ -866,19 +870,20 @@
 (define_insn_and_split "*bclridisi_nottwobits"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (match_operand:DI 1 "register_operand" "r")
-		(match_operand:DI 2 "const_nottwobits_not_arith_operand" "i")))]
+		(match_operand:DI 2 "const_nottwobits_not_arith_operand" "i")))
+   (clobber (match_scratch:DI 3 "=&r"))]
   "TARGET_64BIT && TARGET_ZBS
    && clz_hwi (~UINTVAL (operands[2])) > 33"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (and:DI (match_dup 1) (match_dup 3)))
-   (set (match_dup 0) (and:DI (match_dup 0) (match_dup 4)))]
+  [(set (match_dup 3) (and:DI (match_dup 1) (match_dup 4)))
+   (set (match_dup 0) (and:DI (match_dup 3) (match_dup 5)))]
 {
-	unsigned HOST_WIDE_INT bits = ~UINTVAL (operands[2]);
-	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
+  unsigned HOST_WIDE_INT bits = ~UINTVAL (operands[2]);
+  unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
 
-	operands[3] = GEN_INT (~bits | topbit);
-	operands[4] = GEN_INT (~topbit);
+  operands[4] = GEN_INT (~bits | topbit);
+  operands[5] = GEN_INT (~topbit);
 }
 [(set_attr "type" "bitmanip")])
 
@@ -1011,12 +1016,13 @@
   [(set (match_operand:X 0 "register_operand")
 	(and:X (not:X (lshiftrt:X (match_operand:X 1 "register_operand")
 				  (match_operand:QI 2 "register_operand")))
-	       (const_int 1)))]
+	       (const_int 1)))
+   (clobber (match_operand:X 3 "register_operand"))]
   "TARGET_ZBS"
-  [(set (match_dup 0) (zero_extract:X (match_dup 1)
+  [(set (match_dup 3) (zero_extract:X (match_dup 1)
 				      (const_int 1)
 				      (match_dup 2)))
-   (set (match_dup 0) (xor:X (match_dup 0) (const_int 1)))]
+   (set (match_dup 0) (xor:X (match_dup 3) (const_int 1)))]
   "operands[2] = gen_lowpart (<MODE>mode, operands[2]);")
 
 ;; We can create a polarity-reversed mask (i.e. bit N -> { set = 0, clear = -1 })
@@ -1027,28 +1033,30 @@
        (neg:GPR (eq:GPR (zero_extract:GPR (match_operand:GPR 1 "register_operand")
                                           (const_int 1)
                                           (match_operand 2))
-                        (const_int 0))))]
+			(const_int 0))))
+   (clobber (match_operand:X 3 "register_operand"))]
   "TARGET_ZBS"
-  [(set (match_dup 0) (zero_extract:GPR (match_dup 1) (const_int 1) (match_dup 2)))
-   (set (match_dup 0) (plus:GPR (match_dup 0) (const_int -1)))])
+  [(set (match_dup 3) (zero_extract:GPR (match_dup 1) (const_int 1) (match_dup 2)))
+   (set (match_dup 0) (plus:GPR (match_dup 3) (const_int -1)))])
 
 ;; Catch those cases where we can use a bseti/binvi + ori/xori or
 ;; bseti/binvi + bseti/binvi instead of a lui + addi + or/xor sequence.
 (define_insn_and_split "*<or_optab>i<mode>_extrabit"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(any_or:X (match_operand:X 1 "register_operand" "r")
-	          (match_operand:X 2 "uimm_extra_bit_or_twobits" "i")))]
+		  (match_operand:X 2 "uimm_extra_bit_or_twobits" "i")))
+   (clobber (match_scratch:X 3 "=&r"))]
   "TARGET_ZBS && !single_bit_mask_operand (operands[2], VOIDmode)"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (<or_optab>:X (match_dup 1) (match_dup 3)))
-   (set (match_dup 0) (<or_optab>:X (match_dup 0) (match_dup 4)))]
+  [(set (match_dup 3) (<or_optab>:X (match_dup 1) (match_dup 4)))
+   (set (match_dup 0) (<or_optab>:X (match_dup 3) (match_dup 5)))]
 {
   unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
   unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
 
-  operands[3] = GEN_INT (bits &~ topbit);
-  operands[4] = GEN_INT (topbit);
+  operands[4] = GEN_INT (bits &~ topbit);
+  operands[5] = GEN_INT (topbit);
 }
 [(set_attr "type" "bitmanip")])
 
@@ -1056,18 +1064,19 @@
 (define_insn_and_split "*andi<mode>_extrabit"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand:X 2 "not_uimm_extra_bit_or_nottwobits" "i")))]
+	       (match_operand:X 2 "not_uimm_extra_bit_or_nottwobits" "i")))
+   (clobber (match_scratch:X 3 "=&r"))]
   "TARGET_ZBS && !not_single_bit_mask_operand (operands[2], VOIDmode)"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (and:X (match_dup 1) (match_dup 3)))
-   (set (match_dup 0) (and:X (match_dup 0) (match_dup 4)))]
+  [(set (match_dup 3) (and:X (match_dup 1) (match_dup 4)))
+   (set (match_dup 0) (and:X (match_dup 3) (match_dup 5)))]
 {
   unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
   unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (~bits);
 
-  operands[3] = GEN_INT (bits | topbit);
-  operands[4] = GEN_INT (~topbit);
+  operands[4] = GEN_INT (bits | topbit);
+  operands[5] = GEN_INT (~topbit);
 }
 [(set_attr "type" "bitmanip")])
 
