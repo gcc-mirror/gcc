@@ -29,7 +29,6 @@
  */
 #include <algorithm>
 #include <cctype>
-#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -45,7 +44,7 @@
 #include <err.h>
 #include <fcntl.h>
 #include <fenv.h>
-#include <math.h> // required for fpclassify(3)
+#include <math.h> // required for fpclassify(3), not in cmath
 #include <setjmp.h>
 #include <signal.h>
 #include <syslog.h>
@@ -11432,17 +11431,6 @@ void
 __gg__clear_exception()
 {
   ec_stack.top().clear();
-}
-
-// Update the list of compiler-maintained enabled exceptions.
-extern "C"
-void
-__gg__stash_exceptions( size_t nec, cbl_enabled_exception_t *ecs )
-{
-  enabled_ECs = cbl_enabled_exceptions_t(nec, ecs);
-
-  if( false && MATCH_DECLARATIVE )
-    warnx("%s: %zu exceptions enabled", __func__, nec);
 }
 
 void

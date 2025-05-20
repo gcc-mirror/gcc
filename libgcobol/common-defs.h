@@ -30,8 +30,9 @@
 #ifndef COMMON_DEFS_H_
 #define COMMON_DEFS_H_
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdint>
 #include <list>
 
 #define COUNT_OF(X) (sizeof(X) / sizeof(X[0]))

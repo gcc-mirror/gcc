@@ -375,7 +375,7 @@
 			LSUB "("
 			PARAMETER_kw "PARAMETER"
 			OVERRIDE READY RESET
-			RSUB ")"
+			RSUB")"
 			SERVICE_RELOAD "SERVICE RELOAD" STAR_CBL "*CBL"
 			SUBSCRIPT SUPPRESS TITLE TRACE USE
 
@@ -662,7 +662,7 @@
 %type   <boolean>       all optional sign_leading on_off initialized strong is_signed
 %type   <number>        count data_clauses data_clause
 %type   <number>        nine nines nps relop spaces_etc reserved_value signed
-%type   <number>        variable_type
+%type   <number>        variable_type binary_type
 %type   <number>        true_false posneg eval_posneg
 %type   <number>        open_io alphabet_etc
 %type   <special_type>  device_name
@@ -951,7 +951,7 @@
 %printer { fprintf(yyo, "%s'%.*s'{" HOST_SIZE_T_PRINT_UNSIGNED "} %s",
                         $$.prefix, int($$.len), $$.data, (fmt_size_t)$$.len,
                         $$.symbol_name()); } <literal>
-%printer { fprintf(yyo, "%s (1st of " HOST_SIZE_T_PRINT_UNSIGNED ")",
+%printer { fprintf(yyo,"%s (1st of" HOST_SIZE_T_PRINT_UNSIGNED")",
                         $$->targets.empty()? "" : $$->targets.front().refer.field->name,
                         (fmt_size_t)$$->targets.size() ); } <targets>
 %printer { fprintf(yyo, "#" HOST_SIZE_T_PRINT_UNSIGNED ": %s",
@@ -1559,7 +1559,7 @@ opt_clause:     opt_arith
         |       opt_entry
         |       opt_binary
         |       opt_decimal {
-		  cbl_unimplementedw("type FLOAT-DECIMAL was ignored");
+		  cbl_unimplemented("type FLOAT-DECIMAL");
 		}
         |       opt_intermediate
         |       opt_init
@@ -2948,7 +2948,7 @@ fd_clause:      record_desc
                 {
                   auto f = cbl_file_of(symbol_at(file_section_fd));
                   f->attr |= external_e;
-                  cbl_unimplemented("AS LITERAL ");
+                  cbl_unimplemented("AS LITERAL");
                 }
         |       fd_linage
         |       fd_report {
@@ -3362,9 +3362,11 @@ data_descr:     data_descr1
                 ;
 
 const_value:    cce_expr
-        |       BYTE_LENGTH of name { $name->data.set_real_from_capacity(&$$); }
-        |       LENGTH      of name { $name->data.set_real_from_capacity(&$$); }
-        |       LENGTH_OF   of name { $name->data.set_real_from_capacity(&$$); }
+        |       BYTE_LENGTH of name { set_real_from_capacity(@name, $name, &$$); }
+        |       LENGTH      of name { set_real_from_capacity(@name, $name, &$$); }
+        |       LENGTH_OF   of name { set_real_from_capacity(@name, $name, &$$); }
+        |       LENGTH_OF   of binary_type[type] {
+		                real_from_integer(&$$, VOIDmode, $type, SIGNED); }
                 ;
 
 value78:        literalism
@@ -3380,6 +3382,12 @@ value78:        literalism
 		  data = build_real (float128_type_node, $1);
                   $$ = new cbl_field_data_t(data);
                 }
+        |       reserved_value[value]
+                {
+		  auto field = constant_of(constant_index($value));
+                  $$ = new cbl_field_data_t(field->data);
+                }
+
         |       true_false
                 {
                   cbl_unimplemented("Boolean constant");
@@ -3413,6 +3421,21 @@ data_descr1:    level_name
                     error_msg(@1, "%s was defined by CDF", field.name);
                   }
                 }
+
+        |       level_name CONSTANT is_global as reserved_value[value]
+                {
+                  cbl_field_t& field = *$1;
+                  if( field.level != 1 ) {
+                    error_msg(@1, "%s must be an 01-level data item", field.name);
+                    YYERROR;
+                  }
+                  field.attr |= constant_e;
+                  if( $is_global ) field.attr |= global_e;
+                  field.type = FldLiteralA;
+		  auto fig = constant_of(constant_index($value));
+                  field.data = fig->data;
+                }
+
         |       level_name CONSTANT is_global as literalism[lit]
                 {
                   cbl_field_t& field = *$1;
@@ -3452,8 +3475,8 @@ data_descr1:    level_name
 
         |       LEVEL78 NAME[name] VALUE is value78[data]
                 {
-                  if( ! dialect_mf() ) {
-                    dialect_error(@1, "level 78", "mf");
+                  if( ! (dialect_mf() || dialect_gnu()) ) {
+                    dialect_error(@1, "level 78", "mf or gnu");
                     YYERROR;
                   }
                   struct cbl_field_t field = { 0, FldLiteralA, FldInvalid,
@@ -5038,7 +5061,7 @@ accept:         accept_body end_accept {
 		  switch( $accept_body.func ) {
 		  case accept_done_e:
 		    error_msg(@ec, "ON EXCEPTION valid only "
-			    "with ENVIRONMENT or COMAMND-LINE(n)");
+			    "with ENVIRONMENT or COMMAND-LINE(n)");
 		    break;
 		  case accept_command_line_e:
 		    if( $1.from->field == NULL ) { // take next command-line arg
@@ -5050,7 +5073,7 @@ accept:         accept_body end_accept {
 		      parser_move(*$1.into, *$1.from);
 		      if( $ec.on_error || $ec.not_error ) {
 			error_msg(@ec, "ON EXCEPTION valid only "
-				"with ENVIRONMENT or COMAMND-LINE(n)");
+				"with ENVIRONMENT or COMMAND-LINE(n)");
 		      }
 		    } else {
 		      parser_accept_command_line(*$1.into, *$1.from,
@@ -7025,6 +7048,15 @@ num_value:      scalar // might actually be a string
         |       num_literal { $$ = new_reference($1); }
         |       ADDRESS OF scalar {$$ = $scalar; $$->addr_of = true; }
         |       DETAIL OF scalar {$$ = $scalar; }
+        |       LENGTH_OF binary_type[size] {
+                  location_set(@1);
+                  $$ = new cbl_refer_t( new_tempnumeric() );
+		  $$->field->clear_attr(signable_e);
+                  if( dialect_gcc() ) {
+		    dialect_error(@1, "LENGTH OF", "ibm");
+                  }
+		  parser_set_numeric($$->field, $size);
+		}
         |       LENGTH_OF name[val] {
                   location_set(@1);
                   $$ = new cbl_refer_t( new_tempnumeric() );
@@ -7251,6 +7283,15 @@ signed_literal:     num_literal
                   struct cbl_field_t *zero = constant_of(constant_index(ZERO));
                   parser_subtract( $$, zero, $2, current_rounded_mode() );
                 }
+        |       LENGTH_OF binary_type[size] {
+                  location_set(@1);
+                  $$ = new_tempnumeric();
+		  $$->clear_attr(signable_e);
+                  if( dialect_gcc() ) {
+		    dialect_error(@1, "LENGTH OF", "ibm");
+                  }
+                  parser_set_numeric($$, $size);
+		}
         |       LENGTH_OF name[val] {
                   location_set(@1);
                   $$ = new_tempnumeric();
@@ -7505,6 +7546,7 @@ perform_inline: perform_start statements END_PERFORM
 		  }
                 }
                 ;
+
 perform_start:	%empty %prec LOCATION {
 		  perform_ec_setup();
 		  $$ = 0;
@@ -7809,6 +7851,15 @@ varg1a:         ADDRESS OF scalar {
                 {
                   $$ = new_reference(constant_of(constant_index($1)));
                 }
+        |       LENGTH_OF binary_type[size] {
+                  location_set(@1);
+                  $$ = new cbl_refer_t( new_tempnumeric() );
+		  $$->field->clear_attr(signable_e);
+                  if( dialect_gcc() ) {
+		    dialect_error(@1, "LENGTH OF", "ibm");
+                  }
+		  parser_set_numeric($$->field, $size);
+		}
         |       LENGTH_OF name[val] {
                   location_set(@1);
                   $$ = new cbl_refer_t( new_tempnumeric() );
@@ -7832,6 +7883,10 @@ varg1a:         ADDRESS OF scalar {
 		  parser_set_numeric($$->field, $val->data.capacity);
                 }
                 ;
+
+binary_type:	BINARY_INTEGER { $$ = $1.capacity; }
+	|	COMPUTATIONAL  { $$ = $1.capacity; }
+		;
 
 literal:        literalism
                 {
@@ -10108,7 +10163,9 @@ function_udf:   FUNCTION_UDF '(' arg_list[args] ')' {
 		  if( ! current.udf_args_valid(L, $args->refers, params) ) {
 		    YYERROR;
 		  }
-                  $$ = new_temporary_clone(cbl_field_of(symbol_at(L->returning)));
+		  const auto returning = cbl_field_of(symbol_at(L->returning));
+                  $$ = new_temporary_clone(returning);
+		  $$->data.initial = returning->name; // user's name for the field
                   std::vector <cbl_ffi_arg_t> args($args->refers.size());
 		  size_t i = 0;
 		  // Pass parameters as defined by the function.
@@ -10127,7 +10184,9 @@ function_udf:   FUNCTION_UDF '(' arg_list[args] ')' {
                   static cbl_ffi_arg_t *args = NULL;
 
                   auto L = cbl_label_of(symbol_at($1));
-                  $$ = new_temporary_clone(cbl_field_of(symbol_at(L->returning)));
+		  const auto returning = cbl_field_of(symbol_at(L->returning));
+                  $$ = new_temporary_clone(returning);
+		  $$->data.initial = returning->name; // user's name for the field
 
                   auto name = new_literal(strlen(L->name), L->name, quoted_e);
                   ast_call( @1, name, $$, narg, args, NULL, NULL, true );
@@ -10168,7 +10227,7 @@ intrinsic:      function_udf
                   $$ = is_numeric(args[0].field)?
                          new_tempnumeric_float() :
                          new_alphanumeric();
-
+		  $$->data.initial = keyword_str($1);
                   parser_intrinsic_callv( $$, intrinsic_cname($1),
 					  args.size(), args.data() );
                 }
@@ -10177,7 +10236,7 @@ intrinsic:      function_udf
                 {
                   static char s[] = "__gg__present_value";
                   location_set(@1);
-                  $$ = new_tempnumeric_float();
+                  $$ = new_tempnumeric_float("PRESENT-VALUE");
                   size_t n = $args->size();
                   assert(n > 0);
                   if( n < 2 ) {
@@ -10195,48 +10254,48 @@ intrinsic:      function_udf
 
 	|       BASECONVERT  '(' varg[r1] varg[r2] varg[r3] ')' {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("BASECONVERT");
 		  cbl_unimplemented("BASECONVERT");
                   if( ! intrinsic_call_3($$, BASECONVERT, $r1, $r2, $r3 )) YYERROR;
                 }
         |       BIT_OF  '(' expr[r1] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("BIT-OF");
                   if( ! intrinsic_call_1($$, BIT_OF, $r1, @r1)) YYERROR;
                 }
         |       CHAR  '(' expr[r1] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric(1);
+                  $$ = new_alphanumeric(1,"CHAR");
                   if( ! intrinsic_call_1($$, CHAR, $r1, @r1)) YYERROR;
                 }
 
 	|       CONVERT  '(' varg[r1] convert_src[src] convert_dst[dst] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric(1);
+                  $$ = new_alphanumeric(1,"CONVERT");
 		  cbl_unimplemented("CONVERT");
                   /* if( ! intrinsic_call_3($$, CONVERT, $r1, $src, $dst) ) YYERROR; */
                 }
 
         |       DISPLAY_OF  '(' varg[r1]  ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("DISPLAY-OF");
                   if( ! intrinsic_call_2($$, DISPLAY_OF, $r1, NULL) ) YYERROR;
                 }
         |       DISPLAY_OF  '(' varg[r1] varg[r2]  ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("DISPLAY-OF");
                   if( ! intrinsic_call_2($$, DISPLAY_OF, $r1, $r2) ) YYERROR;
                 }
 
         |       EXCEPTION_FILE filename {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("EXCEPTION-FILE");
                   parser_exception_file( $$, $filename );
                 }
 
         |       FIND_STRING '(' varg[r1] last start_after anycase ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("FIND-STRING");
                   /* auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e)); */
 		  cbl_unimplemented("FIND_STRING");
                   /* if( ! intrinsic_call_4($$, FIND_STRING, r1, $r2) ) YYERROR; */
@@ -10244,7 +10303,7 @@ intrinsic:      function_udf
 
         |       FORMATTED_DATE '(' DATE_FMT[r1] expr[r2] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATE);
+                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATE, "FORMATTED-DATE");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_2($$, FORMATTED_DATE, r1, $r2) ) YYERROR;
                 }
@@ -10253,7 +10312,7 @@ intrinsic:      function_udf
         |       FORMATTED_DATETIME '(' DATETIME_FMT[r1] expr[r2]
                                                         expr[r3] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATETIME);
+                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATETIME, "FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   static cbl_refer_t r3(literally_zero);
                   if( ! intrinsic_call_4($$, FORMATTED_DATETIME,
@@ -10262,7 +10321,7 @@ intrinsic:      function_udf
         |       FORMATTED_DATETIME '(' DATETIME_FMT[r1] expr[r2]
                                         expr[r3] expr[r4] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATETIME);
+                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATETIME, "FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_4($$, FORMATTED_DATETIME,
                                              r1, $r2, $r3, $r4) ) YYERROR;
@@ -10273,14 +10332,14 @@ intrinsic:      function_udf
         |       FORMATTED_TIME '(' TIME_FMT[r1] expr[r2]
                                                 expr[r3]  ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_TIME);
+                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_TIME, "FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_3($$, FORMATTED_TIME,
                                              r1, $r2, $r3) ) YYERROR;
                 }
         |       FORMATTED_TIME '(' TIME_FMT[r1] expr[r2]  ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_TIME);
+                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_TIME, "FORMATTED-TIME");
                   auto r3 = new_reference(new_literal("0"));
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_3($$, FORMATTED_TIME,
@@ -10288,21 +10347,21 @@ intrinsic:      function_udf
                 }
         |       FORMATTED_CURRENT_DATE '(' DATETIME_FMT[r1] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATETIME);
+                  $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATETIME, "FORMATTED-CURRENT_DATE");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_1($$, FORMATTED_CURRENT_DATE, r1, @r1) )
                                          YYERROR;
                 }
         |       TEST_FORMATTED_DATETIME '(' DATE_FMT[r1] varg[r2] ')' {
                 location_set(@1);
-                  $$ = new_tempnumeric();
+		$$ = new_tempnumeric("TEST-FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_2($$, TEST_FORMATTED_DATETIME,
                                               r1, $r2) ) YYERROR;
                 }
         |       TEST_FORMATTED_DATETIME '(' TIME_FMT[r1] varg[r2] ')' {
                 location_set(@1);
-                  $$ = new_tempnumeric();
+		$$ = new_tempnumeric("TEST-FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_2($$, TEST_FORMATTED_DATETIME,
                                               r1, $r2) ) YYERROR;
@@ -10310,14 +10369,14 @@ intrinsic:      function_udf
         |       TEST_FORMATTED_DATETIME '(' DATETIME_FMT[r1] varg[r2] ')'
                 {
                 location_set(@1);
-                  $$ = new_tempnumeric();
+		$$ = new_tempnumeric("TEST-FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_2($$, TEST_FORMATTED_DATETIME,
                                               r1, $r2) ) YYERROR;
                 }
         |       INTEGER_OF_FORMATTED_DATE '(' DATE_FMT[r1] varg[r2] ')' {
                 location_set(@1);
-                  $$ = new_tempnumeric();
+		$$ = new_tempnumeric("INTEGER-OF-FORMATTED-DATE");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_2($$, INTEGER_OF_FORMATTED_DATE,
                                               r1, $r2) ) YYERROR;
@@ -10325,14 +10384,14 @@ intrinsic:      function_udf
         |       INTEGER_OF_FORMATTED_DATE '(' DATETIME_FMT[r1] varg[r2] ')'
                 {
                 location_set(@1);
-                  $$ = new_tempnumeric();
+		$$ = new_tempnumeric("INTEGER-OF-FORMATTED-DATE");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_2($$, INTEGER_OF_FORMATTED_DATE,
                                               r1, $r2) ) YYERROR;
                 }
         |       SECONDS_FROM_FORMATTED_TIME '(' TIME_FMT[r1] varg[r2] ')' {
                 location_set(@1);
-                  $$ = new_tempnumeric();
+		$$ = new_tempnumeric("SECONDS-FROM-FORMATTED-TIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_2($$, SECONDS_FROM_FORMATTED_TIME,
                                               r1, $r2) ) YYERROR;
@@ -10340,7 +10399,7 @@ intrinsic:      function_udf
         |       SECONDS_FROM_FORMATTED_TIME '(' DATETIME_FMT[r1] varg[r2] ')'
                 {
                 location_set(@1);
-                  $$ = new_tempnumeric();
+		$$ = new_tempnumeric("SECONDS-FROM-FORMATTED-TIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
                   if( ! intrinsic_call_2($$, SECONDS_FROM_FORMATTED_TIME,
                                               r1, $r2) ) YYERROR;
@@ -10348,85 +10407,85 @@ intrinsic:      function_udf
 
         |       HEX_OF  '(' varg[r1] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("HEX-OF");
                   if( ! intrinsic_call_1($$, HEX_OF, $r1, @r1)) YYERROR;
                 }
 	|	LENGTH '(' tableish[val] ')' {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("LENGTH");
 		  $$->clear_attr(signable_e);
 		  parser_set_numeric($$, $val->field->size());
 		  if( ! intrinsic_call_1($$, LENGTH, $val, @val)) YYERROR;
 		}
 	|	LENGTH '(' varg1a[val] ')' {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("LENGTH");
 		  $$->clear_attr(signable_e);
 		  parser_set_numeric($$, $val->field->data.capacity);
 		  if( ! intrinsic_call_1($$, LENGTH, $val, @val)) YYERROR;
 		}
         |       lopper_case[func] '(' alpha_val[r1] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric($r1->field->data.capacity);
+                  $$ = new_alphanumeric($r1->field->data.capacity, "lopper_case[func]");
                   if( ! intrinsic_call_1($$, $func, $r1, @r1)) YYERROR;
                 }
 
 	|	MODULE_NAME '(' module_type[type] ')'
 		{
-		  $$ = new_alphanumeric(sizeof(cbl_name_t));
+		  $$ = new_alphanumeric(sizeof(cbl_name_t), "MODULE-NAME");
 		  parser_module_name( $$, $type );
 		}
 
         |       NUMVAL_C '(' varg[r1] numval_locale[r2] anycase ')' {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("NUMVAL-C");
                   parser_intrinsic_numval_c( $$, *$r1, $r2.is_locale,
                                                       *$r2.arg2, $anycase );
                 }
         |       ORD  '(' alpha_val[r1] ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("ORD");
                   if( ! intrinsic_call_1($$, ORD, $r1, @r1)) YYERROR;
                 }
         |       RANDOM
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric_float();
+                  $$ = new_tempnumeric_float("RANDOM");
                   parser_intrinsic_call_0( $$, intrinsic_cname(RANDOM) );
                 }
         |       RANDOM_SEED expr[r1] ')'
                 { // left parenthesis consumed by lexer
                   location_set(@1);
-                  $$ = new_tempnumeric_float();
+                  $$ = new_tempnumeric_float("RANDOM-SEED");
                   if( ! intrinsic_call_1($$, RANDOM, $r1, @r1)) YYERROR;
                 }
 
         |       STANDARD_COMPARE  '(' varg[r1] varg[r2] varg[r3] varg[r4] ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("STANDARD-COMPARE");
 		  cbl_unimplemented("STANDARD-COMPARE");
                   /* if( ! intrinsic_call_4($$, STANDARD_COMPARE, $r1) ) YYERROR; */
                 }
         |       STANDARD_COMPARE  '(' varg[r1] varg[r2] varg[r3]  ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("STANDARD-COMPARE");
 		  cbl_unimplemented("STANDARD-COMPARE");
                   /* if( ! intrinsic_call_4($$, STANDARD_COMPARE, $r1) ) YYERROR; */
                 }
         |       STANDARD_COMPARE  '(' varg[r1] varg[r2] ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("STANDARD-COMPARE");
 		  cbl_unimplemented("STANDARD-COMPARE");
                   /* if( ! intrinsic_call_4($$, STANDARD_COMPARE, $r1) ) YYERROR; */
                 }
 
         |       SUBSTITUTE '(' varg[r1] subst_inputs[inputs] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("SUBSTITUTE");
                   std::vector <cbl_substitute_t> args($inputs->size());
                   std::transform( $inputs->begin(), $inputs->end(), args.begin(),
                                   []( const substitution_t& arg ) {
@@ -10442,7 +10501,7 @@ intrinsic:      function_udf
 
         |       TEST_NUMVAL_C '(' varg[r1] numval_locale[r2] anycase ')' {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("parser_intrinsic_subst($$,");
                   parser_intrinsic_numval_c( $$, *$r1, $r2.is_locale,
                                                  *$r2.arg2, $anycase, true );
                 }
@@ -10469,14 +10528,14 @@ intrinsic:      function_udf
                      YYERROR;
                      break;
                   }
-                  $$ = new_alphanumeric();
+		   $$ = new_alphanumeric("TRIM");
                   cbl_refer_t * how = new_reference($trim_trailing);
                   if( ! intrinsic_call_2($$, TRIM, $r1, how) ) YYERROR;
                 }
 
         |       USUBSTR '(' alpha_val[r1] expr[r2] expr[r3]  ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("USUBSTR");
                   if( ! intrinsic_call_3($$, FORMATTED_DATETIME,
                                              $r1, $r2, $r3) ) YYERROR;
                 }
@@ -10484,14 +10543,14 @@ intrinsic:      function_udf
         |       intrinsic_I  '(' expr[r1] ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric(keyword_str($1));
                   if( ! intrinsic_call_1($$, $1, $r1, @r1)) YYERROR;
                 }
 
         |       intrinsic_N  '(' expr[r1] ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric_float();
+                  $$ = new_tempnumeric_float(keyword_str($1));
                   if( ! intrinsic_call_1($$, $1, $r1, @r1)) YYERROR;
                 }
 
@@ -10501,17 +10560,14 @@ intrinsic:      function_udf
                   auto type = intrinsic_return_type($1);
                   switch(type) {
                   case FldAlphanumeric:
-                    $$ = new_alphanumeric();
+                    $$ = new_alphanumeric(keyword_str($1));
                     break;
                   default:
-                    if( $1 == NUMVAL || $1 == NUMVAL_F )
-                      {
-                      $$ = new_temporary(FldFloat);
-                      }
-                    else
-                      {
-                      $$ = new_temporary(type);
-                      }
+                    if( $1 == NUMVAL || $1 == NUMVAL_F ) {
+			$$ = new_temporary(FldFloat, keyword_str($1));
+		    } else {
+                      $$ = new_temporary(type, keyword_str($1));
+		    }
                   }
                   if( $1 == NUMVAL_F ) {
 		    if( is_literal($r1->field) && ! is_numeric($r1->field->type) ) {
@@ -10526,7 +10582,7 @@ intrinsic:      function_udf
         |       intrinsic_I2 '(' expr[r1] expr[r2] ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("intrinsic_I2");
                   if( ! intrinsic_call_2($$, $1, $r1, $r2) ) YYERROR;
                 }
 
@@ -10542,7 +10598,7 @@ intrinsic:      function_udf
 
                   parser_intrinsic_call_0( r3->field, "__gg__current_date" );
 
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("DATE_TO_YYYYMMDD");
                   if( ! intrinsic_call_3($$, DATE_TO_YYYYMMDD,
                                          $r1, r2, r3) ) YYERROR;
                 }
@@ -10558,7 +10614,7 @@ intrinsic:      function_udf
 
                   parser_intrinsic_call_0( r3->field, "__gg__current_date" );
 
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("DATE_TO_YYYYMMDD");
                   if( ! intrinsic_call_3($$, DATE_TO_YYYYMMDD,
                                          $r1, $r2, r3) ) YYERROR;
                 }
@@ -10567,7 +10623,7 @@ intrinsic:      function_udf
                                      expr[r2] expr[r3] ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("DATE_TO_YYYYMMDD");
                   if( ! intrinsic_call_3($$, DATE_TO_YYYYMMDD,
                                          $r1, $r2, $r3) ) YYERROR;
                 }
@@ -10584,7 +10640,7 @@ intrinsic:      function_udf
 
                   parser_intrinsic_call_0( r3->field, "__gg__current_date" );
 
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("DAY_TO_YYYYDDD");
                   if( ! intrinsic_call_3($$, DAY_TO_YYYYDDD,
                                          $r1, r2, r3) ) YYERROR;
                 }
@@ -10600,7 +10656,7 @@ intrinsic:      function_udf
 
                   parser_intrinsic_call_0( r3->field, "__gg__current_date" );
 
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("DAY_TO_YYYYDDD");
                   if( ! intrinsic_call_3($$, DAY_TO_YYYYDDD,
                                          $r1, $r2, r3) ) YYERROR;
                 }
@@ -10609,7 +10665,7 @@ intrinsic:      function_udf
                                      expr[r2] expr[r3] ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("DAY_TO_YYYYDDD");
                   if( ! intrinsic_call_3($$, DAY_TO_YYYYDDD,
                                          $r1, $r2, $r3) ) YYERROR;
                 }
@@ -10626,7 +10682,7 @@ intrinsic:      function_udf
 
                   parser_intrinsic_call_0( r3->field, "__gg__current_date" );
 
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("YEAR_TO_YYYY");
                   if( ! intrinsic_call_3($$, YEAR_TO_YYYY,
                                          $r1, r2, r3) ) YYERROR;
                 }
@@ -10642,7 +10698,7 @@ intrinsic:      function_udf
 
                   parser_intrinsic_call_0( r3->field, "__gg__current_date" );
 
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("YEAR_TO_YYYY");
                   if( ! intrinsic_call_3($$, YEAR_TO_YYYY,
                                          $r1, $r2, r3) ) YYERROR;
                 }
@@ -10651,7 +10707,7 @@ intrinsic:      function_udf
                                      expr[r2] expr[r3] ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("YEAR_TO_YYYY");
                   if( ! intrinsic_call_3($$, YEAR_TO_YYYY,
                                          $r1, $r2, $r3) ) YYERROR;
                 }
@@ -10659,25 +10715,25 @@ intrinsic:      function_udf
         |       intrinsic_N2 '(' expr[r1] expr[r2] ')'
                 {
                   location_set(@1);
-                  switch($1)
-                    {
-                    case ANNUITY:
-                      $$ = new_tempnumeric_float();
-                      break;
-                    case COMBINED_DATETIME:
-                      $$ = new_tempnumeric();
-                      break;
-                    case REM:
-                      $$ = new_tempnumeric_float();
-                      break;
-                    }
+                  switch($1) {
+		  case ANNUITY:
+		    $$ = new_tempnumeric_float();
+		    break;
+		  case COMBINED_DATETIME:
+		    $$ = new_tempnumeric();
+		    break;
+		  case REM:
+		    $$ = new_tempnumeric_float();
+		    break;
+		  }
+		  $$->data.initial = keyword_str($1); // function name
                   if( ! intrinsic_call_2($$, $1, $r1, $r2) ) YYERROR;
                 }
 
         |       intrinsic_X2 '(' varg[r1] varg[r2] ')'
                 {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric(keyword_str($1));
                   if( ! intrinsic_call_2($$, $1, $r1, $r2) ) YYERROR;
                 }
         |       intrinsic_locale
@@ -10788,65 +10844,66 @@ trim_trailing:  %empty          { $$ = new_literal("0"); }  // Remove both
 
 intrinsic0:     CURRENT_DATE {
                   location_set(@1);
-                  $$ = new_alphanumeric(MAXLENGTH_CALENDAR_DATE);
+                  $$ = new_alphanumeric(MAXLENGTH_CALENDAR_DATE, "CURRENT-DATE");
                   parser_intrinsic_call_0( $$, "__gg__current_date" );
                 }
         |       E {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("E");
                  parser_intrinsic_call_0( $$, "__gg__e" );
                 }
 
         |       EXCEPTION_FILE_N {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("EXCEPTION-FILE-N");
                   intrinsic_call_0( $$, EXCEPTION_FILE_N );
                 }
 
         |       EXCEPTION_FILE {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("EXCEPTION-FILE");
                   parser_exception_file( $$ );
                 }
         |       EXCEPTION_LOCATION_N {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("EXCEPTION-LOCATION-N");
                   intrinsic_call_0( $$, EXCEPTION_LOCATION_N );
                 }
         |       EXCEPTION_LOCATION {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("EXCEPTION-LOCATION");
                   intrinsic_call_0( $$, EXCEPTION_LOCATION );
                 }
         |       EXCEPTION_STATEMENT {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("EXCEPTION-STATEMENT");
                   intrinsic_call_0( $$, EXCEPTION_STATEMENT );
                 }
         |       EXCEPTION_STATUS {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("EXCEPTION-STATUS");
                   intrinsic_call_0( $$, EXCEPTION_STATUS );
                 }
 
         |       PI {
                   location_set(@1);
-                  $$ = new_tempnumeric_float();
+                  $$ = new_tempnumeric_float("PI");
                  parser_intrinsic_call_0( $$, "__gg__pi" );
                 }
         |       SECONDS_PAST_MIDNIGHT {
                   location_set(@1);
-                  $$ = new_tempnumeric();
+                  $$ = new_tempnumeric("SECONDS-PAST-MIDNIGHT");
                  intrinsic_call_0( $$, SECONDS_PAST_MIDNIGHT );
                 }
         |       UUID4 {
                   location_set(@1);
-                  $$ = new_alphanumeric();
+                  $$ = new_alphanumeric("UUID4");
                  parser_intrinsic_call_0( $$, "__gg__uuid4" );
                 }
         |       WHEN_COMPILED {
                   location_set(@1);
-                  $$ = new_alphanumeric(MAXLENGTH_CALENDAR_DATE); // Returns YYYYMMDDhhmmssss-0500
+		  // Returns YYYYMMDDhhmmssss-0500)
+                  $$ = new_alphanumeric(MAXLENGTH_CALENDAR_DATE, "WHEN-COMPILED"); 
                  parser_intrinsic_call_0( $$, "__gg__when_compiled" );
                 }
                 ;
@@ -12878,6 +12935,34 @@ cbl_figconst_of( const char *value ) {
 
   return p == eovalues? normal_value_e : p->type;
 }
+
+int
+cbl_figconst_tok( const char *value ) {
+  struct values_t {
+    const char *value; int token;
+  } static const values[] = {
+    { constant_of(constant_index(ZERO))->data.initial, ZERO },
+    { constant_of(constant_index(SPACES))->data.initial, SPACES },
+    { constant_of(constant_index(HIGH_VALUES))->data.initial, HIGH_VALUES },
+    { constant_of(constant_index(LOW_VALUES))->data.initial, LOW_VALUES },
+    { constant_of(constant_index(QUOTES))->data.initial, QUOTES },
+    { constant_of(constant_index(NULLS))->data.initial, NULLS },
+  }, *eovalues = values + COUNT_OF(values);
+
+  auto p = std::find_if( values, eovalues,
+                         [value]( const values_t& elem ) {
+                           return elem.value == value;
+                         } );
+
+  return p == eovalues? 0 : p->token;
+}
+
+const cbl_field_t *
+cbl_figconst_field_of( const char *value ) {
+  int token = cbl_figconst_tok(value);
+  return token == 0 ? nullptr : constant_of(constant_index(token));
+}
+
 
 cbl_field_attr_t
 literal_attr( const char prefix[] ) {

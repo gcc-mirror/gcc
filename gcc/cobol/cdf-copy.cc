@@ -35,22 +35,11 @@
 // We regret any confusion engendered.
 
 #include "config.h"
-#include <glob.h>
 
 #include "cobol-system.h"
 #include "cbldiag.h"
 #include "util.h"
 #include "copybook.h"
-
-// GLOB_BRACE and GLOB_TILDE are BSD extensions.  Provide fallback definitions
-// if necessary.
-#ifndef GLOB_BRACE
-#define GLOB_BRACE 0
-#endif
-
-#ifndef GLOB_TILDE
-#define GLOB_TILDE 0
-#endif
 
 #define COUNT_OF(X) (sizeof(X) / sizeof(X[0]))
 
@@ -86,7 +75,6 @@
  * space.  This function only applies them.
  */
 
-extern int yydebug;
 const char * cobol_filename();
 bool is_fixed_format();
 bool is_reference_format();
@@ -190,12 +178,6 @@ esc( size_t len, const char input[] ) {
   return buffer; // caller must strdup static buffer
 }
 
-static int
-glob_error(const char *epath, int eerrno) {
-  dbgmsg("%s: COPY file search: '%s': %s", __func__, epath, xstrerror(eerrno));
-  return 0;
-}
-
 void
 copybook_directory_add( const char gcob_copybook[] ) {
   if( !gcob_copybook ) return;
@@ -242,27 +224,15 @@ copybook_extension_add( const char ext[] ) {
   copybook.extensions_add( ext, alt );
 }
 
-extern int yydebug;
 
-const char * copybook_elem_t::extensions;
+std::list<const char *> copybook_elem_t::suffixes {
+  "", ".cpy", ".CPY", ".cbl", ".CBL", ".cob", ".COB"
+};
 
 void
 copybook_t::extensions_add( const char ext[], const char alt[] ) {
-  char *output;
-  if( alt ) {
-    output = xasprintf("%s,%s", ext, alt);
-  } else {
-    output = xstrdup(ext);
-  }
-  gcc_assert(output);
-  if( book.extensions ) {
-    char *s = xasprintf("%s,%s", output, book.extensions);
-    free(const_cast<char*>(book.extensions));
-    free(output);
-    book.extensions = s;
-  } else {
-    book.extensions = output;
-  }
+  book.suffixes.push_back(ext);
+  if( alt ) book.suffixes.push_back(alt);
 }
 
 static inline ino_t
@@ -276,9 +246,7 @@ inode_of( int fd ) {
 
 int
 copybook_elem_t::open_file( const char directory[], bool literally ) {
-  int erc;
-  char  *pattern, *copier = xstrdup(cobol_filename());
-  char *dname = NULL;
+  char *dname = NULL, *copier = xstrdup(cobol_filename());
 
   if ( directory ) {
     dname = xstrdup(directory);
@@ -324,52 +292,26 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
   }
   gcc_assert( ! literally );
 
-  if( extensions ) {
-    pattern = xasprintf("%s{,.cpy,.CPY,.cbl,.CBL,.cob,.COB,%s}",
-                        path, this->extensions);
-  } else {
-    pattern = xasprintf("%s{,.cpy,.CPY,.cbl,.CBL,.cob,.COB}", path);
-  }
-
   free(copier);
 
-  static int flags = GLOB_MARK | GLOB_BRACE | GLOB_TILDE;
-  glob_t globber;
+  for( auto suffix : suffixes ) {
+    std::string pattern(path);
+    pattern += suffix;
+    dbgmsg("%s: trying %s", __func__, pattern.c_str());
 
-  if( (erc = glob(pattern, flags, glob_error, &globber)) != 0 ) {
-    switch(erc) {
-    case GLOB_NOSPACE:
-      yywarn("COPY file search: out of memory");
-      break;
-    case GLOB_ABORTED:
-      yywarn("COPY file search: read error");
-      break;
-    case GLOB_NOMATCH:
-      dbgmsg("COPY '%s': no files match %s", this->source.name, pattern);
-    default:
-      break; // caller says no file found
-    }
-    return -1;
-  }
-
-  free(pattern);
-
-  for( size_t i=0; i < globber.gl_pathc; i++ ) {
-    auto filename = globber.gl_pathv[i];
+    auto filename = pattern.c_str();
     if( (this->fd = open(filename, O_RDONLY)) != -1 ) {
       dbgmsg("found copybook file %s", filename);
       this->source.name = xstrdup(filename);
       if( ! cobol_filename(this->source.name, inode_of(fd)) ) {
-        error_msg(source.loc, "recursive copybook: '%s' includes itself", this->source);
-        (void)! close(fd);
-        fd = -1;
+	error_msg(source.loc, "recursive copybook: '%s' includes itself", this->source);
+	(void)! close(fd);
+	fd = -1;
       }
-      globfree(&globber);
+      dbgmsg("%s: opened %s as fd %d", __func__, source.name, fd);
       return fd;
     }
   }
-  yywarn("could not open copy source for '%s'", source);
 
-  globfree(&globber);
   return -1;
 }

@@ -1455,7 +1455,7 @@ cdftext::lex_open( const char filename[] ) {
 
   int output = open_output();
 
-  // Process any files supplied by the -include comamnd-line option.
+  // Process any files supplied by the -include command-line option.
   for( auto name : included_files ) {
     int input;
     if( -1 == (input = open(name, O_RDONLY)) ) {
@@ -1466,7 +1466,10 @@ cdftext::lex_open( const char filename[] ) {
     filespan_t mfile( free_form_reference_format( input ) );
 
     process_file( mfile, output );
+
+    cobol_filename_restore(); // process_file restores only for COPY
   }
+  included_files.clear();
 
   cobol_filename(filename, inode_of(input));
   filespan_t mfile( free_form_reference_format( input ) );
@@ -1831,6 +1834,7 @@ cdftext::process_file( filespan_t mfile, int output, bool second_pass ) {
   // indicate current file
   static const char file_push[] = "\f#FILE PUSH ", file_pop[] = "\f#FILE POP\f";
 
+  if( !included_files.empty() ) { ++nfiles; }; // force push/pop of included filename
   if( !second_pass && nfiles++ ) {
     static const char delimiter[] = "\f";
     const char *filename = cobol_filename();
@@ -1918,6 +1922,7 @@ cdftext::process_file( filespan_t mfile, int output, bool second_pass ) {
     std::copy(file_pop, file_pop + strlen(file_pop), ofs);
     out.flush();
   }
+  if( !included_files.empty() ) { --nfiles; };
 }
 
 std::list<span_t>
