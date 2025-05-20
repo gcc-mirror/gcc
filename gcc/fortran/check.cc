@@ -5952,49 +5952,110 @@ gfc_check_c_sizeof (gfc_expr *arg)
 }
 
 
+/* Helper functions check_c_ptr_1 and check_c_ptr_2
+   used in gfc_check_c_associated.  */
+
+static inline
+bool check_c_ptr_1 (gfc_expr *c_ptr_1)
+{
+  if ((c_ptr_1->ts.type == BT_VOID)
+      && (c_ptr_1->expr_type == EXPR_FUNCTION))
+    return true;
+
+  if (c_ptr_1->ts.type != BT_DERIVED
+      || c_ptr_1->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING
+      || (c_ptr_1->ts.u.derived->intmod_sym_id != ISOCBINDING_PTR
+	  && c_ptr_1->ts.u.derived->intmod_sym_id != ISOCBINDING_FUNPTR))
+	goto check_1_error;
+
+  if ((c_ptr_1->ts.type == BT_DERIVED)
+       && (c_ptr_1->expr_type == EXPR_STRUCTURE)
+       && (c_ptr_1->ts.u.derived->intmod_sym_id
+	   == ISOCBINDING_NULL_FUNPTR))
+    goto check_1_error;
+
+  if (scalar_check (c_ptr_1, 0))
+    return true;
+  else
+    /*  Return since the check_1_error message may not apply here. */
+    return false;
+
+check_1_error:
+
+  gfc_error ("Argument C_PTR_1 at %L to C_ASSOCIATED shall have the "
+	     "type TYPE(C_PTR) or TYPE(C_FUNPTR)", &c_ptr_1->where);
+  return false;
+}
+
+static inline
+bool check_c_ptr_2 (gfc_expr *c_ptr_1, gfc_expr *c_ptr_2)
+{
+  switch (c_ptr_2->ts.type)
+  {
+    case BT_VOID:
+      if (c_ptr_2->expr_type == EXPR_FUNCTION)
+	{
+	  if ((c_ptr_1->ts.type == BT_DERIVED)
+	       && c_ptr_1->expr_type == EXPR_STRUCTURE
+	       && (c_ptr_1->ts.u.derived->intmod_sym_id
+		  == ISOCBINDING_FUNPTR))
+	    goto check_2_error;
+	}
+      break;
+
+    case BT_DERIVED:
+      if ((c_ptr_2->expr_type == EXPR_STRUCTURE)
+	   && (c_ptr_2->ts.u.derived->intmod_sym_id == ISOCBINDING_PTR)
+	   && (c_ptr_1->ts.type == BT_VOID)
+	   && (c_ptr_1->expr_type == EXPR_FUNCTION))
+	return scalar_check (c_ptr_2, 1);
+
+      if ((c_ptr_2->expr_type == EXPR_STRUCTURE)
+	   && (c_ptr_1->ts.type == BT_VOID)
+	   && (c_ptr_1->expr_type == EXPR_FUNCTION))
+	goto check_2_error;
+
+      if (c_ptr_2->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING)
+	goto check_2_error;
+
+      if (c_ptr_1->ts.type == BT_DERIVED
+	  && (c_ptr_1->ts.u.derived->intmod_sym_id
+	      != c_ptr_2->ts.u.derived->intmod_sym_id))
+	goto check_2_error;
+      break;
+
+    default:
+      goto check_2_error;
+  }
+
+  if (scalar_check (c_ptr_2, 1))
+    return true;
+  else
+    /*  Return since the check_2_error message may not apply here. */
+    return false;
+
+check_2_error:
+
+  gfc_error ("Argument C_PTR_2 at %L to C_ASSOCIATED shall have the "
+	     "same type as C_PTR_1: %s instead of %s", &c_ptr_2->where,
+	     gfc_typename (&c_ptr_1->ts), gfc_typename (&c_ptr_2->ts));
+
+  return false;
+ }
+
+
 bool
 gfc_check_c_associated (gfc_expr *c_ptr_1, gfc_expr *c_ptr_2)
 {
-  if (c_ptr_1)
-    {
-      if (c_ptr_1->expr_type == EXPR_FUNCTION && c_ptr_1->ts.type == BT_VOID)
-	return true;
-
-      if (c_ptr_1->ts.type != BT_DERIVED
-	  || c_ptr_1->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING
-	  || (c_ptr_1->ts.u.derived->intmod_sym_id != ISOCBINDING_PTR
-	      && c_ptr_1->ts.u.derived->intmod_sym_id != ISOCBINDING_FUNPTR))
-	{
-	  gfc_error ("Argument C_PTR_1 at %L to C_ASSOCIATED shall have the "
-		     "type TYPE(C_PTR) or TYPE(C_FUNPTR)", &c_ptr_1->where);
-	  return false;
-	}
-    }
-
-  if (!scalar_check (c_ptr_1, 0))
-    return false;
-
   if (c_ptr_2)
     {
-      if (c_ptr_2->expr_type == EXPR_FUNCTION && c_ptr_2->ts.type == BT_VOID)
-	return true;
-
-      if (c_ptr_2->ts.type != BT_DERIVED
-	  || c_ptr_2->ts.u.derived->from_intmod != INTMOD_ISO_C_BINDING
-	  || (c_ptr_1->ts.u.derived->intmod_sym_id
-	      != c_ptr_2->ts.u.derived->intmod_sym_id))
-	{
-	  gfc_error ("Argument C_PTR_2 at %L to C_ASSOCIATED shall have the "
-		   "same type as C_PTR_1: %s instead of %s", &c_ptr_1->where,
-		   gfc_typename (&c_ptr_1->ts), gfc_typename (&c_ptr_2->ts));
-	  return false;
-	}
+      if (check_c_ptr_2 (c_ptr_1, c_ptr_2))
+	return check_c_ptr_1 (c_ptr_1);
+      else
+	return false;
     }
-
-  if (c_ptr_2 && !scalar_check (c_ptr_2, 1))
-    return false;
-
-  return true;
+  else
+    return check_c_ptr_1 (c_ptr_1);
 }
 
 
