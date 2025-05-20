@@ -315,8 +315,6 @@ public:
   std::unique_ptr<Stmt> discriminant_value (std::string binding_name,
 					    std::string instance = "self");
 
-  static std::unique_ptr<Type> new_type (Type &type);
-
   static std::unique_ptr<GenericParam>
   new_lifetime_param (LifetimeParam &param);
 

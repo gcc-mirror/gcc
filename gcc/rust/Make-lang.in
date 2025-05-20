@@ -93,7 +93,6 @@ GRS_OBJS = \
     rust/rust-cfg-strip.o \
     rust/rust-expand-visitor.o \
     rust/rust-ast-builder.o \
-    rust/rust-ast-builder-type.o \
     rust/rust-derive.o \
     rust/rust-derive-cmp-common.o \
     rust/rust-derive-clone.o \

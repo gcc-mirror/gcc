@@ -98,7 +98,7 @@ DeriveDefault::visit_struct (StructStruct &item)
   for (auto &field : item.get_fields ())
     {
       auto name = field.get_field_name ().as_string ();
-      auto type = Builder::new_type (field.get_field_type ());
+      auto type = field.get_field_type ().reconstruct ();
       auto expr = default_call (std::move (type));
 
       cloned_fields.emplace_back (
@@ -120,7 +120,7 @@ DeriveDefault::visit_tuple (TupleStruct &tuple_item)
 
   for (auto &field : tuple_item.get_fields ())
     {
-      auto type = Builder::new_type (field.get_field_type ());
+      auto type = field.get_field_type ().reconstruct ();
 
       defaulted_fields.emplace_back (default_call (std::move (type)));
     }
