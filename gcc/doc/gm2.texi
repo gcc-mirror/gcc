@@ -1495,7 +1495,7 @@ from @samp{bad} will cause an overflow to @samp{foo}.  If we compile
 the code with the following options:
 
 @example
-$ gm2 -g -fsoft-check-all -O2 -c assignvalue.mod
+$ gm2 -g -fsoft-check-all -O2 -fm2-plugin -c assignvalue.mod
 assignvalue.mod:16:0:inevitable that this error will occur at run time,
 assignment will result in an overflow
 @end example

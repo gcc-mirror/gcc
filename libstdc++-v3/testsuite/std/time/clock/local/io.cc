@@ -89,6 +89,9 @@ test_format()
 
   s = std::format("{}", local_seconds{});
   VERIFY( s == "1970-01-01 00:00:00" );
+
+  s = std::format("{}", local_days{}); // PR libstdc++/120293
+  VERIFY( s == "1970-01-01" );
 }
 
 void

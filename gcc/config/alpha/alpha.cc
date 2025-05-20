@@ -4291,14 +4291,10 @@ alpha_get_mem_rtx_alignment_and_offset (rtx expr, int &a, HOST_WIDE_INT &o)
 
   tree mem = MEM_EXPR (expr);
   if (mem != NULL_TREE)
-    switch (TREE_CODE (mem))
-      {
-      case MEM_REF:
-	tree_offset = mem_ref_offset (mem).force_shwi ();
-	tree_align = get_object_alignment (get_base_address (mem));
-	break;
+    {
+      HOST_WIDE_INT comp_offset = 0;
 
-      case COMPONENT_REF:
+      for (; TREE_CODE (mem) == COMPONENT_REF; mem = TREE_OPERAND (mem, 0))
 	{
 	  tree byte_offset = component_ref_field_offset (mem);
 	  tree bit_offset = DECL_FIELD_BIT_OFFSET (TREE_OPERAND (mem, 1));
@@ -4307,14 +4303,15 @@ alpha_get_mem_rtx_alignment_and_offset (rtx expr, int &a, HOST_WIDE_INT &o)
 	      || !poly_int_tree_p (byte_offset, &offset)
 	      || !tree_fits_shwi_p (bit_offset))
 	    break;
-	  tree_offset = offset + tree_to_shwi (bit_offset) / BITS_PER_UNIT;
+	  comp_offset += offset + tree_to_shwi (bit_offset) / BITS_PER_UNIT;
 	}
-	tree_align = get_object_alignment (get_base_address (mem));
-	break;
 
-      default:
-	break;
-      }
+      if (TREE_CODE (mem) == MEM_REF)
+	{
+	  tree_offset = comp_offset + mem_ref_offset (mem).force_shwi ();
+	  tree_align = get_object_alignment (get_base_address (mem));
+	}
+    }
 
   if (reg_align > mem_align)
     {

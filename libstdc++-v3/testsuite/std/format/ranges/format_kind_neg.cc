@@ -5,9 +5,14 @@
 
 #include <format>
 
-template<auto> struct Tester { };
+void test()
+{
+  (void) std::format_kind<void>; // { dg-error "here" }
+  (void) std::format_kind<const void>; // { dg-error "here" }
+  (void) std::format_kind<int>; // { dg-error "here" }
+  (void) std::format_kind<int&>; // { dg-error "here" }
+  (void) std::format_kind<const int(&)[10]>; // { dg-error "here" }
+  (void) std::format_kind<void()>; // { dg-error "here" }
+}
 
-Tester<std::format_kind<const int(&)[1]>> t; // { dg-error "here" }
-
-// { dg-error "use of 'std::format_kind" "" { target *-*-* } 0 }
-// { dg-error "primary_template_not_defined" "" { target *-*-* } 0 }
+// { dg-error "cannot use primary template of 'std::format_kind'" "" { target *-*-* } 0 }

@@ -1,5 +1,7 @@
 /* { dg-additional-options "-ldl" } */
-/* { dg-require-effective-target offload_device_gcn } */
+/* { dg-require-effective-target offload_device_gcn }
+   The 'asm' insert is valid for GCN only:
+   { dg-additional-options -foffload=amdgcn-amdhsa } */
 
 #include <stdio.h>
 #include <stdlib.h>

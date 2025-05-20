@@ -1,0 +1,25 @@
+# Compile tests, no torture testing.
+#
+# These tests should all generate errors if the plugin is available.
+
+# Load support procs.
+load_lib gm2-dg.exp
+
+gm2_init_pim4 $srcdir/$subdir
+
+# Initialize `dg'.
+dg-init
+
+# If the --enable-plugin has not been enabled during configure, bail.
+if { ![info exists TESTING_IN_BUILD_TREE] || ![info exists ENABLE_PLUGIN] } {
+    return
+}
+
+# Main loop.
+
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.mod]]
+
+gm2-dg-runtest $tests "" ""
+
+# All done.
+dg-finish

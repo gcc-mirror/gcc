@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: cpplib 15.1-b20250316\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-03-14 22:05+0000\n"
-"PO-Revision-Date: 2025-05-12 11:20-0600\n"
+"PO-Revision-Date: 2025-05-16 12:16-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@cfuga.mx>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -58,7 +58,7 @@ msgstr "los nombres universales de carácter de C99 son incompatibles con C90"
 #: charset.cc:1556
 #, gcc-internal-format
 msgid "the meaning of %<\\%c%> is different in traditional C"
-msgstr "el significado de <\\%c> es diferente en C tradicional"
+msgstr "el significado de %<\\%c%> es diferente en C tradicional"
 
 #: charset.cc:1595
 #, gcc-internal-format
@@ -95,7 +95,7 @@ msgstr "¿Quiso decir %<\\N{%s}%>?"
 #: charset.cc:1693
 #, gcc-internal-format
 msgid "%<\\N{%> not terminated with %<}%> after %.*s; treating it as separate tokens"
-msgstr "%<\\N{%> no termina con %<}%> después de %.*s; se trata como elemntos separados"
+msgstr "%<\\N{%> no termina con %<}%> después de %.*s; se trata como elementos separados"
 
 #: charset.cc:1702
 #, gcc-internal-format
@@ -204,7 +204,7 @@ msgstr "%<\\x{%> no termina con %<}%> después de %.*s"
 
 #: charset.cc:2204
 msgid "hex escape sequence out of range"
-msgstr "secuencia de escape hexadecimal fuera de rango"
+msgstr "secuencia de escape hexadecimal fuera de intervalo"
 
 #: charset.cc:2247
 #, gcc-internal-format
@@ -218,7 +218,7 @@ msgstr "%<\\o{%> no termina con %<}%> después de %.*s"
 
 #: charset.cc:2314
 msgid "octal escape sequence out of range"
-msgstr "secuencia de escape octal fuera de rango"
+msgstr "secuencia de escape octal fuera de intervalo"
 
 #: charset.cc:2366 charset.cc:2376
 #, gcc-internal-format
@@ -247,11 +247,11 @@ msgstr "secuencia de escape desconocida: %<\\%s%>"
 
 #: charset.cc:2436
 msgid "converting escape sequence to execution character set"
-msgstr "se convierte una secuencia de escape al conjunto de caracteres de ejecución"
+msgstr "se convierte la secuencia de escape al conjunto de caracteres de ejecución"
 
 #: charset.cc:2576
 msgid "missing open quote"
-msgstr "falta comilla abierta"
+msgstr "falta comilla al inicio"
 
 #: charset.cc:2807
 msgid "character not encodable in a single execution character code unit"
@@ -373,7 +373,7 @@ msgstr "los nombres de macro deben ser identificadores"
 #: directives.cc:743 directives.cc:747
 #, gcc-internal-format
 msgid "undefining %qs"
-msgstr "borrando la definición de %qs"
+msgstr "se borra la definición de %qs"
 
 #: directives.cc:805
 #, gcc-internal-format
@@ -383,7 +383,7 @@ msgstr "falta el carácter de terminación %<>%>"
 #: directives.cc:865
 #, gcc-internal-format
 msgid "%<#%s%> expects %<\"FILENAME\"%> or %<<FILENAME>%>"
-msgstr "%<#%s$> espera %<«NOMBREFICHERO»%> o %<<NOMBREFICHERO>%>"
+msgstr "%<#%s$> espera %<\"NOMBREFICHERO\"%> o %<<NOMBREFICHERO>%>"
 
 #: directives.cc:911 directives.cc:1391
 #, gcc-internal-format, gfc-internal-format
@@ -398,7 +398,7 @@ msgstr "la profundidad anidada %u de %<#include%> excede el máximo de %u (utili
 #: directives.cc:965
 #, gcc-internal-format
 msgid "%<#include_next%> in primary source file"
-msgstr "%<#include_next%> en fichero primario de código fuente"
+msgstr "%<#include_next%> en fichero de código fuente primario"
 
 #: directives.cc:1037 directives.cc:1059 directives.cc:1062 directives.cc:1065
 #, gcc-internal-format, gfc-internal-format
@@ -447,7 +447,7 @@ msgstr "se esperaba %<(%>"
 #: directives.cc:1269
 #, gcc-internal-format
 msgid "too large %<gnu::offset%> argument"
-msgstr "argumento %<gnu::offset%> demasiado grande"
+msgstr "el argumento %<gnu::offset%> es demasiado grande"
 
 #: directives.cc:1316
 msgid "expected character string literal"
@@ -485,7 +485,7 @@ msgstr "%qs después de %<#line%> no es un entero positivo"
 
 #: directives.cc:1513 directives.cc:1516
 msgid "line number out of range"
-msgstr "número de línea fuera de rango"
+msgstr "número de línea fuera de intervalo"
 
 #: directives.cc:1529 directives.cc:1610
 #, gcc-internal-format
@@ -682,7 +682,7 @@ msgstr "uso de una constante de coma flotante hexadecimal C99"
 #: expr.cc:789
 #, gcc-internal-format
 msgid "invalid suffix %<%.*s%> on floating constant"
-msgstr "sufijo %<%.*s%> inválido en la constante de coma flotante"
+msgstr "sufijo %<%.*s%> inválido en una constante de coma flotante"
 
 #: expr.cc:800 expr.cc:870
 #, gcc-internal-format
@@ -696,7 +696,7 @@ msgstr "el sufijo para una constante doble es una extensión GCC"
 #: expr.cc:815
 #, gcc-internal-format
 msgid "invalid suffix %<%.*s%> with hexadecimal floating constant"
-msgstr "sufijo %<%.*s%> inválido en la constante de coma flotante hexadecimal"
+msgstr "sufijo %<%.*s%> inválido en una constante de coma flotante hexadecimal"
 
 #: expr.cc:829 expr.cc:833
 msgid "decimal floating constants are a C23 feature"
@@ -705,7 +705,7 @@ msgstr "las constantes de coma flotante decimal son una característica de C23"
 #: expr.cc:853
 #, gcc-internal-format
 msgid "invalid suffix %<%.*s%> on integer constant"
-msgstr "sufijo %<%.*s%> inválido en la constante entera"
+msgstr "sufijo %<%.*s%> inválido en una constante entera"
 
 #: expr.cc:878
 msgid "use of C++11 long long integer constant"
@@ -744,7 +744,7 @@ msgstr "las constantes imaginarias son una característica de C2Y"
 
 #: expr.cc:956
 msgid "binary constants are a C++14 feature or GCC extension"
-msgstr "las constantes binarias son una característica C++14 o una extensión de GCC"
+msgstr "las constantes binarias son una característica de C++14 o una extensión de GCC"
 
 #: expr.cc:961
 msgid "binary constants are a C23 feature or GCC extension"
@@ -838,7 +838,7 @@ msgstr "operando de parámetro imbuído demasiado grande"
 #: expr.cc:1658
 #, gcc-internal-format, gfc-internal-format
 msgid "impossible operator '%u'"
-msgstr "operador '%u' imposible"
+msgstr "operador «%u» imposible"
 
 #: expr.cc:1759
 #, gcc-internal-format
@@ -852,7 +852,7 @@ msgstr "%<?%> sin %<:%> a continuación"
 
 #: expr.cc:1798
 msgid "integer overflow in preprocessor expression"
-msgstr "desbordamiento entero en expresión del preprocesador"
+msgstr "desbordamiento entero en una expresión del preprocesador"
 
 #: expr.cc:1803
 #, gcc-internal-format
@@ -871,7 +871,7 @@ msgstr "el operando derecho de %qs cambia de signo cuando es promovido"
 
 #: expr.cc:2099
 msgid "traditional C rejects the unary plus operator"
-msgstr "C tradicional rechaza el operador unario mas"
+msgstr "C tradicional rechaza el operador unario más"
 
 #: expr.cc:2197
 #, gcc-internal-format, gfc-internal-format
@@ -890,7 +890,7 @@ msgstr "directorio NULL en %<find_file%>"
 
 #: files.cc:603
 msgid "one or more PCH files were found, but they were invalid"
-msgstr "se encontró uno o más ficheros PCH, pero eran inválidos"
+msgstr "se encontraron uno o más ficheros PCH, pero eran inválidos"
 
 #: files.cc:607
 #, gcc-internal-format
@@ -934,7 +934,7 @@ msgstr "Guardias múltiples de include pueden ser útiles para:\n"
 #: files.cc:2306
 #, gcc-internal-format
 msgid "header guard %qs followed by %<#define%> of a different macro"
-msgstr "guarda de encabezado %qs seguida por %<#define%> de un macro diferente"
+msgstr "guarda de cabecera %qs seguida por %<#define%> de un macro diferente"
 
 #: files.cc:2310
 #, gcc-internal-format
@@ -954,7 +954,7 @@ msgstr "la aritmética del preprocesador tiene una precisión máxima de %lu bit
 #: init.cc:687
 #, gcc-internal-format
 msgid "CPP arithmetic must be at least as precise as a target %<int%>"
-msgstr "la aritmética de CPP debe se al menos tan precisa como un %<int%> del objetivo"
+msgstr "la aritmética de CPP debe ser al menos tan precisa como un %<int%> del objetivo"
 
 #: init.cc:691
 #, gcc-internal-format
@@ -1111,7 +1111,7 @@ msgstr "%<__VA_OPT__%> solamente puede aparecer en la expansión de una macro va
 #: lex.cc:2186
 #, gcc-internal-format
 msgid "attempt to use poisoned %qs"
-msgstr "intento de utilizar %qs envenenado"
+msgstr "se intenta usar %qs envenenado"
 
 #: lex.cc:2191
 msgid "poisoned here"
@@ -1151,7 +1151,7 @@ msgstr "carácter inválido nueva línea en un delimitador de cadena cruda"
 #: lex.cc:2731 lex.cc:5671
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid character '%c' in raw string delimiter"
-msgstr "carácter inválido '%c' en un delimitador de cadena cruda"
+msgstr "carácter inválido «%c» en un delimitador de cadena cruda"
 
 #: lex.cc:2770 lex.cc:2793
 msgid "unterminated raw string"
@@ -1168,7 +1168,7 @@ msgstr "falta el carácter de terminación %c"
 
 #: lex.cc:2986
 msgid "C++11 requires a space between string literal and macro"
-msgstr "C++11 requiere un espacio entre cadena literal y macro"
+msgstr "C++11 requiere un espacio entre una cadena literal y un macro"
 
 #: lex.cc:3579
 msgid "module control-line cannot be in included file"
@@ -1177,7 +1177,7 @@ msgstr "la línea de control del módulo no puede estar en un fichero incluido"
 #: lex.cc:3593
 #, gcc-internal-format
 msgid "module control-line %qs cannot be an object-like macro"
-msgstr "la línea de control del módulo %qs no puede ser una macro de tipo objeto"
+msgstr "la línea de control del módulo %qs no puede ser un macro de tipo objeto"
 
 #: lex.cc:3631
 #, gcc-internal-format
@@ -1187,7 +1187,7 @@ msgstr "el nombre de módulo %qs no puede ser una macro de tipo objeto"
 #: lex.cc:3637
 #, gcc-internal-format
 msgid "module partition %qs cannot be an object-like macro"
-msgstr "la partición de módulo %qs no puede ser una macro de tipo objeto"
+msgstr "la partición de módulo %qs no puede ser un macro de tipo objeto"
 
 #: lex.cc:3658
 #, gcc-internal-format
@@ -1290,7 +1290,7 @@ msgstr "macro interna %qs inválida"
 #: macro.cc:579 macro.cc:687
 #, gcc-internal-format
 msgid "macro %qs might prevent reproducible builds"
-msgstr "macro %qs quizá previene compilaciones reproducibles"
+msgstr "el macro %qs quizá previene compilaciones reproducibles"
 
 #: macro.cc:610
 msgid "could not determine file timestamp"
@@ -1401,7 +1401,7 @@ msgstr "se esperaba %<)%> después de %<...%>"
 
 #: macro.cc:3624
 msgid "anonymous variadic macros were introduced in C++11"
-msgstr "las macros variadic anónimas se introdujeron en C++11"
+msgstr "los macros variadic anónimos se introdujeron en C++11"
 
 #: macro.cc:3625 macro.cc:3629
 msgid "anonymous variadic macros were introduced in C99"
@@ -1440,7 +1440,7 @@ msgstr "%<#%> no es seguido por un parámetro de macro"
 #: macro.cc:3961
 #, gcc-internal-format
 msgid "%qs redefined"
-msgstr "%qs redefinido"
+msgstr "se redefine %qs"
 
 #: macro.cc:3965
 msgid "this is the location of the previous definition"
@@ -1453,7 +1453,7 @@ msgstr "el argumento de macro %qs debería ser convertido a cadena en C tradicio
 
 #: pch.cc:90 pch.cc:342 pch.cc:356 pch.cc:374 pch.cc:380 pch.cc:389 pch.cc:396
 msgid "while writing precompiled header"
-msgstr "al escribir el encabezado precompilado"
+msgstr "al escribir la cabecera precompilada"
 
 #: pch.cc:616
 #, gcc-internal-format
@@ -1482,7 +1482,7 @@ msgstr "%s: no se usa porque %<__COUNTER__%> es inválido"
 
 #: pch.cc:722 pch.cc:885
 msgid "while reading precompiled header"
-msgstr "al leer el encabezado precompilado"
+msgstr "al leer la cabecera precompilada"
 
 #: traditional.cc:891
 #, gcc-internal-format
@@ -1523,7 +1523,7 @@ msgstr "error de sintaxis en la lista de parámetros de macro"
 #~ msgstr "#include anidado con demasiada profundidad"
 
 #~ msgid "missing ')' after \"__has_include__\""
-#~ msgstr "falta ')' tras \"__has_include__\""
+#~ msgstr "falta ')' después de \"__has_include__\""
 
 #~ msgid "\"%s\" may not appear in macro parameter list"
 #~ msgstr "«%s» podría faltar en la lista de parámetro de macro"

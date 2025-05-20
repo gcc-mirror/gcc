@@ -457,7 +457,7 @@ sminloc1_8_s1 (gfc_array_i8 * const restrict retarray,
 
   for (n = 0; n < dim; n++)
     {
-      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n) * string_len;
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
       if (extent[n] <= 0)
 	extent[n] = 0;
@@ -465,8 +465,7 @@ sminloc1_8_s1 (gfc_array_i8 * const restrict retarray,
 
   for (n = dim; n < rank; n++)
     {
-      extent[n] =
-	GFC_DESCRIPTOR_EXTENT(array,n + 1) * string_len;
+      extent[n] = GFC_DESCRIPTOR_EXTENT(array,n + 1);
 
       if (extent[n] <= 0)
 	extent[n] = 0;

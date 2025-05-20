@@ -1,3 +1,144 @@
+2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (_ZipTransform::operator()): Remove name of
+	unused parameter.
+	(chunk_view::_Iterator, stride_view::_Iterator): Likewise.
+	(join_with_view): Declare _Iterator and _Sentinel as class
+	instead of struct.
+	(repeat_view): Declare _Iterator as class instead of struct.
+
+2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120293
+	* include/bits/chrono_io.h (_M_format_to_ostream): Add special
+	case for local_time convertible to local_days.
+	* testsuite/std/time/clock/local/io.cc: Check formatting of
+	chrono::local_days.
+
+2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120029
+	* src/c++17/fs_path.cc (path::operator+=(const path&)): Handle
+	parameters that alias the path or one of its components.
+	* testsuite/27_io/filesystem/path/concat/120029.cc: New test.
+	* testsuite/experimental/filesystem/path/concat/120029.cc: New
+	test.
+
+2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120190
+	* include/std/format (format_kind): Adjust primary template to
+	not depend on itself.
+	* testsuite/std/format/ranges/format_kind_neg.cc: Adjust
+	expected errors. Check more invalid specializations.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120187
+	* include/c_global/ciso646: Only give deprecated warning for
+	C++20 and later.
+	* include/c_global/ccomplex: Add @since to Doxygen comment.
+	* include/c_global/cstdalign: Likewise.
+	* include/c_global/cstdbool: Likewise.
+	* include/c_global/ctgmath: Likewise.
+	* testsuite/18_support/headers/ciso646/macros.cc: Remove
+	dg-warning for c++17_only effective target.
+	* testsuite/18_support/headers/ciso646/macros-2.cc: New test.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120198
+	* include/bits/version.def (scoped_lock): Do not depend on
+	gthreads or hosted.
+	* include/bits/version.h: Regenerate.
+	* include/std/mutex (scoped_lock): Update comment.
+	* testsuite/30_threads/scoped_lock/requirements/typedefs.cc:
+	Remove dg-require-gthreads and use custom lockable type instead
+	of std::mutex. Check that typedef is only present for a single
+	template argument.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2023.xml: Update status of proposals
+	implemented after GCC 14.2 release.
+	* doc/html/*: Regenerate.
+
+2025-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119714
+	PR libstdc++/112490
+	* include/std/expected (expected::operator==): Replace
+	non-dependent std::expected function parameter with a dependent
+	one of type expected<_Vp, _Er> where _Vp matches _Tp.
+	* testsuite/20_util/expected/119714.cc: New test.
+
+2025-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119427
+	* include/std/flat_map (_Flat_map_impl::erase_if): Replace
+	this hidden friend with ...
+	(_Flat_map_impl::_M_erase_if): ... this member function.
+	(flat_map): Export _Flat_map_impl::_M_erase_if.
+	(erase_if(flat_map)): Define.
+	(flat_multimap): Export _Flat_map_impl::_M_erase_if.
+	(erase_if(flat_multimap)): Define.
+	* include/std/flat_set (_Flat_set_impl::erase_if): Replace
+	with ...
+	(_Flat_set_impl::_M_erase_if): ... this member function.
+	(flat_set): Export _Flat_set_impl::_M_erase_if.
+	(erase_if(flat_set)): Define.
+	(flat_multiset): Export _Flat_set_impl::_M_erase_if.
+	(erase_if(flat_multiset)): Define.
+	* testsuite/23_containers/flat_map/1.cc (test07): New test.
+	* testsuite/23_containers/flat_multimap/1.cc (test07): New test.
+	* testsuite/23_containers/flat_multiset/1.cc (test09): New test.
+	* testsuite/23_containers/flat_set/1.cc (test09): New test.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118260
+	* python/hook.in: Suppress output from gdb.execute calls to
+	register skips.
+
+2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update status for
+	std::to_chars and std::from_chars.
+	* doc/html/manual/*: Regenerate.
+
 2025-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

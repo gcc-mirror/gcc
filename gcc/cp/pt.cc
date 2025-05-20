@@ -26012,10 +26012,10 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 			  INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (parm)),
 			  INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (t)),
 			  UNIFY_ALLOW_NONE, explain_p);
-	  else
-	    return unify_success (explain_p);
+	  gcc_checking_assert (t == arg);
 	}
-      else if (!same_type_ignoring_top_level_qualifiers_p (parm, arg))
+
+      if (!same_type_ignoring_top_level_qualifiers_p (parm, arg))
 	return unify_type_mismatch (explain_p, parm, arg);
       return unify_success (explain_p);
 

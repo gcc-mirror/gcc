@@ -31099,7 +31099,8 @@ resolve_addr_in_expr (dw_attr_node *a, dw_loc_descr_ref loc)
               return false;
             remove_addr_table_entry (loc->dw_loc_oprnd1.val_entry);
 	    loc->dw_loc_oprnd1.val_entry
-	      = add_addr_table_entry (rtl, ate_kind_rtx);
+	      = add_addr_table_entry (rtl, loc->dtprel
+				      ? ate_kind_rtx_dtprel : ate_kind_rtx);
           }
 	break;
       case DW_OP_const4u:

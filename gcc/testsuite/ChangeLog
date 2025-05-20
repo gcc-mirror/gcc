@@ -1,3 +1,138 @@
+2025-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* gfortran.dg/pr120049_a.f90: New test.
+	* gfortran.dg/pr120049_b.f90: New test.
+
+2025-05-16  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	Backported from master:
+	2025-04-19  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/alpha/memcpy-nested-offset-long.c: New file.
+	* gcc.target/alpha/memcpy-nested-offset-quad.c: New file.
+
+2025-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120161
+	* g++.dg/template/unify13.C: New test.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120125
+	* g++.dg/modules/clone-4_a.C: New test.
+	* g++.dg/modules/clone-4_b.C: New test.
+
+2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119864
+	* g++.dg/modules/openmp-1.C: New test.
+
+2025-05-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120163
+	* gfortran.dg/interface_61.f90: New test.
+
+2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-05-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120117
+	* gm2/pim/pass/highbit.mod: New test.
+	* gm2/pim/pass/highbit2.mod: New test.
+
+2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-04-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119915
+	* gm2/pimlib/run/pass/format2.mod: New test.
+
+2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-04-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119914
+	* gm2/pim/fail/constintarraybyte.mod: New test.
+
+2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120188
+	* gm2.dg/doc/examples/plugin/fail/doc-examples-plugin-fail.exp:
+	Remove call to gm2-dg-frontend-configure-check and replace with
+	tests for whether plugin variables exist.
+
+2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-05-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120188
+	* lib/gm2-dg.exp (gm2-dg-frontend-configure-check): New function.
+	(gm2-dg-runtest): Add -O2 to the option_list.
+	* gm2.dg/doc/examples/plugin/fail/assignvalue.mod: New test.
+	* gm2.dg/doc/examples/plugin/fail/doc-examples-plugin-fail.exp: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120196
+	* gfortran.dg/pr120196.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_3.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_2.f90: New test.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+		    Daniil Kochergin  <daniil2472s@gmail.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_1.f90: New test.
+
+2025-05-12  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120012
+	* g++.dg/abi/base-defaulted2.C: New test.
+
 2025-05-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/120211
