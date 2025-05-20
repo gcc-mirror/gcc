@@ -3565,7 +3565,7 @@ __gg__sqrt( cblc_field_t *dest,
                                                         source_offset,
                                                         source_size);
 
-  if( value <= GCOB_FP128_LITERAL(0.0) )
+  if( value < GCOB_FP128_LITERAL(0.0) )
     {
     exception_raise(ec_argument_function_e);
     }

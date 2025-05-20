@@ -1,0 +1,5 @@
+ok
+sqrt(0) ""
+bad
+sqrt(-0.1) "EC-ARGUMENT-FUNCTION"
+
