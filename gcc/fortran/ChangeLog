@@ -1,3 +1,10 @@
+2025-05-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120099
+	* trans-types.cc (gfc_return_by_reference): Intrinsic functions
+	returning complex numbers may return their result by reference
+	with -ff2c.
+
 2025-05-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/85750

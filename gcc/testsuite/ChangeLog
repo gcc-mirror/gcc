@@ -1,3 +1,417 @@
+2025-05-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120333
+	* gcc.target/riscv/pr114512.c: Update expected output.
+	* gcc.target/riscv/pr120333.c: New test.
+
+2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR lto/120308
+	* gcc.target/nvptx/abi-struct-arg.c: Add empty structure testing.
+	* gcc.target/nvptx/abi-struct-ret.c: Likewise.
+
+2025-05-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/120351
+	* gcc.target/arm/pr120351.c: New test.
+
+2025-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/zilsd-code-gen.c: New test.
+
+2025-05-19  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR middle-end/120276
+	* gcc.dg/torture/pr120276.c: New test.
+
+2025-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/constraint-cR-pair.c: New test case.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_2-512-bf16-1.c: Removed and combined ...
+	* gcc.target/i386/avx10_2-bf16-1.c: ... to this.
+	* gcc.target/i386/avx10_2-512-bf16-vector-cmp-1.c: Removed and
+	combined ...
+	* gcc.target/i386/avx10_2-bf16-vector-cmp-1.c:... to this.
+	* gcc.target/i386/avx10_2-512-bf16-vector-fma-1.c: Removed and
+	combined ...
+	* gcc.target/i386/avx10_2-bf16-vector-fma-1.c:... to this.
+	* gcc.target/i386/avx10_2-512-bf16-vector-operations-1.c: Removed
+	and combined ...
+	* gcc.target/i386/avx10_2-bf16-vector-operations-1.c:... to this.
+	* gcc.target/i386/avx10_2-512-bf16-vector-smaxmin-1.c: Removed
+	and combined ...
+	* gcc.target/i386/avx10_2-bf16-vector-smaxmin-1.c:... to this.
+	* gcc.target/i386/avx10_2-512-convert-1.c: Removed and combined ...
+	* gcc.target/i386/avx10_2-convert-1.c:... to this.
+	* gcc.target/i386/avx10_2-512-media-1.c: Removed and combined ...
+	* gcc.target/i386/avx10_2-media-1.c:... to this.
+	* gcc.target/i386/avx10_2-512-minmax-1.c: Removed and combined ...
+	* gcc.target/i386/avx10_2-minmax-1.c:... to this.
+	* gcc.target/i386/avx10_2-512-movrs-1.c: Removed and combined ...
+	* gcc.target/i386/avx10_2-movrs-1.c:... to this.
+	* gcc.target/i386/avx10_2-512-satcvt-1.c: Removed and combined ...
+	* gcc.target/i386/avx10_2-satcvt-1.c:... to this.
+	* gcc.target/i386/sm4-avx10_2-512-1.c: Move to...
+	* gcc.target/i386/sm4-avx10_2-1b.c: ...here.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10-check.h: Remove AVX10_512BIT.
+	* gcc.target/i386/avx10-minmax-helper.h: Ditto.
+	* gcc.target/i386/avx10_2-vaddbf16-2.c: Add 512 test.
+	* gcc.target/i386/avx10_2-vcmpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ps2phx-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvthf82ph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vdivbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vdpphps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfmaddXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfmsubXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfnmaddXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfnmsubXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfpclassbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vgetexpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vgetmantbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmaxbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmpsadbw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmulbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbssd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbssds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwusd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwusds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrcpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vreducebf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrndscalebf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrsqrtbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vscalefbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vsqrtbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vsubbf16-2.c: Ditto.
+	* gcc.target/i386/avx512f-helper.h: Remove AVX10_512BIT.
+	* gcc.target/i386/sm4-check.h: Use AVX10_2.
+	* gcc.target/i386/avx10_2-512-vaddbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vaddbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcmpbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcmpbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvt2ph2bf8-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvt2ph2bf8-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvt2ph2bf8s-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvt2ph2bf8s-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvt2ph2hf8-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvt2ph2hf8-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvt2ph2hf8s-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvt2ph2hf8s-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvt2ps2phx-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvt2ps2phx-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtbf162ibs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtbf162ibs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtbf162iubs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtbf162iubs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8s-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8s-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8s-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8s-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvthf82ph-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvthf82ph-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtph2bf8-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtph2bf8-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtph2bf8s-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtph2bf8s-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtph2hf8-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtph2hf8-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtph2hf8s-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtph2hf8s-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtph2ibs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtph2ibs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtph2iubs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtph2iubs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtps2ibs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtps2ibs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvtps2iubs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvtps2iubs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttbf162ibs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttbf162ibs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttbf162iubs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttbf162iubs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttpd2dqs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttpd2dqs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttpd2qqs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttpd2qqs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttpd2udqs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttpd2udqs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttpd2uqqs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttpd2uqqs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttph2ibs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttph2ibs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttph2iubs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttph2iubs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttps2dqs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttps2dqs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttps2ibs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttps2ibs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttps2iubs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttps2iubs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttps2qqs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttps2qqs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttps2udqs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttps2udqs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vcvttps2uqqs-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vcvttps2uqqs-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vdivbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vdivbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vdpphps-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vdpphps-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vfmaddXXXbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vfmaddXXXbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vfmsubXXXbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vfmsubXXXbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vfnmaddXXXbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vfnmaddXXXbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vfnmsubXXXbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vfnmsubXXXbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vfpclassbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vfpclassbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vgetexpbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vgetexpbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vgetmantbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vgetmantbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vmaxbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vmaxbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vminbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vminbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vminmaxbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vminmaxbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vminmaxpd-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vminmaxpd-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vminmaxph-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vminmaxph-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vminmaxps-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vminmaxps-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vmpsadbw-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vmpsadbw-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vmulbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vmulbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpbssd-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpbssd-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpbssds-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpbssds-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpbsud-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpbsud-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpbsuds-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpbsuds-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpbuud-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpbuud-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpbuuds-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpbuuds-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpwsud-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpwsud-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpwsuds-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpwsuds-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpwusd-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpwusd-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpwusds-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpwusds-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpwuud-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpwuud-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vpdpwuuds-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vpdpwuuds-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vrcpbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vrcpbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vreducebf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vreducebf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vrndscalebf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vrndscalebf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vrsqrtbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vrsqrtbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vscalefbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vscalefbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vsqrtbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vsqrtbf16-2.h: ...here.
+	* gcc.target/i386/avx10_2-512-vsubbf16-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/avx10_2-vsubbf16-2.h: ...here.
+	* gcc.target/i386/sm4key4-avx10_2-512-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/sm4key4-avx10_2-2.c: ...here.
+	* gcc.target/i386/sm4rnds4-avx10_2-512-2.c:
+	Remove 512 test. Move to...
+	* gcc.target/i386/sm4rnds4-avx10_2-2.c: ...here.
+	* gcc.target/i386/vnniint16-auto-vectorize-4.c: Use AVX10_SCALAR
+	for 512 bit test.
+	* gcc.target/i386/vnniint8-auto-vectorize-4.c: Ditto.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx-1.c: Combine tests and change
+	intrin file name.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-1.c: Remove warning.
+	* gcc.target/i386/avx10_1-2.c: Ditto.
+	* gcc.target/i386/avx10_1-3.c: Ditto.
+	* gcc.target/i386/avx10_1-4.c: Ditto.
+	* gcc.target/i386/pr111068.c: Ditto.
+	* gcc.target/i386/pr117946.c: Ditto.
+	* gcc.target/i386/pr117240_avx512f.c: Remove -mevex512 and
+	warning.
+	* gcc.target/i386/avx10_1-11.c: Rename to ...
+	* gcc.target/i386/avx10_1-5.c: ... this. Remove warning.
+	* gcc.target/i386/avx10_1-12.c: Rename to ...
+	* gcc.target/i386/avx10_1-6.c: ... this. Remove warning.
+	* gcc.target/i386/avx10_1-26.c: Rename to ...
+	* gcc.target/i386/avx10_1-7.c: ... this. Remove warning.
+	The origin avx10_1-7.c is removed.
+	* gcc.target/i386/avx10_1-10.c: Removed.
+	* gcc.target/i386/avx10_1-13.c: Removed.
+	* gcc.target/i386/avx10_1-14.c: Removed.
+	* gcc.target/i386/avx10_1-15.c: Removed.
+	* gcc.target/i386/avx10_1-16.c: Removed.
+	* gcc.target/i386/avx10_1-17.c: Removed.
+	* gcc.target/i386/avx10_1-18.c: Removed.
+	* gcc.target/i386/avx10_1-19.c: Removed.
+	* gcc.target/i386/avx10_1-20.c: Removed.
+	* gcc.target/i386/avx10_1-21.c: Removed.
+	* gcc.target/i386/avx10_1-22.c: Removed.
+	* gcc.target/i386/avx10_1-23.c: Removed.
+	* gcc.target/i386/avx10_1-8.c: Removed.
+	* gcc.target/i386/avx10_1-9.c: Removed.
+	* gcc.target/i386/noevex512-1.c: Removed.
+	* gcc.target/i386/noevex512-2.c: Removed.
+	* gcc.target/i386/noevex512-3.c: Removed.
+	* gcc.target/i386/pr111889.c: Removed.
+	* gcc.target/i386/pr111907.c: Removed.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/pr90096.c: Adjust error message.
+	* gcc.target/i386/pr117304-1.c: Removed.
+
 2025-05-17  Yuao Ma  <c8ef@outlook.com>
 
 	* gcc.dg/builtins-1.c: Builtin codegen test.

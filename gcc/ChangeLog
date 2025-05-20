@@ -1,3 +1,284 @@
+2025-05-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120333
+	* config/riscv/bitmanip.md: Remove bext formed from left+right
+	shift patterns.
+
+2025-05-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-hpux.h (TARGET_HAVE_LIBATOMIC): Define.
+	(HAVE_sync_compare_and_swapqi): Likewise.
+	(HAVE_sync_compare_and_swaphi): Likewise.
+	(HAVE_sync_compare_and_swapsi): Likewise.
+	(HAVE_sync_compare_and_swapdi): Likewise.
+
+2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR lto/120308
+	* lto-streamer-out.cc (hash_tree): Don't handle 'TYPE_EMPTY_P' for
+	'lto_stream_offload_p'.
+	* tree-streamer-in.cc (unpack_ts_type_common_value_fields):
+	Likewise.
+	* tree-streamer-out.cc (pack_ts_type_common_value_fields):
+	Likewise.
+
+2025-05-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (synthesize_ior_xor): Initialize OUTPUT and
+	verify it's non-null before emitting the final copy insn.
+
+2025-05-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/120351
+	* config/arm/predicates.md (mem_noofs_operand): Also check the op
+	is a valid memory_operand.
+
+2025-05-19  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc (get_riscv_ext_info): Fix argument type.
+	(riscv_subset_list::check_implied_ext): Type conversion.
+
+2025-05-19  zhusonghe  <zhusonghe@eswincomputing.com>
+
+	* config/riscv/gen-riscv-ext-texi.cc (struct version_t):rename
+	major/minor to major_version/minor_version.
+
+2025-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Handle
+	load/store with odd-even reg pair.
+	(riscv_split_64bit_move_p): Don't split load/store if zilsd enabled.
+	(riscv_hard_regno_mode_ok): Only allow even reg can be used for
+	64 bits mode for zilsd.
+
+2025-05-19  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR middle-end/120276
+	* regcprop.cc (copy_value): Return in case of unordered modes.
+
+2025-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/constraints.md (cR): New constraint.
+	* doc/md.texi (Machine Constraints::RISC-V): Document the new cR
+	constraint.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config.gcc: Remove 512 intrin file.
+	* config/i386/avx10_2-512bf16intrin.h:
+	Removed and combined to ...
+	* config/i386/avx10_2bf16intrin.h: ... this.
+	* config/i386/avx10_2-512convertintrin.h:
+	Removed and combined to ...
+	* config/i386/avx10_2convertintrin.h: ... this.
+	* config/i386/avx10_2-512mediaintrin.h:
+	Removed and combined to ...
+	* config/i386/avx10_2mediaintrin.h: ... this.
+	* config/i386/avx10_2-512minmaxintrin.h:
+	Removed and combined to ...
+	* config/i386/avx10_2minmaxintrin.h: ... this.
+	* config/i386/avx10_2-512satcvtintrin.h:
+	Removed and combined to ...
+	* config/i386/avx10_2satcvtintrin.h: ... this.
+	* config/i386/immintrin.h: Remove 512 intrin file.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/sse.md (VF1_VF2_AVX10_2): Removed.
+	(VF2_AVX10_2): Ditto.
+	(VI1248_AVX10_2): Ditto.
+	(VFH_AVX10_2): Ditto.
+	(VF1_AVX10_2): Ditto.
+	(VHF_AVX10_2): Ditto.
+	(VBF_AVX10_2): Ditto.
+	(VI8_AVX10_2): Ditto.
+	(VI2_AVX10_2): Ditto.
+	(VBF): New.
+	(div<mode>3): Use VBF instead of AVX10.2 ones.
+	(vec_cmp<mode><avx512fmaskmodelower>): Ditto.
+	(avx10_2_cvt2ps2phx_<mode><mask_name><round_name>):
+	Use VHF_AVX512VL instead of AVX10.2 ones.
+	(vcvt<convertfp8_pack><mode><mask_name>): Ditto.
+	(vcvthf82ph<mode><mask_name>): Ditto.
+	(VHF_AVX10_2_2): Remove not needed TARGET_AVX10_2.
+	(usdot_prod<sseunpackmodelower><mode>): Use VI2_AVX512F
+	instead of AVX10.2 ones.
+	(vdpphps_<mode>): Use VF1_AVX512VL instead of AVX10.2 ones.
+	(vdpphps_<mode>_mask): Ditto.
+	(vdpphps_<mode>_maskz): Ditto.
+	(vdpphps_<mode>_maskz_1): Ditto.
+	(avx10_2_scalefbf16_<mode><mask_name>): Use VBF instead of
+	AVX10.2 ones.
+	(<code><mode>3): Ditto.
+	(avx10_2_<code>bf16_<mode><mask_name>): Ditto.
+	(avx10_2_fmaddbf16_<mode>_maskz); Ditto.
+	(avx10_2_fmaddbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fmaddbf16_<mode>_mask): Ditto.
+	(avx10_2_fmaddbf16_<mode>_mask3): Ditto.
+	(avx10_2_fnmaddbf16_<mode>_maskz): Ditto.
+	(avx10_2_fnmaddbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fnmaddbf16_<mode>_mask): Ditto.
+	(avx10_2_fnmaddbf16_<mode>_mask3): Ditto.
+	(avx10_2_fmsubbf16_<mode>_maskz); Ditto.
+	(avx10_2_fmsubbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fmsubbf16_<mode>_mask): Ditto.
+	(avx10_2_fmsubbf16_<mode>_mask3): Ditto.
+	(avx10_2_fnmsubbf16_<mode>_maskz): Ditto.
+	(avx10_2_fnmsubbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fnmsubbf16_<mode>_mask): Ditto.
+	(avx10_2_fnmsubbf16_<mode>_mask3): Ditto.
+	(avx10_2_rsqrtbf16_<mode><mask_name>): Ditto.
+	(avx10_2_sqrtbf16_<mode><mask_name>): Ditto.
+	(avx10_2_rcpbf16_<mode><mask_name>): Ditto.
+	(avx10_2_getexpbf16_<mode><mask_name>): Ditto.
+	(avx10_2_<bf16immop>bf16_<mode><mask_name>): Ditto.
+	(avx10_2_fpclassbf16_<mode><mask_scalar_merge_name>): Ditto.
+	(avx10_2_cmpbf16_<mode><mask_scalar_merge_name>): Ditto.
+	(avx10_2_cvt<sat_cvt_trunc_prefix>bf162i<sat_cvt_sign_prefix>bs<mode><mask_name>):
+	Ditto.
+	(avx10_2_cvtph2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_name>):
+	Use VHF_AVX512VL instead of AVX10.2 ones.
+	(avx10_2_cvttph2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx10_2_cvtps2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_name>):
+	Use VF1_AVX512VL instead of AVX10.2 ones.
+	(avx10_2_cvttps2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx10_2_vcvtt<castmode>2<sat_cvt_sign_prefix>dqs<mode><mask_name><round_saeonly_name>):
+	Use VF instead of AVX10.2 ones.
+	(avx10_2_vcvttpd2<sat_cvt_sign_prefix>qqs<mode><mask_name><round_saeonly_name>):
+	Use VF2 instead of AVX10.2 ones.
+	(avx10_2_vcvttps2<sat_cvt_sign_prefix>qqs<mode><mask_name><round_saeonly_name>):
+	Use VI8 instead of AVX10.2 ones.
+	(avx10_2_minmaxbf16_<mode><mask_name>): Use VBF instead of
+	AVX10.2 ones.
+	(avx10_2_minmaxp<mode><mask_name><round_saeonly_name>):
+	Use VFH_AVX512VL instead of AVX10.2 ones.
+	(avx10_2_vmovrs<ssemodesuffix><mode><mask_name>):
+	Use VI1248_AVX512VLBW instead of AVX10.2 ones.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_available_features): Remove feature set for AVX10_1_256.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_EVEX512_SET): Removed.
+	(OPTION_MASK_ISA2_AVX10_1_256_SET): Removed.
+	(OPTION_MASK_ISA_AVX10_1_SET): Imply all AVX512 features.
+	(OPTION_MASK_ISA2_AVX10_1_SET): Ditto.
+	(OPTION_MASK_ISA2_AVX2_UNSET): Remove AVX10_1_UNSET.
+	(OPTION_MASK_ISA2_EVEX512_UNSET): Removed.
+	(OPTION_MASK_ISA2_AVX10_1_UNSET): Remove AVX10_1_256.
+	(OPTION_MASK_ISA2_AVX512F_UNSET): Unset AVX10_1.
+	(ix86_handle_option): Remove special handling for AVX512/AVX10.1
+	options, evex512 and avx10_1_256. Modify ISA set for AVX10 options.
+	* common/config/i386/i386-cpuinfo.h
+	(enum feature_priority): Remove P_AVX10_1_256.
+	(enum processor_features): Remove FEATURE_AVX10_1_256.
+	* common/config/i386/i386-isas.h: Remove avx10.1-256/512.
+	* config/i386/avx512bf16intrin.h: Rollback target push before
+	evex512 is introduced.
+	* config/i386/avx512bf16vlintrin.h: Ditto.
+	* config/i386/avx512bitalgintrin.h: Ditto.
+	* config/i386/avx512bitalgvlintrin.h: Ditto.
+	* config/i386/avx512bwintrin.h: Ditto.
+	* config/i386/avx512cdintrin.h: Ditto.
+	* config/i386/avx512dqintrin.h: Ditto.
+	* config/i386/avx512fintrin.h: Ditto.
+	* config/i386/avx512fp16intrin.h: Ditto.
+	* config/i386/avx512fp16vlintrin.h: Ditto.
+	* config/i386/avx512ifmaintrin.h: Ditto.
+	* config/i386/avx512ifmavlintrin.h: Ditto.
+	* config/i386/avx512vbmi2intrin.h: Ditto.
+	* config/i386/avx512vbmi2vlintrin.h: Ditto.
+	* config/i386/avx512vbmiintrin.h: Ditto.
+	* config/i386/avx512vbmivlintrin.h: Ditto.
+	* config/i386/avx512vlbwintrin.h: Ditto.
+	* config/i386/avx512vldqintrin.h: Ditto.
+	* config/i386/avx512vlintrin.h: Ditto.
+	* config/i386/avx512vnniintrin.h: Ditto.
+	* config/i386/avx512vnnivlintrin.h: Ditto.
+	* config/i386/avx512vp2intersectintrin.h: Ditto.
+	* config/i386/avx512vp2intersectvlintrin.h: Ditto.
+	* config/i386/avx512vpopcntdqintrin.h: Ditto.
+	* config/i386/avx512vpopcntdqvlintrin.h: Ditto.
+	* config/i386/gfniintrin.h: Ditto.
+	* config/i386/vaesintrin.h: Ditto.
+	* config/i386/vpclmulqdqintrin.h: Ditto.
+	* config/i386/driver-i386.cc (check_avx512_features): Removed.
+	(host_detect_local_cpu): Remove -march=native special handling.
+	* config/i386/i386-builtins.cc
+	(ix86_vectorize_builtin_gather): Remove TARGET_EVEX512.
+	* config/i386/i386-c.cc
+	(ix86_target_macros_internal): Remove EVEX512 and AVX10_1_256.
+	* config/i386/i386-expand.cc
+	(ix86_valid_mask_cmp_mode): Remove TARGET_EVEX512.
+	(ix86_expand_int_sse_cmp): Ditto.
+	(ix86_vector_duplicate_simode_const): Ditto.
+	(ix86_expand_vector_init_duplicate): Ditto.
+	(ix86_expand_vector_init_one_nonzero): Ditto.
+	(ix86_emit_swsqrtsf): Ditto.
+	(ix86_vectorize_vec_perm_const): Ditto.
+	(ix86_expand_vecop_qihi2): Ditto.
+	(ix86_expand_sse2_mulvxdi3): Ditto.
+	(ix86_gen_bcst_mem): Ditto.
+	* config/i386/i386-isa.def (EVEX512): Removed.
+	(AVX10_1_256): Ditto.
+	* config/i386/i386-options.cc
+	(isa2_opts): Remove evex512 and avx10.1-256.
+	(ix86_function_specific_save): Remove no_avx512_explicit and
+	no_avx10_1_explicit.
+	(ix86_function_specific_restore): Ditto.
+	(ix86_valid_target_attribute_inner_p): Remove evex512 and
+	avx10.1-256/512.
+	(ix86_valid_target_attribute_tree): Remove special handling
+	to rerun ix86_option_override_internal for AVX10.1-256.
+	(ix86_option_override_internal): Remove warning handling.
+	(ix86_simd_clone_adjust): Remove evex512.
+	* config/i386/i386.cc
+	(type_natural_mode): Remove TARGET_EVEX512.
+	(ix86_return_in_memory): Ditto.
+	(standard_sse_constant_p): Ditto.
+	(standard_sse_constant_opcode): Ditto.
+	(ix86_get_ssemov): Ditto.
+	(ix86_legitimate_constant_p): Ditto.
+	(ix86_vectorize_builtin_scatter): Ditto.
+	(ix86_hard_regno_mode_ok): Ditto.
+	(ix86_set_reg_reg_cost): Ditto.
+	(ix86_rtx_costs): Ditto.
+	(ix86_vector_mode_supported_p): Ditto.
+	(ix86_preferred_simd_mode): Ditto.
+	(ix86_autovectorize_vector_modes): Ditto.
+	(ix86_get_mask_mode): Ditto.
+	(ix86_simd_clone_compute_vecsize_and_simdlen): Ditto.
+	(ix86_simd_clone_usable): Ditto.
+	* config/i386/i386.h (BIGGEST_ALIGNMENT): Ditto.
+	(MOVE_MAX): Ditto.
+	(STORE_MAX_PIECES): Ditto.
+	(PTA_SKYLAKE_AVX512): Remove PTA_EVEX512.
+	(PTA_CANNONLAKE): Ditto.
+	(PTA_ZNVER4): Ditto.
+	(PTA_GRANITERAPIDS): Use PTA_AVX10_1.
+	(PTA_DIAMONDRAPIDS): Use PTA_GRANITERAPIDS.
+	* config/i386/i386.md: Remove TARGET_EVEX512, avx512f_512
+	and avx512bw_512.
+	* config/i386/i386.opt: Remove ix86_no_avx512_explicit,
+	ix86_no_avx10_1_explicit, mevex512, mavx10.1-256/512 and
+	warning for mavx10.1. Modify option comment.
+	* config/i386/i386.opt.urls: Remove evex512 and avx10.1-256/512.
+	* config/i386/predicates.md: Remove TARGET_EVEX512.
+	* config/i386/sse.md: Ditto.
+	* doc/extend.texi: Remove avx10.1-256/512. Modify avx10.1 doc.
+	* doc/invoke.texi: Remove avx10.1-256/512 and evex512.
+	* doc/sourcebuild.texi: Remove avx10.1-256/512.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtin.def
+	(BDESC): Remove OPTION_MASK_ISA2_EVEX512.
+	* config/i386/i386-builtins.cc
+	(ix86_init_mmx_sse_builtins): Ditto.
+
 2025-05-18  Dimitar Dimitrov  <dimitar@dinux.eu>
 	    Richard Sandiford  <richard.sandiford@arm.com>
 
