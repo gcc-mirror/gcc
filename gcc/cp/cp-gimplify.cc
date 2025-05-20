@@ -3887,7 +3887,6 @@ struct source_location_table_entry_hash
 
 static GTY(()) hash_table <source_location_table_entry_hash>
   *source_location_table;
-static GTY(()) unsigned int source_location_id;
 
 /* Fold the __builtin_source_location () call T.  */
 
@@ -3920,9 +3919,7 @@ fold_builtin_source_location (const_tree t)
     var = entryp->var;
   else
     {
-      char tmp_name[32];
-      ASM_GENERATE_INTERNAL_LABEL (tmp_name, "Lsrc_loc", source_location_id++);
-      var = build_decl (loc, VAR_DECL, get_identifier (tmp_name),
+      var = build_decl (loc, VAR_DECL, generate_internal_label ("Lsrc_loc"),
 			source_location_impl);
       TREE_STATIC (var) = 1;
       TREE_PUBLIC (var) = 0;

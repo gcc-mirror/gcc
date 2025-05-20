@@ -358,10 +358,6 @@ get_ubsan_type_info_for_type (tree type)
     return 0;
 }
 
-/* Counters for internal labels.  ubsan_ids[0] for Lubsan_type,
-   ubsan_ids[1] for Lubsan_data labels.  */
-static GTY(()) unsigned int ubsan_ids[2];
-
 /* Helper routine that returns ADDR_EXPR of a VAR_DECL of a type
    descriptor.  It first looks into the hash table; if not found,
    create the VAR_DECL, put it into the hash table and return the
@@ -552,10 +548,8 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
   TREE_READONLY (str) = 1;
   TREE_STATIC (str) = 1;
 
-  char tmp_name[32];
-  ASM_GENERATE_INTERNAL_LABEL (tmp_name, "Lubsan_type", ubsan_ids[0]++);
-  decl = build_decl (UNKNOWN_LOCATION, VAR_DECL, get_identifier (tmp_name),
-		     dtype);
+  decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+		     generate_internal_label ("Lubsan_type"), dtype);
   TREE_STATIC (decl) = 1;
   TREE_PUBLIC (decl) = 0;
   DECL_ARTIFICIAL (decl) = 1;
@@ -659,10 +653,8 @@ ubsan_create_data (const char *name, int loccnt, const location_t *ploc, ...)
   layout_type (ret);
 
   /* Now, fill in the type.  */
-  char tmp_name[32];
-  ASM_GENERATE_INTERNAL_LABEL (tmp_name, "Lubsan_data", ubsan_ids[1]++);
-  tree var = build_decl (UNKNOWN_LOCATION, VAR_DECL, get_identifier (tmp_name),
-			 ret);
+  tree var = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			 generate_internal_label ("Lubsan_data"), ret);
   TREE_STATIC (var) = 1;
   TREE_PUBLIC (var) = 0;
   DECL_ARTIFICIAL (var) = 1;

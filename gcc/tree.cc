@@ -788,6 +788,57 @@ init_ttree (void)
 }
 
 
+/* Mapping from prefix to label number.  */
+
+struct identifier_hash : ggc_ptr_hash <tree_node>
+{
+  static inline hashval_t hash (tree t)
+  {
+    return IDENTIFIER_HASH_VALUE (t);
+  }
+};
+struct identifier_count_traits
+  : simple_hashmap_traits<identifier_hash, long> {};
+typedef hash_map<tree, long, identifier_count_traits> internal_label_map;
+static GTY(()) internal_label_map *internal_label_nums;
+
+/* Generates an identifier intended to be used internally with the
+   given PREFIX.  This is intended to be used by the frontend so that
+   C++ modules can regenerate appropriate (non-clashing) identifiers on
+   stream-in.  */
+
+tree
+generate_internal_label (const char *prefix)
+{
+  tree prefix_id = get_identifier (prefix);
+  if (!internal_label_nums)
+    internal_label_nums = internal_label_map::create_ggc();
+  long &num = internal_label_nums->get_or_insert (prefix_id);
+
+  char tmp[32];
+  ASM_GENERATE_INTERNAL_LABEL (tmp, prefix, num++);
+
+  tree id = get_identifier (tmp);
+  IDENTIFIER_INTERNAL_P (id) = true;
+
+  /* Cache the prefix on the identifier so we can retrieve it later.  */
+  TREE_CHAIN (id) = prefix_id;
+
+  return id;
+}
+
+/* Get the PREFIX we created the internal identifier LABEL with.  */
+
+const char *
+prefix_for_internal_label (tree label)
+{
+  gcc_assert (IDENTIFIER_INTERNAL_P (label)
+	      && !IDENTIFIER_TRANSPARENT_ALIAS (label)
+	      && TREE_CHAIN (label)
+	      && TREE_CODE (TREE_CHAIN (label)) == IDENTIFIER_NODE);
+  return IDENTIFIER_POINTER (TREE_CHAIN (label));
+}
+
 /* The name of the object as the assembler will see it (but before any
    translations made by ASM_OUTPUT_LABELREF).  Often this is the same
    as DECL_NAME.  It is an IDENTIFIER_NODE.  */

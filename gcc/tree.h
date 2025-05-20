@@ -1078,6 +1078,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define IDENTIFIER_ANON_P(NODE) \
   (IDENTIFIER_NODE_CHECK (NODE)->base.private_flag)
 
+/* Nonzero indicates an IDENTIFIER_NODE that names an internal label.
+   The prefix used to generate the label can be found on the TREE_CHAIN.  */
+#define IDENTIFIER_INTERNAL_P(NODE) \
+  (IDENTIFIER_NODE_CHECK (NODE)->base.volatile_flag)
+
 /* Nonzero in an IDENTIFIER_NODE if the name is a local alias, whose
    uses are to be substituted for uses of the TREE_CHAINed identifier.  */
 #define IDENTIFIER_TRANSPARENT_ALIAS(NODE) \
@@ -4744,6 +4749,8 @@ vector_cst_encoded_nelts (const_tree t)
   return VECTOR_CST_NPATTERNS (t) * VECTOR_CST_NELTS_PER_PATTERN (t);
 }
 
+extern tree generate_internal_label (const char *);
+extern const char *prefix_for_internal_label (tree label);
 extern tree decl_assembler_name (tree);
 extern void overwrite_decl_assembler_name (tree decl, tree name);
 extern tree decl_comdat_group (const_tree);
