@@ -214,6 +214,9 @@ gfc_typename (gfc_typespec *ts, bool for_hash)
     case BT_UNKNOWN:
       strcpy (buffer, "UNKNOWN");
       break;
+    case BT_VOID:
+      strcpy (buffer, "VOID");
+      break;
     default:
       gfc_internal_error ("gfc_typename(): Undefined type");
     }

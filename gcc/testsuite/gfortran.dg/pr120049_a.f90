@@ -1,5 +1,8 @@
-! { dg-do preprocess }
-! { dg-additional-options "-cpp" }
+! Compiled with pr120049_b.f90
+! { dg-options -O0 }
+! { dg-do run }
+! { dg-compile-aux-modules "pr120049_b.f90" }
+! { dg-additional-sources pr120049_b.f90 }
 !
 ! Test the fix for PR86248
 program tests_gtk_sup
