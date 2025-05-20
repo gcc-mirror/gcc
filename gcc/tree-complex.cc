@@ -1715,6 +1715,10 @@ gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, gimple *old_stmt)
 
   tree lhs = gimple_call_lhs (old_stmt);
 
+  /* If there is not a LHS, then just keep the statement around.  */
+  if (!lhs)
+    return;
+
   real_part = extract_component (gsi, arg, false, true);
   imag_part = extract_component (gsi, arg, true, true);
   location_t loc = gimple_location (old_stmt);
