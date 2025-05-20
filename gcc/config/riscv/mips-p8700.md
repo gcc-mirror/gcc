@@ -35,6 +35,11 @@
 ;; Long FPU pipeline.
 (define_cpu_unit "mips_p8700_fpu_apu" "mips_p8700_fpu_pipe")
 
+;; P8700 unsupported insns are mapped to dummies reservations
+(define_reservation "mips_p8700_dummies"
+ "mips_p8700_agq |  mips_p8700_al2 |  mips_p8700_ctistd |  mips_p8700_lsu |
+ mips_p8700_fpu_short |  mips_p8700_fpu_long")
+
 (define_reservation "mips_p8700_agq_al2" "mips_p8700_agq, mips_p8700_al2")
 (define_reservation "mips_p8700_agq_ctistd" "mips_p8700_agq, mips_p8700_ctistd")
 (define_reservation "mips_p8700_agq_lsu" "mips_p8700_agq, mips_p8700_lsu")
@@ -137,3 +142,26 @@
   (and (eq_attr "tune" "mips_p8700")
        (eq_attr "type" "call,jalr"))
   "mips_p8700_agq_ctistd")
+
+;; mips-p8700 dummies insn and placeholder that had no mapping to p8700 hardware.
+(define_insn_reservation "mips_p8700_unknown" 1
+  (and (eq_attr "tune" "mips_p8700")
+       (eq_attr "type" "rdvlenb,rdvl,wrvxrm,wrfrm,
+   rdfrm,vsetvl,vsetvl_pre,vlde,vste,vldm,vstm,vlds,vsts,
+   vldux,vldox,vstux,vstox,vldff,vldr,vstr,
+   vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
+   vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,
+   vimul,vidiv,viwmul,vimuladd,sf_vqmacc,viwmuladd,vimerge,vimov,
+   vsalu,vaalu,vsmul,vsshift,vnclip,sf_vfnrclip,
+   vfalu,vfwalu,vfmul,vfdiv,vfwmul,vfmuladd,vfwmuladd,vfsqrt,vfrecp,
+   vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,
+   vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,
+   vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,
+   vired,viwred,vfredu,vfredo,vfwredu,vfwredo,
+   vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
+   vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,
+   vgather,vcompress,vmov,vector,vandn,vbrev,vbrev8,vrev8,vclz,vctz,vcpop,vrol,vror,vwsll,
+   vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,vaeskf1,vaeskf2,vaesz,
+   vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c,vfncvtbf16,vfwcvtbf16,vfwmaccbf16,
+   sf_vc,sf_vc_se"))
+  "mips_p8700_dummies")
