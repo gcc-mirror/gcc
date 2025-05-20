@@ -401,7 +401,7 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
 
   if (expect_dyn && need_unsize)
     {
-      bool bounds_compatible = b->bounds_compatible (*a, locus, true);
+      bool bounds_compatible = b->bounds_compatible (*a, locus, false);
       if (!bounds_compatible)
 	{
 	  unsafe_error = true;
