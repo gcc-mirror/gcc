@@ -427,24 +427,16 @@ maybe_queue_insn (const md_rtx_info &info)
   queue.safe_push (info);
 }
 
-/* Generate the `gen_...' function for a DEFINE_INSN.  */
+/* Output the function name, argument declarations, and initial function
+   body for a pattern called NAME, given that it has the properties
+   in STATS.  */
 
 static void
-gen_insn (const md_rtx_info &info, FILE *file)
+start_gen_insn (FILE *file, const char *name, const pattern_stats &stats)
 {
-  struct pattern_stats stats;
-  int i;
-
-  /* Find out how many operands this function has.  */
-  rtx insn = info.def;
-  get_pattern_stats (&stats, XVEC (insn, 1));
-  if (stats.max_dup_opno > stats.max_opno)
-    fatal_at (info.loc, "match_dup operand number has no match_operand");
-
-  /* Output the function name and argument declarations.  */
-  fprintf (file, "rtx\ngen_%s (", XSTR (insn, 0));
+  fprintf (file, "rtx\ngen_%s (", name);
   if (stats.num_generator_args)
-    for (i = 0; i < stats.num_generator_args; i++)
+    for (int i = 0; i < stats.num_generator_args; i++)
       if (i)
 	fprintf (file, ",\n\trtx operand%d ATTRIBUTE_UNUSED", i);
       else
@@ -453,6 +445,23 @@ gen_insn (const md_rtx_info &info, FILE *file)
     fprintf (file, "void");
   fprintf (file, ")\n");
   fprintf (file, "{\n");
+}
+
+/* Generate the `gen_...' function for a DEFINE_INSN.  */
+
+static void
+gen_insn (const md_rtx_info &info, FILE *file)
+{
+  struct pattern_stats stats;
+
+  /* Find out how many operands this function has.  */
+  rtx insn = info.def;
+  get_pattern_stats (&stats, XVEC (insn, 1));
+  if (stats.max_dup_opno > stats.max_opno)
+    fatal_at (info.loc, "match_dup operand number has no match_operand");
+
+  /* Output the function name and argument declarations.  */
+  start_gen_insn (file, XSTR (insn, 0), stats);
 
   /* Output code to construct and return the rtl for the instruction body.  */
 
@@ -499,17 +508,7 @@ gen_expand (const md_rtx_info &info, FILE *file)
 	      "numbers above all other operands", XSTR (expand, 0));
 
   /* Output the function name and argument declarations.  */
-  fprintf (file, "rtx\ngen_%s (", XSTR (expand, 0));
-  if (stats.num_generator_args)
-    for (i = 0; i < stats.num_generator_args; i++)
-      if (i)
-	fprintf (file, ",\n\trtx operand%d", i);
-      else
-	fprintf (file, "rtx operand%d", i);
-  else
-    fprintf (file, "void");
-  fprintf (file, ")\n");
-  fprintf (file, "{\n");
+  start_gen_insn (file, XSTR (expand, 0), stats);
 
   /* If we don't have any C code to write, only one insn is being written,
      and no MATCH_DUPs are present, we can just return the desired insn
