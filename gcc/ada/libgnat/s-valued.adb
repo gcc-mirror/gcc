@@ -131,27 +131,39 @@ package body System.Value_D is
 
       --  Local variables
 
-      E : Uns := Uns (Extra2 / Base);
+      V : Uns      := Val;
+      S : Integer  := ScaleB;
+      E : Unsigned := Extra2 / Base;
 
    begin
+      --  The implementation of Value_R uses fully symmetric arithmetics
+      --  but here we cannot handle 2**(Int'Size - 1) if Minus is not set.
+
+      if V = 2**(Int'Size - 1) and then not Minus then
+         E := Unsigned (V rem Uns (Base));
+         V := V / Uns (Base);
+         S := S + 1;
+      end if;
+
       --  If the base of the value is 10 or its scaling factor is zero, then
       --  add the scales (they are defined in the opposite sense) and apply
       --  the result to the value, checking for overflow in the process.
 
-      if Base = 10 or else ScaleB = 0 then
-         declare
-            S : Integer := ScaleB + Scale;
-            V : Uns     := Val;
-
+      if Base = 10 or else S = 0 then
          begin
+            S := S + Scale;
+
             while S < 0 loop
+               if V = 0 then
+                  exit;
+               end if;
                V := V / 10;
                S := S + 1;
             end loop;
 
             while S > 0 loop
-               if V <= (Uns'Last - E) / 10 then
-                  V := V * 10 + E;
+               if V <= (Uns'Last - Uns (E)) / 10 then
+                  V := V * 10 + Uns (E);
                   S := S - 1;
                   E := 0;
                else
@@ -167,10 +179,7 @@ package body System.Value_D is
 
       else
          declare
-            B : constant Int     := Int (Base);
-            S : constant Integer := ScaleB;
-
-            V : Uns := Val;
+            B : constant Int := Int (Base);
 
             Y, Z, Q, R : Int;
 
@@ -186,7 +195,10 @@ package body System.Value_D is
                   Z := Safe_Expont (B, LS, 10 ** Integer'Max (0, -Scale));
 
                   for J in 1 .. LS loop
-                     V := V / Uns (B);
+                     if V = 0 then
+                        exit;
+                     end if;
+                     V := V / Uns (Base);
                   end loop;
                end;
 
@@ -201,8 +213,8 @@ package body System.Value_D is
                   Z := 10 ** Integer'Max (0, -Scale);
 
                   for J in 1 .. LS loop
-                     if V <= (Uns'Last - E) / Uns (B) then
-                        V := V * Uns (B) + E;
+                     if V <= (Uns'Last - Uns (E)) / Uns (Base) then
+                        V := V * Uns (Base) + Uns (E);
                         E := 0;
                      else
                         Bad_Value (Str);

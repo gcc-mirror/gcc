@@ -236,8 +236,8 @@ package body System.Value_F is
       --  but here we cannot handle 2**(Int'Size - 1) if Minus is not set.
 
       if V = 2**(Int'Size - 1) and then not Minus then
-         E := Unsigned (V rem Uns (B)) * Base + E / Base;
-         V := V / Uns (B);
+         E := Unsigned (V rem Uns (Base)) * Base + E / Base;
+         V := V / Uns (Base);
          S := S + 1;
       end if;
 
@@ -261,8 +261,8 @@ package body System.Value_F is
                   E := 0;
                   exit;
                end if;
-               E := Unsigned (V rem Uns (B)) * Base + E / Base;
-               V := V / Uns (B);
+               E := Unsigned (V rem Uns (Base)) * Base + E / Base;
+               V := V / Uns (Base);
             end loop;
          end;
 
@@ -277,8 +277,8 @@ package body System.Value_F is
             Z := Num;
 
             for J in 1 .. LS loop
-               if V <= (Uns'Last - Uns (E / Base)) / Uns (B) then
-                  V := V * Uns (B) + Uns (E / Base);
+               if V <= (Uns'Last - Uns (E / Base)) / Uns (Base) then
+                  V := V * Uns (Base) + Uns (E / Base);
                   E := (E rem Base) * Base;
                else
                   Bad_Value (Str);
