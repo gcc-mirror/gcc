@@ -1,3 +1,41 @@
+2025-05-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102891
+	* gfortran.dg/transfer_array_subref.f90: New test.
+
+2025-05-20  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/pr120044-1.c: New test.
+	* gcc.dg/ipa/pr120044-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr114864.c: Likewise.
+
+2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120013
+	* g++.dg/modules/partial-8.h: New test.
+	* g++.dg/modules/partial-8_a.C: New test.
+	* g++.dg/modules/partial-8_b.C: New test.
+	* g++.dg/modules/partial-8_c.C: New test.
+	* g++.dg/modules/partial-8_d.C: New test.
+
+2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120350
+	* g++.dg/modules/tinfo-3_a.H: New test.
+	* g++.dg/modules/tinfo-3_b.C: New test.
+
 2025-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
