@@ -80,8 +80,8 @@ gen_rtx_scratch (rtx x, enum rtx_code subroutine_type, FILE *file)
    substituting any operand references appearing within.  */
 
 static void
-gen_exp (rtx x, enum rtx_code subroutine_type, char *used, md_rtx_info *info,
-	 FILE *file)
+gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
+	 const md_rtx_info &info, FILE *file)
 {
   RTX_CODE code;
   int i;
@@ -281,7 +281,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used, md_rtx_info *info,
    becoming a separate instruction.  USED is as for gen_exp.  */
 
 static void
-gen_emit_seq (rtvec vec, char *used, md_rtx_info *info, FILE *file)
+gen_emit_seq (rtvec vec, char *used, const md_rtx_info &info, FILE *file)
 {
   for (int i = 0, len = GET_NUM_ELEM (vec); i < len; ++i)
     {
@@ -329,7 +329,7 @@ emit_c_code (const char *code, bool can_fail_p, const char *name, FILE *file)
 /* Generate the `gen_...' function for a DEFINE_INSN.  */
 
 static void
-gen_insn (md_rtx_info *info, FILE *file)
+gen_insn (const md_rtx_info &info, FILE *file)
 {
   struct pattern_stats stats;
   int i;
@@ -338,7 +338,7 @@ gen_insn (md_rtx_info *info, FILE *file)
      registers or MATCH_SCRATCHes.  If so, store away the information for
      later.  */
 
-  rtx insn = info->def;
+  rtx insn = info.def;
   if (XVEC (insn, 1))
     {
       int has_hard_reg = 0;
@@ -366,7 +366,7 @@ gen_insn (md_rtx_info *info, FILE *file)
 	  struct clobber_ent *link = XNEW (struct clobber_ent);
 	  int j;
 
-	  link->code_number = info->index;
+	  link->code_number = info.index;
 
 	  /* See if any previous CLOBBER_LIST entry is the same as this
 	     one.  */
@@ -422,12 +422,12 @@ gen_insn (md_rtx_info *info, FILE *file)
   if (XSTR (insn, 0)[0] == 0 || XSTR (insn, 0)[0] == '*')
     return;
 
-  fprintf (file, "/* %s:%d */\n", info->loc.filename, info->loc.lineno);
+  fprintf (file, "/* %s:%d */\n", info.loc.filename, info.loc.lineno);
 
   /* Find out how many operands this function has.  */
   get_pattern_stats (&stats, XVEC (insn, 1));
   if (stats.max_dup_opno > stats.max_opno)
-    fatal_at (info->loc, "match_dup operand number has no match_operand");
+    fatal_at (info.loc, "match_dup operand number has no match_operand");
 
   /* Output the function name and argument declarations.  */
   fprintf (file, "rtx\ngen_%s (", XSTR (insn, 0));
@@ -458,25 +458,25 @@ gen_insn (md_rtx_info *info, FILE *file)
 /* Generate the `gen_...' function for a DEFINE_EXPAND.  */
 
 static void
-gen_expand (md_rtx_info *info, FILE *file)
+gen_expand (const md_rtx_info &info, FILE *file)
 {
   struct pattern_stats stats;
   int i;
   char *used;
 
-  rtx expand = info->def;
+  rtx expand = info.def;
   if (strlen (XSTR (expand, 0)) == 0)
-    fatal_at (info->loc, "define_expand lacks a name");
+    fatal_at (info.loc, "define_expand lacks a name");
   if (XVEC (expand, 1) == 0)
-    fatal_at (info->loc, "define_expand for %s lacks a pattern",
+    fatal_at (info.loc, "define_expand for %s lacks a pattern",
 	      XSTR (expand, 0));
 
   /* Find out how many operands this function has.  */
   get_pattern_stats (&stats, XVEC (expand, 1));
   if (stats.min_scratch_opno != -1
       && stats.min_scratch_opno <= MAX (stats.max_opno, stats.max_dup_opno))
-    fatal_at (info->loc, "define_expand for %s needs to have match_scratch "
-			 "numbers above all other operands", XSTR (expand, 0));
+    fatal_at (info.loc, "define_expand for %s needs to have match_scratch "
+	      "numbers above all other operands", XSTR (expand, 0));
 
   /* Output the function name and argument declarations.  */
   fprintf (file, "rtx\ngen_%s (", XSTR (expand, 0));
@@ -567,21 +567,21 @@ gen_expand (md_rtx_info *info, FILE *file)
 /* Like gen_expand, but generates insns resulting from splitting SPLIT.  */
 
 static void
-gen_split (md_rtx_info *info, FILE *file)
+gen_split (const md_rtx_info &info, FILE *file)
 {
   struct pattern_stats stats;
   int i;
-  rtx split = info->def;
+  rtx split = info.def;
   const char *const name =
     ((GET_CODE (split) == DEFINE_PEEPHOLE2) ? "peephole2" : "split");
   const char *unused;
   char *used;
 
   if (XVEC (split, 0) == 0)
-    fatal_at (info->loc, "%s lacks a pattern",
+    fatal_at (info.loc, "%s lacks a pattern",
 	      GET_RTX_NAME (GET_CODE (split)));
   else if (XVEC (split, 2) == 0)
-    fatal_at (info->loc, "%s lacks a replacement pattern",
+    fatal_at (info.loc, "%s lacks a replacement pattern",
 	      GET_RTX_NAME (GET_CODE (split)));
 
   /* Find out how many operands this function has.  */
@@ -594,18 +594,18 @@ gen_split (md_rtx_info *info, FILE *file)
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     {
       fprintf (file, "extern rtx_insn *gen_%s_%d (rtx_insn *, rtx *);\n",
-	      name, info->index);
+	      name, info.index);
       fprintf (file, "rtx_insn *\ngen_%s_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED,"
 	      " rtx *operands%s)\n",
-	      name, info->index, unused);
+	      name, info.index, unused);
     }
   else
     {
       fprintf (file, "extern rtx_insn *gen_split_%d (rtx_insn *, rtx *);\n",
-	      info->index);
+	      info.index);
       fprintf (file, "rtx_insn *\ngen_split_%d "
 	      "(rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
-	      info->index, unused);
+	      info.index, unused);
     }
   fprintf (file, "{\n");
 
@@ -617,14 +617,14 @@ gen_split (md_rtx_info *info, FILE *file)
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     output_peephole2_scratches (split, file);
 
-  const char *fn = info->loc.filename;
+  const char *fn = info.loc.filename;
   for (const char *p = fn; *p; p++)
     if (*p == '/')
       fn = p + 1;
 
   fprintf (file, "  if (dump_file)\n");
   fprintf (file, "    fprintf (dump_file, \"Splitting with gen_%s_%d (%s:%d)\\n\");\n",
-	  name, info->index, fn, info->loc.lineno);
+	  name, info.index, fn, info.loc.lineno);
 
   fprintf (file, "  start_sequence ();\n");
 
@@ -658,7 +658,7 @@ gen_split (md_rtx_info *info, FILE *file)
    the end of the vector.  */
 
 static void
-output_add_clobbers (md_rtx_info *info, FILE *file)
+output_add_clobbers (const md_rtx_info &info, FILE *file)
 {
   struct clobber_pat *clobber;
   struct clobber_ent *ent;
@@ -957,22 +957,22 @@ main (int argc, const char **argv)
       switch (GET_CODE (info.def))
 	{
 	case DEFINE_INSN:
-	  gen_insn (&info, file);
+	  gen_insn (info, file);
 	  break;
 
 	case DEFINE_EXPAND:
 	  fprintf (file, "/* %s:%d */\n", info.loc.filename, info.loc.lineno);
-	  gen_expand (&info, file);
+	  gen_expand (info, file);
 	  break;
 
 	case DEFINE_SPLIT:
 	  fprintf (file, "/* %s:%d */\n", info.loc.filename, info.loc.lineno);
-	  gen_split (&info, file);
+	  gen_split (info, file);
 	  break;
 
 	case DEFINE_PEEPHOLE2:
 	  fprintf (file, "/* %s:%d */\n", info.loc.filename, info.loc.lineno);
-	  gen_split (&info, file);
+	  gen_split (info, file);
 	  break;
 
 	default:
@@ -984,7 +984,7 @@ main (int argc, const char **argv)
 
   /* Write out the routines to add CLOBBERs to a pattern and say whether they
      clobber a hard reg.  */
-  output_add_clobbers (&info, file);
+  output_add_clobbers (info, file);
   output_added_clobbers_hard_reg_p (file);
 
   for (overloaded_name *oname = rtx_reader_ptr->get_overloads ();
