@@ -1,3 +1,67 @@
+2025-05-20  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (_ChronoSpec::_M_locale_specific):
+	Declare as bit fiekd in tail-padding..
+	* include/bits/formatfwd.h (__format::_Align): Defined as enum
+	class and add using enum.
+	* include/std/format (__format::_Pres_type, __format::_Sign)
+	(__format::_WidthPrec,  __format::_Arg_t): Defined as enum class
+	and add using enum.
+	(_Pres_type::_Pres_esc): Replace with _Pres_max.
+	(_Pres_type::_Pres_seq, _Pres_type::_Pres_str): Remove.
+	(__format::_Pres_type): Updated values of enumerators as described
+	above.
+	(__format::_Spec): Rearranged members to have 8 bits of tail-padding.
+	(_Spec::_M_debug): Defined.
+	(_Spec::_M_reserved): Extended to 8 bits and moved at the end.
+	(_Spec::_M_reserved2): Removed.
+	(_Spec::_M_parse_fill_and_align, _Spec::_M_parse_sign)
+	(__format::__write_padded_as_spec): Adjusted default value checks.
+	(__format::_Term_char): Add using enum and adjust enumertors.
+	(__Escapes::_S_term): Adjusted for _Term_char values.
+	(__format::__should_escape_ascii): Adjusted _Term_char uses.
+	(__format::__write_escaped): Adjusted for _Term_char.
+	(__formatter_str::parse): Set _Pres_s if specifed and _M_debug
+	instead of _Pres_esc.
+	(__formatter_str::set_debug_format): Set _M_debug instead of
+	_Pres_esc.
+	(__formatter_str::format, __formatter_str::_M_format_range):
+	Check _M_debug instead of _Prec_esc.
+	(__formatter_str::_M_format_escaped): Adjusted _Term_char uses.
+	(__formatter_int::__formatter_int(_Spec<_CharT>)): Set _Pres_d if
+	default presentation type is not set.
+	(__formatter_int::_M_parse): Adjusted default value checks.
+	(__formatter_int::_M_do_parse): Set _M_debug instead of _Pres_esc.
+	(__formatter_int::_M_format_character): Handle escaped presentation.
+	(__formatter_int::_M_format_character_escaped)
+	(__formatter_int::_S_character_width): Merged into
+	_M_format_character.
+	(__formatter_ptr::__formatter_ptr(_Spec<_CharT>)): Set _Pres_p if
+	default presentation type is not set.
+	(__formatter_ptr::parse): Add default __type parameter, store _Pres_p,
+	and handle _M_alt to be consistent with meaning for integers.
+	(__foramtter_ptr<_CharT>::_M_set_default): Define.
+	(__format::__pack_arg_types, std::basic_format_args): Add necessary
+	casts.
+	(formatter<_CharT, _CharT>::set_debug_format)
+	(formatter<char, wchar_t>::set_debug_format): Set _M_debug instead of
+	_Pres_esc.
+	(formatter<_CharT, _CharT>::format, formatter<char, wchar_t>::format):
+	Simplify calls to _M_format_character.
+	(range_formatter<_Rg, _CharT>::parse): Replace _Pres_str with
+	_Pres_s and set _M_debug instead of _Pres_esc.
+	(range_formatter<_Rg, _CharT>::format): Replace _Pres_str with
+	_Pres_s.
+
+2025-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Update URL for archived SGI STL docs.
+	* doc/xml/manual/containers.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/xml/manual/utilities.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 2025-05-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/ranges (_ZipTransform::operator()): Remove name of

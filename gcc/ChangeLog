@@ -1,3 +1,84 @@
+2025-05-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* Makefile.in (gimple-match-exports.o-warn): Remove.
+	* gimple-match-exports.cc (gimple_extract): Remove valueize_condition
+	argument.
+	(gimple_extract_op): Update call to gimple_extract.
+	(gimple_simplify): Likewise. Also remove valueize_condition lambda.
+
+2025-05-20  Umesh Kalappa  <ukalappa.mips@gmail.com>
+
+	* config/riscv/mips-p8700.md (mips_p8700_dummies): New
+	reservation.
+	(mips_p8700_unknown): Reservation for all the dummies.
+
+2025-05-20  Umesh Kalappa  <ukalappa.mips@gmail.com>
+
+	* config/riscv/mips-p8700.md: New scheduler model.
+	* config/riscv/riscv-cores.def (mips-p87000): New tuning model
+	and core architecture.
+	* config/riscv/riscv-opts.h (riscv_microarchitecture_type); Add
+	mips-p8700.
+	* config/riscv/riscv.cc (mips_p8700_tune_info): New uarch
+	tuning parameters.
+	* config/riscv/riscv.md (tune): Add mips_p8700.
+	Include mips-p8700.md
+	* doc/invoke.texi: Document tune/cpu options for the MIPS P8700.
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2025-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-chrec.cc (convert_affine_scev): Use signed_type_for instead of
+	build_nonstandard_integer_type.
+
+2025-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (bitint_big_endian): New variable.
+	(bitint_precision_kind): Set it.
+	(struct bitint_large_huge): Add unsigned argument to
+	finish_arith_overflow.
+	(bitint_large_huge::limb_access_type): Handle bitint_big_endian.
+	(bitint_large_huge::handle_operand): Likewise.
+	(bitint_large_huge::handle_cast): Likewise.
+	(bitint_large_huge::handle_bit_field_ref): Likewise.
+	(bitint_large_huge::handle_load): Likewise.
+	(bitint_large_huge::lower_shift_stmt): Likewise.
+	(bitint_large_huge::finish_arith_overflow): Likewise.
+	Add nelts argument.
+	(bitint_large_huge::lower_addsub_overflow): Handle bitint_big_endian.
+	Adjust finish_arith_overflow caller.
+	(bitint_large_huge::lower_mul_overflow): Likewise.
+	(bitint_large_huge::lower_bit_query): Handle bitint_big_endian.
+	(bitint_large_huge::lower_stmt): Likewise.
+	(build_bitint_stmt_ssa_conflicts): Likewise.
+	(gimple_lower_bitint): Likewise.
+
+2025-05-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (various splits): Avoid writing the output
+	more than once when trivially possible.
+
+2025-05-20  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/103771
+	* match.pd (cond_expr_convert_p): Extend the match to handle
+	REAL_CST.
+	* tree-vect-patterns.cc
+	(vect_recog_cond_expr_convert_pattern): Handle REAL_CST.
+
+2025-05-20  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md: Leverage the new add func to
+	expand the vx insn.
+	* config/riscv/riscv-protos.h (expand_vx_binary_vec_dup_vec): Add
+	new func decl to expand format v = vop(vec_dup(x), v).
+	(expand_vx_binary_vec_vec_dup): Diito but for format
+	v = vop(v, vec_dup(x)).
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add new
+	func impl to expand vx for v = vop(vec_dup(x), v).
+	(expand_vx_binary_vec_vec_dup): Diito but for another format
+	v = vop(v, vec_dup(x)).
+
 2025-05-19  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/120333

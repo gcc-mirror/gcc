@@ -1,3 +1,19 @@
+2025-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgcc-std.ver.in (GCC_14.0.0): Remove bitint related exports
+	from here.
+	* config/i386/libgcc-glibc.ver (GCC_14.0.0): Add them here.
+	* config/i386/libgcc-darwin.ver (GCC_14.0.0): Likewise.
+	* config/i386/libgcc-sol2.ver (GCC_14.0.0): Likewise.
+	* config/aarch64/libgcc-softfp.ver (GCC_14.0.0): Likewise.
+
+2025-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgcc2.c (bitint_reduce_prec): For big endian
+	__LIBGCC_BITINT_ORDER__ use ++*p and --*p instead of
+	++p and --p.
+	* soft-fp/bitint.h (bitint_reduce_prec): Likewise.
+
 2025-05-17  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/lib1funcs.S (ashiftrt_r4_32): Increase alignment.

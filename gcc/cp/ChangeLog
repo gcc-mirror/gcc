@@ -1,3 +1,20 @@
+2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120349
+	* module.cc (trees_out::core_bools): Always mark vtables as
+	DECL_EXTERNAL.
+
+2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120013
+	* module.cc (trees_in::install_entity): Handle re-registering
+	the inner TYPE_DECL of a partial specialisation.
+
+2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120350
+	* rtti.cc (get_tinfo_decl_direct): Mark TREE_ADDRESSABLE.
+
 2025-05-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* cp-gimplify.cc (cp_fold): Do the conversion unconditionally, even for same-type cases.

@@ -1,3 +1,23 @@
+2025-05-20  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* charmaps.cc: Switch to C++ includes.
+	* common-defs.h: Likewise.
+	* constants.cc: Likewise.
+	* ec.h: Remove #include <assert.h>.
+	* gcobolio.h (GCOBOLIO_H_): Switch to C++ includes.
+	* gfileio.cc: Likewise.
+	* gmath.cc: Likewise.
+	* intrinsic.cc: Comment formatting; C++ includes.
+	* io.cc: C++ includes.
+	* libgcobol.cc: (__gg__stash_exceptions): Eliminate.
+	* valconv.cc: Switch to C++ includes.
+
+2025-05-20  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119885
+	* intrinsic.cc: (__gg__sqrt): Change test from <= zero to < zero.
+
 2025-05-16  Robert Dubner  <rdubner@symas.com>
 
 	* common-defs.h (struct cbl_declarative_t): Eliminate blobl.

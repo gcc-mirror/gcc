@@ -1,3 +1,42 @@
+2025-05-20  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/119770
+	PR cobol/119772
+	PR cobol/119790
+	PR cobol/119771
+	PR cobol/119810
+	PR cobol/119335
+	PR cobol/119632
+	* cdf-copy.cc (GLOB_BRACE): Eliminate <glob.h>.
+	* cdfval.h (_CDF_VAL_H_): Switch to C++ headers.
+	* copybook.h (class copybook_elem_t): Eliminate <glob.h>.
+	(class copybook_t): Likewise.
+	* gcobc: Numerous changes to improve utility.
+	* gcobol.1: Correct names in the list of functions.
+	* genapi.cc (compare_binary_binary): Use has_attr() function.
+	* lexio.cc (cdftext::lex_open): Typo; filename logic.
+	(cdftext::process_file): Filename logic.
+	* parse.y: Numerous parsing changes.
+	* parse_ante.h (new_alphanumeric): C++ includes; changes to temporaries.
+	(new_tempnumeric): Likewise.
+	(new_tempnumeric_float): Likewise.
+	(set_real_from_capacity): Created.
+	* scan.l: Use yy_pop_state().
+	* scan_ante.h (typed_name): Find figconst from data.initial.
+	* symbols.cc (symbol_valid_udf_args): Eliminate.
+	(symbols_update): figconst processing.
+	(new_temporary_impl): For functions, set .initial to function name.
+	(temporaries_t::acquire): Likewise.
+	(new_alphanumeric): Likewise.
+	(new_temporary): Likewise.
+	* symbols.h (_SYMBOLS_H_): Use C++ includes.
+	(cbl_figconst_tok): Change handling of figconst.
+	(cbl_figconst_field_of): Change handling of figconst.
+	(symbol_valid_udf_args): Eliminate.
+	* symfind.cc (symbol_match2): Change declaration.
+	(symbol_match): Change declaration.
+
 2025-05-18  Mark Wielaard  <mark@klomp.org>
 
 	* lang.opt.urls: Regenerated.
