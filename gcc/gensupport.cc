@@ -3764,16 +3764,6 @@ get_emit_function (rtx x)
     }
 }
 
-/* Return true if we must emit a barrier after pattern X.  */
-
-bool
-needs_barrier_p (rtx x)
-{
-  return (GET_CODE (x) == SET
-	  && GET_CODE (SET_DEST (x)) == PC
-	  && GET_CODE (SET_SRC (x)) == LABEL_REF);
-}
-
 #define NS "NULL"
 #define ZS "'\\0'"
 #define OPTAB_CL(o, p, c, b, l)    { #o, p, #b, ZS, #l, o, c, UNKNOWN, 1 },
