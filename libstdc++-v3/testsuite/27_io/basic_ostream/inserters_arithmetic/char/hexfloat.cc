@@ -95,6 +95,11 @@ test01()
 void
 test02()
 {
+  /* If these conditions are not met, basic_string.h doesn't define
+     std::stold(const string&, size_t* = 0), and then the test would
+     fail to compile.  */
+#if (_GLIBCXX_HAVE_STRTOLD && ! _GLIBCXX_HAVE_BROKEN_STRTOLD) \
+  || __DBL_MANT_DIG__ == __LDBL_MANT_DIG__
   ostringstream os;
   long double d = 272.L; // 0x1.1p+8L;
   os << hexfloat << setprecision(1);
@@ -140,6 +145,7 @@ test02()
   cout << "got: " << os.str() << endl;
 #endif
   VERIFY( os && os.str() == "15" );
+#endif
 }
 
 int
