@@ -918,52 +918,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			   __gnu_cxx::__ops::__iter_comp_iter(__binary_pred));
     }
 
-  /**
-   *  This is an uglified
-   *  unique_copy(_InputIterator, _InputIterator, _OutputIterator,
-   *              _BinaryPredicate)
-   *  overloaded for forward iterators and output iterator as result.
-  */
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4269. unique_copy passes arguments to its predicate backwards
+
+  // Implementation of std::unique_copy for forward iterators.
+  // This case is easy, just compare *i with *(i-1).
   template<typename _ForwardIterator, typename _OutputIterator,
 	   typename _BinaryPredicate>
     _GLIBCXX20_CONSTEXPR
     _OutputIterator
     __unique_copy(_ForwardIterator __first, _ForwardIterator __last,
 		  _OutputIterator __result, _BinaryPredicate __binary_pred,
-		  forward_iterator_tag, output_iterator_tag)
+		  forward_iterator_tag)
     {
-      _ForwardIterator __next = __first;
+      _ForwardIterator __prev = __first;
       *__result = *__first;
-      while (++__next != __last)
-	if (!__binary_pred(__first, __next))
+      while (++__first != __last)
+	if (!__binary_pred(__prev, __first))
 	  {
-	    __first = __next;
 	    *++__result = *__first;
+	    __prev = __first;
 	  }
       return ++__result;
     }
 
-  /**
-   *  This is an uglified
-   *  unique_copy(_InputIterator, _InputIterator, _OutputIterator,
-   *              _BinaryPredicate)
-   *  overloaded for input iterators and output iterator as result.
-  */
+  // Implementation of std::unique_copy for non-forward iterators,
+  // where we cannot compare with elements written to the output.
   template<typename _InputIterator, typename _OutputIterator,
 	   typename _BinaryPredicate>
     _GLIBCXX20_CONSTEXPR
     _OutputIterator
-    __unique_copy(_InputIterator __first, _InputIterator __last,
-		  _OutputIterator __result, _BinaryPredicate __binary_pred,
-		  input_iterator_tag, output_iterator_tag)
+    __unique_copy_1(_InputIterator __first, _InputIterator __last,
+		    _OutputIterator __result, _BinaryPredicate __binary_pred,
+		    __false_type)
     {
-      typename iterator_traits<_InputIterator>::value_type __value = *__first;
-      __decltype(__gnu_cxx::__ops::__iter_comp_val(__binary_pred))
-	__rebound_pred
-	= __gnu_cxx::__ops::__iter_comp_val(__binary_pred);
+      typedef typename iterator_traits<_InputIterator>::value_type _Val;
+      _Val __value = *__first;
       *__result = __value;
       while (++__first != __last)
-	if (!__rebound_pred(__first, __value))
+	if (!__binary_pred(std::__addressof(__value), __first))
 	  {
 	    __value = *__first;
 	    *++__result = __value;
@@ -971,19 +964,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return ++__result;
     }
 
-  /**
-   *  This is an uglified
-   *  unique_copy(_InputIterator, _InputIterator, _OutputIterator,
-   *              _BinaryPredicate)
-   *  overloaded for input iterators and forward iterator as result.
-  */
+  // Implementation of std::unique_copy for non-forward iterators,
+  // where we can compare with the last element written to the output.
   template<typename _InputIterator, typename _ForwardIterator,
 	   typename _BinaryPredicate>
-    _GLIBCXX20_CONSTEXPR
     _ForwardIterator
-    __unique_copy(_InputIterator __first, _InputIterator __last,
-		  _ForwardIterator __result, _BinaryPredicate __binary_pred,
-		  input_iterator_tag, forward_iterator_tag)
+    __unique_copy_1(_InputIterator __first, _InputIterator __last,
+		    _ForwardIterator __result, _BinaryPredicate __binary_pred,
+		    __true_type)
     {
       *__result = *__first;
       while (++__first != __last)
@@ -991,6 +979,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  *++__result = *__first;
       return ++__result;
     }
+
+  // Implementation of std::unique_copy for non-forward iterators.
+  // We cannot compare *i to *(i-1) so we need to either make a copy
+  // or compare with the last element written to the output range.
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
+    _OutputIterator
+    __unique_copy(_InputIterator __first, _InputIterator __last,
+		  _OutputIterator __result, _BinaryPredicate __binary_pred,
+		  input_iterator_tag)
+    {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2439. unique_copy() sometimes can't fall back to reading its output
+      typedef iterator_traits<_InputIterator> _InItTraits;
+      typedef iterator_traits<_OutputIterator> _OutItTraits;
+      typedef typename _OutItTraits::iterator_category _Cat;
+      const bool __output_is_fwd = __is_base_of(forward_iterator_tag, _Cat);
+      const bool __same_type = __is_same(typename _OutItTraits::value_type,
+					 typename _InItTraits::value_type);
+      typedef __truth_type<__output_is_fwd && __same_type> __cmp_with_output;
+      return std::__unique_copy_1(__first, __last, __result, __binary_pred,
+				  typename __cmp_with_output::__type());
+    }
+
 
   /**
    *  This is an uglified reverse(_BidirectionalIterator,
@@ -4456,8 +4469,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	return __result;
       return std::__unique_copy(__first, __last, __result,
 				__gnu_cxx::__ops::__iter_equal_to_iter(),
-				std::__iterator_category(__first),
-				std::__iterator_category(__result));
+				std::__iterator_category(__first));
     }
 
   /**
@@ -4499,8 +4511,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	return __result;
       return std::__unique_copy(__first, __last, __result,
 			__gnu_cxx::__ops::__iter_comp_iter(__binary_pred),
-				std::__iterator_category(__first),
-				std::__iterator_category(__result));
+				std::__iterator_category(__first));
     }
 
 #if __cplusplus <= 201103L || _GLIBCXX_USE_DEPRECATED
