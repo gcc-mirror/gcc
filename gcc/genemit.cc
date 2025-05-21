@@ -78,9 +78,9 @@ struct generator
   /* The type of subroutine that we're expanding.  */
   rtx_code subroutine_type;
 
-  /* If nonnull, index N indicates that the original operand N has already
-     been used to replace a MATCH_OPERATOR or MATCH_DUP, and so any further
-     replacements must make a copy.  */
+  /* Index N indicates that the original operand N has already been used to
+     replace a MATCH_OPERATOR or MATCH_DUP, and so any further replacements
+     must make a copy.  */
   char *used;
 
   /* The construct that we're expanding.  */
@@ -135,15 +135,12 @@ generator::gen_exp (rtx x)
     {
     case MATCH_OPERAND:
     case MATCH_DUP:
-      if (used)
+      if (used[XINT (x, 0)])
 	{
-	  if (used[XINT (x, 0)])
-	    {
-	      fprintf (file, "copy_rtx (operands[%d])", XINT (x, 0));
-	      return;
-	    }
-	  used[XINT (x, 0)] = 1;
+	  fprintf (file, "copy_rtx (operands[%d])", XINT (x, 0));
+	  return;
 	}
+      used[XINT (x, 0)] = 1;
       fprintf (file, "operands[%d]", XINT (x, 0));
       return;
 
@@ -505,10 +502,7 @@ gen_insn (const md_rtx_info &info, FILE *file)
   /* Output code to construct and return the rtl for the instruction body.  */
 
   rtx pattern = add_implicit_parallel (XVEC (insn, 1));
-  /* ??? This is the traditional behavior, but seems suspect.  */
-  char *used = (XVECLEN (insn, 1) == 1
-		? NULL
-		: XCNEWVEC (char, stats.num_generator_args));
+  char *used = XCNEWVEC (char, stats.num_generator_args);
   fprintf (file, "  return ");
   generator (DEFINE_INSN, used, info, file).gen_exp (pattern);
   fprintf (file, ";\n}\n\n");
@@ -555,10 +549,12 @@ gen_expand (const md_rtx_info &info, FILE *file)
       && stats.max_opno >= stats.max_dup_opno
       && XVECLEN (expand, 1) == 1)
     {
+      used = XCNEWVEC (char, stats.num_operand_vars);
       fprintf (file, "  return ");
-      generator (DEFINE_EXPAND, NULL, info, file)
+      generator (DEFINE_EXPAND, used, info, file)
 	.gen_exp (XVECEXP (expand, 1, 0));
       fprintf (file, ";\n}\n\n");
+      XDELETEVEC (used);
       return;
     }
 
@@ -717,6 +713,7 @@ output_add_clobbers (const md_rtx_info &info, FILE *file)
 	{
 	  fprintf (file, "      XVECEXP (pattern, 0, %d) = ", i);
 	  rtx clobbered_value = RTVEC_ELT (clobber->pattern, i);
+	  /* Pass null for USED since there are no operands.  */
 	  generator (clobber->code, NULL, info, file)
 	    .gen_exp (clobbered_value);
 	  fprintf (file, ";\n");
