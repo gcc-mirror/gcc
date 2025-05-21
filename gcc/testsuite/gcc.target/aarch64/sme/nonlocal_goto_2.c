@@ -7,7 +7,7 @@ void run(void (*)());
 ** foo:
 **	...
 **	smstop	sm
-**	bl	__clear_cache
+**	bl	[^\n]*[cC]ache[^\n]*
 **	smstart	sm
 **	add	x0, .*
 **	smstop	sm

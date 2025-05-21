@@ -13,7 +13,7 @@ void run(void (*)());
 **	ldr	x16, \1
 **	tbz	x16, 0, .*
 **	smstop	sm
-**	bl	__clear_cache
+**	bl	[^\n]*[cC]ache[^\n]*
 **	ldr	x16, \1
 **	tbz	x16, 0, .*
 **	smstart	sm
