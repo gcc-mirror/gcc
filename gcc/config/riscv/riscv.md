@@ -2938,7 +2938,14 @@
 	       (match_operand:GPR2 2 "register_operand"  "r")
 	       (match_operand 3 "<GPR:shiftm1>"))])))]
   ""
-  "<insn>\t%0,%1,%2"
+{
+  /* If the shift mode is not word mode, then it must be the
+     case that we're generating rv64 code, but this is a 32-bit
+     operation.  Thus we need to use the "w" variant.  */
+  if (E_<GPR:MODE>mode != word_mode)
+    return "<insn>w\t%0,%1,%2";
+  return "<insn>\t%0,%1,%2";
+}
   [(set_attr "type" "shift")
    (set_attr "mode" "<GPR:MODE>")])
 
