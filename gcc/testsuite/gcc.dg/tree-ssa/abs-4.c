@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-optimized" } */
-/* { dg-additional-options "-msse -mfpmath=sse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-additional-options "-msse2 -mfpmath=sse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* PR tree-optimization/109829 */
 
 float abs_f(float x) { return __builtin_signbit(x) ? x : -x; }

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-backprop-details" }  */
-/* { dg-additional-options "-msse -mfpmath=sse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-additional-options "-msse2 -mfpmath=sse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 void start (void *);
 void end (void *);
