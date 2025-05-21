@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "c-family/c-ubsan.h"
 #include "gcc-urlifier.h"
-
+
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
    In finish_decl(), if the decl is static, has incomplete
@@ -1737,7 +1737,10 @@ static struct c_expr c_parser_binary_expression (c_parser *, struct c_expr *,
 						 tree);
 static struct c_expr c_parser_cast_expression (c_parser *, struct c_expr *);
 static struct c_expr c_parser_unary_expression (c_parser *);
-static struct c_expr c_parser_sizeof_expression (c_parser *);
+static inline struct c_expr c_parser_sizeof_expression (c_parser *);
+static inline struct c_expr c_parser_countof_expression (c_parser *);
+static struct c_expr c_parser_sizeof_or_countof_expression (c_parser *,
+							    enum rid);
 static struct c_expr c_parser_alignof_expression (c_parser *);
 static struct c_expr c_parser_postfix_expression (c_parser *);
 static struct c_expr c_parser_postfix_expression_after_paren_type (c_parser *,
@@ -10452,8 +10455,12 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
      ++ unary-expression
      -- unary-expression
      unary-operator cast-expression
+     _Countof unary-expression
+     _Countof ( type-name )
      sizeof unary-expression
      sizeof ( type-name )
+
+   (_Countof is new in C2y.)
 
    unary-operator: one of
      & * + - ~ !
@@ -10572,6 +10579,8 @@ c_parser_unary_expression (c_parser *parser)
     case CPP_KEYWORD:
       switch (c_parser_peek_token (parser)->keyword)
 	{
+	case RID_COUNTOF:
+	  return c_parser_countof_expression (parser);
 	case RID_SIZEOF:
 	  return c_parser_sizeof_expression (parser);
 	case RID_ALIGNOF:
@@ -10610,13 +10619,30 @@ c_parser_unary_expression (c_parser *parser)
 
 /* Parse a sizeof expression.  */
 
-static struct c_expr
+static inline struct c_expr
 c_parser_sizeof_expression (c_parser *parser)
 {
+  return c_parser_sizeof_or_countof_expression (parser, RID_SIZEOF);
+}
+
+/* Parse a _Countof expression.  */
+
+static inline struct c_expr
+c_parser_countof_expression (c_parser *parser)
+{
+  return c_parser_sizeof_or_countof_expression (parser, RID_COUNTOF);
+}
+
+/* Parse a sizeof or _Countof expression.  */
+
+static struct c_expr
+c_parser_sizeof_or_countof_expression (c_parser *parser, enum rid rid)
+{
+  const char *op_name = (rid == RID_COUNTOF) ? "_Countof" : "sizeof";
   struct c_expr expr;
   struct c_expr result;
   location_t expr_loc;
-  gcc_assert (c_parser_next_token_is_keyword (parser, RID_SIZEOF));
+  gcc_assert (c_parser_next_token_is_keyword (parser, rid));
 
   location_t start;
   location_t finish = UNKNOWN_LOCATION;
@@ -10625,7 +10651,10 @@ c_parser_sizeof_expression (c_parser *parser)
 
   c_parser_consume_token (parser);
   c_inhibit_evaluation_warnings++;
-  in_sizeof++;
+  if (rid == RID_COUNTOF)
+    in_countof++;
+  else
+    in_sizeof++;
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
       && c_token_starts_compound_literal (c_parser_peek_2nd_token (parser)))
     {
@@ -10646,7 +10675,7 @@ c_parser_sizeof_expression (c_parser *parser)
 	     for parsing error; the parsing of the expression could have
 	     called record_maybe_used_decl.  */
 	  expr.set_error ();
-	  goto sizeof_expr;
+	  goto Xof_expr;
 	}
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
 	{
@@ -10654,31 +10683,45 @@ c_parser_sizeof_expression (c_parser *parser)
 							       type_name,
 							       expr_loc);
 	  finish = expr.get_finish ();
-	  goto sizeof_expr;
+	  goto Xof_expr;
 	}
       /* sizeof ( type-name ).  */
       if (scspecs)
-	error_at (expr_loc, "storage class specifier in %<sizeof%>");
+	error_at (expr_loc, "storage class specifier in %qs", op_name);
       if (type_name->specs->alignas_p)
 	error_at (type_name->specs->locations[cdw_alignas],
-		  "alignment specified for type name in %<sizeof%>");
+		  "alignment specified for type name in %qs", op_name);
       c_inhibit_evaluation_warnings--;
-      in_sizeof--;
-      result = c_expr_sizeof_type (expr_loc, type_name);
+      if (rid == RID_COUNTOF)
+	{
+	  in_countof--;
+	  result = c_expr_countof_type (expr_loc, type_name);
+	}
+      else
+	{
+	  in_sizeof--;
+	  result = c_expr_sizeof_type (expr_loc, type_name);
+	}
     }
   else
     {
       expr_loc = c_parser_peek_token (parser)->location;
       expr = c_parser_unary_expression (parser);
       finish = expr.get_finish ();
-    sizeof_expr:
+    Xof_expr:
       c_inhibit_evaluation_warnings--;
-      in_sizeof--;
+      if (rid == RID_COUNTOF)
+	in_countof--;
+      else
+	in_sizeof--;
       mark_exp_read (expr.value);
       if (TREE_CODE (expr.value) == COMPONENT_REF
 	  && DECL_C_BIT_FIELD (TREE_OPERAND (expr.value, 1)))
-	error_at (expr_loc, "%<sizeof%> applied to a bit-field");
-      result = c_expr_sizeof_expr (expr_loc, expr);
+	error_at (expr_loc, "%qs applied to a bit-field", op_name);
+      if (rid == RID_COUNTOF)
+	result = c_expr_countof_expr (expr_loc, expr);
+      else
+	result = c_expr_sizeof_expr (expr_loc, expr);
     }
   if (finish == UNKNOWN_LOCATION)
     finish = start;

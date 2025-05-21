@@ -105,6 +105,7 @@ enum rid
 
   /* C extensions */
   RID_ASM,       RID_TYPEOF,   RID_TYPEOF_UNQUAL, RID_ALIGNOF,  RID_ATTRIBUTE,
+  RID_COUNTOF,
   RID_C23_VA_START, RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,    RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	   RID_BUILTIN_SHUFFLE,
@@ -890,6 +891,7 @@ extern tree c_common_truthvalue_conversion (location_t, tree);
 extern void c_apply_type_quals_to_decl (int, tree);
 extern tree c_sizeof_or_alignof_type (location_t, tree, bool, bool, int);
 extern tree c_alignof_expr (location_t, tree);
+extern tree c_countof_type (location_t, tree);
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error (rich_location *, enum tree_code, tree, tree);

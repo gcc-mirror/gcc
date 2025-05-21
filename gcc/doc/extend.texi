@@ -10693,6 +10693,36 @@ library.
 @xref{OpenMP and OpenACC Options}, for additional options useful with
 @option{-fopenacc}.
 
+@node _Countof
+@section Determining the Number of Elements of Arrays
+@cindex _Countof
+@cindex number of elements
+
+The keyword @code{_Countof} determines
+the number of elements of an array operand.
+Its syntax is similar to @code{sizeof}.
+The operand must be
+a parenthesized complete array type name
+or an expression of such a type.
+For example:
+
+@smallexample
+int a[n];
+_Countof (a);  // returns n
+_Countof (int [7][3]);  // returns 7
+@end smallexample
+
+The result of this operator is an integer constant expression,
+unless the array has a variable number of elements.
+The operand is only evaluated
+if the array has a variable number of elements.
+For example:
+
+@smallexample
+_Countof (int [7][n++]);  // integer constant expression
+_Countof (int [n++][7]);  // run-time value; n++ is evaluated
+@end smallexample
+
 @node Inline
 @section An Inline Function is As Fast As a Macro
 @cindex inline functions

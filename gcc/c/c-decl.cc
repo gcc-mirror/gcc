@@ -8943,12 +8943,14 @@ start_struct (location_t loc, enum tree_code code, tree name,
      within a statement expr used within sizeof, et. al.  This is not
      terribly serious as C++ doesn't permit statement exprs within
      sizeof anyhow.  */
-  if (warn_cxx_compat && (in_sizeof || in_typeof || in_alignof))
+  if (warn_cxx_compat
+      && (in_sizeof || in_typeof || in_alignof || in_countof))
     warning_at (loc, OPT_Wc___compat,
 		"defining type in %qs expression is invalid in C++",
-		(in_sizeof
-		 ? "sizeof"
-		 : (in_typeof ? "typeof" : "alignof")));
+		(in_sizeof ? "sizeof"
+		 : in_typeof ? "typeof"
+		 : in_alignof ? "alignof"
+		 : "_Countof"));
 
   if (in_underspecified_init)
     error_at (loc, "%qT defined in underspecified object initializer", ref);
@@ -9923,7 +9925,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	 struct_types.  */
       if (warn_cxx_compat
 	  && struct_parse_info != NULL
-	  && !in_sizeof && !in_typeof && !in_alignof)
+	  && !in_sizeof && !in_typeof && !in_alignof && !in_countof)
 	struct_parse_info->struct_types.safe_push (t);
      }
 
@@ -10097,12 +10099,14 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
   /* FIXME: This will issue a warning for a use of a type defined
      within sizeof in a statement expr.  This is not terribly serious
      as C++ doesn't permit statement exprs within sizeof anyhow.  */
-  if (warn_cxx_compat && (in_sizeof || in_typeof || in_alignof))
+  if (warn_cxx_compat
+      && (in_sizeof || in_typeof || in_alignof || in_countof))
     warning_at (loc, OPT_Wc___compat,
 		"defining type in %qs expression is invalid in C++",
-		(in_sizeof
-		 ? "sizeof"
-		 : (in_typeof ? "typeof" : "alignof")));
+		(in_sizeof ? "sizeof"
+		 : in_typeof ? "typeof"
+		 : in_alignof ? "alignof"
+		 : "_Countof"));
 
   if (in_underspecified_init)
     error_at (loc, "%qT defined in underspecified object initializer",
@@ -10296,7 +10300,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
      struct_types.  */
   if (warn_cxx_compat
       && struct_parse_info != NULL
-      && !in_sizeof && !in_typeof && !in_alignof)
+      && !in_sizeof && !in_typeof && !in_alignof && !in_countof)
     struct_parse_info->struct_types.safe_push (enumtype);
 
   /* Check for consistency with previous definition */

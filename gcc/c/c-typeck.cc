@@ -72,6 +72,9 @@ int in_alignof;
 /* The level of nesting inside "sizeof".  */
 int in_sizeof;
 
+/* The level of nesting inside "countof".  */
+int in_countof;
+
 /* The level of nesting inside "typeof".  */
 int in_typeof;
 
@@ -3540,7 +3543,7 @@ build_external_ref (location_t loc, tree id, bool fun, tree *type)
 
   if (TREE_CODE (ref) == FUNCTION_DECL && !in_alignof)
     {
-      if (!in_sizeof && !in_typeof)
+      if (!in_sizeof && !in_typeof && !in_countof)
 	C_DECL_USED (ref) = 1;
       else if (DECL_INITIAL (ref) == NULL_TREE
 	       && DECL_EXTERNAL (ref)
@@ -3596,7 +3599,7 @@ struct maybe_used_decl
 {
   /* The decl.  */
   tree decl;
-  /* The level seen at (in_sizeof + in_typeof).  */
+  /* The level seen at (in_sizeof + in_typeof + in_countof).  */
   int level;
   /* The next one at this level or above, or NULL.  */
   struct maybe_used_decl *next;
@@ -3614,7 +3617,7 @@ record_maybe_used_decl (tree decl)
 {
   struct maybe_used_decl *t = XOBNEW (&parser_obstack, struct maybe_used_decl);
   t->decl = decl;
-  t->level = in_sizeof + in_typeof;
+  t->level = in_sizeof + in_typeof + in_countof;
   t->next = maybe_used_decls;
   maybe_used_decls = t;
 }
@@ -3628,7 +3631,7 @@ void
 pop_maybe_used (bool used)
 {
   struct maybe_used_decl *p = maybe_used_decls;
-  int cur_level = in_sizeof + in_typeof;
+  int cur_level = in_sizeof + in_typeof + in_countof;
   while (p && p->level > cur_level)
     {
       if (used)
@@ -3735,6 +3738,110 @@ c_expr_sizeof_type (location_t loc, struct c_type_name *t)
     }
   pop_maybe_used (type != error_mark_node
 		  ? C_TYPE_VARIABLE_SIZE (type) : false);
+  return ret;
+}
+
+static bool
+is_top_array_vla (tree type)
+{
+  bool zero, var;
+  tree d;
+
+  if (TREE_CODE (type) != ARRAY_TYPE)
+    return false;
+  if (!COMPLETE_TYPE_P (type))
+    return false;
+
+  d = TYPE_DOMAIN (type);
+  zero = !TYPE_MAX_VALUE (d);
+  if (zero)
+    return false;
+
+  var = (TREE_CODE (TYPE_MIN_VALUE (d)) != INTEGER_CST
+	 || TREE_CODE (TYPE_MAX_VALUE (d)) != INTEGER_CST);
+  return var;
+}
+
+/* Return the result of countof applied to EXPR.  */
+
+struct c_expr
+c_expr_countof_expr (location_t loc, struct c_expr expr)
+{
+  struct c_expr ret;
+  if (expr.value == error_mark_node)
+    {
+      ret.value = error_mark_node;
+      ret.original_code = ERROR_MARK;
+      ret.original_type = NULL;
+      ret.m_decimal = 0;
+      pop_maybe_used (false);
+    }
+  else
+    {
+      bool expr_const_operands = true;
+
+      tree folded_expr = c_fully_fold (expr.value, require_constant_value,
+				       &expr_const_operands);
+      ret.value = c_countof_type (loc, TREE_TYPE (folded_expr));
+      c_last_sizeof_arg = expr.value;
+      c_last_sizeof_loc = loc;
+      ret.original_code = COUNTOF_EXPR;
+      ret.original_type = NULL;
+      ret.m_decimal = 0;
+      if (is_top_array_vla (TREE_TYPE (folded_expr)))
+	{
+	  /* countof is evaluated when given a vla.  */
+	  ret.value = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (ret.value),
+			      folded_expr, ret.value);
+	  C_MAYBE_CONST_EXPR_NON_CONST (ret.value) = !expr_const_operands;
+	  SET_EXPR_LOCATION (ret.value, loc);
+	}
+      pop_maybe_used (is_top_array_vla (TREE_TYPE (folded_expr)));
+    }
+  return ret;
+}
+
+/* Return the result of countof applied to T, a structure for the type
+   name passed to countof (rather than the type itself).  LOC is the
+   location of the original expression.  */
+
+struct c_expr
+c_expr_countof_type (location_t loc, struct c_type_name *t)
+{
+  tree type;
+  struct c_expr ret;
+  tree type_expr = NULL_TREE;
+  bool type_expr_const = true;
+  type = groktypename (t, &type_expr, &type_expr_const);
+  ret.value = c_countof_type (loc, type);
+  c_last_sizeof_arg = type;
+  c_last_sizeof_loc = loc;
+  ret.original_code = COUNTOF_EXPR;
+  ret.original_type = NULL;
+  ret.m_decimal = 0;
+  if (type == error_mark_node)
+    {
+      ret.value = error_mark_node;
+      ret.original_code = ERROR_MARK;
+    }
+  else
+  if ((type_expr || TREE_CODE (ret.value) == INTEGER_CST)
+      && is_top_array_vla (type))
+    {
+      /* If the type is a [*] array, it is a VLA but is represented as
+	 having a size of zero.  In such a case we must ensure that
+	 the result of countof does not get folded to a constant by
+	 c_fully_fold, because if the number of elements is evaluated
+	 the result is not constant and so
+	 constraints on zero or negative size arrays must not be applied
+	 when this countof call is inside another array declarator.  */
+      if (!type_expr)
+	type_expr = integer_zero_node;
+      ret.value = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (ret.value),
+			  type_expr, ret.value);
+      C_MAYBE_CONST_EXPR_NON_CONST (ret.value) = !type_expr_const;
+    }
+  pop_maybe_used (type != error_mark_node ? is_top_array_vla (type) : false);
   return ret;
 }
 

@@ -765,6 +765,7 @@ extern int c_type_dwarf_attribute (const_tree, int);
 /* in c-typeck.cc */
 extern int in_alignof;
 extern int in_sizeof;
+extern int in_countof;
 extern int in_typeof;
 extern bool c_in_omp_for;
 extern bool c_omp_array_section_p;
@@ -827,6 +828,9 @@ extern tree build_external_ref (location_t, tree, bool, tree *);
 extern void pop_maybe_used (bool);
 extern struct c_expr c_expr_sizeof_expr (location_t, struct c_expr);
 extern struct c_expr c_expr_sizeof_type (location_t, struct c_type_name *);
+extern struct c_expr c_expr_countof_expr (location_t, struct c_expr);
+extern struct c_expr c_expr_countof_type (location_t loc,
+					  struct c_type_name *);
 extern struct c_expr parser_build_unary_op (location_t, enum tree_code,
     					    struct c_expr);
 extern struct c_expr parser_build_binary_op (location_t,

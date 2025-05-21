@@ -394,6 +394,7 @@ const struct c_common_resword c_common_reswords[] =
 {
   { "_Alignas",		RID_ALIGNAS,   D_CONLY },
   { "_Alignof",		RID_ALIGNOF,   D_CONLY },
+  { "_Countof",		RID_COUNTOF,   D_CONLY },
   { "_Atomic",		RID_ATOMIC,    D_CONLY },
   { "_BitInt",		RID_BITINT,    D_CONLY },
   { "_Bool",		RID_BOOL,      D_CONLY },
@@ -4079,6 +4080,31 @@ c_alignof_expr (location_t loc, tree expr)
     return c_alignof (loc, TREE_TYPE (expr));
 
   return fold_convert_loc (loc, size_type_node, t);
+}
+
+/* Implement the _Countof keyword:
+   Return the number of elements of an array.  */
+
+tree
+c_countof_type (location_t loc, tree type)
+{
+  enum tree_code type_code;
+
+  type_code = TREE_CODE (type);
+  if (type_code != ARRAY_TYPE)
+    {
+      error_at (loc, "invalid application of %<_Countof%> to type %qT", type);
+      return error_mark_node;
+    }
+  if (!COMPLETE_TYPE_P (type))
+    {
+      error_at (loc,
+		"invalid application of %<_Countof%> to incomplete type %qT",
+		type);
+      return error_mark_node;
+    }
+
+  return array_type_nelts_top (type);
 }
 
 /* Handle C and C++ default attributes.  */
