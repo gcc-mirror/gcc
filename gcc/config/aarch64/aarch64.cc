@@ -26327,7 +26327,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_reencode (struct expand_vec_perm_d *d)
 {
-  expand_vec_perm_d newd = {};
+  expand_vec_perm_d newd;
 
   /* The subregs that we'd create are not supported for big-endian SVE;
      see aarch64_modes_compatible_p for details.  */
@@ -26353,6 +26353,8 @@ aarch64_evpc_reencode (struct expand_vec_perm_d *d)
   newd.op1 = d->op1 ? gen_lowpart (new_mode, d->op1) : NULL;
   newd.testing_p = d->testing_p;
   newd.one_vector_p = d->one_vector_p;
+  newd.zero_op0_p = d->zero_op0_p;
+  newd.zero_op1_p = d->zero_op1_p;
 
   newd.perm.new_vector (newpermindices.encoding (), newd.one_vector_p ? 1 : 2,
 			newpermindices.nelts_per_input ());
