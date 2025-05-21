@@ -270,6 +270,7 @@ generator::gen_exp (rtx x)
 	  break;
 
 	case 'L':
+	case 's':
 	  fatal_at (info.loc, "'%s' rtxes are not supported in this context",
 		    GET_RTX_NAME (code));
 	  break;
@@ -282,10 +283,6 @@ generator::gen_exp (rtx x)
 	  /* We don't have a way of parsing polynomial offsets yet,
 	     and hopefully never will.  */
 	  fprintf (file, "%d", SUBREG_BYTE (x).to_constant ());
-	  break;
-
-	case 's':
-	  fprintf (file, "\"%s\"", XSTR (x, i));
 	  break;
 
 	case 'E':
