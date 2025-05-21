@@ -333,30 +333,31 @@
   ""
 {
   rtx system_reg = NULL_RTX;
+  rtx shift_amt = NULL_RTX;
 
   /* Set system register form nds32_intrinsic_register_names[].  */
   if ((INTVAL (operands[1]) >= NDS32_INT_H0)
       && (INTVAL (operands[1]) <= NDS32_INT_H15))
     {
       system_reg = GEN_INT (__NDS32_REG_INT_PEND__);
-      operands[2] = GEN_INT (31 - INTVAL (operands[1]));
+      shift_amt = GEN_INT (31 - INTVAL (operands[1]));
     }
   else if (INTVAL (operands[1]) == NDS32_INT_SWI)
     {
       system_reg = GEN_INT (__NDS32_REG_INT_PEND__);
-      operands[2] = GEN_INT (15);
+      shift_amt = GEN_INT (15);
     }
   else if ((INTVAL (operands[1]) >= NDS32_INT_H16)
 	   && (INTVAL (operands[1]) <= NDS32_INT_H31))
     {
       system_reg = GEN_INT (__NDS32_REG_INT_PEND2__);
-      operands[2] = GEN_INT (31 - INTVAL (operands[1]));
+      shift_amt = GEN_INT (31 - INTVAL (operands[1]));
     }
   else if ((INTVAL (operands[1]) >= NDS32_INT_H32)
 	   && (INTVAL (operands[1]) <= NDS32_INT_H63))
     {
       system_reg = GEN_INT (__NDS32_REG_INT_PEND3__);
-      operands[2] = GEN_INT (31 - (INTVAL (operands[1]) - 32));
+      shift_amt = GEN_INT (31 - (INTVAL (operands[1]) - 32));
     }
   else
     error ("%<get_pending_int%> not support %<NDS32_INT_ALZ%>,"
@@ -366,7 +367,7 @@
   if (system_reg != NULL_RTX)
     {
       emit_insn (gen_unspec_volatile_mfsr (operands[0], system_reg));
-      emit_insn (gen_ashlsi3 (operands[0], operands[0], operands[2]));
+      emit_insn (gen_ashlsi3 (operands[0], operands[0], shift_amt));
       emit_insn (gen_lshrsi3 (operands[0], operands[0], GEN_INT (31)));
       emit_insn (gen_unspec_dsb ());
     }
