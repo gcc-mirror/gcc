@@ -9,14 +9,14 @@
 void
 test_leading_zeros ()
 {
-  __uint64_t b = __arm_rsr64 ("S1_2_C03_C04_5"); /* { dg-error "invalid system register name 's1_2_c03_c04_5'" } */
+  uint64_t b = __arm_rsr64 ("S1_2_C03_C04_5"); /* { dg-error "invalid system register name 's1_2_c03_c04_5'" } */
   __arm_wsr64 ("S1_2_C03_C04_5", b); /* { dg-error "invalid system register name 's1_2_c03_c04_5'" } */
 }
 
 void
 test_bounds ()
 {
-  __uint64_t b;
+  uint64_t b;
   b = __arm_rsr64 ("s4_2_c3_c4_5"); /* { dg-error "invalid system register name 's4_2_c3_c4_5'" } */
   b = __arm_rsr64 ("s1_8_c3_c4_5"); /* { dg-error "invalid system register name 's1_8_c3_c4_5'" } */
   b = __arm_rsr64 ("s1_2_c16_c4_5"); /* { dg-error "invalid system register name 's1_2_c16_c4_5'" } */
