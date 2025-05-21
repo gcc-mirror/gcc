@@ -66,8 +66,40 @@ print_code (RTX_CODE code, FILE *file)
     fprintf (file, "%c", TOUPPER (*p1));
 }
 
-static void
-gen_rtx_scratch (rtx x, enum rtx_code subroutine_type, FILE *file)
+/* A structure used to generate code for a particular expansion.  */
+struct generator
+{
+  generator (rtx_code, char *, const md_rtx_info &, FILE *);
+
+  void gen_rtx_scratch (rtx);
+  void gen_exp (rtx);
+  void gen_emit_seq (rtvec);
+
+  /* The type of subroutine that we're expanding.  */
+  rtx_code subroutine_type;
+
+  /* If nonnull, index N indicates that the original operand N has already
+     been used to replace a MATCH_OPERATOR or MATCH_DUP, and so any further
+     replacements must make a copy.  */
+  char *used;
+
+  /* The construct that we're expanding.  */
+  const md_rtx_info info;
+
+  /* The output file.  */
+  FILE *file;
+};
+
+generator::generator (rtx_code subroutine_type, char *used,
+		      const md_rtx_info &info, FILE *file)
+  : subroutine_type (subroutine_type),
+    used (used),
+    info (info),
+    file (file)
+{}
+
+void
+generator::gen_rtx_scratch (rtx x)
 {
   if (subroutine_type == DEFINE_PEEPHOLE2)
     {
@@ -82,9 +114,8 @@ gen_rtx_scratch (rtx x, enum rtx_code subroutine_type, FILE *file)
 /* Print a C expression to construct an RTX just like X,
    substituting any operand references appearing within.  */
 
-static void
-gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
-	 const md_rtx_info &info, FILE *file)
+void
+generator::gen_exp (rtx x)
 {
   RTX_CODE code;
   int i;
@@ -128,7 +159,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
       for (i = 0; i < XVECLEN (x, 1); i++)
 	{
 	  fprintf (file, ",\n\t\t");
-	  gen_exp (XVECEXP (x, 1, i), subroutine_type, used, info, file);
+	  gen_exp (XVECEXP (x, 1, i));
 	}
       fprintf (file, ")");
       return;
@@ -142,7 +173,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
       for (i = 0; i < XVECLEN (x, 2); i++)
 	{
 	  fprintf (file, ",\n\t\t");
-	  gen_exp (XVECEXP (x, 2, i), subroutine_type, used, info, file);
+	  gen_exp (XVECEXP (x, 2, i));
 	}
       fprintf (file, ")");
       return;
@@ -153,7 +184,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
       return;
 
     case MATCH_SCRATCH:
-      gen_rtx_scratch (x, subroutine_type, file);
+      gen_rtx_scratch (x);
       return;
 
     case PC:
@@ -234,7 +265,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
       switch (fmt[i])
 	{
 	case 'e': case 'u':
-	  gen_exp (XEXP (x, i), subroutine_type, used, info, file);
+	  gen_exp (XEXP (x, i));
 	  break;
 
 	case 'i':
@@ -266,7 +297,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
 	    for (j = 0; j < XVECLEN (x, i); j++)
 	      {
 		fprintf (file, ",\n\t\t");
-		gen_exp (XVECEXP (x, i, j), subroutine_type, used, info, file);
+		gen_exp (XVECEXP (x, i, j));
 	      }
 	    fprintf (file, ")");
 	    break;
@@ -281,10 +312,10 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
 }
 
 /* Output code to emit the instruction patterns in VEC, with each element
-   becoming a separate instruction.  USED is as for gen_exp.  */
+   becoming a separate instruction.  */
 
-static void
-gen_emit_seq (rtvec vec, char *used, const md_rtx_info &info, FILE *file)
+void
+generator::gen_emit_seq (rtvec vec)
 {
   for (int i = 0, len = GET_NUM_ELEM (vec); i < len; ++i)
     {
@@ -293,7 +324,7 @@ gen_emit_seq (rtvec vec, char *used, const md_rtx_info &info, FILE *file)
       if (const char *name = get_emit_function (next))
 	{
 	  fprintf (file, "  %s (", name);
-	  gen_exp (next, DEFINE_EXPAND, used, info, file);
+	  gen_exp (next);
 	  fprintf (file, ");\n");
 	  if (!last_p && needs_barrier_p (next))
 	    fprintf (file, "  emit_barrier ();");
@@ -301,7 +332,7 @@ gen_emit_seq (rtvec vec, char *used, const md_rtx_info &info, FILE *file)
       else
 	{
 	  fprintf (file, "  emit (");
-	  gen_exp (next, DEFINE_EXPAND, used, info, file);
+	  gen_exp (next);
 	  fprintf (file, ", %s);\n", last_p ? "false" : "true");
 	}
     }
@@ -479,7 +510,7 @@ gen_insn (const md_rtx_info &info, FILE *file)
 		? NULL
 		: XCNEWVEC (char, stats.num_generator_args));
   fprintf (file, "  return ");
-  gen_exp (pattern, DEFINE_INSN, used, info, file);
+  generator (DEFINE_INSN, used, info, file).gen_exp (pattern);
   fprintf (file, ";\n}\n\n");
   XDELETEVEC (used);
 }
@@ -525,7 +556,8 @@ gen_expand (const md_rtx_info &info, FILE *file)
       && XVECLEN (expand, 1) == 1)
     {
       fprintf (file, "  return ");
-      gen_exp (XVECEXP (expand, 1, 0), DEFINE_EXPAND, NULL, info, file);
+      generator (DEFINE_EXPAND, NULL, info, file)
+	.gen_exp (XVECEXP (expand, 1, 0));
       fprintf (file, ";\n}\n\n");
       return;
     }
@@ -559,7 +591,7 @@ gen_expand (const md_rtx_info &info, FILE *file)
     }
 
   used = XCNEWVEC (char, stats.num_operand_vars);
-  gen_emit_seq (XVEC (expand, 1), used, info, file);
+  generator (DEFINE_EXPAND, used, info, file).gen_emit_seq (XVEC (expand, 1));
   XDELETEVEC (used);
 
   /* Call `get_insns' to extract the list of all the
@@ -647,7 +679,8 @@ gen_split (const md_rtx_info &info, FILE *file)
   if (XSTR (split, 3))
     emit_c_code (XSTR (split, 3), true, name, file);
 
-  gen_emit_seq (XVEC (split, 2), used, info, file);
+  generator (GET_CODE (split), used, info, file)
+    .gen_emit_seq (XVEC (split, 2));
 
   /* Call `get_insns' to make a list of all the
      insns emitted within this gen_... function.  */
@@ -683,8 +716,9 @@ output_add_clobbers (const md_rtx_info &info, FILE *file)
       for (i = clobber->first_clobber; i < GET_NUM_ELEM (clobber->pattern); i++)
 	{
 	  fprintf (file, "      XVECEXP (pattern, 0, %d) = ", i);
-	  gen_exp (RTVEC_ELT (clobber->pattern, i),
-		   clobber->code, NULL, info, file);
+	  rtx clobbered_value = RTVEC_ELT (clobber->pattern, i);
+	  generator (clobber->code, NULL, info, file)
+	    .gen_exp (clobbered_value);
 	  fprintf (file, ";\n");
 	}
 
