@@ -4704,23 +4704,38 @@
 			    (match_operand 2 "const_int_operand" "n"))
 		 (match_operand 3 "const_int_operand" "n")))
    (clobber (match_scratch:DI 4 "=&r"))]
-  "(TARGET_64BIT && riscv_const_insns (operands[3], false) == 1)"
+  "(TARGET_64BIT
+    && riscv_const_insns (operands[3], false) == 1
+    && riscv_const_insns (GEN_INT (INTVAL (operands[3])
+			  << INTVAL (operands[2])), false) != 1)"
   "#"
   "&& reload_completed"
   [(const_int 0)]
   "{
-     rtx x = gen_rtx_ASHIFT (DImode, operands[1], operands[2]);
-     emit_insn (gen_rtx_SET (operands[0], x));
-
-     /* If the constant fits in a simm12, use it directly as we do not
-	get another good chance to optimize things again.  */
-     if (!SMALL_OPERAND (INTVAL (operands[3])))
+     /* Prefer to generate shNadd when we can, even over using an
+	immediate form.  If we're not going to be able to generate
+	a shNadd, then use the constant directly if it fits in a
+	simm12 field since we won't get another chance to optimize this.  */
+     if ((TARGET_ZBA && imm123_operand (operands[2], word_mode))
+	 || !SMALL_OPERAND (INTVAL (operands[3])))
        emit_move_insn (operands[4], operands[3]);
      else
        operands[4] = operands[3];
 
-     x = gen_rtx_PLUS (DImode, operands[0], operands[4]);
-     emit_insn (gen_rtx_SET (operands[0], x));
+     if (TARGET_ZBA && imm123_operand (operands[2], word_mode))
+       {
+	 rtx x = gen_rtx_ASHIFT (DImode, operands[1], operands[2]);
+	 x = gen_rtx_PLUS (DImode, x, operands[4]);
+	 emit_insn (gen_rtx_SET (operands[0], x));
+       }
+     else
+       {
+	 rtx x = gen_rtx_ASHIFT (DImode, operands[1], operands[2]);
+	 emit_insn (gen_rtx_SET (operands[0], x));
+	 x = gen_rtx_PLUS (DImode, operands[0], operands[4]);
+	 emit_insn (gen_rtx_SET (operands[0], x));
+       }
+
      DONE;
    }"
   [(set_attr "type" "arith")])
