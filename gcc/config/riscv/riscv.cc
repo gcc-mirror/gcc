@@ -14300,7 +14300,7 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
      we clear bits in IVAL.  Once IVAL is zero, then synthesis of the
      operation is complete.  */
   unsigned HOST_WIDE_INT ival = INTVAL (operands[2]);
-  
+
   /* Check if we want to use [x]ori. Then get the remaining bits
      and decrease the budget by one. */
   if ((ival & HOST_WIDE_INT_UC (0x7ff)) != 0)
@@ -14435,14 +14435,14 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
 	}
     }
 
-  /* If after accounting for bseti the remaining budget has 
+  /* If after accounting for bseti the remaining budget has
      gone to less than zero, it forces the value into a
      register and performs the IOR operation.  It returns
      TRUE to the caller so the caller knows code generation
      is complete. */
   if (budget < 0)
     {
-      rtx x = force_reg (word_mode, operands[2]); 
+      rtx x = force_reg (word_mode, operands[2]);
       x = gen_rtx_fmt_ee (code, word_mode, operands[1], x);
       emit_insn (gen_rtx_SET (operands[0], x));
       return true;
@@ -14466,8 +14466,8 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
     }
 
   /* We figure out a single bit as a constant and
-     generate a CONST_INT node for that.  Then we 
-     construct the IOR node, then the SET node and 
+     generate a CONST_INT node for that.  Then we
+     construct the IOR node, then the SET node and
      emit it.  An IOR with a suitable constant that is
      a single bit will be implemented with a bseti. */
   while (ival)
@@ -14485,6 +14485,60 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
   emit_move_insn (operands[0], output);
   return true;
 }
+
+/* Synthesize OPERANDS[0] = OPERANDS[1] & OPERANDS[2].
+
+    OPERANDS[0] and OPERANDS[1] will be a REG and may be the same
+    REG.
+
+    OPERANDS[2] is a CONST_INT.
+
+    Return TRUE if the operation was fully synthesized and the caller
+    need not generate additional code.  Return FALSE if the operation
+    was not synthesized and the caller is responsible for emitting the
+    proper sequence.  */
+
+bool
+synthesize_and (rtx operands[3])
+{
+  /* Trivial cases that don't need synthesis.  */
+  if (SMALL_OPERAND (INTVAL (operands[2]))
+     || (TARGET_ZBS && not_single_bit_mask_operand (operands[2], word_mode)))
+    return false;
+
+  /* If the second operand is a mode mask, emit an extension
+     insn instead.  */
+  if (CONST_INT_P (operands[2]))
+    {
+      enum machine_mode tmode = VOIDmode;
+      if (UINTVAL (operands[2]) == GET_MODE_MASK (HImode))
+	tmode = HImode;
+      else if (UINTVAL (operands[2]) == GET_MODE_MASK (SImode))
+	tmode = SImode;
+
+      if (tmode != VOIDmode)
+	{
+	  rtx tmp = gen_lowpart (tmode, operands[1]);
+	  emit_insn (gen_extend_insn (operands[0], tmp, word_mode, tmode, 1));
+	  return true;
+	}
+    }
+
+  /* If the remaining budget has gone to less than zero, it
+     forces the value into a register and performs the AND
+     operation.  It returns TRUE to the caller so the caller
+     knows code generation is complete.
+     FIXME: This is hacked to always be enabled until the last
+     patch in the series is enabled.  */
+  if (1)
+    {
+      rtx x = force_reg (word_mode, operands[2]);
+      x = gen_rtx_AND (word_mode, operands[1], x);
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+}
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP

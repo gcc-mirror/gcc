@@ -1724,26 +1724,11 @@
 (define_expand "and<mode>3"
   [(set (match_operand:X                0 "register_operand")
         (and:X (match_operand:X 1 "register_operand")
-	       (match_operand:X 2 "arith_or_mode_mask_or_zbs_operand")))]
+	       (match_operand:X 2 "reg_or_const_int_operand")))]
   ""
 {
-  /* If the second operand is a mode mask, emit an extension
-     insn instead.  */
-  if (CONST_INT_P (operands[2]))
-    {
-      enum machine_mode tmode = VOIDmode;
-      if (UINTVAL (operands[2]) == GET_MODE_MASK (HImode))
-	tmode = HImode;
-      else if (UINTVAL (operands[2]) == GET_MODE_MASK (SImode))
-	tmode = SImode;
-
-      if (tmode != VOIDmode)
-	{
-	  rtx tmp = gen_lowpart (tmode, operands[1]);
-	  emit_insn (gen_extend_insn (operands[0], tmp, <MODE>mode, tmode, 1));
-	  DONE;
-	}
-    }
+  if (CONST_INT_P (operands[2]) && synthesize_and (operands))
+    DONE;
 })
 
 (define_insn "*and<mode>3"
