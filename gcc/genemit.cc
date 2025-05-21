@@ -71,7 +71,7 @@ gen_rtx_scratch (rtx x, enum rtx_code subroutine_type, FILE *file)
 {
   if (subroutine_type == DEFINE_PEEPHOLE2)
     {
-      fprintf (file, "operand%d", XINT (x, 0));
+      fprintf (file, "operands[%d]", XINT (x, 0));
     }
   else
     {
@@ -108,21 +108,21 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
 	{
 	  if (used[XINT (x, 0)])
 	    {
-	      fprintf (file, "copy_rtx (operand%d)", XINT (x, 0));
+	      fprintf (file, "copy_rtx (operands[%d])", XINT (x, 0));
 	      return;
 	    }
 	  used[XINT (x, 0)] = 1;
 	}
-      fprintf (file, "operand%d", XINT (x, 0));
+      fprintf (file, "operands[%d]", XINT (x, 0));
       return;
 
     case MATCH_OP_DUP:
       fprintf (file, "gen_rtx_fmt_");
       for (i = 0; i < XVECLEN (x, 1); i++)
 	fprintf (file, "e");
-      fprintf (file, " (GET_CODE (operand%d), ", XINT (x, 0));
+      fprintf (file, " (GET_CODE (operands[%d]), ", XINT (x, 0));
       if (GET_MODE (x) == VOIDmode)
-	fprintf (file, "GET_MODE (operand%d)", XINT (x, 0));
+	fprintf (file, "GET_MODE (operands[%d])", XINT (x, 0));
       else
 	fprintf (file, "%smode", GET_MODE_NAME (GET_MODE (x)));
       for (i = 0; i < XVECLEN (x, 1); i++)
@@ -137,7 +137,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
       fprintf (file, "gen_rtx_fmt_");
       for (i = 0; i < XVECLEN (x, 2); i++)
 	fprintf (file, "e");
-      fprintf (file, " (GET_CODE (operand%d)", XINT (x, 0));
+      fprintf (file, " (GET_CODE (operands[%d])", XINT (x, 0));
       fprintf (file, ", %smode", GET_MODE_NAME (GET_MODE (x)));
       for (i = 0; i < XVECLEN (x, 2); i++)
 	{
@@ -149,7 +149,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used,
 
     case MATCH_PARALLEL:
     case MATCH_PAR_DUP:
-      fprintf (file, "operand%d", XINT (x, 0));
+      fprintf (file, "operands[%d]", XINT (x, 0));
       return;
 
     case MATCH_SCRATCH:
@@ -437,14 +437,22 @@ start_gen_insn (FILE *file, const char *name, const pattern_stats &stats)
   fprintf (file, "rtx\ngen_%s (", name);
   if (stats.num_generator_args)
     for (int i = 0; i < stats.num_generator_args; i++)
-      if (i)
-	fprintf (file, ",\n\trtx operand%d ATTRIBUTE_UNUSED", i);
-      else
-	fprintf (file, "rtx operand%d ATTRIBUTE_UNUSED", i);
+      fprintf (file, "%sconst rtx operand%d", i == 0 ? "" : ", ", i);
   else
     fprintf (file, "void");
   fprintf (file, ")\n");
   fprintf (file, "{\n");
+  if (stats.num_generator_args)
+    {
+      fprintf (file, "  rtx operands[%d] ATTRIBUTE_UNUSED = {",
+	       stats.num_operand_vars);
+      for (int i = 0; i < stats.num_generator_args; i++)
+	fprintf (file, "%s operand%d", i == 0 ? "" : ",", i);
+      fprintf (file, " };\n");
+    }
+  else if (stats.num_operand_vars != 0)
+    fprintf (file, "  rtx operands[%d] ATTRIBUTE_UNUSED;\n",
+	     stats.num_operand_vars);
 }
 
 /* Generate the `gen_...' function for a DEFINE_INSN.  */
@@ -496,7 +504,6 @@ static void
 gen_expand (const md_rtx_info &info, FILE *file)
 {
   struct pattern_stats stats;
-  int i;
   char *used;
 
   /* Find out how many operands this function has.  */
@@ -523,10 +530,6 @@ gen_expand (const md_rtx_info &info, FILE *file)
       return;
     }
 
-  /* For each operand referred to only with MATCH_DUPs,
-     make a local variable.  */
-  for (i = stats.num_generator_args; i <= stats.max_dup_opno; i++)
-    fprintf (file, "  rtx operand%d;\n", i);
   fprintf (file, "  rtx_insn *_val = 0;\n");
   fprintf (file, "  start_sequence ();\n");
 
@@ -539,12 +542,6 @@ gen_expand (const md_rtx_info &info, FILE *file)
   if (XSTR (expand, 3) && *XSTR (expand, 3))
     {
       fprintf (file, "  {\n");
-      if (stats.num_operand_vars > 0)
-	fprintf (file, "    rtx operands[%d];\n", stats.num_operand_vars);
-
-      /* Output code to copy the arguments into `operands'.  */
-      for (i = 0; i < stats.num_generator_args; i++)
-	fprintf (file, "    operands[%d] = operand%d;\n", i, i);
 
       /* Output the special code to be executed before the sequence
 	 is generated.  */
@@ -558,16 +555,6 @@ gen_expand (const md_rtx_info &info, FILE *file)
 	}
       emit_c_code (XSTR (expand, 3), can_fail_p, XSTR (expand, 0), file);
 
-      /* Output code to copy the arguments back out of `operands'
-	 (unless we aren't going to use them at all).  */
-      if (XVEC (expand, 1) != 0)
-	{
-	  for (i = 0; i <= MAX (stats.max_opno, stats.max_dup_opno); i++)
-	    {
-	      fprintf (file, "    operand%d = operands[%d];\n", i, i);
-	      fprintf (file, "    (void) operand%d;\n", i);
-	    }
-	}
       fprintf (file, "  }\n");
     }
 
@@ -606,7 +593,6 @@ static void
 gen_split (const md_rtx_info &info, FILE *file)
 {
   struct pattern_stats stats;
-  int i;
   rtx split = info.def;
   const char *const name =
     ((GET_CODE (split) == DEFINE_PEEPHOLE2) ? "peephole2" : "split");
@@ -639,8 +625,6 @@ gen_split (const md_rtx_info &info, FILE *file)
   fprintf (file, "{\n");
 
   /* Declare all local variables.  */
-  for (i = 0; i < stats.num_operand_vars; i++)
-    fprintf (file, "  rtx operand%d;\n", i);
   fprintf (file, "  rtx_insn *_val = NULL;\n");
 
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
@@ -662,13 +646,6 @@ gen_split (const md_rtx_info &info, FILE *file)
 
   if (XSTR (split, 3))
     emit_c_code (XSTR (split, 3), true, name, file);
-
-  /* Output code to copy the arguments back out of `operands'  */
-  for (i = 0; i < stats.num_operand_vars; i++)
-    {
-      fprintf (file, "  operand%d = operands[%d];\n", i, i);
-      fprintf (file, "  (void) operand%d;\n", i);
-    }
 
   gen_emit_seq (XVEC (split, 2), used, info, file);
 
