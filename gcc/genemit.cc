@@ -55,6 +55,9 @@ static void output_peephole2_scratches	(rtx, FILE*);
 /* True for <X>_optab if that optab isn't allowed to fail.  */
 static bool nofail_optabs[NUM_OPTABS];
 
+/* A list of the md constructs that need a gen_* function.  */
+static vec<md_rtx_info> queue;
+
 static void
 print_code (RTX_CODE code, FILE *file)
 {
@@ -326,14 +329,12 @@ emit_c_code (const char *code, bool can_fail_p, const char *name, FILE *file)
   fprintf (file, "#undef FAIL\n");
 }
 
-/* Generate the `gen_...' function for a DEFINE_INSN.  */
+/* Process the DEFINE_INSN in LOC, and queue it if it needs a gen_*
+   function.  */
 
 static void
-gen_insn (const md_rtx_info &info, FILE *file)
+maybe_queue_insn (const md_rtx_info &info)
 {
-  struct pattern_stats stats;
-  int i;
-
   /* See if the pattern for this insn ends with a group of CLOBBERs of (hard)
      registers or MATCH_SCRATCHes.  If so, store away the information for
      later.  */
@@ -349,6 +350,7 @@ gen_insn (const md_rtx_info &info, FILE *file)
 	  && GET_CODE (RTVEC_ELT (pattern, 0)) == PARALLEL)
 	pattern = XVEC (RTVEC_ELT (pattern, 0), 0);
 
+      int i;
       for (i = GET_NUM_ELEM (pattern) - 1; i > 0; i--)
 	{
 	  if (GET_CODE (RTVEC_ELT (pattern, i)) != CLOBBER)
@@ -422,9 +424,19 @@ gen_insn (const md_rtx_info &info, FILE *file)
   if (XSTR (insn, 0)[0] == 0 || XSTR (insn, 0)[0] == '*')
     return;
 
-  fprintf (file, "/* %s:%d */\n", info.loc.filename, info.loc.lineno);
+  queue.safe_push (info);
+}
+
+/* Generate the `gen_...' function for a DEFINE_INSN.  */
+
+static void
+gen_insn (const md_rtx_info &info, FILE *file)
+{
+  struct pattern_stats stats;
+  int i;
 
   /* Find out how many operands this function has.  */
+  rtx insn = info.def;
   get_pattern_stats (&stats, XVEC (insn, 1));
   if (stats.max_dup_opno > stats.max_opno)
     fatal_at (info.loc, "match_dup operand number has no match_operand");
@@ -455,6 +467,20 @@ gen_insn (const md_rtx_info &info, FILE *file)
   XDELETEVEC (used);
 }
 
+/* Process and queue the DEFINE_EXPAND in INFO.  */
+
+static void
+queue_expand (const md_rtx_info &info)
+{
+  rtx expand = info.def;
+  if (strlen (XSTR (expand, 0)) == 0)
+    fatal_at (info.loc, "define_expand lacks a name");
+  if (XVEC (expand, 1) == 0)
+    fatal_at (info.loc, "define_expand for %s lacks a pattern",
+	      XSTR (expand, 0));
+  queue.safe_push (info);
+}
+
 /* Generate the `gen_...' function for a DEFINE_EXPAND.  */
 
 static void
@@ -464,14 +490,8 @@ gen_expand (const md_rtx_info &info, FILE *file)
   int i;
   char *used;
 
-  rtx expand = info.def;
-  if (strlen (XSTR (expand, 0)) == 0)
-    fatal_at (info.loc, "define_expand lacks a name");
-  if (XVEC (expand, 1) == 0)
-    fatal_at (info.loc, "define_expand for %s lacks a pattern",
-	      XSTR (expand, 0));
-
   /* Find out how many operands this function has.  */
+  rtx expand = info.def;
   get_pattern_stats (&stats, XVEC (expand, 1));
   if (stats.min_scratch_opno != -1
       && stats.min_scratch_opno <= MAX (stats.max_opno, stats.max_dup_opno))
@@ -564,7 +584,24 @@ gen_expand (const md_rtx_info &info, FILE *file)
   fprintf (file, "  return _val;\n}\n\n");
 }
 
-/* Like gen_expand, but generates insns resulting from splitting SPLIT.  */
+/* Process and queue the DEFINE_SPLIT or DEFINE_PEEPHOLE2 in INFO.  */
+
+static void
+queue_split (const md_rtx_info &info)
+{
+  rtx split = info.def;
+
+  if (XVEC (split, 0) == 0)
+    fatal_at (info.loc, "%s lacks a pattern",
+	      GET_RTX_NAME (GET_CODE (split)));
+  if (XVEC (split, 2) == 0)
+    fatal_at (info.loc, "%s lacks a replacement pattern",
+	      GET_RTX_NAME (GET_CODE (split)));
+
+  queue.safe_push (info);
+}
+
+/* Generate the `gen_...' function for a DEFINE_SPLIT or DEFINE_PEEPHOLE2.  */
 
 static void
 gen_split (const md_rtx_info &info, FILE *file)
@@ -576,13 +613,6 @@ gen_split (const md_rtx_info &info, FILE *file)
     ((GET_CODE (split) == DEFINE_PEEPHOLE2) ? "peephole2" : "split");
   const char *unused;
   char *used;
-
-  if (XVEC (split, 0) == 0)
-    fatal_at (info.loc, "%s lacks a pattern",
-	      GET_RTX_NAME (GET_CODE (split)));
-  else if (XVEC (split, 2) == 0)
-    fatal_at (info.loc, "%s lacks a replacement pattern",
-	      GET_RTX_NAME (GET_CODE (split)));
 
   /* Find out how many operands this function has.  */
 
@@ -951,9 +981,30 @@ main (int argc, const char **argv)
 
   /* Read the machine description.  */
   while (read_md_rtx (&info))
+    switch (GET_CODE (info.def))
+      {
+      case DEFINE_INSN:
+	maybe_queue_insn (info);
+	break;
+
+      case DEFINE_EXPAND:
+	queue_expand (info);
+	break;
+
+      case DEFINE_SPLIT:
+      case DEFINE_PEEPHOLE2:
+	queue_split (info);
+	break;
+
+      default:
+	break;
+      }
+
+  for (auto &info : queue)
     {
       file = choose_output (output_files, file_idx);
 
+      fprintf (file, "/* %s:%d */\n", info.loc.filename, info.loc.lineno);
       switch (GET_CODE (info.def))
 	{
 	case DEFINE_INSN:
@@ -961,17 +1012,11 @@ main (int argc, const char **argv)
 	  break;
 
 	case DEFINE_EXPAND:
-	  fprintf (file, "/* %s:%d */\n", info.loc.filename, info.loc.lineno);
 	  gen_expand (info, file);
 	  break;
 
 	case DEFINE_SPLIT:
-	  fprintf (file, "/* %s:%d */\n", info.loc.filename, info.loc.lineno);
-	  gen_split (info, file);
-	  break;
-
 	case DEFINE_PEEPHOLE2:
-	  fprintf (file, "/* %s:%d */\n", info.loc.filename, info.loc.lineno);
 	  gen_split (info, file);
 	  break;
 
