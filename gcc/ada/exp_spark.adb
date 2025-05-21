@@ -172,6 +172,14 @@ package body Exp_SPARK is
          when N_Op_Ne =>
             Expand_SPARK_N_Op_Ne (N);
 
+         --  Resolution of type conversion relies on minimal expansion of
+         --  fixedpoint operations to insert the range check on their result.
+
+         when N_Op_Multiply | N_Op_Divide =>
+            if Etype (N) = Universal_Fixed then
+               Exp_Ch4.Fixup_Universal_Fixed_Operation (N);
+            end if;
+
          when N_Freeze_Entity =>
             --  Currently we only expand type freeze entities, so ignore other
             --  freeze entites, because it is expensive to create a suitable

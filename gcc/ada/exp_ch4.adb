@@ -177,12 +177,6 @@ package body Exp_Ch4 is
    --  integer type. This is a case where top level processing is required to
    --  handle overflow checks in subtrees.
 
-   procedure Fixup_Universal_Fixed_Operation (N : Node_Id);
-   --  N is a N_Op_Divide or N_Op_Multiply node whose result is universal
-   --  fixed. We do not have such a type at runtime, so the purpose of this
-   --  routine is to find the real type by looking up the tree. We also
-   --  determine if the operation must be rounded.
-
    procedure Get_First_Index_Bounds (T : Entity_Id; Lo, Hi : out Uint);
    --  T is an array whose index bounds are all known at compile time. Return
    --  the value of the low and high bounds of the first index of T.
