@@ -39,7 +39,6 @@ struct clobber_pat
   int first_clobber;
   struct clobber_pat *next;
   int has_hard_reg;
-  rtx_code code;
 } *clobber_list;
 
 /* Records one insn that uses the clobber list.  */
@@ -435,7 +434,6 @@ maybe_queue_insn (const md_rtx_info &info)
 	      p->first_clobber = i + 1;
 	      p->next = clobber_list;
 	      p->has_hard_reg = has_hard_reg;
-	      p->code = GET_CODE (insn);
 	      clobber_list = p;
 	    }
 
@@ -691,7 +689,7 @@ gen_split (const md_rtx_info &info, FILE *file)
    the end of the vector.  */
 
 static void
-output_add_clobbers (const md_rtx_info &info, FILE *file)
+output_add_clobbers (FILE *file)
 {
   struct clobber_pat *clobber;
   struct clobber_ent *ent;
@@ -709,12 +707,16 @@ output_add_clobbers (const md_rtx_info &info, FILE *file)
 
       for (i = clobber->first_clobber; i < GET_NUM_ELEM (clobber->pattern); i++)
 	{
-	  fprintf (file, "      XVECEXP (pattern, 0, %d) = ", i);
-	  rtx clobbered_value = RTVEC_ELT (clobber->pattern, i);
-	  /* Pass null for USED since there are no operands.  */
-	  generator (clobber->code, NULL, info, file)
-	    .gen_exp (clobbered_value);
-	  fprintf (file, ";\n");
+	  fprintf (file, "    XVECEXP (pattern, 0, %d) ="
+		   " gen_rtx_CLOBBER (VOIDmode, ", i);
+	  rtx x = XEXP (RTVEC_ELT (clobber->pattern, i), 0);
+	  if (REG_P (x))
+	    fprintf (file, "gen_rtx_REG (%smode, %d)",
+		     GET_MODE_NAME (GET_MODE (x)), REGNO (x));
+	  else
+	    fprintf (file, "gen_rtx_SCRATCH (%smode)",
+		     GET_MODE_NAME (GET_MODE (x)));
+	  fprintf (file, ");\n");
 	}
 
       fprintf (file, "      break;\n\n");
@@ -1034,7 +1036,7 @@ main (int argc, const char **argv)
 
   /* Write out the routines to add CLOBBERs to a pattern and say whether they
      clobber a hard reg.  */
-  output_add_clobbers (info, file);
+  output_add_clobbers (file);
   output_added_clobbers_hard_reg_p (file);
 
   for (overloaded_name *oname = rtx_reader_ptr->get_overloads ();
