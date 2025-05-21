@@ -270,7 +270,8 @@ generator::gen_exp (rtx x)
 	  break;
 
 	case 'L':
-	  fprintf (file, "%llu", (unsigned long long) XLOC (x, i));
+	  fatal_at (info.loc, "'%s' rtxes are not supported in this context",
+		    GET_RTX_NAME (code));
 	  break;
 
 	case 'r':
