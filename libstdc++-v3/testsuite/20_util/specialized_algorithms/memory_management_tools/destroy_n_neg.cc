@@ -29,7 +29,7 @@ test01()
 {
   alignas(DeletedDtor) unsigned char buf[sizeof(DeletedDtor)];
   auto p = ::new (buf) DeletedDtor();
-  std::destroy(p, p + 1);
+  std::destroy_n(p, 1);
 }
 
 class PrivateDtor {
@@ -41,7 +41,7 @@ test02()
 {
   alignas(PrivateDtor) unsigned char buf[sizeof(PrivateDtor)];
   auto p = ::new (buf) PrivateDtor();
-  std::destroy(p, p + 1);
+  std::destroy_n(p, 1);
 }
 
 #if __cpp_constexpr_dynamic_alloc // >= C++20
@@ -49,7 +49,7 @@ consteval bool
 test03()
 {
   DeletedDtor* p = nullptr;
-  std::destroy(p, p);
+  std::destroy_n(p, 0);
   return true;
 }
 static_assert(test03());

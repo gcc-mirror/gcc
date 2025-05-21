@@ -42,8 +42,5 @@ test02()
   std::vector<PrivateDtor> v; // { dg-error "here" }
 }
 
-// { dg-error "value type is destructible" "" { target *-*-* } 0 }
-
-// Needed because of PR c++/92193
-// { dg-prune-output "deleted function" }
-// { dg-prune-output "private within this context" }
+// { dg-error "deleted function .*DeletedDtor" "" { target *-*-* } 0 }
+// { dg-error "PrivateDtor.* is private" "" { target *-*-* } 0 }
