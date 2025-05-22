@@ -118,7 +118,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~_UninitDestroyGuard()
       {
 	if (__builtin_expect(_M_cur != 0, 0))
+#if __cplusplus == 201703L
+	  // std::uninitialized_{value,default}{,_n} can construct array types,
+	  // but std::_Destroy cannot handle them until C++20 (PR 120397).
+	  _S_destroy(_M_first, *_M_cur);
+#else
 	  std::_Destroy(_M_first, *_M_cur);
+#endif
       }
 
       _GLIBCXX20_CONSTEXPR
@@ -129,6 +135,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _UninitDestroyGuard(const _UninitDestroyGuard&);
+
+#if __cplusplus == 201703L
+      template<typename _Iter>
+	static void
+	_S_destroy(_Iter __first, _Iter __last)
+	{
+	  using _ValT = typename iterator_traits<_Iter>::value_type;
+	  if constexpr (is_array<_ValT>::value)
+	    for (; __first != __last; ++__first)
+	      _S_destroy(*__first, *__first + extent<_ValT>::value);
+	  else
+	    std::_Destroy(__first, __last);
+	}
+#endif
     };
 
   // This is the default implementation of std::uninitialized_copy.
