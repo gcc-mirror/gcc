@@ -358,8 +358,8 @@ package ALI is
       --  Indicates presence of PR parameter for a preelaborated package
 
       No_Elab : Boolean;
-      --  Indicates presence of NE parameter for a unit that has does not
-      --  have an elaboration routine (since it has no elaboration code).
+      --  Indicates presence of NE parameter for a unit that does not have an
+      --  elaboration routine (since it has no elaboration code).
 
       Pure : Boolean;
       --  Indicates presence of PU parameter for a package having pragma Pure
