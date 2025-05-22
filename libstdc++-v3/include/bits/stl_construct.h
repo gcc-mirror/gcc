@@ -82,7 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if constexpr (__cplusplus > 201703L && is_array_v<_Tp>)
 	{
 	  for (auto& __x : *__location)
-	    std::destroy_at(std::__addressof(__x));
+	    std::destroy_at(std::addressof(__x));
 	}
       else
 	__location->~_Tp();
@@ -123,7 +123,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Construct(_Tp* __p, _Args&&... __args)
     {
 #if __cpp_constexpr_dynamic_alloc // >= C++20
-      if (std::__is_constant_evaluated())
+      if (std::is_constant_evaluated())
 	{
 	  // Allow std::_Construct to be used in constant expressions.
 	  std::construct_at(__p, std::forward<_Args>(__args)...);
@@ -223,11 +223,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       if constexpr (!is_trivially_destructible<_Value_type>::value)
 	for (; __first != __last; ++__first)
-	  std::_Destroy(std::__addressof(*__first));
+	  std::_Destroy(std::addressof(*__first));
 #if __cpp_constexpr_dynamic_alloc // >= C++20
-      else if (std::__is_constant_evaluated())
+      else if (std::is_constant_evaluated())
 	for (; __first != __last; ++__first)
-	  std::destroy_at(std::__addressof(*__first));
+	  std::destroy_at(std::addressof(*__first));
 #endif
 #else
       std::_Destroy_aux<__has_trivial_destructor(_Value_type)>::
@@ -249,11 +249,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       if constexpr (!is_trivially_destructible<_Value_type>::value)
 	for (; __count > 0; (void)++__first, --__count)
-	  std::_Destroy(std::__addressof(*__first));
+	  std::_Destroy(std::addressof(*__first));
 #if __cpp_constexpr_dynamic_alloc // >= C++20
-      else if (std::__is_constant_evaluated())
+      else if (std::is_constant_evaluated())
 	for (; __count > 0; (void)++__first, --__count)
-	  std::destroy_at(std::__addressof(*__first));
+	  std::destroy_at(std::addressof(*__first));
 #endif
       else
 	std::advance(__first, __count);
