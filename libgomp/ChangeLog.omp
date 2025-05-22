@@ -1,3 +1,33 @@
+2025-05-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR lto/120308
+	* testsuite/libgomp.oacc-c-c++-common/abi-struct-1.c: Add empty
+	structure testing.
+
+2025-05-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/target-abi-struct-1-O0.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/abi-struct-1.c: Likewise.
+
+2025-05-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119692
+	* testsuite/libgomp.c++/pr119692-1-4.C: '{ dg-timeout 10 }'.
+	* testsuite/libgomp.c++/pr119692-1-5.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-1.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2.C: Likewise.
+
 2025-05-16  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

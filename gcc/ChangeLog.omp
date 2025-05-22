@@ -1,3 +1,16 @@
+2025-05-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR lto/120308
+	* lto-streamer-out.cc (hash_tree): Don't handle 'TYPE_EMPTY_P' for
+	'lto_stream_offload_p'.
+	* tree-streamer-in.cc (unpack_ts_type_common_value_fields):
+	Likewise.
+	* tree-streamer-out.cc (pack_ts_type_common_value_fields):
+	Likewise.
+
 2025-05-15  Sandra Loosemore  <sloosemore@baylibre.com>
 	    Tobias Burnus  <tburnus@baylibre.com>
 
