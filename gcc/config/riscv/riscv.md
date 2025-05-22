@@ -2501,8 +2501,8 @@
 })
 
 (define_insn "*movdi_32bit"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,m,  *f,*f,*r,*f,*m,r")
-	(match_operand:DI 1 "move_operand"         " r,i,m,r,*J*r,*m,*f,*f,*f,vp"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*f,*m,r")
+	(match_operand:DI 1 "move_operand"         " r,i,m,rJ,*J*r,*m,*f,*f,*f,vp"))]
   "!TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
