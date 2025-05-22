@@ -70,11 +70,16 @@ endif
 
 libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
 	$(lt_host_flags) $(libatomic_darwin_rpath)
+
+SIZES = @SIZES@
+
+if PARTIAL_VXWORKS
+libatomic_la_SOURCES = fenv.c fence.c flag.c
+else
 libatomic_la_SOURCES = gload.c gstore.c gcas.c gexch.c glfree.c lock.c init.c \
 	fenv.c fence.c flag.c
 
 SIZEOBJS = load store cas exch fadd fsub fand fior fxor fnand tas
-SIZES = @SIZES@
 
 EXTRA_libatomic_la_SOURCES = $(addsuffix _n.c,$(SIZEOBJS))
 libatomic_la_DEPENDENCIES = $(libatomic_la_LIBADD) $(libatomic_version_dep)
@@ -151,6 +156,7 @@ endif
 
 if ARCH_AARCH64_LINUX
 libatomic_la_SOURCES += atomic_16.S
+endif
 endif
 
 libatomic_convenience_la_SOURCES = $(libatomic_la_SOURCES)
