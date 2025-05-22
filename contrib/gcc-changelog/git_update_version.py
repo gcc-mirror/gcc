@@ -124,21 +124,19 @@ def update_current_branch(ref_name=None, suffix="", last_commit_ref=None,
                           exclude_branch=None):
     commit = repo.head.commit
     commit_count = 1
-    last_commit = (repo.commit(last_commit_ref)
-                   if last_commit_ref is not None else None)
-    while commit:
-        if last_commit is not None:
-            if last_commit == commit:
+    if last_commit_ref is not None:
+        commit = repo.commit(last_commit_ref)
+    else:
+        while commit:
+            if (commit.author.email == 'gccadmin@gcc.gnu.org'
+                  and commit.message.strip() == 'Daily bump.'):
                 break
-        elif (commit.author.email == 'gccadmin@gcc.gnu.org'
-              and commit.message.strip() == 'Daily bump.'):
-            break
-        # We support merge commits but only with 2 parensts
-        assert len(commit.parents) <= 2
-        commit = commit.parents[-1]
-        commit_count += 1
+            # We support merge commits but only with 2 parensts
+            assert len(commit.parents) <= 2
+            commit = commit.parents[-1]
+            commit_count += 1
+        logging.info('%d revisions since last Daily bump' % commit_count)
 
-    logging.info('%d revisions since last Daily bump' % commit_count)
     datestamp_path = os.path.join(args.git_path, 'gcc/DATESTAMP')
     if suffix != "":
         if not os.path.exists(datestamp_path + suffix):
@@ -158,6 +156,8 @@ def update_current_branch(ref_name=None, suffix="", last_commit_ref=None,
                                       % (commit.hexsha, head.hexsha), ref_name,
                                       exclude_branch)
         commits = [c for c in commits if c.info.hexsha not in ignored_commits]
+        if last_commit_ref is not None:
+            logging.info('%d revisions since last Daily bump' % len(commits))
         for git_commit in reversed(commits):
             prepend_to_changelog_files(repo, args.git_path, git_commit,
                                        not args.dry_mode, args.suffix)

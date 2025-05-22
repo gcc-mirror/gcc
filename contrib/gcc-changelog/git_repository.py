@@ -77,8 +77,13 @@ def parse_git_revisions(repo_path, revisions, ref_name=None,
         commits = [repo.commit(revisions)]
 
     for commit in commits:
-        if exclude_branch is not None and repo.is_ancestor(commit, exclude_branch):
-            continue
+        if exclude_branch is not None:
+            if repo.is_ancestor(commit, exclude_branch):
+                continue
+            # Exlude merge commit
+            if (len(commit.parents) == 2
+                and repo.is_ancestor(commit.parents[1], exclude_branch)):
+                continue
         git_commit = GitCommit(commit_to_info(commit.hexsha),
                                commit_to_info_hook=commit_to_info,
                                ref_name=ref_name)
