@@ -77,7 +77,7 @@ enum bitint_prec_kind {
 
 static int small_max_prec, mid_min_prec, large_min_prec, huge_min_prec;
 static int limb_prec;
-static bool bitint_big_endian;
+static bool bitint_big_endian, bitint_extended;
 
 /* Categorize _BitInt(PREC) as small, middle, large or huge.  */
 
@@ -103,6 +103,7 @@ bitint_precision_kind (int prec)
       return bitint_prec_small;
     }
   bitint_big_endian = info.big_endian;
+  bitint_extended = info.extended;
   if (!large_min_prec
       && GET_MODE_PRECISION (limb_mode) < MAX_FIXED_MODE_SIZE)
     large_min_prec = MAX_FIXED_MODE_SIZE + 1;
@@ -3882,6 +3883,23 @@ bitint_large_huge::lower_shift_stmt (tree obj, gimple *stmt)
 	g = gimple_build_cond (GE_EXPR, add_cast (ssizetype, idx_next),
 			       ssize_int (0), NULL_TREE, NULL_TREE);
       insert_before (g);
+      if (bitint_extended && prec % limb_prec != 0)
+	{
+	  /* The most significant limb has been updated either in the
+	     loop or in the if after it.  To simplify the code, just
+	     read it back from memory and extend.  */
+	  m_gsi = gsi_after_labels (edge_false->dest);
+	  idx = bitint_big_endian ? size_zero_node : p;
+	  tree l = limb_access (TREE_TYPE (lhs), obj, idx, true);
+	  tree type = limb_access_type (TREE_TYPE (lhs), idx);
+	  tree v = make_ssa_name (m_limb_type);
+	  g = gimple_build_assign (v, l);
+	  insert_before (g);
+	  v = add_cast (type, v);
+	  l = limb_access (TREE_TYPE (lhs), obj, idx, true);
+	  g = gimple_build_assign (l, add_cast (m_limb_type, v));
+	  insert_before (g);
+	}
     }
 }
 
