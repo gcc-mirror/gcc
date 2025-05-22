@@ -1,3 +1,10 @@
+2025-05-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gcc-changelog/git_update_version.py (update_current_branch): Fix
+	handling of merges.
+	* gcc-changelog/git_repository.py (parse_git_revisions): Skip over
+	merge commits for merges from exclude branch.
+
 2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gcc-changelog/git_repository.py (parse_git_revisions): Optional
