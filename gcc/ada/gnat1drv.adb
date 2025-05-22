@@ -1352,7 +1352,15 @@ begin
             --  Exit the gnat driver with success, otherwise external builders
             --  such as gnatmake and gprbuild will treat the compilation of an
             --  ignored Ghost unit as a failure. Be sure we produce an empty
-            --  object file for the unit.
+            --  object file for the unit, while indicating for the ALI file
+            --  generation that neither spec or body has elaboration code
+            --  (which in ordinary compilation is indicated in Gigi).
+
+            Set_Has_No_Elaboration_Code (Main_Unit_Node);
+
+            if Present (Library_Unit (Main_Unit_Node)) then
+               Set_Has_No_Elaboration_Code (Library_Unit (Main_Unit_Node));
+            end if;
 
             Ecode := E_Success;
             Back_End.Gen_Or_Update_Object_File;
