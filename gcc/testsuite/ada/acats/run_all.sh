@@ -303,10 +303,6 @@ for chapter in $chapters; do
       fi
 
       extraflags="-gnat95"
-      grep $i $testdir/overflow.lst > /dev/null 2>&1
-      if [ $? -eq 0 ]; then
-         extraflags="$extraflags -gnato"
-      fi
       grep $i $testdir/elabd.lst > /dev/null 2>&1
       if [ $? -eq 0 ]; then
          extraflags="$extraflags -gnatE"
