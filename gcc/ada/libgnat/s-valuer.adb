@@ -287,7 +287,9 @@ package body System.Value_R is
             if Digit = Underscore and then Index + 1 <= Max then
 
                Digit := As_Digit (Str (Index + 1));
-               if Digit in Valid_Digit then
+               if Digit in Valid_Digit and then
+                  (Digit /= E_Digit or else Base > E_Digit)
+               then
                   Index := Index + 1;
                else
                   return;
@@ -437,7 +439,9 @@ package body System.Value_R is
 
             if Digit = Underscore and then Index + 1 <= Max then
                Digit := As_Digit (Str (Index + 1));
-               if Digit in Valid_Digit then
+               if Digit in Valid_Digit and then
+                  (Digit /= E_Digit or else Base > E_Digit)
+               then
                   Index := Index + 1;
                else
                   return;
