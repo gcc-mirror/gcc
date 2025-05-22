@@ -1,4 +1,4 @@
-// PR c++/120935
+// PR c++/120395
 // { dg-additional-options "-fdump-tree-optimized" }
 // { dg-final { scan-tree-dump-not "goto" "optimized" } }
 // { dg-do compile { target c++11 } }
