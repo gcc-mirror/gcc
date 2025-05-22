@@ -323,6 +323,7 @@
 
 #ifdef __sun__
 // <fenv.h> defines these as members of fex_numeric_t
+#undef i
 #undef l
 #undef f
 #undef d
@@ -332,8 +333,11 @@
 #undef ptr
 // <sys/timespec_util.h> uses this as parameter
 #undef r
-// <stdlib.h> uses this as member of drand48_data
+// <stdlib.h> uses these as members of drand48_data
+#undef a
 #undef x
+// <string.h> defines this as a parameter of timingsafe_memcmp
+#undef n
 #endif
 
 #ifdef __VXWORKS__
