@@ -4,7 +4,7 @@
 // { dg-add-options tls }
 // { dg-additional-options "-fmodules-ts" }
 
-import "pr113292_a.H";
+import "tls-1_a.H";
 
 int main() {
   auto& instance = test::get_instance();
