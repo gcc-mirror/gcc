@@ -4944,7 +4944,7 @@ cp_coroutine_transform::build_ramp_function ()
       tree frame_cleanup = push_stmt_list ();
       tree do_fr_cleanup
 	= build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, iarc_x);
-      do_fr_cleanup = build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node,
+      do_fr_cleanup = build2_loc (loc, TRUTH_ANDIF_EXPR, boolean_type_node,
 				  coro_before_return, do_fr_cleanup);
       r = build3 (COND_EXPR, void_type_node, do_fr_cleanup,
 			     delete_frame_call, void_node);
@@ -5036,7 +5036,7 @@ cp_coroutine_transform::build_ramp_function ()
 		  tree do_cleanup
 		    = build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, iarc_x);
 		  do_cleanup
-		    = build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node,
+		    = build2_loc (loc, TRUTH_ANDIF_EXPR, boolean_type_node,
 				  coro_before_return, do_cleanup);
 		  r = build3_loc (loc, COND_EXPR, void_type_node, do_cleanup,
 				  parm.fr_copy_dtor, void_node);
@@ -5096,7 +5096,7 @@ cp_coroutine_transform::build_ramp_function ()
 	  tree promise_cleanup = push_stmt_list ();
 	  tree do_cleanup
 	    = build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, iarc_x);
-	  do_cleanup = build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node,
+	  do_cleanup = build2_loc (loc, TRUTH_ANDIF_EXPR, boolean_type_node,
 				   coro_before_return, do_cleanup);
 	  r = build3 (COND_EXPR, void_type_node, do_cleanup,
 		      promise_dtor, void_node);
