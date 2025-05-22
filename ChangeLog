@@ -1,3 +1,8 @@
+2025-05-21  Stephanos Ioannidis  <root@stephanos.io>
+
+	* configure.ac: Always add pre-installed heades to search path.
+	* configure: Regenerate.
+
 2025-05-16  Spencer Abson  <spencer.abson@arm.com>
 
 	* MAINTAINERS: Add myself to write after approval.

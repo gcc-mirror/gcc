@@ -1,3 +1,7 @@
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/gthr-vxworks-thread.c: Include string.h for memset.
+
 2025-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgcc-std.ver.in (GCC_14.0.0): Remove bitint related exports

@@ -1,3 +1,160 @@
+2025-05-22  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	* config/aarch64/aarch64.cc (aarch64_evpc_reencode): Copy zero_op0_p and
+	zero_op1_p from d to newd.
+
+2025-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/120090
+	* combine.cc (gen_lowpart_for_combine_no_emit): New function.
+	(RTL_HOOKS_GEN_LOWPART_NO_EMIT): Set to gen_lowpart_for_combine_no_emit.
+
+2025-05-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md ((x << C1) + C2): Tighten split condition
+	and generate more efficient code when splitting.
+
+2025-05-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120368
+	* config/riscv/riscv.md (shift with masked shift count): Fix
+	opcode when generating an SImode shift on rv64.
+
+2025-05-21  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add new
+	case for rtx code AND.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op and to no_shift_vx_ops.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gensupport.h (needs_barrier_p): Delete.
+	* gensupport.cc (needs_barrier_p): Likewise.
+	* rtl.h (always_void_p): Return true for PC, RETURN and SIMPLE_RETURN.
+	(expand_opcode): New enum class.
+	(expand_rtx, complete_seq): Declare.
+	* emit-rtl.cc (rtx_expander): New class.
+	(expand_rtx, complete_seq): New functions.
+	* gengenrtl.cc (special_rtx, excluded_rtx): Add a cross-reference
+	comment.
+	* genemit.cc (FIRST_CODE): New constant.
+	(print_code): Delete.
+	(generator::file, generator::used, generator::sequence_type): Delete.
+	(generator::bytes): New member variable.
+	(generator::generator): Update accordingly.
+	(generator::gen_rtx_scratch): Delete.
+	(generator::add_uint, generator::add_opcode, generator::add_code)
+	(generator::add_match_operator, generator::add_exp)
+	(generator::add_vec, generator::gen_table): New member functions.
+	(generator::gen_exp): Rewrite to use a bytecode expansion.
+	(generator::gen_emit_seq): Likewise.
+	(start_gen_insn): Return the C++ expression for the operands array.
+	(gen_insn, gen_expand, gen_split): Update callers accordingly.
+	(emit_c_code): Remove use of _val.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (clobber_pat::code): Delete.
+	(maybe_queue_insn): Don't set clobber_pat::code.
+	(output_add_clobbers): Remove info argument and output the two
+	REG and SCRATCH cases directly.
+	(main): Update call accordingly.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (generator::gen_exp): Report an error for 's' operands.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (generator::gen_exp): Raise an error if we see
+	an 'L' operand.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (generator::used): Update comment.
+	(generator::gen_exp): Remove handling of null unused arrays.
+	(gen_insn, gen_expand): Always pass a used array.
+	(output_add_clobbers): Note why the used array is null here.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (generator): New structure.
+	(gen_rtx_scratch, gen_exp, gen_emit_seq): Turn into member
+	functions of generator.
+	(gen_insn, gen_expand, gen_split, output_add_clobbers): Update
+	users accordingly.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (gen_rtx_scratch, gen_exp): Use operands[%d] rather than
+	operand%d.
+	(start_gen_insn): Mark the incoming arguments as const and store
+	them to an operands array.
+	(gen_expand, gen_split): Remove copies into and out of the operands
+	array.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (start_gen_insn): New function, split out from...
+	(gen_insn, gen_expand): ...here.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (queue): New static variable.
+	(maybe_queue_insn): New function, split out from...
+	(gen_insn): ...here.
+	(queue_expand): New function, split out from...
+	(gen_expand): ...here.
+	(gen_split): New function, split out from...
+	(queue_split): ...here.
+	(main): Queue definitions for later processing rather than
+	emitting them on the fly.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (gen_exp): Make the info argument a constant reference.
+	(gen_emit_seq, gen_insn, gen_expand, gen_split): Likewise.
+	(output_add_clobbers): Likewise.
+	(main): Update calls accordingly.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/sparc/sparc.md (zero_extendhisi2, zero_extendhidi2)
+	(extendhisi2, extendqihi2, extendqisi2, extendqidi2)
+	(extendhidi2): Use operands[0] and operands[1] instead of
+	operand0 and operand1.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/stormy16/stormy16.md (negsi2): Remove unused assignment.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100837
+	* config/nds32/nds32-intrinsic.md (unspec_get_pending_int): Use
+	a local variable instead of operands[2].
+
+2025-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120369
+	* tree-complex.cc (gimple_expand_builtin_cabs): Return early
+	if the LHS of cabs is null.
+
+2025-05-21  Co-Authored-By: Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-protos.h (synthesize_and): Prototype.
+	* config/riscv/riscv.cc (synthesize_and): New function.
+	* config/riscv/riscv.md (and<mode>3): Use it.
+
+2025-05-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/118994
+	* match.pd ((a >> 1) + (b >> 1) + ((a | b) & 1) to
+	.AVG_CEIL (a, b)): New pattern.
+	((a | b) - ((a ^ b) >> 1) to .AVG_CEIL (a, b)): Ditto.
+
 2025-05-20  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* Makefile.in (gimple-match-exports.o-warn): Remove.

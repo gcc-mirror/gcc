@@ -1,3 +1,163 @@
+2025-05-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120368
+	* gcc.target/riscv/pr120368.c: New test.
+
+2025-05-21  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add asm check
+	for vand.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+
+2025-05-21  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add test cases
+	for vand vx combine case 0 on GR2VR cost.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for vand.vx run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vand-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vand-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vand-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vand-run-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vand-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vand-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vand-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vand-run-1-u8.c: New test.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/vect-simd-clone-16e.c: Expect fewer calls on ia32.
+	* gcc.dg/vect/vect-simd-clone-17e.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18e.c: Likewise.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pr31985.c: Add -fomit-frame-pointer.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pr108938-3.c: Add -msse2.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/no-callee-saved-16.c: Add -fomit-frame-pointer.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/tsvc/vect-tsvc-s332.c: Require vect_early_break_hw.
+	* gcc.dg/vect/tsvc/vect-tsvc-s481.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s482.c: Likewise.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tree-ssa/forwprop-41.c: Add -msse on x86.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/strlenopt-80.c: Bump to -msse2.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/memcpy-6.c: Bump to -msse2.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/fold-copysign-1.c: Bump to sse2 on ia32.
+	* gcc.dg/pr55152-2.c: Likewise.
+	* gcc.dg/tree-ssa/abs-4.c: Likewise.
+	* gcc.dg/tree-ssa/backprop-6.c: Likewise.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/aarch64/sme/nonlocal_goto_1.c: Match
+	vxworks cache-clearing function as well.
+	* gcc.target/aarch64/sme/nonlocal_goto_2.c: Likewise.
+	* gcc.target/aarch64/sme/nonlocal_goto_3.c: Likewise.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/aarch64/acle/rwsr.c: Use uint64_t.
+	* gcc.target/aarch64/acle/rwsr-2.c: Likewise.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/analyzer/strtok-cppreference.c
+	(__STDC_WANT_LIB_EXT1__): Define to 1.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/analyzer/fd-glibc-byte-stream-socket.c: Skip on
+	vxworks with C++ < 11.
+
+2025-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/pr115908.C: Count promise construction
+	and destruction. Run the test and XFAIL it.
+
+2025-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/119916
+	* g++.dg/coroutines/torture/special-termination-00-sync-completion.C:
+	Amend for CWG2563 expected behaviour.
+	* g++.dg/coroutines/torture/special-termination-01-self-destruct.C:
+	Likewise.
+	* g++.dg/coroutines/torture/pr119916.C: New test.
+
+2025-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120369
+	* gcc.dg/torture/pr120369-1.c: New test.
+
+2025-05-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr118994-1.c: New test.
+	* gcc.target/i386/pr118994-2.c: New test.
+
 2025-05-20  Robert Dubner  <rdubner@symas.com>
 
 	* cobol.dg/group2/FUNCTION_SQRT__2_.cob: Testcase.

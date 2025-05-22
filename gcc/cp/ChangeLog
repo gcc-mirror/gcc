@@ -1,3 +1,28 @@
+2025-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc
+	(cp_coroutine_transform::build_ramp_function): Replace ramp
+	cleanup try-catch block with eh-only cleanup statements.
+
+2025-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc
+	(cp_coroutine_transform::build_ramp_function): Use
+	decltype(auto) to determine the type of the temporary
+	get_return_object.
+
+2025-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/119916
+	* coroutines.cc
+	(cp_coroutine_transform::wrap_original_function_body): Do not
+	initialise initial_await_resume_called here...
+	(cp_coroutine_transform::build_ramp_function): ... but here.
+	When the coroutine is not void, initialize a GRO object from
+	promise.get_return_object().  Use this as the argument to the
+	return expression.  Use a regular cleanup for the GRO, since
+	it is ramp-local.
+
 2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/120349
