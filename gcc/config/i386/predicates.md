@@ -393,6 +393,23 @@
   return false;
 })
 
+;; Return true if VALUE is a constant integer whose negation satisfies
+;; x86_64_immediate_operand.
+(define_predicate "x86_64_neg_const_int_operand"
+  (match_code "const_int")
+{
+  HOST_WIDE_INT val = -UINTVAL (op);
+  if (mode == DImode && trunc_int_for_mode (val, SImode) != val)
+    return false;
+  if (flag_cf_protection & CF_BRANCH)
+    {
+      unsigned HOST_WIDE_INT endbr = TARGET_64BIT ? 0xfa1e0ff3 : 0xfb1e0ff3;
+      if ((val & HOST_WIDE_INT_C (0xffffffff)) == endbr)
+	return false;
+    }
+  return true;
+})
+
 ;; Return true if VALUE is a constant integer whose low and high words satisfy
 ;; x86_64_immediate_operand.
 (define_predicate "x86_64_hilo_int_operand"
