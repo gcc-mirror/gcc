@@ -14525,6 +14525,43 @@ synthesize_and (rtx operands[3])
 	}
     }
 
+  /* The number of instructions to synthesize the constant is a good
+     estimate of the budget.  That does not account for out of order
+     execution an fusion in the constant synthesis those would naturally
+     decrease the budget.  It also does not account for the AND at
+     the end of the sequence which would increase the budget. */
+  int budget = riscv_const_insns (operands[2], true);
+  rtx input = NULL_RTX;
+  rtx output = NULL_RTX;
+
+  /* Left shift + right shift to clear high bits.  */
+  if (budget >= 2 && p2m1_shift_operand (operands[2], word_mode))
+    {
+      int count = (GET_MODE_BITSIZE (GET_MODE (operands[1])).to_constant ()
+		   - exact_log2 (INTVAL (operands[2]) + 1));
+      rtx x = gen_rtx_ASHIFT (word_mode, operands[1], GEN_INT (count));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+      x = gen_rtx_LSHIFTRT (word_mode, input, GEN_INT (count));
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+
+  /* Clears a bunch of low bits with only high bits set.  */
+  unsigned HOST_WIDE_INT t = ~INTVAL (operands[2]);
+  if (budget >= 2 && exact_log2 (t + 1) >= 0)
+    {
+      int count = ctz_hwi (INTVAL (operands[2]));
+      rtx x = gen_rtx_LSHIFTRT (word_mode, operands[1], GEN_INT (count));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+      x = gen_rtx_ASHIFT (word_mode, input, GEN_INT (count));
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+
   /* If the remaining budget has gone to less than zero, it
      forces the value into a register and performs the AND
      operation.  It returns TRUE to the caller so the caller
