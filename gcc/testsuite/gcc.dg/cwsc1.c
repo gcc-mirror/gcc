@@ -6,7 +6,11 @@
 #elif defined(__i386__)
 # define CHAIN  "%ecx"
 #elif defined(__aarch64__)
-# define CHAIN  "x18"
+# if defined __vxworks
+#  define CHAIN "x9"
+# else
+#  define CHAIN  "x18"
+# endif
 #elif defined(__alpha__)
 # define CHAIN  "$1"
 #elif defined(__arm__)

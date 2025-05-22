@@ -18826,9 +18826,16 @@ aarch64_override_options_internal (struct gcc_options *opts)
       aarch64_stack_protector_guard_offset = offs;
     }
 
-  if ((flag_sanitize & SANITIZE_SHADOW_CALL_STACK)
-      && !fixed_regs[R18_REGNUM])
-    error ("%<-fsanitize=shadow-call-stack%> requires %<-ffixed-x18%>");
+  if ((flag_sanitize & SANITIZE_SHADOW_CALL_STACK))
+    {
+      if (!fixed_regs[R18_REGNUM])
+	error ("%<-fsanitize=shadow-call-stack%> requires %<-ffixed-x18%>");
+#ifdef TARGET_OS_USES_R18
+      else
+	sorry ("%<-fsanitize=shadow-call-stack%> conflicts with the use of"
+	       " register x18 by the target operating system");
+#endif
+    }
 
   aarch64_feature_flags isa_flags = aarch64_get_isa_flags (opts);
   if ((isa_flags & (AARCH64_FL_SM_ON | AARCH64_FL_ZA_ON))
@@ -22046,6 +22053,14 @@ aarch64_conditional_register_usage (void)
       fixed_regs[SPECULATION_SCRATCH_REGNUM] = 1;
       call_used_regs[SPECULATION_SCRATCH_REGNUM] = 1;
     }
+
+#ifdef TARGET_OS_USES_R18
+  /* R18 is the STATIC_CHAIN_REGNUM on most aarch64 ports, but VxWorks
+     uses it as the TCB, so aarch64-vxworks.h overrides
+     STATIC_CHAIN_REGNUM, and here we mark R18 as fixed.  */
+  fixed_regs[R18_REGNUM] = 1;
+  call_used_regs[R18_REGNUM] = 1;
+#endif
 }
 
 /* Implement TARGET_MEMBER_TYPE_FORCES_BLK.  */
