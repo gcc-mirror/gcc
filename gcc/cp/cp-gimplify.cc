@@ -3441,7 +3441,9 @@ cp_fold (tree x, fold_flags_t flags)
 	   Do constexpr expansion of expressions where the call itself is not
 	   constant, but the call followed by an INDIRECT_REF is.  */
 	if (callee && DECL_DECLARED_CONSTEXPR_P (callee)
-	    && !flag_no_inline)
+	    && (!flag_no_inline
+		|| lookup_attribute ("always_inline",
+				     DECL_ATTRIBUTES (callee))))
 	  {
 	    mce_value manifestly_const_eval = mce_unknown;
 	    if (flags & ff_mce_false)
