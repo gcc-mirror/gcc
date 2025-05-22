@@ -4452,23 +4452,12 @@ static tree
 mangle_decl_string (const tree decl)
 {
   tree result;
-  tree saved_fn = NULL_TREE;
-  bool template_p = false;
+  tree saved_fn = current_function_decl;
 
   /* We shouldn't be trying to mangle an uninstantiated template.  */
   gcc_assert (!type_dependent_expression_p (decl));
 
-  if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
-    {
-      struct tinst_level *tl = current_instantiation ();
-      if ((!tl || tl->maybe_get_node () != decl)
-	  && push_tinst_level (decl))
-	{
-	  template_p = true;
-	  saved_fn = current_function_decl;
-	  current_function_decl = NULL_TREE;
-	}
-    }
+  current_function_decl = NULL_TREE;
   iloc_sentinel ils (DECL_SOURCE_LOCATION (decl));
 
   start_mangling (decl);
@@ -4483,12 +4472,7 @@ mangle_decl_string (const tree decl)
     fprintf (stderr, "mangle_decl_string = '%s'\n\n",
 	     IDENTIFIER_POINTER (result));
 
-  if (template_p)
-    {
-      pop_tinst_level ();
-      current_function_decl = saved_fn;
-    }
-
+  current_function_decl = saved_fn;
   return result;
 }
 
