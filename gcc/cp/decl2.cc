@@ -4028,6 +4028,7 @@ get_tls_init_fn (tree var)
       SET_DECL_LANGUAGE (fn, lang_c);
       TREE_PUBLIC (fn) = TREE_PUBLIC (var);
       DECL_ARTIFICIAL (fn) = true;
+      DECL_CONTEXT (fn) = FROB_CONTEXT (global_namespace);
       DECL_COMDAT (fn) = DECL_COMDAT (var);
       DECL_EXTERNAL (fn) = DECL_EXTERNAL (var);
       if (DECL_ONE_ONLY (var))
@@ -4087,7 +4088,7 @@ get_tls_wrapper_fn (tree var)
       TREE_PUBLIC (fn) = TREE_PUBLIC (var);
       DECL_ARTIFICIAL (fn) = true;
       DECL_IGNORED_P (fn) = 1;
-      DECL_CONTEXT (fn) = DECL_CONTEXT (var);
+      DECL_CONTEXT (fn) = FROB_CONTEXT (global_namespace);
       /* The wrapper is inline and emitted everywhere var is used.  */
       DECL_DECLARED_INLINE_P (fn) = true;
       if (TREE_PUBLIC (var))

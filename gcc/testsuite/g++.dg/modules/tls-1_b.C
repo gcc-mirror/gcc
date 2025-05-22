@@ -1,7 +1,7 @@
 // PR c++/113292
 // { dg-additional-options "-fmodules-ts" }
 
-import "pr113292_a.H";
+import "tls-1_a.H";
 
 // provide a definition of 'instance' so things link
 thread_local test test::instance;
