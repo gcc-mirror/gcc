@@ -14562,6 +14562,34 @@ synthesize_and (rtx operands[3])
       return true;
     }
 
+  /* If there are all zeros, except for a run of 1s somewhere in the middle
+     of the constant, then this is at worst 3 shifts.  */
+  t = INTVAL (operands[2]);
+  if (budget >= 3
+      && consecutive_bits_operand (GEN_INT (t), word_mode)
+      && popcount_hwi (t) > 3)
+    {
+      /* Shift right to clear the low order bits.  */
+      int count = ctz_hwi (INTVAL (operands[2]));
+      rtx x = gen_rtx_LSHIFTRT (word_mode, operands[1], GEN_INT (count));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+
+      /* Shift left to clear the high order bits.  */
+      count += clz_hwi (INTVAL (operands[2])) % BITS_PER_WORD;
+      x = gen_rtx_ASHIFT (word_mode, input, GEN_INT (count));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+
+      /* And shift back right to put the bits into position.  */
+      count = clz_hwi (INTVAL (operands[2])) % BITS_PER_WORD;
+      x = gen_rtx_LSHIFTRT (word_mode, input, GEN_INT (count));
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+
   /* If the remaining budget has gone to less than zero, it
      forces the value into a register and performs the AND
      operation.  It returns TRUE to the caller so the caller
