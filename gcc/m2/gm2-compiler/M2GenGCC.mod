@@ -8229,6 +8229,14 @@ BEGIN
    type := SkipType (type) ;
    DeclareConstant (rightpos, right) ;
    DeclareConstructor (rightpos, quad, right) ;
+   IF StrictTypeChecking AND
+      (NOT AssignmentTypeCompatible (xindrpos, "", GetType (left), right))
+   THEN
+      MetaErrorT2 (tokenno,
+                   'assignment check caught mismatch between {%1Ead} and {%2ad}',
+                   left, right) ;
+      SubQuad (quad)
+   END ;
    IF IsProcType(SkipType(type))
    THEN
       BuildAssignmentStatement (location, BuildIndirect (location, Mod2Gcc (left), GetPointerType ()), Mod2Gcc (right))
