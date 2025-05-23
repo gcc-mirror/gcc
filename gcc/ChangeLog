@@ -1,3 +1,14 @@
+2025-05-22  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/111873
+	* tree-sra.cc (sra_modify_expr): When processing a load which has
+	a type-incompatible replacement, do not store the contents of the
+	replacement into the original aggregate when that aggregate is
+	const.
+
 2025-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
