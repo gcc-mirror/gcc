@@ -10522,7 +10522,8 @@ trees_in::tree_node (bool is_use)
 	      res = lookup_field_ident (ctx, u ());
 
 	    if (!res
-		|| TREE_CODE (res) != FIELD_DECL
+		|| (TREE_CODE (res) != FIELD_DECL
+		    && TREE_CODE (res) != USING_DECL)
 		|| DECL_CONTEXT (res) != ctx)
 	      res = NULL_TREE;
 	  }
