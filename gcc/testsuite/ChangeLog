@@ -1,3 +1,73 @@
+2025-05-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* gm2/iso/fail/badarray3.mod: New test.
+
+2025-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats/overflow.lst: Delete.
+	* ada/acats/run_all.sh: Do not process overflow.lst.
+
+2025-05-22  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/opt/always_inline2.C: Correct PR number.
+
+2025-05-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120935
+	* g++.dg/opt/always_inline2.C: New test.
+	* g++.dg/debug/dwarf2/pubnames-2.C: Suppress -fimplicit-constexpr.
+	* g++.dg/debug/dwarf2/pubnames-3.C: Likewise.
+
+2025-05-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/cwsc1.c (CHAIN, aarch64): x9 instead x18 for __vxworks.
+	* gcc.target/aarch64/reg-alloc-4.c: Drop x18-assigned asm
+	operand on vxworks.
+	* gcc.target/aarch64/shadow_call_stack_1.c: Don't expect
+	-ffixed-x18 error on vxworks, but rather the sorry message.
+	* gcc.target/aarch64/shadow_call_stack_2.c: Skip on vxworks.
+	* gcc.target/aarch64/shadow_call_stack_3.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_4.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_5.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_6.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_7.c: Likewise.
+	* gcc.target/aarch64/shadow_call_stack_8.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-19.c: Likewise.
+	* gcc.target/aarch64/stack-check-prologue-20.c: Likewise.
+
+2025-05-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/120372
+	* gcc.target/aarch64/imm_choice_comparison-2.c: New test.
+
+2025-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/bitintext.h: New file.
+	* gcc.dg/torture/bitint-82.c: New test.
+
+2025-05-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_arm_v8_1a_neon_ok_nocache): Use
+	-mcpu=unset on arm only.
+	(check_effective_target_arm_v8_2a_fp16_scalar_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_2a_fp16_neon_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_2a_i8mm_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_2a_bf16_neon_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_3a_complex_neon_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache): Likewise.
+
+2025-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/120360
+	* gcc.target/i386/pr120360.c: New test.
+
+2025-05-22  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/cset-sext-sfb.c: Skip for -Oz.
+	* gcc.target/riscv/zba-slliuw.c: Skip for -Og.
+
 2025-05-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/120368

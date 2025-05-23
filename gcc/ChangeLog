@@ -1,3 +1,71 @@
+2025-05-22  Joseph Myers  <josmyers@redhat.com>
+
+	* doc/implement-c.texi: Document C23 implementation-defined
+	behavior.
+	(Constant expressions implementation, Types implementation): New
+	nodes.
+
+2025-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.cc (loc_list_from_tree_1) <COMPONENT_REF>: Add specific
+	handling of bit-fields for big-endian targets.
+
+2025-05-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/aarch64/aarch64-vxworks.h (TARGET_OS_USES_R18): Define.
+	Update comments.
+	* config/aarch64/aarch64.cc (aarch64_conditional_register_usage):
+	Mark x18 as fixed on VxWorks.
+	(aarch64_override_options_internal): Issue sorry message on
+	-fsanitize=shadow-call-stack if TARGET_OS_USES_R18.
+
+2025-05-22  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	* config/riscv/riscv.cc (synthesize_and): When profitable, use a three
+	shift sequence to clear bits at both upper and lower bits rather than
+	synthesizing the constant mask.
+
+2025-05-22  Siarhei Volkau  <lis8215@gmail.com>
+
+	PR target/70557
+	* config/riscv/riscv.md (movdi_32bit): Add "J" constraint to allow storing 0
+	directly to memory.
+
+2025-05-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/120372
+	* config/aarch64/aarch64.cc (aarch64_rtx_costs <case CONST_INSN>): Handle
+	if outer is COMPARE and the constant can be handled by the cmp instruction.
+
+2025-05-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* expmed.cc (canonicalize_comparison): Use rtx_cost directly
+	instead of gen_move_insn. Print out the choice if dump is enabled.
+
+2025-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (bitint_extended): New variable.
+	(bitint_large_huge::lower_shift_stmt): For LSHIFT_EXPR with
+	bitint_extended if lhs has most significant partial limb extend
+	it afterwards.
+
+2025-05-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* doc/md.texi: Document the 'q' constraint for LoongArch.
+
+2025-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/120360
+	* config/i386/predicates.md (x86_64_neg_const_int_operand): New
+	predicate.
+	* config/i386/i386.md (*cmp<mode>_plus_1): New pattern.
+
+2025-05-22  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	* config/riscv/riscv.cc (synthesize_and): When profitable, use two
+	shift combinations to clear high or low bits rather than synthsizing
+	the constant.
+
 2025-05-22  Pengxuan Zheng  <quic_pzheng@quicinc.com>
 
 	* config/aarch64/aarch64.cc (aarch64_evpc_reencode): Copy zero_op0_p and

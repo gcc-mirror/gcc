@@ -1,3 +1,8 @@
+2025-05-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120935
+	* cp-gimplify.cc (cp_fold): Check always_inline.
+
 2025-05-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc

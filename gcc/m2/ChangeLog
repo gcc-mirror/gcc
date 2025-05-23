@@ -1,3 +1,10 @@
+2025-05-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* gm2-compiler/M2GenGCC.mod (CodeXIndr): Check to see that
+	the type of left is assignment compatible with the type of
+	right.
+
 2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/120253
