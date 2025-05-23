@@ -132,7 +132,7 @@ AARCH64_CORE("octeontx2f95mm", octeontx2f95mm, cortexa57, V8_2A,  (CRYPTO, PROFI
 
 /* Fujitsu ('F') cores. */
 AARCH64_CORE("a64fx", a64fx, a64fx, V8_2A,  (F16, SVE), a64fx, 0x46, 0x001, -1)
-AARCH64_CORE("fujitsu-monaka", fujitsu_monaka, cortexa57, V9_3A, (F16, FP8, LS64, RNG, CRYPTO, SVE2_AES, SVE2_BITPERM, SVE2_SHA3, SVE2_SM4), fujitsu_monaka, 0x46, 0x003, -1)
+AARCH64_CORE("fujitsu-monaka", fujitsu_monaka, cortexa57, V9_3A, (F16, FAMINMAX, FP8FMA, FP8DOT2, FP8DOT4, LS64, LUT, RNG, CRYPTO, SVE2_AES, SVE2_BITPERM, SVE2_SHA3, SVE2_SM4), fujitsu_monaka, 0x46, 0x003, -1)
 
 /* HiSilicon ('H') cores. */
 AARCH64_CORE("tsv110",  tsv110, tsv110, V8_2A,  (CRYPTO, F16), tsv110,   0x48, 0xd01, -1)
