@@ -1,3 +1,7 @@
+2025-05-23  Release Manager
+
+	* GCC 14.3.0 released.
+
 2025-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

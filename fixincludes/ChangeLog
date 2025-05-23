@@ -1,3 +1,7 @@
+2025-05-23  Release Manager
+
+	* GCC 14.3.0 released.
+
 2025-05-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:
