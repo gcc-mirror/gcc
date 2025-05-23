@@ -208,43 +208,51 @@ Late::visit (AST::LetStmt &let)
   //      let.get_node_id (), [] () {});
 }
 
-void
-Late::visit (AST::IdentifierPattern &identifier)
+static void
+visit_identifier_as_pattern (NameResolutionContext &ctx,
+			     const Identifier &ident, location_t locus,
+			     NodeId node_id)
 {
   // do we insert in labels or in values
   // but values does not allow shadowing... since functions cannot shadow
   // do we insert functions in labels as well?
 
-  if (ctx.bindings.peek ().is_and_bound (identifier.get_ident ()))
+  if (ctx.bindings.peek ().is_and_bound (ident))
     {
       if (ctx.bindings.peek ().get_source () == BindingSource::Param)
 	rust_error_at (
-	  identifier.get_locus (), ErrorCode::E0415,
+	  locus, ErrorCode::E0415,
 	  "identifier %qs is bound more than once in the same parameter list",
-	  identifier.as_string ().c_str ());
+	  ident.as_string ().c_str ());
       else
 	rust_error_at (
-	  identifier.get_locus (), ErrorCode::E0416,
+	  locus, ErrorCode::E0416,
 	  "identifier %qs is bound more than once in the same pattern",
-	  identifier.as_string ().c_str ());
+	  ident.as_string ().c_str ());
       return;
     }
 
-  ctx.bindings.peek ().insert_ident (identifier.get_ident ());
+  ctx.bindings.peek ().insert_ident (ident);
 
-  if (ctx.bindings.peek ().is_or_bound (identifier.get_ident ()))
+  if (ctx.bindings.peek ().is_or_bound (ident))
     {
       // FIXME: map usage instead
-      std::ignore = ctx.values.insert_shadowable (identifier.get_ident (),
-						  identifier.get_node_id ());
+      std::ignore = ctx.values.insert_shadowable (ident, node_id);
     }
   else
     {
       // We do want to ignore duplicated data because some situations rely on
       // it.
-      std::ignore = ctx.values.insert_shadowable (identifier.get_ident (),
-						  identifier.get_node_id ());
+      std::ignore = ctx.values.insert_shadowable (ident, node_id);
     }
+}
+
+void
+Late::visit (AST::IdentifierPattern &identifier)
+{
+  visit_identifier_as_pattern (ctx, identifier.get_ident (),
+			       identifier.get_locus (),
+			       identifier.get_node_id ());
 }
 
 void
@@ -274,9 +282,8 @@ Late::visit_function_params (AST::Function &function)
 void
 Late::visit (AST::StructPatternFieldIdent &field)
 {
-  // We do want to ignore duplicated data because some situations rely on it.
-  std::ignore = ctx.values.insert_shadowable (field.get_identifier (),
-					      field.get_node_id ());
+  visit_identifier_as_pattern (ctx, field.get_identifier (), field.get_locus (),
+			       field.get_node_id ());
 }
 
 void
