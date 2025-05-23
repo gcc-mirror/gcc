@@ -236,8 +236,9 @@ visit_identifier_as_pattern (NameResolutionContext &ctx,
 
   if (ctx.bindings.peek ().is_or_bound (ident))
     {
-      // FIXME: map usage instead
-      std::ignore = ctx.values.insert_shadowable (ident, node_id);
+      auto res = ctx.values.get (ident);
+      rust_assert (res.has_value () && !res->is_ambiguous ());
+      ctx.map_usage (Usage (node_id), Definition (res->get_node_id ()));
     }
   else
     {
