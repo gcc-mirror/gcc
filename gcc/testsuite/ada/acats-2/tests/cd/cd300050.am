@@ -43,7 +43,7 @@
 --      Implementation dialects of C may require alteration of the C program
 --      syntax.  The program is included here for reference:
 --
---            int _cd30005_1( Value )
+--            int _cd30005_1( int Value )
 --            {
 --               /* int Value */
 --
@@ -64,8 +64,8 @@
 --
 --      For implementations not validating against Annex C:
 --        this test may report compile time errors at one or more points
---        indicated by "-- ANX-C RQMT", in which case it may be graded as inapplicable.
---        Otherwise, the test must execute and report PASSED.
+--        indicated by "-- ANX-C RQMT", in which case it may be graded as
+--        inapplicable. Otherwise, the test must execute and report PASSED.
 --
 --
 -- CHANGE HISTORY:
@@ -75,6 +75,7 @@
 --      04 NOV 96   SAIC   Added use type System.Address
 --      16 FEB 98   EDS    Modified documentation.
 --      29 JUN 98   EDS    Modified main program name.
+--      03 JUN 24   RLB    Corrected C program to have a proper prototype.
 --!
 
 ----------------------------------------------------------------- CD30005_0

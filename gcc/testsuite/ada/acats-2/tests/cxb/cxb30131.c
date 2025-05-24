@@ -50,15 +50,16 @@
 --      12 Oct 95   SAIC    Initial prerelease version. 
 --      26 Oct 96   SAIC    Modified temp array initialization.                
 --      15 Feb 99   RLB     Repaired to remove non-standard function strdup.
+--      16 Jun 21   RLB     Added missing include required by C standards.
 --!
 */
 
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 char *stringdup (char *s)
 {
-  char *result = malloc(sizeof(char)*(strlen(s)+1));
+  char *result = (char *) malloc(sizeof(char)*(strlen(s)+1));
   return strcpy(result,s);
 }
 

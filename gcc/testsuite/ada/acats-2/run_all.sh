@@ -1,10 +1,10 @@
 #!/bin/sh
-# Run ACATS with the GNU Ada compiler
+# Run ACATS 2 with the GNU Ada compiler
 
 # The following functions are to be customized if you run in cross
 # environment or want to change compilation flags.  Note that for
 # tests requiring checks not turned on by default, this script
-# automatically adds the needed flags to pass (ie: -gnato or -gnatE).
+# automatically adds the needed flags to pass (e.g. -gnatE).
 
 # gccflags="-O3 -funroll-loops"
 # gnatflags="-gnatn"
