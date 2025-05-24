@@ -1,3 +1,21 @@
+2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120363
+	* decl2.cc (get_tls_init_fn): Set context as global_namespace.
+	(get_tls_wrapper_fn): Likewise.
+
+2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120414
+	* module.cc (trees_in::tree_node): Allow reading a USING_DECL
+	when streaming tt_data_member.
+
 2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:

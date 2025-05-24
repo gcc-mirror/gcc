@@ -1,3 +1,31 @@
+2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120363
+	* g++.dg/modules/pr113292_a.H: Move to...
+	* g++.dg/modules/tls-1_a.H: ...here.
+	* g++.dg/modules/pr113292_b.C: Move to...
+	* g++.dg/modules/tls-1_b.C: ...here.
+	* g++.dg/modules/pr113292_c.C: Move to...
+	* g++.dg/modules/tls-1_c.C: ...here.
+	* g++.dg/modules/tls-2_a.C: New test.
+	* g++.dg/modules/tls-2_b.C: New test.
+	* g++.dg/modules/tls-2_c.C: New test.
+	* g++.dg/modules/tls-3.h: New test.
+	* g++.dg/modules/tls-3_a.H: New test.
+	* g++.dg/modules/tls-3_b.C: New test.
+
+2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120414
+	* g++.dg/modules/using-31_a.C: New test.
+	* g++.dg/modules/using-31_b.C: New test.
+
 2025-05-22  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
