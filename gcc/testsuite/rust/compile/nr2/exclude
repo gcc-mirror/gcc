@@ -1,8 +1,4 @@
 issue-3315-2.rs
 torture/alt_patterns1.rs
-issue-1487.rs
-issue-2015.rs
-issue-3454.rs
-impl_trait_generic_arg.rs
 issue-3642.rs
 # please don't delete the trailing newline
