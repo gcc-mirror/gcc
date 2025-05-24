@@ -211,7 +211,7 @@ Late::visit (AST::LetStmt &let)
 static void
 visit_identifier_as_pattern (NameResolutionContext &ctx,
 			     const Identifier &ident, location_t locus,
-			     NodeId node_id)
+			     NodeId node_id, bool is_ref, bool is_mut)
 {
   // do we insert in labels or in values
   // but values does not allow shadowing... since functions cannot shadow
@@ -232,7 +232,7 @@ visit_identifier_as_pattern (NameResolutionContext &ctx,
       return;
     }
 
-  ctx.bindings.peek ().insert_ident (ident);
+  ctx.bindings.peek ().insert_ident (ident.as_string (), locus, is_ref, is_mut);
 
   if (ctx.bindings.peek ().is_or_bound (ident))
     {
@@ -255,7 +255,9 @@ Late::visit (AST::IdentifierPattern &identifier)
 
   visit_identifier_as_pattern (ctx, identifier.get_ident (),
 			       identifier.get_locus (),
-			       identifier.get_node_id ());
+			       identifier.get_node_id (),
+			       identifier.get_is_ref (),
+			       identifier.get_is_mut ());
 }
 
 void
@@ -286,7 +288,8 @@ void
 Late::visit (AST::StructPatternFieldIdent &field)
 {
   visit_identifier_as_pattern (ctx, field.get_identifier (), field.get_locus (),
-			       field.get_node_id ());
+			       field.get_node_id (), field.is_ref (),
+			       field.is_mut ());
 }
 
 void

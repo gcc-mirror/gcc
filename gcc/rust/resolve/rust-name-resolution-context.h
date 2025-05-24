@@ -158,6 +158,22 @@ public:
   NodeId id;
 };
 
+struct IdentifierMode
+{
+  bool is_ref;
+  bool is_mut;
+
+  IdentifierMode (bool is_ref, bool is_mut) : is_ref (is_ref), is_mut (is_mut)
+  {}
+
+  bool operator== (const IdentifierMode &other)
+  {
+    return other.is_ref == is_ref && other.is_mut == is_mut;
+  }
+
+  bool operator!= (const IdentifierMode &other) { return !(*this == other); }
+};
+
 struct Binding
 {
   enum class Kind
@@ -166,9 +182,12 @@ struct Binding
     Or,
   } kind;
 
-  std::unordered_set<Identifier> set;
+  // used to check the correctness of or-bindings
+  bool has_expected_bindings;
 
-  Binding (Binding::Kind kind) : kind (kind) {}
+  std::unordered_map<std::string, std::pair<location_t, IdentifierMode>> idents;
+
+  Binding (Binding::Kind kind) : kind (kind), has_expected_bindings (false) {}
 };
 
 /**
@@ -208,7 +227,8 @@ public:
    */
   bool is_or_bound (Identifier ident);
 
-  void insert_ident (Identifier ident);
+  void insert_ident (std::string ident, location_t locus, bool is_ref,
+		     bool is_mut);
 
   void merge ();
 

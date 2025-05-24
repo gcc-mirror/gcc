@@ -33,7 +33,8 @@ BindingLayer::bind_test (Identifier ident, Binding::Kind kind)
 {
   for (auto &bind : bindings)
     {
-      if (bind.set.find (ident) != bind.set.cend () && bind.kind == kind)
+      if (bind.idents.find (ident.as_string ()) != bind.idents.cend ()
+	  && bind.kind == kind)
 	{
 	  return true;
 	}
@@ -60,20 +61,66 @@ BindingLayer::is_or_bound (Identifier ident)
 }
 
 void
-BindingLayer::insert_ident (Identifier ident)
+BindingLayer::insert_ident (std::string ident, location_t locus, bool is_ref,
+			    bool is_mut)
 {
-  bindings.back ().set.insert (ident);
+  bindings.back ().idents.emplace (
+    std::move (ident), std::make_pair (locus, IdentifierMode (is_ref, is_mut)));
 }
 
 void
 BindingLayer::merge ()
 {
-  auto last_binding = bindings.back ();
+  auto last_binding = std::move (bindings.back ());
   bindings.pop_back ();
-  for (auto &value : last_binding.set)
+
+  if (bindings.back ().has_expected_bindings)
     {
-      bindings.back ().set.insert (value);
+      for (auto &value : bindings.back ().idents)
+	{
+	  auto ident = value.first;
+	  if (last_binding.idents.find (ident) == last_binding.idents.end ())
+	    {
+	      location_t locus = value.second.first;
+	      rust_error_at (locus, ErrorCode::E0408,
+			     "variable %qs is not bound in all patterns",
+			     ident.c_str ());
+	    }
+	}
     }
+
+  for (auto &value : last_binding.idents)
+    {
+      auto res = bindings.back ().idents.emplace (value);
+      if (res.second)
+	{
+	  if (bindings.back ().has_expected_bindings)
+	    {
+	      auto &ident = value.first;
+	      location_t locus = value.second.first;
+	      rust_error_at (locus, ErrorCode::E0408,
+			     "variable %qs is not bound in all patterns",
+			     ident.c_str ());
+	    }
+	}
+      else
+	{
+	  auto this_mode = value.second.second;
+	  auto other_mode = res.first->second.second;
+	  if (this_mode != other_mode)
+	    {
+	      auto &ident = value.first;
+	      location_t locus = value.second.first;
+	      rust_error_at (locus, ErrorCode::E0409,
+			     "variable %qs is bound inconsistently across "
+			     "pattern alternatives",
+			     ident.c_str ());
+	    }
+	}
+    }
+
+  if (bindings.back ().kind == Binding::Kind::Or)
+    bindings.back ().has_expected_bindings = true;
 }
 
 BindingSource
