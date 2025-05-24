@@ -6784,6 +6784,13 @@ trees_out::core_vals (tree t)
       if (streaming_p ())
 	WU (((lang_tree_node *)t)->trait_expression.kind);
       break;
+
+    case TU_LOCAL_ENTITY:
+      WT (((lang_tree_node *)t)->tu_local_entity.name);
+      if (state)
+	state->write_location
+	  (*this, ((lang_tree_node *)t)->tu_local_entity.loc);
+      break;
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
@@ -7327,6 +7334,11 @@ trees_in::core_vals (tree t)
       RT (((lang_tree_node *)t)->trait_expression.type2);
       RUC (cp_trait_kind, ((lang_tree_node *)t)->trait_expression.kind);
       break;
+
+    case TU_LOCAL_ENTITY:
+      RT (((lang_tree_node *)t)->tu_local_entity.name);
+      ((lang_tree_node *)t)->tu_local_entity.loc
+	= state->read_location (*this);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
@@ -10135,7 +10147,8 @@ trees_in::tree_node (bool is_use)
 	    && dump ("Read %stypedef %C:%N",
 		     DECL_IMPLICIT_TYPEDEF_P (res) ? "implicit " : "",
 		     TREE_CODE (res), res);
-	  res = TREE_TYPE (res);
+	  if (TREE_CODE (res) != TU_LOCAL_ENTITY)
+	    res = TREE_TYPE (res);
 	}
       break;
 
