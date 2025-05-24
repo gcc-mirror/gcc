@@ -1,3 +1,46 @@
+2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120363
+	* g++.dg/modules/pr113292_a.H: Move to...
+	* g++.dg/modules/tls-1_a.H: ...here.
+	* g++.dg/modules/pr113292_b.C: Move to...
+	* g++.dg/modules/tls-1_b.C: ...here.
+	* g++.dg/modules/pr113292_c.C: Move to...
+	* g++.dg/modules/tls-1_c.C: ...here.
+	* g++.dg/modules/tls-2_a.C: New test.
+	* g++.dg/modules/tls-2_b.C: New test.
+	* g++.dg/modules/tls-2_c.C: New test.
+	* g++.dg/modules/tls-3.h: New test.
+	* g++.dg/modules/tls-3_a.H: New test.
+	* g++.dg/modules/tls-3_b.C: New test.
+
+2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120414
+	* g++.dg/modules/using-31_a.C: New test.
+	* g++.dg/modules/using-31_b.C: New test.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/arch-56.c: New test.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/param-autovec-mode.c: New test.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-3.c: Adjust
+	expectations.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-9.c: Ditto.
+
+2025-05-23  Dhruv Chawla  <dhruvc@nvidia.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/shift_rev_1.c: New test.
+	* gcc.target/aarch64/sve/shift_rev_2.c: Likewise.
+	* gcc.target/aarch64/sve/shift_rev_3.c: Likewise.
+
 2025-05-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/120389

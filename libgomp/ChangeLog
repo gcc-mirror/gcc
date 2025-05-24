@@ -1,3 +1,9 @@
+2025-05-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/118694
+	* testsuite/libgomp.c-c++-common/metadirective-1.c: xfail when
+	compiling (also) for nvptx offloading as an error is then expected.
+
 2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR lto/120308

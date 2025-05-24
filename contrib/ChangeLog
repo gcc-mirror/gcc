@@ -1,3 +1,7 @@
+2025-05-23  Andi Kleen  <ak@gcc.gnu.org>
+
+	* diffsummary.py: New file.
+
 2025-05-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* check_GNU_style_lib.py: Remove literal prefix.

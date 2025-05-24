@@ -1,3 +1,7 @@
+2025-05-23  Andi Kleen  <ak@gcc.gnu.org>
+
+	* bootstrap-native.mk: New file.
+
 2025-04-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* bootstrap-lto-locality.mk: New file.

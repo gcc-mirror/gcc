@@ -1,3 +1,86 @@
+2025-05-23  Andi Kleen  <ak@gcc.gnu.org>
+
+	* doc/install.texi: Document bootstrap-native.
+
+2025-05-23  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR middle-end/114563
+	PR c++/119387
+	* ggc-page.cc (struct free_list): New structure.
+	(struct page_entry): Point to free_list.
+	(find_free_list): New function.
+	(find_free_list_order): Dito.
+	(alloc_page): Use specific free_list.
+	(release_pages): Dito.
+	(do_release_pages): Dito.
+	(init_ggc): Dito.
+	(ggc_print_statistics): Print overflow stat.
+	(ggc_pch_read): Use specific free list.
+
+2025-05-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/implement-c.texi (C Implementation): Add missing menu items.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::parse_base_ext):
+	Adjust error message.
+	(riscv_handle_option): Parse as CPU string first.
+	(riscv_expand_arch): Ditto.
+	* doc/invoke.texi: Document.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (autovectorize_vector_modes): Return
+	user-specified mode if available.
+	* config/riscv/riscv.opt: New param.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv.cc (singleton_vxrm_need): Init
+	saved_vxrm_mode.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-vector-costs.cc (compute_estimated_lmul):
+	Always use vect_vf_for_cost and TARGET_MIN_VLEN.
+
+2025-05-23  Dhruv Chawla  <dhruvc@nvidia.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* expmed.cc (expand_rotate_as_vec_perm): Avoid a no-op move if the
+	target already provided the result in the expected register.
+	* config/aarch64/aarch64.cc (aarch64_vectorize_vec_perm_const):
+	Avoid forcing subregs into fresh registers unnecessarily.
+	* config/aarch64/aarch64-sve.md: Add define_split for rotate.
+	(*v_revvnx8hi): New pattern.
+
+2025-05-23  Dhruv Chawla  <dhruvc@nvidia.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_adr<mode>_shift):
+	Match lowered form of ashift.
+	(*aarch64_adr<mode>_shift): Likewise.
+	(*aarch64_adr_shift_sxtw): Likewise.
+	(*aarch64_adr_shift_uxtw): Likewise.
+	(<ASHIFT:optab><mode>3): Check amount instead of operands[2] in
+	aarch64_sve_<lr>shift_operand.
+	(v<optab><mode>3): Generate unpredicated shifts for constant
+	operands.
+	(@aarch64_pred_<optab><mode>): Convert to a define_expand.
+	(*aarch64_pred_<optab><mode>): Create define_insn_and_split pattern
+	from @aarch64_pred_<optab><mode>.
+	(*post_ra_v_ashl<mode>3): Rename to ...
+	(aarch64_vashl<mode>3_const): ... this and remove reload requirement.
+	(*post_ra_v_<optab><mode>3): Rename to ...
+	(aarch64_v<optab><mode>3_const): ... this and remove reload
+	requirement.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve_add_<sve_int_op><mode>): Match lowered form of
+	SHIFTRT.
+	(*aarch64_sve2_sra<mode>): Likewise.
+	(*bitmask_shift_plus<mode>): Match lowered form of lshiftrt.
+
 2025-05-22  Joseph Myers  <josmyers@redhat.com>
 
 	* doc/implement-c.texi: Document C23 implementation-defined
