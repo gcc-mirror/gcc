@@ -103,14 +103,14 @@ gnatls -v >> $dir/acats.log
 display ""
 
 if [ -n "$GCC_RUNTEST_PARALLELIZE_DIR" ]; then
-  dir_support=$dir/../acats/support
+  dir_support=$dir/../acats-2/support
 
   rm -rf $dir/run
   mv $dir/tests $dir/tests.$$ 2> /dev/null
   rm -rf $dir/tests.$$ &
   mkdir -p $dir/run
 
-  cp -pr $dir/../acats/tests $dir/
+  cp -pr $dir/../acats-2/tests $dir/
 else
   dir_support=$dir/support
 
@@ -336,7 +336,9 @@ for chapter in $chapters; do
       echo "BUILD $main" >> $dir/acats.log
       EXTERNAL_OBJECTS=""
       case $i in
-        cxb30*) EXTERNAL_OBJECTS="$dir_support/cxb30040.o $dir_support/cxb30060.o $dir_support/cxb30130.o $dir_support/cxb30131.o";;
+        cxb3004) EXTERNAL_OBJECTS="$dir_support/cxb30040.o";;
+        cxb3006) EXTERNAL_OBJECTS="$dir_support/cxb30060.o";;
+        cxb3013) EXTERNAL_OBJECTS="$dir_support/cxb30130.o $dir_support/cxb30131.o";;
         ca1020e) rm -f ca1020e_func1.adb ca1020e_func2.adb ca1020e_proc1.adb ca1020e_proc2.adb > /dev/null 2>&1;;
         ca14028) rm -f ca14028_func2.ads ca14028_func3.ads ca14028_proc1.ads ca14028_proc3.ads > /dev/null 2>&1;;
       esac

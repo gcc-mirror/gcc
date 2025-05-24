@@ -1108,7 +1108,7 @@ check-ada-subtargets: check-acats-subtargets check-gnat-subtargets
 # No ada-specific selftests
 selftest-ada:
 
-ACATSDIR = $(TESTSUITEDIR)/ada/acats
+ACATSDIR = $(TESTSUITEDIR)/ada/acats-2
 ACATSCMD = run_acats.sh
 
 check_acats_numbers0:=1 2 3 4 5 6 7 8 9
