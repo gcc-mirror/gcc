@@ -14563,6 +14563,36 @@ synthesize_and (rtx operands[3])
       return true;
     }
 
+  /* If we shift right to eliminate the trailing zeros and
+     the result is a SMALL_OPERAND, then it's a shift right,
+     andi and shift left.  */
+  t = INTVAL (operands[2]);
+  t >>= ctz_hwi (t);
+  if (budget >= 3 && SMALL_OPERAND (t) && popcount_hwi (t) > 2)
+    {
+      /* Shift right to clear the low order bits.  */
+      unsigned HOST_WIDE_INT count = ctz_hwi (INTVAL (operands[2]));
+      rtx x = gen_rtx_LSHIFTRT (word_mode, operands[1], GEN_INT (count));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+
+      /* Now emit the ANDI.  */
+      unsigned HOST_WIDE_INT mask = INTVAL (operands[2]);
+      mask >>= ctz_hwi (mask);
+      x = gen_rtx_AND (word_mode, input, GEN_INT (mask));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+
+      /* Shift left to move bits into position.  */
+      count = INTVAL (operands[2]);
+      count = ctz_hwi (count);
+      x = gen_rtx_ASHIFT (word_mode, input, GEN_INT (count));
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+
   /* If there are all zeros, except for a run of 1s somewhere in the middle
      of the constant, then this is at worst 3 shifts.  */
   t = INTVAL (operands[2]);
