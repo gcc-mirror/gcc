@@ -1,3 +1,12 @@
+2025-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* config/rs6000/rs6000.cc (rs6000_can_inline_p): Ignore also
+	OPTION_MASK_SAVE_TOC_INDIRECT differences.
+
 2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/117287

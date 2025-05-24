@@ -1,3 +1,45 @@
+2025-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120196
+	* gfortran.dg/pr120196.f90: New test.
+
+2025-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_3.f90: New test.
+
+2025-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_2.f90: New test.
+
+2025-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+		    Daniil Kochergin  <daniil2472s@gmail.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_1.f90: New test.
+
+2025-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* g++.dg/opt/pr119327.C: New test.
+
 2025-05-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/117287

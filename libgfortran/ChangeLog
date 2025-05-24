@@ -1,3 +1,57 @@
+2025-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120196
+	* m4/ifindloc2.m4 (header1, header2): For back use i > 0 rather than
+	i >= 0 as for condition.
+	* generated/findloc2_s1.c: Regenerate.
+	* generated/findloc2_s4.c: Regenerate.
+
+2025-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* m4/ifunction-s.m4 (SCALAR_ARRAY_FUNCTION): Don't multiply
+	GFC_DESCRIPTOR_EXTENT(array,) by string_len.
+	* generated/maxloc1_4_s1.c: Regenerate.
+	* generated/maxloc1_4_s4.c: Regenerate.
+	* generated/maxloc1_8_s1.c: Regenerate.
+	* generated/maxloc1_8_s4.c: Regenerate.
+	* generated/maxloc1_16_s1.c: Regenerate.
+	* generated/maxloc1_16_s4.c: Regenerate.
+	* generated/minloc1_4_s1.c: Regenerate.
+	* generated/minloc1_4_s4.c: Regenerate.
+	* generated/minloc1_8_s1.c: Regenerate.
+	* generated/minloc1_8_s4.c: Regenerate.
+	* generated/minloc1_16_s1.c: Regenerate.
+	* generated/minloc1_16_s4.c: Regenerate.
+
+2025-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* m4/maxloc2s.m4: For smaxloc2 call maxloc2 if mask is NULL or *mask.
+	Swap back and len arguments.
+	* m4/minloc2s.m4: Likewise.
+	* generated/maxloc2_4_s1.c: Regenerate.
+	* generated/maxloc2_4_s4.c: Regenerate.
+	* generated/maxloc2_8_s1.c: Regenerate.
+	* generated/maxloc2_8_s4.c: Regenerate.
+	* generated/maxloc2_16_s1.c: Regenerate.
+	* generated/maxloc2_16_s4.c: Regenerate.
+	* generated/minloc2_4_s1.c: Regenerate.
+	* generated/minloc2_4_s4.c: Regenerate.
+	* generated/minloc2_8_s1.c: Regenerate.
+	* generated/minloc2_8_s4.c: Regenerate.
+	* generated/minloc2_16_s1.c: Regenerate.
+	* generated/minloc2_16_s4.c: Regenerate.
+
 2024-05-21  Release Manager
 
 	* GCC 13.3.0 released.
