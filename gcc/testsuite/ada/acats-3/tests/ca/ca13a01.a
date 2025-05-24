@@ -1,0 +1,320 @@
+-- CA13A01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that subunits declared in non-generic child units of a public 
+--      parent have the same visibility into its parent, its siblings 
+--      (public and private), and packages on which its parent depends 
+--      as is available at the point of their declaration.
+--
+-- TEST DESCRIPTION:
+--      Declare an check system procedure as a subunit in a private child 
+--      package of the basic operation package (FA13A00.A).  This procedure 
+--      has visibility into its parent ancestor and its private sibling.
+--
+--      Declare an emergency procedure as a subunit in a public child package
+--      of the basic operation package (FA13A00.A).  This procedure has 
+--      visibility into its parent ancestor and its private sibling. 
+--
+--      Declare an express procedure as a subunit in a public child subprogram
+--      of the basic operation package (FA13A00.A).  This procedure has 
+--      visibility into its parent ancestor and its public sibling. 
+--
+--      In the main program, "with"s the child package and subprogram.  Check 
+--      that subunits perform as expected.  
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FA13A00.A
+--         CA13A01.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+-- Private child package of an elevator application.  This package
+-- provides maintenance operations.
+
+private package FA13A00_1.CA13A01_4 is    -- Maintenance operation
+
+   One_Floor : Floor_No := 1;             -- Type declared in parent.
+
+   procedure Check_System;
+
+   -- other type definitions and procedure declarations in real application.
+
+end FA13A00_1.CA13A01_4;
+
+     --==================================================================--
+
+-- Context clauses required for visibility needed by separate subunit.
+
+with FA13A00_0;                           -- Building Manager
+
+with FA13A00_1.FA13A00_2;                 -- Floor Calculation (private)
+                                         
+with FA13A00_1.FA13A00_3;                 -- Move Elevator
+
+use  FA13A00_0;                           
+
+package body FA13A00_1.CA13A01_4 is              
+
+   procedure Check_System is separate;
+
+end FA13A00_1.CA13A01_4;
+
+     --==================================================================--
+
+separate (FA13A00_1.CA13A01_4)
+
+-- Subunit Check_System declared in Maintenance Operation.
+
+procedure Check_System is
+begin
+   -- See if regular power is on.
+
+   if Power /= V120 then                  -- Reference package with'ed by
+      TC_Operation := false;              -- the subunit parent's body.
+   end if;
+
+   -- Test elevator function.
+
+   FA13A00_1.FA13A00_3.Move_Elevator      -- Reference public sibling of
+     (Penthouse, Call_Waiting);           -- the subunit parent's body.
+
+   if not Call_Waiting (Penthouse) then   -- Reference private part of the
+      TC_Operation := false;              -- parent of the subunit package's 
+                                          -- body.
+   end if;
+
+   FA13A00_1.FA13A00_2.Down (One_Floor);  -- Reference private sibling of
+                                          -- the subunit parent's body.
+
+   if Current_Floor /= Floor'pred (Penthouse) then 
+      TC_Operation := false;              -- Reference type declared in the
+   end if;                                -- parent of the subunit parent's
+                                          -- body.
+
+end Check_System;
+
+     --==================================================================--
+
+-- Public child package of an elevator application.  This package provides
+-- an emergency operation.
+
+package FA13A00_1.CA13A01_5 is            -- Emergency Operation
+
+   -- Other type definitions in real application.
+
+   procedure Emergency;
+
+private
+   type Bell_Type is (Inactive, Active);
+
+end FA13A00_1.CA13A01_5;
+
+     --==================================================================--
+
+-- Context clauses required for visibility needed by separate subunit.
+
+with FA13A00_0;                           -- Building Manager
+
+with FA13A00_1.FA13A00_3;                 -- Move Elevator
+
+with FA13A00_1.CA13A01_4;                 -- Maintenance Operation (private)
+
+use  FA13A00_0;
+
+package body FA13A00_1.CA13A01_5 is              
+
+   procedure Emergency is separate;
+
+end FA13A00_1.CA13A01_5;
+
+     --==================================================================--
+
+separate (FA13A00_1.CA13A01_5)
+
+-- Subunit Emergency declared in Maintenance Operation.
+
+procedure Emergency is
+   Bell : Bell_Type;                      -- Reference type declared in the 
+                                          -- subunit parent's body.
+
+begin
+   -- Calls maintenance operation.
+
+   FA13A00_1.CA13A01_4.Check_System;      -- Reference private sibling of the
+                                          -- subunit parent 's body.
+
+   -- Clear all calls to the elevator.
+
+   Clear_Calls (Call_Waiting);            -- Reference subprogram declared
+                                          -- in the parent of the subunit
+                                          -- parent's body.
+   for I in Floor loop                    
+      if Call_Waiting (I) then            -- Reference private part of the
+        TC_Operation := false;            -- parent of the subunit parent's
+      end if;                             -- body.
+   end loop;
+
+   -- Move elevator to the basement.
+
+   FA13A00_1.FA13A00_3.Move_Elevator      -- Reference public sibling of the
+     (Basement, Call_Waiting);            -- subunit parent's body.
+
+   if Current_Floor /= Basement then      -- Reference type declared in the
+      TC_Operation := false;              -- parent of the subunit parent's
+   end if;                                -- body.
+
+   -- Shut off power.
+
+   Power := Off;                          -- Reference package with'ed by
+                                          -- the subunit parent's body.
+
+   -- Activate bell.
+
+   Bell := Active;                        -- Reference type declared in the 
+                                          -- subunit parent's body. 
+
+end Emergency;
+
+     --==================================================================--
+
+-- Public child subprogram of an elevator application.  This subprogram 
+-- provides an express operation.
+
+procedure FA13A00_1.CA13A01_6;
+
+     --==================================================================--
+
+-- Context clauses required for visibility needed by separate subunit.
+
+with FA13A00_0;                           -- Building Manager
+
+with FA13A00_1.FA13A00_2;                 -- Floor Calculation (private)
+
+with FA13A00_1.FA13A00_3;                 -- Move Elevator
+
+use  FA13A00_0;
+
+procedure FA13A00_1.CA13A01_6 is          -- Express Operation
+
+   -- Other type definitions in real application.
+
+   procedure GoTo_Penthouse is separate;
+
+begin
+   GoTo_Penthouse;
+
+end FA13A00_1.CA13A01_6;
+
+     --==================================================================--
+
+separate (FA13A00_1.CA13A01_6)
+
+-- Subunit GoTo_Penthouse declared in Express Operation.
+
+procedure GoTo_Penthouse is
+begin
+   -- Go faster.
+
+   Power := V240;                         -- Reference package with'ed by
+                                          -- the subunit parent's body. 
+
+   -- Call elevator.
+
+   Call (Penthouse, Call_Waiting);        -- Reference subprogram declared in
+                                          -- the parent of the subunit 
+                                          -- parent's body.
+
+   if not Call_Waiting (Penthouse) then   -- Reference private part of the
+      TC_Operation := false;              -- parent of the subunit parent's
+   end if;                                -- body.
+
+   -- Move elevator to Penthouse.
+
+   FA13A00_1.FA13A00_3.Move_Elevator      -- Reference public sibling of the
+     (Penthouse, Call_Waiting);           -- subunit parent's body.
+
+   if Current_Floor /= Penthouse then     -- Reference type declared in the
+      TC_Operation := false;              -- parent of the subunit parent's
+   end if;                                -- body.
+
+   -- Return slowly
+
+   while Current_Floor /= Floor1 loop     -- Reference type, subprogram 
+      FA13A00_1.FA13A00_2.Down (1);       -- declared in the parent of the
+                                          -- subunit parent's body.
+   end loop;
+
+   if Current_Floor /= Floor1 then        -- Reference type declared in
+      TC_Operation := false;              -- the parent of the subunit
+   end if;                                -- parent's body.
+
+   -- Back to normal.
+                                          
+   Power := V120;                         -- Reference package with'ed by
+                                          -- the subunit parent's body.
+
+end GoTo_Penthouse;
+
+     --==================================================================--
+
+with FA13A00_1.CA13A01_5;                 -- Emergency Operation
+                                          -- implicitly with Basic Elevator
+                                          -- Operations
+
+with FA13A00_1.CA13A01_6;                 -- Express Operation
+
+with Report;
+
+procedure CA13A01 is
+
+begin
+
+   Report.Test ("CA13A01", "Check that subunits declared in non-generic " &
+                "child units of a public parent have the same visibility " &
+                "into its parent, its parent's siblings, and packages on " &
+                "which its parent depends");
+
+   -- Go to Penthouse.
+
+   FA13A00_1.CA13A01_6;
+
+   -- Call emergency operation.
+
+   FA13A00_1.CA13A01_5.Emergency;
+
+   if not FA13A00_1.TC_Operation then
+      Report.Failed ("Incorrect elevator operation");
+   end if;
+
+   Report.Result;
+
+end CA13A01;

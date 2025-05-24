@@ -1,0 +1,227 @@
+-- CC50A02.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a nonlimited tagged type may be passed as an actual to a
+--      formal (non-tagged) private type. Check that if the formal type has
+--      an unknown discriminant part, a class-wide type may also be passed as
+--      an actual.
+--
+-- TEST DESCRIPTION:
+--      A generic package declares a formal private type and defines a
+--      stack abstraction. Stacks are modeled as singly linked lists of
+--      pointers to elements. Pointers are used because the elements may
+--      be unconstrained.
+--
+--      A generic testing procedure pushes an item onto a stack, then views
+--      the item on top of the stack.
+--
+--      The formal private type has an unknown discriminant part, and
+--      is thus indefinite. This allows both definite and indefinite types
+--      (including class-wide types) to be passed as actuals. For tagged types,
+--      definite implies nondiscriminated, and indefinite implies discriminated
+--      (with known/unknown discriminants). 
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FC50A00.A
+--      -> CC50A02.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      10 Nov 95   SAIC    ACVC 2.0.1 fixes: Removed use of formal package
+--                          exception name in exception choice.
+--
+--!
+
+generic        -- Generic stack abstraction.
+   type Item (<>) is private;                   -- Formal private type.
+package CC50A02_0 is
+
+   type Stack is private;
+
+   procedure Push     (I : in Item; S : in out Stack);
+   function  View_Top (S : Stack) return Item;
+
+   -- ...Other stack operations...
+
+   Stack_Empty : exception;
+
+private
+
+   type Item_Ptr is access Item;
+
+   type Stack_Item;
+   type Stack_Ptr is access Stack_Item;
+
+   type Stack_Item is record
+      Item : Item_Ptr;
+      Next : Stack_Ptr;
+   end record;
+
+   type Stack is record
+      Top  : Stack_Ptr := null;
+      Size : Natural   := 0;
+   end record;
+
+end CC50A02_0;
+
+
+     --==================================================================--
+
+
+package body CC50A02_0 is
+
+   -- Link NewItem in at the top of the stack.
+
+   procedure Push (I : in Item; S : in out Stack) is
+      NewItem : Item_Ptr  := new Item'(I);
+      Element : Stack_Ptr := new Stack_Item'(Item => NewItem, Next => S.Top);
+   begin
+      S.Top   := Element;
+      S.Size  := S.Size + 1;
+   end Push;
+
+
+   -- Return (copy) of top item on stack. Do NOT remove from stack.
+
+   function View_Top (S : Stack) return Item is
+   begin
+      if S.Top = null then
+         raise Stack_Empty;
+      else
+         return S.Top.Item.all;
+      end if;
+   end View_Top;
+
+end CC50A02_0;
+
+
+     --==================================================================--
+
+
+-- The formal package Stacker below is needed to gain access to the
+-- appropriate version of the "generic" type Stack. It is provided with an
+-- explicit actual part in order to restrict the packages that can be passed
+-- as actuals to those which have been instantiated with the same actuals
+-- which this generic procedure has been instantiated with.
+
+with CC50A02_0;  -- Generic stack abstraction.
+generic
+   type Item_Type (<>) is private;       -- Formal private type.
+   with package Stacker is new CC50A02_0 (Item_Type);
+procedure CC50A02_1 (S : in out Stacker.Stack; I : in Item_Type);
+
+
+     --==================================================================--
+
+--
+-- This generic procedure performs all of the testing of the
+-- stack abstraction.
+--
+
+with Report;
+procedure CC50A02_1 (S : in out Stacker.Stack; I : in Item_Type) is
+begin
+   Stacker.Push (I, S);                    -- Push onto empty stack.
+
+   -- Calls to View_Top must initialize a declared object of type Item_Type
+   -- because the type may be unconstrained.
+
+   declare
+      Buffer : Item_Type := Stacker.View_Top (S);
+   begin
+      if Buffer /= I then
+         Report.Failed ("   Expected item not on stack");
+      end if;
+   exception
+      when Constraint_Error =>
+         Report.Failed ("   Unexpected error: Tags of pushed and popped " &
+                        "items don't match");
+   end;
+
+
+exception
+   when others =>
+      Report.Failed ("   Unexpected error: Item not pushed onto stack");
+end CC50A02_1;
+
+
+     --==================================================================--
+
+
+with FC50A00;   -- Tagged (actual) type declarations.
+with CC50A02_0; -- Generic stack abstraction.
+with CC50A02_1; -- Generic stack testing procedure.
+
+with Report;
+procedure CC50A02 is
+
+   --
+   -- Pass a nondiscriminated tagged actual:
+   --
+
+   package   Count_Stacks  is new CC50A02_0 (FC50A00.Count_Type);
+   procedure TC_Count_Test is new CC50A02_1 (FC50A00.Count_Type,
+                                             Count_Stacks);
+   Count_Stack : Count_Stacks.Stack;
+
+
+   --
+   -- Pass a discriminated tagged actual:
+   --
+ 
+   package   Person_Stacks  is new CC50A02_0 (FC50A00.Person_Type);
+   procedure TC_Person_Test is new CC50A02_1 (FC50A00.Person_Type,
+                                              Person_Stacks);
+   Person_Stack : Person_Stacks.Stack;
+
+
+   --
+   -- Pass a class-wide actual:
+   --
+ 
+   package   People_Stacks  is new CC50A02_0 (FC50A00.Person_Type'Class);
+   procedure TC_People_Test is new CC50A02_1 (FC50A00.Person_Type'Class,
+                                              People_Stacks);
+   People_Stack : People_Stacks.Stack;
+
+begin
+   Report.Test ("CC50A02", "Check that tagged actuals may be passed " &
+                "to a formal (nontagged) private type");
+
+   Report.Comment ("Testing definite tagged type..");
+   TC_Count_Test  (Count_Stack,  FC50A00.TC_Count_Item);
+
+   Report.Comment ("Testing indefinite tagged type..");
+   TC_Person_Test (Person_Stack, FC50A00.TC_Person_Item);
+
+   Report.Comment ("Testing class-wide type..");
+   TC_People_Test (People_Stack, FC50A00.TC_VIPerson_Item);
+
+   Report.Result;
+end CC50A02;

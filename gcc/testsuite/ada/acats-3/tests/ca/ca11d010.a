@@ -1,0 +1,119 @@
+-- CA11D010.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      See CA11D013.AM
+--
+-- TEST DESCRIPTION:
+--      See CA11D013.AM
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FA11D00.A
+--      => CA11D010.A
+--         CA11D011.A
+--         CA11D012.A
+--         CA11D013.AM
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      26 Apr 96   SAIC    ACVC 2.1: Modified prologue.
+--
+--!
+
+-- Child package of FA11D00.
+
+package FA11D00.CA11D010 is     -- Add_Subtract_Complex
+
+   procedure Add (Left, Right : in     Complex_Type;   -- Add two complex
+                  C           :    out Complex_Type);  -- numbers.
+
+   function Subtract (Left, Right : Complex_Type)      -- Subtract two 
+     return Complex_Type;                              -- complex numbers.
+                                                
+                                                       
+                                                       
+end FA11D00.CA11D010;     -- Add_Subtract_Complex
+
+--=======================================================================--
+
+with Report;
+
+package body FA11D00.CA11D010 is     -- Add_Subtract_Complex
+
+   procedure Add (Left, Right : in Complex_Type;
+                  C           :    out Complex_Type) is
+   begin
+      -- Zero is declared in parent package.
+
+      if Left.Real < Zero.Real or else Right.Real < Zero.Real
+        or else Left.Imag < Zero.Imag or else Right.Imag < Zero.Imag then
+          raise Add_Error;     -- Reference to exception in parent package.
+          Report.Failed ("Program control not transferred by raise in " &
+                         "procedure Add");
+      else
+         C.Real := (Left.Real + Right.Real);
+         C.Imag := (Left.Imag + Right.Imag);
+      end if;
+
+   exception
+      when Add_Error => 
+         TC_Handled_In_Child_Pkg_Proc := true;
+         C := Check_Value;           -- Reference to object in parent package.
+         raise;     -- Reraise the Add_Error exception in the subtest.
+         Report.Failed ("Exception not reraised in handler");
+
+      when others    =>
+         Report.Failed ("Unexpected exception raised in Add");
+
+   end Add;
+   -----------------------------------------------------------
+   function Subtract (Left, Right : Complex_Type) 
+     return Complex_Type is
+   begin
+      -- Zero is declared in parent package.
+      if Left.Real < Zero.Real or Right.Real < Zero.Real
+        or Left.Imag < Zero.Imag or Right.Imag < Zero.Imag then
+          raise Subtract_Error;    -- Reference to exception in parent package. 
+          Report.Failed ("Program control not transferred by raise in " &
+                         "function Subtract");
+      else
+         return ( Real => (Left.Real - Right.Real),
+                  Imag => (Left.Imag - Right.Imag) );
+      end if;
+
+   exception
+      when Subtract_Error => 
+         Report.Comment ("Exception is properly handled in Subtract");
+         TC_Handled_In_Child_Pkg_Func := true;
+         return Check_Value;
+
+      when others         =>
+         Report.Failed ("Unexpected exception raised in Subtract");
+
+   end Subtract;
+
+end FA11D00.CA11D010;     -- Add_Subtract_Complex

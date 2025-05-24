@@ -1,0 +1,404 @@
+-- C390004.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--     Check that the tags of allocated objects correctly identify the
+--     type of the allocated object.  Check that the tag corresponds
+--     correctly to the value resulting from both normal and view
+--     conversion.  Check that the tags of accessed values designating
+--     aliased objects correctly identify the type of the object.  Check
+--     that the tag of a function result correctly evaluates.  Check this
+--     for class-wide functions.  The tag of a class-wide function result
+--     should be the tag appropriate to the actual value returned, not the
+--     tag of the ancestor type.
+--
+-- TEST DESCRIPTION:
+--     This test defines a class hierarchy of types, with reference
+--     semantics (an access type to the class-wide type).  Similar in
+--     structure to C392005, this test checks that dynamic allocation does
+--     not adversely impact the tagging of types.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package C390004_1 is -- DMV
+  type Equipment is ( T_Veh, T_Car, T_Con, T_Jep );
+
+  type Vehicle is tagged record
+    Wheels : Natural := 4;
+    Parked : Boolean := False;
+  end record;
+
+  function  Wheels    ( It: Vehicle ) return Natural;
+  procedure Park      ( It: in out Vehicle );
+  procedure UnPark    ( It: in out Vehicle );
+  procedure Set_Wheels( It: in out Vehicle; To_Count: in Natural );
+  procedure TC_Check  ( It: in Vehicle; To_Equip: in Equipment );
+
+  type Car is new Vehicle with record
+    Passengers : Natural := 0;
+  end record;
+
+  function  Passengers     ( It: Car ) return Natural;
+  procedure Load_Passengers( It: in out Car; To_Count: in Natural );
+  procedure Park           ( It: in out Car );
+  procedure TC_Check       ( It: in Car; To_Equip: in Equipment );
+
+  type Convertible is new Car with record
+    Top_Up : Boolean := True;
+  end record;
+
+  function  Top_Up   ( It: Convertible ) return Boolean;
+  procedure Lower_Top( It: in out Convertible );
+  procedure Park     ( It: in out Convertible );
+  procedure Raise_Top( It: in out Convertible );
+  procedure TC_Check ( It: in Convertible; To_Equip: in Equipment );
+
+  type Jeep is new Convertible with record
+    Windshield_Up : Boolean := True;
+  end record;
+
+  function  Windshield_Up   ( It: Jeep ) return Boolean;
+  procedure Lower_Windshield( It: in out Jeep );
+  procedure Park            ( It: in out Jeep );
+  procedure Raise_Windshield( It: in out Jeep );
+  procedure TC_Check        ( It: in Jeep; To_Equip: in Equipment );
+
+end C390004_1;
+
+with Report;
+package body C390004_1 is
+
+  procedure Set_Wheels( It: in out Vehicle; To_Count: in Natural ) is
+  begin
+    It.Wheels := To_Count;
+  end Set_Wheels;
+
+  function  Wheels( It: Vehicle ) return Natural is
+  begin
+    return It.Wheels;
+  end Wheels;
+
+  procedure Park      ( It: in out Vehicle ) is
+  begin
+    It.Parked := True;
+  end Park;
+
+  procedure UnPark    ( It: in out Vehicle ) is
+  begin
+    It.Parked := False;
+  end UnPark;
+
+  procedure TC_Check  ( It: in Vehicle; To_Equip: in Equipment ) is
+  begin
+    if To_Equip /= T_Veh then
+      Report.Failed ("Failed, called Vehicle for "
+                     & Equipment'Image(To_Equip));      
+    end if;
+  end TC_Check;
+
+  procedure TC_Check  ( It: in Car; To_Equip: in Equipment ) is
+  begin
+    if To_Equip /= T_Car then
+      Report.Failed ("Failed, called Car for "
+                     & Equipment'Image(To_Equip));      
+    end if;
+  end TC_Check;
+
+  procedure TC_Check  ( It: in Convertible; To_Equip: in Equipment ) is
+  begin
+    if To_Equip /= T_Con then
+      Report.Failed ("Failed, called Convertible for "
+                     & Equipment'Image(To_Equip));      
+    end if;
+  end TC_Check;
+
+  procedure TC_Check  ( It: in Jeep; To_Equip: in Equipment ) is
+  begin
+    if To_Equip /= T_Jep then
+      Report.Failed ("Failed, called Jeep for "
+                     & Equipment'Image(To_Equip));      
+    end if;
+  end TC_Check;
+
+  procedure Load_Passengers( It: in out Car; To_Count: in Natural ) is
+  begin
+    It.Passengers := To_Count;
+    UnPark( It );
+  end Load_Passengers;
+
+  procedure Park( It: in out Car ) is
+  begin
+    It.Passengers := 0;
+    Park( Vehicle( It ) );
+  end Park;
+
+  function  Passengers( It: Car ) return Natural is
+  begin
+    return It.Passengers;
+  end Passengers;
+
+  procedure Raise_Top( It: in out Convertible ) is
+  begin
+    It.Top_Up := True;
+  end Raise_Top;
+
+  procedure Lower_Top( It: in out Convertible ) is
+  begin
+    It.Top_Up := False;
+  end Lower_Top;
+
+  function  Top_Up   ( It: Convertible ) return Boolean is
+  begin
+    return It.Top_Up;
+  end Top_Up;
+
+  procedure Park     ( It: in out Convertible ) is
+  begin
+    It.Top_Up := True;
+    Park( Car( It ) );
+  end Park;
+
+  procedure Raise_Windshield( It: in out Jeep ) is
+  begin
+    It.Windshield_Up := True;
+  end Raise_Windshield;
+
+  procedure Lower_Windshield( It: in out Jeep ) is
+  begin
+    It.Windshield_Up := False;
+  end Lower_Windshield;
+
+  function  Windshield_Up( It: Jeep ) return Boolean is
+  begin
+    return It.Windshield_Up;
+  end Windshield_Up;
+
+  procedure Park( It: in out Jeep ) is
+  begin
+    It.Windshield_Up := True;
+    Park( Convertible( It ) );
+  end Park;
+end C390004_1;
+
+with Report;
+with Ada.Tags;
+with C390004_1;
+procedure C390004 is
+  package DMV renames C390004_1;
+
+  The_Vehicle     : aliased DMV.Vehicle;
+  The_Car         : aliased DMV.Car;
+  The_Convertible : aliased DMV.Convertible;
+  The_Jeep        : aliased DMV.Jeep;
+
+  type C_Reference is access all DMV.Car'Class;
+  type V_Reference is access all DMV.Vehicle'Class;
+
+  Designator : V_Reference;
+  Storage    : Natural;
+
+  procedure Valet( It: in out DMV.Vehicle'Class ) is
+  begin
+    DMV.Park( It );
+  end Valet;
+
+  procedure TC_Match( Object: DMV.Vehicle'Class;
+                      Taglet: Ada.Tags.Tag;
+                      Where : String ) is
+    use Ada.Tags;
+  begin
+    if Object'Tag /= Taglet then
+      Report.Failed("Tag mismatch: " & Where);
+    end if;
+  end TC_Match;
+
+  procedure Parking_Validation( It: DMV.Vehicle; TC_Message: String ) is
+  begin
+    if DMV.Wheels( It ) /= 1  or not It.Parked then
+      Report.Failed ("Failed Vehicle " & TC_Message);
+    end if;
+  end Parking_Validation;
+
+  procedure Parking_Validation( It: DMV.Car; TC_Message: String ) is
+  begin
+    if DMV.Wheels( It ) /= 2 or DMV.Passengers( It ) /= 0
+       or not It.Parked then
+      Report.Failed ("Failed Car " & TC_Message);
+    end if;
+  end Parking_Validation;
+
+  procedure Parking_Validation( It: DMV.Convertible;
+                                TC_Message: String ) is
+  begin
+    if DMV.Wheels( It ) /= 3 or DMV.Passengers( It ) /= 0
+       or not DMV.Top_Up( It ) or not It.Parked then
+      Report.Failed ("Failed Convertible " & TC_Message);
+    end if;
+  end Parking_Validation;
+
+  procedure Parking_Validation( It: DMV.Jeep; TC_Message: String ) is
+  begin
+    if DMV.Wheels( It ) /= 4 or DMV.Passengers( It ) /= 0
+       or not DMV.Top_Up( It ) or not DMV.Windshield_Up( It )
+       or not It.Parked then
+      Report.Failed ("Failed Jeep " & TC_Message);
+    end if;
+  end Parking_Validation;
+
+  function Wash( It: V_Reference; TC_Expect : Ada.Tags.Tag )
+                                    return DMV.Vehicle'Class is
+    This_Machine : DMV.Vehicle'Class := It.all;
+  begin
+    TC_Match( It.all, TC_Expect, "Class-wide object in Wash" );
+    Storage := DMV.Wheels( This_Machine );
+    return This_Machine;
+  end Wash;
+
+  function Wash( It: C_Reference; TC_Expect : Ada.Tags.Tag )
+                                    return DMV.Car'Class is
+    This_Machine : DMV.Car'Class := It.all;
+  begin
+    TC_Match( It.all, TC_Expect, "Class-wide object in Wash" );
+    Storage := DMV.Wheels( This_Machine );
+    return This_Machine;
+  end Wash;
+
+begin
+
+  Report.Test( "C390004", "Check that the tags of allocated objects "
+                        & "correctly identify the type of the allocated "
+                        & "object.  Check that tags resulting from "
+                        & "normal and view conversions.  Check tags of "
+                        & "accessed values designating aliased objects. "
+                        & "Check function result tags" );
+
+  DMV.Set_Wheels( The_Vehicle, 1 );
+  DMV.Set_Wheels( The_Car, 2 );
+  DMV.Set_Wheels( The_Convertible, 3 );
+  DMV.Set_Wheels( The_Jeep, 4 );
+
+  Valet( The_Vehicle );
+  Valet( The_Car );
+  Valet( The_Convertible );
+  Valet( The_Jeep );
+
+  Parking_Validation( The_Vehicle,     "setup" );
+  Parking_Validation( The_Car,         "setup" );
+  Parking_Validation( The_Convertible, "setup" );
+  Parking_Validation( The_Jeep,        "setup" );
+
+-- Check that the tags of allocated objects correctly identify the type
+-- of the allocated object.
+
+  Designator := new DMV.Vehicle;
+  DMV.TC_Check( Designator.all, DMV.T_Veh );
+  TC_Match( Designator.all, DMV.Vehicle'Tag, "allocated Vehicle" );
+
+  Designator := new DMV.Car;
+  DMV.TC_Check( Designator.all, DMV.T_Car );
+  TC_Match( Designator.all, DMV.Car'Tag, "allocated Car");
+
+  Designator := new DMV.Convertible;
+  DMV.TC_Check( Designator.all, DMV.T_Con );
+  TC_Match( Designator.all, DMV.Convertible'Tag, "allocated Convertible" );
+
+  Designator := new DMV.Jeep;
+  DMV.TC_Check( Designator.all, DMV.T_Jep );
+  TC_Match( Designator.all, DMV.Jeep'Tag, "allocated Jeep" );
+
+-- Check that view conversion causes the correct dispatch
+  DMV.TC_Check( DMV.Vehicle( The_Jeep ),     DMV.T_Veh );
+  DMV.TC_Check( DMV.Car( The_Jeep ),         DMV.T_Car );
+  DMV.TC_Check( DMV.Convertible( The_Jeep ), DMV.T_Con );
+
+-- And that view conversion does not change the tag
+  TC_Match( DMV.Vehicle( The_Jeep ),     DMV.Jeep'Tag, "View Conv Veh" );
+  TC_Match( DMV.Car( The_Jeep ),         DMV.Jeep'Tag, "View Conv Car" );
+  TC_Match( DMV.Convertible( The_Jeep ), DMV.Jeep'Tag, "View Conv Jep" );
+
+-- Check that the tags of accessed values designating aliased objects
+-- correctly identify the type of the object.
+  Designator := The_Vehicle'Access;
+  DMV.TC_Check( Designator.all, DMV.T_Veh );
+  TC_Match( Designator.all, DMV.Vehicle'Tag, "aliased Vehicle" );
+
+  Designator := The_Car'Access;
+  DMV.TC_Check( Designator.all, DMV.T_Car );
+  TC_Match( Designator.all, DMV.Car'Tag, "aliased Car" );
+
+  Designator := The_Convertible'Access;
+  DMV.TC_Check( Designator.all, DMV.T_Con );
+  TC_Match( Designator.all, DMV.Convertible'Tag, "aliased Convertible" );
+
+  Designator := The_Jeep'Access;
+  DMV.TC_Check( Designator.all, DMV.T_Jep );
+  TC_Match( Designator.all, DMV.Jeep'Tag, "aliased Jeep" );
+
+-- Check that the tag of a function result correctly evaluates.
+-- Check this for class-wide functions.  The tag of a class-wide
+-- function result should be the tag appropriate to the actual value
+-- returned, not the tag of the ancestor type.
+  Function_Check: declare
+    A_Vehicle     : V_Reference := new DMV.Vehicle'( The_Vehicle );
+    A_Car         : C_Reference := new DMV.Car'( The_Car );
+    A_Convertible : C_Reference := new DMV.Convertible'( The_Convertible );
+    A_Jeep        : C_Reference := new DMV.Jeep'( The_Jeep );
+  begin
+    DMV.Unpark( A_Vehicle.all );
+    DMV.Load_Passengers( A_Car.all, 5 );
+    DMV.Load_Passengers( A_Convertible.all, 6 );
+    DMV.Load_Passengers( A_Jeep.all, 7 );
+    DMV.Lower_Top( DMV.Convertible(A_Convertible.all) );
+    DMV.Lower_Top( DMV.Jeep(A_Jeep.all) );
+    DMV.Lower_Windshield( DMV.Jeep(A_Jeep.all) );
+
+    if DMV.Wheels( Wash( A_Jeep, DMV.Jeep'Tag ) ) /= 4
+       or Storage /= 4 then
+      Report.Failed("Did not correctly wash Jeep");
+    end if;
+
+    if DMV.Wheels( Wash( A_Convertible, DMV.Convertible'Tag ) ) /= 3
+       or Storage /= 3 then
+      Report.Failed("Did not correctly wash Convertible");
+    end if;
+
+    if DMV.Wheels( Wash( A_Car, DMV.Car'Tag ) ) /= 2
+       or Storage /= 2 then
+      Report.Failed("Did not correctly wash Car");
+    end if;
+
+    if DMV.Wheels( Wash( A_Vehicle, DMV.Vehicle'Tag ) ) /= 1
+       or Storage /= 1 then
+      Report.Failed("Did not correctly wash Vehicle");
+    end if; 
+
+  end Function_Check;
+
+  Report.Result;
+end C390004;

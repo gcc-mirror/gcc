@@ -1,0 +1,139 @@
+-- CA140232.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a generic instantiation depends on
+--      a generic function that is changed.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a generic function, a generic
+--      instantiation of the generic function, and a main
+--      procedure that withs the instantiated generic
+--      function.  Then, a new version of the first generic
+--      function is compiled (in a separate file, simulating
+--      editing and modification to the unit).  The test should
+--      link the correct version of the withed function and
+--      report "PASSED" at execution time.
+--
+--      Note that compilers are required by the standard to support
+--      replacement of a generic body without recompilation of the
+--      instantation. The ARG confirmed 10.1.4(10) with AI-00077.
+--
+--      To build this test:
+--         1) Compile the file CA140230 (and include the results in the
+--            program library).
+--         2) Compile the file CA140231 (and include the results in the
+--            program library).
+--         3) Compile the file CA140232 (and include the results in the
+--            program library).
+--         4) Compile the file CA140233 (and include the results in the
+--            program library).
+--         5) Build and run an executable image.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         CA140230.A
+--         CA140231.A
+--      -> CA140232.AM
+--         CA140233.A
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008T baseline version
+--     29 JUN 95   SAIC        Initial version
+--     05 MAR 96   SAIC        First revision after review
+--     18 NOV 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions.
+--     07 DEC 96   SAIC        Moved CA14023_1 to a separate file.
+--     13 SEP 99   RLB         Changed to C-test (by AI-00077).
+--     20 MAR 00   RLB         Removed special requirements, because there
+--                             aren't any.
+--
+--!
+
+with CA14023_0;
+use CA14023_0;
+
+generic
+     Min : Little_float := 0.0;
+     type Any_rec is new Data_rec with private;
+function CA14023_2 (R1, R2 : Any_rec) return Little_float;
+
+--------------------------------------------------------
+
+with CA14023_1;
+
+function CA14023_2 (R1, R2 : Any_rec) return Little_float is
+     function Max_val is new CA14023_1 (Little_float, Min);
+begin
+     return max_val (R1.Data, R2.Data);
+end CA14023_2;
+
+--------------------------------------------------------
+
+package CA14023_0.CA14023_3 is
+     type New_data_rec is new Data_rec with record
+          Other_val : integer := 100;
+     end record;
+end CA14023_0.CA14023_3;
+
+--------------------------------------------------------
+
+with Report; use Report;
+with CA14023_2;
+with CA14023_0;
+with CA14023_0.CA14023_3;
+
+procedure CA140232 is
+
+     NDR1, NDR2 : CA14023_0.CA14023_3.New_data_rec;
+     Min_value : constant CA14023_0.Little_float := 0.0;
+     TC_result : CA14023_0.Little_float;
+     function Max_Data_Val is new CA14023_2 (Min_value,
+                    CA14023_0.CA14023_3.New_data_rec);
+begin
+     Test ("CA14023", "Check that a compilation unit may not " &
+                      "depend semantically on two different " &
+                      "versions of the same compilation unit.  " &
+                      "Check the case where a generic " &
+                      "instantiation depends on a generic " &
+                      "function that is changed");
+
+     NDR1.Data := 2.0;
+     NDR2.Data := 5.0;
+
+     TC_result := Max_Data_Val (NDR1, NDR2);
+
+     if TC_result = 5.0 then
+          Failed ("Revised generic not used");
+     elsif TC_result /= 0.0 then               -- the minimum, floor
+          Failed ("Incorrect value returned"); -- value of 0.0 should
+     end if;                                   -- be returned rather
+                                               -- than the min of the
+                                               -- two actual parameters
+
+     Result;
+end CA140232;

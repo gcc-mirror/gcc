@@ -1,0 +1,327 @@
+-- C730004.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that for a type declared in a package, descendants of the package
+--      use the full view of type.  Specifically check that full view of the
+--      limited type is visible only in private descendants (children) and in
+--      the private parts and bodies of public descendants (children).
+--      Check that a limited type may be used as an out parameter outside
+--      the package that defines the type.
+--
+-- TEST DESCRIPTION:
+--      This test defines a parent package containing limited private type 
+--      definitions. Children packages are defined (one public, one private) 
+--      that use the nonlimited full view of the types defined in the private 
+--      part of the parent specification.
+--      The main declares a procedure with an out parameter that was defined
+--      as limited in the specification of the parent package.
+--
+--
+-- CHANGE HISTORY:
+--      15 Sep 95   SAIC    Initial prerelease version.
+--      23 Apr 96   SAIC    Added prefix for parameter in Call_Modify_File.
+--      02 Nov 96   SAIC    ACVC 2.1: Modified prologue and Test.Report. 
+--
+--!
+
+package C730004_0 is 
+
+   -- Full views of File_Descriptor, File_Mode, File_Name, and File_Type are
+   -- are nonlimited.
+
+   type File_Descriptor is limited private;
+
+   type File_Mode is limited private;
+
+   Active_Mode  : constant File_Mode;
+
+   type File_Name is limited private;
+
+   type File_Type is limited private;
+
+   function Next_Available_File return File_Descriptor;
+
+private
+
+   type File_Descriptor is new Integer;
+
+   Null_File    : constant File_Descriptor := 0;
+   First_File   : constant File_Descriptor := 1;
+
+   type File_Mode is 
+     (Read_Only, Write_Only, Read_Write, Archived, Corrupt, Lost);
+
+   Default_Mode : constant File_Mode       := Read_Only;
+   Active_Mode  : constant File_Mode       := Read_Write;
+
+   type File_Name is array (1 .. 6) of Character;
+
+   Null_String : File_Name := "      ";
+   String1     : File_Name := "ACVC  ";
+   String2     : File_Name := "  1995";
+
+   type File_Type is 
+     record
+        Descriptor : File_Descriptor := Null_File;
+        Mode       : File_Mode       := Default_Mode;
+        Name       : File_Name       := Null_String;
+     end record;
+
+end C730004_0;       
+
+     --=================================================================--
+
+package body C730004_0 is     
+
+   File_Count : Integer := 0;
+
+   function Next_Available_File return File_Descriptor is
+   begin
+      File_Count := File_Count + 1;
+      return (File_Descriptor(File_Count));    -- Type conversion.
+   end Next_Available_File;
+
+end C730004_0;     
+
+     --=================================================================--
+
+private
+package C730004_0.C730004_1 is                             -- private child
+
+   -- Since full view of the nontagged File_Name is nonlimited in the parent 
+   -- package, it is not limited in the private child, so concatenation is 
+   -- available.
+
+   System_File_Name :  constant File_Name
+                    := String1(1..4) & String2(5..6);
+
+   -- Since full view of the nontagged File_Type is nonlimited in the parent 
+   -- package, it is not limited in the private child, so a default expression
+   -- is available.
+
+   function New_File_Validated (File :  File_Type 
+                                     := (Descriptor => First_File,
+                                         Mode       => Active_Mode,
+                                         Name       => System_File_Name))
+     return Boolean;
+
+   -- Since full view of the nontagged File_Type is nonlimited in the parent 
+   -- package, it is not limited in the private child, so initialization
+   -- expression in an object declaration is available.
+
+   System_File      :  File_Type 
+                    := (Null_File, Read_Only, System_File_Name);
+
+
+end C730004_0.C730004_1;    
+
+     --=================================================================--
+
+package body C730004_0.C730004_1 is 
+
+   function New_File_Validated (File :  File_Type 
+                                     := (Descriptor => First_File,
+                                         Mode       => Active_Mode,
+                                         Name       => System_File_Name))
+     return Boolean is                                   
+      Result : Boolean := False;                         
+   begin                                                 
+      if (File.Descriptor > System_File.Descriptor) and  
+         (File.Mode in Read_Only .. Read_Write) and (File.Name = "ACVC95")
+      then
+         Result := True;
+      end if;
+
+      return (Result);
+
+   end New_File_Validated;
+
+end C730004_0.C730004_1;       
+
+     --=================================================================--
+
+package C730004_0.C730004_2 is                   -- public child
+
+   -- File_Type is limited here.
+
+   procedure Create_File (File : out File_Type);    
+                          
+   procedure Modify_File (File : out File_Type);
+
+   type File_Dir is limited private;
+
+   -- The following three validation functions provide the capability to 
+   -- check the limited private types defined in the parent and the
+   -- private child package from within the client program.
+                                   
+   function  Validate_Create (File : in File_Type) return Boolean;
+
+   function  Validate_Modification (File : in File_Type) 
+     return Boolean;
+
+   function  Validate_Dir (Dir : in File_Dir) return Boolean;
+
+private
+
+   -- Since full view of the nontagged File_Type is nonlimited in the parent 
+   -- package, it is not limited in the private part of the public child, so 
+   -- aggregates are available.
+
+   Child_File :  File_Type 
+              := File_Type'(Descriptor => Null_File, 
+                            Mode       => Write_Only,
+                            Name       => String2);
+                     
+   -- Since full view of the nontagged component File_Type is nonlimited in 
+   -- the parent package, it is not limited in the private part of the public 
+   -- child, so default expressions are available.
+
+   type File_Dir is 
+     record
+        Comp : File_Type := Child_File;
+     end record;
+
+end C730004_0.C730004_2;             
+
+     --=================================================================--
+
+with C730004_0.C730004_1;
+
+package body C730004_0.C730004_2 is  
+
+   procedure Create_File (File : out File_Type) is
+      New_File : File_Type;
+
+   begin
+      New_File.Descriptor := Next_Available_File;       
+      New_File.Mode       := Default_Mode;
+      New_File.Name       := C730004_0.C730004_1.System_File_Name;
+
+      if C730004_0.C730004_1.New_File_Validated (New_File) then
+         File := New_File;
+      else 
+         File := (Null_File, Lost, "MISSED");
+      end if;
+
+   end Create_File;
+
+   --------------------------------------------------------------
+   procedure Modify_File (File : out File_Type) is
+   begin
+      File.Descriptor := Next_Available_File;      
+      File.Mode       := Active_Mode;
+      File.Name       := String1;
+   end Modify_File;     
+
+   --------------------------------------------------------------
+   function  Validate_Create (File : in File_Type) return Boolean is
+   begin
+      if ((File.Descriptor /= Child_File.Descriptor) and
+          (File.Mode = Read_Only) and (File.Name = "ACVC95"))
+      then
+         return True;
+      else
+         return False;
+      end if;
+   end Validate_Create;
+  
+   ------------------------------------------------------------------------
+   function  Validate_Modification (File : in File_Type) 
+      return Boolean is      
+   begin
+      if ((File.Descriptor /= C730004_0.C730004_1.System_File.Descriptor) and 
+          (File.Mode = Read_Write) and (File.Name = "ACVC  "))
+      then
+         return True;
+      else
+         return False;
+      end if;
+   end Validate_Modification;
+
+   ------------------------------------------------------------------------
+   function  Validate_Dir (Dir : in File_Dir) return Boolean is      
+   begin
+      if ((Dir.Comp.Descriptor = C730004_0.C730004_1.System_File.Descriptor) 
+        and (Dir.Comp.Mode = Write_Only) and (Dir.Comp.Name = String2))
+      then
+         return True;
+      else
+         return False;
+      end if;
+   end Validate_Dir;
+
+end C730004_0.C730004_2;
+
+     --=================================================================--
+
+with C730004_0.C730004_2; 
+with Report;
+
+procedure C730004 is
+
+   package File      renames C730004_0;
+   package File_Ops  renames C730004_0.C730004_2;            
+
+   Validation_File : File.File_Type;     
+
+   Validation_Dir  : File_Ops.File_Dir;
+
+   ------------------------------------------------------------------------ 
+   -- Limited File_Type is allowed as an out parameter outside package File.
+
+   procedure Call_Modify_File (Modified_File : out File.File_Type) is
+   begin
+      File_Ops.Modify_File (Modified_File);
+   end Call_Modify_File;     
+  
+begin
+
+   Report.Test ("C730004", "Check that for a type declared in a package, "   &
+                           "descendants of the package use the full view "   &
+                           "of the type.  Specifically check that full "     &
+                           "view of the limited type is visible only in "    &
+                           "private children and in the private parts and "  &
+                           "bodies of public children");
+
+   File_Ops.Create_File (Validation_File);
+
+   if not File_Ops.Validate_Create (Validation_File) then
+      Report.Failed ("Incorrect creation of file");
+   end if;
+
+   Call_Modify_File (Validation_File);
+
+   if not File_Ops.Validate_Modification (Validation_File) then 
+      Report.Failed ("Incorrect modification of file");
+   end if;
+
+   if not File_Ops.Validate_Dir (Validation_Dir) then
+      Report.Failed ("Incorrect creation of directory");
+   end if;
+
+   Report.Result;
+
+end C730004; 

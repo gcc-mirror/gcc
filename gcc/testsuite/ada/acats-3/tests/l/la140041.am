@@ -1,0 +1,108 @@
+-- LA140041.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a generic function depends on a 
+--      library level package.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a package specification, then a generic 
+--      function specification and body that withs the package, 
+--      followed by a procedure that makes a call to an instance of
+--      the generic function.  Then, the package specification is
+--      recompiled, making the body of function LA14004_1 obsolete.
+--      Unless automatic recompilation is supported this test should fail
+--      to link.  Otherwise, the test should recompile and link 
+--      the correct version of the withed package and report
+--      "PASSED" at execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140040 (and include the results in the
+--            program library).
+--         2) Compile the file LA140041 (and include the results in the
+--            program library).
+--         3) Compile the file LA140042 (and include the results in the
+--            program library).
+--         4) Attempt to build an executable image.
+--         5) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140040.A
+--      -> LA140041.AM
+--         LA140042.A
+--
+-- PASS/FAIL CRITERIA:                
+--      Expect a link-time error message that the body of generic 
+--      function LA14004_1 is missing or obsolete.  If automatic
+--      recompilation is supported, and an executable image is 
+--      built, expect a "PASSED" message from execution.
+--
+-- CHANGE HISTORY:
+--     09 MAY 95   SAIC    Initial version
+--     10 DEC 96   SAIC    Reorganized to permit automatic recompilation.
+--
+--!
+
+generic
+function LA14004_1 return integer;
+
+with LA14004_0;     -- Revision and recompilation of LA14004_0
+                    -- will require resolution of this semantic
+                    -- dependency
+function LA14004_1 return integer is
+begin
+     return LA14004_0.TC_Var;
+end LA14004_1;
+
+
+
+with Report; use Report;
+with LA14004_1;
+procedure LA140041 is
+     TC_Val : integer := 0;
+
+     function F_LA14004_1 is new LA14004_1;
+begin
+     Test ("LA14004", "Check that a compilation unit may " &
+                      "not depend semantically on two " &
+                      "different versions of the same " &
+                      "compilation unit.  Check the case " &
+                      "where a generic function depends on a "&
+                      "library level package");
+
+      TC_Val := F_LA14004_1;
+
+      if TC_Val = 100 then
+           Failed ("Obsolete unit used in elaboration");
+      elsif TC_Val /= -10 then
+           Failed ("Incorrect test value returned");
+      end if;
+
+     Result;
+end LA140041;

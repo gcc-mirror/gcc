@@ -1,0 +1,246 @@
+-- CA11017.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that body of the parent package may depend on one of its own 
+--      public children.
+--
+-- TEST DESCRIPTION:
+--      A scenario is created that demonstrates the potential of adding a
+--      public child during code maintenance without distubing a large 
+--      subsystem.  After child is added to the subsystem, a maintainer
+--      decides to take advantage of the new functionality and rewrites
+--      the parent's body.
+--
+--      Declare a string abstraction in a package which manipulates string
+--      replacement. Define a parent package which provides operations for 
+--      a record type with discriminant.  Declare a public child of this 
+--      package which adds functionality to the original subsystem.  In the 
+--      parent body, call operations from the public child.
+--
+--      In the main program, check that operations in the parent and public 
+--      child perform as expected.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+-- Simulates application which manipulates strings.
+
+package CA11017_0 is               
+
+   type String_Rec (The_Size : positive) is private;
+
+   type Substring is new string;
+
+   -- ... Various other types used by the application.
+
+   procedure Replace (In_The_String   : in out String_Rec;
+                      At_The_Position : in     positive;
+                      With_The_String : in     String_Rec);
+
+   -- ... Various other operations used by the application.
+
+private
+   -- Different size for each individual record.
+
+   type String_Rec (The_Size : positive) is
+      record
+         The_Length  : natural := 0;
+         The_Content : Substring (1 .. The_Size);
+      end record;
+
+end CA11017_0;
+
+     --=================================================================--
+
+-- Public child added during code maintenance without disturbing a 
+-- large system.  This public child would add functionality to the
+-- original system.
+
+package CA11017_0.CA11017_1 is    
+
+   Position_Error : exception;
+
+   function Equal_Length (Left  : in String_Rec;
+                          Right : in String_Rec) return boolean;
+
+   function Same_Content (Left  : in String_Rec;
+                          Right : in String_Rec) return boolean;
+
+   procedure Copy (From_The_Substring : in     Substring;
+                   To_The_String      : in out String_Rec);
+
+   -- ... Various other operations used by the application.
+
+end CA11017_0.CA11017_1;
+
+     --=================================================================--
+
+package body CA11017_0.CA11017_1 is    
+
+   function Equal_Length (Left  : in String_Rec;
+                          Right : in String_Rec) return boolean is
+   -- Quick comparison between the lengths of the input strings.
+
+   begin
+      return (Left.The_Length = Right.The_Length);  -- Parent's private
+                                                    -- type.
+   end Equal_Length;
+   --------------------------------------------------------------------
+   function Same_Content (Left  : in String_Rec;
+                          Right : in String_Rec) return boolean is
+
+   begin
+      for I in 1 .. Left.The_Length loop
+         if Left.The_Content (I) = Right.The_Content (I) then
+            return true;
+         else
+            return false;
+         end if;
+      end loop;
+
+   end Same_Content;
+   --------------------------------------------------------------------
+   procedure Copy (From_The_Substring : in     Substring;
+                   To_The_String      : in out String_Rec) is
+   begin
+      To_The_String.The_Content        -- Parent's private type.
+        (1 .. From_The_Substring'length) := From_The_Substring;
+
+      To_The_String.The_Length         -- Parent's private type.
+                                         := From_The_Substring'length;
+   end Copy;
+
+end CA11017_0.CA11017_1;
+
+     --=================================================================--
+
+--  After child is added to the subsystem, a maintainer decides
+--  to take advantage of the new functionality and rewrites the
+--  parent's body.
+
+with CA11017_0.CA11017_1;
+
+package body CA11017_0 is
+
+   -- Calls functions from public child for a quick comparison of the
+   -- input strings.  If their lengths are the same, do the replacement.
+
+   procedure Replace (In_The_String   : in out String_Rec;
+                      At_The_Position : in     positive;
+                      With_The_String : in     String_Rec) is
+      End_Position : natural := At_The_Position +
+                                With_The_String.The_Length - 1;
+
+   begin
+      if not CA11017_0.CA11017_1.Equal_Length  -- Public child's operation.
+        (With_The_String, In_The_String) then
+           raise CA11017_0.CA11017_1.Position_Error;                 
+                                               -- Public child's exception.
+      else 
+         In_The_String.The_Content (At_The_Position .. End_Position) :=
+           With_The_String.The_Content (1 .. With_The_String.The_Length);
+      end if;
+
+   end Replace;
+
+end CA11017_0;
+
+     --=================================================================--
+
+with Report;
+
+with CA11017_0.CA11017_1;   -- Explicit with public child package,
+                            -- implicit with parent package (CA11017_0).
+
+procedure CA11017 is
+
+   package String_Pkg renames CA11017_0;
+   use String_Pkg;
+
+begin
+
+   Report.Test ("CA11017", "Check that body of the parent package can " &
+                "depend on one of its own public children");
+
+-- Both input strings have the same size. Replace the first string by the 
+-- second string.  
+
+        Replace_Subtest:
+        declare
+           The_First_String, The_Second_String : String_Rec (16);
+                                                 -- Parent's private type.
+           The_Position                        : positive := 1;
+        begin
+           CA11017_1.Copy ("This is the time", 
+                           To_The_String => The_First_String); 
+
+           CA11017_1.Copy ("For all good men", The_Second_String); 
+
+           Replace (The_First_String, The_Position, The_Second_String);
+  
+           -- Compare results using function from public child since
+           -- the type is private.
+
+           if not CA11017_1.Same_Content
+                            (The_First_String, The_Second_String) then
+              Report.Failed ("Incorrect results");
+           end if;
+
+        end Replace_Subtest;
+
+-- During processing, the application may erroneously attempt to replace
+-- strings of different size. This would result in the raising of an 
+-- exception.                                                       
+
+        Exception_Subtest:
+        declare
+           The_First_String  : String_Rec (17);
+                                                 -- Parent's private type.
+           The_Second_String : String_Rec (13);
+                                                 -- Parent's private type.
+           The_Position      : positive := 2;
+        begin
+           CA11017_1.Copy (" ACVC Version 2.0", The_First_String); 
+
+           CA11017_1.Copy (From_The_Substring => "ACVC 9X Basic", 
+                           To_The_String      => The_Second_String); 
+
+           Replace (The_First_String, The_Position, The_Second_String);
+
+           Report.Failed ("Exception was not raised");
+
+        exception
+           when CA11017_1.Position_Error =>
+                  Report.Comment ("Exception is raised as expected");
+
+        end Exception_Subtest;
+
+   Report.Result;
+
+end CA11017;

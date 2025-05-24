@@ -1,0 +1,196 @@
+-- CB20007.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that exceptions are raised and can be directly propagated to
+--      the calling unit by protected operations.
+--
+-- TEST DESCRIPTION:
+--      Declare a package with a protected type, including protected operation
+--      declarations and private data, simulating a counting semaphore.
+--      In the main procedure, perform calls on protected operations 
+--      of the protected object designed to induce the raising of exceptions.
+--
+--      The exceptions raised are to be propagated directly from the protected
+--      operations to the calling unit. 
+--
+--      Ensure that the exceptions are raised and correctly propagated directly
+--      to the calling unit from protected procedures and functions.
+--
+--       
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package CB20007_0 is               -- Package Semaphore.
+
+   Handled_In_Function_Caller,
+   Handled_In_Procedure_Caller : Boolean := False;
+
+   Resource_Overflow,
+   Resource_Underflow          : exception;
+
+   protected type Counting_Semaphore (Max_Resources : Integer) is
+      procedure Secure;
+      function  Resource_Limit_Exceeded return Boolean;
+      procedure Release;
+   private
+      Count : Integer := Max_Resources;
+   end Counting_Semaphore;
+
+end CB20007_0;
+
+     --=================================================================--
+
+with Report;
+
+package body CB20007_0 is                  -- Package Semaphore.
+
+   protected body Counting_Semaphore is
+
+      procedure Secure is
+      begin
+         if (Count = 0) then               -- No resources left to secure.
+            raise Resource_Underflow;      
+            Report.Failed ("Program control not transferred by raise");
+         else
+            Count := Count - 1;            -- Available resources decremented.
+         end if;                          
+         -- No exception handlers here, direct propagation to calling unit.
+      end Secure;
+
+
+      function Resource_Limit_Exceeded return Boolean is
+      begin
+         if (Count > Max_Resources) then   
+            raise Resource_Overflow;       -- Exception used as control flow
+                                           -- mechanism.
+            Report.Failed ("Program control not transferred by raise");
+         else                              
+            return (False);
+         end if;
+         -- No exception handlers here, direct propagation to calling unit.
+      end Resource_Limit_Exceeded;
+
+
+      procedure Release is
+      begin
+         Count := Count + 1;               -- Count of resources available 
+                                           -- incremented.
+         if Resource_Limit_Exceeded then   -- Call to protected operation
+            Count := Count - 1;            -- function that raises an
+                                           -- exception.
+            Report.Failed("Resource limit exceeded");
+         end if;                           
+         -- No exception handler here for exception raised in function.
+         -- Exception will propagate directly to calling unit.
+      end Release;
+
+
+   end Counting_Semaphore;
+
+end CB20007_0;
+
+
+     --=================================================================--
+
+
+with CB20007_0;                           -- Package Semaphore.
+with Report;
+
+procedure CB20007 is
+begin
+
+   Test_Block:
+   declare
+
+      package Semaphore renames CB20007_0;
+
+      Total_Resources_Available : constant := 1;
+
+      Resources : Semaphore.Counting_Semaphore (Total_Resources_Available);
+                                             -- An object of protected type.
+
+   begin
+
+      Report.Test ("CB20007", "Check that exceptions are raised and can "   &
+                              "be directly propagated to the calling unit " &
+                              "by protected operations" );
+
+      Allocate_Resources:
+      declare
+         Loop_Count : Integer := Total_Resources_Available + 1;
+      begin                                   -- Force exception.
+         for I in 1..Loop_Count loop  
+            Resources.Secure;
+         end loop;
+         Report.Failed ("Exception not propagated from protected " &
+                        " operation in Allocate_Resources");
+      exception                                     
+         when Semaphore.Resource_Underflow =>              -- Exception prop.
+            Semaphore.Handled_In_Procedure_Caller := True; -- from protected
+                                                           -- procedure.
+         when others =>
+            Report.Failed ("Unknown exception during resource allocation");
+      end Allocate_Resources;
+
+   
+      Deallocate_Resources:
+      declare
+         Loop_Count : Integer := Total_Resources_Available + 1;
+      begin                                   -- Force exception.
+         for I in 1..Loop_Count loop  
+            Resources.Release;  
+         end loop;
+         Report.Failed ("Exception not propagated from protected " &
+                        "operation in Deallocate_Resources");
+      exception                                     
+         when Semaphore.Resource_Overflow =>              -- Exception prop
+            Semaphore.Handled_In_Function_Caller := True; -- from protected
+                                                          -- function.
+         when others =>
+            Report.Failed ("Exception raised during resource deallocation");
+      end Deallocate_Resources;
+
+
+      if not (Semaphore.Handled_In_Procedure_Caller and -- Incorrect exception
+              Semaphore.Handled_In_Function_Caller)     -- handling in
+      then                                              -- protected ops.
+          Report.Failed                                 
+            ("Improper exception propagation by protected operations");
+      end if;
+
+   exception
+
+      when others =>
+         Report.Failed ("Unexpected exception " &
+                        " raised and propagated in test");
+   end Test_Block;
+
+
+   Report.Result;
+
+end CB20007;

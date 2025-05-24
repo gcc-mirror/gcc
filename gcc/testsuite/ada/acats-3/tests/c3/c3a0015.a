@@ -1,0 +1,267 @@
+-- C3A0015.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--    Check that a derived access type has the same storage pool as its
+--    parent.  (Defect Report 8652/0012, Technical Corrigendum 3.10(7/1)).
+--
+-- CHANGE HISTORY:
+--    24 JAN 2001   PHL   Initial version.
+--    29 JUN 2001   RLB   Reformatted for ACATS.
+--
+--!
+with System.Storage_Elements;
+use System.Storage_Elements;
+with System.Storage_Pools;
+use System.Storage_Pools;
+package C3A0015_0 is
+
+    type Pool (Storage_Size : Storage_Count) is new Root_Storage_Pool with
+	record
+	    First_Free : Storage_Count := 1;
+	    Contents : Storage_Array (1 .. Storage_Size);
+	end record;
+
+    procedure Allocate (Pool : in out C3A0015_0.Pool;
+			Storage_Address : out System.Address;
+			Size_In_Storage_Elements : in Storage_Count;
+			Alignment : in Storage_Count);
+
+    procedure Deallocate (Pool : in out C3A0015_0.Pool;
+			  Storage_Address : in System.Address;
+			  Size_In_Storage_Elements : in Storage_Count;
+			  Alignment : in Storage_Count);
+
+    function Storage_Size (Pool : in C3A0015_0.Pool) return Storage_Count;
+
+end C3A0015_0;
+
+package body C3A0015_0 is
+
+    use System;
+
+    procedure Allocate (Pool : in out C3A0015_0.Pool;
+			Storage_Address : out System.Address;
+			Size_In_Storage_Elements : in Storage_Count;
+			Alignment : in Storage_Count) is
+	Unaligned_Address : constant System.Address :=
+	   Pool.Contents (Pool.First_Free)'Address;
+	Unalignment : Storage_Count;
+    begin
+	Unalignment := Unaligned_Address mod Alignment;
+	if Unalignment = 0 then
+	    Storage_Address := Unaligned_Address;
+	    Pool.First_Free := Pool.First_Free + Size_In_Storage_Elements;
+	else
+	    Storage_Address :=
+	       Pool.Contents (Pool.First_Free + Alignment - Unalignment)'
+		  Address;
+	    Pool.First_Free := Pool.First_Free + Size_In_Storage_Elements +
+				  Alignment - Unalignment;
+	end if;
+    end Allocate;
+
+    procedure Deallocate (Pool : in out C3A0015_0.Pool;
+			  Storage_Address : in System.Address;
+			  Size_In_Storage_Elements : in Storage_Count;
+			  Alignment : in Storage_Count) is
+    begin
+	if Storage_Address + Size_In_Storage_Elements =
+	   Pool.Contents (Pool.First_Free)'Address then
+	    -- Only deallocate if the block is at the end.
+	    Pool.First_Free := Pool.First_Free - Size_In_Storage_Elements;
+	end if;
+    end Deallocate;
+
+    function Storage_Size (Pool : in C3A0015_0.Pool) return Storage_Count is
+    begin
+	return Pool.Storage_Size;
+    end Storage_Size;
+
+end C3A0015_0;
+
+with Ada.Exceptions;
+use Ada.Exceptions;
+with Ada.Unchecked_Deallocation;
+with Report;
+use Report;
+with System.Storage_Elements;
+use System.Storage_Elements;
+with C3A0015_0;
+procedure C3A0015 is
+
+    type Standard_Pool is access Float;
+    type Derived_Standard_Pool is new Standard_Pool;
+    type Derived_Derived_Standard_Pool is new Derived_Standard_Pool;
+
+    type User_Defined_Pool is access Integer;
+    type Derived_User_Defined_Pool is new User_Defined_Pool;
+    type Derived_Derived_User_Defined_Pool is new Derived_User_Defined_Pool;
+
+    My_Pool : C3A0015_0.Pool (1024);
+    for User_Defined_Pool'Storage_Pool use My_Pool;
+
+    generic
+	type Designated is private;
+	Value : Designated;
+	type Acc is access Designated;
+	type Derived_Acc is new Acc;
+    procedure Check (Subtest : String; User_Defined_Pool : Boolean);
+
+    procedure Check (Subtest : String; User_Defined_Pool : Boolean) is
+
+	procedure Deallocate is
+	   new Ada.Unchecked_Deallocation (Object => Designated,
+					   Name => Acc);
+	procedure Deallocate is
+	   new Ada.Unchecked_Deallocation (Object => Designated,
+					   Name => Derived_Acc);
+
+	First_Free : Storage_Count;
+	X : Acc;
+	Y : Derived_Acc;
+    begin
+	if User_Defined_Pool then
+	    First_Free := My_Pool.First_Free;
+	end if;
+	X := new Designated'(Value);
+	if User_Defined_Pool and then First_Free >= My_Pool.First_Free then
+	    Failed (Subtest &
+		    " - Allocation didn't consume storage in the pool - 1");
+	else
+	    First_Free := My_Pool.First_Free;
+	end if;
+
+	Y := Derived_Acc (X);
+	if User_Defined_Pool and then First_Free /= My_Pool.First_Free then
+	    Failed (Subtest &
+		    " - Conversion did consume storage in the pool - 1");
+	end if;
+	if Y.all /= Value then
+	    Failed (Subtest &
+		    " - Incorrect allocation/conversion of access values - 1");
+	end if;
+
+	Deallocate (Y);
+	if User_Defined_Pool and then First_Free <= My_Pool.First_Free then
+	    Failed (Subtest &
+		    " - Deallocation didn't release storage from the pool - 1");
+	else
+	    First_Free := My_Pool.First_Free;
+	end if;
+
+	Y := new Designated'(Value);
+	if User_Defined_Pool and then First_Free >= My_Pool.First_Free then
+	    Failed (Subtest &
+		    " - Allocation didn't consume storage in the pool - 2");
+	else
+	    First_Free := My_Pool.First_Free;
+	end if;
+
+	X := Acc (Y);
+	if User_Defined_Pool and then First_Free /= My_Pool.First_Free then
+	    Failed (Subtest &
+		    " - Conversion did consume storage in the pool - 2");
+	end if;
+	if X.all /= Value then
+	    Failed (Subtest &
+		    " - Incorrect allocation/conversion of access values - 2");
+	end if;
+
+	Deallocate (X);
+	if User_Defined_Pool and then First_Free <= My_Pool.First_Free then
+	    Failed (Subtest &
+		    " - Deallocation didn't release storage from the pool - 2");
+	end if;
+    exception
+	when E: others =>
+	    Failed (Subtest & " - Exception " & Exception_Name (E) &
+		    " raised - " & Exception_Message (E));
+    end Check;
+
+
+begin
+    Test ("C3A0015", "Check that a dervied access type has the same " &
+			"storage pool as its parent");
+
+    Comment ("Access types using the standard storage pool");
+
+    Std:
+	declare
+	    procedure Check1 is
+	       new Check (Designated => Float,
+			  Value => 3.0,
+			  Acc => Standard_Pool,
+			  Derived_Acc => Derived_Standard_Pool);
+	    procedure Check2 is
+	       new Check (Designated => Float,
+			  Value => 4.0,
+			  Acc => Standard_Pool,
+			  Derived_Acc => Derived_Derived_Standard_Pool);
+	    procedure Check3 is
+	       new Check (Designated => Float,
+			  Value => 5.0,
+			  Acc => Derived_Standard_Pool,
+			  Derived_Acc => Derived_Derived_Standard_Pool);
+	begin
+	    Check1 ("Standard_Pool/Derived_Standard_Pool",
+		    User_Defined_Pool => False);
+	    Check2 ("Standard_Pool/Derived_Derived_Standard_Pool",
+		    User_Defined_Pool => False);
+	    Check3 ("Derived_Standard_Pool/Derived_Derived_Standard_Pool",
+		    User_Defined_Pool => False);
+	end Std;
+
+    Comment ("Access types using a user-defined storage pool");
+
+    User:
+	declare
+	    procedure Check1 is
+	       new Check (Designated => Integer,
+			  Value => 17,
+			  Acc => User_Defined_Pool,
+			  Derived_Acc => Derived_User_Defined_Pool);
+	    procedure Check2 is
+	       new Check (Designated => Integer,
+			  Value => 18,
+			  Acc => User_Defined_Pool,
+			  Derived_Acc => Derived_Derived_User_Defined_Pool);
+	    procedure Check3 is
+	       new Check (Designated => Integer,
+			  Value => 19,
+			  Acc => Derived_User_Defined_Pool,
+			  Derived_Acc => Derived_Derived_User_Defined_Pool);
+	begin
+	    Check1 ("User_Defined_Pool/Derived_User_Defined_Pool",
+		    User_Defined_Pool => True);
+	    Check2 ("User_Defined_Pool/Derived_Derived_User_Defined_Pool",
+		    User_Defined_Pool => True);
+	    Check3
+	       ("Derived_User_Defined_Pool/Derived_Derived_User_Defined_Pool",
+		User_Defined_Pool => True);
+	end User;
+
+    Result;
+end C3A0015;

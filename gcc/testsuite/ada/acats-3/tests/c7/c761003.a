@@ -1,0 +1,447 @@
+-- C761003.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that an object of a controlled type is finalized when the
+--      enclosing master is complete.
+--      Check this for controlled types where the derived type has a
+--      discriminant.
+--      Check this for subprograms of abstract types derived from the
+--      types in Ada.Finalization.
+--
+--      Check that finalization of controlled objects is
+--      performed in the correct order.  In particular, check that if
+--      multiple objects of controlled types are declared immediately
+--      within the same declarative part then type are finalized in the
+--      reverse order of their creation.
+--
+-- TEST DESCRIPTION:
+--      This test checks these conditions for subprograms and
+--      block statements; both variables and constants of controlled
+--      types; cases of a controlled component of a record type, as
+--      well as an array with controlled components.
+--
+--      The base controlled types used for the test are defined
+--      with a character discriminant.  The initialize procedure for
+--      the types will record the order of creation in a globally
+--      accessible array, the finalize procedure for the types will call
+--      TCTouch with that tag character.  The test can then check that
+--      the order of finalization is indeed the reverse of the order of
+--      creation (assuming that the implementation calls Initialize in
+--      the order that the objects are created).
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      02 Nov 95   SAIC    ACVC 2.0.1
+--
+--!
+
+------------------------------------------------------------ C761003_Support
+
+package C761003_Support is
+  
+  function Pick_Char return Character;
+  -- successive calls to Pick_Char return distinct characters which may
+  -- be assigned to objects to track an order sequence.  These characters
+  -- are then used in calls to TCTouch.Touch.
+
+  procedure Validate(Initcount   : Natural;
+                     Testnumber  : Natural;
+                     Check_Order : Boolean := True);
+  -- does a little extra processing prior to calling TCTouch.Validate,
+  -- specifically, it reverses the stored string of characters, and checks
+  -- for a correct count.
+
+  Inits_Order  : String(1..255);
+  Inits_Called : Natural := 0;
+
+end C761003_Support;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+with TCTouch;
+package body C761003_Support is
+  type Pick_Rotation is mod 52;
+  type Pick_String is array(Pick_Rotation) of Character;
+
+  From : constant Pick_String  := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                & "abcdefghijklmnopqrstuvwxyz";
+  Recent_Pick : Pick_Rotation := Pick_Rotation'Last;
+
+  function Pick_Char return Character is
+  begin
+    Recent_Pick := Recent_Pick +1;
+    return From(Recent_Pick);
+  end Pick_Char;
+
+  function Invert(S:String) return String is
+    T: String(1..S'Length);
+  begin
+    for SI in reverse S'Range loop
+      T(S'Last - SI + 1) := S(SI);
+    end loop;
+    return T;
+  end Invert;
+
+  procedure Validate(Initcount   : Natural;
+                     Testnumber  : Natural;
+                     Check_Order : Boolean := True) is
+    Number : constant String := Natural'Image(Testnumber);
+  begin
+    if Inits_Called /= Initcount then
+      Report.Failed("Got" & Natural'Image(Inits_Called) & " inits, expected"
+                    & Natural'Image(Initcount) & ", Subtest " & Number);
+      TCTouch.Flush;
+    else
+      TCTouch.Validate(
+        Invert(Inits_Order(1..Inits_Called)),
+               "Subtest " & Number, Order_Meaningful => Check_Order );
+    end if;
+    Inits_Called := 0;  -- reset for the next batch
+  end Validate;
+
+end C761003_Support;
+
+------------------------------------------------------------------ C761003_0
+
+with Ada.Finalization;
+package C761003_0 is
+
+  type Global(Tag: Character) is new Ada.Finalization.Controlled
+    with null record;
+
+  procedure Initialize( It: in out Global );
+  procedure Finalize  ( It: in out Global );
+
+  Null_Global : Global('1') := (Ada.Finalization.Controlled with Tag => '1');
+
+  type Second(Tag: Character) is new Ada.Finalization.Limited_Controlled
+    with null record;
+
+  procedure Initialize( It: in out Second );
+  procedure Finalize  ( It: in out Second );
+
+end C761003_0;
+
+------------------------------------------------------------------ C761003_1
+
+with Ada.Finalization;
+package C761003_1 is
+
+  type Global is abstract new Ada.Finalization.Controlled with record
+    Tag: Character;
+  end record;
+
+  procedure Initialize( It: in out Global );
+  procedure Finalize  ( It: in out Global );
+
+  type Second is abstract new Ada.Finalization.Limited_Controlled with record
+    Tag: Character;
+  end record;
+
+  procedure Initialize( It: in out Second );
+  procedure Finalize  ( It: in out Second );
+
+end C761003_1;
+
+------------------------------------------------------------------ C761003_2
+
+with C761003_1;
+package C761003_2 is
+
+  type Global is new C761003_1.Global with null record;
+  -- inherits Initialize and Finalize
+
+  type Second is new C761003_1.Second with null record;
+  -- inherits Initialize and Finalize
+
+end C761003_2;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --  C761003_0
+
+with TCTouch;
+with C761003_Support;
+package body C761003_0 is
+
+  package Sup renames C761003_Support;
+
+  procedure Initialize( It: in out Global ) is
+  begin
+    Sup.Inits_Called := Sup.Inits_Called +1;
+    Sup.Inits_Order(Sup.Inits_Called) := It.Tag;
+  end Initialize;
+
+  procedure Finalize( It: in out Global ) is
+  begin
+    TCTouch.Touch(It.Tag);  --------------------------------------------- Tag
+  end Finalize;
+
+  procedure Initialize( It: in out Second ) is
+  begin
+    Sup.Inits_Called := Sup.Inits_Called +1;
+    Sup.Inits_Order(Sup.Inits_Called) := It.Tag;
+  end Initialize;
+
+  procedure Finalize( It: in out Second ) is
+  begin
+    TCTouch.Touch(It.Tag);  --------------------------------------------- Tag
+  end Finalize;
+
+end C761003_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --  C761003_1
+
+with TCTouch;
+with C761003_Support;
+package body C761003_1 is
+
+  package Sup renames C761003_Support;
+
+  procedure Initialize( It: in out Global ) is
+  begin
+    Sup.Inits_Called := Sup.Inits_Called +1;
+    It.Tag := Sup.Pick_Char;
+    Sup.Inits_Order(Sup.Inits_Called) := It.Tag;
+  end Initialize;
+
+  procedure Finalize( It: in out Global ) is
+  begin
+    TCTouch.Touch(It.Tag);  --------------------------------------------- Tag
+  end Finalize;
+
+  procedure Initialize( It: in out Second ) is
+  begin
+    Sup.Inits_Called := Sup.Inits_Called +1;
+    It.Tag := Sup.Pick_Char;
+    Sup.Inits_Order(Sup.Inits_Called) := It.Tag;
+  end Initialize;
+
+  procedure Finalize( It: in out Second ) is
+  begin
+    TCTouch.Touch(It.Tag);  --------------------------------------------- Tag
+  end Finalize;
+
+end C761003_1;
+
+-------------------------------------------------------------------- C761003
+
+with Report;
+with TCTouch;
+with C761003_0;
+with C761003_2;
+with C761003_Support;
+procedure C761003 is
+
+  package Sup renames C761003_Support;
+
+---------------------------------------------------------------- Subtest_1
+
+  Subtest_1_Inits_Expected : constant := 5;  -- includes 1 previous
+
+  procedure Subtest_1 is
+
+    -- the constant will take its constraint from the value.
+    -- must be declared first to be finalized last (and take the
+    -- initialize from before calling subtest_1)
+    Item_1 : constant C761003_0.Global := C761003_0.Null_Global;
+
+    -- Item_2, declared second, should be finalized second to last.
+    Item_2 : C761003_0.Global(Sup.Pick_Char);
+
+    -- Item_3 and Item_4 will be created in the order of the
+    -- list.
+    Item_3, Item_4 : C761003_0.Global(Sup.Pick_Char);
+
+   -- Item_5 will be finalized first.
+    Item_5 : C761003_0.Second(Sup.Pick_Char);
+
+  begin
+    if Item_3.Tag >= Item_4.Tag then
+      Report.Failed("Controlled objects created by list in wrong order");
+    end if;
+    -- check that nothing has happened yet!
+    TCTouch.Validate("","Subtest 1 body");
+  end Subtest_1;
+
+---------------------------------------------------------------- Subtest_2
+
+  -- These declarations should cause calls to initialize and
+  -- finalize.  The expected operations are the subprograms associated
+  -- with the abstract types.  Note that for these objects, the
+  -- Initialize and Finalize are visible only by inheritance.
+
+  Subtest_2_Inits_Expected : constant := 4;
+
+  procedure Subtest_2 is
+
+    Item_1 : C761003_2.Global;
+    Item_2, Item_3 : C761003_2.Global;
+    Item_4 : C761003_2.Second;
+
+  begin
+    -- check that nothing has happened yet!
+    TCTouch.Validate("","Subtest 2 body");
+  end Subtest_2;
+
+---------------------------------------------------------------- Subtest_3
+
+  -- Test for controlled objects embedded in arrays.  Using structures
+  -- that will cause a checkable order.
+
+  Subtest_3_Inits_Expected : constant := 8;
+
+  procedure Subtest_3 is
+
+    type Global_List is array(Natural range <>)
+                          of C761003_0.Global(Sup.Pick_Char);
+
+    Items : Global_List(1..4);  -- components have the same tag
+
+    type Second_List is array(Natural range <>)
+                          of C761003_0.Second(Sup.Pick_Char);
+
+    Second_Items : Second_List(1..4);  -- components have the same tag,
+                                       -- distinct from the tag used in Items
+
+  begin
+    -- check that nothing has happened yet!
+    TCTouch.Validate("","Subtest 3 body");
+  end Subtest_3;
+
+---------------------------------------------------------------- Subtest_4
+
+  -- These declarations should cause dispatching calls to initialize and
+  -- finalize.  The expected operations are the subprograms associated
+  -- with the abstract types.
+
+  Subtest_4_Inits_Expected : constant := 2;
+
+  procedure Subtest_4 is
+
+    type Global_Rec is record
+      Item1: C761003_0.Global(Sup.Pick_Char);
+    end record;
+
+    type Second_Rec is record
+      Item2: C761003_2.Second;
+    end record;
+
+    G : Global_Rec;
+    S : Second_Rec;
+
+  begin
+    -- check that nothing has happened yet!
+    TCTouch.Validate("","Subtest 4 body");
+  end Subtest_4;
+
+---------------------------------------------------------------- Subtest_5
+
+  -- Test for controlled objects embedded in arrays.  In these cases, the
+  -- order of the finalization of the components is not defined by the
+  -- language.
+
+  Subtest_5_Inits_Expected : constant := 8;
+
+  procedure Subtest_5 is
+
+
+    type Another_Global_List is array(Natural range <>)
+                          of C761003_2.Global;
+
+    More_Items : Another_Global_List(1..4);
+
+    type Another_Second_List is array(Natural range <>)
+                          of C761003_2.Second;
+
+    Second_More_Items : Another_Second_List(1..4);
+
+  begin
+    -- check that nothing has happened yet!
+    TCTouch.Validate("","Subtest 5 body");
+  end Subtest_5;
+
+---------------------------------------------------------------- Subtest_6
+
+  -- These declarations should cause dispatching calls to initialize and
+  -- finalize.  The expected operations are the subprograms associated
+  -- with the abstract types.
+
+  Subtest_6_Inits_Expected : constant := 2;
+
+  procedure Subtest_6 is
+
+    type Global_Rec is record
+     Item2: C761003_2.Global;
+    end record;
+
+    type Second_Rec is record
+      Item1: C761003_0.Second(Sup.Pick_Char);
+   end record;
+
+    G : Global_Rec;
+    S : Second_Rec;
+
+  begin
+    -- check that nothing has happened yet!
+    TCTouch.Validate("","Subtest 6 body");
+  end Subtest_6;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C761003", "Check that an object of a controlled type "
+                        & "is finalized when the enclosing master is "
+                        & "complete, left by a transfer of control, "
+                        & "and performed in the correct order" );
+
+  -- adjust for optional adjusts and initializes for C761003_0.Null_Global
+  TCTouch.Flush; -- clear the optional adjust
+  if Sup.Inits_Called /= 1 then
+    -- C761003_0.Null_Global did not get "initialized"
+    C761003_0.Initialize(C761003_0.Null_Global);  -- prime the pump
+  end if;
+
+  Subtest_1;
+  Sup.Validate(Subtest_1_Inits_Expected, 1);
+
+  Subtest_2;
+  Sup.Validate(Subtest_2_Inits_Expected, 2);
+
+  Subtest_3;
+  Sup.Validate(Subtest_3_Inits_Expected, 3);
+
+  Subtest_4;
+  Sup.Validate(Subtest_4_Inits_Expected, 4);
+
+  Subtest_5;
+  Sup.Validate(Subtest_5_Inits_Expected, 5, Check_Order => False);
+
+  Subtest_6;
+  Sup.Validate(Subtest_6_Inits_Expected, 6);
+
+  Report.Result;
+
+end C761003;

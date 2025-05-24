@@ -1,0 +1,150 @@
+-- C3A0008.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE: 
+--      Check that subprogram references may be passed as parameters using 
+--      access-to-subprogram types. Check that the passed subprograms may 
+--      be invoked from within the called subprogram.
+--
+-- TEST DESCRIPTION:
+--      Declare an access to function type in a package specification.  
+--      Declare three different trig functions that can be referred to by 
+--      the access to function type.  
+--
+--      In the main program, call each function indirectly by passing the 
+--      access to subprogram value as parameter.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+
+package Integrate_Lookup is
+
+  TC_Log_Call  : Boolean := False;
+
+  TC_Cos_Call  : Boolean := False;
+
+  TC_Sine_Call : Boolean := False;
+
+  -- Type accesses to functions Log, Sine, or Cos
+  type Integrand_Ptr is access function        
+     (Angle : Float) return Float;
+
+  function Log  (Angle : in Float) return Float;        
+
+  function Sine (Angle : in Float) return Float;         
+
+  function Cos  (Angle : in Float) return Float;        
+
+  function Integrate  (Func : Integrand_Ptr; From, To: Float) 
+    return Float;
+
+end Integrate_Lookup;
+
+
+-----------------------------------------------------------------------------
+
+
+package body Integrate_Lookup is
+
+
+  function Log (Angle : in Float) return Float is
+  begin
+     TC_Log_Call := True;
+     return 0.1;
+  end Log;
+
+
+  function Sine (Angle : in Float) return Float is
+  begin
+     TC_Sine_Call := True;
+     return 0.0;
+  end Sine;
+
+
+  function Cos  (Angle : in Float) return Float is
+  begin
+     TC_Cos_Call := True;
+     return 1.0;
+  end Cos;
+
+
+  function Integrate (Func : Integrand_Ptr; From, To: Float) 
+    return Float is
+     Theta : Float;
+  begin
+     -- calls the actual subprogram passed as parameter
+     Theta := Func (From) + Func (To);
+     return Theta;
+  end Integrate;
+
+end Integrate_Lookup;
+
+
+-----------------------------------------------------------------------------
+
+
+with Report;
+
+with Integrate_Lookup; 
+
+procedure C3A0008 is
+
+  Area : Float := 0.0;
+
+begin
+
+  Report.Test ("C3A0008", "Check that subprogram references may be passed "
+                        & "as parameters using access-to-subprogram types. " 
+                       & "Check that the passed subprograms may be invoked "
+                        & "from within the called subprogram");
+
+  Area := Integrate_Lookup.Integrate
+            (Integrate_Lookup.Log'Access, 1.0, 2.0);
+
+  If not Integrate_Lookup.TC_Log_Call or Area /= 0.2 then
+     Report.Failed ("Incorrect Log result");
+  end if;
+
+  Area := Integrate_Lookup.Integrate
+            (Integrate_Lookup.Sine'Access, 1.0, 2.0);
+
+  If not Integrate_Lookup.TC_Sine_Call or Area /= 0.0 then
+     Report.Failed ("Incorrect Sine result");
+  end if;
+
+  Area := Integrate_Lookup.Integrate
+            (Integrate_Lookup.Cos'Access, 1.0, 2.0);
+
+  If not Integrate_Lookup.TC_Cos_Call or Area /= 2.0 then
+     Report.Failed ("Incorrect Cos result");
+  end if;
+
+  Report.Result;
+
+end C3A0008;

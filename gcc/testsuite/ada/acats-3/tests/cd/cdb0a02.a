@@ -1,0 +1,329 @@
+-- CDB0A02.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that several access types can share the same pool.
+--
+--      Check that any exception propagated by Allocate is
+--      propagated by the allocator.
+--
+--      Check that for an access type S, S'Max_Size_In_Storage_Elements
+--      denotes the maximum values for Size_In_Storage_Elements that will
+--      be requested via Allocate.
+--
+-- TEST DESCRIPTION:
+--      After checking correct operation of the tree packages, the limits of
+--      the storage pools (first the shared user defined storage pool, then
+--      the system storage pool) are intentionally exceeded.  The test checks
+--      that the correct exception is raised.
+--
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FDB0A00.A   (foundation code)
+--         CDB0A02.A
+--
+--
+-- CHANGE HISTORY:
+--      10 AUG 95   SAIC   Initial version
+--      07 MAY 96   SAIC   Disambiguated for 2.1
+--      13 FEB 97   PWB.CTA  Reduced minimum allowable
+--                           Max_Size_In_Storage_Units, for implementations
+--                           with larger storage units
+--      25 JAN 01   RLB    Removed dubious checks on Max_Size_In_Storage_Units;
+--                         tightened important one.
+
+--!
+
+---------------------------------------------------------- FDB0A00.Pool2
+
+package FDB0A00.Pool2 is
+  Pond : Stack_Heap( 5_000 );
+end FDB0A00.Pool2;
+
+---------------------------------------------------------------- CDB0A02_2
+
+with FDB0A00.Pool2;
+package CDB0A02_2 is
+
+  type Small_Cell;
+  type Small_Tree is access Small_Cell;
+
+  for Small_Tree'Storage_Pool use FDB0A00.Pool2.Pond;  -- first usage
+
+  type Small_Cell is record
+    Data: Character;
+    Left,Right : Small_Tree;
+  end record;
+
+  procedure Insert( Item: Character; On_Tree : in out Small_Tree );
+
+  procedure Traverse( The_Tree : Small_Tree );
+
+  procedure Defoliate( The_Tree : in out Small_Tree );
+
+  procedure TC_Exceed_Pool;
+
+  Pool_Max_Elements : constant := 6000;
+                      -- to guarantee overflow in TC_Exceed_Pool
+
+end CDB0A02_2;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+with Report;
+with Unchecked_Deallocation;
+package body CDB0A02_2 is
+  procedure Deallocate is new Unchecked_Deallocation(Small_Cell,Small_Tree);
+
+  -- Sort: zeros on the left, ones on the right...
+  procedure Insert( Item: Character; On_Tree : in out Small_Tree ) is
+  begin
+    if On_Tree = null then
+      On_Tree := new Small_Cell'(Item,null,null);
+    elsif Item > On_Tree.Data then
+      Insert(Item,On_Tree.Right);
+    else
+      Insert(Item,On_Tree.Left);
+    end if;
+  end Insert;
+
+  procedure Traverse( The_Tree : Small_Tree ) is
+  begin
+    if The_Tree = null then
+      null;  -- how very symmetrical
+    else
+      Traverse(The_Tree.Left);
+      TCTouch.Touch(The_Tree.Data);
+      Traverse(The_Tree.Right);
+    end if;
+  end Traverse;
+
+  procedure Defoliate( The_Tree : in out Small_Tree ) is
+  begin
+
+    if The_Tree.Left /= null then
+      Defoliate(The_Tree.Left);
+    end if;
+
+    if The_Tree.Right /= null then
+      Defoliate(The_Tree.Right);
+    end if;
+
+    Deallocate(The_Tree);
+
+  end Defoliate;
+
+  procedure TC_Exceed_Pool is
+    Wild_Branch : Small_Tree;
+  begin
+    for Ever in 1..Pool_Max_Elements loop
+       Wild_Branch := new Small_Cell'('a', Wild_Branch, Wild_Branch);
+       TCTouch.Validate("A","Allocating element for overflow");
+    end loop;
+    Report.Failed(" Pool_Overflow not raised on exceeding user pool size");
+  exception
+    when FDB0A00.Pool_Overflow => null; -- anticipated case
+    when others =>
+      Report.Failed("wrong exception raised in user Exceed_Pool");
+  end TC_Exceed_Pool;
+
+end CDB0A02_2;
+
+---------------------------------------------------------------- CDB0A02_3
+
+-- This package is essentially identical to CDB0A02_2, except that the size
+-- of a cell is significantly larger.  This is used to check that different
+-- access types may share a single pool
+
+with FDB0A00.Pool2;
+package CDB0A02_3 is
+
+  type Large_Cell;
+  type Large_Tree is access Large_Cell;
+
+  for Large_Tree'Storage_Pool use FDB0A00.Pool2.Pond;  -- second usage
+
+  type Large_Cell is record
+    Data: Character;
+    Extra_Data : String(1..2);
+    Left,Right : Large_Tree;
+  end record;
+
+  procedure Insert( Item: Character; On_Tree : in out Large_Tree );
+
+  procedure Traverse( The_Tree : Large_Tree );
+
+  procedure Defoliate( The_Tree : in out Large_Tree );
+
+end CDB0A02_3;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+with Unchecked_Deallocation;
+package body CDB0A02_3 is
+  procedure Deallocate is new Unchecked_Deallocation(Large_Cell,Large_Tree);
+
+  -- Sort: zeros on the left, ones on the right...
+  procedure Insert( Item: Character; On_Tree : in out Large_Tree ) is
+  begin
+    if On_Tree = null then
+      On_Tree := new Large_Cell'(Item,(Item,Item),null,null);
+    elsif Item > On_Tree.Data then
+      Insert(Item,On_Tree.Right);
+    else
+      Insert(Item,On_Tree.Left);
+    end if;
+  end Insert;
+
+  procedure Traverse( The_Tree : Large_Tree ) is
+  begin
+    if The_Tree = null then
+      null;  -- how very symmetrical
+    else
+      Traverse(The_Tree.Left);
+      TCTouch.Touch(The_Tree.Data);
+      Traverse(The_Tree.Right);
+    end if;
+  end Traverse;
+
+  procedure Defoliate( The_Tree : in out Large_Tree ) is
+  begin
+
+    if The_Tree.Left /= null then
+      Defoliate(The_Tree.Left);
+    end if;
+
+    if The_Tree.Right /= null then
+      Defoliate(The_Tree.Right);
+    end if;
+
+    Deallocate(The_Tree);
+
+ end Defoliate;
+
+end CDB0A02_3;
+
+------------------------------------------------------------------ CDB0A02
+
+with Report;
+with TCTouch;
+with System.Storage_Elements;
+with CDB0A02_2;
+with CDB0A02_3;
+with FDB0A00;
+
+procedure CDB0A02 is
+
+  Banyan : CDB0A02_2.Small_Tree;
+  Torrey : CDB0A02_3.Large_Tree;
+
+  use type CDB0A02_2.Small_Tree;
+  use type CDB0A02_3.Large_Tree;
+
+  Countess1    : constant String := "Ada ";
+  Countess2    : constant String := "Augusta ";
+  Countess3    : constant String := "Lovelace";
+  Cenosstu     : constant String := "  AALaaacdeeglostuuv";
+  Insertion    : constant String := "AAAAAAAAAAAAAAAAAAAA"
+                                  & "AAAAAAAAAAAAAAAAAAAA";
+  Deallocation : constant String := "DDDDDDDDDDDDDDDDDDDD";
+
+begin  -- Main test procedure.
+
+   Report.Test ("CDB0A02", "Check that several access types can share " &
+                           "the same pool.  Check that any exception " &
+                           "propagated by Allocate is propagated by the " &
+                           "allocator.  Check that for an access type S, " &
+                           "S'Max_Size_In_Storage_Elements denotes the " &
+                           "maximum values for Size_In_Storage_Elements " &
+                           "that will be requested via Allocate" );
+
+  -- Check that access types can share the same pool.
+
+  for Count in Countess1'Range loop
+    CDB0A02_2.Insert( Countess1(Count), Banyan );
+  end loop;
+
+  for Count in Countess1'Range loop
+    CDB0A02_3.Insert( Countess1(Count), Torrey );
+  end loop;
+
+  for Count in Countess2'Range loop
+    CDB0A02_2.Insert( Countess2(Count), Banyan );
+  end loop;
+
+  for Count in Countess2'Range loop
+    CDB0A02_3.Insert( Countess2(Count), Torrey );
+  end loop;
+
+  for Count in Countess3'Range loop
+    CDB0A02_2.Insert( Countess3(Count), Banyan );
+  end loop;
+
+  for Count in Countess3'Range loop
+    CDB0A02_3.Insert( Countess3(Count), Torrey );
+  end loop;
+
+  TCTouch.Validate(Insertion, "Allocate calls via CDB0A02_2" );
+
+
+  CDB0A02_2.Traverse(Banyan);
+  TCTouch.Validate(Cenosstu, "Traversal of Banyan" );
+
+  CDB0A02_3.Traverse(Torrey);
+  TCTouch.Validate(Cenosstu, "Traversal of Torrey" );
+
+  CDB0A02_2.Defoliate(Banyan);
+  TCTouch.Validate(Deallocation, "Deforestation of Banyan" );
+  TCTouch.Assert(Banyan = null, "Banyan Deallocation result not null");
+
+  CDB0A02_3.Defoliate(Torrey);
+  TCTouch.Validate(Deallocation, "Deforestation of Torrey" );
+  TCTouch.Assert(Torrey = null, "Torrey Deallocation result not null");
+
+  -- Check that for an access type S, S'Max_Size_In_Storage_Elements
+  -- denotes the maximum values for Size_In_Storage_Elements that will
+  -- be requested via Allocate. (Of course, all we can do is check that
+  -- whatever was requested of Allocate did not exceed the values of the
+  -- attributes.)
+
+  TCTouch.Assert( FDB0A00.TC_Largest_Request in 1 ..
+                  System.Storage_Elements.Storage_Count'Max (
+                    CDB0A02_2.Small_Cell'Max_Size_In_Storage_Elements,
+                    CDB0A02_3.Large_Cell'Max_Size_In_Storage_Elements),
+                  "An object of excessive size was allocated.  Size: "
+   & System.Storage_Elements.Storage_Count'Image(FDB0A00.TC_Largest_Request));
+
+  -- Check that an exception raised in Allocate is propagated by the allocator.
+
+  CDB0A02_2.TC_Exceed_Pool;
+
+  Report.Result;
+
+end CDB0A02;

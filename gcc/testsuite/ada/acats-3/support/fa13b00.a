@@ -1,0 +1,106 @@
+-- FA13B00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation code is used to check visibility of separate
+--      subunit of child packages.
+--      Declares a package containing type definitions and a private
+--      part; package will be with'ed by the parent's body of the subunits.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package FA13B00_0 is             
+
+   -- Type definitions.
+
+   type Visible_Integer is range 1 .. 10;
+
+   type Private_Record is private;
+
+   type Visible_Tagged is tagged
+      record
+         PR : Private_Record;
+      end record;
+
+   type Private_Tagged is tagged private;
+
+   Visible_Num : Visible_Integer := 7;
+
+   -- Subprogram definitions.
+
+   function Assign_Visible_Tagged (I : Visible_Integer) 
+     return Visible_Tagged;
+
+   function Assign_Private_Tagged (I : Visible_Integer) 
+     return Private_Tagged;
+
+private
+
+   -- Type definitions.
+
+   type Private_Integer is range 11 .. 20;
+
+   type Private_Record is
+      record
+         VI : Visible_Integer;
+      end record;
+
+   type Private_Tagged is tagged
+      record
+         VI : Visible_Integer;
+      end record;
+
+   -- Object definitions.
+
+   Private_Num : Visible_Integer :=  6;
+
+end FA13B00_0;
+
+     --==================================================================--
+
+package body FA13B00_0 is             
+
+   function Assign_Visible_Tagged(I : Visible_Integer) 
+     return Visible_Tagged is
+     VT : Visible_Tagged := (PR => (VI => I));
+   begin
+     return VT;
+   end Assign_Visible_Tagged;
+
+   -------------------------------------------------------
+
+   function Assign_Private_Tagged (I : Visible_Integer) 
+     return Private_Tagged is
+     PT : Private_Tagged := (VI => I);
+   begin
+     return PT;
+   end Assign_Private_Tagged;
+
+   -------------------------------------------------------
+
+end FA13B00_0;

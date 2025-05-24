@@ -1,0 +1,259 @@
+-- C974005.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that Tasking_Error is raised at the point of an entry call
+--      which is the triggering statement of an asynchronous select, if
+--      the entry call is queued, but the task containing the entry completes
+--      before it can be accepted or canceled.
+--
+--      Check that the abortable part is aborted if it does not complete
+--      before the triggering statement completes.
+--
+--      Check that the sequence of statements of the triggering alternative
+--      is not executed.
+--
+-- TEST DESCRIPTION:
+--      Declare a main procedure containing an asynchronous select with a task
+--      entry call as triggering statement. Force the entry call to be
+--      queued by having the task call a procedure, prior to the corresponding
+--      accept statement, which simulates a routine waiting for user input
+--      (with a delay). 
+--
+--      Simulate a time-consuming routine in the abortable part by calling a
+--      procedure containing an infinite loop. Meanwhile, simulate input by
+--      the user (the delay expires) which is NOT the input expected by the
+--      guard on the accept statement. The entry remains closed, and the
+--      task completes its execution. Since the entry was not accepted before
+--      its task completed, Tasking_Error is raised at the point of the entry
+--      call.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package C974005_0 is  -- Automated teller machine abstraction.
+
+
+   -- Flags for testing purposes:
+
+   Count : Integer := 1234;            
+
+   type Key_Enum is (None, Cancel, Deposit, Withdraw);
+
+   type Card_Number_Type is private;
+   type Card_PIN_Type    is private;
+   type ATM_Card_Type    is private;
+
+
+   Transaction_Canceled : exception;
+
+
+   task type ATM_Keyboard_Task is
+      entry Cancel_Pressed;
+   end ATM_Keyboard_Task;
+
+
+   procedure Read_Card (Card : in out ATM_Card_Type);
+
+   procedure Validate_Card (Card : in ATM_Card_Type);
+
+   procedure Perform_Transaction (Card : in ATM_Card_Type);
+
+private
+
+   type Card_Number_Type is range   1 .. 9999;
+   type Card_PIN_Type    is range 100 ..  999;
+
+   type ATM_Card_Type is record
+      Number : Card_Number_Type;
+      PIN    : Card_PIN_Type;
+   end record;
+
+end C974005_0;
+
+
+     --==================================================================--
+
+
+with Report;
+with ImpDef;
+
+package body C974005_0 is
+
+
+   procedure Listen_For_Input (Key : out Key_Enum) is
+   begin
+      -- Simulate the situation where a user waits a bit for the card to
+      -- be validated, then presses a transaction key (NOT Cancel).
+
+      -- Delay long enough to force queuing of Keyboard.Cancel_Pressed.
+      delay ImpDef.Clear_Ready_Queue;
+
+      if Report.Equal (3, 3) then  -- Always true.
+         Key := Deposit;           -- Cancel is NOT pressed.
+      end if;
+   end Listen_For_Input;
+
+
+   task body ATM_Keyboard_Task is
+      Key_Pressed : Key_Enum := None;
+   begin
+
+      -- Note: no loop. If the user does not press Cancel, the task completes.
+      -- In this model of the keyboard monitor, the user only gets one chance
+      -- to cancel the card validation.
+                                                            -- Force entry
+         Listen_For_Input (Key_Pressed);                    -- calls to be
+                                                            -- queued, but do
+                                                            -- NOT set guard
+                                                            -- to true.
+      select
+         when (Key_Pressed = Cancel) =>                     -- Guard is false,
+            accept Cancel_Pressed do                        -- so entry call
+               Report.Failed ("Accept statement executed"); -- remains queued.
+            end Cancel_Pressed;
+      else                                                  -- Else alternative
+         Key_Pressed := None;                               -- executed, then
+      end select;                                           -- task ends.
+   exception
+      when others => 
+         Report.Failed ("Unexpected exception in ATM_Keyboard_Task"); 
+   end ATM_Keyboard_Task;
+
+
+
+   procedure Read_Card (Card : in out ATM_Card_Type) is
+   begin
+      Card.Number := 9999;
+      Card.PIN    := 111;
+   end Read_Card;
+
+
+   procedure Validate_Card (Card : in ATM_Card_Type) is
+   begin
+      -- Simulate an exceedingly long validation activity.
+      loop                                             -- Infinite loop.
+         Count := (Count + 1) mod Integer (Card.PIN);
+
+         -- Synch Point to allow transfer of control to Keyboard task
+         -- during this simulation
+         delay ImpDef.Minimum_Task_Switch;
+
+         exit when not Report.Equal (Count, Count);    -- Always false.
+      end loop;
+   end Validate_Card;
+
+
+   procedure Perform_Transaction (Card : in ATM_Card_Type) is
+   begin
+      Report.Failed ("Exception not re-raised immediately following " &
+                     "asynchronous select");
+      if Count = 1234 then
+         -- Additional analysis added to aid developers
+         Report.Failed ("Abortable part did not execute");
+      end if;
+   end Perform_Transaction;
+
+
+end C974005_0;
+
+
+     --==================================================================--
+
+
+with Report;
+
+with C974005_0;  -- Automated teller machine abstraction.
+use  C974005_0;
+
+procedure C974005 is
+
+   Card_Data : ATM_Card_Type;
+
+begin  -- Main program.
+
+   Report.Test ("C974005", "ATC: trigger is queued but task terminates" &
+                             " before call is serviced");
+
+   Read_Card (Card_Data);
+
+   begin
+
+      declare
+         Keyboard : C974005_0.ATM_Keyboard_Task;
+      begin
+
+         --                                    --
+         -- Asynchronous select is tested here --
+         --                                    --
+
+         select
+            Keyboard.Cancel_Pressed;      -- Entry call initially queued, so
+                                          -- abortable part starts.
+
+                                          -- Tasking_Error raised here when
+                                          -- Keyboard completes before entry
+                                          -- call can be accepted, and before
+                                          -- abortable part completes.
+
+            raise Transaction_Canceled;   -- Should not be executed.
+         then abort
+            Validate_Card (Card_Data);    -- Keyboard task completes before
+                                          -- Keyboard.Cancel_Pressed is
+                                          -- accepted, and before this call
+                                          -- finishes. Tasking_Error is raised
+                                          -- at the point of the entry call,
+                                          -- and this call is aborted.
+            -- Check that the whole of the abortable part is aborted, not just
+            -- the statement in the abortable part that was executing at
+            -- the time
+            Report.Failed ("Abortable part not aborted");
+         end select;
+         Perform_Transaction (Card_Data); -- Should not be reached.
+      exception
+         when Transaction_Canceled =>
+            Report.Failed ("Triggering alternative sequence of statements " &
+                           "executed");
+         when Tasking_Error        =>
+            if Count = 1234 then
+               Report.Failed ("Abortable part did not execute");
+            end if;
+         when others       =>
+            Report.Failed ("Wrong exception raised");
+      end;
+
+   exception
+      when Tasking_Error        =>
+         Report.Failed ("Correct exception raised at wrong level");
+      when others       =>
+         Report.Failed ("Wrong exception raised at wrong level");
+   end;
+
+   Report.Result;
+
+end C974005;

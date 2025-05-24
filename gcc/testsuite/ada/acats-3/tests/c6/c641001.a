@@ -1,0 +1,281 @@
+-- C641001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that actual parameters passed by reference are view converted
+--      to the nominal subtype of the formal parameter.
+--
+-- TEST DESCRIPTION:
+--      Check that sliding is allowed for formal parameters, especially
+--      check cases that would have caused errors in Ada'83.
+--      Check that length check for a formal parameter (esp out mode)
+--      is performed before the call, not after.
+--
+--  notes: 6.2; by reference ::= tagged, task, protected,
+--                       limited (nonprivate), or composite containing such
+--         4.6; view conversion
+--
+--
+-- CHANGE HISTORY:
+--      26 JAN 96   SAIC   Initial version
+--      04 NOV 96   SAIC   Commentary revision for release 2.1
+--      27 FEB 97   PWB.CTA Corrected reference to the wrong string
+--!
+
+----------------------------------------------------------------- C641001_0
+
+package C641001_0 is
+
+  subtype String_10 is String(1..10);
+
+  procedure Check_String_10( S : out String_10; Start, Stop: Natural );
+
+  procedure Check_Illegal_Slice_Reference( Slice_Passed : in out String;
+                                           Index: Natural );
+
+  type Tagged_Data(Bound: Natural) is tagged record
+    Data_Item : String(1..Bound) := (others => '*');
+  end record;
+
+  type Tag_List is array(Natural range <>) of Tagged_Data(5);
+
+  subtype Tag_List_10 is Tag_List(1..10);
+
+  procedure Check_Tag_Slice( TL : in out Tag_List_10 );
+
+  procedure Check_Out_Tagged_Data( Formal : out Tagged_Data );
+
+end C641001_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+with TCTouch;
+package body C641001_0 is
+
+  String_Data : constant String := "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  procedure Check_String_10( S : out String_10; Start, Stop: Natural ) is
+  begin
+    if S'Length /= 10 then
+      Report.Failed("Length check not performed prior to execution");
+    end if;
+    S := String_Data(Start..Stop);
+  exception
+    when others => Report.Failed("Exception encountered in Check_String_10");
+  end Check_String_10;
+
+  procedure Check_Illegal_Slice_Reference( Slice_Passed : in out String;
+                                           Index: Natural ) is
+  begin
+    -- essentially "do-nothing" for optimization foilage...
+    if Slice_Passed(Index) in Character then
+    -- Intent is    ^^^^^  should raise Constraint_Error
+      Report.Failed("Illegal Slice provided legal character");
+    else
+      Report.Failed("Illegal Slice provided illegal character");
+    end if;
+  exception
+    when Constraint_Error =>
+      null; -- expected case
+    when others =>
+      Report.Failed("Wrong exception in Check_Illegal_Slice_Reference");
+  end Check_Illegal_Slice_Reference;
+
+  procedure Check_Tag_Slice( TL : in out Tag_List_10 ) is
+    -- if the view conversion is not performed, one of the following checks
+    -- will fail (given data passed as 0..9 and then 2..11)
+  begin
+    Check_Under_Index:  -- index 0 should raise C_E
+    begin
+      TCTouch.Assert( TL(Report.Ident_Int(0)).Data_Item = "*****",
+                      "Index 0 (illegal); bad data" );
+      Report.Failed("Index 0 did not raise Constraint_Error");
+    exception
+      when Constraint_Error =>
+        null; -- expected case
+      when others =>
+        Report.Failed("Wrong exception in Check_Under_Index ");
+    end Check_Under_Index;
+
+    Check_Over_Index:  -- index 11 should raise C_E
+    begin
+      TCTouch.Assert( TL(Report.Ident_Int(11)).Data_Item = "*****",
+                      "Index 11 (illegal); bad data" );
+      Report.Failed("Index 11 did not raise Constraint_Error");
+    exception
+      when Constraint_Error =>
+        null; -- expected case
+      when others =>
+        Report.Failed("Wrong exception in Check_Over_Index ");
+    end Check_Over_Index;
+
+  end Check_Tag_Slice;
+
+  procedure Check_Out_Tagged_Data( Formal : out Tagged_Data ) is
+  begin
+    TCTouch.Assert( Formal.Data_Item = "*****", "out formal data bad" );
+    Formal.Data_Item(1) := '!';
+  end Check_Out_Tagged_Data;
+
+end C641001_0;
+
+------------------------------------------------------------------- C641001
+
+with Report;
+with TCTouch;
+with C641001_0;
+procedure C641001 is
+
+  function II( I: Integer ) return Integer renames Report.Ident_Int;
+        -- ^^ name chosen to allow embedding in calls
+
+  A_String_10 : C641001_0.String_10;
+  Slicable    : String(1..40);
+  Tag_Slices  : C641001_0.Tag_List(0..11);
+
+  Global_Data : String(1..26) := "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  procedure Check_Out_Sliding( Lo1, Hi1, Lo2, Hi2 : Natural ) is
+
+    subtype One_Constrained_String is String(Lo1..Hi1);   -- 1  5
+    subtype Two_Constrained_String is String(Lo2..Hi2);   -- 6 10
+
+    procedure Out_Param( Param : out One_Constrained_String ) is
+    begin
+      Param := Report.Ident_Str( Global_Data(Lo2..Hi2) );
+    end Out_Param;
+    Object : Two_Constrained_String;
+  begin
+    Out_Param( Object );
+    if Object /= Report.Ident_Str( Global_Data(Lo2..Hi2) ) then
+      Report.Failed("Bad result in Check_Out_Sliding");
+    end if;
+  exception
+    when others => Report.Failed("Exception in Check_Out_Sliding");
+  end Check_Out_Sliding;
+
+  procedure Check_Dynamic_Subtype_Cases(F_Lower,F_Upper: Natural;
+                                        A_Lower,A_Upper: Natural) is
+
+    subtype Dyn_String is String(F_Lower..F_Upper);
+
+    procedure Check_Dyn_Subtype_Formal_Out( Param : out Dyn_String ) is
+    begin
+      Param := Global_Data(11..20);
+    end Check_Dyn_Subtype_Formal_Out;
+
+    procedure Check_Dyn_Subtype_Formal_In( Param : in Dyn_String ) is
+    begin
+      if Param /= Global_Data(11..20) then
+        Report.Failed("Dynamic case, data mismatch");
+      end if;
+    end Check_Dyn_Subtype_Formal_In;
+
+    Stuff: String(A_Lower..A_Upper);
+
+  begin
+    Check_Dyn_Subtype_Formal_Out( Stuff );
+    Check_Dyn_Subtype_Formal_In( Stuff );
+  end Check_Dynamic_Subtype_Cases;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C641001", "Check that actual parameters passed by " &
+                          "reference are view converted to the nominal " &
+                          "subtype of the formal parameter" );
+
+  -- non error cases for string slices
+
+  C641001_0.Check_String_10( A_String_10, 1, 10 );
+  TCTouch.Assert( A_String_10 = "1234567890", "Nominal case" );
+
+  C641001_0.Check_String_10( A_String_10, 11, 20 );
+  TCTouch.Assert( A_String_10 = "ABCDEFGHIJ", "Sliding to subtype" );
+
+  C641001_0.Check_String_10( Slicable(1..10), 1, 10 );
+  TCTouch.Assert( Slicable(1..10) = "1234567890", "Slice, no sliding" );
+
+  C641001_0.Check_String_10( Slicable(1..10), 21, 30 );
+  TCTouch.Assert( Slicable(1..10) = "KLMNOPQRST", "Sliding to slice" );
+
+  C641001_0.Check_String_10( Slicable(11..20), 11, 20 );
+  TCTouch.Assert( Slicable(11..20) = "ABCDEFGHIJ", "Sliding to same" );
+
+  C641001_0.Check_String_10( Slicable(21..30), 11, 20 );
+  TCTouch.Assert( Slicable(21..30) = "ABCDEFGHIJ", "Sliding up" );
+
+  -- error cases for string slices
+
+  C641001_0.Check_Illegal_Slice_Reference( Slicable(21..30), 20 );
+
+  C641001_0.Check_Illegal_Slice_Reference( Slicable(1..15), Slicable'Last );
+
+  -- checks for view converting actuals to formals
+
+  -- catch low bound fault
+  C641001_0.Check_Tag_Slice( Tag_Slices(II(0)..9) );     -- II ::= Ident_Int
+  TCTouch.Assert( Tag_Slices'First = 0, "Tag_Slices'First = 0" );
+  TCTouch.Assert( Tag_Slices'Last = 11, "Tag_Slices'Last = 11" );
+
+  -- catch high bound fault
+  C641001_0.Check_Tag_Slice( Tag_Slices(2..II(11)) );
+  TCTouch.Assert( Tag_Slices'First = 0, "Tag_Slices'First = 0" );
+  TCTouch.Assert( Tag_Slices'Last = 11, "Tag_Slices'Last = 11" );
+
+  Check_Formal_Association_Check:
+  begin
+    C641001_0.Check_String_10( Slicable, 1, 10 ); -- catch length fault
+    Report.Failed("Exception not raised at Check_Formal_Association_Check");
+  exception
+    when Constraint_Error =>
+      null; -- expected case
+    when others =>
+      Report.Failed("Wrong exception at Check_Formal_Association_Check");
+  end Check_Formal_Association_Check;
+
+  -- check for constrained actual, unconstrained formal
+  C641001_0.Check_Out_Tagged_Data( Tag_Slices(5) );
+  TCTouch.Assert( Tag_Slices(5).Data_Item = "!****",
+                  "formal out returned bad result" );
+
+  -- additional checks for out mode formal parameters, dynamic subtypes
+
+  Check_Out_Sliding( II(1),II(5), II(6),II(10) );
+
+  Check_Out_Sliding( 21,25, 6,10 );
+
+  Check_Dynamic_Subtype_Cases(F_Lower => II(1), F_Upper => II(10),
+                              A_Lower => II(1), A_Upper => II(10));
+
+  Check_Dynamic_Subtype_Cases(F_Lower => II(21), F_Upper => II(30),
+                              A_Lower => II( 1), A_Upper => II(10));
+
+  Check_Dynamic_Subtype_Cases(F_Lower => II( 1), F_Upper => II(10),
+                              A_Lower => II(21), A_Upper => II(30));
+
+  Report.Result;
+
+end C641001;

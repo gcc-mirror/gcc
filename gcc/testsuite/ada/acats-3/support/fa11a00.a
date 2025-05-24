@@ -1,0 +1,73 @@
+-- FA11A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation declares a tagged type and primitive subprograms in
+--      a parent package.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package FA11A00 is     -- Widget_Pkg
+-- This package represents processing of widgets in a window system.  It 
+-- contains a tagged type that can be extended by its children.
+
+   type Widget_Length is range 1 .. 100;
+
+   type Widget is tagged                     -- Parent tagged type
+      record            
+         Width, Height : Widget_Length;
+         -- More components to be added by extension
+      end record;
+
+   -- To be inherited by its children derivatives.
+   procedure Set_Width (The_Widget : in out Widget; 
+                        W          : in     Widget_Length);      
+                       
+   -- To be inherited by its children derivatives.
+   procedure Set_Height (The_Widget : in out Widget;    
+                         H          : in     Widget_Length);    
+
+end FA11A00;        -- Widget_Pkg
+
+--=======================================================================--
+
+package body FA11A00 is     -- Widget_Pkg
+
+   procedure Set_Width (The_Widget : in out Widget; 
+                        W          : in Widget_Length) is
+   begin
+      The_Widget.Width := W;
+   end Set_Width;
+   -------------------------------------------------------
+   procedure Set_Height (The_Widget : in out Widget; 
+                         H          : in Widget_Length) is
+   begin
+      The_Widget.Height := H;
+   end Set_Height;
+
+end FA11A00;     -- Widget_Pkg

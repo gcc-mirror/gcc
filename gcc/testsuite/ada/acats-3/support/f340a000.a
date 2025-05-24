@@ -1,0 +1,149 @@
+-- F340A000.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This file simulates a generic linked list abstraction for use in tests
+--      covering tagged types and type extensions.
+--
+-- TEST FILES:
+--      This foundation consists of the following files:
+--
+--      => F340A000.A
+--         F340A001.A
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      12 Jun 96   SAIC    ACVC 2.1: Modified prologue. Added pragma
+--                          Elaborate_Body.
+--
+--!
+
+generic  -- Singly-linked list abstraction.
+   type Parent_Type is tagged private;                   -- Actual is parent
+package F340A000 is                                      -- tagged type.
+
+   pragma Elaborate_Body;
+
+
+   -- Declarations for visible linked list nodes:
+
+   type Node_Type;
+
+   type Node_Ptr is access Node_Type;
+
+   type Node_Type is new Parent_Type with record         -- Record extension
+      Next : Node_Ptr := null;                           -- of parent type.
+   end record;
+
+
+   -- Inherits primitive operations of actual type corresponding
+   -- to Parent_Type.
+
+   -- Add node at head of list.
+   procedure Add (Item : in     Node_Ptr;
+                  Head : in out Node_Ptr);
+
+   -- Remove node from head of list and return it.
+   procedure Remove (Head : in out Node_Ptr;
+                     Item :    out Node_Ptr);
+
+
+
+   -- Declarations for private linked list nodes:
+
+   type Priv_Node_Type is new Parent_Type with private;  -- Private extension
+                                                         -- of parent type.
+
+   -- Inherits primitive operations of actual parameter corresponding
+   -- to Parent_Type.
+
+
+   type Priv_Node_Ptr is access Priv_Node_Type;
+
+
+   -- Add node at head of list.
+   procedure Add (Item : in     Priv_Node_Ptr;
+                  Head : in out Priv_Node_Ptr);
+
+   -- Remove node from head of list and return it.
+   procedure Remove (Head : in out Priv_Node_Ptr;
+                     Item :    out Priv_Node_Ptr);
+                     
+
+private
+
+   type Priv_Node_Type is new Parent_Type with record
+      Next : Priv_Node_Ptr := null;
+   end record;
+
+end F340A000;
+
+
+     --==================================================================--
+
+
+package body F340A000 is  -- Singly-linked list abstraction.
+
+   procedure Add (Item : in     Node_Ptr;
+                  Head : in out Node_Ptr) is
+   begin
+      if Item /= null then
+         Item.Next := Head;
+         Head := Item;
+      end if;
+   end Add;
+
+
+   procedure Remove (Head : in out Node_Ptr;
+                     Item :    out Node_Ptr) is
+   begin
+      Item := Head;
+      if Head /= null then
+         Head := Head.Next;
+      end if;
+   end Remove;
+
+
+   procedure Add (Item : in     Priv_Node_Ptr;
+                  Head : in out Priv_Node_Ptr) is
+   begin
+      if Item /= null then
+         Item.Next := Head;
+         Head := Item;
+      end if;
+   end Add;
+
+
+   procedure Remove (Head : in out Priv_Node_Ptr;
+                     Item :    out Priv_Node_Ptr) is
+   begin
+      Item := Head;
+      if Head /= null then
+         Head := Head.Next;
+      end if;
+   end Remove;
+
+
+end F340A000;

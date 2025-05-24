@@ -1,0 +1,101 @@
+-- LA140152.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a library level function depends
+--      on another library level function that is changed.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a function, a function that withs and
+--      calls the first, and a procedure that withs the second
+--      function.  Then, a new version of the first function is 
+--      compiled (in a separate file, simulating an editing 
+--      modification to the function).  Unless automatic recompilation 
+--      is supported, this test should fail to link.  Otherwise, the 
+--      test should recompile and link the correct version of the 
+--      withed package and report "PASSED" at execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140150 (and include the results in the
+--            program library).
+--         2) Compile the file LA140151 (and include the results in the
+--            program library).
+--         3) Compile the file LA140152 (and include the results in the
+--            program library).
+--         4) Compile the file LA140153 (and include the results in the
+--            program library).
+--         5) Attempt to build an executable image.
+--         6) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140150.A
+--         LA140151.A
+--      -> LA140152.AM
+--         LA140153.A
+--
+-- PASS/FAIL CRITERIA:    
+--      The test passes if a link time error message reports that 
+--      LA14015_1 is missing or obsolete and no executable image
+--      results.  The test also passes if an executable image is produced
+--      and reports "PASSED" (in the case where the implementation supports
+--      automatic recompilation).            
+--
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5007T baseline version
+--     06 JUN 95   SAIC        Initial version
+--     17 NOV 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions.
+--
+--!
+
+with Report; use Report;
+with LA14015_1;
+
+procedure LA140152 is
+     TC_local : integer := 5;
+begin
+     Test ("LA14015", "Check that a compilation unit may " &
+                      "not depend semantically on two " &
+                      "different versions of the same " &
+                      "compilation unit.  Check the case " &
+                      "where a library level function " &
+                      "depends on another library level " &
+                      "function that is changed");
+
+     TC_local := LA14015_1 (5);
+
+     if TC_local = 100 then
+          Failed ("Revised unit not used");
+     elsif TC_local /= -10 then
+          Failed ("Incorrect value returned");
+     end if;
+     
+     Result;
+end LA140152;

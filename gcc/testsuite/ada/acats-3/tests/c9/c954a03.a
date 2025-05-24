@@ -1,0 +1,322 @@
+-- C954A03.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a requeue statement in an accept_statement with
+--      parameters may requeue the entry call to a protected entry with no
+--      parameters. Check that, if the call is queued on the new entry's
+--      queue, the original caller remains blocked after the requeue, but
+--      the accept_statement containing the requeue is completed.
+--
+--      Note that this test uses a requeue "with abort," although it does not
+--      check that such a requeued caller can be aborted; that feature is
+--      tested elsewhere.
+--
+-- TEST DESCRIPTION:
+--      Declare a protected type which simulates a printer device driver
+--      (foundation code).
+--
+--      Declare a task which simulates a printer server for multiple printers.
+--
+--      For the protected type, declare an entry with a barrier that is set
+--      false by a protected procedure (which simulates starting a print job
+--      on the printer), and is set true by a second protected procedure (which
+--      simulates a handler called when the printer interrupts, indicating
+--      that printing is done).
+--
+--      For the task, declare an entry whose corresponding accept statement
+--      contains a call to first protected procedure of the protected type
+--      (which sets the barrier of the protected entry to false), followed by
+--      a requeue with abort to the protected entry. Declare a second entry
+--      which does nothing.
+--
+--      Declare a "requesting" task which calls the printer server task entry
+--      (and thus executes the requeue). Verify that, following the requeue,
+--      the requesting task remains blocked. Call the second entry of the
+--      printer server task (the acceptance of this entry call verifies that
+--      the requeue statement completed the entry call by the requesting task.
+--      Call the second protected procedure of the protected type (the
+--      interrupt handler) and verify that the protected entry completes for
+--      the requesting task (which verifies that the requeue statement queued
+--      the first task object to the protected entry).
+--
+-- TEST FILES:
+--      This test depends on the following foundation code:
+--
+--         F954A00.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      10 Oct 96   SAIC    Added pragma elaborate.
+--
+--!
+
+package C954A03_0 is  -- Printer server abstraction.
+
+   -- Simulate a system with multiple printers. The entry Print requests
+   -- that data be printed on the next available printer. The entry call
+   -- is accepted when a printer is available, and completes when printing
+   -- is done.
+
+   task Printer_Server is
+      entry Print (File_Name : String);        -- Test the requeue statement.
+      entry Verify_Results;                    -- Artifice for test purposes.
+   end Printer_Server;
+
+end C954A03_0;
+
+
+     --==================================================================--
+
+
+with Report;
+with ImpDef;
+
+with F954A00;              -- Printer device abstraction.
+use  F954A00;
+pragma Elaborate(F954a00);
+
+package body C954A03_0 is  -- Printer server abstraction.
+
+
+   task body Printer_Server is
+      Printers_Busy  : Boolean    := True;
+      Index          : Printer_ID := 1;
+      Print_Accepted : Boolean    := False;
+   begin
+
+      loop
+         -- Wait for a printer to become available:
+
+         while Printers_Busy loop
+            Printers_Busy := False;                        -- Exit loop if
+                                                           -- entry accepted.
+            select
+               Printer(Index).Done_Printing;               -- Accepted immed.
+                                                           -- when printer is
+                                                           -- available.
+            else
+               Index := 1 + (Index mod Number_Of_Printers);-- Entry not immed.
+               Printers_Busy := True;                      -- accepted; keep
+            end select;                                    -- looping.
+
+            -- Allow other tasks to get control
+            delay ImpDef.Minimum_Task_Switch;   
+
+         end loop;
+                                                           -- Value of Index
+                                                           -- at loop exit
+                                                           -- identifies the
+                                                           -- avail. printer.
+
+         -- Wait for a print request or terminate:
+
+         select
+            accept Print (File_Name : String) do
+               Print_Accepted := True;                     -- Allow
+                                                           -- Verify_Results
+                                                           -- to be accepted.
+
+               Printer(Index).Start_Printing (File_Name);  -- Begin printing on
+                                                           -- the available
+               --                        --                -- printer.
+               -- Requeue is tested here --
+               --                        --
+                                                           -- Requeue caller so
+               requeue Printer(Index).Done_Printing        -- server task free
+                 with abort;                               -- to accept other
+            end Print;                                     -- requests.
+         or
+            -- Guard ensures that Verify_Results cannot be accepted
+            -- until after Print has been accepted. This avoids a
+            -- race condition in the main program.
+
+            when Print_Accepted => accept Verify_Results;  -- Artifice for
+                                                           -- testing purposes.
+         or
+            terminate;
+         end select;
+
+      end loop;
+
+   exception
+      when others =>
+         Report.Failed ("Exception raised in Printer_Server task");
+   end Printer_Server;
+
+
+end C954A03_0;
+
+
+     --==================================================================--
+
+
+with Report;
+with ImpDef;
+
+with F954A00;    -- Printer device abstraction.
+with C954A03_0;  -- Printer server abstraction.
+
+use  C954A03_0;
+use  F954A00;
+
+procedure C954A03 is
+
+   Long_Enough : constant Duration := ImpDef.Clear_Ready_Queue;
+
+
+               --==============================================--
+
+   Task_Completed : Boolean := False;          -- Testing flag.
+
+   protected Interlock is                      -- Artifice for test purposes.
+      entry Wait;                              -- Wait for lock to be released.
+      procedure Release;                       -- Release the lock.
+   private
+      Locked : Boolean := True;
+   end Interlock;
+
+
+   protected body Interlock is
+
+      entry Wait when not Locked is            -- Calls are queued until after
+      --                                       -- Release is called.
+      begin
+         Task_Completed := True;               
+      end Wait;
+
+      procedure Release is                     -- Called by Print_Request.
+      begin
+         Locked := False;
+      end Release;
+
+   end Interlock;
+
+               --==============================================--
+
+   task Print_Request is                       -- Send a print request.
+   end Print_Request;
+
+   task body Print_Request is
+      My_File : constant String := "MYFILE.DAT";
+   begin
+      Printer_Server.Print (My_File);          -- Invoke requeue statement.
+      Interlock.Release;                       -- Allow main to continue.
+   exception
+      when others =>
+         Report.Failed ("Exception raised in Print_Request task");
+   end Print_Request;
+
+               --==============================================--
+
+begin  -- Main program.
+
+   Report.Test ("C954A03", "Requeue from an Accept with parameters" &
+                              " to a Protected Entry without parameters");
+
+   -- To pass this test, the following must be true:
+   --
+   --    (A) The Print entry call made by the task Print_Request must be
+   --        completed by the requeue statement.
+   --    (B) Print_Request must remain blocked following the requeue.
+   --    (C) Print_Request must be queued on the Done_Printing queue of
+   --        Printer(1).
+   --    (D) Print_Request must continue execution after Done_Printing is
+   --        complete.
+   --
+   -- First, verify (A): that the Print entry call is complete.
+   --
+   -- Call the entry Verify_Results. If the requeue statement completed the
+   -- entry call to Print, the entry call to Verify_Results should be
+   -- accepted. Since the main will hang if this is NOT the case, make this
+   -- a timed entry call.
+
+   select
+      Printer_Server.Verify_Results;        -- Accepted if requeue completed
+                                            -- entry call to Print.
+   or
+      delay Long_Enough;                    -- Time out otherwise.
+      Report.Failed ("Requeue did not complete entry call");
+   end select;
+
+   -- Now verify (B): that Print_Request remains blocked following the
+   -- requeue. Also verify that Done_Printing (the entry to which
+   -- Print_Request should have been queued) has not yet executed.
+
+   if Printer(1).Is_Done then
+      Report.Failed ("Target entry of requeue executed prematurely");
+   elsif Print_Request'Terminated then
+      Report.Failed ("Caller did not remain blocked after the requeue");
+   else
+
+      -- Verify (C): that Print_Request is queued on the
+      -- Done_Printing queue of Printer(1).
+      --
+      -- Set the barrier for Printer(1).Done_Printing to true. Check
+      -- that the Done flag is updated and that Print_Request terminates.
+
+      Printer(1).Handle_Interrupt;             -- Simulate a printer interrupt,
+                                               -- signaling that printing is
+                                               -- done.
+
+      -- The Done_Printing entry body will complete before the next
+      -- protected action is called (Printer(1).Is_Done).
+
+      if not Printer(1).Is_Done then
+         Report.Failed ("Caller was not requeued on target entry");
+      end if;
+
+      -- Finally, verify (D): that Print_Request continues after Done_Printing
+      -- completes.
+      --
+      -- After Done_Printing completes, there is a potential race condition
+      -- between the main program and Print_Request. The protected object
+      -- Interlock is provided to ensure that the check of whether
+      -- Print_Request continued is made *after* it has had a chance to do so.
+      -- The main program waits until the statement in Print_Request following
+      -- the requeue-causing statement has executed, then checks to see
+      -- whether Print_Request did in fact continue executing.
+      --
+      -- Note that the test will hang here if Print_Request does not continue
+      -- executing following the completion of the requeued entry call.
+
+      Interlock.Wait;                          -- Wait until Print_Request is
+                                               -- done.
+      if not Task_Completed then
+         Report.Failed ("Caller remained blocked after target " &
+                        "entry released");
+      end if;
+
+      -- Wait for Print_Request to finish before calling Report.Result.
+      while not Print_Request'Terminated loop
+         delay ImpDef.Minimum_Task_Switch;   
+      end loop;                             
+
+   end if;
+
+   Report.Result;
+
+end C954A03;

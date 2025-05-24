@@ -1,0 +1,152 @@
+-- CA21001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687 and
+--     F08630-91-C-0015, the U.S. Government obtained unlimited rights in the
+--     software and documentation contained herein.  Unlimited rights are
+--     defined in DFAR 252.227-7013(a)(19).  By making this public release,
+--     the Government intends to confer upon all recipients unlimited rights
+--     equal to those held by the Government.  These rights include rights to
+--     use, duplicate, release or disclose the released technical data and
+--     computer software in whole or in part, in any manner and for any purpose
+--     whatsoever, and to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE
+--     Check the requirements of the revised 10.2.1(11) from Technical
+--     Corrigendum 1 (originally discussed as AI95-00002).
+--     A package subunit whose parent is a preelaborated subprogram need
+--     not be preelaborable.
+--
+-- TEST DESCRIPTION
+--     We create several preelaborated library procedures with
+--     non-preelaborable package body subunits.  We try various levels
+--     of nesting of package and procedure subunits.
+--
+-- CHANGE HISTORY:
+--      29 JUN 1999   RAD   Initial Version
+--      23 SEP 1999   RLB   Improved comments, renamed, issued.
+--
+--!
+
+procedure CA21001_1(X: out Integer);
+    pragma Preelaborate(CA21001_1);
+
+procedure CA21001_1(X: out Integer) is
+    function F return Integer is separate;
+
+    package Sub is
+        function G(X: Integer) return Integer;
+            -- Returns X + 1.
+        Not_Preelaborable: Integer := F; -- OK, by AI-2.
+    end Sub;
+
+    package body Sub is separate;
+
+begin
+    X := -1;
+    X := F;
+    X := Sub.G(X);
+end CA21001_1;
+
+separate(CA21001_1)
+package body Sub is
+    package Sub_Sub is
+        -- Empty.
+    end Sub_Sub;
+    package body Sub_Sub is separate;
+
+    function G(X: Integer) return Integer is separate;
+begin
+    Not_Preelaborable := G(F); -- OK, by AI-2.
+    if Not_Preelaborable /= 101 then
+        raise Program_Error; -- Can't call Report.Failed, here,
+            -- because Report is not preelaborated.
+    end if;
+end Sub;
+
+separate(CA21001_1.Sub)
+package body Sub_Sub is
+begin
+    X := X; -- OK by AI-2.
+end Sub_Sub;
+
+separate(CA21001_1.Sub)
+function G(X: Integer) return Integer is
+
+    package G_Sub is
+        function H(X: Integer) return Integer;
+            -- Returns X + 1.
+        Not_Preelaborable: Integer := F; -- OK, by AI-2.
+    end G_Sub;
+    package body G_Sub is separate;
+
+begin
+    return G_Sub.H(X);
+end G;
+
+separate(CA21001_1.Sub.G)
+package body G_Sub is
+    function H(X: Integer) return Integer is separate;
+begin
+    Not_Preelaborable := H(F); -- OK, by AI-2.
+    if Not_Preelaborable /= 101 then
+        raise Program_Error; -- Can't call Report.Failed, here,
+            -- because Report is not preelaborated.
+    end if;
+end G_Sub;
+
+separate(CA21001_1.Sub.G.G_Sub)
+function H(X: Integer) return Integer is
+begin
+    return X + 1;
+end H;
+
+separate(CA21001_1)
+function F return Integer is
+
+    package F_Sub is
+        -- Empty.
+    end F_Sub;
+
+    package body F_Sub is separate;
+begin
+    return 100;
+end F;
+
+separate(CA21001_1.F)
+package body F_Sub is
+    True_Var: Boolean;
+begin
+    True_Var := True;
+    if True_Var then -- OK by AI-2.
+        X := X;
+    else
+        X := X + 2;
+    end if;
+end F_Sub;
+
+with Report; use Report;
+with CA21001_1;
+procedure CA21001 is
+    X: Integer := 0;
+begin
+    Test("CA21001",
+         "Test that a package subunit whose parent is a preelaborated"
+         & " subprogram need not be preelaborable");
+    CA21001_1(X);
+    if X /= 101 then
+        Failed("Bad value for X");
+    end if;
+    Result;
+end CA21001;

@@ -1,0 +1,131 @@
+-- C393B12.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- TEST OBJECTIVE:
+--      Check that an extended type can be derived in the specification of a
+--      generic package when the parent is an abstract type in a library
+--      package.
+--
+-- TEST DESCRIPTION:
+--      Extend an abstract type in the visible part of a generic package.
+--      Make all of the procedures which override abstract procedures
+--      available as part of the generic interface.  Instantiate the generic.
+--
+-- TEST FILES: 
+--      This test depends on the following foundation code:
+--
+--         F393B00.A  Package Alert_Foundation
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      14 Oct 95   SAIC    Update and repair for ACVC 2.0.1
+--      27 Feb 97   PWB.CTA Add pragma Elaborate for C393B12_0.
+--!
+
+----------------------------------------------------------------- C393B12_0
+
+with F393B00;
+  -- Alert_Foundation
+generic 
+  type Generic_Status_Enum is (<>);
+
+package C393B12_0 is
+     -- Alert_Functions
+
+  type Generic_Alert_Type is new F393B00.Alert with record
+    Status : Generic_Status_Enum := Generic_Status_Enum'First;
+  end record;
+                                     -- extension of an abstract type
+
+  procedure Handle (GA : in out Generic_Alert_Type);
+                                     -- override of abstract procedure
+
+  function Query_Status (GA : Generic_Alert_Type)
+    return Generic_Status_Enum;      -- new primitive operation for
+                                     -- Generic_Alert_Type
+end C393B12_0;
+ -- Alert_Functions
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C393B12_0 is
+          -- Alert_Functions
+
+  procedure Handle (GA : in out Generic_Alert_Type) is
+    begin
+      GA.Status := Generic_Status_Enum'Last;
+    end Handle;
+
+  function Query_Status (GA : Generic_Alert_Type) 
+    return Generic_Status_Enum is
+    begin
+      return GA.Status;
+    end Query_Status;
+
+end C393B12_0;
+
+----------------------------------------------------------------- C393B12_1
+
+package C393B12_1 is
+  type Status is (Low, Medium, High);
+end C393B12_1;
+
+------------------------------------------------------- C393B12_1.C393B12_2
+
+with C393B12_0;
+pragma Elaborate (C393B12_0);
+package C393B12_1.C393B12_2 is new C393B12_0 
+                        -- Alert_Functions
+                 (Generic_Status_Enum => Status);
+
+------------------------------------------------------------------- C393B12
+
+with C393B12_1.C393B12_2;
+with Report;
+procedure C393B12 is
+
+  use type C393B12_1.Status;
+
+  package Alt_Alert renames C393B12_1.C393B12_2;
+
+  GA : Alt_Alert.Generic_Alert_Type;
+
+begin
+  Report.Test ("C393B12",  "Check that an extended type can be derived " &
+                           "from an abstract type");
+
+  if Alt_Alert.Query_Status (GA) /= C393B12_1.Low then
+    Report.Failed ("Wrong initialization");
+  end if;
+
+  Alt_Alert.Handle (GA);
+  if Alt_Alert.Query_Status (GA) /= C393B12_1.High then
+    Report.Failed ("Wrong results from Handle");
+  end if;
+
+  Report.Result;
+
+end C393B12;

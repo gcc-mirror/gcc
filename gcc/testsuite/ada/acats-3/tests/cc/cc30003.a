@@ -1,0 +1,423 @@
+-- CC30003.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVE:
+--     Check that, for a type extension derived from a formal tagged private
+--     type, a whole new set of primitive subprograms is declared for use
+--     outside of the instance. Check that primitive subprograms of the
+--     type extension can override those inherited from the actual type
+--     in the instance.
+
+-- TEST DESCRIPTION:
+--     The test objective echoes the wording of 12.3(16).
+--
+--     We create a mix-in generic that can extend any tagged type with
+--     counting operations. We then use this generic to extend various
+--     tagged types (including some that have these operations), and
+--     finally, make a number of statically-bound and dispatching calls
+--     to the operations.
+--
+--     This test differs from existing (as of August 2008) ACATS tests
+--     in three ways:
+--     (1) Most of the existing tests either inherit primitive operations
+--     from the actual (and sometimes the formal) type OR have explicit
+--     primitive operations. This test both inherits and have explicit
+--     primitive operations, which is far more likely for a real mix-in
+--     generic.
+--     (2) This mix-in uses a generic formal tagged private type
+--     rather than the more limiting generic formal tagged derived type.
+--     Both occur in practice, so both should be tested.
+--     (3) There are few (if any) dispatching calls in the existing tests.
+--     We test them both inside and outside the generic unit.
+--
+--     The tagged type hierarchy is loosely based on the one from the
+--     Ada 2005 Rationale. (See
+--     http://www.adaic.com/standards/05rat/html/Rat-2-3.html).
+--     Object <- Right_Triangle <- Counted_Triangle_Inst.Counted_Type
+--       ^- Rectangle <- Counted_Rectangle_Inst.Counted_Type <- Counted_Square
+--
+-- CHANGE HISTORY:
+--     28 Aug 2008 RLB Created test for RRS.
+--     29 Aug 2008 RLB Converted test to ACATS test.
+--     13 Mar 2015 RLB Eliminated overlong lines and tab characters.
+--
+generic
+   type Base_Type is tagged private;
+package CC30003_0 is
+
+   type Counted_Type is new Base_Type with record
+      Count : Natural := 0;
+   end record;
+   -- In the instance, inherits primitive subprograms of the actual.
+
+   procedure Clear (Obj : in out Counted_Type);
+      -- Clear the count of Obj.
+
+   procedure Bump (Obj : in out Counted_Type);
+      -- Increment the count of Obj.
+
+   function Count (Obj : Counted_Type) return Natural;
+      -- Return the count of Obj.
+
+   procedure Double_Bump (Obj : in out Counted_Type'Class);
+      -- Increment the count of Obj twice.
+
+end CC30003_0;
+
+with TCTouch;
+package body CC30003_0 is
+
+   procedure Clear (Obj : in out Counted_Type) is
+      -- Clear the count of Obj.
+   begin
+      TCTouch.Touch ('C'); ----------------------------------------- C
+      Obj.Count := 0;
+   end Clear;
+
+   procedure Bump (Obj : in out Counted_Type) is
+      -- Increment the count of Obj.
+   begin
+      TCTouch.Touch ('B'); ----------------------------------------- B
+      Obj.Count := Obj.Count + 1;
+   end Bump;
+
+   function Count (Obj : Counted_Type) return Natural is
+      -- Return the count of Obj.
+   begin
+      TCTouch.Touch ('c'); ----------------------------------------- c
+      return Obj.Count;
+   end Count;
+
+   procedure Double_Bump (Obj : in out Counted_Type'Class) is
+      -- Increment the count of Obj twice.
+   begin
+      TCTouch.Touch ('D'); ----------------------------------------- D
+      Bump (Obj);
+      Bump (Obj);
+   end Double_Bump;
+
+end CC30003_0;
+
+
+package CC30003_Root is
+   type Object is abstract tagged
+      record
+         X_Coord : Float;
+         Y_Coord : Float;
+      end record;
+
+   function Area (Obj : Object) return Float is abstract;
+
+   function Distance (Obj : Object) return Float;
+
+end CC30003_Root;
+
+
+with Ada.Numerics.Elementary_Functions;
+package body CC30003_Root is
+   function Distance (Obj : Object) return Float is
+   begin
+      return Ada.Numerics.Elementary_Functions.Sqrt(
+              Obj.X_Coord ** 2 + Obj.Y_Coord ** 2);
+   end Distance;
+end CC30003_Root;
+
+
+with CC30003_Root;
+package CC30003_1 is
+   type Rectangle is new CC30003_Root.Object with
+      record
+         Height, Width : Float;
+      end record;
+
+   function Area (R : Rectangle) return Float;
+
+end CC30003_1;
+
+
+with TCTouch;
+package body CC30003_1 is
+
+   function Area (R : Rectangle) return Float is
+   begin
+      TCTouch.Touch ('r'); ----------------------------------------- r
+      TCTouch.Touch ('a'); ----------------------------------------- a
+      return R.Height*R.Width;
+   end Area;
+
+end CC30003_1;
+
+
+with CC30003_Root;
+package CC30003_2 is
+   type Right_Triangle is new CC30003_Root.Object with
+      record
+         A, B : Float;    -- Lengths of sides
+      end record;
+
+   function Area (T : Right_Triangle) return Float;
+
+   function Hypotenuse (T : Right_Triangle) return Float;
+
+   procedure Clear (T : in out Right_Triangle);
+
+end CC30003_2;
+
+
+with TCTouch;
+with Ada.Numerics.Elementary_Functions;
+package body CC30003_2 is
+
+   function Area (T : Right_Triangle) return Float is
+   begin
+      TCTouch.Touch ('t'); ----------------------------------------- t
+      TCTouch.Touch ('a'); ----------------------------------------- a
+      return (T.A * T.B) / 2.0;
+   end Area;
+
+   function Hypotenuse (T : Right_Triangle) return Float is
+   begin
+      TCTouch.Touch ('h'); ----------------------------------------- h
+      return Ada.Numerics.Elementary_Functions.Sqrt(
+              T.A ** 2 + T.B ** 2);
+   end Hypotenuse;
+
+   procedure Clear (T : in out Right_Triangle) is
+   begin
+      TCTouch.Touch ('t'); ----------------------------------------- t
+      TCTouch.Touch ('c'); ----------------------------------------- c
+      T.A := 0.0; T.B := 0.0;
+   end Clear;
+
+end CC30003_2;
+
+
+with CC30003_0;
+with CC30003_1;
+package CC30003_3 is
+
+   package Counted_Rectangle_Inst is new CC30003_0 (CC30003_1.Rectangle);
+
+   type Counted_Square is new Counted_Rectangle_Inst.Counted_Type
+      with null record;
+
+   procedure Make_Square (S : in out Counted_Square; Side : in Float);
+
+   function Area (S : Counted_Square) return Float;
+
+   procedure Bump (S : in out Counted_Square);
+
+end CC30003_3;
+
+
+with TCTouch;
+package body CC30003_3 is
+
+   procedure Make_Square (S : in out Counted_Square; Side : in Float) is
+   begin
+      TCTouch.Touch ('s'); ----------------------------------------- t
+      TCTouch.Touch ('m'); ----------------------------------------- a
+      S.Height := Side;
+      S.Width  := Side;
+      Clear (S);
+   end Make_Square;
+
+
+   function Area (S : Counted_Square) return Float is
+   begin
+      TCTouch.Touch ('s'); ----------------------------------------- s
+      TCTouch.Touch ('a'); ----------------------------------------- a
+      return S.Width ** 2;
+   end Area;
+
+
+   procedure Bump (S : in out Counted_Square) is
+   begin
+      TCTouch.Touch ('s'); ----------------------------------------- s
+      TCTouch.Touch ('b'); ----------------------------------------- b
+      Counted_Rectangle_Inst.Bump (Counted_Rectangle_Inst.Counted_Type(S));
+   end Bump;
+
+end CC30003_3;
+
+
+with CC30003_0;
+with CC30003_2;
+package CC30003_4 is
+
+   package Counted_Triangle_Inst is new CC30003_0 (CC30003_2.Right_Triangle);
+
+end CC30003_4;
+
+
+with Report;
+with TCTouch;
+with CC30003_Root;
+with CC30003_1; use CC30003_1;
+with CC30003_2; use CC30003_2;
+with CC30003_3; use CC30003_3;
+with CC30003_4; use CC30003_4;
+procedure CC30003 is
+   use CC30003_3.Counted_Rectangle_Inst;
+   use CC30003_4.Counted_Triangle_Inst;
+
+   type Array_of_Objects is array (Positive range <>) of
+        access CC30003_Root.Object'Class;
+
+   function Total_Area (Objects : in Array_of_Objects) return Float is
+      Result : Float := 0.0;
+   begin
+       for I in Objects'Range loop
+          Result := Result + CC30003_Root.Area (Objects(I).all);
+       end loop;
+       return Result;
+   end Total_Area;
+
+begin
+   Report.Test ("CC30003", "Check that, for a type extension derived from " &
+                "a formal tagged private type, a whole new set of primitive " &
+                "subprograms is declared for use outside of the instance. " &
+                "Check that primitive subprograms of the type extension " &
+                "can override those inherited from the actual type in " &
+                "the instance");
+
+   declare
+      R : Rectangle := (X_Coord => 0.0, Y_Coord => 0.0,
+                        Height => 2.0, Width => 3.0);
+      S : Counted_Square;
+      T : Counted_Triangle_Inst.Counted_Type :=
+               (X_Coord => 5.0, Y_Coord => 5.0,
+                A => 3.0, B => 4.0, Count => 0);
+      RT : Right_Triangle := (X_Coord => 7.0, Y_Coord => 3.0,
+                A => 3.0, B => 4.0);
+   begin
+      -- Statically bound calls:
+      Make_Square (S, Side => 4.0);
+      TcTouch.Validate ("smC", "Sqr initialization bad");
+      if Area (R) /= 6.0 then
+         Report.Failed ("Wrong area (R)");
+      end if;
+      if Area (S) /= 16.0 then
+         Report.Failed ("Wrong area (S)");
+      end if;
+      if Area (T) /= 6.0 then
+         Report.Failed ("Wrong area (T)");
+      end if;
+      TcTouch.Validate ("rasata", "Unexpected calls in area calculations");
+      if Area (RT) /= 6.0 then
+         Report.Failed ("Wrong area (RT)");
+      end if;
+      Clear (RT); -- Original routine.
+      if Area (RT) /= 0.0 then
+         Report.Failed ("Wrong area (RTC)");
+      end if;
+      TcTouch.Validate ("tatcta", "Unexpected calls in right triangle " &
+                                  "calculations");
+
+      Clear (T); -- Note: Original Clear overridden by generic one.
+      Bump (T);
+      Bump (T);
+      Bump (S); -- Note: Generic Bump overriden by primitive one.
+      if Count (S) /= 1 then
+         Report.Failed ("Wrong count (S)");
+      end if;
+      if Count (T) /= 2 then
+         Report.Failed ("Wrong count (T)");
+      end if;
+
+      TcTouch.Validate ("CBBsbBcc", "Unexpected calls in count calculations");
+
+      -- Dynamically bound calls in generic instances:
+      CC30003_4.Counted_Triangle_Inst.Double_Bump (T);
+      CC30003_3.Counted_Rectangle_Inst.Double_Bump (S);
+      if Count (S) /= 3 then
+         Report.Failed ("Wrong count (S2)");
+      end if;
+      if Count (T) /= 4 then
+         Report.Failed ("Wrong count (T2)");
+      end if;
+
+      TcTouch.Validate ("DBBDsbBsbBcc", "Unexpected calls in dynamic count " &
+                                        "calculations");
+   end;
+
+   -- Dynamically bound calls here:
+   declare
+      List : Array_of_Objects (1..4);
+   begin
+      List(Report.Ident_Int(1)) :=
+            new Rectangle'(X_Coord => 0.0, Y_Coord => 0.0,
+                        Height => 1.5, Width => 4.0);
+      List(Report.Ident_Int(2)) :=
+            new Counted_Square;
+      List(Report.Ident_Int(3)) :=
+            new Counted_Triangle_Inst.Counted_Type'
+               (X_Coord => 5.0, Y_Coord => 5.0,
+                A => 3.0, B => 4.0, Count => 0);
+      List(Report.Ident_Int(4)) :=
+            new Counted_Rectangle_Inst.Counted_Type'
+               (X_Coord => 5.0, Y_Coord => 5.0,
+                Height => 2.0, Width => 2.5, Count => 0);
+      Make_Square (Counted_Square(List(2).all), Side => 3.0);
+      TcTouch.Validate ("smC", "2nd Sqr initialization bad");
+
+      Bump (Counted_Rectangle_Inst.Counted_Type'Class(List(2).all));
+      Bump (Counted_Triangle_Inst.Counted_Type'Class(List(3).all));
+      Bump (Counted_Triangle_Inst.Counted_Type'Class(List(3).all));
+      Bump (Counted_Rectangle_Inst.Counted_Type'Class(List(4).all));
+      Bump (Counted_Rectangle_Inst.Counted_Type'Class(List(4).all));
+      Bump (Counted_Rectangle_Inst.Counted_Type'Class(List(4).all));
+      if Count (Counted_Rectangle_Inst.Counted_Type'Class(List(2).all))
+            /= 1 then
+         Report.Failed ("Wrong count (L2)");
+      end if;
+      if Count (Counted_Triangle_Inst.Counted_Type'Class(List(3).all))
+            /= 2 then
+         Report.Failed ("Wrong count (L3)");
+      end if;
+      if Count (Counted_Rectangle_Inst.Counted_Type'Class(List(4).all))
+            /= 3 then
+         Report.Failed ("Wrong count (L4)");
+      end if;
+      TcTouch.Validate ("sbBBBBBBccc", "Unexpected calls dispatching count " &
+                                       "calculations");
+
+      if Total_Area (List) /= (6.0+9.0+6.0+5.0) then
+         Report.Failed ("Wrong total area");
+      end if;
+      TcTouch.Validate ("rasatara", "Unexpected calls in total area");
+   end;
+
+   Report.Result;
+end CC30003;
+

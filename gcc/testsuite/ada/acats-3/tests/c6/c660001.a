@@ -1,0 +1,307 @@
+-- C660001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVE:
+--     Check that an explicit declaration of "=" whose result is Boolean
+--     declares a "/=" as well.
+--
+--     Check that a declaration of "/=" implicitly created by the declaration
+--     of "=" with a Boolean result is inherited for a derived type.
+--
+-- TEST DESCRIPTION:
+--     We declare a type similar to unbounded string with several user-defined
+--     declarations of "=". We then check that "/=" can be called for the
+--     type and a type derived from it in various ways.
+--
+--     Note that AI05-0128-1 clarifies 6.6(6/3) so that it is clear that it
+--     only applies to explicit declarations, and that such declarations are
+--     inherited.
+--
+-- CHANGE HISTORY:
+--     12 Mar 2014 RLB Created test (borrowing the package from C324002).
+--
+with Ada.Finalization;
+package C660001_0 is
+
+   -- An unbounded string type, similar to a likely implementation of
+   -- Ada.Strings.Unbounded.Unbounded_String. This type has three "="
+   -- operations.
+
+   type Unbounded_String is tagged private;
+   Null_Unbounded_String : constant Unbounded_String;
+
+   function Length (Source : Unbounded_String) return Natural;
+
+   function "+" (Source : String) return Unbounded_String;
+
+   function "+" (Source : Unbounded_String) return String;
+
+   procedure Set_Unbounded_String
+      (Target : out Unbounded_String; Source : in String);
+
+   procedure Append
+      (Source : in out Unbounded_String; New_Item : in String);
+
+   function "=" (Left, Right : Unbounded_String) return Boolean;
+
+   function "=" (Left : Unbounded_String; Right : String) return Boolean;
+
+   function "=" (Left : String; Right : Unbounded_String) return Boolean;
+
+   function Element (Source : in Unbounded_String; Index : in Positive)
+      return Character;
+
+   -- In a real package, there'd be many more operations here.
+
+private
+   type String_Access is access all String;
+
+   procedure Free (X : in out String_Access);
+
+   type Unbounded_String is new Ada.Finalization.Controlled with record
+      Str : String_Access := new String'("");
+   end record;
+
+   procedure Finalize (Object : in out Unbounded_String);
+
+   procedure Adjust   (Object : in out Unbounded_String);
+
+   Null_Unbounded_String : constant Unbounded_String :=
+      (Ada.Finalization.Controlled with Str => new String'(""));
+
+end C660001_0;
+
+
+with Ada.Unchecked_Deallocation;
+package body C660001_0 is
+
+   function Length (Source : Unbounded_String) return Natural is
+   begin
+      return Source.Str.all'Length;
+   end Length;
+
+
+   function "+" (Source : String) return Unbounded_String is
+      Result : Unbounded_String := (Ada.Finalization.Controlled with
+               Str => new String(1 .. Source'Length));
+   begin
+      Result.Str.all := Source;
+      return Result;
+   end "+";
+
+
+   function "+" (Source : Unbounded_String) return String is
+   begin
+      return Source.Str.all;
+   end "+";
+
+
+   procedure Set_Unbounded_String
+      (Target : out Unbounded_String; Source : in String) is
+   begin
+      Free (Target.Str);
+      Target := (Ada.Finalization.Controlled with
+                Str => new String(1 .. Source'Length));
+      Target.Str.all := Source;
+   end Set_Unbounded_String;
+
+
+   procedure Append
+      (Source : in out Unbounded_String; New_Item : in String) is
+      S_Length : Natural;
+      Length : Natural;
+      Temp : String_Access := Source.Str;
+   begin
+      S_Length := Source.Str.All'Length;
+      Length := S_Length + New_Item'Length;
+      Source.Str :=  new String(1 .. Length); -- new size
+      if Temp /= null then
+         Source.Str.all (1 .. S_Length) := Temp.all;
+      end if;
+      Source.Str.all (S_Length + 1 .. Length) := New_Item;
+      Free (Temp);
+   end Append;
+
+
+   function "=" (Left, Right : Unbounded_String) return Boolean is
+   begin
+       return Left.Str.all = Right.Str.all;
+   end "=";
+
+
+   function "=" (Left : Unbounded_String; Right : String) return Boolean is
+   begin
+       return Left.Str.all = Right;
+   end "=";
+
+
+   function "=" (Left : String; Right : Unbounded_String) return Boolean is
+   begin
+       return Left = Right.Str.all;
+   end "=";
+
+
+   function Element (Source : in Unbounded_String; Index : in Positive)
+      return Character is
+   begin
+      return Source.Str.all (Index); -- Raises Constraint_Error if Index
+          -- is greater than Length (Source);
+   end Element;
+
+
+   procedure Free (X : in out String_Access) is
+      procedure Deallocate is new Ada.Unchecked_Deallocation
+                                            (String, String_Access);
+   begin
+      Deallocate (X);
+   end Free;
+
+
+   procedure Finalize (Object : in out Unbounded_String) is
+   begin
+      Free (Object.Str);
+   end Finalize;
+
+
+   procedure Adjust   (Object : in out Unbounded_String) is
+   begin
+      Object.Str := new String'(Object.Str.all);
+   end Adjust;
+
+end C660001_0;
+
+
+with Report;
+with C660001_0; use C660001_0;
+procedure C660001 is
+
+begin
+   Report.Test ("C660001",
+                "Check that an explicit declaration of ""="" with a result of "&
+                "Boolean also declares an ""/="" with a complementary result");
+
+   declare
+      A1, A2 : Unbounded_String := +"123";
+   begin
+      if not (A1 = A2) then
+         Report.Failed ("Wrong behavior from ""="" (1)");
+      end if;
+      if A1 /= A2 then
+         Report.Failed ("Wrong behavior from ""/="" (1)");
+      end if;
+   end;
+
+   declare
+      A3 : Unbounded_String := +"ABCD";
+   begin
+      if not (A3 = "ABCD") then
+         Report.Failed ("Wrong behavior from ""="" (2)");
+      end if;
+      if "1234" = A3 then
+         Report.Failed ("Wrong behavior from ""="" (3)");
+      end if;
+      if A3 /= "ABCD" then
+         Report.Failed ("Wrong behavior from ""/="" (2)");
+      end if;
+      if not (A3 /= "1234") then
+         Report.Failed ("Wrong behavior from ""/="" (3)");
+      end if;
+      if not (A3 /= "ABC") then
+         Report.Failed ("Wrong behavior from ""/="" (4)");
+      end if;
+      if "ABCD" /= A3 then
+         Report.Failed ("Wrong behavior from ""/="" (5)");
+      end if;
+      if not ("BCD" /= A3) then
+         Report.Failed ("Wrong behavior from ""/="" (6)");
+      end if;
+   end;
+
+   declare
+      package Inner is
+         type String_with_Count is new Unbounded_String with record
+            Count : Natural := 0;
+         end record;
+         -- Inherited "=" and "/=" with String parameters do not use the
+         -- extension component; the "=" and "/=" with both parameters
+         -- String_with_Count do use the extension component as they
+         -- incorporate the Unbounded_String "=" and are not inherited.
+
+	 function "+" (Source : String) return String_with_Count;
+
+      end Inner;
+
+      package body Inner is
+	 function "+" (Source : String) return String_with_Count is
+         begin
+            return String_with_Count'(Unbounded_String'(+Source) with Count => 0);
+         end "+";
+      end Inner;
+
+      use Inner;
+
+      Val5 : String_with_Count :=
+         String_with_Count'(Unbounded_String'(+"XYZ") with Count => 5);
+      Val10 : String_with_Count :=
+         String_with_Count'(Unbounded_String'(+"XYZ") with Count => 10);
+
+   begin
+      if Val5 = Val10 then
+         Report.Failed ("Wrong behavior from ""="" (11)");
+      end if;
+      if Val5 = +"XYZ" then
+         Report.Failed ("Wrong behavior from ""="" (12)");
+      end if;
+      if not (Val5 /= Val10) then
+         Report.Failed ("Wrong behavior from ""/="" (11)");
+      end if;
+      if not (Val5 /= +"XYZ") then
+         Report.Failed ("Wrong behavior from ""/="" (11)");
+      end if;
+      if Val5 = "WXYZ" then
+         Report.Failed ("Wrong behavior from ""="" (13)");
+      end if;
+      if not (Val5 /= "WXYZ") then
+         Report.Failed ("Wrong behavior from ""/="" (13)");
+      end if;
+      if Val5 /= "XYZ" then
+         Report.Failed ("Wrong behavior from ""/="" (14)");
+      end if;
+      if "XYZ" /= Val10 then
+         Report.Failed ("Wrong behavior from ""/="" (14)");
+      end if;
+   end;
+
+   Report.Result;
+
+end C660001;

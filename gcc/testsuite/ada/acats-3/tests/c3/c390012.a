@@ -1,0 +1,588 @@
+-- C390012.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+-- OBJECTIVE:
+--     Check that an instance of Generic_Dispatching_Constructor calls the
+--     correct functions and creates objects of the correct type.
+--
+--     Check that an instance of Generic_Dispatching_Constructor raises
+--     Tag_Error if called with the tag of an unrelated type, the tag of
+--     an abstract type, the tag of a type more nested than the instance,
+--     or with No_Tag.
+--
+-- TEST DESCRIPTION:
+--     The purpose of Generic_Dispatching_Constructor is to avoid giant
+--     case statements for all specific kinds of a type class. It's usually
+--     used with a manager with which each specific type registers itself
+--     as it elaborates. The manager might directly be used to populate a menu
+--     or toolbar in a GUI, for example.
+--
+--     In order to simply emulate the typical GUI use, we declare a tree of
+--     types representing various mathematical shapes (this is inspired by
+--     Program 1 in John Barnes book, Programming in Ada 2012). The manager is
+--     emulated by a simple array (rather than the more likely map). We then
+--     try creating various objects, checking afterwards that the correct
+--     subprograms were called and the created object has the correct type.
+
+-- CHANGE HISTORY:
+--     17 Aug 2015  RLB  Created test.
+
+package C390012_Geometry is
+
+   type Object is abstract tagged private;
+
+   type Params is record
+      X_Coord : Float;
+      Y_Coord : Float;
+      Size    : Float; -- What this means differs for each kind of object.
+   end record;
+
+   function Make_Object (P : not null access Params) return Object is abstract;
+
+   function Distance (O : in Object) return Float;
+   function Area (O : in Object) return Float is abstract;
+   function Name (O : in Object) return String is abstract;
+   function X_Coord (O : in Object) return Float;
+   function Y_Coord (O : in Object) return Float;
+   function Size_Param (O : in Object) return Float is abstract;
+
+private
+
+   type Object is abstract tagged record
+      X_Coord : Float;
+      Y_Coord : Float;
+   end record;
+
+end C390012_Geometry;
+
+with Ada.Numerics.Elementary_Functions;
+package body C390012_Geometry is
+
+   function Distance (O : in Object) return Float is
+   begin
+      return Ada.Numerics.Elementary_Functions.Sqrt (
+          O.X_Coord ** 2 + O.Y_Coord ** 2);
+   end Distance;
+
+   function X_Coord (O : in Object) return Float is begin
+      return O.X_Coord;
+   end X_Coord;
+
+   function Y_Coord (O : in Object) return Float is
+   begin
+      return O.Y_Coord;
+   end Y_Coord;
+
+end C390012_Geometry;
+
+with Ada.Tags;
+package C390012_Manager is
+
+   procedure Register (The_Tag : in Ada.Tags.Tag; Code : in Character);
+
+   function Decode (Code : in Character) return Ada.Tags.Tag;
+
+   type Dummy is tagged null record; -- A tagged type not related to Object.
+
+end C390012_Manager;
+
+with TCTouch;
+package body C390012_Manager is
+
+   Map : array (Character) of Ada.Tags.Tag := (others => Ada.Tags.No_Tag);
+
+   procedure Register (The_Tag : in Ada.Tags.Tag; Code : in Character) is
+      use type Ada.Tags.Tag;
+   begin
+      TCTouch.Touch ('r'); TCTouch.Touch (Code); ------------------ "r<code>"
+      if Map(Code) /= Ada.Tags.No_Tag then
+         raise Program_Error with "Double Registration of code " & Code;
+      end if;
+      Map(Code) := The_Tag;
+   end Register;
+
+   function Decode (Code : in Character) return Ada.Tags.Tag is
+   begin
+      return Map(Code);
+   end Decode;
+
+end C390012_Manager;
+
+package C390012_Geometry.Circles is
+
+   type Circle is new Object with private;
+
+   -- Concrete versions of abstract routines:
+   function Make_Object (P : not null access Params) return Circle;
+      -- For a Circle, the size is the radius of the circle.
+   function Area (C : in Circle) return Float;
+   function Name (C : in Circle) return String;
+   function Size_Param (C : in Circle) return Float;
+
+private
+
+   type Circle is new Object with
+      record
+         Radius : Float;
+      end record;
+
+end C390012_Geometry.Circles;
+
+with TCTouch;
+with C390012_Manager;
+with Ada.Numerics;
+package body C390012_Geometry.Circles is
+
+   function Make_Object (P : not null access Params) return Circle is
+   begin
+      TCTouch.Touch ('M'); TCTouch.Touch ('C'); ------------------ "MC"
+      return Circle'(X_Coord => P.X_Coord, Y_Coord => P.Y_Coord,
+                     Radius  => P.Size);
+   end Make_Object;
+
+   function Area (C : in Circle) return Float is
+   begin
+      TCTouch.Touch ('A'); TCTouch.Touch ('C'); ------------------ "AC"
+      return Ada.Numerics.PI * C.Radius**2;
+   end Area;
+
+   function Name (C : in Circle) return String is
+   begin
+      return "Circle";
+   end Name;
+
+   function Size_Param (C : in Circle) return Float is
+   begin
+      return C.Radius;
+   end Size_Param;
+
+begin
+   C390012_Manager.Register (Circle'Tag, 'C'); -- Register the Circle type.
+end C390012_Geometry.Circles;
+
+package C390012_Geometry.Squares is
+
+   type Square is new Object with private;
+
+   -- Concrete versions of abstract routines:
+   function Make_Object (P : not null access Params) return Square;
+      -- For a Square, the size is the side of the Square.
+   function Area (S : in Square) return Float;
+   function Name (S : in Square) return String;
+   function Size_Param (S : in Square) return Float;
+
+private
+
+   type Square is new Object with
+      record
+         Side : Float;
+      end record;
+
+end C390012_Geometry.Squares;
+
+with TCTouch;
+with C390012_Manager;
+with Ada.Numerics;
+package body C390012_Geometry.Squares is
+
+   function Make_Object (P : not null access Params) return Square is
+   begin
+      TCTouch.Touch ('M'); TCTouch.Touch ('S'); ------------------ "MS"
+      return Square'(X_Coord => P.X_Coord, Y_Coord => P.Y_Coord,
+                     Side    => P.Size);
+   end Make_Object;
+
+   function Area (S : in Square) return Float is
+   begin
+      TCTouch.Touch ('A'); TCTouch.Touch ('S'); ------------------ "AS"
+      return S.Side**2;
+   end Area;
+
+   function Name (S : in Square) return String is
+   begin
+      return "Square";
+   end Name;
+
+   function Size_Param (S : in Square) return Float is
+   begin
+      return S.Side;
+   end Size_Param;
+
+
+begin
+   C390012_Manager.Register (Square'Tag, 'S'); -- Register the Square type.
+end C390012_Geometry.Squares;
+
+package C390012_Geometry.Triangles is
+
+   type Triangle is new Object with private;
+      -- This is a bit of a misnomer; we only support right triangles here
+      -- with the two right sides the same length.
+
+   -- Concrete versions of abstract routines:
+   function Make_Object (P : not null access Params) return Triangle;
+      -- For a Triangle, the size is the (right) side of the Triangle.
+   function Area (T : in Triangle) return Float;
+   function Name (T : in Triangle) return String;
+   function Size_Param (T : in Triangle) return Float;
+
+private
+
+   type Triangle is new Object with
+      record
+         Right_Side : Float;
+      end record;
+
+end C390012_Geometry.Triangles;
+
+with TCTouch;
+with C390012_Manager;
+with Ada.Numerics;
+package body C390012_Geometry.Triangles is
+
+   function Make_Object (P : not null access Params) return Triangle is
+   begin
+      TCTouch.Touch ('M'); TCTouch.Touch ('T'); ------------------ "MT"
+      return Triangle'(X_Coord => P.X_Coord, Y_Coord => P.Y_Coord,
+                       Right_Side => P.Size);
+   end Make_Object;
+
+   function Area (T : in Triangle) return Float is
+   begin
+      TCTouch.Touch ('A'); TCTouch.Touch ('T'); ------------------ "AT"
+      return T.Right_Side**2 / 2.0;
+   end Area;
+
+   function Name (T : in Triangle) return String is
+   begin
+      return "Triangle";
+   end Name;
+
+   function Size_Param (T : in Triangle) return Float is
+   begin
+      return T.Right_Side;
+   end Size_Param;
+
+begin
+   C390012_Manager.Register (Triangle'Tag, 'T'); -- Register the Triangle type.
+end C390012_Geometry.Triangles;
+
+
+package C390012_Geometry.Ghosts is
+
+   type Ghost is abstract new Object with private;
+      -- This is not a real shape.
+
+   function Size_Param (G : in Ghost) return Float;
+
+   procedure Register;
+
+private
+
+   type Ghost is abstract new Object with null record;
+
+end C390012_Geometry.Ghosts;
+
+with C390012_Manager;
+package body C390012_Geometry.Ghosts is
+
+   function Size_Param (G : in Ghost) return Float is
+   begin
+      return 0.0;
+   end Size_Param;
+
+   procedure Register is
+   begin
+      C390012_Manager.Register (Ghost'Tag, 'G'); -- Register the Ghost type.
+        -- We do this manually so the we don't have too many types to
+        -- track successfully.
+   end Register;
+
+end C390012_Geometry.Ghosts;
+
+
+with Report, TCTouch;
+with C390012_Geometry, C390012_Manager;
+with Ada.Tags.Generic_Dispatching_Constructor;
+
+-- We use the following packages only for verification purposes,
+-- but even in a real program they have to be
+-- withed somewhere so they are included in the program.
+with C390012_Geometry.Circles, C390012_Geometry.Squares,
+     C390012_Geometry.Triangles, C390012_Geometry.Ghosts;
+
+procedure C390012 is
+
+   function Create_Object is new Ada.Tags.Generic_Dispatching_Constructor
+      (C390012_Geometry.Object, Parameters => C390012_Geometry.Params,
+       Constructor => C390012_Geometry.Make_Object);
+
+   procedure TC_Check_Object (O : in C390012_Geometry.Object'Class;
+                              N : in String;
+                              P : in C390012_Geometry.Params;
+                              Code : in Character) is
+   begin
+      if O.X_Coord /= P.X_Coord or else
+         O.Y_Coord /= P.Y_Coord then
+         Report.Failed ("Coordinates wrong (" & Code & ')');
+      end if;
+      if O.Size_Param /= P.Size then
+         Report.Failed ("Size wrong (" & Code & ')');
+      end if;
+      if O.Name /= N then
+         Report.Failed ("Object name was " & O.Name & "; expected " & N &
+                         " (" & Code & ')');
+      end if;
+   end TC_Check_Object;
+
+begin
+   Report.Test ("C390012", "Check that an instance of " &
+                           "Generic_Dispatching_Constructor calls the " &
+                           "correct functions and creates objects of the " &
+                           "correct type");
+
+   -- Check that the types got registered:
+   TCTouch.Validate_One_Of (Expected_1 => "rCrSrT",
+                            Expected_2 => "rCrTrS",
+                            Expected_3 => "rSrCrT",
+                            Expected_4 => "rSrTrC",
+                            Expected_5 => "rTrCrS",
+                            Expected_6 => "rTrSrC",
+                            Message => "Type registration incorrect (A)");
+      -- Note: Order of elaboration is unspecified, so
+      -- we allow all six possible orders.
+
+   -- Try a class-wide object declaration:
+   declare
+      P : aliased C390012_Geometry.Params := (X_Coord => 3.0,
+                                              Y_Coord => 4.0,
+                                              Size    => 2.0);
+      O : C390012_Geometry.Object'Class := Create_Object (
+          C390012_Manager.Decode ('C'), P'access);
+   begin
+      TCTouch.Validate (Expected => "MC",
+                        Message =>  "Incorrect construction (B)");
+
+      TC_Check_Object (O, "Circle", P, 'B');
+      if O.Distance /= 5.0 then
+         Report.Failed ("Distance wrong (B)");
+      end if;
+   end;
+
+   -- Try directly passing as a class-wide parameter:
+   declare
+      P : aliased C390012_Geometry.Params := (X_Coord => 1.0,
+                                              Y_Coord => 1.0,
+                                              Size    => 3.0);
+      procedure Use_It (O : in C390012_Geometry.Object'Class) is
+      begin
+         TC_Check_Object (O, "Square", P, 'C');
+         if O.Area /= 9.0 then
+            Report.Failed ("Area wrong (C)");
+         end if;
+      end Use_It;
+   begin
+      Use_It (Create_Object (C390012_Manager.Decode ('S'), P'access));
+
+      TCTouch.Validate (Expected => "MSAS",
+                        Message =>  "Incorrect construction (C)");
+   end;
+
+   -- Try using as an initialized allocator:
+   declare
+      P : aliased C390012_Geometry.Params := (X_Coord => 1.0,
+                                              Y_Coord => 3.0,
+                                              Size    => 1.5);
+      type Node is access C390012_Geometry.Object'Class;
+      Head : Node;
+   begin
+      Head := new C390012_Geometry.Object'Class'(
+                 Create_Object (C390012_Manager.Decode ('T'), P'access));
+
+      TC_Check_Object (Head.all, "Triangle", P, 'D');
+      if Head.Area /= 1.125 then
+         Report.Failed ("Area wrong (D)");
+      end if;
+      TCTouch.Validate (Expected => "MTAT",
+                        Message =>  "Incorrect construction (D)");
+   end;
+
+   -- Check that attempting to create a Ghost (an abstract type) causes
+   -- Tag_Error to be raised:
+   begin
+      C390012_Geometry.Ghosts.Register;
+      TCTouch.Validate (Expected => "rG",
+                        Message =>  "Ghost not registered properly (E)");
+
+      declare
+         P : aliased C390012_Geometry.Params := (X_Coord => 1.0,
+                                                 Y_Coord => 2.5,
+                                                 Size    => 0.75);
+         O : C390012_Geometry.Object'Class := Create_Object (
+             C390012_Manager.Decode ('G'), P'access);
+      begin
+          Report.Failed ("Creation of Ghost did not raise Tag_Error (E)");
+          TC_Check_Object (O, "Ghost", P, 'E');
+      end;
+   exception
+      when Ada.Tags.Tag_Error =>
+         Report.Comment ("Tag_Error raised as expected from attempt to " &
+                         "create abstract object (E)");
+   end;
+
+   -- Check that an unused code (which will return No_Tag) causes Tag_Error
+   -- to be raised:
+   begin
+      declare
+         P : aliased C390012_Geometry.Params := (X_Coord => 1.5,
+                                                 Y_Coord => 2.0,
+                                                 Size    => 0.5);
+         O : C390012_Geometry.Object'Class := Create_Object (
+             C390012_Manager.Decode ('Z'), P'access);
+      begin
+          Report.Failed ("Creation of unknown code did not raise " &
+                         "Tag_Error (F)");
+          TC_Check_Object (O, "Zowie", P, 'F');
+      end;
+   exception
+      when Ada.Tags.Tag_Error =>
+         Report.Comment ("Tag_Error raised as expected from attempt to " &
+                         "create object from No_Tag (F)");
+   end;
+
+   -- Check that calling Create_Object with the tag of a type that is not
+   -- descended from Object causes Tag_Error to be raised:
+   begin
+      declare
+         P : aliased C390012_Geometry.Params := (X_Coord => 8.0,
+                                                 Y_Coord => 1.0,
+                                                 Size    => 0.5);
+         O : C390012_Geometry.Object'Class := Create_Object (
+             C390012_Manager.Dummy'Tag, P'access);
+      begin
+          Report.Failed ("Creation of Dummy object code did not raise " &
+                         "Tag_Error (G)");
+          TC_Check_Object (O, "Dummy", P, 'G');
+      end;
+   exception
+      when Ada.Tags.Tag_Error =>
+         null; -- OK, Tag_Error expected.
+         Report.Comment ("Tag_Error raised as expected from attempt to " &
+                         "create object from an unrelated type (G)");
+   end;
+
+   -- Check that attempting to create a EQ (a type more nested than the
+   -- instance of Ada.Tags.Generic_Dispatching_Constructor) causes
+   -- Tag_Error to be raised:
+   declare
+
+      procedure Nested_Subtest (Size : in Float) is
+         package EQs is
+
+            type EQ is new C390012_Geometry.Object with private;
+                -- EQ = Equilateral Triangle.
+            -- Concrete versions of abstract routines:
+            function Make_Object (P : not null access C390012_Geometry.Params)
+                return EQ;
+               -- For a EQ, the size is that of one side.
+            function Area (E : in EQ) return Float;
+            function Name (E : in EQ) return String;
+            function Size_Param (E : in EQ) return Float;
+
+         private
+
+            type EQ is new C390012_Geometry.Object with
+               record
+                  Side: Float;
+               end record;
+
+         end EQs;
+
+         package body EQs is
+
+            function Make_Object (P : not null access C390012_Geometry.Params)
+                return EQ is
+            begin
+               TCTouch.Touch ('M'); TCTouch.Touch ('E'); --------------- "ME"
+               return EQ'(C390012_Geometry.Object with Side => P.Size);
+                   -- Careful: This isn't usable if this routine actually
+                   -- gets called (the coordinates are undefined).
+            end Make_Object;
+
+            function Area (E : in EQ) return Float is
+            begin
+               TCTouch.Touch ('A'); TCTouch.Touch ('C'); --------------- "AE"
+               return Size**2; -- Not right, but this ought to never be called.
+            end Area;
+
+            function Name (E : in EQ) return String is
+            begin
+               return "EQ";
+            end Name;
+
+            function Size_Param (E : in EQ) return Float is
+            begin
+               return E.Side;
+            end Size_Param;
+
+         begin
+            C390012_Manager.Register (EQ'Tag, 'E'); -- Register the EQ type.
+         end EQs;
+
+      begin
+         TCTouch.Validate (Expected => "rE",
+                           Message =>  "EQ not registered properly (H)");
+         declare
+            P : aliased C390012_Geometry.Params := (X_Coord => 3.5,
+                                                    Y_Coord => 1.0,
+                                                    Size    => 1.5);
+            O : C390012_Geometry.Object'Class := Create_Object (
+                C390012_Manager.Decode ('E'), P'access);
+         begin
+             Report.Failed ("Creation of EQ did not raise Tag_Error (H)");
+             TC_Check_Object (O, "EQ", P, 'H');
+         end;
+      exception
+         when Ada.Tags.Tag_Error =>
+            Report.Comment ("Tag_Error raised as expected from attempt to " &
+                            "create an object of a more nested type (H)");
+      end Nested_Subtest;
+
+   begin
+      Nested_Subtest (10.0);
+   end;
+
+   Report.Result;
+end C390012;
+
