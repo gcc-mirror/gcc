@@ -1,0 +1,174 @@
+﻿-- C250002.AU
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that characters in Latin-1 above ASCII.Del can be used in
+--      identifiers, character literals and strings.
+-- 
+-- TEST DESCRIPTION:
+--      This test is distributed in UTF-8 format. The test defines Character
+--      and String objects, assigns and tests several sample values that use
+--      values in extended Latin-1 characters. Several Identifiers
+--      used in this test also include extended Latin-1 Characters.
+--      The extended characters used are documented in comments.
+--
+--      Note that C250001 checks Wide_Characters and Wide_Strings.
+--
+-- CHANGE HISTORY:
+--      10 JAN 96   SAIC   Initial version
+--      12 NOV 96   SAIC   Changed file extension to .AW
+--      27 DEC 07   RLB    Converted to UTF-8, changed file extension to .AU
+--
+--!
+
+----------------------------------------------------------------- C250002_0
+
+package C250002_0 is
+
+  type Tagged_À_Id is tagged record -- À -> 16#C0#
+    Length, Width: Natural;
+  end record;
+
+  X_Char_A2 : constant Character := '¢'; -- ¢ -> 16#A2#
+
+  X_Char_A3_Through_A9 : constant String := 
+               "£¤¥¦§¨©"; -- 16#A3# through 16#A9#
+
+  X_Char_AA_AB : constant String := "ª«"; -- ª« -> 16#AA# 16#AB#
+
+end C250002_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+-- no package body C250002_0 is required or allowed
+
+----------------------------------------------------------------- C250002_Á
+
+with Ada.Characters.Latin_1;
+package C250002_Á is -- Á -> 16#C1#
+
+  type Enum is ( Item, 'A', '­', -- 16#AD#
+                  AE_Ææ_ae, -- 16#C6# 16#E6#
+                 '-', -- 16#2D#
+                 'ÿ' ); -- 16#FF#
+
+  task type C2_Â is -- Â -> 16#C2#
+    entry C2_Ã; -- Ã -> 16#C3#
+  end C2_Â;
+
+end C250002_Á;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C250002_Á is -- Á -> 16#C1#
+
+  task body C2_Â is
+  begin
+    accept C2_Ã;
+  end C2_Â;
+
+end C250002_Á;
+
+------------------------------------------------------------------- C250002
+
+with Report;
+with C250002_0;
+with C250002_Á;
+
+with Ada.Tags;
+
+procedure C250002 is
+  use C250002_0; 
+
+  My_Task: C250002_Á.C2_Â;
+
+  function Hex( N: Natural ) return String is
+    S : String := "xx";
+    T : String := "0123456789ABCDEF";
+  begin
+    S(1) := T(N  /  16 +1);
+    S(2) := T(N mod 16 +1);
+    return S;
+  end Hex;
+
+  procedure Match( Check : Character; Matching : Natural ) is
+  begin
+    if Check /= Character'Val( Matching ) then
+      Report.Failed( "Didn't match for " & Hex(Matching) );
+    end if;
+  end Match;
+
+  type Value_List is array(Positive range <>) of Natural;
+
+  procedure Match( Check : String; Matching : Value_List ) is
+  begin
+    if Check'Length /= Matching'Length then
+      Report.Failed( "Check'Length /= Matching'Length" );
+    else
+      for I in Check'Range loop
+        Match( Check(I), Matching(I - Check'First + Matching'First) );
+      end loop;
+    end if;
+  end Match;
+
+  TC_Count : Natural := 0;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C250002", "Check that characters above ASCII.Del can be " &
+                          "used in identifiers, character literals and " &
+                          "strings" );
+
+  Report.Comment( Ada.Tags.Expanded_Name(Tagged_À_Id'Tag) );
+
+  for Specials in C250002_Á.Enum loop
+    TC_Count := TC_Count +1;
+  end loop;
+
+  if TC_Count /= 6 then
+    Report.Failed("Expected 6 literals in Enum");
+  end if;
+
+  Match( X_Char_A2, 16#A2# );
+
+  Match(X_Char_A3_Through_A9,
+         (16#A3#,16#A4#,16#A5#,16#A6#,16#A7#,16#A8#,16#A9#) );
+
+  -- check catenations
+
+  Match( X_Char_A2 & X_Char_A2, (16#A2#,16#A2#) );
+
+  Match( X_Char_A2 & X_Char_AA_AB, (16#A2#,16#AA#,16#AB#) );
+
+  Match( X_Char_AA_AB & X_Char_A2, (16#AA#,16#AB#,16#A2#) );
+
+  Match( X_Char_AA_AB & X_Char_AA_AB,
+         (16#AA#,16#AB#,16#AA#,16#AB#) );
+
+  My_Task.C2_Ã;
+
+  Report.Result;
+
+end C250002;

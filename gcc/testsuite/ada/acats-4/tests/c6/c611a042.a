@@ -1,0 +1,202 @@
+-- C611A042.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--     See C611A040.A.
+--
+-- TEST DESCRIPTION:
+--     See C611A040.A.
+--
+-- TEST FILES:
+--     This test consists of the following files:
+--        C611A040.A
+--        C611A041.A
+--     -> C611A042.A
+--        C611A043.AM
+--
+-- CHANGE HISTORY:
+--      12 Dec 16   JAC     Initial pre-release version.
+--
+--!
+package C611A040.Child.Grandchild is
+
+   pragma Assertion_Policy (Check);
+
+   type Triangle is new Object with private;
+
+   overriding
+   function  Distance              (T       : in     Triangle) return Float
+    with Pre'Class  => F611A00.TC_Log_Triangle_Distance_Pre_Class_Called
+                       and then Y_Coord   (T) >= 0.0,
+         Post'Class => F611A00.TC_Log_Triangle_Distance_Post_Class_Called
+                       and then Not_Too_Far (T);
+
+   function  Area                  (T       : in     Triangle) return Float
+    with Post'Class => Area_Is_Positive (Area'Result);
+
+   function  Make_Triangle         (A, B, C : in     Float)    return
+    Triangle;
+
+   procedure Get_Sides             (T       : in     Triangle;
+                                    A, B, C :    out Float);
+
+   overriding
+   function  X_Coord               (T       : in     Triangle) return Float;
+
+   overriding
+   function  Y_Coord               (T       : in     Triangle) return Float;
+
+   -- Postcondition functions
+   function Distance_Is_Positive   (T       : in     Triangle) return Boolean;
+
+   function Not_Too_Far            (T       : in     Triangle) return Boolean;
+
+   function Not_Too_Near           (T       : in     Triangle) return Boolean;
+
+   function Area_Is_Positive       (Area    : in     Float)    return Boolean;
+
+private
+
+   type Triangle is new Object with record
+      A, B, C : Float;
+   end record;
+
+end C611A040.Child.Grandchild;
+
+with Ada.Numerics.Elementary_Functions;
+with F611A00;
+with Report;
+
+package body C611A040.Child.Grandchild is
+
+   function Local_Distance (T : in Triangle) return Float is
+     (Ada.Numerics.Elementary_Functions.Sqrt
+        (T.X_Coord ** 2 + T.Y_Coord ** 2));
+
+   function Distance (T : in Triangle) return Float is
+   begin
+      if not (F611A00.TC_Point_Distance_Pre_Class_Called or
+              F611A00.TC_Triangle_Distance_Pre_Class_Called) then
+         Report.Failed
+          ("Distance's class-wide precondition (comprising an " &
+           "'or' of both Object's Pre'Class and Triangle's Pre'Class) " &
+           "should have been called before the subprogram body");
+         -- Note that we only have to have called one or the other
+         -- precondition, as if one is True, the other doesn't need to be
+         -- evaluated. (And we don't necessarily evaluate all of them for a
+         -- dispatching call.)
+         F611A00.TC_Output;
+      end if;
+
+      F611A00.TC_Triangle_Distance_Called := True;
+
+      if F611A00.TC_Point_Distance_Post_Class_Called or
+         F611A00.TC_Triangle_Distance_Post_Class_Called then
+         Report.Failed
+          ("Some part of Distance's class-wide postcondition was " &
+           "was called before the subprogram body completed");
+         -- Note that we only have to have called one or the other
+         -- precondition, as if one is True, the other doesn't need to be
+         -- evaluated. (And we don't necessarily evaluate all of them for a
+         -- dispatching call.)
+         F611A00.TC_Output;
+      end if;
+      return Local_Distance (T);
+   end Distance;
+
+   -- Using Heron's formula
+   function Area (T : in Triangle) return Float is
+      S : constant Float := (T.A + T.B + T.C) / 2.0;
+   begin
+      return Ada.Numerics.Elementary_Functions.Sqrt
+        ((S - T.A) * (S - T.B) * (S - T.C));
+   end Area;
+
+   function Make_Triangle (A, B, C : in Float) return Triangle is
+      (A       => A,
+       B       => B,
+       C       => C,
+       X_Coord => 0.0,
+       Y_Coord => 0.0);
+
+   procedure Get_Sides (T       : in      Triangle;
+                        A, B, C :     out Float) is
+   begin
+       A := T.A;
+       B := T.B;
+       C := T.C;
+   end Get_Sides;
+
+   function X_Coord (T : in Triangle) return Float is
+   begin
+      F611A00.TC_Triangle_X_Coord_Called := True;
+
+      return T.X_Coord;
+   end X_Coord;
+
+   -- function X_Coord_S inherited
+
+   function Y_Coord (T : in Triangle) return Float is
+   begin
+      F611A00.TC_Triangle_Y_Coord_Called := True;
+
+      return T.Y_Coord;
+   end Y_Coord;
+
+   -- Postcondition functions
+   function Distance_Is_Positive (T : in Triangle) return Boolean is
+   begin
+      F611A00.TC_Triangle_Distance_Is_Positive_Called := True;
+
+      return Local_Distance (T) > 0.0;
+   end Distance_Is_Positive;
+
+   function Not_Too_Far (T : in Triangle) return Boolean is
+   begin
+      F611A00.TC_Triangle_Not_Too_Far_Called := True;
+
+      return Local_Distance (T) <= 10.0;
+   end Not_Too_Far;
+
+   function Not_Too_Near (T : in Triangle) return Boolean is
+   begin
+      F611A00.TC_Triangle_Not_Too_Near_Called := True;
+
+      return Local_Distance (T) >= 1.0;
+   end Not_Too_Near;
+
+   function Area_Is_Positive (Area : in Float) return Boolean is
+     (Area > 0.0);
+
+end C611A040.Child.Grandchild;

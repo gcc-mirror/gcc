@@ -1,0 +1,110 @@
+-- LA140052.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically on two 
+--      different versions of the same compilation unit.  Check the case 
+--      where a generic package body depends on a generic package 
+--      specification.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a generic package specification and body, 
+--      followed by a procedure that makes a call to a procedure
+--      contained inside the generic package.  Then, the generic package
+--      specification is recompiled, making the body of the generic
+--      package obsolete.  Unless automatic recompilation is 
+--      supported this test should fail to link.  Otherwise, the test should 
+--      recompile and link the correct version of the units and report
+--      "PASSED" at execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140050 (and include the results in the
+--            program library).
+--         2) Compile the file LA140051 (and include the results in the
+--            program library).
+--         3) Compile the file LA140052 (and include the results in the
+--            program library).
+--         4) Compile the file LA140053 (and include the results in the
+--            program library).
+--         5) Attempt to build an executable image.
+--         6) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140050.A
+--         LA140051.A
+--      -> LA140052.AM
+--         LA140053.A
+--
+-- PASS/FAIL CRITERIA:                
+--      Expect a link-time error message that the body of generic
+--      package LA14005_1 is missing or obsolete.  If automatic
+--      recompilation is supported, and an executable image is 
+--      built, expect a "PASSED" message from execution.
+--
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008I baseline version
+--     09 MAY 95   SAIC        Initial version
+--     08 NOV 96   SAIC        Unit naming correction
+--     07 DEC 96   SAIC        Moved spec of LA14005_1 to a separate file.
+--
+--!
+
+package body LA14005_1 is
+     function return_flt return types.gen_flt is
+     begin
+          return types.gen_flt(types.TC_var);
+     end return_flt;
+begin
+     types.TC_var := types.flt(TC_constant_flt);
+end LA14005_1;
+
+          ---------------------------------------------------------
+
+with Report; use Report;
+with LA14005_0;
+with LA14005_1;
+procedure LA140052 is
+     subtype TC_flt is float digits 5;
+
+     package Y is new LA14005_0 (integer(100.0), integer(0.0), TC_flt);
+     package inst is new LA14005_1 (Y);
+     TC_var : TC_flt;
+begin
+     Test ("LA14005", "Check that a compilation unit may not depend " &
+           "semantically on two different versions of the same " &
+           "compilation unit. Check the case where a generic package " &
+           "body depends on a generic package specification");
+
+     TC_var := TC_flt(inst.return_flt);
+
+     if TC_Var /= TC_flt(Y.min) then
+          Failed ("Obsolete unit used in elaboration");
+     end if;
+
+     Result;
+end LA140052;

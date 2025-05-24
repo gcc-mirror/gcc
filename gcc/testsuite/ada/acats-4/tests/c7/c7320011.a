@@ -1,0 +1,117 @@
+-- C7320011.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVE:
+--      See C7320010.A.
+--
+-- TEST DESCRIPTION:
+--      See C7320010.A.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         C7320010.A
+--      -> C7320011.A
+--         C7320012.AM
+--
+-- CHANGE HISTORY:
+--      28 Dec 14   JAC     Initial pre-release version.
+--      16 Jan 15   RLB     Renamed test parts for release, updated for changes
+--                          in C7320010, replace Text_IO with Report.
+--
+--!
+with C7320010;
+
+package C7320011 is
+
+   pragma Assertion_Policy (Check);
+
+   type T is new C7320010.T_Ancestor with private
+     with
+       Type_Invariant => Increasing (T);
+
+   function Increasing (My_T : in T) return Boolean;
+
+   function Init return T;
+
+   -- function Val and procedures Set and Inc inherited here.
+
+   procedure Set_B (My_T : in out T; Val : in Integer);
+
+   procedure Output (My_T : in T; Label : in String);
+
+private
+
+   type T is new C7320010.T_Ancestor with record
+      B : Integer := 2;
+   end record;
+
+end C7320011;
+
+with Report;
+
+package body C7320011 is
+
+   pragma Assertion_Policy (Check);
+
+   function Increasing (My_T : in T) return Boolean is
+   begin
+
+      return My_T.B > Val(My_T);
+
+   end Increasing;
+
+   function Init return T is
+   begin
+
+      return (C7320010.Init with B => 2);
+
+   end Init;
+
+   procedure Set_B (My_T : in out T; Val : in Integer) is
+   begin
+
+     My_T.B := Val;
+
+   end Set_B;
+
+   procedure Output (My_T : in T; Label : in String) is
+   begin
+
+      Report.Comment ("At " & Label &
+                      ", T.A is " & Integer'Image(Val(My_T)) &
+                      "; T.B is " & Integer'Image(My_T.B));
+
+   end Output;
+
+end C7320011;
+

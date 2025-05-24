@@ -1,0 +1,311 @@
+-- CB50001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+-- OBJECTIVE:
+--
+--     Check that checks are made in the scope of an appropriate pragma
+--     Unsuppress, even if checks are suppressed for the entire containing
+--     unit.
+--
+--  TEST DESCRIPTION:
+--
+--     We use two scenarios where handling an exception is needed. We want that
+--     code to work even if a global setting (a configuration pragma or
+--     compiler option) suppresses all checks.
+--
+--     The first scenario is a saturation math package. We handle overflow and
+--     range exceptions there as it is impractical to determine whether the
+--     result of some operations (especially multiply) will exceed the maximum
+--     value.
+--
+--     The second scenario is an container that can hold arbitray nonlimited
+--     objects. We want to avoid reallocating memory unless absolutely
+--     necessary, so the Replace operation attempts an assignment and only
+--     reallocates memory if the assignment faile. We use a Holder container
+--     for simplicity in creating the test (although the same pattern could
+--     apply to any indefinite container).
+--
+--     We test that both of thsee packages properly make the checks and raise
+--     exceptions when needed by recording traces of their operation.
+--
+--     We use an outer pragma Suppress(All_Checks) in each unit to stand in for
+--     the global setting of Suppress.
+
+--  CHANGE HISTORY:
+--     30 Jun 2023  RLB  Created test.
+--
+--!
+package CB50001S is
+   MAX : constant := 4000;
+   type SatNum is private;
+   
+   function To_Sat (Right : Integer) return SatNum;
+   function To_Int (Right : SatNum) return Integer;
+   function "+" (Left, Right : in SatNum) return SatNum;
+   function "*" (Left, Right : in SatNum) return SatNum;
+   
+private
+   type SatNum is range -MAX .. MAX;
+end CB50001S;
+
+with TcTouch;
+package body CB50001S is
+
+   pragma Suppress(All_Checks);
+   
+   function To_Sat (Right : Integer) return SatNum is
+   begin
+       return SatNum (Right);
+   end To_Sat;
+   
+   function To_Int (Right : SatNum) return Integer is
+   begin
+       return Integer(Right);
+   end To_Int;
+   
+   function "+" (Left, Right : in SatNum) return SatNum is
+       pragma Unsuppress (Range_Check);
+   begin
+       TCTouch.Touch( '+' ); -------------------------------------------- +
+       return SatNum(Integer(Left) + Integer(Right));
+   exception
+       when Constraint_Error => 
+           TCTouch.Touch( 'S' ); ---------------------------------------- S
+           return SatNum(MAX);
+   end "+";
+   
+   function "*" (Left, Right : in SatNum) return SatNum is
+       pragma Unsuppress (All_Checks);
+   begin
+       TCTouch.Touch( '*' ); -------------------------------------------- *
+       return SatNum(Integer(Left) * Integer(Right));
+   exception
+       when Constraint_Error => 
+           TCTouch.Touch( 'S' ); ---------------------------------------- S
+           return SatNum(MAX);
+   end "*";
+
+end CB50001S;
+
+generic
+   type Element (<>) is private;
+package CB50001H is
+   type Holder is private;
+
+   procedure Clear (Obj : in out Holder);
+   
+   function Is_Empty (Obj : in Holder) return Boolean;
+   
+   procedure Replace (Obj : in out Holder; Val : in Element);
+   
+   function Value (Obj : in Holder) return Element;
+       
+private
+   type Acc is access Element;
+   type Holder is record
+      Value : Acc := null;
+   end record;
+end CB50001H;
+
+
+with TcTouch;
+package body CB50001H is
+
+   pragma Suppress(All_Checks); 
+
+   procedure Free (P : in out Acc) is
+   begin
+      -- We'll drop the allocated objects on the floor here, to avoid
+      -- complicating the test furher. A real implementation would use
+      -- Unchecked_Deallocate or another technique for memory management.
+      P := null;
+   end Free;
+   
+   procedure Clear (Obj : in out Holder) is
+   begin
+      Free (Obj.Value);
+   end Clear;
+   
+   function Is_Empty (Obj : in Holder) return Boolean is
+   begin
+      return Obj.Value = null;
+   end Is_Empty;
+   
+   procedure Replace (Obj : in out Holder; Val : in Element) is
+   begin
+      TCTouch.Touch( 'R' ); ---------------------------------------------- R
+      if Obj.Value = null then
+          TCTouch.Touch( 'N' ); ------------------------------------------ N
+          Obj.Value := new Element'(Val);
+      else
+         declare
+             pragma Unsuppress (All_Checks);
+         begin
+             TCTouch.Touch( 'A' ); --------------------------------------- A
+             Obj.Value.all := Val;
+         exception
+            when Constraint_Error =>
+               -- Assignment failed, so reallocate:
+               TCTouch.Touch( 'F' ); ------------------------------------- F
+               Free (Obj.Value);
+               Obj.Value := new Element'(Val);
+         end;
+      end if;
+   end Replace;
+   
+   function Value (Obj : in Holder) return Element is
+   begin
+      if Obj.Value = null then
+          raise Program_Error with "No value to retrieve";
+      end if;
+      return Obj.Value.all;
+   end Value;
+
+end CB50001H;
+
+
+with Report, TcTouch;
+with CB50001S;
+with CB50001H;
+procedure CB50001 is
+begin
+   Report.Test ("CB50001", "Check that checks are made in the scope of an " &
+                           "appropriate pragma Unsuppress, even if checks " &
+                           "are suppressed for the entire containing unit");
+
+   -- Check the saturation math package:
+
+   declare
+      ZERO : constant CB50001S.SatNum := CB50001S.To_Sat (0);
+      ONE  : constant CB50001S.SatNum := CB50001S.To_Sat (1);
+      BIG  : constant CB50001S.SatNum := CB50001S.To_Sat (2400);
+      MAX  : constant CB50001S.SatNum := CB50001S.To_Sat (CB50001S.MAX);
+      Result : CB50001S.SatNum;
+      use type CB50001S.SatNum;
+   begin
+      Result := ONE + ZERO;
+      if Result /= ONE then
+          Report.Failed ("Unexpected result - 1");
+      end if;
+      TcTouch.Validate (Expected => "+", Message => "Incorrect operation - 1");
+      Result := BIG + BIG;
+      if Result /= MAX then
+          Report.Failed ("Unexpected result - 2");
+          Result := MAX;
+      end if;
+      TcTouch.Validate (Expected => "+S", Message => "No check - 2");
+      Result := Result + ONE;
+      if Result /= MAX then
+          Report.Failed ("Unexpected result - 3");
+      end if;
+      TcTouch.Validate (Expected => "+S", Message => "No check - 3");
+      Result := BIG * ONE;
+      if Result /= BIG then
+          Report.Failed ("Unexpected result - 4");
+      end if;
+      TcTouch.Validate (Expected => "*", Message => "Incorrect operation - 4");
+      Result := BIG * BIG;
+      if Result /= MAX then
+          Report.Failed ("Unexpected result - 5");
+      end if;
+      TcTouch.Validate (Expected => "*S", Message => "No check - 5");
+      Result := BIG * (ONE + ONE);
+      if Result /= MAX then
+          Report.Failed ("Unexpected result - 6");
+      end if;
+      TcTouch.Validate (Expected => "+*S", Message => "No check - 6");        
+   end;
+ 
+   -- Check the holder package:
+   declare
+      subtype Small is Natural range 0 .. 20;
+      type Mutable (D : Small := 0) is record
+         Val : String (1 .. D);
+      end record;
+      type Immutable (D : Small) is record
+         Val : String (1 .. D);
+      end record;
+      package Mut_Holder is new CB50001H (Mutable);
+      package Imm_Holder is new CB50001H (Immutable);
+      MHold : Mut_Holder.Holder;
+      IHold : Imm_Holder.Holder;
+   begin
+      if not Mut_Holder.Is_Empty (MHold) then
+         Report.Failed ("Initial state wrong - 1");
+      end if;
+      if not Imm_Holder.Is_Empty (IHold) then
+         Report.Failed ("Initial state wrong - 2");
+      end if;
+      Mut_Holder.Replace (MHold, (4, "ABCD"));
+      if Mut_Holder.Value (MHold) /= (4, "ABCD") then
+          Report.Failed ("Unexpected result - 11");
+      end if;
+      TcTouch.Validate (Expected => "RN", Message => "Unexpected flow - 11");
+      Imm_Holder.Replace (IHold, (3, "XYZ"));
+      if Imm_Holder.Value (IHold) /= (3, "XYZ") then
+          Report.Failed ("Unexpected result - 12");
+      end if;
+      TcTouch.Validate (Expected => "RN", Message => "Unexpected flow - 12");
+      Mut_Holder.Replace (MHold, (4, "DUMP"));
+      if Mut_Holder.Value (MHold) /= (4, "DUMP") then
+          Report.Failed ("Unexpected result - 13");
+      end if;
+      TcTouch.Validate (Expected => "RA", Message => "Unexpected flow - 13");
+      Imm_Holder.Replace (IHold, (3, "WET"));
+      if Imm_Holder.Value (IHold) /= (3, "WET") then
+          Report.Failed ("Unexpected result - 14");
+      end if;
+      TcTouch.Validate (Expected => "RA", Message => "Unexpected flow - 14");
+      Mut_Holder.Replace (MHold, (5, "JANUS"));
+      if Mut_Holder.Value (MHold) /= (5, "JANUS") then
+          Report.Failed ("Unexpected result - 15");
+      end if;
+      TcTouch.Validate (Expected => "RAF", Message => "Unexpected flow - 15");
+          -- Note: Even though the type is mutable, the allocated object
+          -- is not mutable unless the type also has a partial view (not the
+          -- case in this instance).
+      Imm_Holder.Replace (IHold, (6, "SMOKEY"));
+      if Imm_Holder.Value (IHold) /= (6, "SMOKEY") then
+          Report.Failed ("Unexpected result - 16");
+      end if;
+      TcTouch.Validate (Expected => "RAF", Message => "No check - 16");
+      Imm_Holder.Replace (IHold, (5, "FIRES"));
+      if Imm_Holder.Value (IHold) /= (5, "FIRES") then
+          Report.Failed ("Unexpected result - 17");
+      end if;
+      TcTouch.Validate (Expected => "RAF", Message => "No check - 17");
+   end;    
+  
+   Report.Result;
+end CB50001;

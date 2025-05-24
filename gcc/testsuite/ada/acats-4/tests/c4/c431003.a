@@ -1,0 +1,303 @@
+-- C431003.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+-- OBJECTIVE:
+--      Check that the association in a record aggregate for a discriminant
+--      with a default can be given by <>.
+--
+-- TEST DESCRIPTION:
+--      Record aggregate cases for paragraph 4.3.1(17.1/2). Note that this rule
+--      applies to all Ada versions since Amendment 1 for Ada 95.
+--
+--      Aggregates are commonly used. Thus, we assume that almost all cases
+--      will eventually appear in actual usage and thus do not try to describe
+--      a specific usage scenario.
+--
+-- CHANGE HISTORY:
+--      2022-02-24   JAC      Initial pre-release version.
+--      2022-03-28   RLB      Cleaned up for release.
+--
+--!
+
+with Ada.Calendar;
+with Report;
+
+procedure C431003 is
+
+   -- Example where a discriminant of a numeric type determines the bounds of a
+   -- 1-D array
+
+   type Integer_Vector is array (Integer range <>) of Integer;
+
+   Max : constant := 100;
+
+   subtype Index is Integer range 0 .. Max;
+
+   type Poly_Type (N : Index := 1) is record
+      A : Integer_Vector (0 .. N);
+   end record;
+
+   -- Discriminant explicitly initialised to default
+   Poly_1 : Poly_Type := (N => <>, A => <>);
+   -- Discriminant explicitly initialised to a specific value
+   Poly_2 : Poly_Type := (N => 2, A => <>);
+
+   -- Example where discriminants of a numeric type determine the bounds of a
+   -- matrix
+
+   subtype Bounds_Type is Integer range 0 .. 100;
+
+   type Matrix_Type is array (Bounds_Type range <>,
+                              Bounds_Type range <>) of Float;
+
+   type Matrix_Rec_Type (Rows    : Integer := 2;
+                         Columns : Integer := 3) is record
+      Mat : Matrix_Type (1 .. Rows, 1 .. Columns);
+   end record;
+
+   Matrix_Rec : Matrix_Rec_Type := (Rows    => <>,
+                                    Columns => <>,
+                                    Mat     => (others => (others => 0.0)));
+
+   -- Example where a discriminant of a numeric type selects a variant
+
+   subtype Account_Number_Type is Integer range 1 .. 9_999;
+
+   type Account_Type (Account_Number : Account_Number_Type := 1) is record
+      case Account_Number is
+         when     1 .. 4_999 =>
+            -- Savings Account
+            Savings_Rate : Float;
+         when 5_000 .. 9_999 =>
+            -- Loan Account
+            Loan_Rate : Float;
+         end case;
+   end record;
+
+   Account : Account_Type;
+
+   -- Example where multiple discriminants selects variants, one of a numeric
+   -- type, one of an enumeration type
+
+   type Extended_Account_Type
+     (Account_Number : Account_Number_Type := 1;
+      Term_Account   : Boolean             := False) is record
+      case Account_Number is
+         when     1 .. 4_999 =>
+            -- Savings Account
+            Savings_Rate : Float;
+            case Term_Account is
+               when False =>
+                  null;
+               when True  =>
+                  Maturity_Date : Ada.Calendar.Time;
+            end case;
+         when 5_000 .. 9_999 =>
+            -- Loan Account
+            Loan_Rate : Float;
+            case Term_Account is
+               when False =>
+                  null;
+               when True  =>
+                  Repayment_Date : Ada.Calendar.Time;
+            end case;
+         end case;
+   end record;
+
+   Extended_Account : Extended_Account_Type;
+
+begin
+
+   Report.Test
+     ("C431003",
+      "Check that the association in a record aggregate for a discriminant" &
+      " with a default can be given by <>");
+
+   -- Check that the default discriminant value of 1 has been used
+   if Poly_1.N /= 1 then
+      Report.Failed
+        ("Discriminant not as expected, 1-D array, discriminant set to" &
+         " default at creation");
+   end if;
+
+   -- Discriminant returned to default by assignment
+   Poly_2 := (N => <>, A => <>);
+
+   -- Check that the default discriminant value of 1 has been used
+   if Poly_2.N /= 1 then
+      Report.Failed
+        ("Discriminant not as expected, 1-D array, discriminant reset to" &
+         " default at subsequent assignment");
+   end if;
+
+
+   -- Check that the default discriminant values of 2 and 3 have been used
+   if Matrix_Rec.Rows    /= 2 and then
+      Matrix_Rec.Columns /= 3 then
+      Report.Failed
+        ("Discriminants not as expected, rows and columns both set to" &
+         " defaults at creation");
+   end if;
+
+   Matrix_Rec := (Rows    => <>,
+                  Columns => <>,
+                  Mat     => (others => (others => 0.0)));
+
+   -- Check that the default discriminant values of 2 and 3 have been used
+   if Matrix_Rec.Rows    /= 2 and then
+      Matrix_Rec.Columns /= 3 then
+      Report.Failed
+        ("Discriminants not as expected, rows and columns both set to" &
+         " defaults at subsequent assignment");
+   end if;
+
+   Matrix_Rec := (Rows    => 5,
+                  Columns => <>,
+                  Mat     => (others => (others => 0.0)));
+
+   -- Check that the discriminant values of specific 5 and default 3 have been
+   -- used
+   if Matrix_Rec.Rows    /= 5 and then
+      Matrix_Rec.Columns /= 3 then
+      Report.Failed
+        ("Discriminants not as expected, rows specific and columns using" &
+         " default");
+   end if;
+
+   Matrix_Rec := (Rows    => <>,
+                  Columns => 4,
+                  Mat     => (others => (others => 0.0)));
+
+   -- Check that the discriminant values of default 2 and specific 4 have been
+   -- used
+   if Matrix_Rec.Rows    /= 2 and then
+      Matrix_Rec.Columns /= 4 then
+      Report.Failed
+        ("Discriminants not as expected, rows using default and columns" &
+         " specific");
+   end if;
+
+   Matrix_Rec := (others => <>);
+
+   -- Check that the default discriminant values of 2 and 3 have been used
+   if Matrix_Rec.Rows    /= 2 and then
+      Matrix_Rec.Columns /= 3 then
+      Report.Failed
+        ("Discriminants not as expected, rows and columns both set to" &
+         " defaults at subsequent assignment with others");
+   end if;
+
+   Matrix_Rec := (Rows    => 6, others => <>);
+
+   -- Check that the discriminant values of specific 5 and default 3 have been
+   -- used
+   if Matrix_Rec.Rows    /= 6 and then
+      Matrix_Rec.Columns /= 3 then
+      Report.Failed
+        ("Discriminants not as expected, rows specific and columns using" &
+         " default via others");
+   end if;
+
+
+   Account := (Account_Number => <>, Savings_Rate => <>);
+
+   -- Check that the default discriminant value of 1 has been used
+   if Account.Account_Number /= 1 then
+      Report.Failed
+        ("Discriminant not as expected, variant parts");
+   end if;
+
+
+   Extended_Account := (Account_Number => <>,
+                        Savings_Rate   => <>,
+                        Term_Account   => <>);
+
+   -- Check that the default discriminant values of 1 and False have been used
+   if Extended_Account.Account_Number /= 1 and then
+      not Extended_Account.Term_Account then
+      Report.Failed
+        ("Discriminants not as expected, outer and inner both using defaults");
+   end if;
+
+   Extended_Account := (Account_Number => 5_000,
+                        Loan_Rate      => <>,
+                        Term_Account   => <>);
+
+   -- Check that the discriminant values of specific 5000 and default False
+   -- have been used
+   if Extended_Account.Account_Number /= 5_000 and then
+      not Extended_Account.Term_Account then
+      Report.Failed
+        ("Discriminants not as expected, outer specific and inner using" &
+         " default");
+   end if;
+
+   Extended_Account := (Account_Number => <>,
+                        Savings_Rate   => <>,
+                        Term_Account   => True,
+                        Maturity_Date  => Ada.Calendar.Clock); -- Short lived!
+
+   -- Check that the discriminant values of default 1 and specific True have
+   -- been used
+   if Extended_Account.Account_Number /= 1 and then
+      Extended_Account.Term_Account then
+      Report.Failed
+        ("Discriminants not as expected, outer using default and inner using" &
+         " specific");
+   end if;
+
+   Extended_Account := (others => <>);
+
+   -- Check that the default discriminant values of 1 and False have been used
+   if Extended_Account.Account_Number /= 1 and then
+      not Extended_Account.Term_Account then
+      Report.Failed
+        ("Discriminants not as expected, outer and inner both using defaults" &
+         " via others");
+   end if;
+
+   Extended_Account := (Account_Number => 7_000, others => <>);
+
+   -- Check that the discriminant values of specific 7000 and default False
+   -- have been used
+   if Extended_Account.Account_Number /= 7_000 and then
+      not Extended_Account.Term_Account then
+      Report.Failed
+        ("Discriminants not as expected, outer specific and inner using" &
+         " default via others");
+   end if;
+
+   Report.Result;
+
+end C431003;

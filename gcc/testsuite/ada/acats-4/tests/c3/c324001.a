@@ -1,0 +1,514 @@
+-- C324001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--     Check usage of aspects Static_Predicate and Dynamic_Predicate.
+--     Verify that the appropriate predicate checks are performed
+--     upon assignment, declarations of objects with explicit or
+--     default initialization and the passing of parameters.
+--     Check predicates specified for enumeration, integer, record,
+--     and access types.
+--
+-- TEST DESCRIPTION:
+--     Several types, subtypes and associated predicates are defined.
+--     Functions returning values that do and do not satisfy those
+--     predicates are defined. A series of variable declarations,
+--     assignments and procedure calls verify that the defined predicates
+--     are properly checked, with Assertion_Error raised when appropriate.
+--
+--     This test checks by-copy parameter passing checks. See C324002 for
+--     by-reference parameter passing checks.
+--
+-- CHANGE HISTORY:
+--        30 Sep 10   RAD    Created test (for AdaCore).
+--        03 Mar 14   GSM    Adapted to ACATS format.
+--        10 Mar 14   RLB    Corrected "out" and "in out" test cases.
+--                           Corrected typos and comments. Issued test.
+--        11 Mar 14   RLB    Improved P3 case with a suggestion from Bob Duff.
+--        13 Mar 15   RLB    Eliminate overlong lines.
+--
+with Ada.Assertions; use Ada.Assertions;
+package c324001_0 is
+
+   pragma Assertion_Policy (Check);
+
+   type Even is range 0 .. Integer'Last with
+     Dynamic_Predicate => (Even mod 2) = 0;
+
+   type Color is
+     (Red, Orange, Yellow, Green, Blue, Indigo, Violet);
+   subtype RGB is Color with
+     Static_Predicate => RGB = Red or RGB in Green .. Blue;
+   subtype Other_Color is Color with
+     Static_Predicate => Other_Color not in RGB;
+
+   subtype Another_Color is Other_Color;
+   function Not_Another_One return Color;
+   -- Returns a value that violates Another_Color's predicate
+
+   type No_Defaults is private;
+   subtype No_Defaults_P is No_Defaults with
+     Dynamic_Predicate => Is_Good (No_Defaults_P);
+
+   function Is_Good (X : No_Defaults) return Boolean;
+   function Good return No_Defaults;
+   function Bad return No_Defaults;
+   -- Is_Good(Good) is True; Is_Good(Bad) is False.
+
+   type Defaults is private;
+   subtype Defaults_P is Defaults with
+     Dynamic_Predicate => Is_Good (Defaults_P);
+
+   function Is_Good (X : Defaults) return Boolean;
+   function Good return Defaults;
+   function Bad return Defaults;
+
+   type String_Ref is access all String;
+
+   type Node (Discrim : Color) is
+      record
+         case Discrim is
+            when Red =>
+               Red_Comp : Integer;
+            when others =>
+               Others_Color_Comp : Integer;
+         end case;
+      end record;
+
+   type Ref is access all Node;
+   subtype RGB_Ref is Ref with
+     Dynamic_Predicate => RGB_Ref.all.Discrim in RGB;
+   subtype Another_Color_Ref is Ref with
+     Dynamic_Predicate =>
+       Another_Color_Ref.all.Discrim
+         in Another_Color;
+
+private
+
+   type No_Defaults is
+      record
+         Comp : Integer;
+         Acc : String_Ref;    -- Implicit 'null' default doesn't count!
+      end record;
+
+   type Defaults is
+      record
+         Comp : Integer := 0;
+         Acc : String_Ref := null;
+      end record;
+
+end c324001_0;
+
+package body c324001_0 is
+
+   pragma Assertion_Policy (Check);
+
+   function Not_Another_One return Color is
+   begin
+      return Result : constant Color := Red do
+         pragma Assert (Result in RGB);
+         pragma Assert
+           (Result not in Another_Color);
+      end return;
+   end Not_Another_One;
+
+   function Is_Good
+     (X : No_Defaults) return Boolean is
+   begin
+      return X.Acc /= null;
+   end Is_Good;
+
+   function Good return No_Defaults is
+   begin
+      return Result : constant No_Defaults
+        := (Comp => 0, Acc => new String'("xxx"))
+      do
+         pragma Assert (Result in No_Defaults_P);
+         pragma Assert (Is_Good (Result));
+      end return;
+   end Good;
+
+   function Bad return No_Defaults is
+   begin
+      return Result : constant No_Defaults
+        := (Comp => 0, Acc => null)
+      do
+         pragma Assert (Result not in No_Defaults_P);
+         pragma Assert (not Is_Good (Result));
+      end return;
+   end Bad;
+
+   function Is_Good (X : Defaults) return Boolean is
+   begin
+      return X.Acc /= null;
+   end Is_Good;
+
+   function Good return Defaults is
+   begin
+      return Result : constant Defaults
+        := (Comp => 0, Acc => new String'("xxx"))
+      do
+         pragma Assert (Is_Good (Result));
+         pragma Assert (Result in Defaults_P);
+      end return;
+   end Good;
+
+   function Bad return Defaults is
+   begin
+      return Result : constant Defaults
+        := (Comp => 0, Acc => null)
+      do
+         pragma Assert (not Is_Good (Result));
+         pragma Assert (Result not in Defaults_P);
+      end return;
+   end Bad;
+
+end C324001_0;
+
+
+with Report;
+with C324001_0; use c324001_0;
+with Ada.Assertions; use Ada.Assertions;
+procedure C324001 is
+
+   pragma Assertion_Policy (Check);
+
+   X1 : RGB;                          -- OK; predicate not checked
+
+   X2 : Another_Color;                -- OK; predicate not checked
+
+   X3 : No_Defaults;                  -- OK; no predicate
+
+   X4 : No_Defaults_P;                -- OK; predicate not checked
+
+   X5 : Defaults;                     -- OK; no predicate
+
+   X6 : RGB := Not_Another_One;       -- OK; predicate is True
+
+   X7 : No_Defaults := Bad;           -- OK; no predicate
+
+   X8 : No_Defaults_P := Good;        -- OK; predicate is True
+
+   X9 : Defaults := Bad;              -- OK; no predicate
+
+   X10 : Defaults_P := Good;          -- OK; predicate is True
+
+   Even_Var_1 : Even;                 -- OK; predicate not checked
+
+   Even_Var_2 : Even := 100;          -- OK; predicate is True
+
+begin
+
+   Report.Test ("C324001",
+                "Check predicate checks are performed for static and " &
+                "dynamic subtype predicates");
+   begin
+      Even_Var_1 := 1;
+      Report.Failed ("Predicate should fail on assignment of 1 to Even_Var_1");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   begin
+      Even_Var_1 := 0;                 -- OK; predicate is True
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate not true on assignment of 2 to Even_Var_1");
+   end;
+
+   begin
+      declare
+         Even_Var_3 : Even := Even_Var_2 + 1;
+      begin
+         Report.Failed ("Predicate should fail on initialization of " &
+                        "Even_Var_3");
+      end;
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   ----------------
+
+   begin
+      declare
+         Var : Another_Color := Not_Another_One;
+      begin
+         Report.Failed ("Predicate specified for Another_Color should fail");
+      end;
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   begin
+      declare
+         Var : Defaults_P := Bad;
+      begin
+         Report.Failed ("Predicate specified for Defaults_P should fail - "
+                   & "explicit initialization");
+      end;
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   begin
+      declare
+         Var : No_Defaults_P := Bad;
+      begin
+         Report.Failed ("Predicate specified for No_Defaults_P should fail - "
+                   & "explicit initialization");
+      end;
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   begin
+      declare
+         Var : Defaults_P;         -- Default init violates predicate
+      begin
+         Report.Failed ("Predicate specified for Defaults_P should fail - "
+                   & "default initialization");
+      end;
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   begin
+      X1 := Not_Another_One;        -- OK; predicate is True
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate not true on assignment to X1");
+   end;
+
+   begin
+      X2 := Not_Another_One;
+      Report.Failed ("Predicate specified for Another_Color should fail");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   begin
+      X3 := Bad;                    -- OK; no predicate
+   exception
+      when Assertion_Error =>
+         Report.Failed ("No predicate specified for No_Defaults - X3");
+   end;
+
+   begin
+      X4 := Good;
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate not true for assignment of Good to X4");
+   end;
+
+   begin
+      X4 := Bad;
+      Report.Failed ("Predicate specified for No_Defaults_P should fail - "
+                & "assignment to X4");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   begin
+      X5 := Bad;                    -- OK; no predicate
+   exception
+      when Assertion_Error =>
+         Report.Failed ("No predicate specified for Defaults - X5");
+   end;
+
+   begin
+      X6 := Not_Another_One;        -- OK; predicate is True
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate is false - assignment to X6");
+   end;
+
+   begin
+      X7 := Bad;                    -- OK; no predicate
+   exception
+      when Assertion_Error =>
+         Report.Failed ("No predicate specified for No_Defaults - X7");
+   end;
+
+   begin
+      X8 := Good;                   -- OK; predicate is True
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate is false - assignment to X8");
+   end;
+
+   begin
+      X8 := Bad;
+      Report.Failed ("Predicate specified for No_Defaults_P should fail - "
+                & "assignment to X8");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   begin
+      X9 := Bad;                    -- OK; no predicate
+   exception
+      when Assertion_Error =>
+         Report.Failed ("No predicate specified for Defaults - X9");
+   end;
+
+   begin
+      X10 := Good;                  -- OK; predicate is True
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate is false - assignment to X10");
+   end;
+
+   begin
+      X10 := Bad;
+      Report.Failed ("Predicate specified for Defaults_P should fail - "
+                & "assignment to X10");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   ----------------
+
+   declare
+      procedure P1 (X : Another_Color_Ref) is
+      begin
+         null;
+      end P1;
+
+      Var : Ref := new Node(Red);
+   begin
+      P1 (Var); -- Violate predicate of 'in' param
+      Report.Failed ("Predicate for Another_Color_Ref should fail - P1");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   declare
+      procedure P2 (X : out Another_Color_Ref) is
+      begin
+         null;
+      end P2;
+
+      Var : Ref;
+   begin
+      P2 (Var); -- No predicate check upon the call, and the check on the
+          -- return is for subtype Ref, which has no predicate.
+   exception
+      when Constraint_Error =>
+          Report.Failed ("Constraint_Error raised by unnecessary predicate "
+               & "evaluation - P2");
+   end;
+
+   declare
+      procedure P3 (X : out Ref) is
+      begin
+         X := new Node(Blue);
+      end P3;
+
+      Var : Another_Color_Ref; -- Predicate not checked here.
+   begin
+      P3 (Var); -- No predicate check needed for the call, but the
+          -- predicate check will fail upon return.
+      Report.Failed ("Predicate is false - access out parameter "
+               & "- P3");
+   exception
+      when Constraint_Error =>
+          Report.Failed ("Constraint_Error raised by unnecessary predicate "
+               & "evaluation - P3");
+      when Assertion_Error =>
+          null; -- OK
+   end;
+
+   declare
+      procedure P4 (X : out Another_Color_Ref) is
+      begin
+         X := new Node(Orange);
+      end P4;
+
+      Var : Ref;
+   begin
+      P4 (Var);     -- OK; don't check predicate on the way 'in'
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate false upon return from P4");
+      when Constraint_Error =>
+         Report.Failed ("Predicate evaluated prior to execution of P4");
+   end;
+
+   declare
+      procedure P5 (X : in out Another_Color_Ref) is
+      begin
+         X := new Node(Orange); -- Can't get here
+         Report.Failed ("Constraint_Error not raised while calling P5");
+      end P5;
+
+      Var : Ref;
+   begin
+      P5 (Var);  -- Predicate of 'in out' param raises Constraint_Error
+      Report.Failed ("Constraint_Error not raised during evaluation of "
+                & "predicate - P5");
+   exception
+      when Constraint_Error =>
+         null; -- OK
+   end;
+
+   declare
+      procedure P6 (X : in out Ref) is
+      begin
+         X := new Node(Blue);
+      end P6;
+
+      Var : Another_Color_Ref := new Node(Orange);
+   begin
+      P6 (Var);  -- Outbound predicate of 'in out' param is false.
+      Report.Failed ("Predicate is false - access out parameter "
+               & "- P6");
+   exception
+      when Assertion_Error =>
+          null; -- OK
+   end;
+
+   Report.Result;
+
+end C324001;

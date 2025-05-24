@@ -1,0 +1,96 @@
+-- C611B032.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--     See C611B030.A.
+--
+-- TEST DESCRIPTION:
+--     See C611B030.A.
+--
+-- TEST FILES:
+--     This test consists of the following files:
+--         C611B030.A
+--         C611B031.A
+--      -> C611B032.A
+--         C611B033.AM
+--
+-- CHANGE HISTORY:
+--      27 Dec 16   JAC     Initial pre-release version.
+--
+--!
+package C611B030.Child.Grandchild is
+
+   pragma Assertion_Policy (Check);
+
+   type Annotated_Event_Record is new Event_Record with private;
+
+   overriding
+   function Count1 (Annotated_Event : in Annotated_Event_Record)
+      return Integer;
+
+   overriding
+   function Count2 (Annotated_Event : in Annotated_Event_Record)
+      return Integer;
+
+private
+
+   type Annotated_Event_Record is new Event_Record with record
+      Details : String (1 .. 20) := "Info about the event";
+   end record;
+
+end C611B030.Child.Grandchild;
+
+with F611B00;
+
+package body C611B030.Child.Grandchild is
+
+   function Count1 (Annotated_Event : in Annotated_Event_Record)
+      return Integer is
+   begin
+      F611B00.TC_Log_Annotated_Event_Record_Count1_Called (
+         Annotated_Event_Record'Class(Annotated_Event)'Tag);
+
+      return Annotated_Event.No_Of_Occurrences;
+   end Count1;
+
+   function Count2 (Annotated_Event : in Annotated_Event_Record)
+      return Integer is
+   begin
+      F611B00.TC_Log_Annotated_Event_Record_Count2_Called (
+         Annotated_Event_Record'Class(Annotated_Event)'Tag);
+
+      return Annotated_Event.No_Of_Occurrences;
+   end Count2;
+
+end C611B030.Child.Grandchild;

@@ -1,0 +1,393 @@
+-- CC51011.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--      Check that a generic unit with a tagged incomplete formal type can be
+--      instantiated with an incomplete type whose completion is given in
+--      a body, and that such instantiations can be passed as actuals
+--      to formal packages.
+--
+--      Check that a parameter of a tagged incomplete type can be passed
+--      directly as a parameter. Part 3: formal tagged incomplete
+--      types.
+--
+-- TEST DESCRIPTION:
+--      A generic package (CC51011_0), modeling a set signature, is declared
+--      with formal incomplete type parameters and with several formal
+--      operations with parameters or results of the formal incomplete type.
+--      The generic package is instantiated in the private part of a
+--      package (CC51011_2) where a type is declared with a "Taft-Amendment"
+--      incomplete type (that is, one where the completion is given in the
+--      body). The instance is associated with a formal package in another
+--      instantiation of a generic set processing package (CC51011_1) given
+--      in the body of a child unit. The functioning of the set abstraction is
+--      tested by making calls to the formal operations of the formal package
+--      inside of CC51011_1.
+--
+--      This test models using a signature to implement part of a subsystem
+--      of a larger abstraction. This might be necessary if the larger
+--      abstraction needs to be split into multiple packages for managability,
+--      without exposing the core implementation to all of the subsystems.
+--
+-- CHANGE HISTORY:
+--      06 Jan 2015   RLB     Created this version using basic layout of
+--                            original test.
+--      09 Jan 2015   RLB     Revised test to fix errors.
+--      12 Jan 2015   RLB     Revised test again to fix more errors.
+--      23 Jan 2015   RLB     Revised test again to fix one more error.
+--      25 Jun 2024   RLB     Revised test to reflect the approval of
+--                            AI12-0155-1,
+--      06 Jul 2024   RLB     Corrected Union and Intersection specs to be
+--                            similar to those of the containers.
+--
+--!
+
+package CC51011_0 is
+
+   generic
+      type Element;
+      type Set is tagged;
+      with procedure Add (Elem : Element; To_Set : in out Set) is <>;
+      with procedure Union (Target : in out Set; Source : in Set) is <>;
+      with procedure Intersection (Target : in out Set;
+                                   Source : in Set) is <>;
+   package Set_Signature is
+
+   end Set_Signature;
+
+end CC51011_0;
+
+
+     --==================================================================--
+
+with CC51011_0;
+
+package CC51011_1 is
+
+   generic
+      type Element is private;
+
+      type Set_Type is tagged;
+
+      with package Sets
+        is new CC51011_0.Set_Signature
+                 (Element => Element, Set => Set_Type, others => <>);
+   package Set_Processing is
+
+      use Sets;
+
+      procedure Test
+        (Set_1 : in out Set_Type;
+         Set_2 : Set_Type;
+         Set_3 : Set_Type;
+         Elt   : Element);
+
+   end Set_Processing;
+
+end CC51011_1;
+
+
+     --==================================================================--
+
+
+package body CC51011_1 is
+
+   package body Set_Processing is
+
+      procedure Test
+        (Set_1 : in out Set_Type;
+         Set_2 : Set_Type;
+         Set_3 : Set_Type;
+         Elt   : Element)
+      is
+      begin
+         Intersection (Target => Set_1, Source => Set_2);
+
+         Union (Target => Set_1, Source => Set_3);
+
+         Add (Elt, Set_1);
+      end Test;
+
+   end Set_Processing;
+
+end CC51011_1;
+
+
+     --==================================================================--
+
+with CC51011_0;
+package CC51011_2 is
+
+   type Bag_Type is private;
+
+   procedure Add (Bag : in out Bag_Type; Elem : Integer);
+
+private
+
+   type Set is tagged;
+
+   type Bag_Type is access Set;
+
+   package Inner is
+      -- These can't be primitive for Set, else 3.10.1(9.3/2) is violated.
+
+      procedure Add (Elem : Integer; To_Set : in out Set);
+
+      procedure Union (Target : in out Set; Source : in Set);
+
+      procedure Intersection (Target : in out Set; Source : in Set);
+
+      function "=" (Left, Right : Set) return Boolean;
+
+      package The_Set_Signature
+         is new CC51011_0.Set_Signature (Integer, Set);
+   end Inner;
+   -- AI12-0155-1 says that incomplete types like Set are never frozen, so
+   -- these declarations are legal.
+end CC51011_2;
+
+
+     --==================================================================--
+
+
+package body CC51011_2 is
+
+   type Set_Range is range 0 .. 20;
+
+   type Integer_Array is
+      array (Set_Range range 1 .. Set_Range'Last) of Integer;
+
+   type Set is tagged record
+      Last_Integer : Set_Range := 0;
+      Integers     : Integer_Array;
+   end record;
+
+   package body Inner is
+      procedure Add (Elem : Integer; To_Set : in out Set) is
+         Found : Boolean := False;
+      begin
+         for E in To_Set.Integers'first .. To_Set.Last_Integer loop
+            if To_Set.Integers (E) = Elem then
+               Found := True;
+               exit;
+            end if;
+         end loop;
+
+         if not Found then
+            To_Set.Last_Integer := To_Set.Last_Integer + 1;
+            To_Set.Integers (To_Set.Last_Integer) := Elem;
+         end if;
+      end Add;
+
+      procedure Union (Target : in out Set; Source : in Set) is
+         Found  : Boolean;
+      begin
+         for ES in Source.Integers'First .. Source.Last_Integer loop
+            Found := False;
+
+            for ET in Target.Integers'First .. Target.Last_Integer loop
+               if Target.Integers (ET) = Source.Integers (ES) then
+                  Found := True;
+                  exit;
+               end if;
+            end loop;
+
+            if not Found then -- Add item to Target.
+               Target.Last_Integer := Target.Last_Integer + 1;
+               Target.Integers (Target.Last_Integer) := Source.Integers (ES);
+            end if;
+         end loop;
+      end Union;
+
+      procedure Intersection (Target : in out Set; Source : in Set) is
+         Found  : Boolean;
+      begin
+         for ET in reverse Target.Integers'First .. Target.Last_Integer loop
+            Found := False;
+
+            for ES in Source.Integers'First .. Source.Last_Integer loop
+               if Target.Integers (ET) = Source.Integers (ES) then
+                  Found := True;
+                  exit;
+               end if;
+            end loop;
+
+            if not Found then -- Remove item from Target.
+               Target.Last_Integer := Target.Last_Integer - 1;
+               for ED in ET .. Target.Last_Integer loop
+                  Target.Integers (ED) := Target.Integers (ED+1);
+               end loop;
+            end if;
+         end loop;
+      end Intersection;
+
+      function "=" (Left, Right : Set) return Boolean is
+      begin
+         if Left.Last_Integer /= Right.Last_Integer then
+            return False;
+         end if;
+
+         for ER in Right.Integers'First .. Right.Last_Integer loop
+            declare
+               Found_Integer : Boolean := False;
+            begin
+               for EL in Left.Integers'First .. Left.Last_Integer loop
+                  if Left.Integers (EL) = Right.Integers (ER) then
+                     Found_Integer := True;
+                     exit;
+                  end if;
+               end loop;
+
+               if not Found_Integer then
+                  return False;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end "=";
+   end Inner;
+
+   procedure Add (Bag : in out Bag_Type; Elem : Integer) is
+   begin
+      if Bag = null then
+         Bag := new Set;
+      end if;
+      Inner.Add (Elem, Bag.all);
+   end Add;
+
+end CC51011_2;
+
+
+     --==================================================================--
+
+package CC51011_2.Child is
+
+   procedure Do_Test (S1, S2, S3, TC_Result : Bag_Type);
+
+end CC51011_2.Child;
+
+
+     --==================================================================--
+
+with CC51011_1;
+with Report;
+package body CC51011_2.Child is
+
+   package Integer_Set_Processing
+      is new CC51011_1.Set_Processing (Integer, Set, Inner.The_Set_Signature);
+         -- Set and The_Set_Signiture are visible here.
+
+   procedure Do_Test (S1, S2, S3, TC_Result : Bag_Type) is
+
+      use CC51011_2.Inner;
+
+      Elt_Value : constant Integer := 17;
+
+   begin
+      --  Compute "Union (Intersection (S1.all, S2.all), S3.all) + E"
+
+      Integer_Set_Processing.Test (S1.all, S2.all, S3.all, Elt_Value);
+
+      --if S1.all /= TC_Result.all then -- Don't want predefined "=".
+      if Inner."/=" (S1.all, TC_Result.all) then
+         Report.Failed ("Wrong result set from Integer set operations");
+      end if;
+   end Do_Test;
+
+end CC51011_2.Child;
+
+
+     --==================================================================--
+
+
+with CC51011_2.Child;
+
+with Report;
+procedure CC51011 is
+
+   Elt_Value : constant Integer := 17;
+
+   S1 : CC51011_2.Bag_Type;
+   S2 : CC51011_2.Bag_Type;
+   S3 : CC51011_2.Bag_Type;
+
+   TC_Result_Set : CC51011_2.Bag_Type;
+
+begin
+   Report.Test ("CC51011", "Check that a generic unit with incomplete " &
+                "formal types can be instantiated with an incomplete "  &
+                "type whose completion is given in a body, " &
+                "and that such instantiations can be passed as " &
+                "actuals to formal packages");
+
+   --  Initialize S1 to { 1 .. 10 }
+
+   for I in Integer range 1 .. 10 loop
+      CC51011_2.Add (S1, I);
+   end loop;
+
+   --  Initialize S2 to { 5 .. 15 }
+
+   for I in Integer range 5 .. 15 loop
+      CC51011_2.Add (S2, I);
+   end loop;
+
+   --  Initialize S3 to { 20 .. 25 }
+
+   for I in Integer range 20 .. 25 loop
+      CC51011_2.Add (S3, I);
+   end loop;
+
+   --  Compute the result of the generic operation.
+
+   --  Initialize TC_Result_Set to { 5 .. 10, 17, 20 .. 25 },
+   --  as that is the result of
+   -- "Union (Intersection (S1, S2), S3) + 17"
+
+   for I in Integer range 5 .. 10 loop
+      CC51011_2.Add (TC_Result_Set, I);
+   end loop;
+
+   for I in Integer range 20 .. 25 loop
+      CC51011_2.Add (TC_Result_Set, I);
+   end loop;
+
+   CC51011_2.Add (TC_Result_Set, Elt_Value);
+
+   CC51011_2.Child.Do_Test (S1, S2, S3, TC_Result_Set);
+
+   Report.Result;
+end CC51011;
+

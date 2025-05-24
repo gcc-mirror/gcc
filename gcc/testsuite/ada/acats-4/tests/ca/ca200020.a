@@ -1,0 +1,70 @@
+-- CA200020.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687 and
+--     F08630-91-C-0015, the U.S. Government obtained unlimited rights in the
+--     software and documentation contained herein.  Unlimited rights are
+--     defined in DFAR 252.227-7013(a)(19).  By making this public release,
+--     the Government intends to confer upon all recipients unlimited rights
+--     equal to those held by the Government.  These rights include rights to
+--     use, duplicate, release or disclose the released technical data and
+--     computer software in whole or in part, in any manner and for any purpose
+--     whatsoever, and to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a partition can be created even if the environment contains
+--      two units with the same name. (This is rule 10.2(19)).
+--
+-- TEST DESCRIPTION:
+--      Declare the a parent package (CA20002_0). Declare a child package
+--      (CA20002_0.CA20002_1). Declare a subunit in the parent package body
+--      (CA20002_1). Declare a main subprogram that does NOT include the
+--      child package. Insure that this partition can be created.
+--
+--      This test is intended to test the effects of program maintenance.
+--      After the programmer receives an error from creating a partition
+--      like that tested in test LA20001, the programmer may then repair
+--      the partition by eliminating the reference of the child unit. The
+--      partition should be able to be created.
+--
+--      To build this test:
+--         1) Compile the file CA200020 (and include the results in the
+--            program library).
+--         2) Compile the file CA200021 (and include the results in the
+--            program library).
+--         3) Compile the file CA200022 (and include the results in the
+--            program library).
+--         4) Build an executable image, and run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--      -> CA200020.A
+--         CA200021.A
+--         CA200022.AM
+--
+-- CHANGE HISTORY:
+--      27 Jan 99   RLB     Initial test.
+--      20 Mar 00   RLB     Removed special requirements, because there
+--                          aren't any.
+--!
+
+package CA20002_0 is
+   procedure Do_a_Little (A : out Integer);
+
+end CA20002_0;
+
+package CA20002_0.CA20002_1 is
+   My_Global : Integer;
+end CA20002_0.CA20002_1;
+

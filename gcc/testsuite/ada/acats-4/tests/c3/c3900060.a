@@ -1,0 +1,159 @@
+-- C3900060.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      See C3900063.AM.
+--
+-- TEST DESCRIPTION:
+--      See C3900063.AM.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--
+--      => C3900060.A
+--         C3900061.A
+--         C3900062.A
+--         C3900063.AM
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      04 Jun 96   SAIC    ACVC 2.1: Modified prologue. Added pragma Elaborate
+--                          for Ada.Calendar.
+--
+--!
+
+with Ada.Calendar;
+pragma Elaborate (Ada.Calendar);
+
+package C3900060 is  -- Alert system abstraction.
+
+
+   -- Declarations used by component Arrival_Time.
+
+   Default_Time : constant Ada.Calendar.Time :=
+                    Ada.Calendar.Time_Of (1901, 1, 1);
+   Alert_Time   : constant Ada.Calendar.Time :=
+                    Ada.Calendar.Time_Of (1991, 6, 15);
+
+
+   -- Declarations used by component Display_On and procedure Display.
+
+   type Device_Enum      is (Null_Device, Teletype, Console, Big_Screen);
+   type Display_Counters is array (Device_Enum) of Natural;
+
+   Display_Count_For : Display_Counters := (others => 0);
+
+
+
+   type Alert_Type is tagged private;                 -- Root tagged type.
+
+   procedure Set_Display (A : in out Alert_Type;      -- To be inherited by
+                          D : in     Device_Enum);    -- all derivatives.
+
+   procedure Display (A : in Alert_Type);             -- To be inherited by
+                                                      -- all derivatives.
+
+   procedure Handle (A : in out Alert_Type);          -- To be overridden by
+                                                      -- all derivatives.
+
+
+   -- The following functions are needed to verify the values of the
+   -- root tagged type's private components.
+
+   function Get_Time (A: Alert_Type) return Ada.Calendar.Time;
+
+   function Get_Display (A: Alert_Type) return Device_Enum;
+
+   function Initial_Values_Okay (A : in Alert_Type)
+     return Boolean;
+
+   function Bad_Final_Values (A : in Alert_Type)
+     return Boolean;
+
+private
+
+   type Alert_Type is tagged record                    -- Root tagged type.
+      Arrival_Time : Ada.Calendar.Time := Default_Time;
+      Display_On   : Device_Enum   := Null_Device;
+   end record;
+
+
+end C3900060;
+
+
+     --==================================================================--
+
+
+package body C3900060 is
+
+
+   procedure Set_Display (A : in out Alert_Type;
+                          D : in     Device_Enum) is
+   begin
+      A.Display_On := D;
+   end Set_Display;
+
+
+   procedure Display (A : in Alert_Type) is
+   begin
+      Display_Count_For (A.Display_On) := Display_Count_For (A.Display_On) + 1;
+   end Display;
+
+
+   procedure Handle (A : in out Alert_Type) is
+   begin
+      A.Arrival_Time := Alert_Time;
+      Display (A);
+   end Handle;
+
+
+   function Get_Time (A: Alert_Type) return Ada.Calendar.Time is
+   begin
+      return A.Arrival_Time;
+   end Get_Time;
+
+
+   function Get_Display (A: Alert_Type) return Device_Enum is
+   begin
+      return A.Display_On;
+   end Get_Display;
+
+
+   function Initial_Values_Okay (A : in Alert_Type) return Boolean is
+   begin
+      return (A = (Arrival_Time => Default_Time,         -- Check "=" operator
+                   Display_On   => Null_Device));        -- availability.
+   end Initial_Values_Okay;                              -- Aggregate with
+                                                         -- named associations.
+
+   function Bad_Final_Values (A : in Alert_Type) return Boolean is
+   begin
+      return (A /= (Alert_Time, Null_Device));           -- Check "/=" operator
+                                                         -- availability.
+   end Bad_Final_Values;                                 -- Aggregate with
+                                                         -- positional assoc.
+
+end C3900060;

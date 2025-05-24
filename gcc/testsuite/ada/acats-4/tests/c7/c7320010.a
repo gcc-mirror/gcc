@@ -1,0 +1,122 @@
+-- C7320010.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+-- OBJECTIVE:
+--      Check that when the assertion policy requires checks and there is a
+--      view conversion from a type to an ancestor of the type, an invariant
+--      check is performed after assigning to the view conversion and after
+--      a call where the view conversion is an actual for an in out or out
+--      parameter.
+--
+-- TEST DESCRIPTION:
+--      The only way to tell if an invariant check is made is to check that
+--      one fails. We also test that the check doesn't fail when the object
+--      is OK.
+--
+--      We give a type invariant to an extension (T) of the root type
+--      (T_Ancestor) of the hierarchy. The type invariant is that successive
+--      fields increase in value. We test various view conversions to see
+--      if the checks are made as needed.
+--
+--      The primary reason behind this check is to ensure that appropriate
+--      checks are made for inherited subprograms (the formal model is that
+--      an inherited subprogram is called with appropriate view conversions).
+--      Thus we test both explicit view conversions as well as the implicit
+--      view conversions present in inherited subprograms.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--      -> C7320010.A
+--         C7320011.A
+--         C7320012.AM
+--
+-- CHANGE HISTORY:
+--      28 Dec 14   JAC     Initial pre-release version.
+--      16 Jan 15   RLB     Renamed test parts for release, improved comments,
+--                          made type private to be more realistic and added
+--                          Val and Set to support that and let us test
+--                          parameter cases.
+--
+--!
+package C7320010 is
+
+   pragma Assertion_Policy (Check);
+
+   type T_Ancestor is tagged private;
+
+   function Init return T_Ancestor;
+
+   function Val (Obj : in T_Ancestor) return Integer;
+
+   procedure Set (Obj : out T_Ancestor; Val : in Integer);
+
+   procedure Inc (Obj : in out T_Ancestor);
+
+private
+
+   type T_Ancestor is tagged record
+      A : Integer := 1;
+   end record;
+
+   function Val (Obj : in T_Ancestor) return Integer is (Obj.A);
+
+end C7320010;
+
+package body C7320010 is
+
+   pragma Assertion_Policy (Check);
+
+   function Init return T_Ancestor is
+   begin
+
+      return (A => 1);
+
+   end Init;
+
+   procedure Set (Obj : out T_Ancestor; Val : in Integer) is
+   begin
+
+      Obj.A := Val;
+
+   end Set;
+
+   procedure Inc (Obj : in out T_Ancestor) is
+   begin
+
+      Obj.A := Obj.A + 1;
+
+   end Inc;
+
+end C7320010;
+

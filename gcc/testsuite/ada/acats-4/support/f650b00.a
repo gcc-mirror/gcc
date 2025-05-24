@@ -1,0 +1,226 @@
+-- F650B00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation provides a simple background for a class family
+--      based on an abstract type. It is based on foundation F393A00,
+--      updated for testing various rules for return statements.
+--
+--  type                       procedures                  functions
+--  ----                       ----------                  ---------
+--  Object                     Initialize, Swap(abstract)  Create(abstract)
+--        Object'Class                                     Initialized
+--    Windmill is new Object   Swap, Stop, Add_Spin        Create, Spin
+--      Pump is new Windmill   Set_Rate                    Create, Rate
+--      Mill is new Windmill   Swap, Stop                  Create
+--
+-- CHANGE HISTORY:
+--      19 Aug 2015   RLB   Created foundation from F393A00.
+--
+--!
+
+package F650B00_1 is
+   type Object is abstract tagged private;
+   procedure Initialize( An_Object: in out Object );
+   function  Initialized( An_Object: Object'Class ) return Boolean;
+   procedure Swap( A,B: in out Object ) is abstract;
+   function  Create return Object is abstract;
+private
+   type Object is abstract tagged record
+     Initialized : Boolean := False;
+   end record;
+end F650B00_1;
+
+with TCTouch;
+package body F650B00_1 is
+   procedure Initialize( An_Object: in out Object ) is
+   begin
+     An_Object.Initialized := True;
+     TCTouch.Touch('a');
+   end Initialize;
+
+   function  Initialized( An_Object: Object'Class ) return Boolean is
+   begin
+     TCTouch.Touch('b');
+     return An_Object.Initialized;
+   end Initialized;
+end F650B00_1;
+
+----------------------------------------------------------------------
+
+with F650B00_1;
+package F650B00_2 is
+
+   type Rotational_Measurement is range -1_000 .. 1_000;
+   type Windmill is new F650B00_1.Object with private;
+
+   procedure Swap( A,B: in out Windmill );
+
+   function  Create return Windmill;
+
+   procedure Add_Spin( To_Mill : in out Windmill;
+                       RPMs    : in     Rotational_Measurement );
+
+   procedure Stop( Mill : in out Windmill );
+
+   function  Spin( Mill : Windmill ) return Rotational_Measurement;
+
+private
+   type Windmill is new F650B00_1.Object with
+     record
+       Spin : Rotational_Measurement := 0;
+     end record;
+end F650B00_2;
+
+with TCTouch;
+package body F650B00_2 is
+
+   procedure Swap( A,B: in out Windmill ) is
+     T : constant Windmill := B;
+   begin
+     TCTouch.Touch('c');
+     B := A;
+     A := T;
+   end Swap;
+
+   function  Create return Windmill is
+     A_Mill : Windmill;
+   begin
+     TCTouch.Touch('d');
+     return A_Mill;
+   end Create;
+
+   procedure Add_Spin( To_Mill : in out Windmill;
+                       RPMs    : in     Rotational_Measurement ) is
+   begin
+     TCTouch.Touch('e');
+     To_Mill.Spin := To_Mill.Spin + RPMs;
+   end Add_Spin;
+
+   procedure Stop( Mill : in out Windmill ) is
+   begin
+     TCTouch.Touch('f');
+     Mill.Spin := 0;
+   end Stop;
+
+   function  Spin( Mill : Windmill ) return Rotational_Measurement is
+   begin
+     TCTouch.Touch('g');
+     return Mill.Spin;
+   end Spin;
+
+end F650B00_2;
+
+----------------------------------------------------------------------
+
+with F650B00_2;
+package F650B00_3 is
+   type Pump is new F650B00_2.Windmill with private;
+   function Create return Pump;
+
+   type Gallons_Per_Revolution is digits 3;
+   procedure Set_Rate( A_Pump: in out Pump; To_Rate: Gallons_Per_Revolution);
+   function  Rate( Of_Pump: Pump ) return Gallons_Per_Revolution;
+private
+   type Pump is new F650B00_2.Windmill with
+     record
+       GPRPM : Gallons_Per_Revolution := 0.0; -- Gallons/RPM
+     end record;
+end F650B00_3;
+
+with TCTouch;
+package body F650B00_3 is
+   function Create return Pump is
+     Sump : Pump;
+   begin
+     TCTouch.Touch('h');
+     return Sump;
+   end Create;
+
+   procedure Set_Rate( A_Pump: in out Pump; To_Rate: Gallons_Per_Revolution)
+   is
+   begin
+     TCTouch.Touch('i');
+     A_Pump.GPRPM := To_Rate;
+   end Set_Rate;
+
+   function  Rate( Of_Pump: Pump ) return Gallons_Per_Revolution is
+   begin
+     TCTouch.Touch('j');
+     return Of_Pump.GPRPM;
+   end Rate;
+end F650B00_3;
+
+----------------------------------------------------------------------
+
+with F650B00_2;
+with F650B00_3;
+package F650B00_4 is
+   type Mill is new F650B00_2.Windmill with private;
+
+   procedure Swap( A,B: in out Mill );
+   function  Create return Mill;
+   procedure Stop( It: in out Mill );
+ private
+   type Mill is new F650B00_2.Windmill with
+     record
+       Pump: F650B00_3.Pump := F650B00_3.Create;
+     end record;
+end F650B00_4;
+
+with TCTouch;
+package body F650B00_4 is
+   procedure Swap( A,B: in out Mill ) is
+     T: constant Mill := A;
+   begin
+     TCTouch.Touch('k');
+     A := B;
+     B := T;
+   end Swap;
+
+   function  Create return Mill is
+     A_Mill : Mill;
+   begin
+     TCTouch.Touch('l');
+     return A_Mill;
+   end Create;
+
+   procedure Stop( It: in out Mill ) is
+   begin
+     TCTouch.Touch('m');
+     F650B00_3.Stop( It.Pump );
+     F650B00_2.Stop( F650B00_2.Windmill( It ) );
+   end Stop;
+end F650B00_4;

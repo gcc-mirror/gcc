@@ -1,0 +1,196 @@
+-- LA140162.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a separate procedure depends
+--      on a withed generic package that is changed.
+--
+-- TEST DESCRIPTION:
+--      This test declares a package which contains a generic procedure GP,
+--      the body of which is a subunit. The package also contains a procedure
+--      P which instantiates GP and calls the instance. The instance itself
+--      calls a procedure which is declared within the instance of a generic
+--      package X. The test compiles each of these compilation units and the
+--      main procedure, then compiles a new version of the generic package X
+--      (in a separate file, simulating an editing modification to the unit).
+--      Unless automatic recompilation is supported, this test should fail to
+--      link.  Otherwise, the test should recompile and link the correct
+--      version of the generic package X and report "PASSED" at execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140160 (and include the results in the
+--            program library).
+--         2) Compile the file LA140161 (and include the results in the
+--            program library).
+--         3) Compile the file LA140162 (and include the results in the
+--            program library).
+--         4) Compile the file LA140163 (and include the results in the
+--            program library).
+--         5) Attempt to build an executable image.
+--         6) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140160.A
+--         LA140161.A
+--      -> LA140162.AM
+--         LA140163.A
+--
+-- PASS/FAIL CRITERIA:    
+--      The test passes if a link time error message reports that 
+--      LA14016_4.gen_def is missing or obsolete and no executable 
+--      image results.  The test also passes if an executable image is
+--      produced and reports "PASSED" (in the case where the implementation
+--      supports automatic recompilation).            
+--
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008L baseline version
+--     16 JUN 95   SAIC        Initial version
+--     07 DEC 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions. Restructured subunits
+--                             to prevent potential Program_Error due to
+--                             premature instantiation of gen_def. Moved
+--                             LA14016_1 to a separate file. Added pragma
+--                             Elaborate to context clause of LA14016_3.
+--
+--
+--!
+
+package body LA14016_1 is
+     procedure inc (param : in out new_t) is
+     begin
+          param.count := param.count + 1; 
+     end inc;
+     function status (param : new_t) return LA14016_0.status_code is
+     begin
+          return LA14016_0.status_code(param.count);
+     end status;
+end LA14016_1;
+
+---------------------------------------------------------
+
+with LA14016_0;
+package LA14016_2 is
+     type extended is new LA14016_0.tagged_type with
+          record
+               status : LA14016_0.status_code := 10;
+          end record;
+     function status (param : extended) return LA14016_0.status_code;
+end LA14016_2;
+
+---------------------------------------------------------
+
+package body LA14016_2 is
+     function status (param : extended) return LA14016_0.status_code is
+     begin
+          return param.status;
+     end status;
+end LA14016_2;
+
+---------------------------------------------------------
+
+with LA14016_0;
+with LA14016_1;
+with LA14016_2;
+pragma Elaborate (LA14016_1);
+package LA14016_3 is new LA14016_1 (LA14016_2.extended,
+                                    LA14016_0.status_code);
+
+---------------------------------------------------------
+
+with LA14016_3;
+package LA14016_4 is
+
+   procedure gen_caller (p1 : in out LA14016_3.new_t);
+
+   generic
+      new_max : integer;
+   procedure gen_def (param : in out LA14016_3.new_t);
+
+end LA14016_4;
+
+---------------------------------------------------------
+
+package body LA14016_4 is
+   procedure gen_def (param : in out LA14016_3.new_t) is separate;
+   procedure gen_caller (p1 : in out LA14016_3.new_t) is separate;
+end LA14016_4;
+
+---------------------------------------------------------
+
+separate (LA14016_4)
+procedure gen_def (param : in out LA14016_3.new_t) is
+begin
+     param.status := LA14016_3.default_status;  --originally 0
+                                                --later change to 5
+     param.count := param.status;
+     LA14016_3.inc (param);
+end gen_def;
+
+---------------------------------------------------------
+
+separate (LA14016_4)
+procedure gen_caller (p1 : in out LA14016_3.new_t) is
+   procedure default is new gen_def (101);
+begin
+   default (p1);
+end gen_caller;
+
+---------------------------------------------------------
+
+with Report; use Report;
+with LA14016_3;
+with LA14016_4;
+with LA14016_2;
+
+procedure LA140162 is
+     E : LA14016_3.new_t; --status defaults to 10
+begin
+     Test ("LA14016","Check that a compilation unit may not depend " &
+                     "semantically on two different versions of the " &
+                     "same compilation unit.  Check the case where a " &
+                     "separate procedure depends on a withed generic " &
+                     "package that is changed");
+
+     LA14016_4.gen_caller (E);
+ 
+     if E.status = 0 then
+          Failed ("Old generic used");
+     elsif E.status = 10 then
+          Failed ("Status not updated");
+     elsif E.status /= 5 then
+          Failed ("Wrong status value used");
+     end if;
+
+     if E.count /= 6 then
+          Failed ("Count not properly handled");
+     end if;
+
+     Result;
+end LA140162;

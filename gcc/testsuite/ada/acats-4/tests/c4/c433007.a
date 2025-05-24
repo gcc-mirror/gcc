@@ -1,0 +1,263 @@
+-- C433007.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+-- OBJECTIVE
+--     Check that an aggregate with an others choice can be assigned into
+--     an array variable, even if the nominal subtype of the variable is
+--     unconstrained.
+--
+-- TEST DESCRIPTION
+--     This test is checking 4.3.3(12), which says that the constraint comes
+--     from the object rather than from some subtype. The following AARM note
+--     conforms this interpretation.
+--
+--     In this test, we have several subprograms which initialize their
+--     unconstrained array parameters with an aggregate with an others clause.
+--     In a real program, the subprograms would go on to do other processing,
+--     but we don't do so as it would have no effect on the results.
+--
+--     We also try a few direct assignments of aggregates to stand-alone
+--     objects to check that reinitialization works as expected.
+--
+--     Since this is an Ada 95 rule, we write this test only with Ada 95
+--     constructs.
+--
+-- CHANGE HISTORY:
+--      24 Sep 2022   RLB   Created using types from C433006.
+
+with Report;
+procedure C433007 is
+
+    type Color_Type is (Red, Orange, Yellow, Green, Blue, Indigo, Violet);
+
+    type My_Int is range -10000 .. 10000;
+
+    function Ident_Int (Val : in My_Int) return My_Int is
+    begin
+        return My_Int(Report.Ident_Int(Integer(Val)));
+    end Ident_Int;
+    
+    type Array_1 is array (Positive range <>) of My_Int;
+
+    procedure Clear (Str : in out String) is
+    begin
+       Str := (others => ' ');
+       -- Note: This should be equivalent to:
+       -- Str := (Str'First .. Str'Last => ' ');
+    end Clear;
+
+
+    procedure Some_Simulation (Results : in out Array_1;
+                               Which_Sim : in Color_Type) is
+       -- Do a simulation, with the results placed into Results.
+       -- Note: For the purposes of this test, we just do the
+       -- initialization of Results with an aggregate. It is possible for the
+       -- intialization to raise Constraint_Error if the array isn't large
+       -- enough (positional aggregates) or the bounds are wrong (named
+       -- aggregates).
+    begin
+       case Which_Sim is
+           when Red =>
+               Results := (2, 1, others => 0);
+           when Orange =>
+               Results := (Ident_Int(1), others => Ident_Int(0));
+           when Yellow =>
+               Results := (2 => 1, others => Ident_Int(0));
+           when Green =>
+               Results := (3 | 5 => Ident_Int(4), others => 1);
+           when Blue | Indigo | Violet =>
+               null; -- Not used.
+       end case;
+    end Some_Simulation;
+    
+begin
+
+    Report.Test ("C433007",
+                 "Check that an aggregate with an others choice can be " &
+                 "assigned into an array variable, even if the nominal " &
+                 "subtype of the variable is unconstrained");
+
+    declare
+        Str1 : String(1..5) := "ABCDE"; -- Static bounds
+        Str2 : String(Report.Ident_Int(2)..4) := "XYX"; -- Dynamic bounds
+        Str3 : String(1..10) := "ABCDEFGHIJ"; -- For slicing.
+        Str4 : String := Str3(Report.Ident_Int(3)..6);
+                                            -- Bounds from initial value.
+    begin
+        Clear (Str1);
+        if Str1 /= "     " then
+            Report.Failed ("Wrong result from Clear (A)");
+        end if;
+        Clear (Str2);
+        if Str2 /= "   " then
+            Report.Failed ("Wrong result from Clear (B)");
+        end if;
+        Clear (Str3(4..6));
+        if Str3 /= "ABC   GHIJ" then
+            Report.Failed ("Wrong result from Clear (C)");
+        end if;
+        Clear (Str4);
+        if Str4 /= "    " then
+            Report.Failed ("Wrong result from Clear (D)");
+        end if;
+        -- Try a direct assignment to an unconstrained object:
+        Str4 := (others => 'A');
+        if Str4 /= "AAAA" then
+            Report.Failed ("Wrong result from assignment (E)");
+        end if;
+        
+    end;
+            
+    declare
+        Value1 : Array_1(1 .. 4) := (others => 12); -- Static bounds
+        Value2 : Array_1(2 .. Report.Ident_Int(3)) := (others => 12);
+                                                    -- Dynamic bounds.
+        Value3 : Array_1(1..10) := (1..10 => 12); -- For slicing.
+        Value4 : Array_1 := Value3(Report.Ident_Int(2)..6);
+                                            -- Bounds from initial value.
+        Value5 : Array_1(3 .. 3) := (others => 12);
+    begin
+        Some_Simulation (Value1, Red);
+        if Value1 /= Array_1'(2, 1, 0, 0) then
+            Report.Failed ("Wrong result from Some_Simulation (1 Red)");
+        end if;
+        Some_Simulation (Value2, Red);
+        if Value2 /= Array_1'(2, 1) then
+            Report.Failed ("Wrong result from Some_Simulation (2 Red)");
+        end if;
+        Some_Simulation (Value3(4..6), Red);
+        if Value3 /= Array_1'(12, 12, 12, 2, 1, 0, 12, 12, 12, 12) then
+            Report.Failed ("Wrong result from Some_Simulation (3 Red)");
+        end if;
+        Some_Simulation (Value4, Red);
+        if Value4 /= Array_1'(2, 1, 0, 0, 0) then
+            Report.Failed ("Wrong result from Some_Simulation (4 Red)");
+        end if;
+        -- Aggregate is too long:
+        begin
+            Some_Simulation (Value5, Red);
+            Report.Failed ("Constraint_Error not raised by positional " &
+                           "aggregate with too many choices (5 Red)");
+        exception
+            when Constraint_Error => null; -- Expected exception.
+        end;
+        
+        Some_Simulation (Value1, Orange);
+        if Value1 /= Array_1'(1, 0, 0, 0) then
+            Report.Failed ("Wrong result from Some_Simulation (1 Orange)");
+        end if;
+        Some_Simulation (Value2, Orange);
+        if Value2 /= Array_1'(1, 0) then
+            Report.Failed ("Wrong result from Some_Simulation (2 Orange)");
+        end if;
+        Some_Simulation (Value3(8..Report.Ident_Int(9)), Orange);
+        if Value3 /= Array_1'(12, 12, 12, 2, 1, 0, 12, 1, 0, 12) then
+            Report.Failed ("Wrong result from Some_Simulation (3 Orange)");
+        end if;
+        Some_Simulation (Value4, Orange);
+        if Value4 /= Array_1'(1, 0, 0, 0, 0) then
+            Report.Failed ("Wrong result from Some_Simulation (4 Orange)");
+        end if;
+        Some_Simulation (Value5, Orange);
+        if Value5 /= Array_1'(3 => 1) then
+            Report.Failed ("Wrong result from Some_Simulation (5 Orange)");
+        end if;
+        
+        Value1 := (others => 4);
+        Some_Simulation (Value1, Yellow);
+        if Value1 /= Array_1'(0, 1, 0, 0) then
+            Report.Failed ("Wrong result from Some_Simulation (1 Yellow)");
+        end if;
+        Some_Simulation (Value2, Yellow);
+        if Value2 /= Array_1'(1, 0) then
+            Report.Failed ("Wrong result from Some_Simulation (2 Yellow)");
+        end if;
+        begin
+            Some_Simulation (Value3(Report.Ident_Int(5)..6), Yellow);
+            Report.Failed ("Constraint_Error not raised by choice not in " &
+                           "bounds (3 Yellow)");
+        exception
+            when Constraint_Error => null; -- Expected exception.
+        end;
+        Some_Simulation (Value4, Yellow);
+        if Value4 /= Array_1'(1, 0, 0, 0, 0) then
+            Report.Failed ("Wrong result from Some_Simulation (4 Yellow)");
+        end if;
+        begin
+            Some_Simulation (Value5, Yellow);
+            Report.Failed ("Constraint_Error not raised by choice not in " &
+                           "bounds (5 Yellow)");
+        exception
+            when Constraint_Error => null; -- Expected exception.
+        end;
+
+        begin
+            Some_Simulation (Value1, Green);
+            Report.Failed ("Constraint_Error not raised by choice not in " &
+                           "bounds (1 Green)");
+        exception
+            when Constraint_Error => null; -- Expected exception.
+        end;
+        Some_Simulation (Value3(3 .. 5), Green);
+        if Value3(3 .. 5) /= Array_1'(4, 1, 4) then
+            Report.Failed ("Wrong result from Some_Simulation (3 Green)");
+        end if;
+        Some_Simulation (Value4, Green);
+        if Value4 /= Array_1'(1, 4, 1, 4, 1) then
+            Report.Failed ("Wrong result from Some_Simulation (4 Green)");
+        end if;
+
+        -- Try some direct assignments to an unconstrained object:
+        Value4 := (2, 3, others => 0);
+        if Value4 /= Array_1'(2, 3, 0, 0, 0) then
+            Report.Failed ("Wrong result from assignment (Red)");
+        end if;
+        Value4 := (Ident_Int(4), others => Ident_Int(2));
+        if Value4 /= Array_1'(4, 2, 2, 2, 2) then
+            Report.Failed ("Wrong result from assignment (Orange)");
+        end if;
+        Value4 := (2 => 1, others => Ident_Int(0));
+        if Value4 /= Array_1'(1, 0, 0, 0, 0) then
+            Report.Failed ("Wrong result from assignment (Yellow)");
+        end if;
+        Value4 := (3 | 5 => Ident_Int(4), others => 1);
+        if Value4 /= Array_1'(1, 4, 1, 4, 1) then
+            Report.Failed ("Wrong result from assignment (Green)");
+        end if;
+       
+    end;
+
+    Report.Result;
+
+end C433007;

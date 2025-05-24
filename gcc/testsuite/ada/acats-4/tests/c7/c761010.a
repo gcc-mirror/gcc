@@ -1,0 +1,447 @@
+-- C761010.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE
+--     Check the requirements of the new 7.6(17.1/1) from Technical
+--     Corrigendum 1 (originally discussed as AI95-00083).
+--     This new paragraph requires that the initialization of an object with
+--     an aggregate does not involve calls to Adjust.
+--
+-- TEST DESCRIPTION
+--     We include several cases of initialization:
+--        - Explicit initialization of an object declared by an
+--          object declaration.
+--        - Explicit initialization of a heap object.
+--        - Default initialization of a record component.
+--        - Initialization of a formal parameter during a call.
+--        - Initialization of a formal parameter during a call with
+--          a defaulted parameter.
+--        - Lots of nested records, arrays, and pointers.
+--     In this test, Initialize should never be called, because we
+--     never declare a default-initialized controlled object (although
+--     we do declare default-initialized records containing controlled
+--     objects, with default expressions for the components).
+--     Adjust should never be called, because every initialization
+--     is via an aggregate.  Finalize is called, because the objects
+--     themselves need to be finalized.
+--     Thus, Initialize and Adjust call Failed.
+--     In some of the cases, these procedures will not yet be elaborated,
+--     anyway.
+--
+-- CHANGE HISTORY:
+--      29 JUN 1999   RAD   Initial Version
+--      23 SEP 1999   RLB   Improved comments, renamed, issued.
+--      10 APR 2000   RLB   Corrected errors in comments and text, fixed
+--                          discriminant error. Fixed so that Report.Test
+--                          is called before any Report.Failed call. Added
+--                          a marker so that the failed subtest can be
+--                          determined.
+--      26 APR 2000   RAD   Try to defeat optimizations.
+--      04 AUG 2000   RLB   Corrected error in Check_Equal.
+--      18 AUG 2000   RLB   Removed dubious main subprogram renames (see AI-172).
+--      19 JUL 2002   RLB   Fixed to avoid calling comment after Report.Result.
+--
+--!
+
+with Ada; use Ada;
+with Report; use Report; pragma Elaborate_All(Report);
+with Ada.Finalization;
+package C761010_1 is
+    pragma Elaborate_Body;
+    function Square(X: Integer) return Integer;
+private
+    type TC_Control is new Ada.Finalization.Limited_Controlled with null record;
+    procedure Initialize (Object : in out TC_Control);
+    procedure Finalize (Object : in out TC_Control);
+    TC_Finalize_Called : Boolean := False;
+end C761010_1;
+
+package body C761010_1 is
+    function Square(X: Integer) return Integer is
+    begin
+        return X**2;
+    end Square;
+
+    procedure Initialize (Object : in out TC_Control) is
+    begin
+        Test("C761010_1",
+             "Check that Adjust is not called"
+              & " when aggregates are used to initialize objects");
+    end Initialize;
+
+    procedure Finalize (Object : in out TC_Control) is
+    begin
+        if not TC_Finalize_Called then
+            Failed("Var_Strings Finalize never called");
+        end if;
+        Result;
+    end Finalize;
+
+    TC_Test : TC_Control; -- Starts test; finalization ends test.
+end C761010_1;
+
+with Ada.Finalization;
+package C761010_1.Var_Strings is
+    type Var_String(<>) is private;
+
+    Some_String: constant Var_String;
+
+    function "=" (X, Y: Var_String) return Boolean;
+
+    procedure Check_Equal(X, Y: Var_String);
+        -- Calls to this are used to defeat optimizations
+        -- that might otherwise defeat the purpose of the
+        -- test.  I'm talking about the optimization of removing
+        -- unused controlled objects.
+
+private
+
+    type String_Ptr is access constant String;
+
+    type Var_String(Length: Natural) is new Finalization.Controlled with
+        record
+            Comp_1: String_Ptr := new String'(2..Square(Length)-1 => 'x');
+            Comp_2: String_Ptr(1..Length) := null;
+            Comp_3: String(Length..Length) := (others => '.');
+            TC_Lab: Character := '1';
+        end record;
+    procedure Initialize(X: in out Var_String);
+    procedure Adjust(X: in out Var_String);
+    procedure Finalize(X: in out Var_String);
+
+    Some_String: constant Var_String
+      := (Finalization.Controlled with Length => 1,
+          Comp_1 => null,
+          Comp_2 => null,
+          Comp_3 => "x",
+          TC_Lab => 'A');
+
+    Another_String: constant Var_String
+      := (Finalization.Controlled with Length => 10,
+          Comp_1 => Some_String.Comp_2,
+          Comp_2 => new String'("1234567890"),
+          Comp_3 => "x",
+          TC_Lab => 'B');
+
+end C761010_1.Var_Strings;
+
+package C761010_1.Var_Strings.Types is
+
+    type Ptr is access all Var_String;
+    Ptr_Const: constant Ptr;
+
+    type Ptr_Arr is array(Positive range <>) of Ptr;
+    Ptr_Arr_Const: constant Ptr_Arr;
+
+    type Ptr_Rec(N_Strings: Natural) is
+        record
+            Ptrs: Ptr_Arr(1..N_Strings);
+        end record;
+    Ptr_Rec_Const: constant Ptr_Rec;
+
+private
+
+    Ptr_Const: constant Ptr := new Var_String'
+      (Finalization.Controlled with
+       Length => 1,
+       Comp_1 => null,
+       Comp_2 => null,
+       Comp_3 => (others => ' '),
+       TC_Lab => 'C');
+
+    Ptr_Arr_Const: constant Ptr_Arr :=
+      (1 => new Var_String'
+       (Finalization.Controlled with
+        Length => 1,
+        Comp_1 => new String'("abcdefghij"),
+        Comp_2 => null,
+        Comp_3 => (2..2 => ' '),
+        TC_Lab => 'D'));
+
+    Ptr_Rec_Var: Ptr_Rec :=
+      (3,
+       (1..2 => null,
+        3 => new Var_String'
+        (Finalization.Controlled with
+         Length => 2,
+         Comp_1 => new String'("abcdefghij"),
+         Comp_2 => null,
+         Comp_3 => (2..2 => ' '),
+         TC_Lab => 'E')));
+
+    Ptr_Rec_Const: constant Ptr_Rec :=
+      (3,
+       (1..2 => null,
+        3 => new Var_String'
+        (Finalization.Controlled with
+         Length => 2,
+         Comp_1 => new String'("abcdefghij"),
+         Comp_2 => null,
+         Comp_3 => (2..2 => ' '),
+         TC_Lab => 'F')));
+
+    type Arr is array(Positive range <>) of Var_String(Length => 2);
+
+    Arr_Var: Arr :=
+      (1 => (Finalization.Controlled with
+         Length => 2,
+         Comp_1 => new String'("abcdefghij"),
+         Comp_2 => null,
+         Comp_3 => (2..2 => ' '),
+         TC_Lab => 'G'));
+
+    type Rec(N_Strings: Natural) is
+        record
+            Ptrs: Ptr_Rec(N_Strings);
+            Strings: Arr(1..N_Strings) :=
+              (others =>
+                 (Finalization.Controlled with
+                  Length => 2,
+                  Comp_1 => new String'("abcdefghij"),
+                  Comp_2 => null,
+                  Comp_3 => (2..2 => ' '),
+                  TC_Lab => 'H'));
+        end record;
+
+    Default_Init_Rec_Var: Rec(N_Strings => 10);
+    Empty_Default_Init_Rec_Var: Rec(N_Strings => 0);
+
+    Rec_Var: Rec(N_Strings => 2) :=
+      (N_Strings => 2,
+       Ptrs =>
+         (2,
+          (1..1 => null,
+           2 => new Var_String'
+           (Finalization.Controlled with
+            Length => 2,
+            Comp_1 => new String'("abcdefghij"),
+            Comp_2 => null,
+            Comp_3 => (2..2 => ' '),
+            TC_Lab => 'J'))),
+       Strings =>
+         (1 =>
+            (Finalization.Controlled with
+             Length => 2,
+             Comp_1 => new String'("abcdefghij"),
+             Comp_2 => null,
+             Comp_3 => (2..2 => ' '),
+             TC_Lab => 'K'),
+          others =>
+            (Finalization.Controlled with
+             Length => 2,
+             Comp_1 => new String'("abcdefghij"),
+             Comp_2 => null,
+             Comp_3 => (2..2 => ' '),
+             TC_Lab => 'L')));
+
+    procedure Check_Equal(X, Y: Rec);
+
+end C761010_1.Var_Strings.Types;
+
+package body C761010_1.Var_Strings.Types is
+
+    -- Check that parameter passing doesn't create new objects,
+    -- and therefore doesn't need extra Adjusts or Finalizes.
+
+    procedure Check_Equal(X, Y: Rec) is
+        -- We assume that the arguments should be equal.
+        -- But we cannot assume that pointer values are the same.
+    begin
+        if X.N_Strings /= Y.N_Strings then
+            Failed("Records should be equal (1)");
+        else
+            for I in 1 .. X.N_Strings loop
+                if X.Ptrs.Ptrs(I) /= Y.Ptrs.Ptrs(I) then
+                    if X.Ptrs.Ptrs(I) = null or else
+                       Y.Ptrs.Ptrs(I) = null or else
+                       X.Ptrs.Ptrs(I).all /= Y.Ptrs.Ptrs(I).all then
+                       Failed("Records should be equal (2)");
+                    end if;
+                end if;
+                if X.Strings(I) /= Y.Strings(I) then
+                    Failed("Records should be equal (3)");
+                end if;
+            end loop;
+        end if;
+    end Check_Equal;
+
+    procedure My_Check_Equal
+              (X: Rec := Rec_Var;
+               Y: Rec :=
+      (N_Strings => 2,
+       Ptrs =>
+         (2,
+          (1..1 => null,
+           2 => new Var_String'
+           (Finalization.Controlled with
+            Length => 2,
+            Comp_1 => new String'("abcdefghij"),
+            Comp_2 => null,
+            Comp_3 => (2..2 => ' '),
+            TC_Lab => 'M'))),
+       Strings =>
+         (1 =>
+            (Finalization.Controlled with
+             Length => 2,
+             Comp_1 => new String'("abcdefghij"),
+             Comp_2 => null,
+             Comp_3 => (2..2 => ' '),
+             TC_Lab => 'N'),
+          others =>
+            (Finalization.Controlled with
+             Length => 2,
+             Comp_1 => new String'("abcdefghij"),
+             Comp_2 => null,
+             Comp_3 => (2..2 => ' '),
+             TC_Lab => 'O'))))
+              renames Check_Equal;
+begin
+
+    My_Check_Equal;
+
+    Check_Equal(Rec_Var,
+      (N_Strings => 2,
+       Ptrs =>
+         (2,
+          (1..1 => null,
+           2 => new Var_String'
+           (Finalization.Controlled with
+            Length => 2,
+            Comp_1 => new String'("abcdefghij"),
+            Comp_2 => null,
+            Comp_3 => (2..2 => ' '),
+            TC_Lab => 'P'))),
+       Strings =>
+         (1 =>
+            (Finalization.Controlled with
+             Length => 2,
+             Comp_1 => new String'("abcdefghij"),
+             Comp_2 => null,
+             Comp_3 => (2..2 => ' '),
+             TC_Lab => 'Q'),
+          others =>
+            (Finalization.Controlled with
+             Length => 2,
+             Comp_1 => new String'("abcdefghij"),
+             Comp_2 => null,
+             Comp_3 => (2..2 => ' '),
+             TC_Lab => 'R'))));
+
+    -- Use the objects to avoid optimizations.
+
+    Check_Equal(Ptr_Const.all, Ptr_Const.all);
+    Check_Equal(Ptr_Arr_Const(1).all, Ptr_Arr_Const(1).all);
+    Check_Equal(Ptr_Rec_Const.Ptrs(Ptr_Rec_Const.N_Strings).all,
+                Ptr_Rec_Const.Ptrs(Ptr_Rec_Const.N_Strings).all);
+    Check_Equal(Ptr_Rec_Var.Ptrs(Ptr_Rec_Var.N_Strings).all,
+                Ptr_Rec_Var.Ptrs(Ptr_Rec_Var.N_Strings).all);
+
+    if Report.Equal (3, 2) then
+       -- Can't get here.
+       Check_Equal (Arr_Var(1), Default_Init_Rec_Var.Strings(1));
+       Check_Equal (Arr_Var(1), Empty_Default_Init_Rec_Var.Strings(1));
+    end if;
+
+end C761010_1.Var_Strings.Types;
+
+with C761010_1.Var_Strings;
+with C761010_1.Var_Strings.Types;
+procedure C761010_1.Main is
+begin
+    -- Report.Test is called by the elaboration of C761010_1, and
+    -- Report.Result is called by the finalization of C761010_1.
+    -- This will happen before any objects are created, and after any
+    -- are finalized.
+    null;
+end C761010_1.Main;
+
+with C761010_1.Main;
+procedure C761010 is
+begin
+    C761010_1.Main;
+end C761010;
+
+package body C761010_1.Var_Strings is
+
+    Some_Error: exception;
+
+    procedure Initialize(X: in out Var_String) is
+    begin
+        Failed("Initialize should never be called");
+        raise Some_Error;
+    end Initialize;
+
+    procedure Adjust(X: in out Var_String) is
+    begin
+        Failed("Adjust should never be called - case " & X.TC_Lab);
+        raise Some_Error;
+    end Adjust;
+
+    procedure Finalize(X: in out Var_String) is
+    begin
+        Comment("Finalize called - case " & X.TC_Lab);
+	C761010_1.TC_Finalize_Called := True;
+    end Finalize;
+
+    function "=" (X, Y: Var_String) return Boolean is
+        -- Don't check the TC_Lab component, but do check the contents of the
+	-- access values.
+    begin
+        if X.Length /= Y.Length then
+            return False;
+        end if;
+        if X.Comp_3 /= Y.Comp_3 then
+            return False;
+        end if;
+        if X.Comp_1 /= Y.Comp_1 then
+            -- Still OK if the values are the same.
+            if X.Comp_1 = null or else
+               Y.Comp_1 = null or else
+               X.Comp_1.all /= Y.Comp_1.all then
+               return False;
+            --else OK.
+            end if;
+        end if;
+        if X.Comp_2 /= Y.Comp_2 then
+            -- Still OK if the values are the same.
+            if X.Comp_2 = null or else
+               Y.Comp_2 = null or else
+               X.Comp_2.all /= Y.Comp_2.all then
+               return False;
+            end if;
+        end if;
+        return True;
+    end "=";
+
+    procedure Check_Equal(X, Y: Var_String) is
+    begin
+        if X /= Y then
+            Failed("Check_Equal of Var_String");
+        end if;
+    end Check_Equal;
+
+begin
+    Check_Equal(Another_String, Another_String);
+end C761010_1.Var_Strings;

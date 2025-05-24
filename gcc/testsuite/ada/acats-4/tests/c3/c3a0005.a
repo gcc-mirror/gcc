@@ -1,0 +1,147 @@
+-- C3A0005.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE: 
+--      Check that access to subprogram may be stored within record 
+--      objects, and that the access to subprogram can subsequently 
+--      be called. 
+-- 
+-- TEST DESCRIPTION:
+--      Declare an access to procedure type in a package specification.  
+--      Declare two different procedures that can be referred to by the 
+--      access to procedure type.  Declare a record with the access to 
+--      procedure type as a component.  Use the access to procedure type to 
+--      initialize the component of a record.  
+--
+--      In the main program, declare an operation.  An access value 
+--      designating this operation is passed as a parameter to be 
+--      stored in the record.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package C3A0005_0 is
+
+   Default_Call   : Boolean := False;
+
+   type Button;
+
+
+   -- Type accesses to procedures Push and Default_Response
+   type Button_Response_Ptr is access procedure
+      (B : access Button);
+
+   procedure Push (B : access Button);
+
+   procedure Set_Response (B : access Button;
+                           R : in Button_Response_Ptr);
+
+   procedure Default_Response  (B : access Button);
+
+   Emergency_Call : Boolean := False;
+
+   procedure Emergency (B : access C3A0005_0.Button);
+
+   type Button is
+      record
+         Response :  Button_Response_Ptr
+                  := Default_Response'Access;   
+      end record;
+
+end C3A0005_0;
+
+
+-----------------------------------------------------------------------------
+
+with TCTouch;
+package body C3A0005_0 is
+
+   procedure Push (B : access Button) is
+   begin
+      TCTouch.Touch( 'P' ); --------------------------------------------- P
+      -- Invoking subprogram designated by access value
+      B.Response (B);
+   end Push;
+
+
+   procedure Set_Response (B : access Button;
+                           R : in     Button_Response_Ptr) is
+   begin
+      TCTouch.Touch( 'S' ); --------------------------------------------- S
+      -- Set procedure value in record
+      B.Response := R;
+   end Set_Response;
+
+
+   procedure Default_Response (B : access Button) is
+   begin
+      TCTouch.Touch( 'D' ); --------------------------------------------- D
+      Default_Call := True;
+   end Default_Response;
+
+
+   procedure Emergency (B : access C3A0005_0.Button) is
+   begin
+      TCTouch.Touch( 'E' ); --------------------------------------------- E
+      Emergency_Call := True;
+   end Emergency;
+
+end C3A0005_0;
+
+
+-----------------------------------------------------------------------------
+
+with TCTouch;
+with Report;
+
+with C3A0005_0;
+
+procedure C3A0005 is
+
+   Big_Red_Button : aliased C3A0005_0.Button;
+
+begin
+
+   Report.Test ("C3A0005", "Check that access to subprogram may be "
+                         & "stored within data structures, and that the "
+                         & "access to subprogram can subsequently be called");
+
+   C3A0005_0.Push (Big_Red_Button'Access);
+   TCTouch.Validate("PD", "Using default value");
+   TCTouch.Assert( C3A0005_0.Default_Call, "Default Call" );
+
+   -- set Emergency value in Button.Response
+   C3A0005_0.Set_Response(Big_Red_Button'Access, C3A0005_0.Emergency'Access);
+
+   C3A0005_0.Push (Big_Red_Button'Access);
+   TCTouch.Validate("SPE", "After set to Emergency value");
+   TCTouch.Assert( C3A0005_0.Emergency_Call, "Emergency Call");
+
+   Report.Result;
+
+end C3A0005;

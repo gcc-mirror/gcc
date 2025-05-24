@@ -1,0 +1,170 @@
+-- F416A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--     This foundation provides basic operations to test the declaration and
+--     use of the generalized indexing aspects Constant_Indexing and
+--     Variable_Indexing.
+--
+--     The foundation is intended to demonstrate a sprite-drawing package,
+--     where sprites are defined in a window object, and can either be
+--     accessed by name or by location (where the location is given with
+--     X and Y coordinates) in a particular window object. Constant_Indexings
+--     and Variable_Indexings are defined to access the sprites in a window.
+--
+-- CHANGE HISTORY:
+--     11 May 2015   RLB   Created foundation.
+--     14 May 2015   RLB   Fixed bug in by location routines.
+
+package F416A00 is
+   type Window is tagged private
+      with Constant_Indexing => CRef,
+           Variable_Indexing => VRef;
+
+   type Kind is (Player, Ghost, Power_Pill);
+
+   type Color is (White, Yellow, Orange, Pink, Red, Cyan, Blue, Green, Violet);
+
+   type Sprite is record
+      K : aliased Kind;
+      C : Color;
+      X, Y : Natural;
+   end record;
+
+   subtype Name is String(1..6);
+
+   Missing_Error : exception;
+
+   type Ref_Rec (D : access Sprite) is null record
+      with Implicit_Dereference => D;
+
+   function CRef (W : in Window; N : in Name) return Sprite;
+
+   function VRef (W : aliased in out Window; N : in Name) return Ref_Rec;
+
+   function CRef (W : in Window; X, Y : in Natural) return Sprite;
+
+   function VRef (W : aliased in out Window; X, Y : in Natural)
+      return Ref_Rec;
+
+   procedure Create_Sprite (W : in out Window;
+                            N : in Name;
+                            X : in Natural;
+                            Y : in Natural;
+                            K : in Kind;
+                            C : in Color);
+
+private
+
+   type Tuple is record
+       N : Name;
+       S : aliased Sprite;
+   end record;
+
+   type SArray is array (1..10) of Tuple;
+   type Window is tagged record
+      Count : Natural := 0;
+      Sprites : SArray;
+   end record;
+
+end F416A00;
+
+with TcTouch;
+package body F416A00 is
+
+   function CRef (W : in Window; N : in Name) return Sprite is
+   begin
+      TcTouch.Touch('c'); TcTouch.Touch(N(1));  ---------------
+      for I in 1 .. W.Count loop
+         if W.Sprites(I).N = N then
+            return W.Sprites(I).S;
+         end if;
+      end loop;
+      raise Missing_Error;
+   end CRef;
+
+   function VRef (W : aliased in out Window; N : in Name) return Ref_Rec is
+   begin
+      TcTouch.Touch('v'); TcTouch.Touch(N(1));  ---------------
+      for I in 1 .. W.Count loop
+         if W.Sprites(I).N = N then
+            return (D => W.Sprites(I).S'Access);
+         end if;
+      end loop;
+      raise Missing_Error;
+   end VRef;
+
+   function CRef (W : in Window; X, Y : in Natural) return Sprite is
+   begin
+      TcTouch.Touch('d');                       ---------------
+      TcTouch.Touch(Character'Val(X - 1 + Character'Pos('A')));
+      TcTouch.Touch(Character'Val(Y - 1 + Character'Pos('A')));
+      for I in 1 .. W.Count loop
+         if W.Sprites(I).S.X = X and then
+            W.Sprites(I).S.Y = Y then
+            return W.Sprites(I).S;
+         end if;
+      end loop;
+      raise Missing_Error;
+   end CRef;
+
+   function VRef (W : aliased in out Window; X, Y : in Natural)
+      return Ref_Rec is
+   begin
+      TcTouch.Touch('w');                       ---------------
+      TcTouch.Touch(Character'Val(X - 1 + Character'Pos('A')));
+      TcTouch.Touch(Character'Val(Y - 1 + Character'Pos('A')));
+      for I in 1 .. W.Count loop
+         if W.Sprites(I).S.X = X and then
+            W.Sprites(I).S.Y = Y then
+            return (D => W.Sprites(I).S'Access);
+         end if;
+      end loop;
+      raise Missing_Error;
+   end VRef;
+
+   procedure Create_Sprite (W : in out Window;
+                            N : in Name;
+                            X : in Natural;
+                            Y : in Natural;
+                            K : in Kind;
+                            C : in Color) is
+   begin
+      W.Count := W.Count + 1;
+      W.Sprites(W.Count) := (N => N, S => (K, C, X, Y));
+   end Create_Sprite;
+
+end F416A00;
+
+

@@ -1,0 +1,306 @@
+-- C393010.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- TEST OBJECTIVE:
+--      Check that an extended type can be derived from an abstract type and
+--      that a call on an abstract operation is a dispatching operation.
+--      Check that such a call can dispatch to an overriding operation
+--      declared in the private part of a package.
+--
+-- TEST DESCRIPTION:
+--      Taking from a classroom example of a typical usage: declare a basic
+--      abstract type containing data germane to the entire class structure,
+--      derive from that a type with specific data, and derive from that
+--      another type merely providing a "secret" override.  The abstract type
+--      provides a concrete procedure that itself "redispatches" to an
+--      abstract procedure; the abstract procedure must be provided by one or
+--      more of the concrete types derived from the abstract type, and hence
+--      upon re-evaluating the actual type of the operand should dispatch
+--      accordingly.
+--
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      15 Mar 96   SAIC    ACVC 2.1
+--
+--!
+
+----------------------------------------------------------------- C393010_0
+
+package C393010_0 is
+
+  type Ticket is abstract tagged record
+    Flight        : Natural;
+    Serial_Number : Natural;
+  end record;
+
+  function Issue return Ticket is abstract;
+  procedure Label( T: Ticket ) is abstract;
+
+  procedure Print( T: Ticket );
+
+end C393010_0;
+
+with TCTouch;
+package body C393010_0 is
+
+  procedure Print( T: Ticket ) is
+  begin
+    -- Check that a call on an abstract operation is a dispatching operation
+    Label( Ticket'Class( T ) );
+    -- Appropriate_IO.Put( T.Flight & T.Serial_Number );
+    TCTouch.Touch('P'); -------------------------------------------------- P
+  end Print;
+
+end C393010_0;
+
+----------------------------------------------------------------- C393010_1
+
+with C393010_0;
+package C393010_1 is
+
+  type Service_Classes is (First, Business, Coach);
+
+  type Menu is (Steak, Lobster, Fowl, Vegan);
+
+  -- Check that an extended type can be derived from an abstract type.
+  type Passenger_Ticket(Service : Service_Classes) is
+    new C393010_0.Ticket with record
+      Row_Seat : String(1..3);
+      case Service is
+        when First | Business => Meal : Menu;
+        when Coach => null;
+      end case;
+  end record;
+
+  function Issue return Passenger_Ticket;
+  function Issue( Service : Service_Classes;
+                   Flight : Natural;
+                     Seat : String;
+                     Meal : Menu := Fowl ) return Passenger_Ticket;
+
+  procedure Label( T: Passenger_Ticket );
+
+  procedure Print( T: Passenger_Ticket );
+
+end C393010_1;
+
+with TCTouch;
+package body C393010_1 is
+
+  procedure Label( T: Passenger_Ticket ) is
+  begin
+    -- Appropriate_IO.Put( T.Service );
+    TCTouch.Touch('L'); -------------------------------------------------- L
+  end Label;
+
+  procedure Print( T: Passenger_Ticket ) is
+  begin
+    -- call parent print:
+    C393010_0.Print( C393010_0.Ticket( T ) );
+    case T.Service is
+      when First    => -- Appropriate_IO.Put( Meal );
+        TCTouch.Touch('F'); ---------------------------------------------- F
+      when Business => -- Appropriate_IO.Put( Meal );
+        TCTouch.Touch('B'); ---------------------------------------------- B
+      when Coach    => -- Appropriate_IO.Put( "BYO" & " peanuts" );
+        TCTouch.Touch('C'); ---------------------------------------------- C
+    end case;   
+  end Print;
+
+  Num : Natural := 1000;
+
+  function Issue( Service : Service_Classes;
+                   Flight : Natural;
+                     Seat : String;
+                     Meal : Menu := Fowl ) return Passenger_Ticket is
+  begin
+    Num := Num +1;
+    case Service is
+      when First =>
+        return Passenger_Ticket'(Service => First, Flight => Flight,
+                       Row_Seat => Seat, Meal => Meal, Serial_Number => Num );
+      when Business =>
+        return Passenger_Ticket'(Service => Business, Flight => Flight,
+                       Row_Seat => Seat, Meal => Meal, Serial_Number => Num );
+      when Coach =>
+        return Passenger_Ticket'(Service => Coach, Flight => Flight,
+                       Row_Seat => Seat, Serial_Number => Num );
+    end case;
+  end Issue;
+
+  function Issue return Passenger_Ticket is
+  begin
+    return Issue( Coach, 0, "non" );
+  end Issue;
+
+end C393010_1;
+
+----------------------------------------------------------------- C393010_1
+
+with C393010_1;
+package C393010_2 is
+
+  type Charter is new C393010_1.Passenger_Ticket( C393010_1.Coach )
+    with private;
+
+  function Issue return Charter;
+
+  -- procedure Print( T: Passenger_Ticket );
+
+private
+  type Charter is new C393010_1.Passenger_Ticket( C393010_1.Coach )
+    with null record;
+
+  -- Check that the dispatching call to the abstract operation will dispatch
+  -- to a procedure defined in the private part of a package.
+  procedure Label( T: Charter );
+
+  -- an example of a required function the users shouldn't see:
+  function Issue( Service : C393010_1.Service_Classes;
+                   Flight : Natural;
+                     Seat : String;
+                     Meal : C393010_1.Menu ) return Charter;
+
+end C393010_2;
+
+with TCTouch;
+package body C393010_2 is
+
+  procedure Label( T: Charter ) is
+  begin
+    -- Appropriate_IO.Put( "Excursion Fare" );
+    TCTouch.Touch('X'); -------------------------------------------------- X
+  end Label;
+
+  Num : Natural := 4000;
+
+  function Issue return Charter is
+  begin
+    Num := Num +1;
+    return Charter'(Service => C393010_1.Coach, Flight => 1001,
+                       Row_Seat => "OPN", Serial_Number => Num );
+  end Issue;
+
+  function Issue( Service : C393010_1.Service_Classes;
+                   Flight : Natural;
+                     Seat : String;
+                     Meal : C393010_1.Menu ) return Charter is
+  begin
+    return Issue;
+  end Issue;
+
+end C393010_2;
+
+----------------------------------------------------------------- C393010_1
+
+with Report;
+with TCTouch;
+with C393010_0;
+with C393010_1;
+with C393010_2; -- Charter Tours
+
+procedure C393010 is
+
+  type Agents_Handle is access all C393010_0.Ticket'Class;
+
+  type Itinerary;
+
+  type Next_Leg is access Itinerary;
+
+  type Itinerary is record
+    Leg  : Agents_Handle;
+    Next : Next_Leg;
+  end record;
+
+  function Travel_Agent_1 return Next_Leg is
+  begin
+    -- ORL -> JFK -> LAX -> SAN -> DFW -> ORL
+    return new Itinerary'(
+       -- ORL -> JFK 01   12  2A First, Lobster
+       new C393010_1.Passenger_Ticket'(
+         C393010_1.Issue(C393010_1.First, 12, " 2A", C393010_1.Lobster )),
+         new Itinerary'(
+       -- JFK -> LAX 02   18  2B First, Steak
+       new C393010_1.Passenger_Ticket'(
+         C393010_1.Issue(C393010_1.First, 18, " 2B", C393010_1.Steak )),
+         new Itinerary'(
+       -- LAX -> SAN 03 5225 34H Coach
+       new C393010_1.Passenger_Ticket'(
+         C393010_1.Issue(C393010_1.Coach, 5225, "34H")),
+         new Itinerary'(
+       -- SAN -> DFW 04   25 13A Business, Fowl
+       new C393010_1.Passenger_Ticket'(
+         C393010_1.Issue(C393010_1.Business, 25, "13A")),
+         new Itinerary'(
+       -- DFW -> ORL 05   15  1D First, Lobster
+       new C393010_1.Passenger_Ticket'(
+         C393010_1.Issue(C393010_1.First, 15, " 1D", C393010_1.Lobster )),
+         null          )))));
+  end Travel_Agent_1;
+
+  function Travel_Agent_2 return Next_Leg is
+  begin
+    -- LAX -> NRT -> SYD -> LAX
+    return new Itinerary'(
+       new C393010_2.Charter'( C393010_2.Issue ),
+         new Itinerary'(
+       new C393010_2.Charter'( C393010_2.Issue ),
+         new Itinerary'(
+       new C393010_2.Charter'( C393010_2.Issue ),
+         new Itinerary'(
+       new C393010_2.Charter'( C393010_2.Issue ),
+         null ))));
+  end Travel_Agent_2;
+
+  procedure Traveler( Pax_Tix : in Next_Leg ) is
+    Fly_Me : Next_Leg := Pax_Tix;
+  begin
+    -- a particularly consumptive process...
+    while Fly_Me /= null loop
+      C393010_0.Print( Fly_Me.Leg.all );  -- herein lies the test.
+      Fly_Me := Fly_Me.Next;
+    end loop;
+  end Traveler;
+
+begin
+
+  Report.Test ("C393010", "Check that an extended type can be derived from "
+                        & "an abstract type and that a call on an abstract "
+                        & "operation is a dispatching operation.  Check "
+                        & "that such a call can dispatch to an overriding "
+                        & "operation declared in the private part of a "
+                        & "package" );
+
+  Traveler( Travel_Agent_1 );
+  TCTouch.Validate("LPFLPFLPCLPBLPF","First Trip");
+
+  Traveler( Travel_Agent_2 );
+  TCTouch.Validate("XPCXPCXPCXPC","Second Trip");
+
+  Report.Result;
+
+end C393010;

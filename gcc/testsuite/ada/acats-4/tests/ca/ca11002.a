@@ -1,0 +1,238 @@
+-- CA11002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a public child can utilize its parent unit's visible 
+--      definitions.
+--      
+-- TEST DESCRIPTION:
+--      Declare a parent package that contains the following: type, object,
+--      constant, exception, and subprograms.  Declare a public child unit
+--      that utilizes the components found in the visible part of its parent.
+--
+--      Demonstrate utilization of the following parent components in the 
+--      child package:
+--
+--                          Parent
+--          Type              X
+--          Constant          X
+--          Object            X           
+--          Subprogram        X           
+--          Exception         X           
+--
+--      This abstraction simulates a portion of a simple operating system.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package CA11002_0 is                      -- Package OS.
+
+   type File_Descriptor is new Integer;
+   type File_Mode is (Read_Only, Write_Only, Read_Write);
+
+   Null_File    : constant File_Descriptor := 0;
+   Default_Mode : constant File_Mode       := Read_Only;
+   Active_Mode  : constant File_Mode       := Read_Write;
+
+   type File_Type is 
+     record
+        Descriptor : File_Descriptor := Null_File;
+        Mode       : File_Mode       := Default_Mode;
+     end record;
+
+   System_File     : File_Type;
+   File_Mode_Error : exception;
+
+   function Next_Available_File return File_Descriptor;
+
+   function Mode_Of_File (File : File_Type) return File_Mode;
+
+end CA11002_0;                            -- Package OS. 
+
+     --=================================================================--
+
+package body CA11002_0 is                 -- Package body OS.
+   
+   File_Count : Integer := 0;
+
+   function Next_Available_File return File_Descriptor is
+   begin
+      File_Count := File_Count + 1;
+      return (File_Descriptor(File_Count));    -- Type conversion.
+   end Next_Available_File;
+   --------------------------------------------------------------
+   function Mode_Of_File (File : File_Type) return File_Mode is
+      Mode : File_Mode := File.Mode;
+   begin
+      return (Mode);
+   end Mode_Of_File;
+
+end CA11002_0;                            -- Package body OS.
+
+     --=================================================================--
+
+package CA11002_0.CA11002_1 is            -- Child package OS.Operations.
+
+   -- Dot qualification of types, objects, etc. from parent is not required
+   -- in a child unit.
+
+   procedure Create_File (Mode : in     File_Mode:= Active_Mode;
+                          File :    out File_Type);    
+
+end CA11002_0.CA11002_1;                  -- Child package OS.Operations. 
+
+     --=================================================================--
+
+with Report;
+package body CA11002_0.CA11002_1 is       -- Child package body OS.Operations.
+
+   function New_File_Validated (File : File_Type)        -- Ensure that a newly
+     return Boolean is                                   -- created file has
+      Result : Boolean := False;                         -- appropriate values.
+   begin                                                 
+      if (File.Descriptor > System_File.Descriptor) and  -- Parent object.
+         (File.Mode  in  File_Mode )                     -- Parent type.
+      then
+         Result := True;
+      end if;
+
+      return (Result);
+
+   end New_File_Validated;
+   --------------------------------------------------------------
+   procedure Create_File 
+     (Mode       : in     File_Mode := Active_Mode;     -- Parent constant.
+      File       :    out File_Type) is                 -- Parent type.
+
+      New_File : File_Type;
+
+   begin
+      New_File.Descriptor := Next_Available_File;       -- Parent subprogram.
+      New_File.Mode       := Mode;
+
+      if New_File_Validated (File => New_File) then
+         File := New_File;
+      end if;
+
+   end Create_File;
+
+end CA11002_0.CA11002_1;                  -- Child Package body OS.Operations.
+
+     --=================================================================--
+
+-- Child library subprogram Convert_File_Mode specification.
+procedure CA11002_0.CA11002_2 (File     : in out File_Type;    -- Parent type. 
+                               New_Mode : in     File_Mode);   -- Parent type.
+
+
+     --=================================================================--
+with Report;
+
+-- Child library subprogram Convert_File_Mode body.
+procedure CA11002_0.CA11002_2 (File     : in out File_Type;   
+                               New_Mode : in     File_Mode) is
+begin
+   if File.Mode = New_Mode then
+      raise File_Mode_Error;                               -- Parent exception.
+      Report.Failed ("Exception not raised in child unit");
+   else
+      File.Mode := New_Mode;
+   end if;
+end CA11002_0.CA11002_2;
+
+     --=================================================================--
+
+with Report;
+with CA11002_0.CA11002_1;          -- Child package OS.Operations.
+with CA11002_0.CA11002_2;          -- Child subprogram OS.Convert_File_Mode,
+                                   -- Implicitly with parent, OS.
+use CA11002_0;                     -- All user-defined operators directly
+                                   -- visible.
+procedure CA11002 is
+begin
+
+   Report.Test ("CA11002", "Check that a public child can utilize its " &
+                "parent unit's visible definitions");
+
+   File_Creation:                   -- This processing block will demonstrate
+                                    -- use of child package subroutine that
+                                    -- takes advantage of components declared
+                                    -- in the parent package.
+   declare
+      User_File : File_Type;
+   begin
+      CA11002_0.CA11002_1.Create_File (File => User_File); -- Default mode
+                                                           -- parameter used in
+                                                           -- this call.
+      if (User_File.Descriptor = System_File.Descriptor) or
+         (User_File.Mode       = Default_Mode) 
+      then
+         Report.Failed ("Incorrect file creation");
+      end if;
+
+   end File_Creation;
+
+   --------------------------------------------------------------
+   File_Mode_Conversion:            -- This processing block will demonstrate
+                                    -- the occurrence of a (forced) exception
+                                    -- being raised in a child subprogram, and
+                                    -- propagated to the caller.  The exception
+                                    -- is handled, and the child subprogram
+                                    -- is called again, this time to perform
+                                    -- without error.
+   declare
+      procedure Convert_File_Mode (File : in out File_Type; 
+        New_Mode : in File_Mode) renames CA11002_0.CA11002_2; 
+      New_File : File_Type;
+   begin                               -- Raise an exception with this
+                                       -- illegal conversion operation
+                                       -- (attempt to change to current mode).
+
+      Convert_File_Mode (File     => New_File,
+                         New_Mode => Default_Mode);
+      Report.Failed ("Exception should have been raised in child unit");
+
+   exception
+      when File_Mode_Error =>          -- Perform the conversion again, this
+                                       -- time with a different file mode.
+
+         Convert_File_Mode (File     => New_File,
+                            New_Mode => CA11002_0.Active_Mode);
+
+         if New_File.Mode /= Read_Write then
+            Report.Failed ("Incorrect result from mode conversion operation");
+         end if;
+
+      when others =>
+         Report.Failed ("Unexpected exception raised in File_Mode_Conversion");
+
+   end File_Mode_Conversion;
+
+   Report.Result;
+
+end CA11002;

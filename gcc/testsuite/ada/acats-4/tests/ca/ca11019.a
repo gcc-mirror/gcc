@@ -1,0 +1,306 @@
+-- CA11019.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that body of the parent package may depend on one of its own
+--      private generic children.
+--
+-- TEST DESCRIPTION:
+--      A scenario is created that demonstrates the potential of adding a
+--      generic private child during code maintenance without distubing a 
+--      large subsystem.  After child is added to the subsystem, a maintainer
+--      decides to take advantage of the new functionality and rewrites
+--      the parent's body.
+--
+--      Declare a data collection abstraction in a package. Declare a private
+--      generic child of this package which provides parameterized code that
+--      have been written once and will be used three times to implement the
+--      services of the parent package. In the parent body, instantiate the 
+--      private child.  
+--
+--      In the main program, check that the operations in the parent, 
+--      and instance of the private child package perform as expected.  
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      17 Nov 95   SAIC    Update and repair for ACVC 2.0.1
+--
+--!
+  
+package CA11019_0 is   
+     -- parent
+
+   type Data_Record is tagged private;
+   type Data_Collection is private;
+   ---
+   ---
+   subtype Data_1 is integer range 0 .. 100;
+   procedure Add_1 (Data : Data_1; To : in out Data_Collection);  
+   function Statistical_Op_1 (Data : Data_Collection) return Data_1;
+   ---
+   subtype Data_2 is integer range -100 .. 1000;
+   procedure Add_2 (Data : Data_2; To : in out Data_Collection);
+   function Statistical_Op_2 (Data : Data_Collection) return Data_2;
+   ---
+   subtype Data_3 is integer range -10_000 .. 10_000;
+   procedure Add_3 (Data : Data_3; To : in out Data_Collection);  
+   function Statistical_Op_3 (Data : Data_Collection) return Data_3;
+   ---
+
+private
+
+   type Data_Ptr is access Data_Record'class;
+   subtype Sequence_Number is positive range 1 .. 512;
+
+   type Data_Record is tagged 
+     record
+        Next  : Data_Ptr := null;
+        Seq   : Sequence_Number;
+     end record;
+   ---
+   type Data_Collection is 
+     record
+        First : Data_Ptr := null;
+        Last  : Data_Ptr := null;
+     end record;
+            
+end CA11019_0;
+ -- parent
+
+    --=================================================================--
+
+-- This generic package provides parameterized code that has been
+-- written once and will be used three times to implement the services
+-- of the parent package.
+
+private
+generic   
+   type Data_Type is range <>;
+
+package CA11019_0.CA11019_1 is    
+     -- parent.child
+
+   type Data_Elem is new Data_Record with
+     record
+        Value : Data_Type;
+     end record;
+
+   Next_Avail_Seq_No : Sequence_Number := 1;
+
+   procedure Sequence (Ptr : Data_Ptr);
+    -- the child must be private for this procedure to know details of
+    -- the implementation of data collections
+
+   procedure Add (Datum : Data_Type; To : in out Data_Collection);
+
+   function  Op  (Data : Data_Collection) return Data_Type;
+    -- op models a complicated operation that whose code can be
+    -- used for various data types
+
+
+end CA11019_0.CA11019_1;
+ -- parent.child
+
+     --=================================================================--
+
+ 
+package body CA11019_0.CA11019_1 is    
+          -- parent.child
+
+   procedure Sequence (Ptr : Data_Ptr) is
+   begin
+      Ptr.Seq := Next_Avail_Seq_No;
+      Next_Avail_Seq_No := Next_Avail_Seq_No + 1;
+   end Sequence;
+
+   ---------------------------------------------------------
+
+   procedure Add (Datum : Data_Type; To : in out Data_Collection) is
+      Ptr : Data_Ptr;
+   begin
+      if To.First = null then
+         -- assign new record with data value to 
+         -- to.next <- null;
+         To.First := new Data_Elem'(Next  => null,
+                                    Value => Datum,
+                                    Seq   => 1);
+         Sequence (To.First);
+         To.Last := To.First;
+      else
+         -- chase to end of list
+         Ptr := To.First;
+         while Ptr.Next /= null loop
+            Ptr := Ptr.Next;
+         end loop;
+         -- and add element there
+         Ptr.Next := new Data_Elem'(Next  => null,
+                                    Value => Datum,
+                                    Seq   => 1);
+         Sequence (Ptr.Next);
+         To.Last := Ptr.Next;
+      end if;
+
+   end Add;
+
+   ---------------------------------------------------------
+
+   function  Op  (Data : Data_Collection) return Data_Type is
+      -- for simplicity, just return the maximum of the data set
+      Max : Data_Type := Data_Elem( Data.First.all ).Value; 
+                              -- assuming non-empty collection
+      Ptr : Data_Ptr  := Data.First;
+
+   begin
+      -- no error checking
+      while Ptr.Next /= null loop
+         if Data_Elem( Ptr.Next.all ).Value > Max then
+            Max := Data_Elem( Ptr.Next.all ).Value;
+         end if;
+         Ptr := Ptr.Next;
+      end loop;
+      return Max;
+   end Op;
+
+end CA11019_0.CA11019_1;
+ -- parent.child
+
+     --=================================================================--
+
+-- parent body depends on private generic child
+with CA11019_0.CA11019_1;     -- Private generic child.
+
+pragma Elaborate (CA11019_0.CA11019_1);
+package body CA11019_0 is
+
+   -- instantiate the generic child with data types needed by the 
+   -- package interface services
+   package Data_1_Ops is new CA11019_1
+     (Data_Type => Data_1);
+ 
+   package Data_2_Ops is new CA11019_1
+     (Data_Type => Data_2);
+
+   package Data_3_Ops is new CA11019_1
+     (Data_Type => Data_3);
+
+   ---------------------------------------------------------
+
+   procedure Add_1 (Data : Data_1; To : in out Data_Collection) is
+   begin
+      -- maybe do other stuff here
+      Data_1_Ops.Add (Data, To);
+      -- and here
+   end;
+
+   ---------------------------------------------------------
+
+   function Statistical_Op_1 (Data : Data_Collection) return Data_1 is
+   begin
+      -- maybe use generic operation(s) in some complicated ways
+      -- (but simplified out, for the sake of testing)
+      return Data_1_Ops.Op (Data);
+   end;
+
+   ---------------------------------------------------------
+
+   procedure Add_2 (Data : Data_2; To : in out Data_Collection) is
+   begin
+      Data_2_Ops.Add (Data, To);
+   end;
+
+   ---------------------------------------------------------
+
+   function Statistical_Op_2 (Data : Data_Collection) return Data_2 is
+   begin
+      return Data_2_Ops.Op (Data);
+   end;
+
+   ---------------------------------------------------------
+
+   procedure Add_3 (Data : Data_3; To : in out Data_Collection) is
+   begin
+      Data_3_Ops.Add (Data, To);
+   end;
+
+   ---------------------------------------------------------
+
+   function Statistical_Op_3 (Data : Data_Collection) return Data_3 is
+   begin
+      return Data_3_Ops.Op (Data);
+   end;
+
+end CA11019_0;
+
+
+     --=================================================--
+
+with CA11019_0,
+  -- Main,    
+  -- Main.Child is private
+     Report;
+
+procedure CA11019 is
+
+   package Main renames CA11019_0;
+
+   Col_1,
+   Col_2,
+   Col_3 : Main.Data_Collection;
+
+begin
+
+   Report.Test ("CA11019", "Check that body of a (non-generic) package " &
+                "may depend on its private generic child");
+
+   -- build a data collection
+
+   for I in 1 .. 10 loop
+      Main.Add_1 ( Main.Data_1(I), Col_1);
+   end loop;
+
+   if Main.Statistical_Op_1 (Col_1) /= 10 then 
+      Report.Failed ("Wrong data_1 value returned");
+   end if;
+
+   for I in reverse 10 .. 20 loop
+      Main.Add_2 ( Main.Data_2(I * 10), Col_2);
+   end loop;
+
+   if Main.Statistical_Op_2 (Col_2) /= 200 then 
+      Report.Failed ("Wrong data_2 value returned");
+   end if;
+
+   for I in 0 .. 10 loop
+      Main.Add_3 ( Main.Data_3(I + 5), Col_3);
+   end loop;
+
+   if Main.Statistical_Op_3 (Col_3) /= 15 then 
+      Report.Failed ("Wrong data_3 value returned");
+   end if;
+
+   Report.Result;
+
+end CA11019;

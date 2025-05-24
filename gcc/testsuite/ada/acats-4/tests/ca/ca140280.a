@@ -1,0 +1,77 @@
+-- CA140280.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+-- OBJECTIVE:
+--     See CA140283.AM.
+--
+-- TEST DESCRIPTION
+--     See CA140283.AM.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--      -> CA140280.A
+--         CA140281.A
+--         CA140282.A
+--         CA140283.AM
+--
+-- CHANGE HISTORY:
+--     JBG 05/28/85  CREATED ORGINAL TEST.
+--     RDH 04/18/90  ADDED CASES WHERE SUBPROGRAM PARAMETER TYPES ARE
+--                   NOT THE SAME.
+--     RLB 07/08/99  Reinstated withdrawn test; revised to Ada 95 format.
+
+GENERIC
+     C : INTEGER;
+PROCEDURE GENPROC_CA14028 (X : OUT INTEGER);
+
+WITH REPORT; USE REPORT;
+PRAGMA ELABORATE (REPORT);
+PROCEDURE GENPROC_CA14028 (X : OUT INTEGER) IS
+BEGIN
+     X := IDENT_INT(C);
+END GENPROC_CA14028;
+
+GENERIC
+FUNCTION GENFUNC_CA14028 RETURN INTEGER;
+
+FUNCTION GENFUNC_CA14028 RETURN INTEGER IS
+BEGIN
+     RETURN 2;
+END GENFUNC_CA14028;
+
+WITH GENPROC_CA14028;
+PRAGMA ELABORATE (GENPROC_CA14028);
+PROCEDURE CA14028_PROC1 IS NEW GENPROC_CA14028(1);
+
+WITH GENFUNC_CA14028;
+PRAGMA ELABORATE (GENFUNC_CA14028);
+FUNCTION CA14028_FUNC2 IS NEW GENFUNC_CA14028;
+
+WITH GENPROC_CA14028;
+PRAGMA ELABORATE (GENPROC_CA14028);
+PROCEDURE CA14028_PROC3 IS NEW GENPROC_CA14028(3);
+
+WITH GENFUNC_CA14028;
+PRAGMA ELABORATE (GENFUNC_CA14028);
+FUNCTION CA14028_FUNC3 IS NEW GENFUNC_CA14028;

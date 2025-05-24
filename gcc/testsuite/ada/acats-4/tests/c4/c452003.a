@@ -1,0 +1,529 @@
+-- C452003.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--     For a membership where the membership choice is a subtype (determining
+--     the tested type) which is a (named) general access-to-object type
+--     designating a tagged type, check that the membership returns False
+--     unless all of the below are true:
+--     (1) the type of the tested expression is convertible to the tested type;
+--     (2) the accessibility level of the tested expression is no deeper than
+--         that of the tested type;
+--     (3) if the tested expression is not null, the tag of the designated
+--         object is covered by the designated type of the tested type;
+--     (4) if the tested subtype excludes null, the tested expression is not
+--         null.
+--
+-- TEST DESCRIPTION:
+--     A programmer is creating a hierarchy of objects where some of the
+--     dispatching and class-wide operations need to store the controlling
+--     parameter into a global data structure. The global data structure is
+--     built using a named general access to root classwide type declared
+--     at library level. Since we are postulating that dispatching is required
+--     by some of the operations, anonymous access parameters are needed to
+--     provide that. The abstraction constructor wants to communicate that
+--     the actual parameters have to have library-level accessibility - they
+--     can do that with a membership in a precondition. Similarly, the client
+--     programmer wants to avoid violating the precondition (regardless of how
+--     it is given), and they can use a membership to do that.
+--
+--     We only declare a skeleton of this structure, declaring Root_Type and
+--     Child_Type derived from it, two primitive operations Save and Is_Present
+--     and one class-wide operation for each type, and a simple global data
+--     structure.
+--
+--     ----
+--
+--     This test is checking the rules of 4.5.2(30.2/4) and 4.5.2(30.3/4),
+--     both added by Ada 2012. The tested expression of these memberships can
+--     be an object of an anonymous access type following 8.6(25.1/3), which
+--     allows anonymous access types to match named general access types when
+--     that's reasonable. Also note that the Legality Rule 8.6(27.1/4)
+--     explicitly excludes the tested expression of a membership from its check
+--     -- essentially, there is no implicit conversion in a membership, the
+--     tested expression retains its original (possibly different) type and
+--     the membership test returns True or False instead.
+--
+--     This test is implicitly also providing a test of 8.6(25.1/3) resolution,
+--     as it uses all of the abilities provided there. It also uses a variety
+--     of other new Ada 2012 features (if expressions, preconditions, and
+--     use all type).
+
+-- CHANGE HISTORY:
+--    28 Sep 2018   RLB   Created test.
+--    13 May 2020   RLB   Corrected Force_Save, the inner if branches
+--                        were backwards.
+--    14 May 2020   RLB   Corrected Force_Op, which didn't test the objective.
+--    22 May 2020   RLB   Typos in previous version.
+--
+--!
+
+package C452003_Root is
+
+   pragma Assertion_Policy (Check);
+
+   type Root_Type is tagged record
+       Id : Natural := 0;
+   end record;
+
+   type Any_Root_Ptr is access all Root_Type'Class;
+
+   subtype Non_Null_Any_Root_Ptr is not null Any_Root_Ptr;
+
+   procedure Save (Obj : access Root_Type)
+      with Pre => Obj in Any_Root_Ptr; -- (Objective 2)
+
+   function Is_Present (Obj : access Root_Type) return Boolean;
+
+   type TC_Result is (Is_Null, Done, Wrong_Kind);
+
+   procedure Force_Op (Obj : access constant Root_Type'Class;
+                       Result : out TC_Result);
+
+end C452003_Root;
+
+package body C452003_Root is
+
+   pragma Assertion_Policy (Check);
+
+   Global_Save : Any_Root_Ptr := null;
+      -- The global data structure. In a real program, this probably would
+      -- be a container or have internal pointers, but we don't need that
+      -- for this test.
+
+   procedure Save (Obj : access Root_Type) is
+   begin
+      if Obj.Id /= 0 then
+         Global_Save := Any_Root_Ptr (Obj); -- Always should be OK
+                                            -- if the precondition is checked.
+      -- else don't save.
+      end if;
+   end Save;
+
+   function Is_Present (Obj : access Root_Type) return Boolean is
+   begin
+      if Obj in Any_Root_Ptr then -- (Objective 2)
+         return Any_Root_Ptr (Obj) = Global_Save; -- Always should be OK
+                                                  -- if the membership worked.
+      else
+         return False;
+      end if;
+   end Is_Present;
+
+   procedure Force_Op (Obj : access constant Root_Type'Class;
+                       Result : out TC_Result) is
+   begin
+      if Obj in Any_Root_Ptr then -- (Objective 1)
+         if Obj in Non_Null_Any_Root_Ptr then -- Should never get here.
+            Result := Done;
+         else
+            Result := Is_Null;
+         end if;
+      else
+         Result := Wrong_Kind;
+      end if;
+   end Force_Op;
+
+end C452003_Root;
+
+package C452003_Root.Child is
+
+   pragma Assertion_Policy (Check);
+
+   type Child_Type is new Root_Type with record
+       Name : String(1..4);
+   end record;
+
+   type Any_Child_Ptr is access all Child_Type'Class;
+
+   overriding
+   procedure Save (Obj : access Child_Type)
+      with Pre => Obj in Any_Root_Ptr;
+
+   overriding
+   function Is_Present (Obj : access Child_Type) return Boolean;
+
+   type TC_Result is (Is_Null, Done, Wrong_Tag);
+
+   procedure Force_Save (Obj : access Root_Type'Class;
+                         Result : out TC_Result);
+
+end C452003_Root.Child;
+
+package body C452003_Root.Child is
+
+   pragma Assertion_Policy (Check);
+
+   Global_Save : Any_Child_Ptr := null;
+
+   procedure Save (Obj : access Child_Type) is
+   begin
+      if Obj.Id /= 0 then
+         Global_Save := Any_Child_Ptr (Obj); -- Always should be OK
+                                             -- if the precondition is checked.
+      -- else don't save.
+      end if;
+   end Save;
+
+   function Is_Present (Obj : access Child_Type) return Boolean is
+   begin
+      if Obj in Any_Child_Ptr then
+         return Any_Child_Ptr (Obj) = Global_Save; -- Always should be OK
+                                                   -- if the membership worked.
+      elsif Obj in Any_Root_Ptr then
+         return C452003_Root.Is_Present (Any_Root_Ptr(Obj));
+      else
+         return False;
+      end if;
+   end Is_Present;
+
+   procedure Force_Save (Obj : access Root_Type'Class;
+                         Result : out TC_Result) is
+   begin
+      if Obj in Any_Child_Ptr then -- (Objective 3)
+         if Obj in Non_Null_Any_Root_Ptr then -- (Objective 4)
+            Global_Save := Any_Child_Ptr (Obj);
+            Result := Done;
+         else
+            Global_Save := null;
+            Result := Is_Null;
+         end if;
+      else
+         Result := Wrong_Tag;
+      end if;
+   end Force_Save;
+
+end C452003_Root.Child;
+
+with C452003_Root.Child;
+package C452003A is
+
+   pragma Assertion_Policy (Check);
+
+   -- Note: We have to do most of the tests in a package, since they require
+   -- declaring library-level objects.
+
+   procedure Do_Tests (Nested_Obj : access C452003_Root.Root_Type'Class;
+                       Is_Root : in Boolean);
+
+end C452003A;
+
+
+with Report;
+with Ada.Assertions;
+package body C452003A is
+
+   pragma Assertion_Policy (Check);
+
+   Global_Root_Obj : aliased C452003_Root.Root_Type := (Id => 3);
+
+   Global_Child_Obj : aliased C452003_Root.Child.Child_Type :=
+                     (Id => 3, Name => "ZZZZ");
+
+   procedure Force_Dispatch_Save (
+                 The_Obj : access C452003_Root.Root_Type'Class) is
+   begin
+      C452003_Root.Save (The_Obj);
+   end Force_Dispatch_Save;
+
+   function Force_Dispatch_Is_Present (
+           The_Obj : access C452003_Root.Root_Type'Class) return Boolean is
+   begin
+      return C452003_Root.Is_Present (The_Obj);
+   end Force_Dispatch_Is_Present;
+
+   procedure Do_Tests (Nested_Obj : access C452003_Root.Root_Type'Class;
+                       Is_Root : in Boolean) is
+      An_Obj : access C452003_Root.Root_Type'Class;
+   begin
+      -- First, try calling Save with the parameter, it should fail the
+      -- precondition (Objective 2, failure):
+      begin
+         Nested_Obj.Save; -- Prefixed call.
+         Report.Comment ("Prefixed Save call succeeded with nested object" &
+            " - Is_Root=" & Boolean'Image(Is_Root));
+      exception
+         when Ada.Assertions.Assertion_Error =>
+            Report.Comment ("Precondition for prefixed Save call fails as " &
+                "expected - Is_Root=" & Boolean'Image(Is_Root));
+         when Program_Error =>
+            Report.Failed ("Precondition on prefixed Save call did not fail, "&
+                "conversion did - Is_Root=" & Boolean'Image(Is_Root));
+      end;
+
+      begin
+         C452003_Root.Save (Nested_Obj); -- Normal call.
+         Report.Failed ("Save call succeeded with nested object - Is_Root=" &
+            Boolean'Image(Is_Root));
+      exception
+         when Ada.Assertions.Assertion_Error =>
+            Report.Comment ("Precondition for Save call fails as " &
+                "expected - Is_Root=" & Boolean'Image(Is_Root));
+         when Program_Error =>
+            Report.Failed ("Precondition on Save call did not fail, " &
+                "conversion did - Is_Root=" & Boolean'Image(Is_Root));
+      end;
+
+      begin
+         Force_Dispatch_Save (Nested_Obj); -- Dispatching call on Save.
+         Report.Failed ("Dispatching save call succeeded with nested " &
+            "object - Is_Root=" & Boolean'Image(Is_Root));
+      exception
+         when Ada.Assertions.Assertion_Error =>
+            Report.Comment ("Precondition for dispatching Save call fails " &
+                "as expected - Is_Root=" & Boolean'Image(Is_Root));
+         when Program_Error =>
+            Report.Failed ("Precondition on dispatching Save call did not " &
+                "fail, conversion did - Is_Root=" & Boolean'Image(Is_Root));
+      end;
+
+      -- Now, try the appropriate global object (Objective 2, success):
+      begin
+         if Is_Root then
+            Force_Dispatch_Save (Global_Root_Obj'Access);
+         else
+            Force_Dispatch_Save (Global_Child_Obj'Access);
+         end if;
+         Report.Comment ("Save call succeeded with global object - Is_Root=" &
+            Boolean'Image(Is_Root));
+      exception
+         when Ada.Assertions.Assertion_Error =>
+            Report.Comment ("Precondition for Save call failed for global " &
+                "object - Is_Root=" & Boolean'Image(Is_Root));
+         when Program_Error =>
+            Report.Failed ("Precondition on Save call OK, but conversion " &
+                "failed - Is_Root=" & Boolean'Image(Is_Root));
+      end;
+
+      -- Check that the usual membership works (Objective 2):
+      begin
+         if (if Is_Root then
+                Force_Dispatch_Is_Present (Global_Root_Obj'Access)
+             else
+                Force_Dispatch_Is_Present (Global_Child_Obj'Access)) then
+            Report.Comment ("Is_Present OK with global object - Is_Root=" &
+               Boolean'Image(Is_Root));
+         else
+            Report.Failed ("Is_Present incorrect answer with global object" &
+               " - Is_Root=" & Boolean'Image(Is_Root));
+         end if;
+      exception
+         when Program_Error =>
+            Report.Failed ("Is_Present raised Program_Error, conversion " &
+                "failed - Is_Root=" & Boolean'Image(Is_Root));
+      end;
+
+      begin
+         if C452003_Root.Is_Present (Nested_Obj) then
+            Report.Failed ("Is_Present incorrect answer with nested object" &
+               " - Is_Root=" & Boolean'Image(Is_Root));
+         else
+            Report.Comment ("Is_Present OK with nested object" &
+               " - Is_Root=" & Boolean'Image(Is_Root));
+         end if;
+      exception
+         when Program_Error =>
+            Report.Failed ("Is_Present raised Program_Error with nested " &
+                "object, conversion failed - Is_Root=" &
+                Boolean'Image(Is_Root));
+      end;
+
+      begin
+         if Force_Dispatch_Is_Present (Nested_Obj) then
+            Report.Failed ("Dispatching Is_Present incorrect answer with " &
+               "nested object - Is_Root=" & Boolean'Image(Is_Root));
+         else
+            Report.Comment ("Dispatching Is_Present OK with nested object" &
+               " - Is_Root=" & Boolean'Image(Is_Root));
+         end if;
+      exception
+         when Program_Error =>
+            Report.Failed ("Dispatching Is_Present raised Program_Error with "&
+                "nested object, conversion failed - Is_Root=" &
+                Boolean'Image(Is_Root));
+      end;
+
+      -- Check that the membership works on a stand-alone object of an
+      -- anonymous access type:
+      declare
+         procedure Check_It (Is_OK : in Boolean; Code : in Character) is
+         begin
+            if An_Obj not in C452003_Root.Any_Root_Ptr then
+               if Is_OK then
+                  Report.Failed ("Check_It incorrect answer case " & Code);
+               end if;
+            else
+               if not Is_OK then
+                  Report.Failed ("Check_It incorrect answer case " & Code);
+               end if;
+               C452003_Root.Save (An_Obj); -- Should be OK.
+            end if;
+         end Check_It;
+      begin
+         if Is_Root then
+            An_Obj := Nested_Obj;
+            Check_It (Is_OK => False, Code => 'A');
+            An_Obj := Global_Root_Obj'Access;
+            Check_It (Is_OK => True, Code => 'B');
+         else
+            An_Obj := Nested_Obj;
+            Check_It (Is_OK => False, Code => 'C');
+            An_Obj := Global_Child_Obj'Access;
+            Check_It (Is_OK => True, Code => 'D');
+         end if;
+      exception
+         when Ada.Assertions.Assertion_Error =>
+            Report.Failed ("Check_It raised Asserion_Error " &
+                "- Is_Root=" & Boolean'Image(Is_Root));
+         when Program_Error =>
+            Report.Failed ("Check_It raisedd Program_Error " &
+                "- Is_Root=" & Boolean'Image(Is_Root));
+      end;
+
+      -- Call Force_Save with various parameters, to check that the tag check
+      -- is made (and conditional on whether the object is null).
+      -- (Objectives 3 and 4).
+      declare
+         R : C452003_Root.Child.TC_Result;
+         use all type C452003_Root.Child.TC_Result;
+      begin
+         begin
+            C452003_Root.Child.Force_Save (null, R);
+            if R = Is_Null then
+               Report.Comment ("Force_Save OK with null");
+            else
+               Report.Failed ("Force_Save null wrong result - " &
+                  C452003_Root.Child.TC_Result'Image (R));
+            end if;
+         exception
+            when Program_Error =>
+               Report.Failed ("Unexpected Program_Error from Force_Save " &
+                  "with null");
+         end;
+         begin
+            if Is_Root then
+               C452003_Root.Child.Force_Save (Global_Root_Obj'Access, R);
+               if R = Wrong_Tag then
+                  Report.Comment ("Force_Save OK with Global_Root");
+               else
+                  Report.Failed ("Force_Save Global_Root wrong result - " &
+                     C452003_Root.Child.TC_Result'Image (R));
+               end if;
+            else
+               C452003_Root.Child.Force_Save (Global_Child_Obj'Access, R);
+               if R = Done then
+                  Report.Comment ("Force_Save OK with Global_Child");
+               else
+                  Report.Failed ("Force_Save Global_Child wrong result - " &
+                     C452003_Root.Child.TC_Result'Image (R));
+               end if;
+            end if;
+         exception
+            when Program_Error =>
+               Report.Failed ("Force_Save raised Program_Error with global " &
+                   "object, conversion failed - Is_Root=" &
+                   Boolean'Image(Is_Root));
+         end;
+      end;
+
+      -- Call Force_Op with various parameters, to check that the conversion
+      -- check is made (Objective 1).
+      declare
+         R : C452003_Root.TC_Result;
+         use all type C452003_Root.TC_Result;
+      begin
+         begin
+            C452003_Root.Force_Op (null, R);
+            if R = Wrong_Kind then
+               Report.Comment ("Force_Op OK with null");
+            else
+               Report.Failed ("Force_Op null wrong result - " &
+                  C452003_Root.TC_Result'Image (R));
+            end if;
+         exception
+            when Program_Error =>
+               Report.Failed ("Unexpected Program_Error from Force_Op " &
+                  "with null");
+         end;
+         begin
+            if Is_Root then
+               C452003_Root.Force_Op (Global_Root_Obj'Access, R);
+            else
+               C452003_Root.Force_Op (Global_Child_Obj'Access, R);
+            end if;
+            if R = Wrong_Kind then
+               Report.Comment ("Force_Op OK with global object" &
+                  " - Is_Root=" & Boolean'Image(Is_Root));
+            else
+               Report.Failed ("Force_Op global object wrong result - " &
+                  C452003_Root.TC_Result'Image (R) &
+                  " - Is_Root=" & Boolean'Image(Is_Root));
+            end if;
+         exception
+            when Program_Error =>
+               Report.Failed ("Force_Save raised Program_Error with global " &
+                   "object, conversion failed - Is_Root=" &
+                   Boolean'Image(Is_Root));
+         end;
+      end;
+   end Do_Tests;
+
+end C452003A;
+
+with Report;
+with C452003_Root.Child;
+with C452003A;
+procedure C452003 is
+
+   pragma Assertion_Policy (Check);
+
+   Local_Root_Obj : aliased C452003_Root.Root_Type := (Id => 1);
+
+   Local_Child_Obj : aliased C452003_Root.Child.Child_Type :=
+                     (Id => 2, Name => "XXXX");
+
+begin
+
+   Report.Test
+     ("C452003",
+      "Check that memberships with a tested type of a named general " &
+       "access-to-object type work as defined");
+
+   C452003A.Do_Tests (Local_Root_Obj'Access, Is_Root => True);
+
+   C452003A.Do_Tests (Local_Child_Obj'Access, Is_Root => False);
+
+   Report.Result;
+
+end C452003;

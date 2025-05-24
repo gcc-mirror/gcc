@@ -1,0 +1,99 @@
+-- FC51A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation defines a fraction type abstraction. Fractions are
+--      implemented as records with two scalar components: a numerator
+--      of type integer and a denominator of type positive. Fractions are
+--      created via an overloaded "/" operator.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package FC51A00 is   -- Fraction type abstraction.
+
+   type Fraction_Type is private;
+
+   -- Create a fraction object by integer division.
+   function "/" (Left, Right : Integer) return Fraction_Type;
+
+   -- Change the sign of a fraction.
+   function "-" (Frac : Fraction_Type) return Fraction_Type;
+
+   -- Return value of numerator as integer.
+   function Numerator (Frac : Fraction_Type) return Integer;
+
+   -- Return value of denominator as integer.
+   function Denominator (Frac : Fraction_Type) return Integer;
+
+   -- ... Other operations on fraction types.
+
+private
+
+   type Fraction_Type is record
+      Numerator   : Integer;
+      Denominator : Positive;
+   end record;
+
+end FC51A00;
+
+
+     --==================================================================--
+
+
+package body FC51A00 is
+
+   function "/" (Left, Right : Integer) return Fraction_Type is
+      Result : Fraction_Type;
+   begin
+      Result.Numerator   := Left;
+      Result.Denominator := Right;
+      return Result;
+   end "/";
+
+
+   function "-" (Frac : Fraction_Type) return Fraction_Type is
+      Result : Fraction_Type := Frac;
+   begin
+      Result.Numerator := -(Result.Numerator);
+      return Result;
+   end "-";
+
+
+   function Numerator (Frac : Fraction_Type) return Integer is
+   begin
+      return (Frac.Numerator);
+   end Numerator;
+
+
+   function Denominator (Frac : Fraction_Type) return Integer is
+   begin
+      return (Frac.Denominator);
+   end Denominator;
+
+
+end FC51A00;

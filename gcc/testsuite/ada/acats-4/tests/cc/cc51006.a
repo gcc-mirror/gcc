@@ -1,0 +1,224 @@
+-- CC51006.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, in an instance, each implicit declaration of a primitive
+--      subprogram of a formal (nontagged) derived type declares a view of
+--      the corresponding primitive subprogram of the ancestor type, even if
+--      the subprogram has been overridden for the actual type. Check that for
+--      a formal derived type with no discriminant part, if the ancestor
+--      subtype is an unconstrained scalar subtype then the actual may be
+--      either constrained or unconstrained.
+--
+-- TEST DESCRIPTION:
+--      The formal derived type has no discriminant part, but the ancestor
+--      subtype is unconstrained, making the formal type unconstrained. Since
+--      the ancestor subtype is a scalar subtype (not an access or composite
+--      subtype), the actual may be either constrained or unconstrained.
+--
+--      Declare a root type of a class as an unconstrained scalar (use floating
+--      point). Declare a primitive subprogram of the root type. Declare a
+--      generic package which has a formal derived type with the scalar root
+--      type as ancestor. Inside the generic, declare an operation which calls
+--      the ancestor type's primitive subprogram. Derive both constrained and
+--      unconstrained types from the root type and override the primitive
+--      subprogram for each. Declare a constrained subtype of the unconstrained
+--      derivative. Instantiate the generic package for the derived types and
+--      the subtype and call the "generic" operation for each one. Confirm that
+--      in all cases the root type's implementation of the primitive
+--      subprogram is called.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package CC51006_0 is  -- Weight class.
+
+   type Weight_Type is digits 3;         -- Root type of class (unconstrained).
+
+   function Weight_To_String (Wt : Weight_Type) return String;
+
+   -- ... Other operations.
+
+end CC51006_0;
+
+
+     --==================================================================--
+
+
+package body CC51006_0 is
+
+   -- The implementations of the operations below are purely artificial; the
+   -- validity of their implementations in the context of the abstraction is
+   -- irrelevant to the feature being tested.
+
+   function Weight_To_String (Wt : Weight_Type) return String is
+   begin
+      if Wt > 0.0 then         -- Always true for this test.
+         return ("Root type's implementation called");
+      else
+         return ("Unexpected result                ");
+      end if;
+   end Weight_To_String;
+
+end CC51006_0;
+
+
+     --==================================================================--
+
+
+with CC51006_0;  -- Weight class.
+generic          -- Generic weight operations. 
+   type Weight is new CC51006_0.Weight_Type;
+package CC51006_1 is
+
+   procedure Output_Weight (Wt : in Weight; TC_Return : out String);
+
+   -- ... Other operations.
+
+end CC51006_1;
+
+
+     --==================================================================--
+
+
+package body CC51006_1 is
+
+
+   -- The implementation of this procedure is purely artificial, and contains
+   -- an artificial parameter for testing purposes: the procedure returns the
+   -- weight string to the caller.
+
+   procedure Output_Weight (Wt : in Weight; TC_Return : out String) is
+   begin
+      TC_Return := Weight_To_String (Wt);   -- Should always call root type's
+   end Output_Weight;                       -- implementation.
+
+
+end CC51006_1;
+
+
+     --==================================================================--
+
+
+with CC51006_0;       -- Weight class.
+use  CC51006_0;
+package CC51006_2 is  -- Extensions to weight class.
+
+   type Grams is new Weight_Type;                         -- Unconstrained
+                                                          -- derivative.
+
+   function Weight_To_String (Wt : Grams) return String;  -- Overrides root
+                                                          -- type's operation.
+
+   subtype Milligrams is Grams                            -- Constrained
+     range 0.0 .. 0.999;                                  -- subtype (of der.).
+
+   type Pounds is new Weight_Type                         -- Constrained
+     range 0.0 .. 500.0;                                  -- derivative.
+
+   function Weight_To_String (Wt : Pounds) return String; -- Overrides root
+                                                          -- type's operation.
+
+end CC51006_2;
+
+
+     --==================================================================--
+
+
+package body CC51006_2 is
+
+   -- The implementations of the operations below are purely artificial; the
+   -- validity of their implementations in the context of the abstraction is
+   -- irrelevant to the feature being tested.
+
+   function Weight_To_String (Wt : Grams) return String is
+   begin
+      return ("GRAMS: Should never be called    ");
+   end Weight_To_String;
+
+
+   function Weight_To_String (Wt : Pounds) return String is
+   begin
+      return ("POUNDS: Should never be called   ");
+   end Weight_To_String;
+
+end CC51006_2;
+
+
+     --==================================================================--
+
+
+with CC51006_1; -- Generic weight operations.
+with CC51006_2; -- Extensions to weight class.
+
+with Report;
+procedure CC51006 is
+
+   package Metric_Wts_G  is new CC51006_1 (CC51006_2.Grams);      -- Unconstr.
+   package Metric_Wts_MG is new CC51006_1 (CC51006_2.Milligrams); -- Constr.
+   package US_Wts        is new CC51006_1 (CC51006_2.Pounds);     -- Constr.
+
+   Gms : CC51006_2.Grams      := 113.451;
+   Mgm : CC51006_2.Milligrams := 0.549;
+   Lbs : CC51006_2.Pounds     := 24.52;
+
+
+   subtype TC_Buffers is String (1 .. 33);
+
+   TC_Expected : constant TC_Buffers := "Root type's implementation called";
+   TC_Buffer   :          TC_Buffers;
+
+begin
+   Report.Test ("CC51006", "Check that, in an instance, each implicit "  &
+                "declaration of a primitive subprogram of a formal "     &
+                "(nontagged) type declares a view of the corresponding " &
+                "primitive subprogram of the ancestor type");
+
+
+   Metric_Wts_G.Output_Weight (Gms, TC_Buffer);
+
+   if TC_Buffer /= TC_Expected then
+      Report.Failed ("Root operation not called for unconstrained derivative");
+   end if;
+
+
+   Metric_Wts_MG.Output_Weight (Mgm, TC_Buffer);
+
+   if TC_Buffer /= TC_Expected then
+      Report.Failed ("Root operation not called for constrained subtype");
+   end if;
+
+
+   US_Wts.Output_Weight (Lbs, TC_Buffer);
+
+   if TC_Buffer /= TC_Expected then
+      Report.Failed ("Root operation not called for constrained derivative");
+   end if;
+
+   Report.Result;
+end CC51006;

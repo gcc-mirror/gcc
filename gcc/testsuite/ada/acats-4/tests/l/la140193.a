@@ -1,0 +1,64 @@
+-- LA140193.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      See LA140192.AM.
+--
+-- TEST DESCRIPTION:
+--      See LA140192.AM.
+--
+-- SPECIAL REQUIREMENTS:
+--      See LA140192.AM.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140190.A
+--         LA140191.A
+--         LA140192.AM
+--      -> LA140193.A 
+--
+-- PASS/FAIL CRITERIA:                
+--      See LA140192.AM.
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008P baseline version
+--     23 JUN 95   SAIC        Initial version
+--     29 JAN 96   SAIC        First revision after review
+--     17 NOV 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions.
+--
+--!
+
+procedure LA14019_0 (Param : in out integer);
+
+
+procedure LA14019_0 (Param : in out integer) is
+     Local_array : array (1..10) of float := (others => 0.0);
+     Local_var : integer := 0;
+     TC_var : constant integer := -9;
+
+begin
+     Param := (1 + Param) * 2;
+end LA14019_0;

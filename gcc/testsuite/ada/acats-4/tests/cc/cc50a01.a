@@ -1,0 +1,313 @@
+-- CC50A01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a formal parameter of a library-level generic unit may be
+--      a formal tagged private type. Check that a nonlimited tagged type may
+--      be passed as an actual. Check that if the formal type is indefinite,
+--      both indefinite and definite types may be passed as actuals.
+--
+-- TEST DESCRIPTION:
+--      The generic package declares a formal tagged private type (this can
+--      be considered the parent "mixin" class). This type is extended in
+--      the generic to provide support for stacks of items of any nonlimited
+--      tagged type. Stacks are modeled as singly linked lists, with the list
+--      nodes being objects of the extended type.
+--
+--      A generic testing procedure pushes items onto a stack, and pops them
+--      back off, verifying the state of the stack at various points along the
+--      way. The push and pop routines exercise functionality important to
+--      tagged types, such as type conversion toward the root of the derivation
+--      class and extension aggregates.
+--
+--      The formal tagged private type has an unknown discriminant part, and
+--      is thus indefinite. This allows both definite and indefinite types
+--      to be passed as actuals. For tagged types, definite implies
+--      nondiscriminated, and indefinite implies discriminated (with known
+--      or unknown discriminants). 
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--
+--         FC50A00.A
+--      -> CC50A01.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      21 Nov 95   SAIC    ACVC 2.0.1 fixes: Moved instantiations of
+--                          BC50A01_0 to library level.
+--      11 Aug 96   SAIC    ACVC 2.1: Updated prologue. Added pragma
+--                          Elaborate to context clauses for CC50A01_2 & _3.
+--
+--!
+
+with FC50A00;  -- Tagged (actual) type declarations.
+generic        -- Generic stack abstraction.
+
+   type Item (<>) is tagged private;            -- Formal tagged private type.
+   TC_Default_Value : Item;                     -- Needed in View_Top (see
+                                                -- below).
+package CC50A01_0 is
+
+   type Stack is private;
+
+-- Note that because the actual type corresponding to Item may be
+-- unconstrained, the functions of removing the top item from the stack and
+-- returning the value of the top item of the stack have been separated into
+-- Pop and View_Top, respectively. This is necessary because otherwise the
+-- returned value would have to be an out parameter of Pop, which would
+-- require the user (in the unconstrained case) to create an uninitialized
+-- unconstrained object to serve as the actual, which is illegal.
+
+   procedure Push     (I : in Item; S : in out Stack);
+   procedure Pop      (S : in out Stack);
+   function  View_Top (S : Stack) return Item;
+
+   function Size_Of (S : Stack) return Natural;
+
+private
+
+   type Stack_Item;
+   type Stack_Ptr is access Stack_Item;
+
+   type Stack_Item is new Item with record      -- Extends formal type.
+      Next : Stack_Ptr := null;
+   end record;
+
+   type Stack is record
+      Top  : Stack_Ptr := null;
+      Size : Natural   := 0;
+   end record;
+
+end CC50A01_0;
+
+
+     --==================================================================--
+
+
+package body CC50A01_0 is
+
+   -- Link NewItem in at the top of the stack (the extension aggregate within
+   -- the allocator initializes the inherited portion of NewItem to equal I,
+   -- and NewItem.Next to point to what S.Top points to).
+
+   procedure Push (I : in Item; S : in out Stack) is
+      NewItem : Stack_Ptr;
+   begin
+      NewItem := new Stack_Item'(I with S.Top);     -- Extension aggregate.
+      S.Top   := NewItem;
+      S.Size  := S.Size + 1;
+   end Push;
+
+
+   -- Remove item from top of stack. This procedure only updates the state of
+   -- the stack; it does not return the value of the popped item. Hence, in
+   -- order to accomplish a "true" pop, both View_Top and Pop must be called
+   -- consecutively.
+   --
+   -- If the stack is empty, the Pop is ignored (for simplicity; in a true
+   -- application this might be treated as an error condition).
+
+   procedure Pop (S : in out Stack) is
+   begin
+      if S.Top = null then                          -- Stack is empty.
+         null;
+         -- Raise exception.
+      else
+         S.Top  := S.Top.Next;
+         S.Size := S.Size - 1;
+         -- Deallocate discarded node.
+      end if;
+   end Pop;
+
+
+   -- Return the value of the top item on the stack. This procedure only
+   -- returns the value; it does not remove the top item from the stack.
+   -- Hence, in order to accomplish a "true" pop, both View_Top and Pop must
+   -- be called consecutively.
+   --
+   -- Since items on the stack are of a type (Stack_Item) derived from Item,
+   -- which is a (tagged) private type, type conversion toward the root is the
+   -- only way to get a value of type Item for return to the caller.
+   --
+   -- If the stack is empty, View_Top returns a pre-specified default value.
+   -- (In a true application, an exception might be raised instead).
+
+   function View_Top (S : Stack) return Item is
+   begin
+      if S.Top = null then                          -- Stack is empty.
+         return TC_Default_Value;                   -- Testing artifice.
+         -- Raise exception.
+      else
+         return Item(S.Top.all);                    -- Type conversion.
+      end if;
+   end View_Top;
+
+
+   function Size_Of (S : Stack) return Natural is
+   begin
+      return (S.Size);
+   end Size_Of;
+
+
+end CC50A01_0;
+
+
+     --==================================================================--
+
+
+-- The formal package Stacker below is needed to gain access to the
+-- appropriate version of the "generic" type Stack. It is provided with an
+-- explicit actual part in order to restrict the packages that can be passed
+-- as actuals to those which have been instantiated with the same actuals
+-- which this generic procedure has been instantiated with.
+
+with CC50A01_0;  -- Generic stack abstraction.
+generic
+   type Item_Type (<>) is tagged private;       -- Formal tagged private type.
+   Default : Item_Type;
+   with package Stacker is new CC50A01_0 (Item_Type, Default);
+procedure CC50A01_1 (S : in out Stacker.Stack; I : in Item_Type);
+
+
+     --==================================================================--
+
+--
+-- This generic procedure performs all of the testing of the
+-- stack abstraction.
+--
+
+with Report;
+procedure CC50A01_1 (S : in out Stacker.Stack; I : in Item_Type) is
+begin
+   Stacker.Push (I, S);                    -- Push onto empty stack.
+   Stacker.Push (I, S);                    -- Push onto nonempty stack.
+
+   if Stacker.Size_Of (S) /= 2 then
+      Report.Failed ("   Wrong stack size after 2 Pushes");
+   end if;
+
+   -- Calls to View_Top must initialize a declared object of type Item_Type
+   -- because the type may be unconstrained.
+
+   declare
+      Buffer1 : Item_Type := Stacker.View_Top (S);
+   begin
+      Stacker.Pop (S);                     -- Pop item off nonempty stack.
+      if Buffer1 /= I then
+         Report.Failed ("   Wrong stack item value after 1st Pop");
+      end if;
+   end;
+
+   declare
+      Buffer2 : Item_Type := Stacker.View_Top (S);
+   begin
+      Stacker.Pop (S);                     -- Pop last item off stack.
+      if Buffer2 /= I then
+         Report.Failed ("   Wrong stack item value after 2nd Pop");
+      end if;
+   end;
+
+   if Stacker.Size_Of (S) /= 0 then
+      Report.Failed ("   Wrong stack size after 2 Pops");
+   end if;
+
+   declare
+      Buffer3 : Item_Type := Stacker.View_Top (S);
+   begin
+      if Buffer3 /= Default then
+         Report.Failed ("   Wrong result after Pop of empty stack");
+      end if;
+      Stacker.Pop (S);                     -- Pop off empty stack.
+   end;
+
+end CC50A01_1;
+
+
+     --==================================================================--
+
+
+with FC50A00;
+
+with CC50A01_0;
+pragma Elaborate (CC50A01_0);
+
+package CC50A01_2 is new CC50A01_0 (FC50A00.Count_Type,
+                                    FC50A00.TC_Default_Count);
+
+
+     --==================================================================--
+
+
+with FC50A00;
+
+with CC50A01_0;
+pragma Elaborate (CC50A01_0);
+
+package CC50A01_3 is new CC50A01_0 (FC50A00.Person_Type,
+                                    FC50A00.TC_Default_Person);
+
+
+     --==================================================================--
+
+
+with FC50A00;   -- Tagged (actual) type declarations.
+with CC50A01_0; -- Generic stack abstraction.
+with CC50A01_1; -- Generic stack testing procedure.
+with CC50A01_2;
+with CC50A01_3;
+
+with Report;
+procedure CC50A01 is
+
+   package Count_Stacks  renames CC50A01_2;
+   package Person_Stacks renames CC50A01_3;
+
+
+   procedure TC_Count_Test is new CC50A01_1 (FC50A00.Count_Type,
+                                             FC50A00.TC_Default_Count,
+                                             Count_Stacks);
+   Count_Stack : Count_Stacks.Stack;
+
+ 
+   procedure TC_Person_Test is new CC50A01_1 (FC50A00.Person_Type,
+                                              FC50A00.TC_Default_Person,
+                                              Person_Stacks);
+   Person_Stack : Person_Stacks.Stack;
+
+begin
+   Report.Test ("CC50A01", "Check that a formal parameter of a " &
+                "library-level generic unit may be a formal tagged " &
+                "private type");
+
+   Report.Comment ("Testing definite tagged type..");
+   TC_Count_Test  (Count_Stack,  FC50A00.TC_Count_Item);
+
+   Report.Comment ("Testing indefinite tagged type..");
+   TC_Person_Test (Person_Stack, FC50A00.TC_Person_Item);
+
+   Report.Result;
+end CC50A01;

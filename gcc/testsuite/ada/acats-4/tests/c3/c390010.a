@@ -1,0 +1,216 @@
+-- C390010.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--     Check that if S is a subtype of a tagged type T, and if S is
+--     constrained, then the allowable values of S'Class are only those
+--     that, when converted to T, belong to S.
+--
+-- TEST DESCRIPTION:
+--      This test defines a small tagged hierarchy of discriminated tagged
+--      records, and constrained subtypes of those tagged record types.
+--      It then uses access to the classwide of the constrained subtype
+--      to check the objective.
+--
+--
+-- CHANGE HISTORY:
+--      09 APR 96   SAIC   Initial version
+--      03 NOV 96   SAIC   Revised for 2.1 release
+--      31 DEC 97   EDS    Restored use of intermediate access variable
+--                         to eliminate raising of Program_Error
+--      13 SEP 99   RLB    Repaired previous change to avoid premature
+--                         subtype check.
+--      28 JUN 02   RLB    Added pragma Elaborate_All (Report);.
+--!
+
+----------------------------------------------------------------- C390010_0
+
+with Report; pragma Elaborate_All (Report);
+package C390010_0 is
+
+  -- the defined subprograms will allow checking the placement of
+  -- constraint_checks
+
+  -- define a discriminated tagged type, and a constrained subtype of
+  -- that type:
+
+  type Discr_Tag_Record( Disc: Boolean ) is tagged record
+    FieldA : Character := 'A';
+    case Disc is
+      when True  => FieldB : Character := 'B';
+      when False => FieldC : Character := 'C';
+    end case;
+  end record;
+
+  procedure Dispatching_Op( DTO : in out Discr_Tag_Record );
+
+  Authentic : Boolean := Report.Ident_Bool( True );
+
+  subtype True_Record is Discr_Tag_Record( Authentic );
+
+
+  -- derive a type, "passing through" one discriminant, adding one
+  -- discriminant, and a constrained subtype of THAT type:
+
+  type Derived_Record( Disc1, Disc2: Boolean ) is
+    new Discr_Tag_Record( Disc1 ) with record
+      FieldD : Character := 'D';
+      case Disc2 is
+        when True  => FieldE : Character := 'E';
+        when False => FieldF : Character := 'F';
+      end case;
+    end record;
+
+  procedure Dispatching_Op( DR : in out Derived_Record );
+
+  subtype True_True_Derived is Derived_Record( Authentic, Authentic );
+
+
+  -- now, define an access to classwide type, using the classwide from the
+  -- constrained subtype of the root (or parent) type:
+
+  type Subtype_Parent_Class_Access is access all True_Record'Class;
+  type Parent_Class_Access is access all Discr_Tag_Record'Class;
+
+  procedure PCW_Op( SPCA : in Subtype_Parent_Class_Access );
+
+end C390010_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- C390010_0
+
+with Report;
+with TCTouch;
+package body C390010_0 is
+
+  procedure Dispatching_Op( DTO : in out Discr_Tag_Record ) is
+  begin
+    TCTouch.Touch('1');  --------------------------------------------------- 1
+    if DTO.Disc then
+      TCTouch.Touch(DTO.FieldB);  ------------------------------------------ B
+    else
+      TCTouch.Touch(DTO.FieldC);  ------------------------------------------ C
+    end if;
+  end Dispatching_Op;
+
+
+  procedure Dispatching_Op( DR : in out Derived_Record ) is
+  begin
+    TCTouch.Touch('2');  --------------------------------------------------- 2
+    if DR.Disc1 then
+      TCTouch.Touch(DR.FieldB);   ------------------------------------------ B
+    else
+      TCTouch.Touch(DR.FieldC);   ------------------------------------------ C
+    end if;
+    if DR.Disc2 then
+      TCTouch.Touch(DR.FieldE);   ------------------------------------------ E
+    else
+      TCTouch.Touch(DR.FieldF);   ------------------------------------------ F
+    end if;
+  end Dispatching_Op;
+
+  procedure PCW_Op( SPCA : in Subtype_Parent_Class_Access ) is
+  begin
+
+    -- the following line is the "heart" of this test, objects of all types
+    -- covered by the classwide type will be passed to this subprogram in
+    -- the execution of the test.
+    if SPCA.Disc then
+      TCTouch.Touch(SPCA.FieldB); ------------------------------------------ B
+    else
+      TCTouch.Touch(SPCA.FieldC); ------------------------------------------ C
+    end if;
+
+    Dispatching_Op( SPCA.all );  -- check that this dispatches correctly,
+                                 -- with discriminants correctly represented
+
+  end PCW_Op;
+
+end C390010_0;
+
+------------------------------------------------------------------- C390010
+
+with Report;
+with TCTouch;
+with C390010_0;
+procedure C390010 is
+
+  package CP renames C390010_0;
+
+  procedure Check_Element( Item : access CP.Discr_Tag_Record'Class ) is
+  begin
+
+    -- the implicit conversion from the general access parameter to the more
+    -- constrained subtype access type in the following call should cause
+    -- Constraint_Error in the cases where the object is not correctly
+    -- constrained
+
+    CP.PCW_Op( Item.all'Access );
+
+  exception
+    when Constraint_Error => TCTouch.Touch('X');  -------------------------- X
+    when others => Report.Failed("Unanticipated exception in Check_Element");
+
+  end Check_Element;
+
+  An_Item : CP.Parent_Class_Access;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C390010", "Check that if S is a subtype of a tagged type " &
+                          "T, and if S is constrained, then the allowable " &
+                          "values of S'Class are only those that, when " &
+                          "converted to T, belong to S" );
+
+  An_Item := new CP.Discr_Tag_Record(True);
+  Check_Element( An_Item );
+  TCTouch.Validate("B1B","Case 1");
+
+  An_Item := new CP.Discr_Tag_Record(False);
+  Check_Element( An_Item );
+  TCTouch.Validate("X","Case 2");
+
+  An_Item := new CP.True_Record;
+  Check_Element( An_Item );
+  TCTouch.Validate("B1B","Case 3");
+
+  An_Item := new CP.Derived_Record(False, False);
+  Check_Element( An_Item );
+  TCTouch.Validate("X","Case 4");
+
+  An_Item := new CP.Derived_Record(False, True);
+  Check_Element( An_Item );
+  TCTouch.Validate("X","Case 5");
+
+  An_Item := new CP.Derived_Record(True, False);
+  Check_Element( An_Item );
+  TCTouch.Validate("B2BF","Case 6");
+
+  An_Item := new CP.True_True_Derived;
+  Check_Element( An_Item );
+  TCTouch.Validate("B2BE","Case 7");
+
+  Report.Result;
+
+end C390010;

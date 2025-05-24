@@ -1,0 +1,251 @@
+-- C940017.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--     Check that dispatching calls can be made for subprograms inherited from
+--     a progenator for a protected type and implemented by protected
+--     operations of the type.
+--
+-- TEST DESCRIPTION:
+--     We imagine a protected interface describing an abstract queue and
+--     with concrete implementations supporting various numbers of items
+--     and various policies for handling empty/full queues (exceptions,
+--     blocking, and so on). [This shouldn't be too hard to imagine, it's
+--     essentially how the queue containers work, see RM A.18.28.]
+--
+--     We then create a class-wide usage of queues, and check using TcTouch
+--     to ensure that appropriate routines are called. We only use the
+--     environment task here for simplicity.
+--
+-- CHANGE HISTORY:
+--    27 Jun 2019   RLB   Created test.
+--
+--!
+
+with Report;
+package C940017_A is
+
+   type Queue_Interface is protected interface;
+
+   procedure Enqueue (Q : in out Queue_Interface; Item : in Integer)
+                                                              is abstract;
+
+   procedure Dequeue (Q : in out Queue_Interface; Item : out Integer)
+                                                              is abstract;
+
+   function Item_Count (Q : in Queue_Interface) return Natural is abstract;
+
+end C940017_A;
+
+with C940017_A;
+package C940017_B is
+
+   Empty_Error, Full_Error : exception;
+
+   protected type Single_w_Exceptions is new C940017_A.Queue_Interface with
+      overriding
+      procedure Enqueue (Item : in Integer);
+      overriding
+      procedure Dequeue (Item : out Integer);
+      overriding
+      function Item_Count return Natural;
+   private
+      In_Use : Boolean := False;
+      Stored_Item : Integer;
+   end Single_w_Exceptions;
+
+   type Item_Array is array (1..4) of Integer;
+
+   protected type Quad_w_Blocking is new C940017_A.Queue_Interface with
+      overriding
+      entry Enqueue (Item : in Integer);
+      overriding
+      entry Dequeue (Item : out Integer);
+      overriding
+      function Item_Count return Natural;
+   private
+      Count : Natural := 0;
+      Stored : Item_Array;
+   end Quad_w_Blocking;
+
+end C940017_B;
+
+
+with TcTouch;
+package body C940017_B is
+
+   protected body Single_w_Exceptions is
+      procedure Enqueue (Item : in Integer) is
+      begin
+         if In_Use then
+            raise Full_Error;
+         end if;
+         In_Use := True;
+         Stored_Item := Item;
+         TCTouch.Touch ('E'); -------------------------------------------- E
+      end Enqueue;
+
+      procedure Dequeue (Item : out Integer) is
+      begin
+         if not In_Use then
+            raise Empty_Error;
+         end if;
+         In_Use := False;
+         Item := Stored_Item;
+         TCTouch.Touch ('D'); -------------------------------------------- D
+      end Dequeue;
+
+      function Item_Count return Natural is
+      begin
+         TCTouch.Touch ('C'); -------------------------------------------- C
+         if In_Use then
+            return 1;
+         else
+            return 0;
+         end if;
+      end Item_Count;
+
+   end Single_w_Exceptions;
+
+
+   protected body Quad_w_Blocking is
+      entry Enqueue (Item : in Integer) when Count < Stored'Last is
+      begin
+         Count := Count + 1;
+         Stored(Count) := Item;
+         TCTouch.Touch ('e'); -------------------------------------------- e
+      end Enqueue;
+
+      entry Dequeue (Item : out Integer) when Count > 0 is
+      begin
+         Item := Stored(1);
+         Stored(1..3) := Stored(2..4);
+         Count := Count - 1;
+         TCTouch.Touch ('d'); -------------------------------------------- d
+      end Dequeue;
+
+      function Item_Count return Natural is
+      begin
+         TCTouch.Touch ('c'); -------------------------------------------- c
+         return Count;
+      end Item_Count;
+
+   end Quad_w_Blocking;
+
+end C940017_B;
+
+with Report;
+with TcTouch;
+with C940017_A;
+with C940017_B;
+procedure C940017 is
+
+   S : C940017_B.Single_w_Exceptions;
+   Q : C940017_B.Quad_w_Blocking;
+
+   procedure Munge (A_Queue : in out C940017_A.Queue_Interface'Class;
+                    An_Item : in Integer;
+                    Code : in String) is
+      Org_Count : Natural := A_Queue.Item_Count;
+      Temp_Item : Integer;
+   begin
+      A_Queue.Enqueue (An_Item);
+      if Org_Count + 1 /= A_Queue.Item_Count then
+         Report.Failed ("Wrong queue count after enqueue - " & Code);
+      end if;
+      A_Queue.Dequeue (Temp_Item);
+      if Org_Count = 0 then
+         if Temp_Item /= An_Item then
+            Report.Failed ("Wrong item from dequeue - " & Code);
+         end if;
+         if Org_Count /= A_Queue.Item_Count then
+            Report.Failed ("Wrong queue count after munging (0) - " & Code);
+         end if;
+      elsif Org_Count = 1 then
+         A_Queue.Dequeue (Temp_Item);
+         if Temp_Item /= An_Item then
+            Report.Failed ("Wrong item from dequeue (2) - " & Code);
+         end if;
+         if A_Queue.Item_Count /= 0 then
+            Report.Failed ("Wrong queue count after munging (1) - " & Code);
+         end if;
+      else -- don't know what to expect.
+         if Org_Count /= A_Queue.Item_Count then
+            Report.Failed ("Wrong queue count after munging (2) - " & Code);
+         end if;
+      end if;
+   end Munge;
+
+begin
+
+   Report.Test
+     ("C940017",
+      "Check that dispatching calls can be made for subprograms inherited " &
+      "from a progenator for a protected type and implemented by protected " &
+      "operations of the type");
+
+   if S.Item_Count /= 0 then
+      Report.Failed ("Wrong initial count (S)");
+   end if;
+   if Q.Item_Count /= 0 then
+      Report.Failed ("Wrong initial count (Q)");
+   end if;
+   Q.Enqueue (4);
+
+   TcTouch.Validate (Expected => "Cce",
+                     Message => "Wrong initialization (1)");
+
+   Munge (S, 12, Code => "(2)");
+
+   TcTouch.Validate (Expected => "CECDC",
+                     Message => "Wrong routines called (2)");
+
+   Munge (Q, 92, Code => "(3)");
+
+   TcTouch.Validate (Expected => "cecddc",
+                     Message => "Wrong routines called (3)");
+
+   if S.Item_Count /= 0 then
+      Report.Failed ("Wrong final count (S)");
+   end if;
+   if Q.Item_Count /= 0 then
+      Report.Failed ("Wrong final count (Q)");
+   end if;
+   TcTouch.Validate (Expected => "Cc",
+                     Message => "Wrong initialization (4)");
+
+
+   Report.Result;
+
+end C940017;

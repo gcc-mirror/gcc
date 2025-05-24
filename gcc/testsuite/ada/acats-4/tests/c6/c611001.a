@@ -1,0 +1,225 @@
+-- C611001.A
+--
+--                             Grant of Unlimited Rights
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--    The ACAA has created and maintains the Ada Conformity Assessment Test
+--    Suite for the purpose of conformity assessments conducted in accordance
+--    with the International Standard ISO/IEC 18009 - Ada: Conformity
+--    assessment of a language processor. This test suite should not be used
+--    to make claims of conformance unless used in accordance with
+--    ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+--
+-- OBJECTIVE:
+--      Check that pre- and post-conditions are checked before and after
+--      each call.
+--
+-- TEST DESCRIPTION:
+--      Define an abstract generic stack, and then a concrete bounded
+--      descendant.  Instantiate the generic stack and its bounded
+--      descendant.  Create a stack and try various combinations of
+--      pushing and popping to verify that pre- and postconditions are being
+--      appropriately enforced.
+--
+-- CHANGE HISTORY:
+--      02 Oct 2013   T. Taft    ACVC 4.0.
+--      23 Apr 2014   RLB        Fixed name of main subprogram, minor
+--                               formatting issues. Added missing
+--                               Assertion_Policy pragmas (initial mode is
+--                               implementation-defined, we need to know).
+--
+--!
+
+generic
+   type Item is private;
+package C611001_0 is
+
+   pragma Assertion_Policy (Check);
+
+   type Stack is interface;
+   function Is_Empty (S : Stack) return Boolean is abstract;
+   function Is_Full (S : Stack) return Boolean is abstract;
+
+   procedure Push (S : in out Stack; I : in Item) is abstract
+      with Pre'Class => not Is_Full (S),
+           Post'Class => not Is_Empty (S);
+
+   function Pop (S : in out Stack) return Item is abstract
+      with Pre'Class => not Is_Empty (S),
+           Post'Class => not Is_Full (S);
+
+end C611001_0;
+
+generic
+package C611001_0.C611001_1 is
+
+   pragma Assertion_Policy (Check);
+
+   package Bounded renames C611001_1;
+
+   type Bounded_Stack(<>) is new Stack with private;
+
+   function Create(Size: Natural) return Bounded_Stack
+      with Post => Bounded.Size(Create'Result) = Size
+                        and Count(Create'Result) = 0;
+
+   function Size(S : Bounded_Stack) return Natural;
+
+   function Count(S : Bounded_Stack) return Natural
+      with Post => (Count'Result <= Size(S));
+
+   function Is_Empty (S : Bounded_Stack) return Boolean
+      is (Count(S) = 0);
+
+   function Is_Full (S : Bounded_Stack) return Boolean
+      is (Count(S) = Size(S));
+
+   procedure Push (S : in out Bounded_Stack; I : in Item)
+      with Pre => Count(S) < Size(S),
+           Post => Count(S) = Count(S)'Old + 1;
+
+   function Pop(S : in out Bounded_Stack) return Item
+      with Pre => Count(S) > 0,
+           Post => Count(S) = Count(S)'Old - 1;
+
+private
+
+   type Item_Array is array (Positive range <>) of Item;
+   type Bounded_Stack(Size : Natural) is new Stack with record
+      Count : Natural := 0;
+      Items : Item_Array (1 .. Size);
+   end record;
+
+   function Size(S : Bounded_Stack) return Natural is (S.Size);
+
+   function Count(S : Bounded_Stack) return Natural is (S.Count);
+
+end C611001_0.C611001_1;
+
+package body C611001_0.C611001_1 is
+
+   pragma Assertion_Policy (Check);
+
+   function Create(Size: Natural) return Bounded_Stack is
+   begin
+      return Result : Bounded_Stack (Size => Size);
+   end Create;
+
+   procedure Push (S : in out Bounded_Stack; I : in Item) is
+   begin
+      pragma Assert (not Is_Full (S));
+      S.Count := S.Count + 1;
+      S.Items (S.Count) := I;
+   end Push;
+
+   function Pop(S : in out Bounded_Stack) return Item is
+   begin
+      pragma Assert (not Is_Empty (S));
+      S.Count := S.Count - 1;
+      return S.Items (S.Count + 1);
+   end Pop;
+
+end C611001_0.C611001_1;
+
+with Report;
+with Ada.Assertions;
+with Ada.Exceptions;
+with C611001_0.C611001_1;
+procedure C611001 is
+
+   pragma Assertion_Policy (Check);
+
+   type My_Int is range 1 .. 1000;
+   generic package Stack_Interfaces renames C611001_0;
+   package Int_Stack is new Stack_Interfaces(My_Int);
+   package Int_BStack is new Int_Stack.C611001_1;
+   use Int_BStack;
+   S : Bounded_Stack := Create (3);
+   X : My_Int;
+begin
+   Report.Test ("C611001", "Pre and Post conditions");
+   Report.Comment ("Push three times");
+   Push (S, 11);
+   Push (S, 22);
+   Push (S, 33);
+
+   Report.Comment ("Verify that Count is three");
+   if Count (S) /= 3 then
+       Report.Failed ("Count should be 3, is actually" &
+         Natural'Image (Count (S)));
+   end if;
+
+   Report.Comment ("Pop and verify we get a 33");
+   X := Pop (S);
+   if X /= 33 then
+       Report.Failed ("Expected 33 on Pop, found" &
+         My_Int'Image (X));
+   end if;
+
+   Report.Comment ("Pop and verify we get a 22");
+   X := Pop (S);
+   if X /= 22 then
+       Report.Failed ("Expected 22 on Pop, found" &
+         My_Int'Image (X));
+   end if;
+
+   Report.Comment ("Verify that Count is now one");
+   if Count (S) /= 1 then
+       Report.Failed ("Count should be 1, is actually" &
+         Natural'Image (Count (S)));
+   end if;
+
+   Report.Comment
+     ("Try to push three items, with the last overflowing the stack");
+
+   begin
+      Push (S, 222);
+      Push (S, 333);
+   exception
+      when E : others =>
+          Report.Failed ("Unexpected exception raised: " &
+            Ada.Exceptions.Exception_Name (E));
+   end;
+
+   begin
+      Push (S, 444);
+   exception
+      when E : Ada.Assertions.Assertion_Error =>
+          Report.Comment ("Assertion_Error raised");
+          Report.Comment ("Exception message is: """ &
+            Ada.Exceptions.Exception_Message (E) & '"');
+          Report.Comment ("Verify that count is 3");
+          pragma Assert (Count (S) = 3);
+
+          Report.Comment ("Pop the stack and verify we get 333");
+          X := Pop (S);
+          pragma Assert (X = 333);
+
+      when E : others =>
+          Report.Failed ("Wrong exception raised: " &
+            Ada.Exceptions.Exception_Name (E));
+   end;
+   Report.Result;
+end C611001;

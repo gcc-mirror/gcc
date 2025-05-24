@@ -1,0 +1,208 @@
+-- CC70A01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the visible part of a generic formal package includes the
+--      first list of basic declarative items of the package specification.
+--      Check for a generic package which declares a formal package with (<>)
+--      as its actual part.
+--
+-- TEST DESCRIPTION:
+--      The "first list of basic declarative items" of a package specification
+--      is the visible part of the package. Thus, the declarations in the
+--      visible part of the actual instance corresponding to a formal
+--      package are available in the generic which declares the formal package.
+--       
+--      Declare a generic package which simulates a complex integer abstraction
+--      (foundation code).
+--
+--      Declare a second, library-level generic package which utilizes the
+--      first generic package as a generic formal package (with a (<>)
+--      actual_part). In the second generic package, declare objects, types,
+--      and operations in terms of the objects, types, and operations declared
+--      in the first generic package.
+--
+--      In the main program, instantiate the first generic package, then
+--      instantiate the second generic package and pass the first instance
+--      to it as a generic actual parameter. Check that the operations in
+--      the second instance perform as expected.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+with FC70A00;         -- Generic complex integer operations.
+
+generic               -- Generic complex matrix operations.
+   with package Complex_Package is new FC70A00 (<>);
+package CC70A01_0 is
+
+   type Complex_Matrix_Type is                        -- 1st index is matrix
+      array (Positive range <>, Positive range <>)    -- row, 2nd is column.
+        of Complex_Package.Complex_Type;              
+   Dimension_Mismatch : exception;
+
+
+   function Identity_Matrix (Size : Positive)         -- Create identity matrix
+     return Complex_Matrix_Type;                      -- of specified size.
+
+   function "*" (Left  : Complex_Matrix_Type;         -- Multiply two complex
+                 Right : Complex_Matrix_Type)         -- matrices.
+     return Complex_Matrix_Type;
+
+end CC70A01_0;
+
+
+     --==================================================================--
+
+
+package body CC70A01_0 is  -- Generic complex matrix operations.
+
+   use Complex_Package;
+
+               --==============================================--
+
+   function Inner_Product (Left, Right : Complex_Matrix_Type;
+                           Row, Column : Positive)    -- Compute inner product
+     return Complex_Package.Complex_Type is           -- for matrix-multiply.
+
+      Result : Complex_Type := Zero;                  
+      subtype Vector_Size is Positive range Left'Range(2);
+
+   begin  -- Inner_Product.
+      for I in Vector_Size loop
+         Result := Result +                           -- Complex_Package."+".
+                   (Left(Row, I) * Right(I, Column)); -- Complex_Package."*".
+      end loop;
+      return (Result);
+   end Inner_Product;
+
+               --==============================================--
+
+   function Identity_Matrix (Size : Positive) return Complex_Matrix_Type is
+      Result : Complex_Matrix_Type (1 .. Size, 1 .. Size) :=
+               (others => (others => Zero));          -- Zeroes everywhere...
+   begin
+      for I in 1 .. Size loop
+         Result (I, I) := One;                        -- Ones on the diagonal.
+      end loop;
+      return (Result);
+   end Identity_Matrix;
+
+               --==============================================--
+
+   function "*" (Left  : Complex_Matrix_Type; Right : Complex_Matrix_Type)
+     return Complex_Matrix_Type is
+
+      subtype Rows    is Positive range Left'Range(1);
+      subtype Columns is Positive range Right'Range(2);
+
+      Result : Complex_Matrix_Type(Rows, Columns);
+   begin
+      if Left'Length(2) /= Right'Length(1) then       -- # columns of Left must
+                                                      -- match # rows of Right.
+         raise Dimension_Mismatch;                    
+      else
+         for I in Rows loop
+            for J in Columns loop
+                Result(I, J) := Inner_Product (Left, Right, I, J);
+            end loop;
+         end loop;
+         return (Result);
+      end if;
+   end "*";
+
+end CC70A01_0;
+
+
+     --==================================================================--
+
+
+with Report;
+
+with FC70A00;    -- Generic complex integer operations.
+with CC70A01_0;  -- Generic complex matrix operations.
+
+procedure CC70A01 is
+
+   type My_Integer is range -100 .. 100;
+
+   package My_Complex_Package is new FC70A00   (My_Integer);
+   package My_Matrix_Package  is new CC70A01_0 (My_Complex_Package);
+
+   use My_Complex_Package,                                -- All user-defined
+       My_Matrix_Package;                                 -- operators directly
+                                                          -- visible.
+
+   subtype Matrix_2x2 is Complex_Matrix_Type (1 .. 2, 1 .. 2);
+   subtype Matrix_2x3 is Complex_Matrix_Type (1 .. 2, 1 .. 3);
+
+   function C (Real, Imag : My_Integer) return Complex_Type renames Complex;
+
+begin  -- Main program.
+
+   Report.Test ("CC70A01", "Check that the visible part of a generic " &
+                "formal package includes the first list of basic " &
+                "declarative items of the package specification. Check " &
+                "for a generic package where formal package has (<>) " &
+                "actual part");
+
+   declare
+      Identity_2x2 : Matrix_2x2 := Identity_Matrix (Size => 2);
+      Operand_2x3  : Matrix_2x3 := ( ( C(1, 2), C(3, 6), C(5, 1) ),
+                                     ( C(0, 3), C(7, 9), C(3, 4) ) );
+      Result_2x3   : Matrix_2x3 := ( others => ( others => Zero ) );
+   begin
+
+      begin -- Block #1.
+         Result_2x3 := Identity_2x2 * Operand_2x3; -- Should return
+                                                   -- Operand_2x3.
+         if (Result_2x3 /= Operand_2x3) then
+            Report.Failed ("Incorrect results from matrix multiplication");
+         end if;
+      exception
+         when others =>
+            Report.Failed ("Unexpected exception raised - Block #1");
+      end;  -- Block #1.
+
+
+      begin -- Block #2.
+         Result_2x3 := Operand_2x3 * Identity_2x2;  -- Can't multiply 2x3
+                                                    -- by 2x2.
+         Report.Failed ("Exception Dimension_Mismatch not raised");
+      exception
+         when Dimension_Mismatch =>
+            null;
+         when others             =>
+            Report.Failed ("Unexpected exception raised - Block #2");
+      end;  -- Block #2.
+
+   end;
+
+   Report.Result;
+
+end CC70A01;

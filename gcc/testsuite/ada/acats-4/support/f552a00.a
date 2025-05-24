@@ -1,0 +1,693 @@
+--  F552A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+--
+--  FOUNDATION DESCRIPTION:
+--      This package declares packages that contain iterator_types that may
+--      be used for tests that exercise General Loop Iteration for both
+--      generalized iterators and container element iterators.
+--
+--  CHANGE HISTORY:
+--      30 Sep 13   BJM     Created foundation.
+--      31 May 14   RLB     Readied for release: added foundation prefix to
+--                          each package name.
+--      01 Jun 14   RLB     Renamed Call_History to TC_Call_History to reflect
+--                          that the history exists to check test objectives
+--                          rather than the usage-oriented structure of the
+--                          rest of the code.
+--      02 Jun 14   RLB     Changed indexing information for Sparse_Arrays to
+--                          counters to allow testing additional objectives.
+--      16 Jun 14   RLB     Corrected sparse arrays to not require variables
+--                          for iterators. Removed cursor creation/destruction
+--                          counts (as those are unreliable in the face of
+--                          allowed optimizations).
+--      17 Jul 15   RLB     Replaced Constant_Reference for Bingo_Balls with
+--                          The_Call to eliminate accessibility failure.
+--
+--!
+
+with Ada.Iterator_Interfaces;
+with Ada.Strings.Unbounded; use Ada;
+
+package F552A00_Prime_Numbers is
+
+   --  This package defines a simple Iterator Type that represents a
+   --  set of prime numbers from 1 to N.
+
+   function Is_Prime (Value : Natural) return Boolean;
+
+   package Prime_Number_Iterator is new Ada.Iterator_Interfaces (
+      Cursor      => Natural,
+      Has_Element => Is_Prime);
+
+   type Prime_Number_Set (Max_Value : Natural) is new
+     Prime_Number_Iterator.Forward_Iterator with null record;
+   --  A Prime_Number_Set represents all the prime numbers between
+   --  1 and Max_Value. Two is not considered to be a prime number.
+   --  Max_Value may or may not be a prime number
+
+   overriding function First (Object : Prime_Number_Set) return Natural;
+
+   overriding function Next
+     (Object : Prime_Number_Set;
+      Value  : Natural)
+      return   Natural;
+
+   function Iterate
+     (Set  : Prime_Number_Set)
+      return Prime_Number_Iterator.Forward_Iterator'Class;
+
+   TC_Call_History : Strings.Unbounded.Unbounded_String;
+   --
+   --  A string capturing the call sequence to the above subprogams.
+   --  The following gets appended to the history for the above calls;
+   --      Iterate  => I
+   --      First    => 1
+   --      Next     => N( nn)        where nn is the next prime number
+   --      Is_Prime => H:{T|F}( nn)  H is the Has_Element function
+   --                                  T means Has_Element returned True
+   --                                  F means Has_Element returns False
+   --                                  nn is the current prime number
+
+end F552A00_Prime_Numbers;
+
+with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
+
+package body F552A00_Prime_Numbers is
+
+   Disable_History : Boolean := False;
+   --  Used to disable call history for calls to Is_Prime that are internal
+   --  and not called as a result of loop iteration.
+
+   function First (Object : Prime_Number_Set) return Natural is
+   begin
+      --  The first prime number is 3, unless the Prime_Number_Set only
+      --  goes up to 2 or less, in which case a non-prime number is returned
+      --  since the set does not contain a prime number.
+
+      Ada.Strings.Unbounded.Append (Source => TC_Call_History,
+                                    New_Item => '1');
+      return (if Object.Max_Value >= 3 then 3 else Object.Max_Value);
+   end First;
+
+   function Next
+     (Object : Prime_Number_Set;
+      Value  : Natural)
+      return   Natural is
+   begin
+
+      --  Disable logging of calls to Is_Prime inside this loop, since these
+      --  calls are not directly related to iterator types.
+      Disable_History := True;
+
+      for I in Value + 1 .. Object.Max_Value loop
+         if Is_Prime (I) then
+            Ada.Strings.Unbounded.Append
+              (Source   => TC_Call_History,
+               New_Item => "N(" & Integer'Image (I) & ')');
+            Disable_History := False;
+            return I;
+         end if;
+      end loop;
+      Disable_History := False;
+
+      Ada.Strings.Unbounded.Append
+        (Source   => TC_Call_History,
+         New_Item => "N(" & Integer'Image (Value + 1) & ')');
+
+      return Value + 1;
+   end Next;
+
+   function Is_Prime (Value : Natural) return Boolean is
+   begin
+      for I in 2 .. Integer (Sqrt (Float (Value))) loop
+         if Value mod I = 0 then
+
+            --  Not a prime number
+            if not Disable_History then
+               Ada.Strings.Unbounded.Append
+                 (Source   => TC_Call_History,
+                  New_Item => "H:F(" & Integer'Image (Value) & ')');
+            end if;
+
+            return False;
+         end if;
+      end loop;
+
+      --  Is a prime number if the value is > 2.
+      if not Disable_History then
+         Ada.Strings.Unbounded.Append
+           (Source   => TC_Call_History,
+            New_Item => "H:" &
+                        (if Value > 2 then "T(" else "F(") &
+                        Integer'Image (Value) &
+                        ')');
+      end if;
+
+      return (Value > 2);
+   end Is_Prime;
+
+   function Iterate
+     (Set  : Prime_Number_Set)
+      return Prime_Number_Iterator.Forward_Iterator'Class is
+   begin
+      Ada.Strings.Unbounded.Append (Source => TC_Call_History,
+                                    New_Item => 'I');
+      return Result : Prime_Number_Set (Set.Max_Value) do
+         null;
+      end return;
+   end Iterate;
+
+end F552A00_Prime_Numbers;
+
+with Ada.Iterator_Interfaces;
+with Ada.Strings.Unbounded; use Ada;
+
+package F552A00_Bingo_Balls is
+   --  This package defines an iterable container that is only iterable
+   --  in the forward direction. In addition, it only supports constant
+   --  indexing. It presents the abstraction of a Bingo game, where
+   --  a set of Bingo balls is drawn one by one randomly from the set of
+   --  available balls. A particular ball can only be drawn once in a game.
+
+   type Bingo_Call is
+     (B_1,  I_16, N_31, G_46, O_61,
+      B_2,  I_17, N_32, G_47, O_62,
+      B_3,  I_18, N_33, G_48, O_63,
+      B_4,  I_19, N_34, G_49, O_64,
+      B_5,  I_20, N_35, G_50, O_65,
+      B_6,  I_21, N_36, G_51, O_66,
+      B_7,  I_22, N_37, G_52, O_67,
+      B_8,  I_23, N_38, G_53, O_68,
+      B_9,  I_24, N_39, G_54, O_69,
+      B_10, I_25, N_40, G_55, O_70,
+      B_11, I_26, N_41, G_56, O_71,
+      B_12, I_27, N_42, G_57, O_72,
+      B_13, I_28, N_43, G_58, O_73,
+      B_14, I_29, N_44, G_59, O_74,
+      B_15, I_30, N_45, G_60, O_75);
+
+   type Bingo_Game is tagged private
+    with Constant_Indexing   => The_Call,
+           Default_Iterator  => Iterate,
+           Iterator_Element  => Bingo_Call;
+
+   type Cursor is private;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+   package Bingo_Iterator is new Ada.Iterator_Interfaces
+     (Cursor,
+      Has_Element);
+
+   function Iterate
+     (Container : Bingo_Game)
+      return      Bingo_Iterator.Forward_Iterator'Class;
+
+   function The_Call
+     (Container : Bingo_Game;
+      Position  : Cursor) return Bingo_Call;
+
+   TC_Call_History : Strings.Unbounded.Unbounded_String;
+   --
+   --  A string capturing the call sequence to the above subprogams.
+   --  The following gets appended to the history for the above calls;
+   --      Iterate  => I
+   --      First    => 1
+   --      Next     => N( nn)        where nn is the physical index of the
+   --                                   next element
+   --      Has_Element => H:{T|F}( nn)  H is the Has_Element function
+   --                                     T means Has_Element returned True
+   --                                     F means Has_Element returns False
+   --                                      nn is the physical index
+
+   TC_Used_Constant_Indexing : Boolean := False;
+
+private
+
+   type Bingo_Game is tagged null record;
+
+   subtype Bingo_Index is
+     Natural range 0 .. Bingo_Call'Pos (Bingo_Call'Last) + 1;
+
+   type Bingo_Ball_Array is array (1 .. Bingo_Index'Last) of Bingo_Call;
+
+   type Cursor is
+      record
+         Balls : Bingo_Ball_Array;
+         Current_Ball : Bingo_Index;
+         Count : Natural;
+      end record;
+
+end F552A00_Bingo_Balls;
+
+with Ada.Numerics.Float_Random; use Ada.Numerics;
+
+package body F552A00_Bingo_Balls is
+
+   Generator : Float_Random.Generator;
+
+   -----------------
+   -- Has_Element --
+   -----------------
+
+   function Has_Element (Position : Cursor) return Boolean is
+   begin
+      Ada.Strings.Unbounded.Append
+        (Source   => TC_Call_History,
+         New_Item => "H:" &
+                     (if Position.Count > 0 then "T(" else "F(") &
+           Natural'Image (Bingo_Index'Last - Position.Count + 1) &
+        ')');
+      return Position.Count > 0;
+   end Has_Element;
+
+   type Iterator is new Bingo_Iterator.Forward_Iterator with null record;
+
+   overriding function First
+     (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   function First
+     (Object : Iterator) return Cursor is
+   begin
+      Ada.Strings.Unbounded.Append (Source   => TC_Call_History,
+                                    New_Item => '1');
+
+      return Position : Cursor do
+         Position.Count := Position.Balls'Last;
+         for I in Bingo_Call'Range loop
+            Position.Balls (Bingo_Call'Pos (I) + 1) := I;
+         end loop;
+
+         Position.Current_Ball :=
+           Bingo_Index'Base'Max
+             (Bingo_Index'Last,
+              Bingo_Index'First + Bingo_Index'Base
+                (Float'Floor (Float_Random.Random (Gen => Generator) /
+                   1.0 / Float (Position.Count))));
+
+      end return;
+
+   end First;
+
+   function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor is
+   begin
+
+      return New_Position : Cursor do
+         New_Position.Count := Position.Count - 1;
+
+         if Position.Current_Ball > 1 then
+            New_Position.Balls (1 .. Position.Current_Ball - 1) :=
+              Position.Balls (1 .. Position.Current_Ball - 1);
+         end if;
+
+         if Position.Current_Ball < Position.Count then
+            New_Position.Balls (Position.Current_Ball .. Position.Count - 1) :=
+              Position.Balls (Position.Current_Ball + 1 .. Position.Count);
+         end if;
+
+         New_Position.Current_Ball :=
+           (if New_Position.Count = 0 then 0 else
+            Bingo_Index'Base'Max
+             (New_Position.Count,
+              Bingo_Index'First + Bingo_Index'Base
+                (Float'Floor (Float_Random.Random (Gen => Generator) /
+                   1.0 / Float (New_Position.Count)))));
+
+         Ada.Strings.Unbounded.Append
+           (Source   => TC_Call_History,
+            New_Item => "N(" &
+              Integer'Image (Integer (Bingo_Index'Last) -
+                Integer (New_Position.Count) + 1) & ')');
+
+      end return;
+
+   end Next;
+
+   -------------
+   -- Iterate --
+   -------------
+
+   function Iterate
+     (Container : Bingo_Game)
+      return Bingo_Iterator.Forward_Iterator'Class is
+   begin
+      Ada.Strings.Unbounded.Append (Source   => TC_Call_History,
+                                    New_Item => 'I');
+
+      return New_Iterator : Iterator do
+         null;
+      end return;
+
+   end Iterate;
+
+   ------------------------
+   -- The_Call           --
+   ------------------------
+
+   function The_Call
+     (Container : Bingo_Game;
+      Position  : Cursor) return Bingo_Call is
+   begin
+      TC_Used_Constant_Indexing := True;
+      return Position.Balls (Position.Current_Ball);
+   end The_Call;
+
+end F552A00_Bingo_Balls;
+
+with Ada.Iterator_Interfaces;
+with Ada.Strings.Unbounded; use Ada;
+
+generic
+
+   type Sparse_Array_Index is range <>;
+
+   type Element_Type is private;
+
+package F552A00_Sparse_Arrays is
+
+   --  This package defines an iterable container that is a sparse array.
+   --  A sparse array has elements that can have large gaps beteen each
+   --  element. For instance an array from 1 .. 1000000 might only have a
+   --  dozen real elements in the array.
+
+   type Count_Type is range 0 .. 2 ** 31 - 1;
+
+   type Sparse_Array (Max_Elements : Count_Type) is tagged private
+    with   Constant_Indexing => Constant_Reference,
+           Variable_Indexing => Reference,
+           Default_Iterator  => Iterate,
+           Iterator_Element  => Element_Type;
+
+   procedure Append
+     (Container : in out Sparse_Array;
+      Index     : Sparse_Array_Index;
+      New_Item  : Element_Type)
+    with Pre => Container.Length < Container.Max_Elements and then
+     not Has_Element (Container, Index);
+   --  Duplicate indexes are not allowed.
+
+   function Length (Container : Sparse_Array) return Count_Type;
+   --  Returns the number of real elements in the array
+
+   type Cursor is private;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+   function Has_Element
+     (Container : Sparse_Array;
+      Index     : Sparse_Array_Index)
+      return      Boolean;
+
+   function Index_Of (Position : Cursor) return Sparse_Array_Index;
+   --  Returns the array index assosiated with Position.
+
+   package Sparse_Array_Iterator_Interfaces is new Ada.Iterator_Interfaces (
+      Cursor,
+      Has_Element);
+
+   function Iterate
+     (Container : aliased in Sparse_Array)
+      return      Sparse_Array_Iterator_Interfaces.Reversible_Iterator'Class;
+
+   type Constant_Reference_Type
+     (Element : not null access constant Element_Type) is private
+     with Implicit_Dereference => Element;
+
+   type Reference_Type (Element : not null access Element_Type) is private
+     with Implicit_Dereference => Element;
+
+   function Constant_Reference
+     (Container : aliased Sparse_Array;
+      Position  : Cursor) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Sparse_Array;
+      Position  : Cursor) return Reference_Type;
+
+   TC_Call_History : Strings.Unbounded.Unbounded_String;
+   --
+   --  A string capturing the call sequence to the above subprogams.
+   --  The following gets appended to the history for the above calls;
+   --      Iterate  => I
+   --      First    => 1
+   --      Next     => N( nn)        where nn is the physical index of the
+   --                                   next element
+   --      Last     => L
+   --      Previous => P( nn)        where nn is the physical index of the
+   --                                   next element
+   --      Has_Element => H:{T|F}( nn)  H is the Has_Element function
+   --                                     T means Has_Element returned True
+   --                                     F means Has_Element returns False
+   --                                      nn is the physical index
+
+   TC_Constant_Indexing_Use_Count : Natural := 0;
+   TC_Variable_Indexing_Use_Count : Natural := 0;
+
+private
+
+   type Sparse_Array_Element is
+   record
+      Index : Sparse_Array_Index;
+      --  The real index associated with the value
+
+      Value : aliased Element_Type;
+   end record;
+
+   type Data_Array is
+     array (Count_Type range <>) of Sparse_Array_Element;
+
+   type Sparse_Array (Max_Elements : Count_Type) is tagged
+   record
+      Data : Data_Array (1 .. Max_Elements) := (others => <>);
+      Count : Count_Type := 0;
+   end record;
+
+   function Length (Container : Sparse_Array) return Count_Type is
+     (Container.Count);
+
+   type Sparse_Array_Access is access constant Sparse_Array;
+   for Sparse_Array_Access'Storage_Size use 0;
+
+   type Cursor is
+   record
+      Index : Count_Type;
+      Container : Sparse_Array_Access;
+   end record;
+
+   function Index_Of (Position : Cursor) return Sparse_Array_Index is
+      (Position.Container.all.Data (Position.Index).Index);
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is null record;
+
+   type Reference_Type (Element : not null access Element_Type)
+     is null record;
+
+end F552A00_Sparse_Arrays;
+
+package body F552A00_Sparse_Arrays is
+
+   Disable_History : Boolean := False;
+
+   procedure Append
+     (Container : in out Sparse_Array;
+      Index     : Sparse_Array_Index;
+      New_Item  : Element_Type)
+   is
+   begin
+      Container.Count                  := Container.Count + 1;
+      Container.Data (Container.Count) := (Index => Index, Value => New_Item);
+   end Append;
+
+   function Has_Element (Position : Cursor) return Boolean is
+      Found : constant Boolean :=
+        (Position.Container /= null
+        and then Position.Index > 0
+        and then Position.Index <= Position.Container.all.Count);
+   begin
+      if not Disable_History then
+         Ada.Strings.Unbounded.Append
+           (Source   => TC_Call_History,
+            New_Item => "H:" &
+                        (if Found then "T(" else "F(") &
+                        Count_Type'Image (Position.Index) &
+                        ')');
+      end if;
+
+      return Found;
+   end Has_Element;
+
+   function Has_Element
+     (Container : Sparse_Array;
+      Index     : Sparse_Array_Index)
+      return      Boolean
+   is
+   begin
+      return (for some Item in Container.Data'Range =>
+                   Container.Data (Item).Index = Index);
+   end Has_Element;
+
+   type Iterator is new
+     Sparse_Array_Iterator_Interfaces.Reversible_Iterator with
+      record
+         Index     : Count_Type;
+         Container : Sparse_Array_Access;
+      end record;
+
+   overriding function First
+     (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Last
+     (Object : Iterator) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   function First
+     (Object : Iterator) return Cursor is
+   begin
+      Ada.Strings.Unbounded.Append (Source   => TC_Call_History,
+                                    New_Item => '1');
+
+      return (Index => 1,
+              Container => Object.Container);
+   end First;
+
+   function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor is
+   begin
+
+      Ada.Strings.Unbounded.Append
+        (Source   => TC_Call_History,
+         New_Item => "N(" & Count_Type'Image (Position.Index + 1) & ')');
+
+      return (Index => Position.Index + 1,
+              Container => Object.Container);
+   end Next;
+
+   function Last
+     (Object : Iterator) return Cursor is
+   begin
+      Ada.Strings.Unbounded.Append (Source   => TC_Call_History,
+                                    New_Item => 'L');
+
+      return (Index => Object.Container.all.Count,
+              Container => Object.Container);
+   end Last;
+
+   function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor is
+   begin
+      Ada.Strings.Unbounded.Append
+        (Source   => TC_Call_History,
+         New_Item => "P(" & Count_Type'Image (Position.Index - 1) & ')');
+
+      return (Index => Position.Index - 1,
+              Container => Object.Container);
+   end Previous;
+
+   function Iterate
+     (Container : aliased in Sparse_Array)
+      return
+       Sparse_Array_Iterator_Interfaces.Reversible_Iterator'Class is
+   begin
+      Ada.Strings.Unbounded.Append (Source   => TC_Call_History,
+                                    New_Item => 'I');
+      return Iterator'(Index => 0,
+                       Container => Container'Unchecked_Access);
+   end Iterate;
+
+   function Constant_Reference
+     (Container : aliased Sparse_Array;
+      Position  : Cursor) return Constant_Reference_Type is
+   begin
+      Disable_History := True;
+      TC_Constant_Indexing_Use_Count := TC_Constant_Indexing_Use_Count + 1;
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position is invalid";
+      elsif not Position.Container.all'Overlaps_Storage (Container) then
+         raise Program_Error with
+         "Position denotes a different container";
+      elsif Position.Index = 0 or else
+        Position.Index > Container.Count then
+         raise Constraint_Error with "Position is out of range";
+      elsif not Has_Element (Position) then
+         raise Constraint_Error with "Position does not exist";
+      end if;
+
+      Disable_History := False;
+
+      return (Element => Container.Data (Position.Index).Value'Access);
+
+   end Constant_Reference;
+
+   function Reference
+     (Container : aliased in out Sparse_Array;
+      Position  : Cursor) return Reference_Type is
+   begin
+      Disable_History := True;
+      TC_Variable_Indexing_Use_Count := TC_Variable_Indexing_Use_Count + 1;
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position is invalid";
+      elsif not Position.Container.all'Overlaps_Storage (Container) then
+         raise Program_Error with
+           "Position denotes a different container";
+      elsif not Has_Element (Position) then
+         raise Constraint_Error with "Position does not exist";
+      end if;
+
+      Disable_History := False;
+
+      return (Element => Container.Data (Position.Index).Value'Access);
+
+   end Reference;
+
+end F552A00_Sparse_Arrays;
+

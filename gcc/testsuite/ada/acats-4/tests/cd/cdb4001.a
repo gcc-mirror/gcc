@@ -1,0 +1,599 @@
+-- CDB4001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVE:
+--      Check allocation and deallocation of objects using subpools.
+--
+-- TEST DESCRIPTION:
+--
+--      The test structure is
+--         1) Do a bunch of allocators;
+--         2) Deallocate a few using Unchecked_Deallocation;
+--         3) Deallocate some more using Unchecked_Deallocate_Subpool;
+--         4) Exit the scope so that the remaining allocated objects get
+--            finalized.
+--
+-- CHANGE HISTORY:
+--       5 Jan 12   SWB     Initial pre-release version.
+--       6 Jan 12   SWB     Correction to assert routine.
+--      23 Mar 14   SWB     Fixed test errors.
+--      24 Mar 14   RLB     Created ACATS 4.0 version, adding missing headers.
+--!
+
+
+generic
+    type State is limited private;
+    with function Initial_Value return State;
+package CDB4001_Serializer_Generic is
+    type Null_Record is null record;
+
+    protected type Protected_State is
+        function  Read (Op : access procedure (Current_State : State))
+          return Null_Record;
+
+        procedure Update (Op : access procedure (Current_State : in out State));
+    private
+        Current_State : State := Initial_Value;
+    end Protected_State;
+end CDB4001_Serializer_Generic;
+
+
+package body CDB4001_Serializer_Generic is
+    protected body Protected_State is
+        function Read (Op : access procedure (Current_State : State))
+           return Null_Record is
+        begin
+            Op.all (Current_State);
+            return (null record);
+        end Read;
+
+        procedure Update (Op : access procedure
+                                        (Current_State : in out State)) is
+        begin
+            Op.all (Current_State);
+        end Update;
+    end Protected_State;
+end CDB4001_Serializer_Generic;
+
+
+with Ada.Containers.Ordered_Maps;
+with CDB4001_Serializer_Generic;
+with System.Storage_Pools.Subpools;
+with System.Storage_Elements;
+
+package CDB4001_Tracked_Subpools is
+    -- Subpools which support mapping an address returned from a call
+    -- to Allocate back to its enclosing subpool.
+
+    use System.Storage_Pools;
+    use System.Storage_Elements;
+
+    type Tracked_Pool
+      is new Subpools.Root_Storage_Pool_With_Subpools with private;
+    --
+    -- Default_Subpool_For_Pool is not overridden, so allocators which
+    -- do not provide a subpool will raise Program_Error.
+
+    type Tracked_Subpool is new Subpools.Root_Subpool with private;
+
+    type Tracked_Subpool_Handle is access all Tracked_Subpool'Class;
+    for Tracked_Subpool_Handle'Storage_Size use 0;
+
+    function Enclosing_Subpool
+      (Pool : Tracked_Pool; Storage_Address : System.Address) return
+      Tracked_Subpool_Handle;
+    -- If the given address points into a block of storage that was
+    -- returned by a previous call to this Pool type's Allocate (and
+    -- was not subsequently freed), then return a reference to the
+    -- enclosing subpool. Otherwise, the result is undefined.
+
+    function Enclosing_Subpool
+      (Pool : Tracked_Pool; Storage_Address : System.Address)
+      return Subpools.Subpool_Handle is
+      (Subpools.Subpool_Handle
+         (Tracked_Subpool_Handle'
+            (Enclosing_Subpool (Pool, Storage_Address))));
+
+    function Create_Tracked_Subpool (Pool : in out Tracked_Pool) return
+      not null Tracked_Subpool_Handle;
+
+    overriding
+    function Create_Subpool (Pool : in out Tracked_Pool)
+      return not null Subpools.Subpool_Handle
+      is (Subpools.Subpool_Handle (Create_Tracked_Subpool (Pool)));
+
+private
+    overriding
+    function Storage_Size (Pool : Tracked_Pool) return Storage_Count;
+
+    overriding
+    procedure Allocate_From_Subpool (
+      Pool : in out Tracked_Pool;
+      Storage_Address : out System.Address;
+      Size_In_Storage_Elements : Storage_Count;
+      Alignment : Storage_Count;
+      Subpool : not null Subpools.Subpool_Handle);
+
+    overriding
+    procedure Deallocate_Subpool (
+      Pool : in out Tracked_Pool;
+      Subpool : in out Subpools.Subpool_Handle);
+
+    use Ada.Containers;
+    use System;
+
+    type Allocator_Info is
+       record
+           Storage_Address : System.Address;
+           Size_In_Storage_Elements : Storage_Count;
+           Subpool : Tracked_Subpool_Handle;
+       end record;
+
+    package Allocator_Info_Maps is new Ordered_Maps
+      (Key_Type => Address,
+       Element_Type => Allocator_Info,
+       "<" => "<",
+       "=" => "=");
+
+    function Empty_Map return Allocator_Info_Maps.Map is
+      (Allocator_Info_Maps.Empty_Map);
+
+    package Serialized_Allocator_Info_Maps is new CDB4001_Serializer_Generic
+      (Allocator_Info_Maps.Map, Initial_Value => Empty_Map);
+
+    type Tracked_Pool
+      is new Subpools.Root_Storage_Pool_With_Subpools with record
+        Allocation_Map : Serialized_Allocator_Info_Maps.Protected_State;
+      end record;
+
+    type Allocated_Storage;
+    type Allocated_Storage_Ref is access Allocated_Storage;
+
+    type Allocated_Storage (Size : Storage_Offset) is
+      limited record
+        Next_In_Subpool : Allocated_Storage_Ref;
+        Storage : aliased Storage_Array (1 .. Size);
+      end record;
+
+    function Nil return Allocated_Storage_Ref is (null);
+
+    package Serialized_Allocated_Storage_Refs is
+      new CDB4001_Serializer_Generic (Allocated_Storage_Ref,
+                                      Initial_Value => Nil);
+
+    type Tracked_Subpool is new Subpools.Root_Subpool with record
+        First_In_Subpool : Serialized_Allocated_Storage_Refs.Protected_State;
+        Reclaim_Upon_Deallocation : Boolean := False;
+      end record;
+
+end CDB4001_Tracked_Subpools;
+
+
+with Ada.Unchecked_Deallocation;
+
+package body CDB4001_Tracked_Subpools is
+
+    function Enclosing_Subpool
+      (Pool : Tracked_Pool; Storage_Address : System.Address) return
+      Tracked_Subpool_Handle is
+        use Allocator_Info_Maps;
+        use Serialized_Allocator_Info_Maps;
+
+        Result : Tracked_Subpool_Handle;
+
+        procedure Set_Result (Mapping : Map) is
+            Position : constant Cursor
+              := Floor (Mapping, Storage_Address);
+            Info : Allocator_Info;
+        begin
+            Result := null;
+            if Position /= No_Element then
+                Info := Element (Position);
+                if Storage_Address < Info.Storage_Address
+                                     + Info.Size_In_Storage_Elements then
+                    Result := Info.Subpool;
+                end if;
+            end if;
+        end Set_Result;
+
+        Ignored : Null_Record renames
+          Pool.Allocation_Map.Read (Set_Result'Access);
+    begin
+        return Result;
+    end Enclosing_Subpool;
+
+    type Tracked_Subpool_Ref is access all Tracked_Subpool;
+
+    function Create_Tracked_Subpool (Pool : in out Tracked_Pool) return
+      not null Tracked_Subpool_Handle is
+        use Subpools;
+    begin
+        return Result : constant not null Tracked_Subpool_Handle :=
+          Tracked_Subpool_Handle (Tracked_Subpool_Ref'(new Tracked_Subpool)) do
+           Set_Pool_Of_Subpool (Subpool_Handle (Result), Pool);
+           Result.Reclaim_Upon_Deallocation := True;
+        end return;
+    end Create_Tracked_Subpool;
+
+    function Storage_Size (Pool : Tracked_Pool) return Storage_Count is
+    begin
+        return Storage_Size (Allocated_Storage_Ref'Storage_Pool); -- ???
+    end Storage_Size;
+
+    procedure Allocate_From_Subpool (
+      Pool : in out Tracked_Pool;
+      Storage_Address : out System.Address;
+      Size_In_Storage_Elements : Storage_Count;
+      Alignment : Storage_Count;
+      Subpool : not null Subpools.Subpool_Handle) is
+
+        Allocated : constant Allocated_Storage_Ref :=
+          new Allocated_Storage
+                (Size => Size_In_Storage_Elements +
+                         Storage_Count'Max (Alignment - 1, 0));
+
+        Unaligned_Address : constant System.Address
+          := Allocated.Storage'Address;
+
+        Misalignment : constant Storage_Offset
+          := (if Alignment = 0 then 0 else Unaligned_Address mod Alignment);
+
+        Tracked_Subpool : constant Tracked_Subpool_Handle :=
+           Tracked_Subpool_Handle (Subpool);
+
+        use Allocator_Info_Maps;
+        use Serialized_Allocator_Info_Maps;
+
+        procedure Update_Pool (Mapping : in out Map) is
+        begin
+            Insert (Mapping,
+                    Unaligned_Address,
+                    Allocator_Info'(Unaligned_Address,
+                                    Allocated.Size,
+                                    Tracked_Subpool));
+        end Update_Pool;
+
+        procedure Update_Allocation_Ref (Ref : in out Allocated_Storage_Ref) is
+        begin
+            Allocated.Next_In_Subpool := Ref;
+            Ref := Allocated;
+        end Update_Allocation_Ref;
+
+    begin
+        Storage_Address :=
+          Unaligned_Address +
+          (if Misalignment /= 0 then Alignment - Misalignment else 0);
+
+        pragma Assert (Alignment = 0 or else
+                       Storage_Address mod Alignment = 0);
+
+        Pool.Allocation_Map.Update (Update_Pool'Access);
+        Tracked_Subpool.First_In_Subpool.Update (Update_Allocation_Ref'Access);
+    end Allocate_From_Subpool;
+
+    procedure Deallocate_Subpool (
+      Pool : in out Tracked_Pool;
+      Subpool : in out Subpools.Subpool_Handle) is
+        procedure Free is new Ada.Unchecked_Deallocation
+          (Allocated_Storage, Allocated_Storage_Ref);
+        procedure Free is new Ada.Unchecked_Deallocation
+          (Tracked_Subpool, Tracked_Subpool_Ref);
+
+        Tracked_Subpool : Tracked_Subpool_Ref :=
+           Tracked_Subpool_Ref (Subpool);
+
+        Rover : Allocated_Storage_Ref;
+
+        procedure Set_Rover (Ref : in out Allocated_Storage_Ref) is
+        begin
+            Rover := Ref;
+            Ref := null;
+        end Set_Rover;
+
+    begin
+        Tracked_Subpool.First_In_Subpool.Update (Set_Rover'Access);
+
+        while Rover /= null loop
+            declare
+                use Allocator_Info_Maps;
+
+                procedure Update_Pool (Mapping : in out Map) is
+                begin
+                    -- Empty map indicates enclosing pool has been finalized.
+                    if not Is_Empty (Mapping) then
+                        Delete (Mapping, Rover.Storage'Address);
+                    end if;
+                end Update_Pool;
+            begin
+                Pool.Allocation_Map.Update (Update_Pool'Access);
+            end;
+
+            declare
+                Prev : Allocated_Storage_Ref := Rover;
+            begin
+                Rover := Rover.Next_In_Subpool;
+                Free (Prev);
+            end;
+        end loop;
+        Subpool := null;
+        if Tracked_Subpool.Reclaim_Upon_Deallocation then
+            Free (Tracked_Subpool);
+        end if;
+    end Deallocate_Subpool;
+end CDB4001_Tracked_Subpools;
+
+
+with Ada.Assertions;
+with Ada.Finalization;
+with Ada.Unchecked_Deallocate_Subpool;
+with Ada.Unchecked_Deallocation;
+with System.Storage_Pools.Subpools;
+with CDB4001_Tracked_Subpools;
+
+with Report;
+procedure CDB4001 is
+
+    subtype Subpool_Handle is System.Storage_Pools.Subpools.Subpool_Handle;
+    use type Subpool_Handle;
+
+    type Subpool_Id is range 1 .. 5;
+    type Index is range 1 .. 4;
+
+    type Object_Id_Or_Nil is new Integer range 0 ..
+      Integer (Subpool_Id'Last)
+      * Integer (Index'Last + ((Index'Last * (Index'Last + 1)) / 2));
+    --
+    -- For each (Subpool,Index) pair, one object is created for the
+    -- Obj_Ref array (declared below) and Index objects are created
+    -- for the Vec_Ref array (declared below; see also the "1 .. Idx" in
+    -- the body of Initializer_Task below).
+
+    subtype Object_Id is Object_Id_Or_Nil range 1 .. Object_Id_Or_Nil'Last;
+
+    protected Id_Allocator is
+        procedure Next (Id : out Object_Id);
+    private
+        Counter : Object_Id_Or_Nil := 0;
+    end Id_Allocator;
+
+    protected body Id_Allocator is
+        procedure Next (Id : out Object_Id) is
+        begin
+            Counter := Counter + 1;
+            Id := Counter;
+        end Next;
+    end Id_Allocator;
+
+    function Next return Object_Id is
+    begin
+        return Result : Object_Id do
+            Id_Allocator.Next (Result);
+        end return;
+    end Next;
+
+    type Object_Id_Set is array (Object_Id) of Boolean;
+    Finalized : Object_Id_Set := (others => False);
+
+    Test_Failed : exception;
+
+    procedure Assert (Condition : Boolean; Descr : String) is
+    begin
+        if not Condition then
+            Report.Failed (Descr => Descr);
+            raise Test_Failed;
+        end if;
+    end Assert;
+
+    package Pkg is
+        type Object (Id : Object_Id := Next) is
+          new Ada.Finalization.Limited_Controlled with
+          null record;
+
+        overriding
+        procedure Finalize (X : in out Object);
+    end Pkg;
+
+    package body Pkg is
+        procedure Finalize (X : in out Object) is
+        begin
+            Assert (not Finalized (X.Id), "limited object finalized twice");
+            Finalized (X.Id) := True;
+        end Finalize;
+    end Pkg;
+
+    type Rec is
+      record
+         Real : Long_Float := 1234.5;
+         Obj  : Pkg.Object;
+         Char : Character := 'C';
+      end record;
+
+    procedure Test is
+        The_Pool : CDB4001_Tracked_Subpools.Tracked_Pool;
+
+        Subpools : array (Subpool_Id) of Subpool_Handle;
+          --  := (others => CDB4001_Tracked_Subpools.Create_Subpool (The_Pool));
+          --  Can't initialize with aggregate because Create_Subpool's
+          --  parameter is in-out.
+
+        type Vec is array (Index range <>) of Rec;
+
+        type Obj_Ref is access Pkg.Object;
+        for Obj_Ref'Storage_Pool use The_Pool;
+
+        type Vec_Ref is access Vec;
+        for Vec_Ref'Storage_Pool use The_Pool;
+
+        Obj_Refs : array (Index, Subpool_Id) of Obj_Ref
+            with Independent_Components;
+        Vec_Refs : array (Index, Subpool_Id) of Vec_Ref
+            with Independent_Components;
+
+        procedure Initialize_Refs is
+            Next_Index : Index := Index'First;
+
+            function Get_Index return Index is
+            begin
+                return Result : Index := Next_Index do
+                    if Next_Index /= Index'Last then
+                        Next_Index := Next_Index + 1;
+                    end if;
+                end return;
+            end Get_Index;
+
+            task type Initializer (Idx : Index := Get_Index);
+
+            task body Initializer is
+            begin
+                for Subp in Subpool_Id loop
+                  declare
+                    Handle : Subpool_Handle renames Subpools (Subp);
+                  begin
+                    Obj_Refs (Idx, Subp) := new (Handle) Pkg.Object;
+                    Vec_Refs (Idx, Subp) := new (Handle) Vec (1 .. Idx);
+                  end;
+                end loop;
+            end Initializer;
+
+        begin
+            declare
+                Initializers : array (Index) of Initializer;
+            begin null; end;
+
+            for Subp in Subpool_Id loop
+                for Idx in Index loop
+                    Assert (Obj_Refs (Idx, Subp) /= null,
+                            "incomplete Obj_Refs initialization");
+                    Assert (Vec_Refs (Idx, Subp) /= null,
+                            "incomplete Vec_Refs initialization");
+                end loop;
+            end loop;
+        end Initialize_Refs;
+
+    begin
+        for Id in Subpool_Id loop
+           Subpools (Id) := CDB4001_Tracked_Subpools.Create_Subpool (The_Pool);
+        end loop;
+
+        Initialize_Refs;
+
+        Report.Comment ("Initialization complete");
+
+        for Subp in Subpool_Id loop
+            for Idx in Index loop
+                Assert
+                  (CDB4001_Tracked_Subpools.Enclosing_Subpool
+                     (The_Pool, Obj_Refs (Idx, Subp).all'Address)
+                   = Subpools (Subp),
+                   "wrong enclosing subpool for Obj_Refs element");
+                Assert
+                  (CDB4001_Tracked_Subpools.Enclosing_Subpool
+                     (The_Pool, Vec_Refs (Idx, Subp).all'Address)
+                   = Subpools (Subp),
+                   "wrong enclosing subpool for Vec_Refs element");
+            end loop;
+        end loop;
+
+        Report.Comment ("Enclosing_Subpool checking complete");
+
+        declare
+            procedure Free is new Ada.Unchecked_Deallocation
+              (Pkg.Object, Obj_Ref);
+            procedure Free is new Ada.Unchecked_Deallocation (Vec, Vec_Ref);
+
+            Expected : Object_Id_Set := (others => False);
+        begin
+            for Subp in Subpool_Id loop
+                for Idx in Index loop
+                    case  (Integer (Subp) + Integer (Idx)) mod 5 is
+                        when 1 =>
+                            Expected (Obj_Refs (Idx, Subp).Id) := True;
+                            Free (Obj_Refs (Idx, Subp));
+
+                        when 2 =>
+                            for I in Vec_Refs (Idx, Subp)'Range loop
+                                Expected (Vec_Refs (Idx, Subp)(I).Obj.Id)
+                                  := True;
+                            end loop;
+                            Free (Vec_Refs (Idx, Subp));
+
+                        when others =>
+                            null;
+                    end case;
+                    Assert (Finalized = Expected,
+                            "unexpected finalization state after " &
+                            "Unchecked_Deallocation call");
+                end loop;
+            end loop;
+
+            Report.Comment ("Individual object deallocation complete");
+
+            for Subp in Subpool_Id loop
+                if Subp mod 3 = 1 then
+                    for Idx in Index loop
+                        if Obj_Refs (Idx, Subp) /= null then
+                            Expected (Obj_Refs (Idx, Subp).Id) := True;
+                        end if;
+                        if Vec_Refs (Idx, Subp) /= null then
+                            for I in Vec_Refs (Idx, Subp)'Range loop
+                                Expected (Vec_Refs (Idx, Subp)(I).Obj.Id)
+                                  := True;
+                            end loop;
+                        end if;
+                    end loop;
+                    Ada.Unchecked_Deallocate_Subpool (Subpools (Subp));
+                    Assert (Finalized = Expected,
+                            "unexpected finalization state after " &
+                             "Unchecked_Deallocate_Subpool call");
+                end if;
+            end loop;
+
+            Report.Comment ("Subpool deallocation complete");
+        end;
+    end Test;
+begin
+    Report.Test ("CDB4001",
+                 "Allocation and deallocation of objects using subpools");
+    begin
+        Test;
+        Assert (Finalized = (Finalized'Range => True),
+                "not all allocated objects were finalized");
+    exception
+        when Test_Failed =>
+            null;
+        when others =>
+            Report.Failed ("Unexpected exception");
+    end;
+
+    Report.Result;
+end CDB4001;

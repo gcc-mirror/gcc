@@ -1,0 +1,305 @@
+-- C761004.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that an object of a controlled type is finalized with the
+--      enclosing master is complete.
+--      Check that finalization occurs in the case where the master is
+--      left by a transfer of control.
+--      Specifically check for types where the derived types do not have
+--      discriminants.
+--      
+--      Check that finalization of controlled objects is 
+--      performed in the correct order.  In particular, check that if 
+--      multiple objects of controlled types are declared immediately 
+--      within the same declarative part then they are finalized in the 
+--      reverse order of their creation.
+--
+-- TEST DESCRIPTION:
+--      This test checks these conditions for subprograms and 
+--      block statements; both variables and constants of controlled 
+--      types; cases of a controlled component of a record type, as 
+--      well as an array with controlled components.
+--
+--      The base controlled types used for the test are defined 
+--      with a character discriminant.  The initialize procedure for 
+--      the types will record the order of creation in a globally 
+--      accessible array, the finalize procedure for the types will call
+--      TCTouch with that tag character.  The test can then check that 
+--      the order of finalization is indeed the reverse of the order of 
+--      creation (assuming that the implementation calls Initialize in 
+--      the order that the objects are created).
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      04 Nov 95   SAIC    Fixed bugs for ACVC 2.0.1
+--
+--! 
+
+package C761004_Support is
+  
+  function Pick_Char return Character;
+  -- successive calls to Pick_Char return distinct characters which may
+  -- be assigned to objects to track an order sequence.  These characters
+  -- are then used in calls to TCTouch.Touch.
+
+  procedure Validate(Initcount: Natural; Testnumber:Natural);
+  -- does a little extra processing prior to calling TCTouch.Validate,
+  -- specifically, it reverses the stored string of characters, and checks
+  -- for a correct count.
+
+  Inits_Order  : String(1..255);
+  Inits_Called : Natural := 0;
+
+end C761004_Support;
+
+with Report;
+with TCTouch;
+package body C761004_Support is
+  type Pick_Rotation is mod 52;
+  type Pick_String is array(Pick_Rotation) of Character;
+
+  From : constant Pick_String  := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                & "abcdefghijklmnopqrstuvwxyz";
+  Recent_Pick : Pick_Rotation := Pick_Rotation'Last;
+
+  function Pick_Char return Character is
+  begin
+    Recent_Pick := Recent_Pick +1;
+    return From(Recent_Pick);
+  end Pick_Char;
+
+  function Invert(S:String) return String is
+    T: String(1..S'Length);
+    TI: Positive := 1;
+  begin
+    for SI in reverse S'Range loop
+      T(TI) := S(SI);
+      TI := TI +1;
+    end loop;
+    return T;
+  end Invert;
+
+  procedure Validate(Initcount: Natural; Testnumber:Natural) is
+    Number : constant String := Natural'Image(Testnumber);
+  begin
+    if Inits_Called /= Initcount then
+      Report.Failed("Wrong number of inits, Subtest " & Number);
+      TCTouch.Flush;
+    else
+      TCTouch.Validate(
+        Invert(Inits_Order(1..Inits_Called)),
+               "Subtest " & Number, True);
+    end if;
+  end Validate;
+
+end C761004_Support;
+
+----------------------------------------------------------------- C761004_0
+
+with Ada.Finalization;
+package C761004_0 is
+  type Global is new Ada.Finalization.Controlled with record
+    Tag : Character;
+  end record;
+  procedure Initialize( It: in out Global );
+  procedure Finalize  ( It: in out Global );
+
+  type Second is new Ada.Finalization.Limited_Controlled with record
+    Tag : Character;
+  end record;
+  procedure Initialize( It: in out Second );
+  procedure Finalize  ( It: in out Second );
+
+end C761004_0;
+
+with TCTouch;
+with C761004_Support;
+package body C761004_0 is
+  
+  package Sup renames C761004_Support;
+
+  procedure Initialize( It: in out Global ) is
+  begin
+    Sup.Inits_Called := Sup.Inits_Called +1;
+    It.Tag := Sup.Pick_Char;
+    Sup.Inits_Order(Sup.Inits_Called) := It.Tag;
+  end Initialize;
+  
+  procedure Finalize( It: in out Global ) is
+  begin
+    TCTouch.Touch(It.Tag);  --------------------------------------------- Tag
+  end Finalize;
+
+  procedure Initialize( It: in out Second ) is
+  begin
+    Sup.Inits_Called := Sup.Inits_Called +1;
+    It.Tag := Sup.Pick_Char;
+    Sup.Inits_Order(Sup.Inits_Called) := It.Tag;
+  end Initialize;
+  
+  procedure Finalize( It: in out Second ) is
+  begin
+    TCTouch.Touch(It.Tag);  --------------------------------------------- Tag
+  end Finalize;
+end C761004_0;
+
+------------------------------------------------------------------- C761004
+
+with Report;
+with TCTouch;
+with C761004_0;
+with C761004_Support;
+with Ada.Finalization; -- needed to be able to create extension aggregates
+procedure C761004 is
+
+  Verbose : constant Boolean := False;
+
+  package Sup renames C761004_Support;
+
+  -- Subtest 1, general case.  Check that several objects declared in a
+  -- subprogram are created, and finalized in opposite order.
+
+  Subtest_1_Expected_Inits : constant := 3;
+
+  procedure Subtest_1 is
+    Item_1 : C761004_0.Global;
+    Item_2, Item_3 : C761004_0.Global;
+ begin
+    if Item_2.Tag = Item_3.Tag then  -- not germane to the test
+      Report.Failed("Duplicate tag");-- but helps prevent code elimination
+    end if;
+  end Subtest_1;
+
+  -- Subtest 2, extension of the general case.  Check that several objects
+  -- created identically on the stack (via a recursive procedure) are
+  -- finalized in the opposite order of their creation.
+  Subtest_2_Expected_Inits : constant := 12;
+  User_Exception : exception;
+  
+  procedure Subtest_2 is
+    
+    Item_1 : C761004_0.Global;
+
+    -- combine recursion and exit by exception:
+
+    procedure Nested(Recurs: Natural) is
+      Item_3 : C761004_0.Global;
+    begin
+      if Verbose then
+        Report.Comment("going in: " & Item_3.Tag);
+      end if;
+      if Recurs = 1 then
+        raise User_Exception;
+      else
+        Nested(Recurs -1);
+      end if;
+    end Nested;
+    
+    Item_2 : C761004_0.Global;
+  
+  begin
+    Nested(10);
+  end Subtest_2;
+
+  -- subtest 3, check the case of objects embedded in structures:
+  -- an array
+  -- a record
+  Subtest_3_Expected_Inits : constant := 3;
+  procedure Subtest_3 is
+    type G_List is array(Positive range <>) of C761004_0.Global;
+    type Pandoras_Box is record
+      G : G_List(1..1);
+    end record;
+
+    procedure Nested(Recursions: Natural) is
+      Merlin : Pandoras_Box;
+    begin
+      if Recursions > 1 then
+        Nested(Recursions-1);
+      else
+        TCTouch.Validate("","Final Nested call");
+      end if;
+    end Nested;
+
+  begin
+    Nested(3);
+  end Subtest_3;
+
+  -- subtest 4, check the case of objects embedded in structures:
+  -- an array
+  -- a record
+  Subtest_4_Expected_Inits : constant := 3;
+  procedure Subtest_4 is
+    type S_List is array(Positive range <>) of C761004_0.Second;
+    type Pandoras_Box is record
+      S : S_List(1..1);
+    end record;
+
+    procedure Nested(Recursions: Natural) is
+      Merlin : Pandoras_Box;
+    begin
+      if Recursions > 1 then
+        Nested(Recursions-1);
+      else
+        TCTouch.Validate("","Final Nested call");
+      end if;
+    end Nested;
+
+  begin
+    Nested(3);
+  end Subtest_4;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C761004", "Check that an object of a controlled type "
+                        & "is finalized when the enclosing master is "
+                        & "complete, left by a transfer of control, "
+                        & "and performed in the correct order" );
+
+  Subtest_1;
+  Sup.Validate(Subtest_1_Expected_Inits,1); 
+
+  Subtest_2_Frame: begin
+    Sup.Inits_Called := 0;
+    Subtest_2;
+  exception           
+    when User_Exception => null;
+    when others => Report.Failed("Wrong Exception, Subtest 2");
+  end Subtest_2_Frame;
+  Sup.Validate(Subtest_2_Expected_Inits,2);
+  
+  Sup.Inits_Called := 0;
+  Subtest_3;
+  Sup.Validate(Subtest_3_Expected_Inits,3);
+  
+  Sup.Inits_Called := 0;
+  Subtest_4;
+  Sup.Validate(Subtest_4_Expected_Inits,4);
+  
+  Report.Result;
+
+end C761004;

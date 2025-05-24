@@ -1,0 +1,157 @@
+-- F650A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This package declares three limited tagged types for use in limited
+--      return tests, Alert, Special_Alert, and Practice_Alert.
+--      It models (in miniature) an application situation in which an
+--      abstraction is defined with an abstract root type and several
+--      concrete extensions.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0.
+--      29 Mar 08   RLB     Created from existing F393B00 foundation.
+--      17 Jul 08   RLB     Removed illegal component reference.
+--
+--!
+
+package F650A00 is
+   type Alert is abstract tagged limited private;  -- Abstract type
+                                               -- See procedure Handle below
+
+   procedure Handle (A : in out Alert) is abstract;
+                                               -- Abstract procedure,
+                                               -- explicitly declared
+
+   procedure Set_Alert_Time (A : in out Alert; Time : in Duration);
+
+   function Alert_Time (A : in Alert) return Duration;
+
+private
+   type Alert is abstract tagged limited record
+      Time : Duration := 0.0;
+   end record;
+end F650A00;
+
+--=======================================================================--
+
+package body F650A00 is
+
+   procedure Set_Alert_Time (A : in out Alert; Time : in Duration) is
+   begin
+      A.Time := Time;
+   end Set_Alert_Time;
+
+
+   function Alert_Time (A : in Alert) return Duration is
+   begin
+      return A.Time;
+   end Alert_Time;
+
+end F650A00;
+
+--=======================================================================--
+
+package F650A00.P is
+   type Status_Kind is (Practice, Real, Dont_Care);
+   type Urgency_Kind is (Low, Medium, High);
+
+   type Practice_Alert is new Alert with record
+      Status : Status_Kind := Dont_Care;
+      Urgency : Urgency_Kind := Low;
+   end record;
+
+   overriding
+   procedure Handle (PA : in out Practice_Alert);
+
+   function Make_Alert_for_Time (Time : in Duration) return Practice_Alert;
+
+end F650A00.P;
+
+--=======================================================================--
+
+package body F650A00.P is
+
+   procedure Handle (PA : in out Practice_Alert) is
+   begin
+      PA.Status := Real;
+      PA.Urgency := Medium;
+   end Handle;
+
+
+   function Make_Alert_for_Time (Time : in Duration) return Practice_Alert is
+   begin
+      return (Time => Time, Status => <>, Urgency => <>);
+   end Make_Alert_for_Time;
+
+end F650A00.P;
+
+--=======================================================================--
+
+with F650A00.P;
+package F650A00.S is
+   type Device is (Teletype, Console, Big_Screen);
+
+   type Special_Alert (Age : Integer) is new P.Practice_Alert with record
+       Display : Device;
+     end record;
+
+   overriding
+   procedure Handle (SA : in out Special_Alert);
+
+   function Make_Alert_for_Time (Time : in Duration) return Special_Alert;
+
+end F650A00.S;
+
+--=======================================================================--
+
+package body F650A00.S is
+
+   procedure Handle (SA : in out Special_Alert) is
+   begin
+      F650A00.P.Practice_Alert(SA).Handle;
+      SA.Display := Big_Screen;
+   end Handle;
+
+
+   function Make_Alert_for_Time (Time : in Duration) return Special_Alert is
+   begin
+       return Result : Special_Alert(Age => 39) do
+           Set_Alert_Time (Result, Time);
+       end return;
+   end Make_Alert_for_Time;
+
+end F650A00.S;
+

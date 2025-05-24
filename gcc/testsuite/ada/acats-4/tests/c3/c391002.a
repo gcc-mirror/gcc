@@ -1,0 +1,493 @@
+-- C391002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that structures nesting discriminated records as
+--      components in record extension are correctly supported.
+--      Check that record extensions inherit all the visible components
+--      of their ancestor types.
+--      Check that discriminants are correctly inherited.
+--
+-- TEST DESCRIPTION:
+--      This test defines a simple class hierarchy, where the final
+--      derivations exercise the different possible "permissions" available
+--      to a designer.  Extension aggregates for discriminated types are used
+--      to set values of these final types.  The key difference between
+--      this test and C391001 is that the types are visible, and allow the
+--      creation of complex discriminated extension aggregates.  Another
+--      layer of derivation is present to more robustly check that the
+--      inheritance is correctly supported.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      16 Dec 94   SAIC    Removed offending parenthesis in aggregate
+--                          extensions, corrected typo: TC_MC SB TC_PC,
+--                          corrected visibility errors for literals,
+--                          added qualification for aggregate expressions
+--                          used in extension aggregates, corrected parameter
+--                          order in call to Communications.Creator
+--     01 MAY 95    SAIC    Removed "limited" from the definition of Mil_Comm
+--     14 OCT 95    SAIC    Fixed some value bugs for ACVC 2.0.1
+--     04 MAR 96    SAIC    Altered 3 overambitious extension aggregates
+--     11 APR 96    SAIC    Updated documentation for 2.1
+--     27 FEB 97    PWB.CTA Deleted extra (illegal) component association
+--!
+
+----------------------------------------------------------------- C391002_1
+
+package C391002_1 is 
+
+  type Object is tagged private;  
+
+  -- Constructor operation
+  procedure Create( The_Plaque : in out Object );
+
+  -- Selector operations
+  function TC_Match( Left_Plaque : Object; Right_Natural : Natural )
+    return Boolean;
+
+  function Serial_Number( A_Plaque : Object ) return Natural;
+
+  Unserialized : exception;  -- Serial_Number called before Create
+  Reserialized : exception;  -- Create called twice
+
+private
+  type Object is tagged record
+    Serial_Number : Natural := 0;
+  end record;
+end C391002_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C391002_1 is
+
+  Counter : Natural := 0;
+
+  procedure Create( The_Plaque : in out Object ) is
+  begin
+    if The_Plaque.Serial_Number = 0 then
+      Counter := Counter +1;
+      The_Plaque.Serial_Number := Counter;
+    else
+      raise Reserialized;
+    end if;
+  end Create;
+
+  function TC_Match( Left_Plaque : Object; Right_Natural : Natural )
+    return Boolean is
+  begin
+    return (Left_Plaque.Serial_Number = Right_Natural);
+  end TC_Match;
+
+  function Serial_Number( A_Plaque : Object ) return Natural is
+  begin
+    if A_Plaque.Serial_Number = 0 then
+      raise Unserialized;
+    end if;
+    return A_Plaque.Serial_Number;
+  end Serial_Number;
+end C391002_1;
+
+----------------------------------------------------------------- C391002_2
+
+with C391002_1;
+package C391002_2 is -- package Boards is
+
+  package Plaque renames C391002_1;
+
+  type Modes is (Receiving, Transmitting, Standby);
+  type Link(Mode: Modes := Standby) is record
+    case Mode is
+      when Receiving    => TC_R : Integer := 100; 
+      when Transmitting => TC_T : Integer := 200;
+      when Standby      => TC_S : Integer := 300; -- TGA, TSA, SSA
+    end case;
+  end record;
+
+  type Data_Formats is (S_Band, KU_Band, UHF);
+
+  type Transceiver(Band: Data_Formats) is tagged record
+    ID : Plaque.Object;
+    The_Link: Link;
+    case Band is
+      when S_Band  => TC_S_Band_Data  : Integer := 1; -- TGA, SSA, Milnet
+      when KU_Band => TC_KU_Band_Data : Integer := 2; -- TSA, Usenet
+      when UHF     => TC_UHF_Data     : Integer := 3; -- Gossip
+    end case;
+  end record;
+end C391002_2;
+
+----------------------------------------------------------------- C391002_3
+
+with C391002_1;
+with C391002_2;
+package C391002_3 is -- package Modules
+
+  package Plaque renames C391002_1;
+  package Boards renames C391002_2;
+  use type Boards.Modes;
+  use type Boards.Data_Formats;
+
+  type Command_Formats is ( Set_Compression_Code,
+                            Set_Data_Rate,
+                            Set_Power_State );
+
+  type Electronics_Module(EBand       : Boards.Data_Formats;
+                          The_Command : Command_Formats)
+    is new Boards.Transceiver(EBand) with record
+      case The_Command is
+        when Set_Compression_Code => TC_SCC : Integer := 10; -- SSA, Gossip
+        when Set_Data_Rate        => TC_SDR : Integer := 20; -- TGA, Usenet
+        when Set_Power_State      => TC_SPS : Integer := 30; -- TSA, Milnet
+      end case;
+    end record;
+end C391002_3;
+
+----------------------------------------------------------------- C391002_4
+
+with C391002_3;
+package C391002_4 is -- Communications
+  package Modules renames C391002_3;
+
+  type Public_Comm is new Modules.Electronics_Module with
+    record
+      TC_VC : Integer;
+    end record;
+
+  type Private_Comm is new Modules.Electronics_Module with private;
+
+  type Mil_Comm is new Modules.Electronics_Module with private;
+
+  procedure Creator( Plugs : in Modules.Electronics_Module;
+                     Gives : out Mil_Comm);
+
+  function  Creator( Key : Integer; Plugs : in Modules.Electronics_Module )
+            return Private_Comm;
+
+  procedure Setup( It : in out Public_Comm;  Value : in Integer );
+  procedure Setup( It : in out Private_Comm; Value : in Integer );
+  procedure Setup( It : in out Mil_Comm;     Value : in Integer );
+
+  function  Selector( It : Public_Comm )  return Integer;
+  function  Selector( It : Private_Comm ) return Integer;
+  function  Selector( It : Mil_Comm )     return Integer;
+
+private
+  type Private_Comm is new Modules.Electronics_Module with
+    record
+      TC_PC : Integer;
+    end record;
+
+  type Mil_Comm is new Modules.Electronics_Module with 
+    record
+      TC_MC : Integer;
+    end record;
+end C391002_4; -- Communications
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+with TCTouch;
+package body C391002_4 is -- Communications
+
+  procedure Creator( Plugs : in Modules.Electronics_Module;
+                     Gives : out Mil_Comm) is
+  begin
+    Gives := ( Plugs with TC_MC => -1 );
+  end Creator;
+
+  function  Creator( Key : Integer; Plugs : in Modules.Electronics_Module )
+            return Private_Comm is
+  begin
+    return ( Plugs with TC_PC => Key );
+  end Creator;
+
+  procedure Setup( It : in out Public_Comm; Value : in Integer ) is
+  begin
+    It.TC_VC := Value;
+    TCTouch.Assert( Value = 1, "Public_Comm");
+  end Setup;
+
+  procedure Setup( It : in out Private_Comm; Value : in Integer ) is
+  begin
+    It.TC_PC := Value;
+    TCTouch.Assert( Value = 2, "Private_Comm");
+  end Setup;
+
+  procedure Setup( It : in out Mil_Comm; Value : in Integer ) is
+  begin
+    It.TC_MC := Value;
+    TCTouch.Assert( Value = 3, "Private_Comm");
+  end Setup;
+
+  function  Selector( It : Public_Comm )  return Integer is
+  begin
+    return It.TC_VC;
+  end Selector;
+
+  function  Selector( It : Private_Comm ) return Integer is
+  begin
+    return It.TC_PC;
+  end Selector;
+
+  function  Selector( It : Mil_Comm )     return Integer is
+  begin
+    return It.TC_MC;
+  end Selector;
+
+end C391002_4; -- Communications
+
+------------------------------------------------------------------- C391002
+
+with Report;
+with TCTouch;
+with C391002_1;
+with C391002_2;
+with C391002_3;
+with C391002_4;
+procedure C391002 is
+
+  package Plaque  renames C391002_1;
+  package Boards  renames C391002_2;
+  package Modules renames C391002_3;
+  package Communications renames C391002_4;
+
+  procedure Assert( Condition: Boolean; Message: String )
+    renames TCTouch.Assert;
+
+  use type Boards.Modes;
+  use type Boards.Data_Formats;
+  use type Modules.Command_Formats;
+
+  type Azimuth is range 0..359;
+
+  type Ground_Antenna(The_Band    : Boards.Data_Formats;
+                      The_Command : Modules.Command_Formats) is
+    record
+      ID          : Plaque.Object;
+      Electronics : Modules.Electronics_Module(The_Band,The_Command);
+      Pointing    : Azimuth;
+    end record;
+
+  type Space_Antenna(The_Band    : Boards.Data_Formats    := Boards.KU_Band;
+                     The_Command : Modules.Command_Formats
+                                   := Modules.Set_Power_State)
+  is
+    record
+      ID          : Plaque.Object;
+      Electronics : Modules.Electronics_Module(The_Band,The_Command);
+    end record;
+
+  The_Ground_Antenna     : Ground_Antenna (Boards.S_Band,
+                                           Modules.Set_Data_Rate);
+  The_Space_Antenna      : Space_Antenna;
+  Space_Station_Antenna  : Space_Antenna  (Boards.UHF,
+                                           Modules.Set_Compression_Code);
+
+  Gossip : Communications.Public_Comm  (Boards.UHF,
+                                        Modules.Set_Compression_Code);
+  Usenet : Communications.Private_Comm (Boards.KU_Band,
+                                        Modules.Set_Data_Rate);
+  Milnet : Communications.Mil_Comm     (Boards.S_Band,
+                                        Modules.Set_Power_State);
+
+
+begin
+
+  Report.Test("C391002", "Check nested tagged discriminated"
+                       & " record structures");
+
+  Plaque.Create( The_Ground_Antenna.ID );               -- 1
+  Plaque.Create( The_Ground_Antenna.Electronics.ID );   -- 2
+  Plaque.Create( The_Space_Antenna.ID );                -- 3
+  Plaque.Create( The_Space_Antenna.Electronics.ID );    -- 4
+  Plaque.Create( Space_Station_Antenna.ID );            -- 5
+  Plaque.Create( Space_Station_Antenna.Electronics.ID );-- 6
+
+  The_Ground_Antenna := ( The_Band    => Boards.S_Band,
+                          The_Command => Modules.Set_Data_Rate,
+                          ID          => The_Ground_Antenna.ID,
+                          Electronics =>
+                          ( Boards.Transceiver'(
+                              Band     => Boards.S_Band,
+                              ID       => The_Ground_Antenna.Electronics.ID,
+                              The_Link => ( Mode => Boards.Transmitting,
+                                            TC_T => 222 ),
+                              TC_S_Band_Data => 8 )
+                            with   EBand       => Boards.S_Band,
+                                   The_Command => Modules.Set_Data_Rate,
+                                   TC_SDR      => 11 ),
+                          Pointing    => 270 );
+
+  The_Space_Antenna := ( The_Band    => Boards.S_Band,
+                         The_Command => Modules.Set_Data_Rate,
+                         ID          => The_Space_Antenna.ID,
+                         Electronics =>
+                         ( Boards.Transceiver'(
+                             Band     => Boards.S_Band,
+                             ID       => The_Space_Antenna.Electronics.ID,
+                             The_Link => ( Mode => Boards.Transmitting,
+                                           TC_T => 456 ),
+                             TC_S_Band_Data => 88 )
+                           with
+                               EBand       => Boards.S_Band,
+                               The_Command => Modules.Set_Data_Rate,
+                               TC_SDR      => 42
+                        ) );
+
+  Space_Station_Antenna := ( Boards.UHF, Modules.Set_Compression_Code,
+                             Space_Station_Antenna.ID,
+                             ( Boards.Transceiver'(
+                                 Boards.UHF,
+                                 Space_Station_Antenna.Electronics.ID,
+                                 ( Boards.Transmitting, 202 ),
+                                 42 )
+                                 with Boards.UHF, 
+                                      Modules.Set_Compression_Code,
+                                      TC_SCC => 101
+                           ) );
+
+  Assert( The_Ground_Antenna.The_Band = Boards.S_Band, "TGA disc 1" );
+  Assert( The_Ground_Antenna.The_Command = Modules.Set_Data_Rate,
+            "TGA disc 2" );
+  Assert( Plaque.TC_Match(The_Ground_Antenna.ID,1), "TGA comp 3" );
+  Assert( The_Ground_Antenna.Electronics.EBand = Boards.S_Band,
+            "TGA comp 2.disc 1" );
+  Assert( The_Ground_Antenna.Electronics.The_Command
+             = Modules.Set_Data_Rate,
+            "TGA comp 2.disc 2" );
+  Assert( The_Ground_Antenna.Electronics.TC_SDR = 11,
+            "TGA comp 2.1" );
+  Assert( Plaque.TC_Match( The_Ground_Antenna.Electronics.ID, 2 ),
+            "TGA comp 2.inher.1" );
+  Assert( The_Ground_Antenna.Electronics.The_Link.Mode = Boards.Transmitting,
+            "TGA comp 2.inher.2.disc" );
+  Assert( The_Ground_Antenna.Electronics.The_Link.TC_T = 222,
+            "TGA comp 2.inher.2.1" );
+  Assert( The_Ground_Antenna.Electronics.TC_S_Band_Data = 8,
+            "TGA comp 2.inher.3" );
+  Assert( The_Ground_Antenna.Pointing = 270, "TGA comp 3" );
+
+  Assert( The_Space_Antenna.The_Band = Boards.S_Band, "TSA disc 1");
+  Assert( The_Space_Antenna.The_Command = Modules.Set_Data_Rate,
+            "TSA disc 2");
+  Assert( Plaque.TC_Match(The_Space_Antenna.ID,3),
+            "TSA comp 1");
+  Assert( The_Space_Antenna.Electronics.EBand = Boards.S_Band,
+            "TSA comp 2.disc 1");
+  Assert( The_Space_Antenna.Electronics.The_Command = Modules.Set_Data_Rate,
+            "TSA comp 2.disc 2");
+  Assert( The_Space_Antenna.Electronics.TC_SDR = 42,
+            "TSA comp 2.1");
+  Assert( Plaque.TC_Match(The_Space_Antenna.Electronics.ID,4),
+            "TSA comp 2.inher.1");
+  Assert( The_Space_Antenna.Electronics.The_Link.Mode = Boards.Transmitting,
+            "TSA comp 2.inher.2.disc");
+  Assert( The_Space_Antenna.Electronics.The_Link.TC_T = 456,
+            "TSA comp 2.inher.2.1");
+  Assert( The_Space_Antenna.Electronics.TC_S_Band_Data = 88,
+            "TSA comp 2.inher.3");
+
+  Assert( Space_Station_Antenna.The_Band = Boards.UHF, "SSA disc 1");
+  Assert( Space_Station_Antenna.The_Command = Modules.Set_Compression_Code,
+            "SSA disc 2");
+  Assert( Plaque.TC_Match(Space_Station_Antenna.ID,5),
+            "SSA comp 1");
+  Assert( Space_Station_Antenna.Electronics.EBand = Boards.UHF,
+            "SSA comp 2.disc 1");
+  Assert( Space_Station_Antenna.Electronics.The_Command
+             = Modules.Set_Compression_Code,
+            "SSA comp 2.disc 2");
+  Assert( Space_Station_Antenna.Electronics.TC_SCC = 101,
+            "SSA comp 2.1");
+  Assert( Plaque.TC_Match(Space_Station_Antenna.Electronics.ID,6),
+            "SSA comp 2.inher.1");
+  Assert( Space_Station_Antenna.Electronics.The_Link.Mode
+            = Boards.Transmitting,
+            "SSA comp 2.inher.2.disc");
+  Assert( Space_Station_Antenna.Electronics.The_Link.TC_T = 202,
+            "SSA comp 2.inher.2.1");
+  Assert( Space_Station_Antenna.Electronics.TC_UHF_Data = 42,
+            "SSA comp 2.inher.3");
+
+
+  The_Space_Antenna := ( The_Band    => Boards.S_Band,
+                         The_Command => Modules.Set_Power_State,
+                         ID          => The_Space_Antenna.ID,
+                         Electronics =>
+                         ( Boards.Transceiver'(
+                             Band     => Boards.S_Band,
+                             ID       => The_Space_Antenna.Electronics.ID,
+                             The_Link => ( Mode => Boards.Transmitting,
+                                           TC_T => 1 ),
+                             TC_S_Band_Data => 5 )
+                           with
+                               EBand       => Boards.S_Band,
+                               The_Command => Modules.Set_Power_State,
+                               TC_SPS      => 101
+                        ) );
+
+  Communications.Creator( The_Space_Antenna.Electronics, Milnet );
+  Assert( Communications.Selector( Milnet ) = -1, "Milnet creator" );
+
+  Usenet := Communications.Creator( -2, 
+                     ( Boards.Transceiver'(
+                         Band        => Boards.KU_Band,
+                         ID          => The_Space_Antenna.Electronics.ID,
+                         The_Link    => ( Boards.Transmitting, TC_T => 101 ),
+                         TC_KU_Band_Data => 395 )
+                    with Boards.KU_Band, Modules.Set_Data_Rate, 66 ) );
+
+  Assert( Communications.Selector( Usenet ) = -2, "Usenet creator" );
+
+  Gossip := ( 
+    Modules.Electronics_Module'(
+      Boards.Transceiver'(
+         Band        => Boards.UHF,
+         ID          => The_Space_Antenna.Electronics.ID,
+         The_Link    => ( Boards.Transmitting, TC_T => 101 ),
+         TC_UHF_Data => 395 )
+       with 
+         Boards.UHF, Modules.Set_Compression_Code, 66 )
+     with
+       TC_VC => -3 ); 
+
+  Assert( Gossip.TC_VC = -3, "Gossip Aggregate" );
+
+  Communications.Setup( Gossip, 1 ); -- (Boards.UHF,
+                                     -- Modules.Set_Compression_Code)
+  Communications.Setup( Usenet, 2 ); -- (Boards.KU_Band,
+                                     -- Modules.Set_Data_Rate)
+  Communications.Setup( Milnet, 3 ); -- (Boards.S_Band,
+                                     -- Modules.Set_Power_State)
+
+  Assert( Communications.Selector( Gossip ) = 1, "Gossip Setup" );
+  Assert( Communications.Selector( Usenet ) = 2, "Usenet Setup" );
+  Assert( Communications.Selector( Milnet ) = 3, "Milnet Setup" );
+
+  Report.Result;
+
+end C391002;

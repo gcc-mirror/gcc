@@ -1,0 +1,301 @@
+-- CA13A02.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that subunits declared in generic child units of a public 
+--      parent have the same visibility into its parent, its siblings 
+--      (public and private), and packages on which its parent depends 
+--      as is available at the point of their declaration.
+--
+-- TEST DESCRIPTION:
+--      Declare an outside elevator button operation as a subunit in a 
+--      generic child package of the basic operation package (FA13A00.A).  
+--      This procedure has visibility into its parent ancestor and its 
+--      private sibling.
+--
+--      In the main program, instantiate the child package. Check that 
+--      subunits perform as expected.  
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FA13A00.A
+--         CA13A02.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+-- Public generic child package of an elevator application.  This package
+-- provides outside elevator button operations.
+
+generic                           -- Instantiate once for each floor.
+   Our_Floor : in Floor;          -- Reference type declared in parent.
+
+package FA13A00_1.CA13A02_4 is    -- Outside Elevator Button Operations
+
+   type Light is (Up, Down, Express, Off);
+
+   type Direction is (Up, Down, Express);
+
+   function Call_Elevator (D : Direction) return Light;
+
+   -- other type definitions and procedure declarations in real application.
+
+end FA13A00_1.CA13A02_4;
+
+     --==================================================================--
+
+-- Context clauses required for visibility needed by separate subunit.
+
+with FA13A00_0;                   -- Building Manager
+
+with FA13A00_1.FA13A00_2;         -- Floor Calculation (private)
+                                         
+with FA13A00_1.FA13A00_3;         -- Move Elevator
+
+use  FA13A00_0;                           
+
+package body FA13A00_1.CA13A02_4 is              
+
+   function Call_Elevator (D : Direction) return Light is separate;
+
+end FA13A00_1.CA13A02_4;
+
+     --==================================================================--
+
+separate (FA13A00_1.CA13A02_4)
+
+-- Subunit Call_Elevator declared in Outside Elevator Button Operations.
+
+function Call_Elevator (D : Direction) return Light is
+   Elevator_Button : Light;
+
+begin
+   -- See if power is on.
+
+   if Power = Off then                       -- Reference package with'ed by
+      Elevator_Button := Off;                -- the subunit parent's body.
+
+   else
+      case D is
+         when Express =>        
+            FA13A00_1.FA13A00_3.Move_Elevator -- Reference public sibling of
+              (Penthouse, Call_Waiting);      -- the subunit parent's body.
+
+            Elevator_Button := Express;    
+
+         when Up      =>        
+            if Current_Floor < Our_Floor then
+               FA13A00_1.FA13A00_2.Up         -- Reference private sibling of
+                 (Floor'pos (Our_Floor)       -- the subunit parent's body.
+                   - Floor'pos (Current_Floor));
+            else
+               FA13A00_1.FA13A00_2.Down       -- Reference private sibling of
+                 (Floor'pos (Current_Floor)   -- the subunit parent's body.
+                   - Floor'pos (Our_Floor));
+            end if;
+
+            -- Call elevator.
+
+            Call 
+              (Current_Floor, Call_Waiting);  -- Reference subprogram declared
+                                              -- in the parent of the subunit 
+                                              -- parent's body. 
+            Elevator_Button := Up;    
+
+         when Down    =>        
+            if Current_Floor > Our_Floor then
+               FA13A00_1.FA13A00_2.Down       -- Reference private sibling of
+                 (Floor'pos (Current_Floor)   -- the subunit parent's body.
+                   - Floor'pos (Our_Floor));
+            else
+               FA13A00_1.FA13A00_2.Up         -- Reference private sibling of
+                 (Floor'pos (Our_Floor)       -- the subunit parent's body.
+                   - Floor'pos (Current_Floor));
+            end if;
+
+            Elevator_Button := Down;    
+
+            -- Call elevator.
+
+            Call 
+              (Current_Floor, Call_Waiting);  -- Reference subprogram declared
+                                              -- in the parent of the subunit 
+                                              -- parent's body.
+      end case;
+
+      if not Call_Waiting (Current_Floor)     -- Reference private part of the
+      then                                    -- parent of the subunit parent's
+                                              -- body.
+         TC_Operation := false;              
+      end if;
+
+   end if;
+
+   return Elevator_Button;
+
+end Call_Elevator;
+
+     --==================================================================--
+
+with FA13A00_1.CA13A02_4;         -- Outside Elevator Button Operations
+                                  -- implicitly with Basic Elevator
+                                  -- Operations
+with Report;
+
+procedure CA13A02 is
+
+begin
+
+   Report.Test ("CA13A02", "Check that subunits declared in generic child " &
+                "units of a public parent have the same visibility into " & 
+                "its parent, its parent's siblings, and packages on " &
+                "which its parent depends");
+
+-- Going from floor one to penthouse.
+
+   Going_To_Penthouse:
+   declare
+      -- Declare instance of the child generic elevator package for penthouse.
+ 
+      package Call_Elevator_Pkg is new FA13A00_1.CA13A02_4 
+        (FA13A00_1.Penthouse);
+
+      use Call_Elevator_Pkg;
+
+      Call_Button_Light : Light;
+
+   begin
+
+      Call_Button_Light := Call_Elevator (Express);
+
+      if not FA13A00_1.TC_Operation or Call_Button_Light /= Express then
+         Report.Failed ("Incorrect elevator operation going to penthouse");
+      end if;
+
+   end Going_To_Penthouse;
+
+-- Going from penthouse to basement.
+
+   Going_To_Basement:
+   declare
+      -- Declare instance of the child generic elevator package for basement.
+ 
+      package Call_Elevator_Pkg is new FA13A00_1.CA13A02_4 
+        (FA13A00_1.Basement);
+
+      use Call_Elevator_Pkg;
+
+      Call_Button_Light : Light;
+
+   begin
+
+      Call_Button_Light := Call_Elevator (Down);
+
+      if not FA13A00_1.TC_Operation or Call_Button_Light /= Down then
+         Report.Failed ("Incorrect elevator operation going to basement");
+      end if;
+
+   end Going_To_Basement;
+  
+-- Going from basement to floor three.
+
+   Going_To_Floor3:
+   declare
+      -- Declare instance of the child generic elevator package for floor 
+      -- three.
+ 
+      package Call_Elevator_Pkg is new FA13A00_1.CA13A02_4 
+        (FA13A00_1.Floor3);
+
+      use Call_Elevator_Pkg;
+
+      Call_Button_Light : Light;
+
+   begin
+
+      Call_Button_Light := Call_Elevator (Up);
+
+      if not FA13A00_1.TC_Operation or Call_Button_Light /= Up then
+         Report.Failed ("Incorrect elevator operation going to floor 3");
+      end if;
+
+   end Going_To_Floor3;
+  
+-- Going from floor three to floor two.
+
+   Going_To_Floor2:
+   declare
+      -- Declare instance of the child generic elevator package for floor two.
+ 
+      package Call_Elevator_Pkg is new FA13A00_1.CA13A02_4 
+        (FA13A00_1.Floor2);
+
+      use Call_Elevator_Pkg;
+
+      Call_Button_Light : Light;
+
+   begin
+
+      Call_Button_Light := Call_Elevator (Up);
+
+      if not FA13A00_1.TC_Operation or Call_Button_Light /= Up then
+         Report.Failed ("Incorrect elevator operation going to floor 2");
+      end if;
+
+   end Going_To_Floor2;
+  
+-- Going to floor one.
+
+   Going_To_Floor1:
+   declare
+      -- Declare instance of the child generic elevator package for floor one.
+ 
+      package Call_Elevator_Pkg is new FA13A00_1.CA13A02_4 
+        (FA13A00_1.Floor1);
+
+      use Call_Elevator_Pkg;
+
+      Call_Button_Light : Light;
+
+   begin
+      -- Calling elevator from floor one.
+
+      FA13A00_1.Current_Floor := FA13A00_1.Floor1;
+
+      Call_Button_Light := Call_Elevator (Down);
+
+      if not FA13A00_1.TC_Operation or Call_Button_Light /= Down then
+         Report.Failed ("Incorrect elevator operation going to floor 1");
+      end if;
+
+   end Going_To_Floor1;
+
+   Report.Result;
+
+end CA13A02;

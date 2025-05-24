@@ -1,0 +1,339 @@
+-- CC51009.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--      Check that a generic unit with incomplete formal types can be
+--      instantiated with a private type prior to the full declaration
+--      of that type and that such instantiations can be passed as actuals
+--      to formal packages.
+--
+-- TEST DESCRIPTION:
+--      A generic package, modeling a set signature, is declared with formal
+--      incomplete type parameters and with several formal operations with
+--      parameters or results of the formal incomplete type. The generic
+--      package is instantiated in the visible part with a private type
+--      (which necessarily will occur before the full type declaration).
+--      The instance is associated with a formal package in another
+--      instantiation. The functioning of the set abstraction is tested
+--      by making calls to the formal operations of the formal package.
+--
+-- CHANGE HISTORY:
+--      15 Jan 2012   GJD     Initial version.
+--      26 Mar 2014   RLB     Renamed for ACATS.
+--      02 Apr 2014   RLB     Removed incomplete type case as it is artifical
+--                            and should be tested properly in a separate test.
+--
+--!
+
+package CC51009_0 is
+
+   generic
+      type Element;
+      type Set;
+      with procedure Add (Elem : Element; To_Set : in out Set) is <>;
+      with function Union (Left, Right : Set) return Set is <>;
+      with function Intersection (Left, Right : Set) return Set is <>;
+   package Set_Signature is
+
+   end Set_Signature;
+
+end CC51009_0;
+
+
+     --==================================================================--
+
+
+with CC51009_0;
+
+package CC51009_1 is
+
+   generic
+      type Element is private;
+
+      type Set_Type is private;
+
+      with package Sets
+        is new CC51009_0.Set_Signature
+                 (Element => Element, Set => Set_Type, others => <>);
+   package Set_Processing is
+
+      use Sets;
+
+      procedure Test
+        (Set_1 : in out Set_Type;
+         Set_2 : Set_Type;
+         Set_3 : Set_Type;
+         Elt   : Element);
+
+   end Set_Processing;
+
+end CC51009_1;
+
+
+     --==================================================================--
+
+
+package body CC51009_1 is
+
+   package body Set_Processing is
+
+      procedure Test
+        (Set_1 : in out Set_Type;
+         Set_2 : Set_Type;
+         Set_3 : Set_Type;
+         Elt   : Element)
+      is
+      begin
+         Set_1 := Intersection (Set_1, Set_2);
+
+         Set_1 := Union (Set_1, Set_3);
+
+         Add (Elt, Set_1);
+      end Test;
+
+   end Set_Processing;
+
+end CC51009_1;
+
+
+     --==================================================================--
+
+
+with CC51009_0;
+
+package CC51009_2 is
+
+   generic
+      type Element is private;
+   package Set_Abstraction is
+
+      type Set is private;
+
+      procedure Add (Elem : Element; To_Set : in out Set);
+
+      function Union (Left, Right : Set) return Set;
+
+      function Intersection (Left, Right : Set) return Set;
+
+      function "=" (Left, Right : Set) return Boolean;
+
+      --  Instantiation with uncompleted private and private formal types
+
+      package The_Set_Signature
+        is new CC51009_0.Set_Signature (Element, Set);
+
+   private
+
+      type Set_Range is range 0 .. 20;
+
+      type Element_Array is
+        array (Set_Range range 1 .. Set_Range'Last) of Element;
+
+      type Set is record
+         Last_Element : Set_Range := 0;
+         Elements     : Element_Array;
+      end record;
+
+   end Set_Abstraction;
+
+end CC51009_2;
+
+
+     --==================================================================--
+
+
+package body CC51009_2 is
+
+   package body Set_Abstraction is
+
+      procedure Add (Elem : Element; To_Set : in out Set) is
+         Found : Boolean := False;
+      begin
+         for E in To_Set.Elements'first .. To_Set.Last_Element loop
+            if To_Set.Elements (E) = Elem then
+               Found := True;
+               exit;
+            end if;
+         end loop;
+
+         if not Found then
+            To_Set.Last_Element := To_Set.Last_Element + 1;
+            To_Set.Elements (To_Set.Last_Element) := Elem;
+         end if;
+      end Add;
+
+      function Union (Left, Right : Set) return Set is
+         Result : Set := Left;
+         Found  : Boolean;
+
+      begin
+         for ER in Right.Elements'first .. Right.Last_Element loop
+            Found := False;
+
+            for EL in Left.Elements'first .. Left.Last_Element loop
+               if Left.Elements (EL) = Right.Elements (ER) then
+                  Found := True;
+
+                  exit;
+               end if;
+            end loop;
+
+            if not Found then
+               Result.Last_Element := Result.Last_Element + 1;
+               Result.Elements (Result.Last_Element) := Right.Elements (ER);
+            end if;
+         end loop;
+
+         return Result;
+      end Union;
+
+      function Intersection (Left, Right : Set) return Set is
+         Result : Set;
+      begin
+         for ER in Right.Elements'first .. Right.Last_Element loop
+            for EL in Left.Elements'first .. Left.Last_Element loop
+               if Left.Elements (EL) = Right.Elements (ER) then
+                  Result.Last_Element := Result.Last_Element + 1;
+                  Result.Elements (Result.Last_Element) := Right.Elements (ER);
+
+                  exit;
+               end if;
+            end loop;
+         end loop;
+
+         return Result;
+      end Intersection;
+
+      function "=" (Left, Right : Set) return Boolean is
+      begin
+         if Left.Last_Element /= Right.Last_Element then
+            return False;
+         end if;
+
+         for ER in Right.Elements'first .. Right.Last_Element loop
+            declare
+               Found_Element : Boolean := False;
+            begin
+               for EL in Left.Elements'first .. Left.Last_Element loop
+                  if Left.Elements (EL) = Right.Elements (ER) then
+                     Found_Element := True;
+                     exit;
+                  end if;
+               end loop;
+
+               if not Found_Element then
+                  return False;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end "=";
+
+   end Set_Abstraction;
+
+end CC51009_2;
+
+
+     --==================================================================--
+
+
+with CC51009_1;
+with CC51009_2;
+
+with Report;
+procedure CC51009 is
+
+   package Integer_Sets is new CC51009_2.Set_Abstraction (Integer);
+
+   use Integer_Sets;
+
+   package Integer_Set_Processing
+     is new CC51009_1.Set_Processing (Integer, Set, The_Set_Signature);
+
+   Elt_Value : constant Integer := 17;
+
+   S1 : Integer_Sets.Set;
+   S2 : Integer_Sets.Set;
+   S3 : Integer_Sets.Set;
+
+   Result_Set : Integer_Sets.Set;
+
+begin
+   Report.Test ("CC51009", "Check that a generic unit with incomplete " &
+                "formal types can be instantiated with a private "  &
+                "type prior to the full declaration of that " &
+                "type, and that such instantiations can be passed as " &
+                "actuals to formal packages");
+
+   --  Initialize S1 to { 1 .. 10 }
+
+   for I in Integer range 1 .. 10 loop
+      Add (I, S1);
+   end loop;
+
+   --  Initialize S1 to { 5 .. 15 }
+
+   for I in Integer range 5 .. 15 loop
+      Add (I, S2);
+   end loop;
+
+   --  Initialize S1 to { 20 .. 25 }
+
+   for I in Integer range 20 .. 25 loop
+      Add (I, S3);
+   end loop;
+
+   --  Initialize Result_Set to { 5 .. 10, 17, 20 .. 25 }
+
+   for I in Integer range 5 .. 10 loop
+      Add (I, Result_Set);
+   end loop;
+
+   for I in Integer range 20 .. 25 loop
+      Add (I, Result_Set);
+   end loop;
+
+   Add (Elt_Value, Result_Set);
+
+   --  Compute "Union (Intersection (S1, S2), S3) + E"
+
+   Integer_Set_Processing.Test (S1, S2, S3, Elt_Value);
+
+   if S1 /= Result_Set then
+      Report.Failed ("Wrong result set from Integer set operations");
+   end if;
+
+   Report.Result;
+end CC51009;
