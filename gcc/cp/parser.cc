@@ -51568,7 +51568,10 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
 	      goto add;
 	    case CPP_CLOSE_PAREN:
 	      if (nesting_depth-- == 0)
-		break;
+		{
+		  cp_lexer_consume_token (parser->lexer);
+		  break;
+		}
 	      goto add;
 	    default:
 	    add:
@@ -51579,8 +51582,6 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
 	    }
 	  break;
 	}
-
-      cp_lexer_consume_token (parser->lexer);
 
       if (!skip)
 	{

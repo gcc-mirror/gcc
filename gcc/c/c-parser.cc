@@ -29247,7 +29247,10 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
 	      goto add;
 	    case CPP_CLOSE_PAREN:
 	      if (nesting_depth-- == 0)
-		break;
+		{
+		  c_parser_consume_token (parser);
+		  break;
+		}
 	      goto add;
 	    default:
 	    add:
@@ -29258,8 +29261,6 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
 	    }
 	  break;
 	}
-
-      c_parser_consume_token (parser);
 
       if (!skip)
 	{
