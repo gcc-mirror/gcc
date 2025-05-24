@@ -501,6 +501,10 @@ enum WMB_Flags
   WMB_Hidden = 1 << 3,
   WMB_Purview = 1 << 4,
 };
+inline WMB_Flags operator|(WMB_Flags x, WMB_Flags y)
+{ return WMB_Flags(+x|y); }
+inline WMB_Flags& operator|=(WMB_Flags& x, WMB_Flags y)
+{ return x = x|y; }
 
 extern unsigned walk_module_binding (tree binding, bitmap partitions,
 				     bool (*)(tree decl, WMB_Flags, void *data),
