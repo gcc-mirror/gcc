@@ -3439,13 +3439,8 @@ loongarch_move_integer (rtx temp, rtx dest, unsigned HOST_WIDE_INT value)
   x = GEN_INT (codes[0].value);
   for (i = 1; i < num_ops; i++)
     {
-      if (!can_create_pseudo_p ())
-	{
-	  emit_insn (gen_rtx_SET (temp, x));
-	  x = temp;
-	}
-      else
-	x = force_reg (mode, x);
+      emit_insn (gen_rtx_SET (temp, x));
+      x = temp;
 
       set_unique_reg_note (get_last_insn (), REG_EQUAL,
 			   GEN_INT (codes[i-1].curr_value));
