@@ -3918,6 +3918,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	      case MINUS:
 	      case AND:
 	      case IOR:
+	      case XOR:
 		{
 		  rtx op_0 = XEXP (x, 0);
 		  rtx op_1 = XEXP (x, 1);
