@@ -239,6 +239,10 @@ section *sdata2_section;
 #define TARGET_HAVE_TLS true
 #endif
 
+/* MicroBlaze does not do speculative execution.  */
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 /* Return truth value if a CONST_DOUBLE is ok to be a legitimate constant.  */
 static bool
 microblaze_const_double_ok (rtx op, machine_mode mode)
