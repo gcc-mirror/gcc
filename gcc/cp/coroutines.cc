@@ -4089,17 +4089,7 @@ analyze_fn_parms (tree orig, hash_map<tree, param_info> *param_uses)
 	}
       parm.field_id = name;
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (parm.frame_type))
-	{
-	  char *buf = xasprintf ("_Coro_q%u_%s_live", parm_num,
-				 DECL_NAME (arg) ? IDENTIFIER_POINTER (name)
-						 : "__unnamed");
-	  parm.guard_var
-	    = coro_build_artificial_var (UNKNOWN_LOCATION, get_identifier (buf),
-					 boolean_type_node, orig,
-					 boolean_false_node);
-	  free (buf);
-	  parm.trivial_dtor = false;
-	}
+	parm.trivial_dtor = false;
       else
 	parm.trivial_dtor = true;
     }
