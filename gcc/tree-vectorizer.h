@@ -1714,7 +1714,7 @@ public:
   unsigned int outside_cost () const;
   unsigned int total_cost () const;
   unsigned int suggested_unroll_factor () const;
-  machine_mode suggested_epilogue_mode () const;
+  machine_mode suggested_epilogue_mode (int &masked) const;
 
 protected:
   unsigned int record_stmt_cost (stmt_vec_info, vect_cost_model_location,
@@ -1738,8 +1738,13 @@ protected:
   unsigned int m_suggested_unroll_factor;
 
   /* The suggested mode to be used for a vectorized epilogue or VOIDmode,
-     determined at finish_cost.  */
+     determined at finish_cost.  m_masked_epilogue specifies whether the
+     epilogue should use masked vectorization, regardless of the
+     --param vect-partial-vector-usage default.  If -1 then the
+     --param setting takes precedence.  If the user explicitly specified
+     --param vect-partial-vector-usage then that takes precedence.  */
   machine_mode m_suggested_epilogue_mode;
+  int m_masked_epilogue;
 
   /* True if finish_cost has been called.  */
   bool m_finished;
@@ -1755,6 +1760,7 @@ vector_costs::vector_costs (vec_info *vinfo, bool costing_for_scalar)
     m_costs (),
     m_suggested_unroll_factor(1),
     m_suggested_epilogue_mode(VOIDmode),
+    m_masked_epilogue (-1),
     m_finished (false)
 {
 }
@@ -1815,9 +1821,10 @@ vector_costs::suggested_unroll_factor () const
 /* Return the suggested epilogue mode.  */
 
 inline machine_mode
-vector_costs::suggested_epilogue_mode () const
+vector_costs::suggested_epilogue_mode (int &masked_p) const
 {
   gcc_checking_assert (m_finished);
+  masked_p = m_masked_epilogue;
   return m_suggested_epilogue_mode;
 }
 

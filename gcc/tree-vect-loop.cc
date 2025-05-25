@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "case-cfn-macros.h"
 #include "langhooks.h"
+#include "opts.h"
 
 /* Loop Vectorization Pass.
 
@@ -3400,8 +3401,10 @@ vect_joust_loop_vinfos (loop_vec_info new_loop_vinfo,
 }
 
 /* Analyze LOOP with VECTOR_MODES[MODE_I] and as epilogue if ORIG_LOOP_VINFO is
-   not NULL.  Set AUTODETECTED_VECTOR_MODE if VOIDmode and advance
-   MODE_I to the next mode useful to analyze.
+   not NULL.  When MASKED_P is not -1 override the default
+   LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P with it.
+   Set AUTODETECTED_VECTOR_MODE if VOIDmode and advance MODE_I to the next
+   mode useful to analyze.
    Return the loop_vinfo on success and wrapped null on failure.  */
 
 static opt_loop_vec_info
@@ -3409,6 +3412,7 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
 		     const vect_loop_form_info *loop_form_info,
 		     loop_vec_info orig_loop_vinfo,
 		     const vector_modes &vector_modes, unsigned &mode_i,
+		     int masked_p,
 		     machine_mode &autodetected_vector_mode,
 		     bool &fatal)
 {
@@ -3417,6 +3421,8 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
 
   machine_mode vector_mode = vector_modes[mode_i];
   loop_vinfo->vector_mode = vector_mode;
+  if (masked_p != -1)
+    loop_vinfo->can_use_partial_vectors_p = masked_p;
   unsigned int suggested_unroll_factor = 1;
   unsigned slp_done_for_suggested_uf = 0;
 
@@ -3600,7 +3606,7 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
       cached_vf_per_mode[last_mode_i] = -1;
       opt_loop_vec_info loop_vinfo
 	= vect_analyze_loop_1 (loop, shared, &loop_form_info,
-			       NULL, vector_modes, mode_i,
+			       NULL, vector_modes, mode_i, -1,
 			       autodetected_vector_mode, fatal);
       if (fatal)
 	break;
@@ -3685,18 +3691,21 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
      array may contain length-agnostic and length-specific modes.  Their
      ordering is not guaranteed, so we could end up picking a mode for the main
      loop that is after the epilogue's optimal mode.  */
+  int masked_p = -1;
   if (!unlimited_cost_model (loop)
-      && first_loop_vinfo->vector_costs->suggested_epilogue_mode () != VOIDmode)
+      && (first_loop_vinfo->vector_costs->suggested_epilogue_mode (masked_p)
+	  != VOIDmode))
     {
       vector_modes[0]
-	= first_loop_vinfo->vector_costs->suggested_epilogue_mode ();
+	= first_loop_vinfo->vector_costs->suggested_epilogue_mode (masked_p);
       cached_vf_per_mode[0] = 0;
     }
   else
     vector_modes[0] = autodetected_vector_mode;
   mode_i = 0;
 
-  bool supports_partial_vectors = param_vect_partial_vector_usage != 0;
+  bool supports_partial_vectors = (param_vect_partial_vector_usage != 0
+				   || masked_p == 1);
   machine_mode mask_mode;
   if (supports_partial_vectors
       && !partial_vectors_supported_p ()
@@ -3710,6 +3719,10 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
   loop_vec_info orig_loop_vinfo = first_loop_vinfo;
   do
     {
+      /* Let the user override what the target suggests.  */
+      if (OPTION_SET_P (param_vect_partial_vector_usage))
+	masked_p = -1;
+
       while (1)
 	{
 	  /* If the target does not support partial vectors we can shorten the
@@ -3750,7 +3763,7 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
 	  opt_loop_vec_info loop_vinfo
 	    = vect_analyze_loop_1 (loop, shared, &loop_form_info,
 				   orig_loop_vinfo,
-				   vector_modes, mode_i,
+				   vector_modes, mode_i, masked_p,
 				   autodetected_vector_mode, fatal);
 	  if (fatal)
 	    break;
@@ -3781,6 +3794,9 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
 		break;
 	    }
 
+	  /* Revert back to the default from the suggested prefered
+	     epilogue vectorization mode.  */
+	  masked_p = -1;
 	  if (mode_i == vector_modes.length ())
 	    break;
 	}
@@ -3791,13 +3807,14 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
 
       /* When we selected a first vectorized epilogue, see if the target
 	 suggests to have another one.  */
+      masked_p = -1;
       if (!unlimited_cost_model (loop)
 	  && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (orig_loop_vinfo)
-	  && (orig_loop_vinfo->vector_costs->suggested_epilogue_mode ()
+	  && (orig_loop_vinfo->vector_costs->suggested_epilogue_mode (masked_p)
 	      != VOIDmode))
 	{
 	  vector_modes[0]
-	    = orig_loop_vinfo->vector_costs->suggested_epilogue_mode ();
+	    = orig_loop_vinfo->vector_costs->suggested_epilogue_mode (masked_p);
 	  cached_vf_per_mode[0] = 0;
 	  mode_i = 0;
 	}
