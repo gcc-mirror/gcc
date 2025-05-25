@@ -1,3 +1,7 @@
+2025-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (ACATSDIR): Use acats-2 directory.
+
 2025-05-13  Nicolas Boulenguez  <nicolas@debian.org>
 
 	PR ada/87778

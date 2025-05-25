@@ -1,3 +1,18 @@
+2025-05-24  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	* config/riscv/riscv.cc (synthesize_and): Use a srl+andi+sll
+	sequence when the mask fits in a simm12 after shifting by the
+	number of trailing zeros.
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2025-05-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add new
+	case for IOR op.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op or to no_shift_vx_ops.
+
 2025-05-23  Andi Kleen  <ak@gcc.gnu.org>
 
 	* doc/install.texi: Document bootstrap-native.
