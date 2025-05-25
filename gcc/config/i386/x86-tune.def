@@ -639,6 +639,11 @@ DEF_TUNE (X86_TUNE_AVX512_STORE_BY_PIECES, "avx512_store_by_pieces",
 DEF_TUNE (X86_TUNE_AVX512_TWO_EPILOGUES, "avx512_two_epilogues",
 	  m_ZNVER4 | m_ZNVER5)
 
+/* X86_TUNE_AVX512_MAKED_EPILOGUES: Use two masked vector epilogues
+   when fit.  */
+DEF_TUNE (X86_TUNE_AVX512_MASKED_EPILOGUES, "avx512_masked_epilogues",
+	  m_ZNVER4 | m_ZNVER5)
+
 /*****************************************************************************/
 /*****************************************************************************/
 /* Historical relics: tuning flags that helps a specific old CPU designs     */

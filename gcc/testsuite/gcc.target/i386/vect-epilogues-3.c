@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mavx512bw -mtune=znver4 -fdump-tree-vect-optimized" } */
+/* { dg-options "-O3 -mavx512bw -mtune=znver4 --param vect-partial-vector-usage=0 -fdump-tree-vect-optimized" } */
 
 int test (signed char *data, int n)
 {
