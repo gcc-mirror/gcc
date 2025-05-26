@@ -1,3 +1,26 @@
+2025-05-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85750
+	* gfortran.dg/alloc_comp_auto_array_3.f90: Adjust scan counts.
+	* gfortran.dg/alloc_comp_class_3.f03: Remove bogus warnings.
+	* gfortran.dg/alloc_comp_class_4.f03: Likewise.
+	* gfortran.dg/allocate_with_source_14.f03: Adjust scan count.
+	* gfortran.dg/derived_constructor_comps_6.f90: Likewise.
+	* gfortran.dg/derived_result_5.f90: New test.
+
+2025-05-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98454
+	* gfortran.dg/alloc_comp_class_4.f03: Remove bogus pattern.
+	* gfortran.dg/pdt_26.f03: Adjust expected count.
+	* gfortran.dg/derived_result_3.f90: New test.
+
 2025-05-23  Release Manager
 
 	* GCC 14.3.0 released.

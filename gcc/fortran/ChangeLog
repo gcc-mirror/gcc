@@ -1,3 +1,21 @@
+2025-05-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85750
+	* resolve.cc (resolve_symbol): Reorder conditions when to apply
+	default-initializers.
+
+2025-05-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-08-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98454
+	* resolve.cc (resolve_symbol): Add default-initialization of
+	non-allocatable, non-pointer derived-type function results.
+
 2025-05-23  Release Manager
 
 	* GCC 14.3.0 released.
