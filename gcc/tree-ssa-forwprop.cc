@@ -1324,6 +1324,7 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
       tree ctor = build_constructor (TREE_TYPE (dest), NULL);
       gimple_assign_set_rhs_from_tree (gsip, ctor);
       update_stmt (stmt);
+      statistics_counter_event (cfun, "copy zeroing propagation of aggregate", 1);
     }
   else /* If stmt is memcpy, transform it into memset.  */
     {
@@ -1333,6 +1334,7 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
       gimple_call_set_fntype (call, TREE_TYPE (fndecl));
       gimple_call_set_arg (call, 1, val);
       update_stmt (stmt);
+      statistics_counter_event (cfun, "memcpy to memset changed", 1);
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
