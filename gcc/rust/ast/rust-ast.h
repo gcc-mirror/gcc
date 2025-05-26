@@ -107,6 +107,7 @@ std::vector<std::unique_ptr<T>>
 reconstruct_vec (const std::vector<std::unique_ptr<T>> &to_reconstruct)
 {
   std::vector<std::unique_ptr<T>> reconstructed;
+  reconstructed.reserve (to_reconstruct.size ());
 
   for (const auto &elt : to_reconstruct)
     reconstructed.emplace_back (std::unique_ptr<T> (elt->reconstruct_impl ()));
