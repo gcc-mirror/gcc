@@ -1,3 +1,35 @@
+2025-05-25  Michael J. Eager  <eager@eagercon.com>
+
+	PR target/86772
+	Tracking CVE-2017-5753
+	* config/microblaze/microblaze.cc (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_save_value_not_needed
+
+2025-05-20  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/111873
+	* tree-sra.cc (sra_modify_expr): When processing a load which has
+	a type-incompatible replacement, do not store the contents of the
+	replacement into the original aggregate when that aggregate is
+	const.
+
+2025-05-20  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-16  Martin Jambor  <mjambor@suse.cz>
+		    Michal Jires  <mjires@suse.cz>
+
+	* cgraph.h (symtab_node): Make member function get_uid const.
+	* cgraphclones.cc (dump_callgraph_transformation): Dump m_uid of the
+	call graph nodes instead of order.
+	* cgraph.cc (cgraph_node::remove): Likewise.
+	* ipa-cp.cc (ipcp_lattice<valtype>::print): Likewise.
+	* ipa-sra.cc (ipa_sra_summarize_function): Likewise.
+	* symtab.cc (symtab_node::dump_base): Likewise.
+
 2025-05-16  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	Backported from master:

@@ -1,3 +1,82 @@
+2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120363
+	* g++.dg/modules/pr113292_a.H: Move to...
+	* g++.dg/modules/tls-1_a.H: ...here.
+	* g++.dg/modules/pr113292_b.C: Move to...
+	* g++.dg/modules/tls-1_b.C: ...here.
+	* g++.dg/modules/pr113292_c.C: Move to...
+	* g++.dg/modules/tls-1_c.C: ...here.
+	* g++.dg/modules/tls-2_a.C: New test.
+	* g++.dg/modules/tls-2_b.C: New test.
+	* g++.dg/modules/tls-2_c.C: New test.
+	* g++.dg/modules/tls-3.h: New test.
+	* g++.dg/modules/tls-3_a.H: New test.
+	* g++.dg/modules/tls-3_b.C: New test.
+
+2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120414
+	* g++.dg/modules/using-31_a.C: New test.
+	* g++.dg/modules/using-31_b.C: New test.
+
+2025-05-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85750
+	* gfortran.dg/alloc_comp_auto_array_3.f90: Adjust scan counts.
+	* gfortran.dg/alloc_comp_class_3.f03: Remove bogus warnings.
+	* gfortran.dg/alloc_comp_class_4.f03: Likewise.
+	* gfortran.dg/allocate_with_source_14.f03: Adjust scan count.
+	* gfortran.dg/derived_constructor_comps_6.f90: Likewise.
+	* gfortran.dg/derived_result_5.f90: New test.
+
+2025-05-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102891
+	* gfortran.dg/transfer_array_subref.f90: New test.
+
+2025-05-20  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/pr120044-1.c: New test.
+	* gcc.dg/ipa/pr120044-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr114864.c: Likewise.
+
+2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120013
+	* g++.dg/modules/partial-8.h: New test.
+	* g++.dg/modules/partial-8_a.C: New test.
+	* g++.dg/modules/partial-8_b.C: New test.
+	* g++.dg/modules/partial-8_c.C: New test.
+	* g++.dg/modules/partial-8_d.C: New test.
+
+2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-05-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120350
+	* g++.dg/modules/tinfo-3_a.H: New test.
+	* g++.dg/modules/tinfo-3_b.C: New test.
+
 2025-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:

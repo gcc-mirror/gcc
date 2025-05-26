@@ -1,3 +1,22 @@
+2025-05-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85750
+	* resolve.cc (resolve_symbol): Reorder conditions when to apply
+	default-initializers.
+
+2025-05-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102891
+	* dependency.cc (gfc_ref_needs_temporary_p): Within an array
+	reference, inquiry references of complex variables generally
+	need a temporary.
+
 2025-05-19  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
