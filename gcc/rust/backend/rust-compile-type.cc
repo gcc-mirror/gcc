@@ -454,7 +454,7 @@ TyTyResolveCompile::visit (const TyTy::TupleType &type)
     }
 
   tree struct_type_record = Backend::struct_type (fields);
-  translated = Backend::named_type (type.as_string (), struct_type_record,
+  translated = Backend::named_type (type.get_name (), struct_type_record,
 				    type.get_ident ().locus);
 }
 
