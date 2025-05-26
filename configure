@@ -730,6 +730,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+cpu_type
 target_subdir
 host_subdir
 build_subdir
@@ -3394,6 +3395,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libquadmath"
     ;;
 esac
+
+cpu_type=`echo ${host} | sed 's/-.*$//'`
+
 
 # Disable libssp for some systems.
 case "${target}" in

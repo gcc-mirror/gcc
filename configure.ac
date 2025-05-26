@@ -621,6 +621,9 @@ case "${target}" in
     ;;
 esac
 
+cpu_type=`echo ${host} | sed 's/-.*$//'`
+AC_SUBST(cpu_type)
+
 # Disable libssp for some systems.
 case "${target}" in
   avr-*-*)
