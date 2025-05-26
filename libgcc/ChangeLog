@@ -1,3 +1,9 @@
+2025-05-25  LIU Hao  <lh_mouse@126.com>
+
+	* config.host: Enable mcf thread model for aarch64-*-mingw*.
+	* config/i386/t-mingw-mcfgthread: Move to...
+	* config/mingw/t-mingw-mcfgthread: ...here.
+
 2025-05-21  Alexandre Oliva  <oliva@adacore.com>
 
 	* config/gthr-vxworks-thread.c: Include string.h for memset.

@@ -1,3 +1,8 @@
+2025-05-25  Jason Merrill  <jason@redhat.com>
+
+	* error.cc (dump_template_bindings): Correct skipping of
+	redundant bindings.
+
 2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/120363

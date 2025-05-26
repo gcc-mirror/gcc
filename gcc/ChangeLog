@@ -1,3 +1,28 @@
+2025-05-25  Michael J. Eager  <eager@eagercon.com>
+
+	PR target/86772
+	Tracking CVE-2017-5753
+	* config/microblaze/microblaze.cc (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_save_value_not_needed
+
+2025-05-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.cc (ix86_builtin_vectorization_cost):
+	use sse_op instead of addss to cost vinsertti128 and vinsertti64x4;
+	compute correct mode of vinsertti128.
+	(ix86_vector_costs::add_stmt_cost): For integer 256bit and 512bit
+	vector constructions account more integer_to_sse moves.
+
+2025-05-25  LIU Hao  <lh_mouse@126.com>
+
+	PR target/53929
+	PR target/80881
+	* config/i386/i386-protos.h (ix86_asm_output_labelref): Declare new
+	function for quoting user-defined symbols in Intel syntax.
+	* config/i386/i386.cc (ix86_asm_output_labelref): Implement it.
+	* config/i386/i386.h (ASM_OUTPUT_LABELREF): Use it.
+	* config/i386/cygming.h (ASM_OUTPUT_LABELREF): Use it.
+
 2025-05-24  Shreya Munnangi  <smunnangi1@ventanamicro.com>
 
 	* config/riscv/riscv.cc (synthesize_and): Use a srl+andi+sll
