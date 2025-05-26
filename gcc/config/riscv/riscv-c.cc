@@ -239,26 +239,22 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   size_t max_ext_len = 0;
 
   /* Figure out the max length of extension name for reserving buffer.   */
-  for (const riscv_subset_t *subset = subset_list->begin ();
-       subset != subset_list->end ();
-       subset = subset->next)
-    max_ext_len = MAX (max_ext_len, subset->name.length ());
+  for (auto &subset : *subset_list)
+    max_ext_len = MAX (max_ext_len, subset.name.length ());
 
   char *buf = (char *)alloca (max_ext_len + 10 /* For __riscv_ and '\0'.  */);
 
-  for (const riscv_subset_t *subset = subset_list->begin ();
-       subset != subset_list->end ();
-       subset = subset->next)
+  for (auto &subset : *subset_list)
     {
-      int version_value = riscv_ext_version_value (subset->major_version,
-						   subset->minor_version);
+      int version_value = riscv_ext_version_value (subset.major_version,
+						   subset.minor_version);
       /* Special rule for zicsr and zifencei, it's used for ISA spec 2.2 or
 	 earlier.  */
-      if ((subset->name == "zicsr" || subset->name == "zifencei")
+      if ((subset.name == "zicsr" || subset.name == "zifencei")
 	  && version_value == 0)
 	version_value = riscv_ext_version_value (2, 0);
 
-      sprintf (buf, "__riscv_%s", subset->name.c_str ());
+      sprintf (buf, "__riscv_%s", subset.name.c_str ());
       builtin_define_with_int_value (buf, version_value);
     }
 }
