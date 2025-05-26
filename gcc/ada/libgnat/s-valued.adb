@@ -228,9 +228,9 @@ package body System.Value_D is
                raise Program_Error;
             end if;
 
-            --  Perform a scaled divide operation with rounding to match 'Image
+            --  Perform a scaled divide operation with truncation
 
-            Scaled_Divide (To_Signed (V), Y, Z, Q, R, Round => True);
+            Scaled_Divide (To_Signed (V), Y, Z, Q, R, Round => False);
 
             return Q;
          end;
