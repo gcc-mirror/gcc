@@ -2011,7 +2011,7 @@ TupleType::get_name () const
   std::string fields_buffer;
   for (const TyVar &field : get_fields ())
     {
-      fields_buffer += field.get_tyty ()->as_string ();
+      fields_buffer += field.get_tyty ()->get_name ();
       bool has_next = (i + 1) < get_fields ().size ();
       fields_buffer += has_next ? ", " : "";
       i++;
