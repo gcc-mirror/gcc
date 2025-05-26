@@ -10543,10 +10543,10 @@ finish_omp_target_clauses_r (tree *tp, int *walk_subtrees, void *ptr)
 
   if (TREE_CODE (t) == BIND_EXPR)
     {
-      tree block = BIND_EXPR_BLOCK (t);
-      for (tree var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
-	if (!data->local_decls.contains (var))
-	  data->local_decls.add (var);
+      if (tree block = BIND_EXPR_BLOCK (t))
+	for (tree var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
+	  if (!data->local_decls.contains (var))
+	    data->local_decls.add (var);
       return NULL_TREE;
     }
 
