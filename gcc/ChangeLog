@@ -1,3 +1,10 @@
+2025-05-25  Michael J. Eager  <eager@eagercon.com>
+
+	PR target/86772
+	Tracking CVE-2017-5753
+	* config/microblaze/microblaze.cc (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_save_value_not_needed
+
 2025-05-20  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
