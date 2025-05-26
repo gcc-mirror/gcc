@@ -51457,7 +51457,6 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
 	    {
 	      error_at (match_loc, "too many %<otherwise%> or %<default%> "
 			"clauses in %<metadirective%>");
-	      cp_parser_skip_to_end_of_block_or_statement (parser, true);
 	      goto fail;
 	    }
 	  else
@@ -51467,14 +51466,12 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
 	{
 	  error_at (match_loc, "%<otherwise%> or %<default%> clause "
 		    "must appear last in %<metadirective%>");
-	  cp_parser_skip_to_end_of_block_or_statement (parser, true);
 	  goto fail;
 	}
       if (!default_p && strcmp (p, "when") != 0)
 	{
 	  error_at (match_loc, "%qs is not valid for %qs",
 		    p, "metadirective");
-	  cp_parser_skip_to_end_of_block_or_statement (parser, true);
 	  goto fail;
 	}
 
@@ -51543,7 +51540,6 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
       if (i == 0)
 	{
 	  error_at (loc, "expected directive name");
-	  cp_parser_skip_to_end_of_block_or_statement (parser, true);
 	  goto fail;
 	}
 
@@ -51762,11 +51758,8 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
   return;
 
 fail:
-  /* Skip the metadirective pragma.  */
+  /* Skip the metadirective pragma.  Do not skip the metadirective body.  */
   cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-
-  /* Skip the metadirective body.  */
-  cp_parser_skip_to_end_of_block_or_statement (parser, true);
 }
 
 

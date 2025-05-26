@@ -1420,6 +1420,51 @@ c_parser_skip_to_end_of_parameter (c_parser *parser)
   parser->error = false;
 }
 
+/* Skip tokens until a non-nested closing curly brace is the next
+   token, or there are no more tokens. Return true in the first case,
+   false otherwise.  */
+
+static bool
+c_parser_skip_to_closing_brace (c_parser *parser)
+{
+  unsigned nesting_depth = 0;
+
+  while (true)
+    {
+      c_token *token = c_parser_peek_token (parser);
+
+      switch (token->type)
+	{
+	case CPP_PRAGMA_EOL:
+	  if (!parser->in_pragma)
+	    break;
+	  /* FALLTHRU */
+	case CPP_EOF:
+	  /* If we've run out of tokens, stop.  */
+	  return false;
+
+	case CPP_CLOSE_BRACE:
+	  /* If the next token is a non-nested `}', then we have reached
+	     the end of the current block.  */
+	  if (nesting_depth-- == 0)
+	    return true;
+	  break;
+
+	case CPP_OPEN_BRACE:
+	  /* If it the next token is a `{', then we are entering a new
+	     block.  Consume the entire block.  */
+	  ++nesting_depth;
+	  break;
+
+	default:
+	  break;
+	}
+
+      /* Consume the token.  */
+      c_parser_consume_token (parser);
+    }
+}
+
 /* Expect to be at the end of the pragma directive and consume an
    end of line marker.  */
 
@@ -1535,7 +1580,7 @@ c_parser_skip_to_end_of_block_or_statement (c_parser *parser,
 	     here for secondary error recovery, after parser->error has
 	     been cleared.  */
 	  c_parser_consume_pragma (parser);
-	  c_parser_skip_to_pragma_eol (parser);
+	  c_parser_skip_to_pragma_eol (parser, false);
 	  parser->error = save_error;
 	  continue;
 
@@ -26821,19 +26866,17 @@ c_parser_omp_context_selector (c_parser *parser, enum omp_tss_code set,
 	    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
 	    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
 	      t = c_parser_expr_no_commas (parser, NULL).value;
-	      if (t != error_mark_node)
-		{
-		  mark_exp_read (t);
-		  t = c_fully_fold (t, false, NULL);
-		  if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
-		    error_at (token->location,
-			      "property must be integer expression");
-		  else
-		    properties = make_trait_property (NULL_TREE, t,
-						      properties);
-		}
-	      else
+	      if (t == error_mark_node)
 		return error_mark_node;
+	      mark_exp_read (t);
+	      t = c_fully_fold (t, false, NULL);
+	      if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+		{
+		  error_at (token->location,
+			    "property must be integer expression");
+		  return error_mark_node;
+		}
+	      properties = make_trait_property (NULL_TREE, t, properties);
 	      break;
 	    case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
 	      if (sel == OMP_TRAIT_CONSTRUCT_SIMD)
@@ -26935,11 +26978,14 @@ c_parser_omp_context_selector_specification (c_parser *parser, tree parms)
 
       tree selectors = c_parser_omp_context_selector (parser, set, parms);
       if (selectors == error_mark_node)
-	ret = error_mark_node;
+	{
+	  c_parser_skip_to_closing_brace (parser);
+	  ret = error_mark_node;
+	}
       else if (ret != error_mark_node)
 	ret = make_trait_set_selector (set, selectors, ret);
 
-      braces.skip_until_found_close (parser);
+      braces.require_close (parser);
 
       if (c_parser_next_token_is (parser, CPP_COMMA))
 	c_parser_consume_token (parser);
@@ -29144,7 +29190,6 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
 	    {
 	      error_at (match_loc, "too many %<otherwise%> or %<default%> "
 			"clauses in %<metadirective%>");
-	      c_parser_skip_to_end_of_block_or_statement (parser, true);
 	      goto error;
 	    }
 	  default_seen = true;
@@ -29153,14 +29198,12 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
 	{
 	  error_at (match_loc, "%<otherwise%> or %<default%> clause "
 		    "must appear last in %<metadirective%>");
-	  c_parser_skip_to_end_of_block_or_statement (parser, true);
 	  goto error;
 	}
       if (!default_p && strcmp (p, "when") != 0)
 	{
 	  error_at (match_loc, "%qs is not valid for %qs",
 		    p, "metadirective");
-	  c_parser_skip_to_end_of_block_or_statement (parser, true);
 	  goto error;
 	}
 
@@ -29228,7 +29271,6 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
       if (i == 0)
 	{
 	  error_at (loc, "expected directive name");
-	  c_parser_skip_to_end_of_block_or_statement (parser, true);
 	  goto error;
 	}
 
@@ -29437,9 +29479,9 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
   return;
 
 error:
+  /* Skip the metadirective pragma.  Do not skip the metadirective body.  */
   if (parser->in_pragma)
-    c_parser_skip_to_pragma_eol (parser);
-  c_parser_skip_to_end_of_block_or_statement (parser, true);
+    c_parser_skip_to_pragma_eol (parser, false);
 }
 
 /* Main entry point to parsing most OpenMP pragmas.  */
