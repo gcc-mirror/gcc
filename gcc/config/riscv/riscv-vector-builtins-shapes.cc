@@ -908,6 +908,8 @@ struct vset_def : public build_base
   {
     poly_int64 outer_size = GET_MODE_SIZE (c.arg_mode (0));
     poly_int64 inner_size = GET_MODE_SIZE (c.arg_mode (2));
+    if (maybe_eq (inner_size, 0))
+      return false;
     unsigned int nvecs = exact_div (outer_size, inner_size).to_constant ();
     return c.require_immediate (1, 0, nvecs - 1);
   }
@@ -920,6 +922,8 @@ struct vget_def : public misc_def
   {
     poly_int64 outer_size = GET_MODE_SIZE (c.arg_mode (0));
     poly_int64 inner_size = GET_MODE_SIZE (c.ret_mode ());
+    if (maybe_eq (inner_size, 0))
+      return false;
     unsigned int nvecs = exact_div (outer_size, inner_size).to_constant ();
     return c.require_immediate (1, 0, nvecs - 1);
   }
