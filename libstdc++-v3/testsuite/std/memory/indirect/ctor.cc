@@ -139,7 +139,6 @@ test_inplace_ctor()
 
   std::indirect<std::vector<int>> i5(std::in_place);
   VERIFY( i5->size() == 0 );
-  VERIFY( i5->at(0) == 13 );
 
   std::indirect<std::vector<int>> i6(std::in_place, 5, 13);
   VERIFY( i6->size() == 5 );
@@ -194,10 +193,12 @@ int main()
 {
   test_default_ctor();
   test_forwarding_ctor();
+  test_inplace_ctor();
 
   static_assert([] {
     test_default_ctor();
     test_forwarding_ctor();
+    test_inplace_ctor();
     return true;
   });
 }
