@@ -260,8 +260,10 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
   unsigned ix;
   const char *sm_ver = NULL, *version = NULL;
   const char *sm_ver2 = NULL, *version2 = NULL;
-  size_t file_cnt = 0;
-  size_t *file_idx = XALLOCAVEC (size_t, len);
+  /* To reduce the number of reallocations for 'file_idx', guess 'file_cnt'
+     (very roughly...), based on 'len'.  */
+  const size_t file_cnt_guessed = 13 + len / 27720;
+  auto_vec<size_t> file_idx (file_cnt_guessed);
 
   fprintf (out, "#include <stdint.h>\n\n");
 
@@ -269,9 +271,10 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
      terminated by a NUL.  */
   for (size_t i = 0; i != len;)
     {
+      file_idx.safe_push (i);
+
       char c;
       bool output_fn_ptr = false;
-      file_idx[file_cnt++] = i;
 
       fprintf (out, "static const char ptx_code_%u[] =\n\t\"", obj_count++);
       while ((c = input[i++]))
@@ -348,6 +351,9 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 	  version2 = version;
 	}
     }
+
+  const size_t file_cnt = file_idx.length ();
+  gcc_checking_assert (file_cnt == obj_count);
 
   /* Create function-pointer array, required for reverse
      offload function-pointer lookup.  */
