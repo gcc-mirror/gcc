@@ -97,6 +97,8 @@ package body System.Value_F is
 
    --    V = Q1 + (Q2 + R1) / Num + R2 / (Num * (Base ** 2))
 
+   --  but we get rid of the third term by using a rounding divide for (2a).
+
    --  This works only if Den * (Base ** ScaleB) does not overflow for inputs
    --  corresponding to 'Image. Let S = Num / Den, B = Base and N the scale in
    --  base B of S, i.e. the smallest integer such that B**N * S >= 1. Then,
@@ -124,6 +126,8 @@ package body System.Value_F is
    --  Num * (Base ** (2 - ScaleB)) and summing
 
    --    V = Q1 + (Q2 + R1) / (Num * (Base ** -ScaleB)) + R2 / (Num * (...))
+
+   --  but we get rid of the third term by using a rounding divide for (2b).
 
    --  This works only if Num * (Base ** -ScaleB) does not overflow for inputs
    --  corresponding to 'Image. With the determination of ScaleB above, we have
@@ -300,7 +304,7 @@ package body System.Value_F is
 
       if E > 0 then
          Scaled_Divide (To_Signed (V), Y, Z, Q1, R1, Round => False);
-         Scaled_Divide (To_Signed (Uns (E)), Y, -B**2, Q2, R2, Round => False);
+         Scaled_Divide (To_Signed (Uns (E)), Y, -B**2, Q2, R2, Round => True);
 
          --  Avoid an overflow during the subtraction. Note that Q2 is smaller
          --  than Y and R1 smaller than Z in magnitude, so it is safe to take
