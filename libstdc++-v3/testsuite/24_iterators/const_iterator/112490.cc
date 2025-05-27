@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++23" }
 // { dg-do compile { target c++23 } }
 
 // PR libstdc++/112490 - infinite meta error in
