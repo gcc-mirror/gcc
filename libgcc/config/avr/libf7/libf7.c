@@ -928,6 +928,21 @@ void f7_sub (f7_t *cc, const f7_t *aa, const f7_t *bb)
 #endif // F7MOD_sub_
 
 
+#ifdef F7MOD_fdim_
+F7_WEAK
+void f7_fdim (f7_t *cc, const f7_t *aa, const f7_t *bb)
+{
+  int8_t cmp = f7_cmp_unordered (aa, bb, true /*with_sign*/);
+  if (cmp == INT8_MIN)
+    return f7_set_nan (cc);
+  if (cmp < 0)
+    return f7_clr (cc);
+
+  f7_sub (cc, aa, bb);
+}
+#endif // F7MOD_fdim_
+
+
 #ifdef F7MOD_addsub_
 static void return_with_sign (f7_t *cc, const f7_t *aa, int8_t c_sign)
 {

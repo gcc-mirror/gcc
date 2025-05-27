@@ -612,6 +612,7 @@ extern void f7_cos (f7_t*, const f7_t*);
 extern void f7_tan (f7_t*, const f7_t*);
 extern void f7_atan (f7_t*, const f7_t*);
 extern void f7_atan2 (f7_t*, const f7_t*, const f7_t*);
+extern void f7_fdim (f7_t*, const f7_t*, const f7_t*);
 extern void f7_asin (f7_t*, const f7_t*);
 extern void f7_acos (f7_t*, const f7_t*);
 extern void f7_tanh (f7_t*, const f7_t*);
