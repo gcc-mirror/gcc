@@ -216,9 +216,13 @@ public:
 	return "Forward type param ban";
       case Rib::Kind::ConstParamType:
 	return "Const Param Type";
-      default:
-	rust_unreachable ();
+      case Kind::Prelude:
+	return "Prelude";
+      case Kind::Generics:
+	return "Generics";
       }
+
+    rust_unreachable ();
   }
 
   Rib (Kind kind);
