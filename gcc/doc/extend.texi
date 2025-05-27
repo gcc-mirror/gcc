@@ -7323,7 +7323,7 @@ truncate the copy without appending the terminating @code{NUL} character.
 Using the attribute makes it possible to suppress the warning.  However,
 when the array is declared with the attribute the call to @code{strlen} is
 diagnosed because when the array doesn't contain a @code{NUL}-terminated
-string the call is undefined.  To copy, compare, of search non-string
+string the call is undefined.  To copy, compare, or search non-string
 character arrays use the @code{memcpy}, @code{memcmp}, @code{memchr},
 and other functions that operate on arrays of bytes.  In addition,
 calling @code{strnlen} and @code{strndup} with such arrays is safe
