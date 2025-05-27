@@ -151,7 +151,6 @@ public:
      Each inline stack should only be used to annotate IR once.
      This will be enforced when instruction-level discriminator
      is supported.  */
-  bool annotated;
 };
 
 /* operator< for "const char *".  */
@@ -242,9 +241,6 @@ public:
      MAP, return the total count for all inlined indirect calls.  */
   gcov_type find_icall_target_map (gcall *stmt, icall_target_map *map) const;
 
-  /* Sum of counts that is used during annotation.  */
-  gcov_type total_annotated_count () const;
-
   /* Mark LOC as annotated.  */
   void mark_annotated (location_t loc);
 
@@ -313,9 +309,6 @@ public:
   /* Update value profile INFO for STMT from the inlined indirect callsite.
      Return true if INFO is updated.  */
   bool update_inlined_ind_target (gcall *stmt, count_info *info);
-
-  /* Mark LOC as annotated.  */
-  void mark_annotated (location_t loc);
 
 private:
   /* Map from function_instance name index (in string_table) to
@@ -578,17 +571,6 @@ function_instance::get_count_info (location_t loc, count_info *info) const
   return true;
 }
 
-/* Mark LOC as annotated.  */
-
-void
-function_instance::mark_annotated (location_t loc)
-{
-  position_count_map::iterator iter = pos_counts.find (loc);
-  if (iter == pos_counts.end ())
-    return;
-  iter->second.annotated = true;
-}
-
 /* Read the inlined indirect call target profile for STMT and store it in
    MAP, return the total count for all inlined indirect calls.  */
 
@@ -685,22 +667,6 @@ function_instance::read_function_instance (function_instance_stack *stack,
   return s;
 }
 
-/* Sum of counts that is used during annotation.  */
-
-gcov_type
-function_instance::total_annotated_count () const
-{
-  gcov_type ret = 0;
-  for (callsite_map::const_iterator iter = callsites.begin ();
-       iter != callsites.end (); ++iter)
-    ret += iter->second->total_annotated_count ();
-  for (position_count_map::const_iterator iter = pos_counts.begin ();
-       iter != pos_counts.end (); ++iter)
-    if (iter->second.annotated)
-      ret += iter->second.count;
-  return ret;
-}
-
 /* Member functions for autofdo_source_profile.  */
 
 autofdo_source_profile::~autofdo_source_profile ()
@@ -746,21 +712,6 @@ autofdo_source_profile::get_count_info (location_t gimple_loc,
   if (s == NULL)
     return false;
   return s->get_count_info (stack[0].second, info);
-}
-
-/* Mark LOC as annotated.  */
-
-void
-autofdo_source_profile::mark_annotated (location_t loc)
-{
-  inline_stack stack;
-  get_inline_stack (loc, &stack);
-  if (stack.length () == 0)
-    return;
-  function_instance *s = get_function_instance_by_inline_stack (stack);
-  if (s == NULL)
-    return;
-  s->mark_annotated (stack[0].second);
 }
 
 /* Update value profile INFO for STMT from the inlined indirect callsite.
@@ -1118,8 +1069,6 @@ static bool
 afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
 {
   gimple_stmt_iterator gsi;
-  edge e;
-  edge_iterator ei;
   gcov_type max_count = 0;
   bool has_annotated = false;
 
@@ -1171,20 +1120,6 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
       if (!has_annotated)
 	return false;
     }
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    afdo_source_profile->mark_annotated (gimple_location (gsi_stmt (gsi)));
-  for (gphi_iterator gpi = gsi_start_phis (bb);
-       !gsi_end_p (gpi);
-       gsi_next (&gpi))
-    {
-      gphi *phi = gpi.phi ();
-      size_t i;
-      for (i = 0; i < gimple_phi_num_args (phi); i++)
-        afdo_source_profile->mark_annotated (gimple_phi_arg_location (phi, i));
-    }
-  FOR_EACH_EDGE (e, ei, bb->succs)
-  afdo_source_profile->mark_annotated (e->goto_locus);
 
   bb->count = profile_count::from_gcov_type (max_count).afdo ();
   return true;
@@ -1607,10 +1542,6 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
           = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
       set_bb_annotated (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb, &annotated_bb);
     }
-  afdo_source_profile->mark_annotated (
-      DECL_SOURCE_LOCATION (current_function_decl));
-  afdo_source_profile->mark_annotated (cfun->function_start_locus);
-  afdo_source_profile->mark_annotated (cfun->function_end_locus);
   if (max_count.nonzero_p())
     {
       /* Calculate, propagate count and probability information on CFG.  */
