@@ -1848,6 +1848,12 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
   if (!desc || !desc->split_candidate)
     return;
 
+  if (storage_order_barrier_p (expr))
+    {
+      disqualify_split_candidate (desc, "Encountered a storage order barrier.");
+      return;
+    }
+
   if (!poffset.is_constant (&offset)
       || !psize.is_constant (&size)
       || !pmax_size.is_constant (&max_size))
