@@ -25,7 +25,7 @@
 
 #ifdef _AIX
 // <netdb.h> declares endnetgrent_r with ptr parameter.
-# undef n
+# undef ptr
 #endif
 
 // Filesystem
