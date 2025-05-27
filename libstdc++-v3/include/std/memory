@@ -113,6 +113,7 @@
 #define __glibcxx_want_make_unique
 #define __glibcxx_want_out_ptr
 #define __glibcxx_want_parallel_algorithm
+#define __glibcxx_want_polymorphic
 #define __glibcxx_want_ranges
 #define __glibcxx_want_raw_memory_algorithms
 #define __glibcxx_want_shared_ptr_arrays

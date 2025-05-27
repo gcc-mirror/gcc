@@ -2213,4 +2213,14 @@
 #endif /* !defined(__cpp_lib_indirect) && defined(__glibcxx_want_indirect) */
 #undef __glibcxx_want_indirect
 
+#if !defined(__cpp_lib_polymorphic)
+# if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
+#  define __glibcxx_polymorphic 202502L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_polymorphic)
+#   define __cpp_lib_polymorphic 202502L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_polymorphic) && defined(__glibcxx_want_polymorphic) */
+#undef __glibcxx_want_polymorphic
+
 #undef __glibcxx_want_all
