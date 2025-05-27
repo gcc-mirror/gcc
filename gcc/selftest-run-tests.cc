@@ -106,7 +106,7 @@ selftest::run_tests ()
   spellcheck_cc_tests ();
   spellcheck_tree_cc_tests ();
   tree_cfg_cc_tests ();
-  diagnostic_path_cc_tests ();
+  diagnostic_path_output_cc_tests ();
   simple_diagnostic_path_cc_tests ();
   lazy_diagnostic_path_cc_tests ();
   attribs_cc_tests ();
