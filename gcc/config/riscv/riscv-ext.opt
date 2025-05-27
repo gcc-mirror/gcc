@@ -325,6 +325,8 @@ Mask(SHCOUNTERENW) Var(riscv_sh_subext)
 
 Mask(SHGATPA) Var(riscv_sh_subext)
 
+Mask(SHLCOFIDELEG) Var(riscv_sh_subext)
+
 Mask(SHTVALA) Var(riscv_sh_subext)
 
 Mask(SHVSTVALA) Var(riscv_sh_subext)

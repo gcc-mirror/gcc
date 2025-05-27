@@ -474,6 +474,10 @@
 @tab 1.0
 @tab SvNNx4 mode supported for all modes supported by satp
 
+@item shlcofideleg
+@tab 1.0
+@tab Delegating LCOFI interrupts to VS-mode
+
 @item shtvala
 @tab 1.0
 @tab The htval register provides all needed values

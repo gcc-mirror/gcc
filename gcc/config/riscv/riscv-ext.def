@@ -1611,6 +1611,19 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ shlcofideleg,
+  /* UPPERCASE_NAME */ SHLCOFIDELEG,
+  /* FULL_NAME */ "Delegating LCOFI interrupts to VS-mode",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"h"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sh,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ shtvala,
   /* UPPERCAE_NAME */ SHTVALA,
   /* FULL_NAME */ "The htval register provides all needed values",
