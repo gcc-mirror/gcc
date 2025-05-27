@@ -248,6 +248,8 @@
 #undef r
 #undef x
 #undef y
+// <sys/localedef.h> defines _LC_weight_t::n
+#undef n
 // <sys/poll.h> defines pollfd_ext::u on AIX 7.3
 #undef u
 // <sys/var.h> defines vario::v
