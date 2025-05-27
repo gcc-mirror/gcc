@@ -511,7 +511,6 @@ export namespace std
 }
 
 // 22.7.2 <any>
-#if __cpp_lib_any
 export namespace std
 {
   using std::any;
@@ -520,7 +519,6 @@ export namespace std
   using std::make_any;
   using std::swap;
 }
-#endif
 
 // 24.3.2 <array>
 export namespace std
@@ -698,7 +696,6 @@ export namespace std
 }
 
 // 29.2 <chrono>
-#if __cpp_lib_chrono
 export namespace std
 {
   namespace chrono
@@ -852,7 +849,6 @@ export namespace std::inline literals::inline chrono_literals
 export namespace std::chrono {
   using namespace literals::chrono_literals;
 }
-#endif // __cpp_lib_chrono
 
 // <codecvt>: deprecated C++17, removed C++26
 export namespace std
@@ -864,7 +860,6 @@ export namespace std
 }
 
 // 17.11.1 <compare>
-#if __cpp_lib_three_way_comparison
 export namespace std
 {
   using std::common_comparison_category;
@@ -890,7 +885,6 @@ export namespace std
   using std::strong_order;
   using std::weak_order;
 }
-#endif // __cpp_lib_three_way_comparison
 
 // 28.4 <complex>
 export namespace std
@@ -944,7 +938,6 @@ export namespace std::inline literals::inline complex_literals
 }
 
 // 18 <concepts>
-#if __cpp_lib_concepts
 export namespace std
 {
   using std::assignable_from;
@@ -983,7 +976,6 @@ export namespace std
   using std::totally_ordered;
   using std::totally_ordered_with;
 }
-#endif
 
 // 33.7 <condition_variable>
 export namespace std
