@@ -1636,10 +1636,10 @@ void f7_exp (f7_t *cc, const f7_t *aa)
     return f7_set_nan (cc);
 
   /* The maximal exponent of 2 for a double is 1023, hence we may limit
-     to  |A| < 1023 * ln2 ~ 709.  We limit to  1024 ~ 1.99 * 2^9  */
+     to  |A| < 1023 * ln2 ~ 709.  We limit to  1024 = 2^10  */
 
   if (f7_class_inf (a_class)
-      || (f7_class_nonzero (a_class) && aa->expo >= 9))
+      || (f7_class_nonzero (a_class) && aa->expo >= 10))
     {
       if (f7_class_sign (a_class))
 	return f7_clr (cc);
