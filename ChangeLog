@@ -1,3 +1,10 @@
+2025-05-26  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* Makefile.def: AUTO_PROFILE based on cpu_type.
+	* Makefile.in: Likewise.
+	* configure: Regenerate.
+	* configure.ac: Set autofdo_target.
+
 2025-05-23  Kishan Parmar  <kishan@linux.ibm.com>
 
 	* MAINTAINERS: Add myself to write after approval.

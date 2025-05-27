@@ -1,3 +1,63 @@
+2025-05-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119152
+	* testsuite/std/memory/indirect/ctor.cc: Run test_inplace_ctor.
+
+2025-05-26  Jonathan Wakely  <jwakely@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119152
+	* doc/doxygen/stdheader.cc: Added indirect.h file.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/indirect.h: New file.
+	* include/bits/version.def (indirect): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/memory: Include new header.
+	* testsuite/std/memory/indirect/copy.cc
+	* testsuite/std/memory/indirect/copy_alloc.cc
+	* testsuite/std/memory/indirect/ctor.cc
+	* testsuite/std/memory/indirect/incomplete.cc
+	* testsuite/std/memory/indirect/invalid_neg.cc
+	* testsuite/std/memory/indirect/move.cc
+	* testsuite/std/memory/indirect/move_alloc.cc
+	* testsuite/std/memory/indirect/relops.cc
+
+2025-05-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119126
+	* doc/doxygen/stdheader.cc: Added funcref_impl.h file.
+	* include/Makefile.am: Added funcref_impl.h file.
+	* include/Makefile.in: Added funcref_impl.h file.
+	* include/bits/funcref_impl.h: New file.
+	* include/bits/funcwrap.h: (_Ptrs::_M_obj): Const-qualify.
+	(_Storage::_M_ptr, _Storage::_M_ref): Remove.
+	(__polyfunc::__cast_to) Define.
+	(_Base_invoker::_S_ptrs, _Base_invoker::_S_nttp)
+	(_Base_invoker::_S_bind_ptrs, _Base_invoker::_S_bind_ref)
+	(_Base_invoker::_S_call_ptrs): Define.
+	(_Base_invoker::_S_call_storage): Foward to _S_call_ptrs.
+	(_Manager::_S_local, _Manager::_S_ptr): Adjust for _M_obj being
+	const qualified.
+	(__polyfunc::_Manager, __polyfunc::_Mo_base): Guard with
+	__glibcxx_move_only_function || __glibcxx_copyable_function.
+	(__polyfunc::__skip_first_arg, __polyfunc::__deduce_funcref)
+	(std::function_ref) [__glibcxx_function_ref]: Define.
+	* include/bits/utility.h (std::nontype_t, std::nontype)
+	(__is_nontype_v) [__glibcxx_function_ref]: Define.
+	* include/bits/version.def: Define function_ref.
+	* include/bits/version.h: Regenerate.
+	* include/std/functional: Define __cpp_lib_function_ref.
+	* src/c++23/std.cc.in (std::nontype_t, std::nontype)
+	(std::function_ref) [__cpp_lib_function_ref]: Export.
+	* testsuite/20_util/function_ref/assign.cc: New test.
+	* testsuite/20_util/function_ref/call.cc: New test.
+	* testsuite/20_util/function_ref/cons.cc: New test.
+	* testsuite/20_util/function_ref/cons_neg.cc: New test.
+	* testsuite/20_util/function_ref/conv.cc: New test.
+	* testsuite/20_util/function_ref/deduction.cc: New test.
+	* testsuite/20_util/function_ref/mutation.cc: New test.
+
 2025-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/120384

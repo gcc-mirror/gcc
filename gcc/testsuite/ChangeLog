@@ -1,3 +1,22 @@
+2025-05-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/118694
+	* c-c++-common/gomp/attrs-metadirective-3.c: Change to never
+	expect 'omp metadirective' in the dump. If !offload_nvptx, check
+	that no 'teams' shows up in the dump; for offload_nvptx, expect
+	OMP_NEXT_VARIANT and an error about directive between 'target'
+	and 'teams'.
+	* c-c++-common/gomp/metadirective-3.c: Likewise.
+
+2025-05-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/120413
+	* g++.dg/gomp/target-4.C: New test.
+
+2025-05-26  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-epilogues-5.c: Adjust.
+
 2025-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ada/acats-4/elabd.lst: New file.

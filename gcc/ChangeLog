@@ -1,3 +1,22 @@
+2025-05-26  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Move C++ -fdump-lang to C++ section.
+	Add -fdump-lang-tinst.
+
+2025-05-26  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* config/aarch64/gcc-auto-profile: New file.
+
+2025-05-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.cc: Remove include of reload.h .
+
+2025-05-26  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* ipa-split.cc (pass_feedback_split_functions::clone): New.
+	* passes.def: Enable pass_feedback_split_functions for
+	pass_ipa_auto_profile.
+
 2025-05-25  Michael J. Eager  <eager@eagercon.com>
 
 	PR target/86772

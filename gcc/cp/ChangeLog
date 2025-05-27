@@ -1,3 +1,24 @@
+2025-05-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/120413
+	* semantics.cc (finish_omp_target_clauses_r): Handle
+	BIND_EXPR with empty BIND_EXPR_BLOCK.
+
+2025-05-26  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h: Declare tinst_dump_id.
+	* cp-objcp-common.cc (cp_register_dumps): Set it.
+	* pt.cc (push_tinst_level_loc): Dump it.
+	(reopen_tinst_level): Here too.
+	(tinst_complete_p): New.
+	(instantiate_pending_templates): Don't reopen_tinst_level for
+	already-complete instantiations.
+
+2025-05-26  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (class cxx_dump_pretty_printer): New.
+	* error.cc (cxx_dump_pretty_printer): Ctor/dtor definitions.
+
 2025-05-25  Jason Merrill  <jason@redhat.com>
 
 	* error.cc (dump_template_bindings): Correct skipping of
