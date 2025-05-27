@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "explow.h"
 #include "expr.h"
-#include "reload.h"
 #include "langhooks.h"
 #include "gimplify.h"
 #include "builtins.h"
