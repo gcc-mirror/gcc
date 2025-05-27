@@ -2651,26 +2651,6 @@ emit_contract_attr (tree attr)
   emit_contract_statement (CONTRACT_STATEMENT (attr));
 }
 
-/* Add the statements of contract attributes ATTRS of the type specified
-   with CODE to the current block.  */
-
-static void
-emit_contract_conditions (tree attrs, tree_code code)
-{
-  if (!attrs) return;
-  gcc_checking_assert (TREE_CODE (attrs) == TREE_LIST);
-  gcc_checking_assert (code == PRECONDITION_STMT
-		       || code == POSTCONDITION_STMT);
-  for (attrs = find_contract (attrs); attrs;
-      attrs = CONTRACT_CHAIN (attrs))
-    {
-      tree contract = CONTRACT_STATEMENT (attrs);
-      if (TREE_CODE (contract) != code)
-	continue;
-      emit_contract_attr (attrs);
-    }
-}
-
 /* Emit the statement for an assertion attribute.  */
 
 void
@@ -2689,22 +2669,6 @@ emit_assertion (tree attr)
       /* Insert a std::observable () epoch marker.  */
       emit_builtin_observable();
     }
-}
-
-/* Emit statements for precondition attributes.  */
-
-static void
-emit_preconditions (tree attr)
-{
-  return emit_contract_conditions (attr, PRECONDITION_STMT);
-}
-
-/* Emit statements for postcondition attributes.  */
-
-static void
-emit_postconditions (tree attr)
-{
-  return emit_contract_conditions (attr, POSTCONDITION_STMT);
 }
 
 /* We're compiling the pre/postcondition function CONDFN; remap any FN
@@ -3010,6 +2974,72 @@ add_post_condition_fn_call (tree fndecl)
   finish_expr_stmt (call);
 }
 
+/* Returns a copy of FNDECL contracts. This is used when emiting a contract.
+ If we were to emit the original contract tree, any folding of the contract
+ condition would affect the original contract too. The original contract
+ tree needs to be preserved in case it is used to apply to a different
+ function (for inheritance or wrapping reasons). */
+
+tree
+copy_contracts (tree fndecl, contract_match_kind remap_kind = cmk_all )
+{
+  tree last = NULL_TREE, contract_attrs = NULL_TREE;
+  for (tree a = DECL_CONTRACTS (fndecl);
+      a != NULL_TREE;
+      a = CONTRACT_CHAIN (a))
+    {
+      if ((remap_kind == cmk_pre
+	   && (TREE_CODE (CONTRACT_STATEMENT (a)) == POSTCONDITION_STMT))
+	  || (remap_kind == cmk_post
+	      && (TREE_CODE (CONTRACT_STATEMENT (a)) == PRECONDITION_STMT)))
+	continue;
+
+      tree c = copy_node (a);
+      TREE_VALUE (c) = build_tree_list (TREE_PURPOSE (TREE_VALUE (c)),
+					copy_node (CONTRACT_STATEMENT (c)));
+
+      copy_body_data id;
+      hash_map<tree, tree> decl_map;
+
+      memset (&id, 0, sizeof (id));
+
+      id.src_fn = fndecl;
+      id.dst_fn = fndecl;
+      id.src_cfun = DECL_STRUCT_FUNCTION (fndecl);
+      id.decl_map = &decl_map;
+
+      id.copy_decl = retain_decl;
+
+      id.transform_call_graph_edges = CB_CGE_DUPLICATE;
+      id.transform_new_cfg = false;
+      id.transform_return_to_modify = false;
+      id.transform_parameter = true;
+
+      /* Make sure not to unshare trees behind the front-end's back
+	 since front-end specific mechanisms may rely on sharing.  */
+      id.regimplify = false;
+      id.do_not_unshare = true;
+      id.do_not_fold = true;
+
+      /* We're not inside any EH region.  */
+      id.eh_lp_nr = 0;
+      walk_tree (&CONTRACT_CONDITION (CONTRACT_STATEMENT (c)),
+				      copy_tree_body_r, &id, NULL);
+
+
+      CONTRACT_COMMENT (CONTRACT_STATEMENT (c))
+	= copy_node (CONTRACT_COMMENT (CONTRACT_STATEMENT (c)));
+
+      chainon (last, c);
+      last = c;
+      if (!contract_attrs)
+	contract_attrs = c;
+    }
+
+  return contract_attrs;
+}
+
+
 /* Add a call or a direct evaluation of the pre checks.  */
 
 static void
@@ -3018,7 +3048,11 @@ apply_preconditions (tree fndecl)
   if (outline_contracts_p (fndecl))
     add_pre_condition_fn_call (fndecl);
   else
-    emit_preconditions (DECL_CONTRACTS (fndecl));
+  {
+    tree contract_copy = copy_contracts (fndecl, cmk_pre);
+    for (; contract_copy; contract_copy = CONTRACT_CHAIN (contract_copy))
+      emit_contract_attr (contract_copy);
+  }
 }
 
 /* Add a call or a direct evaluation of the post checks.  */
@@ -3029,7 +3063,11 @@ apply_postconditions (tree fndecl)
   if (outline_contracts_p (fndecl))
     add_post_condition_fn_call (fndecl);
   else
-    emit_postconditions (DECL_CONTRACTS (fndecl));
+    {
+      tree contract_copy = copy_contracts (fndecl, cmk_post);
+      for (; contract_copy; contract_copy = CONTRACT_CHAIN (contract_copy))
+	emit_contract_attr (contract_copy);
+    }
 }
 
 /* Add contract handling to the function in FNDECL.
