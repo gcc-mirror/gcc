@@ -1226,7 +1226,8 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
   gimple *defstmt;
   unsigned limit = param_sccvn_max_alias_queries_per_access;
   do {
-    if (vuse == NULL || TREE_CODE (vuse) != SSA_NAME)
+    /* If the vuse is the default definition, then there is no stores beforhand. */
+    if (SSA_NAME_IS_DEFAULT_DEF (vuse))
       return false;
     defstmt = SSA_NAME_DEF_STMT (vuse);
     if (is_a <gphi*>(defstmt))
