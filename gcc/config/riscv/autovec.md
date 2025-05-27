@@ -2491,19 +2491,12 @@
       (sign_extend:VWEXTI
        (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))))))]
   "TARGET_VECTOR"
-{
-  /* First emit a widening addition.  */
-  rtx tmp1 = gen_reg_rtx (<MODE>mode);
-  rtx ops1[] = {tmp1, operands[1], operands[2]};
-  insn_code icode = code_for_pred_dual_widen (PLUS, SIGN_EXTEND, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops1);
-
-  /* Then a narrowing shift.  */
-  rtx ops2[] = {operands[0], tmp1, const1_rtx};
-  icode = code_for_pred_narrow_scalar (ASHIFTRT, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops2);
-  DONE;
-})
+  {
+    insn_code icode = code_for_pred (UNSPEC_VAADD, <V_DOUBLE_TRUNC>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RDN, operands);
+    DONE;
+  }
+)
 
 (define_expand "avg<v_double_trunc>3_ceil"
  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand")
