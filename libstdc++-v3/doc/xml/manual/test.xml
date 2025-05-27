@@ -585,18 +585,6 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     </para>
 
     <para>
-      The <option>--target_board</option> option can also be used to run the
-      tests multiple times in different variations. For example, to run the
-      entire testsuite three times using <option>-O3</option> but with
-      different <option>-std</option> options:
-<programlisting>    make check 'RUNTESTFLAGS=--target_board=unix/-O3\"{-std=gnu++98,-std=gnu++11,-std=gnu++17}\"'</programlisting>
-      N.B. that set of variations could also be written as
-      <literal>unix/-O3\"{-std=gnu++98,-std=gnu++11,}\"</literal> so that
-      the third variation would use the default for <option>-std</option>
-      (which is <option>-std=gnu++17</option> as of GCC 11).
-    </para>
-
-    <para>
       Since GCC 14, the libstdc++ testsuite has built-in support for running
       tests with more than one <option>-std</option>, similar to the G++ tests.
       Adding <code>set v3_std_list { 11 17 23 }</code> to
@@ -607,6 +595,9 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
       as a comma-separated list in the <envar>GLIBCXX_TESTSUITE_STDS</envar>
       environment variable, e.g. <envar>GLIBCXX_TESTSUITE_STDS=11,17,23</envar>
       is equivalent to the <code>v3_std_list</code> value above.
+      Before GCC 14, the <option>--target_board</option> option could be
+      used to run the tests with different <option>-std</option> options,
+      but this no longer works.
     </para>
 
     <para>
