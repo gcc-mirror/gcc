@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_ALGORITHM
+#define INCLUDE_MAP
 #define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"
@@ -38,6 +39,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest-diagnostic-path.h"
 #include "text-art/theme.h"
 #include "diagnostic-format-text.h"
+#include "diagnostic-format-html.h"
+#include "xml.h"
+#include "xml-printer.h"
 
 /* Disable warnings about missing quoting in GCC diagnostics for the print
    calls below.  */
@@ -60,10 +64,15 @@ public:
   {
   }
 
+  path_print_policy (const diagnostic_context &dc)
+  : m_source_policy (dc)
+  {
+  }
+
   text_art::theme *
   get_diagram_theme () const
   {
-    return  m_source_policy.get_diagram_theme ();
+    return m_source_policy.get_diagram_theme ();
   }
 
   const diagnostic_source_print_policy &
@@ -276,6 +285,119 @@ private:
   int m_max_depth;
 };
 
+/* A stack frame for use in HTML output, holding child stack frames,
+   and event ranges. */
+
+struct stack_frame
+{
+  stack_frame (std::unique_ptr<stack_frame> parent,
+	       logical_location logical_loc,
+	       int stack_depth)
+  : m_parent (std::move (parent)),
+    m_logical_loc (logical_loc),
+    m_stack_depth (stack_depth)
+  {}
+
+  std::unique_ptr<stack_frame> m_parent;
+  logical_location m_logical_loc;
+  const int m_stack_depth;
+};
+
+/* Begin emitting content relating to a new stack frame within PARENT.
+   Allocated a new stack_frame and return it.  */
+
+static std::unique_ptr<stack_frame>
+begin_html_stack_frame (xml::printer &xp,
+			std::unique_ptr<stack_frame> parent,
+			logical_location logical_loc,
+			int stack_depth,
+			const logical_location_manager *logical_loc_mgr)
+{
+  if (logical_loc)
+    {
+      gcc_assert (logical_loc_mgr);
+      xp.push_tag_with_class ("table", "stack-frame-with-margin", false);
+      xp.push_tag ("tr", false);
+      {
+	xp.push_tag_with_class ("td", "interprocmargin", false);
+	xp.set_attr ("style", "padding-left: 100px");
+	xp.pop_tag ();
+      }
+      xp.push_tag_with_class ("td", "stack-frame", false);
+      label_text funcname
+	= logical_loc_mgr->get_name_for_path_output (logical_loc);
+      if (funcname.get ())
+	{
+	  xp.push_tag_with_class ("div", "frame-funcname", false);
+	  xp.push_tag ("span", true);
+	  xp.add_text (funcname.get ());
+	  xp.pop_tag (); // span
+	  xp.pop_tag (); // div
+	}
+    }
+  return std::make_unique<stack_frame> (std::move (parent),
+					logical_loc,
+					stack_depth);
+}
+
+/* Finish emitting content for FRAME and delete it.
+   Return parent.  */
+
+static std::unique_ptr<stack_frame>
+end_html_stack_frame (xml::printer &xp,
+		      std::unique_ptr<stack_frame> frame)
+{
+  auto parent = std::move (frame->m_parent);
+  if (frame->m_logical_loc)
+    {
+      xp.pop_tag (); // td
+      xp.pop_tag (); // tr
+      xp.pop_tag (); // table
+    }
+  return parent;
+}
+
+/* Append an HTML <div> element to XP containing an SVG arrow representing
+   a change in stack depth from OLD_DEPTH to NEW_DEPTH.  */
+
+static void
+emit_svg_arrow (xml::printer &xp, int old_depth, int new_depth)
+{
+  const int pixels_per_depth = 100;
+  const int min_depth = MIN (old_depth, new_depth);
+  const int base_x = 20;
+  const int excess = 30;
+  const int last_x
+    = base_x + (old_depth - min_depth) * pixels_per_depth;
+  const int this_x
+    = base_x + (new_depth - min_depth) * pixels_per_depth;
+  pretty_printer tmp_pp;
+  pretty_printer *pp = &tmp_pp;
+  pp_printf (pp, "<div class=\"%s\">\n",
+	     old_depth < new_depth
+	     ? "between-ranges-call" : "between-ranges-return");
+  pp_printf (pp, "  <svg height=\"30\" width=\"%i\">\n",
+	     MAX (last_x, this_x) + excess);
+  pp_string
+    (pp,
+     "    <defs>\n"
+     "      <marker id=\"arrowhead\" markerWidth=\"10\" markerHeight=\"7\"\n"
+     "              refX=\"0\" refY=\"3.5\" orient=\"auto\" stroke=\"#0088ce\" fill=\"#0088ce\">\n"
+     "      <polygon points=\"0 0, 10 3.5, 0 7\"/>\n"
+     "      </marker>\n"
+     "    </defs>\n");
+  pp_printf (pp,
+	     "    <polyline points=\"%i,0 %i,10 %i,10 %i,20\"\n",
+	     last_x, last_x, this_x, this_x);
+  pp_string
+    (pp,
+     "              style=\"fill:none;stroke: #0088ce\"\n"
+     "              marker-end=\"url(#arrowhead)\"/>\n"
+     "  </svg>\n"
+     "</div>\n\n");
+  xp.add_raw (pp_formatted_text (pp));
+}
+
 /* A range of consecutive events within a diagnostic_path, all within the
    same thread, and with the same fndecl and stack_depth, and which are suitable
    to print with a single call to diagnostic_show_locus.  */
@@ -468,9 +590,9 @@ struct event_range
   /* Print the events in this range to PP, typically as a single
      call to diagnostic_show_locus.  */
 
-  void print (pretty_printer &pp,
-	      diagnostic_text_output_format &text_output,
-	      diagnostic_source_effect_info *effect_info)
+  void print_as_text (pretty_printer &pp,
+		      diagnostic_text_output_format &text_output,
+		      diagnostic_source_effect_info *effect_info)
   {
     location_t initial_loc = m_initial_event.get_location ();
 
@@ -487,7 +609,7 @@ struct event_range
 	if (exploc.file != LOCATION_FILE (dc.m_last_location))
 	  {
 	    diagnostic_location_print_policy loc_policy (text_output);
-	    diagnostic_start_span (&dc) (loc_policy, &pp, exploc);
+	    loc_policy.print_text_span_start (dc, pp, exploc);
 	  }
       }
 
@@ -522,6 +644,65 @@ struct event_range
 	gcc_assert (m_start_idx == m_end_idx);
 	maybe_unwind_expanded_macro_loc (text_output, initial_loc);
       }
+  }
+
+  /* Print the events in this range to XP, typically as a single
+     call to diagnostic_show_locus_as_html.  */
+
+  void print_as_html (xml::printer &xp,
+		      diagnostic_context &dc,
+		      diagnostic_source_effect_info *effect_info,
+		      html_label_writer *event_label_writer)
+  {
+    location_t initial_loc = m_initial_event.get_location ();
+
+    /* Emit a span indicating the filename (and line/column) if the
+       line has changed relative to the last call to
+       diagnostic_show_locus.  */
+    if (dc.m_source_printing.enabled)
+      {
+	expanded_location exploc
+	  = linemap_client_expand_location_to_spelling_point
+	  (line_table, initial_loc, LOCATION_ASPECT_CARET);
+	if (exploc.file != LOCATION_FILE (dc.m_last_location))
+	  {
+	    diagnostic_location_print_policy loc_policy (dc);
+	    loc_policy.print_html_span_start (dc, xp, exploc);
+	  }
+      }
+
+    /* If we have an UNKNOWN_LOCATION (or BUILTINS_LOCATION) as the
+       primary location for an event, diagnostic_show_locus_as_html won't print
+       anything.
+
+       In particular the label for the event won't get printed.
+       Fail more gracefully in this case by showing the event
+       index and text, at no particular location.  */
+    if (get_pure_location (initial_loc) <= BUILTINS_LOCATION)
+      {
+	for (unsigned i = m_start_idx; i <= m_end_idx; i++)
+	  {
+	    const diagnostic_event &iter_event = m_path.get_event (i);
+	    diagnostic_event_id_t event_id (i);
+	    pretty_printer pp;
+	    pp_printf (&pp, " %@: ", &event_id);
+	    iter_event.print_desc (pp);
+	    if (event_label_writer)
+	      event_label_writer->begin_label ();
+	    xp.add_text (pp_formatted_text (&pp));
+	    if (event_label_writer)
+	      event_label_writer->end_label ();
+	  }
+	return;
+      }
+
+    /* Call diagnostic_show_locus_as_html to show the source,
+       showing events using labels.  */
+    diagnostic_show_locus_as_html (&dc, dc.m_source_printing,
+				   &m_richloc, DK_DIAGNOSTIC_PATH, xp,
+				   effect_info, event_label_writer);
+
+    // TODO: show macro expansions
   }
 
   const diagnostic_path &m_path;
@@ -700,11 +881,11 @@ public:
   }
 
   void
-  print_swimlane_for_event_range (diagnostic_text_output_format &text_output,
-				  pretty_printer *pp,
-				  const logical_location_manager &logical_loc_mgr,
-				  event_range *range,
-				  diagnostic_source_effect_info *effect_info)
+  print_swimlane_for_event_range_as_text (diagnostic_text_output_format &text_output,
+					  pretty_printer *pp,
+					  const logical_location_manager &logical_loc_mgr,
+					  event_range *range,
+					  diagnostic_source_effect_info *effect_info)
   {
     gcc_assert (pp);
     const char *const line_color = "path";
@@ -785,7 +966,7 @@ public:
 	}
 	pp_set_prefix (pp, prefix);
 	pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
-	range->print (*pp, text_output, effect_info);
+	range->print_as_text (*pp, text_output, effect_info);
 	pp_set_prefix (pp, saved_prefix);
 
 	write_indent (pp, m_cur_indent + per_frame_indent);
@@ -795,7 +976,7 @@ public:
 	pp_newline (pp);
       }
     else
-      range->print (*pp, text_output, effect_info);
+      range->print_as_text (*pp, text_output, effect_info);
 
     if (const event_range *next_range = get_any_next_range ())
       {
@@ -856,6 +1037,17 @@ public:
 	  }
       }
 
+    m_num_printed++;
+  }
+
+  void
+  print_swimlane_for_event_range_as_html (diagnostic_context &dc,
+					  xml::printer &xp,
+					  html_label_writer *event_label_writer,
+					  event_range *range,
+					  diagnostic_source_effect_info *effect_info)
+  {
+    range->print_as_html (xp, dc, effect_info, event_label_writer);
     m_num_printed++;
   }
 
@@ -945,11 +1137,146 @@ print_path_summary_as_text (const path_summary &ps,
 	 of this range.  */
       diagnostic_source_effect_info effect_info;
       effect_info.m_leading_in_edge_column = last_out_edge_column;
-      tep.print_swimlane_for_event_range (text_output, pp,
-					  ps.get_logical_location_manager (),
-					  range, &effect_info);
+      tep.print_swimlane_for_event_range_as_text
+	(text_output, pp,
+	 ps.get_logical_location_manager (),
+	 range, &effect_info);
       last_out_edge_column = effect_info.m_trailing_out_edge_column;
     }
+}
+
+/* Print PS as HTML to XP, using DC and, if non-null EVENT_LABEL_WRITER.  */
+
+static void
+print_path_summary_as_html (const path_summary &ps,
+			    diagnostic_context &dc,
+			    xml::printer &xp,
+			    html_label_writer *event_label_writer,
+			    bool show_depths)
+{
+  std::vector<thread_event_printer> thread_event_printers;
+  for (auto t : ps.m_per_thread_summary)
+    thread_event_printers.push_back (thread_event_printer (*t, show_depths));
+
+  const logical_location_manager *logical_loc_mgr
+    = dc.get_logical_location_manager ();
+
+  xp.push_tag_with_class ("div", "event-ranges", false);
+
+  /* Group the ranges into stack frames.  */
+  std::unique_ptr<stack_frame> curr_frame;
+  unsigned i;
+  event_range *range;
+  int last_out_edge_column = -1;
+  FOR_EACH_VEC_ELT (ps.m_ranges, i, range)
+    {
+      const int swimlane_idx
+	= range->m_per_thread_summary.get_swimlane_index ();
+
+      const logical_location this_logical_loc = range->m_logical_loc;
+      const int this_depth = range->m_stack_depth;
+      if (curr_frame)
+	{
+	  int old_stack_depth = curr_frame->m_stack_depth;
+	  if (this_depth > curr_frame->m_stack_depth)
+	    {
+	      emit_svg_arrow (xp, old_stack_depth, this_depth);
+	      curr_frame
+		= begin_html_stack_frame (xp,
+					  std::move (curr_frame),
+					  range->m_logical_loc,
+					  range->m_stack_depth,
+					  logical_loc_mgr);
+	    }
+	  else
+	    {
+	      while (this_depth < curr_frame->m_stack_depth
+		     || this_logical_loc != curr_frame->m_logical_loc)
+		{
+		  curr_frame = end_html_stack_frame (xp, std::move (curr_frame));
+		  if (curr_frame == NULL)
+		    {
+		      curr_frame
+			= begin_html_stack_frame (xp,
+						  nullptr,
+						  range->m_logical_loc,
+						  range->m_stack_depth,
+						  logical_loc_mgr);
+		      break;
+		    }
+		}
+	      emit_svg_arrow (xp, old_stack_depth, this_depth);
+	    }
+	}
+      else
+	{
+	  curr_frame = begin_html_stack_frame (xp,
+					       NULL,
+					       range->m_logical_loc,
+					       range->m_stack_depth,
+					       logical_loc_mgr);
+	}
+
+      xp.push_tag_with_class ("table", "event-range-with-margin", false);
+      xp.push_tag ("tr", false);
+      xp.push_tag_with_class ("td", "event-range", false);
+      xp.push_tag_with_class ("div", "events-hdr", true);
+      if (range->m_logical_loc)
+	{
+	  gcc_assert (logical_loc_mgr);
+	  label_text funcname
+	    = logical_loc_mgr->get_name_for_path_output (range->m_logical_loc);
+	  if (funcname.get ())
+	    {
+	      xp.push_tag_with_class ("span", "funcname", true);
+	      xp.add_text (funcname.get ());
+	      xp.pop_tag (); //span
+	      xp.add_text (": ");
+	    }
+	}
+      {
+	xp.push_tag_with_class ("span", "event-ids", true);
+	pretty_printer pp;
+	if (range->m_start_idx == range->m_end_idx)
+	  pp_printf (&pp, "event %i",
+		     range->m_start_idx + 1);
+	else
+	  pp_printf (&pp, "events %i-%i",
+		     range->m_start_idx + 1, range->m_end_idx + 1);
+	xp.add_text (pp_formatted_text (&pp));
+	xp.pop_tag (); // span
+      }
+      if (show_depths)
+	{
+	  xp.add_text (" ");
+	  xp.push_tag_with_class ("span", "depth", true);
+	  pretty_printer pp;
+	  pp_printf (&pp, "(depth %i)", range->m_stack_depth);
+	  xp.add_text (pp_formatted_text (&pp));
+	  xp.pop_tag (); //span
+	}
+      xp.pop_tag (); // div
+
+      /* Print a run of events.  */
+      thread_event_printer &tep = thread_event_printers[swimlane_idx];
+      /* Wire up any trailing out-edge from previous range to leading in-edge
+	 of this range.  */
+      diagnostic_source_effect_info effect_info;
+      effect_info.m_leading_in_edge_column = last_out_edge_column;
+      tep.print_swimlane_for_event_range_as_html (dc, xp, event_label_writer,
+						  range, &effect_info);
+      last_out_edge_column = effect_info.m_trailing_out_edge_column;
+
+      xp.pop_tag (); // td
+      xp.pop_tag (); // tr
+      xp.pop_tag (); // table
+    }
+
+  /* Close outstanding frames.  */
+  while (curr_frame)
+    curr_frame = end_html_stack_frame (xp, std::move (curr_frame));
+
+  xp.pop_tag (); // div
 }
 
 } /* end of anonymous namespace for path-printing code.  */
@@ -1047,6 +1374,32 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
       }
       break;
     }
+}
+
+/* Print PATH as HTML to XP, using DC and DSPP for settings.
+   If non-null, use EVENT_LABEL_WRITER when writing events.  */
+
+void
+print_path_as_html (xml::printer &xp,
+		    const diagnostic_path &path,
+		    diagnostic_context &dc,
+		    html_label_writer *event_label_writer,
+		    const diagnostic_source_print_policy &dspp)
+{
+  path_print_policy policy (dc);
+  const bool check_rich_locations = true;
+  const bool colorize = false;
+  const diagnostic_source_printing_options &source_printing_opts
+    = dspp.get_options ();
+  const bool show_event_links = source_printing_opts.show_event_links_p;
+  path_summary summary (policy,
+			*dc.get_reference_printer (),
+			path,
+			check_rich_locations,
+			colorize,
+			show_event_links);
+  print_path_summary_as_html (summary, dc, xp, event_label_writer,
+			      dc.show_path_depths_p ());
 }
 
 #if CHECKING_P

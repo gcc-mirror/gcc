@@ -18,12 +18,6 @@ import pytest
 def html_tree():
     return html_tree_from_env()
 
-XHTML = 'http://www.w3.org/1999/xhtml'
-ns = {'xhtml': XHTML}
-
-def make_tag(local_name):
-    return f'{{{XHTML}}}' + local_name
-
 def test_basics(html_tree):
     root = html_tree.getroot ()
     assert root.tag == make_tag('html')

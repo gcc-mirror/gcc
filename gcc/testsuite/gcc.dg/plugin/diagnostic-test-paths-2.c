@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdiagnostics-show-caret -fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-add-output=experimental-html" } */
+/* { dg-options "-fdiagnostics-show-caret -fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-add-output=experimental-html:javascript=no" } */
 
 #include <stddef.h>
 #include <stdlib.h>

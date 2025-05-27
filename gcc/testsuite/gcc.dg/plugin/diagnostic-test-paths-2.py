@@ -8,12 +8,6 @@ import pytest
 def html_tree():
     return html_tree_from_env()
 
-XHTML = 'http://www.w3.org/1999/xhtml'
-ns = {'xhtml': XHTML}
-
-def make_tag(local_name):
-    return f'{{{XHTML}}}' + local_name
-
 def test_paths(html_tree):
     root = html_tree.getroot ()
     assert root.tag == make_tag('html')
@@ -29,7 +23,19 @@ def test_paths(html_tree):
     assert diag is not None
     assert diag.attrib['class'] == 'gcc-diagnostic'
 
-    pre = diag.findall('xhtml:pre', ns)
-    assert pre[0].attrib['class'] == 'gcc-annotated-source'
-    assert pre[1].attrib['class'] == 'gcc-execution-path'
-    assert pre[1].text.startswith("  'make_a_list_of_random_ints_badly': events 1-3")
+    event_ranges = diag.find('xhtml:div', ns)
+    assert_class(event_ranges, 'event-ranges')
+
+    frame_margin = event_ranges.find('xhtml:table', ns)
+    assert_class(frame_margin, 'stack-frame-with-margin')
+
+    tr = frame_margin.find('xhtml:tr', ns)
+    assert tr is not None
+    tds = tr.findall('xhtml:td', ns)
+    assert len(tds) == 2
+
+    assert_class(tds[0], 'interprocmargin')
+
+    test_frame = tds[1]
+    assert_frame(test_frame, 'make_a_list_of_random_ints_badly')
+    assert_event_range_with_margin(test_frame[1])

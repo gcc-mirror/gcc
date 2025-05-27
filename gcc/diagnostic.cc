@@ -250,7 +250,10 @@ diagnostic_context::initialize (int n_opts)
   m_internal_error = nullptr;
   m_adjust_diagnostic_info = nullptr;
   m_text_callbacks.m_begin_diagnostic = default_diagnostic_text_starter;
-  m_text_callbacks.m_start_span = default_diagnostic_start_span_fn;
+  m_text_callbacks.m_text_start_span
+    = default_diagnostic_start_span_fn<to_text>;
+  m_text_callbacks.m_html_start_span
+    = default_diagnostic_start_span_fn<to_html>;
   m_text_callbacks.m_end_diagnostic = default_diagnostic_text_finalizer;
   m_option_mgr = nullptr;
   m_urlifier_stack = new auto_vec<urlifier_stack_node> ();
@@ -1069,21 +1072,6 @@ logical_location_manager::function_p (key k) const
     case LOGICAL_LOCATION_KIND_MEMBER:
       return true;
     }
-}
-
-void
-default_diagnostic_start_span_fn (const diagnostic_location_print_policy &loc_policy,
-				  pretty_printer *pp,
-				  expanded_location exploc)
-{
-  const diagnostic_column_policy &column_policy
-    = loc_policy.get_column_policy ();
-  label_text text
-    = column_policy.get_location_text (exploc,
-				       loc_policy.show_column_p (),
-				       pp_show_color (pp));
-  pp_string (pp, text.get ());
-  pp_newline (pp);
 }
 
 /* Interface to specify diagnostic kind overrides.  Returns the

@@ -545,21 +545,40 @@ html_scheme_handler::make_sink (const context &ctxt,
 				const char *unparsed_arg,
 				const scheme_name_and_params &parsed_arg) const
 {
+  bool css = true;
   label_text filename;
+  bool javascript = true;
   for (auto& iter : parsed_arg.m_kvs)
     {
       const std::string &key = iter.first;
       const std::string &value = iter.second;
+      if (key == "css")
+	{
+	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
+				 css))
+	    return nullptr;
+	  continue;
+	}
       if (key == "file")
 	{
 	  filename = label_text::take (xstrdup (value.c_str ()));
 	  continue;
 	}
+      if (key == "javascript")
+	{
+	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
+				 javascript))
+	    return nullptr;
+	  continue;
+	}
 
       /* Key not found.  */
       auto_vec<const char *> known_keys;
+      known_keys.safe_push ("css");
       known_keys.safe_push ("file");
-      ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (), known_keys);
+      known_keys.safe_push ("javascript");
+      ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
+			       known_keys);
       return nullptr;
     }
 
@@ -579,8 +598,13 @@ html_scheme_handler::make_sink (const context &ctxt,
   if (!output_file)
     return nullptr;
 
+  html_generation_options html_gen_opts;
+  html_gen_opts.m_css = css;
+  html_gen_opts.m_javascript = javascript;
+
   auto sink = make_html_sink (ctxt.m_dc,
 			      *line_table,
+			      html_gen_opts,
 			      std::move (output_file));
   return sink;
 }

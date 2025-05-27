@@ -40,7 +40,7 @@ class test_diagnostic_context : public diagnostic_context
      real filename (to avoid printing the names of tempfiles).  */
   static void
   start_span_cb (const diagnostic_location_print_policy &,
-		 pretty_printer *,
+		 to_text &sink,
 		 expanded_location exploc);
 
   /* Report a diagnostic to this context.  For a selftest, this

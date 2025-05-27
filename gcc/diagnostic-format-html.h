@@ -24,6 +24,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-format.h"
 #include "diagnostic-output-file.h"
 
+struct html_generation_options
+{
+  html_generation_options ();
+
+  bool m_css;
+  bool m_javascript;
+};
+
 extern diagnostic_output_file
 diagnostic_output_format_open_html_file (diagnostic_context &context,
 					 line_maps *line_maps,
@@ -32,6 +40,14 @@ diagnostic_output_format_open_html_file (diagnostic_context &context,
 extern std::unique_ptr<diagnostic_output_format>
 make_html_sink (diagnostic_context &context,
 		const line_maps &line_maps,
+		const html_generation_options &html_gen_opts,
 		diagnostic_output_file output_file);
+
+extern void
+print_path_as_html (xml::printer &xp,
+		    const diagnostic_path &path,
+		    diagnostic_context &dc,
+		    html_label_writer *event_label_writer,
+		    const diagnostic_source_print_policy &dspp);
 
 #endif /* ! GCC_DIAGNOSTIC_FORMAT_HTML_H */

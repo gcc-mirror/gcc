@@ -6119,17 +6119,24 @@ in this release.
 
 @item experimental-html
 Emit diagnostics to a file in HTML format.  This scheme is experimental,
-and may go away in future GCC releases.  The details of the output are
-also subject to change.
+and may go away in future GCC releases.  The keys and details of the output
+are also subject to change.
 
 Supported keys are:
 
 @table @gcctabopt
 
+@item css=@r{[}yes@r{|}no@r{]}
+Add an embedded <style> to the generated HTML.  Defaults to yes.
+
 @item file=@var{FILENAME}
 Specify the filename to write the HTML output to, potentially with a
 leading absolute or relative path.  If not specified, it defaults to
 @file{@var{source}.html}.
+
+@item javascript=@r{[}yes@r{|}no@r{]}
+Add an embedded <script> to the generated HTML providing a barebones UI
+for viewing results.  Defaults to yes.
 
 @end table
 
