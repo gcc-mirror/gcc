@@ -1,3 +1,83 @@
+2025-05-26  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2025-05-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md: Fix tf_to_fprx2 by using vlr instead of
+	ldr.
+
+2025-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/118819
+	* alias.cc (memrefs_conflict_p): Perform arithmetics on c, xsize and
+	ysize in poly_offset_int and return -1 if it is not representable in
+	poly_int64.
+
+2025-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117239
+	* cselib.cc (cselib_init): Remove spurious closing paren in
+	the #ifdef STACK_ADDRESS_OFFSET specific code.
+
+2025-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117239
+	* cselib.cc: Include predict.h.
+	(callmem): Change type from rtx to rtx[2].
+	(cselib_preserve_only_values): Use callmem[0] rather than callmem.
+	(cselib_invalidate_mem): Optimize and don't try to invalidate
+	for the mem_rtx == callmem[1] case MEMs which clearly can't be
+	below the stack pointer.
+	(cselib_process_insn): Use callmem[0] rather than callmem.
+	For const/pure calls also call cselib_invalidate_mem (callmem[1])
+	in !ACCUMULATE_OUTGOING_ARGS or cfun->calls_alloca functions.
+	(cselib_init): Initialize callmem[0] rather than callmem and also
+	initialize callmem[1].
+
+2025-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117358
+	* gimple-fold.cc (gimple_fold_builtin_memory_op): Punt if stmt has no
+	vdef in ssa form.
+	(gimple_fold_builtin_bcmp): Punt if stmt has no vuse in ssa form.
+	(gimple_fold_builtin_bcopy): Punt if stmt has no vdef in ssa form.
+	(gimple_fold_builtin_bzero): Likewise.
+	(gimple_fold_builtin_memset): Likewise.  Use return false instead of
+	return NULL_TREE.
+	(gimple_fold_builtin_strcpy): Punt if stmt has no vdef in ssa form.
+	(gimple_fold_builtin_strncpy): Likewise.
+	(gimple_fold_builtin_strchr): Punt if stmt has no vuse in ssa form.
+	(gimple_fold_builtin_strstr): Likewise.
+	(gimple_fold_builtin_strcat): Punt if stmt has no vdef in ssa form.
+	(gimple_fold_builtin_strcat_chk): Likewise.
+	(gimple_fold_builtin_strncat): Likewise.
+	(gimple_fold_builtin_strncat_chk): Likewise.
+	(gimple_fold_builtin_string_compare): Likewise.
+	(gimple_fold_builtin_fputs): Likewise.
+	(gimple_fold_builtin_memory_chk): Likewise.
+	(gimple_fold_builtin_stxcpy_chk): Likewise.
+	(gimple_fold_builtin_stxncpy_chk): Likewise.
+	(gimple_fold_builtin_stpcpy): Likewise.
+	(gimple_fold_builtin_snprintf_chk): Likewise.
+	(gimple_fold_builtin_sprintf_chk): Likewise.
+	(gimple_fold_builtin_sprintf): Likewise.
+	(gimple_fold_builtin_snprintf): Likewise.
+	(gimple_fold_builtin_fprintf): Likewise.
+	(gimple_fold_builtin_printf): Likewise.
+	(gimple_fold_builtin_realloc): Likewise.
+
 2025-05-25  Michael J. Eager  <eager@eagercon.com>
 
 	PR target/86772
