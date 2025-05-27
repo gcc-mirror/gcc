@@ -35,9 +35,9 @@ EOF
 
     c)
         if [ x${PRE} != xf7_ ]; then
-            echo " "
+            echo ""
             echo "/* Renames for libf7.c, libf7.h.  */"
-            echo " "
+            echo ""
             for x in $*; do
                 echo "#define f7_$x ${PRE}$x"
             done
@@ -46,9 +46,9 @@ EOF
 
     cst)
         if [ x${PRE} != xf7_ ]; then
-            echo " "
+            echo ""
             echo "/* Renames for libf7.c, libf7.h.  */"
-            echo " "
+            echo ""
             for x in $*; do
                 echo "#define f7_const_${x}   ${PRE}const_${x}"
                 echo "#define f7_const_${x}_P ${PRE}const_${x}_P"
@@ -58,9 +58,9 @@ EOF
 
     asm)
         if [ x${PRE} != xf7_ ]; then
-            echo " "
+            echo ""
             echo "/* Renames for libf7-asm.sx, f7-wraps.h.  */"
-            echo " "
+            echo ""
             for x in $*; do
                 echo "#define f7_${x}_asm ${PRE}${x}_asm"
             done

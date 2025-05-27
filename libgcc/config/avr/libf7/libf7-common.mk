@@ -8,7 +8,7 @@ F7_C_PARTS += set_float get_float get_double set_double set_pdouble
 F7_C_PARTS += fabs neg fmin fmax minmax truncx trunc floor ceil round lround
 F7_C_PARTS += horner logx log log10 log2 exp pow10 pow powi
 F7_C_PARTS += sin cos tan cotan sincos sinh cosh tanh sinhcosh
-F7_C_PARTS += asinacos asin acos atan atan2
+F7_C_PARTS += asinacos asin acos atan atan2 fdim
 F7_C_PARTS += abscmp_msb_ge cmp cmp_abs cmp_unordered
 
 F7_C_PARTS += const_1 const_1_2 const_1_3
@@ -34,7 +34,7 @@ g_xdd_cmp += le lt ge gt ne eq unord
 g_dx += floatunsidf floatsidf extendsfdf2
 g_xd += fixdfsi fixdfdi fixunsdfdi fixunsdfsi truncdfsf2
 
-m_ddd += pow fmin fmax fmod hypot atan2
+m_ddd += pow fmin fmax fmod hypot atan2 fdim
 m_ddx += ldexp frexp
 m_dd += sqrt cbrt exp exp10 pow10 log log10 log2 sin cos tan cotan asin acos atan
 m_dd += ceil floor trunc round sinh cosh tanh
@@ -59,7 +59,7 @@ F7F += lrint ldexp frexp exp logx log log10 log2
 F7F += minmax fmax fmin floor ceil round lround trunc truncx
 F7F += horner pow10 exp10 pow powi
 F7F += sin cos tan cotan sincos sinh cosh tanh sinhcosh
-F7F += asinacos asin acos atan atan2
+F7F += asinacos asin acos atan atan2 fdim
 F7F += mul_noround sqrt16_round sqrt16_floor
 F7F += clr_mant_lsbs abscmp_msb_ge lshrdi3 ashldi3
 F7F += assert
