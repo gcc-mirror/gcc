@@ -1846,6 +1846,7 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
   gfc_ref *ref;
   gfc_ref *inquiry = NULL;
   gfc_ref *inquiry_head;
+  gfc_ref *ref_ss = NULL;
   gfc_expr *tmp;
 
   tmp = gfc_copy_expr (p);
@@ -1862,6 +1863,9 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 	  {
 	    inquiry = ref->next;
 	    ref->next = NULL;
+	    if (ref->type == REF_SUBSTRING)
+	      ref_ss = ref;
+	    break;
 	  }
     }
 
@@ -1890,6 +1894,28 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 
 	  if (!gfc_notify_std (GFC_STD_F2003, "LEN part_ref at %C"))
 	    goto cleanup;
+
+	  /* Inquire length of substring?  */
+	  if (ref_ss)
+	    {
+	      if (ref_ss->u.ss.start->expr_type == EXPR_CONSTANT
+		  && ref_ss->u.ss.end->expr_type == EXPR_CONSTANT)
+		{
+		  HOST_WIDE_INT istart, iend, length;
+		  istart = gfc_mpz_get_hwi (ref_ss->u.ss.start->value.integer);
+		  iend = gfc_mpz_get_hwi (ref_ss->u.ss.end->value.integer);
+
+		  if (istart <= iend)
+		    length = iend - istart + 1;
+		  else
+		    length = 0;
+		  *newp = gfc_get_int_expr (gfc_default_integer_kind,
+					    NULL, length);
+		  break;
+		}
+	      else
+		goto cleanup;
+	    }
 
 	  if (tmp->ts.u.cl->length
 	      && tmp->ts.u.cl->length->expr_type == EXPR_CONSTANT)
