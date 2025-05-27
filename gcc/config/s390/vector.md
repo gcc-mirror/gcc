@@ -639,7 +639,7 @@
 	return "vste<bhfgq>\t%v1,%0,%2";
   }
   [(set_attr "op_type" "VRS,VRX")
-   (set_attr "mnemonic" "vlgv<bhqgq>,vste<bhfgq>")])
+   (set_attr "mnemonic" "vlgv<bhfgq>,vste<bhfgq>")])
 
 (define_insn "*vec_extract<mode>"
   [(set (match_operand:<non_vec> 0 "nonimmediate_operand" "=d,R,v")
