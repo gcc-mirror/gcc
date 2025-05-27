@@ -846,14 +846,12 @@
   [(set_attr "type" "bitmanip")])
 
 ;; In case we have "val & ~IMM" where ~IMM has 2 bits set.
-(define_insn_and_split "*bclri<mode>_nottwobits"
-  [(set (match_operand:X 0 "register_operand" "=r")
-	(and:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand:X 2 "const_nottwobits_not_arith_operand" "i")))
-   (clobber (match_scratch:X 3 "=&r"))]
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (match_operand:X 1 "register_operand")
+	       (match_operand:X 2 "const_nottwobits_not_arith_operand")))
+   (clobber (match_operand:X 3 "register_operand"))]
   "TARGET_ZBS && !paradoxical_subreg_p (operands[1])"
-  "#"
-  "&& reload_completed"
   [(set (match_dup 3) (and:X (match_dup 1) (match_dup 4)))
    (set (match_dup 0) (and:X (match_dup 3) (match_dup 5)))]
 {
@@ -862,20 +860,17 @@
 
   operands[4] = GEN_INT (~bits | topbit);
   operands[5] = GEN_INT (~topbit);
-}
-[(set_attr "type" "bitmanip")])
+})
 
 ;; In case of a paradoxical subreg, the sign bit and the high bits are
 ;; not allowed to be changed
-(define_insn_and_split "*bclridisi_nottwobits"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(and:DI (match_operand:DI 1 "register_operand" "r")
-		(match_operand:DI 2 "const_nottwobits_not_arith_operand" "i")))
-   (clobber (match_scratch:DI 3 "=&r"))]
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(and:DI (match_operand:DI 1 "register_operand")
+		(match_operand:DI 2 "const_nottwobits_not_arith_operand")))
+   (clobber (match_operand:DI 3 "register_operand"))]
   "TARGET_64BIT && TARGET_ZBS
    && clz_hwi (~UINTVAL (operands[2])) > 33"
-  "#"
-  "&& reload_completed"
   [(set (match_dup 3) (and:DI (match_dup 1) (match_dup 4)))
    (set (match_dup 0) (and:DI (match_dup 3) (match_dup 5)))]
 {
@@ -884,8 +879,7 @@
 
   operands[4] = GEN_INT (~bits | topbit);
   operands[5] = GEN_INT (~topbit);
-}
-[(set_attr "type" "bitmanip")])
+})
 
 ;; An outer AND with a constant where bits 31..63 are 0 can be seen as
 ;; a virtual zero extension from 31 to 64 bits.
@@ -1061,14 +1055,12 @@
 [(set_attr "type" "bitmanip")])
 
 ;; Same to use blcri + andi and blcri + bclri
-(define_insn_and_split "*andi<mode>_extrabit"
-  [(set (match_operand:X 0 "register_operand" "=r")
-	(and:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand:X 2 "not_uimm_extra_bit_or_nottwobits" "i")))
-   (clobber (match_scratch:X 3 "=&r"))]
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (match_operand:X 1 "register_operand")
+	       (match_operand:X 2 "not_uimm_extra_bit_or_nottwobits")))
+   (clobber (match_operand:X 3 "register_operand"))]
   "TARGET_ZBS && !not_single_bit_mask_operand (operands[2], VOIDmode)"
-  "#"
-  "&& reload_completed"
   [(set (match_dup 3) (and:X (match_dup 1) (match_dup 4)))
    (set (match_dup 0) (and:X (match_dup 3) (match_dup 5)))]
 {
@@ -1077,8 +1069,7 @@
 
   operands[4] = GEN_INT (bits | topbit);
   operands[5] = GEN_INT (~topbit);
-}
-[(set_attr "type" "bitmanip")])
+})
 
 ;; If we have the ZBA extension, then we can clear the upper half of a 64
 ;; bit object with a zext.w.  So if we have AND where the constant would

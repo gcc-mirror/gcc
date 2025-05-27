@@ -14622,19 +14622,70 @@ synthesize_and (rtx operands[3])
       return true;
     }
 
+  /* The special cases didn't apply.  It's entirely possible we may
+     want to combine some of the ideas above with bclr, but for now
+     those are deferred until we see them popping up in practice.  */
+
+  unsigned HOST_WIDE_INT ival = ~INTVAL (operands[2]);
+
+  /* Clear as many bits using andi as we can.  */
+  if ((ival & HOST_WIDE_INT_UC (0x7ff)) != 0x0)
+    {
+      ival &= ~HOST_WIDE_INT_UC (0x7ff);
+      budget--;
+    }
+
+  /* And handle remaining bits via bclr.  */
+  while (TARGET_ZBS && ival)
+    {
+      unsigned HOST_WIDE_INT tmpval = HOST_WIDE_INT_UC (1) << ctz_hwi (ival);
+      ival &= ~tmpval;
+      budget--;
+    }
+
   /* If the remaining budget has gone to less than zero, it
      forces the value into a register and performs the AND
      operation.  It returns TRUE to the caller so the caller
      knows code generation is complete.
      FIXME: This is hacked to always be enabled until the last
      patch in the series is enabled.  */
-  if (1)
+  if (ival || budget < 0)
     {
       rtx x = force_reg (word_mode, operands[2]);
       x = gen_rtx_AND (word_mode, operands[1], x);
       emit_insn (gen_rtx_SET (operands[0], x));
       return true;
     }
+
+  /* Synthesis is better than loading the constant.  */
+  ival = ~INTVAL (operands[2]);
+  input = operands[1];
+
+  /* Clear any of the lower 11 bits we need.  */
+  if ((ival & HOST_WIDE_INT_UC (0x7ff)) != 0)
+    {
+      rtx x = GEN_INT (~(ival & HOST_WIDE_INT_UC (0x7ff)));
+      x = gen_rtx_AND (word_mode, input, x);
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+      ival &= ~HOST_WIDE_INT_UC (0x7ff);
+    }
+
+  /* Clear the rest with bclr.  */
+  while (ival)
+    {
+      unsigned HOST_WIDE_INT tmpval = HOST_WIDE_INT_UC (1) << ctz_hwi (ival);
+      rtx x = GEN_INT (~tmpval);
+      x = gen_rtx_AND (word_mode, input, x);
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+      ival &= ~tmpval;
+    }
+
+  emit_move_insn (operands[0], input);
+  return true;
 }
 
 
