@@ -97,6 +97,7 @@
 #define f7_acos __f7_acos
 #define f7_atan __f7_atan
 #define f7_atan2 __f7_atan2
+#define f7_fdim __f7_fdim
 #define f7_mul_noround __f7_mul_noround
 #define f7_sqrt16_round __f7_sqrt16_round
 #define f7_sqrt16_floor __f7_sqrt16_floor

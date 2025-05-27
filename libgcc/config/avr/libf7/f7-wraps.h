@@ -239,7 +239,7 @@ _ENDF __extendsfdf2
 
 ;; Functions that usually live in libm:  Depending on [long] double layout,
 ;; define <name> and <name>l as weak alias(es) of __<name> for <name> in:
-;; pow fmin fmax fmod hypot atan2
+;; pow fmin fmax fmod hypot atan2 fdim
 
 ;; double __pow (double, double)
 #ifdef F7MOD_D_pow_
@@ -312,6 +312,18 @@ _DEFUN __atan2
     F7jmp   call_ddd
 _ENDF __atan2
 #endif /* F7MOD_D_atan2_ */
+
+;; double __fdim (double, double)
+#ifdef F7MOD_D_fdim_
+_DEFUN __fdim
+    DALIAS fdim
+    LALIAS fdiml
+    .global F7_NAME(fdim)
+    ldi     ZH,     hi8(gs(F7_NAME(fdim)))
+    ldi     ZL,     lo8(gs(F7_NAME(fdim)))
+    F7jmp   call_ddd
+_ENDF __fdim
+#endif /* F7MOD_D_fdim_ */
 
 ;; Functions that usually live in libm:  Depending on [long] double layout,
 ;; define <name> and <name>l as weak alias(es) of __<name> for <name> in:
