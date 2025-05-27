@@ -1491,6 +1491,10 @@ package body Sem_Ch10 is
                 --  No checks required if no separate spec
 
                 or else Acts_As_Spec (N)
+
+                --  No checked needed for ignored ghost units
+
+                or else Is_Ignored_Ghost_Entity (Spec_Id)
               )
             then
                --  This is a case where we only need the entity for checking to
