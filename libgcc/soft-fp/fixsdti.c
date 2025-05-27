@@ -28,6 +28,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bitint.h"
 
 #if defined(__BITINT_MAXWIDTH__) && defined(__SIZEOF_INT128__)
+#ifndef ENABLE_DECIMAL_BID_FORMAT
+#define __bid_fixsdbitint __dpd_fixsdbitint
+#define __bid_fixsdti __dpd_fixsdti
+#endif
 extern void __bid_fixsdbitint (UBILtype *, SItype, _Decimal32);
 extern TItype __bid_fixsdti (_Decimal32);
 

@@ -1,7 +1,7 @@
 /* Software floating-point emulation.
    Convert a _BitInt to _Decimal128.
 
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bitint.h"
 
 #ifdef __BITINT_MAXWIDTH__
+#ifndef ENABLE_DECIMAL_BID_FORMAT
+#define __bid_floatbitinttd __dpd_floatbitinttd
+#endif
 extern _Decimal128 __bid_floatbitinttd (const UBILtype *, SItype);
 
 _Decimal128
@@ -51,7 +54,11 @@ __bid_floatbitinttd (const UBILtype *i, SItype iprec)
     }
   if (iprec < 0)
     {
-      SItype n = sizeof (0ULL) * __CHAR_BIT__ + 1 - __builtin_clzll (~msb);
+      SItype n;
+      if (msb == ~(UBILtype) 0)
+	n = 1;
+      else
+	n = sizeof (0ULL) * __CHAR_BIT__ + 1 - __builtin_clzll (~msb);
       aiprec = (in - 1) * BIL_TYPE_SIZE + n;
     }
   else if (msb == 0)
@@ -117,7 +124,8 @@ __bid_floatbitinttd (const UBILtype *i, SItype iprec)
 	}
       else
 	{
-	  __builtin_memcpy (buf + BITINT_END (q_limbs - in + 1, 0), i,
+	  __builtin_memcpy (buf + BITINT_END (q_limbs - in + 1, 0),
+			    i + BITINT_END (1, 0),
 			    (in - 1) * sizeof (UBILtype));
 	  buf[BITINT_END (q_limbs - in, in - 1)] = msb;
 	  if (iprec < 0)
@@ -253,15 +261,69 @@ __bid_floatbitinttd (const UBILtype *i, SItype iprec)
     }
 
   exponent += 6176;
+#ifdef ENABLE_DECIMAL_BID_FORMAT
   u.u[__FLOAT_WORD_ORDER__ != __ORDER_BIG_ENDIAN__]
     = ((((UDItype) (iprec < 0)) << 63)
        | (((UDItype) exponent) << 49)
        | mantissahi);
+#else
+#ifdef __SIZEOF_INT128__
+  unsigned __int128 m = mantissahi;
+#else
+  unsigned _BitInt(128) m = mantissahi;
+#endif
+  m = (m << 64) | mantissalo;
+  u.u[0] = m / 1000000000000000ULL;
+  u.u[1] = m % 1000000000000000ULL;
+  mantissalo = __dpd_b2dbitint[u.u[1] % 1000];
+  u.u[1] /= 1000;
+  mantissalo |= ((UDItype) __dpd_b2dbitint[u.u[1] % 1000]) << 10;
+  u.u[1] /= 1000;
+  mantissalo |= ((UDItype) __dpd_b2dbitint[u.u[1] % 1000]) << 20;
+  u.u[1] /= 1000;
+  mantissalo |= ((UDItype) __dpd_b2dbitint[u.u[1] % 1000]) << 30;
+  u.u[1] /= 1000;
+  mantissalo |= ((UDItype) __dpd_b2dbitint[u.u[1] % 1000]) << 40;
+  mantissalo |= ((UDItype) __dpd_b2dbitint[u.u[0] % 1000]) << 50;
+  u.u[0] /= 1000;
+  mantissahi = __dpd_b2dbitint[u.u[0] % 1000];
+  u.u[0] /= 1000;
+  mantissalo |= mantissahi << 60;
+  mantissahi >>= 4;
+  mantissahi |= ((UDItype) __dpd_b2dbitint[u.u[0] % 1000]) << 6;
+  u.u[0] /= 1000;
+  mantissahi |= ((UDItype) __dpd_b2dbitint[u.u[0] % 1000]) << 16;
+  u.u[0] /= 1000;
+  mantissahi |= ((UDItype) __dpd_b2dbitint[u.u[0] % 1000]) << 26;
+  u.u[0] /= 1000;
+  mantissahi |= ((UDItype) __dpd_b2dbitint[u.u[0] % 1000]) << 36;
+  u.u[0] /= 1000;
+  if (u.u[0] >= 8)
+    u.u[__FLOAT_WORD_ORDER__ != __ORDER_BIG_ENDIAN__]
+      = (((((iprec < 0) << 2) | (UDItype) 3) << 61)
+	 | (((UDItype) exponent & (3 << 12)) << 47)
+	 | ((u.u[0] & 1) << 58)
+	 | (((UDItype) exponent & 4095) << 46)
+	 | mantissahi);
+  else
+    u.u[__FLOAT_WORD_ORDER__ != __ORDER_BIG_ENDIAN__]
+      = ((((UDItype) (iprec < 0)) << 63)
+	 | (((UDItype) exponent & (3 << 12)) << 49)
+	 | (u.u[0] << 58)
+	 | (((UDItype) exponent & 4095) << 46)
+	 | mantissahi);
+#endif
   u.u[__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__] = mantissalo;
   if (inexact)
     {
       ui.u[__FLOAT_WORD_ORDER__ != __ORDER_BIG_ENDIAN__]
+#ifdef ENABLE_DECIMAL_BID_FORMAT
 	= (((UDItype) (iprec < 0)) << 63) | (((UDItype) exponent - 1) << 49);
+#else
+	= ((((UDItype) (iprec < 0)) << 63)
+	   | ((((UDItype) exponent - 1) & (3 << 12)) << 49)
+	   | ((((UDItype) exponent - 1) & 4095) << 46));
+#endif
       ui.u[__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__] = inexact + 3;
       __asm ("" : "+g" (u.d));
       __asm ("" : "+g" (ui.d));

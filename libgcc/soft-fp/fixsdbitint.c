@@ -1,7 +1,7 @@
 /* Software floating-point emulation.
    Convert _Decimal32 to signed or unsigned _BitInt.
 
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bitint.h"
 
 #ifdef __BITINT_MAXWIDTH__
+#ifndef ENABLE_DECIMAL_BID_FORMAT
+#define __bid_fixsdbitint __dpd_fixsdbitint
+#endif
 extern void __bid_fixsdbitint (UBILtype *, SItype, _Decimal32);
 
 void
@@ -48,6 +51,7 @@ __bid_fixsdbitint (UBILtype *r, SItype rprec, _Decimal32 a)
   u.d = a;
   t = u.u >> 21;
   sgn = (SItype) u.u < 0;
+#ifdef ENABLE_DECIMAL_BID_FORMAT
   if ((t & (3 << 8)) != (3 << 8))
     {
       mantissa = u.u & ((((USItype) 1) << 23) - 1);
@@ -61,6 +65,25 @@ __bid_fixsdbitint (UBILtype *r, SItype rprec, _Decimal32 a)
       if (mantissa > (USItype) 9999999)
 	mantissa = 0;
     }
+#else
+  if ((t & (15 << 6)) != (15 << 6))
+    {
+      exponent = (u.u >> 20) & 63;
+      if ((t & (3 << 8)) != (3 << 8))
+	{
+	  mantissa = ((t >> 5) & 7) * 1000;
+	  exponent += (t >> 2) & (3 << 6);
+	}
+      else
+	{
+	  mantissa = ((t >> 5) & 1) ? 9000 : 8000;
+	  exponent += t & (3 << 6);
+	}
+      mantissa += __dpd_d2bbitint[(u.u >> 10) & 1023];
+      mantissa *= 1000;
+      mantissa += __dpd_d2bbitint[u.u & 1023];
+    }
+#endif
   else
     {
       FP_SET_EXCEPTION (FP_EX_INVALID
@@ -153,7 +176,7 @@ __bid_fixsdbitint (UBILtype *r, SItype rprec, _Decimal32 a)
       if (res_limbs + low_zeros > rn && resv[BITINT_END (0, res_limbs - 1)])
 	goto ovf_ex;
       if ((arprec % BIL_TYPE_SIZE) != 0
-	  && (resv[BITINT_END (rn - res_limbs, rn - 1) - low_zeros]
+	  && (resv[BITINT_END (res_limbs + low_zeros - rn, rn - 1 - low_zeros)]
 	      & ((UBILtype) -1 << (arprec % BIL_TYPE_SIZE))) != 0)
 	goto ovf_ex;
       min_limbs = rn - low_zeros;

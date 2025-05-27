@@ -1,7 +1,7 @@
 /* Software floating-point emulation.
    Convert _Decimal64 to signed or unsigned _BitInt.
 
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bitint.h"
 
 #ifdef __BITINT_MAXWIDTH__
+#ifndef ENABLE_DECIMAL_BID_FORMAT
+#define __bid_fixddbitint __dpd_fixddbitint
+#endif
 extern void __bid_fixddbitint (UBILtype *, SItype, _Decimal64);
 
 void
@@ -48,6 +51,7 @@ __bid_fixddbitint (UBILtype *r, SItype rprec, _Decimal64 a)
   u.d = a;
   t = u.u >> 51;
   sgn = (DItype) u.u < 0;
+#ifdef ENABLE_DECIMAL_BID_FORMAT
   if ((t & (3 << 10)) != (3 << 10))
     {
       mantissa = u.u & ((((UDItype) 1) << 53) - 1);
@@ -61,6 +65,31 @@ __bid_fixddbitint (UBILtype *r, SItype rprec, _Decimal64 a)
       if (mantissa > (UDItype) 9999999999999999)
 	mantissa = 0;
     }
+#else
+  if ((t & (15 << 8)) != (15 << 8))
+    {
+      exponent = (u.u >> 50) & 255;
+      if ((t & (3 << 10)) != (3 << 10))
+	{
+	  mantissa = ((t >> 7) & 7) * 1000;
+	  exponent += (t >> 2) & (3 << 8);
+	}
+      else
+	{
+	  mantissa = ((t >> 7) & 1) ? 9000 : 8000;
+	  exponent += t & (3 << 8);
+	}
+      mantissa += __dpd_d2bbitint[(u.u >> 40) & 1023];
+      mantissa *= 1000;
+      mantissa += __dpd_d2bbitint[(u.u >> 30) & 1023];
+      mantissa *= 1000;
+      mantissa += __dpd_d2bbitint[(u.u >> 20) & 1023];
+      mantissa *= 1000;
+      mantissa += __dpd_d2bbitint[(u.u >> 10) & 1023];
+      mantissa *= 1000;
+      mantissa += __dpd_d2bbitint[u.u & 1023];
+    }
+#endif
   else
     {
       FP_SET_EXCEPTION (FP_EX_INVALID
@@ -162,7 +191,7 @@ __bid_fixddbitint (UBILtype *r, SItype rprec, _Decimal64 a)
       if (res_limbs + low_zeros > rn && resv[BITINT_END (0, res_limbs - 1)])
 	goto ovf_ex;
       if ((arprec % BIL_TYPE_SIZE) != 0
-	  && (resv[BITINT_END (rn - res_limbs, rn - 1) - low_zeros]
+	  && (resv[BITINT_END (res_limbs + low_zeros - rn, rn - 1 - low_zeros)]
 	      & ((UBILtype) -1 << (arprec % BIL_TYPE_SIZE))) != 0)
 	goto ovf_ex;
       min_limbs = rn - low_zeros;

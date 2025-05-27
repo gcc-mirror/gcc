@@ -1,7 +1,7 @@
 /* Software floating-point emulation.
    Convert a _BitInt to _Decimal64.
 
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bitint.h"
 
 #ifdef __BITINT_MAXWIDTH__
+#ifndef ENABLE_DECIMAL_BID_FORMAT
+#define __bid_floatbitintdd __dpd_floatbitintdd
+#endif
 extern _Decimal64 __bid_floatbitintdd (const UBILtype *, SItype);
 
 _Decimal64
@@ -51,7 +54,11 @@ __bid_floatbitintdd (const UBILtype *i, SItype iprec)
     }
   if (iprec < 0)
     {
-      SItype n = sizeof (0ULL) * __CHAR_BIT__ + 1 - __builtin_clzll (~msb);
+      SItype n;
+      if (msb == ~(UBILtype) 0)
+	n = 1;
+      else
+	n = sizeof (0ULL) * __CHAR_BIT__ + 1 - __builtin_clzll (~msb);
       aiprec = (in - 1) * BIL_TYPE_SIZE + n;
     }
   else if (msb == 0)
@@ -118,7 +125,8 @@ __bid_floatbitintdd (const UBILtype *i, SItype iprec)
 	}
       else
 	{
-	  __builtin_memcpy (buf + BITINT_END (q_limbs - in + 1, 0), i,
+	  __builtin_memcpy (buf + BITINT_END (q_limbs - in + 1, 0),
+			    i + BITINT_END (1, 0),
 			    (in - 1) * sizeof (UBILtype));
 	  buf[BITINT_END (q_limbs - in, in - 1)] = msb;
 	  if (iprec < 0)
@@ -239,6 +247,7 @@ __bid_floatbitintdd (const UBILtype *i, SItype iprec)
     }
 
   exponent += 398;
+#ifdef ENABLE_DECIMAL_BID_FORMAT
   if (mantissa >= (UDItype) 0x20000000000000)
     u.u = (((((iprec < 0) << 2) | (UDItype) 3) << 61)
 	   | (((UDItype) exponent) << 51)
@@ -247,10 +256,40 @@ __bid_floatbitintdd (const UBILtype *i, SItype iprec)
     u.u = ((((UDItype) (iprec < 0)) << 63)
 	   | (((UDItype) exponent) << 53)
 	   | mantissa);
+#else
+  u.u = mantissa;
+  mantissa = __dpd_b2dbitint[u.u % 1000];
+  u.u /= 1000;
+  mantissa |= ((UDItype) __dpd_b2dbitint[u.u % 1000]) << 10;
+  u.u /= 1000;
+  mantissa |= ((UDItype) __dpd_b2dbitint[u.u % 1000]) << 20;
+  u.u /= 1000;
+  mantissa |= ((UDItype) __dpd_b2dbitint[u.u % 1000]) << 30;
+  u.u /= 1000;
+  mantissa |= ((UDItype) __dpd_b2dbitint[u.u % 1000]) << 40;
+  u.u /= 1000;
+  if (u.u >= 8)
+    u.u = (((((iprec < 0) << 2) | (UDItype) 3) << 61)
+	   | (((UDItype) exponent & (3 << 8)) << 51)
+	   | ((u.u & 1) << 58)
+	   | (((UDItype) exponent & 255) << 50)
+	   | mantissa);
+  else
+    u.u = ((((UDItype) (iprec < 0)) << 63)
+	   | (((UDItype) exponent & (3 << 8)) << 53)
+	   | (u.u << 58)
+	   | (((UDItype) exponent & 255) << 50)
+	   | mantissa);
+#endif
   if (inexact)
     {
       ui.u = ((((UDItype) (iprec < 0)) << 63)
+#ifdef ENABLE_DECIMAL_BID_FORMAT
 	      | (((UDItype) (exponent - 1)) << 53)
+#else
+	      | (((UDItype) (exponent - 1) & (3 << 8)) << 53)
+	      | (((UDItype) (exponent - 1) & 255) << 50)
+#endif
 	      | (inexact + 3));
       __asm ("" : "+g" (u.d));
       __asm ("" : "+g" (ui.d));
