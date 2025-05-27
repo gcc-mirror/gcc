@@ -97,12 +97,6 @@ if test x$ac_assert_checking != x ; then
 [Define if you want assertions enabled.  This is a cheap check.])
 fi
 
-# Check whether --enable-default-pie was given.
-AC_ARG_ENABLE(default-pie,
-[AS_HELP_STRING([--enable-default-pie],
-		  [enable Position Independent Executable as default])],
-[PICFLAG=-fPIE], [PICFLAG=])
-
 # Enable --enable-host-pie
 AC_ARG_ENABLE(host-pie,
 [AS_HELP_STRING([--enable-host-pie],

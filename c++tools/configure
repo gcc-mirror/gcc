@@ -700,7 +700,6 @@ enable_option_checking
 enable_c___tools
 enable_maintainer_mode
 enable_checking
-enable_default_pie
 enable_host_pie
 enable_host_bind_now
 with_gcc_major_version_only
@@ -1335,7 +1334,6 @@ Optional Features:
                           enable expensive run-time checks. With LIST, enable
                           only specific categories of checks. Categories are:
                           yes,no,all,none,release.
-  --enable-default-pie    enable Position Independent Executable as default
   --enable-host-pie       build host code as PIE
   --enable-host-bind-now  link host code as BIND_NOW
 
@@ -2945,15 +2943,6 @@ if test x$ac_assert_checking != x ; then
 $as_echo "#define ENABLE_ASSERT_CHECKING 1" >>confdefs.h
 
 fi
-
-# Check whether --enable-default-pie was given.
-# Check whether --enable-default-pie was given.
-if test "${enable_default_pie+set}" = set; then :
-  enableval=$enable_default_pie; PICFLAG=-fPIE
-else
-  PICFLAG=
-fi
-
 
 # Enable --enable-host-pie
 # Check whether --enable-host-pie was given.
