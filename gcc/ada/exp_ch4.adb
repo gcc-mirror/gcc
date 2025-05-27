@@ -11303,11 +11303,12 @@ package body Exp_Ch4 is
       -----------------------------------
 
       procedure Handle_Changed_Representation is
-         Temp : Entity_Id;
-         Decl : Node_Id;
-         Odef : Node_Id;
-         N_Ix : Node_Id;
          Cons : List_Id;
+         Decl : Node_Id;
+         N_Ix : Node_Id;
+         Odef : Node_Id;
+         Stmt : Node_Id;
+         Temp : Entity_Id;
 
       begin
          --  Nothing else to do if no change of representation
@@ -11450,19 +11451,24 @@ package body Exp_Ch4 is
                 Defining_Identifier => Temp,
                 Object_Definition   => Odef);
 
-            Set_No_Initialization (Decl, True);
+            --  The temporary need not be initialized
+
+            Set_No_Initialization (Decl);
+
+            Stmt :=
+              Make_Assignment_Statement (Loc,
+                Name       => New_Occurrence_Of (Temp, Loc),
+                Expression => Relocate_Node (N));
+
+            --  And, therefore, cannot be finalized
+
+            Set_No_Finalize_Actions (Stmt);
 
             --  Insert required actions. It is essential to suppress checks
             --  since we have suppressed default initialization, which means
             --  that the variable we create may have no discriminants.
 
-            Insert_Actions (N,
-              New_List (
-                Decl,
-                Make_Assignment_Statement (Loc,
-                  Name       => New_Occurrence_Of (Temp, Loc),
-                  Expression => Relocate_Node (N))),
-                Suppress => All_Checks);
+            Insert_Actions (N, New_List (Decl, Stmt), Suppress => All_Checks);
 
             Rewrite (N, New_Occurrence_Of (Temp, Loc));
             return;
