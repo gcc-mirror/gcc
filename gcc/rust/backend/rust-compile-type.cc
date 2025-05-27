@@ -17,11 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-type.h"
-#include "rust-compile-expr.h"
 #include "rust-constexpr.h"
-#include "rust-gcc.h"
+#include "rust-compile-base.h"
 
 #include "tree.h"
+#include "fold-const.h"
 #include "stor-layout.h"
 
 namespace Rust {
@@ -480,9 +480,12 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
 
   tree folded_capacity_expr = fold_expr (capacity_expr);
 
-  translated = Backend::array_type (element_type, folded_capacity_expr);
-  if (translated != error_mark_node)
-    translated = ctx->insert_compiled_type (translated);
+  // build_index_type takes the maximum index, which is one less than
+  // the length.
+  tree index_type_tree = build_index_type (
+    fold_build2 (MINUS_EXPR, sizetype, folded_capacity_expr, size_one_node));
+
+  translated = build_array_type (element_type, index_type_tree, false);
 }
 
 void
