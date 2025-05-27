@@ -109,12 +109,9 @@ DeriveOrd::cmp_fn (std::unique_ptr<BlockExpr> &&block, Identifier type_name)
 			   ptrify (return_type), std::move (block));
 }
 
-std::pair<MatchArm, MatchArm>
-DeriveOrd::make_cmp_arms ()
+std::unique_ptr<Pattern>
+DeriveOrd::make_equal ()
 {
-  // All comparison results other than Ordering::Equal
-  auto non_equal = builder.identifier_pattern (DeriveOrd::not_equal);
-
   std::unique_ptr<Pattern> equal = ptrify (
     builder.path_in_expression ({"core", "cmp", "Ordering", "Equal"}, true));
 
@@ -131,6 +128,16 @@ DeriveOrd::make_cmp_arms ()
 						std::move (pattern_items));
     }
 
+  return equal;
+}
+
+std::pair<MatchArm, MatchArm>
+DeriveOrd::make_cmp_arms ()
+{
+  // All comparison results other than Ordering::Equal
+  auto non_equal = builder.identifier_pattern (DeriveOrd::not_equal);
+  auto equal = make_equal ();
+
   return {builder.match_arm (std::move (equal)),
 	  builder.match_arm (std::move (non_equal))};
 }
@@ -138,6 +145,20 @@ DeriveOrd::make_cmp_arms ()
 std::unique_ptr<Expr>
 DeriveOrd::recursive_match (std::vector<SelfOther> &&members)
 {
+  if (members.empty ())
+    {
+      std::unique_ptr<Expr> value = ptrify (
+	builder.path_in_expression ({"core", "cmp", "Ordering", "Equal"},
+				    true));
+
+      if (ordering == Ordering::Partial)
+	value = builder.call (ptrify (builder.path_in_expression (
+				LangItem::Kind::OPTION_SOME)),
+			      std::move (value));
+
+      return value;
+    }
+
   std::unique_ptr<Expr> final_expr = nullptr;
 
   for (auto it = members.rbegin (); it != members.rend (); it++)

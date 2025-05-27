@@ -80,6 +80,12 @@ private:
   std::unique_ptr<Expr> recursive_match (std::vector<SelfOther> &&members);
 
   /**
+   * Create a pattern for the `Ordering::Equal` case. In the case of partial
+   * ordering, `Option::Some(Ordering::Equal)`.
+   */
+  std::unique_ptr<Pattern> make_equal ();
+
+  /**
    * Make the match arms for one inner match in a comparison function block.
    * This returns the "equal" match arm and the "rest" match arm, so something
    * like `Ordering::Equal` and `non_eq` in the following match expression:
