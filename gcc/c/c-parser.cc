@@ -10651,7 +10651,7 @@ c_parser_sizeof_or_countof_expression (c_parser *parser, enum rid rid)
 
   if (rid == RID_COUNTOF)
     pedwarn_c23 (start, OPT_Wpedantic,
-		 "ISO C does not support %qs before C23", op_name);
+		 "ISO C does not support %qs before C2Y", op_name);
 
   c_parser_consume_token (parser);
   c_inhibit_evaluation_warnings++;
