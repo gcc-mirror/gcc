@@ -1,3 +1,12 @@
+2025-05-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-05-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/120413
+	* semantics.cc (finish_omp_target_clauses_r): Handle
+	BIND_EXPR with empty BIND_EXPR_BLOCK.
+
 2025-05-23  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:
