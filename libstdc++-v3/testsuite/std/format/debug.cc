@@ -1,6 +1,7 @@
 // { dg-options "-fexec-charset=UTF-8 -fwide-exec-charset=UTF-32LE -DUNICODE_ENC" { target le } }
 // { dg-options "-fexec-charset=UTF-8 -fwide-exec-charset=UTF-32BE -DUNICODE_ENC" { target be } }
 // { dg-do run { target c++23 } }
+// { dg-require-effective-target 4byte_wchar_t }
 // { dg-add-options no_pch }
 // { dg-timeout-factor 2 }
 

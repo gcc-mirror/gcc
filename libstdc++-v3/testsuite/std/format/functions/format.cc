@@ -1,6 +1,7 @@
 // { dg-options "-fexec-charset=UTF-8" }
 // { dg-do run { target c++20 } }
 // { dg-add-options no_pch }
+// { dg-additional-options "-DUNICODE" { target 4byte_wchar_t } }
 
 #include <format>
 
@@ -511,6 +512,7 @@ test_bool()
 void
 test_unicode()
 {
+#ifdef UNICODE
   // Similar to sC example in test_std_examples, but not from the standard.
   // Verify that the character "🤡" has estimated field width 2,
   // rather than estimated field width equal to strlen("🤡"), which would be 4,
@@ -564,6 +566,7 @@ test_unicode()
     std::string sA = std::format("{:>5}", input[0]);
     VERIFY( sA == input[1] );
   }
+#endif
 }
 
 int main()
