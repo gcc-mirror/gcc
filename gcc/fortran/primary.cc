@@ -2686,16 +2686,17 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       else if (component == NULL && !inquiry)
 	return MATCH_ERROR;
 
-      /* Find end of reference chain if inquiry reference and tail not set.  */
-      if (tail == NULL && inquiry && tmp)
-	tail = extend_ref (primary, tail);
-
       /* Extend the reference chain determined by gfc_find_component or
 	 is_inquiry_ref.  */
       if (primary->ref == NULL)
 	primary->ref = tmp;
       else
 	{
+	  /* Find end of reference chain if inquiry reference and tail not
+	     set.  */
+	  if (tail == NULL && inquiry && tmp)
+	    tail = extend_ref (primary, tail);
+
 	  /* Set by the for loop below for the last component ref.  */
 	  gcc_assert (tail != NULL);
 	  tail->next = tmp;
