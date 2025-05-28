@@ -961,7 +961,7 @@ set_even_probabilities (basic_block bb,
 	    if (unlikely_edges != NULL && unlikely_edges->contains (e))
 	      e->probability = profile_probability::very_unlikely ();
 	    else
-	      e->probability = all / scale;
+	      e->probability = (all / scale).guessed ();
 	  }
 	else
 	  e->probability = profile_probability::never ();
