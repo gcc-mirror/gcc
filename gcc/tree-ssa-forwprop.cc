@@ -2508,16 +2508,15 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 }
 
 
-/* Check whether an array contains a valid ctz table.  */
+/* Check whether an array contains a valid table according to VALIDATE_FN.  */
+template<typename ValidateFn>
 static bool
-check_ctz_array (tree ctor, unsigned HOST_WIDE_INT mulc,
-		 HOST_WIDE_INT &zero_val, unsigned shift, unsigned bits)
+check_table_array (tree ctor, HOST_WIDE_INT &zero_val, unsigned bits,
+		  ValidateFn validate_fn)
 {
   tree elt, idx;
-  unsigned HOST_WIDE_INT i, mask, raw_idx = 0;
+  unsigned HOST_WIDE_INT i, raw_idx = 0;
   unsigned matched = 0;
-
-  mask = ((HOST_WIDE_INT_1U << (bits - shift)) - 1) << shift;
 
   zero_val = 0;
 
@@ -2558,7 +2557,7 @@ check_ctz_array (tree ctor, unsigned HOST_WIDE_INT mulc,
 	  matched++;
 	}
 
-      if (val >= 0 && val < bits && (((mulc << val) & mask) >> shift) == index)
+      if (val >= 0 && val < bits && validate_fn (val, index))
 	matched++;
 
       if (matched > bits)
@@ -2568,47 +2567,47 @@ check_ctz_array (tree ctor, unsigned HOST_WIDE_INT mulc,
   return false;
 }
 
-/* Check whether a string contains a valid ctz table.  */
+/* Check whether a string contains a valid table according to VALIDATE_FN.  */
+template<typename ValidateFn>
 static bool
-check_ctz_string (tree string, unsigned HOST_WIDE_INT mulc,
-		  HOST_WIDE_INT &zero_val, unsigned shift, unsigned bits)
+check_table_string (tree string, HOST_WIDE_INT &zero_val,unsigned bits,
+		    ValidateFn validate_fn)
 {
   unsigned HOST_WIDE_INT len = TREE_STRING_LENGTH (string);
-  unsigned HOST_WIDE_INT mask;
   unsigned matched = 0;
   const unsigned char *p = (const unsigned char *) TREE_STRING_POINTER (string);
 
   if (len < bits || len > bits * 2)
     return false;
 
-  mask = ((HOST_WIDE_INT_1U << (bits - shift)) - 1) << shift;
-
   zero_val = p[0];
 
   for (unsigned i = 0; i < len; i++)
-    if (p[i] < bits && (((mulc << p[i]) & mask) >> shift) == i)
+    if (p[i] < bits && validate_fn (p[i], i))
       matched++;
 
   return matched == bits;
 }
 
-/* Check whether CTOR contains a valid ctz table.  */
+/* Check whether CTOR contains a valid table according to VALIDATE_FN.  */
+template<typename ValidateFn>
 static bool
-check_ctz_table (tree ctor, tree type, unsigned HOST_WIDE_INT mulc,
-		 HOST_WIDE_INT &zero_val, unsigned shift, unsigned bits)
+check_table (tree ctor, tree type, HOST_WIDE_INT &zero_val, unsigned bits,
+	     ValidateFn validate_fn)
 {
   if (TREE_CODE (ctor) == CONSTRUCTOR)
-    return check_ctz_array (ctor, mulc, zero_val, shift, bits);
+    return check_table_array (ctor, zero_val, bits, validate_fn);
   else if (TREE_CODE (ctor) == STRING_CST
 	   && TYPE_PRECISION (type) == CHAR_TYPE_SIZE)
-    return check_ctz_string (ctor, mulc, zero_val, shift, bits);
+    return check_table_string (ctor, zero_val, bits, validate_fn);
   return false;
 }
 
 /* Match.pd function to match the ctz expression.  */
 extern bool gimple_ctz_table_index (tree, tree *, tree (*)(tree));
+extern bool gimple_clz_table_index (tree, tree *, tree (*)(tree));
 
-/* Recognize count trailing zeroes idiom.
+/* Recognize count leading and trailing zeroes idioms.
    The canonical form is array[((x & -x) * C) >> SHIFT] where C is a magic
    constant which when multiplied by a power of 2 creates a unique value
    in the top 5 or 6 bits.  This is then indexed into a table which maps it
@@ -2617,7 +2616,7 @@ extern bool gimple_ctz_table_index (tree, tree *, tree (*)(tree));
    the target.  */
 
 static bool
-simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
+simplify_count_zeroes (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
   tree array_ref = gimple_assign_rhs1 (stmt);
@@ -2625,7 +2624,23 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
 
   gcc_checking_assert (TREE_CODE (array_ref) == ARRAY_REF);
 
-  if (!gimple_ctz_table_index (TREE_OPERAND (array_ref, 1), &res_ops[0], NULL))
+  internal_fn fn = IFN_LAST;
+  /* For CTZ we recognize ((x & -x) * C) >> SHIFT where the array data
+     represents the number of trailing zeros.  */
+  if (gimple_ctz_table_index (TREE_OPERAND (array_ref, 1), &res_ops[0], NULL))
+    fn = IFN_CTZ;
+  /* For CLZ we recognize
+       x |= x >> 1;
+       x |= x >> 2;
+       x |= x >> 4;
+       x |= x >> 8;
+       x |= x >> 16;
+       (x * C) >> SHIFT
+     where 31 minus the array data represents the number of leading zeros.  */
+  else if (gimple_clz_table_index (TREE_OPERAND (array_ref, 1), &res_ops[0],
+				   NULL))
+    fn = IFN_CLZ;
+  else
     return false;
 
   HOST_WIDE_INT zero_val;
@@ -2641,7 +2656,7 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
   if (input_bits != 32 && input_bits != 64)
     return false;
 
-  if (!direct_internal_fn_supported_p (IFN_CTZ, input_type, OPTIMIZE_FOR_BOTH))
+  if (!direct_internal_fn_supported_p (fn, input_type, OPTIMIZE_FOR_BOTH))
     return false;
 
   /* Check the lower bound of the array is zero.  */
@@ -2657,13 +2672,46 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
   tree ctor = ctor_for_folding (array);
   if (!ctor)
     return false;
-  unsigned HOST_WIDE_INT val = tree_to_uhwi (res_ops[1]);
-  if (!check_ctz_table (ctor, type, val, zero_val, shiftval, input_bits))
-    return false;
+  unsigned HOST_WIDE_INT mulval = tree_to_uhwi (res_ops[1]);
+  if (fn == IFN_CTZ)
+    {
+      auto checkfn = [&](unsigned data, unsigned i) -> bool
+	{
+	  unsigned HOST_WIDE_INT mask
+	    = ((HOST_WIDE_INT_1U << (input_bits - shiftval)) - 1) << shiftval;
+	  return (((mulval << data) & mask) >> shiftval) == i;
+	};
+      if (!check_table (ctor, type, zero_val, input_bits, checkfn))
+	return false;
+    }
+  else if (fn == IFN_CLZ)
+    {
+      auto checkfn = [&](unsigned data, unsigned i) -> bool
+	{
+	  unsigned HOST_WIDE_INT mask
+	    = ((HOST_WIDE_INT_1U << (input_bits - shiftval)) - 1) << shiftval;
+	  return (((((HOST_WIDE_INT_1U << (data + 1)) - 1) * mulval) & mask)
+		  >> shiftval) == i;
+	};
+    if (!check_table (ctor, type, zero_val, input_bits, checkfn))
+      return false;
+    }
 
-  HOST_WIDE_INT ctz_val = 0;
-  bool zero_ok = CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (input_type),
-					    ctz_val) == 2;
+  HOST_WIDE_INT ctz_val = -1;
+  bool zero_ok;
+  if (fn == IFN_CTZ)
+    {
+      ctz_val = 0;
+      zero_ok = CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (input_type),
+					   ctz_val) == 2;
+    }
+  else if (fn == IFN_CLZ)
+    {
+      ctz_val = 32;
+      zero_ok = CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (input_type),
+					   ctz_val) == 2;
+      zero_val = input_bits - 1 - zero_val;
+    }
   int nargs = 2;
 
   /* If the input value can't be zero, don't special case ctz (0).  */
@@ -2689,7 +2737,7 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
 
   gimple_seq seq = NULL;
   gimple *g;
-  gcall *call = gimple_build_call_internal (IFN_CTZ, nargs, res_ops[0],
+  gcall *call = gimple_build_call_internal (fn, nargs, res_ops[0],
 					    nargs == 1 ? NULL_TREE
 					    : build_int_cst (integer_type_node,
 							     ctz_val));
@@ -2698,6 +2746,17 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
   gimple_seq_add_stmt (&seq, call);
 
   tree prev_lhs = gimple_call_lhs (call);
+  if (fn == IFN_CLZ)
+    {
+      g = gimple_build_assign (make_ssa_name (integer_type_node),
+			       MINUS_EXPR,
+			       build_int_cst (integer_type_node,
+					      input_bits - 1),
+			       prev_lhs);
+      gimple_set_location (g, gimple_location (stmt));
+      gimple_seq_add_stmt (&seq, g);
+      prev_lhs = gimple_assign_lhs (g);
+    }
 
   /* Emit ctz (x) & 31 if ctz (0) is 32 but we need to return 0.  */
   if (zero_val == 0 && ctz_val == input_bits)
@@ -4829,7 +4888,7 @@ pass_forwprop::execute (function *fun)
 			     && TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
 		      changed |= simplify_vector_constructor (&gsi);
 		    else if (code == ARRAY_REF)
-		      changed |= simplify_count_trailing_zeroes (&gsi);
+		      changed |= simplify_count_zeroes (&gsi);
 		    break;
 		  }
 
