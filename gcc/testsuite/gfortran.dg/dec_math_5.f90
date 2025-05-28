@@ -101,4 +101,67 @@ program p
   if (abs(b1 - 0.5) > e2) stop 38
   if (abs(c1 - 0.5) > e3) stop 39
   if (abs(d1 - 0.5) > e4) stop 40
+
+  a1 = acospi(0.5)
+  b1 = acospi(-0.5)
+  c1 = acospi(0.5)
+  d1 = acospi(-0.5)
+  if (abs(a1 - 1.0 / 3) > e1) stop 41
+  if (abs(b1 - 2.0 / 3) > e2) stop 42
+  if (abs(c1 - 1.0 / 3) > e3) stop 43
+  if (abs(d1 - 2.0 / 3) > e4) stop 44
+
+  a1 = asinpi(0.5)
+  b1 = asinpi(-0.5)
+  c1 = asinpi(0.5)
+  d1 = asinpi(-0.5)
+  if (abs(a1 - 1.0 / 6) > e1) stop 45
+  if (abs(b1 + 1.0 / 6) > e2) stop 46
+  if (abs(c1 - 1.0 / 6) > e3) stop 47
+  if (abs(d1 + 1.0 / 6) > e4) stop 48
+
+  a1 = atanpi(1.0)
+  b1 = atanpi(-1.0)
+  c1 = atanpi(1.0)
+  d1 = atanpi(-1.0)
+  if (abs(a1 - 0.25) > e1) stop 49
+  if (abs(b1 + 0.25) > e2) stop 50
+  if (abs(c1 - 0.25) > e3) stop 51
+  if (abs(d1 + 0.25) > e4) stop 52
+
+  a1 = atan2pi(1.0, 1.0)
+  b1 = atan2pi(1.0, 1.0)
+  c1 = atan2pi(1.0, 1.0)
+  d1 = atan2pi(1.0, 1.0)
+  if (abs(a1 - 0.25) > e1) stop 53
+  if (abs(b1 - 0.25) > e2) stop 54
+  if (abs(c1 - 0.25) > e3) stop 55
+  if (abs(d1 - 0.25) > e4) stop 56
+
+  a1 = cospi(1._4 / 3)
+  b1 = cospi(-1._8 / 3)
+  c1 = cospi(4._ep / 3)
+  d1 = cospi(-4._16 / 3)
+  if (abs(a1 - 0.5) > e1) stop 57
+  if (abs(b1 - 0.5) > e2) stop 58
+  if (abs(c1 + 0.5) > e3) stop 59
+  if (abs(d1 + 0.5) > e4) stop 60
+
+  a1 = sinpi(1._4 / 6)
+  b1 = sinpi(-1._8 / 6)
+  c1 = sinpi(5._ep / 6)
+  d1 = sinpi(-7._16 / 6)
+  if (abs(a1 - 0.5) > e1) stop 61
+  if (abs(b1 + 0.5) > e2) stop 62
+  if (abs(c1 - 0.5) > e3) stop 63
+  if (abs(d1 - 0.5) > e4) stop 64
+
+  a1 = tanpi(0.25)
+  b1 = tanpi(-0.25)
+  c1 = tanpi(1.25)
+  d1 = tanpi(-1.25)
+  if (abs(a1 - 1.0) > e1) stop 65
+  if (abs(b1 + 1.0) > e2) stop 66
+  if (abs(c1 - 1.0) > e3) stop 67
+  if (abs(d1 + 1.0) > e4) stop 68
 end program p

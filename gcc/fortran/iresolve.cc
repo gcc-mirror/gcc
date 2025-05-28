@@ -3435,13 +3435,12 @@ gfc_resolve_trim (gfc_expr *f, gfc_expr *string)
   f->value.function.name = gfc_get_string ("__trim_%d", string->ts.kind);
 }
 
-
-/* Resolve the degree trigonometric functions.  This amounts to setting
+/* Resolve the trigonometric functions.  This amounts to setting
    the function return type-spec from its argument and building a
    library function names of the form _gfortran_sind_r4.  */
 
 void
-gfc_resolve_trigd (gfc_expr *f, gfc_expr *x)
+gfc_resolve_trig (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
@@ -3450,9 +3449,8 @@ gfc_resolve_trigd (gfc_expr *f, gfc_expr *x)
 		      gfc_type_abi_kind (&x->ts));
 }
 
-
 void
-gfc_resolve_trigd2 (gfc_expr *f, gfc_expr *y, gfc_expr *x)
+gfc_resolve_trig2 (gfc_expr *f, gfc_expr *y, gfc_expr *x)
 {
   f->ts = y->ts;
   f->value.function.name
