@@ -258,6 +258,13 @@ package body SPARK_Specific is
                Context := Defining_Entity (Context);
                exit;
 
+            when N_Subunit =>
+               Context := Corresponding_Stub (Context);
+
+            when N_Body_Stub =>
+               Context := Corresponding_Spec_Of_Stub (Context);
+               exit;
+
             when others =>
                Context := Parent (Context);
          end case;
