@@ -1218,6 +1218,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
       now() noexcept;
 
       // Map to C API
+      [[__gnu__::__always_inline__]]
       static std::time_t
       to_time_t(const time_point& __t) noexcept
       {
@@ -1225,6 +1226,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 			   (__t.time_since_epoch()).count());
       }
 
+      [[__gnu__::__always_inline__]]
       static time_point
       from_time_t(std::time_t __t) noexcept
       {
