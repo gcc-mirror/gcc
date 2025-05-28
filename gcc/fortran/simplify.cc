@@ -2288,10 +2288,10 @@ gfc_simplify_cospi (gfc_expr *x)
 #if MPFR_VERSION >= MPFR_VERSION_NUM(4, 2, 0)
   mpfr_cospi (result->value.real, x->value.real, GFC_RND_MODE);
 #else
-  mpfr_t cs, n, r;
+  mpfr_t cs, n, r, two;
   int s;
 
-  mpfr_inits2 (2 * mpfr_get_prec (x->value.real), cs, n, r, NULL);
+  mpfr_inits2 (2 * mpfr_get_prec (x->value.real), cs, n, r, two, NULL);
 
   mpfr_abs (r, x->value.real, GFC_RND_MODE);
   mpfr_modf (n, r, r, GFC_RND_MODE);
@@ -2302,7 +2302,8 @@ gfc_simplify_cospi (gfc_expr *x)
       return result;
     }
 
-  mpfr_fmod_ui (cs, n, 2, GFC_RND_MODE);
+  mpfr_set_ui (two, 2, GFC_RND_MODE);
+  mpfr_fmod (cs, n, two, GFC_RND_MODE);
   s = mpfr_cmp_ui (cs, 0) == 0 ? 1 : -1;
 
   mpfr_const_pi (cs, GFC_RND_MODE);
@@ -2310,7 +2311,7 @@ gfc_simplify_cospi (gfc_expr *x)
   mpfr_cos (cs, cs, GFC_RND_MODE);
   mpfr_mul_si (result->value.real, cs, s, GFC_RND_MODE);
 
-  mpfr_clears (cs, n, r, NULL);
+  mpfr_clears (cs, n, r, two, NULL);
 #endif
 
   return range_check (result, "COSPI");
@@ -2329,10 +2330,10 @@ gfc_simplify_sinpi (gfc_expr *x)
 #if MPFR_VERSION >= MPFR_VERSION_NUM(4, 2, 0)
   mpfr_sinpi (result->value.real, x->value.real, GFC_RND_MODE);
 #else
-  mpfr_t sn, n, r;
+  mpfr_t sn, n, r, two;
   int s;
 
-  mpfr_inits2 (2 * mpfr_get_prec (x->value.real), sn, n, r, NULL);
+  mpfr_inits2 (2 * mpfr_get_prec (x->value.real), sn, n, r, two, NULL);
 
   mpfr_abs (r, x->value.real, GFC_RND_MODE);
   mpfr_modf (n, r, r, GFC_RND_MODE);
@@ -2343,7 +2344,8 @@ gfc_simplify_sinpi (gfc_expr *x)
       return result;
     }
 
-  mpfr_fmod_ui (sn, n, 2, GFC_RND_MODE);
+  mpfr_set_ui (two, 2, GFC_RND_MODE);
+  mpfr_fmod (sn, n, two, GFC_RND_MODE);
   s = mpfr_cmp_si (x->value.real, 0) < 0 ? -1 : 1;
   s *= mpfr_cmp_ui (sn, 0) == 0 ? 1 : -1;
 
@@ -2352,7 +2354,7 @@ gfc_simplify_sinpi (gfc_expr *x)
   mpfr_sin (sn, sn, GFC_RND_MODE);
   mpfr_mul_si (result->value.real, sn, s, GFC_RND_MODE);
 
-  mpfr_clears (sn, n, r, NULL);
+  mpfr_clears (sn, n, r, two, NULL);
 #endif
 
   return range_check (result, "SINPI");
