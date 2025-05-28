@@ -1228,7 +1228,8 @@ between_desc:
     default:
       if (mode != MODE_FORMAT)
 	format_locus.nextc += format_string_pos - 1;
-      if (!gfc_notify_std (GFC_STD_GNU, "Missing comma at %L", &format_locus))
+      if (!gfc_notify_std (GFC_STD_LEGACY,
+	  "Missing comma in FORMAT string at %L", &format_locus))
 	return false;
       /* If we do not actually return a failure, we need to unwind this
          before the next round.  */
@@ -1290,7 +1291,8 @@ extension_optional_comma:
     default:
       if (mode != MODE_FORMAT)
 	format_locus.nextc += format_string_pos;
-      if (!gfc_notify_std (GFC_STD_GNU, "Missing comma at %L", &format_locus))
+      if (!gfc_notify_std (GFC_STD_LEGACY,
+	  "Missing comma in FORMAT string at %L", &format_locus))
 	return false;
       /* If we do not actually return a failure, we need to unwind this
          before the next round.  */

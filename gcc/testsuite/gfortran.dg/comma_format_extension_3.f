@@ -3,7 +3,7 @@
 ! did do the correct thing at runtime.
 ! Note the missing , before i1 in the format.
 ! { dg-do run }
-! { dg-options "" }
+! { dg-options "-std=legacy" }
       character*12 c
 
       write (c,100) 0, 1

@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "" }
+! { dg-options "-std=legacy" }
 ! test that the extension for a missing comma is accepted
 
       subroutine mysub
