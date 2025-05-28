@@ -167,16 +167,21 @@ pass_nrv::execute (function *fun)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-	  tree ret_val;
 
 	  if (greturn *return_stmt = dyn_cast <greturn *> (stmt))
 	    {
-	      /* In a function with an aggregate return value, the
-		 gimplifier has changed all non-empty RETURN_EXPRs to
-		 return the RESULT_DECL.  */
-	      ret_val = gimple_return_retval (return_stmt);
-	      if (ret_val)
-		gcc_assert (ret_val == result);
+	      /* We cannot perform NRV optimizations in a function with an
+		 aggregate return value if there is a return that does not
+		 return RESULT_DECL.  We used to assert this scenario doesn't
+		 happen: the gimplifier has changed all non-empty RETURN_EXPRs
+		 to return the RESULT_DECL.  However, per PR119835 we may run
+		 into this scenario for offloading compilation, and therefore
+		 gracefully bail out.  */
+	      if (tree ret_val = gimple_return_retval (return_stmt))
+		{
+		  if (ret_val != result)
+		    return 0;
+		}
 	    }
 	  else if (gimple_has_lhs (stmt)
 		   && gimple_get_lhs (stmt) == result)

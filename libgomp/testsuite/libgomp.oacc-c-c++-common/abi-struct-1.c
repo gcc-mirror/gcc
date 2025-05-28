@@ -1,6 +1,10 @@
 /* Inspired by 'gcc.target/nvptx/abi-struct-arg.c', 'gcc.target/nvptx/abi-struct-ret.c'.  */
 
-/* See also '../libgomp.c-c++-common/target-abi-struct-1-O0.c'.  */
+/* See also '../libgomp.c-c++-common/target-abi-struct-1.c'.  */
+
+/* To exercise PR119835 (if optimizations enabled): disable inlining, so that
+   GIMPLE passes still see the functions that return aggregate types.  */
+#pragma GCC optimize "-fno-inline"
 
 typedef struct {} empty;  /* See 'gcc/doc/extend.texi', "Empty Structures".  */
 typedef struct {char a;} schar;
