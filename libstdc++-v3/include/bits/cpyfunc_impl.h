@@ -64,6 +64,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    _GLIBCXX_MOF_REF noexcept(_Noex)>
     : __polyfunc::_Cpy_base
     {
+      static_assert(
+	(std::__is_complete_or_unbounded(__type_identity<_ArgTypes>()) && ...),
+	"each parameter type must be a complete class");
+
       using _Base = __polyfunc::_Cpy_base;
       using _Invoker = __polyfunc::_Invoker<_Noex, _Res, _ArgTypes...>;
       using _Signature = _Invoker::_Signature;

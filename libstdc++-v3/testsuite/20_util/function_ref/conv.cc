@@ -2,6 +2,7 @@
 // { dg-require-effective-target hosted }
 
 #include <functional>
+#include <string_view>
 #include <testsuite_hooks.h>
 
 using std::function_ref;
@@ -19,6 +20,21 @@ struct CountedArg
   int counter = 0;
 };
 CountedArg const c;
+
+using FuncType = int(int);
+
+// Top level const qualifiers are ignored in function types, and decay
+// is performed.
+static_assert( std::is_same_v<std::function_ref<void(int const)>,
+			      std::function_ref<void(int)>> );
+static_assert( std::is_same_v<std::function_ref<void(int[2])>,
+			      std::function_ref<void(int*)>>);
+static_assert( std::is_same_v<std::function_ref<void(int[])>,
+			      std::function_ref<void(int*)>>);
+static_assert( std::is_same_v<std::function_ref<void(int const[5])>,
+			      std::function_ref<void(int const*)>>);
+static_assert( std::is_same_v<std::function_ref<void(FuncType)>,
+			      std::function_ref<void(FuncType*)>>);
 
 // The C++26 [func.wrap.general] p2 does not currently cover funciton_ref,
 // so we make extra copies of arguments.
@@ -244,6 +260,23 @@ test08()
   return true;
 };
 
+void
+test09()
+{
+  // Scalar types and small trivially move constructible types are passed
+  // by value to invoker. So int&& signature is not compatible for such types.
+  auto fi = [](CountedArg const& arg, int) noexcept { return arg.counter; };
+  std::function_ref<int(CountedArg, int) const noexcept> ri1(fi);
+  VERIFY( ri1(c, 0) == 1 );
+  std::function_ref<int(CountedArg, int&&) const noexcept> ri2(ri1);
+  VERIFY( ri2(c, 0) == 2 );
+
+  auto fs = [](CountedArg const& arg, std::string_view) noexcept { return arg.counter; };
+  std::function_ref<int(CountedArg, std::string_view) const noexcept> rs1(fs);
+  VERIFY( rs1(c, "") == 1 );
+  std::function_ref<int(CountedArg, std::string_view&&) const noexcept> rs2(rs1);
+  VERIFY( rs2(c, "") == 2 );
+}
 
 int main()
 {
@@ -254,6 +287,7 @@ int main()
   test05();
   test06();
   test07();
+  test09();
 
   static_assert( test08() );
 }
