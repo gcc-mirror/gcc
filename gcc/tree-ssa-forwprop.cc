@@ -2667,7 +2667,12 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
   int nargs = 2;
 
   /* If the input value can't be zero, don't special case ctz (0).  */
-  if (tree_expr_nonzero_p (res_ops[0]))
+  range_query *q = get_range_query (cfun);
+  if (q == get_global_range_query ())
+    q = enable_ranger (cfun);
+  int_range_max vr;
+  if (q->range_of_expr (vr, res_ops[0], stmt)
+      && !range_includes_zero_p (vr))
     {
       zero_ok = true;
       zero_val = 0;
