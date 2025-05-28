@@ -41,6 +41,7 @@ build_alias=@build_noncanonical@
 build_vendor=@build_vendor@
 build_os=@build_os@
 build=@build@
+cpu_type=@cpu_type@
 host_alias=@host_noncanonical@
 host_vendor=@host_vendor@
 host_os=@host_os@
