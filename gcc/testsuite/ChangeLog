@@ -1,3 +1,70 @@
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115358
+	* g++.dg/template/array37.C: New test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117792
+	* g++.dg/cpp1z/nontype7.C: New test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-03-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119233
+	* g++.dg/template/fn-ptr5.C: New test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106760
+	* g++.dg/ext/conv3.C: New test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115656
+	* g++.dg/cpp2a/concepts-ttp7.C: New test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116418
+	* g++.dg/eh/pr84968.C: No longer expect an ahead of time diagnostic
+	for the statement-expresssion.  Instantiate the template and expect
+	an incomplete type error instead.
+	* g++.dg/ext/stmtexpr26.C: New test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118060
+	* g++.dg/cpp2a/concepts-requires40.C: New test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-08-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116320
+	* g++.dg/template/access42.C: New test.
+
 2025-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

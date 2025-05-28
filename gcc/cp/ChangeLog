@@ -1,3 +1,86 @@
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115358
+	* decl2.cc (mark_used): Call maybe_instantiate_decl for an array
+	variable with unknown bound.
+	* semantics.cc (finish_decltype_type): Remove now redundant
+	handling of array variables with unknown bound.
+	* typeck.cc (cxx_sizeof_expr): Likewise.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117792
+	* pt.cc (type_dependent_expression_p): Consider the dependence
+	of the address of each template argument of a function
+	template-id.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-03-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119233
+	* pt.cc (mark_template_arguments_used): Also handle member
+	function pointers.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106760
+	* call.cc (add_candidates): Relax test for adding a candidate
+	to 'bad_cands' to also accept an uninstantiated template candidate
+	that has no missing conversions.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115656
+	* constraint.cc (weakly_subsumes): Pass in_decl=tmpl to
+	get_normalized_constraints_from_info.  Rename to ...
+	(ttp_subsumes): ... this.
+	* cp-tree.h (weakly_subsumes): Rename to ...
+	(ttp_subsumes): ... this.
+	* pt.cc (is_compatible_template_arg): Adjust after renaming.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116418
+	* tree.cc (strip_typedefs_expr) <case STATEMENT_LIST>: Replace
+	this error path with ...
+	<case STMT_EXPR>: ... this, returning the original tree.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118060
+	* constraint.cc (tsubst_valid_expression_requirement): Don't
+	check convert_to_void during partial substitution.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-08-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116320
+	* semantics.cc (check_accessibility_of_qualified_id): Try
+	currently_open_class when using the object type as the
+	effective qualifying type.
+
 2025-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

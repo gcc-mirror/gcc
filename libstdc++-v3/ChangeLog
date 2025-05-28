@@ -1,3 +1,95 @@
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/112490
+	* testsuite/24_iterators/const_iterator/112490.cc: Add
+	dg-options directive.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-10-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/112641
+	* include/std/ranges (drop_view::begin): Reimplement const
+	overload so that it's O(1) always.
+	* testsuite/std/ranges/adaptors/drop.cc (test10): New test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/115046
+	PR libstdc++/112490
+	* include/bits/stl_iterator.h (basic_const_iterator::operator-):
+	Replace non-dependent basic_const_iterator function parameter with
+	a dependent one of type basic_const_iterator<_It2> where _It2
+	matches _It.
+	* testsuite/std/ranges/adaptors/as_const/1.cc (test04): New test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/112490
+	* include/bits/stl_iterator.h (basic_const_iterator::operator<):
+	Replace non-dependent basic_const_iterator function parameter with
+	a dependent one of type basic_const_iterator<_It3> where _It3
+	matches _It.
+	(basic_const_iterator::operator>): Likewise.
+	(basic_const_iterator::operator<=): Likewise.
+	(basic_const_iterator::operator>=): Likewise.
+	* testsuite/24_iterators/const_iterator/112490.cc: New test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-03-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119135
+	* include/std/ranges: Include <utility>.
+	(views::__detail::__is_ref_view): Replace with ...
+	(views::__detail::__is_constable_ref_view): ... this.
+	(views::_AsConst::operator()): Replace bogus use of element_type
+	in the ref_view branch.
+	* testsuite/std/ranges/adaptors/as_const/1.cc (test03): Extend
+	test.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (views::_CartesianProduct::operator()):
+	Adjust identity case as per P2540R1.
+	* testsuite/std/ranges/cartesian_product/1.cc (test01):
+	Adjust expected result of the identity case.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (const_iterator): Define conversion
+	operators as per P2836R1.
+	* include/std/ranges (__cpp_lib_ranges_as_const): Update value.
+	* include/std/version (__cpp_lib_ranges_as_const): Likewise.
+	* testsuite/24_iterators/const_iterator/1.cc (test04): New test.
+	* testsuite/std/ranges/adaptors/as_const/1.cc: Adjust expected
+	value of __cpp_lib_ranges_as_const.
+	* testsuite/std/ranges/version_c++23.cc: Likewise.
+
+2025-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-10-05  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (__distance_fn::operator()):
+	Adjust iterator/sentinel overloads as per LWG 3664.
+	* testsuite/24_iterators/range_operations/distance.cc:
+	Test LWG 3664 example.
+
 2025-05-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2023.xml: Update status of proposals
