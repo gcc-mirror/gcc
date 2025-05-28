@@ -1,3 +1,11 @@
+2025-05-27  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2025-05-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/vector.md: Fix tf_to_fprx2 by using vlr instead of
+	ldr.
+
 2025-05-12  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
