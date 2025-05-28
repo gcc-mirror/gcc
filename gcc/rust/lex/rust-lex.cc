@@ -1897,17 +1897,17 @@ Lexer::parse_raw_byte_string (location_t loc)
 	      break;
 	    }
 	}
+      else if (current_char.is_eof ())
+	{
+	  rust_error_at (string_begin_locus, "unended raw byte string literal");
+	  return Token::make (END_OF_FILE, get_current_location ());
+	}
       else if (current_char.value > 127)
 	{
 	  rust_error_at (get_current_location (),
 			 "character %qs in raw byte string out of range",
 			 current_char.as_string ().c_str ());
 	  current_char = 0;
-	}
-      else if (current_char.is_eof ())
-	{
-	  rust_error_at (string_begin_locus, "unended raw byte string literal");
-	  return Token::make (END_OF_FILE, get_current_location ());
 	}
 
       length++;
