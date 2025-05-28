@@ -2008,6 +2008,14 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 
   dump_function_name (pp, t, dump_function_name_flags);
 
+  /* By default we need no padding here, but if we emit target_version or
+     target_clones then we need some.  */
+  pp->set_padding (pp_none);
+  pp_cxx_function_target_version (pp, t);
+  pp_cxx_maybe_whitespace (pp);
+  pp_cxx_function_target_clones (pp, t);
+  pp_cxx_maybe_whitespace (pp);
+
   if (!(flags & TFF_NO_FUNCTION_ARGUMENTS))
     {
       int const parm_flags

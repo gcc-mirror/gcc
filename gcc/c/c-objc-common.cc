@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-tree.h"
 #include "intl.h"
 #include "c-family/c-pretty-print.h"
+#include "tree-core.h"
 #include "tree-pretty-print.h"
 #include "tree-pretty-print-markup.h"
 #include "gimple-pretty-print.h"
@@ -359,6 +360,11 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       if (DECL_NAME (t))
 	{
 	  pp_identifier (cpp, lang_hooks.decl_printable_name (t, 2));
+	  if (TREE_CODE (t) == FUNCTION_DECL)
+	    {
+	      pp_c_function_target_version (cpp, t);
+	      pp_c_function_target_clones (cpp, t);
+	    }
 	  return true;
 	}
       break;

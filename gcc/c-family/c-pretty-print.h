@@ -102,6 +102,12 @@ public:
 #define pp_ptr_operator(PP, D)          (PP)->ptr_operator (PP, D)
 #define pp_parameter_list(PP, T)        (PP)->parameter_list (PP, T)
 
+#define pp_c_maybe_whitespace(PP)            \
+   do {                                      \
+     if ((PP)->get_padding () == pp_before)  \
+       pp_c_whitespace (PP);                 \
+   } while (0)
+
 void pp_c_whitespace (c_pretty_printer *);
 void pp_c_left_paren (c_pretty_printer *);
 void pp_c_right_paren (c_pretty_printer *);
@@ -138,6 +144,8 @@ void pp_c_ws_string (c_pretty_printer *, const char *);
 void pp_c_identifier (c_pretty_printer *, const char *);
 void pp_c_string_literal (c_pretty_printer *, tree);
 void pp_c_integer_constant (c_pretty_printer *, tree);
+void pp_c_function_target_version (c_pretty_printer *, tree);
+void pp_c_function_target_clones (c_pretty_printer *, tree);
 
 void print_c_tree (FILE *file, tree t, dump_flags_t);
 

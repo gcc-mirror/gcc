@@ -81,8 +81,13 @@ public:
 
 #define pp_cxx_ws_string(PP, I)		pp_c_ws_string (PP, I)
 #define pp_cxx_identifier(PP, I)	pp_c_identifier (PP, I)
+#define pp_cxx_maybe_whitespace(PP)	pp_c_maybe_whitespace (PP)
 #define pp_cxx_tree_identifier(PP, T) \
   pp_c_tree_identifier (PP, T)
+#define pp_cxx_function_target_version(PP, T) \
+  pp_c_function_target_version (PP, T)
+#define pp_cxx_function_target_clones(PP, T) \
+  pp_c_function_target_clones (PP, T)
 
 void pp_cxx_begin_template_argument_list (cxx_pretty_printer *);
 void pp_cxx_end_template_argument_list (cxx_pretty_printer *);
