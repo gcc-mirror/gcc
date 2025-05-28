@@ -1061,6 +1061,19 @@ set_bb_annotated (basic_block bb, bb_set *annotated)
   annotated->insert (bb);
 }
 
+/* Update profile_count by known autofdo count.  */
+void
+update_count_by_afdo_count (profile_count *count, gcov_type c)
+{
+  if (c)
+    *count = profile_count::from_gcov_type (c).afdo ();
+  /* In case we have guessed profile which is already zero, preserve
+     quality info.  */
+  else if (count->nonzero_p ()
+	   || count->quality () == GUESSED)
+    *count = profile_count::zero ().afdo ();
+}
+
 /* For a given BB, set its execution count. Attach value profile if a stmt
    is not in PROMOTED, because we only want to promote an indirect call once.
    Return TRUE if BB is annotated.  */
@@ -1071,6 +1084,8 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
   gimple_stmt_iterator gsi;
   gcov_type max_count = 0;
   bool has_annotated = false;
+  if (dump_file)
+    fprintf (dump_file, " Looking up AFDO count of bb %i\n", bb->index);
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -1082,6 +1097,12 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
         {
           if (info.count > max_count)
             max_count = info.count;
+	  if (dump_file && info.count)
+	    {
+	      fprintf (dump_file, "  count %" PRIu64 " in stmt: ",
+		       (int64_t)info.count);
+	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	    }
           has_annotated = true;
           if (info.targets.size () > 0
               && promoted.find (stmt) == promoted.end ())
@@ -1112,6 +1133,13 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
 		{
 		  if (info.count > max_count)
 		    max_count = info.count;
+		  if (dump_file && info.count)
+		    {
+		      fprintf (dump_file,
+			       "  phi op in BB %i with count %" PRIu64": ",
+			       bb_succ->index, (int64_t)info.count);
+		      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
+		    }
 		  has_annotated = true;
 		}
 	    }
@@ -1121,7 +1149,14 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
 	return false;
     }
 
-  bb->count = profile_count::from_gcov_type (max_count).afdo ();
+  if (max_count)
+    {
+      update_count_by_afdo_count (&bb->count, max_count);
+      if (dump_file)
+	fprintf (dump_file,
+		 " Annotated bb %i with count %" PRId64 "\n",
+		 bb->index, (int64_t)max_count);
+    }
   return true;
 }
 
@@ -1154,6 +1189,14 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 	  bb1->aux = bb;
 	  if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
 	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file,
+			   "  Copying count of bb %i to bb %i; count is:",
+			   bb1->index,
+			   bb->index);
+		  bb1->count.dump (dump_file);
+		}
 	      bb->count = bb1->count;
 	      set_bb_annotated (bb, annotated_bb);
 	    }
@@ -1166,6 +1209,14 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 	  bb1->aux = bb;
 	  if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
 	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file,
+			   "  Copying count of bb %i to bb %i; count is:",
+			   bb1->index,
+			   bb->index);
+		  bb1->count.dump (dump_file);
+		}
 	      bb->count = bb1->count;
 	      set_bb_annotated (bb, annotated_bb);
 	    }
@@ -1411,7 +1462,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
       else
         total_count += AFDO_EINFO (e)->get_count ();
     }
-    if (num_unknown_succ == 0 && total_count.nonzero_p())
+    if (num_unknown_succ == 0 && total_count.nonzero_p ())
       {
 	FOR_EACH_EDGE (e, ei, bb->succs)
 	  e->probability
@@ -1512,22 +1563,55 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
           current_function_decl);
 
   if (s == NULL)
-    return;
-  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
-     = profile_count::from_gcov_type (s->head_count ()).afdo ();
-  EXIT_BLOCK_PTR_FOR_FN (cfun)->count = profile_count::zero ().afdo ();
+    {
+      if (dump_file)
+	fprintf (dump_file, "No afdo profile for %s",
+		 cgraph_node::get (current_function_decl)->dump_name ());
+      return;
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "\n\nAnnotating BB profile of %s\n",
+	     cgraph_node::get (current_function_decl)->dump_name ());
+
+  /* In the first pass only store non-zero counts.  */
+  gcov_type head_count = s->head_count ();
+  bool profile_found = head_count > 0;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      if (afdo_set_bb_count (bb, promoted_stmts))
+	{
+	  if (bb->count.quality () == AFDO)
+	    {
+	      gcc_assert (bb->count.nonzero_p ());
+	      profile_found = true;
+	    }
+	  set_bb_annotated (bb, &annotated_bb);
+	}
+    }
+  /* Exit without clobbering static profile if there was no
+     non-zero count.
+     ??? Instead of keeping guessed profile we can introduce
+     GUESSED_GLOBAL0_AFDO.  */
+  if (!profile_found)
+    {
+      if (dump_file)
+	fprintf (dump_file, "No afdo samples found; keeping original profile");
+      return;
+    }
+
+  /* Update profile.  */
+  update_count_by_afdo_count (&ENTRY_BLOCK_PTR_FOR_FN (cfun)->count,
+			      head_count);
+  update_count_by_afdo_count (&EXIT_BLOCK_PTR_FOR_FN (cfun)->count, 0);
   profile_count max_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
   FOR_EACH_BB_FN (bb, cfun)
-    {
-      /* As autoFDO uses sampling approach, we have to assume that all
-	 counters are zero when not seen by autoFDO.  */
-      bb->count = profile_count::zero ().afdo ();
-      if (afdo_set_bb_count (bb, promoted_stmts))
-	set_bb_annotated (bb, &annotated_bb);
-      if (bb->count > max_count)
-	max_count = bb->count;
-    }
+    if (bb->count.quality () != AFDO)
+      update_count_by_afdo_count (&bb->count, 0);
+    else
+      max_count = max_count.max (bb->count);
+
   if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
       > ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->count)
     {
@@ -1542,11 +1626,10 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
           = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
       set_bb_annotated (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb, &annotated_bb);
     }
-  if (max_count.nonzero_p())
-    {
-      /* Calculate, propagate count and probability information on CFG.  */
-      afdo_calculate_branch_prob (&annotated_bb);
-    }
+  gcc_assert (max_count.nonzero_p ());
+  /* Calculate, propagate count and probability information on CFG.  */
+  afdo_calculate_branch_prob (&annotated_bb);
+
   cgraph_node::get(current_function_decl)->count
       = ENTRY_BLOCK_PTR_FOR_FN(cfun)->count;
   update_max_bb_count ();
