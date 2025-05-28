@@ -1628,10 +1628,8 @@ irange::contains_p (const wide_int &cst) const
   if (undefined_p ())
     return false;
 
-  // See if we can exclude CST based on the known 0 bits.
-  if (!m_bitmask.unknown_p ()
-      && cst != 0
-      && wi::bit_and (m_bitmask.get_nonzero_bits (), cst) == 0)
+  // Check is the known bits in bitmask exclude CST.
+  if (!m_bitmask.member_p (cst))
     return false;
 
   signop sign = TYPE_SIGN (type ());
@@ -1899,12 +1897,17 @@ irange::irange_contains_p (const irange &r) const
   gcc_checking_assert (!undefined_p () && !varying_p ());
   gcc_checking_assert (!r.undefined_p () && !varying_p ());
 
+  // Check singletons directly which will include any bitmasks.
+  wide_int rl;
+  if (r.singleton_p (rl))
+    return contains_p (rl);
+
   // In order for THIS to fully contain R, all of the pairs within R must
   // be fully contained by the pairs in this object.
   signop sign = TYPE_SIGN (m_type);
   unsigned ri = 0;
   unsigned i = 0;
-  wide_int rl = r.m_base[0];
+  rl = r.m_base[0];
   wide_int ru = r.m_base[1];
   wide_int l = m_base[0];
   wide_int u = m_base[1];
@@ -1971,6 +1974,16 @@ irange::intersect (const vrange &v)
       if (res)
 	normalize_kind ();
       return res;
+    }
+
+  // If either range is a singleton and the other range does not contain
+  // it, the result is undefined.
+  wide_int val;
+  if ((singleton_p (val) && !r.contains_p (val))
+      || (r.singleton_p (val) && !contains_p (val)))
+    {
+      set_undefined ();
+      return true;
     }
 
   // If R fully contains this, then intersection will change nothing.
