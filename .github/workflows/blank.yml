@@ -34,3 +34,13 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
+
+      # Actual testing on what actions can do
+      - name: My tests
+        run: |
+          echo Actor: ${{ github.actor }}
+          echo Event: ${{ github.event_name }}
+          echo Branch: ${{ github.ref }}
+          echo Repo: ${{ github.repository }}
+          echo Workspace: ${{ github.workspace }}
+          echo Status: ${{ github.status }}
