@@ -100,6 +100,17 @@ is
 
    --  The Value functions copy the contents of a chars_ptr object
    --  into a char_array/String.
+   --  There is a guard for a storage error on an object declaration for
+   --  an array type with a modular index type with the size of
+   --  Long_Long_Integer. The special processing is needed in this case
+   --  to compute reliably the size of the object, and eventually, to
+   --  raise Storage_Error, when wrap-around arithmetic might compute
+   --  a meangingless size for the object.
+   --
+   --  The guard raises Storage_Error when
+   --
+   --    (Arr'Last / 2 - Arr'First / 2) > (2 ** 30)
+   --
    function Value (Item : chars_ptr) return char_array with
      Pre    => Item /= Null_Ptr,
      Global => (Input => C_Memory);
