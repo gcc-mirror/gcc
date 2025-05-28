@@ -9797,7 +9797,7 @@ riscv_register_move_cost (machine_mode mode,
       if (from_is_gpr)
 	return get_gr2vr_cost ();
       else if (from_is_fpr)
-	return get_vector_costs ()->regmove->FR2VR;
+	return get_fr2vr_cost ();
     }
 
   return riscv_secondary_memory_needed (mode, from, to) ? 8 : 2;
@@ -12743,8 +12743,7 @@ riscv_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     case vec_construct:
 	{
 	  /* TODO: This is too pessimistic in case we can splat.  */
-	  int regmove_cost = fp ? costs->regmove->FR2VR
-	    : get_gr2vr_cost ();
+	  int regmove_cost = fp ? get_fr2vr_cost () : get_gr2vr_cost ();
 	  return (regmove_cost + common_costs->scalar_to_vec_cost)
 	    * estimated_poly_value (TYPE_VECTOR_SUBPARTS (vectype));
 	}
