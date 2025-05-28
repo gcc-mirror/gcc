@@ -3019,7 +3019,14 @@ cgraph_edge::maybe_hot_p (sreal scale)
 
   /* Use IPA count and if it s not available appy local heuristics.  */
   if (c.initialized_p ())
-    return maybe_hot_count_p (NULL, c * scale);
+    {
+      /* A special case; AFDO zero means that function may quite possibly
+	 be executed few times per execution.  If scale is large, we still
+	 want to consider the call hot.  */
+      if (c.quality () == AFDO)
+	c = c.force_nonzero ();
+      return maybe_hot_count_p (NULL, c * scale);
+    }
   if (!count.initialized_p ())
     return true;
   cgraph_node *where = caller->inlined_to ? caller->inlined_to : caller;
