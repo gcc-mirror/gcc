@@ -1,6 +1,5 @@
 // { dg-do run { target c++11 } }
 // { dg-require-effective-target std_allocator_new }
-// { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 
 // 2010-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
