@@ -1,3 +1,11 @@
+2025-05-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-05-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/120441
+	* libf7.c (f7_exp): Limit aa->expo to 10 (not to 9).
+
 2025-05-23  Release Manager
 
 	* GCC 14.3.0 released.
