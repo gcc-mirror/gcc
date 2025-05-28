@@ -31,6 +31,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Thread-Local::        Per-thread variables.
 * OpenMP::              Multiprocessing extensions.
 * OpenACC::             Extensions for offloading code to accelerator devices.
+* _Countof::            The number of elements of arrays.
 * Inline::              Defining inline functions (as fast as macros).
 * Volatiles::           What constitutes an access to a volatile object.
 * Using Assembly Language with C:: Instructions and extensions for interfacing C with assembler.
