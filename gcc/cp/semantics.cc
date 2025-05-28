@@ -13235,6 +13235,14 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
       type1 = strip_array_types (type1);
+      if (CLASS_TYPE_P (type1) && type_build_dtor_call (type1))
+	{
+	  deferring_access_check_sentinel dacs (dk_no_check);
+	  tree fn = get_dtor (type1, tf_none);
+	  if (!fn && !seen_error ())
+	    warning (0, "checking %qs for type %qT with a destructor that "
+		     "cannot be called", "__has_trivial_destructor", type1);
+	}
       return (trivial_type_p (type1) || type_code1 == REFERENCE_TYPE
 	      || (CLASS_TYPE_P (type1)
 		  && TYPE_HAS_TRIVIAL_DESTRUCTOR (type1)));
@@ -13290,6 +13298,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_CONVERTIBLE:
       return is_convertible (type1, type2);
 
+    case CPTK_IS_DESTRUCTIBLE:
+      return is_xible (BIT_NOT_EXPR, type1, NULL_TREE);
+
     case CPTK_IS_EMPTY:
       return NON_UNION_CLASS_TYPE_P (type1) && CLASSTYPE_EMPTY_P (type1);
 
@@ -13328,6 +13339,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_NOTHROW_CONVERTIBLE:
       return is_nothrow_convertible (type1, type2);
+
+    case CPTK_IS_NOTHROW_DESTRUCTIBLE:
+      return is_nothrow_xible (BIT_NOT_EXPR, type1, NULL_TREE);
 
     case CPTK_IS_NOTHROW_INVOCABLE:
       return expr_noexcept_p (build_invoke (type1, type2, tf_none), tf_none);
@@ -13370,6 +13384,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_TRIVIALLY_COPYABLE:
       return trivially_copyable_p (type1);
+
+    case CPTK_IS_TRIVIALLY_DESTRUCTIBLE:
+      return is_trivially_xible (BIT_NOT_EXPR, type1, NULL_TREE);
 
     case CPTK_IS_UNBOUNDED_ARRAY:
       return array_of_unknown_bound_p (type1);
@@ -13543,6 +13560,9 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_HAS_NOTHROW_COPY:
     case CPTK_HAS_TRIVIAL_COPY:
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
+    case CPTK_IS_DESTRUCTIBLE:
+    case CPTK_IS_NOTHROW_DESTRUCTIBLE:
+    case CPTK_IS_TRIVIALLY_DESTRUCTIBLE:
       if (!check_trait_type (type1))
 	return error_mark_node;
       break;

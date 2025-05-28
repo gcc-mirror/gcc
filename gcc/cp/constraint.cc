@@ -3100,6 +3100,9 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_CONVERTIBLE:
       inform (loc, "  %qT is not convertible from %qE", t2, t1);
       break;
+    case CPTK_IS_DESTRUCTIBLE:
+      inform (loc, "  %qT is not destructible", t1);
+      break;
     case CPTK_IS_EMPTY:
       inform (loc, "  %qT is not an empty class", t1);
       break;
@@ -3144,6 +3147,9 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_IS_NOTHROW_CONVERTIBLE:
       inform (loc, "  %qT is not nothrow convertible from %qE", t2, t1);
+      break;
+    case CPTK_IS_NOTHROW_DESTRUCTIBLE:
+      inform (loc, "  %qT is not nothrow destructible", t1);
       break;
     case CPTK_IS_NOTHROW_INVOCABLE:
       if (!t2)
@@ -3193,6 +3199,9 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_IS_TRIVIALLY_COPYABLE:
       inform (loc, "  %qT is not trivially copyable", t1);
+      break;
+    case CPTK_IS_TRIVIALLY_DESTRUCTIBLE:
+      inform (loc, "  %qT is not trivially destructible", t1);
       break;
     case CPTK_IS_UNBOUNDED_ARRAY:
       inform (loc, "  %qT is not an unbounded array", t1);

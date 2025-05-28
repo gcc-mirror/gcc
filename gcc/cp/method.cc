@@ -2330,6 +2330,19 @@ constructible_expr (tree to, tree from)
   return expr;
 }
 
+/* Return declval<T>().~T() treated as an unevaluated operand.  */
+
+static tree
+destructible_expr (tree to)
+{
+  cp_unevaluated cp_uneval_guard;
+  int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
+  to = build_trait_object (to);
+  tree r = build_delete (input_location, TREE_TYPE (to), to,
+			 sfk_complete_destructor, flags, 0, tf_none);
+  return r;
+}
+
 /* Returns a tree iff TO is assignable (if CODE is MODIFY_EXPR) or
    constructible (otherwise) from FROM, which is a single type for
    assignment or a list of types for construction.  */
@@ -2346,6 +2359,8 @@ is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
   tree expr;
   if (code == MODIFY_EXPR)
     expr = assignable_expr (to, from);
+  else if (code == BIT_NOT_EXPR)
+    expr = destructible_expr (to);
   else if (trivial && TREE_VEC_LENGTH (from) > 1
 	   && cxx_dialect < cxx20)
     return error_mark_node; // only 0- and 1-argument ctors can be trivial
