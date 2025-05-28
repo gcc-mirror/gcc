@@ -1,3 +1,25 @@
+2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/pstl/test_utils.h (ForwardIterator::operator++):
+	Fix return type.
+	(BidirectionalIterator::operator++): Likewise.
+	(BidirectionalIterator::operator--): Likewise.
+
+2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120367
+	* include/bits/stl_vector.h (_M_range_initialize): Initialize
+	_M_impl._M_finish.
+	* testsuite/23_containers/vector/cons/from_range.cc: Check with
+	a type that throws on construction.
+	exceptions during construction.
+
 2025-05-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

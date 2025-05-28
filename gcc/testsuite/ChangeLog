@@ -1,3 +1,8 @@
+2025-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso19.adb: New test.
+	* gnat.dg/sso19_pkg.ads, gnat.dg/sso19_pkg.adb: New helper.
+
 2025-05-26  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
