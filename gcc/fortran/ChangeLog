@@ -1,3 +1,40 @@
+2025-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101735
+	* primary.cc (gfc_match_varspec): Correct order of logic.
+
+2025-05-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* check.cc (gfc_check_c_associated): Use new helper functions.
+	Only call check_c_ptr_1 if optional c_ptr_2 tests succeed.
+	(check_c_ptr_1): Handle only c_ptr_1 checks.
+	(check_c_ptr_2): Expand checks for c_ptr_2 and handle cases
+	where there is no derived pointer in the gfc_expr and check
+	the inmod_sym_id only if it exists.
+	* misc.cc (gfc_typename): Handle the case for BT_VOID rather
+	than throw an internal error.
+
+2025-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101735
+	* expr.cc (find_inquiry_ref): If an inquiry reference applies to
+	a substring, use that, and calculate substring length if needed.
+	* primary.cc (extend_ref): Also handle attaching to end of
+	reference chain for appending.
+	(gfc_match_varspec): Discrimate between arrays of character and
+	substrings of them.  If a substring is taken from a character
+	component of a derived type, get the proper typespec so that
+	inquiry references work correctly.
+	(gfc_match_rvalue): Handle corner case where we hit a seemingly
+	dangling '%' and missed an inquiry reference. Try another match.
+
+2025-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* error.cc (gfc_diagnostic_start_span): Update for diagnostic.h
+	changes.
+
 2025-05-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/120099

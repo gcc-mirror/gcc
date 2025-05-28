@@ -1,3 +1,8 @@
+2025-05-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (cp_coroutine_transform::build_ramp_function):
+	Replace TRUTH_AND_EXPR with TRUTH_ANDIF_EXPR in three places.
+
 2025-05-26  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR c++/120413

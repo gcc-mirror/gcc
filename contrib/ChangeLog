@@ -1,3 +1,8 @@
+2025-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gen_autofdo_event.py: Add support for AMD Zen 3 and
+	later CPUs.
+
 2025-05-23  Andi Kleen  <ak@gcc.gnu.org>
 
 	* diffsummary.py: New file.

@@ -1,3 +1,13 @@
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+	    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117025
+	* c-common.h (enum rid): Add RID_COUNTOF.
+	(c_countof_type): New function prototype.
+	* c-common.def (COUNTOF_EXPR): New tree.
+	* c-common.cc (c_common_reswords): Add RID_COUNTOF entry.
+	(c_countof_type): New function.
+
 2025-05-23  Jason Merrill  <jason@redhat.com>
 
 	* c-format.cc (flag_chars_t::validate): Control quoting warnings

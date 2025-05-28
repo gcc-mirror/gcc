@@ -1,3 +1,37 @@
+2025-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117025
+	* c-parser.cc (c_parser_sizeof_or_countof_expression): Use
+	C2Y rather than C23 in pedwarn_c23.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/117025
+	* c-parser.cc (c_parser_sizeof_or_countof_expression):
+	Add -Wpedantic diagnostic for _Countof in <= C23 mode.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+	    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117025
+	* c-tree.h (in_countof): Add global variable declaration.
+	(c_expr_countof_expr): Add function prototype.
+	(c_expr_countof_type): Add function prototype.
+	* c-decl.cc (start_struct, finish_struct): Add support for
+	_Countof.
+	(start_enum, finish_enum): Add support for _Countof.
+	* c-parser.cc (c_parser_sizeof_expression): New macro.
+	(c_parser_countof_expression): New macro.
+	(c_parser_sizeof_or_countof_expression): Rename function and add
+	support for _Countof.
+	(c_parser_unary_expression): Add RID_COUNTOF entry.
+	* c-typeck.cc (in_countof): Add global variable.
+	(build_external_ref): Add support for _Countof.
+	(record_maybe_used_decl): Add support for _Countof.
+	(pop_maybe_used): Add support for _Countof.
+	(is_top_array_vla): New function.
+	(c_expr_countof_expr, c_expr_countof_type): New functions.
+
 2025-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/120057

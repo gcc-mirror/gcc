@@ -1,3 +1,394 @@
+2025-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120400
+	* fold-const.cc (simple_operand_p): False for vars with
+	DECL_VALUE_EXPR.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/117025
+	* Makefile.in (USER_H): Add <stdcountof.h>.
+	* ginclude/stdcountof.h: New file.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+	    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117025
+	* doc/extend.texi: Document _Countof operator.
+
+2025-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/gcc-auto-profile: regenerate.
+
+2025-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (function_instance::mark_annotated): Remove.
+	(function_instance::total_annotated_count): Remove.
+	(autofdo_source_profile::mark_annotated): Remove.
+	(afdo_set_bb_count): Do not mark annotated locations.
+	(afdo_annotate_cfg): Likewise.
+
+2025-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-sra.cc (scan_expr_access): Also disqualify storage order
+	barriers from splitting.
+	* tree.h (storage_order_barrier_p): Also return false if the
+	operand of the VIEW_CONVERT_EXPR has reverse storage order.
+
+2025-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* diagnostic-format-html.cc: Define INCLUDE_STRING.
+	Include "xml.h", "xml-printer.h", and "json.h".
+	(html_generation_options::html_generation_options): New.
+	(namespace xml): Move decls to xml.h and convert from using
+	label_text to std::string.
+	(xml::text::write_as_xml): Reimplement indentation so it is done
+	by this node, rather than the parent.
+	(xml::node_with_children::add_text): Convert from label_text to
+	std::string.  Consolidate runs of text into a single node.
+	(xml::document::write_as_xml): Reimplement indentation.
+	(xml::element::write_as_xml): Reimplement indentation so it is
+	done by this node, rather than the parent.  Convert from
+	label_text to std::string.  Update attribute-printing to new
+	representation to preserve insertion order.
+	(xml::element::set_attr): Convert from label_text to std::string.
+	Record insertion order.
+	(xml::raw::write_as_xml): New.
+	(xml::printer::printer): New.
+	(xml::printer::push_tag): New.
+	(xml::printer::push_tag_with_class): New.
+	(xml::printer::pop_tag): New.
+	(xml::printer::set_attr): New.
+	(xml::printer::add_text): New.
+	(xml::printer::add_raw): New.
+	(xml::printer::push_element): New.
+	(xml::printer::append): New.
+	(xml::printer::get_insertion_point): New.
+	(html_builder::add_focus_id): New.
+	(html_builder::m_html_gen_opts): New field.
+	(html_builder::m_head_element): New field.
+	(html_builder::m_next_diag_id): New field.
+	(html_builder::m_ui_focus_ids): New field.
+	(make_div): Convert from label_text to std::string.
+	(make_span): Likewise.
+	(HTML_STYLE): New.
+	(HTML_SCRIPT): New.
+	(html_builder::html_builder): Fix indentation.  Add
+	"html_gen_opts" param.  Initialize new fields.  Reimplement
+	using xml::printer.  Optionally add style and script tags.
+	(class html_path_label_writer): New.
+	(html_builder::make_element_for_diagnostic): Convert from
+	label_text to std::string. Set "id" on "gcc-diagnostic" and
+	"gcc-message" <div> elements; add the latter to the focus ids.
+	Use diagnostic_context::maybe_show_locus_as_html rather than
+	html_builder::make_element_for_source.  Use print_path_as_html
+	rather than html_builder::make_element_for_path.
+	(html_builder::make_element_for_source): Drop.
+	(html_builder::make_element_for_path): Drop.
+	(html_builder::make_element_for_patch): Convert from label_text to
+	std::string.
+	(html_builder::make_metadata_element): Likewise.  Use
+	xml::printer.
+	(html_builder::make_element_for_metadata): Convert from label_text
+	to std::string.
+	(html_builder::emit_diagram): Expand comment.
+	(html_builder::flush_to_file): Write out initializer for
+	"focus_ids" into javascript.
+	(html_output_format::html_output_format): Add param
+	"html_gen_opts" and use it to initialize m_builder.
+	(html_file_output_format::html_file_output_format): Likewise, to
+	initialize base class.
+	(make_html_sink): Likewise, to pass to ctor.
+	(selftest::test_html_diagnostic_context::test_html_diagnostic_context):
+	Set up html_generation_options.
+	(selftest::html_buffered_output_format::html_buffered_output_format):
+	Add html_gen_opts param.
+	(selftest::test_simple_log): Add id attributes to expected text
+	for "gcc-diagnostic" and "gcc-message" elements.  Update
+	whitespace for indentation fixes.
+	(selftest::test_metadata): Update whitespace for indentation
+	fixes.
+	(selftest::test_printer): New selftest.
+	(selftest::test_attribute_ordering): New selftest.
+	(selftest::diagnostic_format_html_cc_tests): Call the new
+	selftests.
+	* diagnostic-format-html.h (struct html_generation_options): New.
+	(make_html_sink): Add "html_gen_opts" param.
+	(print_path_as_html): New decl.
+	* diagnostic-path-output.cc: Define INCLUDE_MAP.  Add includes of
+	"diagnostic-format-html.h", "xml.h", and "xml-printer.h".
+	(path_print_policy::path_print_policy): Add ctor.
+	(path_print_policy::get_diagram_theme): Fix whitespace.
+	(struct stack_frame): New.
+	(begin_html_stack_frame): New function.
+	(end_html_stack_frame): New function.
+	(emit_svg_arrow): New function.
+	(event_range::print): Rename to...
+	(event_range::print_as_text): ...this.  Update call to
+	diagnostic_start_span.
+	(event_range::print_as_html): New, based on the above, but ported
+	from pretty_printer to xml::printer.
+	(thread_event_printer::print_swimlane_for_event_range): Rename
+	to...
+	(thread_event_printer::print_swimlane_for_event_range_as_text):
+	...this.  Update for renaming of event_range::print to
+	event_range::print_as_text.
+	(thread_event_printer::print_swimlane_for_event_range_as_html):
+	New.
+	(print_path_summary_as_text): Update for "_as_text" renaming.
+	(print_path_summary_as_html): New.
+	(print_path_as_html): New.
+	* diagnostic-show-locus.cc: Add defines of INCLUDE_MAP and
+	INCLUDE_STRING.  Add includes of "xml.h" and "xml-printer.h".
+	(struct char_display_policy): Replace "m_print_cb" with
+	"m_print_text_cb" and "m_print_html_cb".
+	(struct to_text): New.
+	(struct to_html): New.
+	(get_printer): New.
+	(default_diagnostic_start_span_fn<to_text>): New.
+	(default_diagnostic_start_span_fn<to_html>): New.
+	(class layout): Update "friend class layout_printer;" for
+	template.
+	(enum class margin_kind): New.
+	(class layout_printer): Convert into a template.
+	(layout_printer::m_pp): Replace field with...
+	(layout_printer::m_sink): ...this.
+	(layout_printer::m_colorizer): Drop field in favor of a pointer
+	in the "to_text" sink.
+	(default_print_decoded_ch): Convert into a template.
+	(escape_as_bytes_print): Likewise.
+	(escape_as_unicode_print): Likewise.
+	(make_char_policy): Update to use both text and html callbacks.
+	(layout_printer::print_gap_in_line_numbering): Replace with...
+	(layout_printer<to_text>::print_gap_in_line_numbering): ...this
+	(layout_printer<to_html>::print_gap_in_line_numbering): ...and
+	this.
+	(layout_printer::print_source_line): Convert to template, using
+	m_sink.
+	(layout_printer::print_leftmost_column): Likewise.
+	(layout_printer::start_annotation_line): Likewise.
+	(layout_printer<to_text>::end_line): New.
+	(layout_printer<to_html>::end_line): New.
+	(layout_printer::print_annotation_line): Convert to template,
+	using m_sink.
+	(class line_label): Add field m_original_range_idx.
+	(layout_printer<to_text>::begin_label): New.
+	(layout_printer<to_html>::begin_label): New.
+	(layout_printer<to_text>::end_label): New.
+	(layout_printer<to_html>::end_label): New.
+	(layout_printer::print_any_labels): Convert to template, using
+	m_sink.
+	(layout_printer::print_leading_fixits): Likewise.
+	(layout_printer::print_trailing_fixits): Likewise.
+	(layout_printer::print_newline): Drop.
+	(layout_printer::move_to_column): Convert to template, using
+	m_sink.
+	(layout_printer::show_ruler): Likewise.
+	(layout_printer::print_line): Likewise.
+	(layout_printer::print_any_right_to_left_edge_lines): Likewise.
+	(layout_printer::layout_printer): Likewise.
+	(diagnostic_context::maybe_show_locus_as_html): New.
+	(diagnostic_source_print_policy::diagnostic_source_print_policy):
+	Update for split of start_span_cb into text vs html variants.
+	(diagnostic_source_print_policy::print): Update for use of
+	templates; use to_text.
+	(diagnostic_source_print_policy::print_as_html): New.
+	(layout_printer::print): Convert to template, using m_sink.
+	(selftest::make_element_for_locus): New.
+	(selftest::make_raw_html_for_locus): New.
+	(selftest::test_layout_x_offset_display_utf8): Update for use of
+	templates.
+	(selftest::test_layout_x_offset_display_tab): Likewise.
+	(selftest::test_one_liner_caret_and_range): Add test coverage of
+	HTML output.
+	(selftest::test_one_liner_labels): Likewise.
+	* diagnostic.cc (diagnostic_context::initialize): Update for split
+	of start_span_cb into text vs html variants.
+	(default_diagnostic_start_span_fn): Move to
+	diagnostic-show-locus.cc, converting to template.
+	* diagnostic.h (class xml::printer): New forward decl.
+	(diagnostic_start_span_fn): Replace typedef with "using",
+	converting to a template.
+	(struct to_text): New forward decl.
+	(struct to_html): New forward decl.
+	(get_printer): New decl.
+	(diagnostic_location_print_policy::print_text_span_start): New
+	decl.
+	(diagnostic_location_print_policy::print_html_span_start): New
+	decl.
+	(class html_label_writer): New.
+	(diagnostic_source_print_policy::print_as_html): New decl.
+	(diagnostic_source_print_policy::get_start_span_fn): Replace
+	with...
+	(diagnostic_source_print_policy::get_text_start_span_fn): ...this
+	(diagnostic_source_print_policy::get_html_start_span_fn): ...and
+	this
+	(diagnostic_source_print_policy::m_start_span_cb): Replace with...
+	(diagnostic_source_print_policy::m_text_start_span_cb): ...this
+	(diagnostic_source_print_policy::m_html_start_span_cb): ...and
+	this.
+	(diagnostic_context::maybe_show_locus_as_html): New decl.
+	(diagnostic_context::m_text_callbacks::m_start_span): Replace
+	with...
+	(diagnostic_context::m_text_callbacks::m_text_start_span): ...this
+	(diagnostic_context::m_text_callbacks::m_html_start_span): ...and
+	this.
+	(diagnostic_start_span): Update for template change.
+	(diagnostic_show_locus_as_html): New inline function.
+	(default_diagnostic_start_span_fn): Convert to template.
+	* doc/invoke.texi (experimental-html): Add "css" and "javascript"
+	keys.
+	* opts-diagnostic.cc (html_scheme_handler::make_sink): Likewise.
+	* selftest-diagnostic.cc
+	(selftest::test_diagnostic_context::start_span_cb): Update for
+	template changes.
+	* selftest-diagnostic.h
+	(selftest::test_diagnostic_context::start_span_cb): Likewise.
+	* xml-printer.h: New file.
+	* xml.h: New file, based on material in diagnostic-format-html.cc,
+	but using std::string rather than label_text.
+	(xml::element::m_key_insertion_order): New field.
+	(struct xml::raw): New.
+
+2025-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostic-path-output.o.
+	* diagnostic-path-output.cc: New file, taken from material in
+	diagnostic-path.cc.
+	* diagnostic-path.cc: Drop includes of
+	"diagnostic-macro-unwinding.h", "intl.h", "gcc-rich-location.h",
+	"diagnostic-color.h", "diagnostic-event-id.h",
+	"diagnostic-label-effects.h", "pretty-print-markup.h",
+	"selftest.h", "selftest-diagnostic.h",
+	"selftest-diagnostic-path.h", "text-art/theme.h", and
+	"diagnostic-format-text.h".
+	(class path_print_policy): Move to diagnostic-path-output.cc.
+	(class path_label): Likewise.
+	(can_consolidate_events): Likewise.
+	(class per_thread_summary): Likewise.
+	(struct event_range): Likewise.
+	(struct path_summary): Likewise.
+	(per_thread_summary::interprocedural_p): Likewise.
+	(path_summary::path_summary): Likewise.
+	(write_indent): Likewise.
+	(base_indent): Likewise.
+	(per_frame_indent): Likewise.
+	(class thread_event_printer): Likewise.
+	(print_path_summary_as_text): Likewise.
+	(class element_event_desc): Likewise.
+	(diagnostic_text_output_format::print_path): Likewise.
+	(selftest::path_events_have_column_data_p): Likewise.
+	(selftest::test_empty_path): Likewise.
+	(selftest::test_intraprocedural_path): Likewise.
+	(selftest::test_interprocedural_path_1): Likewise.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+	(class selftest::control_flow_test): Likewise.
+	(selftest::test_control_flow_1): Likewise.
+	(selftest::test_control_flow_2): Likewise.
+	(selftest::test_control_flow_3): Likewise.
+	(selftest::assert_cfg_edge_path_streq): Likewise.
+	(ASSERT_CFG_EDGE_PATH_STREQ): Likewise.
+	(selftest::test_control_flow_4): Likewise.
+	(selftest::test_control_flow_5): Likewise.
+	(selftest::test_control_flow_6): Likewise.
+	(selftest::control_flow_tests): Likewise.
+	(selftest::diagnostic_path_cc_tests): Likewise, renaming
+	accordingly.
+	* selftest-run-tests.cc (selftest::run_tests): Update for
+	move of path-printing selftests.
+	* selftest.h (selftest::diagnostic_path_cc_tests): Replace decl
+	with...
+	(selftest::diagnostic_path_output_cc_tests): ...this.
+
+2025-05-27  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/vector.md(*vec_extract<mode>): Fix mnemonic.
+
+2025-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117965
+	* tree-ssa-phiprop.cc (phivn_valid_p): Remove.
+	(propagate_with_phi): Pass in virtual PHI node from BB,
+	rewrite load motion validity check to require the same
+	virtual use along all paths.
+
+2025-05-27  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/119884
+	* avoid-store-forwarding.cc (process_store_forwarding):
+	Use `lowpart_subreg` for the base register initialization
+	and remove redundant stores from the store/load sequence.
+
+2025-05-27  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* sbitmap.cc (bitmap_any_bit_in_range_p):
+	Call and return the result of `bitmap_bit_in_range_p` with the
+	`any_inverted` parameter set to false.
+	(bitmap_bit_in_range_p): New function.
+	(bitmap_all_bits_in_range_p): New function.
+	* sbitmap.h (bitmap_all_bits_in_range_p): New function.
+
+2025-05-27  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* sbitmap.cc (bitmap_bit_in_range_p): Renamed the function.
+	(bitmap_any_bit_in_range_p): New function name.
+	(bitmap_bit_in_range_p_checking): Renamed the function.
+	(bitmap_any_bit_in_range_p_checking): New function name.
+	(test_set_range): Updated function calls to use the new name.
+	(test_bit_in_range): Likewise.
+	* sbitmap.h (bitmap_bit_in_range_p): Renamed the function.
+	(bitmap_any_bit_in_range_p): New function name.
+	* tree-ssa-dse.cc (live_bytes_read):
+	Updated function call to use the new name.
+
+2025-05-27  Co-authored-by: Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (andi+bclr splits): Simplified from
+	prior define_insn_and_splits.
+	* config/riscv/riscv.cc (synthesize_and): Add support for andi+bclr
+	sequences.
+
+2025-05-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add
+	new case for XOR op.
+	(expand_vx_binary_vec_vec_dup): Diito.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op or to no_shift_vx_ops.
+
+2025-05-27  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/vector.md (VF): New mode iterator.
+	(VEC_SET_NONFLOAT): New mode iterator.
+	(VEC_SET_SINGLEFLOAT): New mode iterator.
+	(*vec_set<mode>): Split pattern in two.
+	(*vec_setv2df): Extract special handling for V2DF mode.
+	(*vec_extract<mode>): Split pattern in two.
+
+2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Common Variable Attributes): Fix typo in
+	description of nonstring.
+
+2025-05-27  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.cc (find_multilib_os_dir_by_multilib_dir): New.
+	(set_multilib_dir): Fix multilib_os_dir and multiarch_dir
+	if multilib_os_dir is not set.
+
+2025-05-27  xuli  <xuli1@eswincomputing.com>
+
+	* match.pd: add singned vector SAT_ADD IMM form1 matching.
+
+2025-05-27  xuli  <xuli1@eswincomputing.com>
+
+	* match.pd: Add signed scalar SAT_ADD IMM form1 with IMM=-1 matching.
+	* tree-ssa-math-opts.cc (match_unsigned_saturation_add): Adapt function name.
+	(match_saturation_add_with_assign): Match signed and unsigned SAT_ADD with assign.
+	(math_opts_dom_walker::after_dom_children): Match imm=-1 signed SAT_ADD with NOP_EXPR case.
+
 2025-05-26  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi: Move C++ -fdump-lang to C++ section.

@@ -1,3 +1,39 @@
+2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc [_AIX] (n): Undefine.
+	* testsuite/experimental/names.cc [_AIX] (ptr): Undefine.
+
+2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/format/debug.cc: Disable for targets with 16-bit
+	wchar_t.
+	* testsuite/std/format/functions/format.cc: Use -DUNICODE for
+	targets with 32-bit wchar_t.
+	(test_unicode) [UNICODE]: Only run checks when UNICODE is
+	defined.
+
+2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.in: Regenerate.
+
+2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96710
+	* include/bits/std_abs.h [__SIZEOF_INT128__] (abs(__int128)):
+	Define.
+	[_GLIBCXX_USE_FLOAT128] (abs(__float128)): Enable definition for
+	strict modes.
+	* testsuite/26_numerics/headers/cmath/82644.cc: Use strict_std
+	instead of defining __STRICT_ANSI__.
+	* testsuite/26_numerics/headers/cstdlib/abs128.cc: New test.
+
+2025-05-27  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan: Value initialize the array storing the
+	dynamic extents.
+	* testsuite/23_containers/mdspan/extents/ctor_default.cc: New
+	test.
+
 2025-05-26  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/119152

@@ -1,3 +1,196 @@
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/117025
+	* gcc.dg/countof-compat.c: New test.
+	* gcc.dg/countof-no-compat.c: New test.
+	* gcc.dg/countof-pedantic.c: New test.
+	* gcc.dg/countof-pedantic-errors.c: New test.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/117025
+	* gcc.dg/countof-stdcountof.c: New test.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+	    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117025
+	* gcc.dg/countof-compile.c: New test.
+	* gcc.dg/countof-vla.c: New test.
+	* gcc.dg/countof-vmt.c: New test.
+	* gcc.dg/countof-zero-compile.c: New test.
+	* gcc.dg/countof-zero.c: New test.
+	* gcc.dg/countof.c: New test.
+
+2025-05-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* gfortran.dg/pr120049_a.f90: Update test directives.
+	* gfortran.dg/pr120049_b.f90: Update test directives
+	* gfortran.dg/pr120049_2.f90: New test.
+	Co-Authored-By: Steve Kargl <kargl@gcc.gnu.org>
+
+2025-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101735
+	* gfortran.dg/inquiry_type_ref_7.f90: New test.
+
+2025-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso19.adb: New test.
+	* gnat.dg/sso19_pkg.ads, gnat.dg/sso19_pkg.adb: New helper.
+
+2025-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* gcc.dg/html-output/missing-semicolon.c: Add ":javascript=no" to
+	html output.
+	* gcc.dg/html-output/missing-semicolon.py: Move repeated
+	definitions into lib/htmltest.py.
+	* gcc.dg/plugin/diagnostic_group_plugin.cc: Update for template
+	changes.
+	* gcc.dg/plugin/diagnostic-test-metadata-html.c: Add
+	":javascript=no" to html output.  Add
+	"-fdiagnostics-show-line-numbers".
+	* gcc.dg/plugin/diagnostic-test-metadata-html.py: Move repeated
+	definitions into lib/htmltest.py.  Add checks of annotated source.
+	* gcc.dg/plugin/diagnostic-test-paths-2.c: Add ":javascript=no" to
+	html output.
+	* gcc.dg/plugin/diagnostic-test-paths-2.py: Move repeated
+	definitions into lib/htmltest.py.  Add checks of execution path.
+	* gcc.dg/plugin/diagnostic-test-paths-4.c: Add
+	-fdiagnostics-add-output=experimental-html:javascript=no.  Add
+	invocation ot diagnostic-test-paths-4.py.
+	* gcc.dg/plugin/diagnostic-test-paths-4.py: New test script.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c: Add
+	-fdiagnostics-add-output=experimental-html:javascript=no.  Add
+	invocation of diagnostic-test-show-locus.py.
+	* gcc.dg/plugin/diagnostic-test-show-locus.py: New test script.
+	* lib/htmltest.py: New test support script.
+
+2025-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117965
+	* g++.dg/tree-ssa/pr117965-1.C: New testcase.
+	* g++.dg/tree-ssa/pr117965-2.C: Likewise.
+
+2025-05-27  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/119884
+	* gcc.target/i386/pr119884.c: New test.
+
+2025-05-27  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add asm check
+	for vxor.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+
+2025-05-27  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for vxor.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for vxor run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vxor-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vxor-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vxor-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vxor-run-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vxor-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vxor-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vxor-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vxor-run-1-u8.c: New test.
+
+2025-05-27  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-extract-1.c: New test.
+	* gcc.target/s390/vector/vec-set-1.c: New test.
+
+2025-05-27  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_arith.h: add signed vec SAT_ADD IMM form1.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_data.h: add sat_s_add_imm data.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-run-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm_type_check-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm_type_check-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm_type_check-1-i8.c: New test.
+
+2025-05-27  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/sat/sat_s_add_imm-2.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm-1-i16.c: ...here.
+	* gcc.target/riscv/sat/sat_s_add_imm-3.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm-1-i32.c: ...here.
+	* gcc.target/riscv/sat/sat_s_add_imm-4.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm-1-i64.c: ...here.
+	* gcc.target/riscv/sat/sat_s_add_imm-1.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm-1-i8.c: ...here.
+	* gcc.target/riscv/sat/sat_s_add_imm-run-2.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm-run-1-i16.c: ...here.
+	* gcc.target/riscv/sat/sat_s_add_imm-run-3.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm-run-1-i32.c: ...here.
+	* gcc.target/riscv/sat/sat_s_add_imm-run-4.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm-run-1-i64.c: ...here.
+	* gcc.target/riscv/sat/sat_s_add_imm-run-1.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm-run-1-i8.c: ...here.
+	* gcc.target/riscv/sat/sat_s_add_imm-2-1.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm_type_check-1-i16.c: ...here.
+	* gcc.target/riscv/sat/sat_s_add_imm-3-1.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm_type_check-1-i32.c: ...here.
+	* gcc.target/riscv/sat/sat_s_add_imm-1-1.c: Move to...
+	* gcc.target/riscv/sat/sat_s_add_imm_type_check-1-i8.c: ...here.
+
 2025-05-26  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR middle-end/118694
