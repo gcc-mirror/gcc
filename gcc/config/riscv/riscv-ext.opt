@@ -343,6 +343,8 @@ Mask(SMNPM) Var(riscv_sm_subext)
 
 Mask(SMSTATEEN) Var(riscv_sm_subext)
 
+Mask(SMDBLTRP) Var(riscv_sm_subext)
+
 Mask(SSAIA) Var(riscv_ss_subext)
 
 Mask(SSCOFPMF) Var(riscv_ss_subext)
@@ -356,6 +358,8 @@ Mask(SSSTATEEN) Var(riscv_ss_subext)
 Mask(SSTC) Var(riscv_ss_subext)
 
 Mask(SSSTRICT) Var(riscv_ss_subext)
+
+Mask(SSDBLTRP) Var(riscv_ss_subext)
 
 Mask(SUPM) Var(riscv_su_subext)
 

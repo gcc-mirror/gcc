@@ -1728,6 +1728,19 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ smdbltrp,
+  /* UPPERCAE_NAME */ SMDBLTRP,
+  /* FULL_NAME */ "Double Trap Extensions",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sm,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ ssaia,
   /* UPPERCAE_NAME */ SSAIA,
   /* FULL_NAME */ "Advanced interrupt architecture extension for supervisor-mode",
@@ -1812,6 +1825,19 @@ DEFINE_RISCV_EXT(
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ ssdbltrp,
+  /* UPPERCAE_NAME */ SSDBLTRP,
+  /* FULL_NAME */ "Double Trap Extensions",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
   /* SUPPORTED_VERSIONS */ ({{1, 0}}),
   /* FLAG_GROUP */ ss,
   /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
