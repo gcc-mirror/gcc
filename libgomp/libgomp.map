@@ -609,6 +609,12 @@ OACC_2.6 {
 	acc_get_property_string_h_;
 } OACC_2.5.1;
 
+OACC_2.6.1 {
+  global:
+	acc_memcpy_device;
+	acc_memcpy_device_async;
+} OACC_2.6;
+
 GOACC_2.0 {
   global:
 	GOACC_data_end;

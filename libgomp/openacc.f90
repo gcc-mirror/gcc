@@ -797,6 +797,7 @@ module openacc
   public :: acc_copyout_finalize, acc_delete_finalize
   public :: acc_memcpy_to_device, acc_memcpy_to_device_async
   public :: acc_memcpy_from_device, acc_memcpy_from_device_async
+  public :: acc_memcpy_device, acc_memcpy_device_async
 
   integer, parameter :: openacc_version = 201711
 
@@ -1040,6 +1041,27 @@ module openacc
       use iso_c_binding, only: c_ptr, c_size_t
       import :: acc_handle_kind
       type(*),dimension(*) :: data_host_dest
+      type(c_ptr), value :: data_dev_src
+      integer(c_size_t), value :: bytes
+      integer(acc_handle_kind), value :: async_arg
+    end subroutine
+  end interface
+
+  interface
+    subroutine acc_memcpy_device (data_dev_dest, data_dev_src, bytes) bind(C)
+      use iso_c_binding, only: c_ptr, c_size_t
+      type(c_ptr), value :: data_dev_dest
+      type(c_ptr), value :: data_dev_src
+      integer(c_size_t), value :: bytes
+    end subroutine
+  end interface
+
+  interface
+    subroutine acc_memcpy_device_async (data_dev_dest, data_dev_src,  &
+                                        bytes, async_arg) bind(C)
+      use iso_c_binding, only: c_ptr, c_size_t
+      import :: acc_handle_kind
+      type(c_ptr), value :: data_dev_dest
       type(c_ptr), value :: data_dev_src
       integer(c_size_t), value :: bytes
       integer(acc_handle_kind), value :: async_arg
