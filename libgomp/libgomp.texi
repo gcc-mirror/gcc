@@ -4780,6 +4780,7 @@ acceleration device.
                                 present on device.
 * acc_memcpy_to_device::        Copy host memory to device memory.
 * acc_memcpy_from_device::      Copy device memory to host memory.
+* acc_memcpy_device::           Copy memory within a device.
 * acc_attach::                  Let device pointer point to device-pointer target.
 * acc_detach::                  Let device pointer point to host-pointer target.
 
@@ -5850,6 +5851,44 @@ This function copies device memory specified by device address of
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.32.  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
 3.2.27.
+@end table
+
+
+
+@node acc_memcpy_device
+@section @code{acc_memcpy_device} -- Copy memory within a device.
+@table @asis
+@item @emph{Description}
+This function copies device memory from one memory location to another
+on the current device.  It copies @var{bytes} bytes of data from the device
+address, specified by @var{data_dev_src}, to the device address
+@var{data_dev_dest}.  The @code{_async} version performs the transfer
+asnychronously using the queue associated with @var{async_arg}.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void acc_memcpy_device(d_void* data_dev_dest,}
+@item                   @tab @code{d_void* data_dev_src, size_t bytes);}
+@item @emph{Prototype}: @tab @code{void acc_memcpy_device_async(d_void* data_dev_dest,}
+@item                   @tab @code{d_void* data_dev_src, size_t bytes, int async_arg);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine acc_memcpy_device(data_dev_dest, &}
+@item                   @tab @code{data_dev_src, bytes)}
+@item @emph{Interface}: @tab @code{subroutine acc_memcpy_device_async(data_dev_dest, &}
+@item                   @tab @code{data_dev_src, bytes, async_arg)}
+@item                   @tab @code{type(c_ptr), value :: data_dev_dest}
+@item                   @tab @code{type(c_ptr), value :: data_dev_src}
+@item                   @tab @code{integer(c_size_t), value :: bytes}
+@item                   @tab @code{integer(acc_handle_kind), value :: async_arg}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+3.2.33.  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
+3.2.28.
 @end table
 
 

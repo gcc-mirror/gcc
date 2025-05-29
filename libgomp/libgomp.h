@@ -1378,6 +1378,7 @@ typedef struct acc_dispatch_t
     __typeof (GOMP_OFFLOAD_openacc_async_exec) *exec_func;
     __typeof (GOMP_OFFLOAD_openacc_async_dev2host) *dev2host_func;
     __typeof (GOMP_OFFLOAD_openacc_async_host2dev) *host2dev_func;
+    __typeof (GOMP_OFFLOAD_openacc_async_dev2dev) *dev2dev_func;
   } async;
 
   __typeof (GOMP_OFFLOAD_openacc_get_property) *get_property_func;
@@ -1485,6 +1486,9 @@ extern void gomp_copy_host2dev (struct gomp_device_descr *,
 extern void gomp_copy_dev2host (struct gomp_device_descr *,
 				struct goacc_asyncqueue *, void *, const void *,
 				size_t);
+extern void gomp_copy_dev2dev (struct gomp_device_descr *,
+			       struct goacc_asyncqueue *, void *, const void *,
+			       size_t);
 extern uintptr_t gomp_map_val (struct target_mem_desc *, void **, size_t);
 extern bool gomp_attach_pointer (struct gomp_device_descr *,
 				 struct goacc_asyncqueue *, splay_tree,

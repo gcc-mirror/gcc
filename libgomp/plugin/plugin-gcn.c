@@ -5081,7 +5081,8 @@ GOMP_OFFLOAD_openacc_async_queue_callback (struct goacc_asyncqueue *aq,
   queue_push_callback (aq, fn, data);
 }
 
-/* Queue up an asynchronous data copy from host to DEVICE.  */
+/* Queue up an asynchronous data copy from host to DEVICE.
+   (Also handles dev2host and dev2dev.)  */
 
 bool
 GOMP_OFFLOAD_openacc_async_host2dev (int device, void *dst, const void *src,
@@ -5099,10 +5100,16 @@ bool
 GOMP_OFFLOAD_openacc_async_dev2host (int device, void *dst, const void *src,
 				     size_t n, struct goacc_asyncqueue *aq)
 {
-  struct agent_info *agent = get_agent_info (device);
-  assert (agent == aq->agent);
-  queue_push_copy (aq, dst, src, n);
-  return true;
+  return GOMP_OFFLOAD_openacc_async_host2dev (device, dst, src, n, aq);
+}
+
+/* Queue up an asynchronous data copy from DEVICE to DEVICE.  */
+
+bool
+GOMP_OFFLOAD_openacc_async_dev2dev (int device, void *dst, const void *src,
+				    size_t n, struct goacc_asyncqueue *aq)
+{
+  return GOMP_OFFLOAD_openacc_async_host2dev (device, dst, src, n, aq);
 }
 
 union goacc_property_value

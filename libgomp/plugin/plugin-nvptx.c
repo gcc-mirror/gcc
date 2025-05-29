@@ -2060,6 +2060,34 @@ GOMP_OFFLOAD_openacc_async_queue_callback (struct goacc_asyncqueue *aq,
 }
 
 static bool
+cuda_memcpy_dev_sanity_check (const void *d1, const void *d2, size_t s)
+{
+  CUdeviceptr pb1, pb2;
+  size_t ps1, ps2;
+  if (!s)
+    return true;
+  if (!d1 || !d2)
+    {
+      GOMP_PLUGIN_error ("invalid device address");
+      return false;
+    }
+  CUDA_CALL (cuMemGetAddressRange, &pb1, &ps1, (CUdeviceptr) d1);
+  CUDA_CALL (cuMemGetAddressRange, &pb2, &ps2, (CUdeviceptr) d2);
+  if (!pb1 || !pb2)
+    {
+      GOMP_PLUGIN_error ("invalid device address");
+      return false;
+    }
+  if ((void *)(d1 + s) > (void *)(pb1 + ps1)
+      || (void *)(d2 + s) > (void *)(pb2 + ps2))
+    {
+      GOMP_PLUGIN_error ("invalid size");
+      return false;
+    }
+  return true;
+}
+
+static bool
 cuda_memcpy_sanity_check (const void *h, const void *d, size_t s)
 {
   CUdeviceptr pb;
@@ -2118,6 +2146,9 @@ GOMP_OFFLOAD_dev2host (int ord, void *dst, const void *src, size_t n)
 bool
 GOMP_OFFLOAD_dev2dev (int ord, void *dst, const void *src, size_t n)
 {
+  if (!nvptx_attach_host_thread_to_device (ord)
+      || !cuda_memcpy_dev_sanity_check (dst, src, n))
+    return false;
   CUDA_CALL (cuMemcpyDtoDAsync, (CUdeviceptr) dst, (CUdeviceptr) src, n, NULL);
   return true;
 }
@@ -2326,6 +2357,18 @@ GOMP_OFFLOAD_openacc_async_dev2host (int ord, void *dst, const void *src,
       || !cuda_memcpy_sanity_check (dst, src, n))
     return false;
   CUDA_CALL (cuMemcpyDtoHAsync, dst, (CUdeviceptr) src, n, aq->cuda_stream);
+  return true;
+}
+
+bool
+GOMP_OFFLOAD_openacc_async_dev2dev (int ord, void *dst, const void *src,
+				    size_t n, struct goacc_asyncqueue *aq)
+{
+  if (!nvptx_attach_host_thread_to_device (ord)
+      || !cuda_memcpy_dev_sanity_check (dst, src, n))
+    return false;
+  CUDA_CALL (cuMemcpyDtoDAsync, (CUdeviceptr) dst, (CUdeviceptr) src, n,
+	     aq->cuda_stream);
   return true;
 }
 

@@ -461,6 +461,19 @@ gomp_copy_dev2host (struct gomp_device_descr *devicep,
     gomp_device_copy (devicep, devicep->dev2host_func, "host", h, "dev", d, sz);
 }
 
+attribute_hidden void
+gomp_copy_dev2dev (struct gomp_device_descr *devicep,
+		   struct goacc_asyncqueue *aq,
+		   void *dst, const void *src, size_t sz)
+{
+  if (__builtin_expect (aq != NULL, 0))
+    goacc_device_copy_async (devicep, devicep->openacc.async.dev2dev_func,
+			     "dev", dst, "dev", src, NULL, sz, aq);
+  else
+    gomp_device_copy (devicep, devicep->dev2dev_func, "dev", dst,
+		      "dev", src, sz);
+}
+
 static void
 gomp_free_device_memory (struct gomp_device_descr *devicep, void *devptr)
 {
@@ -6312,6 +6325,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
 	  || !DLSYM_OPT (openacc.async.exec, openacc_async_exec)
 	  || !DLSYM_OPT (openacc.async.dev2host, openacc_async_dev2host)
 	  || !DLSYM_OPT (openacc.async.host2dev, openacc_async_host2dev)
+	  || !DLSYM_OPT (openacc.async.dev2dev, openacc_async_dev2dev)
 	  || !DLSYM_OPT (openacc.get_property, openacc_get_property))
 	{
 	  /* Require all the OpenACC handlers if we have
