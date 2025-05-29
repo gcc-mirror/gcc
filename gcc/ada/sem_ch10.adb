@@ -3299,7 +3299,7 @@ package body Sem_Ch10 is
             --  the renamed unit, and the renaming declaration itself has not
             --  been analyzed.
 
-            Analyze (Parent (Parent (Entity (Pref))));
+            Semantics (Parent (Parent (Entity (Pref))));
             pragma Assert (Renamed_Entity (Entity (Pref)) = Par_Name);
             Par_Name := Entity (Pref);
          end if;
