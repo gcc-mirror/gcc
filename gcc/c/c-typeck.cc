@@ -776,7 +776,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	     construction, return it.  */
 
 	  for (struct composite_cache *c = cache; c != NULL; c = c->next)
-	    if (c->t1 == t1 && c->t2 == t2)
+	    if ((c->t1 == t1 && c->t2 == t2) || (c->t1 == t2 && c->t2 == t1))
 	       return c->composite;
 
 	  /* Otherwise, create a new type node and link it into the cache.  */
