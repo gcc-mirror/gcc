@@ -126,6 +126,7 @@ private:
   bool inline_p = false;
   bool valid_coroutine = false;
 
+  void analyze_fn_parms ();
   void wrap_original_function_body ();
   bool build_ramp_function ();
 };
