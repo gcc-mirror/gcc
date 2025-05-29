@@ -1277,8 +1277,14 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind,
 
   if (TREE_CODE (o_type) != RECORD_TYPE)
     {
-      error_at (loc, "awaitable type %qT is not a structure",
-		o_type);
+      if (suspend_kind == FINAL_SUSPEND_POINT)
+	error_at (loc, "%qs awaitable type %qT is not a structure",
+		  "final_suspend()", o_type);
+      else if (suspend_kind == INITIAL_SUSPEND_POINT)
+	error_at (loc, "%qs awaitable type %qT is not a structure",
+		  "initial_suspend()", o_type);
+      else
+	error_at (loc, "awaitable type %qT is not a structure", o_type);
       return error_mark_node;
     }
 
@@ -4356,7 +4362,6 @@ cp_coroutine_transform::wrap_original_function_body ()
   /* Wrap the function body in a try {} catch (...) {} block, if exceptions
      are enabled.  */
   tree var_list = NULL_TREE;
-  tree initial_await = build_init_or_final_await (fn_start, false);
 
   /* [stmt.return.coroutine] / 3
      If p.return_void() is a valid expression, flowing off the end of a
@@ -4550,7 +4555,8 @@ cp_coroutine_transform::wrap_original_function_body ()
   zero_resume = build2_loc (loc, MODIFY_EXPR, act_des_fn_ptr_type,
 			    resume_fn_ptr, zero_resume);
   finish_expr_stmt (zero_resume);
-  finish_expr_stmt (build_init_or_final_await (fn_start, true));
+  finish_expr_stmt (final_await);
+
   BIND_EXPR_BODY (update_body) = pop_stmt_list (BIND_EXPR_BODY (update_body));
   BIND_EXPR_VARS (update_body) = nreverse (var_list);
   BLOCK_VARS (top_block) = BIND_EXPR_VARS (update_body);
@@ -5207,9 +5213,10 @@ cp_coroutine_transform::cp_coroutine_transform (tree _orig_fn, bool _inl)
       }
 
     /* We don't have the locus of the opening brace - it's filled in later (and
-       there doesn't really seem to be any easy way to get at it).
-       The closing brace is assumed to be input_location.  */
+       there doesn't really seem to be any easy way to get at it).  */
     fn_start = DECL_SOURCE_LOCATION (orig_fn_decl);
+    /* The closing brace is assumed to be input_location.  */
+    fn_end = input_location;
 
     /* Build types we need.  */
     tree fr_name = get_fn_local_identifier (orig_fn_decl, "Frame");
@@ -5287,6 +5294,16 @@ cp_coroutine_transform::apply_transforms ()
   destroyer
     = coro_build_actor_or_destroy_function (orig_fn_decl, act_des_fn_type,
 					    frame_ptr_type, false);
+
+  /* Avoid repeating diagnostics about promise or awaiter fails.  */
+  if (!seen_error ())
+    {
+      iloc_sentinel stable_input_loc (fn_start);
+      initial_await = build_init_or_final_await (fn_start, false);
+      input_location = fn_end;
+      if (initial_await && initial_await != error_mark_node)
+	final_await = build_init_or_final_await (fn_end, true);
+    }
 
   /* Transform the function body as per [dcl.fct.def.coroutine] / 5.  */
   wrap_original_function_body ();
