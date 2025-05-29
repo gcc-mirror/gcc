@@ -897,10 +897,14 @@ html_builder::make_metadata_element (label_text label,
   xml::printer xp (*item.get ());
   xp.add_text ("[");
   {
-    xp.push_tag ("a", true);
-    xp.set_attr ("href", url.get ());
+    if (url.get ())
+      {
+	xp.push_tag ("a", true);
+	xp.set_attr ("href", url.get ());
+      }
     xp.add_text (label.get ());
-    xp.pop_tag ();
+    if (url.get ())
+      xp.pop_tag ();
   }
   xp.add_text ("]");
   return item;
