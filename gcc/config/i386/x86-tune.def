@@ -572,6 +572,11 @@ DEF_TUNE (X86_TUNE_V2DF_REDUCTION_PREFER_HADDPD,
 DEF_TUNE (X86_TUNE_SSE_MOVCC_USE_BLENDV,
 	  "sse_movcc_use_blendv", ~m_CORE_ATOM)
 
+/* X86_TUNE_V4SI_REDUCTION_PREFER_SHUFD: Prefer pshuf to reduce V16QI,
+   V8HI, V8HI, V4SI, V4FI, V2DI modes when lshr are costlier. */
+DEF_TUNE (X86_TUNE_SSE_REDUCTION_PREFER_PSHUF,
+   "sse_reduction_prefer_pshuf", m_ZNVER4 | m_ZNVER5)
+
 /*****************************************************************************/
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */
 /*****************************************************************************/
