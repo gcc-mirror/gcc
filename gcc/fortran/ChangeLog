@@ -6,7 +6,7 @@
 
 2025-05-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR fortran/119586
+	PR fortran/119856
 	* io.cc: Set missing comma error checks to STD_STD_LEGACY.
 
 2025-05-28  Yuao Ma  <c8ef@outlook.com>
