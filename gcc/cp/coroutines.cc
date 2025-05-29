@@ -4027,12 +4027,14 @@ rewrite_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 }
 
 /* Build up a set of info that determines how each param copy will be
-   handled.  */
+   handled.  We store this in a hash map so that we can access it from
+   a tree walk callback that re-writes the original parameters to their
+   copies.  */
 
-static void
-analyze_fn_parms (tree orig, hash_map<tree, param_info> *param_uses)
+void
+cp_coroutine_transform::analyze_fn_parms ()
 {
-  if (!DECL_ARGUMENTS (orig))
+  if (!DECL_ARGUMENTS (orig_fn_decl))
     return;
 
   /* Build a hash map with an entry for each param.
@@ -4042,19 +4044,19 @@ analyze_fn_parms (tree orig, hash_map<tree, param_info> *param_uses)
      Then a tree list of the uses.
      The second two entries start out empty - and only get populated
      when we see uses.  */
-  bool lambda_p = LAMBDA_FUNCTION_P (orig);
+  bool lambda_p = LAMBDA_FUNCTION_P (orig_fn_decl);
 
   /* Count the param copies from 1 as per the std.  */
   unsigned parm_num = 1;
-  for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
+  for (tree arg = DECL_ARGUMENTS (orig_fn_decl); arg != NULL;
        ++parm_num, arg = DECL_CHAIN (arg))
     {
       bool existed;
-      param_info &parm = param_uses->get_or_insert (arg, &existed);
+      param_info &parm = param_uses.get_or_insert (arg, &existed);
       gcc_checking_assert (!existed);
       parm.body_uses = NULL;
       tree actual_type = TREE_TYPE (arg);
-      actual_type = complete_type_or_else (actual_type, orig);
+      actual_type = complete_type_or_else (actual_type, orig_fn_decl);
       if (actual_type == NULL_TREE)
 	actual_type = error_mark_node;
       parm.orig_type = actual_type;
@@ -5249,7 +5251,7 @@ cp_coroutine_transform::apply_transforms ()
 
   /* Collect information on the original function params and their use in the
      function body.  */
-  analyze_fn_parms (orig_fn_decl, &param_uses);
+  analyze_fn_parms ();
 
   /* Declare the actor and destroyer functions, the following code needs to
      see these.  */
