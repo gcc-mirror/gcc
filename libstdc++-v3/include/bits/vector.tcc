@@ -466,7 +466,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       const size_type __len = _M_check_len(1u, "vector::_M_realloc_insert");
       if (__len <= 0)
-	__builtin_unreachable ();
+	__builtin_unreachable();
       pointer __old_start = this->_M_impl._M_start;
       pointer __old_finish = this->_M_impl._M_finish;
       const size_type __elems_before = __position - begin();
@@ -573,7 +573,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       const size_type __len = _M_check_len(1u, "vector::_M_realloc_append");
       if (__len <= 0)
-	__builtin_unreachable ();
+	__builtin_unreachable();
       pointer __old_start = this->_M_impl._M_start;
       pointer __old_finish = this->_M_impl._M_finish;
       const size_type __elems = end() - begin();

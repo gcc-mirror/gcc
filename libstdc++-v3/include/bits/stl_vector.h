@@ -1106,7 +1106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	ptrdiff_t __dif = this->_M_impl._M_finish - this->_M_impl._M_start;
 	if (__dif < 0)
-	   __builtin_unreachable ();
+	   __builtin_unreachable();
 	return size_type(__dif);
       }
 
@@ -1198,7 +1198,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	ptrdiff_t __dif = this->_M_impl._M_end_of_storage
 			  - this->_M_impl._M_start;
 	if (__dif < 0)
-	   __builtin_unreachable ();
+	   __builtin_unreachable();
 	return size_type(__dif);
       }
 

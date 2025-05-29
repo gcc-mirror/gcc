@@ -1164,7 +1164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	size_type __sz = _M_string_length;
 	if (__sz > max_size ())
-	  __builtin_unreachable ();
+	  __builtin_unreachable();
 	return __sz;
       }
 
@@ -1279,7 +1279,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	size_t __sz = _M_is_local() ? size_type(_S_local_capacity)
 				     : _M_allocated_capacity;
 	if (__sz < _S_local_capacity || __sz > max_size ())
-	  __builtin_unreachable ();
+	  __builtin_unreachable();
 	return __sz;
       }
 
