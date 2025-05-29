@@ -10979,6 +10979,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	    *jump_target = *target;
 	    return true;
 	  }
+	if (DECL_ARTIFICIAL (*target))
+	  /* The user didn't write this goto, this isn't the problem.  */
+	  return true;
 	if (flags & tf_error)
 	  constexpr_error (loc, fundef_p, "%<goto%> is not a constant "
 			   "expression");

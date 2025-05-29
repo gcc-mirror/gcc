@@ -15431,11 +15431,12 @@ cp_parser_jump_statement (cp_parser* parser, tree &std_attrs)
 
     case RID_GOTO:
       if (parser->in_function_body
-	  && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+	  && maybe_constexpr_fn (current_function_decl)
 	  && cxx_dialect < cxx23)
 	{
-	  error ("%<goto%> in %<constexpr%> function only available with "
-		 "%<-std=c++23%> or %<-std=gnu++23%>");
+	  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+	    error ("%<goto%> in %<constexpr%> function only available with "
+		   "%<-std=c++23%> or %<-std=gnu++23%>");
 	  cp_function_chain->invalid_constexpr = true;
 	}
 

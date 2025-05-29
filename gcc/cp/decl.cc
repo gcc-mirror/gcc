@@ -6198,22 +6198,28 @@ start_decl (const cp_declarator *declarator,
     }
 
   if (current_function_decl && VAR_P (decl)
-      && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+      && maybe_constexpr_fn (current_function_decl)
       && cxx_dialect < cxx23)
     {
       bool ok = false;
       if (CP_DECL_THREAD_LOCAL_P (decl) && !DECL_REALLY_EXTERN (decl))
-	error_at (DECL_SOURCE_LOCATION (decl),
-		  "%qD defined %<thread_local%> in %qs function only "
-		  "available with %<-std=c++23%> or %<-std=gnu++23%>", decl,
-		  DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
-		  ? "consteval" : "constexpr");
+	{
+	  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "%qD defined %<thread_local%> in %qs function only "
+		      "available with %<-std=c++23%> or %<-std=gnu++23%>", decl,
+		      DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
+		      ? "consteval" : "constexpr");
+	}
       else if (TREE_STATIC (decl))
-	error_at (DECL_SOURCE_LOCATION (decl),
-		  "%qD defined %<static%> in %qs function only available "
-		  "with %<-std=c++23%> or %<-std=gnu++23%>", decl,
-		  DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
-		  ? "consteval" : "constexpr");
+	{
+	  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "%qD defined %<static%> in %qs function only available "
+		      "with %<-std=c++23%> or %<-std=gnu++23%>", decl,
+		      DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
+		      ? "consteval" : "constexpr");
+	}
       else
 	ok = true;
       if (!ok)
