@@ -2027,8 +2027,10 @@ expand_one_await_expression (tree *expr, tree *await_expr, void *d)
   tree awaiter_calls = TREE_OPERAND (saved_co_await, 3);
 
   tree source = TREE_OPERAND (saved_co_await, 4);
-  bool is_final = (source
-		   && TREE_INT_CST_LOW (source) == (int) FINAL_SUSPEND_POINT);
+  bool is_final
+    = (source && TREE_INT_CST_LOW (source) == (int) FINAL_SUSPEND_POINT);
+  bool is_initial
+    = (source && TREE_INT_CST_LOW (source) == (int) INITIAL_SUSPEND_POINT);
 
   /* Build labels for the destinations of the control flow when we are resuming
      or destroying.  */
@@ -2155,6 +2157,13 @@ expand_one_await_expression (tree *expr, tree *await_expr, void *d)
 
   /* Resume point.  */
   add_stmt (build_stmt (loc, LABEL_EXPR, resume_label));
+
+  if (is_initial && data->i_a_r_c)
+    {
+      r = cp_build_modify_expr (loc, data->i_a_r_c, NOP_EXPR, boolean_true_node,
+				tf_warning_or_error);
+      finish_expr_stmt (r);
+    }
 
   /* This will produce the value (if one is provided) from the co_await
      expression.  */
@@ -2654,8 +2663,12 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   /* We've now rewritten the tree and added the initial and final
      co_awaits.  Now pass over the tree and expand the co_awaits.  */
+  tree i_a_r_c = NULL_TREE;
+  if (flag_exceptions)
+    i_a_r_c = coro_build_frame_access_expr (actor_frame, coro_frame_i_a_r_c_id,
+					   false, tf_warning_or_error);
 
-  coro_aw_data data = {actor, actor_fp, resume_idx_var, NULL_TREE,
+  coro_aw_data data = {actor, actor_fp, resume_idx_var, i_a_r_c,
 		       ash, del_promise_label, ret_label,
 		       continue_label, restart_dispatch_label, continuation, 2};
   cp_walk_tree (&actor_body, await_statement_expander, &data, NULL);
@@ -4435,30 +4448,6 @@ cp_coroutine_transform::wrap_original_function_body ()
       tree tcb = build_stmt (loc, TRY_BLOCK, NULL_TREE, NULL_TREE);
       add_stmt (tcb);
       TRY_STMTS (tcb) = push_stmt_list ();
-      if (initial_await != error_mark_node)
-	{
-	  /* Build a compound expression that sets the
-	     initial-await-resume-called variable true and then calls the
-	     initial suspend expression await resume.
-	     In the case that the user decides to make the initial await
-	     await_resume() return a value, we need to discard it and, it is
-	     a reference type, look past the indirection.  */
-	  if (INDIRECT_REF_P (initial_await))
-	    initial_await = TREE_OPERAND (initial_await, 0);
-	  /* In the case that the initial_await returns a target expression
-	     we might need to look through that to update the await expr.  */
-	  tree iaw = initial_await;
-	  if (TREE_CODE (iaw) == TARGET_EXPR)
-	    iaw = TARGET_EXPR_INITIAL (iaw);
-	  gcc_checking_assert (TREE_CODE (iaw) == CO_AWAIT_EXPR);
-	  tree vec = TREE_OPERAND (iaw, 3);
-	  tree aw_r = TREE_VEC_ELT (vec, 2);
-	  aw_r = convert_to_void (aw_r, ICV_STATEMENT, tf_warning_or_error);
-	  tree update = build2 (MODIFY_EXPR, boolean_type_node, i_a_r_c,
-				boolean_true_node);
-	  aw_r = cp_build_compound_expr (update, aw_r, tf_warning_or_error);
-	  TREE_VEC_ELT (vec, 2) = aw_r;
-	}
       /* Add the initial await to the start of the user-authored function.  */
       finish_expr_stmt (initial_await);
       /* Append the original function body.  */
