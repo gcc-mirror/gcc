@@ -2510,25 +2510,13 @@
 	(match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
       (const_int 1)))))]
   "TARGET_VECTOR"
-{
-  /* First emit a widening addition.  */
-  rtx tmp1 = gen_reg_rtx (<MODE>mode);
-  rtx ops1[] = {tmp1, operands[1], operands[2]};
-  insn_code icode = code_for_pred_dual_widen (PLUS, SIGN_EXTEND, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops1);
-
-  /* Then add 1.  */
-  rtx tmp2 = gen_reg_rtx (<MODE>mode);
-  rtx ops2[] = {tmp2, tmp1, const1_rtx};
-  icode = code_for_pred_scalar (PLUS, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops2);
-
-  /* Finally, a narrowing shift.  */
-  rtx ops3[] = {operands[0], tmp2, const1_rtx};
-  icode = code_for_pred_narrow_scalar (ASHIFTRT, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops3);
-  DONE;
-})
+  {
+    insn_code icode = code_for_pred (UNSPEC_VAADD, <V_DOUBLE_TRUNC>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RNU,
+				   operands);
+    DONE;
+  }
+)
 
 ;; csrwi vxrm, 2
 ;; vaaddu.vv vd, vs2, vs1
