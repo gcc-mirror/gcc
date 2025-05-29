@@ -5,4 +5,4 @@
 
 /* { dg-final { scan-assembler-times {csrwi\s*vxrm,\s*2} 6 } } */
 /* { dg-final { scan-assembler-times {vaaddu\.vv} 6 } } */
-/* { dg-final { scan-assembler-times {vaadd\.vv} 3 } } */
+/* { dg-final { scan-assembler-times {vaadd\.vv} 6 } } */
