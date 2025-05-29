@@ -759,7 +759,13 @@ proc check_effective_target_keeps_null_pointer_checks { } {
 # this allows parallelism of 16 and higher of parallel gcc-auto-profile
 proc profopt-perf-wrapper { } {
     global srcdir
-    return "$srcdir/../config/i386/gcc-auto-profile --all -m8 "
+    if { [check_effective_target_x86] } {
+    	return "$srcdir/../config/i386/gcc-auto-profile -m8"
+    }
+    if { [istarget aarch64*-*-*] } {
+    	return "$srcdir/../config/aarch64/gcc-auto-profile -m8"
+    }
+    return ""
 }
 
 # Return true if profiling is supported on the target.
@@ -778,8 +784,7 @@ proc check_profiling_available { test_what } {
     }
 
     if { $test_what == "-fauto-profile" } {
-	if { !([check_effective_target_x86] && [istarget *-*-linux*]) } {
-	    verbose "autofdo only supported on linux"
+	if { !([check_effective_target_autofdo]) } {
 	    return 0
 	}
 	# not cross compiling?
@@ -787,13 +792,14 @@ proc check_profiling_available { test_what } {
 	    verbose "autofdo not supported for non native builds"
 	    return 0
 	}
-	set event [profopt-perf-wrapper]
-	if {$event == "" } {
+	set wrapper [profopt-perf-wrapper]
+	if {$wrapper == "" } {
 	    verbose "autofdo not supported"
 	    return 0
 	}
+	puts $wrapper
 	global srcdir
-	set status [remote_exec host "$srcdir/../config/i386/gcc-auto-profile" "-m8 true -v >/dev/null"]
+	set status [remote_exec host "$wrapper true -v >/dev/null"]
 	if { [lindex $status 0] != 0 } {
 	    verbose "autofdo not supported because perf does not work"
 	    return 0
@@ -1422,6 +1428,23 @@ proc check_effective_target_fpic { } {
     }
     return 0
 }
+
+# Check if target supports autofdo.
+
+proc check_effective_target_autofdo { } {
+    if { !([istarget *-*-linux*]) } {
+	verbose "autofdo only supported on linux"
+	return 0
+    }
+    if { [check_effective_target_x86] } {
+	return 1
+    }
+    if { [istarget aarch64*-*-*] } {
+	return 1
+    }
+    return 0
+}
+
 
 # On AArch64, if -fpic is not supported, then we will fall back to -fPIC
 # silently.  So, we can't rely on above "check_effective_target_fpic" as it
