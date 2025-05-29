@@ -542,6 +542,7 @@ ipa_dump_jump_function (FILE *f, ipa_jump_func *jump_func,
 
   if (jump_func->m_vr)
     {
+      fprintf (f, "         ");
       jump_func->m_vr->dump (f);
       fprintf (f, "\n");
     }
