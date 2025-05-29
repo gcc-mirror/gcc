@@ -101,8 +101,6 @@ TopLevel::go (AST::Crate &crate)
 void
 TopLevel::visit (AST::Module &module)
 {
-  insert_or_error_out (module.get_name (), module, Namespace::Types);
-
   // Parse the module's items if they haven't been expanded and the file
   // should be parsed (i.e isn't hidden behind an untrue or impossible cfg
   // directive
