@@ -1,3 +1,8 @@
+2025-05-28  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* Makefile.def: Fix typo in cpu_type
+	* Makefile.tpl: Add cpu_type
+
 2025-05-26  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* Makefile.def: AUTO_PROFILE based on cpu_type.

@@ -1,3 +1,68 @@
+2025-05-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119586
+	* gfortran.dg/comma_format_extension_1.f: Update dg-options to
+	"-std=legacy".
+	* gfortran.dg/comma_format_extension_3.f: Likewise.
+	* gfortran.dg/continuation_13.f90: Likewise.
+
+2025-05-28  Yuao Ma  <c8ef@outlook.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113152
+	* gfortran.dg/dec_math_3.f90: Test invalid input.
+	* gfortran.dg/dec_math_5.f90: Test valid output.
+	* gfortran.dg/dec_math_6.f90: New test.
+
+2025-05-28  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/120436
+	* gcc.target/riscv/rvv/base/pr120436.c: New test.
+
+2025-05-28  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/namespace-8_a.C: New test.
+	* g++.dg/modules/namespace-8_b.C: New test.
+	* g++.dg/modules/namespace-9_a.C: New test.
+	* g++.dg/modules/namespace-9_b.C: New test.
+	* g++.dg/modules/namespace-10_a.C: New test.
+	* g++.dg/modules/namespace-10_b.C: New test.
+	* g++.dg/modules/namespace-10_c.C: New test.
+	* g++.dg/modules/namespace-11_a.C: New test.
+	* g++.dg/modules/namespace-11_b.C: New test.
+	* g++.dg/modules/namespace-11_c.C: New test.
+
+2025-05-28  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/avg.h: New test.
+	* gcc.target/riscv/rvv/autovec/avg_data.h: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i16-from-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i16-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i32-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i8-from-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i8-from-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-1-i8-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-run-1-i16-from-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-run-1-i16-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-run-1-i32-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-run-1-i8-from-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-run-1-i8-from-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_floor-run-1-i8-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_run.h: New test.
+
+2025-05-28  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/avg-1.c: Update asm check
+	to vaadd.
+	* gcc.target/riscv/rvv/autovec/vls/avg-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/avg-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/vec-avg-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/vec-avg-rv64gcv.c: Ditto.
+
+2025-05-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/vect/bb-slp-pr119181.c: New test.
+
 2025-05-27  Alejandro Colomar  <alx@kernel.org>
 
 	PR c/117025

@@ -1,3 +1,16 @@
+2025-05-28  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (module_state::write_namespaces): Write
+	using-directives.
+	(module_state::read_namespaces): And read them.
+	* name-lookup.cc (add_using_namespace): Add overload.  Build a
+	USING_DECL for modules.
+	(name_lookup::search_usings, name_lookup::queue_usings)
+	(using_directives_contain_std_p): Strip the USING_DECL.
+	* name-lookup.h: Declare it.
+	* parser.cc (cp_parser_import_declaration): Set MK_EXPORTING
+	for export import.
+
 2025-05-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (cp_coroutine_transform::build_ramp_function):

@@ -1,3 +1,35 @@
+2025-05-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/113152
+	* simplify.cc (gfc_simplify_cospi, gfc_simplify_sinpi): Avoid using
+	mpfr_fmod_ui in the MPFR < 4.2.0 version.
+
+2025-05-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119586
+	* io.cc: Set missing comma error checks to STD_STD_LEGACY.
+
+2025-05-28  Yuao Ma  <c8ef@outlook.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113152
+	* gfortran.h (enum gfc_isym_id): Add new enum.
+	* intrinsic.cc (add_functions): Register new intrinsics. Changing the call
+	from gfc_resolve_trigd{,2} to gfc_resolve_trig{,2}.
+	* intrinsic.h (gfc_simplify_acospi, gfc_simplify_asinpi,
+	gfc_simplify_asinpi, gfc_simplify_atanpi, gfc_simplify_atan2pi,
+	gfc_simplify_cospi, gfc_simplify_sinpi, gfc_simplify_tanpi): New.
+	(gfc_resolve_trig): Rename from gfc_resolve_trigd.
+	(gfc_resolve_trig2): Rename from gfc_resolve_trigd2.
+	* iresolve.cc (gfc_resolve_trig): Rename from gfc_resolve_trigd.
+	(gfc_resolve_trig2): Rename from gfc_resolve_trigd2.
+	* mathbuiltins.def: Add 7 new math builtins and re-align.
+	* simplify.cc (gfc_simplify_acos, gfc_simplify_asin,
+	gfc_simplify_acosd, gfc_simplify_asind): Revise error message.
+	(gfc_simplify_acospi, gfc_simplify_asinpi,
+	gfc_simplify_asinpi, gfc_simplify_atanpi, gfc_simplify_atan2pi,
+	gfc_simplify_cospi, gfc_simplify_sinpi, gfc_simplify_tanpi): New.
+
 2025-05-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/101735

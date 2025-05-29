@@ -1,3 +1,71 @@
+2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/119298
+	* config/i386/x86-tune-costs.h (struct processor_costs): Set addss cost
+	back to 2.
+
+2025-05-28  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* tree-vect-stmts.cc (vectorizable_load): Remove non-SLP paths.
+
+2025-05-28  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/120436
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct vset_def):
+	Avoid division by zero.
+	(struct vget_def): Ditto.
+	* config/riscv/riscv-vector-builtins.h (struct function_group_info):
+	Use required_extensions_specified instead of duplicating code.
+
+2025-05-28  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (avg<v_double_trunc>3_floor): Add insn
+	expand to leverage vaadd directly.
+
+2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.cc (cgraph_edge::maybe_hot_p): For auto-fdo turn 0
+	to non-zero.
+	* ipa-cp.cc (cs_interesting_for_ipcp_p): Do not trust
+	auto-fdo 0.
+	* profile-count.cc (profile_count::adjust_for_ipa_scaling): Likewise.
+	(profile_count::from_gcov_type): Fix formating.
+
+2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.cc (rebuild_frequencies): look harder for presence
+	of profile feedback.
+
+2025-05-28  Yuta Mukai  <mukai.yuta@fujitsu.com>
+
+	* config/aarch64/aarch64-cores.def (fujitsu-monaka): Update ISA
+	features.
+
+2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.cc (set_even_probabilities): Set quality to guessed.
+
+2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (update_count_by_afdo_count): New function.
+	(afdo_set_bb_count): Add debug output; only set count if it is
+	non-zero.
+	(afdo_find_equiv_class): Add debug output.
+	(afdo_calculate_branch_prob): Fix formating.
+	(afdo_annotate_cfg): Add debug output; do not erase static
+	profile if autofdo profile is all 0.
+
+2025-05-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* doc/extend.texi (C Extensions): Add missing menu items.
+
+2025-05-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/119181
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_accesses):
+	Split datarefs when there's a gap bigger than
+	MAX_BITSIZE_MODE_ANY_MODE.
+
 2025-05-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120400
