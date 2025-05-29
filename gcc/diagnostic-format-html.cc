@@ -472,7 +472,7 @@ diagnostic_html_format_buffer::flush ()
 /* class html_builder.  */
 
 /* Style information for writing out HTML paths.
-   Colors taken from https://www.patternfly.org/v3/styles/color-palette/ */
+   Colors taken from https://pf3.patternfly.org/v3/styles/color-palette/ */
 
 static const char * const HTML_STYLE
   = ("  <style>\n"
