@@ -5522,6 +5522,10 @@ decl_template_parm_check (const_tree t, const char *f, int l, const char *fn)
 #define DECL_RAMP_FN(NODE) \
   (coro_get_ramp_function (NODE))
 
+/* For a FUNCTION_DECL this is true if it is a coroutine ramp.  */
+#define DECL_RAMP_P(NODE) \
+  DECL_COROUTINE_P (NODE) && !DECL_RAMP_FN (NODE)
+
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
    as an expr in operand 1, and integer_zero_node or clauses in operand 0.  */
 #define OMP_ATOMIC_DEPENDENT_P(NODE) \
