@@ -6037,8 +6037,8 @@ bool check_c_ptr_2 (gfc_expr *c_ptr_1, gfc_expr *c_ptr_2)
 check_2_error:
 
   gfc_error ("Argument C_PTR_2 at %L to C_ASSOCIATED shall have the "
-	     "same type as C_PTR_1: %s instead of %s", &c_ptr_2->where,
-	     gfc_typename (&c_ptr_1->ts), gfc_typename (&c_ptr_2->ts));
+	     "same type as C_PTR_1, found %s instead of %s", &c_ptr_2->where,
+	     gfc_typename (&c_ptr_2->ts), gfc_typename (&c_ptr_1->ts));
 
   return false;
  }
