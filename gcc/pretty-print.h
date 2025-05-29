@@ -196,7 +196,7 @@ class format_postprocessor
 {
  public:
   virtual ~format_postprocessor () {}
-  virtual format_postprocessor *clone() const = 0;
+  virtual std::unique_ptr<format_postprocessor> clone() const = 0;
   virtual void handle (pretty_printer *) = 0;
 };
 
@@ -229,7 +229,7 @@ inline int & pp_indentation (pretty_printer *pp);
 inline bool & pp_translate_identifiers (pretty_printer *pp);
 inline bool & pp_show_color (pretty_printer *pp);
 inline printer_fn &pp_format_decoder (pretty_printer *pp);
-inline format_postprocessor *& pp_format_postprocessor (pretty_printer *pp);
+inline format_postprocessor *pp_format_postprocessor (pretty_printer *pp);
 inline bool & pp_show_highlight_colors (pretty_printer *pp);
 
 class urlifier;
@@ -256,7 +256,7 @@ public:
   friend bool & pp_translate_identifiers (pretty_printer *pp);
   friend bool & pp_show_color (pretty_printer *pp);
   friend printer_fn &pp_format_decoder (pretty_printer *pp);
-  friend format_postprocessor *& pp_format_postprocessor (pretty_printer *pp);
+  friend format_postprocessor * pp_format_postprocessor (pretty_printer *pp);
   friend bool & pp_show_highlight_colors (pretty_printer *pp);
 
   friend void pp_output_formatted_text (pretty_printer *,
@@ -316,6 +316,11 @@ public:
   void set_real_maximum_length ();
   int remaining_character_count_for_line ();
 
+  void set_format_postprocessor (std::unique_ptr<format_postprocessor> p)
+  {
+    m_format_postprocessor = std::move (p);
+  }
+
   void dump (FILE *out, int indent) const;
   void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
@@ -356,7 +361,7 @@ private:
      have been processed, to allow for client-specific postprocessing.
      This is used by the C++ frontend for handling the %H and %I
      format codes (which interract with each other).  */
-  format_postprocessor *m_format_postprocessor;
+  std::unique_ptr<format_postprocessor> m_format_postprocessor;
 
   /* This is used by pp_output_formatted_text after it has converted all
      formatted chunks into a single list of tokens.
@@ -443,10 +448,10 @@ pp_format_decoder (pretty_printer *pp)
   return pp->m_format_decoder;
 }
 
-inline format_postprocessor *&
+inline format_postprocessor *
 pp_format_postprocessor (pretty_printer *pp)
 {
-  return pp->m_format_postprocessor;
+  return pp->m_format_postprocessor.get ();
 }
 
 inline bool &

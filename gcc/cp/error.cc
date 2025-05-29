@@ -182,9 +182,10 @@ class cxx_format_postprocessor : public format_postprocessor
   : m_type_a (), m_type_b ()
   {}
 
-  format_postprocessor *clone() const final override
+  std::unique_ptr<format_postprocessor>
+  clone() const final override
   {
-    return new cxx_format_postprocessor ();
+    return std::make_unique<cxx_format_postprocessor> ();
   }
 
   void handle (pretty_printer *pp) final override;
@@ -204,8 +205,7 @@ cxx_dump_pretty_printer (int phase)
   if (outf)
     {
       pp_format_decoder (this) = cp_printer;
-      /* This gets deleted in ~pretty_printer.  */
-      pp_format_postprocessor (this) = new cxx_format_postprocessor ();
+      set_format_postprocessor (std::make_unique<cxx_format_postprocessor> ());
       set_output_stream (outf);
     }
 }
@@ -301,7 +301,7 @@ void
 cxx_initialize_diagnostics (diagnostic_context *context)
 {
   cxx_pretty_printer *pp = new cxx_pretty_printer ();
-  pp_format_postprocessor (pp) = new cxx_format_postprocessor ();
+  pp->set_format_postprocessor (std::make_unique<cxx_format_postprocessor> ());
   context->set_pretty_printer (std::unique_ptr<pretty_printer> (pp));
 
   c_common_diagnostics_set_defaults (context);
