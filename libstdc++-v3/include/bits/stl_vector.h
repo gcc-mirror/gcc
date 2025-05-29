@@ -372,8 +372,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX20_CONSTEXPR
       ~_Vector_base() _GLIBCXX_NOEXCEPT
       {
-	_M_deallocate(_M_impl._M_start,
-		      _M_impl._M_end_of_storage - _M_impl._M_start);
+	ptrdiff_t __n = _M_impl._M_end_of_storage - _M_impl._M_start;
+	if (__n < 0)
+	  __builtin_unreachable();
+	_M_deallocate(_M_impl._M_start, size_t(__n));
       }
 
     public:

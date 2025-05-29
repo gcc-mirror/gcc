@@ -576,7 +576,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__builtin_unreachable();
       pointer __old_start = this->_M_impl._M_start;
       pointer __old_finish = this->_M_impl._M_finish;
-      const size_type __elems = end() - begin();
+      const size_type __elems = size();
       pointer __new_start(this->_M_allocate(__len));
       pointer __new_finish(__new_start);
 
