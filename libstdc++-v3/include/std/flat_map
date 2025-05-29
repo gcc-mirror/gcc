@@ -873,7 +873,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[nodiscard]]
       friend bool
       operator==(const _Derived& __x, const _Derived& __y)
-      { return std::equal(__x.begin(), __x.end(), __y.begin(), __y.end()); }
+      {
+	return __x._M_cont.keys == __y._M_cont.keys
+	  && __x._M_cont.values == __y._M_cont.values;
+      }
 
       template<typename _Up = value_type>
 	[[nodiscard]]
