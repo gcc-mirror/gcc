@@ -442,7 +442,7 @@ build_capture_proxy (tree member, tree init)
 
   type = lambda_proxy_type (object);
 
-  if (name == this_identifier && !INDIRECT_TYPE_P (type))
+  if (name == this_identifier && !INDIRECT_TYPE_P (TREE_TYPE (member)))
     {
       type = build_pointer_type (type);
       type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
@@ -921,8 +921,9 @@ lambda_expr_this_capture (tree lambda, int add_capture_p)
   else
     {
       /* To make sure that current_class_ref is for the lambda.  */
-      gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref))
-		  == LAMBDA_EXPR_CLOSURE (lambda));
+      gcc_assert (!current_class_ref
+		  || (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref))
+		      == LAMBDA_EXPR_CLOSURE (lambda)));
 
       result = this_capture;
 
@@ -1037,12 +1038,9 @@ current_nonlambda_function (void)
 tree
 nonlambda_method_basetype (void)
 {
-  if (!current_class_ref)
-    return NULL_TREE;
-
   tree type = current_class_type;
   if (!type || !LAMBDA_TYPE_P (type))
-    return type;
+    return current_class_ref ? type : NULL_TREE;
 
   while (true)
     {

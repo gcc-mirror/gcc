@@ -2770,7 +2770,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
       else if (PACK_EXPANSION_P (type))
 	/* Don't bother trying to represent this.  */
 	type = NULL_TREE;
-      else if (WILDCARD_TYPE_P (TREE_TYPE (object)))
+      else if (!TREE_TYPE (object) || WILDCARD_TYPE_P (TREE_TYPE (object)))
 	/* We don't know what the eventual quals will be, so punt until
 	   instantiation time.
 
@@ -3605,16 +3605,11 @@ finish_this_expr (void)
 {
   tree result = NULL_TREE;
 
-  if (current_class_ptr)
-    {
-      tree type = TREE_TYPE (current_class_ref);
-
-      /* In a lambda expression, 'this' refers to the captured 'this'.  */
-      if (LAMBDA_TYPE_P (type))
-        result = lambda_expr_this_capture (CLASSTYPE_LAMBDA_EXPR (type), true);
-      else
-        result = current_class_ptr;
-    }
+  if (current_class_type && LAMBDA_TYPE_P (current_class_type))
+    result = (lambda_expr_this_capture
+	      (CLASSTYPE_LAMBDA_EXPR (current_class_type), /*add*/true));
+  else if (current_class_ptr)
+    result = current_class_ptr;
 
   if (result)
     /* The keyword 'this' is a prvalue expression.  */
