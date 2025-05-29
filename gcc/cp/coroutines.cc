@@ -2865,8 +2865,8 @@ find_any_await (tree *stmt, int *dosub, void *d)
   if (TREE_CODE (*stmt) == CO_AWAIT_EXPR)
     {
       *dosub = 0; /* We don't need to consider this any further.  */
-      tree **p = (tree **) d;
-      *p = stmt;
+      if (d)
+	*(tree **)d = stmt;
       return *stmt;
     }
   return NULL_TREE;
@@ -3116,7 +3116,9 @@ flatten_await_stmt (var_nest_node *n, hash_set<tree> *promoted,
 	  bool already_present = promoted->add (var);
 	  gcc_checking_assert (!already_present);
 	  tree inner = TARGET_EXPR_INITIAL (init);
-	  gcc_checking_assert (TREE_CODE (inner) != COND_EXPR);
+	  gcc_checking_assert
+	    (TREE_CODE (inner) != COND_EXPR
+	     || !cp_walk_tree (&inner, find_any_await, nullptr, nullptr));
 	  init = cp_build_modify_expr (input_location, var, INIT_EXPR, init,
 				       tf_warning_or_error);
 	  /* Simplify for the case that we have an init containing the temp
