@@ -1,3 +1,42 @@
+2025-05-28  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/111873
+	* tree-sra.cc (sra_modify_expr): When processing a load which has
+	a type-incompatible replacement, do not store the contents of the
+	replacement into the original aggregate when that aggregate is
+	const.
+
+2025-05-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2025-04-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Recognise PROJECT:ld-mmmm.nn.aa as an identifier
+	for Darwin's static linker.
+
+2025-05-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/119172
+	* config.in: Regenerate.
+	* config/darwin.h (DARWIN_PLATFORM_ID): Add the option to
+	use -macos_version_min where available.
+	* configure: Regenerate.
+	* configure.ac: Check for ld64 support of -macos_version_min.
+
+2025-05-28  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2024-04-23  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/114676
+	* config/s390/s390-c.cc (s390_expand_overloaded_builtin): Use a
+	MEM_REF with an addend of type ptr_type_node.
+
 2025-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

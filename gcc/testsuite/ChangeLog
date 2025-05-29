@@ -1,3 +1,28 @@
+2025-05-28  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/pr120044-1.c: New test.
+	* gcc.dg/ipa/pr120044-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr114864.c: Likewise.
+
+2025-05-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2025-03-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/gm2.exp: Arrange for a '-B' option to be added for the
+	libstdc++ paths on targets that need it.
+
+2025-05-28  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2024-04-23  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/114676
+	* gcc.target/s390/zvector/pr114676.c: New test.
+
 2025-05-27  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
