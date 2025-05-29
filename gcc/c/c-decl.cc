@@ -9649,15 +9649,18 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       DECL_NOT_FLEXARRAY (x) = !is_flexible_array_member_p (is_last_field, x);
 
       /* Set TYPE_INCLUDES_FLEXARRAY for the context of x, t.
-	 when x is an array and is the last field.  */
+	 when x is an array and is the last field.
+	 There is only one last_field for a structure type, but there might
+	 be multiple last_fields for a union type, therefore we should ORed
+	 the result for multiple last_fields.  */
       if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE)
 	TYPE_INCLUDES_FLEXARRAY (t)
-	  = is_last_field && c_flexible_array_member_type_p (TREE_TYPE (x));
+	  |= is_last_field && c_flexible_array_member_type_p (TREE_TYPE (x));
       /* Recursively set TYPE_INCLUDES_FLEXARRAY for the context of x, t
 	 when x is an union or record and is the last field.  */
       else if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
 	TYPE_INCLUDES_FLEXARRAY (t)
-	  = is_last_field && TYPE_INCLUDES_FLEXARRAY (TREE_TYPE (x));
+	  |= is_last_field && TYPE_INCLUDES_FLEXARRAY (TREE_TYPE (x));
 
       if (warn_flex_array_member_not_at_end
 	  && !is_last_field
