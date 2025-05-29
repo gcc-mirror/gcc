@@ -700,11 +700,9 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   class html_token_printer : public token_printer
   {
   public:
-    html_token_printer (html_builder &builder,
-			 xml::element &parent_element)
-    : m_builder (builder)
+    html_token_printer (xml::printer &xp)
+    : m_xp (xp)
     {
-      m_open_elements.push_back (&parent_element);
     }
     void print_tokens (pretty_printer */*pp*/,
 		       const pp_token_list &tokens) final override
@@ -722,7 +720,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 	      pp_token_text *sub = as_a <pp_token_text *> (iter);
 	      /* The value might be in the obstack, so we may need to
 		 copy it.  */
-	      insertion_element ().add_text (sub->m_value.get ());
+	      m_xp.add_text (sub->m_value.get ());
 	    }
 	    break;
 
@@ -733,51 +731,32 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 
 	  case pp_token::kind::begin_quote:
 	    {
-	      insertion_element ().add_text (open_quote);
-	      push_element (make_span ("gcc-quoted-text"));
+	      m_xp.add_text (open_quote);
+	      m_xp.push_tag_with_class ("span", "gcc-quoted-text");
 	    }
 	    break;
 	  case pp_token::kind::end_quote:
 	    {
-	      pop_element ();
-	      insertion_element ().add_text (close_quote);
+	      m_xp.pop_tag ();
+	      m_xp.add_text (close_quote);
 	    }
 	    break;
 
 	  case pp_token::kind::begin_url:
 	    {
 	      pp_token_begin_url *sub = as_a <pp_token_begin_url *> (iter);
-	      auto anchor = std::make_unique<xml::element> ("a", true);
-	      anchor->set_attr ("href", sub->m_value.get ());
-	      push_element (std::move (anchor));
+	      m_xp.push_tag ("a", true);
+	      m_xp.set_attr ("href", sub->m_value.get ());
 	    }
 	    break;
 	  case pp_token::kind::end_url:
-	    pop_element ();
+	    m_xp.pop_tag ();
 	    break;
 	  }
     }
 
   private:
-    xml::element &insertion_element () const
-    {
-      return *m_open_elements.back ();
-    }
-    void push_element (std::unique_ptr<xml::element> new_element)
-    {
-      xml::element &current_top = insertion_element ();
-      m_open_elements.push_back (new_element.get ());
-      current_top.add_child (std::move (new_element));
-    }
-    void pop_element ()
-    {
-      m_open_elements.pop_back ();
-    }
-
-    html_builder &m_builder;
-    /* We maintain a stack of currently "open" elements.
-       Children are added to the topmost open element.  */
-    std::vector<xml::element *> m_open_elements;
+    xml::printer &m_xp;
   };
 
   auto diag_element = make_div ("gcc-diagnostic");
@@ -798,7 +777,8 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   message_span->set_attr ("id", message_span_id);
   add_focus_id (message_span_id);
 
-  html_token_printer tok_printer (*this, *message_span.get ());
+  xml::printer xp (*message_span.get ());
+  html_token_printer tok_printer (xp);
   m_printer->set_token_printer (&tok_printer);
   pp_output_formatted_text (m_printer, m_context.get_urlifier ());
   m_printer->set_token_printer (nullptr);
