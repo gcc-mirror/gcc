@@ -426,7 +426,7 @@ static struct ggc_globals
   int dev_zero_fd;
 #endif
 
-  /* A cache of free system pages. Entry 0 is fallback.  */
+  /* A cache of free system pages.  Entry 0 is fallback.  */
   struct free_list free_lists[num_free_list];
 
 #ifdef USING_MALLOC_PAGE_GROUPS
@@ -787,7 +787,7 @@ find_free_list (size_t entry_size)
 	  return &G.free_lists[i];
 	}
     }
-  /* Fallback. Does this happen?  */
+  /* Fallback.  Does this happen?  */
   if (GATHER_STATISTICS)
     G.stats.fallback++;
   return &G.free_lists[0];
@@ -955,7 +955,7 @@ alloc_page (unsigned order)
       /* If we allocated multiple pages, put the rest on the free list.  */
       if (multiple_pages)
 	{
-	  struct page_entry *e, *f = G.free_pages;
+	  struct page_entry *e, *f = free_list->free_pages;
 	  for (a = enda - G.pagesize; a != page; a -= G.pagesize)
 	    {
 	      e = XCNEWVAR (struct page_entry, page_entry_size);
@@ -1073,10 +1073,10 @@ free_page (page_entry *entry)
 /* Release the free page cache for FREE_LIST to the system.  */
 
 static void
-do_release_pages (struct free_list *free_list)
+do_release_pages (struct free_list *free_list, size_t &n1, size_t &n2)
 {
-  size_t n1 = 0;
-  size_t n2 = 0;
+  (void) n1;
+  (void) n2;
 #ifdef USING_MADVISE
   page_entry *p, *start_p;
   char *start;
@@ -1089,7 +1089,7 @@ do_release_pages (struct free_list *free_list)
      This allows other allocators to grab these areas if needed.
      This is only done on larger chunks to avoid fragmentation.
      This does not always work because the free_pages list is only
-     approximately sorted. */
+     approximately sorted.  */
 
   p = free_list->free_pages;
   prev = NULL;
@@ -1104,7 +1104,7 @@ do_release_pages (struct free_list *free_list)
         {
           len += p->bytes;
 	  if (!p->discarded)
-	      mapped_len += p->bytes;
+	    mapped_len += p->bytes;
 	  newprev = p;
           p = p->next;
         }
@@ -1129,7 +1129,7 @@ do_release_pages (struct free_list *free_list)
    }
 
   /* Now give back the fragmented pages to the OS, but keep the address
-     space to reuse it next time. */
+     space to reuse it next time.  */
 
   for (p = free_list->free_pages; p; )
     {
@@ -1149,10 +1149,10 @@ do_release_pages (struct free_list *free_list)
         }
       /* Give the page back to the kernel, but don't free the mapping.
          This avoids fragmentation in the virtual memory map of the
- 	 process. Next time we can reuse it by just touching it. */
+	 process.  Next time we can reuse it by just touching it.  */
       madvise (start, len, MADV_DONTNEED);
       /* Don't count those pages as mapped to not touch the garbage collector
-         unnecessarily. */
+	 unnecessarily.  */
       G.bytes_mapped -= len;
       n2 += len;
       while (start_p != p)
@@ -1195,7 +1195,6 @@ do_release_pages (struct free_list *free_list)
 #endif
 #ifdef USING_MALLOC_PAGE_GROUPS
   page_entry **pp, *p;
-  page_group **gp, *g;
 
   /* Remove all pages from free page groups from the list.  */
   pp = &free_list->free_pages;
@@ -1207,6 +1206,20 @@ do_release_pages (struct free_list *free_list)
       }
     else
       pp = &p->next;
+#endif
+}
+
+/* Release the free page cache to the system.  */
+
+static void
+release_pages ()
+{
+  size_t n1 = 0;
+  size_t n2 = 0;
+  for (int i = 0; i < num_free_list; i++)
+    do_release_pages (&G.free_lists[i], n1, n2);
+#ifdef USING_MALLOC_PAGE_GROUPS
+  page_group **gp, *g;
 
   /* Remove all free page groups, and release the storage.  */
   gp = &G.page_groups;
@@ -1230,15 +1243,6 @@ do_release_pages (struct free_list *free_list)
 	fprintf (stderr, " madv_dontneed " PRsa (0), SIZE_AMOUNT (n2));
       fprintf (stderr, "}");
     }
-}
-
-/* Release the free page cache to the system.  */
-
-static void
-release_pages ()
-{
-  for (int i = 0; i < num_free_list; i++)
-    do_release_pages (&G.free_lists[i]);
 }
 
 /* This table provides a fast way to determine ceil(log_2(size)) for
@@ -2008,9 +2012,9 @@ clear_marks (void)
     }
 }
 
-/* Check if any blocks with a registered finalizer have become unmarked. If so
+/* Check if any blocks with a registered finalizer have become unmarked.  If so
    run the finalizer and unregister it because the block is about to be freed.
-   Note that no garantee is made about what order finalizers will run in so
+   Note that no guarantee is made about what order finalizers will run in so
    touching other objects in gc memory is extremely unwise.  */
 
 static void
