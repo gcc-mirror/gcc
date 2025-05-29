@@ -1,3 +1,12 @@
+2025-05-28  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2024-04-23  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/114676
+	* config/s390/s390-c.cc (s390_expand_overloaded_builtin): Use a
+	MEM_REF with an addend of type ptr_type_node.
+
 2025-05-27  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2025-05-28  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2024-04-23  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/114676
+	* gcc.target/s390/zvector/pr114676.c: New test.
+
 2025-05-01  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
