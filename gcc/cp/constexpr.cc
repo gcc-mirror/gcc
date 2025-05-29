@@ -2883,10 +2883,15 @@ diagnose_failing_condition (tree bad, location_t cloc, bool show_expr_p,
   if (TREE_CODE (bad) == CLEANUP_POINT_EXPR)
     bad = TREE_OPERAND (bad, 0);
 
+  auto_diagnostic_nesting_level sentinel;
+
   /* Actually explain the failure if this is a concept check or a
      requires-expression.  */
   if (concept_check_p (bad) || TREE_CODE (bad) == REQUIRES_EXPR)
     diagnose_constraints (cloc, bad, NULL_TREE);
+  /* Similarly if this is a standard trait.  */
+  else if (maybe_diagnose_standard_trait (cloc, bad))
+    ;
   else if (COMPARISON_CLASS_P (bad)
 	   && ARITHMETIC_TYPE_P (TREE_TYPE (TREE_OPERAND (bad, 0))))
     {

@@ -704,6 +704,20 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 	}
       break;
 
+    case TREE_VEC:
+      {
+	/* A list of types used for a trait.  */
+	bool need_comma = false;
+	for (tree arg : tree_vec_range (t))
+	  {
+	    if (need_comma)
+	      pp_separate_with_comma (pp);
+	    dump_type (pp, arg, flags);
+	    need_comma = true;
+	  }
+      }
+      break;
+
     case TREE_LIST:
       /* A list of function parms.  */
       dump_parameters (pp, t, flags);

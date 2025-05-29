@@ -20,6 +20,7 @@
 #include <atomic>
 
 std::atomic<const int> a; // { dg-error "here" }
+// { dg-error "assignment to read-only type" "" { target *-*-* } 0 }
 
 struct MoveOnly
 {
@@ -40,3 +41,4 @@ struct NoMove
 std::atomic<NoMove> c; // { dg-error "here" }
 
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }
+// { dg-error "use of deleted function" "" { target *-*-* } 0 }

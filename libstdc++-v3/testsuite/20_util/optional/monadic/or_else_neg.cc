@@ -26,4 +26,5 @@ test02()
 
   std::optional<move_only> mo;
   mo.or_else([]{ return std::optional<move_only>{}; }); // { dg-error "no matching function" }
+  // { dg-error "use of deleted function" "" { target *-*-* } 0 }
 }

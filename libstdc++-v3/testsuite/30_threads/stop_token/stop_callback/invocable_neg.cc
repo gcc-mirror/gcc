@@ -32,3 +32,4 @@ test01(std::stop_token& tok, F& f)
 }
 
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }
+// { dg-error "no match for call" "" { target *-*-* } 0 }

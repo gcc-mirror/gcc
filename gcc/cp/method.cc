@@ -1928,8 +1928,8 @@ is_stub_object (tree expr)
 
 /* Build a std::declval<TYPE>() expression and return it.  */
 
-tree
-build_trait_object (tree type)
+static tree
+build_trait_object (tree type, tsubst_flags_t complain)
 {
   /* TYPE can't be a function with cv-/ref-qualifiers: std::declval is
      defined as
@@ -1942,7 +1942,11 @@ build_trait_object (tree type)
   if (FUNC_OR_METHOD_TYPE_P (type)
       && (type_memfn_quals (type) != TYPE_UNQUALIFIED
 	  || type_memfn_rqual (type) != REF_QUAL_NONE))
-    return error_mark_node;
+    {
+      if (complain & tf_error)
+	error ("object cannot have qualified function type %qT", type);
+      return error_mark_node;
+    }
 
   return build_stub_object (type);
 }
@@ -2046,13 +2050,16 @@ build_invoke (tree fn_type, const_tree arg_types, tsubst_flags_t complain)
 	    }
 	}
 
-      tree datum_expr = build_trait_object (datum_type);
+      tree datum_expr = build_trait_object (datum_type, complain);
       if (!ptrmem_is_same_or_base_of_datum && !datum_is_refwrap)
 	/* 1.3 & 1.6: Try to dereference datum_expr.  */
 	datum_expr = build_x_indirect_ref (UNKNOWN_LOCATION, datum_expr,
 					   RO_UNARY_STAR, NULL_TREE, complain);
 
-      tree fn_expr = build_trait_object (fn_type);
+      if (error_operand_p (datum_expr))
+	return error_mark_node;
+
+      tree fn_expr = build_trait_object (fn_type, complain);
       ptrmem_expr = build_m_component_ref (datum_expr, fn_expr, complain);
 
       if (error_operand_p (ptrmem_expr))
@@ -2069,7 +2076,9 @@ build_invoke (tree fn_type, const_tree arg_types, tsubst_flags_t complain)
   for (int i = is_ptrmemfunc ? 1 : 0; i < TREE_VEC_LENGTH (arg_types); ++i)
     {
       tree arg_type = TREE_VEC_ELT (arg_types, i);
-      tree arg = build_trait_object (arg_type);
+      tree arg = build_trait_object (arg_type, complain);
+      if (error_operand_p (arg))
+	return error_mark_node;
       vec_safe_push (args, arg);
     }
 
@@ -2078,8 +2087,8 @@ build_invoke (tree fn_type, const_tree arg_types, tsubst_flags_t complain)
     invoke_expr = build_offset_ref_call_from_tree (ptrmem_expr, &args,
 						   complain);
   else  /* 1.7.  */
-    invoke_expr = finish_call_expr (build_trait_object (fn_type), &args, false,
-				    false, complain);
+    invoke_expr = finish_call_expr (build_trait_object (fn_type, complain),
+				    &args, false, false, complain);
   return invoke_expr;
 }
 
@@ -2228,12 +2237,20 @@ check_nontriv (tree *tp, int *, void *)
 /* Return declval<T>() = declval<U>() treated as an unevaluated operand.  */
 
 static tree
-assignable_expr (tree to, tree from)
+assignable_expr (tree to, tree from, bool explain)
 {
   cp_unevaluated cp_uneval_guard;
-  to = build_trait_object (to);
-  from = build_trait_object (from);
-  tree r = cp_build_modify_expr (input_location, to, NOP_EXPR, from, tf_none);
+  tsubst_flags_t complain = explain ? tf_error : tf_none;
+
+  to = build_trait_object (to, complain);
+  if (to == error_mark_node)
+    return error_mark_node;
+
+  from = build_trait_object (from, complain);
+  if (from == error_mark_node)
+    return error_mark_node;
+
+  tree r = cp_build_modify_expr (input_location, to, NOP_EXPR, from, complain);
   return r;
 }
 
@@ -2245,10 +2262,11 @@ assignable_expr (tree to, tree from)
    Return something equivalent in well-formedness and triviality.  */
 
 static tree
-constructible_expr (tree to, tree from)
+constructible_expr (tree to, tree from, bool explain)
 {
   tree expr;
   cp_unevaluated cp_uneval_guard;
+  tsubst_flags_t complain = explain ? tf_error : tf_none;
   const int len = TREE_VEC_LENGTH (from);
   if (CLASS_TYPE_P (to))
     {
@@ -2260,14 +2278,14 @@ constructible_expr (tree to, tree from)
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
       if (len == 0)
-	expr = build_value_init (ctype, tf_none);
+	expr = build_value_init (ctype, complain);
       else
 	{
 	  vec_alloc (args, len);
 	  for (tree arg : tree_vec_range (from))
 	    args->quick_push (build_stub_object (arg));
 	  expr = build_special_member_call (ob, complete_ctor_identifier, &args,
-					    ctype, LOOKUP_NORMAL, tf_none);
+					    ctype, LOOKUP_NORMAL, complain);
 	}
       if (expr == error_mark_node)
 	return error_mark_node;
@@ -2277,7 +2295,7 @@ constructible_expr (tree to, tree from)
 	{
 	  tree dtor = build_special_member_call (ob, complete_dtor_identifier,
 						 NULL, ctype, LOOKUP_NORMAL,
-						 tf_none);
+						 complain);
 	  if (dtor == error_mark_node)
 	    return error_mark_node;
 	  if (!TYPE_HAS_TRIVIAL_DESTRUCTOR (ctype))
@@ -2287,12 +2305,15 @@ constructible_expr (tree to, tree from)
   else
     {
       if (len == 0)
-	return build_value_init (strip_array_types (to), tf_none);
+	return build_value_init (strip_array_types (to), complain);
       if (len > 1)
 	{
 	  if (cxx_dialect < cxx20)
-	    /* Too many initializers.  */
-	    return error_mark_node;
+	    {
+	      if (explain)
+		error ("too many initializers for non-class type %qT", to);
+	      return error_mark_node;
+	    }
 
 	  /* In C++20 this is well-formed:
 	       using T = int[2];
@@ -2313,9 +2334,11 @@ constructible_expr (tree to, tree from)
 	}
       else
 	from = build_stub_object (TREE_VEC_ELT (from, 0));
+
+      tree orig_from = from;
       expr = perform_direct_initialization_if_possible (to, from,
 							/*cast*/false,
-							tf_none);
+							complain);
       /* If t(e) didn't work, maybe t{e} will.  */
       if (expr == NULL_TREE
 	  && len == 1
@@ -2327,7 +2350,24 @@ constructible_expr (tree to, tree from)
 	  CONSTRUCTOR_IS_PAREN_INIT (from) = true;
 	  expr = perform_direct_initialization_if_possible (to, from,
 							    /*cast*/false,
-							    tf_none);
+							    complain);
+	}
+
+      if (expr == NULL_TREE && explain)
+	{
+	  if (len > 1)
+	    error ("too many initializers for non-class type %qT", to);
+	  else
+	    {
+	      /* Redo the implicit conversion for diagnostics.  */
+	      int count = errorcount + warningcount;
+	      perform_implicit_conversion_flags (to, orig_from, complain,
+						 LOOKUP_NORMAL);
+	      if (count == errorcount + warningcount)
+		/* The message may have been suppressed due to -w + -fpermissive,
+		   emit a generic response instead.  */
+		error ("the conversion is invalid");
+	    }
 	}
     }
   return expr;
@@ -2341,20 +2381,25 @@ constructible_expr (tree to, tree from)
    valid or error_mark_node if not.  */
 
 static tree
-destructible_expr (tree to)
+destructible_expr (tree to, bool explain)
 {
   cp_unevaluated cp_uneval_guard;
+  tsubst_flags_t complain = explain ? tf_error : tf_none;
   int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
   if (TYPE_REF_P (to))
     return void_node;
   if (!COMPLETE_TYPE_P (complete_type (to)))
-    return error_mark_node;
+    {
+      if (explain)
+	error_at (location_of (to), "%qT is incomplete", to);
+      return error_mark_node;
+    }
   to = strip_array_types (to);
   if (CLASS_TYPE_P (to))
     {
-      to = build_trait_object (to);
+      to = build_trait_object (to, complain);
       return build_delete (input_location, TREE_TYPE (to), to,
-			     sfk_complete_destructor, flags, 0, tf_none);
+			   sfk_complete_destructor, flags, 0, complain);
     }
   /* [expr.prim.id.dtor] If the id-expression names a pseudo-destructor, T
      shall be a scalar type.... */
@@ -2366,70 +2411,109 @@ destructible_expr (tree to)
 
 /* Returns a tree iff TO is assignable (if CODE is MODIFY_EXPR) or
    constructible (otherwise) from FROM, which is a single type for
-   assignment or a list of types for construction.  */
+   assignment or a list of types for construction.  If EXPLAIN is
+   set, emit a diagnostic explaining why the operation failed.  */
 
 static tree
-is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
+is_xible_helper (enum tree_code code, tree to, tree from, bool explain)
 {
   to = complete_type (to);
   deferring_access_check_sentinel acs (dk_no_deferred);
-  if (VOID_TYPE_P (to)
-      || (from && FUNC_OR_METHOD_TYPE_P (from)
-	  && (TYPE_READONLY (from) || FUNCTION_REF_QUALIFIED (from))))
-    return error_mark_node;
+
+  if (VOID_TYPE_P (to))
+    {
+      if (explain)
+	error_at (location_of (to), "%qT is incomplete", to);
+      return error_mark_node;
+    }
+  if (from
+      && FUNC_OR_METHOD_TYPE_P (from)
+      && (TYPE_READONLY (from) || FUNCTION_REF_QUALIFIED (from)))
+    {
+      if (explain)
+	error ("%qT is a qualified function type", from);
+      return error_mark_node;
+    }
+
   tree expr;
   if (code == MODIFY_EXPR)
-    expr = assignable_expr (to, from);
+    expr = assignable_expr (to, from, explain);
   else if (code == BIT_NOT_EXPR)
-    expr = destructible_expr (to);
-  else if (trivial && TREE_VEC_LENGTH (from) > 1
-	   && cxx_dialect < cxx20)
-    return error_mark_node; // only 0- and 1-argument ctors can be trivial
-			    // before C++20 aggregate paren init
+    expr = destructible_expr (to, explain);
   else if (TREE_CODE (to) == ARRAY_TYPE && !TYPE_DOMAIN (to))
-    return error_mark_node; // can't construct an array of unknown bound
+    {
+      if (explain)
+	error ("cannot construct an array of unknown bound");
+      return error_mark_node;
+    }
   else
-    expr = constructible_expr (to, from);
+    expr = constructible_expr (to, from, explain);
   return expr;
 }
 
 /* Returns true iff TO is trivially assignable (if CODE is MODIFY_EXPR) or
    constructible (otherwise) from FROM, which is a single type for
-   assignment or a list of types for construction.  */
+   assignment or a list of types for construction.  If EXPLAIN, diagnose
+   why we returned false.  */
 
 bool
-is_trivially_xible (enum tree_code code, tree to, tree from)
+is_trivially_xible (enum tree_code code, tree to, tree from,
+		    bool explain/*=false*/)
 {
-  tree expr = is_xible_helper (code, to, from, /*trivial*/true);
+  /* In some cases, when producing errors is_xible_helper may not return
+     error_mark_node, so check if it looks like we've already emitted any
+     diagnostics to ensure we don't do so multiple times.  */
+  int errs = errorcount + sorrycount;
+
+  tree expr = is_xible_helper (code, to, from, explain);
   if (expr == NULL_TREE || expr == error_mark_node)
     return false;
+
   tree nt = cp_walk_tree_without_duplicates (&expr, check_nontriv, NULL);
+  if (explain && errs == (errorcount + sorrycount))
+    {
+      gcc_assert (nt);
+      inform (location_of (nt), "%qE is non-trivial", nt);
+    }
   return !nt;
 }
 
 /* Returns true iff TO is nothrow assignable (if CODE is MODIFY_EXPR) or
    constructible (otherwise) from FROM, which is a single type for
-   assignment or a list of types for construction.  */
+   assignment or a list of types for construction.  If EXPLAIN, diagnose
+   why we returned false.  */
 
 bool
-is_nothrow_xible (enum tree_code code, tree to, tree from)
+is_nothrow_xible (enum tree_code code, tree to, tree from,
+		  bool explain/*=false*/)
 {
+  /* As with is_trivially_xible.  */
+  int errs = errorcount + sorrycount;
+
   ++cp_noexcept_operand;
-  tree expr = is_xible_helper (code, to, from, /*trivial*/false);
+  tree expr = is_xible_helper (code, to, from, explain);
   --cp_noexcept_operand;
   if (expr == NULL_TREE || expr == error_mark_node)
     return false;
-  return expr_noexcept_p (expr, tf_none);
+
+  bool is_noexcept = expr_noexcept_p (expr, tf_none);
+  if (explain && errs == (errorcount + sorrycount))
+    {
+      gcc_assert (!is_noexcept);
+      explain_not_noexcept (expr);
+    }
+  return is_noexcept;
 }
 
 /* Returns true iff TO is assignable (if CODE is MODIFY_EXPR) or
    constructible (otherwise) from FROM, which is a single type for
-   assignment or a list of types for construction.  */
+   assignment or a list of types for construction.  If EXPLAIN, diagnose
+   why we returned false.  */
 
 bool
-is_xible (enum tree_code code, tree to, tree from)
+is_xible (enum tree_code code, tree to, tree from, bool explain/*=false*/)
 {
-  tree expr = is_xible_helper (code, to, from, /*trivial*/false);
+  tree expr = is_xible_helper (code, to, from, explain);
   if (expr == error_mark_node)
     return false;
   return !!expr;
@@ -2454,7 +2538,7 @@ ref_xes_from_temporary (tree to, tree from, bool direct_init_p)
     return false;
   /* We don't check is_constructible<T, U>: if T isn't constructible
      from U, we won't be able to create a conversion.  */
-  tree val = build_trait_object (from);
+  tree val = build_trait_object (from, tf_none);
   if (val == error_mark_node)
     return false;
   if (!TYPE_REF_P (from) && TREE_CODE (from) != FUNCTION_TYPE)
@@ -2463,25 +2547,36 @@ ref_xes_from_temporary (tree to, tree from, bool direct_init_p)
 }
 
 /* Worker for is_{,nothrow_}convertible.  Attempt to perform an implicit
-   conversion from FROM to TO and return the result.  */
+   conversion from FROM to TO and return the result.  If EXPLAIN, emit a
+   diagnostic about why the conversion failed.  */
 
 static tree
-is_convertible_helper (tree from, tree to)
+is_convertible_helper (tree from, tree to, bool explain)
 {
   if (VOID_TYPE_P (from) && VOID_TYPE_P (to))
     return integer_one_node;
   cp_unevaluated u;
-  tree expr = build_trait_object (from);
+  tsubst_flags_t complain = explain ? tf_error : tf_none;
+
   /* std::is_{,nothrow_}convertible test whether the imaginary function
      definition
 
        To test() { return std::declval<From>(); }
 
      is well-formed.  A function can't return a function.  */
-  if (FUNC_OR_METHOD_TYPE_P (to) || expr == error_mark_node)
+  if (FUNC_OR_METHOD_TYPE_P (to))
+    {
+      if (explain)
+	error ("%qT is a function type", to);
+      return error_mark_node;
+    }
+
+  tree expr = build_trait_object (from, complain);
+  if (expr == error_mark_node)
     return error_mark_node;
+
   deferring_access_check_sentinel acs (dk_no_deferred);
-  return perform_implicit_conversion (to, expr, tf_none);
+  return perform_implicit_conversion (to, expr, complain);
 }
 
 /* Return true if FROM can be converted to TO using implicit conversions,
@@ -2490,9 +2585,9 @@ is_convertible_helper (tree from, tree to)
    to either type" restriction.  */
 
 bool
-is_convertible (tree from, tree to)
+is_convertible (tree from, tree to, bool explain/*=false*/)
 {
-  tree expr = is_convertible_helper (from, to);
+  tree expr = is_convertible_helper (from, to, explain);
   if (expr == error_mark_node)
     return false;
   return !!expr;
@@ -2501,12 +2596,18 @@ is_convertible (tree from, tree to)
 /* Like is_convertible, but the conversion is also noexcept.  */
 
 bool
-is_nothrow_convertible (tree from, tree to)
+is_nothrow_convertible (tree from, tree to, bool explain/*=false*/)
 {
-  tree expr = is_convertible_helper (from, to);
+  tree expr = is_convertible_helper (from, to, explain);
   if (expr == NULL_TREE || expr == error_mark_node)
     return false;
-  return expr_noexcept_p (expr, tf_none);
+  bool is_noexcept = expr_noexcept_p (expr, tf_none);
+  if (explain)
+    {
+      gcc_assert (!is_noexcept);
+      explain_not_noexcept (expr);
+    }
+  return is_noexcept;
 }
 
 /* Categorize various special_function_kinds.  */

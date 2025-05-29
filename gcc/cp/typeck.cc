@@ -4530,7 +4530,11 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
     {
       if (complain & tf_error)
 	{
-	  if (!flag_diagnostics_show_caret)
+	  if (is_stub_object (original))
+	    error_at (input_location,
+		      "%qT cannot be used as a function",
+		      TREE_TYPE (original));
+	  else if (!flag_diagnostics_show_caret)
 	    error_at (input_location,
 		      "%qE cannot be used as a function", original);
 	  else if (DECL_P (original))
@@ -4672,12 +4676,8 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
       if (type == void_type_node)
 	{
           if (complain & tf_error)
-            {
-	      error_args_num (input_location, fndecl, /*too_many_p=*/true);
-              return i;
-            }
-          else
-            return -1;
+	    error_args_num (input_location, fndecl, /*too_many_p=*/true);
+	  return -1;
 	}
 
       /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.

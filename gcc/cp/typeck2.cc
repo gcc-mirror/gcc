@@ -119,6 +119,11 @@ cxx_readonly_error (location_t loc, tree arg, enum lvalue_use errstring)
 			  G_("increment of read-only reference %qD"),
 			  G_("decrement of read-only reference %qD"),
 			  TREE_OPERAND (arg, 0));
+  else if (is_stub_object (arg))
+    {
+      gcc_assert (errstring == lv_assign);
+      error_at (loc, "assignment to read-only type %qT", TREE_TYPE (arg));
+    }
   else
     readonly_error (loc, arg, errstring);
 }
