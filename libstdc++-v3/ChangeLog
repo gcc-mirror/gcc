@@ -1,3 +1,52 @@
+2025-05-29  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/flat_map (_Flat_map_impl::operator==): Compare
+	keys and values separately.
+
+2025-05-29  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120465
+	* include/std/flat_map (_Flat_map_impl::_M_erase_if): Use a
+	projection with ranges::remove_if to pass a pair instead of
+	a tuple to the predicate.
+	* testsuite/23_containers/flat_map/1.cc (test07): Strengthen
+	to expect the argument passed to the predicate is a pair.
+	* testsuite/23_containers/flat_multimap/1.cc (test07): Likewise.
+
+2025-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc [_AIX] (a): Undefine.
+	* testsuite/experimental/names.cc [_AIX] (ptr): Undefine.
+
+2025-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/num_put/put/char/lwg4084.cc [_AIX]: Adjust
+	expected output for NaN and infinity.
+
+2025-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/deque/capacity/shrink_to_fit.cc:
+	Remove dg-xfail-run-if for AIX.
+	* testsuite/23_containers/unordered_map/96088.cc: Replace
+	dg-xfail-run-if with dg-require-effective-target c++20.
+	* testsuite/23_containers/unordered_multimap/96088.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/96088.cc: Likewise.
+	* testsuite/23_containers/unordered_set/96088.cc: Likewise.
+
+2025-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/boost_concept_check.h: Disable -Wlong-long
+	warnings.
+	* testsuite/24_iterators/operations/prev_neg.cc: Adjust dg-error
+	line number.
+
+2025-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Remove outdated documentation on
+	testing with -std options in --target_board.
+	* doc/html/manual/test.html: Regenerate.
+
 2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/17_intro/names.cc [_AIX] (n): Undefine.

@@ -1,3 +1,75 @@
+2025-05-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (cxx_format_postprocessor::clone): Update to use
+	unique_ptr.
+	(cxx_dump_pretty_printer::cxx_dump_pretty_printer): Likewise.
+	(cxx_initialize_diagnostics): Likewise.
+
+2025-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113563
+	* lambda.cc (build_capture_proxy): Check pointerness of the
+	member, not the proxy type.
+	(lambda_expr_this_capture): Don't assume current_class_ref.
+	(nonlambda_method_basetype): Likewise.
+	* semantics.cc (finish_non_static_data_member): Don't assume
+	TREE_TYPE (object) is set.
+	(finish_this_expr): Check current_class_type for lambda,
+	not current_class_ref.
+
+2025-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/109283
+	* coroutines.cc (find_any_await): Only save the statement
+	pointer if the caller passes a place for it.
+	(flatten_await_stmt): When checking that ternary expressions
+	have been handled, also check that they contain a co_await.
+
+2025-05-29  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (start_decl): Also set invalid_constexpr
+	for maybe_constexpr_fn.
+	* parser.cc (cp_parser_jump_statement): Likewise.
+	* constexpr.cc (potential_constant_expression_1): Ignore
+	goto to an artificial label.
+
+2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* parser.cc (cp_parser_omp_metadirective): Do not call
+	cp_parser_skip_to_end_of_block_or_statement after an error.
+
+2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/120180
+	* parser.cc (cp_parser_omp_metadirective): Only consume the
+	token if it is the expected close paren.
+
+2025-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (analyze_fn_parms): No longer
+	create a parameter copy guard var.
+	* coroutines.h (struct param_info): Remove the
+	entry for the parameter copy destructor guard.
+
+2025-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/120453
+	* cp-tree.h (DECL_RAMP_P): New.
+	* typeck.cc (check_return_expr): Use DECL_RAMP_P instead
+	of DECL_RAMP_FN.
+
+2025-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* cp-trait.def (IS_DESTRUCTIBLE, IS_NOTHROW_DESTRUCTIBLE)
+	(IS_TRIVIALLY_DESTRUCTIBLE): New.
+	* constraint.cc (diagnose_trait_expr): Explain them.
+	* method.cc (destructible_expr): New.
+	(is_xible_helper): Use it.
+	* semantics.cc (finish_trait_expr): Handle new traits.
+	(trait_expr_value): Likewise.  Complain about asking
+	whether a deleted dtor is trivial.
+
 2025-05-28  Jason Merrill  <jason@redhat.com>
 
 	* module.cc (module_state::write_namespaces): Write

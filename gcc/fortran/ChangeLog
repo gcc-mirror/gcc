@@ -1,3 +1,9 @@
+2025-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* check.cc(check_c_ptr_2): Rephrase error message
+	for clarity.
+
 2025-05-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/113152

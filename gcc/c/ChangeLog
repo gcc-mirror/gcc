@@ -1,3 +1,23 @@
+2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-parser.cc (c_parser_skip_to_closing_brace): New, copied from
+	the equivalent function in the C++ front end.
+	(c_parser_skip_to_end_of_block_or_statement): Pass false to
+	the error flag.
+	(c_parser_omp_context_selector): Immediately return error_mark_node
+	after giving an error that the integer trait property is invalid,
+	similarly to C++ front end.
+	(c_parser_omp_context_selector_specification): Likewise handle
+	error return from c_parser_omp_context_selector similarly to C++.
+	(c_parser_omp_metadirective): Do not call
+	c_parser_skip_to_end_of_block_or_statement after an error.
+
+2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/120180
+	* c-parser.cc (c_parser_omp_metadirective): Only consume the
+	token if it is the expected close paren.
+
 2025-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/117025

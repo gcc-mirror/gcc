@@ -1,3 +1,95 @@
+2025-05-29  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* config/aarch64/gcc-auto-profile: Make script executable.
+
+2025-05-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (optimize_memcpy_to_memset): Adds
+	statistics when the statement changed.
+
+2025-05-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (optimize_memcpy_to_memset): Change check
+	from NULL/non-ssa name to default name.
+
+2025-05-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc (HTML_STYLE): Fix PatternFly URL in
+	comment.
+
+2025-05-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc
+	(html_builder::make_element_for_diagnostic::html_token_printer):
+	Reimplement in terms of xml::printer.
+	(html_builder::make_element_for_diagnostic): Create an
+	xml::printer and use it with the html_token_printer.
+
+2025-05-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc (html_builder::make_metadata_element):
+	Gracefully handle the case where "url" is null.
+
+2025-05-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.cc (pretty_printer::pretty_printer): Use "nullptr"
+	rather than "NULL".  Remove explicit delete of
+	m_format_postprocessor.
+	* pretty-print.h (format_postprocessor::clone): Use unique_ptr.
+	(pretty_printer::set_format_postprocessor): New.
+	(pretty_printer::m_format_postprocessor): Use unique_ptr.
+	(pp_format_postprocessor): Update for use of unique_ptr, removing
+	reference from return type.
+
+2025-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/120295
+	* ipa-prop.cc (update_jump_functions_after_inlining): Do not
+	combine pass-through jump functions with type-casts changing
+	signedness.
+
+2025-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.cc (ipa_dump_jump_function): Fix whitespace when
+	dumping IPA VRs.
+
+2025-05-29  Pranav Gorantla  <Pranav.Gorantla@amd.com>
+
+	* config/i386/i386-expand.cc (emit_reduc_half): Use shuffles to
+	generate reduc half for V4SI, similar modes.
+	* config/i386/i386.h (TARGET_SSE_REDUCTION_PREFER_PSHUF): New Macro.
+	* config/i386/x86-tune.def (X86_TUNE_SSE_REDUCTION_PREFER_PSHUF):
+	New tuning.
+
+2025-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/120464
+	* ggc-page.cc (struct ggc_globals): Fix up comment formatting.
+	(find_free_list): Likewise.
+	(alloc_page): For defined(USING_MALLOC_PAGE_GROUPS) use
+	free_list->free_pages instead of G.free_pages.
+	(do_release_pages): Add n1 and n2 arguments, make them used.
+	Move defined(USING_MALLOC_PAGE_GROUPS) page group freeing to
+	release_pages and dumping of statistics as well.  Formatting fixes.
+	(release_pages): Adjust do_release_pages caller, move here
+	defined(USING_MALLOC_PAGE_GROUPS) page group freeing and dumping
+	of statistics.
+	(ggc_handle_finalizers): Fix up comment formatting and typo.
+
+2025-05-29  Jerry Zhang Jian  <jerry.zhangjian@sifive.com>
+
+	* config/riscv/riscv-ext.def: New extensions
+	* config/riscv/riscv-ext.opt: Auto re-generated
+	* doc/riscv-ext.texi: Auto re-generated
+
+2025-05-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add
+	new case for MULT op.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op mult to no_shift_vx_ops.
+
 2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/119298

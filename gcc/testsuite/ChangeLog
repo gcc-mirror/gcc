@@ -1,3 +1,121 @@
+2025-05-29  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* lib/target-supports.exp: Enable autofdo tests for aarch64.
+
+2025-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113563
+	* g++.dg/cpp23/explicit-obj-lambda16.C: New test.
+
+2025-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/109283
+	* g++.dg/coroutines/pr109283.C: New test.
+
+2025-05-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1z/constexpr-lambda29.C: New test.
+
+2025-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* gfortran.dg/c_f_pointer_tests_6.f90: Adjust dg-error
+	directive.
+
+2025-05-29  Alice Carlotti  <alice.carlotti@arm.com>
+	    Alfie Richards  <alfie.richards@arm.com>
+
+	* g++.target/i386/mv-symbols1.C: New test.
+	* g++.target/i386/mv-symbols2.C: New test.
+	* g++.target/i386/mv-symbols3.C: New test.
+	* g++.target/i386/mv-symbols4.C: New test.
+	* g++.target/i386/mv-symbols5.C: New test.
+	* g++.target/i386/mvc-symbols1.C: New test.
+	* g++.target/i386/mvc-symbols2.C: New test.
+	* g++.target/i386/mvc-symbols3.C: New test.
+	* g++.target/i386/mvc-symbols4.C: New test.
+
+2025-05-29  Alice Carlotti  <alice.carlotti@arm.com>
+	    Alfie Richards  <alfie.richards@arm.com>
+
+	* g++.target/powerpc/mvc-symbols1.C: New test.
+	* g++.target/powerpc/mvc-symbols2.C: New test.
+	* g++.target/powerpc/mvc-symbols3.C: New test.
+	* g++.target/powerpc/mvc-symbols4.C: New test.
+
+2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/declare-variant-2.c: Adjust patterns now that
+	C and C++ now behave similarly.
+	* c-c++-common/gomp/metadirective-error-recovery.c: New.
+
+2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/120180
+	* c-c++-common/gomp/pr120180.c: New.
+
+2025-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/120453
+	* g++.dg/coroutines/pr120453.C: New test.
+
+2025-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/120295
+	* gcc.dg/ipa/pr120295.c: New test.
+
+2025-05-29  Pranav Gorantla  <Pranav.Gorantla@amd.com>
+
+	* gcc.target/i386/reduc-pshuf.c: New test.
+
+2025-05-29  Jerry Zhang Jian  <jerry.zhangjian@sifive.com>
+
+	* gcc.target/riscv/arch-57.c: New test
+	* gcc.target/riscv/arch-58.c: New test
+
+2025-05-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add asm
+	check for vmul.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+
+2025-05-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for vmul.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for vmul run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmul-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmul-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmul-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmul-run-1-i8.c: New test.
+
+2025-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* g++.dg/ext/is_destructible1.C: New test.
+
 2025-05-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/119586
