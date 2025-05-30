@@ -3269,6 +3269,27 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	break;
       }
 
+    case CO_AWAIT_EXPR:
+      pp_cxx_ws_string (pp, "co_await");
+      pp_cxx_whitespace (pp);
+      dump_expr (pp, TREE_OPERAND (t, 0), flags);
+      break;
+
+    case CO_YIELD_EXPR:
+      pp_cxx_ws_string (pp, "co_yield");
+      pp_cxx_whitespace (pp);
+      dump_expr (pp, TREE_OPERAND (t, 0), flags);
+      break;
+
+    case CO_RETURN_EXPR:
+      pp_cxx_ws_string (pp, "co_return");
+      if (TREE_OPERAND (t, 0))
+	{
+	  pp_cxx_whitespace (pp);
+	  dump_expr (pp, TREE_OPERAND (t, 0), flags);
+	}
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */
