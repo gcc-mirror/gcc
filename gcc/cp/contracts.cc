@@ -3314,8 +3314,8 @@ void
 p2900_duplicate_contracts (tree newdecl, tree olddecl)
 {
   /* Aggregate the contracts and strip them from the input decls.  */
-  tree new_contracts = extract_contract_attributes (newdecl);
-  tree old_contracts = extract_contract_attributes (olddecl);
+  tree new_contracts = DECL_CONTRACTS (newdecl);
+  tree old_contracts = DECL_CONTRACTS (olddecl);
 
   if (!old_contracts && !new_contracts)
     return;
@@ -3328,9 +3328,9 @@ p2900_duplicate_contracts (tree newdecl, tree olddecl)
      also be needed when we process deferred contracts.  */
   bool existed = false;
   contract_redecl& rd = redeclared_contracts.get_or_insert (olddecl, &existed);
-  if (!existed)
+  if (!existed && !contract_any_deferred_p (old_contracts))
     {
-      rd.original_contracts = old_contracts;
+      rd.original_contracts = copy_contracts(olddecl);
       location_t cont_end = old_loc;
       if (old_contracts)
 	cont_end = get_contract_end_loc (old_contracts);
@@ -3351,20 +3351,13 @@ p2900_duplicate_contracts (tree newdecl, tree olddecl)
       return;
     }
 
-  /* If have now parsed deferred contracts for the 'first' decl, update the
-     saved record.  */
-  if (rd.original_contracts
-      && contract_any_deferred_p (rd.original_contracts)
-      && old_contracts
-      && !contract_any_deferred_p (old_contracts))
-    rd.original_contracts = old_contracts;
-
   if (old_contracts && !new_contracts)
     /* We allow re-declarations to omit contracts declared on the initial decl.
        In fact, this is required if the conditions contain lambdas.  Check if
        all the parameters are correctly const qualified. */
     check_param_in_redecl (olddecl, newdecl);
-  else if (contract_any_deferred_p (new_contracts))
+  else if (contract_any_deferred_p (new_contracts)
+	   || contract_any_deferred_p (old_contracts))
     /* TODO: stash these and figure out how to process them later.  */
     ;
   else
@@ -3377,10 +3370,12 @@ p2900_duplicate_contracts (tree newdecl, tree olddecl)
     }
 
   /* We have maybe issued a diagnostic - but because the caller will smash the
-     attributes on the old decl with those on the new, we need to copy the old
-     ones onto the new.  */
+     attributes on the old decl with those on the new, we need to remove the
+     contracts from the old decl and move the old contracts onto the new decl.  */
+  remove_contract_attributes (newdecl);
   DECL_ATTRIBUTES (newdecl)
-    = attr_chainon (DECL_ATTRIBUTES (newdecl), old_contracts);
+    = attr_chainon (DECL_ATTRIBUTES (newdecl),
+		    extract_contract_attributes (olddecl));
   return;
 }
 
