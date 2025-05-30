@@ -1,4 +1,4 @@
-/* { dg-do compile { target c++ } } */
+/* { dg-do compile } */
 
 typedef struct S_ {
   int *myarr;
@@ -7,7 +7,7 @@ typedef struct S_ {
 
 #pragma omp declare mapper (named: struct S_ v) map(to:v.size, v.myarr) \
 						map(tofrom: v.myarr[0:v.size])
-/* { dg-error "previous '#pragma omp declare mapper'" "" { target c } .-2 } */
+/* { dg-note "'#pragma omp declare mapper' previously declared here" "" { target c } .-2 } */
 /* { dg-note "'#pragma omp declare mapper \\(named: S_\\)' previously defined here" "" { target c++ } .-3 } */
 
 #pragma omp declare mapper (named: S v) map(to:v.size, v.myarr) \
@@ -17,7 +17,7 @@ typedef struct S_ {
 
 #pragma omp declare mapper (struct S_ v) map(to:v.size, v.myarr) \
 					 map(tofrom: v.myarr[0:v.size])
-/* { dg-error "previous '#pragma omp declare mapper'" "" { target c } .-2 } */
+/* { dg-note "'#pragma omp declare mapper' previously declared here" "" { target c } .-2 } */
 /* { dg-note "'#pragma omp declare mapper \\(S_\\)' previously defined here" "" { target c++ } .-3 } */
 
 #pragma omp declare mapper (S v) map(to:v.size, v.myarr) \

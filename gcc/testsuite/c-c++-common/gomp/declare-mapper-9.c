@@ -1,4 +1,4 @@
-/* { dg-do compile { target c++ } } */
+/* { dg-do compile } */
 
 int x = 5;
 
@@ -11,7 +11,7 @@ struct Q {
 int y = 5;
 
 #pragma omp declare mapper (struct Q myq) map(myq.arr2[0:x])
-/* { dg-error "previous '#pragma omp declare mapper'" "" { target c } .-1 } */
+/* { dg-note "'#pragma omp declare mapper' previously declared here" "" { target c } .-1 } */
 /* { dg-note "'#pragma omp declare mapper \\(Q\\)' previously defined here" "" { target c++ } .-2 } */
 
 #pragma omp declare mapper (struct Q myq) map(myq.arr2[0:y])
@@ -25,7 +25,7 @@ struct R {
 void foo (void)
 {
 #pragma omp declare mapper (struct R myr) map(myr.arr1[0:x])
-/* { dg-error "previous '#pragma omp declare mapper'" "" { target c } .-1 } */
+/* { dg-note "'#pragma omp declare mapper' previously declared here" "" { target c } .-1 } */
 /* { dg-note "'#pragma omp declare mapper \\(R\\)' previously declared here" "" { target c++ } .-2 } */
 
 #pragma omp declare mapper (struct R myr) map(myr.arr1[0:y])
