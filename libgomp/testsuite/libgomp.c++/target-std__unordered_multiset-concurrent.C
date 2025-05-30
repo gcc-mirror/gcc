@@ -33,7 +33,9 @@ int main (void)
   srand (time (NULL));
   init (data);
 
+#ifndef MEM_SHARED
   #pragma omp target data map (to: data[ :N]) map (alloc: set)
+#endif
     {
       #pragma omp target
 	{
@@ -48,6 +50,14 @@ int main (void)
 	for (int i = 0; i < MAX; ++i)
 	  sum += i * set.count (i);
 
+#ifdef OMP_USM
+      #pragma omp target
+	/* Restore the object into pristine state.  In particular, deallocate
+	   any memory allocated during device execution, which otherwise, back
+	   on the host, we'd SIGSEGV on, when attempting to deallocate during
+	   destruction of the object.  */
+	__typeof__ (set){}.swap (set);
+#endif
 #ifndef MEM_SHARED
       #pragma omp target
 	set.~unordered_multiset ();
