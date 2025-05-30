@@ -605,6 +605,137 @@ Here is an example of this feature:
 It ensures that arithmetic operations of type ``Uns_64`` are carried
 out using 64 bits.
 
+Generalized Finalization
+------------------------
+
+The ``Finalizable`` aspect can be applied to any record type, tagged or not,
+to specify that it provides the same level of control on the operations of
+initialization, finalization, and assignment of objects as the controlled
+types (see RM 7.6(2) for a high-level overview). The only restriction is
+that the record type must be a root type, in other words not a derived type.
+
+The aspect additionally makes it possible to specify relaxed semantics for
+the finalization operations by means of the ``Relaxed_Finalization`` setting.
+Here is the archetypal example:
+
+.. code-block:: ada
+
+    type T is record
+      ...
+    end record
+      with Finalizable => (Initialize           => Initialize,
+                           Adjust               => Adjust,
+                           Finalize             => Finalize,
+                           Relaxed_Finalization => True);
+
+    procedure Adjust     (Obj : in out T);
+    procedure Finalize   (Obj : in out T);
+    procedure Initialize (Obj : in out T);
+
+The three procedures have the same profile, with a single ``in out`` parameter,
+and also have the same dynamic semantics as for controlled types:
+
+ - ``Initialize`` is called when an object of type ``T`` is declared without
+   initialization expression.
+
+ - ``Adjust`` is called after an object of type ``T`` is assigned a new value.
+
+ - ``Finalize`` is called when an object of type ``T`` goes out of scope (for
+   stack-allocated objects) or is deallocated (for heap-allocated objects).
+   It is also called when the value is replaced by an assignment.
+
+However, when ``Relaxed_Finalization`` is either ``True`` or not explicitly
+specified, the following differences are implemented relative to the semantics
+of controlled types:
+
+* The compiler has permission to perform no automatic finalization of
+  heap-allocated objects: ``Finalize`` is only called when such an object
+  is explicitly deallocated, or when the designated object is assigned a new
+  value. As a consequence, no runtime support is needed for performing
+  implicit deallocation. In particular, no per-object header data is needed
+  for heap-allocated objects.
+
+  Heap-allocated objects allocated through a nested access type will therefore
+  **not** be deallocated either. The result is simply that memory will be leaked
+  in this case.
+
+* The ``Adjust`` and ``Finalize`` procedures are automatically considered as
+  having the :ref:`No_Raise_Aspect` specified for them. In particular, the
+  compiler has permission to enforce none of the guarantees specified by the
+  RM 7.6.1 (14/1) and subsequent subclauses.
+
+Simple example of ref-counted type:
+
+.. code-block:: ada
+
+   type T is record
+      Value     : Integer;
+      Ref_Count : Natural := 0;
+   end record;
+
+   procedure Inc_Ref (X : in out T);
+   procedure Dec_Ref (X : in out T);
+
+   type T_Access is access all T;
+
+   type T_Ref is record
+      Value : T_Access;
+   end record
+      with Finalizable => (Adjust   => Adjust,
+                           Finalize => Finalize);
+
+   procedure Adjust (Ref : in out T_Ref) is
+   begin
+      Inc_Ref (Ref.Value);
+   end Adjust;
+
+   procedure Finalize (Ref : in out T_Ref) is
+   begin
+      Def_Ref (Ref.Value);
+   end Finalize;
+
+Simple file handle that ensures resources are properly released:
+
+.. code-block:: ada
+
+   package P is
+      type File (<>) is limited private;
+
+      function Open (Path : String) return File;
+
+      procedure Close (F : in out File);
+
+   private
+      type File is limited record
+         Handle : ...;
+      end record
+         with Finalizable (Finalize => Close);
+   end P;
+
+Finalizable tagged types
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The aspect is inherited by derived types and the primitives may be overridden
+by the derivation. The compiler-generated calls to these operations are then
+dispatching whenever it makes sense, i.e. when the object in question is of a
+class-wide type and the class includes at least one finalizable tagged type.
+
+Composite types
+^^^^^^^^^^^^^^^
+
+When a finalizable type is used as a component of a composite type, the latter
+becomes finalizable as well. The three primitives are derived automatically
+in order to call the primitives of their components. The dynamic semantics is
+the same as for controlled components of composite types.
+
+Interoperability with controlled types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Finalizable types are fully interoperable with controlled types, in particular
+it is possible for a finalizable type to have a controlled component and vice
+versa, but the stricter dynamic semantics, in other words that of controlled
+types, is applied in this case.
+
 .. _Experimental_Language_Extensions:
 
 Experimental Language Extensions
@@ -1517,137 +1648,6 @@ If the type of a formal parameter is a specific tagged type, then the execution
 of the call is erroneous if the tag of the actual is changed while the formal
 parameter exists (that is, before leaving the corresponding callable construct).
 This is analogous to the RM 6.4.1(18) rule about discriminated parameters.
-
-Generalized Finalization
-------------------------
-
-The ``Finalizable`` aspect can be applied to any record type, tagged or not,
-to specify that it provides the same level of control on the operations of
-initialization, finalization, and assignment of objects as the controlled
-types (see RM 7.6(2) for a high-level overview). The only restriction is
-that the record type must be a root type, in other words not a derived type.
-
-The aspect additionally makes it possible to specify relaxed semantics for
-the finalization operations by means of the ``Relaxed_Finalization`` setting.
-Here is the archetypal example:
-
-.. code-block:: ada
-
-    type T is record
-      ...
-    end record
-      with Finalizable => (Initialize           => Initialize,
-                           Adjust               => Adjust,
-                           Finalize             => Finalize,
-                           Relaxed_Finalization => True);
-
-    procedure Adjust     (Obj : in out T);
-    procedure Finalize   (Obj : in out T);
-    procedure Initialize (Obj : in out T);
-
-The three procedures have the same profile, with a single ``in out`` parameter,
-and also have the same dynamic semantics as for controlled types:
-
- - ``Initialize`` is called when an object of type ``T`` is declared without
-   initialization expression.
-
- - ``Adjust`` is called after an object of type ``T`` is assigned a new value.
-
- - ``Finalize`` is called when an object of type ``T`` goes out of scope (for
-   stack-allocated objects) or is deallocated (for heap-allocated objects).
-   It is also called when the value is replaced by an assignment.
-
-However, when ``Relaxed_Finalization`` is either ``True`` or not explicitly
-specified, the following differences are implemented relative to the semantics
-of controlled types:
-
-* The compiler has permission to perform no automatic finalization of
-  heap-allocated objects: ``Finalize`` is only called when such an object
-  is explicitly deallocated, or when the designated object is assigned a new
-  value. As a consequence, no runtime support is needed for performing
-  implicit deallocation. In particular, no per-object header data is needed
-  for heap-allocated objects.
-
-  Heap-allocated objects allocated through a nested access type will therefore
-  **not** be deallocated either. The result is simply that memory will be leaked
-  in this case.
-
-* The ``Adjust`` and ``Finalize`` procedures are automatically considered as
-  having the :ref:`No_Raise_Aspect` specified for them. In particular, the
-  compiler has permission to enforce none of the guarantees specified by the
-  RM 7.6.1 (14/1) and subsequent subclauses.
-
-Simple example of ref-counted type:
-
-.. code-block:: ada
-
-   type T is record
-      Value     : Integer;
-      Ref_Count : Natural := 0;
-   end record;
-
-   procedure Inc_Ref (X : in out T);
-   procedure Dec_Ref (X : in out T);
-
-   type T_Access is access all T;
-
-   type T_Ref is record
-      Value : T_Access;
-   end record
-      with Finalizable => (Adjust   => Adjust,
-                           Finalize => Finalize);
-
-   procedure Adjust (Ref : in out T_Ref) is
-   begin
-      Inc_Ref (Ref.Value);
-   end Adjust;
-
-   procedure Finalize (Ref : in out T_Ref) is
-   begin
-      Def_Ref (Ref.Value);
-   end Finalize;
-
-Simple file handle that ensures resources are properly released:
-
-.. code-block:: ada
-
-   package P is
-      type File (<>) is limited private;
-
-      function Open (Path : String) return File;
-
-      procedure Close (F : in out File);
-
-   private
-      type File is limited record
-         Handle : ...;
-      end record
-         with Finalizable (Finalize => Close);
-   end P;
-
-Finalizable tagged types
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-The aspect is inherited by derived types and the primitives may be overridden
-by the derivation. The compiler-generated calls to these operations are then
-dispatching whenever it makes sense, i.e. when the object in question is of a
-class-wide type and the class includes at least one finalizable tagged type.
-
-Composite types
-^^^^^^^^^^^^^^^
-
-When a finalizable type is used as a component of a composite type, the latter
-becomes finalizable as well. The three primitives are derived automatically
-in order to call the primitives of their components. The dynamic semantics is
-the same as for controlled components of composite types.
-
-Interoperability with controlled types
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Finalizable types are fully interoperable with controlled types, in particular
-it is possible for a finalizable type to have a controlled component and vice
-versa, but the stricter dynamic semantics, in other words that of controlled
-types, is applied in this case.
 
 .. _No_Raise_Aspect:
 

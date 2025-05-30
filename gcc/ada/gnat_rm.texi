@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Sep 05, 2025
+GNAT Reference Manual , Sep 12, 2025
 
 AdaCore
 
@@ -909,6 +909,7 @@ Curated Extensions
 * Static aspect on intrinsic functions:: 
 * First Controlling Parameter:: 
 * Unsigned_Base_Range aspect:: 
+* Generalized Finalization:: 
 
 Deep delta Aggregates
 
@@ -916,6 +917,12 @@ Deep delta Aggregates
 * Legality Rules:: 
 * Dynamic Semantics:: 
 * Examples:: 
+
+Generalized Finalization
+
+* Finalizable tagged types:: 
+* Composite types:: 
+* Interoperability with controlled types:: 
 
 Experimental Language Extensions
 
@@ -926,7 +933,6 @@ Experimental Language Extensions
 * Simpler Accessibility Model:: 
 * Case pattern matching:: 
 * Mutably Tagged Types with Size’Class Aspect:: 
-* Generalized Finalization:: 
 * No_Raise aspect:: 
 * Inference of Dependent Types in Generic Instantiations:: 
 * External_Initialization Aspect:: 
@@ -945,12 +951,6 @@ Simpler Accessibility Model
 * Stand-alone objects:: 
 * Subprogram parameters:: 
 * Function results:: 
-
-Generalized Finalization
-
-* Finalizable tagged types:: 
-* Composite types:: 
-* Interoperability with controlled types:: 
 
 Finally construct
 
@@ -30515,6 +30515,7 @@ Features activated via @code{-gnatX} or
 * Static aspect on intrinsic functions:: 
 * First Controlling Parameter:: 
 * Unsigned_Base_Range aspect:: 
+* Generalized Finalization:: 
 
 @end menu
 
@@ -31217,7 +31218,7 @@ overriding a primitive or creating new one.
 The result of a function is never a controlling result.
 @end itemize
 
-@node Unsigned_Base_Range aspect,,First Controlling Parameter,Curated Extensions
+@node Unsigned_Base_Range aspect,Generalized Finalization,First Controlling Parameter,Curated Extensions
 @anchor{gnat_rm/gnat_language_extensions unsigned-base-range-aspect}@anchor{458}
 @subsection @code{Unsigned_Base_Range} aspect
 
@@ -31243,8 +31244,170 @@ type Uns_64 is range 0 .. 2 ** 64 - 1
 It ensures that arithmetic operations of type @code{Uns_64} are carried
 out using 64 bits.
 
+@node Generalized Finalization,,Unsigned_Base_Range aspect,Curated Extensions
+@anchor{gnat_rm/gnat_language_extensions generalized-finalization}@anchor{459}
+@subsection Generalized Finalization
+
+
+The @code{Finalizable} aspect can be applied to any record type, tagged or not,
+to specify that it provides the same level of control on the operations of
+initialization, finalization, and assignment of objects as the controlled
+types (see RM 7.6(2) for a high-level overview). The only restriction is
+that the record type must be a root type, in other words not a derived type.
+
+The aspect additionally makes it possible to specify relaxed semantics for
+the finalization operations by means of the @code{Relaxed_Finalization} setting.
+Here is the archetypal example:
+
+@example
+type T is record
+  ...
+end record
+  with Finalizable => (Initialize           => Initialize,
+                       Adjust               => Adjust,
+                       Finalize             => Finalize,
+                       Relaxed_Finalization => True);
+
+procedure Adjust     (Obj : in out T);
+procedure Finalize   (Obj : in out T);
+procedure Initialize (Obj : in out T);
+@end example
+
+The three procedures have the same profile, with a single @code{in out} parameter,
+and also have the same dynamic semantics as for controlled types:
+
+@quotation
+
+
+@itemize -
+
+@item 
+@code{Initialize} is called when an object of type @code{T} is declared without
+initialization expression.
+
+@item 
+@code{Adjust} is called after an object of type @code{T} is assigned a new value.
+
+@item 
+@code{Finalize} is called when an object of type @code{T} goes out of scope (for
+stack-allocated objects) or is deallocated (for heap-allocated objects).
+It is also called when the value is replaced by an assignment.
+@end itemize
+@end quotation
+
+However, when @code{Relaxed_Finalization} is either @code{True} or not explicitly
+specified, the following differences are implemented relative to the semantics
+of controlled types:
+
+
+@itemize *
+
+@item 
+The compiler has permission to perform no automatic finalization of
+heap-allocated objects: @code{Finalize} is only called when such an object
+is explicitly deallocated, or when the designated object is assigned a new
+value. As a consequence, no runtime support is needed for performing
+implicit deallocation. In particular, no per-object header data is needed
+for heap-allocated objects.
+
+Heap-allocated objects allocated through a nested access type will therefore
+`not' be deallocated either. The result is simply that memory will be leaked
+in this case.
+
+@item 
+The @code{Adjust} and @code{Finalize} procedures are automatically considered as
+having the @ref{45a,,No_Raise aspect} specified for them. In particular, the
+compiler has permission to enforce none of the guarantees specified by the
+RM 7.6.1 (14/1) and subsequent subclauses.
+@end itemize
+
+Simple example of ref-counted type:
+
+@example
+type T is record
+   Value     : Integer;
+   Ref_Count : Natural := 0;
+end record;
+
+procedure Inc_Ref (X : in out T);
+procedure Dec_Ref (X : in out T);
+
+type T_Access is access all T;
+
+type T_Ref is record
+   Value : T_Access;
+end record
+   with Finalizable => (Adjust   => Adjust,
+                        Finalize => Finalize);
+
+procedure Adjust (Ref : in out T_Ref) is
+begin
+   Inc_Ref (Ref.Value);
+end Adjust;
+
+procedure Finalize (Ref : in out T_Ref) is
+begin
+   Def_Ref (Ref.Value);
+end Finalize;
+@end example
+
+Simple file handle that ensures resources are properly released:
+
+@example
+package P is
+   type File (<>) is limited private;
+
+   function Open (Path : String) return File;
+
+   procedure Close (F : in out File);
+
+private
+   type File is limited record
+      Handle : ...;
+   end record
+      with Finalizable (Finalize => Close);
+end P;
+@end example
+
+@menu
+* Finalizable tagged types:: 
+* Composite types:: 
+* Interoperability with controlled types:: 
+
+@end menu
+
+@node Finalizable tagged types,Composite types,,Generalized Finalization
+@anchor{gnat_rm/gnat_language_extensions finalizable-tagged-types}@anchor{45b}
+@subsubsection Finalizable tagged types
+
+
+The aspect is inherited by derived types and the primitives may be overridden
+by the derivation. The compiler-generated calls to these operations are then
+dispatching whenever it makes sense, i.e. when the object in question is of a
+class-wide type and the class includes at least one finalizable tagged type.
+
+@node Composite types,Interoperability with controlled types,Finalizable tagged types,Generalized Finalization
+@anchor{gnat_rm/gnat_language_extensions composite-types}@anchor{45c}
+@subsubsection Composite types
+
+
+When a finalizable type is used as a component of a composite type, the latter
+becomes finalizable as well. The three primitives are derived automatically
+in order to call the primitives of their components. The dynamic semantics is
+the same as for controlled components of composite types.
+
+@node Interoperability with controlled types,,Composite types,Generalized Finalization
+@anchor{gnat_rm/gnat_language_extensions interoperability-with-controlled-types}@anchor{45d}
+@subsubsection Interoperability with controlled types
+
+
+Finalizable types are fully interoperable with controlled types, in particular
+it is possible for a finalizable type to have a controlled component and vice
+versa, but the stricter dynamic semantics, in other words that of controlled
+types, is applied in this case.
+
 @node Experimental Language Extensions,,Curated Extensions,GNAT language extensions
-@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6b}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{459}
+@anchor{gnat_rm/gnat_language_extensions experimental-language-extensions}@anchor{6b}@anchor{gnat_rm/gnat_language_extensions id2}@anchor{45e}
 @section Experimental Language Extensions
 
 
@@ -31259,7 +31422,6 @@ Features activated via @code{-gnatX0} or
 * Simpler Accessibility Model:: 
 * Case pattern matching:: 
 * Mutably Tagged Types with Size’Class Aspect:: 
-* Generalized Finalization:: 
 * No_Raise aspect:: 
 * Inference of Dependent Types in Generic Instantiations:: 
 * External_Initialization Aspect:: 
@@ -31270,7 +31432,7 @@ Features activated via @code{-gnatX0} or
 @end menu
 
 @node Conditional when constructs,Implicit With,,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions conditional-when-constructs}@anchor{45a}
+@anchor{gnat_rm/gnat_language_extensions conditional-when-constructs}@anchor{45f}
 @subsection Conditional when constructs
 
 
@@ -31339,7 +31501,7 @@ end;
 @end example
 
 @node Implicit With,Storage Model,Conditional when constructs,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions implicit-with}@anchor{45b}
+@anchor{gnat_rm/gnat_language_extensions implicit-with}@anchor{460}
 @subsection Implicit With
 
 
@@ -31356,7 +31518,7 @@ end;
 @end example
 
 @node Storage Model,Attribute Super,Implicit With,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions storage-model}@anchor{45c}
+@anchor{gnat_rm/gnat_language_extensions storage-model}@anchor{461}
 @subsection Storage Model
 
 
@@ -31373,7 +31535,7 @@ memory models, in particular to support interactions with GPU.
 @end menu
 
 @node Aspect Storage_Model_Type,Aspect Designated_Storage_Model,,Storage Model
-@anchor{gnat_rm/gnat_language_extensions aspect-storage-model-type}@anchor{45d}
+@anchor{gnat_rm/gnat_language_extensions aspect-storage-model-type}@anchor{462}
 @subsubsection Aspect Storage_Model_Type
 
 
@@ -31507,7 +31669,7 @@ end CUDA_Memory;
 @end example
 
 @node Aspect Designated_Storage_Model,Legacy Storage Pools,Aspect Storage_Model_Type,Storage Model
-@anchor{gnat_rm/gnat_language_extensions aspect-designated-storage-model}@anchor{45e}
+@anchor{gnat_rm/gnat_language_extensions aspect-designated-storage-model}@anchor{463}
 @subsubsection Aspect Designated_Storage_Model
 
 
@@ -31585,7 +31747,7 @@ begin
 @end example
 
 @node Legacy Storage Pools,,Aspect Designated_Storage_Model,Storage Model
-@anchor{gnat_rm/gnat_language_extensions legacy-storage-pools}@anchor{45f}
+@anchor{gnat_rm/gnat_language_extensions legacy-storage-pools}@anchor{464}
 @subsubsection Legacy Storage Pools
 
 
@@ -31636,7 +31798,7 @@ type Acc is access Integer_Array with Storage_Pool => My_Pool;
 can still be accepted as a shortcut for the new syntax.
 
 @node Attribute Super,Simpler Accessibility Model,Storage Model,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions attribute-super}@anchor{460}
+@anchor{gnat_rm/gnat_language_extensions attribute-super}@anchor{465}
 @subsection Attribute Super
 
 
@@ -31671,7 +31833,7 @@ end;
 @end example
 
 @node Simpler Accessibility Model,Case pattern matching,Attribute Super,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions simpler-accessibility-model}@anchor{461}
+@anchor{gnat_rm/gnat_language_extensions simpler-accessibility-model}@anchor{466}
 @subsection Simpler Accessibility Model
 
 
@@ -31702,7 +31864,7 @@ All of the refined rules are compatible with the [use of anonymous access types 
 @end menu
 
 @node Stand-alone objects,Subprogram parameters,,Simpler Accessibility Model
-@anchor{gnat_rm/gnat_language_extensions stand-alone-objects}@anchor{462}
+@anchor{gnat_rm/gnat_language_extensions stand-alone-objects}@anchor{467}
 @subsubsection Stand-alone objects
 
 
@@ -31750,7 +31912,7 @@ of the RM 4.6 rule “The accessibility level of the operand type shall not be
 statically deeper than that of the target type …”.
 
 @node Subprogram parameters,Function results,Stand-alone objects,Simpler Accessibility Model
-@anchor{gnat_rm/gnat_language_extensions subprogram-parameters}@anchor{463}
+@anchor{gnat_rm/gnat_language_extensions subprogram-parameters}@anchor{468}
 @subsubsection Subprogram parameters
 
 
@@ -31843,7 +32005,7 @@ end;
 @end example
 
 @node Function results,,Subprogram parameters,Simpler Accessibility Model
-@anchor{gnat_rm/gnat_language_extensions function-results}@anchor{464}
+@anchor{gnat_rm/gnat_language_extensions function-results}@anchor{469}
 @subsubsection Function results
 
 
@@ -31971,7 +32133,7 @@ end;
 @end example
 
 @node Case pattern matching,Mutably Tagged Types with Size’Class Aspect,Simpler Accessibility Model,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions case-pattern-matching}@anchor{465}
+@anchor{gnat_rm/gnat_language_extensions case-pattern-matching}@anchor{46a}
 @subsection Case pattern matching
 
 
@@ -32100,8 +32262,8 @@ compile-time capacity limits in some annoyingly common scenarios; the
 message generated in such cases is usually “Capacity exceeded in compiling
 case statement with composite selector type”.
 
-@node Mutably Tagged Types with Size’Class Aspect,Generalized Finalization,Case pattern matching,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions mutably-tagged-types-with-size-class-aspect}@anchor{466}
+@node Mutably Tagged Types with Size’Class Aspect,No_Raise aspect,Case pattern matching,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions mutably-tagged-types-with-size-class-aspect}@anchor{46b}
 @subsection Mutably Tagged Types with Size’Class Aspect
 
 
@@ -32271,170 +32433,8 @@ of the call is erroneous if the tag of the actual is changed while the formal
 parameter exists (that is, before leaving the corresponding callable construct).
 This is analogous to the RM 6.4.1(18) rule about discriminated parameters.
 
-@node Generalized Finalization,No_Raise aspect,Mutably Tagged Types with Size’Class Aspect,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions generalized-finalization}@anchor{467}
-@subsection Generalized Finalization
-
-
-The @code{Finalizable} aspect can be applied to any record type, tagged or not,
-to specify that it provides the same level of control on the operations of
-initialization, finalization, and assignment of objects as the controlled
-types (see RM 7.6(2) for a high-level overview). The only restriction is
-that the record type must be a root type, in other words not a derived type.
-
-The aspect additionally makes it possible to specify relaxed semantics for
-the finalization operations by means of the @code{Relaxed_Finalization} setting.
-Here is the archetypal example:
-
-@example
-type T is record
-  ...
-end record
-  with Finalizable => (Initialize           => Initialize,
-                       Adjust               => Adjust,
-                       Finalize             => Finalize,
-                       Relaxed_Finalization => True);
-
-procedure Adjust     (Obj : in out T);
-procedure Finalize   (Obj : in out T);
-procedure Initialize (Obj : in out T);
-@end example
-
-The three procedures have the same profile, with a single @code{in out} parameter,
-and also have the same dynamic semantics as for controlled types:
-
-@quotation
-
-
-@itemize -
-
-@item 
-@code{Initialize} is called when an object of type @code{T} is declared without
-initialization expression.
-
-@item 
-@code{Adjust} is called after an object of type @code{T} is assigned a new value.
-
-@item 
-@code{Finalize} is called when an object of type @code{T} goes out of scope (for
-stack-allocated objects) or is deallocated (for heap-allocated objects).
-It is also called when the value is replaced by an assignment.
-@end itemize
-@end quotation
-
-However, when @code{Relaxed_Finalization} is either @code{True} or not explicitly
-specified, the following differences are implemented relative to the semantics
-of controlled types:
-
-
-@itemize *
-
-@item 
-The compiler has permission to perform no automatic finalization of
-heap-allocated objects: @code{Finalize} is only called when such an object
-is explicitly deallocated, or when the designated object is assigned a new
-value. As a consequence, no runtime support is needed for performing
-implicit deallocation. In particular, no per-object header data is needed
-for heap-allocated objects.
-
-Heap-allocated objects allocated through a nested access type will therefore
-`not' be deallocated either. The result is simply that memory will be leaked
-in this case.
-
-@item 
-The @code{Adjust} and @code{Finalize} procedures are automatically considered as
-having the @ref{468,,No_Raise aspect} specified for them. In particular, the
-compiler has permission to enforce none of the guarantees specified by the
-RM 7.6.1 (14/1) and subsequent subclauses.
-@end itemize
-
-Simple example of ref-counted type:
-
-@example
-type T is record
-   Value     : Integer;
-   Ref_Count : Natural := 0;
-end record;
-
-procedure Inc_Ref (X : in out T);
-procedure Dec_Ref (X : in out T);
-
-type T_Access is access all T;
-
-type T_Ref is record
-   Value : T_Access;
-end record
-   with Finalizable => (Adjust   => Adjust,
-                        Finalize => Finalize);
-
-procedure Adjust (Ref : in out T_Ref) is
-begin
-   Inc_Ref (Ref.Value);
-end Adjust;
-
-procedure Finalize (Ref : in out T_Ref) is
-begin
-   Def_Ref (Ref.Value);
-end Finalize;
-@end example
-
-Simple file handle that ensures resources are properly released:
-
-@example
-package P is
-   type File (<>) is limited private;
-
-   function Open (Path : String) return File;
-
-   procedure Close (F : in out File);
-
-private
-   type File is limited record
-      Handle : ...;
-   end record
-      with Finalizable (Finalize => Close);
-end P;
-@end example
-
-@menu
-* Finalizable tagged types:: 
-* Composite types:: 
-* Interoperability with controlled types:: 
-
-@end menu
-
-@node Finalizable tagged types,Composite types,,Generalized Finalization
-@anchor{gnat_rm/gnat_language_extensions finalizable-tagged-types}@anchor{469}
-@subsubsection Finalizable tagged types
-
-
-The aspect is inherited by derived types and the primitives may be overridden
-by the derivation. The compiler-generated calls to these operations are then
-dispatching whenever it makes sense, i.e. when the object in question is of a
-class-wide type and the class includes at least one finalizable tagged type.
-
-@node Composite types,Interoperability with controlled types,Finalizable tagged types,Generalized Finalization
-@anchor{gnat_rm/gnat_language_extensions composite-types}@anchor{46a}
-@subsubsection Composite types
-
-
-When a finalizable type is used as a component of a composite type, the latter
-becomes finalizable as well. The three primitives are derived automatically
-in order to call the primitives of their components. The dynamic semantics is
-the same as for controlled components of composite types.
-
-@node Interoperability with controlled types,,Composite types,Generalized Finalization
-@anchor{gnat_rm/gnat_language_extensions interoperability-with-controlled-types}@anchor{46b}
-@subsubsection Interoperability with controlled types
-
-
-Finalizable types are fully interoperable with controlled types, in particular
-it is possible for a finalizable type to have a controlled component and vice
-versa, but the stricter dynamic semantics, in other words that of controlled
-types, is applied in this case.
-
-@node No_Raise aspect,Inference of Dependent Types in Generic Instantiations,Generalized Finalization,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions id3}@anchor{46c}@anchor{gnat_rm/gnat_language_extensions no-raise-aspect}@anchor{468}
+@node No_Raise aspect,Inference of Dependent Types in Generic Instantiations,Mutably Tagged Types with Size’Class Aspect,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions id3}@anchor{46c}@anchor{gnat_rm/gnat_language_extensions no-raise-aspect}@anchor{45a}
 @subsection No_Raise aspect
 
 
