@@ -11024,6 +11024,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case CO_AWAIT_EXPR:
     case CO_YIELD_EXPR:
     case CO_RETURN_EXPR:
+      if (flags & tf_error)
+	constexpr_error (cp_expr_loc_or_loc (t, input_location), fundef_p,
+			 "%qE is not a constant expression", t);
       return false;
 
     /* Assume a TU-local entity is not constant, we'll error later when
