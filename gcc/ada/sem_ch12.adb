@@ -3171,7 +3171,7 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      if Subtype_Mark (Def) <= Empty_Or_Error then
+      if Subtype_Mark (Def) in Empty | Error then
          pragma Assert (Serious_Errors_Detected > 0);
          --  avoid passing bad argument to Entity
          return;

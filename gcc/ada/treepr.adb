@@ -2015,17 +2015,16 @@ package body Treepr is
          --  Case of descendant is a node
 
          if D in Node_Range then
-
-            --  Don't bother about Empty or Error descendants
-
-            if D <= Union_Id (Empty_Or_Error) then
-               return;
-            end if;
-
             declare
                Nod : constant Node_Or_Entity_Id := Node_Or_Entity_Id (D);
 
             begin
+               --  Don't bother about Empty or Error descendants
+
+               if Nod in Empty | Error then
+                  return;
+               end if;
+
                --  Descendants in one of the standardly compiled internal
                --  packages are normally ignored, unless the parent is also
                --  in such a package (happens when Standard itself is output)

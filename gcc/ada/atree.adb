@@ -1296,8 +1296,7 @@ package body Atree is
         Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
 
    begin
-      --  Empty_Or_Error use as described in types.ads
-      if Destination <= Empty_Or_Error or No (Source) then
+      if Destination in Empty | Error or else No (Source) then
          pragma Assert (Serious_Errors_Detected > 0);
          return;
       end if;
@@ -1458,7 +1457,7 @@ package body Atree is
    --  Start of processing for Copy_Separate_Tree
 
    begin
-      if Source <= Empty_Or_Error then
+      if Source in Empty | Error then
          return Source;
 
       elsif Is_Entity (Source) then
@@ -1841,7 +1840,7 @@ package body Atree is
       pragma Debug (Validate_Node (Source));
       S_Size : constant Slot_Count := Size_In_Slots_To_Alloc (Source);
    begin
-      if Source <= Empty_Or_Error then
+      if Source in Empty | Error then
          return Source;
       end if;
 

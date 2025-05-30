@@ -431,11 +431,6 @@ package Types is
    --  Used to indicate an error in the source program. A node is actually
    --  allocated with this Id value, so that Nkind (Error) = N_Error.
 
-   Empty_Or_Error : constant Node_Id := Error;
-   --  Since Empty and Error are the first two Node_Id values, the test for
-   --  N <= Empty_Or_Error tests to see if N is Empty or Error. This definition
-   --  provides convenient self-documentation for such tests.
-
    First_Node_Id  : constant Node_Id := Node_Low_Bound;
    --  Subscript of first allocated node. Note that Empty and Error are both
    --  allocated nodes, whose Nkind fields can be accessed without error.

@@ -19159,8 +19159,7 @@ package body Sem_Ch3 is
       --  Otherwise we have a subtype mark without a constraint
 
       elsif Error_Posted (S) then
-         --  Don't rewrite if S is Empty or Error
-         if S > Empty_Or_Error then
+         if S not in Empty | Error then
             Rewrite (S, New_Occurrence_Of (Any_Id, Sloc (S)));
          end if;
          return Any_Type;
@@ -21094,7 +21093,7 @@ package body Sem_Ch3 is
 
       --  If no range was given, set a dummy range
 
-      if RRS <= Empty_Or_Error then
+      if RRS in Empty | Error then
          Low_Val  := -Small_Val;
          High_Val := Small_Val;
 
