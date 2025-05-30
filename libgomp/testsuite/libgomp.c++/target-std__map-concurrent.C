@@ -56,6 +56,14 @@ int main (void)
     for (int i = 0; i < N; ++i)
       sum += (long long) keys[i] * _map[keys[i]];
 
+#ifdef OMP_USM
+  #pragma omp target
+    /* Restore the object into pristine state.  In particular, deallocate
+       any memory allocated during device execution, which otherwise, back
+       on the host, we'd SIGSEGV on, when attempting to deallocate during
+       destruction of the object.  */
+    __typeof__ (_map){}.swap (_map);
+#endif
 #ifndef MEM_SHARED
   #pragma omp target
     _map.~map ();

@@ -53,6 +53,11 @@ int main (void)
       #pragma omp target map (from: ok)
 	{
 	  ok = validate (arr, data);
+
+#ifdef OMP_USM
+	  /* (By construction) we're not allocating memory during device
+	     execution, so have nothing to clean up.  */
+#endif
 #ifndef MEM_SHARED
 	  arr.~array ();
 #endif

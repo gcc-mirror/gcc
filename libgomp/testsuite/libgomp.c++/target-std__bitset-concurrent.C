@@ -58,6 +58,10 @@ int main (void)
 	  if (_set[i])
 	    sum += i;
 
+#ifdef OMP_USM
+	/* (By construction) we're not allocating memory during device
+	   execution, so have nothing to clean up.  */
+#endif
 #ifndef MEM_SHARED
       #pragma omp target
 	_set.~bitset ();

@@ -54,17 +54,15 @@ int main (void)
 	for (auto it = range.first; it != range.second; ++it)
 	  sum += (long long) it->first * it->second;
       }
-#ifdef MEM_SHARED
-  /* Even with USM, memory allocated on the device (with _map.insert)
-     must be freed on the device.  */
-  if (omp_get_default_device () != omp_initial_device
-      && omp_get_default_device () != omp_get_num_devices ())
-    {
-      #pragma omp target
-	_map.clear ();
-    }
-#endif
 
+#ifdef OMP_USM
+  #pragma omp target
+    /* Restore the object into pristine state.  In particular, deallocate
+       any memory allocated during device execution, which otherwise, back
+       on the host, we'd SIGSEGV on, when attempting to deallocate during
+       destruction of the object.  */
+    __typeof__ (_map){}.swap (_map);
+#endif
 #ifndef MEM_SHARED
   #pragma omp target
     _map.~multimap ();
