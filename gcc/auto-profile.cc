@@ -233,6 +233,10 @@ public:
   function_instance *get_function_instance_by_decl (unsigned lineno,
                                                     tree decl) const;
 
+  /* Merge profile of clones.  Note that cloning hasnt been performed when
+     we annotate the CFG (at this stage).  */
+  void merge (function_instance *other);
+
   /* Store the profile info for LOC in INFO. Return TRUE if profile info
      is found.  */
   bool get_count_info (location_t loc, count_info *info) const;
@@ -558,6 +562,27 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
   return NULL;
 }
 
+/* Merge profile of clones.  Note that cloning hasnt been performed when
+   we annotate the CFG (at this stage).  */
+
+void function_instance::merge (function_instance *other)
+{
+  total_count_ += other->total_count_;
+  head_count_ += other->head_count_;
+
+  for (callsite_map::const_iterator iter = other->callsites.begin ();
+       iter != other->callsites.end (); ++iter)
+    if (callsites.count (iter->first) == 0)
+	callsites[iter->first] = iter->second;
+
+  for (position_count_map::const_iterator iter = pos_counts.begin ();
+       iter != pos_counts.end (); ++iter)
+    if (pos_counts.count (iter->first) == 0)
+      pos_counts[iter->first] = iter->second;
+    else
+      pos_counts[iter->first].count += iter->second.count;
+}
+
 /* Store the profile info for LOC in INFO. Return TRUE if profile info
    is found.  */
 
@@ -838,7 +863,14 @@ autofdo_source_profile::read ()
       function_instance::function_instance_stack stack;
       function_instance *s = function_instance::read_function_instance (
           &stack, gcov_read_counter ());
-      map_[s->name ()] = s;
+      int fun_id = afdo_string_table->get_index
+	      (afdo_string_table->get_name (s->name ()));
+      /* If function_instace with get_original_name (without the clone
+	 suffix) exixts, merge the function instances.  */
+      if (map_.count (fun_id) == 0)
+	map_[fun_id] = s;
+      else
+	map_[fun_id]->merge (s);
     }
   return true;
 }
