@@ -3307,7 +3307,8 @@ can_sm_ref_p (class loop *loop, im_mem_ref *ref)
      explicitly.  */
   base = get_base_address (ref->mem.ref);
   if ((tree_could_trap_p (ref->mem.ref)
-       || (DECL_P (base) && TREE_READONLY (base)))
+       || (DECL_P (base) && TREE_READONLY (base))
+       || TREE_CODE (base) == STRING_CST)
       /* ???  We can at least use false here, allowing loads?  We
 	 are forcing conditional stores if the ref is not always
 	 stored to later anyway.  So this would only guard
