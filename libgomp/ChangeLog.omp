@@ -1,3 +1,39 @@
+2025-05-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-05-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/93226
+	* libgomp-plugin.h (GOMP_OFFLOAD_openacc_async_dev2dev): New
+	prototype.
+	* libgomp.h (struct acc_dispatch_t): Add dev2dev_func.
+	(gomp_copy_dev2dev): New prototype.
+	* libgomp.map (OACC_2.6.1): New; add acc_memcpy_device{,_async}.
+	* libgomp.texi (acc_memcpy_device): New.
+	* oacc-mem.c (memcpy_tofrom_device): Change to take from/to
+	device boolean; use memcpy not memmove; add early return if
+	size == 0 or same device + same ptr.
+	(acc_memcpy_to_device, acc_memcpy_to_device_async,
+	acc_memcpy_from_device, acc_memcpy_from_device_async): Update.
+	(acc_memcpy_device, acc_memcpy_device_async): New.
+	* openacc.f90 (acc_memcpy_device, acc_memcpy_device_async):
+	Add interface.
+	* openacc_lib.h (acc_memcpy_device, acc_memcpy_device_async):
+	Likewise.
+	* openacc.h (acc_memcpy_device, acc_memcpy_device_async): Add
+	prototype.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_async_host2dev):
+	Update comment.
+	(GOMP_OFFLOAD_openacc_async_dev2host): Update call.
+	(GOMP_OFFLOAD_openacc_async_dev2dev): New.
+	* plugin/plugin-nvptx.c (cuda_memcpy_dev_sanity_check): New.
+	(GOMP_OFFLOAD_dev2dev): Call it.
+	(GOMP_OFFLOAD_openacc_async_dev2dev): New.
+	* target.c (gomp_copy_dev2dev): New.
+	(gomp_load_plugin_for_device): Load dev2dev and async_dev2dev.
+	* testsuite/libgomp.oacc-c-c++-common/acc_memcpy_device-1.c: New test.
+	* testsuite/libgomp.oacc-fortran/acc_memcpy_device-1.f90: New test.
+
 2025-05-22  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:
