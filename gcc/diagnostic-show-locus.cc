@@ -148,6 +148,7 @@ class colorizer
   const char *m_fixit_insert;
   const char *m_fixit_delete;
   const char *m_stop_color;
+  std::string m_current_named_color;
 };
 
 /* In order to handle multibyte sources properly, all of this logic needs to be
@@ -932,9 +933,13 @@ colorizer::~colorizer ()
 void
 colorizer::set_named_color (const char *color)
 {
+  if (m_current_state == STATE_NAMED_COLOR
+      && color == m_current_named_color)
+    return;
   finish_state (m_current_state);
   m_current_state = STATE_NAMED_COLOR;
   pp_string (&m_pp, colorize_start (pp_show_color (&m_pp), color));
+  m_current_named_color = color;
 }
 
 /* Update state, printing color codes if necessary if there's a state
