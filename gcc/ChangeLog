@@ -1,3 +1,14 @@
+2025-05-29  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/99015
+	* lra-constraints.cc (enough_allocatable_hard_regs_p): Extract
+	from in_class_p.
+	(in_class_p): Use it with added conditions.
+	(process_alt_operands): Try to change class too.
+	(curr_insn_transform): Pass true to in_class_p for reg operand
+	win.  Spill pseudo only used in the insn if the corresponding
+	operand does not require hard register anymore.
+
 2025-05-28  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
