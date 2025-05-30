@@ -37,7 +37,9 @@ int main (void)
   std::vector<int> vec;
 #endif
 
+#ifndef MEM_SHARED
   #pragma omp target data map (to: data[:N]) map (alloc: vec)
+#endif
     {
 #ifndef MEM_SHARED
       #pragma omp target

@@ -34,7 +34,9 @@ int main (void)
   srand (time (NULL));
   init (data);
 
+#ifndef MEM_SHARED
   #pragma omp target enter data map (to: data[:N]) map (alloc: elements, span)
+#endif
 
   #pragma omp target
     {
@@ -56,7 +58,9 @@ int main (void)
 #endif
     }
 
+#ifndef MEM_SHARED
   #pragma omp target exit data map (release: elements, span)
+#endif
 
   return ok ? 0 : 1;
 }
