@@ -1303,10 +1303,12 @@ enum c_omp_region_type
   C_ORT_TARGET			= 1 << 3,
   C_ORT_EXIT_DATA		= 1 << 4,
   C_ORT_INTEROP			= 1 << 5,
+  C_ORT_DECLARE_MAPPER		= 1 << 6,
   C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD,
   C_ORT_OMP_TARGET		= C_ORT_OMP | C_ORT_TARGET,
   C_ORT_OMP_EXIT_DATA		= C_ORT_OMP | C_ORT_EXIT_DATA,
   C_ORT_OMP_INTEROP		= C_ORT_OMP | C_ORT_INTEROP,
+  C_ORT_OMP_DECLARE_MAPPER	= C_ORT_OMP | C_ORT_DECLARE_MAPPER,
   C_ORT_ACC_TARGET		= C_ORT_ACC | C_ORT_TARGET
 };
 
@@ -1345,6 +1347,9 @@ extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern void c_omp_adjust_map_clauses (tree, bool);
+template<typename T> struct omp_mapper_list;
+extern void c_omp_find_nested_mappers (struct omp_mapper_list<tree> *, tree);
+extern tree c_omp_instantiate_mappers (tree);
 
 namespace omp_addr_tokenizer { struct omp_addr_token; }
 typedef omp_addr_tokenizer::omp_addr_token omp_addr_token;

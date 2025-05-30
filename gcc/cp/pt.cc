@@ -15989,7 +15989,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
 		  = remove_attribute ("visibility", DECL_ATTRIBUTES (r));
 	      }
 	    determine_visibility (r);
-	    if ((!local_p || TREE_STATIC (t)) && DECL_SECTION_NAME (t))
+	    if ((!local_p || TREE_STATIC (t))
+		&& !(flag_openmp && DECL_LANG_SPECIFIC (t)
+		     && DECL_OMP_DECLARE_MAPPER_P (t))
+		&& DECL_SECTION_NAME (t))
 	      set_decl_section_name (r, t);
 	  }
 
@@ -16040,6 +16043,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
 		&& dependent_type_p (TREE_TYPE (r)))
 	      SET_TYPE_STRUCTURAL_EQUALITY (TREE_TYPE (r));
 	  }
+
+	if (flag_openmp
+	    && VAR_P (t)
+	    && DECL_LANG_SPECIFIC (t)
+	    && DECL_OMP_DECLARE_MAPPER_P (t)
+	    && strchr (IDENTIFIER_POINTER (DECL_NAME (t)), '~') == NULL)
+	  DECL_NAME (r) = omp_mapper_id (DECL_NAME (t), TREE_TYPE (r));
 
 	layout_decl (r, 0);
       }
@@ -18313,8 +18323,10 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
     }
 
   new_clauses = nreverse (new_clauses);
-  if (ort != C_ORT_OMP_DECLARE_SIMD)
+  if (ort != C_ORT_OMP_DECLARE_SIMD && ort != C_ORT_OMP_DECLARE_MAPPER)
     {
+      if (ort == C_ORT_OMP_TARGET)
+	new_clauses = c_omp_instantiate_mappers (new_clauses);
       new_clauses = finish_omp_clauses (new_clauses, ort);
       if (linear_no_step)
 	for (nc = new_clauses; nc; nc = OMP_CLAUSE_CHAIN (nc))
@@ -20034,6 +20046,22 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	break;
       }
 
+    case OMP_DECLARE_MAPPER:
+      {
+	t = copy_node (t);
+
+	tree decl = OMP_DECLARE_MAPPER_DECL (t);
+	decl = tsubst (decl, args, complain, in_decl);
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree clauses = OMP_DECLARE_MAPPER_CLAUSES (t);
+	clauses = tsubst_omp_clauses (clauses, C_ORT_OMP_DECLARE_MAPPER, args,
+				      complain, in_decl);
+	TREE_TYPE (t) = type;
+	OMP_DECLARE_MAPPER_DECL (t) = decl;
+	OMP_DECLARE_MAPPER_CLAUSES (t) = clauses;
+	RETURN (t);
+      }
+
     case TRANSACTION_EXPR:
       {
 	int flags = 0;
@@ -21091,6 +21119,23 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      RETURN (error_mark_node);
 	  }
 	RETURN (build_omp_array_section (EXPR_LOCATION (t), op0, op1, op2));
+      }
+
+    case OMP_DECLARE_MAPPER:
+      {
+	t = copy_node (t);
+
+	tree decl = OMP_DECLARE_MAPPER_DECL (t);
+	DECL_OMP_DECLARE_MAPPER_P (decl) = 1;
+	decl = tsubst (decl, args, complain, in_decl);
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree clauses = OMP_DECLARE_MAPPER_CLAUSES (t);
+	clauses = tsubst_omp_clauses (clauses, C_ORT_OMP_DECLARE_MAPPER, args,
+				      complain, in_decl);
+	TREE_TYPE (t) = type;
+	OMP_DECLARE_MAPPER_DECL (t) = decl;
+	OMP_DECLARE_MAPPER_CLAUSES (t) = clauses;
+	RETURN (t);
       }
 
     case SIZEOF_EXPR:
@@ -28036,7 +28081,9 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
       || (external_p && VAR_P (d))
       /* Handle here a deleted function too, avoid generating
 	 its body (c++/61080).  */
-      || deleted_p)
+      || deleted_p
+      /* We need the initializer for an OpenMP declare mapper.  */
+      || (VAR_P (d) && DECL_LANG_SPECIFIC (d) && DECL_OMP_DECLARE_MAPPER_P (d)))
     {
       /* The definition of the static data member is now required so
 	 we must substitute the initializer.  */

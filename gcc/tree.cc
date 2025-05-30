@@ -326,6 +326,7 @@ unsigned const char omp_clause_num_ops[] =
   2, /* OMP_CLAUSE_MAP  */
   1, /* OMP_CLAUSE_HAS_DEVICE_ADDR  */
   1, /* OMP_CLAUSE_DOACROSS  */
+  3, /* OMP_CLAUSE__MAPPER_BINDING_  */
   2, /* OMP_CLAUSE__CACHE_  */
   1, /* OMP_CLAUSE_DESTROY  */
   2, /* OMP_CLAUSE_INIT  */
@@ -428,6 +429,7 @@ const char * const omp_clause_code_name[] =
   "map",
   "has_device_addr",
   "doacross",
+  "_mapper_binding_",
   "_cache_",
   "destroy",
   "init",
