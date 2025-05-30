@@ -21,6 +21,8 @@ bool f()
 
   bool ok;
   #pragma omp target defaultmap(none) map(from: ok) map(to: arr_fwd[:8], arr_rev[:8])
+  /* <https://baylibre.slack.com/archives/C06TTV7HMMG/p1748508583437829>
+     { dg-bogus {sorry, unimplemented: unsupported map expression '<lambda closure object>.*} TODO { xfail *-*-* } .-2 } */
     {
       std::span<const int> fwd = {arr_fwd, 8};
       std::span<const int> rev = {arr_rev, 8};
