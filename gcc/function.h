@@ -333,7 +333,6 @@ struct GTY(()) function {
 
   /* Properties used by the pass manager.  */
   unsigned int curr_properties;
-  unsigned int last_verified;
 
   /* Different from normal TODO_flags which are handled right at the
      beginning or the end of one pass execution, the pending_TODOs

@@ -64,6 +64,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 
+/* Reserved TODOs */
+#define TODO_verify_il			(1u << 31)
+
 using namespace gcc;
 
 /* This is used for debugging.  It allows the current pass to printed
@@ -2059,7 +2062,6 @@ execute_function_todo (function *fn, void *data)
 {
   bool from_ipa_pass = (cfun == NULL);
   unsigned int flags = (size_t)data;
-  flags &= ~fn->last_verified;
   if (!flags)
     return;
 
@@ -2127,8 +2129,6 @@ execute_function_todo (function *fn, void *data)
       gcc_assert (dom_info_state (fn, CDI_POST_DOMINATORS) == pre_verify_pstate);
     }
 
-  fn->last_verified = flags & TODO_verify_all;
-
   pop_cfun ();
 
   /* For IPA passes make sure to release dominator info, it can be
@@ -2191,14 +2191,6 @@ static void
 verify_interpass_invariants (void)
 {
   gcc_checking_assert (!fold_deferring_overflow_warnings_p ());
-}
-
-/* Clear the last verified flag.  */
-
-static void
-clear_last_verified (function *fn, void *data ATTRIBUTE_UNUSED)
-{
-  fn->last_verified = 0;
 }
 
 /* Helper function. Verify that the properties has been turn into the
@@ -2339,13 +2331,15 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   if (pass->tv_id != TV_NONE)
     timevar_push (pass->tv_id);
 
+  gcc_checking_assert (!(ipa_pass->function_transform_todo_flags_start & TODO_verify_il));
   /* Run pre-pass verification.  */
   execute_todo (ipa_pass->function_transform_todo_flags_start);
 
   /* Do it!  */
   todo_after = ipa_pass->function_transform (node);
 
-  /* Run post-pass cleanup and verification.  */
+  /* Run post-pass cleanup.  */
+  gcc_checking_assert (!(todo_after & TODO_verify_il));
   execute_todo (todo_after);
   verify_interpass_invariants ();
 
@@ -2649,6 +2643,7 @@ execute_one_pass (opt_pass *pass)
 
 
   /* Run pre-pass verification.  */
+  gcc_checking_assert (!(pass->todo_flags_start & TODO_verify_il));
   execute_todo (pass->todo_flags_start);
 
   if (flag_checking)
@@ -2697,11 +2692,11 @@ execute_one_pass (opt_pass *pass)
       return true;
     }
 
-  do_per_function (clear_last_verified, NULL);
-
   do_per_function (update_properties_after_pass, pass);
 
   /* Run post-pass cleanup and verification.  */
+  gcc_checking_assert (!(todo_after & TODO_verify_il));
+  gcc_checking_assert (!(pass->todo_flags_finish & TODO_verify_il));
   execute_todo (todo_after | pass->todo_flags_finish | TODO_verify_il);
   if (profile_report)
     {

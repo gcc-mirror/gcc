@@ -1549,8 +1549,7 @@ pass_harden_control_flow_redundancy::execute (function *fun)
 
   return
     TODO_update_ssa
-    | TODO_cleanup_cfg
-    | TODO_verify_il;
+    | TODO_cleanup_cfg;
 }
 
 /* Instantiate a hardcfr pass.  */

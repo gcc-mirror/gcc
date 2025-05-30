@@ -236,9 +236,9 @@ protected:
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
 
 /* To-do flags.  */
+/* Note (1ul << 31) is reserved for TODO_verify_il. */
 #define TODO_do_not_ggc_collect		(1 << 1)
 #define TODO_cleanup_cfg        	(1 << 5)
-#define TODO_verify_il			(1 << 6)
 #define TODO_dump_symtab		(1 << 7)
 #define TODO_remove_functions		(1 << 8)
 
@@ -308,14 +308,14 @@ protected:
    and stop pass manager.  */
 #define TODO_discard_function		(1 << 23)
 
+/* (1ul << 31) is reserved for TODO_verify_il. */
+
 /* Internally used in execute_function_todo().  */
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\
      | TODO_update_ssa_no_phi		\
      | TODO_update_ssa_full_phi		\
      | TODO_update_ssa_only_virtuals)
-
-#define TODO_verify_all TODO_verify_il
 
 /* To-do flags for pending_TODOs.  */
 
