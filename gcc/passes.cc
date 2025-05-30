@@ -2391,7 +2391,7 @@ execute_all_ipa_transforms (bool do_not_collect)
 
   for (auto p : node->ipa_transforms_to_apply)
     {
-      /* To get consistent statistics, we need to account each functio
+      /* To get consistent statistics, we need to account each function
 	 to each IPA pass.  */
       if (report)
 	{
