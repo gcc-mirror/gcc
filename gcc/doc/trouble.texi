@@ -494,10 +494,12 @@ as to use the proper set, but you'll have to do this by hand.
 @section Standard Libraries
 
 @opindex Wall
-GCC by itself attempts to be a conforming freestanding implementation.
+GCC by itself attempts to provide the compiler part of a conforming
+implementation, but only a limited subset of the library part of such
+an implementation.
 @xref{Standards,,Language Standards Supported by GCC}, for details of
-what this means.  Beyond the library facilities required of such an
-implementation, the rest of the C library is supplied by the vendor of
+what this means.  Beyond the limited library facilities described
+there, the rest of the C library is supplied by the vendor of
 the operating system.  If that C library doesn't conform to the C
 standards, then your programs might get warnings (especially when using
 @option{-Wall}) that you don't expect.
