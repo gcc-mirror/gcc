@@ -43,7 +43,9 @@ int main (void)
   std::list<int> _list;
 #endif
 
+#ifndef MEM_SHARED
   #pragma omp target data map (to: data[:N]) map (alloc: _list)
+#endif
     {
 #ifndef MEM_SHARED
       #pragma omp target

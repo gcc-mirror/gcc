@@ -34,7 +34,9 @@ int main (void)
   srand (time (NULL));
   init (data);
 
+#ifndef MEM_SHARED
   #pragma omp target data map (to: data[:N]) map (alloc: set)
+#endif
     {
       #pragma omp target
 	{
