@@ -1154,7 +1154,7 @@ package body Exp_Ch5 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_Assign_Array;
 
    ------------------------------
@@ -3455,7 +3455,7 @@ package body Exp_Ch5 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_N_Assignment_Statement;
 
    ------------------------------

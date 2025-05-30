@@ -750,7 +750,7 @@ package body Checks is
       --  mode then just skip the check (it is not required in any case).
 
       when RE_Not_Available =>
-         return;
+         null;
    end Apply_Address_Clause_Check;
 
    -------------------------------------
@@ -1078,7 +1078,7 @@ package body Checks is
 
       exception
          when RE_Not_Available =>
-            return;
+            null;
       end;
    end Apply_Arithmetic_Overflow_Strict;
 
@@ -6437,8 +6437,6 @@ package body Checks is
          if Debug_Flag_CC then
             w ("  exception occurred, overflow flag set");
          end if;
-
-         return;
    end Enable_Overflow_Check;
 
    ------------------------
@@ -6686,8 +6684,6 @@ package body Checks is
          if Debug_Flag_CC then
             w ("  exception occurred, range flag set");
          end if;
-
-         return;
    end Enable_Range_Check;
 
    ------------------
@@ -7091,8 +7087,6 @@ package body Checks is
       end loop;
 
       --  If we fall through entry was not found
-
-      return;
    end Find_Check;
 
    ---------------------------------

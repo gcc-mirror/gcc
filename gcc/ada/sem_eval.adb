@@ -3997,7 +3997,6 @@ package body Sem_Eval is
       --  Otherwise the result depends on the right operand
 
       Fold_Uint (N, Expr_Value (Right), Rstat);
-      return;
    end Eval_Short_Circuit;
 
    ----------------

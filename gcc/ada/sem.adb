@@ -1401,7 +1401,6 @@ package body Sem is
            Prev     => Global_Suppress_Stack_Top,
            Next     => Suppress_Stack_Entries);
       Suppress_Stack_Entries := Global_Suppress_Stack_Top;
-      return;
    end Push_Global_Suppress_Stack_Entry;
 
    -------------------------------------
@@ -1422,8 +1421,6 @@ package body Sem is
            Prev     => Local_Suppress_Stack_Top,
            Next     => Suppress_Stack_Entries);
       Suppress_Stack_Entries := Local_Suppress_Stack_Top;
-
-      return;
    end Push_Local_Suppress_Stack_Entry;
 
    ---------------

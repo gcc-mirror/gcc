@@ -227,9 +227,7 @@ package body Layout is
    procedure Layout_Object (E : Entity_Id) is
       pragma Unreferenced (E);
    begin
-      --  Nothing to do for now, assume backend does the layout
-
-      return;
+      null; -- Nothing to do for now, assume backend does the layout
    end Layout_Object;
 
    -----------------

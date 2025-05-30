@@ -513,7 +513,6 @@ package body Tchk is
 
       Error_Msg_AP -- CODEFIX
         ("|missing "";""");
-      return;
    end T_Semicolon;
 
    ------------

@@ -2305,8 +2305,6 @@ package body Exp_Unst is
             end if;
          end Adjust_One_Call;
       end loop Adjust_Calls;
-
-      return;
    end Unnest_Subprogram;
 
    ------------------------

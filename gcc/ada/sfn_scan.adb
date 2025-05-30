@@ -261,8 +261,6 @@ package body SFN_Scan is
       if At_EOF then
          Error ("unexpected end of file");
       end if;
-
-      return;
    end Check_Not_At_EOF;
 
    -----------------

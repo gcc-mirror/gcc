@@ -713,8 +713,6 @@ package body Sem_Elim is
       <<Continue>>
          Elmt := Elmt.Homonym;
       end loop;
-
-      return;
    end Check_Eliminated;
 
    -------------------------------------

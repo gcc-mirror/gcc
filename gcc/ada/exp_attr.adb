@@ -8776,7 +8776,7 @@ package body Exp_Attr is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_N_Attribute_Reference;
 
    --------------------------------

@@ -69,7 +69,7 @@ package body System.Exceptions_Debug is
    procedure Local_Raise (Excep : System.Address) is
       pragma Warnings (Off, Excep);
    begin
-      return;
+      null;
    end Local_Raise;
 
 end System.Exceptions_Debug;

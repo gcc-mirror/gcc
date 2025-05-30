@@ -479,7 +479,7 @@ package body System.Traceback.Symbolic is
 
    exception
       when others =>
-         return;
+         null;
    end Module_Symbolic_Traceback;
 
    -------------------------------------

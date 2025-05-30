@@ -432,7 +432,7 @@ package body Exp_Ch4 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Build_Boolean_Array_Proc_Call;
 
    ---------------------------------
@@ -1236,7 +1236,7 @@ package body Exp_Ch4 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_Allocator_Expression;
 
    -----------------------------
@@ -5067,7 +5067,7 @@ package body Exp_Ch4 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_N_Allocator;
 
    -----------------------
@@ -7758,7 +7758,7 @@ package body Exp_Ch4 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_N_Null;
 
    ---------------------
@@ -9143,7 +9143,7 @@ package body Exp_Ch4 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_N_Op_Expon;
 
    --------------------
@@ -13573,7 +13573,7 @@ package body Exp_Ch4 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Insert_Dereference_Action;
 
    --------------------------------

@@ -7767,7 +7767,6 @@ package body Sem_Attr is
       when Bad_Attribute =>
          Set_Analyzed (N);
          Set_Etype (N, Any_Type);
-         return;
    end Analyze_Attribute;
 
    --------------------

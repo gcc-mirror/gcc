@@ -5956,7 +5956,7 @@ package body Exp_Ch3 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_Freeze_Enumeration_Type;
 
    -------------------------------
@@ -9239,7 +9239,7 @@ package body Exp_Ch3 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_N_Object_Declaration;
 
    ---------------------------------
@@ -9501,7 +9501,7 @@ package body Exp_Ch3 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_Tagged_Root;
 
    ------------------------------

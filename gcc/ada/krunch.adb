@@ -271,6 +271,4 @@ begin
          Buffer (Len) := Buffer (J);
       end if;
    end loop;
-
-   return;
 end Krunch;

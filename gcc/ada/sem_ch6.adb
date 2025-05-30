@@ -7831,7 +7831,6 @@ package body Sem_Ch6 is
          end if;
 
          Overridden_Subp := Candidate;
-         return;
       end;
    end Check_Synchronized_Overriding;
 

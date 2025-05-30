@@ -146,8 +146,6 @@ package body Eval_Fat is
       if UR_Is_Negative (X) then
          Fraction := -Fraction;
       end if;
-
-      return;
    end Decompose;
 
    -------------------

@@ -5764,7 +5764,7 @@ package body Exp_Ch6 is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_N_Simple_Return_Statement;
 
    ------------------------------

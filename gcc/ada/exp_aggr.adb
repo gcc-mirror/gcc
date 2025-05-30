@@ -6633,7 +6633,7 @@ package body Exp_Aggr is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_N_Aggregate;
 
    -------------------------------
@@ -7957,7 +7957,7 @@ package body Exp_Aggr is
 
    exception
       when RE_Not_Available =>
-         return;
+         null;
    end Expand_N_Extension_Aggregate;
 
    -----------------------------

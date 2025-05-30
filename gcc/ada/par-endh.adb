@@ -658,8 +658,6 @@ package body Endh is
             Scan; -- past junk token on same line
          end loop;
       end if;
-
-      return;
    end End_Skip;
 
    --------------------
