@@ -32,7 +32,9 @@ int main (void)
   init (keys, KEY_MAX);
   init (data, RAND_MAX);
 
+#ifndef MEM_SHARED
   #pragma omp target enter data map (to: keys[:N], data[:N]) map (alloc: _map)
+#endif
 
   #pragma omp target
     {
@@ -57,7 +59,9 @@ int main (void)
     _map.~multimap ();
 #endif
 
+#ifndef MEM_SHARED
   #pragma omp target exit data map (release: _map)
+#endif
 
   bool ok = validate (sum, keys, data);
   return ok ? 0 : 1;

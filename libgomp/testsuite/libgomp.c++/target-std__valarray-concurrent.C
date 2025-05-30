@@ -37,7 +37,9 @@ int main (void)
   std::valarray<int> arr;
 #endif
 
+#ifndef MEM_SHARED
   #pragma omp target data map (to: data[:N]) map (alloc: arr)
+#endif
     {
       #pragma omp target
 	{

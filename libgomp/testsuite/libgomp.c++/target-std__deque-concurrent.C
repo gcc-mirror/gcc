@@ -38,7 +38,9 @@ int main (void)
   std::deque<int> _deque;
 #endif
 
+#ifndef MEM_SHARED
   #pragma omp target data map (to: data[:N]) map (alloc: _deque)
+#endif
     {
 #ifndef MEM_SHARED
       #pragma omp target
