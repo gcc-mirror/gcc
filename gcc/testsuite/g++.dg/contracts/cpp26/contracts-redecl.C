@@ -86,3 +86,13 @@ struct Bar : Foo {
 void Bar::f10(int n) pre (n >10) {}; // { dg-error "mismatched contract" }
 
 
+struct NonTrivial{
+  NonTrivial(){};
+  NonTrivial(const NonTrivial&){}
+  ~NonTrivial(){};
+  int x = 0;
+};
+
+void f(const NonTrivial s) pre(s.x >0);
+void f(const NonTrivial g) {};
+void f(const NonTrivial t) pre(t.x >0);
