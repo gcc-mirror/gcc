@@ -2716,6 +2716,9 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  if (primary->expr_type == EXPR_CONSTANT)
 	    goto check_done;
 
+	  if (primary->ref == NULL)
+	    goto check_done;
+
 	  switch (tmp->u.i)
 	    {
 	    case INQUIRY_RE:
