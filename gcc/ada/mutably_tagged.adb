@@ -40,6 +40,7 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Mutably_Tagged is
 
@@ -205,20 +206,40 @@ package body Mutably_Tagged is
       Mut_Tag_Typ : Entity_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (New_Typ);
+
+      CW_Size : constant Uint := RM_Size (Mut_Tag_Typ);
+
+      function To_Mixed_Case (S : String) return String;
+      --  convert string to mixed case
+
+      -------------------
+      -- To_Mixed_Case --
+      -------------------
+
+      function To_Mixed_Case (S : String) return String is
+         Buf : Bounded_String;
+      begin
+         Append (Buf, S);
+         Set_Casing (Buf, Mixed_Case);
+         return +Buf;
+      end To_Mixed_Case;
+
+   --  Start of processing for Make_CW_Size_Compile_Check
+
    begin
-      --  Generate a string literal for New_Typ's name which is needed for
-      --  printing within the Compile_Time_Error.
+      --  Build a Compile_Time_Error pragma in order to defer the
+      --  (compile-time) size check until after the back end has
+      --  determined sizes.
+      --
+      --  It would be nice if we could somehow include the value of
+      --  New_Type'Size in the error message, but it is not clear how to
+      --  accomplish that with the current FE/BE interfaces.
+
+      --  Get New_Typ's name (in mixed case) into the name buffer;
+      --  this is used immediately afterwards in the Make_Pragma call.
 
       Get_Decoded_Name_String (Chars (New_Typ));
       Set_Casing (Mixed_Case);
-
-      --  Build a pragma Compile_Time_Error to force the backend to
-      --  preform appropriate sizing checks.
-
-      --  Generate:
-      --    pragma Compile_Time_Error
-      --             (New_Typ'Size < Mut_Tag_Typ'Size,
-      --              "class size for by-reference type ""New_Typ"" too small")
 
       return
         Make_Pragma (Loc,
@@ -233,19 +254,18 @@ package body Mutably_Tagged is
                       Prefix         =>
                         New_Occurrence_Of (New_Typ, Loc)),
                   Right_Opnd =>
-                    Make_Integer_Literal (Loc,
-                      RM_Size (Mut_Tag_Typ))))),
+                    Make_Integer_Literal (Loc, CW_Size)))),
              Make_Pragma_Argument_Association (Loc,
                Expression =>
-
-                 --  Is it possible to print the size of New_Typ via
-                 --  Validate_Compile_Time_Warning_Or_Error after the back-end
-                 --  has run to generate the error message manually ???
-
                  Make_String_Literal (Loc,
-                   "class size for by-reference type """
-                   & To_String (String_From_Name_Buffer)
-                   & """ too small"))));
+                   To_String (String_From_Name_Buffer)
+                     & "'Size exceeds "
+                     & To_Mixed_Case (
+                         To_String (Fully_Qualified_Name_String
+                                     (Find_Specific_Type (Mut_Tag_Typ),
+                                      Append_NUL => False)))
+                     & "'Size'Class limit of "
+                     & UI_Image (CW_Size)))));
    end Make_CW_Size_Compile_Check;
 
    ------------------------------------
