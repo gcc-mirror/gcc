@@ -1,3 +1,11 @@
+2025-05-29  Yuta Mukai  <mukai.yuta@fujitsu.com>
+
+	Backported from master:
+	2025-05-28  Yuta Mukai  <mukai.yuta@fujitsu.com>
+
+	* config/aarch64/aarch64-cores.def (fujitsu-monaka): Update ISA
+	features.
+
 2025-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-sra.cc (scan_expr_access): Also disqualify storage order
