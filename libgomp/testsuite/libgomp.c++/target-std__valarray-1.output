@@ -1,0 +1,22 @@
+
+v1: 10 20 30 40 50
+v2: 5 4 3 2 1
+v1 + v2: 15 24 33 42 51
+v1 - v2: 5 16 27 38 49
+v1 * v2: 50 80 90 80 50
+v1 / v2: 2 5 10 20 50
+pow(v1, 2): 100 400 900 1600 2500
+sinh(v2): 74 27 10 3 1
+log(v1 * v2): 3 4 4 4 3
+Original array: 0 1 2 3 4 5 6 7 8 9 10 11
+Slice(2, 5, 1): 2 3 4 5 6
+Slice(1, 4, 3): 1 4 7 10
+Array after slice modification: 0 1 99 99 99 99 99 7 8 9 10 11
+Elements of v1 > 20: 30 40 50
+Masked array: 30 40 50
+Original shiftData: 1 2 3 4 5
+shift(2): 3 4 5 0 0
+cshift(-1): 5 1 2 3 4
+Sum(v1): 150
+Min(v1): 10
+Max(v1): 50

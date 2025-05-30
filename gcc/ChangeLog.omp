@@ -1,3 +1,12 @@
+2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119835
+	* tree-nrv.cc (pass_nrv::execute): Defuse 'RESULT_DECL' check.
+
 2025-05-22  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:

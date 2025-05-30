@@ -1,3 +1,127 @@
+2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-flex-300.C: XFAIL.
+	* testsuite/libgomp.c++/target-flex-60.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-61.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-62.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-81.C: Likewise.
+
+2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__valarray-1.C: New.
+	* testsuite/libgomp.c++/target-std__valarray-1.output: Likewise.
+
+2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__array-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__array-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__bitset-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__bitset-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__deque-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__deque-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__list-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__list-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__map-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__map-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__multimap-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__multimap-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__multiset-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__multiset-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__set-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__set-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__span-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__span-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__vector-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__vector-concurrent.C: Adjust.
+
+2025-05-30  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	Backported from master:
+	2025-05-30  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+		    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__array-concurrent.C: New.
+	* testsuite/libgomp.c++/target-std__bitset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__deque-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__flat_map-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__flat_multimap-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__flat_multiset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__flat_set-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__list-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__map-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__multimap-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__multiset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__set-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__span-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_map-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_multimap-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_multiset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_set-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__vector-concurrent.C: Likewise.
+
+2025-05-30  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	Backported from master:
+	2025-05-30  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__cmath.C: New.
+	* testsuite/libgomp.c++/target-std__complex.C: Likewise.
+	* testsuite/libgomp.c++/target-std__numbers.C: Likewise.
+
+2025-05-30  Waffl3x  <waffl3x@baylibre.com>
+
+	Backported from master:
+	2025-05-30  Waffl3x  <waffl3x@baylibre.com>
+		    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-flex-10.C: New test.
+	* testsuite/libgomp.c++/target-flex-100.C: New test.
+	* testsuite/libgomp.c++/target-flex-101.C: New test.
+	* testsuite/libgomp.c++/target-flex-11.C: New test.
+	* testsuite/libgomp.c++/target-flex-12.C: New test.
+	* testsuite/libgomp.c++/target-flex-2000.C: New test.
+	* testsuite/libgomp.c++/target-flex-2001.C: New test.
+	* testsuite/libgomp.c++/target-flex-2002.C: New test.
+	* testsuite/libgomp.c++/target-flex-2003.C: New test.
+	* testsuite/libgomp.c++/target-flex-30.C: New test.
+	* testsuite/libgomp.c++/target-flex-300.C: New test.
+	* testsuite/libgomp.c++/target-flex-31.C: New test.
+	* testsuite/libgomp.c++/target-flex-32.C: New test.
+	* testsuite/libgomp.c++/target-flex-33.C: New test.
+	* testsuite/libgomp.c++/target-flex-41.C: New test.
+	* testsuite/libgomp.c++/target-flex-60.C: New test.
+	* testsuite/libgomp.c++/target-flex-61.C: New test.
+	* testsuite/libgomp.c++/target-flex-62.C: New test.
+	* testsuite/libgomp.c++/target-flex-70.C: New test.
+	* testsuite/libgomp.c++/target-flex-80.C: New test.
+	* testsuite/libgomp.c++/target-flex-81.C: New test.
+	* testsuite/libgomp.c++/target-flex-90.C: New test.
+	* testsuite/libgomp.c++/target-flex-common.h: New test.
+
+2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119835
+	* testsuite/libgomp.oacc-c-c++-common/abi-struct-1.c:
+	'#pragma GCC optimize "-fno-inline"'.
+	* testsuite/libgomp.c-c++-common/target-abi-struct-1.c: New.
+	* testsuite/libgomp.c-c++-common/target-abi-struct-1-O0.c: Adjust.
+
 2025-05-30  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
