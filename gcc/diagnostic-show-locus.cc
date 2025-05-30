@@ -539,8 +539,10 @@ struct to_html
   friend class layout_printer<to_html>;
 
   to_html (xml::printer &xp,
+	   const rich_location *richloc,
 	   html_label_writer *html_label_writer)
   : m_xp (xp),
+    m_richloc (richloc),
     m_html_label_writer (html_label_writer)
   {}
 
@@ -620,11 +622,6 @@ struct to_html
     // no-op for HTML
   }
 
-  void colorize_text_for_range_idx (int)
-  {
-    // no-op for HTML
-  }
-
   void colorize_text_for_cfg_edge ()
   {
     // no-op for HTML
@@ -648,7 +645,26 @@ struct to_html
     source_policy.get_html_start_span_fn () (loc_policy, *this, exploc);
   }
 
+  const location_range *
+  get_location_range_by_idx (int range_idx)
+  {
+    if (!m_richloc)
+      return nullptr;
+    return m_richloc->get_range (range_idx);
+  }
+
+  const char *
+  get_highlight_color_for_range_idx (int range_idx)
+  {
+    const location_range *const loc_range
+      = get_location_range_by_idx (range_idx);
+    if (!loc_range)
+      return nullptr;
+    return loc_range->m_highlight_color;
+  }
+
   xml::printer &m_xp;
+  const rich_location *m_richloc;
 private:
   html_label_writer *m_html_label_writer;
   pretty_printer m_scratch_pp;
@@ -671,7 +687,7 @@ print_html_span_start (const diagnostic_context &dc,
 		       xml::printer &xp,
 		       const expanded_location &exploc)
 {
-  to_html sink (xp, nullptr);
+  to_html sink (xp, nullptr, nullptr);
   diagnostic_source_print_policy source_policy (dc);
   source_policy.get_html_start_span_fn () (*this, sink, exploc);
 }
@@ -835,8 +851,8 @@ private:
   void end_line ();
   void print_annotation_line (linenum_type row, const line_bounds lbounds);
   void print_any_labels (linenum_type row);
-  void begin_label (const line_label &label);
-  void end_label ();
+  void begin_label (int state_idx, bool is_label_text);
+  void end_label (int state_idx, bool is_label_text);
   void print_trailing_fixits (linenum_type row);
 
   void
@@ -844,10 +860,16 @@ private:
 
   void print_any_right_to_left_edge_lines ();
 
+  void set_in_range (int range_idx);
+  void set_outside_range ();
+
 private:
   Sink &m_sink;
   const layout &m_layout;
   bool m_is_diagnostic_path;
+
+  bool m_was_in_range_p;
+  int m_last_range_idx;
 
   /* Fields for handling links between labels (e.g. for showing CFG edges
      in execution paths).
@@ -2302,9 +2324,9 @@ layout_printer<Sink>::print_source_line (linenum_type row,
 						    CU_BYTES,
 						    &state);
 	  if (in_range_p)
-	    m_sink.colorize_text_for_range_idx (state.range_idx);
+	    set_in_range (state.range_idx);
 	  else
-	    m_sink.colorize_text_ensure_normal ();
+	    set_outside_range ();
 	}
 
       /* Get the display width of the next character to be output, expanding
@@ -2335,6 +2357,7 @@ layout_printer<Sink>::print_source_line (linenum_type row,
       m_sink.print_decoded_char (m_layout.m_char_policy, cp);
       c = dw.next_byte ();
     }
+  set_outside_range ();
   end_line ();
   return lbounds;
 }
@@ -2477,6 +2500,41 @@ layout_printer<to_html>::end_line ()
   m_sink.pop_html_tag ("tr");
 }
 
+/* Handle the various transitions between being-in-range and
+   not-being-in-a-range, and between ranges.  */
+
+template<typename Sink>
+void
+layout_printer<Sink>::set_in_range (int range_idx)
+{
+  if (m_was_in_range_p)
+    {
+      if (m_last_range_idx != range_idx)
+	{
+	  /* transition between ranges.  */
+	  end_label (m_last_range_idx, false);
+	  begin_label (range_idx, false);
+	}
+    }
+  else
+    {
+      /* transition from "not in a range" to "in a range".  */
+      begin_label (range_idx, false);
+      m_was_in_range_p = true;
+    }
+  m_last_range_idx = range_idx;
+}
+
+template<typename Sink>
+void
+layout_printer<Sink>::set_outside_range ()
+{
+  if (m_was_in_range_p)
+    /* transition from "in a range" to "not in a range".  */
+    end_label (m_last_range_idx, false);
+  m_was_in_range_p = false;
+}
+
 /* Print a line consisting of the caret/underlines for the given
    source line.  */
 
@@ -2501,9 +2559,13 @@ layout_printer<Sink>::print_annotation_line (linenum_type row,
 						CU_DISPLAY_COLS,
 						&state);
       if (in_range_p)
+	set_in_range (state.range_idx);
+      else
+	set_outside_range ();
+
+      if (in_range_p)
 	{
 	  /* Within a range.  Draw either the caret or an underline.  */
-	  m_sink.colorize_text_for_range_idx (state.range_idx);
 	  if (state.draw_caret_p)
 	    {
 	      /* Draw the caret.  */
@@ -2520,10 +2582,11 @@ layout_printer<Sink>::print_annotation_line (linenum_type row,
       else
 	{
 	  /* Not in a range.  */
-	  m_sink.colorize_text_ensure_normal ();
 	  m_sink.add_character (' ');
 	}
     }
+
+  set_outside_range ();
 
   end_line ();
 }
@@ -2606,36 +2669,59 @@ public:
   bool m_has_out_edge;
 };
 
+/* Implementations of layout_printer::{begin,end}_label for
+   to_text and to_html.
+
+   RANGE_IDX is the index of the range within the rich_location.
+
+   IS_LABEL_TEXT is true for the text of the label,
+   false when quoting the source code, underlining the source
+   code, and for the vertical bars connecting the underlines
+   to the text of the label.  */
+
 template<>
 void
-layout_printer<to_text>::begin_label (const line_label &label)
+layout_printer<to_text>::begin_label (int range_idx,
+				      bool is_label_text)
 {
-  /* Colorize the text, unless it's for events in a
+  /* Colorize the text, unless it's for labels for events in a
      diagnostic_path.  */
-  if (!m_is_diagnostic_path)
-    m_sink.colorize_text_for_range_idx (label.m_state_idx);
+  if (is_label_text && m_is_diagnostic_path)
+    return;
+
+  gcc_assert (m_sink.m_colorizer);
+  m_sink.m_colorizer->set_range (range_idx);
 }
 
 template<>
 void
-layout_printer<to_html>::begin_label (const line_label &)
+layout_printer<to_html>::begin_label (int range_idx,
+				      bool is_label_text)
 {
-  if (m_sink.m_html_label_writer)
+  if (is_label_text && m_sink.m_html_label_writer)
     m_sink.m_html_label_writer->begin_label ();
+
+  if (const char *highlight_color
+	= m_sink.get_highlight_color_for_range_idx (range_idx))
+    m_sink.m_xp.push_tag_with_class ("span", highlight_color);
 }
 
 template<>
 void
-layout_printer<to_text>::end_label ()
+layout_printer<to_text>::end_label (int, bool)
 {
   m_sink.colorize_text_ensure_normal ();
 }
 
 template<>
 void
-layout_printer<to_html>::end_label ()
+layout_printer<to_html>::end_label (int range_idx,
+				    bool is_label_text)
 {
-  if (m_sink.m_html_label_writer)
+  if (m_sink.get_highlight_color_for_range_idx (range_idx))
+    m_sink.m_xp.pop_tag ();
+
+  if (is_label_text && m_sink.m_html_label_writer)
     m_sink.m_html_label_writer->end_label ();
 }
 
@@ -2804,9 +2890,9 @@ layout_printer<Sink>::print_any_labels (linenum_type row)
 		  move_to_column (&column, label->m_column, true);
 		gcc_assert (column == label->m_column);
 
-		begin_label (*label);
+		begin_label (label->m_state_idx, true);
 		m_sink.add_text (label->m_text.m_buffer);
-		end_label ();
+		end_label (label->m_state_idx, true);
 
 		column += label->m_display_width;
 		if (get_options ().show_event_links_p && label->m_has_out_edge)
@@ -2837,9 +2923,9 @@ layout_printer<Sink>::print_any_labels (linenum_type row)
 	      {
 		gcc_assert (column <= label->m_column);
 		move_to_column (&column, label->m_column, true);
-		m_sink.colorize_text_for_range_idx (label->m_state_idx);
+		begin_label (label->m_state_idx, false);
 		m_sink.add_character ('|');
-		m_sink.colorize_text_ensure_normal ();
+		end_label (label->m_state_idx, false);
 		column++;
 	      }
 	  }
@@ -3676,6 +3762,8 @@ layout_printer<Sink>::layout_printer (Sink &sink,
 : m_sink (sink),
   m_layout (layout),
   m_is_diagnostic_path (is_diagnostic_path),
+  m_was_in_range_p (false),
+  m_last_range_idx (0),
   m_link_lhs_state (link_lhs_state::none),
   m_link_rhs_column (-1)
 {
@@ -3857,7 +3945,7 @@ diagnostic_source_print_policy::print_as_html (xml::printer &xp,
   const
 {
   layout layout (*this, richloc, effects);
-  to_html sink (xp, label_writer);
+  to_html sink (xp, &richloc, label_writer);
   layout_printer<to_html> lp (sink, layout,
 			      diagnostic_kind == DK_DIAGNOSTIC_PATH);
   lp.print (*this);

@@ -511,6 +511,10 @@ static const char * const HTML_STYLE
      "                    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.5); }\n"
      "    .frame-funcname { text-align: right;\n"
      "                      font-style: italic; } \n"
+     "    .highlight-a { color: #703fec;\n" // pf-purple-400
+     "                   font-weight: bold; }\n"
+     "    .highlight-b { color: #3f9c35;\n" // pf-green-400
+     "                   font-weight: bold; }\n"
      "  </style>\n");
 
 /* A little JavaScript for ease of navigation.
@@ -725,8 +729,15 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 	    break;
 
 	  case pp_token::kind::begin_color:
+	    {
+	      pp_token_begin_color *sub = as_a <pp_token_begin_color *> (iter);
+	      gcc_assert (sub->m_value.get ());
+	      m_xp.push_tag_with_class ("span", sub->m_value.get ());
+	    }
+	    break;
+
 	  case pp_token::kind::end_color:
-	    /* These are no-ops.  */
+	    m_xp.pop_tag ();
 	    break;
 
 	  case pp_token::kind::begin_quote:
