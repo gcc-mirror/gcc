@@ -463,7 +463,7 @@ Implementation-defined assertion_aspect_marks include Assert_And_Cut,
 Assume, Contract_Cases, Debug, Ghost, Initial_Condition, Loop_Invariant,
 Loop_Variant, Postcondition, Precondition, Predicate, Refined_Post,
 Statement_Assertions, and Subprogram_Variant. Implementation-defined
-policy_identifiers include Ignore and Suppressible.
+policy_identifiers include Disable and Suppressible.
 
 *
   "The default assertion policy.  See 11.4.2(10)."

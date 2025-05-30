@@ -43,8 +43,7 @@ package Sem_Ch13 is
 
    procedure Analyze_Aspect_Specifications (N : Node_Id; E : Entity_Id);
    --  This procedure is called to analyze aspect specifications for node N. E
-   --  is the corresponding entity declared by the declaration node N. Callers
-   --  should check that Has_Aspects (N) is True before calling this routine.
+   --  is the corresponding entity declared by the declaration node N.
 
    procedure Analyze_Aspects_On_Subprogram_Body_Or_Stub (N : Node_Id);
    --  Analyze the aspect specifications of [generic] subprogram body or stub
