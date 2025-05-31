@@ -2567,7 +2567,12 @@ insert_clobber_before_stack_restore (tree saved_val, tree var,
       {
 	clobber = build_clobber (TREE_TYPE (var), CLOBBER_STORAGE_END);
 	clobber_stmt = gimple_build_assign (var, clobber);
-
+	/* Manually update the vdef/vuse here. */
+	gimple_set_vuse (clobber_stmt, gimple_vuse (stmt));
+	gimple_set_vdef (clobber_stmt, make_ssa_name (gimple_vop (cfun)));
+	gimple_set_vuse (stmt, gimple_vdef (clobber_stmt));
+	SSA_NAME_DEF_STMT (gimple_vdef (clobber_stmt)) = clobber_stmt;
+	update_stmt (stmt);
 	i = gsi_for_stmt (stmt);
 	gsi_insert_before (&i, clobber_stmt, GSI_SAME_STMT);
       }
@@ -3020,7 +3025,7 @@ do_ssa_ccp (bool nonzero_p)
   ccp_propagate.ssa_propagate ();
   if (ccp_finalize (nonzero_p || flag_ipa_bit_cp))
     {
-      todo = (TODO_cleanup_cfg | TODO_update_ssa);
+      todo = TODO_cleanup_cfg;
 
       /* ccp_finalize does not preserve loop-closed ssa.  */
       loops_state_clear (LOOP_CLOSED_SSA);
