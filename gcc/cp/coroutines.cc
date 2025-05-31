@@ -2543,8 +2543,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   /* Finish the resume dispatcher.  */
   finish_switch_stmt (dispatcher);
-  finish_else_clause (lsb_if);
 
+  finish_else_clause (lsb_if);
   finish_if_stmt (lsb_if);
 
   /* If we reach here then we've hit UB.  */
@@ -2583,37 +2583,32 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* Add in our function body with the co_returns rewritten to final form.  */
   add_stmt (fnbody);
 
-  /* now do the tail of the function.  */
+  /* Now do the tail of the function; first cleanups.  */
   r = build_stmt (loc, LABEL_EXPR, del_promise_label);
   add_stmt (r);
 
-  /* Destructors for the things we built explicitly.  */
+  /* Destructors for the things we built explicitly.
+     promise... */
   if (tree c = cxx_maybe_build_cleanup (promise_proxy, tf_warning_or_error))
-    add_stmt (c);
+    finish_expr_stmt (c);
 
-  tree del_frame_label
-    = create_named_label_with_ctx (loc, "coro.delete.frame", actor);
-  r = build_stmt (loc, LABEL_EXPR, del_frame_label);
-  add_stmt (r);
-
-  /* Here deallocate the frame (if we allocated it), which we will have at
-     present.  */
-  tree fnf2_x
-   = coro_build_frame_access_expr (actor_frame, coro_frame_needs_free_id,
-				   false, tf_warning_or_error);
-
-  tree need_free_if = begin_if_stmt ();
-  fnf2_x = build1 (CONVERT_EXPR, integer_type_node, fnf2_x);
-  tree cmp = build2 (NE_EXPR, integer_type_node, fnf2_x, integer_zero_node);
-  finish_if_stmt_cond (cmp, need_free_if);
+  /* Argument copies ...  */
   while (!param_dtor_list->is_empty ())
     {
       tree parm_id = param_dtor_list->pop ();
       tree a = coro_build_frame_access_expr (actor_frame, parm_id, false,
 					     tf_warning_or_error);
       if (tree dtor = cxx_maybe_build_cleanup (a, tf_warning_or_error))
-	add_stmt (dtor);
+	finish_expr_stmt (dtor);
     }
+
+  /* Here deallocate the frame (if we allocated it), which we will have at
+     present.  */
+  tree fnf2_x
+   = coro_build_frame_access_expr (actor_frame, coro_frame_needs_free_id,
+				   false, tf_warning_or_error);
+  tree need_free_if = begin_if_stmt ();
+  finish_if_stmt_cond (fnf2_x, need_free_if);
 
   /* Build the frame DTOR.  */
   tree del_coro_fr
@@ -2621,31 +2616,20 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 					 promise_type, loc);
   finish_expr_stmt (del_coro_fr);
   finish_then_clause (need_free_if);
-  tree scope = IF_SCOPE (need_free_if);
-  IF_SCOPE (need_free_if) = NULL;
-  r = do_poplevel (scope);
-  add_stmt (r);
+  finish_if_stmt (need_free_if);
 
-  /* done.  */
-  r = build_stmt (loc, RETURN_EXPR, NULL);
-  suppress_warning (r); /* We don't want a warning about this.  */
-  r = maybe_cleanup_point_expr_void (r);
-  add_stmt (r);
+  /* Done.  */
+  finish_return_stmt (NULL_TREE);
 
   /* This is the suspend return point.  */
-  r = build_stmt (loc, LABEL_EXPR, ret_label);
-  add_stmt (r);
+  add_stmt (build_stmt (loc, LABEL_EXPR, ret_label));
 
-  r = build_stmt (loc, RETURN_EXPR, NULL);
-  suppress_warning (r); /* We don't want a warning about this.  */
-  r = maybe_cleanup_point_expr_void (r);
-  add_stmt (r);
+  finish_return_stmt (NULL_TREE);
 
   /* This is the 'continuation' return point.  For such a case we have a coro
      handle (from the await_suspend() call) and we want handle.resume() to
      execute as a tailcall allowing arbitrary chaining of coroutines.  */
-  r = build_stmt (loc, LABEL_EXPR, continue_label);
-  add_stmt (r);
+  add_stmt (build_stmt (loc, LABEL_EXPR, continue_label));
 
   /* Should have been set earlier by the coro_initialized code.  */
   gcc_assert (void_coro_handle_address);
