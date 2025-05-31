@@ -205,7 +205,6 @@ struct _vec_perm_simplify_seq
 typedef struct _vec_perm_simplify_seq *vec_perm_simplify_seq;
 
 static bool forward_propagate_addr_expr (tree, tree, bool);
-static void optimize_vector_load (gimple_stmt_iterator *);
 
 /* Set to true if we delete dead edges during the optimization.  */
 static bool cfg_changed;
@@ -3387,6 +3386,7 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
   gimple *stmt = gsi_stmt (*gsi);
   tree lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
+  tree vuse = gimple_vuse (stmt);
 
   /* Gather BIT_FIELD_REFs to rewrite, looking through
      VEC_UNPACK_{LO,HI}_EXPR.  */
@@ -3495,6 +3495,7 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
 	  gimple *new_stmt = gimple_build_assign (tem, new_rhs);
 	  location_t loc = gimple_location (use_stmt);
 	  gimple_set_location (new_stmt, loc);
+	  gimple_set_vuse (new_stmt, vuse);
 	  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 	  /* Perform scalar promotion.  */
 	  new_stmt = gimple_build_assign (gimple_assign_lhs (use_stmt),
@@ -3514,6 +3515,7 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
 						  new_rhs);
 	  location_t loc = gimple_location (use_stmt);
 	  gimple_set_location (new_stmt, loc);
+	  gimple_set_vuse (new_stmt, vuse);
 	  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 	}
       gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
@@ -4167,7 +4169,7 @@ const pass_data pass_data_forwprop =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_update_ssa, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_forwprop : public gimple_opt_pass
@@ -4404,6 +4406,7 @@ pass_forwprop::execute (function *fun)
 	         component-wise loads.  */
 	      use_operand_p use_p;
 	      imm_use_iterator iter;
+	      tree vuse = gimple_vuse (stmt);
 	      bool rewrite = true;
 	      FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
 		{
@@ -4443,6 +4446,7 @@ pass_forwprop::execute (function *fun)
 
 		      location_t loc = gimple_location (use_stmt);
 		      gimple_set_location (new_stmt, loc);
+		      gimple_set_vuse (new_stmt, vuse);
 		      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
 		      unlink_stmt_vdef (use_stmt);
 		      gsi_remove (&gsi2, true);
