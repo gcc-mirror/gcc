@@ -1,3 +1,311 @@
+2025-05-30  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/time/format/empty_spec.cc: New test.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h: Use __wait_result_type.
+	* include/bits/atomic_wait.h (__wait_result_type): New struct.
+	(__wait_args::_M_prep_for_wait_on): Rename to _M_setup_wait, use
+	__wait_result_type.
+	(__atomic_wait_address): Adjust to call _M_setup_wait.
+	* src/c++20/atomic.cc (__spin_impl): Use __wait_result_type.
+	(__wait_impl): Likewise.
+	(__spin_until_impl): Likewise.
+	(__wait_until_impl): Likewise.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118494
+	PR libstdc++/110854
+	PR libstdc++/98749
+	* acinclude.m4 (GLIBCXX_CHECK_GTHREADS): Remove checks for
+	sem_timedwait. Do not define _GLIBCXX_HAVE_POSIX_SEMAPHORE.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/bits/semaphore_base.h (__platform_semaphore): Remove.
+	(__atomic_semaphore): Replace with __semaphore_base<bool> and
+	make type of _M_count depend on template parameter. Fix _S_max
+	constant to use correct type.
+	(__semaphore_base::_M_try_acquire): Qualify to avoid ADL.
+	(__semaphore_base::_M_release): Return old value. Remove FIXME
+	comment.
+	(__semaphore_impl): Replace typedef with alias template.
+	* include/bits/version.def (semaphore): Do not depend on
+	_GLIBCXX_HAVE_POSIX_SEMAPHORE.
+	* include/bits/version.h: Regenerate.
+	* include/std/semaphore (semaphore): Adjust type of _M_sem
+	member. Add constexpr to constructor. Add assertions to
+	(semaphore::semaphore(ptrdiff_t)): Add constexpr. Add assertion
+	for precondition.
+	(semaphore::release): Add assertion using value returned from
+	_M_release.
+	* testsuite/30_threads/semaphore/100806.cc: Increase template
+	argument for std::counting_semaphore, so constructor
+	precondition is met.
+	* testsuite/30_threads/semaphore/cons.cc: New test.
+	* testsuite/30_threads/semaphore/try_acquire_posix.cc: Remove.
+	* testsuite/30_threads/semaphore/platform_try_acquire_for.cc:
+	Removed.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/barrier (__tree_barrier_base): New class.
+	(__tree_barrier): Move non-dependent code into
+	__tree_barrier_base and derive from it.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118395
+	PR libstdc++/108974
+	PR libstdc++/98749
+	* include/std/barrier (__tree_barrier): Use default
+	member-initializers. Change _M_state member from
+	unique_ptr<__state_t[]> to atomic<__state_t*>. Add
+	no_unique_address attribute to _M_completion.
+	(__tree_barrier::_M_arrive): Load value from _M_state.
+	(__tree_barrier::_M_invoke_completion): New member function to
+	ensure a throwing completion function will terminate, as
+	proposed in LWG 3898.
+	(__tree_barrier::max): Reduce by one to avoid overflow.
+	(__tree_barrier::__tree_barrier): Add constexpr. Qualify call to
+	std::move. Remove mem-initializers made unnecessary by default
+	member-initializers. Add precondition check. Only allocate state
+	array if not constant evaluated.
+	(__tree_barrier::arrive): Add precondition check. Do deferred
+	initialization of _M_state if needed.
+	(barrier): Add static_assert, as proposed in LWG 3898.
+	(barrier::barrier): Add constexpr.
+	* testsuite/30_threads/barrier/cons.cc: New test.
+	* testsuite/30_threads/barrier/lwg3898.cc: New test.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/latch (latch::arrive_and_wait): Optimise.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Add new symbol version and exports.
+	* include/bits/atomic_timed_wait.h (__platform_wait_until): Move
+	to atomic.cc.
+	(__cond_wait_until, __spin_until_impl): Likewise.
+	(__wait_until_impl): Likewise. Change __wait_args_base parameter
+	to non-const reference and change third parameter to
+	__wait_clock_t::duration.
+	(__wait_until): Change __wait_args_base parameter to non-const
+	reference. Change Call time_since_epoch() to get duration from
+	time_point.
+	(__wait_for): Change __wait_args_base parameter to non-const
+	reference.
+	(__atomic_wait_address_until): Call _M_prep_for_wait_on on args.
+	(__atomic_wait_address_for): Likewise.
+	(__atomic_wait_address_until_v): Qualify call to avoid ADL. Do
+	not forward __vfn.
+	* include/bits/atomic_wait.h (__platform_wait_uses_type): Use
+	alignof(T) not alignof(T*).
+	(__futex_wait_flags, __platform_wait, __platform_notify)
+	(__waitable_state, __spin_impl, __notify_impl): Move to
+	atomic.cc.
+	(__wait_impl): Likewise. Change __wait_args_base parameter to
+	non-const reference.
+	(__wait_args_base::_M_wait_state): New data member.
+	(__wait_args_base::_M_prep_for_wait_on): New member function.
+	(__wait_args_base::_M_load_proxy_wait_val): New member
+	function.
+	(__wait_args_base::_S_memory_order_for): Remove member function.
+	(__atomic_wait_address): Call _M_prep_for_wait_on on args.
+	(__atomic_wait_address_v): Qualify call to avoid ADL.
+	* src/c++20/Makefile.am: Add new file.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++20/atomic.cc: New file.
+	* testsuite/17_intro/headers/c++1998/49745.cc: Remove XFAIL for
+	C++20 and later.
+	* testsuite/29_atomics/atomic/wait_notify/100334.cc: Remove use
+	of internal implementation details.
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.35 version.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__wait_until_impl): Adjust
+	to use new naming.
+	* include/bits/atomic_wait.h (__waiter_pool_impl): Rename to
+	__waitable_state.
+	(__waiter_pool_impl::_S_wait): Rename to _M_waiters.
+	(__waiter_pool_impl::_S_impl_for): Rename to _S_state_for.
+	(__waiter_pool_impl::_S_track): Adjust to use new naming.
+	(__wait_impl, __notify_impl): Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/100334.cc: Adjust to
+	use new naming.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h
+	(__atomic_wait_address_until_v): Replace __atomic_compare with
+	__atomic_eq.
+	(__atomic_wait_address_for_v): Likewise.
+	* include/bits/atomic_wait.h (__atomic_compare): Rename to
+	__atomic_eq.
+	(__atomic_wait_address_v): Replace __atomic_compare with
+	__atomic_eq.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__wait_until_impl): Change
+	first parameter to const void* and then static_cast to const
+	__platform_wait_t* when not using proxied wait.
+	(__wait_until): Change first parameter to const void*.
+	(__wait_for): Likewise.
+	(__atomic_wait_address_until): Remove reinterpret_cast and allow
+	address to implicitly convert to const void* instead.
+	(__atomic_wait_address_for): Likewise.
+	* include/bits/atomic_wait.h: (__wait_impl, __notify_impl):
+	Change first parameter to const void* and then static_cast to
+	const __platform_wait_t* when not using proxied wait.
+	(__atomic_wait_address, __atomic_notify_address) Remove
+	reinterpret_cast and allow address to implicitly convert to
+	const void* instead.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__platform_wait): Change function
+	template to a normal function. The parameter is always
+	__platform_wait_t* which is just int* for this implementation of
+	the function.
+	(__platform_notify): Likewise.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__to_wait_clock): Do not use
+	chrono::ceil if clock and duration are already correct type.
+	(__wait_until): Always call __to_wait_clock.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__notify_impl): Increment the
+	proxy value before returning early for the uncontended case.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__cond_wait_impl): Add
+	missing inline keyword.
+	(__spin_until_impl): Change parameter from pointer to reference.
+	Replace make_pair with list-initialization.  Initialize variable
+	for return value.
+	(__wait_until_impl): Likewise. Remove some preprocessor
+	conditional logic. Use _S_track for contention tracking.
+	Avoid unnecessary const_cast.
+	(__wait_until): Change parameter from pointer to reference.
+	Replace make_pair with list-initialization.
+	(__wait_for):  Change parameter from pointer to reference. Add
+	__do_spin flag to args.
+	* include/bits/atomic_wait.h (__waiter_pool_impl::_S_track): New
+	function returning an RAII object for contention tracking.
+	(__wait_flags): Do not set the __do_spin flag in the __spin_only
+	enumerator. Comment out the unused __abi_version_mask
+	enumerator.  Define operator| and operator|= overloads.
+	(__wait_args_base::operator&): Define.
+	(__wait_args::operator&, __wait_args::_S_default_flags): Remove.
+	(__wait_args::operator|, __wait_args::operator|=): Remove.
+	(__spin_impl): Change parameter from pointer to reference.
+	Replace make_pair call with list-initialization.
+	(__wait_impl): Likewise.  Remove some preprocessor conditional
+	logic.  Always store old value in __args._M_old. Avoid
+	unnecessary const_cast. Use _S_track.
+	(__notify_impl): Change parameter to reference. Remove some
+	preprocessor conditional logic.
+	(__atomic_wait_address): Add comment. Update __args._M_old on
+	each iteration.
+	(__atomic_wait_address_v): Add comment.
+	* include/std/latch (latch::wait): Adjust predicates for new
+	logic.
+	* testsuite/29_atomics/atomic_integral/wait_notify.cc: Improve
+	test.
+
+2025-05-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h: Whitespace fixes.
+	* include/bits/atomic_wait.h: Likewise.
+
+2025-05-30  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__spin_until_impl): Accept
+	__wait_args as const __wait_args_base*.
+	(__wait_until_impl): Likewise.
+	(__wait_until): Likewise.
+	(__wait_for): Likewise.
+	(__atomic_wait_address_until): Pass __wait_args by address.
+	(__atomic_wait_address_for): Likewise.
+	* include/bits/atomic_wait.h (__wait_args_base): New struct.
+	(__wait_args): Derive from __wait_args_base.
+	(__wait_args::__wait_args()): Adjust ctors to call call base ctor.
+	(__wait_args::__wait_args(const __wait_args_base&)): New ctor.
+	(__wait_args::operator|=): New method.
+	(__wait_args::_S_flags_for): Change return type to
+	__wait_flags.
+	(__spin_impl): Accept __wait_args as const __wait_args_base*.
+	(__wait_impl): Likewise.
+	(__notify_impl): Likewise.
+	(__atomic_wait_address): Pass __wait_args by address.
+	(__atomic_wait_address_v): Likewise.
+	(__atomic_notify_address): Likewise.
+
+2025-05-30  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/bits/atomic_timed_wait.h:
+	(__detail::__platform_wait_until_impl): Rename to
+	__platform_wait_until.
+	(__detail::__platform_wait_until): Remove previous
+	definition.
+	(__detail::__cond_wait_until_impl): Rename to
+	__cond_wait_until.
+	(__detail::__cond_wait_until): Remove previous
+	definition.
+	(__detail::__spin_until_impl): New function.
+	(__detail::__wait_until_impl): New function.
+	(__detail::__wait_until): New function.
+	(__detail::__wait_for): New function.
+	(__detail::__timed_waiter_pool): Remove type.
+	(__detail::__timed_backoff_spin_policy): Remove type.
+	(__detail::__timed_waiter): Remove type.
+	(__detail::__enters_timed_wait): Remove type alias.
+	(__detail::__bare_timed_wait): Remove type alias.
+	(__atomic_wait_address_until): Adjust to new implementation
+	detail.
+	(__atomic_wait_address_until_v): Likewise.
+	(__atomic_wait_address_bare): Remove.
+	(__atomic_wait_address_for): Adjust to new implementation
+	detail.
+	(__atomic_wait_address_for_v): Likewise.
+	(__atomic_wait_address_for_bare): Remove.
+	* include/bits/atomic_wait.h: Include bits/stl_pair.h.
+	(__detail::__default_spin_policy): Remove type.
+	(__detail::__atomic_spin): Remove function.
+	(__detail::__waiter_pool_base): Rename to __waiter_pool_impl.
+	Remove _M_notify.  Rename _S_for to _S_impl_for.
+	(__detail::__waiter_base): Remove type.
+	(__detail::__waiter_pool): Remove type.
+	(__detail::__waiter): Remove type.
+	(__detail::__enters_wait): Remove type alias.
+	(__detail::__bare_wait): Remove type alias.
+	(__detail::__wait_flags): New enum.
+	(__detail::__wait_args): New struct.
+	(__detail::__wait_result_type): New type alias.
+	(__detail::__spin_impl): New function.
+	(__detail::__wait_impl): New function.
+	(__atomic_wait_address): Adjust to new implementation detail.
+	(__atomic_wait_address_v): Likewise.
+	(__atomic_notify_address): Likewise.
+	(__atomic_wait_address_bare): Delete.
+	(__atomic_notify_address_bare): Likewise.
+	* include/bits/semaphore_base.h: Adjust implementation to
+	use new __atomic_wait_address_v contract.
+	* include/std/barrier: Adjust implementation to use new
+	__atomic_wait contract.
+	* include/std/latch: Adjust implementation to use new
+	__atomic_wait contract.
+	* testsuite/29_atomics/atomic/wait_notify/100334.cc (main):
+	Adjust to for __detail::__waiter_pool_base renaming.
+
 2025-05-29  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/flat_map (_Flat_map_impl::operator==): Compare

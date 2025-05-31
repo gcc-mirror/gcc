@@ -1,3 +1,137 @@
+2025-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* gcc.dg/format/diagnostic-ranges-html.py: New test script.
+	* gcc.dg/format/diagnostic-ranges.c: Add HTML generation to
+	options, and invoke the new script to check the HTML output.
+
+2025-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120123
+	* g++.dg/cpp23/explicit-obj-lambda18.C: New test.
+
+2025-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102599
+	PR fortran/114022
+	* gfortran.dg/inquiry_type_ref_8.f90: New test.
+
+2025-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113563
+	* g++.dg/cpp23/explicit-obj-lambda17.C: New test.
+
+2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/120354
+	* gcc.dg/pr120354.c: New test.
+
+2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/120353
+	* gcc.dg/pr120353.c: New test.
+
+2025-05-30  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/avg.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/avg_data.h: Add test data for
+	avg_ceil.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i16-from-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i16-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i32-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i8-from-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i8-from-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-1-i8-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-run-1-i16-from-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-run-1-i16-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-run-1-i32-from-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-run-1-i8-from-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-run-1-i8-from-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/avg_ceil-run-1-i8-from-i64.c: New test.
+
+2025-05-30  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/avg-4.c: Update asm check
+	to vaadd.
+	* gcc.target/riscv/rvv/autovec/vls/avg-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/avg-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/vec-avg-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/widen/vec-avg-rv64gcv.c: Ditto.
+
+2025-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120341
+	* gcc.dg/torture/pr120341-1.c: New testcase.
+	* gcc.dg/torture/pr120341-2.c: Likewise.
+
+2025-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/120480
+	* gcc.dg/pr120480.c: New test.
+
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+
+	* c-c++-common/gomp/declare-mapper-3.c: Enable for C.
+	* c-c++-common/gomp/declare-mapper-4.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-5.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-6.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-7.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-8.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-9.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-10.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-12.c: Likewise.
+	* c-c++-common/gomp/map-6.c: Update dg-error.
+	* gcc.dg/gomp/udr-3.c: Update for change to dg-note.
+	* c-c++-common/gomp/declare-mapper-11.c: New.
+	* gcc.dg/gomp/declare-mapper-10.c: New test.
+	* gcc.dg/gomp/declare-mapper-11.c: New test.
+	* gcc.dg/gomp/declare-mapper-13.c: New test.
+
+2025-05-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120355
+	* gfortran.dg/interface_62.f90: New test.
+
+2025-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/bad-binary-ops-highlight-colors.C: Update
+	expected multiline output for quoted source and underlines to
+	reflect emitting color codes when changes happen, rather than
+	per character.
+	* g++.dg/diagnostic/long-short-colorization.C: Likewise.
+	* g++.dg/plugin/show-template-tree-color-labels.C: Likewise.
+	* gcc.dg/bad-binary-ops-highlight-colors.c: Likewise.
+	* gcc.dg/format/colors.c: Likewise.
+
+2025-05-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120347
+	* gcc.dg/torture/pr120347.c: New test.
+
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/map-6.c: Update error scan output.
+	* c-c++-common/gomp/declare-mapper-3.c: New test (only enabled for C++
+	for now).
+	* c-c++-common/gomp/declare-mapper-4.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-5.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-6.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-7.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-8.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-9.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-10.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-12.c: Likewise.
+	* g++.dg/gomp/declare-mapper-1.C: New test.
+	* g++.dg/gomp/declare-mapper-2.C: New test.
+	* g++.dg/gomp/declare-mapper-3.C: New test.
+
+2025-05-30  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120381
+	* gcc.dg/pr120381.c: New test.
+	* gcc.dg/gnu23-tag-composite-6.c: New test.
+
 2025-05-29  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* lib/target-supports.exp: Enable autofdo tests for aarch64.

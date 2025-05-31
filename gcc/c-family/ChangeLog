@@ -1,3 +1,15 @@
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-common.h (c_omp_region_type): Add C_ORT_DECLARE_MAPPER and
+	C_ORT_OMP_DECLARE_MAPPER codes.
+	(omp_mapper_list): Add forward declaration.
+	(c_omp_find_nested_mappers, c_omp_instantiate_mappers): Add prototypes.
+	* c-omp.cc (c_omp_find_nested_mappers): New function.
+	(remap_mapper_decl_info): New struct.
+	(remap_mapper_decl_1, omp_instantiate_mapper,
+	c_omp_instantiate_mappers): New functions.
+
 2025-05-27  Alejandro Colomar  <alx@kernel.org>
 	    Martin Uecker  <uecker@tugraz.at>
 

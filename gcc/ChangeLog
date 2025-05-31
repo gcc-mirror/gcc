@@ -1,3 +1,147 @@
+2025-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* diagnostic-format-html.cc (HTML_STYLE): Add ".highlight-a" and
+	".highlight-b".
+	(html_builder::make_element_for_diagnostic): Handle begin_color
+	and end_color.
+	* diagnostic-show-locus.cc (to_html::to_html): Add "richloc"
+	param and use it to initialize m_richloc.
+	(to_html::colorize_text_for_range_idx): Drop.
+	(to_html::get_location_range_by_idx): New.
+	(to_html::get_highlight_color_for_range_idx): New.
+	(to_html::m_richloc): New field.
+	(print_html_span_start): Update for new param of to_html ctor.
+	(line_printer::m_was_in_range_p): New field.
+	(line_printer::m_last_range_idx): New field.
+	(layout_printer<Sink>::print_source_line): Use set_in_range
+	and set_outside_range rather than colorization calls.
+	(layout_printer<Sink>::set_in_range): New.
+	(layout_printer<Sink>::set_outside_range): New.
+	(layout_printer<Sink>::print_annotation_line): Use set_in_range
+	and set_outside_range rather than colorization calls.
+	(layout_printer<to_text>::begin_label): Convert param from label
+	to state_idx.  Add "is_label_text" param and use it to guard logic
+	for turning off colorization within paths.
+	(layout_printer<to_html>::begin_label): Likewise.  Push <span>
+	for any highlight color.
+	(layout_printer<to_text>::end_label): Likewise.
+	(layout_printer<to_text>::end_label): Likewise, popping the
+	<span>.
+	(layout_printer<Sink>::print_any_labels): Convert begin/end_label
+	calls to pass in state_idx rather than label.  Use begin/end_label
+	rather than colorization calls.
+	(layout_printer<Sink>::layout_printer): Likewise.
+	(layout_printer<Sink>::layout_printer): Initialize new fields.
+	(diagnostic_source_print_policy::print_as_html): Update for new
+	param of to_html ctor.
+
+2025-05-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* passes.cc (execute_all_ipa_transforms): Fix typo in
+	commenet.
+
+2025-05-30  Joseph Myers  <josmyers@redhat.com>
+
+	* doc/standards.texi (C Language): Document library facilities
+	provided in terms of headers not declaring functions with external
+	linkage, not in terms of headers required of freestanding
+	implementations.
+	* doc/sourcebuild.texi (Subdirectories, Headers): Likewise.
+	* doc/trouble.texi (Standard Libraries): Likewise.
+
+2025-05-30  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (avg<v_double_trunc>3_ceil): Add insn
+	expand to leverage vaadd with rnu directly.
+
+2025-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120341
+	* tree-ssa-loop-im.cc (can_sm_ref_p): STRING_CSTs are readonly.
+	* tree-ssa-phiopt.cc (cond_store_replacement): Likewise.
+
+2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119835
+	* tree-nrv.cc (pass_nrv::execute): Defuse 'RESULT_DECL' check.
+
+2025-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.cc (colorizer::m_current_named_color): New
+	field.
+	(colorizer::set_named_color): Use it to consolidate repeated calls
+	to the same color.
+
+2025-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120457
+	* tree-vect-slp.cc (vect_lower_load_permutations): Implement
+	the same heuristics as load vectorization for single-element
+	interleaving that spans multiple vectors.
+
+2025-05-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120347
+	* rtlanal.cc (rtx_properties::try_to_add_src): Don't drop the
+	IN_MEM_LOAD and IN_MEM_STORE flags for autoinc registers.
+	* rtl-ssa/changes.cc (recog_level2): Check whether an
+	RTX_AUTOINCed register also appears outside of an address.
+
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_omp_ctx): Add IMPLICIT_MAPPERS field.
+	(new_omp_context): Initialise IMPLICIT_MAPPERS hash map.
+	(delete_omp_context): Delete IMPLICIT_MAPPERS hash map.
+	(instantiate_mapper_info): New structs.
+	(remap_mapper_decl_1, omp_mapper_copy_decl, omp_instantiate_mapper,
+	omp_instantiate_implicit_mappers): New functions.
+	(gimplify_scan_omp_clauses): Handle MAPPER_BINDING clauses.
+	(gimplify_adjust_omp_clauses): Instantiate implicit declared mappers.
+	(gimplify_omp_declare_mapper): New function.
+	(gimplify_expr): Call above function.
+	* langhooks-def.h (lhd_omp_mapper_lookup,
+	lhd_omp_extract_mapper_directive, lhd_omp_map_array_section): Add
+	prototypes.
+	(LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES,
+	LANG_HOOKS_OMP_MAPPER_LOOKUP, LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE,
+	LANG_HOOKS_OMP_MAP_ARRAY_SECTION): Define macros.
+	(LANG_HOOK_DECLS): Add above macros.
+	* langhooks.cc (lhd_omp_mapper_lookup,
+	lhd_omp_extract_mapper_directive, lhd_omp_map_array_section): New
+	dummy functions.
+	* langhooks.h (lang_hooks_for_decls): Add OMP_FINISH_MAPPER_CLAUSES,
+	OMP_MAPPER_LOOKUP, OMP_EXTRACT_MAPPER_DIRECTIVE, OMP_MAP_ARRAY_SECTION
+	hooks.
+	* omp-general.h (omp_name_type<T>): Add templatized struct, hash type
+	traits (for omp_name_type<tree> specialization).
+	(omp_mapper_list<T>): Add struct.
+	* tree-core.h (omp_clause_code): Add OMP_CLAUSE__MAPPER_BINDING_.
+	* tree-pretty-print.cc (dump_omp_clause): Support GOMP_MAP_UNSET,
+	GOMP_MAP_PUSH_MAPPER_NAME, GOMP_MAP_POP_MAPPER_NAME artificial mapping
+	clauses.  Support OMP_CLAUSE__MAPPER_BINDING_ and OMP_DECLARE_MAPPER.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Add
+	OMP_CLAUSE__MAPPER_BINDING_.
+	* tree.def (OMP_DECLARE_MAPPER): New tree code.
+	* tree.h (OMP_DECLARE_MAPPER_ID, OMP_DECLARE_MAPPER_DECL,
+	OMP_DECLARE_MAPPER_CLAUSES): New defines.
+	(OMP_CLAUSE__MAPPER_BINDING__ID, OMP_CLAUSE__MAPPER_BINDING__DECL,
+	OMP_CLAUSE__MAPPER_BINDING__MAPPER): New defines.
+
+2025-05-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-ssa-sccopy.cc (scc_copy_prop::replace_scc_by_value): Return true
+	if something was done.
+	(scc_copy_prop::propagate): Return true if something was changed.
+	(pass_sccopy::execute): Return TODO_cleanup_cfg if a prop happened.
+
+2025-05-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* auto-profile.cc (function_instance::merge): New.
+	(autofdo_source_profile::read): Call merge.
+
 2025-05-29  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* config/aarch64/gcc-auto-profile: Make script executable.

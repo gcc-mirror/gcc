@@ -1,3 +1,30 @@
+2025-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102599
+	PR fortran/114022
+	* expr.cc (simplify_complex_array_inquiry_ref): Helper function for
+	simplification of inquiry references (%re/%im) of constant complex
+	arrays.
+	(find_inquiry_ref): Use it for handling %re/%im inquiry references
+	of complex arrays.
+	(scalarize_intrinsic_call): Fix frontend memleak.
+	* primary.cc (gfc_match_varspec): When the reference is NULL, the
+	previous simplification has succeeded in evaluating inquiry
+	references also of arrays.
+
+2025-05-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120355
+	* interface.cc (compare_parameter): If the global function has a
+	result clause, take typespec from there for the comparison against
+	the dummy argument.
+
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* parse.cc (tree.h, fold-const.h, tree-hash-traits.h): Add includes
+	(for additions to omp-general.h).
+
 2025-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/120049
