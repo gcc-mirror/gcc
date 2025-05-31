@@ -525,6 +525,9 @@ gm2_langhook_handle_option (
     case OPT_fm2_strict_type:
       M2Options_SetStrictTypeChecking (value);
       return 1;
+    case OPT_fm2_strict_type_reason:
+      M2Options_SetStrictTypeReason (value);
+      return 1;
     case OPT_fm2_debug_trace_:
       M2Options_SetM2DebugTraceFilter (value, arg);
       return 1;

@@ -540,6 +540,9 @@ lines compiled.
 @item -fm2-strict-type
 experimental flag to turn on the new strict type checker.
 
+@item -fm2-strict-type-reason
+provides more detail why the types are incompatible.
+
 @item -fm2-whole-program
 compile all implementation modules and program module at once.  Notice
 that you need to take care if you are compiling different dialect
