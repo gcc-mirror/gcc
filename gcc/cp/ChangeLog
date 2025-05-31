@@ -1,3 +1,20 @@
+2025-05-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* parser.cc (cp_parser_omp_metadirective): Do not call
+	cp_parser_skip_to_end_of_block_or_statement after an error.
+
+2025-05-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/120180
+	* parser.cc (cp_parser_omp_metadirective): Only consume the
+	token if it is the expected close paren.
+
 2025-05-26  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

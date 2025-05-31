@@ -1,3 +1,28 @@
+2025-05-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/declare-variant-2.c: Adjust patterns now that
+	C and C++ now behave similarly.
+	* c-c++-common/gomp/metadirective-error-recovery.c: New.
+
+2025-05-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/120180
+	* c-c++-common/gomp/pr120180.c: New.
+
+2025-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/120480
+	* gcc.dg/pr120480.c: New test.
+
 2025-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/sso19.adb: New test.
