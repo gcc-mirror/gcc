@@ -1,3 +1,31 @@
+2025-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119834
+	* config/s390/s390.md (define_split after *cpymem_short): Use
+	(clobber (match_scratch N)) instead of (clobber (scratch)).  Use
+	(match_dup 4) and operands[4] instead of (match_dup 3) and operands[3]
+	in the last of those.
+	(define_split after *clrmem_short): Use (clobber (match_scratch N))
+	instead of (clobber (scratch)).
+	(define_split after *cmpmem_short): Likewise.
+
+2025-05-30  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2025-05-29  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/99015
+	* lra-constraints.cc (enough_allocatable_hard_regs_p): Extract
+	from in_class_p.
+	(in_class_p): Use it with added conditions.
+	(process_alt_operands): Try to change class too.
+	(curr_insn_transform): Pass true to in_class_p for reg operand
+	win.  Spill pseudo only used in the insn if the corresponding
+	operand does not require hard register anymore.
+
 2025-05-29  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/99015
