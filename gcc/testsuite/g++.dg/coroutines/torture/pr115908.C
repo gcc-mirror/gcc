@@ -3,13 +3,8 @@
 // With the changes to deal with CWG2563 (and PR119916) we now use the
 // referenced promise in the return expression.  It is quite reasonable
 // for a body implementation to complete before control is returned to
-// the ramp - and in that case we would be creating the ramp return object
-// from an already-deleted promise object.
-// This is recognised to be a poor situation and resolution via a core
-// issue is planned.
-
-// In this test we explicitly trigger the circumstance mentioned above.
-// { dg-xfail-run-if "" { *-*-* } }
+// the ramp - so we need to ensure that the promise lifetime is extended
+// in that case, tested here.
 
 #include <coroutine>
 
