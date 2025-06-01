@@ -49,6 +49,7 @@
 #include <signal.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <stdarg.h>
 #if __has_include(<errno.h>)
 # include <errno.h> // for program_invocation_short_name
 #endif
@@ -13151,3 +13152,16 @@ __gg__set_env_value(cblc_field_t   *value,
   // And now, anticlimactically, set the variable:
   setenv(trimmed_env, trimmed_val, 1);
   }
+
+extern "C"
+void
+__gg__fprintf_stderr(const char *format_string, ...)
+  {
+  /*  This routine allows the compiler to send stuff to stderr in a way
+      that is straightforward to use..  */
+  va_list ap;
+  va_start(ap, format_string);
+  vfprintf(stderr, format_string, ap);
+  va_end(ap);
+  }
+
