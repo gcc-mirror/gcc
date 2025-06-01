@@ -960,6 +960,14 @@ is_a_helper <rtx_call_insn *>::test (rtx_insn *insn)
 template <>
 template <>
 inline bool
+is_a_helper <const rtx_call_insn *>::test (const rtx_insn *insn)
+{
+  return CALL_P (insn);
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <rtx_jump_table_data *>::test (rtx rt)
 {
   return JUMP_TABLE_DATA_P (rt);
@@ -3682,7 +3690,6 @@ extern bool nonzero_address_p (const_rtx);
 extern bool rtx_unstable_p (const_rtx);
 extern bool rtx_varies_p (const_rtx, bool);
 extern bool rtx_addr_varies_p (const_rtx, bool);
-extern rtx get_call_rtx_from (const rtx_insn *);
 extern tree get_call_fndecl (const rtx_insn *);
 extern HOST_WIDE_INT get_integer_term (const_rtx);
 extern rtx get_related_value (const_rtx);
@@ -4572,6 +4579,7 @@ extern void simplify_using_condition (rtx, rtx *, bitmap);
 extern void compute_alignments (void);
 extern void update_alignments (vec<rtx> &);
 extern int asm_str_count (const char *templ);
+extern rtx get_call_rtx_from (const rtx_insn *);
 
 struct rtl_hooks
 {
