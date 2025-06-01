@@ -257,16 +257,8 @@ END WriteString ;
 PROCEDURE LocalWrite (ch: CHAR) ;
 BEGIN
    FIO.WriteChar(outFile, ch) ;
-   Done := FIO.IsNoError(outFile)
-(*
-   IF outUsed
-   THEN
-      FIO.WriteChar(outFile, ch) ;
-      Done := FIO.IsNoError(outFile)
-   ELSE
-      Done := (write(stdout, ADR(ch), 1) = 1)
-   END
-*)
+   Done := FIO.IsNoError(outFile) ;
+   FIO.FlushBuffer (outFile)
 END LocalWrite ;
 
 
