@@ -846,12 +846,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	  n = finish_struct (input_location, n, fields, attributes, NULL,
 			     &expr);
 
-	  n = qualify_type (n, t1);
-
-	  gcc_checking_assert (!TYPE_NAME (n) || comptypes (n, t1));
-	  gcc_checking_assert (!TYPE_NAME (n) || comptypes (n, t2));
-
-	  return n;
+	  return qualify_type (n, t1);
 	}
       /* FALLTHRU */
     case ENUMERAL_TYPE:
@@ -1004,7 +999,15 @@ tree
 composite_type (tree t1, tree t2)
 {
   struct composite_cache cache = { };
-  return composite_type_internal (t1, t2, &cache);
+  tree n = composite_type_internal (t1, t2, &cache);
+  /* For function and arrays there are some cases where qualifiers do
+     not match.  See PR120510.  */
+  if (FUNCTION_TYPE != TREE_CODE (n) && ARRAY_TYPE != TREE_CODE (n))
+    {
+      gcc_checking_assert (comptypes (n, t1));
+      gcc_checking_assert (comptypes (n, t2));
+    }
+  return n;
 }
 
 /* Return the type of a conditional expression between pointers to
