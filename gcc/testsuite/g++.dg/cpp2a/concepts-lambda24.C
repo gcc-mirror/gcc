@@ -1,5 +1,5 @@
 // PR c++/120123
-// { dg-do compile { target c++23 } }
+// { dg-do compile { target c++20 } }
 
 struct H {
     void member(int) {}
