@@ -10293,6 +10293,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
       TYPE_UNSIGNED (tem) = TYPE_UNSIGNED (enumtype);
       TYPE_LANG_SPECIFIC (tem) = TYPE_LANG_SPECIFIC (enumtype);
       ENUM_UNDERLYING_TYPE (tem) = ENUM_UNDERLYING_TYPE (enumtype);
+      TYPE_PACKED (tem) = TYPE_PACKED (enumtype);
     }
 
   /* Finish debugging output for this type.  */
