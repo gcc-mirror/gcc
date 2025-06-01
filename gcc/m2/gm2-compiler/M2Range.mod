@@ -91,7 +91,6 @@ FROM M2Check IMPORT ParameterTypeCompatible, ExpressionTypeCompatible, Assignmen
 
 FROM M2Base IMPORT Nil, IsRealType, GetBaseTypeMinMax,
                    Cardinal, Integer, ZType, IsComplexType,
-                   IsAssignmentCompatible,
                    IsExpressionCompatible,
                    IsParameterCompatible,
                    ExceptionAssign,
@@ -1803,6 +1802,7 @@ END FoldRotate ;
 
 PROCEDURE FoldTypeReturnFunc (q: CARDINAL; tokenNo: CARDINAL; func, val: CARDINAL; r: CARDINAL) ;
 VAR
+   valType,
    returnType: CARDINAL ;
 BEGIN
    returnType := GetType (func) ;
@@ -1816,18 +1816,25 @@ BEGIN
                        func, val) ;
          SubQuad(q)
       END
-   ELSIF AssignmentTypeCompatible (tokenNo, "", returnType, val, FALSE)
-   THEN
-      SubQuad (q)
    ELSE
-      IF NOT reportedError (r)
+      valType := val ;
+      IF IsVar (val) AND (GetMode (val) = LeftValue)
       THEN
-         MetaErrorsT2 (tokenNo,
-                       'the return type {%1Etad} used in procedure {%1Da}',
-                       'is incompatible with the returned expression {%1ad}}',
-                       func, val) ;
-         setReported (r) ;
-         FlushErrors
+         valType := GetType (val)
+      END ;
+      IF AssignmentTypeCompatible (tokenNo, "", returnType, valType, FALSE)
+      THEN
+         SubQuad (q)
+      ELSE
+         IF NOT reportedError (r)
+         THEN
+            MetaErrorsT2 (tokenNo,
+                          'the return type {%1Etad} used in procedure {%1Da}',
+                          'is incompatible with the returned expression {%1ad}}',
+                          func, val) ;
+            setReported (r) ;
+            FlushErrors
+         END
       END
    END
 END FoldTypeReturnFunc ;
@@ -1877,7 +1884,7 @@ BEGIN
    ELSE
       exprType := GetType (expr)
    END ;
-   IF IsAssignmentCompatible (desType, exprType)
+   IF AssignmentTypeCompatible (tokenNo, "", GetType (des), GetType (expr), FALSE)
    THEN
       SubQuad(q)
    ELSE
@@ -1986,16 +1993,35 @@ END CodeTypeAssign ;
 *)
 
 PROCEDURE CodeTypeReturnFunc (tokenNo: CARDINAL; func, val: CARDINAL; r: CARDINAL) ;
+VAR
+   valType,
+   returnType: CARDINAL ;
 BEGIN
-   IF NOT AssignmentTypeCompatible (tokenNo, "", GetType (func), val, FALSE)
+   returnType := GetType (func) ;
+   IF returnType = NulSym
    THEN
       IF NOT reportedError (r)
       THEN
          MetaErrorsT2 (tokenNo,
-                       'the return type {%1Etad} used in procedure function {%1Da}',
-                       'is incompatible with the returned expression {%2EUa} {%2tad:of type {%2tad}}',
+                       'procedure {%1Da} is not a procedure function',
+                       '{%2ad} cannot be returned from {%1Da}',
                        func, val) ;
-         setReported (r)
+      END
+   ELSE
+      valType := val ;
+      IF IsVar (val) AND (GetMode (val) = LeftValue)
+      THEN
+         valType := GetType (val)
+      END ;
+      IF NOT AssignmentTypeCompatible (tokenNo, "", returnType, valType, FALSE)
+      THEN
+         IF NOT reportedError (r)
+         THEN
+            MetaErrorsT2 (tokenNo,
+                          'the return type {%1Etad} used in procedure function {%1Da}',
+                          'is incompatible with the returned expression {%2EUa} {%2tad:of type {%2tad}}',
+                          func, val)
+         END
       END
    END
 END CodeTypeReturnFunc ;
@@ -2010,7 +2036,7 @@ END CodeTypeReturnFunc ;
 
 PROCEDURE CodeTypeIndrX (tokenNo: CARDINAL; des, expr: CARDINAL; r: CARDINAL) ;
 BEGIN
-   IF NOT IsAssignmentCompatible (GetType (des), GetType (expr))
+   IF NOT AssignmentTypeCompatible (tokenNo, "", GetType (des), GetType (expr), FALSE)
    THEN
       IF NOT reportedError (r)
       THEN
@@ -2022,7 +2048,9 @@ BEGIN
                           des, expr) ;
          ELSE
             MetaErrorT2 (tokenNo,
-                         'assignment designator {%1Ea} {%1ta:of type {%1ta}} {%1d:is a {%1d}} and expression {%2a} {%2tad:of type {%2tad}} are incompatible',
+                         'assignment designator {%1Ea} {%1ta:of type {%1ta}}' +
+                         ' {%1d:is a {%1d}} and expression {%2a}' +
+                         ' {%2tad:of type {%2tad}} are incompatible',
                          des, expr)
          END ;
          setReported (r)
