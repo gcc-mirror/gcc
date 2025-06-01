@@ -1,3 +1,23 @@
+2025-06-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120497
+	* gm2/pim/pass/ReturnType.mod: New test.
+	* gm2/pim/pass/ReturnType2.mod: New test.
+
+2025-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120357
+	* gcc.dg/vect/vect-early-break_136-pr120357.c: New testcase.
+
+2025-05-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* gm2/pim/fail/testcharint.mod: New test.
+	* gm2/pim/fail/testindrx.mod: New test.
+	* gm2/pim/pass/testxindr.mod: New test.
+	* gm2/pim/pass/testxindr2.mod: New test.
+	* gm2/pim/pass/testxindr3.mod: New test.
+
 2025-05-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116792

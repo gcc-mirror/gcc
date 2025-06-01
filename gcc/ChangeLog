@@ -1,3 +1,36 @@
+2025-05-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* function.h (struct function): Remove last_verified.
+	* gimple-harden-conditionals.cc (pass_data_harden_compares): Remove
+	TODO_verify_il.
+	(pass_data_harden_conditional_branches): Likewise.
+	* gimple-harden-control-flow.cc (pass_harden_control_flow_redundancy::execute):
+	Don't return TODO_verify_il.
+	* ipa-strub.cc (pass_data_ipa_strub): Remove TODO_verify_il.
+	* passes.cc (TODO_verify_il): Define.
+	(execute_function_todo): Don't use or set last_verified.
+	(clear_last_verified): Remove.
+	(execute_one_ipa_transform_pass): Update comment before execute_todo.
+	Assert that none of the todos have TODO_verify_il set on it.
+	(execute_one_pass): Don't call clear_last_verified on all functions.
+	Assert that none of the todos have TODO_verify_il set on it.
+	* tree-inline.cc (initialize_cfun): Don't copy last_verified.
+	* tree-pass.h (TODO_verify_all): Remove.
+	* tree-vrp.cc (pass_data_early_vrp): Remove TODO_verify_all.
+	(pass_data_fast_vrp): Likewise.
+
+2025-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120357
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Create
+	the conditional reduction induction IV increment before the
+	main IV exit.
+
+2025-05-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* doc/gm2.texi (-fm2-strict-type-reason): Document new flag.
+
 2025-05-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116792
