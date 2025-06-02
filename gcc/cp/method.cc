@@ -2332,13 +2332,22 @@ constructible_expr (tree to, tree from)
   return expr;
 }
 
-/* Return declval<T>().~T() treated as an unevaluated operand.  */
+/* Valid if "Either T is a reference type, or T is a complete object type for
+   which the expression declval<U&>().~U() is well-formed when treated as an
+   unevaluated operand ([expr.context]), where U is remove_all_extents_t<T>."
+
+   For a class U, return the destructor call; otherwise return void_node if
+   valid or error_mark_node if not.  */
 
 static tree
 destructible_expr (tree to)
 {
   cp_unevaluated cp_uneval_guard;
   int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
+  if (TYPE_REF_P (to))
+    return void_node;
+  if (!COMPLETE_TYPE_P (complete_type (to)))
+    return error_mark_node;
   to = strip_array_types (to);
   if (CLASS_TYPE_P (to))
     {
