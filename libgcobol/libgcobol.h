@@ -39,6 +39,21 @@
     Some are also called between source code modules in libgcobol, hence the
     need here for declarations. */
 
+extern void __gg__mabort();
+
+
+// The unnecessary abort() that follows is necessary to make cppcheck be 
+// aware that massert() actually terminates processing after a failed
+// malloc().
+#define massert(p) if(!p){__gg__mabort();abort();}
+
+// This was part of an exercise to make cppcheck shut up about invalid
+// pointer type conversions.
+// It was also to avoid having reinterpret_cast<> all over the place.
+// So, instead of                 reinterpret_cast<char *>(VALUE)
+// I sometimes use                PTRCAST(char, VALUE)
+#define PTRCAST(TYPE, VALUE) static_cast<TYPE *>(static_cast<void *>(VALUE))
+
 extern "C" __int128 __gg__power_of_ten(int n);
 
 extern "C" __int128 __gg__dirty_to_binary_source( const char *dirty,
@@ -91,20 +106,21 @@ extern "C" char * __gg__get_default_currency_string();
 
 extern "C" void __gg__clock_gettime(clockid_t clk_id, struct timespec *tp);
 
-extern "C" GCOB_FP128 __gg__float128_from_location(cblc_field_t *var,
-                                                  unsigned char *location);
+extern "C" GCOB_FP128 __gg__float128_from_location(
+                                        const cblc_field_t *var,
+                                        const unsigned char *location);
 extern "C" void __gg__adjust_dest_size(cblc_field_t *dest, size_t ncount);
 
 extern "C" void __gg__realloc_if_necessary( char **dest,
                                             size_t *dest_size,
                                             size_t new_size);
-extern "C" void __gg__set_exception_file(cblc_file_t *file);
+extern "C" void __gg__set_exception_file(const cblc_file_t *file);
 extern "C" void __gg__internal_to_console_in_place(char *loc, size_t length);
-extern "C" __int128 __gg__binary_value_from_qualified_field(int        *rdigits,
-                                                            cblc_field_t *var,
+extern "C" __int128 __gg__binary_value_from_qualified_field(int     *rdigits,
+                                                            const cblc_field_t *var,
                                                             size_t     offset,
                                                             size_t     size);
-extern "C"  GCOB_FP128 __gg__float128_from_qualified_field(cblc_field_t *field,
+extern "C"  GCOB_FP128 __gg__float128_from_qualified_field(const cblc_field_t *field,
                                                           size_t offset,
                                                           size_t size);
 extern "C"  __int128 __gg__integer_from_qualified_field(cblc_field_t *var,

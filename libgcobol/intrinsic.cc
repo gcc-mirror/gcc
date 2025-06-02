@@ -248,9 +248,12 @@ struct input_state
     nsubscript = N;
     if(N)
       {
-      subscript_alls   = (bool *)  malloc(nsubscript);
-      subscripts       = (size_t *)malloc(nsubscript);
-      subscript_limits = (size_t *)malloc(nsubscript);
+      subscript_alls   = static_cast<bool   *>(malloc(nsubscript));
+      subscripts       = static_cast<size_t *>(malloc(nsubscript));
+      subscript_limits = static_cast<size_t *>(malloc(nsubscript));
+      massert(subscript_alls);
+      massert(subscripts);
+      massert(subscript_limits);
       }
     done = false;
     }
@@ -378,7 +381,7 @@ year_to_yyyy(int arg1, int arg2, int arg3)
 
 static
 double
-get_value_as_double_from_qualified_field( cblc_field_t *input,
+get_value_as_double_from_qualified_field( const cblc_field_t *input,
                                           size_t input_o,
                                           size_t input_s)
   {
@@ -411,9 +414,9 @@ get_value_as_double_from_qualified_field( cblc_field_t *input,
 static
 GCOB_FP128 kahan_summation(size_t ncount,
                           cblc_field_t **source,
-                          size_t        *source_o,
-                          size_t        *source_s,
-                          int           *flags,
+                    const size_t        *source_o,
+                    const size_t        *source_s,
+                    const int           *flags,
                           size_t        *k_count)
   {
   // We use compensated addition.  Look up Kahan summation.
@@ -458,9 +461,9 @@ static
 GCOB_FP128
 variance( size_t         ncount,
           cblc_field_t **source,
-          size_t        *source_o,
-          size_t        *source_s,
-          int           *flags)
+    const size_t        *source_o,
+    const size_t        *source_s,
+    const int           *flags)
   {
   // In order to avoid catastrophic cancellation, we are going to use an
   // algorithm that is a bit wasteful of time, but is described as particularly
@@ -547,14 +550,14 @@ get_all_time( char *stime,
   //         days of January show up in the final week of the prior year.
 
   sprintf(stime,
-          "%4.4u%2.2u%2.2uT"  // YYYYMMSS
-          "%2.2u%2.2u%2.2u"   // hhmmss
-          ".%9.9u"            // .sssssssss
-          "%c%2.2u%2.2u"      // +hhmm
-          "W%2.2u"            // Www
-          "%1u"               // DOW [1-7], 1 for Monday
-          "%3.3u"             // DDD day of year, 001 - 365,366
-          "%4.4u",            // ZZZZ Year for YYYY-Www-D
+          "%4.4d%2.2d%2.2dT"  // YYYYMMSS
+          "%2.2d%2.2d%2.2d"   // hhmmss
+          ".%9.9d"            // .sssssssss
+          "%c%2.2d%2.2d"      // +hhmm
+          "W%2.2d"            // Www
+          "%1d"               // DOW [1-7], 1 for Monday
+          "%3.3d"             // DDD day of year, 001 - 365,366
+          "%4.4d",            // ZZZZ Year for YYYY-Www-D
           ctm.YYYY,
           ctm.MM,
           ctm.DD,
@@ -687,7 +690,7 @@ populate_ctm_from_JD(struct cobol_tm &ctm, double JD )
 static
 void
 populate_ctm_from_date( struct cobol_tm &ctm,
-                        cblc_field_t *pdate,
+                  const cblc_field_t *pdate,
                         size_t pdate_offset,
                         size_t pdate_size)
   {
@@ -721,10 +724,10 @@ populate_ctm_from_double_time(struct cobol_tm &ctm, double time)
 static
 void
 populate_ctm_from_time( struct cobol_tm &ctm,
-                        cblc_field_t *ptime,
+                   const cblc_field_t *ptime,
                         size_t ptime_o,
                         size_t ptime_s,
-                        cblc_field_t *poffset,
+                   const cblc_field_t *poffset,
                         size_t poffset_o,
                         size_t poffset_s)
   {
@@ -791,8 +794,10 @@ convert_to_zulu(cobol_tm &ctm)
 
 static
 void
-ftime_replace(char *dest, char const * const dest_end,
-              char const *source, char const * const source_end,
+ftime_replace(char *dest,
+              char const * const dest_end,
+              char const *       source,
+              char const * const source_end,
               char const * const ftime)
   {
   // This routine is highly dependent on the source format being correct.
@@ -956,7 +961,7 @@ ftime_replace(char *dest, char const * const dest_end,
 extern "C"
 void
 __gg__abs(cblc_field_t *dest,
-          cblc_field_t *source,
+    const cblc_field_t *source,
           size_t source_offset,
           size_t source_size)
   {
@@ -978,7 +983,7 @@ __gg__abs(cblc_field_t *dest,
 extern "C"
 void
 __gg__acos( cblc_field_t *dest,
-            cblc_field_t *source,
+      const cblc_field_t *source,
             size_t        source_offset,
             size_t        source_size)
   {
@@ -1005,10 +1010,10 @@ __gg__acos( cblc_field_t *dest,
 extern "C"
 void
 __gg__annuity(cblc_field_t *dest,
-              cblc_field_t *arg1,
+        const cblc_field_t *arg1,
               size_t arg1_offset,
               size_t arg1_size,
-              cblc_field_t *arg2,
+        const cblc_field_t *arg2,
               size_t arg2_offset,
               size_t arg2_size)
   {
@@ -1050,7 +1055,7 @@ __gg__annuity(cblc_field_t *dest,
 extern "C"
 void
 __gg__asin( cblc_field_t *dest,
-            cblc_field_t *source,
+      const cblc_field_t *source,
             size_t source_offset,
             size_t source_size)
   {
@@ -1080,7 +1085,7 @@ __gg__asin( cblc_field_t *dest,
 extern "C"
 void
 __gg__atan( cblc_field_t *dest,
-            cblc_field_t *source,
+      const cblc_field_t *source,
             size_t source_offset,
             size_t source_size)
   {
@@ -1102,7 +1107,7 @@ __gg__atan( cblc_field_t *dest,
 extern "C"
 void
 __gg__byte_length(cblc_field_t *dest,
-                  cblc_field_t */*source*/,
+            const cblc_field_t */*source*/,
                   size_t /*source_offset*/,
                   size_t source_size)
   {
@@ -1118,7 +1123,7 @@ __gg__byte_length(cblc_field_t *dest,
 extern "C"
 void
 __gg__char( cblc_field_t *dest,
-            cblc_field_t *source,
+      const cblc_field_t *source,
             size_t source_offset,
             size_t source_size)
   {
@@ -1143,10 +1148,10 @@ __gg__char( cblc_field_t *dest,
 extern "C"
 void
 __gg__combined_datetime(cblc_field_t *dest,
-                        cblc_field_t *arg1,
+                  const cblc_field_t *arg1,
                         size_t arg1_offset,
                         size_t arg1_size,
-                        cblc_field_t *arg2,
+                  const cblc_field_t *arg2,
                         size_t arg2_offset,
                         size_t arg2_size)
   {
@@ -1192,7 +1197,7 @@ __gg__concat( cblc_field_t *dest,
 extern "C"
 void
 __gg__cos(cblc_field_t *dest,
-          cblc_field_t *source,
+     const cblc_field_t *source,
           size_t        source_offset,
           size_t        source_size)
   {
@@ -1251,7 +1256,7 @@ __gg__seconds_past_midnight(cblc_field_t *dest)
 extern "C"
 void
 __gg__date_of_integer(cblc_field_t *dest,
-                      cblc_field_t *source,
+                const cblc_field_t *source,
                       size_t source_offset,
                       size_t source_size)
   {
@@ -1277,13 +1282,13 @@ __gg__date_of_integer(cblc_field_t *dest,
 extern "C"
 void
 __gg__date_to_yyyymmdd( cblc_field_t *dest,
-                        cblc_field_t *par1,
+                  const cblc_field_t *par1,
                         size_t par1_o,
                         size_t par1_s,
-                        cblc_field_t *par2,
+                  const cblc_field_t *par2,
                         size_t par2_o,
                         size_t par2_s,
-                        cblc_field_t *par3,
+                  const cblc_field_t *par3,
                         size_t par3_o,
                         size_t par3_s)
   {
@@ -1308,7 +1313,7 @@ __gg__date_to_yyyymmdd( cblc_field_t *dest,
 extern "C"
 void
 __gg__day_of_integer( cblc_field_t *dest,
-                      cblc_field_t *source,
+                const cblc_field_t *source,
                       size_t source_offset,
                       size_t source_size)
   {
@@ -1337,13 +1342,13 @@ __gg__day_of_integer( cblc_field_t *dest,
 extern "C"
 void
 __gg__day_to_yyyyddd( cblc_field_t *dest,
-                      cblc_field_t *par1,
+                const cblc_field_t *par1,
                       size_t par1_o,
                       size_t par1_s,
-                      cblc_field_t *par2,
+                const cblc_field_t *par2,
                       size_t par2_o,
                       size_t par2_s,
-                      cblc_field_t *par3,
+                const cblc_field_t *par3,
                       size_t par3_o,
                       size_t par3_s)
   {
@@ -1382,7 +1387,7 @@ __gg__e(cblc_field_t *dest)
 extern "C"
 void
 __gg__exp(cblc_field_t *dest,
-          cblc_field_t *source,
+    const cblc_field_t *source,
           size_t source_offset,
           size_t source_size)
   {
@@ -1401,7 +1406,7 @@ __gg__exp(cblc_field_t *dest,
 extern "C"
 void
 __gg__exp10(cblc_field_t *dest,
-            cblc_field_t *source,
+      const cblc_field_t *source,
             size_t source_offset,
             size_t source_size)
   {
@@ -1420,7 +1425,7 @@ __gg__exp10(cblc_field_t *dest,
 extern "C"
 void
 __gg__factorial(cblc_field_t *dest,
-                cblc_field_t *source,
+          const cblc_field_t *source,
                 size_t source_offset,
                 size_t source_size)
   {
@@ -1451,24 +1456,24 @@ __gg__factorial(cblc_field_t *dest,
 extern "C"
 void
 __gg__formatted_current_date( cblc_field_t *dest, // Destination string
-                              cblc_field_t *input, // datetime format
+                         const cblc_field_t *input, // datetime format
                               size_t input_offset,
                               size_t input_size)
   {
   // FUNCTION CURRENT-DATE
 
   // Establish the destination, and set it to spaces
-  char *d    = (char *)dest->data;
-  char *dend = d + dest->capacity;
+  char *d    = PTRCAST(char, dest->data);
+  const char *dend = d + dest->capacity;
   memset(d, internal_space, dest->capacity);
 
   // Establish the formatting string:
-  char *format     = (char *)(input->data+input_offset);
-  char *format_end = format + input_size;
+  const char *format     = PTRCAST(char, (input->data+input_offset));
+  const char *format_end = format + input_size;
 
   bool is_zulu = false;
 
-  char *p = format;
+  const char *p = format;
   while( p < format_end )
     {
     int ch = *p++;
@@ -1512,23 +1517,23 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
 extern "C"
 void
 __gg__formatted_date(cblc_field_t *dest, // Destination string
-                     cblc_field_t *arg1, // datetime format
+               const cblc_field_t *arg1, // datetime format
                      size_t arg1_offset,
                      size_t arg1_size,
-                     cblc_field_t *arg2, // integer date
+               const cblc_field_t *arg2, // integer date
                      size_t arg2_offset,
                      size_t arg2_size)
   {
   // FUNCTION FORMATTED-DATE
 
   // Establish the destination, and set it to spaces
-  char *d    = (char *)dest->data;
-  char *dend = d + dest->capacity;
+  char *d    = PTRCAST(char, dest->data);
+  const char *dend = d + dest->capacity;
   memset(d, internal_space, dest->capacity);
 
   // Establish the formatting string:
-  char *format     = (char *)(arg1->data+arg1_offset);
-  char *format_end = format + arg1_size;
+  char *format     = PTRCAST(char, (arg1->data+arg1_offset));
+  const char *format_end = format + arg1_size;
 
   struct cobol_tm ctm = {};
 
@@ -1550,16 +1555,16 @@ __gg__formatted_date(cblc_field_t *dest, // Destination string
 extern "C"
 void
 __gg__formatted_datetime( cblc_field_t *dest, // Destination string
-                          cblc_field_t *par1, // datetime format
+                    const cblc_field_t *par1, // datetime format
                           size_t par1_o,
                           size_t par1_s,
-                          cblc_field_t *par2, // integer date
+                    const cblc_field_t *par2, // integer date
                           size_t par2_o,
                           size_t par2_s,
-                          cblc_field_t *par3, // numeric time
+                    const cblc_field_t *par3, // numeric time
                           size_t par3_o,
                           size_t par3_s,
-                          cblc_field_t *par4, // optional offset in seconds
+                    const cblc_field_t *par4, // optional offset in seconds
                           size_t par4_o,
                           size_t par4_s
                           )
@@ -1567,12 +1572,12 @@ __gg__formatted_datetime( cblc_field_t *dest, // Destination string
   // FUNCTION FORMATTED-DATETIME
 
   // Establish the destination, and set it to spaces
-  char *d    = (char *)dest->data;
-  char *dend = d + dest->capacity;
+        char *d    = PTRCAST(char, (dest->data));
+  const char *dend = d + dest->capacity;
   memset(d, internal_space, dest->capacity);
 
   // Establish the formatting string:
-  char *format     = (char *)(par1->data+par1_o);
+  char *format     = PTRCAST(char, (par1->data+par1_o));
   char *format_end = format + par1_s;
   trim_trailing_spaces(format, format_end);
   bool is_zulu = is_zulu_format(format, format_end);
@@ -1605,13 +1610,13 @@ __gg__formatted_datetime( cblc_field_t *dest, // Destination string
 extern "C"
 void
 __gg__formatted_time( cblc_field_t *dest,// Destination string
-                      cblc_field_t *par1, // datetime format
+                const cblc_field_t *par1, // datetime format
                       size_t par1_o,
                       size_t par1_s,
-                      cblc_field_t *par2,// numeric time
+                const cblc_field_t *par2,// numeric time
                       size_t par2_o,
                       size_t par2_s,
-                      cblc_field_t *par4, // optional offset in seconds
+                const cblc_field_t *par4, // optional offset in seconds
                       size_t par4_o,
                       size_t par4_s)
 
@@ -1619,12 +1624,12 @@ __gg__formatted_time( cblc_field_t *dest,// Destination string
   // FUNCTION FORMATTED-TIME
 
   // Establish the destination, and set it to spaces
-  char *d    = (char *)dest->data;
-  char *dend = d + dest->capacity;
+  char *d          = PTRCAST(char, dest->data);
+  const char *dend = d + dest->capacity;
   memset(d, internal_space, dest->capacity);
 
   // Establish the formatting string:
-  char *format     = (char *)(par1->data+par1_o);
+  char *format     = PTRCAST(char, (par1->data+par1_o));
   char *format_end = format + par1_s;
   trim_trailing_spaces(format, format_end);
   bool is_zulu = is_zulu_format(format, format_end);
@@ -1659,7 +1664,7 @@ __gg__formatted_time( cblc_field_t *dest,// Destination string
 extern "C"
 void
 __gg__integer(cblc_field_t *dest,
-              cblc_field_t *source,
+        const cblc_field_t *source,
               size_t source_offset,
               size_t source_size)
   {
@@ -1677,7 +1682,7 @@ __gg__integer(cblc_field_t *dest,
 extern "C"
 void
 __gg__integer_of_date(cblc_field_t *dest,
-                      cblc_field_t *source,
+                const cblc_field_t *source,
                       size_t source_offset,
                       size_t source_size)
   {
@@ -1732,7 +1737,7 @@ __gg__integer_of_date(cblc_field_t *dest,
 extern "C"
 void
 __gg__integer_of_day( cblc_field_t *dest,
-                      cblc_field_t *source,
+                const cblc_field_t *source,
                       size_t source_offset,
                       size_t source_size)
   {
@@ -1759,7 +1764,7 @@ __gg__integer_of_day( cblc_field_t *dest,
 extern "C"
 void
 __gg__integer_part( cblc_field_t *dest,
-                    cblc_field_t *source,
+              const cblc_field_t *source,
                     size_t source_offset,
                     size_t source_size)
   {
@@ -1782,7 +1787,7 @@ __gg__integer_part( cblc_field_t *dest,
 extern "C"
 void
 __gg__fraction_part(cblc_field_t *dest,
-                    cblc_field_t *source,
+              const cblc_field_t *source,
                     size_t source_offset,
                     size_t source_size)
   {
@@ -1811,10 +1816,10 @@ __gg__fraction_part(cblc_field_t *dest,
 
 extern "C"
 void
-__gg__log( cblc_field_t *dest,
-                      cblc_field_t *source,
-                      size_t source_offset,
-                      size_t source_size)
+__gg__log(cblc_field_t *dest,
+    const cblc_field_t *source,
+          size_t source_offset,
+          size_t source_size)
   {
   // FUNCTION LOG
   GCOB_FP128 value = __gg__float128_from_qualified_field(source,
@@ -1836,10 +1841,10 @@ __gg__log( cblc_field_t *dest,
 
 extern "C"
 void
-__gg__log10( cblc_field_t *dest,
-                      cblc_field_t *source,
-                      size_t source_offset,
-                      size_t source_size)
+__gg__log10(cblc_field_t *dest,
+      const cblc_field_t *source,
+            size_t source_offset,
+            size_t source_size)
   {
   // FUNCTION LOG10
   GCOB_FP128 value = __gg__float128_from_qualified_field(source,
@@ -1870,8 +1875,8 @@ __gg__max(cblc_field_t *dest,
         || __gg__treeplet_1f[0]->type == FldLiteralA) )
     {
     cblc_field_t  *best_field      ;
-    unsigned char *best_location   ;
-    size_t         best_length     ;
+    unsigned char *best_location = nullptr  ;
+    size_t         best_length   = 0        ;
     int            best_attr       ;
     int            best_flags      ;
 
@@ -1931,8 +1936,10 @@ __gg__max(cblc_field_t *dest,
         }
       }
 
+
     __gg__adjust_dest_size(dest, best_length);
     dest->type = FldAlphanumeric;
+    assert(best_location);
     memcpy(dest->data, best_location, best_length);
     }
   else
@@ -1977,7 +1984,7 @@ __gg__max(cblc_field_t *dest,
 extern "C"
 void
 __gg__lower_case( cblc_field_t *dest,
-                  cblc_field_t *input,
+            const cblc_field_t *input,
                   size_t        input_offset,
                   size_t        input_size)
   {
@@ -1985,10 +1992,10 @@ __gg__lower_case( cblc_field_t *dest,
   size_t source_length = input_size;
   memset(dest->data, internal_space, dest_length);
   memcpy(dest->data, input->data+input_offset, std::min(dest_length, source_length));
-  internal_to_ascii((char *)dest->data, dest_length);
+  internal_to_ascii( PTRCAST(char, dest->data), dest_length);
   std::transform(dest->data, dest->data + dest_length, dest->data,
 		 [](unsigned char c) { return std::tolower(c); });
-  ascii_to_internal_str((char *)dest->data, dest_length);
+  ascii_to_internal_str( PTRCAST(char, dest->data), dest_length);
   }
 
 extern "C"
@@ -2027,7 +2034,8 @@ __gg__median( cblc_field_t *dest,
 
   size_t list_size = 1;
 
-  GCOB_FP128 *the_list = (GCOB_FP128 *)malloc(list_size *sizeof(GCOB_FP128));
+  GCOB_FP128 *the_list = static_cast<GCOB_FP128 *>(malloc(list_size *sizeof(GCOB_FP128)));
+  massert(the_list);
   size_t k_count = 0;
   assert(ncount);
   for(size_t i=0; i<ncount; i++)
@@ -2040,9 +2048,11 @@ __gg__median( cblc_field_t *dest,
       if(k_count >= list_size)
         {
         list_size *= 2;
-        the_list = (GCOB_FP128 *)realloc(the_list, list_size *sizeof(GCOB_FP128));
+        the_list = PTRCAST(GCOB_FP128, realloc(the_list, list_size *sizeof(GCOB_FP128)));
+        massert(the_list);
         }
 
+      assert(the_list);
       the_list[k_count] = __gg__float128_from_qualified_field(__gg__treeplet_1f[i],
                                                               __gg__treeplet_1o[i],
                                                               __gg__treeplet_1s[i]);
@@ -2125,11 +2135,11 @@ __gg__min(cblc_field_t *dest,
   if( (    __gg__treeplet_1f[0]->type == FldAlphanumeric
         || __gg__treeplet_1f[0]->type == FldLiteralA) )
     {
-    cblc_field_t  *best_field      ;
-    unsigned char *best_location   ;
-    size_t         best_length     ;
-    int            best_attr       ;
-    int            best_flags      ;
+    cblc_field_t  *best_field               ;
+    unsigned char *best_location = nullptr  ;
+    size_t         best_length   = 0        ;
+    int            best_attr                ;
+    int            best_flags               ;
 
     bool first_time = true;
     assert(ncount);
@@ -2189,6 +2199,7 @@ __gg__min(cblc_field_t *dest,
 
     __gg__adjust_dest_size(dest, best_length);
     dest->type = FldAlphanumeric;
+    assert(best_location);
     memcpy(dest->data, best_location, best_length);
     }
   else
@@ -2277,15 +2288,15 @@ __gg__mod(cblc_field_t *dest,
 
 static int
 numval( cblc_field_t *dest,
-        cblc_field_t *input,
+  const cblc_field_t *input,
         size_t input_offset,
         size_t input_size)
   {
   // Returns the one-based character position of a bad character
   // returns zero if it is okay
 
-  char *p    = (char *)(input->data + input_offset);
-  char *pend =     p + input_size;
+  const char *p    = PTRCAST(char, (input->data + input_offset));
+  const char *pend =     p + input_size;
 
   int errpos = 0;
   __int128 retval = 0;
@@ -2568,17 +2579,17 @@ numval( cblc_field_t *dest,
 static
 int
 numval_c( cblc_field_t *dest,
-          cblc_field_t *src,
+    const cblc_field_t *src,
           size_t        src_offset,
           size_t        src_size,
-          cblc_field_t *crcy,
+    const cblc_field_t *crcy,
           size_t        crcy_offset,
           size_t        crcy_size
           )
   {
   size_t errcode = 0;
 
-  char *pstart = (char *)(src->data+src_offset);
+  char *pstart = PTRCAST(char, (src->data+src_offset));
   char *pend   = pstart + src_size;
   char *p      = pstart;
 
@@ -2593,7 +2604,7 @@ numval_c( cblc_field_t *dest,
   char *currency_end;
   if( crcy )
     {
-    currency_start = (char *)(crcy->data+crcy_offset);
+    currency_start = PTRCAST(char, (crcy->data+crcy_offset));
     currency_end   = currency_start + crcy_size;
     }
   else
@@ -2807,7 +2818,6 @@ numval_c( cblc_field_t *dest,
         if( sign )
           {
           // A second sign isn't allowed
-          state = final_space;
           errcode = p - pstart;
           p = pend;
           }
@@ -2875,7 +2885,7 @@ numval_c( cblc_field_t *dest,
 extern "C"
 void
 __gg__numval( cblc_field_t *dest,
-              cblc_field_t *source,
+        const cblc_field_t *source,
               size_t source_offset,
               size_t source_size)
   {
@@ -2889,7 +2899,7 @@ __gg__numval( cblc_field_t *dest,
 extern "C"
 void
 __gg__test_numval(cblc_field_t *dest,
-                  cblc_field_t *source,
+            const cblc_field_t *source,
                   size_t source_offset,
                   size_t source_size)
   {
@@ -2904,10 +2914,10 @@ __gg__test_numval(cblc_field_t *dest,
 extern "C"
 void
 __gg__numval_c( cblc_field_t *dest,
-                    cblc_field_t *src,
+              const cblc_field_t *src,
                     size_t        src_offset,
                     size_t        src_size,
-                    cblc_field_t *crcy,
+              const cblc_field_t *crcy,
                     size_t        crcy_offset,
                     size_t        crcy_size
                 )
@@ -2924,10 +2934,10 @@ __gg__numval_c( cblc_field_t *dest,
 extern "C"
 void
 __gg__test_numval_c(cblc_field_t *dest,
-                    cblc_field_t *src,
+              const cblc_field_t *src,
                     size_t        src_offset,
                     size_t        src_size,
-                    cblc_field_t *crcy,
+              const cblc_field_t *crcy,
                     size_t        crcy_offset,
                     size_t        crcy_size
                     )
@@ -2949,12 +2959,12 @@ __gg__test_numval_c(cblc_field_t *dest,
 extern "C"
 void
 __gg__ord(cblc_field_t *dest,
-          cblc_field_t *input,
+    const cblc_field_t *input,
           size_t input_offset,
           size_t /*input_size*/)
   {
   // We get our input in internal_character form.
-  char *arg = (char *)(input->data + input_offset);
+  const char *arg = PTRCAST(char, (input->data + input_offset));
 
   // The ORD function takes a single-character string and returns the
   // ordinal position of that character.
@@ -3257,10 +3267,10 @@ __gg__range(cblc_field_t *dest,
 extern "C"
 void
 __gg__rem(cblc_field_t *dest,
-          cblc_field_t *par1,
+     const cblc_field_t *par1,
           size_t par1_offset,
           size_t par1_size,
-          cblc_field_t *par2,
+     const cblc_field_t *par2,
           size_t par2_offset,
           size_t par2_size)
   {
@@ -3300,10 +3310,10 @@ __gg__rem(cblc_field_t *dest,
 extern "C"
 void
 __gg__trim( cblc_field_t *dest,
-            cblc_field_t *arg1,
+      const cblc_field_t *arg1,
             size_t        arg1_offset,
             size_t        arg1_size,
-            cblc_field_t *arg2,
+      const cblc_field_t *arg2,
             size_t        arg2_offset,
             size_t        arg2_size)
   {
@@ -3329,7 +3339,7 @@ __gg__trim( cblc_field_t *dest,
   // No matter what, we want to find the leftmost non-space and the
   // rightmost non-space:
 
-  char *left  = (char *)(arg1->data+arg1_offset);
+  char *left  = PTRCAST(char, (arg1->data+arg1_offset));
   char *right = left + arg1_size-1;
 
   // Find left and right: the first and last non-spaces
@@ -3352,13 +3362,13 @@ __gg__trim( cblc_field_t *dest,
     {
     // We want to leave any trailing spaces, so we return 'right' to its
     // original value:
-    right = (char *)(arg1->data+arg1_offset) + arg1_size-1;
+    right = PTRCAST(char, (arg1->data+arg1_offset)) + arg1_size-1;
     }
   else if( type == TRAILING )
     {
     // We want to leave any leading spaces, so we return 'left' to its
     // original value:
-    left = (char *)(arg1->data+arg1_offset);
+    left = PTRCAST(char, (arg1->data+arg1_offset));
     }
 
   if( left > right )
@@ -3378,9 +3388,9 @@ __gg__trim( cblc_field_t *dest,
   // compiler believes the capacity to be at compile-time.  But we obviously
   // think it'll be okay.
 
-  char *dest_left  = (char *)dest->data;
+  char *dest_left  = PTRCAST(char, dest->data);
   char *dest_right = dest_left + dest->capacity - 1;
-  char *dest_end   = dest_left + dest->capacity;
+  const char *dest_end   = dest_left + dest->capacity;
 
   while( dest_left <= dest_right && left <= right )
     {
@@ -3403,7 +3413,7 @@ static unsigned seed = 0;
 extern "C"
 void
 __gg__random( cblc_field_t *dest,
-              cblc_field_t *input,
+        const cblc_field_t *input,
               size_t        input_offset,
               size_t        input_size)
   {
@@ -3480,7 +3490,7 @@ __gg__random_next(cblc_field_t *dest)
 extern "C"
 void
 __gg__reverse(cblc_field_t *dest,
-              cblc_field_t *input,
+        const cblc_field_t *input,
               size_t input_offset,
               size_t input_size)
   {
@@ -3501,7 +3511,7 @@ __gg__reverse(cblc_field_t *dest,
 extern "C"
 void
 __gg__sign( cblc_field_t *dest,
-            cblc_field_t *source,
+      const cblc_field_t *source,
             size_t source_offset,
             size_t source_size)
   {
@@ -3534,7 +3544,7 @@ __gg__sign( cblc_field_t *dest,
 extern "C"
 void
 __gg__sin(cblc_field_t *dest,
-          cblc_field_t *source,
+    const cblc_field_t *source,
           size_t source_offset,
           size_t source_size)
   {
@@ -3555,7 +3565,7 @@ __gg__sin(cblc_field_t *dest,
 extern "C"
 void
 __gg__sqrt( cblc_field_t *dest,
-            cblc_field_t *source,
+      const cblc_field_t *source,
             size_t source_offset,
             size_t source_size)
   {
@@ -3621,7 +3631,7 @@ __gg__sum(cblc_field_t *dest,
 extern "C"
 void
 __gg__tan(cblc_field_t *dest,
-          cblc_field_t *source,
+    const cblc_field_t *source,
           size_t source_offset,
           size_t source_size)
   {
@@ -3640,7 +3650,7 @@ __gg__tan(cblc_field_t *dest,
 extern "C"
 void
 __gg__test_date_yyyymmdd( cblc_field_t *dest,
-                          cblc_field_t *source,
+                    const cblc_field_t *source,
                           size_t source_offset,
                           size_t source_size)
   {
@@ -3650,14 +3660,8 @@ __gg__test_date_yyyymmdd( cblc_field_t *dest,
                                                               source_offset,
                                                               source_size);
   int retval;
-  int dd   = yyyymmdd %   100;
   int mmdd = yyyymmdd % 10000;
   int mm   = mmdd     /   100;
-  int yyyy = yyyymmdd / 10000;
-  int jy;
-  int jm;
-  int jd;
-  double JD;
   if( yyyymmdd < 16010000 || yyyymmdd > 99999999 )
     {
     retval = 1;
@@ -3668,6 +3672,13 @@ __gg__test_date_yyyymmdd( cblc_field_t *dest,
     }
   else
     {
+    int dd   = yyyymmdd %   100;
+    int yyyy = yyyymmdd / 10000;
+    int jy;
+    int jm;
+    int jd;
+    double JD;
+
     // If there is something wrong with the number of days per month for a
     // given year, the Julian Date conversion won't reverse properly.
     // For example, January 32 will come back as February 1
@@ -3692,7 +3703,7 @@ __gg__test_date_yyyymmdd( cblc_field_t *dest,
 extern "C"
 void
 __gg__test_day_yyyyddd( cblc_field_t *dest,
-                        cblc_field_t *source,
+                  const cblc_field_t *source,
                         size_t source_offset,
                         size_t source_size)
   {
@@ -3730,7 +3741,7 @@ __gg__test_day_yyyyddd( cblc_field_t *dest,
 extern "C"
 void
 __gg__upper_case( cblc_field_t *dest,
-                  cblc_field_t *input,
+            const cblc_field_t *input,
                   size_t        input_offset,
                   size_t        input_size)
   {
@@ -3738,10 +3749,10 @@ __gg__upper_case( cblc_field_t *dest,
   size_t source_length = input_size;
   memset(dest->data, internal_space, dest_length);
   memcpy(dest->data, input->data+input_offset, std::min(dest_length, source_length));
-  internal_to_ascii((char *)dest->data, dest_length);
+  internal_to_ascii( PTRCAST(char, dest->data), dest_length);
   std::transform(dest->data, dest->data + dest_length, dest->data,
 		 [](unsigned char c) { return std::toupper(c); });
-  ascii_to_internal_str((char *)dest->data, dest_length);
+  ascii_to_internal_str( PTRCAST(char, dest->data), dest_length);
   }
 
 extern "C"
@@ -3777,13 +3788,13 @@ __gg__when_compiled(cblc_field_t *dest, size_t tv_sec, long tv_nsec)
 extern "C"
 void
 __gg__year_to_yyyy( cblc_field_t *dest,
-                    cblc_field_t *par1,
+              const cblc_field_t *par1,
                     size_t par1_o,
                     size_t par1_s,
-                    cblc_field_t *par2,
+              const cblc_field_t *par2,
                     size_t par2_o,
                     size_t par2_s,
-                    cblc_field_t *par3,
+              const cblc_field_t *par3,
                     size_t par3_o,
                     size_t par3_s)
   {
@@ -3804,7 +3815,7 @@ __gg__year_to_yyyy( cblc_field_t *dest,
 
 static
 int
-gets_int(int ndigits, char *p, char *pend, int *digits)
+gets_int(int ndigits, const char *p, const char *pend, int *digits)
   {
   // This routine returns the value of the integer at p.  If there is something
   // wrong with the integer, it returns a negative number, the value being the
@@ -3835,7 +3846,7 @@ gets_int(int ndigits, char *p, char *pend, int *digits)
 
 static
 int
-gets_year(char *p, char *pend, struct cobol_tm &ctm)
+gets_year(const char *p, const char *pend, struct cobol_tm &ctm)
   {
   // Populates ctm.YYYY, ctm.days_in_year, and ctm.weeks_in_year, which are
   // all determined by the YYYY value.
@@ -3852,10 +3863,6 @@ gets_year(char *p, char *pend, struct cobol_tm &ctm)
     return 1;
     }
   if( digits[1] == -1 )
-    {
-    return 2;
-    }
-  if( digits[0] == 0 && digits[1] < 5)
     {
     return 2;
     }
@@ -3903,7 +3910,7 @@ gets_year(char *p, char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_month(char *p, char *pend, struct cobol_tm &ctm)
+gets_month(const char *p, const char *pend, struct cobol_tm &ctm)
   {
   // Populates ctm.MM
 
@@ -3950,7 +3957,7 @@ gets_month(char *p, char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_day(char *p, char *pend, struct cobol_tm &ctm)
+gets_day(const char *p, const char *pend, struct cobol_tm &ctm)
   {
   // Populates ctm.DD, ctm.day_of_week, ctm.week_of_year, ctm.day_of_week
 
@@ -3968,48 +3975,45 @@ gets_day(char *p, char *pend, struct cobol_tm &ctm)
     {
     return 2;
     }
-  if(DD >= 0)
+  if( DD >= 0 )
     {
-    if( DD >= 0 )
+    if( DD == 0)
       {
-      if( DD == 0)
+      // If zero, we know we failed at the second '0' in "00"
+      retval = 2;
+      }
+    else if( DD >= 40)
+      {
+      // 40 or more, then we knew there was trouble at the first digit
+      retval = 1;
+      }
+    else if(ctm.MM == 2 && DD >=30)
+      {
+      // It's February, so if we see 3x we know on the 3 that we are in
+      // error:
+      retval = 1;
+      }
+    else
+      {
+      static const int month_days[13] = {-1,31,28,31,30,31,30,31,31,30,31,30,31};
+      int days_in_month = month_days[ctm.MM];
+      if( ctm.MM == 2 && ctm.days_in_year == 366 )
         {
-        // If zero, we know we failed at the second '0' in "00"
+        days_in_month = 29;
+        }
+
+      if( DD > days_in_month )
+        {
         retval = 2;
-        }
-      else if( DD >= 40)
-        {
-        // 40 or more, then we knew there was trouble at the first digit
-        retval = 1;
-        }
-      else if(ctm.MM == 2 && DD >=30)
-        {
-        // It's February, so if we see 3x we know on the 3 that we are in
-        // error:
-        retval = 1;
         }
       else
         {
-        static const int month_days[13] = {-1,31,28,31,30,31,30,31,31,30,31,30,31};
-        int days_in_month = month_days[ctm.MM];
-        if( ctm.MM == 2 && ctm.days_in_year == 366 )
-          {
-          days_in_month = 29;
-          }
-
-        if( DD > days_in_month )
-          {
-          retval = 2;
-          }
-        else
-          {
-          // We have a good YYYY-MM-DD
-          ctm.DD = DD;
-          double JD      = YMD_to_JD(ctm.YYYY, ctm.MM, DD);
-          double JD_Jan0 = YMD_to_JD(ctm.YYYY, 1, 0);
-          ctm.day_of_year = (int)(JD - JD_Jan0);
-          ctm.day_of_week = JD_to_DOW(JD);
-          }
+        // We have a good YYYY-MM-DD
+        ctm.DD = DD;
+        double JD      = YMD_to_JD(ctm.YYYY, ctm.MM, DD);
+        double JD_Jan0 = YMD_to_JD(ctm.YYYY, 1, 0);
+        ctm.day_of_year = (int)(JD - JD_Jan0);
+        ctm.day_of_week = JD_to_DOW(JD);
         }
       }
     }
@@ -4022,7 +4026,7 @@ gets_day(char *p, char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_day_of_week(char *p, char *pend, struct cobol_tm &ctm)
+gets_day_of_week(const char *p, const char *pend, struct cobol_tm &ctm)
   {
   // This is just a simple D, for day-of-week.  The COBOL spec is that
   // it be 1 to 7, 1 being Monday
@@ -4071,7 +4075,7 @@ gets_day_of_week(char *p, char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_day_of_year(char *p, char *pend, struct cobol_tm &ctm)
+gets_day_of_year(const char *p, const char *pend, struct cobol_tm &ctm)
   {
   // This is a three-digit day-of-year, 001 through 365,366
   int digits[3];
@@ -4128,7 +4132,7 @@ gets_day_of_year(char *p, char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_week(char *p, char *pend, struct cobol_tm &ctm)
+gets_week(const char *p, const char *pend, struct cobol_tm &ctm)
   {
   // This is a two-digit value, 01 through 52,53
   int digits[2];
@@ -4168,7 +4172,10 @@ gets_week(char *p, char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_hours(char *p, char *pend, struct cobol_tm &ctm, bool in_offset)
+gets_hours( const char *p,
+            const char *pend,
+            struct cobol_tm &ctm,
+            bool in_offset)
   {
   // This is a two-digit value, 01 through 23
   int digits[2];
@@ -4213,7 +4220,10 @@ gets_hours(char *p, char *pend, struct cobol_tm &ctm, bool in_offset)
 
 static
 int
-gets_minutes(char *p, char *pend, struct cobol_tm &ctm, bool in_offset)
+gets_minutes( const char *p,
+              const char *pend,
+              struct cobol_tm &ctm,
+              bool in_offset)
   {
   // This is a two-digit value, 01 through 59
   int digits[2];
@@ -4251,7 +4261,7 @@ gets_minutes(char *p, char *pend, struct cobol_tm &ctm, bool in_offset)
 
 static
 int
-gets_seconds(char *p, char *pend, struct cobol_tm &ctm)
+gets_seconds(const char *p, const char *pend, struct cobol_tm &ctm)
   {
   // This is a two-digit value, 01 through 59
   int digits[2];
@@ -4281,7 +4291,11 @@ gets_seconds(char *p, char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_nanoseconds(char *f, char *f_end, char *p, char *pend, struct cobol_tm &ctm)
+gets_nanoseconds( const char *f,
+                  const char *f_end,
+                  const char *p,
+                  const char *pend,
+                  struct cobol_tm &ctm)
   {
   // Because nanoseconds digits to the right of the decimal point can vary from
   // one digit to our implementation-specific limit of nine characters, this
@@ -4293,7 +4307,7 @@ gets_nanoseconds(char *f, char *f_end, char *p, char *pend, struct cobol_tm &ctm
   int ncount = 0;
   int nanoseconds = 0;
 
-  char *pinit = p;
+  const char *pinit = p;
   while( f < f_end && *f == internal_s && p < pend )
     {
     f += 1;
@@ -4325,19 +4339,19 @@ gets_nanoseconds(char *f, char *f_end, char *p, char *pend, struct cobol_tm &ctm
 static
 int
 fill_cobol_tm(cobol_tm &ctm,
-              cblc_field_t *par1,
+        const cblc_field_t *par1,
               size_t par1_offset,
               size_t par1_size,
-              cblc_field_t *par2,
+        const cblc_field_t *par2,
               size_t par2_offset,
               size_t par2_size)
   {
   // Establish the formatting string:
-  char *format     = (char *)(par1->data+par1_offset);
+  char *format     = PTRCAST(char, (par1->data+par1_offset));
   char *format_end = format + par1_size;
 
   // Establish the string to be checked:
-  char *source     = (char *)(par2->data+par2_offset);
+  char *source     = PTRCAST(char, (par2->data+par2_offset));
   char *source_end = source + par2_size;
 
   // Let's eliminate trailing spaces...
@@ -4587,10 +4601,10 @@ proceed:
 extern "C"
 void
 __gg__test_formatted_datetime(cblc_field_t *dest,
-                              cblc_field_t *arg1,
+                        const cblc_field_t *arg1,
                               size_t arg1_offset,
                               size_t arg1_size,
-                              cblc_field_t *arg2,
+                        const cblc_field_t *arg2,
                               size_t arg2_offset,
                               size_t arg2_size)
 
@@ -4610,10 +4624,10 @@ __gg__test_formatted_datetime(cblc_field_t *dest,
 extern "C"
 void
 __gg__integer_of_formatted_date(cblc_field_t *dest,
-                                cblc_field_t *arg1,
+                          const cblc_field_t *arg1,
                                 size_t arg1_offset,
                                 size_t arg1_size,
-                                cblc_field_t *arg2,
+                          const cblc_field_t *arg2,
                                 size_t arg2_offset,
                                 size_t arg2_size)
   {
@@ -4645,10 +4659,10 @@ __gg__integer_of_formatted_date(cblc_field_t *dest,
 extern "C"
 void
 __gg__seconds_from_formatted_time(cblc_field_t *dest,
-                                  cblc_field_t *arg1,
+                            const cblc_field_t *arg1,
                                   size_t arg1_offset,
                                   size_t arg1_size,
-                                  cblc_field_t *arg2,
+                            const cblc_field_t *arg2,
                                   size_t arg2_offset,
                                   size_t arg2_size)
   {
@@ -4673,7 +4687,7 @@ __gg__seconds_from_formatted_time(cblc_field_t *dest,
 extern "C"
 void
 __gg__hex_of(cblc_field_t *dest,
-             cblc_field_t *field,
+       const cblc_field_t *field,
              size_t field_offset,
              size_t field_size)
   {
@@ -4691,7 +4705,7 @@ __gg__hex_of(cblc_field_t *dest,
 extern "C"
 void
 __gg__highest_algebraic(cblc_field_t *dest,
-                        cblc_field_t *var,
+                  const cblc_field_t *var,
                         size_t,
                         size_t)
   {
@@ -4733,7 +4747,7 @@ __gg__highest_algebraic(cblc_field_t *dest,
 extern "C"
 void
 __gg__lowest_algebraic( cblc_field_t *dest,
-                        cblc_field_t *var,
+                  const cblc_field_t *var,
                         size_t,
                         size_t)
   {
@@ -4795,7 +4809,7 @@ __gg__lowest_algebraic( cblc_field_t *dest,
   }
 
 static int
-floating_format_tester(char const * const f, char * const f_end)
+floating_format_tester(char const * const f, char const * const f_end)
   {
   int retval = -1;
   char decimal_point = __gg__get_decimal_point();
@@ -4983,13 +4997,13 @@ floating_format_tester(char const * const f, char * const f_end)
 extern "C"
 void
 __gg__numval_f( cblc_field_t *dest,
-                cblc_field_t *source,
+          const cblc_field_t *source,
                 size_t source_offset,
                 size_t source_size)
   {
   GCOB_FP128 value = 0;
-  char *data     = (char * )(source->data + source_offset);
-  char *data_end = data + source_size;
+  const char *data     = PTRCAST(char, (source->data + source_offset));
+  const char *data_end = data + source_size;
 
   int error = floating_format_tester(data, data_end);
 
@@ -5022,12 +5036,12 @@ __gg__numval_f( cblc_field_t *dest,
 extern "C"
 void
 __gg__test_numval_f(cblc_field_t *dest,
-                    cblc_field_t *source,
+              const cblc_field_t *source,
                     size_t source_offset,
                     size_t source_size)
   {
-  char *data     = (char * )(source->data + source_offset);
-  char *data_end = data + source_size;
+  const char *data     = PTRCAST(char, (source->data + source_offset));
+  const char *data_end = data + source_size;
 
   int error = floating_format_tester(data, data_end);
 
@@ -5039,7 +5053,7 @@ __gg__test_numval_f(cblc_field_t *dest,
   }
 
 static bool
-ismatch(char *a1, char *a2, char *b1, char *b2)
+ismatch(const char *a1, const char *a2, const char *b1, const char *b2)
   {
   bool retval = true;
   while( a1 < a2 && b1 < b2 )
@@ -5053,7 +5067,7 @@ ismatch(char *a1, char *a2, char *b1, char *b2)
   }
 
 static bool
-iscasematch(char *a1, char *a2, char *b1, char *b2)
+iscasematch(const char *a1, const char *a2, const char *b1, const char *b2)
   {
   bool retval = true;
   while( a1 < a2 && b1 < b2 )
@@ -5066,11 +5080,15 @@ iscasematch(char *a1, char *a2, char *b1, char *b2)
   return retval;
   }
 
-static char *
-strstr(char *haystack, char *haystack_e, char *needle, char *needle_e)
+static
+const char *
+strstr( const char *haystack,
+        const char *haystack_e,
+        const char *needle,
+        const char *needle_e)
   {
-  char *retval = NULL;
-  char *pend = haystack_e - (needle_e - needle);
+  const char *retval = NULL;
+  const char *pend = haystack_e - (needle_e - needle);
   while( haystack <= pend )
     {
     if(ismatch(haystack, haystack_e, needle, needle_e))
@@ -5083,11 +5101,15 @@ strstr(char *haystack, char *haystack_e, char *needle, char *needle_e)
   return retval;
   }
 
-static char *
-strcasestr(char *haystack, char *haystack_e, char *needle, char *needle_e)
+static
+const char *
+strcasestr( const char *haystack,
+            const char *haystack_e,
+            const char *needle,
+            const char *needle_e)
   {
-  char *retval = NULL;
-  char *pend = haystack_e - (needle_e - needle);
+  const char *retval = NULL;
+  const char *pend = haystack_e - (needle_e - needle);
   while( haystack <= pend )
     {
     if(iscasematch(haystack, haystack_e, needle, needle_e))
@@ -5100,11 +5122,15 @@ strcasestr(char *haystack, char *haystack_e, char *needle, char *needle_e)
   return retval;
   }
 
-static char *
-strlaststr(char *haystack, char *haystack_e, char *needle, char *needle_e)
+static 
+const char *
+strlaststr( const char *haystack,
+            const char *haystack_e,
+            const char *needle,
+            const char *needle_e)
   {
-  char *retval = NULL;
-  char *pend = haystack_e - (needle_e - needle);
+  const char *retval = NULL;
+  const char *pend = haystack_e - (needle_e - needle);
   while( haystack <= pend )
     {
     if(ismatch(haystack, haystack_e, needle, needle_e))
@@ -5116,11 +5142,15 @@ strlaststr(char *haystack, char *haystack_e, char *needle, char *needle_e)
   return retval;
   }
 
-static char *
-strcaselaststr(char *haystack, char *haystack_e, char *needle, char *needle_e)
+static 
+const char *
+strcaselaststr( const char *haystack,
+                const char *haystack_e,
+                const char *needle,
+                const char *needle_e)
   {
-  char *retval = NULL;
-  char *pend = haystack_e - (needle_e - needle);
+  const char *retval = NULL;
+  const char *pend = haystack_e - (needle_e - needle);
   while( haystack <= pend )
     {
     if(iscasematch(haystack, haystack_e, needle, needle_e))
@@ -5134,13 +5164,13 @@ strcaselaststr(char *haystack, char *haystack_e, char *needle, char *needle_e)
 
 
 extern "C"
-void __gg__substitute(cblc_field_t *dest,
-                      cblc_field_t *arg1_f,
-                      size_t        arg1_o,
-                      size_t        arg1_s,
-                      size_t        N,
-                      uint8_t      *control
-                      )
+void 
+__gg__substitute( cblc_field_t *dest,
+            const cblc_field_t *arg1_f,
+                  size_t        arg1_o,
+                  size_t        arg1_s,
+                  size_t        N,
+            const uint8_t      *control)
   {
   // arg2 is the Group 1 triplet.
   // arg3 is the Group 2 triplet
@@ -5148,19 +5178,22 @@ void __gg__substitute(cblc_field_t *dest,
   size_t        *arg2_o = __gg__treeplet_1o;
   size_t        *arg2_s = __gg__treeplet_1s;
   cblc_field_t **arg3_f = __gg__treeplet_2f;
-  size_t        *arg3_o = __gg__treeplet_2o;
-  size_t        *arg3_s = __gg__treeplet_2s;
+  const size_t  *arg3_o = __gg__treeplet_2o;
+  const size_t  *arg3_s = __gg__treeplet_2s;
 
-  ssize_t retval_size = 256;
-  char  *retval = (char *)malloc(retval_size);
+  ssize_t retval_size;
+  retval_size = 256;
+  char  *retval = static_cast<char *>(malloc(retval_size));
+  massert(retval);
   *retval = '\0';
 
-  char *haystack   = (char *)(arg1_f->data + arg1_o);
-  char *haystack_e = haystack + arg1_s;
+  const char *haystack   = PTRCAST(char, (arg1_f->data + arg1_o));
+  const char *haystack_e = haystack + arg1_s;
 
   ssize_t outdex = 0;
 
-  char **pflasts = (char **)malloc(N * sizeof(char *));
+  const char **pflasts = static_cast<const char **>(malloc(N * sizeof(char *)));
+  massert(pflasts);
 
   if( arg1_s == 0 )
     {
@@ -5181,15 +5214,15 @@ void __gg__substitute(cblc_field_t *dest,
         {
         pflasts[i] = strcasestr(haystack,
                                 haystack_e,
-                                (char *)(arg2_f[i]->data+arg2_o[i]),
-                                (char *)(arg2_f[i]->data+arg2_o[i]) + arg2_s[i]);
+                                PTRCAST(char, (arg2_f[i]->data+arg2_o[i])),
+                                PTRCAST(char, (arg2_f[i]->data+arg2_o[i])) + arg2_s[i]);
         }
       else if( control[i] & substitute_last_e)
         {
         pflasts[i] = strcaselaststr(haystack,
                                 haystack_e,
-                                (char *)(arg2_f[i]->data+arg2_o[i]),
-                                (char *)(arg2_f[i]->data+arg2_o[i]) + arg2_s[i]);
+                                PTRCAST(char, (arg2_f[i]->data+arg2_o[i])),
+                                PTRCAST(char, (arg2_f[i]->data+arg2_o[i])) + arg2_s[i]);
         }
       else
         {
@@ -5202,15 +5235,15 @@ void __gg__substitute(cblc_field_t *dest,
         {
         pflasts[i] = strstr(haystack,
                             haystack_e,
-                            (char *)(arg2_f[i]->data+arg2_o[i]),
-                            (char *)(arg2_f[i]->data+arg2_o[i]) + arg2_s[i]);
+                            PTRCAST(char, (arg2_f[i]->data+arg2_o[i])),
+                            PTRCAST(char, (arg2_f[i]->data+arg2_o[i])) + arg2_s[i]);
         }
       else if( control[i] & substitute_last_e)
         {
         pflasts[i] = strlaststr(haystack,
                                 haystack_e,
-                                (char *)(arg2_f[i]->data+arg2_o[i]),
-                                (char *)(arg2_f[i]->data+arg2_o[i]) + arg2_s[i]);
+                                PTRCAST(char, (arg2_f[i]->data+arg2_o[i])),
+                                PTRCAST(char, (arg2_f[i]->data+arg2_o[i])) + arg2_s[i]);
         }
       else
         {
@@ -5230,7 +5263,8 @@ void __gg__substitute(cblc_field_t *dest,
                                                                  > retval_size )
         {
         retval_size *= 2;
-        retval = (char *)realloc(retval, retval_size);
+        retval = static_cast<char *>(realloc(retval, retval_size));
+        massert(retval);
         }
 
       // We checked earlier for FIRST/LAST matches
@@ -5245,8 +5279,8 @@ void __gg__substitute(cblc_field_t *dest,
           continue;
           }
 
-        char *needle   = (char *)(arg2_f[i]->data+arg2_o[i]);
-        char *needle_e = (char *)(arg2_f[i]->data+arg2_o[i]) + arg2_s[i];
+        const char *needle   = PTRCAST(char, arg2_f[i]->data+arg2_o[i]);
+        const char *needle_e = PTRCAST(char, arg2_f[i]->data+arg2_o[i]) + arg2_s[i];
         matched = (control[i] & substitute_anycase_e) && iscasematch(
                                                                  haystack,
                                                                  haystack_e,
@@ -5274,7 +5308,8 @@ void __gg__substitute(cblc_field_t *dest,
       while( outdex + 1 > retval_size )
         {
         retval_size *= 2;
-        retval = (char *)realloc(retval, retval_size);
+        retval = static_cast<char *>(realloc(retval, retval_size));
+        massert(retval);
         }
       retval[outdex++] = *haystack++;
       }
@@ -5291,13 +5326,13 @@ void __gg__substitute(cblc_field_t *dest,
 extern "C"
 void
 __gg__locale_compare( cblc_field_t *dest,
-                      cblc_field_t *arg1,
+                const cblc_field_t *arg1,
                       size_t        arg1_o,
                       size_t        arg1_s,
-                      cblc_field_t *arg2,
+                const cblc_field_t *arg2,
                       size_t        arg2_o,
                       size_t        arg2_s,
-                      cblc_field_t *arg_locale,
+                const cblc_field_t *arg_locale,
                       size_t        /*arg_locale_o*/,
                       size_t        /*arg_locale_s*/
                       )
@@ -5348,10 +5383,10 @@ __gg__locale_compare( cblc_field_t *dest,
 extern "C"
 void
 __gg__locale_date(cblc_field_t *dest,
-                  cblc_field_t *arg1,
+            const cblc_field_t *arg1,
                   size_t        arg1_o,
                   size_t        /*arg1_s*/,
-                  cblc_field_t *arg_locale,
+            const cblc_field_t *arg_locale,
                   size_t        /*arg_locale_o*/,
                   size_t        /*arg_locale_s*/)
   {
@@ -5384,10 +5419,10 @@ __gg__locale_date(cblc_field_t *dest,
 extern "C"
 void
 __gg__locale_time(cblc_field_t *dest,
-                  cblc_field_t *arg1,
+            const cblc_field_t *arg1,
                   size_t        arg1_o,
                   size_t        /*arg1_s*/,
-                  cblc_field_t *arg_locale,
+            const cblc_field_t *arg_locale,
                   size_t        /*arg_locale_o*/,
                   size_t        /*arg_locale_s*/)
 
@@ -5420,10 +5455,10 @@ __gg__locale_time(cblc_field_t *dest,
 extern "C"
 void
 __gg__locale_time_from_seconds( cblc_field_t *dest,
-                                cblc_field_t *arg1,
+                          const cblc_field_t *arg1,
                                 size_t        arg1_o,
                                 size_t        arg1_s,
-                                cblc_field_t *arg_locale,
+                          const cblc_field_t *arg_locale,
                                 size_t        /*arg_locale_o*/,
                                 size_t        /*arg_locale_s*/)
   {
@@ -5439,7 +5474,7 @@ __gg__locale_time_from_seconds( cblc_field_t *dest,
     // Default locale
     tm tm = {};
 
-    int rdigits;
+    int rdigits=0;
     long seconds = (long)__gg__binary_value_from_qualified_field(&rdigits,
                                                                  arg1,
                                                                  arg1_o,
