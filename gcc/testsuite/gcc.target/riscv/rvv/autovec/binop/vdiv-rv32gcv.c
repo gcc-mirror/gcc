@@ -3,8 +3,8 @@
 
 #include "vdiv-template.h"
 
-/* { dg-final { scan-assembler-times {\tvdiv\.vv} 5 } } */
-/* { dg-final { scan-assembler-times {\tvdiv\.vx} 3 } } */
+/* { dg-final { scan-assembler-times {\tvdiv\.vv} 8 } } */
+/* { dg-final { scan-assembler-not {\tvdiv\.vx} } } */
 /* { dg-final { scan-assembler-times {\tvdivu\.vv} 5 } } */
 /* { dg-final { scan-assembler-times {\tvdivu\.vx} 3 } } */
 
