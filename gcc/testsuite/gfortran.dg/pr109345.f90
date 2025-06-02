@@ -29,10 +29,9 @@ program test
 ! Test character(kind=4)
   call foo (str_t(2)%str_array)
 ! Test component references
-  call foo (str_t%str_array(1), .true.)
+!  call foo (str_t%str_array(1), .true.) ! Does not work in 12-/13-branches
 ! Test component references and that array offset is correct.
-!  call foo (str_t(2:3)%i) ! Does not work in 13-branch
-
+!  call foo (str_t(2:3)%i)               ! Does not work in 12-/13-branches
 contains
   subroutine foo (var, flag)
     class(*), intent(in) :: var(:)
