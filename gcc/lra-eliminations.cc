@@ -1185,7 +1185,7 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 	  setup_can_eliminate (ep, false);
 	  continue;
 	}
-      if (ep->can_eliminate != prev && elimination_map[ep->from] == ep)
+      if (!ep->can_eliminate && elimination_map[ep->from] == ep)
 	{
 	  /* We cannot use this elimination anymore -- find another
 	     one.  */
