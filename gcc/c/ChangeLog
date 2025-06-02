@@ -1,3 +1,8 @@
+2025-06-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120380
+	* c-objc-common.cc (get_aka_type): Ignore attributes for tagged types.
+
 2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR c/120354

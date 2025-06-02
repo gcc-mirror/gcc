@@ -1,3 +1,47 @@
+2025-06-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR other/120493
+	* final.cc (call_from_call_insn): Change the argument type to
+	const rtx_call_insn *.
+	(get_call_rtx_from): New.
+	* rtl.h (is_a_helper <const rtx_call_insn *>::test): New.
+	(get_call_rtx_from): Moved to the final.cc section.
+	* rtlanal.cc (get_call_rtx_from): Removed.
+
+2025-06-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (optimize_vector_load): Set the vuse manually
+	on the new load statements. Also remove forward declaration since
+	the definition is before the first use.
+	(pass_forwprop::execute): Likewise for complex loads.
+	(pass_data_forwprop): Remove TODO_update_ssa.
+
+2025-06-01  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Fix line too long for sorts
+	of pattern.
+
+2025-06-01  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc: Remove include of reload.h.
+
+2025-06-01  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (movsf_internal):
+	Remove destination side constraint modifier '^' in the third
+	alternative.
+
+2025-06-01  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc
+	(xtensa_ira_change_pseudo_allocno_class):
+	New prototype and function.
+	(TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS): Define macro.
+	(xtensa_register_move_cost):
+	Change between integer and FP register move cost to a value
+	based on actual behavior, i.e. 2, the default and the same as
+	the move cost between integer registers.
+
 2025-05-31  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* function.h (struct function): Remove last_verified.

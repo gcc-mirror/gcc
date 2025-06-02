@@ -1,5 +1,10 @@
 2025-06-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
+	PR modula2/120474
+	* gm2-libs-log/InOut.mod (LocalWrite): Call FIO.FlushBuffer.
+
+2025-06-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
 	PR modula2/120497
 	* gm2-compiler/M2Range.mod (IsAssignmentCompatible): Remove from
 	import list.

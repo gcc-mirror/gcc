@@ -1,3 +1,9 @@
+2025-06-01  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119524
+	* gengen.cc (gg_printf): Use the new __gg__fprintf_stderr() function
+	instead of generating a call to fprintf().
+
 2025-05-20  Robert Dubner  <rdubner@symas.com>
 	    James K. Lowden  <jklowden@cobolworx.com>
 

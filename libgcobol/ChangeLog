@@ -1,3 +1,8 @@
+2025-06-01  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119524
+	* libgcobol.cc (__gg__fprintf_stderr): New function.
+
 2025-05-20  Robert Dubner  <rdubner@symas.com>
 	    James K. Lowden  <jklowden@cobolworx.com>
 
