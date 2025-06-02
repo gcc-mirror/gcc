@@ -1847,7 +1847,9 @@ init_pragma (void)
   c_register_pragma_with_early_handler ("GCC", "target",
 					handle_pragma_target,
 					handle_pragma_target);
-  c_register_pragma ("GCC", "optimize", handle_pragma_optimize);
+  c_register_pragma_with_early_handler ("GCC", "optimize",
+					handle_pragma_optimize,
+					handle_pragma_optimize);
   c_register_pragma_with_early_handler ("GCC", "push_options",
 					handle_pragma_push_options,
 					handle_pragma_push_options);
