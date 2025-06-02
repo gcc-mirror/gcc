@@ -2119,3 +2119,26 @@ qualified_data_location(cbl_refer_t &refer)
   return gg_add(member(refer.field->var_decl_node, "data"),
                 refer_offset(refer));
   }
+
+uint64_t
+get_time_64()
+{
+  // This code was unabashedly stolen from gcc/timevar.cc.
+  // It returns the Unix epoch with nine decimal places.
+
+  uint64_t retval = 0;
+
+#ifdef HAVE_CLOCK_GETTIME
+  struct timespec ts;
+  clock_gettime (CLOCK_REALTIME, &ts);
+  retval = ts.tv_sec * 1000000000 + ts.tv_nsec;
+  return retval;
+#endif
+#ifdef HAVE_GETTIMEOFDAY
+  struct timeval tv;
+  gettimeofday (&tv, NULL);
+  retval = tv.tv_sec * 1000000000 + tv.tv_usec * 1000;
+  return retval;
+#endif
+  return retval;
+}
