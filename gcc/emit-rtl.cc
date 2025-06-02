@@ -975,8 +975,9 @@ validate_subreg (machine_mode omode, machine_mode imode,
 
   /* Verify that the offset is representable.  */
 
-  /* For hard registers, we already have most of these rules collected in
-     subreg_offset_representable_p.  */
+  /* Ensure that subregs of hard registers can be folded.  In other words,
+     the hardware register must be valid in the subreg's outer mode,
+     and consequently the subreg can be replaced with a hardware register.  */
   if (reg && REG_P (reg) && HARD_REGISTER_P (reg))
     {
       unsigned int regno = REGNO (reg);
@@ -987,7 +988,9 @@ validate_subreg (machine_mode omode, machine_mode imode,
       else if (!REG_CAN_CHANGE_MODE_P (regno, imode, omode))
 	return false;
 
-      return subreg_offset_representable_p (regno, imode, offset, omode);
+      /* Pass true to allow_stack_regs because targets like x86
+	 expect to be able to take subregs of the stack pointer.  */
+      return simplify_subreg_regno (regno, imode, offset, omode, true) >= 0;
     }
   /* Do not allow normal SUBREG with stricter alignment than the inner MEM.
 

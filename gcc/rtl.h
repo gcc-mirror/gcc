@@ -2506,7 +2506,8 @@ extern bool subreg_offset_representable_p (unsigned int, machine_mode,
 					   poly_uint64, machine_mode);
 extern unsigned int subreg_regno (const_rtx);
 extern int simplify_subreg_regno (unsigned int, machine_mode,
-				  poly_uint64, machine_mode);
+				  poly_uint64, machine_mode,
+				  bool allow_stack_regs = false);
 extern int lowpart_subreg_regno (unsigned int, machine_mode,
 				 machine_mode);
 extern unsigned int subreg_nregs (const_rtx);
