@@ -2298,6 +2298,15 @@ GOMP_OFFLOAD_memcpy3d (int dst_ord, int src_ord, size_t dim2_size,
 }
 
 bool
+GOMP_OFFLOAD_memset (int ord, void *ptr, int val, size_t count)
+{
+  if (!nvptx_attach_host_thread_to_device (ord))
+    return false;
+  CUDA_CALL (cuMemsetD8, (CUdeviceptr) ptr, (unsigned char) val, count);
+  return true;
+}
+
+bool
 GOMP_OFFLOAD_openacc_async_host2dev (int ord, void *dst, const void *src,
 				     size_t n, struct goacc_asyncqueue *aq)
 {

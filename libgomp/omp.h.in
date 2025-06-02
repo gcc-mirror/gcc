@@ -347,6 +347,10 @@ extern int omp_target_memcpy_rect_async (void *, const void *, __SIZE_TYPE__,
 					 const __SIZE_TYPE__ *, int, int, int,
 					 omp_depend_t * __GOMP_DEFAULT_NULL)
   __GOMP_NOTHROW;
+extern void *omp_target_memset (void *, int, __SIZE_TYPE__, int) __GOMP_NOTHROW;
+extern void *omp_target_memset_async (void *, int, __SIZE_TYPE__, int,
+				      int, omp_depend_t * __GOMP_DEFAULT_NULL)
+  __GOMP_NOTHROW;
 extern int omp_target_associate_ptr (const void *, const void *, __SIZE_TYPE__,
 				     __SIZE_TYPE__, int) __GOMP_NOTHROW;
 extern int omp_target_disassociate_ptr (const void *, int) __GOMP_NOTHROW;

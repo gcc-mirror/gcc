@@ -603,7 +603,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @code{omp_get_device_teams_thread_limit}, and
       @code{omp_set_device_teams_thread_limit} routines @tab N @tab
 @item @code{omp_target_memset} and @code{omp_target_memset_async} routines
-      @tab N @tab
+      @tab Y @tab
 @item Fortran version of the interop runtime routines @tab Y @tab
 @item Routines for obtaining memory spaces/allocators for shared/device memory
       @tab N @tab
@@ -1984,8 +1984,8 @@ pointers on devices. They have C linkage and do not throw exceptions.
 * omp_target_memcpy_async:: Copy data between devices asynchronously
 * omp_target_memcpy_rect:: Copy a subvolume of data between devices
 * omp_target_memcpy_rect_async:: Copy a subvolume of data between devices asynchronously
-@c * omp_target_memset:: <fixme>/TR12
-@c * omp_target_memset_async:: <fixme>/TR12
+* omp_target_memset:: Set bytes in device memory
+* omp_target_memset_async:: Set bytes in device memory asynchronously
 * omp_target_associate_ptr:: Associate a device pointer with a host pointer
 * omp_target_disassociate_ptr:: Remove device--host pointer association
 * omp_get_mapped_ptr:: Return device pointer to a host pointer
@@ -2395,6 +2395,98 @@ the initial device.
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.8
+@end table
+
+
+@node omp_target_memset
+@subsection @code{omp_target_memset} -- Set bytes in device memory
+@table @asis
+@item @emph{Description}:
+This routine fills memory on the device identified by device number
+@var{device_num}.  Starting from the device address @var{ptr}, the first
+@var{count} bytes are set to the value @var{val}, converted to
+@code{unsigned char}. If @var{count} is zero, the routine has no effect;
+if @var{ptr} is @code{NULL}, the behavior is unspecified.  The function
+returns @var{ptr}.
+
+The @var{device_num} must be a conforming device number and @var{ptr} must be
+a valid device pointer for that device.  Running this routine in a
+@code{target} region except on the initial device is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void *omp_target_memcpy(void *ptr,}
+@item                   @tab @code{                        int val,}
+@item                   @tab @code{                        size_t count,}
+@item                   @tab @code{                        int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_target_memset( &}
+@item                   @tab @code{    ptr, val, count, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_size_t), value :: count}
+@item                   @tab @code{integer(c_int), value :: val, device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_memset_async}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 25.8.1
+@end table
+
+
+
+@node omp_target_memset_async
+@subsection @code{omp_target_memset} -- Set bytes in device memory asynchronously
+@table @asis
+@item @emph{Description}:
+This routine fills memory on the device identified by device number
+@var{device_num}.  Starting from the device address @var{ptr}, the first
+@var{count} bytes are set to the value @var{val}, converted to
+@code{unsigned char}. If @var{count} is zero, the routine has no effect;
+if @var{ptr} is @code{NULL}, the behavior is unspecified.  Task dependence
+is expressed by passing an array of depend objects to @var{depobj_list}, where
+the number of array elements is passed as @var{depobj_count}; if the count is
+zero, the @var{depobj_list} argument is ignored.  In C++ and Fortran, the
+@var{depobj_list} argument can also be omitted in that case.  The function
+returns @var{ptr}.
+
+The @var{device_num} must be a conforming device number and @var{ptr} must be
+a valid device pointer for that device.  Running this routine in a
+@code{target} region except on the initial device is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void *omp_target_memcpy_async(void *ptr,}
+@item                   @tab @code{                        int val,}
+@item                   @tab @code{                        size_t count,}
+@item                   @tab @code{                        int device_num,}
+@item                   @tab @code{                        int depobj_count,}
+@item                   @tab @code{                        omp_depend_t *depobj_list)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_target_memset_async( &}
+@item                   @tab @code{    ptr, val, count, device_num, &}
+@item                   @tab @code{    depobj_count, depobj_list) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_size_t), value :: count}
+@item                   @tab @code{integer(c_int), value :: val, device_num, depobj_count}
+@item                   @tab @code{integer(omp_depend_kind), optional :: depobj_list(*)}
+@end multitable
+
+
+@item @emph{See also}:
+@ref{omp_target_memset}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 25.8.2
 @end table
 
 
