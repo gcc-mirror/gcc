@@ -10491,7 +10491,9 @@ parser_intrinsic_call_0(cbl_field_t *tgt,
     {
     // Pass __gg__when_compiled() the time from right now.
     struct timespec tp;
-    clock_gettime(CLOCK_REALTIME, &tp); // time_t tv_sec; long tv_nsec
+    uint64_t now = get_time_64();
+    tp.tv_sec  = now / 1000000000;
+    tp.tv_nsec = now % 1000000000;
 
     store_location_stuff(function_name);
     gg_call(VOID,
