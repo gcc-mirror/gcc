@@ -34,8 +34,7 @@
 #define __glibcxx_want_jthread
 #include <bits/version.h>
 
-#if __cplusplus > 201703L
-
+#ifdef __glibcxx_jthread // C++ >= 20
 #include <atomic>
 #include <bits/std_thread.h>
 
@@ -650,6 +649,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     stop_callback(stop_token, _Callback) -> stop_callback<_Callback>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
-#endif // __cplusplus > 201703L
+} // namespace std
+#endif // __glibcxx_jthread
 #endif // _GLIBCXX_STOP_TOKEN
