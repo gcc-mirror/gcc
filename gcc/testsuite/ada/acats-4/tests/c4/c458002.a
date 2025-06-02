@@ -1,0 +1,657 @@
+--  C458002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--  OBJECTIVES:
+--
+--     (A) Check that the predicate of a quantified expression is evaluated in
+--         the order specified by an array component iterator specification.
+--
+--     (B) Check that result of a quantified expression with an
+--         array component iterator specification is True if the predicate is
+--         True for all values if the quantifier is all and any value if the
+--         quantifier is some, and is False otherwise.
+--
+--     (C) Check that evaluation of predicates of a quantified expression with
+--         an array component iterator specification stops when the result is
+--         determined, and no extra evaluations occur.
+--
+--     (D) Check that if the quantifier is all, the result of a quantified
+--         expression is True if there are no values in the domain.
+--
+--     (E) Check that if the quantifier is some, the result of a quantified
+--         expression is False if there are no values in the domain.
+--
+--     (F) Check that any exceptions propagated by the predicate of a
+--         quantified expression with a quantifier of all is propagated by the
+--         quantified expression.
+--
+--     (G) Check that any exceptions propagated by the predicate of a
+--         quantified expression with a quantifier of some is propagated by the
+--         quantified expression.
+--
+--  HISTORY:
+--     BJM 5/08/22 Created original test.
+--     RLB 6/30/22 Removed stray Ada 2022 features.
+--!
+
+with Report; use Report;
+
+procedure C458002 is
+
+   type Direction  is (Forward, Backward);
+
+   Test_Error : exception;
+
+   Test_Array : constant array (1 .. 10) of Integer := 
+                                         (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+   Empty_Array : constant array (1 .. 0) of Integer := (others => <>);
+
+   TC_Last_Check : Natural := Test_Array'First - 1;
+
+   function Succession_Check
+     (X                   : Integer;
+      Iteration           : Direction;
+      Result              : Boolean;
+      Propagate_Exception : Boolean := False) return Boolean is
+   begin
+
+      if Iteration = Forward then
+         if Natural'Succ (TC_Last_Check) /= X then
+            Failed ("Expression evaluated out of order - " & X'Image);
+            --Comment ("TC_Last_Check - " & TC_Last_Check'Image);
+            --raise Test_Error with "Out-of-order fail";
+         end if;
+      else
+         if Natural'Pred (TC_Last_Check) /= X then
+            Failed ("Expression evaluated out of order - " & X'Image);
+            --Comment ("TC_Last_Check - " & TC_Last_Check'Image);
+            --raise Test_Error with "Out-of-order fail";
+         end if;
+      end if;
+
+      if Test_Array (X) /= X then
+         Failed ("Unexpected array value");
+      end if;
+
+      if Propagate_Exception then
+         raise Test_Error with "Test Exception Propagation: X=" & X'Image;
+      end if;
+
+      TC_Last_Check := X;
+
+      return Result;
+   end Succession_Check;
+
+begin --  C458002
+
+   Test
+     ("C458002",
+      "Check that the predicate of a quantified expression " &
+      "is evaluated in the order specified by the " &
+      "array component iterator specification");
+
+   TC_Last_Check := Test_Array'First - 1;
+
+   Objective_A_Forward_All :
+   --  Also partly satisfies Objective B
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_A_Forward_All
+
+      --  Forward iteration through all elements
+      Expression_Value :=
+        (for all Value of Test_Array =>
+           Succession_Check (Value, Forward, Result => True));
+
+      if not Expression_Value then
+         Failed ("Wrong value for quantified expression - 1");
+      end if;
+
+      if TC_Last_Check /= Test_Array'Last then
+         Failed ("Unexpected value for last evaluated expression - 1");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 1");
+   end Objective_A_Forward_All;
+
+   TC_Last_Check := Test_Array'Last + 1;
+
+   Objective_A_Reverse_All :
+   --  Also partly satisifies Objective B
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_A_Reverse_All
+
+      --  Reverse iteration through all elements
+      Expression_Value :=
+        (for all Value of reverse Test_Array =>
+           Succession_Check (Value, Backward, Result => True));
+
+      if not Expression_Value then
+         Failed ("Wrong value for quantified expression - 2");
+      end if;
+
+      if TC_Last_Check /= Test_Array'First then
+         Failed ("Unexpected value for last evaluated expression - 2");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 2");
+   end Objective_A_Reverse_All;
+
+   TC_Last_Check := Test_Array'First - 1;
+
+   Objective_A_Forward_Some :
+   --  Also partly satisifies Objective B
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_A_Forward_Some
+
+      --  Forward iteration to check one element exists
+      Expression_Value :=
+        (for some Value of Test_Array =>
+           Succession_Check
+             (Value, Forward, Result => (Value = Test_Array'Last)));
+
+      if not Expression_Value then
+         Failed ("Wrong value for quantified expression - 3");
+      end if;
+
+      if TC_Last_Check /= Test_Array'Last then
+         Failed ("Unexpected value for last evaluated expression - 3");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 3");
+   end Objective_A_Forward_Some;
+
+   TC_Last_Check := Test_Array'Last + 1;
+
+   Objective_A_Reverse_Some :
+   --  Also partly satisifies Objective B
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_A_Reverse_Some
+
+      --  Reverse iteration to check if one element exists
+      Expression_Value :=
+        (for some Value of reverse Test_Array =>
+           Succession_Check
+             (Value, Backward, Result => (Value = Test_Array'First)));
+
+      if not Expression_Value then
+         Failed ("Wrong value for Quantified Expression - 4");
+      end if;
+
+      if TC_Last_Check /= Test_Array'First then
+         Failed ("Unexpected value for last evaluated expression - 4");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 4");
+   end Objective_A_Reverse_Some;
+
+   TC_Last_Check := Test_Array'First - 1;
+
+   Objective_C_Forward :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_C_Forward
+
+      --  Forward iteration stopping on the second element
+      Expression_Value :=
+        (for all Value of Test_Array =>
+           Succession_Check (Value, Forward, Result => Value = 1));
+
+      if Expression_Value then
+         Failed ("Wrong value for quantified expression - 5");
+      end if;
+
+      if TC_Last_Check < 2 then
+         Failed
+           ("Did not evaluate enough elements for False quantified expression"
+            & " - 5");
+      elsif TC_Last_Check > 2 then
+         Failed
+           ("Evaluated too many elements for False quantified expression"
+            & " - 5");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 5");
+   end Objective_C_Forward;
+
+   TC_Last_Check := Test_Array'Last + 1;
+
+   Objective_C_Reverse :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_C_Reverse
+
+      --  Reverse iteration stopping on the 7th element.
+      Expression_Value :=
+        (for all Value of reverse Test_Array =>
+           Succession_Check (Value, Backward, Result => Value > 7));
+
+      if Expression_Value then
+         Failed ("Wrong value for quantified expression - 6");
+      end if;
+
+      if TC_Last_Check < 7 then
+         Failed
+           ("Did not evaluate enough elements for False quantified expression"
+            & " - 6");
+      elsif TC_Last_Check > 7 then
+         Failed
+           ("Evaluated too many elements for False quantified expression"
+            & " - 6");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 6");
+   end Objective_C_Reverse;
+
+   TC_Last_Check := Test_Array'First - 1;
+
+   Objective_C_Forward_Middle :
+   declare
+      Expression_Value : Boolean := False;
+   begin -- Objective_C_Forward_Middle
+
+      --  Forward iteration to check one element exists, in this case
+      --  the third element.
+      Expression_Value :=
+        (for some Value of Test_Array =>
+           Succession_Check (Value, Forward, Result => Value = 3));
+
+      if not Expression_Value then
+         Failed ("Wrong value for quantified expression - 7");
+      end if;
+
+      if TC_Last_Check < 3 then
+         Failed
+           ("Did not evaluate enough elements for True quantified expression"
+            & " - 7");
+      elsif TC_Last_Check > 3 then
+         Failed
+           ("Evaluated too many elements for True quantified expression"
+            & " - 7");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 7");
+   end Objective_C_Forward_Middle;
+
+   TC_Last_Check := Test_Array'Last + 1;
+
+   Objective_C_Reverse_Middle :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_C_Reverse_Middle
+
+      --  Reverse iteration to check if one element exists, in this case
+      --  the sixth element.
+      Expression_Value :=
+        (for some Value of reverse Test_Array =>
+           Succession_Check (Value, Backward, Result => Value = 6));
+
+      if not Expression_Value then
+         Failed ("Wrong value for Quantified Expression - 8");
+      end if;
+
+      if TC_Last_Check < 6 then
+         Failed
+           ("Did not evaluate enough elements for True quantified expression"
+            & " - 8");
+      elsif TC_Last_Check > 6 then
+         Failed
+           ("Evaluated too many elements for True quantified expression"
+            & " - 8");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 8");
+   end Objective_C_Reverse_Middle;
+
+   TC_Last_Check := Test_Array'First - 1;
+
+   Objective_B_Some_False_Forward :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_B_Some_False_Forward
+
+      --  Forward iteration to check one element exists, but none do.
+      Expression_Value :=
+        (for some Value of Test_Array =>
+           Succession_Check (Value, Forward, Result => False));
+
+      if Expression_Value then
+         Failed ("Wrong value for quantified expression - 9");
+      end if;
+
+      if TC_Last_Check /= Test_Array'Last then
+         Failed ("Unexpected value for last evaluated expression - 9");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 9");
+   end Objective_B_Some_False_Forward;
+
+   TC_Last_Check := Test_Array'Last + 1;
+
+   Objective_B_Some_False_Reverse :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_B_Some_False_Reverse
+
+      --  Reverse iteration to check if one element exists, but none do.
+      Expression_Value :=
+        (for some Value of reverse Test_Array =>
+           Succession_Check (Value, Backward, Result => False));
+
+      if Expression_Value then
+         Failed ("Wrong value for Quantified Expression - 10");
+      end if;
+
+      if TC_Last_Check /= Test_Array'First then
+         Failed ("Unexpected value for last evaluated expression - 10");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 10");
+   end Objective_B_Some_False_Reverse;
+
+   TC_Last_Check := Test_Array'First - 1;
+
+   Objective_B_All_False_Forward :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_B_All_False_Forward
+
+      --  Forward iteration to check one element exists, but none do.
+      Expression_Value :=
+        (for all Value of Test_Array =>
+           Succession_Check (Value, Forward, Result => False));
+
+      if Expression_Value then
+         Failed ("Wrong value for quantified expression - 11");
+      end if;
+
+      if TC_Last_Check /= Test_Array'First then
+         Failed ("Unexpected value for last evaluated expression - 11");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 11");
+   end Objective_B_All_False_Forward;
+
+   TC_Last_Check := Test_Array'Last + 1;
+
+   Objective_B_All_False_Reverse :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_B_All_False_Forward
+
+      --  Forward iteration to check one element exists, but none do.
+      Expression_Value :=
+        (for all Value of reverse Test_Array =>
+           Succession_Check (Value, Backward, Result => False));
+
+      if Expression_Value then
+         Failed ("Wrong value for quantified expression - 12");
+      end if;
+
+      if TC_Last_Check /= Test_Array'Last then
+         Failed ("Unexpected value for last evaluated expression - 12");
+      end if;
+
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 12");
+   end Objective_B_All_False_Reverse;
+
+   Objective_D_None_Forward :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_D_None_Forward
+   
+      --  Forward iteration to check one element exists, but none do.
+      Expression_Value :=
+        (for all Value of Empty_Array =>
+           Succession_Check (Value, Forward, Result => False));
+   
+      if not Expression_Value then
+         Failed ("Wrong value for quantified expression - 13");
+      end if;
+   
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 13");
+   end Objective_D_None_Forward;
+   
+   Objective_D_None_Reverse :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_D_None_Reverse
+   
+      --  Forward iteration to check one element exists, but none do.
+      Expression_Value :=
+        (for all Value of reverse Empty_Array =>
+           Succession_Check (Value, Backward, Result => False));
+   
+      if not Expression_Value then
+         Failed ("Wrong value for quantified expression - 14");
+      end if;
+   
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 14");
+   end Objective_D_None_Reverse;
+   
+   Objective_E_None_Forward :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_E_None_Forward
+   
+      --  Forward iteration to check one element exists, but none do.
+      Expression_Value :=
+        (for some Value of Empty_Array =>
+           Succession_Check (Value, Forward, Result => True));
+   
+      if Expression_Value then
+         Failed ("Wrong value for quantified expression - 15");
+      end if;
+   
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 15");
+   end Objective_E_None_Forward;
+   
+   Objective_E_None_Reverse :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_E_None_Reverse
+   
+      --  Forward iteration to check one element exists, but none do.
+      Expression_Value :=
+        (for some Value of reverse Empty_Array =>
+           Succession_Check (Value, Backward, Result => True));
+   
+      if Expression_Value then
+         Failed ("Wrong value for quantified expression - 16");
+      end if;
+   
+   exception
+      when others =>
+         Failed ("Unexpected exception raised - 16");
+   end Objective_E_None_Reverse;
+
+   TC_Last_Check := Test_Array'First - 1;
+
+   Objective_F_Forward_All :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_F_Forward_All
+
+      --  Forward iteration until exception is raised
+      Expression_Value :=
+        (for all Value of Test_Array =>
+           Succession_Check (Value, Forward,
+                             Result => True,
+                             Propagate_Exception => Value = 4));
+
+      Failed ("Exception not propagated - 17");
+
+   exception
+      when Test_Error =>
+         if TC_Last_Check /= 3 then
+            Failed ("Wrong number of iterations - 17");
+         end if;
+
+         if Expression_Value then
+            Failed ("Expression_Value should not have been modified - 17");
+         end if;
+
+      when others =>
+         Failed ("Unexpected exception raised - 17");
+   end Objective_F_Forward_All;
+
+   TC_Last_Check := Test_Array'Last + 1;
+
+   Objective_F_Reverse_All :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_F_Reverse_All
+
+      --  Reverse iteration until exception is raised
+      Expression_Value :=
+        (for all Value of reverse Test_Array =>
+           Succession_Check (Value, Backward,
+                             Result => True,
+                             Propagate_Exception => Value = 4));
+
+      Failed ("Exception not propagated - 18");
+
+   exception
+      when Test_Error =>
+         if TC_Last_Check /= 5 then
+            Failed ("Wrong number of iterations - 18");
+         end if;
+
+         if Expression_Value then
+            Failed ("Expression_Value should not have been modified - 18");
+         end if;
+
+      when others =>
+         Failed ("Unexpected exception raised - 18");
+   end Objective_F_Reverse_All;
+
+   TC_Last_Check := Test_Array'First - 1;
+
+   Objective_G_Forward_Some :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_G_Forward_Some
+
+      --  Forward iteration until exception is raised
+      Expression_Value :=
+        (for some Value of Test_Array =>
+           Succession_Check (Value, Forward,
+                             Result => Value > 4,
+                             Propagate_Exception => Value = 4));
+
+      Failed ("Exception not propagated - 19");
+
+   exception
+      when Test_Error =>
+         if TC_Last_Check /= 3 then
+            Failed ("Wrong number of iterations - 19");
+         end if;
+
+         if Expression_Value then
+            Failed ("Expression_Value should not have been modified - 19");
+         end if;
+
+      when others =>
+         Failed ("Unexpected exception raised - 19");
+   end Objective_G_Forward_Some;
+
+   TC_Last_Check := Test_Array'Last + 1;
+
+   Objective_G_Reverse_Some :
+   declare
+      Expression_Value : Boolean := False;
+   begin --  Objective_G_Reverse_Some
+
+      --  Reverse iteration until exception is raised
+      Expression_Value :=
+        (for some Value of reverse Test_Array =>
+           Succession_Check (Value, Backward,
+                             Result => Value < 4,
+                             Propagate_Exception => Value = 4));
+
+      Failed ("Exception not propagated - 20");
+
+   exception
+      when Test_Error =>
+         if TC_Last_Check /= 5 then
+            Failed ("Wrong number of iterations - 20");
+         end if;
+
+         if Expression_Value then
+            Failed ("Expression_Value should not have been modified - 20");
+         end if;
+
+      when others =>
+         Failed ("Unexpected exception raised - 20");
+   end Objective_G_Reverse_Some;
+
+   Result;
+
+end C458002;
+
+
+
+

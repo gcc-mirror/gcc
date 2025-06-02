@@ -472,6 +472,9 @@ aarch64-*-mingw*)
 	  posix)
 	    tmake_thr_file="mingw/t-mingw-pthread"
 	    ;;
+	  mcf)
+	    tmake_thr_file="mingw/t-mingw-mcfgthread"
+	    ;;
 	esac
 	tmake_file="${tmake_file} ${cpu_type}/t-no-eh ${tmake_thr_file}"
 	tmake_file="${tmake_file} t-dfprules"
@@ -904,7 +907,7 @@ i[34567]86-*-mingw*)
 	    tmake_thr_file="mingw/t-mingw-pthread"
 	    ;;
 	  mcf)
-	    tmake_thr_file="i386/t-mingw-mcfgthread"
+	    tmake_thr_file="mingw/t-mingw-mcfgthread"
 	    ;;
 	esac
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
@@ -931,7 +934,7 @@ x86_64-*-mingw*)
 	    tmake_thr_file="mingw/t-mingw-pthread"
 	    ;;
 	  mcf)
-	    tmake_thr_file="i386/t-mingw-mcfgthread"
+	    tmake_thr_file="mingw/t-mingw-mcfgthread"
 	    ;;
 	esac
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h

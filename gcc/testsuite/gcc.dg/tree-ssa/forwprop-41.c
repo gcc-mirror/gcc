@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized -Wno-psabi -w" } */
+/* { dg-additional-options "-msse" { target i?86-*-* x86_64-*-* } } */
 
 #define vector __attribute__((__vector_size__(16) ))
 

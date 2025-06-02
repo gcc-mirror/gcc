@@ -1,0 +1,207 @@
+-- CD30002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the implementation supports Alignments for subtypes and
+--      objects specified as factors and multiples of the number of storage
+--      elements per word, unless those values cannot be loaded and stored.
+--      Check that the largest alignment returned by default is supported.
+--
+--      Check that the implementation supports Alignments supported by the
+--      target linker for stand-alone library-level objects of statically
+--      constrained subtypes.
+--
+-- TEST DESCRIPTION:
+--      This test defines several types and objects, specifying various
+--      alignments for them (as factors and multiples of the number of
+--      storage elements per word).  It then checks the alignments by
+--      declaring some objects, and checking that the integer values of
+--      their addresses is mod the specified alignment.  This will not
+--      prevent false passes where the lucky compiler gets it right by
+--      chance, but will catch compilers that specifically do not obey
+--      the alignment clauses.
+--
+-- APPLICABILITY CRITERIA:
+--      All implementations must attempt to compile this test.
+--
+--      For implementations validating against Systems Programming Annex (C):
+--        this test must execute and report PASSED.
+--
+--      For implementations not validating against Annex C:
+--        this test may report compile time errors at one or more points
+--        indicated by "-- ANX-C RQMT", in which case it may be graded as inapplicable.
+--        Otherwise, the test must execute and report PASSED.
+--
+--
+-- CHANGE HISTORY:
+--      22 JUL 95   SAIC   Initial version
+--      09 MAY 96   SAIC   Strengthened for 2.1
+--      26 FEB 97   PWB.CTA Allowed for unexpected word sizes
+--      16 FEB 98   EDS    Modified documentation.
+--      26 SEP 98   RLB    Fixed value on line 130 so check and dec. match.
+--      30 OCT 98   RLB    Split Multiple_Alignment and revised the
+--                         calculation to work on all targets.
+--      18 JAN 99   RLB    Repaired again to work on targets where word size
+--                         equals storage unit.
+--!
+
+----------------------------------------------------------------- CD30002_0
+
+with Impdef;
+with System.Storage_Elements;
+package CD30002_0 is
+
+  S_Units_per_Word : constant := System.Word_Size/System.Storage_Unit;
+	-- Must be 1 or greater.
+
+  Multiple_Type_Alignment : constant :=
+      Integer'Min ( Impdef.Max_Default_Alignment,
+                    2 * S_Units_per_Word );
+      -- Calculate a reasonable alignment, but not larger than the
+      -- implementation is required to support.
+
+  Multiple_Object_Alignment : constant :=
+      Integer'Min ( Impdef.Max_Linker_Alignment,
+                    2 * S_Units_per_Word );
+      -- Calculate a reasonable object alignment, but not larger than
+      -- the implementation is required to support.
+
+  Small_Alignment : constant :=
+      Integer'Max ( S_Units_per_Word / 2, 1);
+      -- Calculate a reasonable small alignment, but not less than 1.
+      -- (If S_Units_per_Word = 1, 1/2 => 0 which causes problems
+      -- verifying alignment.)
+
+  subtype Storage_Element is System.Storage_Elements.Storage_Element;
+
+  type Some_Stuff is array(1..S_Units_Per_Word) of Storage_Element;
+    for Some_Stuff'Alignment
+      use Impdef.Max_Default_Alignment;                       -- ANX-C RQMT.
+
+  Library_Level_Object : Some_Stuff;
+    for Library_Level_Object'Alignment
+      use Impdef.Max_Linker_Alignment;                        -- ANX-C RQMT.
+
+  type Quarter is mod 4; -- two bits
+    for Quarter'Alignment use Small_Alignment;                -- ANX-C RQMT.
+
+  type Half is mod 16; -- nibble
+    for Half'Alignment use Multiple_Type_Alignment;                -- ANX-C RQMT.
+  
+  type O_Some_Stuff is array(1..S_Units_Per_Word) of Storage_Element;
+  
+  type O_Quarter is mod 4; -- two bits
+
+  type O_Half is mod 16; -- nibble
+
+end CD30002_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+-- there is no package body CD30002_0
+
+------------------------------------------------------------------- CD30002
+
+with Report;
+with Impdef;
+with CD30002_0;
+with System.Storage_Elements;
+procedure CD30002 is
+
+  My_Stuff   : CD30002_0.Some_Stuff;
+    -- Impdef.Max_Default_Alignment
+
+  My_Quarter : CD30002_0.Quarter;
+    -- CD30002_0.S_Units_per_Word / 2
+
+  My_Half    : CD30002_0.Half;
+    -- CD30002_0.S_Units_per_Word * 2
+
+  Stuff_Object   : CD30002_0.O_Some_Stuff;
+    for Stuff_Object'Alignment
+      use Impdef.Max_Default_Alignment;                       -- ANX-C RQMT.
+
+  Quarter_Object : CD30002_0.O_Quarter;
+    for Quarter_Object'Alignment
+        use CD30002_0.Small_Alignment;                        -- ANX-C RQMT.
+
+  Half_Object    : CD30002_0.O_Half;
+    for Half_Object'Alignment
+        use CD30002_0.Multiple_Object_Alignment;              -- ANX-C RQMT.
+
+  subtype IntAdd is System.Storage_Elements.Integer_Address;
+    use type System.Storage_Elements.Integer_Address;
+
+  function A2I(Value: System.Address) return IntAdd renames
+    System.Storage_Elements.To_Integer;
+
+  NAC : constant String := " not aligned correctly";
+
+begin  -- Main test procedure.
+
+  Report.Test ("CD30002", "Check that the implementation supports " &
+                          "Alignments for subtypes and objects specified " &
+                          "as factors and multiples of the number of " &
+                          "storage elements per word, unless those values " &
+                          "cannot be loaded and stored. Check that the " &
+                          "largest alignment returned by default is " &
+                          "supported. Check that the implementation " &
+                          "supports Alignments supported by the target " &
+                          "linker for stand-alone library-level objects " &
+                          "of statically constrained subtypes" );
+
+  if A2I(CD30002_0.Library_Level_Object'Address)
+     mod Impdef.Max_Linker_Alignment /= 0 then
+    Report.Failed("Library_Level_Object" & NAC);
+  end if;
+
+  if A2I(My_Stuff'Address) mod Impdef.Max_Default_Alignment /= 0 then
+    Report.Failed("Max alignment subtype" & NAC);
+  end if;
+
+  if A2I(My_Quarter'Address) mod (CD30002_0.Small_Alignment) /= 0 then
+    Report.Failed("Factor of words subtype" & NAC);
+  end if;
+
+  if A2I(My_Half'Address) mod (CD30002_0.Multiple_Type_Alignment) /= 0 then
+    Report.Failed("Multiple of words subtype" & NAC);
+  end if;
+
+  if A2I(Stuff_Object'Address) mod Impdef.Max_Default_Alignment /= 0 then
+    Report.Failed("Stuff alignment object" & NAC);
+  end if;
+
+  if A2I(Quarter_Object'Address) 
+       mod (CD30002_0.Small_Alignment) /= 0 then
+    Report.Failed("Factor of words object" & NAC);
+  end if;
+
+  if A2I(Half_Object'Address) mod (CD30002_0.Multiple_Object_Alignment) /= 0 then
+    Report.Failed("Multiple of words object" & NAC);
+  end if;
+
+  Report.Result;
+
+end CD30002;

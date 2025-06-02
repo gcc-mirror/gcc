@@ -1,0 +1,134 @@
+-- LA140211.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a generic package depends on another
+--      generic package that is changed.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a generic package, a second generic 
+--      package that withs the first and a main procedure that  
+--      withs the second package.  Then, a new version of the  
+--      first package is compiled (in a separate file, simulating 
+--      editing and modification to the unit).  Unless automatic 
+--      recompilation is supported, this test should fail to link.  
+--      Otherwise, the test should recompile and link the correct 
+--      version of the withed function and report "PASSED" at 
+--      execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140210 (and include the results in the
+--            program library).
+--         2) Compile the file LA140211 (and include the results in the
+--            program library).
+--         3) Compile the file LA140212 (and include the results in the
+--            program library).
+--         4) Attempt to build an executable image.
+--         5) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140210.A
+--      -> LA140211.AM
+--         LA140212.A
+--
+-- PASS/FAIL CRITERIA:    
+--      The test passes if a link time error message reports that 
+--      LA14021_1 is missing or obsolete and no executable image
+--      results.  The test also passes if an executable image is produced
+--      and reports "PASSED" (in the case where the implementation supports
+--      automatic recompilation).            
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008R baseline version
+--     23 JUN 95   SAIC        Initial version
+--     18 NOV 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions.
+--     07 DEC 96   SAIC        Moved LA14021_0 to a separate file.
+--
+--!
+
+package LA14021_1 is
+     type data_record is tagged 
+          record
+          info : character;
+          end record;
+     subtype loop_count is integer range 1..100;
+     type data_type is new data_record  with
+          record
+                serial : integer := 0;
+          end record;
+end LA14021_1;
+
+---------------------------------------------------------
+
+with LA14021_1;
+with LA14021_0;
+generic     
+     type data_rec is new LA14021_1.data_record with private;
+package LA14021_2 is
+     package util is new LA14021_0 (character, LA14021_1.loop_count);
+     procedure flip_flop (rec1, rec2 : in out data_rec);
+end LA14021_2;
+
+---------------------------------------------------------
+
+package body LA14021_2 is
+     procedure flip_flop (rec1, rec2 : in out data_rec) is
+     begin
+          util.swap (rec1.info, rec2.info);
+    end flip_flop;
+end LA14021_2;
+
+---------------------------------------------------------
+
+with Report; use Report;
+with LA14021_1;
+with LA14021_2;
+
+procedure LA140211 is
+     package util is new LA14021_2 (LA14021_1.data_type);
+     datum_1 : LA14021_1.data_type := LA14021_1.data_type'('a', 1);
+     datum_2 : LA14021_1.data_type := LA14021_1.data_type'('b', 2);
+begin
+     Test ("LA14021", "Check that a compilation unit may " &
+                      "not depend semantically on two " &
+                      "different versions of the same " &
+                      "compilation unit.  Check the case " &
+                      "where a generic package depends on " &
+                      "another generic package that is changed");
+
+     util.flip_flop (datum_1, datum_2);
+     if datum_1.info = 'b' then
+          Failed ("Revised unit not used");
+     elsif datum_1.info /= 'a' then 
+          Failed ("Incorrect value returned");
+     end if;
+
+     Result;
+end LA140211;

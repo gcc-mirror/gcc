@@ -345,6 +345,31 @@ vec_sat_s_add_##T##_fmt_4 (T *out, T *op_1, T *op_2, unsigned limit) \
 #define RUN_VEC_SAT_S_ADD_FMT_4_WRAP(T, out, op_1, op_2, N) \
   RUN_VEC_SAT_S_ADD_FMT_4(T, out, op_1, op_2, N)
 
+#define DEF_VEC_SAT_S_ADD_IMM_FMT_1(INDEX, T, UT, IMM, MIN, MAX)     \
+void __attribute__((noinline))                                       \
+vec_sat_s_add_imm_##T##_fmt_1##_##INDEX (T *out, T *op_1, unsigned limit) \
+{                                                                    \
+  unsigned i;                                                        \
+  for (i = 0; i < limit; i++)                                        \
+    {                                                                \
+      T x = op_1[i];                                                 \
+      T sum = (UT)x + (UT)IMM;                                       \
+      out[i] = (x ^ IMM) < 0                                         \
+        ? sum                                                        \
+        : (sum ^ x) >= 0                                             \
+          ? sum                                                      \
+          : x < 0 ? MIN : MAX;                                       \
+    }                                                                \
+}
+#define DEF_VEC_SAT_S_ADD_IMM_FMT_1_WRAP(INDEX, T, UT, IMM, MIN, MAX) \
+  DEF_VEC_SAT_S_ADD_IMM_FMT_1(INDEX, T, UT, IMM, MIN, MAX)
+
+#define RUN_VEC_SAT_S_ADD_IMM_FMT_1(INDEX, T, out, in, expect, IMM, N) \
+  vec_sat_s_add_imm_##T##_fmt_1##_##INDEX (out, in, N);             \
+  VALIDATE_RESULT (out, expect, N)
+#define RUN_VEC_SAT_S_ADD_IMM_FMT_1_WRAP(INDEX, T, out, in, expect, IMM, N) \
+  RUN_VEC_SAT_S_ADD_IMM_FMT_1(INDEX, T, out, in, expect, IMM, N)
+
 /******************************************************************************/
 /* Saturation Sub (Unsigned and Signed)                                       */
 /******************************************************************************/

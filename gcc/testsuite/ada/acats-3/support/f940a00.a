@@ -1,0 +1,97 @@
+-- F940A00.A
+--
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation contains test control code for tests covering 
+--      the protected record.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package F940A00 is
+     -- Interlock_Foundation
+   
+  protected type Interlock_Type is
+    entry Post;
+    entry Consume;
+  private
+    Int_Count : Integer := 0;
+  end Interlock_Type;
+
+  protected Counter is                 -- used to count the number of
+    procedure Increment;               -- resources that have been granted
+    procedure Decrement;               -- to tasks
+    function Number return integer;
+  private
+    Count : Integer := 0;
+  end Counter;
+
+end F940A00;
+ -- Interlock_Foundation
+
+--===================================--
+
+package body F940A00 is
+          -- Interlock_Foundation
+
+  protected body Interlock_Type is
+
+    entry Post when true is
+    begin
+      Int_Count := Int_Count + 1;
+    end Post;
+
+    entry Consume when Int_Count > 0 is
+    begin
+      Int_Count := Int_Count - 1;
+    end Consume;
+
+  end Interlock_Type;
+
+
+  protected body Counter is
+
+    procedure Increment is
+      begin
+        Count := Count + 1;
+      end Increment;
+
+    procedure Decrement is
+      begin
+        Count := Count - 1;
+      end Decrement;
+
+    function Number return Integer is 
+      begin
+        return Count;
+      end Number;
+
+  end Counter;
+
+end F940A00;
+ -- Interlock_Foundation

@@ -1,0 +1,227 @@
+-- C392014.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--    Check that objects designated by X'Access (where X is of a class-wide
+--    type) and new T'Class'(...) are dynamically tagged and can be used in
+--    dispatching calls.  (Defect Report 8652/0010).
+--
+-- CHANGE HISTORY:
+--    18 JAN 2001   PHL   Initial version
+--    15 MAR 2001   RLB   Readied for release.
+--    03 JUN 2004   RLB   Removed constraint for S0, as the subtype has
+--                        unknown discriminants.
+
+--!
+package C392014_0 is
+
+    type T (D : Integer) is abstract tagged private;
+
+    procedure P (X : access T) is abstract;
+    function Create (X : Integer) return T'Class;
+
+    Result : Natural := 0;
+
+private
+    type T (D : Integer) is abstract tagged null record;
+end C392014_0;
+
+with C392014_0;
+package C392014_1 is
+    type T is new C392014_0.T with private;
+    function Create (X : Integer) return T'Class;
+private
+    type T is new C392014_0.T with
+	record
+	    C1 : Integer;
+	end record;
+    procedure P (X : access T);
+end C392014_1;
+
+package C392014_1.Child is
+    type T is new C392014_1.T with private;
+    procedure P (X : access T);
+    function Create (X : Integer) return T'Class;
+private
+    type T is new C392014_1.T with
+	record
+	    C1C : Integer;
+	end record;
+end C392014_1.Child;
+
+with Report;
+use Report;
+with C392014_1.Child;
+package body C392014_1 is
+
+    procedure P (X : access T) is
+    begin
+	C392014_0.Result := C392014_0.Result + X.D + X.C1;
+    end P;
+
+    function Create (X : Integer) return T'Class is
+    begin
+	case X mod Ident_Int (2) is
+	    when 0 =>
+		return C392014_1.Child.Create (X / Ident_Int (2));
+	    when 1 =>
+		declare
+		    Y : T (D => (X / Ident_Int (2)) mod Ident_Int (20));
+		begin
+		    Y.C1 := X / Ident_Int (40);
+		    return T'Class (Y);
+		end;
+	    when others =>
+		null;
+	end case;
+    end Create;
+
+end C392014_1;
+
+with C392014_0;
+with C392014_1;
+package C392014_2 is
+    type T is new C392014_0.T with private;
+    function Create (X : Integer) return T'Class;
+private
+    type T is new C392014_1.T with
+	record
+	    C2 : Integer;
+	end record;
+    procedure P (X : access T);
+end C392014_2;
+
+with Report;
+use Report;
+with C392014_1.Child;
+with C392014_2;
+package body C392014_0 is
+
+    function Create (X : Integer) return T'Class is
+    begin
+	case X mod 3 is
+	    when 0 =>
+		return C392014_1.Create (X / Ident_Int (3));
+	    when 1 =>
+		return C392014_1.Child.Create (X / Ident_Int (3));
+	    when 2 =>
+		return C392014_2.Create (X / Ident_Int (3));
+	    when others =>
+		null;
+	end case;
+    end Create;
+
+end C392014_0;
+
+with Report;
+use Report;
+with C392014_0;
+package body C392014_1.Child is
+
+    procedure P (X : access T) is
+    begin
+	C392014_0.Result := C392014_0.Result + X.D + X.C1 + X.C1C;
+    end P;
+
+    function Create (X : Integer) return T'Class is
+	Y : T (D => X mod Ident_Int (20));
+    begin
+	Y.C1 := (X / Ident_Int (20)) mod Ident_Int (20);
+	Y.C1C := X / Ident_Int (400);
+	return T'Class (Y);
+    end Create;
+
+end C392014_1.Child;
+
+with Report;
+use Report;
+package body C392014_2 is
+
+    procedure P (X : access T) is
+    begin
+	C392014_0.Result := C392014_0.Result + X.D + X.C2;
+    end P;
+
+    function Create (X : Integer) return T'Class is
+	Y : T (D => X mod Ident_Int (20));
+    begin
+	Y.C2 := X / Ident_Int (600);
+	return T'Class (Y);
+    end Create;
+
+end C392014_2;
+
+with Report;
+use Report;
+with C392014_0;
+with C392014_1.Child;
+with C392014_2;
+procedure C392014 is
+
+    subtype S0 is C392014_0.T'Class;
+    subtype S1 is C392014_1.T'Class;
+
+    X0 : aliased C392014_0.T'Class := C392014_0.Create (Ident_Int (5218));
+    X1 : aliased C392014_1.T'Class := C392014_1.Create (Ident_Int (8253));
+
+    Y0 : aliased S0 := C392014_0.Create (Ident_Int (2693));
+    Y1 : aliased S1 := C392014_1.Create (Ident_Int (5622));
+
+    procedure TC_Check (Subtest : String; Expected : Integer) is
+    begin
+	if C392014_0.Result = Expected then
+	    Comment ("Subtest " & Subtest & " Passed");
+	else
+	    Failed ("Subtest " & Subtest & " Failed");
+	end if;
+	C392014_0.Result := Ident_Int (0);
+    end TC_Check;
+
+begin
+    Test ("C392014",
+	  "Check that objects designated by X'Access " &
+	     "(where X is of a class-wide type) and New T'Class'(...) " &
+	     "are dynamically tagged and can be used in dispatching " &
+	     "calls");
+
+    C392014_0.P (X0'Access);
+    TC_Check ("X0'Access", Ident_Int (29));
+    C392014_0.P (new C392014_0.T'Class'(C392014_0.Create (Ident_Int (12850))));
+    TC_Check ("New C392014_0.T'Class", Ident_Int (27));
+    C392014_1.P (X1'Access);
+    TC_Check ("X1'Access", Ident_Int (212));
+    C392014_1.P (new C392014_1.T'Class'(C392014_1.Create (Ident_Int (2031))));
+    TC_Check ("New C392014_1.T'Class", Ident_Int (65));
+    C392014_0.P (Y0'Access);
+    TC_Check ("Y0'Access", Ident_Int (18));
+    C392014_0.P (new S0'(C392014_0.Create (Ident_Int (6893))));
+    TC_Check ("New S0", Ident_Int (20));
+    C392014_1.P (Y1'Access);
+    TC_Check ("Y1'Access", Ident_Int (18));
+    C392014_1.P (new S1'(C392014_1.Create (Ident_Int (1861))));
+    TC_Check ("New S1", Ident_Int (56));
+
+    Result;
+end C392014;

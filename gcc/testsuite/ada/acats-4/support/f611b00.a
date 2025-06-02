@@ -1,0 +1,130 @@
+-- F611B00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation declares a set of objects and types used to determine
+--      if various precondition and postcondition expressions are evaluated
+--      as expected.
+--
+-- CHANGE HISTORY:
+--      21 Mar 16   JAC     Initial pre-release version.
+--      24 Mar 16   RLB     Added foundation description.
+--
+--!
+with Ada.Tags;
+package F611B00 is
+
+   TC_Annotated_Event_Record_Count1_Called : Boolean;
+   TC_Annotated_Event_Record_Count2_Called : Boolean;
+   TC_Event_Record_Count1_Called           : Boolean;
+   TC_Event_Record_Count2_Called           : Boolean;
+   TC_Event_Record_Count1_Tag              : Ada.Tags.Tag;
+   TC_Event_Record_Count2_Tag              : Ada.Tags.Tag;
+
+   procedure TC_Clear;
+
+   procedure TC_Log_Annotated_Event_Record_Count1_Called (Tag : Ada.Tags.Tag);
+
+   procedure TC_Log_Annotated_Event_Record_Count2_Called (Tag : Ada.Tags.Tag);
+
+   procedure TC_Log_Event_Record_Count1_Called (Tag : Ada.Tags.Tag);
+
+   procedure TC_Log_Event_Record_Count2_Called (Tag : Ada.Tags.Tag);
+
+   procedure TC_Output;
+
+end F611B00;
+
+with Report;
+
+package body F611B00 is
+
+   procedure TC_Clear is
+   begin
+     TC_Annotated_Event_Record_Count1_Called := False;
+     TC_Annotated_Event_Record_Count2_Called := False;
+     TC_Event_Record_Count1_Called           := False;
+     TC_Event_Record_Count2_Called           := False;
+     TC_Event_Record_Count1_Tag              := Ada.Tags.No_Tag;
+     TC_Event_Record_Count2_Tag              := Ada.Tags.No_Tag;
+   end TC_Clear;
+
+   procedure TC_Log_Annotated_Event_Record_Count1_Called
+             (Tag : Ada.Tags.Tag) is
+   begin
+      TC_Annotated_Event_Record_Count1_Called := True;
+      TC_Event_Record_Count1_Tag              := Tag;
+   end TC_Log_Annotated_Event_Record_Count1_Called;
+
+   procedure TC_Log_Annotated_Event_Record_Count2_Called
+             (Tag : Ada.Tags.Tag) is
+   begin
+      TC_Annotated_Event_Record_Count2_Called := True;
+      TC_Event_Record_Count2_Tag              := Tag;
+   end TC_Log_Annotated_Event_Record_Count2_Called;
+
+   procedure TC_Log_Event_Record_Count1_Called (Tag : Ada.Tags.Tag) is
+   begin
+      TC_Event_Record_Count1_Called := True;
+      TC_Event_Record_Count1_Tag    := Tag;
+   end TC_Log_Event_Record_Count1_Called;
+
+   procedure TC_Log_Event_Record_Count2_Called (Tag : Ada.Tags.Tag) is
+   begin
+      TC_Event_Record_Count2_Called := True;
+      TC_Event_Record_Count2_Tag    := Tag;
+   end TC_Log_Event_Record_Count2_Called;
+
+   procedure TC_Output is
+   begin
+      Report.Comment
+       ("Annotated_Event_Record_Count1_Called is " &
+        Boolean'Image (TC_Annotated_Event_Record_Count1_Called));
+
+      Report.Comment
+       ("Annotated_Event_Record_Count2_Called is " &
+        Boolean'Image (TC_Annotated_Event_Record_Count2_Called));
+
+      Report.Comment
+       ("Event_Record_Count1_Called is " &
+        Boolean'Image (TC_Event_Record_Count1_Called));
+
+      Report.Comment
+       ("Event_Record_Count2_Called is " &
+        Boolean'Image (TC_Event_Record_Count2_Called));
+
+      Report.Comment ("");
+   end TC_Output;
+
+end F611B00;

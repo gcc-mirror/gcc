@@ -257,43 +257,6 @@ cbl_ffi_arg_t( cbl_ffi_crv_t crv,
  } while(0)
 
 
-cbl_field_t *
-symbol_valid_udf_args( size_t function, std::list<cbl_refer_t> args ) {
-  auto L = cbl_label_of(symbol_at(function));
-  if( ! L->returning ) {
-    dbgmsg("logic error: %s does not define RETURNING", L->name);
-    return NULL;
-  }
-  auto e = std::find_if( symbol_at(function), symbols_end(),
-                         []( auto symbol ) {
-                           if( symbol.type == SymDataSection ) {
-                             auto section(symbol.elem.section);
-                             return section.type == linkage_sect_e;
-                           }
-                           return false;
-                         } );
-  for( auto arg : args ) {
-    size_t iarg(1);
-    e++; // skip over linkage_sect_e, which appears after the function
-    if( e->type != SymField ) {
-      ERROR_FIELD(arg.field,
-                  "FUNCTION %s has no defined parameter matching arg %zu, '%s'",
-                  L->name, iarg, arg.field->name );
-      return NULL;
-    }
-
-    auto tgt = cbl_field_of(e);
-
-    if( ! valid_move(tgt, arg.field) ) {
-      ERROR_FIELD(tgt, "FUNCTION %s arg %zu, '%s' cannot be passed to %s, type %s",
-                L->name, iarg, arg.field->pretty_name(),
-                tgt->pretty_name(), 3 + cbl_field_type_str(tgt->type) );
-      return NULL;
-    }
-  }
-  return cbl_field_of(symbol_at(L->returning));
-}
-
 static const struct cbl_occurs_t nonarray = cbl_occurs_t();
 
 #if 0
@@ -1847,6 +1810,15 @@ symbols_update( size_t first, bool parsed_ok ) {
     if( field->level == 0 && field->is_key_name() ) continue;
     if( is_literal(field) && field->var_decl_node != NULL ) continue;
 
+    // If the field is a constant for a figconstant, just use it. 
+    if( field->level != 0 && field->has_attr(constant_e) ) {
+      auto fig = cbl_figconst_field_of(field->data.initial);
+      if( fig ) {
+	field->var_decl_node = fig->var_decl_node;
+	continue;
+      }
+    }
+    
     if( field->is_typedef() ) {
       auto isym = end_of_group( symbol_index(p) );
       p = symbol_at(--isym);
@@ -3161,7 +3133,7 @@ using std::deque;
 static deque<cbl_field_t*> stack;
 
 static cbl_field_t *
-new_temporary_impl( enum cbl_field_type_t type )
+new_temporary_impl( enum cbl_field_type_t type, const cbl_name_t name = nullptr )
 {
   extern int yylineno;
   static int nstack, nliteral;
@@ -3237,6 +3209,8 @@ new_temporary_impl( enum cbl_field_type_t type )
   } else {
     snprintf(f->name, sizeof(f->name), "_stack%d",++nstack);
   }
+
+  f->data.initial = name; // capture e.g. the function name 
 
   return f;
 }
@@ -3360,11 +3334,11 @@ temporaries_t::reuse( cbl_field_type_t type ) {
 }
 
 cbl_field_t *
-temporaries_t::acquire( cbl_field_type_t type ) {
+temporaries_t::acquire( cbl_field_type_t type, const cbl_name_t name ) {
   cbl_field_t *field = reuse(type);
 
   if( !field ) {
-    field = new_temporary_impl(type);
+    field = new_temporary_impl(type, name);
     add(field);
   }
   return parser_symbol_add2(field); // notify of reuse
@@ -3397,8 +3371,8 @@ symbol_temporaries_free() {
 }
 
 cbl_field_t *
-new_alphanumeric( size_t capacity ) {
-  cbl_field_t * field = new_temporary_impl(FldAlphanumeric);
+new_alphanumeric( size_t capacity, const cbl_name_t name = nullptr ) {
+  cbl_field_t * field = new_temporary_impl(FldAlphanumeric, name);
   field->data.capacity = capacity;
   temporaries.add(field);
   return parser_symbol_add2(field);
@@ -3408,15 +3382,14 @@ cbl_field_t *
 new_temporary( enum cbl_field_type_t type, const char *initial ) {
   if( ! initial ) {
     assert( ! is_literal(type) ); // Literal type must have literal value.
-    return temporaries.acquire(type);
+    return temporaries.acquire(type, initial);
   }
   if( is_literal(type) ) {
     auto field = temporaries.literal(initial,
                                      type == FldLiteralA? quoted_e : none_e);
     return field;
   }
-  cbl_field_t *field = new_temporary_impl(type);
-  field->data.capacity = strlen(field->data.initial = initial);
+  cbl_field_t *field = new_temporary_impl(type, initial);
   temporaries.add(field);
   parser_symbol_add(field);
 

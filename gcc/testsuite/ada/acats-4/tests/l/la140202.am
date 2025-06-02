@@ -1,0 +1,144 @@
+-- LA140202.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a library level instance depends on
+--      a library level generic function whose body is changed.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a generic function, an instance of a generic
+--      function that withs the first function and a main procedure that 
+--      withs the instance.  Then a new version of the first generic function
+--      is compiled (in a separate file, simulating editing and modification
+--      of the unit).  Unless automatic recompilation is supported, this
+--      test should fail to link. Otherwise, the test should recompile and
+--      link the correct version of the withed function and report "PASSED"
+--      at execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140200 (and include the results in the
+--            program library).
+--         2) Compile the file LA140201 (and include the results in the
+--            program library).
+--         3) Compile the file LA140202 (and include the results in the
+--            program library).
+--         4) Compile the file LA140203 (and include the results in the
+--            program library).
+--         5) Attempt to build an executable image.
+--         6) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140200.A
+--         LA140201.A
+--      -> LA140202.AM
+--         LA140203.A
+--
+-- PASS/FAIL CRITERIA:    
+--      The test passes if a link time error message reports that 
+--      LA140202 is missing or obsolete, or that LA14020_3 or LA14020_4
+--      is missing or obsolete (optional) and no executable image
+--      results.  The test passes if an executable image is produced
+--      and reports "PASSED" (in the case where the implementation
+--      supports automatic recompilation).            
+--
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008Q baseline version
+--     23 JUN 95   SAIC        Initial version
+--     29 FEB 96   SAIC        First revision after review
+--     12 DEC 96   SAIC        Reorganized to permit automatic recompilation.
+--                             Reworded objective. Moved instance to
+--                             library-level and redesigned to use generic
+--                             formal function. Fixed arithmetic errors.
+--
+--!
+
+with LA14020_0.LA14020_1;
+with LA14020_2;
+pragma Elaborate (LA14020_2);
+function LA14020_3 is new LA14020_2 (LA14020_0.LA14020_1.Bigger_Basket);
+
+    --==================================================================--
+
+with LA14020_0.LA14020_1;
+generic
+     type Market_Basket is new LA14020_0.LA14020_1.Bigger_Basket with private;
+     with function "+" (L,R: Market_Basket) return Market_Basket is <>;
+function LA14020_4 (B1, B2 : Market_Basket) return Market_Basket;
+
+    --==================================================================--
+
+with LA14020_3;
+function LA14020_4 (B1, B2 : Market_Basket) return Market_Basket is
+   Result : Market_Basket;
+begin
+   Result := B1 + B2;
+   Result.Total := integer (Result.App) + integer (Result.Ora);
+   return Result;
+end LA14020_4;
+
+    --==================================================================--
+
+with Report;
+
+with LA14020_0.LA14020_1;
+with LA14020_3;
+with LA14020_4;
+
+procedure LA140202 is
+   package Child renames LA14020_0.LA14020_1;
+
+   Basket_1 : Child.Bigger_Basket := (App => 5, Ora => 20, Total => 0);
+   Basket_2 : Child.Bigger_Basket := (App => 7, Ora =>  3, Total => 0);
+
+   function Total is new LA14020_4 (Child.Bigger_Basket, LA14020_3);
+begin
+     Report.Test ("LA14020", "Check that a compilation unit may "  &
+                             "not depend semantically on two "     &
+                             "different versions of the same "     &
+                             "compilation unit. Check the case "   &
+                             "where a library level instance "     &
+                             "depends on a library level generic " &
+                             "function whose body is changed");
+
+     Basket_1 := Total (Basket_1, Basket_2);
+
+     if    Basket_1.App    = 10 or
+           Basket_1.Ora    =  6 or
+           Basket_1.Total  = 16
+     then
+        Report.Failed ("Revised generic function not used");
+     elsif Basket_1.App   /= 12 or
+           Basket_1.Ora   /= 23 or
+           Basket_1.Total /= 35 then
+        Report.Failed ("Incorrect result returned");
+     end if;
+
+     Report.Result;
+end LA140202;

@@ -1,0 +1,393 @@
+-- CA11D02.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that an exception declared in a package can be raised by a 
+--      child of a child package.  Check that it can be renamed in the 
+--      child of the child package and raised with the correct effect.
+--
+-- TEST DESCRIPTION:
+--      Declare a package which defines complex number abstraction with
+--      user-defined exceptions (foundation code).
+--
+--      Add a public child package to the above package. Declare two 
+--      subprograms for the parent type.  
+--
+--      Add a public grandchild package to the foundation package.  Declare
+--      subprograms to raise exceptions.
+--
+--      In the main program, "with" the grandchild package, then check that
+--      the exceptions are raised and handled as expected.  Ensure that
+--      exceptions are:
+--         1) raised in the public grandchild package and handled/reraised to
+--            be handled by the main program.
+--         2) raised and handled locally by the "others" handler in the 
+--            public grandchild package.
+--         3) raised in the public grandchild and propagated to the main 
+--            program.
+--
+-- TEST FILES:
+--      This test depends on the following foundation code:
+--
+--         FA11D00.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+-- Child package of FA11D00.
+
+package FA11D00.CA11D02_0 is     -- Basic_Complex
+
+   function "+" (Left, Right : Complex_Type) 
+     return Complex_Type;                   -- Add two complex numbers.
+
+   function "*" (Left, Right : Complex_Type) 
+     return Complex_Type;                   -- Multiply two complex numbers.
+
+end FA11D00.CA11D02_0;     -- Basic_Complex
+
+--=======================================================================--
+
+package body FA11D00.CA11D02_0 is     -- Basic_Complex
+
+   function "+" (Left, Right : Complex_Type) return Complex_Type is
+   begin
+      return ( (Left.Real + Right.Real, Left.Imag + Right.Imag) );
+   end "+";
+   --------------------------------------------------------------
+   function "*" (Left, Right : Complex_Type) return Complex_Type is
+   begin
+      return ( Real => (Left.Real * Right.Real),
+               Imag => (Left.Imag * Right.Imag) );
+   end "*";
+
+end FA11D00.CA11D02_0;     -- Basic_Complex
+
+--=======================================================================--
+
+-- Child package of FA11D00.CA11D02_0.
+-- Grandchild package of FA11D00.
+
+package FA11D00.CA11D02_0.CA11D02_1 is     -- Array_Complex
+
+   Inverse_Error : exception renames Divide_Error;   -- Reference to exception 
+                                                     -- in grandparent package.
+   Array_Size    : constant := 2;
+
+   type Complex_Array_Type is                        
+      array (1 .. Array_Size) of Complex_Type;       -- Reference to type
+                                                     -- in parent package.
+
+   function Multiply (Left  : Complex_Array_Type;    -- Multiply two complex
+                      Right : Complex_Array_Type)    -- arrays.
+     return Complex_Array_Type;
+
+   function Add (Left, Right : Complex_Array_Type)   -- Add two complex
+     return Complex_Array_Type;                      -- arrays.
+
+   procedure Inverse (Right : in     Complex_Array_Type;  -- Invert a complex
+                      Left  : in out Complex_Array_Type); -- array.
+ 
+end FA11D00.CA11D02_0.CA11D02_1;     -- Array_Complex
+
+--=======================================================================--
+
+with Report;
+
+
+package body FA11D00.CA11D02_0.CA11D02_1 is     -- Array_Complex
+
+   function Multiply (Left  : Complex_Array_Type;
+                      Right : Complex_Array_Type)
+     return Complex_Array_Type is
+
+   -- This procedure will raise an exception depending on the input
+   -- parameter.  The exception will be handled locally by the
+   -- "others" handler.
+
+      Result : Complex_Array_Type := (others => Zero);
+
+      subtype Vector_Size is Positive range Left'Range;
+
+   begin  
+      if Left = Result or else Right = Result then -- Do not multiply zero.
+         raise Multiply_Error;                     -- Refence to exception in
+                                                   -- grandparent package.
+         Report.Failed ("Program control not transferred by raise");
+      else
+         for I in Vector_Size loop
+           Result(I) := ( Left(I) * Right(I) );    -- Basic_Complex."*".
+         end loop;
+      end if;
+      return (Result);
+   
+   exception
+      when others =>
+         Report.Comment ("Exception is handled by others in Multiplication");
+         TC_Handled_In_Grandchild_Pkg_Func := true;
+         return (Zero, Zero);
+      
+   end Multiply;
+   --------------------------------------------------------------
+   function Add (Left, Right : Complex_Array_Type)
+     return Complex_Array_Type is
+
+   -- This function will raise an exception depending on the input
+   -- parameter.  The exception will be propagated and handled
+   -- by the caller.
+
+      Result : Complex_Array_Type := (others => Zero);
+
+      subtype Vector_Size is Positive range Left'Range;
+
+   begin  
+      if Left = Result or Right = Result then     -- Do not add zero.
+         raise Add_Error;                         -- Refence to exception in
+                                                  -- grandparent package.
+         Report.Failed ("Program control not transferred by raise");
+      else
+         for I in Vector_Size loop                   
+           Result(I) := ( Left(I) + Right(I) );   -- Basic_Complex."+".
+         end loop;
+      end if;
+      return (Result);
+ 
+   end Add;
+   --------------------------------------------------------------
+   procedure Inverse (Right : in     Complex_Array_Type;
+                      Left  : in out Complex_Array_Type) is
+
+   -- This function will raise an exception depending on the input
+   -- parameter.  The exception will be handled/reraised to be
+   -- handled by the caller.
+
+      Result : Complex_Array_Type := (others => Zero);
+
+      Array_With_Zero : boolean := false;
+
+   begin
+      for I in 1 .. Right'Length loop
+        if Right(I) = Zero then      -- Check for zero.
+          Array_With_Zero := true;
+        end if;
+      end loop;
+
+      If Array_With_Zero then
+         raise Inverse_Error;      -- Do not inverse zero.
+         Report.Failed ("Program control not transferred by raise");
+      else
+         for I in 1 .. Array_Size loop
+           Left(I).Real := - Right(I).Real;
+           Left(I).Imag := - Right(I).Imag;
+        end loop;
+      end if;
+
+   exception
+      when Inverse_Error  => 
+         TC_Handled_In_Grandchild_Pkg_Proc := true;
+         Left := Result;
+         raise;     -- Reraise the Inverse_Error exception in the subtest.
+         Report.Failed ("Exception not reraised in handler");
+
+      when others => 
+         Report.Failed ("Unexpected exception in procedure Inverse");
+   end Inverse;
+
+end FA11D00.CA11D02_0.CA11D02_1;     -- Array_Complex
+
+--=======================================================================--
+
+with FA11D00.CA11D02_0.CA11D02_1;    -- Array_Complex,
+                                     -- implicitly with Basic_Complex.
+with Report;
+
+procedure CA11D02 is
+
+   package Complex_Pkg renames FA11D00;
+   package Array_Complex_Pkg renames FA11D00.CA11D02_0.CA11D02_1;
+
+   use Complex_Pkg;                            
+   use Array_Complex_Pkg;                      
+
+begin
+
+   Report.Test ("CA11D02", "Check that an exception declared in a package " &
+                "can be raised by a child of a child package");
+
+   Multiply_Complex_Subtest:
+   declare
+      Operand_1  : Complex_Array_Type 
+                 := ( Complex (Int_Type (Report.Ident_Int (3)), 
+                      Int_Type (Report.Ident_Int (5))),
+                      Complex (Int_Type (Report.Ident_Int (2)), 
+                      Int_Type (Report.Ident_Int (8))) );
+      Operand_2  : Complex_Array_Type 
+                 := ( Complex (Int_Type (Report.Ident_Int (1)), 
+                      Int_Type (Report.Ident_Int (2))),
+                      Complex (Int_Type (Report.Ident_Int (3)), 
+                      Int_Type (Report.Ident_Int (6))) );
+      Operand_3  : Complex_Array_Type := ( Zero, Zero);
+      Mul_Result : Complex_Array_Type 
+                 := ( Complex (Int_Type (Report.Ident_Int (3)), 
+                      Int_Type (Report.Ident_Int (10))),
+                      Complex (Int_Type (Report.Ident_Int (6)), 
+                      Int_Type (Report.Ident_Int (48))) );
+      Complex_No : Complex_Array_Type := (others => Zero);
+
+   begin
+      If (Multiply (Operand_1, Operand_2) /= Mul_Result) then
+         Report.Failed ("Incorrect results from multiplication");
+      end if;
+
+      -- Error is raised and exception will be handled in grandchild package.
+
+      Complex_No := Multiply (Operand_1, Operand_3);
+
+      if Complex_No /= (Zero, Zero) then
+         Report.Failed ("Exception was not raised in multiplication");
+      end if;
+
+   exception
+      when Multiply_Error     =>
+         Report.Failed ("Exception raised in multiplication and " &
+                        "propagated to caller");
+         TC_Handled_In_Grandchild_Pkg_Func := false;  
+              -- Improper exception handling in caller.
+
+      when others => 
+         Report.Failed ("Unexpected exception in multiplication");
+         TC_Handled_In_Grandchild_Pkg_Func := false;  
+              -- Improper exception handling in caller.
+
+   end Multiply_Complex_Subtest;
+
+
+   Add_Complex_Subtest:
+   declare
+      Operand_1  : Complex_Array_Type 
+                 := ( Complex (Int_Type (Report.Ident_Int (2)), 
+                      Int_Type (Report.Ident_Int (7))),
+                      Complex (Int_Type (Report.Ident_Int (5)), 
+                      Int_Type (Report.Ident_Int (8))) );
+      Operand_2  : Complex_Array_Type 
+                 := ( Complex (Int_Type (Report.Ident_Int (4)), 
+                      Int_Type (Report.Ident_Int (1))),
+                      Complex (Int_Type (Report.Ident_Int (2)), 
+                      Int_Type (Report.Ident_Int (3))) );
+      Operand_3  : Complex_Array_Type := ( Zero, Zero);
+      Add_Result : Complex_Array_Type 
+                 := ( Complex (Int_Type (Report.Ident_Int (6)), 
+                      Int_Type (Report.Ident_Int (8))),
+                      Complex (Int_Type (Report.Ident_Int (7)), 
+                      Int_Type (Report.Ident_Int (11))) );
+      Complex_No : Complex_Array_Type := (others => Zero);
+
+   begin
+      Complex_No := Add (Operand_1, Operand_2);
+
+      If (Complex_No /= Add_Result) then
+         Report.Failed ("Incorrect results from addition");
+      end if;
+
+      -- Error is raised in grandchild package and exception 
+      -- will be propagated to caller.
+
+      Complex_No := Add (Operand_1, Operand_3);
+
+      if Complex_No = Add_Result then
+         Report.Failed ("Exception was not raised in addition");
+      end if;
+
+   exception
+      when Add_Error => 
+         TC_Propagated_To_Caller := true;  -- Exception is propagated.
+
+      when others => 
+         Report.Failed ("Unexpected exception in addition subtest");
+         TC_Propagated_To_Caller := false;  -- Improper exception handling
+                                            -- in caller.
+   end Add_Complex_Subtest;
+
+   Inverse_Complex_Subtest:
+   declare
+      Operand_1  : Complex_Array_Type 
+                 := ( Complex (Int_Type (Report.Ident_Int (1)), 
+                      Int_Type (Report.Ident_Int (5))),
+                      Complex (Int_Type (Report.Ident_Int (3)), 
+                      Int_Type (Report.Ident_Int (11))) );
+      Operand_3  : Complex_Array_Type 
+                 := ( Zero, Complex (Int_Type (Report.Ident_Int (3)), 
+                      Int_Type (Report.Ident_Int (6))) );
+      Inv_Result : Complex_Array_Type 
+                 := ( Complex (Int_Type (Report.Ident_Int (-1)), 
+                      Int_Type (Report.Ident_Int (-5))),
+                      Complex (Int_Type (Report.Ident_Int (-3)), 
+                      Int_Type (Report.Ident_Int (-11))) );
+      Complex_No : Complex_Array_Type := (others => Zero);
+
+   begin
+      Inverse (Operand_1, Complex_No);
+
+      if (Complex_No /= Inv_Result) then
+         Report.Failed ("Incorrect results from inverse");
+      end if;
+
+      -- Error is raised in grandchild package and exception 
+      -- will be handled/reraised to caller.
+
+      Inverse (Operand_3, Complex_No);
+
+      Report.Failed ("Exception was not handled in inverse");
+
+   exception
+      when Inverse_Error => 
+         if not TC_Handled_In_Grandchild_Pkg_Proc then
+            Report.Failed ("Exception was not raised in inverse");
+         else
+            TC_Handled_In_Caller := true;  -- Exception is reraised from
+                                           -- child package.
+         end if;
+
+      when others => 
+         Report.Failed ("Unexpected exception in inverse");
+         TC_Handled_In_Caller := false; 
+                -- Improper exception handling in caller.
+
+   end Inverse_Complex_Subtest;
+
+   if not (TC_Handled_In_Caller               and   -- Check to see that all 
+           TC_Handled_In_Grandchild_Pkg_Proc  and   -- exceptions were handled
+           TC_Handled_In_Grandchild_Pkg_Func  and   -- in proper location.
+           TC_Propagated_To_Caller)        
+   then
+      Report.Failed ("Exceptions handled in incorrect locations");
+   end if;
+
+   Report.Result;
+
+end CA11D02;

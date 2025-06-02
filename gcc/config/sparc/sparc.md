@@ -3014,17 +3014,18 @@
   rtx shift_16 = GEN_INT (16);
   int op1_subbyte = 0;
 
-  if (GET_CODE (operand1) == SUBREG)
+  if (GET_CODE (operands[1]) == SUBREG)
     {
-      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte = SUBREG_BYTE (operands[1]);
       op1_subbyte /= GET_MODE_SIZE (SImode);
       op1_subbyte *= GET_MODE_SIZE (SImode);
-      operand1 = XEXP (operand1, 0);
+      operands[1] = XEXP (operands[1], 0);
     }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subbyte),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operands[1],
+						op1_subbyte),
 			  shift_16));
-  emit_insn (gen_lshrsi3 (operand0, temp, shift_16));
+  emit_insn (gen_lshrsi3 (operands[0], temp, shift_16));
   DONE;
 })
 
@@ -3097,17 +3098,18 @@
   rtx shift_48 = GEN_INT (48);
   int op1_subbyte = 0;
 
-  if (GET_CODE (operand1) == SUBREG)
+  if (GET_CODE (operands[1]) == SUBREG)
     {
-      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte = SUBREG_BYTE (operands[1]);
       op1_subbyte /= GET_MODE_SIZE (DImode);
       op1_subbyte *= GET_MODE_SIZE (DImode);
-      operand1 = XEXP (operand1, 0);
+      operands[1] = XEXP (operands[1], 0);
     }
 
-  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subbyte),
+  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operands[1],
+						op1_subbyte),
 			  shift_48));
-  emit_insn (gen_lshrdi3 (operand0, temp, shift_48));
+  emit_insn (gen_lshrdi3 (operands[0], temp, shift_48));
   DONE;
 })
 
@@ -3283,17 +3285,18 @@
   rtx shift_16 = GEN_INT (16);
   int op1_subbyte = 0;
 
-  if (GET_CODE (operand1) == SUBREG)
+  if (GET_CODE (operands[1]) == SUBREG)
     {
-      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte = SUBREG_BYTE (operands[1]);
       op1_subbyte /= GET_MODE_SIZE (SImode);
       op1_subbyte *= GET_MODE_SIZE (SImode);
-      operand1 = XEXP (operand1, 0);
+      operands[1] = XEXP (operands[1], 0);
     }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subbyte),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operands[1],
+						op1_subbyte),
 			  shift_16));
-  emit_insn (gen_ashrsi3 (operand0, temp, shift_16));
+  emit_insn (gen_ashrsi3 (operands[0], temp, shift_16));
   DONE;
 })
 
@@ -3315,25 +3318,26 @@
   int op1_subbyte = 0;
   int op0_subbyte = 0;
 
-  if (GET_CODE (operand1) == SUBREG)
+  if (GET_CODE (operands[1]) == SUBREG)
     {
-      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte = SUBREG_BYTE (operands[1]);
       op1_subbyte /= GET_MODE_SIZE (SImode);
       op1_subbyte *= GET_MODE_SIZE (SImode);
-      operand1 = XEXP (operand1, 0);
+      operands[1] = XEXP (operands[1], 0);
     }
-  if (GET_CODE (operand0) == SUBREG)
+  if (GET_CODE (operands[0]) == SUBREG)
     {
-      op0_subbyte = SUBREG_BYTE (operand0);
+      op0_subbyte = SUBREG_BYTE (operands[0]);
       op0_subbyte /= GET_MODE_SIZE (SImode);
       op0_subbyte *= GET_MODE_SIZE (SImode);
-      operand0 = XEXP (operand0, 0);
+      operands[0] = XEXP (operands[0], 0);
     }
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subbyte),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operands[1],
+						op1_subbyte),
 			  shift_24));
-  if (GET_MODE (operand0) != SImode)
-    operand0 = gen_rtx_SUBREG (SImode, operand0, op0_subbyte);
-  emit_insn (gen_ashrsi3 (operand0, temp, shift_24));
+  if (GET_MODE (operands[0]) != SImode)
+    operands[0] = gen_rtx_SUBREG (SImode, operands[0], op0_subbyte);
+  emit_insn (gen_ashrsi3 (operands[0], temp, shift_24));
   DONE;
 })
 
@@ -3354,17 +3358,18 @@
   rtx shift_24 = GEN_INT (24);
   int op1_subbyte = 0;
 
-  if (GET_CODE (operand1) == SUBREG)
+  if (GET_CODE (operands[1]) == SUBREG)
     {
-      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte = SUBREG_BYTE (operands[1]);
       op1_subbyte /= GET_MODE_SIZE (SImode);
       op1_subbyte *= GET_MODE_SIZE (SImode);
-      operand1 = XEXP (operand1, 0);
+      operands[1] = XEXP (operands[1], 0);
     }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subbyte),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operands[1],
+						op1_subbyte),
 			  shift_24));
-  emit_insn (gen_ashrsi3 (operand0, temp, shift_24));
+  emit_insn (gen_ashrsi3 (operands[0], temp, shift_24));
   DONE;
 })
 
@@ -3385,17 +3390,18 @@
   rtx shift_56 = GEN_INT (56);
   int op1_subbyte = 0;
 
-  if (GET_CODE (operand1) == SUBREG)
+  if (GET_CODE (operands[1]) == SUBREG)
     {
-      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte = SUBREG_BYTE (operands[1]);
       op1_subbyte /= GET_MODE_SIZE (DImode);
       op1_subbyte *= GET_MODE_SIZE (DImode);
-      operand1 = XEXP (operand1, 0);
+      operands[1] = XEXP (operands[1], 0);
     }
 
-  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subbyte),
+  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operands[1],
+						op1_subbyte),
 			  shift_56));
-  emit_insn (gen_ashrdi3 (operand0, temp, shift_56));
+  emit_insn (gen_ashrdi3 (operands[0], temp, shift_56));
   DONE;
 })
 
@@ -3416,17 +3422,18 @@
   rtx shift_48 = GEN_INT (48);
   int op1_subbyte = 0;
 
-  if (GET_CODE (operand1) == SUBREG)
+  if (GET_CODE (operands[1]) == SUBREG)
     {
-      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte = SUBREG_BYTE (operands[1]);
       op1_subbyte /= GET_MODE_SIZE (DImode);
       op1_subbyte *= GET_MODE_SIZE (DImode);
-      operand1 = XEXP (operand1, 0);
+      operands[1] = XEXP (operands[1], 0);
     }
 
-  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subbyte),
+  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operands[1],
+						op1_subbyte),
 			  shift_48));
-  emit_insn (gen_ashrdi3 (operand0, temp, shift_48));
+  emit_insn (gen_ashrdi3 (operands[0], temp, shift_48));
   DONE;
 })
 

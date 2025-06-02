@@ -1,0 +1,354 @@
+-- C330001.A 
+-- 
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+-- 
+-- OBJECTIVE: 
+--      Check that a variable object of an indefinite type is properly 
+--      initialized/constrained by an initial value assignment that is 
+--      a) an aggregate, b) a function, or c) an object.  Check that objects 
+--      of the above types do not need explicit constraints if they have 
+--      initial values.  
+--                    
+-- TEST DESCRIPTION: 
+--      An indefinite subtype is either: 
+--         a) An unconstrained array subtype. 
+--         b) A subtype with unknown discriminants.
+--         c) A subtype with unconstrained discriminants without defaults. 
+-- 
+--      Declare several indefinite types in a parent package specification.  
+--      In the private part, complete one type with a discriminant without 
+--      default (indefinite) and the other with a default discriminant 
+--      (definite).  Declare objects of both indefinite and definite subtypes 
+--      in children (private and public) with initialization expressions.  The 
+--      test verifies all values of the objects.  It also verifies that
+--      Constraint_Error is raised if an attempt is made to change the 
+--      discriminants of the objects of the indefinite subtypes.        
+-- 
+-- 
+-- CHANGE HISTORY: 
+--      15 Jan 95   SAIC    Initial version for ACVC 2.1
+--      25 Jul 96   SAIC    Modified test description. Deleted use C330001_0.
+--      20 Nov 98   RLB     Added Elaborate pragmas to avoid problems
+--                          with an unconventional, but legal, elaboration
+--                          order.
+--!
+
+package C330001_0 is  
+
+   subtype Sub_Type is Integer range 1 .. 20;
+
+   type Tag_W_Disc (D : Sub_Type) is tagged record
+       C1 :  String (1 .. D);
+   end record;
+
+   -- Indefinite type declarations.
+
+   type FullViewDefinite_Unknown_Disc (<>) is private;           
+
+   type Indefinite_No_Disc is array (Positive range <>) of Integer;
+
+   type Indefinite_Tag_W_Disc (D : Sub_Type) is tagged
+     record
+        C1 : Boolean := False;
+     end record;
+
+   type Indefinite_New_W_Disc (ND : Sub_Type) is new 
+     Indefinite_Tag_W_Disc (ND) with record
+        C2 : Integer := 9;
+     end record;
+
+   type Indefinite_W_Inherit_Disc_1 is new Tag_W_Disc with 
+     record     
+        S : Sub_Type := 18;
+     end record;
+                                                    
+   type Indefinite_W_Inherit_Disc_2 is     
+     new Tag_W_Disc with private;                                       
+                                                                           
+   function Indef_Func_1 return FullViewDefinite_Unknown_Disc;
+
+   function Indef_Func_2 (P : Sub_Type) return Indefinite_W_Inherit_Disc_2;
+
+private
+
+   type FullViewDefinite_Unknown_Disc (D : Sub_Type := 2) is
+      record     
+        S : String (1 .. D) := "Hi";
+      end record;
+
+   type Indefinite_W_Inherit_Disc_2 is new Tag_W_Disc with 
+      record     
+        S : Sub_Type;
+      end record;
+
+end C330001_0;
+
+     --==================================================================--
+
+package body C330001_0 is  
+
+   function Indef_Func_1 return FullViewDefinite_Unknown_Disc is
+      Var_1 : FullViewDefinite_Unknown_Disc;      -- No need for explicit 
+                                                  -- constraints, use initial
+   begin                                          -- values.
+      return Var_1;
+   end Indef_Func_1;
+
+   ------------------------------------------------------------------
+   function Indef_Func_2 (P : Sub_Type) return Indefinite_W_Inherit_Disc_2 is
+      Var_2 : Indefinite_W_Inherit_Disc_2 := (D => 5, C1 => "Hello", S => P);
+   begin
+      return Var_2;
+   end Indef_Func_2;
+
+end C330001_0;
+
+     --==================================================================--
+
+with C330001_0;
+pragma Elaborate(C330001_0); -- Insure that the functions can be called.
+private
+package C330001_0.C330001_1 is  
+
+   PrivateChild_Obj    : Tag_W_Disc := (D => 4, C1 => "ACVC");
+
+   PrivateChild_Obj_01 : Indefinite_W_Inherit_Disc_1 
+     := Indefinite_W_Inherit_Disc_1'(PrivateChild_Obj with S => 15);
+
+   -- Since full view of Indefinite_W_Inherit_Disc_2 is indefinite in 
+   -- the parent package, Indefinite_W_Inherit_Disc_2 needs an initialization
+   -- expression.
+
+   PrivateChild_Obj_02 : Indefinite_W_Inherit_Disc_2 := Indef_Func_2 (19);
+
+   -- Since full view of FullViewDefinite_Unknown_Disc is definite in the 
+   -- parent package, no initialization expression needed for 
+   -- PrivateChild_Obj_03.
+
+   PrivateChild_Obj_03 : FullViewDefinite_Unknown_Disc;
+
+   PrivateChild_Obj_04 : Indefinite_No_Disc          := (12, 15);
+
+end C330001_0.C330001_1;
+
+     --==================================================================--
+
+with C330001_0;
+pragma Elaborate(C330001_0); -- Insure that the functions can be called.
+package C330001_0.C330001_2 is  
+
+   PublicChild_Obj_01 : FullViewDefinite_Unknown_Disc := Indef_Func_1;
+
+   PublicChild_Obj_02 : Indefinite_W_Inherit_Disc_2   := Indef_Func_2 (4);
+
+   PublicChild_Obj_03 : Indefinite_No_Disc            := (38, 72, 21, 59);
+
+   PublicChild_Obj_04 : Indefinite_Tag_W_Disc         := (D => 7, C1 => True);
+
+   PublicChild_Obj_05 : Indefinite_Tag_W_Disc         := PublicChild_Obj_04;
+
+   PublicChild_Obj_06 : Indefinite_New_W_Disc (6);
+
+   procedure Assign_Private_Obj_3;
+
+   function Raised_CE_PublicChild_Obj return Boolean;
+
+   function Raised_CE_PrivateChild_Obj return Boolean;
+
+   -- The following functions check the private types defined in the parent
+   -- and the private child package from within the client program.
+
+   function Verify_Public_Obj_1 return Boolean;
+
+   function Verify_Public_Obj_2 return Boolean;
+
+   function Verify_Private_Obj_1 return Boolean;
+
+   function Verify_Private_Obj_2 return Boolean;
+
+   function Verify_Private_Obj_3 return Boolean;
+
+end C330001_0.C330001_2;
+
+     --==================================================================--
+
+with Report;
+with C330001_0.C330001_1;
+package body C330001_0.C330001_2 is  
+
+   procedure Assign_Private_Obj_3 is
+   begin
+      C330001_0.C330001_1.PrivateChild_Obj_03 := (5, "Aloha");
+   end Assign_Private_Obj_3;
+
+   ------------------------------------------------------------------
+   function Raised_CE_PublicChild_Obj return Boolean is
+   begin
+      PublicChild_Obj_03 := (16, 13);       -- C_E, can't change constraints 
+                                            -- of PublicChild_Obj_03.
+
+      Report.Failed ("Constraint_Error not raised - Public child");
+
+      -- Next line prevents dead assignment.
+
+      Report.Comment ("PublicChild_Obj_03'First is" & Integer'Image 
+                      (PublicChild_Obj_03'First) );
+      return False;
+
+   exception                             
+      when Constraint_Error => 
+         return True;                       -- Exception is expected.
+      when others           => 
+         return False;
+   end Raised_CE_PublicChild_Obj;
+
+   ------------------------------------------------------------------
+   function Raised_CE_PrivateChild_Obj return Boolean is
+   begin
+      C330001_0.C330001_1.PrivateChild_Obj_04 := (21, 87, 18);      
+                                            -- C_E, can't change constraints
+                                            -- of PrivateChild_Obj_04.
+
+      Report.Failed ("Constraint_Error not raised - Private child");
+
+      -- Next line prevents dead assignment.
+
+      Report.Comment ("PrivateChild_Obj_04'Last is" & Integer'Image 
+                      (C330001_0.C330001_1.PrivateChild_Obj_04'Last) );
+      return False;
+
+   exception                             
+      when Constraint_Error => 
+         return True;                       -- Exception is expected.
+      when others           => 
+         return False;
+   end Raised_CE_PrivateChild_Obj;
+
+   ------------------------------------------------------------------
+   function Verify_Public_Obj_1 return Boolean is
+   begin
+      return (PublicChild_Obj_01.D = 2 and PublicChild_Obj_01.S = "Hi");
+
+   end Verify_Public_Obj_1;
+
+   ------------------------------------------------------------------
+   function Verify_Public_Obj_2 return Boolean is
+   begin
+      return (PublicChild_Obj_02.D  = 5       and
+              PublicChild_Obj_02.C1 = "Hello" and 
+              PublicChild_Obj_02.S  = 4);
+
+   end Verify_Public_Obj_2;
+
+   ------------------------------------------------------------------
+   function Verify_Private_Obj_1 return Boolean is
+   begin
+      return (C330001_0.C330001_1.PrivateChild_Obj_01.D  = 4      and
+              C330001_0.C330001_1.PrivateChild_Obj_01.C1 = "ACVC" and
+              C330001_0.C330001_1.PrivateChild_Obj_01.S  = 15);
+
+   end Verify_Private_Obj_1;
+
+   ------------------------------------------------------------------
+   function Verify_Private_Obj_2 return Boolean is
+   begin
+      return (C330001_0.C330001_1.PrivateChild_Obj_02.D  = 5       and
+              C330001_0.C330001_1.PrivateChild_Obj_02.C1 = "Hello" and
+              C330001_0.C330001_1.PrivateChild_Obj_02.S  = 19);
+
+   end Verify_Private_Obj_2;
+
+   ------------------------------------------------------------------
+   function Verify_Private_Obj_3 return Boolean is
+   begin
+      return (C330001_0.C330001_1.PrivateChild_Obj_03.D = 5 and
+              C330001_0.C330001_1.PrivateChild_Obj_03.S = "Aloha");
+
+   end Verify_Private_Obj_3;
+
+end C330001_0.C330001_2;
+
+     --==================================================================--
+
+with C330001_0.C330001_2;
+with Report;
+
+use  C330001_0.C330001_2;
+
+procedure C330001 is  
+begin
+   Report.Test ("C330001", "Check that a variable object of an indefinite " &
+                "type is properly initialized/constrained by an initial "   &
+                "value assignment that is a) an aggregate, b) a function, " &
+                "or c) an object.  Check that objects of the above types "  &
+                "do not need explicit constraints if they have initial "    &
+                "values");
+
+   -- Verify values of public child objects.
+
+   if not (Verify_Public_Obj_1 and Verify_Public_Obj_2) then 
+      Report.Failed ("Wrong values for PublicChild_Obj_01 or " &
+                     "PublicChild_Obj_02");
+   end if;
+   
+   if PublicChild_Obj_03'First /= 1 or
+      PublicChild_Obj_03'Last  /= 4 then
+      Report.Failed ("Wrong values for PublicChild_Obj_03");
+   end if;
+
+   if PublicChild_Obj_05.D  /= 7 or 
+      not PublicChild_Obj_05.C1  then
+      Report.Failed ("Wrong values for PublicChild_Obj_05");
+   end if;
+
+   if PublicChild_Obj_06.ND /= 6 or 
+      PublicChild_Obj_06.C2 /= 9 or
+      PublicChild_Obj_06.C1      then
+      Report.Failed ("Wrong values for PublicChild_Obj_06");
+   end if;
+
+   -- Definite object can have its discriminant changed by assignment to
+   -- the entire object.
+
+   Assign_Private_Obj_3;
+
+   -- Verify values of private child objects.
+
+   if not Verify_Private_Obj_1 or not 
+          Verify_Private_Obj_2 or not 
+          Verify_Private_Obj_3 then
+      Report.Failed ("Wrong values for PrivateChild_Obj_01 or " &
+                     "PrivateChild_Obj_02 or PrivateChild_Obj_03");
+   end if;
+
+   -- Attempt to change the discriminants of the objects of the indefinite
+   -- subtypes:  Constraint_Error.
+
+   if not Raised_CE_PublicChild_Obj or not Raised_CE_PrivateChild_Obj then
+      Report.Failed ("Constraint_Error not raised");
+   end if;
+
+   Report.Result;
+
+end C330001;

@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MAP
+#define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -36,6 +37,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print-urlifier.h"
 #include "edit-context.h"
 #include "intl.h"
+#include "xml.h"
+#include "xml-printer.h"
+#include "json.h"
+
+// struct html_generation_options
+
+html_generation_options::html_generation_options ()
+: m_css (true),
+  m_javascript (true)
+{
+}
 
 namespace xml {
 
@@ -46,57 +58,6 @@ namespace xml {
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
 
-struct node
-{
-  virtual ~node () {}
-  virtual void write_as_xml (pretty_printer *pp,
-			     int depth, bool indent) const = 0;
-  void dump (FILE *out) const;
-  void DEBUG_FUNCTION dump () const { dump (stderr); }
-};
-
-struct text : public node
-{
-  text (label_text str)
-  : m_str (std::move (str))
-  {}
-
-  void write_as_xml (pretty_printer *pp,
-		     int depth, bool indent) const final override;
-
-  label_text m_str;
-};
-
-struct node_with_children : public node
-{
-  void add_child (std::unique_ptr<node> node);
-  void add_text (label_text str);
-
-  std::vector<std::unique_ptr<node>> m_children;
-};
-
-struct document : public node_with_children
-{
-  void write_as_xml (pretty_printer *pp,
-		     int depth, bool indent) const final override;
-};
-
-struct element : public node_with_children
-{
-  element (const char *kind, bool preserve_whitespace)
-  : m_kind (kind),
-    m_preserve_whitespace (preserve_whitespace)
-  {}
-
-  void write_as_xml (pretty_printer *pp,
-		     int depth, bool indent) const final override;
-
-  void set_attr (const char *name, label_text value);
-
-  const char *m_kind;
-  bool m_preserve_whitespace;
-  std::map<const char *, label_text> m_attributes;
-};
 
 /* Implementation.  */
 
@@ -146,9 +107,16 @@ node::dump (FILE *out) const
 /* struct text : public node.  */
 
 void
-text::write_as_xml (pretty_printer *pp, int /*depth*/, bool /*indent*/) const
+text::write_as_xml (pretty_printer *pp, int depth, bool indent) const
 {
-  write_escaped_text (pp, m_str.get ());
+  if (indent)
+    {
+      for (int i = 0; i < depth; ++i)
+	pp_string (pp, "  ");
+    }
+  write_escaped_text (pp, m_str.c_str ());
+  if (indent)
+    pp_newline (pp);
 }
 
 /* struct node_with_children : public node.  */
@@ -161,9 +129,15 @@ node_with_children::add_child (std::unique_ptr<node> node)
 }
 
 void
-node_with_children::add_text (label_text str)
+node_with_children::add_text (std::string str)
 {
-  gcc_assert (str.get ());
+  // Consolidate runs of text
+  if (!m_children.empty ())
+    if (text *t = m_children.back ()->dyn_cast_text ())
+      {
+	t->m_str += std::move (str);
+	return;
+      }
   add_child (std::make_unique <text> (std::move (str)));
 }
 
@@ -177,6 +151,8 @@ document::write_as_xml (pretty_printer *pp, int depth, bool indent) const
   pp_string (pp, "<!DOCTYPE html\n"
 	     "     PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
 	     "     \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
+  if (indent)
+    pp_newline (pp);
   for (auto &iter : m_children)
     iter->write_as_xml (pp, depth, indent);
 }
@@ -188,47 +164,138 @@ element::write_as_xml (pretty_printer *pp, int depth, bool indent) const
 {
   if (indent)
     {
-      pp_newline (pp);
       for (int i = 0; i < depth; ++i)
 	pp_string (pp, "  ");
     }
 
-  if (m_preserve_whitespace)
-    indent = false;
-
-  pp_printf (pp, "<%s", m_kind);
-  for (auto &attr : m_attributes)
+  pp_printf (pp, "<%s", m_kind.c_str ());
+  for (auto &key : m_key_insertion_order)
     {
-      pp_printf (pp, " %s=\"", attr.first);
-      write_escaped_text (pp, attr.second.get ());
-      pp_string (pp, "\"");
+      auto iter = m_attributes.find (key);
+      if (iter != m_attributes.end ())
+	{
+	  pp_printf (pp, " %s=\"", key.c_str ());
+	  write_escaped_text (pp, iter->second.c_str ());
+	  pp_string (pp, "\"");
+	}
     }
   if (m_children.empty ())
-    pp_string (pp, " />");
+    pp_string (pp, "/>");
   else
     {
+      const bool indent_children = m_preserve_whitespace ? false : indent;
       pp_string (pp, ">");
+      if (indent_children)
+	pp_newline (pp);
       for (auto &child : m_children)
-	child->write_as_xml (pp, depth + 1, indent);
-      if (indent)
+	child->write_as_xml (pp, depth + 1, indent_children);
+      if (indent_children)
 	{
-	  pp_newline (pp);
 	  for (int i = 0; i < depth; ++i)
 	    pp_string (pp, "  ");
 	}
-      pp_printf (pp, "</%s>", m_kind);
+      pp_printf (pp, "</%s>", m_kind.c_str ());
     }
+
+  if (indent)
+    pp_newline (pp);
 }
 
 void
-element::set_attr (const char *name, label_text value)
+element::set_attr (const char *name, std::string value)
 {
+  auto iter = m_attributes.find (name);
+  if (iter == m_attributes.end ())
+    m_key_insertion_order.push_back (name);
   m_attributes[name] = std::move (value);
+}
+
+// struct raw : public node
+
+void
+raw::write_as_xml (pretty_printer *pp,
+		   int /*depth*/, bool /*indent*/) const
+{
+  pp_string (pp, m_xml_src.c_str ());
 }
 
 #if __GNUC__ >= 10
 #  pragma GCC diagnostic pop
 #endif
+
+// class printer
+
+printer::printer (element &insertion_point)
+{
+  m_open_tags.push_back (&insertion_point);
+}
+
+void
+printer::push_tag (std::string name,
+		   bool preserve_whitespace)
+{
+  push_element
+    (std::make_unique<element> (std::move (name),
+				preserve_whitespace));
+}
+
+void
+printer::push_tag_with_class (std::string name, std::string class_,
+			      bool preserve_whitespace)
+{
+  auto new_element
+    = std::make_unique<element> (std::move (name),
+				 preserve_whitespace);
+  new_element->set_attr ("class", class_);
+  push_element (std::move (new_element));
+}
+
+void
+printer::pop_tag ()
+{
+  m_open_tags.pop_back ();
+}
+
+void
+printer::set_attr (const char *name, std::string value)
+{
+  m_open_tags.back ()->set_attr (name, value);
+}
+
+void
+printer::add_text (std::string text)
+{
+  element *parent = m_open_tags.back ();
+  parent->add_text (std::move (text));
+}
+
+void
+printer::add_raw (std::string text)
+{
+  element *parent = m_open_tags.back ();
+  parent->add_child (std::make_unique<xml::raw> (std::move (text)));
+}
+
+void
+printer::push_element (std::unique_ptr<element> new_element)
+{
+  element *parent = m_open_tags.back ();
+  m_open_tags.push_back (new_element.get ());
+  parent->add_child (std::move (new_element));
+}
+
+void
+printer::append (std::unique_ptr<node> new_node)
+{
+  element *parent = m_open_tags.back ();
+  parent->add_child (std::move (new_node));
+}
+
+element *
+printer::get_insertion_point () const
+{
+  return m_open_tags.back ();
+}
 
 } // namespace xml
 
@@ -284,7 +351,8 @@ public:
 
   html_builder (diagnostic_context &context,
 		pretty_printer &pp,
-		const line_maps *line_maps);
+		const line_maps *line_maps,
+		const html_generation_options &html_gen_opts);
 
   void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind,
@@ -310,13 +378,12 @@ public:
   make_element_for_metadata (const diagnostic_metadata &metadata);
 
   std::unique_ptr<xml::element>
-  make_element_for_source (const diagnostic_info &diagnostic);
-
-  std::unique_ptr<xml::element>
-  make_element_for_path (const diagnostic_path &path);
-
-  std::unique_ptr<xml::element>
   make_element_for_patch (const diagnostic_info &diagnostic);
+
+  void add_focus_id (std::string focus_id)
+  {
+    m_ui_focus_ids.append_string (focus_id.c_str ());
+  }
 
 private:
   std::unique_ptr<xml::element>
@@ -330,14 +397,18 @@ private:
   diagnostic_context &m_context;
   pretty_printer *m_printer;
   const line_maps *m_line_maps;
+  html_generation_options m_html_gen_opts;
 
   std::unique_ptr<xml::document> m_document;
+  xml::element *m_head_element;
   xml::element *m_diagnostics_element;
   std::unique_ptr<xml::element> m_cur_diagnostic_element;
+  int m_next_diag_id; // for handing out unique IDs
+  json::array m_ui_focus_ids;
 };
 
 static std::unique_ptr<xml::element>
-make_div (label_text class_)
+make_div (std::string class_)
 {
   auto div = std::make_unique<xml::element> ("div", false);
   div->set_attr ("class", std::move (class_));
@@ -345,7 +416,7 @@ make_div (label_text class_)
 }
 
 static std::unique_ptr<xml::element>
-make_span (label_text class_)
+make_span (std::string class_)
 {
   auto span = std::make_unique<xml::element> ("span", true);
   span->set_attr ("class", std::move (class_));
@@ -400,45 +471,155 @@ diagnostic_html_format_buffer::flush ()
 
 /* class html_builder.  */
 
+/* Style information for writing out HTML paths.
+   Colors taken from https://pf3.patternfly.org/v3/styles/color-palette/ */
+
+static const char * const HTML_STYLE
+  = ("  <style>\n"
+     "    .linenum { color: white;\n"
+     "               background-color: #0088ce;\n"
+     "               white-space: pre;\n"
+     "               border-right: 1px solid black; }\n"
+     "    .ruler { color: red;\n"
+     "              white-space: pre; }\n"
+     "    .source { color: blue;\n"
+     "              white-space: pre; }\n"
+     "    .annotation { color: green;\n"
+     "                  white-space: pre; }\n"
+     "    .linenum-gap { text-align: center;\n"
+     "                   border-top: 1px solid black;\n"
+     "                   border-right: 1px solid black;\n"
+     "                   background-color: #ededed; }\n"
+     "    .source-gap { border-bottom: 1px dashed black;\n"
+     "                  border-top: 1px dashed black;\n"
+     "                  background-color: #ededed; }\n"
+     "    .no-locus-event { font-family: monospace;\n"
+     "                      color: green;\n"
+     "                      white-space: pre; }\n"
+     "    .funcname { font-weight: bold; }\n"
+     "    .events-hdr { color: white;\n"
+     "                  background-color: #030303; }\n"
+     "    .event-range {  border: 1px solid black;\n"
+     "                    padding: 0px; }\n"
+     "    .event-range-with-margin { border-spacing: 0; }\n"
+     "    .locus { font-family: monospace;\n"
+     "             border-spacing: 0px; }\n"
+     "    .selected { color: white;\n"
+     "                background-color: #0088ce; }\n"
+     "    .stack-frame-with-margin { border-spacing: 0; }\n"
+     "    .stack-frame {  padding: 5px;\n"
+     "                    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.5); }\n"
+     "    .frame-funcname { text-align: right;\n"
+     "                      font-style: italic; } \n"
+     "    .highlight-a { color: #703fec;\n" // pf-purple-400
+     "                   font-weight: bold; }\n"
+     "    .highlight-b { color: #3f9c35;\n" // pf-green-400
+     "                   font-weight: bold; }\n"
+     "  </style>\n");
+
+/* A little JavaScript for ease of navigation.
+   Keys j/k move forward and backward cyclically through a list
+   of focus ids (written out in another <script> tag as the HTML
+   is flushed).  */
+
+const char * const HTML_SCRIPT
+  = ("  var current_focus_idx = 0;\n"
+     "\n"
+     "  function get_focus_span (focus_idx)\n"
+     "  {\n"
+     "      const element_id = focus_ids[focus_idx];\n"
+     "      return document.getElementById(element_id);\n"
+     "  }\n"
+     "  function unhighlight_current_focus_idx ()\n"
+     "  {\n"
+     "      get_focus_span (current_focus_idx).classList.remove ('selected');\n"
+     "  }\n"
+     "  function highlight_current_focus_idx ()\n"
+     "  {\n"
+     "      const el = get_focus_span (current_focus_idx);\n"
+     "      el.classList.add ('selected');\n"
+     "      // Center the element on the screen\n"
+     "      const top_y = el.getBoundingClientRect ().top + window.pageYOffset;\n"
+     "      const middle = top_y - (window.innerHeight / 2);\n"
+     "      window.scrollTo (0, middle);\n"
+     "  }\n"
+     "  function select_prev_focus_idx ()\n"
+     "  {\n"
+     "      unhighlight_current_focus_idx ();\n"
+     "      if (current_focus_idx > 0)\n"
+     "          current_focus_idx -= 1;\n"
+     "      else\n"
+     "          current_focus_idx = focus_ids.length - 1;\n"
+     "      highlight_current_focus_idx ();\n"
+     "  }\n"
+     "  function select_next_focus_idx ()\n"
+     "  {\n"
+     "      unhighlight_current_focus_idx ();\n"
+     "      if (current_focus_idx < focus_ids.length - 1)\n"
+     "          current_focus_idx += 1;\n"
+     "      else\n"
+     "          current_focus_idx = 0;\n"
+     "      highlight_current_focus_idx ();\n"
+     "  }\n"
+     "  document.addEventListener('keydown', function (ev) {\n"
+     "      if (ev.key == 'j')\n"
+     "          select_next_focus_idx ();\n"
+     "      else if (ev.key == 'k')\n"
+     "          select_prev_focus_idx ();\n"
+     "  });\n"
+     "  highlight_current_focus_idx ();\n");
+
 /* html_builder's ctor.  */
 
 html_builder::html_builder (diagnostic_context &context,
-			      pretty_printer &pp,
-			      const line_maps *line_maps)
+			    pretty_printer &pp,
+			    const line_maps *line_maps,
+			    const html_generation_options &html_gen_opts)
 : m_context (context),
   m_printer (&pp),
-  m_line_maps (line_maps)
+  m_line_maps (line_maps),
+  m_html_gen_opts (html_gen_opts),
+  m_head_element (nullptr),
+  m_diagnostics_element (nullptr),
+  m_next_diag_id (0)
 {
   gcc_assert (m_line_maps);
 
   m_document = std::make_unique<xml::document> ();
   {
     auto html_element = std::make_unique<xml::element> ("html", false);
-    html_element->set_attr
-      ("xmlns",
-       label_text::borrow ("http://www.w3.org/1999/xhtml"));
-    {
-      {
-	auto head_element = std::make_unique<xml::element> ("head", false);
-	{
-	  auto title_element = std::make_unique<xml::element> ("title", true);
-	  label_text title (label_text::borrow ("Title goes here")); // TODO
-	  title_element->add_text (std::move (title));
-	  head_element->add_child (std::move (title_element));
-	}
-	html_element->add_child (std::move (head_element));
+    html_element->set_attr ("xmlns",
+			    "http://www.w3.org/1999/xhtml");
+    xml::printer xp (*html_element.get ());
+    m_document->add_child (std::move (html_element));
 
-	auto body_element = std::make_unique<xml::element> ("body", false);
+    {
+      xml::auto_print_element head (xp, "head");
+      m_head_element = xp.get_insertion_point ();
+      {
+	xml::auto_print_element title (xp, "title", true);
+	xp.add_text ("Title goes here");
+      }
+      if (m_html_gen_opts.m_css)
+	xp.add_raw (HTML_STYLE);
+      if (m_html_gen_opts.m_javascript)
 	{
-	  auto diagnostics_element
-	    = make_div (label_text::borrow ("gcc-diagnostic-list"));
-	  m_diagnostics_element = diagnostics_element.get ();
-	  body_element->add_child (std::move (diagnostics_element));
+	  xp.push_tag ("script");
+	  /* Escaping rules are different for HTML <script> elements,
+	     so add the script "raw" for now.  */
+	  xp.add_raw (HTML_SCRIPT);
+	  xp.pop_tag (); // script
 	}
-	html_element->add_child (std::move (body_element));
+    }
+
+    {
+      xml::auto_print_element body (xp, "body");
+      {
+	auto diagnostics_element = make_div ("gcc-diagnostic-list");
+	m_diagnostics_element = diagnostics_element.get ();
+	xp.append (std::move (diagnostics_element));
       }
     }
-    m_document->add_child (std::move (html_element));
   }
 }
 
@@ -477,6 +658,45 @@ html_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
     }
 }
 
+/* Custom subclass of html_label_writer.
+   Wrap labels within a <span> element, supplying them with event IDs.
+   Add the IDs to the list of focus IDs.  */
+
+class html_path_label_writer : public html_label_writer
+{
+public:
+  html_path_label_writer (xml::printer &xp,
+			  html_builder &builder,
+			  const std::string &event_id_prefix)
+  : m_xp (xp),
+    m_html_builder (builder),
+    m_event_id_prefix (event_id_prefix),
+    m_next_event_idx (0)
+  {
+  }
+
+  void begin_label () final override
+  {
+    m_xp.push_tag_with_class ("span", "event", true);
+    pretty_printer pp;
+    pp_printf (&pp, "%s%i",
+	       m_event_id_prefix.c_str (), m_next_event_idx++);
+    m_xp.set_attr ("id", pp_formatted_text (&pp));
+    m_html_builder.add_focus_id (pp_formatted_text (&pp));
+  }
+
+  void end_label () final override
+  {
+    m_xp.pop_tag (); // span
+  }
+
+private:
+  xml::printer &m_xp;
+  html_builder &m_html_builder;
+  const std::string &m_event_id_prefix;
+  int m_next_event_idx;
+};
+
 std::unique_ptr<xml::element>
 html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 					   diagnostic_t orig_diag_kind)
@@ -484,11 +704,9 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   class html_token_printer : public token_printer
   {
   public:
-    html_token_printer (html_builder &builder,
-			 xml::element &parent_element)
-    : m_builder (builder)
+    html_token_printer (xml::printer &xp)
+    : m_xp (xp)
     {
-      m_open_elements.push_back (&parent_element);
     }
     void print_tokens (pretty_printer */*pp*/,
 		       const pp_token_list &tokens) final override
@@ -506,71 +724,72 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 	      pp_token_text *sub = as_a <pp_token_text *> (iter);
 	      /* The value might be in the obstack, so we may need to
 		 copy it.  */
-	      insertion_element ().add_text
-		(label_text::take (xstrdup (sub->m_value.get ())));
+	      m_xp.add_text (sub->m_value.get ());
 	    }
 	    break;
 
 	  case pp_token::kind::begin_color:
+	    {
+	      pp_token_begin_color *sub = as_a <pp_token_begin_color *> (iter);
+	      gcc_assert (sub->m_value.get ());
+	      m_xp.push_tag_with_class ("span", sub->m_value.get ());
+	    }
+	    break;
+
 	  case pp_token::kind::end_color:
-	    /* These are no-ops.  */
+	    m_xp.pop_tag ();
 	    break;
 
 	  case pp_token::kind::begin_quote:
 	    {
-	      insertion_element ().add_text (label_text::borrow (open_quote));
-	      push_element (make_span (label_text::borrow ("gcc-quoted-text")));
+	      m_xp.add_text (open_quote);
+	      m_xp.push_tag_with_class ("span", "gcc-quoted-text");
 	    }
 	    break;
 	  case pp_token::kind::end_quote:
 	    {
-	      pop_element ();
-	      insertion_element ().add_text (label_text::borrow (close_quote));
+	      m_xp.pop_tag ();
+	      m_xp.add_text (close_quote);
 	    }
 	    break;
 
 	  case pp_token::kind::begin_url:
 	    {
 	      pp_token_begin_url *sub = as_a <pp_token_begin_url *> (iter);
-	      auto anchor = std::make_unique<xml::element> ("a", true);
-	      anchor->set_attr ("href", std::move (sub->m_value));
-	      push_element (std::move (anchor));
+	      m_xp.push_tag ("a", true);
+	      m_xp.set_attr ("href", sub->m_value.get ());
 	    }
 	    break;
 	  case pp_token::kind::end_url:
-	    pop_element ();
+	    m_xp.pop_tag ();
 	    break;
 	  }
     }
 
   private:
-    xml::element &insertion_element () const
-    {
-      return *m_open_elements.back ();
-    }
-    void push_element (std::unique_ptr<xml::element> new_element)
-    {
-      xml::element &current_top = insertion_element ();
-      m_open_elements.push_back (new_element.get ());
-      current_top.add_child (std::move (new_element));
-    }
-    void pop_element ()
-    {
-      m_open_elements.pop_back ();
-    }
-
-    html_builder &m_builder;
-    /* We maintain a stack of currently "open" elements.
-       Children are added to the topmost open element.  */
-    std::vector<xml::element *> m_open_elements;
+    xml::printer &m_xp;
   };
 
-  auto diag_element = make_div (label_text::borrow ("gcc-diagnostic"));
+  auto diag_element = make_div ("gcc-diagnostic");
+
+  const int diag_idx = m_next_diag_id++;
+  std::string diag_id;
+  {
+    pretty_printer pp;
+    pp_printf (&pp, "gcc-diag-%i", diag_idx);
+    diag_id = pp_formatted_text (&pp);
+  }
+  diag_element->set_attr ("id", diag_id);
 
   // TODO: might be nice to emulate the text output format, but colorize it
 
-  auto message_span = make_span (label_text::borrow ("gcc-message"));
-  html_token_printer tok_printer (*this, *message_span.get ());
+  auto message_span = make_span ("gcc-message");
+  std::string message_span_id (diag_id + "-message");
+  message_span->set_attr ("id", message_span_id);
+  add_focus_id (message_span_id);
+
+  xml::printer xp (*message_span.get ());
+  html_token_printer tok_printer (xp);
   m_printer->set_token_printer (&tok_printer);
   pp_output_formatted_text (m_printer, m_context.get_urlifier ());
   m_printer->set_token_printer (nullptr);
@@ -579,7 +798,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 
   if (diagnostic.metadata)
     {
-      diag_element->add_text (label_text::borrow (" "));
+      diag_element->add_text (" ");
       diag_element->add_child
 	(make_element_for_metadata (*diagnostic.metadata));
     }
@@ -592,32 +811,47 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
       label_text option_url = label_text::take
 	(m_context.make_option_url (diagnostic.option_id));
 
-      diag_element->add_text (label_text::borrow (" "));
-      auto option_span = make_span (label_text::borrow ("gcc-option"));
-      option_span->add_text (label_text::borrow ("["));
+      diag_element->add_text (" ");
+      auto option_span = make_span ("gcc-option");
+      option_span->add_text ("[");
       {
 	if (option_url.get ())
 	  {
 	    auto anchor = std::make_unique<xml::element> ("a", true);
-	    anchor->set_attr ("href", std::move (option_url));
-	    anchor->add_text (std::move (option_text));
+	    anchor->set_attr ("href", option_url.get ());
+	    anchor->add_text (option_text.get ());
 	    option_span->add_child (std::move (anchor));
 	  }
 	else
-	  option_span->add_text (std::move (option_text));
-	option_span->add_text (label_text::borrow ("]"));
+	  option_span->add_text (option_text.get ());
+	option_span->add_text ("]");
       }
       diag_element->add_child (std::move (option_span));
     }
 
   /* Source (and fix-it hints).  */
-  if (auto source_element = make_element_for_source (diagnostic))
-    diag_element->add_child (std::move (source_element));
+  {
+    xml::printer xp (*diag_element);
+    m_context.m_last_location = UNKNOWN_LOCATION;
+    m_context.maybe_show_locus_as_html (*diagnostic.richloc,
+					m_context.m_source_printing,
+					diagnostic.kind,
+					xp,
+					nullptr,
+					nullptr);
+  }
 
   /* Execution path.  */
   if (auto path = diagnostic.richloc->get_path ())
-    if (auto path_element = make_element_for_path (*path))
-      diag_element->add_child (std::move (path_element));
+    {
+      xml::printer xp (*diag_element);
+      std::string event_id_prefix (diag_id + "-event-");
+      html_path_label_writer event_label_writer (xp, *this,
+						 event_id_prefix);
+      diagnostic_source_print_policy dspp (m_context);
+      print_path_as_html (xp, *path, m_context, &event_label_writer,
+			  dspp);
+    }
 
   if (auto patch_element = make_element_for_patch (diagnostic))
     diag_element->add_child (std::move (patch_element));
@@ -626,61 +860,23 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 }
 
 std::unique_ptr<xml::element>
-html_builder::make_element_for_source (const diagnostic_info &diagnostic)
-{
-  // TODO: ideally we'd like to capture elements within the following:
-  m_context.m_last_location = UNKNOWN_LOCATION;
-  pp_clear_output_area (m_printer);
-  diagnostic_show_locus (&m_context,
-			 m_context.m_source_printing,
-			 diagnostic.richloc, diagnostic.kind,
-			 m_printer);
-  auto text = label_text::take (xstrdup (pp_formatted_text (m_printer)));
-  pp_clear_output_area (m_printer);
-
-  if (strlen (text.get ()) == 0)
-    return nullptr;
-
-  auto pre = std::make_unique<xml::element> ("pre", true);
-  pre->set_attr ("class", label_text::borrow ("gcc-annotated-source"));
-  pre->add_text (std::move (text));
-  return pre;
-}
-
-std::unique_ptr<xml::element>
-html_builder::make_element_for_path (const diagnostic_path &path)
-{
-  m_context.m_last_location = UNKNOWN_LOCATION;
-  diagnostic_text_output_format text_format (m_context);
-  pp_show_color (text_format.get_printer ()) = false;
-  pp_buffer (text_format.get_printer ())->m_flush_p = false;
-  // TODO: ideally we'd like to capture elements within the following:
-  text_format.print_path (path);
-  auto text = label_text::take
-    (xstrdup (pp_formatted_text (text_format.get_printer ())));
-
-  if (strlen (text.get ()) == 0)
-    return nullptr;
-
-  auto pre = std::make_unique<xml::element> ("pre", true);
-  pre->set_attr ("class", label_text::borrow ("gcc-execution-path"));
-  pre->add_text (std::move (text));
-  return pre;
-}
-
-std::unique_ptr<xml::element>
 html_builder::make_element_for_patch (const diagnostic_info &diagnostic)
 {
   edit_context ec (m_context.get_file_cache ());
   ec.add_fixits (diagnostic.richloc);
   if (char *diff = ec.generate_diff (true))
-    if (strlen (diff) > 0)
-      {
-	auto element = std::make_unique<xml::element> ("pre", true);
-	element->set_attr ("class", label_text::borrow ("gcc-generated-patch"));
-	element->add_text (label_text::take (diff));
-	return element;
-      }
+    {
+      if (strlen (diff) > 0)
+	{
+	  auto element = std::make_unique<xml::element> ("pre", true);
+	  element->set_attr ("class", "gcc-generated-patch");
+	  element->add_text (diff);
+	  free (diff);
+	  return element;
+	}
+      else
+	free (diff);
+    }
   return nullptr;
 }
 
@@ -688,22 +884,27 @@ std::unique_ptr<xml::element>
 html_builder::make_metadata_element (label_text label,
 				     label_text url)
 {
-  auto item = make_span (label_text::borrow ("gcc-metadata-item"));
-  item->add_text (label_text::borrow ("["));
+  auto item = make_span ("gcc-metadata-item");
+  xml::printer xp (*item.get ());
+  xp.add_text ("[");
   {
-    auto anchor = std::make_unique<xml::element> ("a", true);
-    anchor->set_attr ("href", std::move (url));
-    anchor->add_child (std::make_unique<xml::text> (std::move (label)));
-    item->add_child (std::move (anchor));
+    if (url.get ())
+      {
+	xp.push_tag ("a", true);
+	xp.set_attr ("href", url.get ());
+      }
+    xp.add_text (label.get ());
+    if (url.get ())
+      xp.pop_tag ();
   }
-  item->add_text (label_text::borrow ("]"));
+  xp.add_text ("]");
   return item;
 }
 
 std::unique_ptr<xml::element>
 html_builder::make_element_for_metadata (const diagnostic_metadata &metadata)
 {
-  auto span_metadata = make_span (label_text::borrow ("gcc-metadata"));
+  auto span_metadata = make_span ("gcc-metadata");
 
   int cwe = metadata.get_cwe ();
   if (cwe)
@@ -737,7 +938,7 @@ html_builder::emit_diagram (const diagnostic_diagram &/*diagram*/)
   /* We must be within the emission of a top-level diagnostic.  */
   gcc_assert (m_cur_diagnostic_element);
 
-  // TODO
+  // TODO: currently a no-op
 }
 
 /* Implementation of "end_group_cb" for HTML output.  */
@@ -757,6 +958,20 @@ html_builder::end_group ()
 void
 html_builder::flush_to_file (FILE *outf)
 {
+  if (m_html_gen_opts.m_javascript)
+    {
+      gcc_assert (m_head_element);
+      xml::printer xp (*m_head_element);
+      /* Add an initialization of the global js variable "focus_ids"
+	 using the array of IDs we saved as we went.  */
+      xp.push_tag ("script");
+      pretty_printer pp;
+      pp_string (&pp, "focus_ids = ");
+      m_ui_focus_ids.print (&pp, true);
+      pp_string (&pp, ";\n");
+      xp.add_raw (pp_formatted_text (&pp));
+      xp.pop_tag (); // script
+    }
   auto top = m_document.get ();
   top->dump (outf);
   fprintf (outf, "\n");
@@ -842,9 +1057,10 @@ public:
 
 protected:
   html_output_format (diagnostic_context &context,
-		      const line_maps *line_maps)
+		      const line_maps *line_maps,
+		      const html_generation_options &html_gen_opts)
   : diagnostic_output_format (context),
-    m_builder (context, *get_printer (), line_maps),
+    m_builder (context, *get_printer (), line_maps, html_gen_opts),
     m_buffer (nullptr)
   {}
 
@@ -857,8 +1073,9 @@ class html_file_output_format : public html_output_format
 public:
   html_file_output_format (diagnostic_context &context,
 			   const line_maps *line_maps,
+			   const html_generation_options &html_gen_opts,
 			   diagnostic_output_file output_file)
-  : html_output_format (context, line_maps),
+  : html_output_format (context, line_maps, html_gen_opts),
     m_output_file (std::move (output_file))
   {
     gcc_assert (m_output_file.get_open_file ());
@@ -922,11 +1139,13 @@ diagnostic_output_format_open_html_file (diagnostic_context &context,
 std::unique_ptr<diagnostic_output_format>
 make_html_sink (diagnostic_context &context,
 		const line_maps &line_maps,
+		const html_generation_options &html_gen_opts,
 		diagnostic_output_file output_file)
 {
   auto sink
     = std::make_unique<html_file_output_format> (context,
 						 &line_maps,
+						 html_gen_opts,
 						 std::move (output_file));
   sink->update_printer ();
   return sink;
@@ -945,8 +1164,12 @@ class test_html_diagnostic_context : public test_diagnostic_context
 public:
   test_html_diagnostic_context ()
   {
+    html_generation_options html_gen_opts;
+    html_gen_opts.m_css = false;
+    html_gen_opts.m_javascript = false;
     auto sink = std::make_unique<html_buffered_output_format> (*this,
-							       line_table);
+							       line_table,
+							       html_gen_opts);
     sink->update_printer ();
     m_format = sink.get (); // borrowed
 
@@ -968,8 +1191,9 @@ private:
   {
   public:
     html_buffered_output_format (diagnostic_context &context,
-				 const line_maps *line_maps)
-    : html_output_format (context, line_maps)
+				 const line_maps *line_maps,
+				 const html_generation_options &html_gen_opts)
+    : html_output_format (context, line_maps, html_gen_opts)
     {
     }
     bool machine_readable_stderr_p () const final override
@@ -1009,12 +1233,12 @@ test_simple_log ()
       "  </head>\n"
       "  <body>\n"
       "    <div class=\"gcc-diagnostic-list\">\n"
-      "      <div class=\"gcc-diagnostic\">\n"
-      "        <span class=\"gcc-message\">this is a test: `<span class=\"gcc-quoted-text\">foo</span>&apos;</span>\n"
+      "      <div class=\"gcc-diagnostic\" id=\"gcc-diag-0\">\n"
+      "        <span class=\"gcc-message\" id=\"gcc-diag-0-message\">this is a test: `<span class=\"gcc-quoted-text\">foo</span>&apos;</span>\n"
       "      </div>\n"
       "    </div>\n"
       "  </body>\n"
-      "</html>"));
+      "</html>\n"));
 }
 
 static void
@@ -1031,7 +1255,6 @@ test_metadata ()
     element->write_as_xml (&pp, 0, true);
     ASSERT_STREQ
       (pp_formatted_text (&pp),
-       "\n"
        "<span class=\"gcc-metadata\">"
        "<span class=\"gcc-metadata-item\">"
        "["
@@ -1040,7 +1263,7 @@ test_metadata ()
        "</a>"
        "]"
        "</span>"
-       "</span>");
+       "</span>\n");
   }
 
   {
@@ -1053,7 +1276,6 @@ test_metadata ()
     element->write_as_xml (&pp, 0, true);
     ASSERT_STREQ
       (pp_formatted_text (&pp),
-       "\n"
        "<span class=\"gcc-metadata\">"
        "<span class=\"gcc-metadata-item\">"
        "["
@@ -1062,8 +1284,69 @@ test_metadata ()
        "</a>"
        "]"
        "</span>"
-       "</span>");
+       "</span>\n");
   }
+}
+
+static void
+test_printer ()
+{
+  xml::element top ("top", false);
+  xml::printer xp (top);
+  xp.push_tag ("foo");
+  xp.add_text ("hello");
+  xp.push_tag ("bar");
+  xp.set_attr ("size", "3");
+  xp.set_attr ("color", "red");
+  xp.add_text ("world");
+  xp.push_tag ("baz");
+  xp.pop_tag ();
+  xp.pop_tag ();
+  xp.pop_tag ();
+
+  pretty_printer pp;
+  top.write_as_xml (&pp, 0, true);
+  ASSERT_STREQ
+    (pp_formatted_text (&pp),
+     "<top>\n"
+     "  <foo>\n"
+     "    hello\n"
+     "    <bar size=\"3\" color=\"red\">\n"
+     "      world\n"
+     "      <baz/>\n"
+     "    </bar>\n"
+     "  </foo>\n"
+     "</top>\n");
+}
+
+// Verify that element attributes preserve insertion order.
+
+static void
+test_attribute_ordering ()
+{
+  xml::element top ("top", false);
+  xml::printer xp (top);
+  xp.push_tag ("chronological");
+  xp.set_attr ("maldon", "991");
+  xp.set_attr ("hastings", "1066");
+  xp.set_attr ("edgehill", "1642");
+  xp.set_attr ("naseby", "1645");
+  xp.pop_tag ();
+  xp.push_tag ("alphabetical");
+  xp.set_attr ("edgehill", "1642");
+  xp.set_attr ("hastings", "1066");
+  xp.set_attr ("maldon", "991");
+  xp.set_attr ("naseby", "1645");
+  xp.pop_tag ();
+
+  pretty_printer pp;
+  top.write_as_xml (&pp, 0, true);
+  ASSERT_STREQ
+    (pp_formatted_text (&pp),
+     "<top>\n"
+     "  <chronological maldon=\"991\" hastings=\"1066\" edgehill=\"1642\" naseby=\"1645\"/>\n"
+     "  <alphabetical edgehill=\"1642\" hastings=\"1066\" maldon=\"991\" naseby=\"1645\"/>\n"
+     "</top>\n");
 }
 
 /* Run all of the selftests within this file.  */
@@ -1074,6 +1357,8 @@ diagnostic_format_html_cc_tests ()
   auto_fix_quotes fix_quotes;
   test_simple_log ();
   test_metadata ();
+  test_printer ();
+  test_attribute_ordering ();
 }
 
 } // namespace selftest

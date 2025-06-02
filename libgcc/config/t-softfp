@@ -67,12 +67,10 @@ softfp_floatint_funcs = fix$(m)$(i) fixuns$(m)$(i) \
 softfp_floatbitint_funcs = fix$(m)bitint floatbitint$(m)
 softfp_bid_list := 
 ifeq ($(decimal_float),yes)
-ifeq ($(enable_decimal_float),bid)
 softfp_bid_list += bitintpow10 \
 		   $(foreach m,sd dd td,fix$(m)bitint floatbitint$(m) \
 					fix$(m)ti fixuns$(m)ti \
 					floatti$(m) floatunti$(m))
-endif
 endif
 
 softfp_func_list := \

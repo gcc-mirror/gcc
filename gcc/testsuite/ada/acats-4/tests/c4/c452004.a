@@ -1,0 +1,291 @@
+-- C452004.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--     Check that for a membership test with multiple choices, the tested
+--     expression is evaluated first, and then the choices are evaluated
+--     in order.
+--
+--     Check that for a membership test with multiple choices, choices after
+--     the first individual membership test that evaluates True are not
+--     evaluated.
+--
+--     Check that an individual membership test that is an expression of an
+--     untagged record yields True if the primitive equals for the type yields
+--     True, and False otherwise.
+--
+-- TEST DESCRIPTION:
+--     A user application uses a rational arithmetic package, and wishes to
+--     use membership tests on values of that package.
+--
+--     We create a skeleton rational arithmetic package, with each subprogram
+--     in the package using TCTouch to record when it is called.
+--
+--     We then write various membership tests and check both that the result
+--     is correct and that the rational subprograms are called in the expected
+--     order.
+--
+--     RM 4.5.2(27.1/4) and 4.5.2(28.1/4) are the primary paragraphs tested
+--     herein.
+--
+--     Note: We don't try to describe a use case for the use of the
+--     memberships, since these are an alternative to using "=", and we
+--     wouldn't try to justify the use of "=" as it is so common that we expect
+--     that every possible case will appear eventually.
+--
+-- CHANGE HISTORY:
+--    27 Mar 2019   RLB   Created test.
+--    06 Feb 2020   RLB   Corrected types of LTemp and RTemp.
+--
+--!
+
+package C452004_A is
+   -- A skeleton rational arithmetic package.
+   -- Note: Because the values are integers (which could be as small as
+   -- 16-bits), and because we don't try to reduce demoninators, the values
+   -- of numerators and denominators given to this packages should be less
+   -- than 100.
+
+   type Rat is private;
+
+   function Zero return Rat;
+
+   function One return Rat;
+
+   function Val (Num : Integer; Dem : Positive) return Rat;
+
+   function "/" (Num : Integer; Dem : Positive) return Rat renames Val;
+
+   function "=" (Left, Right : Rat) return Boolean;
+
+   function "+" (Right : Rat) return Rat;
+
+   function "-" (Right : Rat) return Rat;
+
+   function "+" (Left, Right : Rat) return Rat;
+
+   function "-" (Left, Right : Rat) return Rat;
+
+private
+
+   type Rat is record
+      Num : Integer;
+      Dem : Positive;
+   end record;
+
+end C452004_A;
+
+with TCTouch;
+package body C452004_A is
+
+   function Zero return Rat is
+   begin
+      TCTouch.Touch ('0'); -------------------------------------------- 0
+      return (Num => 0, Dem => 1);
+   end Zero;
+
+   function One return Rat is
+   begin
+      TCTouch.Touch ('1'); -------------------------------------------- 0
+      return (Num => 1, Dem => 1);
+   end One;
+
+   function Val (Num : Integer; Dem : Positive) return Rat is
+   begin
+      TCTouch.Touch ('V'); -------------------------------------------- V
+      return (Num => Num, Dem => Dem);
+   end Val;
+
+   function "=" (Left, Right : Rat) return Boolean is
+   begin
+      TCTouch.Touch ('='); -------------------------------------------- =
+      if Left.Dem = Right.Dem then
+         return Left.Num = Right.Num;
+      else
+         declare
+            LTemp, RTemp : Integer;
+         begin
+            LTemp := Left.Num*Right.Dem;
+            RTemp := Right.Num*Left.Dem;
+            return LTemp = RTemp;
+         end;
+      end if;
+   end "=";
+
+   function "+" (Right : Rat) return Rat is
+   begin
+      TCTouch.Touch ('p'); -------------------------------------------- p
+      return Right;
+   end "+";
+
+   function "-" (Right : Rat) return Rat is
+   begin
+      TCTouch.Touch ('m'); -------------------------------------------- m
+      return (Num => -Right.Num, Dem => Right.Dem);
+   end "-";
+
+   function Add (Left, Right : Rat) return Rat is
+      -- Note: No touch here.
+   begin
+      if Left.Dem = Right.Dem then
+         return (Num => Left.Num + Right.Num, Dem => Left.Dem);
+      else
+         declare
+            LTemp, RTemp : Integer;
+         begin
+            LTemp := Left.Num*Right.Dem;
+            RTemp := Right.Num*Left.Dem;
+            return (Num => LTemp + RTemp, Dem => Left.Dem*Right.Dem);
+         end;
+      end if;
+   end Add;
+
+   function "+" (Left, Right : Rat) return Rat is
+   begin
+      TCTouch.Touch ('+'); -------------------------------------------- +
+      return Add (Left, Right);
+   end "+";
+
+   function "-" (Left, Right : Rat) return Rat is
+   begin
+      TCTouch.Touch ('-'); -------------------------------------------- -
+      return Add (Left, (Num => -Right.Num, Dem => Right.Dem));
+   end "-";
+
+end C452004_A;
+
+with Report;
+with TcTouch;
+with C452004_A;
+procedure C452004 is
+
+   package Rats renames C452004_A;
+   use type Rats.Rat;
+
+   Third : Rats.Rat := 1 / 3;
+
+begin
+
+   Report.Test
+     ("C452004",
+      "Check that memberships with multiple choices are evaluated in order " &
+      "and that primitive record equality is used to evaluate the tests");
+
+   TcTouch.Validate (Expected => "V",
+                     Message => "Wrong initialization (0)");
+
+   -- Check that primitive equality works as expected:
+   if Third + (2/4) = 5/6 then
+      null;
+   else
+      Report.Failed ("Bad equality (0)");
+   end if;
+   TcTouch.Validate_One_Of (Expected_1 => "V+V=",
+                            Expected_2 => "VV+=",
+                            Message => "Wrong equality (0)");
+
+   -- Choices evaluated in order:
+   if +(1/1) in Rats.Zero | Rats.One then
+      null; -- OK.
+   else
+      Report.Failed ("Wrong result (1)");
+   end if;
+   TcTouch.Validate (Expected => "Vp0=1=",
+                     Message => "Wrong evaluation (1)");
+
+   if -(1/3) not in Rats.Zero | Rats.One | -Third then
+      Report.Failed ("Wrong result (2)");
+   else
+      null; -- OK.
+   end if;
+   TcTouch.Validate (Expected => "Vm0=1=m=",
+                     Message => "Wrong evaluation (2)");
+
+   if Third + Third in Rats.Zero | Rats.One | Rats.One + Rats.One then
+      Report.Failed ("Wrong result (3)");
+   else
+      null; -- OK.
+   end if;
+   TcTouch.Validate (Expected => "+0=1=11+=",
+                     Message => "Wrong evaluation (3)");
+
+   if 2/4 not in Rats.Zero | Rats.One | 2/1 | 3/1 then
+      null; -- OK.
+   else
+      Report.Failed ("Wrong result (4)");
+   end if;
+   TcTouch.Validate (Expected => "V0=1=V=V=",
+                     Message => "Wrong evaluation (4)");
+
+
+   -- Choices past first true test not evaluated:
+   if 1/3 in Rats.Zero | +Third | Rats.One then
+      null; -- OK.
+   else
+      Report.Failed ("Wrong result (5)");
+   end if;
+   TcTouch.Validate (Expected => "V0=p=",
+                     Message => "Wrong evaluation (5)");
+
+   if (1/3) - Third not in Rats.Zero | Rats.One | Rats.One + Rats.One then
+      Report.Failed ("Wrong result (6)");
+   else
+      null; -- OK.
+   end if;
+   TcTouch.Validate (Expected => "V-0=",
+                     Message => "Wrong evaluation (6)");
+
+   -- Primitive rather than predefined equality used:
+   -- (We try values that would not be equal for predefined equality. But
+   -- note that TcTouch validation would fail if predefined equality is used.)
+
+   if Third + Rats.One in Rats.Zero | 8/6 | Rats.One then
+      null; -- OK.
+   else
+      Report.Failed ("Wrong equality used (7)");
+   end if;
+   TcTouch.Validate (Expected => "1+0=V=",
+                     Message => "Wrong evaluation (7)");
+
+   if Third + (2/4) not in Rats.Zero | Rats.One | 5/6 then
+      Report.Failed ("Wrong equality used (8)");
+   else
+      null; -- OK.
+   end if;
+   TcTouch.Validate (Expected => "V+0=1=V=",
+                     Message => "Wrong evaluation (8)");
+
+   Report.Result;
+
+end C452004;

@@ -1,0 +1,482 @@
+-- CXA9002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the operations defined in the generic package 
+--      Ada.Storage_IO provide the ability to store and retrieve objects 
+--      of tagged types from in-memory buffers.
+--
+-- TEST DESCRIPTION:
+--      The following scenario demonstrates how objects of a tagged type, 
+--      extended types, and twice extended types can be written/read
+--      to/from Direct_IO files. The Storage_IO subprograms, Read and Write, 
+--      demonstrated in this scenario, perform tag "fixing" prior to/following
+--      transfer to the Direct_IO files.
+--      This method is especially important for those implementations that 
+--      represent tags as pointers, or for cases where the tagged objects
+--      are read in by a program other than the one that wrote them.  
+--
+--      In this small example, we have attempted to simulate the situation 
+--      where two independent programs are using a series of Direct_IO files,
+--      one writing data to the files, and the second program reading the 
+--      data from those files.  Two procedures are defined, the first
+--      simulating the program responsible for writing, the second simulating 
+--      a separate program opening and reading the data from the files.  
+--      
+--      The hierarchy of types used in this test can be displayed as follows:
+--      
+--                                Account_Type
+--                                 /       \
+--                                /         \
+--                               /           \
+--                  Cash_Account_Type       Investment_Account_Type
+--                     /         \
+--                    /           \
+--                   /             \
+--      Checking_Account_Type    Savings_Account_Type
+--      
+-- APPLICABILITY CRITERIA: 
+--      Applicable to implementations capable of supporting external
+--      Direct_IO files.
+--
+--       
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      08 Nov 95   SAIC    Corrected incorrect prefix of 'Tag for ACVC 2.0.1,
+--                          and mode of files in Procedure Read_Data.
+--                          Added verification of objects reconstructed from
+--                          files.
+--      27 Feb 97   PWB.CTA Allowed for non-support of some IO operations
+--!
+
+package CXA9002_0 is
+
+   type Investment_Type is (Stocks, Bonds, Mutual_Funds);
+   type Savings_Type    is (Standard, Business, Impound);
+
+   type Account_Type is tagged 
+      record
+         Num : String (1..3);
+      end record;
+
+   type Cash_Account_Type is new Account_Type with
+      record
+         Years_As_Customer : Natural := 1;
+      end record;
+
+   type Investment_Account_Type is new Account_Type with
+      record
+         Investment_Vehicle : Investment_Type := Stocks;
+      end record;
+
+   type Checking_Account_Type is new Cash_Account_Type with
+      record
+         Checks_Per_Year  : Positive := 200;
+         Interest_Bearing : Boolean  := False;
+      end record;
+
+   type Savings_Account_Type is new Cash_Account_Type with
+      record
+         Kind : Savings_Type := Standard;
+      end record;
+
+end CXA9002_0;
+
+---
+
+with Report;
+with Ada.Storage_IO;
+with Ada.Direct_IO;
+with Ada.Tags;
+with CXA9002_0;
+
+procedure CXA9002 is
+   package Dir_IO is new Ada.Direct_IO (Integer);
+   Test_File : Dir_IO.File_Type;
+   Incomplete : exception;
+begin
+
+   Report.Test ("CXA9002", "Check that the operations defined in the "   &
+                           "generic package Ada.Storage_IO provide the " &
+                           "ability to store and retrieve objects of "   &
+                           "tagged types from in-memory buffers");
+
+
+   Test_For_Direct_IO_Support:
+   begin
+
+      -- The following Create does not have any bearing on the test scenario,
+      -- but is included to check that the implementation supports Direct_IO
+      -- files.  An exception on this Create statement will raise a Name_Error
+      -- or Use_Error, which will be handled to produce a Not_Applicable
+      -- result. If created, the file is immediately deleted, as it is not 
+      -- needed for the program scenario.
+
+      Dir_IO.Create (Test_File, 
+                     Dir_IO.Out_File, 
+                     Report.Legal_File_Name(1));
+   exception
+
+       when Dir_IO.Use_Error | Dir_IO.Name_Error =>
+          Report.Not_Applicable
+             ( "Files not supported - Create as Out_File for Direct_IO" );
+          raise Incomplete;
+
+   end Test_for_Direct_IO_Support;
+
+   Deletion:
+   begin
+      Dir_IO.Delete (Test_File);
+   exception
+      when others =>
+         Report.Failed
+            ( "Delete not properly implemented for Direct_IO" );
+   end Deletion;
+
+   Test_Block:
+   declare
+
+      use CXA9002_0; 
+
+      Acct_Filename : constant String := Report.Legal_File_Name(1);
+      Cash_Filename : constant String := Report.Legal_File_Name(2);
+      Inv_Filename  : constant String := Report.Legal_File_Name(3);
+      Chk_Filename  : constant String := Report.Legal_File_Name(4);
+      Sav_Filename  : constant String := Report.Legal_File_Name(5);
+
+      type Tag_Pointer_Type is access String;
+
+      TC_Account_Type_Tag,           
+      TC_Cash_Account_Type_Tag,      
+      TC_Investment_Account_Type_Tag,
+      TC_Checking_Account_Type_Tag,  
+      TC_Savings_Account_Type_Tag    : Tag_Pointer_Type;
+
+      TC_Account            : Account_Type            := 
+                                (Num => "123");
+
+      TC_Cash_Account       : Cash_Account_Type       := 
+                                (Num               => "234", 
+                                 Years_As_Customer => 3);
+
+      TC_Investment_Account : Investment_Account_Type := 
+                                (Num                => "456", 
+                                 Investment_Vehicle => Bonds);
+
+      TC_Checking_Account   : Checking_Account_Type   :=
+                                (Num               => "567", 
+                                 Years_As_Customer => 2,  
+                                 Checks_Per_Year   => 300,
+                                 Interest_Bearing  => True);
+
+      TC_Savings_Account    : Savings_Account_Type    :=
+                                (Num               => "789", 
+                                 Years_As_Customer => 14, 
+                                 Kind              => Business);
+              
+      procedure Buffer_Data is
+
+         Account            : Account_Type            := 
+                                TC_Account;
+         Cash_Account       : Cash_Account_Type       := 
+                                TC_Cash_Account;
+         Investment_Account : Investment_Account_Type :=
+                                TC_Investment_Account;
+         Checking_Account   : Checking_Account_Type   :=
+                                TC_Checking_Account;
+         Savings_Account    : Savings_Account_Type    :=
+                                TC_Savings_Account;
+
+         -- The instantiations below are a central point in this test. 
+         -- Storage_IO is instantiated for each of the specific tagged
+         -- type. These instantiated packages will be used to compress 
+         -- tagged objects of these various types into buffers that will 
+         -- be written to the Direct_IO files declared below.
+
+         package Acct_SIO is new Ada.Storage_IO (Account_Type);
+         package Cash_SIO is new Ada.Storage_IO (Cash_Account_Type);
+         package Inv_SIO  is new Ada.Storage_IO (Investment_Account_Type);
+         package Chk_SIO  is new Ada.Storage_IO (Checking_Account_Type);
+         package Sav_SIO  is new Ada.Storage_IO (Savings_Account_Type);
+
+         -- Direct_IO is instantiated for the buffer types defined in the
+         -- instantiated Storage_IO packages.
+
+         package Acct_DIO is new Ada.Direct_IO (Acct_SIO.Buffer_Type);
+         package Cash_DIO is new Ada.Direct_IO (Cash_SIO.Buffer_Type);
+         package Inv_DIO  is new Ada.Direct_IO (Inv_SIO.Buffer_Type);
+         package Chk_DIO  is new Ada.Direct_IO (Chk_SIO.Buffer_Type);
+         package Sav_DIO  is new Ada.Direct_IO (Sav_SIO.Buffer_Type);
+
+         Acct_Buffer : Acct_SIO.Buffer_Type;
+         Cash_Buffer : Cash_SIO.Buffer_Type;
+         Inv_Buffer  : Inv_SIO.Buffer_Type;
+         Chk_Buffer  : Chk_SIO.Buffer_Type;
+         Sav_Buffer  : Sav_SIO.Buffer_Type;
+
+         Acct_File   : Acct_DIO.File_Type;
+         Cash_File   : Cash_DIO.File_Type;
+         Inv_File    : Inv_DIO.File_Type;
+         Chk_File    : Chk_DIO.File_Type;
+         Sav_File    : Sav_DIO.File_Type;
+
+      begin 
+
+         Acct_DIO.Create (Acct_File, Acct_DIO.Out_File, Acct_Filename);
+         Cash_DIO.Create (Cash_File, Cash_DIO.Out_File, Cash_Filename);
+         Inv_DIO.Create  (Inv_File,  Inv_DIO.Out_File,  Inv_Filename);
+         Chk_DIO.Create  (Chk_File,  Chk_DIO.Out_File,  Chk_Filename);
+         Sav_DIO.Create  (Sav_File,  Sav_DIO.Out_File,  Sav_Filename);
+
+         -- Store the tag values of the objects declared above for 
+         -- comparison with tag values of objects following processing.
+
+         TC_Account_Type_Tag := 
+           new String'(Ada.Tags.External_Tag(Account_Type'Tag));
+
+         TC_Cash_Account_Type_Tag := 
+           new String'(Ada.Tags.External_Tag(Cash_Account_Type'Tag));
+
+         TC_Investment_Account_Type_Tag := 
+           new String'(Ada.Tags.External_Tag(Investment_Account_Type'Tag));
+
+         TC_Checking_Account_Type_Tag := 
+           new String'(Ada.Tags.External_Tag(Checking_Account_Type'Tag));
+
+         TC_Savings_Account_Type_Tag := 
+           new String'(Ada.Tags.External_Tag(Savings_Account_Type'Tag));
+
+         -- Prepare tagged data for writing to the Direct_IO files using
+         -- Storage_IO procedure to place data in buffers.
+
+         Acct_SIO.Write (Buffer => Acct_Buffer, Item => Account);
+         Cash_SIO.Write (Cash_Buffer, Cash_Account);
+         Inv_SIO.Write  (Inv_Buffer, Item => Investment_Account);  
+         Chk_SIO.Write  (Buffer => Chk_Buffer, Item => Checking_Account);
+         Sav_SIO.Write  (Sav_Buffer, Savings_Account);
+
+         -- At this point, the data and associated tag values have been
+         -- buffered by the Storage_IO procedure, and the buffered data 
+         -- can be written to the appropriate Direct_IO file.
+
+         Acct_DIO.Write (File => Acct_File, Item => Acct_Buffer);
+         Cash_DIO.Write (Cash_File, Cash_Buffer);
+         Inv_DIO.Write  (Inv_File, Item => Inv_Buffer);
+         Chk_DIO.Write  (File => Chk_File, Item =>Chk_Buffer);
+         Sav_DIO.Write  (Sav_File, Sav_Buffer);
+
+         -- Close all Direct_IO files.
+
+         Acct_DIO.Close (Acct_File);
+         Cash_DIO.Close (Cash_File);
+         Inv_DIO.Close  (Inv_File); 
+         Chk_DIO.Close  (Chk_File); 
+         Sav_DIO.Close  (Sav_File); 
+
+      exception
+         when others => Report.Failed("Exception raised in Buffer_Data");
+      end Buffer_Data;
+
+      procedure Read_Data is
+
+         Account            : Account_Type;
+         Cash_Account       : Cash_Account_Type;
+         Investment_Account : Investment_Account_Type;
+         Checking_Account   : Checking_Account_Type;
+         Savings_Account    : Savings_Account_Type;
+
+         -- Storage_IO is instantiated for each of the specific tagged
+         -- type. 
+
+         package Acct_SIO is new Ada.Storage_IO (Account_Type);
+         package Cash_SIO is new Ada.Storage_IO (Cash_Account_Type);
+         package Inv_SIO  is new Ada.Storage_IO (Investment_Account_Type);
+         package Chk_SIO  is new Ada.Storage_IO (Checking_Account_Type);
+         package Sav_SIO  is new Ada.Storage_IO (Savings_Account_Type);
+
+         -- Direct_IO is instantiated for the buffer types defined in the
+         -- instantiated Storage_IO packages.
+
+         package Acct_DIO is new Ada.Direct_IO (Acct_SIO.Buffer_Type);
+         package Cash_DIO is new Ada.Direct_IO (Cash_SIO.Buffer_Type);
+         package Inv_DIO  is new Ada.Direct_IO (Inv_SIO.Buffer_Type);
+         package Chk_DIO  is new Ada.Direct_IO (Chk_SIO.Buffer_Type);
+         package Sav_DIO  is new Ada.Direct_IO (Sav_SIO.Buffer_Type);
+
+         Acct_Buffer : Acct_SIO.Buffer_Type;
+         Cash_Buffer : Cash_SIO.Buffer_Type;
+         Inv_Buffer  : Inv_SIO.Buffer_Type;
+         Chk_Buffer  : Chk_SIO.Buffer_Type;
+         Sav_Buffer  : Sav_SIO.Buffer_Type;
+
+         Acct_File   : Acct_DIO.File_Type;
+         Cash_File   : Cash_DIO.File_Type;
+         Inv_File    : Inv_DIO.File_Type;
+         Chk_File    : Chk_DIO.File_Type;
+         Sav_File    : Sav_DIO.File_Type;
+
+      begin
+
+         -- Open the Direct_IO files.
+
+         Acct_DIO.Open (Acct_File, Acct_DIO.In_File, Acct_Filename);
+         Cash_DIO.Open (Cash_File, Cash_DIO.In_File, Cash_Filename);
+         Inv_DIO.Open  (Inv_File,  Inv_DIO.In_File,  Inv_Filename);
+         Chk_DIO.Open  (Chk_File,  Chk_DIO.In_File,  Chk_Filename);
+         Sav_DIO.Open  (Sav_File,  Sav_DIO.In_File,  Sav_Filename);
+
+         -- Read the buffer data from the files using Direct_IO.
+
+         Acct_DIO.Read (File => Acct_File, Item => Acct_Buffer);
+         Cash_DIO.Read (Cash_File, Cash_Buffer);
+         Inv_DIO.Read  (Inv_File, Item => Inv_Buffer);
+         Chk_DIO.Read  (File => Chk_File, Item =>Chk_Buffer);
+         Sav_DIO.Read  (Sav_File, Sav_Buffer);
+
+         -- At this point, the data and associated tag values are stored
+         -- in buffers. Use the Storage_IO procedure Read to recreate the
+         -- tagged objects from the buffers.
+
+         Acct_SIO.Read (Buffer => Acct_Buffer, Item => Account);
+         Cash_SIO.Read (Cash_Buffer, Cash_Account);
+         Inv_SIO.Read  (Inv_Buffer, Item => Investment_Account);  
+         Chk_SIO.Read  (Buffer => Chk_Buffer, Item => Checking_Account);
+         Sav_SIO.Read  (Sav_Buffer, Savings_Account);
+
+         -- Delete all Direct_IO files.
+
+         Acct_DIO.Delete (Acct_File);
+         Cash_DIO.Delete (Cash_File);
+         Inv_DIO.Delete  (Inv_File); 
+         Chk_DIO.Delete  (Chk_File); 
+         Sav_DIO.Delete  (Sav_File); 
+
+         Data_Verification_Block:
+         begin
+
+            if Account /= TC_Account then
+               Report.Failed("Incorrect Account object reconstructed");
+            end if;
+
+            if Cash_Account /= TC_Cash_Account then
+               Report.Failed
+                 ("Incorrect Cash_Account object reconstructed");
+            end if;   
+
+            if Investment_Account /= TC_Investment_Account then
+               Report.Failed
+                 ("Incorrect Investment_Account object reconstructed");
+            end if;   
+
+            if Checking_Account /= TC_Checking_Account then
+               Report.Failed
+                 ("Incorrect Checking_Account object reconstructed");
+            end if;   
+
+            if Savings_Account /= TC_Savings_Account then
+               Report.Failed
+                 ("Incorrect Savings_Account object reconstructed");
+            end if;   
+               
+         exception
+            when others =>
+              Report.Failed
+                ("Exception raised during Data_Verification Block");
+         end Data_Verification_Block;
+
+
+         -- To ensure that the tags of the values reconstructed by 
+         -- Storage_IO were properly preserved, object tag values following 
+         -- object reconstruction are compared with tag values of objects
+         -- stored prior to processing.
+
+         Tag_Verification_Block:
+         begin
+
+            if TC_Account_Type_Tag.all /= 
+               Ada.Tags.External_Tag(Account_Type'Class(Account)'Tag)
+            then
+               Report.Failed("Incorrect Account tag");
+            end if;
+
+            if TC_Cash_Account_Type_Tag.all       /= 
+               Ada.Tags.External_Tag(
+                 Cash_Account_Type'Class(Cash_Account)'Tag)
+            then
+               Report.Failed("Incorrect Cash_Account tag");
+            end if;
+
+            if TC_Investment_Account_Type_Tag.all /=                 
+               Ada.Tags.External_Tag(
+                 Investment_Account_Type'Class(Investment_Account)'Tag)
+            then
+               Report.Failed("Incorrect Investment_Account tag");
+            end if;
+
+            if TC_Checking_Account_Type_Tag.all   /=
+               Ada.Tags.External_Tag(
+                 Checking_Account_Type'Class(Checking_Account)'Tag)
+            then
+               Report.Failed("Incorrect Checking_Account tag");
+            end if;
+
+            if TC_Savings_Account_Type_Tag.all    /=
+               Ada.Tags.External_Tag(
+                 Savings_Account_Type'Class(Savings_Account)'Tag)
+            then
+               Report.Failed("Incorrect Savings_Account tag");
+            end if;
+
+         exception
+            when others => 
+              Report.Failed ("Exception raised during tag evaluation");
+         end Tag_Verification_Block;
+
+      exception
+         when others => Report.Failed ("Exception in Read_Data");
+      end Read_Data;
+
+      begin  -- Test_Block
+
+      -- Enter the data into the appropriate files.
+      Buffer_Data;
+
+      -- Reconstruct the data from files, and verify the results.
+      Read_Data;
+
+   exception
+      when others => Report.Failed ("Exception raised in Test_Block");
+   end Test_Block;
+
+   Report.Result;
+
+exception
+   when Incomplete =>
+      Report.Result;
+   when others     =>
+      Report.Failed ( "Unexpected exception" );
+      Report.Result;
+
+end CXA9002;

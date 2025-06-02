@@ -1095,7 +1095,7 @@ vect_recog_cond_expr_convert_pattern (vec_info *vinfo,
 				      stmt_vec_info stmt_vinfo, tree *type_out)
 {
   gassign *last_stmt = dyn_cast <gassign *> (stmt_vinfo->stmt);
-  tree lhs, match[4], temp, type, new_lhs, op2;
+  tree lhs, match[4], temp, type, new_lhs, op2, op1;
   gimple *cond_stmt;
   gimple *pattern_stmt;
   enum tree_code code = NOP_EXPR;
@@ -1110,26 +1110,47 @@ vect_recog_cond_expr_convert_pattern (vec_info *vinfo,
   if (!gimple_cond_expr_convert_p (lhs, &match[0], NULL))
     return NULL;
 
-  vect_pattern_detected ("vect_recog_cond_expr_convert_pattern", last_stmt);
-
   if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (lhs)))
     code = INTEGRAL_TYPE_P (TREE_TYPE (match[1])) ? FLOAT_EXPR : CONVERT_EXPR;
   else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (match[1])))
     code = FIX_TRUNC_EXPR;
 
+  op1 = match[1];
   op2 = match[2];
-  type = TREE_TYPE (match[1]);
-  if (TYPE_SIGN (type) != TYPE_SIGN (TREE_TYPE (match[2])))
+  type = TREE_TYPE (op1);
+  /* When op1/op2 is REAL_CST, the conversion must be CONVERT_EXPR from
+     SCALAR_FLOAT_TYPE_P which is restricted in gimple_cond_expr_convert_p.
+     Otherwise, the conversion could be FLOAT_EXPR, FIX_TRUNC_EXPR
+     or CONVERT_EXPR.  */
+  if (TREE_CODE (op1) == REAL_CST)
     {
-      op2 = vect_recog_temp_ssa_var (type, NULL);
-      gimple* nop_stmt = gimple_build_assign (op2, NOP_EXPR, match[2]);
-      append_pattern_def_seq (vinfo, stmt_vinfo, nop_stmt,
-			      get_vectype_for_scalar_type (vinfo, type));
+      op1 = const_unop (CONVERT_EXPR, TREE_TYPE (op2), op1);
+      type = TREE_TYPE (op2);
+      if (op1 == NULL_TREE)
+	return NULL;
     }
+  else if (TREE_CODE (op2) == REAL_CST)
+    {
+      op2 = const_unop (FLOAT_EXPR, TREE_TYPE (op1), op2);
+      if (op2 == NULL_TREE)
+	return NULL;
+    }
+  else if (code == NOP_EXPR)
+    {
+      if (TYPE_SIGN (type) != TYPE_SIGN (TREE_TYPE (match[2])))
+	{
+	  op2 = vect_recog_temp_ssa_var (type, NULL);
+	  gimple* nop_stmt = gimple_build_assign (op2, NOP_EXPR, match[2]);
+	  append_pattern_def_seq (vinfo, stmt_vinfo, nop_stmt,
+				  get_vectype_for_scalar_type (vinfo, type));
+	}
+    }
+
+  vect_pattern_detected ("vect_recog_cond_expr_convert_pattern", last_stmt);
 
   temp = vect_recog_temp_ssa_var (type, NULL);
   cond_stmt = gimple_build_assign (temp, build3 (COND_EXPR, type, match[3],
-						 match[1], op2));
+						 op1, op2));
   append_pattern_def_seq (vinfo, stmt_vinfo, cond_stmt,
 			  get_vectype_for_scalar_type (vinfo, type));
   new_lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);

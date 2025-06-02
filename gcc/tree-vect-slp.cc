@@ -4557,6 +4557,15 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
       if (!SLP_TREE_CHILDREN (load).is_empty ())
 	continue;
 
+      /* For single-element interleaving spanning multiple vectors avoid
+	 lowering, we want to use VMAT_ELEMENTWISE later.  */
+      if (ld_lanes_lanes == 0
+	  && SLP_TREE_LANES (load) == 1
+	  && !DR_GROUP_NEXT_ELEMENT (first)
+	  && maybe_gt (group_lanes,
+		       TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (load))))
+	return;
+
       /* We want to pattern-match special cases here and keep those
 	 alone.  Candidates are splats and load-lane.  */
 

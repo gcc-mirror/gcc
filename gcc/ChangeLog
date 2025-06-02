@@ -1,3 +1,1527 @@
+2025-06-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR other/120493
+	* final.cc (call_from_call_insn): Change the argument type to
+	const rtx_call_insn *.
+	(get_call_rtx_from): New.
+	* rtl.h (is_a_helper <const rtx_call_insn *>::test): New.
+	(get_call_rtx_from): Moved to the final.cc section.
+	* rtlanal.cc (get_call_rtx_from): Removed.
+
+2025-06-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (optimize_vector_load): Set the vuse manually
+	on the new load statements. Also remove forward declaration since
+	the definition is before the first use.
+	(pass_forwprop::execute): Likewise for complex loads.
+	(pass_data_forwprop): Remove TODO_update_ssa.
+
+2025-06-01  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Fix line too long for sorts
+	of pattern.
+
+2025-06-01  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc: Remove include of reload.h.
+
+2025-06-01  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (movsf_internal):
+	Remove destination side constraint modifier '^' in the third
+	alternative.
+
+2025-06-01  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc
+	(xtensa_ira_change_pseudo_allocno_class):
+	New prototype and function.
+	(TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS): Define macro.
+	(xtensa_register_move_cost):
+	Change between integer and FP register move cost to a value
+	based on actual behavior, i.e. 2, the default and the same as
+	the move cost between integer registers.
+
+2025-05-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* function.h (struct function): Remove last_verified.
+	* gimple-harden-conditionals.cc (pass_data_harden_compares): Remove
+	TODO_verify_il.
+	(pass_data_harden_conditional_branches): Likewise.
+	* gimple-harden-control-flow.cc (pass_harden_control_flow_redundancy::execute):
+	Don't return TODO_verify_il.
+	* ipa-strub.cc (pass_data_ipa_strub): Remove TODO_verify_il.
+	* passes.cc (TODO_verify_il): Define.
+	(execute_function_todo): Don't use or set last_verified.
+	(clear_last_verified): Remove.
+	(execute_one_ipa_transform_pass): Update comment before execute_todo.
+	Assert that none of the todos have TODO_verify_il set on it.
+	(execute_one_pass): Don't call clear_last_verified on all functions.
+	Assert that none of the todos have TODO_verify_il set on it.
+	* tree-inline.cc (initialize_cfun): Don't copy last_verified.
+	* tree-pass.h (TODO_verify_all): Remove.
+	* tree-vrp.cc (pass_data_early_vrp): Remove TODO_verify_all.
+	(pass_data_fast_vrp): Likewise.
+
+2025-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120357
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Create
+	the conditional reduction induction IV increment before the
+	main IV exit.
+
+2025-05-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* doc/gm2.texi (-fm2-strict-type-reason): Document new flag.
+
+2025-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* diagnostic-format-html.cc (HTML_STYLE): Add ".highlight-a" and
+	".highlight-b".
+	(html_builder::make_element_for_diagnostic): Handle begin_color
+	and end_color.
+	* diagnostic-show-locus.cc (to_html::to_html): Add "richloc"
+	param and use it to initialize m_richloc.
+	(to_html::colorize_text_for_range_idx): Drop.
+	(to_html::get_location_range_by_idx): New.
+	(to_html::get_highlight_color_for_range_idx): New.
+	(to_html::m_richloc): New field.
+	(print_html_span_start): Update for new param of to_html ctor.
+	(line_printer::m_was_in_range_p): New field.
+	(line_printer::m_last_range_idx): New field.
+	(layout_printer<Sink>::print_source_line): Use set_in_range
+	and set_outside_range rather than colorization calls.
+	(layout_printer<Sink>::set_in_range): New.
+	(layout_printer<Sink>::set_outside_range): New.
+	(layout_printer<Sink>::print_annotation_line): Use set_in_range
+	and set_outside_range rather than colorization calls.
+	(layout_printer<to_text>::begin_label): Convert param from label
+	to state_idx.  Add "is_label_text" param and use it to guard logic
+	for turning off colorization within paths.
+	(layout_printer<to_html>::begin_label): Likewise.  Push <span>
+	for any highlight color.
+	(layout_printer<to_text>::end_label): Likewise.
+	(layout_printer<to_text>::end_label): Likewise, popping the
+	<span>.
+	(layout_printer<Sink>::print_any_labels): Convert begin/end_label
+	calls to pass in state_idx rather than label.  Use begin/end_label
+	rather than colorization calls.
+	(layout_printer<Sink>::layout_printer): Likewise.
+	(layout_printer<Sink>::layout_printer): Initialize new fields.
+	(diagnostic_source_print_policy::print_as_html): Update for new
+	param of to_html ctor.
+
+2025-05-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* passes.cc (execute_all_ipa_transforms): Fix typo in
+	commenet.
+
+2025-05-30  Joseph Myers  <josmyers@redhat.com>
+
+	* doc/standards.texi (C Language): Document library facilities
+	provided in terms of headers not declaring functions with external
+	linkage, not in terms of headers required of freestanding
+	implementations.
+	* doc/sourcebuild.texi (Subdirectories, Headers): Likewise.
+	* doc/trouble.texi (Standard Libraries): Likewise.
+
+2025-05-30  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (avg<v_double_trunc>3_ceil): Add insn
+	expand to leverage vaadd with rnu directly.
+
+2025-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120341
+	* tree-ssa-loop-im.cc (can_sm_ref_p): STRING_CSTs are readonly.
+	* tree-ssa-phiopt.cc (cond_store_replacement): Likewise.
+
+2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119835
+	* tree-nrv.cc (pass_nrv::execute): Defuse 'RESULT_DECL' check.
+
+2025-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.cc (colorizer::m_current_named_color): New
+	field.
+	(colorizer::set_named_color): Use it to consolidate repeated calls
+	to the same color.
+
+2025-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120457
+	* tree-vect-slp.cc (vect_lower_load_permutations): Implement
+	the same heuristics as load vectorization for single-element
+	interleaving that spans multiple vectors.
+
+2025-05-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120347
+	* rtlanal.cc (rtx_properties::try_to_add_src): Don't drop the
+	IN_MEM_LOAD and IN_MEM_STORE flags for autoinc registers.
+	* rtl-ssa/changes.cc (recog_level2): Check whether an
+	RTX_AUTOINCed register also appears outside of an address.
+
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_omp_ctx): Add IMPLICIT_MAPPERS field.
+	(new_omp_context): Initialise IMPLICIT_MAPPERS hash map.
+	(delete_omp_context): Delete IMPLICIT_MAPPERS hash map.
+	(instantiate_mapper_info): New structs.
+	(remap_mapper_decl_1, omp_mapper_copy_decl, omp_instantiate_mapper,
+	omp_instantiate_implicit_mappers): New functions.
+	(gimplify_scan_omp_clauses): Handle MAPPER_BINDING clauses.
+	(gimplify_adjust_omp_clauses): Instantiate implicit declared mappers.
+	(gimplify_omp_declare_mapper): New function.
+	(gimplify_expr): Call above function.
+	* langhooks-def.h (lhd_omp_mapper_lookup,
+	lhd_omp_extract_mapper_directive, lhd_omp_map_array_section): Add
+	prototypes.
+	(LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES,
+	LANG_HOOKS_OMP_MAPPER_LOOKUP, LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE,
+	LANG_HOOKS_OMP_MAP_ARRAY_SECTION): Define macros.
+	(LANG_HOOK_DECLS): Add above macros.
+	* langhooks.cc (lhd_omp_mapper_lookup,
+	lhd_omp_extract_mapper_directive, lhd_omp_map_array_section): New
+	dummy functions.
+	* langhooks.h (lang_hooks_for_decls): Add OMP_FINISH_MAPPER_CLAUSES,
+	OMP_MAPPER_LOOKUP, OMP_EXTRACT_MAPPER_DIRECTIVE, OMP_MAP_ARRAY_SECTION
+	hooks.
+	* omp-general.h (omp_name_type<T>): Add templatized struct, hash type
+	traits (for omp_name_type<tree> specialization).
+	(omp_mapper_list<T>): Add struct.
+	* tree-core.h (omp_clause_code): Add OMP_CLAUSE__MAPPER_BINDING_.
+	* tree-pretty-print.cc (dump_omp_clause): Support GOMP_MAP_UNSET,
+	GOMP_MAP_PUSH_MAPPER_NAME, GOMP_MAP_POP_MAPPER_NAME artificial mapping
+	clauses.  Support OMP_CLAUSE__MAPPER_BINDING_ and OMP_DECLARE_MAPPER.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Add
+	OMP_CLAUSE__MAPPER_BINDING_.
+	* tree.def (OMP_DECLARE_MAPPER): New tree code.
+	* tree.h (OMP_DECLARE_MAPPER_ID, OMP_DECLARE_MAPPER_DECL,
+	OMP_DECLARE_MAPPER_CLAUSES): New defines.
+	(OMP_CLAUSE__MAPPER_BINDING__ID, OMP_CLAUSE__MAPPER_BINDING__DECL,
+	OMP_CLAUSE__MAPPER_BINDING__MAPPER): New defines.
+
+2025-05-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-ssa-sccopy.cc (scc_copy_prop::replace_scc_by_value): Return true
+	if something was done.
+	(scc_copy_prop::propagate): Return true if something was changed.
+	(pass_sccopy::execute): Return TODO_cleanup_cfg if a prop happened.
+
+2025-05-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* auto-profile.cc (function_instance::merge): New.
+	(autofdo_source_profile::read): Call merge.
+
+2025-05-29  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* config/aarch64/gcc-auto-profile: Make script executable.
+
+2025-05-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (optimize_memcpy_to_memset): Adds
+	statistics when the statement changed.
+
+2025-05-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-forwprop.cc (optimize_memcpy_to_memset): Change check
+	from NULL/non-ssa name to default name.
+
+2025-05-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc (HTML_STYLE): Fix PatternFly URL in
+	comment.
+
+2025-05-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc
+	(html_builder::make_element_for_diagnostic::html_token_printer):
+	Reimplement in terms of xml::printer.
+	(html_builder::make_element_for_diagnostic): Create an
+	xml::printer and use it with the html_token_printer.
+
+2025-05-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc (html_builder::make_metadata_element):
+	Gracefully handle the case where "url" is null.
+
+2025-05-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.cc (pretty_printer::pretty_printer): Use "nullptr"
+	rather than "NULL".  Remove explicit delete of
+	m_format_postprocessor.
+	* pretty-print.h (format_postprocessor::clone): Use unique_ptr.
+	(pretty_printer::set_format_postprocessor): New.
+	(pretty_printer::m_format_postprocessor): Use unique_ptr.
+	(pp_format_postprocessor): Update for use of unique_ptr, removing
+	reference from return type.
+
+2025-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/120295
+	* ipa-prop.cc (update_jump_functions_after_inlining): Do not
+	combine pass-through jump functions with type-casts changing
+	signedness.
+
+2025-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.cc (ipa_dump_jump_function): Fix whitespace when
+	dumping IPA VRs.
+
+2025-05-29  Pranav Gorantla  <Pranav.Gorantla@amd.com>
+
+	* config/i386/i386-expand.cc (emit_reduc_half): Use shuffles to
+	generate reduc half for V4SI, similar modes.
+	* config/i386/i386.h (TARGET_SSE_REDUCTION_PREFER_PSHUF): New Macro.
+	* config/i386/x86-tune.def (X86_TUNE_SSE_REDUCTION_PREFER_PSHUF):
+	New tuning.
+
+2025-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/120464
+	* ggc-page.cc (struct ggc_globals): Fix up comment formatting.
+	(find_free_list): Likewise.
+	(alloc_page): For defined(USING_MALLOC_PAGE_GROUPS) use
+	free_list->free_pages instead of G.free_pages.
+	(do_release_pages): Add n1 and n2 arguments, make them used.
+	Move defined(USING_MALLOC_PAGE_GROUPS) page group freeing to
+	release_pages and dumping of statistics as well.  Formatting fixes.
+	(release_pages): Adjust do_release_pages caller, move here
+	defined(USING_MALLOC_PAGE_GROUPS) page group freeing and dumping
+	of statistics.
+	(ggc_handle_finalizers): Fix up comment formatting and typo.
+
+2025-05-29  Jerry Zhang Jian  <jerry.zhangjian@sifive.com>
+
+	* config/riscv/riscv-ext.def: New extensions
+	* config/riscv/riscv-ext.opt: Auto re-generated
+	* doc/riscv-ext.texi: Auto re-generated
+
+2025-05-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add
+	new case for MULT op.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op mult to no_shift_vx_ops.
+
+2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/119298
+	* config/i386/x86-tune-costs.h (struct processor_costs): Set addss cost
+	back to 2.
+
+2025-05-28  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* tree-vect-stmts.cc (vectorizable_load): Remove non-SLP paths.
+
+2025-05-28  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/120436
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct vset_def):
+	Avoid division by zero.
+	(struct vget_def): Ditto.
+	* config/riscv/riscv-vector-builtins.h (struct function_group_info):
+	Use required_extensions_specified instead of duplicating code.
+
+2025-05-28  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (avg<v_double_trunc>3_floor): Add insn
+	expand to leverage vaadd directly.
+
+2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.cc (cgraph_edge::maybe_hot_p): For auto-fdo turn 0
+	to non-zero.
+	* ipa-cp.cc (cs_interesting_for_ipcp_p): Do not trust
+	auto-fdo 0.
+	* profile-count.cc (profile_count::adjust_for_ipa_scaling): Likewise.
+	(profile_count::from_gcov_type): Fix formating.
+
+2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.cc (rebuild_frequencies): look harder for presence
+	of profile feedback.
+
+2025-05-28  Yuta Mukai  <mukai.yuta@fujitsu.com>
+
+	* config/aarch64/aarch64-cores.def (fujitsu-monaka): Update ISA
+	features.
+
+2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.cc (set_even_probabilities): Set quality to guessed.
+
+2025-05-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (update_count_by_afdo_count): New function.
+	(afdo_set_bb_count): Add debug output; only set count if it is
+	non-zero.
+	(afdo_find_equiv_class): Add debug output.
+	(afdo_calculate_branch_prob): Fix formating.
+	(afdo_annotate_cfg): Add debug output; do not erase static
+	profile if autofdo profile is all 0.
+
+2025-05-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* doc/extend.texi (C Extensions): Add missing menu items.
+
+2025-05-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/119181
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_accesses):
+	Split datarefs when there's a gap bigger than
+	MAX_BITSIZE_MODE_ANY_MODE.
+
+2025-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120400
+	* fold-const.cc (simple_operand_p): False for vars with
+	DECL_VALUE_EXPR.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/117025
+	* Makefile.in (USER_H): Add <stdcountof.h>.
+	* ginclude/stdcountof.h: New file.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+	    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117025
+	* doc/extend.texi: Document _Countof operator.
+
+2025-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/gcc-auto-profile: regenerate.
+
+2025-05-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (function_instance::mark_annotated): Remove.
+	(function_instance::total_annotated_count): Remove.
+	(autofdo_source_profile::mark_annotated): Remove.
+	(afdo_set_bb_count): Do not mark annotated locations.
+	(afdo_annotate_cfg): Likewise.
+
+2025-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-sra.cc (scan_expr_access): Also disqualify storage order
+	barriers from splitting.
+	* tree.h (storage_order_barrier_p): Also return false if the
+	operand of the VIEW_CONVERT_EXPR has reverse storage order.
+
+2025-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* diagnostic-format-html.cc: Define INCLUDE_STRING.
+	Include "xml.h", "xml-printer.h", and "json.h".
+	(html_generation_options::html_generation_options): New.
+	(namespace xml): Move decls to xml.h and convert from using
+	label_text to std::string.
+	(xml::text::write_as_xml): Reimplement indentation so it is done
+	by this node, rather than the parent.
+	(xml::node_with_children::add_text): Convert from label_text to
+	std::string.  Consolidate runs of text into a single node.
+	(xml::document::write_as_xml): Reimplement indentation.
+	(xml::element::write_as_xml): Reimplement indentation so it is
+	done by this node, rather than the parent.  Convert from
+	label_text to std::string.  Update attribute-printing to new
+	representation to preserve insertion order.
+	(xml::element::set_attr): Convert from label_text to std::string.
+	Record insertion order.
+	(xml::raw::write_as_xml): New.
+	(xml::printer::printer): New.
+	(xml::printer::push_tag): New.
+	(xml::printer::push_tag_with_class): New.
+	(xml::printer::pop_tag): New.
+	(xml::printer::set_attr): New.
+	(xml::printer::add_text): New.
+	(xml::printer::add_raw): New.
+	(xml::printer::push_element): New.
+	(xml::printer::append): New.
+	(xml::printer::get_insertion_point): New.
+	(html_builder::add_focus_id): New.
+	(html_builder::m_html_gen_opts): New field.
+	(html_builder::m_head_element): New field.
+	(html_builder::m_next_diag_id): New field.
+	(html_builder::m_ui_focus_ids): New field.
+	(make_div): Convert from label_text to std::string.
+	(make_span): Likewise.
+	(HTML_STYLE): New.
+	(HTML_SCRIPT): New.
+	(html_builder::html_builder): Fix indentation.  Add
+	"html_gen_opts" param.  Initialize new fields.  Reimplement
+	using xml::printer.  Optionally add style and script tags.
+	(class html_path_label_writer): New.
+	(html_builder::make_element_for_diagnostic): Convert from
+	label_text to std::string. Set "id" on "gcc-diagnostic" and
+	"gcc-message" <div> elements; add the latter to the focus ids.
+	Use diagnostic_context::maybe_show_locus_as_html rather than
+	html_builder::make_element_for_source.  Use print_path_as_html
+	rather than html_builder::make_element_for_path.
+	(html_builder::make_element_for_source): Drop.
+	(html_builder::make_element_for_path): Drop.
+	(html_builder::make_element_for_patch): Convert from label_text to
+	std::string.
+	(html_builder::make_metadata_element): Likewise.  Use
+	xml::printer.
+	(html_builder::make_element_for_metadata): Convert from label_text
+	to std::string.
+	(html_builder::emit_diagram): Expand comment.
+	(html_builder::flush_to_file): Write out initializer for
+	"focus_ids" into javascript.
+	(html_output_format::html_output_format): Add param
+	"html_gen_opts" and use it to initialize m_builder.
+	(html_file_output_format::html_file_output_format): Likewise, to
+	initialize base class.
+	(make_html_sink): Likewise, to pass to ctor.
+	(selftest::test_html_diagnostic_context::test_html_diagnostic_context):
+	Set up html_generation_options.
+	(selftest::html_buffered_output_format::html_buffered_output_format):
+	Add html_gen_opts param.
+	(selftest::test_simple_log): Add id attributes to expected text
+	for "gcc-diagnostic" and "gcc-message" elements.  Update
+	whitespace for indentation fixes.
+	(selftest::test_metadata): Update whitespace for indentation
+	fixes.
+	(selftest::test_printer): New selftest.
+	(selftest::test_attribute_ordering): New selftest.
+	(selftest::diagnostic_format_html_cc_tests): Call the new
+	selftests.
+	* diagnostic-format-html.h (struct html_generation_options): New.
+	(make_html_sink): Add "html_gen_opts" param.
+	(print_path_as_html): New decl.
+	* diagnostic-path-output.cc: Define INCLUDE_MAP.  Add includes of
+	"diagnostic-format-html.h", "xml.h", and "xml-printer.h".
+	(path_print_policy::path_print_policy): Add ctor.
+	(path_print_policy::get_diagram_theme): Fix whitespace.
+	(struct stack_frame): New.
+	(begin_html_stack_frame): New function.
+	(end_html_stack_frame): New function.
+	(emit_svg_arrow): New function.
+	(event_range::print): Rename to...
+	(event_range::print_as_text): ...this.  Update call to
+	diagnostic_start_span.
+	(event_range::print_as_html): New, based on the above, but ported
+	from pretty_printer to xml::printer.
+	(thread_event_printer::print_swimlane_for_event_range): Rename
+	to...
+	(thread_event_printer::print_swimlane_for_event_range_as_text):
+	...this.  Update for renaming of event_range::print to
+	event_range::print_as_text.
+	(thread_event_printer::print_swimlane_for_event_range_as_html):
+	New.
+	(print_path_summary_as_text): Update for "_as_text" renaming.
+	(print_path_summary_as_html): New.
+	(print_path_as_html): New.
+	* diagnostic-show-locus.cc: Add defines of INCLUDE_MAP and
+	INCLUDE_STRING.  Add includes of "xml.h" and "xml-printer.h".
+	(struct char_display_policy): Replace "m_print_cb" with
+	"m_print_text_cb" and "m_print_html_cb".
+	(struct to_text): New.
+	(struct to_html): New.
+	(get_printer): New.
+	(default_diagnostic_start_span_fn<to_text>): New.
+	(default_diagnostic_start_span_fn<to_html>): New.
+	(class layout): Update "friend class layout_printer;" for
+	template.
+	(enum class margin_kind): New.
+	(class layout_printer): Convert into a template.
+	(layout_printer::m_pp): Replace field with...
+	(layout_printer::m_sink): ...this.
+	(layout_printer::m_colorizer): Drop field in favor of a pointer
+	in the "to_text" sink.
+	(default_print_decoded_ch): Convert into a template.
+	(escape_as_bytes_print): Likewise.
+	(escape_as_unicode_print): Likewise.
+	(make_char_policy): Update to use both text and html callbacks.
+	(layout_printer::print_gap_in_line_numbering): Replace with...
+	(layout_printer<to_text>::print_gap_in_line_numbering): ...this
+	(layout_printer<to_html>::print_gap_in_line_numbering): ...and
+	this.
+	(layout_printer::print_source_line): Convert to template, using
+	m_sink.
+	(layout_printer::print_leftmost_column): Likewise.
+	(layout_printer::start_annotation_line): Likewise.
+	(layout_printer<to_text>::end_line): New.
+	(layout_printer<to_html>::end_line): New.
+	(layout_printer::print_annotation_line): Convert to template,
+	using m_sink.
+	(class line_label): Add field m_original_range_idx.
+	(layout_printer<to_text>::begin_label): New.
+	(layout_printer<to_html>::begin_label): New.
+	(layout_printer<to_text>::end_label): New.
+	(layout_printer<to_html>::end_label): New.
+	(layout_printer::print_any_labels): Convert to template, using
+	m_sink.
+	(layout_printer::print_leading_fixits): Likewise.
+	(layout_printer::print_trailing_fixits): Likewise.
+	(layout_printer::print_newline): Drop.
+	(layout_printer::move_to_column): Convert to template, using
+	m_sink.
+	(layout_printer::show_ruler): Likewise.
+	(layout_printer::print_line): Likewise.
+	(layout_printer::print_any_right_to_left_edge_lines): Likewise.
+	(layout_printer::layout_printer): Likewise.
+	(diagnostic_context::maybe_show_locus_as_html): New.
+	(diagnostic_source_print_policy::diagnostic_source_print_policy):
+	Update for split of start_span_cb into text vs html variants.
+	(diagnostic_source_print_policy::print): Update for use of
+	templates; use to_text.
+	(diagnostic_source_print_policy::print_as_html): New.
+	(layout_printer::print): Convert to template, using m_sink.
+	(selftest::make_element_for_locus): New.
+	(selftest::make_raw_html_for_locus): New.
+	(selftest::test_layout_x_offset_display_utf8): Update for use of
+	templates.
+	(selftest::test_layout_x_offset_display_tab): Likewise.
+	(selftest::test_one_liner_caret_and_range): Add test coverage of
+	HTML output.
+	(selftest::test_one_liner_labels): Likewise.
+	* diagnostic.cc (diagnostic_context::initialize): Update for split
+	of start_span_cb into text vs html variants.
+	(default_diagnostic_start_span_fn): Move to
+	diagnostic-show-locus.cc, converting to template.
+	* diagnostic.h (class xml::printer): New forward decl.
+	(diagnostic_start_span_fn): Replace typedef with "using",
+	converting to a template.
+	(struct to_text): New forward decl.
+	(struct to_html): New forward decl.
+	(get_printer): New decl.
+	(diagnostic_location_print_policy::print_text_span_start): New
+	decl.
+	(diagnostic_location_print_policy::print_html_span_start): New
+	decl.
+	(class html_label_writer): New.
+	(diagnostic_source_print_policy::print_as_html): New decl.
+	(diagnostic_source_print_policy::get_start_span_fn): Replace
+	with...
+	(diagnostic_source_print_policy::get_text_start_span_fn): ...this
+	(diagnostic_source_print_policy::get_html_start_span_fn): ...and
+	this
+	(diagnostic_source_print_policy::m_start_span_cb): Replace with...
+	(diagnostic_source_print_policy::m_text_start_span_cb): ...this
+	(diagnostic_source_print_policy::m_html_start_span_cb): ...and
+	this.
+	(diagnostic_context::maybe_show_locus_as_html): New decl.
+	(diagnostic_context::m_text_callbacks::m_start_span): Replace
+	with...
+	(diagnostic_context::m_text_callbacks::m_text_start_span): ...this
+	(diagnostic_context::m_text_callbacks::m_html_start_span): ...and
+	this.
+	(diagnostic_start_span): Update for template change.
+	(diagnostic_show_locus_as_html): New inline function.
+	(default_diagnostic_start_span_fn): Convert to template.
+	* doc/invoke.texi (experimental-html): Add "css" and "javascript"
+	keys.
+	* opts-diagnostic.cc (html_scheme_handler::make_sink): Likewise.
+	* selftest-diagnostic.cc
+	(selftest::test_diagnostic_context::start_span_cb): Update for
+	template changes.
+	* selftest-diagnostic.h
+	(selftest::test_diagnostic_context::start_span_cb): Likewise.
+	* xml-printer.h: New file.
+	* xml.h: New file, based on material in diagnostic-format-html.cc,
+	but using std::string rather than label_text.
+	(xml::element::m_key_insertion_order): New field.
+	(struct xml::raw): New.
+
+2025-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostic-path-output.o.
+	* diagnostic-path-output.cc: New file, taken from material in
+	diagnostic-path.cc.
+	* diagnostic-path.cc: Drop includes of
+	"diagnostic-macro-unwinding.h", "intl.h", "gcc-rich-location.h",
+	"diagnostic-color.h", "diagnostic-event-id.h",
+	"diagnostic-label-effects.h", "pretty-print-markup.h",
+	"selftest.h", "selftest-diagnostic.h",
+	"selftest-diagnostic-path.h", "text-art/theme.h", and
+	"diagnostic-format-text.h".
+	(class path_print_policy): Move to diagnostic-path-output.cc.
+	(class path_label): Likewise.
+	(can_consolidate_events): Likewise.
+	(class per_thread_summary): Likewise.
+	(struct event_range): Likewise.
+	(struct path_summary): Likewise.
+	(per_thread_summary::interprocedural_p): Likewise.
+	(path_summary::path_summary): Likewise.
+	(write_indent): Likewise.
+	(base_indent): Likewise.
+	(per_frame_indent): Likewise.
+	(class thread_event_printer): Likewise.
+	(print_path_summary_as_text): Likewise.
+	(class element_event_desc): Likewise.
+	(diagnostic_text_output_format::print_path): Likewise.
+	(selftest::path_events_have_column_data_p): Likewise.
+	(selftest::test_empty_path): Likewise.
+	(selftest::test_intraprocedural_path): Likewise.
+	(selftest::test_interprocedural_path_1): Likewise.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+	(class selftest::control_flow_test): Likewise.
+	(selftest::test_control_flow_1): Likewise.
+	(selftest::test_control_flow_2): Likewise.
+	(selftest::test_control_flow_3): Likewise.
+	(selftest::assert_cfg_edge_path_streq): Likewise.
+	(ASSERT_CFG_EDGE_PATH_STREQ): Likewise.
+	(selftest::test_control_flow_4): Likewise.
+	(selftest::test_control_flow_5): Likewise.
+	(selftest::test_control_flow_6): Likewise.
+	(selftest::control_flow_tests): Likewise.
+	(selftest::diagnostic_path_cc_tests): Likewise, renaming
+	accordingly.
+	* selftest-run-tests.cc (selftest::run_tests): Update for
+	move of path-printing selftests.
+	* selftest.h (selftest::diagnostic_path_cc_tests): Replace decl
+	with...
+	(selftest::diagnostic_path_output_cc_tests): ...this.
+
+2025-05-27  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/vector.md(*vec_extract<mode>): Fix mnemonic.
+
+2025-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117965
+	* tree-ssa-phiprop.cc (phivn_valid_p): Remove.
+	(propagate_with_phi): Pass in virtual PHI node from BB,
+	rewrite load motion validity check to require the same
+	virtual use along all paths.
+
+2025-05-27  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/119884
+	* avoid-store-forwarding.cc (process_store_forwarding):
+	Use `lowpart_subreg` for the base register initialization
+	and remove redundant stores from the store/load sequence.
+
+2025-05-27  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* sbitmap.cc (bitmap_any_bit_in_range_p):
+	Call and return the result of `bitmap_bit_in_range_p` with the
+	`any_inverted` parameter set to false.
+	(bitmap_bit_in_range_p): New function.
+	(bitmap_all_bits_in_range_p): New function.
+	* sbitmap.h (bitmap_all_bits_in_range_p): New function.
+
+2025-05-27  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* sbitmap.cc (bitmap_bit_in_range_p): Renamed the function.
+	(bitmap_any_bit_in_range_p): New function name.
+	(bitmap_bit_in_range_p_checking): Renamed the function.
+	(bitmap_any_bit_in_range_p_checking): New function name.
+	(test_set_range): Updated function calls to use the new name.
+	(test_bit_in_range): Likewise.
+	* sbitmap.h (bitmap_bit_in_range_p): Renamed the function.
+	(bitmap_any_bit_in_range_p): New function name.
+	* tree-ssa-dse.cc (live_bytes_read):
+	Updated function call to use the new name.
+
+2025-05-27  Co-authored-by: Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (andi+bclr splits): Simplified from
+	prior define_insn_and_splits.
+	* config/riscv/riscv.cc (synthesize_and): Add support for andi+bclr
+	sequences.
+
+2025-05-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add
+	new case for XOR op.
+	(expand_vx_binary_vec_vec_dup): Diito.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op or to no_shift_vx_ops.
+
+2025-05-27  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/vector.md (VF): New mode iterator.
+	(VEC_SET_NONFLOAT): New mode iterator.
+	(VEC_SET_SINGLEFLOAT): New mode iterator.
+	(*vec_set<mode>): Split pattern in two.
+	(*vec_setv2df): Extract special handling for V2DF mode.
+	(*vec_extract<mode>): Split pattern in two.
+
+2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Common Variable Attributes): Fix typo in
+	description of nonstring.
+
+2025-05-27  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.cc (find_multilib_os_dir_by_multilib_dir): New.
+	(set_multilib_dir): Fix multilib_os_dir and multiarch_dir
+	if multilib_os_dir is not set.
+
+2025-05-27  xuli  <xuli1@eswincomputing.com>
+
+	* match.pd: add singned vector SAT_ADD IMM form1 matching.
+
+2025-05-27  xuli  <xuli1@eswincomputing.com>
+
+	* match.pd: Add signed scalar SAT_ADD IMM form1 with IMM=-1 matching.
+	* tree-ssa-math-opts.cc (match_unsigned_saturation_add): Adapt function name.
+	(match_saturation_add_with_assign): Match signed and unsigned SAT_ADD with assign.
+	(math_opts_dom_walker::after_dom_children): Match imm=-1 signed SAT_ADD with NOP_EXPR case.
+
+2025-05-26  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Move C++ -fdump-lang to C++ section.
+	Add -fdump-lang-tinst.
+
+2025-05-26  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* config/aarch64/gcc-auto-profile: New file.
+
+2025-05-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.cc: Remove include of reload.h .
+
+2025-05-26  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* ipa-split.cc (pass_feedback_split_functions::clone): New.
+	* passes.def: Enable pass_feedback_split_functions for
+	pass_ipa_auto_profile.
+
+2025-05-25  Michael J. Eager  <eager@eagercon.com>
+
+	PR target/86772
+	Tracking CVE-2017-5753
+	* config/microblaze/microblaze.cc (TARGET_HAVE_SPECULATION_SAFE_VALUE):
+	Define to speculation_save_value_not_needed
+
+2025-05-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.cc (ix86_builtin_vectorization_cost):
+	use sse_op instead of addss to cost vinsertti128 and vinsertti64x4;
+	compute correct mode of vinsertti128.
+	(ix86_vector_costs::add_stmt_cost): For integer 256bit and 512bit
+	vector constructions account more integer_to_sse moves.
+
+2025-05-25  LIU Hao  <lh_mouse@126.com>
+
+	PR target/53929
+	PR target/80881
+	* config/i386/i386-protos.h (ix86_asm_output_labelref): Declare new
+	function for quoting user-defined symbols in Intel syntax.
+	* config/i386/i386.cc (ix86_asm_output_labelref): Implement it.
+	* config/i386/i386.h (ASM_OUTPUT_LABELREF): Use it.
+	* config/i386/cygming.h (ASM_OUTPUT_LABELREF): Use it.
+
+2025-05-24  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	* config/riscv/riscv.cc (synthesize_and): Use a srl+andi+sll
+	sequence when the mask fits in a simm12 after shifting by the
+	number of trailing zeros.
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2025-05-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add new
+	case for IOR op.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op or to no_shift_vx_ops.
+
+2025-05-23  Andi Kleen  <ak@gcc.gnu.org>
+
+	* doc/install.texi: Document bootstrap-native.
+
+2025-05-23  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR middle-end/114563
+	PR c++/119387
+	* ggc-page.cc (struct free_list): New structure.
+	(struct page_entry): Point to free_list.
+	(find_free_list): New function.
+	(find_free_list_order): Dito.
+	(alloc_page): Use specific free_list.
+	(release_pages): Dito.
+	(do_release_pages): Dito.
+	(init_ggc): Dito.
+	(ggc_print_statistics): Print overflow stat.
+	(ggc_pch_read): Use specific free list.
+
+2025-05-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/implement-c.texi (C Implementation): Add missing menu items.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::parse_base_ext):
+	Adjust error message.
+	(riscv_handle_option): Parse as CPU string first.
+	(riscv_expand_arch): Ditto.
+	* doc/invoke.texi: Document.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (autovectorize_vector_modes): Return
+	user-specified mode if available.
+	* config/riscv/riscv.opt: New param.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv.cc (singleton_vxrm_need): Init
+	saved_vxrm_mode.
+
+2025-05-23  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-vector-costs.cc (compute_estimated_lmul):
+	Always use vect_vf_for_cost and TARGET_MIN_VLEN.
+
+2025-05-23  Dhruv Chawla  <dhruvc@nvidia.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* expmed.cc (expand_rotate_as_vec_perm): Avoid a no-op move if the
+	target already provided the result in the expected register.
+	* config/aarch64/aarch64.cc (aarch64_vectorize_vec_perm_const):
+	Avoid forcing subregs into fresh registers unnecessarily.
+	* config/aarch64/aarch64-sve.md: Add define_split for rotate.
+	(*v_revvnx8hi): New pattern.
+
+2025-05-23  Dhruv Chawla  <dhruvc@nvidia.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_adr<mode>_shift):
+	Match lowered form of ashift.
+	(*aarch64_adr<mode>_shift): Likewise.
+	(*aarch64_adr_shift_sxtw): Likewise.
+	(*aarch64_adr_shift_uxtw): Likewise.
+	(<ASHIFT:optab><mode>3): Check amount instead of operands[2] in
+	aarch64_sve_<lr>shift_operand.
+	(v<optab><mode>3): Generate unpredicated shifts for constant
+	operands.
+	(@aarch64_pred_<optab><mode>): Convert to a define_expand.
+	(*aarch64_pred_<optab><mode>): Create define_insn_and_split pattern
+	from @aarch64_pred_<optab><mode>.
+	(*post_ra_v_ashl<mode>3): Rename to ...
+	(aarch64_vashl<mode>3_const): ... this and remove reload requirement.
+	(*post_ra_v_<optab><mode>3): Rename to ...
+	(aarch64_v<optab><mode>3_const): ... this and remove reload
+	requirement.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve_add_<sve_int_op><mode>): Match lowered form of
+	SHIFTRT.
+	(*aarch64_sve2_sra<mode>): Likewise.
+	(*bitmask_shift_plus<mode>): Match lowered form of lshiftrt.
+
+2025-05-22  Joseph Myers  <josmyers@redhat.com>
+
+	* doc/implement-c.texi: Document C23 implementation-defined
+	behavior.
+	(Constant expressions implementation, Types implementation): New
+	nodes.
+
+2025-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.cc (loc_list_from_tree_1) <COMPONENT_REF>: Add specific
+	handling of bit-fields for big-endian targets.
+
+2025-05-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/aarch64/aarch64-vxworks.h (TARGET_OS_USES_R18): Define.
+	Update comments.
+	* config/aarch64/aarch64.cc (aarch64_conditional_register_usage):
+	Mark x18 as fixed on VxWorks.
+	(aarch64_override_options_internal): Issue sorry message on
+	-fsanitize=shadow-call-stack if TARGET_OS_USES_R18.
+
+2025-05-22  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	* config/riscv/riscv.cc (synthesize_and): When profitable, use a three
+	shift sequence to clear bits at both upper and lower bits rather than
+	synthesizing the constant mask.
+
+2025-05-22  Siarhei Volkau  <lis8215@gmail.com>
+
+	PR target/70557
+	* config/riscv/riscv.md (movdi_32bit): Add "J" constraint to allow storing 0
+	directly to memory.
+
+2025-05-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/120372
+	* config/aarch64/aarch64.cc (aarch64_rtx_costs <case CONST_INSN>): Handle
+	if outer is COMPARE and the constant can be handled by the cmp instruction.
+
+2025-05-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* expmed.cc (canonicalize_comparison): Use rtx_cost directly
+	instead of gen_move_insn. Print out the choice if dump is enabled.
+
+2025-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (bitint_extended): New variable.
+	(bitint_large_huge::lower_shift_stmt): For LSHIFT_EXPR with
+	bitint_extended if lhs has most significant partial limb extend
+	it afterwards.
+
+2025-05-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* doc/md.texi: Document the 'q' constraint for LoongArch.
+
+2025-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/120360
+	* config/i386/predicates.md (x86_64_neg_const_int_operand): New
+	predicate.
+	* config/i386/i386.md (*cmp<mode>_plus_1): New pattern.
+
+2025-05-22  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	* config/riscv/riscv.cc (synthesize_and): When profitable, use two
+	shift combinations to clear high or low bits rather than synthsizing
+	the constant.
+
+2025-05-22  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	* config/aarch64/aarch64.cc (aarch64_evpc_reencode): Copy zero_op0_p and
+	zero_op1_p from d to newd.
+
+2025-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/120090
+	* combine.cc (gen_lowpart_for_combine_no_emit): New function.
+	(RTL_HOOKS_GEN_LOWPART_NO_EMIT): Set to gen_lowpart_for_combine_no_emit.
+
+2025-05-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md ((x << C1) + C2): Tighten split condition
+	and generate more efficient code when splitting.
+
+2025-05-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120368
+	* config/riscv/riscv.md (shift with masked shift count): Fix
+	opcode when generating an SImode shift on rv64.
+
+2025-05-21  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add new
+	case for rtx code AND.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op and to no_shift_vx_ops.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gensupport.h (needs_barrier_p): Delete.
+	* gensupport.cc (needs_barrier_p): Likewise.
+	* rtl.h (always_void_p): Return true for PC, RETURN and SIMPLE_RETURN.
+	(expand_opcode): New enum class.
+	(expand_rtx, complete_seq): Declare.
+	* emit-rtl.cc (rtx_expander): New class.
+	(expand_rtx, complete_seq): New functions.
+	* gengenrtl.cc (special_rtx, excluded_rtx): Add a cross-reference
+	comment.
+	* genemit.cc (FIRST_CODE): New constant.
+	(print_code): Delete.
+	(generator::file, generator::used, generator::sequence_type): Delete.
+	(generator::bytes): New member variable.
+	(generator::generator): Update accordingly.
+	(generator::gen_rtx_scratch): Delete.
+	(generator::add_uint, generator::add_opcode, generator::add_code)
+	(generator::add_match_operator, generator::add_exp)
+	(generator::add_vec, generator::gen_table): New member functions.
+	(generator::gen_exp): Rewrite to use a bytecode expansion.
+	(generator::gen_emit_seq): Likewise.
+	(start_gen_insn): Return the C++ expression for the operands array.
+	(gen_insn, gen_expand, gen_split): Update callers accordingly.
+	(emit_c_code): Remove use of _val.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (clobber_pat::code): Delete.
+	(maybe_queue_insn): Don't set clobber_pat::code.
+	(output_add_clobbers): Remove info argument and output the two
+	REG and SCRATCH cases directly.
+	(main): Update call accordingly.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (generator::gen_exp): Report an error for 's' operands.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (generator::gen_exp): Raise an error if we see
+	an 'L' operand.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (generator::used): Update comment.
+	(generator::gen_exp): Remove handling of null unused arrays.
+	(gen_insn, gen_expand): Always pass a used array.
+	(output_add_clobbers): Note why the used array is null here.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (generator): New structure.
+	(gen_rtx_scratch, gen_exp, gen_emit_seq): Turn into member
+	functions of generator.
+	(gen_insn, gen_expand, gen_split, output_add_clobbers): Update
+	users accordingly.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (gen_rtx_scratch, gen_exp): Use operands[%d] rather than
+	operand%d.
+	(start_gen_insn): Mark the incoming arguments as const and store
+	them to an operands array.
+	(gen_expand, gen_split): Remove copies into and out of the operands
+	array.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (start_gen_insn): New function, split out from...
+	(gen_insn, gen_expand): ...here.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (queue): New static variable.
+	(maybe_queue_insn): New function, split out from...
+	(gen_insn): ...here.
+	(queue_expand): New function, split out from...
+	(gen_expand): ...here.
+	(gen_split): New function, split out from...
+	(queue_split): ...here.
+	(main): Queue definitions for later processing rather than
+	emitting them on the fly.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genemit.cc (gen_exp): Make the info argument a constant reference.
+	(gen_emit_seq, gen_insn, gen_expand, gen_split): Likewise.
+	(output_add_clobbers): Likewise.
+	(main): Update calls accordingly.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/sparc/sparc.md (zero_extendhisi2, zero_extendhidi2)
+	(extendhisi2, extendqihi2, extendqisi2, extendqidi2)
+	(extendhidi2): Use operands[0] and operands[1] instead of
+	operand0 and operand1.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/stormy16/stormy16.md (negsi2): Remove unused assignment.
+
+2025-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100837
+	* config/nds32/nds32-intrinsic.md (unspec_get_pending_int): Use
+	a local variable instead of operands[2].
+
+2025-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/120369
+	* tree-complex.cc (gimple_expand_builtin_cabs): Return early
+	if the LHS of cabs is null.
+
+2025-05-21  Co-Authored-By: Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-protos.h (synthesize_and): Prototype.
+	* config/riscv/riscv.cc (synthesize_and): New function.
+	* config/riscv/riscv.md (and<mode>3): Use it.
+
+2025-05-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/118994
+	* match.pd ((a >> 1) + (b >> 1) + ((a | b) & 1) to
+	.AVG_CEIL (a, b)): New pattern.
+	((a | b) - ((a ^ b) >> 1) to .AVG_CEIL (a, b)): Ditto.
+
+2025-05-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* Makefile.in (gimple-match-exports.o-warn): Remove.
+	* gimple-match-exports.cc (gimple_extract): Remove valueize_condition
+	argument.
+	(gimple_extract_op): Update call to gimple_extract.
+	(gimple_simplify): Likewise. Also remove valueize_condition lambda.
+
+2025-05-20  Umesh Kalappa  <ukalappa.mips@gmail.com>
+
+	* config/riscv/mips-p8700.md (mips_p8700_dummies): New
+	reservation.
+	(mips_p8700_unknown): Reservation for all the dummies.
+
+2025-05-20  Umesh Kalappa  <ukalappa.mips@gmail.com>
+
+	* config/riscv/mips-p8700.md: New scheduler model.
+	* config/riscv/riscv-cores.def (mips-p87000): New tuning model
+	and core architecture.
+	* config/riscv/riscv-opts.h (riscv_microarchitecture_type); Add
+	mips-p8700.
+	* config/riscv/riscv.cc (mips_p8700_tune_info): New uarch
+	tuning parameters.
+	* config/riscv/riscv.md (tune): Add mips_p8700.
+	Include mips-p8700.md
+	* doc/invoke.texi: Document tune/cpu options for the MIPS P8700.
+	Co-authored-by: Jeff Law <jlaw@ventanamicro.com>
+
+2025-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-chrec.cc (convert_affine_scev): Use signed_type_for instead of
+	build_nonstandard_integer_type.
+
+2025-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-lower-bitint.cc (bitint_big_endian): New variable.
+	(bitint_precision_kind): Set it.
+	(struct bitint_large_huge): Add unsigned argument to
+	finish_arith_overflow.
+	(bitint_large_huge::limb_access_type): Handle bitint_big_endian.
+	(bitint_large_huge::handle_operand): Likewise.
+	(bitint_large_huge::handle_cast): Likewise.
+	(bitint_large_huge::handle_bit_field_ref): Likewise.
+	(bitint_large_huge::handle_load): Likewise.
+	(bitint_large_huge::lower_shift_stmt): Likewise.
+	(bitint_large_huge::finish_arith_overflow): Likewise.
+	Add nelts argument.
+	(bitint_large_huge::lower_addsub_overflow): Handle bitint_big_endian.
+	Adjust finish_arith_overflow caller.
+	(bitint_large_huge::lower_mul_overflow): Likewise.
+	(bitint_large_huge::lower_bit_query): Handle bitint_big_endian.
+	(bitint_large_huge::lower_stmt): Likewise.
+	(build_bitint_stmt_ssa_conflicts): Likewise.
+	(gimple_lower_bitint): Likewise.
+
+2025-05-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (various splits): Avoid writing the output
+	more than once when trivially possible.
+
+2025-05-20  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/103771
+	* match.pd (cond_expr_convert_p): Extend the match to handle
+	REAL_CST.
+	* tree-vect-patterns.cc
+	(vect_recog_cond_expr_convert_pattern): Handle REAL_CST.
+
+2025-05-20  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md: Leverage the new add func to
+	expand the vx insn.
+	* config/riscv/riscv-protos.h (expand_vx_binary_vec_dup_vec): Add
+	new func decl to expand format v = vop(vec_dup(x), v).
+	(expand_vx_binary_vec_vec_dup): Diito but for format
+	v = vop(v, vec_dup(x)).
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add new
+	func impl to expand vx for v = vop(vec_dup(x), v).
+	(expand_vx_binary_vec_vec_dup): Diito but for another format
+	v = vop(v, vec_dup(x)).
+
+2025-05-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120333
+	* config/riscv/bitmanip.md: Remove bext formed from left+right
+	shift patterns.
+
+2025-05-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-hpux.h (TARGET_HAVE_LIBATOMIC): Define.
+	(HAVE_sync_compare_and_swapqi): Likewise.
+	(HAVE_sync_compare_and_swaphi): Likewise.
+	(HAVE_sync_compare_and_swapsi): Likewise.
+	(HAVE_sync_compare_and_swapdi): Likewise.
+
+2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR lto/120308
+	* lto-streamer-out.cc (hash_tree): Don't handle 'TYPE_EMPTY_P' for
+	'lto_stream_offload_p'.
+	* tree-streamer-in.cc (unpack_ts_type_common_value_fields):
+	Likewise.
+	* tree-streamer-out.cc (pack_ts_type_common_value_fields):
+	Likewise.
+
+2025-05-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (synthesize_ior_xor): Initialize OUTPUT and
+	verify it's non-null before emitting the final copy insn.
+
+2025-05-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/120351
+	* config/arm/predicates.md (mem_noofs_operand): Also check the op
+	is a valid memory_operand.
+
+2025-05-19  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc (get_riscv_ext_info): Fix argument type.
+	(riscv_subset_list::check_implied_ext): Type conversion.
+
+2025-05-19  zhusonghe  <zhusonghe@eswincomputing.com>
+
+	* config/riscv/gen-riscv-ext-texi.cc (struct version_t):rename
+	major/minor to major_version/minor_version.
+
+2025-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Handle
+	load/store with odd-even reg pair.
+	(riscv_split_64bit_move_p): Don't split load/store if zilsd enabled.
+	(riscv_hard_regno_mode_ok): Only allow even reg can be used for
+	64 bits mode for zilsd.
+
+2025-05-19  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR middle-end/120276
+	* regcprop.cc (copy_value): Return in case of unordered modes.
+
+2025-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/constraints.md (cR): New constraint.
+	* doc/md.texi (Machine Constraints::RISC-V): Document the new cR
+	constraint.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config.gcc: Remove 512 intrin file.
+	* config/i386/avx10_2-512bf16intrin.h:
+	Removed and combined to ...
+	* config/i386/avx10_2bf16intrin.h: ... this.
+	* config/i386/avx10_2-512convertintrin.h:
+	Removed and combined to ...
+	* config/i386/avx10_2convertintrin.h: ... this.
+	* config/i386/avx10_2-512mediaintrin.h:
+	Removed and combined to ...
+	* config/i386/avx10_2mediaintrin.h: ... this.
+	* config/i386/avx10_2-512minmaxintrin.h:
+	Removed and combined to ...
+	* config/i386/avx10_2minmaxintrin.h: ... this.
+	* config/i386/avx10_2-512satcvtintrin.h:
+	Removed and combined to ...
+	* config/i386/avx10_2satcvtintrin.h: ... this.
+	* config/i386/immintrin.h: Remove 512 intrin file.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/sse.md (VF1_VF2_AVX10_2): Removed.
+	(VF2_AVX10_2): Ditto.
+	(VI1248_AVX10_2): Ditto.
+	(VFH_AVX10_2): Ditto.
+	(VF1_AVX10_2): Ditto.
+	(VHF_AVX10_2): Ditto.
+	(VBF_AVX10_2): Ditto.
+	(VI8_AVX10_2): Ditto.
+	(VI2_AVX10_2): Ditto.
+	(VBF): New.
+	(div<mode>3): Use VBF instead of AVX10.2 ones.
+	(vec_cmp<mode><avx512fmaskmodelower>): Ditto.
+	(avx10_2_cvt2ps2phx_<mode><mask_name><round_name>):
+	Use VHF_AVX512VL instead of AVX10.2 ones.
+	(vcvt<convertfp8_pack><mode><mask_name>): Ditto.
+	(vcvthf82ph<mode><mask_name>): Ditto.
+	(VHF_AVX10_2_2): Remove not needed TARGET_AVX10_2.
+	(usdot_prod<sseunpackmodelower><mode>): Use VI2_AVX512F
+	instead of AVX10.2 ones.
+	(vdpphps_<mode>): Use VF1_AVX512VL instead of AVX10.2 ones.
+	(vdpphps_<mode>_mask): Ditto.
+	(vdpphps_<mode>_maskz): Ditto.
+	(vdpphps_<mode>_maskz_1): Ditto.
+	(avx10_2_scalefbf16_<mode><mask_name>): Use VBF instead of
+	AVX10.2 ones.
+	(<code><mode>3): Ditto.
+	(avx10_2_<code>bf16_<mode><mask_name>): Ditto.
+	(avx10_2_fmaddbf16_<mode>_maskz); Ditto.
+	(avx10_2_fmaddbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fmaddbf16_<mode>_mask): Ditto.
+	(avx10_2_fmaddbf16_<mode>_mask3): Ditto.
+	(avx10_2_fnmaddbf16_<mode>_maskz): Ditto.
+	(avx10_2_fnmaddbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fnmaddbf16_<mode>_mask): Ditto.
+	(avx10_2_fnmaddbf16_<mode>_mask3): Ditto.
+	(avx10_2_fmsubbf16_<mode>_maskz); Ditto.
+	(avx10_2_fmsubbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fmsubbf16_<mode>_mask): Ditto.
+	(avx10_2_fmsubbf16_<mode>_mask3): Ditto.
+	(avx10_2_fnmsubbf16_<mode>_maskz): Ditto.
+	(avx10_2_fnmsubbf16_<mode><sd_maskz_name>): Ditto.
+	(avx10_2_fnmsubbf16_<mode>_mask): Ditto.
+	(avx10_2_fnmsubbf16_<mode>_mask3): Ditto.
+	(avx10_2_rsqrtbf16_<mode><mask_name>): Ditto.
+	(avx10_2_sqrtbf16_<mode><mask_name>): Ditto.
+	(avx10_2_rcpbf16_<mode><mask_name>): Ditto.
+	(avx10_2_getexpbf16_<mode><mask_name>): Ditto.
+	(avx10_2_<bf16immop>bf16_<mode><mask_name>): Ditto.
+	(avx10_2_fpclassbf16_<mode><mask_scalar_merge_name>): Ditto.
+	(avx10_2_cmpbf16_<mode><mask_scalar_merge_name>): Ditto.
+	(avx10_2_cvt<sat_cvt_trunc_prefix>bf162i<sat_cvt_sign_prefix>bs<mode><mask_name>):
+	Ditto.
+	(avx10_2_cvtph2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_name>):
+	Use VHF_AVX512VL instead of AVX10.2 ones.
+	(avx10_2_cvttph2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx10_2_cvtps2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_name>):
+	Use VF1_AVX512VL instead of AVX10.2 ones.
+	(avx10_2_cvttps2i<sat_cvt_sign_prefix>bs<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx10_2_vcvtt<castmode>2<sat_cvt_sign_prefix>dqs<mode><mask_name><round_saeonly_name>):
+	Use VF instead of AVX10.2 ones.
+	(avx10_2_vcvttpd2<sat_cvt_sign_prefix>qqs<mode><mask_name><round_saeonly_name>):
+	Use VF2 instead of AVX10.2 ones.
+	(avx10_2_vcvttps2<sat_cvt_sign_prefix>qqs<mode><mask_name><round_saeonly_name>):
+	Use VI8 instead of AVX10.2 ones.
+	(avx10_2_minmaxbf16_<mode><mask_name>): Use VBF instead of
+	AVX10.2 ones.
+	(avx10_2_minmaxp<mode><mask_name><round_saeonly_name>):
+	Use VFH_AVX512VL instead of AVX10.2 ones.
+	(avx10_2_vmovrs<ssemodesuffix><mode><mask_name>):
+	Use VI1248_AVX512VLBW instead of AVX10.2 ones.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_available_features): Remove feature set for AVX10_1_256.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_EVEX512_SET): Removed.
+	(OPTION_MASK_ISA2_AVX10_1_256_SET): Removed.
+	(OPTION_MASK_ISA_AVX10_1_SET): Imply all AVX512 features.
+	(OPTION_MASK_ISA2_AVX10_1_SET): Ditto.
+	(OPTION_MASK_ISA2_AVX2_UNSET): Remove AVX10_1_UNSET.
+	(OPTION_MASK_ISA2_EVEX512_UNSET): Removed.
+	(OPTION_MASK_ISA2_AVX10_1_UNSET): Remove AVX10_1_256.
+	(OPTION_MASK_ISA2_AVX512F_UNSET): Unset AVX10_1.
+	(ix86_handle_option): Remove special handling for AVX512/AVX10.1
+	options, evex512 and avx10_1_256. Modify ISA set for AVX10 options.
+	* common/config/i386/i386-cpuinfo.h
+	(enum feature_priority): Remove P_AVX10_1_256.
+	(enum processor_features): Remove FEATURE_AVX10_1_256.
+	* common/config/i386/i386-isas.h: Remove avx10.1-256/512.
+	* config/i386/avx512bf16intrin.h: Rollback target push before
+	evex512 is introduced.
+	* config/i386/avx512bf16vlintrin.h: Ditto.
+	* config/i386/avx512bitalgintrin.h: Ditto.
+	* config/i386/avx512bitalgvlintrin.h: Ditto.
+	* config/i386/avx512bwintrin.h: Ditto.
+	* config/i386/avx512cdintrin.h: Ditto.
+	* config/i386/avx512dqintrin.h: Ditto.
+	* config/i386/avx512fintrin.h: Ditto.
+	* config/i386/avx512fp16intrin.h: Ditto.
+	* config/i386/avx512fp16vlintrin.h: Ditto.
+	* config/i386/avx512ifmaintrin.h: Ditto.
+	* config/i386/avx512ifmavlintrin.h: Ditto.
+	* config/i386/avx512vbmi2intrin.h: Ditto.
+	* config/i386/avx512vbmi2vlintrin.h: Ditto.
+	* config/i386/avx512vbmiintrin.h: Ditto.
+	* config/i386/avx512vbmivlintrin.h: Ditto.
+	* config/i386/avx512vlbwintrin.h: Ditto.
+	* config/i386/avx512vldqintrin.h: Ditto.
+	* config/i386/avx512vlintrin.h: Ditto.
+	* config/i386/avx512vnniintrin.h: Ditto.
+	* config/i386/avx512vnnivlintrin.h: Ditto.
+	* config/i386/avx512vp2intersectintrin.h: Ditto.
+	* config/i386/avx512vp2intersectvlintrin.h: Ditto.
+	* config/i386/avx512vpopcntdqintrin.h: Ditto.
+	* config/i386/avx512vpopcntdqvlintrin.h: Ditto.
+	* config/i386/gfniintrin.h: Ditto.
+	* config/i386/vaesintrin.h: Ditto.
+	* config/i386/vpclmulqdqintrin.h: Ditto.
+	* config/i386/driver-i386.cc (check_avx512_features): Removed.
+	(host_detect_local_cpu): Remove -march=native special handling.
+	* config/i386/i386-builtins.cc
+	(ix86_vectorize_builtin_gather): Remove TARGET_EVEX512.
+	* config/i386/i386-c.cc
+	(ix86_target_macros_internal): Remove EVEX512 and AVX10_1_256.
+	* config/i386/i386-expand.cc
+	(ix86_valid_mask_cmp_mode): Remove TARGET_EVEX512.
+	(ix86_expand_int_sse_cmp): Ditto.
+	(ix86_vector_duplicate_simode_const): Ditto.
+	(ix86_expand_vector_init_duplicate): Ditto.
+	(ix86_expand_vector_init_one_nonzero): Ditto.
+	(ix86_emit_swsqrtsf): Ditto.
+	(ix86_vectorize_vec_perm_const): Ditto.
+	(ix86_expand_vecop_qihi2): Ditto.
+	(ix86_expand_sse2_mulvxdi3): Ditto.
+	(ix86_gen_bcst_mem): Ditto.
+	* config/i386/i386-isa.def (EVEX512): Removed.
+	(AVX10_1_256): Ditto.
+	* config/i386/i386-options.cc
+	(isa2_opts): Remove evex512 and avx10.1-256.
+	(ix86_function_specific_save): Remove no_avx512_explicit and
+	no_avx10_1_explicit.
+	(ix86_function_specific_restore): Ditto.
+	(ix86_valid_target_attribute_inner_p): Remove evex512 and
+	avx10.1-256/512.
+	(ix86_valid_target_attribute_tree): Remove special handling
+	to rerun ix86_option_override_internal for AVX10.1-256.
+	(ix86_option_override_internal): Remove warning handling.
+	(ix86_simd_clone_adjust): Remove evex512.
+	* config/i386/i386.cc
+	(type_natural_mode): Remove TARGET_EVEX512.
+	(ix86_return_in_memory): Ditto.
+	(standard_sse_constant_p): Ditto.
+	(standard_sse_constant_opcode): Ditto.
+	(ix86_get_ssemov): Ditto.
+	(ix86_legitimate_constant_p): Ditto.
+	(ix86_vectorize_builtin_scatter): Ditto.
+	(ix86_hard_regno_mode_ok): Ditto.
+	(ix86_set_reg_reg_cost): Ditto.
+	(ix86_rtx_costs): Ditto.
+	(ix86_vector_mode_supported_p): Ditto.
+	(ix86_preferred_simd_mode): Ditto.
+	(ix86_autovectorize_vector_modes): Ditto.
+	(ix86_get_mask_mode): Ditto.
+	(ix86_simd_clone_compute_vecsize_and_simdlen): Ditto.
+	(ix86_simd_clone_usable): Ditto.
+	* config/i386/i386.h (BIGGEST_ALIGNMENT): Ditto.
+	(MOVE_MAX): Ditto.
+	(STORE_MAX_PIECES): Ditto.
+	(PTA_SKYLAKE_AVX512): Remove PTA_EVEX512.
+	(PTA_CANNONLAKE): Ditto.
+	(PTA_ZNVER4): Ditto.
+	(PTA_GRANITERAPIDS): Use PTA_AVX10_1.
+	(PTA_DIAMONDRAPIDS): Use PTA_GRANITERAPIDS.
+	* config/i386/i386.md: Remove TARGET_EVEX512, avx512f_512
+	and avx512bw_512.
+	* config/i386/i386.opt: Remove ix86_no_avx512_explicit,
+	ix86_no_avx10_1_explicit, mevex512, mavx10.1-256/512 and
+	warning for mavx10.1. Modify option comment.
+	* config/i386/i386.opt.urls: Remove evex512 and avx10.1-256/512.
+	* config/i386/predicates.md: Remove TARGET_EVEX512.
+	* config/i386/sse.md: Ditto.
+	* doc/extend.texi: Remove avx10.1-256/512. Modify avx10.1 doc.
+	* doc/invoke.texi: Remove avx10.1-256/512 and evex512.
+	* doc/sourcebuild.texi: Remove avx10.1-256/512.
+
+2025-05-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtin.def
+	(BDESC): Remove OPTION_MASK_ISA2_EVEX512.
+	* config/i386/i386-builtins.cc
+	(ix86_init_mmx_sse_builtins): Ditto.
+
+2025-05-18  Dimitar Dimitrov  <dimitar@dinux.eu>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119966
+	* emit-rtl.cc (validate_subreg): Do not exit immediately for
+	paradoxical subregs.  Filter subsequent tests which are
+	not valid for paradoxical subregs.
+
+2025-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.cc (loc_list_from_tree_1) <COMPONENT_REF>: Do not bail
+	out when the size is not a multiple of a byte.
+	Deal with bit-fields whose size is not a multiple of a byte when
+	dereferencing an address.
+
+2025-05-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-fold.cc (mark_lhs_in_seq_for_dce): Make
+	non-static.
+	* gimple-fold.h (mark_lhs_in_seq_for_dce): Declare.
+	* tree-ssa-phiopt.cc (match_simplify_replacement): Use
+	mark_lhs_in_seq_for_dce instead of manually looping.
+
 2025-05-17  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/riscv-vect-permconst.cc (vector_permconst:process_bb):

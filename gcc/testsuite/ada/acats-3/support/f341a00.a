@@ -1,0 +1,216 @@
+-- F341A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation provides a simple class hierarchy (a root type and two
+--      levels of derivation from it) to use in testing the basic OO features
+--      related to tagged types.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package F341A00_0 is   -- package Bank
+
+  type Dollar_Amount  is new Float;  
+ 
+   type Account is tagged
+      record
+        Current_Balance: Dollar_Amount;
+      end record;
+
+   -- Primitive operations.
+
+   procedure Deposit        (A : in out Account; 
+                             X : in     Dollar_Amount);
+   procedure Withdrawal     (A : in out Account; 
+                             X : in     Dollar_Amount);
+   function  Balance        (A : in     Account) return Dollar_Amount;
+   procedure Service_Charge (A : in out Account);
+   procedure Add_Interest   (A : in out Account);
+   procedure Open           (A : in out Account);
+
+end F341A00_0;
+
+
+     --=================================================================--
+
+
+package body F341A00_0 is
+
+   -- Primitive operations for type Account.
+
+   procedure Deposit (A : in out Account; 
+                      X : in     Dollar_Amount) is
+   begin
+      A.Current_Balance := A.Current_Balance + X;
+   end Deposit;
+
+   --
+
+   procedure Withdrawal (A : in out Account; 
+                         X : in     Dollar_Amount) is
+   begin
+      A.Current_Balance := A.Current_Balance - X;
+   end Withdrawal;
+
+   --
+
+   function  Balance (A : in     Account) return Dollar_Amount is
+   begin
+      return (A.Current_Balance);
+   end Balance;
+
+   --
+
+   procedure Service_Charge (A : in out Account) is
+   begin
+      A.Current_Balance := A.Current_Balance - 5.00;
+   end Service_Charge;
+
+   --
+
+   procedure Add_Interest (A : in out Account) is
+      -- No interest accumulated on this type of account.
+      Interest_On_Account : Dollar_Amount := 0.00;
+   begin
+      A.Current_Balance := A.Current_Balance + Interest_On_Account;
+   end Add_Interest;
+
+   --
+
+   procedure Open (A : in out Account) is
+      Initial_Deposit : Dollar_Amount := 10.00;
+   begin
+      A.Current_Balance := Initial_Deposit;
+   end Open;
+
+end F341A00_0;
+
+
+     --=================================================================--
+
+
+with F341A00_0;
+
+package F341A00_1 is    -- package Checking
+
+   package Bank renames F341A00_0;
+
+   type Account is new Bank.Account with 
+      record
+         Overdraft_Fee : Bank.Dollar_Amount;
+      end record;
+
+
+   -- Inherited primitive operations.
+   -- procedure Deposit       (A : in out Account; X : in Bank.Dollar_Amount);
+   -- procedure Withdrawal    (A : in out Account; X : in Bank.Dollar_Amount);
+   -- function  Balance       (A : in     Account) return Bank.Dollar_Amount;
+   -- procedure Service_Charge(A : in out Account);
+   -- procedure Add_Interest  (A : in out Account);
+
+   -- Overridden primitive operation.
+   procedure Open (A : in out Account);
+
+end F341A00_1;
+
+
+     --=================================================================--
+
+
+package body F341A00_1 is
+
+   -- Overridden primitive operation.
+
+   procedure Open (A : in out Account) is
+      Check_Guarantee : Bank.Dollar_Amount :=  10.00;
+      Initial_Deposit : Bank.Dollar_Amount := 100.00;
+   begin
+      A.Current_Balance := Initial_Deposit;
+      A.Overdraft_Fee   := Check_Guarantee;
+   end Open;
+
+end F341A00_1;
+
+
+     --=================================================================--
+
+
+with F341A00_0;  -- package Bank
+with F341A00_1;  -- package Checking
+
+package F341A00_2 is    -- package Interest_Checking 
+
+   package Bank     renames F341A00_0;
+   package Checking renames F341A00_1;
+
+   subtype Interest_Rate is Bank.Dollar_Amount digits 4;  
+
+   Current_Rate : Interest_Rate := 0.030;
+
+   type Account is new Checking.Account with
+      record
+         Rate : Interest_Rate;
+      end record;
+
+   -- "Twice" inherited primitive operations (Bank.Account, Checking.Account)
+   -- procedure Deposit       (A : in out Account; X : in Bank.Dollar_Amount);
+   -- procedure Withdrawal    (A : in out Account; X : in Bank.Dollar_Amount);
+   -- function  Balance       (A : in     Account) return Bank.Dollar_Amount;
+   -- procedure Service_Charge(A : in out Account);
+
+   -- Overridden primitive operations.
+   procedure Add_Interest (A : in out Account);
+   procedure Open         (A : in out Account);
+
+end F341A00_2;
+
+
+     --=================================================================--
+
+
+package body F341A00_2 is
+
+   -- Overridden primitive operations.
+
+   procedure Add_Interest (A : in out Account) is
+      use type Bank.Dollar_Amount;
+      Interest_On_Account : Bank.Dollar_Amount
+                          := Bank.Dollar_Amount(A.Current_Balance * A.Rate);
+   begin
+      A.Current_Balance := A.Current_Balance + Interest_On_Account;
+   end Add_Interest;
+
+   procedure Open (A : in out Account) is
+      Initial_Deposit : Bank.Dollar_Amount := 1000.00;
+   begin
+      Checking.Open (Checking.Account (A));
+      A.Current_Balance := Initial_Deposit;
+      A.Rate            := Current_Rate;
+   end Open;
+
+end F341A00_2;

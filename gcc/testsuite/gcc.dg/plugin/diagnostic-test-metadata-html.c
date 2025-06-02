@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-fdiagnostics-set-output=experimental-html" } */
-/* { dg-additional-options "-fdiagnostics-show-caret" } */
+/* { dg-options "-fdiagnostics-set-output=experimental-html:javascript=no" } */
+/* { dg-additional-options "-fdiagnostics-show-caret -fdiagnostics-show-line-numbers" } */
 
 extern char *gets (char *s);
 

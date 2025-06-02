@@ -14578,6 +14578,13 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	 we don't need to consider that here.  */
       if (x == const0_rtx)
 	*cost = 0;
+      /* If the outer is a COMPARE which is used by the middle-end
+	 and the constant fits how the cmp instruction allows, say the cost
+	 is the same as 1 insn.  */
+      else if (outer == COMPARE
+	       && (aarch64_uimm12_shift (INTVAL (x))
+		   || aarch64_uimm12_shift (-UINTVAL (x))))
+	*cost = COSTS_N_INSNS (1);
       else
 	{
 	  /* To an approximation, building any other constant is
@@ -18819,9 +18826,16 @@ aarch64_override_options_internal (struct gcc_options *opts)
       aarch64_stack_protector_guard_offset = offs;
     }
 
-  if ((flag_sanitize & SANITIZE_SHADOW_CALL_STACK)
-      && !fixed_regs[R18_REGNUM])
-    error ("%<-fsanitize=shadow-call-stack%> requires %<-ffixed-x18%>");
+  if ((flag_sanitize & SANITIZE_SHADOW_CALL_STACK))
+    {
+      if (!fixed_regs[R18_REGNUM])
+	error ("%<-fsanitize=shadow-call-stack%> requires %<-ffixed-x18%>");
+#ifdef TARGET_OS_USES_R18
+      else
+	sorry ("%<-fsanitize=shadow-call-stack%> conflicts with the use of"
+	       " register x18 by the target operating system");
+#endif
+    }
 
   aarch64_feature_flags isa_flags = aarch64_get_isa_flags (opts);
   if ((isa_flags & (AARCH64_FL_SM_ON | AARCH64_FL_ZA_ON))
@@ -22039,6 +22053,14 @@ aarch64_conditional_register_usage (void)
       fixed_regs[SPECULATION_SCRATCH_REGNUM] = 1;
       call_used_regs[SPECULATION_SCRATCH_REGNUM] = 1;
     }
+
+#ifdef TARGET_OS_USES_R18
+  /* R18 is the STATIC_CHAIN_REGNUM on most aarch64 ports, but VxWorks
+     uses it as the TCB, so aarch64-vxworks.h overrides
+     STATIC_CHAIN_REGNUM, and here we mark R18 as fixed.  */
+  fixed_regs[R18_REGNUM] = 1;
+  call_used_regs[R18_REGNUM] = 1;
+#endif
 }
 
 /* Implement TARGET_MEMBER_TYPE_FORCES_BLK.  */
@@ -26327,7 +26349,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_reencode (struct expand_vec_perm_d *d)
 {
-  expand_vec_perm_d newd = {};
+  expand_vec_perm_d newd;
 
   /* The subregs that we'd create are not supported for big-endian SVE;
      see aarch64_modes_compatible_p for details.  */
@@ -26353,6 +26375,8 @@ aarch64_evpc_reencode (struct expand_vec_perm_d *d)
   newd.op1 = d->op1 ? gen_lowpart (new_mode, d->op1) : NULL;
   newd.testing_p = d->testing_p;
   newd.one_vector_p = d->one_vector_p;
+  newd.zero_op0_p = d->zero_op0_p;
+  newd.zero_op1_p = d->zero_op1_p;
 
   newd.perm.new_vector (newpermindices.encoding (), newd.one_vector_p ? 1 : 2,
 			newpermindices.nelts_per_input ());
@@ -27067,11 +27091,17 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   d.op_mode = op_mode;
   d.op_vec_flags = aarch64_classify_vector_mode (d.op_mode);
   d.target = target;
-  d.op0 = op0 ? force_reg (op_mode, op0) : NULL_RTX;
+  d.op0 = op0;
+  if (d.op0 && !register_operand (d.op0, op_mode))
+    d.op0 = force_reg (op_mode, d.op0);
   if (op0 && d.one_vector_p)
     d.op1 = copy_rtx (d.op0);
   else
-    d.op1 = op1 ? force_reg (op_mode, op1) : NULL_RTX;
+    {
+      d.op1 = op1;
+      if (d.op1 && !register_operand (d.op1, op_mode))
+       d.op1 = force_reg (op_mode, d.op1);
+    }
   d.testing_p = !target;
 
   if (!d.testing_p)

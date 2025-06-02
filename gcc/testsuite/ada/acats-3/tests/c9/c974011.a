@@ -1,0 +1,275 @@
+-- C974011.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the sequence of statements of the triggering alternative
+--      of an asynchronous select statement is not executed if the triggering
+--      statement is a task entry call and the entry is not accepted
+--      before the abortable part completes. 
+--      Check that the call queued on the entry is cancelled
+--
+-- TEST DESCRIPTION:
+--      Declare a main procedure containing an asynchronous select with a task
+--      entry call as triggering statement. Force the entry call to be
+--      queued by having the task call a procedure, prior to the corresponding
+--      accept statement, which simulates (with a delay) a routine waiting
+--      for user input
+--       
+--      Once the call is known to be queued, complete the abortable part. 
+--      Check that the rendezvous (and thus the trigger) does not complete. 
+--      Then clear the barrier and check that the entry has been cancelled
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      28 Nov 95   SAIC    Eliminated shared global variable for ACVC 2.0.1
+--
+--!
+
+with ImpDef;
+--
+package C974011_0 is  -- Automated teller machine abstraction.
+
+
+
+   type Key_Enum is (None, Cancel, Deposit, Withdraw);
+
+   protected Key_PO is
+      procedure Set (K : Key_Enum);
+      function  Value return Key_Enum;
+   private
+      Current : Key_Enum := None;
+   end Key_PO;
+
+
+   -- Flags for testing purposes
+   TC_Abortable_Part_Completed : Boolean := False;
+   TC_Rendezvous_Entered       : Boolean := False;
+   TC_Delay_Time : constant duration := ImpDef.Switch_To_New_Task;
+
+
+   Count  : Integer := 1234;  -- Global to defeat optimization.
+
+
+   type Card_Number_Type is private;
+   type Card_PIN_Type    is private;
+   type ATM_Card_Type    is private;
+
+
+   Transaction_Canceled : exception;
+
+
+   task type ATM_Keyboard_Task is
+      entry Cancel_Pressed;
+   end ATM_Keyboard_Task;
+
+   procedure Read_Card (Card : in out ATM_Card_Type);
+
+   procedure Validate_Card (Card : in ATM_Card_Type);
+
+   procedure Perform_Transaction (Card : in ATM_Card_Type);
+
+private
+
+   type Card_Number_Type is range   1 .. 9999;
+   type Card_PIN_Type    is range 100 ..  999;
+
+   type ATM_Card_Type is record
+      Number : Card_Number_Type;
+      PIN    : Card_PIN_Type;
+   end record;
+
+end C974011_0;
+
+
+     --==================================================================--
+
+
+with Report;
+package body C974011_0 is
+
+   protected body Key_PO is
+      procedure Set (K : Key_Enum) is
+      begin
+         Current := K;
+      end Set;
+
+      function Value return Key_Enum is
+      begin
+        return Current;
+      end Value;
+   end Key_PO;
+
+
+   procedure Listen_For_Input (Key : out Key_Enum) is
+   begin
+      -- Model the situation where the user does not press cancel thus
+      -- allowing validation to complete
+
+      delay TC_Delay_Time;  -- Long enough to force queuing on
+                            -- Keyboard.Cancel_Pressed.
+    
+      Key := Key_PO.Value;
+
+   end Listen_For_Input;
+
+
+
+   -- One of these gets created as "Keyboard" for each transaction
+   --
+   task body ATM_Keyboard_Task is
+      Key_Pressed : Key_Enum;
+   begin
+      loop
+                                                           -- Force entry calls
+         Listen_For_Input (Key_Pressed);                   -- to be queued,
+
+         select
+            when (Key_Pressed = Cancel) =>                 
+               accept Cancel_Pressed do                    
+                  TC_Rendezvous_Entered := True;
+               end Cancel_Pressed;                        
+
+               -- User has cancelled the transaction so we exit the
+               -- loop and allow the task to terminate
+               exit;
+         else
+            delay ImpDef.Switch_To_New_Task;
+         end select;
+
+      end loop;
+   exception
+      when others =>
+          Report.Failed ("Unexpected Exception in ATM_Keyboard_Task");
+   end ATM_Keyboard_Task;
+
+
+
+   procedure Read_Card (Card : in out ATM_Card_Type) is
+   begin
+      Card.Number := 9999;
+      Card.PIN    := 111;
+   end Read_Card;
+
+
+   procedure Validate_Card (Card : in ATM_Card_Type) is
+   begin
+      Count := (Count + 1) mod Integer (Card.PIN);
+
+      -- Simulate a validation activity which is longer than the time
+      -- taken in Listen_For_Input but not inordinately so.
+      delay TC_Delay_Time * 2;
+
+   end Validate_Card;
+
+
+   procedure Perform_Transaction (Card : in ATM_Card_Type) is
+   begin
+      if TC_Rendezvous_Entered then
+         Report.Failed ("Triggering statement completed");
+      end if;
+      if Count = 1234 then
+         -- Initial value is unchanged
+         Report.Failed ("Abortable part did not execute");
+      end if;
+      if not TC_Abortable_Part_Completed then
+         Report.Failed ("Abortable part did not complete");
+      end if;
+   end Perform_Transaction;
+
+
+end C974011_0;
+
+
+     --==================================================================--
+
+
+with Report;
+
+with C974011_0;  -- Automated teller machine abstraction.
+use  C974011_0;
+
+procedure C974011 is
+
+   Card_Data : ATM_Card_Type;
+
+begin  -- Main program.
+
+   Report.Test ("C974011", "Asynchronous Select: Trigger is queued on a " &
+                            "task entry and the abortable part " &
+                            "completes first");
+
+   Read_Card (Card_Data);
+
+   declare
+      -- Create the task for this transaction
+      Keyboard : C974011_0.ATM_Keyboard_Task;    
+   begin
+
+      --                                    --
+      -- Asynchronous select is tested here --
+      --                                    --
+
+      select
+      
+         Keyboard.Cancel_Pressed;      -- Entry call is initially queued, so
+                                       -- abortable part starts.
+         raise Transaction_Canceled;   -- This would be executed if we
+                                       -- completed the rendezvous
+      then abort
+      
+         Validate_Card (Card_Data);
+         TC_Abortable_Part_Completed := true;
+
+      end select;
+
+      Perform_Transaction (Card_Data); 
+
+
+      -- Now clear the entry barrier to allow the rendezvous to complete
+      -- if the triggering call has not been cancelled 
+      Key_PO.Set (Cancel);
+      --
+      delay TC_Delay_Time;  -- to allow it all to take place
+
+      if TC_Rendezvous_Entered then 
+         Report.Failed ("Triggering Call was not cancelled");
+      end if;
+      
+      abort Keyboard;    -- clean up.  (Note: the task will only exit the
+                         -- loop and terminate if the call hanging on the 
+                         -- entry is executed.)  
+
+   exception
+      when Transaction_Canceled =>
+         Report.Failed ("Triggering alternative sequence of statements " &
+                           "executed");
+      when Others =>
+         Report.Failed ("Unexpected exception in the Main");
+   end;
+
+   Report.Result;
+       
+end C974011;

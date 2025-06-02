@@ -19764,18 +19764,35 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	    {
 	      if (TYPE_UNSIGNED (TREE_TYPE (loc)))
 		{
-		  const unsigned HOST_WIDE_INT mask
-		    = (HOST_WIDE_INT_1U << bitsize) - 1;
-		  add_loc_descr (&deref, uint_loc_descriptor (mask));
-		  add_loc_descr (&deref, new_loc_descr (DW_OP_and, 0, 0));
+		  if (BYTES_BIG_ENDIAN)
+		    {
+		      const unsigned HOST_WIDE_INT shift
+			= size * BITS_PER_UNIT - bitsize;
+		      add_loc_descr (&deref, uint_loc_descriptor (shift));
+		      add_loc_descr (&deref, new_loc_descr (DW_OP_shr, 0, 0));
+		    }
+		  else
+		    {
+		      const unsigned HOST_WIDE_INT mask
+			= (HOST_WIDE_INT_1U << bitsize) - 1;
+		      add_loc_descr (&deref, uint_loc_descriptor (mask));
+		      add_loc_descr (&deref, new_loc_descr (DW_OP_and, 0, 0));
+		    }
 		}
 	      else
 		{
-		  const unsigned HOST_WIDE_INT shift
+		  const unsigned HOST_WIDE_INT shiftr
 		    = DWARF2_ADDR_SIZE * BITS_PER_UNIT - bitsize;
-		  add_loc_descr (&deref, uint_loc_descriptor (shift));
-		  add_loc_descr (&deref, new_loc_descr (DW_OP_shl, 0, 0));
-		  add_loc_descr (&deref, uint_loc_descriptor (shift));
+		  const unsigned HOST_WIDE_INT shiftl
+		    = BYTES_BIG_ENDIAN
+		      ? (DWARF2_ADDR_SIZE - size) * BITS_PER_UNIT
+		      : shiftr;
+		  if (shiftl > 0)
+		    {
+		      add_loc_descr (&deref, uint_loc_descriptor (shiftl));
+		      add_loc_descr (&deref, new_loc_descr (DW_OP_shl, 0, 0));
+		    }
+		  add_loc_descr (&deref, uint_loc_descriptor (shiftr));
 		  add_loc_descr (&deref, new_loc_descr (DW_OP_shra, 0, 0));
 		}
 	    }

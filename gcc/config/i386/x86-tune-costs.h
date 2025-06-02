@@ -2252,7 +2252,7 @@ struct processor_costs znver5_cost = {
   COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
   /* ADDSS has throughput 2 and latency 2
      (in some cases when source is another addition).  */
-  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  COSTS_N_INSNS (2),			/* cost of ADDSS/SD SUBSS/SD insns.  */
   /* MULSS has throughput 2 and latency 3.  */
   COSTS_N_INSNS (3),			/* cost of MULSS instruction.  */
   COSTS_N_INSNS (3),			/* cost of MULSD instruction.  */

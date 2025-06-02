@@ -1,0 +1,147 @@
+-- C393B14.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- TEST OBJECTIVE:
+--      Check that an extended type can be derived in a private child package
+--      from an abstract type defined in a library package.
+--
+-- TEST DESCRIPTION:
+--      Add a private child package to Alert_Foundation.  Using Private_Alert
+--      as parent type, declare an extended type adding a new record component.
+--      Override procedure Handle.  Declare an object of the new type in the
+--      child specification. Use type definitions from the private part of the
+--      parent in the body of the child.
+--
+-- TEST FILES: 
+--      This test depends on the following foundation code:
+--
+--         F393B00.A  Package Alert_Foundation
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+private package F393B00.C393B14_0 is
+             -- Alert_Foundation.Private_Child
+
+  type Implementation_Specific_Alert_Type is new Private_Alert with record
+    New_Private_Field : Implementation_Detail 
+                        := Implementation_Detail'Last;
+  end record;
+
+  procedure Handle (PA : in out Implementation_Specific_Alert_Type);
+                             -- overrides abstract Handle, as required
+  PA : Implementation_Specific_Alert_Type;
+
+end F393B00.C393B14_0;
+ -- Alert_Foundation.Private_Child
+
+--=======================================================================--
+
+package body F393B00.C393B14_0 is
+                  -- Alert_Foundation.Private_Child
+
+  procedure Handle (PA : in out Implementation_Specific_Alert_Type) is
+    begin
+      PA.Private_Field := 1;
+      PA.New_Private_Field := PA.Private_Field + 1;
+    end;
+
+end F393B00.C393B14_0;
+ -- Alert_Foundation.Private_Child
+
+--=======================================================================--
+
+package F393B00.C393B14_1 is
+     -- Alert_Foundation.Public_Child
+
+  type Timing is (Before, After);
+  procedure Init;
+  procedure Modify;
+  function Check_Before return Boolean;
+  function Check_After  return Boolean;
+
+end F393B00.C393B14_1;
+ -- Alert_Foundation.Public_Child
+
+--=======================================================================--
+
+with F393B00.C393B14_0;               -- private sibling is visible in the
+  -- Alert_Foundation.Private_Child   -- body of a public sibling
+package body F393B00.C393B14_1 is
+     -- Alert_Foundation.Public_Child
+  package Priv renames F393B00.C393B14_0;
+
+  procedure Init is
+    begin
+      Priv.PA.Private_Field     := 5;
+      Priv.PA.New_Private_Field := 10;
+    end Init;
+
+  procedure Modify is
+    begin 
+      Priv.Handle (Priv.PA);
+    end Modify;
+
+  function Check_Before return Boolean is
+    begin
+      return ((Priv.PA.Private_Field = 5) 
+               and (Priv.PA.New_Private_Field =10));
+    end Check_Before;
+
+  function Check_After return Boolean is
+    begin
+      return ((Priv.PA.Private_Field = 1)
+               and (Priv.PA.New_Private_Field = 2));
+    end Check_After;
+
+end F393B00.C393B14_1;
+ -- Alert_Foundation.Public_Child
+
+--=======================================================================--
+
+with Report;
+with F393B00.C393B14_1;
+procedure C393B14 is
+ -- Alert_Foundation.Public_Child;
+
+begin
+  Report.Test ("C393B14", "Check that an extended type can be derived " &
+                          "from an abstract type");
+
+  F393B00.C393B14_1.Init;
+  if not F393B00.C393B14_1.Check_Before then 
+    Report.Failed ("Wrong initialization");
+  end if;
+
+  F393B00.C393B14_1.Modify;
+  if not F393B00.C393B14_1.Check_After then
+    Report.Failed ("Wrong results from Handle");
+  end if;
+
+  Report.Result;
+end C393B14;

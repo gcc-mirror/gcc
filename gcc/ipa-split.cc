@@ -1992,6 +1992,10 @@ public:
       return execute_feedback_split_functions ();
     }
 
+  opt_pass * clone () final override
+  {
+    return new pass_feedback_split_functions (m_ctxt);
+  }
 }; // class pass_feedback_split_functions
 
 bool

@@ -242,11 +242,15 @@ popd
 cp -a gcc/gcc/jit/docs/_build/html jit
 mkdir -p $DOCSDIR/jit
 
-pushd gcc/gcc/doc/libgdiagnostics
-make html SPHINXBUILD=$SPHINX_VENV/bin/sphinx-build || true
-popd
-cp -a gcc/gcc/doc/libgdiagnostics/_build/html libgdiagnostics
-mkdir -p $DOCSDIR/libgdiagnostics
+LIBGDIAGNOSTICS=
+if test -d gcc/gcc/doc/libgdiagnostics; then
+  pushd gcc/gcc/doc/libgdiagnostics
+  make html SPHINXBUILD=$SPHINX_VENV/bin/sphinx-build || true
+  popd
+  cp -a gcc/gcc/doc/libgdiagnostics/_build/html libgdiagnostics
+  mkdir -p $DOCSDIR/libgdiagnostics
+  LIBGDIAGNOSTICS=libgdiagnostics
+fi
 
 # Work around makeinfo generated file names and references with
 # "_002d" instead of "-".
@@ -298,7 +302,7 @@ done
 # below them, and with some non-HTML files (.png images from us,
 # plus .css and .js supplied by sphinx, and source files, renamed
 # from .rst to .txt).
-find jit libgdiagnostics \
+find jit $LIBGDIAGNOSTICS \
     -name "*.html" -o -name "*.png" \
     -o -name "*.css" -o -name "*.js" \
     -o -name "*.txt" |

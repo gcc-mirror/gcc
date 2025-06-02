@@ -97,7 +97,7 @@ MAKE_MASK_ZERO(bf16_bf, __bf16)
 /* Function which calculates result.  */
 #define CALC EVAL(calc_, AVX512F_LEN,)
 
-#if !defined(AVX512VL) || defined(AVX10_512BIT)
+#if !defined(AVX512VL)
 #define AVX512F_LEN 512
 #define AVX512F_LEN_HALF 256
 #endif

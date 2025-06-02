@@ -1,0 +1,197 @@
+-- F750A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--    The ACAA has created and maintains the Ada Conformity Assessment Test
+--    Suite for the purpose of conformity assessments conducted in accordance
+--    with the International Standard ISO/IEC 18009 - Ada: Conformity
+--    assessment of a language processor. This test suite should not be used
+--    to make claims of conformance unless used in accordance with
+--    ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation declares limited types, operations, and objects
+--      for use in tests checking the limitations on use of limited
+--      expression.
+--
+-- CHANGE HISTORY:
+--      30 Apr 07   RLB   Created.
+--      17 Aug 07   RLB   Moved primitive function Func_Lim_Ext_Access before
+--                        freezing point.
+--
+--!
+
+package F750A00 is
+
+    type Lim_Rec is limited record
+        A : Integer;
+        B : Boolean;
+    end record;
+
+    function Func_Lim_Rec return Lim_Rec;
+
+    Cnst_Lim_Rec : constant Lim_Rec := (A => 10, B => True);
+
+    Var_Lim_Rec : Lim_Rec := (A => 22, B => False);
+
+    type Lim_Array is array (Positive range <>) of Lim_Rec;
+    subtype Short_Lim_Array is Lim_Array (1..3);
+
+    function Func_Lim_Array return Short_Lim_Array;
+
+    Cnst_Lim_Array : constant Lim_Array := (1 .. 3 => (A => 4, B => False));
+
+    Var_Lim_Array : constant Lim_Array := (1 .. 3 => (A => 5, B => False));
+
+    type Lim_Tagged is tagged limited record
+        R : Lim_Rec;
+        N : Natural;
+    end record;
+
+    function Func_New_One return Lim_Tagged;
+
+    type Lim_Ext is new Lim_Tagged with record
+       G : Natural;
+    end record;
+
+    type Any_Tagged_Access is access all Lim_Tagged'Class;
+
+    function Func_Lim_Tagged (Ext : in Boolean) return Lim_Tagged'Class;
+
+    function Func_New_One return Lim_Ext;
+
+    function Func_Lim_Ext return Lim_Ext;
+
+    function Func_Lim_Ext_Access return access Lim_Ext;
+
+    Cnst_Lim_Tagged : constant Lim_Tagged :=
+                    (R => (A => 10, B => True), N => 92);
+
+    Cnst_Lim_Ext : constant Lim_Ext :=
+                    (R => (A => 10, B => True), N => 36, G => 84);
+
+    Var_Lim_Tagged : aliased Lim_Tagged :=
+                    (R => (A => 10, B => True), N => 92);
+
+    Var_Lim_Ext : aliased Lim_Ext :=
+                    (R => (A => 10, B => True), N => 36, G => 84);
+
+    function Func_Lim_Tagged_Access (Ext : in Boolean) return Any_Tagged_Access;
+
+    Obj_Any_Tagged_Access : Any_Tagged_Access := Var_Lim_Tagged'Access;
+
+    Obj_Lim_Ext_Access : access Lim_Ext := Var_Lim_Ext'Access;
+
+    protected type Prot is
+       function Get return Natural;
+       procedure Set (Val : in Natural);
+    private
+       Value : Natural := 0;
+    end Prot;
+
+    type Lim_Comp is record
+       P : Prot;
+       N : Natural;
+    end record;
+
+    function Func_Lim_Comp return Lim_Comp;
+
+    Cnst_Lim_Comp : constant Lim_Comp := (N => 32, P => <>);
+
+    Var_Lim_Comp : Lim_Comp := (N => 98, P => <>);
+
+end F750A00;
+
+
+package body F750A00 is
+
+    function Func_Lim_Rec return Lim_Rec is
+    begin
+       return (A => 45, B => False);
+    end Func_Lim_Rec;
+
+    function Func_Lim_Array return Short_Lim_Array is
+    begin
+       return (1 .. 3 => (A => 4, B => False));
+    end Func_Lim_Array;
+
+    function Func_Lim_Tagged (Ext : in Boolean) return Lim_Tagged'Class is
+    begin
+       if Ext then
+          return Lim_Ext'(R => (A => 15, B => False), N => 31, G => 5);
+       else
+          return Lim_Tagged'(R => (A => 15, B => False), N => 31);
+       end if;
+    end Func_Lim_Tagged;
+
+    function Func_New_One return Lim_Tagged is
+    begin
+       return (R => (A => 4, B => False), N => 9);
+    end Func_New_One;
+
+    function Func_New_One return Lim_Ext is
+    begin
+       return (R => (A => 7, B => True), N => 5, G => 8);
+    end Func_New_One;
+
+    function Func_Lim_Ext return Lim_Ext is
+    begin
+       return (R => (A => 7, B => True), N => 5, G => 8);
+    end Func_Lim_Ext;
+
+    function Func_Lim_Tagged_Access (Ext : in Boolean) return Any_Tagged_Access is
+    begin
+       if Ext then
+          return Var_Lim_Ext'Access;
+       else
+          return Var_Lim_Tagged'Access;
+       end if;
+    end Func_Lim_Tagged_Access;
+
+    function Func_Lim_Ext_Access return access Lim_Ext is
+    begin
+       return Var_Lim_Ext'Access;
+    end Func_Lim_Ext_Access;
+
+    function Func_Lim_Comp return Lim_Comp is
+    begin
+       return (N => 382, P => <>);
+    end Func_Lim_Comp;
+
+    protected body Prot is
+       function Get return Natural is
+       begin
+          return Value;
+       end Get;
+
+       procedure Set (Val : in Natural) is
+       begin
+          Value := Val;
+       end Set;
+    end Prot;
+
+end F750A00;
+

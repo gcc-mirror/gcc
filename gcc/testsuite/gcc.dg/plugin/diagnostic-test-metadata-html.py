@@ -8,12 +8,6 @@ import pytest
 def html_tree():
     return html_tree_from_env()
 
-XHTML = 'http://www.w3.org/1999/xhtml'
-ns = {'xhtml': XHTML}
-
-def make_tag(local_name):
-    return f'{{{XHTML}}}' + local_name
-
 def test_metadata(html_tree):
     root = html_tree.getroot ()
     assert root.tag == make_tag('html')
@@ -48,11 +42,21 @@ def test_metadata(html_tree):
     assert metadata[1][0].text == 'STR34-C'
     assert metadata[1][0].tail == ']'
 
-    src = diag.find('xhtml:pre', ns)
-    assert src.attrib['class'] == 'gcc-annotated-source'
-    assert src.text == (
-        '   gets (buf);\n'
-        '   ^~~~~~~~~~\n')
+    src = diag.find('xhtml:table', ns)
+    assert src.attrib['class'] == 'locus'
+
+    tbody = src.find('xhtml:tbody', ns)
+    assert tbody.attrib['class'] == 'line-span'
+
+    rows = tbody.findall('xhtml:tr', ns)
+
+    quoted_src_tr = rows[0]
+    assert_quoted_line(quoted_src_tr,
+                       '   10', '  gets (buf);')
+    
+    annotation_tr = rows[1]
+    assert_annotation_line(annotation_tr,
+                           '  ^~~~~~~~~~')
 
 # For reference, here's the generated HTML:
 """
@@ -60,8 +64,13 @@ def test_metadata(html_tree):
     <div class="gcc-diagnostic-list">
       <div class="gcc-diagnostic">
         <span class="gcc-message">never use &apos;<span class="gcc-quoted-text">gets</span>&apos;</span> 
-        <span class="gcc-metadata"><span class="gcc-metadata-item">[<a href="https://cwe.mitre.org/data/definitions/242.html">CWE-242</a>]</span><span class="gcc-metadata-item">[<a href="https://example.com/">STR34-C</a>]</span></span>
-        ...etc...
+        <span class="gcc-metadata"><span class="gcc-metadata-item">[<a href="https://cwe.mitre.org/data/definitions/242.html">CWE-242</a>]</span><span class="gcc-metadata-item">[<a href="https://example.com/">STR34-C</a>]</span></span><table class="locus">
+<tbody class="line-span">
+<tr><td class="linenum">   10</td> <td class="source">  gets (buf);</td></tr>
+<tr><td class="linenum"/><td class="annotation">  ^~~~~~~~~~</td></tr>
+</tbody>
+</table>
+
       </div>
     </div>
   </body>

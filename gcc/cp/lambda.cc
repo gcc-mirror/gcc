@@ -218,9 +218,7 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
   tree type;
   bool is_this = is_this_parameter (tree_strip_nop_conversions (expr));
 
-  if (is_this)
-    type = TREE_TYPE (expr);
-  else if (explicit_init_p)
+  if (explicit_init_p)
     {
       tree auto_node = make_auto ();
 
@@ -259,7 +257,7 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
 
       type = non_reference (unlowered_expr_type (expr));
 
-      if (by_reference_p || TREE_CODE (type) == FUNCTION_TYPE)
+      if ((by_reference_p && !is_this) || TREE_CODE (type) == FUNCTION_TYPE)
 	type = build_reference_type (type);
     }
 
@@ -440,13 +438,21 @@ build_capture_proxy (tree member, tree init)
   else
     name = get_identifier (IDENTIFIER_POINTER (DECL_NAME (member)) + 2);
 
-  type = lambda_proxy_type (object);
-
-  if (name == this_identifier && !INDIRECT_TYPE_P (type))
+  if (name == this_identifier && TYPE_PTR_P (TREE_TYPE (member)))
+    /* Avoid DECLTYPE_TYPE for by-ref 'this' capture in an xobj lambda; the
+       constness of the closure doesn't matter just like it doesn't matter to
+       other by-ref capture.  It's simpler to handle this special case here
+       than in lambda_proxy_type.  */
+    type = TREE_TYPE (member);
+  else
     {
-      type = build_pointer_type (type);
-      type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
-      object = build_fold_addr_expr_with_type (object, type);
+      type = lambda_proxy_type (object);
+      if (name == this_identifier)
+	{
+	  type = build_pointer_type (type);
+	  type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
+	  object = build_fold_addr_expr_with_type (object, type);
+	}
     }
 
   if (DECL_VLA_CAPTURE_P (member))
@@ -923,8 +929,9 @@ lambda_expr_this_capture (tree lambda, int add_capture_p)
   else
     {
       /* To make sure that current_class_ref is for the lambda.  */
-      gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref))
-		  == LAMBDA_EXPR_CLOSURE (lambda));
+      gcc_assert (!current_class_ref
+		  || (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref))
+		      == LAMBDA_EXPR_CLOSURE (lambda)));
 
       result = this_capture;
 
@@ -1039,12 +1046,9 @@ current_nonlambda_function (void)
 tree
 nonlambda_method_basetype (void)
 {
-  if (!current_class_ref)
-    return NULL_TREE;
-
   tree type = current_class_type;
   if (!type || !LAMBDA_TYPE_P (type))
-    return type;
+    return current_class_ref ? type : NULL_TREE;
 
   while (true)
     {
@@ -1056,7 +1060,7 @@ nonlambda_method_basetype (void)
 
       tree fn = TYPE_CONTEXT (type);
       if (!fn || TREE_CODE (fn) != FUNCTION_DECL
-	  || !DECL_IOBJ_MEMBER_FUNCTION_P (fn))
+	  || !DECL_OBJECT_MEMBER_FUNCTION_P (fn))
 	/* No enclosing non-lambda method.  */
 	return NULL_TREE;
       if (!LAMBDA_FUNCTION_P (fn))

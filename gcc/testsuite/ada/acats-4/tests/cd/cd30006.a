@@ -1,0 +1,219 @@
+-- CD30006.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--      Check that the implementation supports specifying Alignments for
+--      subtypes and objects using aspect specifications.
+--
+-- TEST DESCRIPTION:
+--      This test is similar to CD30002, using aspect notation rather than
+--      attribute definition clauses. We make the same requirements as in
+--      that test.
+--
+--      The test tries using constants declared after the aspect
+--      specifications as the aspects are not supposed to be evaluated
+--      until the freezing point of the entities. Note that in this
+--      case, there is no need for declaring these constants later,
+--      but in real programs this feature can be critical.
+--
+--      The test defines several types and objects, specifying various
+--      alignments for them (as factors and multiples of the number of
+--      storage elements per word).  It then checks the alignments by
+--      declaring some objects, and checking that the integer values of
+--      their addresses is mod the specified alignment.  This will not
+--      prevent false passes where the lucky compiler gets it right by
+--      chance, but will catch compilers that specifically do not obey
+--      the alignment clauses.
+--
+--      Note that we assign this test to 13.3 (where the Alignment attribute
+--      is defined) rather than 13.1.1(31/3) which states that we can specify
+--      representation attributes this way. Since 13.1.1(31/3) is a blanket
+--      applying to a large number of attributes, it is less interesting
+--      than the details of the aspect itself.
+--
+-- APPLICABILITY CRITERIA:
+--      All implementations must attempt to compile this test.
+--
+--      For implementations validating against Systems Programming Annex (C):
+--        this test must execute and report PASSED.
+--
+--      For implementations not validating against Annex C:
+--        this test may report compile time errors at one or more points
+--        indicated by "-- ANX-C RQMT", in which case it may be graded as inapplicable.
+--        Otherwise, the test must execute and report PASSED.
+--
+--
+-- CHANGE HISTORY:
+--      27 Sep 13   RLB    Created test from CD30002.
+--      16 Oct 13   RLB    Corrected message.
+--      20 Mar 14   RLB    Readied to issue; minor changes to comments.
+--      13 Mar 15   RLB    Eliminated overlong lines and tab characters.
+--!
+
+----------------------------------------------------------------- CD30006_0
+
+with Impdef;
+with System.Storage_Elements;
+package CD30006_0 is
+
+  S_Units_per_Word : constant := System.Word_Size/System.Storage_Unit;
+        -- Must be 1 or greater.
+
+  subtype Storage_Element is System.Storage_Elements.Storage_Element;
+
+  type Some_Stuff is array(1..S_Units_Per_Word) of Storage_Element
+    with Alignment => Impdef.Max_Default_Alignment;           -- ANX-C RQMT.
+
+  Library_Level_Object : Some_Stuff
+    with Alignment => Impdef.Max_Linker_Alignment;            -- ANX-C RQMT.
+
+  type Quarter is mod 4 -- two bits
+    with Alignment => Small_Alignment;                        -- ANX-C RQMT.
+
+  type Half is mod 16 -- nibble
+    with Alignment => Multiple_Type_Alignment;                -- ANX-C RQMT.
+
+  Multiple_Type_Alignment : constant :=
+      Integer'Min ( Impdef.Max_Default_Alignment,
+                    2 * S_Units_per_Word );
+      -- Calculate a reasonable alignment, but not larger than the
+      -- implementation is required to support.
+
+  Small_Alignment : constant :=
+      Integer'Max ( S_Units_per_Word / 2, 1);
+      -- Calculate a reasonable small alignment, but not less than 1.
+      -- (If S_Units_per_Word = 1, 1/2 => 0 which causes problems
+      -- verifying alignment.)
+
+  type O_Some_Stuff is array(1..S_Units_Per_Word) of Storage_Element;
+
+  type O_Quarter is mod 4; -- two bits
+
+  type O_Half is mod 16; -- nibble
+
+  Delay_Object    : O_Half
+    with Alignment => Multiple_Object_Alignment;               -- ANX-C RQMT.
+
+  Multiple_Object_Alignment : constant :=
+      Integer'Min ( Impdef.Max_Linker_Alignment,
+                    2 * S_Units_per_Word );
+      -- Calculate a reasonable object alignment, but not larger than
+      -- the implementation is required to support.
+
+end CD30006_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+-- there is no package body CD30006_0
+
+------------------------------------------------------------------- CD30006
+
+with Report;
+with Impdef;
+with CD30006_0;
+with System.Storage_Elements;
+procedure CD30006 is
+
+  My_Stuff   : CD30006_0.Some_Stuff;
+    -- Impdef.Max_Default_Alignment
+
+  My_Quarter : CD30006_0.Quarter;
+    -- CD30006_0.S_Units_per_Word / 2
+
+  My_Half    : CD30006_0.Half;
+    -- CD30006_0.S_Units_per_Word * 2
+
+  Stuff_Object   : CD30006_0.O_Some_Stuff
+    with Alignment => Impdef.Max_Default_Alignment;           -- ANX-C RQMT.
+
+  Quarter_Object : CD30006_0.O_Quarter
+    with Alignment => CD30006_0.Small_Alignment;              -- ANX-C RQMT.
+
+  Half_Object    : CD30006_0.O_Half
+    with Alignment => CD30006_0.Multiple_Object_Alignment;    -- ANX-C RQMT.
+
+  subtype IntAdd is System.Storage_Elements.Integer_Address;
+    use type System.Storage_Elements.Integer_Address;
+
+  function A2I(Value: System.Address) return IntAdd renames
+    System.Storage_Elements.To_Integer;
+
+  NAC : constant String := " not aligned correctly";
+
+begin  -- Main test procedure.
+
+  Report.Test ("CD30006", "Check that the implementation supports " &
+                          "specifying Alignments for subtypes and objects " &
+                          "using aspect notation");
+
+  if A2I(CD30006_0.Library_Level_Object'Address)
+     mod Impdef.Max_Linker_Alignment /= 0 then
+    Report.Failed("Library_Level_Object" & NAC);
+  end if;
+
+  if A2I(CD30006_0.Delay_Object'Address)
+     mod (CD30006_0.Multiple_Object_Alignment) /= 0 then
+    Report.Failed("Delayed multiple of words object" & NAC);
+  end if;
+
+  if A2I(My_Stuff'Address) mod Impdef.Max_Default_Alignment /= 0 then
+    Report.Failed("Max alignment subtype" & NAC);
+  end if;
+
+  if A2I(My_Quarter'Address) mod (CD30006_0.Small_Alignment) /= 0 then
+    Report.Failed("Factor of words subtype" & NAC);
+  end if;
+
+  if A2I(My_Half'Address) mod (CD30006_0.Multiple_Type_Alignment) /= 0 then
+    Report.Failed("Multiple of words subtype" & NAC);
+  end if;
+
+  if A2I(Stuff_Object'Address) mod Impdef.Max_Default_Alignment /= 0 then
+    Report.Failed("Stuff alignment object" & NAC);
+  end if;
+
+  if A2I(Quarter_Object'Address)
+       mod (CD30006_0.Small_Alignment) /= 0 then
+    Report.Failed("Factor of words object" & NAC);
+  end if;
+
+  if A2I(Half_Object'Address) mod (CD30006_0.Multiple_Object_Alignment)
+       /= 0 then
+    Report.Failed("Multiple of words object" & NAC);
+  end if;
+
+  Report.Result;
+
+end CD30006;
+

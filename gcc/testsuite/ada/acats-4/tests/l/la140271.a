@@ -1,0 +1,93 @@
+-- LA140271.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      See LA140272.AM.
+--
+-- TEST DESCRIPTION:
+--      See LA140272.AM.
+--
+-- SPECIAL REQUIREMENTS:
+--      See LA140272.AM.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140270.A
+--      -> LA140271.A
+--         LA140272.AM
+--         LA140273.A
+--
+-- PASS/FAIL CRITERIA:    
+--      See LA140272.AM.
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5007O baseline version
+--     28 JUL 95   SAIC        Initial version
+--     29 JAN 96   SAIC        First revision after review
+--     18 NOV 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions. Removed loop from
+--                             task body to prevent hang.
+--
+--!
+
+package LA14027_1 is
+     procedure Random (Number : out integer);
+end LA14027_1;
+
+  --------------------------------------------
+
+package body LA14027_1 is
+     task LA14027_2 is
+          entry Get (Value : out integer);
+     end LA14027_2;
+
+     task body LA14027_2 is separate;
+
+     procedure Random (Number : out integer) is
+     begin
+          -- get a random number from sampling task
+          LA14027_2.Get (Number);
+          -- massage it
+          Number := Number + 10;
+          -- and return it
+     end;
+end LA14027_1;
+
+  --------------------------------------------
+
+with LA14027_0;  -- must resolve this
+
+separate (LA14027_1)
+
+task body LA14027_2 is
+     begin
+          select
+               accept Get (Value : out integer) do
+                    -- sample some random physical process
+                    Value := LA14027_0.Sample_value;
+                    -- and return it
+               end Get;
+          end select;
+end LA14027_2;

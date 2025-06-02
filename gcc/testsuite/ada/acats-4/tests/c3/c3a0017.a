@@ -1,0 +1,298 @@
+-- C3A0017.A
+--
+--                            Grant of Unlimited Rights
+--
+--    AdaCore holds unlimited rights in the software and documentation
+--    contained herein. Unlimited rights are the same as those granted
+--    by the U.S. Government for older parts of the Ada Conformity
+--    Assessment Test Suite, and are defined in DFAR 252.227-7013(a)(19).
+--    By making this public release, AdaCore intends to confer upon all
+--    recipients unlimited rights equal to those held by the Ada Conformity
+--    Assessment Authority. These rights include rights to use, duplicate,
+--    release or disclose the released technical data and computer software
+--    in whole or in part, in any manner and for any purpose whatsoever,
+--    and to have or permit others to do so.
+--
+--                                   DISCLAIMER
+--
+--    ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--    DISCLOSED ARE AS IS. ADACORE MAKES NO EXPRESS OR IMPLIED WARRANTY AS
+--    TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE SOFTWARE,
+--    DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE OR
+--    DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--    PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                    Notice
+--
+--    The ACAA has created and maintains the Ada Conformity Assessment Test
+--    Suite for the purpose of conformity assessments conducted in accordance
+--    with the International Standard ISO/IEC 18009 - Ada: Conformity
+--    assessment of a language processor. This test suite should not be used
+--    to make claims of conformance unless used in accordance with
+--    ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--    This test is based on one submitted by AdaCore; AdaCore retains the
+--    copyright on the test.
+--*
+--  OBJECTIVE:
+--     Check that an anonymous access type can be an access-to-subprogram
+--     type, and that it can be called with an appropriate profile.
+--
+--  CHANGE HISTORY:
+--     15 Apr 2004 JM  Initial Version.
+--     29 Mar 2008 RLB Converted to ACATS test.
+--!
+package C3A0017P is
+
+   function Double (X : Float) return Float;
+
+   function Evaluate
+     (Fn : access function (X: Float) return Float;
+      X  : Float)
+     return Float;
+
+   procedure Pass_It
+     (Fn : access function (X: Float)
+      return Float := Double'Access);
+
+   function Return_It
+      return access function (X: Float) return Float;
+      -- Return an access to Double.
+
+end C3A0017P;
+
+-- ----------------------------------------------------------------------------
+
+with Report;
+package body C3A0017P is
+
+   function Double (X : Float) return Float is
+   begin
+      return 2.0 * X;
+   end Double;
+
+   function Evaluate
+     (Fn : access function (X: Float) return Float;
+      X  : Float)
+     return Float is
+      Ren_F : access function (F: Float) return Float renames Fn;
+   begin
+      if Fn (X) /= Ren_F (X) then
+         Report.Failed ("Renaming test (in package) failed");
+      end if;
+
+      return Fn (X);
+   end Evaluate;
+
+   procedure Pass_It
+     (Fn : access function (X: Float)
+      return Float := Double'Access) is
+      Result : Float;
+   begin
+      --  Check that the formal can be passed as an actual to
+      --  another subprogram
+      Result := Evaluate (Fn, 3.0);
+
+      if Result /= 6.0 then
+         Report.Failed ("Wrong result in called function (Pass_It)");
+      end if;
+   end Pass_It;
+
+   function Return_It
+      return access function (X: Float) return Float is
+      -- Return an access to Double.
+   begin
+      return Double'access;
+   end Return_It;
+
+end C3A0017P;
+
+-- ----------------------------------------------------------------------------
+
+with Report;
+with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
+with C3A0017P;
+
+procedure C3A0017 is
+
+   function Double (X : Float) return Float is
+   begin
+      return 2.0 * X;
+   end Double;
+
+   function Triple (X : Float) return Float is
+   begin
+      return 3.0 * X;
+   end ;
+
+begin
+   Report.Test ("C3A0017", "Anonymous access to subprogram types");
+
+   Report.Comment ("Indirect function call and renaming test " &
+                   "(local subprograms)");
+   declare
+      function Evaluate
+        (Fn : access function (X: Float) return Float;
+         X  : Float)
+        return Float is
+         Ren_F : access function (F: Float) return Float renames Fn;
+      begin
+         if Fn (X) /= Ren_F (X) then
+            Report.Failed ("Renaming test failed (local)");
+         end if;
+
+         return Fn (X);
+      end Evaluate;
+
+      procedure Pass_It
+        (Fn : access function (X: Float)
+         return Float := Double'Access) is
+         Result : Float;
+      begin
+         --  Check that the formal can be passed as an actual to
+         --  another subprogram.
+
+         Result := Evaluate (Fn, 3.0);
+
+         if Result /= 6.0 then
+            Report.Failed ("Wrong result in called function (Pass_It)");
+         end if;
+      end Pass_It;
+
+      Result : Float;
+   begin
+      Result := Evaluate (Double'Access, 5.0);
+
+      if Result /= 10.0 then
+         Report.Failed ("Wrong result in called function (local, Double)");
+      end if;
+
+      Result := Evaluate (Sqrt'Access, 9.0);
+
+      if Result /= 3.0 then
+         Report.Failed ("Wrong result in called function (local, Sqrt)");
+      end if;
+
+      Pass_It (Double'Access);
+      Pass_It;
+   end;
+
+   --  Following test carries the same checks that the previous test
+   --  but the subprograms with the anonymous access types are found
+   --  in a separate package
+
+   Report.Comment ("Indirect function call and renaming test " &
+                   "(package subprograms)");
+   declare
+      Result : Float;
+   begin
+      Result := C3A0017P.Evaluate (Double'Access, 7.5);
+
+      if Result /= 15.0 then
+         Report.Failed ("Wrong result in called function (package, Double)");
+      end if;
+
+      Result := C3A0017P.Evaluate (Sqrt'Access, 36.0);
+      if Result /= 6.0 then
+         Report.Failed ("Wrong result in called function (package, Sqrt)");
+      end if;
+
+
+      C3A0017P.Pass_It (Double'Access);
+      C3A0017P.Pass_It;
+   end;
+
+   Report.Comment ("Record component test");
+   declare
+      type Rec is record
+         C : access function (F : Float) return Float;
+      end record;
+
+      R      : Rec := (C => Double'Access);
+      Result : Float;
+   begin
+      --  Call through the access component
+      Result := R.C (2.5);
+      if Result /= 5.0 then
+         Report.Failed ("Wrong result (record component)");
+      end if;
+   end;
+
+   Report.Comment ("Discriminant test");
+   declare
+      type D_Rec (D : access function (F : Float) return Float) is
+         record
+            Dummy : Natural;
+         end record;
+
+      DR_1   : D_Rec (D => Triple'Access);
+      DR_2   : D_Rec := (D => Triple'Access, Dummy => 0);
+      Result : Float;
+   begin
+      DR_1.Dummy := 0;
+
+      --  Call through the access discriminant
+      Result     := DR_1.D (1.5);
+
+      if Result /= 4.5 then
+         Report.Failed ("Wrong result (discriminant 1)");
+      end if;
+
+      --  Call through the access discriminant
+      Result   := DR_2.D (3.0);
+
+      if Result /= 9.0 then
+         Report.Failed ("Wrong result (discriminant 1)");
+      end if;
+   end;
+
+   Report.Comment ("Array test");
+   declare
+      type Table is array (Integer range <>) of
+        access function (F: Float) return Float;
+      T      : Table (1 .. 2) := (Double'Access, Triple'Access);
+      Result : Float;
+   begin
+      Result := T (1)(2.0);
+      if Result /= 4.0 then
+         Report.Failed ("Wrong result from array(1)");
+      end if;
+
+      Result := T (2)(2.0);
+      if Result /= 6.0 then
+         Report.Failed ("Wrong result from array(2)");
+      end if;
+   end;
+
+   Report.Comment ("Object and function returning tests");
+   declare
+      Obj : access function (F: Float) return Float;
+      Result : Float;
+   begin
+      Obj := Triple'access;
+      Result := Obj (4.5);
+      if Result /= 13.5 then
+         Report.Failed ("Wrong result from object (1)");
+      end if;
+      Result := C3A0017P.Return_It.all (3.5);
+      if Result /= 7.0 then
+         Report.Failed ("Wrong result from call of function result (1)");
+      end if;
+      Result := C3A0017P.Return_It (9.0); -- Implicit .all
+      if Result /= 18.0 then
+         Report.Failed ("Wrong result from call of function result (2)");
+      end if;
+      Result := C3A0017P.Evaluate (C3A0017P.Return_It, 7.5);
+      if Result /= 15.0 then
+         Report.Failed ("Wrong result in called function passed function result");
+      end if;
+      Obj := C3A0017P.Return_It;
+      Result := Obj (4.5);
+      if Result /= 9.0 then
+         Report.Failed ("Wrong result from object (2)");
+      end if;
+   end;
+
+   Report.Result;
+end C3A0017;
+

@@ -932,11 +932,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  _OutputIterator __result, _BinaryPredicate __binary_pred,
 		  forward_iterator_tag, output_iterator_tag)
     {
-      // concept requirements -- iterators already checked
-      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
-	  typename iterator_traits<_ForwardIterator>::value_type,
-	  typename iterator_traits<_ForwardIterator>::value_type>)
-
       _ForwardIterator __next = __first;
       *__result = *__first;
       while (++__next != __last)
@@ -962,11 +957,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  _OutputIterator __result, _BinaryPredicate __binary_pred,
 		  input_iterator_tag, output_iterator_tag)
     {
-      // concept requirements -- iterators already checked
-      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
-	  typename iterator_traits<_InputIterator>::value_type,
-	  typename iterator_traits<_InputIterator>::value_type>)
-
       typename iterator_traits<_InputIterator>::value_type __value = *__first;
       __decltype(__gnu_cxx::__ops::__iter_comp_val(__binary_pred))
 	__rebound_pred
@@ -995,10 +985,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  _ForwardIterator __result, _BinaryPredicate __binary_pred,
 		  input_iterator_tag, forward_iterator_tag)
     {
-      // concept requirements -- iterators already checked
-      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
-	  typename iterator_traits<_ForwardIterator>::value_type,
-	  typename iterator_traits<_InputIterator>::value_type>)
       *__result = *__first;
       while (++__first != __last)
 	if (!__binary_pred(__result, __first))
@@ -4505,6 +4491,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
 	    typename iterator_traits<_InputIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
+      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
+	  typename iterator_traits<_InputIterator>::value_type,
+	  typename iterator_traits<_InputIterator>::value_type>)
 
       if (__first == __last)
 	return __result;

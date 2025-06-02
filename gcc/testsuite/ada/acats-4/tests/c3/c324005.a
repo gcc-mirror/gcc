@@ -1,0 +1,293 @@
+-- C324005.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVE:
+--     Check that a static or dynamic predicate specified directly for a
+--     type or subtype is not checked when it is disabled (the applicable
+--     assertion policy is Ignore). Case A: specific assertion policy pragmas.
+--
+--     Check that a static or dynamic predicate specified directly for a
+--     type or subtype still is evaluated for a membership even if it is
+--     disabled (the applicable assertion policy is Ignore).
+--
+--     Check that a static or dynamic predicate specified directly for a
+--     type or subtype still is evaluated for a Valid attribute even if it is
+--     disabled (the applicable assertion policy is Ignore).
+--
+--     Check that a static predicate specified directly for a
+--     type or subtype still is determines the items iterated by a for loop
+--     on the type or subtype even if it is disabled (the applicable assertion
+--     policy is Ignore).
+--
+-- CHANGE HISTORY:
+--     14 May 15   RLB     Created test based on C324004.
+--
+with Ada.Assertions; use Ada.Assertions;
+package C324005_0 is
+
+   pragma Assertion_Policy (Check);
+   pragma Assertion_Policy (Static_Predicate  => Ignore,
+                            Dynamic_Predicate => Ignore);
+   -- Predicate checks (but not others) are disabled for the
+   -- the following declarations.
+
+   type Even is range 0 .. Integer'Last with
+     Dynamic_Predicate => (Even mod 2) = 0;
+
+   type Prime is range 2 .. 20 with
+     Static_Predicate => Prime in 2 | 3 | 5 | 7 | 11 | 13 | 17 | 19;
+
+   type Color is
+     (Red, Orange, Yellow, Green, Blue, Indigo, Violet);
+   subtype RGB is Color with
+     Static_Predicate => RGB = Red or RGB in Green .. Blue;
+   subtype Other_Color is Color with
+     Static_Predicate => Other_Color not in RGB;
+
+   type Priv_T is private;
+   subtype Priv_T_P is Priv_T with
+     Dynamic_Predicate => Is_Good (Priv_T_P);
+
+   function Is_Good (X : Priv_T) return Boolean;
+   function Good return Priv_T;
+   function Bad return Priv_T;
+   -- Is_Good(Good) is True; Is_Good(Bad) is False.
+
+   type String_Ref is access all String;
+
+private
+
+   type Priv_T is
+      record
+         Comp : Integer := 0;
+         Acc : String_Ref := null;
+      end record;
+
+end C324005_0;
+
+package body C324005_0 is
+
+   function Is_Good (X : Priv_T) return Boolean is
+   begin
+      return X.Acc /= null;
+   end Is_Good;
+
+   function Good return Priv_T is
+   begin
+      return Result : constant Priv_T
+        := (Comp => 0, Acc => new String'("xxx"))
+      do
+         null;
+         --pragma Assert (Is_Good (Result));
+         --pragma Assert (Result in Priv_T_P);
+      end return;
+   end Good;
+
+   function Bad return Priv_T is
+   begin
+      return Result : constant Priv_T
+        := (Comp => 0, Acc => null)
+      do
+         null;
+         --pragma Assert (not Is_Good (Result));
+         --pragma Assert (Result not in Priv_T_P);
+      end return;
+   end Bad;
+
+end C324005_0;
+
+
+with Report;
+with C324005_0; use c324005_0;
+with Ada.Assertions; use Ada.Assertions;
+procedure C324005 is
+
+   -- Note: the assertion policy in this unit is irrelevant - 3.2.4(8-11/3)
+   -- apply. A different test will check that explicitly, but we don't need
+   -- to set the policy here.
+
+   X1 : RGB := Green;
+
+   X2 : Other_Color := Violet;
+
+   X3 : Priv_T_P := Good;
+
+   X4 : Priv_T_P := Good;
+
+   Prime_Var : Prime := 5;
+
+   Even_Var_1 : Even := 10;
+
+   Even_Var_2 : Even := 100;
+
+begin
+
+   Report.Test ("C324005",
+                "Check predicate checks are not performed for static and " &
+                "dynamic subtype predicates when the assertion policy is " &
+                "Ignore, but memberships, the Valid attribute, and for " &
+                "loops continue to use the predicates -- case B: specific " &
+                "assertion policy pragmas");
+
+   -- Check that checks are not made for these predicates:
+   begin
+      Even_Var_1 := 1;
+      -- OK, predicate check is off.
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate checked on assignment of 1 to Even_Var_1");
+   end;
+
+   begin
+      Prime_Var := Prime(Report.Ident_Int(4));
+      -- OK, predicate check is off.
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate checked on type conversion 4 to Prime");
+   end;
+
+   begin
+      X1 := Yellow;
+      -- OK, predicate check is off.
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate checked on assignment of Yellow to RGB");
+   end;
+
+   begin
+      declare
+         Var : Priv_T_P := Bad;
+      begin
+         null; -- OK, predicate check is off.
+         X3 := Var;
+      end;
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate checked for Priv_T_P - "
+                   & "explicit initialization");
+   end;
+
+   -- Now, the variables Even_Var_1, Prime_Var, X1, and X3 have values
+   -- that do not satisfy the appropriate predicate, while X2, X4, and
+   -- Even_Var_2 do satisfy the appropriate predicate. Check membership of
+   -- all of these:
+   if Even_Var_1 in Even then
+      Report.Failed ("Membership wrong - Even_Var_1");
+   end if;
+
+   if Even_Var_2 not in Even then
+      Report.Failed ("Membership wrong - Even_Var_2");
+   end if;
+
+   if (Even_Var_2 + 1) in Even then
+      Report.Failed ("Membership wrong - Inc(Even_Var_2)");
+   end if;
+
+   if Prime_Var in Prime then
+      Report.Failed ("Membership wrong - Prime_Var");
+   end if;
+
+   if Prime'Base(Report.Ident_Int(6)) in Prime then
+      Report.Failed ("Membership wrong - 6");
+   end if;
+
+   if Prime'Base(Report.Ident_Int(11)) not in Prime then
+      Report.Failed ("Membership wrong - 11");
+   end if;
+
+   if X1 in RGB then
+      Report.Failed ("Membership wrong - X1");
+   end if;
+
+   if Color'Succ(X1) not in RGB then
+      Report.Failed ("Membership wrong - Succ(X1)");
+   end if;
+
+   if Color'Pred(X1) in RGB then
+      Report.Failed ("Membership wrong - Pred(X1)");
+   end if;
+
+   if X2 not in Other_Color then
+      Report.Failed ("Membership wrong - X2");
+   end if;
+
+   if X3 in Priv_T_P then
+      Report.Failed ("Membership wrong - X3");
+   end if;
+
+   if X4 not in Priv_T_P then
+      Report.Failed ("Membership wrong - X4");
+   end if;
+
+   -- Check the results of the Valid attribute on these scalar variables:
+   if Even_Var_1'Valid then
+      Report.Failed ("Valid wrong - Even_Var_1");
+   end if;
+
+   if not Even_Var_2'Valid then
+      Report.Failed ("Valid wrong - Even_Var_2");
+   end if;
+
+   if Prime_Var'Valid then
+      Report.Failed ("Valid wrong - Prime_Var");
+   end if;
+
+   if X1'Valid then
+      Report.Failed ("Valid wrong - X1");
+   end if;
+
+   if not X2'Valid then
+      Report.Failed ("Valid wrong - X2");
+   end if;
+
+   -- Try For loops. (We just check the values and not the order, as that's
+   -- done by C550001 and it's unlikely that would change even if the predicate
+   -- is ignored).
+
+   for I in RGB loop
+      if I /= Red and then I /= Green and then I /= Blue then
+         Report.Failed ("RGB for loop wrong - I=" & Color'Image(I));
+      end if;
+   end loop;
+
+   for I in reverse Prime loop
+      if (I > 2 and then Even'Base(I) in Even) or else
+         I = 9 or else I = 15 then
+         Report.Failed ("Prime for loop wrong - I=" & Prime'Image(I));
+      end if;
+   end loop;
+
+   Report.Result;
+
+end C324005;
+

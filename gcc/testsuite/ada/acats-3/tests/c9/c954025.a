@@ -1,0 +1,237 @@
+-- C954025.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that if the original entry call was a conditional entry call,
+--      the call is cancelled if a requeue-with-abort of the call is not
+--      selected immediately.
+--      Check that if the original entry call was a timed entry call, the 
+--      expiration time for a requeue-with-abort is the original expiration 
+--      time.
+--
+-- TEST DESCRIPTION:
+--      This test declares two tasks: Launch_Control and Mission_Control.
+--      Mission_Control instructs Launch_Control to start its countdown
+--      and then requeues (with abort) to the Launch_Control.Launch 
+--      entry.  This call to Launch will be accepted at the end of the
+--      countdown (if the task is still waiting).
+--      The main task does an unconditional, conditional, and timed 
+--      entry call to Mission_Control and checks to see if the launch
+--      was accepted.
+--
+--
+-- CHANGE HISTORY:
+--      18 OCT 95   SAIC    ACVC 2.1
+--      10 JUL 96   SAIC    Incorporated reviewer's comments.
+--
+--!
+
+with Calendar;   use type Calendar.Time;
+with Report;
+with ImpDef;
+procedure C954025 is
+  Verbose : constant Boolean := False;
+  Countdown_Amount : constant Duration := 2.0 * Impdef.One_Long_Second;
+  Plenty_Of_Time : constant Duration := 
+         Countdown_Amount + ImpDef.Clear_Ready_Queue + 1.0 * Impdef.One_Long_Second;
+  Not_Enough_Time : constant Duration :=
+         Countdown_Amount - 0.5 * Impdef.One_Long_Second;
+begin
+  Report.Test ("C954025",
+               "Check that if the original entry" &
+               " call was a conditional or timed entry call, the" &
+               " expiration time for a requeue with abort is the" &
+               " original expiration time");
+  declare
+     -- note that the following object is a shared object and its use
+     -- governed by the rules of 9.10(3,4,8);6.0
+     Launch_Accepted : Boolean := False;
+
+     task Launch_Control is
+        entry Enable_Launch_Control;
+        entry Start_Countdown (How_Long : Duration);
+        -- Launch will be accepted if a call is waiting when the countdown
+        -- reaches 0
+        entry Launch;
+     end Launch_Control;
+
+     task body Launch_Control is
+        Wait_Amount : Duration := 0.0;
+     begin
+        loop
+           select
+              accept Enable_Launch_Control do
+                 Launch_Accepted := False;
+              end Enable_Launch_Control;
+           or
+              terminate;
+           end select;
+
+           accept Start_Countdown (How_Long : Duration) do
+                 Wait_Amount := How_Long;
+           end Start_Countdown;
+
+           delay Wait_Amount;
+
+           select
+              accept Launch do
+                 Launch_Accepted := True;
+              end Launch;
+           else
+              null;
+              -- note that Launch_Accepted is False here
+           end select;
+        end loop;
+     end Launch_Control;
+
+     task Mission_Control is
+        --  launch will occur if we are given enough time to complete
+        --  a standard countdown.  We will not be rushed!
+        entry Do_Launch;
+     end Mission_Control;
+
+     task body Mission_Control is
+     begin
+        loop
+           select
+              accept Do_Launch do
+                 Launch_Control.Start_Countdown (Countdown_Amount);
+                 requeue Launch_Control.Launch with abort;
+              end Do_Launch;
+           or
+              terminate;
+           end select;
+        end loop;
+     end Mission_Control;
+     
+  begin   -- test encapsulation
+     -- unconditional entry call to check the simple case
+     Launch_Control.Enable_Launch_Control;
+     Mission_Control.Do_Launch;
+     if Launch_Accepted then
+        if Verbose then
+           Report.Comment ("simple case passed");
+        end if;
+      else
+         Report.Failed ("simple case");
+      end if;
+
+  
+     -- timed but with plenty of time - delay relative
+     Launch_Control.Enable_Launch_Control;
+     select
+        Mission_Control.Do_Launch;
+     or 
+        delay Plenty_Of_Time;
+        if Launch_Accepted then
+           Report.Failed ("plenty of time timed out after accept (1)");
+        end if;
+     end select;
+     if Launch_Accepted then
+        if Verbose then
+           Report.Comment ("plenty of time case passed (1)");
+        end if;
+      else
+         Report.Failed ("plenty of time (1)");
+      end if;
+
+  
+     -- timed but with plenty of time  -- delay until
+     Launch_Control.Enable_Launch_Control;
+     select
+        Mission_Control.Do_Launch;
+     or 
+        delay until Calendar.Clock + Plenty_Of_Time;
+        if Launch_Accepted then
+           Report.Failed ("plenty of time timed out after accept(2)");
+        end if;
+     end select;
+     if Launch_Accepted then
+        if Verbose then
+           Report.Comment ("plenty of time case passed (2)");
+        end if;
+      else
+         Report.Failed ("plenty of time (2)");
+      end if;
+
+  
+     -- timed without enough time - delay relative
+     Launch_Control.Enable_Launch_Control;
+     select
+        Mission_Control.Do_Launch;
+        Report.Failed ("not enough time completed accept (1)");
+     or 
+        delay Not_Enough_Time;
+     end select;
+     if Launch_Accepted then
+        Report.Failed ("not enough time (1)");
+      else
+        if Verbose then
+           Report.Comment ("not enough time case passed (1)");
+        end if;
+      end if;
+
+  
+     -- timed without enough time - delay until
+     Launch_Control.Enable_Launch_Control;
+     select
+        Mission_Control.Do_Launch;
+        Report.Failed ("not enough time completed accept (2)");
+     or 
+        delay until Calendar.Clock + Not_Enough_Time;
+     end select;
+     if Launch_Accepted then
+        Report.Failed ("not enough time (2)");
+      else
+        if Verbose then
+           Report.Comment ("not enough time case passed (2)");
+        end if;
+      end if;
+
+  
+     -- conditional case
+     Launch_Control.Enable_Launch_Control;
+     -- make sure Mission_Control is ready to accept immediately
+     delay ImpDef.Clear_Ready_Queue; 
+     select
+        Mission_Control.Do_Launch;
+        Report.Failed ("no time completed accept");
+     else
+        if Verbose then
+           Report.Comment ("conditional case - else taken");
+         end if;
+     end select;
+     if Launch_Accepted then
+        Report.Failed ("no time");
+      else
+        if Verbose then
+           Report.Comment ("no time case passed");
+        end if;
+      end if;
+
+  end;
+
+  Report.Result;
+end C954025;

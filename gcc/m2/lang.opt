@@ -190,6 +190,10 @@ fm2-strict-type
 Modula-2
 experimental flag to turn on the new strict type checker
 
+fm2-strict-type-reason
+Modula-2
+provides more detail why the types are incompatible
+
 fm2-whole-program
 Modula-2
 compile all implementation modules and program module at once

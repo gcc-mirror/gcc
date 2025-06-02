@@ -813,21 +813,6 @@ rtx_addr_varies_p (const_rtx x, bool for_alias)
   return false;
 }
 
-/* Return the CALL in X if there is one.  */
-
-rtx
-get_call_rtx_from (const rtx_insn *insn)
-{
-  rtx x = PATTERN (insn);
-  if (GET_CODE (x) == PARALLEL)
-    x = XVECEXP (x, 0, 0);
-  if (GET_CODE (x) == SET)
-    x = SET_SRC (x);
-  if (GET_CODE (x) == CALL && MEM_P (XEXP (x, 0)))
-    return x;
-  return NULL_RTX;
-}
-
 /* Get the declaration of the function called by INSN.  */
 
 tree
@@ -2235,7 +2220,7 @@ rtx_properties::try_to_add_src (const_rtx x, unsigned int flags)
 	{
 	  has_pre_post_modify = true;
 
-	  unsigned int addr_flags = (base_flags
+	  unsigned int addr_flags = (flags
 				     | rtx_obj_flags::IS_PRE_POST_MODIFY
 				     | rtx_obj_flags::IS_READ);
 	  try_to_add_dest (XEXP (x, 0), addr_flags);

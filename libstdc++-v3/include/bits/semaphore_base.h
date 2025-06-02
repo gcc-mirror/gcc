@@ -34,157 +34,45 @@
 #pragma GCC system_header
 #endif
 
+#include <bits/version.h>
+
+#ifdef __glibcxx_semaphore // C++ >= 20 && hosted && atomic_wait
 #include <bits/atomic_base.h>
 #include <bits/chrono.h>
-#if __glibcxx_atomic_wait
 #include <bits/atomic_timed_wait.h>
 #include <ext/numeric_traits.h>
-#endif // __cpp_lib_atomic_wait
-
-#ifdef _GLIBCXX_HAVE_POSIX_SEMAPHORE
-# include <cerrno>	// errno, EINTR, EAGAIN etc.
-# include <limits.h>	// SEM_VALUE_MAX
-# include <semaphore.h>	// sem_t, sem_init, sem_wait, sem_post etc.
-#elif defined(_GLIBCXX_USE_POSIX_SEMAPHORE)
-# warning "POSIX semaphore not available, ignoring _GLIBCXX_USE_POSIX_SEMAPHORE"
-# undef _GLIBCXX_USE_POSIX_SEMAPHORE
-#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#ifdef _GLIBCXX_HAVE_POSIX_SEMAPHORE
-  struct __platform_semaphore
+  template<bool _Platform_wait>
+  struct __semaphore_base
   {
-    using __clock_t = chrono::system_clock;
-#ifdef SEM_VALUE_MAX
-    static constexpr ptrdiff_t _S_max = SEM_VALUE_MAX;
-#else
-    static constexpr ptrdiff_t _S_max = _POSIX_SEM_VALUE_MAX;
-#endif
+    using __count_type = __conditional_t<_Platform_wait,
+					 __detail::__platform_wait_t,
+					 ptrdiff_t>;
 
-    explicit __platform_semaphore(ptrdiff_t __count) noexcept
+    static constexpr ptrdiff_t _S_max
+      = __gnu_cxx::__int_traits<__count_type>::__max;
+
+    constexpr explicit
+    __semaphore_base(__count_type __count) noexcept
+    : _M_counter(__count)
+    { }
+
+    __semaphore_base(const __semaphore_base&) = delete;
+    __semaphore_base& operator=(const __semaphore_base&) = delete;
+
+    static _GLIBCXX_ALWAYS_INLINE __count_type
+    _S_get_current(__count_type* __counter) noexcept
     {
-      sem_init(&_M_semaphore, 0, __count);
+      return __atomic_impl::load(__counter, memory_order::acquire);
     }
-
-    __platform_semaphore(const __platform_semaphore&) = delete;
-    __platform_semaphore& operator=(const __platform_semaphore&) = delete;
-
-    ~__platform_semaphore()
-    { sem_destroy(&_M_semaphore); }
-
-    _GLIBCXX_ALWAYS_INLINE void
-    _M_acquire() noexcept
-    {
-      while (sem_wait(&_M_semaphore))
-	if (errno != EINTR)
-	  std::__terminate();
-    }
-
-    _GLIBCXX_ALWAYS_INLINE bool
-    _M_try_acquire() noexcept
-    {
-      while (sem_trywait(&_M_semaphore))
-	{
-	  if (errno == EAGAIN) // already locked
-	    return false;
-	  else if (errno != EINTR)
-	    std::__terminate();
-	  // else got EINTR so retry
-	}
-      return true;
-    }
-
-    _GLIBCXX_ALWAYS_INLINE void
-    _M_release(ptrdiff_t __update) noexcept
-    {
-      for(; __update != 0; --__update)
-	if (sem_post(&_M_semaphore))
-	  std::__terminate();
-    }
-
-    bool
-    _M_try_acquire_until_impl(const chrono::time_point<__clock_t>& __atime)
-      noexcept
-    {
-      auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-      struct timespec __ts =
-      {
-	static_cast<std::time_t>(__s.time_since_epoch().count()),
-	static_cast<long>(__ns.count())
-      };
-
-      while (sem_timedwait(&_M_semaphore, &__ts))
-	{
-	  if (errno == ETIMEDOUT)
-	    return false;
-	  else if (errno != EINTR)
-	    std::__terminate();
-	}
-      return true;
-    }
-
-    template<typename _Clock, typename _Duration>
-      bool
-      _M_try_acquire_until(const chrono::time_point<_Clock,
-			   _Duration>& __atime) noexcept
-      {
-	if constexpr (std::is_same_v<__clock_t, _Clock>)
-	  {
-	    using _Dur = __clock_t::duration;
-	    return _M_try_acquire_until_impl(chrono::ceil<_Dur>(__atime));
-	  }
-	else
-	  {
-	    // TODO: if _Clock is monotonic_clock we could use
-	    // sem_clockwait with CLOCK_MONOTONIC.
-
-	    const typename _Clock::time_point __c_entry = _Clock::now();
-	    const auto __s_entry = __clock_t::now();
-	    const auto __delta = __atime - __c_entry;
-	    const auto __s_atime = __s_entry + __delta;
-	    if (_M_try_acquire_until_impl(__s_atime))
-	      return true;
-
-	    // We got a timeout when measured against __clock_t but
-	    // we need to check against the caller-supplied clock
-	    // to tell whether we should return a timeout.
-	    return (_Clock::now() < __atime);
-	  }
-      }
-
-    template<typename _Rep, typename _Period>
-      _GLIBCXX_ALWAYS_INLINE bool
-      _M_try_acquire_for(const chrono::duration<_Rep, _Period>& __rtime)
-	noexcept
-      { return _M_try_acquire_until(__clock_t::now() + __rtime); }
-
-  private:
-    sem_t _M_semaphore;
-  };
-#endif // _GLIBCXX_HAVE_POSIX_SEMAPHORE
-
-#if __glibcxx_atomic_wait
-  struct __atomic_semaphore
-  {
-    static constexpr ptrdiff_t _S_max = __gnu_cxx::__int_traits<int>::__max;
-    explicit __atomic_semaphore(__detail::__platform_wait_t __count) noexcept
-      : _M_counter(__count)
-    {
-      __glibcxx_assert(__count >= 0 && __count <= _S_max);
-    }
-
-    __atomic_semaphore(const __atomic_semaphore&) = delete;
-    __atomic_semaphore& operator=(const __atomic_semaphore&) = delete;
 
     static _GLIBCXX_ALWAYS_INLINE bool
-    _S_do_try_acquire(__detail::__platform_wait_t* __counter) noexcept
+    _S_do_try_acquire(__count_type* __counter, __count_type __old) noexcept
     {
-      auto __old = __atomic_impl::load(__counter, memory_order::acquire);
       if (__old == 0)
 	return false;
 
@@ -197,68 +85,71 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_ALWAYS_INLINE void
     _M_acquire() noexcept
     {
-      auto const __pred =
-	[this] { return _S_do_try_acquire(&this->_M_counter); };
-      std::__atomic_wait_address_bare(&_M_counter, __pred);
+      auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+      auto const __pred = [this](__count_type __cur) {
+	return _S_do_try_acquire(&this->_M_counter, __cur);
+      };
+      std::__atomic_wait_address(&_M_counter, __pred, __vfn, true);
     }
 
     bool
     _M_try_acquire() noexcept
     {
-      auto const __pred =
-	[this] { return _S_do_try_acquire(&this->_M_counter); };
-      return std::__detail::__atomic_spin(__pred);
+      auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+      auto const __pred = [this](__count_type __cur) {
+	return _S_do_try_acquire(&this->_M_counter, __cur);
+      };
+      using __detail::__wait_clock_t;
+      return std::__atomic_wait_address_for(&_M_counter, __pred, __vfn,
+					    __wait_clock_t::duration(),
+					    true);
     }
 
     template<typename _Clock, typename _Duration>
       _GLIBCXX_ALWAYS_INLINE bool
-      _M_try_acquire_until(const chrono::time_point<_Clock,
-			   _Duration>& __atime) noexcept
+      _M_try_acquire_until(const chrono::time_point<_Clock, _Duration>& __atime) noexcept
       {
-	auto const __pred =
-	  [this] { return _S_do_try_acquire(&this->_M_counter); };
-
-	return __atomic_wait_address_until_bare(&_M_counter, __pred, __atime);
+	auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+	auto const __pred = [this](__count_type __cur) {
+	  return _S_do_try_acquire(&this->_M_counter, __cur);
+	};
+	return std::__atomic_wait_address_until(&_M_counter, __pred, __vfn,
+						__atime, true);
       }
 
     template<typename _Rep, typename _Period>
       _GLIBCXX_ALWAYS_INLINE bool
-      _M_try_acquire_for(const chrono::duration<_Rep, _Period>& __rtime)
-	noexcept
+      _M_try_acquire_for(const chrono::duration<_Rep, _Period>& __rtime) noexcept
       {
-	auto const __pred =
-	  [this] { return _S_do_try_acquire(&this->_M_counter); };
-
-	return __atomic_wait_address_for_bare(&_M_counter, __pred, __rtime);
+	auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+	auto const __pred = [this](__count_type __cur) {
+	  return _S_do_try_acquire(&this->_M_counter, __cur);
+	};
+	return std::__atomic_wait_address_for(&_M_counter, __pred, __vfn,
+					      __rtime, true);
       }
 
-    _GLIBCXX_ALWAYS_INLINE void
+    _GLIBCXX_ALWAYS_INLINE ptrdiff_t
     _M_release(ptrdiff_t __update) noexcept
     {
-      if (0 < __atomic_impl::fetch_add(&_M_counter, __update, memory_order_release))
-	return;
-      if (__update > 1)
-	__atomic_notify_address_bare(&_M_counter, true);
-      else
-	__atomic_notify_address_bare(&_M_counter, true);
-// FIXME - Figure out why this does not wake a waiting thread
-//	__atomic_notify_address_bare(&_M_counter, false);
+      auto __old = __atomic_impl::fetch_add(&_M_counter, __update,
+					    memory_order::release);
+      if (__old == 0 && __update > 0)
+	__atomic_notify_address(&_M_counter, true, true);
+      return __old;
     }
 
   private:
-    alignas(__detail::__platform_wait_alignment)
-    __detail::__platform_wait_t _M_counter;
+    alignas(_Platform_wait ? __detail::__platform_wait_alignment
+			   : __alignof__(__count_type))
+    __count_type _M_counter;
   };
-#endif // __cpp_lib_atomic_wait
 
-// Note: the _GLIBCXX_USE_POSIX_SEMAPHORE macro can be used to force the
-// use of Posix semaphores (sem_t). Doing so however, alters the ABI.
-#if defined __glibcxx_atomic_wait && !_GLIBCXX_USE_POSIX_SEMAPHORE
-  using __semaphore_impl = __atomic_semaphore;
-#elif _GLIBCXX_HAVE_POSIX_SEMAPHORE
-  using __semaphore_impl = __platform_semaphore;
-#endif
+  template<ptrdiff_t _Max>
+    using __semaphore_impl
+      = __semaphore_base<(_Max <= __semaphore_base<true>::_S_max)>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+#endif // __glibcxx_semaphore
 #endif // _GLIBCXX_SEMAPHORE_BASE_H

@@ -9,7 +9,7 @@ void run(void (*)());
 **	smstart	sm
 **	...
 **	smstop	sm
-**	bl	__clear_cache
+**	bl	[^\n]*[cC]ache[^\n]*
 **	smstart	sm
 **	add	x0, .*
 **	smstop	sm

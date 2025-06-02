@@ -790,4 +790,1768 @@ uint64_t TEST_BINARY_DATA(uint64_t, sub)[][3][N] =
   },
 };
 
+int8_t TEST_BINARY_DATA(int8_t, rsub)[][3][N] =
+{
+  {
+    { 1 },
+    {
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+       0,  0,  0,  0,
+      -1, -1, -1, -1,
+    },
+    {
+       0,  0,  0,  0,
+      -1, -1, -1, -1,
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+    },
+  },
+  {
+    { 127 },
+    {
+       127,  127,  127,  127,
+       126,  126,  126,  126,
+         1,    1,    1,    1,
+       125,  125,  125,  125,
+    },
+    {
+         0,    0,    0,    0,
+         1,    1,    1,    1,
+       126,  126,  126,  126,
+         2,    2,    2,    2,
+    },
+  },
+  {
+    { -128 },
+    {
+      -128, -128, -128, -128,
+      -127, -127, -127, -127,
+        -1,   -1,   -1,   -1,
+      -126, -126, -126, -126,
+    },
+    {
+         0,    0,    0,    0,
+        -1,   -1,   -1,   -1,
+      -127, -127, -127, -127,
+        -2,   -2,   -2,   -2,
+    },
+  },
+};
+
+int16_t TEST_BINARY_DATA(int16_t, rsub)[][3][N] =
+{
+  {
+    { 1 },
+    {
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+       0,  0,  0,  0,
+      -1, -1, -1, -1,
+    },
+    {
+       0,  0,  0,  0,
+      -1, -1, -1, -1,
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+    },
+  },
+  {
+    { 32767 },
+    {
+       32767,  32767,  32767,  32767,
+       32766,  32766,  32766,  32766,
+           1,      1,      1,      1,
+       32765,  32765,  32765,  32765,
+    },
+    {
+           0,      0,      0,      0,
+           1,      1,      1,      1,
+       32766,  32766,  32766,  32766,
+           2,      2,      2,      2,
+    },
+  },
+  {
+    { -32768 },
+    {
+      -32768, -32768, -32768, -32768,
+      -32767, -32767, -32767, -32767,
+          -1,     -1,     -1,     -1,
+      -32766, -32766, -32766, -32766,
+    },
+    {
+           0,      0,      0,      0,
+          -1,     -1,     -1,     -1,
+      -32767, -32767, -32767, -32767,
+          -2,     -2,     -2,     -2,
+    },
+  },
+};
+
+int32_t TEST_BINARY_DATA(int32_t, rsub)[][3][N] =
+{
+  {
+    { 1 },
+    {
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+       0,  0,  0,  0,
+      -1, -1, -1, -1,
+    },
+    {
+       0,  0,  0,  0,
+      -1, -1, -1, -1,
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+    },
+  },
+  {
+    { 2147483647 },
+    {
+       2147483647,  2147483647,  2147483647,  2147483647,
+       2147483646,  2147483646,  2147483646,  2147483646,
+                1,           1,           1,           1,
+       2147483645,  2147483645,  2147483645,  2147483645,
+    },
+    {
+                0,           0,           0,           0,
+                1,           1,           1,           1,
+       2147483646,  2147483646,  2147483646,  2147483646,
+                2,           2,           2,           2,
+    },
+  },
+  {
+    { -2147483648 },
+    {
+      -2147483648, -2147483648, -2147483648, -2147483648,
+      -2147483647, -2147483647, -2147483647, -2147483647,
+               -1,          -1,          -1,          -1,
+      -2147483646, -2147483646, -2147483646, -2147483646,
+    },
+    {
+                0,           0,           0,           0,
+               -1,          -1,          -1,          -1,
+      -2147483647, -2147483647, -2147483647, -2147483647,
+               -2,          -2,          -2,          -2,
+    },
+  },
+};
+
+int64_t TEST_BINARY_DATA(int64_t, rsub)[][3][N] =
+{
+  {
+    { 1 },
+    {
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+       0,  0,  0,  0,
+      -1, -1, -1, -1,
+    },
+    {
+       0,  0,  0,  0,
+      -1, -1, -1, -1,
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+    },
+  },
+  {
+    {  9223372036854775807ll },
+    {
+       9223372036854775807ll,  9223372036854775807ll,  9223372036854775807ll,  9223372036854775807ll,
+       9223372036854775806ll,  9223372036854775806ll,  9223372036854775806ll,  9223372036854775806ll,
+                           1,                      1,                      1,                      1,
+       9223372036854775805ll,  9223372036854775805ll,  9223372036854775805ll,  9223372036854775805ll,
+    },
+    {
+                            0,                       0,                       0,                       0,
+                            1,                       1,                       1,                       1,
+       9223372036854775806ull,  9223372036854775806ull,  9223372036854775806ull,  9223372036854775806ull,
+                            2,                       2,                       2,                       2,
+    },
+  },
+  {
+    { -9223372036854775808ull },
+    {
+      -9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull,
+       -9223372036854775807ll,  -9223372036854775807ll,  -9223372036854775807ll,  -9223372036854775807ll,
+                           -1,                      -1,                      -1,                      -1,
+       -9223372036854775806ll,  -9223372036854775806ll,  -9223372036854775806ll,  -9223372036854775806ll,
+    },
+    {
+                           0,                      0,                      0,                      0,
+                          -1,                     -1,                     -1,                     -1,
+      -9223372036854775807ll, -9223372036854775807ll, -9223372036854775807ll, -9223372036854775807ll,
+                          -2,                     -2,                     -2,                     -2,
+    },
+  },
+};
+
+uint8_t TEST_BINARY_DATA(uint8_t, rsub)[][3][N] =
+{
+  {
+    { 12 },
+    {
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+      12, 12, 12, 12,
+      10, 10, 10, 10,
+    },
+    {
+      11,  11,  11,  11,
+      10,  10,  10,  10,
+       0,   0,   0,   0,
+       2,   2,   2,   2,
+    },
+  },
+  {
+    { 127 },
+    {
+      127, 127, 127, 127,
+       28,  28,  28,  28,
+        4,   4,   4,   4,
+        5,   5,   5,   5,
+    },
+    {
+        0,   0,   0,   0,
+       99,  99,  99,  99,
+      123, 123, 123, 123,
+      122, 122, 122, 122,
+    },
+  },
+  {
+    { 255 },
+    {
+       253, 253, 253, 253,
+       254, 254, 254, 254,
+       255, 255, 255, 255,
+       252, 252, 252, 252,
+    },
+    {
+         2,   2,   2,   2,
+         1,   1,   1,   1,
+         0,   0,   0,   0,
+         3,   3,   3,   3,
+    },
+  },
+};
+
+uint16_t TEST_BINARY_DATA(uint16_t, rsub)[][3][N] =
+{
+  {
+    { 12 },
+    {
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+      12, 12, 12, 12,
+      10, 10, 10, 10,
+    },
+    {
+      11, 11, 11, 11,
+      10, 10, 10, 10,
+       0,  0,  0,  0,
+       2,  2,  2,  2,
+    },
+  },
+  {
+    { 32768 },
+    {
+      32767, 32767, 32767, 32767,
+      32768, 32768, 32768, 32768,
+          4,     4,     4,     4,
+          5,     5,     5,     5,
+    },
+    {
+          1,     1,     1,     1,
+          0,     0,     0,     0,
+      32764, 32764, 32764, 32764,
+      32763, 32763, 32763, 32763,
+    },
+  },
+  {
+    { 65535 },
+    {
+       65533, 65533, 65533, 65533,
+       65534, 65534, 65534, 65534,
+       65535, 65535, 65535, 65535,
+       65532, 65532, 65532, 65532,
+    },
+    {
+           2,     2,     2,     2,
+           1,     1,     1,     1,
+           0,     0,     0,     0,
+           3,     3,     3,     3,
+    },
+  },
+};
+
+uint32_t TEST_BINARY_DATA(uint32_t, rsub)[][3][N] =
+{
+  {
+    { 12 },
+    {
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+      12, 12, 12, 12,
+      10, 10, 10, 10,
+    },
+    {
+      11, 11, 11, 11,
+      10, 10, 10, 10,
+       0,  0,  0,  0,
+       2,  2,  2,  2,
+    },
+  },
+  {
+    { 2147483648 },
+    {
+      2147483647, 2147483647, 2147483647, 2147483647,
+      2147483648, 2147483648, 2147483648, 2147483648,
+               4,          4,          4,          4,
+               5,          5,          5,          5,
+    },
+    {
+               1,          1,          1,          1,
+               0,          0,          0,          0,
+      2147483644, 2147483644, 2147483644, 2147483644,
+      2147483643, 2147483643, 2147483643, 2147483643,
+    },
+  },
+  {
+    { 4294967295 },
+    {
+       4294967293, 4294967293, 4294967293, 4294967293,
+       4294967294, 4294967294, 4294967294, 4294967294,
+       4294967295, 4294967295, 4294967295, 4294967295,
+       4294967292, 4294967292, 4294967292, 4294967292,
+    },
+    {
+                2,          2,          2,          2,
+                1,          1,          1,          1,
+                0,          0,          0,          0,
+                3,          3,          3,          3,
+    },
+  },
+};
+
+uint64_t TEST_BINARY_DATA(uint64_t, rsub)[][3][N] =
+{
+  {
+    { 12 },
+    {
+       1,  1,  1,  1,
+       2,  2,  2,  2,
+      12, 12, 12, 12,
+      10, 10, 10, 10,
+    },
+    {
+      11, 11, 11, 11,
+      10, 10, 10, 10,
+       0,  0,  0,  0,
+       2,  2,  2,  2,
+    },
+  },
+  {
+    { 9223372036854775808ull },
+    {
+      9223372036854775807ull, 9223372036854775807ull, 9223372036854775807ull, 9223372036854775807ull,
+      9223372036854775808ull, 9223372036854775808ull, 9223372036854775808ull, 9223372036854775808ull,
+                        4ull,                   4ull,                   4ull,                   4ull,
+                        5ull,                   5ull,                   5ull,                   5ull,
+    },
+    {
+                           1,                      1,                      1,                      1,
+                           0,                      0,                      0,                      0,
+      9223372036854775804ull, 9223372036854775804ull, 9223372036854775804ull, 9223372036854775804ull,
+      9223372036854775803ull, 9223372036854775803ull, 9223372036854775803ull, 9223372036854775803ull,
+    },
+  },
+  {
+    { 18446744073709551615ull },
+    {
+       18446744073709551613ull, 18446744073709551613ull, 18446744073709551613ull, 18446744073709551613ull,
+       18446744073709551614ull, 18446744073709551614ull, 18446744073709551614ull, 18446744073709551614ull,
+       18446744073709551615ull, 18446744073709551615ull, 18446744073709551615ull, 18446744073709551615ull,
+       18446744073709551612ull, 18446744073709551612ull, 18446744073709551612ull, 18446744073709551612ull,
+    },
+    {
+                             2,                       2,                       2,                       2,
+                             1,                       1,                       1,                       1,
+                             0,                       0,                       0,                       0,
+                             3,                       3,                       3,                       3,
+    },
+  },
+};
+
+int8_t TEST_BINARY_DATA(int8_t, and)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+       0x1,  0x1,  0x1,  0x1,
+       0x2,  0x2,  0x2,  0x2,
+       0x0,  0x0,  0x0,  0x0,
+      0xff, 0xff, 0xff, 0xff,
+    },
+    {
+       0x1,  0x1,  0x1,  0x1,
+       0x0,  0x0,  0x0,  0x0,
+       0x0,  0x0,  0x0,  0x0,
+       0x1,  0x1,  0x1,  0x1,
+    },
+  },
+  {
+    { 0x7f },
+    {
+      0x7f, 0x7f, 0x7f, 0x7f,
+      0x80, 0x80, 0x80, 0x80,
+       0xf,  0xf,  0xf,  0xf,
+      0x70, 0x70, 0x70, 0x70,
+    },
+    {
+      0x7f, 0x7f, 0x7f, 0x7f,
+       0x0,  0x0,  0x0,  0x0,
+       0xf,  0xf,  0xf,  0xf,
+      0x70, 0x70, 0x70, 0x70,
+    },
+  },
+  {
+    { 0xff },
+    {
+      0xff, 0xff, 0xff, 0xff,
+      0x1f, 0x1f, 0x1f, 0x1f,
+      0x80, 0x80, 0x80, 0x80,
+       0x1,  0x1,  0x1,  0x1,
+    },
+    {
+      0xff, 0xff, 0xff, 0xff,
+      0x1f, 0x1f, 0x1f, 0x1f,
+      0x80, 0x80, 0x80, 0x80,
+       0x1,  0x1,  0x1,  0x1,
+    },
+  },
+};
+
+int16_t TEST_BINARY_DATA(int16_t, and)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+         0x1,    0x1,    0x1,    0x1,
+         0x2,    0x2,    0x2,    0x2,
+         0x0,    0x0,    0x0,    0x0,
+      0xffff, 0xffff, 0xffff, 0xffff,
+    },
+    {
+         0x1,    0x1,    0x1,    0x1,
+         0x0,    0x0,    0x0,    0x0,
+         0x0,    0x0,    0x0,    0x0,
+         0x1,    0x1,    0x1,    0x1,
+    },
+  },
+  {
+    { 0x7fff },
+    {
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0xf,    0xf,    0xf,    0xf,
+      0x7000, 0x7000, 0x7000, 0x7000,
+    },
+    {
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+         0x0,    0x0,    0x0,    0x0,
+         0xf,    0xf,    0xf,    0xf,
+      0x7000, 0x7000, 0x7000, 0x7000,
+    },
+  },
+  {
+    { 0xffff },
+    {
+      0xffff, 0xffff, 0xffff, 0xffff,
+        0x1f,   0x1f,   0x1f,   0x1f,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0x1,    0x1,    0x1,    0x1,
+    },
+    {
+      0xffff, 0xffff, 0xffff, 0xffff,
+        0x1f,   0x1f,   0x1f,   0x1f,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0x1,    0x1,    0x1,    0x1,
+    },
+  },
+};
+
+int32_t TEST_BINARY_DATA(int32_t, and)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+             0x1,        0x1,        0x1,        0x1,
+             0x2,        0x2,        0x2,        0x2,
+             0x0,        0x0,        0x0,        0x0,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    },
+    {
+             0x1,        0x1,        0x1,        0x1,
+             0x0,        0x0,        0x0,        0x0,
+             0x0,        0x0,        0x0,        0x0,
+             0x1,        0x1,        0x1,        0x1,
+    },
+  },
+  {
+    { 0x7fffffff },
+    {
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0xf,        0xf,        0xf,        0xf,
+      0x70000000, 0x70000000, 0x70000000, 0x70000000,
+    },
+    {
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+             0x0,        0x0,        0x0,        0x0,
+             0xf,        0xf,        0xf,        0xf,
+      0x70000000, 0x70000000, 0x70000000, 0x70000000,
+    },
+  },
+  {
+    { 0xffffffff },
+    {
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            0x1f,       0x1f,       0x1f,       0x1f,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0x1,        0x1,        0x1,        0x1,
+    },
+    {
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            0x1f,       0x1f,       0x1f,       0x1f,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0x1,        0x1,        0x1,        0x1,
+    },
+  },
+};
+
+int64_t TEST_BINARY_DATA(int64_t, and)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+                        0x1,                   0x1,                   0x1,                   0x1,
+                        0x2,                   0x2,                   0x2,                   0x2,
+                        0x0,                   0x0,                   0x0,                   0x0,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+    },
+    {
+                        0x1,                   0x1,                   0x1,                   0x1,
+                        0x0,                   0x0,                   0x0,                   0x0,
+                        0x0,                   0x0,                   0x0,                   0x0,
+                        0x1,                   0x1,                   0x1,                   0x1,
+    },
+  },
+  {
+    { 0x7fffffffffffffffull },
+    {
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0xf,                   0xf,                   0xf,                   0xf,
+      0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull,
+    },
+    {
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+                        0x0,                   0x0,                   0x0,                   0x0,
+                        0xf,                   0xf,                   0xf,                   0xf,
+      0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull,
+    },
+  },
+  {
+    { 0xffffffffffffffffull },
+    {
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+                       0x1f,                  0x1f,                  0x1f,                  0x1f,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0x1,                   0x1,                   0x1,                   0x1,
+    },
+    {
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+                       0x1f,                  0x1f,                  0x1f,                  0x1f,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0x1,                   0x1,                   0x1,                   0x1,
+    },
+  },
+};
+
+uint8_t TEST_BINARY_DATA(uint8_t, and)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+       0x1,  0x1,  0x1,  0x1,
+       0x2,  0x2,  0x2,  0x2,
+       0x0,  0x0,  0x0,  0x0,
+      0xff, 0xff, 0xff, 0xff,
+    },
+    {
+       0x1,  0x1,  0x1,  0x1,
+       0x0,  0x0,  0x0,  0x0,
+       0x0,  0x0,  0x0,  0x0,
+       0x1,  0x1,  0x1,  0x1,
+    },
+  },
+  {
+    { 0x7f },
+    {
+      0x7f, 0x7f, 0x7f, 0x7f,
+      0x80, 0x80, 0x80, 0x80,
+       0xf,  0xf,  0xf,  0xf,
+      0x70, 0x70, 0x70, 0x70,
+    },
+    {
+      0x7f, 0x7f, 0x7f, 0x7f,
+       0x0,  0x0,  0x0,  0x0,
+       0xf,  0xf,  0xf,  0xf,
+      0x70, 0x70, 0x70, 0x70,
+    },
+  },
+  {
+    { 0xff },
+    {
+      0xff, 0xff, 0xff, 0xff,
+      0x1f, 0x1f, 0x1f, 0x1f,
+      0x80, 0x80, 0x80, 0x80,
+       0x1,  0x1,  0x1,  0x1,
+    },
+    {
+      0xff, 0xff, 0xff, 0xff,
+      0x1f, 0x1f, 0x1f, 0x1f,
+      0x80, 0x80, 0x80, 0x80,
+       0x1,  0x1,  0x1,  0x1,
+    },
+  },
+};
+
+uint16_t TEST_BINARY_DATA(uint16_t, and)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+         0x1,    0x1,    0x1,    0x1,
+         0x2,    0x2,    0x2,    0x2,
+         0x0,    0x0,    0x0,    0x0,
+      0xffff, 0xffff, 0xffff, 0xffff,
+    },
+    {
+         0x1,    0x1,    0x1,    0x1,
+         0x0,    0x0,    0x0,    0x0,
+         0x0,    0x0,    0x0,    0x0,
+         0x1,    0x1,    0x1,    0x1,
+    },
+  },
+  {
+    { 0x7fff },
+    {
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0xf,    0xf,    0xf,    0xf,
+      0x7000, 0x7000, 0x7000, 0x7000,
+    },
+    {
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+         0x0,    0x0,    0x0,    0x0,
+         0xf,    0xf,    0xf,    0xf,
+      0x7000, 0x7000, 0x7000, 0x7000,
+    },
+  },
+  {
+    { 0xffff },
+    {
+      0xffff, 0xffff, 0xffff, 0xffff,
+        0x1f,   0x1f,   0x1f,   0x1f,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0x1,    0x1,    0x1,    0x1,
+    },
+    {
+      0xffff, 0xffff, 0xffff, 0xffff,
+        0x1f,   0x1f,   0x1f,   0x1f,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0x1,    0x1,    0x1,    0x1,
+    },
+  },
+};
+
+uint32_t TEST_BINARY_DATA(uint32_t, and)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+             0x1,        0x1,        0x1,        0x1,
+             0x2,        0x2,        0x2,        0x2,
+             0x0,        0x0,        0x0,        0x0,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    },
+    {
+             0x1,        0x1,        0x1,        0x1,
+             0x0,        0x0,        0x0,        0x0,
+             0x0,        0x0,        0x0,        0x0,
+             0x1,        0x1,        0x1,        0x1,
+    },
+  },
+  {
+    { 0x7fffffff },
+    {
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0xf,        0xf,        0xf,        0xf,
+      0x70000000, 0x70000000, 0x70000000, 0x70000000,
+    },
+    {
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+             0x0,        0x0,        0x0,        0x0,
+             0xf,        0xf,        0xf,        0xf,
+      0x70000000, 0x70000000, 0x70000000, 0x70000000,
+    },
+  },
+  {
+    { 0xffffffff },
+    {
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            0x1f,       0x1f,       0x1f,       0x1f,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0x1,        0x1,        0x1,        0x1,
+    },
+    {
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            0x1f,       0x1f,       0x1f,       0x1f,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0x1,        0x1,        0x1,        0x1,
+    },
+  },
+};
+
+uint64_t TEST_BINARY_DATA(uint64_t, and)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+                        0x1,                   0x1,                   0x1,                   0x1,
+                        0x2,                   0x2,                   0x2,                   0x2,
+                        0x0,                   0x0,                   0x0,                   0x0,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+    },
+    {
+                        0x1,                   0x1,                   0x1,                   0x1,
+                        0x0,                   0x0,                   0x0,                   0x0,
+                        0x0,                   0x0,                   0x0,                   0x0,
+                        0x1,                   0x1,                   0x1,                   0x1,
+    },
+  },
+  {
+    { 0x7fffffffffffffffull },
+    {
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0xf,                   0xf,                   0xf,                   0xf,
+      0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull,
+    },
+    {
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+                        0x0,                   0x0,                   0x0,                   0x0,
+                        0xf,                   0xf,                   0xf,                   0xf,
+      0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull,
+    },
+  },
+  {
+    { 0xffffffffffffffffull },
+    {
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+                       0x1f,                  0x1f,                  0x1f,                  0x1f,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0x1,                   0x1,                   0x1,                   0x1,
+    },
+    {
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+                       0x1f,                  0x1f,                  0x1f,                  0x1f,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0x1,                   0x1,                   0x1,                   0x1,
+    },
+  },
+};
+
+int8_t TEST_BINARY_DATA(int8_t, or)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+       0x1,  0x1,  0x1,  0x1,
+       0x2,  0x2,  0x2,  0x2,
+       0x0,  0x0,  0x0,  0x0,
+      0xff, 0xff, 0xff, 0xff,
+    },
+    {
+       0x1,  0x1,  0x1,  0x1,
+       0x3,  0x3,  0x3,  0x3,
+       0x1,  0x1,  0x1,  0x1,
+      0xff, 0xff, 0xff, 0xff,
+    },
+  },
+  {
+    { 0x7f },
+    {
+      0x7f, 0x7f, 0x7f, 0x7f,
+      0x80, 0x80, 0x80, 0x80,
+       0xf,  0xf,  0xf,  0xf,
+      0x70, 0x70, 0x70, 0x70,
+    },
+    {
+      0x7f, 0x7f, 0x7f, 0x7f,
+      0xff, 0xff, 0xff, 0xff,
+      0x7f, 0x7f, 0x7f, 0x7f,
+      0x7f, 0x7f, 0x7f, 0x7f,
+    },
+  },
+  {
+    { 0xf0 },
+    {
+      0xff, 0xff, 0xff, 0xff,
+      0x1f, 0x1f, 0x1f, 0x1f,
+      0x80, 0x80, 0x80, 0x80,
+       0x1,  0x1,  0x1,  0x1,
+    },
+    {
+      0xff, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xff,
+      0xf0, 0xf0, 0xf0, 0xf0,
+      0xf1, 0xf1, 0xf1, 0xf1,
+    },
+  },
+};
+
+int16_t TEST_BINARY_DATA(int16_t, or)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+         0x1,    0x1,    0x1,    0x1,
+         0x2,    0x2,    0x2,    0x2,
+         0x0,    0x0,    0x0,    0x0,
+      0xffff, 0xffff, 0xffff, 0xffff,
+    },
+    {
+         0x1,    0x1,    0x1,    0x1,
+         0x3,    0x3,    0x3,    0x3,
+         0x1,    0x1,    0x1,    0x1,
+      0xffff, 0xffff, 0xffff, 0xffff,
+    },
+  },
+  {
+    { 0x7fff },
+    {
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0xf,    0xf,    0xf,    0xf,
+      0x7000, 0x7000, 0x7000, 0x7000,
+    },
+    {
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+      0xffff, 0xffff, 0xffff, 0xffff,
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+    },
+  },
+  {
+    { 0xfff0 },
+    {
+      0xffff, 0xffff, 0xffff, 0xffff,
+        0x1f,   0x1f,   0x1f,   0x1f,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0x1,    0x1,    0x1,    0x1,
+    },
+    {
+      0xffff, 0xffff, 0xffff, 0xffff,
+      0xffff, 0xffff, 0xffff, 0xffff,
+      0xfff0, 0xfff0, 0xfff0, 0xfff0,
+      0xfff1, 0xfff1, 0xfff1, 0xfff1,
+    },
+  },
+};
+
+int32_t TEST_BINARY_DATA(int32_t, or)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+             0x1,        0x1,        0x1,        0x1,
+             0x2,        0x2,        0x2,        0x2,
+             0x0,        0x0,        0x0,        0x0,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    },
+    {
+             0x1,        0x1,        0x1,        0x1,
+             0x3,        0x3,        0x3,        0x3,
+             0x1,        0x1,        0x1,        0x1,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    },
+  },
+  {
+    { 0x7fffffff },
+    {
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0xf,        0xf,        0xf,        0xf,
+      0x70000000, 0x70000000, 0x70000000, 0x70000000,
+    },
+    {
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+    },
+  },
+  {
+    { 0xfffffff0 },
+    {
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            0x1f,       0x1f,       0x1f,       0x1f,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0x1,        0x1,        0x1,        0x1,
+    },
+    {
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+      0xfffffff0, 0xfffffff0, 0xfffffff0, 0xfffffff0,
+      0xfffffff1, 0xfffffff1, 0xfffffff1, 0xfffffff1,
+    },
+  },
+};
+
+int64_t TEST_BINARY_DATA(int64_t, or)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+                        0x1,                   0x1,                   0x1,                   0x1,
+                        0x2,                   0x2,                   0x2,                   0x2,
+                        0x0,                   0x0,                   0x0,                   0x0,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+    },
+    {
+                        0x1,                   0x1,                   0x1,                   0x1,
+                        0x3,                   0x3,                   0x3,                   0x3,
+                        0x1,                   0x1,                   0x1,                   0x1,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+    },
+  },
+  {
+    { 0x7fffffffffffffffull },
+    {
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0xf,                   0xf,                   0xf,                   0xf,
+      0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull,
+    },
+    {
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+    },
+  },
+  {
+    { 0xfffffffffffffff0ull },
+    {
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+                       0x1f,                  0x1f,                  0x1f,                  0x1f,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0x1,                   0x1,                   0x1,                   0x1,
+    },
+    {
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+      0xfffffffffffffff0ull, 0xfffffffffffffff0ull, 0xfffffffffffffff0ull, 0xfffffffffffffff0ull,
+      0xfffffffffffffff1ull, 0xfffffffffffffff1ull, 0xfffffffffffffff1ull, 0xfffffffffffffff1ull,
+    },
+  },
+};
+
+uint8_t TEST_BINARY_DATA(uint8_t, or)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+       0x1,  0x1,  0x1,  0x1,
+       0x2,  0x2,  0x2,  0x2,
+       0x0,  0x0,  0x0,  0x0,
+      0xff, 0xff, 0xff, 0xff,
+    },
+    {
+       0x1,  0x1,  0x1,  0x1,
+       0x3,  0x3,  0x3,  0x3,
+       0x1,  0x1,  0x1,  0x1,
+      0xff, 0xff, 0xff, 0xff,
+    },
+  },
+  {
+    { 0x7f },
+    {
+      0x7f, 0x7f, 0x7f, 0x7f,
+      0x80, 0x80, 0x80, 0x80,
+       0xf,  0xf,  0xf,  0xf,
+      0x70, 0x70, 0x70, 0x70,
+    },
+    {
+      0x7f, 0x7f, 0x7f, 0x7f,
+      0xff, 0xff, 0xff, 0xff,
+      0x7f, 0x7f, 0x7f, 0x7f,
+      0x7f, 0x7f, 0x7f, 0x7f,
+    },
+  },
+  {
+    { 0xf0 },
+    {
+      0xff, 0xff, 0xff, 0xff,
+      0x1f, 0x1f, 0x1f, 0x1f,
+      0x80, 0x80, 0x80, 0x80,
+       0x1,  0x1,  0x1,  0x1,
+    },
+    {
+      0xff, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xff,
+      0xf0, 0xf0, 0xf0, 0xf0,
+      0xf1, 0xf1, 0xf1, 0xf1,
+    },
+  },
+};
+
+uint16_t TEST_BINARY_DATA(uint16_t, or)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+         0x1,    0x1,    0x1,    0x1,
+         0x2,    0x2,    0x2,    0x2,
+         0x0,    0x0,    0x0,    0x0,
+      0xffff, 0xffff, 0xffff, 0xffff,
+    },
+    {
+         0x1,    0x1,    0x1,    0x1,
+         0x3,    0x3,    0x3,    0x3,
+         0x1,    0x1,    0x1,    0x1,
+      0xffff, 0xffff, 0xffff, 0xffff,
+    },
+  },
+  {
+    { 0x7fff },
+    {
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0xf,    0xf,    0xf,    0xf,
+      0x7000, 0x7000, 0x7000, 0x7000,
+    },
+    {
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+      0xffff, 0xffff, 0xffff, 0xffff,
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+    },
+  },
+  {
+    { 0xfff0 },
+    {
+      0xffff, 0xffff, 0xffff, 0xffff,
+        0x1f,   0x1f,   0x1f,   0x1f,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0x1,    0x1,    0x1,    0x1,
+    },
+    {
+      0xffff, 0xffff, 0xffff, 0xffff,
+      0xffff, 0xffff, 0xffff, 0xffff,
+      0xfff0, 0xfff0, 0xfff0, 0xfff0,
+      0xfff1, 0xfff1, 0xfff1, 0xfff1,
+    },
+  },
+};
+
+uint32_t TEST_BINARY_DATA(uint32_t, or)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+             0x1,        0x1,        0x1,        0x1,
+             0x2,        0x2,        0x2,        0x2,
+             0x0,        0x0,        0x0,        0x0,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    },
+    {
+             0x1,        0x1,        0x1,        0x1,
+             0x3,        0x3,        0x3,        0x3,
+             0x1,        0x1,        0x1,        0x1,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    },
+  },
+  {
+    { 0x7fffffff },
+    {
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0xf,        0xf,        0xf,        0xf,
+      0x70000000, 0x70000000, 0x70000000, 0x70000000,
+    },
+    {
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+    },
+  },
+  {
+    { 0xfffffff0 },
+    {
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            0x1f,       0x1f,       0x1f,       0x1f,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0x1,        0x1,        0x1,        0x1,
+    },
+    {
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+      0xfffffff0, 0xfffffff0, 0xfffffff0, 0xfffffff0,
+      0xfffffff1, 0xfffffff1, 0xfffffff1, 0xfffffff1,
+    },
+  },
+};
+
+uint64_t TEST_BINARY_DATA(uint64_t, or)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+                        0x1,                   0x1,                   0x1,                   0x1,
+                        0x2,                   0x2,                   0x2,                   0x2,
+                        0x0,                   0x0,                   0x0,                   0x0,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+    },
+    {
+                        0x1,                   0x1,                   0x1,                   0x1,
+                        0x3,                   0x3,                   0x3,                   0x3,
+                        0x1,                   0x1,                   0x1,                   0x1,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+    },
+  },
+  {
+    { 0x7fffffffffffffffull },
+    {
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0xf,                   0xf,                   0xf,                   0xf,
+      0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull,
+    },
+    {
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+    },
+  },
+  {
+    { 0xfffffffffffffff0ull },
+    {
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+                       0x1f,                  0x1f,                  0x1f,                  0x1f,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0x1,                   0x1,                   0x1,                   0x1,
+    },
+    {
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+      0xfffffffffffffff0ull, 0xfffffffffffffff0ull, 0xfffffffffffffff0ull, 0xfffffffffffffff0ull,
+      0xfffffffffffffff1ull, 0xfffffffffffffff1ull, 0xfffffffffffffff1ull, 0xfffffffffffffff1ull,
+    },
+  },
+};
+
+int8_t TEST_BINARY_DATA(int8_t, xor)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+       0x1,  0x1,  0x1,  0x1,
+       0x2,  0x2,  0x2,  0x2,
+       0x0,  0x0,  0x0,  0x0,
+      0xff, 0xff, 0xff, 0xff,
+    },
+    {
+       0x0,  0x0,  0x0,  0x0,
+       0x3,  0x3,  0x3,  0x3,
+       0x1,  0x1,  0x1,  0x1,
+      0xfe, 0xfe, 0xfe, 0xfe,
+    },
+  },
+  {
+    { 0x7f },
+    {
+      0x7f, 0x7f, 0x7f, 0x7f,
+      0x80, 0x80, 0x80, 0x80,
+       0xf,  0xf,  0xf,  0xf,
+      0x70, 0x70, 0x70, 0x70,
+    },
+    {
+       0x0,  0x0,  0x0,  0x0,
+      0xff, 0xff, 0xff, 0xff,
+      0x70, 0x70, 0x70, 0x70,
+       0xf,  0xf,  0xf,  0xf,
+    },
+  },
+  {
+    { 0xf0 },
+    {
+      0xff, 0xff, 0xff, 0xff,
+      0x1f, 0x1f, 0x1f, 0x1f,
+      0x80, 0x80, 0x80, 0x80,
+       0x1,  0x1,  0x1,  0x1,
+    },
+    {
+       0xf,  0xf,  0xf,  0xf,
+      0xef, 0xef, 0xef, 0xef,
+      0x70, 0x70, 0x70, 0x70,
+      0xf1, 0xf1, 0xf1, 0xf1,
+    },
+  },
+};
+
+int16_t TEST_BINARY_DATA(int16_t, xor)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+         0x1,    0x1,    0x1,    0x1,
+         0x2,    0x2,    0x2,    0x2,
+         0x0,    0x0,    0x0,    0x0,
+      0xffff, 0xffff, 0xffff, 0xffff,
+    },
+    {
+         0x0,    0x0,    0x0,    0x0,
+         0x3,    0x3,    0x3,    0x3,
+         0x1,    0x1,    0x1,    0x1,
+      0xfffe, 0xfffe, 0xfffe, 0xfffe,
+    },
+  },
+  {
+    { 0x7fff },
+    {
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0xf,    0xf,    0xf,    0xf,
+      0x7000, 0x7000, 0x7000, 0x7000,
+    },
+    {
+         0x0,    0x0,    0x0,    0x0,
+      0xffff, 0xffff, 0xffff, 0xffff,
+      0x7ff0, 0x7ff0, 0x7ff0, 0x7ff0,
+      0x0fff, 0x0fff, 0x0fff, 0x0fff,
+    },
+  },
+  {
+    { 0xfff0 },
+    {
+      0xffff, 0xffff, 0xffff, 0xffff,
+        0x1f,   0x1f,   0x1f,   0x1f,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0x1,    0x1,    0x1,    0x1,
+    },
+    {
+         0xf,    0xf,    0xf,    0xf,
+      0xffef, 0xffef, 0xffef, 0xffef,
+      0x7ff0, 0x7ff0, 0x7ff0, 0x7ff0,
+      0xfff1, 0xfff1, 0xfff1, 0xfff1,
+    },
+  },
+};
+
+int32_t TEST_BINARY_DATA(int32_t, xor)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+             0x1,        0x1,        0x1,        0x1,
+             0x2,        0x2,        0x2,        0x2,
+             0x0,        0x0,        0x0,        0x0,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    },
+    {
+             0x0,        0x0,        0x0,        0x0,
+             0x3,        0x3,        0x3,        0x3,
+             0x1,        0x1,        0x1,        0x1,
+      0xfffffffe, 0xfffffffe, 0xfffffffe, 0xfffffffe,
+    },
+  },
+  {
+    { 0x7fffffff },
+    {
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0xf,        0xf,        0xf,        0xf,
+      0x70000000, 0x70000000, 0x70000000, 0x70000000,
+    },
+    {
+             0x0,        0x0,        0x0,        0x0,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+      0x7ffffff0, 0x7ffffff0, 0x7ffffff0, 0x7ffffff0,
+       0xfffffff,  0xfffffff,  0xfffffff,  0xfffffff,
+    },
+  },
+  {
+    { 0xfffffff0 },
+    {
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            0x1f,       0x1f,       0x1f,       0x1f,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0x1,        0x1,        0x1,        0x1,
+    },
+    {
+             0xf,        0xf,        0xf,        0xf,
+      0xffffffef, 0xffffffef, 0xffffffef, 0xffffffef,
+      0x7ffffff0, 0x7ffffff0, 0x7ffffff0, 0x7ffffff0,
+      0xfffffff1, 0xfffffff1, 0xfffffff1, 0xfffffff1,
+    },
+  },
+};
+
+int64_t TEST_BINARY_DATA(int64_t, xor)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+                        0x1,                   0x1,                   0x1,                   0x1,
+                        0x2,                   0x2,                   0x2,                   0x2,
+                        0x0,                   0x0,                   0x0,                   0x0,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+    },
+    {
+                        0x0,                   0x0,                   0x0,                   0x0,
+                        0x3,                   0x3,                   0x3,                   0x3,
+                        0x1,                   0x1,                   0x1,                   0x1,
+      0xfffffffffffffffeull, 0xfffffffffffffffeull, 0xfffffffffffffffeull, 0xfffffffffffffffeull,
+    },
+  },
+  {
+    { 0x7fffffffffffffffull },
+    {
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0xf,                   0xf,                   0xf,                   0xf,
+      0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull,
+    },
+    {
+                        0x0,                   0x0,                   0x0,                   0x0,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+      0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull,
+       0xfffffffffffffffull,  0xfffffffffffffffull,  0xfffffffffffffffull,  0xfffffffffffffffull,
+    },
+  },
+  {
+    { 0xfffffffffffffff0ull },
+    {
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+                       0x1f,                  0x1f,                  0x1f,                  0x1f,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0x1,                   0x1,                   0x1,                   0x1,
+    },
+    {
+                        0xf,                   0xf,                   0xf,                   0xf,
+      0xffffffffffffffefull, 0xffffffffffffffefull, 0xffffffffffffffefull, 0xffffffffffffffefull,
+      0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull,
+      0xfffffffffffffff1ull, 0xfffffffffffffff1ull, 0xfffffffffffffff1ull, 0xfffffffffffffff1ull,
+    },
+  },
+};
+
+uint8_t TEST_BINARY_DATA(uint8_t, xor)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+       0x1,  0x1,  0x1,  0x1,
+       0x2,  0x2,  0x2,  0x2,
+       0x0,  0x0,  0x0,  0x0,
+      0xff, 0xff, 0xff, 0xff,
+    },
+    {
+       0x0,  0x0,  0x0,  0x0,
+       0x3,  0x3,  0x3,  0x3,
+       0x1,  0x1,  0x1,  0x1,
+      0xfe, 0xfe, 0xfe, 0xfe,
+    },
+  },
+  {
+    { 0x7f },
+    {
+      0x7f, 0x7f, 0x7f, 0x7f,
+      0x80, 0x80, 0x80, 0x80,
+       0xf,  0xf,  0xf,  0xf,
+      0x70, 0x70, 0x70, 0x70,
+    },
+    {
+       0x0,  0x0,  0x0,  0x0,
+      0xff, 0xff, 0xff, 0xff,
+      0x70, 0x70, 0x70, 0x70,
+       0xf,  0xf,  0xf,  0xf,
+    },
+  },
+  {
+    { 0xf0 },
+    {
+      0xff, 0xff, 0xff, 0xff,
+      0x1f, 0x1f, 0x1f, 0x1f,
+      0x80, 0x80, 0x80, 0x80,
+       0x1,  0x1,  0x1,  0x1,
+    },
+    {
+       0xf,  0xf,  0xf,  0xf,
+      0xef, 0xef, 0xef, 0xef,
+      0x70, 0x70, 0x70, 0x70,
+      0xf1, 0xf1, 0xf1, 0xf1,
+    },
+  },
+};
+
+uint16_t TEST_BINARY_DATA(uint16_t, xor)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+         0x1,    0x1,    0x1,    0x1,
+         0x2,    0x2,    0x2,    0x2,
+         0x0,    0x0,    0x0,    0x0,
+      0xffff, 0xffff, 0xffff, 0xffff,
+    },
+    {
+         0x0,    0x0,    0x0,    0x0,
+         0x3,    0x3,    0x3,    0x3,
+         0x1,    0x1,    0x1,    0x1,
+      0xfffe, 0xfffe, 0xfffe, 0xfffe,
+    },
+  },
+  {
+    { 0x7fff },
+    {
+      0x7fff, 0x7fff, 0x7fff, 0x7fff,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0xf,    0xf,    0xf,    0xf,
+      0x7000, 0x7000, 0x7000, 0x7000,
+    },
+    {
+         0x0,    0x0,    0x0,    0x0,
+      0xffff, 0xffff, 0xffff, 0xffff,
+      0x7ff0, 0x7ff0, 0x7ff0, 0x7ff0,
+      0x0fff, 0x0fff, 0x0fff, 0x0fff,
+    },
+  },
+  {
+    { 0xfff0 },
+    {
+      0xffff, 0xffff, 0xffff, 0xffff,
+        0x1f,   0x1f,   0x1f,   0x1f,
+      0x8000, 0x8000, 0x8000, 0x8000,
+         0x1,    0x1,    0x1,    0x1,
+    },
+    {
+         0xf,    0xf,    0xf,    0xf,
+      0xffef, 0xffef, 0xffef, 0xffef,
+      0x7ff0, 0x7ff0, 0x7ff0, 0x7ff0,
+      0xfff1, 0xfff1, 0xfff1, 0xfff1,
+    },
+  },
+};
+
+uint32_t TEST_BINARY_DATA(uint32_t, xor)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+             0x1,        0x1,        0x1,        0x1,
+             0x2,        0x2,        0x2,        0x2,
+             0x0,        0x0,        0x0,        0x0,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    },
+    {
+             0x0,        0x0,        0x0,        0x0,
+             0x3,        0x3,        0x3,        0x3,
+             0x1,        0x1,        0x1,        0x1,
+      0xfffffffe, 0xfffffffe, 0xfffffffe, 0xfffffffe,
+    },
+  },
+  {
+    { 0x7fffffff },
+    {
+      0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0xf,        0xf,        0xf,        0xf,
+      0x70000000, 0x70000000, 0x70000000, 0x70000000,
+    },
+    {
+             0x0,        0x0,        0x0,        0x0,
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+      0x7ffffff0, 0x7ffffff0, 0x7ffffff0, 0x7ffffff0,
+       0xfffffff,  0xfffffff,  0xfffffff,  0xfffffff,
+    },
+  },
+  {
+    { 0xfffffff0 },
+    {
+      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            0x1f,       0x1f,       0x1f,       0x1f,
+      0x80000000, 0x80000000, 0x80000000, 0x80000000,
+             0x1,        0x1,        0x1,        0x1,
+    },
+    {
+             0xf,        0xf,        0xf,        0xf,
+      0xffffffef, 0xffffffef, 0xffffffef, 0xffffffef,
+      0x7ffffff0, 0x7ffffff0, 0x7ffffff0, 0x7ffffff0,
+      0xfffffff1, 0xfffffff1, 0xfffffff1, 0xfffffff1,
+    },
+  },
+};
+
+uint64_t TEST_BINARY_DATA(uint64_t, xor)[][3][N] =
+{
+  {
+    { 0x1 },
+    {
+                        0x1,                   0x1,                   0x1,                   0x1,
+                        0x2,                   0x2,                   0x2,                   0x2,
+                        0x0,                   0x0,                   0x0,                   0x0,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+    },
+    {
+                        0x0,                   0x0,                   0x0,                   0x0,
+                        0x3,                   0x3,                   0x3,                   0x3,
+                        0x1,                   0x1,                   0x1,                   0x1,
+      0xfffffffffffffffeull, 0xfffffffffffffffeull, 0xfffffffffffffffeull, 0xfffffffffffffffeull,
+    },
+  },
+  {
+    { 0x7fffffffffffffffull },
+    {
+      0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull, 0x7fffffffffffffffull,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0xf,                   0xf,                   0xf,                   0xf,
+      0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull, 0x7000000000000000ull,
+    },
+    {
+                        0x0,                   0x0,                   0x0,                   0x0,
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+      0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull,
+       0xfffffffffffffffull,  0xfffffffffffffffull,  0xfffffffffffffffull,  0xfffffffffffffffull,
+    },
+  },
+  {
+    { 0xfffffffffffffff0ull },
+    {
+      0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull, 0xffffffffffffffffull,
+                       0x1f,                  0x1f,                  0x1f,                  0x1f,
+      0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull, 0x8000000000000000ull,
+                        0x1,                   0x1,                   0x1,                   0x1,
+    },
+    {
+                        0xf,                   0xf,                   0xf,                   0xf,
+      0xffffffffffffffefull, 0xffffffffffffffefull, 0xffffffffffffffefull, 0xffffffffffffffefull,
+      0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull, 0x7ffffffffffffff0ull,
+      0xfffffffffffffff1ull, 0xfffffffffffffff1ull, 0xfffffffffffffff1ull, 0xfffffffffffffff1ull,
+    },
+  },
+};
+
+int8_t TEST_BINARY_DATA(int8_t, mul)[][3][N] =
+{
+  {
+    { 1 },
+    {
+       0,  0,  0,  0,
+       1,  1,  1,  1,
+      -1, -1, -1, -1,
+      -2, -2, -2, -2,
+    },
+    {
+       0,  0,  0,  0,
+       1,  1,  1,  1,
+      -1, -1, -1, -1,
+      -2, -2, -2, -2,
+    },
+  },
+  {
+    { 127 },
+    {
+         0,    0,    0,    0,
+        -1,   -1,   -1,   -1,
+      -128, -128, -128, -128,
+        -2,   -2,   -2,   -2,
+    },
+    {
+         0,    0,    0,    0,
+      -127, -127, -127, -127,
+      -128, -128, -128, -128,
+         2,    2,    2,    2,
+    },
+  },
+  {
+    { -128 },
+    {
+         0,    0,    0,    0,
+         1,    1,    1,    1,
+       127,  127,  127,  127,
+         2,    2,    2,    2,
+    },
+    {
+         0,    0,    0,    0,
+      -128, -128, -128, -128,
+      -128, -128, -128, -128,
+         0,    0,    0,    0,
+    },
+  },
+};
+
+int16_t TEST_BINARY_DATA(int16_t, mul)[][3][N] =
+{
+  {
+    { 1 },
+    {
+       0,  0,  0,  0,
+       1,  1,  1,  1,
+      -1, -1, -1, -1,
+      -2, -2, -2, -2,
+    },
+    {
+       0,  0,  0,  0,
+       1,  1,  1,  1,
+      -1, -1, -1, -1,
+      -2, -2, -2, -2,
+    },
+  },
+  {
+    { 32767 },
+    {
+           0,      0,      0,      0,
+          -1,     -1,     -1,     -1,
+      -32768, -32768, -32768, -32768,
+          -2,     -2,     -2,     -2,
+    },
+    {
+           0,      0,      0,      0,
+      -32767, -32767, -32767, -32767,
+      -32768, -32768, -32768, -32768,
+           2,      2,      2,      2,
+    },
+  },
+  {
+    { -32768 },
+    {
+           0,      0,      0,      0,
+           1,      1,      1,      1,
+       32767,  32767,  32767,  32767,
+           2,      2,      2,      2,
+    },
+    {
+           0,      0,      0,      0,
+      -32768, -32768, -32768, -32768,
+      -32768, -32768, -32768, -32768,
+           0,      0,      0,      0,
+    },
+  },
+};
+
+int32_t TEST_BINARY_DATA(int32_t, mul)[][3][N] =
+{
+  {
+    { 1 },
+    {
+       0,  0,  0,  0,
+       1,  1,  1,  1,
+      -1, -1, -1, -1,
+      -2, -2, -2, -2,
+    },
+    {
+       0,  0,  0,  0,
+       1,  1,  1,  1,
+      -1, -1, -1, -1,
+      -2, -2, -2, -2,
+    },
+  },
+  {
+    { 2147483647 },
+    {
+                0,           0,           0,           0,
+               -1,          -1,          -1,          -1,
+      -2147483648, -2147483648, -2147483648, -2147483648,
+               -2,          -2,          -2,          -2,
+    },
+    {
+                0,           0,           0,           0,
+      -2147483647, -2147483647, -2147483647, -2147483647,
+      -2147483648, -2147483648, -2147483648, -2147483648,
+                2,           2,           2,           2,
+    },
+  },
+  {
+    { -2147483648 },
+    {
+                0,           0,           0,           0,
+                1,           1,           1,           1,
+       2147483647,  2147483647,  2147483647,  2147483647,
+                2,           2,           2,           2,
+    },
+    {
+                0,           0,           0,           0,
+      -2147483648, -2147483648, -2147483648, -2147483648,
+      -2147483648, -2147483648, -2147483648, -2147483648,
+                0,           0,           0,           0,
+    },
+  },
+};
+
+int64_t TEST_BINARY_DATA(int64_t, mul)[][3][N] =
+{
+  {
+    { 1 },
+    {
+       0,  0,  0,  0,
+       1,  1,  1,  1,
+      -1, -1, -1, -1,
+      -2, -2, -2, -2,
+    },
+    {
+       0,  0,  0,  0,
+       1,  1,  1,  1,
+      -1, -1, -1, -1,
+      -2, -2, -2, -2,
+    },
+  },
+  {
+    { 9223372036854775807ll },
+    {
+                            0,                       0,                       0,                       0,
+                           -1,                      -1,                      -1,                      -1,
+      -9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull,
+                           -2,                      -2,                      -2,                      -2,
+    },
+    {
+                            0,                       0,                       0,                       0,
+       -9223372036854775807ll,  -9223372036854775807ll,  -9223372036854775807ll,  -9223372036854775807ll,
+      -9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull,
+                            2,                       2,                       2,                       2,
+    },
+  },
+  {
+    { -9223372036854775808ull },
+    {
+                           0,                      0,                      0,                      0,
+                           1,                      1,                      1,                      1,
+       9223372036854775807ll,  9223372036854775807ll,  9223372036854775807ll,  9223372036854775807ll,
+                           2,                      2,                      2,                      2,
+    },
+    {
+                            0,                       0,                       0,                       0,
+      -9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull,
+      -9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull, -9223372036854775808ull,
+                            0,                       0,                       0,                       0,
+    },
+  },
+};
+
 #endif

@@ -58,11 +58,11 @@ test_diagnostic_context::~test_diagnostic_context ()
 void
 test_diagnostic_context::
 start_span_cb (const diagnostic_location_print_policy &loc_policy,
-	       pretty_printer *pp,
+	       to_text &sink,
 	       expanded_location exploc)
 {
   exploc.file = "FILENAME";
-  default_diagnostic_start_span_fn (loc_policy, pp, exploc);
+  default_diagnostic_start_span_fn<to_text> (loc_policy, sink, exploc);
 }
 
 bool

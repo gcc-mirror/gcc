@@ -66,12 +66,10 @@ check_minmax_##UNION_TYPE (UNION_TYPE u, const VALUE_TYPE *v) \
   return err; \
 }
 
-#if defined (AVX10_512BIT)
 CHECK_EXP_MINMAX (union512, float, int)
 CHECK_EXP_MINMAX (union512d, double, long int)
 CHECK_EXP_MINMAX (union512bf16_bf, __bf16, short int)
 CHECK_EXP_MINMAX (union512h, _Float16, short int)
-#endif
 CHECK_EXP_MINMAX (union256, float, int)
 CHECK_EXP_MINMAX (union256d, double, long int)
 CHECK_EXP_MINMAX (union128, float, int)

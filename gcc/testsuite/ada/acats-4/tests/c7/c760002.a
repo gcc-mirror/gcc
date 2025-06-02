@@ -1,0 +1,489 @@
+-- C760002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that assignment to an object of a (non-limited) controlled
+--      type causes the Adjust operation of the type to be called.
+--      Check that Adjust is called after copying the value of the
+--      source expression to the target object.
+--
+--      Check that Adjust is called for all controlled components when
+--      the containing object is assigned.  (Test this for the cases
+--      where the type of the containing object is controlled and
+--      noncontrolled; test this for initialization as well as
+--      assignment statements.)
+--
+--      Check that for an object of a controlled type with controlled
+--      components, Adjust for each of the components is called before
+--      the containing object is adjusted.
+--
+--      Check that an Adjust procedure for a Limited_Controlled type is
+--      not called by the implementation.
+--
+-- TEST DESCRIPTION:
+--      This test is loosely "derived" from C760001.
+--
+--      Visit Tags:
+--        D - Default value at declaration
+--        d - Default value at declaration, limited root
+--        I - initialize at root controlled
+--        i - initialize at root limited controlled
+--        A - adjust at root controlled
+--        X,Y,Z,x,y,z - used in test body
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      19 Dec 94   SAIC    Correct test assertion logic for Sinister case
+--
+--!
+
+---------------------------------------------------------------- C760002_0
+
+with Ada.Finalization;
+package C760002_0 is
+  subtype Unique_ID is Natural;
+  function Unique_Value return Unique_ID;
+  -- increments each time it's called
+
+  function Most_Recent_Unique_Value return Unique_ID;
+  -- returns the same value as the most recent call to Unique_Value
+
+  type Root is tagged record
+    My_ID      : Unique_ID := Unique_Value;
+    Visit_Tag  : Character := 'D';  -- Default
+  end record;
+
+  procedure Initialize( R: in out Root );
+  procedure Adjust    ( R: in out Root );
+
+  type Root_Controlled is new Ada.Finalization.Controlled with record
+    My_ID      : Unique_ID := Unique_Value;
+    Visit_Tag  : Character := 'D'; ---------------------------------------- D
+  end record;
+
+  procedure Initialize( R: in out Root_Controlled );
+  procedure Adjust    ( R: in out Root_Controlled );
+
+  type Root_Limited_Controlled is
+       new Ada.Finalization.Limited_Controlled with record
+    My_ID      : Unique_ID := Unique_Value;
+    Visit_Tag  : Character := 'd'; ---------------------------------------- d
+  end record;
+
+  procedure Initialize( R: in out Root_Limited_Controlled );
+  procedure Adjust    ( R: in out Root_Limited_Controlled );
+
+end C760002_0;
+
+with Report;
+package body C760002_0 is
+
+  Global_Unique_Counter : Unique_ID := 0;
+  
+  function Unique_Value return Unique_ID is
+  begin
+    Global_Unique_Counter := Global_Unique_Counter +1;
+    return Global_Unique_Counter;
+  end Unique_Value;
+  
+  function Most_Recent_Unique_Value return Unique_ID is
+  begin
+    return Global_Unique_Counter;
+  end Most_Recent_Unique_Value;
+
+  procedure Initialize( R: in out Root ) is
+  begin
+    Report.Failed("Initialize called for Non_Controlled type");
+  end Initialize;
+
+  procedure Adjust    ( R: in out Root ) is
+  begin
+    Report.Failed("Adjust called for Non_Controlled type");
+  end Adjust;
+
+  procedure Initialize( R: in out Root_Controlled ) is
+  begin
+    R.Visit_Tag := 'I'; --------------------------------------------------- I
+  end Initialize;
+
+  procedure Adjust( R: in out Root_Controlled ) is
+  begin
+    R.Visit_Tag := 'A'; --------------------------------------------------- A
+  end Adjust;
+
+  procedure Initialize( R: in out Root_Limited_Controlled ) is
+  begin
+    R.Visit_Tag := 'i'; --------------------------------------------------- i
+  end Initialize;
+
+  procedure Adjust( R: in out Root_Limited_Controlled ) is
+  begin
+    Report.Failed("Adjust called for Limited_Controlled type");
+  end Adjust;
+
+end C760002_0;
+
+---------------------------------------------------------------- C760002_1
+
+with Ada.Finalization;
+with C760002_0;
+package C760002_1 is
+
+  type Proc_ID is (None, Init, Adj, Fin);
+
+  type Test_Controlled is new C760002_0.Root_Controlled with record
+    Last_Proc_Called: Proc_ID := None;
+  end record;
+
+  procedure Initialize( TC: in out Test_Controlled );
+  procedure Adjust    ( TC: in out Test_Controlled );
+  procedure Finalize  ( TC: in out Test_Controlled );
+
+  type Nested_Controlled is new C760002_0.Root_Controlled with record
+    Nested : C760002_0.Root_Controlled;
+    Last_Proc_Called: Proc_ID := None;
+  end record;
+
+  procedure Initialize( TC: in out Nested_Controlled );
+  procedure Adjust    ( TC: in out Nested_Controlled );
+  procedure Finalize  ( TC: in out Nested_Controlled );
+
+  type Test_Limited_Controlled is
+       new C760002_0.Root_Limited_Controlled with record
+    Last_Proc_Called: Proc_ID := None;
+  end record;
+
+  procedure Initialize( TC: in out Test_Limited_Controlled );
+  procedure Adjust    ( TC: in out Test_Limited_Controlled );
+  procedure Finalize  ( TC: in out Test_Limited_Controlled );
+
+  type Nested_Limited_Controlled is
+       new C760002_0.Root_Limited_Controlled with record
+    Nested : C760002_0.Root_Limited_Controlled;
+    Last_Proc_Called: Proc_ID := None;
+  end record;
+
+  procedure Initialize( TC: in out Nested_Limited_Controlled );
+  procedure Adjust    ( TC: in out Nested_Limited_Controlled );
+  procedure Finalize  ( TC: in out Nested_Limited_Controlled );
+
+end C760002_1;
+
+with Report;
+package body C760002_1 is
+
+  procedure Initialize( TC: in out Test_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Init;
+    C760002_0.Initialize(C760002_0.Root_Controlled(TC));
+  end Initialize;
+
+  procedure Adjust    ( TC: in out Test_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Adj;
+    C760002_0.Adjust(C760002_0.Root_Controlled(TC));
+  end Adjust;
+
+  procedure Finalize  ( TC: in out Test_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Fin;
+  end Finalize;
+
+  procedure Initialize( TC: in out Nested_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Init;
+    C760002_0.Initialize(C760002_0.Root_Controlled(TC));
+  end Initialize;
+
+  procedure Adjust    ( TC: in out Nested_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Adj;
+    C760002_0.Adjust(C760002_0.Root_Controlled(TC));
+  end Adjust;
+
+  procedure Finalize  ( TC: in out Nested_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Fin;
+  end Finalize;
+
+  procedure Initialize( TC: in out Test_Limited_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Init;
+    C760002_0.Initialize(C760002_0.Root_Limited_Controlled(TC));
+  end Initialize;
+
+  procedure Adjust    ( TC: in out Test_Limited_Controlled ) is
+  begin
+    Report.Failed("Adjust called for Test_Limited_Controlled");
+  end Adjust;
+
+  procedure Finalize  ( TC: in out Test_Limited_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Fin;
+  end Finalize;
+
+  procedure Initialize( TC: in out Nested_Limited_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Init;
+    C760002_0.Initialize(C760002_0.Root_Limited_Controlled(TC));
+  end Initialize;
+
+  procedure Adjust    ( TC: in out Nested_Limited_Controlled ) is
+  begin
+    Report.Failed("Adjust called for Nested_Limited_Controlled");
+  end Adjust;
+
+  procedure Finalize  ( TC: in out Nested_Limited_Controlled ) is
+  begin
+    TC.Last_Proc_Called := Fin;
+  end Finalize;
+
+end C760002_1;
+
+---------------------------------------------------------------- C760002
+
+with Report;
+with TCTouch;
+with C760002_0;
+with C760002_1;
+with Ada.Finalization;
+procedure C760002 is
+
+  use type C760002_1.Proc_ID;
+
+  -- in the first test, test the simple cases.
+  -- Also check that assignment causes a call to Adjust for a controlled
+  -- object.  Check that assignment of a non-controlled object does not call
+  -- an Adjust procedure.
+
+  procedure Check_Simple_Objects is
+
+    A,B : C760002_0.Root;
+    S,T : C760002_1.Test_Controlled;
+    Q   : C760002_1.Test_Limited_Controlled;  -- Adjust call shouldn't happen
+  begin
+
+    S := T;
+
+    TCTouch.Assert((S.Last_Proc_Called = C760002_1.Adj),
+                   "Adjust for simple object");
+    TCTouch.Assert((S.My_ID = T.My_ID),
+                   "Assignment failed for simple object");
+
+    -- Check that adjust was called
+    TCTouch.Assert((S.Visit_Tag = 'A'), "Adjust timing incorrect");
+
+    -- Check that Adjust has not been called
+    TCTouch.Assert_Not((T.Visit_Tag = 'A'), "Adjust incorrectly called");
+
+    -- Check that Adjust does not get called
+    A.My_ID := A.My_ID +1;
+    B := A;  -- see: Adjust: Report.Failed
+
+  end Check_Simple_Objects;
+
+  -- in the second test, test a more complex case, check that a controlled
+  -- component of a controlled object gets processed correctly
+
+  procedure Check_Nested_Objects is
+    NO1 : C760002_1.Nested_Controlled;
+    NO2 : C760002_1.Nested_Controlled := NO1;
+
+  begin
+
+    -- NO2 should be flagged with adjust markers
+    TCTouch.Assert((NO2.Last_Proc_Called = C760002_1.Adj),
+                   "Adjust not called for NO2 enclosure declaration");
+    TCTouch.Assert((NO2.Nested.Visit_Tag = 'A'),
+                   "Adjust not called for NO2 enclosed declaration");
+
+    NO2.Visit_Tag := 'x';
+    NO2.Nested.Visit_Tag := 'y';
+
+    NO1 := NO2;
+
+    -- NO1 should be flagged with adjust markers
+    TCTouch.Assert((NO1.Visit_Tag = 'A'),
+                   "Adjust not called for NO1 enclosure declaration");
+    TCTouch.Assert((NO1.Nested.Visit_Tag = 'A'),
+                   "Adjust not called for NO1 enclosed declaration");
+
+  end Check_Nested_Objects;
+
+  procedure Check_Array_Case is
+    type Array_Simple is array(1..4) of C760002_1.Test_Controlled;
+    type Array_Nested is array(1..4) of C760002_1.Nested_Controlled;
+
+    Left,Right      : Array_Simple;
+    Overlap         : Array_Simple := Left;
+
+    Sinister,Dexter : Array_Nested;
+    Underlap        : Array_Nested := Sinister;
+
+    Now : Natural;
+
+  begin
+
+    -- get a current unique value since initializations
+    Now := C760002_0.Unique_Value;
+
+    -- check results of declarations
+    for N in 1..4 loop
+      TCTouch.Assert(Left(N).My_Id < Now,
+                     "Initialize for array initial value");
+      TCTouch.Assert(Overlap(N).My_Id < Now,
+                     "Adjust for nested array (outer) initial value");
+      TCTouch.Assert(Sinister(N).Nested.My_Id < Now,
+                     "Initialize for nested array (inner) initial value");
+      TCTouch.Assert(Sinister(N).My_Id < Sinister(N).Nested.My_Id,
+                     "Initialize for enclosure should be after enclosed");
+      TCTouch.Assert(Overlap(N).Visit_Tag = 'A',"Adjust at declaration");
+      TCTouch.Assert(Underlap(N).Nested.Visit_Tag = 'A',
+                     "Adjust at declaration, nested object");
+    end loop;
+
+    -- set visit tags
+    for O in 1..4 loop
+      Overlap(O).Visit_Tag         := 'X';
+      Underlap(O).Visit_Tag        := 'Y';
+      Underlap(O).Nested.Visit_Tag := 'y';
+    end loop;
+
+    -- check that overlapping assignments don't cause odd grief
+    Overlap(1..3)  := Overlap(2..4);
+    Underlap(2..4) := Underlap(1..3);
+
+    for M in 2..3 loop
+      TCTouch.Assert(Overlap(M).Last_Proc_Called = C760002_1.Adj,
+                     "Adjust for overlap");
+      TCTouch.Assert(Overlap(M).Visit_Tag = 'A',
+                     "Adjust for overlap ID");
+      TCTouch.Assert(Underlap(M).Last_Proc_Called = C760002_1.Adj,
+                     "Adjust for Underlap");
+      TCTouch.Assert(Underlap(M).Nested.Visit_Tag = 'A',
+                     "Adjust for Underlaps nested ID");
+    end loop;
+
+  end Check_Array_Case;
+
+  procedure Check_Access_Case is
+    type TC_Ref is access C760002_1.Test_Controlled;
+    type NC_Ref is access C760002_1.Nested_Controlled;
+    type TL_Ref is access C760002_1.Test_Limited_Controlled;
+    type NL_Ref is access C760002_1.Nested_Limited_Controlled;
+
+    A,B : TC_Ref;
+    C,D : NC_Ref;
+    E   : TL_Ref;
+    F   : NL_Ref;
+
+  begin
+
+    A := new C760002_1.Test_Controlled;
+    B := new C760002_1.Test_Controlled'( A.all );
+
+    C := new C760002_1.Nested_Controlled;
+    D := new C760002_1.Nested_Controlled'( C.all );
+
+    E := new C760002_1.Test_Limited_Controlled;
+    F := new C760002_1.Nested_Limited_Controlled;
+
+    TCTouch.Assert(A.Visit_Tag = 'I',"TC Allocation");
+    TCTouch.Assert(B.Visit_Tag = 'A',"TC Allocation, with value");
+
+    TCTouch.Assert(C.Visit_Tag = 'I',"NC Allocation");
+    TCTouch.Assert(C.Nested.Visit_Tag = 'I',"NC Allocation, Nested");
+    TCTouch.Assert(D.Visit_Tag = 'A',"NC Allocation, with value");
+    TCTouch.Assert(D.Nested.Visit_Tag = 'A',
+                   "NC Allocation, Nested, with value");
+
+    TCTouch.Assert(E.Visit_Tag = 'i',"TL Allocation");
+    TCTouch.Assert(F.Visit_Tag = 'i',"NL Allocation");
+
+    A.all := B.all;
+    C.all := D.all;
+
+    TCTouch.Assert(A.Visit_Tag = 'A',"TC Assignment");
+    TCTouch.Assert(C.Visit_Tag = 'A',"NC Assignment");
+    TCTouch.Assert(C.Nested.Visit_Tag = 'A',"NC Assignment, Nested");
+
+  end Check_Access_Case;
+
+  procedure Check_Access_Limited_Array_Case is
+    type Array_Simple is array(1..4) of C760002_1.Test_Limited_Controlled;
+    type AS_Ref is access Array_Simple;
+    type Array_Nested is array(1..4) of C760002_1.Nested_Limited_Controlled;
+    type AN_Ref is access Array_Nested;
+
+    Simple_Array_Limited : AS_Ref;
+
+    Nested_Array_Limited : AN_Ref;
+
+  begin
+
+    Simple_Array_Limited := new Array_Simple;
+
+    Nested_Array_Limited := new Array_Nested;
+    
+    for N in 1..4 loop
+      TCTouch.Assert(Simple_Array_Limited(N).Last_Proc_Called
+                     = C760002_1.Init,  
+                     "Initialize for array initial value");
+      TCTouch.Assert(Nested_Array_Limited(N).Last_Proc_Called
+                     = C760002_1.Init,
+                     "Initialize for nested array (outer) initial value");
+      TCTouch.Assert(Nested_Array_Limited(N).Nested.Visit_Tag = 'i',
+                     "Initialize for nested array (inner) initial value");
+    end loop;
+  end Check_Access_Limited_Array_Case;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C760002", "Check that assignment causes the Adjust " &
+                          "operation of the type to be called.  Check " &
+                          "that Adjust is called after copying the " &
+                          "value of the source expression to the target " &
+                          "object.  Check that Adjust is called for all " &
+                          "controlled components when the containing " &
+                          "object is assigned.  Check that Adjust is " &
+                          "called for components before the containing " &
+                          "object is adjusted.  Check that Adjust is not " &
+                          "called for a Limited_Controlled type by the " &
+                          "implementation" );
+
+  Check_Simple_Objects;
+
+  Check_Nested_Objects;
+
+  Check_Array_Case;
+
+  Check_Access_Case;
+
+  Check_Access_Limited_Array_Case;
+
+  Report.Result;
+
+end C760002;

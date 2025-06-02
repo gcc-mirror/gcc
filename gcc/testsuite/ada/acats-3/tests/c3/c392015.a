@@ -1,0 +1,354 @@
+-- C392015
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--    The ACAA has created and maintains the Ada Conformity Assessment Test
+--    Suite for the purpose of conformity assessments conducted in accordance
+--    with the International Standard ISO/IEC 18009 - Ada: Conformity
+--    assessment of a language processor. This test suite should not be used
+--    to make claims of conformance unless used in accordance with
+--    ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+--
+-- OBJECTIVE:
+--    Check that default expressions of inherited dispatching routines
+--    dispatch properly. (From AI95-00239.)
+--
+-- CHANGE HISTORY:
+--    20 Jul 2000   RLB   Created test for AI-239.
+--    25 Apr 2007   RLB   Updated test for ACATS 3.0.
+--    21 Sep 2007   RLB   Fixed the test results to allow parameters to
+--                        be evaluated in an arbitrary order.
+--
+--!
+
+package C392015_0 is
+
+    type T0 is tagged null record;
+
+    function Fa return T0;
+
+    function Fc return T0'Class;
+
+    procedure Pa (P : in T0 := Fa);
+
+    procedure Pb (P : in T0 := Fa);
+
+    procedure Pc (Param1, Param2 : in T0 := Fa);
+
+    function Fd (P : in T0 := Fa) return T0'Class;
+
+end C392015_0;
+
+with TCTouch;
+package body C392015_0 is
+
+    function Fa return T0 is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('a'); TCTouch.Touch('0');
+       return T0'(null record);
+    end Fa;
+
+    function Fc return T0'Class is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('c'); TCTouch.Touch('0');
+       return T0'(null record);
+    end Fc;
+
+    procedure Pa (P : in T0 := Fa) is
+    begin
+       TCTouch.Touch('P'); TCTouch.Touch('a'); TCTouch.Touch('0');
+    end Pa;
+
+    procedure Pb (P : in T0 := Fa) is
+    begin
+       TCTouch.Touch('P'); TCTouch.Touch('b'); TCTouch.Touch('0');
+    end Pb;
+
+    procedure Pc (Param1, Param2 : in T0 := Fa) is
+    begin
+       TCTouch.Touch('P'); TCTouch.Touch('c'); TCTouch.Touch('0');
+    end Pc;
+
+    function Fd (P : in T0 := Fa) return T0'Class is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('d'); TCTouch.Touch('0');
+       return T0'Class(P);
+    end Fd;
+
+end C392015_0;
+
+with C392015_0;
+package C392015_1 is
+
+    type T1 is new C392015_0.T0 with null record;
+
+    function Fa return T1;
+
+    procedure Pa (P : in T1 := Fa);
+
+    procedure Pb (P : in T1 := Fa);
+
+    procedure Pc (Param1, Param2 : in T1 := Fa);
+
+    procedure Pd (Param1 : in T1; Param2 : in C392015_0.T0 := C392015_0.Fa);
+        -- Param2 is not a controlling operand.
+
+    function Fc1 return T1'Class;
+
+    function Fd (P : in T1 := Fa) return C392015_0.T0'Class;
+
+    function Fe (P : in T1 := Fa) return T1'Class;
+
+end C392015_1;
+
+with TCTouch;
+package body C392015_1 is
+
+    function Fa return T1 is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('a'); TCTouch.Touch('1');
+       return T1'(null record);
+    end Fa;
+
+    procedure Pa (P : in T1 := Fa) is
+    begin
+       TCTouch.Touch('P'); TCTouch.Touch('a'); TCTouch.Touch('1');
+    end Pa;
+
+    procedure Pb (P : in T1 := Fa) is
+    begin
+       TCTouch.Touch('P'); TCTouch.Touch('b'); TCTouch.Touch('1');
+    end Pb;
+
+    procedure Pc (Param1, Param2 : in T1 := Fa) is
+    begin
+       TCTouch.Touch('P'); TCTouch.Touch('c'); TCTouch.Touch('1');
+    end Pc;
+
+    procedure Pd (Param1 : in T1; Param2 : in C392015_0.T0 := C392015_0.Fa) is
+    begin
+       TCTouch.Touch('P'); TCTouch.Touch('d'); TCTouch.Touch('1');
+    end Pd;
+
+    function Fc1 return T1'Class is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('c'); TCTouch.Touch('1');
+       return T1'(null record);
+    end Fc1;
+
+    function Fd (P : in T1 := Fa) return C392015_0.T0'Class is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('d'); TCTouch.Touch('1');
+       return C392015_0.T0'Class(P);
+    end Fd;
+
+    function Fe (P : in T1 := Fa) return T1'Class is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('e'); TCTouch.Touch('1');
+       return T1'Class(P);
+    end Fe;
+
+end C392015_1;
+
+with C392015_0, C392015_1;
+package C392015_2 is
+
+    type T2 is new C392015_1.T1 with null record;
+
+    -- Inherits:
+    --procedure Pa (P : in T2 := Fa);
+    --procedure Pb (P : in T2 := Fa);
+    --procedure Pc (Param1, Param2 : in T2 := Fa);
+    --procedure Pd (Param1 : in T2; Param2 : in C392015_0.T0 := C392015_0.Fa);
+    --function Fe (P : in T2 := Fa) return C392015_1.T1'Class;
+
+    function Fa return T2;
+
+    function Fb return T2;
+
+    function Fc2 return T2'Class;
+
+    function Fd (P : in T2 := Fa) return C392015_0.T0'Class;
+
+    function Ff (P : in T2 := Fa) return T2'Class;
+
+private
+    procedure Pb (P : in T2 := Fb); -- Privately override Pb with a
+                                    -- different default.
+end C392015_2;
+
+with TCTouch;
+package body C392015_2 is
+
+    function Fa return T2 is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('a'); TCTouch.Touch('2');
+       return T2'(null record);
+    end Fa;
+
+    function Fb return T2 is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('b'); TCTouch.Touch('2');
+       return T2'(null record);
+    end Fb;
+
+    function Fc2 return T2'Class is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('c'); TCTouch.Touch('2');
+       return T2'(null record);
+    end Fc2;
+
+    procedure Pb (P : in T2 := Fb) is
+    begin
+       TCTouch.Touch('P'); TCTouch.Touch('b'); TCTouch.Touch('2');
+    end Pb;
+
+    function Fd (P : in T2 := Fa) return C392015_0.T0'Class is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('d'); TCTouch.Touch('2');
+       return C392015_0.T0'Class(P);
+    end Fd;
+
+    function Ff (P : in T2 := Fa) return T2'Class is
+    begin
+       TCTouch.Touch('F'); TCTouch.Touch('f'); TCTouch.Touch('2');
+       return T2'Class(P);
+    end Ff;
+
+end C392015_2;
+
+with TcTouch, Report;
+with C392015_0, C392015_1, C392015_2;
+procedure C392015 is
+begin
+   Report.Test ("C392015",
+                    "Check that default expressions of inherited " &
+                    "dispatching routines dispatch properly");
+
+   C392015_0.Pa; -- The default should be Fa0.
+   TCTouch.Validate( "Fa0Pa0", "Subtest 1" );
+
+   C392015_1.Pa; -- The default should be Fa1.
+   TCTouch.Validate( "Fa1Pa1", "Subtest 2" );
+
+   C392015_2.Pa; -- The default should be Fa2.
+   TCTouch.Validate( "Fa2Pa1", "Subtest 3");
+
+   C392015_2.Pb; -- The default should be Fa2, not Fb2 (which is not visible).
+   TCTouch.Validate( "Fa2Pb2", "Subtest 4");
+
+   C392015_1.Pc; -- Two defaults.
+   TCTouch.Validate( "Fa1Fa1Pc1", "Subtest 5");
+       -- Results same no matter what order the parameters are evaluated in.
+
+   C392015_2.Pc; -- Two defaults, both Fa2.
+   TCTouch.Validate( "Fa2Fa2Pc1", "Subtest 6");
+       -- Results same no matter what order the parameters are evaluated in.
+
+   declare
+       O1 : C392015_1.T1;
+       O2 : C392015_2.T2;
+   begin
+       C392015_1.Pc(O1); -- One default, Fa1.
+       TCTouch.Validate( "Fa1Pc1", "Subtest 7");
+           -- Results same no matter what order the parameters are evaluated in.
+       C392015_2.Pc(O2); -- One default, Fa2.
+       TCTouch.Validate( "Fa2Pc1", "Subtest 8");
+           -- Results same no matter what order the parameters are evaluated in.
+       C392015_1.Pc(C392015_1.T1'Class(C392015_2.Fc2)); -- One default, Fa.
+                    -- Both Fa and Pc are dispatching (for T2).
+       TCTouch.Validate_One_Of( "Fc2Fa2Pc1", "Fa2Fc2Pc1", Message => "Subtest 9");
+       C392015_2.Pc(C392015_2.Fc2); -- One default, Fa. Both Fa and Pc are
+                    -- dispatching (for T2).
+       TCTouch.Validate_One_Of( "Fc2Fa2Pc1", "Fa2Fc2Pc1", Message => "Subtest 10");
+       C392015_1.Pc(C392015_1.Fc1); -- One default, Fa. Both Fa and Pc are
+                    -- dispatching (for T1).
+       TCTouch.Validate_One_Of( "Fc1Fa1Pc1", "Fa1Fc1Pc1", Message => "Subtest 11");
+   end;
+
+   declare
+       O1 : C392015_1.T1;
+       O2 : C392015_2.T2;
+   begin
+       C392015_1.Pd(O1); -- Default is Fa0 (not controlling).
+       TCTouch.Validate( "Fa0Pd1", "Subtest 14");
+           -- Results same no matter what order the parameters are evaluated in.
+       C392015_2.Pd(O2); -- Default is Fa0 (not controlling).
+       TCTouch.Validate( "Fa0Pd1", "Subtest 15");
+           -- Results same no matter what order the parameters are evaluated in.
+       C392015_2.Pd(C392015_2.Fc2); -- Default is Fa0 (not controlling).
+       TCTouch.Validate_One_Of( "Fc2Fa0Pd1", "Fa0Fc2Pd1", Message => "Subtest 16");
+       C392015_1.Pd(C392015_1.Fc1); -- Default is Fa0 (not controlling).
+       TCTouch.Validate_One_Of( "Fc1Fa0Pd1", "Fa0Fc1Pd1", Message => "Subtest 17");
+   end;
+
+   C392015_1.Pb(C392015_1.Fe); -- The default is Fa1. Pb is dispatching.
+   TCTouch.Validate( "Fa1Fe1Pb1", "Subtest 18" );
+
+   C392015_2.Pb(C392015_2.Ff); -- The default is Fa2. Pb is dispatching.
+   TCTouch.Validate( "Fa2Ff2Pb2", "Subtest 19");
+
+   C392015_0.Pb(C392015_0.Fd); -- The default is Fa0. Pb is dispatching.
+   TCTouch.Validate( "Fa0Fd0Pb0", "Subtest 20");
+
+   C392015_0.Pb(C392015_1.Fd); -- The default is Fa1. Pb is dispatching.
+   TCTouch.Validate( "Fa1Fd1Pb1", "Subtest 21");
+
+   C392015_0.Pb(C392015_2.Fd); -- The default is Fa2. Pb is dispatching.
+   TCTouch.Validate( "Fa2Fd2Pb2", "Subtest 22");
+
+   C392015_1.Pb(C392015_2.Fe); -- The default is Fa2. Pb is dispatching.
+   TCTouch.Validate( "Fa2Fe1Pb2", "Subtest 23");
+
+   C392015_0.Pc(C392015_2.Fd, C392015_0.Fa); -- Default is Fa2;
+                                             -- Pc and Fa are dispatching.
+   TCTouch.Validate_One_Of( "Fa2Fd2Fa2Pc1", "Fa2Fa2Fd2Pc1",
+                            Message => "Subtest 24");
+
+   C392015_0.Pc(C392015_1.Fd, C392015_0.Fa); -- Default is Fa1;
+                                             -- Pc and Fa are dispatching.
+   TCTouch.Validate_One_Of( "Fa1Fd1Fa1Pc1", "Fa1Fa1Fd1Pc1",
+                            Message => "Subtest 25");
+
+   C392015_0.Pc(C392015_0.Fd, C392015_0.Fa); -- Default is Fa0;
+                                             -- Pc and Fa are dispatching.
+   TCTouch.Validate_One_Of( "Fa0Fd0Fa0Pc0", "Fa0Fa0Fd0Pc0",
+                            Message => "Subtest 26");
+
+   C392015_1.Pc(C392015_1.Fe, C392015_1.Fa); -- Default is Fa1;
+                                             -- Pc and Fa are dispatching.
+   TCTouch.Validate_One_Of( "Fa1Fe1Fa1Pc1", "Fa1Fa1Fe1Pc1",
+                            Message => "Subtest 27");
+
+   C392015_1.Pc(C392015_2.Fe, C392015_1.Fa); -- Default is Fa2;
+                                             -- Pc and Fa are dispatching.
+   TCTouch.Validate_One_Of( "Fa2Fe1Fa2Pc1", "Fa2Fa2Fe1Pc1",
+                            Message => "Subtest 28");
+
+   Report.Result;
+
+end C392015;

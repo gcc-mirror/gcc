@@ -1,3 +1,10 @@
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_UNSET,
+	GOMP_MAP_PUSH_MAPPER_NAME, GOMP_MAP_POP_MAPPER_NAME artificial mapping
+	clause types.
+
 2025-05-14  Andreas Schwab  <schwab@suse.de>
 
 	* libiberty.h (mkstemps): Remove duplicate.

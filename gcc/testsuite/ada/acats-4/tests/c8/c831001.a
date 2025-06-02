@@ -1,0 +1,474 @@
+-- C831001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+-- OBJECTIVE:
+--     Check that overriding indicators can be given on subprogram
+--     declarations, including null procedure and expression function
+--     declarations, and that they have no effect on the operation of calls.
+--
+-- TEST DESCRIPTION:
+--
+--     We use the layout of test C392D01 and its associated foundation
+--     to make this test. The original test is enhanced with query functions
+--     and sinks to test expression functions and null procedures,
+--     respectively. All of the primitive subprograms in the test are
+--     decorated with overriding indicators. The use of indicators should
+--     have no effect on the dynamic semantics of the test.
+--
+--     This test tries to use overriding indicators in a correct program
+--     similarly to how they should be used in practice.
+--
+--     See test C392D01 for an explanation of the package and type structure
+--     of this test.
+--
+-- CHANGE HISTORY:
+--      15 Apr 2015   RLB   Created test, patterned after test C392D01.
+--
+--!
+
+package C831001_Root is
+
+   type Depth_Of_Field is range 5 .. 100;
+   type Shutter_Speed  is (Tenth, Two_Fiftith, Four_Hundredth, Thousandth);
+   type Exposure is (Normal, Bright, Dark);
+
+   type Remote_Camera is tagged private;
+
+   -- ...Other declarations.
+
+   not overriding
+   procedure Focus (C     : in out Remote_Camera;
+                    Depth : in     Depth_Of_Field);
+
+   not overriding
+   function Get_Shutter_Speed (C : in Remote_Camera)
+      return Shutter_Speed;
+
+   not overriding
+   function Get_Depth_of_Field (C : in Remote_Camera)
+      return Depth_Of_Field;
+
+   not overriding
+   procedure Set_Exposure (C : in out Remote_Camera;
+                           X : in     Exposure) is null;
+      -- No exposure settings on basic camera.
+
+   procedure Self_Test (C: in out Remote_Camera'Class);
+
+   -- ...Other operations.
+
+   not overriding
+   procedure TC_Set_Params (C     : in out Remote_Camera;
+                            Depth : in     Depth_Of_Field;
+                            Speed : in     Shutter_Speed);
+   -- In a real system, Focus would use its parameter to set the
+   -- Depth_of_Field and Shutter_Speed; in this artifical setup, DOF and
+   -- Shutter are used mainly to determine which bodies are called. As such,
+   -- we provide this fake setter to actually set the (hidden) components.
+   -- [Note: The original C392D01 test used visible components, which is
+   -- unusual in actual practice.]
+
+private
+
+   type Remote_Camera is tagged record
+      DOF    : Depth_Of_Field := 10;
+      Shutter: Shutter_Speed  := Tenth;
+   end record;
+
+   not overriding
+   procedure Set_Shutter_Speed (C     : in out Remote_Camera;
+                                Speed : in     Shutter_Speed);
+
+   -- For the basic remote camera, shutter speed might be set as a function of
+   -- focus perhaps, thus it is declared as a private operation (usable
+   -- only internally within the abstraction).
+
+   -- Use expression functions to provide bodies to Getters:
+   function Get_Shutter_Speed (C : in Remote_Camera)
+      return Shutter_Speed is (C.Shutter);
+
+   function Get_Depth_of_Field (C : in Remote_Camera)
+      return Depth_Of_Field is (C.DOF);
+
+end C831001_Root;
+
+
+     --==================================================================--
+
+
+package body C831001_Root is
+
+   procedure Focus (C     : in out Remote_Camera;
+                    Depth : in     Depth_Of_Field) is
+   begin
+      -- Artificial for testing purposes.
+      C.DOF := 46;
+   end Focus;
+
+   -----------------------------------------------------------
+   procedure Set_Shutter_Speed (C     : in out Remote_Camera;
+                                Speed : in     Shutter_Speed) is
+   begin
+      -- Artificial for testing purposes.
+      C.Shutter := Thousandth;
+   end Set_Shutter_Speed;
+
+   -----------------------------------------------------------
+   procedure Self_Test (C: in out Remote_Camera'Class) is
+      TC_Dummy_Depth : constant Depth_Of_Field := 23;
+      TC_Dummy_Speed : constant Shutter_Speed  := Four_Hundredth;
+   begin
+
+      -- Test focus at various depths:
+      Focus(C, TC_Dummy_Depth);
+      -- ...Additional calls to Focus.
+
+      -- Test various shutter speeds:
+      Set_Shutter_Speed(C, TC_Dummy_Speed);
+      -- ...Additional calls to Set_Shutter_Speed.
+
+   end Self_Test;
+
+   -----------------------------------------------------------
+   procedure TC_Set_Params (C     : in out Remote_Camera;
+                            Depth : in     Depth_Of_Field;
+                            Speed : in     Shutter_Speed) is
+   begin
+      C := (DOF => Depth, Shutter => Speed);
+   end TC_Set_Params;
+
+end C831001_Root;
+
+with C831001_Root;
+package C831001_0 is
+
+   type Zoom_Camera is tagged private;
+
+   procedure Self_Test (C : in out Zoom_Camera'Class);
+
+   procedure Set_Exposure (C : in out Zoom_Camera;
+                           X : in     C831001_Root.Exposure);
+
+
+   -- ...Additional operations.
+
+
+   not overriding
+   function TC_Correct_Result (C : Zoom_Camera;
+                               D : C831001_Root.Depth_Of_Field;
+                               S : C831001_Root.Shutter_Speed) return Boolean;
+
+   function TC_Shutter (C : in out Zoom_Camera'Class)
+      return C831001_Root.Shutter_Speed;
+
+private
+
+   type Magnification is (Low, Medium, High);
+
+   type Zoom_Camera is new C831001_Root.Remote_Camera with record
+      Mag : Magnification;
+   end record;
+
+   -- procedure Focus (C     : in out Zoom_Camera;               -- Implicitly
+   --                  Depth : in     Depth_Of_Field)            -- declared
+                                                                 -- here.
+
+   overriding
+   procedure Focus (C     : in out Zoom_Camera;
+                    Depth : in     C831001_Root.Depth_Of_Field);
+      -- Overrides inherited operation.
+
+   -- For the remote zoom camera, perhaps the focusing algorithm is different
+   -- in some way, so the original Focus operation is overridden here.
+
+   -- Since the partial view is not an extension, the overriding operation
+   -- must be declared after the full type. This version of Focus, although
+   -- not visible for type Zoom_Camera from outside the package, can still be
+   -- dispatched to.
+
+   -- Note: C831001_Root.Set_Shutter_Speed is inherited by Zoom_Camera from
+   -- C831001_Root.Remote_Camera, but since the operation never becomes visible
+   -- within the immediate scope of Zoom_Camera, it is never implicitly
+   -- declared.
+
+   -- The original Set_Exposure is inherited here as well; it then is
+   -- immediately overridden. This completion is clearly overriding.
+   overriding
+   procedure Set_Exposure (C : in out Zoom_Camera;
+                           X : in     C831001_Root.Exposure) is null;
+
+   function TC_Shutter (C : in out Zoom_Camera'Class)
+      return C831001_Root.Shutter_Speed is
+         (Get_Shutter_Speed(C)); -- Dispatching call.
+
+end C831001_0;
+
+
+     --==================================================================--
+
+
+package body C831001_0 is
+
+   procedure Focus (C     : in out Zoom_Camera;
+                    Depth : in     C831001_Root.Depth_Of_Field) is
+   begin
+      -- Artificial for testing purposes.
+      TC_Set_Params (C, 83, Get_Shutter_Speed (C));
+   end Focus;
+
+   -----------------------------------------------------------
+   -- Indirect call to C831001_Root.Self_Test since the main does not know
+   -- that Zoom_Camera is a private extension of C831001_Root.Basic_Camera.
+   procedure Self_Test (C : in out Zoom_Camera'Class) is
+   begin
+      C831001_Root.Self_Test (C);
+      -- ...Additional self-testing.
+   end Self_Test;
+
+   -----------------------------------------------------------
+   function TC_Correct_Result (C : Zoom_Camera;
+                               D : C831001_Root.Depth_Of_Field;
+                               S : C831001_Root.Shutter_Speed)
+             return Boolean is
+      use type C831001_Root.Depth_Of_Field;
+      use type C831001_Root.Shutter_Speed;
+   begin
+      return (Get_Depth_of_Field(C) = D and Get_Shutter_Speed(C) = S);
+   end TC_Correct_Result;
+
+end C831001_0;
+
+
+     --==================================================================--
+
+
+with C831001_Root;
+package C831001_0.C831001_1 is
+
+   type Film_Speed is private;
+
+   type Auto_Speed is new Zoom_Camera with private;
+
+   -- Implicit procedure Set_Exposure and
+   -- function TC_Correct_Result (Auto_Speed) declared here.
+
+   not overriding
+   procedure Set_Shutter_Speed (C     : in out Auto_Speed;
+                                Speed : in     C831001_Root.Shutter_Speed);
+
+   -- This version of Set_Shutter_Speed does NOT override the operation
+   -- inherited from Zoom_Camera, because the inherited operation is never
+   -- visible (and thus, is never implicitly declared) within the immediate
+   -- scope of type Auto_Speed.
+
+   procedure Self_Test (C : in out Auto_Speed'Class);
+
+   -- ...Other operations.
+
+private
+   type Film_Speed is (One_Hundred, Two_Hundred, Four_Hundredth);
+
+   type Auto_Speed is new Zoom_Camera with record
+      ASA : Film_Speed;
+   end record;
+
+   -- procedure Focus (C     : in out Auto_Speed;
+   --                  Depth : in     C831001_Root.Depth_Of_Field);
+   --     Implicitly declared here, along with Get_Depth_of_Field and
+   --     Get_Shutter_Speed.)
+
+   overriding
+   function Get_Shutter_Speed (C : in Auto_Speed)
+      return C831001_Root.Shutter_Speed is
+      (C831001_Root.Shutter_Speed'Pred(Get_Shutter_Speed(Zoom_Camera(C))));
+
+   overriding
+   procedure Set_Exposure (C : in out Auto_Speed;
+                           X : in     C831001_Root.Exposure);
+
+end C831001_0.C831001_1;
+
+
+     --==================================================================--
+
+
+package body C831001_0.C831001_1 is
+
+   procedure Set_Shutter_Speed (C     : in out Auto_Speed;
+                                Speed : in     C831001_Root.Shutter_Speed) is
+   begin
+      -- Artificial for testing purposes.
+      TC_Set_Params (C, Get_Depth_of_Field (C), C831001_Root.Two_Fiftith);
+   end Set_Shutter_Speed;
+
+   -------------------------------------------------------
+   procedure Self_Test (C : in out Auto_Speed'Class) is
+   begin
+      -- Artificial for testing purposes.
+      Set_Shutter_Speed (C, C831001_Root.Thousandth);
+      Focus (C, 27);
+   end Self_Test;
+
+   -------------------------------------------------------
+   procedure Set_Exposure (C : in out Auto_Speed;
+                           X : in     C831001_Root.Exposure) is
+   begin
+      if C831001_Root."=" (X, C831001_Root.Dark) then
+         -- Artificial for testing purposes.
+         TC_Set_Params (C, 52, C831001_Root.Four_Hundredth);
+      end if;
+   end Set_Exposure;
+
+
+end C831001_0.C831001_1;
+
+
+     --==================================================================--
+
+
+with C831001_Root;
+with C831001_0.C831001_1;
+
+with Report;
+
+procedure C831001 is
+   Zooming_Camera : C831001_0.Zoom_Camera;
+   Auto_Camera1   : C831001_0.C831001_1.Auto_Speed;
+   Auto_Camera2   : C831001_0.C831001_1.Auto_Speed;
+
+   TC_Expected_Zoom_Depth : constant C831001_Root.Depth_Of_Field := 83;
+   TC_Expected_Auto_Depth : constant C831001_Root.Depth_Of_Field := 83;
+   TC_Expected_Depth      : constant C831001_Root.Depth_Of_Field := 83;
+   TC_Expected_Dark_Depth : constant C831001_Root.Depth_Of_Field := 52;
+   TC_Expected_Zoom_Speed : constant C831001_Root.Shutter_Speed
+                          := C831001_Root.Thousandth;
+   TC_Expected_Auto_Speed : constant C831001_Root.Shutter_Speed
+                          := C831001_Root.Thousandth;
+   TC_Expected_Speed      : constant C831001_Root.Shutter_Speed
+                          := C831001_Root.Two_Fiftith;
+   TC_Expected_Dark_Speed : constant C831001_Root.Shutter_Speed
+                          := C831001_Root.Four_Hundredth;
+
+   use type C831001_Root.Depth_Of_Field;
+   use type C831001_Root.Shutter_Speed;
+
+begin
+   Report.Test ("C831001", "Check that overriding indicators can be used on " &
+                "subprogram declarations, including expression functions " &
+                "and null procedures");
+
+
+
+-- Call the class-wide operation (Self_Test) for Zoom_Camera'Class, which
+-- itself calls the class-wide operation for Remote_Camera'Class, which
+-- in turn makes dispatching calls to Focus and Set_Shutter_Speed:
+
+
+   -- For an object of type Zoom_Camera, the dispatching call to Focus should
+   -- dispatch to the body explicitly declared for Zoom_Camera. The dispatching
+   -- to Set_Shutter_Speed should dispatch to the body declared for
+   -- Remote_Camera:
+
+   C831001_0.Self_Test(Zooming_Camera);
+
+   if not C831001_0.TC_Correct_Result (Zooming_Camera,
+                                       TC_Expected_Zoom_Depth,
+                                       TC_Expected_Zoom_Speed)
+   then
+      Report.Failed ("Calls dispatched incorrectly for tagged private type");
+   end if;
+
+   C831001_0.Set_Exposure(Zooming_Camera, C831001_Root.Dark);
+
+   if not C831001_0.TC_Correct_Result (Zooming_Camera,
+                                       TC_Expected_Zoom_Depth,
+                                       TC_Expected_Zoom_Speed)
+   then
+      Report.Failed ("Static call to explicit subprogram executed " &
+                     "the wrong body");
+   end if;
+
+   if C831001_0.TC_Shutter (Zooming_Camera) /= TC_Expected_Zoom_Speed then
+      Report.Failed ("Original Getter not used by dispatching call");
+   end if;
+
+   -- For an object of type Auto_Speed, the dispatching call to Focus should
+   -- dispatch to the body explicitly declared for Zoom_Camera. The dispatching
+   -- call to Set_Shutter_Speed should dispatch to the body explicitly declared
+   -- for Remote_Camera:
+
+   C831001_0.Self_Test(Auto_Camera1);
+
+   if not C831001_0.C831001_1.TC_Correct_Result (
+             Auto_Camera1,
+             TC_Expected_Auto_Depth,
+             TC_Expected_Auto_Speed)
+   then
+      Report.Failed ("Calls dispatched incorrectly for private extension");
+   end if;
+
+   -- Call to Self_Test from C831001_0.C831001_1 invokes the dispatching call
+   -- to Focus which should dispatch to the body explicitly declared for
+   -- Zoom_Camera. The dispatching call to Set_Shutter_Speed should dispatch
+   -- to the body explicitly declared for Auto_Speed:
+
+   C831001_0.C831001_1.Self_Test(Auto_Camera2);
+
+   if not C831001_0.C831001_1.TC_Correct_Result (Auto_Camera2,
+                                                 TC_Expected_Depth,
+                                                 TC_Expected_Speed)
+   then
+      Report.Failed ("Call to explicit subprogram executed the wrong body");
+         -- Note: We use "Pred" in the above to account for the overridden
+         -- Getter.
+   end if;
+
+   C831001_0.C831001_1.Set_Exposure(Auto_Camera2, C831001_Root.Dark);
+
+   if not C831001_0.C831001_1.TC_Correct_Result (Auto_Camera2,
+                                                 TC_Expected_Dark_Depth,
+                                                 TC_Expected_Dark_Speed)
+   then
+      Report.Failed ("Static call to explicit subprogram executed " &
+                     "the wrong body");
+   end if;
+
+   if C831001_0.TC_Shutter (Auto_Camera2) /=
+      C831001_Root.Shutter_Speed'Pred (TC_Expected_Dark_Speed) then
+      Report.Failed ("Overridden Getter not used by dispatching call");
+   end if;
+
+   Report.Result;
+
+end C831001;

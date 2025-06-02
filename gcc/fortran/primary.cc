@@ -2102,10 +2102,18 @@ extend_ref (gfc_expr *primary, gfc_ref *tail)
 {
   if (primary->ref == NULL)
     primary->ref = tail = gfc_get_ref ();
+  else if (tail == NULL)
+    {
+      /* Set tail to end of reference chain.  */
+      for (gfc_ref *ref = primary->ref; ref; ref = ref->next)
+	if (ref->next == NULL)
+	  {
+	    tail = ref;
+	    break;
+	  }
+    }
   else
     {
-      if (tail == NULL)
-	gfc_internal_error ("extend_ref(): Bad tail");
       tail->next = gfc_get_ref ();
       tail = tail->next;
     }
@@ -2302,9 +2310,22 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       gfc_array_spec *as;
       bool coarray_only = sym->attr.codimension && !sym->attr.dimension
 			  && sym->ts.type == BT_CHARACTER;
+      gfc_ref *ref, *strarr = NULL;
 
       tail = extend_ref (primary, tail);
-      tail->type = REF_ARRAY;
+      if (sym->ts.type == BT_CHARACTER && tail->type == REF_SUBSTRING)
+	{
+	  gcc_assert (sym->attr.dimension);
+	  /* Find array reference for substrings of character arrays.  */
+	  for (ref = primary->ref; ref && ref->next; ref = ref->next)
+	    if (ref->type == REF_ARRAY && ref->next->type == REF_SUBSTRING)
+	      {
+		strarr = ref;
+		break;
+	      }
+	}
+      else
+	tail->type = REF_ARRAY;
 
       /* In EQUIVALENCE, we don't know yet whether we are seeing
 	 an array, character variable or array of character
@@ -2317,7 +2338,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       else
 	as = sym->as;
 
-      m = gfc_match_array_ref (&tail->u.ar, as, equiv_flag, as ? as->corank : 0,
+      ref = strarr ? strarr : tail;
+      m = gfc_match_array_ref (&ref->u.ar, as, equiv_flag, as ? as->corank : 0,
 			       coarray_only);
       if (m != MATCH_YES)
 	return m;
@@ -2483,6 +2505,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
     {
       bool t;
       gfc_symtree *tbp;
+      gfc_typespec *ts = &primary->ts;
 
       m = gfc_match_name (name);
       if (m == MATCH_NO)
@@ -2490,8 +2513,18 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       if (m != MATCH_YES)
 	return MATCH_ERROR;
 
+      /* For derived type components find typespec of ultimate component.  */
+      if (ts->type == BT_DERIVED && primary->ref)
+	{
+	  for (gfc_ref *ref = primary->ref; ref; ref = ref->next)
+	    {
+	      if (ref->type == REF_COMPONENT && ref->u.c.component)
+		ts = &ref->u.c.component->ts;
+	    }
+	}
+
       intrinsic = false;
-      if (primary->ts.type != BT_CLASS && primary->ts.type != BT_DERIVED)
+      if (ts->type != BT_CLASS && ts->type != BT_DERIVED)
 	{
 	  inquiry = is_inquiry_ref (name, &tmp);
 	  if (inquiry)
@@ -2564,7 +2597,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 			return MATCH_ERROR;
 		    }
 		  else if (tmp->u.i == INQUIRY_LEN
-			   && primary->ts.type != BT_CHARACTER)
+			   && ts->type != BT_CHARACTER)
 		    {
 			gfc_error ("The LEN part_ref at %C must be applied "
 				   "to a CHARACTER expression");
@@ -2659,6 +2692,11 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	primary->ref = tmp;
       else
 	{
+	  /* Find end of reference chain if inquiry reference and tail not
+	     set.  */
+	  if (tail == NULL && inquiry && tmp)
+	    tail = extend_ref (primary, tail);
+
 	  /* Set by the for loop below for the last component ref.  */
 	  gcc_assert (tail != NULL);
 	  tail->next = tmp;
@@ -2676,6 +2714,9 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  gfc_simplify_expr (primary, 0);
 
 	  if (primary->expr_type == EXPR_CONSTANT)
+	    goto check_done;
+
+	  if (primary->ref == NULL)
 	    goto check_done;
 
 	  switch (tmp->u.i)
@@ -2828,6 +2869,7 @@ check_substring:
 	  if (substring)
 	    primary->ts.u.cl = NULL;
 
+	  gfc_gobble_whitespace ();
 	  if (gfc_peek_ascii_char () == '(')
 	    {
 	      gfc_error_now ("Unexpected array/substring ref at %C");
@@ -4270,6 +4312,16 @@ gfc_match_rvalue (gfc_expr **result)
       gfc_error ("Symbol at %C is not appropriate for an expression");
       return MATCH_ERROR;
     }
+
+  /* Scan for possible inquiry references.  */
+  if (m == MATCH_YES
+      && e->expr_type == EXPR_VARIABLE
+      && gfc_peek_ascii_char () == '%')
+      {
+	m = gfc_match_varspec (e, 0, false, false);
+	if (m == MATCH_NO)
+	  m = MATCH_YES;
+      }
 
   if (m == MATCH_YES)
     {

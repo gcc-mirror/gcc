@@ -1,0 +1,210 @@
+-- C650A01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVE:
+--     Check that Constraint_Error is raised if the result subtype of the
+--     function is an anonymous access type designating a specific tagged
+--     type and the result value is not null and designates some other
+--     specific type.
+--
+-- TEST DESCRIPTION:
+--     The foundation F650A00 declares a set of related limited tagged types.
+--     The package C650A01 declares a map of these objects, including several
+--     incorrect and correct accessor functions.
+--
+--     The rule tested is added by AI05-0073-1. It is necessary
+--     so that dispatching on functions with access controlling results
+--     work properly; those rules assume that the tag of the returned
+--     object is that of the specific type. Recall that general access types
+--     only require that the designated type is convertible to (not the same
+--     as) the target designated type.
+--
+-- CHANGE HISTORY:
+--     29 Mar 2008 RLB Created test.
+--     17 Jul 2008 RLB Corrected illegal type conversion.
+--
+with F650A00.P;
+package C650A01_Map is
+    -- Package defining a map of alerts.
+    -- Note: This package can only store library-level alert objects.
+
+    subtype Key_Type is Natural range 1 .. 100;
+        -- This probably would be some other type in a real map.
+
+    procedure Clear_Map;
+
+    procedure Set_Item (Key : in Key_Type; Item : access F650A00.Alert'Class);
+
+    function Get_Item (Key : in Key_Type) return access F650A00.Alert'Class;
+        -- Returns null if no object has been set for Key.
+
+    function Get_Practice_Item (Key : in Key_Type)
+        return access F650A00.P.Practice_Alert;
+        -- Returns null if no object has been set for Key.
+        -- This is a bad idea; no objects derived from Practice_Alert can be
+        -- returned. We use it to test the objective in question.
+
+end C650A01_Map;
+
+package body C650A01_Map is
+    -- Package defining a map of alerts.
+
+    The_Map : array (Key_Type) of access F650A00.Alert'Class;
+
+    procedure Clear_Map is
+    begin
+        The_Map := (others => null);
+    end Clear_Map;
+
+    procedure Set_Item (Key : in Key_Type; Item : access F650A00.Alert'Class) is
+    begin
+        The_Map(Key) := Item;
+    end Set_Item;
+
+    function Get_Item (Key : in Key_Type) return access F650A00.Alert'Class is
+        -- Returns null if no object has been set for Key.
+    begin
+        return The_Map(Key);
+    end Get_Item;
+
+    type PA is access all F650A00.P.Practice_Alert;
+
+    function Get_Practice_Item (Key : in Key_Type)
+        return access F650A00.P.Practice_Alert is
+        -- Returns null if no object has been set for Key.
+        -- This is a bad idea; no objects derived from Practice_Alert can be
+        -- returned. We use it to test the objective in question.
+    begin
+        return PA(The_Map(Key));
+    end Get_Practice_Item;
+
+end C650A01_Map;
+
+with F650A00.P, F650A00.S;
+package C650A01_Alerts is
+    Practice : aliased F650A00.P.Practice_Alert :=
+             F650A00.P.Make_Alert_for_Time (8.0);
+    Trial : aliased F650A00.P.Practice_Alert :=
+             (F650A00.Alert with Status => F650A00.P.Real,
+                 Urgency => F650A00.P.Low);
+    Special : aliased F650A00.S.Special_Alert :=
+             F650A00.S.Make_Alert_for_Time (54.0);
+end C650A01_Alerts;
+
+with C650A01_Map, C650A01_Alerts, F650A00.P, F650A00.S, Report, Ada.Tags;
+procedure C650A01 is
+begin
+   Report.Test ("C650A01", "Check that Constraint_Error is raised if the " &
+                           "result subtype of the function is an anonymous " &
+                           "access type designating a specific tagged " &
+                           "type and the result value is not null and " &
+                           "designates some other specific type");
+
+   C650A01_Map.Clear_Map;
+
+   -- Put the objects into the Map:
+   C650A01_Map.Set_Item (Key =>  4, Item => C650A01_Alerts.Special'Access);
+   C650A01_Map.Set_Item (Key => 15, Item => C650A01_Alerts.Practice'Access);
+   C650A01_Map.Set_Item (Key => 66, Item => C650A01_Alerts.Trial'Access);
+
+   -- Check that we can retrieve the items with access-to-classwide:
+   declare
+      PA : access F650A00.Alert'Class;
+      TA : access F650A00.Alert'Class;
+      SA : access F650A00.Alert'Class;
+      NA : access F650A00.Alert'Class;
+      use type Ada.Tags.Tag;
+   begin
+      PA := C650A01_Map.Get_Item (Key => 15);
+      TA := C650A01_Map.Get_Item (Key => 66);
+      SA := C650A01_Map.Get_Item (Key =>  4);
+      NA := C650A01_Map.Get_Item (Key => 33); -- No item here.
+      if PA.all'tag /= F650A00.P.Practice_Alert'tag or else
+         PA.Alert_Time /= 8.0 then
+          Report.Failed ("PA object has wrong value");
+      end if;
+      if TA.all'tag /= F650A00.P.Practice_Alert'tag or else
+         TA.Alert_Time /= 0.0 then
+          Report.Failed ("TA object has wrong value");
+      end if;
+      if SA.all'tag /= F650A00.S.Special_Alert'tag or else
+         SA.Alert_Time /= 54.0 then
+          Report.Failed ("SA object has wrong value");
+      end if;
+      if NA /= null then
+          Report.Failed ("NA object has wrong value");
+      end if;
+      -- These are accesses to the actual objects: verify that for TA:
+      TA.Set_Alert_Time (Time => 3.5);
+      if C650A01_Alerts.Trial.Alert_Time /= 3.5 then
+          Report.Failed ("TA object did not change");
+      end if;
+   end;
+
+   -- OK, try retriving practice items.
+   declare
+      PA : access F650A00.P.Practice_Alert;
+      SA : access F650A00.P.Practice_Alert;
+      NA : access F650A00.P.Practice_Alert;
+   begin
+      begin
+         PA := C650A01_Map.Get_Practice_Item (Key => 15);
+         if PA.Alert_Time /= 8.0 then
+            Report.Failed ("PA practice object has wrong value");
+         end if;
+      exception
+         when Constraint_Error =>
+             Report.Failed ("Get_Practice_Item of PA object raised exception");
+      end;
+      begin
+         SA := C650A01_Map.Get_Practice_Item (Key => 4);
+         Report.Failed ("Get_Practice_Item of Special object did not raise an " &
+                        "exception");
+      exception
+         when Constraint_Error =>
+             null;
+      end;
+      begin
+         NA := C650A01_Map.Get_Practice_Item (Key => 54);
+         if NA /= null then
+            Report.Failed ("NA practice object has wrong value");
+         end if;
+      exception
+         when Constraint_Error =>
+             Report.Failed ("Get_Practice_Item of unused item raised exception");
+      end;
+   end;
+
+   Report.Result;
+
+end C650A01;

@@ -961,7 +961,7 @@ set_even_probabilities (basic_block bb,
 	    if (unlikely_edges != NULL && unlikely_edges->contains (e))
 	      e->probability = profile_probability::very_unlikely ();
 	    else
-	      e->probability = all / scale;
+	      e->probability = (all / scale).guessed ();
 	  }
 	else
 	  e->probability = profile_probability::never ();
@@ -4444,11 +4444,14 @@ rebuild_frequencies (void)
   bool inconsistency_found = false;
   bool uninitialized_probablity_found = false;
   bool uninitialized_count_found = false;
+  bool feedback_found = false;
 
   cfun->cfg->count_max = profile_count::uninitialized ();
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     {
       cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
+      if (bb->count.nonzero_p () && bb->count.quality () >= AFDO)
+	feedback_found = true;
       /* Uninitialized count may be result of inlining or an omision in an
          optimization pass.  */
       if (!bb->count.initialized_p ())
@@ -4516,8 +4519,7 @@ rebuild_frequencies (void)
      Propagating from probabilities would make profile look consistent, but
      because probablities after code duplication may not be representative
      for a given run, we would only propagate the error further.  */
-  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ().nonzero_p ()
-      && !uninitialized_count_found)
+  if (feedback_found && !uninitialized_count_found)
     {
       if (dump_file)
 	fprintf (dump_file,

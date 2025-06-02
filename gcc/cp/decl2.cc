@@ -4028,6 +4028,7 @@ get_tls_init_fn (tree var)
       SET_DECL_LANGUAGE (fn, lang_c);
       TREE_PUBLIC (fn) = TREE_PUBLIC (var);
       DECL_ARTIFICIAL (fn) = true;
+      DECL_CONTEXT (fn) = FROB_CONTEXT (global_namespace);
       DECL_COMDAT (fn) = DECL_COMDAT (var);
       DECL_EXTERNAL (fn) = DECL_EXTERNAL (var);
       if (DECL_ONE_ONLY (var))
@@ -4087,7 +4088,7 @@ get_tls_wrapper_fn (tree var)
       TREE_PUBLIC (fn) = TREE_PUBLIC (var);
       DECL_ARTIFICIAL (fn) = true;
       DECL_IGNORED_P (fn) = 1;
-      DECL_CONTEXT (fn) = DECL_CONTEXT (var);
+      DECL_CONTEXT (fn) = FROB_CONTEXT (global_namespace);
       /* The wrapper is inline and emitted everywhere var is used.  */
       DECL_DECLARED_INLINE_P (fn) = true;
       if (TREE_PUBLIC (var))
@@ -6416,12 +6417,17 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
 
   /* If DECL has a deduced return type, we need to instantiate it now to
      find out its type.  For OpenMP user defined reductions, we need them
-     instantiated for reduction clauses which inline them by hand directly.  */
+     instantiated for reduction clauses which inline them by hand directly.
+     OpenMP declared mappers are used implicitly so must be instantiated
+     before they can be detected.  */
   if (undeduced_auto_decl (decl)
       || (VAR_P (decl)
 	  && VAR_HAD_UNKNOWN_BOUND (decl))
       || (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_OMP_DECLARE_REDUCTION_P (decl)))
+	  && DECL_OMP_DECLARE_REDUCTION_P (decl))
+      || (TREE_CODE (decl) == VAR_DECL
+	  && DECL_LANG_SPECIFIC (decl)
+	  && DECL_OMP_DECLARE_MAPPER_P (decl)))
     maybe_instantiate_decl (decl);
 
   if (!decl_dependent_p (decl)

@@ -1,0 +1,252 @@
+-- C950001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--    The ACAA has created and maintains the Ada Conformity Assessment Test
+--    Suite for the purpose of conformity assessments conducted in accordance
+--    with the International Standard ISO/IEC 18009 - Ada: Conformity
+--    assessment of a language processor. This test suite should not be used
+--    to make claims of conformance unless used in accordance with
+--    ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+--
+-- OBJECTIVE:
+--      Check that primitive procedures of synchronized interfaces with
+--      a Synchronization aspect can be completed by a procedure, protected
+--      procedure or entry as specified, and check correct mutual exclusion.
+--
+-- TEST DESCRIPTION:
+--      We first define a synchronized interface using various synchronization
+--      specifications. We then implement that interface with an appropriate
+--      protected object. We finally then test the interface by making
+--      dispatching calls through the interface and verify that each has the
+--      correct behavior.
+--
+-- CHANGE HISTORY:
+--      16 Nov 13   GRB     Initial version.
+--      26 Nov 13   RLB     Added headers, cleaned up capitalization of
+--                          messages.
+--      21 Apr 14   RLB     Added to ACATS, added dispatching calls for
+--                          realism. Replaced Volatile counter with PO.
+--!
+
+package C950001_0 is
+   type Spinlock is synchronized interface;
+
+   procedure Unlock (L : in out Spinlock) is abstract
+      with Synchronization => By_Protected_Procedure;
+   procedure Lock (L : in out Spinlock) is abstract
+      with Synchronization => By_Entry;
+   procedure Try_Lock  (L : in out Spinlock; Success : out Boolean) is abstract
+      with Synchronization => Optional;
+   procedure Unlock_2 (L : in out Spinlock) is abstract
+      with Synchronization => Optional;
+   procedure Lock_2 (L : in out Spinlock) is abstract
+      with Synchronization => Optional;
+
+   protected type Lock_Type is new Spinlock with
+      procedure Unlock;   --  Synchronization => By_Protected_Procedure
+      procedure Unlock_2; --  Synchronization => Optional
+      entry Lock;         --  Synchronization => By_Entry
+      entry Lock_2;       --  Synchronization => Optional
+   private
+      Unlocked : Boolean := True;
+   end Lock_Type;
+
+   procedure Try_Lock
+     (L       : in out Lock_Type;
+      Success : out Boolean) with Synchronization => Optional;
+
+   function Get_Lock return Spinlock'Class;
+
+end C950001_0;
+
+     --==================================================================--
+
+package body C950001_0 is
+   protected body Lock_Type is
+      procedure Unlock is
+      begin
+         Unlocked := True;
+      end Unlock;
+
+      procedure Unlock_2 is
+      begin
+         Unlocked := True;
+      end Unlock_2;
+
+      entry Lock when Unlocked is
+      begin
+         Unlocked := False;
+      end;
+
+      entry Lock_2 when Unlocked is
+      begin
+         Unlocked := False;
+      end Lock_2;
+   end Lock_Type;
+
+   procedure Try_Lock (L : in out Lock_Type; Success : out Boolean) is
+   begin
+      Success := False;
+   end Try_Lock;
+
+   function Get_Lock return Spinlock'Class is
+   begin
+      return Result : Lock_Type; -- Default initialized.
+   end Get_Lock;
+
+end C950001_0;
+
+     --==================================================================--
+
+package C950001_1 is
+
+   Num_Tasks : constant := 2;
+   Num_Iters : constant := 5_000;
+
+   protected Monitor is
+      procedure Signal_Ready;
+      procedure Signal_Started;
+      entry Wait_Ready (Success : out Boolean);
+      entry Wait_Started;
+   private
+      Ready_Tasks : Natural := 0;
+      Started     : Boolean := False;
+   end Monitor;
+
+end C950001_1;
+
+     --==================================================================--
+
+with C950001_0;
+package body C950001_1 is
+   Lock : C950001_0.Spinlock'Class := C950001_0.Get_Lock;
+       -- As this is an object of the interface type, all of the calls will
+       -- be dispatching calls.
+
+   type Count_Range is range 0 .. Num_Tasks * Num_Iters;
+   protected Counter is
+      procedure Clear_Count;
+      procedure Bump_Count;
+      function Read_Count return Count_Range;
+   private
+      Count : Count_Range;
+   end Counter;
+
+   protected body Counter is
+      procedure Clear_Count is
+      begin
+         Count := 0;
+      end Clear_Count;
+
+      procedure Bump_Count is
+      begin
+         Count := Count + 1;
+      end Bump_Count;
+
+      function Read_Count return Count_Range is
+      begin
+         return Count;
+      end Read_Count;
+   end Counter;
+
+   protected body Monitor is
+      procedure Signal_Ready is
+      begin
+         Ready_Tasks := Ready_Tasks + 1;
+      end Signal_Ready;
+
+      procedure Signal_Started is
+      begin
+         Counter.Clear_Count;
+         Started := True;
+      end Signal_Started;
+
+      entry Wait_Ready (Success : out Boolean) when Ready_Tasks = Num_Tasks is
+      begin
+         Success := Counter.Read_Count = Num_Tasks * Num_Iters;
+         Ready_Tasks := 0;
+      end Wait_Ready;
+
+      entry Wait_Started when Started is
+      begin
+         null;
+      end Wait_Started;
+   end Monitor;
+
+   task type Counter_Task is
+   end Counter_Task;
+
+   task body Counter_Task is
+   begin
+      Monitor.Wait_Started;
+
+      for J in 1 .. Num_Iters loop
+         if J mod 2 = 0 then
+            Lock.Lock;
+            Counter.Bump_Count;
+            Lock.Unlock;
+         else
+            Lock.Lock_2;
+            Counter.Bump_Count;
+            Lock.Unlock_2;
+         end if;
+      end loop;
+
+      Monitor.Signal_Ready;
+   end Counter_Task;
+
+   Counters : array (1 .. Num_Tasks) of Counter_Task;
+end C950001_1;
+
+     --==================================================================--
+
+with C950001_1;
+with Report;
+procedure C950001 is
+   Success : Boolean;
+begin
+   Report.Test ("C950001", "Check that primitive procedures of synchronized " &
+                "interfaces with a Synchronization aspect can be completed " &
+                "by a procedure, protected procedure or entry as specified, " &
+                "and check correct mutual exclusion");
+
+   begin
+      C950001_1.Monitor.Signal_Started;
+      C950001_1.Monitor.Wait_Ready (Success);
+
+      if not Success then
+         Report.Failed ("Counter did not have expected number of updates");
+      end if;
+
+   exception
+      when others =>
+         Report.Failed ("Unexpected exception");
+   end;
+
+   Report.Result;
+end C950001;

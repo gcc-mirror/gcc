@@ -123,6 +123,7 @@ void *acc_hostptr (void *) __GOACC_NOTHROW;
 int acc_is_present (void *, size_t) __GOACC_NOTHROW;
 void acc_memcpy_to_device (void *, void *, size_t) __GOACC_NOTHROW;
 void acc_memcpy_from_device (void *, void *, size_t) __GOACC_NOTHROW;
+void acc_memcpy_device (void *, void *, size_t) __GOACC_NOTHROW;
 void acc_attach (void **) __GOACC_NOTHROW;
 void acc_attach_async (void **, int) __GOACC_NOTHROW;
 void acc_detach (void **) __GOACC_NOTHROW;
@@ -136,7 +137,7 @@ void acc_delete_finalize_async (void *, size_t, int) __GOACC_NOTHROW;
 void acc_detach_finalize (void **) __GOACC_NOTHROW;
 void acc_detach_finalize_async (void **, int) __GOACC_NOTHROW;
 
-/* Async functions, specified in OpenACC 2.5.  */
+/* Async functions, specified in OpenACC 2.5, acc_memcpy_device in 2.6.  */
 void acc_copyin_async (void *, size_t, int) __GOACC_NOTHROW;
 void acc_create_async (void *, size_t, int) __GOACC_NOTHROW;
 void acc_copyout_async (void *, size_t, int) __GOACC_NOTHROW;
@@ -145,6 +146,7 @@ void acc_update_device_async (void *, size_t, int) __GOACC_NOTHROW;
 void acc_update_self_async (void *, size_t, int) __GOACC_NOTHROW;
 void acc_memcpy_to_device_async (void *, void *, size_t, int) __GOACC_NOTHROW;
 void acc_memcpy_from_device_async (void *, void *, size_t, int) __GOACC_NOTHROW;
+void acc_memcpy_device_async (void *, void *, size_t, int) __GOACC_NOTHROW;
 
 /* CUDA-specific routines.  */
 void *acc_get_current_cuda_device (void) __GOACC_NOTHROW;

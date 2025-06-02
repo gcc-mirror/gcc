@@ -38,7 +38,7 @@ void f18 (void);
 void f19 (void);
 #pragma omp declare variant (f1) match(user={condition()})	/* { dg-error "expected \[^\n\r]*expression before '\\)' token" } */
 void f20 (void);
-#pragma omp declare variant (f1) match(user={condition(f1)})	/* { dg-error "property must be integer expression" } */
+#pragma omp declare variant (f1) match(user={condition(f1)})
 void f21 (void);
 #pragma omp declare variant (f1) match(user={condition(1, 2, 3)})	/* { dg-error "expected '\\)' before ',' token" } */
 void f22 (void);
@@ -47,10 +47,9 @@ void f23 (void);
 #pragma omp declare variant (f1) match(construct={teams,parallel,master,for})	/* { dg-warning "unknown selector 'master' for context selector set 'construct'" } */
 void f24 (void);
 #pragma omp declare variant (f1) match(construct={parallel(1	/* { dg-error "selector 'parallel' does not accept any properties" } */
-void f25 (void);						/* { dg-error "expected '\\\}' before end of line" "" { target c++ } .-1 } */
-								/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-2 } */
+void f25 (void);						/* { dg-error "expected '\\\}' before end of line" "" { target *-*-* } .-1 } */
 #pragma omp declare variant (f1) match(construct={parallel(1)})	/* { dg-error "selector 'parallel' does not accept any properties" } */
-void f26 (void);							/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-1 } */
+void f26 (void);
 #pragma omp declare variant (f0) match(construct={simd(12)})	/* { dg-error "expected \[^\n\r]* clause before" } */
 void f27 (void);						/* { dg-error "'\\)' before numeric constant" "" { target c++ } .-1 } */
 #pragma omp declare variant (f1) match(construct={parallel},construct={for})	/* { dg-error "selector set 'construct' specified more than once" } */
@@ -96,13 +95,13 @@ void f46 (void);
 #pragma omp declare variant (f1) match(implementation={vendor("foobar")})	/* { dg-warning "unknown property '.foobar.' of 'vendor' selector" } */
 void f47 (void);
 #pragma omp declare variant (f1) match(implementation={unified_address(yes)})	/* { dg-error "selector 'unified_address' does not accept any properties" } */
-void f48 (void);								/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-1 } */
+void f48 (void);
 #pragma omp declare variant (f1) match(implementation={unified_shared_memory(no)})	/* { dg-error "selector 'unified_shared_memory' does not accept any properties" } */
-void f49 (void);									/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-1 } */
+void f49 (void);
 #pragma omp declare variant (f1) match(implementation={dynamic_allocators(42)})	/* { dg-error "selector 'dynamic_allocators' does not accept any properties" } */
-void f50 (void);								/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-1 } */
+void f50 (void);
 #pragma omp declare variant (f1) match(implementation={reverse_offload()})	/* { dg-error "selector 'reverse_offload' does not accept any properties" } */
-void f51 (void);								/* { dg-error "expected '\\\}' before '\\(' token" "" { target c } .-1 } */
+void f51 (void);
 #pragma omp declare variant (f1) match(implementation={atomic_default_mem_order})	/* { dg-error "expected '\\(' before '\\\}' token" } */
 void f52 (void);
 #pragma omp declare variant (f1) match(implementation={atomic_default_mem_order(acquire)})

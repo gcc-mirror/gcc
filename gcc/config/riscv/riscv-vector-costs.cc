@@ -205,9 +205,7 @@ compute_local_program_points (
 	      if (!is_gimple_assign_or_call (gsi_stmt (si)))
 		continue;
 	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (si));
-	      enum stmt_vec_info_type type
-		= STMT_VINFO_TYPE (vect_stmt_to_vectorize (stmt_info));
-	      if (type != undef_vec_info_type)
+	      if (STMT_VINFO_RELEVANT_P (stmt_info))
 		{
 		  stmt_point info = {point, gsi_stmt (si), stmt_info};
 		  program_points.safe_push (info);
@@ -626,7 +624,7 @@ compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
   int regno_alignment = riscv_get_v_regno_alignment (loop_vinfo->vector_mode);
   if (riscv_v_ext_vls_mode_p (loop_vinfo->vector_mode))
     return regno_alignment;
-  else if (known_eq (LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo), 1U))
+  else
     {
       int estimated_vf = vect_vf_for_cost (loop_vinfo);
       int estimated_lmul = estimated_vf * GET_MODE_BITSIZE (mode).to_constant ()
@@ -635,25 +633,6 @@ compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
 	return regno_alignment;
       else
 	return estimated_lmul;
-    }
-  else
-    {
-      /* Estimate the VLA SLP LMUL.  */
-      if (regno_alignment > RVV_M1)
-	return regno_alignment;
-      else if (mode != QImode
-	       || LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo).is_constant ())
-	{
-	  int ratio;
-	  if (can_div_trunc_p (BYTES_PER_RISCV_VECTOR,
-			       GET_MODE_SIZE (loop_vinfo->vector_mode), &ratio))
-	    {
-	      if (ratio == 1)
-		return RVV_M4;
-	      else if (ratio == 2)
-		return RVV_M2;
-	    }
-	}
     }
   return 0;
 }

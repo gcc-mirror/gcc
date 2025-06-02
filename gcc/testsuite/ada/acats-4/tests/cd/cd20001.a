@@ -1,0 +1,275 @@
+-- CD20001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that for packed records the components are packed as tightly
+--      as possible subject to the Size of the component subtypes.
+--      Specifically check that Boolean objects are packed one to a bit.
+--
+--      Check that the Component_Size for a packed array type is less than
+--      or equal to the smallest of those factors of the word size that are
+--      greater than or equal to the Size of the component subtype.
+--      
+-- TEST DESCRIPTION:
+--      This test defines and packs several types, and checks that the sizes
+--      of the resulting objects is as expected.
+--
+-- APPLICABILITY CRITERIA:
+--      All implementations must attempt to compile this test.
+--
+--      For implementations validating against Systems Programming Annex (C):
+--        this test must execute and report PASSED.
+--
+--      For implementations not validating against Annex C:
+--        this test may report compile time errors at one or more points
+--        indicated by "-- ANX-C RQMT", in which case it may be graded as
+--        inapplicable.  Otherwise, the test must execute and report PASSED.
+--
+--
+-- CHANGE HISTORY:
+--      22 JUL 95   SAIC   Initial version
+--      08 MAY 96   SAIC   Strengthened for 2.1
+--      29 JAN 98   EDS    Deleted check that Component_Size is really a
+--                         factor of Word_Size.
+--!
+
+----------------------------------------------------------------- CD20001_0
+
+with System;
+package CD20001_0 is
+
+  type Wordlong_Bool_Array is array(1..System.Word_Size) of Boolean;
+    pragma Pack(Wordlong_Bool_Array);                         -- ANX-C RQMT
+
+  type Def_Rep_Components is range 0..2**(System.Storage_Unit-2);
+
+  type Spec_Rep_Components is range 0..2**(System.Storage_Unit-2);
+    for Spec_Rep_Components'Size use System.Storage_Unit;     -- ANX-C RQMT
+
+  type Packed_Array_Def_Components is array(1..32) of Def_Rep_Components;
+    pragma Pack(Packed_Array_Def_Components);                 -- ANX-C RQMT
+
+  type Packed_Array_Spec_Components is array(1..32) of Spec_Rep_Components;
+    pragma Pack(Packed_Array_Spec_Components);                -- ANX-C RQMT
+
+  procedure TC_Check_Values;
+
+end CD20001_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+with TCTouch;
+package body CD20001_0 is
+
+  procedure TC_Check_Values is
+    My_Word      : Wordlong_Bool_Array := (others => False);
+
+    Cited_Unit   : Spec_Rep_Components := 0;
+
+    Packed_Array : Packed_Array_Def_Components := (others => 0);
+
+    Cited_Packed : Packed_Array_Spec_Components := (others => 0);
+
+  begin
+    TCTouch.Assert( My_Word'Size = System.Word_Size,
+       "pragma Pack on array of Booleans does not pack one Boolean per bit" );
+
+    TCTouch.Assert( My_Word'Component_Size = 1,
+                    "size of Boolean array component not 1 bit");
+
+    TCTouch.Assert( Cited_Unit'Size = System.Storage_Unit,
+                    "Object specified to be Storage_Unit bits not " &
+                    "Storage_Unit bits in size");
+
+    TCTouch.Assert( Packed_Array'Component_Size <= System.Storage_Unit,
+                    "Packed array component expected to be less than or " &
+                    "equal to Storage_Unit bits in size is greater than " &
+                    "Storage_Unit bits in size");
+
+    TCTouch.Assert( Cited_Packed'Component_Size = System.Storage_Unit,
+                    "Array component specified to be Storage_Unit " &
+                    "bits not Storage_Unit bits in size");
+
+  end TC_Check_Values;
+
+end CD20001_0;
+
+----------------------------------------------------------------- CD20001_1
+
+with System;
+package CD20001_1 is
+
+  type Bits_2  is range 0..2**2-1;
+    for Bits_2'Size use 2;                                    -- ANX-C RQMT
+
+  type Bits_3  is range 0..2**3-1;
+    for Bits_3'Size use 3;                                    -- ANX-C RQMT
+
+  type Bits_7  is range 0..2**7-1;
+    for Bits_7'Size use 7;                                    -- ANX-C RQMT
+
+  type Bits_8  is range 0..2**8-1;
+    for Bits_8'Size use 8;                                    -- ANX-C RQMT
+
+  type Bits_9  is range 0..2**9-1;
+    for Bits_9'Size use 9;                                    -- ANX-C RQMT
+
+  type Bits_15 is range 0..2**15-1;
+    for Bits_15'Size use 15;                                  -- ANX-C RQMT
+
+  type Pact_Aray_2  is array(0..31) of Bits_2;
+    pragma Pack( Pact_Aray_2 );                               -- ANX-C RQMT
+
+  type Pact_Aray_3  is array(0..31) of Bits_3;
+    pragma Pack( Pact_Aray_3 );                               -- ANX-C RQMT
+
+  type Pact_Aray_7  is array(0..31) of Bits_7;
+    pragma Pack( Pact_Aray_7 );                               -- ANX-C RQMT
+
+  type Pact_Aray_8  is array(0..31) of Bits_8;
+    pragma Pack( Pact_Aray_8 );                               -- ANX-C RQMT
+
+  type Pact_Aray_9  is array(0..31) of Bits_9;
+    pragma Pack( Pact_Aray_9 );                               -- ANX-C RQMT
+
+  type Pact_Aray_15 is array(0..31) of Bits_15;
+    pragma Pack( Pact_Aray_15 );                              -- ANX-C RQMT
+
+
+  procedure TC_Check_Values;
+
+end CD20001_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+with TCTouch;
+package body CD20001_1 is
+
+   function Next_Factor ( Value : Positive ) return Integer is
+   -- Returns the factor of Word_Size that is next larger than Value.
+   -- If Value is greater than Word_Size, then returns Word_Size.
+     Test   : Integer := Value;
+     Found  : Boolean := False;
+  begin  -- Next_Factor
+     while not Found and Test <= System.Word_Size loop
+       if System.Word_Size mod Test = 0 then
+          Found := True;
+       else
+          Test := Test + 1;
+       end if;
+     end loop;
+     if Found then
+        return Test;
+     else
+        return System.Word_Size;
+     end if;
+  end Next_Factor;
+
+  procedure TC_Check_Values is
+  begin
+  
+    if Pact_Aray_2'Component_Size > Next_Factor ( Bits_2'Size ) then
+       Report.Failed
+          ( "2 bit element Packed Array'Component_Size too big" );
+    end if;
+
+    TCTouch.Assert( Pact_Aray_2'Component_Size <= Pact_Aray_2'Size,
+                    "2 bit Component_Size greater than array size" );
+
+    if Pact_Aray_3'Component_Size > Next_Factor ( Bits_3'Size ) then
+       Report.Failed
+          ( "3 bit element Packed Array'Component_Size too big" );
+    end if;
+
+    TCTouch.Assert( Pact_Aray_3'Component_Size <= Pact_Aray_3'Size,
+                    "3 bit Component_Size greater than array size" );
+
+    if Pact_Aray_7'Component_Size > Next_Factor ( Bits_7'Size ) then
+       Report.Failed
+          ( "7 bit element Packed Array'Component_Size too big" );
+    end if;
+
+    TCTouch.Assert( Pact_Aray_7'Component_Size <= Pact_Aray_7'Size,
+                    "7 bit Component_Size greater than array size" );
+
+    if Pact_Aray_8'Component_Size > Next_Factor ( Bits_8'Size ) then
+       Report.Failed
+          ( "8 bit element Packed Array'Component_Size too big" );
+    end if;
+
+    TCTouch.Assert( Pact_Aray_8'Component_Size <= Pact_Aray_8'Size,
+                    "8 bit Component_Size greater than array size" );
+
+    if System.Word_Size > 8 then
+
+      if Pact_Aray_9'Component_Size > Next_Factor ( Bits_9'Size ) then
+         Report.Failed
+            ( "9 bit element Packed Array'Component_Size too big" );
+      end if;
+
+      TCTouch.Assert( Pact_Aray_9'Component_Size <= Pact_Aray_9'Size,
+                    "9 bit Component_Size greater than array size" );
+
+      if Pact_Aray_15'Component_Size > Next_Factor ( Bits_15'Size ) then
+         Report.Failed
+            ( "15 bit element Packed Array'Component_Size too big" );
+      end if;
+
+      TCTouch.Assert( Pact_Aray_15'Component_Size <= Pact_Aray_15'Size,
+                    "15 bit Component_Size greater than array size" );
+
+    end if;
+
+  end TC_Check_Values;
+
+end CD20001_1;
+
+------------------------------------------------------------------- CD20001
+
+with Report;
+with CD20001_0;
+with CD20001_1;
+
+procedure CD20001 is
+
+begin  -- Main test procedure.
+
+  Report.Test ("CD20001", "Check that packed records are packed as tightly " &
+                          "as possible.  Check that Boolean objects are " &
+                          "packed one to a bit. " &
+                          "Check that the Component_Size for a packed " &
+                          "array type is the value which is less than or " &
+                          "equal to the Size of the component type, " &
+                          "rounded up to the nearest factor of word_size" );
+   
+  CD20001_0.TC_Check_Values;
+
+  CD20001_1.TC_Check_Values;
+
+  Report.Result;
+
+end CD20001;

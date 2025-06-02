@@ -1061,64 +1061,60 @@ test_1 ( __bextri_u64, unsigned long long, unsigned long long, 1)
 /* sm3intrin.h */
 test_3 (_mm_sm3rnds2_epi32, __m128i, __m128i, __m128i, __m128i, 1)
 
-/* avx10_2-512mediaintrin.h */
+/* avx10_2mediaintrin.h */
 test_2 (_mm512_mpsadbw_epu8, __m512i, __m512i, __m512i, 1)
 test_3 (_mm512_maskz_mpsadbw_epu8, __m512i, __mmask32, __m512i, __m512i, 1)
-test_4 (_mm512_mask_mpsadbw_epu8, __m512i, __m512i, __mmask32, __m512i, __m512i, 1)
-
-/* avx10_2mediaintrin.h */
-test_3 (_mm_maskz_mpsadbw_epu8, __m128i, __mmask8, __m128i, __m128i, 1)
 test_3 (_mm256_maskz_mpsadbw_epu8, __m256i, __mmask16, __m256i, __m256i, 1)
-test_4 (_mm_mask_mpsadbw_epu8, __m128i, __m128i, __mmask8, __m128i, __m128i, 1)
+test_3 (_mm_maskz_mpsadbw_epu8, __m128i, __mmask8, __m128i, __m128i, 1)
+test_4 (_mm512_mask_mpsadbw_epu8, __m512i, __m512i, __mmask32, __m512i, __m512i, 1)
 test_4 (_mm256_mask_mpsadbw_epu8, __m256i, __m256i, __mmask16, __m256i, __m256i, 1)
+test_4 (_mm_mask_mpsadbw_epu8, __m128i, __m128i, __mmask8, __m128i, __m128i, 1)
 
-/* avx10_2-512convertintrin.h */
+/* avx10_2convertintrin.h */
 test_2 (_mm512_cvtx_round2ps_ph, __m512h, __m512, __m512, 4)
 
-/* avx10_2-512bf16intrin.h */
-test_1 (_mm512_roundscale_pbh, __m512bh, __m512bh, 123)
-test_2 (_mm512_maskz_roundscale_pbh, __m512bh, __mmask32, __m512bh, 123)
-test_3 (_mm512_mask_roundscale_pbh, __m512bh, __m512bh, __mmask32, __m512bh, 123)
-test_1 (_mm512_reduce_pbh, __m512bh, __m512bh, 123)
-test_2 (_mm512_maskz_reduce_pbh, __m512bh, __mmask32, __m512bh, 123)
-test_3 (_mm512_mask_reduce_pbh, __m512bh, __m512bh, __mmask32, __m512bh, 123)
-test_1x (_mm512_getmant_pbh, __m512bh, __m512bh, 1, 1)
-test_2x (_mm512_maskz_getmant_pbh, __m512bh, __mmask32,__m512bh, 1, 1)
-test_3x (_mm512_mask_getmant_pbh, __m512bh, __m512bh, __mmask32,__m512bh, 1, 1)
-test_1 (_mm512_fpclass_pbh_mask, __mmask32, __m512bh, 13)
-test_2 (_mm512_mask_fpclass_pbh_mask, __mmask32, __mmask32, __m512bh, 13)
-test_2 (_mm512_cmp_pbh_mask, __mmask32, __m512bh, __m512bh, 1)
-test_3 (_mm512_mask_cmp_pbh_mask, __mmask32, __mmask32,__m512bh, __m512bh, 1)
-
 /* avx10_2bf16intrin.h */
+test_1 (_mm512_roundscale_pbh, __m512bh, __m512bh, 123)
 test_1 (_mm256_roundscale_pbh, __m256bh, __m256bh, 123)
 test_1 (_mm_roundscale_pbh, __m128bh, __m128bh, 123)
+test_2 (_mm512_maskz_roundscale_pbh, __m512bh, __mmask32, __m512bh, 123)
 test_2 (_mm256_maskz_roundscale_pbh, __m256bh, __mmask16, __m256bh, 123)
 test_2 (_mm_maskz_roundscale_pbh, __m128bh, __mmask8, __m128bh, 123)
+test_3 (_mm512_mask_roundscale_pbh, __m512bh, __m512bh, __mmask32, __m512bh, 123)
 test_3 (_mm256_mask_roundscale_pbh, __m256bh, __m256bh, __mmask16, __m256bh, 123)
 test_3 (_mm_mask_roundscale_pbh, __m128bh, __m128bh, __mmask8, __m128bh, 123)
+test_1 (_mm512_reduce_pbh, __m512bh, __m512bh, 123)
 test_1 (_mm256_reduce_pbh, __m256bh, __m256bh, 123)
 test_1 (_mm_reduce_pbh, __m128bh, __m128bh, 123)
+test_2 (_mm512_maskz_reduce_pbh, __m512bh, __mmask32, __m512bh, 123)
 test_2 (_mm256_maskz_reduce_pbh, __m256bh, __mmask16, __m256bh, 123)
 test_2 (_mm_maskz_reduce_pbh, __m128bh, __mmask8, __m128bh, 123)
+test_3 (_mm512_mask_reduce_pbh, __m512bh, __m512bh, __mmask32, __m512bh, 123)
 test_3 (_mm256_mask_reduce_pbh, __m256bh, __m256bh, __mmask16, __m256bh, 123)
 test_3 (_mm_mask_reduce_pbh, __m128bh, __m128bh, __mmask8, __m128bh, 123)
+test_1x (_mm512_getmant_pbh, __m512bh, __m512bh, 1, 1)
 test_1x (_mm256_getmant_pbh, __m256bh, __m256bh, 1, 1)
 test_1x (_mm_getmant_pbh, __m128bh, __m128bh, 1, 1)
+test_2x (_mm512_maskz_getmant_pbh, __m512bh, __mmask32,__m512bh, 1, 1)
 test_2x (_mm256_maskz_getmant_pbh, __m256bh, __mmask16,__m256bh, 1, 1)
 test_2x (_mm_maskz_getmant_pbh, __m128bh, __mmask8, __m128bh, 1, 1)
+test_3x (_mm512_mask_getmant_pbh, __m512bh, __m512bh, __mmask32,__m512bh, 1, 1)
 test_3x (_mm256_mask_getmant_pbh, __m256bh, __m256bh, __mmask16,__m256bh, 1, 1)
 test_3x (_mm_mask_getmant_pbh, __m128bh, __m128bh, __mmask8, __m128bh, 1, 1)
+test_1 (_mm512_fpclass_pbh_mask, __mmask32, __m512bh, 13)
 test_1 (_mm256_fpclass_pbh_mask, __mmask16, __m256bh, 13)
 test_1 (_mm_fpclass_pbh_mask, __mmask8, __m128bh, 13)
+test_2 (_mm512_mask_fpclass_pbh_mask, __mmask32, __mmask32, __m512bh, 13)
 test_2 (_mm256_mask_fpclass_pbh_mask, __mmask16, __mmask16, __m256bh, 13)
 test_2 (_mm_mask_fpclass_pbh_mask, __mmask8, __mmask8, __m128bh, 13)
+test_2 (_mm512_cmp_pbh_mask, __mmask32, __m512bh, __m512bh, 1)
 test_2 (_mm256_cmp_pbh_mask, __mmask16, __m256bh, __m256bh, 1)
 test_2 (_mm_cmp_pbh_mask, __mmask8, __m128bh, __m128bh, 1)
+test_3 (_mm512_mask_cmp_pbh_mask, __mmask32, __mmask32,__m512bh, __m512bh, 1)
 test_3 (_mm256_mask_cmp_pbh_mask, __mmask16, __mmask16, __m256bh, __m256bh, 1)
 test_3 (_mm_mask_cmp_pbh_mask, __mmask8, __mmask8, __m128bh, __m128bh, 1)
 
-/* avx10_2-512satcvtintrin.h */
+/* avx10_2satcvtintrin.h */
 test_1 (_mm512_ipcvts_roundph_epi8, __m512i, __m512h, 8)
 test_1 (_mm512_ipcvts_roundph_epu8, __m512i, __m512h, 8)
 test_1 (_mm512_ipcvts_roundps_epi8, __m512i, __m512, 8)
@@ -1167,8 +1163,6 @@ test_3 (_mm512_mask_cvtts_roundps_epu32, __m512i, __m512i, __mmask16, __m512, 8)
 test_1 (_mm512_cvtts_roundps_epu64, __m512i, __m256, 8)
 test_2 (_mm512_maskz_cvtts_roundps_epu64, __m512i, __mmask8, __m256, 8)
 test_3 (_mm512_mask_cvtts_roundps_epu64, __m512i, __m512i, __mmask8, __m256, 8)
-
-/* avx10_2satcvtintrin.h */
 test_1 (_mm_cvtts_roundsd_epi32, int, __m128d, 8)
 test_1 (_mm_cvtts_roundsd_epu32, unsigned int, __m128d, 8)
 test_1 (_mm_cvtts_roundss_epi32, int, __m128, 8)
@@ -1180,7 +1174,7 @@ test_1 (_mm_cvtts_roundss_epi64, long long, __m128, 8)
 test_1 (_mm_cvtts_roundss_epu64, unsigned long long, __m128, 8)
 #endif
 
-/* avx10_2-512minmaxintrin.h */
+/* avx10_2minmaxintrin.h */
 test_2 (_mm512_minmax_pbh, __m512bh, __m512bh, __m512bh, 100)
 test_3 (_mm512_maskz_minmax_pbh, __m512bh, __mmask32, __m512bh, __m512bh, 100)
 test_4 (_mm512_mask_minmax_pbh, __m512bh, __m512bh, __mmask32, __m512bh, __m512bh, 100)
@@ -1202,8 +1196,6 @@ test_4 (_mm512_mask_minmax_ps, __m512, __m512, __mmask16, __m512, __m512, 100)
 test_2 (_mm512_minmax_ph, __m512h, __m512h, __m512h, 100)
 test_3 (_mm512_maskz_minmax_ph, __m512h, __mmask32, __m512h, __m512h, 100)
 test_4 (_mm512_mask_minmax_ph, __m512h, __m512h, __mmask32, __m512h, __m512h, 100)
-
-/* avx10_2minmaxintrin.h */
 test_2 (_mm256_minmax_pbh, __m256bh, __m256bh, __m256bh, 100)
 test_3 (_mm256_maskz_minmax_pbh, __m256bh, __mmask16, __m256bh, __m256bh, 100)
 test_4 (_mm256_mask_minmax_pbh, __m256bh, __m256bh, __mmask16, __m256bh, __m256bh, 100)

@@ -1,0 +1,303 @@
+-- C980001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that when a construct is aborted the execution of an Initialize
+--      procedure as the last step of the default initialization of a
+--      controlled object is abort-deferred.
+--     
+--      Check that when a construct is aborted the execution of a Finalize
+--      procedure as part of the finalization of a controlled object is
+--      abort-deferred.
+--     
+--      Check that an assignment operation to an object with a controlled
+--      part is an abort-deferred operation.
+--
+-- TEST DESCRIPTION:
+--      The controlled operations which are being tested call a subprogram
+--      which guarantees that the enclosing operation becomes aborted.
+--
+--      Each object is created with a unique value to prevent optimizations
+--      due to the values being the same.
+--
+--      Two protected objects are utilized to warrant that the operations
+--      are delayed in their execution until such time that the abort is
+--      processed.  The object Hold_Up is used to hold the targeted
+--      operation in execution, the object Progress is used to communicate
+--      to the driver software that progress is indeed being made. 
+--
+--
+-- CHANGE HISTORY:
+--      01 MAY 95   SAIC    Initial version
+--      01 MAY 96   SAIC    Revised for 2.1
+--      11 DEC 96   SAIC    Final revision for 2.1
+--      02 DEC 97   EDS     Remove 2 calls to C980001_0.Hold_Up.Lock
+--!
+
+---------------------------------------------------------------- C980001_0
+
+with Impdef;
+with Ada.Finalization;
+package C980001_0 is
+
+  A_Little_While : constant Duration := Impdef.Switch_To_New_Task * 2.0;
+  Enough_Time_For_The_Controlled_Operation_To_Happen : constant Duration
+   := Impdef.Switch_To_New_Task * 4.0;
+
+  function TC_Unique return Integer;
+
+  type Sticks_In_Initialize is new Ada.Finalization.Controlled with record
+    Item: Integer := TC_Unique;
+  end record;
+  procedure Initialize( AV: in out Sticks_In_Initialize );
+
+  type Sticks_In_Adjust is new Ada.Finalization.Controlled with record
+    Item: Integer := TC_Unique;
+  end record;
+  procedure Adjust    ( AV: in out Sticks_In_Adjust );
+
+  type Sticks_In_Finalize is new Ada.Finalization.Controlled with record
+    Item: Integer := TC_Unique;
+  end record;
+  procedure Finalize  ( AV: in out Sticks_In_Finalize );
+
+  Initialize_Called : Boolean := False;
+  Adjust_Called     : Boolean := False;
+  Finalize_Called   : Boolean := False;
+
+  protected type Sticker is
+    entry Lock;
+    procedure Unlock;
+    function Is_Locked return Boolean;
+  private
+    Locked : Boolean := False;
+  end Sticker;
+
+  Hold_Up  : Sticker;
+  Progress : Sticker;
+
+  procedure Fail_And_Clear( Message : String );
+
+
+end C980001_0;
+ 
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+with TCTouch;
+package body C980001_0 is
+
+  TC_Master_Value : Integer := 0;
+
+
+  function TC_Unique return Integer is  -- make all values unique.
+  begin
+    TC_Master_Value := TC_Master_Value +1;
+    return TC_Master_Value;
+  end TC_Unique;
+
+  protected body Sticker is
+
+    entry Lock when not Locked is
+    begin
+      Locked := True;
+    end Lock;
+
+    procedure Unlock is
+    begin
+      Locked := False;
+    end Unlock;
+
+    function Is_Locked return Boolean is
+    begin
+      return Locked;
+    end Is_Locked;
+
+  end Sticker;
+
+  procedure Initialize( AV: in out Sticks_In_Initialize ) is
+  begin
+    TCTouch.Touch('I');  -------------------------------------------------- I
+    Hold_Up.Unlock;               -- cause the select to abort
+    Initialize_Called := True;
+    AV.Item := TC_Unique;
+    TCTouch.Touch('i');  -------------------------------------------------- i
+    Progress.Unlock;              -- allows Wait_Your_Turn to continue
+  end Initialize;
+
+  procedure Adjust    ( AV: in out Sticks_In_Adjust ) is
+  begin
+    TCTouch.Touch('A');  -------------------------------------------------- A
+    Hold_Up.Unlock;               -- cause the select to abort
+    Adjust_Called := True;
+    AV.Item := TC_Unique;
+    TCTouch.Touch('a');  -------------------------------------------------- a
+    Progress.Unlock;
+  end Adjust;
+
+  procedure Finalize  ( AV: in out Sticks_In_Finalize ) is
+  begin
+    TCTouch.Touch('F');  -------------------------------------------------- F
+    Hold_Up.Unlock;               -- cause the select to abort
+    Finalize_Called := True;
+    AV.Item := TC_Unique;
+    TCTouch.Touch('f');  -------------------------------------------------- f
+    Progress.Unlock;
+  end Finalize;
+
+  procedure Fail_And_Clear( Message : String ) is
+  begin
+    Report.Failed(Message);
+    Hold_Up.Unlock;
+    Progress.Unlock;
+  end Fail_And_Clear;
+
+end C980001_0;
+ 
+---------------------------------------------------------------------------
+
+with Report;
+with TCTouch;
+with Impdef;
+with C980001_0;
+procedure C980001 is
+
+  procedure Check_Initialize_Conditions is
+  begin
+    if not C980001_0.Initialize_Called then
+      C980001_0.Fail_And_Clear("Initialize did not correctly complete");
+    end if;
+    TCTouch.Validate("Ii", "Initialization Sequence");
+  end Check_Initialize_Conditions;
+
+  procedure Check_Adjust_Conditions is
+  begin
+    if not C980001_0.Adjust_Called then
+      C980001_0.Fail_And_Clear("Adjust did not correctly complete");
+    end if;
+    TCTouch.Validate("Aa", "Adjust Sequence");
+  end Check_Adjust_Conditions;
+
+  procedure Check_Finalize_Conditions is
+  begin
+    if not C980001_0.Finalize_Called then
+      C980001_0.Fail_And_Clear("Finalize did not correctly complete");
+    end if;
+    TCTouch.Validate("FfFfFf", "Finalization Sequence",
+                     Order_Meaningful => False);
+  end Check_Finalize_Conditions;
+
+  procedure Wait_Your_Turn is
+    Overrun : Natural := 0;
+  begin
+    while C980001_0.Progress.Is_Locked loop  -- and waits
+      delay C980001_0.A_Little_While;
+      Overrun := Overrun +1;
+      if Overrun > 10 then  
+        C980001_0.Fail_And_Clear("Overrun expired lock");
+      end if;
+    end loop;
+  end Wait_Your_Turn;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C980001", "Check the interaction between asynchronous " &
+                          "transfer of control and controlled types" );
+
+  C980001_0.Progress.Lock;
+  C980001_0.Hold_Up.Lock;
+
+  select
+    C980001_0.Hold_Up.Lock;  -- Init will unlock
+
+    Wait_Your_Turn;  -- abortable part is stuck in Initialize
+    Check_Initialize_Conditions;
+
+  then abort
+    declare
+      Object : C980001_0.Sticks_In_Initialize;
+    begin
+      delay Impdef.Minimum_Task_Switch;
+      if Report.Ident_Int( Object.Item ) /= Object.Item then
+        Report.Failed("Optimization foil caused failure");
+      end if;
+      C980001_0.Fail_And_Clear(
+                           "Initialize test executed beyond expected region");
+    end;
+  end select;
+
+  C980001_0.Progress.Lock;
+
+  select
+    C980001_0.Hold_Up.Lock;  -- Adjust will unlock
+
+    Wait_Your_Turn;  -- abortable part is stuck in Adjust
+    Check_Adjust_Conditions;
+
+  then abort
+    declare
+      Object1 : C980001_0.Sticks_In_Adjust;
+      Object2 : C980001_0.Sticks_In_Adjust;
+    begin
+      Object1 := Object2;
+      delay Impdef.Minimum_Task_Switch;
+      if Report.Ident_Int( Object2.Item )
+         /= Report.Ident_Int( Object1.Item ) then
+        Report.Failed("Optimization foil 1 caused failure");
+      end if;
+      C980001_0.Fail_And_Clear("Adjust test executed beyond expected region");
+    end;
+  end select;
+
+  C980001_0.Progress.Lock;
+
+  select
+    C980001_0.Hold_Up.Lock;  -- Finalize will unlock
+
+    Wait_Your_Turn;  -- abortable part is stuck in Finalize
+    Check_Finalize_Conditions;
+
+  then abort
+    declare
+      Object1 : C980001_0.Sticks_In_Finalize;
+      Object2 : C980001_0.Sticks_In_Finalize;
+    begin
+      Object1 := Object2;  -- cause a finalize call
+      delay Impdef.Minimum_Task_Switch;
+      if Report.Ident_Int( Object2.Item )
+         /= Report.Ident_Int( Object1.Item ) then
+        Report.Failed("Optimization foil 2 caused failure");
+      end if;
+      C980001_0.Fail_And_Clear(
+                             "Finalize test executed beyond expected region");
+    end;
+  end select;
+
+  Report.Result;
+
+exception
+  when others => C980001_0.Fail_And_Clear("Exception in main");
+                 Report.Result;
+end C980001;

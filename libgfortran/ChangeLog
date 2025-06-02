@@ -1,3 +1,11 @@
+2025-06-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/119856
+	* io/format.c (parse_format_list): Set the fmt->error
+	message for missing comma.
+	(parse_format): Do not cache the parsed format string
+	if a previous error ocurred.
+
 2025-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/120196

@@ -28,9 +28,9 @@
 #ifndef _AVX512FP16INTRIN_H_INCLUDED
 #define _AVX512FP16INTRIN_H_INCLUDED
 
-#if !defined (__AVX512FP16__) || defined (__EVEX512__)
+#if !defined (__AVX512FP16__)
 #pragma GCC push_options
-#pragma GCC target("avx512fp16,no-evex512")
+#pragma GCC target("avx512fp16")
 #define __DISABLE_AVX512FP16__
 #endif /* __AVX512FP16__ */
 
@@ -2851,17 +2851,6 @@ _mm_maskz_fmul_round_sch (__mmask8 __A, __m128h __B, __m128h __C, const int __E)
   _mm_mask_fcmul_round_sch ((W), (U), (A), (B), (R))
 #define _mm_maskz_cmul_round_sch(U, A, B, R)			      \
   _mm_maskz_fcmul_round_sch ((U), (A), (B), (R))
-
-#ifdef __DISABLE_AVX512FP16__
-#undef __DISABLE_AVX512FP16__
-#pragma GCC pop_options
-#endif /* __DISABLE_AVX512FP16__ */
-
-#if !defined (__AVX512FP16__) || !defined (__EVEX512__)
-#pragma GCC push_options
-#pragma GCC target("avx512fp16,evex512")
-#define __DISABLE_AVX512FP16_512__
-#endif /* __AVX512FP16_512__ */
 
 typedef _Float16 __v32hf __attribute__ ((__vector_size__ (64)));
 typedef _Float16 __m512h __attribute__ ((__vector_size__ (64), __may_alias__));
@@ -7238,9 +7227,9 @@ _mm512_set1_pch (_Float16 _Complex __A)
 #define _mm512_maskz_cmul_round_pch(U, A, B, R)			      \
   _mm512_maskz_fcmul_round_pch ((U), (A), (B), (R))
 
-#ifdef __DISABLE_AVX512FP16_512__
-#undef __DISABLE_AVX512FP16_512__
+#ifdef __DISABLE_AVX512FP16__
+#undef __DISABLE_AVX512FP16__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX512FP16_512__ */
+#endif /* __DISABLE_AVX512FP16__ */
 
 #endif /* _AVX512FP16INTRIN_H_INCLUDED */

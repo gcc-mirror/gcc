@@ -1,0 +1,496 @@
+-- C393013.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVE:
+--     Check that a non-abstract function with a controlling result of
+--     type T is inherited as non-abstract and does not require overriding
+--     for a null extension of T.
+--
+--     Check that a call on an inherited function for a null extension
+--     returns the equivalent of a null extension aggregate.
+--
+--     For a private extension of type T, check that an inherited non-abstract
+--     function with a controlling result does not require overriding if the
+--     full type is a null extension of T.
+
+
+-- TEST DESCRIPTION:
+--     The rules in question are 3.4(27/2), 3.9.3(4/2), and 3.9.3(6/2), which
+--     are all changes from Ada 95.
+--
+--     We create a root tagged type with concrete constructor and
+--     cloning functions, and then derive from it in various ways.
+--     We then check that the constructor and cloning functions
+--     return objects with the correct tag.
+--
+--     Specifically, types Water_Turbine and Alarmed_Generator check the
+--     first objective (for non-generic and generic cases, respectively), and
+--     types Windmill and Monitored_Generator check the second objective
+--     (also for non-generic and generic cases). The main subprogram checks
+--     the third objective.
+--
+-- CHANGE HISTORY:
+--     08 Apr 2008 RLB Created test.
+--     09 Apr 2008 RLB Added generic cases.
+--
+package C393013_1 is
+   type Generator is tagged private;
+   function Power_Output (Obj : in Generator) return Natural;
+   procedure Set_Power_Output (Obj : in out Generator; Power : in Natural);
+   function Location (Obj : in Generator) return Character;
+   procedure Set_Location (Obj : in out Generator; Location : in Character);
+       -- Natural and Character stand in for real application data types.
+   function Create (Power : in Natural) return Generator;
+   function Clone (Obj : in Generator; New_Location : in Character)
+     return Generator;
+       -- Create a copy of Obj at a new location.
+private
+   type Generator is tagged record
+       Power_Output : Natural := 0;
+       Location : Character := ' ';
+   end record;
+end C393013_1;
+
+package body C393013_1 is
+
+   function Power_Output (Obj : in Generator) return Natural is
+   begin
+       return Obj.Power_Output;
+   end Power_Output;
+
+   procedure Set_Power_Output (Obj : in out Generator; Power : in Natural) is
+   begin
+      Obj.Power_Output := Power;
+   end Set_Power_Output;
+
+   function Location (Obj : in Generator) return Character is
+   begin
+       return Obj.Location;
+   end Location;
+
+   procedure Set_Location (Obj : in out Generator; Location : in Character) is
+   begin
+       Obj.Location := Location;
+   end Set_Location;
+
+   function Create (Power : in Natural) return Generator is
+   begin
+       return (Power_Output => Power, Location => 'A');
+   end Create;
+
+   function Clone (Obj : Generator; New_Location : in Character)
+     return Generator is
+   begin
+       return  (Power_Output => Obj.Power_Output, Location => New_Location);
+   end Clone;
+
+end C393013_1;
+
+with C393013_1;
+package C393013_2 is
+   type Water_Turbine is new C393013_1.Generator with null record;
+   -- Inherits all of Power_Output, Set_Power_Output, Location,
+   -- Set_Location, Create, and Clone as non-abstract operations.
+end C393013_2;
+
+with C393013_1;
+package C393013_3 is
+   type Windmill is new C393013_1.Generator with private;
+   -- Inherits all of Power_Output, Set_Power_Output, Location, and
+   -- Set_Location as non-abstract operations.
+
+   -- Clone and Create are inherited as requires overriding operations.
+private
+   type Windmill is new C393013_1.Generator with null record;
+   -- Clone and Create become non-abstract operations here, and no
+   -- overriding is required.
+end C393013_3;
+
+with C393013_1;
+package C393013_4 is
+   type Gas_Turbine is new C393013_1.Generator with private;
+   -- Inherits all of Power_Output, Set_Power_Output, Location, and
+   -- Set_Location as non-abstract operations.
+   -- Clone and Create are inherited as requires overriding operations.
+   type Gas_Kind_Type is (Natural_Gas, Gasoline, Biomass_Methane);
+   not overriding
+   function Kind (Obj : in Gas_Turbine) return Gas_Kind_Type;
+   not overriding
+   procedure Set_Kind (Obj : in out Gas_Turbine; Kind : in Gas_Kind_Type);
+private
+   type Gas_Turbine is new C393013_1.Generator with record
+       Kind : Gas_Kind_Type;
+   end record;
+   -- Create and Clone must be overridden:
+   overriding
+   function Create (Power : in Natural) return Gas_Turbine;
+   overriding
+   function Clone (Obj : in Gas_Turbine; New_Location : in Character)
+     return Gas_Turbine;
+       -- Create a copy of Obj at a new location.
+end C393013_4;
+
+package body C393013_4 is
+
+   function Kind (Obj : in Gas_Turbine) return Gas_Kind_Type is
+   begin
+       return Obj.Kind;
+   end Kind;
+
+   procedure Set_Kind (Obj : in out Gas_Turbine; Kind : in Gas_Kind_Type) is
+   begin
+      Obj.Kind := Kind;
+   end Set_Kind;
+
+   function Create (Power : in Natural) return Gas_Turbine is
+   begin
+       return (C393013_1.Create (Power) with Kind => Natural_Gas);
+   end Create;
+
+   function Clone (Obj : Gas_Turbine; New_Location : in Character)
+     return Gas_Turbine is
+   begin
+       return  (C393013_1.Clone (C393013_1.Generator(Obj), New_Location) with
+           Kind => Natural_Gas);
+   end Clone;
+
+end C393013_4;
+
+with C393013_1;
+generic
+   type Original_Generator is new C393013_1.Generator with private;
+package C393013_G1 is
+   type Alarmed_Generator is new Original_Generator with null record;
+   -- Inherits all of Power_Output, Set_Power_Output, Location,
+   -- Set_Location, Create, and Clone as non-abstract operations.
+
+   -- Alarm operations would be here.
+end C393013_G1;
+
+with C393013_1;
+generic
+   type Original_Generator is new C393013_1.Generator with private;
+package C393013_G2 is
+   type Monitored_Generator is new Original_Generator with private;
+   -- Inherits all of Power_Output, Set_Power_Output, Location, and
+   -- Set_Location as non-abstract operations.
+   -- Clone and Create are inherited as requires overriding operations.
+
+   -- Monitor operations would be here.
+private
+   type Monitored_Generator is new Original_Generator with null record;
+   -- Clone and Create become non-abstract operations here, and no
+   -- overriding is required.
+end C393013_G2;
+
+with C393013_1;
+with C393013_2;
+with C393013_3;
+with C393013_4;
+with C393013_G1;
+with C393013_G2;
+package C393013_5 is
+
+   package Alarmed_Windmill is new C393013_G1 (C393013_3.Windmill);
+
+   package Monitored_Hydro is new C393013_G2 (C393013_2.Water_Turbine);
+
+   package Monitored_Gas_Turbine is new C393013_G2 (C393013_4.Gas_Turbine);
+
+end C393013_5;
+
+with C393013_1; use C393013_1;
+with C393013_2;
+with C393013_3;
+with C393013_4;
+with C393013_5;
+with Report;
+with Ada.Tags;
+procedure C393013 is
+   -- Static objects of each type:
+   Gen : C393013_1.Generator;
+   H2O : C393013_2.Water_Turbine;
+   Wind: C393013_3.Windmill;
+   Gas : C393013_4.Gas_Turbine;
+   A_Wind : C393013_5.Alarmed_Windmill.Alarmed_Generator;
+   M_H2O  : C393013_5.Monitored_Hydro.Monitored_Generator;
+   M_Gas  : C393013_5.Monitored_Gas_Turbine.Monitored_Generator;
+   use type Ada.Tags.Tag;
+
+   procedure Make_Farm (First_Obj : Generator'Class;
+			TC_Tag : Ada.Tags.Tag; TC_Id : String) is
+     -- Clone First_Obj with dispatching calls:
+     Obj1 : Generator'Class := First_Obj.Clone (New_Location => 'X');
+     Obj2 : Generator'Class := First_Obj.Clone (New_Location => 'Y');
+     Obj3 : Generator'Class := First_Obj.Clone (New_Location => 'Z');
+   begin
+     if Obj1.Location /= 'X' or else Obj2.Location /= 'Y' or else
+        Obj3.Location /= 'Z' then
+        Report.Failed ("Farm locations wrong - " & TC_Id);
+     end if;
+     if Obj1'Tag /= TC_Tag or else Obj2'Tag /= TC_Tag or else
+        Obj3'Tag /= TC_Tag then
+        Report.Failed ("Farm tag wrong - " & TC_Id);
+     end if;
+   end Make_Farm;
+
+begin
+   Report.Test ("C393013", "Check that a non-abstract function with a " &
+                           "controlling result of type T is inherited " &
+                           "as non-abstract and does not require " &
+                           "overriding for a null extension of T " &
+                           "and that the result of calling the inherited " &
+                           "function has the tag of the extension");
+
+   begin
+      Gen := C393013_1.Create (10);
+      if Gen.Power_Output /= Report.Ident_Int(10) then
+          Report.Failed ("Wrong value for Gen");
+      end if;
+   exception
+      when Constraint_Error =>
+          Report.Failed ("Constraint_Error raised; tag wrong for Gen.Create");
+   end;
+
+   begin
+      H2O := C393013_2.Create (65);
+      if H2O.Power_Output /= Report.Ident_Int(65) then
+          Report.Failed ("Wrong value for H2O");
+      end if;
+   exception
+      when Constraint_Error =>
+          Report.Failed ("Constraint_Error raised; tag wrong for H2O.Create");
+   end;
+
+   begin
+      Wind := C393013_3.Create (23);
+      if Wind.Power_Output /= Report.Ident_Int(23) then
+          Report.Failed ("Wrong value for Wind");
+      end if;
+   exception
+      when Constraint_Error =>
+          Report.Failed ("Constraint_Error raised; tag wrong for Wind.Create");
+   end;
+
+   begin
+      Gas := C393013_4.Create (135);
+      if Gas.Power_Output /= Report.Ident_Int(135) then
+          Report.Failed ("Wrong value for Gas");
+      end if;
+   exception
+      when Constraint_Error =>
+          Report.Failed ("Constraint_Error raised; tag wrong for Gas.Create");
+   end;
+
+   begin
+      A_Wind := C393013_5.Alarmed_Windmill.Create (90);
+      if A_Wind.Power_Output /= Report.Ident_Int(90) then
+          Report.Failed ("Wrong value for A_Wind");
+      end if;
+   exception
+      when Constraint_Error =>
+          Report.Failed ("Constraint_Error raised; tag wrong for A_Wind.Create");
+   end;
+
+   begin
+      M_H2O := C393013_5.Monitored_Hydro.Create (43);
+      if M_H2O.Power_Output /= Report.Ident_Int(43) then
+          Report.Failed ("Wrong value for M_H2O");
+      end if;
+   exception
+      when Constraint_Error =>
+          Report.Failed ("Constraint_Error raised; tag wrong for M_H2O.Create");
+   end;
+
+   begin
+      M_Gas := C393013_5.Monitored_Gas_Turbine.Create (850);
+      if M_Gas.Power_Output /= Report.Ident_Int(850) then
+          Report.Failed ("Wrong value for M_Gas");
+      end if;
+   exception
+      when Constraint_Error =>
+          Report.Failed ("Constraint_Error raised; tag wrong for M_Gas.Create");
+   end;
+
+   declare
+      G1 : Generator'Class := C393013_1.Create (20);
+      G2 : Generator'Class := C393013_2.Create (55);
+      G3 : Generator'Class := C393013_3.Create (16);
+      G4 : Generator'Class := C393013_4.Create (134);
+      G5 : Generator'Class := C393013_5.Alarmed_Windmill.Create (40);
+      G6 : Generator'Class := C393013_5.Monitored_Hydro.Create (1200);
+      G7 : Generator'Class := C393013_5.Monitored_Gas_Turbine.Create (450);
+      -- Test cloning; these are dispatching calls:
+      G11 : Generator'Class := G1.Clone (New_Location => 'B');
+      G12 : Generator'Class := G2.Clone (New_Location => 'C');
+      G13 : Generator'Class := G3.Clone (New_Location => 'D');
+      G14 : Generator'Class := G4.Clone (New_Location => 'E');
+      G15 : Generator'Class := G5.Clone (New_Location => 'F');
+      G16 : Generator'Class := G6.Clone (New_Location => 'G');
+      G17 : Generator'Class := G7.Clone (New_Location => 'H');
+   begin
+      if G1.Power_Output /= Report.Ident_Int(20) or else
+         G1.Location /= 'A' then
+          Report.Failed ("Wrong values for G1");
+      end if;
+      if G1'Tag /= C393013_1.Generator'Tag then
+          Report.Failed ("Wrong tag for G1");
+      end if;
+
+      if G2.Power_Output /= Report.Ident_Int(55) or else
+         G2.Location /= 'A' then
+          Report.Failed ("Wrong values for G2");
+      end if;
+      if G2'Tag /= C393013_2.Water_Turbine'Tag then
+          Report.Failed ("Wrong tag for G2");
+      elsif G2'Tag = G1'Tag then
+          Report.Failed ("Tags same for objects of different types - G2");
+      end if;
+
+      if G3.Power_Output /= Report.Ident_Int(16) or else
+         G3.Location /= 'A' then
+          Report.Failed ("Wrong values for G3");
+      end if;
+      if G3'Tag /= C393013_3.Windmill'Tag then
+          Report.Failed ("Wrong tag for G3");
+      elsif G3'Tag = G1'Tag then
+          Report.Failed ("Tags same for objects of different types - G3");
+      end if;
+
+      if G4.Power_Output /= Report.Ident_Int(134) or else
+         G4.Location /= 'A' then
+          Report.Failed ("Wrong values for G4");
+      end if;
+      if G4'Tag /= C393013_4.Gas_Turbine'Tag then
+          Report.Failed ("Wrong tag for G4");
+      elsif G4'Tag = G1'Tag then
+          Report.Failed ("Tags same for objects of different types - G4");
+      end if;
+
+      if G5.Power_Output /= Report.Ident_Int(40) or else
+         G5.Location /= 'A' then
+          Report.Failed ("Wrong values for G5");
+      end if;
+      if G5'Tag /= C393013_5.Alarmed_Windmill.Alarmed_Generator'Tag then
+          Report.Failed ("Wrong tag for G5");
+      elsif G5'Tag = G1'Tag or else G5'Tag = G3'Tag then
+          Report.Failed ("Tags same for objects of different types - G5");
+      end if;
+
+      if G6.Power_Output /= Report.Ident_Int(1200) or else
+         G6.Location /= 'A' then
+          Report.Failed ("Wrong values for G6");
+      end if;
+      if G6'Tag /= C393013_5.Monitored_Hydro.Monitored_Generator'Tag then
+          Report.Failed ("Wrong tag for G6");
+      elsif G6'Tag = G1'Tag or else G6'Tag = G2'Tag then
+          Report.Failed ("Tags same for objects of different types - G6");
+      end if;
+
+      if G7.Power_Output /= Report.Ident_Int(450) or else
+         G7.Location /= 'A' then
+          Report.Failed ("Wrong values for G7");
+      end if;
+      if G7'Tag /= C393013_5.Monitored_Gas_Turbine.Monitored_Generator'Tag then
+          Report.Failed ("Wrong tag for G7");
+      elsif G7'Tag = G1'Tag or else G7'Tag = G4'Tag then
+          Report.Failed ("Tags same for objects of different types - G7");
+      end if;
+
+      if G11.Power_Output /= Report.Ident_Int(20) or else
+         G11.Location /= 'B' then
+          Report.Failed ("Wrong values for G11");
+      end if;
+      if G11'Tag /= C393013_1.Generator'Tag then
+          Report.Failed ("Wrong tag for G11");
+      end if;
+
+      if G12.Power_Output /= Report.Ident_Int(55) or else
+         G12.Location /= 'C' then
+          Report.Failed ("Wrong values for G12");
+      end if;
+      if G12'Tag /= C393013_2.Water_Turbine'Tag then
+          Report.Failed ("Wrong tag for G12");
+      end if;
+
+      if G13.Power_Output /= Report.Ident_Int(16) or else
+         G13.Location /= 'D' then
+          Report.Failed ("Wrong values for G13");
+      end if;
+      if G13'Tag /= C393013_3.Windmill'Tag then
+          Report.Failed ("Wrong tag for G13");
+      end if;
+
+      if G14.Power_Output /= Report.Ident_Int(134) or else
+         G14.Location /= 'E' then
+          Report.Failed ("Wrong values for G14");
+      end if;
+      if G14'Tag /= C393013_4.Gas_Turbine'Tag then
+          Report.Failed ("Wrong tag for G14");
+      end if;
+
+      if G15.Power_Output /= Report.Ident_Int(40) or else
+         G15.Location /= 'F' then
+          Report.Failed ("Wrong values for G15");
+      end if;
+      if G15'Tag /= C393013_5.Alarmed_Windmill.Alarmed_Generator'Tag then
+          Report.Failed ("Wrong tag for G15");
+      end if;
+
+      if G16.Power_Output /= Report.Ident_Int(1200) or else
+         G16.Location /= 'G' then
+          Report.Failed ("Wrong values for G16");
+      end if;
+      if G16'Tag /= C393013_5.Monitored_Hydro.Monitored_Generator'Tag then
+          Report.Failed ("Wrong tag for G16");
+      end if;
+
+      if G17.Power_Output /= Report.Ident_Int(450) or else
+         G17.Location /= 'H' then
+          Report.Failed ("Wrong values for G17");
+      end if;
+      if G17'Tag /= C393013_5.Monitored_Gas_Turbine.Monitored_Generator'Tag then
+          Report.Failed ("Wrong tag for G17");
+      end if;
+
+      -- Create a hydropower farm:
+      Make_Farm (G2, C393013_2.Water_Turbine'Tag, "Hydro Farm");
+      -- and a wind farm:
+      Make_Farm (G3, C393013_3.Windmill'Tag,      "Wind Farm");
+      -- and Hoover Dam (lots of hydropower, to light Las Vegas):
+      Make_Farm (G6, C393013_5.Monitored_Hydro.Monitored_Generator'Tag, "Hoover Dam");
+   end;
+
+   Report.Result;
+
+end C393013;

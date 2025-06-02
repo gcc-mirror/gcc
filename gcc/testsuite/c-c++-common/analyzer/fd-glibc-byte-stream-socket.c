@@ -5,6 +5,8 @@
 /* { dg-additional-options "-fno-exceptions" } */
 
 /* { dg-skip-if "" { hppa*-*-hpux* powerpc*-*-aix* } } */
+/* On vxworks, netinet/in.h indirectly includes atomic, that requires C++11.  */
+/* { dg-skip-if "" { *-*-vxworks* && { c++ && { ! c++11 } } } } */
 
 #include <stdio.h>
 #include <string.h>

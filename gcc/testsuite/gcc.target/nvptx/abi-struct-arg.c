@@ -3,11 +3,15 @@
 
 /* Struct arg.  Passed via pointer.  */
 
+typedef struct {} empty;  /* See 'gcc/doc/extend.texi', "Empty Structures".  */
 typedef struct {char a;} one;
 typedef struct {short a;} two;
 typedef struct {int a;} four;
 typedef struct {long long a;} eight;
 typedef struct {int a, b[12];} big;
+
+/* { dg-final { scan-assembler-times ".extern .func dcl_aempty \\(.param.u64 %\[_a-z0-9\]*\\);" 1 } } */
+void dcl_aempty (empty);
 
 /* { dg-final { scan-assembler-times ".extern .func dcl_aone \\(.param.u64 %\[_a-z0-9\]*\\);" 1 } } */
 void dcl_aone (one);
@@ -28,11 +32,17 @@ void dcl_abig (big);
 
 void test_1 (void)
 {
+  dcl_aempty (({empty t; t;}));
   dcl_aone (M (one, 1));
   dcl_atwo (M (two, 2));
   dcl_afour (M (four, 3));
   dcl_aeight (M (eight, 4));
   dcl_abig (M (big, 5));
+}
+
+/* { dg-final { scan-assembler-times ".visible .func dfn_aempty \\(.param.u64 %\[_a-z0-9\]*\\)(?:;|\[\r\n\]+\{)" 2 } } */
+void dfn_aempty (empty empty)
+{
 }
 
 /* { dg-final { scan-assembler-times ".visible .func dfn_aone \\(.param.u64 %\[_a-z0-9\]*\\)(?:;|\[\r\n\]+\{)" 2 } } */

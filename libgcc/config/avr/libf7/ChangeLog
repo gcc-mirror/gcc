@@ -1,3 +1,18 @@
+2025-05-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/120442
+	* libf7-common.mk (LIBF_C_PARTS, m_ddd): Add fdim.
+	* libf7.h (f7_fdim): New proto.
+	* libf7.c (f7_fdim): New function.
+	* f7renames.sh (f7_fdim): Add rename.
+	* f7-wraps.h: Rebuild
+	* f7-renames.h: Rebuild
+
+2025-05-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/120441
+	* libf7.c (f7_exp): Limit aa->expo to 10 (not to 9).
+
 2025-03-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* t-libf7 (libgcc-objects): Only add objects when building

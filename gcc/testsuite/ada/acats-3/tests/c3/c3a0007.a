@@ -1,0 +1,234 @@
+-- C3A0007.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a call to a subprogram via an access-to-subprogram value
+--      stored in a data structure will correctly dispatch according to the
+--      tag of the class-wide parameter passed via that call.
+-- 
+-- TEST DESCRIPTION:
+--      Declare an access to procedure type in a package specification. 
+--      Declare a root tagged type with the access to procedure type as a 
+--      component.  Declare three primitive procedures for the type that 
+--      can be referred to by the access to procedure type.  Use the access 
+--      to procedure type to initialize the component of a record.
+--
+--      Extend the root type with a record extension in another package
+--      specification. Declare a new primitive procedure for the extension
+--      (in addition to its three inherited subprograms).
+--
+--      In the main program, declare an operation for the root tagged type 
+--      which can be passed as an access value to change the initial value
+--      of the component.  Call the inherited operation indirectly by 
+--      dereferencing the access value to check on the initial value of the 
+--      extension.  Call inherited operations indirectly by dereferencing 
+--      the access value to replace the initial value.  Call the primitive 
+--      procedure indirectly by dereferencing the access value to modify the 
+--      extension.
+--
+--          type Button
+--            procedure Push(Button)
+--            procedure Set_Response(Button,Button_Response_Ptr)
+--            procedure Default_Response(Button)
+--
+--          type Priority_Button (new Button)
+--            procedures Push, Set_Response inherited
+--            procedure Default_Response
+--            procedure Set_Priority
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package C3A0007_0 is
+
+   Default_Call   : Boolean := False;
+
+   type Button is tagged private;
+
+   type Button_Response_Ptr is access procedure
+      (B : in out Button'Class);
+
+   procedure Push (B : in out Button);               -- to be inherited
+
+   procedure Set_Response (B : in out Button;        -- to be inherited
+                           R : in Button_Response_Ptr);
+
+   procedure Response  (B : in out Button);          -- to be inherited
+
+private
+   procedure Default_Response(B: in out Button'Class);
+   type Button is tagged                             -- root tagged type
+      record
+         Action :  Button_Response_Ptr 
+                  := Default_Response'Access;   
+      end record;
+end C3A0007_0;
+
+with C3A0007_0;
+package C3A0007_1 is
+
+   type Priority_Button is new C3A0007_0.Button
+     with record
+        Priority : Integer := 0;
+      end record;
+
+   -- Inherits procedure Push from Button
+   -- Inherits procedure Set_Response from Button
+
+   -- Override procedure Response from Button
+   procedure Response (B : in out Priority_Button);
+
+   -- Primitive operation of the extension
+   procedure Set_Priority (B : in out Priority_Button);
+
+end C3A0007_1;
+
+with C3A0007_0;
+package C3A0007_2 is
+
+   Emergency_Call : Boolean := False;
+
+   procedure Emergency (B : in out C3A0007_0.Button'Class);
+end C3A0007_2;
+
+-----------------------------------------------------------------------------
+
+with TCTouch;
+package body C3A0007_0 is
+
+   procedure Push (B : in out Button) is
+   begin
+      TCTouch.Touch( 'P' ); --------------------------------------------- P
+      -- Invoking subprogram designated by access value
+      B.Action (B);
+   end Push;
+
+
+   procedure Set_Response (B : in out Button;
+                           R : in     Button_Response_Ptr) is
+   begin
+      TCTouch.Touch( 'S' ); --------------------------------------------- S
+      -- Set procedure value in record
+      B.Action := R;
+   end Set_Response;
+
+
+   procedure Response (B : in out Button) is
+   begin
+      TCTouch.Touch( 'D' ); --------------------------------------------- D
+      Default_Call := True;
+   end Response;
+
+   procedure Default_Response (B : in out Button'Class) is
+   begin
+      TCTouch.Touch( 'C' ); --------------------------------------------- C
+      Response(B);
+   end Default_Response;
+
+end C3A0007_0;
+
+with TCTouch;
+package body C3A0007_1 is
+
+   procedure Set_Priority (B : in out Priority_Button) is
+   begin
+      TCTouch.Touch( 's' ); --------------------------------------------- s
+      B.Priority := 1;
+   end Set_Priority;
+
+   procedure Response (B : in out Priority_Button) is
+   begin
+      TCTouch.Touch( 'd' ); --------------------------------------------- d
+   end Response;
+
+end C3A0007_1;
+
+with TCTouch;
+package body C3A0007_2 is
+   procedure Emergency (B : in out C3A0007_0.Button'Class) is
+      begin
+        TCTouch.Touch( 'E' ); ------------------------------------------- E
+        Emergency_Call := True;
+      end Emergency;
+end C3A0007_2;
+
+-----------------------------------------------------------------------------
+
+with Report;
+with TCTouch;
+
+with C3A0007_0; 
+with C3A0007_1; 
+with C3A0007_2;
+procedure C3A0007 is
+
+   Pink_Button  : C3A0007_0.Button;
+   Green_Button : C3A0007_1.Priority_Button;
+
+begin
+
+   Report.Test ("C3A0007", "Check that a call to a subprogram via an "
+                         & "access-to-subprogram value stored in a data "
+                         & "structure will correctly dispatch according to "
+                         & "the tag of the class-wide parameter passed "
+                         & "via that call" );
+
+   -- Call inherited operation Push to set Default_Response value 
+   -- in the extension.
+
+   C3A0007_1.Push (Green_Button);
+   TCTouch.Validate("PCd", "First Green Button Push");
+
+   TCTouch.Assert_Not(C3A0007_0.Default_Call,
+                         "Incorrect Green Default_Response");
+
+   C3A0007_0.Push (Pink_Button);
+   TCTouch.Validate("PCD", "First Pink Button Push");
+
+   -- Call inherited operations Set_Response and Push to set 
+   -- Emergency value in the extension.
+   C3A0007_1.Set_Response (Green_Button, C3A0007_2.Emergency'Access);  
+   C3A0007_1.Push (Green_Button);
+   TCTouch.Validate("SPE", "Second Green Button Push");
+
+   TCTouch.Assert(C3A0007_2.Emergency_Call, "Incorrect Green Emergency");
+
+   C3A0007_0.Set_Response (Pink_Button, C3A0007_2.Emergency'Access);  
+   C3A0007_0.Push (Pink_Button);
+   TCTouch.Validate("SPE", "Second Pink Button Push");
+
+   -- Call primitive operation to set priority value 
+   -- in the extension.
+   C3A0007_1.Set_Priority (Green_Button);
+   TCTouch.Validate("s", "Green Button Priority");
+
+   TCTouch.Assert(Green_Button.Priority = 1, "Incorrect Set_Priority");
+
+   Report.Result;
+
+end C3A0007;

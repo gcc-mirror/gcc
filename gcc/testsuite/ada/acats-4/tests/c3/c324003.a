@@ -1,0 +1,515 @@
+-- C324003.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVE:
+--      Check that predicates are checked in the correct order, and that the
+--      specified exception raised in place of Assertion_Error.
+--
+-- TEST DESCRIPTION:
+--      This test is based on the examples in AI12s 22, 54 & 71.
+--
+-- CHANGE HISTORY:
+--       5 Mar 15   JAC     Initial pre-release version.
+--      17 Mar 15   RLB     Changes for release, removed use of Text_IO.
+--      11 Aug 15   RLB     Added the missing function Name, used in the
+--                          Predicate_Failure message.
+--
+--!
+
+package C324003_A is
+
+   -- A version of the example found at the end of RM 3.2.4.
+
+   pragma Assertion_Policy (Check); -- Should turn on for all
+
+   type File_Mode is (In_File, Out_File, Append_File);
+
+   type File_Type is private;
+
+   subtype Open_File_Type is File_Type
+      with Dynamic_Predicate => (Is_Open (Open_File_Type)),
+           Predicate_Failure => raise Status_Error;
+
+   subtype Input_File_Type is Open_File_Type
+      with Dynamic_Predicate => Mode (Input_File_Type) = In_File,
+           Predicate_Failure => raise Mode_Error with "Can't read file: " &
+           Name (Input_File_Type);
+
+   subtype Output_File_Type is Open_File_Type
+      with Dynamic_Predicate => Mode (Output_File_Type) /= In_File,
+           Predicate_Failure => raise Mode_Error with "Can't write file: " &
+           Name (Output_File_Type);
+
+   Status_Error : exception;
+   Mode_Error   : exception;
+
+   function Is_Open (Open_File : File_Type) return Boolean;
+
+   function Mode (File : in Open_File_Type) return File_Mode;
+
+   function Name (File : in Open_File_Type) return String;
+
+   procedure Open (File : in out File_Type;
+                   Mode : in     File_Mode);
+
+   procedure Close (File : in out File_Type);
+
+   procedure Get (File : in Input_File_Type; Item : out Character);
+
+   procedure Put (File : in Output_File_Type; Item : in Character);
+
+private
+
+   type File_Type is record
+      Open : Boolean := False;
+      Mode : File_Mode;
+   end record;
+
+end C324003_A;
+
+
+package body C324003_A is
+
+   pragma Assertion_Policy (Check); -- Should turn on for all
+
+   procedure Close (File : in out File_Type) is
+   begin
+
+      File.Open := False;
+      File.Mode := In_File;
+
+   end Close;
+
+   function Is_Open (Open_File : File_Type) return Boolean is
+   begin
+
+      return Open_File.Open;
+
+   end Is_Open;
+
+   function Mode (File : Open_File_Type) return File_Mode is
+   begin
+
+      return File.Mode;
+
+   end Mode;
+
+   function Name (File : in Open_File_Type) return String is
+   begin
+
+      return "No Names"; -- No file names in this example.
+
+   end Name;
+
+   procedure Open (File : in out File_Type;
+                   Mode : in     File_Mode) is
+   begin
+
+      File.Open := True;
+      File.Mode := Mode;
+
+   end Open;
+
+   procedure Get (File : in Input_File_Type; Item : out Character) is
+   begin
+
+      Item := 'X';
+
+   end Get;
+
+   procedure Put (File : in Output_File_Type; Item : in Character) is
+
+      My_Item : Character;
+
+   begin
+
+      My_Item := Item;
+
+   end Put;
+
+end C324003_A;
+
+
+with Ada.Assertions; use Ada.Assertions;
+with C324003_A;
+with Report;
+
+procedure C324003 is
+
+   pragma Assertion_Policy (Check); -- Should turn on for all
+
+   My_File : C324003_A.File_Type;
+
+   Current_Mode : C324003_A.File_Mode;
+
+
+   procedure Test_In_Param_Not_Satisfy_Predicate_Input is
+
+      procedure Call_Get is
+
+         Got_Character : Character;
+
+      begin
+
+         --Confirm mode isn't in
+         Report.Comment
+           ("Call_Get - Mode is " &
+            C324003_A.File_Mode'Image (C324003_A.Mode (My_File)));
+
+         -- Should fail as mode is Out_File
+         C324003_A.Get (File => My_File, Item => Got_Character);
+
+      end Call_Get;
+
+   begin
+
+      declare
+      begin
+
+         Call_Get;
+
+         Report.Failed
+           ("Calling Get should have raised Mode_Error");
+
+      exception
+
+         when C324003_A.Mode_Error =>
+
+            null;
+
+         when Ada.Assertions.Assertion_Error =>
+
+            Report.Failed
+              ("Test_In_Param_Not_Satisfy_Predicate_Input - failure to" &
+               " satisfy predicate detected but not changed from" &
+               " Assertion_Error to Mode_Error");
+
+         when others =>
+
+            Report.Failed
+              ("Test_In_Param_Not_Satisfy_Predicate_Input - " &
+               "Some other exception raised");
+
+      end;
+
+   end Test_In_Param_Not_Satisfy_Predicate_Input;
+
+
+   procedure Test_In_Param_Not_Satisfy_Predicate_Open is
+
+      Status_Error_Raised : Boolean := False;
+
+      procedure Call_Mode is
+      begin
+
+         --Confirm file isn't open
+         Report.Comment
+           ("Test_In_Param_Not_Satisfy_Predicate_Open - Is_Open is " &
+            Boolean'Image (C324003_A.Is_Open (My_File)));
+
+         -- Should fail as not open
+         Current_Mode := C324003_A.Mode (My_File);
+
+      end Call_Mode;
+
+   begin
+
+      declare
+      begin
+
+         Call_Mode;
+
+         Report.Failed
+           ("Calling Mode should have raised Status_Error");
+
+      exception
+
+         when C324003_A.Status_Error =>
+
+            null;
+
+         when Ada.Assertions.Assertion_Error =>
+
+            Report.Failed
+              ("Test_In_Param_Not_Satisfy_Predicate_Open - failure to" &
+               " satisfy predicate detected but not changed from" &
+               " Assertion_Error to Status_Error");
+
+         when others =>
+
+            Report.Failed
+              ("Test_In_Param_Not_Satisfy_Predicate_Open - " &
+               "Some other exception raised");
+
+      end;
+
+   end Test_In_Param_Not_Satisfy_Predicate_Open;
+
+
+   procedure Test_In_Param_Not_Satisfy_Predicate_Open_Two is
+
+      procedure Call_Put is
+      begin
+
+         --Confirm file isn't open
+         Report.Comment
+           ("Test_In_Param_Not_Satisfy_Predicate_Open_Two - Is_Open is " &
+            Boolean'Image (C324003_A.Is_Open (My_File)));
+
+         -- Should fail as not open
+         C324003_A.Put (File => My_File, Item => 'B');
+
+      end Call_Put;
+
+   begin
+
+      declare
+      begin
+
+         Call_Put;
+
+         Report.Failed
+           ("Calling Put with unopen file should have raised Status_Error");
+
+      exception
+
+         when C324003_A.Status_Error =>
+
+            null;
+
+         when C324003_A.Mode_Error =>
+
+            Report.Failed
+              ("Test_In_Param_Not_Satisfy_Predicate_Open_Two - failure to" &
+               " satisfy predicate detected but Mode_Error raised");
+
+         when Ada.Assertions.Assertion_Error =>
+
+            Report.Failed
+              ("Test_In_Param_Not_Satisfy_Predicate_Open_Two - failure to" &
+               " satisfy predicate detected but not changed from" &
+               " Assertion_Error to Status_Error");
+
+         when others =>
+
+            Report.Failed
+              ("Test_In_Param_Not_Satisfy_Predicate_Open_Two - " &
+               "Some other exception raised");
+
+      end;
+
+   end Test_In_Param_Not_Satisfy_Predicate_Open_Two;
+
+
+   procedure Test_In_Param_Not_Satisfy_Predicate_Output is
+
+      procedure Call_Put is
+      begin
+
+         --Confirm mode isn't out or append
+         Report.Comment
+           ("Call_Put - Mode is " &
+            C324003_A.File_Mode'Image (C324003_A.Mode (My_File)));
+
+         -- Should fail as mode is In_File
+         C324003_A.Put (File => My_File, Item => 'A');
+
+      end Call_Put;
+
+   begin
+
+      declare
+      begin
+
+         Call_Put;
+
+         Report.Failed
+           ("Calling Put should have raised Mode_Error");
+
+      exception
+
+         when C324003_A.Mode_Error =>
+
+            null;
+
+         when Ada.Assertions.Assertion_Error =>
+
+            Report.Failed
+              ("Test_In_Param_Not_Satisfy_Predicate_Output - failure to" &
+               " satisfy predicate detected but not changed from" &
+               " Assertion_Error to Mode_Error");
+
+         when others =>
+
+            Report.Failed
+              ("Test_In_Param_Not_Satisfy_Predicate_Output - " &
+               "Some other exception raised");
+
+      end;
+
+   end Test_In_Param_Not_Satisfy_Predicate_Output;
+
+
+   procedure Test_Membership_Test_Input is
+
+      procedure Membership_Test_Input is
+      begin
+
+         -- The predicate of Input_File_Type should not be evaluated if the
+         -- prior predicate of Open_File_Type is not satisfied, so (the file
+         -- being closed) the membership test should return False, not raise an
+         -- exception.
+
+         if My_File in C324003_A.Input_File_Type then
+
+            Test_In_Param_Not_Satisfy_Predicate_Input;
+
+         end if;
+
+      end Membership_Test_Input;
+
+   begin
+
+      Report.Comment ("Test_Membership_Test_Input");
+
+      declare
+      begin
+
+         Membership_Test_Input;
+
+      exception
+
+         when C324003_A.Mode_Error =>
+
+            Report.Failed
+              ("Test_Membership_Test_Input - should not have evaluated the" &
+               " predicate of Input_File_Type as the predicate of" &
+               " Open_File_Type wasn't satisfied, not raised Mode_Error");
+
+         when Ada.Assertions.Assertion_Error =>
+
+            Report.Failed
+              ("Test_Membership_Test_Input - should not have evaluated the" &
+               " predicate of Input_File_Type as the predicate of" &
+               " Open_File_Type wasn't satisfied (plus exception not changed" &
+               " from Assertion_Error to Mode_Error)");
+
+         when others =>
+
+            Report.Failed
+              ("Test_Membership_Test_Input - Some other exception raised");
+
+      end;
+
+   end Test_Membership_Test_Input;
+
+
+   procedure Test_Membership_Test_Output is
+
+      procedure Membership_Test_Output is
+      begin
+
+         -- The predicate of Output_File_Type should not be evaluated if the
+         -- prior predicate of Open_File_Type is not satisfied, so (the file
+         -- being closed) the membership test should return False, not raise an
+         -- exception.
+
+         if My_File in C324003_A.Output_File_Type then
+
+            Test_In_Param_Not_Satisfy_Predicate_Output;
+
+         end if;
+
+      end Membership_Test_Output;
+
+   begin
+
+      Report.Comment ("Test_Membership_Test_Output");
+
+      declare
+      begin
+
+         Membership_Test_Output;
+
+      exception
+
+         when C324003_A.Mode_Error =>
+
+            Report.Failed
+              ("Test_Membership_Test_Output - should not have evaluated the" &
+               " predicate of Output_File_Type as the predicate of" &
+               " Open_File_Type wasn't satisfied, not raised Mode_Error");
+
+         when Ada.Assertions.Assertion_Error =>
+
+            Report.Failed
+              ("Test_Membership_Test_Output - should not have evaluated the" &
+               " predicate of Output_File_Type as the predicate of" &
+               " Open_File_Type wasn't satisfied (plus exception not changed" &
+               " from Assertion_Error to Mode_Error)");
+
+         when others =>
+
+            Report.Failed
+              ("Test_Membership_Test_Output - Some other exception raised");
+
+      end;
+
+   end Test_Membership_Test_Output;
+
+begin
+
+   Report.Test
+     ("C324003",
+      "Check that predicates are checked in the correct order, and that the" &
+      "  specified exception raised in place of Assertion_Error");
+
+   -- Sets Open to False and Mode to In_File
+   C324003_A.Close (My_File);
+
+   Test_In_Param_Not_Satisfy_Predicate_Open;
+
+   Test_In_Param_Not_Satisfy_Predicate_Open_Two;
+
+   Test_Membership_Test_Input;
+
+   Test_Membership_Test_Output;
+
+   C324003_A.Open (File => My_File, Mode => C324003_A.Out_File);
+
+   Test_In_Param_Not_Satisfy_Predicate_Input;
+
+   Report.Result;
+
+end C324003;
+

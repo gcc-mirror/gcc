@@ -175,10 +175,13 @@ esac
 AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)
 
 # Get target configury.
+partial_libatomic=
 . ${srcdir}/configure.tgt
 if test -n "$UNSUPPORTED"; then
   AC_MSG_ERROR([Configuration ${target} is unsupported.])
 fi
+
+AM_CONDITIONAL(PARTIAL_VXWORKS, test "x$partial_libatomic" = "xvxworks")
 
 # Write out the ifunc resolver arg type.
 AC_DEFINE_UNQUOTED(IFUNC_RESOLVER_ARGS, $IFUNC_RESOLVER_ARGS,

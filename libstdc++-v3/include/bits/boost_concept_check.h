@@ -68,6 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#pragma GCC diagnostic ignored "-Wlong-long"
 
 #define _IsUnused __attribute__ ((__unused__))
 

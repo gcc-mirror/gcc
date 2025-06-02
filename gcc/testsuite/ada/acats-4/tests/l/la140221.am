@@ -1,0 +1,128 @@
+-- LA140221.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a generic instantiation depends on
+--      a generic procedure that is changed.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a generic procedure, a second generic 
+--      procedure, a generic instantiation of the second procedure 
+--      that depends on both the first and second generic
+--      procedures, and a main procedure that withs the instantiated
+--      procedure.  Then, a new version of the first generic  
+--      procedure is compiled (in a separate file, simulating 
+--      editing and modification to the unit).  Unless automatic 
+--      recompilation is supported, this test should fail to link.  
+--      Otherwise, the test should recompile and link the correct 
+--      version of the withed function and report "PASSED" at 
+--      execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140220 (and include the results in the
+--            program library).
+--         2) Compile the file LA140221 (and include the results in the
+--            program library).
+--         3) Compile the file LA140222 (and include the results in the
+--            program library).
+--         4) Attempt to build an executable image.
+--         5) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140220.A
+--      -> LA140221.AM
+--         LA140222.A
+--
+-- PASS/FAIL CRITERIA:    
+--      The test passes if a link time error message reports that 
+--      LA14022_2 is missing or obsolete and no executable image
+--      results.  The test also passes if an executable image is produced
+--      and reports "PASSED" (in the case where the implementation supports
+--      automatic recompilation).            
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008S baseline version
+--     23 JUN 95   SAIC        Initial version
+--     18 NOV 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions.
+--     07 DEC 96   SAIC        Moved LA14022_0 to a separate file. Added
+--                             pragma Elaborate to context clause of
+--                             LA14022_2.
+--
+--!
+
+package LA14022_1 is
+     type rec_ptr; 
+     type rec is record
+          data : integer;
+     end record;
+     type rec_ptr is access rec;
+     subtype data_int is integer range 0..100;
+end LA14022_1;
+
+
+with LA14022_0;
+with LA14022_1;
+pragma Elaborate (LA14022_0);
+procedure LA14022_2 is new 
+     LA14022_0 (stuff => LA14022_1.rec,
+                ptr => LA14022_1.rec_ptr,
+                return_result => LA14022_1.data_int,
+                delta_val => 50);
+
+with Report;
+use Report;
+with LA14022_2;
+with LA14022_1;
+use LA14022_1;
+procedure LA140221 is
+     TC_val : LA14022_1.data_int := 10;
+     P, Q : LA14022_1.rec_ptr;
+begin
+     Test ("LA14022", "Check that a compilation unit may not " & 
+                      "depend semantically on two different " &
+                      "versions of the same compilation unit. " &
+                      "Check the case where a generic " &
+                      "instantiation depends on a generic " &
+                      "procedure that is changed");
+
+     Q := P;
+     LA14022_2 (Q, TC_val);
+
+     if Q /= P then
+          Failed ("Wrong procedure result");
+     end if;
+     if TC_val = 60 then
+          Failed ("Old instantiation used");
+     elsif TC_val /= 10 then
+          Failed ("Wrong result");
+     end if;
+
+     Result;
+end LA140221;

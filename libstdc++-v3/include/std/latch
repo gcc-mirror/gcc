@@ -89,15 +89,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_ALWAYS_INLINE void
     wait() const noexcept
     {
-      auto const __pred = [this] { return this->try_wait(); };
-      std::__atomic_wait_address(&_M_counter, __pred);
+      auto const __vfn = [this] {
+	return __atomic_impl::load(&_M_counter, memory_order::acquire);
+      };
+      auto const __pred = [](__detail::__platform_wait_t __v) {
+	return __v == 0;
+      };
+      std::__atomic_wait_address(&_M_counter, __pred, __vfn);
     }
 
     _GLIBCXX_ALWAYS_INLINE void
     arrive_and_wait(ptrdiff_t __update = 1) noexcept
     {
-      count_down(__update);
-      wait();
+      // The standard specifies this functions as count_down(update); wait();
+      // but we combine those two calls into one and avoid the wait() if we
+      // know the counter reached zero.
+
+      __glibcxx_assert(__update >= 0 && __update <= max());
+      // Use acq_rel here because an omitted wait() would have used acquire:
+      auto const __old = __atomic_impl::fetch_sub(&_M_counter, __update,
+						  memory_order::acq_rel);
+      if (std::cmp_equal(__old, __update))
+	__atomic_impl::notify_all(&_M_counter);
+      else
+	{
+	  __glibcxx_assert(std::cmp_less(__update, __old));
+	  wait();
+	}
     }
 
   private:

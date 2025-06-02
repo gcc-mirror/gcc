@@ -140,6 +140,9 @@ along with GCC; see the file COPYING3.  If not see
 
   NEXT_PASS (pass_target_clone);
   NEXT_PASS (pass_ipa_auto_profile);
+  PUSH_INSERT_PASSES_WITHIN (pass_ipa_auto_profile)
+      NEXT_PASS (pass_feedback_split_functions);
+  POP_INSERT_PASSES ()
   NEXT_PASS (pass_ipa_tree_profile);
   PUSH_INSERT_PASSES_WITHIN (pass_ipa_tree_profile)
       NEXT_PASS (pass_feedback_split_functions);

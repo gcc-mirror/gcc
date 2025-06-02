@@ -1,7 +1,7 @@
 /* Software floating-point emulation.
    Convert _Decimal128 to signed or unsigned _BitInt.
 
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bitint.h"
 
 #ifdef __BITINT_MAXWIDTH__
+#ifndef ENABLE_DECIMAL_BID_FORMAT
+#define __bid_fixtdbitint __dpd_fixtdbitint
+#endif
 extern void __bid_fixtdbitint (UBILtype *, SItype, _Decimal128);
 
 void
@@ -50,6 +53,7 @@ __bid_fixtdbitint (UBILtype *r, SItype rprec, _Decimal128 a)
   mantissalo = u.u[__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__];
   t = mantissahi >> 47;
   sgn = (DItype) mantissahi < 0;
+#ifdef ENABLE_DECIMAL_BID_FORMAT
   if ((t & (3 << 14)) != (3 << 14))
     {
       mantissahi &= ((((UDItype) 1) << 49) - 1);
@@ -68,6 +72,52 @@ __bid_fixtdbitint (UBILtype *r, SItype rprec, _Decimal128 a)
       mantissalo = 0;
       exponent = t & 0x3fff;
     }
+#else
+  if ((t & (15 << 12)) != (15 << 12))
+    {
+      exponent = (mantissahi >> 46) & 4095;
+      if ((t & (3 << 14)) != (3 << 14))
+	{
+	  exponent += (t >> 2) & (3 << 12);
+	  t = ((t >> 11) & 7) * 1000;
+	}
+      else
+	{
+	  exponent += t & (3 << 12);
+	  t = ((t >> 11) & 1) ? 9000 : 8000;
+	}
+      t += __dpd_d2bbitint[(mantissahi >> (100 - 64)) & 1023];
+      t *= 1000;
+      t += __dpd_d2bbitint[(mantissahi >> (90 - 64)) & 1023];
+      t *= 1000;
+      t += __dpd_d2bbitint[(mantissahi >> (80 - 64)) & 1023];
+      t *= 1000;
+      t += __dpd_d2bbitint[(mantissahi >> (70 - 64)) & 1023];
+      t *= 1000;
+      t += __dpd_d2bbitint[((mantissahi & 63) << 4)
+			   + ((mantissalo >> 60) & 15)];
+      t *= 1000;
+      t += __dpd_d2bbitint[mantissalo >> 50 & 1023];
+#ifdef __SIZEOF_INT128__
+      unsigned __int128 m = t;
+#else
+      unsigned _BitInt(128) m = t;
+#endif
+      m *= 1000000000000000ULL;
+      t = __dpd_d2bbitint[(mantissalo >> 40) & 1023];
+      t *= 1000;
+      t += __dpd_d2bbitint[(mantissalo >> 30) & 1023];
+      t *= 1000;
+      t += __dpd_d2bbitint[(mantissalo >> 20) & 1023];
+      t *= 1000;
+      t += __dpd_d2bbitint[(mantissalo >> 10) & 1023];
+      t *= 1000;
+      t += __dpd_d2bbitint[mantissalo & 1023];
+      m += t;
+      mantissahi = m >> 64;
+      mantissalo = m;
+    }
+#endif
   else
     {
       FP_SET_EXCEPTION (FP_EX_INVALID
@@ -199,7 +249,7 @@ __bid_fixtdbitint (UBILtype *r, SItype rprec, _Decimal128 a)
       if (res_limbs + low_zeros > rn && resv[BITINT_END (0, res_limbs - 1)])
 	goto ovf_ex;
       if ((arprec % BIL_TYPE_SIZE) != 0
-	  && (resv[BITINT_END (rn - res_limbs, rn - 1) - low_zeros]
+	  && (resv[BITINT_END (res_limbs + low_zeros - rn, rn - 1 - low_zeros)]
 	      & ((UBILtype) -1 << (arprec % BIL_TYPE_SIZE))) != 0)
 	goto ovf_ex;
       min_limbs = rn - low_zeros;

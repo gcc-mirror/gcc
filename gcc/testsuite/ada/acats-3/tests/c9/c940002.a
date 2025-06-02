@@ -1,0 +1,309 @@
+-- C940002.A
+--
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a protected object provides coordinated access to shared 
+--      data.  Check that it can implement a semaphore-like construct using a
+--      parameterless procedure which allows a specific maximum number of tasks
+--      to run and excludes all others
+--
+-- TEST DESCRIPTION:
+--      Implement a counting semaphore type that can be initialized to a 
+--      specific number of available resources.  Declare an entry for 
+--      requesting a resource and a procedure for releasing it.  Declare an 
+--      object of this type, initialized to two resources.  Declare and start 
+--      three tasks each of which asks for a resource.  Verify that only two 
+--      resources are granted and that the last task in is queued.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+
+package C940002_0 is
+     -- Semaphores
+
+  protected type Semaphore_Type (Resources_Available : Integer :=1) is
+    entry Request;
+    procedure Release;
+    function Available return Integer;
+  private
+    Currently_Available : Integer := Resources_Available;
+  end Semaphore_Type;
+
+  Max_Resources : constant Integer := 2;
+  Resource      : Semaphore_Type (Max_Resources);
+
+end C940002_0;
+ -- Semaphores;
+
+
+          --========================================================--
+
+
+package body C940002_0 is
+          -- Semaphores
+
+  protected body Semaphore_Type is
+
+    entry Request when Currently_Available >0 is  -- when granted, secures
+    begin                                         -- a resource
+      Currently_Available := Currently_Available - 1;
+    end Request;
+
+    procedure Release is                          -- when called, releases
+    begin                                         -- a resource
+      Currently_Available := Currently_Available + 1;
+    end Release;
+
+    function Available return Integer is          -- returns number of
+    begin                                         -- available resources
+      return Currently_Available;
+    end Available;
+
+  end Semaphore_Type;
+
+end C940002_0;
+ -- Semaphores;
+
+
+          --========================================================--
+
+
+package C940002_1 is
+     -- Task_Pkg
+
+  task type Requesting_Task is
+     entry Done;                        -- call on Done instructs the task
+  end Requesting_Task;                  -- to release resource
+
+  type Task_Ptr is access Requesting_Task;
+
+  protected Counter is
+    procedure Increment;
+    procedure Decrement;
+    function Number return integer;
+  private
+    Count : Integer := 0;
+  end Counter;
+
+  protected Hold_Lock is
+    procedure Lock;
+    procedure Unlock;
+    function  Locked return Boolean;
+  private
+    Lock_State  : Boolean := true;        -- starts out locked
+  end Hold_Lock;
+
+
+end C940002_1;
+ -- Task_Pkg
+
+
+          --========================================================--
+
+
+with Report;
+with C940002_0;
+  -- Semaphores;    
+
+package body C940002_1 is
+          -- Task_Pkg is
+  
+  protected body Counter is
+
+    procedure Increment is
+      begin
+        Count := Count + 1;
+      end Increment;
+
+    procedure Decrement is
+      begin
+        Count := Count - 1;
+      end Decrement;
+
+    function Number return Integer is
+      begin
+        return Count;
+      end Number;
+
+  end Counter;
+
+
+  protected body Hold_Lock is
+
+    procedure Lock is 
+    begin
+      Lock_State := true;
+    end Lock;
+
+    procedure Unlock is 
+    begin
+      Lock_State := false;
+    end Unlock;
+
+    function  Locked return Boolean is 
+    begin
+      return Lock_State;
+    end Locked;
+
+  end Hold_Lock;
+
+
+  task body Requesting_Task is
+  begin
+    C940002_0.Resource.Request;        -- request a resource
+                                       -- if resource is not available, 
+                                       -- task will be queued to wait
+    Counter.Increment;                 -- add to count of resources obtained
+    Hold_Lock.Unlock;                  -- and unlock Lock - system is stable;
+                                       -- status may now be queried
+
+    accept Done do                     -- hold resource until Done is called
+      C940002_0.Resource.Release;      -- release the resource and
+      Counter.Decrement;               -- note release
+    end Done;                           
+
+  exception
+    when others => Report.Failed ("Unexpected Exception in Requesting_Task");
+  end Requesting_Task;
+
+end C940002_1;
+ -- Task_Pkg;
+
+
+          --========================================================--
+
+
+with Report;
+with ImpDef;
+with C940002_0,
+  -- Semaphores, 
+     C940002_1;
+  -- Task_Pkg;
+
+procedure C940002 is
+
+  package Semaphores renames C940002_0;
+  package Task_Pkg renames C940002_1;
+
+  Ptr1,
+  Ptr2, 
+  Ptr3 : Task_Pkg.Task_Ptr;
+  Num  : Integer;
+
+  procedure Spinlock is
+    begin
+      -- loop until unlocked
+      while Task_Pkg.Hold_Lock.Locked loop
+        delay ImpDef.Minimum_Task_Switch;   
+      end loop;
+      Task_Pkg.Hold_Lock.Lock;
+    end Spinlock;
+
+begin
+
+  Report.Test ("C940002", "Check that a protected record can be used to " &
+                          "control access to resources");
+
+  if (Task_Pkg.Counter.Number /=0)
+  or (Semaphores.Resource.Available /= 2) then
+    Report.Failed ("Wrong initial conditions");
+  end if;
+                                  
+  Ptr1 := new Task_Pkg.Requesting_Task;   -- newly allocated task requests 
+                                   -- resource; request for resource should 
+                                   -- be granted
+  Spinlock;                        -- ensure that task obtains resource
+
+                                   -- Task 1 waiting for call to Done
+                                   -- One resource assigned to task 1
+                                   -- One resource still available
+  if (Task_Pkg.Counter.Number /= 1) 
+  or (Semaphores.Resource.Available /= 1) then
+    Report.Failed ("Resource not assigned to task 1");
+  end if;
+
+  Ptr2 := new Task_Pkg.Requesting_Task;   -- newly allocated task requests 
+                                   -- resource; request for resource should 
+                                   -- be granted
+  Spinlock;                        -- ensure that task obtains resource  
+
+                                   -- Task 1 waiting for call to Done
+                                   -- Task 2 waiting for call to Done
+                                   -- Resources held by tasks 1 and 2
+                                   -- No resources available
+  if (Task_Pkg.Counter.Number /= 2) 
+  or (Semaphores.Resource.Available /= 0) then
+    Report.Failed ("Resource not assigned to task 2");
+  end if;
+
+  Ptr3 := new Task_Pkg.Requesting_Task;   -- newly allocated task requests 
+                                   -- resource; request for resource should 
+                                   -- be denied and task queued to wait for 
+                                   -- next available resource
+
+
+  Ptr1.all.Done;                   -- Task 1 releases resource and lock
+                                   -- Resource should be given to queued task
+  Spinlock;                        -- ensure that resource is released
+
+
+                                   -- Task 1 holds no resource
+                                   -- One resource still assigned to task 2
+                                   -- One resource assigned to task 3
+                                   -- No resources available
+  if (Task_Pkg.Counter.Number /= 2) 
+  or (Semaphores.Resource.Available /= 0) then
+    Report.Failed ("Resource not properly released/assigned to task 3");
+  end if;
+
+  Ptr2.all.Done;                   -- Task 2 releases resource and lock
+                                   -- No outstanding request for resource
+
+                                   -- Tasks 1 and 2 hold no resources
+                                   -- One resource assigned to task 3
+                                   -- One resource available
+  if (Task_Pkg.Counter.Number /= 1)
+  or (Semaphores.Resource.Available /= 1) then 
+    Report.Failed ("Resource not properly released from task 2");
+  end if;
+
+  Ptr3.all.Done;                   -- Task 3 releases resource and lock
+
+                                   -- All resources released
+                                   -- All tasks terminated (or close)
+                                   -- Two resources available
+  if (Task_Pkg.Counter.Number /=0) 
+  or (Semaphores.Resource.Available /= 2) then 
+    Report.Failed ("Resource not properly released from task 3");
+  end if;
+
+  Report.Result;
+
+end C940002;

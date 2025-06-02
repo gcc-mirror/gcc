@@ -1,0 +1,171 @@
+-- FA13A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation code is used to check visibility of separate
+--      subunit of child packages.
+--      Declares a package containing type definitions; package will be
+--      with'ed by the root of the elevator abstraction.
+--
+--      Declare an elevator abstraction in a parent root package which manages 
+--      basic operations.  This package has a private part.  Declare a 
+--      private child package which calculates the floors for going up or 
+--      down.  Declare a public child package which provides the actual 
+--      operations.  
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+-- Simulates a fragment of an elevator operation application.
+
+package FA13A00_0 is                      -- Building Manager
+
+   type Electrical_Power is (Off, V120, V240);
+   Power : Electrical_Power := V120;
+
+   -- other type definitions and procedure declarations in real application.
+
+end FA13A00_0;
+
+-- No bodies provided for FA13A00_0.
+
+     --==================================================================--
+
+package FA13A00_1 is                      -- Basic Elevator Operations
+
+   type Call_Waiting_Type is private;
+   type Floor is (Basement, Floor1, Floor2, Floor3, Penthouse);
+   type Floor_No is range Floor'Pos(Floor'First) .. Floor'Pos(Floor'Last);
+   Current_Floor : Floor   := Floor1;
+
+   TC_Operation  : boolean := true;       
+
+   procedure Call (F : in Floor; C : in out Call_Waiting_Type);
+   procedure Clear_Calls (C : in out Call_Waiting_Type);
+
+private
+   type Call_Waiting_Type is array (Floor) of boolean;
+   Call_Waiting : Call_Waiting_Type := (others => false);
+
+end FA13A00_1;
+
+
+     --==================================================================--
+
+package body FA13A00_1 is              
+
+   -- Call the elevator.
+
+   procedure Call (F : in Floor; C : in out Call_Waiting_Type) is
+   begin
+      C (F) := true;
+   end Call;
+
+   --------------------------------------------
+
+   -- Clear all calls of the elevator.
+
+   procedure Clear_Calls (C : in out Call_Waiting_Type) is
+   begin
+      C := (others => false);
+   end Clear_Calls;
+
+end FA13A00_1;
+
+     --==================================================================--
+
+-- Private child package of an elevator application.  This package calculates
+-- how many floors to go up or down.
+
+private package FA13A00_1.FA13A00_2 is    -- Floor Calculation
+
+   -- Other type definitions in real application.
+
+   procedure Up (HowMany : in Floor_No);
+                 
+   procedure Down (HowMany : in Floor_No);
+
+end FA13A00_1.FA13A00_2;
+
+     --==================================================================--
+
+package body FA13A00_1.FA13A00_2 is              
+
+   -- Go up from the current floor.
+
+   procedure Up (HowMany : in Floor_No) is
+   begin
+      Current_Floor := Floor'val (Floor'pos (Current_Floor) + HowMany);
+   end Up;
+
+   --------------------------------------------
+
+   -- Go down from the current floor.
+
+   procedure Down (HowMany : in Floor_No) is
+   begin
+      Current_Floor := Floor'val (Floor'pos (Current_Floor) - HowMany);
+   end Down;
+
+end FA13A00_1.FA13A00_2;
+
+     --==================================================================--
+
+-- Public child package of an elevator application.  This package provides
+-- the actual operation of the elevator.
+
+package FA13A00_1.FA13A00_3 is            -- Move Elevator  
+
+   -- Other type definitions in real application.
+
+   procedure Move_Elevator (F : in     Floor;
+                            C : in out Call_Waiting_Type);
+
+end FA13A00_1.FA13A00_3;
+
+     --==================================================================--
+
+with FA13A00_1.FA13A00_2;                 -- Floor Calculation
+
+package body FA13A00_1.FA13A00_3 is              
+
+   -- Going up or down depends on the current floor.
+
+   procedure Move_Elevator (F : in     Floor;
+                            C : in out Call_Waiting_Type) is
+   begin
+      if F > Current_Floor then
+         FA13A00_1.FA13A00_2.Up (Floor'Pos (F) - Floor'Pos (Current_Floor));
+         FA13A00_1.Call (F, C);
+      elsif F < Current_Floor then
+         FA13A00_1.FA13A00_2.Down (Floor'Pos (Current_Floor) - Floor'Pos (F));
+         FA13A00_1.Call (F, C);
+      end if;
+
+   end Move_Elevator;
+
+end FA13A00_1.FA13A00_3;

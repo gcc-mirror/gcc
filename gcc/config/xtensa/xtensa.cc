@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "explow.h"
 #include "expr.h"
-#include "reload.h"
 #include "langhooks.h"
 #include "gimplify.h"
 #include "builtins.h"
@@ -197,6 +196,8 @@ static void xtensa_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 				    tree function);
 
 static rtx xtensa_delegitimize_address (rtx);
+static reg_class_t xtensa_ira_change_pseudo_allocno_class (int, reg_class_t,
+							   reg_class_t);
 
 
 
@@ -365,6 +366,9 @@ static rtx xtensa_delegitimize_address (rtx);
 
 #undef TARGET_DIFFERENT_ADDR_DISPLACEMENT_P
 #define TARGET_DIFFERENT_ADDR_DISPLACEMENT_P hook_bool_void_true
+
+#undef TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
+#define TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS xtensa_ira_change_pseudo_allocno_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4432,12 +4436,10 @@ xtensa_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 	  && reg_class_subset_p (to, AR_REGS)))
     return 2;
 
-  /* The cost between AR_REGS and FR_REGS must be <= 8 (2x the default
-     MEMORY_MOVE_COST) to avoid unwanted spills, and > 4 (2x the above
-     case) to avoid excessive register-to-register moves.  */
+  /* The cost between AR_REGS and FR_REGS is 2 (the default value).  */
   if ((reg_class_subset_p (from, AR_REGS) && to == FP_REGS)
       || (from == FP_REGS && reg_class_subset_p (to, AR_REGS)))
-    return 5;
+    return 2;
 
   if ((reg_class_subset_p (from, AR_REGS) && to == ACC_REG)
       || (from == ACC_REG && reg_class_subset_p (to, AR_REGS)))
@@ -5431,6 +5433,22 @@ xtensa_delegitimize_address (rtx op)
       break;
     }
   return op;
+}
+
+/* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS, in order to tell
+   the register allocator to avoid using ALL_REGS rclass.  */
+
+static reg_class_t
+xtensa_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
+					reg_class_t best_class)
+{
+  if (allocno_class != ALL_REGS)
+    return allocno_class;
+
+  if (best_class != ALL_REGS)
+    return best_class;
+
+  return FLOAT_MODE_P (PSEUDO_REGNO_MODE (regno)) ? FP_REGS : AR_REGS;
 }
 
 #include "gt-xtensa.h"

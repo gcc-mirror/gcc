@@ -215,10 +215,10 @@ man pages and support for converting the installation manual to
 HTML@.  @xref{Documentation}.
 
 @item ginclude
-System headers installed by GCC, mainly those required by the C
-standard of freestanding implementations.  @xref{Headers, , Headers
-Installed by GCC}, for details of when these and other headers are
-installed.
+System headers installed by GCC, mainly those defined by the C
+standard that do not declare functions with external linkage.
+@xref{Headers, , Headers Installed by GCC}, for details of when these
+and other headers are installed.
 
 @item po
 Message catalogs with translations of messages produced by GCC into
@@ -326,7 +326,8 @@ Headers Installed by GCC}, for more information about the
 In general, GCC expects the system C library to provide most of the
 headers to be used with it.  However, GCC will fix those headers if
 necessary to make them work with GCC, and will install some headers
-required of freestanding implementations.  These headers are installed
+of its own, mainly headers that do not declare functions with external
+linkage.  These headers are installed
 in @file{@var{libsubdir}/include}.  Headers for non-C runtime
 libraries are also installed by GCC; these are not documented here.
 (FIXME: document them somewhere.)
@@ -351,8 +352,8 @@ representation of floating point numbers.
 GCC also installs its own version of @code{<limits.h>}; this is generated
 from @file{glimits.h}, together with @file{limitx.h} and
 @file{limity.h} if the system also has its own version of
-@code{<limits.h>}.  (GCC provides its own header because it is
-required of ISO C freestanding implementations, but needs to include
+@code{<limits.h>}.  (GCC provides its own header because it does not
+declare functions with external linkage, but needs to include
 the system header from its own header as well because other standards
 such as POSIX specify additional values to be defined in
 @code{<limits.h>}.)  The system's @code{<limits.h>} header is used via
@@ -1975,6 +1976,9 @@ at plain @option{-O2}.
 @item tls
 Target supports thread-local storage.
 
+@item tls_link
+Target supports linking TLS executables.
+
 @item tls_native
 Target supports native (rather than emulated) thread-local storage.
 
@@ -2619,14 +2623,8 @@ Target supports compiling @code{avx} instructions.
 @item avx_runtime
 Target supports the execution of @code{avx} instructions.
 
-@item avx10.1-256
-Target supports the execution of @code{avx10.1-256} instructions.
-
 @item avx10.1
 Target supports the execution of @code{avx10.1} instructions.
-
-@item avx10.1-512
-Target supports the execution of @code{avx10.1-512} instructions.
 
 @item avx10.2
 Target supports the execution of @code{avx10.2} instructions.

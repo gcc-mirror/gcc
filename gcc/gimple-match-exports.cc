@@ -720,16 +720,14 @@ gimple_simplify (combined_fn fn, tree type,
    describe STMT in RES_OP, returning true on success.  Before recording
    an operand, call:
 
-   - VALUEIZE_CONDITION for a COND_EXPR condition
-   - VALUEIZE_OP for every other top-level operand
+   - VALUEIZE_OP for all top-level operand
 
-   Both routines take a tree argument and returns a tree.  */
+   This routine takes a tree argument and returns a tree.  */
 
-template<typename ValueizeOp, typename ValueizeCondition>
+template<typename ValueizeOp>
 inline bool
 gimple_extract (gimple *stmt, gimple_match_op *res_op,
-		ValueizeOp valueize_op,
-		ValueizeCondition valueize_condition)
+		ValueizeOp valueize_op)
 {
   switch (gimple_code (stmt))
     {
@@ -858,7 +856,7 @@ bool
 gimple_extract_op (gimple *stmt, gimple_match_op *res_op)
 {
   auto nop = [](tree op) { return op; };
-  return gimple_extract (stmt, res_op, nop, nop);
+  return gimple_extract (stmt, res_op, nop);
 }
 
 /* The main STMT based simplification entry.  It is used by the fold_stmt
@@ -873,38 +871,8 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
     {
       return do_valueize (op, top_valueize, valueized);
     };
-  auto valueize_condition = [&](tree op) -> tree
-    {
-      bool cond_valueized = false;
-      tree lhs = do_valueize (TREE_OPERAND (op, 0), top_valueize,
-			      cond_valueized);
-      tree rhs = do_valueize (TREE_OPERAND (op, 1), top_valueize,
-			      cond_valueized);
-      gimple_match_op res_op2 (res_op->cond, TREE_CODE (op),
-			       TREE_TYPE (op), lhs, rhs);
-      if ((gimple_resimplify2 (seq, &res_op2, valueize)
-	   || cond_valueized)
-	  && res_op2.code.is_tree_code ())
-	{
-	  auto code = tree_code (res_op2.code);
-	  if (TREE_CODE_CLASS (code) == tcc_comparison)
-	    {
-	      valueized = true;
-	      return build2 (code, TREE_TYPE (op),
-			     res_op2.ops[0], res_op2.ops[1]);
-	    }
-	  else if (code == SSA_NAME
-		   || code == INTEGER_CST
-		   || code == VECTOR_CST)
-	    {
-	      valueized = true;
-	      return res_op2.ops[0];
-	    }
-	}
-      return valueize_op (op);
-    };
 
-  if (!gimple_extract (stmt, res_op, valueize_op, valueize_condition))
+  if (!gimple_extract (stmt, res_op, valueize_op))
     return false;
 
   if (res_op->code.is_internal_fn ())

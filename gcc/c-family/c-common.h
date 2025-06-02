@@ -105,6 +105,7 @@ enum rid
 
   /* C extensions */
   RID_ASM,       RID_TYPEOF,   RID_TYPEOF_UNQUAL, RID_ALIGNOF,  RID_ATTRIBUTE,
+  RID_COUNTOF,
   RID_C23_VA_START, RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,    RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	   RID_BUILTIN_SHUFFLE,
@@ -891,6 +892,7 @@ extern tree c_common_truthvalue_conversion (location_t, tree);
 extern void c_apply_type_quals_to_decl (int, tree);
 extern tree c_sizeof_or_alignof_type (location_t, tree, bool, bool, int);
 extern tree c_alignof_expr (location_t, tree);
+extern tree c_countof_type (location_t, tree);
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error (rich_location *, enum tree_code, tree, tree);
@@ -1302,10 +1304,12 @@ enum c_omp_region_type
   C_ORT_TARGET			= 1 << 3,
   C_ORT_EXIT_DATA		= 1 << 4,
   C_ORT_INTEROP			= 1 << 5,
+  C_ORT_DECLARE_MAPPER		= 1 << 6,
   C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD,
   C_ORT_OMP_TARGET		= C_ORT_OMP | C_ORT_TARGET,
   C_ORT_OMP_EXIT_DATA		= C_ORT_OMP | C_ORT_EXIT_DATA,
   C_ORT_OMP_INTEROP		= C_ORT_OMP | C_ORT_INTEROP,
+  C_ORT_OMP_DECLARE_MAPPER	= C_ORT_OMP | C_ORT_DECLARE_MAPPER,
   C_ORT_ACC_TARGET		= C_ORT_ACC | C_ORT_TARGET
 };
 
@@ -1344,6 +1348,9 @@ extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern void c_omp_adjust_map_clauses (tree, bool);
+template<typename T> struct omp_mapper_list;
+extern void c_omp_find_nested_mappers (struct omp_mapper_list<tree> *, tree);
+extern tree c_omp_instantiate_mappers (tree);
 
 namespace omp_addr_tokenizer { struct omp_addr_token; }
 typedef omp_addr_tokenizer::omp_addr_token omp_addr_token;

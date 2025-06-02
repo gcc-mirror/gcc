@@ -1969,8 +1969,8 @@ compare_binary_binary(tree return_int,
       {
       gg_printf("compare_binary_binary(): using int64\n", NULL_TREE);
       }
-    left_side  = gg_define_variable( left_side_ref->field->attr & signable_e ? LONG : ULONG );
-    right_side = gg_define_variable(right_side_ref->field->attr & signable_e ? LONG : ULONG );
+    left_side  = gg_define_variable( left_side_ref->field->has_attr(signable_e) ? LONG : ULONG );
+    right_side = gg_define_variable(right_side_ref->field->has_attr(signable_e) ? LONG : ULONG );
     }
 
   //tree dummy = gg_define_int();

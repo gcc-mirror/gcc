@@ -57,6 +57,7 @@
 #define __glibcxx_want_bind_back
 #define __glibcxx_want_constexpr_functional
 #define __glibcxx_want_copyable_function
+#define __glibcxx_want_function_ref
 #define __glibcxx_want_invoke
 #define __glibcxx_want_invoke_r
 #define __glibcxx_want_move_only_function
@@ -86,7 +87,7 @@
 # include <bits/ranges_cmp.h> // std::identity, ranges::equal_to etc.
 # include <compare>
 #endif
-#if defined(__glibcxx_move_only_function) || defined(__glibcxx_copyable_function)
+#if __glibcxx_move_only_function || __glibcxx_copyable_function || __glibcxx_function_ref
 # include <bits/funcwrap.h>
 #endif
 

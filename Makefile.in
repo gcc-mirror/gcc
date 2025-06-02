@@ -38,6 +38,7 @@ build_alias=@build_noncanonical@
 build_vendor=@build_vendor@
 build_os=@build_os@
 build=@build@
+cpu_type=@cpu_type@
 host_alias=@host_noncanonical@
 host_vendor=@host_vendor@
 host_os=@host_os@
@@ -4271,7 +4272,7 @@ all-stageautoprofile-bfd: configure-stageautoprofile-bfd
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/bfd && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -5411,7 +5412,7 @@ all-stageautoprofile-opcodes: configure-stageautoprofile-opcodes
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/opcodes && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -6551,7 +6552,7 @@ all-stageautoprofile-binutils: configure-stageautoprofile-binutils
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/binutils && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -10037,7 +10038,7 @@ all-stageautoprofile-fixincludes: configure-stageautoprofile-fixincludes
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/fixincludes && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -11617,7 +11618,7 @@ all-stageautoprofile-gas: configure-stageautoprofile-gas
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/gas && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -12766,7 +12767,7 @@ all-stageautoprofile-gcc: configure-stageautoprofile-gcc
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/gcc && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -13915,7 +13916,7 @@ all-stageautoprofile-gmp: configure-stageautoprofile-gmp
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/gmp && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -15052,7 +15053,7 @@ all-stageautoprofile-mpfr: configure-stageautoprofile-mpfr
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/mpfr && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -16189,7 +16190,7 @@ all-stageautoprofile-mpc: configure-stageautoprofile-mpc
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/mpc && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -17326,7 +17327,7 @@ all-stageautoprofile-isl: configure-stageautoprofile-isl
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/isl && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -18454,7 +18455,7 @@ all-stageautoprofile-gold: configure-stageautoprofile-gold
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/gold && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -20539,7 +20540,7 @@ all-stageautoprofile-gettext: configure-stageautoprofile-gettext
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/gettext && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -22449,7 +22450,7 @@ all-stageautoprofile-ld: configure-stageautoprofile-ld
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/ld && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -23589,7 +23590,7 @@ all-stageautoprofile-libbacktrace: configure-stageautoprofile-libbacktrace
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/libbacktrace && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -24729,7 +24730,7 @@ all-stageautoprofile-libcpp: configure-stageautoprofile-libcpp
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/libcpp && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -25869,7 +25870,7 @@ all-stageautoprofile-libcody: configure-stageautoprofile-libcody
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/libcody && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -26858,7 +26859,7 @@ all-stageautoprofile-libdecnumber: configure-stageautoprofile-libdecnumber
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/libdecnumber && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -28460,7 +28461,7 @@ all-stageautoprofile-libiberty: configure-stageautoprofile-libiberty
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/libiberty && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -29609,7 +29610,7 @@ all-stageautoprofile-libiberty-linker-plugin: configure-stageautoprofile-libiber
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -30758,7 +30759,7 @@ all-stageautoprofile-libiconv: configure-stageautoprofile-libiconv
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/libiconv && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -34130,7 +34131,7 @@ all-stageautoprofile-zlib: configure-stageautoprofile-zlib
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/zlib && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -40321,7 +40322,7 @@ all-stageautoprofile-lto-plugin: configure-stageautoprofile-lto-plugin
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -42397,7 +42398,7 @@ all-stageautoprofile-libctf: configure-stageautoprofile-libctf
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/libctf && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -43537,7 +43538,7 @@ all-stageautoprofile-libsframe: configure-stageautoprofile-libsframe
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/libsframe && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -44677,7 +44678,7 @@ all-stageautoprofile-libgrust: configure-stageautoprofile-libgrust
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
 	cd $(HOST_SUBDIR)/libgrust && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
@@ -45939,7 +45940,7 @@ all-stageautoprofile-target-libstdc++-v3: configure-stageautoprofile-target-libs
 	$(RAW_CXX_TARGET_EXPORTS) \
 	  \
 	cd $(TARGET_SUBDIR)/libstdc++-v3 && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
@@ -47209,7 +47210,7 @@ all-stageautoprofile-target-libsanitizer: configure-stageautoprofile-target-libs
 	$(RAW_CXX_TARGET_EXPORTS) \
 	  \
 	cd $(TARGET_SUBDIR)/libsanitizer && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
@@ -48479,7 +48480,7 @@ all-stageautoprofile-target-libvtv: configure-stageautoprofile-target-libvtv
 	$(RAW_CXX_TARGET_EXPORTS) \
 	  \
 	cd $(TARGET_SUBDIR)/libvtv && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
@@ -50719,7 +50720,7 @@ all-stageautoprofile-target-libgcc: configure-stageautoprofile-target-libgcc
 	$(NORMAL_TARGET_EXPORTS) \
 	  \
 	cd $(TARGET_SUBDIR)/libgcc && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
@@ -51951,7 +51952,7 @@ all-stageautoprofile-target-libbacktrace: configure-stageautoprofile-target-libb
 	$(NORMAL_TARGET_EXPORTS) \
 	  \
 	cd $(TARGET_SUBDIR)/libbacktrace && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
@@ -55128,7 +55129,7 @@ all-stageautoprofile-target-libphobos: configure-stageautoprofile-target-libphob
 	$(NORMAL_TARGET_EXPORTS) \
 	  \
 	cd $(TARGET_SUBDIR)/libphobos && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
@@ -58258,7 +58259,7 @@ all-stageautoprofile-target-zlib: configure-stageautoprofile-target-zlib
 	$(NORMAL_TARGET_EXPORTS) \
 	  \
 	cd $(TARGET_SUBDIR)/zlib && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
@@ -60983,7 +60984,7 @@ all-stageautoprofile-target-libgomp: configure-stageautoprofile-target-libgomp
 	$(NORMAL_TARGET_EXPORTS) \
 	  \
 	cd $(TARGET_SUBDIR)/libgomp && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
@@ -62738,7 +62739,7 @@ all-stageautoprofile-target-libatomic: configure-stageautoprofile-target-libatom
 	$(NORMAL_TARGET_EXPORTS) \
 	  \
 	cd $(TARGET_SUBDIR)/libatomic && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \

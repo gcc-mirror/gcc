@@ -176,9 +176,10 @@ test_diagnostic_text_starter (diagnostic_text_output_format &text_output,
 
 void
 test_diagnostic_start_span_fn (const diagnostic_location_print_policy &,
-			       pretty_printer *pp,
+			       to_text &sink,
 			       expanded_location)
 {
+  pretty_printer *pp = get_printer (sink);
   pp_string (pp, "START_SPAN_FN: ");
   pp_newline (pp);
 }

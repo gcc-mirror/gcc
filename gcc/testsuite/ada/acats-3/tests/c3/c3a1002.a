@@ -1,0 +1,251 @@
+-- C3A1002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the full type completing a type with no discriminant part
+--      or an unknown discriminant part may have explicitly declared or
+--      inherited discriminants.
+--      Check for cases where the types are tagged records and task types.
+--
+-- TEST DESCRIPTION:
+--      Declare two groups of incomplete types: one group with no discriminant 
+--      part and one group with unknown discriminant part.  Both groups of 
+--      incomplete types are completed with both explicit and inherited 
+--      discriminants.  Discriminants for task types are declared with both 
+--      default and non default values.  Discriminants for tagged types are 
+--      only declared without default values.  
+--      In the main program, verify that objects of both groups of incomplete 
+--      types can be created by default values or by assignments.
+--
+--
+-- CHANGE HISTORY:
+--      23 Oct 95   SAIC    Initial prerelease version.
+--      19 Oct 96   SAIC    ACVC 2.1: modified test description.  Initialized
+--                          Int_Val.
+--
+--!
+
+package C3A1002_0 is
+
+   subtype Small_Int is Integer range 1 .. 15;
+
+   type Enu_Type is (M, F);
+
+   type Tag_Type is tagged         
+     record                                          
+        I : Small_Int := 1;
+     end record;
+
+   type NTag_Type (D : Small_Int) is new Tag_Type with
+     record                                          
+        S : String (1 .. D) := "Aloha";  
+     end record;
+
+   type Incomplete1;                               -- no discriminant
+
+   type Incomplete2 (<>);                          -- unknown discriminant
+
+   type Incomplete3;                               -- no discriminant
+
+   type Incomplete4 (<>);                          -- unknown discriminant
+
+   type Incomplete5;                               -- no discriminant
+
+   type Incomplete6 (<>);                          -- unknown discriminant
+
+   type Incomplete1 (D1 : Enu_Type) is tagged      -- no discriminant/  
+     record                                        -- explicit discriminant
+        case D1 is
+           when M => MInteger : Small_Int := 9;
+           when F => FInteger : Small_Int := 8;
+        end case;
+     end record;
+
+   type Incomplete2 (D2 : Small_Int) is new       -- unknown discriminant/
+     Incomplete1 (D1 => F) with record            -- explicit discriminant
+        ID : String (1 .. D2) := "ACVC95";
+     end record;
+
+   type Incomplete3 is new                         -- no discriminant/
+     NTag_Type with record                         -- inherited discriminant
+        E : Enu_Type := M;
+     end record;
+
+   type Incomplete4 is new                         -- unknown discriminant/
+     NTag_Type (D => 3) with record                -- inherited discriminant
+        E : Enu_Type := F;
+     end record;
+
+   task type Incomplete5 (D5 : Enu_Type) is      -- no discriminant/
+      entry Read_Disc (P : out Enu_Type);        -- explicit discriminant
+   end Incomplete5;
+
+   task type Incomplete6 
+     (D6 : Small_Int := 4) is                    -- unknown discriminant/
+      entry Read_Int (P : out Small_Int);        -- explicit discriminant
+   end Incomplete6;
+
+end C3A1002_0;
+
+     --==================================================================--
+
+package body C3A1002_0 is
+
+   task body Incomplete5 is  
+   begin
+      select 
+         accept Read_Disc (P : out Enu_Type) do  
+            P := D5;
+         end Read_Disc;
+      or
+         terminate;
+      end select;
+
+   end Incomplete5;
+
+   ----------------------------------------------------------------------
+   task body Incomplete6 is 
+   begin
+      select 
+         accept Read_Int (P : out Small_Int) do  
+            P := D6;
+         end Read_Int;
+      or
+         terminate;
+      end select;
+
+   end Incomplete6;
+
+end C3A1002_0;
+
+     --==================================================================--
+
+with Report;
+
+with C3A1002_0;
+use  C3A1002_0;
+
+procedure C3A1002 is
+
+   Enum_Val : Enu_Type := M;
+
+   Int_Val  : Small_Int := 15;
+
+   -- Discriminant value comes from default.
+
+   Incomplete6_Obj_1  :  Incomplete6;
+
+   -- Discriminant value comes from explicit constraint.
+
+   Incomplete1_Obj_1  :  Incomplete1 (M);
+
+   Incomplete2_Obj_1  :  Incomplete2 (6);
+
+   Incomplete5_Obj_1  :  Incomplete5 (F);
+
+   Incomplete6_Obj_2  :  Incomplete6 (7);
+
+   -- Discriminant value comes from assignment.        
+
+   Incomplete1_Obj_2  :  Incomplete1
+                      := (F, 12);
+
+   Incomplete3_Obj_1  :  Incomplete3
+                      := (D => 2, S => "Hi", I => 10, E => F);
+
+   Incomplete4_Obj_1  :  Incomplete4
+                      := (E => M, D => 3, S => "Bye", I => 14);
+
+begin
+
+   Report.Test ("C3A1002", "Check that the full type completing a type " &
+                "with no discriminant part or an unknown discriminant "  &
+                "part may have explicitly declared or inherited "        &
+                "discriminants.  Check for cases where the types are "   &
+                "tagged records and task types");
+
+   -- Check the initial values.
+
+   if (Incomplete6_Obj_1.D6 /= 4) then 
+      Report.Failed ("Wrong initial value for Incomplete6_Obj_1");
+   end if;
+
+   -- Check the explicit values.
+
+   if (Incomplete1_Obj_1.D1       /= M) or 
+      (Incomplete1_Obj_1.MInteger /= 9) then
+        Report.Failed ("Wrong values for Incomplete1_Obj_1");
+   end if;
+
+   if (Incomplete2_Obj_1.D2       /= 6) or 
+      (Incomplete2_Obj_1.FInteger /= 8) or
+      (Incomplete2_Obj_1.ID       /= "ACVC95") then
+         Report.Failed ("Wrong values for Incomplete2_Obj_1");
+   end if;
+
+   if (Incomplete5_Obj_1.D5 /= F) then 
+      Report.Failed ("Wrong value for Incomplete5_Obj_1");
+   end if;
+
+   Incomplete5_Obj_1.Read_Disc (Enum_Val);
+
+   if (Enum_Val /= F) then 
+      Report.Failed ("Wrong value for Enum_Val");
+   end if;
+
+   if (Incomplete6_Obj_2.D6 /= 7) then 
+      Report.Failed ("Wrong value for Incomplete6_Obj_2");
+   end if;
+
+   Incomplete6_Obj_1.Read_Int (Int_Val);
+
+   if (Int_Val /= 4) then 
+      Report.Failed ("Wrong value for Int_Val");
+   end if;
+
+   -- Check the assigned values.
+
+   if (Incomplete1_Obj_2.D1       /= F)  or 
+      (Incomplete1_Obj_2.FInteger /= 12) then
+         Report.Failed ("Wrong values for Incomplete1_Obj_2");
+   end if;
+
+   if (Incomplete3_Obj_1.D /= 2 ) or 
+      (Incomplete3_Obj_1.I /= 10) or
+      (Incomplete3_Obj_1.E /= F ) or
+      (Incomplete3_Obj_1.S /= "Hi") then
+         Report.Failed ("Wrong values for Incomplete3_Obj_1");
+   end if;
+
+   if (Incomplete4_Obj_1.E /= M )      or 
+      (Incomplete4_Obj_1.D /= 3)       or
+      (Incomplete4_Obj_1.S /= "Bye")   or
+      (Incomplete4_Obj_1.I /= 14)      then
+         Report.Failed ("Wrong values for Incomplete4_Obj_1");
+   end if;
+
+   Report.Result;
+
+end C3A1002;

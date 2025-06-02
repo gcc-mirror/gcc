@@ -702,8 +702,7 @@
   [(parallel [(set (match_operand:SI 0 "register_operand" "")
 		   (neg:SI (match_operand:SI 1 "register_operand" "")))
 	      (clobber (reg:BI CARRY_REG))])]
-  ""
-  { operands[2] = gen_reg_rtx (HImode); })
+  "")
 
 (define_insn_and_split "*negsi2_internal"
   [(set (match_operand:SI 0 "register_operand" "=&r")

@@ -3682,6 +3682,13 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 		      != type_size_a))
 		break;
 
+	      /* For datarefs with big gap, it's better to split them into different
+		 groups.
+		 .i.e a[0], a[1], a[2], .. a[7], a[100], a[101],..., a[107]  */
+	      if ((unsigned HOST_WIDE_INT)(init_b - init_prev) * tree_to_uhwi (szb)
+		  > MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT)
+		break;
+
 	      /* If the step (if not zero or non-constant) is smaller than the
 		 difference between data-refs' inits this splits groups into
 		 suitable sizes.  */

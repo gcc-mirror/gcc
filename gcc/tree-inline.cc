@@ -2866,7 +2866,6 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, profile_count count)
   cfun->nonlocal_goto_save_area = src_cfun->nonlocal_goto_save_area;
   cfun->function_end_locus = src_cfun->function_end_locus;
   cfun->curr_properties = src_cfun->curr_properties;
-  cfun->last_verified = src_cfun->last_verified;
   cfun->va_list_gpr_size = src_cfun->va_list_gpr_size;
   cfun->va_list_fpr_size = src_cfun->va_list_fpr_size;
   cfun->has_nonlocal_label = src_cfun->has_nonlocal_label;

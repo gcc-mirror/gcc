@@ -1,0 +1,94 @@
+-- F390A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This file declares the root type and primitive subprograms of an
+--      alert system abstraction, to be used for tests covering tagged
+--      types and type extensions.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      04 Jun 96   SAIC    ACVC 2.1: Added pragma Elaborate for Ada.Calendar.
+--
+--!
+
+with Ada.Calendar;
+pragma Elaborate (Ada.Calendar);
+
+package F390A00 is  -- Alert system abstraction.
+
+
+   -- Declarations used by component Display_On and procedure Display.
+
+   type Device_Enum      is (Null_Device, Teletype, Console, Big_Screen);
+   type Display_Counters is array (Device_Enum) of Natural;
+
+   Display_Count_For : Display_Counters := (others => 0);
+
+
+   -- Declarations used by component Arrival_Time.
+
+   Default_Time : constant Ada.Calendar.Time :=
+                    Ada.Calendar.Time_Of (1901, 1, 1);
+   Alert_Time   : constant Ada.Calendar.Time :=
+                    Ada.Calendar.Time_Of (1991, 6, 15);
+
+
+
+   type Alert_Type is tagged record                   -- Root tagged type.
+      Arrival_Time : Ada.Calendar.Time := Default_Time;
+      Display_On   : Device_Enum   := Null_Device;
+   end record;
+
+
+   procedure Display (A : in Alert_Type);             -- To be inherited by
+                                                      -- all derivatives.
+
+   procedure Handle (A : in out Alert_Type);          -- To be overridden by
+                                                      -- all derivatives.
+
+end F390A00;
+
+
+     --==================================================================--
+
+
+package body F390A00 is  -- Alert system abstraction.
+
+
+   procedure Display (A : in Alert_Type) is
+   begin
+      Display_Count_For (A.Display_On) := Display_Count_For (A.Display_On) + 1;
+   end Display;
+
+
+   procedure Handle (A : in out Alert_Type) is
+   begin
+      A.Arrival_Time := Alert_Time;
+      Display (A);
+   end Handle;
+
+
+end F390A00;

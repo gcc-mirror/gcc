@@ -29,7 +29,6 @@
  */
 #include <algorithm>
 #include <cctype>
-#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -45,11 +44,12 @@
 #include <err.h>
 #include <fcntl.h>
 #include <fenv.h>
-#include <math.h> // required for fpclassify(3)
+#include <math.h> // required for fpclassify(3), not in cmath
 #include <setjmp.h>
 #include <signal.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <stdarg.h>
 #if __has_include(<errno.h>)
 # include <errno.h> // for program_invocation_short_name
 #endif
@@ -11434,17 +11434,6 @@ __gg__clear_exception()
   ec_stack.top().clear();
 }
 
-// Update the list of compiler-maintained enabled exceptions.
-extern "C"
-void
-__gg__stash_exceptions( size_t nec, cbl_enabled_exception_t *ecs )
-{
-  enabled_ECs = cbl_enabled_exceptions_t(nec, ecs);
-
-  if( false && MATCH_DECLARATIVE )
-    warnx("%s: %zu exceptions enabled", __func__, nec);
-}
-
 void
 cbl_enabled_exception_t::dump( int i ) const {
   warnx("cbl_enabled_exception_t: %2d  {%s, %s, %zu}",
@@ -13163,3 +13152,16 @@ __gg__set_env_value(cblc_field_t   *value,
   // And now, anticlimactically, set the variable:
   setenv(trimmed_env, trimmed_val, 1);
   }
+
+extern "C"
+void
+__gg__fprintf_stderr(const char *format_string, ...)
+  {
+  /*  This routine allows the compiler to send stuff to stderr in a way
+      that is straightforward to use..  */
+  va_list ap;
+  va_start(ap, format_string);
+  vfprintf(stderr, format_string, ap);
+  va_end(ap);
+  }
+

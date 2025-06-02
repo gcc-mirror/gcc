@@ -1,0 +1,179 @@
+-- C392013.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--    Check that the "/=" implicitly declared with the declaration of "=" for
+--    a tagged type is legal and can be used in a dispatching call.
+--    (Defect Report 8652/0010, as reflected in Technical Corrigendum 1).
+--
+-- CHANGE HISTORY:
+--    23 JAN 2001   PHL   Initial version.
+--    16 MAR 2001   RLB   Readied for release; added identity and negative
+--                        result cases.
+--    24 MAY 2001   RLB   Corrected the result for the 9 vs. 9 case.
+--!
+with Report;
+use Report;
+procedure C392013 is
+
+    package P1 is
+        type T is tagged
+            record
+                C1 : Integer;
+            end record;
+        function "=" (L, R : T) return Boolean;
+    end P1;
+
+    package P2 is
+        type T is new P1.T with private;
+        function Make (Ancestor : P1.T; X : Float) return T;
+    private
+        type T is new P1.T with
+            record
+                C2 : Float;
+            end record;
+        function "=" (L, R : T) return Boolean;
+    end P2;
+
+    package P3 is
+        type T is new P2.T with
+            record
+                C3 : Character;
+            end record;
+    private
+        function "=" (L, R : T) return Boolean;
+        function Make (Ancestor : P1.T; X : Float) return T;
+    end P3;
+
+
+    package body P1 is separate;
+    package body P2 is separate;
+    package body P3 is separate;
+
+
+    type Cwat is access P1.T'Class;
+    type Cwat_Array is array (Positive range <>) of Cwat;
+
+    A : constant Cwat_Array :=
+       (1 => new P1.T'(C1 => Ident_Int (3)),
+        2 => new P2.T'(P2.Make (Ancestor => (C1 => Ident_Int (5)), X => 4.0)),
+        3 => new P2.T'(P2.Make (Ancestor => (C1 => Ident_Int (-5)), X => 4.2)),
+        4 => new P1.T'(C1 => Ident_Int (-3)),
+        5 => new P2.T'(P2.Make (Ancestor => (C1 => Ident_Int (5)), X => 3.6)),
+        6 => new P1.T'(C1 => Ident_Int (4)),
+        7 => new P3.T'(P2.Make
+                          (Ancestor => (C1 => Ident_Int (4)), X => 1.2) with
+                       Ident_Char ('a')),
+        8 => new P3.T'(P2.Make
+                          (Ancestor => (C1 => Ident_Int (-4)), X => 1.3) with
+                       Ident_Char ('A')),
+        9 => new P3.T'(P2.Make
+                          (Ancestor => (C1 => Ident_Int (4)), X => 1.0) with
+                       Ident_Char ('B')));
+
+    type Truth is ('F', 'T');
+    type Truth_Table is array (Positive range <>, Positive range <>) of Truth;
+
+    Equality : constant Truth_Table (A'Range, A'Range) := ("TFFTFFFFF",
+                                                           "FTTFTFFFF",
+                                                           "FTTFFFFFF",
+                                                           "TFFTFFFFF",
+                                                           "FTFFTFFFF",
+                                                           "FFFFFTFFF",
+                                                           "FFFFFFTTF",
+                                                           "FFFFFFTTF",
+                                                           "FFFFFFFFT");
+
+begin
+    Test ("C392013", "Check that the ""/="" implicitly declared " &
+                        "with the declaration of ""="" for a tagged " &
+                        "type is legal and can be used in a dispatching call");
+
+    for I in A'Range loop
+        for J in A'Range loop
+	    -- Test identity:
+            if P1."=" (A (I).all, A (J).all) /=
+                  (not P1."/=" (A (I).all, A (J).all)) then
+                Failed ("Incorrect identity comparing objects" &
+                        Positive'Image (I) & " and" & Positive'Image (J));
+            end if;
+            -- Test the result of "/=":
+            if Equality (I, J) = 'T' then
+                if P1."/=" (A (I).all, A (J).all) then
+                    Failed ("Incorrect result comparing objects" &
+                           Positive'Image (I) & " and" & Positive'Image (J) & " - T");
+                end if;
+            else
+                if not P1."/=" (A (I).all, A (J).all) then
+                    Failed ("Incorrect result comparing objects" &
+                           Positive'Image (I) & " and" & Positive'Image (J) & " - F");
+                end if;
+            end if;
+        end loop;
+    end loop;
+
+    Result;
+end C392013;
+separate (C392013)
+package body P1 is
+
+    function "=" (L, R : T) return Boolean is
+    begin
+        return abs L.C1 = abs R.C1;
+    end "=";
+
+end P1;
+separate (C392013)
+package body P2 is
+
+    function "=" (L, R : T) return Boolean is
+    begin
+        return P1."=" (P1.T (L), P1.T (R)) and then abs (L.C2 - R.C2) <= 0.5;
+    end "=";
+
+
+    function Make (Ancestor : P1.T; X : Float) return T is
+    begin
+        return (Ancestor with X);
+    end Make;
+
+end P2;
+with Ada.Characters.Handling;
+separate (C392013)
+package body P3 is
+
+    function "=" (L, R : T) return Boolean is
+    begin
+        return P2."=" (P2.T (L), P2.T (R)) and then
+                  Ada.Characters.Handling.To_Upper (L.C3) =
+                     Ada.Characters.Handling.To_Upper (R.C3);
+    end "=";
+
+    function Make (Ancestor : P1.T; X : Float) return T is
+    begin
+        return (P2.Make (Ancestor, X) with ' ');
+    end Make;
+
+end P3;

@@ -171,6 +171,6 @@ set_wsrf64 (double a)
 */
 void set_custom ()
 {
-  __uint64_t b = __arm_rsr64 ("S1_2_C3_C4_5");
+  uint64_t b = __arm_rsr64 ("S1_2_C3_C4_5");
   __arm_wsr64 ("S1_2_C3_C4_5", b);
 }

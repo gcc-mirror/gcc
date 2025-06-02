@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*  Operational note for COBOL intrinsic functions:
+/* COBOL intrinsic functions.
+ *
+ * In general, the parameters to these functions are cblc_field_t pointers
+ * along with an offset, size, and for some functions the "allflags", which
+ * indicate that the variable is a table that was referenced as TABL(ALL)
+ */
 
-    In general, the parameters to these functions are cblc_field_t pointers
-    along with an offset, size, and for some functions the "allflags", which
-    indicate that the variable is a table that was referenced as TABL(ALL)
-
-
-    */
-
-#include <time.h>
-#include <math.h>
-#include <algorithm>
-#include <cctype>
 #include <langinfo.h>
-#include <string.h>
+
+#include <cctype>
+#include <cmath>
+#include <cstring>
+#include <ctime>
+
+#include <algorithm>
 #include <vector>
 
 #include "config.h"
@@ -3565,7 +3565,7 @@ __gg__sqrt( cblc_field_t *dest,
                                                         source_offset,
                                                         source_size);
 
-  if( value <= GCOB_FP128_LITERAL(0.0) )
+  if( value < GCOB_FP128_LITERAL(0.0) )
     {
     exception_raise(ec_argument_function_e);
     }

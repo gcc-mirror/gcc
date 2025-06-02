@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdiagnostics-add-output=experimental-html" } */
+/* { dg-options "-fdiagnostics-add-output=experimental-html:javascript=no" } */
 
 /* Verify that basics of HTML output work.  */
 

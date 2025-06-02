@@ -458,6 +458,7 @@ static rtx simplify_shift_const (rtx, enum rtx_code, machine_mode, rtx,
 				 int);
 static int recog_for_combine (rtx *, rtx_insn *, rtx *, unsigned = 0, unsigned = 0);
 static rtx gen_lowpart_for_combine (machine_mode, rtx);
+static rtx gen_lowpart_for_combine_no_emit (machine_mode, rtx);
 static enum rtx_code simplify_compare_const (enum rtx_code, machine_mode,
 					     rtx *, rtx *);
 static enum rtx_code simplify_comparison (enum rtx_code, rtx *, rtx *);
@@ -491,7 +492,7 @@ static rtx gen_lowpart_or_truncate (machine_mode, rtx);
 
 /* Our implementation of gen_lowpart never emits a new pseudo.  */
 #undef RTL_HOOKS_GEN_LOWPART_NO_EMIT
-#define RTL_HOOKS_GEN_LOWPART_NO_EMIT      gen_lowpart_for_combine
+#define RTL_HOOKS_GEN_LOWPART_NO_EMIT      gen_lowpart_for_combine_no_emit
 
 #undef RTL_HOOKS_REG_NONZERO_REG_BITS
 #define RTL_HOOKS_REG_NONZERO_REG_BITS     reg_nonzero_bits_for_combine
@@ -11890,6 +11891,22 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
  fail:
   return gen_rtx_CLOBBER (omode, const0_rtx);
 }
+
+/* Like gen_lowpart_for_combine but returns NULL_RTX
+   for an error instead of CLOBBER.
+   Note no_emit is not called directly from combine but rather from
+   simplify_rtx and is expecting a NULL on failure rather than
+   a CLOBBER.  */
+
+static rtx
+gen_lowpart_for_combine_no_emit (machine_mode omode, rtx x)
+{
+  rtx tem = gen_lowpart_for_combine (omode, x);
+  if (!tem || GET_CODE (tem) == CLOBBER)
+    return NULL_RTX;
+  return tem;
+}
+
 
 /* Try to simplify a comparison between OP0 and a constant OP1,
    where CODE is the comparison code that will be tested, into a

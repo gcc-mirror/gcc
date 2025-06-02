@@ -393,6 +393,23 @@
   return false;
 })
 
+;; Return true if VALUE is a constant integer whose negation satisfies
+;; x86_64_immediate_operand.
+(define_predicate "x86_64_neg_const_int_operand"
+  (match_code "const_int")
+{
+  HOST_WIDE_INT val = -UINTVAL (op);
+  if (mode == DImode && trunc_int_for_mode (val, SImode) != val)
+    return false;
+  if (flag_cf_protection & CF_BRANCH)
+    {
+      unsigned HOST_WIDE_INT endbr = TARGET_64BIT ? 0xfa1e0ff3 : 0xfb1e0ff3;
+      if ((val & HOST_WIDE_INT_C (0xffffffff)) == endbr)
+	return false;
+    }
+  return true;
+})
+
 ;; Return true if VALUE is a constant integer whose low and high words satisfy
 ;; x86_64_immediate_operand.
 (define_predicate "x86_64_hilo_int_operand"
@@ -1280,8 +1297,7 @@
   (and (match_code "vec_duplicate")
        (and (match_test "TARGET_AVX512F")
 	    (ior (match_test "TARGET_AVX512VL")
-		 (and (match_test "GET_MODE_SIZE (GET_MODE (op)) == 64")
-		      (match_test "TARGET_EVEX512"))))
+		 (match_test "GET_MODE_SIZE (GET_MODE (op)) == 64")))
        (match_test "VALID_BCST_MODE_P (GET_MODE_INNER (GET_MODE (op)))")
        (match_test "GET_MODE (XEXP (op, 0))
 		    == GET_MODE_INNER (GET_MODE (op))")

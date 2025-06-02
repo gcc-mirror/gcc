@@ -510,6 +510,10 @@
 @tab 1.0
 @tab State enable extension
 
+@item smdbltrp
+@tab 1.0
+@tab Double Trap Extensions
+
 @item ssaia
 @tab 1.0
 @tab Advanced interrupt architecture extension for supervisor-mode
@@ -537,6 +541,10 @@
 @item ssstrict
 @tab 1.0
 @tab ssstrict extension
+
+@item ssdbltrp
+@tab 1.0
+@tab Double Trap Extensions
 
 @item supm
 @tab 1.0

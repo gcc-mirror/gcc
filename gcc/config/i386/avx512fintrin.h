@@ -28,9 +28,9 @@
 #ifndef _AVX512FINTRIN_H_INCLUDED
 #define _AVX512FINTRIN_H_INCLUDED
 
-#if !defined (__AVX512F__) || defined (__EVEX512__)
+#if !defined (__AVX512F__)
 #pragma GCC push_options
-#pragma GCC target("avx512f,no-evex512")
+#pragma GCC target("avx512f")
 #define __DISABLE_AVX512F__
 #endif /* __AVX512F__ */
 
@@ -54,11 +54,12 @@ typedef enum
   _MM_MANT_SIGN_nan		/* DEST = NaN if sign(SRC) = 1 */
 } _MM_MANTISSA_SIGN_ENUM;
 
-/* These _mm{,256}_avx512* intrins are duplicated from their _mm{,256}_* forms
-   from AVX2 or before.  We need to add them to prevent target option mismatch
-   when calling AVX512 intrins implemented with these intrins under no-evex512
-   function attribute.  All AVX512 intrins calling those AVX2 intrins or
-   before will change their calls to these AVX512 version.  */
+/* These _mm{,256}_avx512* intrins are initially duplicated from their
+   _mm{,256}_* forms from AVX2 or before.  At that time, e need to add them
+   to prevent target option mismatch when calling AVX512 intrins implemented
+   with these intrins under no-evex512 function attribute.  Thess intrins will
+   still be here to avoid huge changes.  All AVX512 intrins calling those AVX2
+   intrins or before have changed their calls to these AVX512 version.  */
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_avx512_undefined_ps (void)
 {
@@ -3801,17 +3802,6 @@ _mm_mask_cmp_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y, const int __P)
 					 M,_MM_FROUND_CUR_DIRECTION))
 
 #endif
-
-#ifdef __DISABLE_AVX512F__
-#undef __DISABLE_AVX512F__
-#pragma GCC pop_options
-#endif /* __DISABLE_AVX512F__ */
-
-#if !defined (__AVX512F__) || !defined (__EVEX512__)
-#pragma GCC push_options
-#pragma GCC target("avx512f,evex512")
-#define __DISABLE_AVX512F_512__
-#endif /* __AVX512F_512__ */
 
 /* Internal data types for implementing the intrinsics.  */
 typedef double __v8df __attribute__ ((__vector_size__ (64)));
@@ -16609,9 +16599,9 @@ _mm512_mask_reduce_max_pd (__mmask8 __U, __m512d __A)
 
 #undef __MM512_REDUCE_OP
 
-#ifdef __DISABLE_AVX512F_512__
-#undef __DISABLE_AVX512F_512__
+#ifdef __DISABLE_AVX512F__
+#undef __DISABLE_AVX512F__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX512F_512__ */
+#endif /* __DISABLE_AVX512F__ */
 
 #endif /* _AVX512FINTRIN_H_INCLUDED */

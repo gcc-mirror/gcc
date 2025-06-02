@@ -1,0 +1,350 @@
+-- C940A03.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a protected object provides coordinated access to
+--      shared data.  Check that it can implement a semaphore-like construct
+--      controlling access to shared data through procedure parameters to
+--      allow a specific maximum number of tasks to run and exclude all
+--      others.
+--
+-- TEST DESCRIPTION:
+--      Declare a resource descriptor tagged type.  Extend the type and
+--      use the extended type in a protected data structure.
+--      Implement a counting semaphore type that can be initialized to a 
+--      specific number of available resources.  Declare an entry for 
+--      requesting a specific resource and an procedure for releasing the 
+--      same resource it.  Declare an object of this (protected) type, 
+--      initialized to two resources.  Declare and start three tasks each 
+--      of which asks for a resource.  Verify that only two resources are 
+--      granted and that the last task in is queued.
+--
+--      This test models a multi-user operating system that allows a limited
+--      number of logins.  Users requesting login are modeled by tasks.
+--
+--
+-- TEST FILES:
+--      This test depends on the following foundation code:
+--
+--         F940A00
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      13 Nov 95   SAIC    Fixed bugs for ACVC 2.0.1
+--
+--!
+
+package C940A03_0 is
+      --Resource_Pkg
+
+  -- General type declarations that will be extended to model available
+  -- logins
+
+  type Resource_ID_Type is range 0..10;
+  type Resource_Type is tagged record 
+    Id : Resource_ID_Type := 0;
+  end record;
+
+end C940A03_0;
+  --Resource_Pkg
+
+--======================================--
+-- no body for C940A3_0
+--======================================--
+
+with F940A00;     -- Interlock_Foundation
+with C940A03_0;   -- Resource_Pkg;
+
+package C940A03_1 is
+     -- Semaphores
+
+  -- Models a counting semaphore that will allow up to a specific 
+  -- number of logins
+  -- Users (tasks) request a login slot by calling the Request_Login
+  -- entry and logout by calling the Release_Login procedure
+
+  Max_Logins : constant Integer := 2;
+  
+
+  type Key_Type is range 0..100;
+                                      -- When a user requests a login, an
+                                      -- identifying key will be returned
+  Init_Key : constant Key_Type := 0;
+
+  type Login_Record_Type is new C940A03_0.Resource_Type with record
+    Key  : Key_Type := Init_Key;
+  end record;
+
+
+  protected type Login_Semaphore_Type (Resources_Available : Integer :=1) is
+
+    entry     Request_Login   (Resource_Key : in out Login_Record_Type);
+    procedure Release_Login;
+    function  Available return Integer;  -- how many logins are available?
+  private
+    Logins_Avail : Integer  := Resources_Available;
+    Next_Key     : Key_Type := Init_Key;
+
+  end Login_Semaphore_Type;
+
+  Login_Semaphore      : Login_Semaphore_Type (Max_Logins);
+
+  --====== machinery for the test, not the model =====--
+  TC_Control_Message : F940A00.Interlock_Type;    
+  function TC_Key_Val (Login_Rec : Login_Record_Type) return Integer;
+
+
+end C940A03_1;
+ -- Semaphores;
+
+--=========================================================--
+
+package body C940A03_1 is
+          -- Semaphores is
+
+  protected body Login_Semaphore_Type is
+
+    entry Request_Login (Resource_Key : in out Login_Record_Type)
+                                             when Logins_Avail > 0 is
+    begin
+      Next_Key := Next_Key + 1;        -- login process returns a key
+      Resource_Key.Key := Next_Key;     -- to the requesting user
+      Logins_Avail := Logins_Avail - 1;
+    end Request_Login;
+
+    procedure Release_Login is
+    begin
+      Logins_Avail := Logins_Avail + 1;
+    end Release_Login;
+
+    function Available return Integer is
+      begin
+        return Logins_Avail;
+      end Available;
+
+  end Login_Semaphore_Type;
+
+  function TC_Key_Val (Login_Rec : Login_Record_Type) return Integer is
+    begin
+      return Integer (Login_Rec.Key);
+    end TC_Key_Val;
+
+end C940A03_1;
+ -- Semaphores;
+
+--=========================================================--
+
+with C940A03_0;    -- Resource_Pkg,
+with C940A03_1;    -- Semaphores;
+
+package C940A03_2 is
+     -- Task_Pkg
+
+  package Semaphores renames C940A03_1;
+
+  task type User_Task_Type is
+
+     entry Login  (user_id : C940A03_0.Resource_Id_Type);
+                      -- instructs the task to ask for a login
+     entry Logout;    -- instructs the task to release the login
+     --=======================--
+     -- this entry is used to get information to verify test operation
+     entry Get_Status (User_Record : out Semaphores.Login_Record_Type);
+
+  end User_Task_Type;
+
+end C940A03_2;
+ -- Task_Pkg
+
+--=========================================================--
+
+with Report;
+with C940A03_0;   -- Resource_Pkg,
+with C940A03_1;   -- Semaphores,
+with F940A00;     -- Interlock_Foundation;
+    
+package body C940A03_2 is
+          -- Task_Pkg 
+
+  -- This task models a user requesting a login from the system
+  -- For control of this test, we can ask the task to login, logout, or
+  -- give us the current user record (containing login information)
+
+  task body User_Task_Type is
+    Rec  : Semaphores.Login_Record_Type;
+  begin
+    loop
+      select
+        accept Login (user_id : C940A03_0.Resource_Id_Type) do
+          Rec.Id := user_id;
+        end Login;
+
+        Semaphores.Login_Semaphore.Request_Login (Rec);
+                      -- request a resource; if resource is not available, 
+                      -- task will be queued to wait
+
+        --== following is test control machinery ==--
+        F940A00.Counter.Increment;
+        Semaphores.TC_Control_Message.Post;   
+               -- after resource is obtained, post message
+
+      or
+        accept Logout do  
+          Semaphores.Login_Semaphore.Release_Login;
+                      -- release the resource
+          --== test control machinery ==--
+          F940A00.Counter.Decrement;
+        end Logout;
+        exit;
+
+      or
+        accept Get_Status (User_Record : out Semaphores.Login_Record_Type) do
+          User_Record := Rec;
+        end Get_Status;
+
+      end select;  
+    end loop;
+
+  exception
+    when others => Report.Failed ("Exception raised in model user task");
+  end User_Task_Type;
+
+end C940A03_2;
+ -- Task_Pkg
+
+--=========================================================--
+
+with Report;
+with ImpDef;
+with C940A03_1;   -- Semaphores, 
+with C940A03_2;   -- Task_Pkg,
+with F940A00;     -- Interlock_Foundation;
+
+procedure C940A03 is
+
+  package Semaphores renames C940A03_1;
+  package Users      renames C940A03_2;  
+
+  Task1, Task2, Task3 : Users.User_Task_Type;
+  User_Rec            : Semaphores.Login_Record_Type;
+
+begin      -- Tasks start here
+
+  Report.Test ("C940A03", "Check that a protected object can coordinate " &
+                          "shared data access using procedure parameters");
+
+  if F940A00.Counter.Number /=0 then
+    Report.Failed ("Wrong initial conditions");
+  end if;
+                                 
+  Task1.Login (1);               -- request resource; request should be granted
+  Semaphores.TC_Control_Message.Consume;  
+                                 -- ensure that task obtains resource by
+                                 -- waiting for task to post message
+
+                                 -- Task 1 waiting for call to Logout
+                                 -- Others still available
+  Task1.Get_Status (User_Rec);
+  if (F940A00.Counter.Number /= 1)
+  or (Semaphores.Login_Semaphore.Available /=1)
+  or (Semaphores.TC_Key_Val (User_Rec) /= 1) then
+    Report.Failed ("Resource not assigned to task 1");
+  end if;
+ 
+  Task2.Login (2);               -- Request for resource should be granted  
+  Semaphores.TC_Control_Message.Consume;  
+                                 -- ensure that task obtains resource by
+                                 -- waiting for task to post message
+ 
+  Task2.Get_Status (User_Rec);
+  if (F940A00.Counter.Number /= 2)
+  or (Semaphores.Login_Semaphore.Available /=0)
+  or (Semaphores.TC_Key_Val (User_Rec) /= 2) then
+    Report.Failed ("Resource not assigned to task 2");
+  end if;
+ 
+
+  Task3.Login (3);               -- request for resource should be denied
+                                 -- and task queued
+
+
+                                 -- Tasks 1 and 2 holds resources
+                                 -- and are waiting for a call to Logout
+                                 -- Task 3 is queued
+
+  if (F940A00.Counter.Number /= 2)
+  or (Semaphores.Login_Semaphore.Available /=0) then
+    Report.Failed ("Resource incorrectly assigned to task 3");
+  end if;
+
+  Task1.Logout;                  -- released resource should be given to
+                                 -- queued task
+  Semaphores.TC_Control_Message.Consume;  
+                                 -- wait for confirming message from task
+
+                                 -- Task 1 holds no resources
+                                 --   and is terminated (or will soon)
+                                 -- Tasks 2 and 3 hold resources
+                                 --   and are waiting for a call to Logout
+
+  Task3.Get_Status (User_Rec);
+  if (F940A00.Counter.Number /= 2)
+                      or (Semaphores.Login_Semaphore.Available /=0)
+                      or (Semaphores.TC_Key_Val (User_Rec) /= 3) then
+    Report.Failed ("Resource not properly released/assigned to task 3");
+  end if;
+
+  Task2.Logout;                  -- no outstanding request for released
+                                 -- resource
+                                 -- Tasks 1 and 2 hold no resources
+                                 -- Task 3 holds a resource
+                                 --   and is waiting for a call to Logout
+
+  if (F940A00.Counter.Number /= 1)
+                        or (Semaphores.Login_Semaphore.Available /=1) then
+    Report.Failed ("Resource not properly released from task 2");
+  end if;
+
+  Task3.Logout;
+
+                                 -- all resources have been returned
+                                 -- all tasks have terminated or will soon
+
+  if (F940A00.Counter.Number /=0)
+                          or (Semaphores.Login_Semaphore.Available /=2) then
+    Report.Failed ("Resource not properly released from task 3");
+  end if;
+
+  -- Ensure all tasks have terminated before calling Result
+  while not (Task1'terminated and     
+             Task2'terminated and
+             Task3'terminated)     loop
+    delay ImpDef.Minimum_Task_Switch;   
+  end loop;
+
+  Report.Result;
+
+end C940A03;

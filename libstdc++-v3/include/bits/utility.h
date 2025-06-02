@@ -316,6 +316,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline constexpr sorted_equivalent_t sorted_equivalent{};
 #endif
 
+#if __glibcxx_function_ref // >= C++26
+  template<auto>
+    struct nontype_t
+    {
+      explicit nontype_t() = default;
+    };
+
+  template<auto __val>
+    constexpr nontype_t<__val> nontype{};
+
+  template<typename>
+    inline constexpr bool __is_nontype_v = false;
+
+  template<auto __val>
+    inline constexpr bool __is_nontype_v<nontype_t<__val>> = true;
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

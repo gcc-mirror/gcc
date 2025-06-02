@@ -1,0 +1,242 @@
+-- C393A03.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a non-abstract primitive subprogram of an abstract
+--      type can be called as a dispatching operation and that the body
+--      of this subprogram can make a dispatching call to an abstract
+--      operation of the corresponding abstract type. 
+--
+-- TEST DESCRIPTION:
+--      This test expands on the class family defined in foundation F393A00
+--      by deriving a new abstract type from the root abstract type "Object".
+--      The subprograms defined for the new abstract type are then
+--      appropriately overridden, and the test ultimately calls various
+--      mixtures of these subprograms to check that the dispatching occurs
+--      correctly.
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         F393A00.A   (foundation code)
+--         C393A03.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      19 Dec 94   SAIC    Removed ARM references from objective text.
+--      23 Oct 95   SAIC    Fixed bugs for ACVC 2.0.1
+--
+--!
+
+------------------------------------------------------------------- C393A03_0
+
+with F393A00_1;
+package C393A03_0 is
+
+  type Counting_Object is abstract new F393A00_1.Object with private;
+  -- inherits Initialize, Swap (abstract) and Create (abstract)
+
+  procedure Bump ( A_Counter: in out Counting_Object );
+  procedure Clear( A_Counter: in out Counting_Object ) is abstract;
+  procedure Zero ( A_Counter: in out Counting_Object );
+  function  Value( A_Counter: Counting_Object'Class ) return Natural;
+
+private
+
+  type Counting_Object is abstract new F393A00_1.Object with
+    record
+      Tally : Natural :=0;
+    end record;
+
+end C393A03_0;
+
+-----------------------------------------------------------------------------
+
+with F393A00_0;
+package body C393A03_0 is
+
+  procedure Bump ( A_Counter: in out Counting_Object ) is
+  begin
+    F393A00_0.TC_Touch('A');
+    A_Counter.Tally := A_Counter.Tally +1;
+  end Bump;
+
+  procedure Zero ( A_Counter: in out Counting_Object ) is
+  begin
+    F393A00_0.TC_Touch('B');
+
+ -- dispatching call to abstract operation of Counting_Object
+    Clear( Counting_Object'Class(A_Counter) );
+
+    A_Counter.Tally := 0;
+
+  end Zero;
+
+  function  Value( A_Counter: Counting_Object'Class ) return Natural is
+  begin
+    F393A00_0.TC_Touch('C');
+    return A_Counter.Tally;
+  end Value;
+
+end C393A03_0;
+
+------------------------------------------------------------------- C393A03_1
+
+with C393A03_0;
+package C393A03_1 is
+
+  type Modular_Object is new C393A03_0.Counting_Object with private;
+  -- inherits Initialize, Bump, Zero and Value,
+  -- inherits abstract Swap, Create and Clear
+
+  procedure Swap( A,B: in out Modular_Object );
+  procedure Clear( It: in out Modular_Object );
+  procedure Set_Max( It : in out Modular_Object; Value : Natural );
+  function  Create return Modular_Object;
+
+private
+
+  type Modular_Object is new C393A03_0.Counting_Object with
+    record
+      Max_Value : Natural;
+    end record;
+
+end C393A03_1;
+
+-----------------------------------------------------------------------------
+
+with F393A00_0;
+package body C393A03_1 is
+
+  procedure Swap( A,B: in out Modular_Object ) is
+    T : constant Modular_Object := B;
+  begin
+    F393A00_0.TC_Touch('1');
+    B := A;
+    A := T;
+  end Swap;
+
+  procedure Clear( It: in out Modular_Object ) is
+  begin
+    F393A00_0.TC_Touch('2');
+    null;
+  end Clear;
+
+  procedure Set_Max( It : in out Modular_Object; Value : Natural ) is
+  begin
+    F393A00_0.TC_Touch('3');
+    It.Max_Value := Value;
+  end Set_Max;
+
+  function  Create return Modular_Object is
+    AMO : Modular_Object;
+  begin
+    F393A00_0.TC_Touch('4');
+    AMO.Max_Value := Natural'Last;
+    return AMO;
+  end Create;
+
+end C393A03_1;
+
+--------------------------------------------------------------------- C393A03
+
+with Report;
+with F393A00_0;
+with F393A00_1;
+with C393A03_0;
+with C393A03_1;
+procedure C393A03 is
+
+  A_Thing       : C393A03_1.Modular_Object;
+  Another_Thing : C393A03_1.Modular_Object;
+
+  procedure Initialize( It: in out C393A03_0.Counting_Object'Class ) is
+  begin
+    C393A03_0.Initialize( It );  -- dispatch to inherited procedure
+  end Initialize;
+
+  procedure Bump( It: in out C393A03_0.Counting_Object'Class ) is
+  begin
+    C393A03_0.Bump( It ); -- dispatch to non-abstract procedure
+  end Bump;
+
+  procedure Set_Max( It  : in out C393A03_1.Modular_Object'Class;
+                     Val : Natural) is
+  begin
+    C393A03_1.Set_Max( It, Val ); -- dispatch to non-abstract procedure
+  end Set_Max;
+
+  procedure Swap( A, B  : in out C393A03_0.Counting_Object'Class ) is
+  begin
+    C393A03_0.Swap( A, B ); -- dispatch to inherited abstract procedure
+  end Swap;
+
+  procedure Zero( It: in out C393A03_0.Counting_Object'Class ) is
+  begin
+    C393A03_0.Zero( It ); -- dispatch to non-abstract procedure
+  end Zero;
+
+begin  -- Main test procedure.
+
+   Report.Test ("C393A03", "Check that a non-abstract primitive subprogram "
+			 & "of an abstract type can be called as a "
+			 & "dispatching operation and that the body of this "
+			 & "subprogram can make a dispatching call to an "
+			 & "abstract operation of the corresponding "
+			 & "abstract type" );
+
+   A_Thing := C393A03_1.Create; -- Max_Value = Natural'Last
+   F393A00_0.TC_Validate( "4", "Overridden primitive layer 2");
+
+   Initialize( A_Thing );
+   Initialize( Another_Thing );
+   F393A00_0.TC_Validate( "aa", "Non-abstract primitive layer 0");
+   
+   Bump( A_Thing ); -- Tally = 1
+   F393A00_0.TC_Validate( "A", "Non-abstract primitive layer 1");
+
+   Set_Max( A_Thing, 42 ); -- Max_Value = 42
+   F393A00_0.TC_Validate( "3", "Non-abstract normal layer 2");
+
+   if not F393A00_1.Initialized( A_Thing ) then
+     Report.Failed("Initialize didn't");
+   end if;
+   F393A00_0.TC_Validate( "b", "Class-wide layer 0");
+
+   Swap( A_Thing, Another_Thing );
+   F393A00_0.TC_Validate( "1", "Overridden abstract layer 2");
+
+   Zero( A_Thing );
+   F393A00_0.TC_Validate( "B2", "Non-abstract layer 0, calls dispatch");
+
+   if C393A03_0.Value( A_Thing ) /= 0 then
+     Report.Failed("Zero didn't");
+   end if;
+   F393A00_0.TC_Validate( "C", "Class-wide normal layer 2");
+
+   Report.Result;
+
+end C393A03;

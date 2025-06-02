@@ -873,7 +873,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[nodiscard]]
       friend bool
       operator==(const _Derived& __x, const _Derived& __y)
-      { return std::equal(__x.begin(), __x.end(), __y.begin(), __y.end()); }
+      {
+	return __x._M_cont.keys == __y._M_cont.keys
+	  && __x._M_cont.values == __y._M_cont.values;
+      }
 
       template<typename _Up = value_type>
 	[[nodiscard]]
@@ -895,7 +898,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  auto __guard = _M_make_clear_guard();
 	  auto __zv = views::zip(_M_cont.keys, _M_cont.values);
-	  auto __sr = ranges::remove_if(__zv, __pred);
+	  auto __sr = ranges::remove_if(__zv, __pred,
+					[](const auto& __e) {
+					  return const_reference(__e);
+					});
 	  auto __erased = __sr.size();
 	  erase(end() - __erased, end());
 	  __guard._M_disable();

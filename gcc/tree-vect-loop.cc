@@ -6016,7 +6016,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       /* Create an induction variable.  */
       gimple_stmt_iterator incr_gsi;
       bool insert_after;
-      vect_iv_increment_position (loop_exit, &incr_gsi, &insert_after);
+      vect_iv_increment_position (LOOP_VINFO_IV_EXIT (loop_vinfo),
+				  &incr_gsi, &insert_after);
       create_iv (series_vect, PLUS_EXPR, vec_step, NULL_TREE, loop, &incr_gsi,
 		 insert_after, &indx_before_incr, &indx_after_incr);
 

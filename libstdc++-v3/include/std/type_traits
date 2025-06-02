@@ -4019,7 +4019,8 @@ template<typename _Ret, typename _Fn, typename... _Args>
 #ifdef __cpp_lib_is_constant_evaluated // C++ >= 20 && HAVE_IS_CONST_EVAL
   /// Returns true only when called during constant evaluation.
   /// @since C++20
-  constexpr inline bool
+  [[__gnu__::__always_inline__]]
+  constexpr bool
   is_constant_evaluated() noexcept
   {
 #if __cpp_if_consteval >= 202106L

@@ -1,0 +1,107 @@
+-- LA140192.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a library level generic procedure
+--      depends on library level procedure that is changed.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a procedure, a generic procedure that 
+--      withs the first procedure and a main procedure that withs
+--      the generic procedure.  Then, a new version of the  
+--      procedure is compiled (in a separate file, simulating 
+--      and editing modification to the unit).  Unless automatic 
+--      recompilation is supported, this test should fail to link.  
+--      Otherwise, the test should recompile and link the correct 
+--      version of the withed function and report "PASSED" at 
+--      execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140190 (and include the results in the
+--            program library).
+--         2) Compile the file LA140191 (and include the results in the
+--            program library).
+--         3) Compile the file LA140192 (and include the results in the
+--            program library).
+--         4) Compile the file LA140193 (and include the results in the
+--            program library).
+--         5) Attempt to build an executable image.
+--         6) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140190.A
+--         LA140191.A
+--      -> LA140192.AM
+--         LA140193.A
+--
+-- PASS/FAIL CRITERIA:    
+--      The test passes if a link time error message reports that 
+--      LA140192 is missing or obsolete, or that LA14019_1 is 
+--      missing or obsolete (optional) and no executable image
+--      results.  The test also passes if an executable image is produced
+--      and reports "PASSED" (in the case where the implementation supports
+--      automatic recompilation).            
+--
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008P baseline version
+--     23 JUN 95   SAIC        Initial version
+--     29 JAN 96   SAIC        First revision after review
+--     17 NOV 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions.
+--
+--!
+
+with Report; use Report;
+with LA14019_1;       -- This dependency must be resolved
+                      -- after LA140193 is compiled.
+
+procedure LA140192 is
+     subtype count is integer range 0..100;
+     procedure Gen_proc is new LA14019_1 (count);
+     TC_local : count := 0;
+begin
+     Test ("LA14019", "Check that a compilation unit may " &
+                      "not depend semantically on two " &
+                      "different versions of the same " &
+                      "compilation unit.  Check the case " &
+                      "where a library level generic " &
+                      "procedure depends on library level " &
+                      "procedure that is changed.");
+
+     Gen_proc (TC_local);
+
+     if TC_local = 10 then
+          Failed ("Revised library level procedure not used");
+     elsif TC_local /= 52 then
+          Failed ("Incorrect value returned");
+     end if;
+
+     Result;
+end LA140192;

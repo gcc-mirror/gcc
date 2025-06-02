@@ -6324,7 +6324,8 @@ expand_rotate_as_vec_perm (machine_mode mode, rtx dst, rtx x, rtx amt)
 			     qimode, perm_dst);
   if (!res)
     return NULL_RTX;
-  emit_move_insn (dst, lowpart_subreg (mode, res, qimode));
+  if (!rtx_equal_p (res, perm_dst))
+    emit_move_insn (dst, lowpart_subreg (mode, res, qimode));
   return dst;
 }
 
@@ -6408,18 +6409,25 @@ canonicalize_comparison (machine_mode mode, enum rtx_code *code, rtx *imm)
   if (overflow)
     return;
 
-  /* The following creates a pseudo; if we cannot do that, bail out.  */
-  if (!can_create_pseudo_p ())
-    return;
-
-  rtx reg = gen_rtx_REG (mode, LAST_VIRTUAL_REGISTER + 1);
   rtx new_imm = immed_wide_int_const (imm_modif, mode);
 
-  rtx_insn *old_rtx = gen_move_insn (reg, *imm);
-  rtx_insn *new_rtx = gen_move_insn (reg, new_imm);
+  int old_cost = rtx_cost (*imm, mode, COMPARE, 0, true);
+  int new_cost = rtx_cost (new_imm, mode, COMPARE, 0, true);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, ";; cmp: %s, old cst: ",
+	       GET_RTX_NAME (*code));
+      print_rtl (dump_file, *imm);
+      fprintf (dump_file, " new cst: ");
+      print_rtl (dump_file, new_imm);
+      fprintf (dump_file, "\n");
+      fprintf (dump_file, ";; old cst cost: %d, new cst cost: %d\n",
+	       old_cost, new_cost);
+    }
 
   /* Update the immediate and the code.  */
-  if (insn_cost (old_rtx, true) > insn_cost (new_rtx, true))
+  if (old_cost > new_cost)
     {
       *code = equivalent_cmp_code (*code);
       *imm = new_imm;

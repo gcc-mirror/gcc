@@ -3533,6 +3533,9 @@ reduced_constant_expression_p (tree t)
       /* Even if we can't lower this yet, it's constant.  */
       return true;
 
+    case OMP_DECLARE_MAPPER:
+      return true;
+
     case CONSTRUCTOR:
       /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
       tree field;
@@ -7842,6 +7845,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case LABEL_EXPR:
     case CASE_LABEL_EXPR:
     case PREDICT_EXPR:
+    case OMP_DECLARE_MAPPER:
       return t;
 
     case PARM_DECL:
@@ -10536,6 +10540,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 			  "expression", t);
       return false;
 
+    case OMP_DECLARE_MAPPER:
+      /* This can be used to initialize VAR_DECLs: it's treated as a magic
+	 constant.  */
+      return true;
+
     case ASM_EXPR:
       if (flags & tf_error)
 	inline_asm_in_constexpr_error (loc, fundef_p);
@@ -10983,6 +10992,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	    *jump_target = *target;
 	    return true;
 	  }
+	if (DECL_ARTIFICIAL (*target))
+	  /* The user didn't write this goto, this isn't the problem.  */
+	  return true;
 	if (flags & tf_error)
 	  constexpr_error (loc, fundef_p, "%<goto%> is not a constant "
 			   "expression");

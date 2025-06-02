@@ -1,0 +1,294 @@
+-- C980003.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- TEST OBJECTIVE:
+--      Check that aborts are deferred during the execution of an 
+--      Initialize procedure (as the last step of the default 
+--      initialization of a controlled object), during the execution 
+--      of a Finalize procedure (as part of the finalization of a 
+--      controlled object), and during an assignment operation to an
+--      object with a controlled part.
+--
+-- TEST DESCRIPTION:
+--      A controlled type is created with Initialize, Adjust, and 
+--      Finalize operations.  These operations note in a protected
+--      object when the operation starts and completes.  This change
+--      in state of the protected object will open the barrier for
+--      the entry in the protected object.
+--      The test contains declarations of objects of the controlled
+--      type.  An asynchronous select is used to attempt to abort
+--      the operations on the controlled type.  The asynchronous select
+--      makes use of the state change to the protected object to 
+--      trigger the abort.
+--
+--
+-- CHANGE HISTORY:
+--      11 Jan 96   SAIC    Initial Release for 2.1
+--       5 May 96   SAIC    Incorporated Reviewer comments.
+--      10 Oct 96   SAIC    Addressed issue where assignment statement
+--                          can be 2 assignment operations.
+--
+--!
+
+with Ada.Finalization;
+package C980003_0 is
+    Verbose : constant Boolean := False;
+
+    -- the following flag is set true whenever the
+    -- Initialize operation is called.
+    Init_Occurred : Boolean;
+
+    type Is_Controlled is new Ada.Finalization.Controlled with
+         record
+             Id : Integer;
+         end record;
+
+     procedure Initialize (Object : in out Is_Controlled);
+     procedure Finalize   (Object : in out Is_Controlled);
+     procedure Adjust     (Object : in out Is_Controlled);
+
+     type States is (Unknown,
+                     Start_Init,   Finished_Init, 
+                     Start_Adjust, Finished_Adjust,
+                     Start_Final,  Finished_Final);
+
+     protected State_Manager is
+        procedure Reset;
+        procedure Set (New_State : States);
+        function Current return States;
+        entry Wait_For_Change;
+     private
+        Current_State : States := Unknown;
+        Changed : Boolean := False;
+     end State_Manager;
+
+end C980003_0;
+
+
+with Report;
+with ImpDef;
+package body C980003_0 is
+     protected body State_Manager is
+         procedure Reset is
+         begin
+             Current_State := Unknown;
+             Changed := False;
+         end Reset;
+
+         procedure Set (New_State : States) is
+         begin
+             Changed := True;
+             Current_State := New_State;
+         end Set;
+
+         function Current return States is
+         begin
+             return Current_State;
+         end Current;
+
+         entry Wait_For_Change when Changed is
+         begin
+             Changed := False;
+         end Wait_For_Change;
+     end State_Manager;
+
+     procedure Initialize (Object : in out Is_Controlled) is
+     begin
+        if Verbose then
+            Report.Comment ("starting initialize");
+        end if;
+        State_Manager.Set (Start_Init);
+        if Verbose then
+            Report.Comment ("in initialize");
+        end if;
+        delay ImpDef.Switch_To_New_Task;  -- tempting place for abort
+        State_Manager.Set (Finished_Init);
+        if Verbose then
+            Report.Comment ("finished initialize");
+        end if;
+        Init_Occurred := True;
+     end Initialize;
+
+     procedure Finalize   (Object : in out Is_Controlled) is
+     begin
+        if Verbose then
+            Report.Comment ("starting finalize");
+        end if;
+        State_Manager.Set (Start_Final);
+        if Verbose then
+            Report.Comment ("in finalize");
+        end if;
+        delay ImpDef.Switch_To_New_Task; -- tempting place for abort
+        State_Manager.Set (Finished_Final);
+        if Verbose then
+            Report.Comment ("finished finalize");
+        end if;
+     end Finalize;
+
+     procedure Adjust     (Object : in out Is_Controlled) is
+     begin
+        if Verbose then
+            Report.Comment ("starting adjust");
+        end if;
+        State_Manager.Set (Start_Adjust);
+        if Verbose then
+            Report.Comment ("in adjust");
+        end if;
+        delay ImpDef.Switch_To_New_Task; -- tempting place for abort
+        State_Manager.Set (Finished_Adjust);
+        if Verbose then
+            Report.Comment ("finished adjust");
+        end if;
+     end Adjust;
+end C980003_0;
+
+
+with Report;
+with ImpDef;
+with C980003_0;  use C980003_0;
+with Ada.Unchecked_Deallocation;
+procedure C980003 is
+
+    procedure Check_State (Should_Be : States;
+                           Msg       : String) is
+        Cur : States := State_Manager.Current;
+    begin
+        if Cur /= Should_Be then
+            Report.Failed (Msg);
+            Report.Comment ("expected: " & States'Image (Should_Be) &
+                            "  found: " & States'Image (Cur));
+        elsif Verbose then
+            Report.Comment ("passed: " & Msg);
+        end if;
+    end Check_State;
+
+begin
+ 
+    Report.Test ("C980003", "Check that aborts are deferred during" &
+                            " initialization, finalization, and assignment" &
+                            " operations on controlled objects");
+
+    Check_State (Unknown, "initial condition");
+
+    -- check that initialization and finalization take place
+    Init_Occurred := False;
+    select
+        State_Manager.Wait_For_Change;
+    then abort
+        declare
+            My_Controlled_Obj : Is_Controlled;
+        begin
+            delay 0.0;   -- abort completion point
+            Report.Failed ("state change did not occur");
+        end; 
+    end select;
+    if not Init_Occurred then
+        Report.Failed ("Initialize did not complete");
+    end if;
+    Check_State (Finished_Final, "init/final for declared item");
+
+    -- check adjust
+    State_Manager.Reset;
+    declare
+        Source, Dest : Is_Controlled;
+    begin
+        Check_State (Finished_Init, "adjust initial state");
+        Source.Id := 3;
+        Dest.Id := 4;
+        State_Manager.Reset;  -- so we will wait for change
+        select
+            State_Manager.Wait_For_Change;
+        then abort
+            Dest := Source;
+        end select;
+
+        -- there are two implementation methods for the 
+        -- assignment statement:
+        --   1.  no temporary was used in the assignment statement 
+        --        thus the entire
+        --        assignment statement is abort deferred.  
+        --   2.  a temporary was used in the assignment statement so
+        --        there are two assignment operations.  An abort may
+        --        occur between the assignment operations
+        -- Various optimizations are allowed by 7.6 that can affect
+        -- how many times Adjust and Finalize are called. 
+        -- Depending upon the implementation, the state can be either
+        -- Finished_Adjust or Finished_Finalize.   If it is any other
+        -- state then the abort took place at the wrong time.
+
+        case State_Manager.Current is
+        when Finished_Adjust =>
+            if Verbose then
+                Report.Comment ("assignment aborted after adjust");
+            end if;
+        when Finished_Final =>
+            if Verbose then
+                Report.Comment ("assignment aborted after finalize");
+            end if;
+        when Start_Adjust =>
+            Report.Failed ("assignment aborted in adjust");
+        when Start_Final =>
+            Report.Failed ("assignment aborted in finalize");
+        when Start_Init =>
+            Report.Failed ("assignment aborted in initialize");
+        when Finished_Init =>
+            Report.Failed ("assignment aborted after initialize");
+        when Unknown =>
+            Report.Failed ("assignment aborted in unknown state");
+        end case;
+
+
+        if Dest.Id /= 3 then
+            if Verbose then
+                Report.Comment ("assignment not performed");
+            end if;
+        end if;
+    end;
+
+
+     -- check dynamically allocated objects
+    State_Manager.Reset;
+    declare
+        type Pointer_Type is access Is_Controlled;
+        procedure Free is new Ada.Unchecked_Deallocation (
+              Is_Controlled, Pointer_Type);
+        Ptr : Pointer_Type;
+    begin
+      -- make sure initialize is done when object is allocated
+      Ptr := new Is_Controlled;
+      Check_State (Finished_Init, "init when item allocated");
+      -- now try aborting the finalize
+      State_Manager.Reset;
+      select
+             State_Manager.Wait_For_Change;
+      then abort
+             Free (Ptr);
+      end select;
+      Check_State (Finished_Final, "finalization in dealloc");
+    end;
+
+    Report.Result;
+ 
+end C980003;

@@ -1,0 +1,185 @@
+-- C854002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687 and
+--     F08630-91-C-0015, the U.S. Government obtained unlimited rights in the
+--     software and documentation contained herein.  Unlimited rights are
+--     defined in DFAR 252.227-7013(a)(19).  By making this public release,
+--     the Government intends to confer upon all recipients unlimited rights
+--     equal to those held by the Government.  These rights include rights to
+--     use, duplicate, release or disclose the released technical data and
+--     computer software in whole or in part, in any manner and for any purpose
+--     whatsoever, and to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE
+--     Check the requirements of the new 8.5.4(8.A) from Technical
+--     Corrigendum 1 (originally discussed as AI95-00064).
+--     This paragraph requires an elaboration check on renamings-as-body:
+--     even if the body of the ultimately-called subprogram has been
+--     elaborated, the check should fail if the renaming-as-body
+--     itself has not yet been elaborated.
+--
+-- TEST DESCRIPTION
+--     We declare two functions F and G, and ensure that they are
+--     elaborated before anything else, by using pragma Pure.  Then we
+--     declare two renamings-as-body: the renaming of F is direct, and
+--     the renaming of G is via an access-to-function object.  We call
+--     the renamings during elaboration, and check that they raise
+--     Program_Error.  We then call them again after elaboration; this
+--     time, they should work.
+--
+-- CHANGE HISTORY:
+--      29 JUN 1999   RAD   Initial Version
+--      23 SEP 1999   RLB   Improved comments, renamed, issued.
+--      28 JUN 2002   RLB   Added pragma Elaborate_All for Report.
+--!
+
+package C854002_1 is
+    pragma Pure;
+    -- Empty.
+end C854002_1;
+
+package C854002_1.Pure is
+    pragma Pure;
+    function F return String;
+    function G return String;
+end C854002_1.Pure;
+
+with C854002_1.Pure;
+package C854002_1.Renamings is
+
+    F_Result: constant String := C854002_1.Pure.F; -- Make sure we can call F.
+    function Renamed_F return String;
+
+    G_Result: constant String := C854002_1.Pure.G;
+    type String_Function is access function return String;
+    G_Pointer: String_Function := null;
+        -- Will be set to C854002_1.Pure.G'Access in the body.
+    function Renamed_G return String;
+
+end C854002_1.Renamings;
+
+package C854002_1.Caller is
+
+    -- These procedures call the renamings; when called during elaboration,
+    -- we pass Should_Fail => True, which checks that Program_Error is
+    -- raised.  Later, we use Should_Fail => False.
+
+    procedure Call_Renamed_F(Should_Fail: Boolean);
+    procedure Call_Renamed_G(Should_Fail: Boolean);
+
+end C854002_1.Caller;
+
+with Report; use Report; pragma Elaborate_All (Report);
+with C854002_1.Renamings;
+package body C854002_1.Caller is
+
+    Some_Error: exception;
+
+    procedure Call_Renamed_F(Should_Fail: Boolean) is
+    begin
+        if Should_Fail then
+            begin
+                Failed(C854002_1.Renamings.Renamed_F);
+                raise Some_Error;
+                    -- This raise statement is necessary, because the
+                    -- Report package has a bug -- if Failed is called
+                    -- before Test, then the failure is ignored, and the
+                    -- test prints "PASSED".
+                    -- Presumably, this raise statement will cause the
+                    -- program to crash, thus avoiding the PASSED message.
+            exception
+                when Program_Error =>
+                    Comment("Program_Error -- OK");
+            end;
+        else
+            if C854002_1.Renamings.F_Result /= C854002_1.Renamings.Renamed_F then
+                Failed("Bad result from renamed F");
+            end if;
+        end if;
+    end Call_Renamed_F;
+
+    procedure Call_Renamed_G(Should_Fail: Boolean) is
+    begin
+        if Should_Fail then
+            begin
+                Failed(C854002_1.Renamings.Renamed_G);
+                raise Some_Error;
+            exception
+                when Program_Error =>
+                    Comment("Program_Error -- OK");
+            end;
+        else
+            if C854002_1.Renamings.G_Result /= C854002_1.Renamings.Renamed_G then
+                Failed("Bad result from renamed G");
+            end if;
+        end if;
+    end Call_Renamed_G;
+
+begin
+    -- At this point, the bodies of Renamed_F and Renamed_G have not yet
+    -- been elaborated, so calling them should raise Program_Error:
+    Call_Renamed_F(Should_Fail => True);
+    Call_Renamed_G(Should_Fail => True);
+end C854002_1.Caller;
+
+package body C854002_1.Pure is
+
+    function F return String is
+    begin
+        return "This is function F";
+    end F;
+
+    function G return String is
+    begin
+        return "This is function G";
+    end G;
+
+end C854002_1.Pure;
+
+with C854002_1.Pure;
+with C854002_1.Caller; pragma Elaborate(C854002_1.Caller);
+    -- This pragma ensures that this package body (Renamings)
+    -- will be elaborated after Caller, so that when Caller calls
+    -- the renamings during its elaboration, the renamings will
+    -- not have been elaborated (although what the rename have been).
+package body C854002_1.Renamings is
+
+    function Renamed_F return String renames C854002_1.Pure.F;
+
+    package Dummy is end; -- So we can insert statements here.
+    package body Dummy is
+    begin
+        G_Pointer := C854002_1.Pure.G'Access;
+    end Dummy;
+
+    function Renamed_G return String renames G_Pointer.all;
+
+end C854002_1.Renamings;
+
+with Report; use Report;
+with C854002_1.Caller;
+procedure C854002 is
+begin
+    Test("C854002",
+         "An elaboration check is performed for a call to a subprogram"
+         & " whose body is given as a renaming-as-body");
+
+    -- By the time we get here, all library units have been elaborated,
+    -- so the following calls should not raise Program_Error:
+    C854002_1.Caller.Call_Renamed_F(Should_Fail => False);
+    C854002_1.Caller.Call_Renamed_G(Should_Fail => False);
+
+    Result;
+end C854002;

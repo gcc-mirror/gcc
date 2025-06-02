@@ -656,6 +656,8 @@ LIBAT_BUILD_VERSIONED_SHLIB_FALSE
 LIBAT_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
 SECTION_LDFLAGS
+PARTIAL_VXWORKS_FALSE
+PARTIAL_VXWORKS_TRUE
 SYSROOT_CFLAGS_FOR_TARGET
 enable_aarch64_lse
 libtool_VERSION
@@ -11456,7 +11458,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11459 "configure"
+#line 11461 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11562,7 +11564,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11565 "configure"
+#line 11567 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11932,10 +11934,20 @@ esac
 
 
 # Get target configury.
+partial_libatomic=
 . ${srcdir}/configure.tgt
 if test -n "$UNSUPPORTED"; then
   as_fn_error $? "Configuration ${target} is unsupported." "$LINENO" 5
 fi
+
+ if test "x$partial_libatomic" = "xvxworks"; then
+  PARTIAL_VXWORKS_TRUE=
+  PARTIAL_VXWORKS_FALSE='#'
+else
+  PARTIAL_VXWORKS_TRUE='#'
+  PARTIAL_VXWORKS_FALSE=
+fi
+
 
 # Write out the ifunc resolver arg type.
 
@@ -15987,6 +15999,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_DARWIN_AT_RPATH_TRUE}" && test -z "${ENABLE_DARWIN_AT_RPATH_FALSE}"; then
   as_fn_error $? "conditional \"ENABLE_DARWIN_AT_RPATH\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${PARTIAL_VXWORKS_TRUE}" && test -z "${PARTIAL_VXWORKS_FALSE}"; then
+  as_fn_error $? "conditional \"PARTIAL_VXWORKS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

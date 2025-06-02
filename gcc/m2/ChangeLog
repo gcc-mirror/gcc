@@ -1,3 +1,112 @@
+2025-06-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120474
+	* gm2-libs-log/InOut.mod (LocalWrite): Call FIO.FlushBuffer.
+
+2025-06-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120497
+	* gm2-compiler/M2Range.mod (IsAssignmentCompatible): Remove from
+	import list.
+	(FoldTypeReturnFunc): Rewrite to skip the Lvalue of a var
+	variable.
+	(CodeTypeReturnFunc): Ditto.
+	(CodeTypeIndrX): Call AssignmentTypeCompatible rather than
+	IsAssignmentCompatible.
+	(FoldTypeIndrX): Ditto.
+
+2025-05-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* gm2-compiler/M2Check.def (AssignmentTypeCompatible): Add new
+	parameter enableReason.
+	* gm2-compiler/M2Check.mod (EquivalenceProcedure): New type.
+	(falseReason2): New procedure function.
+	(falseReason1): Ditto.
+	(falseReason0): Ditto.
+	(checkTypeEquivalence): Rewrite.
+	(checkUnboundedArray): Ditto.
+	(checkUnbounded): Ditto.
+	(checkArrayTypeEquivalence): Ditto.
+	(checkCharStringTypeEquivalence): Ditto.
+	(buildError4): Add false reason.
+	(buildError2): Ditto.
+	(IsTyped): Use GetDType.
+	(IsTypeEquivalence): New procedure function.
+	(checkVarTypeEquivalence): Ditto.
+	(checkVarEquivalence ): Rewrite.
+	(checkConstMeta): Ditto.
+	(checkEnumField): New procedure function.
+	(checkEnumFieldEquivalence): Ditto.
+	(checkSubrangeTypeEquivalence): Rewrite.
+	(checkSystemEquivalence): Ditto.
+	(checkTypeKindViolation): Ditto.
+	(doCheckPair): Ditto.
+	(InitEquivalenceArray): New procedure.
+	(addEquivalence): Ditto.
+	(checkProcType): Rewrite.
+	(deconstruct): Deallocate reason string.
+	(AssignmentTypeCompatible): Initialize reason and reasonEnable
+	fields.
+	(ParameterTypeCompatible): Ditto.
+	(doExpressionTypeCompatible): Ditto.
+	* gm2-compiler/M2GenGCC.mod (CodeIndrX) Rewrite.
+	(CheckBinaryExpressionTypes): Rewrite and simplify now that the
+	type checker is more robust.
+	(CheckElementSetTypes): Ditto.
+	(CodeXIndr): Add new range assignment type check.
+	* gm2-compiler/M2MetaError.def: Correct comments.
+	* gm2-compiler/M2Options.def (SetStrictTypeAssignment): New procedure.
+	(SetStrictTypeReason): Ditto.
+	* gm2-compiler/M2Options.mod: (SetStrictTypeAssignment): New procedure.
+	(SetStrictTypeReason): Ditto.
+	(StrictTypeReason): Initialize.
+	(StrictTypeAssignment): Ditto.
+	* gm2-compiler/M2Quads.mod (CheckBreak): Delete.
+	(BreakQuad): New global variable.
+	(BreakAtQuad): Delete.
+	(gdbhook): New procedure.
+	(BreakWhenQuadCreated): Ditto.
+	(CheckBreak): Ditto.
+	(Init): Call BreakWhenQuadCreated and gdbhook.
+	(doBuildAssignment): Add type assignment range check.
+	(CheckProcTypeAndProcedure): Only check if the procedure
+	types differ.
+	(doIndrX): Add type IndrX range check.
+	(CheckReturnType): Add range return type check.
+	* gm2-compiler/M2Range.def (InitTypesIndrXCheck): New procedure
+	function.
+	(InitTypesReturnTypeCheck): Ditto.
+	* gm2-compiler/M2Range.mod (InitTypesIndrXCheck): New procedure
+	function.
+	(InitTypesReturnTypeCheck): Ditto.
+	(HandlerExists): Add new clauses.
+	(FoldAssignment): Pass extra FALSE parameter to
+	AssignmentTypeCompatible.
+	(FoldTypeReturnFunc): New procedure.
+	(FoldTypeAssign): Ditto.
+	(FoldTypeIndrX): Ditto.
+	(CodeTypeAssign): Rewrite.
+	(CodeTypeIndrX): New procedure.
+	(CodeTypeReturnFunc): Ditto.
+	(FoldTypeCheck): Add new case clauses.
+	(CodeTypeCheck): Ditto.
+	(FoldRangeCheckLower): Ditto.
+	(IssueWarning): Ditto.
+	* gm2-gcc/m2options.h (M2Options_SetStrictTypeAssignment): New
+	function prototype.
+	(M2Options_SetStrictTypeReason): Ditto.
+	* gm2-lang.cc (gm2_langhook_handle_option): New case clause
+	OPT_fm2_strict_type_reason.
+	* lang.opt (-fm2-strict-type-reason): New option.
+
+2025-05-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* gm2-compiler/M2GenGCC.mod (CodeXIndr): Check to see that
+	the type of left is assignment compatible with the type of
+	right.
+
 2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/120253

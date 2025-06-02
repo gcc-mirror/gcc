@@ -765,6 +765,7 @@ extern int c_type_dwarf_attribute (const_tree, int);
 /* in c-typeck.cc */
 extern int in_alignof;
 extern int in_sizeof;
+extern int in_countof;
 extern int in_typeof;
 extern bool c_in_omp_for;
 extern bool c_omp_array_section_p;
@@ -827,6 +828,9 @@ extern tree build_external_ref (location_t, tree, bool, tree *);
 extern void pop_maybe_used (bool);
 extern struct c_expr c_expr_sizeof_expr (location_t, struct c_expr);
 extern struct c_expr c_expr_sizeof_type (location_t, struct c_type_name *);
+extern struct c_expr c_expr_countof_expr (location_t, struct c_expr);
+extern struct c_expr c_expr_countof_type (location_t loc,
+					  struct c_type_name *);
 extern struct c_expr parser_build_unary_op (location_t, enum tree_code,
     					    struct c_expr);
 extern struct c_expr parser_build_binary_op (location_t,
@@ -884,6 +888,10 @@ extern tree c_finish_omp_task (location_t, tree, tree);
 extern void c_finish_omp_cancel (location_t, tree);
 extern void c_finish_omp_cancellation_point (location_t, tree);
 extern tree c_finish_omp_clauses (tree, enum c_omp_region_type);
+extern tree c_omp_finish_mapper_clauses (tree);
+extern tree c_omp_mapper_lookup (tree, tree);
+extern tree c_omp_extract_mapper_directive (tree);
+extern tree c_omp_map_array_section (location_t, tree);
 extern tree c_build_va_arg (location_t, tree, location_t, tree);
 extern tree c_finish_transaction (location_t, tree, int);
 extern bool c_tree_equal (tree, tree);
@@ -942,6 +950,10 @@ extern tree c_omp_reduction_id (enum tree_code, tree);
 extern tree c_omp_reduction_decl (tree);
 extern tree c_omp_reduction_lookup (tree, tree);
 extern tree c_check_omp_declare_reduction_r (tree *, int *, void *);
+extern tree c_omp_mapper_id (tree);
+extern tree c_omp_mapper_decl (tree);
+extern void c_omp_scan_mapper_bindings (location_t, tree *, tree);
+extern tree c_omp_instantiate_mappers (tree);
 extern bool c_check_in_current_scope (tree);
 extern void c_pushtag (location_t, tree, tree);
 extern void c_bind (location_t, tree, bool);

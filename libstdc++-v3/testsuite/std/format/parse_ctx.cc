@@ -539,7 +539,7 @@ test_dynamic_type_check()
   (void) std::format("{:str}", X{}, "H2G2");
   (void) std::format("{:float}", X{}, 10.0);
 
-#ifdef __STDCPP_FLOAT16_T__
+#ifdef __STDCPP_BFLOAT16_T__
   if constexpr (std::formattable<std::bfloat16_t, char>)
     (void) std::format("{:other}", X{}, 10.0bf16);
 #endif

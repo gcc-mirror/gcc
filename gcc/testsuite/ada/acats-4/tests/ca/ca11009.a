@@ -1,0 +1,246 @@
+-- CA11009.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a private child package can use entities declared in the
+--      visible part of the parent unit of its parent unit.
+--
+-- TEST DESCRIPTION:
+--      Declare a parent package containing types and objects used by the 
+--      system.  Declare a public child package that provides a visible 
+--      interface to the system functionality.
+--      Declare a private grandchild package that uses the visible grandparent
+--      components to provide the actual functionality to the system. 
+--
+--      The public child (parent of the private grandchild) uses the 
+--      functionality of its private child (grandchild package) to provide 
+--      the visible interface to operations of the system.
+--
+--      The test itself will utilize the visible interface provided in the 
+--      public child package to demonstrate a possible structure for
+--      file management.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      15 Apr 96   SAIC    ACVC 2.1: Added pragma Elaborate_body.
+--
+--!
+
+package CA11009_0 is               -- Package OS.
+   pragma Elaborate_Body (CA11009_0);
+
+   type File_Descriptor_Type is new Integer;
+   type File_Name_Type       is new String (1 .. 11);
+   type Permission_Type      is (None, User, System, Bypass);
+   type File_Mode_Type       is (Read_Only, Write_Only, Read_Write);
+   type File_Status_Type     is (Open, Closed);
+
+   Default_Descriptor : constant File_Descriptor_Type := 0;
+   Default_Permission : constant Permission_Type      := None;
+   Default_Mode       : constant File_Mode_Type       := Read_Only;
+   Default_Status     : constant File_Status_Type     := Closed;
+   Default_Filename   : constant File_Name_Type       := "           ";
+
+   Max_Files          : constant File_Descriptor_Type := 10;
+   An_Ada_File_Name   : constant File_Name_Type       := "AdaFileName";
+   File_Counter       : Integer                       := 0;
+
+   type File_Type is tagged
+      record
+         Descriptor     : File_Descriptor_Type := Default_Descriptor;
+         Name           : File_Name_Type       := Default_Filename;
+         Acct_Access    : Permission_Type      := Default_Permission;
+         Mode           : File_Mode_Type       := Default_Mode;
+         Current_Status : File_Status_Type     := Default_Status;
+      end record;
+
+   type File_Array_Type is array (1 .. Max_Files) of File_Type;
+
+   File_Table : File_Array_Type;
+
+   --
+
+   function Get_File_Name return File_Name_Type;
+
+end CA11009_0;                     -- Package OS.
+
+     --=================================================================--
+
+package body CA11009_0 is          -- Package body OS.
+
+   function Get_File_Name return File_Name_Type is
+   begin
+      return (An_Ada_File_Name);   -- Processing would be replace by a user
+                                   -- prompt in a functioning system.
+   end Get_File_Name;           
+                                
+end CA11009_0;                     -- Package body OS.
+
+     --=================================================================--
+
+package CA11009_0.CA11009_1 is     -- Child Package OS.File_Manager
+
+   -- This package simulates a visible interface for the Operating System.
+   -- The actual processing performed by this routine is encapsulated
+   -- in the routines of private child package Internals, which is "withed"
+   -- by the body of this package.
+
+   procedure Create_File (Mode      : in     File_Mode_Type;
+                          File_Key  :    out File_Descriptor_Type);
+
+end CA11009_0.CA11009_1;           -- Child Package OS.File_Manager
+
+     --=================================================================--
+
+-- Subprogram that performs the actual file operation is contained in a
+-- private package so that it is not accessible to any client, and can be
+-- modified/extended without requiring recompilation of the clients of the
+-- parent (since this package is "withed" by the parent body only.)
+
+
+                               -- Grandchild Package OS.File_Manager.Internals
+private package CA11009_0.CA11009_1.CA11009_2 is  
+
+   Initial_Permission : constant Permission_Type  := User;  -- Grandparent
+   Initial_Status     : constant File_Status_Type := Open;  -- literals.
+   Initial_Filename   : constant File_Name_Type   :=  -- Grandparent type.
+     Get_File_Name;                                   -- Grandparent function.
+
+   function Create (Mode : File_Mode_Type)                      
+     return File_Descriptor_Type;                     -- Grandparent type.
+
+end CA11009_0.CA11009_1.CA11009_2;   
+                          -- Grandchild Package OS.File_Manager.Internals
+
+     --=================================================================--
+
+                          -- Grandchild Package body OS.File_Manager.Internals
+package body CA11009_0.CA11009_1.CA11009_2 is  
+
+   function Next_Available_File return File_Descriptor_Type is
+   begin
+      File_Counter := File_Counter + 1;              -- Grandparent object.
+      return (File_Descriptor_Type(File_Counter));
+   end Next_Available_File;
+   -------------------------------------------------------------------------
+   function Create (Mode : File_Mode_Type)           -- Grandparent literal.
+     return File_Descriptor_Type is
+      Number : File_Descriptor_Type;                 -- Grandparent type.
+   begin
+      Number := Next_Available_File;
+      File_Table(Number).Descriptor     := Number;   -- Grandparent object.
+      File_Table(Number).Name           := Initial_Filename;
+      File_Table(Number).Mode           := Mode;     -- Parameter.
+      File_Table(Number).Acct_Access    := Initial_Permission;
+      File_Table(Number).Current_Status := Initial_Status;
+      return (Number);
+   end Create;
+
+end CA11009_0.CA11009_1.CA11009_2;  
+                          -- Grandchild Package body OS.File_Manager.Internals
+
+     --=================================================================--
+
+                                     -- "With" of a child package 
+                                     -- by the parent body.
+with CA11009_0.CA11009_1.CA11009_2;  -- Grandchild OS.File_Manager.Internals
+
+package body CA11009_0.CA11009_1 is  -- Child Package body OS.File_Manager
+
+   package Internal renames CA11009_0.CA11009_1.CA11009_2;            
+
+   -- These subprograms utilize calls to subprograms contained in a private
+   -- sibling to perform the actual processing.
+
+   procedure Create_File (Mode      : in     File_Mode_Type;
+                          File_Key  :    out File_Descriptor_Type) is
+   begin
+      File_Key := Internal.Create (Mode);
+   end Create_File;
+
+end CA11009_0.CA11009_1;        -- Child Package body OS.File_Manager
+
+     --=================================================================--
+
+with CA11009_0.CA11009_1;       -- with Child Package OS.File_Manager
+with Report;
+
+procedure CA11009 is
+
+   package OS           renames CA11009_0;
+   use OS;
+   package File_Manager renames CA11009_0.CA11009_1;
+
+   Data_Base_File_Key : File_Descriptor_Type := Default_Descriptor;
+   New_Mode           : File_Mode_Type := Read_Write;
+
+begin
+   
+   -- This test indicates one approach to file management.
+   -- It is not intended to demonstrate full functionality, but rather
+   -- that the use of a private child package could provide a solution
+   -- to this type of situation.
+
+   Report.Test ("CA11009", "Check that a private child package can use "   &
+                           "entities declared in the visible part of the " &
+                           "parent unit of its parent unit");
+
+   -- Check initial conditions of the first entry in the file table.
+   -- These are all default values provided in the declaration of the 
+   -- type File_Type.                           
+
+   if (not (Data_Base_File_Key      = Default_Descriptor)) and then
+      (((not (File_Table(1).Name    = Default_Filename))   or 
+      (File_Table(1).Descriptor     /= Default_Descriptor))  or else
+      ((File_Table(1).Acct_Access   /= Default_Permission)  or
+      (not (File_Table(1).Mode      = Default_Mode))       or
+      (File_Table(1).Current_Status /= Default_Status)))
+   then
+      Report.Failed ("Initial condition failure");
+   end if;
+
+   -- Create/initialize file using the capability provided by the visible 
+   -- interface to the operating system, OS.File_Manager.  The actual 
+   -- processing routine is contained in the private grandchild package 
+   -- Internals, which utilize the components from the grandparent package.
+
+   File_Manager.Create_File (New_Mode, Data_Base_File_Key);
+
+   -- Verify that the initial conditions of the file table component have
+   -- been properly modified by the initialization function.
+
+   if not ((File_Table(1).Descriptor          = Data_Base_File_Key)   and then
+           (File_Table(1).Name                = An_Ada_File_Name)  and then
+           (File_Table(1).Acct_Access         = User)              and then
+           not ((File_Table(1).Mode           = Default_Mode)      or else
+                (File_Table(1).Current_Status = Default_Status)))
+   then
+      Report.Failed ("File creation failure");
+   end if;
+
+   Report.Result;
+
+end CA11009;

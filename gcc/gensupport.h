@@ -229,7 +229,6 @@ extern void get_pattern_stats (struct pattern_stats *ranges, rtvec vec);
 extern void compute_test_codes (rtx, file_location, char *);
 extern file_location get_file_location (rtx);
 extern const char *get_emit_function (rtx);
-extern bool needs_barrier_p (rtx);
 extern bool find_optab (optab_pattern *, const char *);
 extern FILE *choose_output (const vec<FILE *> &, unsigned &);
 

@@ -1,3 +1,30 @@
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-common.h (c_omp_region_type): Add C_ORT_DECLARE_MAPPER and
+	C_ORT_OMP_DECLARE_MAPPER codes.
+	(omp_mapper_list): Add forward declaration.
+	(c_omp_find_nested_mappers, c_omp_instantiate_mappers): Add prototypes.
+	* c-omp.cc (c_omp_find_nested_mappers): New function.
+	(remap_mapper_decl_info): New struct.
+	(remap_mapper_decl_1, omp_instantiate_mapper,
+	c_omp_instantiate_mappers): New functions.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+	    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117025
+	* c-common.h (enum rid): Add RID_COUNTOF.
+	(c_countof_type): New function prototype.
+	* c-common.def (COUNTOF_EXPR): New tree.
+	* c-common.cc (c_common_reswords): Add RID_COUNTOF entry.
+	(c_countof_type): New function.
+
+2025-05-23  Jason Merrill  <jason@redhat.com>
+
+	* c-format.cc (flag_chars_t::validate): Control quoting warnings
+	with -Wformat-diag.
+
 2025-05-15  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.cc (c_common_post_options): Set flag_coroutines.

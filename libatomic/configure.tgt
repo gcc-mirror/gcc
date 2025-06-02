@@ -185,6 +185,10 @@ case "${target}" in
   nvptx*-*-*)
 	;;
 
+  *-*-vxworks*)
+        partial_libatomic=vxworks
+	;;
+
   *)
 	# Who are you?
 	UNSUPPORTED=1

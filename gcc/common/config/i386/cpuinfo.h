@@ -1044,11 +1044,9 @@ get_available_features (struct __processor_model *cpu_model,
 	  /* Fall through.  */
 	case 1:
 	  set_feature (FEATURE_AVX10_1);
-	  set_feature (FEATURE_AVX10_1_256);
 	  break;
 	default:
 	  set_feature (FEATURE_AVX10_1);
-	  set_feature (FEATURE_AVX10_1_256);
 	  break;
 	}
     }

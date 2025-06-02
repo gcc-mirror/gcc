@@ -198,19 +198,24 @@ RISCV_EXT_DEFS = \
 
 $(srcdir)/config/riscv/riscv-ext.opt: $(RISCV_EXT_DEFS)
 
-build/gen-riscv-ext-opt$(build_exeext): $(srcdir)/config/riscv/gen-riscv-ext-opt.cc \
+build/gen-riscv-ext-opt.o: $(srcdir)/config/riscv/gen-riscv-ext-opt.cc \
 	$(RISCV_EXT_DEFS)
-	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@
+	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) -c $< -o $@
+
+build/gen-riscv-ext-opt$(build_exeext): build/gen-riscv-ext-opt.o
+	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ $<
 
 s-riscv-ext.opt: build/gen-riscv-ext-opt$(build_exeext)
 	$(RUN_GEN) build/gen-riscv-ext-opt$(build_exeext) > tmp-riscv-ext.opt
 	$(SHELL) $(srcdir)/../move-if-change tmp-riscv-ext.opt $(srcdir)/config/riscv/riscv-ext.opt
 	$(STAMP) s-riscv-ext.opt
 
-build/gen-riscv-ext-texi$(build_exeext): $(srcdir)/config/riscv/gen-riscv-ext-texi.cc \
+build/gen-riscv-ext-texi.o: $(srcdir)/config/riscv/gen-riscv-ext-texi.cc \
 	$(RISCV_EXT_DEFS)
-	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@
+	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) -c $< -o $@
 
+build/gen-riscv-ext-texi$(build_exeext): build/gen-riscv-ext-texi.o
+	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ $<
 
 $(srcdir)/doc/riscv-ext.texi: $(RISCV_EXT_DEFS)
 $(srcdir)/doc/riscv-ext.texi: s-riscv-ext.texi ; @true

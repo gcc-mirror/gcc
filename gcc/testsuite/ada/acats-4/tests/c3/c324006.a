@@ -1,0 +1,312 @@
+-- C324006.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVE:
+--      Check that a failed predicate check for a type or subtype with a 
+--      predicate and a Predicate_Failure aspect that does not raise an 
+--      exception propagates Assertion_Error with the string value resulting
+--      from the evaluation of the Predicate_Failure aspect.
+--
+--      Check that a predicate is checked when it is enabled by a specific
+--      pragma.
+--
+--      Check that a dynamic predicate of a type is checked when it is enabled.
+--
+-- TEST DESCRIPTION:
+--      We declare a set of types and subtypes with predicates with
+--      Predicate_Failure aspects, and then use those types and subtypes in
+--      various contexts. The Predicate_Failure aspects are strings that
+--      provide information about the failure. We check cases where the
+--      predicate check fails to ensure that the correct exception and
+--      message string are produced.
+--
+--      The other objectives are covered as a side-effect of the above test
+--      for the primary objective.
+--
+--      We test cases associated with assignments and with parameter passing,
+--      as these operations are ubiquitous in Ada and thus their combination
+--      with predicates will be as well.
+--
+--      The Predicate_Failure aspect was introduced by the 2016 Corrigendum.
+--
+--      Note that the use of X'Image here assumes that AI12-0225-1 (a Binding
+--      Interpretation) has been implemented (the current instance of a type
+--      or subtype being a value, not an object). As that AI corrects a wording
+--      mistake rather than adding capability (the traditional form of Image
+--      already has this capability), we require it here.
+--
+-- CHANGE HISTORY:
+--      30 Jun 21   RLB     Created test.
+--!
+package C324006_A is
+
+   pragma Assertion_Policy (Static_Predicate => Check,
+                            Dynamic_Predicate => Check);
+
+   type Odd is new Natural
+      with Dynamic_Predicate => Odd mod 2 = 1,
+           Predicate_Failure => "Value not odd =" & 
+                                             Natural'Image(Natural(Odd));
+              -- Note: We can't use Odd as the prefix of the Image attribute
+              -- here, as it represents the current instance of the type (a
+              -- value), not the type itself, in this context. AI12-0225-1
+              -- would allow us to directly write "Odd'Image", but it's
+              -- premature to require that as the Corrigendum wording required
+              -- an object rather than a value.
+           
+   subtype Small_Odd is Odd
+      with Static_Predicate => Small_Odd < 100,
+          Predicate_Failure => "Value not small =" & 
+                                             Natural'Image(Natural(Small_Odd));
+          
+   procedure Reset (Value : in out Small_Odd; Op : in Positive);
+      
+   procedure A_Reset (Value : in out Odd'Base; Op : in Positive);
+
+end C324006_A;
+
+package body C324006_A is
+
+   pragma Assertion_Policy (Static_Predicate => Check,
+                            Dynamic_Predicate => Check);
+
+   procedure Reset (Value : in out Small_Odd; Op : in Positive) is
+   begin
+      if Op = 1 then
+         Value := Value + 2; -- Usually OK.
+      elsif Op = 2 then
+         Value := Value + 1; -- Won't be odd.
+      elsif Op = 3 then
+         Value := Value + 100; -- Won't be small.
+      elsif Op = 4 then
+         Value := Value + 101; -- Won't be either small nor odd.
+      end if;
+   end Reset;
+      
+   procedure A_Reset (Value : in out Odd'Base; Op : in Positive) is
+   begin
+      -- Note: These are all OK here, but the check on the actual may fail.
+      if Op = 1 then
+         Value := Value + 2; -- Usually OK.
+      elsif Op = 2 then
+         Value := Value + 1; -- Won't be odd.
+      elsif Op = 3 then
+         Value := Value + 100; -- Won't be small.
+      elsif Op = 4 then
+         Value := Value + 101; -- Won't be either small nor odd.
+      end if;
+   end A_Reset;
+     
+end C324006_A;
+
+with C324006_A; use C324006_A;
+with Ada.Assertions;
+with Ada.Exceptions;
+with Report;
+
+procedure C324006 is
+
+   pragma Assertion_Policy (Static_Predicate => Check,
+                            Dynamic_Predicate => Check);
+
+begin
+
+   Report.Test
+     ("C324006",
+      "Check that a failed predicate check for a type or subtype with a " & 
+      "predicate and a Predicate_Failure aspect that does not raise an " &
+      "exception propagates Assertion_Error with the string value resulting " &
+      "from the evaluation of the Predicate_Failure aspect");
+
+   begin
+      declare
+         Foo : Small_Odd := 2;
+      begin
+         Report.Failed ("No exception raised for predicate (A)");
+      end;           
+   exception
+      when Oops1:Ada.Assertions.Assertion_Error =>
+         if Ada.Exceptions.Exception_Message (Oops1) /=
+            "Value not odd = 2" then
+            Report.Failed ("Wrong exception message for predicate (A) - " &
+               Ada.Exceptions.Exception_Message (Oops1));
+         -- else OK.
+         end if;
+      when Oops2:others =>
+         Report.Failed ("Wrong exception raised for predicate (A) - " &
+            Ada.Exceptions.Exception_Name (Oops2));
+   end;
+
+   declare
+      Foo : Small_Odd := 1;
+   begin
+      Foo := Foo + 100;
+      Report.Failed ("No exception raised for predicate (B)");
+   exception
+      when Oops1:Ada.Assertions.Assertion_Error =>
+         if Ada.Exceptions.Exception_Message (Oops1) /=
+            "Value not small = 101" then
+            Report.Failed ("Wrong exception message for predicate (B) - " &
+               Ada.Exceptions.Exception_Message (Oops1));
+         -- else OK.
+         end if;
+      when Oops2:others =>
+         Report.Failed ("Wrong exception raised for predicate (B) - " &
+            Ada.Exceptions.Exception_Name (Oops2));
+   end;
+
+   declare
+      Foo : Small_Odd := 1;
+   begin
+      Foo := Foo + 101; -- Small predicate fails.
+      Report.Failed ("No exception raised for predicate (C)");
+   exception
+      when Oops1:Ada.Assertions.Assertion_Error =>
+         -- Note: 3.2.4(29.2-29.7/4) require that the type's predicate is
+         -- checked before the subtype's predicate. In that case, 3.2.4(31.1/4)
+         -- says that the associated predicate is used.
+         if Ada.Exceptions.Exception_Message (Oops1) /=
+            "Value not odd = 102" then
+            Report.Failed ("Wrong exception message for predicate (C) - " &
+               Ada.Exceptions.Exception_Message (Oops1));
+         -- else OK.
+         end if;
+      when Oops2:others =>
+         Report.Failed ("Wrong exception raised for predicate (C) - " &
+            Ada.Exceptions.Exception_Name (Oops2));
+   end;
+
+   declare
+      Foo : Odd'Base := 1;
+   begin
+      Reset (Foo, 1); -- Should not raise exception
+   exception
+      when Oops2:others =>
+         Report.Failed ("Exception raised for predicate (D) - " &
+            Ada.Exceptions.Exception_Name (Oops2));
+   end;
+
+   declare
+      Foo : Odd'Base := 2;
+   begin
+      Reset (Foo, 1); -- Inbound value not odd
+      Report.Failed ("No exception raised for predicate (E)");
+   exception
+      when Oops1:Ada.Assertions.Assertion_Error =>
+         if Ada.Exceptions.Exception_Message (Oops1) /=
+            "Value not odd = 2" then
+            Report.Failed ("Wrong exception message for predicate (E) - " &
+               Ada.Exceptions.Exception_Message (Oops1));
+         -- else OK.
+         end if;
+      when Oops2:others =>
+         Report.Failed ("Wrong exception raised for predicate (E) - " &
+            Ada.Exceptions.Exception_Name (Oops2));
+   end;
+ 
+   declare
+      Foo : Odd'Base := 13;
+   begin
+      Reset (Foo, 4); -- Predicate fails internally
+      Report.Failed ("No exception raised for predicate (F)");
+   exception
+      when Oops1:Ada.Assertions.Assertion_Error =>
+         if Ada.Exceptions.Exception_Message (Oops1) /=
+            "Value not odd = 114" then
+            Report.Failed ("Wrong exception message for predicate (F) - " &
+               Ada.Exceptions.Exception_Message (Oops1));
+         -- else OK.
+         end if;
+      when Oops2:others =>
+         Report.Failed ("Wrong exception raised for predicate (F) - " &
+            Ada.Exceptions.Exception_Name (Oops2));
+   end;
+ 
+   declare
+      Foo : Small_Odd := 13;
+   begin
+      A_Reset (Foo, 3); -- Predicate fails on copy-back
+      Report.Failed ("No exception raised for predicate (G)");
+   exception
+      when Oops1:Ada.Assertions.Assertion_Error =>
+         if Ada.Exceptions.Exception_Message (Oops1) /=
+            "Value not small = 113" then
+            Report.Failed ("Wrong exception message for predicate (G) - " &
+               Ada.Exceptions.Exception_Message (Oops1));
+         -- else OK.
+         end if;
+      when Oops2:others =>
+         Report.Failed ("Wrong exception raised for predicate (G) - " &
+            Ada.Exceptions.Exception_Name (Oops2));
+   end;
+ 
+   declare
+      Foo : Small_Odd := 25;
+   begin
+      A_Reset (Foo, 2); -- Predicate fails on copy-back
+      Report.Failed ("No exception raised for predicate (H)");
+   exception
+      when Oops1:Ada.Assertions.Assertion_Error =>
+         if Ada.Exceptions.Exception_Message (Oops1) /=
+            "Value not odd = 26" then
+            Report.Failed ("Wrong exception message for predicate (H) - " &
+               Ada.Exceptions.Exception_Message (Oops1));
+         -- else OK.
+         end if;
+      when Oops2:others =>
+         Report.Failed ("Wrong exception raised for predicate (H) - " &
+            Ada.Exceptions.Exception_Name (Oops2));
+   end;
+ 
+   declare
+      Foo : Small_Odd := 35;
+   begin
+      A_Reset (Foo, 4); -- Predicate fails on copy-back
+      Report.Failed ("No exception raised for predicate (J)");
+   exception
+      when Oops1:Ada.Assertions.Assertion_Error =>
+         if Ada.Exceptions.Exception_Message (Oops1) /=
+            "Value not odd = 136" then
+            Report.Failed ("Wrong exception message for predicate (J) - " &
+               Ada.Exceptions.Exception_Message (Oops1));
+         -- else OK.
+         end if;
+      when Oops2:others =>
+         Report.Failed ("Wrong exception raised for predicate (J) - " &
+            Ada.Exceptions.Exception_Name (Oops2));
+   end;
+ 
+   Report.Result;
+
+end C324006;
+

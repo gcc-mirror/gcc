@@ -1,0 +1,214 @@
+-- C470001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVES:
+--     Check that a qualified expression is a name, and thus can be used:
+--        * as the prefix of indexing;
+--        * as the prefix of a slice;
+--        * as the prefix of selection;
+--        * as the prefix of a dereference;
+--        * as the prefix of an attribute;
+--        * as renamed entity in an object renaming.
+--
+-- TEST DESCRIPTION:
+--     We imagine a (dubiously designed) document management package that
+--     includes a pair of functions Paragraph that return a paragraph (and
+--     in one case, extra information as well). We use qualified expressions
+--     to ensure that the uses of the functions are unambiguous.
+
+-- CHANGE HISTORY:
+--     24 Mar 17   RLB     Created test.
+--
+--!
+package C470001_0 is -- Document_Manager
+
+   subtype Paragraph_Number is Natural range 0 .. 19;
+   type Paragraph_Text is access all String;
+   type Paragraph_Info is record
+      Text : Paragraph_Text;
+      Length : Natural := 0;
+      Indent : aliased Natural := 0;
+      -- ... other information here.
+   end record;
+
+   procedure Set_Paragraph (Num : in Paragraph_Number;
+                            Text : in String;
+                            Indent : in Natural := 0);
+      -- Insert paragraph number Num with the given Text and Indent.
+
+   function Paragraph (Num : in Paragraph_Number) return Paragraph_Info;
+      -- Get the paragraph information for paragraph Num.
+
+   function Paragraph (Num : in Paragraph_Number) return Paragraph_Text;
+      -- Get the paragraph text for paragraph Num. Note that modifying
+      -- the returned text will modify the original text as well.
+
+end C470001_0;
+
+package body C470001_0 is -- Document_Manager
+
+   Document : array (Paragraph_Number) of Paragraph_Info;
+
+   procedure Set_Paragraph (Num : in Paragraph_Number;
+                            Text : in String;
+                            Indent : in Natural := 0) is
+      -- Insert paragraph number Num with the given Text and Indent.
+   begin
+      Document(Num) := (Text => new String'(Text),
+                        Indent => Indent,
+                        Length => Text'Length);
+   end Set_Paragraph;
+
+
+   function Paragraph (Num : in Paragraph_Number) return Paragraph_Info is
+      -- Get the paragraph information for paragraph Num.
+      -- We presume the real application would do more than just return
+      -- the information passed in.
+   begin
+      return Document(Num);
+   end Paragraph;
+
+
+   function Paragraph (Num : in Paragraph_Number) return Paragraph_Text is
+      -- Get the paragraph text for paragraph Num.
+      -- We presume the real application would do more than just return
+      -- the information passed in.
+   begin
+      return Document(Num).Text;
+   end Paragraph;
+
+end C470001_0;
+
+
+with Report;
+with C470001_0; use C470001_0;
+procedure C470001 is
+
+begin
+
+   Report.Test
+     ("C470001",
+      "Check that a qualified expression is a name, and thus can be used " &
+      "where a name is required");
+
+   Set_Paragraph (1, Text => "The quick brown fox jumped over the " &
+                             "lazy Ada implementor.");
+
+   Set_Paragraph (2, Text => "May you have a punny day!",
+                     Indent => 4);
+
+   Set_Paragraph (3, Text => "This is a test. This is only a test. Had" &
+                             " this been a real application, you would have" &
+                             " needed instructions on how to use it.");
+
+   -- Indexing of qualified expression:
+   if String'(Paragraph (1).all)(1) /= 'T' then
+      Report.Failed ("Incorrect character (1A)");
+   end if;
+
+   -- Indexing of qualified expression with implicit dereference:
+   if Paragraph_Text'(Paragraph (2))(25) /= '!' then
+      Report.Failed ("Incorrect character (2A)");
+   end if;
+
+   -- Slice of qualified expression:
+   if String'(Paragraph (3).all)(17..36) /= "This is only a test." then
+      Report.Failed ("Incorrect slice (3A)");
+   end if;
+
+   -- Slice of qualified expression with implicit dereference:
+   if Paragraph_Text'(Paragraph (2))(16..20) /= "punny" then
+      Report.Failed ("Incorrect slice (2B)");
+   end if;
+
+   -- Explicit dereference of qualified expression:
+   if Paragraph_Text'(Paragraph (2)).all /= "May you have a punny day!" then
+      Report.Failed ("Incorrect string (2C)");
+   end if;
+
+   -- Indexed explicit dereference of qualified expression:
+   if Paragraph_Text'(Paragraph (1)).all(19) /= 'x' then
+      Report.Failed ("Incorrect character (1B)");
+   end if;
+
+   -- Sliced explicit dereference of qualified expression:
+   if Paragraph_Text'(Paragraph (1)).all(37..40) /= "lazy" then
+      Report.Failed ("Incorrect slice (1C)");
+   end if;
+
+   -- Modify sliced explicit dereference of qualified expression:
+   Paragraph_Text'(Paragraph (2)).all(16..20) := "sunny";
+   if Paragraph_Text'(Paragraph (2)).all(16) /= 's' then
+      Report.Failed ("Incorrect character (2D)");
+   end if;
+
+   -- Selection of qualified expression:
+   if Paragraph_Info'(Paragraph (2)).Indent /= 4 then
+      Report.Failed ("Incorrect indent (2E)");
+   end if;
+
+   -- Selection of qualified expression (with implicit dereference and slice):
+   if Paragraph_Info'(Paragraph (1)).Text(37..40) /= "lazy" then
+      Report.Failed ("Incorrect slice (1D)");
+   end if;
+
+   -- Qualified expression as prefix of attribute:
+   if Natural'(Paragraph (1).Indent)'Image /= " 0" then
+      Report.Failed ("Incorrect image (1E)");
+   end if;
+
+   -- Qualified expression as prefix of attribute:
+   if Natural'(Paragraph_Info'(Paragraph (2)).Length)'Image /= " 25" then
+      Report.Failed ("Incorrect image (2F)");
+   end if;
+
+   declare
+      -- Qualified expression as renamed entity in an object renaming:
+      Two_Length : Natural renames Natural'(Paragraph (2).Length);
+      Three_Text : Paragraph_Text renames Paragraph_Text'(Paragraph (3));
+   begin
+      if Two_Length /= 25 then
+         Report.Failed ("Incorrect length (2G)");
+      end if;
+      Three_Text(94..123) := "official instructions.        ";
+      if Three_Text(1..15) /= "This is a test." then
+         Report.Failed ("Incorrect text (3B)");
+      end if;
+      if Paragraph_Text'(Paragraph (3))(117) /= ' ' then
+         Report.Failed ("Incorrect character (3C)");
+      end if;
+   end;
+
+   Report.Result;
+
+end C470001;

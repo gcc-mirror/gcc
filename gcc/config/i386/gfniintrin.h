@@ -297,9 +297,9 @@ _mm256_maskz_gf2p8affine_epi64_epi8 (__mmask32 __A, __m256i __B,
 #pragma GCC pop_options
 #endif /* __GFNIAVX512VLBW__ */
 
-#if !defined(__GFNI__) || !defined(__EVEX512__) || !defined(__AVX512F__)
+#if !defined(__GFNI__) || !defined(__AVX512F__)
 #pragma GCC push_options
-#pragma GCC target("gfni,avx512f,evex512")
+#pragma GCC target("gfni,avx512f")
 #define __DISABLE_GFNIAVX512F__
 #endif /* __GFNIAVX512F__ */
 
@@ -341,9 +341,9 @@ _mm512_gf2p8affine_epi64_epi8 (__m512i __A, __m512i __B, const int __C)
 #pragma GCC pop_options
 #endif /* __GFNIAVX512F__ */
 
-#if !defined(__GFNI__) || !defined(__EVEX512__) || !defined(__AVX512BW__)
+#if !defined(__GFNI__) || !defined(__AVX512BW__)
 #pragma GCC push_options
-#pragma GCC target("gfni,avx512bw,evex512")
+#pragma GCC target("gfni,avx512bw")
 #define __DISABLE_GFNIAVX512FBW__
 #endif /* __GFNIAVX512FBW__ */
 

@@ -642,6 +642,28 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   NULL,						/* loop_align */
 };
 
+/* Costs to use when optimizing for MIPS P8700 */
+static const struct riscv_tune_param mips_p8700_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* fp_add */
+  {COSTS_N_INSNS (5), COSTS_N_INSNS (5)},	/* fp_mul */
+  {COSTS_N_INSNS (17), COSTS_N_INSNS (17)},	/* fp_div */
+  {COSTS_N_INSNS (5), COSTS_N_INSNS (5)},	/* int_mul */
+  {COSTS_N_INSNS (8), COSTS_N_INSNS (8)},	/* int_div */
+  4,            /* issue_rate */
+  8,            /* branch_cost */
+  4,            /* memory_cost */
+  8,            /* fmv_cost */
+  true,         /* slow_unaligned_access */
+  false,        /* vector_unaligned_access */
+  true,         /* use_divmod_expansion */
+  false,        /* overlap_op_by_pieces */
+  RISCV_FUSE_NOTHING,				/* fusible_ops */
+  NULL,         /* vector cost */
+  NULL,         /* function_align */
+  NULL,         /* jump_align */
+  NULL,         /* loop_align */
+};
+
 static bool riscv_avoid_shrink_wrapping_separate ();
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
@@ -3740,6 +3762,26 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       return true;
     }
 
+  if (TARGET_ZILSD
+      && (GET_MODE_UNIT_SIZE (mode) == (UNITS_PER_WORD * 2))
+      && ((REG_P (dest) && MEM_P (src))
+	  || (MEM_P (dest) && REG_P (src)))
+      && can_create_pseudo_p ())
+    {
+      rtx reg = REG_P (dest) ? dest : src;
+      unsigned regno = REGNO (reg);
+      /* ZILSD requires an even-odd register pair, let RA to
+	 fix the constraint if the reg is hard reg and not even reg.  */
+      if ((regno < FIRST_PSEUDO_REGISTER)
+	  && (regno % 2) != 0)
+	{
+	  rtx tmp = gen_reg_rtx (GET_MODE (reg));
+	  emit_move_insn (tmp, src);
+	  emit_move_insn (dest, tmp);
+	  return true;
+	}
+    }
+
   /* RISC-V GCC may generate non-legitimate address due to we provide some
      pattern for optimize access PIC local symbol and it's make GCC generate
      unrecognizable instruction during optimizing.  */
@@ -3874,6 +3916,10 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		break;
 	      case PLUS:
 	      case MINUS:
+	      case AND:
+	      case IOR:
+	      case XOR:
+	      case MULT:
 		{
 		  rtx op_0 = XEXP (x, 0);
 		  rtx op_1 = XEXP (x, 1);
@@ -4575,6 +4621,19 @@ riscv_split_64bit_move_p (rtx dest, rtx src)
 {
   if (TARGET_64BIT)
     return false;
+
+  /* Zilsd provides load/store with even-odd register pair. */
+  if (TARGET_ZILSD
+      && (((REG_P (dest) && MEM_P (src))
+	  || (MEM_P (dest) && REG_P (src)))))
+    {
+      rtx reg = REG_P (dest) ? dest : src;
+      unsigned regno = REGNO (reg);
+      /* GCC may still generating some load/store with odd-even reg pair
+	 because the ABI handling, but that's fine, just split that later.  */
+      if (GP_REG_P (regno))
+	return (regno < FIRST_PSEUDO_REGISTER) && ((regno % 2) != 0);
+    }
 
   /* There is no need to split if the FLI instruction in the `Zfa` extension can be used.  */
   if (satisfies_constraint_zfli (src))
@@ -9798,6 +9857,12 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (riscv_v_ext_mode_p (mode))
 	return false;
 
+      /* Zilsd require load/store with even-odd reg pair.  */
+      if (TARGET_ZILSD
+	  && (GET_MODE_UNIT_SIZE (mode) == (UNITS_PER_WORD * 2))
+	  && ((regno % 2) != 0))
+	return false;
+
       if (!GP_REG_P (regno + nregs - 1))
 	return false;
     }
@@ -12259,7 +12324,7 @@ singleton_vxrm_need (void)
   /* Walk the IL noting if VXRM is needed and if there's more than one
      mode needed.  */
   bool found = false;
-  int saved_vxrm_mode;
+  int saved_vxrm_mode = VXRM_MODE_NONE;
   for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (!INSN_P (insn) || DEBUG_INSN_P (insn))
@@ -14239,7 +14304,7 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
      we clear bits in IVAL.  Once IVAL is zero, then synthesis of the
      operation is complete.  */
   unsigned HOST_WIDE_INT ival = INTVAL (operands[2]);
-  
+
   /* Check if we want to use [x]ori. Then get the remaining bits
      and decrease the budget by one. */
   if ((ival & HOST_WIDE_INT_UC (0x7ff)) != 0)
@@ -14374,14 +14439,14 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
 	}
     }
 
-  /* If after accounting for bseti the remaining budget has 
+  /* If after accounting for bseti the remaining budget has
      gone to less than zero, it forces the value into a
      register and performs the IOR operation.  It returns
      TRUE to the caller so the caller knows code generation
      is complete. */
   if (budget < 0)
     {
-      rtx x = force_reg (word_mode, operands[2]); 
+      rtx x = force_reg (word_mode, operands[2]);
       x = gen_rtx_fmt_ee (code, word_mode, operands[1], x);
       emit_insn (gen_rtx_SET (operands[0], x));
       return true;
@@ -14390,7 +14455,7 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
   /* Synthesis is better than loading the constant.  */
   ival = INTVAL (operands[2]);
   rtx input = operands[1];
-  rtx output;
+  rtx output = NULL_RTX;
 
   /* Emit the [x]ori insn that sets the low 11 bits into
      the proper state.  */
@@ -14405,8 +14470,8 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
     }
 
   /* We figure out a single bit as a constant and
-     generate a CONST_INT node for that.  Then we 
-     construct the IOR node, then the SET node and 
+     generate a CONST_INT node for that.  Then we
+     construct the IOR node, then the SET node and
      emit it.  An IOR with a suitable constant that is
      a single bit will be implemented with a bseti. */
   while (ival)
@@ -14419,9 +14484,211 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
       input = output;
       ival &= ~tmpval;
     }
+
+  gcc_assert (output);
   emit_move_insn (operands[0], output);
   return true;
 }
+
+/* Synthesize OPERANDS[0] = OPERANDS[1] & OPERANDS[2].
+
+    OPERANDS[0] and OPERANDS[1] will be a REG and may be the same
+    REG.
+
+    OPERANDS[2] is a CONST_INT.
+
+    Return TRUE if the operation was fully synthesized and the caller
+    need not generate additional code.  Return FALSE if the operation
+    was not synthesized and the caller is responsible for emitting the
+    proper sequence.  */
+
+bool
+synthesize_and (rtx operands[3])
+{
+  /* Trivial cases that don't need synthesis.  */
+  if (SMALL_OPERAND (INTVAL (operands[2]))
+     || (TARGET_ZBS && not_single_bit_mask_operand (operands[2], word_mode)))
+    return false;
+
+  /* If the second operand is a mode mask, emit an extension
+     insn instead.  */
+  if (CONST_INT_P (operands[2]))
+    {
+      enum machine_mode tmode = VOIDmode;
+      if (UINTVAL (operands[2]) == GET_MODE_MASK (HImode))
+	tmode = HImode;
+      else if (UINTVAL (operands[2]) == GET_MODE_MASK (SImode))
+	tmode = SImode;
+
+      if (tmode != VOIDmode)
+	{
+	  rtx tmp = gen_lowpart (tmode, operands[1]);
+	  emit_insn (gen_extend_insn (operands[0], tmp, word_mode, tmode, 1));
+	  return true;
+	}
+    }
+
+  /* The number of instructions to synthesize the constant is a good
+     estimate of the budget.  That does not account for out of order
+     execution an fusion in the constant synthesis those would naturally
+     decrease the budget.  It also does not account for the AND at
+     the end of the sequence which would increase the budget. */
+  int budget = riscv_const_insns (operands[2], true);
+  rtx input = NULL_RTX;
+  rtx output = NULL_RTX;
+
+  /* Left shift + right shift to clear high bits.  */
+  if (budget >= 2 && p2m1_shift_operand (operands[2], word_mode))
+    {
+      int count = (GET_MODE_BITSIZE (GET_MODE (operands[1])).to_constant ()
+		   - exact_log2 (INTVAL (operands[2]) + 1));
+      rtx x = gen_rtx_ASHIFT (word_mode, operands[1], GEN_INT (count));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+      x = gen_rtx_LSHIFTRT (word_mode, input, GEN_INT (count));
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+
+  /* Clears a bunch of low bits with only high bits set.  */
+  unsigned HOST_WIDE_INT t = ~INTVAL (operands[2]);
+  if (budget >= 2 && exact_log2 (t + 1) >= 0)
+    {
+      int count = ctz_hwi (INTVAL (operands[2]));
+      rtx x = gen_rtx_LSHIFTRT (word_mode, operands[1], GEN_INT (count));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+      x = gen_rtx_ASHIFT (word_mode, input, GEN_INT (count));
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+
+  /* If we shift right to eliminate the trailing zeros and
+     the result is a SMALL_OPERAND, then it's a shift right,
+     andi and shift left.  */
+  t = INTVAL (operands[2]);
+  t >>= ctz_hwi (t);
+  if (budget >= 3 && SMALL_OPERAND (t) && popcount_hwi (t) > 2)
+    {
+      /* Shift right to clear the low order bits.  */
+      unsigned HOST_WIDE_INT count = ctz_hwi (INTVAL (operands[2]));
+      rtx x = gen_rtx_LSHIFTRT (word_mode, operands[1], GEN_INT (count));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+
+      /* Now emit the ANDI.  */
+      unsigned HOST_WIDE_INT mask = INTVAL (operands[2]);
+      mask >>= ctz_hwi (mask);
+      x = gen_rtx_AND (word_mode, input, GEN_INT (mask));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+
+      /* Shift left to move bits into position.  */
+      count = INTVAL (operands[2]);
+      count = ctz_hwi (count);
+      x = gen_rtx_ASHIFT (word_mode, input, GEN_INT (count));
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+
+  /* If there are all zeros, except for a run of 1s somewhere in the middle
+     of the constant, then this is at worst 3 shifts.  */
+  t = INTVAL (operands[2]);
+  if (budget >= 3
+      && consecutive_bits_operand (GEN_INT (t), word_mode)
+      && popcount_hwi (t) > 3)
+    {
+      /* Shift right to clear the low order bits.  */
+      int count = ctz_hwi (INTVAL (operands[2]));
+      rtx x = gen_rtx_LSHIFTRT (word_mode, operands[1], GEN_INT (count));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+
+      /* Shift left to clear the high order bits.  */
+      count += clz_hwi (INTVAL (operands[2])) % BITS_PER_WORD;
+      x = gen_rtx_ASHIFT (word_mode, input, GEN_INT (count));
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+
+      /* And shift back right to put the bits into position.  */
+      count = clz_hwi (INTVAL (operands[2])) % BITS_PER_WORD;
+      x = gen_rtx_LSHIFTRT (word_mode, input, GEN_INT (count));
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+
+  /* The special cases didn't apply.  It's entirely possible we may
+     want to combine some of the ideas above with bclr, but for now
+     those are deferred until we see them popping up in practice.  */
+
+  unsigned HOST_WIDE_INT ival = ~INTVAL (operands[2]);
+
+  /* Clear as many bits using andi as we can.  */
+  if ((ival & HOST_WIDE_INT_UC (0x7ff)) != 0x0)
+    {
+      ival &= ~HOST_WIDE_INT_UC (0x7ff);
+      budget--;
+    }
+
+  /* And handle remaining bits via bclr.  */
+  while (TARGET_ZBS && ival)
+    {
+      unsigned HOST_WIDE_INT tmpval = HOST_WIDE_INT_UC (1) << ctz_hwi (ival);
+      ival &= ~tmpval;
+      budget--;
+    }
+
+  /* If the remaining budget has gone to less than zero, it
+     forces the value into a register and performs the AND
+     operation.  It returns TRUE to the caller so the caller
+     knows code generation is complete.
+     FIXME: This is hacked to always be enabled until the last
+     patch in the series is enabled.  */
+  if (ival || budget < 0)
+    {
+      rtx x = force_reg (word_mode, operands[2]);
+      x = gen_rtx_AND (word_mode, operands[1], x);
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+
+  /* Synthesis is better than loading the constant.  */
+  ival = ~INTVAL (operands[2]);
+  input = operands[1];
+
+  /* Clear any of the lower 11 bits we need.  */
+  if ((ival & HOST_WIDE_INT_UC (0x7ff)) != 0)
+    {
+      rtx x = GEN_INT (~(ival & HOST_WIDE_INT_UC (0x7ff)));
+      x = gen_rtx_AND (word_mode, input, x);
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+      ival &= ~HOST_WIDE_INT_UC (0x7ff);
+    }
+
+  /* Clear the rest with bclr.  */
+  while (ival)
+    {
+      unsigned HOST_WIDE_INT tmpval = HOST_WIDE_INT_UC (1) << ctz_hwi (ival);
+      rtx x = GEN_INT (~tmpval);
+      x = gen_rtx_AND (word_mode, input, x);
+      output = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (output, x));
+      input = output;
+      ival &= ~tmpval;
+    }
+
+  emit_move_insn (operands[0], input);
+  return true;
+}
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP

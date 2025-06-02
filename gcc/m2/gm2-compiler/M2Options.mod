@@ -657,6 +657,26 @@ END SetStrictTypeChecking ;
 
 
 (*
+   SetStrictTypeAssignment - assigns the StrictTypeAssignment flag to value.
+*)
+
+PROCEDURE SetStrictTypeAssignment (value: BOOLEAN) ;
+BEGIN
+   StrictTypeAssignment := value
+END SetStrictTypeAssignment ;
+
+
+(*
+   SetStrictTypeReason - assigns the StrictTypeReason flag to value.
+*)
+
+PROCEDURE SetStrictTypeReason (value: BOOLEAN) ;
+BEGIN
+   StrictTypeReason := value
+END SetStrictTypeReason ;
+
+
+(*
    SetVerboseUnbounded - sets the VerboseUnbounded flag to, value.
 *)
 
@@ -2111,6 +2131,8 @@ BEGIN
    UnusedVariableChecking            := FALSE ;
    UnusedParameterChecking           := FALSE ;
    StrictTypeChecking                := TRUE ;
+   StrictTypeAssignment              := TRUE ;
+   StrictTypeReason                  := TRUE ;
    AutoInit                          := FALSE ;
    SaveTemps                         := FALSE ;
    ScaffoldDynamic                   := TRUE ;

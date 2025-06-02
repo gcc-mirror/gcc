@@ -69,8 +69,8 @@ are used to perform unordered floating point compare and set flag operations.
 mcmodel=
 Target RejectNegative Joined Enum(or1k_cmodel_type) Var(or1k_code_model) Init(CMODEL_SMALL)
 Specify the code model used for accessing memory addresses.  Specifying large
-enables generating binaries with large global offset tables.  By default the
-value is small.
+enables generating binaries with large global offset tables and calling
+functions anywhere in an executable.  By default the value is small.
 
 Enum
 Name(or1k_cmodel_type) Type(enum or1k_cmodel_type)

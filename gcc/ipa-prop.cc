@@ -542,6 +542,7 @@ ipa_dump_jump_function (FILE *f, ipa_jump_func *jump_func,
 
   if (jump_func->m_vr)
     {
+      fprintf (f, "         ");
       jump_func->m_vr->dump (f);
       fprintf (f, "\n");
     }
@@ -3329,6 +3330,10 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
   ipa_edge_args *args = ipa_edge_args_sum->get (e);
   if (!args)
     return;
+  ipa_node_params *old_inline_root_info = ipa_node_params_sum->get (cs->callee);
+  ipa_node_params *new_inline_root_info
+    = ipa_node_params_sum->get (cs->caller->inlined_to
+				? cs->caller->inlined_to : cs->caller);
   int count = ipa_get_cs_argument_count (args);
   int i;
 
@@ -3539,6 +3544,30 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		    int formal_id = ipa_get_jf_pass_through_formal_id (src);
 		    enum tree_code operation;
 		    operation = ipa_get_jf_pass_through_operation (src);
+
+		    tree old_ir_ptype = ipa_get_type (old_inline_root_info,
+						      dst_fid);
+		    tree new_ir_ptype = ipa_get_type (new_inline_root_info,
+						      formal_id);
+		    if (!useless_type_conversion_p (old_ir_ptype, new_ir_ptype))
+		      {
+			/* Jump-function construction now permits type-casts
+			   from an integer to another if the latter can hold
+			   all values or has at least the same precision.
+			   However, as we're combining multiple pass-through
+			   functions together, we are losing information about
+			   signedness and thus if conversions should sign or
+			   zero extend.  Therefore we must prevent combining
+			   such jump-function if signednesses do not match.  */
+			if (!INTEGRAL_TYPE_P (old_ir_ptype)
+			    || !INTEGRAL_TYPE_P (new_ir_ptype)
+			    || (TYPE_UNSIGNED (new_ir_ptype)
+				!= TYPE_UNSIGNED (old_ir_ptype)))
+			  {
+			    ipa_set_jf_unknown (dst);
+			    continue;
+			  }
+		      }
 
 		    if (operation == NOP_EXPR)
 		      {

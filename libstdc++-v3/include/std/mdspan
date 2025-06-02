@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       private:
 	using _S_storage = __array_traits<_IndexType, _S_rank_dynamic>::_Type;
-	[[no_unique_address]] _S_storage _M_dynamic_extents;
+	[[no_unique_address]] _S_storage _M_dynamic_extents{};
       };
 
     template<typename _OIndexType, typename _SIndexType>

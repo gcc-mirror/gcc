@@ -1,0 +1,161 @@
+-- CXAIB05.A
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--    The ACAA has created and maintains the Ada Conformity Assessment Test
+--    Suite for the purpose of conformity assessments conducted in accordance
+--    with the International Standard ISO/IEC 18009 - Ada: Conformity
+--    assessment of a language processor. This test suite should not be used
+--    to make claims of conformance unless used in accordance with
+--    ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+--
+-- OBJECTIVE:
+--      Check that Ada.Containers.Ordered_Maps is preelaborated.
+--
+--      Check that type Map from an instance of Ada.Containers.Ordered_Maps
+--      has Preeelaborable_Initialization, regardless of whether the element
+--      type has Preelaborable_Initialization.
+--
+-- TEST DESCRIPTION:
+--      This test is designed to imagine an active mapping program which
+--      keeps its data in instances of Ada.Containers.Ordered_Maps. Static
+--      items are kept in one map and movable items are kept in a different
+--      map with additional data.
+--
+--      The data are declared in a preelaborated package to improve startup
+--      times.
+--
+--      Note that for a (unbounded) Map, the container type Map has
+--      preelaborable initialization regardless of whether the element type
+--      does. (Elements are supposed to be created as needed, and creation
+--      is not needed when a container is initialized.)
+--
+-- CHANGE HISTORY:
+--    23 Dec 2020   RLB   Created test.
+--
+--!
+with FXAIB00;
+with Ada.Containers.Ordered_Maps;
+package CXAIB05_Data
+   with Preelaborate is
+
+   subtype Name is String(1..9);
+
+   package Static_Data is new Ada.Containers.Ordered_Maps (Name,
+                                                           FXAIB00.Location,
+                                                           "=" => FXAIB00."=");
+
+   Static_Locations : Static_Data.Map;
+
+   package Moveable_Data is new
+                       Ada.Containers.Ordered_Maps (Name,
+                                                    FXAIB00.Tagged_Location,
+                                                    "=" => FXAIB00."=");
+
+   Moveable_Locations : Moveable_Data.Map;
+
+end CXAIB05_Data;
+
+with Report;
+with CXAIB05_Data, FXAIB00; use CXAIB05_Data;
+with Ada.Containers;
+procedure CXAIB05 is
+    use type Ada.Containers.Count_Type; -- Make operators visible.
+    use type FXAIB00.Location; -- Make operators visible.
+begin
+   Report.Test ("CXAIB05", "Check that Ada.Containers.Ordered_Maps is " &
+                           "preelaborated and that type Map has " &
+                           "Preeelaborable_Initialization");
+
+   -- Check that the containers start empty:
+   if Static_Locations.Length /= 0 then
+      Report.Failed ("Static locations not empty on initialization");
+   end if;
+   if not Moveable_Locations.Is_Empty then
+      Report.Failed ("Moveable locations not empty on initialization");
+   end if;
+
+   -- Insert data, saving cursors:
+   Static_Locations.Include (Key => "Sheboygan",
+                             New_Item => (X => 100, Y => 50));
+   Static_Locations.Include (Key => "Madison  ",
+                             New_Item => (X => 0, Y => 0));
+   Static_Locations.Include (Key => "Wausau   ",
+                             New_Item => (X => 0, Y => 150));
+   Static_Locations.Include (Key => "Green_Bay",
+                            New_Item => (X => 75, Y => 120));
+
+   Moveable_Locations.Include (Key => "Windstar ",
+                               New_Item => (Id => <>,
+                                            Loc => (X => 100, Y => 50)));
+   Moveable_Locations.Include (Key => "Mazda_3  ",
+                               New_Item => (Id => <>,
+                                            Loc => (X => 0, Y => 0)));
+   Moveable_Locations.Include (Key => "Forester ",
+                               New_Item => (Id => <>,
+                                            Loc => (X => -10, Y => 0)));
+
+   -- Check that the lengths are correct:
+   if Static_Locations.Length /= 4 then
+      Report.Failed ("Wrong number of static locations after loading");
+   end if;
+   if Moveable_Locations.Length /= 3 then
+      Report.Failed ("Wrong number of moveable locations after loading");
+   end if;
+
+   -- Check a few values (using indexed notation):
+   if Static_Locations("Sheboygan") /= (X => 100, Y => 50) then
+      Report.Failed ("Wrong data - Sheboygan");
+   end if;
+   if Static_Locations("Green_Bay") /= (X => 75, Y => 120) then
+      Report.Failed ("Wrong data - Green Bay");
+   end if;
+   if Moveable_Locations("Mazda_3  ").Loc /= (X => 0, Y => 0) then
+      Report.Failed ("Wrong data - Mazda 3");
+   end if;
+   if Moveable_Locations("Forester ").Loc /= (X => -10, Y => 0) then
+      Report.Failed ("Wrong data - Forester");
+   end if;
+
+   -- Move the Mazda 3:
+   Moveable_Locations("Mazda_3  ").Loc := (X => 100, Y => 50);
+
+   -- Check that it moved:
+   if Moveable_Locations("Mazda_3  ").Loc /= (X => 100, Y => 50) then
+      Report.Failed ("Wrong data after moving - Mazda 3");
+   end if;
+
+   -- Check that the ids are unique:
+   if Moveable_Locations("Mazda_3  ").Id =
+                               Moveable_Locations("Forester ").Id or else
+      Moveable_Locations("Mazda_3  ").Id =
+                               Moveable_Locations("Windstar ").Id or else
+      Moveable_Locations("Forester ").Id =
+                               Moveable_Locations("Windstar ").Id then
+      Report.Failed ("Ids not unique for moveable data");
+   end if;
+
+   Report.Result;
+end CXAIB05;

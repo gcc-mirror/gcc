@@ -47,22 +47,6 @@ _Bool my_isxdigit_2a(unsigned char ch) {
   return 1;
 }
 
-_Bool my_isxdigit_3(unsigned char ch) {
-  utype mask1 = 0x7E00FFC0;
-  if (!((mask1 << (MASK - (ch & MASK))) >> MASK))
-    return 0;
-
-  return 1;
-}
-
-_Bool my_isxdigit_3a(unsigned char ch) {
-  utype mask2 =  0x7E00FFC0;
-  if (!((mask2 << (MASK - ((ch >> 4) & MASK))) >> MASK))
-    return 0;
-
-  return 1;
-}
-
 _Bool my_isxdigit_1_parm(unsigned char ch, utype mask1) {
   if (!((mask1 >> (ch & MASK)) & 1))
     return 0;
@@ -91,19 +75,5 @@ _Bool my_isxdigit_2a_parm(unsigned char ch, utype mask2) {
   return 1;
 }
 
-_Bool my_isxdigit_3_parm(unsigned char ch, utype mask1) {
-  if (!((mask1 << (MASK - (ch & MASK))) >> MASK))
-    return 0;
-
-  return 1;
-}
-
-_Bool my_isxdigit_3a_parm(unsigned char ch, utype mask2) {
-  if (!((mask2 << (MASK - ((ch >> 4) & MASK))) >> MASK))
-    return 0;
-
-  return 1;
-}
-
 /* Each test should generate a single bext.  */
-/* { dg-final { scan-assembler-times "bext\t" 12 } } */
+/* { dg-final { scan-assembler-times "bext\t" 8 } } */

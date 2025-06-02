@@ -1,3 +1,112 @@
+2025-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102599
+	PR fortran/114022
+	* expr.cc (simplify_complex_array_inquiry_ref): Helper function for
+	simplification of inquiry references (%re/%im) of constant complex
+	arrays.
+	(find_inquiry_ref): Use it for handling %re/%im inquiry references
+	of complex arrays.
+	(scalarize_intrinsic_call): Fix frontend memleak.
+	* primary.cc (gfc_match_varspec): When the reference is NULL, the
+	previous simplification has succeeded in evaluating inquiry
+	references also of arrays.
+
+2025-05-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120355
+	* interface.cc (compare_parameter): If the global function has a
+	result clause, take typespec from there for the comparison against
+	the dummy argument.
+
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* parse.cc (tree.h, fold-const.h, tree-hash-traits.h): Add includes
+	(for additions to omp-general.h).
+
+2025-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* check.cc(check_c_ptr_2): Rephrase error message
+	for clarity.
+
+2025-05-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/113152
+	* simplify.cc (gfc_simplify_cospi, gfc_simplify_sinpi): Avoid using
+	mpfr_fmod_ui in the MPFR < 4.2.0 version.
+
+2025-05-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119856
+	* io.cc: Set missing comma error checks to STD_STD_LEGACY.
+
+2025-05-28  Yuao Ma  <c8ef@outlook.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113152
+	* gfortran.h (enum gfc_isym_id): Add new enum.
+	* intrinsic.cc (add_functions): Register new intrinsics. Changing the call
+	from gfc_resolve_trigd{,2} to gfc_resolve_trig{,2}.
+	* intrinsic.h (gfc_simplify_acospi, gfc_simplify_asinpi,
+	gfc_simplify_asinpi, gfc_simplify_atanpi, gfc_simplify_atan2pi,
+	gfc_simplify_cospi, gfc_simplify_sinpi, gfc_simplify_tanpi): New.
+	(gfc_resolve_trig): Rename from gfc_resolve_trigd.
+	(gfc_resolve_trig2): Rename from gfc_resolve_trigd2.
+	* iresolve.cc (gfc_resolve_trig): Rename from gfc_resolve_trigd.
+	(gfc_resolve_trig2): Rename from gfc_resolve_trigd2.
+	* mathbuiltins.def: Add 7 new math builtins and re-align.
+	* simplify.cc (gfc_simplify_acos, gfc_simplify_asin,
+	gfc_simplify_acosd, gfc_simplify_asind): Revise error message.
+	(gfc_simplify_acospi, gfc_simplify_asinpi,
+	gfc_simplify_asinpi, gfc_simplify_atanpi, gfc_simplify_atan2pi,
+	gfc_simplify_cospi, gfc_simplify_sinpi, gfc_simplify_tanpi): New.
+
+2025-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101735
+	* primary.cc (gfc_match_varspec): Correct order of logic.
+
+2025-05-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* check.cc (gfc_check_c_associated): Use new helper functions.
+	Only call check_c_ptr_1 if optional c_ptr_2 tests succeed.
+	(check_c_ptr_1): Handle only c_ptr_1 checks.
+	(check_c_ptr_2): Expand checks for c_ptr_2 and handle cases
+	where there is no derived pointer in the gfc_expr and check
+	the inmod_sym_id only if it exists.
+	* misc.cc (gfc_typename): Handle the case for BT_VOID rather
+	than throw an internal error.
+
+2025-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101735
+	* expr.cc (find_inquiry_ref): If an inquiry reference applies to
+	a substring, use that, and calculate substring length if needed.
+	* primary.cc (extend_ref): Also handle attaching to end of
+	reference chain for appending.
+	(gfc_match_varspec): Discrimate between arrays of character and
+	substrings of them.  If a substring is taken from a character
+	component of a derived type, get the proper typespec so that
+	inquiry references work correctly.
+	(gfc_match_rvalue): Handle corner case where we hit a seemingly
+	dangling '%' and missed an inquiry reference. Try another match.
+
+2025-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* error.cc (gfc_diagnostic_start_span): Update for diagnostic.h
+	changes.
+
+2025-05-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120099
+	* trans-types.cc (gfc_return_by_reference): Intrinsic functions
+	returning complex numbers may return their result by reference
+	with -ff2c.
+
 2025-05-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/85750

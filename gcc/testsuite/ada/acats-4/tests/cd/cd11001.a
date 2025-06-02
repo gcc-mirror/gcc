@@ -1,0 +1,397 @@
+-- CD11001.A
+--
+--                                     Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                                DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                                 Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVE:
+--
+--    For an associated declaration that is a subprogram, check that the names
+--    of the parameters are directly visible in each aspect_declaration.
+--
+--    For an associated declaration that is a type declaration, check that the
+--    current instance of the type is directly visible in each
+--    aspect_declaration.
+--
+--    For an associated declaration that is a type declaration, check that the
+--    names of components are directly visible in each aspect_declaration.
+--
+--    For an associated declaration that is a subtype declaration, check that
+--    the current instance of the subtype is directly visible in each
+--    aspect_declaration.
+--
+-- TEST DESCRIPTION:
+--
+--     This test checks the global visibility rules for aspect specifications.
+--     We only try a few representative aspects of the appropriate kind; the
+--     does not check requirements for specific aspects.
+--
+--     We test that the appropriate items are directly visible, and that they
+--     hide any other new declarations that happen to be directly visible
+--     in the declaration list. (Note that we can't usefully test hiding
+--     of the current instance of a type, as we can't declare an object
+--     of the same type in some external package, and we can't test direct
+--     visibility of any current instance as that would require having another
+--     declaration with the same name in the declaration list, which is not
+--     allowed.)
+--
+--     Since this test is about general visibility rules, which of course
+--     apply to all Ada code, we expect that anything that can be written
+--     eventually will occur in real code. As such, we won't try to describe a
+--     specific usage scenario beyond importing declarations from another
+--     package.
+
+-- CHANGE HISTORY:
+--     07 Dec 15   RLB    Created test.
+--     30 Mar 16   RLB    Corrected value in predicate of Subtype3.
+
+package CD11001_0 is
+
+   Param1 : constant Natural := 12;
+
+   Subtype1 : constant Natural := 12;
+
+   Der1 : constant Natural := 12;
+
+   Comp1 : constant Natural := 12;
+
+end CD11001_0;
+
+
+
+with Report;
+with Ada.Assertions; use Ada.Assertions;
+with CD11001_0; use CD11001_0;
+procedure CD11001 is
+   pragma Assertion_Policy (Check); -- Contract checks are enabled for the
+                                    -- the following declarations.
+
+   Param2 : constant Natural := 52;
+
+   Comp2 : constant Natural := 12;
+
+   -- Object Param1 is use-visible here.
+   procedure Test1 (Param1 : in Natural)
+      with Pre => Param1 in 1 .. 9;
+
+   -- Object Param2 is directly visible here.
+   procedure Test2 (Param2 : in Natural)
+      with Pre => Param2 in 1 .. 9;
+
+   -- Object Param3 is directly visible at the end of the declaration list.
+   procedure Test3 (Param3 : in Natural)
+      with Pre => Param3 in 1 .. 9;
+
+   -- Object Subtype1 is use-visible here.
+   subtype Subtype1 is Natural range 0 .. 99
+      with Dynamic_Predicate => Subtype1 mod 2 = 1;
+
+   -- Check that we can use a use-visible object in the predicate:
+   subtype Subtype2 is Natural range 0 .. 99
+      with Dynamic_Predicate => Subtype2 mod 2 = 1 and Param1 = 12;
+
+   -- Check that we can use a directly visible object in the predicate:
+   subtype Subtype3 is Natural range 0 .. 99
+      with Dynamic_Predicate => Subtype3 mod 2 = 1 and Param2 = 52;
+
+   -- Object Der1 is use-visible here.
+   type Der1 is new Natural range 0 .. 99
+      with Dynamic_Predicate => Der1 mod 2 = 1;
+
+   package P is
+      type Priv1 is private;
+      type Priv2 is private;
+      type Priv3 is private;
+      procedure T1 (O : out Priv1; Val : in Natural);
+      procedure T2 (O : out Priv2; Val : in Natural);
+      procedure T3 (O : out Priv3; Val : in Natural);
+      function F1 (O : Priv1) return Natural;
+      function F2 (O : Priv2) return Natural;
+      function F3 (O : Priv3) return Natural;
+   private
+      -- Object Comp1 is use-visible here.
+      type Priv1 is record
+          Comp1 : Natural := 0;
+      end record
+      with Type_Invariant => Comp1 in 0 .. 9;
+      -- Object Comp2 is directly visible here.
+      type Priv2 is record
+          Comp2 : Natural := 0;
+      end record
+      with Type_Invariant => Comp2 in 0 .. 9;
+      -- Object Comp3 is directly visible at the end of the declaration list.
+      type Priv3 is record
+          Comp3 : Natural := 0;
+      end record
+      with Type_Invariant => Comp3 in 0 .. 9;
+
+      Comp3 : constant Natural := 12;
+   end P;
+
+   Param3 : constant Natural := 92;
+
+   procedure Test1 (Param1 : in Natural) is null;
+
+   procedure Test2 (Param2 : in Natural) is null;
+
+   procedure Test3 (Param3 : in Natural) is null;
+
+   package body P is
+      procedure T1 (O : out Priv1; Val : in Natural) is
+      begin
+         O := (Comp1 => Val);
+      end T1;
+
+      procedure T2 (O : out Priv2; Val : in Natural) is
+      begin
+         O := (Comp2 => Val);
+      end T2;
+
+      procedure T3 (O : out Priv3; Val : in Natural) is
+      begin
+         O := (Comp3 => Val);
+      end T3;
+
+      function F1 (O : Priv1) return Natural is (O.Comp1);
+      function F2 (O : Priv2) return Natural is (O.Comp2);
+      function F3 (O : Priv3) return Natural is (O.Comp3);
+   end P;
+
+
+begin
+
+   Report.Test ("CD11001", "Check that appropriate parameters, components, " &
+                           "and current instances are visible in an aspect " &
+                           "specification");
+
+   -- Check that the preconditions are being checked:
+   begin
+      Test1 (Report.Ident_Int(66));
+      Report.Failed ("Precondition failure did not raise an exception");
+   exception
+      when Assertion_Error =>
+         null;
+   end;
+
+   --- Try each procedure with a parameter value that passes the check:
+   begin
+      Test1 (Report.Ident_Int(4));
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Precondition used a use-visible object rather " &
+                        "than a parameter");
+   end;
+
+   begin
+      Test2 (Report.Ident_Int(4));
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Precondition used a directly visible object rather " &
+                        "than a parameter");
+   end;
+
+   begin
+      Test3 (Report.Ident_Int(1));
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Precondition used a directly visible object " &
+                        "declared later rather than a parameter");
+   end;
+
+   -- Check that the predicates are being checked:
+   begin
+      declare
+         Foo : Subtype1 := Report.Ident_Int(66);
+      begin
+         if Report.Equal (Foo, 66) then
+            Report.Failed ("Predicate failure did not raise an exception");
+         else
+            Report.Failed ("Weird result 1");
+         end if;
+      end;
+   exception
+      when Assertion_Error =>
+         null;
+      when Constraint_Error =>
+         Report.Failed ("Wrong exception raised 1");
+   end;
+
+   begin
+      declare
+         Foo : Subtype1 := Report.Ident_Int(15);
+      begin
+         if Report.Equal (Foo, 15) then
+            null;
+         else
+            Report.Failed ("Weird result 2");
+         end if;
+      end;
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate used a use-visible object rather " &
+                        "than the current instance of a subtype");
+      when Constraint_Error =>
+         Report.Failed ("Wrong exception raised 2");
+   end;
+
+   begin
+      declare
+         Foo : Subtype2 := Report.Ident_Int(37);
+      begin
+         if Report.Equal (Foo, 37) then
+            null;
+         else
+            Report.Failed ("Weird result 3");
+         end if;
+      end;
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate with a use-visible object failed");
+      when Constraint_Error =>
+         Report.Failed ("Wrong exception raised 3");
+   end;
+
+   begin
+      declare
+         Foo : Subtype3 := Report.Ident_Int(91);
+      begin
+         if Report.Equal (Foo, 91) then
+            null;
+         else
+            Report.Failed ("Weird result 4");
+         end if;
+      end;
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate with a directly visible object failed");
+      when Constraint_Error =>
+         Report.Failed ("Wrong exception raised 4");
+   end;
+
+   begin
+      declare
+         Foo : Der1 := Der1(Report.Ident_Int(5));
+      begin
+         if Report.Equal (Natural(Foo), 5) then
+            null;
+         else
+            Report.Failed ("Weird result 5");
+         end if;
+      end;
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate used a use-visible object rather " &
+                        "than the current instance of a type");
+      when Constraint_Error =>
+         Report.Failed ("Wrong exception raised 5");
+   end;
+
+   -- Check that the invariants are being checked:
+   begin
+      declare
+         Foo : P.Priv1;
+      begin
+         P.T1 (Foo, Report.Ident_Int(80));
+         if Report.Equal (P.F1(Foo), 80) then
+            Report.Failed ("Invariant failure did not raise an exception");
+         else
+            Report.Failed ("Weird result 6");
+         end if;
+      end;
+   exception
+      when Assertion_Error =>
+         null;
+      when Constraint_Error =>
+         Report.Failed ("Wrong exception raised 6");
+   end;
+
+   begin
+      declare
+         Foo : P.Priv1;
+      begin
+         P.T1 (Foo, Report.Ident_Int(4));
+         if Report.Equal (P.F1(Foo), 4) then
+            null;
+         else
+            Report.Failed ("Weird result 7");
+         end if;
+      end;
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Invariant used a use-visible object rather " &
+                        "than the component of the type");
+      when Constraint_Error =>
+         Report.Failed ("Wrong exception raised 7");
+   end;
+
+   begin
+      declare
+         Foo : P.Priv2;
+      begin
+         P.T2 (Foo, Report.Ident_Int(8));
+         if Report.Equal (P.F2(Foo), 8) then
+            null;
+         else
+            Report.Failed ("Weird result 8");
+         end if;
+      end;
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Invariant used a directly visible object rather " &
+                        "than the component of the type");
+      when Constraint_Error =>
+         Report.Failed ("Wrong exception raised 8");
+   end;
+
+   begin
+      declare
+         Foo : P.Priv3;
+      begin
+         P.T3 (Foo, Report.Ident_Int(1));
+         if Report.Equal (P.F3(Foo), 1) then
+            null;
+         else
+            Report.Failed ("Weird result 9");
+         end if;
+      end;
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Invariant used a directly visible object " &
+                        "declared later rather than the component of " &
+                        "the type");
+      when Constraint_Error =>
+         Report.Failed ("Wrong exception raised 9");
+   end;
+
+
+   Report.Result;
+
+end CD11001;
+

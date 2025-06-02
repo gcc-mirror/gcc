@@ -1453,7 +1453,7 @@
 })
 
 (define_insn "movsf_internal"
-  [(set (match_operand:SF 0 "nonimmed_operand" "=f,f,^U,D,a,D,R,a,f,a,a,W,a,U")
+  [(set (match_operand:SF 0 "nonimmed_operand" "=f,f,U,D,a,D,R,a,f,a,a,W,a,U")
 	(match_operand:SF 1 "move_operand" "f,^U,f,d,T,R,d,r,r,f,Y,iF,U,r"))]
   "((register_operand (operands[0], SFmode)
      || register_operand (operands[1], SFmode))

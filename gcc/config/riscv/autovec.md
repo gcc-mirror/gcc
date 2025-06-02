@@ -2491,19 +2491,13 @@
       (sign_extend:VWEXTI
        (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))))))]
   "TARGET_VECTOR"
-{
-  /* First emit a widening addition.  */
-  rtx tmp1 = gen_reg_rtx (<MODE>mode);
-  rtx ops1[] = {tmp1, operands[1], operands[2]};
-  insn_code icode = code_for_pred_dual_widen (PLUS, SIGN_EXTEND, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops1);
-
-  /* Then a narrowing shift.  */
-  rtx ops2[] = {operands[0], tmp1, const1_rtx};
-  icode = code_for_pred_narrow_scalar (ASHIFTRT, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops2);
-  DONE;
-})
+  {
+    insn_code icode = code_for_pred (UNSPEC_VAADD, <V_DOUBLE_TRUNC>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RDN,
+				   operands);
+    DONE;
+  }
+)
 
 (define_expand "avg<v_double_trunc>3_ceil"
  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand")
@@ -2517,25 +2511,13 @@
 	(match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
       (const_int 1)))))]
   "TARGET_VECTOR"
-{
-  /* First emit a widening addition.  */
-  rtx tmp1 = gen_reg_rtx (<MODE>mode);
-  rtx ops1[] = {tmp1, operands[1], operands[2]};
-  insn_code icode = code_for_pred_dual_widen (PLUS, SIGN_EXTEND, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops1);
-
-  /* Then add 1.  */
-  rtx tmp2 = gen_reg_rtx (<MODE>mode);
-  rtx ops2[] = {tmp2, tmp1, const1_rtx};
-  icode = code_for_pred_scalar (PLUS, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops2);
-
-  /* Finally, a narrowing shift.  */
-  rtx ops3[] = {operands[0], tmp2, const1_rtx};
-  icode = code_for_pred_narrow_scalar (ASHIFTRT, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops3);
-  DONE;
-})
+  {
+    insn_code icode = code_for_pred (UNSPEC_VAADD, <V_DOUBLE_TRUNC>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RNU,
+				   operands);
+    DONE;
+  }
+)
 
 ;; csrwi vxrm, 2
 ;; vaaddu.vv vd, vs2, vs1
@@ -2546,7 +2528,8 @@
   "TARGET_VECTOR"
 {
   insn_code icode = code_for_pred (UNSPEC_VAADDU, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RDN, operands);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RDN,
+				 operands);
   DONE;
 })
 
@@ -2559,7 +2542,8 @@
   "TARGET_VECTOR"
 {
   insn_code icode = code_for_pred (UNSPEC_VAADDU, <MODE>mode);
-  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RNU, operands);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RNU,
+				 operands);
   DONE;
 })
 
@@ -2584,7 +2568,8 @@
    (match_operand:V_VLSF 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_ceil (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    riscv_vector::expand_vec_ceil (operands[0], operands[1], <MODE>mode,
+				   <VCONVERT>mode);
     DONE;
   }
 )
@@ -2594,7 +2579,8 @@
    (match_operand:V_VLSF 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_floor (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    riscv_vector::expand_vec_floor (operands[0], operands[1], <MODE>mode,
+				    <VCONVERT>mode);
     DONE;
   }
 )
@@ -2604,7 +2590,8 @@
    (match_operand:V_VLSF 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_nearbyint (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    riscv_vector::expand_vec_nearbyint (operands[0], operands[1], <MODE>mode,
+					<VCONVERT>mode);
     DONE;
   }
 )
@@ -2614,7 +2601,8 @@
    (match_operand:V_VLSF 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_rint (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    riscv_vector::expand_vec_rint (operands[0], operands[1], <MODE>mode,
+				   <VCONVERT>mode);
     DONE;
   }
 )
@@ -2624,7 +2612,8 @@
    (match_operand:V_VLSF 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_round (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    riscv_vector::expand_vec_round (operands[0], operands[1], <MODE>mode,
+				    <VCONVERT>mode);
     DONE;
   }
 )
@@ -2634,7 +2623,8 @@
    (match_operand:V_VLSF 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_trunc (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    riscv_vector::expand_vec_trunc (operands[0], operands[1], <MODE>mode,
+				    <VCONVERT>mode);
     DONE;
   }
 )
@@ -2644,7 +2634,8 @@
    (match_operand:V_VLSF 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_roundeven (operands[0], operands[1], <MODE>mode, <VCONVERT>mode);
+    riscv_vector::expand_vec_roundeven (operands[0], operands[1], <MODE>mode,
+					<VCONVERT>mode);
     DONE;
   }
 )
@@ -2701,7 +2692,8 @@
    (match_operand:V_VLS_F_CONVERT_SI 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lceil (operands[0], operands[1], <MODE>mode, <V_F2SI_CONVERT>mode);
+    riscv_vector::expand_vec_lceil (operands[0], operands[1], <MODE>mode,
+				    <V_F2SI_CONVERT>mode);
     DONE;
   }
 )
@@ -2711,7 +2703,8 @@
    (match_operand:V_VLS_F_CONVERT_DI 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lceil (operands[0], operands[1], <MODE>mode, <V_F2DI_CONVERT>mode);
+    riscv_vector::expand_vec_lceil (operands[0], operands[1], <MODE>mode,
+				    <V_F2DI_CONVERT>mode);
     DONE;
   }
 )
@@ -2721,7 +2714,8 @@
    (match_operand:V_VLS_F_CONVERT_SI 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lfloor (operands[0], operands[1], <MODE>mode, <V_F2SI_CONVERT>mode);
+    riscv_vector::expand_vec_lfloor (operands[0], operands[1], <MODE>mode,
+				     <V_F2SI_CONVERT>mode);
     DONE;
   }
 )
@@ -2731,7 +2725,8 @@
    (match_operand:V_VLS_F_CONVERT_DI 1 "register_operand")]
   "TARGET_VECTOR && !flag_trapping_math && !flag_rounding_math"
   {
-    riscv_vector::expand_vec_lfloor (operands[0], operands[1], <MODE>mode, <V_F2DI_CONVERT>mode);
+    riscv_vector::expand_vec_lfloor (operands[0], operands[1], <MODE>mode,
+				     <V_F2DI_CONVERT>mode);
     DONE;
   }
 )
@@ -2763,7 +2758,8 @@
    (match_operand:V_VLSI 2 "register_operand")]
   "TARGET_VECTOR"
   {
-    riscv_vector::expand_vec_usadd (operands[0], operands[1], operands[2], <MODE>mode);
+    riscv_vector::expand_vec_usadd (operands[0], operands[1], operands[2],
+				    <MODE>mode);
     DONE;
   }
 )
@@ -2774,7 +2770,8 @@
    (match_operand:V_VLSI 2 "register_operand")]
   "TARGET_VECTOR"
   {
-    riscv_vector::expand_vec_ssadd (operands[0], operands[1], operands[2], <MODE>mode);
+    riscv_vector::expand_vec_ssadd (operands[0], operands[1], operands[2],
+				    <MODE>mode);
     DONE;
   }
 )
@@ -2785,7 +2782,8 @@
    (match_operand:V_VLSI 2 "register_operand")]
   "TARGET_VECTOR"
   {
-    riscv_vector::expand_vec_ussub (operands[0], operands[1], operands[2], <MODE>mode);
+    riscv_vector::expand_vec_ussub (operands[0], operands[1], operands[2],
+				    <MODE>mode);
     DONE;
   }
 )
@@ -2796,7 +2794,8 @@
    (match_operand:V_VLSI 2 "register_operand")]
   "TARGET_VECTOR"
   {
-    riscv_vector::expand_vec_sssub (operands[0], operands[1], operands[2], <MODE>mode);
+    riscv_vector::expand_vec_sssub (operands[0], operands[1], operands[2],
+				    <MODE>mode);
     DONE;
   }
 )

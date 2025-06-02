@@ -2124,7 +2124,7 @@ flag_chars_t::validate (const format_kind_info *fki,
 	{
 	  format_warning_at_char (format_string_loc, format_string_cst,
 				  format_chars - orig_format_chars - 1,
-				  OPT_Wformat_,
+				  OPT_Wformat_diag,
 				  "%s used within a quoted sequence",
 				  _(s->name));
 	}
@@ -2137,7 +2137,7 @@ flag_chars_t::validate (const format_kind_info *fki,
     {
       format_warning_at_char (format_string_loc, format_string_cst,
 			      format_chars - orig_format_chars,
-			      OPT_Wformat_,
+			      OPT_Wformat_diag,
 			      "%qc conversion used unquoted",
 			      format_char);
     }

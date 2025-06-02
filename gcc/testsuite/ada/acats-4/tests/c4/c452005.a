@@ -1,0 +1,260 @@
+-- C452005.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--     Check that an individual membership test that is an expression of an
+--     limited array type yields True if the primitive equals for the type
+--     yields True, and False otherwise.
+--
+--     Check that an individual membership test that is an expression of an
+--     nonlimited array type yields True if the predefined equals for the type
+--     yields True, and False otherwise.
+--
+-- TEST DESCRIPTION:
+--     We imagine an application that represents lists of record data with a
+--     a fixed array with a terminator record. We create limited and nonlimited
+--     versions of such a list, each having a primitive equality operation that
+--     respects the terminator. To simplify the test, we declare the actual
+--     data to be a single integer value (the data would be more complex in a
+--     real application).
+--
+--     We then try various membership operations on the lists to check which
+--     equality operator is used to implement the individual membership tests.
+--
+--     RM 4.5.2(28.1/4) is the primary paragraph tested herein.
+--
+--     Note: We don't try to describe a use case for the use of the
+--     memberships, since these are an alternative to using "=", and we
+--     wouldn't try to justify the use of "=" as it is so common that we expect
+--     that every possible case will appear eventually.
+--
+-- CHANGE HISTORY:
+--    28 Mar 2019   RLB   Created test.
+--
+--!
+
+with Report;
+package C452005_A is
+
+   type Kind_Type is (Data_End, Data);
+
+   type Lim_Data_Type is limited record
+      Kind : Kind_Type := Data_End;
+      Value: Natural := Report.Ident_Int(0);
+   end record;
+
+   type Nonlim_Data_Type is record
+      Kind : Kind_Type := Data_End;
+      Value: Natural := 0;
+   end record;
+
+end C452005_A;
+
+with C452005_A;
+package C452005_B is
+
+   MAX : constant := 5;
+
+   type Lim_List is array (1 .. MAX) of C452005_A.Lim_Data_Type;
+
+   function "=" (Left, Right : Lim_List) return Boolean;
+
+   type Nonlim_List is array (1 .. MAX) of C452005_A.Nonlim_Data_Type;
+
+   function "=" (Left, Right : Nonlim_List) return Boolean;
+
+   procedure Append (Obj : in out Nonlim_List;
+                     Val : in C452005_A.Nonlim_Data_Type);
+
+end C452005_B;
+
+package body C452005_B is
+
+   use type C452005_A.Kind_Type;
+
+   use type C452005_A.Nonlim_Data_Type;
+
+   function "=" (Left, Right : Lim_List) return Boolean is
+   begin
+      for I in Left'Range loop
+         if Left(I).Kind  /= Right(I).Kind or else
+            Left(I).Value /= Right(I).Value then
+            return False;
+         elsif Left(I).Kind = C452005_A.Data_End then
+            return True; -- Don't look at the rest of the array.
+         -- else continue comparing.
+         end if;
+      end loop;
+      return True;
+   end "=";
+
+   function "=" (Left, Right : Nonlim_List) return Boolean is
+   begin
+      for I in Left'Range loop
+         if Left(I) /= Right(I) then
+            return False;
+         elsif Left(I).Kind = C452005_A.Data_End then
+            return True; -- Don't look at the rest of the array.
+         -- else continue comparing.
+         end if;
+      end loop;
+      return True;
+   end "=";
+
+   procedure Append (Obj : in out Nonlim_List;
+                     Val : in C452005_A.Nonlim_Data_Type) is
+   begin
+      for I in Obj'Range loop
+         if Obj(I).Kind = C452005_A.Data_End then
+            Obj(I) := Val;
+            if I /= Obj'Last then
+               Obj(I+1) := (Kind => C452005_A.Data_End, Value => <>);
+            -- else last element of list.
+            end if;
+         -- else not the end, keep looking.
+         end if;
+      end loop;
+   end Append;
+
+end C452005_B;
+
+with Report;
+with C452005_A;
+with C452005_B; use C452005_B;
+procedure C452005 is
+
+   use all type C452005_A.Kind_Type;
+
+   use type C452005_A.Nonlim_Data_Type;
+
+   Lim_One : Lim_List := (1 => (Data, 12),
+                          others => (Kind => Data_End, Value => <>));
+
+   Lim_Two : Lim_List := (1 => (Data, 15), 2 => (Data, 66),
+                          others => (Kind => Data_End, Value => <>));
+
+   Lim_Mess: Lim_List := (1 => (Data, 12), 4 => (Data, 4),
+                          others => (Kind => Data_End, Value => <>));
+
+   Nonlim_One : Nonlim_List := (1 => (Data, 12),
+                                others => (Kind => Data_End, Value => <>));
+
+   Nonlim_Two : Nonlim_List := (1 => (Data, 15), 2 => (Data, 66),
+                                others => (Kind => Data_End, Value => <>));
+
+   Nonlim_Mess: Nonlim_List := (1 => (Data, 12), 4 => (Data, 4),
+                                others => (Kind => Data_End, Value => <>));
+
+   Nonlim_Updated : Nonlim_List := Nonlim_One;
+
+begin
+
+   Report.Test
+     ("C452005",
+      "Check that a membership with a limited array tested type uses " &
+      "primitive equality to evaluate the tests for expression choices, " &
+      "while a nonlimited array tested type uses predefined equality");
+
+   -- Check that primitive equality works as expected:
+   if Lim_One = Lim_Mess then
+      null;
+   else
+      Report.Failed ("Bad limited equality (1)");
+   end if;
+
+   if Nonlim_One = Nonlim_Mess then
+      null;
+   else
+      Report.Failed ("Bad nonlimited equality (1)");
+   end if;
+
+   Append (Nonlim_Updated, (Data, 66));
+
+   if Nonlim_Updated(2) = (Data, 66) then
+      null;
+   else
+      Report.Failed ("Bad nonlimited append (2)");
+   end if;
+   if Nonlim_Updated /= Nonlim_Two then
+      null;
+   else
+      Report.Failed ("Bad nonlimited equality(2)");
+   end if;
+
+
+   -- Simple cases:
+   if Lim_One in Lim_One | Lim_Two then
+      null; -- OK.
+   else
+      Report.Failed ("Wrong limited result (3)");
+   end if;
+   if Nonlim_One not in Nonlim_One | Nonlim_Two then
+      Report.Failed ("Wrong nonlimited result (3)");
+   else
+      null; -- OK.
+   end if;
+
+   if Lim_Two not in Lim_One | Lim_Mess then
+      null; -- OK.
+   else
+      Report.Failed ("Wrong limited result (4)");
+   end if;
+   if Nonlim_Two in Nonlim_One | Nonlim_Mess then
+      Report.Failed ("Wrong nonlimited result (4)");
+   else
+      null; -- OK.
+   end if;
+
+   -- Interesting cases:
+   if Lim_Mess in Lim_Two | Lim_One then
+      null; -- OK. (Must use primitive equality)
+   else
+      Report.Failed ("Wrong limited result (5)");
+   end if;
+
+   if Nonlim_Mess not in Nonlim_Two | Nonlim_One then
+      null; -- OK. (Must use predefined equality)
+   else
+      Report.Failed ("Wrong nonlimited result (5)");
+   end if;
+
+   if Nonlim_Updated in Nonlim_One | Nonlim_Two then
+      Report.Failed ("Wrong nonlimited result (6)");
+   else
+      null; -- OK.
+   end if;
+
+   Report.Result;
+
+end C452005;

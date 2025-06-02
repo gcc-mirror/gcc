@@ -1,0 +1,367 @@
+-- C392005.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, for an implicitly declared dispatching operation that is
+--      overridden, the body executed is the body for the overriding
+--      subprogram, even if the overriding occurs in a private part.
+--
+--      Check for the case where the overriding operations are declared in a
+--      public child unit of the package declaring the parent type, and the
+--      descendant type is a private extension.
+--
+--      Check for both dispatching and nondispatching calls.
+--
+--
+-- TEST DESCRIPTION:
+--      Consider:
+--
+--      package Parent is
+--         type Root is tagged ...
+--         procedure Vis_Op (P: Root);
+--      private
+--         procedure Pri_Op (P: Root);
+--      end Parent;
+--
+--      package Parent.Child is
+--         type Derived is new Root with private;
+--         -- Implicit Vis_Op (P: Derived) declared here.
+--
+--         procedure Pri_Op (P: Derived);                  -- (A)
+--         ...
+--      private
+--         type Derived is new Root with record...
+--         -- Implicit Pri_Op (P: Derived) declared here.
+
+--         procedure Vis_Op (P: Derived);                  -- (B)
+--         ...
+--      end Parent.Child;
+--
+--      Type Derived inherits both Vis_Op and Pri_Op from the ancestor type
+--      Root. Note, however, that Vis_Op is implicitly declared in the visible
+--      part, whereas Pri_Op is implicitly declared in the private part
+--      (inherited subprograms for a private extension are implicitly declared
+--      after the private_extension_declaration if the corresponding
+--      declaration from the ancestor is visible at that place; otherwise the
+--      inherited subprogram is not declared for the private extension,
+--      although it might be for the full type).
+--
+--      Even though Root's version of Pri_Op hasn't been implicitly declared
+--      for Derived at the time Derived's version of Pri_Op has been
+--      explicitly declared, the explicit Pri_Op still overrides the implicit
+--      version. 
+--      Also, even though the explicit Vis_Op for Derived is declared in the
+--      private part it still overrides the implicit version declared in the
+--      visible part. Calls with tag Derived will execute (A) and (B).
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      26 Nov 96   SAIC    Improved for ACVC 2.1
+--
+--!
+
+package C392005_0 is
+
+   type Remote_Camera is tagged private;
+
+   type Depth_Of_Field is range 5 .. 100;  
+   type Shutter_Speed  is (One, Two_Fifty, Four_Hundred, Thousand);
+   type Aperture       is (Eight, Sixteen, Thirty_Two);     
+
+   -- ...Other declarations.
+
+   procedure Focus (Cam   : in out Remote_Camera;
+                    Depth : in     Depth_Of_Field);
+
+   procedure Self_Test (C: in out Remote_Camera'Class);
+
+   -- ...Other operations.
+
+   function TC_Get_Depth (C: Remote_Camera) return Depth_Of_Field;
+   function TC_Get_Speed (C: Remote_Camera) return Shutter_Speed;
+
+private
+
+   type Remote_Camera is tagged record
+      DOF    : Depth_Of_Field := 10;
+      Shutter: Shutter_Speed  := One;
+      FStop  : Aperture       := Eight;
+   end record;
+
+   procedure Set_Shutter_Speed (C     : in out Remote_Camera;
+                                Speed : in     Shutter_Speed);
+
+   -- For the basic remote camera, shutter speed might be set as a function of
+   -- focus perhaps, thus it is declared as a private operation (usable
+   -- only internally within the abstraction).
+
+   function Set_Aperture (C : Remote_Camera) return Aperture;
+                               
+end C392005_0;
+
+
+     --==================================================================--
+
+
+package body C392005_0 is
+
+   procedure Focus (Cam   : in out Remote_Camera;
+                    Depth : in     Depth_Of_Field) is
+   begin
+      -- Artificial for testing purposes.
+      Cam.DOF := 46;
+   end Focus;
+
+   -----------------------------------------------------------
+   procedure Set_Shutter_Speed (C     : in out Remote_Camera;
+                                Speed : in     Shutter_Speed) is
+   begin
+      -- Artificial for testing purposes.
+      C.Shutter := Thousand;
+   end Set_Shutter_Speed;
+
+   -----------------------------------------------------------
+   function Set_Aperture (C : Remote_Camera) return Aperture is
+   begin
+      -- Artificial for testing purposes.
+      return Thirty_Two;
+   end Set_Aperture;
+
+   -----------------------------------------------------------
+   procedure Self_Test (C: in out Remote_Camera'Class) is
+      TC_Dummy_Depth : constant Depth_Of_Field := 23;
+      TC_Dummy_Speed : constant Shutter_Speed  := Four_Hundred;
+   begin
+
+      -- Test focus at various depths:
+      Focus(C, TC_Dummy_Depth);
+      -- ...Additional calls to Focus.
+
+      -- Test various shutter speeds:
+      Set_Shutter_Speed(C, TC_Dummy_Speed);
+      -- ...Additional calls to Set_Shutter_Speed.
+
+   end Self_Test;
+
+   -----------------------------------------------------------
+   function TC_Get_Depth (C: Remote_Camera) return Depth_Of_Field is
+   begin
+      return C.DOF;
+   end TC_Get_Depth;
+
+   -----------------------------------------------------------
+   function TC_Get_Speed (C: Remote_Camera) return Shutter_Speed is
+   begin
+      return C.Shutter;
+   end TC_Get_Speed;
+
+end C392005_0;
+
+     --==================================================================--
+
+
+package C392005_0.C392005_1 is
+
+   type Auto_Speed is new Remote_Camera with private;
+
+
+   -- procedure Focus (C     : in out Auto_Speed;      -- Implicitly declared
+   --                  Depth : in     Depth_Of_Field)  -- here.
+
+   -- For the improved remote camera, shutter speed can be set manually,
+   -- so it is declared as a public operation.
+
+   -- The order of declarations for Set_Aperture and Set_Shutter_Speed are
+   -- reversed from the original declarations to trap potential compiler
+   -- problems related to subprogram ordering.
+
+   function Set_Aperture (C : Auto_Speed) return Aperture;    -- Overrides
+                                                              -- inherited op.
+
+   procedure Set_Shutter_Speed (C     : in out Auto_Speed;    -- Overrides
+                                Speed : in     Shutter_Speed);-- inherited op.
+
+   -- Set_Shutter_Speed and Set_Aperture override the operations inherited
+   -- from the parent, even though the inherited operations are not implicitly
+   -- declared until the private part below.
+
+   type New_Camera is private;
+
+   function TC_Get_Aper (C: New_Camera) return Aperture;
+
+   -- ...Other operations.
+
+private
+   type Film_Speed is (One_Hundred, Two_Hundred, Four_Hundred);
+
+   type Auto_Speed is new Remote_Camera with record
+      ASA : Film_Speed;
+   end record;
+
+   -- procedure Set_Shutter_Speed (C     : in out Auto_Speed;    -- Implicitly
+   --                              Speed : in     Shutter_Speed) -- declared
+                                                                 -- here.
+
+   -- function Set_Aperture (C : Auto_Speed) return Aperture;    -- Implicitly
+                                                                 -- declared.
+
+   procedure Focus (C     : in out Auto_Speed;                -- Overrides
+                    Depth : in     Depth_Of_Field);           -- inherited op.
+
+   -- For the improved remote camera, perhaps the focusing algorithm is
+   -- different, so the original Focus operation is overridden here.
+
+   Auto_Camera : Auto_Speed;
+
+   type New_Camera is record
+      Aper : Aperture := Set_Aperture (Auto_Camera);  -- Calls the overridden,
+   end record;                                        -- not the inherited op.
+
+end C392005_0.C392005_1;
+
+
+     --==================================================================--
+
+
+package body C392005_0.C392005_1 is
+
+   procedure Focus (C     : in out Auto_Speed;
+                    Depth : in     Depth_Of_Field) is
+   begin
+      -- Artificial for testing purposes.
+      C.DOF := 57;
+   end Focus;
+
+   ---------------------------------------------------------------
+   procedure Set_Shutter_Speed (C     : in out Auto_Speed;
+                                Speed : in     Shutter_Speed) is
+   begin
+      -- Artificial for testing purposes.
+      C.Shutter := Two_Fifty;
+   end Set_Shutter_Speed;
+
+   -----------------------------------------------------------
+   function Set_Aperture (C : Auto_Speed) return Aperture is
+   begin
+      -- Artificial for testing purposes.
+      return Sixteen;
+   end Set_Aperture;
+
+   -----------------------------------------------------------
+   function TC_Get_Aper (C: New_Camera) return Aperture is
+   begin
+      return C.Aper;
+   end TC_Get_Aper;
+
+end C392005_0.C392005_1;
+
+
+     --==================================================================--
+
+
+with C392005_0.C392005_1;
+
+with Report;
+
+procedure C392005 is
+   Basic_Camera : C392005_0.Remote_Camera;
+   Auto_Camera1 : C392005_0.C392005_1.Auto_Speed;
+   Auto_Camera2 : C392005_0.C392005_1.Auto_Speed;
+   Auto_Depth   : C392005_0.Depth_Of_Field := 67;
+   New_Camera1  : C392005_0.C392005_1.New_Camera;
+   TC_Expected_Basic_Depth : constant C392005_0.Depth_Of_Field := 46;
+   TC_Expected_Auto_Depth  : constant C392005_0.Depth_Of_Field := 57;
+   TC_Expected_Basic_Speed : constant C392005_0.Shutter_Speed  
+                           := C392005_0.Thousand;
+   TC_Expected_Auto_Speed  : constant C392005_0.Shutter_Speed  
+                           := C392005_0.Two_Fifty;
+   TC_Expected_New_Aper    : constant C392005_0.Aperture 
+                           := C392005_0.Sixteen;
+
+   use type C392005_0.Depth_Of_Field;
+   use type C392005_0.Shutter_Speed;
+   use type C392005_0.Aperture;
+
+begin
+   Report.Test ("C392005", "Dispatching for overridden primitive "        &
+                "subprograms: private extension declared in child unit, " &
+                "parent is tagged private whose full view is tagged record");
+
+-- Call the class-wide operation for Remote_Camera'Class, which itself makes
+-- dispatching calls to Focus and Set_Shutter_Speed:
+
+
+   -- For an object of type Remote_Camera, the dispatching calls should
+   -- dispatch to the bodies declared for the root type:
+     
+   C392005_0.Self_Test(Basic_Camera);
+
+   if C392005_0.TC_Get_Depth (Basic_Camera) /= TC_Expected_Basic_Depth 
+     or else C392005_0.TC_Get_Speed (Basic_Camera) /= TC_Expected_Basic_Speed
+   then
+      Report.Failed ("Calls dispatched incorrectly for root type");
+   end if;
+
+
+   -- For an object of type Auto_Speed, the dispatching calls should
+   -- dispatch to the bodies declared for the derived type:
+     
+   C392005_0.Self_Test(Auto_Camera1);
+
+   if C392005_0.C392005_1.TC_Get_Depth(Auto_Camera1) /= TC_Expected_Auto_Depth
+
+      or
+      C392005_0.C392005_1.TC_Get_Speed(Auto_Camera1) /= TC_Expected_Auto_Speed
+   then
+      Report.Failed ("Calls dispatched incorrectly for derived type");
+   end if;
+
+   -- For an object of type Auto_Speed, a non-dispatching call to Focus should
+
+   -- execute the body declared for the derived type (even through it is 
+   -- declared in the private part).
+
+   C392005_0.C392005_1.Focus (Auto_Camera2, Auto_Depth);
+
+   if C392005_0.C392005_1.TC_Get_Depth(Auto_Camera2) /= TC_Expected_Auto_Depth
+
+   then
+      Report.Failed ("Non-dispatching call to privately overriding " &
+                     "subprogram executed the wrong body");
+   end if;
+
+   -- For an object of type New_Camera, the initialization using Set_Ap 
+   -- should execute the overridden body, not the inherited one.
+
+   if C392005_0.C392005_1.TC_Get_Aper (New_Camera1) /= TC_Expected_New_Aper  
+   then
+      Report.Failed ("Non-dispatching call to visible overriding " &
+                     "subprogram executed the wrong body");
+   end if;
+
+   Report.Result;
+
+end C392005;

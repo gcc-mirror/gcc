@@ -1268,7 +1268,7 @@ See RS/6000 and PowerPC Options.
 -mfence-tso  -mno-fence-tso
 -mdiv  -mno-div
 -misa-spec=@var{ISA-spec-string}
--march=@var{ISA-string|Profiles|Profiles_ISA-string}
+-march=@var{ISA-string|Profiles|Profiles_ISA-string|CPU/processor string}
 -mtune=@var{processor-string}
 -mpreferred-stack-boundary=@var{num}
 -msmall-data-limit=@var{N-bytes}
@@ -1496,8 +1496,8 @@ See RS/6000 and PowerPC Options.
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni -mamx-fp8
 -mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16
 -mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mapxf
--musermsr -mavx10.1 -mavx10.1-256 -mavx10.1-512 -mevex512 -mavx10.2
--mamx-avx512 -mamx-tf32 -mamx-transpose -mmovrs -mamx-movrs
+-musermsr -mavx10.1 -mavx10.2 -mamx-avx512 -mamx-tf32 -mamx-transpose -mmovrs
+-mamx-movrs
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg}
 -mkl -mwidekl
@@ -3296,6 +3296,50 @@ Enable support for the C++ coroutines extension (experimental).
 @item -fdiagnostics-all-candidates
 Permit the C++ front end to note all candidates during overload resolution
 failure, including when a deleted function is selected.
+
+@item -fdump-lang-
+@itemx -fdump-lang-@var{switch}
+@itemx -fdump-lang-@var{switch}-@var{options}
+@itemx -fdump-lang-@var{switch}-@var{options}=@var{filename}
+Control the dumping of C++-specific information.  The @var{options}
+and @var{filename} portions behave as described in the
+@option{-fdump-tree} option.  The following @var{switch} values are
+accepted:
+
+@table @samp
+@item all
+Enable all of the below.
+
+@opindex fdump-lang-class
+@item class
+Dump class hierarchy information.  Virtual table information is emitted
+unless '@option{slim}' is specified.
+
+@opindex fdump-lang-module
+@item module
+Dump module information.  Options @option{lineno} (locations),
+@option{graph} (reachability), @option{blocks} (clusters),
+@option{uid} (serialization), @option{alias} (mergeable),
+@option{asmname} (Elrond), @option{eh} (mapper) & @option{vops}
+(macros) may provide additional information.
+
+@opindex fdump-lang-raw
+@item raw
+Dump the raw internal tree data.
+
+@opindex fdump-lang-tinst
+@item tinst
+Dump the sequence of template instantiations, indented to show the
+depth of recursion.  The @option{lineno} option adds the source
+location where the instantiation was triggered, and the
+@option{details} option also dumps pre-instantiation substitutions
+such as those performed during template argument deduction.
+
+Lines in the .tinst dump start with @samp{I} for an instantiation,
+@samp{S} for another substitution, and @samp{R[IS]} for the reopened
+context of a deferred instantiation.
+
+@end table
 
 @opindex fno-elide-constructors
 @opindex felide-constructors
@@ -6075,17 +6119,24 @@ in this release.
 
 @item experimental-html
 Emit diagnostics to a file in HTML format.  This scheme is experimental,
-and may go away in future GCC releases.  The details of the output are
-also subject to change.
+and may go away in future GCC releases.  The keys and details of the output
+are also subject to change.
 
 Supported keys are:
 
 @table @gcctabopt
 
+@item css=@r{[}yes@r{|}no@r{]}
+Add an embedded <style> to the generated HTML.  Defaults to yes.
+
 @item file=@var{FILENAME}
 Specify the filename to write the HTML output to, potentially with a
 leading absolute or relative path.  If not specified, it defaults to
 @file{@var{source}.html}.
+
+@item javascript=@r{[}yes@r{|}no@r{]}
+Add an embedded <script> to the generated HTML providing a barebones UI
+for viewing results.  Defaults to yes.
 
 @end table
 
@@ -20891,30 +20942,10 @@ Dump language-specific information.  The file name is made by appending
 @itemx -fdump-lang-@var{switch}-@var{options}=@var{filename}
 Control the dumping of language-specific information.  The @var{options}
 and @var{filename} portions behave as described in the
-@option{-fdump-tree} option.  The following @var{switch} values are
-accepted:
-
-@table @samp
-@item all
-
-Enable all language-specific dumps.
-
-@item class
-Dump class hierarchy information.  Virtual table information is emitted
-unless '@option{slim}' is specified.  This option is applicable to C++ only.
-
-@item module
-Dump module information.  Options @option{lineno} (locations),
-@option{graph} (reachability), @option{blocks} (clusters),
-@option{uid} (serialization), @option{alias} (mergeable),
-@option{asmname} (Elrond), @option{eh} (mapper) & @option{vops}
-(macros) may provide additional information.  This option is
-applicable to C++ only.
-
-@item raw
-Dump the raw internal tree data.  This option is applicable to C++ only.
-
-@end table
+@option{-fdump-tree} option.  @option{-fdump-tree-all} enables all
+language-specific dumps; other options vary with the language.  For
+instance, see @xref{C++ Dialect Options} for the @option{-fdump-lang}
+flags supported by the C++ front-end.
 
 @opindex fdump-passes
 @item -fdump-passes
@@ -30880,12 +30911,13 @@ to store the immediate to a register first.
 @opindex mcmodel=
 @opindex mcmodel=small
 @item -mcmodel=small
-Generate OpenRISC code for the small model: The GOT is limited to 64k. This is
-the default model.
+Generate OpenRISC code for the small model: The GOT is limited to 64k and
+function call jumps are limited to 64M offsets. This is the default model.
 
 @opindex mcmodel=large
 @item -mcmodel=large
-Generate OpenRISC code for the large model: The GOT may grow up to 4G in size.
+Generate OpenRISC code for the large model: The GOT may grow up to 4G in size
+and function call jumps can target the full 4G address space.
 
 
 @end table
@@ -31163,12 +31195,12 @@ extension set if they weren't added explicitly.
 @item -mcpu=@var{processor-string}
 Use architecture of and optimize the output for the given processor, specified
 by particular CPU name.
-Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
-@samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34}, @samp{sifive-e76},
-@samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54}, @samp{sifive-s76},
-@samp{sifive-u54}, @samp{sifive-u74}, @samp{sifive-x280}, @samp{sifive-xp450},
-@samp{sifive-x670}, @samp{thead-c906}, @samp{tt-ascalon-d8}, @samp{xiangshan-nanhu},
-@samp{xt-c908}, @samp{xt-c908v}, @samp{xt-c910}, @samp{xt-c910v2},
+Permissible values for this option are: @samp{mips-p8700}, @samp{sifive-e20},
+@samp{sifive-e21}, @samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34},
+@samp{sifive-e76}, @samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54},
+@samp{sifive-s76}, @samp{sifive-u54}, @samp{sifive-u74}, @samp{sifive-x280},
+@samp{sifive-xp450}, @samp{sifive-x670}, @samp{thead-c906}, @samp{tt-ascalon-d8},
+@samp{xiangshan-nanhu}, @samp{xt-c908}, @samp{xt-c908v}, @samp{xt-c910}, @samp{xt-c910v2},
 @samp{xt-c920}, @samp{xt-c920v2}.
 
 Note that @option{-mcpu} does not override @option{-march} or @option{-mtune}.
@@ -31177,7 +31209,7 @@ Note that @option{-mcpu} does not override @option{-march} or @option{-mtune}.
 @item -mtune=@var{processor-string}
 Optimize the output for the given processor, specified by microarchitecture or
 particular CPU name.  Permissible values for this option are:
-@samp{generic-ooo}, @samp{rocket}, @samp{sifive-3-series},
+@samp{generic-ooo}, @samp{mips-p8700}, @samp{rocket}, @samp{sifive-3-series},
 @samp{sifive-5-series}, @samp{sifive-7-series}, @samp{size},
 @samp{sifive-p400-series}, @samp{sifive-p600-series}, and all valid options for
 @option{-mcpu=}.
@@ -35742,12 +35774,6 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex mavx10.1
 @itemx -mavx10.1
 @need 200
-@opindex mavx10.1-256
-@itemx -mavx10.1-256
-@need 200
-@opindex mavx10.1-512
-@itemx -mavx10.1-512
-@need 200
 @opindex mavx10.2
 @itemx -mavx10.2
 @need 200
@@ -36535,11 +36561,6 @@ disabled to prevent potential illegal instruction with EGPR occurs.
 To invoke egpr usage in inline asm, use new compiler option
 -mapx-inline-asm-use-gpr32 and user should ensure the instruction
 supports EGPR.
-
-@opindex mevex512
-@item -mevex512
-@itemx -mno-evex512
-Enables/disables 512-bit vector. It will be default on if AVX512F is enabled.
 
 @end table
 

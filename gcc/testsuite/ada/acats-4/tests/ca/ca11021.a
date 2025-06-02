@@ -1,0 +1,245 @@
+-- CA11021.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that body of the generic parent package can depend on one of 
+--      its own private generic children.
+--      
+-- TEST DESCRIPTION:
+--      A scenario is created that demonstrates the potential of adding a
+--      public generic child during code maintenance without distubing a large 
+--      subsystem.  After child is added to the subsystem, a maintainer
+--      decides to take advantage of the new functionality and rewrites
+--      the parent's body.
+--
+--      Declare a generic package which declares high level operations for a
+--      complex number abstraction.  Declare a private generic child package 
+--      of this package which defines low level complex operations. In the 
+--      parent body, instantiate the private child.  Use the low level
+--      operation to complete the high level operation.
+--
+--      In the main program, instantiate the parent generic package.
+--      Check that the operations in both packages perform as expected.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+generic               -- Complex number abstraction.
+   type Int_Type is range <>;
+
+package CA11021_0 is
+ 
+   -- Simulate a generic complex number support package. Complex numbers
+   -- are treated as coordinates in the Cartesian plane.
+
+   type Complex_Type is private;
+
+   Zero : constant Complex_Type;                      -- Real number (0,0).
+
+   function Real_Part (Complex_No : Complex_Type)
+     return Int_Type;
+
+   function Imag_Part (Complex_No : Complex_Type)
+     return Int_Type;
+
+   function Complex (Real, Imag : Int_Type)           
+     return Complex_Type;                             
+
+   -- High level operation for complex number.
+   function "*" (Factor : Int_Type; 
+                 C      : Complex_Type) return Complex_Type;
+
+   -- ... and other complicated ones.
+
+private
+   type Complex_Type is record
+      Real : Int_Type;
+      Imag : Int_Type;
+   end record;
+
+   Zero : constant Complex_Type := (Real => 0, Imag => 0);
+
+end CA11021_0;
+
+     --==================================================================--
+
+-- Private generic child of Complex_Number.  
+
+private
+
+generic               
+
+-- No parameter.
+
+package CA11021_0.CA11021_1 is
+ 
+   -- ... Other declarations.
+
+   -- Low level operation on complex number. 
+   function "+" (Left, Right : Complex_Type)              
+     return Complex_Type;                     
+
+   function "-" (Right : Complex_Type)                
+     return Complex_Type;                             
+
+   -- ... Various other operations in real application.
+
+end CA11021_0.CA11021_1;
+
+     --==================================================================--
+
+package body CA11021_0.CA11021_1 is
+
+   function "+" (Left, Right : Complex_Type)              
+     return Complex_Type is
+
+   begin
+      return ( (Left.Real + Right.Real, Left.Imag + Right.Imag) );
+   end "+";
+
+               --------------------------------------------------
+
+   function "-" (Right : Complex_Type) return Complex_Type is
+   begin
+      return (-Right.Real, -Right.Imag);
+   end "-";
+
+end CA11021_0.CA11021_1;
+
+     --==================================================================--
+
+with CA11021_0.CA11021_1;    -- Private generic child package.
+
+package body CA11021_0 is
+
+   -----------------------------------------------------
+   -- Parent's body depends on private generic child. --
+   -----------------------------------------------------
+
+   -- Instantiate the private child.
+
+   package Complex_Ops is new CA11021_1;  
+   use Complex_Ops;                    -- All user-defined operators 
+                                       -- directly visible.        
+
+               --------------------------------------------------
+
+   function "*" (Factor : Int_Type; 
+                 C      : Complex_Type) return Complex_Type is
+      Result : Complex_Type := Zero;   
+
+   begin
+      for I in 1 .. abs (Factor) loop
+         Result := Result + C;         -- Private generic child "+".
+      end loop;
+
+      if Factor < 0 then
+         Result := - Result;           -- Private generic child "-".
+      end if;
+
+      return Result;
+   end "*";
+
+               --------------------------------------------------
+
+   function Real_Part (Complex_No : Complex_Type) return Int_Type is
+   begin
+      return (Complex_No.Real);
+   end Real_Part;
+
+               --------------------------------------------------
+
+   function Imag_Part (Complex_No : Complex_Type) return Int_Type is
+   begin
+      return (Complex_No.Imag);
+   end Imag_Part;
+
+               --------------------------------------------------
+
+   function Complex (Real, Imag : Int_Type) return Complex_Type is
+   begin
+      return (Real, Imag);
+   end Complex;
+
+end CA11021_0;
+
+     --==================================================================--
+
+with CA11021_0;                        -- Complex number abstraction.
+
+with Report;
+
+procedure CA11021 is
+
+   type My_Integer is range -100 .. 100;
+
+               --------------------------------------------------
+
+-- Declare instance of the generic complex package for one particular 
+-- integer type.  
+
+   package My_Complex_Pkg is new 
+     CA11021_0 (Int_Type => My_Integer);
+
+   use My_Complex_Pkg;                 -- All user-defined operators 
+                                       -- directly visible.
+
+               --------------------------------------------------
+
+   Complex_One, Complex_Two : Complex_Type;
+
+   My_Literal               : My_Integer := -3;
+
+begin
+
+   Report.Test ("CA11021", "Check that body of the generic parent package " &
+                "can depend on its private generic child");
+
+   Complex_One := Complex (11, 6);          
+
+   Complex_Two := 5 * Complex_One; 
+
+   if Real_Part (Complex_Two) /= 55         
+     and Imag_Part (Complex_Two) /= 30     
+        then
+           Report.Failed ("Incorrect results from complex operation");
+   end if;
+
+   Complex_One := Complex (-4, 7);          
+
+   Complex_Two := My_Literal * Complex_One; 
+
+   if Real_Part (Complex_Two) /= 12         
+     and Imag_Part (Complex_Two) /= -21     
+        then
+           Report.Failed ("Incorrect results from complex operation");
+   end if;
+
+   Report.Result;
+
+end CA11021;

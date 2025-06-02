@@ -721,6 +721,14 @@ enum gfc_isym_id
      remains compatible.  */
   GFC_ISYM_SU_KIND,
   GFC_ISYM_UINT,
+
+  GFC_ISYM_ACOSPI,
+  GFC_ISYM_ASINPI,
+  GFC_ISYM_ATANPI,
+  GFC_ISYM_ATAN2PI,
+  GFC_ISYM_COSPI,
+  GFC_ISYM_SINPI,
+  GFC_ISYM_TANPI,
 };
 
 enum init_local_logical

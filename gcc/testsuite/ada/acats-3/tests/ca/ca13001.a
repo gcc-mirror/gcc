@@ -1,0 +1,370 @@
+-- CA13001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a separate protected unit declared in a non-generic child 
+--      unit of a private parent have the same visibility into its parent, 
+--      its siblings, and packages on which its parent depends as is available 
+--      at the point of their declaration.
+--
+-- TEST DESCRIPTION:
+--      A scenario is created that demonstrates the potential of having all
+--      members of one family to take out a transportation.  The restriction
+--      is depend on each member to determine who can get a car, a clunker, 
+--      or a bicycle.  If no transportation is available, that member has to
+--      walk.  
+--      
+--      Declare a package with location for each family member.  Declare
+--      a public parent package.  Declare a private child package. Declare a 
+--      public grandchild of this private package.  Declare a protected unit 
+--      as a subunit in a public grandchild package.  This subunit has 
+--      visibility into it's parent body ancestor and its sibling.
+--
+--      Declare another public parent package.  The body of this package has
+--      visibility into its private sibling's descendants.
+--
+--      In the main program, "with"s the parent package.  Check that the
+--      protected subunit performs as expected.  
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      16 Nov 95   SAIC    Update and repair for ACVC 2.0.1
+--
+--!
+
+package CA13001_0 is                    
+
+   type Location is (School, Work, Beach, Home);
+   type Family is (Father, Mother, Teen);
+   Destination : array (Family) of Location;
+
+   -- Other type definitions and procedure declarations in real application.
+
+end CA13001_0;
+
+-- No bodies required for CA13001_0.
+
+     --==================================================================--
+
+-- Public parent.
+
+package CA13001_1 is                     
+
+   type Transportation is (Bicycle, Clunker, New_Car);
+   type Key_Type is private;
+   Walking : boolean := false;
+
+   -- Other type definitions and procedure declarations in real application.
+
+private
+   type Key_Type 
+     is range Transportation'pos(Bicycle) .. Transportation'pos(New_Car);
+
+end CA13001_1;
+
+-- No bodies required for CA13001_1.
+
+     --==================================================================--
+
+-- Private child. 
+
+private package CA13001_1.CA13001_2 is       
+
+   type Transport is
+      record
+         In_Use : boolean := false;
+      end record;
+   Vehicles : array (Transportation) of Transport;
+
+   -- Other type definitions and procedure declarations in real application.
+
+end CA13001_1.CA13001_2;
+
+-- No bodies required for CA13001_1.CA13001_2.
+
+     --==================================================================--
+
+-- Public grandchild of a private parent.
+
+package CA13001_1.CA13001_2.CA13001_3 is
+
+   Flat_Tire : array (Transportation) of boolean := (others => false);
+
+   -- Other type definitions and procedure declarations in real application.
+
+end CA13001_1.CA13001_2.CA13001_3;
+
+-- No bodies required for CA13001_1.CA13001_2.CA13001_3.
+
+     --==================================================================--
+
+-- Context clauses required for visibility needed by a separate subunit.
+
+with CA13001_0;                           
+use  CA13001_0;
+
+-- Public grandchild of a private parent.
+
+package CA13001_1.CA13001_2.CA13001_4 is
+
+   type Transit is
+      record
+         Available : boolean := false;
+      end record;
+   type Keys_Array is array (Transportation) of Transit;
+   Fuel : array (Transportation) of boolean := (others => true);
+
+   protected Family_Transportation is
+
+      procedure Get_Vehicle (Who : in     Family;
+                             Key :    out Key_Type);
+      procedure Return_Vehicle (Tr : in Transportation);
+      function TC_Verify (What : Transportation) return boolean;
+
+   private
+      Keys : Keys_Array;
+
+   end Family_Transportation;
+
+end CA13001_1.CA13001_2.CA13001_4;
+
+     --==================================================================--
+
+-- Context clause required for visibility needed by a separate subunit.
+
+with CA13001_1.CA13001_2.CA13001_3;    -- Public sibling.
+
+package body CA13001_1.CA13001_2.CA13001_4 is
+
+   protected body Family_Transportation is separate;
+
+end CA13001_1.CA13001_2.CA13001_4;
+
+     --==================================================================--
+
+separate (CA13001_1.CA13001_2.CA13001_4)
+protected body Family_Transportation is
+
+   procedure Get_Vehicle (Who : in     Family;
+                          Key :    out Key_Type) is
+   begin
+      case Who is
+         when Father|Mother => 
+            -- Drive new car to work
+
+            -- Reference package with'ed by the subunit parent's body.
+            if Destination(Who) = Work then
+
+               -- Reference type declared in the private parent of the subunit
+               -- parent's body.
+               -- Reference type declared in the visible part of the 
+               -- subunit parent's body.
+               if not Vehicles(New_Car).In_Use and Fuel(New_Car) 
+
+                 -- Reference type declared in the public sibling of the 
+                 -- subunit parent's body.
+                 and not CA13001_1.CA13001_2.CA13001_3.Flat_Tire(New_Car) then
+                    Vehicles(New_Car).In_Use := true;
+
+                    -- Reference type declared in the private part of the 
+                    -- protected subunit.
+                    Keys(New_Car).Available := false;
+                    Key                     := Transportation'pos(New_Car);
+               else
+                 -- Reference type declared in the grandparent of the subunit
+                 -- parent's body.
+                 Walking := true;
+               end if;
+
+            -- Drive clunker to other destinations.
+            else
+               if not Vehicles(Clunker).In_Use and Fuel(Clunker) and not 
+                 CA13001_1.CA13001_2.CA13001_3.Flat_Tire(Clunker) then
+                    Vehicles(Clunker).In_Use := true;
+                    Keys(Clunker).Available  := false;
+                    Key                      := Transportation'pos(Clunker);
+               else
+                 Walking := true;
+                 Key     := Transportation'pos(Bicycle);
+               end if;
+            end if;
+    
+         -- Similar for Teen.
+         when Teen => 
+            if not Vehicles(Clunker).In_Use and Fuel(Clunker) and not 
+              CA13001_1.CA13001_2.CA13001_3.Flat_Tire(Clunker) then
+                 Vehicles(Clunker).In_Use := true;
+                 Keys(Clunker).Available  := false;
+                 Key                      := Transportation'pos(Clunker);
+            else
+               Walking := true;
+               Key     := Transportation'pos(Bicycle);
+            end if;
+      end case;
+
+   end Get_Vehicle;
+
+   ----------------------------------------------------------------
+
+   -- Any family member can bring back the transportation with the key.
+
+   procedure Return_Vehicle (Tr : in Transportation) is
+   begin
+      Vehicles(Tr).In_Use := false;
+      Keys(Tr).Available  := true;
+   end Return_Vehicle;
+
+   ----------------------------------------------------------------
+
+   function TC_Verify (What : Transportation) return boolean is
+   begin
+      return Keys(What).Available;
+   end TC_Verify;
+   
+end Family_Transportation;
+
+     --==================================================================--
+
+with CA13001_0;
+use  CA13001_0;
+
+-- Public child.
+
+package CA13001_1.CA13001_5 is
+
+   -- In a real application, tasks could be used to demonstrate 
+   -- a family transportation scenario, i.e., each member of
+   -- a family can take a vehicle out concurrently, then return
+   -- them at the same time. For the purposes of the test, family
+   -- transportation happens sequentially.
+
+   procedure Provide_Transportation (Who     : in     Family;
+                                     Get_Key :    out Key_Type;
+                                     Get_Veh :    out boolean);
+   procedure Return_Transportation (What   : in     Transportation;
+                                    Rt_Veh :    out boolean);
+
+end CA13001_1.CA13001_5;
+
+     --==================================================================--
+
+with CA13001_1.CA13001_2.CA13001_4;   -- Public grandchild of a private parent,
+                                      -- implicitly with CA13001_1.CA13001_2.
+package body CA13001_1.CA13001_5 is
+
+   package Transportation_Pkg renames CA13001_1.CA13001_2.CA13001_4;
+   use Transportation_Pkg;
+
+   -- These two validation subprograms provide the capability to check the 
+   -- components defined in the private packages from within the client 
+   -- program.
+
+   procedure Provide_Transportation (Who     : in     Family;
+                                     Get_Key :    out Key_Type;
+                                     Get_Veh :    out boolean) is
+   begin
+      -- Goto work, school, or to the beach.
+      Family_Transportation.Get_Vehicle (Who, Get_Key);
+      if not Family_Transportation.TC_Verify 
+        (Transportation'Val(Get_Key)) then
+           Get_Veh := true;
+      else
+         Get_Veh := false;
+      end if;
+
+   end Provide_Transportation;
+
+   ----------------------------------------------------------------
+
+   procedure Return_Transportation (What   : in     Transportation;
+                                    Rt_Veh :    out boolean) is
+   begin
+      Family_Transportation.Return_Vehicle (What);
+      if Family_Transportation.TC_Verify(What) and 
+        not CA13001_1.CA13001_2.Vehicles(What).In_Use then
+           Rt_Veh := true;
+      else
+         Rt_Veh := false;
+      end if;
+
+   end Return_Transportation;
+
+end CA13001_1.CA13001_5;
+
+     --==================================================================--
+
+with CA13001_0;
+with CA13001_1.CA13001_5;        -- Implicitly with parent, CA13001_1.
+with Report;
+
+procedure CA13001 is
+
+   Mommy           : CA13001_0.Family := CA13001_0.Mother;
+   Daddy           : CA13001_0.Family := CA13001_0.Father;
+   BG              : CA13001_0.Family := CA13001_0.Teen;
+   BG_Clunker      : CA13001_1.Transportation := CA13001_1.Clunker;
+   Get_Key         : CA13001_1.Key_Type;
+   Get_Transit     : boolean := false;
+   Return_Transit  : boolean := false;
+
+begin 
+   Report.Test ("CA13001", "Check that a protected subunit declared in " & 
+                "a child unit of a private parent have the same visibility " &
+                "into its parent, its parent's siblings, and packages on " &
+                "which its parent depends");
+
+   -- Get transportation for mother to go to work.
+   CA13001_0.Destination(CA13001_0.Mother) := CA13001_0.Work;
+   CA13001_1.CA13001_5.Provide_Transportation (Mommy, Get_Key, Get_Transit);
+   if not Get_Transit then
+      Report.Failed ("Failed to get mother transportation");
+   end if;
+
+   -- Get transportation for teen to go to school.
+   CA13001_0.Destination(CA13001_0.Teen) := CA13001_0.School;
+   Get_Transit := false;
+   CA13001_1.CA13001_5.Provide_Transportation (BG, Get_Key, Get_Transit);
+   if not Get_Transit then
+      Report.Failed ("Failed to get teen transportation");
+   end if;
+
+   -- Get transportation for father to go to the beach.
+   CA13001_0.Destination(CA13001_0.Father) := CA13001_0.Beach;
+   Get_Transit := false;
+   CA13001_1.CA13001_5.Provide_Transportation (Daddy, Get_Key, Get_Transit);
+   if Get_Transit and not CA13001_1.Walking then
+      Report.Failed ("Failed to make daddy to walk to the beach");
+   end if;
+
+   -- Return the clunker.
+   CA13001_1.CA13001_5.Return_Transportation (BG_Clunker, Return_Transit);
+   if not Return_Transit then
+      Report.Failed ("Failed to get back the clunker");
+   end if;
+
+   Report.Result;
+
+end CA13001;

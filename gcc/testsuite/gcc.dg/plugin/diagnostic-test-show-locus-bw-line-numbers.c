@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdiagnostics-show-caret -fdiagnostics-show-line-numbers" } */
+/* { dg-options "-O -fdiagnostics-show-caret -fdiagnostics-show-line-numbers -fdiagnostics-add-output=experimental-html:javascript=no" } */
 
 /* This is a collection of unittests for diagnostic_show_locus;
    see the overview in diagnostic_plugin_test_show_locus.c.
@@ -118,3 +118,7 @@ void test_fixit_insert_newline (void)
    { dg-end-multiline-output "" } */
 #endif
 }
+
+/* Use a Python script to verify various properties about the generated
+   HTML file:
+   { dg-final { run-html-pytest diagnostic-test-show-locus-bw-line-numbers.c "diagnostic-test-show-locus.py" } } */

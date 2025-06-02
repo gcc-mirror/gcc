@@ -10689,8 +10689,7 @@ vectorizable_load (vec_info *vinfo,
 	  first_dr_info = dr_info;
 	}
 
-      if (slp && grouped_load
-	  && memory_access_type == VMAT_STRIDED_SLP)
+      if (grouped_load && memory_access_type == VMAT_STRIDED_SLP)
 	{
 	  group_size = DR_GROUP_SIZE (first_stmt_info);
 	  ref_type = get_group_alias_ptr_type (first_stmt_info);
@@ -10830,22 +10829,20 @@ vectorizable_load (vec_info *vinfo,
 	  ltype = build_aligned_type (ltype, align * BITS_PER_UNIT);
 	}
 
-      if (slp)
+      /* For SLP permutation support we need to load the whole group,
+	 not only the number of vector stmts the permutation result
+	 fits in.  */
+      if (slp_perm)
 	{
-	  /* For SLP permutation support we need to load the whole group,
-	     not only the number of vector stmts the permutation result
-	     fits in.  */
-	  if (slp_perm)
-	    {
-	      /* We don't yet generate SLP_TREE_LOAD_PERMUTATIONs for
-		 variable VF.  */
-	      unsigned int const_vf = vf.to_constant ();
-	      ncopies = CEIL (group_size * const_vf, const_nunits);
-	      dr_chain.create (ncopies);
-	    }
-	  else
-	    ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+	  /* We don't yet generate SLP_TREE_LOAD_PERMUTATIONs for
+	     variable VF.  */
+	  unsigned int const_vf = vf.to_constant ();
+	  ncopies = CEIL (group_size * const_vf, const_nunits);
+	  dr_chain.create (ncopies);
 	}
+      else
+	ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+
       unsigned int group_el = 0;
       unsigned HOST_WIDE_INT
 	elsz = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
@@ -10883,14 +10880,13 @@ vectorizable_load (vec_info *vinfo,
 		CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, new_temp);
 
 	      group_el += lnel;
-	      if (! slp
-		  || group_el == group_size)
+	      if (group_el == group_size)
 		{
 		  n_groups++;
 		  /* When doing SLP make sure to not load elements from
 		     the next vector iteration, those will not be accessed
 		     so just use the last element again.  See PR107451.  */
-		  if (!slp || known_lt (n_groups, vf))
+		  if (known_lt (n_groups, vf))
 		    {
 		      tree newoff = copy_ssa_name (running_off);
 		      gimple *incr
@@ -10938,19 +10934,10 @@ vectorizable_load (vec_info *vinfo,
 
 	  if (!costing_p)
 	    {
-	      if (slp)
-		{
-		  if (slp_perm)
-		    dr_chain.quick_push (gimple_assign_lhs (new_stmt));
-		  else
-		    slp_node->push_vec_def (new_stmt);
-		}
+	      if (slp_perm)
+		dr_chain.quick_push (gimple_assign_lhs (new_stmt));
 	      else
-		{
-		  if (j == 0)
-		    *vec_stmt = new_stmt;
-		  STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
-		}
+		slp_node->push_vec_def (new_stmt);
 	    }
 	}
       if (slp_perm)

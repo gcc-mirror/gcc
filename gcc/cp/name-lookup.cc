@@ -1049,7 +1049,7 @@ name_lookup::search_usings (tree scope)
   bool found = false;
   if (vec<tree, va_gc> *usings = NAMESPACE_LEVEL (scope)->using_directives)
     for (unsigned ix = usings->length (); ix--;)
-      found |= search_qualified ((*usings)[ix], true);
+      found |= search_qualified (strip_using_decl ((*usings)[ix]), true);
 
   /* Look in its inline children.  */
   if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
@@ -1121,7 +1121,7 @@ name_lookup::queue_usings (using_queue& queue, int depth, vec<tree, va_gc> *usin
 {
   if (usings)
     for (unsigned ix = usings->length (); ix--;)
-      queue_namespace (queue, depth, (*usings)[ix]);
+      queue_namespace (queue, depth, strip_using_decl ((*usings)[ix]));
 }
 
 /* Unqualified namespace lookup in SCOPE.
@@ -6870,7 +6870,7 @@ using_directives_contain_std_p (vec<tree, va_gc> *usings)
     return false;
 
   for (unsigned ix = usings->length (); ix--;)
-    if ((*usings)[ix] == std_node)
+    if (strip_using_decl ((*usings)[ix]) == std_node)
       return true;
 
   return false;
@@ -8945,7 +8945,25 @@ add_using_namespace (vec<tree, va_gc> *&usings, tree target)
       if ((*usings)[ix] == target)
 	return;
 
+  if (modules_p ())
+    {
+      tree u = build_lang_decl (USING_DECL, NULL_TREE, NULL_TREE);
+      USING_DECL_DECLS (u) = target;
+      DECL_MODULE_EXPORT_P (u) = module_exporting_p ();
+      DECL_MODULE_PURVIEW_P (u) = module_purview_p ();
+      target = u;
+    }
   vec_safe_push (usings, target);
+}
+
+/* Convenience overload for the above, taking the user as its first
+   parameter.  */
+
+void
+add_using_namespace (tree ns, tree target)
+{
+  add_using_namespace (NAMESPACE_LEVEL (ns)->using_directives,
+		       ORIGINAL_NAMESPACE (target));
 }
 
 /* Tell the debug system of a using directive.  */

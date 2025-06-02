@@ -1,0 +1,228 @@
+-- CA11007.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the private part of a grandchild library unit can
+--      utilize its grandparent unit's private definition.
+--
+-- TEST DESCRIPTION:
+--      Declare a package, child package, and grandchild package, all 
+--      with private parts in their specifications.  
+--
+--      The private part of the grandchild package will make use of components
+--      that have been declared in the private part of the grandparent
+--      specification.
+--
+--      The child package demonstrates the extension of a parent file type 
+--      into an abstraction of an analog file structure. The grandchild package
+--      extends the grandparent file type into an abstraction of a digital 
+--      file structure, and provides conversion capability to/from the parent 
+--      analog file structure.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+  
+package CA11007_0 is                                -- Package File_Package 
+
+   type File_Descriptor is private;
+   type File_Type       is tagged private;
+
+   function  Next_Available_File return File_Descriptor;
+
+private
+
+   type File_Measure_Type is range 0 .. 1000;
+   type File_Descriptor   is new Integer;
+
+   Null_Measure : constant File_Measure_Type := File_Measure_Type'First;
+   Null_File    : constant File_Descriptor   := 0;
+
+   type File_Type is tagged
+     record
+        Descriptor : File_Descriptor := Null_File;
+     end record;
+
+end CA11007_0;                                 -- Package File_Package  
+
+     --=================================================================--
+
+package body CA11007_0 is                      -- Package body File_Package  
+
+   File_Count : Integer := 0;
+
+   function Next_Available_File return File_Descriptor is
+   begin
+      File_Count := File_Count + 1;
+      return File_Descriptor (File_Count);
+   end Next_Available_File;
+
+end CA11007_0;                                 -- Package body File_Package   
+
+     --=================================================================--
+
+package CA11007_0.CA11007_1 is                 -- Child package Analog
+
+   type    Analog_File_Type is new File_Type with private;
+
+private
+
+   type Wavelength_Type is new File_Measure_Type;
+
+   Min_Wavelength : constant Wavelength_Type := Wavelength_Type'First;
+
+   type Analog_File_Type is new File_Type with          -- Parent type.
+      record                                           
+         Wavelength : Wavelength_Type := Min_Wavelength;
+      end record;
+
+end CA11007_0.CA11007_1;                        -- Child package Analog
+
+     --=================================================================--
+
+package CA11007_0.CA11007_1.CA11007_2 is        -- Grandchild package Digital
+
+   type    Digital_File_Type is new File_Type with private;
+
+   procedure Recording (File : out Digital_File_Type);    
+
+   procedure Convert (From : in     Analog_File_Type;
+                      To   :    out Digital_File_Type);
+
+   function Validate         (File : in Digital_File_Type) return Boolean;
+   function Valid_Conversion (To : Digital_File_Type) return Boolean;
+   function Valid_Initial (From : Analog_File_Type) return Boolean;
+
+private
+
+   type Track_Type is new File_Measure_Type;          -- Grandparent type.
+
+   Min_Tracks : constant Track_Type := 
+     Track_Type (Null_Measure) + Track_Type'First;    -- Grandparent private 
+   Max_Tracks : constant Track_Type :=                -- constant.
+     Track_Type (Null_Measure) + Track_Type'Last;
+
+   type Digital_File_Type is new File_Type with       -- Grandparent type.  
+      record
+         Tracks : Track_Type := Min_Tracks;
+      end record;
+
+end CA11007_0.CA11007_1.CA11007_2;             -- Grandchild package Digital
+
+     --=================================================================--
+
+                                          -- Grandchild package body Digital
+package body CA11007_0.CA11007_1.CA11007_2 is  
+
+   procedure Recording (File : out Digital_File_Type) is
+   begin
+      File.Descriptor := Next_Available_File;    -- Assign new file descriptor.
+      File.Tracks     := Max_Tracks;             -- Change initial value.
+   end Recording;
+   --------------------------------------------------------------------------
+   procedure Convert (From : in     Analog_File_Type;
+                      To   :    out Digital_File_Type) is
+   begin
+      To.Descriptor := From.Descriptor + 100;            -- Dummy conversion.
+      To.Tracks     := Track_Type (From.Wavelength) / 2;
+   end Convert;                                     
+   --------------------------------------------------------------------------
+   function  Validate (File : in Digital_File_Type) return Boolean is
+      Result : Boolean := False;
+   begin
+      if not (File.Tracks /= Max_Tracks) then
+         Result := True;
+      end if;
+      return Result;                     
+   end Validate;
+   --------------------------------------------------------------------------
+   function Valid_Conversion (To : Digital_File_Type) return Boolean is
+   begin
+      return (To.Descriptor = 100) and (To.Tracks = (Min_Tracks / 2));
+   end Valid_Conversion;
+   --------------------------------------------------------------------------
+   function Valid_Initial (From : Analog_File_Type) return Boolean is
+   begin
+      return (From.Wavelength = Min_Wavelength);     -- Validate initial 
+   end Valid_Initial;                                -- conditions.  
+
+end CA11007_0.CA11007_1.CA11007_2;     -- Grandchild package body Digital
+
+     --=================================================================--
+
+with CA11007_0.CA11007_1.CA11007_2;    -- with Grandchild package Digital
+with Report;
+
+procedure CA11007 is
+
+   package Analog  renames CA11007_0.CA11007_1;
+   package Digital renames CA11007_0.CA11007_1.CA11007_2;            
+
+   Original_Digital_File,
+   Converted_Digital_File : Digital.Digital_File_Type;
+
+   Original_Analog_File : Analog.Analog_File_Type;
+
+begin
+   
+   -- This code demonstrates how private extensions could be utilized
+   -- in child packages to allow for recording on different media.  
+   -- The processing contained in the procedures and functions is
+   -- "dummy" processing, not intended to perform actual recording,
+   -- conversion, or validation operations, but simply to demonstrate 
+   -- this type of structural decomposition  as a possible solution to 
+   -- a user's design problem.
+
+   Report.Test ("CA11007", "Check that the private part of a grandchild "  &
+                           "library unit can utilize its grandparent    "  &
+                           "unit's private definition");
+
+   if not Digital.Valid_Initial (Original_Analog_File)
+   then
+      Report.Failed ("Incorrect initialization of Analog File");
+   end if;
+
+   ---
+
+   Digital.Convert (From => Original_Analog_File,        -- Convert file to
+                    To   => Converted_Digital_File);     -- digital format.
+
+   if not Digital.Valid_Conversion (To => Converted_Digital_File) then
+      Report.Failed ("Incorrect conversion of analog file");
+   end if;
+             
+   ---
+
+   Digital.Recording (Original_Digital_File);            -- Create file in
+                                                         -- digital format.
+   if not Digital.Validate (Original_Digital_File) then
+      Report.Failed ("Incorrect recording of digital file");
+   end if;
+
+   Report.Result;
+
+end CA11007; 

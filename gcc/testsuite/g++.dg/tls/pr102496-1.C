@@ -1,6 +1,6 @@
 // PR c++/102496
 // { dg-do link { target c++11 } }
-// { dg-require-effective-target tls }
+// { dg-require-effective-target tls_link }
 // { dg-add-options tls }
 // { dg-additional-sources pr102496-2.C }
 

@@ -152,7 +152,9 @@ library facilities: those in @code{<float.h>}, @code{<limits.h>},
 @code{<iso646.h>}; since C99, also those in @code{<stdbool.h>} and
 @code{<stdint.h>}; and since C11, also those in @code{<stdalign.h>}
 and @code{<stdnoreturn.h>}.  In addition, complex types, added in C99, are not
-required for freestanding implementations.  
+required for freestanding implementations.  Since C23, freestanding
+implementations are required to support a larger range of library
+facilities, including some functions from other headers.
 
 The standard also defines two environments for programs, a
 @dfn{freestanding environment}, required of all implementations and
@@ -167,13 +169,13 @@ a program using the facilities of an
 operating system is an example of a program running in a hosted environment.
 
 @opindex ffreestanding
-GCC aims towards being usable as a conforming freestanding
-implementation, or as the compiler for a conforming hosted
-implementation.  By default, it acts as the compiler for a hosted
+GCC aims towards being usable as the compiler for a conforming
+freestanding or hosted implementation.
+By default, it acts as the compiler for a hosted
 implementation, defining @code{__STDC_HOSTED__} as @code{1} and
 presuming that when the names of ISO C functions are used, they have
-the semantics defined in the standard.  To make it act as a conforming
-freestanding implementation for a freestanding environment, use the
+the semantics defined in the standard.  To make it act as the compiler
+for a freestanding environment, use the
 option @option{-ffreestanding}; it then defines
 @code{__STDC_HOSTED__} to @code{0} and does not make assumptions about the
 meanings of function names from the standard library, with exceptions
@@ -181,12 +183,24 @@ noted below.  To build an OS kernel, you may well still need to make
 your own arrangements for linking and startup.
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 
-GCC does not provide the library facilities required only of hosted
-implementations, nor yet all the facilities required by C99 of
-freestanding implementations on all platforms.  
-To use the facilities of a hosted
-environment, you need to find them elsewhere (for example, in the
-GNU C library).  @xref{Standard Libraries,,Standard Libraries}.
+GCC generally provides library facilities in headers that do not
+declare functions with external linkage (which includes the headers
+required by C11 and before to be provided by freestanding
+implementations), but not those included in other headers.
+Additionally, GCC provides @code{<stdatomic.h>}, even though it
+declares some functions with external linkage (which are provided in
+@code{libatomic}).  On a few platforms, some of the headers not
+declaring functions with external linkage are instead obtained from
+the OS's C library, which may mean that they lack support for features
+from more recent versions of the C standard that are supported in
+GCC's own versions of those headers.  On some platforms, GCC provides
+@code{<tgmath.h>} (but this implementation does not support interfaces
+added in C23).
+
+To use the facilities of a hosted environment, and some of the
+facilities required in a freestanding environment by C23, you need to
+find them elsewhere (for example, in the GNU C library).
+@xref{Standard Libraries,,Standard Libraries}.
 
 Most of the compiler support routines used by GCC are present in
 @file{libgcc}, but there are a few exceptions.  GCC requires the

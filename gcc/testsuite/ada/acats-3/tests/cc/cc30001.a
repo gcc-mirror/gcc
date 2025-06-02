@@ -1,0 +1,219 @@
+-- CC30001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that if a non-overriding primitive subprogram is declared for
+--      a type derived from a formal derived tagged type, the copy of that
+--      subprogram in an instance can override a subprogram inherited from the
+--      actual type.
+--
+-- TEST DESCRIPTION:
+--      User writes program to handle both mail messages and system messages.
+--
+--      Mail messages are created by instantiating a generic "mail" package
+--      with a root message type. System messages are created by
+--      instantiating the generic with a system message type derived from the
+--      root in a separate package. The system message type has a primitive
+--      subprogram called Send.
+--
+--      Inside the generic, a "mail" type is derived from the generic formal
+--      derived type, and a "Send" operation is declared.
+--
+--      Declare a root tagged type T. Declare a generic package with a formal
+--      derived type using the root tagged type as ancestor. In the generic,
+--      derive a type from the formal derived type and declare a primitive
+--      subprogram for it. In a separate package, declare a derivative DT of
+--      the root tagged type T and declare a primitive subprogram which is
+--      type conformant with (and hence, overridable for) the primitive
+--      declared in the generic. Instantiate the generic for DT. Make both
+--      dispatching and non-dispatching calls to the primitive subprogram. In
+--      both cases the version of the subprogram in the instance should be
+--      called (since it overrides the implementation inherited from the
+--      actual).
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      13 Apr 95   SAIC    Replaced call involving instance for root tagged
+--                          type with a dispatching call involving instance
+--                          for derived type. Updated commentary. Moved
+--                          instantiations (and related commentary) to
+--                          library-level to avoid accessibility violation.
+--                          Commented out instantiation for root tagged type.
+--      27 Feb 97   PWB.CTA Added elaboration pragma.
+--!
+
+package CC30001_0 is  -- Root message type.
+
+   type Msg_Type is tagged record
+      Text         : String (1 .. 20);
+      Message_Sent : Boolean;
+   end record;
+
+end CC30001_0;
+
+
+     --==================================================================--
+
+
+with CC30001_0;  -- Root message type.
+generic          -- Generic "mail" package.
+   type Message is new CC30001_0.Msg_Type with private;
+package CC30001_1 is
+
+   type Mail_Type is new Message with record   -- Derived from formal type.
+      To : String (1 .. 8);
+   end record;
+
+   procedure Send (M : in out Mail_Type);      -- For this test, this version
+                                               -- of Send should be called in
+   -- ... Other operations.                    -- all cases.
+
+end CC30001_1;
+
+
+     --==================================================================--
+
+
+package body CC30001_1 is
+
+   procedure Send (M : in out Mail_Type) is
+   begin
+      -- ... Code to send message omitted for brevity.
+      M.Message_Sent := True;
+   end Send;
+
+end CC30001_1;
+
+
+     --==================================================================--
+
+
+with CC30001_0;       -- Root message type.
+package CC30001_2 is  -- System message type and operations.
+
+   type Signal_Type is (Note, Warning, Error);
+
+   type Sys_Message is new CC30001_0.Msg_Type with record   -- Derived from
+      Signal : Signal_Type := Warning;                      -- root type.
+   end record;
+
+   procedure Send (Item : in out Sys_Message); -- For this test, this version
+                                               -- of Send should never be
+   -- ... Other operations.                    -- called (it will have been
+                                               -- overridden).
+end CC30001_2;
+
+
+     --==================================================================--
+
+
+package body CC30001_2 is
+
+   procedure Send (Item : in out Sys_Message) is
+   begin
+      -- ... Code to send message omitted for brevity.
+      Item.Message_Sent := False;  -- Ensure this procedure gives a different
+   end Send;                       -- result than CC30001_1.Send.
+
+end CC30001_2;
+
+
+     --==================================================================--
+
+
+-- User first sets up support for mail messages by instantiating the
+-- generic mail package for the root message type. An operation "Send" is
+-- declared for the mail message type in the instance.
+--
+-- with CC30001_0;  -- Root message type.
+-- with CC30001_1;  -- Generic "mail" package.
+-- package Mail_Messages is new CC30001_1 (CC30001_0.Msg_Type);
+
+
+     --==================================================================--
+
+
+-- Next, the user sets up support for system messages by instantiating the
+-- generic mail package with the system message type. An operation "Send"
+-- is declared for the "system" mail message type in the instance. This
+-- operation overrides the "Send" operation inherited from the system
+-- message type actual (a situation the user may not have intended).
+
+with CC30001_1;  -- Generic "mail" package.
+with CC30001_2;  -- System message type and operations.
+pragma Elaborate (CC30001_1);
+package CC30001_3 is new CC30001_1 (CC30001_2.Sys_Message);
+
+
+     --==================================================================--
+
+with CC30001_2;  -- System message type and operations.
+with CC30001_3;  -- Instance with mail type and operations.
+
+with Report;
+procedure CC30001 is
+
+   package System_Messages renames CC30001_3;
+
+
+   Sys_Msg1 : System_Messages.Mail_Type := (Text   => "System shutting down",
+                                            Signal => CC30001_2.Warning,
+                                            To     => "AllUsers",
+                                            Message_Sent => False);
+
+   Sys_Msg2 : System_Messages.Mail_Type'Class := Sys_Msg1;
+
+
+   use System_Messages, CC30001_2;                 -- All versions of "Send"
+                                                   -- directly visible.
+
+begin
+
+   Report.Test ("CC30001", "Check that if a non-overriding primitive "     &
+                "subprogram is declared for a type derived from a formal " &
+                "derived tagged type, the copy of that subprogram in an "  &
+                "instance can override a subprogram inherited from the "   &
+                "actual type");
+
+
+   Send (Sys_Msg1);   -- Calls version declared in instance (version declared
+                      -- in CC30001_2 has been overridden).
+
+   if not Sys_Msg1.Message_Sent then
+      Report.Failed ("Non-dispatching call: instance operation not called");
+   end if;
+
+
+   Send (Sys_Msg2);   -- Calls version declared in instance (version declared
+                      -- in CC30001_2 has been overridden).
+
+   if not Sys_Msg2.Message_Sent then
+      Report.Failed ("Dispatching call: instance operation not called");
+   end if;
+
+
+   Report.Result;
+end CC30001;

@@ -5085,6 +5085,11 @@ simple_operand_p (const_tree exp)
 		 #pragma weak, etc).  */
 	      && ! TREE_PUBLIC (exp)
 	      && ! DECL_EXTERNAL (exp)
+	      /* DECL_VALUE_EXPR will expand to something non-simple.  */
+	      && ! ((VAR_P (exp)
+		     || TREE_CODE (exp) == PARM_DECL
+		     || TREE_CODE (exp) == RESULT_DECL)
+		    && DECL_HAS_VALUE_EXPR_P (exp))
 	      /* Weakrefs are not safe to be read, since they can be NULL.
  		 They are !TREE_PUBLIC && !DECL_EXTERNAL but still
 		 have DECL_WEAK flag set.  */

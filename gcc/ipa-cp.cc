@@ -544,8 +544,12 @@ cs_interesting_for_ipcp_p (cgraph_edge *e)
   if (e->count.ipa ().nonzero_p ())
     return true;
   /* If local (possibly guseed or adjusted 0 profile) claims edge is
-     not executed, do not propagate.  */
-  if (e->count.initialized_p () && !e->count.nonzero_p ())
+     not executed, do not propagate.
+     Do not trust AFDO since branch needs to be executed multiple
+     time to count while we want to propagate even call called
+     once during the train run if callee is important.  */
+  if (e->count.initialized_p () && !e->count.nonzero_p ()
+      && e->count.quality () != AFDO)
     return false;
   /* If we have zero IPA profile, still consider edge for cloning
      in case we do partial training.  */

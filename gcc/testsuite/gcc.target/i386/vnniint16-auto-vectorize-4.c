@@ -5,8 +5,7 @@
 #define N 512
 
 #define AVX10_2
-#define AVX10_2_512
-#define AVX10_512BIT
+#define AVX10_SCALAR
 #define AVX512F_LEN 512
 
 #define TEST test_512

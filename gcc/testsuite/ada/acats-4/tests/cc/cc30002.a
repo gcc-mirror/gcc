@@ -1,0 +1,349 @@
+-- CC30002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that an explicit declaration in the private part of an instance
+--      does not override an implicit declaration in the instance, unless the
+--	corresponding explicit declaration in the generic overrides a
+--      corresponding implicit declaration in the generic. Check for primitive
+--      subprograms of tagged types.
+--
+-- TEST DESCRIPTION:
+--      Consider the following:
+--
+--         type Ancestor is tagged null record;
+--         procedure R (X: in Ancestor);
+--
+--         generic
+--            type Formal is new Ancestor with private;
+--         package G is
+--            type T is new Formal with null record;
+--            -- Implicit procedure R (X: in T);
+--            procedure P (X: in T);  -- (1)
+--         private
+--            procedure Q (X: in T);  -- (2)
+--            procedure R (X: in T);  -- (3) Overrides implicit R in generic.
+--         end G;
+--
+--         type Actual is new Ancestor with null record;
+--         procedure P (X: in Actual);
+--         procedure Q (X: in Actual);
+--         procedure R (X: in Actual);
+--
+--         package Instance is new G (Formal => Actual);
+--
+--      In the instance, the copy of P at (1) overrides Actual's P, since it
+--      is declared in the visible part of the instance. The copy of Q at (2)
+--      does not override anything. The copy of R at (3) overrides Actual's
+--      R, even though it is declared in the private part, because within
+--      the generic the explicit declaration of R overrides an implicit
+--      declaration.
+--
+--      Thus, for calls involving a parameter with tag T:
+--         - Calls to P will execute the body declared for T.
+--         - Calls to Q from within Instance will execute the body declared
+--           for T.
+--         - Calls to Q from outside Instance will execute the body declared
+--           for Actual.
+--         - Calls to R will execute the body declared for T.
+--
+--      Verify this behavior for both dispatching and nondispatching calls to
+--      Q and R. 
+--
+--
+-- CHANGE HISTORY:
+--      24 Feb 95   SAIC    Initial prerelease version.
+--
+--!
+
+package CC30002_0 is
+
+   type TC_Body_Kind is (Body_Of_Ancestor, Body_In_Instance,
+                         Body_Of_Actual,   Initial_Value);
+
+   type Camera is tagged record
+      -- ... Camera components.
+      TC_Focus_Called   : TC_Body_Kind := Initial_Value;
+      TC_Shutter_Called : TC_Body_Kind := Initial_Value;
+   end record;
+
+   procedure Focus (C: in out Camera);
+
+   -- ...Other operations.
+
+end CC30002_0;
+
+
+     --==================================================================--
+
+
+package body CC30002_0 is
+
+   procedure Focus (C: in out Camera) is
+   begin
+      -- Artificial for testing purposes.
+      C.TC_Focus_Called := Body_Of_Ancestor;
+   end Focus;
+
+end CC30002_0;
+
+
+     --==================================================================--
+
+
+with CC30002_0;
+use  CC30002_0;
+generic
+   type Camera_Type is new CC30002_0.Camera with private;
+package CC30002_1 is
+
+   type Speed_Camera is new Camera_Type with record
+      Diag_Code: Positive;
+      -- ...Other components.
+   end record;
+
+   -- Implicit procedure Focus (C: in out Speed_Camera) declared in generic.
+   procedure Self_Test_NonDisp (C: in out Speed_Camera);
+   procedure Self_Test_Disp    (C: in out Speed_Camera'Class);
+
+private
+
+   -- The following explicit declaration of Set_Shutter_Speed does NOT override
+   -- a corresponding implicit declaration in the generic. Therefore, its copy
+   -- does NOT override the implicit declaration (inherited from the actual)
+   -- in the instance.
+
+   procedure Set_Shutter_Speed (C: in out Speed_Camera);
+
+   -- The following explicit declaration of Focus DOES override a
+   -- corresponding implicit declaration (inherited from the parent) in the
+   -- generic. Therefore, its copy overrides the implicit declaration
+   -- (inherited from the actual) in the instance.
+
+   procedure Focus (C: in out Speed_Camera);  -- Overrides implicit Focus
+                                              -- in generic.
+end CC30002_1;
+
+
+     --==================================================================--
+
+
+package body CC30002_1 is
+
+   procedure Self_Test_NonDisp (C: in out Speed_Camera) is
+   begin
+      -- Nondispatching calls:
+      Focus (C);
+      Set_Shutter_Speed (C);
+   end Self_Test_NonDisp;
+
+   procedure Self_Test_Disp (C: in out Speed_Camera'Class) is
+   begin
+      -- Dispatching calls:
+      Focus (C);
+      Set_Shutter_Speed (C);
+   end Self_Test_Disp;
+
+   procedure Set_Shutter_Speed (C: in out Speed_Camera) is
+   begin
+      -- Artificial for testing purposes.
+      C.TC_Shutter_Called := Body_In_Instance;
+   end Set_Shutter_Speed;
+
+   procedure Focus (C: in out Speed_Camera) is
+   begin
+      -- Artificial for testing purposes.
+      C.TC_Focus_Called := Body_In_Instance;
+   end Focus;
+
+end CC30002_1;
+
+
+     --==================================================================--
+
+
+with CC30002_0;
+package CC30002_2 is
+
+   type Aperture_Camera is new CC30002_0.Camera with record
+      FStop: Natural;
+      -- ...Other components.
+   end record;
+
+   procedure Set_Shutter_Speed (C: in out Aperture_Camera);
+   procedure Focus (C: in out Aperture_Camera);
+
+end CC30002_2;
+
+
+     --==================================================================--
+
+
+package body CC30002_2 is
+
+   procedure Set_Shutter_Speed (C: in out Aperture_Camera) is
+      use CC30002_0;
+   begin
+      -- Artificial for testing purposes.
+      C.TC_Shutter_Called := Body_Of_Actual;
+   end Set_Shutter_Speed;
+
+   procedure Focus (C: in out Aperture_Camera) is
+      use CC30002_0;
+   begin
+      -- Artificial for testing purposes.
+      C.TC_Focus_Called := Body_Of_Actual;
+   end Focus;
+
+end CC30002_2;
+
+
+     --==================================================================--
+
+
+-- Instance declaration.
+
+with CC30002_1;
+with CC30002_2;
+package CC30002_3 is new CC30002_1 (Camera_Type => CC30002_2.Aperture_Camera);
+
+
+     --==================================================================--
+
+
+with CC30002_0;
+with CC30002_1;
+with CC30002_2;
+with CC30002_3; -- Instance.
+
+with Report;
+procedure CC30002 is
+
+   package Speed_Cameras renames CC30002_3;
+
+   use CC30002_0;
+
+   TC_Camera1: Speed_Cameras.Speed_Camera;
+   TC_Camera2: Speed_Cameras.Speed_Camera'Class := TC_Camera1;
+   TC_Camera3: Speed_Cameras.Speed_Camera;
+   TC_Camera4: Speed_Cameras.Speed_Camera;
+
+begin
+   Report.Test ("CC30002", "Check that an explicit declaration in the "      &
+                "private part of an instance does not override an implicit " &
+                "declaration in the instance, unless the corresponding "     &
+                "explicit declaration in the generic overrides a "           &
+                "corresponding implicit declaration in the generic. Check "  &
+                "for primitive subprograms of tagged types");
+
+--
+-- Check non-dispatching calls outside instance:
+--
+
+   -- Non-overriding primitive operation:
+
+   Speed_Cameras.Set_Shutter_Speed (TC_Camera1);
+   if TC_Camera1.TC_Shutter_Called /= Body_Of_Actual then
+      Report.Failed ("Wrong body executed: non-dispatching call to " &
+                     "Set_Shutter_Speed outside instance");
+   end if;
+
+
+   -- Overriding primitive operation:
+
+   Speed_Cameras.Focus (TC_Camera1);
+   if TC_Camera1.TC_Focus_Called /= Body_In_Instance then
+      Report.Failed ("Wrong body executed: non-dispatching call to " &
+                     "Focus outside instance");
+   end if;
+
+
+--
+-- Check dispatching calls outside instance:
+--
+
+   -- Non-overriding primitive operation:
+
+   Speed_Cameras.Set_Shutter_Speed (TC_Camera2);
+   if TC_Camera2.TC_Shutter_Called /= Body_Of_Actual then
+      Report.Failed ("Wrong body executed: dispatching call to " &
+                     "Set_Shutter_Speed outside instance");
+   end if;
+
+
+   -- Overriding primitive operation:
+
+   Speed_Cameras.Focus (TC_Camera2);
+   if TC_Camera2.TC_Focus_Called /= Body_In_Instance then
+      Report.Failed ("Wrong body executed: dispatching call to " &
+                     "Focus outside instance");
+   end if;
+
+
+
+--
+-- Check non-dispatching calls within instance:
+--
+
+   Speed_Cameras.Self_Test_NonDisp (TC_Camera3);
+
+   -- Non-overriding primitive operation:
+
+   if TC_Camera3.TC_Shutter_Called /= Body_In_Instance then
+      Report.Failed ("Wrong body executed: non-dispatching call to " &
+                     "Set_Shutter_Speed inside instance");
+   end if;
+
+   -- Overriding primitive operation:
+
+   if TC_Camera3.TC_Focus_Called /= Body_In_Instance then
+      Report.Failed ("Wrong body executed: non-dispatching call to " &
+                     "Focus inside instance");
+   end if;
+
+
+
+--
+-- Check dispatching calls within instance:
+--
+
+   Speed_Cameras.Self_Test_Disp (TC_Camera4);
+
+   -- Non-overriding primitive operation:
+
+   if TC_Camera4.TC_Shutter_Called /= Body_In_Instance then
+      Report.Failed ("Wrong body executed: dispatching call to " &
+                     "Set_Shutter_Speed inside instance");
+   end if;
+
+   -- Overriding primitive operation:
+
+   if TC_Camera4.TC_Focus_Called /= Body_In_Instance then
+      Report.Failed ("Wrong body executed: dispatching call to " &
+                     "Focus inside instance");
+   end if;
+
+   Report.Result;
+end CC30002;

@@ -1,7 +1,7 @@
 /* Software floating-point emulation.
    Convert _Decimal128 to 128bit unsigned integer.
 
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2025 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bitint.h"
 
 #if defined(__BITINT_MAXWIDTH__) && defined(__SIZEOF_INT128__)
+#ifndef ENABLE_DECIMAL_BID_FORMAT
+#define __bid_fixtdbitint __dpd_fixtdbitint
+#define __bid_fixunstdti __dpd_fixunstdti
+#endif
 extern void __bid_fixtdbitint (UBILtype *, SItype, _Decimal128);
 extern UTItype __bid_fixunstdti (_Decimal128);
 

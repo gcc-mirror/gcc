@@ -29,14 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+#include <iconv.h>
+
+#include <cctype>
+#include <clocale>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+
 #include <algorithm>
 #include <unordered_map>
-#include <locale.h>
-#include <iconv.h>
 #include <vector>
 
 #include "ec.h"

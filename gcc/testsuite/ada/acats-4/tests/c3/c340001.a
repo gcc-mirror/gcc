@@ -1,0 +1,470 @@
+-- C340001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that user-defined equality operators are inherited by a
+--      derived type except when the derived type is a nonlimited record
+--      extension. In the latter case, ensure that the primitive
+--      equality operation of the record extension compares any extended
+--      components according to the predefined equality operators of the
+--      component types.  Also check that the parent portion of the extended
+--      type is compared using the user-defined equality operation of the
+--      parent type.
+--
+-- TEST DESCRIPTION:
+--      Declares a nonlimited tagged record and a limited tagged record
+--      type, each in a separate package. A user-defined "=" operation is
+--      defined for each type. Each type is extended with one new record
+--      component added.
+--
+--      Objects are declared for each parent and extended types and are
+--      assigned values. For the limited type, modifier operations defined
+--      in the package are used to assign values.
+--
+--      To verify the use of the user-defined "=", values are assigned so
+--      that predefined equality will return the opposite result if called.
+--      Similarly, values are assigned to the extended type objects so that
+--      one comparison will verify that the inherited components from the
+--      parent are compared using the user-defined equality operation.
+--
+--      A second comparison sets the values of the inherited components to
+--      be the same so that equality based on the extended component may be
+--      verified. For the nonlimited type, the test for equality should
+--      fail, as the "=" defined for this type should include testing
+--      equality of the extended component. For the limited type, "=" of the
+--      parent should be inherited as-is, so the test for equality should
+--      succeed even though the records differ in the extended component.
+--
+--      A third package declares a discriminated tagged record. Equality
+--      is user-defined and ignores the discriminant value. A type
+--      extension is declared which also contains a discriminant. Since
+--      an inherited discriminant may not be referenced other than in a
+--      "new" discriminant, the type extension is also discriminated. The
+--      discriminant is used as the constraint for the parent type.
+--
+--      A variant part is declared in the type extension based on the new
+--      discriminant. Comparisons are made to confirm that the user-defined
+--      equality operator is used to compare values of the type extension.
+--      Two record objects are given values so that user-defined equality
+--      for the parent portion of the record succeeds, but the variant
+--      parts in the type extended object differ. These objects are checked
+--      to ensure that they are not equal.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      19 Dec 94   SAIC    Removed RM references from objective text.
+--
+--! 
+
+with Ada.Calendar;
+package C340001_0 is
+
+   type DB_Record is tagged record
+      Key : Natural range 1 .. 9999;
+      Data : String (1..10);
+   end record;
+
+   function "=" (L, R : in DB_Record) return Boolean;
+
+   type Dated_Record is new DB_Record with record
+      Retrieval_Time : Ada.Calendar.Time;
+   end record;
+
+end C340001_0;
+
+package body C340001_0 is
+
+   function "=" (L, R : in DB_Record) return Boolean is
+   -- Key is ignored in determining equality of records
+   begin
+      return L.Data = R.Data;
+   end "=";
+   
+end C340001_0;
+
+package C340001_1 is
+
+   type List_Contents is array (1..10) of Integer;
+   type List is tagged limited record
+      Length   : Natural range 0..10 := 0;
+      Contents : List_Contents := (others => 0);
+   end record;
+
+   procedure Add_To (L : in out List; New_Value : in Integer);
+   procedure Remove_From (L : in out List);
+
+   function "=" (L, R : in List) return Boolean;
+
+   subtype Revision_Mark is Character range 'A' .. 'Z';
+   type Revisable_List is new List with record
+      Revision : Revision_Mark := 'A';
+   end record;
+
+   procedure Revise (L : in out Revisable_List);
+
+end C340001_1;
+
+package body C340001_1 is
+
+   -- Note: This is not a complete abstraction of a list. Exceptions
+   -- are not defined and boundary checks are not made.
+
+   procedure Add_To (L : in out List; New_Value : in Integer) is
+   begin
+      L.Length := L.Length + 1;
+      L.Contents (L.Length) := New_Value;
+   end Add_To;
+
+   procedure Remove_From (L : in out List) is
+   -- The list length is decremented. "Old" values are left in the
+   -- array. They are overwritten when a new value is added.
+   begin
+      L.Length := L.Length - 1;
+   end Remove_From;
+
+   function "=" (L, R : in List) return Boolean is
+   -- Two lists are equal if they are the same length and
+   -- the component values within that length are the same.
+   -- Values stored past the end of the list are ignored.
+   begin
+      return L.Length = R.Length
+	 and then L.Contents (1..L.Length) = R.Contents (1..R.Length);
+   end "=";
+
+   procedure Revise (L : in out Revisable_List) is
+   begin
+      L.Revision := Character'Succ (L.Revision);
+   end Revise;
+   
+end C340001_1;
+
+package C340001_2 is
+
+   type Media is (Paper, Electronic);
+
+   type Transaction (Medium : Media) is tagged record
+      ID : Natural range 1000 .. 9999;
+   end record;
+
+   function "=" (L, R : in Transaction) return Boolean;
+
+   type Authorization (Kind : Media) is new Transaction (Medium => Kind)
+   with record
+      case Kind is
+      when Paper =>
+	 Signature_On_File : Boolean;
+      when Electronic =>
+        Paper_Backup   : Boolean; -- to retain opposing value
+      end case;
+   end record;
+
+end C340001_2;
+
+package body C340001_2 is
+
+   function "=" (L, R : in Transaction) return Boolean is
+   -- There may be electronic and paper copies of the same transaction.
+   -- The ID uniquely identifies a transaction. The medium (stored in
+   -- the discriminant) is ignored.
+   begin
+      return L.ID = R.ID;
+   end "=";
+
+end C340001_2;
+
+
+with C340001_0; -- nonlimited tagged record declarations
+with C340001_1; -- limited tagged record declarations
+with C340001_2; -- tagged variant declarations
+with Ada.Calendar;
+with Report;
+procedure C340001 is
+
+   DB_Rec1 : C340001_0.DB_Record := (Key  => 1,
+				     Data => "aaaaaaaaaa");
+   DB_Rec2 : C340001_0.DB_Record := (Key  => 55,
+				     Data => "aaaaaaaaaa");
+   -- DB_Rec1  = DB_Rec2 using user-defined equality
+   -- DB_Rec1 /= DB_Rec2 using predefined equality
+
+   Some_Time : Ada.Calendar.Time :=
+      Ada.Calendar.Time_Of (Month => 9, Day => 16, Year => 1993);
+
+   Another_Time : Ada.Calendar.Time :=
+      Ada.Calendar.Time_Of (Month => 9, Day => 19, Year => 1993);
+
+   Dated_Rec1 : C340001_0.Dated_Record := (Key  => 2,
+					   Data => "aaaaaaaaaa",
+					   Retrieval_Time => Some_Time);
+   Dated_Rec2 : C340001_0.Dated_Record := (Key  => 77,
+					   Data => "aaaaaaaaaa",
+					   Retrieval_Time => Some_Time);
+   Dated_Rec3 : C340001_0.Dated_Record := (Key  => 77,
+					   Data => "aaaaaaaaaa",
+					   Retrieval_Time => Another_Time);
+   -- Dated_Rec1  = Dated_Rec2 if DB_Record."=" used for parent portion
+   -- Dated_Rec2 /= Dated_Rec3 if extended component is compared
+   --    using Ada.Calendar.Time."="
+
+   List1 : C340001_1.List;
+   List2 : C340001_1.List;
+
+   RList1 : C340001_1.Revisable_List;
+   RList2 : C340001_1.Revisable_List;
+   RList3 : C340001_1.Revisable_List;
+
+   Current : C340001_2.Transaction (C340001_2.Paper) :=
+      (C340001_2.Paper, 2001);
+   Last    : C340001_2.Transaction (C340001_2.Electronic) :=
+      (C340001_2.Electronic, 2001);
+   -- Current  = Last using user-defined equality
+   -- Current /= Last using predefined equality
+
+   Approval1 : C340001_2.Authorization (C340001_2.Paper)
+    := (Kind => C340001_2.Paper,
+        ID => 1040,
+        Signature_On_File => True);
+   Approval2 : C340001_2.Authorization (C340001_2.Paper)
+    := (Kind => C340001_2.Paper,
+        ID => 2167,
+        Signature_On_File => False);
+   Approval3 : C340001_2.Authorization (C340001_2.Electronic)
+    := (Kind => C340001_2.Electronic,
+        ID => 2167,
+        Paper_Backup => False);
+   -- Approval1 /= Approval2 if user-defined equality extended with
+   --    component equality.
+   -- Approval2 /= Approval3 if differing variant parts checked
+
+   -- Direct visibility to operator symbols
+   use type C340001_0.DB_Record;
+   use type C340001_0.Dated_Record;
+
+   use type C340001_1.List;
+   use type C340001_1.Revisable_List;
+
+   use type C340001_2.Transaction;
+   use type C340001_2.Authorization;
+
+begin
+
+   Report.Test ("C340001", "Inheritance of user-defined ""=""");
+
+   -- Approval1 /= Approval2 if user-defined equality extended with
+   --    component equality.
+   -- Approval2 /= Approval3 if differing variant parts checked
+
+   ---------------------------------------------------------------------
+   -- Check that "=" and "/=" for the parent type call the user-defined
+   -- operation
+   ---------------------------------------------------------------------
+
+   if not (DB_Rec1 = DB_Rec2) then
+      Report.Failed ("Nonlimited tagged record: " &
+		     "User-defined equality did not override predefined " &
+		     "equality");
+   end if;
+
+   if DB_Rec1 /= DB_Rec2 then
+      Report.Failed ("Nonlimited tagged record: " &
+		     "User-defined equality did not override predefined " &
+		     "inequality as well");
+   end if;
+
+   ---------------------------------------------------------------------
+   -- Check that "=" and "/=" for the type extension use the user-defined 
+   -- equality operations from the parent to compare the inherited
+   -- components
+   ---------------------------------------------------------------------
+   
+   if not (Dated_Rec1 = Dated_Rec2) then
+      Report.Failed ("Nonlimited tagged record: " &
+		     "User-defined equality was not used to compare " &
+		     "components inherited from parent");
+   end if;
+
+   if Dated_Rec1 /= Dated_Rec2 then
+      Report.Failed ("Nonlimited tagged record: " &
+		     "User-defined inequality was not used to compare " &
+		     "components inherited from parent");
+   end if;
+
+   ---------------------------------------------------------------------
+   -- Check that equality and inequality for the type extension incorporate
+   -- the predefined equality operators for the extended component type
+   ---------------------------------------------------------------------
+   if Dated_Rec2 = Dated_Rec3 then
+      Report.Failed ("Nonlimited tagged record: " &
+		     "Record equality was not extended with component " &
+		     "equality");
+   end if;
+
+   if not (Dated_Rec2 /= Dated_Rec3) then
+      Report.Failed ("Nonlimited tagged record: " &
+		     "Record inequality was not extended with component " &
+		     "equality");
+   end if;
+
+   ---------------------------------------------------------------------
+   C340001_1.Add_To (List1, 1);
+   C340001_1.Add_To (List1, 2);
+   C340001_1.Add_To (List1, 3);
+   C340001_1.Remove_From (List1);
+
+   C340001_1.Add_To (List2, 1);
+   C340001_1.Add_To (List2, 2);
+   
+   -- List1 contents are (2, (1, 2, 3, 0, 0, 0, 0, 0, 0, 0))
+   -- List2 contents are (2, (1, 2, 0, 0, 0, 0, 0, 0, 0, 0))
+   
+   -- List1 = List2 using user-defined equality
+   -- List1 /= List2 using predefined equality
+
+   ---------------------------------------------------------------------
+   -- Check that "=" and "/=" for the parent type call the user-defined
+   -- operation
+   ---------------------------------------------------------------------
+   if not (List1 = List2) then
+      Report.Failed ("Limited tagged record   : " &
+		     "User-defined equality incorrectly implemented " );
+   end if;
+   
+   if List1 /= List2 then
+      Report.Failed ("Limited tagged record   : " &
+		     "User-defined equality incorrectly implemented " );
+   end if;
+
+   ---------------------------------------------------------------------
+   -- RList1 and RList2 are made equal but "different" by adding
+   -- a nonzero value to RList1 then removing it. Removal updates
+   -- the list Length only, not its contents. The two lists will be
+   -- equal according to the defined list abstraction, but the records
+   -- will contain differing component values.
+
+   C340001_1.Add_To (RList1, 1);
+   C340001_1.Add_To (RList1, 2);
+   C340001_1.Add_To (RList1, 3);
+   C340001_1.Remove_From (RList1);
+
+   C340001_1.Add_To (RList2, 1);
+   C340001_1.Add_To (RList2, 2);
+
+   C340001_1.Add_To (RList3, 1);
+   C340001_1.Add_To (RList3, 2);
+
+   C340001_1.Revise (RList3);
+
+   -- RList1 contents are (2, (1, 2, 3, 0, 0, 0, 0, 0, 0, 0), 'A')
+   -- RList2 contents are (2, (1, 2, 0, 0, 0, 0, 0, 0, 0, 0), 'A')
+   -- RList3 contents are (2, (1, 2, 0, 0, 0, 0, 0, 0, 0, 0), 'B')
+   
+   -- RList1 = RList2 if List."=" inherited
+   -- RList2 /= RList3 if List."=" inherited and extended with Character "="
+
+   ---------------------------------------------------------------------
+   -- Check that "=" and "/=" are the user-defined operations inherited
+   -- from the parent type.
+   ---------------------------------------------------------------------
+   if not (RList1 = RList2) then
+      Report.Failed ("Limited tagged record   : " &
+		     "User-defined equality was not inherited");
+   end if;
+
+   if RList1 /= RList2 then
+      Report.Failed ("Limited tagged record   : " &
+		     "User-defined inequality was not inherited");
+   end if;
+   ---------------------------------------------------------------------
+   -- Check that "=" and "/=" for the type extension are NOT extended
+   -- with the predefined equality operators for the extended component.
+   -- A limited type extension should inherit the parent equality operation
+   -- as is.
+   ---------------------------------------------------------------------
+   if not (RList2 = RList3) then
+      Report.Failed ("Limited tagged record   : " &
+		     "Inherited equality operation was extended with " &
+		     "component equality");
+   end if;
+
+   if RList2 /= RList3 then
+      Report.Failed ("Limited tagged record   : " &
+		     "Inherited inequality operation was extended with " &
+		     "component equality");
+   end if;
+
+   ---------------------------------------------------------------------
+   -- Check that "=" and "/=" for the parent type call the user-defined
+   -- operation
+   ---------------------------------------------------------------------
+   if not (Current = Last) then
+      Report.Failed ("Variant record          : " &
+		     "User-defined equality did not override predefined " &
+		     "equality");
+   end if;
+   
+   if Current /= Last then
+      Report.Failed ("Variant record          : " &
+		     "User-defined inequality did not override predefined " &
+		     "inequality");
+   end if;
+
+   ---------------------------------------------------------------------
+   -- Check that user-defined equality was incorporated and extended
+   -- with equality of extended components.
+   ---------------------------------------------------------------------
+   if not (Approval1 /= Approval2) then
+      Report.Failed ("Variant record          : " &
+		     "Inequality was not extended with component " &
+		     "inequality");
+   end if;
+
+   if Approval1 = Approval2 then
+      Report.Failed ("Variant record          : " &
+		     "Equality was not extended with component " &
+		     "equality");
+   end if;
+   
+   ---------------------------------------------------------------------
+   -- Check that equality and inequality for the type extension
+   -- succeed despite the presence of differing variant parts.
+   ---------------------------------------------------------------------
+   if Approval2 = Approval3 then
+      Report.Failed ("Variant record          : " &
+		     "Equality succeeded even though variant parts " &
+		     "in type extension differ");
+   end if;
+
+   if not (Approval2 /= Approval3) then
+      Report.Failed ("Variant record          : " &
+		     "Inequality failed even though variant parts " &
+		     "in type extension differ");
+   end if;
+   
+   ---------------------------------------------------------------------
+   Report.Result;
+   ---------------------------------------------------------------------
+
+end C340001;

@@ -618,9 +618,10 @@ gfc_diagnostic_text_starter (diagnostic_text_output_format &text_output,
 
 static void
 gfc_diagnostic_start_span (const diagnostic_location_print_policy &loc_policy,
-			   pretty_printer *pp,
+			   to_text &sink,
 			   expanded_location exploc)
 {
+  pretty_printer *pp = get_printer (sink);
   const bool colorize = pp_show_color (pp);
   char *locus_prefix
     = gfc_diagnostic_build_locus_prefix (loc_policy, exploc, colorize);

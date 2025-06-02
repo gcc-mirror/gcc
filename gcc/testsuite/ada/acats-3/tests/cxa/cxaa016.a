@@ -1,0 +1,462 @@
+-- CXAA016.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the type File_Access is available in Ada.Text_IO, and that
+--      objects of this type designate File_Type objects.
+--      Check that function Set_Error will set the current default error file.
+--      Check that versions of Ada.Text_IO functions Standard_Input,
+--      Standard_Output, Standard_Error return File_Access values designating
+--      the standard system input, output, and error files.
+--      Check that versions of Ada.Text_IO functions Current_Input,
+--      Current_Output, Current_Error return File_Access values designating
+--      the current system input, output, and error files.
+--      
+-- TEST DESCRIPTION:
+--      This test tests the use of File_Access objects in referring 
+--      to File_Type objects, as well as several new functions that return 
+--      File_Access objects as results.
+--      Four user-defined files are created.  These files will be set to 
+--      function as current system input, output, and error files.
+--      Data will be read from and written to these files during the
+--      time at which they function as the current system files.  
+--      An array of File_Access objects will be defined.  It will be 
+--      initialized using functions that return File_Access objects 
+--      referencing the Standard and Current Input, Output, and Error files.
+--      This "saves" the initial system environment, which will be modified
+--      to use the user-defined files as the current default Input, Output,
+--      and Error files.  At the end of the test, the data in this array 
+--      will be used to restore the initial system environment.
+--      
+-- APPLICABILITY CRITERIA: 
+--      This test is applicable to implementations capable of supporting
+--      external Text_IO files.
+--
+--       
+-- CHANGE HISTORY:
+--      25 May 95   SAIC    Initial prerelease version.
+--      22 Apr 96   SAIC    Incorporated reviewer comments for ACVC 2.1.
+--      26 Feb 97   PWB.CTA Allowed for non-support of some IO operations.
+--      18 Jan 99   RLB     Repaired to allow Not_Applicable systems to
+--                          fail delete.
+--!
+
+with Ada.Text_IO;
+package CXAA016_0 is
+   New_Input_File,
+   New_Output_File,
+   New_Error_File_1,
+   New_Error_File_2 : aliased Ada.Text_IO.File_Type;
+end CXAA016_0;
+
+
+with Report;
+with Ada.Exceptions;
+with Ada.Text_IO; use Ada.Text_IO;
+with CXAA016_0;   use CXAA016_0;
+
+procedure CXAA016 is
+   
+   Non_Applicable_System : exception;
+   No_Reset              : exception;
+   Not_Applicable_System : Boolean := False;
+
+   procedure Delete_File ( A_File : in out Ada.Text_IO.File_Type;
+                           ID_Num : in     Integer ) is
+   begin
+      if not Ada.Text_IO.Is_Open ( A_File ) then
+         Ada.Text_IO.Open ( A_File, 
+                            Ada.Text_IO.In_File, 
+                            Report.Legal_File_Name ( ID_Num ) );
+      end if;
+      Ada.Text_IO.Delete ( A_File );
+   exception
+      when Ada.Text_IO.Name_Error =>
+         if Not_Applicable_System then
+            null; -- File probably wasn't created.
+         else
+            Report.Failed ( "Can't open file for Text_IO" );
+         end if;
+      when Ada.Text_IO.Use_Error =>
+         if Not_Applicable_System then
+            null; -- File probably wasn't created.
+         else
+            Report.Failed ( "Delete not properly implemented for Text_IO" );
+         end if;
+      when others                =>
+         Report.Failed ( "Unexpected exception in Delete_File" );
+   end Delete_File;
+
+begin
+
+   Report.Test ("CXAA016", "Check that the type File_Access is available " &
+                           "in Ada.Text_IO, and that objects of this "     &
+                           "type designate File_Type objects");
+   Test_Block:
+   declare
+
+      use Ada.Exceptions;
+
+      type System_File_Array_Type is 
+        array (Integer range <>) of File_Access;        
+
+      -- Fill the following array with the File_Access results of six
+      -- functions.
+
+      Initial_Environment : System_File_Array_Type(1..6) := 
+                              ( Standard_Input,
+                                Standard_Output,
+                                Standard_Error,
+                                Current_Input,    
+                                Current_Output,
+                                Current_Error );
+
+      New_Input_Ptr    : File_Access := New_Input_File'Access;
+      New_Output_Ptr   : File_Access := New_Output_File'Access;
+      New_Error_Ptr    : File_Access := New_Error_File_1'Access;
+
+      Line   : String(1..80);
+      Length : Natural := 0;
+
+      Line_1 : constant String := "This is the first line in the Output file";
+      Line_2 : constant String := "This is the next line in the Output file";
+      Line_3 : constant String := "This is the first line in Error file 1";
+      Line_4 : constant String := "This is the next line in Error file 1";
+      Line_5 : constant String := "This is the first line in Error file 2";
+      Line_6 : constant String := "This is the next line in Error file 2";
+
+
+
+      procedure New_File (The_File : in out File_Type;
+                          Mode     : in     File_Mode;
+                          Next     : in     Integer) is
+      begin
+         Create (The_File, Mode, Report.Legal_File_Name(Next));
+      exception
+         -- The following two exceptions may be raised if a system is not
+         -- capable of supporting external Text_IO files.  The handler will
+         -- raise a user-defined exception which will result in a 
+         -- Not_Applicable result for the test.
+         when Use_Error | Name_Error => raise Non_Applicable_System;
+      end New_File;
+
+
+
+      procedure Check_Initial_Environment (Env : System_File_Array_Type) is
+      begin
+        -- Check that the system has defined the following sources/
+        -- destinations for input/output/error, and that the six functions
+        -- returning File_Access values are available.
+        if not (Env(1) = Standard_Input  and
+                Env(2) = Standard_Output and
+                Env(3) = Standard_Error  and    
+                Env(4) = Current_Input   and
+                Env(5) = Current_Output  and
+                Env(6) = Current_Error) 
+        then
+           Report.Failed("At the start of the test, the Standard and " &
+                         "Current File_Access values associated with " &
+                         "system Input, Output, and Error files do "   &
+                         "not correspond");
+        end if;
+      end Check_Initial_Environment;
+
+
+
+      procedure Load_Input_File (Input_Ptr : in File_Access) is
+      begin
+         -- Load data into the file that will function as the user-defined
+         -- system input file.
+         Put_Line(Input_Ptr.all, Line_1);
+         Put_Line(Input_Ptr.all, Line_2);
+         Put_Line(Input_Ptr.all, Line_3);
+         Put_Line(Input_Ptr.all, Line_4);
+         Put_Line(Input_Ptr.all, Line_5);
+         Put_Line(Input_Ptr.all, Line_6);
+      end Load_Input_File;
+
+
+
+      procedure Restore_Initial_Environment 
+                  (Initial_Env : System_File_Array_Type) is 
+      begin
+         -- Restore the Current Input, Output, and Error files to their
+         -- original states.
+
+         Set_Input (Initial_Env(4).all);
+         Set_Output(Initial_Env(5).all);
+         Set_Error (Initial_Env(6).all);
+
+         -- At this point, the user-defined files that were functioning as
+         -- the Current Input, Output, and Error files have been replaced in
+         -- that capacity by the state of the original environment.
+
+         declare
+
+            -- Capture the state of the current environment.
+
+            Current_Env : System_File_Array_Type (1..6) := 
+                            (Standard_Input, Standard_Output, Standard_Error,
+                             Current_Input,  Current_Output,  Current_Error);
+         begin
+
+            -- Compare the current environment with that of the saved  
+            -- initial environment.
+
+            if Current_Env /= Initial_Env then
+               Report.Failed("Restored file environment was not the same " &
+                             "as the initial file environment");
+            end if;
+         end;
+      end Restore_Initial_Environment;
+
+
+
+      procedure Verify_Files (O_File, E_File_1, E_File_2 : in File_Type) is
+         Str_1, Str_2, Str_3, Str_4, Str_5, Str_6 : String (1..80);
+         Len_1, Len_2, Len_3, Len_4, Len_5, Len_6 : Natural;
+      begin
+         
+         -- Get the lines that are contained in all the files, and verify
+         -- them against the expected results.
+
+         Get_Line(O_File, Str_1, Len_1);  -- The user defined output file 
+         Get_Line(O_File, Str_2, Len_2);  -- should contain two lines of data.
+       
+         if Str_1(1..Len_1) /= Line_1 or
+            Str_2(1..Len_2) /= Line_2
+         then
+            Report.Failed("Incorrect results from Current_Output file");
+         end if;
+
+         Get_Line(E_File_1, Str_3, Len_3);  -- The first error file received 
+         Get_Line(E_File_1, Str_4, Len_4);  -- two lines of data originally,
+         Get_Line(E_File_1, Str_5, Len_5);  -- then had two additional lines
+         Get_Line(E_File_1, Str_6, Len_6);  -- appended from the second error
+                                            -- file.
+         if Str_3(1..Len_3) /= Line_3 or
+            Str_4(1..Len_4) /= Line_4 or
+            Str_5(1..Len_5) /= Line_5 or
+            Str_6(1..Len_6) /= Line_6 
+         then
+            Report.Failed("Incorrect results from first Error file");
+         end if;
+
+         Get_Line(E_File_2, Str_5, Len_5);  -- The second error file
+         Get_Line(E_File_2, Str_6, Len_6);  -- received two lines of data.
+
+         if Str_5(1..Len_5) /= Line_5 or
+            Str_6(1..Len_6) /= Line_6 
+         then
+            Report.Failed("Incorrect results from second Error file");
+         end if;
+
+      end Verify_Files;
+
+
+
+   begin
+
+      Check_Initial_Environment (Initial_Environment);
+
+      -- Create user-defined text files that will be set to serve as current
+      -- system input, output, and error files.
+
+      New_File (New_Input_File,   Out_File, 1); -- Will be reset prior to use.
+      New_File (New_Output_File,  Out_File, 2);
+      New_File (New_Error_File_1, Out_File, 3);
+      New_File (New_Error_File_2, Out_File, 4);
+
+      -- Enter several lines of text into the new input file.  This file will
+      -- be reset to mode In_File to function as the current system input file.
+      -- Note: File_Access value used as parameter to this procedure.
+      
+      Load_Input_File (New_Input_Ptr);
+
+      -- Reset the New_Input_File to mode In_File, to allow it to act as the
+      -- current system input file.
+
+      Reset1:
+      begin
+         Reset (New_Input_File, In_File);
+      exception
+         when Ada.Text_IO.Use_Error =>
+            Report.Not_Applicable
+               ( "Reset to In_File not supported for Text_IO - 1" );
+            raise No_Reset;
+      end Reset1;
+
+      -- Establish new files that will function as the current system Input,
+      -- Output, and Error files.
+      
+      Set_Input (New_Input_File);
+      Set_Output(New_Output_Ptr.all);
+      Set_Error (New_Error_Ptr.all);      
+
+      -- Perform various file processing tasks, exercising specific new
+      -- Text_IO functionality.
+      --
+      -- Read two lines from Current_Input and write them to Current_Output.
+
+      for i in 1..2 loop
+         Get_Line(Current_Input,  Line, Length);
+         Put_Line(Current_Output, Line(1..Length));
+      end loop;
+
+      -- Read two lines from Current_Input and write them to Current_Error.
+
+      for i in 1..2 loop
+         Get_Line(Current_Input, Line, Length);
+         Put_Line(Current_Error, Line(1..Length));
+      end loop;
+
+      -- Reset the Current system error file.
+
+      Set_Error (New_Error_File_2);      
+
+      -- Read two lines from Current_Input and write them to Current_Error.
+
+      for i in 1..2 loop
+         Get_Line(Current_Input, Line, Length);
+         Put_Line(Current_Error, Line(1..Length));
+      end loop;
+
+      -- At this point in the processing, the new Output file, and each of
+      -- the two Error files, contain two lines of data.
+      -- Note that New_Error_File_1 has been replaced by New_Error_File_2
+      -- as the current system error file, allowing New_Error_File_1 to be
+      -- reset (Mode_Error raised otherwise).
+      --
+      -- Reset the first Error file to Append_File mode, and then set it to 
+      -- function as the current system error file.
+
+      Reset2:
+      begin
+         Reset (New_Error_File_1, Append_File);
+      exception
+         when Ada.Text_IO.Use_Error =>
+            Report.Not_Applicable
+               ( "Reset to Append_File not supported for Text_IO - 2" );
+            raise No_Reset;
+      end Reset2;
+
+      Set_Error (New_Error_File_1);
+
+      -- Reset the second Error file to In_File mode, then set it to become
+      -- the current system input file.
+
+      Reset3:
+      begin
+         Reset (New_Error_File_2, In_File);
+      exception
+         when Ada.Text_IO.Use_Error =>
+            Report.Not_Applicable
+               ( "Reset to In_File not supported for Text_IO - 3" );
+            raise No_Reset;
+      end Reset3;
+
+      New_Error_Ptr := New_Error_File_2'Access; 
+      Set_Input (New_Error_Ptr.all);
+
+      -- Append all of the text lines (2) in the new current system input
+      -- file onto the current system error file.
+
+      while not End_Of_File(Current_Input) loop
+         Get_Line(Current_Input, Line, Length);
+         Put_Line(Current_Error, Line(1..Length));
+      end loop;
+
+      -- Restore the original system file environment, based upon the values
+      -- stored at the start of this test.
+      -- Check that the original environment has been restored.
+
+      Restore_Initial_Environment (Initial_Environment);
+
+      -- Reset all three files to In_File_Mode prior to verification.
+      -- Note: If these three files had still been the designated Current
+      --       Input, Output, or Error files for the system, a Reset 
+      --       operation at this point would raise Mode_Error.
+      --       However, at this point, the environment has been restored to
+      --       its original state, and these user-defined files are no longer
+      --       designated as current system files, allowing a Reset.
+
+      Reset4:
+      begin
+         Reset(New_Error_File_1, In_File);
+      exception
+         when Ada.Text_IO.Use_Error =>
+            Report.Not_Applicable
+               ( "Reset to In_File not supported for Text_IO - 4" );
+            raise No_Reset;
+      end Reset4;
+
+      Reset5:
+      begin
+         Reset(New_Error_File_2, In_File);
+      exception
+         when Ada.Text_IO.Use_Error =>
+            Report.Not_Applicable
+               ( "Reset to In_File not supported for Text_IO - 5" );
+            raise No_Reset;
+      end Reset5;
+
+      Reset6:
+      begin
+         Reset(New_Output_File,  In_File);
+      exception
+         when Ada.Text_IO.Use_Error =>
+            Report.Not_Applicable
+               ( "Reset to In_File not supported for Text_IO - 6" );
+            raise No_Reset;
+      end Reset6;
+
+      -- Check that all the files contain the appropriate data.
+
+      Verify_Files (New_Output_File, New_Error_File_1, New_Error_File_2);
+
+   exception
+      when No_Reset =>
+         null;
+      when Non_Applicable_System =>
+         Report.Not_Applicable("System not capable of supporting external " &
+                               "text files -- Name_Error/Use_Error raised " &
+                               "during text file creation");
+         Not_Applicable_System := True;
+      when The_Error : others => 
+         Report.Failed ("The following exception was raised in the " &
+                        "Test_Block: " & Exception_Name(The_Error));
+   end Test_Block;
+
+   Delete_Block:
+   begin
+      Delete_File ( New_Input_File, 1 );
+      Delete_File ( New_Output_File, 2 );
+      Delete_File ( New_Error_File_1, 3 );
+      Delete_File ( New_Error_File_2, 4 );
+   end Delete_Block;
+
+   Report.Result;
+
+end CXAA016;

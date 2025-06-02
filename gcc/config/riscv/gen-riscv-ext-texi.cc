@@ -6,22 +6,22 @@
 
 struct version_t
 {
-  int major;
-  int minor;
+  int major_version;
+  int minor_version;
   version_t (int major, int minor,
 	     enum riscv_isa_spec_class spec = ISA_SPEC_CLASS_NONE)
-    : major (major), minor (minor)
+    : major_version (major), minor_version (minor)
   {}
   bool operator<(const version_t &other) const
   {
-    if (major != other.major)
-      return major < other.major;
-    return minor < other.minor;
+    if (major_version != other.major_version)
+      return major_version < other.major_version;
+    return minor_version < other.minor_version;
   }
 
   bool operator== (const version_t &other) const
   {
-    return major == other.major && minor == other.minor;
+    return major_version == other.major_version && minor_version == other.minor_version;
   }
 };
 
@@ -39,7 +39,7 @@ print_ext_doc_entry (const std::string &ext_name, const std::string &full_name,
   printf ("@tab");
   for (const auto &version : unique_versions)
     {
-      printf (" %d.%d", version.major, version.minor);
+      printf (" %d.%d", version.major_version, version.minor_version);
     }
   printf ("\n");
   printf ("@tab %s", full_name.c_str ());

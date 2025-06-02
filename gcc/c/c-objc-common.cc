@@ -216,6 +216,11 @@ get_aka_type (tree type)
 	  return canonical ? canonical : type;
 	}
     }
+  /* For tagged types ignore attributes because they will otherwise
+     be ignored later causing a warning inside diagnostics which leads
+     to an ICE.  */
+  if (RECORD_OR_UNION_TYPE_P (type) || TREE_CODE (type) == ENUMERAL_TYPE)
+    return build_qualified_type (result, TYPE_QUALS (type));
   return build_type_attribute_qual_variant (result, TYPE_ATTRIBUTES (type),
 					    TYPE_QUALS (type));
 }

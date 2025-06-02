@@ -1,0 +1,405 @@
+-- CXA4033.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the functionality found in packages Ada.Strings.Wide_Maps,
+--      Ada.Strings.Wide_Unbounded, and Ada.Strings.Wide_Maps.Wide_Constants 
+--      is available and produces correct results.
+--
+-- TEST DESCRIPTION:
+--      This test tests the subprograms found in the
+--      Ada.Strings.Wide_Unbounded package.  It is based on the tests 
+--      CXA4030-32, which are tests for the complementary "non-wide" 
+--      packages.
+--      
+--      The functions found in CXA4033_0 provide mapping capability, when
+--      used in conjunction with Wide_Character_Mapping_Function objects.
+--
+--       
+-- CHANGE HISTORY:
+--      23 Jun 95   SAIC    Initial prerelease version.
+--      24 Feb 97   PWB.CTA Removed attempt to create wide string of length
+--                          Natural'Last
+--!
+
+package CXA4033_0 is
+   -- Functions used to supply mapping capability.
+   function Map_To_Lower_Case (From : Wide_Character) return Wide_Character;
+   function Map_To_Upper_Case (From : Wide_Character) return Wide_Character;
+end CXA4033_0;
+
+with Ada.Characters.Handling;
+package body CXA4033_0 is
+      -- Function Map_To_Lower_Case will return the lower case form of 
+      -- Wide_Characters in the range 'A'..'Z' only, and return the input
+      -- wide_character otherwise.
+
+      function Map_To_Lower_Case (From : Wide_Character) 
+         return Wide_Character is
+      begin
+         return Ada.Characters.Handling.To_Wide_Character(
+                  Ada.Characters.Handling.To_Lower(
+                    Ada.Characters.Handling.To_Character(From)));
+      end Map_To_Lower_Case;
+
+      -- Function Map_To_Upper_Case will return the upper case form of 
+      -- Wide_Characters in the range 'a'..'z', or whose position is in one
+      -- of the ranges 223..246 or 248..255, provided the wide_character has
+      -- an upper case form.               
+
+      function Map_To_Upper_Case (From : Wide_Character) 
+        return Wide_Character is
+      begin
+         return Ada.Characters.Handling.To_Wide_Character(
+                  Ada.Characters.Handling.To_Upper(
+                    Ada.Characters.Handling.To_Character(From)));
+      end Map_To_Upper_Case;
+
+end CXA4033_0;
+
+
+with CXA4033_0;
+with Report;
+with Ada.Characters.Handling;
+with Ada.Characters.Latin_1;
+with Ada.Strings;
+with Ada.Strings.Wide_Maps;
+with Ada.Strings.Wide_Maps.Wide_Constants;
+with Ada.Strings.Wide_Fixed;
+with Ada.Strings.Wide_Unbounded;
+
+procedure CXA4033 is
+begin
+   Report.Test ("CXA4033", 
+                "Check that subprograms defined in the package " &
+                "Ada.Strings.Wide_Unbounded produce correct results");
+
+   Test_Block:
+   declare
+
+      package ACL1 renames Ada.Characters.Latin_1;
+      package Unb  renames Ada.Strings.Wide_Unbounded;
+
+      subtype LC_Characters is Wide_Character range 'a'..'z';
+
+      use Ada.Characters, Ada.Strings, Unb;
+      use type Wide_Maps.Wide_Character_Set; 
+
+      TC_String      : constant Wide_String := "A Standard String";
+
+      String_20      : Wide_String(1..20)    := "ABCDEFGHIJKLMNOPQRST";
+      String_40      : Wide_String(1..40)    := "abcdefghijklmnopqrst" & 
+                                                String_20;
+      String_80      : Wide_String(1..80)    := String_40 & String_40;
+      TC_String_5    : Wide_String(1..5)     := "ABCDE";
+      TC_Unb_String  : Unbounded_Wide_String := Null_Unbounded_Wide_String;
+
+      -- The following strings are used in examination of the Translation
+      -- subprograms.
+      New_Character_String : Wide_String(1..10) :=
+        Handling.To_Wide_String( 
+          ACL1.LC_A_Grave          & ACL1.LC_A_Ring  & ACL1.LC_AE_Diphthong &
+          ACL1.LC_C_Cedilla        & ACL1.LC_E_Acute & ACL1.LC_I_Circumflex &
+          ACL1.LC_Icelandic_Eth    & ACL1.LC_N_Tilde & 
+          ACL1.LC_O_Oblique_Stroke & ACL1.LC_Icelandic_Thorn);  
+ 
+      TC_New_Character_String : Wide_String(1..10) :=
+        Handling.To_Wide_String(
+          ACL1.UC_A_Grave          & ACL1.UC_A_Ring  & ACL1.UC_AE_Diphthong &
+          ACL1.UC_C_Cedilla        & ACL1.UC_E_Acute & ACL1.UC_I_Circumflex &
+          ACL1.UC_Icelandic_Eth    & ACL1.UC_N_Tilde &
+          ACL1.UC_O_Oblique_Stroke & ACL1.UC_Icelandic_Thorn);  
+
+      New_UB_Character_String : Unbounded_Wide_String :=
+                         To_Unbounded_Wide_String(New_Character_String);
+
+      TC_New_UB_Character_String : Unbounded_Wide_String :=
+                         To_Unbounded_Wide_String(TC_New_Character_String);
+                     
+      -- Access objects that will be provided as parameters to the 
+      -- subprograms.
+      Map_To_Lower_Case_Ptr : Wide_Maps.Wide_Character_Mapping_Function :=
+                                CXA4033_0.Map_To_Lower_Case'Access;
+      Map_To_Upper_Case_Ptr : Wide_Maps.Wide_Character_Mapping_Function :=
+                                CXA4033_0.Map_To_Upper_Case'Access;
+
+   begin
+
+      -- Testing functionality found in Package Ada.Strings.Wide_Unbounded.
+      -- 
+      -- Function Index.
+
+      if Index(To_Unbounded_Wide_String("AAABBBaaabbb"),
+               "aabb",
+               Mapping => Map_To_Lower_Case_Ptr)                   /=  2 or
+         Index(To_Unbounded_Wide_String("Case of a Mixed Case String"), 
+               "case", 
+               Ada.Strings.Backward,
+               Map_To_Lower_Case_Ptr)                              /= 17 
+      then
+         Report.Failed("Incorrect results from Function Index, " &
+                       "using a Wide Character Mapping Function parameter");
+      end if;
+
+      -- Function Count.
+      if Count(Source  => To_Unbounded_Wide_String("ABABABA"),       
+               Pattern => "aba",
+               Mapping => Map_To_Lower_Case_Ptr)                      /= 2 or
+         Count(Null_Unbounded_Wide_String, "mat", Map_To_Upper_Case_Ptr) /= 0
+      then
+         Report.Failed("Incorrect results from Function Count, using " &
+                       "a Character Mapping Function parameter");
+      end if;
+
+      -- Function Translate.
+      if Translate(To_Unbounded_Wide_String("A Sample Mixed Case String"),
+                   Mapping => Map_To_Lower_Case_Ptr)               /= 
+         To_Unbounded_Wide_String("a sample mixed case string")      or
+         Translate(New_UB_Character_String, Map_To_Upper_Case_Ptr) /= 
+         TC_New_UB_Character_String
+      then
+         Report.Failed("Incorrect results from Function Translate, " &
+                       "using a Character Mapping Function parameter");
+      end if;
+
+      -- Procedure Translate.
+      declare
+         use Ada.Characters.Handling;
+         Str : Unbounded_Wide_String := 
+                 To_Unbounded_Wide_String("AN ALL UPPER CASE STRING");
+      begin
+         Translate(Source => Str, Mapping => Map_To_Lower_Case_Ptr);
+         if Str /= To_Unbounded_Wide_String("an all upper case string") then
+            Report.Failed("Incorrect result from Procedure Translate 1");
+         end if;
+
+         Translate(New_UB_Character_String, Map_To_Upper_Case_Ptr);
+         if New_UB_Character_String /= TC_New_UB_Character_String then
+            Report.Failed("Incorrect result from Procedure Translate 2");
+         end if;
+      end;
+
+      -- Function To_Unbounded_Wide_String (version with Length parameter)
+      if Length(To_Unbounded_Wide_String(Length => 10)) /= 10 or
+         Length(To_Unbounded_Wide_String(0))            /=  0 or
+         Length( To_Unbounded_Wide_String(10) &
+                 To_Unbounded_Wide_String(1) &
+                 To_Unbounded_Wide_String(0) ) /= 10 + 1 + 0
+      then
+         Report.Failed
+           ("Incorrect results from Function To_Unbounded_Wide_String " &
+            "with Length parameter");
+      end if;
+
+      -- Procedure Append (Wide_Unbounded - Wide_Unbounded)
+      TC_Unb_String := Null_Unbounded_Wide_String;
+      Append(TC_Unb_String, To_Unbounded_Wide_String("New Unbounded String"));
+      if TC_Unb_String /= To_Unbounded_Wide_String("New Unbounded String")
+      then
+         Report.Failed("Incorrect results from Procedure Append with " &
+                       "unbounded wide string parameters");
+      end if;
+
+      
+      -- Procedure Append (Wide_Unbounded - Wide_String)
+      TC_Unb_String := To_Unbounded_Wide_String("An Unbounded String and ");
+      Append(Source => TC_Unb_String, New_Item => TC_String);
+      if TC_Unb_String /= 
+         To_Unbounded_Wide_String("An Unbounded String and A Standard String")
+      then
+         Report.Failed("Incorrect results from Procedure Append with "  &
+                       "an unbounded wide string parameter and a wide " &
+                       "string parameter");
+      end if;
+
+      -- Procedure Append (Wide_Unbounded - Wide_Character)
+      TC_Unb_String := To_Unbounded_Wide_String("Lower Case = ");
+      for i in LC_Characters'Range loop
+         Append(Source => TC_Unb_String, New_Item => LC_Characters(i));
+      end loop;
+      if TC_Unb_String /= 
+         Unb.To_Unbounded_Wide_String
+           ("Lower Case = abcdefghijklmnopqrstuvwxyz")
+      then
+         Report.Failed("Incorrect results from Procedure Append with "  &
+                       "an unbounded wide string parameter and a wide " &
+                       "character parameter");
+      end if;        
+
+      -- Function "="
+      TC_Unb_String := To_Unbounded_Wide_String(TC_String);
+      if not (TC_Unb_String = TC_String)             or 
+         not "="("A Standard String", TC_Unb_String) or 
+         not ((Null_Unbounded_Wide_String = "") and          
+              ("Test String" = To_Unbounded_Wide_String("Test String")))
+      then
+         Report.Failed("Incorrect results from Function ""="" with " &
+                       "wide_string - unbounded wide string parameters");
+      end if;
+
+      -- Function "<"
+      if not ("Extra Space" < To_Unbounded_Wide_String("Extra Space ") and
+              To_Unbounded_Wide_String("tess") < "test"                and
+              To_Unbounded_Wide_String("best") < "test")                
+      then
+         Report.Failed("Incorrect results from Function ""<"" with " &
+                       "wide string - unbounded wide string parameters");
+      end if;
+
+      -- Function "<="
+      TC_Unb_String := To_Unbounded_Wide_String("Sample string");
+      if TC_Unb_String                  <= "Sample strin" or 
+         not("Sample string"            <= TC_Unb_String)
+      then
+         Report.Failed("Incorrect results from Function ""<="" with " &
+                       "wide string - unbounded wide string parameters");
+      end if;
+
+      -- Function ">"
+      TC_Unb_String := To_Unbounded_Wide_String("A MUCH LONGER STRING");
+      if not ("A much longer string" > TC_Unb_String                   and 
+              To_Unbounded_Wide_String(TC_String) > "A Standard Strin" and
+              "abcdefgh" > To_Unbounded_Wide_String("ABCDEFGH"))        
+      then
+         Report.Failed("Incorrect results from Function "">"" with " &
+                       "wide string - unbounded wide string parameters");
+      end if;
+
+      -- Function ">=" 
+      TC_Unb_String := To_Unbounded_Wide_String(TC_String);
+      if not (TC_Unb_String >= TC_String                        and 
+              "test"        >= To_Unbounded_Wide_String("tess") and  
+              To_Unbounded_Wide_String("Programming") >= "PROGRAMMING")
+      then
+         Report.Failed("Incorrect results from Function "">="" with " &
+                       "wide string - unbounded wide string parameters");
+      end if;
+
+      -- Procedure Replace_Slice
+      TC_Unb_String := To_Unbounded_Wide_String("Test String");
+      Replace_Slice(TC_Unb_String, 5, 5, TC_String_5);
+      if TC_Unb_String /= To_Unbounded_Wide_String("TestABCDEString") then
+         Report.Failed("Incorrect results from Replace_Slice - 1");
+      end if;
+
+      Replace_Slice(TC_Unb_String, 1, 4, TC_String_5);
+      if TC_Unb_String /= To_Unbounded_Wide_String("ABCDEABCDEString") then
+         Report.Failed("Incorrect results from Replace_Slice - 2");
+      end if;
+
+      -- Procedure Insert
+      TC_Unb_String := To_Unbounded_Wide_String("Test String");
+      Insert(TC_Unb_String, 1, "**");
+      if TC_Unb_String /= To_Unbounded_Wide_String("**Test String") then
+         Report.Failed("Incorrect results from Procedure Insert - 1");
+      end if;
+
+      Insert(TC_Unb_String, Length(TC_Unb_String)+1, "**");
+      if TC_Unb_String /= To_Unbounded_Wide_String("**Test String**") then
+         Report.Failed("Incorrect results from Procedure Insert - 2");
+      end if;
+
+      -- Procedure Overwrite
+      TC_Unb_String := To_Unbounded_Wide_String("Test String");
+      Overwrite(TC_Unb_String, 1, New_Item => "XXXX");
+      if TC_Unb_String /= To_Unbounded_Wide_String("XXXX String") then
+         Report.Failed("Incorrect results from Procedure Overwrite - 1");
+      end if;
+
+      Overwrite(TC_Unb_String, Length(TC_Unb_String)+1, "**");
+      if TC_Unb_String /= To_Unbounded_Wide_String("XXXX String**") then
+         Report.Failed("Incorrect results from Procedure Overwrite - 2");
+      end if;
+
+      -- Procedure Delete
+      TC_Unb_String := To_Unbounded_Wide_String("Test String");
+      Delete(TC_Unb_String, 1, 0);
+      if TC_Unb_String /= To_Unbounded_Wide_String("Test String") then
+         Report.Failed("Incorrect results from Procedure Delete - 1");
+      end if;
+
+      Delete(TC_Unb_String, 1, 5);
+      if TC_Unb_String /= To_Unbounded_Wide_String("String") then
+         Report.Failed("Incorrect results from Procedure Delete - 2");
+      end if;
+
+      -- Procedure Trim 
+      TC_Unb_String := To_Unbounded_Wide_String("   Leading Spaces   ");
+      Trim(TC_Unb_String, Ada.Strings.Left);
+      if TC_Unb_String /= To_Unbounded_Wide_String("Leading Spaces   ") then
+         Report.Failed("Incorrect results from Procedure Trim - 1");
+      end if;
+
+      TC_Unb_String := 
+        To_Unbounded_Wide_String("    Spaces   on  both  ends     ");
+      Trim(TC_Unb_String, Ada.Strings.Both);
+      if TC_Unb_String /= 
+         To_Unbounded_Wide_String("Spaces   on  both  ends") 
+      then
+         Report.Failed("Incorrect results from Procedure Trim - 2");
+      end if;
+
+      -- Procedure Trim (with Wide_Character_Set parameters)
+      TC_Unb_String := To_Unbounded_Wide_String("012abcdefghGFEDCBA789ab");
+      Trim(TC_Unb_String,
+           Ada.Strings.Wide_Maps.Wide_Constants.Hexadecimal_Digit_Set,
+           Ada.Strings.Wide_Maps.Wide_Constants.Hexadecimal_Digit_Set);
+      if TC_Unb_String /= To_Unbounded_Wide_String("ghG") then
+         Report.Failed("Incorrect results from Procedure Trim with Sets");
+      end if;
+
+      -- Procedure Head
+      TC_Unb_String := To_Unbounded_Wide_String("Test String");
+      Head(Source => TC_Unb_String, Count => 0, Pad => '*');
+      if TC_Unb_String /= Null_Unbounded_Wide_String then
+         Report.Failed("Incorrect results from Procedure Head - 1");
+      end if;
+
+      TC_Unb_String := To_Unbounded_Wide_String("Test String");
+      Head(Source => TC_Unb_String, Count => 4, Pad => '*');
+      if TC_Unb_String /= To_Unbounded_Wide_String("Test") then
+         Report.Failed("Incorrect results from Procedure Head - 2");
+      end if;
+
+      -- Procedure Tail
+      TC_Unb_String := To_Unbounded_Wide_String("Test String");
+      Tail(Source => TC_Unb_String, Count  => 0, Pad => '*');
+      if TC_Unb_String /= Null_Unbounded_Wide_String then
+         Report.Failed("Incorrect results from Procedure Tail - 1");
+      end if;
+
+      TC_Unb_String := To_Unbounded_Wide_String("Test String");
+      Tail(TC_Unb_String, Length(TC_Unb_String) + 5, 'x');
+      if TC_Unb_String /= To_Unbounded_Wide_String("xxxxxTest String") then
+         Report.Failed("Incorrect results from Procedure Tail - 2");
+      end if;
+
+   exception
+      when others => Report.Failed ("Exception raised in Test_Block");
+   end Test_Block;
+
+   Report.Result;
+
+end CXA4033;

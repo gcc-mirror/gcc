@@ -1,3 +1,190 @@
+2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__valarray-1.C: New.
+	* testsuite/libgomp.c++/target-std__valarray-1.output: Likewise.
+
+2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__array-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__array-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__bitset-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__bitset-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__deque-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__deque-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__list-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__list-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__map-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__map-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__multimap-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__multimap-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__multiset-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__multiset-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__set-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__set-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__span-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__span-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__vector-concurrent-usm.C: New.
+	* testsuite/libgomp.c++/target-std__vector-concurrent.C: Adjust.
+
+2025-05-30  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__array-concurrent.C: New.
+	* testsuite/libgomp.c++/target-std__bitset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__deque-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__flat_map-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__flat_multimap-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__flat_multiset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__flat_set-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__list-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__map-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__multimap-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__multiset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__set-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__span-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_map-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_multimap-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_multiset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_set-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__vector-concurrent.C: Likewise.
+
+2025-05-30  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__cmath.C: New.
+	* testsuite/libgomp.c++/target-std__complex.C: Likewise.
+	* testsuite/libgomp.c++/target-std__numbers.C: Likewise.
+
+2025-05-30  Waffl3x  <waffl3x@baylibre.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-flex-10.C: New test.
+	* testsuite/libgomp.c++/target-flex-100.C: New test.
+	* testsuite/libgomp.c++/target-flex-101.C: New test.
+	* testsuite/libgomp.c++/target-flex-11.C: New test.
+	* testsuite/libgomp.c++/target-flex-12.C: New test.
+	* testsuite/libgomp.c++/target-flex-2000.C: New test.
+	* testsuite/libgomp.c++/target-flex-2001.C: New test.
+	* testsuite/libgomp.c++/target-flex-2002.C: New test.
+	* testsuite/libgomp.c++/target-flex-2003.C: New test.
+	* testsuite/libgomp.c++/target-flex-30.C: New test.
+	* testsuite/libgomp.c++/target-flex-300.C: New test.
+	* testsuite/libgomp.c++/target-flex-31.C: New test.
+	* testsuite/libgomp.c++/target-flex-32.C: New test.
+	* testsuite/libgomp.c++/target-flex-33.C: New test.
+	* testsuite/libgomp.c++/target-flex-41.C: New test.
+	* testsuite/libgomp.c++/target-flex-60.C: New test.
+	* testsuite/libgomp.c++/target-flex-61.C: New test.
+	* testsuite/libgomp.c++/target-flex-62.C: New test.
+	* testsuite/libgomp.c++/target-flex-70.C: New test.
+	* testsuite/libgomp.c++/target-flex-80.C: New test.
+	* testsuite/libgomp.c++/target-flex-81.C: New test.
+	* testsuite/libgomp.c++/target-flex-90.C: New test.
+	* testsuite/libgomp.c++/target-flex-common.h: New test.
+
+2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119835
+	* testsuite/libgomp.oacc-c-c++-common/abi-struct-1.c:
+	'#pragma GCC optimize "-fno-inline"'.
+	* testsuite/libgomp.c-c++-common/target-abi-struct-1.c: New.
+	* testsuite/libgomp.c-c++-common/target-abi-struct-1-O0.c: Adjust.
+
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/declare-mapper-9.c: Enable for C.
+	* testsuite/libgomp.c-c++-common/declare-mapper-10.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-11.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-12.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-13.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-14.c: Likewise.
+
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c++/declare-mapper-1.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-2.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-3.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-4.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-5.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-6.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-7.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-8.C: New test.
+	* testsuite/libgomp.c-c++-common/declare-mapper-9.c: New test (only
+	enabled for C++ for now).
+	* testsuite/libgomp.c-c++-common/declare-mapper-10.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-11.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-12.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-13.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-14.c: Likewise.
+
+2025-05-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/93226
+	* libgomp-plugin.h (GOMP_OFFLOAD_openacc_async_dev2dev): New
+	prototype.
+	* libgomp.h (struct acc_dispatch_t): Add dev2dev_func.
+	(gomp_copy_dev2dev): New prototype.
+	* libgomp.map (OACC_2.6.1): New; add acc_memcpy_device{,_async}.
+	* libgomp.texi (acc_memcpy_device): New.
+	* oacc-mem.c (memcpy_tofrom_device): Change to take from/to
+	device boolean; use memcpy not memmove; add early return if
+	size == 0 or same device + same ptr.
+	(acc_memcpy_to_device, acc_memcpy_to_device_async,
+	acc_memcpy_from_device, acc_memcpy_from_device_async): Update.
+	(acc_memcpy_device, acc_memcpy_device_async): New.
+	* openacc.f90 (acc_memcpy_device, acc_memcpy_device_async):
+	Add interface.
+	* openacc_lib.h (acc_memcpy_device, acc_memcpy_device_async):
+	Likewise.
+	* openacc.h (acc_memcpy_device, acc_memcpy_device_async): Add
+	prototype.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_async_host2dev):
+	Update comment.
+	(GOMP_OFFLOAD_openacc_async_dev2host): Update call.
+	(GOMP_OFFLOAD_openacc_async_dev2dev): New.
+	* plugin/plugin-nvptx.c (cuda_memcpy_dev_sanity_check): New.
+	(GOMP_OFFLOAD_dev2dev): Call it.
+	(GOMP_OFFLOAD_openacc_async_dev2dev): New.
+	* target.c (gomp_copy_dev2dev): New.
+	(gomp_load_plugin_for_device): Load dev2dev and async_dev2dev.
+	* testsuite/libgomp.oacc-c-c++-common/acc_memcpy_device-1.c: New test.
+	* testsuite/libgomp.oacc-fortran/acc_memcpy_device-1.f90: New test.
+
+2025-05-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/118694
+	* testsuite/libgomp.fortran/metadirective-1.f90: xfail when
+	compiling (also) for nvptx offloading as an error is then expected.
+
+2025-05-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/118694
+	* testsuite/libgomp.c-c++-common/metadirective-1.c: xfail when
+	compiling (also) for nvptx offloading as an error is then expected.
+
+2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR lto/120308
+	* testsuite/libgomp.oacc-c-c++-common/abi-struct-1.c: Add empty
+	structure testing.
+
+2025-05-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/target-abi-struct-1-O0.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/abi-struct-1.c: Likewise.
+
+2025-05-19  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/lib-13.f90: End data region after
+	wait API calls.
+
 2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.fortran/alloc-comp-4.f90: New test.

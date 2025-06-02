@@ -621,6 +621,9 @@ case "${target}" in
     ;;
 esac
 
+cpu_type=`echo ${host} | sed 's/-.*$//'`
+AC_SUBST(cpu_type)
+
 # Disable libssp for some systems.
 case "${target}" in
   avr-*-*)
@@ -3822,13 +3825,17 @@ if test x"${build}" = x"${host}" ; then
   LDFLAGS_FOR_BUILD=${LDFLAGS_FOR_BUILD-${LDFLAGS}}
 fi
 
-# On Canadian crosses, we'll be searching the right directories for
-# the previously-installed cross compiler, so don't bother to add
-# flags for directories within the install tree of the compiler
-# being built; programs in there won't even run.
-if test "${build}" = "${host}" && test -d ${srcdir}/gcc; then
+if test -d ${srcdir}/gcc; then
+  # On Canadian crosses, we'll be searching the right directories for the
+  # previously-installed cross compiler, so don't bother to add flags for
+  # executable directories within the install tree of the compiler being built;
+  # programs in there won't even run.
+  if test "${build}" = "${host}"; then
+    FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/'
+  fi
+
   # Search for pre-installed headers if nothing else fits.
-  FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include'
+  FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include'
 fi
 
 if test "x${use_gnu_ld}" = x &&

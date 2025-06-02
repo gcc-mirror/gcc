@@ -2544,7 +2544,18 @@ GLIBCXX_3.4.34 {
     # void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<bool>(char const*, size_t)
     # and wide char version
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE12_M_constructILb[01]EEEvPK[cw][jmy];
+
 } GLIBCXX_3.4.33;
+
+# GCC 16.1.0
+GLIBCXX_3.4.35 {
+
+    _ZNSt8__detail11__wait_implEPKvRNS_16__wait_args_baseE;
+    _ZNSt8__detail13__notify_implEPKvbRKNS_16__wait_args_baseE;
+    _ZNSt8__detail17__wait_until_implEPKvRNS_16__wait_args_baseERKNSt6chrono8durationI[lx]St5ratioIL[lx]1EL[lx]1000000000EEEE;
+    _ZNSt8__detail11__wait_args22_M_load_proxy_wait_valEPKv;
+
+} GLIBCXX_3.4.34;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {

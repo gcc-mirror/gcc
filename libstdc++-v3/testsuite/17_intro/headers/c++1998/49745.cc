@@ -131,5 +131,3 @@
 #endif
 
 int truncate = 0;
-
-// { dg-xfail-if "PR libstdc++/99995" { c++20 } }

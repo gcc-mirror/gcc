@@ -758,7 +758,7 @@ bootstrap_stage = {
 	bootstrap_target=profiledbootstrap ; };
 bootstrap_stage = {
 	id=autoprofile ; prev=1 ;
-        autoprofile="$$s/gcc/config/i386/$(AUTO_PROFILE)" ; };
+        autoprofile="$$s/gcc/config/$(cpu_type)/$(AUTO_PROFILE)" ; };
 bootstrap_stage = {
 	id=autofeedback ; prev=autoprofile ;
 	bootstrap_target=autoprofiledbootstrap ;

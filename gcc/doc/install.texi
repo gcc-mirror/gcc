@@ -3144,6 +3144,13 @@ Removes any @option{-O}-started option from @code{BOOT_CFLAGS}, and adds
 @itemx @samp{bootstrap-Og}
 Analogous to @code{bootstrap-O1}.
 
+@item @samp{bootstrap-native}
+@itemx @samp{bootstrap-native}
+Optimize the compiler code for the build host, if supported by the
+architecture. Note this only affects the compiler, not the targeted
+code. If you want the later, choose options suitable to the target you
+are looking for. For example @samp{--with-cpu} would be a good starting point.
+
 @item @samp{bootstrap-lto}
 Enables Link-Time Optimization for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-lto} is equivalent to adding

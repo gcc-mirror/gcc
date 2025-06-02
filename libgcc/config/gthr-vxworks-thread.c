@@ -33,6 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <taskLib.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define __TIMESPEC_TO_NSEC(timespec) \
   ((long long)timespec.tv_sec * 1000000000 + (long long)timespec.tv_nsec)

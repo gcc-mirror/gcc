@@ -13,20 +13,20 @@ foo (void)
   #pragma omp target map (to:a)
   ;
 
-  #pragma omp target map (a to: b) /* { dg-error "'map' clause with map-type modifier other than 'always', 'close' or 'present'" } */
-  ;
+  #pragma omp target map (a to: b) /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'mapper' or 'present'" "" { target c++ } } */
+  ; /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'mapper' or 'present' before 'a'" "" { target c } .-1 }  */
 
-  #pragma omp target map (close, a to: b) /* { dg-error "'map' clause with map-type modifier other than 'always', 'close' or 'present'" } */
-  ;
+  #pragma omp target map (close, a to: b) /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'mapper' or 'present'" "" { target c++ } } */
+  ; /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'mapper' or 'present' before 'a'" "" { target c } .-1 }  */
 
-  #pragma omp target enter data map(b7) map (close, a to: b) /* { dg-error "'map' clause with map-type modifier other than 'always', 'close' or 'present'" } */
-  ;
+  #pragma omp target enter data map(b7) map (close, a to: b) /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'mapper' or 'present'" "" { target c++ } } */
+  ; /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'mapper' or 'present' before 'a'" "" { target c } .-1 }  */
 
-  #pragma omp target exit data map(b7) map (close, a from: b) /* { dg-error "'map' clause with map-type modifier other than 'always', 'close' or 'present'" } */
-  ;
+  #pragma omp target exit data map(b7) map (close, a from: b) /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'mapper' or 'present'" "" { target c++ } } */
+  ; /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'mapper' or 'present' before 'a'" "" { target c } .-1 }  */
 
-  #pragma omp target data map(b7) map (close, a from: b) /* { dg-error "'map' clause with map-type modifier other than 'always', 'close' or 'present'" } */
-  ;
+  #pragma omp target data map(b7) map (close, a from: b) /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'mapper' or 'present'" "" { target c++ } } */
+  ; /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'mapper' or 'present' before 'a'" "" { target c } .-1 }  */
 
 
   #pragma omp target map (close a) /* { dg-error "'close' undeclared" "" { target c } } */ 

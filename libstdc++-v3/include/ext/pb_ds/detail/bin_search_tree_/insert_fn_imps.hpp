@@ -122,7 +122,6 @@ insert_leaf_new(const_reference r_value, node_pointer p_nd, bool left_nd)
     }
 
   p_new_nd->m_p_parent = p_nd;
-  p_new_nd->m_p_left = p_new_nd->m_p_right = 0;
   PB_DS_ASSERT_NODE_CONSISTENT(p_nd)
 
   update_to_top(p_new_nd, (node_update* )this);
@@ -142,7 +141,6 @@ insert_imp_empty(const_reference r_value)
     m_p_head->m_p_parent = p_new_node;
 
   p_new_node->m_p_parent = m_p_head;
-  p_new_node->m_p_left = p_new_node->m_p_right = 0;
   _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_value));)
 
   update_to_top(m_p_head->m_p_parent, (node_update*)this);

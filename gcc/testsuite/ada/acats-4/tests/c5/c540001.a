@@ -1,0 +1,410 @@
+-- C540001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that an expression in a case statement may be of a generic formal
+--      type.  Check that a function call may be used as a case statement 
+--      expression.  Check that a call to a generic formal function may be 
+--      used as a case statement expression.  Check that a call to an inherited
+--      function may be used as a case statement expression even if its result
+--      type does not correspond to any nameable subtype.
+--
+-- TEST DESCRIPTION:
+--      This transition test creates examples where expressions in a case
+--      statement can be a generic formal object and a call to a generic formal
+--      function.  This test also creates examples when either a function call,
+--      a renaming of a function, or a call to an inherited function is used
+--      in the case expressions, the choices of the case statement only need 
+--      to cover the values in the result of the function.
+--
+--      Inspired by B54A08A.ADA.
+--
+--
+-- CHANGE HISTORY:
+--      12 Feb 96   SAIC    Initial version for ACVC 2.1.
+--
+--!
+
+package C540001_0 is 
+   type Int is range 1 .. 2;
+
+end C540001_0;
+
+     --==================================================================--
+
+with C540001_0;
+package C540001_1 is 
+   type Enum_Type is (Eh, Bee, Sea, Dee); -- Range of Enum_Type'Val is 0..3.
+   type Mixed     is ('A','B', 'C', None); 
+   subtype Small_Num is Natural range 0 .. 10;
+   type Small_Int is range 1 .. 2;
+   function Get_Small_Int (P : Boolean) return Small_Int;
+   procedure Assign_Mixed (P1 : in     Boolean;
+                           P2 :    out Mixed);
+
+   type Tagged_Type is tagged
+     record
+        C1 : Enum_Type;
+     end record;
+   function Get_Tagged (P : Tagged_Type) return C540001_0.Int;
+
+end C540001_1;
+
+     --==================================================================--
+
+package body C540001_1 is 
+   function Get_Small_Int (P : Boolean) return Small_Int is
+   begin
+      if P then
+         return Small_Int'First;
+      else
+         return Small_Int'Last; 
+      end if;
+   end Get_Small_Int;
+
+   ---------------------------------------------------------------------
+   procedure Assign_Mixed (P1 : in     Boolean;
+                           P2 :    out Mixed) is
+   begin
+      case Get_Small_Int (P1) is          -- Function call as expression
+           when 1  => P2 := None;         -- in case statement.
+           when 2  => P2 := 'A';
+           -- No others needed.
+      end case;
+
+   end Assign_Mixed;
+
+   ---------------------------------------------------------------------
+   function Get_Tagged (P : Tagged_Type) return C540001_0.Int is
+   begin
+      return C540001_0.Int'Last;
+   end Get_Tagged;
+
+end C540001_1;
+
+     --==================================================================--
+
+generic               
+
+   type Formal_Scalar is range <>;  
+
+   FSO : Formal_Scalar;
+
+package C540001_2 is              
+
+   type Enum is (Alpha, Beta, Theta);
+
+   procedure Assign_Enum (ET : out Enum);
+
+end C540001_2;
+
+     --==================================================================--
+
+package body C540001_2 is              
+
+   procedure Assign_Enum (ET : out Enum) is
+   begin
+      case FSO is                         -- Type of expression in case
+           when 1      => ET := Alpha;    -- statement is generic formal type.
+           when 2      => ET := Beta;
+           when others => ET := Theta;
+      end case;
+
+   end Assign_Enum;
+
+end C540001_2;
+
+     --==================================================================--
+
+with C540001_1;
+generic               
+
+   type Formal_Enum_Type is new C540001_1.Enum_Type;
+
+   with function Formal_Func (P : C540001_1.Small_Num) 
+     return Formal_Enum_Type is <>;
+
+function C540001_3 (P : C540001_1.Small_Num) return Formal_Enum_Type;
+
+     --==================================================================--
+
+function C540001_3 (P : C540001_1.Small_Num) return Formal_Enum_Type is
+
+begin
+   return Formal_Func (P);
+end C540001_3;
+
+     --==================================================================--
+
+with C540001_1;
+generic               
+
+   type Formal_Int_Type is new C540001_1.Small_Int;
+
+   with function Formal_Func return Formal_Int_Type;
+
+package C540001_4 is
+
+   procedure Gen_Assign_Mixed (P : out C540001_1.Mixed);
+
+end C540001_4;
+
+     --==================================================================--
+
+package body C540001_4 is
+
+   procedure Gen_Assign_Mixed (P : out C540001_1.Mixed) is
+   begin
+      case Formal_Func is                          -- Case expression is
+         when 1      => P := C540001_1.'A';        -- generic function.
+         when others => P := C540001_1.'B';
+      end case;
+
+   end Gen_Assign_Mixed;
+
+end C540001_4;
+
+     --==================================================================--
+
+with C540001_1;
+package C540001_5 is
+   type New_Tagged is new C540001_1.Tagged_Type with
+      record
+         C2 : C540001_1.Mixed;
+      end record;
+
+    -- Inherits Get_Tagged (P : New_Tagged) return C540001_0.Int;
+    -- Note that the return type of the inherited function is not
+    -- nameable here.
+
+   procedure Assign_Tagged (P1 : in     New_Tagged;
+                            P2 :    out New_Tagged);
+
+end C540001_5;
+
+     --==================================================================--
+
+package body C540001_5 is
+
+   procedure Assign_Tagged (P1 : in     New_Tagged;
+                            P2 :    out New_Tagged) is
+   begin
+      case Get_Tagged (P1) is                      -- Case expression is
+                                                   -- inherited function.
+         when 2      => P2 := (C540001_1.Bee, 'B');       
+         when others => P2 := (C540001_1.Sea, C540001_1.None);
+      end case;
+
+   end Assign_Tagged;
+
+end C540001_5;
+
+     --==================================================================--
+
+with Report;
+with C540001_1;
+with C540001_2;
+with C540001_3;
+with C540001_4;
+with C540001_5;
+
+procedure C540001 is
+   type Value is range 1 .. 5;
+
+begin
+   Report.Test ("C540001", "Check that an expression in a case statement " &
+                "may be of a generic formal type.  Check that a function " &
+                "call may be used as a case statement expression.  Check " &
+                "that a call to a generic formal function may be used as " &
+                "a case statement expression.  Check that a call to an "   &
+                "inherited function may be used as a case statement "      &
+                "expression");
+
+   Generic_Formal_Object_Subtest:
+   begin
+      declare
+         One  : Value := 1;
+         package One_Pck is new C540001_2 (Value, One);
+         use One_Pck;
+         EObj : Enum;
+      begin
+         Assign_Enum (EObj);
+         if EObj /= Alpha then
+            Report.Failed ("Incorrect result for value of one in generic" &
+                           "formal object subtest");
+         end if;
+      end;
+
+      declare
+         Five : Value := 5;
+         package Five_Pck is new C540001_2 (Value, Five);
+         use Five_Pck;
+         EObj : Enum;
+      begin
+         Assign_Enum (EObj);
+         if EObj /= Theta then
+            Report.Failed ("Incorrect result for value of five in generic" &
+                           "formal object subtest");
+         end if;
+      end;
+
+   end Generic_Formal_Object_Subtest;
+
+   Instantiated_Generic_Function_Subtest:
+   declare
+      type New_Enum_Type is new C540001_1.Enum_Type;
+
+      function Get_Enum_Value (P : C540001_1.Small_Num) 
+        return New_Enum_Type is
+      begin
+         return New_Enum_Type'Val (P);
+      end Get_Enum_Value;
+
+      function Val_Func is new C540001_3 
+        (Formal_Enum_Type => New_Enum_Type, 
+         Formal_Func      => Get_Enum_Value);
+
+      procedure Assign_Num (P : in out C540001_1.Small_Num) is
+      begin
+         case Val_Func (P) is                         -- Case expression is
+                                                      -- instantiated generic
+             when New_Enum_Type (C540001_1.Eh) |      -- function.
+                  New_Enum_Type (C540001_1.Sea)   => P := 4;
+             when New_Enum_Type (C540001_1.Bee)   => P := 7;
+             when others                          => P := 9;
+         end case;
+
+      end Assign_Num;
+
+      SNObj  : C540001_1.Small_Num;
+
+   begin
+      SNObj := 0;
+      Assign_Num (SNObj);       
+      if SNObj /= 4 then
+         Report.Failed ("Incorrect result for value of zero in call to " &
+                        "generic function subtest");
+      end if;
+
+      SNObj := 3;
+      Assign_Num (SNObj);       
+      if SNObj /= 9 then
+         Report.Failed ("Incorrect result for value of three in call to " &
+                        "generic function subtest");
+      end if;
+
+   end Instantiated_Generic_Function_Subtest;
+
+   -- When a function call, a renaming of a function, or a call to an 
+   -- inherited function is used in the case expressions, the choices 
+   -- of the case statement only need to cover the values in the result 
+   -- of the function.
+
+   Function_Call_Subtest:
+   declare
+      MObj : C540001_1.Mixed := 'B';
+      BObj : Boolean         := True;
+      use type C540001_1.Mixed;
+   begin
+      C540001_1.Assign_Mixed (BObj, MObj);
+      if MObj /= C540001_1.None then
+         Report.Failed ("Incorrect result for value of true in function" &
+                        "call subtest");
+         end if;
+
+      BObj := False;
+      C540001_1.Assign_Mixed (BObj, MObj);
+      if MObj /= C540001_1.'A' then
+         Report.Failed ("Incorrect result for value of false in function" &
+                        "call subtest");
+      end if;
+
+   end Function_Call_Subtest;
+
+   Function_Renaming_Subtest:
+   declare
+      use C540001_1;
+      function Rename_Get_Small_Int (P : Boolean) 
+        return Small_Int renames Get_Small_Int;
+      MObj : Mixed   := None;
+      BObj : Boolean := False;
+   begin
+      case Rename_Get_Small_Int (BObj) is
+          when 1 => MObj := 'A';
+          when 2 => MObj := 'B';
+          -- No others needed.
+      end case;
+
+      if MObj /= 'B' then
+         Report.Failed ("Incorrect result for value of false in function" &
+                        "renaming subtest");
+      end if;
+
+   end Function_Renaming_Subtest;
+
+   Call_To_Generic_Formal_Function_Subtest:
+   declare
+      type New_Small_Int is new C540001_1.Small_Int;
+
+      function Get_Int_Value return New_Small_Int is
+      begin
+         return New_Small_Int'First;
+      end Get_Int_Value;
+
+      package Int_Pck is new C540001_4 
+        (Formal_Int_Type => New_Small_Int, 
+         Formal_Func     => Get_Int_Value);
+
+      use type C540001_1.Mixed;
+      MObj : C540001_1.Mixed := C540001_1.None; 
+
+   begin
+      Int_Pck.Gen_Assign_Mixed (MObj); 
+      if MObj /= C540001_1.'A' then
+         Report.Failed ("Incorrect result in call to generic formal " &
+                        "function subtest");
+      end if;
+
+   end Call_To_Generic_Formal_Function_Subtest;
+
+   Call_To_Inherited_Function_Subtest:
+   declare
+      NTObj1 : C540001_5.New_Tagged := (C1 => C540001_1.Eh,
+                                        C2 => C540001_1.'A');
+      NTObj2 : C540001_5.New_Tagged := (C540001_1.Dee, C540001_1.'C');
+      use type C540001_1.Mixed;
+      use type C540001_1.Enum_Type;
+   begin
+      C540001_5.Assign_Tagged (NTObj1, NTObj2);
+      if NTObj2.C1 /= C540001_1.Bee or  
+         NTObj2.C2 /= C540001_1.'B' then
+         Report.Failed ("Incorrect result in inherited function subtest");
+      end if;
+
+   end Call_To_Inherited_Function_Subtest;
+
+   Report.Result;
+
+end C540001;

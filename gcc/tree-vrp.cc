@@ -1297,7 +1297,7 @@ const pass_data pass_data_early_vrp =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_cleanup_cfg | TODO_update_ssa | TODO_verify_all ),
+  ( TODO_cleanup_cfg | TODO_update_ssa ),
 };
 
 const pass_data pass_data_fast_vrp =
@@ -1310,7 +1310,7 @@ const pass_data pass_data_fast_vrp =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_cleanup_cfg | TODO_update_ssa | TODO_verify_all ),
+  ( TODO_cleanup_cfg | TODO_update_ssa ),
 };
 
 

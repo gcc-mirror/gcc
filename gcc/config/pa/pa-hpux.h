@@ -114,3 +114,17 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
+/* Assume we have libatomic if sync libcalls are disabled.  */
+#undef TARGET_HAVE_LIBATOMIC
+#define TARGET_HAVE_LIBATOMIC (!flag_sync_libcalls)
+
+/* The SYNC operations are implemented as library functions, not
+   INSN patterns.  As a result, the HAVE defines for the patterns are
+   not defined.  We need to define them to generate the corresponding
+   __GCC_HAVE_SYNC_COMPARE_AND_SWAP_* and __GCC_ATOMIC_*_LOCK_FREE
+   defines.  */
+#define HAVE_sync_compare_and_swapqi (flag_sync_libcalls)
+#define HAVE_sync_compare_and_swaphi (flag_sync_libcalls)
+#define HAVE_sync_compare_and_swapsi (flag_sync_libcalls)
+#define HAVE_sync_compare_and_swapdi (flag_sync_libcalls)

@@ -1,0 +1,534 @@
+-- C611A01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--
+--    Check that if all applicable class-wide preconditions evaluated to False,
+--    Assertion_Error is raised even if an enabled specific precondition of
+--    S evaluates to True.
+--
+--    Check that an enabled specific precondition of a subprogram S raises
+--    Assertion_Error if it evaluates to False, even if a class-wide
+--    precondition for S evaluated to True.
+--
+--    Check that if any applicable class-wide postcondition evaluates to False,
+--    Assertion_Error is raised even if an enabled specific postcondition of S
+--    evaluates to True.
+--
+--    Check that if an enabled specific postcondition valuates to False,
+--    Assertion_Error is raised even if all enabled applicable class-wide
+--    postconditions of S evaluate to True.
+--
+-- TEST DESCRIPTION:
+--    Loosely derived from adding pre- and postconditions to the examples in
+--    Chapter 14 of Programming in Ada 2012.  Object is the root type from
+--    which shape types are derived (we only declare Triangle here).
+--
+--    We use class-wide preconditions and postconditions on type Object,
+--    and then use specific preconditions and postconditions on type Triangle
+--    derived from Object. This is the most likely way that mixed class-wide
+--    and specific contracts would appear in a program, especially as
+--    a specific precondition is needed to strengthen an existing precondition
+--    (class-wide preconditions can only be weakened). (Best practice would
+--    never mix class-wide and specific contracts on a single subprogram.)
+--
+--    Since this is based on another submitted test, there are some ordering
+--    checks that are not strictly needed for this test.
+--
+-- CHANGE HISTORY:
+--    29 Mar 16   RLB    Created test from a version of the test submitted
+--                       by JAC (and used to create C611A02 and other tests).
+--    31 Mar 16   RLB    Removed duplicative suffixes.
+--
+--!
+with F611A00;
+
+package C611A010 is
+
+   pragma Assertion_Policy (Check);
+
+   type Object is tagged private;
+
+   function  Distance             (O : in     Object) return Float
+    with Pre'Class  => F611A00.TC_Log_Object_Distance_Pre_Class_Called
+                       and then X_Coord (O) >= 0.0,
+         Post'Class => F611A00.TC_Log_Object_Distance_Post_Class_Called
+                       and then Not_Too_Near (O);
+
+   procedure Move                   (O : in out Object'Class;
+                                     X : in     Float;
+                                     Y : in     Float);
+
+   function  X_Coord                (O : in     Object) return Float;
+
+   function  Y_Coord                (O : in     Object) return Float;
+
+
+   -- Postcondition functions
+   function  Not_Too_Far            (O : in     Object) return Boolean;
+
+   function  Not_Too_Near           (O : in     Object) return Boolean;
+
+private
+
+   type Object is tagged record
+      X_Coord : Float := 0.0;
+      Y_Coord : Float := 0.0;
+   end record;
+
+end C611A010;
+
+with Ada.Numerics.Elementary_Functions;
+with Report;
+
+package body C611A010 is
+
+   function Local_Distance (O : in Object) return Float is
+     (Ada.Numerics.Elementary_Functions.Sqrt
+        (O.X_Coord ** 2 + O.Y_Coord ** 2));
+
+   function Distance (O : in Object) return Float is
+   begin
+      if not F611A00.TC_Log_Object_Distance_Pre_Class_Called then
+         Report.Failed
+          ("Distance's Pre'Class should have been called before" &
+           " the subprogram body");
+         F611A00.TC_Output;
+      end if;
+
+      if not F611A00.TC_Log_Object_Distance_Specific_Pre_Called then
+         Report.Failed
+          ("Distance's specific precondition should have been" &
+           "called before the subprogram body");
+         F611A00.TC_Output;
+      end if;
+
+      F611A00.TC_Object_Distance_Called := True;
+
+      return Local_Distance (O);
+   end Distance;
+
+   procedure Move (O : in out Object'Class;
+                   X : in     Float;
+                   Y : in     Float) is
+   begin
+      O.X_Coord := X;
+      O.Y_Coord := Y;
+   end Move;
+
+   function X_Coord (O : in Object) return Float is
+   begin
+      F611A00.TC_Object_X_Coord_Called := True;
+
+      return O.X_Coord;
+   end X_Coord;
+
+   function Y_Coord (O : in Object) return Float is
+   begin
+      F611A00.TC_Object_Y_Coord_Called := True;
+
+      return O.Y_Coord;
+   end Y_Coord;
+
+   -- Postcondition functions
+   function Not_Too_Far (O : in Object) return Boolean is
+   begin
+      F611A00.TC_Object_Not_Too_Far_Called := True;
+
+      return Local_Distance (O) <= 10.0;
+   end Not_Too_Far;
+
+   function Not_Too_Near (O : in Object) return Boolean is
+   begin
+      F611A00.TC_Object_Not_Too_Near_Called := True;
+
+      return Local_Distance (O) >= 1.0;
+   end Not_Too_Near;
+
+end C611A010;
+
+package C611A010.Child is
+
+   pragma Assertion_Policy (Check);
+
+   type Triangle is new Object with private;
+
+   overriding
+   function  Distance              (T       : in      Triangle) return Float
+    with Pre        => F611A00.TC_Log_Triangle_Distance_Specific_Pre_Called
+                       and then Y_Coord (T) <= 5.0,
+         Post       => F611A00.TC_Log_Triangle_Distance_Specific_Post_Called
+                       and then Not_Too_Far (T);
+
+   function  Area                  (T        : in     Triangle) return Float
+    with Post'Class => Area_Is_Positive (Area'Result);
+
+   function  Make_Triangle         (A, B, C  : in     Float)    return
+    Triangle;
+
+   procedure Get_Sides             (T        : in     Triangle;
+                                    A, B, C  :    out Float);
+
+   overriding
+   function  X_Coord               (T        : in     Triangle) return Float;
+
+   overriding
+   function  Y_Coord               (T        : in     Triangle) return Float;
+
+   -- Postcondition functions
+   function Not_Too_Far            (T        : in     Triangle) return Boolean;
+
+   function Not_Too_Near           (T        : in     Triangle) return Boolean;
+
+   function Area_Is_Positive       (Area     : in     Float)    return Boolean;
+
+private
+
+   type Triangle is new Object with record
+      A, B, C : Float;
+   end record;
+
+end C611A010.Child;
+
+with Ada.Numerics.Elementary_Functions;
+with F611A00;
+with Report;
+
+package body C611A010.Child is
+
+   function Local_Distance (T : in Triangle) return Float is
+     (Ada.Numerics.Elementary_Functions.Sqrt
+        (T.X_Coord ** 2 + T.Y_Coord ** 2));
+
+   function Distance (T : in Triangle) return Float is
+   begin
+      if not (F611A00.TC_Log_Object_Distance_Pre_Class_Called or
+              F611A00.TC_Log_Triangle_Distance_Pre_Class_Called) then
+         Report.Failed
+          ("Distance's class-wide precondition (inherited from Object) " &
+           "should have been called before the subprogram body");
+         F611A00.TC_Output;
+      end if;
+
+      if not F611A00.TC_Log_Triangle_Distance_Specific_Pre_Called then
+         Report.Failed
+          ("Distance's specific precondition should have been" &
+           "called before the subprogram body");
+         F611A00.TC_Output;
+      end if;
+
+      F611A00.TC_Triangle_Distance_Called := True;
+
+      return Local_Distance (T);
+   end Distance;
+
+   -- Using Heron's formula
+   function Area (T : in Triangle) return Float is
+      S : constant Float := (T.A + T.B + T.C) / 2.0;
+   begin
+      return Ada.Numerics.Elementary_Functions.Sqrt
+        ((S - T.A) * (S - T.B) * (S - T.C));
+   end Area;
+
+   function Make_Triangle (A, B, C : in Float) return Triangle is
+      (A       => A,
+       B       => B,
+       C       => C,
+       X_Coord => 0.0,
+       Y_Coord => 0.0);
+
+   procedure Get_Sides (T       : in      Triangle;
+                        A, B, C :     out Float) is
+   begin
+       A := T.A;
+       B := T.B;
+       C := T.C;
+   end Get_Sides;
+
+   function X_Coord (T : in Triangle) return Float is
+   begin
+      F611A00.TC_Triangle_X_Coord_Called := True;
+
+      return T.X_Coord;
+   end X_Coord;
+
+   function Y_Coord (T : in Triangle) return Float is
+   begin
+      F611A00.TC_Triangle_Y_Coord_Called := True;
+
+      return T.Y_Coord;
+   end Y_Coord;
+
+   -- Postcondition functions
+   function Not_Too_Far (T : in Triangle) return Boolean is
+   begin
+      F611A00.TC_Triangle_Not_Too_Far_Called := True;
+
+      return Local_Distance (T) <= 10.0;
+   end Not_Too_Far;
+
+   function Not_Too_Near (T : in Triangle) return Boolean is
+   begin
+      F611A00.TC_Triangle_Not_Too_Near_Called := True;
+
+      return Local_Distance (T) >= 1.0;
+   end Not_Too_Near;
+
+   function Area_Is_Positive (Area : in Float) return Boolean is
+     (Area >= 0.0);
+
+end C611A010.Child;
+with Ada.Assertions;
+with F611A00;
+with C611A010;
+with C611A010.Child;
+with Report;
+
+procedure C611A01 is
+
+   pragma Assertion_Policy (Check);
+
+   Assertion_Error_Raised : Boolean;
+   Order_Error_Raised : Boolean;
+
+   Outer_Distance : Float;
+
+   My_Triangle : C611A010.Child.Triangle :=
+                  C611A010.Child.Make_Triangle
+                   (A => 3.0, B => 4.0, C => 5.0);
+
+   My_X_Coord : Float;
+
+   procedure Test_Get_Distance (O : in C611A010.Object'Class) is
+
+      function Call_Get_Distance (O : in C611A010.Object'Class) return Float is
+         Inner_Distance : Float;
+      begin
+         -- Dispatching call
+         Inner_Distance := C611A010.Distance (O);
+         return Inner_Distance;
+      end Call_Get_Distance;
+   begin
+      begin
+         Assertion_Error_Raised := False;
+         Order_Error_Raised := False;
+         Outer_Distance := Call_Get_Distance (O);
+      exception
+         when Ada.Assertions.Assertion_Error =>
+            Assertion_Error_Raised := True;
+         when F611A00.TC_Order_Error =>
+            Order_Error_Raised := True;
+      end;
+   end Test_Get_Distance;
+
+begin
+
+   Report.Test
+     ("C611A01",
+      "Check that if both specific and class-wide preconditions (or " &
+      "postconditions) are enabled and apply to a subprogram, then " &
+      "Assertion_Error is raised appropriately");
+
+
+   -- Should pass Object's Pre'Class and Post'Class, and
+   -- Triangle's Pre and Post.
+
+   F611A00.TC_Clear;
+
+   My_Triangle.Move (X => 3.0, Y => 4.0);
+
+   Test_Get_Distance (My_Triangle);
+
+   if Assertion_Error_Raised then
+      Report.Failed ("Assertion_Error raised (1)");
+   elsif Order_Error_Raised then
+      Report.Failed ("Postcondition should only have been called after the" &
+        " subprogram body (1)");
+   end if;
+
+   if F611A00.TC_Object_X_Coord_Called or
+      F611A00.TC_Object_Y_Coord_Called or
+      (not F611A00.TC_Triangle_X_Coord_Called) or
+      (not F611A00.TC_Triangle_Y_Coord_Called) then
+      Report.Failed
+        ("Precondition expressions should only have called " &
+         "primitives appropriate for the tag, and should have called " &
+         "both of them (1)");
+      F611A00.TC_Output;
+   end if;
+
+   if F611A00.TC_Object_Not_Too_Near_Called or
+      F611A00.TC_Object_Not_Too_Far_Called or
+      (not F611A00.TC_Triangle_Not_Too_Near_Called) or
+      (not F611A00.TC_Triangle_Not_Too_Far_Called) then
+      Report.Failed
+        ("Postconndition expressions should only have called " &
+         "primitives appropriate for the tag, and should have called " &
+         "both of them (1)");
+      F611A00.TC_Output;
+   end if;
+
+   -- Should pass Object's Pre'Class but fail Triangle's Pre (postconditions
+   -- are irrelevant here).
+
+   F611A00.TC_Clear;
+
+   My_Triangle.Move (X => 3.0, Y => 8.0);
+
+   Test_Get_Distance (My_Triangle);
+
+   if not Assertion_Error_Raised then
+      Report.Failed ("Triangle precondition failure not detected");
+   end if;
+
+   if F611A00.TC_Object_X_Coord_Called or
+      F611A00.TC_Object_Y_Coord_Called or
+      (not F611A00.TC_Triangle_Y_Coord_Called) then
+      -- Note: We don't know if X_Coord is called, as it doesn't have to
+      -- be evaluated if the specific Pre was evaluated first.
+      Report.Failed
+        ("Precondition expressions should only have called " &
+         "primitives appropriate for the tag, and should have called " &
+         "at least Y Coord (2)");
+      F611A00.TC_Output;
+   end if;
+
+   -- Should fail Object's Pre'Class but pass Triangle's Pre (postconditions
+   -- are irrelevant here).
+
+   F611A00.TC_Clear;
+
+   My_Triangle.Move (X => -3.0, Y => 4.0);
+
+   Test_Get_Distance (My_Triangle);
+
+   if not Assertion_Error_Raised then
+      Report.Failed ("Object precondition failure not detected");
+   end if;
+
+   if F611A00.TC_Object_X_Coord_Called or
+      F611A00.TC_Object_Y_Coord_Called or
+      (not F611A00.TC_Triangle_X_Coord_Called) then
+      -- Note: We don't know if Y_Coord is called, as it doesn't have to
+      -- be evaluated if the class-wide Pre was evaluated first.
+      Report.Failed
+        ("Precondition expressions should only have called " &
+         "primitives appropriate for the tag, and should have called " &
+         "at least X Coord (3)");
+      F611A00.TC_Output;
+   end if;
+
+   -- Should fail Object's Post'Class but pass Triangle's Post.
+
+   F611A00.TC_Clear;
+
+   My_Triangle.Move (X => 0.0, Y => 0.0);
+
+   Test_Get_Distance (My_Triangle);
+
+   if not Assertion_Error_Raised then
+      Report.Failed ("Object postcondition failure not detected");
+      F611A00.TC_Output;
+   end if;
+   if Order_Error_Raised then
+      Report.Failed ("Postcondition should only have been called after the" &
+        " subprogram body (4)");
+   end if;
+
+   if F611A00.TC_Object_X_Coord_Called or
+      F611A00.TC_Object_Y_Coord_Called or
+      (not F611A00.TC_Triangle_X_Coord_Called) or
+      (not F611A00.TC_Triangle_Y_Coord_Called) then
+      Report.Failed
+        ("Precondition expressions should only have called " &
+         "primitives appropriate for the tag, and should have called " &
+         "both of them (4)");
+      F611A00.TC_Output;
+   end if;
+
+   if F611A00.TC_Object_Not_Too_Near_Called or
+      F611A00.TC_Object_Not_Too_Far_Called or
+      (not F611A00.TC_Triangle_Not_Too_Near_Called) then
+      -- Note: We don't know if Not_Too_Far is called, as it doesn't have to
+      -- be evaluated if the class-wide Post was evaluated first.
+      Report.Failed
+        ("Postcondition expressions should only have called " &
+         "primitives appropriate for the tag, and should have called " &
+         "at least Not_Too_Near (4)");
+      F611A00.TC_Output;
+   end if;
+
+   -- Should fail Triangle's Post but pass Object's Post'Class.
+
+   F611A00.TC_Clear;
+
+   My_Triangle.Move (X => 12.0, Y => 4.0);
+
+   Test_Get_Distance (My_Triangle);
+
+   if not Assertion_Error_Raised then
+      Report.Failed ("Triangle postcondition failure not detected");
+      F611A00.TC_Output;
+   end if;
+   if Order_Error_Raised then
+      Report.Failed ("Postcondition should only have been called after the" &
+        " subprogram body (5)");
+   end if;
+
+   if F611A00.TC_Object_X_Coord_Called or
+      F611A00.TC_Object_Y_Coord_Called or
+      (not F611A00.TC_Triangle_X_Coord_Called) or
+      (not F611A00.TC_Triangle_Y_Coord_Called) then
+      Report.Failed
+        ("Precondition expressions should only have called " &
+         "primitives appropriate for the tag, and should have called " &
+         "both of them (5)");
+      F611A00.TC_Output;
+   end if;
+
+   if F611A00.TC_Object_Not_Too_Near_Called or
+      F611A00.TC_Object_Not_Too_Far_Called or
+      (not F611A00.TC_Triangle_Not_Too_Far_Called) then
+      -- Note: We don't know if Not_Too_Near is called, as it doesn't have to
+      -- be evaluated if the specific Post was evaluated first.
+      Report.Failed
+        ("Postcondition expressions should only have called " &
+         "primitives appropriate for the tag, and should have called " &
+         "at least Not_Too_Far (5)");
+      F611A00.TC_Output;
+   end if;
+
+   Report.Result;
+
+end C611A01;

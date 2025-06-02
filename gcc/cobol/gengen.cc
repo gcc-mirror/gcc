@@ -2152,18 +2152,6 @@ gg_printf(const char *format_string, ...)
   int nargs = 0;
   tree args[ARG_LIMIT];
 
-  // Because this routine is intended for debugging, we are sending the
-  // text to STDERR
-
-  // Because we don't actually use stderr ourselves, we just pick it up as a
-  // VOID_P and pass it along to fprintf()
-  tree t_stderr = gg_declare_variable(VOID_P, "stderr",
-                                      NULL_TREE,
-                                      vs_external_reference);
-
-  gg_push_context();
-
-  args[nargs++] = t_stderr;
   args[nargs++] = build_string_literal(strlen(format_string)+1, format_string);
 
   va_list ap;
@@ -2197,7 +2185,7 @@ gg_printf(const char *format_string, ...)
   static tree function = NULL_TREE;
   if( !function )
     {
-    function = gg_get_function_address(INT, "fprintf");
+    function = gg_get_function_address(INT, "__gg__fprintf_stderr");
     }
 
   tree stmt = build_call_array_loc (location_from_lineno(),
@@ -2206,8 +2194,6 @@ gg_printf(const char *format_string, ...)
                                     nargs,
                                     args);
   gg_append_statement(stmt);
-
-  gg_pop_context();
   }
 
 tree

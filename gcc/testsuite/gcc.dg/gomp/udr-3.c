@@ -31,13 +31,13 @@ f2 ()
   #pragma omp declare reduction (bar: struct S: omp_out.s += omp_in.s) initializer (bar (&omp_orig)) /* { dg-error "one of the initializer call arguments should be" } */
 }
 
-#pragma omp declare reduction (+: struct U: omp_out.u *= omp_in.u)		/* { dg-error "previous" } */
+#pragma omp declare reduction (+: struct U: omp_out.u *= omp_in.u)		/* { dg-note "'#pragma omp declare reduction' previously declared here" } */
 #pragma omp declare reduction (+: struct U: omp_out.u += omp_in.u)		/* { dg-error "redeclaration of" } */
 
 void
 f3 ()
 {
-  #pragma omp declare reduction (f3: struct U: omp_out.u *= omp_in.u)		/* { dg-error "previous" } */
+  #pragma omp declare reduction (f3: struct U: omp_out.u *= omp_in.u)		/* { dg-note "'#pragma omp declare reduction' previously declared here" } */
   #pragma omp declare reduction (f3: struct U: omp_out.u += omp_in.u)		/* { dg-error "redeclaration of" } */
 }
 
@@ -47,7 +47,7 @@ struct V
   #pragma omp declare reduction (bar: struct S: omp_out.s += omp_in.s)		/* { dg-error "not at file or block scope" } */
 };
 
-#pragma omp declare reduction (n3: long: omp_out += omp_in)		/* { dg-error "previous" } */
+#pragma omp declare reduction (n3: long: omp_out += omp_in)		/* { dg-note "'#pragma omp declare reduction' previously declared here" } */
 #pragma omp declare reduction (n3: long int: omp_out += omp_in)		/* { dg-error "redeclaration of" } */
 #pragma omp declare reduction (n3: short unsigned: omp_out += omp_in)
 #pragma omp declare reduction (n3: short int: omp_out += omp_in)
@@ -55,7 +55,7 @@ struct V
 void
 f4 (void)
 {
-  #pragma omp declare reduction (f4: long: omp_out += omp_in)		/* { dg-error "previous" } */
+  #pragma omp declare reduction (f4: long: omp_out += omp_in)		/* { dg-note "'#pragma omp declare reduction' previously declared here" } */
   #pragma omp declare reduction (f4: long int: omp_out += omp_in)	/* { dg-error "redeclaration of" } */
   #pragma omp declare reduction (f4: short unsigned: omp_out += omp_in)
   #pragma omp declare reduction (f4: short int: omp_out += omp_in)

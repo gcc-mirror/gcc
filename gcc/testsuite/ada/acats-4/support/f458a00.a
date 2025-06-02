@@ -1,0 +1,565 @@
+-- F458A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--     This foundation provides a number of arrays of reals with default
+--     component values. We assume that the default values are necessary to
+--     ensure an expected initial condition.
+
+-- CHANGE HISTORY:
+--     08 May 2022   BJM   Extended foundation for 4.5.8 tests.
+--     29 Jun 2022   RLB   Copied foundation to follow naming conventions.
+--     30 Jun 2022   RLB   Commented out Ada 2022 feature.
+
+with Ada.Iterator_Interfaces;
+with Ada.Strings.Unbounded; use Ada;
+
+generic
+
+   type Sparse_Array_Index is range <>;
+
+   type Element_Type is private;
+
+package F458A00_Sparse_Arrays is
+
+   --  This package defines an iterable container that is a sparse array.
+   --  A sparse array has elements that can have large gaps beteen each
+   --  element. For instance an array from 1 .. 1000000 might only have a
+   --  dozen real elements in the array. This sparse array implementation does
+   --  not maintain elements in sorted order by index. Each element in the
+   --  array actually has two indexes. One index is the "virtual" index
+   --  specified by the Append cal, and the other is a storage index, which
+   --  effectively is an index to the other index that represents the
+   --  internal storage index where the element can be found. It is possible
+   --  to iterate through the container using either index type.
+
+   type Count_Type is range 0 .. 2 ** 31 - 1;
+   subtype Storage_Index is Count_Type;
+   --  Indicates the physical internal index of the element
+
+   type Sparse_Array (Max_Elements : Count_Type) is tagged private
+    with   Constant_Indexing => Constant_Reference,
+           Variable_Indexing => Reference,
+           Default_Iterator  => Iterate,
+           Iterator_Element  => Element_Type;
+           --Aggregate         => (Empty          => Empty,
+           --                      Add_Named      => Append);
+
+   function Empty (Max_Elements : Count_Type) return Sparse_Array
+     with Post => Empty'Result.Length = 0;
+
+   procedure Append
+     (Container : in out Sparse_Array;
+      Index     : Sparse_Array_Index;
+      New_Item  : Element_Type) with
+     Pre =>
+       Container.Length < Container.Max_Elements and then
+       not Has_Element (Container, Index) and then
+       Index /= Sparse_Array_Index'Base'First,
+       Post =>
+         Container.Length = Container'Old.Length + 1 and then
+         Container.Last_Element = New_Item; 
+   --  Duplicate indexes are not allowed.
+
+   function Length (Container : Sparse_Array) return Count_Type;
+   --  Returns the number of real elements in the array
+
+   type Cursor is private;
+
+   No_Element : constant Cursor;
+   --  No_Element represents a cursor that designates no element.
+   
+   No_Index   : constant Sparse_Array_Index'Base :=
+     Sparse_Array_Index'Base'First;
+   --  No_Index represents an index that designates no element
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+   function Has_Element
+     (Container : Sparse_Array;
+      Index     : Sparse_Array_Index)
+      return      Boolean;
+
+   function Element (Container : Sparse_Array;
+                     Index     : Storage_Index) return Element_Type;
+
+   function Index_Of (Position : Cursor) return Sparse_Array_Index;
+   --  Returns the array index assosiated with Position.
+   
+   function Storage_Index_Of (Position : Cursor) return Storage_Index;
+   --  Returns the physical storage index associated with Position
+      
+   function Index_Of (Container : Sparse_Array;
+                      Index     : Storage_Index) return Sparse_Array_Index;
+
+   function Cursor_Of (Container : Sparse_Array;
+                       Index : Sparse_Array_Index) return Cursor;
+
+   function Cursor_Of (Container : Sparse_Array;
+                       Index : Storage_Index) return Cursor;
+
+   package Sparse_Array_Iterator_Interfaces is new Ada.Iterator_Interfaces (
+      Cursor,
+      Has_Element);
+
+   function Iterate
+     (Container : aliased Sparse_Array)
+      return      Sparse_Array_Iterator_Interfaces.Reversible_Iterator'Class;
+
+   type Constant_Reference_Type
+     (Element : not null access constant Element_Type) is private
+     with Implicit_Dereference => Element;
+
+   type Reference_Type (Element : not null access Element_Type) is private
+     with Implicit_Dereference => Element;
+
+   function Constant_Reference
+     (Container : aliased Sparse_Array;
+      Position  : Cursor) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Sparse_Array;
+      Position  : Cursor) return Reference_Type;
+
+   function Constant_Reference
+     (Container : aliased Sparse_Array;
+      Index     : Sparse_Array_Index) return Constant_Reference_Type;
+
+   function Reference
+     (Container : aliased in out Sparse_Array;
+      Index     : Sparse_Array_Index) return Reference_Type;
+
+   function First_Index (Container : Sparse_Array)
+                         return Sparse_Array_Index'Base;
+   --  If Container is empty, First_Index returns No_Index. Otherwise, it
+   --  returns an index that designates the first element in Container.
+
+   function First (Container : Sparse_Array) return Cursor;
+   --  If Container is empty, First returns No_Element. Otherwise, it returns a
+   --  cursor that designates the first element in Container.
+
+   function First_Element (Container : Sparse_Array) return Element_Type
+     with Pre => Container.Length > 0;
+   --  Equivalent to Element (Container, First_Index (Container)).
+
+   function Last_Index (Container : Sparse_Array)
+                        return Sparse_Array_Index'Base;
+   --  If Container is empty, Last_Index returns No_Index. Otherwise, it
+   --  returns the position of the last element in Container.
+
+   function Last (Container : Sparse_Array) return Cursor;
+   --  If Container is empty, Last returns No_Element. Otherwise, it returns a
+   --  cursor that designates the last element in Container.
+
+   function Last_Element (Container : Sparse_Array) return Element_Type
+     with Pre => Container.Length > 0;
+   --  Equivalent to Element (Container, Last_Index (Container)).
+
+   function Next (Position : Cursor) return Cursor;
+   --  If Position equals No_Element or designates the last element of the
+   --  container, then Next returns the value No_Element. Otherwise, it returns
+   --  a cursor that designates the element with index To_Index (Position) + 1
+   --  in the same vector as Position.
+
+   function Next_Index (Container : Sparse_Array;
+                        Index     : Sparse_Array_Index)
+                        return Sparse_Array_Index'Base;
+   --  If Index equals No_Index or designates the last element of the
+   --  container, then Next_Index returns the value No_Index. Otherwise, it
+   --  returns an index that designates the element with index + 1
+   --  in the same array as Index.
+
+   function Previous (Position : Cursor) return Cursor;
+   --  If Position equals No_Element or designates the first element of the
+   --  container, then Previous returns the value No_Element. Otherwise, it
+   --  returns a cursor that designates the element with index To_Index
+   --  (Position) - 1 in the same array as Position.
+
+   function Previous_Index (Container : Sparse_Array;
+                            Index     : Sparse_Array_Index)
+                            return Sparse_Array_Index'Base;
+   --  If Index equals No_Index or designates the first element of the
+   --  container, then Previous_Index returns the value No_Index. Otherwise, it
+   --  returns an index that designates the element with storage index - 1 in
+   --  the same array as Index.
+
+   TC_Call_History : Strings.Unbounded.Unbounded_String;
+   --
+   --  A string capturing the call sequence to the above subprogams.
+   --  The following gets appended to the history for the above calls;
+   --      Iterate  => I
+   --      First    => 1
+   --      Next     => N( nn)        where nn is the physical index of the
+   --                                   next element
+   --      Last     => L
+   --      Previous => P( nn)        where nn is the physical index of the
+   --                                   next element
+   --      Has_Element => H:{T|F}( nn)  H is the Has_Element function
+   --                                     T means Has_Element returned True
+   --                                     F means Has_Element returns False
+   --                                      nn is the physical index
+
+   TC_Constant_Indexing_Use_Count : Natural := 0;
+   TC_Variable_Indexing_Use_Count : Natural := 0;
+
+private
+
+   type Sparse_Array_Element is
+   record
+      Index : Sparse_Array_Index;
+      --  The real index associated with the value
+
+      Value : aliased Element_Type;
+   end record;
+
+   type Data_Array is
+     array (Count_Type range <>) of Sparse_Array_Element;
+
+   type Sparse_Array (Max_Elements : Count_Type) is tagged
+   record
+      Data : Data_Array (1 .. Max_Elements) := (others => (Index => <>,
+                                                           Value => <>));
+      Count : Count_Type := 0;
+   end record;
+
+   function Length (Container : Sparse_Array) return Count_Type is
+     (Container.Count);
+
+   type Sparse_Array_Access is access constant Sparse_Array;
+   for Sparse_Array_Access'Storage_Size use 0;
+
+   type Cursor is
+   record
+      Index : Count_Type;
+      Container : Sparse_Array_Access;
+   end record;
+
+   function Index_Of (Position : Cursor) return Sparse_Array_Index is
+      (Position.Container.all.Data (Position.Index).Index);
+
+   function Index_Of (Container : Sparse_Array;
+                      Index : Storage_Index) return Sparse_Array_Index is
+      (Container.Data (Index).Index);
+
+   function Storage_Index_Of (Position : Cursor) return Storage_Index is
+      (Position.Index);
+
+   function Element (Container : Sparse_Array;
+                     Index     : Storage_Index) return Element_Type is
+      (Container.Data (Index).Value);
+
+   function Cursor_Of (Container : Sparse_Array;
+                       Index : Storage_Index) return Cursor is
+     (Container => Container'Unchecked_Access,
+      Index => Index);
+
+   No_Element : constant Cursor := (Index => 0, Container => null);
+
+   type Constant_Reference_Type
+      (Element : not null access constant Element_Type) is null record;
+
+   type Reference_Type (Element : not null access Element_Type)
+     is null record;
+
+end F458A00_Sparse_Arrays;
+
+
+package body F458A00_Sparse_Arrays is
+
+   Disable_History : Boolean := False;
+
+   procedure Append
+     (Container : in out Sparse_Array;
+      Index     : Sparse_Array_Index;
+      New_Item  : Element_Type)
+   is
+   begin
+      Container.Count                  := Container.Count + 1;
+      Container.Data (Container.Count) := (Index => Index, Value => New_Item);
+   end Append;
+
+   function Empty (Max_Elements : Count_Type) return Sparse_Array is
+   begin
+      return Empty_Array : Sparse_Array (Max_Elements);
+   end Empty;
+
+   function Has_Element (Position : Cursor) return Boolean is
+      Found : constant Boolean :=
+        (Position.Container /= null
+        and then Position.Index > 0
+        and then Position.Index <= Position.Container.all.Count);
+   begin
+      if not Disable_History then
+         Ada.Strings.Unbounded.Append
+           (Source   => TC_Call_History,
+            New_Item => "H:" &
+                        (if Found then "T(" else "F(") &
+                        Count_Type'Image (Position.Index) &
+                        ')');
+      end if;
+
+      return Found;
+   end Has_Element;
+
+   function Has_Element
+     (Container : Sparse_Array;
+      Index     : Sparse_Array_Index)
+      return      Boolean
+   is
+   begin
+      return (for some Item in Container.Data'Range =>
+                   Container.Data (Item).Index = Index);
+   end Has_Element;
+
+   type Iterator is new
+     Sparse_Array_Iterator_Interfaces.Reversible_Iterator with
+      record
+         Index     : Count_Type;
+         Container : Sparse_Array_Access;
+      end record;
+
+   overriding function First
+     (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Last
+     (Object : Iterator) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function First
+     (Object : Iterator) return Cursor is
+   begin
+      Ada.Strings.Unbounded.Append (Source   => TC_Call_History,
+                                    New_Item => '1');
+
+      return (Index => 1,
+              Container => Object.Container);
+   end First;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor is
+   begin
+
+      Ada.Strings.Unbounded.Append
+        (Source   => TC_Call_History,
+         New_Item => "N(" & Count_Type'Image (Position.Index + 1) & ')');
+
+      return (Index => Position.Index + 1,
+              Container => Object.Container);
+   end Next;
+
+   overriding function Last
+     (Object : Iterator) return Cursor is
+   begin
+      Ada.Strings.Unbounded.Append (Source   => TC_Call_History,
+                                    New_Item => 'L');
+
+      return (Index => Object.Container.all.Count,
+              Container => Object.Container);
+   end Last;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor is
+   begin
+      Ada.Strings.Unbounded.Append
+        (Source   => TC_Call_History,
+         New_Item => "P(" & Count_Type'Image (Position.Index - 1) & ')');
+
+      return (Index => Position.Index - 1,
+              Container => Object.Container);
+   end Previous;
+
+   function Iterate
+     (Container : aliased Sparse_Array)
+      return
+       Sparse_Array_Iterator_Interfaces.Reversible_Iterator'Class is
+   begin
+      Ada.Strings.Unbounded.Append (Source   => TC_Call_History,
+                                    New_Item => 'I');
+      return Iterator'(Index => 0,
+                       Container => Container'Unchecked_Access);
+   end Iterate;
+
+   function Constant_Reference
+     (Container : aliased Sparse_Array;
+      Position  : Cursor) return Constant_Reference_Type is
+   begin
+      Disable_History := True;
+      TC_Constant_Indexing_Use_Count := TC_Constant_Indexing_Use_Count + 1;
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position is invalid";
+      elsif not Position.Container.all'Overlaps_Storage (Container) then
+         raise Program_Error with
+         "Position denotes a different container";
+      elsif Position.Index = 0 or else Position.Index > Container.Count then
+         raise Constraint_Error with "Position is out of range";
+      elsif not Has_Element (Position) then
+         raise Constraint_Error with "Position does not exist";
+      end if;
+
+      Disable_History := False;
+
+      return (Element => Container.Data (Position.Index).Value'Access);
+
+   end Constant_Reference;
+
+   function Constant_Reference
+     (Container : aliased Sparse_Array;
+      Index     : Sparse_Array_Index) return Constant_Reference_Type
+   is
+     (Container.Constant_Reference (Container.Cursor_Of (Index)));   
+
+   function Cursor_Of (Container : Sparse_Array;
+                       Index : Sparse_Array_Index) return Cursor is
+   begin
+   
+      for I in 1 .. Container.Count loop
+         if Container.Data (I).Index = Index then
+            return Cursor'(Index     => I,
+                           Container => Container'Unchecked_Access);
+         end if;         
+      end loop;
+      
+      return No_Element;
+      
+   end Cursor_Of;
+
+   function Reference
+     (Container : aliased in out Sparse_Array;
+      Position  : Cursor) return Reference_Type is
+   begin
+      Disable_History := True;
+      TC_Variable_Indexing_Use_Count := TC_Variable_Indexing_Use_Count + 1;
+
+      if Position.Container = null then
+         raise Constraint_Error with "Position is invalid";
+      elsif not Position.Container.all'Overlaps_Storage (Container) then
+         raise Program_Error with
+           "Position denotes a different container";
+      elsif not Has_Element (Position) then
+         raise Constraint_Error with "Position does not exist";
+      end if;
+
+      Disable_History := False;
+
+      return (Element => Container.Data (Position.Index).Value'Access);
+
+   end Reference;
+
+   function Reference
+     (Container : aliased in out Sparse_Array;
+      Index  : Sparse_Array_Index) return Reference_Type
+   is
+     (Container.Reference (Container.Cursor_Of (Index)));
+
+   function First_Index (Container : Sparse_Array)
+                         return Sparse_Array_Index'Base
+     is (if Container.Count >= 1 then Container.Data (1).Index else No_Index);
+
+   function First (Container : Sparse_Array) return Cursor is
+     (if Container.Count >= 1 then
+        (Index => 1,
+         Container => Container'Unchecked_Access)
+      else No_Element);
+
+   function First_Element (Container : Sparse_Array) return Element_Type
+     is (Container.Data (1).Value);
+   --  Equivalent to Element (Container, First_Index (Container)).
+
+   function Last_Index (Container : Sparse_Array)
+                        return Sparse_Array_Index'Base
+   is (if Container.Count >= 1 then
+          Container.Data (Container.Count).Index else No_Index);
+   --  If Container is empty, Last_Index returns No_Index. Otherwise, it
+   --  returns the position of the last element in Container.
+
+   function Last (Container : Sparse_Array) return Cursor is
+     (if Container.Count >= 1 then
+        (Index => Container.Count,
+         Container => Container'Unchecked_Access)
+      else No_Element);
+   --  If Container is empty, Last returns No_Element. Otherwise, it returns a
+   --  cursor that designates the last element in Container.
+
+   function Last_Element (Container : Sparse_Array) return Element_Type is
+      (Container.Data (Container.Count).Value);
+   --  Equivalent to Element (Container, Last_Index (Container)).
+
+   function Next (Position : Cursor) return Cursor is
+     (if Position = No_Element
+      or else Position.Index = Position.Container.Count
+      then No_Element else (Position.Index + 1, Position.Container));
+   --  If Position equals No_Element or designates the last element of the
+   --  container, then Next returns the value No_Element. Otherwise, it returns
+   --  a cursor that designates the element with index To_Index (Position) + 1
+   --  in the same vector as Position.
+
+   function Next_Index (Container : Sparse_Array;
+                        Index : Sparse_Array_Index)
+                        return Sparse_Array_Index'Base is
+      Position : constant Cursor := Container.Cursor_Of (Index);
+   begin
+      return
+         (if Position = No_Element or else Position.Index = Container.Count
+          then No_Index else Container.Data (Position.Index + 1).Index);
+   end Next_Index;
+   
+
+   function Previous (Position : Cursor) return Cursor is
+      (if Position = No_Element
+          or else Position.Index = 1
+          then No_Element else (Position.Index - 1, Position.Container));
+
+
+   function Previous_Index (Container : Sparse_Array;
+                            Index : Sparse_Array_Index)
+                            return Sparse_Array_Index'Base is
+      Position : constant Cursor := Container.Cursor_Of (Index);
+   begin
+      return (if Position = No_Element or else Position.Index = 1
+              then No_Index else Container.Data (Position.Index - 1).Index);
+   end Previous_Index;
+   
+end F458A00_Sparse_Arrays;
+
+

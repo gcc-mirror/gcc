@@ -1,4 +1,4 @@
-/* { dg-options "-Wformat -fdiagnostics-show-caret" } */
+/* { dg-options "-Wformat -fdiagnostics-show-caret -fdiagnostics-add-output=experimental-html:javascript=no" } */
 
 /* See PR 52952. */
 
@@ -390,3 +390,7 @@ void test_const_arrays (void)
                        double
    { dg-end-multiline-output "" } */
 }
+
+/* Use a Python script to verify various properties about the generated
+   HTML file:
+   { dg-final { run-html-pytest diagnostic-ranges.c "diagnostic-ranges-html.py" } } */

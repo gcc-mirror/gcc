@@ -759,7 +759,13 @@ proc check_effective_target_keeps_null_pointer_checks { } {
 # this allows parallelism of 16 and higher of parallel gcc-auto-profile
 proc profopt-perf-wrapper { } {
     global srcdir
-    return "$srcdir/../config/i386/gcc-auto-profile --all -m8 "
+    if { [check_effective_target_x86] } {
+    	return "$srcdir/../config/i386/gcc-auto-profile -m8"
+    }
+    if { [istarget aarch64*-*-*] } {
+    	return "$srcdir/../config/aarch64/gcc-auto-profile -m8"
+    }
+    return ""
 }
 
 # Return true if profiling is supported on the target.
@@ -778,8 +784,7 @@ proc check_profiling_available { test_what } {
     }
 
     if { $test_what == "-fauto-profile" } {
-	if { !([check_effective_target_x86] && [istarget *-*-linux*]) } {
-	    verbose "autofdo only supported on linux"
+	if { !([check_effective_target_autofdo]) } {
 	    return 0
 	}
 	# not cross compiling?
@@ -787,13 +792,14 @@ proc check_profiling_available { test_what } {
 	    verbose "autofdo not supported for non native builds"
 	    return 0
 	}
-	set event [profopt-perf-wrapper]
-	if {$event == "" } {
+	set wrapper [profopt-perf-wrapper]
+	if {$wrapper == "" } {
 	    verbose "autofdo not supported"
 	    return 0
 	}
+	puts $wrapper
 	global srcdir
-	set status [remote_exec host "$srcdir/../config/i386/gcc-auto-profile" "-m8 true -v >/dev/null"]
+	set status [remote_exec host "$wrapper true -v >/dev/null"]
 	if { [lindex $status 0] != 0 } {
 	    verbose "autofdo not supported because perf does not work"
 	    return 0
@@ -1088,6 +1094,16 @@ proc check_effective_target_tls {} {
     return [check_no_compiler_messages tls assembly {
 	__thread int i;
 	int f (void) { return i; }
+	void g (int j) { i = j; }
+    }]
+}
+
+# Return 1 if we can link using TLS, 0 otherwise.
+
+proc check_effective_target_tls_link {} {
+    return [check_no_compiler_messages tls_link executable {
+	__thread int i;
+	int main (void) { return i; }
 	void g (int j) { i = j; }
     }]
 }
@@ -1422,6 +1438,23 @@ proc check_effective_target_fpic { } {
     }
     return 0
 }
+
+# Check if target supports autofdo.
+
+proc check_effective_target_autofdo { } {
+    if { !([istarget *-*-linux*]) } {
+	verbose "autofdo only supported on linux"
+	return 0
+    }
+    if { [check_effective_target_x86] } {
+	return 1
+    }
+    if { [istarget aarch64*-*-*] } {
+	return 1
+    }
+    return 0
+}
+
 
 # On AArch64, if -fpic is not supported, then we will fall back to -fPIC
 # silently.  So, we can't rely on above "check_effective_target_fpic" as it
@@ -6631,9 +6664,14 @@ proc add_options_for_arm_v8_1m_mve_fp { flags } {
 proc check_effective_target_arm_v8_1a_neon_ok_nocache { } {
     global et_arm_v8_1a_neon_flags
     set et_arm_v8_1a_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -6641,7 +6679,8 @@ proc check_effective_target_arm_v8_1a_neon_ok_nocache { } {
     # since AArch64 only needs the -march setting.
     foreach flags {"" "-mfpu=neon-fp-armv8" "-mfloat-abi=softfp" \
 		       "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"} {
-	foreach arches { "-mcpu=unset -march=armv8-a+rdma" "-mcpu=unset -march=armv8.1-a" } {
+	foreach arches [list "$cpu_unset -march=armv8-a+rdma" \
+			    "$cpu_unset -march=armv8.1-a" ] {
 	    if { [check_no_compiler_messages_nocache arm_v8_1a_neon_ok object {
 		#if !defined (__ARM_FEATURE_QRDMX)
 		#error "__ARM_FEATURE_QRDMX not defined"
@@ -6668,9 +6707,14 @@ proc check_effective_target_arm_v8_1a_neon_ok { } {
 proc check_effective_target_arm_v8_2a_fp16_scalar_ok_nocache { } {
     global et_arm_v8_2a_fp16_scalar_flags
     set et_arm_v8_2a_fp16_scalar_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -6682,8 +6726,8 @@ proc check_effective_target_arm_v8_2a_fp16_scalar_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_FP16_SCALAR_ARITHMETIC)
 	    #error "__ARM_FEATURE_FP16_SCALAR_ARITHMETIC not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.2-a+fp16"] } {
-	    set et_arm_v8_2a_fp16_scalar_flags "$flags -mcpu=unset -march=armv8.2-a+fp16"
+	} "$flags $cpu_unset -march=armv8.2-a+fp16"] } {
+	    set et_arm_v8_2a_fp16_scalar_flags "$flags $cpu_unset -march=armv8.2-a+fp16"
 	    return 1
 	}
     }
@@ -6703,9 +6747,14 @@ proc check_effective_target_arm_v8_2a_fp16_scalar_ok { } {
 proc check_effective_target_arm_v8_2a_fp16_neon_ok_nocache { } {
     global et_arm_v8_2a_fp16_neon_flags
     set et_arm_v8_2a_fp16_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -6717,8 +6766,8 @@ proc check_effective_target_arm_v8_2a_fp16_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
 	    #error "__ARM_FEATURE_FP16_VECTOR_ARITHMETIC not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.2-a+fp16"] } {
-	    set et_arm_v8_2a_fp16_neon_flags "$flags -mcpu=unset -march=armv8.2-a+fp16"
+	} "$flags $cpu_unset -march=armv8.2-a+fp16"] } {
+	    set et_arm_v8_2a_fp16_neon_flags "$flags $cpu_unset -march=armv8.2-a+fp16"
 	    return 1
 	}
     }
@@ -6738,9 +6787,14 @@ proc check_effective_target_arm_v8_2a_fp16_neon_ok { } {
 proc check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache { } {
     global et_arm_v8_2a_dotprod_neon_flags
     set et_arm_v8_2a_dotprod_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -6752,8 +6806,8 @@ proc check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_DOTPROD)
 	    #error "__ARM_FEATURE_DOTPROD not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.2-a+dotprod"] } {
-	    set et_arm_v8_2a_dotprod_neon_flags "$flags -mcpu=unset -march=armv8.2-a+dotprod"
+	} "$flags $cpu_unset -march=armv8.2-a+dotprod"] } {
+	    set et_arm_v8_2a_dotprod_neon_flags "$flags $cpu_unset -march=armv8.2-a+dotprod"
 	    return 1
 	}
     }
@@ -6827,9 +6881,14 @@ proc add_options_for_arm_v8_2a_dotprod_neon { flags } {
 proc check_effective_target_arm_v8_2a_i8mm_ok_nocache { } {
     global et_arm_v8_2a_i8mm_flags
     set et_arm_v8_2a_i8mm_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -6841,8 +6900,8 @@ proc check_effective_target_arm_v8_2a_i8mm_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_MATMUL_INT8)
 	    #error "__ARM_FEATURE_MATMUL_INT8 not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.2-a+i8mm"] } {
-	    set et_arm_v8_2a_i8mm_flags "$flags -mcpu=unset -march=armv8.2-a+i8mm"
+	} "$flags $cpu_unset -march=armv8.2-a+i8mm"] } {
+	    set et_arm_v8_2a_i8mm_flags "$flags $cpu_unset -march=armv8.2-a+i8mm"
 	    return 1
 	}
     }
@@ -6914,9 +6973,14 @@ proc add_options_for_arm_fp16fml_neon { flags } {
 proc check_effective_target_arm_v8_2a_bf16_neon_ok_nocache { } {
     global et_arm_v8_2a_bf16_neon_flags
     set et_arm_v8_2a_bf16_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     foreach flags {"" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" "-mfloat-abi=hard -mfpu=neon-fp-armv8" } {
@@ -6925,8 +6989,8 @@ proc check_effective_target_arm_v8_2a_bf16_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_BF16_VECTOR_ARITHMETIC)
 	    #error "__ARM_FEATURE_BF16_VECTOR_ARITHMETIC not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.2-a+bf16"] } {
-	    set et_arm_v8_2a_bf16_neon_flags "$flags -mcpu=unset -march=armv8.2-a+bf16"
+	} "$flags $cpu_unset -march=armv8.2-a+bf16"] } {
+	    set et_arm_v8_2a_bf16_neon_flags "$flags $cpu_unset -march=armv8.2-a+bf16"
 	    return 1
 	}
     }
@@ -13404,9 +13468,14 @@ proc check_effective_target_inff { } {
 proc check_effective_target_arm_v8_3a_complex_neon_ok_nocache { } {
     global et_arm_v8_3a_complex_neon_flags
     set et_arm_v8_3a_complex_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -13417,8 +13486,8 @@ proc check_effective_target_arm_v8_3a_complex_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_COMPLEX)
 	    #error "__ARM_FEATURE_COMPLEX not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.3-a"] } {
-	    set et_arm_v8_3a_complex_neon_flags "$flags -mcpu=unset -march=armv8.3-a"
+	} "$flags $cpu_unset -march=armv8.3-a"] } {
+	    set et_arm_v8_3a_complex_neon_flags "$flags $cpu_unset -march=armv8.3-a"
 	    return 1;
 	}
     }
@@ -13446,9 +13515,14 @@ proc add_options_for_arm_v8_3a_complex_neon { flags } {
 proc check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache { } {
     global et_arm_v8_3a_fp16_complex_neon_flags
     set et_arm_v8_3a_fp16_complex_neon_flags ""
+    set cpu_unset ""
 
     if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
 	return 0;
+    }
+
+    if { [istarget arm*-*-*] } {
+	set cpu_unset "-mcpu=unset"
     }
 
     # Iterate through sets of options to find the compiler flags that
@@ -13459,9 +13533,9 @@ proc check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_COMPLEX)
 	    #error "__ARM_FEATURE_COMPLEX not defined"
 	    #endif
-	} "$flags -mcpu=unset -march=armv8.3-a+fp16"] } {
+	} "$flags $cpu_unset -march=armv8.3-a+fp16"] } {
 	    set et_arm_v8_3a_fp16_complex_neon_flags \
-			"$flags -mcpu=unset -march=armv8.3-a+fp16"
+			"$flags $cpu_unset -march=armv8.3-a+fp16"
 	    return 1;
 	}
     }

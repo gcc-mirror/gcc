@@ -1,0 +1,426 @@
+-- CXAC002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the subprograms defined in package Ada.Streams.Stream_IO
+--      are accessible, and that they provide the appropriate functionality.
+--
+-- TEST DESCRIPTION:
+--      This test simulates a user filter designed to capitalize the
+--      characters of a string.  It utilizes a variety of the subprograms
+--      contained in the package Ada.Streams.Stream_IO.
+--      Its purpose is to demonstrate the use of a variety of the capabilities
+--      found in the Ada.Streams.Stream_IO package.
+--
+-- APPLICABILITY CRITERIA:
+--      This test is applicable to all implementations capable of supporting
+--      external Stream_IO files.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      14 Nov 95   SAIC    Corrected visibility problems; corrected
+--                          subtest validating result from function Name
+--                          for ACVC 2.0.1.
+--      05 Oct 96   SAIC    Removed calls to Close/Open in test and replaced
+--                          them with a single call to Reset (per AI95-0001)
+--      26 Feb 97   PWB.CTA Allowed for non-support of some IO operations.
+--      09 Feb 01   RLB     Corrected non-support check to avoid unintended
+--                          failures.
+--!
+
+package CXAC002_0 is
+
+   -- This function searches for the first instance of a specified substring
+   -- within a specified string, returning boolean result. (Case insensitive
+   -- analysis)
+
+   function Find (Str : in String; Sub : in String) return Boolean;
+
+end CXAC002_0;
+
+package body CXAC002_0 is
+
+   function Find (Str : in String; Sub : in String) return Boolean is
+
+      New_Str : String(Str'First..Str'Last);
+      New_Sub : String(Sub'First..Sub'Last);
+      Pos     : Integer := Str'First;             -- Character index.
+
+      function Upper_Case (Str : in String) return String is
+         subtype Upper is Character range 'A'..'Z';
+         subtype Lower is Character range 'a'..'z';
+         Ret : String(Str'First..Str'Last);
+         Pos : Integer;
+      begin
+         for I in Str'Range loop
+            if (Str(I) in Lower) then
+               Pos := Upper'Pos(Upper'First) +
+                      (Lower'Pos(Str(I)) - Lower'Pos(Lower'First));
+               Ret(I) := Upper'Val(Pos);
+            else
+               Ret(I) := Str (I);
+            end if;
+         end loop;
+         return Ret;
+      end Upper_Case;
+
+   begin
+
+      New_Str := Upper_Case(Str);             -- Convert Str and Sub to upper
+      New_Sub := Upper_Case(Sub);             -- case for comparison.
+
+      while (Pos <= New_Str'Last-New_Sub'Length+1)     -- Search until no more
+        and then                                       -- sub-string-length
+        (New_Str(Pos..Pos+New_Sub'Length-1) /= New_Sub) -- slices remain.
+      loop
+         Pos := Pos + 1;
+      end loop;
+
+      if (Pos > New_Str'Last-New_Sub'Length+1) then  -- Substring not found.
+         return False;
+      else
+         return True;
+      end if;
+
+   end Find;
+
+end CXAC002_0;
+
+
+with Ada.Streams.Stream_IO, CXAC002_0, Report;
+procedure CXAC002 is
+   Filter_File     : Ada.Streams.Stream_IO.File_Type;
+   Filter_Stream   : Ada.Streams.Stream_IO.Stream_Access;
+   Filter_Filename : constant String :=
+                              Report.Legal_File_Name ( Nam => "CXAC002" );
+   Incomplete : Exception;
+
+begin
+
+   Report.Test ("CXAC002", "Check that the subprograms defined in "         &
+                           "package Ada.Streams.Stream_IO are accessible, " &
+                           "and that they provide the appropriate "         &
+                           "functionality");
+
+   Test_for_Stream_IO_Support:
+
+   begin
+
+      -- If an implementation does not support Stream_IO in a particular
+      -- environment, the exception Use_Error or Name_Error will be raised on
+      -- calls to various Stream_IO operations.  This block statement
+      -- encloses a call to Create, which should produce an exception in a
+      -- non-supportive environment.  These exceptions will be handled to
+      -- produce a Not_Applicable result.
+
+      Ada.Streams.Stream_IO.Create (Filter_File,                    -- Create.
+                                    Ada.Streams.Stream_IO.Out_File,
+                                    Filter_Filename);
+   exception
+
+       when Ada.Streams.Stream_IO.Use_Error | Ada.Streams.Stream_IO.Name_Error =>
+          Report.Not_Applicable
+             ( "Files not supported - Create as Out_File for Stream_IO" );
+          raise Incomplete;
+
+   end Test_for_Stream_IO_Support;
+
+   Operational_Test_Block:
+   declare
+
+      use CXAC002_0;
+      use type Ada.Streams.Stream_IO.File_Mode;
+      use type Ada.Streams.Stream_IO.Count;
+
+      File_Size  : Ada.Streams.Stream_IO.Count :=            -- Count.
+        Ada.Streams.Stream_IO.Count'First;                   -- (0)
+      File_Index : Ada.Streams.Stream_IO.Positive_Count :=   -- Pos. Count.
+        Ada.Streams.Stream_IO.Positive_Count'First;          -- (1)
+
+      First_String  : constant String := "this is going to be ";
+      Second_String : constant String := "the best year of your life";
+      Total_Length  : constant Natural := First_String'Length +
+                                          Second_String'Length;
+      Current_Char  : Character := ' ';
+
+      Cap_String    : String (1..Total_Length) := (others => ' ');
+
+      TC_Capital_String : constant String :=
+                "THIS IS GOING TO BE THE BEST YEAR OF YOUR LIFE";
+
+   begin
+
+      if not Ada.Streams.Stream_IO.Is_Open (Filter_File) then   -- Is_Open
+         Report.Failed ("File not open following Create");
+      end if;
+
+      -- Call function Find to determine if the filename (Sub) is contained
+      -- in the result of Function Name.
+
+      if not Find(Str => Ada.Streams.Stream_IO.Name(Filter_File), -- Name.
+                  Sub => Filter_Filename)
+      then
+         Report.Failed ("Function Name provided incorrect filename");
+      end if;
+                                                                 -- Stream.
+      Filter_Stream := Ada.Streams.Stream_IO.Stream (Filter_File);
+
+      ---
+
+      Enter_Data_In_Stream:
+      declare
+         Pos                 : Natural := 1;
+         Bad_Character_Found : Boolean := False;
+      begin
+
+         -- Enter data from the first string into the stream.
+         while Pos <= Natural(First_String'Length) loop
+            -- Write all characters of the First_String to the stream.
+            Character'Write (Filter_Stream, First_String (Pos));
+            Pos := Pos + 1;
+            -- Ensure data put in file on a regular basis.
+            if Pos mod 5 = 0 then
+               Ada.Streams.Stream_IO.Flush (Filter_File);         -- Flush.
+            end if;
+         end loop;
+
+         Ada.Streams.Stream_IO.Flush (Filter_File);               -- Flush.
+         -- Reset to In_File mode and read stream contents.
+         Reset1:
+         begin
+            Ada.Streams.Stream_IO.Reset (Filter_File,                -- Reset.
+                                         Ada.Streams.Stream_IO.In_File);
+         exception
+            when Ada.Streams.Stream_IO.Use_Error =>
+               Report.Not_Applicable
+                  ( "Reset to In_File not supported for Stream_IO" );
+               raise Incomplete;
+         end Reset1;
+
+         Pos := 1;
+         while Pos <= First_String'Length loop
+            -- Read one character from the stream.
+            Character'Read (Filter_Stream, Current_Char);         -- 'Read
+            -- Verify character against the original string.
+            if Current_Char /= First_String(Pos) then
+               Bad_Character_Found := True;
+            end if;
+            Pos := Pos + 1;
+         end loop;
+
+         if Bad_Character_Found then
+            Report.Failed ("Incorrect character read from stream");
+         end if;
+
+         -- Following user stream/string processing, the stream file is
+         -- appended to as follows:
+
+         Reset2:
+         begin
+            Ada.Streams.Stream_IO.Reset (Filter_File,                -- Reset.
+                                         Ada.Streams.Stream_IO.Append_File);
+         exception
+            when Ada.Streams.Stream_IO.Use_Error =>
+               Report.Not_Applicable
+                  ( "Reset to Append_File not supported for Stream_IO" );
+               raise Incomplete;
+         end Reset2;
+
+         if Ada.Streams.Stream_IO.Mode (Filter_File) /=           -- Mode.
+            Ada.Streams.Stream_IO.Append_File
+         then
+            Report.Failed ("Incorrect mode following Reset to Append");
+         end if;
+
+         Pos := 1;
+         while Pos <= Natural(Second_String'Length) loop
+            -- Write all characters of the Second_String to the stream.
+            Character'Write (Filter_Stream, Second_String (Pos)); -- 'Write
+            Pos := Pos + 1;
+         end loop;
+
+         Ada.Streams.Stream_IO.Flush (Filter_File);               -- Flush.
+
+         -- Record file statistics.
+         File_Size  := Ada.Streams.Stream_IO.Size  (Filter_File); -- Size.
+
+         Index_Might_Not_Be_Supported:
+         begin
+            File_Index := Ada.Streams.Stream_IO.Index (Filter_File); -- Index.
+         exception
+            when Ada.Streams.Stream_IO.Use_Error =>
+               Report.Not_Applicable ( "Index not supported for Stream_IO" );
+               raise Incomplete;
+         end Index_Might_Not_Be_Supported;
+
+      exception
+         when Incomplete =>
+            raise;
+         when others =>
+            Report.Failed ("Exception in Enter_Data_In_Stream block");
+            raise;
+      end Enter_Data_In_Stream;
+
+      ---
+
+      Filter_Block:
+      declare
+         Pos          : Positive := 1;
+         Full_String  : constant String := First_String & Second_String;
+
+         function Capitalize (Char : Character) return Character is
+         begin
+            if Char /= ' ' then
+               return Character'Val( Character'Pos(Char) -
+                      (Character'Pos('a') - Character'Pos('A')));
+            else
+               return Char;
+            end if;
+         end Capitalize;
+
+      begin
+
+         Reset3:
+         begin
+           Ada.Streams.Stream_IO.Reset (Filter_File,                -- Reset.
+                                         Ada.Streams.Stream_IO.In_File);
+         exception
+            when Ada.Streams.Stream_IO.Use_Error =>
+               Report.Not_Applicable
+                  ( "Reset to In_File not supported for Stream_IO" );
+               raise Incomplete;
+         end Reset3;
+
+         if Ada.Streams.Stream_IO.Mode (Filter_File) /=           -- Mode.
+            Ada.Streams.Stream_IO.In_File
+         then
+            Report.Failed ("Incorrect mode following Reset to In_File");
+         end if;
+
+         if not Ada.Streams.Stream_IO.Is_Open (Filter_File) then -- Is_Open
+            Report.Failed ( "Reset command did not leave file open" );
+         end if;
+
+         if Ada.Streams.Stream_IO.Size (Filter_File) /=            -- Size.
+            File_Size
+         then
+            Report.Failed ("Reset file is not correct size");
+         end if;
+
+         if Ada.Streams.Stream_IO.Index (Filter_File) /= 1 then    -- Index.
+            -- File position should have been reset to start of file.
+            Report.Failed ("Index of file not set to 1 following Reset");
+         end if;
+
+         while Pos <= Full_String'Length loop
+            -- Read one character from the stream.
+            Character'Read (Filter_Stream, Current_Char);          -- 'Read
+            -- Verify character against the original string.
+            if Current_Char /= Full_String(Pos) then
+               Report.Failed ("Incorrect character read from stream");
+            else
+               -- Capitalize the characters read from the stream, and
+               -- place them in a string variable.
+               Cap_String(Pos) := Capitalize (Current_Char);
+            end if;
+            Pos := Pos + 1;
+         end loop;
+
+         -- File index should now be set to the position following the final
+         -- character in the file (the same as the index value stored at
+         -- the completion of the Enter_Data_In_Stream block).
+         if Ada.Streams.Stream_IO.Index (Filter_File) /=           -- Index.
+            File_Index
+         then
+            Report.Failed ("Incorrect file index position");
+         end if;
+
+         -- The stream file should now be at EOF.                  -- EOF.
+         if not Ada.Streams.Stream_IO.End_Of_File (Filter_File) then
+            Report.Failed ("File not empty following filtering");
+         end if;
+
+      exception
+
+         when Incomplete =>
+            raise;
+         when others =>
+            Report.Failed ("Exception in Filter_Block");
+            raise;
+      end Filter_Block;
+
+         ---
+
+      Verification_Block:
+      begin
+
+         -- Verify that the entire string was examined, and that the
+         -- process of capitalizing the character data was successful.
+         if Cap_String /= TC_Capital_String then
+            Report.Failed ("Incorrect Capitalization");
+         end if;
+
+      exception
+         when others =>
+            Report.Failed ("Exception in Verification_Block");
+      end Verification_Block;
+
+
+   exception
+
+         when Incomplete =>
+            raise;
+         when others =>
+            Report.Failed ("Exception raised in Operational Test Block");
+
+   end Operational_Test_Block;
+
+   Deletion:
+   begin
+      if Ada.Streams.Stream_IO.Is_Open (Filter_File) then          -- Is_Open.
+         Ada.Streams.Stream_IO.Delete (Filter_File);               -- Delete.
+      else
+         Ada.Streams.Stream_IO.Open (Filter_File,                  -- Open.
+                                     Ada.Streams.Stream_IO.Out_File,
+                                     Filter_Filename);
+         Ada.Streams.Stream_IO.Delete (Filter_File);               -- Delete.
+      end if;
+   exception
+      when others =>
+         Report.Failed
+            ( "Delete not properly implemented for Stream_IO" );
+   end Deletion;
+
+   Report.Result;
+
+exception
+   when Incomplete =>
+      Report.Result;
+   when others     =>
+      Report.Failed ( "Unexpected exception" );
+      Report.Result;
+
+end CXAC002;

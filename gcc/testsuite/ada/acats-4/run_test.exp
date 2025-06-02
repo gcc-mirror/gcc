@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+
+if {[info exists env(DEJAGNU_TIMEOUT)]} {
+    set timeout $env(DEJAGNU_TIMEOUT)
+} else {
+    set timeout 300 
+}
+
+spawn -noecho $argv
+expect timeout {
+    send_user "Program timed out.\n"
+    exit 1
+}

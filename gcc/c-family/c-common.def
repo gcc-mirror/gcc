@@ -50,6 +50,9 @@ DEFTREECODE (EXCESS_PRECISION_EXPR, "excess_precision_expr", tcc_expression, 1)
    number.  */
 DEFTREECODE (USERDEF_LITERAL, "userdef_literal", tcc_exceptional, 3)
 
+/* Represents a 'countof' expression.  */
+DEFTREECODE (COUNTOF_EXPR, "countof_expr", tcc_expression, 1)
+
 /* Represents a 'sizeof' expression during C++ template expansion,
    or for the purpose of -Wsizeof-pointer-memaccess warning.  */
 DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_expression, 1)

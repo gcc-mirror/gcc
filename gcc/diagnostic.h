@@ -31,6 +31,11 @@ namespace text_art
   class theme;
 } // namespace text_art
 
+namespace xml
+{
+  class printer;
+} // namespace xml
+
 /* An enum for controlling what units to use for the column number
    when diagnostics are output, used by the -fdiagnostics-column-unit option.
    Tabs will be expanded or not according to the value of -ftabstop.  The origin
@@ -177,10 +182,15 @@ class diagnostic_source_print_policy;
 typedef void (*diagnostic_text_starter_fn) (diagnostic_text_output_format &,
 					    const diagnostic_info *);
 
-typedef void
-(*diagnostic_start_span_fn) (const diagnostic_location_print_policy &,
-			     pretty_printer *,
-			     expanded_location);
+struct to_text;
+struct to_html;
+
+extern pretty_printer *get_printer (to_text &);
+
+template <typename Sink>
+using diagnostic_start_span_fn = void (*) (const diagnostic_location_print_policy &,
+					   Sink &sink,
+					   expanded_location);
 
 typedef void (*diagnostic_text_finalizer_fn) (diagnostic_text_output_format &,
 					      const diagnostic_info *,
@@ -389,9 +399,30 @@ public:
   const diagnostic_column_policy &
   get_column_policy () const { return m_column_policy; }
 
+  void
+  print_text_span_start (const diagnostic_context &dc,
+			 pretty_printer &pp,
+			 const expanded_location &exploc);
+
+  void
+  print_html_span_start (const diagnostic_context &dc,
+			 xml::printer &xp,
+			 const expanded_location &exploc);
+
 private:
   diagnostic_column_policy m_column_policy;
   bool m_show_column;
+};
+
+/* Abstract base class for optionally supplying extra tags when writing
+   out annotation labels in HTML output.  */
+
+class html_label_writer
+{
+public:
+  virtual ~html_label_writer () {}
+  virtual void begin_label () = 0;
+  virtual void end_label () = 0;
 };
 
 /* A bundle of state for printing source within a diagnostic,
@@ -411,11 +442,21 @@ public:
 	 diagnostic_t diagnostic_kind,
 	 diagnostic_source_effect_info *effect_info) const;
 
+  void
+  print_as_html (xml::printer &xp,
+		 const rich_location &richloc,
+		 diagnostic_t diagnostic_kind,
+		 diagnostic_source_effect_info *effect_info,
+		 html_label_writer *label_writer) const;
+
   const diagnostic_source_printing_options &
   get_options () const { return m_options; }
 
-  diagnostic_start_span_fn
-  get_start_span_fn () const { return m_start_span_cb; }
+  diagnostic_start_span_fn<to_text>
+  get_text_start_span_fn () const { return m_text_start_span_cb; }
+
+  diagnostic_start_span_fn<to_html>
+  get_html_start_span_fn () const { return m_html_start_span_cb; }
 
   file_cache &
   get_file_cache () const { return m_file_cache; }
@@ -442,7 +483,8 @@ public:
 private:
   const diagnostic_source_printing_options &m_options;
   class diagnostic_location_print_policy m_location_policy;
-  diagnostic_start_span_fn m_start_span_cb;
+  diagnostic_start_span_fn<to_text> m_text_start_span_cb;
+  diagnostic_start_span_fn<to_html> m_html_start_span_cb;
   file_cache &m_file_cache;
 
   /* Other data copied from diagnostic_context.  */
@@ -508,7 +550,7 @@ public:
   /* Give access to m_text_callbacks.  */
   friend diagnostic_text_starter_fn &
   diagnostic_text_starter (diagnostic_context *context);
-  friend diagnostic_start_span_fn &
+  friend diagnostic_start_span_fn<to_text> &
   diagnostic_start_span (diagnostic_context *context);
   friend diagnostic_text_finalizer_fn &
   diagnostic_text_finalizer (diagnostic_context *context);
@@ -602,6 +644,12 @@ public:
 			 diagnostic_t diagnostic_kind,
 			 pretty_printer &pp,
 			 diagnostic_source_effect_info *effect_info);
+  void maybe_show_locus_as_html (const rich_location &richloc,
+				 const diagnostic_source_printing_options &opts,
+				 diagnostic_t diagnostic_kind,
+				 xml::printer &xp,
+				 diagnostic_source_effect_info *effect_info,
+				 html_label_writer *label_writer);
 
   void emit_diagram (const diagnostic_diagram &diagram);
 
@@ -882,7 +930,8 @@ private:
     /* This function is called by diagnostic_show_locus in between
        disjoint spans of source code, so that the context can print
        something to indicate that a new span of source code has begun.  */
-    diagnostic_start_span_fn m_start_span;
+    diagnostic_start_span_fn<to_text> m_text_start_span;
+    diagnostic_start_span_fn<to_html> m_html_start_span;
 
     /* This function is called after the diagnostic message is printed.  */
     diagnostic_text_finalizer_fn m_end_diagnostic;
@@ -1040,10 +1089,10 @@ diagnostic_text_starter (diagnostic_context *context)
 /* Client supplied function called between disjoint spans of source code,
    so that the context can print
    something to indicate that a new span of source code has begun.  */
-inline diagnostic_start_span_fn &
+inline diagnostic_start_span_fn<to_text> &
 diagnostic_start_span (diagnostic_context *context)
 {
-  return context->m_text_callbacks.m_start_span;
+  return context->m_text_callbacks.m_text_start_span;
 }
 
 /* Client supplied function called after a diagnostic message is
@@ -1128,6 +1177,21 @@ diagnostic_show_locus (diagnostic_context *context,
   context->maybe_show_locus (*richloc, opts, diagnostic_kind, *pp, effect_info);
 }
 
+inline void
+diagnostic_show_locus_as_html (diagnostic_context *context,
+			       const diagnostic_source_printing_options &opts,
+			       rich_location *richloc,
+			       diagnostic_t diagnostic_kind,
+			       xml::printer &xp,
+			       diagnostic_source_effect_info *effect_info = nullptr,
+			       html_label_writer *label_writer = nullptr)
+{
+  gcc_assert (context);
+  gcc_assert (richloc);
+  context->maybe_show_locus_as_html (*richloc, opts, diagnostic_kind, xp,
+				     effect_info, label_writer);
+}
+
 /* Because we read source files a second time after the frontend did it the
    first time, we need to know how the frontend handled things like character
    set conversion and UTF-8 BOM stripping, in order to make everything
@@ -1201,8 +1265,9 @@ extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
 #endif
 void default_diagnostic_text_starter (diagnostic_text_output_format &,
 				      const diagnostic_info *);
+template <typename Sink>
 void default_diagnostic_start_span_fn (const diagnostic_location_print_policy &,
-				       pretty_printer *,
+				       Sink &sink,
 				       expanded_location);
 void default_diagnostic_text_finalizer (diagnostic_text_output_format &,
 					const diagnostic_info *,

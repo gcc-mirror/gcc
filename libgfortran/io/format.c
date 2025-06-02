@@ -1235,9 +1235,9 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 
     default:
       /* Assume a missing comma with -std=legacy, GNU extension. */
-      if (compile_options.warn_std == 0)
-	goto format_item_1;
-      format_error (dtp, tail, comma_missing);
+      if (compile_options.warn_std != 0)
+	fmt->error = comma_missing;
+      goto format_item_1;
     }
 
   /* Optional comma is a weird between state where we've just finished
@@ -1252,7 +1252,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
     case FMT_RPAREN:
       goto finished;
 
-    default:			/* Assume that we have another format item */
+    default:	/* Assume that we have another format item */
       fmt->saved_token = t;
       break;
     }
@@ -1419,7 +1419,7 @@ parse_format (st_parameter_dt *dtp)
   else
     fmt->error = "Missing initial left parenthesis in format";
 
-  if (format_cache_ok)
+  if (format_cache_ok && !fmt->error)
     save_parsed_format (dtp);
   else
     dtp->u.p.format_not_saved = 1;

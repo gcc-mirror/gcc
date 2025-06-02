@@ -207,21 +207,15 @@ namespace __format
   template<typename _CharT>
     struct _ChronoSpec : _Spec<_CharT>
     {
-      basic_string_view<_CharT> _M_chrono_specs;
-
-      // Use one of the reserved bits in __format::_Spec<C>.
+      // Placed in tail-padding of __format::_Spec<C>.
       // This indicates that a locale-dependent conversion specifier such as
       // %a is used in the chrono-specs. This is not the same as the
       // _Spec<C>::_M_localized member which indicates that "L" was present
       // in the format-spec, e.g. "{:L%a}" is localized and locale-specific,
       // but "{:L}" is only localized and "{:%a}" is only locale-specific.
-      constexpr bool
-      _M_locale_specific() const noexcept
-      { return this->_M_reserved; }
+      unsigned _M_locale_specific : 1;
 
-      constexpr void
-      _M_locale_specific(bool __b) noexcept
-      { this->_M_reserved = __b; }
+      basic_string_view<_CharT> _M_chrono_specs;
     };
 
   // Represents the information provided by a chrono type.
@@ -488,7 +482,7 @@ namespace __format
 	  _M_spec = __spec;
 	  _M_spec._M_chrono_specs
 		 = __string_view(__chrono_specs, __first - __chrono_specs);
-	  _M_spec._M_locale_specific(__locale_specific);
+	  _M_spec._M_locale_specific = __locale_specific;
 
 	  return __first;
 	}
@@ -512,7 +506,7 @@ namespace __format
 	  //       of chrono types is underspecified
 	  if constexpr (is_same_v<_CharT, char>)
 	    if constexpr (__unicode::__literal_encoding_is_utf8())
-	      if (_M_spec._M_localized && _M_spec._M_locale_specific())
+	      if (_M_spec._M_localized && _M_spec._M_locale_specific)
 		{
 		  extern locale __with_encoding_conversion(const locale&);
 
@@ -766,6 +760,9 @@ namespace __format
 		  // sys_time with period greater or equal to days:
 		  if constexpr (is_convertible_v<_Tp, chrono::sys_days>)
 		    __os << _S_date(__t);
+		  // Or a local_time with period greater or equal to days:
+		  else if constexpr (is_convertible_v<_Tp, chrono::local_days>)
+		    __os << _S_date(__t);
 		  else // Or it's formatted as "{:L%F %T}":
 		    {
 		      auto __days = chrono::floor<chrono::days>(__t);
@@ -806,7 +803,7 @@ namespace __format
 	  //       of chrono types is underspecified
 	  if constexpr (is_same_v<_CharT, char>)
 	    if constexpr (__unicode::__literal_encoding_is_utf8())
-	      if (_M_spec._M_localized && _M_spec._M_locale_specific()
+	      if (_M_spec._M_localized && _M_spec._M_locale_specific
 		    && __loc != locale::classic())
 		{
 		  extern string_view

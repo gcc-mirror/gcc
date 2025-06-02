@@ -1,0 +1,161 @@
+-- C35A001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+-- OBJECTIVES:
+--     Check that Small can be specified with an aspect specification.
+--
+-- TEST DESCRIPTION:
+--     This test was created using parts of existing tests CD10001,
+--     CD1C03F, CD2D11A, and CD2D13A.
+--
+--     Note: We use only Smalls that are powers of two in this test,
+--     as 3.5.9(21) does not require other values to be supported. This is
+--     NOT a Recommended Level of Support, so the requirements don't change
+--     because Annex C is or is not supported.
+--
+-- CHANGE HISTORY:
+--     28 Mar 17   RLB     Created test.
+--
+--!
+package C35A001_0 is
+
+   Zero  : constant := 0;                                         -- Static
+   One   : constant := 1;                                         -- Static
+   Two   : constant := 2;                                         -- Static
+   Three : constant := 3;                                         -- Static
+   Four  : constant := 4;                                         -- Static
+   Five  : constant := 5;                                         -- Static
+
+   type Tenths is delta 0.1 range 0.0 .. 10.0
+      with Small => 1.0 / (Two ** Five);
+
+   type Specified is delta 2.0 ** (-4) range -4.0 .. 4.0;
+
+   type Check_Type is delta 1.0 range -4.0 .. 4.0
+      with Small => Specified_Small;
+
+   type Derived_Type is new Tenths; -- Inherits Small value from parent.
+
+   Specified_Small : constant := Specified'Small;
+      -- We declare this late to check that the aspect specification isn't
+      -- evaluated until the freezing point.
+
+   procedure TC_Check_Values;
+
+end C35A001_0;
+
+with Report;
+package body C35A001_0 is
+
+   procedure Assert (Truth : Boolean; Message: String) is
+   begin
+      if not Truth then
+         Report.Failed (Message);
+      end if;
+   end Assert;
+
+
+   function Ident (FX : CHECK_TYPE) RETURN CHECK_TYPE IS
+   begin
+      if Report.Equal (3, 3) then
+         return FX;
+      else
+         return 0.0;
+      end if;
+   end Ident;
+
+
+   procedure TC_Check_Values is
+      CNeg1 : Check_Type := -3.5;
+      CNeg2 : Check_Type := Check_Type (-1.0/3.0);
+      CPos1 : Check_Type := Check_Type (4.0/6.0);
+      CPos2 : Check_Type :=  3.5;
+   begin
+
+      Assert (Tenths'Small = 1.0 / Two ** Five,
+              "Tenths Small not specified value");
+
+      Assert (Check_Type'Small = Specified_Small,
+              "Check_Type Small not specified value");
+
+      Assert (Derived_Type'Small = Tenths'Small,
+              "Derived_Type Small not inherited");
+
+      -- Check various operations of Check_Type:
+
+      if Ident (CNeg1) + CPos1 not in -2.875 .. -2.8125 or else
+         CPos2  - Ident (CPos1) not in 2.8125 .. 2.875 then
+         Report.Failed ("Incorrect results for binary adding operators");
+      end if;
+
+      if +Ident (CNeg2) not in -0.375 .. -0.3125 or else
+         Ident (-CPos1) not in -0.6875 .. -0.625 then
+         Report.Failed ("Incorrect results for unary adding operators");
+      end if;
+
+      if Check_Type (CNeg1 * Ident (CPos1)) not in -2.4375 .. -2.1875 or else
+         Check_Type (Ident (CNeg2) / CPos2) not in -0.125 .. -0.0625 then
+          Report.Failed ("Incorrect results for multiplying operators");
+      end if;
+
+      if abs Ident (CNeg2) not in 0.3125 .. 0.375 or else
+         Ident (ABS CPos1) not in 0.625 .. 0.6875 then
+          Report.Failed ("Incorrect results for absolute value " &
+                  "operators");
+      end if;
+
+      if Ident (CPos1) not in 0.625 .. 0.6875 or else
+            CNeg2 in -0.25 .. 0.0 or else
+            Ident (CNeg2) in -1.0 .. -0.4375 then
+         Report.Failed ("Incorrect results for membership operations");
+      end if;
+
+   end TC_Check_Values;
+
+end C35A001_0;
+
+
+with Report;
+with C35A001_0;
+procedure C35A001 is
+
+begin  -- Main test procedure.
+
+  Report.Test ("C35A001", "Check that Small can be specified with an " &
+                          "aspect specification");
+
+  C35A001_0.TC_Check_Values;
+
+  Report.Result;
+
+end C35A001;

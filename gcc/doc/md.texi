@@ -2918,6 +2918,9 @@ A signed 16-bit constant.
 A memory operand whose address is formed by a base register and offset
 that is suitable for use in instructions with the same addressing mode
 as @code{st.w} and @code{ld.w}.
+@item q
+A general-purpose register except for $r0 and $r1 (for the csrxchg
+instruction)
 @item I
 A signed 12-bit constant (for arithmetic instructions).
 @item K
@@ -3693,6 +3696,9 @@ RVC general purpose register (x8-x15).
 @item cf
 RVC floating-point registers (f8-f15), if available, reuse GPR as FPR when use
 zfinx.
+
+@item cR
+Even-odd RVC general purpose register pair.
 
 @item R
 Even-odd general purpose register pair.

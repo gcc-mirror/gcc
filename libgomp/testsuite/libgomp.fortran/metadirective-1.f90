@@ -1,4 +1,5 @@
-! { dg-do run }
+! { dg-do run { target { ! offload_target_nvptx } } }
+! { dg-do compile { target offload_target_nvptx } }
 
 program test
   implicit none
@@ -33,6 +34,10 @@ program test
 contains
   subroutine f (x, y, z)
     integer :: x(N), y(N), z(N)
+    ! The following fails as on the host the target side cannot be
+    ! resolved - and the 'teams' or not status affects how 'target'
+    ! is called. -> See PR118694, esp. comment 9.
+    ! Note also the dg-do compile above for offload_target_nvptx
 
     !$omp target map (to: x, y) map(from: z)
       block
@@ -43,6 +48,7 @@ contains
 	  z(i) = x(i) * y(i)
 	enddo
       end block
+    ! { dg-bogus "'target' construct with nested 'teams' construct contains directives outside of the 'teams' construct" "PR118694" { xfail offload_target_nvptx } .-9 }  */
   end subroutine
   subroutine g (x, y, z)
     integer :: x(N), y(N), z(N)
@@ -56,6 +62,7 @@ contains
 	  z(i) = x(i) * y(i)
 	enddo
     end block
+    ! { dg-bogus "'target' construct with nested 'teams' construct contains directives outside of the 'teams' construct" "PR118694" { xfail offload_target_nvptx } .-9 }  */
     !$omp end target
   end subroutine
 end program

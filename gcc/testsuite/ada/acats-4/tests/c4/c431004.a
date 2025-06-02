@@ -1,0 +1,325 @@
+-- C431004.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+-- OBJECTIVE:
+--      Check that the association in an extension aggregate for a discriminant
+--      with a default can be given by <>.
+--
+-- TEST DESCRIPTION:
+--      Extension aggregate cases for paragraph 4.3.1(17.1/2). Note that this
+--      rule applies to all Ada versions since Amendment 1 for Ada 95.
+--
+--      Only limited tagged types can have defaults (by 3.7(9.1/3)), so this
+--      test can only be made on limited tagged types.
+--
+--      Aggregates are commonly used. Thus, we assume that almost all cases
+--      will eventually appear in actual usage and thus do not try to describe
+--      a specific usage scenario.
+--
+-- CHANGE HISTORY:
+--      2022-02-24   JAC      Initial pre-release version.
+--      2022-03-30   RLB      Redid to use extensions, not nested records.
+--
+--!
+
+with Report;
+
+procedure C431004 is
+
+   type Units_Type is (Feet, Metres);
+
+   type Tagged_Units_Type is tagged limited record
+      Units_Field : Units_Type := Metres;
+   end record;
+
+   -- Example where a discriminant of a numeric type determines the bounds of a
+   -- 1-D array in an extension.
+
+   type Integer_Vector_Type is array (Integer range <>) of Integer;
+
+   Max : constant := 100;
+
+   subtype Index is Integer range 0 .. Max;
+
+   type Poly_Units_Type (N : Index := 1) is new Tagged_Units_Type 
+      with record
+         IV : Integer_Vector_Type (0 .. N);
+      end record;
+
+   -- Discriminant explicitly initialised to default:
+   Poly_1 : constant Poly_Units_Type := (Units_Field => Metres,
+                                         N  => <>,
+                                         IV => <>);
+                                         
+   -- Discriminant explicitly initialised to a specific value:
+   Poly_2 :          Poly_Units_Type := (Units_Field => Feet,
+                                         N  => 2,
+                                         IV => <>);
+                                         
+   -- Discriminant explicit initialized to default in extension aggregate:
+   Poly_3 : constant Poly_Units_Type := (Tagged_Units_Type with 
+                                         N  => <>,
+                                         IV => <>);
+                                         
+   -- Discriminant explicitly initialised to a specific value in 
+   -- extension aggregate:
+   Poly_4 :          Poly_Units_Type := (Tagged_Units_Type with
+                                         N  => 2,
+                                         IV => <>);
+                                                
+   -- All components defaulted:
+   Poly_5 :          Poly_Units_Type := (Tagged_Units_Type with
+                                         others => <>);
+                                                
+   
+
+   -- Example where discriminants of a numeric type determine the bounds of a
+   -- matrix.
+
+   subtype Bounds_Type is Integer range 0 .. 100;
+
+   type Matrix_Type is array (Bounds_Type range <>,
+                              Bounds_Type range <>) of Float;
+
+   type Matrix_Units_Type (Rows    : Integer := 2;
+                           Columns : Integer := 3) is new Tagged_Units_Type
+      with record
+         Mat : Matrix_Type (1 .. Rows, 1 .. Columns);
+      end record;
+
+   Matrix_Rec_1 : constant Matrix_Units_Type :=
+                     (Tagged_Units_Type with 
+                      Rows    => <>,
+                      Columns => <>,
+                      Mat     => (others => (others => 0.0)));
+
+   Matrix_Rec_2 : constant Matrix_Units_Type :=
+                     (Tagged_Units_Type with 
+                      Rows    => 5,
+                      Columns => <>,
+                      Mat     => (others => (others => 0.0)));
+
+   Matrix_Rec_3 : constant Matrix_Units_Type :=
+                     (Tagged_Units_Type with 
+                      Rows    => <>,
+                      Columns => 4,
+                      Mat     => (others => (others => 0.0)));
+
+   Matrix_Rec_4 : constant Matrix_Units_Type :=
+                     (Tagged_Units_Type with 
+                      Rows    => 3,
+                      Columns => 6,
+                      Mat     => (others => (others => 0.0)));
+
+   Matrix_Rec_5 : constant Matrix_Units_Type :=
+                     (Tagged_Units_Type with others => <>);
+
+   Matrix_Rec_6 : constant Matrix_Units_Type :=
+                     (Tagged_Units_Type with Rows => 4, others => <>);
+
+   -- Example where a discriminant of an enumeration type selects a variant:
+
+   type Gender_Type is (Male, Female);
+
+   type Poly_Person_Type (N : Index := 2;
+                          Gender : Gender_Type := Male) is
+      new Poly_Units_Type(N) with record
+         Height : Float;
+         case Gender is
+            when Male =>
+               Bearded : Boolean;
+            when Female =>
+               No_Of_Children : Natural;
+         end case;
+      end record;
+
+    Person_1 : constant Poly_Person_Type :=
+             (Tagged_Units_Type with 
+                 N  => <>,
+                 IV => <>,
+                 Gender => <>,
+                 Height => <>,
+                 Bearded => <>);
+
+    Person_2 : Poly_Person_Type :=
+             (Tagged_Units_Type with others => <>);
+
+    Person_3 : Poly_Person_Type :=
+             (Tagged_Units_Type with 
+                 N  => <>,
+                 IV => <>,
+                 Gender => Female, No_of_Children => 0,
+                 Height => 5.0);
+
+    Person_4 : Poly_Person_Type :=
+             (Tagged_Units_Type with Gender => Female, others => <>);
+
+    Person_5 : Poly_Person_Type :=
+             (Poly_Units_Type with 
+                 N      => <>,
+                 Gender => <>,
+                 Height => <>,
+                 Bearded => <>);
+
+    Person_6 : constant Poly_Person_Type :=
+             (Poly_Units_Type with others => <>);
+
+    Person_7 : constant Poly_Person_Type :=
+             (Poly_Units_Type with 
+                 N      => <>,
+                 Gender => Female, No_of_Children => 0,
+                 Height => 5.0);
+
+    Person_8 : constant Poly_Person_Type :=
+             (Poly_Units_Type with 
+                 N      => 1,
+                 Gender => Female, No_of_Children => 0,
+                 Height => 5.0);
+                 
+begin
+
+   Report.Test
+     ("C431004",
+      "Check that the association in an extension aggregate for a" &
+      " discriminant with a default can be given by <>");
+
+   -- Check that the discriminant values are as expected:
+   if Poly_1.N /= 1 then
+      Report.Failed
+        ("Poly: Discriminant not as expected, 1-D array, record aggregate, " &
+         "discriminant set to default");
+   end if;
+   if Poly_2.N /= 2 then
+      Report.Failed
+        ("Poly: Discriminant not as expected, 1-D array, record aggregate, " &
+         "discriminant explicitly set");
+   end if;
+   if Poly_3.N /= 1 then
+      Report.Failed
+        ("Poly: Discriminant not as expected, 1-D array, extension " &
+         "aggregate, discriminant set to default");
+   end if;
+   if Poly_4.N /= 2 then
+      Report.Failed
+        ("Poly: Discriminant not as expected, 1-D array, extension " &
+         "aggregate, discriminant explicitly set");
+   end if;
+   if Poly_5.N /= 1 then
+      Report.Failed
+        ("Poly: Discriminant not as expected, 1-D array, extension " &
+         "aggregate, all components set to default");
+   end if;
+
+
+   -- Check that the discriminant values for the matrix type are as expected:
+   if Matrix_Rec_1.Rows    /= 2 and then
+      Matrix_Rec_1.Columns /= 3 then
+      Report.Failed
+        ("Matrix: Discriminants not as expected, rows and columns both set" &
+         " to defaults");
+   end if;
+   if Matrix_Rec_2.Rows    /= 5 and then
+      Matrix_Rec_2.Columns /= 3 then
+      Report.Failed
+        ("Matrix: Discriminants not as expected, rows set, columns defaulted");
+   end if;
+   if Matrix_Rec_3.Rows    /= 2 and then
+      Matrix_Rec_3.Columns /= 4 then
+      Report.Failed
+        ("Matrix: Discriminants not as expected, rows defaulted, columns set");
+   end if;
+   if Matrix_Rec_4.Rows    /= 3 and then
+      Matrix_Rec_4.Columns /= 6 then
+      Report.Failed
+        ("Matrix: Discriminants not as expected, rows and columns explicitly" &
+         " set");
+   end if;
+   if Matrix_Rec_5.Rows    /= 2 and then
+      Matrix_Rec_5.Columns /= 3 then
+      Report.Failed
+        ("Matrix: Discriminants not as expected, all components defaulted");
+   end if;
+   if Matrix_Rec_6.Rows    /= 4 and then
+      Matrix_Rec_6.Columns /= 3 then
+      Report.Failed
+        ("Matrix: Discriminants not as expected, rows set explicitly, all " &
+         "other components defaulted");
+   end if;
+
+   -- Check that the correct discriminants have been used:
+   if Person_1.N /= 2 or else Person_1.Gender /= Male then
+      Report.Failed
+        ("Person: Discriminants not as expected, discriminants both set to " &
+         "defaults");
+   end if;
+   if Person_2.N /= 2 or else Person_2.Gender /= Male then
+      Report.Failed
+        ("Person: Discriminants not as expected, all components defaulted");
+   end if;
+   if Person_3.N /= 2 or else Person_3.Gender /= Female then
+      Report.Failed
+        ("Person: Discriminants not as expected, Gender explicitly set, N " &
+         "set to default");
+   end if;
+   if Person_4.N /= 2 or else Person_4.Gender /= Female then
+      Report.Failed
+        ("Person: Discriminants not as expected, Gender explicit set, all " &
+        " other components defaulted");
+   end if;
+   if Person_5.N /= 2 or else Person_5.Gender /= Male then
+      Report.Failed
+        ("Person: Discriminants not as expected, poly parent, discriminants " &
+         "set to defaults");
+   end if;
+    if Person_6.N /= 2 or else Person_6.Gender /= Male then
+      Report.Failed
+        ("Person: Discriminants not as expected, poly parent, other " &
+         "components defaulted");
+   end if; 
+ 
+   if Person_7.N /= 2 or else Person_7.Gender /= Female then
+      Report.Failed
+        ("Person: Discriminants not as expected, poly parent, Gender set " &
+         "explicitly, N defaulted");
+   end if; 
+ 
+   if Person_8.N /= 1 or else Person_8.Gender /= Female then
+      Report.Failed
+        ("Person: Discriminants not as expected, poly parent, components set" &
+         " explicitly");
+   end if; 
+ 
+   Report.Result;
+
+end C431004;

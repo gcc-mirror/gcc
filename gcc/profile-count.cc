@@ -364,8 +364,12 @@ profile_count::adjust_for_ipa_scaling (profile_count *num,
   /* Scaling to zero is always zero.  */
   if (*num == zero ())
     return;
-  /* If den is non-zero we are safe.  */
-  if (den->force_nonzero () == *den)
+  /* If den is non-zero we are safe.
+     However take care of zeros in AFDO profiles since
+     they simply means that no useful samples were collected.
+     Called function still may contain important loop.  */
+  if (den->force_nonzero () == *den
+      && num->quality () != AFDO)
     return;
   /* Force both to non-zero so we do not push profiles to 0 when
      both num == 0 and den == 0.  */
@@ -417,17 +421,17 @@ profile_count::combine_with_ipa_count_within (profile_count ipa,
 
 profile_count
 profile_count::from_gcov_type (gcov_type v, profile_quality quality)
-  {
-    profile_count ret;
-    gcc_checking_assert (v >= 0);
-    if (dump_file && v >= (gcov_type)max_count)
-      fprintf (dump_file,
-	       "Capping gcov count %" PRId64 " to max_count %" PRId64 "\n",
-	       (int64_t) v, (int64_t) max_count);
-    ret.m_val = MIN (v, (gcov_type)max_count);
-    ret.m_quality = quality;
-    return ret;
-  }
+{
+  profile_count ret;
+  gcc_checking_assert (v >= 0);
+  if (dump_file && v >= (gcov_type)max_count)
+    fprintf (dump_file,
+	     "Capping gcov count %" PRId64 " to max_count %" PRId64 "\n",
+	     (int64_t) v, (int64_t) max_count);
+  ret.m_val = MIN (v, (gcov_type)max_count);
+  ret.m_quality = quality;
+  return ret;
+}
 
 /* COUNT1 times event happens with *THIS probability, COUNT2 times OTHER
    happens with COUNT2 probability.  Return probability that either *THIS or

@@ -1,0 +1,221 @@
+-- C340A02.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a record extension (declared in a package specification) of
+--      a tagged type (declared in a different package specification) may be
+--      passed as a generic formal (tagged) private type to a generic package
+--      declaration. Check that the formal type may be further extended with a
+--      record extension in the generic package.
+--
+--      Check that, in the instance, the record extension inherits the
+--      user-defined primitive subprograms of the tagged actual, including
+--      those inherited by the actual from its parent.
+--
+-- TEST DESCRIPTION:
+--      Declare a tagged type and an associated primitive subprogram in a
+--      package specification (foundation code). Declare a record extension
+--      of the tagged type and an associated primitive subprogram in a second
+--      package specification. Declare a generic package which takes a tagged
+--      type as a formal parameter, and then extends it with a record
+--      extension (foundation code).
+--      
+--      Instantiate the generic package with the record extension from the
+--      second package (the "generic" extension should now have inherited
+--      the primitive subprograms of the record extension from the second
+--      package).
+-- 
+--      In the main program, call the primitive subprograms inherited by the
+--      "generic" extension. There are two: (1) Create_Book, declared for
+--      the root tagged type in the first package (inherited by the record
+--      extension of the second package, and then in turn by the "generic"
+--      extension), and (2) Update_Pages, declared for the record extension
+--      in the second package. Verify the correctness of the components.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--
+--         F340A000.A
+--         F340A001.A
+--      => C340A02.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      12 Jun 96   SAIC    ACVC 2.1: Modified prologue. Removed extraneous
+--                          comments.
+--
+--!
+
+with F340A001;        -- Book definitions.
+package C340A02_0 is  -- Extended book abstraction.
+
+
+   type Detailed_Book_Type is new F340A001.Book_Type with record
+      Pages : Natural;                                        -- Record ext.
+   end record;                                                -- of root tagged
+                                                              -- type.
+
+   -- Inherits Create_Book from Book_Type.
+
+   procedure Update_Pages (Book  : in out Detailed_Book_Type; -- Primitive op.
+                           Pages : in     Natural);           -- of extension.
+
+
+end C340A02_0;
+
+
+     --==================================================================--
+
+
+package body C340A02_0 is
+
+
+   procedure Update_Pages (Book  : in out Detailed_Book_Type;
+                           Pages : in     Natural) is
+   begin
+      Book.Pages := Pages;
+   end Update_Pages;
+
+
+end C340A02_0;
+
+
+     --==================================================================--
+
+
+with F340A001;        -- Book definitions.
+package C340A02_1 is  -- Raw data to be used in creating book elements.
+
+
+   Book_Count : constant := 3;
+
+   subtype Number_Of_Books is Integer range 1 .. Book_Count;
+
+   type Data_List   is array (Number_Of_Books) of F340A001.Text_Ptr;
+   type Page_Counts is array (Number_Of_Books) of Natural;
+
+   Title_List  : Data_List   := (new String'("Wuthering Heights"),
+                                 new String'("Heart of Darkness"),
+                                 new String'("Ulysses"));
+
+   Author_List : Data_List   := (new String'("Bronte, Emily"),
+                                 new String'("Conrad, Joseph"),
+                                 new String'("Joyce, James"));
+
+   Page_List   : Page_Counts := (237, 215, 456);
+
+end C340A02_1;
+
+
+     --==================================================================--
+
+
+-- Library-level instantiation. Actual parameter is record extension.
+
+with C340A02_0;  -- Extended book abstraction.
+with F340A000;   -- Singly-linked list abstraction.
+package C340A02_2 is new F340A000
+  (Parent_Type => C340A02_0.Detailed_Book_Type);
+
+
+     --==================================================================--
+
+
+with Report;
+
+with C340A02_0; -- Extended book abstraction.
+with C340A02_1; -- Raw book data.
+with C340A02_2; -- Instance.
+
+use  C340A02_0; -- Primitive operations of Detailed_Book_Type directly visible.
+use  C340A02_2; -- Operations inherited by Node_Type directly visible.
+
+procedure C340A02 is
+
+
+   List_Of_Books : Node_Ptr := null;  -- Head of linked list of books.
+
+
+          --========================================================--
+
+
+   procedure Create_List (Title, Author : in     C340A02_1.Data_List;
+                          Pages         : in     C340A02_1.Page_Counts;
+                          Head          : in out Node_Ptr) is
+
+      Book     : Node_Type;  -- Object of extended type.
+      Book_Ptr : Node_Ptr;
+
+   begin
+      for I in C340A02_1.Number_Of_Books loop
+         Create_Book (Title (I), Author (I), Book);    -- Call twice-inherited
+                                                       -- operation.
+         Update_Pages (Book, Pages (I));               -- Call inherited op.
+         Book_Ptr := new Node_Type'(Book);
+         Add (Book_Ptr, Head);
+      end loop;
+   end Create_List;
+
+
+          --========================================================--
+
+
+   function Bad_List_Contents return Boolean is
+   begin
+      return (List_Of_Books.Title.all            /= "Ulysses"           or
+              List_Of_Books.Author.all           /= "Joyce, James"      or
+              List_Of_Books.Pages                /= 456                 or
+              List_Of_Books.Next.Title.all       /= "Heart of Darkness" or
+              List_Of_Books.Next.Author.all      /= "Conrad, Joseph"    or
+              List_Of_Books.Next.Pages           /= 215                 or
+              List_Of_Books.Next.Next.Title.all  /= "Wuthering Heights" or
+              List_Of_Books.Next.Next.Author.all /= "Bronte, Emily"     or
+              List_Of_Books.Next.Next.Pages      /= 237);
+
+   end Bad_List_Contents;
+
+
+          --========================================================--
+
+
+begin  -- Main program.
+
+   Report.Test ("C340A02", "Inheritance of primitive operations: record " &
+                "extension of formal tagged private type; actual is " &
+                "a record extension");
+
+   -- Create linked list using inherited operation:
+   Create_List (C340A02_1.Title_List, C340A02_1.Author_List,
+                C340A02_1.Page_List,  List_Of_Books);
+
+   -- Verify results:
+   if Bad_List_Contents then
+      Report.Failed ("Wrong values after call to inherited operations");
+   end if;
+
+   Report.Result;
+
+end C340A02;

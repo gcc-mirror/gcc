@@ -1,0 +1,206 @@
+-- C974009.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the abortable part of an asynchronous select statement
+--      is not started if the triggering statement is a task entry call, 
+--      the entry call is not queued and the entry call completes by 
+--      propagating an exception.
+--
+--      Check that the exception is properly propagated to the asynchronous
+--      select statement and thus the sequence of statements of the triggering
+--      alternative is not executed after the abortable part is left. 
+--
+--      Check that the exception propagated by the entry call is re-raised
+--      immediately following the asynchronous select.
+--
+-- TEST DESCRIPTION:
+--
+--      Use a small subset of the base Automated teller machine simulation
+--      which is shown in greater detail in other tests of this series.  
+--      Declare a main procedure containing an asynchronous select with a task
+--      entry call as triggering statement.  Force the task to be waiting at
+--      the accept statement so that the call is not queued and the rendezvous
+--      is executed immediately.  Simulate an unexpected exception in the
+--      rendezvous. Use stripped down versions of called procedures to  check
+--      the correct path in the test.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+
+package C974009_0 is  -- Automated teller machine abstraction.
+
+
+   Propagated_From_Task : exception;
+   Transaction_Canceled : exception;
+
+   type Key_Enum is (None, Cancel, Deposit, Withdraw);
+
+   type Card_Number_Type is private;
+   type Card_PIN_Type    is private;
+   type ATM_Card_Type    is private;
+
+   task type ATM_Keyboard_Task is
+      entry Cancel_Pressed;
+   end ATM_Keyboard_Task;
+
+
+   procedure Validate_Card (Card : in ATM_Card_Type);
+
+   procedure Perform_Transaction (Card : in ATM_Card_Type);
+
+
+private
+
+   type Card_Number_Type is range   1 .. 9999;
+   type Card_PIN_Type    is range 100 ..  999;
+
+   type ATM_Card_Type is record
+      Number : Card_Number_Type;
+      PIN    : Card_PIN_Type;
+   end record;
+
+end C974009_0;
+
+
+     --==================================================================--
+
+
+with Report;
+package body C974009_0 is
+
+
+
+   -- One of these gets created as "Keyboard" for each transaction
+   --
+   task body ATM_Keyboard_Task is
+      Key_Pressed : Key_Enum := None;
+   begin
+      accept Cancel_Pressed do        -- queued entry call.
+         null;  --:::: stub, user code for cancel
+         -- Now simulate an unexpected exception arising in the
+         -- user code
+         raise Propagated_From_Task;  -- Propagate an exception.
+                  
+       end Cancel_Pressed;
+
+       Report.Failed ("Exception not propagated in ATM_Keyboard_Task");
+               
+   exception
+      when Propagated_From_Task =>
+          null;  -- This is the expected test behavior
+      when others =>
+          Report.Failed ("Unexpected Exception in ATM_Keyboard_Task");
+   end ATM_Keyboard_Task;
+
+   procedure Validate_Card (Card : in ATM_Card_Type) is
+   begin
+      Report.Failed ("Abortable part was executed");
+   end Validate_Card;
+
+
+   procedure Perform_Transaction (Card : in ATM_Card_Type) is
+   begin
+      Report.Failed ("Exception not re-raised immediately following " &
+                     "asynchronous select");
+   end Perform_Transaction;
+
+
+end C974009_0;
+
+
+     --==================================================================--
+
+
+with Report;
+with ImpDef;
+
+with C974009_0;  -- Automated teller machine abstraction.
+use  C974009_0;
+
+procedure C974009 is
+
+   Card_Data : ATM_Card_Type;
+
+begin  -- Main program.
+
+   Report.Test ("C974009", "Asynchronous Select: Trigger is a call to a " &
+                           "task entry, is not queued and is completed " &
+                           "first by an exception");
+
+
+   begin
+
+      declare
+         -- Create the task for this transaction
+         Keyboard : C974009_0.ATM_Keyboard_Task;
+      begin
+
+         -- Ensure task is waiting a the accept so the call is not queued
+         -- This is the time required to activate another task and allow it
+         -- to run to its first accept statement
+         -- 
+         delay ImpDef.Switch_To_New_Task;
+
+         --                                    --
+         -- Asynchronous select is tested here --
+         --                                    --
+
+         select
+ 
+            Keyboard.Cancel_Pressed;
+
+            raise Transaction_Canceled;  -- Should not be executed.
+         then abort
+            Validate_Card (Card_Data);   -- Keyboard.Cancel_Pressed is accepted
+                                         -- and propagates an exception before
+                                         -- this call is executed
+         end select;
+
+         -- The propagated exception is re-raised here.
+         Perform_Transaction(Card_Data); -- Should not be reached.
+
+      exception
+         when Transaction_Canceled =>
+            Report.Failed ("Triggering alternative sequence of statements " &
+                           "executed");
+         when Propagated_From_Task =>
+            null;  -- This is the expected test path
+         when others =>
+            Report.Failed ("Wrong exception raised");
+      end;
+
+   exception
+      when others =>
+            Report.Failed ("Unexpected exception raised");
+   end;
+
+   Report.Result;
+
+end C974009;

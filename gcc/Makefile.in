@@ -253,7 +253,6 @@ gengtype-lex.o-warn = -Wno-error
 libgcov-util.o-warn = -Wno-error
 libgcov-driver-tool.o-warn = -Wno-error
 libgcov-merge-tool.o-warn = -Wno-error
-gimple-match-exports.o-warn = -Wno-unused
 dfp.o-warn = -Wno-strict-aliasing
 
 # All warnings have to be shut off in stage1 if the compiler used then
@@ -481,6 +480,7 @@ USER_H = $(srcdir)/ginclude/float.h \
 	 $(srcdir)/ginclude/stdalign.h \
 	 $(srcdir)/ginclude/stdatomic.h \
 	 $(srcdir)/ginclude/stdckdint.h \
+	 $(srcdir)/ginclude/stdcountof.h \
 	 $(EXTRA_HEADERS)
 
 USER_H_INC_NEXT_PRE = @user_headers_inc_next_pre@
@@ -1857,6 +1857,7 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	diagnostic-global-context.o \
 	diagnostic-macro-unwinding.o \
 	diagnostic-path.o \
+	diagnostic-path-output.o \
 	diagnostic-show-locus.o \
 	edit-context.o \
 	pretty-print.o intl.o \

@@ -1,0 +1,220 @@
+-- C393011.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- TEST OBJECTIVE:
+--      Check that an abstract extended type can be derived from an abstract
+--      type, and that a a non-abstract type may then be derived from the
+--      second abstract type.
+--
+-- TEST DESCRIPTION:
+--      Define an abstract type with three primitive operations, two of them
+--      abstract.  Derive an extended type from it, inheriting the non-
+--      abstract operation, overriding one of the abstract operations with
+--      a non-abstract operation, and overriding the other abstract operation
+--      with an abstract operation.  The extended type is therefore abstract;
+--      derive an extended type from it.  Override the abstract operation with
+--      a non-abstract operation; inherit one operation from the original
+--      abstract type, and inherit one operation from the intermediate 
+--      abstract type.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+ 
+ Package C393011_0 is
+     -- Definitions
+ 
+   type Status_Enum is (None, Unhandled, Pending, Handled);
+   type Serial_Type is new Integer range 0 .. Integer'Last;
+   subtype Priority_Type is Integer range 0..10;
+ 
+   type Display_Enum is (Bit_Bucket, TTY, Console, Big_Screen);
+ 
+   Next : Serial_Type := 1;
+   Display_Device : Display_Enum := Bit_Bucket;
+ 
+ end C393011_0;
+ -- Definitions;
+ 
+ --=======================================================================--
+ 
+ with C393011_0;
+   -- Definitions
+ 
+ Package C393011_1 is
+      -- Alert
+ 
+   package Definitions renames C393011_0;
+ 
+   type Alert_Type is abstract tagged record         
+     Status     : Definitions.Status_Enum := Definitions.None;  
+     Serial_Num : Definitions.Serial_Type := 0;
+     Priority   : Definitions.Priority_Type;
+   end record;
+                             -- Alert_Type is an abstract type with
+                             -- two operations to be overridden
+ 
+   procedure Set_Status ( A : in out Alert_Type;          -- not abstract
+                         To : Definitions.Status_Enum);
+ 
+   procedure Set_Serial ( A : in out Alert_Type) is abstract;
+   procedure Display    ( A : Alert_Type)        is abstract;
+  
+ end C393011_1;
+  -- Alert
+ 
+ --=======================================================================--
+ 
+ with C393011_0;
+ package body C393011_1 is
+           -- Alert
+   procedure Set_Status ( A : in out Alert_Type;
+                         To : Definitions.Status_Enum) is
+     begin
+       A.Status := To;
+     end Set_Status;
+ 
+ end C393011_1;
+  -- Alert;
+ 
+ --=======================================================================--
+ 
+ with C393011_0,
+   -- Definitions, 
+      C393011_1,
+   -- Alert, 
+      Calendar;
+ 
+ Package C393011_3 is
+      -- New_Alert
+ 
+   type New_Alert_Type is abstract new C393011_1.Alert_Type with record
+     Display_Dev : C393011_0.Display_Enum := C393011_0.TTY;
+   end record;
+ 
+   -- procedure Set_Status is inherited
+ 
+   procedure Set_Serial ( A : in out New_Alert_Type);   -- override/see body
+ 
+   procedure Display    ( A : New_Alert_Type) is abstract;
+                          -- override is abstract 
+                          -- still can't declare objects of New_Alert_Type
+ 
+ end C393011_3;
+  -- New_Alert
+ 
+ --=======================================================================--
+ 
+ with C393011_0;
+ Package Body C393011_3 is 
+           -- New_Alert
+ 
+   package Definitions renames C393011_0;
+ 
+   procedure Set_Serial (A : in out New_Alert_Type) is
+     use type Definitions.Serial_Type;
+     begin
+       A.Serial_Num := Definitions.Next;
+       Definitions.Next := Definitions."+"( Definitions.Next, 1);
+     end Set_Serial;
+ 
+ End C393011_3;
+  -- New_Alert;
+ 
+ --=======================================================================--
+ 
+ with C393011_0,
+   -- Definitions 
+      C393011_3;
+   -- New_Alert  -- package Alert is not visible
+ package C393011_4 is
+ 
+   package New_Alert renames C393011_3;
+   package Definitions renames C393011_0;
+ 
+   type Final_Alert_Type is new New_Alert.New_Alert_Type with null record;
+   -- inherits Set_Status including body
+   -- inherits Set_Serial including body
+   -- must override Display since inherited Display is abstract
+   procedure Display(FA : in     Final_Alert_Type);
+   procedure Handle (FA : in out Final_Alert_Type);
+ 
+ end C393011_4;
+ 
+ package body C393011_4 is
+ 
+   procedure Display    (FA : in Final_Alert_Type) is 
+     begin
+       Definitions.Display_Device := FA.Display_Dev;
+     end Display;
+ 
+   procedure Handle (FA : in out Final_Alert_Type) is
+     begin
+       Set_Status (FA, Definitions.Handled);
+       Set_Serial (FA);
+       Display (FA);
+     end Handle;
+ end C393011_4;
+ 
+ with C393011_0,
+   -- Definitions 
+      C393011_3;
+   -- New_Alert  -- package Alert is not visible
+ with C393011_4;
+ with Report;
+ procedure C393011 is
+   use C393011_4;
+   use Definitions;
+ 
+   FA : Final_Alert_Type;
+ 
+ begin
+ 
+   Report.Test ("C393011", "Check that an extended type can be derived " &
+                           "from an abstract type");
+ 
+   if (Definitions.Display_Device /= Definitions.Bit_Bucket)
+       or (Definitions.Next /= 1)
+       or (FA.Status /= Definitions.None)
+       or (FA.Serial_Num /= 0)
+       or (FA.Display_Dev /= TTY) then
+     Report.Failed ("Incorrect initial conditions");
+   end if;
+ 
+   Handle (FA);
+   if (Definitions.Display_Device /= Definitions.TTY)
+       or (Definitions.Next /= 2)
+       or (FA.Status /= Definitions.Handled)
+       or (FA.Serial_Num /= 1)
+       or (FA.Display_Dev /= TTY) then
+     Report.Failed ("Incorrect results from Handle");
+   end if;
+ 
+   Report.Result;
+ 
+ end C393011;
+ 

@@ -1,0 +1,408 @@
+-- C460A01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that if the target type of a type conversion is a general
+--      access type, Program_Error is raised if the accessibility level of
+--      the operand type is deeper than that of the target type. Check for
+--      cases where the type conversion occurs in an instance body, and
+--      the operand type is passed as an actual during instantiation.
+--
+-- TEST DESCRIPTION:
+--      In order to satisfy accessibility requirements, the operand type must
+--      be at the same or a less deep nesting level than the target type -- the
+--      operand type must "live" as long as the target type. Nesting levels
+--      are the run-time nestings of masters: block statements; subprogram,
+--      task, and entry bodies; and accept statements. Packages are invisible
+--      to accessibility rules.
+--
+--      This test checks for cases where the operand is a subprogram formal
+--      parameter.
+--
+--      The test declares three generic packages, each containing an access
+--      type conversion in which the operand type is a formal type:
+--
+--         (1) One in which the target type is declared within the
+--             specification, and the conversion occurs within a nested
+--             function.
+--
+--         (2) One in which the target type is also a formal type, and
+--             the conversion occurs within a nested function.
+--
+--         (3) One in which the target type is declared outside the
+--             generic, and the conversion occurs within a nested
+--             procedure.
+--
+--      The test verifies the following:
+--
+--         For (1), Program_Error is not raised when the nested function is
+--         called. Since the actual corresponding to the formal operand type
+--         must always have the same or a less deep level than the target
+--         type declared within the instance, the access type conversion is
+--         always safe.
+--
+--         For (2), Program_Error is raised when the nested function is
+--         called if the operand type passed as an actual during instantiation
+--         has an accessibility level deeper than that of the target type
+--         passed as an actual, and that no exception is raised otherwise.
+--         The exception is propagated to the innermost enclosing master.
+--
+--         For (3), Program_Error is raised when the nested procedure is
+--         called if the operand type passed as an actual during instantiation
+--         has an accessibility level deeper than that of the target type.
+--         The exception is handled within the nested procedure.
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         F460A00.A
+--      => C460A01.A
+--
+--
+-- CHANGE HISTORY:
+--      09 May 95   SAIC    Initial prerelease version.
+--      24 Apr 96   SAIC    Added code to avoid dead variable optimization.
+--      13 Feb 97   PWB.CTA Removed 'Class from qual expression at line 342.
+--!
+
+generic
+   type Designated_Type is tagged private;
+   type Operand_Type is access Designated_Type;
+package C460A01_0 is
+   type Target_Type is access all Designated_Type;
+   function Convert (P : Operand_Type) return Target_Type;
+end C460A01_0;
+
+
+     --==================================================================--
+
+
+package body C460A01_0 is
+   function Convert (P : Operand_Type) return Target_Type is
+   begin
+      return Target_Type(P); -- Never fails.
+   end Convert;
+end C460A01_0;
+
+
+     --==================================================================--
+
+
+generic
+   type Designated_Type is tagged private;
+   type Operand_Type is access all Designated_Type;
+   type Target_Type  is access all Designated_Type;
+package C460A01_1 is
+   function Convert (P : Operand_Type) return Target_Type;
+end C460A01_1;
+
+
+     --==================================================================--
+
+
+package body C460A01_1 is
+   function Convert (P : Operand_Type) return Target_Type is
+   begin
+      return Target_Type(P);
+   end Convert;
+end C460A01_1;
+
+
+     --==================================================================--
+
+
+with F460A00;
+generic
+   type Designated_Type (<>) is new F460A00.Tagged_Type with private;
+   type Operand_Type is access Designated_Type;
+package C460A01_2 is
+   procedure Proc (P   : Operand_Type; 
+                   Res : out F460A00.TC_Result_Kind);
+end C460A01_2;
+
+
+     --==================================================================--
+
+with Report;
+package body C460A01_2 is
+   procedure Proc (P   : Operand_Type; 
+                   Res : out F460A00.TC_Result_Kind) is
+      Ptr : F460A00.AccTag_L0;
+   begin
+      Ptr := F460A00.AccTag_L0(P);
+
+      -- Avoid optimization (dead variable removal of Ptr):
+      if not Report.Equal (Ptr.C, Ptr.C) then                  -- Always false.
+         Report.Failed ("Unexpected error in C460A01_2 instance");
+      end if;
+
+      Res := F460A00.OK;
+   exception
+      when Program_Error => Res := F460A00.PE_Exception;
+      when others        => Res := F460A00.Others_Exception;
+   end Proc;
+end C460A01_2;
+
+
+     --==================================================================--
+
+
+with F460A00;
+with C460A01_0;
+with C460A01_1;
+with C460A01_2;
+
+with Report;
+procedure C460A01 is
+begin -- C460A01.                                              -- [ Level = 1 ]
+
+   Report.Test ("C460A01", "Run-time accessibility checks: instance " &
+                "bodies. Operand type of access type conversion is "  &
+                "passed as actual to instance");
+
+
+   SUBTEST1:
+   declare                                                     -- [ Level = 2 ]
+      type AccTag_L2 is access all F460A00.Tagged_Type;
+      Operand: AccTag_L2 := new F460A00.Tagged_Type;
+
+      Result : F460A00.TC_Result_Kind := F460A00.UN_Init;
+   begin -- SUBTEST1.
+
+      declare                                                  -- [ Level = 3 ]
+         -- The instantiation of C460A01_0 should NOT result in any
+         -- exceptions.
+
+         package Pack_OK is new C460A01_0 (F460A00.Tagged_Type, AccTag_L2);
+         Target : Pack_OK.Target_Type;
+      begin
+         -- The accessibility level of Pack_OK.Target_Type will always be at
+         -- least as deep as the operand type passed as an actual. Thus,
+         -- a call to Pack_OK.Convert does not propagate an exception:
+
+         Target := Pack_OK.Convert(Operand);
+
+         -- Avoid optimization (dead variable removal of Target):
+         if not Report.Equal (Target.C, Target.C) then      -- Always false.
+            Report.Failed ("Unexpected error in SUBTEST #1");
+         end if;
+
+         Result := F460A00.OK;                              -- Expected result.
+      exception
+         when Program_Error => Result := F460A00.PE_Exception;
+         when others        => Result := F460A00.Others_Exception;
+      end;
+
+      F460A00.TC_Check_Results (Result, F460A00.OK, "SUBTEST #1");
+
+   exception
+      when Program_Error =>
+         Report.Failed ("SUBTEST #1: Program_Error incorrectly raised");
+      when others        =>
+         Report.Failed ("SUBTEST #1: Unexpected exception raised");
+   end SUBTEST1;
+
+
+
+   SUBTEST2:
+   declare                                                     -- [ Level = 2 ]
+      type AccTag_L2 is access all F460A00.Tagged_Type;
+      Operand : AccTag_L2 := new F460A00.Tagged_Type;
+
+      Result  : F460A00.TC_Result_Kind := F460A00.UN_Init;
+   begin -- SUBTEST2.
+
+      declare                                                  -- [ Level = 3 ]
+
+         type AccTag_L3 is access all F460A00.Tagged_Type;
+         Target : AccTag_L3;
+
+         -- The instantiation of C460A01_1 should NOT result in any
+         -- exceptions.
+
+         package Pack_OK is new C460A01_1
+           (Designated_Type => F460A00.Tagged_Type,
+            Operand_Type    => AccTag_L2,
+            Target_Type     => AccTag_L3);
+      begin
+         -- The accessibility level of the actual passed as the operand type
+         -- in Pack_OK is 2. The accessibility level of the actual passed as
+         -- the target type is 3. Therefore, the access type conversion in
+         -- Pack_OK.Convert does not raise an exception when the subprogram is
+         -- called. If an exception is (incorrectly) raised, it is propagated 
+         -- to the innermost enclosing master:
+
+         Target := Pack_OK.Convert(Operand);
+
+         -- Avoid optimization (dead variable removal of Target):
+         if not Report.Equal (Target.C, Target.C) then      -- Always false.
+            Report.Failed ("Unexpected error in SUBTEST #2");
+         end if;
+
+         Result := F460A00.OK;                              -- Expected result.
+      exception
+         when Program_Error => Result := F460A00.PE_Exception;
+         when others        => Result := F460A00.Others_Exception;
+      end;
+
+      F460A00.TC_Check_Results (Result, F460A00.OK, "SUBTEST #2");
+
+   exception
+      when Program_Error =>
+         Report.Failed ("SUBTEST #2: Program_Error incorrectly raised");
+      when others        =>
+         Report.Failed ("SUBTEST #2: Unexpected exception raised");
+   end SUBTEST2;
+
+
+
+   SUBTEST3:
+   declare                                                     -- [ Level = 2 ]
+      type AccTag_L2 is access all F460A00.Tagged_Type;
+      Target : AccTag_L2;
+
+      Result : F460A00.TC_Result_Kind := F460A00.UN_Init;
+   begin -- SUBTEST3.
+
+      declare                                                  -- [ Level = 3 ]
+
+         type AccTag_L3 is access all F460A00.Tagged_Type;
+         Operand : AccTag_L3 := new F460A00.Tagged_Type;
+
+         -- The instantiation of C460A01_1 should NOT result in any
+         -- exceptions.
+
+         package Pack_PE is new C460A01_1
+           (Designated_Type => F460A00.Tagged_Type,
+            Operand_Type    => AccTag_L3,
+            Target_Type     => AccTag_L2);
+      begin
+         -- The accessibility level of the actual passed as the operand type
+         -- in Pack_PE is 3. The accessibility level of the actual passed as
+         -- the target type is 2. Therefore, the access type conversion in
+         -- Pack_PE.Convert raises Program_Error when the subprogram is
+         -- called. The exception is propagated to the innermost enclosing
+         -- master:
+
+         Target := Pack_PE.Convert(Operand);
+
+         -- Avoid optimization (dead variable removal of Target):
+         if not Report.Equal (Target.C, Target.C) then      -- Always false.
+            Report.Failed ("Unexpected error in SUBTEST #3");
+         end if;
+
+         Result := F460A00.OK;
+      exception
+         when Program_Error => Result := F460A00.PE_Exception; 
+                                                          -- Expected result.
+         when others        => Result := F460A00.Others_Exception;
+      end;
+
+      F460A00.TC_Check_Results (Result, F460A00.PE_Exception, "SUBTEST #3");
+
+   exception
+      when Program_Error =>
+         Report.Failed ("SUBTEST #3: Program_Error incorrectly raised");
+      when others        =>
+         Report.Failed ("SUBTEST #3: Unexpected exception raised");
+   end SUBTEST3;
+
+
+
+   SUBTEST4:
+   declare                                                     -- [ Level = 2 ]
+      Result : F460A00.TC_Result_Kind := F460A00.UN_Init;
+   begin -- SUBTEST4.
+
+      declare                                                  -- [ Level = 3 ]
+
+         TType   :  F460A00.Tagged_Type;
+         Operand :  F460A00.AccTagClass_L0 
+                 := new F460A00.Tagged_Type'(TType);
+
+         -- The instantiation of C460A01_2 should NOT result in any
+         -- exceptions.
+
+         package Pack_OK is new C460A01_2 (F460A00.Tagged_Type'Class,
+                                           F460A00.AccTagClass_L0);
+      begin
+         -- The accessibility level of the actual passed as the operand type
+         -- in Pack_OK is 0. The accessibility level of the target type
+         -- (F460A00.AccTag_L0) is also 0. Therefore, the access type
+         -- conversion in Pack_OK.Proc does not raise an exception when the
+         -- subprogram is called. If an exception is (incorrectly) raised, 
+         -- it is handled within the subprogram:
+
+         Pack_OK.Proc(Operand, Result);
+      end;
+
+      F460A00.TC_Check_Results (Result, F460A00.OK, "SUBTEST #4");
+
+   exception
+      when Program_Error =>
+         Report.Failed ("SUBTEST #4: Program_Error incorrectly raised");
+      when others        =>
+         Report.Failed ("SUBTEST #4: Unexpected exception raised");
+   end SUBTEST4;
+
+
+
+   SUBTEST5:
+   declare                                                     -- [ Level = 2 ]
+      Result : F460A00.TC_Result_Kind := F460A00.UN_Init;
+   begin -- SUBTEST5.
+
+      declare                                                  -- [ Level = 3 ]
+
+         type AccDerTag_L3 is access all F460A00.Derived_Tagged_Type;
+         Operand : AccDerTag_L3 := new F460A00.Derived_Tagged_Type;
+
+         -- The instantiation of C460A01_2 should NOT result in any
+         -- exceptions.
+
+         package Pack_PE is new C460A01_2 (F460A00.Derived_Tagged_Type,
+                                           AccDerTag_L3);
+      begin
+         -- The accessibility level of the actual passed as the operand type
+         -- in Pack_PE is 3. The accessibility level of the target type
+         -- (F460A00.AccTag_L0) is 0. Therefore, the access type conversion
+         -- in Pack_PE.Proc raises Program_Error when the subprogram is
+         -- called. The exception is handled within the subprogram:
+
+         Pack_PE.Proc(Operand, Result);
+      end;
+
+      F460A00.TC_Check_Results (Result, F460A00.PE_Exception, "SUBTEST #5");
+
+   exception
+      when Program_Error =>
+         Report.Failed ("SUBTEST #5: Program_Error incorrectly raised");
+      when others        =>
+         Report.Failed ("SUBTEST #5: Unexpected exception raised");
+   end SUBTEST5;
+
+   Report.Result;
+
+end C460A01;

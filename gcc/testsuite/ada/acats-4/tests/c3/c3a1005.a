@@ -1,0 +1,328 @@
+-- C3A1005.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--      Check that a tagged incomplete type whose completion is deferred to
+--      a package body can have non-primitive operations and that those
+--      operations can be called from a child unit, even though the
+--      child unit does not have visibility on the completion of the type.
+--
+--      Check that a dereference of an access-to-tagged-incomplete type
+--      can be passed directly as a parameter. Part 2: tagged incomplete
+--      type with the completion given in a body.
+--
+--      Check that a parameter of a tagged incomplete type can be passed
+--      directly as a parameter. Part 2: tagged incomplete type with the
+--      completion given in a body.
+--
+-- TEST DESCRIPTION:
+--      This test checks that the rule changes of AI12-0155-1 are properly
+--      implemented.
+--
+--      We declare a set abstraction in the private part of a package
+--      (C3A1005_2) using a "Taft-Amendment" incomplete type (that is, one
+--      where the completion is given in the body). We use the set abstraction
+--      in a child of the original package.
+--
+--      This test models using a Taft-Amendment type to hide the implementation
+--      of an abstraction, but still make the abstraction available to child
+--      packages within the subsystem. This might be necessary if the larger
+--      abstraction needs to be split into multiple packages for managability,
+--      without exposing the core implementation to all of the subsystems.
+--
+-- CHANGE HISTORY:
+--      03 Mar 2015   RLB     Created this version of the test from one of
+--                            the generic versions using a signature package.
+--      25 Jan 2016   RLB     Cleaned up the documentation and made this
+--                            a submitted test.
+--      25 Jun 2024   RLB     Renamed test for issuance.
+--      06 Jul 2024   RLB     Corrected Union and Intersection specs to be
+--                            similar to those of the containers.
+--!
+
+package C3A1005_2 is
+
+   type Bag_Type is private;
+
+   procedure Add (Bag : in out Bag_Type; Elem : Integer);
+
+private
+
+   type Set is tagged;
+
+   type Bag_Type is access Set;
+
+   package Inner is
+      -- These can't be primitive for Set, else 3.10.1(9.3/2) is violated.
+
+      procedure Add (Elem : Integer; To_Set : in out Set);
+
+      procedure Union (Target : in out Set; Source : in Set);
+
+      procedure Intersection (Target : in out Set; Source : in Set);
+
+      function "=" (Left, Right : Set) return Boolean;
+
+   end Inner;
+
+   -- Note: Without AI12-0155-1 excepting incomplete types from all freezing,
+   -- this test would have been illegal as the profiles of Add, Union, etc.
+   -- are frozen here, and that freezes an incomplete type that has not yet
+   -- been completed.
+end C3A1005_2;
+
+
+     --==================================================================--
+
+
+package body C3A1005_2 is
+
+   type Set_Range is range 0 .. 20;
+
+   type Integer_Array is
+      array (Set_Range range 1 .. Set_Range'Last) of Integer;
+
+   type Set is tagged record
+      Last_Integer : Set_Range := 0;
+      Integers     : Integer_Array;
+   end record;
+
+   package body Inner is
+      procedure Add (Elem : Integer; To_Set : in out Set) is
+         Found : Boolean := False;
+      begin
+         for E in To_Set.Integers'First .. To_Set.Last_Integer loop
+            if To_Set.Integers (E) = Elem then
+               Found := True;
+               exit;
+            end if;
+         end loop;
+
+         if not Found then
+            To_Set.Last_Integer := To_Set.Last_Integer + 1;
+            To_Set.Integers (To_Set.Last_Integer) := Elem;
+         end if;
+      end Add;
+
+      procedure Union (Target : in out Set; Source : in Set) is
+         Found  : Boolean;
+      begin
+         for ES in Source.Integers'First .. Source.Last_Integer loop
+            Found := False;
+
+            for ET in Target.Integers'First .. Target.Last_Integer loop
+               if Target.Integers (ET) = Source.Integers (ES) then
+                  Found := True;
+                  exit;
+               end if;
+            end loop;
+
+            if not Found then -- Add item to Target.
+               Target.Last_Integer := Target.Last_Integer + 1;
+               Target.Integers (Target.Last_Integer) := Source.Integers (ES);
+            end if;
+         end loop;
+      end Union;
+
+      procedure Intersection (Target : in out Set; Source : in Set) is
+         Found  : Boolean;
+      begin
+         for ET in reverse Target.Integers'First .. Target.Last_Integer loop
+            Found := False;
+
+            for ES in Source.Integers'First .. Source.Last_Integer loop
+               if Target.Integers (ET) = Source.Integers (ES) then
+                  Found := True;
+                  exit;
+               end if;
+            end loop;
+
+            if not Found then -- Remove item from Target.
+               Target.Last_Integer := Target.Last_Integer - 1;
+               for ED in ET .. Target.Last_Integer loop
+                  Target.Integers (ED) := Target.Integers (ED+1);
+               end loop;
+            end if;
+         end loop;
+      end Intersection;
+
+      function "=" (Left, Right : Set) return Boolean is
+      begin
+         if Left.Last_Integer /= Right.Last_Integer then
+            return False;
+         end if;
+
+         for ER in Right.Integers'First .. Right.Last_Integer loop
+            declare
+               Found_Integer : Boolean := False;
+            begin
+               for EL in Left.Integers'First .. Left.Last_Integer loop
+                  if Left.Integers (EL) = Right.Integers (ER) then
+                     Found_Integer := True;
+                     exit;
+                  end if;
+               end loop;
+
+               if not Found_Integer then
+                  return False;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end "=";
+   end Inner;
+
+   procedure Add (Bag : in out Bag_Type; Elem : Integer) is
+   begin
+      if Bag = null then
+         Bag := new Set;
+      end if;
+      Inner.Add (Elem, Bag.all);
+   end Add;
+
+end C3A1005_2;
+
+
+     --==================================================================--
+
+package C3A1005_2.Child is
+
+   procedure Do_Test (S1, S2, S3, TC_Result : Bag_Type);
+
+end C3A1005_2.Child;
+
+
+     --==================================================================--
+
+with Report;
+package body C3A1005_2.Child is
+
+   procedure Test_Set_Processing
+     (Set_1 : in out Set;
+      Set_2 : Set;
+      Set_3 : Set;
+      Elt   : Integer) is
+   begin
+      Inner.Intersection (Target => Set_1, Source => Set_2);
+
+      Inner.Union (Target => Set_1, Source => Set_3);
+
+      Inner.Add (Elt, Set_1);
+   end Test_Set_Processing;
+
+
+   procedure Do_Test (S1, S2, S3, TC_Result : Bag_Type) is
+
+      use C3A1005_2.Inner;
+
+      Elt_Value : constant Integer := 17;
+
+   begin
+      --  Compute "Union (Intersection (S1.all, S2.all), S3.all) + E"
+
+      Test_Set_Processing (S1.all, S2.all, S3.all, Elt_Value);
+
+      --if S1.all /= TC_Result.all then -- Don't want predefined "=".
+      if Inner."/=" (S1.all, TC_Result.all) then
+         Report.Failed ("Wrong result set from Integer set operations");
+      end if;
+   end Do_Test;
+
+end C3A1005_2.Child;
+
+
+     --==================================================================--
+
+
+with C3A1005_2.Child;
+
+with Report;
+procedure C3A1005 is
+
+   Elt_Value : constant Integer := 17;
+
+   S1 : C3A1005_2.Bag_Type;
+   S2 : C3A1005_2.Bag_Type;
+   S3 : C3A1005_2.Bag_Type;
+
+   TC_Result_Set : C3A1005_2.Bag_Type;
+
+begin
+   Report.Test ("C3A1005", "Check that a tagged incomplete type whose " &
+                           "completion is deferred to a package body can " &
+                           "have non-primitive operations and that those " &
+                           "operations can be called from a child unit, " &
+                           "even though the child unit does not have " &
+                           "visibility on the completion of the type");
+
+   --  Initialize S1 to { 1 .. 10 }
+
+   for I in Integer range 1 .. 10 loop
+      C3A1005_2.Add (S1, I);
+   end loop;
+
+   --  Initialize S2 to { 5 .. 15 }
+
+   for I in Integer range 5 .. 15 loop
+      C3A1005_2.Add (S2, I);
+   end loop;
+
+   --  Initialize S3 to { 20 .. 25 }
+
+   for I in Integer range 20 .. 25 loop
+      C3A1005_2.Add (S3, I);
+   end loop;
+
+   --  Compute the result of the generic operation.
+
+   --  Initialize TC_Result_Set to { 5 .. 10, 17, 20 .. 25 },
+   --  as that is the result of
+   -- "Union (Intersection (S1, S2), S3) + 17"
+
+   for I in Integer range 5 .. 10 loop
+      C3A1005_2.Add (TC_Result_Set, I);
+   end loop;
+
+   for I in Integer range 20 .. 25 loop
+      C3A1005_2.Add (TC_Result_Set, I);
+   end loop;
+
+   C3A1005_2.Add (TC_Result_Set, Elt_Value);
+
+   C3A1005_2.Child.Do_Test (S1, S2, S3, TC_Result_Set);
+
+   Report.Result;
+end C3A1005;
+

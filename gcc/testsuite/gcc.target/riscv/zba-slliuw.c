@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gc_zba_zbs -mabi=lp64" } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-O1" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" } } */
 
 long
 foo (long i)

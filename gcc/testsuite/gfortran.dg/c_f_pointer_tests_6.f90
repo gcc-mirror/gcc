@@ -38,6 +38,6 @@ contains
     type(my_c_ptr_0) :: my_ptr2
     type(c_funptr) :: myfun
     print *,c_associated(my_ptr,my_ptr2)
-    print *,c_associated(my_ptr,myfun) ! { dg-error "Argument C_PTR_2 at .1. to C_ASSOCIATED shall have the same type as C_PTR_1: TYPE.c_ptr. instead of TYPE.c_funptr." }
+    print *,c_associated(my_ptr,myfun) ! { dg-error "Argument C_PTR_2 at .1. to C_ASSOCIATED shall have the same type as C_PTR_1, found TYPE.c_funptr. instead of TYPE.c_ptr." }
   end subroutine
 end

@@ -55,7 +55,6 @@
 #include "output.h"
 #include "common/common-target.h"
 #include "langhooks.h"
-#include "reload.h"
 #include "sched-int.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"

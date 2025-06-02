@@ -3,6 +3,7 @@
 
 /* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 /* { dg-require-effective-target vect_float } */
+/* { dg-require-effective-target vect_early_break_hw } */
 /* { dg-add-options vect_early_break } */
 
 #include "tsvc.h"

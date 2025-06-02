@@ -2072,7 +2072,7 @@ output_alternate_entry_point (FILE *file, rtx_insn *insn)
 
 /* Given a CALL_INSN, find and return the nested CALL. */
 static rtx
-call_from_call_insn (rtx_call_insn *insn)
+call_from_call_insn (const rtx_call_insn *insn)
 {
   rtx x;
   gcc_assert (CALL_P (insn));
@@ -2096,6 +2096,15 @@ call_from_call_insn (rtx_call_insn *insn)
 	}
     }
   return x;
+}
+
+/* Return the CALL in X if there is one.  */
+
+rtx
+get_call_rtx_from (const rtx_insn *insn)
+{
+  const rtx_call_insn *call_insn = as_a<const rtx_call_insn *> (insn);
+  return call_from_call_insn (call_insn);
 }
 
 /* Print a comment into the asm showing FILENAME, LINENUM, and the

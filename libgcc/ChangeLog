@@ -1,3 +1,108 @@
+2025-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/t-softfp (softfp_bid_list): Don't guard with
+	$(enable_decimal_float) == bid.
+	* soft-fp/bitint.h (__bid_pow10bitint): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_pow10bitint.
+	(__dpd_d2bbitint, __dpd_b2dbitint): Declare.
+	* soft-fp/bitintpow10.c (__dpd_d2bbitint, __dpd_b2dbitint): New
+	variables.
+	* soft-fp/fixsdbitint.c (__bid_fixsdbitint): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_fixsdbitint.
+	Add DPD support.  Fix big-endian support.
+	* soft-fp/fixddbitint.c (__bid_fixddbitint): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_fixddbitint.
+	Add DPD support.  Fix big-endian support.
+	* soft-fp/fixtdbitint.c (__bid_fixtdbitint): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_fixtdbitint.
+	Add DPD support.  Fix big-endian support.
+	* soft-fp/fixsdti.c (__bid_fixsdbitint): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_fixsdbitint.
+	(__bid_fixsdti): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine to
+	__dpd_fixsdti.
+	* soft-fp/fixddti.c (__bid_fixddbitint): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_fixddbitint.
+	(__bid_fixddti): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine to
+	__dpd_fixddti.
+	* soft-fp/fixtdti.c (__bid_fixtdbitint): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_fixtdbitint.
+	(__bid_fixtdti): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine to
+	__dpd_fixtdti.
+	* soft-fp/fixunssdti.c (__bid_fixsdbitint): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_fixsdbitint.
+	(__bid_fixunssdti): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine
+	to __dpd_fixunssdti.
+	* soft-fp/fixunsddti.c (__bid_fixddbitint): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_fixddbitint.
+	(__bid_fixunsddti): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine
+	to __dpd_fixunsddti.
+	* soft-fp/fixunstdti.c (__bid_fixtdbitint): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_fixtdbitint.
+	(__bid_fixunstdti): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine
+	to __dpd_fixunstdti.
+	* soft-fp/floatbitintsd.c (__bid_floatbitintsd): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_floatbitintsd.
+	Add DPD support.  Avoid calling __builtin_clzll with 0 argument.  Fix
+	big-endian support.
+	* soft-fp/floatbitintdd.c (__bid_floatbitintdd): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_floatbitintdd.
+	Add DPD support.  Avoid calling __builtin_clzll with 0 argument.  Fix
+	big-endian support.
+	* soft-fp/floatbitinttd.c (__bid_floatbitinttd): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_floatbitinttd.
+	Add DPD support.  Avoid calling __builtin_clzll with 0 argument.  Fix
+	big-endian support.
+	* soft-fp/floattisd.c (__bid_floatbitintsd): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_floatbitintsd.
+	(__bid_floattisd): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine to
+	__dpd_floattisd.
+	* soft-fp/floattidd.c (__bid_floatbitintdd): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_floatbitintdd.
+	(__bid_floattidd): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine to
+	__dpd_floattidd.
+	* soft-fp/floattitd.c (__bid_floatbitinttd): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_floatbitinttd.
+	(__bid_floattitd): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine to
+	__dpd_floattitd.
+	* soft-fp/floatuntisd.c (__bid_floatbitintsd): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_floatbitintsd.
+	(__bid_floatuntisd): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine
+	to __dpd_floatuntisd.
+	* soft-fp/floatuntidd.c (__bid_floatbitintdd): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_floatbitintdd.
+	(__bid_floatuntidd): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine
+	to __dpd_floatuntidd.
+	* soft-fp/floatuntitd.c (__bid_floatbitinttd): For
+	!defined(ENABLE_DECIMAL_BID_FORMAT) redefine to __dpd_floatbitinttd.
+	(__bid_floatuntitd): For !defined(ENABLE_DECIMAL_BID_FORMAT) redefine
+	to __dpd_floatuntitd.
+
+2025-05-25  LIU Hao  <lh_mouse@126.com>
+
+	* config.host: Enable mcf thread model for aarch64-*-mingw*.
+	* config/i386/t-mingw-mcfgthread: Move to...
+	* config/mingw/t-mingw-mcfgthread: ...here.
+
+2025-05-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/gthr-vxworks-thread.c: Include string.h for memset.
+
+2025-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgcc-std.ver.in (GCC_14.0.0): Remove bitint related exports
+	from here.
+	* config/i386/libgcc-glibc.ver (GCC_14.0.0): Add them here.
+	* config/i386/libgcc-darwin.ver (GCC_14.0.0): Likewise.
+	* config/i386/libgcc-sol2.ver (GCC_14.0.0): Likewise.
+	* config/aarch64/libgcc-softfp.ver (GCC_14.0.0): Likewise.
+
+2025-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgcc2.c (bitint_reduce_prec): For big endian
+	__LIBGCC_BITINT_ORDER__ use ++*p and --*p instead of
+	++p and --p.
+	* soft-fp/bitint.h (bitint_reduce_prec): Likewise.
+
 2025-05-17  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/lib1funcs.S (ashiftrt_r4_32): Increase alignment.

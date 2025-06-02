@@ -19,6 +19,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MAP
+#define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -37,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "text-art/types.h"
 #include "text-art/theme.h"
 #include "diagnostic-label-effects.h"
+#include "xml.h"
+#include "xml-printer.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -70,7 +74,8 @@ struct point_state
   bool draw_caret_p;
 };
 
-/* A class to inject colorization codes when printing the diagnostic locus.
+/* A class to inject colorization codes when printing the diagnostic locus
+   as text.
 
    It has one kind of colorization for each of:
      - normal text
@@ -143,6 +148,7 @@ class colorizer
   const char *m_fixit_insert;
   const char *m_fixit_delete;
   const char *m_stop_color;
+  std::string m_current_named_color;
 };
 
 /* In order to handle multibyte sources properly, all of this logic needs to be
@@ -369,16 +375,363 @@ struct char_display_policy : public cpp_char_column_policy
  public:
   char_display_policy (int tabstop,
 		       int (*width_cb) (cppchar_t c),
-		       void (*print_cb) (pretty_printer *pp,
-					 const cpp_decoded_char &cp))
+		       void (*print_text_cb) (to_text &sink,
+					      const cpp_decoded_char &cp),
+		       void (*print_html_cb) (to_html &sink,
+					      const cpp_decoded_char &cp))
   : cpp_char_column_policy (tabstop, width_cb),
-    m_print_cb (print_cb)
+    m_print_text_cb (print_text_cb),
+    m_print_html_cb (print_html_cb)
   {
   }
 
-  void (*m_print_cb) (pretty_printer *pp,
-		      const cpp_decoded_char &cp);
+  void (*m_print_text_cb) (to_text &sink,
+			   const cpp_decoded_char &cp);
+  void (*m_print_html_cb) (to_html &sink,
+			   const cpp_decoded_char &cp);
 };
+
+template <typename Sink> class layout_printer;
+
+} // anonymous namespace
+
+/* This code is written generically to write either:
+   - text, to a pretty_printer, potentially with colorization codes, or
+   - html, to an xml::printer, with nested HTML tags.
+
+   This is handled via a "Sink" template, which is either to_text
+   or to_html.  */
+
+/* Writing text output.  */
+
+struct to_text
+{
+  friend class layout_printer<to_text>;
+
+  to_text (pretty_printer &pp,
+	   colorizer &colorizer)
+  : m_pp (pp),
+    m_colorizer (&colorizer)
+  {
+    m_saved_rule = pp_prefixing_rule (&m_pp);
+    pp_prefixing_rule (&m_pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+  }
+  to_text (pretty_printer &pp,
+	   colorizer *colorizer)
+  : m_pp (pp),
+    m_colorizer (colorizer)
+  {
+    m_saved_rule = pp_prefixing_rule (&m_pp);
+    pp_prefixing_rule (&m_pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+  }
+  ~to_text ()
+  {
+
+    pp_prefixing_rule (&m_pp) = m_saved_rule;
+  }
+
+  static bool is_text () { return true; }
+  static bool is_html () { return false; }
+
+  void emit_text_prefix ()
+  {
+    pp_emit_prefix (&m_pp);
+  }
+
+  void push_html_tag (std::string, bool)
+  {
+    // no-op for text
+  }
+  void push_html_tag_with_class (std::string, std::string, bool)
+  {
+    // no-op for text
+  }
+  void pop_html_tag (std::string)
+  {
+    // no-op for text
+  }
+
+  void add_html_tag_with_class (std::string, std::string, bool)
+  {
+    // no-op for text
+  }
+
+  void add_space ()
+  {
+    pp_space (&m_pp);
+  }
+
+  void add_character (cppchar_t ch)
+  {
+    pp_unicode_character (&m_pp, ch);
+  }
+
+  void add_utf8_byte (char b)
+  {
+    pp_character (&m_pp, b);
+  }
+
+  void add_text (const char *text)
+  {
+    pp_string (&m_pp, text);
+  }
+
+  void print_decoded_char (const char_display_policy &char_policy,
+			   cpp_decoded_char cp)
+  {
+    char_policy.m_print_text_cb (*this, cp);
+  }
+
+  void colorize_text_ensure_normal ()
+  {
+    gcc_assert (m_colorizer);
+    m_colorizer->set_normal_text ();
+  }
+
+  void colorize_text_for_range_idx (int range_idx)
+  {
+    gcc_assert (m_colorizer);
+    m_colorizer->set_range (range_idx);
+  }
+
+  void colorize_text_for_cfg_edge ()
+  {
+    gcc_assert (m_colorizer);
+    m_colorizer->set_cfg_edge ();
+  }
+
+  void colorize_text_for_fixit_insert ()
+  {
+    gcc_assert (m_colorizer);
+    m_colorizer->set_fixit_insert ();
+  }
+
+  void colorize_text_for_fixit_delete ()
+  {
+    gcc_assert (m_colorizer);
+    m_colorizer->set_fixit_delete ();
+  }
+
+  void
+  invoke_start_span_fn (const diagnostic_source_print_policy &source_policy,
+			const diagnostic_location_print_policy &loc_policy,
+			const expanded_location &exploc)
+  {
+    source_policy.get_text_start_span_fn () (loc_policy, *this, exploc);
+  }
+
+  // Text-specific functions
+  void add_newline ()
+  {
+    pp_newline (&m_pp);
+  }
+
+  pretty_printer &m_pp;
+private:
+  colorizer *m_colorizer;
+  diagnostic_prefixing_rule_t m_saved_rule;
+};
+
+/* Writing HTML output.  */
+
+struct to_html
+{
+  friend class layout_printer<to_html>;
+
+  to_html (xml::printer &xp,
+	   const rich_location *richloc,
+	   html_label_writer *html_label_writer)
+  : m_xp (xp),
+    m_richloc (richloc),
+    m_html_label_writer (html_label_writer)
+  {}
+
+  static bool is_text () { return false; }
+  static bool is_html () { return true; }
+
+  void emit_text_prefix ()
+  {
+    // no-op for HTML
+  }
+
+  void push_html_tag (std::string name,
+		      bool preserve_whitespace)
+  {
+    m_xp.push_tag (std::move (name), preserve_whitespace);
+  }
+
+  void push_html_tag_with_class (std::string name,
+				 std::string class_,
+				 bool preserve_whitespace)
+  {
+    m_xp.push_tag_with_class (std::move (name),
+			      std::move (class_),
+			      preserve_whitespace);
+  }
+
+  void pop_html_tag (std::string /*name*/)
+  {
+    m_xp.pop_tag ();
+  }
+
+  void add_html_tag_with_class (std::string name,
+				std::string class_,
+				bool preserve_whitespace)
+  {
+    auto element = std::make_unique<xml::element> (std::move (name),
+						   preserve_whitespace);
+    element->set_attr ("class", std::move (class_));
+    m_xp.append (std::move (element));
+  }
+
+  void add_raw_html (const char *src)
+  {
+    m_xp.add_raw (src);
+  }
+
+  void add_space ()
+  {
+    m_xp.add_text (" ");
+  }
+
+  void add_character (cppchar_t ch)
+  {
+    pp_clear_output_area (&m_scratch_pp);
+    pp_unicode_character (&m_scratch_pp, ch);
+    m_xp.add_text (pp_formatted_text (&m_scratch_pp));
+  }
+
+  void add_utf8_byte (char b)
+  {
+    m_xp.add_text (std::string (1, b));
+  }
+
+  void add_text (const char *text)
+  {
+    m_xp.add_text (text);
+  }
+
+  void print_decoded_char (const char_display_policy &char_policy,
+			   cpp_decoded_char cp)
+  {
+    char_policy.m_print_html_cb (*this, cp);
+  }
+
+  void colorize_text_ensure_normal ()
+  {
+    // no-op for HTML
+  }
+
+  void colorize_text_for_cfg_edge ()
+  {
+    // no-op for HTML
+  }
+
+  void colorize_text_for_fixit_insert ()
+  {
+    // no-op for HTML
+  }
+
+  void colorize_text_for_fixit_delete ()
+  {
+    // no-op for HTML
+  }
+
+  void
+  invoke_start_span_fn (const diagnostic_source_print_policy &source_policy,
+			const diagnostic_location_print_policy &loc_policy,
+			const expanded_location &exploc)
+  {
+    source_policy.get_html_start_span_fn () (loc_policy, *this, exploc);
+  }
+
+  const location_range *
+  get_location_range_by_idx (int range_idx)
+  {
+    if (!m_richloc)
+      return nullptr;
+    return m_richloc->get_range (range_idx);
+  }
+
+  const char *
+  get_highlight_color_for_range_idx (int range_idx)
+  {
+    const location_range *const loc_range
+      = get_location_range_by_idx (range_idx);
+    if (!loc_range)
+      return nullptr;
+    return loc_range->m_highlight_color;
+  }
+
+  xml::printer &m_xp;
+  const rich_location *m_richloc;
+private:
+  html_label_writer *m_html_label_writer;
+  pretty_printer m_scratch_pp;
+};
+
+void
+diagnostic_location_print_policy::
+print_text_span_start (const diagnostic_context &dc,
+		       pretty_printer &pp,
+		       const expanded_location &exploc)
+{
+  to_text sink (pp, nullptr);
+  diagnostic_source_print_policy source_policy (dc);
+  source_policy.get_text_start_span_fn () (*this, sink, exploc);
+}
+
+void
+diagnostic_location_print_policy::
+print_html_span_start (const diagnostic_context &dc,
+		       xml::printer &xp,
+		       const expanded_location &exploc)
+{
+  to_html sink (xp, nullptr, nullptr);
+  diagnostic_source_print_policy source_policy (dc);
+  source_policy.get_html_start_span_fn () (*this, sink, exploc);
+}
+
+pretty_printer *
+get_printer (to_text &sink)
+{
+  return &sink.m_pp;
+}
+
+template<>
+void
+default_diagnostic_start_span_fn<to_text> (const diagnostic_location_print_policy &loc_policy,
+					   to_text &sink,
+					   expanded_location exploc)
+{
+  const diagnostic_column_policy &column_policy
+    = loc_policy.get_column_policy ();
+  label_text text
+    = column_policy.get_location_text (exploc,
+				       loc_policy.show_column_p (),
+				       pp_show_color (&sink.m_pp));
+  pp_string (&sink.m_pp, text.get ());
+  pp_newline (&sink.m_pp);
+}
+
+template<>
+void
+default_diagnostic_start_span_fn<to_html> (const diagnostic_location_print_policy &loc_policy,
+					   to_html &sink,
+					   expanded_location exploc)
+{
+  const diagnostic_column_policy &column_policy
+    = loc_policy.get_column_policy ();
+  label_text text
+    = column_policy.get_location_text (exploc,
+				       loc_policy.show_column_p (),
+				       false);
+  sink.m_xp.push_tag_with_class ("span", "location", true);
+  sink.m_xp.add_text (text.get ());
+  sink.m_xp.pop_tag (); // span
+}
+
+namespace {
 
 /* A class to control the overall layout when printing a diagnostic.
 
@@ -392,7 +745,8 @@ struct char_display_policy : public cpp_char_column_policy
 class layout
 {
  public:
-  friend class layout_printer;
+  friend class layout_printer<to_text>;
+  friend class layout_printer<to_html>;
 
   layout (const diagnostic_source_print_policy &source_policy,
 	  const rich_location &richloc,
@@ -458,16 +812,24 @@ class layout
   bool m_escape_on_output;
 };
 
-/* A bundle of state for printing a particular layout
-   to a particular pretty_printer.  */
+class line_label;
 
+enum class margin_kind
+{
+  normal,
+  insertion,
+  ruler
+};
+
+/* A bundle of state for printing a particular layout
+   to a particular Sink (either to_text or to_html).  */
+template <typename Sink>
 class layout_printer
 {
 public:
-  layout_printer (pretty_printer &pp,
+  layout_printer (Sink &sink,
 		  const layout &layout,
-		  const rich_location &richloc,
-		  diagnostic_t diagnostic_kind);
+		  bool is_diagnostic_path);
 
   void print (const diagnostic_source_print_policy &source_policy);
 
@@ -485,22 +847,29 @@ private:
   line_bounds print_source_line (linenum_type row, const char *line,
 				 int line_bytes);
   void print_leftmost_column ();
-  void start_annotation_line (char margin_char = ' ');
+  void start_annotation_line (enum margin_kind);
+  void end_line ();
   void print_annotation_line (linenum_type row, const line_bounds lbounds);
   void print_any_labels (linenum_type row);
+  void begin_label (int state_idx, bool is_label_text);
+  void end_label (int state_idx, bool is_label_text);
   void print_trailing_fixits (linenum_type row);
-  void print_newline ();
 
   void
   move_to_column (int *column, int dest_column, bool add_left_margin);
 
   void print_any_right_to_left_edge_lines ();
 
+  void set_in_range (int range_idx);
+  void set_outside_range ();
+
 private:
-  pretty_printer &m_pp;
+  Sink &m_sink;
   const layout &m_layout;
-  colorizer m_colorizer;
   bool m_is_diagnostic_path;
+
+  bool m_was_in_range_p;
+  int m_last_range_idx;
 
   /* Fields for handling links between labels (e.g. for showing CFG edges
      in execution paths).
@@ -586,9 +955,13 @@ colorizer::~colorizer ()
 void
 colorizer::set_named_color (const char *color)
 {
+  if (m_current_state == STATE_NAMED_COLOR
+      && color == m_current_named_color)
+    return;
   finish_state (m_current_state);
   m_current_state = STATE_NAMED_COLOR;
   pp_string (&m_pp, colorize_start (pp_show_color (&m_pp), color));
+  m_current_named_color = color;
 }
 
 /* Update state, printing color codes if necessary if there's a state
@@ -1178,8 +1551,9 @@ fixit_cmp (const void *p_a, const void *p_b)
 /* Callback for char_display_policy::m_print_cb for printing source chars
    when not escaping the source.  */
 
+template <class Sink>
 static void
-default_print_decoded_ch (pretty_printer *pp,
+default_print_decoded_ch (Sink &sink,
 			  const cpp_decoded_char &decoded_ch)
 {
   for (const char *ptr = decoded_ch.m_start_byte;
@@ -1187,11 +1561,11 @@ default_print_decoded_ch (pretty_printer *pp,
     {
       if (*ptr == '\0' || *ptr == '\r')
 	{
-	  pp_space (pp);
+	  sink.add_space ();
 	  continue;
 	}
 
-      pp_character (pp, *ptr);
+      sink.add_utf8_byte (*ptr);
     }
 }
 
@@ -1219,8 +1593,9 @@ escape_as_bytes_width (cppchar_t ch)
 /* Callback for char_display_policy::m_print_cb for printing source chars
    when escaping with DIAGNOSTICS_ESCAPE_FORMAT_BYTES.  */
 
+template <typename Sink>
 static void
-escape_as_bytes_print (pretty_printer *pp,
+escape_as_bytes_print (Sink &sink,
 		       const cpp_decoded_char &decoded_ch)
 {
   if (!decoded_ch.m_valid_ch)
@@ -1230,14 +1605,14 @@ escape_as_bytes_print (pretty_printer *pp,
 	{
 	  char buf[16];
 	  sprintf (buf, "<%02x>", (unsigned char)*iter);
-	  pp_string (pp, buf);
+	  sink.add_text (buf);
 	}
       return;
     }
 
   cppchar_t ch = decoded_ch.m_ch;
   if (ch < 0x80 && ISPRINT (ch))
-    pp_character (pp, ch);
+    sink.add_character (ch);
   else
     {
       for (const char *iter = decoded_ch.m_start_byte;
@@ -1245,7 +1620,7 @@ escape_as_bytes_print (pretty_printer *pp,
 	{
 	  char buf[16];
 	  sprintf (buf, "<%02x>", (unsigned char)*iter);
-	  pp_string (pp, buf);
+	  sink.add_text (buf);
 	}
     }
 }
@@ -1275,24 +1650,25 @@ escape_as_unicode_width (cppchar_t ch)
 /* Callback for char_display_policy::m_print_cb for printing source chars
    when escaping with DIAGNOSTICS_ESCAPE_FORMAT_UNICODE.  */
 
+template <typename Sink>
 static void
-escape_as_unicode_print (pretty_printer *pp,
+escape_as_unicode_print (Sink &sink,
 			 const cpp_decoded_char &decoded_ch)
 {
   if (!decoded_ch.m_valid_ch)
     {
-      escape_as_bytes_print (pp, decoded_ch);
+      escape_as_bytes_print<Sink> (sink, decoded_ch);
       return;
     }
 
   cppchar_t ch = decoded_ch.m_ch;
   if (ch < 0x80 && ISPRINT (ch))
-    pp_character (pp, ch);
+    sink.add_character (ch);
   else
     {
       char buf[16];
       sprintf (buf, "<U+%04X>", ch);
-      pp_string (pp, buf);
+      sink.add_text (buf);
     }
 }
 
@@ -1306,7 +1682,8 @@ make_char_policy (const diagnostic_source_print_policy &source_policy,
   char_display_policy result
     (source_policy.get_column_policy ().get_tabstop (),
      cpp_wcwidth,
-     default_print_decoded_ch);
+     default_print_decoded_ch<to_text>,
+     default_print_decoded_ch<to_html>);
 
   /* If the diagnostic suggests escaping non-ASCII bytes, then
      use policy from user-supplied options.  */
@@ -1319,11 +1696,13 @@ make_char_policy (const diagnostic_source_print_policy &source_policy,
 	  gcc_unreachable ();
 	case DIAGNOSTICS_ESCAPE_FORMAT_UNICODE:
 	  result.m_width_cb = escape_as_unicode_width;
-	  result.m_print_cb = escape_as_unicode_print;
+	  result.m_print_text_cb = escape_as_unicode_print<to_text>;
+	  result.m_print_html_cb = escape_as_unicode_print<to_html>;
 	  break;
 	case DIAGNOSTICS_ESCAPE_FORMAT_BYTES:
 	  result.m_width_cb = escape_as_bytes_width;
-	  result.m_print_cb = escape_as_bytes_print;
+	  result.m_print_text_cb = escape_as_bytes_print<to_text>;
+	  result.m_print_html_cb = escape_as_bytes_print<to_html>;
 	  break;
 	}
     }
@@ -1530,17 +1909,32 @@ layout::will_show_line_p (linenum_type row) const
 /* Print a line showing a gap in the line numbers, for showing the boundary
    between two line spans.  */
 
+template<>
 void
-layout_printer::print_gap_in_line_numbering ()
+layout_printer<to_text>::print_gap_in_line_numbering ()
 {
   gcc_assert (m_layout.m_options.show_line_numbers_p);
 
-  pp_emit_prefix (&m_pp);
+  m_sink.emit_text_prefix ();
 
   for (int i = 0; i < m_layout.get_linenum_width () + 1; i++)
-    pp_character (&m_pp, '.');
+    m_sink.add_character ('.');
 
-  pp_newline (&m_pp);
+  m_sink.add_newline ();
+}
+
+template<>
+void
+layout_printer<to_html>::print_gap_in_line_numbering ()
+{
+  gcc_assert (m_layout.m_options.show_line_numbers_p);
+
+  m_sink.add_raw_html
+    ("<tbody class=\"line-span-jump\">\n"
+     "<tr class=\"line-span-jump-row\">"
+     "<td class=\"linenum-gap\">[...]</td>"
+     "<td class=\"source-gap\"/></tr>\n"
+     "</tbody>\n");
 }
 
 /* Return true iff we should print a heading when starting the
@@ -1854,21 +2248,32 @@ layout::calculate_x_offset_display ()
    colorization and tab expansion, this function tracks the line position in
    both byte and display column units.  */
 
+template<typename Sink>
 line_bounds
-layout_printer::print_source_line (linenum_type row, const char *line, int line_bytes)
+layout_printer<Sink>::print_source_line (linenum_type row,
+					 const char *line,
+					 int line_bytes)
 {
-  m_colorizer.set_normal_text ();
-
-  pp_emit_prefix (&m_pp);
+  m_sink.colorize_text_ensure_normal ();
+  m_sink.push_html_tag ("tr", true);
+  m_sink.emit_text_prefix ();
   if (m_layout.m_options.show_line_numbers_p)
     {
+      m_sink.push_html_tag_with_class ("td", "linenum", true);
       int width = num_digits (row);
       for (int i = 0; i < m_layout.get_linenum_width () - width; i++)
-	pp_space (&m_pp);
-      pp_printf (&m_pp, "%i |", row);
+	m_sink.add_space ();
+      char buf[20];
+      sprintf (buf, "%i", row);
+      m_sink.add_text (buf);
+      if (Sink::is_text ())
+	m_sink.add_text (" |");
+      m_sink.pop_html_tag ("td");
     }
 
+  m_sink.push_html_tag_with_class ("td", "left-margin", true);
   print_leftmost_column ();
+  m_sink.pop_html_tag ("td");
 
   /* We will stop printing the source line at any trailing whitespace.  */
   line_bytes = get_line_bytes_without_trailing_whitespace (line,
@@ -1878,6 +2283,8 @@ layout_printer::print_source_line (linenum_type row, const char *line, int line_
      necessary for computing the line bounds in display units, for doing
      tab expansion, and for implementing m_x_offset_display.  */
   cpp_display_width_computation dw (line, line_bytes, m_layout.m_char_policy);
+
+  m_sink.push_html_tag_with_class ("td", "source", true);
 
   /* Skip the first m_x_offset_display display columns.  In case the leading
      portion that will be skipped ends with a character with wcwidth > 1, then
@@ -1889,7 +2296,7 @@ layout_printer::print_source_line (linenum_type row, const char *line, int line_
   for (int skipped_display_cols
 	 = dw.advance_display_cols (m_layout.m_x_offset_display);
        skipped_display_cols > m_layout.m_x_offset_display; --skipped_display_cols)
-    pp_space (&m_pp);
+    m_sink.add_space ();
 
   /* Print the line and compute the line_bounds.  */
   line_bounds lbounds;
@@ -1917,9 +2324,9 @@ layout_printer::print_source_line (linenum_type row, const char *line, int line_
 						    CU_BYTES,
 						    &state);
 	  if (in_range_p)
-	    m_colorizer.set_range (state.range_idx);
+	    set_in_range (state.range_idx);
 	  else
-	    m_colorizer.set_normal_text ();
+	    set_outside_range ();
 	}
 
       /* Get the display width of the next character to be output, expanding
@@ -1933,7 +2340,7 @@ layout_printer::print_source_line (linenum_type row, const char *line, int line_
 	  /* The returned display width is the number of spaces into which the
 	     tab should be expanded.  */
 	  for (int i = 0; i != this_display_width; ++i)
-	    pp_space (&m_pp);
+	    m_sink.add_space ();
 	  continue;
 	}
 
@@ -1947,10 +2354,11 @@ layout_printer::print_source_line (linenum_type row, const char *line, int line_
 	}
 
       /* Output the character.  */
-      m_layout.m_char_policy.m_print_cb (&m_pp, cp);
+      m_sink.print_decoded_char (m_layout.m_char_policy, cp);
       c = dw.next_byte ();
     }
-  print_newline ();
+  set_outside_range ();
+  end_line ();
   return lbounds;
 }
 
@@ -1975,8 +2383,9 @@ layout::should_print_annotation_line_p (linenum_type row) const
 /* Print the leftmost column after the margin, which is used for showing
    links between labels (e.g. for CFG edges in execution paths).  */
 
+template<typename Sink>
 void
-layout_printer::print_leftmost_column ()
+layout_printer<Sink>::print_leftmost_column ()
 {
   if (!get_options ().show_event_links_p)
     gcc_assert (m_link_lhs_state == link_lhs_state::none);
@@ -1986,76 +2395,159 @@ layout_printer::print_leftmost_column ()
     default:
       gcc_unreachable ();
     case link_lhs_state::none:
-      pp_space (&m_pp);
+      m_sink.add_space ();
       break;
     case link_lhs_state::rewinding_to_lhs:
       {
-	m_colorizer.set_cfg_edge ();
+	m_sink.colorize_text_for_cfg_edge ();
 	const cppchar_t ch = get_theme ().get_cppchar
 	  (text_art::theme::cell_kind::CFG_FROM_LEFT_TO_DOWN);
-	pp_unicode_character (&m_pp, ch);
-	m_colorizer.set_normal_text ();
+	m_sink.add_character (ch);
+	m_sink.colorize_text_ensure_normal ();
       }
       break;
     case link_lhs_state::at_lhs:
       {
-	m_colorizer.set_cfg_edge ();
+	m_sink.colorize_text_for_cfg_edge ();
 	const cppchar_t ch = get_theme ().get_cppchar
 	  (text_art::theme::cell_kind::CFG_DOWN);
-	pp_unicode_character (&m_pp, ch);
-	m_colorizer.set_normal_text ();
+	m_sink.add_character (ch);
+	m_sink.colorize_text_ensure_normal ();
       }
       break;
     case link_lhs_state::indenting_to_dest:
       {
-	m_colorizer.set_cfg_edge ();
+	m_sink.colorize_text_for_cfg_edge ();
 	const cppchar_t ch = get_theme ().get_cppchar
 	  (text_art::theme::cell_kind::CFG_FROM_DOWN_TO_RIGHT);
-	pp_unicode_character (&m_pp, ch);
-	m_colorizer.set_normal_text ();
+	m_sink.add_character (ch);
+	m_sink.colorize_text_ensure_normal ();
       }
       break;
     }
 }
 
-/* Begin an annotation line.  If m_show_line_numbers_p, print the left
-   margin, which is empty for annotation lines.
-   After any left margin, print a leftmost column, which is used for
-   showing links between labels (e.g. for CFG edges in execution paths).  */
+/* Begin an annotation line for either text or html output
 
+   If m_show_line_numbers_p, print the left margin, which is empty
+   for annotation lines.
+   After any left margin, print a leftmost column, which is used for
+   showing links between labels (e.g. for CFG edges in execution paths).
+
+   For text sinks, this also first prints the text prefix.
+   For html sinks, this also pushes <tr> and <td> open tags, where the
+   <td> is for the coming annotations.  */
+
+template<typename Sink>
 void
-layout_printer::start_annotation_line (char margin_char)
+layout_printer<Sink>::start_annotation_line (enum margin_kind margin)
 {
-  pp_emit_prefix (&m_pp);
+  m_sink.emit_text_prefix ();
+  m_sink.push_html_tag ("tr", true);
+
+  char margin_char = (margin == margin_kind::insertion
+		      ? '+'
+		      : ' ');
+
   if (get_options ().show_line_numbers_p)
     {
       /* Print the margin.  If MARGIN_CHAR != ' ', then print up to 3
 	 of it, right-aligned, padded with spaces.  */
+      m_sink.push_html_tag_with_class ("td", "linenum", true);
       int i;
       for (i = 0; i < m_layout.m_linenum_width - 3; i++)
-	pp_space (&m_pp);
+	m_sink.add_space ();
       for (; i < m_layout.m_linenum_width; i++)
-	pp_character (&m_pp, margin_char);
-      pp_string (&m_pp, " |");
+	m_sink.add_character (margin_char);
+      if (Sink::is_text ())
+	m_sink.add_text (" |");
+      m_sink.pop_html_tag ("td");
     }
-  if (margin_char == ' ')
-    print_leftmost_column ();
+
+  m_sink.push_html_tag_with_class ("td", "left-margin", true);
+  if (margin == margin_kind::insertion)
+    m_sink.add_character (margin_char);
   else
-    pp_character (&m_pp, margin_char);
+    print_leftmost_column ();
+  m_sink.pop_html_tag ("td");
+
+  m_sink.push_html_tag_with_class ("td",
+				   (margin == margin_kind::ruler
+				    ? "ruler"
+				    : "annotation"),
+				   true);
+}
+
+/* End a source or annotation line: text implementation.
+   Reset any colorization and emit a newline.  */
+
+template<>
+void
+layout_printer<to_text>::end_line ()
+{
+  m_sink.colorize_text_ensure_normal ();
+  m_sink.add_newline ();
+}
+
+/* End a source or annotation line: HTML implementation.
+   Close the <td> and <tr> tags.  */
+
+template<>
+void
+layout_printer<to_html>::end_line ()
+{
+  m_sink.pop_html_tag ("td");
+  m_sink.pop_html_tag ("tr");
+}
+
+/* Handle the various transitions between being-in-range and
+   not-being-in-a-range, and between ranges.  */
+
+template<typename Sink>
+void
+layout_printer<Sink>::set_in_range (int range_idx)
+{
+  if (m_was_in_range_p)
+    {
+      if (m_last_range_idx != range_idx)
+	{
+	  /* transition between ranges.  */
+	  end_label (m_last_range_idx, false);
+	  begin_label (range_idx, false);
+	}
+    }
+  else
+    {
+      /* transition from "not in a range" to "in a range".  */
+      begin_label (range_idx, false);
+      m_was_in_range_p = true;
+    }
+  m_last_range_idx = range_idx;
+}
+
+template<typename Sink>
+void
+layout_printer<Sink>::set_outside_range ()
+{
+  if (m_was_in_range_p)
+    /* transition from "in a range" to "not in a range".  */
+    end_label (m_last_range_idx, false);
+  m_was_in_range_p = false;
 }
 
 /* Print a line consisting of the caret/underlines for the given
    source line.  */
 
+template<typename Sink>
 void
-layout_printer::print_annotation_line (linenum_type row,
-				       const line_bounds lbounds)
+layout_printer<Sink>::print_annotation_line (linenum_type row,
+					     const line_bounds lbounds)
 {
   int x_bound = m_layout.get_x_bound_for_row (row,
 					      m_layout.m_exploc.m_display_col,
 					      lbounds.m_last_non_ws_disp_col);
 
-  start_annotation_line ();
+  start_annotation_line (margin_kind::normal);
 
   for (int column = 1 + m_layout.m_x_offset_display; column < x_bound; column++)
     {
@@ -2067,9 +2559,13 @@ layout_printer::print_annotation_line (linenum_type row,
 						CU_DISPLAY_COLS,
 						&state);
       if (in_range_p)
+	set_in_range (state.range_idx);
+      else
+	set_outside_range ();
+
+      if (in_range_p)
 	{
 	  /* Within a range.  Draw either the caret or an underline.  */
-	  m_colorizer.set_range (state.range_idx);
 	  if (state.draw_caret_p)
 	    {
 	      /* Draw the caret.  */
@@ -2078,19 +2574,21 @@ layout_printer::print_annotation_line (linenum_type row,
 		caret_char = get_options ().caret_chars[state.range_idx];
 	      else
 		caret_char = '^';
-	      pp_character (&m_pp, caret_char);
+	      m_sink.add_character (caret_char);
 	    }
 	  else
-	    pp_character (&m_pp, '~');
+	    m_sink.add_character ('~');
 	}
       else
 	{
 	  /* Not in a range.  */
-	  m_colorizer.set_normal_text ();
-	  pp_character (&m_pp, ' ');
+	  m_sink.add_character (' ');
 	}
     }
-  print_newline ();
+
+  set_outside_range ();
+
+  end_line ();
 }
 
 /* A version of label_text that can live inside a vec.
@@ -2126,11 +2624,13 @@ struct pod_label_text
 class line_label
 {
 public:
-  line_label (int state_idx, int column,
+  line_label (unsigned original_range_idx,
+	      int state_idx, int column,
 	      label_text text,
 	      bool has_in_edge,
 	      bool has_out_edge)
-  : m_state_idx (state_idx), m_column (column),
+  : m_original_range_idx (original_range_idx),
+    m_state_idx (state_idx), m_column (column),
     m_text (std::move (text)), m_label_line (0), m_has_vbar (true),
     m_has_in_edge (has_in_edge),
     m_has_out_edge (has_out_edge)
@@ -2158,6 +2658,7 @@ public:
     return -compare (ll1->m_state_idx, ll2->m_state_idx);
   }
 
+  unsigned m_original_range_idx;
   int m_state_idx;
   int m_column;
   pod_label_text m_text;
@@ -2168,9 +2669,66 @@ public:
   bool m_has_out_edge;
 };
 
-/* Print any labels in this row.  */
+/* Implementations of layout_printer::{begin,end}_label for
+   to_text and to_html.
+
+   RANGE_IDX is the index of the range within the rich_location.
+
+   IS_LABEL_TEXT is true for the text of the label,
+   false when quoting the source code, underlining the source
+   code, and for the vertical bars connecting the underlines
+   to the text of the label.  */
+
+template<>
 void
-layout_printer::print_any_labels (linenum_type row)
+layout_printer<to_text>::begin_label (int range_idx,
+				      bool is_label_text)
+{
+  /* Colorize the text, unless it's for labels for events in a
+     diagnostic_path.  */
+  if (is_label_text && m_is_diagnostic_path)
+    return;
+
+  gcc_assert (m_sink.m_colorizer);
+  m_sink.m_colorizer->set_range (range_idx);
+}
+
+template<>
+void
+layout_printer<to_html>::begin_label (int range_idx,
+				      bool is_label_text)
+{
+  if (is_label_text && m_sink.m_html_label_writer)
+    m_sink.m_html_label_writer->begin_label ();
+
+  if (const char *highlight_color
+	= m_sink.get_highlight_color_for_range_idx (range_idx))
+    m_sink.m_xp.push_tag_with_class ("span", highlight_color);
+}
+
+template<>
+void
+layout_printer<to_text>::end_label (int, bool)
+{
+  m_sink.colorize_text_ensure_normal ();
+}
+
+template<>
+void
+layout_printer<to_html>::end_label (int range_idx,
+				    bool is_label_text)
+{
+  if (m_sink.get_highlight_color_for_range_idx (range_idx))
+    m_sink.m_xp.pop_tag ();
+
+  if (is_label_text && m_sink.m_html_label_writer)
+    m_sink.m_html_label_writer->end_label ();
+}
+
+/* Print any labels in this row.  */
+template <typename Sink>
+void
+layout_printer<Sink>::print_any_labels (linenum_type row)
 {
   int i;
   auto_vec<line_label> labels;
@@ -2203,7 +2761,8 @@ layout_printer::print_any_labels (linenum_type row)
 	if (text.get () == NULL)
 	  continue;
 
-	labels.safe_push (line_label (i, disp_col, std::move (text),
+	labels.safe_push (line_label (range->m_original_idx,
+				      i, disp_col, std::move (text),
 				      range->has_in_edge (),
 				      range->has_out_edge ()));
       }
@@ -2288,7 +2847,7 @@ layout_printer::print_any_labels (linenum_type row)
 	    gcc_assert (get_options ().show_event_links_p);
 	    m_link_lhs_state = link_lhs_state::indenting_to_dest;
 	  }
-	start_annotation_line ();
+	start_annotation_line (margin_kind::normal);
 
 	int column = 1 + m_layout.m_x_offset_display;
 	line_label *label;
@@ -2310,32 +2869,31 @@ layout_printer::print_any_labels (linenum_type row)
 		       . ^~~~~~~~~~~~~
 		       . this text.  */
 		    gcc_assert (get_options ().show_event_links_p);
-		    m_colorizer.set_cfg_edge ();
+		    m_sink.colorize_text_for_cfg_edge ();
 		    const cppchar_t right= get_theme ().get_cppchar
 		      (text_art::theme::cell_kind::CFG_RIGHT);
 		    while (column < label->m_column - 1)
 		      {
-			pp_unicode_character (&m_pp, right);
+			m_sink.add_character (right);
 			column++;
 		      }
 		    if (column == label->m_column - 1)
 		      {
-			pp_character (&m_pp, '>');
+			m_sink.add_character ('>');
 			column++;
 		      }
-		    m_colorizer.set_normal_text ();
+		    m_sink.colorize_text_ensure_normal ();
 		    m_link_lhs_state = link_lhs_state::none;
 		    label_line_with_in_edge = -1;
 		  }
 		else
 		  move_to_column (&column, label->m_column, true);
 		gcc_assert (column == label->m_column);
-		/* Colorize the text, unless it's for events in a
-		   diagnostic_path.  */
-		if (!m_is_diagnostic_path)
-		  m_colorizer.set_range (label->m_state_idx);
-		pp_string (&m_pp, label->m_text.m_buffer);
-		m_colorizer.set_normal_text ();
+
+		begin_label (label->m_state_idx, true);
+		m_sink.add_text (label->m_text.m_buffer);
+		end_label (label->m_state_idx, true);
+
 		column += label->m_display_width;
 		if (get_options ().show_event_links_p && label->m_has_out_edge)
 		  {
@@ -2350,13 +2908,13 @@ layout_printer::print_any_labels (linenum_type row)
 		      (text_art::theme::cell_kind::CFG_RIGHT);
 		    const cppchar_t from_right_to_down= get_theme ().get_cppchar
 		      (text_art::theme::cell_kind::CFG_FROM_RIGHT_TO_DOWN);
-		    m_colorizer.set_cfg_edge ();
-		    pp_space (&m_pp);
-		    pp_unicode_character (&m_pp, right);
-		    pp_unicode_character (&m_pp, '>');
-		    pp_unicode_character (&m_pp, right);
-		    pp_unicode_character (&m_pp, from_right_to_down);
-		    m_colorizer.set_normal_text ();
+		    m_sink.colorize_text_for_cfg_edge ();
+		    m_sink.add_space ();
+		    m_sink.add_character (right);
+		    m_sink.add_character ('>');
+		    m_sink.add_character (right);
+		    m_sink.add_character (from_right_to_down);
+		    m_sink.colorize_text_ensure_normal ();
 		    column += 5;
 		    m_link_rhs_column = column - 1;
 		  }
@@ -2365,9 +2923,9 @@ layout_printer::print_any_labels (linenum_type row)
 	      {
 		gcc_assert (column <= label->m_column);
 		move_to_column (&column, label->m_column, true);
-		m_colorizer.set_range (label->m_state_idx);
-		pp_character (&m_pp, '|');
-		m_colorizer.set_normal_text ();
+		begin_label (label->m_state_idx, false);
+		m_sink.add_character ('|');
+		end_label (label->m_state_idx, false);
 		column++;
 	      }
 	  }
@@ -2377,14 +2935,14 @@ layout_printer::print_any_labels (linenum_type row)
 	if (m_link_rhs_column != -1 && column < m_link_rhs_column)
 	  {
 	    move_to_column (&column, m_link_rhs_column, true);
-	    m_colorizer.set_cfg_edge ();
+	    m_sink.colorize_text_for_cfg_edge ();
 	    const cppchar_t down= get_theme ().get_cppchar
 	      (text_art::theme::cell_kind::CFG_DOWN);
-	    pp_unicode_character (&m_pp, down);
-	    m_colorizer.set_normal_text ();
+	    m_sink.add_character (down);
+	    m_sink.colorize_text_ensure_normal ();
 	  }
 
-	print_newline ();
+	end_line ();
       }
     }
 
@@ -2393,14 +2951,13 @@ layout_printer::print_any_labels (linenum_type row)
   if (m_link_rhs_column != -1)
     {
       int column = 1 + m_layout.m_x_offset_display;
-      start_annotation_line ();
+      start_annotation_line (margin_kind::normal);
       move_to_column (&column, m_link_rhs_column, true);
-      m_colorizer.set_cfg_edge ();
+      m_sink.colorize_text_for_cfg_edge ();
       const cppchar_t down= get_theme ().get_cppchar
 	(text_art::theme::cell_kind::CFG_DOWN);
-      pp_unicode_character (&m_pp, down);
-      m_colorizer.set_normal_text ();
-      print_newline ();
+      m_sink.add_character (down);
+      end_line ();
     }
 
   /* Clean up.  */
@@ -2417,8 +2974,9 @@ layout_printer::print_any_labels (linenum_type row)
    They are printed on lines of their own, before the source line
    itself, with a leading '+'.  */
 
+template <typename Sink>
 void
-layout_printer::print_leading_fixits (linenum_type row)
+layout_printer<Sink>::print_leading_fixits (linenum_type row)
 {
   for (unsigned int i = 0; i < m_layout.m_fixit_hints.length (); i++)
     {
@@ -2438,16 +2996,15 @@ layout_printer::print_leading_fixits (linenum_type row)
 	     and the inserted line with "insert" colorization
 	     helps them stand out from each other, and from
 	     the surrounding text.  */
-	  m_colorizer.set_normal_text ();
-	  start_annotation_line ('+');
-	  m_colorizer.set_fixit_insert ();
+	  m_sink.colorize_text_ensure_normal ();
+	  start_annotation_line (margin_kind::insertion);
+	  m_sink.colorize_text_for_fixit_insert ();
 	  /* Print all but the trailing newline of the fix-it hint.
 	     We have to print the newline separately to avoid
 	     getting additional pp prefixes printed.  */
 	  for (size_t i = 0; i < hint->get_length () - 1; i++)
-	    pp_character (&m_pp, hint->get_string ()[i]);
-	  m_colorizer.set_normal_text ();
-	  pp_newline (&m_pp);
+	    m_sink.add_character (hint->get_string ()[i]);
+	  end_line ();
 	}
     }
 }
@@ -2877,8 +3434,9 @@ line_corrections::add_hint (const fixit_hint *hint)
    Fix-it hints that insert new lines are handled separately,
    in layout::print_leading_fixits.  */
 
+template<typename Sink>
 void
-layout_printer::print_trailing_fixits (linenum_type row)
+layout_printer<Sink>::print_trailing_fixits (linenum_type row)
 {
   /* Build a list of correction instances for the line,
      potentially consolidating hints (for the sake of readability).  */
@@ -2904,7 +3462,7 @@ layout_printer::print_trailing_fixits (linenum_type row)
   int column = 1 + m_layout.m_x_offset_display;
 
   if (!corrections.m_corrections.is_empty ())
-    start_annotation_line ();
+    start_annotation_line (margin_kind::normal);
 
   FOR_EACH_VEC_ELT (corrections.m_corrections, i, c)
     {
@@ -2914,9 +3472,9 @@ layout_printer::print_trailing_fixits (linenum_type row)
 	  /* This assumes the insertion just affects one line.  */
 	  int start_column = c->m_printed_columns.start;
 	  move_to_column (&column, start_column, true);
-	  m_colorizer.set_fixit_insert ();
-	  pp_string (&m_pp, c->m_text);
-	  m_colorizer.set_normal_text ();
+	  m_sink.colorize_text_for_fixit_insert ();
+	  m_sink.add_text (c->m_text);
+	  m_sink.colorize_text_ensure_normal ();
 	  column += c->m_display_cols;
 	}
       else
@@ -2932,10 +3490,10 @@ layout_printer::print_trailing_fixits (linenum_type row)
 	      || c->m_byte_length == 0)
 	    {
 	      move_to_column (&column, start_column, true);
-	      m_colorizer.set_fixit_delete ();
+	      m_sink.colorize_text_for_fixit_delete ();
 	      for (; column <= finish_column; column++)
-		pp_character (&m_pp, '-');
-	      m_colorizer.set_normal_text ();
+		m_sink.add_character ('-');
+	      m_sink.colorize_text_ensure_normal ();
 	    }
 	  /* Print the replacement text.  REPLACE also covers
 	     removals, so only do this extra work (potentially starting
@@ -2943,25 +3501,19 @@ layout_printer::print_trailing_fixits (linenum_type row)
 	  if (c->m_byte_length > 0)
 	    {
 	      move_to_column (&column, start_column, true);
-	      m_colorizer.set_fixit_insert ();
-	      pp_string (&m_pp, c->m_text);
-	      m_colorizer.set_normal_text ();
+	      m_sink.colorize_text_for_fixit_insert ();
+	      m_sink.add_text (c->m_text);
+	      m_sink.colorize_text_ensure_normal ();
 	      column += c->m_display_cols;
 	    }
 	}
     }
 
+  if (!corrections.m_corrections.is_empty ())
+    m_sink.pop_html_tag ("td");
+
   /* Add a trailing newline, if necessary.  */
   move_to_column (&column, 1 + m_layout.m_x_offset_display, false);
-}
-
-/* Disable any colorization and emit a newline.  */
-
-void
-layout_printer::print_newline ()
-{
-  m_colorizer.set_normal_text ();
-  pp_newline (&m_pp);
 }
 
 /* Return true if (ROW/COLUMN) is within a range of the layout.
@@ -3060,27 +3612,28 @@ layout::get_x_bound_for_row (linenum_type row, int caret_column,
    and updating *COLUMN.  If ADD_LEFT_MARGIN, then print the (empty)
    left margin after any newline.  */
 
+template<typename Sink>
 void
-layout_printer::move_to_column (int *column,
-				int dest_column,
-				bool add_left_margin)
+layout_printer<Sink>::move_to_column (int *column,
+				      int dest_column,
+				      bool add_left_margin)
 {
   /* Start a new line if we need to.  */
   if (*column > dest_column)
     {
-      print_newline ();
+      end_line ();
       if (add_left_margin)
-	start_annotation_line ();
+	start_annotation_line (margin_kind::normal);
       *column = 1 + m_layout.m_x_offset_display;
     }
 
   while (*column < dest_column)
     {
       /* For debugging column issues, it can be helpful to replace this
-	 pp_space call with
-	   pp_character (&m_pp, '0' + (*column % 10));
+	 add_space call with
+	   m_sink.add_character ('0' + (*column % 10));
 	 to visualize the changing value of "*column".  */
-      pp_space (&m_pp);
+      m_sink.add_space ();
       (*column)++;
     }
 }
@@ -3088,49 +3641,55 @@ layout_printer::move_to_column (int *column,
 /* For debugging layout issues, render a ruler giving column numbers
    (after the 1-column indent).  */
 
+template<typename Sink>
 void
-layout_printer::show_ruler (int max_column)
+layout_printer<Sink>::show_ruler (int max_column)
 {
+  m_sink.push_html_tag_with_class("thead", "ruler", false);
+
   /* Hundreds.  */
   if (max_column > 99)
     {
-      start_annotation_line ();
+      start_annotation_line (margin_kind::ruler);
       for (int column = 1 + m_layout.m_x_offset_display;
 	   column <= max_column;
 	   ++column)
 	if (column % 10 == 0)
-	  pp_character (&m_pp, '0' + (column / 100) % 10);
+	  m_sink.add_character ('0' + (column / 100) % 10);
 	else
-	  pp_space (&m_pp);
-      pp_newline (&m_pp);
+	  m_sink.add_space ();
+      end_line ();
     }
 
   /* Tens.  */
-  start_annotation_line ();
+  start_annotation_line (margin_kind::ruler);
   for (int column = 1 + m_layout.m_x_offset_display;
        column <= max_column;
        ++column)
     if (column % 10 == 0)
-      pp_character (&m_pp, '0' + (column / 10) % 10);
+      m_sink.add_character ('0' + (column / 10) % 10);
     else
-      pp_space (&m_pp);
-  pp_newline (&m_pp);
+      m_sink.add_space ();
+  end_line ();
 
   /* Units.  */
-  start_annotation_line ();
+  start_annotation_line (margin_kind::ruler);
   for (int column = 1 + m_layout.m_x_offset_display;
        column <= max_column;
        ++column)
-    pp_character (&m_pp, '0' + (column % 10));
-  pp_newline (&m_pp);
+    m_sink.add_character ('0' + (column % 10));
+  end_line ();
+
+  m_sink.pop_html_tag("thead"); // thead
 }
 
 /* Print leading fix-its (for new lines inserted before the source line)
    then the source line, followed by an annotation line
    consisting of any caret/underlines, then any fixits.
    If the source line can't be read, print nothing.  */
+template<typename Sink>
 void
-layout_printer::print_line (linenum_type row)
+layout_printer<Sink>::print_line (linenum_type row)
 {
   char_span line
     = m_layout.m_file_cache.get_source_line (m_layout.m_exploc.file, row);
@@ -3154,8 +3713,9 @@ layout_printer::print_line (linenum_type row)
    showing the link entering at the top right and emerging
    at the bottom left.  */
 
+template<typename Sink>
 void
-layout_printer::print_any_right_to_left_edge_lines ()
+layout_printer<Sink>::print_any_right_to_left_edge_lines ()
 {
   if (m_link_rhs_column == -1)
     /* Can also happen if the out-edge had UNKNOWN_LOCATION.  */
@@ -3164,31 +3724,30 @@ layout_printer::print_any_right_to_left_edge_lines ()
   gcc_assert (get_options ().show_event_links_p);
 
   /* Print the line with "|".  */
-  start_annotation_line ();
+  start_annotation_line (margin_kind::normal);
+
   int column = 1 + m_layout.m_x_offset_display;
   move_to_column (&column, m_link_rhs_column, true);
-  m_colorizer.set_cfg_edge ();
+  m_sink.colorize_text_for_cfg_edge ();
   const cppchar_t down= get_theme ().get_cppchar
     (text_art::theme::cell_kind::CFG_DOWN);
-  pp_unicode_character (&m_pp, down);
-  m_colorizer.set_normal_text ();
-  pp_newline (&m_pp);
+  m_sink.add_character (down);
+  end_line ();
 
   /* Print the line with "┌──────────────────────────────────────────┘".  */
   m_link_lhs_state = link_lhs_state::rewinding_to_lhs;
-  start_annotation_line ();
-  m_colorizer.set_cfg_edge ();
+  start_annotation_line (margin_kind::normal);
+  m_sink.colorize_text_for_cfg_edge ();
   const cppchar_t left= get_theme ().get_cppchar
     (text_art::theme::cell_kind::CFG_LEFT);
   for (int column = 1 + m_layout.m_x_offset_display;
        column < m_link_rhs_column;
        ++column)
-    pp_unicode_character (&m_pp, left);
+    m_sink.add_character (left);
   const cppchar_t from_down_to_left = get_theme ().get_cppchar
     (text_art::theme::cell_kind::CFG_FROM_DOWN_TO_LEFT);
-  pp_unicode_character (&m_pp, from_down_to_left);
-  m_colorizer.set_normal_text ();
-  pp_newline (&m_pp);
+  m_sink.add_character (from_down_to_left);
+  end_line ();
 
   /* We now have a link line on the LHS,
      and no longer have one on the RHS.  */
@@ -3196,14 +3755,15 @@ layout_printer::print_any_right_to_left_edge_lines ()
   m_link_rhs_column = -1;
 }
 
-layout_printer::layout_printer (pretty_printer &pp,
-				const layout &layout,
-				const rich_location &richloc,
-				diagnostic_t diagnostic_kind)
-: m_pp (pp),
+template<typename Sink>
+layout_printer<Sink>::layout_printer (Sink &sink,
+				      const layout &layout,
+				      bool is_diagnostic_path)
+: m_sink (sink),
   m_layout (layout),
-  m_colorizer (m_pp, richloc, diagnostic_kind),
-  m_is_diagnostic_path (diagnostic_kind == DK_DIAGNOSTIC_PATH),
+  m_is_diagnostic_path (is_diagnostic_path),
+  m_was_in_range_p (false),
+  m_last_range_idx (0),
   m_link_lhs_state (link_lhs_state::none),
   m_link_rhs_column (-1)
 {
@@ -3293,11 +3853,47 @@ diagnostic_context::maybe_show_locus (const rich_location &richloc,
   source_policy.print (pp, richloc, diagnostic_kind, effects);
 }
 
+/* As above, but print in HTML form to XP.
+   If non-null, use LABEL_WRITER when writing labelled ranges.  */
+
+void
+diagnostic_context::maybe_show_locus_as_html (const rich_location &richloc,
+					      const diagnostic_source_printing_options &opts,
+					      diagnostic_t diagnostic_kind,
+					      xml::printer &xp,
+					      diagnostic_source_effect_info *effects,
+					      html_label_writer *label_writer)
+{
+  const location_t loc = richloc.get_loc ();
+  /* Do nothing if source-printing has been disabled.  */
+  if (!opts.enabled)
+    return;
+
+  /* Don't attempt to print source for UNKNOWN_LOCATION and for builtins.  */
+  if (loc <= BUILTINS_LOCATION)
+    return;
+
+  /* Don't print the same source location twice in a row, unless we have
+     fix-it hints, or multiple locations, or a label.  */
+  if (loc == m_last_location
+      && richloc.get_num_fixit_hints () == 0
+      && richloc.get_num_locations () == 1
+      && richloc.get_range (0)->m_label == NULL)
+    return;
+
+  m_last_location = loc;
+
+  diagnostic_source_print_policy source_policy (*this, opts);
+  source_policy.print_as_html (xp, richloc, diagnostic_kind, effects,
+			       label_writer);
+}
+
 diagnostic_source_print_policy::
 diagnostic_source_print_policy (const diagnostic_context &dc)
 : m_options (dc.m_source_printing),
   m_location_policy (dc),
-  m_start_span_cb (dc.m_text_callbacks.m_start_span),
+  m_text_start_span_cb (dc.m_text_callbacks.m_text_start_span),
+  m_html_start_span_cb (dc.m_text_callbacks.m_html_start_span),
   m_file_cache (dc.get_file_cache ()),
   m_diagram_theme (dc.get_diagram_theme ()),
   m_escape_format (dc.get_escape_format ())
@@ -3309,7 +3905,8 @@ diagnostic_source_print_policy (const diagnostic_context &dc,
 				const diagnostic_source_printing_options &opts)
 : m_options (opts),
   m_location_policy (dc),
-  m_start_span_cb (dc.m_text_callbacks.m_start_span),
+  m_text_start_span_cb (dc.m_text_callbacks.m_text_start_span),
+  m_html_start_span_cb (dc.m_text_callbacks.m_html_start_span),
   m_file_cache (dc.get_file_cache ()),
   m_diagram_theme (dc.get_diagram_theme ()),
   m_escape_format (dc.get_escape_format ())
@@ -3329,15 +3926,36 @@ diagnostic_source_print_policy::print (pretty_printer &pp,
   const
 {
   layout layout (*this, richloc, effects);
-  layout_printer lp (pp, layout, richloc, diagnostic_kind);
+  colorizer col (pp, richloc, diagnostic_kind);
+  to_text sink (pp, col);
+  layout_printer<to_text> lp (sink, layout,
+			      diagnostic_kind == DK_DIAGNOSTIC_PATH);
   lp.print (*this);
 }
 
+/* As above, but print in HTML form to XP.
+   If non-null, use LABEL_WRITER when writing labelled ranges.  */
+
 void
-layout_printer::print (const diagnostic_source_print_policy &source_policy)
+diagnostic_source_print_policy::print_as_html (xml::printer &xp,
+					       const rich_location &richloc,
+					       diagnostic_t diagnostic_kind,
+					       diagnostic_source_effect_info *effects,
+					       html_label_writer *label_writer)
+  const
 {
-  diagnostic_prefixing_rule_t saved_rule = pp_prefixing_rule (&m_pp);
-  pp_prefixing_rule (&m_pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+  layout layout (*this, richloc, effects);
+  to_html sink (xp, &richloc, label_writer);
+  layout_printer<to_html> lp (sink, layout,
+			      diagnostic_kind == DK_DIAGNOSTIC_PATH);
+  lp.print (*this);
+}
+
+template <typename Sink>
+void
+layout_printer<Sink>::print (const diagnostic_source_print_policy &source_policy)
+{
+  m_sink.push_html_tag_with_class ("table", "locus", false);
 
   if (get_options ().show_ruler_p)
     show_ruler (m_layout.m_x_offset_display + get_options ().max_width);
@@ -3362,26 +3980,64 @@ layout_printer::print (const diagnostic_source_print_policy &source_policy)
 		= m_layout.get_expanded_location (line_span);
 	      const diagnostic_location_print_policy &
 		loc_policy = source_policy.get_location_policy ();
-	      source_policy.get_start_span_fn () (loc_policy, &m_pp, exploc);
+	      m_sink.invoke_start_span_fn (source_policy, loc_policy, exploc);
 	    }
 	}
+
+      m_sink.push_html_tag_with_class ("tbody", "line-span", false);
+
       /* Iterate over the lines within this span (using linenum_arith_t to
 	 avoid overflow with 0xffffffff causing an infinite loop).  */
       linenum_arith_t last_line = line_span->get_last_line ();
       for (linenum_arith_t row = line_span->get_first_line ();
 	   row <= last_line; row++)
 	print_line (row);
+
+      m_sink.pop_html_tag ("tbody");
     }
 
   if (auto effect_info = m_layout.m_effect_info)
     effect_info->m_trailing_out_edge_column = m_link_rhs_column;
 
-  pp_prefixing_rule (&m_pp) = saved_rule;
+  m_sink.pop_html_tag ("table");
 }
 
 #if CHECKING_P
 
 namespace selftest {
+
+static std::unique_ptr<xml::node>
+make_element_for_locus (const rich_location &rich_loc,
+			diagnostic_t kind,
+			diagnostic_context &dc)
+{
+  dc.m_last_location = UNKNOWN_LOCATION;
+
+  xml::element wrapper ("wrapper", false);
+  xml::printer xp (wrapper);
+  dc.maybe_show_locus_as_html (rich_loc,
+			       dc.m_source_printing,
+			       kind,
+			       xp,
+			       nullptr,
+			       nullptr); // label_writer
+  if (wrapper.m_children.size () > 0)
+    return std::move (wrapper.m_children[0]);
+  else
+    return nullptr;
+}
+
+static label_text
+make_raw_html_for_locus (const rich_location &rich_loc,
+			 diagnostic_t kind,
+			 diagnostic_context &dc)
+{
+  auto node = make_element_for_locus (rich_loc, kind, dc);
+  pretty_printer pp;
+  if (node)
+    node->write_as_xml (&pp, 0, true);
+  return label_text::take (xstrdup (pp_formatted_text (&pp)));
+}
 
 /* Selftests for diagnostic_show_locus.  */
 
@@ -3600,7 +4256,10 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
 			   linemap_position_for_column (line_table,
 							emoji_col));
     layout test_layout (policy, richloc, nullptr);
-    layout_printer lp (*dc.get_reference_printer (), test_layout, richloc, DK_ERROR);
+    colorizer col (*dc.get_reference_printer (),
+		   richloc, DK_ERROR);
+    to_text sink (*dc.get_reference_printer (), col);
+    layout_printer<to_text> lp (sink, test_layout, false);
     lp.print (policy);
     ASSERT_STREQ ("     |         1         \n"
 		  "     |         1         \n"
@@ -3627,7 +4286,10 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
 			   linemap_position_for_column (line_table,
 							emoji_col + 2));
     layout test_layout (dc, richloc, nullptr);
-    layout_printer lp (*dc.get_reference_printer (), test_layout, richloc, DK_ERROR);
+    colorizer col (*dc.get_reference_printer (),
+		   richloc, DK_ERROR);
+    to_text sink (*dc.get_reference_printer (), col);
+    layout_printer<to_text> lp (sink, test_layout, false);
     lp.print (policy);
     ASSERT_STREQ ("     |        1         1 \n"
 		  "     |        1         2 \n"
@@ -3708,7 +4370,10 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
       dc.m_tabstop = tabstop;
       diagnostic_source_print_policy policy (dc);
       layout test_layout (policy, richloc, nullptr);
-      layout_printer lp (*dc.get_reference_printer (), test_layout, richloc, DK_ERROR);
+      colorizer col (*dc.get_reference_printer (),
+		     richloc, DK_ERROR);
+      to_text sink (*dc.get_reference_printer (), col);
+      layout_printer<to_text> lp (sink, test_layout, false);
       lp.print (policy);
       const char *out = pp_formatted_text (dc.get_reference_printer ());
       ASSERT_EQ (NULL, strchr (out, '\t'));
@@ -3733,7 +4398,10 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
       dc.m_source_printing.show_line_numbers_p = true;
       diagnostic_source_print_policy policy (dc);
       layout test_layout (policy, richloc, nullptr);
-      layout_printer lp (*dc.get_reference_printer (), test_layout, richloc, DK_ERROR);
+      colorizer col (*dc.get_reference_printer (),
+		     richloc, DK_ERROR);
+      to_text sink (*dc.get_reference_printer (), col);
+      layout_printer<to_text> lp (sink, test_layout, false);
       lp.print (policy);
 
       /* We have arranged things so that two columns will be printed before
@@ -3814,6 +4482,32 @@ test_one_liner_caret_and_range ()
   ASSERT_STREQ (" foo = bar.field;\n"
 		"       ~~~^~~~~~\n",
 		dc.test_show_locus (richloc));
+
+  {
+    test_diagnostic_context dc;
+    auto out = make_raw_html_for_locus (richloc, DK_ERROR, dc);
+     ASSERT_STREQ
+       ("<table class=\"locus\">\n"
+	"  <tbody class=\"line-span\">\n"
+	"    <tr><td class=\"left-margin\"> </td><td class=\"source\">foo = bar.field;</td></tr>\n"
+	"    <tr><td class=\"left-margin\"> </td><td class=\"annotation\">      ~~~^~~~~~</td></tr>\n"
+	"  </tbody>\n"
+	"</table>\n",
+	out.get ());
+  }
+  {
+    test_diagnostic_context dc;
+    dc.m_source_printing.show_line_numbers_p = true;
+    auto out = make_raw_html_for_locus (richloc, DK_ERROR, dc);
+     ASSERT_STREQ
+       ("<table class=\"locus\">\n"
+	"  <tbody class=\"line-span\">\n"
+	"    <tr><td class=\"linenum\">    1</td><td class=\"left-margin\"> </td><td class=\"source\">foo = bar.field;</td></tr>\n"
+	"    <tr><td class=\"linenum\">     </td><td class=\"left-margin\"> </td><td class=\"annotation\">      ~~~^~~~~~</td></tr>\n"
+	"  </tbody>\n"
+	"</table>\n",
+	out.get ());
+  }
 }
 
 /* Multiple ranges and carets.  */
@@ -4231,6 +4925,24 @@ test_one_liner_labels ()
 		  " |     label 1\n"
 		  " label 0\n",
 		  dc.test_show_locus (richloc));
+
+    {
+      test_diagnostic_context dc;
+      dc.m_source_printing.show_line_numbers_p = true;
+      auto out = make_raw_html_for_locus (richloc, DK_ERROR, dc);
+      ASSERT_STREQ
+	("<table class=\"locus\">\n"
+	 "  <tbody class=\"line-span\">\n"
+	 "    <tr><td class=\"linenum\">    1</td><td class=\"left-margin\"> </td><td class=\"source\">foo = bar.field;</td></tr>\n"
+	 "    <tr><td class=\"linenum\">     </td><td class=\"left-margin\"> </td><td class=\"annotation\">^~~   ~~~ ~~~~~</td></tr>\n"
+	 "    <tr><td class=\"linenum\">     </td><td class=\"left-margin\"> </td><td class=\"annotation\">|     |   |</td></tr>\n"
+	 "    <tr><td class=\"linenum\">     </td><td class=\"left-margin\"> </td><td class=\"annotation\">|     |   label 2</td></tr>\n"
+	 "    <tr><td class=\"linenum\">     </td><td class=\"left-margin\"> </td><td class=\"annotation\">|     label 1</td></tr>\n"
+	 "    <tr><td class=\"linenum\">     </td><td class=\"left-margin\"> </td><td class=\"annotation\">label 0</td></tr>\n"
+	 "  </tbody>\n"
+	 "</table>\n",
+	 out.get ());
+    }
   }
 
   /* Example of boundary conditions: label 0 and 1 have just enough clearance,

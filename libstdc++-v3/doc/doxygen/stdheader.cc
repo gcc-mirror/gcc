@@ -55,6 +55,7 @@ void init_map()
     headers["functional_hash.h"]        = "functional";
     headers["mofunc_impl.h"]            = "functional";
     headers["cpyfunc_impl.h"]           = "functional";
+    headers["funcref_impl.h"]           = "functional";
     headers["funcwrap.h"]               = "functional";
     headers["invoke.h"]                 = "functional";
     headers["ranges_cmp.h"]             = "functional";
@@ -105,6 +106,7 @@ void init_map()
     headers["uses_allocator.h"]         = "memory";
     headers["uses_allocator_args.h"]    = "memory";
     headers["out_ptr.h"]                = "memory";
+    headers["indirect.h"]               = "memory";
     headers["memory_resource.h"]        = "memory_resource";
     headers["unique_lock.h"]            = "mutex";
     headers["sat_arith.h"]              = "numeric";

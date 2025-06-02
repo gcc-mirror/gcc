@@ -30,7 +30,8 @@
 #ifndef GCOBOLIO_H_
 #define GCOBOLIO_H_
 
-#include <stdio.h>
+#include <cstdio>
+
 #include <map>
 #include <unordered_map>
 #include <vector>

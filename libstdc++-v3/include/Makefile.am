@@ -206,11 +206,13 @@ bits_headers = \
 	${bits_srcdir}/fs_ops.h \
 	${bits_srcdir}/fs_path.h \
 	${bits_srcdir}/fstream.tcc \
+	${bits_srcdir}/funcref_impl.h \
 	${bits_srcdir}/funcwrap.h \
 	${bits_srcdir}/gslice.h \
 	${bits_srcdir}/gslice_array.h \
 	${bits_srcdir}/hashtable.h \
 	${bits_srcdir}/hashtable_policy.h \
+	${bits_srcdir}/indirect.h \
 	${bits_srcdir}/indirect_array.h \
 	${bits_srcdir}/ios_base.h \
 	${bits_srcdir}/istream.tcc \

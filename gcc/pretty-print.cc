@@ -2461,7 +2461,7 @@ pretty_printer::pretty_printer (int maximum_length)
     m_indent_skip (0),
     m_wrapping (),
     m_format_decoder (nullptr),
-    m_format_postprocessor (NULL),
+    m_format_postprocessor (nullptr),
     m_token_printer (nullptr),
     m_emitted_prefix (false),
     m_need_newline (false),
@@ -2487,7 +2487,7 @@ pretty_printer::pretty_printer (const pretty_printer &other)
   m_indent_skip (other.m_indent_skip),
   m_wrapping (other.m_wrapping),
   m_format_decoder (other.m_format_decoder),
-  m_format_postprocessor (NULL),
+  m_format_postprocessor (nullptr),
   m_token_printer (other.m_token_printer),
   m_emitted_prefix (other.m_emitted_prefix),
   m_need_newline (other.m_need_newline),
@@ -2508,8 +2508,6 @@ pretty_printer::pretty_printer (const pretty_printer &other)
 
 pretty_printer::~pretty_printer ()
 {
-  if (m_format_postprocessor)
-    delete m_format_postprocessor;
   m_buffer->~output_buffer ();
   XDELETE (m_buffer);
   free (m_prefix);

@@ -1,0 +1,305 @@
+-- CC51007.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a generic formal derived tagged type is a private extension.
+--      Specifically, check that, for a generic formal derived type whose
+--      ancestor type has abstract primitive subprograms, neither the formal
+--      derived type nor its descendants need be abstract. Check that objects
+--      and components of the formal derived type and its nonabstract
+--      descendants may be declared and allocated, as may nonabstract
+--      functions returning these types, and that aggregates of nonabstract
+--      descendants of the formal derived type are legal. Check that calls to
+--      the abstract primitive subprograms of the ancestor dispatch to the 
+--      bodies corresponding to the tag of the actual parameters.
+--
+-- TEST DESCRIPTION:
+--      Although the ancestor type is abstract and has abstract primitive
+--      subprograms, these subprograms, when inherited by a formal nonabstract
+--      derived type, are not abstract, since the formal derived type is a
+--      nonabstract private extension.  
+--
+--      Thus, derivatives of the formal derived type need not be abstract,
+--      and both the formal derived type and its derivatives are considered
+--      nonabstract types.
+--
+--      This test verifies that the restrictions placed on abstract types do
+--      not apply to the formal derived type or its derivatives. Specifically,
+--      objects of, components of, allocators of, and nonabstract functions
+--      returning the formal derived type or its derivatives are legal. In
+--      addition, the test verifies that a call within the instance to a
+--      primitive subprogram of the (abstract) ancestor type dispatches to
+--      the body corresponding to the tag of the actual parameter.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      23 Dec 94   SAIC    Deleted illegal extension aggregate.  Corrected
+--                          dispatching call. Editorial changes to commentary.
+--      05 Nov 95   SAIC    ACVC 2.0.1 fixes: Moved instantiation of CC51007_3
+--                          to library level.
+--      11 Aug 96   SAIC    ACVC 2.1: Added pragma Elaborate to context
+--                          clauses of CC51007_1 and CC51007_4.
+--
+--!
+
+package CC51007_0 is
+
+   Max_Length : constant := 10;
+   type Text is new String(1 .. Max_Length);
+
+   type Alert is abstract tagged record              -- Root type of class
+      Message : Text := (others => '*');             -- (abstract).
+   end record;
+
+   procedure Handle (A: in out Alert) is abstract;   -- Abstract dispatching
+                                                     -- operation.
+
+end CC51007_0;
+
+-- No body for CC51007_0;
+
+
+     --===================================================================--
+
+
+with CC51007_0;
+
+with Ada.Calendar;
+pragma Elaborate (Ada.Calendar);
+
+package CC51007_1 is
+
+   type Low_Alert is new CC51007_0.Alert with record
+      Time_Of_Arrival : Ada.Calendar.Time := Ada.Calendar.Time_Of (1901, 8, 1);
+   end record;
+
+   procedure Handle (A: in out Low_Alert);           -- Overrides parent's
+                                                     -- implementation.
+   Low : Low_Alert;
+
+end CC51007_1;
+
+
+     --===================================================================--
+
+
+package body CC51007_1 is
+
+   procedure Handle (A: in out Low_Alert) is         -- Artificial for
+   begin                                             -- testing.
+      A.Time_Of_Arrival := Ada.Calendar.Time_Of (1984, 1, 1);
+      A.Message := "Low Alert!";
+   end Handle;
+
+end CC51007_1;
+
+
+     --===================================================================--
+
+
+with CC51007_1;
+package CC51007_2 is
+
+   type Person is (OOD, CO, CinC);
+
+   type Medium_Alert is new CC51007_1.Low_Alert with record
+      Action_Officer : Person := OOD;
+   end record;
+
+   procedure Handle (A: in out Medium_Alert);        -- Overrides parent's
+                                                     -- implementation.
+   Med : Medium_Alert;
+
+end CC51007_2;
+
+
+     --===================================================================--
+
+
+with Ada.Calendar;
+package body CC51007_2 is
+
+   procedure Handle (A: in out Medium_Alert) is      -- Artificial for
+   begin                                             -- testing.
+      A.Action_Officer := CO;
+      A.Time_Of_Arrival := Ada.Calendar.Time_Of (2001, 1, 1);
+      A.Message := "Med Alert!";
+   end Handle;
+
+end CC51007_2;
+
+
+     --===================================================================--
+
+
+with CC51007_0;
+generic
+   type Alert_Type is new CC51007_0.Alert with private;
+   Initial_State : in Alert_Type;
+package CC51007_3 is
+
+   function Clear_Message (A: Alert_Type)                -- Function returning
+     return Alert_Type;                                  -- formal type.
+
+
+   Max_Note : Natural := 10;
+   type Note is new String (1 .. Max_Note);
+
+   type Extended_Alert is new Alert_Type with record
+      Addendum : Note := (others => '*');
+   end record;
+
+   -- In instance, inherits version of Handle from
+   -- actual corresponding to formal type.
+
+   function Annotate_Alert (A: in Alert_Type'Class)      -- Function returning
+     return Extended_Alert;                              -- derived type.
+
+
+   Init_Ext_Alert : constant Extended_Alert     :=       -- Object declaration.
+     (Initial_State with Addendum => "----------");      -- Aggregate.
+
+
+   type Alert_Type_Ptr is access constant Alert_Type;
+   type Ext_Alert_Ptr  is access          Extended_Alert;
+
+   Init_Alert_Ptr     : Alert_Type_Ptr := 
+     new Alert_Type'(Initial_State);                        -- Allocator.
+
+   Init_Ext_Alert_Ptr : Ext_Alert_Ptr  :=
+     new Extended_Alert'(Init_Ext_Alert);                -- Allocator.
+
+
+   type Alert_Pair is record
+      A  : Alert_Type;                                   -- Component.
+      EA : Extended_Alert;                               -- Component.
+   end record;
+
+end CC51007_3;
+
+
+     --===================================================================--
+
+
+package body CC51007_3 is
+
+   function Clear_Message (A: Alert_Type) return Alert_Type is
+      Temp : Alert_Type := A;                       -- Object declaration.
+   begin
+      Temp.Message := (others => '-');
+      return Temp;
+   end Clear_Message;
+
+   function Annotate_Alert (A: in Alert_Type'Class) return Extended_Alert is
+      Temp : Alert_Type'Class := A;
+   begin
+      Handle (Temp);                                -- Dispatching call to
+                                                    -- operation of ancestor.
+      return (Alert_Type(Temp) with Addendum => "No comment");
+   end Annotate_Alert;
+
+end CC51007_3;
+
+
+     --===================================================================--
+
+
+with CC51007_1;
+
+with CC51007_3;
+pragma Elaborate (CC51007_3);
+
+package CC51007_4 is new CC51007_3 (CC51007_1.Low_Alert, CC51007_1.Low);
+
+
+     --===================================================================--
+
+
+with CC51007_1;
+with CC51007_2;
+with CC51007_3;
+with CC51007_4;
+
+with Ada.Calendar;
+with Report;
+procedure CC51007 is
+
+   package Alert_Support renames CC51007_4;
+
+   Ext : Alert_Support.Extended_Alert;
+
+   TC_Result       : Alert_Support.Extended_Alert;
+
+   TC_Low_Expected : constant Alert_Support.Extended_Alert :=
+                       (Time_Of_Arrival => Ada.Calendar.Time_Of (1984, 1, 1),
+                        Message         => "Low Alert!",
+                        Addendum        => "No comment");
+
+   TC_Med_Expected : constant Alert_Support.Extended_Alert :=
+                       (Time_Of_Arrival => Ada.Calendar.Time_Of (2001, 1, 1),
+                        Message         => "Med Alert!",
+                        Addendum        => "No comment");
+
+   TC_Ext_Expected : constant Alert_Support.Extended_Alert := TC_Low_Expected;
+
+
+   use type Alert_Support.Extended_Alert;
+
+begin
+   Report.Test ("CC51007", "Check that, for a generic formal derived type "  &
+                "whose ancestor type has abstract primitive subprograms, "   &
+                "neither the formal derived type nor its descendants need "  &
+                "be abstract, and that objects of, components of, "          &
+                "allocators of, aggregates of, and nonabstract functions "   &
+                "returning these types are legal. Check that calls to the "  &
+                "abstract primitive subprograms of the ancestor dispatch "   &
+                "to the bodies corresponding to the tag of the actual "      &
+                "parameters");
+
+
+   TC_Result := Alert_Support.Annotate_Alert (CC51007_1.Low);  -- Dispatching
+                                                               -- call.
+   if TC_Result /= TC_Low_Expected then
+      Report.Failed ("Wrong results from dispatching call (Low_Alert)");
+   end if;
+
+
+   TC_Result := Alert_Support.Annotate_Alert (CC51007_2.Med);  -- Dispatching
+                                                               -- call.
+   if TC_Result /= TC_Med_Expected then
+      Report.Failed ("Wrong results from dispatching call (Medium_Alert)");
+   end if;
+
+
+   TC_Result := Alert_Support.Annotate_Alert (Ext);   -- Results in dispatching
+                                                      -- call.
+   if TC_Result /= TC_Ext_Expected then
+      Report.Failed ("Wrong results from dispatching call (Extended_Alert)");
+   end if;
+
+
+   Report.Result;
+end CC51007;

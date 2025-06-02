@@ -31,6 +31,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Thread-Local::        Per-thread variables.
 * OpenMP::              Multiprocessing extensions.
 * OpenACC::             Extensions for offloading code to accelerator devices.
+* _Countof::            The number of elements of arrays.
 * Inline::              Defining inline functions (as fast as macros).
 * Volatiles::           What constitutes an access to a volatile object.
 * Using Assembly Language with C:: Instructions and extensions for interfacing C with assembler.
@@ -6684,23 +6685,10 @@ Enable/disable the generation of the USER_MSR instructions.
 Enable/disable the generation of the APX features, including
 EGPR, PUSH2POP2, NDD and PPX.
 
-@cindex @code{target("avx10.1-256")} function attribute, x86
-@item avx10.1-256
-@itemx no-avx10.1-256
-Enable the generation of the AVX10.1 instructions with 256 bit support.
-Disable the generation of the AVX10.1 instructions.
-
 @cindex @code{target("avx10.1")} function attribute, x86
 @item avx10.1
 @itemx no-avx10.1
-Enable the generation of the AVX10.1 instructions with 512 bit support.
-Disable the generation of the AVX10.1 instructions.
-
-@cindex @code{target("avx10.1-512")} function attribute, x86
-@item avx10.1-512
-@itemx no-avx10.1-512
-Enable the generation of the AVX10.1 instructions with 512 bit support.
-Disable the generation of the AVX10.1 instructions.
+Enable/Disable the generation of the AVX10.1 instructions.
 
 @cindex @code{target("avx10.2")} function attribute, x86
 @item avx10.2
@@ -7336,7 +7324,7 @@ truncate the copy without appending the terminating @code{NUL} character.
 Using the attribute makes it possible to suppress the warning.  However,
 when the array is declared with the attribute the call to @code{strlen} is
 diagnosed because when the array doesn't contain a @code{NUL}-terminated
-string the call is undefined.  To copy, compare, of search non-string
+string the call is undefined.  To copy, compare, or search non-string
 character arrays use the @code{memcpy}, @code{memcmp}, @code{memchr},
 and other functions that operate on arrays of bytes.  In addition,
 calling @code{strnlen} and @code{strndup} with such arrays is safe
@@ -10705,6 +10693,36 @@ library.
 
 @xref{OpenMP and OpenACC Options}, for additional options useful with
 @option{-fopenacc}.
+
+@node _Countof
+@section Determining the Number of Elements of Arrays
+@cindex _Countof
+@cindex number of elements
+
+The keyword @code{_Countof} determines
+the number of elements of an array operand.
+Its syntax is similar to @code{sizeof}.
+The operand must be
+a parenthesized complete array type name
+or an expression of such a type.
+For example:
+
+@smallexample
+int a[n];
+_Countof (a);  // returns n
+_Countof (int [7][3]);  // returns 7
+@end smallexample
+
+The result of this operator is an integer constant expression,
+unless the array has a variable number of elements.
+The operand is only evaluated
+if the array has a variable number of elements.
+For example:
+
+@smallexample
+_Countof (int [7][n++]);  // integer constant expression
+_Countof (int [n++][7]);  // run-time value; n++ is evaluated
+@end smallexample
 
 @node Inline
 @section An Inline Function is As Fast As a Macro

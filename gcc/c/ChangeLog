@@ -1,3 +1,104 @@
+2025-06-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120380
+	* c-objc-common.cc (get_aka_type): Ignore attributes for tagged types.
+
+2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/120354
+	* c-decl.cc (finish_struct): Or the results for TYPE_INCLUDES_FLEXARRAY.
+
+2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/120353
+	* c-decl.cc (finish_struct): Copy TYPE_INCLUDES_FLEXARRAY marking
+	to all the variant types of the current structure type.
+
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+
+	* c-decl.cc (c_omp_mapper_id, c_omp_mapper_decl, c_omp_mapper_lookup,
+	c_omp_extract_mapper_directive, c_omp_map_array_section,
+	c_omp_scan_mapper_bindings_r, c_omp_scan_mapper_bindings): New
+	functions.
+	* c-objc-common.h (LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES,
+	LANG_HOOKS_OMP_MAPPER_LOOKUP, LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE,
+	LANG_HOOKS_OMP_MAP_ARRAY_SECTION): Define langhooks for C.
+	* c-parser.cc (c_parser_omp_clause_map): Add declare_mapper_p
+	parameter; handle mapper modifier.
+	(c_parser_omp_all_clauses): Update call to c_parser_omp_clause_map.
+	(c_parser_omp_target): Instantiate explicit mappers and record bindings
+	for implicit mappers.
+	(c_parser_omp_declare_mapper): Parse "declare mapper" directives.
+	(c_parser_omp_declare): Support "declare mapper".
+	(c_parser_omp_declare_reduction): Use inform not error_at.
+	* c-tree.h (c_omp_finish_mapper_clauses, c_omp_mapper_lookup,
+	c_omp_extract_mapper_directive, c_omp_map_array_section,
+	c_omp_mapper_id, c_omp_mapper_decl, c_omp_scan_mapper_bindings,
+	c_omp_instantiate_mappers): Add prototypes.
+	* c-typeck.cc (c_finish_omp_clauses): Handle GOMP_MAP_PUSH_MAPPER_NAME
+	and GOMP_MAP_POP_MAPPER_NAME.
+	(c_omp_finish_mapper_clauses): New function (langhook).
+
+2025-05-30  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120381
+	* c-typeck.cc (composite_type_internal): Stop recursion for
+	swapped pairs.
+
+2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-parser.cc (c_parser_skip_to_closing_brace): New, copied from
+	the equivalent function in the C++ front end.
+	(c_parser_skip_to_end_of_block_or_statement): Pass false to
+	the error flag.
+	(c_parser_omp_context_selector): Immediately return error_mark_node
+	after giving an error that the integer trait property is invalid,
+	similarly to C++ front end.
+	(c_parser_omp_context_selector_specification): Likewise handle
+	error return from c_parser_omp_context_selector similarly to C++.
+	(c_parser_omp_metadirective): Do not call
+	c_parser_skip_to_end_of_block_or_statement after an error.
+
+2025-05-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/120180
+	* c-parser.cc (c_parser_omp_metadirective): Only consume the
+	token if it is the expected close paren.
+
+2025-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117025
+	* c-parser.cc (c_parser_sizeof_or_countof_expression): Use
+	C2Y rather than C23 in pedwarn_c23.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/117025
+	* c-parser.cc (c_parser_sizeof_or_countof_expression):
+	Add -Wpedantic diagnostic for _Countof in <= C23 mode.
+
+2025-05-27  Alejandro Colomar  <alx@kernel.org>
+	    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117025
+	* c-tree.h (in_countof): Add global variable declaration.
+	(c_expr_countof_expr): Add function prototype.
+	(c_expr_countof_type): Add function prototype.
+	* c-decl.cc (start_struct, finish_struct): Add support for
+	_Countof.
+	(start_enum, finish_enum): Add support for _Countof.
+	* c-parser.cc (c_parser_sizeof_expression): New macro.
+	(c_parser_countof_expression): New macro.
+	(c_parser_sizeof_or_countof_expression): Rename function and add
+	support for _Countof.
+	(c_parser_unary_expression): Add RID_COUNTOF entry.
+	* c-typeck.cc (in_countof): Add global variable.
+	(build_external_ref): Add support for _Countof.
+	(record_maybe_used_decl): Add support for _Countof.
+	(pop_maybe_used): Add support for _Countof.
+	(is_top_array_vla): New function.
+	(c_expr_countof_expr, c_expr_countof_type): New functions.
+
 2025-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/120057

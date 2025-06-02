@@ -87,6 +87,8 @@ VAR
    LineDirectives,               (* Should compiler understand preprocessor  *)
                                  (* # linenumber "filename" markers?         *)
    StrictTypeChecking,           (* -fm2-strict-type experimental checker.   *)
+   StrictTypeAssignment,         (* -fm2-strict-assignment.                  *)
+   StrictTypeReason,             (* -fm2-strict-reason.                      *)
    CPreProcessor,                (* Must we run the cpp on the source?       *)
    Xcode,                        (* Should errors follow Xcode format?       *)
    ExtendedOpaque,               (* Do we allow non pointer opaque types?    *)
@@ -753,6 +755,20 @@ PROCEDURE SetUnusedParameterChecking (value: BOOLEAN) ;
 *)
 
 PROCEDURE SetStrictTypeChecking (value: BOOLEAN) ;
+
+
+(*
+   SetStrictTypeAssignment - assigns the StrictTypeAssignment flag to value.
+*)
+
+PROCEDURE SetStrictTypeAssignment (value: BOOLEAN) ;
+
+
+(*
+   SetStrictTypeReason - assigns the StrictTypeReason flag to value.
+*)
+
+PROCEDURE SetStrictTypeReason (value: BOOLEAN) ;
 
 
 (*

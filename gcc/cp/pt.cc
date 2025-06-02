@@ -11378,6 +11378,7 @@ limit_bad_template_recursion (tree decl)
 static int tinst_depth;
 extern int max_tinst_depth;
 int depth_reached;
+int tinst_dump_id;
 
 static GTY(()) struct tinst_level *last_error_tinst_level;
 
@@ -11430,6 +11431,40 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
   set_refcount_ptr (new_level->next, current_tinst_level);
   set_refcount_ptr (current_tinst_level, new_level);
 
+  if (cxx_dump_pretty_printer pp {tinst_dump_id})
+    {
+#if __GNUC__ >= 10
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+      bool list_p = new_level->list_p ();
+      if (list_p && !pp.has_flag (TDF_DETAILS))
+	/* Skip non-instantiations unless -details.  */;
+      else
+	{
+	  if (tinst_depth == 0)
+	    pp_newline (&pp);
+	  if (loc && pp.has_flag (TDF_LINENO))
+	    {
+	      for (int i = 0; i < tinst_depth; ++i)
+		pp_space (&pp);
+	      const expanded_location el = expand_location (loc);
+	      pp_printf (&pp, "%s:%d:%d", el.file, el.line, el.column);
+	      pp_newline (&pp);
+	    }
+	  for (int i = 0; i < tinst_depth; ++i)
+	    pp_space (&pp);
+	  if (list_p)
+	    pp_printf (&pp, "S %S", new_level->get_node ());
+	  else
+	    pp_printf (&pp, "I %D", tldcl);
+	  pp_newline (&pp);
+	}
+#if __GNUC__ >= 10
+#pragma GCC diagnostic pop
+#endif
+    }
+
   ++tinst_depth;
   if (GATHER_STATISTICS && (tinst_depth > depth_reached))
     depth_reached = tinst_depth;
@@ -11481,6 +11516,20 @@ pop_tinst_level (void)
   --tinst_depth;
 }
 
+/* True if the instantiation represented by LEVEL is complete.  */
+
+static bool
+tinst_complete_p (struct tinst_level *level)
+{
+  gcc_assert (!level->list_p ());
+  tree node = level->get_node ();
+  if (TYPE_P (node))
+    return COMPLETE_TYPE_P (node);
+  else
+    return (DECL_TEMPLATE_INSTANTIATED (node)
+	    || DECL_TEMPLATE_SPECIALIZATION (node));
+}
+
 /* We're instantiating a deferred template; restore the template
    instantiation context in which the instantiation was requested, which
    is one step out from LEVEL.  Return the corresponding DECL or TYPE.  */
@@ -11498,6 +11547,38 @@ reopen_tinst_level (struct tinst_level *level)
   pop_tinst_level ();
   if (current_tinst_level && !current_tinst_level->had_errors)
     current_tinst_level->errors = errorcount+sorrycount;
+
+  if (cxx_dump_pretty_printer pp {tinst_dump_id})
+    {
+#if __GNUC__ >= 10
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+      /* Dump the reopened instantiation context.  */
+      t = current_tinst_level;
+      if (!pp.has_flag (TDF_DETAILS))
+	/* Skip non-instantiations unless -details.  */
+	while (t && t->list_p ())
+	  t = t->next;
+      if (t)
+	{
+	  static tree last_ctx = NULL_TREE;
+	  tree ctx = t->get_node ();
+	  if (ctx != last_ctx)
+	    {
+	      last_ctx = ctx;
+	      pp_newline (&pp);
+	      if (t->list_p ())
+		pp_printf (&pp, "RS %S", ctx);
+	      else
+		pp_printf (&pp, "RI %D", ctx);
+	      pp_newline (&pp);
+	    }
+	}
+#if __GNUC__ >= 10
+#pragma GCC diagnostic pop
+#endif
+    }
 
   tree decl = level->maybe_get_node ();
   if (decl && modules_p ())
@@ -15934,7 +16015,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
 		  = remove_attribute ("visibility", DECL_ATTRIBUTES (r));
 	      }
 	    determine_visibility (r);
-	    if ((!local_p || TREE_STATIC (t)) && DECL_SECTION_NAME (t))
+	    if ((!local_p || TREE_STATIC (t))
+		&& !(flag_openmp && DECL_LANG_SPECIFIC (t)
+		     && DECL_OMP_DECLARE_MAPPER_P (t))
+		&& DECL_SECTION_NAME (t))
 	      set_decl_section_name (r, t);
 	  }
 
@@ -15985,6 +16069,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
 		&& dependent_type_p (TREE_TYPE (r)))
 	      SET_TYPE_STRUCTURAL_EQUALITY (TREE_TYPE (r));
 	  }
+
+	if (flag_openmp
+	    && VAR_P (t)
+	    && DECL_LANG_SPECIFIC (t)
+	    && DECL_OMP_DECLARE_MAPPER_P (t)
+	    && strchr (IDENTIFIER_POINTER (DECL_NAME (t)), '~') == NULL)
+	  DECL_NAME (r) = omp_mapper_id (DECL_NAME (t), TREE_TYPE (r));
 
 	layout_decl (r, 0);
       }
@@ -18258,8 +18349,10 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
     }
 
   new_clauses = nreverse (new_clauses);
-  if (ort != C_ORT_OMP_DECLARE_SIMD)
+  if (ort != C_ORT_OMP_DECLARE_SIMD && ort != C_ORT_OMP_DECLARE_MAPPER)
     {
+      if (ort == C_ORT_OMP_TARGET)
+	new_clauses = c_omp_instantiate_mappers (new_clauses);
       new_clauses = finish_omp_clauses (new_clauses, ort);
       if (linear_no_step)
 	for (nc = new_clauses; nc; nc = OMP_CLAUSE_CHAIN (nc))
@@ -18313,7 +18406,9 @@ tsubst_omp_context_selector (tree ctx, tree args, tsubst_flags_t complain,
 		}
 	    }
 
-	  switch (omp_ts_map[OMP_TS_CODE (sel)].tp_type)
+	  enum omp_tp_type property_kind
+	    = omp_ts_map[OMP_TS_CODE (sel)].tp_type;
+	  switch (property_kind)
 	      {
 	      case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
 	      case OMP_TRAIT_PROPERTY_BOOL_EXPR:
@@ -18321,12 +18416,26 @@ tsubst_omp_context_selector (tree ctx, tree args, tsubst_flags_t complain,
 				 args, complain, in_decl);
 		t = fold_non_dependent_expr (t);
 		if (!value_dependent_expression_p (t)
-		    && !type_dependent_expression_p (t)
-		    && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
-		  error_at (cp_expr_loc_or_input_loc (t),
-			    "property must be integer expression");
-		else
-		  properties = make_trait_property (NULL_TREE, t, NULL_TREE);
+		    && !type_dependent_expression_p (t))
+		  {
+		    if (property_kind == OMP_TRAIT_PROPERTY_BOOL_EXPR)
+		      t = maybe_convert_cond (t);
+		    else
+		      {
+			t = convert_from_reference (t);
+			if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+			  {
+			    error_at (cp_expr_loc_or_input_loc (t),
+				      "property must be integer expression");
+			    t = error_mark_node;
+			  }
+		      }
+		  }
+		if (t != error_mark_node
+		    && !processing_template_decl
+		    && TREE_CODE (t) != CLEANUP_POINT_EXPR)
+		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		properties = make_trait_property (NULL_TREE, t, NULL_TREE);
 		break;
 	      case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
 		if (OMP_TS_CODE (sel) == OMP_TRAIT_CONSTRUCT_SIMD)
@@ -19979,6 +20088,22 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	break;
       }
 
+    case OMP_DECLARE_MAPPER:
+      {
+	t = copy_node (t);
+
+	tree decl = OMP_DECLARE_MAPPER_DECL (t);
+	decl = tsubst (decl, args, complain, in_decl);
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree clauses = OMP_DECLARE_MAPPER_CLAUSES (t);
+	clauses = tsubst_omp_clauses (clauses, C_ORT_OMP_DECLARE_MAPPER, args,
+				      complain, in_decl);
+	TREE_TYPE (t) = type;
+	OMP_DECLARE_MAPPER_DECL (t) = decl;
+	OMP_DECLARE_MAPPER_CLAUSES (t) = clauses;
+	RETURN (t);
+      }
+
     case TRANSACTION_EXPR:
       {
 	int flags = 0;
@@ -21036,6 +21161,23 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      RETURN (error_mark_node);
 	  }
 	RETURN (build_omp_array_section (EXPR_LOCATION (t), op0, op1, op2));
+      }
+
+    case OMP_DECLARE_MAPPER:
+      {
+	t = copy_node (t);
+
+	tree decl = OMP_DECLARE_MAPPER_DECL (t);
+	DECL_OMP_DECLARE_MAPPER_P (decl) = 1;
+	decl = tsubst (decl, args, complain, in_decl);
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree clauses = OMP_DECLARE_MAPPER_CLAUSES (t);
+	clauses = tsubst_omp_clauses (clauses, C_ORT_OMP_DECLARE_MAPPER, args,
+				      complain, in_decl);
+	TREE_TYPE (t) = type;
+	OMP_DECLARE_MAPPER_DECL (t) = decl;
+	OMP_DECLARE_MAPPER_CLAUSES (t) = clauses;
+	RETURN (t);
       }
 
     case SIZEOF_EXPR:
@@ -27989,7 +28131,9 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
       || (external_p && VAR_P (d))
       /* Handle here a deleted function too, avoid generating
 	 its body (c++/61080).  */
-      || deleted_p)
+      || deleted_p
+      /* We need the initializer for an OpenMP declare mapper.  */
+      || (VAR_P (d) && DECL_LANG_SPECIFIC (d) && DECL_OMP_DECLARE_MAPPER_P (d)))
     {
       /* The definition of the static data member is now required so
 	 we must substitute the initializer.  */
@@ -28102,14 +28246,16 @@ instantiate_pending_templates (int retries)
       reconsider = 0;
       while (*t)
 	{
-	  tree instantiation = reopen_tinst_level ((*t)->tinst);
-	  bool complete = false;
+	  struct tinst_level *tinst = (*t)->tinst;
+	  bool complete = tinst_complete_p (tinst);
 
-	  if (limit_bad_template_recursion (instantiation))
-	    /* Do nothing.  */;
-	  else if (TYPE_P (instantiation))
+	  if (!complete)
 	    {
-	      if (!COMPLETE_TYPE_P (instantiation))
+	      tree instantiation = reopen_tinst_level (tinst);
+
+	      if (limit_bad_template_recursion (instantiation))
+		/* Do nothing.  */;
+	      else if (TYPE_P (instantiation))
 		{
 		  instantiate_class_template (instantiation);
 		  if (CLASSTYPE_TEMPLATE_INSTANTIATION (instantiation))
@@ -28126,13 +28272,7 @@ instantiate_pending_templates (int retries)
 		  if (COMPLETE_TYPE_P (instantiation))
 		    reconsider = 1;
 		}
-
-	      complete = COMPLETE_TYPE_P (instantiation);
-	    }
-	  else
-	    {
-	      if (!DECL_TEMPLATE_SPECIALIZATION (instantiation)
-		  && !DECL_TEMPLATE_INSTANTIATED (instantiation))
+	      else
 		{
 		  instantiation
 		    = instantiate_decl (instantiation,
@@ -28142,8 +28282,10 @@ instantiate_pending_templates (int retries)
 		    reconsider = 1;
 		}
 
-	      complete = (DECL_TEMPLATE_SPECIALIZATION (instantiation)
-			  || DECL_TEMPLATE_INSTANTIATED (instantiation));
+	      complete = tinst_complete_p (tinst);
+
+	      tinst_depth = 0;
+	      set_refcount_ptr (current_tinst_level);
 	    }
 
 	  if (complete)
@@ -28160,8 +28302,6 @@ instantiate_pending_templates (int retries)
 	      last = *t;
 	      t = &(*t)->next;
 	    }
-	  tinst_depth = 0;
-	  set_refcount_ptr (current_tinst_level);
 	}
       last_pending_template = last;
     }

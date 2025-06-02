@@ -901,7 +901,8 @@
 
 (define_predicate "mem_noofs_operand"
   (and (match_code "mem")
-       (match_code "reg" "0")))
+       (match_code "reg" "0")
+       (match_operand 0 "memory_operand")))
 
 (define_predicate "call_insn_operand"
   (ior (and (match_code "symbol_ref")

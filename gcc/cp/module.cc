@@ -5724,9 +5724,13 @@ trees_out::core_bools (tree t, bits_out& bits)
 	   DECL_NOT_REALLY_EXTERN -> base.not_really_extern
 	     == that was a lie, it is here  */
 
-	/* decl_flag_1 is DECL_EXTERNAL. Things we emit here, might
-	   well be external from the POV of an importer.  */
 	bool is_external = t->decl_common.decl_flag_1;
+	/* maybe_emit_vtables relies on vtables being marked as
+	   DECL_EXTERNAL and DECL_NOT_REALLY_EXTERN before processing.  */
+	if (!is_external && VAR_P (t) && DECL_VTABLE_OR_VTT_P (t))
+	  is_external = true;
+	/* Things we emit here might well be external from the POV of an
+	   importer.  */
 	if (!is_external
 	    && VAR_OR_FUNCTION_DECL_P (t)
 	    && get_importer_interface (t) == importer_interface::external)
@@ -8083,18 +8087,37 @@ trees_in::install_entity (tree decl)
       gcc_checking_assert (!existed);
       slot = ident;
     }
-  else if (state->is_partition ())
+  else
     {
-      /* The decl is already in the entity map, but we see it again now from a
-	 partition: we want to overwrite if the original decl wasn't also from
-	 a (possibly different) partition.  Otherwise, for things like template
-	 instantiations, make_dependency might not realise that this is also
-	 provided from a partition and should be considered part of this module
-	 (and thus always emitted into the primary interface's CMI).  */
       unsigned *slot = entity_map->get (DECL_UID (decl));
-      module_state *imp = import_entity_module (*slot);
-      if (!imp->is_partition ())
-	*slot = ident;
+
+      /* The entity must be in the entity map already.  However, DECL may
+	 be the DECL_TEMPLATE_RESULT of an existing partial specialisation
+	 if we matched it while streaming another instantiation; in this
+	 case we already registered that TEMPLATE_DECL.  */
+      if (!slot)
+	{
+	  tree type = TREE_TYPE (decl);
+	  gcc_checking_assert (TREE_CODE (decl) == TYPE_DECL
+			       && CLASS_TYPE_P (type)
+			       && CLASSTYPE_TEMPLATE_SPECIALIZATION (type));
+	  slot = entity_map->get (DECL_UID (CLASSTYPE_TI_TEMPLATE (type)));
+	}
+      gcc_checking_assert (slot);
+
+      if (state->is_partition ())
+	{
+	  /* The decl is already in the entity map, but we see it again now
+	     from a partition: we want to overwrite if the original decl
+	     wasn't also from a (possibly different) partition.  Otherwise,
+	     for things like template instantiations, make_dependency might
+	     not realise that this is also provided from a partition and
+	     should be considered part of this module (and thus always
+	     emitted into the primary interface's CMI).  */
+	  module_state *imp = import_entity_module (*slot);
+	  if (!imp->is_partition ())
+	    *slot = ident;
+	}
     }
 
   return true;
@@ -10489,7 +10512,8 @@ trees_in::tree_node (bool is_use)
 	      res = lookup_field_ident (ctx, u ());
 
 	    if (!res
-		|| TREE_CODE (res) != FIELD_DECL
+		|| (TREE_CODE (res) != FIELD_DECL
+		    && TREE_CODE (res) != USING_DECL)
 		|| DECL_CONTEXT (res) != ctx)
 	      res = NULL_TREE;
 	  }
@@ -16841,10 +16865,14 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
   bytes_out sec (to);
   sec.begin ();
 
+  hash_map<tree, unsigned> ns_map;
+
   for (unsigned ix = 0; ix != num; ix++)
     {
       depset *b = spaces[ix];
       tree ns = b->get_entity ();
+
+      ns_map.put (ns, ix);
 
       /* This could be an anonymous namespace even for a named module,
 	 since we can still emit no-linkage decls.  */
@@ -16887,6 +16915,31 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 	}
     }
 
+  /* Now write exported using-directives, as a sequence of 1-origin indices in
+     the spaces array (not entity indices): First the using namespace, then the
+     used namespaces.  And then a zero terminating the list.  :: is
+     represented as index -1.  */
+  auto emit_one_ns = [&](unsigned ix, tree ns) {
+    for (auto udir: NAMESPACE_LEVEL (ns)->using_directives)
+      {
+	if (TREE_CODE (udir) != USING_DECL || !DECL_MODULE_EXPORT_P (udir))
+	  continue;
+	tree ns2 = USING_DECL_DECLS (udir);
+	dump() && dump ("Writing using-directive in %N for %N",
+			ns, ns2);
+	sec.u (ix);
+	sec.u (*ns_map.get (ns2) + 1);
+      }
+  };
+  emit_one_ns (-1, global_namespace);
+  for (unsigned ix = 0; ix != num; ix++)
+    {
+      depset *b = spaces[ix];
+      tree ns = b->get_entity ();
+      emit_one_ns (ix + 1, ns);
+    }
+  sec.u (0);
+
   sec.end (to, to->name (MOD_SNAME_PFX ".nms"), crc_p);
   dump.outdent ();
 }
@@ -16904,6 +16957,8 @@ module_state::read_namespaces (unsigned num)
 
   dump () && dump ("Reading namespaces");
   dump.indent ();
+
+  tree *ns_map = XALLOCAVEC (tree, num);
 
   for (unsigned ix = 0; ix != num; ix++)
     {
@@ -16966,6 +17021,8 @@ module_state::read_namespaces (unsigned num)
 	DECL_ATTRIBUTES (inner)
 	  = tree_cons (get_identifier ("abi_tag"), tags, DECL_ATTRIBUTES (inner));
 
+      ns_map[ix] = inner;
+
       /* Install the namespace.  */
       (*entity_ary)[entity_lwm + entity_index] = inner;
       if (DECL_MODULE_IMPORT_P (inner))
@@ -16980,6 +17037,44 @@ module_state::read_namespaces (unsigned num)
 	    *slot = entity_lwm + entity_index;
 	}
     }
+
+  /* Read the exported using-directives.  */
+  while (unsigned ix = sec.u ())
+    {
+      tree ns;
+      if (ix == (unsigned)-1)
+	ns = global_namespace;
+      else
+	{
+	  if (--ix >= num)
+	    {
+	      sec.set_overrun ();
+	      break;
+	    }
+	  ns = ns_map [ix];
+	}
+      unsigned ix2 = sec.u ();
+      if (--ix2 >= num)
+	{
+	  sec.set_overrun ();
+	  break;
+	}
+      tree ns2 = ns_map [ix2];
+      if (directness)
+	{
+	  dump() && dump ("Reading using-directive in %N for %N",
+			  ns, ns2);
+	  /* In an export import this will mark the using-directive as
+	     exported, so it will be emitted again.  */
+	  add_using_namespace (ns, ns2);
+	}
+      else
+	/* Ignore using-directives from indirect imports, we only want them
+	   from our own imports.  */
+	dump() && dump ("Ignoring using-directive in %N for %N",
+			ns, ns2);
+    }
+
   dump.outdent ();
   if (!sec.end (from ()))
     return false;

@@ -28,9 +28,9 @@
 #ifndef _AVX512BF16INTRIN_H_INCLUDED
 #define _AVX512BF16INTRIN_H_INCLUDED
 
-#if !defined (__AVX512BF16__) || defined (__EVEX512__)
+#if !defined (__AVX512BF16__)
 #pragma GCC push_options
-#pragma GCC target("avx512bf16,no-evex512")
+#pragma GCC target("avx512bf16")
 #define __DISABLE_AVX512BF16__
 #endif /* __AVX512BF16__ */
 
@@ -41,17 +41,6 @@ _mm_cvtsbh_ss (__bf16 __A)
 {
   return __builtin_ia32_cvtbf2sf (__A);
 }
-
-#ifdef __DISABLE_AVX512BF16__
-#undef __DISABLE_AVX512BF16__
-#pragma GCC pop_options
-#endif /* __DISABLE_AVX512BF16__ */
-
-#if !defined (__AVX512BF16__) || !defined (__EVEX512__)
-#pragma GCC push_options
-#pragma GCC target("avx512bf16,evex512")
-#define __DISABLE_AVX512BF16_512__
-#endif /* __AVX512BF16_512__ */
 
 /* Internal data types for implementing the intrinsics.  */
 typedef __bf16 __v32bf __attribute__ ((__vector_size__ (64)));
@@ -155,8 +144,8 @@ _mm512_mask_cvtpbh_ps (__m512 __S, __mmask16 __U, __m256bh __A)
 	 (__m512i)_mm512_cvtepi16_epi32 ((__m256i)__A), 16)));
 }
 
-#ifdef __DISABLE_AVX512BF16_512__
-#undef __DISABLE_AVX512BF16_512__
+#ifdef __DISABLE_AVX512BF16__
+#undef __DISABLE_AVX512BF16__
 #pragma GCC pop_options
 #endif /* __DISABLE_AVX512BF16_512__ */
 

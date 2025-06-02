@@ -58,7 +58,7 @@ FROM M2Debug IMPORT Assert ;
 FROM Indexing IMPORT Index, InitIndex, InBounds, PutIndice, GetIndice ;
 FROM Storage IMPORT ALLOCATE ;
 FROM M2ALU IMPORT PushIntegerTree, PushInt, ConvertToInt, Equ, Gre, Less, GreEqu ;
-FROM M2Options IMPORT VariantValueChecking, CaseEnumChecking, GetPIM ;
+FROM M2Options IMPORT VariantValueChecking, CaseEnumChecking, GetPIM, StrictTypeAssignment ;
 
 FROM M2Error IMPORT Error, InternalError, ErrorFormat0, ErrorFormat1, ErrorFormat2, FlushErrors,
                     GetAnnounceScope ;
@@ -91,7 +91,6 @@ FROM M2Check IMPORT ParameterTypeCompatible, ExpressionTypeCompatible, Assignmen
 
 FROM M2Base IMPORT Nil, IsRealType, GetBaseTypeMinMax,
                    Cardinal, Integer, ZType, IsComplexType,
-                   IsAssignmentCompatible,
                    IsExpressionCompatible,
                    IsParameterCompatible,
                    ExceptionAssign,
@@ -115,7 +114,9 @@ FROM M2CaseList IMPORT CaseBoundsResolved, OverlappingCaseBounds,
 TYPE
    TypeOfRange = (assignment, returnassignment, subrangeassignment,
                   inc, dec, incl, excl, shift, rotate,
-                  typeexpr, typeassign, typeparam, paramassign,
+                  typeindrx, typeexpr, typeassign, typeparam,
+                  typereturn,
+                  paramassign,
                   staticarraysubscript,
                   dynamicarraysubscript,
                   forloopbegin, forloopto, forloopend,
@@ -289,9 +290,10 @@ BEGIN
    excl                 : RETURN( ExceptionExcl ) |
    shift                : RETURN( ExceptionShift ) |
    rotate               : RETURN( ExceptionRotate ) |
-   typeassign           : InternalError ('not expecting this case value') |
-   typeparam            : InternalError ('not expecting this case value') |
-   typeexpr             : InternalError ('not expecting this case value') |
+   typeassign,
+   typeparam,
+   typeexpr,
+   typeindrx            : InternalError ('not expecting this case value') |
    paramassign          : RETURN( ExceptionParameterBounds ) |
    staticarraysubscript : RETURN( ExceptionStaticArray ) |
    dynamicarraysubscript: RETURN( ExceptionDynamicArray ) |
@@ -822,7 +824,7 @@ END InitRotateCheck ;
 
 
 (*
-   InitTypesAssignmentCheck - checks to see that the types of, d, and, e,
+   InitTypesAssignmentCheck - checks to see that the types of d and e
                               are assignment compatible.
 *)
 
@@ -834,6 +836,38 @@ BEGIN
    Assert (PutRangeNoLow (tokno, GetIndice (RangeIndex, r), typeassign, d, e) # NIL) ;
    RETURN r
 END InitTypesAssignmentCheck ;
+
+
+(*
+   InitTypesIndrXCheck - checks to see that the types of d and e
+                         are assignment compatible.  The type checking
+                         will dereference *e during the type check.
+                         d = *e.
+*)
+
+PROCEDURE InitTypesIndrXCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+VAR
+   r: CARDINAL ;
+BEGIN
+   r := InitRange () ;
+   Assert (PutRangeNoLow (tokno, GetIndice (RangeIndex, r), typeindrx, d, e) # NIL) ;
+   RETURN r
+END InitTypesIndrXCheck ;
+
+
+(*
+   InitTypesReturnTypeCheck - checks to see that the types of des and func
+                              are assignment compatible.
+*)
+
+PROCEDURE InitTypesReturnTypeCheck (tokno: CARDINAL; func, val: CARDINAL) : CARDINAL ;
+VAR
+   r: CARDINAL ;
+BEGIN
+   r := InitRange () ;
+   Assert (PutRangeNoLow (tokno, GetIndice (RangeIndex, r), typereturn, func, val) # NIL) ;
+   RETURN r
+END InitTypesReturnTypeCheck ;
 
 
 (*
@@ -1219,9 +1253,11 @@ BEGIN
       excl                 : RETURN( ExceptionExcl#NulSym ) |
       shift                : RETURN( ExceptionShift#NulSym ) |
       rotate               : RETURN( ExceptionRotate#NulSym ) |
-      typeassign           : RETURN( FALSE ) |
-      typeparam            : RETURN( FALSE ) |
-      typeexpr             : RETURN( FALSE ) |
+      typereturn,
+      typeassign,
+      typeparam,
+      typeexpr,
+      typeindrx            : RETURN( FALSE ) |
       paramassign          : RETURN( ExceptionParameterBounds#NulSym ) |
       staticarraysubscript : RETURN( ExceptionStaticArray#NulSym ) |
       dynamicarraysubscript: RETURN( ExceptionDynamicArray#NulSym ) |
@@ -1246,7 +1282,9 @@ END HandlerExists ;
 
 
 (*
-   FoldAssignment -
+   FoldAssignment - attempts to fold the range violation checks.
+                    It does not issue errors on type violations as that
+                    is performed by FoldTypeAssign.
 *)
 
 PROCEDURE FoldAssignment (tokenno: CARDINAL; q: CARDINAL; r: CARDINAL) ;
@@ -1259,7 +1297,7 @@ BEGIN
       TryDeclareConstant (exprtok, expr) ;
       IF desLowestType # NulSym
       THEN
-         IF AssignmentTypeCompatible (tokenno, "", des, expr)
+         IF AssignmentTypeCompatible (tokenno, "", des, expr, FALSE)
          THEN
             IF GccKnowsAbout (expr) AND IsConst (expr) AND
                GetMinMax (tokenno, desLowestType, min, max)
@@ -1275,6 +1313,8 @@ BEGIN
                END
             END
          ELSE
+            (* We do not issue an error if these types are incompatible here
+               as this is done by FoldTypeAssign.  *)
             SubQuad (q)
          END
       END
@@ -1757,21 +1797,94 @@ END FoldRotate ;
 
 
 (*
+   FoldTypeReturnFunc - checks to see that val can be returned from func.
+*)
+
+PROCEDURE FoldTypeReturnFunc (q: CARDINAL; tokenNo: CARDINAL; func, val: CARDINAL; r: CARDINAL) ;
+VAR
+   valType,
+   returnType: CARDINAL ;
+BEGIN
+   returnType := GetType (func) ;
+   IF returnType = NulSym
+   THEN
+      IF NOT reportedError (r)
+      THEN
+         MetaErrorsT2 (tokenNo,
+                       'procedure {%1Da} is not a procedure function',
+                       '{%2ad} cannot be returned from {%1Da}',
+                       func, val) ;
+         SubQuad(q)
+      END
+   ELSE
+      valType := val ;
+      IF IsVar (val) AND (GetMode (val) = LeftValue)
+      THEN
+         valType := GetType (val)
+      END ;
+      IF AssignmentTypeCompatible (tokenNo, "", returnType, valType, FALSE)
+      THEN
+         SubQuad (q)
+      ELSE
+         IF NOT reportedError (r)
+         THEN
+            MetaErrorsT2 (tokenNo,
+                          'the return type {%1Etad} used in procedure {%1Da}',
+                          'is incompatible with the returned expression {%1ad}}',
+                          func, val) ;
+            setReported (r) ;
+            FlushErrors
+         END
+      END
+   END
+END FoldTypeReturnFunc ;
+
+
+(*
    FoldTypeAssign -
 *)
 
 PROCEDURE FoldTypeAssign (q: CARDINAL; tokenNo: CARDINAL; des, expr: CARDINAL; r: CARDINAL) ;
+BEGIN
+   IF NOT reportedError (r)
+   THEN
+      IF AssignmentTypeCompatible (tokenNo,
+                                   'assignment designator {%1Ea} {%1ta:of type {%1ta}}' +
+                                   ' cannot be assigned with' +
+                                   ' {%2ad: a {%2td} {%2ad}}{!%2ad: {%2ad} of type {%2tad}}',
+                                   des, expr, TRUE)
+      THEN
+         SubQuad (q)
+      ELSE
+         setReported (r) ;
+         FlushErrors
+      END
+   END
+END FoldTypeAssign ;
+
+
+(*
+   FoldTypeIndrX - check to see that des = *expr is type compatible.
+*)
+
+PROCEDURE FoldTypeIndrX (q: CARDINAL; tokenNo: CARDINAL; des, expr: CARDINAL; r: CARDINAL) ;
 VAR
+   desType,
    exprType: CARDINAL ;
 BEGIN
-   IF IsProcedure(expr)
+   (* Need to skip over a variable or temporary in des and expr so
+      long as expr is not a procedure.  In the case of des = *expr,
+      both expr and des will be variables due to the property of
+      indirection.  *)
+   desType := GetType (des) ;
+   IF IsProcedure (expr)
    THEN
+      (* Must not GetType for a procedure as it gives the return type.  *)
       exprType := expr
    ELSE
-      exprType := GetType(expr)
+      exprType := GetType (expr)
    END ;
-
-   IF IsAssignmentCompatible (GetType(des), exprType)
+   IF AssignmentTypeCompatible (tokenNo, "", GetType (des), GetType (expr), FALSE)
    THEN
       SubQuad(q)
    ELSE
@@ -1785,14 +1898,16 @@ BEGIN
                           des, expr) ;
          ELSE
             MetaErrorT3 (tokenNo,
-                         'assignment designator {%1Ea} {%1ta:of type {%1ta}} {%1d:is a {%1d}} and expression {%2a} {%3ad:of type {%3ad}} are incompatible',
+                         'assignment designator {%1Ea} {%1ta:of type {%1ta}}' +
+                         ' {%1d:is a {%1d}} and expression {%2a} {%3ad:of type' +
+                         ' {%3ad}} are incompatible',
                          des, expr, exprType)
          END ;
          setReported (r) ;
          FlushErrors
       END
    END
-END FoldTypeAssign ;
+END FoldTypeIndrX ;
 
 
 (*
@@ -1859,35 +1974,90 @@ END FoldTypeExpr ;
 *)
 
 PROCEDURE CodeTypeAssign (tokenNo: CARDINAL; des, expr: CARDINAL; r: CARDINAL) ;
-VAR
-   exprType: CARDINAL ;
 BEGIN
-   IF IsProcedure(expr)
-   THEN
-      exprType := expr
-   ELSE
-      exprType := GetType(expr)
-   END ;
-   IF NOT IsAssignmentCompatible(GetType(des), exprType)
+   IF NOT AssignmentTypeCompatible (tokenNo, "", des, expr, FALSE)
    THEN
       IF NOT reportedError (r)
       THEN
-         IF IsProcedure(des)
+         MetaErrorT2 (tokenNo,
+                      'assignment designator {%1Ea} {%1ta:of type {%1ta}} {%1d:is a {%1d}} and expression {%2a} {%2tad:of type {%2tad}} are incompatible',
+                      des, expr)
+      END ;
+      setReported (r)
+   END
+END CodeTypeAssign ;
+
+
+(*
+   CodeTypeReturnFunc -
+*)
+
+PROCEDURE CodeTypeReturnFunc (tokenNo: CARDINAL; func, val: CARDINAL; r: CARDINAL) ;
+VAR
+   valType,
+   returnType: CARDINAL ;
+BEGIN
+   returnType := GetType (func) ;
+   IF returnType = NulSym
+   THEN
+      IF NOT reportedError (r)
+      THEN
+         MetaErrorsT2 (tokenNo,
+                       'procedure {%1Da} is not a procedure function',
+                       '{%2ad} cannot be returned from {%1Da}',
+                       func, val) ;
+      END
+   ELSE
+      valType := val ;
+      IF IsVar (val) AND (GetMode (val) = LeftValue)
+      THEN
+         valType := GetType (val)
+      END ;
+      IF NOT AssignmentTypeCompatible (tokenNo, "", returnType, valType, FALSE)
+      THEN
+         IF NOT reportedError (r)
          THEN
-            MetaErrorsT2(tokenNo,
-                         'the return type {%1Etad} declared in procedure {%1Da}',
-                         'is incompatible with the returned expression {%2EUa} {%2tad:of type {%2tad}}',
-                         des, expr) ;
+            MetaErrorsT2 (tokenNo,
+                          'the return type {%1Etad} used in procedure function {%1Da}',
+                          'is incompatible with the returned expression {%2EUa} {%2tad:of type {%2tad}}',
+                          func, val)
+         END
+      END
+   END
+END CodeTypeReturnFunc ;
+
+
+(*
+   CodeTypeIndrX - checks that des = *expr is type compatible and generates an error if they
+                   are not compatible.  It skips over the LValue type so that to allow
+                   the error messages to pick up the source variable name rather than
+                   a temporary name or vague name 'expression'.
+*)
+
+PROCEDURE CodeTypeIndrX (tokenNo: CARDINAL; des, expr: CARDINAL; r: CARDINAL) ;
+BEGIN
+   IF NOT AssignmentTypeCompatible (tokenNo, "", GetType (des), GetType (expr), FALSE)
+   THEN
+      IF NOT reportedError (r)
+      THEN
+         IF IsProcedure (des)
+         THEN
+            MetaErrorsT2 (tokenNo,
+                          'the return type {%1Etad} declared in procedure {%1Da}',
+                          'is incompatible with the returned expression {%2EUa} {%2tad:of type {%2tad}}',
+                          des, expr) ;
          ELSE
-            MetaErrorT2(tokenNo,
-                        'assignment designator {%1Ea} {%1ta:of type {%1ta}} {%1d:is a {%1d}} and expression {%2a} {%2tad:of type {%2tad}} are incompatible',
-                        des, expr)
+            MetaErrorT2 (tokenNo,
+                         'assignment designator {%1Ea} {%1ta:of type {%1ta}}' +
+                         ' {%1d:is a {%1d}} and expression {%2a}' +
+                         ' {%2tad:of type {%2tad}} are incompatible',
+                         des, expr)
          END ;
          setReported (r)
       END
       (* FlushErrors *)
    END
-END CodeTypeAssign ;
+END CodeTypeIndrX ;
 
 
 (*
@@ -1941,9 +2111,11 @@ BEGIN
       THEN
          CASE type OF
 
-         typeassign:  FoldTypeAssign(q, tokenNo, des, expr, r) |
-         typeparam:   FoldTypeParam(q, tokenNo, des, expr, procedure, paramNo, r) |
-         typeexpr:    FoldTypeExpr(q, tokenNo, des, expr, strict, isin, r)
+         typeassign:  FoldTypeAssign (q, tokenNo, des, expr, r) |
+         typeparam :  FoldTypeParam (q, tokenNo, des, expr, procedure, paramNo, r) |
+         typeexpr  :  FoldTypeExpr (q, tokenNo, des, expr, strict, isin, r) |
+         typeindrx :  FoldTypeIndrX (q, tokenNo, des, expr, r) |
+         typereturn:  FoldTypeReturnFunc (q, tokenNo, des, expr, r)
 
          ELSE
             InternalError ('not expecting to reach this point')
@@ -1974,9 +2146,11 @@ BEGIN
       THEN
          CASE type OF
 
-         typeassign:  CodeTypeAssign(tokenNo, des, expr, r) |
-         typeparam:   CodeTypeParam(tokenNo, des, expr, procedure, paramNo) |
-         typeexpr:    CodeTypeExpr(tokenNo, des, expr, strict, isin, r)
+         typeassign:  CodeTypeAssign (tokenNo, des, expr, r) |
+         typeparam :  CodeTypeParam (tokenNo, des, expr, procedure, paramNo) |
+         typeexpr  :  CodeTypeExpr (tokenNo, des, expr, strict, isin, r) |
+         typeindrx :  CodeTypeIndrX (tokenNo, des, expr, r) |
+         typereturn:  CodeTypeReturnFunc (tokenNo, des, expr, r)
 
          ELSE
             InternalError ('not expecting to reach this point')
@@ -2005,7 +2179,7 @@ BEGIN
    success := TRUE ;
    WITH p^ DO
       combinedtok := MakeVirtual2Tok (destok, exprtok) ;
-      IF NOT AssignmentTypeCompatible (combinedtok, "", des, expr)
+      IF NOT AssignmentTypeCompatible (combinedtok, "", des, expr, TRUE)
       THEN
          MetaErrorT2 (combinedtok,
                       'type incompatibility between {%1Et} and {%2t} detected during the assignment of the designator {%1a} to the first expression {%2a} in the {%kFOR} loop',
@@ -2419,9 +2593,11 @@ BEGIN
       excl                 :  FoldExcl(tokenno, quad, range) |
       shift                :  FoldShift(tokenno, quad, range) |
       rotate               :  FoldRotate(tokenno, quad, range) |
-      typeassign           :  FoldTypeCheck(tokenno, quad, range) |
-      typeparam            :  FoldTypeCheck(tokenno, quad, range) |
-      typeexpr             :  FoldTypeCheck(tokenno, quad, range) |
+      typereturn,
+      typeassign,
+      typeparam,
+      typeexpr,
+      typeindrx            :  FoldTypeCheck (tokenno, quad, range) |
       paramassign          :  FoldParameterAssign(tokenno, quad, range) |
       staticarraysubscript :  FoldStaticArraySubscript(tokenno, quad, range) |
       dynamicarraysubscript:  FoldDynamicArraySubscript(tokenno, quad, range) |
@@ -3557,6 +3733,8 @@ BEGIN
       typeassign           :  s := NIL |
       typeparam            :  s := NIL |
       typeexpr             :  s := NIL |
+      typeindrx            :  s := InitString ('assignment between designator {%1ad} and {%2ad} is incompatible') |
+      typereturn           :  s := InitString ('the value {%2ad} returned from procedure function {%1a} is type incompatible, expecting {%1tad} rather than a {%2tad}') |
       paramassign          :  s := InitString('if this call is executed then the actual parameter {%2Wa} will be out of range of the {%3N} formal parameter {%1a}') |
       staticarraysubscript :  s := InitString('if this access to the static array {%1Wa:{%2a:{%1a}[{%2a}]}} is ever made then the index will be out of bounds in the {%3N} array subscript') |
       dynamicarraysubscript:  s := InitString('if this access to the dynamic array {%1Wa:{%2a:{%1a}[{%2a}]}} is ever made then the index will be out of bounds in the {%3N} array subscript') |
@@ -3605,9 +3783,11 @@ BEGIN
       excl                 :  CodeInclExcl (tokenNo, r, function, message) |
       shift,
       rotate               :  CodeShiftRotate (tokenNo, r, function, message) |
-      typeassign           :  CodeTypeCheck (tokenNo, r) |
-      typeparam            :  CodeTypeCheck (tokenNo, r) |
-      typeexpr             :  CodeTypeCheck (tokenNo, r) |
+      typeassign,
+      typeparam,
+      typeexpr,
+      typeindrx,
+      typereturn           :  CodeTypeCheck (tokenNo, r) |
       staticarraysubscript :  CodeStaticArraySubscript (tokenNo, r, function, message) |
       dynamicarraysubscript:  CodeDynamicArraySubscript (tokenNo, r, function, message) |
       forloopbegin         :  CodeForLoopBegin (tokenNo, r, function, message) |
@@ -3743,6 +3923,8 @@ BEGIN
       rotate               :  WriteString('rotate(') ; WriteOperand(des) ; WriteString(', ') ; WriteOperand(expr) |
       typeexpr             :  WriteString('expr compatible (') ; WriteOperand(des) ; WriteString(', ') ; WriteOperand(expr) |
       typeassign           :  WriteString('assignment compatible (') ; WriteOperand(des) ; WriteString(', ') ; WriteOperand(expr) |
+      typeindrx            :  WriteString('indrx compatible (') ; WriteOperand(des) ; WriteString(', ') ; WriteOperand(expr) |
+      typereturn           :  WriteString('return compatible (') ; WriteOperand(des) ; WriteString(', ') ; WriteOperand(expr) |
       typeparam            :  WriteString('parameter compatible (') ; WriteOperand(des) ; WriteString(', ') ; WriteOperand(expr) |
       paramassign          :  WriteString('parameter range (') ; WriteOperand(des) ; WriteString(', ') ; WriteOperand(expr) |
       staticarraysubscript :  WriteString('staticarraysubscript(') ; WriteOperand(des) ; WriteString(', ') ; WriteOperand(expr) |

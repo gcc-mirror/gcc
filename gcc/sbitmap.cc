@@ -326,11 +326,13 @@ bitmap_set_range (sbitmap bmap, unsigned int start, unsigned int count)
   bmap->elms[start_word] |= mask;
 }
 
-/* Return TRUE if any bit between START and END inclusive is set within
-   the simple bitmap BMAP.  Return FALSE otherwise.  */
+/* Helper function for bitmap_any_bit_in_range_p and
+   bitmap_all_bits_in_range_p.  If ANY_INVERTED is true, the function checks
+   if any bit in the range is unset.  */
 
-bool
-bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start, unsigned int end)
+static bool
+bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start,
+		       unsigned int end, bool any_inverted)
 {
   gcc_checking_assert (start <= end);
   bitmap_check_index (bmap, end);
@@ -350,7 +352,8 @@ bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start, unsigned int end)
 
       SBITMAP_ELT_TYPE low_mask = ((SBITMAP_ELT_TYPE)1 << start_bitno) - 1;
       SBITMAP_ELT_TYPE mask = high_mask - low_mask;
-      if (bmap->elms[start_word] & mask)
+      const SBITMAP_ELT_TYPE expected_partial = any_inverted ? mask : 0;
+      if ((bmap->elms[start_word] & mask) != expected_partial)
 	return true;
       start_word++;
     }
@@ -360,9 +363,10 @@ bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start, unsigned int end)
 
   /* Now test words at a time until we hit a partial word.  */
   unsigned int nwords = (end_word - start_word);
+  const SBITMAP_ELT_TYPE expected = any_inverted ? ~(SBITMAP_ELT_TYPE)0 : 0;
   while (nwords)
     {
-      if (bmap->elms[start_word])
+      if (bmap->elms[start_word] != expected)
 	return true;
       start_word++;
       nwords--;
@@ -372,7 +376,28 @@ bitmap_bit_in_range_p (const_sbitmap bmap, unsigned int start, unsigned int end)
   SBITMAP_ELT_TYPE mask = ~(SBITMAP_ELT_TYPE)0;
   if (end_bitno + 1 < SBITMAP_ELT_BITS)
     mask = ((SBITMAP_ELT_TYPE)1 << (end_bitno + 1)) - 1;
-  return (bmap->elms[start_word] & mask) != 0;
+  const SBITMAP_ELT_TYPE expected_partial = any_inverted ? mask : 0;
+  return (bmap->elms[start_word] & mask) != expected_partial;
+}
+
+/* Return TRUE if all bits between START and END inclusive are set within
+   the simple bitmap BMAP.  Return FALSE otherwise.  */
+
+bool
+bitmap_all_bits_in_range_p (const_sbitmap bmap, unsigned int start,
+			    unsigned int end)
+{
+  return !bitmap_bit_in_range_p (bmap, start, end, true);
+}
+
+/* Return TRUE if any bit between START and END inclusive is set within
+   the simple bitmap BMAP.  Return FALSE otherwise.  */
+
+bool
+bitmap_any_bit_in_range_p (const_sbitmap bmap, unsigned int start,
+			   unsigned int end)
+{
+  return bitmap_bit_in_range_p (bmap, start, end, false);
 }
 
 #if GCC_VERSION < 3400
@@ -863,14 +888,14 @@ namespace selftest {
 
 /* Selftests for sbitmaps.  */
 
-/* Checking function that uses both bitmap_bit_in_range_p and
+/* Checking function that uses both bitmap_any_bit_in_range_p and
    loop of bitmap_bit_p and verifies consistent results.  */
 
 static bool
-bitmap_bit_in_range_p_checking (sbitmap s, unsigned int start,
+bitmap_any_bit_in_range_p_checking (sbitmap s, unsigned int start,
 				unsigned end)
 {
-  bool r1 = bitmap_bit_in_range_p (s, start, end);
+  bool r1 = bitmap_any_bit_in_range_p (s, start, end);
   bool r2 = false;
 
   for (unsigned int i = start; i <= end; i++)
@@ -893,33 +918,33 @@ test_set_range ()
   bitmap_clear (s);
 
   bitmap_set_range (s, 0, 1);
-  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 0, 0));
-  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 1, 15));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p_checking (s, 0, 0));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p_checking (s, 1, 15));
   bitmap_set_range (s, 15, 1);
-  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 1, 14));
-  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 15, 15));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p_checking (s, 1, 14));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p_checking (s, 15, 15));
   sbitmap_free (s);
 
   s = sbitmap_alloc (1024);
   bitmap_clear (s);
   bitmap_set_range (s, 512, 1);
-  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 0, 511));
-  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 513, 1023));
-  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512, 512));
-  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 508, 512));
-  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 508, 513));
-  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 508, 511));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p_checking (s, 0, 511));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p_checking (s, 513, 1023));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p_checking (s, 512, 512));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p_checking (s, 508, 512));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p_checking (s, 508, 513));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p_checking (s, 508, 511));
 
   bitmap_clear (s);
   bitmap_set_range (s, 512, 64);
-  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 0, 511));
-  ASSERT_FALSE (bitmap_bit_in_range_p_checking (s, 512 + 64, 1023));
-  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512, 512));
-  ASSERT_TRUE (bitmap_bit_in_range_p_checking (s, 512 + 63, 512 + 63));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p_checking (s, 0, 511));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p_checking (s, 512 + 64, 1023));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p_checking (s, 512, 512));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p_checking (s, 512 + 63, 512 + 63));
   sbitmap_free (s);
 }
 
-/* Verify bitmap_bit_in_range_p functions for sbitmap.  */
+/* Verify bitmap_any_bit_in_range_p functions for sbitmap.  */
 
 static void
 test_bit_in_range ()
@@ -927,15 +952,15 @@ test_bit_in_range ()
   sbitmap s = sbitmap_alloc (1024);
   bitmap_clear (s);
 
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 512, 1023));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 512, 1023));
   bitmap_set_bit (s, 100);
 
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 512, 1023));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 99));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 101, 1023));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 100));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 64, 100));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 100, 100));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 512, 1023));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 0, 99));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 101, 1023));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 1, 100));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 64, 100));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 100, 100));
   ASSERT_TRUE (bitmap_bit_p (s, 100));
 
   sbitmap_free (s);
@@ -943,54 +968,54 @@ test_bit_in_range ()
   s = sbitmap_alloc (64);
   bitmap_clear (s);
   bitmap_set_bit (s, 63);
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 63));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 63));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 63, 63));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 0, 63));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 1, 63));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 63, 63));
   ASSERT_TRUE (bitmap_bit_p (s, 63));
   sbitmap_free (s);
 
   s = sbitmap_alloc (1024);
   bitmap_clear (s);
   bitmap_set_bit (s, 128);
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 127));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 129, 1023));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 0, 127));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 129, 1023));
 
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 128));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 128));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 128, 255));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 128, 254));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 0, 128));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 1, 128));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 128, 255));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 128, 254));
   ASSERT_TRUE (bitmap_bit_p (s, 128));
 
   bitmap_clear (s);
   bitmap_set_bit (s, 8);
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 8));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 12));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 63));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 127));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 512));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 8, 8));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 0, 8));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 0, 12));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 0, 63));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 0, 127));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 0, 512));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 8, 8));
   ASSERT_TRUE (bitmap_bit_p (s, 8));
 
   bitmap_clear (s);
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 0));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 8));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 63));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 1, 63));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 0, 256));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 0, 0));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 0, 8));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 0, 63));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 1, 63));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 0, 256));
 
   bitmap_set_bit (s, 0);
   bitmap_set_bit (s, 16);
   bitmap_set_bit (s, 32);
   bitmap_set_bit (s, 48);
   bitmap_set_bit (s, 64);
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 0, 0));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 1, 16));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 48, 63));
-  ASSERT_TRUE (bitmap_bit_in_range_p (s, 64, 64));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 1, 15));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 17, 31));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 49, 63));
-  ASSERT_FALSE (bitmap_bit_in_range_p (s, 65, 1023));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 0, 0));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 1, 16));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 48, 63));
+  ASSERT_TRUE (bitmap_any_bit_in_range_p (s, 64, 64));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 1, 15));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 17, 31));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 49, 63));
+  ASSERT_FALSE (bitmap_any_bit_in_range_p (s, 65, 1023));
   sbitmap_free (s);
 }
 

@@ -20,7 +20,11 @@ test_nan()
   out << ' ' << nan << ' ' << -nan;
   out << std::showpos;
   out << ' ' << nan << ' ' << -nan;
+#ifdef _AIX // non-conforming
+  VERIFY( out.str() == " NaNQ -NaNQ NaNQ -NaNQ NaNQ -NaNQ +NaNQ -NaNQ" );
+#else
   VERIFY( out.str() == " nan -nan NAN -NAN NAN -NAN +NAN -NAN" );
+#endif
 }
 
 void
@@ -36,7 +40,11 @@ test_inf()
   out << ' ' << inf << ' ' << -inf;
   out << std::showpos;
   out << ' ' << inf << ' ' << -inf;
+#ifdef _AIX // non-conforming
+  VERIFY( out.str() == " INF -INF INF -INF INF -INF +INF -INF" );
+#else
   VERIFY( out.str() == " inf -inf INF -INF INF -INF +INF -INF" );
+#endif
 }
 
 int main()

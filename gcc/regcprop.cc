@@ -332,6 +332,10 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
   if (vd->e[sr].mode == VOIDmode)
     set_value_regno (sr, vd->e[dr].mode, vd);
 
+  else if (!ordered_p (GET_MODE_PRECISION (vd->e[sr].mode),
+		       GET_MODE_PRECISION (GET_MODE (src))))
+    return;
+
   /* If we are narrowing the input to a smaller number of hard regs,
      and it is in big endian, we are really extracting a high part.
      Since we generally associate a low part of a value with the value itself,

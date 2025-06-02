@@ -5336,7 +5336,7 @@ namespace views::__adaptor
 	requires move_constructible<decay_t<_Fp>> && regular_invocable<decay_t<_Fp>&>
 	  && is_object_v<decay_t<invoke_result_t<decay_t<_Fp>&>>>
 	constexpr auto
-	operator() [[nodiscard]] (_Fp&& __f) const
+	operator() [[nodiscard]] (_Fp&&) const
 	{
 	  return views::empty<decay_t<invoke_result_t<decay_t<_Fp>&>>>;
 	}
@@ -6598,7 +6598,7 @@ namespace views::__adaptor
     }
 
     friend constexpr difference_type
-    operator-(default_sentinel_t __y, const _Iterator& __x)
+    operator-(default_sentinel_t, const _Iterator& __x)
       requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
     { return __detail::__div_ceil(__x._M_end - __x._M_current, __x._M_n); }
 
@@ -7287,8 +7287,8 @@ namespace views::__adaptor
 	using iterator_category = decltype(_S_iter_cat());
     };
 
-    template<bool> struct _Iterator;
-    template<bool> struct _Sentinel;
+    template<bool> class _Iterator;
+    template<bool> class _Sentinel;
 
   public:
     join_with_view() requires (default_initializable<_Vp>
@@ -7743,7 +7743,7 @@ namespace views::__adaptor
     __detail::__box<_Tp> _M_value;
     [[no_unique_address]] _Bound _M_bound = _Bound();
 
-    struct _Iterator;
+    class _Iterator;
 
     template<typename _Range>
     friend constexpr auto
@@ -8303,7 +8303,7 @@ namespace views::__adaptor
     }
 
     friend constexpr difference_type
-    operator-(default_sentinel_t __y, const _Iterator& __x)
+    operator-(default_sentinel_t, const _Iterator& __x)
       requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
     { return __detail::__div_ceil(__x._M_end - __x._M_current, __x._M_stride); }
 

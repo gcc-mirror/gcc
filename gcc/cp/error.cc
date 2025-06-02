@@ -182,9 +182,10 @@ class cxx_format_postprocessor : public format_postprocessor
   : m_type_a (), m_type_b ()
   {}
 
-  format_postprocessor *clone() const final override
+  std::unique_ptr<format_postprocessor>
+  clone() const final override
   {
-    return new cxx_format_postprocessor ();
+    return std::make_unique<cxx_format_postprocessor> ();
   }
 
   void handle (pretty_printer *pp) final override;
@@ -192,6 +193,32 @@ class cxx_format_postprocessor : public format_postprocessor
   deferred_printed_type m_type_a;
   deferred_printed_type m_type_b;
 };
+
+/* Constructor and destructor for cxx_dump_pretty_printer, defined here to
+   avoid needing to move cxx_format_postprocessor into the header as well.  */
+
+cxx_dump_pretty_printer::
+cxx_dump_pretty_printer (int phase)
+  : phase (phase)
+{
+  outf = dump_begin (phase, &flags);
+  if (outf)
+    {
+      pp_format_decoder (this) = cp_printer;
+      set_format_postprocessor (std::make_unique<cxx_format_postprocessor> ());
+      set_output_stream (outf);
+    }
+}
+
+cxx_dump_pretty_printer::
+~cxx_dump_pretty_printer ()
+{
+  if (outf)
+    {
+      pp_flush (this);
+      dump_end (phase, outf);
+    }
+}
 
 /* Return the in-scope template that's currently being parsed, or
    NULL_TREE otherwise.  */
@@ -274,7 +301,7 @@ void
 cxx_initialize_diagnostics (diagnostic_context *context)
 {
   cxx_pretty_printer *pp = new cxx_pretty_printer ();
-  pp_format_postprocessor (pp) = new cxx_format_postprocessor ();
+  pp->set_format_postprocessor (std::make_unique<cxx_format_postprocessor> ());
   context->set_pretty_printer (std::unique_ptr<pretty_printer> (pp));
 
   c_common_diagnostics_set_defaults (context);
@@ -541,12 +568,13 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
 	  /* If the template argument repeats the template parameter (T = T),
 	     skip the parameter.*/
 	  if (arg && TREE_CODE (arg) == TEMPLATE_TYPE_PARM
-		&& TREE_CODE (parm_i) == TREE_LIST
-		&& TREE_CODE (TREE_VALUE (parm_i)) == TYPE_DECL
-		&& TREE_CODE (TREE_TYPE (TREE_VALUE (parm_i)))
-		     == TEMPLATE_TYPE_PARM
-		&& DECL_NAME (TREE_VALUE (parm_i))
-		     == DECL_NAME (TREE_CHAIN (arg)))
+	      && arg == TYPE_MAIN_VARIANT (arg)
+	      && TREE_CODE (parm_i) == TREE_LIST
+	      && TREE_CODE (TREE_VALUE (parm_i)) == TYPE_DECL
+	      && (TREE_CODE (TREE_TYPE (TREE_VALUE (parm_i)))
+		  == TEMPLATE_TYPE_PARM)
+	      && (DECL_NAME (TREE_VALUE (parm_i))
+		  == DECL_NAME (TYPE_STUB_DECL (arg))))
 	    continue;
 
 	  semicolon_or_introducer ();
@@ -1254,11 +1282,36 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
   pp_printf (pp, p, DECL_SOURCE_FILE (t));
 }
 
+/* Write a representation of OpenMP "declare mapper" T to PP in a manner
+   suitable for error messages.  */
+
+static void
+dump_omp_declare_mapper (cxx_pretty_printer *pp, tree t, int flags)
+{
+  pp_string (pp, "#pragma omp declare mapper");
+  if (t == NULL_TREE || t == error_mark_node)
+    return;
+  pp_space (pp);
+  pp_cxx_left_paren (pp);
+  if (OMP_DECLARE_MAPPER_ID (t))
+    {
+      pp_cxx_tree_identifier (pp, OMP_DECLARE_MAPPER_ID (t));
+      pp_colon (pp);
+    }
+  dump_type (pp, TREE_TYPE (t), flags);
+  pp_cxx_right_paren (pp);
+}
+
 static void
 dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
 {
   if (VAR_P (t) && DECL_NTTP_OBJECT_P (t))
     return dump_expr (pp, DECL_INITIAL (t), flags);
+
+  if (TREE_CODE (t) == VAR_DECL
+      && DECL_LANG_SPECIFIC (t)
+      && DECL_OMP_DECLARE_MAPPER_P (t))
+    return dump_omp_declare_mapper (pp, DECL_INITIAL (t), flags);
 
   if (flags & TFF_DECL_SPECIFIERS)
     {

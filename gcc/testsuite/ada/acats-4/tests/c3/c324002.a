@@ -1,0 +1,345 @@
+-- C324002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--*
+--
+-- OBJECTIVE:
+--     Check that appropriate predicate checks are performed for a by-reference
+--     type upon assignment, type conversion, and the passing of parameters.
+--
+-- TEST DESCRIPTION:
+--     An unbounded string abstraction is defined, along with a subtype
+--     predicate giving a maximum size for a string. This models an application
+--     that wants to minimize string storage but also has an
+--     application-specific maximum string size.
+--
+--     We test a series of operations that both do and do not satisfy the
+--     predicate, ensuring that Assertion_Error is raised when appropriate.
+--
+--     This test checks by-reference parameter passing checks. See C324001 for
+--     by-copy parameter passing checks.
+--
+-- CHANGE HISTORY:
+--        11 Mar 14   RLB    Created test from idea in an Ada-Comment thread.
+--        13 Mar 15   RLB    Eliminate overlong lines.
+--        14 May 15   RLB    Replaced qualified expression case (now covered
+--                           by AI12-0100-1).
+--
+with Ada.Assertions; use Ada.Assertions;
+with Ada.Finalization;
+package C324002_0 is
+
+   pragma Assertion_Policy (Check);
+
+   -- An unbounded string type, similar to a likely implementation of
+   -- Ada.Strings.Unbounded.Unbounded_String. We make the type visibly tagged
+   -- that so it is clearly a by-reference type (we can't assume that about
+   -- Ada.Strings.Unbounded.Unbounded_String).
+
+   type Unbounded_String is tagged private;
+   Null_Unbounded_String : constant Unbounded_String;
+
+   function Length (Source : Unbounded_String) return Natural;
+
+   function "+" (Source : String) return Unbounded_String;
+
+   function "+" (Source : Unbounded_String) return String;
+
+   procedure Set_Unbounded_String
+      (Target : out Unbounded_String; Source : in String);
+
+   procedure Append
+      (Source : in out Unbounded_String; New_Item : in String);
+
+   function "&" (Left : Unbounded_String; Right : String)
+      return Unbounded_String;
+
+   function "&" (Left, Right : Unbounded_String)
+      return Unbounded_String;
+
+   function Element (Source : in Unbounded_String; Index : in Positive)
+      return Character;
+
+   -- In a real package, there'd be many more operations here.
+
+private
+   type String_Access is access all String;
+
+   procedure Free (X : in out String_Access);
+
+   type Unbounded_String is new Ada.Finalization.Controlled with record
+      Str : String_Access := new String'("");
+   end record;
+
+   procedure Finalize (Object : in out Unbounded_String);
+
+   procedure Adjust   (Object : in out Unbounded_String);
+
+   Null_Unbounded_String : constant Unbounded_String :=
+      (Ada.Finalization.Controlled with Str => new String'(""));
+
+end C324002_0;
+
+
+with Ada.Unchecked_Deallocation;
+package body C324002_0 is
+
+   function Length (Source : Unbounded_String) return Natural is
+   begin
+      return Source.Str.all'Length;
+   end Length;
+
+
+   function "+" (Source : String) return Unbounded_String is
+      Result : Unbounded_String := (Ada.Finalization.Controlled with
+               Str => new String(1 .. Source'Length));
+   begin
+      Result.Str.all := Source;
+      return Result;
+   end "+";
+
+
+   function "+" (Source : Unbounded_String) return String is
+   begin
+      return Source.Str.all;
+   end "+";
+
+
+   procedure Set_Unbounded_String
+      (Target : out Unbounded_String; Source : in String) is
+   begin
+      Free (Target.Str);
+      Target := (Ada.Finalization.Controlled with
+                Str => new String(1 .. Source'Length));
+      Target.Str.all := Source;
+   end Set_Unbounded_String;
+
+
+   procedure Append
+      (Source : in out Unbounded_String; New_Item : in String) is
+      S_Length : Natural;
+      Length : Natural;
+      Temp : String_Access := Source.Str;
+   begin
+      S_Length := Source.Str.All'Length;
+      Length := S_Length + New_Item'Length;
+      Source.Str :=  new String(1 .. Length); -- new size
+      if Temp /= null then
+         Source.Str.all (1 .. S_Length) := Temp.all;
+      end if;
+      Source.Str.all (S_Length + 1 .. Length) := New_Item;
+      Free (Temp);
+   end Append;
+
+
+   function "&" (Left : Unbounded_String; Right : String)
+      return Unbounded_String is
+   begin
+      declare
+         Result : Unbounded_String := (Ada.Finalization.Controlled with
+                  Str => new String(1 .. Left.Str.All'Length + Right'Length));
+      begin
+         Result.Str.all := Left.Str.all & Right;
+         return Result;
+      end;
+   end "&";
+
+
+   function "&" (Left, Right : Unbounded_String)
+      return Unbounded_String is
+   begin
+      return Left & Right.Str.all;
+   end "&";
+
+
+   function Element (Source : in Unbounded_String; Index : in Positive)
+      return Character is
+   begin
+      return Source.Str.all (Index); -- Raises Constraint_Error if Index
+          -- is greater than Length (Source);
+   end Element;
+
+
+   procedure Free (X : in out String_Access) is
+      procedure Deallocate is new Ada.Unchecked_Deallocation
+                                            (String, String_Access);
+   begin
+      Deallocate (X);
+   end Free;
+
+
+   procedure Finalize (Object : in out Unbounded_String) is
+   begin
+      Free (Object.Str);
+   end Finalize;
+
+
+   procedure Adjust   (Object : in out Unbounded_String) is
+   begin
+      Object.Str := new String'(Object.Str.all);
+   end Adjust;
+
+end C324002_0;
+
+
+with Report;
+with C324002_0; use c324002_0;
+with Ada.Assertions; use Ada.Assertions;
+procedure C324002 is
+
+   pragma Assertion_Policy (Check);
+
+   subtype Max_10_Char_String is Unbounded_String
+      with Dynamic_Predicate => Length (Max_10_Char_String) <= 10;
+
+   Our_Data : array (1 .. 10) of Max_10_Char_String;
+       -- Stand-in for application data structure.
+
+begin
+   Report.Test ("C324002",
+                "Check predicate checks are performed for a " &
+                "dynamic predicate of a by-reference type");
+
+   begin
+      Our_Data(1) := +"123456";
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate not true on assignment (1)");
+   end;
+
+   begin
+      Our_Data(2) := +"123" & Our_Data(1);
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate not true on assignment (2)");
+   end;
+
+   begin
+      Our_Data(3) := +"1234567890AB";
+      Report.Failed ("Predicate should fail on assignment (3)");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   begin
+      Our_Data(4) := +"123456" & Our_Data(1);
+      Report.Failed ("Predicate should fail on assignment (4)");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   begin
+      Set_Unbounded_String (Our_Data(5), "123456");
+         -- Out parameter predicate check succeeds.
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate not true on Out parameter (5)");
+   end;
+
+   begin
+      Set_Unbounded_String (Our_Data(6), "1234567890AB");
+         -- Out parameter predicate check fails.
+      Report.Failed ("Predicate should fail on Out parameter (6)");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+         if Length (Our_Data(6)) /= 12 then
+            Report.Failed ("Value not changed before predicate failure");
+         end if;
+         -- Note that there is is an oddity here in that Our_Data(6) will
+         -- actually have the out-of-bounds value here, as it is changed
+         -- before the predicate check. This seems necessary to be able to
+         -- add a predicate to an existing type (as in this example), but it
+         -- is one of the reasons that a dynamic predicate is not quite as
+         -- good as a constraint.
+   end;
+
+   begin
+      Our_Data(7) := +"1234";
+      Append (Our_Data(7), "5678");
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate not true on In Out parameter (7)");
+   end;
+
+   begin
+      Our_Data(8) := +"123456";
+      Append (Our_Data(8), "7890AB");
+         -- In Out parameter predicate check fails on return.
+      Report.Failed ("Predicate should fail on In Out parameter (8)");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+         if Length (Our_Data(8)) /= 12 then
+            Report.Failed ("Value not changed before predicate failure");
+         end if;
+         -- See not about oddity above.
+   end;
+
+   declare
+      Temp1 : Unbounded_String;
+   begin
+      Temp1 := +"123456" & Our_Data(1); -- No predicate to check here.
+   exception
+      when Assertion_Error =>
+         Report.Failed ("Predicate checked inappropriately (1)");
+   end;
+
+   declare
+      Temp2 : Unbounded_String;
+   begin
+      Temp2 := Max_10_Char_String(Unbounded_String'(+"123456" & Our_Data(1)));
+          -- Predicate checked by explicit type conversion.
+      Report.Failed ("Predicate should fail from explicit " &
+                     "type conversion (2)");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   -- Required by Corrigedum 2015, via AI12-0100-1.
+   declare
+      Temp3 : Unbounded_String;
+   begin
+      Temp3 := Max_10_Char_String'(+"123456" & Our_Data(1));
+          -- Predicate checked by qualified expression.
+      Report.Failed ("Predicate should fail from qualified expression (3)");
+   exception
+      when Assertion_Error =>
+         null; -- OK
+   end;
+
+   Report.Result;
+
+end C324002;

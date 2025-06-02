@@ -71,12 +71,13 @@ namespace __format
     concept __char = same_as<_CharT, char>;
 #endif
 
-  enum _Align {
+  enum class _Align : unsigned char {
     _Align_default,
     _Align_left,
     _Align_right,
     _Align_centre,
   };
+  using enum _Align;
 
   template<typename _CharT> struct _Spec;
 

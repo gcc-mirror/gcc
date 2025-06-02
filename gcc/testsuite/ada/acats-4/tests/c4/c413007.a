@@ -1,0 +1,256 @@
+-- C413007.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS. THE ACAA MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--
+--                                     Notice
+--
+--     The ACAA has created and maintains the Ada Conformity Assessment Test
+--     Suite for the purpose of conformity assessments conducted in accordance
+--     with the International Standard ISO/IEC 18009 - Ada: Conformity
+--     assessment of a language processor. This test suite should not be used
+--     to make claims of conformance unless used in accordance with
+--     ISO/IEC 18009 and any applicable ACAA procedures.
+--
+--*
+-- OBJECTIVE:
+--
+--     Check that for the reference L.R, if L represents an object or value of
+--     an access type designating a tagged type T with the value null, and R
+--     represents an appropriate subprogram for a prefixed view, that
+--     Constraint_Error is raised when the name L.R is evaluated.
+--
+--  TEST DESCRIPTION:
+--
+--     We check that various prefixes of an access type check that the value
+--     is not null, even when the subprogram has a first access parameter that
+--     does not exclude null (that is the case only for class-wide parameter,
+--     as controlling parameters are automatically null-excluding).
+--
+--     In such a case, P.Proc is equivalent to Proc(P.all'Access) - see
+--     6.4(9.1/5). This includes a dereference, and thus a null check.
+
+--  CHANGE HISTORY:
+--     31 Dec 2022  RLB  Created test, using the declarations from C413004
+--                       as a template.
+--
+--!
+package C413007P is
+   type TP is tagged record
+      Data  : Integer := 999;
+   end record;
+
+   type TP_Access is access all TP;
+   
+   procedure Prim_Proc1 (X : in out TP);
+   procedure Prim_Proc2 (X : access TP; Value : in Integer);
+   function  Prim_Func1 (X : access constant TP) return Integer;
+   function  Prim_Func2 (X : in TP; Value : in Integer) return Integer;
+
+   procedure Class_Wide_Proc1 (X : access TP'Class);
+   procedure Class_Wide_Proc2 (X : in out TP'Class; Value : in Integer);
+   function  Class_Wide_Func1 (X : in TP'Class) return Integer;
+   function  Class_Wide_Func2 (X : access constant TP'Class;
+                               Value : in Integer) return Integer;
+
+end C413007P;
+
+package body C413007P is
+
+   procedure Prim_Proc1 (X: in out TP) is
+   begin
+      X.Data := 11;
+   end Prim_Proc1;
+
+   procedure Prim_Proc2 (X: access TP; Value : in Integer) is
+   begin
+      X.Data := Value;
+   end Prim_Proc2;
+
+   function Prim_Func1 (X : access constant TP) return Integer is
+   begin
+      return 2;
+   end Prim_Func1;
+
+   function Prim_Func2 (X : in TP; Value : in Integer) return Integer is
+   begin
+      return Value;
+   end Prim_Func2;
+
+   procedure Class_Wide_Proc1 (X: access TP'Class) is
+   begin
+      if X /= null then
+          X.Data := -1;
+      -- else do nothing.
+      end if;
+   end Class_Wide_Proc1;
+
+   procedure Class_Wide_Proc2 (X: in out TP'Class; Value : in Integer) is
+   begin
+      X.Data := 3 * Value;
+   end Class_Wide_Proc2;
+
+   function Class_Wide_Func1 (X : in TP'Class) return Integer is
+   begin
+      return -2;
+   end Class_Wide_Func1;
+
+   function Class_Wide_Func2
+     (X : access constant TP'Class; Value : in Integer) return Integer is
+   begin
+      return 3 * Value;
+   end Class_Wide_Func2;
+
+end C413007P;
+
+with Report;
+with C413007P;
+procedure C413007 is
+begin
+   Report.Test ("C413007", "Check that for the reference L.R, if L " &
+                           "represents an object or value of an access type " &
+                           "designating a tagged type T with the value null," &
+                           " and R represents an appropriate subprogram for " &
+                           "a prefixed view, that Constraint_Error is " &
+                           "raised when the name L.R is evaluated.");
+
+   -- Verify that the primitive operation in the ancestor is properly called.
+
+   declare
+      P1 : aliased C413007P.TP;
+      P_Null_Ptr : C413007P.TP_Access := null;
+      P_Obj_Ptr  : C413007P.TP_Access := P1'Unchecked_Access;
+   begin
+      begin
+          P_Null_Ptr.Prim_Proc1;
+          Report.Failed ("Constraint_Error not raised by dereference - 1");
+      exception
+          when Constraint_Error => null; -- Expected.
+      end;
+      
+      P_Obj_Ptr.Prim_Proc2 (4);
+      if P1.Data /= 4 then
+         Report.Failed ("Wrong value - 2");
+      end if;      
+ 
+      begin
+          if P_Null_Ptr.Prim_Func1 /= 2 then
+              Report.Failed ("Result value is wrong - 3");
+          -- else right value, but...
+          end if;
+          Report.Failed ("Constraint_Error not raised by dereference - 3");
+      exception
+          when Constraint_Error => null; -- Expected.
+      end;
+      
+      if P_Obj_Ptr.Prim_Func2 (12) /= 12 then
+         Report.Failed ("Wrong value - 4");
+      end if;      
+ 
+      P_Obj_Ptr.Class_Wide_Proc1;
+      if P1.Data /= -1 then
+         Report.Failed ("Wrong value - 5");
+      end if;      
+ 
+      begin
+          P_Null_Ptr.Class_Wide_Proc1;
+          Report.Failed ("Constraint_Error not raised by dereference - 6A");
+      exception
+          when Constraint_Error => null; -- Expected.
+      end;
+      
+      begin
+          C413007P.Class_Wide_Proc1 (P_Null_Ptr.all'Access);
+          -- This is the meaning of the previous prefixed call.
+          Report.Failed ("Constraint_Error not raised by dereference - 6B");
+      exception
+          when Constraint_Error => null; -- Expected.
+      end;
+      
+      begin
+          C413007P.Class_Wide_Proc1 (P_Null_Ptr);
+          -- This is NOT the meaning of the prefixed call.
+          -- Does nothing, nothing to check.
+       exception
+          when Constraint_Error => null; -- Expected.
+              Report.Failed ("Constraint_Error raised by " &
+                             "non-null-excluding parameter - 6C");
+      end;
+      
+      begin
+          P_Null_Ptr.Class_Wide_Proc2 (92);
+          Report.Failed ("Constraint_Error not raised by dereference - 7");
+      exception
+          when Constraint_Error => null; -- Expected.
+      end;
+      
+      begin
+          if P_Null_Ptr.Class_Wide_Func1 /= -2 then
+              Report.Failed ("Result value is wrong - 8");
+          -- else right value, but...
+          end if;
+          Report.Failed ("Constraint_Error not raised by dereference - 8");
+      exception
+          when Constraint_Error => null; -- Expected.
+      end;
+      
+      if P_Obj_Ptr.Class_Wide_Func2 (5) /= 15 then
+         Report.Failed ("Wrong value - 9");
+      end if;      
+
+      begin
+          if P_Null_Ptr.Class_Wide_Func2 (8) /= 24 then
+             Report.Failed ("Wrong value - 10A");
+           -- else right value, but...
+          end if;        
+          Report.Failed ("Constraint_Error not raised by dereference - 10A");
+      exception
+          when Constraint_Error => null; -- Expected.
+      end;
+      
+      begin
+          if C413007P.Class_Wide_Func2 (P_Null_Ptr.all'Access, 3) /= 9 then
+             -- This is the meaning of the previous prefixed call.
+             Report.Failed ("Wrong value - 10A");
+           -- else right value, but...
+          end if;        
+          Report.Failed ("Constraint_Error not raised by dereference - 10B");
+      exception
+          when Constraint_Error => null; -- Expected.
+      end;
+      
+      begin
+          if C413007P.Class_Wide_Func2 (P_Null_Ptr, 7) /= 21 then
+             -- This is NOT the meaning of the prefix call.
+             Report.Failed ("Wrong value - 10C");
+           -- else right value, but...
+          end if;        
+       exception
+          when Constraint_Error => null; -- Expected.
+              Report.Failed ("Constraint_Error raised by " &
+                             "non-null-excluding parameter - 10C");
+      end;
+
+   end;
+   
+   Report.Result;
+end C413007;

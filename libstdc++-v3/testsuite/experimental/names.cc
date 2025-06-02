@@ -22,6 +22,12 @@
 // naming variables, parameters etc. in the library.
 
 #include "../17_intro/names.cc"
+
+#ifdef _AIX
+// <netdb.h> declares endnetgrent_r with ptr parameter.
+# undef ptr
+#endif
+
 // Filesystem
 #if __has_include(<experimental/filesystem>)
 # include <experimental/filesystem>

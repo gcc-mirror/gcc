@@ -1,0 +1,53 @@
+#!/bin/sh
+# Profile workload for gcc profile feedback (autofdo) using Linux perf.
+# Copyright The GNU Toolchain Authors.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any later
+# version.
+
+# GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.  */
+
+# Run perf record with branch stack sampling and check for
+# specific error message to see if it is supported.
+use_brbe=true
+output=$(perf record -j any,u /bin/true 2>&1)
+case "$output" in
+  *"PMU Hardware or event type doesn't support branch stack sampling."*)
+    use_brbe=false;;
+  *)
+    use_brbe=true;;
+esac
+
+FLAGS=u
+if [ "$1" = "--kernel" ] ; then
+  FLAGS=k
+  shift
+elif [ "$1" = "--all" ] ; then
+  FLAGS=u,k
+  shift
+fi
+
+if [ "$use_brbe" = true ] ; then
+  if grep -q hypervisor /proc/cpuinfo ; then
+    echo >&2 "Warning: branch profiling may not be functional in VMs"
+  fi
+  set -x
+  perf record -j any,$FLAGS "$@"
+  set +x
+else
+  echo >&2 "Warning: branch profiling may not be functional without BRBE"
+  set -x
+  perf record "$@"
+  set +x
+fi
