@@ -226,6 +226,9 @@ AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG,
 /* NVIDIA ('N') cores. */
 AARCH64_CORE("olympus", olympus, cortexa57, V9_2A, (SVE2_BITPERM, RNG, LS64, MEMTAG, PROFILE, FAMINMAX, FP8FMA, FP8DOT2, FP8DOT4, LUT, SVE2_AES, SVE2_SHA3, SVE2_SM4), neoversev3, 0x4e, 0x10, -1)
 
+/* Armv9-A big.LITTLE processors.  */
+AARCH64_CORE("gb10",  gb10, cortexa57, V9_2A,  (SVE2_BITPERM, SVE2_AES, SVE2_SHA3, SVE2_SM4, MEMTAG, PROFILE), cortexx925, 0x41, AARCH64_BIG_LITTLE (0xd85, 0xd87), -1)
+
 /* Generic Architecture Processors.  */
 AARCH64_CORE("generic",  generic, cortexa53, V8A,  (), generic, 0x0, 0x0, -1)
 AARCH64_CORE("generic-armv8-a",  generic_armv8_a, cortexa53, V8A, (), generic_armv8_a, 0x0, 0x0, -1)

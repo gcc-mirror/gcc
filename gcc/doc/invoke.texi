@@ -22185,7 +22185,7 @@ performance of the code.  Permissible values for this option are:
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
-@samp{apple-m1}, @samp{apple-m2}, @samp{apple-m3} specify that GCC
+@samp{apple-m1}, @samp{apple-m2}, @samp{apple-m3}, @samp{gb10} specify that GCC
 should tune for a big.LITTLE system.
 
 The value @samp{neoverse-512tvb} specifies that GCC should tune
