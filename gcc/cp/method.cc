@@ -2251,6 +2251,8 @@ constructible_expr (tree to, tree from)
   const int len = TREE_VEC_LENGTH (from);
   if (CLASS_TYPE_P (to))
     {
+      if (ABSTRACT_CLASS_TYPE_P (to))
+	return error_mark_node;
       tree ctype = to;
       vec<tree, va_gc> *args = NULL;
       if (!TYPE_REF_P (to))
@@ -2337,10 +2339,19 @@ destructible_expr (tree to)
 {
   cp_unevaluated cp_uneval_guard;
   int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
-  to = build_trait_object (to);
-  tree r = build_delete (input_location, TREE_TYPE (to), to,
-			 sfk_complete_destructor, flags, 0, tf_none);
-  return r;
+  to = strip_array_types (to);
+  if (CLASS_TYPE_P (to))
+    {
+      to = build_trait_object (to);
+      return build_delete (input_location, TREE_TYPE (to), to,
+			     sfk_complete_destructor, flags, 0, tf_none);
+    }
+  /* [expr.prim.id.dtor] If the id-expression names a pseudo-destructor, T
+     shall be a scalar type.... */
+  else if (scalarish_type_p (to))
+    return void_node;
+  else
+    return error_mark_node;
 }
 
 /* Returns a tree iff TO is assignable (if CODE is MODIFY_EXPR) or
@@ -2352,7 +2363,7 @@ is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
 {
   to = complete_type (to);
   deferring_access_check_sentinel acs (dk_no_deferred);
-  if (VOID_TYPE_P (to) || ABSTRACT_CLASS_TYPE_P (to)
+  if (VOID_TYPE_P (to)
       || (from && FUNC_OR_METHOD_TYPE_P (from)
 	  && (TYPE_READONLY (from) || FUNCTION_REF_QUALIFIED (from))))
     return error_mark_node;
