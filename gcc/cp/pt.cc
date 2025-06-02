@@ -18380,7 +18380,9 @@ tsubst_omp_context_selector (tree ctx, tree args, tsubst_flags_t complain,
 		}
 	    }
 
-	  switch (omp_ts_map[OMP_TS_CODE (sel)].tp_type)
+	  enum omp_tp_type property_kind
+	    = omp_ts_map[OMP_TS_CODE (sel)].tp_type;
+	  switch (property_kind)
 	      {
 	      case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
 	      case OMP_TRAIT_PROPERTY_BOOL_EXPR:
@@ -18388,12 +18390,26 @@ tsubst_omp_context_selector (tree ctx, tree args, tsubst_flags_t complain,
 				 args, complain, in_decl);
 		t = fold_non_dependent_expr (t);
 		if (!value_dependent_expression_p (t)
-		    && !type_dependent_expression_p (t)
-		    && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
-		  error_at (cp_expr_loc_or_input_loc (t),
-			    "property must be integer expression");
-		else
-		  properties = make_trait_property (NULL_TREE, t, NULL_TREE);
+		    && !type_dependent_expression_p (t))
+		  {
+		    if (property_kind == OMP_TRAIT_PROPERTY_BOOL_EXPR)
+		      t = maybe_convert_cond (t);
+		    else
+		      {
+			t = convert_from_reference (t);
+			if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+			  {
+			    error_at (cp_expr_loc_or_input_loc (t),
+				      "property must be integer expression");
+			    t = error_mark_node;
+			  }
+		      }
+		  }
+		if (t != error_mark_node
+		    && !processing_template_decl
+		    && TREE_CODE (t) != CLEANUP_POINT_EXPR)
+		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		properties = make_trait_property (NULL_TREE, t, NULL_TREE);
 		break;
 	      case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
 		if (OMP_TS_CODE (sel) == OMP_TRAIT_CONSTRUCT_SIMD)

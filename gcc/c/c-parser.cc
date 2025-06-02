@@ -26966,17 +26966,30 @@ c_parser_omp_context_selector (c_parser *parser, enum omp_tss_code set,
 	      break;
 	    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
 	    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
-	      t = c_parser_expr_no_commas (parser, NULL).value;
+	      {
+		c_expr texpr = c_parser_expr_no_commas (parser, NULL);
+		texpr = convert_lvalue_to_rvalue (token->location, texpr,
+						  true, true);
+		t = texpr.value;
+	      }
 	      if (t == error_mark_node)
 		return error_mark_node;
 	      mark_exp_read (t);
-	      t = c_fully_fold (t, false, NULL);
-	      if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	      if (property_kind == OMP_TRAIT_PROPERTY_BOOL_EXPR)
+		{
+		  t = c_objc_common_truthvalue_conversion (token->location,
+							   t,
+							   boolean_type_node);
+		  if (t == error_mark_node)
+		    return error_mark_node;
+		}
+	      else if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
 		{
 		  error_at (token->location,
 			    "property must be integer expression");
 		  return error_mark_node;
 		}
+	      t = c_fully_fold (t, false, NULL);
 	      properties = make_trait_property (NULL_TREE, t, properties);
 	      break;
 	    case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
