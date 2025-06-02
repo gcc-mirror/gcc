@@ -1,5 +1,5 @@
 /* C++ code produced by gperf version 3.1 */
-/* Command-line: gperf -o -C -E -k '1,2,7,11,$' -D -N find -L C++ --output-file std-name-hint.h std-name-hint.gperf  */
+/* Command-line: /opt/iains/x86_64-apple-darwin19/gcc-7-5-toolchain/bin/gperf -o -C -E -k '1,2,7,11,$' -D -N find -L C++ --output-file std-name-hint.h std-name-hint.gperf  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
