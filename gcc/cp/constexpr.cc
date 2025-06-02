@@ -9278,8 +9278,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   /* After verify_constant because reduced_constant_expression_p can unset
      CONSTRUCTOR_NO_CLEARING.  */
-  if (!non_constant_p
-      && TREE_CODE (r) == CONSTRUCTOR && CONSTRUCTOR_NO_CLEARING (r))
+  if (TREE_CODE (r) == CONSTRUCTOR && CONSTRUCTOR_NO_CLEARING (r))
     {
       if (!allow_non_constant)
 	error ("%qE is not a constant expression because it refers to "
