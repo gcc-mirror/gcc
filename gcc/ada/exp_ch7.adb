@@ -5460,7 +5460,7 @@ package body Exp_Ch7 is
 
       --  Finalization calls are inserted after the target
 
-      if Present (Act_After) then
+      if Is_Non_Empty_List (Act_After) then
          Last_Obj := Last (Act_After);
          Insert_List_After (Target, Act_After);
       else
