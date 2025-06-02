@@ -13419,6 +13419,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
       if (CLASS_TYPE_P (type1) && type_build_dtor_call (type1))
 	{
 	  deferring_access_check_sentinel dacs (dk_no_check);
+	  cp_unevaluated un;
 	  tree fn = get_dtor (type1, tf_none);
 	  if (!fn && !seen_error ())
 	    warning (0, "checking %qs for type %qT with a destructor that "
