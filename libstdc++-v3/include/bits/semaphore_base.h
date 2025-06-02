@@ -64,20 +64,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __semaphore_base(const __semaphore_base&) = delete;
     __semaphore_base& operator=(const __semaphore_base&) = delete;
 
-    static _GLIBCXX_ALWAYS_INLINE __count_type
-    _S_get_current(__count_type* __counter) noexcept
-    {
-      return __atomic_impl::load(__counter, memory_order::acquire);
-    }
+    // Load the current counter value.
+    _GLIBCXX_ALWAYS_INLINE __count_type
+    _M_get_current() const noexcept
+    { return __atomic_impl::load(&_M_counter, memory_order::acquire); }
 
-    static _GLIBCXX_ALWAYS_INLINE bool
-    _S_do_try_acquire(__count_type* __counter, __count_type& __old) noexcept
+    // Try to acquire the semaphore (i.e. decrement the counter).
+    // Returns false if the current counter is zero, or if another thread
+    // decrements the value first. In the latter case, __cur is set to the
+    // new value.
+    _GLIBCXX_ALWAYS_INLINE bool
+    _M_do_try_acquire(__count_type& __cur) noexcept
     {
-      if (__old == 0)
-	return false;
+      if (__cur == 0)
+	return false; // Cannot decrement when it's already zero.
 
-      return __atomic_impl::compare_exchange_strong(__counter,
-						    __old, __old - 1,
+      return __atomic_impl::compare_exchange_strong(&_M_counter,
+						    __cur, __cur - 1,
 						    memory_order::acquire,
 						    memory_order::relaxed);
     }
@@ -85,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _M_acquire() noexcept
     {
-      auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+      auto const __vfn = [this]{ return _M_get_current(); };
       auto __val = __vfn();
       auto const __pred = [&__val](__count_type __cur) {
 	if (__cur > 0)
@@ -95,7 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	return false;
       };
-      while (!_S_do_try_acquire(&_M_counter, __val))
+      while (!_M_do_try_acquire(__val))
 	if (__val == 0)
 	  std::__atomic_wait_address(&_M_counter, __pred, __vfn, true);
     }
@@ -103,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     _M_try_acquire() noexcept
     {
-      // The fastest implementation of this function is just _S_do_try_acquire
+      // The fastest implementation of this function is just _M_do_try_acquire
       // but that can fail under contention even when _M_count > 0.
       // Using _M_try_acquire_for(0ns) will retry a few times in a loop.
       return _M_try_acquire_for(__detail::__wait_clock_t::duration{});
@@ -113,7 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_try_acquire_until(const chrono::time_point<_Clock, _Duration>& __atime) noexcept
       {
-	auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+	auto const __vfn = [this]{ return _M_get_current(); };
 	auto __val = __vfn();
 	auto const __pred = [&__val](__count_type __cur) {
 	  if (__cur > 0)
@@ -123,7 +126,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  return false;
 	};
-	while (!_S_do_try_acquire(&this->_M_counter, __val))
+	while (!_M_do_try_acquire(__val))
 	  if (__val == 0)
 	    {
 	      if (!std::__atomic_wait_address_until(&_M_counter, __pred,
@@ -137,7 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_try_acquire_for(const chrono::duration<_Rep, _Period>& __rtime) noexcept
       {
-	auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+	auto const __vfn = [this]{ return _M_get_current(); };
 	auto __val = __vfn();
 	auto const __pred = [&__val](__count_type __cur) {
 	  if (__cur > 0)
@@ -147,7 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  return false;
 	};
-	while (!_S_do_try_acquire(&this->_M_counter, __val))
+	while (!_M_do_try_acquire(__val))
 	  if (__val == 0)
 	    {
 	      if (!std::__atomic_wait_address_for(&_M_counter, __pred,
