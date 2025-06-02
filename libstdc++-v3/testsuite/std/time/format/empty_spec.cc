@@ -492,19 +492,15 @@ test_year_month_day()
   verify( year(2024)/month(1)/30,
 	  WIDEN("2024-01-30") );
   verify( year(-100)/month(14)/1,
-	  // Should be -0100-14-01
-	  WIDEN("-100-14-01 is not a valid date") );
+	  WIDEN("-0100-14-01 is not a valid date") );
   verify( year(2025)/month(11)/100,
-	  // Should be 2025-11-100 ?
-	  WIDEN("2025-11-99 is not a valid date") );
+	  WIDEN("2025-11-100 is not a valid date") );
   verify( year(-32768)/month(2)/10,
 	  WIDEN("-32768-02-10 is not a valid date") );
   verify( year(-32768)/month(212)/10,
-	  // Should be 32768-212-10?
-	  WIDEN("-32768-84-10 is not a valid date") );
+	  WIDEN("-32768-212-10 is not a valid date") );
   verify( year(-32768)/month(2)/105,
-          // Should be 32768-02-99?
-	  WIDEN("-32768-02-99 is not a valid date") );
+	  WIDEN("-32768-02-105 is not a valid date") );
   verify( year(-32768)/month(14)/55,
 	  WIDEN("-32768-14-55 is not a valid date") );
 }

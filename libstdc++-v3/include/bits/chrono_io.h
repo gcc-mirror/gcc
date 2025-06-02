@@ -785,11 +785,12 @@ namespace __format
 	}
 
       static constexpr const _CharT* _S_chars
-	= _GLIBCXX_WIDEN("0123456789+-:/ {}");
-      static constexpr const _CharT* _S_plus_minus = _S_chars + 10;
-      static constexpr _CharT _S_colon = _S_chars[12];
-      static constexpr _CharT _S_slash = _S_chars[13];
-      static constexpr _CharT _S_space = _S_chars[14];
+	= _GLIBCXX_WIDEN("0123456789:/ +-{}");
+      static constexpr _CharT _S_colon = _S_chars[10];
+      static constexpr _CharT _S_slash = _S_chars[11];
+      static constexpr _CharT _S_space = _S_chars[12];
+      static constexpr const _CharT* _S_plus_minus = _S_chars + 13;
+      static constexpr const _CharT* _S_minus_empty_spec = _S_chars + 14;
       static constexpr const _CharT* _S_empty_spec = _S_chars + 15;
 
       template<typename _OutIter>
@@ -941,33 +942,39 @@ namespace __format
 				     __conv, __mod);
 	      }
 
-	  basic_string<_CharT> __s;
 	  int __yi = (int)__y;
 	  const bool __is_neg = __yi < 0;
 	  __yi = __builtin_abs(__yi);
+	  int __ci = __yi / 100;
+	  // For floored division -123//100 is -2 and -100//100 is -1
+	  if (__conv == 'C' && __is_neg && (__ci * 100) != __yi) [[unlikely]]
+	    ++__ci;
 
-	  if (__conv == 'Y' || __conv == 'C')
+	  if (__conv != 'y' && __ci >= 100) [[unlikely]]
 	    {
-	      int __ci = __yi / 100;
-	      if (__is_neg) [[unlikely]]
-		{
-		  __s.assign(1, _S_plus_minus[1]);
-		  // For floored division -123//100 is -2 and -100//100 is -1
-		  if (__conv == 'C' && (__ci * 100) != __yi)
-		    ++__ci;
-		}
-	      if (__ci >= 100) [[unlikely]]
-		{
-		  __s += std::format(_S_empty_spec, __ci / 100);
-		  __ci %= 100;
-		}
-	      __s += _S_two_digits(__ci);
+	      using _FmtStr = _Runtime_format_string<_CharT>;
+	      __string_view __fs = _S_minus_empty_spec + !__is_neg;
+	      __out = std::format_to(std::move(__out), _FmtStr(__fs),
+				     __conv == 'C' ? __ci : __yi);
 	    }
-
-	  if (__conv == 'Y' || __conv == 'y')
-	    __s += _S_two_digits(__yi % 100);
-
-	  return __format::__write(std::move(__out), __string_view(__s));
+	  else
+	    {
+	      _CharT __buf[5];
+	      __buf[0] = _S_plus_minus[1];
+	      __string_view __sv(__buf + 3, __buf + 3);
+	      if (__conv != 'y')
+		{
+		  _S_fill_two_digits(__buf + 1, __ci);
+		  __sv = __string_view(__buf + !__is_neg, __buf + 3);
+		}
+	      if (__conv != 'C')
+		{
+		  _S_fill_two_digits(__buf + 3, __yi % 100);
+		  __sv = __string_view(__sv.data(), __buf + 5);
+		}
+	      __out = __format::__write(std::move(__out), __sv);
+	    }
+	 return std::move(__out);
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -976,16 +983,30 @@ namespace __format
 	     _FormatContext&) const
 	{
 	  auto __ymd = _S_date(__t);
-	  basic_string<_CharT> __s;
-#if ! _GLIBCXX_USE_CXX11_ABI
-	  __s.reserve(8);
-#endif
-	  __s = _S_two_digits((unsigned)__ymd.month());
-	  __s += _S_slash;
-	  __s += _S_two_digits((unsigned)__ymd.day());
-	  __s += _S_slash;
-	  __s += _S_two_digits(__builtin_abs((int)__ymd.year()) % 100);
-	  return __format::__write(std::move(__out), __string_view(__s));
+	  auto __di = (unsigned)__ymd.day();
+	  auto __mi = (unsigned)__ymd.month();
+	  auto __yi = __builtin_abs((int)__ymd.year()) % 100;
+
+	  if (__mi >= 100 || __di >= 100) [[unlikely]]
+	    {
+	      using _FmtStr = _Runtime_format_string<_CharT>;
+	      __string_view __fs = _GLIBCXX_WIDEN("{:02d}/{:02d}/{:02d}");
+	      __out = std::format_to(std::move(__out), _FmtStr(__fs),
+				     __mi, __di, __yi);
+	    }
+	  else
+	    {
+	      _CharT __buf[8];
+	      __buf[2] = _S_slash;
+	      __buf[5] = _S_slash;
+	      __string_view __sv(__buf, __buf + 8);
+
+	      _S_fill_two_digits(__buf, __mi);
+	      _S_fill_two_digits(__buf + 3, __di);
+	      _S_fill_two_digits(__buf + 6, __yi);
+	      __out = __format::__write(std::move(__out), __sv);
+	    }
+	  return std::move(__out);
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1010,12 +1031,12 @@ namespace __format
 				     (char)__conv, 'O');
 	      }
 
-	  auto __sv = _S_two_digits(__i);
-	  _CharT __buf[2];
+	  _CharT __buf[3];
+	  auto __sv = _S_str_d2(__buf, __i);
 	  if (__conv == _CharT('e') && __i < 10)
 	    {
-	      __buf[0] = _S_space;
 	      __buf[1] = __sv[1];
+	      __buf[0] = _S_space;
 	      __sv = {__buf, 2};
 	    }
 	  return __format::__write(std::move(__out), __sv);
@@ -1027,16 +1048,35 @@ namespace __format
 	     _FormatContext&) const
 	{
 	  auto __ymd = _S_date(__t);
-	  auto __s = std::format(_GLIBCXX_WIDEN("{:04d}-  -  "),
-				 (int)__ymd.year());
-	  auto __sv = _S_two_digits((unsigned)__ymd.month());
-	  __s[__s.size() - 5] = __sv[0];
-	  __s[__s.size() - 4] = __sv[1];
-	  __sv = _S_two_digits((unsigned)__ymd.day());
-	  __s[__s.size() - 2] = __sv[0];
-	  __s[__s.size() - 1] = __sv[1];
-	  __sv = __s;
-	  return __format::__write(std::move(__out), __sv);
+	  auto __di = (unsigned)__ymd.day();
+	  auto __mi = (unsigned)__ymd.month();
+	  auto __yi = (int)__ymd.year();
+	  const bool __is_neg = __yi < 0;
+	  __yi = __builtin_abs(__yi);
+
+	  if (__yi >= 10000 || __mi >= 100 || __di >= 100) [[unlikely]]
+	    {
+	      using _FmtStr = _Runtime_format_string<_CharT>;
+	      __string_view __fs
+		= _GLIBCXX_WIDEN("-{:04d}-{:02d}-{:02d}") + !__is_neg;
+	      __out = std::format_to(std::move(__out), _FmtStr(__fs),
+				     __yi, __mi, __di);
+	    }
+	  else
+	    {
+	      _CharT __buf[11];
+	      __buf[0] = _S_plus_minus[1];
+	      __buf[5] = _S_plus_minus[1];
+	      __buf[8] = _S_plus_minus[1];
+	      __string_view __sv(__buf + !__is_neg, __buf + 11);
+
+	      _S_fill_two_digits(__buf + 1, __yi / 100);
+	      _S_fill_two_digits(__buf + 3, __yi % 100);
+	      _S_fill_two_digits(__buf + 6, __mi);
+	      _S_fill_two_digits(__buf + 9, __di);
+	      __out = __format::__write(std::move(__out), __sv);
+	    }
+	  return std::move(__out);
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1079,11 +1119,13 @@ namespace __format
 
 	  if (__conv == _CharT('I'))
 	    {
+	      __i %= 12;
 	      if (__i == 0)
 		__i = 12;
-	      else if (__i > 12)
-		__i -= 12;
 	    }
+	  else if (__i >= 100) [[unlikely]]
+	    return std::format_to(std::move(__out), _S_empty_spec, __i);
+
 	  return __format::__write(std::move(__out), _S_two_digits(__i));
 	}
 
@@ -1136,7 +1178,8 @@ namespace __format
 				     'm', 'O');
 	      }
 
-	  return __format::__write(std::move(__out), _S_two_digits(__i));
+	  _CharT __buf[3];
+	  return __format::__write(std::move(__out), _S_str_d2(__buf, __i));
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1169,12 +1212,15 @@ namespace __format
 	{
 	  // %p The locale's equivalent of the AM/PM designations.
 	  auto __hms = _S_hms(__t);
+	  auto __hi = __hms.hours().count();
+	  if (__hi >= 24) [[unlikely]]
+	    __hi %= 24;
+
 	  locale __loc = _M_locale(__ctx);
 	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
 	  const _CharT* __ampm[2];
 	  __tp._M_am_pm(__ampm);
-	  return _M_write(std::move(__out), __loc,
-			  __ampm[__hms.hours().count() >= 12]);
+	  return _M_write(std::move(__out), __loc, __ampm[__hi >= 12]);
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1222,19 +1268,25 @@ namespace __format
 	  // %R Equivalent to %H:%M
 	  // %T Equivalent to %H:%M:%S
 	  auto __hms = _S_hms(__t);
+	  auto __hi = __hms.hours().count();
 
-	  auto __s = std::format(_GLIBCXX_WIDEN("{:02d}:00"),
-				 __hms.hours().count());
-	  auto __sv = _S_two_digits(__hms.minutes().count());
-	  __s[__s.size() - 2] = __sv[0];
-	  __s[__s.size() - 1] = __sv[1];
-	  __sv = __s;
+   	  _CharT __buf[6];
+	  __buf[2] = _S_colon;
+	  __buf[5] = _S_colon;
+	  __string_view __sv(__buf, 5 + __secs);
+
+	  if (__hi >= 100) [[unlikely]]
+	    {
+	      __out = std::format_to(std::move(__out), _S_empty_spec, __hi);
+	      __sv.remove_prefix(2);
+	    }
+	  else
+	    _S_fill_two_digits(__buf, __hi);
+
+	  _S_fill_two_digits(__buf + 3, __hms.minutes().count());
 	  __out = __format::__write(std::move(__out), __sv);
 	  if (__secs)
-	    {
-	      *__out++ = _S_colon;
-	      __out = _M_S(__hms, std::move(__out), __ctx);
-	    }
+	    __out = _M_S(__hms, std::move(__out), __ctx);
 	  return __out;
 	}
 
@@ -1331,8 +1383,8 @@ namespace __format
 
 	  unsigned __wdi = __conv == 'u' ? __wd.iso_encoding()
 					 : __wd.c_encoding();
-	  const _CharT __d = _S_digit(__wdi);
-	  return __format::__write(std::move(__out), __string_view(&__d, 1));
+	  _CharT __buf[3];
+	  return __format::__write(std::move(__out), _S_str_d1(__buf, __wdi));
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1517,12 +1569,12 @@ namespace __format
 
       // %% handled in _M_format
 
-      // A single digit character in the range '0'..'9'.
-      static _CharT
+      // A string view of single digit character, "0".."9".
+      static basic_string_view<_CharT>
       _S_digit(int __n) noexcept
       {
 	// Extra 9s avoid past-the-end read on bad input.
-	return _GLIBCXX_WIDEN("0123456789999999")[__n & 0xf];
+	return { _GLIBCXX_WIDEN("0123456789999999") + (__n & 0xf), 1 };
       }
 
       // A string view of two digit characters, "00".."99".
@@ -1539,6 +1591,41 @@ namespace __format
 			 "9999999999999999") + 2 * (__n & 0x7f),
 	  2
 	};
+      }
+
+      [[__gnu__::__always_inline__]]
+      // Fills __buf[0] and __buf[1] with 2 digit value of __n.
+      static void
+      _S_fill_two_digits(_CharT* __buf, unsigned __n)
+      {
+	auto __sv = _S_two_digits(__n);
+	__buf[0] = __sv[0];
+	__buf[1] = __sv[1];
+      }
+
+      [[__gnu__::__always_inline__]]
+      // Returns decimal representation of __n.
+      // Returned string_view may point to __buf.
+      static basic_string_view<_CharT>
+      _S_str_d1(span<_CharT, 3> __buf, unsigned __n)
+      {
+	if (__n < 10) [[likely]]
+	  return _S_digit(__n);
+	return _S_str_d2(__buf, __n);
+      }
+
+      [[__gnu__::__always_inline__]]
+      // Returns decimal representation of __n, padded to 2 digits.
+      // Returned string_view may point to __buf.
+      static basic_string_view<_CharT>
+      _S_str_d2(span<_CharT, 3> __buf, unsigned __n)
+      {
+	if (__n < 100) [[likely]]
+	  return _S_two_digits(__n);
+
+	_S_fill_two_digits(__buf.data(), __n / 10);
+	__buf[2] = _S_digit(__n % 10)[0];
+	return __string_view(__buf.data(), 3);
       }
 
       // Accessors for the components of chrono types:
