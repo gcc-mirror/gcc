@@ -494,6 +494,10 @@
 @tab 1.0
 @tab Advanced interrupt architecture extension
 
+@item smcntrpmf
+@tab 1.0
+@tab Cycle and instret privilege mode filtering
+
 @item smepmp
 @tab 1.0
 @tab PMP Enhancements for memory access and execution prevention on Machine mode
