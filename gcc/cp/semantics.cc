@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
    during template instantiation, which may be regarded as a
    degenerate form of parsing.  */
 
-static tree maybe_convert_cond (tree);
 static tree finalize_nrv_r (tree *, int *, void *);
 
 /* Used for OpenMP non-static data member privatization.  */
@@ -1117,7 +1116,7 @@ annotate_saver::restore (tree new_inner)
    statement.  Convert it to a boolean value, if appropriate.
    In addition, verify sequence points if -Wsequence-point is enabled.  */
 
-static tree
+tree
 maybe_convert_cond (tree cond)
 {
   /* Empty conditions remain empty.  */

@@ -38,7 +38,7 @@ void f18 (void);
 void f19 (void);
 #pragma omp declare variant (f1) match(user={condition()})	/* { dg-error "expected \[^\n\r]*expression before '\\)' token" } */
 void f20 (void);
-#pragma omp declare variant (f1) match(user={condition(f1)})	/* { dg-error "property must be integer expression" } */
+#pragma omp declare variant (f1) match(user={condition(f1)})
 void f21 (void);
 #pragma omp declare variant (f1) match(user={condition(1, 2, 3)})	/* { dg-error "expected '\\)' before ',' token" } */
 void f22 (void);

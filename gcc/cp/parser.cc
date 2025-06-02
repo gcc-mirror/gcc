@@ -51717,12 +51717,25 @@ cp_parser_omp_context_selector (cp_parser *parser, enum omp_tss_code set,
 		  && !value_dependent_expression_p (t))
 		{
 		  t = fold_non_dependent_expr (t);
-		  if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+		  if (property_kind == OMP_TRAIT_PROPERTY_BOOL_EXPR)
 		    {
-		      error_at (token->location,
-				"property must be integer expression");
-		      return error_mark_node;
+		      t = maybe_convert_cond (t);
+		      if (t == error_mark_node)
+			return error_mark_node;
 		    }
+		  else
+		    {
+		      t = convert_from_reference (t);
+		      if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+			{
+			  error_at (token->location,
+				    "property must be integer expression");
+			  return error_mark_node;
+			}
+		    }
+		  if (!processing_template_decl
+		      && TREE_CODE (t) != CLEANUP_POINT_EXPR)
+		    t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 	      properties = make_trait_property (NULL_TREE, t, properties);
 	      break;

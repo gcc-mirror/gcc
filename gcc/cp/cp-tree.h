@@ -7951,6 +7951,7 @@ extern bool perform_deferred_access_checks	(tsubst_flags_t);
 extern bool perform_or_defer_access_check	(tree, tree, tree,
 						 tsubst_flags_t,
 						 access_failure_info *afi = NULL);
+extern tree maybe_convert_cond (tree);
 
 /* RAII sentinel to ensures that deferred access checks are popped before
   a function returns.  */
