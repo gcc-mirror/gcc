@@ -1,3 +1,25 @@
+2025-06-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-05-29  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/flat_map (_Flat_map_impl::operator==): Compare
+	keys and values separately.
+
+2025-06-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-05-29  Patrick Palka  <ppalka@redhat.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120465
+	* include/std/flat_map (_Flat_map_impl::_M_erase_if): Use a
+	projection with ranges::remove_if to pass a pair instead of
+	a tuple to the predicate.
+	* testsuite/23_containers/flat_map/1.cc (test07): Strengthen
+	to expect the argument passed to the predicate is a pair.
+	* testsuite/23_containers/flat_multimap/1.cc (test07): Likewise.
+
 2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
