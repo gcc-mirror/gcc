@@ -10052,14 +10052,19 @@ tsubst_entering_scope (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
    D1 is the PTYPENAME terminal, and ARGLIST is the list of arguments.
 
+   If D1 is an identifier and CONTEXT is non-NULL, then the lookup is
+   carried out in CONTEXT. Currently, only namespaces are supported for
+   CONTEXT.
+
+   If D1 is an identifier and CONTEXT is NULL, the lookup is performed
+   in the innermost non-namespace binding.
+
+   Otherwise CONTEXT is ignored and no lookup is carried out.
+
    IN_DECL, if non-NULL, is the template declaration we are trying to
    instantiate.
 
    Issue error and warning messages under control of COMPLAIN.
-
-   If the template class is really a local class in a template
-   function, then the FUNCTION_CONTEXT is the function in which it is
-   being instantiated.
 
    ??? Note that this function is currently called *twice* for each
    template-id: the first time from the parser, while creating the
@@ -10079,20 +10084,23 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
   spec_entry **slot;
   spec_entry *entry;
 
-  if (identifier_p (d1))
+  if (identifier_p (d1) && context)
+    {
+      gcc_checking_assert (TREE_CODE (context) == NAMESPACE_DECL);
+      push_decl_namespace (context);
+      templ = lookup_name (d1, LOOK_where::NAMESPACE, LOOK_want::NORMAL);
+      pop_decl_namespace ();
+    }
+  else if (identifier_p (d1))
     {
       tree value = innermost_non_namespace_value (d1);
       if (value && DECL_TEMPLATE_TEMPLATE_PARM_P (value))
 	templ = value;
       else
-	{
-	  if (context)
-	    push_decl_namespace (context);
+        {
 	  templ = lookup_name (d1);
 	  templ = maybe_get_template_decl_from_type_decl (templ);
-	  if (context)
-	    pop_decl_namespace ();
-	}
+        }
     }
   else if (TREE_CODE (d1) == TYPE_DECL && MAYBE_CLASS_TYPE_P (TREE_TYPE (d1)))
     {
