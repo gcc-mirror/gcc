@@ -4042,7 +4042,7 @@
 ])
 
 (define_code_iterator any_int_binop_no_shift_vx [
-  plus minus and ior xor mult
+  plus minus and ior xor mult div
 ])
 
 (define_code_iterator any_int_unop [neg not])

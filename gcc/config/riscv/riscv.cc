@@ -3891,6 +3891,25 @@ riscv_extend_cost (rtx op, bool unsigned_p)
   return COSTS_N_INSNS (2);
 }
 
+/* Return the cost of the vector binary rtx like add, minus, mult.
+   The cost of gr2vr will be appended if there one of the op comes
+   from the VEC_DUPLICATE.  */
+
+static int
+get_vector_binary_rtx_cost (rtx x, int gr2vr_cost)
+{
+  gcc_assert (riscv_v_ext_mode_p (GET_MODE (x)));
+
+  rtx op_0 = XEXP (x, 0);
+  rtx op_1 = XEXP (x, 1);
+
+  if (GET_CODE (op_0) == VEC_DUPLICATE
+      || GET_CODE (op_1) == VEC_DUPLICATE)
+    return (gr2vr_cost + 1) * COSTS_N_INSNS (1);
+  else
+    return COSTS_N_INSNS (1);
+}
+
 /* Implement TARGET_RTX_COSTS.  */
 
 #define SINGLE_SHIFT_COST 1
@@ -3914,6 +3933,21 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	      {
 	      case VEC_DUPLICATE:
 		*total = gr2vr_cost * COSTS_N_INSNS (1);
+		break;
+	      case IF_THEN_ELSE:
+		{
+		  rtx op_1 = XEXP (x, 1);
+
+		  switch (GET_CODE (op_1))
+		    {
+		    case DIV:
+		      *total = get_vector_binary_rtx_cost (op_1, gr2vr_cost);
+		      break;
+		    default:
+		      *total = COSTS_N_INSNS (1);
+		      break;
+		    }
+		}
 		break;
 	      case PLUS:
 	      case MINUS:
