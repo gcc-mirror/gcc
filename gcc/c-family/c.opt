@@ -938,7 +938,7 @@ C ObjC C++ ObjC++ CPP(cpp_warn_invalid_utf8) CppReason(CPP_W_INVALID_UTF8) Var(w
 Warn about invalid UTF-8 characters.
 
 Wjump-misses-init
-C ObjC Var(warn_jump_misses_init) Warning LangEnabledby(C ObjC,Wc++-compat)
+C ObjC Var(warn_jump_misses_init) Warning LangEnabledBy(C ObjC,Wc++-compat)
 Warn when a jump misses a variable initialization.
 
 Enum
