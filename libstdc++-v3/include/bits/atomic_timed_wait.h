@@ -87,7 +87,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __wait_until_impl(const void* __addr, __wait_args_base& __args,
 		      const __wait_clock_t::duration& __atime);
 
-    // Returns {true, val} if wait ended before a timeout.
     template<typename _Clock, typename _Dur>
       __wait_result_type
       __wait_until(const void* __addr, __wait_args_base& __args,
@@ -158,8 +157,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  bool __bare_wait = false) noexcept
     {
       __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
-      auto __res = __detail::__wait_until(__addr, &__args, __atime);
-      return __res.first; // C++26 will also return last observed __val
+      auto __res = __detail::__wait_until(__addr, __args, __atime);
+      return !__res._M_timeout; // C++26 will also return last observed __val
     }
 
   template<typename _Tp, typename _ValFn,
@@ -203,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __atomic_wait_address_for_v(const __detail::__platform_wait_t* __addr,
 				__detail::__platform_wait_t __old,
 				int __order,
-				const chrono::time_point<_Rep, _Period>& __rtime,
+				const chrono::duration<_Rep, _Period>& __rtime,
 				bool __bare_wait = false) noexcept
     {
       __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
