@@ -60,18 +60,18 @@ extern "C"
   void __gg__realloc_if_necessary(char **dest, size_t *dest_size, size_t new_size);
   void  __gg__alphabet_create(cbl_encoding_t encoding,
                               size_t alphabet_index,
-                              unsigned char *alphabet,
+                              const unsigned char *alphabet,
                               int low_char,
                               int high_char );
   bool __gg__string_to_numeric_edited(char * const dest,
-                                      char *source,       // ASCII
+                                      const char *source,       // ASCII
                                       int rdigits,
                                       int is_negative,
                                       const char *picture);
   void __gg__string_to_alpha_edited(char *dest,
-                                    char *source,
+                                    const char *source,
                                     int slength,
-                                    char *picture);
+                                    const char *picture);
   void __gg__currency_sign_init();
   void __gg__currency_sign(int symbol, const char *sign);
   void __gg__remove_trailing_zeroes(char *p);

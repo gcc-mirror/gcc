@@ -464,16 +464,20 @@ struct cbl_declarative_t {
   uint32_t nfile, files[files_max];
   cbl_file_mode_t mode;
 
+  // cppcheck-suppress noExplicitConstructor
   cbl_declarative_t( cbl_file_mode_t mode = file_mode_none_e )
-    : section(0), global(false)
+    : section(0)
+    , global(false)
     , type(ec_none_e)
     , nfile(0)
     , mode(mode)
   {
     std::fill(files, files + COUNT_OF(files), 0);
   }
+  // cppcheck-suppress noExplicitConstructor
   cbl_declarative_t( ec_type_t type )
-    : section(0), global(false)
+    : section(0)
+    , global(false)
     , type(type)
     , nfile(0)
     , mode(file_mode_none_e)
@@ -533,9 +537,9 @@ struct cbl_declarative_t {
     return section < that.section;
   }
 
-  // TRUE if there are no files to match, or the provided file is in the list.
-  bool match_file( size_t file ) const {
-    static const auto pend = files + nfile;
+    // TRUE if there are no files to match, or the provided file is in the list.
+    bool match_file( size_t file ) const {
+    static const auto pend = files + nfile; // cppcheck-suppress constVariablePointer
 
     return nfile == 0 || pend != std::find(files, files + nfile, file);
   }

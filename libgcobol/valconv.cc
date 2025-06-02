@@ -71,7 +71,7 @@ __gg__realloc_if_necessary(char **dest, size_t *dest_size, size_t new_size)
     new_size |= new_size>>16;
     new_size |= (new_size>>16)>>16;
     *dest_size = new_size + 1;
-    *dest = (char *)realloc(*dest, *dest_size);
+    *dest = static_cast<char *>(realloc(*dest, *dest_size));
     }
   }
 
@@ -79,7 +79,7 @@ extern "C"
 void
 __gg__alphabet_create(  cbl_encoding_t encoding,
                         size_t alphabet_index,
-                        unsigned char *alphabet,
+                        const unsigned char *alphabet,
                         int low_char,
                         int high_char )
   {
@@ -222,7 +222,7 @@ Rindex(const char *dest, int length, char ch)
 extern "C"
 bool
 __gg__string_to_numeric_edited( char * const dest,
-                                char *source,       // In source characters
+                                const char *source,     // In source characters
                                 int rdigits,
                                 int is_negative,
                                 const char *picture)
@@ -1222,9 +1222,9 @@ got_float:
 extern "C"
 void
 __gg__string_to_alpha_edited(   char *dest,
-                                char *source,
+                                const char *source,
                                 int slength,
-                                char *picture)
+                                const char *picture)
   {
   // Put the PICTURE into the data area.  If the caller didn't leave enough
   // room, well, poo on them.  Said another way; if they specify disaster,
