@@ -2782,9 +2782,11 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
 	start.expr = gfc_evaluate_now (start.expr, &se->pre);
 
       /* Change the start of the string.  */
-      if ((TREE_CODE (TREE_TYPE (se->expr)) == ARRAY_TYPE
-	   || TREE_CODE (TREE_TYPE (se->expr)) == INTEGER_TYPE)
-	  && TYPE_STRING_FLAG (TREE_TYPE (se->expr)))
+      if (((TREE_CODE (TREE_TYPE (se->expr)) == ARRAY_TYPE
+	    || TREE_CODE (TREE_TYPE (se->expr)) == INTEGER_TYPE)
+	   && TYPE_STRING_FLAG (TREE_TYPE (se->expr)))
+	  || (POINTER_TYPE_P (TREE_TYPE (se->expr))
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (se->expr))) != ARRAY_TYPE))
 	tmp = se->expr;
       else
 	tmp = build_fold_indirect_ref_loc (input_location,
@@ -2794,6 +2796,14 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
 	{
 	  tmp = gfc_build_array_ref (tmp, start.expr, NULL_TREE, true);
 	  se->expr = gfc_build_addr_expr (type, tmp);
+	}
+      else if (POINTER_TYPE_P (TREE_TYPE (tmp)))
+	{
+	  tree diff;
+	  diff = fold_build2 (MINUS_EXPR, size_type_node, start.expr,
+			      build_one_cst (size_type_node));
+	  se->expr
+	    = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (tmp), tmp, diff);
 	}
     }
 
