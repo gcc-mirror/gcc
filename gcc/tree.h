@@ -5572,7 +5572,7 @@ storage_order_barrier_p (const_tree t)
       && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (op)))
     return true;
 
-  return false;
+  return reverse_storage_order_for_component_p (op);
 }
 
 /* Given a DECL or TYPE, return the scope in which it was declared, or

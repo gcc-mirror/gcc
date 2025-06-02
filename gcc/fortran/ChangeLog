@@ -1,3 +1,28 @@
+2025-05-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-05-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* check.cc (gfc_check_c_associated): Use new helper functions.
+	Only call check_c_ptr_1 if optional c_ptr_2 tests succeed.
+	(check_c_ptr_1): Handle only c_ptr_1 checks.
+	(check_c_ptr_2): Expand checks for c_ptr_2 and handle cases
+	where there is no derived pointer in the gfc_expr and check
+	the inmod_sym_id only if it exists. Rephrase error message.
+	* misc.cc (gfc_typename): Handle the case for BT_VOID rather
+	than throw an internal error.
+
+2025-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2025-05-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120355
+	* interface.cc (compare_parameter): If the global function has a
+	result clause, take typespec from there for the comparison against
+	the dummy argument.
+
 2025-05-22  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

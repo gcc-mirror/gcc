@@ -1981,8 +1981,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_M_range_initialize_n(_Iterator __first, _Sentinel __last,
 			      size_type __n)
 	{
-	  pointer __start = this->_M_impl._M_start =
+	  pointer __start =
 	    this->_M_allocate(_S_check_init_len(__n, _M_get_Tp_allocator()));
+	  this->_M_impl._M_start = this->_M_impl._M_finish = __start;
 	  this->_M_impl._M_end_of_storage = __start + __n;
 	  this->_M_impl._M_finish
 	      = std::__uninitialized_copy_a(_GLIBCXX_MOVE(__first), __last,

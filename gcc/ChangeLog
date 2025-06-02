@@ -1,3 +1,26 @@
+2025-05-29  Yuta Mukai  <mukai.yuta@fujitsu.com>
+
+	Backported from master:
+	2025-05-28  Yuta Mukai  <mukai.yuta@fujitsu.com>
+
+	* config/aarch64/aarch64-cores.def (fujitsu-monaka): Update ISA
+	features.
+
+2025-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-sra.cc (scan_expr_access): Also disqualify storage order
+	barriers from splitting.
+	* tree.h (storage_order_barrier_p): Also return false if the
+	operand of the VIEW_CONVERT_EXPR has reverse storage order.
+
+2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Common Variable Attributes): Fix typo in
+	description of nonstring.
+
 2025-05-25  Michael J. Eager  <eager@eagercon.com>
 
 	PR target/86772

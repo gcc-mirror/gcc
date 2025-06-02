@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=gnu" }
+! { dg-options "-std=legacy" }
 ! PR64506
 character(25) :: astring
 

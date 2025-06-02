@@ -223,8 +223,9 @@ void
 test07()
 {
   // PR libstdc++/119427 - std::erase_if(std::flat_foo) does not work
+  // PR libstdc++/120465 - erase_if for flat_map calls predicate with incorrect type
   std::flat_multimap<int, int> m = {std::pair{1, 2}, {3, 4}, {3, 3}, {5, 6}, {6, 6}};
-  auto n = std::erase_if(m, [](auto x) { auto [k,v] = x; return k == 1 || v == 6; });
+  auto n = std::erase_if(m, [](auto x) { return x.first == 1 || x.second == 6; });
   VERIFY( n == 3 );
   VERIFY( std::ranges::equal(m, (std::pair<int,int>[]){{3,4},{3,3}}) );
 }

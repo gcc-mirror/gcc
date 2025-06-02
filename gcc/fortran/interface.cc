@@ -2547,7 +2547,14 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 			}
 		      else if (formal->attr.function)
 			{
-			  if (!gfc_compare_types (&global_asym->ts,
+			  gfc_typespec ts;
+
+			  if (global_asym->result)
+			    ts = global_asym->result->ts;
+			  else
+			    ts = global_asym->ts;
+
+			  if (!gfc_compare_types (&ts,
 						  &formal->ts))
 			    {
 			      gfc_error ("Type mismatch at %L passing global "

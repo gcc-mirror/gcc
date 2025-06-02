@@ -928,6 +928,21 @@ void f7_sub (f7_t *cc, const f7_t *aa, const f7_t *bb)
 #endif // F7MOD_sub_
 
 
+#ifdef F7MOD_fdim_
+F7_WEAK
+void f7_fdim (f7_t *cc, const f7_t *aa, const f7_t *bb)
+{
+  int8_t cmp = f7_cmp_unordered (aa, bb, true /*with_sign*/);
+  if (cmp == INT8_MIN)
+    return f7_set_nan (cc);
+  if (cmp < 0)
+    return f7_clr (cc);
+
+  f7_sub (cc, aa, bb);
+}
+#endif // F7MOD_fdim_
+
+
 #ifdef F7MOD_addsub_
 static void return_with_sign (f7_t *cc, const f7_t *aa, int8_t c_sign)
 {
@@ -1649,10 +1664,10 @@ void f7_exp (f7_t *cc, const f7_t *aa)
     return f7_set_nan (cc);
 
   /* The maximal exponent of 2 for a double is 1023, hence we may limit
-     to  |A| < 1023 * ln2 ~ 709.  We limit to  1024 ~ 1.99 * 2^9  */
+     to  |A| < 1023 * ln2 ~ 709.  We limit to  1024 = 2^10  */
 
   if (f7_class_inf (a_class)
-      || (f7_class_nonzero (a_class) && aa->expo >= 9))
+      || (f7_class_nonzero (a_class) && aa->expo >= 10))
     {
       if (f7_class_sign (a_class))
 	return f7_clr (cc);
