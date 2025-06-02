@@ -279,6 +279,9 @@ CUresult cuMemcpy3D (const CUDA_MEMCPY3D *);
 CUresult cuMemcpy3DAsync (const CUDA_MEMCPY3D *, CUstream);
 CUresult cuMemcpy3DPeer (const CUDA_MEMCPY3D_PEER *);
 CUresult cuMemcpy3DPeerAsync (const CUDA_MEMCPY3D_PEER *, CUstream);
+#define cuMemsetD8 cuMemsetD8_v2
+CUresult cuMemsetD8 (CUdeviceptr, unsigned char, size_t);
+CUresult cuMemsetD8Async (CUdeviceptr, unsigned char, size_t, CUstream);
 #define cuMemFree cuMemFree_v2
 CUresult cuMemFree (CUdeviceptr);
 CUresult cuMemFreeHost (void *);

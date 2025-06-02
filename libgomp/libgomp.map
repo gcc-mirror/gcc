@@ -454,6 +454,12 @@ GOMP_6.0 {
 	omp_get_uid_from_device_8_;
 } GOMP_5.1.3;
 
+GOMP_6.0.1 {
+  global:
+	omp_target_memset;
+	omp_target_memset_async;
+} GOMP_6.0;
+
 OACC_2.0 {
   global:
 	acc_get_num_devices;

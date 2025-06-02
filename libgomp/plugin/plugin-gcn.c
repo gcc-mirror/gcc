@@ -208,6 +208,8 @@ struct hsa_runtime_fn_info
   hsa_status_t (*hsa_code_object_deserialize_fn)
     (void *serialized_code_object, size_t serialized_code_object_size,
      const char *options, hsa_code_object_t *code_object);
+  hsa_status_t (*hsa_amd_memory_fill_fn)(void *ptr, uint32_t value,
+					 size_t count);
   hsa_status_t (*hsa_amd_memory_lock_fn)
     (void *host_ptr, size_t size, hsa_agent_t *agents, int num_agent,
      void **agent_ptr);
@@ -1456,6 +1458,7 @@ init_hsa_runtime_functions (void)
   DLSYM_FN (hsa_signal_load_acquire)
   DLSYM_FN (hsa_queue_destroy)
   DLSYM_FN (hsa_code_object_deserialize)
+  DLSYM_OPT_FN (hsa_amd_memory_fill)
   DLSYM_OPT_FN (hsa_amd_memory_lock)
   DLSYM_OPT_FN (hsa_amd_memory_unlock)
   DLSYM_OPT_FN (hsa_amd_memory_async_copy_rect)
@@ -4437,6 +4440,83 @@ init_hip_runtime_functions (void)
   return true;
 }
 
+bool
+GOMP_OFFLOAD_memset (int ord, void *ptr, int val, size_t count)
+{
+  hsa_status_t status = HSA_STATUS_SUCCESS;
+
+  /* A memset feature is only provided via hsa_amd_memory_fill; while it
+     is fast, it is an HSA extension and it has two requirements: The memory
+     must be aligned to multiples of 4 bytes - and, by construction, only
+     multiples of 4 bytes can be filled (uint32_t value argument).
+
+     This means: Either not using that function or up to three function calls:
+     - copy 1 to 3 bytes to get alignment (hsa_memory_copy), if unaligned
+     - call hsa_amd_memory_fill
+     - copy remaining 1 to 3 bytes (hsa_memory_copy), if after alignment
+       count is not a multiple of 4 bytes.
+
+     Having more than one function call is only profitable if there is
+     enough data to process; see below for the used heuristic values.  */
+
+  uint8_t v8 = (uint8_t) val;
+  size_t before = (4 - (uintptr_t) ptr % 4) % 4;  /* 0 to 3 bytes.  */
+  size_t tail = (count - before) % 4;  /* 0 to 3 bytes.  */
+
+  /* Heuristic  */
+  enum {
+    /* Prefer alloca to malloc up to ... */
+    alloca_size = 256,  /* bytes */
+    /* Call hsa_amd_memory_fill also when two copy calls are required.  */
+    always_use_fill = 256*1024,  /* bytes */
+    /* Call hsa_amd_memory_fill also when on copy call is required.  */
+    use_fill_one_copy = (128+64)*1024  /* bytes */
+  };
+
+  /* Do not call hsa_amd_memory_fill when any of the following conditions
+     is true. Note that it is always preferred if available and
+     before == tail == 0.  */
+  if (__builtin_expect (!hsa_fns.hsa_amd_memory_fill_fn, 0)
+      || (before && tail && count < always_use_fill)
+      || ((before || tail) && count < use_fill_one_copy))
+    before = count;
+
+  /* Copy call for alignment - or all data, if condition above is true.  */
+  if (before)
+    {
+      void *data;
+      if (before > alloca_size)
+	data = malloc (before * sizeof (uint8_t));
+      else
+	data = alloca (before * sizeof (uint8_t));
+      memset (data, val, before);
+      status = hsa_fns.hsa_memory_copy_fn (ptr, data, before);
+      if (before > alloca_size)
+	free (data);
+      if (data == 0 || status != HSA_STATUS_SUCCESS)
+	goto fail;
+      count -= before;
+    }
+
+  if (count == 0)
+    return true;
+
+  ptr += before;
+
+  uint32_t values = v8 | (v8 << 8) | (v8 << 16) | (v8 << 24);
+  status = hsa_fns.hsa_amd_memory_fill_fn (ptr, values, count / 4);
+  if (tail && status == HSA_STATUS_SUCCESS)
+    {
+      ptr += count - tail;
+      status = hsa_fns.hsa_memory_copy_fn (ptr, &values, tail);
+    }
+  if (status == HSA_STATUS_SUCCESS)
+    return true;
+
+fail:
+  GOMP_PLUGIN_error ("memory set failed");
+  return false;
+}
 
 void
 GOMP_OFFLOAD_interop (struct interop_obj_t *obj, int ord,
