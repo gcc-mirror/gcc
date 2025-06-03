@@ -4313,8 +4313,7 @@ cp_coroutine_transform::wrap_original_function_body ()
 {
   /* Avoid the code here attaching a location that makes the debugger jump.  */
   iloc_sentinel stable_input_loc (fn_start);
-  location_t loc = UNKNOWN_LOCATION;
-  input_location = loc;
+  location_t loc = fn_start;
 
   /* This will be our new outer scope.  */
   tree update_body
@@ -4455,7 +4454,7 @@ cp_coroutine_transform::wrap_original_function_body ()
 
   /* If the coroutine has a frame that needs to be freed, this will be set by
      the ramp.  */
-  var = coro_build_artificial_var (fn_start, coro_frame_needs_free_id,
+  var = coro_build_artificial_var (loc, coro_frame_needs_free_id,
 				   boolean_type_node, orig_fn_decl, NULL_TREE);
   DECL_CHAIN (var) = var_list;
   var_list = var;
@@ -4467,7 +4466,7 @@ cp_coroutine_transform::wrap_original_function_body ()
       tree ueh
 	= coro_build_promise_expression (orig_fn_decl, promise,
 					 coro_unhandled_exception_identifier,
-					 fn_start, NULL, /*musthave=*/true);
+					 loc, NULL, /*musthave=*/true);
       /* Create and initialize the initial-await-resume-called variable per
 	 [dcl.fct.def.coroutine] / 5.3.  */
       tree i_a_r_c
@@ -4529,9 +4528,9 @@ cp_coroutine_transform::wrap_original_function_body ()
 	  tree ueh_meth
 	    = lookup_promise_method (orig_fn_decl,
 				     coro_unhandled_exception_identifier,
-				     fn_start, /*musthave=*/false);
+				     loc, /*musthave=*/false);
 	  if (!ueh_meth || ueh_meth == error_mark_node)
-	    warning_at (fn_start, 0, "no member named %qE in %qT",
+	    warning_at (loc, 0, "no member named %qE in %qT",
 			coro_unhandled_exception_identifier,
 			get_coroutine_promise_type (orig_fn_decl));
 	}
@@ -4543,6 +4542,10 @@ cp_coroutine_transform::wrap_original_function_body ()
       if (return_void)
 	add_stmt (return_void);
     }
+
+  /* We are now doing actions associated with the end of the function, so
+     point to the closing brace.  */
+  input_location = loc = fn_end;
 
   /* co_return branches to the final_suspend label, so declare that now.  */
   fs_label
