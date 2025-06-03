@@ -198,10 +198,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 tree
 create_tmp_reg_or_ssa_name (tree type, gimple *stmt)
 {
-  if (gimple_in_ssa_p (cfun))
-    return make_ssa_name (type, stmt);
-  else
-    return create_tmp_reg (type);
+  return make_ssa_name (type, stmt);
 }
 
 /* CVAL is value taken from DECL_INITIAL of variable.  Try to transform it into
