@@ -159,6 +159,16 @@ package body System.Put_Images is
       Fat_Instance (S, X, "access");
    end Put_Image_Fat_Pointer;
 
+   procedure Ext_Acc_Instance is new
+     Put_Image_Pointer (Byte_String, Ext_Access_Pointer);
+
+   procedure Put_Image_Extended_Access_Pointer
+     (S : in out Sink'Class; X : Ext_Access_Pointer)
+   is
+   begin
+      Ext_Acc_Instance (S, X, "extended access");
+   end Put_Image_Extended_Access_Pointer;
+
    procedure Put_Image_Access_Subp (S : in out Sink'Class; X : Thin_Pointer) is
    begin
       Thin_Instance (S, X, "access subprogram");

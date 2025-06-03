@@ -1660,6 +1660,7 @@ package Rtsfind is
      RE_Put_Image_Long_Long_Long_Unsigned, -- System.Put_Images
      RE_Put_Image_Thin_Pointer,          -- System.Put_Images
      RE_Put_Image_Fat_Pointer,           -- System.Put_Images
+     RE_Put_Image_Extended_Access_Pointer, -- System.Put_Images
      RE_Put_Image_Access_Subp,           -- System.Put_Images
      RE_Put_Image_Access_Prot_Subp,      -- System.Put_Images
      RE_Put_Image_String,                -- System.Put_Images
@@ -3441,6 +3442,7 @@ package Rtsfind is
      RE_Put_Image_Long_Long_Long_Unsigned => System_Put_Images,
      RE_Put_Image_Thin_Pointer           => System_Put_Images,
      RE_Put_Image_Fat_Pointer            => System_Put_Images,
+     RE_Put_Image_Extended_Access_Pointer => System_Put_Images,
      RE_Put_Image_Access_Subp            => System_Put_Images,
      RE_Put_Image_Access_Prot_Subp       => System_Put_Images,
      RE_Put_Image_String                 => System_Put_Images,
