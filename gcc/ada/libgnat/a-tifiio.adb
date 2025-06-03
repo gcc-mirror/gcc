@@ -194,9 +194,6 @@ package body Ada.Text_IO.Fixed_IO with SPARK_Mode => Off is
          ((Num'Base'Small_Numerator = 1
             and then Num'Base'Small_Denominator <= 2**31)
            or else
-          (Num'Base'Small_Denominator = 1
-            and then Num'Base'Small_Numerator <= 2**31)
-           or else
           (Num'Base'Small_Numerator <= 2**27
             and then Num'Base'Small_Denominator <= 2**27));
    --  These conditions are derived from the prerequisites of System.Value_F
@@ -222,9 +219,6 @@ package body Ada.Text_IO.Fixed_IO with SPARK_Mode => Off is
        and then
          ((Num'Base'Small_Numerator = 1
             and then Num'Base'Small_Denominator <= 2**63)
-           or else
-          (Num'Base'Small_Denominator = 1
-            and then Num'Base'Small_Numerator <= 2**63)
            or else
           (Num'Base'Small_Numerator <= 2**59
             and then Num'Base'Small_Denominator <= 2**59));

@@ -36,12 +36,13 @@ with System.Value_R;
 package body System.Value_F is
 
    --  The prerequisite of the implementation is that the computation of the
-   --  operands of the scaled divide does not unduly overflow when the small
-   --  is neither an integer nor the reciprocal of an integer, which means
-   --  that its numerator and denominator must be both not larger than the
-   --  smallest divide 2**(Int'Size - 1) / Base where Base ranges over the
-   --  supported values for the base of the literal. Given that the largest
-   --  supported base is 16, this gives a limit of 2**(Int'Size - 5).
+   --  operands of the scaled divide does not unduly overflow, which means
+   --  that the numerator and the denominator of the small must be both not
+   --  larger than the smallest divide 2**(Int'Size - 1) / Base where Base
+   --  ranges over the supported values for the base of the literal, except
+   --  when the numerator is 1, in which case up to 2**(Int'Size - 1) is
+   --  permitted for the denominator. Given that the largest supported base
+   --  is 16, this gives a limit of 2**(Int'Size - 5) in the general case.
 
    pragma Assert (Int'Size <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
@@ -135,6 +136,9 @@ package body System.Value_F is
    --    Num * (Base ** -ScaleB) <= Num * (B ** N) < Den * B
 
    --  which means that the product does not overflow if Den <= 2**(M-1) / B.
+   --  Moreover, if 2**(M-1) / B < Den <= 2**(M-1), we can add 1 to ScaleB and
+   --  divide Val by B while preserving the rightmost B-digit of Val in Extra2
+   --  without changing the computation when Num = 1.
 
    ----------------------
    -- Integer_To_Fixed --

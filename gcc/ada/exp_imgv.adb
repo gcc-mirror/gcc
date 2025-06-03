@@ -1640,23 +1640,22 @@ package body Exp_Imgv is
             Num : constant Uint := Norm_Num (Small_Value (Rtyp));
             Den : constant Uint := Norm_Den (Small_Value (Rtyp));
             Max : constant Uint := UI_Max (Num, Den);
-            Min : constant Uint := UI_Min (Num, Den);
             Siz : constant Uint := Esize (Rtyp);
 
          begin
             if Siz <= 32
               and then Max <= Uint_2 ** 31
-              and then (Min = Uint_1 or else Max <= Uint_2 ** 27)
+              and then (Num = Uint_1 or else Max <= Uint_2 ** 27)
             then
                Vid := RE_Value_Fixed32;
             elsif Siz <= 64
               and then Max <= Uint_2 ** 63
-              and then (Min = Uint_1 or else Max <= Uint_2 ** 59)
+              and then (Num = Uint_1 or else Max <= Uint_2 ** 59)
             then
                Vid := RE_Value_Fixed64;
             elsif System_Max_Integer_Size = 128
               and then Max <= Uint_2 ** 127
-              and then (Min = Uint_1 or else Max <= Uint_2 ** 123)
+              and then (Num = Uint_1 or else Max <= Uint_2 ** 123)
             then
                Vid := RE_Value_Fixed128;
             else
