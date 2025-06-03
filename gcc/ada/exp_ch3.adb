@@ -342,9 +342,9 @@ package body Exp_Ch3 is
    --     typSO          provides result of 'Output attribute
    --     typPI          provides result of 'Put_Image attribute
    --
-   --  The following entries are additionally present for non-limited tagged
-   --  types, and implement additional dispatching operations for predefined
-   --  operations:
+   --  The following entries implement additional dispatching operations for
+   --  predefined operations. Deep finalization is present on all tagged types;
+   --  the others only on nonlimited tagged types:
    --
    --     _equality      implements "=" operator
    --     _assign        implements assignment operation
