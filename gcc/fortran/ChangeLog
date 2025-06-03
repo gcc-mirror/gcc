@@ -1,3 +1,23 @@
+2025-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120193
+	* trans-types.cc (gfc_init_types): For flag_unsigned use
+	build_distinct_type_copy or build_variant_type_copy from
+	gfc_character_types[index_char] if index_char > -1 instead of
+	gfc_character_types[index_char] or
+	gfc_build_unsigned_type (&gfc_unsigned_kinds[index]).
+
+2025-06-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-05-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119856
+	* io.cc: Set missing comma error checks to STD_STD_LEGACY.
+
 2025-05-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
