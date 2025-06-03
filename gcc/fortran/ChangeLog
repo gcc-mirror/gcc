@@ -1,3 +1,13 @@
+2025-06-02  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103391
+	* trans-expr.cc (gfc_trans_assignment_1): Do not use poly assign
+	for pointer arrays on lhs (as it is done for allocatables
+	already).
+
 2025-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
