@@ -12,6 +12,46 @@ using namespace std::chrono;
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
 #define WIDEN(S) WIDEN_(_CharT, S)
 
+template<typename CharT, typename T>
+void
+test_no_empty_spec()
+{
+  try
+  {
+    T t{};
+
+    if constexpr (std::is_same_v<CharT, char>)
+      (void)std::vformat("{}", std::make_format_args(t));
+#ifdef _GLIBCXX_USE_WCHAR_T
+    else
+      (void)std::vformat(L"{}", std::make_wformat_args(t));
+#endif // _GLIBCXX_USE_WCHAR_T
+    VERIFY(false);
+  }
+  catch (const std::format_error&)
+  {
+    VERIFY(true);
+  }
+}
+
+template<typename T, typename _CharT>
+void verify(const T& t, std::basic_string_view<_CharT> str)
+{
+  std::basic_string<_CharT> res;
+
+  res = std::format(WIDEN("{}"), t);
+  VERIFY( res == str );
+
+  std::basic_stringstream<_CharT> os;
+  os << t;
+  res = std::move(os).str();
+  VERIFY( res == str );
+}
+
+template<typename T, typename CharT>
+void verify(const T& t, const CharT* str)
+{ verify(t, std::basic_string_view<CharT>(str)); }
+
 template<typename _CharT>
 void
 test_padding()
@@ -35,20 +75,6 @@ test_padding()
 
   res = std::format(WIDEN("{:=^27}"), month(16));
   VERIFY( res == WIDEN("==16 is not a valid month==") );
-}
-
-template<typename T, typename _CharT>
-void verify(const T& t, const _CharT* str)
-{
-  std::basic_string<_CharT> res;
-
-  res = std::format(WIDEN("{}"), t);
-  VERIFY( res == str );
-
-  std::basic_stringstream<_CharT> os;
-  os << t;
-  res = std::move(os).str();
-  VERIFY( res == str );
 }
 
 template<typename Ret = void>
@@ -553,6 +579,159 @@ test_calendar()
   test_year_month_weekday_last<CharT>();
 }
 
+template<typename Clock, typename Dur, typename Dur2>
+constexpr auto
+wall_cast(const local_time<Dur2>& tp)
+{
+  using TP = time_point<Clock, std::common_type_t<Dur, days>>;
+  if constexpr (std::is_same_v<Clock, utc_clock> || std::is_same_v<Clock, file_clock>)
+    return clock_cast<Clock>(wall_cast<system_clock, Dur>(tp));
+  else if constexpr (std::is_same_v<Clock, tai_clock>)
+    return TP(floor<Dur>(tp.time_since_epoch()) + days(4383));
+  else if constexpr (std::is_same_v<Clock, gps_clock>)
+    return TP(floor<Dur>(tp.time_since_epoch()) - days(3657));
+  else // system_clock, local_t
+    return time_point<Clock, Dur>(floor<Dur>(tp.time_since_epoch()));
+}
+
+using decadays = duration<days::rep, std::ratio_multiply<std::deca, days::period>>;
+using kilodays = duration<days::rep, std::ratio_multiply<std::kilo, days::period>>;
+
+template<typename _CharT, typename Clock>
+void
+test_time_point(bool daysAsTime)
+{
+  std::basic_string<_CharT> res;
+
+  const auto lt = local_days(2024y/March/22) + 13h + 24min + 54s + 111222333ns;
+  auto strip_time = [daysAsTime](std::basic_string_view<_CharT> sv)
+  { return daysAsTime ? sv : sv.substr(0, 10); };
+
+  verify( wall_cast<Clock, nanoseconds>(lt),
+	  WIDEN("2024-03-22 13:24:54.111222333") );
+  verify( wall_cast<Clock, microseconds>(lt),
+	  WIDEN("2024-03-22 13:24:54.111222") );
+  verify( wall_cast<Clock, milliseconds>(lt),
+	  WIDEN("2024-03-22 13:24:54.111") );
+  verify( wall_cast<Clock, seconds>(lt),
+	  WIDEN("2024-03-22 13:24:54") );
+  verify( wall_cast<Clock, minutes>(lt),
+	  WIDEN("2024-03-22 13:24:00") );
+  verify( wall_cast<Clock, hours>(lt),
+	  WIDEN("2024-03-22 13:00:00") );
+  verify( wall_cast<Clock, days>(lt),
+	  strip_time(WIDEN("2024-03-22 00:00:00")) );
+  verify( wall_cast<Clock, decadays>(lt),
+	  strip_time(WIDEN("2024-03-18 00:00:00")) );
+  verify( wall_cast<Clock, kilodays>(lt),
+	  strip_time(WIDEN("2022-01-08 00:00:00")) );
+}
+
+template<typename _CharT>
+void
+test_leap_second()
+{
+  std::basic_string<_CharT> res;
+
+  const auto st = sys_days(2012y/June/30) + 23h + 59min + 59s + 111222333ns;
+  auto tp = clock_cast<utc_clock>(st);
+  tp += 1s;
+
+  verify( floor<nanoseconds>(tp),
+	  WIDEN("2012-06-30 23:59:60.111222333") );
+  verify( floor<microseconds>(tp),
+	  WIDEN("2012-06-30 23:59:60.111222") );
+  verify( floor<milliseconds>(tp),
+	  WIDEN("2012-06-30 23:59:60.111") );
+  verify( floor<seconds>(tp),
+	  WIDEN("2012-06-30 23:59:60") );
+}
+
+template<typename Dur, typename Dur2>
+auto
+make_zoned(const sys_time<Dur2>& st, const time_zone* tz)
+{ return zoned_time<Dur>(tz, floor<Dur>(st)); }
+
+template<typename _CharT>
+void
+test_zoned_time()
+{
+  const auto st = sys_days(2024y/March/22) + 13h + 24min + 54s + 111222333ns;
+  const time_zone* tz = locate_zone("Europe/Sofia");
+  VERIFY( tz != nullptr );
+
+  verify( make_zoned<nanoseconds>(st, tz),
+	  WIDEN("2024-03-22 15:24:54.111222333 EET") );
+  verify( make_zoned<microseconds>(st, tz),
+	  WIDEN("2024-03-22 15:24:54.111222 EET") );
+  verify( make_zoned<milliseconds>(st, tz),
+	  WIDEN("2024-03-22 15:24:54.111 EET") );
+  verify( make_zoned<seconds>(st, tz),
+	  WIDEN("2024-03-22 15:24:54 EET") );
+  verify( make_zoned<minutes>(st, tz),
+	  WIDEN("2024-03-22 15:24:00 EET") );
+  verify( make_zoned<hours>(st, tz),
+	  WIDEN("2024-03-22 15:00:00 EET") );
+  verify( make_zoned<days>(st, tz),
+	  WIDEN("2024-03-22 02:00:00 EET") );
+  verify( make_zoned<decadays>(st, tz),
+	  WIDEN("2024-03-18 02:00:00 EET") );
+  verify( make_zoned<kilodays>(st, tz),
+	  WIDEN("2022-01-08 02:00:00 EET") );
+}
+
+template<typename Dur, typename Dur2>
+auto
+local_fmt(const local_time<Dur2>& lt, std::string* zone)
+{ return local_time_format(floor<Dur>(lt), zone); }
+
+template<typename _CharT>
+void
+test_local_time_format()
+{
+  std::basic_string<_CharT> res;
+
+  std::string abbrev = "Zone";
+  const auto lt = local_days(2024y/March/22) + 13h + 24min + 54s + 111222333ns;
+
+  res = std::format(WIDEN("{}"), local_fmt<nanoseconds>(lt, &abbrev));
+  VERIFY( res == WIDEN("2024-03-22 13:24:54.111222333 Zone") );
+  res = std::format(WIDEN("{}"), local_fmt<microseconds>(lt, &abbrev));
+  VERIFY( res == WIDEN("2024-03-22 13:24:54.111222 Zone") );
+  res = std::format(WIDEN("{}"), local_fmt<milliseconds>(lt, &abbrev));
+  VERIFY( res == WIDEN("2024-03-22 13:24:54.111 Zone") );
+  res = std::format(WIDEN("{}"), local_fmt<seconds>(lt, &abbrev));
+  VERIFY( res == WIDEN("2024-03-22 13:24:54 Zone") );
+  res = std::format(WIDEN("{}"), local_fmt<minutes>(lt, &abbrev));
+  VERIFY( res == WIDEN("2024-03-22 13:24:00 Zone") );
+  res = std::format(WIDEN("{}"), local_fmt<hours>(lt, &abbrev));
+  VERIFY( res == WIDEN("2024-03-22 13:00:00 Zone") );
+  res = std::format(WIDEN("{}"), local_fmt<days>(lt, &abbrev));
+  VERIFY( res == WIDEN("2024-03-22 00:00:00 Zone") );
+  res = std::format(WIDEN("{}"), local_fmt<decadays>(lt, &abbrev));
+  VERIFY( res == WIDEN("2024-03-18 00:00:00 Zone") );
+  res = std::format(WIDEN("{}"), local_fmt<kilodays>(lt, &abbrev));
+  VERIFY( res == WIDEN("2022-01-08 00:00:00 Zone") );
+}
+
+template<typename CharT>
+void
+test_time_points()
+{
+  test_time_point<CharT, local_t>(false);
+  test_time_point<CharT, system_clock>(false);
+  test_time_point<CharT, utc_clock>(true);
+  test_time_point<CharT, tai_clock>(true);
+  test_time_point<CharT, gps_clock>(true);
+  test_time_point<CharT, file_clock>(true);
+  test_leap_second<CharT>();
+  test_zoned_time<CharT>();
+  test_local_time_format<CharT>();
+
+  test_no_empty_spec<CharT, sys_time<years>>();
+  test_no_empty_spec<CharT, sys_time<duration<float>>>();
+}
+
 template<typename CharT>
 void
 test_all()
@@ -560,6 +739,7 @@ test_all()
   test_padding<CharT>();
   test_durations<CharT>();
   test_calendar<CharT>();
+  test_time_points<CharT>();
 }
 
 int main()
