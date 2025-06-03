@@ -1,3 +1,65 @@
+2025-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string::size): Remove space
+	before parameter list.
+	(basic_string::capacity): Likewise.
+	* include/bits/stl_deque.h (deque::size): Likewise.
+	* include/bits/stl_vector.h (vector::size, vector::capacity):
+	Likewise.
+	* include/bits/vector.tcc (vector::_M_realloc_insert): Likewise.
+	(vector::_M_realloc_append): Likewise.
+
+2025-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120386
+	* include/bits/ranges_algo.h (__unique_copy_fn): Reorder
+	arguments for third case to match the first two cases.
+	* include/bits/stl_algo.h (__unique_copy): Replace three
+	overloads with two, depending only on the iterator category of
+	the input range.  Dispatch to __unique_copy_1 for the
+	non-forward case.
+	(__unique_copy_1): New overloads for the case where the input
+	range uses non-forward iterators.
+	(unique_copy): Only pass the input range category to
+	__unique_copy.
+	* testsuite/25_algorithms/unique_copy/lwg2439.cc: New test.
+
+2025-06-02  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/funcwrap.h (__polyfunc::__pass_by_rref): Define.
+	(__polyfunc::__param_t): Update to use __pass_by_rref.
+	* include/bits/cpyfunc_impl.h:: Assert that are parameters type
+	are complete.
+	* include/bits/funcref_impl.h: Likewise.
+	* include/bits/mofunc_impl.h: Likewise.
+	* testsuite/20_util/copyable_function/call.cc: New test.
+	* testsuite/20_util/function_ref/call.cc: New test.
+	* testsuite/20_util/move_only_function/call.cc: New test.
+	* testsuite/20_util/copyable_function/conv.cc: New test.
+	* testsuite/20_util/function_ref/conv.cc: New test.
+	* testsuite/20_util/move_only_function/conv.cc: New test.
+	* testsuite/20_util/copyable_function/incomplete_neg.cc: New test.
+	* testsuite/20_util/function_ref/incomplete_neg.cc: New test.
+	* testsuite/20_util/move_only_function/incomplete_neg.cc: New test.
+
+2025-06-02  Jonathan Wakely  <jwakely@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119152
+	* include/bits/indirect.h (std::polymorphic, pmr::polymorphic)
+	[__glibcxx_polymorphic]: Define.
+	* include/bits/version.def (polymorphic): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/memory: Define __cpp_lib_polymorphic.
+	* testsuite/std/memory/polymorphic/copy.cc: New test.
+	* testsuite/std/memory/polymorphic/copy_alloc.cc: New test.
+	* testsuite/std/memory/polymorphic/ctor.cc: New test.
+	* testsuite/std/memory/polymorphic/ctor_poly.cc: New test.
+	* testsuite/std/memory/polymorphic/incomplete.cc: New test.
+	* testsuite/std/memory/polymorphic/invalid_neg.cc: New test.
+	* testsuite/std/memory/polymorphic/move.cc: New test.
+	* testsuite/std/memory/polymorphic/move_alloc.cc: New test.
+
 2025-05-30  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* testsuite/std/time/format/empty_spec.cc: New test.

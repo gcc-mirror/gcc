@@ -1,3 +1,10 @@
+2025-06-02  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119975
+	* genapi.cc (parser_intrinsic_call_0): Use get_time_64() function.
+	* genutil.cc (get_time_64): Definition created.
+	* genutil.h (get_time_64): Declaration created.
+
 2025-06-01  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119524

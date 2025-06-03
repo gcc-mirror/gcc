@@ -1,3 +1,43 @@
+2025-06-02  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/120424
+	PR middle-end/118939
+	* lra-spills.cc (spill_pseudos): Update insn regno info.
+	* lra-eliminations.cc (update_reg_eliminate): Recognize
+	disabling of active elimination regardless of
+	prev_can_eliminate.
+
+2025-06-02  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension defs.
+	* config/riscv/riscv-ext.opt: Ditto.
+	* doc/riscv-ext.texi: Ditto.
+
+2025-06-02  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/predicates.md (call_insn_operand): Add condition
+	to not allow symbol_ref operands with TARGET_CMODEL_LARGE.
+	* config/or1k/or1k.opt: Document new -mcmodel=large
+	implications.
+	* doc/invoke.texi: Likewise.
+
+2025-06-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (tls_link): Add documentation.
+
+2025-06-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/t-riscv: Adjust build rule for gen-riscv-ext-opt
+	and gen-riscv-ext-texi.
+
+2025-06-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Use
+	range-based-for-loop.
+	* config/riscv/riscv-subset.h (riscv_subset_list::iterator):
+	New.
+	(riscv_subset_list::const_iterator): New.
+
 2025-06-01  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR other/120493

@@ -1,3 +1,54 @@
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* method.cc (destructible_expr): Fix refs and arrays of unknown
+	bound.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120506
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Always check
+	CONSTRUCTOR_NO_CLEARING.
+
+2025-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Remove an unused
+	label, guard the frame deallocation correctly, use
+	simpler APIs to build if and return statements.
+
+2025-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/118903
+	* constexpr.cc (potential_constant_expression_1): Emit
+	an error when co_await et. al. are used in constexpr
+	contexts.
+
+2025-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* error.cc (dump_expr): Add co_await, co_yield and co_return.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* method.cc (destructible_expr): Handle non-classes.
+	(constructible_expr): Check for abstract class here...
+	(is_xible_helper): ...not here.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* semantics.cc (trait_expr_value) [CPTK_HAS_TRIVIAL_DESTRUCTOR]:
+	Add cp_unevaluated.
+
+2025-06-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* cp-tree.h (maybe_convert_cond): Declare.
+	* parser.cc (cp_parser_omp_context_selector): Call
+	maybe_convert_cond and fold_build_cleanup_point_expr on the
+	expression for OMP_TRAIT_PROPERTY_BOOL_EXPR.
+	* pt.cc (tsubst_omp_context_selector): Likewise.
+	* semantics.cc (maybe_convert_cond): Remove static declaration.
+
 2025-05-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/113563

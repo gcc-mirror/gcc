@@ -1,3 +1,70 @@
+2025-06-02  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/120424
+	PR middle-end/118939
+	* g++.target/arm/pr120424.C: New.
+	* gnat.dg/controlled9.adb: New.
+	* gnat.dg/controlled9_pkg.ads: New.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* g++.dg/ext/is_destructible2.C: Add more cases.
+
+2025-06-02  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/arch-59.c: New test.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120506
+	* g++.dg/cpp2a/constinit21.C: New test.
+
+2025-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/118903
+	* g++.dg/coroutines/pr118903.C: New test.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* g++.dg/ext/is_destructible2.C: New test.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* g++.dg/ext/has_trivial_destructor-3.C: New test.
+
+2025-06-02  Stafford Horne  <shorne@gmail.com>
+
+	* gcc.target/or1k/return-2.c: Fix test.
+
+2025-06-02  Stafford Horne  <shorne@gmail.com>
+
+	* gcc.target/or1k/call-1.c: New test.
+	* gcc.target/or1k/got-1.c: New test.
+
+2025-06-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_tls_link): New.
+	* g++.dg/tls/pr102496-1.C: Require tls_link.
+	* g++.dg/tls/pr77285-1.C: Likewise.
+
+2025-06-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/declare-variant-2.c: Update expected output.
+	* c-c++-common/gomp/metadirective-condition-constexpr.c: New.
+	* c-c++-common/gomp/metadirective-condition.c: New.
+	* c-c++-common/gomp/metadirective-error-recovery.c: Update expected
+	output.
+	* g++.dg/gomp/metadirective-condition-class.C: New.
+	* g++.dg/gomp/metadirective-condition-template.C: New.
+
+2025-06-02  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/autovec/param-autovec-mode.c: Change
+	`autovec-mode` to `riscv-autovec-mode` in dg-options.
+
 2025-06-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/119856
