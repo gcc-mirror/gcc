@@ -1589,6 +1589,44 @@
   "&& 1"
   [(set (match_dup 0) (match_dup 1))])
 
+(define_insn_and_split "*<avx512>_load<mode>mask_and15"
+  [(set (match_operand:V48_AVX512VL_4 0 "register_operand" "=v")
+	(vec_merge:V48_AVX512VL_4
+	 (unspec:V48_AVX512VL_4
+	  [(match_operand:V48_AVX512VL_4 1 "memory_operand" "m")]
+	  UNSPEC_MASKLOAD)
+	 (match_operand:V48_AVX512VL_4 2 "nonimm_or_0_operand" "0C")
+	 (and:QI
+	  (match_operand:QI 3 "register_operand" "Yk")
+	  (const_int 15))))]
+  "TARGET_AVX512F"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V48_AVX512VL_4
+	 (unspec:V48_AVX512VL_4 [(match_dup 1)] UNSPEC_MASKLOAD)
+	 (match_dup 2)
+	 (match_dup 3)))])
+
+(define_insn_and_split "*<avx512>_load<mode>mask_and3"
+  [(set (match_operand:V8_AVX512VL_2 0 "register_operand" "=v")
+	(vec_merge:V8_AVX512VL_2
+	 (unspec:V8_AVX512VL_2
+	  [(match_operand:V8_AVX512VL_2 1 "memory_operand" "m")]
+	  UNSPEC_MASKLOAD)
+	 (match_operand:V8_AVX512VL_2 2 "nonimm_or_0_operand" "0C")
+	 (and:QI
+	  (match_operand:QI 3 "register_operand" "Yk")
+	  (const_int 3))))]
+  "TARGET_AVX512F"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V8_AVX512VL_2
+	 (unspec:V8_AVX512VL_2 [(match_dup 1)] UNSPEC_MASKLOAD)
+	 (match_dup 2)
+	 (match_dup 3)))])
+
 (define_expand "<avx512>_load<mode>_mask"
   [(set (match_operand:VI12_AVX512VL 0 "register_operand")
 	(vec_merge:VI12_AVX512VL

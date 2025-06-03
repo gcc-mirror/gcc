@@ -22938,7 +22938,17 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       /* This is masked instruction, assume the same cost,
 	 as nonmasked variant.  */
-      else if (TARGET_AVX512F && register_operand (mask, GET_MODE (mask)))
+      else if (TARGET_AVX512F
+	       && (register_operand (mask, GET_MODE (mask))
+		   /* Redunduant clean up of high bits for kmask with VL=2/4
+		      .i.e (vec_merge op0, op1, (and op3 15)).  */
+		   || (GET_CODE (mask) == AND
+		       && register_operand (XEXP (mask, 0), GET_MODE (mask))
+		       && CONST_INT_P (XEXP (mask, 1))
+		       && ((INTVAL (XEXP (mask, 1)) == 3
+			    && GET_MODE_NUNITS (mode) == 2)
+			   || (INTVAL (XEXP (mask, 1)) == 15
+			       && GET_MODE_NUNITS (mode) == 4)))))
 	{
 	  *total = rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed)
 		   + rtx_cost (XEXP (x, 1), mode, outer_code, opno, speed);
