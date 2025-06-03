@@ -336,10 +336,11 @@ proc check_weak_available { } {
 	return 0
     }
 
-    # VxWorks hardly supports it (vx7 RTPs only)
-
+    # VxWorks supports it only since VxWorks 7 (assumed >= r2) for RTPs.
+    # Kernel mode works fine as well for our testsuite's purposes.
+ 
     if { [istarget *-*-vxworks*] } {
-	return 0
+	return [istarget *-*-vxworks7*]
     }
 
     # ELF and ECOFF support it. a.out does with gas/gld but may also with
