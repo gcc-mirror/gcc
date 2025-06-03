@@ -24,7 +24,7 @@ check_val (int8_t *ptr, int val, size_t count)
 }
 
 static void
-test_it (void *ptr, int lshift, size_t count)
+test_it (int8_t *ptr, int lshift, size_t count)
 {
   if (N < count + lshift) __builtin_abort ();
   if (lshift >= 4) __builtin_abort ();
@@ -42,7 +42,7 @@ test_it (void *ptr, int lshift, size_t count)
 int main()
 {
   size_t size;
-  void *ptr = omp_target_alloc (N + 3, omp_get_default_device());
+  int8_t *ptr = (int8_t *) omp_target_alloc (N + 3, omp_get_default_device());
   ptr += (4 - (uintptr_t) ptr % 4) % 4;
   if ((uintptr_t) ptr % 4 != 0) __builtin_abort ();
 
