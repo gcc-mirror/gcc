@@ -11131,13 +11131,9 @@ package body Sem_Ch12 is
       begin
          --  If this parent of the child instance is a top-level unit,
          --  then record the unit and its visibility for later resetting in
-         --  Remove_Parent. We exclude units that are generic instances, as we
-         --  only want to record this information for the ultimate top-level
-         --  noninstance parent (is that always correct???).
+         --  Remove_Parent.
 
-         if Scope (Par) = Standard_Standard
-           and then not Is_Generic_Instance (Par)
-         then
+         if Scope (Par) = Standard_Standard then
             Parent_Unit_Visible := Is_Immediately_Visible (Par);
             Instance_Parent_Unit := Par;
          end if;
@@ -16338,39 +16334,43 @@ package body Sem_Ch12 is
                   Install_Private_Declarations (P);
                end if;
 
-            --  If the ultimate parent is a top-level unit recorded in
-            --  Instance_Parent_Unit, then reset its visibility to what it was
-            --  before instantiation. (It's not clear what the purpose is of
-            --  testing whether Scope (P) is In_Open_Scopes, but that test was
-            --  present before the ultimate parent test was added.???)
+            else
+               --  If the ultimate parent is a top-level unit recorded in
+               --  Instance_Parent_Unit, then reset its visibility to what
+               --  it was before instantiation. (It's not clear what the
+               --  purpose is of testing whether Scope (P) is In_Open_Scopes,
+               --  but that test was present before the ultimate parent test
+               --  was added.???)
 
-            elsif not In_Open_Scopes (Scope (P))
-              or else (P = Instance_Parent_Unit
-                        and then not Parent_Unit_Visible)
-            then
-               Set_Is_Immediately_Visible (P, False);
+               if not In_Open_Scopes (Scope (P))
+                 or else (P = Instance_Parent_Unit
+                           and then not Parent_Unit_Visible)
+               then
+                  Set_Is_Immediately_Visible (P, False);
+               end if;
 
-            --  If the current scope is itself an instantiation of a generic
-            --  nested within P, and we are in the private part of body of this
-            --  instantiation, restore the full views of P, that were removed
-            --  in End_Package_Scope above. This obscure case can occur when a
-            --  subunit of a generic contains an instance of a child unit of
-            --  its generic parent unit.
+               --  If the current scope is itself an instantiation of a generic
+               --  nested within P, and we are in the private part of body of
+               --  the instantiation, restore the full views of P, which were
+               --  removed in End_Package_Scope above. This obscure case can
+               --  occur when a subunit of a generic contains an instance of
+               --  a child unit of its generic parent unit.
 
-            elsif S = Current_Scope and then Is_Generic_Instance (S)
-              and then (In_Package_Body (S) or else In_Private_Part (S))
-            then
-               declare
-                  Par : constant Entity_Id :=
-                          Generic_Parent (Package_Specification (S));
-               begin
-                  if Present (Par)
-                    and then P = Scope (Par)
-                  then
-                     Set_In_Private_Part (P);
-                     Install_Private_Declarations (P);
-                  end if;
-               end;
+               if S = Current_Scope and then Is_Generic_Instance (S)
+                 and then (In_Package_Body (S) or else In_Private_Part (S))
+               then
+                  declare
+                     Par : constant Entity_Id :=
+                             Generic_Parent (Package_Specification (S));
+                  begin
+                     if Present (Par)
+                       and then P = Scope (Par)
+                     then
+                        Set_In_Private_Part (P);
+                        Install_Private_Declarations (P);
+                     end if;
+                  end;
+               end if;
             end if;
          end loop;
 
