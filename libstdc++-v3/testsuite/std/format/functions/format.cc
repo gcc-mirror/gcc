@@ -239,6 +239,16 @@ test_locale()
   s = std::format(eloc, "{0:Le} {0:Lf} {0:Lg}", -nan);
   VERIFY( s == "-nan -nan -nan" );
 
+  // PR libstdc++/120548 format confuses a negative sign for a thousands digit
+  s = std::format(bloc, "{:L}", -123.45);
+  VERIFY( s == "-123.45" );
+  s = std::format(bloc, "{:-L}", -876543.21);
+  VERIFY( s == "-876,543.21" );
+  s = std::format(bloc, "{:+L}", 333.22);
+  VERIFY( s == "+333.22" );
+  s = std::format(bloc, "{: L}", 999.44);
+  VERIFY( s == " 999.44" );
+
   // Restore
   std::locale::global(cloc);
 }
