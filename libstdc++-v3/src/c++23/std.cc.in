@@ -1841,6 +1841,7 @@ export namespace std
 {
   using std::extents;
   using std::layout_left;
+  using std::layout_right;
   // FIXME layout_*, default_accessor and mdspan
 }
 #endif
