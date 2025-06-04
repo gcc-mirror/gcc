@@ -298,7 +298,7 @@ get_default_value (tree var)
 	{
 	  val.lattice_val = VARYING;
 	  val.mask = -1;
-	  if (flag_tree_bit_ccp)
+	  if (flag_tree_bit_ccp && !VECTOR_TYPE_P (TREE_TYPE (var)))
 	    {
 	      wide_int nonzero_bits = get_nonzero_bits (var);
 	      tree value;
@@ -2491,11 +2491,11 @@ evaluate_stmt (gimple *stmt)
       is_constant = (val.lattice_val == CONSTANT);
     }
 
+  tree lhs = gimple_get_lhs (stmt);
   if (flag_tree_bit_ccp
+      && lhs && TREE_CODE (lhs) == SSA_NAME && !VECTOR_TYPE_P (TREE_TYPE (lhs))
       && ((is_constant && TREE_CODE (val.value) == INTEGER_CST)
-	  || !is_constant)
-      && gimple_get_lhs (stmt)
-      && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME)
+	  || !is_constant))
     {
       tree lhs = gimple_get_lhs (stmt);
       wide_int nonzero_bits = get_nonzero_bits (lhs);

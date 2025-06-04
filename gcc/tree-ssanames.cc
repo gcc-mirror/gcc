@@ -508,6 +508,14 @@ get_nonzero_bits_1 (const_tree name)
   /* Use element_precision instead of TYPE_PRECISION so complex and
      vector types get a non-zero precision.  */
   unsigned int precision = element_precision (TREE_TYPE (name));
+
+  if (VECTOR_TYPE_P (TREE_TYPE (name)))
+    {
+      tree elem = uniform_vector_p (name);
+      if (elem)
+	return get_nonzero_bits_1 (elem);
+    }
+
   if (TREE_CODE (name) != SSA_NAME)
     return wi::shwi (-1, precision);
 

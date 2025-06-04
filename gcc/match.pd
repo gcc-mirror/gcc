@@ -2177,6 +2177,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (view_convert (rshift (view_convert:ntype @0) @1))
     (convert (rshift (convert:ntype @0) @1))))))
 
+#if GIMPLE
+ /* Fold ((x + y) >> 1 into IFN_AVG_FLOOR (x, y) if x and y are vectors in
+    which each element is known to have at least one leading zero bit.  */
+(simplify
+ (rshift (plus:cs @0 @1) integer_onep)
+ (if (VECTOR_TYPE_P (type)
+      && direct_internal_fn_supported_p (IFN_AVG_FLOOR, type, OPTIMIZE_FOR_BOTH)
+      && wi::clz (get_nonzero_bits (@0)) > 0
+      && wi::clz (get_nonzero_bits (@1)) > 0)
+  (IFN_AVG_FLOOR @0 @1)))
+#endif
+
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
    when profitable.
    For bitwise binary operations apply operand conversions to the
