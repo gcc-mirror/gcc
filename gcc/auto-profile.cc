@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "profile.h"
 #include "langhooks.h"
+#include "context.h"
+#include "pass_manager.h"
 #include "cfgloop.h"
 #include "tree-cfg.h"
 #include "tree-cfgcleanup.h"
@@ -858,6 +860,9 @@ autofdo_source_profile::read ()
   /* Read in the function/callsite profile, and store it in local
      data structure.  */
   unsigned function_num = gcov_read_unsigned ();
+  int profile_pass_num
+	  = g->get_passes ()->get_pass_auto_profile ()->static_pass_number;
+  g->get_dumps ()->dump_start (profile_pass_num, NULL);
   for (unsigned i = 0; i < function_num; i++)
     {
       function_instance::function_instance_stack stack;
@@ -870,8 +875,21 @@ autofdo_source_profile::read ()
       if (map_.count (fun_id) == 0)
 	map_[fun_id] = s;
       else
-	map_[fun_id]->merge (s);
+	{
+ 	  /* Since this is invoked very early, before the pass
+	     manager, we need to set up the dumping explicitly.  This is
+     	     similar to the handling in finish_optimization_passes.  */
+	  if (dump_enabled_p ())
+	    {
+	      dump_user_location_t loc
+		      = dump_user_location_t::from_location_t (input_location);
+	      dump_printf_loc (MSG_NOTE, loc, "Merging profile for %s\n",
+			    afdo_string_table->get_name (s->name ()));
+	    }
+	  map_[fun_id]->merge (s);
+	}
     }
+  g->get_dumps ()->dump_finish (profile_pass_num);
   return true;
 }
 

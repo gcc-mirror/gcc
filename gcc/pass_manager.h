@@ -74,6 +74,7 @@ public:
   }
   opt_pass *get_pass_peephole2 () const { return m_pass_peephole2_1; }
   opt_pass *get_pass_profile () const { return m_pass_profile_1; }
+  opt_pass *get_pass_auto_profile () const { return m_pass_ipa_auto_profile_1; }
 
   void register_pass_name (opt_pass *pass, const char *name);
 
