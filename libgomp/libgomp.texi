@@ -3130,6 +3130,11 @@ and Fortran or used with @code{NULL} as argument in C and C++.  If successful,
 In GCC, the effect of running this routine in a @code{target} region that is not
 the initial device is unspecified.
 
+GCC implements the OpenMP 6.0 version of this function for C and C++, which is not
+compatible with its type signature in previous versions of the OpenMP specification.
+In older versions, the type @code{int*} was used for the @var{ret_code} argument
+in place of a pointer to the enumerated type @code{omp_interop_rc_t}.
+
 @c Implementation remark: In GCC, the Fortran interface differs from the one shown
 @c below: the function has C binding and @var{interop} and @var{property_id} are
 @c passed by value, which permits use of the same ABI as the C function.  This does
@@ -3176,6 +3181,11 @@ and Fortran or used with @code{NULL} as argument in C and C++.  If successful,
 In GCC, the effect of running this routine in a @code{target} region that is not
 the initial device is unspecified.
 
+GCC implements the OpenMP 6.0 version of this function for C and C++, which is not
+compatible with its type signature in previous versions of the OpenMP specification.
+In older versions, the type @code{int*} was used for the @var{ret_code} argument
+in place of a pointer to the enumerated type @code{omp_interop_rc_t}.
+
 @c Implementation remark: In GCC, the Fortran interface differs from the one shown
 @c below: the function has C binding and @var{interop} and @var{property_id} are
 @c passed by value, which permits use of the same ABI as the C function.  This does
@@ -3221,6 +3231,11 @@ and Fortran or used with @code{NULL} as argument in C and C++.  If successful,
 
 In GCC, the effect of running this routine in a @code{target} region that is not
 the initial device is unspecified.
+
+GCC implements the OpenMP 6.0 version of this function for C and C++, which is not
+compatible with its type signature in previous versions of the OpenMP specification.
+In older versions, the type @code{int*} was used for the @var{ret_code} argument
+in place of a pointer to the enumerated type @code{omp_interop_rc_t}.
 
 @c Implementation remark: In GCC, the Fortran interface differs from the one shown
 @c below: @var{interop} and @var{property_id} are passed by value.  This does not
@@ -3347,6 +3362,11 @@ the @var{ret_code} in human-readable form.
 
 The behavior is unspecified if value of @var{ret_code} was not set by an
 interoperability routine invoked for @var{interop}.
+
+GCC implements the OpenMP 6.0 version of this function for C and C++, which is not
+compatible with its type signature in previous versions of the OpenMP specification.
+In older versions, the type @code{int} was used for the @var{ret_code} argument
+in place of the enumerated type @code{omp_interop_rc_t}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
