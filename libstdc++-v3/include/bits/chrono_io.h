@@ -1318,7 +1318,8 @@ namespace __format
 		  else
 		    {
 		      auto __str = std::format(_S_empty_spec, __ss.count());
-		      __out = std::format_to(_GLIBCXX_WIDEN("{:0>{}s}"),
+		      __out = std::format_to(std::move(__out),
+					     _GLIBCXX_WIDEN("{:0>{}s}"),
 					     __str,
 					     __hms.fractional_width);
 		    }
