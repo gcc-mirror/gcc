@@ -48,6 +48,7 @@ RISCV_TUNE("xt-c910v2", generic, generic_ooo_tune_info)
 RISCV_TUNE("xt-c920", generic, generic_ooo_tune_info)
 RISCV_TUNE("xt-c920v2", generic, generic_ooo_tune_info)
 RISCV_TUNE("xiangshan-nanhu", xiangshan, xiangshan_nanhu_tune_info)
+RISCV_TUNE("xiangshan-kunminghu", xiangshan, generic_ooo_tune_info)
 RISCV_TUNE("generic-ooo", generic_ooo, generic_ooo_tune_info)
 RISCV_TUNE("size", generic, optimize_size_tune_info)
 RISCV_TUNE("mips-p8700", mips_p8700, mips_p8700_tune_info)
@@ -153,6 +154,19 @@ RISCV_CORE("xiangshan-nanhu",      "rv64imafdc_zba_zbb_zbc_zbs_"
 			      "zbkb_zbkc_zbkx_zknd_zkne_zknh_zksed_zksh_"
 			      "svinval_zicbom_zicboz",
 			      "xiangshan-nanhu")
+
+RISCV_CORE("xiangshan-kunminghu",   "rv64imafdcbvh_sdtrig_sha_shcounterenw_"
+			      "shgatpa_shlcofideleg_shtvala_shvsatpa_shvstvala_shvstvecd_"
+			      "smaia_smcsrind_smdbltrp_smmpm_smnpm_smrnmi_smstateen_"
+			      "ssaia_ssccptr_sscofpmf_sscounterenw_sscsrind_ssdbltrp_"
+			      "ssnpm_sspm_ssstateen_ssstrict_sstc_sstvala_sstvecd_"
+			      "ssu64xl_supm_svade_svbare_svinval_svnapot_svpbmt_za64rs_"
+			      "zacas_zawrs_zba_zbb_zbc_zbkb_zbkc_zbkx_zbs_zcb_zcmop_"
+			      "zfa_zfh_zfhmin_zic64b_zicbom_zicbop_zicboz_ziccif_"
+			      "zicclsm_ziccrse_zicntr_zicond_zicsr_zifencei_zihintpause_"
+			      "zihpm_zimop_zkn_zknd_zkne_zknh_zksed_zksh_zkt_zvbb_zvfh_"
+			      "zvfhmin_zvkt_zvl128b_zvl32b_zvl64b",
+			      "xiangshan-kunminghu")
 
 RISCV_CORE("mips-p8700",     	"rv64imafd_zicsr_zmmul_"
 			      "zaamo_zalrsc_zba_zbb",
