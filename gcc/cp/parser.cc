@@ -30421,6 +30421,9 @@ cp_parser_asm_operand_list (cp_parser* parser)
       parens.require_open (parser);
       /* Parse the expression.  */
       tree expression = cp_parser_expression (parser);
+      if (check_for_bare_parameter_packs (expression))
+	expression = error_mark_node;
+
       /* Look for the `)'.  */
       parens.require_close (parser);
 
