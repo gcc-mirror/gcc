@@ -998,10 +998,11 @@ validate_subreg (machine_mode omode, machine_mode imode,
 	   && known_le (osize, isize))
     return false;
 
-  /* The outer size must be ordered wrt the register size, otherwise
-     we wouldn't know at compile time how many registers the outer
-     mode occupies.  */
-  if (!ordered_p (osize, regsize))
+  /* If ISIZE is greater than REGSIZE, the inner value is split into blocks
+     of size REGSIZE.  The outer size must then be ordered wrt REGSIZE,
+     otherwise we wouldn't know at compile time how many blocks the
+     outer mode occupies.  */
+  if (maybe_gt (isize, regsize) && !ordered_p (osize, regsize))
     return false;
 
   /* For normal pseudo registers, we want most of the same checks.  Namely:
