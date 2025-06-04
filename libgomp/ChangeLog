@@ -1,3 +1,11 @@
+2025-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/120444
+	* testsuite/libgomp.c-c++-common/omp_target_memset-3.c (test_it):
+	Change ptr argument type from void * to int8_t *.
+	(main): Change ptr variable type from void * to int8_t * and cast
+	omp_target_alloc result to the latter type.
+
 2025-06-02  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR libgomp/120444

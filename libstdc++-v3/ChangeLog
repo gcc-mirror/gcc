@@ -1,3 +1,45 @@
+2025-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token: Check __glibcxx_jthread instead of
+	__cplusplus.
+
+2025-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_destructible, is_destructible_v):
+	Define using new built-in.
+	(is_nothrow_destructible, is_nothrow_destructible_v): Likewise.
+	(is_trivially_destructible, is_trivially_destructible_v):
+	Likewise.
+
+2025-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__detail::__wait_until):
+	Remove incorrect comment.
+	(__atomic_wait_address_until_v): Do not take address of __args in
+	call to __detail::__wait_until. Fix return statement to refer to
+	member of __wait_result_type.
+	(__atomic_wait_address_for_v): Change parameter type from
+	time_point to duration.
+	* src/c++20/atomic.cc (__spin_until_impl): Fix incorrect
+	return value. Reuse result of first call to clock.
+
+2025-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (~_Vector_base): Add unreachable
+	hint for negative capacity and cast to size_t explicitly.
+	* include/bits/vector.tcc (vector::_M_realloc_append): Use
+	size() instead of end() - begin().
+
+2025-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (__rotl, __rotr): Use static_cast for
+	conversion from int to unsigned.
+
+2025-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++23/std.cc.in: Remove redundant checks for feature test
+	macros that are always true.
+
 2025-06-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.h (basic_string::size): Remove space

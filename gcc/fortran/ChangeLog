@@ -1,3 +1,9 @@
+2025-06-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99838
+	* data.cc (gfc_assign_data_value): For a new initializer use the
+	location from the constructor as fallback.
+
 2025-05-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102599

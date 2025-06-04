@@ -1,3 +1,49 @@
+2025-06-03  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.cc (create_tmp_reg_or_ssa_name): Always
+	create a SSA name.
+
+2025-06-03  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_vec_dup): Add new
+	case for DIV op.
+	* config/riscv/riscv.cc (get_vector_binary_rtx_cost): Add new func
+	to get the cost of vector binary.
+	(riscv_rtx_costs): Add div rtx match and leverage above wrap to
+	get cost.
+	* config/riscv/vector-iterators.md: Add new op div to no_shift_vx_op.
+
+2025-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120517
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_accesses):
+	Fix math in dataref group split.
+
+2025-06-03  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/riscv-vector-costs.cc (costs::adjust_stmt_cost): Replace
+	FR2VR with get_fr2vr_cost ().
+	* config/riscv/riscv.cc (riscv_register_move_cost): Likewise.
+	(riscv_builtin_vectorization_cost): Likewise.
+
+2025-06-03  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR target/119100
+	* config/riscv/autovec-opt.md (*<optab>_vf_<mode>): Add new pattern to
+	combine vec_duplicate + vfm{add,sub}.vv into vfm{add,sub}.vf.
+	* config/riscv/riscv-opts.h (FPR2VR_COST_UNPROVIDED): Define.
+	* config/riscv/riscv-protos.h (get_fr2vr_cost): Declare function.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Add cost model for MULT with
+	VEC_DUPLICATE.
+	(get_fr2vr_cost): New function.
+	* config/riscv/riscv.opt: Add new option --param=fpr2vr-cost.
+
+2025-06-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/120451
+	* tree-switch-conversion.cc (switch_conversion::build_one_array): Mark
+	the newly created decl as mergable.
+
 2025-06-02  Alexandre Oliva  <oliva@adacore.com>
 
 	PR rtl-optimization/120424

@@ -1,3 +1,7 @@
+2025-06-03  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.h (operator|, operator|=): Define for WMB_Flags.
+
 2025-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107600
