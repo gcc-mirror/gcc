@@ -379,6 +379,8 @@ Mask(SVADU) Var(riscv_sv_subext)
 
 Mask(SVADE) Var(riscv_sv_subext)
 
+Mask(SVBARE) Var(riscv_sv_subext)
+
 Mask(XCVALU) Var(riscv_xcv_subext)
 
 Mask(XCVBI) Var(riscv_xcv_subext)

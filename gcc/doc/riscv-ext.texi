@@ -582,6 +582,10 @@
 @tab 1.0
 @tab Cause exception when hardware updating of A/D bits is disabled
 
+@item svbare
+@tab 1.0
+@tab Satp mode bare is supported
+
 @item xcvalu
 @tab 1.0
 @tab Core-V miscellaneous ALU extension

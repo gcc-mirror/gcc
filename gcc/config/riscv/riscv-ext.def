@@ -1961,6 +1961,19 @@ DEFINE_RISCV_EXT(
   /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
+DEFINE_RISCV_EXT(
+  /* NAME */ svbare,
+  /* UPPERCAE_NAME */ SVBARE,
+  /* FULL_NAME */ "Satp mode bare is supported",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sv,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
 #include "riscv-ext-corev.def"
 #include "riscv-ext-sifive.def"
 #include "riscv-ext-thead.def"
