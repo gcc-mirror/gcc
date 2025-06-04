@@ -255,6 +255,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  __detail::__platform_wait_t __old,
 			  int __order, bool __bare_wait = false)
   {
+#ifndef _GLIBCXX_HAVE_PLATFORM_WAIT
+    __glibcxx_assert(false); // This function can't be used for proxy wait.
+#endif
     __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
     // C++26 will not ignore the return value here
     __detail::__wait_impl(__addr, __args);

@@ -156,6 +156,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  const chrono::time_point<_Clock, _Dur>& __atime,
 				  bool __bare_wait = false) noexcept
     {
+#ifndef _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT
+      __glibcxx_assert(false); // This function can't be used for proxy wait.
+#endif
       __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
       auto __res = __detail::__wait_until(__addr, __args, __atime);
       return !__res._M_timeout; // C++26 will also return last observed __val
@@ -205,6 +208,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				const chrono::duration<_Rep, _Period>& __rtime,
 				bool __bare_wait = false) noexcept
     {
+#ifndef _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT
+      __glibcxx_assert(false); // This function can't be used for proxy wait.
+#endif
       __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
       auto __res = __detail::__wait_for(__addr, __args, __rtime);
       return !__res._M_timeout; // C++26 will also return last observed __val
