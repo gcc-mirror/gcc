@@ -69,12 +69,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	//
 	// If __r is the index of a dynamic extent, then
 	// _S_dynamic_index[__r] is the index of that extent in
-	// _M_dynamic_extents.
+	// _M_dyn_exts.
 	static constexpr auto _S_dynamic_index = [] consteval
 	{
 	  array<size_t, _S_rank+1> __ret;
 	  size_t __dyn = 0;
-	  for(size_t __i = 0; __i < _S_rank; ++__i)
+	  for (size_t __i = 0; __i < _S_rank; ++__i)
 	    {
 	      __ret[__i] = __dyn;
 	      __dyn += _S_is_dyn(_Extents[__i]);
@@ -105,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  auto __se = _Extents[__r];
 	  if (__se == dynamic_extent)
-	    return _M_dynamic_extents[_S_dynamic_index[__r]];
+	    return _M_dyn_exts[_S_dynamic_index[__r]];
 	  else
 	    return __se;
 	}
@@ -114,12 +114,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  constexpr void
 	  _M_init_dynamic_extents(_GetOtherExtent __get_extent) noexcept
 	  {
-	    for(size_t __i = 0; __i < _S_rank_dynamic; ++__i)
+	    for (size_t __i = 0; __i < _S_rank_dynamic; ++__i)
 	      {
 		size_t __di = __i;
 		if constexpr (_OtherRank != _S_rank_dynamic)
 		  __di = _S_dynamic_index_inv[__i];
-		_M_dynamic_extents[__i] = _S_int_cast(__get_extent(__di));
+		_M_dyn_exts[__i] = _S_int_cast(__get_extent(__di));
 	      }
 	  }
 
@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       private:
 	using _S_storage = __array_traits<_IndexType, _S_rank_dynamic>::_Type;
-	[[no_unique_address]] _S_storage _M_dynamic_extents{};
+	[[no_unique_address]] _S_storage _M_dyn_exts{};
       };
 
     template<typename _OIndexType, typename _SIndexType>
@@ -197,7 +197,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if constexpr (rank() == 0)
 	  __builtin_trap();
 	else
-	  return _M_dynamic_extents._M_extent(__r);
+	  return _M_exts._M_extent(__r);
       }
 
       constexpr
@@ -233,14 +233,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	requires (_S_is_compatible_extents<_OExtents...>())
 	constexpr explicit(_S_ctor_explicit<_OIndexType, _OExtents...>())
 	extents(const extents<_OIndexType, _OExtents...>& __other) noexcept
-	: _M_dynamic_extents(__other._M_dynamic_extents)
+	: _M_exts(__other._M_exts)
 	{ }
 
       template<__mdspan::__valid_index_type<index_type>... _OIndexTypes>
 	requires (sizeof...(_OIndexTypes) == rank()
 		  || sizeof...(_OIndexTypes) == rank_dynamic())
 	constexpr explicit extents(_OIndexTypes... __exts) noexcept
-	: _M_dynamic_extents(span<const _IndexType, sizeof...(_OIndexTypes)>(
+	: _M_exts(span<const _IndexType, sizeof...(_OIndexTypes)>(
 	    initializer_list{_S_storage::_S_int_cast(__exts)...}))
 	{ }
 
@@ -248,7 +248,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	requires (_Nm == rank() || _Nm == rank_dynamic())
 	constexpr explicit(_Nm != rank_dynamic())
 	extents(span<_OIndexType, _Nm> __exts) noexcept
-	: _M_dynamic_extents(span<const _OIndexType, _Nm>(__exts))
+	: _M_exts(span<const _OIndexType, _Nm>(__exts))
 	{ }
 
 
@@ -256,7 +256,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	requires (_Nm == rank() || _Nm == rank_dynamic())
 	constexpr explicit(_Nm != rank_dynamic())
 	extents(const array<_OIndexType, _Nm>& __exts) noexcept
-	: _M_dynamic_extents(span<const _OIndexType, _Nm>(__exts))
+	: _M_exts(span<const _OIndexType, _Nm>(__exts))
 	{ }
 
       template<typename _OIndexType, size_t... _OExtents>
@@ -278,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       using _S_storage = __mdspan::_ExtentsStorage<
 	_IndexType, array<size_t, sizeof...(_Extents)>{_Extents...}>;
-      [[no_unique_address]] _S_storage _M_dynamic_extents;
+      [[no_unique_address]] _S_storage _M_exts;
 
       template<typename _OIndexType, size_t... _OExtents>
 	friend class extents;
