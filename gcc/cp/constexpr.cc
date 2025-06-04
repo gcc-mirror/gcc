@@ -6421,7 +6421,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
   if (TREE_CLOBBER_P (init)
       && CLOBBER_KIND (init) < CLOBBER_OBJECT_END)
-    /* Only handle clobbers ending the lifetime of objects.  */
+    /* Only handle clobbers ending the lifetime of objects.
+       ??? We should probably set CONSTRUCTOR_NO_CLEARING.  */
     return void_node;
 
   /* First we figure out where we're storing to.  */

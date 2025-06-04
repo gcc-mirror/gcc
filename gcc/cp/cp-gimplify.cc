@@ -1473,6 +1473,19 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
       break;
 
     case TARGET_EXPR:
+      if (!flag_no_inline)
+	if (tree &init = TARGET_EXPR_INITIAL (stmt))
+	  {
+	    tree folded = maybe_constant_init (init, TARGET_EXPR_SLOT (stmt),
+					       (data->flags & ff_mce_false
+						? mce_false : mce_unknown));
+	    if (folded != init && TREE_CONSTANT (folded))
+	      init = folded;
+	  }
+
+      /* This needs to happen between the constexpr evaluation (which wants
+	 pre-generic trees) and fold (which wants the cp_genericize_init
+	 transformations).  */
       if (data->flags & ff_genericize)
 	cp_genericize_target_expr (stmt_p);
 
@@ -1481,14 +1494,6 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	  cp_walk_tree (&init, cp_fold_r, data, NULL);
 	  cp_walk_tree (&TARGET_EXPR_CLEANUP (stmt), cp_fold_r, data, NULL);
 	  *walk_subtrees = 0;
-	  if (!flag_no_inline)
-	    {
-	      tree folded = maybe_constant_init (init, TARGET_EXPR_SLOT (stmt),
-						 (data->flags & ff_mce_false
-						  ? mce_false : mce_unknown));
-	      if (folded != init && TREE_CONSTANT (folded))
-		init = folded;
-	    }
 	  /* Folding might replace e.g. a COND_EXPR with a TARGET_EXPR; in
 	     that case, strip it in favor of this one.  */
 	  if (TREE_CODE (init) == TARGET_EXPR)
