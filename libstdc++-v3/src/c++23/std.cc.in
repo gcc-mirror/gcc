@@ -507,6 +507,10 @@ export namespace std
     using ranges::find_last_if;
     using ranges::find_last_if_not;
 #endif
+#if __cpp_lib_ranges_starts_ends_with
+    using ranges::starts_with;
+    using ranges::ends_with;
+#endif
   }
 }
 

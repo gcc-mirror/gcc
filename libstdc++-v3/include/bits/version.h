@@ -1848,6 +1848,16 @@
 #endif /* !defined(__cpp_lib_ranges_find_last) && defined(__glibcxx_want_ranges_find_last) */
 #undef __glibcxx_want_ranges_find_last
 
+#if !defined(__cpp_lib_ranges_starts_ends_with)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_ranges_starts_ends_with 202106L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges_starts_ends_with)
+#   define __cpp_lib_ranges_starts_ends_with 202106L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_ranges_starts_ends_with) && defined(__glibcxx_want_ranges_starts_ends_with) */
+#undef __glibcxx_want_ranges_starts_ends_with
+
 #if !defined(__cpp_lib_constexpr_bitset)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED && (__cpp_constexpr_dynamic_alloc)
 #  define __glibcxx_constexpr_bitset 202202L
