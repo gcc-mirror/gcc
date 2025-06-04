@@ -2759,10 +2759,16 @@ omp_selector_is_dynamic (tree ctx)
 static tree
 omp_device_num_check (tree *device_num, bool *is_host)
 {
+  /* C++ may wrap the device_num expr in a CLEANUP_POINT_EXPR; we want
+     to look inside of it for the special cases.  */
+  tree t = *device_num;
+  if (TREE_CODE (t) == CLEANUP_POINT_EXPR)
+    t = TREE_OPERAND (t, 0);
+
   /* First check for some constant values we can treat specially.  */
-  if (tree_fits_shwi_p (*device_num))
+  if (tree_fits_shwi_p (t))
     {
-      HOST_WIDE_INT num = tree_to_shwi (*device_num);
+      HOST_WIDE_INT num = tree_to_shwi (t);
       if (num < -1)
 	return integer_zero_node;
       /* Initial device?  */
@@ -2781,9 +2787,9 @@ omp_device_num_check (tree *device_num, bool *is_host)
 
   /* Also test for direct calls to OpenMP routines that return valid
      device numbers.  */
-  if (TREE_CODE (*device_num) == CALL_EXPR)
+  if (TREE_CODE (t) == CALL_EXPR)
     {
-      tree fndecl = get_callee_fndecl (*device_num);
+      tree fndecl = get_callee_fndecl (t);
       if (fndecl && omp_runtime_api_call (fndecl))
 	{
 	  const char *fnname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
