@@ -852,7 +852,7 @@ private
       Source_Index           : Source_File_Index;
       Cunit                  : Node_Id;
       Cunit_Entity           : Entity_Id;
-      Dependency_Num         : Int;
+      Dependency_Num         : Nat;
       Ident_String           : Node_Id;
       Main_Priority          : Int;
       Main_CPU               : Int;

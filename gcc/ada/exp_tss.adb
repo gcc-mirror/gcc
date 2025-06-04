@@ -504,13 +504,9 @@ package body Exp_Tss is
       Subp : Entity_Id;
 
    begin
-      if No (FN) then
-         return Empty;
-
-      elsif No (TSS_Elist (FN)) then
-         return Empty;
-
-      else
+      if Present (FN)
+        and then Present (TSS_Elist (FN))
+      then
          Elmt := First_Elmt (TSS_Elist (FN));
          while Present (Elmt) loop
             if Is_TSS (Node (Elmt), Nam) then
