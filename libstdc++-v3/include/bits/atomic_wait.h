@@ -249,12 +249,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // C++26 will return __val
     }
 
+  // Wait on __addr while *__addr == __old is true.
   inline void
   __atomic_wait_address_v(const __detail::__platform_wait_t* __addr,
 			  __detail::__platform_wait_t __old,
-			  int __order)
+			  int __order, bool __bare_wait = false)
   {
-    __detail::__wait_args __args{ __addr, __old, __order };
+    __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
     // C++26 will not ignore the return value here
     __detail::__wait_impl(__addr, __args);
   }
