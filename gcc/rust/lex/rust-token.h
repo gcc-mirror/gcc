@@ -24,6 +24,10 @@
 #include "rust-unicode.h"
 
 namespace Rust {
+
+// used by Rust::Token::make_identifier
+class Identifier;
+
 // "Primitive core types" in Rust - the different int and float types, as well
 // as some others
 enum PrimitiveCoreType
@@ -323,6 +327,8 @@ public:
     // return std::make_shared<Token> (IDENTIFIER, locus, str);
     return TokenPtr (new Token (IDENTIFIER, locus, std::move (str)));
   }
+
+  static TokenPtr make_identifier (const Identifier &ident);
 
   // Makes and returns a new TokenPtr of type INT_LITERAL.
   static TokenPtr make_int (location_t locus, std::string &&str,

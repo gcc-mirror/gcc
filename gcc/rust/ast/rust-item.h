@@ -2450,7 +2450,7 @@ class ConstantItem : public VisItem, public AssociatedItem
   // either has an identifier or "_" - maybe handle in identifier?
   // bool identifier_is_underscore;
   // if no identifier declared, identifier will be "_"
-  std::string identifier;
+  Identifier identifier;
 
   std::unique_ptr<Type> type;
   std::unique_ptr<Expr> const_expr;
@@ -2460,7 +2460,7 @@ class ConstantItem : public VisItem, public AssociatedItem
 public:
   std::string as_string () const override;
 
-  ConstantItem (std::string ident, Visibility vis, std::unique_ptr<Type> type,
+  ConstantItem (Identifier ident, Visibility vis, std::unique_ptr<Type> type,
 		std::unique_ptr<Expr> const_expr,
 		std::vector<Attribute> outer_attrs, location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
@@ -2468,7 +2468,7 @@ public:
       const_expr (std::move (const_expr)), locus (locus)
   {}
 
-  ConstantItem (std::string ident, Visibility vis, std::unique_ptr<Type> type,
+  ConstantItem (Identifier ident, Visibility vis, std::unique_ptr<Type> type,
 		std::vector<Attribute> outer_attrs, location_t locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       identifier (std::move (ident)), type (std::move (type)),
@@ -2511,7 +2511,7 @@ public:
 
   /* Returns whether constant item is an "unnamed" (wildcard underscore used
    * as identifier) constant. */
-  bool is_unnamed () const { return identifier == "_"; }
+  bool is_unnamed () const { return identifier.as_string () == "_"; }
 
   location_t get_locus () const override final { return locus; }
 
@@ -2556,7 +2556,7 @@ public:
     return type;
   }
 
-  std::string get_identifier () const { return identifier; }
+  const Identifier &get_identifier () const { return identifier; }
 
   Item::Kind get_item_kind () const override
   {

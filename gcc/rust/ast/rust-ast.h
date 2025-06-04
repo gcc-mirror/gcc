@@ -62,6 +62,8 @@ public:
     return ident == other.ident;
   }
 
+  operator const std::string & () const { return ident; }
+
 private:
   std::string ident;
   location_t loc;

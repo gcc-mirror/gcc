@@ -20,6 +20,7 @@
 #include "rust-token.h"
 #include "rust-diagnostics.h"
 #include "rust-unicode.h"
+#include "rust-ast.h"
 
 namespace Rust {
 // Hackily defined way to get token description for enum value using x-macros
@@ -234,6 +235,13 @@ escape_special_chars (const std::string &source, Context ctx)
 }
 
 } // namespace
+
+TokenPtr
+Token::make_identifier (const Identifier &ident)
+{
+  std::string str = ident;
+  return make_identifier (ident.get_locus (), std::move (str));
+}
 
 std::string
 Token::as_string () const
