@@ -293,6 +293,15 @@ template<>
     VERIFY(m.stride(1) == 3);
   }
 
+template<>
+  constexpr void
+  test_stride_2d<std::layout_right>()
+  {
+    std::layout_right::mapping<std::extents<int, 3, 5>> m;
+    VERIFY(m.stride(0) == 5);
+    VERIFY(m.stride(1) == 1);
+  }
+
 template<typename Layout>
   constexpr void
   test_stride_3d();
@@ -305,6 +314,16 @@ template<>
     VERIFY(m.stride(0) == 1);
     VERIFY(m.stride(1) == 3);
     VERIFY(m.stride(2) == 3*5);
+  }
+
+template<>
+  constexpr void
+  test_stride_3d<std::layout_right>()
+  {
+    std::layout_right::mapping m(std::dextents<int, 3>(3, 5, 7));
+    VERIFY(m.stride(0) == 5*7);
+    VERIFY(m.stride(1) == 7);
+    VERIFY(m.stride(2) == 1);
   }
 
 template<typename Layout>
@@ -381,23 +400,58 @@ template<typename M1, typename M2>
     { m2 != m1 } -> std::same_as<bool>;
   };
 
-template<typename Layout>
-  constexpr bool
+template<typename SLayout, typename OLayout, bool Expected>
+  constexpr void
   test_has_op_eq()
   {
+    static_assert(has_op_eq<
+	typename SLayout::mapping<std::extents<int>>,
+	typename OLayout::mapping<std::extents<int>>> == Expected);
+
     static_assert(!has_op_eq<
-	typename Layout::mapping<std::extents<int, 1, 2>>,
-	typename Layout::mapping<std::extents<int, 1>>>);
+	typename SLayout::mapping<std::extents<int>>,
+	typename OLayout::mapping<std::extents<int, 1>>>);
 
     static_assert(has_op_eq<
-	typename Layout::mapping<std::extents<int, 1>>,
-	typename Layout::mapping<std::extents<int, 1>>>);
+	typename SLayout::mapping<std::extents<int, 1>>,
+	typename OLayout::mapping<std::extents<int, 1>>> == Expected);
 
     static_assert(has_op_eq<
-	typename Layout::mapping<std::extents<int, 1>>,
-	typename Layout::mapping<std::extents<int, 2>>>);
-    return true;
+	typename SLayout::mapping<std::extents<int, 1>>,
+	typename OLayout::mapping<std::extents<int, 2>>> == Expected);
+
+    static_assert(!has_op_eq<
+	typename SLayout::mapping<std::extents<int, 1>>,
+	typename OLayout::mapping<std::extents<int, 1, 2>>>);
+
+    static_assert(has_op_eq<
+	typename SLayout::mapping<std::extents<int, 1, 2>>,
+	typename OLayout::mapping<std::extents<int, 1, 2>>> == Expected);
+
+    static_assert(has_op_eq<
+	typename SLayout::mapping<std::extents<int, 1, 2>>,
+	typename OLayout::mapping<std::extents<int, 2, 2>>> == Expected);
+
+    static_assert(!has_op_eq<
+	typename SLayout::mapping<std::extents<int, 1, 2>>,
+	typename OLayout::mapping<std::extents<int, 1, 2, 3>>>);
   }
+
+constexpr void
+test_has_op_eq_peculiar()
+{
+  static_assert(has_op_eq<
+      std::layout_right::mapping<std::extents<int>>,
+      std::layout_left::mapping<std::extents<unsigned int>>>);
+
+  static_assert(has_op_eq<
+      std::layout_right::mapping<std::extents<int, 1>>,
+      std::layout_left::mapping<std::extents<int, dyn>>>);
+
+  static_assert(!has_op_eq<
+      std::layout_right::mapping<std::extents<int, 1, 2>>,
+      std::layout_left::mapping<std::extents<int, dyn, 2>>>);
+}
 
 template<typename Layout>
   constexpr bool
@@ -426,12 +480,16 @@ template<typename Layout>
     test_has_stride_0d<Layout>();
     test_has_stride_1d<Layout>();
     test_has_stride_2d<Layout>();
-    test_has_op_eq<Layout>();
+    test_has_op_eq<Layout, Layout, true>();
   }
 
 int
 main()
 {
   test_all<std::layout_left>();
+  test_all<std::layout_right>();
+
+  test_has_op_eq<std::layout_right, std::layout_left, false>();
+  test_has_op_eq_peculiar();
   return 0;
 }

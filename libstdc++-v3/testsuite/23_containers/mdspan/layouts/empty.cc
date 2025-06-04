@@ -108,5 +108,6 @@ int
 main()
 {
   static_assert(test_all<std::layout_left>());
+  static_assert(test_all<std::layout_right>());
   return 0;
 }

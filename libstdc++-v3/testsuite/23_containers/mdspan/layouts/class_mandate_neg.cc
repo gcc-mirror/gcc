@@ -30,7 +30,10 @@ template<size_t Count, typename Layout, typename OLayout>
   };
 
 A<std::layout_left> a_left;                      // { dg-error "required from" }
+A<std::layout_right> a_right;                    // { dg-error "required from" }
 
 B<1, std::layout_left, std::layout_left> b0;     // { dg-error "required here" }
+
+B<3, std::layout_right, std::layout_right> b2;   // { dg-error "required here" }
 
 // { dg-prune-output "must be representable as index_type" }

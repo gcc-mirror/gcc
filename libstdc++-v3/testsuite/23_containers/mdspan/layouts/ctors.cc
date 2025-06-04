@@ -261,6 +261,66 @@ namespace from_same_layout
     }
 }
 
+// ctor: mapping(layout_{right,left}::mapping<OExtents>)
+namespace from_left_or_right
+{
+  template<typename SLayout, typename OLayout, typename SExtents,
+	   typename OExtents>
+    constexpr void
+    verify_ctor(OExtents oexts)
+    {
+      using SMapping = typename SLayout::mapping<SExtents>;
+      using OMapping = typename OLayout::mapping<OExtents>;
+
+      constexpr bool expected = std::is_convertible_v<OExtents, SExtents>;
+      if constexpr (expected)
+	verify_nothrow_convertible<SMapping>(OMapping(oexts));
+      else
+	verify_nothrow_constructible<SMapping>(OMapping(oexts));
+    }
+
+  template<typename SLayout, typename OLayout>
+    constexpr bool
+    test_ctor()
+    {
+      assert_not_constructible<
+	typename SLayout::mapping<std::extents<int>>,
+	typename OLayout::mapping<std::extents<int, 1>>>();
+
+      verify_ctor<OLayout, SLayout, std::extents<int>>(
+	std::extents<unsigned int>{});
+
+      verify_ctor<OLayout, SLayout, std::extents<unsigned int>>(
+	std::extents<int>{});
+
+      assert_not_constructible<
+	typename SLayout::mapping<std::extents<int, 1>>,
+	typename OLayout::mapping<std::extents<int>>>();
+
+      verify_ctor<OLayout, SLayout, std::extents<int, 1>>(
+	std::extents<int, 1>{});
+
+      verify_ctor<OLayout, SLayout, std::extents<int, 1>>(
+	std::extents<unsigned int, 1>{});
+
+      verify_ctor<OLayout, SLayout, std::extents<unsigned int, 1>>(
+	std::extents<int, 1>{});
+
+      assert_not_constructible<
+	typename SLayout::mapping<std::extents<int, 1, 2>>,
+	typename OLayout::mapping<std::extents<int, 1, 2>>>();
+      return true;
+    }
+
+  template<typename SLayout, typename OLayout>
+    constexpr void
+    test_all()
+    {
+      test_ctor<SLayout, OLayout>();
+      static_assert(test_ctor<SLayout, OLayout>());
+    }
+}
+
 template<typename Layout>
   constexpr void
   test_all()
@@ -274,5 +334,9 @@ int
 main()
 {
   test_all<std::layout_left>();
+  test_all<std::layout_right>();
+
+  from_left_or_right::test_all<std::layout_left, std::layout_right>();
+  from_left_or_right::test_all<std::layout_right, std::layout_left>();
   return 0;
 }
