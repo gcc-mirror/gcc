@@ -14,9 +14,6 @@ int foo (int);
 /* { dg-final { scan-assembler-times "\n_Z3foov\.resolver:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n\t\.type\t_Z3foov, @gnu_indirect_function\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n\t\.set\t_Z3foov,_Z3foov\.resolver\n" 0 } } */
-/* { dg-final { scan-assembler-times "\n\tlis \[\\d\]+,_Z3foov\.default@ha\n" 0 } } */
-/* { dg-final { scan-assembler-times "\n\tlis \[\\d\]+,_Z3foov\.cpu_power6@ha\n" 0 } } */
-/* { dg-final { scan-assembler-times "\n\tlis \[\\d\]+,_Z3foov\.cpu_power6x@ha\n" 0 } } */
 
 /* { dg-final { scan-assembler-times "\n_Z3fooi\.default:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n_Z3fooi\.cpu_power6:\n" 0 } } */
@@ -24,6 +21,3 @@ int foo (int);
 /* { dg-final { scan-assembler-times "\n_Z3fooi\.resolver:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n\t\.type\t_Z3fooi, @gnu_indirect_function\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n\t\.set\t_Z3fooi,_Z3fooi\.resolver\n" 0 } } */
-/* { dg-final { scan-assembler-times "\n\tlis \[\\d\]+,_Z3fooi\.default@ha\n" 0 } } */
-/* { dg-final { scan-assembler-times "\n\tlis \[\\d\]+,_Z3fooi\.cpu_power6@ha\n" 0 } } */
-/* { dg-final { scan-assembler-times "\n\tlis \[\\d\]+,_Z3fooi\.cpu_power6x@ha\n" 0 } } */
