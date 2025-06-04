@@ -972,6 +972,7 @@ endif
 DUMPFILE_H = $(srcdir)/../libcpp/include/line-map.h dumpfile.h
 VEC_H = vec.h statistics.h $(GGC_H)
 HASH_TABLE_H = $(HASHTAB_H) hash-table.h $(GGC_H)
+BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h
 EXCEPT_H = except.h $(HASHTAB_H)
 TARGET_DEF = target.def target-hooks-macros.h target-insns.def
 C_TARGET_DEF = c-family/c-target.def target-hooks-macros.h
@@ -1023,6 +1024,8 @@ FLAGS_H = flags.h flag-types.h $(OPTIONS_H)
 OPTIONS_H = options.h flag-types.h $(OPTIONS_H_EXTRA)
 FUNCTION_H = function.h $(HASHTAB_H) $(TM_H) hard-reg-set.h \
 	$(VEC_H) $(INPUT_H)
+BACKEND_H = backend.h $(TM_H) $(FUNCTION_H) $(BITMAP_H) sbitmap.h \
+	$(BASIC_BLOCK_H) cfg.h
 EXPR_H = expr.h insn-config.h $(FUNCTION_H) $(RTL_H) $(FLAGS_H) $(TREE_H) \
 	$(EMIT_RTL_H)
 OPTABS_H = optabs.h insn-codes.h insn-opinit.h
@@ -1076,7 +1079,6 @@ LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) $(HASH_TABLE_H) $(TREE_H) $(GIMPLE_H) \
 		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h
 IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H) alloc-pool.h
-BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h
 GCC_PLUGIN_H = gcc-plugin.h highlev-plugin-common.h plugin.def \
 		$(CONFIG_H) $(SYSTEM_H) $(HASHTAB_H)
 PLUGIN_H = plugin.h $(GCC_PLUGIN_H)

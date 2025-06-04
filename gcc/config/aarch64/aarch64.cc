@@ -83,6 +83,7 @@
 #include "rtlanal.h"
 #include "tree-dfa.h"
 #include "asan.h"
+#include "aarch64-elf-metadata.h"
 #include "aarch64-feature-deps.h"
 #include "config/arm/aarch-common.h"
 #include "config/arm/aarch-common-protos.h"
@@ -29964,91 +29965,22 @@ aarch64_can_tag_addresses ()
 
 /* Implement TARGET_ASM_FILE_END for AArch64.  This adds the AArch64 GNU NOTE
    section at the end if needed.  */
-#define GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
-#define GNU_PROPERTY_AARCH64_FEATURE_1_BTI	(1U << 0)
-#define GNU_PROPERTY_AARCH64_FEATURE_1_PAC	(1U << 1)
-#define GNU_PROPERTY_AARCH64_FEATURE_1_GCS	(1U << 2)
 void
 aarch64_file_end_indicate_exec_stack ()
 {
   file_end_indicate_exec_stack ();
 
-  unsigned feature_1_and = 0;
+  aarch64::section_note_gnu_property gnu_properties;
+
   if (aarch_bti_enabled ())
-    feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_BTI;
-
+    gnu_properties.bti_enabled ();
   if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
-    feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_PAC;
-
+    gnu_properties.pac_enabled ();
   if (aarch64_gcs_enabled ())
-    feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_GCS;
+    gnu_properties.gcs_enabled ();
 
-  if (feature_1_and)
-    {
-      /* Generate .note.gnu.property section.  */
-      switch_to_section (get_section (".note.gnu.property",
-				      SECTION_NOTYPE, NULL));
-
-      /* PT_NOTE header: namesz, descsz, type.
-	 namesz = 4 ("GNU\0")
-	 descsz = 16 (Size of the program property array)
-		  [(12 + padding) * Number of array elements]
-	 type   = 5 (NT_GNU_PROPERTY_TYPE_0).  */
-      assemble_align (POINTER_SIZE);
-      assemble_integer (GEN_INT (4), 4, 32, 1);
-      assemble_integer (GEN_INT (ROUND_UP (12, POINTER_BYTES)), 4, 32, 1);
-      assemble_integer (GEN_INT (5), 4, 32, 1);
-
-      /* PT_NOTE name.  */
-      assemble_string ("GNU", 4);
-
-      /* PT_NOTE contents for NT_GNU_PROPERTY_TYPE_0:
-	 type   = GNU_PROPERTY_AARCH64_FEATURE_1_AND
-	 datasz = 4
-	 data   = feature_1_and.  */
-      fputs (integer_asm_op (4, true), asm_out_file);
-      fprint_whex (asm_out_file, GNU_PROPERTY_AARCH64_FEATURE_1_AND);
-      putc ('\n', asm_out_file);
-      assemble_integer (GEN_INT (4), 4, 32, 1);
-
-      fputs (integer_asm_op (4, true), asm_out_file);
-      fprint_whex (asm_out_file, feature_1_and);
-      if (flag_debug_asm)
-	{
-	  struct flag_name
-	  {
-	    unsigned int mask;
-	    const char *name;
-	  };
-	  static const flag_name flags[] = {
-	    { GNU_PROPERTY_AARCH64_FEATURE_1_BTI, "BTI" },
-	    { GNU_PROPERTY_AARCH64_FEATURE_1_PAC, "PAC" },
-	    { GNU_PROPERTY_AARCH64_FEATURE_1_GCS, "GCS" },
-	  };
-
-	  const char *separator = "";
-	  std::string s_features;
-	  for (auto &flag : flags)
-	    if (feature_1_and & flag.mask)
-	      {
-		s_features.append (separator).append (flag.name);
-		separator = ", ";
-	      }
-
-	  asm_fprintf (asm_out_file,
-		       "\t%s GNU_PROPERTY_AARCH64_FEATURE_1_AND (%s)\n",
-		       ASM_COMMENT_START, s_features.c_str ());
-	}
-      else
-	putc ('\n', asm_out_file);
-      /* Pad the size of the note to the required alignment.  */
-      assemble_align (POINTER_SIZE);
-    }
+  gnu_properties.write ();
 }
-#undef GNU_PROPERTY_AARCH64_FEATURE_1_GCS
-#undef GNU_PROPERTY_AARCH64_FEATURE_1_PAC
-#undef GNU_PROPERTY_AARCH64_FEATURE_1_BTI
-#undef GNU_PROPERTY_AARCH64_FEATURE_1_AND
 
 /* Helper function for straight line speculation.
    Return what barrier should be emitted for straight line speculation
