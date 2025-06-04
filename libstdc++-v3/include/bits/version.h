@@ -2233,4 +2233,14 @@
 #endif /* !defined(__cpp_lib_polymorphic) && defined(__glibcxx_want_polymorphic) */
 #undef __glibcxx_want_polymorphic
 
+#if !defined(__cpp_lib_sstream_from_string_view)
+# if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
+#  define __glibcxx_sstream_from_string_view 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_sstream_from_string_view)
+#   define __cpp_lib_sstream_from_string_view 202306L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_sstream_from_string_view) && defined(__glibcxx_want_sstream_from_string_view) */
+#undef __glibcxx_want_sstream_from_string_view
+
 #undef __glibcxx_want_all
