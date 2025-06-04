@@ -1956,6 +1956,14 @@ export namespace std
   using std::out_ptr;
   using std::inout_ptr;
 #endif
+#if __cpp_lib_indirect
+  using std::indirect;
+  namespace pmr { using std::pmr::indirect; }
+#endif
+#if __cpp_lib_polymorphic
+  using std::polymorphic;
+  namespace pmr { using std::pmr::polymorphic; }
+#endif
 }
 
 // 20.4 <memory_resource>
