@@ -31,9 +31,16 @@ template<size_t Count, typename Layout, typename OLayout>
 
 A<std::layout_left> a_left;                      // { dg-error "required from" }
 A<std::layout_right> a_right;                    // { dg-error "required from" }
+A<std::layout_stride> a_stride;                  // { dg-error "required from" }
 
 B<1, std::layout_left, std::layout_left> b0;     // { dg-error "required here" }
+B<2, std::layout_left, std::layout_stride> b1;   // { dg-error "required here" }
 
 B<3, std::layout_right, std::layout_right> b2;   // { dg-error "required here" }
+B<4, std::layout_right, std::layout_stride> b3;  // { dg-error "required here" }
+
+B<5, std::layout_stride, std::layout_right> b4;  // { dg-error "required here" }
+B<6, std::layout_stride, std::layout_left> b5;   // { dg-error "required here" }
+B<7, std::layout_stride, std::layout_stride> b6; // { dg-error "required here" }
 
 // { dg-prune-output "must be representable as index_type" }

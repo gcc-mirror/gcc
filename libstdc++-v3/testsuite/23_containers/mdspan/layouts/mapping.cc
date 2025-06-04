@@ -12,6 +12,7 @@ template<typename Layout, typename Extents>
   {
     using M = typename Layout::mapping<Extents>;
     static_assert(std::__mdspan::__is_extents<typename M::extents_type>);
+    static_assert(std::__mdspan::__mapping_alike<M>);
     static_assert(std::copyable<M>);
     static_assert(std::is_nothrow_move_constructible_v<M>);
     static_assert(std::is_nothrow_move_assignable_v<M>);
@@ -30,6 +31,8 @@ template<typename Layout, typename Extents>
 
     static_assert(M::is_always_unique() && M::is_unique());
     static_assert(M::is_always_strided() && M::is_strided());
+    if constexpr (!std::is_same_v<Layout, std::layout_stride>)
+      static_assert(M::is_always_exhaustive() && M::is_exhaustive());
     return true;
   }
 
@@ -103,6 +106,39 @@ template<typename Layout>
       static constexpr typename Layout::mapping<Extents>
       create(Extents exts)
       { return exts; }
+  };
+
+template<>
+  struct MappingFactory<std::layout_stride>
+  {
+    template<typename Extents>
+      static constexpr std::layout_stride::mapping<Extents>
+      create(Extents exts)
+      {
+	if constexpr (Extents::rank() == 0)
+	  {
+	    auto strides = std::array<size_t, 0>{};
+	    return std::layout_stride::mapping(exts, strides);
+	  }
+	else if constexpr (Extents::rank() == 1)
+	  {
+	    auto strides = std::array<size_t, 1>{2};
+	    return std::layout_stride::mapping(exts, strides);
+	  }
+	else if constexpr (Extents::rank() == 2)
+	  {
+	    size_t m = exts.extent(1);
+	    auto strides = std::array<size_t, 2>{3*m, 2};
+	    return std::layout_stride::mapping(exts, strides);
+	  }
+	else if constexpr (Extents::rank() == 3)
+	  {
+	    size_t n = exts.extent(0);
+	    size_t m = exts.extent(1);
+	    auto strides = std::array<size_t, 3>{3*m, 2, 11*m*n};
+	    return std::layout_stride::mapping(exts, strides);
+	  }
+      }
   };
 
 template<typename Layout>
@@ -280,6 +316,16 @@ template<typename Layout>
     VERIFY(m.stride(0) == 1);
   }
 
+template<>
+  constexpr void
+  test_stride_1d<std::layout_stride>()
+  {
+    std::array<int, 1> strides{13};
+    std::layout_stride::mapping m(std::extents<int, 3>{}, strides);
+    VERIFY(m.stride(0) == strides[0]);
+    VERIFY(m.strides() == strides);
+  }
+
 template<typename Layout>
   constexpr void
   test_stride_2d();
@@ -300,6 +346,17 @@ template<>
     std::layout_right::mapping<std::extents<int, 3, 5>> m;
     VERIFY(m.stride(0) == 5);
     VERIFY(m.stride(1) == 1);
+  }
+
+template<>
+  constexpr void
+  test_stride_2d<std::layout_stride>()
+  {
+    std::array<int, 2> strides{13, 2};
+    std::layout_stride::mapping m(std::extents<int, 3, 5>{}, strides);
+    VERIFY(m.stride(0) == strides[0]);
+    VERIFY(m.stride(1) == strides[1]);
+    VERIFY(m.strides() == strides);
   }
 
 template<typename Layout>
@@ -326,6 +383,19 @@ template<>
     VERIFY(m.stride(2) == 1);
   }
 
+template<>
+  constexpr void
+  test_stride_3d<std::layout_stride>()
+  {
+    std::dextents<int, 3> exts(3, 5, 7);
+    std::array<int, 3> strides{11, 2, 41};
+    std::layout_stride::mapping<std::dextents<int, 3>> m(exts, strides);
+    VERIFY(m.stride(0) == strides[0]);
+    VERIFY(m.stride(1) == strides[1]);
+    VERIFY(m.stride(2) == strides[2]);
+    VERIFY(m.strides() == strides);
+  }
+
 template<typename Layout>
   constexpr bool
   test_stride_all()
@@ -347,7 +417,7 @@ template<typename Layout>
   test_has_stride_0d()
   {
     using Mapping = typename Layout::mapping<std::extents<int>>;
-    constexpr bool expected = false;
+    constexpr bool expected = std::is_same_v<Layout, std::layout_stride>;
     static_assert(has_stride<Mapping> == expected);
   }
 
@@ -488,8 +558,11 @@ main()
 {
   test_all<std::layout_left>();
   test_all<std::layout_right>();
+  test_all<std::layout_stride>();
 
   test_has_op_eq<std::layout_right, std::layout_left, false>();
+  test_has_op_eq<std::layout_right, std::layout_stride, true>();
+  test_has_op_eq<std::layout_left, std::layout_stride, true>();
   test_has_op_eq_peculiar();
   return 0;
 }

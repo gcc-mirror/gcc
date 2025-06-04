@@ -321,6 +321,104 @@ namespace from_left_or_right
     }
 }
 
+// ctor: mapping(layout_stride::mapping<OExtents>)
+namespace from_stride
+{
+  template<typename Mapping>
+    constexpr auto
+    strides(Mapping m)
+    {
+      constexpr auto rank = Mapping::extents_type::rank();
+      std::array<typename Mapping::index_type, rank> s;
+
+      if constexpr (rank > 0)
+	for(size_t i = 0; i < rank; ++i)
+	  s[i] = m.stride(i);
+      return s;
+    }
+
+  template<typename Layout, typename Extents, typename OExtents>
+    constexpr void
+    verify_convertible(OExtents oexts)
+    {
+      using Mapping = typename Layout::mapping<Extents>;
+      using OMapping = std::layout_stride::mapping<OExtents>;
+
+      constexpr auto other = OMapping(oexts, strides(Mapping(Extents(oexts))));
+      if constexpr (std::is_same_v<Layout, std::layout_right>)
+	::verify_nothrow_convertible<Mapping>(other);
+      else
+	::verify_convertible<Mapping>(other);
+    }
+
+  template<typename Layout, typename Extents, typename OExtents>
+    constexpr void
+    verify_constructible(OExtents oexts)
+    {
+      using Mapping = typename Layout::mapping<Extents>;
+      using OMapping = std::layout_stride::mapping<OExtents>;
+
+      constexpr auto other = OMapping(oexts, strides(Mapping(Extents(oexts))));
+      if constexpr (std::is_same_v<Layout, std::layout_right>)
+	::verify_nothrow_constructible<Mapping>(other);
+      else
+	::verify_constructible<Mapping>(other);
+    }
+
+  template<typename Layout>
+    constexpr bool
+    test_ctor()
+    {
+      assert_not_constructible<
+	typename Layout::mapping<std::extents<int>>,
+	std::layout_stride::mapping<std::extents<int, 1>>>();
+
+      assert_not_constructible<
+	typename Layout::mapping<std::extents<int, 1>>,
+	std::layout_stride::mapping<std::extents<int>>>();
+
+      assert_not_constructible<
+	typename Layout::mapping<std::extents<int, 2>>,
+	std::layout_stride::mapping<std::extents<int, 1>>>();
+
+      verify_convertible<Layout, std::extents<int>>(std::extents<int>{});
+
+      verify_convertible<Layout, std::extents<unsigned int>>(
+	std::extents<int>{});
+
+      // Rank ==  0 doesn't check IndexType for convertibility.
+      verify_convertible<Layout, std::extents<int>>(
+	std::extents<unsigned int>{});
+
+      verify_constructible<Layout, std::extents<int, 3>>(
+	std::extents<int, 3>{});
+
+      verify_constructible<Layout, std::extents<unsigned int, 3>>(
+	std::extents<int, 3>{});
+
+      verify_constructible<Layout, std::extents<int, 3>>(
+	std::extents<unsigned int, 3>{});
+
+      verify_constructible<Layout, std::extents<int, 3, 5>>(
+	std::extents<int, 3, 5>{});
+
+      verify_constructible<Layout, std::extents<unsigned int, 3, 5>>(
+	std::extents<int, 3, 5>{});
+
+      verify_constructible<Layout, std::extents<int, 3, 5>>(
+	std::extents<unsigned int, 3, 5>{});
+      return true;
+    }
+
+  template<typename Layout>
+    constexpr void
+    test_all()
+    {
+      test_ctor<Layout>();
+      static_assert(test_ctor<Layout>());
+    }
+}
+
 template<typename Layout>
   constexpr void
   test_all()
@@ -328,6 +426,7 @@ template<typename Layout>
     default_ctor::test_all<Layout>();
     from_extents::test_all<Layout>();
     from_same_layout::test_all<Layout>();
+    from_stride::test_all<Layout>();
   }
 
 int

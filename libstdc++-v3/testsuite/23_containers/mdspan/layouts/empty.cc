@@ -2,6 +2,7 @@
 #include <mdspan>
 
 #include <cstdint>
+#include <algorithm>
 #include <testsuite_hooks.h>
 
 constexpr size_t dyn = std::dynamic_extent;
@@ -43,11 +44,27 @@ test_static_overflow()
   verify_all(typename Layout::mapping<std::extents<Int, n, n, n, dyn>>{});
 }
 
+template<typename Int, size_t N>
+constexpr std::array<Int, N>
+make_strides()
+{
+  std::array<Int, N> strides;
+  std::ranges::fill(strides, Int(1));
+  return strides;
+}
+
 template<typename Layout, typename Extents>
 constexpr typename Layout::mapping<Extents>
 make_mapping(Extents exts)
 {
-  return typename Layout::mapping(exts);
+  using IndexType = typename Extents::index_type;
+  constexpr auto rank = Extents::rank();
+  constexpr auto strides = make_strides<IndexType, rank>();
+
+  if constexpr (std::same_as<Layout, std::layout_stride>)
+    return typename Layout::mapping(exts, strides);
+  else
+    return typename Layout::mapping(exts);
 }
 
 template<typename Layout, typename Int>
@@ -109,5 +126,6 @@ main()
 {
   static_assert(test_all<std::layout_left>());
   static_assert(test_all<std::layout_right>());
+  static_assert(test_all<std::layout_stride>());
   return 0;
 }
