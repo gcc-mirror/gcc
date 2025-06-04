@@ -647,6 +647,7 @@ test_leap_second()
 	  WIDEN("2012-06-30 23:59:60") );
 }
 
+#if _GLIBCXX_USE_CXX11_ABI
 template<typename Dur, typename Dur2>
 auto
 make_zoned(const sys_time<Dur2>& st, const time_zone* tz)
@@ -679,6 +680,7 @@ test_zoned_time()
   verify( make_zoned<kilodays>(st, tz),
 	  WIDEN("2022-01-08 02:00:00 EET") );
 }
+#endif
 
 template<typename Dur, typename Dur2>
 auto
@@ -725,7 +727,9 @@ test_time_points()
   test_time_point<CharT, gps_clock>(true);
   test_time_point<CharT, file_clock>(true);
   test_leap_second<CharT>();
+#if _GLIBCXX_USE_CXX11_ABI
   test_zoned_time<CharT>();
+#endif
   test_local_time_format<CharT>();
 
   test_no_empty_spec<CharT, sys_time<years>>();
