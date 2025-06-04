@@ -3911,6 +3911,8 @@ get_vector_binary_rtx_cost (rtx x, int scalar2vr_cost)
   if (GET_CODE (op_0) == VEC_DUPLICATE
       || GET_CODE (op_1) == VEC_DUPLICATE)
     return (scalar2vr_cost + 1) * COSTS_N_INSNS (1);
+  else if (GET_CODE (op_0) == NEG && GET_CODE (op_1) == VEC_DUPLICATE)
+    return (scalar2vr_cost + 1) * COSTS_N_INSNS (1);
   else
     return COSTS_N_INSNS (1);
 }

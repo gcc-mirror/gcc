@@ -13,12 +13,12 @@ main ()
 
   for (i = 0; i < sizeof (TEST_DATA) / sizeof (TEST_DATA[0]); i++)
     {
-      T x = TEST_DATA[i][0][0];
+      T f = TEST_DATA[i][0][0];
       T *in = TEST_DATA[i][1];
       T *out = TEST_DATA[i][2];
       T *expect = TEST_DATA[i][3];
 
-      TEST_RUN (T, NAME, out, in, x, N);
+      TEST_RUN (T, NAME, out, in, f, N);
 
       for (k = 0; k < N; k++)
 	{

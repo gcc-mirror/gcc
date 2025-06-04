@@ -7,7 +7,7 @@
 #define T    double
 #define NAME add
 
-DEF_VF_MULOP_CASE_0_WRAP(T, +, NAME)
+DEF_VF_MULOP_CASE_0_WRAP (T, +, +, NAME)
 
 #define TEST_DATA                        TEST_MULOP_DATA_WRAP(T, NAME)
 #define TEST_RUN(T, NAME, out, in, x, n) RUN_VF_MULOP_CASE_0_WRAP(T, NAME, out, in, x, n)
