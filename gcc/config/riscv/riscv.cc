@@ -3892,11 +3892,11 @@ riscv_extend_cost (rtx op, bool unsigned_p)
 }
 
 /* Return the cost of the vector binary rtx like add, minus, mult.
-   The cost of gr2vr will be appended if there one of the op comes
-   from the VEC_DUPLICATE.  */
+   The cost of scalar2vr_cost will be appended if there one of the
+   op comes from the VEC_DUPLICATE.  */
 
 static int
-get_vector_binary_rtx_cost (rtx x, int gr2vr_cost)
+get_vector_binary_rtx_cost (rtx x, int scalar2vr_cost)
 {
   gcc_assert (riscv_v_ext_mode_p (GET_MODE (x)));
 
@@ -3905,7 +3905,7 @@ get_vector_binary_rtx_cost (rtx x, int gr2vr_cost)
 
   if (GET_CODE (op_0) == VEC_DUPLICATE
       || GET_CODE (op_1) == VEC_DUPLICATE)
-    return (gr2vr_cost + 1) * COSTS_N_INSNS (1);
+    return (scalar2vr_cost + 1) * COSTS_N_INSNS (1);
   else
     return COSTS_N_INSNS (1);
 }
@@ -3924,6 +3924,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
     {
       int gr2vr_cost = get_gr2vr_cost ();
       int fr2vr_cost = get_fr2vr_cost ();
+      int scalar2vr_cost = FLOAT_MODE_P (GET_MODE_INNER (mode))
+	? fr2vr_cost : gr2vr_cost;
 
       switch (outer_code)
 	{
@@ -3936,12 +3938,12 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		break;
 	      case IF_THEN_ELSE:
 		{
-		  rtx op_1 = XEXP (x, 1);
+		  rtx op = XEXP (x, 1);
 
-		  switch (GET_CODE (op_1))
+		  switch (GET_CODE (op))
 		    {
 		    case DIV:
-		      *total = get_vector_binary_rtx_cost (op_1, gr2vr_cost);
+		      *total = get_vector_binary_rtx_cost (op, scalar2vr_cost);
 		      break;
 		    default:
 		      *total = COSTS_N_INSNS (1);
@@ -3956,31 +3958,17 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	      case XOR:
 	      case MULT:
 		{
+		  rtx op;
 		  rtx op_0 = XEXP (x, 0);
 		  rtx op_1 = XEXP (x, 1);
-		  rtx op;
 
-		  if (GET_CODE (op_0) == VEC_DUPLICATE
-		      || GET_CODE (op_1) == VEC_DUPLICATE)
-		    {
-		      *total = (gr2vr_cost + 1) * COSTS_N_INSNS (1);
-		      break;
-		    }
-		  else if (GET_CODE (op = op_0) == MULT
-			   || GET_CODE (op = op_1) == MULT)
-		    {
-		      rtx mult_op0 = XEXP (op, 0);
-		      if (GET_CODE (mult_op0) == VEC_DUPLICATE)
-			{
-			  if (FLOAT_MODE_P (mode))
-			    *total = (fr2vr_cost + 1) * COSTS_N_INSNS (1);
-			  else
-			    *total = (gr2vr_cost + 1) * COSTS_N_INSNS (1);
-			  break;
-			}
-		    }
+		  if (GET_CODE (op = op_0) == MULT
+		      || GET_CODE (op = op_1) == MULT)
+		    *total = get_vector_binary_rtx_cost (op, scalar2vr_cost);
+		  else
+		    *total = get_vector_binary_rtx_cost (x, scalar2vr_cost);
 		}
-		/* Fall through.  */
+		break;
 	      default:
 		*total = COSTS_N_INSNS (1);
 		break;
