@@ -17,7 +17,8 @@
 
 // { dg-do run { target c++20 } }
 // { dg-additional-options "-pthread" { target pthread } }
-// { dg-require-gthreads "" }
+// { dg-require-effective-target gthreads { target { ! *-*-linux* } } }
+// { dg-require-effective-target hosted }
 // { dg-add-options libatomic }
 
 #include <semaphore>
