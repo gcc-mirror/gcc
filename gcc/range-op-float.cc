@@ -51,8 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 
 bool
 range_operator::fold_range (frange &r, tree type,
-				  const frange &op1, const frange &op2,
-				  relation_trio trio) const
+			    const frange &op1, const frange &op2,
+			    relation_trio trio) const
 {
   if (empty_range_varying (r, type, op1, op2))
     return true;
@@ -112,20 +112,20 @@ range_operator::rv_fold (frange &r, tree type,
 
 bool
 range_operator::fold_range (irange &r ATTRIBUTE_UNUSED,
-				  tree type ATTRIBUTE_UNUSED,
-				  const frange &lh ATTRIBUTE_UNUSED,
-				  const irange &rh ATTRIBUTE_UNUSED,
-				  relation_trio) const
+			    tree type ATTRIBUTE_UNUSED,
+			    const frange &lh ATTRIBUTE_UNUSED,
+			    const irange &rh ATTRIBUTE_UNUSED,
+			    relation_trio) const
 {
   return false;
 }
 
 bool
 range_operator::fold_range (irange &r ATTRIBUTE_UNUSED,
-				  tree type ATTRIBUTE_UNUSED,
-				  const frange &lh ATTRIBUTE_UNUSED,
-				  const frange &rh ATTRIBUTE_UNUSED,
-				  relation_trio) const
+			    tree type ATTRIBUTE_UNUSED,
+			    const frange &lh ATTRIBUTE_UNUSED,
+			    const frange &rh ATTRIBUTE_UNUSED,
+			    relation_trio) const
 {
   return false;
 }
@@ -142,10 +142,10 @@ range_operator::fold_range (frange &r ATTRIBUTE_UNUSED,
 
 bool
 range_operator::op1_range (frange &r ATTRIBUTE_UNUSED,
-				 tree type ATTRIBUTE_UNUSED,
-				 const frange &lhs ATTRIBUTE_UNUSED,
-				 const frange &op2 ATTRIBUTE_UNUSED,
-				 relation_trio) const
+			   tree type ATTRIBUTE_UNUSED,
+			   const frange &lhs ATTRIBUTE_UNUSED,
+			   const frange &op2 ATTRIBUTE_UNUSED,
+			   relation_trio) const
 {
   return false;
 }
@@ -162,56 +162,56 @@ range_operator::op1_range (frange &r ATTRIBUTE_UNUSED,
 
 bool
 range_operator::op2_range (frange &r ATTRIBUTE_UNUSED,
-				 tree type ATTRIBUTE_UNUSED,
-				 const frange &lhs ATTRIBUTE_UNUSED,
-				 const frange &op1 ATTRIBUTE_UNUSED,
-				 relation_trio) const
+			   tree type ATTRIBUTE_UNUSED,
+			   const frange &lhs ATTRIBUTE_UNUSED,
+			   const frange &op1 ATTRIBUTE_UNUSED,
+			   relation_trio) const
 {
   return false;
 }
 
 bool
 range_operator::op2_range (frange &r ATTRIBUTE_UNUSED,
-				 tree type ATTRIBUTE_UNUSED,
-				 const irange &lhs ATTRIBUTE_UNUSED,
-				 const frange &op1 ATTRIBUTE_UNUSED,
-				 relation_trio) const
+			   tree type ATTRIBUTE_UNUSED,
+			   const irange &lhs ATTRIBUTE_UNUSED,
+			   const frange &op1 ATTRIBUTE_UNUSED,
+			   relation_trio) const
 {
   return false;
 }
 
 relation_kind
 range_operator::lhs_op1_relation (const frange &lhs ATTRIBUTE_UNUSED,
-					const frange &op1 ATTRIBUTE_UNUSED,
-					const frange &op2 ATTRIBUTE_UNUSED,
-					relation_kind) const
+				  const frange &op1 ATTRIBUTE_UNUSED,
+				  const frange &op2 ATTRIBUTE_UNUSED,
+				  relation_kind) const
 {
   return VREL_VARYING;
 }
 
 relation_kind
 range_operator::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
-					const frange &op1 ATTRIBUTE_UNUSED,
-					const frange &op2 ATTRIBUTE_UNUSED,
-					relation_kind) const
+				  const frange &op1 ATTRIBUTE_UNUSED,
+				  const frange &op2 ATTRIBUTE_UNUSED,
+				  relation_kind) const
 {
   return VREL_VARYING;
 }
 
 relation_kind
 range_operator::lhs_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
-					const frange &op1 ATTRIBUTE_UNUSED,
-					const frange &op2 ATTRIBUTE_UNUSED,
-					relation_kind) const
+				  const frange &op1 ATTRIBUTE_UNUSED,
+				  const frange &op2 ATTRIBUTE_UNUSED,
+				  relation_kind) const
 {
   return VREL_VARYING;
 }
 
 relation_kind
 range_operator::lhs_op2_relation (const frange &lhs ATTRIBUTE_UNUSED,
-					const frange &op1 ATTRIBUTE_UNUSED,
-					const frange &op2 ATTRIBUTE_UNUSED,
-					relation_kind) const
+				  const frange &op1 ATTRIBUTE_UNUSED,
+				  const frange &op2 ATTRIBUTE_UNUSED,
+				  relation_kind) const
 {
   return VREL_VARYING;
 }
@@ -675,9 +675,9 @@ operator_equal::fold_range (irange &r, tree type,
 
 bool
 operator_equal::op1_range (frange &r, tree type,
-			    const irange &lhs,
-			    const frange &op2,
-			    relation_trio trio) const
+			   const irange &lhs,
+			   const frange &op2,
+			   relation_trio trio) const
 {
   relation_kind rel = trio.op1_op2 ();
   switch (get_bool_state (r, lhs, type))
@@ -1871,10 +1871,10 @@ public:
 
 bool
 foperator_unordered_gt::op1_range (frange &r,
-			 tree type,
-			 const irange &lhs,
-			 const frange &op2,
-			 relation_trio) const
+				   tree type,
+				   const irange &lhs,
+				   const frange &op2,
+				   relation_trio) const
 {
   switch (get_bool_state (r, lhs, type))
     {

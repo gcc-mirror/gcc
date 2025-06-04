@@ -778,21 +778,21 @@ range_operator::fold_range (irange &r, tree type,
 
 bool
 range_operator::fold_range (frange &, tree, const irange &,
-			   const frange &, relation_trio) const
+			    const frange &, relation_trio) const
 {
   return false;
 }
 
 bool
 range_operator::op1_range (irange &, tree, const frange &,
-			  const frange &, relation_trio) const
+			   const frange &, relation_trio) const
 {
   return false;
 }
 
 bool
 range_operator::op1_range (frange &, tree, const irange &,
-			  const irange &, relation_trio) const
+			   const irange &, relation_trio) const
 {
   return false;
 }
@@ -855,10 +855,13 @@ range_operator::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
 
 bool
 range_operator::op1_op2_relation_effect (irange &lhs_range ATTRIBUTE_UNUSED,
-				       tree type ATTRIBUTE_UNUSED,
-				       const irange &op1_range ATTRIBUTE_UNUSED,
-				       const irange &op2_range ATTRIBUTE_UNUSED,
-				       relation_kind rel ATTRIBUTE_UNUSED) const
+					 tree type ATTRIBUTE_UNUSED,
+					 const irange &op1_range
+					 ATTRIBUTE_UNUSED,
+					 const irange &op2_range
+					 ATTRIBUTE_UNUSED,
+					 relation_kind rel
+					 ATTRIBUTE_UNUSED) const
 {
   return false;
 }
@@ -874,7 +877,7 @@ range_operator::overflow_free_p (const irange &, const irange &,
 
 void
 range_operator::update_bitmask (irange &, const irange &,
-				       const irange &) const
+				const irange &) const
 {
 }
 
@@ -1815,7 +1818,7 @@ operator_plus::wi_fold (irange &r, tree type,
 
 static relation_kind
 plus_minus_ranges (irange &r_ov, irange &r_normal, const irange &offset,
-		bool add_p)
+		   bool add_p)
 {
   relation_kind kind = VREL_VARYING;
   // For now, only deal with constant adds.  This could be extended to ranges
@@ -3349,9 +3352,9 @@ wi_optimize_signed_bitwise_op (irange &r, tree type,
 
 relation_kind
 operator_bitwise_and::lhs_op1_relation (const irange &lhs,
-				 const irange &op1,
-				 const irange &op2,
-				 relation_kind) const
+					const irange &op1,
+					const irange &op2,
+					relation_kind) const
 {
   if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
     return VREL_VARYING;
