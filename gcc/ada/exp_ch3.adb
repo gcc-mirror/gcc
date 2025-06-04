@@ -401,7 +401,7 @@ package body Exp_Ch3 is
      (Tag_Typ    : Entity_Id;
       Renamed_Eq : Entity_Id) return List_Id;
    --  Create the bodies of the predefined primitives that are described in
-   --  Predefined_Primitive_Specs. When not empty, Renamed_Eq must denote
+   --  Make_Predefined_Primitive_Specs. When not empty, Renamed_Eq must denote
    --  the defining unit name of the type's predefined equality as returned
    --  by Make_Predefined_Primitive_Specs.
 
