@@ -339,30 +339,24 @@ namespace from_stride
 
   template<typename Layout, typename Extents, typename OExtents>
     constexpr void
-    verify_convertible(OExtents oexts)
+    verify_nothrow_convertible(OExtents oexts)
     {
       using Mapping = typename Layout::mapping<Extents>;
       using OMapping = std::layout_stride::mapping<OExtents>;
 
       constexpr auto other = OMapping(oexts, strides(Mapping(Extents(oexts))));
-      if constexpr (std::is_same_v<Layout, std::layout_right>)
-	::verify_nothrow_convertible<Mapping>(other);
-      else
-	::verify_convertible<Mapping>(other);
+      ::verify_nothrow_convertible<Mapping>(other);
     }
 
   template<typename Layout, typename Extents, typename OExtents>
     constexpr void
-    verify_constructible(OExtents oexts)
+    verify_nothrow_constructible(OExtents oexts)
     {
       using Mapping = typename Layout::mapping<Extents>;
       using OMapping = std::layout_stride::mapping<OExtents>;
 
       constexpr auto other = OMapping(oexts, strides(Mapping(Extents(oexts))));
-      if constexpr (std::is_same_v<Layout, std::layout_right>)
-	::verify_nothrow_constructible<Mapping>(other);
-      else
-	::verify_constructible<Mapping>(other);
+      ::verify_nothrow_constructible<Mapping>(other);
     }
 
   template<typename Layout>
@@ -381,31 +375,32 @@ namespace from_stride
 	typename Layout::mapping<std::extents<int, 2>>,
 	std::layout_stride::mapping<std::extents<int, 1>>>();
 
-      verify_convertible<Layout, std::extents<int>>(std::extents<int>{});
+      verify_nothrow_convertible<Layout, std::extents<int>>(
+	std::extents<int>{});
 
-      verify_convertible<Layout, std::extents<unsigned int>>(
+      verify_nothrow_convertible<Layout, std::extents<unsigned int>>(
 	std::extents<int>{});
 
       // Rank ==  0 doesn't check IndexType for convertibility.
-      verify_convertible<Layout, std::extents<int>>(
+      verify_nothrow_convertible<Layout, std::extents<int>>(
 	std::extents<unsigned int>{});
 
-      verify_constructible<Layout, std::extents<int, 3>>(
+      verify_nothrow_constructible<Layout, std::extents<int, 3>>(
 	std::extents<int, 3>{});
 
-      verify_constructible<Layout, std::extents<unsigned int, 3>>(
+      verify_nothrow_constructible<Layout, std::extents<unsigned int, 3>>(
 	std::extents<int, 3>{});
 
-      verify_constructible<Layout, std::extents<int, 3>>(
+      verify_nothrow_constructible<Layout, std::extents<int, 3>>(
 	std::extents<unsigned int, 3>{});
 
-      verify_constructible<Layout, std::extents<int, 3, 5>>(
+      verify_nothrow_constructible<Layout, std::extents<int, 3, 5>>(
 	std::extents<int, 3, 5>{});
 
-      verify_constructible<Layout, std::extents<unsigned int, 3, 5>>(
+      verify_nothrow_constructible<Layout, std::extents<unsigned int, 3, 5>>(
 	std::extents<int, 3, 5>{});
 
-      verify_constructible<Layout, std::extents<int, 3, 5>>(
+      verify_nothrow_constructible<Layout, std::extents<int, 3, 5>>(
 	std::extents<unsigned int, 3, 5>{});
       return true;
     }

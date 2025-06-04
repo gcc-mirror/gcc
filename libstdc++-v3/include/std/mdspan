@@ -561,10 +561,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: mapping(__other.extents(), __mdspan::__internal_ctor{})
 	{ }
 
+      // noexcept for consistency with other layouts.
       template<typename _OExtents>
 	requires is_constructible_v<extents_type, _OExtents>
 	constexpr explicit(extents_type::rank() > 0)
-	mapping(const layout_stride::mapping<_OExtents>& __other)
+	mapping(const layout_stride::mapping<_OExtents>& __other) noexcept
 	: mapping(__other.extents(), __mdspan::__internal_ctor{})
 	{ __glibcxx_assert(*this == __other); }
 
