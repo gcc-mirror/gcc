@@ -4872,16 +4872,19 @@ package body Freeze is
                if Nkind (Original_Node (Parent (E))) = N_Full_Type_Declaration
                then
                   Warn_Node := Parent (E);
-
-                  if Formal = First_Formal (E) then
-                     Error_Msg_NE ("??in inherited operation&", Warn_Node, E);
-                  end if;
                else
                   Warn_Node := Formal;
                end if;
 
                Error_Msg_NE ("?x?type of argument& is unconstrained array",
                   Warn_Node, Formal);
+
+               if Nkind (Original_Node (Parent (E))) = N_Full_Type_Declaration
+                 and then Formal = First_Formal (E)
+               then
+                  Error_Msg_NE ("\?x?in inherited operation&", Warn_Node, E);
+               end if;
+
                Error_Msg_N ("\?x?foreign caller must pass bounds explicitly",
                   Warn_Node);
                Error_Msg_Qual_Level := 0;
