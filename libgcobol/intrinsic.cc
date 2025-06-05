@@ -167,7 +167,7 @@ JD_to_DOW(double JD)
 
 static
 char *
-timespec_to_string(char *retval, struct timespec &tp)
+timespec_to_string(char *retval, struct cbl_timespec &tp)
   {
   /*
   Returns a 21-character string:
@@ -1218,7 +1218,7 @@ void
 __gg__current_date(cblc_field_t *dest)
   {
   // FUNCTION CURRENT-DATE
-  struct timespec tp = {};
+  struct cbl_timespec tp = {};
   __gg__clock_gettime(CLOCK_REALTIME, &tp); // time_t tv_sec; long tv_nsec
 
   char retval[DATE_STRING_BUFFER_SIZE];
@@ -1232,7 +1232,7 @@ void
 __gg__seconds_past_midnight(cblc_field_t *dest)
   {
   // SECONDS-PAST-MIDNIGHT
-  struct timespec tp = {};
+  struct cbl_timespec tp = {};
   struct tm tm;
   __int128 retval=0;
   
@@ -1484,7 +1484,7 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
       }
     }
 
-  struct timespec ts = {};
+  struct cbl_timespec ts = {};
   __gg__clock_gettime(CLOCK_REALTIME, &ts);
 
   struct tm tm = {};
@@ -3432,7 +3432,7 @@ __gg__random( cblc_field_t *dest,
     buf->state = NULL;
     state = (char *)malloc(state_len);
 
-    struct timespec ts;
+    struct cbl_timespec ts;
     __gg__clock_gettime(CLOCK_REALTIME, &ts);
     initstate_r( ts.tv_nsec, state, state_len, buf);
     }
@@ -3472,7 +3472,7 @@ __gg__random_next(cblc_field_t *dest)
     buf = (random_data *)malloc(sizeof(struct random_data));
     buf->state = NULL;
     state = (char *)malloc(state_len);
-    struct timespec ts;
+    struct cbl_timespec ts;
     __gg__clock_gettime(CLOCK_REALTIME, &ts);
     initstate_r( ts.tv_nsec, state, state_len, buf);
     }
@@ -3776,7 +3776,7 @@ extern "C"
 void
 __gg__when_compiled(cblc_field_t *dest, size_t tv_sec, long tv_nsec)
   {
-  struct timespec tp = {};
+  struct cbl_timespec tp = {};
   tp.tv_sec  = tv_sec;
   tp.tv_nsec = tv_nsec;
   char retval[DATE_STRING_BUFFER_SIZE];

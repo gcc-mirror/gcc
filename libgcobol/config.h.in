@@ -3,6 +3,9 @@
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 
+/* Define to 1 if you have the `clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
+
 /* Define to 1 if you have the <complex.h> header file. */
 #undef HAVE_COMPLEX_H
 

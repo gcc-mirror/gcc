@@ -2289,7 +2289,7 @@ get_binary_value_local(  int                 *rdigits,
 static time_t
 cobol_time()
   {
-  struct timespec tp;
+  struct cbl_timespec tp;
   __gg__clock_gettime(CLOCK_REALTIME, &tp);
   return tp.tv_sec;
   }
@@ -2402,10 +2402,32 @@ int_from_digits(const char * &p, int ndigits)
   return retval;
   }
 
+uint64_t
+get_time_nanoseconds()
+{
+  // This code was unabashedly stolen from gcc/timevar.cc.
+  // It returns the Unix epoch with nine decimal places.
+
+  uint64_t retval = 0;
+
+#ifdef HAVE_CLOCK_GETTIME
+  struct timespec ts;
+  clock_gettime (CLOCK_REALTIME, &ts);
+  retval = ts.tv_sec * 1000000000 + ts.tv_nsec;
+  return retval;
+#endif
+#ifdef HAVE_GETTIMEOFDAY
+  struct timeval tv;
+  gettimeofday (&tv, NULL);
+  retval = tv.tv_sec * 1000000000 + tv.tv_usec * 1000;
+  return retval;
+#endif
+  return retval;
+}
 
 extern "C"
 void
-__gg__clock_gettime(clockid_t clk_id, struct timespec *tp)
+__gg__clock_gettime(clockid_t clk_id, struct cbl_timespec *tp)
   {
   const char *p = getenv("GCOBOL_CURRENT_DATE");
 
@@ -2435,7 +2457,11 @@ __gg__clock_gettime(clockid_t clk_id, struct timespec *tp)
     }
   else
     {
-    clock_gettime(clk_id, tp);
+    timespec tm;
+    clock_gettime(clk_id, &tm);
+    uint64_t ns = get_time_nanoseconds();
+    tp->tv_sec  = ns/1000000000;
+    tp->tv_nsec = ns%1000000000;
     }
   }
 
@@ -2445,7 +2471,7 @@ __gg__get_date_hhmmssff()
   {
   char ach[32];
 
-  struct timespec tv;
+  struct cbl_timespec tv;
   __gg__clock_gettime(CLOCK_REALTIME, &tv);
 
   struct tm tm;

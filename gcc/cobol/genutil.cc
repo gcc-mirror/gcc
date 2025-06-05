@@ -2121,7 +2121,7 @@ qualified_data_location(cbl_refer_t &refer)
   }
 
 uint64_t
-get_time_64()
+get_time_nanoseconds()
 {
   // This code was unabashedly stolen from gcc/timevar.cc.
   // It returns the Unix epoch with nine decimal places.
