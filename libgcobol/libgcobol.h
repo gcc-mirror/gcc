@@ -104,7 +104,15 @@ extern "C" char __gg__get_decimal_separator();
 extern "C" char __gg__get_decimal_point();
 extern "C" char * __gg__get_default_currency_string();
 
-extern "C" void __gg__clock_gettime(clockid_t clk_id, struct timespec *tp);
+struct cbl_timespec
+  {
+  /*  You keep using that word "portability".  I do not think it means what
+      you think it means. */
+  time_t  tv_sec;    // Seconds.
+  long    tv_nsec;   // Nanoseconds.
+  } ;
+
+extern "C" void __gg__clock_gettime(clockid_t clk_id, struct cbl_timespec *tp);
 
 extern "C" GCOB_FP128 __gg__float128_from_location(
                                         const cblc_field_t *var,

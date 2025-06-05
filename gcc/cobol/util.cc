@@ -65,6 +65,7 @@
 #include "inspect.h"
 #include "../../libgcobol/io.h"
 #include "genapi.h"
+#include "genutil.h"
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -2141,22 +2142,25 @@ cobol_fileline_set( const char line[] ) {
   return file.name;
 }
 
+//#define TIMING_PARSE
+#ifdef TIMING_PARSE
 class cbl_timespec {
-  struct timespec now;
+  uint64_t now; // Nanoseconds
  public:
   cbl_timespec() {
-    clock_gettime(CLOCK_MONOTONIC, &now);
+    now = get_time_nanoseconds();
   }
   double ns() const {
-    return now.tv_sec * 1000000000 + now.tv_nsec;
+    return now;
   }
   friend double operator-( const cbl_timespec& now, const cbl_timespec& then );
 };
 
 double
-operator-( const cbl_timespec& then, const cbl_timespec& now ) {
+operator-( const cbl_timespec& now, const cbl_timespec& then ) {
   return (now.ns() - then.ns()) / 1000000000;
 }
+#endif
 
 static int
 parse_file( const char filename[] )
@@ -2172,15 +2176,20 @@ parse_file( const char filename[] )
     return 0;
   }
 
+#ifdef TIMING_PARSE
   cbl_timespec start;
+#endif
 
   int erc = yyparse();
 
+#ifdef TIMING_PARSE
   cbl_timespec finish;
   double dt  = finish - start;
+  printf("Overall parse & generate time is %.6f seconds\n", dt);
+#endif
+
   parser_leave_file();
 
-  //printf("Overall parse & generate time is %.6f seconds\n", dt);
 
   fclose (yyin);
 

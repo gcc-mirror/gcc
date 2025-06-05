@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// cppcheck-suppress-file postfixOperator
-
 #include <err.h>
 #include <fcntl.h>
 #include <unistd.h>
