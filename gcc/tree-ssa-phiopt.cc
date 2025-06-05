@@ -3605,7 +3605,8 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
 static bool
 cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 				  basic_block join_bb, gimple *then_assign,
-				  gimple *else_assign)
+				  gimple *else_assign,
+				  gphi *vphi)
 {
   tree lhs_base, lhs, then_rhs, else_rhs, name;
   location_t then_locus, else_locus;
@@ -3672,6 +3673,14 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   add_phi_arg (newphi, else_rhs, EDGE_SUCC (else_bb, 0), else_locus);
 
   new_stmt = gimple_build_assign (lhs, gimple_phi_result (newphi));
+  /* Update the vdef for the new store statement. */
+  tree newvphilhs = make_ssa_name (gimple_vop (cfun));
+  tree vdef = gimple_phi_result (vphi);
+  gimple_set_vuse (new_stmt, newvphilhs);
+  gimple_set_vdef (new_stmt, vdef);
+  gimple_phi_set_result (vphi, newvphilhs);
+  SSA_NAME_DEF_STMT (vdef) = new_stmt;
+  update_stmt (vphi);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf(dump_file, "to use phi:\n");
@@ -3782,7 +3791,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
       gimple *else_assign = single_trailing_store_in_bb (else_bb, else_vdef);
       if (else_assign)
 	return cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
-						 then_assign, else_assign);
+						 then_assign, else_assign, vphi);
     }
 
   /* If either vectorization or if-conversion is disabled then do
@@ -3921,7 +3930,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
       then_store = store_pair.first;
       else_store = store_pair.second;
       res = cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
-                                              then_store, else_store);
+					      then_store, else_store, vphi);
       ok = ok || res;
     }
 
