@@ -2511,7 +2511,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       // [first,middle) and [middle,last).
       _TmpBuf __buf(__first, std::min(__len1, __len2));
 
-      if (__builtin_expect(__buf.size() == __buf.requested_size(), true))
+      if (__builtin_expect(__buf.size() == __buf._M_requested_size(), true))
 	std::__merge_adaptive
 	  (__first, __middle, __last, __len1, __len2, __buf.begin(), __comp);
       else if (__builtin_expect(__buf.begin() == 0, false))
@@ -5024,7 +5024,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       // so the buffer only needs to fit half the range at once.
       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
 
-      if (__builtin_expect(__buf.requested_size() == __buf.size(), true))
+      if (__builtin_expect(__buf._M_requested_size() == __buf.size(), true))
 	std::__stable_sort_adaptive(__first,
 				    __first + _DistanceType(__buf.size()),
 				    __last, __buf.begin(), __comp);

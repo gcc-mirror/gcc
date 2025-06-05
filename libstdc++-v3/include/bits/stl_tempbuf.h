@@ -227,7 +227,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// Returns the size requested by the constructor; may be >size().
       size_type
-      requested_size() const
+      _M_requested_size() const
       { return _M_original_len; }
 
       /// As per Table mumble.
