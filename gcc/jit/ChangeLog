@@ -1,3 +1,7 @@
+2025-06-05  Release Manager
+
+	* GCC 13.4.0 released.
+
 2025-02-25  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

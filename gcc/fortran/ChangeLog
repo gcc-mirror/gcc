@@ -1,3 +1,7 @@
+2025-06-05  Release Manager
+
+	* GCC 13.4.0 released.
+
 2025-06-02  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backported from master:
