@@ -14983,6 +14983,8 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   if (closure && DECL_IOBJ_MEMBER_FUNCTION_P (t))
     parms = DECL_CHAIN (parms);
   parms = tsubst (parms, args, complain, t);
+  if (parms == error_mark_node)
+    return error_mark_node;
   for (tree parm = parms; parm; parm = DECL_CHAIN (parm))
     DECL_CONTEXT (parm) = r;
   if (closure && DECL_IOBJ_MEMBER_FUNCTION_P (t))
@@ -15555,6 +15557,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
               /* We're dealing with a normal parameter.  */
               type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 
+	    if (type == error_mark_node && !(complain & tf_error))
+	      RETURN (error_mark_node);
+
             type = type_decays_to (type);
             TREE_TYPE (r) = type;
             cp_apply_type_quals_to_decl (cp_type_quals (type), r);
@@ -15592,8 +15597,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
 	/* If cp_unevaluated_operand is set, we're just looking for a
 	   single dummy parameter, so don't keep going.  */
 	if (DECL_CHAIN (t) && !cp_unevaluated_operand)
-	  DECL_CHAIN (r) = tsubst (DECL_CHAIN (t), args,
-				   complain, DECL_CHAIN (t));
+	  {
+	    tree chain = tsubst (DECL_CHAIN (t), args,
+				 complain, DECL_CHAIN (t));
+	    if (chain == error_mark_node)
+	      RETURN (error_mark_node);
+	    DECL_CHAIN (r) = chain;
+	  }
 
         /* FIRST_R contains the start of the chain we've built.  */
         r = first_r;
