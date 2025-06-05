@@ -40,16 +40,20 @@
 # define HWCAP2_LSE128	(1UL << 47)
 #endif
 
-#if __has_include(<sys/ifunc.h>)
-# include <sys/ifunc.h>
-#else
+/* The following struct is ABI-correct description of the 2nd argument for an
+   ifunc resolver as per SYSVABI spec (see link below).  It is safe to extend
+   it with new fields.  The ifunc resolver implementations must always check
+   the runtime size of the buffer using the value in the _size field.
+   https://github.com/ARM-software/abi-aa/blob/main/sysvabi64/sysvabi64.rst.  */
 typedef struct __ifunc_arg_t {
   unsigned long _size;
   unsigned long _hwcap;
   unsigned long _hwcap2;
+  unsigned long _hwcap3;
+  unsigned long _hwcap4;
 } __ifunc_arg_t;
+
 # define _IFUNC_ARG_HWCAP (1ULL << 62)
-#endif
 
 /* From the file which imported `host-config.h' we can ascertain which
    architectural extension provides relevant atomic support.  From this,

@@ -20512,6 +20512,8 @@ aarch64_compare_version_priority (tree decl1, tree decl2)
      unsigned long _size; // Size of the struct, so it can grow.
      unsigned long _hwcap;
      unsigned long _hwcap2;
+     unsigned long _hwcap3;
+     unsigned long _hwcap4;
    }
  */
 
@@ -20528,14 +20530,24 @@ build_ifunc_arg_type ()
   tree field3 = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
 			    get_identifier ("_hwcap2"),
 			    long_unsigned_type_node);
+  tree field4 = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			    get_identifier ("_hwcap3"),
+			    long_unsigned_type_node);
+  tree field5 = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			    get_identifier ("_hwcap4"),
+			    long_unsigned_type_node);
 
   DECL_FIELD_CONTEXT (field1) = ifunc_arg_type;
   DECL_FIELD_CONTEXT (field2) = ifunc_arg_type;
   DECL_FIELD_CONTEXT (field3) = ifunc_arg_type;
+  DECL_FIELD_CONTEXT (field4) = ifunc_arg_type;
+  DECL_FIELD_CONTEXT (field5) = ifunc_arg_type;
 
   TYPE_FIELDS (ifunc_arg_type) = field1;
   DECL_CHAIN (field1) = field2;
   DECL_CHAIN (field2) = field3;
+  DECL_CHAIN (field3) = field4;
+  DECL_CHAIN (field4) = field5;
 
   layout_type (ifunc_arg_type);
 

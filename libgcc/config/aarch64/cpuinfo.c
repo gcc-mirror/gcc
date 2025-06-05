@@ -27,15 +27,18 @@
 #if __has_include(<sys/auxv.h>)
 #include <sys/auxv.h>
 
-#if __has_include(<sys/ifunc.h>)
-#include <sys/ifunc.h>
-#else
+/* The following struct is ABI-correct description of the 2nd argument for an
+   ifunc resolver as per SYSVABI spec (see link below).  It is safe to extend
+   it with new fields.  The ifunc resolver implementations must always check
+   the runtime size of the buffer using the value in the _size field.
+   https://github.com/ARM-software/abi-aa/blob/main/sysvabi64/sysvabi64.rst.  */
 typedef struct __ifunc_arg_t {
   unsigned long _size;
   unsigned long _hwcap;
   unsigned long _hwcap2;
+  unsigned long _hwcap3;
+  unsigned long _hwcap4;
 } __ifunc_arg_t;
-#endif
 
 #if __has_include(<asm/hwcap.h>)
 #include <asm/hwcap.h>
@@ -237,6 +240,18 @@ struct {
 #define HWCAP2_LRCPC3	(1UL << 46)
 #endif
 
+#ifndef AT_HWCAP3
+#define AT_HWCAP3 29
+#endif
+
+#ifndef AT_HWCAP4
+#define AT_HWCAP4 30
+#endif
+
+#define __IFUNC_ARG_SIZE_HWCAP2 (sizeof (unsigned long) * 3)
+#define __IFUNC_ARG_SIZE_HWCAP3 (sizeof (unsigned long) * 4)
+#define __IFUNC_ARG_SIZE_HWCAP4 (sizeof (unsigned long) * 5)
+
 static void
 __init_cpu_features_constructor (unsigned long hwcap,
 				 const __ifunc_arg_t *arg)
@@ -247,8 +262,14 @@ __init_cpu_features_constructor (unsigned long hwcap,
 #define extractBits(val, start, number) \
   (val & ((1UL << number) - 1UL) << start) >> start
   unsigned long hwcap2 = 0;
-  if (hwcap & _IFUNC_ARG_HWCAP)
+  if ((hwcap & _IFUNC_ARG_HWCAP) && arg->_size >= __IFUNC_ARG_SIZE_HWCAP2)
     hwcap2 = arg->_hwcap2;
+  unsigned long hwcap3 __attribute__ ((unused)) = 0;
+  if ((hwcap & _IFUNC_ARG_HWCAP) && arg->_size >= __IFUNC_ARG_SIZE_HWCAP3)
+    hwcap3 = arg->_hwcap3;
+  unsigned long hwcap4 __attribute__ ((unused)) = 0;
+  if ((hwcap & _IFUNC_ARG_HWCAP) && arg->_size >= __IFUNC_ARG_SIZE_HWCAP4)
+    hwcap4 = arg->_hwcap4;
   if (hwcap & HWCAP_CRC32)
     setCPUFeature(FEAT_CRC);
   if (hwcap & HWCAP_PMULL)
@@ -383,17 +404,24 @@ __init_cpu_features(void)
 {
   unsigned long hwcap;
   unsigned long hwcap2;
+  unsigned long hwcap3;
+  unsigned long hwcap4;
 
   /* CPU features already initialized.  */
   if (__atomic_load_n (&__aarch64_cpu_features.features, __ATOMIC_RELAXED))
     return;
-  hwcap = getauxval(AT_HWCAP);
-  hwcap2 = getauxval(AT_HWCAP2);
+  hwcap = getauxval (AT_HWCAP);
+  hwcap2 = getauxval (AT_HWCAP2);
+  hwcap3 = getauxval (AT_HWCAP3);
+  hwcap4 = getauxval (AT_HWCAP4);
+
   __ifunc_arg_t arg;
-  arg._size = sizeof(__ifunc_arg_t);
+  arg._size = sizeof (__ifunc_arg_t);
   arg._hwcap = hwcap;
   arg._hwcap2 = hwcap2;
-  __init_cpu_features_constructor(hwcap | _IFUNC_ARG_HWCAP, &arg);
+  arg._hwcap3 = hwcap3;
+  arg._hwcap4 = hwcap4;
+  __init_cpu_features_constructor (hwcap | _IFUNC_ARG_HWCAP, &arg);
 #undef extractBits
 #undef getCPUFeature
 #undef setCPUFeature
