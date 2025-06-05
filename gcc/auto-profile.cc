@@ -1520,7 +1520,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
 	    /* If probability is 1, preserve reliable static prediction
 	       (This is, for example the case of single fallthru edge
 		or single fallthru plus unlikely EH edge.)  */
-	    if (AFDO_EINFO (e)->get_count () == total_count ()
+	    if (AFDO_EINFO (e)->get_count () == total_count
 		&& e->probability == profile_probability::always ())
 	      ;
 	    else if (AFDO_EINFO (e)->get_count ().nonzero_p ())
