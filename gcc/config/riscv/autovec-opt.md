@@ -1682,7 +1682,7 @@
 ;; =============================================================================
 (define_insn_and_split "*<optab>_vx_<mode>"
  [(set (match_operand:V_VLSI    0 "register_operand")
-       (any_int_binop_no_shift_vx:V_VLSI
+       (any_int_binop_no_shift_vdup_v:V_VLSI
 	 (vec_duplicate:V_VLSI
 	   (match_operand:<VEL> 1 "register_operand"))
 	 (match_operand:V_VLSI  2 "<binop_rhs2_predicate>")))]
@@ -1699,7 +1699,7 @@
 
 (define_insn_and_split "*<optab>_vx_<mode>"
  [(set (match_operand:V_VLSI    0 "register_operand")
-       (any_int_binop_no_shift_vx:V_VLSI
+       (any_int_binop_no_shift_v_vdup:V_VLSI
 	 (match_operand:V_VLSI  1 "<binop_rhs2_predicate>")
 	 (vec_duplicate:V_VLSI
 	   (match_operand:<VEL> 2 "register_operand"))))]
