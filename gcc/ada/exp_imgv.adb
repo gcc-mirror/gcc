@@ -1631,7 +1631,6 @@ package body Exp_Imgv is
                Name => New_Occurrence_Of (RTE (Vid), Loc),
                Parameter_Associations => Args)));
 
-         Set_Etype (N, Btyp);
          Analyze_And_Resolve (N, Btyp);
          return;
 
@@ -1675,7 +1674,6 @@ package body Exp_Imgv is
                      Name => New_Occurrence_Of (RTE (Vid), Loc),
                      Parameter_Associations => Args)));
 
-               Set_Etype (N, Btyp);
                Analyze_And_Resolve (N, Btyp);
                return;
             end if;
