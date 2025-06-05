@@ -911,14 +911,16 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	     p1 = TREE_CHAIN (p1), p2 = TREE_CHAIN (p2), n = TREE_CHAIN (n))
 	  {
 	     tree mv1 = TREE_VALUE (p1);
-	     if (mv1 && mv1 != error_mark_node
-		 && TREE_CODE (mv1) != ARRAY_TYPE)
-	       mv1 = TYPE_MAIN_VARIANT (mv1);
+	     if (mv1 && mv1 != error_mark_node)
+	       mv1 = TYPE_ATOMIC (mv1)
+		     ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv1), TYPE_QUAL_ATOMIC)
+		     : TYPE_MAIN_VARIANT (mv1);
 
 	     tree mv2 = TREE_VALUE (p2);
-	     if (mv2 && mv2 != error_mark_node
-		 && TREE_CODE (mv2) != ARRAY_TYPE)
-	       mv2 = TYPE_MAIN_VARIANT (mv2);
+	     if (mv2 && mv2 != error_mark_node)
+	       mv2 = TYPE_ATOMIC (mv2)
+		     ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv2), TYPE_QUAL_ATOMIC)
+		     : TYPE_MAIN_VARIANT (mv2);
 
 	    /* A null type means arg type is not specified.
 	       Take whatever the other function type has.  */
