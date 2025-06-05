@@ -1754,6 +1754,19 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ smrnmi,
+  /* UPPERCASE_NAME */ SMRNMI,
+  /* FULL_NAME */ "Resumable non-maskable interrupts",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sm,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ smstateen,
   /* UPPERCASE_NAME */ SMSTATEEN,
   /* FULL_NAME */ "State enable extension",

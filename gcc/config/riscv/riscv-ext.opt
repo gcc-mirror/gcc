@@ -347,6 +347,8 @@ Mask(SMMPM) Var(riscv_sm_subext)
 
 Mask(SMNPM) Var(riscv_sm_subext)
 
+Mask(SMRNMI) Var(riscv_sm_subext)
+
 Mask(SMSTATEEN) Var(riscv_sm_subext)
 
 Mask(SMDBLTRP) Var(riscv_sm_subext)

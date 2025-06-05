@@ -518,6 +518,10 @@
 @tab 1.0
 @tab smnpm extension
 
+@item smrnmi
+@tab 1.0
+@tab Resumable Non-Maskable Interrupts
+
 @item smstateen
 @tab 1.0
 @tab State enable extension
