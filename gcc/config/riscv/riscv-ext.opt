@@ -359,6 +359,8 @@ Mask(SSCCPTR) Var(riscv_ss_subext)
 
 Mask(SSCOFPMF) Var(riscv_ss_subext)
 
+Mask(SSCOUNTERENW) Var(riscv_ss_subext)
+
 Mask(SSCSRIND) Var(riscv_ss_subext)
 
 Mask(SSNPM) Var(riscv_ss_subext)

@@ -1832,6 +1832,19 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ sscounterenw,
+  /* UPPERCASE_NAME */ SSCOUNTERENW,
+  /* FULL_NAME */ "Support writeable enables for any supported counter",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ sscsrind,
   /* UPPERCASE_NAME */ SSCSRIND,
   /* FULL_NAME */ "Supervisor-Level Indirect CSR Access",

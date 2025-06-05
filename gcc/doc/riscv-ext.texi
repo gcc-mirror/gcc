@@ -542,6 +542,10 @@
 @tab 1.0
 @tab Count overflow & filtering extension
 
+@item sscounterenw
+@tab 1.0
+@tab Support writeable enables for any supported counter
+
 @item sscsrind
 @tab 1.0
 @tab Supervisor-Level Indirect CSR Access
