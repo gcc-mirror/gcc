@@ -41,11 +41,7 @@
 
 #include <istream>
 #include <ostream>
-
 #include <bits/alloc_traits.h> // allocator_traits, __allocator_like
-
-#define __glibcxx_want_sstream_from_string_view
-#include <bits/version.h>
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
 # define _GLIBCXX_LVAL_REF_QUAL &
@@ -55,6 +51,8 @@
 // For symbols that are not exported from libstdc++.so for the COW string ABI.
 # define _GLIBCXX_SSTREAM_ALWAYS_INLINE [[__gnu__::__always_inline__]]
 #endif
+
+
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -161,7 +159,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { __rhs._M_sync(const_cast<char_type*>(__rhs._M_string.data()), 0, 0); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
       explicit
       basic_stringbuf(const allocator_type& __a)
       : basic_stringbuf(ios_base::in | std::ios_base::out, __a)
@@ -200,36 +197,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 						    | ios_base::out)
 	: basic_stringbuf(__s, __mode, allocator_type{})
 	{ }
-#endif
 
-#ifdef __cpp_lib_sstream_from_string_view
-      template<typename _Tp>
-	explicit
-	basic_stringbuf(const _Tp& __t,
-	    ios_base::openmode __mode = ios_base::in | ios_base::out)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	: basic_stringbuf(__t, __mode, allocator_type{})
-	{ }
-
-      template<typename _Tp>
-	basic_stringbuf(const _Tp& __t, const allocator_type& __a)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	: basic_stringbuf(__t, ios_base::in | ios_base::out, __a)
-	{ }
-
-      template<typename _Tp>
-	basic_stringbuf(const _Tp& __t, ios_base::openmode __mode,
-	    const allocator_type& __a)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	: _M_string(__t, __a)
-	{ _M_stringbuf_init(__mode); }
-#endif // C++26
-
-#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
       basic_stringbuf(basic_stringbuf&& __rhs, const allocator_type& __a)
       : basic_stringbuf(std::move(__rhs), __a, __xfer_bufptrs(__rhs, this))
       { __rhs._M_sync(const_cast<char_type*>(__rhs._M_string.data()), 0, 0); }
@@ -294,7 +262,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201703L
 #if _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
-	// P0407 Allocator-aware basic_streambuf
       template<__allocator_like _SAlloc>
 	_GLIBCXX_NODISCARD
 	basic_string<_CharT, _Traits, _SAlloc>
@@ -350,7 +317,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
-	// P0407 Allocator-aware basic_streambuf
       template<__allocator_like _SAlloc>
 	requires (!is_same_v<_SAlloc, _Alloc>)
 	void
@@ -368,19 +334,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	_M_stringbuf_init(_M_mode);
       }
 #endif
-
-#ifdef __cpp_lib_sstream_from_string_view
-      template <typename _Tp>
-	void
-	str(const _Tp& __t)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	{
-	  basic_string_view<_CharT, _Traits> __sv{__t};
-	  _M_string = __sv;
-	  _M_stringbuf_init(_M_mode);
-	}
-#endif // C++26
 
     protected:
       // Common initialization code goes here.
@@ -568,8 +521,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
-
       // The move constructor initializes an __xfer_bufptrs temporary then
       // delegates to this constructor to performs moves during its lifetime.
       basic_stringbuf(basic_stringbuf&& __rhs, const allocator_type& __a,
@@ -633,7 +584,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       basic_istringstream()
       : __istream_type(), _M_stringbuf(ios_base::in)
-      { this->init(std::__addressof(_M_stringbuf)); }
+      { this->init(&_M_stringbuf); }
 
       /**
        *  @brief  Starts with an empty string buffer.
@@ -650,7 +601,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       explicit
       basic_istringstream(ios_base::openmode __mode)
       : __istream_type(), _M_stringbuf(__mode | ios_base::in)
-      { this->init(std::__addressof(_M_stringbuf)); }
+      { this->init(&_M_stringbuf); }
 
       /**
        *  @brief  Starts with an existing string buffer.
@@ -669,7 +620,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_istringstream(const __string_type& __str,
 			  ios_base::openmode __mode = ios_base::in)
       : __istream_type(), _M_stringbuf(__str, __mode | ios_base::in)
-      { this->init(std::__addressof(_M_stringbuf)); }
+      { this->init(&_M_stringbuf); }
 
       /**
        *  @brief  The destructor does nothing.
@@ -686,10 +637,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_istringstream(basic_istringstream&& __rhs)
       : __istream_type(std::move(__rhs)),
       _M_stringbuf(std::move(__rhs._M_stringbuf))
-      { __istream_type::set_rdbuf(std::__addressof(_M_stringbuf)); }
+      { __istream_type::set_rdbuf(&_M_stringbuf); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
       basic_istringstream(ios_base::openmode __mode, const allocator_type& __a)
       : __istream_type(), _M_stringbuf(__mode | ios_base::in, __a)
       { this->init(std::__addressof(_M_stringbuf)); }
@@ -720,32 +670,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	: basic_istringstream(__str, __mode, allocator_type())
 	{ }
 #endif // C++20
-
-#ifdef __cpp_lib_sstream_from_string_view
-      template <typename _Tp>
-	explicit
-	basic_istringstream(const _Tp& __t,
-	    ios_base::openmode __mode = ios_base::in)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	: basic_istringstream(__t, __mode, allocator_type{})
-	{ }
-
-      template <typename _Tp>
-	basic_istringstream(const _Tp& __t, const allocator_type& __a)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	: basic_istringstream(__t, ios_base::in, __a)
-	{ }
-
-      template <typename _Tp>
-	basic_istringstream(const _Tp& __t, ios_base::openmode __mode,
-	    const allocator_type& __a)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	  : __istream_type(), _M_stringbuf(__t, __mode | ios_base::in, __a)
-	{ this->init(std::__addressof(_M_stringbuf)); }
-#endif // C++26
 
       // 27.8.3.2 Assign and swap:
 
@@ -778,7 +702,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NODISCARD
       __stringbuf_type*
       rdbuf() const
-      { return const_cast<__stringbuf_type*>(std::__addressof(_M_stringbuf)); }
+      { return const_cast<__stringbuf_type*>(&_M_stringbuf); }
 
       /**
        *  @brief  Copying out the string buffer.
@@ -792,7 +716,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201703L
 #if _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
-	// P0407 Allocator-aware basic_streambuf
       template<__allocator_like _SAlloc>
 	_GLIBCXX_NODISCARD
 	basic_string<_CharT, _Traits, _SAlloc>
@@ -824,7 +747,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
-	// P0407 Allocator-aware basic_streambuf
       template<__allocator_like _SAlloc>
 	requires (!is_same_v<_SAlloc, _Alloc>)
 	void
@@ -836,15 +758,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       str(__string_type&& __s)
       { _M_stringbuf.str(std::move(__s)); }
 #endif
-
-#ifdef __cpp_lib_sstream_from_string_view
-      template<typename _Tp>
-	void
-	str(const _Tp& __t)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	{ _M_stringbuf.str(__t); }
-#endif // C++26
     };
 
 
@@ -899,7 +812,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       basic_ostringstream()
       : __ostream_type(), _M_stringbuf(ios_base::out)
-      { this->init(std::__addressof(_M_stringbuf)); }
+      { this->init(&_M_stringbuf); }
 
       /**
        *  @brief  Starts with an empty string buffer.
@@ -916,7 +829,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       explicit
       basic_ostringstream(ios_base::openmode __mode)
       : __ostream_type(), _M_stringbuf(__mode | ios_base::out)
-      { this->init(std::__addressof(_M_stringbuf)); }
+      { this->init(&_M_stringbuf); }
 
       /**
        *  @brief  Starts with an existing string buffer.
@@ -935,7 +848,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_ostringstream(const __string_type& __str,
 			  ios_base::openmode __mode = ios_base::out)
       : __ostream_type(), _M_stringbuf(__str, __mode | ios_base::out)
-      { this->init(std::__addressof(_M_stringbuf)); }
+      { this->init(&_M_stringbuf); }
 
       /**
        *  @brief  The destructor does nothing.
@@ -952,10 +865,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_ostringstream(basic_ostringstream&& __rhs)
       : __ostream_type(std::move(__rhs)),
       _M_stringbuf(std::move(__rhs._M_stringbuf))
-      { __ostream_type::set_rdbuf(std::__addressof(_M_stringbuf)); }
+      { __ostream_type::set_rdbuf(&_M_stringbuf); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
       basic_ostringstream(ios_base::openmode __mode, const allocator_type& __a)
       : __ostream_type(), _M_stringbuf(__mode | ios_base::out, __a)
       { this->init(std::__addressof(_M_stringbuf)); }
@@ -986,32 +898,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	: basic_ostringstream(__str, __mode, allocator_type())
 	{ }
 #endif // C++20
-
-#ifdef __cpp_lib_sstream_from_string_view
-      template <typename _Tp>
-	explicit
-	basic_ostringstream(
-	    const _Tp& __t, ios_base::openmode __mode = ios_base::out)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	: basic_ostringstream(__t, __mode, allocator_type{})
-	{ }
-
-      template <typename _Tp>
-	basic_ostringstream(const _Tp& __t, const allocator_type& __a)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	: basic_ostringstream(__t, ios_base::out, __a)
-	{ }
-
-      template <typename _Tp>
-	basic_ostringstream(const _Tp& __t, ios_base::openmode __mode,
-	    const allocator_type& __a)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	: __ostream_type(), _M_stringbuf(__t, __mode | ios_base::out, __a)
-	{ this->init(std::__addressof(_M_stringbuf)); }
-#endif // C++26
 
       // 27.8.3.2 Assign and swap:
 
@@ -1044,7 +930,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NODISCARD
       __stringbuf_type*
       rdbuf() const
-      { return const_cast<__stringbuf_type*>(std::__addressof(_M_stringbuf)); }
+      { return const_cast<__stringbuf_type*>(&_M_stringbuf); }
 
       /**
        *  @brief  Copying out the string buffer.
@@ -1058,7 +944,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201703L
 #if _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
-	// P0407 Allocator-aware basic_streambuf
       template<__allocator_like _SAlloc>
 	_GLIBCXX_NODISCARD
 	basic_string<_CharT, _Traits, _SAlloc>
@@ -1090,7 +975,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
-	// P0407 Allocator-aware basic_streambuf
       template<__allocator_like _SAlloc>
 	requires (!is_same_v<_SAlloc, _Alloc>)
 	void
@@ -1102,15 +986,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       str(__string_type&& __s)
       { _M_stringbuf.str(std::move(__s)); }
 #endif
-
-#ifdef __cpp_lib_sstream_from_string_view
-      template<typename _Tp>
-	void
-	str(const _Tp& __t)
-	  requires (is_convertible_v<const _Tp&,
-		     basic_string_view<_CharT, _Traits>>)
-	{ _M_stringbuf.str(__t); }
-#endif // C++26
     };
 
 
@@ -1165,7 +1040,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       basic_stringstream()
       : __iostream_type(), _M_stringbuf(ios_base::out | ios_base::in)
-      { this->init(std::__addressof(_M_stringbuf)); }
+      { this->init(&_M_stringbuf); }
 
       /**
        *  @brief  Starts with an empty string buffer.
@@ -1180,7 +1055,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       explicit
       basic_stringstream(ios_base::openmode __m)
       : __iostream_type(), _M_stringbuf(__m)
-      { this->init(std::__addressof(_M_stringbuf)); }
+      { this->init(&_M_stringbuf); }
 
       /**
        *  @brief  Starts with an existing string buffer.
@@ -1197,7 +1072,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_stringstream(const __string_type& __str,
 			 ios_base::openmode __m = ios_base::out | ios_base::in)
       : __iostream_type(), _M_stringbuf(__str, __m)
-      { this->init(std::__addressof(_M_stringbuf)); }
+      { this->init(&_M_stringbuf); }
 
       /**
        *  @brief  The destructor does nothing.
@@ -1214,13 +1089,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_stringstream(basic_stringstream&& __rhs)
       : __iostream_type(std::move(__rhs)),
       _M_stringbuf(std::move(__rhs._M_stringbuf))
-      { __iostream_type::set_rdbuf(std::__addressof(_M_stringbuf)); }
+      { __iostream_type::set_rdbuf(&_M_stringbuf); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
       basic_stringstream(ios_base::openmode __mode, const allocator_type& __a)
       : __iostream_type(), _M_stringbuf(__mode, __a)
-      { this->init(std::__addressof(_M_stringbuf)); }
+      { this->init(&_M_stringbuf); }
 
       explicit
       basic_stringstream(__string_type&& __str,
@@ -1250,31 +1124,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	: basic_stringstream(__str, __mode, allocator_type())
 	{ }
 #endif // C++20
-
-#ifdef __cpp_lib_sstream_from_string_view
-      template <typename _Tp>
-	explicit
-	basic_stringstream(const _Tp& __t,
-	    ios_base::openmode __mode = ios_base::in | ios_base::out)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	: basic_stringstream(__t, __mode, allocator_type{})
-	{ }
-
-      template <typename _Tp>
-	basic_stringstream(const _Tp& __t, const allocator_type& __a)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	: basic_stringstream(__t, ios_base::in | ios_base::out, __a)
-	{ }
-
-      template <typename _Tp>
-	basic_stringstream(const _Tp& __t, ios_base::openmode __mode,
-	    const allocator_type& __a)
-	  requires (is_convertible_v<const _Tp&, basic_string_view<_CharT, _Traits>>)
-	: __iostream_type(), _M_stringbuf(__t, __mode, __a)
-	{ this->init(std::__addressof(_M_stringbuf)); }
-#endif // C++26
 
       // 27.8.3.2 Assign and swap:
 
@@ -1307,7 +1156,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NODISCARD
       __stringbuf_type*
       rdbuf() const
-      { return const_cast<__stringbuf_type*>(std::__addressof(_M_stringbuf)); }
+      { return const_cast<__stringbuf_type*>(&_M_stringbuf); }
 
       /**
        *  @brief  Copying out the string buffer.
@@ -1321,7 +1170,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201703L
 #if _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
-	// P0407 Allocator-aware basic_streambuf
       template<__allocator_like _SAlloc>
 	_GLIBCXX_NODISCARD
 	basic_string<_CharT, _Traits, _SAlloc>
@@ -1353,7 +1201,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
-	// P0407 Allocator-aware basic_streambuf
       template<__allocator_like _SAlloc>
 	requires (!is_same_v<_SAlloc, _Alloc>)
 	void
@@ -1365,15 +1212,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       str(__string_type&& __s)
       { _M_stringbuf.str(std::move(__s)); }
 #endif
-
-#ifdef __cpp_lib_sstream_from_string_view
-      template<typename _Tp>
-	void
-	str(const _Tp& __t)
-	  requires (is_convertible_v<const _Tp&,
-		    basic_string_view<_CharT, _Traits>>)
-	{ _M_stringbuf.str(__t); }
-#endif // C++26
     };
 
 #if __cplusplus >= 201103L

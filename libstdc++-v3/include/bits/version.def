@@ -649,7 +649,7 @@ ftms = {
   };
   values = {
     v = 1;
-    // For when there is no gthread.
+    /* For when there's no gthread.  */
     cxxmin = 17;
     hosted = yes;
     gthread = no;
@@ -1990,15 +1990,6 @@ ftms = {
   name = polymorphic;
   values = {
     v = 202502;
-    cxxmin = 26;
-    hosted = yes;
-  };
-};
-
-ftms = {
-  name = sstream_from_string_view;
-  values = {
-    v = 202306;
     cxxmin = 26;
     hosted = yes;
   };
