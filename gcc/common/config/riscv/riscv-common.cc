@@ -1129,8 +1129,10 @@ riscv_subset_list::check_implied_ext ()
 void
 riscv_subset_list::handle_combine_ext ()
 {
-  for (const auto &[ext_name, ext_info] : riscv_ext_infos)
+  for (const auto &pair : riscv_ext_infos)
     {
+      const std::string &ext_name = pair.first;
+      auto &ext_info = pair.second;
       bool is_combined = true;
       /* Skip if this extension don't need to combine.  */
       if (!ext_info.need_combine_p ())
@@ -1558,20 +1560,27 @@ riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
   if (opts)
     {
       /* Clean up target flags before we set.  */
-      for (const auto &[ext_name, ext_info] : riscv_ext_infos)
-	ext_info.clean_opts (opts);
+      for (const auto &pair : riscv_ext_infos)
+	{
+	  auto &ext_info = pair.second;
+	  ext_info.clean_opts (opts);
+	}
 
       if (subset_list->xlen () == 32)
 	opts->x_riscv_isa_flags &= ~MASK_64BIT;
       else if (subset_list->xlen () == 64)
 	opts->x_riscv_isa_flags |= MASK_64BIT;
 
-      for (const auto &[ext_name, ext_info] : riscv_ext_infos)
-	if (subset_list->lookup (ext_name.c_str ()))
-	  {
-	    /* Set the extension flag.  */
-	    ext_info.set_opts (opts);
-	  }
+      for (const auto &pair : riscv_ext_infos)
+	{
+	  const std::string &ext_name = pair.first;
+	  auto &ext_info = pair.second;
+	  if (subset_list->lookup (ext_name.c_str ()))
+	    {
+	      /* Set the extension flag.  */
+	      ext_info.set_opts (opts);
+	    }
+	}
     }
 }
 
