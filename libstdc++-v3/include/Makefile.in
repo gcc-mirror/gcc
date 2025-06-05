@@ -433,6 +433,7 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/forward_list \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/fstream \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/future \
+@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/inplace_vector \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/iomanip \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/ios \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/iosfwd \

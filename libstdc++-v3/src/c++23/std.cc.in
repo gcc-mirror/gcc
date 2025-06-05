@@ -1513,7 +1513,15 @@ export namespace std
   using std::initializer_list;
 }
 
-// <inplace_vector> FIXME
+// <inplace_vector>
+#if __cpp_lib_inplace_vector
+export namespace std
+{
+  using std::inplace_vector;
+  using std::erase;
+  using std::erase_if;
+}
+#endif
 
 // <iomanip>
 export namespace std

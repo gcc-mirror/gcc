@@ -257,6 +257,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _InIter>
     concept __has_input_iter_cat
       = is_convertible_v<__iter_category_t<_InIter>, input_iterator_tag>;
+
+  // Is a Cpp17InputIterator or satisfies std::input_iterator.
+  template<typename _InIterator>
+    concept __any_input_iterator
+      = input_iterator<_InIterator> || __has_input_iter_cat<_InIterator>;
 #endif
 
   template<typename _It,

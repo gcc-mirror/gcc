@@ -2229,6 +2229,16 @@
 #endif /* !defined(__cpp_lib_modules) && defined(__glibcxx_want_modules) */
 #undef __glibcxx_want_modules
 
+#if !defined(__cpp_lib_inplace_vector)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_inplace_vector 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_inplace_vector)
+#   define __cpp_lib_inplace_vector 202406L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_inplace_vector) && defined(__glibcxx_want_inplace_vector) */
+#undef __glibcxx_want_inplace_vector
+
 #if !defined(__cpp_lib_indirect)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
 #  define __glibcxx_indirect 202502L

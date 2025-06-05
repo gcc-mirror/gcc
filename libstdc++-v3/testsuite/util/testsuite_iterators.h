@@ -270,6 +270,12 @@ namespace __gnu_test
       return !(*this == in);
     }
 
+    T*
+    base() const
+    {
+      return ptr;
+    }
+
     T&
     operator*() const
     {
