@@ -1120,7 +1120,8 @@ update_count_by_afdo_count (profile_count *count, gcov_type c)
   /* In case we have guessed profile which is already zero, preserve
      quality info.  */
   else if (count->nonzero_p ()
-	   || count->quality () == GUESSED)
+	   || count->quality () == GUESSED
+	   || count->quality () == GUESSED_LOCAL)
     *count = profile_count::zero ().afdo ();
 }
 
@@ -1515,8 +1516,21 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
     if (num_unknown_succ == 0 && total_count.nonzero_p ())
       {
 	FOR_EACH_EDGE (e, ei, bb->succs)
-	  e->probability
-	    = AFDO_EINFO (e)->get_count ().probability_in (total_count);
+	  {
+	    /* If probability is 1, preserve reliable static prediction
+	       (This is, for example the case of single fallthru edge
+		or single fallthru plus unlikely EH edge.)  */
+	    if (AFDO_EINFO (e)->get_count () == total_count ()
+		&& e->probability == profile_probability::always ())
+	      ;
+	    else if (AFDO_EINFO (e)->get_count ().nonzero_p ())
+	      e->probability
+		= AFDO_EINFO (e)->get_count ().probability_in (total_count);
+	    /* If probability is zero, preserve reliable static prediction.  */
+	    else if (e->probability.nonzero_p ()
+		     || e->probability.quality () == GUESSED)
+	      e->probability = profile_probability::never ().afdo ();
+	  }
       }
   }
   FOR_ALL_BB_FN (bb, cfun)
