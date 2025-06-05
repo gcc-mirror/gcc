@@ -4611,15 +4611,13 @@ case "${target}" in
 
 		for which in arch tune; do
 			eval "val=\$with_$which"
-			case ${val} in
-			"" | gfx900 | gfx906 | gfx908 | gfx90a | gfx90c | gfx1030 | gfx1036 | gfx1100 | gfx1103)
-				# OK
-				;;
-			*)
+			if test x"$val" != x \
+			   && ! grep -q "GCN_DEVICE($val," \
+					"${srcdir}/config/gcn/gcn-devices.def";
+			then
 				echo "Unknown cpu used in --with-$which=$val." 1>&2
 				exit 1
-				;;
-			esac
+			fi
 		done
 		[ "x$with_arch" = x ] && with_arch=gfx900
 

@@ -1342,9 +1342,13 @@ default set of libraries is selected based on the value of
 
 @item amdgcn*-*-*
 @var{list} is a comma separated list of ISA names (allowed values:
-@code{gfx900}, @code{gfx906}, @code{gfx908}, @code{gfx90a}, @code{gfx90c}, 
-@code{gfx1030}, @code{gfx1036}, @code{gfx1100}, @code{gfx1103}).
-It ought not include the name of the default
+@code{gfx900}, @code{gfx902}, @code{gfx904}, @code{gfx906}, @code{gfx908},
+@code{gfx909}, @code{gfx90a}, @code{gfx90c}, @code{gfx9-generic},
+@code{gfx1030}, @code{gfx1031}, @code{gfx1032}, @code{gfx1033},
+@code{gfx1034}, @code{gfx1035}, @code{gfx1036}, @code{gfx10-3-generic},
+@code{gfx1100}, @code{gfx1101}, @code{gfx1102}, @code{gfx1103},
+@code{gfx1150}, @code{gfx1151}, @code{gfx1152}, @code{gfx1153},
+@code{gfx11-generic}).  It ought not include the name of the default
 ISA, specified via @option{--with-arch}.  If @var{list} is empty, then there
 will be no multilibs and only the default run-time library will be built.  If
 @var{list} is @code{default} or @option{--with-multilib-list=} is not
