@@ -2490,12 +2490,21 @@ package body Exp_Aggr is
             Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
             Set_Assignment_OK (Ref);
 
-            Append_To (L,
-              Make_Procedure_Call_Statement (Loc,
-                Name                   =>
-                  New_Occurrence_Of
-                    (Find_Controlled_Prim_Op (Init_Typ, Name_Initialize), Loc),
-                Parameter_Associations => New_List (New_Copy_Tree (Ref))));
+            declare
+               Intlz : constant Entity_Id :=
+                 Find_Controlled_Prim_Op (Init_Typ, Name_Initialize);
+            begin
+               if Present (Intlz) then
+                  Append_To
+                    (L,
+                     Make_Procedure_Call_Statement
+                       (Loc,
+                        Name                   =>
+                          New_Occurrence_Of (Intlz, Loc),
+                        Parameter_Associations =>
+                          New_List (New_Copy_Tree (Ref))));
+               end if;
+            end;
          end if;
       end Generate_Finalization_Actions;
 
