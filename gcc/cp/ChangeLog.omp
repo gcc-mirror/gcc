@@ -1,3 +1,15 @@
+2025-06-05  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2025-06-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* cp-tree.h (maybe_convert_cond): Declare.
+	* parser.cc (cp_parser_omp_context_selector): Call
+	maybe_convert_cond and fold_build_cleanup_point_expr on the
+	expression for OMP_TRAIT_PROPERTY_BOOL_EXPR.
+	* pt.cc (tsubst_omp_context_selector): Likewise.
+	* semantics.cc (maybe_convert_cond): Remove static declaration.
+
 2025-05-15  Sandra Loosemore  <sloosemore@baylibre.com>
 	    Tobias Burnus  <tburnus@baylibre.com>
 

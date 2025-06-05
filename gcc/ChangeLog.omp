@@ -1,3 +1,12 @@
+2025-06-05  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2025-06-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c++/120518
+	* omp-general.cc (omp_device_num_check): Look inside a
+	CLEANUP_POINT_EXPR when trying to optimize special cases.
+
 2025-06-04  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2025-06-05  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2025-06-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_context_selector): Call
+	convert_lvalue_to_rvalue and c_objc_common_truthvalue_conversion
+	on the expression for OMP_TRAIT_PROPERTY_BOOL_EXPR.
+
 2025-05-15  waffl3x  <waffl3x@baylibre.com>
 
 	PR c++/119659

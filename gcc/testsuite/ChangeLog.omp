@@ -1,3 +1,16 @@
+2025-06-05  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2025-06-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/declare-variant-2.c: Update expected output.
+	* c-c++-common/gomp/metadirective-condition-constexpr.c: New.
+	* c-c++-common/gomp/metadirective-condition.c: New.
+	* c-c++-common/gomp/metadirective-error-recovery.c: Update expected
+	output.
+	* g++.dg/gomp/metadirective-condition-class.C: New.
+	* g++.dg/gomp/metadirective-condition-template.C: New.
+
 2025-05-22  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:
