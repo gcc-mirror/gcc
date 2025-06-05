@@ -6908,8 +6908,8 @@ package body Exp_Ch3 is
 
       procedure Count_Default_Sized_Task_Stacks
         (Typ         : Entity_Id;
-         Pri_Stacks  : out Int;
-         Sec_Stacks  : out Int);
+         Pri_Stacks  : out Nat;
+         Sec_Stacks  : out Nat);
       --  Count the number of default-sized primary and secondary task stacks
       --  required for task objects contained within type Typ. If the number of
       --  task objects contained within the type is not known at compile time
@@ -7186,8 +7186,8 @@ package body Exp_Ch3 is
 
       procedure Count_Default_Sized_Task_Stacks
         (Typ         : Entity_Id;
-         Pri_Stacks  : out Int;
-         Sec_Stacks  : out Int)
+         Pri_Stacks  : out Nat;
+         Sec_Stacks  : out Nat)
       is
          Component : Entity_Id;
 
@@ -7259,8 +7259,8 @@ package body Exp_Ch3 is
 
                while Present (Component) loop
                   declare
-                     P : Int;
-                     S : Int;
+                     P : Nat;
+                     S : Nat;
 
                   begin
                      Count_Default_Sized_Task_Stacks (Etype (Component), P, S);
@@ -7678,7 +7678,7 @@ package body Exp_Ch3 is
         and then not (Is_Array_Type (Typ) and then Has_Init_Expression (N))
       then
          declare
-            PS_Count, SS_Count : Int;
+            PS_Count, SS_Count : Nat;
          begin
             Count_Default_Sized_Task_Stacks (Typ, PS_Count, SS_Count);
             Increment_Primary_Stack_Count (PS_Count);
