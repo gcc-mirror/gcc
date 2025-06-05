@@ -5393,6 +5393,40 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
   rtx op0 = XEXP (op, 0);
   rtx op1 = XEXP (op, 1);
 
+  /* For some tests, we can easily construct a 0, -1 value
+     which can then be used to synthesize more efficient
+     sequences that don't use zicond.  */
+  if ((code == LT || code == GE)
+      && (REG_P (op0) || SUBREG_P (op0))
+      && op1 == CONST0_RTX (GET_MODE (op0)))
+    {
+      /* The code to expand signed division by a power of 2 uses a
+	 conditional add by 2^n-1 idiom.  It can be more efficiently
+	 synthesized without zicond using srai+srli+add.
+
+	 But we don't see the constants here.  Just a conditional move
+	 with registers as the true/false values.  So this is a little
+	 over-aggressive and can result in a few missed if-conversions.  */
+      if ((REG_P (cons) || SUBREG_P (cons))
+	  && (REG_P (alt) || SUBREG_P (alt)))
+	return false;
+
+      /* If one value is a nonzero constant and the other value is
+	 not a constant, then avoid zicond as more efficient sequences
+	 using the splatted sign bit are often possible.  */
+      if (CONST_INT_P (alt)
+	  && alt != CONST0_RTX (mode)
+	  && !CONST_INT_P (cons))
+	return false;
+
+      if (CONST_INT_P (cons)
+	  && cons != CONST0_RTX (mode)
+	  && !CONST_INT_P (alt))
+	return false;
+
+      /* If we need more special cases, add them here.  */
+    }
+
   if (((TARGET_ZICOND_LIKE
 	|| (arith_operand (cons, mode) && arith_operand (alt, mode)))
        && (GET_MODE_CLASS (mode) == MODE_INT))

@@ -4834,6 +4834,24 @@
   [(set_attr "type" "move")
    (set_attr "mode" "<MODE>")])
 
+;; If we're trying to create 0 or 2^n-1 based on the result of
+;; a test such as (lt (reg) (const_int 0)), we'll see a splat of
+;; the sign bit across a GPR using srai, then a logical and to
+;; mask off high bits.  We can replace the logical and with
+;; a logical right shift which works without constant synthesis
+;; for larger constants.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (ashiftrt:X (match_operand:X 1 "register_operand")
+			   (match_operand 2 "const_int_operand"))
+	       (match_operand 3 "const_int_operand")))]
+  "(INTVAL (operands[2]) == BITS_PER_WORD - 1
+    && exact_log2 (INTVAL (operands[3]) + 1) >= 0)"
+  [(set (match_dup 0) (ashiftrt:X (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (lshiftrt:X (match_dup 0) (match_dup 3)))]
+  { operands[3] = GEN_INT (BITS_PER_WORD
+			   - exact_log2 (INTVAL (operands[3]) + 1)); })
+
 (include "bitmanip.md")
 (include "crypto.md")
 (include "sync.md")
