@@ -1,6 +1,6 @@
 // { dg-do run { target c++20 } }
 // { dg-require-effective-target hosted }
-// { dg-timeout-factor 2 }
+// { dg-timeout-factor 4 }
 
 #include <chrono>
 #include <ranges>
@@ -643,7 +643,7 @@ test_leap_second()
 	  WIDEN("2012-06-30 23:59:60") );
 }
 
-#if _GLIBCXX_USE_CXX11_ABI
+#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
 template<typename Dur, typename Dur2>
 auto
 make_zoned(const sys_time<Dur2>& st, const time_zone* tz)
@@ -723,7 +723,7 @@ test_time_points()
   test_time_point<CharT, gps_clock>(true);
   test_time_point<CharT, file_clock>(true);
   test_leap_second<CharT>();
-#if _GLIBCXX_USE_CXX11_ABI
+#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
   test_zoned_time<CharT>();
 #endif
   test_local_time_format<CharT>();
@@ -731,6 +731,108 @@ test_time_points()
   test_no_empty_spec<CharT, sys_time<years>>();
   test_no_empty_spec<CharT, sys_time<duration<float>>>();
 }
+
+#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
+template<typename _CharT>
+void
+test_sys_info()
+{
+  const sys_info si
+  {
+    sys_days(2024y/March/22) + 2h,
+    sys_days(2025y/April/11) + 23h + 15min + 10s,
+    2h + 13min + 4s,
+    15min,
+    "Zone"
+  };
+  const std::basic_string_view<_CharT> txt
+    = WIDEN("[2024-03-22 02:00:00,2025-04-11 23:15:10,02:13:04,15min,Zone]");
+
+  verify( si, txt );
+
+  std::basic_string<_CharT> res;
+  std::basic_string_view<_CharT> sv;
+
+  sv = res = std::format(WIDEN("{:65}"), si);
+  VERIFY( sv.ends_with(WIDEN("    ")) );
+  sv.remove_suffix(4);
+  VERIFY( sv == txt );
+
+  sv = res = std::format(WIDEN("{:=^67}"), si);
+  VERIFY( sv.starts_with(WIDEN("===")) );
+  VERIFY( sv.ends_with(WIDEN("===")) );
+  sv.remove_prefix(3);
+  sv.remove_suffix(3);
+  VERIFY( sv == txt );
+}
+
+template<typename _CharT>
+void test_local_info()
+{
+  using String = std::basic_string<_CharT>;
+  using StringView = std::basic_string_view<_CharT>;
+
+  const sys_info s1
+  {
+    sys_days(2015y/September/11) + 2h,
+    sys_days(2016y/March/13) + 2h,
+    -5h,
+    0h,
+    "EET"
+  };
+  const sys_info s2
+  {
+    sys_days(2016y/March/13) + 2h,
+    sys_days(2015y/September/15) + 2h,
+    -4h,
+    1h,
+    "EDT"
+  };
+
+  const StringView single
+    = WIDEN("[2015-09-11 02:00:00,2016-03-13 02:00:00,-05:00:00,0min,EET]");
+  const StringView both
+    = WIDEN(" local time between "
+	    "[2015-09-11 02:00:00,2016-03-13 02:00:00,-05:00:00,0min,EET]"
+	    " and "
+	    "[2016-03-13 02:00:00,2015-09-15 02:00:00,-04:00:00,60min,EDT]");
+
+  const local_info l1{local_info::nonexistent, s1, s2};
+  auto exp = WIDEN("[nonexistent") + String(both) + WIDEN("]");
+  verify( l1, StringView(exp) );
+
+  const local_info l2{local_info::ambiguous, s1, s2};
+  exp = WIDEN("[ambiguous") + String(both) + WIDEN("]");
+  verify( l2, StringView(exp) );
+
+  const local_info l3{local_info::unique, s1, s1};
+  exp = WIDEN("[") + String(single) + WIDEN("]");
+  verify( l3, StringView(exp) );
+
+  String res;
+  StringView sv;
+
+  sv = res = std::format(WIDEN("{:65}"), l3);
+  VERIFY( sv.ends_with(WIDEN("   ")) );
+  sv.remove_suffix(3);
+  VERIFY( sv == exp );
+
+  sv = res = std::format(WIDEN("{:=^67}"), l3);
+  VERIFY( sv.starts_with(WIDEN("==")) );
+  VERIFY( sv.ends_with(WIDEN("===")) );
+  sv.remove_prefix(2);
+  sv.remove_suffix(3);
+  VERIFY( sv == exp );
+}
+
+template<typename CharT>
+void
+test_infos()
+{
+  test_sys_info<CharT>();
+  test_local_info<CharT>();
+}
+#endif
 
 template<typename CharT>
 void
@@ -745,6 +847,9 @@ test_all()
 int main()
 {
   test_all<char>();
+#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
+  test_infos<char>();
+#endif
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   test_all<wchar_t>();
