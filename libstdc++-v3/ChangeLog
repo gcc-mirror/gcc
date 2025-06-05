@@ -1,3 +1,99 @@
+2025-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/format/empty_spec.cc: Only test time zones
+	for cxx11 string ABI.
+
+2025-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99832
+	* include/bits/chrono.h (system_clock::to_time_t): Add
+	always_inline attribute to be agnostic to the underlying type of
+	time_t.
+	(system_clock::from_time_t): Add always_inline for consistency
+	with to_time_t.
+	* testsuite/20_util/system_clock/99832.cc: New test.
+
+2025-06-04  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/119741
+	* include/std/sstream: full implementation, really just
+	decls, requires clause and plumbing.
+	* include/bits/version.def, include/bits/version.h:
+	new preprocessor symbol
+	__cpp_lib_sstream_from_string_view.
+	* testsuite/27_io/basic_stringbuf/cons/char/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_istringstream/cons/char/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_ostringstream/cons/char/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_stringstream/cons/char/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_istringstream/cons/wchar_t/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_ostringstream/cons/wchar_t/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_stringstream/cons/wchar_t/string_view.cc:
+	New tests.
+
+2025-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_AUTO_CAST): Define.
+	* include/bits/iterator_concepts.h (_Decay_copy, __decay_copy):
+	Remove.
+	(__member_begin, __adl_begin): Use _GLIBCXX_AUTO_CAST instead of
+	__decay_copy as per P0849R8.
+	* include/bits/ranges_base.h (_Begin): Likewise.
+	(__member_end, __adl_end, _End): Likewise.
+	(__member_rbegin, __adl_rbegin, _RBegin): Likewise.
+	(__member_rend, __adl_rend, _Rend): Likewise.
+	(__member_size, __adl_size, _Size): Likewise.
+	(_Data): Likewise.
+
+2025-06-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/time/format/empty_spec.cc: New tests.
+
+2025-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__starts_with_fn, starts_with):
+	Define.
+	(__ends_with_fn, ends_with): Define.
+	* include/bits/version.def (ranges_starts_ends_with): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/algorithm: Provide __cpp_lib_ranges_starts_ends_with.
+	* src/c++23/std.cc.in (ranges::starts_with): Export.
+	(ranges::ends_with): Export.
+	* testsuite/25_algorithms/ends_with/1.cc: New test.
+	* testsuite/25_algorithms/starts_with/1.cc: New test.
+
+2025-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/semaphore_base.h (_S_get_current): Replace with
+	non-static _M_get_current.
+	(_S_do_try_acquire): Replace with non-static _M_do_try_acquire.
+
+2025-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104928
+	* include/bits/semaphore_base.h (_S_do_try_acquire): Take old
+	value by reference.
+	(_M_acquire): Move _S_do_try_acquire call out of the predicate
+	and loop on its result. Make the predicate capture and update
+	the local copy of the value.
+	(_M_try_acquire_until, _M_try_acquire_for): Likewise.
+	(_M_try_acquire): Just call _M_try_acquire_for.
+	* testsuite/30_threads/semaphore/104928-2.cc: New test.
+	* testsuite/30_threads/semaphore/104928.cc: New test.
+
+2025-06-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono:_M_s): Add missing
+	__out argument to format_to call.
+	* testsuite/std/time/format/empty_spec.cc: New test.
+
 2025-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/stop_token: Check __glibcxx_jthread instead of

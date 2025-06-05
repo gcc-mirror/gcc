@@ -1,3 +1,9 @@
+2025-06-04  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* libgomp.texi (omp_interop_{int,ptr,str,rc_desc}): Add note about
+	the 'ret_code' type change in OpenMP 6.
+
 2025-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/120444

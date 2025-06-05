@@ -1,3 +1,72 @@
+2025-06-04  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* gcc.dg/tree-prof/clone-merge-1.c: New test.
+
+2025-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120502
+	* g++.dg/cpp2a/constexpr-prvalue2.C: New test.
+
+2025-06-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/14295
+	PR tree-optimization/108358
+	PR tree-optimization/114169
+	* gcc.dg/tree-ssa/20031106-6.c: Un-xfail. Add scan for forwprop1.
+	* g++.dg/opt/pr66119.C: Disable forwprop since that does
+	the copy prop now.
+	* gcc.dg/tree-ssa/pr108358-a.c: New test.
+	* gcc.dg/tree-ssa/pr114169-1.c: New test.
+	* gcc.c-torture/execute/builtins/pr22237-1-lib.c: New test.
+	* gcc.c-torture/execute/builtins/pr22237-1.c: New test.
+	* gcc.dg/tree-ssa/pr57361.c: Disable forwprop1.
+	* gcc.dg/tree-ssa/pr57361-1.c: New test.
+
+2025-06-04  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* gcc.target/aarch64/acle/uhadd_1.c: New test.
+
+2025-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120231
+	* gcc.dg/tree-ssa/pr120231-1.c: New test.
+
+2025-06-04  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/arch-60.c: New test.
+
+2025-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120447
+	* gcc.dg/pr120447.c: New test.
+
+2025-06-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR debug/120525
+	* gcc.dg/pr120525.c: New test.
+
+2025-06-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120483
+	* gfortran.dg/save_8.f90: New test.
+
+2025-06-04  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-shlocofideleg.c: New test.
+
+2025-06-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/pr49095-2.c: New test.
+
+2025-06-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/pr79173-13.c: New test.
+	* gcc.target/i386/pr79173-14.c: Ditto.
+	* gcc.target/i386/pr79173-15.c: Ditto.
+	* gcc.target/i386/pr79173-16.c: Ditto.
+	* gcc.target/i386/pr79173-17.c: Ditto.
+	* gcc.target/i386/pr79173-18.c: Ditto.
+
 2025-06-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/99838

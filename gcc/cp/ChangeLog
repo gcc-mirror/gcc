@@ -1,3 +1,10 @@
+2025-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120502
+	* cp-gimplify.cc (cp_fold_r) [TARGET_EXPR]: Do constexpr evaluation
+	before genericize.
+	* constexpr.cc (cxx_eval_store_expression): Add comment.
+
 2025-06-03  Jason Merrill  <jason@redhat.com>
 
 	* name-lookup.h (operator|, operator|=): Define for WMB_Flags.

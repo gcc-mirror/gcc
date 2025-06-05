@@ -1,3 +1,117 @@
+2025-06-04  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* auto-profile.cc (autofdo_source_profile::read): Dump message
+	while merging profile.
+	* pass_manager.h (get_pass_auto_profile): New.
+
+2025-06-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c++/120518
+	* omp-general.cc (omp_device_num_check): Look inside a
+	CLEANUP_POINT_EXPR when trying to optimize special cases.
+
+2025-06-04  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/mkoffload.cc (process): Use an 'auto_vec' for
+	'file_idx'.
+
+2025-06-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/14295
+	PR tree-optimization/108358
+	PR tree-optimization/114169
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop): New function.
+	(pass_forwprop::execute): Call optimize_agr_copyprop for load/store statements.
+
+2025-06-04  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* match.pd: Add folding rule for vector average.
+	* tree-ssa-ccp.cc (get_default_value): Reject vector types.
+	(evaluate_stmt): Reject vector types.
+	* tree-ssanames.cc (get_nonzero_bits_1): Extend to handle
+	uniform vectors.
+
+2025-06-04  Xi Ruoyao  <xry111@xry111.site>
+
+	PR rtl-optimization/120050
+	* ext-dce.cc (ext_dce_process_uses): Break early if a SUBREG in
+	rhs is promoted and the truncation from the inner mode to the
+	outer mode is not a noop when handling SETs.
+
+2025-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* range-op-float.cc (range_operator::fold_range,
+	range_operator::op1_range, range_operator::op2_range,
+	range_operator::lhs_op1_relation, range_operator::lhs_op2_relation,
+	operator_equal::op1_range, foperator_unordered_gt::op1_range): Fix
+	up parameter indentation.
+	* range-op.cc (range_operator::fold_range, range_operator::op1_range,
+	range_operator::op1_op2_relation_effect,
+	range_operator::update_bitmask, plus_minus_ranges,
+	operator_bitwise_and::lhs_op1_relation): Likewise.
+
+2025-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120231
+	* range-op-mixed.h (operator_cast::fold_range): Add overload
+	with 3 {,const} frange & operands.  Change parameter names and
+	add final override keywords for float <-> integer cast overloads.
+	(operator_cast::op1_range): Likewise.
+	* range-op-float.cc (operator_cast::fold_range): New overload
+	with 3 {,const} frange & operands.
+	(operator_cast::op1_range): Likewise.
+
+2025-06-04  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: Imply zicsr.
+
+2025-06-04  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension defs.
+	* config/riscv/riscv-ext.opt: Ditto.
+	* doc/riscv-ext.texi: Ditto.
+
+2025-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120447
+	* emit-rtl.cc (validate_subreg): Restrict ordered_p test
+	between osize and regsize to cases where the inner value
+	occupies multiple blocks.
+
+2025-06-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (get_vector_binary_rtx_cost): Rename
+	the args to scalar2vr.
+	(riscv_rtx_costs): Leverage above func to avoid code dup.
+
+2025-06-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR debug/120525
+	* var-tracking.cc (prepare_call_arguments): Use MEM_EXPR only
+	if MEM_P is true.
+
+2025-06-04  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension defs.
+	* config/riscv/riscv-ext.opt: Ditto.
+	* doc/riscv-ext.texi: Ditto.
+
+2025-06-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/i386.md (define_peephole2): Define some new peephole2 for
+	APX NDD.
+
+2025-06-04  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/i386.md: Add 4 new peephole2 by swap the original
+	peephole2's operands' order to support new pattern.
+
+2025-06-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR other/120494
+	* calls.cc (expand_call): Always add REG_CALL_DECL note.
+	(emit_library_call_value_1): Likewise.
+
 2025-06-03  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.cc (create_tmp_reg_or_ssa_name): Always
