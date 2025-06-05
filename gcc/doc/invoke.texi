@@ -2440,8 +2440,8 @@ ISO C99.  This standard is substantially completely supported, modulo
 bugs and floating-point issues
 (mainly but not entirely relating to optional C99 features from
 Annexes F and G).  See
-@w{@uref{https://gcc.gnu.org/c99status.html}} for more information.  The
-names @samp{c9x} and @samp{iso9899:199x} are deprecated.
+@w{@uref{https://gcc.gnu.org/projects/c-status.html}} for more information.
+The names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 
 @item c11
 @itemx c1x
