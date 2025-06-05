@@ -379,6 +379,8 @@ Mask(SSSTRICT) Var(riscv_ss_subext)
 
 Mask(SSDBLTRP) Var(riscv_ss_subext)
 
+Mask(SSU64XL) Var(riscv_ss_subext)
+
 Mask(SUPM) Var(riscv_su_subext)
 
 Mask(SVINVAL) Var(riscv_sv_subext)

@@ -582,6 +582,10 @@
 @tab 1.0
 @tab Double Trap Extensions
 
+@item ssu64xl
+@tab 1.0
+@tab UXLEN=64 must be supported
+
 @item supm
 @tab 1.0
 @tab supm extension
