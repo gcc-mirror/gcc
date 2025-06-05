@@ -97,6 +97,8 @@ range_op_table::range_op_table ()
   set (INTEGER_CST, op_cst);
   set (NOP_EXPR, op_cast);
   set (CONVERT_EXPR, op_cast);
+  set (FLOAT_EXPR, op_cast);
+  set (FIX_TRUNC_EXPR, op_cast);
   set (PLUS_EXPR, op_plus);
   set (ABS_EXPR, op_abs);
   set (MINUS_EXPR, op_minus);
@@ -165,7 +167,7 @@ dispatch_trio (unsigned lhs, unsigned op1, unsigned op2)
 // of the routines in range_operator.  Note the last 3 characters are
 // shorthand for the LHS, OP1, and OP2 range discriminator class.
 // Reminder, single operand instructions use the LHS type for op2, even if
-// unused. so FLOAT = INT would be RO_FIF.
+// unused.  So FLOAT = INT would be RO_FIF.
 
 const unsigned RO_III =	dispatch_trio (VR_IRANGE, VR_IRANGE, VR_IRANGE);
 const unsigned RO_IFI = dispatch_trio (VR_IRANGE, VR_FRANGE, VR_IRANGE);
@@ -298,10 +300,10 @@ range_op_handler::op1_range (vrange &r, tree type,
 	return m_operator->op1_range (as_a <irange> (r), type,
 				      as_a <irange> (lhs),
 				      as_a <irange> (op2), rel);
-      case RO_IFF:
+      case RO_IFI:
 	return m_operator->op1_range (as_a <irange> (r), type,
 				      as_a <frange> (lhs),
-				      as_a <frange> (op2), rel);
+				      as_a <irange> (op2), rel);
       case RO_PPP:
 	return m_operator->op1_range (as_a <prange> (r), type,
 				      as_a <prange> (lhs),
@@ -322,10 +324,6 @@ range_op_handler::op1_range (vrange &r, tree type,
 	return m_operator->op1_range (as_a <frange> (r), type,
 				      as_a <irange> (lhs),
 				      as_a <frange> (op2), rel);
-      case RO_FII:
-	return m_operator->op1_range (as_a <frange> (r), type,
-				      as_a <irange> (lhs),
-				      as_a <irange> (op2), rel);
       case RO_FFF:
 	return m_operator->op1_range (as_a <frange> (r), type,
 				      as_a <frange> (lhs),
@@ -785,13 +783,6 @@ range_operator::fold_range (frange &, tree, const irange &,
 
 bool
 range_operator::op1_range (irange &, tree, const frange &,
-			   const frange &, relation_trio) const
-{
-  return false;
-}
-
-bool
-range_operator::op1_range (frange &, tree, const irange &,
 			   const irange &, relation_trio) const
 {
   return false;

@@ -3022,34 +3022,173 @@ operator_cast::op1_range (frange &r, tree type, const frange &lhs,
 
 // Implement fold for a cast from float to an int.
 bool
-operator_cast::fold_range (irange &, tree, const frange &,
+operator_cast::fold_range (irange &r, tree type, const frange &op1,
 			   const irange &, relation_trio) const
 {
-  return false;
+  if (empty_range_varying (r, type, op1, op1))
+    return true;
+  if (op1.maybe_isnan () || op1.maybe_isinf ())
+    {
+      r.set_varying (type);
+      return true;
+    }
+  REAL_VALUE_TYPE lb, ub;
+  real_trunc (&lb, VOIDmode, &op1.lower_bound ());
+  real_trunc (&ub, VOIDmode, &op1.upper_bound ());
+  REAL_VALUE_TYPE l, u;
+  l = real_value_from_int_cst (NULL_TREE, TYPE_MIN_VALUE (type));
+  if (real_less (&lb, &l))
+    {
+      r.set_varying (type);
+      return true;
+    }
+  u = real_value_from_int_cst (NULL_TREE, TYPE_MAX_VALUE (type));
+  if (real_less (&u, &ub))
+    {
+      r.set_varying (type);
+      return true;
+    }
+  bool fail = false;
+  wide_int wlb = real_to_integer (&lb, &fail, TYPE_PRECISION (type));
+  wide_int wub = real_to_integer (&ub, &fail, TYPE_PRECISION (type));
+  if (fail)
+    {
+      r.set_varying (type);
+      return true;
+    }
+  r.set (type, wlb, wub);
+  return true;
 }
 
 // Implement op1_range for a cast from float to an int.
 bool
-operator_cast::op1_range (frange &, tree, const irange &,
-			  const irange &, relation_trio) const
+operator_cast::op1_range (frange &r, tree type, const irange &lhs,
+			  const frange &, relation_trio) const
 {
-  return false;
+  if (lhs.undefined_p ())
+    return false;
+  REAL_VALUE_TYPE lb, lbo, ub, ubo;
+  wide_int lhs_lb = lhs.lower_bound ();
+  wide_int lhs_ub = lhs.upper_bound ();
+  tree lhs_type = lhs.type ();
+  enum machine_mode mode = TYPE_MODE (type);
+  real_from_integer (&lbo, VOIDmode, lhs_lb, TYPE_SIGN (lhs_type));
+  real_from_integer (&ubo, VOIDmode, lhs_ub, TYPE_SIGN (lhs_type));
+  real_convert (&lb, mode, &lbo);
+  real_convert (&ub, mode, &ubo);
+  if (real_identical (&lb, &lbo))
+    {
+      /* If low bound is exactly representable in type,
+	 use nextafter (lb - 1., +inf).  */
+      real_arithmetic (&lb, PLUS_EXPR, &lbo, &dconstm1);
+      real_convert (&lb, mode, &lb);
+      if (!real_identical (&lb, &lbo))
+	frange_nextafter (mode, lb, dconstinf);
+      if (real_identical (&lb, &lbo))
+	frange_nextafter (mode, lb, dconstninf);
+    }
+  else if (real_less (&lbo, &lb))
+    frange_nextafter (mode, lb, dconstninf);
+  if (real_identical (&ub, &ubo))
+    {
+      /* If upper bound is exactly representable in type,
+	 use nextafter (ub + 1., -inf).  */
+      real_arithmetic (&ub, PLUS_EXPR, &ubo, &dconst1);
+      real_convert (&ub, mode, &ub);
+      if (!real_identical (&ub, &ubo))
+	frange_nextafter (mode, ub, dconstninf);
+      if (real_identical (&ub, &ubo))
+	frange_nextafter (mode, ub, dconstinf);
+    }
+  else if (real_less (&ub, &ubo))
+    frange_nextafter (mode, ub, dconstinf);
+  r.set (type, lb, ub, nan_state (false));
+  return true;
 }
 
 // Implement fold for a cast from int to a float.
 bool
-operator_cast::fold_range (frange &, tree, const irange &,
+operator_cast::fold_range (frange &r, tree type, const irange &op1,
 			   const frange &, relation_trio) const
 {
-  return false;
+  if (empty_range_varying (r, type, op1, op1))
+    return true;
+  REAL_VALUE_TYPE lb, ub;
+  wide_int op1_lb = op1.lower_bound ();
+  wide_int op1_ub = op1.upper_bound ();
+  tree op1_type = op1.type ();
+  enum machine_mode mode = flag_rounding_math ? VOIDmode : TYPE_MODE (type);
+  real_from_integer (&lb, mode, op1_lb, TYPE_SIGN (op1_type));
+  real_from_integer (&ub, mode, op1_ub, TYPE_SIGN (op1_type));
+  if (flag_rounding_math)
+    {
+      REAL_VALUE_TYPE lbo = lb, ubo = ub;
+      mode = TYPE_MODE (type);
+      real_convert (&lb, mode, &lb);
+      real_convert (&ub, mode, &ub);
+      if (real_less (&lbo, &lb))
+	frange_nextafter (mode, lb, dconstninf);
+      if (real_less (&ub, &ubo))
+	frange_nextafter (mode, ub, dconstinf);
+    }
+  r.set (type, lb, ub, nan_state (false));
+  frange_drop_infs (r, type);
+  if (r.undefined_p ())
+    r.set_varying (type);
+  return true;
 }
 
 // Implement op1_range for a cast from int to a float.
 bool
-operator_cast::op1_range (irange &, tree, const frange &,
-			  const frange &, relation_trio) const
+operator_cast::op1_range (irange &r, tree type, const frange &lhs,
+			  const irange &, relation_trio) const
 {
-  return false;
+  if (lhs.undefined_p ())
+    return false;
+  if (lhs.known_isnan ())
+    {
+      r.set_varying (type);
+      return true;
+    }
+  REAL_VALUE_TYPE lb = lhs.lower_bound ();
+  REAL_VALUE_TYPE ub = lhs.upper_bound ();
+  enum machine_mode mode = TYPE_MODE (lhs.type ());
+  frange_nextafter (mode, lb, dconstninf);
+  frange_nextafter (mode, ub, dconstinf);
+  if (flag_rounding_math)
+    {
+      real_floor (&lb, mode, &lb);
+      real_ceil (&ub, mode, &ub);
+    }
+  else
+    {
+      real_trunc (&lb, mode, &lb);
+      real_trunc (&ub, mode, &ub);
+    }
+  REAL_VALUE_TYPE l, u;
+  wide_int wlb, wub;
+  l = real_value_from_int_cst (NULL_TREE, TYPE_MIN_VALUE (type));
+  if (real_less (&lb, &l))
+    wlb = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+  else
+    {
+      bool fail = false;
+      wlb = real_to_integer (&lb, &fail, TYPE_PRECISION (type));
+      if (fail)
+	wlb = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+    }
+  u = real_value_from_int_cst (NULL_TREE, TYPE_MAX_VALUE (type));
+  if (real_less (&u, &ub))
+    wub = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+  else
+    {
+      bool fail = false;
+      wub = real_to_integer (&ub, &fail, TYPE_PRECISION (type));
+      if (fail)
+	wub = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+    }
+  r.set (type, wlb, wub);
+  return true;
 }
 
 // Initialize any float operators to the primary table
