@@ -7249,7 +7249,8 @@ vect_can_force_dr_alignment_p (const_tree decl, poly_uint64 alignment)
     return false;
 
   if (decl_in_symtab_p (decl)
-      && !symtab_node::get (decl)->can_increase_alignment_p ())
+      && (!symtab_node::get (decl)
+	  || !symtab_node::get (decl)->can_increase_alignment_p ()))
     return false;
 
   if (TREE_STATIC (decl))
