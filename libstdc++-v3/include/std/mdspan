@@ -691,7 +691,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: mapping(__other.extents(), __mdspan::__internal_ctor{})
 	{ }
 
-      template<class _OExtents>
+      template<typename _OExtents>
 	requires (extents_type::rank() <= 1)
 	    && is_constructible_v<extents_type, _OExtents>
 	constexpr explicit(!is_convertible_v<_OExtents, extents_type>)
@@ -699,7 +699,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: mapping(__other.extents(), __mdspan::__internal_ctor{})
 	{ }
 
-      template<class _OExtents>
+      template<typename _OExtents>
 	requires is_constructible_v<extents_type, _OExtents>
 	constexpr explicit(extents_type::rank() > 0)
 	mapping(const layout_stride::mapping<_OExtents>& __other) noexcept
@@ -780,16 +780,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __mdspan
   {
-    template<typename M>
+    template<typename _Mp>
       concept __mapping_alike = requires
       {
-	requires __is_extents<typename M::extents_type>;
-	{ M::is_always_strided() } -> same_as<bool>;
-	{ M::is_always_exhaustive() } -> same_as<bool>;
-	{ M::is_always_unique() } -> same_as<bool>;
-	bool_constant<M::is_always_strided()>::value;
-	bool_constant<M::is_always_exhaustive()>::value;
-	bool_constant<M::is_always_unique()>::value;
+	requires __is_extents<typename _Mp::extents_type>;
+	{ _Mp::is_always_strided() } -> same_as<bool>;
+	{ _Mp::is_always_exhaustive() } -> same_as<bool>;
+	{ _Mp::is_always_unique() } -> same_as<bool>;
+	bool_constant<_Mp::is_always_strided()>::value;
+	bool_constant<_Mp::is_always_exhaustive()>::value;
+	bool_constant<_Mp::is_always_unique()>::value;
       };
 
     template<typename _Mapping>
@@ -847,7 +847,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       mapping() noexcept
       {
 	// The precondition is either statically asserted, or automatically
-	// satisfied because dynamic extents are zero-initialzied.
+	// satisfied because dynamic extents are zero-initialized.
 	size_t __stride = 1;
 	for (size_t __i = extents_type::rank(); __i > 0; --__i)
 	  {
