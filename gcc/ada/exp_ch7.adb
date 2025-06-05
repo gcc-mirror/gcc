@@ -436,7 +436,7 @@ package body Exp_Ch7 is
 
    procedure Build_Record_Deep_Procs (Typ : Entity_Id);
    --  Build the deep Initialize/Adjust/Finalize for a record Typ with
-   --  Has_Component_Component set and store them using the TSS mechanism.
+   --  Has_Controlled_Component set and store them using the TSS mechanism.
 
    --------------------------------
    -- Transient Scope Management --
