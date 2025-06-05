@@ -355,6 +355,8 @@ Mask(SMDBLTRP) Var(riscv_sm_subext)
 
 Mask(SSAIA) Var(riscv_ss_subext)
 
+Mask(SSCCPTR) Var(riscv_ss_subext)
+
 Mask(SSCOFPMF) Var(riscv_ss_subext)
 
 Mask(SSCSRIND) Var(riscv_ss_subext)

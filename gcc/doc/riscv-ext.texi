@@ -534,6 +534,10 @@
 @tab 1.0
 @tab Advanced interrupt architecture extension for supervisor-mode
 
+@item ssccptr
+@tab 1.0
+@tab Main memory supports page table reads
+
 @item sscofpmf
 @tab 1.0
 @tab Count overflow & filtering extension

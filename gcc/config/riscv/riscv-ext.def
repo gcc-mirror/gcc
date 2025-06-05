@@ -1806,6 +1806,19 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ ssccptr,
+  /* UPPERCASE_NAME */ SSCCPTR,
+  /* FULL_NAME */ "Main memory supports page table reads",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ sscofpmf,
   /* UPPERCASE_NAME */ SSCOFPMF,
   /* FULL_NAME */ "Count overflow & filtering extension",
