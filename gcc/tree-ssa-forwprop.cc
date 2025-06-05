@@ -2728,13 +2728,6 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
       nargs = 1;
     }
 
-  /* Skip if there is no value defined at zero, or if we can't easily
-     return the correct value for zero.  */
-  if (!zero_ok)
-    return false;
-  if (zero_val != ctz_val && !(zero_val == 0 && ctz_val == input_bits))
-    return false;
-
   gimple_seq seq = NULL;
   gimple *g;
   gcall *call = gimple_build_call_internal (fn, nargs, res_ops[0],
@@ -2758,13 +2751,31 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
       prev_lhs = gimple_assign_lhs (g);
     }
 
+  if (zero_ok && zero_val == ctz_val)
+    ;
   /* Emit ctz (x) & 31 if ctz (0) is 32 but we need to return 0.  */
-  if (zero_val == 0 && ctz_val == input_bits)
+  else if (zero_ok && zero_val == 0 && ctz_val == input_bits)
     {
       g = gimple_build_assign (make_ssa_name (integer_type_node),
 			       BIT_AND_EXPR, prev_lhs,
 			       build_int_cst (integer_type_node,
 					      input_bits - 1));
+      gimple_set_location (g, gimple_location (stmt));
+      gimple_seq_add_stmt (&seq, g);
+      prev_lhs = gimple_assign_lhs (g);
+    }
+  /* As fallback emit a conditional move.  */
+  else
+    {
+      g = gimple_build_assign (make_ssa_name (boolean_type_node), EQ_EXPR,
+			       res_ops[0], build_zero_cst (input_type));
+      gimple_set_location (g, gimple_location (stmt));
+      gimple_seq_add_stmt (&seq, g);
+      tree cond = gimple_assign_lhs (g);
+      g = gimple_build_assign (make_ssa_name (integer_type_node),
+			       COND_EXPR, cond,
+			       build_int_cst (integer_type_node, zero_val),
+			       prev_lhs);
       gimple_set_location (g, gimple_location (stmt));
       gimple_seq_add_stmt (&seq, g);
       prev_lhs = gimple_assign_lhs (g);
