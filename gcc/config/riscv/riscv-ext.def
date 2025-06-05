@@ -1910,6 +1910,19 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ sstvala,
+  /* UPPERCASE_NAME */ SSTVALA,
+  /* FULL_NAME */ "Stval provides all needed values",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ ssstrict,
   /* UPPERCASE_NAME */ SSSTRICT,
   /* FULL_NAME */ "ssstrict extension",

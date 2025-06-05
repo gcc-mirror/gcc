@@ -566,6 +566,10 @@
 @tab 1.0
 @tab Supervisor-mode timer interrupts extension
 
+@item sstvala
+@tab 1.0
+@tab Stval provides all needed values
+
 @item ssstrict
 @tab 1.0
 @tab ssstrict extension
