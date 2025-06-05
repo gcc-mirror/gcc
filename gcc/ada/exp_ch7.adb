@@ -7830,13 +7830,23 @@ package body Exp_Ch7 is
 
          when Initialize_Case =>
             if Is_Controlled (Typ) then
-               return New_List (
-                 Make_Procedure_Call_Statement (Loc,
-                   Name                   =>
-                     New_Occurrence_Of
-                       (Find_Controlled_Prim_Op (Typ, Name_Initialize), Loc),
-                   Parameter_Associations => New_List (
-                     Make_Identifier (Loc, Name_V))));
+               declare
+                  Intlz : constant Entity_Id :=
+                    Find_Controlled_Prim_Op (Typ, Name_Initialize);
+               begin
+                  if Present (Intlz) then
+                     return
+                       New_List
+                         (Make_Procedure_Call_Statement
+                            (Loc,
+                             Name                   =>
+                               New_Occurrence_Of (Intlz, Loc),
+                             Parameter_Associations =>
+                               New_List (Make_Identifier (Loc, Name_V))));
+                  else
+                     return Empty_List;
+                  end if;
+               end;
             else
                return Empty_List;
             end if;
