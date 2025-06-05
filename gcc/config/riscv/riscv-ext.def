@@ -1702,6 +1702,19 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ smcsrind,
+  /* UPPERCASE_NAME */ SMCSRIND,
+  /* FULL_NAME */ "Machine-Level Indirect CSR Access",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr", "sscsrind"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sm,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ smepmp,
   /* UPPERCASE_NAME */ SMEPMP,
   /* FULL_NAME */ "PMP Enhancements for memory access and execution prevention on Machine mode",
@@ -1783,6 +1796,19 @@ DEFINE_RISCV_EXT(
   /* NAME */ sscofpmf,
   /* UPPERCASE_NAME */ SSCOFPMF,
   /* FULL_NAME */ "Count overflow & filtering extension",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ sscsrind,
+  /* UPPERCASE_NAME */ SSCSRIND,
+  /* FULL_NAME */ "Supervisor-Level Indirect CSR Access",
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({"zicsr"}),

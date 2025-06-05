@@ -502,6 +502,10 @@
 @tab 1.0
 @tab Cycle and instret privilege mode filtering
 
+@item smcsrind
+@tab 1.0
+@tab Machine-Level Indirect CSR Access
+
 @item smepmp
 @tab 1.0
 @tab PMP Enhancements for memory access and execution prevention on Machine mode
@@ -529,6 +533,10 @@
 @item sscofpmf
 @tab 1.0
 @tab Count overflow & filtering extension
+
+@item sscsrind
+@tab 1.0
+@tab Supervisor-Level Indirect CSR Access
 
 @item ssnpm
 @tab 1.0
