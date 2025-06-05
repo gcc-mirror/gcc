@@ -570,6 +570,10 @@
 @tab 1.0
 @tab Stval provides all needed values
 
+@item sstvecd
+@tab 1.0
+@tab Stvec supports Direct mode
+
 @item ssstrict
 @tab 1.0
 @tab ssstrict extension

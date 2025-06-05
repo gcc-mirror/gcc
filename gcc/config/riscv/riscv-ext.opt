@@ -373,6 +373,8 @@ Mask(SSTC) Var(riscv_ss_subext)
 
 Mask(SSTVALA) Var(riscv_ss_subext)
 
+Mask(SSTVECD) Var(riscv_ss_subext)
+
 Mask(SSSTRICT) Var(riscv_ss_subext)
 
 Mask(SSDBLTRP) Var(riscv_ss_subext)
