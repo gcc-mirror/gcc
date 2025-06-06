@@ -1453,6 +1453,7 @@ id_div:         cdf_words IDENTIFICATION_DIV '.' program_id
 
 cdf_words:	%empty
 	|	cobol_words
+	/* |	error { error_msg(@1, "not a COBOL-WORD"); } */
 		;
 cobol_words:	cobol_words1
 	|	cobol_words cobol_words1
@@ -2298,8 +2299,8 @@ config_paragraph:
                     }
                   }
                 }
-        |       REPOSITORY '.'
-        |       REPOSITORY '.' repo_members '.'
+        |       REPOSITORY dot
+        |       REPOSITORY dot repo_members '.'
                 ;
 
 repo_members:   repo_member
@@ -2950,7 +2951,7 @@ fd_clause:      record_desc
                   f->attr |= external_e;
                   cbl_unimplemented("AS LITERAL");
                 }
-        |       fd_linage
+        |       fd_linage { cbl_unimplemented("LINAGE"); }
         |       fd_report {
                   cbl_unimplemented("REPORT WRITER");
                   YYERROR;
@@ -3888,10 +3889,11 @@ data_clauses:   data_clause
                       auto redefined = symbol_redefines(field);
                       if( redefined && redefined->type == FldPointer ) {
                         if( yydebug ) {
-                          yywarn("expanding %s size from %u bytes to %zu "
-                                "because it redefines %s with USAGE POINTER",
+                          yywarn("expanding %s size from %u bytes to "
+				 HOST_WIDE_INT_PRINT " "
+				 "because it redefines %s with USAGE POINTER",
                                 field->name, field->size(),
-                                (size_t)int_size_in_bytes(ptr_type_node),
+                                int_size_in_bytes(ptr_type_node),
                                 redefined->name);
                         }
                         field->embiggen();

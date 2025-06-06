@@ -116,6 +116,6 @@ const cdfval_t *
 cdf_value( const char name[] );
 
 bool
-cdf_value( const char name[], cdfval_t value );
+cdf_value( const char name[], const cdfval_t& value );
 
 #endif

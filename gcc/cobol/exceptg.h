@@ -58,8 +58,8 @@ class exception_turn_t {
 
   exception_turn_t() : enabled(false), location(false) {};
 
-  exception_turn_t( ec_type_t ec, bool enabled = true )
-    : enabled(enabled)
+  explicit exception_turn_t( ec_type_t ec, bool enabled = true )
+    : enabled(enabled), location(false)
   {
     add_exception(ec);
   } 
@@ -74,7 +74,7 @@ class exception_turn_t {
 
   const ec_filemap_t& exception_files() const { return exceptions; }
 
-  bool add_exception( ec_type_t type, const filelist_t files = filelist_t() ) {
+  bool add_exception( ec_type_t type, const filelist_t& files = filelist_t() ) {
     ec_disposition_t disposition = ec_type_disposition(type);
     if( disposition != ec_implemented(disposition) ) {
 	cbl_unimplementedw("CDF: exception '%s'", ec_type_str(type));

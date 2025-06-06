@@ -313,8 +313,9 @@ bool scanner_normal()  { return parsing.normal(); }
 void scanner_parsing( int token, bool tf ) {
   parsing.push( cdf_status_t(token, tf) );
   if( yydebug ) {
-    yywarn("%10s: parsing now %5s, depth %zu",
-            keyword_str(token), boolalpha(parsing.on()), parsing.size());
+    yywarn("%10s: parsing now %5s, depth %lu",
+            keyword_str(token), boolalpha(parsing.on()),
+	   gb4(parsing.size()));
     parsing.splat();
   }
 }
@@ -336,8 +337,9 @@ void scanner_parsing_pop() {
   }
   parsing.pop();
   if( yydebug ) {
-    yywarn("%10s: parsing now %5s, depth %zu",
-            keyword_str(CDF_END_IF), boolalpha(parsing.on()), parsing.size());
+    yywarn("%10s: parsing now %5s, depth %lu",
+            keyword_str(CDF_END_IF), boolalpha(parsing.on()),
+	   gb4(parsing.size()));
     parsing.splat();
   }
 }
@@ -577,7 +579,8 @@ binary_integer_usage( const char name[]) {
   std::transform(name, name + strlen(name), uname, ftoupper);
 
   dbgmsg("%s:%d: checking %s in %zu keyword_aliases",
-	 __func__, __LINE__, uname, keyword_aliases.size() );
+	 __func__, __LINE__, uname,
+	 keyword_aliases.size() );
 
   std::string key = uname;
   auto alias = keyword_aliases.find(key);

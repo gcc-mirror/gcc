@@ -93,9 +93,9 @@ void cbl_unimplemented(const char *gmsgid, ...);  // error
 void cbl_unimplemented_at( const  YYLTYPE& loc, const char *gmsgid, ... );
 
 /*
- * dbgmsg produce messages not intended for the user.  They cannot
- * be localized and fwrite directly to standard out.  dbgmsg is activated by
- * -fflex-debug or -fyacc-debug.  
+ * dbgmsg produce messages not intended for the user.  They cannot be localized
+ * and fwrite directly to standard error.  dbgmsg is activated by -fflex-debug
+ * or -fyacc-debug.
  */
 void dbgmsg( const char fmt[], ... ) ATTRIBUTE_PRINTF_1;
 

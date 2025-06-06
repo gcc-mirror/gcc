@@ -173,7 +173,7 @@ class cbl_domain_elem_t {
   {
     if( value && ! is_numeric ) {
       auto s = consistent_encoding_check(loc, value);
-      if( s ) value = s;
+      if( s ) this->value = s;
     }
   }
   const char *name() const { return value; }
@@ -641,7 +641,7 @@ struct cbl_refer_t;
 struct cbl_span_t {
   cbl_refer_t *from, *len;
 
-  cbl_span_t( cbl_refer_t *from, cbl_refer_t *len = NULL )
+  explicit cbl_span_t( cbl_refer_t *from, cbl_refer_t *len = NULL )
     : from(from), len(len) {};
   bool is_active() const { return !( from == NULL && len == NULL ); }
 
@@ -660,12 +660,12 @@ struct cbl_refer_t {
   cbl_span_t refmod;        // substring bounds
 
   cbl_refer_t()
-    : field(NULL), prog_func(NULL)
+    : loc(), field(NULL), prog_func(NULL)
     , all(NULL), addr_of(false)
     , nsubscript(0), subscripts(NULL), refmod(NULL)
   {}
   cbl_refer_t( cbl_field_t *field, bool all = false )
-    : field(field), prog_func(NULL)
+    : loc(), field(field), prog_func(NULL)
     , all(all), addr_of(false)
     , nsubscript(0), subscripts(NULL), refmod(NULL)
   {}
@@ -675,14 +675,14 @@ struct cbl_refer_t {
     , nsubscript(0), subscripts(NULL), refmod(NULL)
   {}
   cbl_refer_t( cbl_field_t *field, cbl_span_t& refmod )
-    : field(field), prog_func(NULL)
+    : loc(), field(field), prog_func(NULL)
     , all(false), addr_of(false)
     , nsubscript(0), subscripts(NULL), refmod(refmod)
   {}
   cbl_refer_t( cbl_field_t *field,
                size_t nsubscript, cbl_refer_t *subscripts,
                cbl_span_t refmod = cbl_span_t(NULL) )
-    : field(field), prog_func(NULL)
+    : loc(), field(field), prog_func(NULL)
     , all(false), addr_of(false)
     , nsubscript(nsubscript) , subscripts( new cbl_refer_t[nsubscript] )
     , refmod(refmod)
@@ -690,7 +690,7 @@ struct cbl_refer_t {
     std::copy(subscripts, subscripts + nsubscript, this->subscripts);
   }
   explicit cbl_refer_t( cbl_label_t *prog_func, bool addr_of = true )
-    : field(NULL), prog_func(prog_func)
+    : loc(), field(NULL), prog_func(prog_func)
     , all(false), addr_of(addr_of)
     , nsubscript(0), subscripts(NULL), refmod(cbl_span_t(NULL))
   {}
@@ -1419,10 +1419,10 @@ struct cbl_alphabet_t {
   add_sequence( const YYLTYPE& loc, const unsigned char seq[] ) {
     if( low_index == 0 ) low_index = seq[0];
 
-    unsigned char high_value = last_index > 0? alphabet[last_index] + 1 : 0;
+    unsigned char last = last_index > 0? alphabet[last_index] + 1 : 0;
 
     for( const unsigned char *p = seq; !end_of_string(p); p++  ) {
-      assign(loc, *p, high_value++);
+      assign(loc, *p, last++);
     }
   }
 
@@ -1430,10 +1430,10 @@ struct cbl_alphabet_t {
   add_interval( const YYLTYPE& loc, unsigned char low, unsigned char high ) {
     if( low_index == 0 ) low_index = low;
 
-    unsigned char high_value = alphabet[last_index];
+    unsigned char last = alphabet[last_index];
 
     for( unsigned char ch = low; ch < high; ch++  ) {
-      assign(loc, ch, high_value++);
+      assign(loc, ch, last++);
     }
   }
 
@@ -1523,15 +1523,6 @@ struct cbl_file_key_t {
   {
     fields[0] = field;
     memset(name, '\0', sizeof(name));
-  }
-  cbl_file_key_t( const cbl_file_key_t *that )
-    : unique(that->unique)
-    , leftmost(that->leftmost)
-    , nfield(that->nfield)
-  {
-    memcpy(name, that->name, sizeof(name));
-    fields = new size_t[nfield];
-    std::copy( that->fields, that->fields + that->nfield, fields );
   }
 
   cbl_file_key_t( cbl_name_t name,
@@ -1636,10 +1627,7 @@ struct symbol_elem_t {
     cbl_alphabet_t     alphabet;
     cbl_file_t         file;
     cbl_section_t      section;
-    symbol_elem_u() {
-      static const cbl_field_t empty = {};
-      field = empty;
-    }
+    symbol_elem_u() : field() {}
   } elem;
   
   symbol_elem_t( symbol_type_t type = SymField, size_t program = 0 )
@@ -1926,7 +1914,7 @@ struct cbl_until_addresses_t {
     struct cbl_label_addresses_t test;  // The test at the bottom of the body
     struct cbl_label_addresses_t testA; // Starting point of a TEST_AFTER loop
     struct cbl_label_addresses_t setup; // The actual entry point
-    size_t number_of_conditionals;
+    unsigned int number_of_conditionals;
     struct cbl_label_addresses_t condover[MAXIMUM_UNTILS];  // Jumping over the conditional
     struct cbl_label_addresses_t condinto[MAXIMUM_UNTILS];  // Jumping into the conditional
     struct cbl_label_addresses_t condback[MAXIMUM_UNTILS];  // Jumping back from the conditional
@@ -1990,7 +1978,7 @@ struct cbl_prog_hier_t {
   struct program_label_t {
     size_t ordinal;
     cbl_label_t label;
-    program_label_t() : ordinal(0) {}
+    program_label_t() : ordinal(0), label() {}
     program_label_t( const symbol_elem_t& e ) {
       ordinal = symbol_index(&e);
       label = e.elem.label;
@@ -2008,13 +1996,11 @@ struct cbl_prog_hier_t {
 struct cbl_perform_tgt_t {
   struct cbl_until_addresses_t addresses;
 
-  cbl_perform_tgt_t() : ifrom(0), ito(0) {}
-  cbl_perform_tgt_t( cbl_label_t * from, cbl_label_t *to = NULL )
-    : ifrom( from? symbol_index(symbol_elem_of(from)) : 0 )
+  cbl_perform_tgt_t() : addresses(), ifrom(0), ito(0) {}
+  explicit cbl_perform_tgt_t( cbl_label_t * from, cbl_label_t *to = NULL )
+    : addresses(), ifrom( from? symbol_index(symbol_elem_of(from)) : 0 )
     , ito( to? symbol_index(symbol_elem_of(to)) : 0 )
-  {
-    addresses = {};
-  }
+  {}
 
   cbl_label_t * from( cbl_label_t * label ) {
     ifrom = symbol_index(symbol_elem_of(label));
@@ -2252,21 +2238,21 @@ size_t symbols_update( size_t first, bool parsed_ok = true );
 void symbol_table_init(void);
 void symbol_table_check(void);
 
-struct symbol_elem_t * symbol_typedef_add( size_t program,
-                                           struct cbl_field_t *field );
-struct symbol_elem_t * symbol_field_add( size_t program,
-                                         struct cbl_field_t *field );
-struct cbl_label_t *   symbol_label_add( size_t program,
-                                         struct cbl_label_t *label );
-struct cbl_label_t *   symbol_program_add( size_t program, cbl_label_t *input );
-struct symbol_elem_t * symbol_special_add( size_t program,
-                                         struct cbl_special_name_t *special );
-struct symbol_elem_t * symbol_alphabet_add( size_t program,
-                                         struct cbl_alphabet_t *alphabet );
-struct symbol_elem_t * symbol_file_add( size_t program,
-                                         struct cbl_file_t *file );
-struct symbol_elem_t * symbol_section_add( size_t program,
-                                         struct cbl_section_t *section );
+symbol_elem_t * symbol_typedef_add( size_t program,
+                                    cbl_field_t *field );
+symbol_elem_t * symbol_field_add( size_t program,
+                                  cbl_field_t *field );
+cbl_label_t *   symbol_label_add( size_t program,
+                                  cbl_label_t *label );
+cbl_label_t *   symbol_program_add( size_t program, cbl_label_t *input );
+symbol_elem_t * symbol_special_add( size_t program,
+				    cbl_special_name_t *special );
+symbol_elem_t * symbol_alphabet_add( size_t program,
+				     const cbl_alphabet_t *alphabet );
+symbol_elem_t * symbol_file_add( size_t program,
+				 cbl_file_t *file );
+symbol_elem_t * symbol_section_add( size_t program,
+				    cbl_section_t *section );
 
 void symbol_field_location( size_t ifield, const YYLTYPE& loc );
 YYLTYPE symbol_field_location( size_t ifield );

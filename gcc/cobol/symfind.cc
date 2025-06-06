@@ -275,8 +275,8 @@ update_symbol_map( symbol_elem_t *e ) {
 class is_name {
   const char *name;
 public:
-  is_name( const char *name ) : name(name) {}
-  bool operator()( symbol_map_t::value_type& elem ) {
+  explicit is_name( const char *name ) : name(name) {}
+  bool operator()( const symbol_map_t::value_type& elem ) {
     const bool tf = elem.first == name;
     return tf;
   }
@@ -298,7 +298,7 @@ class reduce_ancestry {
   static symbol_map_t::mapped_type
     candidates_only( const symbol_map_t::value_type& elem ) { return elem.second; }
 public:
-  reduce_ancestry( const symbol_map_t& groups )
+  explicit reduce_ancestry( const symbol_map_t& groups )
     : candidates( groups.size() )
     {
       std::transform( groups.begin(), groups.end(), candidates.begin(),
@@ -331,7 +331,7 @@ public:
 class different_program {
   size_t program;
 public:
-  different_program( size_t program ) : program(program) {}
+  explicit different_program( size_t program ) : program(program) {}
   bool operator()( const symbol_map_t::value_type& item ) const {
     return ! item.first.same_program(program);
   }
@@ -346,7 +346,7 @@ class in_scope {
   }
 
 public:
-  in_scope( size_t program ) : program(program) {}
+  explicit in_scope( size_t program ) : program(program) {}
 
   // A symbol is in scope if it's defined by this program or by an ancestor.
   bool operator()( const symbol_map_t::value_type& item ) const {
@@ -561,7 +561,7 @@ symbol_find( size_t program, std::list<const char *> names ) {
 class in_group {
   size_t group;
 public:
-  in_group( size_t group ) : group(group) {}
+  explicit in_group( size_t group ) : group(group) {}
 
   bool operator()( symbol_map_t::const_reference elem ) const {
     return 0 < std::count( elem.second.begin(),

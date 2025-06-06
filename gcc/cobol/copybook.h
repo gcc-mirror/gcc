@@ -62,7 +62,7 @@ class copybook_elem_t {
   struct copybook_loc_t {
     YYLTYPE loc;
     const char *name;
-    copybook_loc_t() : name(NULL) {}
+    copybook_loc_t() : loc(), name(NULL) {}
   } source, library;
   bool suppress;
   static std::list<const char *> suffixes;
@@ -74,12 +74,11 @@ class copybook_elem_t {
 
   copybook_elem_t()
     : suppress(false)
+    , literally()
     , fd(-1)
     , nsubexpr(0)
     , regex_text(NULL)
-  {
-    literally = {};
-  }
+  {}
 
   void clear() {
     suppress = false;
@@ -130,7 +129,7 @@ private:
 class uppername_t {
   std::string upper;
  public:
-  uppername_t( const std::string input ) : upper(input) {
+  explicit uppername_t( const std::string& input ) : upper(input) {
     std::transform(input.begin(), input.end(), upper.begin(), 
 		   []( char ch ) { return TOUPPER(ch); } );
   }

@@ -102,8 +102,8 @@ struct cbx_inspect_match_t {
 
   cbx_inspect_match_t(
     const DATA& matching = DATA(),
-    cbx_inspect_qual_t<DATA> before = cbx_inspect_qual_t<DATA>(),
-    cbx_inspect_qual_t<DATA> after = cbx_inspect_qual_t<DATA>()
+    const cbx_inspect_qual_t<DATA>& before = cbx_inspect_qual_t<DATA>(),
+    const cbx_inspect_qual_t<DATA>& after  = cbx_inspect_qual_t<DATA>()
     )
     : matching(matching)
     , before(before)
@@ -192,7 +192,7 @@ typedef cbx_inspect_oper_t<cbl_refer_t> cbl_inspect_oper_t;
 template <typename DATA>
 struct cbx_inspect_t {
   DATA tally;                 // identifier-2: NULL without a tally
-  size_t nbound;              // Each FOR or REPLACING operation starts with a cbl_inspect_bound_t
+  size_t nbound;              // FOR and REPLACING start with a cbl_inspect_bound_t
   cbx_inspect_oper_t<DATA> *opers;
 
   cbx_inspect_t( const DATA& tally = DATA() )
@@ -200,7 +200,7 @@ struct cbx_inspect_t {
     , nbound(0)
     , opers(NULL)
     {}
-  cbx_inspect_t( const DATA& tally, cbx_inspect_oper_t<DATA> oper )
+  cbx_inspect_t( const DATA& tally, const cbx_inspect_oper_t<DATA>& oper )
     : tally(tally)
     , nbound(1)
     , opers(NULL)
