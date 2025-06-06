@@ -56,7 +56,7 @@ class symbol_pair_t
 {
   const symbol_elem_t *first, *last;
 public:
-  symbol_pair_t( const symbol_elem_t * first, const symbol_elem_t * end = NULL )
+  explicit symbol_pair_t( const symbol_elem_t * first, const symbol_elem_t * end = NULL )
     : first(first), last(end)
   {}
 
@@ -160,8 +160,8 @@ symbol_table_extend() {
   off_t len = symbols.size();
 
   if( 0 != ftruncate(symbols.fd, len) ) {
-    cbl_err( "%s:%d:could not extend symbol table to %zu elements",
-        __func__, __LINE__, symbols.capacity);
+    cbl_err( "%s:%d: could not extend symbol table to %lu elements",
+	     __func__, __LINE__, gb4(symbols.capacity));
   }
 
   /*
@@ -280,7 +280,7 @@ class group_size_t {
 enum  { constq = constant_e | quoted_e };
 
 static symbol_elem_t
-elementize( cbl_field_t& field ) {
+elementize( const cbl_field_t& field ) {
   symbol_elem_t sym (SymField);
   sym.elem.field = field;
   return sym;
@@ -907,7 +907,7 @@ end_of_group( const cbl_field_t *group, const cbl_field_t *field ) {
 class eog_t {
   const cbl_field_t * group;
 public:
-  eog_t( const symbol_elem_t *e ) : group(cbl_field_of(e)) {}
+  explicit eog_t( const symbol_elem_t *e ) : group(cbl_field_of(e)) {}
 
   bool operator()( symbol_elem_t& e ) {
     return e.type == SymField && end_of_group(group, cbl_field_of(&e));
@@ -1339,19 +1339,18 @@ immediately_follows( const cbl_field_t *field ) {
 
 bool
 is_variable_length( const cbl_field_t *field ) {
-  bool odo = false;
-  std::find_if( symbol_at(field_index(field)) + 1, symbols_end(),
-                [&odo, field]( const auto& elem ) {
-                  if( elem.type == SymField ) {
-                    auto f = cbl_field_of(&elem);
-                    if( f->level <= field->level ) return true;
-                    if( f->occurs.depending_on ) {
-                      odo = true;
-                      return true;
-                    }
-                  }
-                  return false;
-                } );
+  // RENAMES may be included in end_of_group.
+  size_t isym = field_index(field),  esym = end_of_group(isym);
+  bool odo = std::any_of( symbol_at(isym) + 1, symbol_at_impl(esym), 
+			  [field]( const auto& elem ) {
+			    if( elem.type == SymField ) {
+			      auto f = cbl_field_of(&elem);
+			      if( field->level < f->level ) { // exclude RENAMES
+				return 0 < f->occurs.depending_on;
+			      }
+			    }
+			    return false;
+			  } );
   return odo;
 }
 
@@ -1704,7 +1703,6 @@ symbols_update( size_t first, bool parsed_ok ) {
     case 1:
       pend = calculate_capacity(p);
       if( dialect_mf() && is_table(field) ) {
-        cbl_field_t *field = cbl_field_of(p);
         if( field->data.memsize < field->size() ) {
           field->data.memsize = field->size();
         }
@@ -2102,7 +2100,7 @@ class parent_elem_set
 private:
   size_t parent_index;
 public:
-  parent_elem_set( size_t parent_index )
+  explicit parent_elem_set( size_t parent_index )
     : parent_index(parent_index)
   {}
   void operator()( struct symbol_elem_t& e ) {
@@ -2419,9 +2417,9 @@ symbol_file_add( size_t program, cbl_file_t *file ) {
   return e;
 }
 
-struct symbol_elem_t *
-symbol_alphabet_add( size_t program, struct cbl_alphabet_t *alphabet ) {
-  struct symbol_elem_t sym{ SymAlphabet, program };
+symbol_elem_t *
+symbol_alphabet_add( size_t program, const cbl_alphabet_t *alphabet ) {
+  symbol_elem_t sym{ SymAlphabet, program };
   sym.elem.alphabet = *alphabet;
   return symbol_add(&sym);
 }
@@ -3230,7 +3228,6 @@ parser_symbol_add2( cbl_field_t *field ) {
 
 static cbl_field_t *
 new_literal_add( const char initial[], uint32_t len, enum cbl_field_attr_t attr ) {
-  static char empty[2] = "\0";
   cbl_field_t *field = NULL;
   if( !(attr & quoted_e) )
     {
@@ -3240,6 +3237,7 @@ new_literal_add( const char initial[], uint32_t len, enum cbl_field_attr_t attr 
     }
   else
     {
+    static char empty[2] = "\0";
     field = new_temporary_impl(FldLiteralA);
     field->attr |= attr;
     field->data.initial = len > 0? initial : empty;

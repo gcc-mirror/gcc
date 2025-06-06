@@ -263,7 +263,7 @@ top:		partials { YYACCEPT; }
 		}
 	|	copy error {
 		  error_msg(@error, "COPY directive must end in a '.'");
-		  YYACCEPT;
+		  YYABORT;
 		}
 	|	completes { YYACCEPT; }
 		;
@@ -584,7 +584,7 @@ copybook_name: 	COPY name_one[src]
 		  if( -1 == copybook.open(@src, $src.string) ) {
 		    error_msg(@src, "could not open copybook file "
 		             "for '%s'", $src.string);
-		    YYERROR;
+		    YYABORT;
 		  }
 		}
 	|	COPY name_one[src] IN name_one[lib]
@@ -593,7 +593,7 @@ copybook_name: 	COPY name_one[src]
 		  if( -1 == copybook.open(@src, $src.string) ) {
 		    error_msg(@src, "could not open copybook file "
 		             "for '%s' in '%'s'", $src.string, $lib.string);
-		    YYERROR;
+		    YYABORT;
 		  }
 		}
 		;
@@ -864,7 +864,7 @@ static int ydflex(void) {
 }
 
 bool
-cdf_value( const char name[], cdfval_t value ) {
+cdf_value( const char name[], const cdfval_t& value ) {
   auto p = dictionary.find(name);
 
   if( p != dictionary.end() ) return false;

@@ -95,6 +95,22 @@ get_current_dir_name ()
 }
 #endif
 
+/*
+ * For printing messages, usually the size of the thing is some kind of string
+ * length, and doesn't really need a size_t.  For message formatting, use a
+ * simple unsigned long, and warn if that's no good.  "gb4" here stands for 
+ * "4 Gigabytes".
+ */
+unsigned long
+gb4( size_t input ) {
+  if( input != static_cast<unsigned long>(input) ) {
+    yywarn("size too large to print: %lx:%lx",
+	   (unsigned long)(input >> (4 * sizeof(unsigned long))),
+	   static_cast<unsigned long>(input));
+  }
+  return input;
+}
+  
 const char *
 symbol_type_str( enum symbol_type_t type )
 {

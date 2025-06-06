@@ -1905,9 +1905,12 @@ cdftext::process_file( filespan_t mfile, int output, bool second_pass ) {
                                  segments.front().pend, '\n');
       nlines.after  = std::count(segments.back().p, segments.back().pend, '\n');
       if( nlines.delta() < 0 ) {
-        yywarn("line %zu: REPLACED %zu lines with %zu lines, "
-              "line count off by %d", mfile.lineno(),
-              nlines.before, nlines.after, nlines.delta());
+        yywarn("line %lu: REPLACED %lu lines with %lu lines, "
+	       "line count off by %d",
+	       gb4(mfile.lineno()),
+	       gb4(nlines.before),
+	       gb4(nlines.after),
+	       nlines.delta());
       }
       int nnl = nlines.delta();
       while( nnl-- > 0 ) {

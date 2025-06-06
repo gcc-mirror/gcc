@@ -237,7 +237,7 @@ enum cbl_file_mode_t {
   file_mode_output_e = 'w',
   file_mode_extend_e = 'a',
   file_mode_io_e     = '+',
-  file_mode_any_e, 
+  file_mode_any_e,
 };
 
 enum cbl_round_t {
@@ -288,15 +288,15 @@ enum bitop_t {
 };
 
 enum file_stmt_t {
-  file_stmt_delete_e, 
-  file_stmt_merge_e, 
-  file_stmt_read_e, 
-  file_stmt_rewrite_e, 
-  file_stmt_sort_e, 
-  file_stmt_start_e, 
-  file_stmt_write_e, 
+  file_stmt_delete_e,
+  file_stmt_merge_e,
+  file_stmt_read_e,
+  file_stmt_rewrite_e,
+  file_stmt_sort_e,
+  file_stmt_start_e,
+  file_stmt_write_e,
 };
-  
+
 enum file_close_how_t {
   file_close_no_how_e     = 0x00,
   file_close_removal_e    = 0x01,
@@ -412,14 +412,14 @@ ec_cmp( ec_type_t raised, ec_type_t ec )
 {
   if( raised == ec ) return true;
 
-  // If both low bytes are nonzero, we had to match exactly, above. 
+  // If both low bytes are nonzero, we had to match exactly, above.
   if( (~EC_ALL_E & static_cast<uint32_t>(raised))
       &&
       (~EC_ALL_E & static_cast<uint32_t>(ec)) ) {
     return false;
   }
 
-  // Level 1 and 2 have low byte of zero. 
+  // Level 1 and 2 have low byte of zero.
   // If one low byte is zero, see if they're the same kind.
   return 0xFF < ( static_cast<uint32_t>(raised)
 		  &
@@ -464,8 +464,7 @@ struct cbl_declarative_t {
   uint32_t nfile, files[files_max];
   cbl_file_mode_t mode;
 
-  // cppcheck-suppress noExplicitConstructor
-  cbl_declarative_t( cbl_file_mode_t mode = file_mode_none_e )
+  explicit cbl_declarative_t( cbl_file_mode_t mode = file_mode_none_e )
     : section(0)
     , global(false)
     , type(ec_none_e)
@@ -474,8 +473,7 @@ struct cbl_declarative_t {
   {
     std::fill(files, files + COUNT_OF(files), 0);
   }
-  // cppcheck-suppress noExplicitConstructor
-  cbl_declarative_t( ec_type_t type )
+  explicit cbl_declarative_t( ec_type_t type )
     : section(0)
     , global(false)
     , type(type)
@@ -512,7 +510,7 @@ struct cbl_declarative_t {
       std::copy( that.files, that.files + nfile, this->files );
     }
   }
-  constexpr cbl_declarative_t& operator=(const cbl_declarative_t&) = default;
+  cbl_declarative_t& operator=(const cbl_declarative_t&) = default;
 
   std::vector<uint64_t> encode() const;
 
@@ -539,7 +537,7 @@ struct cbl_declarative_t {
 
     // TRUE if there are no files to match, or the provided file is in the list.
     bool match_file( size_t file ) const {
-    static const auto pend = files + nfile; // cppcheck-suppress constVariablePointer
+    static const uint32_t * pend = files + nfile;
 
     return nfile == 0 || pend != std::find(files, files + nfile, file);
   }
@@ -568,7 +566,7 @@ class cbl_enabled_exceptions_t : protected std::set<cbl_enabled_exception_t>
 
  public:
   cbl_enabled_exceptions_t() {}
-  cbl_enabled_exceptions_t( size_t nec, const cbl_enabled_exception_t *ecs ) 
+  cbl_enabled_exceptions_t( size_t nec, const cbl_enabled_exception_t *ecs )
     : std::set<cbl_enabled_exception_t>(ecs, ecs + nec)
   {}
   void turn_on_off( bool enabled, bool location, ec_type_t type,

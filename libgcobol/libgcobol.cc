@@ -266,8 +266,7 @@ class ec_status_t {
                     ,  user_status(nullptr)
                     ,  filename(nullptr) 
                       {}
-// cppcheck-suppress noExplicitConstructor
-    file_status_t( const cblc_file_t *file )
+    explicit file_status_t( const cblc_file_t *file )
                     : ifile(file->symbol_table_index)
                     , operation(file->prior_op)
                     , mode(cbl_file_mode_t(file->mode_char))
@@ -296,7 +295,7 @@ class ec_status_t {
   cbl_declaratives_t declaratives;
   struct file_status_t file;
  public:
-  size_t lineno;
+  int lineno;
   const char *source_file;
   cbl_name_t statement; // e.g., "ADD"
 
@@ -325,7 +324,8 @@ class ec_status_t {
   }
   ec_status_t& clear() {
     handled = type = ec_none_e;
-    isection = lineno = 0;
+    isection = 0;
+    lineno = 0;
     msg[0] = statement[0] = '\0';
     return *this;
   }
@@ -345,7 +345,7 @@ class ec_status_t {
   const file_status_t& file_status() const { return file; }
 
   const char * exception_location() {
-    snprintf(msg, sizeof(msg), "%s:%zu: '%s'", source_file, lineno, statement);
+    snprintf(msg, sizeof(msg), "%s:%d: '%s'", source_file, lineno, statement);
     return msg;
   }
 };
@@ -11222,9 +11222,9 @@ match_declarative( bool enabled,
     }
 
     if( matches && MATCH_DECLARATIVE ) {
-      warnx("                   matches exception      %s (file %zu mode %s)",
+      warnx("                   matches exception      %s (file %u mode %s)",
             local_ec_type_str(raised.type),
-            raised.file,
+            static_cast<unsigned int>(raised.file),
             cbl_file_mode_str(raised.mode));
     }
   }
@@ -11312,7 +11312,7 @@ default_exception_handler( ec_type_t ec )
     case ec_category_fatal_e:
     case uc_category_fatal_e:
       if( filename ) {
-        syslog(priority, "fatal exception: %s:%zu: %s %s: %s (%s)",
+        syslog(priority, "fatal exception: %s:%d: %s %s: %s (%s)",
                program_name,
                ec_status.lineno,
                ec_status.statement,
@@ -11320,7 +11320,7 @@ default_exception_handler( ec_type_t ec )
                pec->name,
                pec->description);
       } else {
-        syslog(priority, "fatal exception: %s:%zu: %s: %s (%s)",
+        syslog(priority, "fatal exception: %s:%d: %s: %s (%s)",
                program_name,
                ec_status.lineno,
                ec_status.statement,
@@ -11331,7 +11331,7 @@ default_exception_handler( ec_type_t ec )
       break;
     case ec_category_nonfatal_e:
     case uc_category_nonfatal_e:
-      syslog(priority, "%s:%zu: %s: %s (%s)",
+      syslog(priority, "%s:%d: %s: %s (%s)",
              program_name,
              ec_status.lineno,
              ec_status.statement,
@@ -11393,7 +11393,11 @@ __gg__check_fatal_exception()
     warnx("%s: ec_status is %s", __func__, ec_status.unset()? "unset" : "set");
 
   if( ec_status.copy_environment().unset() )
+    {
     ec_status.update();  // __gg__match_exception was not called first
+    // This is a good time to set the exception code back to zero
+    __gg__exception_code = 0;
+    }
 
   if( ec_status.done() ) { // false for part-handled fatal
     if( MATCH_DECLARATIVE )
@@ -11460,8 +11464,10 @@ __gg__exception_push()
 {
   ec_stack.push(ec_status);
   if( MATCH_DECLARATIVE )
-    warnx("%s: %s: %zu ECs, %zu declaratives", __func__,
-          __gg__exception_statement, enabled_ECs.size(), declaratives.size());
+    warnx("%s: %s: %u ECs, %u declaratives", __func__,
+          __gg__exception_statement,
+	  static_cast<unsigned int>(enabled_ECs.size()),
+	  static_cast<unsigned int>(declaratives.size()));
 }
 
 /*
@@ -11475,8 +11481,10 @@ __gg__exception_pop()
   ec_stack.pop();
   ec_status.reset_environment();
   if( MATCH_DECLARATIVE )
-    warnx("%s: %s: %zu ECs, %zu declaratives", __func__,
-          __gg__exception_statement, enabled_ECs.size(), declaratives.size());
+    warnx("%s: %s: %u ECs, %u declaratives", __func__,
+          __gg__exception_statement,
+	  static_cast<unsigned int>(enabled_ECs.size()),
+	  static_cast<unsigned int>(declaratives.size()));
   __gg__check_fatal_exception();
 }
 
@@ -11490,11 +11498,11 @@ __gg__clear_exception()
 
 void
 cbl_enabled_exception_t::dump( int i ) const {
-  warnx("cbl_enabled_exception_t: %2d  {%s, %s, %zu}",
+  warnx("cbl_enabled_exception_t: %2d  {%s, %s, %u}",
         i,
         location? "location" : "    none",
         local_ec_type_str(ec),
-        file );
+        static_cast<unsigned int>(file) );
 }
 
 /*
@@ -11530,6 +11538,10 @@ __gg__match_exception( cblc_field_t *index )
      * Format 1 may be restricted to a particular mode (for all files).
      * Format 1 and 3 may be restricted to a set of files.
      */
+
+    // This is a good time to set the actual exception code back to zero.
+    __gg__exception_code = 0;
+
     auto f = ec_status.file_status();
     cbl_exception_t raised = { /*0,*/ f.ifile, ec, f.mode };
     bool enabled = enabled_ECs.match(ec);
@@ -11544,8 +11556,9 @@ __gg__match_exception( cblc_field_t *index )
     if( p == declaratives.end() ) {
       if( MATCH_DECLARATIVE ) {
         warnx("__gg__match_exception:%d: raised exception "
-              "%s not matched (%zu enabled)", __LINE__,
-              local_ec_type_str(ec), enabled_ECs.size());
+              "%s not matched (%u enabled)", __LINE__,
+              local_ec_type_str(ec),
+	      static_cast<unsigned int>(enabled_ECs.size()));
       }
     } else {
       isection = p->section;
@@ -11553,11 +11566,11 @@ __gg__match_exception( cblc_field_t *index )
 
       if( MATCH_DECLARATIVE ) {
         warnx("__gg__match_exception:%d: matched "
-              "%s against mask %s for section #%zu",
+              "%s against mask %s for section #%u",
               __LINE__,
               local_ec_type_str(ec),
               local_ec_type_str(p->type),
-              p->section);
+              static_cast<unsigned int>(p->section));
       }
     }
     assert(ec != ec_none_e);
@@ -13082,12 +13095,12 @@ cbl_enabled_exceptions_t::dump( const char tag[] ) const {
   }
   int i = 1;
   for( auto& elem : *this ) {
-    warnx("%s: %2d  {%s, %04x %s, %ld}", tag,
-    i++,
-    elem.location? "with location" : "  no location",
-    elem.ec,
-    local_ec_type_str(elem.ec),
-    elem.file );
+    warnx("%s: %2d  {%s, %04x %s, %u}", tag,
+	  i++,
+	  elem.location? "with location" : "  no location",
+	  elem.ec,
+	  local_ec_type_str(elem.ec),
+	  static_cast<unsigned int>(elem.file) );
   }
 }
 
@@ -13137,7 +13150,9 @@ __gg__set_exception_environment( uint64_t *ecs, uint64_t *dcls )
     if( prior.ecs != ecs ) {
       uint64_t *ecs_begin = ecs + 1, *ecs_end = ecs_begin + ecs[0];
       if( MATCH_DECLARATIVE ) {
-        warnx("%zu elements implies %zu ECs", ecs[0], ecs[0] / 3);
+        warnx("%u elements implies %u ECs",
+	      static_cast<unsigned int>(ecs[0]),
+	      static_cast<unsigned int>(ecs[0] / 3));
       }
       cbl_enabled_exceptions_t enabled;
       enabled_ECs = enabled.decode( std::vector<uint64_t>(ecs_begin, ecs_end) );
@@ -13151,7 +13166,9 @@ __gg__set_exception_environment( uint64_t *ecs, uint64_t *dcls )
     if( prior.dcls != dcls ) {
       uint64_t *dcls_begin = dcls + 1, *dcls_end = dcls_begin + dcls[0];
       if( MATCH_DECLARATIVE ) {
-        warnx("%zu elements implies %zu declaratives", dcls[0], dcls[0] / 21);
+        warnx("%u elements implies %u declaratives",
+	      static_cast<unsigned int>(dcls[0]),
+	      static_cast<unsigned int>(dcls[0] / 21));
       }
       declaratives.clear();
       declaratives << std::vector<uint64_t>( dcls_begin, dcls_end );

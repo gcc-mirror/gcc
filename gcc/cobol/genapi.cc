@@ -1019,10 +1019,63 @@ parser_compile_dcls( const std::vector<uint64_t>& dcls )
   return retval;
   }
 
-static void store_location_stuff(const cbl_name_t statement_name);
+static void
+store_location_stuff(const cbl_name_t statement_name)
+  {
+  if( exception_location_active && !current_declarative_section_name() )
+    {
+    // We need to establish some stuff for EXCEPTION- function processing
+
+    gg_assign(var_decl_exception_program_id,
+              gg_string_literal(current_function->our_unmangled_name));
+
+    if( strstr(current_function->current_section->label->name, "_implicit")
+        != current_function->current_section->label->name )
+      {
+      gg_assign(var_decl_exception_section,
+           gg_string_literal(current_function->current_section->label->name));
+      }
+    else
+      {
+      gg_assign(var_decl_exception_section,
+                gg_cast(build_pointer_type(CHAR_P),null_pointer_node));
+      }
+
+    if( strstr(current_function->current_paragraph->label->name, "_implicit")
+        != current_function->current_paragraph->label->name )
+      {
+      gg_assign(var_decl_exception_paragraph,
+           gg_string_literal(current_function->current_paragraph->label->name));
+      }
+    else
+      {
+      gg_assign(var_decl_exception_paragraph,
+                gg_cast(build_pointer_type(CHAR_P), null_pointer_node));
+      }
+
+    gg_assign(var_decl_exception_source_file,
+              gg_string_literal(current_filename.back().c_str()));
+    gg_assign(var_decl_exception_line_number, build_int_cst_type(INT,
+                                                          CURRENT_LINE_NUMBER));
+    gg_assign(var_decl_exception_statement, gg_string_literal(statement_name));
+    }
+  }
+
+static
+void
+set_exception_environment( tree ecs, tree dcls )
+  {
+  gg_call(VOID,
+          "__gg__set_exception_environment",
+          ecs  ? gg_get_address_of(ecs) : null_pointer_node,
+          dcls ? gg_get_address_of(dcls) : null_pointer_node,
+          NULL_TREE);
+  }
 
 void
-parser_statement_begin( const cbl_name_t statement_name, tree ecs, tree dcls )
+parser_statement_begin( const cbl_name_t statement_name, 
+                        tree ecs,
+                        tree dcls )
   {
   SHOW_PARSE
     {
@@ -1052,6 +1105,35 @@ parser_statement_begin( const cbl_name_t statement_name, tree ecs, tree dcls )
     TRACE1_END
     }
 
+  gcc_assert( gg_trans_unit.function_stack.size() );
+
+  // In the cases where enabled_exceptions.size() is non-zero, or when
+  // there is a possibility of an EC-I-O exception because this is a file
+  // operation, we need to store the location information and do the exception
+  // overhead:
+
+  static const std::set<std::string> file_ops = 
+    {
+    "OPEN",
+    "CLOSE",
+    "READ",
+    "WRITE",
+    "DELETE",
+    "REWRITE",
+    "START",
+    };
+
+  //  Performance note:  By doing exception processing only when necessary
+  //  the execution time of a program doing two-billion simple adds in an inner
+  //  loop dropped from 3.8 seconds to 0.175 seconds.
+
+  bool exception_processing = enabled_exceptions.size() ;
+
+  if( !exception_processing )
+    {
+    exception_processing = file_ops.find(statement_name) != file_ops.end();
+    }
+
   if( gg_get_current_line_number() == DEFAULT_LINE_NUMBER )
     {
     // This code is intended to prevert GDB anomalies when the first line of a
@@ -1064,23 +1146,17 @@ parser_statement_begin( const cbl_name_t statement_name, tree ecs, tree dcls )
   // Each file I-O routine calls store_location_stuff explicitly, because
   // those exceptions can't be defeated.
 
-  if( enabled_exceptions.size() )
+  if( exception_processing )
     {
     store_location_stuff(statement_name);
     }
 
   gg_set_current_line_number(CURRENT_LINE_NUMBER);
 
-  // if( ecs || dcls || sv_is_i_o )
+  if( exception_processing )
     {
-    gg_call(VOID,
-            "__gg__set_exception_environment",
-            ecs  ? gg_get_address_of(ecs) : null_pointer_node,
-            dcls ? gg_get_address_of(dcls) : null_pointer_node,
-            NULL_TREE);
+    set_exception_environment(ecs, dcls);
     }
-
-  gcc_assert( gg_trans_unit.function_stack.size() );
   sv_is_i_o = false;
   }
 
@@ -7833,12 +7909,13 @@ parser_perform_conditional( struct cbl_perform_tgt_t *tgt )
     SHOW_PARSE_END
     }
 
-  size_t i = tgt->addresses.number_of_conditionals;
+  unsigned int i = tgt->addresses.number_of_conditionals;
 
   if( !(i < MAXIMUM_UNTILS) )
     {
-    cbl_internal_error("%s:%d: %zu exceeds MAXIMUM_UNTILS of %d, line %d",
-          __func__, __LINE__, i, MAXIMUM_UNTILS, CURRENT_LINE_NUMBER);
+    cbl_internal_error("%s:%d: %u exceeds MAXIMUM_UNTILS of %d, line %d",
+		       __func__, __LINE__,
+		       i, MAXIMUM_UNTILS, CURRENT_LINE_NUMBER);
     }
   gcc_assert(i < MAXIMUM_UNTILS);
 
@@ -7882,7 +7959,7 @@ parser_perform_conditional_end( struct cbl_perform_tgt_t *tgt )
     SHOW_PARSE_END
     }
 
-  size_t i = tgt->addresses.number_of_conditionals;
+  unsigned int i = tgt->addresses.number_of_conditionals;
   gcc_assert(i);
 
   // We need to cap off the prior conditional in this chain of conditionals
@@ -13427,48 +13504,6 @@ parser_set_numeric(struct cbl_field_t *tgt, ssize_t value)
           NULL_TREE );
   }
 
-static void
-store_location_stuff(const cbl_name_t statement_name)
-  {
-  if( exception_location_active && !current_declarative_section_name() )
-    {
-    // We need to establish some stuff for EXCEPTION- function processing
-
-    gg_assign(var_decl_exception_program_id,
-              gg_string_literal(current_function->our_unmangled_name));
-
-    if( strstr(current_function->current_section->label->name, "_implicit")
-        != current_function->current_section->label->name )
-      {
-      gg_assign(var_decl_exception_section,
-           gg_string_literal(current_function->current_section->label->name));
-      }
-    else
-      {
-      gg_assign(var_decl_exception_section,
-                gg_cast(build_pointer_type(CHAR_P),null_pointer_node));
-      }
-
-    if( strstr(current_function->current_paragraph->label->name, "_implicit")
-        != current_function->current_paragraph->label->name )
-      {
-      gg_assign(var_decl_exception_paragraph,
-           gg_string_literal(current_function->current_paragraph->label->name));
-      }
-    else
-      {
-      gg_assign(var_decl_exception_paragraph,
-                gg_cast(build_pointer_type(CHAR_P), null_pointer_node));
-      }
-
-    gg_assign(var_decl_exception_source_file,
-              gg_string_literal(current_filename.back().c_str()));
-    gg_assign(var_decl_exception_line_number, build_int_cst_type(INT,
-                                                          CURRENT_LINE_NUMBER));
-    gg_assign(var_decl_exception_statement, gg_string_literal(statement_name));
-    }
-  }
-
 void
 parser_exception_clear()
   {
@@ -13548,9 +13583,17 @@ parser_check_fatal_exception()
     TRACE1_END
     }
 
+  // Performance note:
+  // A simple program that does two billion additions of 32-bit binary numbers
+  // in its innermost loop had an execution time of 19.5 seconds.  By putting in
+  // the if() statement, that was reduced to 3.8 seconds.
+
+  if( enabled_exceptions.size() || sv_is_i_o )
+    {
     gg_call(VOID,
             "__gg__check_fatal_exception",
             NULL_TREE);
+    }
   }
 
 void

@@ -260,13 +260,12 @@ prelex() {
   while( is_cdf_token(token) ) {
 
     if( ! run_cdf(token) ) {
-      dbgmsg( ">>CDF parser failed" );
-      return NO_CONDITION;
+      dbgmsg( ">>CDF parser failed, ydfchar %d", ydfchar );
     }
     // Return the CDF's discarded lookahead token, if extant.
     token = ydfchar > 0? ydfchar : next_token();
     if( token == NO_CONDITION && parsing.at_eof() ) {
-      return token = YYEOF;
+      return YYEOF;
     }
 
     // Reenter cdf parser only if next token could affect parsing state.
@@ -375,7 +374,7 @@ yylex(void) {
     token = prelex();
     if( yy_flex_debug ) {
       if( parsing.in_cdf() ) {
-        dbgmsg( "%s:%d: %s routing %s to CDF parser", __func__, __LINE__,
+        dbgmsg( "%s:%d: <%s> routing %s to CDF parser", __func__, __LINE__,
                start_condition_is(), keyword_str(token) );
       } else if( !parsing.on() ) {
         dbgmsg( "eating %s because conditional compilation is FALSE",

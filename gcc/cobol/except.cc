@@ -51,7 +51,7 @@ static const ec_descr_t *
 ec_type_descr( ec_type_t type ) {
   auto p = std::find( __gg__exception_table, __gg__exception_table_end, type );
   if( p == __gg__exception_table_end ) {
-    cbl_internal_error("no such exception: 0x%04x", type);
+    cbl_internal_error("no such exception: 0x%x", type);
   }
   return p;
 }

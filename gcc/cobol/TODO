@@ -1,0 +1,33 @@
+Below is listed work to be done, hopefully all of it in 2025 for
+GCC 16. They are vaguely in priority order, in that addressing more
+technical issues may illuminate ways to attack more amorphous ones.
+
+Portability:
+    - host/target, for cross-compilation
+    - OS portability, BSD, macOS, Solaris
+    - 64-bit portability, LE
+    - 64-bit portability, BE
+    - 2025 goal: Compile & run on primary & secondary GCC 15 platforms
+                 https://www.gnu.org/software/gcc/gcc-15/criteria.html
+
+Correctness:
+    - LTO ODR, PR 119215 
+    - cppcheck
+    - valgrind
+    - -static produces dynamic
+
+Efficiency:
+    - Code size for MOVE 'a' TO FOO(1,1)
+    - EC checking
+
+COBOL Features:
+    - XML, JSON
+    - MF system functions
+    - National characters (and Unicode, for IBM)
+    - GLOBAL and PERFORM declaratives
+    - dialect feature names (to enable and enumerate)
+
+GCC features:
+    - make check-nist
+    - -Werror, -Wno-<foo>
+    - -fEC-ALL, -fno-EC-I-O
