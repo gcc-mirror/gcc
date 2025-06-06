@@ -1,3 +1,24 @@
+2025-06-05  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119975
+	* configure.ac: AC_CHECK_LIB(rt, clock_gettime).
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* gfileio.cc: Remove in-line cppcheck-suppress.
+	* intrinsic.cc (timespec_to_string): Use guarded clock_gettime().
+	(__gg__current_date): Likewise.
+	(__gg__seconds_past_midnight): Likewise.
+	(__gg__formatted_current_date): Likewise.
+	(__gg__random): Likewise.
+	(__gg__random_next): Likewise.
+	(__gg__when_compiled): Likewise.
+	* libgcobol.cc (cobol_time): Likewise.
+	(get_time_nanoseconds): Likewise.
+	(__gg__clock_gettime): Likewise.
+	(__gg__get_date_hhmmssff): Likewise.
+	* libgcobol.h (__gg__clock_gettime): Likewise.
+	(struct cbl_timespec): Likewise.
+
 2025-06-04  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119323

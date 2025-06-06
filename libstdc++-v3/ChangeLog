@@ -1,3 +1,67 @@
+2025-06-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120548
+	* include/std/format (__formatter_fp::_M_localize): Do not
+	include a leading sign character in the string to be grouped.
+	* testsuite/std/format/functions/format.cc: Check grouping when
+	sign is present in the output.
+
+2025-06-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119152
+	* src/c++23/std.cc.in (std::indirect, pmr::indirect)
+	[__cpp_lib_indirect]
+	(std::polymorphic, pmr::polymorphic) [__cpp_lib_polymorphic]: Export.
+
+2025-06-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/120481
+	* include/bits/chrono_io.h (__format::_S_chars): Reorder so it
+	contains "-{}".
+	(__format::_S_colon, __format::_S_slash, __format::_S_space)
+	(__format::_S_plus_minus): Updated starting indicies.
+	(__format::_S_minus_empty_spec): Define.
+	(__formatter_chrono::_M_C_y_Y, __formatter_chrono::_M_R_T):
+	Rework implementation.
+	(__formatter_chrono::_M_d_e, __formatter_chrono::_M_F)
+	(__formatter_chrono::_M_m, __formatter_chrono::_M_u_w)
+	(__formatter_chrono::_M_H_I, __formatter_chrono::_M_p):
+	Handle multi digits values.
+	(__formatter_chrono::_S_digit): Return string view.
+	(__formatter_chrono::_S_str_d1, __formatter_chrono::_S_str_d2)
+	(__formatter_chrono::_S_fill_two_digits): Define.
+	* testsuite/std/time/format/empty_spec.cc: Update test for
+	year_month_day, that uses '%F'.
+	* testsuite/std/time/format/pr120481.cc: New test.
+
+2025-06-05  Nathan Myers  <ncm@cantrip.org>
+
+	Revert:
+	2025-06-04  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/119741
+	* include/std/sstream: full implementation, really just
+	decls, requires clause and plumbing.
+	* include/bits/version.def, include/bits/version.h:
+	new preprocessor symbol
+	__cpp_lib_sstream_from_string_view.
+	* testsuite/27_io/basic_stringbuf/cons/char/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_istringstream/cons/char/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_ostringstream/cons/char/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_stringstream/cons/char/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_istringstream/cons/wchar_t/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_ostringstream/cons/wchar_t/string_view.cc:
+	New tests.
+	* testsuite/27_io/basic_stringstream/cons/wchar_t/string_view.cc:
+	New tests.
+
 2025-06-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/std/time/format/empty_spec.cc: Only test time zones

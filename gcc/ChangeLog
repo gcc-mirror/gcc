@@ -1,3 +1,184 @@
+2025-06-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Avoid
+	zicond in some cases involving sign bit tests.
+	* config/riscv/riscv.md: Split a splat of the sign bit feeding a
+	masking off high bits into a pair of right shifts.
+
+2025-06-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/120553
+	* config/i386/i386.md (mov<mode>cc): Use "general_operand"
+	predicate for operands 2 and 3 for all modes.
+
+2025-06-05  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Update a link to c99status.html.
+	* doc/standards.texi: Likewise.
+
+2025-06-05  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-ccp.cc (insert_clobber_before_stack_restore): Update the virtual
+	op on the inserted clobber and the stack restore function.
+	(do_ssa_ccp): Don't add TODO_update_ssa to the todo.
+
+2025-06-05  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc: Include value-range.h and tree-ssanames.h
+	(gimple_folder::convert_and_fold): Use make_ssa_name
+	instead of create_tmp_var for the temporary. Add comment about callback argument.
+
+2025-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120231
+	* range-op.cc (range_op_table::range_op_table): Register op_cast
+	also for FLOAT_EXPR and FIX_TRUNC_EXPR.
+	(RO_III): Adjust comment.
+	(range_op_handler::op1_range): Handle RO_IFI rather than RO_IFF.
+	Don't handle RO_FII.
+	(range_operator::op1_range): Remove overload with
+	irange &, tree, const frange &, const frange &, relation_trio
+	and frange &, tree, const irange &, const irange &, relation_trio
+	arguments.  Add overload with
+	irange &, tree, const frange &, const irange &, relation_trio
+	arguments.
+	* range-op-mixed.h (operator_cast::op1_range): Remove overload with
+	irange &, tree, const frange &, const frange &, relation_trio
+	and frange &, tree, const irange &, const irange &, relation_trio
+	arguments.  Add overload with
+	irange &, tree, const frange &, const irange &, relation_trio and
+	frange &, tree, const irange &, const frange &, relation_trio
+	arguments.
+	* range-op.h (range_operator::op1_cast): Remove overload with
+	irange &, tree, const frange &, const frange &, relation_trio
+	and frange &, tree, const irange &, const irange &, relation_trio
+	arguments.  Add overload with
+	irange &, tree, const frange &, const irange &, relation_trio
+	arguments.
+	* range-op-float.cc (operator_cast::fold_range): Implement
+	float to int and int to float casts.
+	(operator_cast::op1_range): Remove overload with
+	irange &, tree, const frange &, const frange &, relation_trio
+	and frange &, tree, const irange &, const irange &, relation_trio
+	arguments.  Add overload with
+	irange &, tree, const frange &, const irange &, relation_trio and
+	frange &, tree, const irange &, const frange &, relation_trio
+	arguments and implement reverse op of float to int and int to float
+	cast there.
+
+2025-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (afdo_calculate_branch_prob): Fix typo
+	in previous patch.
+
+2025-06-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc: Remove structured binding
+	from the code.
+
+2025-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120547
+	* real.cc (real_from_integer): Remove maxbitlen variable, use
+	len instead of that.  When shifting right, or in 1 if any of the
+	shifted away bits are non-zero.  Formatting fix.
+
+2025-06-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (update_count_by_afdo_count): Fix handling
+	of GUESSED_LOCAL.
+	(afdo_calculate_branch_prob): Preserve static profile for
+	probabilities 0 and 1.
+
+2025-06-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md: Leverage vdup_v and v_vdup
+	binary op for different patterns.
+	* config/riscv/vector-iterators.md: Add vdup_v and v_vdup
+	binary op iterators.
+
+2025-06-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/zicond.md: Add new splitters to select
+	1, -1 or -1, 1 based on a sign bit test.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension definition.
+	* config/riscv/riscv-ext.opt: New extension mask.
+	* doc/riscv-ext.texi: Document the new extension.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension definition.
+	* config/riscv/riscv-ext.opt: New extension mask.
+	* doc/riscv-ext.texi: Document the new extension.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension definition.
+	* config/riscv/riscv-ext.opt: New extension mask.
+	* doc/riscv-ext.texi: Document the new extension.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension definition.
+	* config/riscv/riscv-ext.opt: New extension mask.
+	* doc/riscv-ext.texi: Document the new extension.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension definition.
+	* config/riscv/riscv-ext.opt: New extension mask.
+	* doc/riscv-ext.texi: Document the new extension.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension definition.
+	* config/riscv/riscv-ext.opt: New extension mask.
+	* doc/riscv-ext.texi: Document the new extension.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: New extension definition.
+	* config/riscv/riscv-ext.opt: New extension mask.
+	* doc/riscv-ext.texi: Document the new extension.
+
+2025-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vect-data-refs.cc (vect_can_force_dr_alignment_p): Return
+	false if the variable has no symtab node.
+
+2025-06-05  Spencer Abson  <spencer.abson@arm.com>
+
+	* tree-eh.cc (operation_could_trap_helper_p): Cover FIX_TRUNC
+	expressions explicitly.
+
+2025-06-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config.gcc (--with-{arch,tune}): Use .def file to validate gcn
+	processor names.
+	* doc/install.texi (amdgcn*-*-*): Update list of devices supported
+	by --with-arch/--with-tune.
+
+2025-06-05  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR middle-end/112824
+	* tree-sra.cc (sra_get_max_scalarization_size): Use MOVE_MAX
+	instead of UNITS_PER_WORD to define max_scalarization_size.
+
+2025-06-05  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/sse.md
+	(avx512f_movddup512<mask_name>): Change sselog1 to ssemov.
+	(avx_movddup256<mask_name>): Ditto.
+	(*vec_dupv2di): Change alternative 4's type attribute from sselog1
+	to ssemov.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-ext.def: Update declaration.
+
 2025-06-04  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* auto-profile.cc (autofdo_source_profile::read): Dump message

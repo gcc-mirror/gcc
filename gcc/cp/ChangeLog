@@ -1,3 +1,37 @@
+2025-06-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120224
+	* pt.cc (tsubst_function_decl): Return error_mark_node if
+	substituting into the formal parameter list failed.
+	(tsubst_decl) <case PARM_DECL>: Return error_mark_node
+	upon TREE_TYPE substitution failure, when in a SFINAE
+	context.  Return error_mark_node upon DECL_CHAIN substitution
+	failure.
+
+2025-06-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118340
+	* constexpr.cc (maybe_constant_value): First try looking up each
+	operand in the cv_cache and reusing the result.
+
+2025-06-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (analyze_fn_parms): Move from free function..
+	(cp_coroutine_transform::analyze_fn_parms):... to method.
+	(cp_coroutine_transform::apply_transforms): Adjust call to
+	analyze_fn_parms.
+	* coroutines.h: Declare analyze_fn_parms.
+
+2025-06-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (expand_one_await_expression): Set the
+	initial_await_resume_called flag here.
+	(build_actor_fn): Populate the frame accessor for the
+	initial_await_resume_called flag.
+	(cp_coroutine_transform::wrap_original_function_body): Do
+	not modify the initial_await expression to include the
+	initial_await_resume_called flag here.
+
 2025-06-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120502

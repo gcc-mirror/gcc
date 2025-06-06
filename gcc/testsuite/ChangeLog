@@ -1,3 +1,89 @@
+2025-06-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/nozicond-3.c: New test.
+
+2025-06-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/120553
+	* gcc.target/i386/pr120553.c: New test.
+
+2025-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120231
+	* gcc.dg/tree-ssa/pr120231-2.c: New test.
+	* gcc.dg/tree-ssa/pr120231-3.c: New test.
+	* gfortran.dg/inline_matmul_16.f90: Don't expect any _gfortran_matmul
+	strings in optimized dump.
+	* gfortran.dg/inline_matmul_26.f90: New test.
+	* g++.dg/tree-ssa/loop-split-1.C (d): New variable.
+	(main): Use std::log (i + d) instead of std::log (i).
+
+2025-06-05  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/89606
+	* gcc.target/aarch64/vld2-1.c: New test.
+
+2025-06-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120224
+	* g++.dg/cpp0x/alias-decl-80.C: New test.
+
+2025-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120547
+	* gcc.dg/bitint-123.c: New test.
+
+2025-06-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/nozicond-1.c: New test.
+	* gcc.target/riscv/nozicond-2.c: New test.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-ssu64xl.c: New test.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-sstvecd.c: New test.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-sstvala.c: New test.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-sscounterenw.c: New test.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-ssccptr.c: New test.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-smrnmi.c: New test.
+
+2025-06-05  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-smcsrind.c: New test.
+
+2025-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/opt7.ads: New test.
+	* gnat.dg/specs/opt7_pkg.ads: New helper.
+	* gnat.dg/specs/opt7_pkg.adb: Likewise.
+
+2025-06-05  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/sve/pr96357.c: Change to avoid producing
+	a conditional FIX_TRUNC_EXPR, whilst still reproducing the bug
+	in PR96357.
+	* gcc.dg/tree-ssa/ifcvt-fix-trunc-1.c: New test.
+	* gcc.dg/tree-ssa/ifcvt-fix-trunc-2.c: Likewise.
+
+2025-06-05  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* g++.target/i386/pr112824-2.C: New test.
+
 2025-06-04  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* gcc.dg/tree-prof/clone-merge-1.c: New test.
