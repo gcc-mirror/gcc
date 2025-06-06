@@ -3302,8 +3302,10 @@ typedef struct
   int flag_init_logical;
   int flag_init_character;
   char flag_init_character_value;
-  bool disable_omp_is_initial_device;
-  bool disable_acc_on_device;
+  bool disable_omp_is_initial_device:1;
+  bool disable_omp_get_initial_device:1;
+  bool disable_omp_get_num_devices:1;
+  bool disable_acc_on_device:1;
 
   int fpe;
   int fpe_summary;
