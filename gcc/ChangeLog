@@ -1,3 +1,8 @@
+2025-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vect-data-refs.cc (vect_can_force_dr_alignment_p): Return
+	false if the variable has no symtab node.
+
 2025-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

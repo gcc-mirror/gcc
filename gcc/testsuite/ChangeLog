@@ -1,3 +1,9 @@
+2025-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/opt7.ads: New test.
+	* gnat.dg/specs/opt7_pkg.ads: New helper.
+	* gnat.dg/specs/opt7_pkg.adb: Likewise.
+
 2025-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120123
