@@ -344,6 +344,10 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
     return 1;
   if (!in.m_val)
     return m_val * 4;
+  /* Auto-FDO 0 really just means that we have no samples.
+     Treat it as small non-zero frequency.  */
+  if (!m_val && quality () == AFDO)
+    return (sreal)1 / (sreal)in.m_val;
   return (sreal)m_val / (sreal)in.m_val;
 }
 
@@ -398,7 +402,7 @@ profile_count::combine_with_ipa_count (profile_count ipa)
   return this->global0adjusted ();
 }
 
-/* Sae as profile_count::combine_with_ipa_count but within function with count
+/* Same as profile_count::combine_with_ipa_count but within function with count
    IPA2.  */
 profile_count
 profile_count::combine_with_ipa_count_within (profile_count ipa,
@@ -410,7 +414,16 @@ profile_count::combine_with_ipa_count_within (profile_count ipa,
   if (ipa2.ipa () == ipa2 && ipa.initialized_p ())
     ret = ipa;
   else
-    ret = combine_with_ipa_count (ipa);
+    {
+      /* For inconsistent profiles we may end up having ipa2 of GLOBAL0
+	 while ipa is non-zero (i.e. non-zero IPA counters within function
+	 executed 0 times).  Be sure we produce GLOBAL0 as well
+	 so counters remain compatible.  */
+      if (ipa.nonzero_p ()
+	  && ipa2.ipa ().initialized_p ())
+	ipa = ipa2.ipa ();
+      ret = combine_with_ipa_count (ipa);
+    }
   gcc_checking_assert (ret.compatible_p (ipa2));
   return ret;
 }
