@@ -1,3 +1,91 @@
+2025-06-05  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch7.adb (Process_Object_Declaration): Avoid generating
+	duplicate names for master nodes.
+
+2025-06-05  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb
+	(Side_Effect_Free_Statements): Return False if the statement list
+	includes an explicit (i.e. Comes_From_Source) raise statement.
+
+2025-06-05  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_ch4.adb (Tagged_Membership): Fix for protected types.
+
+2025-06-05  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_attr.adb (Interunit_Ref_OK): Tweak categorization of compilation
+	units.
+
+2025-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Two_Pass_Aggr_Code): New function containing
+	most of the code initially present in Two_Pass_Aggregate_Expansion.
+	(Two_Pass_Aggregate_Expansion): Remove redundant N parameter.
+	Implement built-in-place expansion for (static) object declarations
+	and allocators, using Build_Two_Pass_Aggr_Code for the main work.
+	(Expand_Array_Aggregate): Adjust Two_Pass_Aggregate_Expansion call.
+	Replace Etype (N) by Typ in a couple of places.
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Remove special case for
+	two-pass array aggregates.
+	(Expand_N_Object_Declaration): Do not adjust the object when it is
+	initialized by a two-pass array aggregate.
+	* exp_ch4.adb (Expand_Allocator_Expression): Apply the processing
+	used for container aggregates to two-pass array aggregates.
+	* exp_ch6.adb (Validate_Subprogram_Calls): Skip calls present in
+	initialization expressions of N_Object_Declaration nodes that have
+	No_Initialization set.
+	* sem_ch3.adb (Analyze_Object_Declaration): Detect the cases of an
+	array originally initialized by an aggregate consistently.
+
+2025-06-05  Viljar Indus  <indus@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst: Update the
+	documentation for Valid_Value.
+	* sem_attr.adb (Analyze_Attribute): Reject types where
+	the root type originates from Standard.
+	* gnat_rm.texi: Regenerate.
+
+2025-06-05  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Two_Pass_Aggregate_Expansion): Change call to Make_Assignment
+	for the indexed aggregate object to call Change_Make_OK_Assignment instead.
+
+2025-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Remove obsolete comment.
+	(Make_Build_In_Place_Call_In_Anonymous_Context): Always use a proper
+	object declaration initialized with the function call in the cases
+	where a temporary is needed, with Assignment_OK set on it.
+	* sem_util.adb (Entity_Of): Deal with rewritten function call first.
+
+2025-06-05  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): When accessing the
+	maps declared in package Cached_Attribute_Ops, the key value
+	passed to Get or to Set should never be the entity node for a
+	subtype. Use the entity of the corresponding type declaration
+	instead.
+
+2025-06-05  Steve Baird  <baird@adacore.com>
+
+	* sem_res.adb
+	(Set_Mixed_Mode_Operand): If we are about to call Resolve
+	passing in Any_Fixed as the expected type, then instead pass in
+	the fixed point type of the other operand (i.e., B_Typ).
+
+2025-06-05  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Check_Function_Writable_Actuals): Add handling for
+	N_Iterated_Component_Association and N_Iterated_Element_Association.
+	Fix a typo in an RM reference (6.4.1(20/3) => 6.4.1(6.20/3)).
+	(Collect_Expression_Ids): New procedure factoring code for collecting
+	identifiers from expressions of aggregate associations.
+	(Handle_Association_Choices): New procedure factoring code for handling
+	id collection for expressions of aggregate associations with multiple
+	choices. Removed redundant test of Box_Present from original code.
+
 2025-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/120104
