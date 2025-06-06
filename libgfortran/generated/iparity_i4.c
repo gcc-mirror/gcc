@@ -29,13 +29,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_INTEGER_4) && defined (HAVE_GFC_INTEGER_4)
 
 
-extern void iparity_i4 (gfc_array_i4 * const restrict, 
+extern void iparity_i4 (gfc_array_i4 * const restrict,
 	gfc_array_i4 * const restrict, const index_type * const restrict);
 export_proto(iparity_i4);
 
 void
-iparity_i4 (gfc_array_i4 * const restrict retarray, 
-	gfc_array_i4 * const restrict array, 
+iparity_i4 (gfc_array_i4 * const restrict retarray,
+	gfc_array_i4 * const restrict array,
 	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -188,15 +188,15 @@ iparity_i4 (gfc_array_i4 * const restrict retarray,
 }
 
 
-extern void miparity_i4 (gfc_array_i4 * const restrict, 
+extern void miparity_i4 (gfc_array_i4 * const restrict,
 	gfc_array_i4 * const restrict, const index_type * const restrict,
 	gfc_array_l1 * const restrict);
 export_proto(miparity_i4);
 
 void
-miparity_i4 (gfc_array_i4 * const restrict retarray, 
-	gfc_array_i4 * const restrict array, 
-	const index_type * const restrict pdim, 
+miparity_i4 (gfc_array_i4 * const restrict retarray,
+	gfc_array_i4 * const restrict array,
+	const index_type * const restrict pdim,
 	gfc_array_l1 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -378,15 +378,15 @@ miparity_i4 (gfc_array_i4 * const restrict retarray,
 }
 
 
-extern void siparity_i4 (gfc_array_i4 * const restrict, 
+extern void siparity_i4 (gfc_array_i4 * const restrict,
 	gfc_array_i4 * const restrict, const index_type * const restrict,
 	GFC_LOGICAL_4 *);
 export_proto(siparity_i4);
 
 void
-siparity_i4 (gfc_array_i4 * const restrict retarray, 
-	gfc_array_i4 * const restrict array, 
-	const index_type * const restrict pdim, 
+siparity_i4 (gfc_array_i4 * const restrict retarray,
+	gfc_array_i4 * const restrict array,
+	const index_type * const restrict pdim,
 	GFC_LOGICAL_4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];

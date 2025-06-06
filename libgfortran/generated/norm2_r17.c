@@ -38,13 +38,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 
-extern void norm2_r17 (gfc_array_r17 * const restrict, 
+extern void norm2_r17 (gfc_array_r17 * const restrict,
 	gfc_array_r17 * const restrict, const index_type * const restrict);
 export_proto(norm2_r17);
 
 void
-norm2_r17 (gfc_array_r17 * const restrict retarray, 
-	gfc_array_r17 * const restrict array, 
+norm2_r17 (gfc_array_r17 * const restrict retarray,
+	gfc_array_r17 * const restrict array,
 	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];

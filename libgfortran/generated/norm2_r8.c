@@ -32,13 +32,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MATHFUNC(funcname) funcname
 
 
-extern void norm2_r8 (gfc_array_r8 * const restrict, 
+extern void norm2_r8 (gfc_array_r8 * const restrict,
 	gfc_array_r8 * const restrict, const index_type * const restrict);
 export_proto(norm2_r8);
 
 void
-norm2_r8 (gfc_array_r8 * const restrict retarray, 
-	gfc_array_r8 * const restrict array, 
+norm2_r8 (gfc_array_r8 * const restrict retarray,
+	gfc_array_r8 * const restrict array,
 	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];

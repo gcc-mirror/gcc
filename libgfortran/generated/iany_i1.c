@@ -29,13 +29,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_INTEGER_1) && defined (HAVE_GFC_INTEGER_1)
 
 
-extern void iany_i1 (gfc_array_i1 * const restrict, 
+extern void iany_i1 (gfc_array_i1 * const restrict,
 	gfc_array_i1 * const restrict, const index_type * const restrict);
 export_proto(iany_i1);
 
 void
-iany_i1 (gfc_array_i1 * const restrict retarray, 
-	gfc_array_i1 * const restrict array, 
+iany_i1 (gfc_array_i1 * const restrict retarray,
+	gfc_array_i1 * const restrict array,
 	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -188,15 +188,15 @@ iany_i1 (gfc_array_i1 * const restrict retarray,
 }
 
 
-extern void miany_i1 (gfc_array_i1 * const restrict, 
+extern void miany_i1 (gfc_array_i1 * const restrict,
 	gfc_array_i1 * const restrict, const index_type * const restrict,
 	gfc_array_l1 * const restrict);
 export_proto(miany_i1);
 
 void
-miany_i1 (gfc_array_i1 * const restrict retarray, 
-	gfc_array_i1 * const restrict array, 
-	const index_type * const restrict pdim, 
+miany_i1 (gfc_array_i1 * const restrict retarray,
+	gfc_array_i1 * const restrict array,
+	const index_type * const restrict pdim,
 	gfc_array_l1 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -378,15 +378,15 @@ miany_i1 (gfc_array_i1 * const restrict retarray,
 }
 
 
-extern void siany_i1 (gfc_array_i1 * const restrict, 
+extern void siany_i1 (gfc_array_i1 * const restrict,
 	gfc_array_i1 * const restrict, const index_type * const restrict,
 	GFC_LOGICAL_4 *);
 export_proto(siany_i1);
 
 void
-siany_i1 (gfc_array_i1 * const restrict retarray, 
-	gfc_array_i1 * const restrict array, 
-	const index_type * const restrict pdim, 
+siany_i1 (gfc_array_i1 * const restrict retarray,
+	gfc_array_i1 * const restrict array,
+	const index_type * const restrict pdim,
 	GFC_LOGICAL_4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];

@@ -29,13 +29,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_INTEGER_16) && defined (HAVE_GFC_INTEGER_16)
 
 
-extern void maxval_i16 (gfc_array_i16 * const restrict, 
+extern void maxval_i16 (gfc_array_i16 * const restrict,
 	gfc_array_i16 * const restrict, const index_type * const restrict);
 export_proto(maxval_i16);
 
 void
-maxval_i16 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict array, 
+maxval_i16 (gfc_array_i16 * const restrict retarray,
+	gfc_array_i16 * const restrict array,
 	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -202,15 +202,15 @@ maxval_i16 (gfc_array_i16 * const restrict retarray,
 }
 
 
-extern void mmaxval_i16 (gfc_array_i16 * const restrict, 
+extern void mmaxval_i16 (gfc_array_i16 * const restrict,
 	gfc_array_i16 * const restrict, const index_type * const restrict,
 	gfc_array_l1 * const restrict);
 export_proto(mmaxval_i16);
 
 void
-mmaxval_i16 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict array, 
-	const index_type * const restrict pdim, 
+mmaxval_i16 (gfc_array_i16 * const restrict retarray,
+	gfc_array_i16 * const restrict array,
+	const index_type * const restrict pdim,
 	gfc_array_l1 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -420,15 +420,15 @@ mmaxval_i16 (gfc_array_i16 * const restrict retarray,
 }
 
 
-extern void smaxval_i16 (gfc_array_i16 * const restrict, 
+extern void smaxval_i16 (gfc_array_i16 * const restrict,
 	gfc_array_i16 * const restrict, const index_type * const restrict,
 	GFC_LOGICAL_4 *);
 export_proto(smaxval_i16);
 
 void
-smaxval_i16 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict array, 
-	const index_type * const restrict pdim, 
+smaxval_i16 (gfc_array_i16 * const restrict retarray,
+	gfc_array_i16 * const restrict array,
+	const index_type * const restrict pdim,
 	GFC_LOGICAL_4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
