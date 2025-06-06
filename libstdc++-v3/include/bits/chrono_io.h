@@ -2944,9 +2944,14 @@ namespace __detail
     basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os, const sys_info& __i)
     {
-      __os << '[' << __i.begin << ',' << __i.end
-	   << ',' << hh_mm_ss(__i.offset) << ',' << __i.save
-	   << ',' << __i.abbrev << ']';
+      // n.b. only decimal separator is locale dependent for specifiers
+      // used below, as sys_info uses seconds and minutes duration, the
+      // output is locale-independent.
+      constexpr auto* __fs 
+	= _GLIBCXX_WIDEN("[{0:%F %T},{1:%F %T},{2:%T},{3:%Q%q},{0:%Z}]");
+      local_seconds __lb(__i.begin.time_since_epoch());
+      __os << std::format(__fs, local_time_format(__lb, &__i.abbrev),
+			  __i.end, __i.offset, __i.save);
       return __os;
     }
 
@@ -2955,19 +2960,19 @@ namespace __detail
     basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os, const local_info& __li)
     {
-      __os << '[';
+      __os << __format::_Separators<_CharT>::_S_squares()[0];
       if (__li.result == local_info::unique)
 	__os << __li.first;
       else
 	{
 	  if (__li.result == local_info::nonexistent)
-	    __os << "nonexistent";
+	    __os << _GLIBCXX_WIDEN("nonexistent");
 	  else
-	    __os << "ambiguous";
-	  __os << " local time between " << __li.first;
-	  __os << " and " << __li.second;
+	    __os << _GLIBCXX_WIDEN("ambiguous");
+	  __os << _GLIBCXX_WIDEN(" local time between ") << __li.first;
+	  __os << _GLIBCXX_WIDEN(" and ") << __li.second;
 	}
-      __os << ']';
+      __os << __format::_Separators<_CharT>::_S_squares()[1];
       return __os;
     }
 

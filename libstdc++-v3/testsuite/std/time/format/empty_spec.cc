@@ -1,6 +1,6 @@
 // { dg-do run { target c++20 } }
 // { dg-require-effective-target hosted }
-// { dg-timeout-factor 4 }
+// { dg-timeout-factor 5 }
 
 #include <chrono>
 #include <ranges>
@@ -842,14 +842,14 @@ test_all()
   test_durations<CharT>();
   test_calendar<CharT>();
   test_time_points<CharT>();
+#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
+  test_infos<CharT>();
+#endif
 }
 
 int main()
 {
   test_all<char>();
-#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
-  test_infos<char>();
-#endif
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   test_all<wchar_t>();
