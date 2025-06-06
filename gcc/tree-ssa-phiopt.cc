@@ -3708,10 +3708,11 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 }
 
 /* Return the single store in BB with VDEF or NULL if there are
-   other stores in the BB or loads following the store.  */
+   other stores in the BB or loads following the store. VPHI is
+   where the only use of the vdef should be.  */
 
 static gimple *
-single_trailing_store_in_bb (basic_block bb, tree vdef)
+single_trailing_store_in_bb (basic_block bb, tree vdef, gphi *vphi)
 {
   if (SSA_NAME_IS_DEFAULT_DEF (vdef))
     return NULL;
@@ -3726,13 +3727,14 @@ single_trailing_store_in_bb (basic_block bb, tree vdef)
       && gimple_code (SSA_NAME_DEF_STMT (gimple_vuse (store))) != GIMPLE_PHI)
     return NULL;
 
-  /* Verify there is no load or store after the store.  */
+  /* Verify there is no load or store after the store, the vdef of the store
+     should only be used by the vphi joining the 2 bbs.  */
   use_operand_p use_p;
-  imm_use_iterator imm_iter;
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_vdef (store))
-    if (USE_STMT (use_p) != store
-	&& gimple_bb (USE_STMT (use_p)) == bb)
-      return NULL;
+  gimple *use_stmt;
+  if (!single_imm_use (gimple_vdef (store), &use_p, &use_stmt))
+    return NULL;
+  if (use_stmt != vphi)
+    return NULL;
 
   return store;
 }
@@ -3778,10 +3780,10 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
     return false;
   tree then_vdef = PHI_ARG_DEF_FROM_EDGE (vphi, single_succ_edge (then_bb));
   tree else_vdef = PHI_ARG_DEF_FROM_EDGE (vphi, single_succ_edge (else_bb));
-  gimple *then_assign = single_trailing_store_in_bb (then_bb, then_vdef);
+  gimple *then_assign = single_trailing_store_in_bb (then_bb, then_vdef, vphi);
   if (then_assign)
     {
-      gimple *else_assign = single_trailing_store_in_bb (else_bb, else_vdef);
+      gimple *else_assign = single_trailing_store_in_bb (else_bb, else_vdef, vphi);
       if (else_assign)
 	return cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
 						 then_assign, else_assign, vphi);
