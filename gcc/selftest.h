@@ -276,6 +276,7 @@ extern void typed_splay_tree_cc_tests ();
 extern void vec_cc_tests ();
 extern void vec_perm_indices_cc_tests ();
 extern void wide_int_cc_tests ();
+extern void xml_cc_tests ();
 
 extern int num_passes;
 
