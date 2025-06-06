@@ -1,7 +1,7 @@
 int
 main ()
 {
-  int i, n, n2;
+  int i, n;
   int data[] = {1,2};
   struct S {
     int **ptrset;
@@ -33,16 +33,17 @@ main ()
 
   i = 1;
   n = 0;
-  n2 = 2;
+  #pragma omp target enter data map(data)
   #pragma omp target enter data map(sptr1[:1], sptr1->ptrset[:3], sptr1->ptrset2[:3])
   #pragma omp target enter data map(sptr1->ptrset[i][:n], sptr1->ptrset2[i][:n])
 
-  #pragma omp target
+  #pragma omp target map(sptr1->ptrset[i][:n], sptr1->ptrset2[i][:n])
     if (sptr1->ptrset2[1][0] != 1 || sptr1->ptrset2[1][1] != 2)
       __builtin_abort ();
 
   #pragma omp target exit data map(sptr1->ptrset[i][:n], sptr1->ptrset2[i][:n])
   #pragma omp target exit data map(sptr1[:1], sptr1->ptrset[:3], sptr1->ptrset2[:3])
+  #pragma omp target exit data map(data)
 
   __builtin_free (s1.ptrset);
   __builtin_free (s1.ptrset2);
