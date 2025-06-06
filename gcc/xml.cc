@@ -128,11 +128,8 @@ void
 document::write_as_xml (pretty_printer *pp, int depth, bool indent) const
 {
   pp_string (pp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-  pp_string (pp, "<!DOCTYPE html\n"
-	     "     PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
-	     "     \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
-  if (indent)
-    pp_newline (pp);
+  if (m_doctypedecl)
+    m_doctypedecl->write_as_xml (pp, depth, indent);
   for (auto &iter : m_children)
     iter->write_as_xml (pp, depth, indent);
 }
@@ -284,6 +281,17 @@ printer::get_insertion_point () const
 namespace selftest {
 
 static void
+test_no_dtd ()
+{
+  xml::document doc;
+  pretty_printer pp;
+  doc.write_as_xml (&pp, 0, true);
+  ASSERT_STREQ
+    (pp_formatted_text (&pp),
+     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+}
+
+static void
 test_printer ()
 {
   xml::element top ("top", false);
@@ -349,6 +357,7 @@ test_attribute_ordering ()
 void
 xml_cc_tests ()
 {
+  test_no_dtd ();
   test_printer ();
   test_attribute_ordering ();
 }

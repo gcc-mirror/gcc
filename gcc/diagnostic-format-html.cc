@@ -319,6 +319,24 @@ const char * const HTML_SCRIPT
      "  });\n"
      "  highlight_current_focus_idx ();\n");
 
+struct html_doctypedecl : public xml::doctypedecl
+{
+  void write_as_xml (pretty_printer *pp,
+		     int depth, bool indent) const final override
+  {
+    if (indent)
+      {
+	for (int i = 0; i < depth; ++i)
+	  pp_string (pp, "  ");
+      }
+    pp_string (pp, "<!DOCTYPE html\n"
+	       "     PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
+	       "     \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
+    if (indent)
+      pp_newline (pp);
+  }
+};
+
 /* html_builder's ctor.  */
 
 html_builder::html_builder (diagnostic_context &context,
@@ -336,6 +354,7 @@ html_builder::html_builder (diagnostic_context &context,
   gcc_assert (m_line_maps);
 
   m_document = std::make_unique<xml::document> ();
+  m_document->m_doctypedecl = std::make_unique<html_doctypedecl> ();
   {
     auto html_element = std::make_unique<xml::element> ("html", false);
     html_element->set_attr ("xmlns",

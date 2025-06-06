@@ -29,6 +29,7 @@ struct node;
   struct node_with_children;
     struct document;
     struct element;
+  struct doctypedecl;
 
 struct node
 {
@@ -72,6 +73,13 @@ struct document : public node_with_children
 {
   void write_as_xml (pretty_printer *pp,
 		     int depth, bool indent) const final override;
+
+  std::unique_ptr<doctypedecl> m_doctypedecl;
+};
+
+struct doctypedecl : public node
+{
+  // still abstract
 };
 
 struct element : public node_with_children
