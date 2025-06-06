@@ -4042,7 +4042,7 @@
 ])
 
 (define_code_iterator any_int_binop_no_shift_v_vdup [
-  plus minus and ior xor mult div
+  plus minus and ior xor mult div udiv
 ])
 
 (define_code_iterator any_int_binop_no_shift_vdup_v [
