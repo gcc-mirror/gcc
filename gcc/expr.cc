@@ -7631,8 +7631,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	tree domain;
 	tree elttype = TREE_TYPE (type);
 	bool const_bounds_p;
-	HOST_WIDE_INT minelt = 0;
-	HOST_WIDE_INT maxelt = 0;
+	unsigned HOST_WIDE_INT minelt = 0;
+	unsigned HOST_WIDE_INT maxelt = 0;
 
 	/* The storage order is specified for every aggregate type.  */
 	reverse = TYPE_REVERSE_STORAGE_ORDER (type);
@@ -7640,14 +7640,14 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	domain = TYPE_DOMAIN (type);
 	const_bounds_p = (TYPE_MIN_VALUE (domain)
 			  && TYPE_MAX_VALUE (domain)
-			  && tree_fits_shwi_p (TYPE_MIN_VALUE (domain))
-			  && tree_fits_shwi_p (TYPE_MAX_VALUE (domain)));
+			  && tree_fits_uhwi_p (TYPE_MIN_VALUE (domain))
+			  && tree_fits_uhwi_p (TYPE_MAX_VALUE (domain)));
 
 	/* If we have constant bounds for the range of the type, get them.  */
 	if (const_bounds_p)
 	  {
-	    minelt = tree_to_shwi (TYPE_MIN_VALUE (domain));
-	    maxelt = tree_to_shwi (TYPE_MAX_VALUE (domain));
+	    minelt = tree_to_uhwi (TYPE_MIN_VALUE (domain));
+	    maxelt = tree_to_uhwi (TYPE_MAX_VALUE (domain));
 	  }
 
 	/* If the constructor has fewer elements than the array, clear
@@ -7660,7 +7660,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	else
 	  {
 	    unsigned HOST_WIDE_INT idx;
-	    HOST_WIDE_INT count = 0, zero_count = 0;
+	    unsigned HOST_WIDE_INT count = 0, zero_count = 0;
 	    need_to_clear = ! const_bounds_p;
 
 	    /* This loop is a more accurate version of the loop in
@@ -7668,7 +7668,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	       is also needed to check for missing elements.  */
 	    FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (exp), idx, index, value)
 	      {
-		HOST_WIDE_INT this_node_count;
+		unsigned HOST_WIDE_INT this_node_count;
 
 		if (need_to_clear)
 		  break;
@@ -7742,16 +7742,16 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	      {
 		tree lo_index = TREE_OPERAND (index, 0);
 		tree hi_index = TREE_OPERAND (index, 1);
-		rtx index_r, pos_rtx;
-		HOST_WIDE_INT lo, hi, count;
-		tree position;
+		rtx index_r;
+		unsigned HOST_WIDE_INT lo, hi, count;
+		tree offset;
 
 		/* If the range is constant and "small", unroll the loop.  */
 		if (const_bounds_p
-		    && tree_fits_shwi_p (lo_index)
-		    && tree_fits_shwi_p (hi_index)
-		    && (lo = tree_to_shwi (lo_index),
-			hi = tree_to_shwi (hi_index),
+		    && tree_fits_uhwi_p (lo_index)
+		    && tree_fits_uhwi_p (hi_index)
+		    && (lo = tree_to_uhwi (lo_index),
+			hi = tree_to_uhwi (hi_index),
 			count = hi - lo + 1,
 			(!MEM_P (target)
 			 || count <= 2
@@ -7762,7 +7762,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		    lo -= minelt;  hi -= minelt;
 		    for (; lo <= hi; lo++)
 		      {
-			bitpos = lo * tree_to_shwi (TYPE_SIZE (elttype));
+			bitpos = lo * tree_to_uhwi (TYPE_SIZE (elttype));
 
 			if (MEM_P (target)
 			    && !MEM_KEEP_ALIAS_SET_P (target)
@@ -7798,21 +7798,18 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		    emit_label (loop_start);
 
 		    /* Assign value to element index.  */
-		    position =
-		      fold_convert (ssizetype,
-				    fold_build2 (MINUS_EXPR,
-						 TREE_TYPE (index),
-						 index,
-						 TYPE_MIN_VALUE (domain)));
+		    offset = fold_build2 (MINUS_EXPR,
+					  TREE_TYPE (index),
+					  index,
+					  TYPE_MIN_VALUE (domain));
 
-		    position =
-			size_binop (MULT_EXPR, position,
-				    fold_convert (ssizetype,
-						  TYPE_SIZE_UNIT (elttype)));
+		    offset = size_binop (MULT_EXPR,
+					 fold_convert (sizetype, offset),
+					 TYPE_SIZE_UNIT (elttype));
 
-		    pos_rtx = expand_normal (position);
-		    xtarget = offset_address (target, pos_rtx,
-					      highest_pow2_factor (position));
+		    xtarget = offset_address (target,
+					      expand_normal (offset),
+					      highest_pow2_factor (offset));
 		    xtarget = adjust_address (xtarget, mode, 0);
 		    if (TREE_CODE (value) == CONSTRUCTOR)
 		      store_constructor (value, xtarget, cleared,
@@ -7840,35 +7837,32 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		    emit_label (loop_end);
 		  }
 	      }
-	    else if ((index != 0 && ! tree_fits_shwi_p (index))
-		     || ! tree_fits_uhwi_p (TYPE_SIZE (elttype)))
+	    else if ((index && !tree_fits_uhwi_p (index))
+		     || !tree_fits_uhwi_p (TYPE_SIZE (elttype)))
 	      {
-		tree position;
+		tree offset;
 
-		if (index == 0)
-		  index = ssize_int (1);
+		if (index)
+		  offset = fold_build2 (MINUS_EXPR,
+					TREE_TYPE (index),
+					index,
+					TYPE_MIN_VALUE (domain));
+		else
+		  offset = size_int (i);
 
-		if (minelt)
-		  index = fold_convert (ssizetype,
-					fold_build2 (MINUS_EXPR,
-						     TREE_TYPE (index),
-						     index,
-						     TYPE_MIN_VALUE (domain)));
-
-		position =
-		  size_binop (MULT_EXPR, index,
-			      fold_convert (ssizetype,
-					    TYPE_SIZE_UNIT (elttype)));
+		offset = size_binop (MULT_EXPR,
+				     fold_convert (sizetype, offset),
+				     TYPE_SIZE_UNIT (elttype));
 		xtarget = offset_address (target,
-					  expand_normal (position),
-					  highest_pow2_factor (position));
+					  expand_normal (offset),
+					  highest_pow2_factor (offset));
 		xtarget = adjust_address (xtarget, mode, 0);
 		store_expr (value, xtarget, 0, false, reverse);
 	      }
 	    else
 	      {
-		if (index != 0)
-		  bitpos = ((tree_to_shwi (index) - minelt)
+		if (index)
+		  bitpos = ((tree_to_uhwi (index) - minelt)
 			    * tree_to_uhwi (TYPE_SIZE (elttype)));
 		else
 		  bitpos = (i * tree_to_uhwi (TYPE_SIZE (elttype)));
