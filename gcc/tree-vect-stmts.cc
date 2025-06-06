@@ -2097,309 +2097,245 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
      known at compile time.  */
   gcc_assert (!STMT_VINFO_STRIDED_P (first_stmt_info) || gap == 0);
 
-  /* Stores can't yet have gaps.  */
-  gcc_assert (slp_node || vls_type == VLS_LOAD || gap == 0);
-
-  if (slp_node)
+  /* For SLP vectorization we directly vectorize a subchain
+     without permutation.  */
+  if (! SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
+    first_dr_info = STMT_VINFO_DR_INFO (SLP_TREE_SCALAR_STMTS (slp_node)[0]);
+  if (STMT_VINFO_STRIDED_P (first_stmt_info))
+    /* Try to use consecutive accesses of as many elements as possible,
+       separated by the stride, until we have a complete vector.
+       Fall back to scalar accesses if that isn't possible.  */
+    *memory_access_type = VMAT_STRIDED_SLP;
+  else
     {
-      /* For SLP vectorization we directly vectorize a subchain
-	 without permutation.  */
-      if (! SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
-	first_dr_info
-	  = STMT_VINFO_DR_INFO (SLP_TREE_SCALAR_STMTS (slp_node)[0]);
-      if (STMT_VINFO_STRIDED_P (first_stmt_info))
-	/* Try to use consecutive accesses of as many elements as possible,
-	   separated by the stride, until we have a complete vector.
-	   Fall back to scalar accesses if that isn't possible.  */
-	*memory_access_type = VMAT_STRIDED_SLP;
-      else
+      int cmp = compare_step_with_zero (vinfo, stmt_info);
+      if (cmp < 0)
 	{
-	  int cmp = compare_step_with_zero (vinfo, stmt_info);
-	  if (cmp < 0)
+	  if (single_element_p)
+	    /* ???  The VMAT_CONTIGUOUS_REVERSE code generation is
+	       only correct for single element "interleaving" SLP.  */
+	    *memory_access_type = get_negative_load_store_type
+		(vinfo, stmt_info, vectype, vls_type, 1,
+		 &neg_ldst_offset);
+	  else
 	    {
-	      if (single_element_p)
-		/* ???  The VMAT_CONTIGUOUS_REVERSE code generation is
-		   only correct for single element "interleaving" SLP.  */
-		*memory_access_type = get_negative_load_store_type
-			     (vinfo, stmt_info, vectype, vls_type, 1,
-			      &neg_ldst_offset);
+	      /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
+		 separated by the stride, until we have a complete vector.
+		 Fall back to scalar accesses if that isn't possible.  */
+	      if (multiple_p (nunits, group_size))
+		*memory_access_type = VMAT_STRIDED_SLP;
 	      else
-		{
-		  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
-		     separated by the stride, until we have a complete vector.
-		     Fall back to scalar accesses if that isn't possible.  */
-		  if (multiple_p (nunits, group_size))
-		    *memory_access_type = VMAT_STRIDED_SLP;
-		  else
-		    *memory_access_type = VMAT_ELEMENTWISE;
-		}
+		*memory_access_type = VMAT_ELEMENTWISE;
 	    }
-	  else if (cmp == 0 && loop_vinfo)
-	    {
-	      gcc_assert (vls_type == VLS_LOAD);
-	      *memory_access_type = VMAT_INVARIANT;
-	    }
-	  /* Try using LOAD/STORE_LANES.  */
-	  else if (slp_node->ldst_lanes
-		   && (*lanes_ifn
-			 = (vls_type == VLS_LOAD
-			    ? vect_load_lanes_supported (vectype, group_size,
-							 masked_p, elsvals)
-			    : vect_store_lanes_supported (vectype, group_size,
-							  masked_p))) != IFN_LAST)
-	    *memory_access_type = VMAT_LOAD_STORE_LANES;
-	  else if (!loop_vinfo && slp_node->avoid_stlf_fail)
+	}
+      else if (cmp == 0 && loop_vinfo)
+	{
+	  gcc_assert (vls_type == VLS_LOAD);
+	  *memory_access_type = VMAT_INVARIANT;
+	}
+      /* Try using LOAD/STORE_LANES.  */
+      else if (slp_node->ldst_lanes
+	       && (*lanes_ifn
+		   = (vls_type == VLS_LOAD
+		      ? vect_load_lanes_supported (vectype, group_size,
+						   masked_p, elsvals)
+		      : vect_store_lanes_supported (vectype, group_size,
+						    masked_p))) != IFN_LAST)
+	*memory_access_type = VMAT_LOAD_STORE_LANES;
+      else if (!loop_vinfo && slp_node->avoid_stlf_fail)
+	{
+	  *memory_access_type = VMAT_ELEMENTWISE;
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "using element-wise load to avoid disrupting "
+			     "cross iteration store-to-load forwarding\n");
+	}
+      else
+	*memory_access_type = VMAT_CONTIGUOUS;
+
+      /* If this is single-element interleaving with an element
+	 distance that leaves unused vector loads around fall back
+	 to elementwise access if possible - we otherwise least
+	 create very sub-optimal code in that case (and
+	 blow up memory, see PR65518).  */
+      if (loop_vinfo
+	  && single_element_p
+	  && (*memory_access_type == VMAT_CONTIGUOUS
+	      || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+	  && maybe_gt (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
+	{
+	  if (SLP_TREE_LANES (slp_node) == 1)
 	    {
 	      *memory_access_type = VMAT_ELEMENTWISE;
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "using element-wise load to avoid disrupting "
-				 "cross iteration store-to-load forwarding\n");
+				 "single-element interleaving not supported "
+				 "for not adjacent vector loads, using "
+				 "elementwise access\n");
 	    }
 	  else
-	    *memory_access_type = VMAT_CONTIGUOUS;
-
-	  /* If this is single-element interleaving with an element
-	     distance that leaves unused vector loads around fall back
-	     to elementwise access if possible - we otherwise least
-	     create very sub-optimal code in that case (and
-	     blow up memory, see PR65518).  */
-	  if (loop_vinfo
-	      && single_element_p
-	      && (*memory_access_type == VMAT_CONTIGUOUS
-		  || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
-	      && maybe_gt (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
 	    {
-	      if (SLP_TREE_LANES (slp_node) == 1)
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "single-element interleaving not supported "
+				 "for not adjacent vector loads\n");
+	      return false;
+	    }
+	}
+
+      /* For single-element interleaving also fall back to elementwise
+	 access in case we did not lower a permutation and cannot
+	 code generate it.  */
+      auto_vec<tree> temv;
+      unsigned n_perms;
+      if (loop_vinfo
+	  && single_element_p
+	  && SLP_TREE_LANES (slp_node) == 1
+	  && (*memory_access_type == VMAT_CONTIGUOUS
+	      || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+	  && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
+	  && !vect_transform_slp_perm_load
+	  (loop_vinfo, slp_node, temv, NULL,
+	   LOOP_VINFO_VECT_FACTOR (loop_vinfo), true, &n_perms))
+	{
+	  *memory_access_type = VMAT_ELEMENTWISE;
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "single-element interleaving permutation not "
+			     "supported, using elementwise access\n");
+	}
+
+      overrun_p = (loop_vinfo && gap != 0
+		   && *memory_access_type != VMAT_ELEMENTWISE);
+      if (overrun_p && vls_type != VLS_LOAD)
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "Grouped store with gaps requires"
+			   " non-consecutive accesses\n");
+	  return false;
+	}
+
+      unsigned HOST_WIDE_INT dr_size = vect_get_scalar_dr_size (first_dr_info);
+      poly_int64 off = 0;
+      if (*memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+	off = (TYPE_VECTOR_SUBPARTS (vectype) - 1) * -dr_size;
+
+      /* An overrun is fine if the trailing elements are smaller
+	 than the alignment boundary B.  Every vector access will
+	 be a multiple of B and so we are guaranteed to access a
+	 non-gap element in the same B-sized block.  */
+      if (overrun_p
+	  && gap < (vect_known_alignment_in_bytes (first_dr_info,
+						   vectype, off) / dr_size))
+	overrun_p = false;
+
+      /* When we have a contiguous access across loop iterations
+	 but the access in the loop doesn't cover the full vector
+	 we can end up with no gap recorded but still excess
+	 elements accessed, see PR103116.  Make sure we peel for
+	 gaps if necessary and sufficient and give up if not.
+
+	 If there is a combination of the access not covering the full
+	 vector and a gap recorded then we may need to peel twice.  */
+      bool large_vector_overrun_p = false;
+      if (loop_vinfo
+	  && (*memory_access_type == VMAT_CONTIGUOUS
+	      || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+	  && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
+	  && !multiple_p (group_size * LOOP_VINFO_VECT_FACTOR (loop_vinfo),
+			  nunits))
+	large_vector_overrun_p = overrun_p = true;
+
+      /* If the gap splits the vector in half and the target
+	 can do half-vector operations avoid the epilogue peeling
+	 by simply loading half of the vector only.  Usually
+	 the construction with an upper zero half will be elided.  */
+      dr_alignment_support alss;
+      int misalign = dr_misalignment (first_dr_info, vectype, off);
+      tree half_vtype;
+      poly_uint64 remain;
+      unsigned HOST_WIDE_INT tem, num;
+      if (overrun_p
+	  && !masked_p
+	  && *memory_access_type != VMAT_LOAD_STORE_LANES
+	  && (((alss = vect_supportable_dr_alignment (vinfo, first_dr_info,
+						      vectype, misalign)))
+	      == dr_aligned
+	      || alss == dr_unaligned_supported)
+	  && can_div_trunc_p (group_size
+			      * LOOP_VINFO_VECT_FACTOR (loop_vinfo) - gap,
+			      nunits, &tem, &remain)
+	  && (known_eq (remain, 0u)
+	      || (known_ne (remain, 0u)
+		  && constant_multiple_p (nunits, remain, &num)
+		  && (vector_vector_composition_type (vectype, num, &half_vtype)
+		      != NULL_TREE))))
+	overrun_p = false;
+
+      if (overrun_p && !can_overrun_p)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Peeling for outer loop is not supported\n");
+	  return false;
+	}
+
+      /* Peeling for gaps assumes that a single scalar iteration
+	 is enough to make sure the last vector iteration doesn't
+	 access excess elements.  */
+      if (overrun_p
+	  && (!can_div_trunc_p (group_size
+				* LOOP_VINFO_VECT_FACTOR (loop_vinfo) - gap,
+				nunits, &tem, &remain)
+	      || maybe_lt (remain + group_size, nunits)))
+	{
+	  /* But peeling a single scalar iteration is enough if
+	     we can use the next power-of-two sized partial
+	     access and that is sufficiently small to be covered
+	     by the single scalar iteration.  */
+	  unsigned HOST_WIDE_INT cnunits, cvf, cremain, cpart_size;
+	  if (masked_p
+	      || !nunits.is_constant (&cnunits)
+	      || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&cvf)
+	      || (((cremain = (group_size * cvf - gap) % cnunits), true)
+		  && ((cpart_size = (1 << ceil_log2 (cremain))), true)
+		  && (cremain + group_size < cpart_size
+		      || (vector_vector_composition_type (vectype,
+							 cnunits / cpart_size,
+							 &half_vtype)
+			  == NULL_TREE))))
+	    {
+	      /* If all fails we can still resort to niter masking unless
+		 the vectors used are too big, so enforce the use of
+		 partial vectors.  */
+	      if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+		  && !large_vector_overrun_p)
 		{
-		  *memory_access_type = VMAT_ELEMENTWISE;
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "single-element interleaving not supported "
-				     "for not adjacent vector loads, using "
-				     "elementwise access\n");
+				     "peeling for gaps insufficient for "
+				     "access unless using partial "
+				     "vectors\n");
+		  LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
 		}
 	      else
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "single-element interleaving not supported "
-				     "for not adjacent vector loads\n");
+				     "peeling for gaps insufficient for "
+				     "access\n");
 		  return false;
 		}
 	    }
-
-	  /* For single-element interleaving also fall back to elementwise
-	     access in case we did not lower a permutation and cannot
-	     code generate it.  */
-	  auto_vec<tree> temv;
-	  unsigned n_perms;
-	  if (loop_vinfo
-	      && single_element_p
-	      && SLP_TREE_LANES (slp_node) == 1
-	      && (*memory_access_type == VMAT_CONTIGUOUS
-		  || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
-	      && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
-	      && !vect_transform_slp_perm_load
-		    (loop_vinfo, slp_node, temv, NULL,
-		     LOOP_VINFO_VECT_FACTOR (loop_vinfo), true, &n_perms))
-	    {
-	      *memory_access_type = VMAT_ELEMENTWISE;
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "single-element interleaving permutation not "
-				 "supported, using elementwise access\n");
-	    }
-
-	  overrun_p = (loop_vinfo && gap != 0
-		       && *memory_access_type != VMAT_ELEMENTWISE);
-	  if (overrun_p && vls_type != VLS_LOAD)
-	    {
-	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			       "Grouped store with gaps requires"
-			       " non-consecutive accesses\n");
-	      return false;
-	    }
-
-	  unsigned HOST_WIDE_INT dr_size
-	    = vect_get_scalar_dr_size (first_dr_info);
-	  poly_int64 off = 0;
-	  if (*memory_access_type == VMAT_CONTIGUOUS_REVERSE)
-	    off = (TYPE_VECTOR_SUBPARTS (vectype) - 1) * -dr_size;
-
-	  /* An overrun is fine if the trailing elements are smaller
-	     than the alignment boundary B.  Every vector access will
-	     be a multiple of B and so we are guaranteed to access a
-	     non-gap element in the same B-sized block.  */
-	  if (overrun_p
-	      && gap < (vect_known_alignment_in_bytes (first_dr_info,
-						       vectype, off) / dr_size))
-	    overrun_p = false;
-
-	  /* When we have a contiguous access across loop iterations
-	     but the access in the loop doesn't cover the full vector
-	     we can end up with no gap recorded but still excess
-	     elements accessed, see PR103116.  Make sure we peel for
-	     gaps if necessary and sufficient and give up if not.
-
-	     If there is a combination of the access not covering the full
-	     vector and a gap recorded then we may need to peel twice.  */
-	  bool large_vector_overrun_p = false;
-	  if (loop_vinfo
-	      && (*memory_access_type == VMAT_CONTIGUOUS
-		  || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
-	      && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
-	      && !multiple_p (group_size * LOOP_VINFO_VECT_FACTOR (loop_vinfo),
-			      nunits))
-	    large_vector_overrun_p = overrun_p = true;
-
-	  /* If the gap splits the vector in half and the target
-	     can do half-vector operations avoid the epilogue peeling
-	     by simply loading half of the vector only.  Usually
-	     the construction with an upper zero half will be elided.  */
-	  dr_alignment_support alss;
-	  int misalign = dr_misalignment (first_dr_info, vectype, off);
-	  tree half_vtype;
-	  poly_uint64 remain;
-	  unsigned HOST_WIDE_INT tem, num;
-	  if (overrun_p
-	      && !masked_p
-	      && *memory_access_type != VMAT_LOAD_STORE_LANES
-	      && (((alss = vect_supportable_dr_alignment (vinfo, first_dr_info,
-							  vectype, misalign)))
-		   == dr_aligned
-		  || alss == dr_unaligned_supported)
-	      && can_div_trunc_p (group_size
-				  * LOOP_VINFO_VECT_FACTOR (loop_vinfo) - gap,
-				  nunits, &tem, &remain)
-	      && (known_eq (remain, 0u)
-		  || (known_ne (remain, 0u)
-		      && constant_multiple_p (nunits, remain, &num)
-		      && (vector_vector_composition_type (vectype, num,
-							  &half_vtype)
-			  != NULL_TREE))))
-	    overrun_p = false;
-
-	  if (overrun_p && !can_overrun_p)
+	  else if (large_vector_overrun_p)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Peeling for outer loop is not supported\n");
-	      return false;
-	    }
-
-	  /* Peeling for gaps assumes that a single scalar iteration
-	     is enough to make sure the last vector iteration doesn't
-	     access excess elements.  */
-	  if (overrun_p
-	      && (!can_div_trunc_p (group_size
-				    * LOOP_VINFO_VECT_FACTOR (loop_vinfo) - gap,
-				    nunits, &tem, &remain)
-		  || maybe_lt (remain + group_size, nunits)))
-	    {
-	      /* But peeling a single scalar iteration is enough if
-		 we can use the next power-of-two sized partial
-		 access and that is sufficiently small to be covered
-		 by the single scalar iteration.  */
-	      unsigned HOST_WIDE_INT cnunits, cvf, cremain, cpart_size;
-	      if (masked_p
-		  || !nunits.is_constant (&cnunits)
-		  || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&cvf)
-		  || (((cremain = (group_size * cvf - gap) % cnunits), true)
-		      && ((cpart_size = (1 << ceil_log2 (cremain))), true)
-		      && (cremain + group_size < cpart_size
-			  || vector_vector_composition_type
-			       (vectype, cnunits / cpart_size,
-				&half_vtype) == NULL_TREE)))
-		{
-		  /* If all fails we can still resort to niter masking unless
-		     the vectors used are too big, so enforce the use of
-		     partial vectors.  */
-		  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-		      && !large_vector_overrun_p)
-		    {
-		      if (dump_enabled_p ())
-			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-					 "peeling for gaps insufficient for "
-					 "access unless using partial "
-					 "vectors\n");
-		      LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
-		    }
-		  else
-		    {
-		      if (dump_enabled_p ())
-			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-					 "peeling for gaps insufficient for "
-					 "access\n");
-		      return false;
-		    }
-		}
-	      else if (large_vector_overrun_p)
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "can't operate on partial vectors because "
-				     "only unmasked loads handle access "
-				     "shortening required because of gaps at "
-				     "the end of the access\n");
-		  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
-		}
-	    }
-	}
-    }
-  else
-    {
-      /* We can always handle this case using elementwise accesses,
-	 but see if something more efficient is available.  */
-      *memory_access_type = VMAT_ELEMENTWISE;
-
-      /* If there is a gap at the end of the group then these optimizations
-	 would access excess elements in the last iteration.  */
-      bool would_overrun_p = (gap != 0);
-      /* An overrun is fine if the trailing elements are smaller than the
-	 alignment boundary B.  Every vector access will be a multiple of B
-	 and so we are guaranteed to access a non-gap element in the
-	 same B-sized block.  */
-      if (would_overrun_p
-	  && !masked_p
-	  && gap < (vect_known_alignment_in_bytes (first_dr_info, vectype)
-		    / vect_get_scalar_dr_size (first_dr_info)))
-	would_overrun_p = false;
-
-      if (!STMT_VINFO_STRIDED_P (first_stmt_info)
-	  && (can_overrun_p || !would_overrun_p)
-	  && compare_step_with_zero (vinfo, stmt_info) > 0)
-	{
-	  /* First cope with the degenerate case of a single-element
-	     vector.  */
-	  if (known_eq (TYPE_VECTOR_SUBPARTS (vectype), 1U))
-	    ;
-
-	  else
-	    {
-	      /* Otherwise try using LOAD/STORE_LANES.  */
-	      *lanes_ifn
-		= vls_type == VLS_LOAD
-		    ? vect_load_lanes_supported (vectype, group_size, masked_p,
-						 elsvals)
-		    : vect_store_lanes_supported (vectype, group_size,
-						  masked_p);
-	      if (*lanes_ifn != IFN_LAST)
-		{
-		  *memory_access_type = VMAT_LOAD_STORE_LANES;
-		  overrun_p = would_overrun_p;
-		}
-
-	      /* If that fails, try using permuting loads.  */
-	      else if (vls_type == VLS_LOAD
-			 ? vect_grouped_load_supported (vectype,
-							single_element_p,
-							group_size)
-			 : vect_grouped_store_supported (vectype, group_size))
-		{
-		  *memory_access_type = VMAT_CONTIGUOUS_PERMUTE;
-		  overrun_p = would_overrun_p;
-		}
+				 "can't operate on partial vectors because "
+				 "only unmasked loads handle access "
+				 "shortening required because of gaps at "
+				 "the end of the access\n");
+	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
 	}
     }
@@ -2414,7 +2350,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
   if ((*memory_access_type == VMAT_ELEMENTWISE
        || *memory_access_type == VMAT_STRIDED_SLP)
       && single_element_p
-      && (!slp_node || SLP_TREE_LANES (slp_node) == 1)
+      && SLP_TREE_LANES (slp_node) == 1
       && loop_vinfo
       && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
 					     masked_p, gs_info, elsvals))
@@ -2494,7 +2430,7 @@ static bool
 get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 		     tree vectype, slp_tree slp_node,
 		     bool masked_p, vec_load_store_type vls_type,
-		     unsigned int ncopies,
+		     unsigned int,
 		     vect_memory_access_type *memory_access_type,
 		     poly_int64 *poffset,
 		     dr_alignment_support *alignment_support_scheme,
@@ -2560,54 +2496,13 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	 is irrelevant for them.  */
       *alignment_support_scheme = dr_unaligned_supported;
     }
-  else if (STMT_VINFO_GROUPED_ACCESS (stmt_info) || slp_node)
-    {
-      if (!get_group_load_store_type (vinfo, stmt_info, vectype, slp_node,
-				      masked_p,
-				      vls_type, memory_access_type, poffset,
-				      alignment_support_scheme,
-				      misalignment, gs_info, lanes_ifn,
-				      elsvals))
-	return false;
-    }
-  else if (STMT_VINFO_STRIDED_P (stmt_info))
-    {
-      gcc_assert (!slp_node);
-      if (loop_vinfo
-	  && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
-						 masked_p, gs_info, elsvals))
-	*memory_access_type = VMAT_GATHER_SCATTER;
-      else
-	*memory_access_type = VMAT_ELEMENTWISE;
-      /* Alignment is irrelevant here.  */
-      *alignment_support_scheme = dr_unaligned_supported;
-    }
-  else
-    {
-      int cmp = compare_step_with_zero (vinfo, stmt_info);
-      if (cmp == 0)
-	{
-	  gcc_assert (vls_type == VLS_LOAD);
-	  *memory_access_type = VMAT_INVARIANT;
-	  /* Invariant accesses perform only component accesses, alignment
-	     is irrelevant for them.  */
-	  *alignment_support_scheme = dr_unaligned_supported;
-	}
-      else
-	{
-	  if (cmp < 0)
-	    *memory_access_type = get_negative_load_store_type
-	       (vinfo, stmt_info, vectype, vls_type, ncopies, poffset);
-	  else
-	    *memory_access_type = VMAT_CONTIGUOUS;
-	  *misalignment = dr_misalignment (STMT_VINFO_DR_INFO (stmt_info),
-					   vectype, *poffset);
-	  *alignment_support_scheme
-	    = vect_supportable_dr_alignment (vinfo,
-					     STMT_VINFO_DR_INFO (stmt_info),
-					     vectype, *misalignment);
-	}
-    }
+  else if (!get_group_load_store_type (vinfo, stmt_info, vectype, slp_node,
+				       masked_p,
+				       vls_type, memory_access_type, poffset,
+				       alignment_support_scheme,
+				       misalignment, gs_info, lanes_ifn,
+				       elsvals))
+    return false;
 
   if ((*memory_access_type == VMAT_ELEMENTWISE
        || *memory_access_type == VMAT_STRIDED_SLP)
@@ -2731,7 +2626,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	 such only the first load in the group is aligned, the rest are not.
 	 Because of this the permutes may break the alignment requirements that
 	 have been set, and as such we should for now, reject them.  */
-      if (slp_node && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
+      if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
