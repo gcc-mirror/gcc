@@ -1,3 +1,9 @@
+2025-06-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120123
+	* lambda.cc (nonlambda_method_basetype): Look through lambdas
+	even when current_class_ref is null.
+
 2025-06-05  Release Manager
 
 	* GCC 13.4.0 released.

@@ -1,3 +1,18 @@
+2025-06-05  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	Backported from master:
+	2025-03-14  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/shared_ptr_base.h (lock): Fixed a compile error
+	when calling lock() on a weak_ptr<T[]>, by removing an
+	erroneous usage of element_type from within lock().
+	* testsuite/20_util/shared_ptr/requirements/explicit_instantiation/1.cc:
+	Add more tests for array types.
+	* testsuite/20_util/weak_ptr/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/requirements/1.cc: New test.
+	* testsuite/20_util/weak_ptr/requirements/1.cc: New test.
+
 2025-06-05  Release Manager
 
 	* GCC 13.4.0 released.
