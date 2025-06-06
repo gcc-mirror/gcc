@@ -1,3 +1,14 @@
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+		    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/omp_get_num_devices_initial_device-2.c: New test.
+	* c-c++-common/gomp/omp_get_num_devices_initial_device.c: New test.
+	* gfortran.dg/gomp/omp_get_num_devices_initial_device-2.f90: New test.
+	* gfortran.dg/gomp/omp_get_num_devices_initial_device.f90: New test.
+
 2025-06-05  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	Backported from master:

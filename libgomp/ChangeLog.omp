@@ -1,3 +1,21 @@
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+		    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* libgomp.texi (omp_get_num_devices, omp_get_intrinsic_device):
+	Document builtin handling.
+
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR target/120530
+	* testsuite/libgomp.c/target-map-zero-sized-3.c (main): Add missing
+	map clause; remove unused variable.
+
 2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.c++/target-flex-300.C: XFAIL.

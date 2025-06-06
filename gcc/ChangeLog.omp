@@ -1,3 +1,23 @@
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+		    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gimple-fold.cc (gimple_fold_builtin_omp_get_initial_device,
+	gimple_fold_builtin_omp_get_num_devices): New.
+	(gimple_fold_builtin): Call them.
+	* omp-builtins.def (BUILT_IN_OMP_GET_INITIAL_DEVICE): Add
+	(BUILT_IN_OMP_GET_NUM_DEVICES): Make uservisible + pure.
+
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	* builtins.def (DEF_GOACC_BUILTIN_COMPILER, DEF_GOMP_BUILTIN_COMPILER):
+	Set NONANSI_P = false to enable those also with -fno-nonansi-builtins.
+
 2025-06-05  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	Backported from master:
