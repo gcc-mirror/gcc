@@ -883,6 +883,10 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	return false;  /* Not supported. */
       if (!strcmp ("omp_is_initial_device", arg))
 	gfc_option.disable_omp_is_initial_device = true;
+      else if (!strcmp ("omp_get_initial_device", arg))
+	gfc_option.disable_omp_get_initial_device = true;
+      else if (!strcmp ("omp_get_num_devices", arg))
+	gfc_option.disable_omp_get_num_devices = true;
       else if (!strcmp ("acc_on_device", arg))
 	gfc_option.disable_acc_on_device = true;
       else

@@ -4224,6 +4224,40 @@ gimple_fold_builtin_omp_is_initial_device (gimple_stmt_iterator *gsi)
   return false;
 }
 
+/* omp_get_initial_device was in OpenMP 5.0/5.1 explicitly and in
+   5.0 implicitly the same as omp_get_num_devices; since 6.0 it is
+   unspecified whether -1 or omp_get_num_devices() is returned.  For
+   better backward compatibility, use omp_get_num_devices() on the
+   host - and -1 on the device (where the result is unspecified).  */
+
+static bool
+gimple_fold_builtin_omp_get_initial_device (gimple_stmt_iterator *gsi)
+{
+#if ACCEL_COMPILER
+  replace_call_with_value (gsi, build_int_cst (integer_type_node, -1));
+#else
+  if (!ENABLE_OFFLOADING)
+    replace_call_with_value (gsi, integer_zero_node);
+  else
+    {
+      tree fn = builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_DEVICES);
+      gcall *repl = gimple_build_call (fn, 0);
+      replace_call_with_call_and_fold (gsi, repl);
+    }
+#endif
+  return true;
+}
+
+static bool
+gimple_fold_builtin_omp_get_num_devices (gimple_stmt_iterator *gsi)
+{
+  if (!ENABLE_OFFLOADING)
+    {
+      replace_call_with_value (gsi, integer_zero_node);
+      return true;
+    }
+  return false;
+}
 
 /* Fold a call to __builtin_acc_on_device.  */
 
@@ -5467,6 +5501,12 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 						gimple_call_arg (stmt, 0));
     case BUILT_IN_OMP_IS_INITIAL_DEVICE:
       return gimple_fold_builtin_omp_is_initial_device (gsi);
+
+    case BUILT_IN_OMP_GET_INITIAL_DEVICE:
+      return gimple_fold_builtin_omp_get_initial_device (gsi);
+
+    case BUILT_IN_OMP_GET_NUM_DEVICES:
+      return gimple_fold_builtin_omp_get_num_devices (gsi);
 
     case BUILT_IN_REALLOC:
       return gimple_fold_builtin_realloc (gsi);

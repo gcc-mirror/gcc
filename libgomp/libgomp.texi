@@ -1802,6 +1802,11 @@ Returns the number of available non-host devices.
 
 The effect of running this routine in a @code{target} region is unspecified.
 
+Note that in GCC the function is marked pure, i.e. as returning always the
+same number.  When GCC was not configured to support offloading, it is replaced
+by zero; compile with @option{-fno-builtin-omp_get_num_devices} if a run-time
+function is desired.
+
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{int omp_get_num_devices(void);}
@@ -1811,6 +1816,9 @@ The effect of running this routine in a @code{target} region is unspecified.
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{integer function omp_get_num_devices()}
 @end multitable
+
+@item @emph{See also}:
+@ref{omp_get_initial_device}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.31.
@@ -1949,6 +1957,12 @@ Since OpenMP 5.1, this is equal to the value returned by the
 the value of @code{omp_initial_device}.
 
 The effect of running this routine in a @code{target} region is unspecified.
+
+Note that GCC inlines this function unless you compile with
+@option{-fno-builtin-omp_get_initial_device}.  If GCC was not configured to
+support offloading, it expands to constant zero; in non-host code it expands
+to @code{omp_initial_device}; and otherwise it is replaced with a call to
+@code{omp_get_num_devices}.
 
 @item @emph{C/C++}
 @multitable @columnfractions .20 .80
