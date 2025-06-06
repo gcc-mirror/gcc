@@ -5,8 +5,8 @@
 
 /* { dg-final { scan-assembler-times {\tvdiv\.vv} 8 } } */
 /* { dg-final { scan-assembler-not {\tvdiv\.vx} } } */
-/* { dg-final { scan-assembler-times {\tvdivu\.vv} 4 } } */
-/* { dg-final { scan-assembler-times {\tvdivu\.vx} 4 } } */
+/* { dg-final { scan-assembler-times {\tvdivu\.vv} 8 } } */
+/* { dg-final { scan-assembler-not {\tvdivu\.vx} } } */
 
 /* { dg-final { scan-assembler-times {\tvfdiv\.vv} 6 } } */
 /* { dg-final { scan-assembler-not {\tvfdiv\.vf} } } */
