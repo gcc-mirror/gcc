@@ -3739,6 +3739,50 @@ single_trailing_store_in_bb (basic_block bb, tree vdef, gphi *vphi)
   return store;
 }
 
+/* Limited Conditional store replacement.  We already know
+   that the recognized pattern looks like so:
+
+   split:
+     if (cond) goto THEN_BB; else goto ELSE_BB (edge E1)
+   THEN_BB:
+     ...
+     ONLY_STORE = Y;
+     ...
+     goto JOIN_BB;
+   ELSE_BB:
+     ...
+     ONLY_STORE = Z;
+     ...
+     fallthrough (edge E0)
+   JOIN_BB:
+     some more
+
+   Handles only the case with single store in THEN_BB and ELSE_BB.  That is
+   cheap enough due to in phiopt and not worry about heurstics.  Moving the store
+   out might provide an opportunity for a phiopt to happen.  */
+
+static bool
+cond_if_else_store_replacement_limited (basic_block then_bb, basic_block else_bb,
+					basic_block join_bb)
+{
+  gphi *vphi = get_virtual_phi (join_bb);
+  if (!vphi)
+    return false;
+
+  tree then_vdef = PHI_ARG_DEF_FROM_EDGE (vphi, single_succ_edge (then_bb));
+  gimple *then_assign = single_trailing_store_in_bb (then_bb, then_vdef, vphi);
+  if (!then_assign)
+    return false;
+
+  tree else_vdef = PHI_ARG_DEF_FROM_EDGE (vphi, single_succ_edge (else_bb));
+  gimple *else_assign = single_trailing_store_in_bb (else_bb, else_vdef, vphi);
+  if (!else_assign)
+    return false;
+
+  return cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
+					   then_assign, else_assign, vphi);
+}
+
 /* Conditional store replacement.  We already know
    that the recognized pattern looks like so:
 
@@ -4460,6 +4504,11 @@ pass_phiopt::execute (function *)
 	      && !predictable_edge_p (EDGE_SUCC (bb, 0))
 	      && !predictable_edge_p (EDGE_SUCC (bb, 1)))
 	    hoist_adjacent_loads (bb, bb1, bb2, bb3);
+
+	  /* Try to see if there are only one store in each side of the if
+	     and try to remove that.  */
+	  if (EDGE_COUNT (bb3->preds) == 2)
+	    cond_if_else_store_replacement_limited (bb1, bb2, bb3);
 	}
 
       gimple_stmt_iterator gsi;
