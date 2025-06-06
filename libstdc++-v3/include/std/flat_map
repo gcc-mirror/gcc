@@ -1148,14 +1148,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // element access
       mapped_type&
       operator[](const key_type& __x)
-      { return operator[]<const key_type>(__x); }
+      { return try_emplace(__x).first->second; }
 
       mapped_type&
       operator[](key_type&& __x)
-      { return operator[]<key_type>(std::move(__x)); }
+      { return try_emplace(std::move(__x)).first->second; }
 
       template<typename _Key2>
-	requires same_as<remove_cvref_t<_Key2>, _Key> || __transparent_comparator<_Compare>
+	requires __transparent_comparator<_Compare>
 	mapped_type&
 	operator[](_Key2&& __x)
 	{ return try_emplace(std::forward<_Key2>(__x)).first->second; }

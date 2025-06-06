@@ -1033,12 +1033,9 @@ current_nonlambda_function (void)
 tree
 nonlambda_method_basetype (void)
 {
-  if (!current_class_ref)
-    return NULL_TREE;
-
   tree type = current_class_type;
   if (!type || !LAMBDA_TYPE_P (type))
-    return type;
+    return current_class_ref ? type : NULL_TREE;
 
   while (true)
     {

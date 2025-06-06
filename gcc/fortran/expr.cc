@@ -1838,6 +1838,55 @@ find_substring_ref (gfc_expr *p, gfc_expr **newp)
 }
 
 
+/* Simplify inquiry references (%re/%im) of constant complex arrays.
+   Used by find_inquiry_ref.  */
+
+static gfc_expr *
+simplify_complex_array_inquiry_ref (gfc_expr *p, inquiry_type inquiry)
+{
+  gfc_expr *e, *r, *result;
+  gfc_constructor_base base;
+  gfc_constructor *c;
+
+  if ((inquiry != INQUIRY_RE && inquiry != INQUIRY_IM)
+      || p->expr_type != EXPR_ARRAY
+      || p->ts.type != BT_COMPLEX
+      || p->rank <= 0
+      || p->value.constructor == NULL
+      || !gfc_is_constant_array_expr (p))
+    return NULL;
+
+  /* Simplify array sections.  */
+  gfc_simplify_expr (p, 0);
+
+  result = gfc_get_array_expr (BT_REAL, p->ts.kind, &p->where);
+  result->rank = p->rank;
+  result->shape = gfc_copy_shape (p->shape, p->rank);
+
+  base = p->value.constructor;
+  for (c = gfc_constructor_first (base); c; c = gfc_constructor_next (c))
+    {
+      e = c->expr;
+      if (e->expr_type != EXPR_CONSTANT)
+	goto fail;
+
+      r = gfc_get_constant_expr (BT_REAL, e->ts.kind, &e->where);
+      if (inquiry == INQUIRY_RE)
+	mpfr_set (r->value.real, mpc_realref (e->value.complex), GFC_RND_MODE);
+      else
+	mpfr_set (r->value.real, mpc_imagref (e->value.complex), GFC_RND_MODE);
+
+      gfc_constructor_append_expr (&result->value.constructor, r, &e->where);
+    }
+
+  return result;
+
+fail:
+  gfc_free_expr (result);
+  return NULL;
+}
+
+
 /* Pull an inquiry result out of an expression.  */
 
 static bool
@@ -1846,7 +1895,9 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
   gfc_ref *ref;
   gfc_ref *inquiry = NULL;
   gfc_ref *inquiry_head;
+  gfc_ref *ref_ss = NULL;
   gfc_expr *tmp;
+  bool nofail = false;
 
   tmp = gfc_copy_expr (p);
 
@@ -1862,6 +1913,9 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 	  {
 	    inquiry = ref->next;
 	    ref->next = NULL;
+	    if (ref->type == REF_SUBSTRING)
+	      ref_ss = ref;
+	    break;
 	  }
     }
 
@@ -1890,6 +1944,28 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 
 	  if (!gfc_notify_std (GFC_STD_F2003, "LEN part_ref at %C"))
 	    goto cleanup;
+
+	  /* Inquire length of substring?  */
+	  if (ref_ss)
+	    {
+	      if (ref_ss->u.ss.start->expr_type == EXPR_CONSTANT
+		  && ref_ss->u.ss.end->expr_type == EXPR_CONSTANT)
+		{
+		  HOST_WIDE_INT istart, iend, length;
+		  istart = gfc_mpz_get_hwi (ref_ss->u.ss.start->value.integer);
+		  iend = gfc_mpz_get_hwi (ref_ss->u.ss.end->value.integer);
+
+		  if (istart <= iend)
+		    length = iend - istart + 1;
+		  else
+		    length = 0;
+		  *newp = gfc_get_int_expr (gfc_default_integer_kind,
+					    NULL, length);
+		  break;
+		}
+	      else
+		goto cleanup;
+	    }
 
 	  if (tmp->ts.u.cl->length
 	      && tmp->ts.u.cl->length->expr_type == EXPR_CONSTANT)
@@ -1921,10 +1997,23 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 	  break;
 
 	case INQUIRY_RE:
-	  if (tmp->ts.type != BT_COMPLEX || tmp->expr_type != EXPR_CONSTANT)
+	  if (tmp->ts.type != BT_COMPLEX)
 	    goto cleanup;
 
 	  if (!gfc_notify_std (GFC_STD_F2008, "RE part_ref at %C"))
+	    goto cleanup;
+
+	  if (tmp->expr_type == EXPR_ARRAY)
+	    {
+	      *newp = simplify_complex_array_inquiry_ref (tmp, INQUIRY_RE);
+	      if (*newp != NULL)
+		{
+		  nofail = true;
+		  break;
+		}
+	    }
+
+	  if (tmp->expr_type != EXPR_CONSTANT)
 	    goto cleanup;
 
 	  *newp = gfc_get_constant_expr (BT_REAL, tmp->ts.kind, &tmp->where);
@@ -1933,10 +2022,23 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 	  break;
 
 	case INQUIRY_IM:
-	  if (tmp->ts.type != BT_COMPLEX || tmp->expr_type != EXPR_CONSTANT)
+	  if (tmp->ts.type != BT_COMPLEX)
 	    goto cleanup;
 
 	  if (!gfc_notify_std (GFC_STD_F2008, "IM part_ref at %C"))
+	    goto cleanup;
+
+	  if (tmp->expr_type == EXPR_ARRAY)
+	    {
+	      *newp = simplify_complex_array_inquiry_ref (tmp, INQUIRY_IM);
+	      if (*newp != NULL)
+		{
+		  nofail = true;
+		  break;
+		}
+	    }
+
+	  if (tmp->expr_type != EXPR_CONSTANT)
 	    goto cleanup;
 
 	  *newp = gfc_get_constant_expr (BT_REAL, tmp->ts.kind, &tmp->where);
@@ -1951,7 +2053,7 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 
   if (!(*newp))
     goto cleanup;
-  else if ((*newp)->expr_type != EXPR_CONSTANT)
+  else if ((*newp)->expr_type != EXPR_CONSTANT && !nofail)
     {
       gfc_free_expr (*newp);
       goto cleanup;
@@ -2523,7 +2625,7 @@ scalarize_intrinsic_call (gfc_expr *e, bool init_flag)
 	    rank[n] = a->expr->rank;
 	  else
 	    rank[n] = 1;
-	  ctor = gfc_constructor_copy (a->expr->value.constructor);
+	  ctor = a->expr->value.constructor;
 	  args[n] = gfc_constructor_first (ctor);
 	}
       else

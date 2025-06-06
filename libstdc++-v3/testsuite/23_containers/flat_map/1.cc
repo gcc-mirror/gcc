@@ -252,6 +252,15 @@ test07()
   VERIFY( std::ranges::equal(m, (std::pair<int,int>[]){{3,4}}) );
 }
 
+void
+test08()
+{
+  // PR libstdc++/120432 - flat_map operator[] is broken for const lvalue keys
+  std::flat_map<int, int> m;
+  const int k = 42;
+  m[k] = 0;
+}
+
 int
 main()
 {
@@ -265,4 +274,5 @@ main()
   test05();
   test06();
   test07();
+  test08();
 }

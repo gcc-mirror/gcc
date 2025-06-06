@@ -1,3 +1,74 @@
+2025-06-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-06-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99838
+	* data.cc (gfc_assign_data_value): For a new initializer use the
+	location from the constructor as fallback.
+
+2025-06-03  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102599
+	PR fortran/114022
+	* expr.cc (simplify_complex_array_inquiry_ref): Helper function for
+	simplification of inquiry references (%re/%im) of constant complex
+	arrays.
+	(find_inquiry_ref): Use it for handling %re/%im inquiry references
+	of complex arrays.
+	(scalarize_intrinsic_call): Fix frontend memleak.
+	* primary.cc (gfc_match_varspec): When the reference is NULL, the
+	previous simplification has succeeded in evaluating inquiry
+	references also of arrays.
+
+2025-06-03  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101735
+	* primary.cc (gfc_match_varspec): Correct order of logic.
+
+2025-06-03  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101735
+	* expr.cc (find_inquiry_ref): If an inquiry reference applies to
+	a substring, use that, and calculate substring length if needed.
+	* primary.cc (extend_ref): Also handle attaching to end of
+	reference chain for appending.
+	(gfc_match_varspec): Discrimate between arrays of character and
+	substrings of them.  If a substring is taken from a character
+	component of a derived type, get the proper typespec so that
+	inquiry references work correctly.
+	(gfc_match_rvalue): Handle corner case where we hit a seemingly
+	dangling '%' and missed an inquiry reference. Try another match.
+
+2025-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120193
+	* trans-types.cc (gfc_init_types): For flag_unsigned use
+	build_distinct_type_copy or build_variant_type_copy from
+	gfc_character_types[index_char] if index_char > -1 instead of
+	gfc_character_types[index_char] or
+	gfc_build_unsigned_type (&gfc_unsigned_kinds[index]).
+
+2025-06-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-05-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119856
+	* io.cc: Set missing comma error checks to STD_STD_LEGACY.
+
 2025-05-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:

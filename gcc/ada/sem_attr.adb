@@ -7511,13 +7511,14 @@ package body Sem_Attr is
          Set_Etype (N, Standard_Boolean);
          Validate_Non_Static_Attribute_Function_Call;
 
-         if P_Type in Standard_Boolean
+         if Root_Type (P_Type) in Standard_Boolean
                     | Standard_Character
                     | Standard_Wide_Character
                     | Standard_Wide_Wide_Character
          then
             Error_Attr_P
-              ("prefix of % attribute must not be a type in Standard");
+              ("prefix of % attribute must not be a type originating from " &
+               "Standard");
          end if;
 
          if Discard_Names (First_Subtype (P_Type)) then

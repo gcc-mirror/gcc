@@ -3565,8 +3565,9 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
 	  /* tree_could_trap_p is a predicate for rvalues, so check
 	     for readonly memory explicitly.  */
 	  || ((base = get_base_address (lhs))
-	      && DECL_P (base)
-	      && TREE_READONLY (base)))
+	      && ((DECL_P (base)
+		   && TREE_READONLY (base))
+		  || TREE_CODE (base) == STRING_CST)))
 	return false;
     }
 

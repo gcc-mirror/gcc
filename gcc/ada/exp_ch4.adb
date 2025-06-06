@@ -769,7 +769,6 @@ package body Exp_Ch4 is
       --  Local variables
 
       Aggr_In_Place     : Boolean;
-      Container_Aggr    : Boolean;
       Delayed_Cond_Expr : Boolean;
 
       TagT : Entity_Id := Empty;
@@ -865,13 +864,15 @@ package body Exp_Ch4 is
 
       Aggr_In_Place     := Is_Delayed_Aggregate (Exp);
       Delayed_Cond_Expr := Is_Delayed_Conditional_Expression (Exp);
-      Container_Aggr    := Nkind (Exp) = N_Aggregate
-                             and then Has_Aspect (T, Aspect_Aggregate);
 
-      --  An allocator with a container aggregate as qualified expression must
-      --  be rewritten into the form expected by Expand_Container_Aggregate.
+      --  An allocator with a container aggregate, resp. a 2-pass aggregate,
+      --  as qualified expression must be rewritten into the form expected by
+      --  Expand_Container_Aggregate, resp. Two_Pass_Aggregate_Expansion.
 
-      if Container_Aggr then
+      if Nkind (Exp) = N_Aggregate
+        and then (Has_Aspect (T, Aspect_Aggregate)
+                   or else Is_Two_Pass_Aggregate (Exp))
+      then
          Temp := Make_Temporary (Loc, 'P', N);
          Set_Analyzed (Exp, False);
          Insert_Action (N,
@@ -15035,10 +15036,11 @@ package body Exp_Ch4 is
 
       --  Handle entities from the limited view
 
-      Orig_Right_Type : constant Entity_Id := Available_View (Etype (Right));
+      Orig_Right_Type : constant Entity_Id :=
+        Base_Type (Available_View (Etype (Right)));
 
       Full_R_Typ   : Entity_Id;
-      Left_Type    : Entity_Id := Available_View (Etype (Left));
+      Left_Type    : Entity_Id := Base_Type (Available_View (Etype (Left)));
       Right_Type   : Entity_Id := Orig_Right_Type;
       Obj_Tag      : Node_Id;
 
