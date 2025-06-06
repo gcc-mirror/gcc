@@ -238,6 +238,93 @@ namespace __format
   operator|=(_ChronoParts& __x, _ChronoParts __y) noexcept
   { return __x = __x | __y; }
 
+  template<typename _CharT>
+  struct _ChronoFormats
+  {
+    using _String_view = basic_string_view<_CharT>;
+
+    static consteval
+    _String_view
+    _S_f() noexcept
+    { return _GLIBCXX_WIDEN("%F"); }
+
+    static consteval
+    _String_view
+    _S_ymd() noexcept
+    { return _GLIBCXX_WIDEN("%Y/%b/%d"); }
+
+    static consteval
+    _String_view
+    _S_ym() noexcept
+    { return _S_ymd().substr(0, 5); }
+
+    static consteval
+    _String_view
+    _S_md() noexcept
+    { return _S_ymd().substr(3); }
+
+    static consteval
+    _String_view
+    _S_y() noexcept
+    { return _S_ymd().substr(0, 2); }
+
+    static consteval
+    _String_view
+    _S_m() noexcept
+    { return _S_ymd().substr(3, 2); }
+
+    static consteval
+    _String_view
+    _S_d() noexcept
+    { return _S_ymd().substr(6, 2); }
+
+    static consteval
+    _String_view
+    _S_ymwi() noexcept
+    // %\0 is extension for handling weekday index
+    { return _String_view(_GLIBCXX_WIDEN("%Y/%b/%a[%\0]"), 12); }
+
+    static consteval
+    _String_view
+    _S_mwi() noexcept
+    { return _S_ymwi().substr(3); }
+
+    static consteval
+    _String_view
+    _S_wi() noexcept
+    { return _S_ymwi().substr(6); }
+
+    static consteval
+    _String_view
+    _S_w() noexcept
+    { return _S_ymwi().substr(6, 2); }
+
+    static consteval
+    _String_view
+    _S_ymwl() noexcept
+    { return _GLIBCXX_WIDEN("%Y/%b/%a[last]"); }
+
+    static consteval
+    _String_view
+    _S_mwl() noexcept
+    { return _S_ymwl().substr(3); }
+
+    static consteval
+    _String_view
+    _S_wl() noexcept
+    { return _S_ymwl().substr(6); }
+
+    static consteval
+    _String_view
+    _S_yml() noexcept
+    { return _GLIBCXX_WIDEN("%Y/%b/last"); }
+
+    static consteval
+    _String_view
+    _S_ml() noexcept
+    { return _S_yml().substr(3); }
+  };
+
   // TODO rename this to chrono::__formatter? or chrono::__detail::__formatter?
   template<typename _CharT>
     struct __formatter_chrono
@@ -245,14 +332,22 @@ namespace __format
       using __string_view = basic_string_view<_CharT>;
       using __string = basic_string<_CharT>;
 
+      __formatter_chrono() = default;
+
+      constexpr explicit
+      __formatter_chrono(_ChronoSpec<_CharT> __spec) noexcept
+      : _M_spec(__spec)
+      { }
+
       template<typename _ParseContext>
 	constexpr typename _ParseContext::iterator
-	_M_parse(_ParseContext& __pc, _ChronoParts __parts)
+	_M_parse(_ParseContext& __pc, _ChronoParts __parts,
+		 const _ChronoSpec<_CharT>& __def = {})
 	{
 	  auto __first = __pc.begin();
 	  auto __last = __pc.end();
 
-	  _ChronoSpec<_CharT> __spec{};
+	  _ChronoSpec<_CharT> __spec = __def;
 
 	  auto __finalize = [this, &__spec] {
 	    _M_spec = __spec;
@@ -285,6 +380,7 @@ namespace __format
 		return __first;
 	    }
 
+	  __spec._M_localized = false;
 	  __first = __spec._M_parse_locale(__first, __last);
 	  if (__finished())
 	    return __first;
@@ -306,6 +402,9 @@ namespace __format
 	  // Parse chrono-specs in [first,last), checking each conversion-spec
 	  // against __parts (so fail for %Y if no year in parts).
 	  // Save range in __spec._M_chrono_specs.
+	  __spec._M_debug = false;
+	  __spec._M_locale_specific = true;
+	  __spec._M_chrono_specs = __string_view();
 
 	  const auto __chrono_specs = __first++; // Skip leading '%'
 	  if (*__chrono_specs != '%')
@@ -562,6 +661,10 @@ namespace __format
 	      _CharT __c = *__first++;
 	      switch (__c)
 		{
+		// %\0 is extension for handling weekday index
+		case '\0':
+		  __out = _M_wi(__t, std::move(__out), __fc);
+		  break;
 		case 'a':
 		case 'A':
 		  __out = _M_a_A(__t, std::move(__out), __fc, __c == 'A');
@@ -818,6 +921,22 @@ namespace __format
 
       template<typename _Tp, typename _FormatContext>
 	typename _FormatContext::iterator
+	_M_wi(const _Tp& __t, typename _FormatContext::iterator __out,
+	       _FormatContext& __ctx) const
+	{
+	  // %\0 Extension to format weekday index, used only by empty format spec
+	  unsigned __wi = _S_weekday_index(__t);
+
+	  _CharT __buf[3];
+	  __out = __format::__write(std::move(__out), _S_str_d1(__buf, __wi));
+	  if (_M_spec._M_debug && (__wi < 1 || __wi > 5))
+	    __out = __format::__write(std::move(__out),
+		      __string_view(_GLIBCXX_WIDEN(" is not a valid index")));
+	  return std::move(__out);
+	}
+
+      template<typename _Tp, typename _FormatContext>
+	typename _FormatContext::iterator
 	_M_a_A(const _Tp& __t, typename _FormatContext::iterator __out,
 	       _FormatContext& __ctx, bool __full) const
 	{
@@ -825,7 +944,16 @@ namespace __format
 	  // %A Locale's full weekday name.
 	  chrono::weekday __wd = _S_weekday(__t);
 	  if (!__wd.ok())
-	    __throw_format_error("format error: invalid weekday");
+	    {
+	      if (!_M_spec._M_debug)
+		__throw_format_error("format error: invalid weekday");
+
+	      _CharT __buf[3];
+	      __out = __format::__write(std::move(__out),
+					_S_str_d1(__buf, __wd.c_encoding()));
+	      return __format::__write(std::move(__out),
+			__string_view(_GLIBCXX_WIDEN(" is not a valid weekday")));
+	    }
 
 	  locale __loc = _M_locale(__ctx);
 	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
@@ -847,7 +975,17 @@ namespace __format
 	  // %B Locale's full month name.
 	  chrono::month __m = _S_month(__t);
 	  if (!__m.ok())
-	    __throw_format_error("format error: invalid month");
+	    {
+	      if (!_M_spec._M_debug)
+		__throw_format_error("format error: invalid month");
+
+	      _CharT __buf[3];
+	      __out = __format::__write(std::move(__out),
+					_S_str_d1(__buf, (unsigned)__m));
+	      return __format::__write(std::move(__out),
+			__string_view(_GLIBCXX_WIDEN(" is not a valid month")));
+	    }
+
 	  locale __loc = _M_locale(__ctx);
 	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
 	  const _CharT* __months[12];
@@ -974,7 +1112,11 @@ namespace __format
 		}
 	      __out = __format::__write(std::move(__out), __sv);
 	    }
-	 return std::move(__out);
+
+	  if (_M_spec._M_debug && __conv == 'Y' && !__y.ok()) [[unlikely]]
+	    __out = __format::__write(std::move(__out),
+		      __string_view(_GLIBCXX_WIDEN(" is not a valid year")));
+	  return __out;
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1039,7 +1181,12 @@ namespace __format
 	      __buf[0] = _S_space;
 	      __sv = {__buf, 2};
 	    }
-	  return __format::__write(std::move(__out), __sv);
+
+	  __out = __format::__write(std::move(__out), __sv);
+	  if (_M_spec._M_debug && !__d.ok()) [[unlikely]]
+	    __out = __format::__write(std::move(__out),
+		      __string_view(_GLIBCXX_WIDEN(" is not a valid day")));
+	  return std::move(__out);
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1076,6 +1223,10 @@ namespace __format
 	      _S_fill_two_digits(__buf + 9, __di);
 	      __out = __format::__write(std::move(__out), __sv);
 	    }
+
+	  if (_M_spec._M_debug && !__ymd.ok())
+	    __out = __format::__write(std::move(__out),
+		      __string_view(_GLIBCXX_WIDEN(" is not a valid date")));
 	  return std::move(__out);
 	}
 
@@ -1757,6 +1908,20 @@ namespace __format
 	    return weekday(_S_days(__t));
 	}
 
+      template<typename _Tp>
+	static unsigned
+	_S_weekday_index(const _Tp& __t)
+	{
+	  using namespace ::std::chrono;
+
+	  if constexpr (is_same_v<_Tp, weekday_indexed>)
+	    return __t.index();
+	  else if constexpr (requires { __t.weekday_indexed(); })
+	    return __t.weekday_indexed().index();
+	  else
+	    return ((unsigned)_S_day(__t) + 6) / 7;
+	}
+
       // Remove subsecond precision from a time_point.
       template<typename _Tp>
 	static auto
@@ -1851,7 +2016,7 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Day); }
+      { return _M_f._M_parse(__pc, __format::_Day, __defSpec); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -1860,7 +2025,15 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_d();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -1868,7 +2041,7 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Month); }
+      { return _M_f._M_parse(__pc, __format::_Month, __defSpec); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -1877,7 +2050,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_m();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -1885,7 +2068,7 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Year); }
+      { return _M_f._M_parse(__pc, __format::_Year, __defSpec); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -1894,7 +2077,15 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_y();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -1902,7 +2093,7 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Weekday); }
+      { return _M_f._M_parse(__pc, __format::_Weekday, __defSpec); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -1911,7 +2102,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_w();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -1919,7 +2120,7 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Weekday); }
+      { return _M_f._M_parse(__pc, __format::_Weekday, __defSpec); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -1928,7 +2129,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_wi();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -1936,7 +2147,7 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Weekday); }
+      { return _M_f._M_parse(__pc, __format::_Weekday, __defSpec); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -1945,7 +2156,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_wl();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -1953,7 +2174,10 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Month|__format::_Day); }
+      {
+	return _M_f._M_parse(__pc, __format::_Month|__format::_Day,
+			     __defSpec);
+      }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -1962,7 +2186,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_md();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -1970,7 +2204,10 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Month|__format::_Day); }
+      {
+	return _M_f._M_parse(__pc, __format::_Month|__format::_Day,
+			     __defSpec);
+      }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -1979,7 +2216,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+       static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_ml();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -1987,7 +2234,10 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Month|__format::_Weekday); }
+      {
+	return _M_f._M_parse(__pc, __format::_Month|__format::_Weekday,
+			     __defSpec);
+      }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -1996,7 +2246,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_mwi();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -2004,7 +2264,10 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Month|__format::_Weekday); }
+      {
+	return _M_f._M_parse(__pc, __format::_Month|__format::_Weekday,
+			     __defSpec);
+      }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -2013,7 +2276,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+       static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_mwl();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -2021,7 +2294,10 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Year|__format::_Month); }
+      {
+	return _M_f._M_parse(__pc, __format::_Year|__format::_Month,
+			     __defSpec);
+      }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -2030,7 +2306,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+       static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_ym();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -2038,7 +2324,7 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Date); }
+      { return _M_f._M_parse(__pc, __format::_Date, __defSpec); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -2047,7 +2333,15 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_f();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -2055,7 +2349,7 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Date); }
+      { return _M_f._M_parse(__pc, __format::_Date, __defSpec); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -2064,7 +2358,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+	static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_yml();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -2072,7 +2376,7 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Date); }
+      { return _M_f._M_parse(__pc, __format::_Date, __defSpec); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -2081,7 +2385,17 @@ namespace __format
 	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+	static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_ymwi();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
@@ -2089,7 +2403,7 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_Date); }
+      { return _M_f._M_parse(__pc, __format::_Date, __defSpec); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
@@ -2098,7 +2412,17 @@ namespace __format
       	{ return _M_f._M_format(__t, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+	static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_debug = true;
+	  __res._M_localized = true;
+	  __res._M_locale_specific = true;
+	  __res._M_chrono_specs = __format::_ChronoFormats<_CharT>::_S_ymwl();
+	  return __res;
+	}();
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<typename _Rep, typename _Period, __format::__char _CharT>
@@ -2947,7 +3271,7 @@ namespace __detail
       // n.b. only decimal separator is locale dependent for specifiers
       // used below, as sys_info uses seconds and minutes duration, the
       // output is locale-independent.
-      constexpr auto* __fs 
+      constexpr auto* __fs
 	= _GLIBCXX_WIDEN("[{0:%F %T},{1:%F %T},{2:%T},{3:%Q%q},{0:%Z}]");
       local_seconds __lb(__i.begin.time_since_epoch());
       __os << std::format(__fs, local_time_format(__lb, &__i.abbrev),
