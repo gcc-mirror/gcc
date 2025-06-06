@@ -5757,6 +5757,12 @@ gimple_verify_flow_info (void)
       error ("probability of edge from entry block not initialized");
       err = true;
     }
+  if (!EXIT_BLOCK_PTR_FOR_FN (cfun)
+	->count.compatible_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count))
+    {
+      error ("exit block count is not compoatible with entry block count");
+      err = true;
+    }
 
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -5780,6 +5786,12 @@ gimple_verify_flow_info (void)
 		err = true;
 	      }
         }
+      if (!bb->count.compatible_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count))
+	{
+	  error ("count of bb %d is not compoatible with entry block count",
+		 bb->index);
+	  err = true;
+	}
 
       /* Skip labels on the start of basic block.  */
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))

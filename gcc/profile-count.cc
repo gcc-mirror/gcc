@@ -94,9 +94,16 @@ profile_count::dump (FILE *f, struct function *fun) const
   else if (fun && initialized_p ()
 	   && fun->cfg
 	   && ENTRY_BLOCK_PTR_FOR_FN (fun)->count.initialized_p ())
-    fprintf (f, "%" PRId64 " (%s, freq %.4f)", m_val,
-	     profile_quality_display_names[m_quality],
-	     to_sreal_scale (ENTRY_BLOCK_PTR_FOR_FN (fun)->count).to_double ());
+    {
+      if (compatible_p (ENTRY_BLOCK_PTR_FOR_FN (fun)->count))
+	fprintf (f, "%" PRId64 " (%s, freq %.4f)", m_val,
+		 profile_quality_display_names[m_quality],
+		 to_sreal_scale
+		   (ENTRY_BLOCK_PTR_FOR_FN (fun)->count).to_double ());
+      else
+	fprintf (f, "%" PRId64 " (%s, incompatible with entry block count)",
+		 m_val, profile_quality_display_names[m_quality]);
+    }
   else
     fprintf (f, "%" PRId64 " (%s)", m_val,
 	     profile_quality_display_names[m_quality]);

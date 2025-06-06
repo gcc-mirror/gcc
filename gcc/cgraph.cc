@@ -179,6 +179,26 @@ cgraph_node::function_version (void)
   return cgraph_fnver_htab->find (&key);
 }
 
+/* Scale profile by NUM/DEN.  Walk into inlined clones.  */
+
+void
+cgraph_node::apply_scale (profile_count num, profile_count den)
+{
+  struct cgraph_edge *e;
+
+  profile_count::adjust_for_ipa_scaling (&num, &den);
+
+  for (e = callees; e; e = e->next_callee)
+    {
+      if (!e->inline_failed)
+	e->callee->apply_scale (num, den);
+      e->count = e->count.apply_scale (num, den);
+    }
+  for (e = indirect_calls; e; e = e->next_callee)
+    e->count = e->count.apply_scale (num, den);
+  count = count.apply_scale (num, den);
+}
+
 /* Insert a new cgraph_function_version_info node into cgraph_fnver_htab
    corresponding to cgraph_node NODE.  */
 cgraph_function_version_info *
