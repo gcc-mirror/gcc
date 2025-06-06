@@ -587,7 +587,7 @@ package body Sem_Disp is
       Formal                 : Entity_Id;
       Control                : Node_Id := Empty;
       Func                   : Entity_Id;
-      Subp_Entity            : Entity_Id;
+      Subp_Entity            : constant Entity_Id := Entity (Name (N));
 
       Indeterm_Ctrl_Type : Entity_Id := Empty;
       --  Type of a controlling formal whose actual is a tag-indeterminate call
@@ -968,7 +968,6 @@ package body Sem_Disp is
       --  Find a controlling argument, if any
 
       if Present (Parameter_Associations (N)) then
-         Subp_Entity := Entity (Name (N));
 
          Actual := First_Actual (N);
          Formal := First_Formal (Subp_Entity);

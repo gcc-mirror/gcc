@@ -24307,7 +24307,9 @@ package body Sem_Util is
             Next (Old_Act);
          end loop;
 
-         pragma Assert (Replaced);
+         if Nkind (Old_Call) /= N_Function_Call then
+            pragma Assert (Replaced);
+         end if;
       end Update_Controlling_Argument;
 
       -------------------------------
