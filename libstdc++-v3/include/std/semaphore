@@ -45,12 +45,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  template<ptrdiff_t __least_max_value = _Select_semaphore_impl<2>::_S_max>
+  template<ptrdiff_t __least_max_value = _Semaphore_impl<2>::_S_max>
     class counting_semaphore
     {
       static_assert(__least_max_value >= 0);
 
-      _Select_semaphore_impl<__least_max_value> _M_sem;
+      _Semaphore_impl<__least_max_value> _M_sem;
 
     public:
       constexpr explicit

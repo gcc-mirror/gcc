@@ -289,22 +289,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     alignas(__detail::__platform_wait_alignment) __count_type _M_counter;
   };
 
-  template<ptrdiff_t _Max>
-    using _Select_semaphore_impl = typename decltype([]
-    {
-      using namespace __detail;
-      if constexpr (__platform_wait_uses_type<__platform_wait_t>)
-	{
-	  if constexpr (_Max <= 1)
-	    return type_identity<__platform_semaphore_impl<true>>{};
-	  else if constexpr (_Max <= __platform_semaphore_impl<false>::_S_max)
-	    return type_identity<__platform_semaphore_impl<false>>{};
-	  else
-	    return type_identity<__semaphore_impl>{};
-	}
-      else
-	return type_identity<__semaphore_impl>{};
-    }())::type;
+  template<ptrdiff_t _Max, typename _Tp = __detail::__platform_wait_t>
+    using _Semaphore_impl
+      = __conditional_t<__platform_wait_uses_type<_Tp>
+			  && _Max <= __gnu_cxx::__int_traits<_Tp>::__max,
+			__platform_semaphore_impl<(_Max <= 1)>,
+			__semaphore_impl>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
