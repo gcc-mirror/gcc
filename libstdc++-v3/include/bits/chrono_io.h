@@ -606,14 +606,12 @@ namespace __format
       // that we instantiate fewer different specializations. Similar to
       // _Sink_iter for std::format. Replace each _S_year, _S_day etc. with
       // member functions of that type.
+      // pre: !_M_spec._M_chrono_specs.empty()
       template<typename _Tp, typename _FormatContext>
 	typename _FormatContext::iterator
 	_M_format(const _Tp& __t, _FormatContext& __fc,
 		  bool __is_neg = false) const
 	{
-	  if (_M_spec._M_chrono_specs.empty())
-	    return _M_format_to_ostream(__t, __fc, __is_neg);
-
 #if defined _GLIBCXX_USE_NL_LANGINFO_L && __CHAR_BIT__ == 8
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 3565. Handling of encodings in localized formatting
@@ -812,6 +810,24 @@ namespace __format
 	  return std::move(__out);
 	}
 
+      // Format duration for empty chrono-specs, e.g. "{}" (C++20 [time.format] p6).
+      template<typename _Rep, typename _Period, typename _FormatContext>
+	typename _FormatContext::iterator
+	_M_format_to_ostream(const chrono::duration<_Rep, _Period>& __d,
+			     bool __is_neg, _FormatContext& __fc) const
+	{
+	   basic_ostringstream<_CharT> __os;
+	   __os.imbue(_M_locale(__fc));
+
+	   if (__is_neg) [[unlikely]]
+	     __os << _S_plus_minus[1];
+	   __os << __d;
+
+	  auto __str = std::move(__os).str();
+	  return __format::__write_padded_as_spec(__str, __str.size(),
+						  __fc, _M_spec);
+	}
+
       _ChronoSpec<_CharT> _M_spec;
 
     private:
@@ -824,41 +840,6 @@ namespace __format
 	    return std::locale::classic();
 	  else
 	    return __fc.locale();
-	}
-
-      // Format for empty chrono-specs, e.g. "{}" (C++20 [time.format] p6).
-      // TODO: consider moving body of every operator<< into this function
-      // and use std::format("{}", t) to implement those operators. That
-      // would avoid std::format("{}", t) calling operator<< which calls
-      // std::format again.
-      template<typename _Tp, typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_format_to_ostream(const _Tp& __t, _FormatContext& __fc,
-			     bool __is_neg) const
-	{
-	  using ::std::chrono::__detail::__utc_leap_second;
-	  using ::std::chrono::__detail::__local_time_fmt;
-
-	  basic_ostringstream<_CharT> __os;
-	  __os.imbue(_M_locale(__fc));
-
-	  if constexpr (__is_specialization_of<_Tp, __local_time_fmt>)
-	    __builtin_trap();
-	  else if constexpr (__is_specialization_of<_Tp, __utc_leap_second>)
-	    __builtin_trap();
-	  else if constexpr (chrono::__is_time_point_v<_Tp>)
-	     __builtin_trap();
-	  else
-	    {
-	      if constexpr (chrono::__is_duration_v<_Tp>)
-		if (__is_neg) [[unlikely]]
-		  __os << _S_plus_minus[1];
-	      __os << __t;
-	    }
-
-	  auto __str = std::move(__os).str();
-	  return __format::__write_padded_as_spec(__str, __str.size(),
-						  __fc, _M_spec);
 	}
 
       static constexpr const _CharT* _S_chars
@@ -2029,7 +2010,7 @@ namespace __format
       parse(basic_format_parse_context<_CharT>& __pc)
       {
 	using namespace __format;
-	auto __it = _M_f._M_parse(__pc, _Duration|_TimeOfDay);
+	auto __it = _M_f._M_parse(__pc, _Duration|_TimeOfDay, __defSpec);
 	if constexpr (!is_floating_point_v<_Rep>)
 	  if (_M_f._M_spec._M_prec_kind != __format::_WP_none)
 	    __throw_format_error("format error: invalid precision for duration");
@@ -2051,16 +2032,37 @@ namespace __format
 		    using _URep = make_unsigned_t<_Rep>;
 		    auto __ucnt = -static_cast<_URep>(__d.count());
 		    auto __ud = chrono::duration<_URep, _Period>(__ucnt);
-		    return _M_f._M_format(__ud, __fc, true);
+		    return _M_format(__ud, true, __fc);
 		  }
 		else
-		  return _M_f._M_format(-__d, __fc, true);
+		  return _M_format(-__d, true, __fc);
 	      }
-	  return _M_f._M_format(__d, __fc, false);
+	  return _M_format(__d, false, __fc);
 	}
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      static constexpr __format::_ChronoSpec<_CharT> __defSpec = []
+	{
+	  __format::_ChronoSpec<_CharT> __res{};
+	  __res._M_localized = !is_integral_v<_Rep>;
+	  if constexpr (is_integral_v<_Rep>)
+	    __res._M_chrono_specs = _GLIBCXX_WIDEN("%Q%q");
+	  return __res;
+	}();
+
+      template<typename _Rep2, typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	_M_format(const chrono::duration<_Rep2, _Period>& __d,
+		  bool __is_neg,
+		  basic_format_context<_Out, _CharT>& __fc) const
+	{
+	  if constexpr (!is_integral_v<_Rep>)
+	    if (_M_f._M_spec._M_chrono_specs.empty())
+	      return _M_f._M_format_to_ostream(__d, __is_neg, __fc);
+	  return _M_f._M_format(__d, __fc, __is_neg);
+	}
+
+      __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
   template<__format::__char _CharT>
