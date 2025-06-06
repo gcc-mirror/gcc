@@ -1940,6 +1940,84 @@ namespace __format
 	}
     };
 
+#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+  template<typename _CharT>
+    struct __formatter_chrono_info
+    {
+      constexpr typename basic_format_parse_context<_CharT>::iterator
+      parse(basic_format_parse_context<_CharT>& __pc)
+      { return _M_f._M_parse(__pc, _ChronoParts(), {}); }
+
+      template<typename _Info, typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(const _Info& __i,
+	       basic_format_context<_Out, _CharT>& __fc) const
+	{
+	  // n.b. only acceptable chrono-spec for info is one containing
+	  // only whitespaces and %%, that do not depend on formatted object.
+	  if (!_M_f._M_spec._M_chrono_specs.empty()) [[unlikely]]
+	    return _M_f._M_format(chrono::day(1), __fc);
+
+	  const size_t __padwidth = _M_f._M_spec._M_get_width(__fc);
+	  if (__padwidth == 0)
+	    return _M_format_to(__fc.out(), __i);
+
+	  _Padding_sink<_Out, _CharT> __sink(__fc.out(), __padwidth);
+	  _M_format_to(__sink.out(), __i);
+	  return __sink._M_finish(_M_f._M_spec._M_align, _M_f._M_spec._M_fill);
+	}
+
+    private:
+       template<typename _Out>
+	 _Out
+	 _M_format_to(_Out __out, const chrono::sys_info& __si) const
+	 {
+	   using _FmtStr = _Runtime_format_string<_CharT>;
+	   // n.b. only decimal separator is locale dependent for specifiers
+	   // used below, as sys_info uses seconds and minutes duration, the
+	   // output is locale-independent.
+	   constexpr auto* __fs
+	     = _GLIBCXX_WIDEN("[{0:%F %T},{1:%F %T},{2:%T},{3:%Q%q},{0:%Z}]");
+	   const chrono::local_seconds __lb(__si.begin.time_since_epoch());
+	   return std::format_to(std::move(__out), _FmtStr(__fs),
+				 chrono::local_time_format(__lb, &__si.abbrev),
+				 __si.end, __si.offset, __si.save);
+	 }
+
+       template<typename _Out>
+	 _Out
+	 _M_format_to(_Out __out, const chrono::local_info& __li) const
+	 {
+	   *__out = _Separators<_CharT>::_S_squares()[0];
+	   ++__out;
+	   if (__li.result == chrono::local_info::unique)
+	     __out = _M_format_to(std::move(__out), __li.first);
+	   else
+	    {
+	      basic_string_view<_CharT> __sv;
+	      if (__li.result == chrono::local_info::nonexistent)
+		__sv =_GLIBCXX_WIDEN("nonexistent");
+	      else
+		__sv = _GLIBCXX_WIDEN("ambiguous");
+	      __out = __format::__write(std::move(__out), __sv);
+
+	      __sv = _GLIBCXX_WIDEN(" local time between ");
+	      __out = __format::__write(std::move(__out), __sv);
+	      __out = _M_format_to(std::move(__out), __li.first);
+
+	      __sv = _GLIBCXX_WIDEN(" and ");
+	      __out = __format::__write(std::move(__out), __sv);
+	      __out = _M_format_to(std::move(__out), __li.second);
+	    }
+	  *__out = _Separators<_CharT>::_S_squares()[1];
+	  ++__out;
+	  return std::move(__out);
+	}
+
+      __formatter_chrono<_CharT> _M_f;
+    };
+#endif
+
 } // namespace __format
 /// @endcond
 
@@ -2430,16 +2508,16 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_ChronoParts{}); }
+      { return _M_f.parse(__pc); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(const chrono::sys_info& __i,
 	       basic_format_context<_Out, _CharT>& __fc) const
-	{ return _M_f._M_format(__i, __fc); }
+	{ return _M_f.format(__i, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      __format::__formatter_chrono_info<_CharT> _M_f;
     };
 
   template<__format::__char _CharT>
@@ -2447,16 +2525,16 @@ namespace __format
     {
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f._M_parse(__pc, __format::_ChronoParts{}); }
+      { return _M_f.parse(__pc); }
 
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(const chrono::local_info& __i,
 	       basic_format_context<_Out, _CharT>& __fc) const
-	{ return _M_f._M_format(__i, __fc); }
+	{ return _M_f.format(__i, __fc); }
 
     private:
-      __format::__formatter_chrono<_CharT> _M_f;
+      __format::__formatter_chrono_info<_CharT> _M_f;
     };
 #endif
 
@@ -3318,15 +3396,7 @@ namespace __detail
     basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os, const sys_info& __i)
     {
-      // n.b. only decimal separator is locale dependent for specifiers
-      // used below, as sys_info uses seconds and minutes duration, the
-      // output is locale-independent.
-      constexpr auto* __fs
-	= _GLIBCXX_WIDEN("[{0:%F %T},{1:%F %T},{2:%T},{3:%Q%q},{0:%Z}]");
-      local_seconds __lb(__i.begin.time_since_epoch());
-      __os << std::format(__fs, local_time_format(__lb, &__i.abbrev),
-			  __i.end, __i.offset, __i.save);
-      return __os;
+      return __os << std::format(__os.getloc(), _GLIBCXX_WIDEN("{}"), __i);
     }
 
   /// Writes a local_info object to an ostream in an unspecified format.
