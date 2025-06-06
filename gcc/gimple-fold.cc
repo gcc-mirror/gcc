@@ -191,16 +191,6 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   return !node || !node->inlined_to;
 }
 
-/* Create a temporary for TYPE for a statement STMT.  If the current function
-   is in SSA form, a SSA name is created.  Otherwise a temporary register
-   is made.  */
-
-tree
-create_tmp_reg_or_ssa_name (tree type, gimple *stmt)
-{
-  return make_ssa_name (type, stmt);
-}
-
 /* CVAL is value taken from DECL_INITIAL of variable.  Try to transform it into
    acceptable form for is_gimple_min_invariant.
    FROM_DECL (if non-NULL) specify variable whose constructor contains CVAL.  */
@@ -1038,8 +1028,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 			{
 			  new_stmt = gimple_build_assign (NULL_TREE, srcmem);
 			  srcmem
-			    = create_tmp_reg_or_ssa_name (TREE_TYPE (srcmem),
-							  new_stmt);
+			    = make_ssa_name (TREE_TYPE (srcmem), new_stmt);
 			  gimple_assign_set_lhs (new_stmt, srcmem);
 			  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
 			  gimple_set_location (new_stmt, loc);
@@ -1308,8 +1297,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	  if (! is_gimple_min_invariant (srcvar))
 	    {
 	      new_stmt = gimple_build_assign (NULL_TREE, srcvar);
-	      srcvar = create_tmp_reg_or_ssa_name (TREE_TYPE (srcvar),
-						   new_stmt);
+	      srcvar = make_ssa_name (TREE_TYPE (srcvar), new_stmt);
 	      gimple_assign_set_lhs (new_stmt, srcvar);
 	      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
 	      gimple_set_location (new_stmt, loc);
@@ -2281,7 +2269,7 @@ gimple_fold_builtin_strchr (gimple_stmt_iterator *gsi, bool is_strrchr)
   gimple_seq stmts = NULL;
   gimple *new_stmt = gimple_build_call (strlen_fn, 1, str);
   gimple_set_location (new_stmt, loc);
-  len = create_tmp_reg_or_ssa_name (size_type_node);
+  len = make_ssa_name (size_type_node);
   gimple_call_set_lhs (new_stmt, len);
   gimple_seq_add_stmt_without_update (&stmts, new_stmt);
 
@@ -2427,7 +2415,7 @@ gimple_fold_builtin_strcat (gimple_stmt_iterator *gsi, tree dst, tree src)
   gimple_seq stmts = NULL, stmts2;
   gimple *repl = gimple_build_call (strlen_fn, 1, dst);
   gimple_set_location (repl, loc);
-  newdst = create_tmp_reg_or_ssa_name (size_type_node);
+  newdst = make_ssa_name (size_type_node);
   gimple_call_set_lhs (repl, newdst);
   gimple_seq_add_stmt_without_update (&stmts, repl);
 
@@ -2660,7 +2648,7 @@ gimple_load_first_char (location_t loc, tree str, gimple_seq *stmts)
 
   tree temp = fold_build2_loc (loc, MEM_REF, cst_uchar_node, str, off0);
   gassign *stmt = gimple_build_assign (NULL_TREE, temp);
-  var = create_tmp_reg_or_ssa_name (cst_uchar_node, stmt);
+  var = make_ssa_name (cst_uchar_node, stmt);
 
   gimple_assign_set_lhs (stmt, var);
   gimple_seq_add_stmt_without_update (stmts, stmt);
@@ -2831,7 +2819,7 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
 
       if (lhs)
 	{
-	  tree c = create_tmp_reg_or_ssa_name (integer_type_node);
+	  tree c = make_ssa_name (integer_type_node);
 	  stmt = gimple_build_assign (c, NOP_EXPR, var);
 	  gimple_seq_add_stmt_without_update (&stmts, stmt);
 
@@ -2853,11 +2841,11 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
 
       if (lhs)
 	{
-	  tree c1 = create_tmp_reg_or_ssa_name (integer_type_node);
+	  tree c1 = make_ssa_name (integer_type_node);
 	  gassign *convert1 = gimple_build_assign (c1, NOP_EXPR, temp1);
 	  gimple_seq_add_stmt_without_update (&stmts, convert1);
 
-	  tree c2 = create_tmp_reg_or_ssa_name (integer_type_node);
+	  tree c2 = make_ssa_name (integer_type_node);
 	  gassign *convert2 = gimple_build_assign (c2, NOP_EXPR, temp2);
 	  gimple_seq_add_stmt_without_update (&stmts, convert2);
 
@@ -10647,7 +10635,7 @@ gimple_build (gimple_stmt_iterator *gsi,
 		       gsi->bb ? follow_all_ssa_edges : gimple_build_valueize);
   if (!res)
     {
-      res = create_tmp_reg_or_ssa_name (type);
+      res = make_ssa_name (type);
       gimple *stmt;
       if (code == REALPART_EXPR
 	  || code == IMAGPART_EXPR
@@ -10679,7 +10667,7 @@ gimple_build (gimple_stmt_iterator *gsi,
 		       gsi->bb ? follow_all_ssa_edges : gimple_build_valueize);
   if (!res)
     {
-      res = create_tmp_reg_or_ssa_name (type);
+      res = make_ssa_name (type);
       gimple *stmt = gimple_build_assign (res, code, op0, op1);
       gimple_set_location (stmt, loc);
       gimple_seq_add_stmt_without_update (&seq, stmt);
@@ -10706,7 +10694,7 @@ gimple_build (gimple_stmt_iterator *gsi,
 		       gsi->bb ? follow_all_ssa_edges : gimple_build_valueize);
   if (!res)
     {
-      res = create_tmp_reg_or_ssa_name (type);
+      res = make_ssa_name (type);
       gimple *stmt;
       if (code == BIT_FIELD_REF)
 	stmt = gimple_build_assign (res, code,
@@ -10742,7 +10730,7 @@ gimple_build (gimple_stmt_iterator *gsi,
     }
   if (!VOID_TYPE_P (type))
     {
-      res = create_tmp_reg_or_ssa_name (type);
+      res = make_ssa_name (type);
       gimple_call_set_lhs (stmt, res);
     }
   gimple_set_location (stmt, loc);
@@ -10777,7 +10765,7 @@ gimple_build (gimple_stmt_iterator *gsi,
 	}
       if (!VOID_TYPE_P (type))
 	{
-	  res = create_tmp_reg_or_ssa_name (type);
+	  res = make_ssa_name (type);
 	  gimple_call_set_lhs (stmt, res);
 	}
       gimple_set_location (stmt, loc);
@@ -10814,7 +10802,7 @@ gimple_build (gimple_stmt_iterator *gsi,
 	}
       if (!VOID_TYPE_P (type))
 	{
-	  res = create_tmp_reg_or_ssa_name (type);
+	  res = make_ssa_name (type);
 	  gimple_call_set_lhs (stmt, res);
 	}
       gimple_set_location (stmt, loc);
@@ -10852,7 +10840,7 @@ gimple_build (gimple_stmt_iterator *gsi,
 	}
       if (!VOID_TYPE_P (type))
 	{
-	  res = create_tmp_reg_or_ssa_name (type);
+	  res = make_ssa_name (type);
 	  gimple_call_set_lhs (stmt, res);
 	}
       gimple_set_location (stmt, loc);
