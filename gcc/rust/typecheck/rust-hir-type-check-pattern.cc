@@ -546,6 +546,11 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
 void
 TypeCheckPattern::visit (HIR::IdentifierPattern &pattern)
 {
+  if (pattern.has_pattern_to_bind ())
+    {
+      TypeCheckPattern::Resolve (pattern.get_to_bind (), parent);
+    }
+
   if (!pattern.get_is_ref ())
     {
       infered = parent;

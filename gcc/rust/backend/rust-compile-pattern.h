@@ -45,12 +45,9 @@ public:
   void visit (HIR::StructPattern &) override;
   void visit (HIR::TupleStructPattern &) override;
   void visit (HIR::TuplePattern &) override;
+  void visit (HIR::IdentifierPattern &) override;
 
   // Always succeeds
-  void visit (HIR::IdentifierPattern &) override
-  {
-    check_expr = boolean_true_node;
-  }
   void visit (HIR::WildcardPattern &) override
   {
     check_expr = boolean_true_node;

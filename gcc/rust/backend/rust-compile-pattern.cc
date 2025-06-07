@@ -434,6 +434,17 @@ CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
     }
 }
 
+void CompilePatternCheckExpr::visit (HIR::IdentifierPattern &pattern)
+{
+  if (pattern.has_pattern_to_bind())
+  {
+    check_expr = CompilePatternCheckExpr::Compile (pattern.get_to_bind(), match_scrutinee_expr, ctx);
+  } else
+  {
+    check_expr = boolean_true_node;
+  }
+}
+
 // setup the bindings
 
 void
