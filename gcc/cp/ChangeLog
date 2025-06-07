@@ -1,3 +1,9 @@
+2025-06-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120555
+	* decl2.cc (fn_being_defined, fn_template_being_defined): New.
+	(mark_used): Check fn_template_being_defined.
+
 2025-06-05  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/120224

@@ -1,3 +1,479 @@
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* urealp.adb (UR_Negate): Capture array element in a local constant.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* urealp.adb (UR_Exponentiate): Use local variable.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Tune code for
+	attribute Small.
+	* sem_prag.adb (Analyze_Attribute): Tune code for pragma Time_Slice.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* ada_get_targ.adb, cstand.ads, cstand.adb, sem_eval.adb, sem_eval.ads,
+	urealp.adb, urealp.ads: Tune style.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* get_targ.ads (Register_Proc_Type): Add null exclusion.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* cstand.adb (Build_Float_Type, Register_Float_Type): Refine
+	parameter subtypes.
+	* set_targ.ads (FPT_Mode_Entry): Refine component subtype.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Add dependency of Program_Exit on
+	Global and Depends contracts.
+	(Analyze_Program_Exit_In_Decl_Part): Check references to subprogram
+	outputs.
+
+2025-06-06  Claire Dross  <dross@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Pragma Exit_Cases): Update the documentation for Exit_Cases.
+	* sem_prag.adb
+	(Anlayze_Pragma): Accept Program_Exit as an exit kind.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.ads (Aspect_Argument): Argument for Program_Exit is now
+	optional.
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Pragma Program_Exit): Change documentation for pragma syntax.
+	* sem_prag.adb (Analyze_Pragma): Argument for Program_Exit is now
+	optional.
+	(Analyze_Program_Exit_In_Decl_Part): Likewise.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.ads (Aspect_Id): Add new aspect identifier.
+	(Aspect_Argument): Specify argument for the new aspect.
+	(Is_Representation_Aspect): New aspect is not a representation aspect.
+	(Aspect_Names): Map new aspect to name.
+	(Aspect_Delay): New aspect is always delayed.
+	* contracts.adb (Expand_Subprogram_Contract)
+	(Add_Pre_Post_Condition, Add_Contract_Item)
+	(Analyze_Entry_Or_Subprogram_Contract)
+	(Analyze_Entry_Or_Subprogram_Body_Contract)
+	(Analyze_Subprogram_Body_Stub_Contract): Support new aspect.
+	* contracts.ads (Add_Contract_Item,
+	Analyze_Entry_Or_Subprogram_Contract,
+	Analyze_Entry_Or_Subprogram_Body_Contract,
+	Analyze_Subprogram_Body_Stub_Contract): Mention new contract in
+	comment.
+	* doc/gnat_rm/implementation_defined_aspects.rst
+	(Aspect Program_Exit): Document new aspect.
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Pragma Program_Exit): Document new pragma.
+	* einfo-utils.adb (Get_Pragma): Support new pragma.
+	* einfo-utils.ads (Get_Pragma): Mention new pragma in comment.
+	* exp_prag.adb (Expand_Pragma_Program_Exit): Expand new pragma;
+	body.
+	* exp_prag.ads (Expand_Pragma_Program_Exit): Expand new pragma;
+	spec.
+	* inline.adb (Remove_Aspects_And_Pragmas): Support new pragma.
+	* par-prag.adb (Prag): Support new pragma.
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Accept attribute
+	Old in new pragma.
+	* sem_ch12.adb (Implementation of Generic Contracts): Mention new
+	aspect in comment.
+	* sem_ch13.adb (Insert_Pragma, Analyze_Aspect_Specifications):
+	Convert new new aspect to pragma.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Renumber
+	subsequent rule in comment.
+	* sem_prag.adb (Check_Postcondition_Use_In_Inlined_Subprogram)
+	(Contract_Freeze_Error): Mention new pragma in comment.
+	(Analyze_Pragma): Support new pragma; renumber subsequent rule in
+	comment.
+	(Analyze_Program_Exit_In_Decl_Part): Analyze new pragma; body.
+	(Sig_Flags): References in new pragma are significant when
+	detecting unreferenced objects.
+	* sem_prag.ads (Aspect_Specifying_Pragma)
+	(Assertion_Expression_Pragma, Pragma_Significant_To_Subprograms):
+	Support new aspect and pragma.
+	(Analyze_Program_Exit_In_Decl_Part): Analyze new pragma; spec.
+	(Find_Related_Package_Or_Body): Mention new pragma in comment.
+	* sem_util.adb (Is_Subprogram_Contract_Annotation): Support new
+	pragma.
+	* sem_util.ads (Is_Subprogram_Contract_Annotation): Mention new
+	pragma in comment.
+	* sinfo.ads (Is_Generic_Contract_Pragma): Mention new pragma in
+	comment.
+	* snames.ads-tmpl (Preset Names, Pragma_Id): Add name and pragma
+	identifiers.
+	* gnat_rm.texi: Regenerate.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/g-dyntab.ads (Instance): Update and extend comment.
+	* scos.ads: Remove comment about the corresponding C header.
+	* scos.h: Remove.
+
+2025-06-06  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Collect_Primitive_Operations): When collecting
+	primitive operations, do not include child unit subprograms.
+
+2025-06-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Constant_Indexing_OK): Add missing support for
+	RM 4.1.6(13/3), and improve performance to avoid climbing more
+	than needed. Add documentation.
+	(Try_Indexing_Function): New subprogram.
+	(Expr_Matches_In_Formal): Added new formals.
+	(Handle_Selected_Component): New subprogram.
+	(Has_IN_Mode): New subprogram.
+	(Try_Container_Indexing): Add documentation, code reorganization
+	and extend its functionality to improve its support for prefixed
+	notation calls.
+
+2025-06-06  Viljar Indus  <indus@adacore.com>
+
+	* debug.adb: Mark -gnatd_D as unused.
+	* diagnostics-repository.adb: Move to...
+	* errid.adb: ...here.
+	* diagnostics-repository.ads: Move to...
+	* errid.ads: ...here.
+	* errout.adb (Error_Msg_Internal): Add new arguments for the new
+	attributes of Error_Msg_Objects.
+	(Error_Msg): Likewise.
+	(Error_Msg_N): Likewise.
+	(Labeled_Span): New method for creating Labeled_Span-s
+	(Primary_Label_Span): New method for creating primary Labeled_Spans.
+	(Secondary_Labeled_Span): New method for creating secondary
+	Labeled_Spans.
+	(Edit): New method for creating Edit elements.
+	(Fix): New method for creating Fix elements.
+	(Error_Msg_F): Simplify code for evaluating the span.
+	(Error_Msg_FE): Likewise.
+	(Error_Msg_NE): Likewise.
+	(Error_Msg_NEL): Likewise.
+	(Error_Msg_N_Gigi): New method that is used as a wrapper for the
+	Error_Msg_xxx methods that have the new arguments. This function
+	is later mapped to the Error_Msg method used inside gigi.
+	(Error_Msg_NE_Gigi): Likewise.
+	(Write_JSON_Span): Ensure that the Style prefix is included that is
+	removed when parsing the message is reinserted to the JSON report.
+	(Output_Messages): Use the new Pretty_Printer and Sarif_Printer
+	packages to print the messages and remove the old implementation
+	for the pretty printer.
+	(Set_Msg_Text): Remove message kind insertion characters from the
+	final message text to avoid some message kinds being duplicated.
+	(To_Full_Span_First): New method for creating a span for a node.
+	(To_Full_Span): Likewise.
+	* errout.ads: Add the specs for all of the newly added functions.
+	* diagnostics-pretty_emitter.adb: Move to...
+	* erroutc-pretty_emitter.adb: ...here.
+	* diagnostics-pretty_emitter.ads: Move to...
+	* erroutc-pretty_emitter.ads: ...here.
+	* diagnostics-sarif_emitter.adb: Move to...
+	* erroutc-sarif_emitter.adb: ...here.
+	* diagnostics-sarif_emitter.ads: Move to...
+	* erroutc-sarif_emitter.ads: ...here.
+	* erroutc.adb (Next_Error_Msg): New method for iterating to the
+	next error message.
+	(Next_Continuation_Msg): New method for iterating to the next
+	continuation message.
+	(Primary_Location): New method for returning the first primary
+	location for the error message.
+	(Get_Human_Id): New method for returning the human readable
+	name for the switch associated with this error message.
+	(Get_Doc_Switch): New method for creating the tag for the switch
+	used in the error message.
+	(Output_Text_Within): Change the method to operating on Strings
+	instead of String pointers.
+	(Output_Msg_Text): Simplify implementation for generating the
+	error message.
+	(Prescan_Message): Make the String handling more error proof.
+	* erroutc.ads (Error_Msg_Object): Add new attributes that were
+	added to Diagnostic objects to Error_Msg_Objects.
+	Add new methods for handling the new error objects.
+	* diagnostics-switch_repository.adb: Move to...
+	* errsw.adb: ...here.
+	* errutil.adb (Error_Msg): Initialize all of the new attributes
+	added to Error_Msg_Object-s.
+	* fe.h (Error_Msg_N): Update the binding.
+	(Error_Msg_NE): Update the binding.
+	For now the error_msg methods in gigi will use the old
+	simplified interface for those methods.
+	* diagnostics-json_utils.adb: Move to...
+	* json_utils.adb: ...here.
+	* diagnostics-json_utils.ads: Move to...
+	* json_utils.ads: ...here.
+	* par-endh.adb: Replace the old error_msg
+	calls with the updated interface.
+	* sem_aggr.adb: Likewise.
+	* sem_ch13.adb: Likewise.
+	* sem_ch4.adb: Likewise.
+	* sem_ch9.adb: Likewise.
+	* diagnostics-brief_emitter.adb: Removed.
+	* diagnostics-brief_emitter.ads: Removed.
+	* diagnostics-constructors.adb: Removed.
+	* diagnostics-constructors.ads: Removed.
+	* diagnostics-converter.adb: Removed.
+	* diagnostics-converter.ads: Removed.
+	* diagnostics-switch_repository.ads: Removed.
+	* diagnostics-utils.adb: Removed.
+	* diagnostics-utils.ads: Removed.
+	* diagnostics.adb: Removed.
+	* diagnostics.ads: Removed.
+	* errsw.ads: New file. Based on diagnostics-switch_repository.ads.
+	It additionally contains all the switch enumerations.
+	* gcc-interface/Make-lang.in: Update compilation dependencies.
+	* gcc-interface/Makefile.in: Likewise.
+
+2025-06-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* contracts.adb (Add_Invariant_And_Predicate_Checks): Assign Ekind.
+	* inline.adb (Expand_Inlined_Call): Likewise.
+	* exp_ch9.adb (Build_Simple_Entry_Call): Likewise.
+	* exp_dist.adb (Append_Array_Traversal): Likewise.
+	* exp_fixd.adb (Build_Double_Divide_Code, Build_Scaled_Divide_Code):
+	Likewise.
+
+2025-06-06  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnarl/s-linux__android-aarch64.ads: Provide an
+	Android_Sigaction generic package to expose an aarch64
+	version of struct_sigation, using a provided sigset_t
+	for sa_flags.
+	* libgnarl/s-linux__android-arm.ads: Likewise, for ARM
+	rather than aarch64.
+	* libgnarl/s-osinte__android.ads: Move sigset_t definition
+	to the visible part and use it to instantiate the Android_Sigation
+	generic provided by System.Linux, which is specialized for ARM vs
+	aarch64. Define struct_sigaction out of the Android_Sigaction
+	instance, remove the local representation clauses.
+
+2025-06-06  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.rtl: Rework the Android pairs to match those of a
+	regular Linux port rather than a generic posix one.
+	* libgnarl/s-osinte__android.ads: Import pcrtl and add bindings
+	for the pthread_rwlock entry points, used by the Linux units now
+	in the libgnat target pairs.
+	* sysdep.c (__gnat_has_cap_sys_nice): Define for Android,
+	conservative return 0.
+	* adaint.c (__gnat_cpu_alloc): Define for Android as for Linux.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* namet.ads (Name_Entry): Update comments to explain the current needs.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib.ads (Unit_Record): Remove representation clauses and filler
+	components
+	* lib-load.adb, lib-writ.adb: Remove initialization of data fillers.
+	* nlists.adb (Allocate_List_Tables): Remove explicit initialization.
+	* repinfo.adb (Exp_Node): Remove representation clauses.
+	* sinput.ads (Source_File_Record): Likewise.
+	* urealp.adb (Ureal_Entry): Likewise.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst
+	(Effect of Convention on Representation): Fix number of list items.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch10.adb (Install_Siblings.In_Context): Add missing guard.
+
+2025-06-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Tweak condition.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Insert_Conditional_Object_Declaration): Make sure the
+	object is allocated properly by the code generator at library level.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.adb (Check_Non_Static_Context): Remove special handling of
+	floating-point zero.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads (Incomplete_View): Move from Sinfo; adapt wording.
+	* exp_ch3.adb (Build_Record_Init_Proc): Adapt retrieval of
+	Incomplete_View.
+	* gen_il-fields.ads (Opt_Field_Enum): Move Incomplete_View from node
+	to entity field.
+	* gen_il-gen-gen_entities.adb (Gen_Entities): Add field.
+	* gen_il-gen-gen_nodes.adb (Gen_Nodes): Remove field.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration,
+	Check_Anonymous_Access_Component): Adapt setting of Incomplete_View.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Adapt retrieval of
+	Incomplete_View for class-wide types; no longer rely on class-wide
+	type being attached to non-classwide type declaration.
+	* sem_util.adb (Collect_Primitive_Operations): Adapt retrieval of
+	Incomplete_View.
+	* sinfo.ads (Incomplete_View): Move to Einfo.
+
+2025-06-06  squirek  <squirek@adacore.com>
+
+	* aspects.ads: Add support for constructors.
+	* exp_aggr.adb: Likewise.
+	* exp_attr.adb: Likewise.
+	* exp_ch3.adb: Likewise.
+	* exp_ch4.adb: Likewise.
+	* exp_util.adb: Likewise.
+	* gen_il-fields.ads: Likewise.
+	* gen_il-gen-gen_entities.adb: Likewise.
+	* gen_il-gen-gen_nodes.adb: Likewise.
+	* par-ch4.adb: Likewise.
+	* sem_aggr.adb: Likewise.
+	* sem_attr.adb, sem_attr.ads: Likewise.
+	* sem_ch13.adb: Likewise.
+	* sem_ch3.adb: Likewise.
+	* sem_ch5.adb: Likewise.
+	* sem_ch6.adb: Likewise.
+	* sem_res.adb: Likewise.
+	* sem_util.adb, sem_util.ads: Likewise.
+	* snames.ads-tmpl: Likewise.
+
+2025-06-06  squirek  <squirek@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst: Add documentation.
+	* gnat_rm.texi: Regenerate.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Modulus): Change to implementation base type only.
+	* gen_il-gen-gen_entities.adb (Modular_Integer_Kind): Change type
+	of Modulus field to Impl_Base_Type_Only.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Original_Access_Type): Restore.
+	* gen_il-fields.ads (Opt_Field_Enum): Restore Original_Access_Type.
+	* gen_il-gen-gen_entities.adb: Adjust accordingly.
+	* exp_ch9.adb (Expand_Access_Protected_Subprogram_Type): Restore the
+	call to Set_Original_Access_Type.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Default_Expr_Function): Delete.
+	(Dependent_Instances): Likewise.
+	(Handler_Records): Likewise.
+	(Needs_Activation_Record): Likewise.
+	(Original_Access_Type): Likewise.
+	(Register_Exception_Call): Likewise.
+	* sinfo.ads (Accept_Handler_Records): Likewise.
+	* gen_il-fields.ads (Opt_Field_Enum): Remove Accept_Handler_Records,
+	Default_Expr_Function, Dependent_Instances, Handler_Records,
+	Needs_Activation_Record, Original_Access_Type and
+	Register_Exception_Call.
+	* gen_il-gen-gen_entities.adb: Adjust accordingly.
+	* gen_il-gen-gen_nodes.adb: Likewise.
+	* exp_ch9.adb (Expand_Access_Protected_Subprogram_Type): Remove call
+	to Set_Original_Access_Type.
+	(Expand_N_Selective_Accept): Remove call to Set_Handler_Records.
+	* exp_ch11.adb (Expand_N_Exception_Declaration): Remove call to
+	Set_Register_Exception_Call.
+	* sem_ch3.adb (Access_Subprogram_Declaration): Remove call to
+	Set_Needs_Activation_Record.
+	* sem_ch12.adb (Instantiate_Package_Body): Remove call to
+	Set_Handler_Records.
+
+2025-06-06  Steve Baird  <baird@adacore.com>
+
+	* sem_ch4.adb
+	(Find_Unary_Types): Because we reanalyze names in an instance,
+	we sometimes have to take steps to filter out extraneous name
+	resolution candidates that happen to be visible at the point of the
+	instance declaration. Remove some code that appears to have been
+	written with this in mind. This is done for two reasons. First, the
+	code sometimes doesn't work (possibly because the In_Instance test
+	is not specific enough - it probably should be testing to see whether
+	we are in an instance of the particular generic in which the result
+	of calling Corresponding_Generic_Type was declared) and causes correct
+	code to be rejected. Second, the code seems to no longer be necessary
+	(possibly because of subsequent fixes in this area which are not
+	specific to unary operators).
+
+2025-06-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch8.adb (Premature_Usage): Remove dead code.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Size_Check_Code): Delete.
+	* gen_il-fields.ads (Opt_Field_Enum): Remove Size_Check_Code.
+	* gen_il-gen-gen_entities.adb (Constant_Or_Variable_Kind): Likewise.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Remove call
+	to Kill_Size_Check_Code.
+	* sem_prag.adb (Analyze_Pragma): Likewise.
+	* sem_util.ads (Kill_Size_Check_Code): Delete.
+	* sem_util.adb (Kill_Size_Check_Code): Likewise.
+
+2025-06-06  Claire Dross  <dross@adacore.com>
+
+	* sem_ch6.adb (Analyze_SPARK_Subprogram_Specification):
+	Allow the first parameter of functions whose return type is
+	an anonymous access-to-variable type to have mode IN OUT.
+
+2025-06-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* gen_il-fields.ads: New field.
+	* gen_il-gen-gen_entities.adb: New field.
+	* einfo.ads: Document new field.
+	* sem_res.adb (Check_Discriminant_Use): Record relevant uses in new
+	field. Move warning emission to...
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): ... Here.
+
+2025-06-06  Steve Baird  <baird@adacore.com>
+
+	* sem_disp.adb
+	(Check_Dispatching_Operation): Delete code to generate
+	"missing overriding indicator" warning. Update comments.
+
+2025-06-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* cstand.adb (Create_Standard): Delay declaration generation for
+	Natural and Positive.
+
+2025-06-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* cstand.adb (Create_Standard): Remove useless calls.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Expand_Record_Aggregate): Use the named form for the
+	second actual parameter in the call to Duplicate_Subexpr.
+	* exp_attr.adb (Expand_Size_Attribute): Likewise.
+	* exp_ch5.adb (Expand_Assign_Array): Likewise.
+	(Expand_Assign_Array_Bitfield): Likewise.
+	(Expand_Assign_Array_Bitfield_Fast): Likewise.
+	* exp_util.ads (Duplicate_Subexpr): Add New_Scope formal parameter.
+	(Duplicate_Subexpr_No_Checks): Likewise.
+	(Duplicate_Subexpr_Move_Checks): Likewise.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Pass Proc_Id as the
+	actual for New_Scope in the calls to Duplicate_Subexpr_No_Checks.
+	(Duplicate_Subexpr): Add New_Scope formal parameter and forward it
+	in the call to New_Copy_Tree.
+	(Duplicate_Subexpr_No_Checks): Likewise.
+	(Duplicate_Subexpr_Move_Checks): Likewise.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Set flag Assignment_OK in the object
+	declaration inserted for the validity checks.
+
 2025-06-05  squirek  <squirek@adacore.com>
 
 	* sem_warn.adb

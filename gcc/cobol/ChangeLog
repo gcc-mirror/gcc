@@ -1,3 +1,68 @@
+2025-06-06  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/120328
+	PR cobol/119695
+	* Make-lang.in: Success with non-English locale.
+	* cbldiag.h (cbl_unimplemented_at): Comment:
+	* cdf-copy.cc (copybook_elem_t::open_file): Indentation.
+	* cdf.y: YYABORT on certain errors.
+	* cdfval.h (cdf_value): Const parameter.
+	* copybook.h (class copybook_elem_t): Initialization.
+	(class uppername_t): Explicit constructor.
+	* except.cc (ec_type_descr): Remove %04s.
+	(cbl_enabled_exceptions_t::dump): Remove %zu.
+	* exceptg.h (class exception_turn_t): Explicit constructor.
+	* genapi.cc (parser_perform_conditional): Remove %zu.
+	(set_exception_environment): Formatting.
+	(parser_statement_begin): Exception overhead.
+	(parser_perform_conditional): Formatting:
+	(parser_perform_conditional_end): Eliminate size_t.
+	(parser_check_fatal_exception): Exception overhead.
+	(parser_perform_conditional_end): Remove %zu.
+	* inspect.h (struct cbx_inspect_match_t): Const reference.
+	(struct cbx_inspect_t): Const parameter.
+	* lexio.cc (cdftext::process_file): Remove %zu.
+	* lexio.h (struct YYLTYPE): Remove unneeded struct.
+	(YYLTYPE_IS_DECLARED): Likewise.
+	(YYLTYPE_IS_TRIVIAL): Likewise.
+	* parse.y: Comment; change DOT.
+	* scan.l: Scan function names without swallowing whitespace.
+	* scan_ante.h (scanner_parsing): Remove %zu.
+	(scanner_parsing_pop): Remove %zu.
+	(binary_integer_usage): Remove %zu.
+	* scan_post.h (prelex): Correct post-CDF resumption.
+	(yylex): Clearer message.
+	* symbols.cc (symbol_table_extend): Explicit constructor.
+	(elementize): Const parameter.
+	(is_variable_length): Correct always-false.
+	(symbols_update): Remove unnecessary shadow variable.
+	(struct symbol_elem_t): Const parameter.
+	(symbol_alphabet_add): Const parameter.
+	(new_literal_add): Initialization.
+	* symbols.h (class cbl_domain_elem_t): Correct assignment.
+	(struct cbl_span_t): Improve constructor.
+	(struct cbl_refer_t): Initialization.
+	(struct cbl_alphabet_t): Rename shadow variable.
+	(struct cbl_file_key_t): Remove unused constructor.
+	(struct symbol_elem_t): Initialization.
+	(struct cbl_until_addresses_t): Use unsigned int, for messages.
+	(struct cbl_prog_hier_t): Initialization.
+	(struct cbl_perform_tgt_t): Repair constructor.
+	(struct cbl_label_t): Const parameter.
+	(symbol_typedef_add): Const parameter.
+	(symbol_field_add): Explicit constructor.
+	(symbol_label_add): Explicit constructor.
+	(symbol_program_add): Remove C-style "struct" use.
+	(symbol_special_add): Remove C-style "struct" use.
+	(symbol_alphabet_add): Const parameter.
+	(symbol_file_add): Remove C-style "struct" use.
+	(symbol_section_add): Remove C-style "struct" use.
+	* symfind.cc: Const parameter.
+	* util.cc (gb4): New function.
+	* util.h (gb4): New function.
+	* TODO: New file.
+
 2025-06-05  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119975

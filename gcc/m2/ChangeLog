@@ -1,3 +1,12 @@
+2025-06-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120542
+	* gm2-compiler/M2Quads.mod (BuildReturnLower): New procedure.
+	(BuildReturn): Allow return without an expression from
+	module initialization blocks.  Generate an error if an
+	expression is provided.  Call BuildReturnLower if no error
+	was seen.
+
 2025-06-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/120474

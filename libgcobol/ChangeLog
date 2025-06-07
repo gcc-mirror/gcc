@@ -1,3 +1,23 @@
+2025-06-06  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* common-defs.h (enum cbl_file_mode_t): Whitespace.
+	(enum file_stmt_t): Likewise.
+	(ec_cmp): Likewise.
+	(struct cbl_declarative_t): Add "explicit" keyword.
+	(class cbl_enabled_exceptions_t): Whitespace.
+	* gfileio.cc: Remove cppcheck comment.
+	* libgcobol.cc (class ec_status_t): Add "explicit" keyword.
+	(match_declarative): Remove %zu.
+	(default_exception_handler): Likwise.
+	(__gg__check_fatal_exception): Exception overhead.
+	(__gg__exception_push): Remove %zu.
+	(__gg__exception_pop): Likewise.
+	(cbl_enabled_exception_t::dump): Likewise.
+	(__gg__match_exception): Exception overhead; remove %zu.
+	(cbl_enabled_exceptions_t::dump): Remove %zu.
+	(__gg__set_exception_environment): Likewise.
+
 2025-06-05  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119975

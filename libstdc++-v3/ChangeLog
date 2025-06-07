@@ -1,3 +1,74 @@
+2025-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/semaphore/1.cc: Check type properties and
+	max() values.
+	* testsuite/30_threads/semaphore/3.cc: New test.
+	* testsuite/30_threads/semaphore/cons_neg.cc: New test.
+
+2025-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/semaphore_base.h (_Select_semaphore_impl): Rename
+	to _Semaphore_impl and use std::conditional_t instead of an
+	immediately invoked lambda expression.
+	* include/std/semaphore (counting_semaphore): Adjust to use new
+	name.
+
+2025-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/barrier/1.cc: Require hosted. Only
+	require gthreads for non-linux targets.
+	* testsuite/30_threads/barrier/2.cc: Likewise.
+	* testsuite/30_threads/semaphore/1.cc: Likewise.
+	* testsuite/30_threads/semaphore/2.cc: Likewise.
+	* testsuite/30_threads/semaphore/cons.cc: Likewise.
+	* testsuite/30_threads/semaphore/least_max_value_neg.cc:
+	Likewise.
+	* testsuite/30_threads/semaphore/try_acquire.cc: Likewise.
+
+2025-06-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/120432
+	* include/std/flat_map (flat_map::operator[]): Make the
+	non-template overloads call try_emplace directly.  Remove
+	non-standard same_as constraint on the template overload.
+	* testsuite/23_containers/flat_map/1.cc (test08): New test.
+
+2025-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__atomic_wait_address_until_v):
+	Add assertion to prevent use with proxy waits.
+	(__atomic_wait_address_for_v): Likewise.
+	* include/bits/atomic_wait.h (__atomic_wait_address_v):
+	Likewise.
+
+2025-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__atomic_wait_address_v): Add bare
+	wait flag.
+	* include/bits/semaphore_base.h (__semaphore_base): Rename to
+	__semaphore_impl. Replace local variable and predicate lambdas
+	with _Available struct.
+	(__platform_semaphore_impl): New class template.
+	(__semaphore_impl): Remove alias template.
+	(_Select_semaphore_impl): New alias template.
+	* include/std/semaphore (counting_semaphore): Use
+	_Select_semaphore_impl.
+
+2025-06-06  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/120565
+	* include/bits/chrono_io.h
+	(operator<<(basic_ostream<_CharT, _Traits>&, const sys_info&))
+	(operator<<(basic_ostream<_CharT, _Traits>&, const local_info&)):
+	Support wchar_t as _CharT.
+	* testsuite/std/time/format/empty_spec.cc: Instantiated test_infos for
+	wchar_t and increase timeout.
+
+2025-06-06  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/time/format/empty_spec.cc: New tests and increased
+	timeout.
+
 2025-06-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/120548

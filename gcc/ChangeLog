@@ -1,3 +1,153 @@
+2025-06-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-html.cc (struct html_doctypedecl): New.
+	(html_builder::html_builder): Use it to populate the document's
+	m_doctypedecl.
+	* xml.cc (xml::document::write_as_xml): Replace hardcoded HTML DTD
+	with use of m_doctypedecl field.
+	(selftest::test_no_dtd): New.
+	(selftest::xml_cc_tests): New.
+	* xml.h (struct doctypedecl): New decl.
+
+2025-06-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add xml.o.
+	* diagnostic-format-html.cc (namespace xml): Move implementation
+	to xml.cc
+	(selftest::test_printer): Likewise.
+	(selftest::test_attribute_ordering): Likewise.
+	(selftest::diagnostic_format_html_cc_tests): Don't call the moved
+	tests here; they will be called from xml_cc_tests in xml.cc.
+	* selftest-run-tests.cc (selftest::run_tests): Call xml_cc_tests.
+	* selftest.h (selftest::xml_cc_tests): New decl.
+	* xml.cc: New file, based on material from
+	diagnostic-format-html.cc.
+
+2025-06-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.h: Fix the sorting of the various *_cc_tests decls.
+
+2025-06-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* text-art/widget.cc (selftest::test_empty_wrapper_widget): New.
+	(selftest::text_art_widget_cc_tests): Call it.
+	* text-art/widget.h (text_art::wrapper_widget::calc_req_size):
+	Gracefully handle m_child being null.
+	(text_art::wrapper_widget::update_child_alloc_rects): Likewise.
+	(text_art::wrapper_widget::paint_to_canvas): Likewise.
+
+2025-06-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_1): Add vphi argument.
+	Manually update the vphi and new_stmt vdef/lhs.
+	(cond_if_else_store_replacement): Update call to cond_if_else_store_replacement_1.
+
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gimple-fold.cc (gimple_fold_builtin_omp_get_initial_device,
+	gimple_fold_builtin_omp_get_num_devices): New.
+	(gimple_fold_builtin): Call them.
+	* omp-builtins.def (BUILT_IN_OMP_GET_INITIAL_DEVICE): Add
+	(BUILT_IN_OMP_GET_NUM_DEVICES): Make uservisible + pure.
+
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	* builtins.def (DEF_GOACC_BUILTIN_COMPILER, DEF_GOMP_BUILTIN_COMPILER):
+	Set NONANSI_P = false to enable those also with -fno-nonansi-builtins.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Remove
+	non-SLP path.
+	(get_load_store_type): Likewise.
+
+2025-06-06  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_vec_dup): Add new
+	case UDIV.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op divu.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_store): Remove non-SLP
+	paths.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.h (create_tmp_reg_or_ssa_name): Remove.
+	* gimple-fold.cc (create_tmp_reg_or_ssa_name): Likewise.
+	(gimple_fold_builtin_memory_op): Use make_ssa_name.
+	(gimple_fold_builtin_strchr): Likewise.
+	(gimple_fold_builtin_strcat): Likewise.
+	(gimple_load_first_char): Likewise.
+	(gimple_fold_builtin_string_compare): Likewise.
+	(gimple_build): Likewise.
+	* tree-inline.cc (copy_bb): Likewise.
+	* config/rs6000/rs6000-builtin.cc (fold_build_vec_cmp): Likewise.
+	(rs6000_gimple_fold_mma_builtin): Likewise.
+	(rs6000_gimple_fold_builtin): Likewise.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.cc (store_constructor) <ARRAY_TYPE>: Perform the arithmetics
+	on offsets in (unsigned) sizetype.
+
+2025-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* coverage.cc (coverage_init): Return early when in LTO
+
+2025-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.cc (profile_count::to_sreal_scale): Special case 0 of autofdo.
+	(profile_count::combine_with_ipa_count): If outer function has GLOBAL0 profile
+	but innter counter has non-zero profile, force it to be 0.
+
+2025-06-06  Jiawei  <jiawei@iscas.ac.cn>
+	    Jiawei Chen  <jiawei@iscas.ac.cn>
+	    Yangyu Chen  <cyy@cyyself.name>
+	    Tang Haojin  <tanghaojin@outlook.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): New cpu tune.
+	(RISCV_CORE): New cpu.
+	* doc/invoke.texi: Ditto.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120032
+	* tree-ssa-forwprop.cc (simplify_count_zeroes): When we cannot use
+	the IFN to determine the result at zero use a conditional move
+	to reproduce the correct result from the table-based
+	algorithm.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120032
+	* match.pd (clz_table_index): New match.
+	* tree-ssa-forwprop.cc (check_table_array): Rename from
+	check_ctz_array.  Split out actual verification to a functor.
+	(check_table_string): Rename from check_ctz_string and likewise.
+	(check_table): Rename from check_ctz_table and adjust.
+	(gimple_clz_table_index): Declare.
+	(simplify_count_zeroes): Rename from simplify_count_trailing_zeroes.
+	Extend to cover CLZ.
+	(pass_forwprop::execute): Adjust.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.cc (simplify_count_trailing_zeroes):
+	Use ranger instead of tree_expr_nonzero_p.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.cc (optimize_count_trailing_zeroes):
+	Inline into ...
+	(simplify_count_trailing_zeroes): ... this function.
+	Split out ...
+	(check_ctz_table): ... a wrapper for CONSTRUCTOR vs. STRING_CST
+	handling.
+
 2025-06-05  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/riscv.cc (riscv_expand_conditional_move): Avoid

@@ -1,3 +1,13 @@
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* f95-lang.cc (ATTR_PURE_NOTHROW_LIST): Define.
+	* trans-expr.cc (get_builtin_fn): Handle omp_get_num_devices
+	and omp_get_intrinsic_device.
+	* gfortran.h (gfc_option_t): Add disable_omp_... for them.
+	* options.cc (gfc_handle_option): Handle them with
+	-fno-builtin-.
+
 2025-06-04  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/120483

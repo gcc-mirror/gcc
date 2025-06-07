@@ -1,3 +1,97 @@
+2025-06-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120555
+	* g++.dg/cpp1z/constexpr-if39.C: New test.
+
+2025-06-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/arc/fma-1.c: Make "a" extern so the optimizers can
+	see any value and optimize away the key computation.
+
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/omp_get_num_devices_initial_device-2.c: New test.
+	* c-c++-common/gomp/omp_get_num_devices_initial_device.c: New test.
+	* gfortran.dg/gomp/omp_get_num_devices_initial_device-2.f90: New test.
+	* gfortran.dg/gomp/omp_get_num_devices_initial_device.f90: New test.
+
+2025-06-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv-nofm.c: Adjust
+	the asm check for vdivu.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv.c: Ditto.
+
+2025-06-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Add asm check
+	for vdivu.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+
+2025-06-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vdivu.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vdiv-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vdiv-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vdiv-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vdiv-run-1-u8.c: New test.
+
+2025-06-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120542
+	* gm2/iso/fail/badreturn.mod: New test.
+	* gm2/iso/fail/badreturn2.mod: New test.
+	* gm2/iso/pass/modulereturn.mod: New test.
+	* gm2/iso/pass/modulereturn2.mod: New test.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr7.ads: New test.
+
+2025-06-06  Jiawei  <jiawei@iscas.ac.cn>
+	    Jiawei Chen  <jiawei@iscas.ac.cn>
+	    Yangyu Chen  <cyy@cyyself.name>
+	    Tang Haojin  <tanghaojin@outlook.com>
+
+	* gcc.target/riscv/mcpu-xiangshan-kunminghu.c: New test.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120032
+	* gcc.target/i386/pr120032-3.c: New testcase.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120032
+	* gcc.target/i386/pr120032-1.c: New testcase.
+	* gcc.target/i386/pr120032-2.c: Likewise.
+
 2025-06-05  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/nozicond-3.c: New test.
