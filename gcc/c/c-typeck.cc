@@ -613,6 +613,17 @@ c_type_tag (const_tree t)
   return name;
 }
 
+/* Remove qualifiers but not atomic.  For arrays remove qualifiers
+   on the element type but also do not remove atomic.  */
+static tree
+remove_qualifiers (tree t)
+{
+  if (!t || t == error_mark_node)
+    return t;
+  return TYPE_ATOMIC (strip_array_types (t))
+	 ? c_build_qualified_type (TYPE_MAIN_VARIANT (t), TYPE_QUAL_ATOMIC)
+	 : TYPE_MAIN_VARIANT (t);
+}
 
 
 /* Return the composite type of two compatible types.
@@ -910,17 +921,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	for (; p1 && p1 != void_list_node;
 	     p1 = TREE_CHAIN (p1), p2 = TREE_CHAIN (p2), n = TREE_CHAIN (n))
 	  {
-	     tree mv1 = TREE_VALUE (p1);
-	     if (mv1 && mv1 != error_mark_node)
-	       mv1 = TYPE_ATOMIC (mv1)
-		     ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv1), TYPE_QUAL_ATOMIC)
-		     : TYPE_MAIN_VARIANT (mv1);
-
-	     tree mv2 = TREE_VALUE (p2);
-	     if (mv2 && mv2 != error_mark_node)
-	       mv2 = TYPE_ATOMIC (mv2)
-		     ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv2), TYPE_QUAL_ATOMIC)
-		     : TYPE_MAIN_VARIANT (mv2);
+	     tree mv1 = remove_qualifiers (TREE_VALUE (p1));
+	     tree mv2 = remove_qualifiers (TREE_VALUE (p2));
 
 	    /* A null type means arg type is not specified.
 	       Take whatever the other function type has.  */
@@ -1789,15 +1791,9 @@ comp_target_types (location_t location, tree ttl, tree ttr)
     val_ped = comptypes (mvl, mvr);
 
   /* Qualifiers on element types of array types that are
-     pointer targets are lost by taking their TYPE_MAIN_VARIANT.  */
-
-  mvl = (TYPE_ATOMIC (strip_array_types (mvl))
-	 ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvl), TYPE_QUAL_ATOMIC)
-	 : TYPE_MAIN_VARIANT (mvl));
-
-  mvr = (TYPE_ATOMIC (strip_array_types (mvr))
-	 ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvr), TYPE_QUAL_ATOMIC)
-	 : TYPE_MAIN_VARIANT (mvr));
+     pointer targets are also removed.  */
+  mvl = remove_qualifiers (mvl);
+  mvr = remove_qualifiers (mvr);
 
   enum_and_int_p = false;
   val = comptypes_check_enum_int (mvl, mvr, &enum_and_int_p);
@@ -2100,25 +2096,16 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 {
   while (1)
     {
-      tree a1, mv1, a2, mv2;
       if (args1 == NULL_TREE && args2 == NULL_TREE)
 	return true;
       /* If one list is shorter than the other,
 	 they fail to match.  */
       if (args1 == NULL_TREE || args2 == NULL_TREE)
 	return 0;
-      mv1 = a1 = TREE_VALUE (args1);
-      mv2 = a2 = TREE_VALUE (args2);
-      if (mv1 && mv1 != error_mark_node && TREE_CODE (mv1) != ARRAY_TYPE)
-	mv1 = (TYPE_ATOMIC (mv1)
-	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv1),
-					 TYPE_QUAL_ATOMIC)
-	       : TYPE_MAIN_VARIANT (mv1));
-      if (mv2 && mv2 != error_mark_node && TREE_CODE (mv2) != ARRAY_TYPE)
-	mv2 = (TYPE_ATOMIC (mv2)
-	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv2),
-					 TYPE_QUAL_ATOMIC)
-	       : TYPE_MAIN_VARIANT (mv2));
+      tree a1 = TREE_VALUE (args1);
+      tree a2 = TREE_VALUE (args2);
+      tree mv1 = remove_qualifiers (a1);
+      tree mv2 = remove_qualifiers (a2);
       /* A null pointer instead of a type
 	 means there is supposed to be an argument
 	 but nothing is specified about what type it has.
@@ -2155,13 +2142,7 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 	      for (memb = TYPE_FIELDS (a1);
 		   memb; memb = DECL_CHAIN (memb))
 		{
-		  tree mv3 = TREE_TYPE (memb);
-		  if (mv3 && mv3 != error_mark_node
-		      && TREE_CODE (mv3) != ARRAY_TYPE)
-		    mv3 = (TYPE_ATOMIC (mv3)
-			   ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv3),
-						     TYPE_QUAL_ATOMIC)
-			   : TYPE_MAIN_VARIANT (mv3));
+		  tree mv3 = remove_qualifiers (TREE_TYPE (memb));
 		  if (comptypes_internal (mv3, mv2, data))
 		    break;
 		}
@@ -2179,13 +2160,7 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 	      for (memb = TYPE_FIELDS (a2);
 		   memb; memb = DECL_CHAIN (memb))
 		{
-		  tree mv3 = TREE_TYPE (memb);
-		  if (mv3 && mv3 != error_mark_node
-		      && TREE_CODE (mv3) != ARRAY_TYPE)
-		    mv3 = (TYPE_ATOMIC (mv3)
-			   ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv3),
-						     TYPE_QUAL_ATOMIC)
-			   : TYPE_MAIN_VARIANT (mv3));
+		  tree mv3 = remove_qualifiers (TREE_TYPE (memb));
 		  if (comptypes_internal (mv3, mv1, data))
 		    break;
 		}
@@ -7477,10 +7452,7 @@ find_anonymous_field_with_type (tree struct_type, tree type)
        field != NULL_TREE;
        field = TREE_CHAIN (field))
     {
-      tree fieldtype = (TYPE_ATOMIC (TREE_TYPE (field))
-			? c_build_qualified_type (TREE_TYPE (field),
-						  TYPE_QUAL_ATOMIC)
-			: TYPE_MAIN_VARIANT (TREE_TYPE (field)));
+      tree fieldtype = remove_qualifiers (TREE_TYPE (field));
       if (DECL_NAME (field) == NULL
 	  && comptypes (type, fieldtype))
 	{
@@ -7518,10 +7490,7 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
   gcc_assert (RECORD_OR_UNION_TYPE_P (rhs_struct_type));
 
   gcc_assert (POINTER_TYPE_P (type));
-  lhs_main_type = (TYPE_ATOMIC (TREE_TYPE (type))
-		   ? c_build_qualified_type (TREE_TYPE (type),
-					     TYPE_QUAL_ATOMIC)
-		   : TYPE_MAIN_VARIANT (TREE_TYPE (type)));
+  lhs_main_type = remove_qualifiers (TREE_TYPE (type));
 
   found_field = NULL_TREE;
   found_sub_field = false;
@@ -7532,10 +7501,7 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
       if (DECL_NAME (field) != NULL_TREE
 	  || !RECORD_OR_UNION_TYPE_P (TREE_TYPE (field)))
 	continue;
-      tree fieldtype = (TYPE_ATOMIC (TREE_TYPE (field))
-			? c_build_qualified_type (TREE_TYPE (field),
-						  TYPE_QUAL_ATOMIC)
-			: TYPE_MAIN_VARIANT (TREE_TYPE (field)));
+      tree fieldtype = remove_qualifiers (TREE_TYPE (field));
       if (comptypes (lhs_main_type, fieldtype))
 	{
 	  if (found_field != NULL_TREE)
@@ -8292,23 +8258,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
       tree ttl = TREE_TYPE (type);
       tree ttr = TREE_TYPE (rhstype);
-      tree mvl = ttl;
-      tree mvr = ttr;
       bool is_opaque_pointer;
       bool target_cmp = false;   /* Cache comp_target_types () result.  */
       addr_space_t asl;
       addr_space_t asr;
 
-      if (TREE_CODE (mvl) != ARRAY_TYPE)
-	mvl = (TYPE_ATOMIC (mvl)
-	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvl),
-					 TYPE_QUAL_ATOMIC)
-	       : TYPE_MAIN_VARIANT (mvl));
-      if (TREE_CODE (mvr) != ARRAY_TYPE)
-	mvr = (TYPE_ATOMIC (mvr)
-	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvr),
-					 TYPE_QUAL_ATOMIC)
-	       : TYPE_MAIN_VARIANT (mvr));
+      tree mvl = remove_qualifiers (ttl);
+      tree mvr = remove_qualifiers (ttr);
+
       /* Opaque pointers are treated like void pointers.  */
       is_opaque_pointer = vector_targets_convertible_p (ttl, ttr);
 
