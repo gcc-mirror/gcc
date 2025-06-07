@@ -2406,6 +2406,11 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   bool spf = start_preparsed_function (actor, NULL_TREE, SF_PRE_PARSED);
   gcc_checking_assert (spf);
   gcc_checking_assert (cfun && current_function_decl && TREE_STATIC (actor));
+  if (flag_exceptions)
+    /* We, unconditionally, add a try/catch and rethrow.
+       TODO: Determine if the combination of initial suspend and the original
+       body cannot throw, and elide these additions.  */
+    cp_function_chain->can_throw = true;
   tree stmt = begin_function_body ();
 
   tree actor_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
