@@ -1408,8 +1408,9 @@ static bool
 or1k_can_change_mode_class (machine_mode from, machine_mode to,
 			    reg_class_t rclass)
 {
+  /* Allow cnoverting special flags to SI mode subregs.  */
   if (rclass == FLAG_REGS)
-    return from == to;
+    return from == to || (from == BImode && to == SImode);
   return true;
 }
 
