@@ -5436,13 +5436,18 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       machine_mode mode0 = GET_MODE (op0);
       machine_mode mode1 = GET_MODE (op1);
 
-      /* An integer comparison must be comparing WORD_MODE objects.  We
-	 must enforce that so that we don't strip away a sign_extension
-	 thinking it is unnecessary.  We might consider using
-	 riscv_extend_operands if they are not already properly extended.  */
+      /* An integer comparison must be comparing WORD_MODE objects.
+	 Extend the comparison arguments as necessary.  */
       if ((INTEGRAL_MODE_P (mode0) && mode0 != word_mode)
 	  || (INTEGRAL_MODE_P (mode1) && mode1 != word_mode))
-	return false;
+	riscv_extend_comparands (code, &op0, &op1);
+
+      /* We might have been handed back a SUBREG.  Just to make things
+	 easy, force it into a REG.  */
+      if (!REG_P (op0) && !CONST_INT_P (op0))
+	op0 = force_reg (word_mode, op0);
+      if (!REG_P (op1) && !CONST_INT_P (op1))
+	op1 = force_reg (word_mode, op1);
 
       /* In the fallback generic case use MODE rather than WORD_MODE for
 	 the output of the SCC instruction, to match the mode of the NEG
