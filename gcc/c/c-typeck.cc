@@ -1002,9 +1002,9 @@ composite_type (tree t1, tree t2)
 {
   struct composite_cache cache = { };
   tree n = composite_type_internal (t1, t2, &cache);
-  /* For function and arrays there are some cases where qualifiers do
+  /* For function types there are some cases where qualifiers do
      not match.  See PR120510.  */
-  if (FUNCTION_TYPE != TREE_CODE (n) && ARRAY_TYPE != TREE_CODE (n))
+  if (FUNCTION_TYPE != TREE_CODE (n))
     {
       gcc_checking_assert (comptypes (n, t1));
       gcc_checking_assert (comptypes (n, t2));
@@ -1022,9 +1022,6 @@ static tree
 common_pointer_type (tree t1, tree t2)
 {
   tree attributes;
-  tree pointed_to_1, mv1;
-  tree pointed_to_2, mv2;
-  tree target;
   unsigned target_quals;
   addr_space_t as1, as2, as_common;
   int quals1, quals2;
@@ -1046,15 +1043,11 @@ common_pointer_type (tree t1, tree t2)
   attributes = targetm.merge_type_attributes (t1, t2);
 
   /* Find the composite type of the target types, and combine the
-     qualifiers of the two types' targets.  Do not lose qualifiers on
-     array element types by taking the TYPE_MAIN_VARIANT.  */
-  mv1 = pointed_to_1 = TREE_TYPE (t1);
-  mv2 = pointed_to_2 = TREE_TYPE (t2);
-  if (TREE_CODE (mv1) != ARRAY_TYPE)
-    mv1 = TYPE_MAIN_VARIANT (pointed_to_1);
-  if (TREE_CODE (mv2) != ARRAY_TYPE)
-    mv2 = TYPE_MAIN_VARIANT (pointed_to_2);
-  target = composite_type (mv1, mv2);
+     qualifiers of the two types' targets.  */
+  tree pointed_to_1 = TREE_TYPE (t1);
+  tree pointed_to_2 = TREE_TYPE (t2);
+  tree target = composite_type (TYPE_MAIN_VARIANT (pointed_to_1),
+				TYPE_MAIN_VARIANT (pointed_to_2));
 
   /* Strip array types to get correct qualifier for pointers to arrays */
   quals1 = TYPE_QUALS_NO_ADDR_SPACE (strip_array_types (pointed_to_1));
