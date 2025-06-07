@@ -169,12 +169,14 @@ libm2pim_la_LIBADD =
 @BUILD_PIMLIB_TRUE@	Builtins.lo MathLib0.lo M2EXCEPTION.lo \
 @BUILD_PIMLIB_TRUE@	RTExceptions.lo SMathLib0.lo RTint.lo \
 @BUILD_PIMLIB_TRUE@	Indexing.lo LMathLib0.lo LegacyReal.lo \
-@BUILD_PIMLIB_TRUE@	MemUtils.lo gdbif.lo GetOpt.lo OptLib.lo
+@BUILD_PIMLIB_TRUE@	MemUtils.lo gdbif.lo GetOpt.lo OptLib.lo \
+@BUILD_PIMLIB_TRUE@	ARRAYOFCHAR.lo CHAR.lo StringFileSysOp.lo \
+@BUILD_PIMLIB_TRUE@	String.lo FileSysOp.lo
 @BUILD_PIMLIB_TRUE@am_libm2pim_la_OBJECTS = $(am__objects_1) \
 @BUILD_PIMLIB_TRUE@	UnixArgs.lo Selective.lo sckt.lo errno.lo \
 @BUILD_PIMLIB_TRUE@	dtoa.lo ldtoa.lo termios.lo \
 @BUILD_PIMLIB_TRUE@	SysExceptions.lo libm2pim_la-target.lo \
-@BUILD_PIMLIB_TRUE@	wrapc.lo cgetopt.lo
+@BUILD_PIMLIB_TRUE@	wrapc.lo cgetopt.lo CFileSysOp.lo
 libm2pim_la_OBJECTS = $(am_libm2pim_la_OBJECTS)
 @BUILD_PIMLIB_TRUE@am_libm2pim_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -495,14 +497,20 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@       Indexing.mod \
 @BUILD_PIMLIB_TRUE@       LMathLib0.mod LegacyReal.mod \
 @BUILD_PIMLIB_TRUE@       MemUtils.mod gdbif.mod \
-@BUILD_PIMLIB_TRUE@       GetOpt.mod OptLib.mod
+@BUILD_PIMLIB_TRUE@       GetOpt.mod OptLib.mod \
+@BUILD_PIMLIB_TRUE@       ARRAYOFCHAR.mod \
+@BUILD_PIMLIB_TRUE@       CHAR.mod \
+@BUILD_PIMLIB_TRUE@       StringFileSysOp.mod \
+@BUILD_PIMLIB_TRUE@       String.mod \
+@BUILD_PIMLIB_TRUE@       FileSysOp.mod
 
 
 # COROUTINES.mod has been removed as it is implemented in ../libm2iso.
 @BUILD_PIMLIB_TRUE@M2DEFS = Args.def   ASCII.def \
 @BUILD_PIMLIB_TRUE@         Assertion.def  Break.def \
 @BUILD_PIMLIB_TRUE@         Builtins.def  cbuiltin.def \
-@BUILD_PIMLIB_TRUE@         CmdArgs.def COROUTINES.def \
+@BUILD_PIMLIB_TRUE@         CmdArgs.def CFileSysOp.def \
+@BUILD_PIMLIB_TRUE@         COROUTINES.def \
 @BUILD_PIMLIB_TRUE@         cxxabi.def  Debug.def \
 @BUILD_PIMLIB_TRUE@         dtoa.def  DynamicStrings.def \
 @BUILD_PIMLIB_TRUE@         Environment.def  errno.def \
@@ -530,7 +538,12 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@         termios.def  TimeString.def \
 @BUILD_PIMLIB_TRUE@         UnixArgs.def  wrapc.def  \
 @BUILD_PIMLIB_TRUE@         GetOpt.def OptLib.def \
-@BUILD_PIMLIB_TRUE@         cgetopt.def
+@BUILD_PIMLIB_TRUE@         cgetopt.def \
+@BUILD_PIMLIB_TRUE@         ARRAYOFCHAR.def \
+@BUILD_PIMLIB_TRUE@         CHAR.def \
+@BUILD_PIMLIB_TRUE@         StringFileSysOp.def \
+@BUILD_PIMLIB_TRUE@         String.def \
+@BUILD_PIMLIB_TRUE@         FileSysOp.def
 
 @BUILD_PIMLIB_TRUE@libm2pim_la_SOURCES = $(M2MODS) \
 @BUILD_PIMLIB_TRUE@                      UnixArgs.cc \
@@ -538,7 +551,8 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@                      errno.cc dtoa.cc \
 @BUILD_PIMLIB_TRUE@                      ldtoa.cc termios.cc \
 @BUILD_PIMLIB_TRUE@                      SysExceptions.cc target.c \
-@BUILD_PIMLIB_TRUE@                      wrapc.cc cgetopt.cc
+@BUILD_PIMLIB_TRUE@                      wrapc.cc cgetopt.cc \
+@BUILD_PIMLIB_TRUE@                      CFileSysOp.cc
 
 @BUILD_PIMLIB_TRUE@libm2pimdir = libm2pim
 @BUILD_PIMLIB_TRUE@libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
@@ -639,6 +653,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CFileSysOp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Selective.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SysExceptions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UnixArgs.Plo@am__quote@

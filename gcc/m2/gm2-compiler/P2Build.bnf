@@ -46,7 +46,8 @@ see <https://www.gnu.org/licenses/>.  *)
 IMPLEMENTATION MODULE P2Build ;
 
 FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken,
-                     InsertTokenAndRewind, GetTokenNo, MakeVirtual2Tok ;
+                     InsertTokenAndRewind, GetTokenNo, MakeVirtual2Tok,
+		     MakeVirtualTok ;
 
 FROM M2MetaError IMPORT MetaErrorStringT0, MetaErrorT1 ;
 FROM NameKey IMPORT NulName, Name, makekey, MakeKey ;
@@ -128,13 +129,13 @@ FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput
                         PutGnuAsmOutput, PutGnuAsmTrash, PutGnuAsmVolatile,
                         MakeRegInterface,
                         PutRegInterface, GetRegInterface,
-                        GetSymName, GetType, MakeConstLit,
+                        GetSymName, GetType, MakeConstLit, IsProcType,
                         NulSym,
-                        StartScope, EndScope,
+                        StartScope, EndScope, GetCurrentModule,
                         PutIncluded,
                         PutExceptionFinally, PutExceptionBlock, GetCurrentScope,
                         IsVarParam, IsProcedure, IsDefImp, IsModule,
-                        IsRecord, IsAModula2Type,
+                        IsRecord, IsAModula2Type, IsImported,
                         RequestSym ;
 
 IMPORT M2Error ;
@@ -450,6 +451,54 @@ BEGIN
    Expect(realtok, stopset0, stopset1, stopset2)
 END Real ;
 
+
+(*
+   CheckModuleQualident - check to see if the beginning ident of the qualident is an
+                          imported module.
+*)
+
+PROCEDURE CheckModuleQualident (stopset0: SetOfStop0;
+                                stopset1: SetOfStop1;
+				stopset2: SetOfStop2) ;
+VAR
+   name         : Name ;
+   init,
+   nextLevel,
+   tok, tokstart: CARDINAL ;
+BEGIN
+   PopTtok (name, tokstart) ;
+   tok := tokstart ;
+   init := RequestSym (tok, name) ;
+   IF IsImported (GetCurrentModule (), init) AND (IsDefImp (init) OR IsModule (init))
+   THEN
+      WHILE IsDefImp (init) OR IsModule (init) DO
+         Expect (periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
+         StartScope (init) ;
+         Ident (stopset0, stopset1, stopset2) ;
+	 PopTtok (name, tok) ;
+         nextLevel := RequestSym (tok, name) ;
+         EndScope ;
+	 init := nextLevel
+      END ;
+      IF tok#tokstart
+      THEN
+         tok := MakeVirtualTok (tokstart, tokstart, tok)
+      END ;
+      IF IsProcedure (init) OR IsProcType (init)
+      THEN
+         PushTtok (init, tok)
+      ELSE
+         Annotate ("%1s(%1d)|%1s(%1d)||qualident|type") ;
+         PushTFtok (init, GetType (init), tok) ;
+      END ;
+      PutIncluded (init)
+   ELSE
+      PushTFtok (init, GetType (init), tok) ;
+      Annotate ("%1s(%1d)|%1s(%1d)||qualident|type")
+   END
+END CheckModuleQualident ;
+
+
 % module P2Build end
 END P2Build.
 % rules
@@ -609,28 +658,10 @@ ImplementationOrProgramModule := ImplementationModule | ProgramModule =:
 
 Number := Integer | Real =:
 
-Qualident :=                                                               % VAR name: Name ;
-                                                                                 Type, Sym, tok: CARDINAL ; %
-             Ident
+Qualident := Ident
                                                                            % IF IsAutoPushOn()
                                                                              THEN
-                                                                                PopTtok(name, tok) ;
-                                                                                Sym := RequestSym (tok, name) ;
-                                                                                IF IsDefImp(Sym) OR IsModule(Sym)
-                                                                                THEN
-                                                                                   Expect(periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
-                                                                                   StartScope(Sym) ;
-                                                                                   Qualident(stopset0, stopset1, stopset2) ;
-                                                                                   (* should we test for lack of ident? *)
-                                                                                   PopTFtok(Sym, Type, tok) ;
-                                                                                   PushTFtok(Sym, Type, tok) ;
-                                                                                   Annotate("%1s(%1d)|%1s(%1d)||qualident|type") ;
-                                                                                   EndScope ;
-                                                                                   PutIncluded(Sym)
-                                                                                ELSE
-                                                                                   PushTFtok(Sym, GetType(Sym), tok) ;
-                                                                                   Annotate("%1s(%1d)|%1s(%1d)||qualident|type")
-                                                                                END
+     										CheckModuleQualident (stopset0, stopset1, stopset2)
                                                                              ELSE (* just parse qualident *) %
              { "." Ident }                                                 % END %
            =:

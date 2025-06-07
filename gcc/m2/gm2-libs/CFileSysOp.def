@@ -1,0 +1,56 @@
+DEFINITION MODULE CFileSysOp ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+
+(*
+   Description: provides access to filesystem operations.
+                The implementation module is written in C
+                and the parameters behave as their C
+                counterparts.
+*)
+
+TYPE
+   AccessMode = SET OF AccessStatus ;
+   AccessStatus = (F_OK, R_OK, W_OK, X_OK, A_FAIL) ;
+
+
+PROCEDURE Unlink (filename: ADDRESS) : INTEGER ;
+
+
+(*
+   Access - test access to a path or file.  The behavior is
+            the same as defined in access(2).  Except that
+            on A_FAIL is only used during the return result
+            indicating the underlying C access has returned
+            -1 (and errno can be checked).
+*)
+
+PROCEDURE Access (pathname: ADDRESS; mode: AccessMode) : AccessMode ;
+
+
+(* Return TRUE if the caller can see the existance of the file or
+   directory on the filesystem.  *)
+
+(*
+   IsDir - return true if filename is a regular directory.
+*)
+
+PROCEDURE IsDir (dirname: ADDRESS) : BOOLEAN ;
+
+
+(*
+   IsFile - return true if filename is a regular file.
+*)
+
+PROCEDURE IsFile (filename: ADDRESS) : BOOLEAN ;
+
+
+(*
+   Exists - return true if pathname exists.
+*)
+
+PROCEDURE Exists (pathname: ADDRESS) : BOOLEAN ;
+
+
+END CFileSysOp.
