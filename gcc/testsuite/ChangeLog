@@ -1,3 +1,65 @@
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120357
+	* gcc.dg/vect/vect-early-break_136-pr120357.c: New testcase.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120341
+	* gcc.dg/torture/pr120341-1.c: New testcase.
+	* gcc.dg/torture/pr120341-2.c: Likewise.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/120182
+	* gcc.dg/torture/pr120182.c: New testcase.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120003
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust aarch64 expected
+	thread2 number of threads.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120003
+	* gcc.dg/tree-ssa/ssa-thread-23.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119960
+	* gcc.dg/vect/bb-slp-pr119960-1.c: New testcase.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-epilogues-1.c: New testcase.
+	* gcc.target/i386/vect-epilogues-2.c: Likewise.
+	* gcc.target/i386/vect-epilogues-3.c: Likewise.
+	* gcc.target/i386/vect-epilogues-4.c: Likewise.
+	* gcc.target/i386/vect-epilogues-5.c: Likewise.
+
 2025-06-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/opt7.ads: New test.

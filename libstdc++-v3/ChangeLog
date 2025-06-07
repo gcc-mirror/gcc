@@ -1,3 +1,22 @@
+2025-06-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-06-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/120432
+	* include/std/flat_map (flat_map::operator[]): Make the
+	non-template overloads call try_emplace directly.  Remove
+	non-standard same_as constraint on the template overload.
+	* testsuite/23_containers/flat_map/1.cc (test08): New test.
+
+2025-06-06  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-06-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono:_M_s): Add missing
+	__out argument to format_to call.
+
 2025-06-01  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
