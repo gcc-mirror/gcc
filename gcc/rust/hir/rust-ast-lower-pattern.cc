@@ -50,6 +50,11 @@ ASTLoweringPattern::visit (AST::IdentifierPattern &pattern)
 				 UNKNOWN_LOCAL_DEFID);
 
   std::unique_ptr<Pattern> to_bind;
+  if (pattern.has_pattern_to_bind ())
+    {
+      to_bind = std::unique_ptr<Pattern> (
+	ASTLoweringPattern::translate (pattern.get_pattern_to_bind ()));
+    }
   translated
     = new HIR::IdentifierPattern (mapping, pattern.get_ident (),
 				  pattern.get_locus (), pattern.get_is_ref (),

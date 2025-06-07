@@ -2116,7 +2116,7 @@ Dump::visit (IdentifierPattern &e)
   put_field ("mut", std::to_string (e.is_mut ()));
 
   if (e.has_pattern_to_bind ())
-    put_field ("to_bind", e.get_to_bind ().as_string ());
+    visit_field ("to_bind", e.get_to_bind ());
   else
     put_field ("to_bind", "none");
 
