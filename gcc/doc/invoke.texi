@@ -7060,14 +7060,14 @@ which is enabled by optimizations in most targets.  The precision of
 the warnings depends on the optimization options used.
 
 @opindex Wno-musttail-local-addr
-@opindex -Wmusttail-local-addr
+@opindex Wmusttail-local-addr
 @item -Wno-musttail-local-addr
 Do not warn about passing a pointer (or in C++, a reference) to a
 local variable or label to argument of a @code{musttail} call.  Those
 variables go out of scope before the tail call instruction.
 
 @opindex Wmaybe-musttail-local-addr
-@opindex -Wno-maybe-musttail-local-addr
+@opindex Wno-maybe-musttail-local-addr
 @item -Wmaybe-musttail-local-addr
 Warn when address of a local variable can escape to a @code{musttail}
 call, unless it goes out of scope already before the @code{musttail}
