@@ -1467,6 +1467,12 @@ finish_co_await_expr (location_t kw, tree expr)
   if (!expr || error_operand_p (expr))
     return error_mark_node;
 
+  if (cp_unevaluated_operand)
+    {
+      error_at (kw, "%qs cannot be used in an unevaluated context","co_await");
+      return error_mark_node;
+    }
+
   if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
 					    "co_await"))
     return error_mark_node;
@@ -1546,6 +1552,12 @@ finish_co_yield_expr (location_t kw, tree expr)
 {
   if (!expr || error_operand_p (expr))
     return error_mark_node;
+
+  if (cp_unevaluated_operand)
+    {
+      error_at (kw, "%qs cannot be used in an unevaluated context","co_yield");
+      return error_mark_node;
+    }
 
   /* Check the general requirements and simple syntax errors.  */
   if (!coro_common_keyword_context_valid_p (current_function_decl, kw,
