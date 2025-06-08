@@ -3690,7 +3690,11 @@ next_nonnote_nondebug_insn (rtx_insn *insn)
 
 /* Return the next insn after INSN that is not a NOTE nor DEBUG_INSN,
    but stop the search before we enter another basic block.  This
-   routine does not look inside SEQUENCEs.  */
+   routine does not look inside SEQUENCEs.
+   NOTE: This can potentially bleed into next BB. If current insn is
+	 last insn of BB, followed by a code_label before the start of
+	 the next BB, code_label will be returned. But this is the
+	 behavior rest of gcc assumes/relies on e.g. get_last_bb_insn.  */
 
 rtx_insn *
 next_nonnote_nondebug_insn_bb (rtx_insn *insn)
