@@ -3823,14 +3823,16 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
   if (!vphi)
     return false;
   tree then_vdef = PHI_ARG_DEF_FROM_EDGE (vphi, single_succ_edge (then_bb));
-  tree else_vdef = PHI_ARG_DEF_FROM_EDGE (vphi, single_succ_edge (else_bb));
   gimple *then_assign = single_trailing_store_in_bb (then_bb, then_vdef, vphi);
   if (then_assign)
     {
-      gimple *else_assign = single_trailing_store_in_bb (else_bb, else_vdef, vphi);
+      tree else_vdef = PHI_ARG_DEF_FROM_EDGE (vphi, single_succ_edge (else_bb));
+      gimple *else_assign = single_trailing_store_in_bb (else_bb, else_vdef,
+							 vphi);
       if (else_assign)
 	return cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
-						 then_assign, else_assign, vphi);
+						 then_assign, else_assign,
+						 vphi);
     }
 
   /* If either vectorization or if-conversion is disabled then do
