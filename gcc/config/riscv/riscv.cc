@@ -3949,6 +3949,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		    {
 		    case DIV:
 		    case UDIV:
+		    case MOD:
 		      *total = get_vector_binary_rtx_cost (op, scalar2vr_cost);
 		      break;
 		    default:
