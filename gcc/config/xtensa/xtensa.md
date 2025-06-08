@@ -41,6 +41,8 @@
   UNSPEC_LSETUP_START
   UNSPEC_LSETUP_END
   UNSPEC_FRAME_BLOCKAGE
+  UNSPEC_CEIL
+  UNSPEC_FLOOR
 ])
 
 (define_c_enum "unspecv" [
@@ -102,6 +104,11 @@
 (define_code_iterator any_float [float unsigned_float])
 (define_code_attr m_float [(float "float") (unsigned_float "ufloat")])
 (define_code_attr s_float [(float "") (unsigned_float "uns")])
+
+;; This iterator and attribute allow FP-to-integer rounding of two types
+;; to be generated from one template.
+(define_int_iterator ANY_ROUND [UNSPEC_CEIL UNSPEC_FLOOR])
+(define_int_attr m_round [(UNSPEC_CEIL "ceil") (UNSPEC_FLOOR "floor")])
 
 
 ;; Attributes.
@@ -1168,12 +1175,7 @@
 	(any_fix:SI (mult:SF (match_operand:SF 1 "register_operand" "f")
 			     (match_operand:SF 2 "fix_scaling_operand" "F"))))]
   "TARGET_HARD_FLOAT"
-{
-  static char result[64];
-  sprintf (result, "<m_fix>.s\t%%0, %%1, %d",
-	   REAL_EXP (CONST_DOUBLE_REAL_VALUE (operands[2])) - 1);
-  return result;
-}
+  "<m_fix>.s\t%0, %1, %U2"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
@@ -1192,12 +1194,36 @@
 	(mult:SF (any_float:SF (match_operand:SI 1 "register_operand" "a"))
 		 (match_operand:SF 2 "float_scaling_operand" "F")))]
   "TARGET_HARD_FLOAT"
-{
-  static char result[64];
-  sprintf (result, "<m_float>.s\t%%0, %%1, %d",
-	   1 - REAL_EXP (CONST_DOUBLE_REAL_VALUE (operands[2])));
-  return result;
-}
+  "<m_float>.s\t%0, %1, %V2"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "l<m_round>sfsi2"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(match_operand:SF 1 "register_operand" "f")] ANY_ROUND))]
+  "TARGET_HARD_FLOAT"
+  "<m_round>.s\t%0, %1, 0"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*l<m_round>sfsi2_2x"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(plus:SF (match_operand:SF 1 "register_operand" "f")
+			     (match_dup 1))] ANY_ROUND))]
+  "TARGET_HARD_FLOAT"
+  "<m_round>.s\t%0, %1, 1"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*l<m_round>sfsi2_scaled"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(mult:SF (match_operand:SF 1 "register_operand" "f")
+			     (match_operand:SF 2 "fix_scaling_operand" "F"))] ANY_ROUND))]
+  "TARGET_HARD_FLOAT"
+  "<m_round>.s\t%0, %1, %U2"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])

@@ -3047,6 +3047,8 @@ xtensa_modes_tieable_p (machine_mode mode1, machine_mode mode2)
    'K'  CONST_INT, print number of bits in mask for EXTUI
    'R'  CONST_INT, print (X & 0x1f)
    'L'  CONST_INT, print ((32 - X) & 0x1f)
+   'U', CONST_DOUBLE:SF, print (REAL_EXP (rval) - 1)
+   'V', CONST_DOUBLE:SF, print (1 - REAL_EXP (rval))
    'D'  REG, print second register of double-word register operand
    'N'  MEM, print address of next word following a memory operand
    'v'  MEM, if memory reference is volatile, output a MEMW before it
@@ -3141,6 +3143,20 @@ print_operand (FILE *file, rtx x, int letter)
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0x1f);
       else
 	output_operand_lossage ("invalid %%R value");
+      break;
+
+    case 'U':
+      if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
+	fprintf (file, "%d", REAL_EXP (CONST_DOUBLE_REAL_VALUE (x)) - 1);
+      else
+	output_operand_lossage ("invalid %%U value");
+      break;
+
+    case 'V':
+      if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
+	fprintf (file, "%d", 1 - REAL_EXP (CONST_DOUBLE_REAL_VALUE (x)));
+      else
+	output_operand_lossage ("invalid %%V value");
       break;
 
     case 'x':
