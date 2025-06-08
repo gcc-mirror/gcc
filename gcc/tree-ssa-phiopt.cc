@@ -3773,14 +3773,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
   /* Handle the case with single store in THEN_BB and ELSE_BB.  That is
      cheap enough to always handle as it allows us to elide dependence
      checking.  */
-  gphi *vphi = NULL;
-  for (gphi_iterator si = gsi_start_phis (join_bb); !gsi_end_p (si);
-       gsi_next (&si))
-    if (virtual_operand_p (gimple_phi_result (si.phi ())))
-      {
-	vphi = si.phi ();
-	break;
-      }
+  gphi *vphi = get_virtual_phi (join_bb);
   if (!vphi)
     return false;
   tree then_vdef = PHI_ARG_DEF_FROM_EDGE (vphi, single_succ_edge (then_bb));
