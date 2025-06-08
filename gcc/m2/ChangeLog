@@ -1,3 +1,31 @@
+2025-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119650
+	PR modula2/117203
+	* gm2-compiler/P2Build.bnf (CheckModuleQualident): New
+	procedure.
+	(Qualident): Rewrite.
+	* gm2-compiler/P3Build.bnf (PushTFQualident): New procedure.
+	(CheckModuleQualident): Ditto.
+	(Qualident): Rewrite.
+	* gm2-compiler/PCBuild.bnf (PushTFQualident): New procedure.
+	(CheckModuleQualident): Ditto.
+	(Qualident): Rewrite.
+	* gm2-compiler/PHBuild.bnf (PushTFQualident): New procedure.
+	(CheckModuleQualident): Ditto.
+	(Qualident): Rewrite.
+	* gm2-libs/ARRAYOFCHAR.def: New file.
+	* gm2-libs/ARRAYOFCHAR.mod: New file.
+	* gm2-libs/CFileSysOp.def: New file.
+	* gm2-libs/CHAR.def: New file.
+	* gm2-libs/CHAR.mod: New file.
+	* gm2-libs/FileSysOp.def: New file.
+	* gm2-libs/FileSysOp.mod: New file.
+	* gm2-libs/String.def: New file.
+	* gm2-libs/String.mod: New file.
+	* gm2-libs/StringFileSysOp.def: New file.
+	* gm2-libs/StringFileSysOp.mod: New file.
+
 2025-06-06  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/120542

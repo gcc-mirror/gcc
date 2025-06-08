@@ -1,3 +1,12 @@
+2025-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119650
+	* gm2/iso/fail/CHAR.mod: New test.
+	* gm2/iso/run/pass/CHAR.mod: New test.
+	* gm2/iso/run/pass/importself.mod: New test.
+	* gm2/pimlib/run/pass/testwrite.mod: New test.
+	* gm2/pimlib/run/pass/testwritechar.mod: New test.
+
 2025-06-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120555
