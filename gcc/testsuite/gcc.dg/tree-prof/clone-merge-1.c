@@ -1,4 +1,6 @@
 /* { dg-options "-O3 -fno-early-inlining -fdump-ipa-afdo-all" } */
+/* { dg-require-profiling "-fauto-profile" } */ 
+
 __attribute__ ((used))
 int a[1000];
 

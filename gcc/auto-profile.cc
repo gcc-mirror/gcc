@@ -575,10 +575,10 @@ void function_instance::merge (function_instance *other)
   for (callsite_map::const_iterator iter = other->callsites.begin ();
        iter != other->callsites.end (); ++iter)
     if (callsites.count (iter->first) == 0)
-	callsites[iter->first] = iter->second;
+      callsites[iter->first] = iter->second;
 
-  for (position_count_map::const_iterator iter = pos_counts.begin ();
-       iter != pos_counts.end (); ++iter)
+  for (position_count_map::const_iterator iter = other->pos_counts.begin ();
+       iter != other->pos_counts.end (); ++iter)
     if (pos_counts.count (iter->first) == 0)
       pos_counts[iter->first] = iter->second;
     else
