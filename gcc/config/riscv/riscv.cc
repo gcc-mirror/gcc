@@ -12277,7 +12277,7 @@ riscv_emit_frm_mode_set (int mode, int prev_mode)
 	  && prev_mode != riscv_vector::FRM_DYN
 	  && prev_mode != riscv_vector::FRM_DYN_CALL)
       /* Restore frm value when switch to DYN mode.  */
-      || (mode == riscv_vector::FRM_DYN
+      || (STATIC_FRM_P (cfun) && mode == riscv_vector::FRM_DYN
 	  && prev_mode != riscv_vector::FRM_DYN_CALL);
 
   if (restore_p)
