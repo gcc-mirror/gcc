@@ -107,6 +107,8 @@ along with GCC; see the file COPYING3.  If not see
 /* True the mode switching has static frm, or false.  */
 #define STATIC_FRM_P(c) ((c)->machine->mode_sw_info.static_frm_p)
 
+#define CFUN_IN_CALL(c) ((c)->machine->mode_sw_info.cfun_call)
+
 /* True if we can use the instructions in the XTheadInt extension
    to handle interrupts, or false.  */
 #define TH_INT_INTERRUPT(c)						\
@@ -176,10 +178,13 @@ struct GTY(()) mode_switching_info {
      mode instruction in the function or not.  */
   bool static_frm_p;
 
+  bool cfun_call;
+
   mode_switching_info ()
     {
       dynamic_frm = NULL_RTX;
       static_frm_p = false;
+      cfun_call = false;
     }
 };
 
@@ -12304,20 +12309,6 @@ riscv_emit_mode_set (int entity, int mode, int prev_mode,
     }
 }
 
-/* Adjust the FRM_NONE insn after a call to FRM_DYN for the
-   underlying emit.  */
-
-static int
-riscv_frm_adjust_mode_after_call (rtx_insn *cur_insn, int mode)
-{
-  rtx_insn *insn = prev_nonnote_nondebug_insn_bb (cur_insn);
-
-  if (insn && CALL_P (insn))
-    return riscv_vector::FRM_DYN;
-
-  return mode;
-}
-
 /* Return mode that frm must be switched into
    prior to the execution of insn.  */
 
@@ -12329,26 +12320,25 @@ riscv_frm_mode_needed (rtx_insn *cur_insn, int code)
       /* The dynamic frm will be initialized only onece during cfun.  */
       DYNAMIC_FRM_RTL (cfun) = gen_reg_rtx (SImode);
       emit_insn_at_entry (gen_frrmsi (DYNAMIC_FRM_RTL (cfun)));
+      CFUN_IN_CALL (cfun) = false;
     }
 
   if (CALL_P (cur_insn))
+    {
+      CFUN_IN_CALL (cfun) = true;
       return riscv_vector::FRM_DYN_CALL;
+    }
 
   int mode = code >= 0 ? get_attr_frm_mode (cur_insn) : riscv_vector::FRM_NONE;
 
   if (mode == riscv_vector::FRM_NONE)
-      /* After meet a call, we need to backup the frm because it may be
-	 updated during the call. Here, for each insn, we will check if
-	 the previous insn is a call or not. When previous insn is call,
-	 there will be 2 cases for the emit mode set.
-
-	 1. Current insn is not MODE_NONE, then the mode switch framework
-	    will do the mode switch from MODE_CALL to MODE_NONE natively.
-	 2. Current insn is MODE_NONE, we need to adjust the MODE_NONE to
-	    the MODE_DYN, and leave the mode switch itself to perform
-	    the emit mode set.
-       */
-    mode = riscv_frm_adjust_mode_after_call (cur_insn, mode);
+    {
+      if (CFUN_IN_CALL (cfun))
+	{
+	  CFUN_IN_CALL (cfun) = false;
+	  return riscv_vector::FRM_DYN;
+	}
+    }
 
   return mode;
 }
