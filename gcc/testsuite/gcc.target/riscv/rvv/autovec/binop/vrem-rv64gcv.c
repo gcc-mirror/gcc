@@ -3,8 +3,8 @@
 
 #include "vrem-template.h"
 
-/* { dg-final { scan-assembler-times {\tvrem\.vv} 4 } } */
-/* { dg-final { scan-assembler-times {\tvrem\.vx} 4 } } */
+/* { dg-final { scan-assembler-times {\tvrem\.vv} 8 } } */
+/* { dg-final { scan-assembler-not {\tvrem\.vx} } } */
 /* { dg-final { scan-assembler-times {\tvremu\.vv} 4 } } */
 /* { dg-final { scan-assembler-times {\tvremu\.vx} 4 } } */
 /* { dg-final { scan-tree-dump-times "\.COND_LEN_MOD" 16 "optimized" } } */
