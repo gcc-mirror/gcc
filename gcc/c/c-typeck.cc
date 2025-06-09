@@ -136,6 +136,7 @@ static int lvalue_or_else (location_t, const_tree, enum lvalue_use);
 static void record_maybe_used_decl (tree);
 static bool comptypes_internal (const_tree, const_tree,
 				struct comptypes_data *data);
+static bool comptypes_check_for_composite (tree t1, tree t2);
 
 /* Return true if EXP is a null pointer constant, false otherwise.  */
 
@@ -1002,15 +1003,13 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 tree
 composite_type (tree t1, tree t2)
 {
+  gcc_checking_assert (comptypes_check_for_composite (t1, t2));
+
   struct composite_cache cache = { };
   tree n = composite_type_internal (t1, t2, &cache);
-  /* For function types there are some cases where qualifiers do
-     not match.  See PR120510.  */
-  if (FUNCTION_TYPE != TREE_CODE (n))
-    {
-      gcc_checking_assert (comptypes (n, t1));
-      gcc_checking_assert (comptypes (n, t2));
-    }
+
+  gcc_checking_assert (comptypes_check_for_composite (n, t1));
+  gcc_checking_assert (comptypes_check_for_composite (n, t2));
   return n;
 }
 
@@ -1454,15 +1453,38 @@ comptypes_verify (tree type1, tree type2)
 }
 
 struct comptypes_data {
+
+  /* output */
   bool enum_and_int_p;
   bool different_types_p;
   bool warning_needed;
+
+  /* context */
   bool anon_field;
   bool pointedto;
+
+  /* configuration */
   bool equiv;
+  bool ignore_promoting_args;
 
   const struct tagged_tu_seen_cache* cache;
 };
+
+
+/* Helper function for composite_type.  This function ignores when the
+   function type of an old-style declaration is incompatible with a type
+   of a declaration with prototype because some are arguments are not
+   self-promoting.  This is ignored only for function types but not
+   ignored in a nested context.  */
+
+static bool
+comptypes_check_for_composite (tree t1, tree t2)
+{
+  struct comptypes_data data = { };
+  data.ignore_promoting_args = FUNCTION_TYPE == TREE_CODE (t1);
+  return comptypes_internal (t1, t2, &data);
+}
+
 
 /* C implementation of compatible_types_for_indirection_note_p.  */
 
@@ -1593,6 +1615,10 @@ comptypes_equiv_p (tree type1, tree type2)
    permitted in C11 typedef redeclarations, then this sets
    'different_types_p' in DATA to true; it is never set to
    false, but may or may not be set if the types are incompatible.
+   If two functions types are not compatible only because one is
+   an old-style definition that does not have self-promoting arguments,
+   then this can be ignored by setting 'ignore_promoting_args_p'.
+   For 'equiv' we can compute equivalency classes (see above).
    This differs from comptypes, in that we don't free the seen
    types.  */
 
@@ -2030,8 +2056,13 @@ function_types_compatible_p (const_tree f1, const_tree f2,
     ret2 = build_qualified_type (TYPE_MAIN_VARIANT (ret2),
 				 TYPE_QUALS (ret2) & ~TYPE_QUAL_VOLATILE);
 
+  bool ignore_pargs = data->ignore_promoting_args;
+  data->ignore_promoting_args = false;
+
   if (!comptypes_internal (ret1, ret2, data))
     return false;
+
+  data->ignore_promoting_args = ignore_pargs;
 
   tree args1 = TYPE_ARG_TYPES (f1);
   tree args2 = TYPE_ARG_TYPES (f2);
@@ -2046,8 +2077,9 @@ function_types_compatible_p (const_tree f1, const_tree f2,
     {
       if (TYPE_NO_NAMED_ARGS_STDARG_P (f1) != TYPE_NO_NAMED_ARGS_STDARG_P (f2))
 	return false;
-      if (!self_promoting_args_p (args2))
+      if (!(data->ignore_promoting_args || self_promoting_args_p (args2)))
 	return false;
+      data->ignore_promoting_args = false;
       /* If one of these types comes from a non-prototype fn definition,
 	 compare that with the other type's arglist.
 	 If they don't match, ask for a warning (but no error).  */
@@ -2060,8 +2092,9 @@ function_types_compatible_p (const_tree f1, const_tree f2,
     {
       if (TYPE_NO_NAMED_ARGS_STDARG_P (f1) != TYPE_NO_NAMED_ARGS_STDARG_P (f2))
 	return false;
-      if (!self_promoting_args_p (args1))
+      if (!(data->ignore_promoting_args || self_promoting_args_p (args1)))
 	return false;
+      data->ignore_promoting_args = false;
       if (TYPE_ACTUAL_ARG_TYPES (f2)
 	  && !type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2), data))
 	data->warning_needed = true;
