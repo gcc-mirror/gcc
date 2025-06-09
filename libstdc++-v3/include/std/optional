@@ -36,6 +36,7 @@
 
 #define __glibcxx_want_freestanding_optional
 #define __glibcxx_want_optional
+#define __glibcxx_want_optional_range_support
 #define __glibcxx_want_constrained_equality
 #include <bits/version.h>
 
@@ -56,6 +57,11 @@
 #endif
 #if __cplusplus > 202002L
 # include <concepts>
+#endif
+#ifdef __cpp_lib_optional_range_support // C++ >= 26
+# include <bits/formatfwd.h>
+# include <bits/ranges_base.h>
+# include <bits/stl_iterator.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -858,6 +864,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       using value_type = _Tp;
+#ifdef __cpp_lib_optional_range_support // >= C++26
+      using iterator = __gnu_cxx::__normal_iterator<_Tp*, optional>;
+      using const_iterator = __gnu_cxx::__normal_iterator<const _Tp*, optional>;
+#endif
 
       constexpr optional() noexcept { }
 
@@ -1157,6 +1167,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __other._M_destruct();
 	  }
       }
+
+#ifdef __cpp_lib_optional_range_support // >= C++26
+      // Iterator support.
+      constexpr iterator begin() noexcept
+      {
+	return iterator(
+	  this->_M_is_engaged() ? std::addressof(this->_M_get()) : nullptr
+	);
+      }
+
+      constexpr const_iterator begin() const noexcept
+      {
+	return const_iterator(
+	  this->_M_is_engaged() ? std::addressof(this->_M_get()) : nullptr
+	);
+      }
+
+      constexpr iterator end() noexcept
+      {
+	return begin() + has_value();
+      }
+
+      constexpr const_iterator end() const noexcept
+      {
+	return begin() + has_value();
+      }
+#endif // __cpp_lib_optional_range_support
 
       // Observers.
       constexpr const _Tp*
@@ -1771,6 +1808,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_deduction_guides >= 201606
   template <typename _Tp> optional(_Tp) -> optional<_Tp>;
 #endif
+
+#ifdef __cpp_lib_optional_range_support // >= C++26
+  template<typename _Tp>
+    inline constexpr bool
+      ranges::enable_view<optional<_Tp>> = true;
+
+  template<typename _Tp>
+    inline constexpr auto
+      format_kind<optional<_Tp>> = range_format::disabled;
+#endif // __cpp_lib_optional_range_support
 
 #undef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
 

@@ -162,6 +162,32 @@ namespace __format
     using __maybe_const
       = __conditional_t<formattable<const _Tp, _CharT>, const _Tp, _Tp>;
 }
+
+  // [format.range], formatting of ranges
+  // [format.range.fmtkind], variable template format_kind
+  enum class range_format {
+    disabled,
+    map,
+    set,
+    sequence,
+    string,
+    debug_string
+  };
+
+  /** @brief A constant determining how a range should be formatted.
+   *
+   * The primary template of `std::format_kind` cannot be instantiated.
+   * There is a partial specialization for input ranges and you can
+   * specialize the variable template for your own cv-unqualified types
+   * that satisfy the `ranges::input_range` concept.
+   *
+   * @since C++23
+   */
+  template<typename _Rg>
+    constexpr auto format_kind = []{
+      static_assert(false, "cannot use primary template of 'std::format_kind'");
+      return type_identity<_Rg>{};
+    }();
 #endif // format_ranges
 
 _GLIBCXX_END_NAMESPACE_VERSION

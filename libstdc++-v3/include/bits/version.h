@@ -955,6 +955,16 @@
 #endif /* !defined(__cpp_lib_optional) && defined(__glibcxx_want_optional) */
 #undef __glibcxx_want_optional
 
+#if !defined(__cpp_lib_optional_range_support)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_optional_range_support 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_optional_range_support)
+#   define __cpp_lib_optional_range_support 202406L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_optional_range_support) && defined(__glibcxx_want_optional_range_support) */
+#undef __glibcxx_want_optional_range_support
+
 #if !defined(__cpp_lib_destroying_delete)
 # if (__cplusplus >= 202002L) && (__cpp_impl_destroying_delete)
 #  define __glibcxx_destroying_delete 201806L

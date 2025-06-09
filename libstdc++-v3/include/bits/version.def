@@ -852,6 +852,14 @@ ftms = {
 };
 
 ftms = {
+  name = optional_range_support;
+  values = {
+    v = 202406;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = destroying_delete;
   values = {
     v = 201806;
