@@ -76,7 +76,7 @@ package Errid is
    --    - Optionally additional information
    --    TODO: the mandatory fields for the documentation file could be changed
 
-   Diagnostic_Entries : Diagnostics_Registry_Type :=
+   Diagnostic_Entries : constant Diagnostics_Registry_Type :=
      (No_Diagnostic_Id => <>,
       GNAT0001         =>
         (Status        => Active,
