@@ -786,7 +786,7 @@ ResolveExpr::visit (AST::ClosureExprInnerTyped &expr)
 
   resolver->push_closure_context (expr.get_node_id ());
 
-  ResolveExpr::go (expr.get_definition_block (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_definition_expr (), prefix, canonical_prefix);
 
   resolver->pop_closure_context ();
 

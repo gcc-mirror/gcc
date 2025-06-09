@@ -2506,6 +2506,8 @@ public:
   bool get_has_move () const { return has_move; }
 
   Expr::Kind get_expr_kind () const override { return Expr::Kind::Closure; }
+
+  virtual Expr &get_definition_expr () = 0;
 };
 
 // Represents a non-type-specified closure expression AST node
@@ -2565,7 +2567,7 @@ public:
     return closure_inner == nullptr;
   }
 
-  Expr &get_definition_expr ()
+  Expr &get_definition_expr () override
   {
     rust_assert (closure_inner != nullptr);
     return *closure_inner;
@@ -2932,7 +2934,7 @@ public:
   bool is_marked_for_strip () const override { return expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  BlockExpr &get_definition_block ()
+  BlockExpr &get_definition_expr () override
   {
     rust_assert (expr != nullptr);
     return *expr;

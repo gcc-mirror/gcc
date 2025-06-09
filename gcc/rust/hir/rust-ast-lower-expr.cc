@@ -836,7 +836,7 @@ ASTLoweringExpr::visit (AST::ClosureExprInnerTyped &expr)
 {
   HIR::Type *closure_return_type = nullptr;
   HIR::Expr *closure_expr
-    = ASTLoweringExpr::translate (expr.get_definition_block ());
+    = ASTLoweringExpr::translate (expr.get_definition_expr ());
 
   std::vector<HIR::ClosureParam> closure_params;
   for (auto &param : expr.get_params ())

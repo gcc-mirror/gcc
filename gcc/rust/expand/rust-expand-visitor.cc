@@ -641,7 +641,7 @@ ExpandVisitor::visit (AST::ClosureExprInnerTyped &expr)
 
   maybe_expand_type (expr.get_return_type_ptr ());
 
-  visit (expr.get_definition_block ());
+  visit (expr.get_definition_expr ());
 }
 
 void

@@ -474,7 +474,7 @@ DefaultASTVisitor::visit (AST::ClosureExprInnerTyped &expr)
   for (auto &param : expr.get_params ())
     visit (param);
   visit (expr.get_return_type ());
-  visit (expr.get_definition_block ());
+  visit (expr.get_definition_expr ());
 }
 
 void

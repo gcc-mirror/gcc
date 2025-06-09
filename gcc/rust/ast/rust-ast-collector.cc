@@ -1291,7 +1291,7 @@ TokenCollector::visit (ClosureExprInnerTyped &expr)
   visit_closure_common (expr);
   push (Rust::Token::make (RETURN_TYPE, expr.get_locus ()));
   visit (expr.get_return_type ());
-  visit (expr.get_definition_block ());
+  visit (expr.get_definition_expr ());
 }
 
 void

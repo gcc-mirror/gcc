@@ -1192,7 +1192,7 @@ CfgStrip::visit (AST::ClosureExprInnerTyped &expr)
     rust_error_at (type.get_locus (), "cannot strip type in this position");
 
   // can't strip expression itself, but can strip sub-expressions
-  auto &definition_block = expr.get_definition_block ();
+  auto &definition_block = expr.get_definition_expr ();
   definition_block.accept_vis (*this);
   if (definition_block.is_marked_for_strip ())
     rust_error_at (definition_block.get_locus (),
