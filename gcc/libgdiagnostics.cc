@@ -307,45 +307,45 @@ public:
 	gcc_unreachable ();
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION:
-	return LOGICAL_LOCATION_KIND_FUNCTION;
+	return logical_location_kind::function;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MEMBER:
-	return LOGICAL_LOCATION_KIND_MEMBER;
+	return logical_location_kind::member;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MODULE:
-	return LOGICAL_LOCATION_KIND_MODULE;
+	return logical_location_kind::module_;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_NAMESPACE:
-	return LOGICAL_LOCATION_KIND_NAMESPACE;
+	return logical_location_kind::namespace_;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TYPE:
-	return LOGICAL_LOCATION_KIND_TYPE;
+	return logical_location_kind::type;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_RETURN_TYPE:
-	return LOGICAL_LOCATION_KIND_RETURN_TYPE;
+	return logical_location_kind::return_type;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PARAMETER:
-	return LOGICAL_LOCATION_KIND_PARAMETER;
+	return logical_location_kind::parameter;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE:
-	return LOGICAL_LOCATION_KIND_VARIABLE;
+	return logical_location_kind::variable;
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ELEMENT:
-	return LOGICAL_LOCATION_KIND_ELEMENT;
+	return logical_location_kind::element;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ATTRIBUTE:
-	return LOGICAL_LOCATION_KIND_ATTRIBUTE;
+	return logical_location_kind::attribute;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TEXT:
-	return LOGICAL_LOCATION_KIND_TEXT;
+	return logical_location_kind::text;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_COMMENT:
-	return LOGICAL_LOCATION_KIND_COMMENT;
+	return logical_location_kind::comment;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION:
-	return LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION;
+	return logical_location_kind::processing_instruction;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DTD:
-	return LOGICAL_LOCATION_KIND_DTD;
+	return logical_location_kind::dtd;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DECLARATION:
-	return LOGICAL_LOCATION_KIND_DECLARATION;
+	return logical_location_kind::declaration;
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT:
-	  return LOGICAL_LOCATION_KIND_OBJECT;
+	  return logical_location_kind::object;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY:
-	return LOGICAL_LOCATION_KIND_ARRAY;
+	return logical_location_kind::array;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY:
-	return LOGICAL_LOCATION_KIND_PROPERTY;
+	return logical_location_kind::property;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE:
-	return LOGICAL_LOCATION_KIND_VALUE;
+	return logical_location_kind::value;
       }
   }
 

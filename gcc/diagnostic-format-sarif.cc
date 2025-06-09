@@ -2735,51 +2735,51 @@ maybe_get_sarif_kind (enum logical_location_kind kind)
     {
     default:
       gcc_unreachable ();
-    case LOGICAL_LOCATION_KIND_UNKNOWN:
+    case logical_location_kind::unknown:
       return nullptr;
 
     /* Kinds within executable code.  */
-    case LOGICAL_LOCATION_KIND_FUNCTION:
+    case logical_location_kind::function:
       return "function";
-    case LOGICAL_LOCATION_KIND_MEMBER:
+    case logical_location_kind::member:
       return "member";
-    case LOGICAL_LOCATION_KIND_MODULE:
+    case logical_location_kind::module_:
       return "module";
-    case LOGICAL_LOCATION_KIND_NAMESPACE:
+    case logical_location_kind::namespace_:
       return "namespace";
-    case LOGICAL_LOCATION_KIND_TYPE:
+    case logical_location_kind::type:
       return "type";
-    case LOGICAL_LOCATION_KIND_RETURN_TYPE:
+    case logical_location_kind::return_type:
       return "returnType";
-    case LOGICAL_LOCATION_KIND_PARAMETER:
+    case logical_location_kind::parameter:
       return "parameter";
-    case LOGICAL_LOCATION_KIND_VARIABLE:
+    case logical_location_kind::variable:
       return "variable";
 
     /* Kinds within XML or HTML documents.  */
-    case LOGICAL_LOCATION_KIND_ELEMENT:
+    case logical_location_kind::element:
       return "element";
-    case LOGICAL_LOCATION_KIND_ATTRIBUTE:
+    case logical_location_kind::attribute:
       return "attribute";
-    case LOGICAL_LOCATION_KIND_TEXT:
+    case logical_location_kind::text:
       return "text";
-    case LOGICAL_LOCATION_KIND_COMMENT:
+    case logical_location_kind::comment:
       return "comment";
-    case LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION:
+    case logical_location_kind::processing_instruction:
       return "processingInstruction";
-    case LOGICAL_LOCATION_KIND_DTD:
+    case logical_location_kind::dtd:
       return "dtd";
-    case LOGICAL_LOCATION_KIND_DECLARATION:
+    case logical_location_kind::declaration:
       return "declaration";
 
     /* Kinds within JSON documents.  */
-    case LOGICAL_LOCATION_KIND_OBJECT:
+    case logical_location_kind::object:
       return "object";
-    case LOGICAL_LOCATION_KIND_ARRAY:
+    case logical_location_kind::array:
       return "array";
-    case LOGICAL_LOCATION_KIND_PROPERTY:
+    case logical_location_kind::property:
       return "property";
-    case LOGICAL_LOCATION_KIND_VALUE:
+    case logical_location_kind::value:
       return "value";
     }
 }

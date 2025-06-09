@@ -1059,17 +1059,17 @@ logical_location_manager::function_p (key k) const
     {
     default:
       gcc_unreachable ();
-    case LOGICAL_LOCATION_KIND_UNKNOWN:
-    case LOGICAL_LOCATION_KIND_MODULE:
-    case LOGICAL_LOCATION_KIND_NAMESPACE:
-    case LOGICAL_LOCATION_KIND_TYPE:
-    case LOGICAL_LOCATION_KIND_RETURN_TYPE:
-    case LOGICAL_LOCATION_KIND_PARAMETER:
-    case LOGICAL_LOCATION_KIND_VARIABLE:
+    case logical_location_kind::unknown:
+    case logical_location_kind::module_:
+    case logical_location_kind::namespace_:
+    case logical_location_kind::type:
+    case logical_location_kind::return_type:
+    case logical_location_kind::parameter:
+    case logical_location_kind::variable:
       return false;
 
-    case LOGICAL_LOCATION_KIND_FUNCTION:
-    case LOGICAL_LOCATION_KIND_MEMBER:
+    case logical_location_kind::function:
+    case logical_location_kind::member:
       return true;
     }
 }
