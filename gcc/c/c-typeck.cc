@@ -2016,14 +2016,8 @@ static bool
 function_types_compatible_p (const_tree f1, const_tree f2,
 			     struct comptypes_data *data)
 {
-  tree args1, args2;
-  /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  int val = 1;
-  int val1;
-  tree ret1, ret2;
-
-  ret1 = TREE_TYPE (f1);
-  ret2 = TREE_TYPE (f2);
+  tree ret1 = TREE_TYPE (f1);
+  tree ret2 = TREE_TYPE (f2);
 
   /* 'volatile' qualifiers on a function's return type used to mean
      the function is noreturn.  */
@@ -2035,12 +2029,12 @@ function_types_compatible_p (const_tree f1, const_tree f2,
   if (TYPE_VOLATILE (ret2))
     ret2 = build_qualified_type (TYPE_MAIN_VARIANT (ret2),
 				 TYPE_QUALS (ret2) & ~TYPE_QUAL_VOLATILE);
-  val = comptypes_internal (ret1, ret2, data);
-  if (val == 0)
-    return 0;
 
-  args1 = TYPE_ARG_TYPES (f1);
-  args2 = TYPE_ARG_TYPES (f2);
+  if (!comptypes_internal (ret1, ret2, data))
+    return false;
+
+  tree args1 = TYPE_ARG_TYPES (f1);
+  tree args2 = TYPE_ARG_TYPES (f2);
 
   if ((args1 == NULL_TREE) != (args2 == NULL_TREE))
     data->different_types_p = true;
@@ -2051,40 +2045,31 @@ function_types_compatible_p (const_tree f1, const_tree f2,
   if (args1 == NULL_TREE)
     {
       if (TYPE_NO_NAMED_ARGS_STDARG_P (f1) != TYPE_NO_NAMED_ARGS_STDARG_P (f2))
-	return 0;
+	return false;
       if (!self_promoting_args_p (args2))
-	return 0;
+	return false;
       /* If one of these types comes from a non-prototype fn definition,
 	 compare that with the other type's arglist.
 	 If they don't match, ask for a warning (but no error).  */
       if (TYPE_ACTUAL_ARG_TYPES (f1)
-	  && type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1),
-				      data) != 1)
-	{
-	  val = 1;
-	  data->warning_needed = true;
-	}
-      return val;
+	  && !type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1), data))
+	 data->warning_needed = true;
+      return true;
     }
   if (args2 == NULL_TREE)
     {
       if (TYPE_NO_NAMED_ARGS_STDARG_P (f1) != TYPE_NO_NAMED_ARGS_STDARG_P (f2))
-	return 0;
+	return false;
       if (!self_promoting_args_p (args1))
-	return 0;
+	return false;
       if (TYPE_ACTUAL_ARG_TYPES (f2)
-	  && type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2),
-				      data) != 1)
-	{
-	  val = 1;
-	  data->warning_needed = true;
-	}
-      return val;
+	  && !type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2), data))
+	data->warning_needed = true;
+      return true;
     }
 
   /* Both types have argument lists: compare them and propagate results.  */
-  val1 = type_lists_compatible_p (args1, args2, data);
-  return val1;
+  return type_lists_compatible_p (args1, args2, data);
 }
 
 /* Check two lists of types for compatibility, returning false for
@@ -2101,7 +2086,7 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
       /* If one list is shorter than the other,
 	 they fail to match.  */
       if (args1 == NULL_TREE || args2 == NULL_TREE)
-	return 0;
+	return false;
       tree a1 = TREE_VALUE (args1);
       tree a2 = TREE_VALUE (args2);
       tree mv1 = remove_qualifiers (a1);
@@ -2115,12 +2100,12 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
       if (a1 == NULL_TREE)
 	{
 	  if (c_type_promotes_to (a2) != a2)
-	    return 0;
+	    return false;
 	}
       else if (a2 == NULL_TREE)
 	{
 	  if (c_type_promotes_to (a1) != a1)
-	    return 0;
+	    return false;
 	}
       /* If one of the lists has an error marker, ignore this arg.  */
       else if (TREE_CODE (a1) == ERROR_MARK
@@ -2147,7 +2132,7 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 		    break;
 		}
 	      if (memb == NULL_TREE)
-		return 0;
+		return false;
 	    }
 	  else if (TREE_CODE (a2) == UNION_TYPE
 		   && (TYPE_NAME (a2) == NULL_TREE
@@ -2165,10 +2150,10 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 		    break;
 		}
 	      if (memb == NULL_TREE)
-		return 0;
+		return false;
 	    }
 	  else
-	    return 0;
+	    return false;
 	}
 
       args1 = TREE_CHAIN (args1);
