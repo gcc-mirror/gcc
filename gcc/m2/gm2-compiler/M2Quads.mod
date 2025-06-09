@@ -4646,6 +4646,8 @@ BEGIN
                    BySym) ;
       MetaErrorDecl (BySym, TRUE)
    ELSE
+      e1 := DereferenceLValue (e1tok, e1) ;
+      e2 := DereferenceLValue (e2tok, e2) ;
       GenQuadOTypetok (bytok, LastForIteratorOp, LastIterator,
                        Make2Tuple (e1, e2), BySym, FALSE, FALSE,
                        bytok, MakeVirtual2Tok (e1tok, e2tok), bytok)
