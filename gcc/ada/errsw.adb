@@ -30,7 +30,7 @@ package body Errsw is
    Switches : constant array (Switch_Id)
      of Switch_Type :=
      (No_Switch_Id            =>
-        (others => <>),
+        <>,
       gnatwb                  =>
         (Human_Id          => new String'("Warn_On_Bad_Fixed_Value"),
          Status            => Active,

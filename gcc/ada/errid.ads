@@ -77,7 +77,7 @@ package Errid is
    --    TODO: the mandatory fields for the documentation file could be changed
 
    Diagnostic_Entries : Diagnostics_Registry_Type :=
-     (No_Diagnostic_Id => (others => <>),
+     (No_Diagnostic_Id => <>,
       GNAT0001         =>
         (Status        => Active,
          Human_Id      => new String'("Default_Iterator_Not_Primitive_Error"),
