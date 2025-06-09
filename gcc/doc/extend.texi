@@ -3879,6 +3879,7 @@ behavior and permissible arguments are the same as for the command-line option
 
 @cindex @code{outline-atomics} function attribute, AArch64
 @item outline-atomics
+@itemx no-outline-atomics
 Enable or disable calls to out-of-line helpers to implement atomic operations.
 This corresponds to the behavior of the command-line options
 @option{-moutline-atomics} and @option{-mno-outline-atomics}.
