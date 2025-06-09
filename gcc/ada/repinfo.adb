@@ -1239,15 +1239,25 @@ package body Repinfo is
          function First_Comp_Or_Discr (Ent : Entity_Id) return Entity_Id is
 
             function Is_Placed_Before (C1, C2 : Entity_Id) return Boolean;
-            --  Return True if component C1 is placed before component C2
+            --  Return True if components C1 and C2 are in the same component
+            --  list and component C1 is placed before component C2 in there.
 
             ----------------------
             -- Is_Placed_Before --
             ----------------------
 
             function Is_Placed_Before (C1, C2 : Entity_Id) return Boolean is
+               L1 : constant Node_Id := Parent (Parent (C1));
+               L2 : constant Node_Id := Parent (Parent (C2));
+
             begin
-               return Known_Static_Component_Bit_Offset (C1)
+               --  Discriminants and top-level components are considered to be
+               --  in the same list, although this is not syntactically true.
+
+               return (L1 = L2
+                        or else (Nkind (Parent (L1)) /= N_Variant
+                                  and then Nkind (Parent (L2)) /= N_Variant))
+                 and then Known_Static_Component_Bit_Offset (C1)
                  and then Known_Static_Component_Bit_Offset (C2)
                  and then
                    Component_Bit_Offset (C1) < Component_Bit_Offset (C2);
