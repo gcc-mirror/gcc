@@ -3479,6 +3479,19 @@ analyze_expression_awaits (tree *stmt, int *do_subtree, void *d)
 		}
 	      *do_subtree = 0;
 	    }
+	  else if (!fn && CALL_EXPR_IFN (*stmt) == IFN_ASSUME)
+	    {
+	      tree expr = CALL_EXPR_ARG (*stmt, 0);
+	      if (TREE_SIDE_EFFECTS (expr))
+		{
+		  location_t loc_e = cp_expr_location (expr);
+		  location_t loc_s = cp_expr_location (*stmt);
+		  location_t loc_n = make_location (loc_e, loc_s, loc_s);
+		  warning_at (loc_n, OPT_Wattributes,"assumption ignored"
+			      " because it contains an await-expression");
+		  *stmt = build_empty_stmt (loc_n);
+		}
+	    }
 	}
 	break;
       case CO_YIELD_EXPR:
