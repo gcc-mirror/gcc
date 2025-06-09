@@ -1190,117 +1190,55 @@ constant_pointer_difference (tree p1, tree p2)
   return NULL_TREE;
 }
 
-
-/* Optimize
-   a = {};
-   b = a;
-   into
-   a = {};
-   b = {};
-   Similarly for memset (&a, ..., sizeof (a)); instead of a = {};
-   and/or memcpy (&b, &a, sizeof (a)); instead of b = a;  */
-
+/* Helper function for optimize_aggr_zeroprop.
+   Props the zeroing (memset, VAL) that was done in DEST+OFFSET:LEN
+   (DEFSTMT) into the STMT.  Returns true if the STMT was updated.  */
 static bool
-optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree len)
+optimize_aggr_zeroprop_1 (gimple *defstmt, gimple *stmt,
+			  tree dest, poly_int64 offset, tree val,
+			  poly_offset_int len)
 {
-  ao_ref read;
-  gimple *stmt = gsi_stmt (*gsip);
-  if (gimple_has_volatile_ops (stmt))
-    return false;
+  tree src2;
+  tree len2 = NULL_TREE;
+  poly_int64 offset2;
 
-  tree src2 = NULL_TREE, len2 = NULL_TREE;
-  poly_int64 offset, offset2;
-  tree val = integer_zero_node;
-  bool len_was_null = len == NULL_TREE;
-  if (len == NULL_TREE)
-    len = (TREE_CODE (src) == COMPONENT_REF
-	   ? DECL_SIZE_UNIT (TREE_OPERAND (src, 1))
-	   : TYPE_SIZE_UNIT (TREE_TYPE (src)));
-  if (len == NULL_TREE
-      || !poly_int_tree_p (len))
-    return false;
-
-  ao_ref_init (&read, src);
-  tree vuse = gimple_vuse (stmt);
-  gimple *defstmt;
-  unsigned limit = param_sccvn_max_alias_queries_per_access;
-  do {
-    /* If the vuse is the default definition, then there is no stores beforhand. */
-    if (SSA_NAME_IS_DEFAULT_DEF (vuse))
-      return false;
-    defstmt = SSA_NAME_DEF_STMT (vuse);
-    if (is_a <gphi*>(defstmt))
-      return false;
-    if (limit-- == 0)
-      return false;
-    /* If the len was null, then we can use TBBA. */
-    if (stmt_may_clobber_ref_p_1 (defstmt, &read,
-				  /* tbaa_p = */ len_was_null))
-      break;
-    vuse = gimple_vuse (defstmt);
-  } while (true);
-
-  if (gimple_store_p (defstmt)
-      && gimple_assign_single_p (defstmt)
-      && TREE_CODE (gimple_assign_rhs1 (defstmt)) == STRING_CST
-      && !gimple_clobber_p (defstmt))
+  if (gimple_call_builtin_p (stmt, BUILT_IN_MEMCPY)
+      && TREE_CODE (gimple_call_arg (stmt, 1)) == ADDR_EXPR
+      && poly_int_tree_p (gimple_call_arg (stmt, 2)))
     {
-      tree str = gimple_assign_rhs1 (defstmt);
-      src2 = gimple_assign_lhs (defstmt);
-      /* The string must contain all null char's for now.  */
-      for (int i = 0; i < TREE_STRING_LENGTH (str); i++)
-	{
-	  if (TREE_STRING_POINTER (str)[i] != 0)
-	    {
-	      src2 = NULL_TREE;
-	      break;
-	    }
-	}
+      src2 = TREE_OPERAND (gimple_call_arg (stmt, 1), 0);
+      len2 = gimple_call_arg (stmt, 2);
     }
-  else if (gimple_store_p (defstmt)
-      && gimple_assign_single_p (defstmt)
-      && TREE_CODE (gimple_assign_rhs1 (defstmt)) == CONSTRUCTOR
-      && !gimple_clobber_p (defstmt))
-    src2 = gimple_assign_lhs (defstmt);
-  else if (gimple_call_builtin_p (defstmt, BUILT_IN_MEMSET)
-	   && TREE_CODE (gimple_call_arg (defstmt, 0)) == ADDR_EXPR
-	   && TREE_CODE (gimple_call_arg (defstmt, 1)) == INTEGER_CST)
-    {
-      src2 = TREE_OPERAND (gimple_call_arg (defstmt, 0), 0);
-      len2 = gimple_call_arg (defstmt, 2);
-      val = gimple_call_arg (defstmt, 1);
-      /* For non-0 val, we'd have to transform stmt from assignment
-	 into memset (only if dest is addressable).  */
-      if (!integer_zerop (val) && is_gimple_assign (stmt))
-	src2 = NULL_TREE;
-    }
+   else if (gimple_assign_load_p (stmt) && gimple_store_p (stmt))
+     {
+	src2 = gimple_assign_rhs1 (stmt);
+	len2 = (TREE_CODE (src2) == COMPONENT_REF
+		? DECL_SIZE_UNIT (TREE_OPERAND (src2, 1))
+		: TYPE_SIZE_UNIT (TREE_TYPE (src2)));
+	/* Can only handle zero memsets. */
+	if (!integer_zerop (val))
+	  return false;
+     }
+   else
+     return false;
 
-  if (src2 == NULL_TREE)
-    return false;
-
-  if (len2 == NULL_TREE)
-    len2 = (TREE_CODE (src2) == COMPONENT_REF
-	    ? DECL_SIZE_UNIT (TREE_OPERAND (src2, 1))
-	    : TYPE_SIZE_UNIT (TREE_TYPE (src2)));
   if (len2 == NULL_TREE
       || !poly_int_tree_p (len2))
     return false;
 
-  src = get_addr_base_and_unit_offset (src, &offset);
   src2 = get_addr_base_and_unit_offset (src2, &offset2);
-  if (src == NULL_TREE
-      || src2 == NULL_TREE
-      || maybe_lt (offset, offset2))
+  if (src2 == NULL_TREE
+      || maybe_lt (offset2, offset))
     return false;
 
-  if (!operand_equal_p (src, src2, 0))
+  if (!operand_equal_p (dest, src2, 0))
     return false;
 
-  /* [ src + offset2, src + offset2 + len2 - 1 ] is set to val.
+  /* [ dest + offset, dest + offset + len - 1 ] is set to val.
      Make sure that
-     [ src + offset, src + offset + len - 1 ] is a subset of that.  */
-  if (maybe_gt (wi::to_poly_offset (len) + (offset - offset2),
-		wi::to_poly_offset (len2)))
+     [ dest + offset2, dest + offset2 + len2 - 1 ] is a subset of that.  */
+  if (maybe_gt (wi::to_poly_offset (len2) + (offset2 - offset),
+		len))
     return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1310,7 +1248,7 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
       fprintf (dump_file, "after previous\n  ");
       print_gimple_stmt (dump_file, defstmt, 0, dump_flags);
     }
-
+  gimple *orig_stmt = stmt;
   /* For simplicity, don't change the kind of the stmt,
      turn dest = src; into dest = {}; and memcpy (&dest, &src, len);
      into memset (&dest, val, len);
@@ -1320,8 +1258,10 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
      of dest, dest isn't volatile.  */
   if (is_gimple_assign (stmt))
     {
-      tree ctor = build_constructor (TREE_TYPE (dest), NULL);
-      gimple_assign_set_rhs_from_tree (gsip, ctor);
+      tree ctor_type = TREE_TYPE (gimple_assign_lhs (stmt));
+      tree ctor = build_constructor (ctor_type, NULL);
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gimple_assign_set_rhs_from_tree (&gsi, ctor);
       update_stmt (stmt);
       statistics_counter_event (cfun, "copy zeroing propagation of aggregate", 1);
     }
@@ -1341,7 +1281,125 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
       fprintf (dump_file, "into\n  ");
       print_gimple_stmt (dump_file, stmt, 0, dump_flags);
     }
+
+  /* Mark the bb for eh cleanup if needed.  */
+  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
+    bitmap_set_bit (to_purge, gimple_bb (stmt)->index);
+
   return true;
+}
+
+/* Optimize
+   a = {}; // DEST = value ;; LEN(nullptr)
+   b = a;
+   into
+   a = {};
+   b = {};
+   Similarly for memset (&a, ..., sizeof (a)); instead of a = {};
+   and/or memcpy (&b, &a, sizeof (a)); instead of b = a;  */
+
+static bool
+optimize_aggr_zeroprop (gimple_stmt_iterator *gsip)
+{
+  ao_ref read;
+  gimple *stmt = gsi_stmt (*gsip);
+  if (gimple_has_volatile_ops (stmt))
+    return false;
+
+  tree dest = NULL_TREE;
+  tree val = integer_zero_node;
+  tree len = NULL_TREE;
+  bool can_use_tbba = true;
+  bool changed = false;
+
+  if (gimple_call_builtin_p (stmt, BUILT_IN_MEMSET)
+      && TREE_CODE (gimple_call_arg (stmt, 0)) == ADDR_EXPR
+      && TREE_CODE (gimple_call_arg (stmt, 1)) == INTEGER_CST
+      && poly_int_tree_p (gimple_call_arg (stmt, 2)))
+    {
+      dest = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
+      len = gimple_call_arg (stmt, 2);
+      val = gimple_call_arg (stmt, 1);
+      ao_ref_init_from_ptr_and_size (&read, gimple_call_arg (stmt, 0), len);
+      can_use_tbba = false;
+    }
+  else if (gimple_store_p (stmt)
+	   && gimple_assign_single_p (stmt)
+	   && TREE_CODE (gimple_assign_rhs1 (stmt)) == STRING_CST)
+    {
+      tree str = gimple_assign_rhs1 (stmt);
+      dest = gimple_assign_lhs (stmt);
+      ao_ref_init (&read, dest);
+      /* The string must contain all null char's for now.  */
+      for (int i = 0; i < TREE_STRING_LENGTH (str); i++)
+	{
+	  if (TREE_STRING_POINTER (str)[i] != 0)
+	    {
+	      dest = NULL_TREE;
+	      break;
+	    }
+	}
+    }
+  else if (gimple_store_p (stmt)
+	   && gimple_assign_single_p (stmt)
+	   && TREE_CODE (gimple_assign_rhs1 (stmt)) == CONSTRUCTOR
+	   && !gimple_clobber_p (stmt))
+    {
+      dest = gimple_assign_lhs (stmt);
+      ao_ref_init (&read, dest);
+    }
+
+  if (dest == NULL_TREE)
+    return false;
+
+  if (len == NULL_TREE)
+    len = (TREE_CODE (dest) == COMPONENT_REF
+	   ? DECL_SIZE_UNIT (TREE_OPERAND (dest, 1))
+	   : TYPE_SIZE_UNIT (TREE_TYPE (dest)));
+  if (len == NULL_TREE
+      || !poly_int_tree_p (len))
+    return false;
+
+  /* This store needs to be on the byte boundary and pointing to an object.  */
+  poly_int64 offset;
+  tree dest_base = get_addr_base_and_unit_offset (dest, &offset);
+  if (dest_base == NULL_TREE)
+    return false;
+
+  /* Setup the worklist.  */
+  auto_vec<std::pair<tree, unsigned>> worklist;
+  unsigned limit = param_sccvn_max_alias_queries_per_access;
+  worklist.safe_push (std::make_pair (gimple_vdef (stmt), limit));
+
+  while (!worklist.is_empty ())
+    {
+      std::pair<tree, unsigned> top = worklist.pop ();
+      tree vdef = top.first;
+      limit = top.second;
+      gimple *use_stmt;
+      imm_use_iterator iter;
+      FOR_EACH_IMM_USE_STMT (use_stmt, iter, vdef)
+	{
+	  /* Handling PHI nodes might not be worth it so don't.  */
+	  if (is_a <gphi*> (use_stmt))
+	    continue;
+
+	  /* If this statement does not clobber add the vdef stmt to the
+	     worklist.  */
+	  if (gimple_vdef (use_stmt)
+	      && !stmt_may_clobber_ref_p_1 (use_stmt, &read,
+					   /* tbaa_p = */ can_use_tbba)
+	      && limit != 0)
+	    worklist.safe_push (std::make_pair (gimple_vdef (use_stmt),
+						limit - 1));
+
+	  if (optimize_aggr_zeroprop_1 (stmt, use_stmt, dest_base, offset,
+					 val, wi::to_poly_offset (len)))
+	   changed = true;
+	}
+    }
+
+  return changed;
 }
 /* Optimizes
    DEST = SRC;
@@ -1462,22 +1520,6 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 
   switch (DECL_FUNCTION_CODE (callee2))
     {
-    case BUILT_IN_MEMCPY:
-      if (gimple_call_num_args (stmt2) == 3)
-	{
-	  tree dest = gimple_call_arg (stmt2, 0);
-	  tree src = gimple_call_arg (stmt2, 1);
-	  tree len = gimple_call_arg (stmt2, 2);
-	  /* Try to optimize the memcpy to memset if src
-	     and dest are addresses. */
-	  if (TREE_CODE (dest) == ADDR_EXPR
-	      && TREE_CODE (src) == ADDR_EXPR
-	      && TREE_CODE (len) == INTEGER_CST
-	      && optimize_memcpy_to_memset (gsi_p, TREE_OPERAND (dest, 0),
-					    TREE_OPERAND (src, 0), len))
-	    return true;
-	}
-    break;
     case BUILT_IN_MEMCHR:
       if (gimple_call_num_args (stmt2) == 3
 	  && (res = gimple_call_lhs (stmt2)) != nullptr
@@ -1539,6 +1581,13 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
       break;
 
     case BUILT_IN_MEMSET:
+      if (gimple_call_num_args (stmt2) == 3)
+	{
+	  /* Try to prop the zeroing/value of the memset to memcpy
+	     if the dest is an address and the value is a constant. */
+	  if (optimize_aggr_zeroprop (gsi_p))
+	    return true;
+	}
       if (gimple_call_num_args (stmt2) != 3
 	  || gimple_call_lhs (stmt2)
 	  || CHAR_BIT != 8
@@ -4857,21 +4906,16 @@ pass_forwprop::execute (function *fun)
 		  {
 		    tree rhs1 = gimple_assign_rhs1 (stmt);
 		    enum tree_code code = gimple_assign_rhs_code (stmt);
-		    if (gimple_assign_load_p (stmt) && gimple_store_p (stmt))
+		    if (gimple_store_p (stmt) && optimize_aggr_zeroprop (&gsi))
 		      {
-			if (optimize_memcpy_to_memset (&gsi,
-						       gimple_assign_lhs (stmt),
-						       gimple_assign_rhs1 (stmt),
-						       /* len = */NULL_TREE))
-			  {
-			    changed = true;
-			    break;
-			  }
-			if (optimize_agr_copyprop (&gsi))
-			  {
-			    changed = true;
-			    break;
-			  }
+			changed = true;
+			break;
+		      }
+		    if (gimple_assign_load_p (stmt) && gimple_store_p (stmt)
+			&& optimize_agr_copyprop (&gsi))
+		      {
+			changed = true;
+			break;
 		      }
 
 		    if (TREE_CODE_CLASS (code) == tcc_comparison)
