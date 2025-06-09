@@ -622,6 +622,10 @@ case "${target}" in
 esac
 
 cpu_type=`echo ${host} | sed 's/-.*$//'`
+# Special case cpu_type for x86_64 as it shares AUTO_PROFILE from i386.
+if test "${cpu_type}" = "x86_64" ; then
+  cpu_type="i386"
+fi
 AC_SUBST(cpu_type)
 
 # Disable libssp for some systems.
