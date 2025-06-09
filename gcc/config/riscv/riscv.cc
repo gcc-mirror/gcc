@@ -4609,16 +4609,14 @@ riscv_noce_conversion_profitable_p (rtx_insn *seq,
 
 	  rtx dest = SET_DEST (x);
 
-	  /* Do something similar for the  moves that are likely to
+	  /* Do something similar for the moves that are likely to
 	     turn into NOP moves by the time the register allocator is
-	     done.  These are also side effects of how our sCC expanders
-	     work.  We'll want to check and update LAST_DEST here too.  */
-	  if (last_dest
-	      && REG_P (dest)
+	     done.  We don't require src to be something set in this
+	     sequence, just a promoted SUBREG.  */
+	  if (REG_P (dest)
 	      && GET_MODE (dest) == SImode
 	      && SUBREG_P (src)
-	      && SUBREG_PROMOTED_VAR_P (src)
-	      && REGNO (SUBREG_REG (src)) == REGNO (last_dest))
+	      && SUBREG_PROMOTED_VAR_P (src))
 	    {
 	      riscv_if_info.original_cost += COSTS_N_INSNS (1);
 	      riscv_if_info.max_seq_cost += COSTS_N_INSNS (1);
