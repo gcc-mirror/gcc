@@ -5570,6 +5570,7 @@ expand_vx_binary_vec_vec_dup (rtx op_0, rtx op_1, rtx op_2,
     case DIV:
     case UDIV:
     case MOD:
+    case UMOD:
       icode = code_for_pred_scalar (code, mode);
       break;
     default:
