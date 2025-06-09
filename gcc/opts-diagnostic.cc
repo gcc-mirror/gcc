@@ -531,7 +531,6 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 
   auto sink = make_sarif_sink (ctxt.m_dc,
 			       *line_table,
-			       ctxt.m_opts.x_main_input_filename,
 			       std::move (serialization_obj),
 			       sarif_gen_opts,
 			       std::move (output_file));
@@ -633,6 +632,7 @@ handle_OPT_fdiagnostics_add_output_ (const gcc_options &opts,
   if (!sink)
     return;
 
+  sink->set_main_input_filename (opts.x_main_input_filename);
   dc.add_sink (std::move (sink));
 }
 
@@ -657,6 +657,7 @@ handle_OPT_fdiagnostics_set_output_ (const gcc_options &opts,
   if (!sink)
     return;
 
+  sink->set_main_input_filename (opts.x_main_input_filename);
   dc.set_output_format (std::move (sink));
 }
 

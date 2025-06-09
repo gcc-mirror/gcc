@@ -26,7 +26,7 @@ def test_basics(html_tree):
     assert head is not None
 
     title = head.find('xhtml:title', ns)
-    assert title.text == 'Title goes here'
+    assert title.text.endswith('gcc/testsuite/gcc.dg/html-output/missing-semicolon.c')
 
     body = root.find('xhtml:body', ns)
     assert body is not None
@@ -56,26 +56,3 @@ def test_basics(html_tree):
     assert pre is not None
     assert pre.attrib['class'] == 'gcc-generated-patch'
     assert pre.text.startswith('--- ')
-
-# For reference, here's the generated HTML:
-"""
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <title>Title goes here</title>
-  </head>
-  <body>
-    <div class="gcc-diagnostic-list">
-      <div class="gcc-diagnostic">
-        <span class="gcc-message">expected &apos;<span class="gcc-quoted-text">;</span>&apos; before &apos;<span class="gcc-quoted-text">}</span>&apos; token</span>
-        <pre class="gcc-generated-patch">
-        [...snip...]
-        </pre>
-      </div>
-    </div>
-  </body>
-</html>
-"""

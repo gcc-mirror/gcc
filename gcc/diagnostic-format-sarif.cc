@@ -751,7 +751,6 @@ public:
   sarif_builder (diagnostic_context &context,
 		 pretty_printer &printer,
 		 const line_maps *line_maps,
-		 const char *main_input_filename_,
 		 std::unique_ptr<sarif_serialization_format> serialization_format,
 		 const sarif_generation_options &sarif_gen_opts);
   ~sarif_builder ();
@@ -766,6 +765,9 @@ public:
   {
     return m_logical_loc_mgr;
   }
+
+  void
+  set_main_input_filename (const char *name);
 
   void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind,
@@ -1643,7 +1645,6 @@ sarif_thread_flow::add_location ()
 sarif_builder::sarif_builder (diagnostic_context &context,
 			      pretty_printer &printer,
 			      const line_maps *line_maps,
-			      const char *main_input_filename_,
 			      std::unique_ptr<sarif_serialization_format> serialization_format,
 			      const sarif_generation_options &sarif_gen_opts)
 : m_context (context),
@@ -1672,17 +1673,6 @@ sarif_builder::sarif_builder (diagnostic_context &context,
 
   if (auto client_data_hooks = context.get_client_data_hooks ())
     m_logical_loc_mgr = client_data_hooks->get_logical_location_manager ();
-
-  /* Mark MAIN_INPUT_FILENAME_ as the artifact that the tool was
-     instructed to scan.
-     Only quote the contents if it gets referenced by physical locations,
-     since otherwise the "no diagnostics" case would quote the main input
-     file, and doing so noticeably bloated the output seen in analyzer
-     integration testing (build directory went from 20G -> 21G).  */
-  if (main_input_filename_)
-    get_or_create_artifact (main_input_filename_,
-			    diagnostic_artifact_role::analysis_target,
-			    false);
 }
 
 sarif_builder::~sarif_builder ()
@@ -1818,6 +1808,20 @@ sarif_builder::make_stack_from_backtrace ()
   auto stack = std::make_unique<json::object> ();
   stack->set ("frames", std::move (frames_arr));
   return stack;
+}
+
+void
+sarif_builder::set_main_input_filename (const char *name)
+{
+  /* Mark NAME as the artifact that the tool was instructed to scan.
+     Only quote the contents if it gets referenced by physical locations,
+     since otherwise the "no diagnostics" case would quote the main input
+     file, and doing so noticeably bloated the output seen in analyzer
+     integration testing (build directory went from 20G -> 21G).  */
+  if (name)
+    get_or_create_artifact (name,
+			    diagnostic_artifact_role::analysis_target,
+			    false);
 }
 
 /* Implementation of "on_report_diagnostic" for SARIF output.  */
@@ -3657,6 +3661,12 @@ public:
     diagnostic_output_format::dump (out, indent);
   }
 
+  void
+  set_main_input_filename (const char *name) final override
+  {
+    m_builder.set_main_input_filename (name);
+  }
+
   std::unique_ptr<diagnostic_per_format_buffer>
   make_per_format_buffer () final override
   {
@@ -3722,11 +3732,10 @@ public:
 protected:
   sarif_output_format (diagnostic_context &context,
 		       const line_maps *line_maps,
-		       const char *main_input_filename_,
 		       std::unique_ptr<sarif_serialization_format> serialization_format,
 		       const sarif_generation_options &sarif_gen_opts)
   : diagnostic_output_format (context),
-    m_builder (context, *get_printer (), line_maps, main_input_filename_,
+    m_builder (context, *get_printer (), line_maps,
 	       std::move (serialization_format), sarif_gen_opts),
     m_buffer (nullptr)
   {}
@@ -3740,11 +3749,10 @@ class sarif_stream_output_format : public sarif_output_format
 public:
   sarif_stream_output_format (diagnostic_context &context,
 			      const line_maps *line_maps,
-			      const char *main_input_filename_,
 			      std::unique_ptr<sarif_serialization_format> serialization_format,
 			      const sarif_generation_options &sarif_gen_opts,
 			      FILE *stream)
-  : sarif_output_format (context, line_maps, main_input_filename_,
+  : sarif_output_format (context, line_maps,
 			 std::move (serialization_format), sarif_gen_opts),
     m_stream (stream)
   {
@@ -3766,11 +3774,10 @@ class sarif_file_output_format : public sarif_output_format
 public:
   sarif_file_output_format (diagnostic_context &context,
 			    const line_maps *line_maps,
-			    const char *main_input_filename_,
 			    std::unique_ptr<sarif_serialization_format> serialization_format,
 			    const sarif_generation_options &sarif_gen_opts,
 			    diagnostic_output_file output_file)
-  : sarif_output_format (context, line_maps, main_input_filename_,
+  : sarif_output_format (context, line_maps,
 			 std::move (serialization_format), sarif_gen_opts),
     m_output_file (std::move (output_file))
   {
@@ -3914,34 +3921,39 @@ sarif_builder::sarif_token_printer::print_tokens (pretty_printer *pp,
 }
 
 /* Populate CONTEXT in preparation for SARIF output (either to stderr, or
-   to a file).  */
+   to a file).
+   Return a reference to *FMT.  */
 
-static void
+static diagnostic_output_format &
 diagnostic_output_format_init_sarif (diagnostic_context &context,
 				     std::unique_ptr<sarif_output_format> fmt)
 {
+  gcc_assert (fmt);
+  diagnostic_output_format &out = *fmt;
+
   fmt->update_printer ();
 
   context.set_output_format (std::move (fmt));
+
+  return out;
 }
 
-/* Populate CONTEXT in preparation for SARIF output to stderr.  */
+/* Populate CONTEXT in preparation for SARIF output to stderr.
+   Return a reference to the new sink.  */
 
-void
+diagnostic_output_format &
 diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 					    const line_maps *line_maps,
-					    const char *main_input_filename_,
 					    bool formatted)
 {
   gcc_assert (line_maps);
   const sarif_generation_options sarif_gen_opts;
   auto serialization
     = std::make_unique<sarif_serialization_format_json> (formatted);
-  diagnostic_output_format_init_sarif
+  return diagnostic_output_format_init_sarif
     (context,
      std::make_unique<sarif_stream_output_format> (context,
 						   line_maps,
-						   main_input_filename_,
 						   std::move (serialization),
 						   sarif_gen_opts,
 						   stderr));
@@ -4018,12 +4030,12 @@ diagnostic_output_format_open_sarif_file (diagnostic_context &context,
 }
 
 /* Populate CONTEXT in preparation for SARIF output to a file named
-   BASE_FILE_NAME.sarif.  */
+   BASE_FILE_NAME.sarif.
+   Return a reference to the new sink.  */
 
-void
+diagnostic_output_format &
 diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 					  line_maps *line_maps,
-					  const char *main_input_filename_,
 					  bool formatted,
 					  const char *base_file_name)
 {
@@ -4038,22 +4050,21 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
     = std::make_unique<sarif_serialization_format_json> (formatted);
 
   const sarif_generation_options sarif_gen_opts;
-  diagnostic_output_format_init_sarif
+  return diagnostic_output_format_init_sarif
     (context,
      std::make_unique<sarif_file_output_format> (context,
 						 line_maps,
-						 main_input_filename_,
 						 std::move (serialization),
 						 sarif_gen_opts,
 						 std::move (output_file)));
 }
 
-/* Populate CONTEXT in preparation for SARIF output to STREAM.  */
+/* Populate CONTEXT in preparation for SARIF output to STREAM.
+   Return a reference to the new sink.  */
 
-void
+diagnostic_output_format &
 diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 					    const line_maps *line_maps,
-					    const char *main_input_filename_,
 					    bool formatted,
 					    FILE *stream)
 {
@@ -4061,11 +4072,10 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
   const sarif_generation_options sarif_gen_opts;
   auto serialization
     = std::make_unique<sarif_serialization_format_json> (formatted);
-  diagnostic_output_format_init_sarif
+  return diagnostic_output_format_init_sarif
     (context,
      std::make_unique<sarif_stream_output_format> (context,
 						   line_maps,
-						   main_input_filename_,
 						   std::move (serialization),
 						   sarif_gen_opts,
 						   stream));
@@ -4074,7 +4084,6 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 std::unique_ptr<diagnostic_output_format>
 make_sarif_sink (diagnostic_context &context,
 		 const line_maps &line_maps,
-		 const char *main_input_filename_,
 		 std::unique_ptr<sarif_serialization_format> serialization,
 		 const sarif_generation_options &sarif_gen_opts,
 		 diagnostic_output_file output_file)
@@ -4082,7 +4091,6 @@ make_sarif_sink (diagnostic_context &context,
   auto sink
     = std::make_unique<sarif_file_output_format> (context,
 						  &line_maps,
-						  main_input_filename_,
 						  std::move (serialization),
 						  sarif_gen_opts,
 						  std::move (output_file));
@@ -4183,11 +4191,11 @@ public:
   {
     auto format = std::make_unique<buffered_output_format> (*this,
 							    line_table,
-							    main_input_filename,
 							    true,
 							    sarif_gen_opts);
     m_format = format.get (); // borrowed
     diagnostic_output_format_init_sarif (*this, std::move (format));
+    m_format->set_main_input_filename (main_input_filename);
   }
 
   std::unique_ptr<sarif_log> flush_to_object ()
@@ -4204,10 +4212,9 @@ private:
   public:
     buffered_output_format (diagnostic_context &context,
 			    const line_maps *line_maps,
-			    const char *main_input_filename_,
 			    bool formatted,
 			    const sarif_generation_options &sarif_gen_opts)
-    : sarif_output_format (context, line_maps, main_input_filename_,
+    : sarif_output_format (context, line_maps,
 			   std::make_unique<sarif_serialization_format_json>
 			     (formatted),
 			   sarif_gen_opts)
@@ -4243,7 +4250,7 @@ test_make_location_object (const sarif_generation_options &sarif_gen_opts,
   test_diagnostic_context dc;
   pretty_printer pp;
   sarif_builder builder
-    (dc, pp, line_table, "MAIN_INPUT_FILENAME",
+    (dc, pp, line_table,
      std::make_unique<sarif_serialization_format_json> (true),
      sarif_gen_opts);
 

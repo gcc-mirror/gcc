@@ -104,6 +104,9 @@ public:
 		const line_maps *line_maps,
 		const html_generation_options &html_gen_opts);
 
+  void
+  set_main_input_filename (const char *name);
+
   void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind,
 			     diagnostic_html_format_buffer *buffer);
@@ -151,6 +154,7 @@ private:
 
   std::unique_ptr<xml::document> m_document;
   xml::element *m_head_element;
+  xml::element *m_title_element;
   xml::element *m_diagnostics_element;
   std::unique_ptr<xml::element> m_cur_diagnostic_element;
   int m_next_diag_id; // for handing out unique IDs
@@ -348,6 +352,7 @@ html_builder::html_builder (diagnostic_context &context,
   m_line_maps (line_maps),
   m_html_gen_opts (html_gen_opts),
   m_head_element (nullptr),
+  m_title_element (nullptr),
   m_diagnostics_element (nullptr),
   m_next_diag_id (0)
 {
@@ -367,7 +372,7 @@ html_builder::html_builder (diagnostic_context &context,
       m_head_element = xp.get_insertion_point ();
       {
 	xml::auto_print_element title (xp, "title", true);
-	xp.add_text ("Title goes here");
+	m_title_element = xp.get_insertion_point ();
       }
       if (m_html_gen_opts.m_css)
 	xp.add_raw (HTML_STYLE);
@@ -390,6 +395,17 @@ html_builder::html_builder (diagnostic_context &context,
       }
     }
   }
+}
+
+void
+html_builder::set_main_input_filename (const char *name)
+{
+  gcc_assert (m_title_element);
+  if (name)
+    {
+      m_title_element->m_children.clear ();
+      m_title_element->add_text (name);
+    }
 }
 
 /* Implementation of "on_report_diagnostic" for HTML output.  */
@@ -765,6 +781,12 @@ public:
     diagnostic_output_format::dump (out, indent);
   }
 
+  void
+  set_main_input_filename (const char *name) final override
+  {
+    m_builder.set_main_input_filename (name);
+  }
+
   std::unique_ptr<diagnostic_per_format_buffer>
   make_per_format_buffer () final override
   {
@@ -940,6 +962,7 @@ public:
 							       line_table,
 							       html_gen_opts);
     sink->update_printer ();
+    sink->set_main_input_filename ("(main input filename)");
     m_format = sink.get (); // borrowed
 
     set_output_format (std::move (sink));
@@ -998,7 +1021,7 @@ test_simple_log ()
       "     \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
       "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
       "  <head>\n"
-      "    <title>Title goes here</title>\n"
+      "    <title>(main input filename)</title>\n"
       "  </head>\n"
       "  <body>\n"
       "    <div class=\"gcc-diagnostic-list\">\n"

@@ -1191,10 +1191,10 @@ sarif_sink::sarif_sink (diagnostic_manager &mgr,
   auto serialization = std::make_unique<sarif_serialization_format_json> (true);
   auto inner_sink = make_sarif_sink (mgr.get_dc (),
 				     *mgr.get_line_table (),
-				     main_input_file->get_name (),
 				     std::move (serialization),
 				     sarif_gen_opts,
 				     std::move (output_file));
+  inner_sink->set_main_input_filename (main_input_file->get_name ());
   mgr.get_dc ().add_sink (std::move (inner_sink));
 }
 

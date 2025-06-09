@@ -1865,6 +1865,7 @@ diagnostic_output_format_init (diagnostic_context &context,
 			       enum diagnostics_output_format format,
 			       bool json_formatting)
 {
+  diagnostic_output_format *new_sink = nullptr;
   switch (format)
     {
     default:
@@ -1874,31 +1875,31 @@ diagnostic_output_format_init (diagnostic_context &context,
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR:
-      diagnostic_output_format_init_json_stderr (context,
-						 json_formatting);
+      new_sink = &diagnostic_output_format_init_json_stderr (context,
+							     json_formatting);
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE:
-      diagnostic_output_format_init_json_file (context,
-					       json_formatting,
-					       base_file_name);
+      new_sink = &diagnostic_output_format_init_json_file (context,
+							   json_formatting,
+							   base_file_name);
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR:
-      diagnostic_output_format_init_sarif_stderr (context,
-						  line_table,
-						  main_input_filename_,
-						  json_formatting);
+      new_sink = &diagnostic_output_format_init_sarif_stderr (context,
+							      line_table,
+							      json_formatting);
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE:
-      diagnostic_output_format_init_sarif_file (context,
-						line_table,
-						main_input_filename_,
-						json_formatting,
-						base_file_name);
+      new_sink = &diagnostic_output_format_init_sarif_file (context,
+							line_table,
+							    json_formatting,
+							    base_file_name);
       break;
     }
+  if (new_sink)
+    new_sink->set_main_input_filename (main_input_filename_);
 }
 
 /* Initialize this context's m_diagrams based on CHARSET.
