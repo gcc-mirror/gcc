@@ -1,3 +1,84 @@
+2025-06-08  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* auto-profile.cc (function_instance::merge): Fix typo.
+
+2025-06-08  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/120203
+	* config/riscv/riscv.cc (CFUN_IN_CALL): New macro.
+	(struct mode_switching_info): Add new field.
+	(riscv_frm_adjust_mode_after_call): Remove.
+	(riscv_frm_mode_needed): Track call_insn.
+
+2025-06-08  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/119164
+	* config/riscv/riscv.cc (riscv_emit_frm_mode_set): check
+	STATIC_FRM_P for transition to DYN.
+
+2025-06-08  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_frm_emit_after_bb_end): Delete.
+	(riscv_frm_mode_needed): Remove call riscv_frm_emit_after_bb_end.
+
+2025-06-08  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_dynamic_frm_mode_p): Remove.
+	(riscv_mode_confluence): Ditto.
+	(TARGET_MODE_CONFLUENCE): Ditto.
+
+2025-06-08  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* emit-rtl.cc (next_nonnote_nondebug_insn): Update comments.
+
+2025-06-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement): Move
+	definitin of else_vdef to right before the usage. Reformat
+	slightly.
+
+2025-06-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/120533
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_limited): New function.
+	(pass_phiopt::execute):	Call cond_if_else_store_replacement_limited
+	for diamand case.
+
+2025-06-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (single_trailing_store_in_bb): Add vphi argument.
+	Check for single use of the vdef of the store instead of a loop
+	and check vdef's single use statement is the same as vphi.
+	(cond_if_else_store_replacement): Update call to single_trailing_store_in_bb.
+
+2025-06-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement): Use get_virtual_phi
+	instead of inlining it.
+
+2025-06-08  Co-authored-by: Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Use
+	riscv_extend_comparands to extend sub-word comparison arguments.
+
+2025-06-08  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (printx, print_operand):
+	Add two instruction operand format codes 'U' and 'V',
+	whose represent scale factors of 0 to 15th positive/negative
+	power of two.
+	* config/xtensa/xtensa.md (c_enum "unspec"):
+	Add UNSPEC_CEIL and UNSPEC_FLOOR.
+	(int_iterator ANY_ROUND, int_attr m_round):
+	New integer iterator and its attribute.
+	(fix<s_fix>_truncsfsi2, *fix<s_fix>_truncsfsi2_2x,
+	*fix<s_fix>_truncsfsi2_scaled, float<s_float>sisf2,
+	*float<s_float>sisf2_scaled):
+	Use output templates with the operand formats added above,
+	instead of individual output statements.
+	(l<m_round>sfsi2, *l<m_round>sfsi2_2x, *l<m_round>sfsi2_scaled):
+	New insn patterns.
+
 2025-06-07  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/riscv.cc (riscv_expand_conditional_move): Use

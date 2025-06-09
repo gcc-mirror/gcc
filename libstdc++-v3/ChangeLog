@@ -1,3 +1,7 @@
+2025-06-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
 2025-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/30_threads/semaphore/1.cc: Check type properties and

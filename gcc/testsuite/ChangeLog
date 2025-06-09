@@ -1,3 +1,27 @@
+2025-06-08  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* gcc.dg/tree-prof/clone-merge-1.c: Enable only for
+	-fauto-profile.
+
+2025-06-08  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/120203
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-74.c: Expect
+	an additional FRRM.
+
+2025-06-08  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/119164
+	* gcc.target/riscv/rvv/base/pr119164.c: New test.
+
+2025-06-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/120533
+	* gcc.dg/tree-ssa/pr35286.c: Add -fno-ssa-phiopt.
+	* gcc.dg/tree-ssa/split-path-6.c: Likewise.
+	* gcc.dg/tree-ssa/split-path-7.c: Likewise.
+	* gcc.dg/tree-ssa/phiprop-2.c: Move the check for MIN_EXPR to phiopt1.
+
 2025-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/119650
