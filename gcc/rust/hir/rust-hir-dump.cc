@@ -2115,10 +2115,10 @@ Dump::visit (IdentifierPattern &e)
   put_field ("is_ref", std::to_string (e.get_is_ref ()));
   put_field ("mut", std::to_string (e.is_mut ()));
 
-  if (e.has_pattern_to_bind ())
-    visit_field ("to_bind", e.get_to_bind ());
+  if (e.has_subpattern ())
+    visit_field ("subpattern", e.get_subpattern ());
   else
-    put_field ("to_bind", "none");
+    put_field ("subpattern", "none");
 
   end ("IdentifierPattern");
 }

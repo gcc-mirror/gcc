@@ -80,7 +80,7 @@ class IdentifierPattern : public Pattern
   Identifier variable_ident;
   bool is_ref;
   Mutability mut;
-  std::unique_ptr<Pattern> to_bind;
+  std::unique_ptr<Pattern> subpattern;
   location_t locus;
   Analysis::NodeMapping mappings;
 
@@ -88,15 +88,15 @@ public:
   std::string as_string () const override;
 
   // Returns whether the IdentifierPattern has a pattern to bind.
-  bool has_pattern_to_bind () const { return to_bind != nullptr; }
+  bool has_subpattern () const { return subpattern != nullptr; }
 
   // Constructor
   IdentifierPattern (Analysis::NodeMapping mappings, Identifier ident,
 		     location_t locus, bool is_ref = false,
 		     Mutability mut = Mutability::Imm,
-		     std::unique_ptr<Pattern> to_bind = nullptr)
+		     std::unique_ptr<Pattern> subpattern = nullptr)
     : variable_ident (std::move (ident)), is_ref (is_ref), mut (mut),
-      to_bind (std::move (to_bind)), locus (locus), mappings (mappings)
+      subpattern (std::move (subpattern)), locus (locus), mappings (mappings)
   {}
 
   // Copy constructor with clone
@@ -105,8 +105,8 @@ public:
       mut (other.mut), locus (other.locus), mappings (other.mappings)
   {
     // fix to get prevent null pointer dereference
-    if (other.to_bind != nullptr)
-      to_bind = other.to_bind->clone_pattern ();
+    if (other.subpattern != nullptr)
+      subpattern = other.subpattern->clone_pattern ();
   }
 
   // Overload assignment operator to use clone
@@ -119,8 +119,8 @@ public:
     mappings = other.mappings;
 
     // fix to get prevent null pointer dereference
-    if (other.to_bind != nullptr)
-      to_bind = other.to_bind->clone_pattern ();
+    if (other.subpattern != nullptr)
+      subpattern = other.subpattern->clone_pattern ();
 
     return *this;
   }
@@ -133,7 +133,7 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
   bool get_is_ref () const { return is_ref; }
-  Pattern &get_to_bind () { return *to_bind; }
+  Pattern &get_subpattern () { return *subpattern; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;

@@ -49,10 +49,10 @@ ASTLoweringPattern::visit (AST::IdentifierPattern &pattern)
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  std::unique_ptr<Pattern> to_bind;
-  if (pattern.has_pattern_to_bind ())
+  std::unique_ptr<Pattern> subpattern;
+  if (pattern.has_subpattern ())
     {
-      to_bind = std::unique_ptr<Pattern> (
+      subpattern = std::unique_ptr<Pattern> (
 	ASTLoweringPattern::translate (pattern.get_pattern_to_bind ()));
     }
   translated
@@ -60,7 +60,7 @@ ASTLoweringPattern::visit (AST::IdentifierPattern &pattern)
 				  pattern.get_locus (), pattern.get_is_ref (),
 				  pattern.get_is_mut () ? Mutability::Mut
 							: Mutability::Imm,
-				  std::move (to_bind));
+				  std::move (subpattern));
 }
 
 void

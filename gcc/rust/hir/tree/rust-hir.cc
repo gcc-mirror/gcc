@@ -2608,9 +2608,9 @@ IdentifierPattern::as_string () const
 
   str += variable_ident.as_string ();
 
-  if (has_pattern_to_bind ())
+  if (has_subpattern ())
     {
-      str += " @ " + to_bind->as_string ();
+      str += " @ " + subpattern->as_string ();
     }
 
   return str;

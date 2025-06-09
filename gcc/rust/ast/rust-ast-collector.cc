@@ -2482,7 +2482,7 @@ TokenCollector::visit (IdentifierPattern &pattern)
   auto id = pattern.get_ident ().as_string ();
   push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
 
-  if (pattern.has_pattern_to_bind ())
+  if (pattern.has_subpattern ())
     {
       push (Rust::Token::make (PATTERN_BIND, UNDEF_LOCATION));
       visit (pattern.get_pattern_to_bind ());

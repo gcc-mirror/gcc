@@ -1199,7 +1199,7 @@ DefaultASTVisitor::visit (AST::LiteralPattern &pattern)
 void
 DefaultASTVisitor::visit (AST::IdentifierPattern &pattern)
 {
-  if (pattern.has_pattern_to_bind ())
+  if (pattern.has_subpattern ())
     visit (pattern.get_pattern_to_bind ());
 }
 
