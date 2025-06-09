@@ -17325,6 +17325,10 @@ this parameter.  The default value of this parameter is 50.
 @item vect-induction-float
 Enable loop vectorization of floating point inductions.
 
+@item vect-scalar-cost-multiplier
+Apply the given multiplier % to scalar loop costing during vectorization.
+Increasing the cost multiplier will make vector loops more profitable.
+
 @item vrp-block-limit
 Maximum number of basic blocks before VRP switches to a lower memory algorithm.
 

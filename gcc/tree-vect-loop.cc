@@ -4646,7 +4646,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
      TODO: Consider assigning different costs to different scalar
      statements.  */
 
-  scalar_single_iter_cost = loop_vinfo->scalar_costs->total_cost ();
+  scalar_single_iter_cost = (loop_vinfo->scalar_costs->total_cost ()
+			     * param_vect_scalar_cost_multiplier) / 100;
 
   /* Add additional cost for the peeled instructions in prologue and epilogue
      loop.  (For fully-masked loops there will be no peeling.)
