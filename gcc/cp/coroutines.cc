@@ -3425,7 +3425,8 @@ maybe_promote_temps (tree *stmt, void *d)
   return cp_walk_tree (stmt, register_awaits, d, &visited);
 }
 
-/* Lightweight callback to determine two key factors:
+/* Relatively lightweight callback to do initial assessment:
+   0) Rewrite some await expressions.
    1) If the statement/expression contains any await expressions.
    2) If the statement/expression potentially requires a re-write to handle
       TRUTH_{AND,OR}IF_EXPRs since, in most cases, they will need expansion
@@ -3442,6 +3443,26 @@ analyze_expression_awaits (tree *stmt, int *do_subtree, void *d)
   switch (TREE_CODE (*stmt))
     {
       default: return NULL_TREE;
+      case CALL_EXPR:
+	{
+	  tree fn = cp_get_callee_fndecl_nofold (*stmt);
+	  /* Special-cases where we want to re-write await expressions to some
+	     other value before they are otherwise processed.  */
+	  if (fn && DECL_IS_BUILTIN_CONSTANT_P (fn))
+	    {
+	      gcc_checking_assert (call_expr_nargs (*stmt) == 1);
+	      tree expr = CALL_EXPR_ARG (*stmt, 0);
+	      if (cp_walk_tree (&expr, find_any_await, nullptr, NULL))
+		{
+		  if (TREE_CONSTANT (maybe_constant_value (expr)))
+		    *stmt = integer_one_node;
+		  else
+		    *stmt = integer_zero_node;
+		}
+	      *do_subtree = 0;
+	    }
+	}
+	break;
       case CO_YIELD_EXPR:
 	/* co_yield is syntactic sugar, re-write it to co_await.  */
 	*stmt = TREE_OPERAND (*stmt, 1);
