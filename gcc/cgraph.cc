@@ -179,24 +179,126 @@ cgraph_node::function_version (void)
   return cgraph_fnver_htab->find (&key);
 }
 
-/* Scale profile by NUM/DEN.  Walk into inlined clones.  */
+/* If profile is IPA, turn it into local one.  */
+void
+cgraph_node::make_profile_local ()
+{
+  if (!count.ipa ().initialized_p ())
+    return;
+  if (!(count == profile_count::zero ()))
+    count = count.guessed_local ();
+  for (cgraph_edge *e = callees; e; e = e->next_callee)
+    {
+      if (!e->inline_failed)
+	e->callee->make_profile_local ();
+      if (!(e->count == profile_count::zero ()))
+	e->count = e->count.guessed_local ();
+    }
+  for (cgraph_edge *e = indirect_calls; e; e = e->next_callee)
+    if (!(e->count == profile_count::zero ()))
+      e->count = e->count.guessed_local ();
+}
+
+/* Turn profile to global0.  Walk into inlined functions.
+   QUALITY must be GUESSED_GLOBAL0 or GUESSED_GLOBAL0_ADJUSTED  */
+void
+cgraph_node::make_profile_global0 (profile_quality quality)
+{
+  if (count == profile_count::zero ())
+    ;
+  else if (quality == GUESSED_GLOBAL0)
+    {
+      if (count.quality () == GUESSED_GLOBAL0)
+	return;
+      count = count.global0 ();
+    }
+  else if (quality == GUESSED_GLOBAL0_ADJUSTED)
+    {
+      if (count.quality () == GUESSED_GLOBAL0
+	  || count.quality () == GUESSED_GLOBAL0_ADJUSTED)
+	return;
+      count = count.global0adjusted ();
+    }
+  else
+    gcc_unreachable ();
+  for (cgraph_edge *e = callees; e; e = e->next_callee)
+    {
+      if (!e->inline_failed)
+	e->callee->make_profile_global0 (quality);
+      if (e->count == profile_count::zero ())
+	;
+      else if (quality == GUESSED_GLOBAL0)
+	e->count = e->count.global0 ();
+      else if (quality == GUESSED_GLOBAL0_ADJUSTED)
+	e->count = e->count.global0adjusted ();
+      else
+	gcc_unreachable ();
+    }
+  for (cgraph_edge *e = indirect_calls; e; e = e->next_callee)
+    if (e->count == profile_count::zero ())
+      ;
+    else if (quality == GUESSED_GLOBAL0)
+      e->count = e->count.global0 ();
+    else if (quality == GUESSED_GLOBAL0_ADJUSTED)
+      e->count = e->count.global0adjusted ();
+    else
+      gcc_unreachable ();
+}
+
+/* Scale profile by NUM/DEN.  Walk into inlined functions.  */
 
 void
 cgraph_node::apply_scale (profile_count num, profile_count den)
 {
-  struct cgraph_edge *e;
+  if (num == den)
+    return;
 
-  profile_count::adjust_for_ipa_scaling (&num, &den);
-
-  for (e = callees; e; e = e->next_callee)
+  for (cgraph_edge *e = callees; e; e = e->next_callee)
     {
       if (!e->inline_failed)
 	e->callee->apply_scale (num, den);
       e->count = e->count.apply_scale (num, den);
     }
-  for (e = indirect_calls; e; e = e->next_callee)
+  for (cgraph_edge *e = indirect_calls; e; e = e->next_callee)
     e->count = e->count.apply_scale (num, den);
   count = count.apply_scale (num, den);
+}
+
+/* Scale profile to given IPA_COUNT.
+   IPA_COUNT should pass ipa_p () with a single exception.
+   It can be also GUESSED_LOCAL in case we want to
+   drop any IPA info about the profile.  */
+
+void
+cgraph_node::scale_profile_to (profile_count ipa_count)
+{
+  /* If we do not know the adjustment, it is better to keep profile
+     as it is.  */
+  if (!ipa_count.initialized_p ()
+      || ipa_count == count)
+    return;
+  /* ipa-cp converts value to guessed-local in case it believes
+     that we lost track of IPA profile.  */
+  if (ipa_count.quality () == GUESSED_LOCAL)
+    {
+      make_profile_local ();
+      return;
+    }
+  if (ipa_count == profile_count::zero ())
+    {
+      make_profile_global0 (GUESSED_GLOBAL0);
+      return;
+    }
+  if (ipa_count == profile_count::adjusted_zero ())
+    {
+      make_profile_global0 (GUESSED_GLOBAL0_ADJUSTED);
+      return;
+    }
+  gcc_assert (ipa_count.ipa () == ipa_count
+	      && !inlined_to);
+  profile_count num = count.combine_with_ipa_count (ipa_count);
+  profile_count den = count;
+  profile_count::adjust_for_ipa_scaling (&num, &den);
 }
 
 /* Insert a new cgraph_function_version_info node into cgraph_fnver_htab

@@ -191,7 +191,10 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	    }
 	  duplicate = false;
 	  e->callee->externally_visible = false;
-	  e->callee->apply_scale (e->count, e->callee->count);
+	  profile_count num = e->count;
+	  profile_count den = e->callee->count;
+	  profile_count::adjust_for_ipa_scaling (&num, &den);
+	  e->callee->apply_scale (num, den);
 
 	  dump_callgraph_transformation (e->callee, inlining_into,
 					 "inlining to");
