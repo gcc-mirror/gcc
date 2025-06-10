@@ -2268,7 +2268,11 @@ irange::set_range_from_bitmask ()
   // If all the bits are known, this is a singleton.
   if (m_bitmask.mask () == 0)
     {
-      set (m_type, m_bitmask.value (), m_bitmask.value ());
+      // Make sure the singleton is within the range.
+      if (contains_p (m_bitmask.value ()))
+	set (m_type, m_bitmask.value (), m_bitmask.value ());
+      else
+	set_undefined ();
       return true;
     }
 
