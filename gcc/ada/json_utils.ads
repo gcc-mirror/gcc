@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---               D I A G N O S T I C S . J S O N _ U T I L S                --
+--                           J S O N _ U T I L S                            --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -22,6 +22,7 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
 with Types; use Types;
 
 package JSON_Utils is

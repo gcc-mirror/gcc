@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---              D I A G N O S T I C S . S A R I F _ E M I T T E R           --
+--                 E R R O U T C . S A R I F _ E M I T T E R                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -24,6 +24,5 @@
 ------------------------------------------------------------------------------
 
 package Erroutc.SARIF_Emitter is
-
    procedure Print_SARIF_Report;
 end Erroutc.SARIF_Emitter;

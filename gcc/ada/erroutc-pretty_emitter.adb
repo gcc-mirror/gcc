@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---             D I A G N O S T I C S . P R E T T Y _ E M I T T E R          --
+--                 E R R O U T C . P R E T T Y _ E M I T T E R              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --

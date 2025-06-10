@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---               D I A G N O S T I C S . R E P O S I T O R Y                --
+--                                E R R I D                                 --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -22,6 +22,7 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
 with JSON_Utils; use JSON_Utils;
 with Output;     use Output;
 

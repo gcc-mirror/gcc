@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---               D I A G N O S T I C S . J S O N _ U T I L S                --
+--                           J S O N _ U T I L S                            --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
