@@ -1,3 +1,16 @@
+2025-06-09  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-06-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120555
+	* g++.dg/cpp1z/constexpr-if39.C: New test.
+
+2025-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120502
+	* g++.dg/cpp2a/constexpr-prvalue2.C: New test.
+
 2025-06-06  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

@@ -1,3 +1,54 @@
+2025-06-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Constrain_Index): In the case of a fixed-lower-bound index,
+	set Etype of the newly created itype's Scalar_Range from the index's Etype.
+	* sem_ch12.adb (Validate_Array_Type_Instance): If the actual subtype is
+	a fixed-lower-bound type, then check again the Etype of its Scalar_Range.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Fix conditions for legality checks on
+	formal type declarations.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): If pragmas apply to a formal array
+	type, then set the flags on the base type.
+
+2025-06-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Use the Base_Type of the
+	subtype provided by the context as the subtype of the temporary object
+	initialized by the aggregate.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): When expanding attribute
+	Valid, use signedness from the validated view, not from its base type.
+
+2025-06-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* contracts.adb (Inherit_Condition): Remove Assoc_List and its uses
+	along with function Check_Condition, since mapping of formals will
+	effectively be done in Build_Class_Wide_Expression (by Replace_Entity).
+	* exp_util.adb (Replace_Entity): Only rewrite entity references in
+	function calls that qualify according to the result of calling the
+	new function Call_To_Parent_Dispatching_Op_Must_Be_Mapped.
+	(Call_To_Parent_Dispatching_Op_Must_Be_Mapped): New function that
+	determines whether a function call to a primitive of Par_Subp
+	associated tagged type needs to be mapped (according to whether
+	it has any actuals that reference controlling formals of the
+	primitive).
+
+2025-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Insert_Conditional_Object_Declaration): Remove Decl
+	formal parameter, add Typ and Const formal parameters.
+	(Expand_N_Case_Expression): Fix pasto in comment.  Adjust call to
+	Insert_Conditional_Object_Declaration and tidy up surrounding code.
+	(Expand_N_If_Expression): Adjust couple of calls to
+	Insert_Conditional_Object_Declaration.
+
 2025-06-06  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch4.adb (Constant_Indexing_OK): Add missing support for
