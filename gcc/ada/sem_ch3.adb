@@ -4297,7 +4297,7 @@ package body Sem_Ch3 is
             then
                Error_Msg_N
                  ("result subtype must be statically compatible with the " &
-                  "function result type", Indic);
+                  "function result subtype", Indic);
 
                if not Predicates_Compatible (Obj_Typ, R_Typ) then
                   Error_Msg_NE
