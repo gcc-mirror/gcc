@@ -206,7 +206,7 @@
 ;	 vdata: vgpr0-255
 ;	 srsrc: sgpr0-102
 ;	 soffset: sgpr0-102
-;	 flags: offen, idxen, glc, lds, slc, tfe
+;	 flags: offen, idxen, %G, lds, slc, tfe
 ;
 ; mtbuf - Typed memory buffer operation. Two words
 ;	 offset: 12-bit constant
@@ -216,10 +216,10 @@
 ;	 vdata: vgpr0-255
 ;	 srsrc: sgpr0-102
 ;	 soffset: sgpr0-102
-;	 flags: offen, idxen, glc, lds, slc, tfe
+;	 flags: offen, idxen, %G, lds, slc, tfe
 ;
 ; flat - flat or global memory operations
-;	 flags: glc, slc
+;	 flags: %G, slc
 ;	 addr: vgpr0-255
 ;	 data: vgpr0-255
 ;	 vdst: vgpr0-255
@@ -1964,6 +1964,14 @@
   [(set_attr "type" "mult")
    (set_attr "length" "8")])
 
+(define_insn "*memory_barrier"
+  [(set (match_operand:BLK 0)
+	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))]
+  "TARGET_TARGET_SC_CACHE"
+  "buffer_inv sc1"
+  [(set_attr "type" "mubuf")
+   (set_attr "length" "4")])
+
 ; FIXME: These patterns have been disabled as they do not seem to work
 ; reliably - they can cause hangs or incorrect results.
 ; TODO: flush caches according to memory model
@@ -1979,9 +1987,9 @@
    (use (match_operand 3 "const_int_operand"))]
   "0 /* Disabled.  */"
   "@
-   s_atomic_<bare_mnemonic><X>\t%0, %1, %2 glc\;s_waitcnt\tlgkmcnt(0)
-   flat_atomic_<bare_mnemonic><X>\t%0, %1, %2 glc\;s_waitcnt\t0
-   global_atomic_<bare_mnemonic><X>\t%0, %A1, %2%O1 glc\;s_waitcnt\tvmcnt(0)"
+   s_atomic_<bare_mnemonic><X>\t%0, %1, %2 %G2\;s_waitcnt\tlgkmcnt(0)
+   flat_atomic_<bare_mnemonic><X>\t%0, %1, %2 %G2\;s_waitcnt\t0
+   global_atomic_<bare_mnemonic><X>\t%0, %A1, %2%O1 %G2\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
    (set_attr "length" "12")])
 
@@ -2046,9 +2054,9 @@
 	  UNSPECV_ATOMIC))]
   ""
   "@
-   s_atomic_cmpswap<X>\t%0, %1, %2 glc\;s_waitcnt\tlgkmcnt(0)
-   flat_atomic_cmpswap<X>\t%0, %1, %2 glc\;s_waitcnt\t0
-   global_atomic_cmpswap<X>\t%0, %A1, %2%O1 glc\;s_waitcnt\tvmcnt(0)"
+   s_atomic_cmpswap<X>\t%0, %1, %2 %G2\;s_waitcnt\tlgkmcnt(0)
+   flat_atomic_cmpswap<X>\t%0, %1, %2 %G2\;s_waitcnt\t0
+   global_atomic_cmpswap<X>\t%0, %A1, %2%O1 %G2\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
    (set_attr "length" "12")
    (set_attr "delayeduse" "*,yes,yes")])
@@ -2088,15 +2096,15 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_load%o0\t%0, %A1 glc\;s_waitcnt\tlgkmcnt(0)";
+	    return "s_load%o0\t%0, %A1 %G1\;s_waitcnt\tlgkmcnt(0)";
 	  case 1:
 	    return (TARGET_RDNA2 /* Not GFX11.  */
-		    ? "flat_load%o0\t%0, %A1%O1 glc dlc\;s_waitcnt\t0"
-		    : "flat_load%o0\t%0, %A1%O1 glc\;s_waitcnt\t0");
+		    ? "flat_load%o0\t%0, %A1%O1 %G1 dlc\;s_waitcnt\t0"
+		    : "flat_load%o0\t%0, %A1%O1 %G1\;s_waitcnt\t0");
 	  case 2:
 	    return (TARGET_RDNA2 /* Not GFX11.  */
-		    ? "global_load%o0\t%0, %A1%O1 glc dlc\;s_waitcnt\tvmcnt(0)"
-		    : "global_load%o0\t%0, %A1%O1 glc\;s_waitcnt\tvmcnt(0)");
+		    ? "global_load%o0\t%0, %A1%O1 %G1 dlc\;s_waitcnt\tvmcnt(0)"
+		    : "global_load%o0\t%0, %A1%O1 %G1\;s_waitcnt\tvmcnt(0)");
 	  }
 	break;
       case MEMMODEL_CONSUME:
@@ -2105,25 +2113,31 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_load%o0\t%0, %A1 glc\;s_waitcnt\tlgkmcnt(0)\;"
+	    return "s_load%o0\t%0, %A1 %G1\;s_waitcnt\tlgkmcnt(0)\;"
 		   "s_dcache_wb_vol";
 	  case 1:
 	    return (TARGET_RDNA2
-		    ? "flat_load%o0\t%0, %A1%O1 glc dlc\;s_waitcnt\t0\;"
+		    ? "flat_load%o0\t%0, %A1%O1 %G1 dlc\;s_waitcnt\t0\;"
 		      "buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_RDNA3
-		    ? "flat_load%o0\t%0, %A1%O1 glc\;s_waitcnt\t0\;"
+		    ? "flat_load%o0\t%0, %A1%O1 %G1\;s_waitcnt\t0\;"
 		      "buffer_gl1_inv\;buffer_gl0_inv"
-		    : "flat_load%o0\t%0, %A1%O1 glc\;s_waitcnt\t0\;"
+		    : TARGET_TARGET_SC_CACHE
+		    ? "flat_load%o0\t%0, %A1%O1 %G1\;s_waitcnt\t0\;"
+		      "buffer_inv sc1"
+		    : "flat_load%o0\t%0, %A1%O1 %G1\;s_waitcnt\t0\;"
 		      "buffer_wbinvl1_vol");
 	  case 2:
 	    return (TARGET_RDNA2
-		    ? "global_load%o0\t%0, %A1%O1 glc dlc\;s_waitcnt\tvmcnt(0)\;"
+		    ? "global_load%o0\t%0, %A1%O1 %G1 dlc\;s_waitcnt\tvmcnt(0)\;"
 		      "buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_RDNA3
-		    ? "global_load%o0\t%0, %A1%O1 glc\;s_waitcnt\tvmcnt(0)\;"
+		    ? "global_load%o0\t%0, %A1%O1 %G1\;s_waitcnt\tvmcnt(0)\;"
 		      "buffer_gl1_inv\;buffer_gl0_inv"
-		    : "global_load%o0\t%0, %A1%O1 glc\;s_waitcnt\tvmcnt(0)\;"
+		    : TARGET_TARGET_SC_CACHE
+		    ? "global_load%o0\t%0, %A1%O1 %G1\;s_waitcnt\tvmcnt(0)\;"
+		      "buffer_inv sc1"
+		    : "global_load%o0\t%0, %A1%O1 %G1\;s_waitcnt\tvmcnt(0)\;"
 		      "buffer_wbinvl1_vol");
 	  }
 	break;
@@ -2133,25 +2147,31 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_load%o0\t%0, %A1 glc\;"
+	    return "s_dcache_wb_vol\;s_load%o0\t%0, %A1 %G1\;"
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
 	    return (TARGET_RDNA2
-		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_load%o0\t%0, %A1%O1 glc dlc\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_load%o0\t%0, %A1%O1 %G1 dlc\;"
 		      "s_waitcnt\t0\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_RDNA3
-		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_load%o0\t%0, %A1%O1 glc\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\t0\;buffer_gl1_inv\;buffer_gl0_inv"
-		    : "buffer_wbinvl1_vol\;flat_load%o0\t%0, %A1%O1 glc\;"
+		    : TARGET_TARGET_SC_CACHE
+		    ? "buffer_inv sc1\;flat_load%o0\t%0, %A1%O1 %G1\;"
+		      "s_waitcnt\t0\;buffer_inv sc1"
+		    : "buffer_wbinvl1_vol\;flat_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol");
 	  case 2:
 	    return (TARGET_RDNA2
-		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_load%o0\t%0, %A1%O1 glc dlc\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_load%o0\t%0, %A1%O1 %G1 dlc\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_RDNA3
-		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_load%o0\t%0, %A1%O1 glc\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
-		    : "buffer_wbinvl1_vol\;global_load%o0\t%0, %A1%O1 glc\;"
+		    : TARGET_TARGET_SC_CACHE
+		    ? "buffer_inv sc1\;global_load%o0\t%0, %A1%O1 %G1\;"
+		      "s_waitcnt\tvmcnt(0)\;buffer_inv sc1"
+		    : "buffer_wbinvl1_vol\;global_load%o0\t%0, %A1%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol");
 	  }
 	break;
@@ -2176,11 +2196,11 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_store%o1\t%1, %A0 glc\;s_waitcnt\tlgkmcnt(0)";
+	    return "s_store%o1\t%1, %A0 %G1\;s_waitcnt\tlgkmcnt(0)";
 	  case 1:
-	    return "flat_store%o1\t%A0, %1%O0 glc\;s_waitcnt\t0";
+	    return "flat_store%o1\t%A0, %1%O0 %G1\;s_waitcnt\t0";
 	  case 2:
-	    return "global_store%o1\t%A0, %1%O0 glc\;s_waitcnt\tvmcnt(0)";
+	    return "global_store%o1\t%A0, %1%O0 %G1\;s_waitcnt\tvmcnt(0)";
 	  }
 	break;
       case MEMMODEL_RELEASE:
@@ -2188,18 +2208,22 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 glc";
+	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 %G1";
 	  case 1:
 	    return (TARGET_GLn_CACHE
-		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 glc"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 %G1"
 		    : TARGET_WBINVL1_CACHE
-		    ? "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 glc"
+		    ? "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 %G1"
+		    : TARGET_TARGET_SC_CACHE
+		    ? "buffer_inv sc1\;flat_store%o1\t%A0, %1%O0 %G1"
 		    : "error: cache architectire unspecified");
 	  case 2:
 	    return (TARGET_GLn_CACHE
-		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_store%o1\t%A0, %1%O0 glc"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_store%o1\t%A0, %1%O0 %G1"
 		    : TARGET_WBINVL1_CACHE
-		    ? "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 glc"
+		    ? "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 %G1"
+		    : TARGET_TARGET_SC_CACHE
+		    ? "buffer_inv sc1\;global_store%o1\t%A0, %1%O0 %G1"
 		    : "error: cache architecture unspecified");
 	  }
 	break;
@@ -2209,23 +2233,29 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 glc\;"
+	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 %G1\;"
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
 	    return (TARGET_GLn_CACHE
-		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 glc\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\t0\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_WBINVL1_CACHE
-		    ? "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 glc\;"
+		    ? "buffer_wbinvl1_vol\;flat_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol"
+		    : TARGET_TARGET_SC_CACHE
+		    ? "buffer_inv sc1\;flat_store%o1\t%A0, %1%O0 %G1\;"
+		      "s_waitcnt\t0\;buffer_inv sc1"
 		    : "error: cache architecture unspecified");
 	  case 2:
 	    return (TARGET_GLn_CACHE
-		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_store%o1\t%A0, %1%O0 glc\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;global_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_WBINVL1_CACHE
-		    ? "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 glc\;"
+		    ? "buffer_wbinvl1_vol\;global_store%o1\t%A0, %1%O0 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol"
+		    : TARGET_TARGET_SC_CACHE
+		    ? "buffer_inv sc1\;global_store%o1\t%A0, %1%O0 %G1\;"
+		      "s_waitcnt\tvmcnt(0)\;buffer_inv sc1"
 		    : "error: cache architecture unspecified");
 	  }
 	break;
@@ -2252,11 +2282,11 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\tlgkmcnt(0)";
+	    return "s_atomic_swap<X>\t%0, %1, %2 %G1\;s_waitcnt\tlgkmcnt(0)";
 	  case 1:
-	    return "flat_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\t0";
+	    return "flat_atomic_swap<X>\t%0, %1, %2 %G1\;s_waitcnt\t0";
 	  case 2:
-	    return "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
+	    return "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		   "s_waitcnt\tvmcnt(0)";
 	  }
 	break;
@@ -2266,23 +2296,29 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\tlgkmcnt(0)\;"
+	    return "s_atomic_swap<X>\t%0, %1, %2 %G1\;s_waitcnt\tlgkmcnt(0)\;"
 		   "s_dcache_wb_vol\;s_dcache_inv_vol";
 	  case 1:
 	    return (TARGET_GLn_CACHE
-		    ? "flat_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\t0\;"
+		    ? "flat_atomic_swap<X>\t%0, %1, %2 %G1\;s_waitcnt\t0\;"
 		      "buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_WBINVL1_CACHE
-            ? "flat_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\t0\;"
+            ? "flat_atomic_swap<X>\t%0, %1, %2 %G1\;s_waitcnt\t0\;"
 		      "buffer_wbinvl1_vol"
+	    : TARGET_TARGET_SC_CACHE
+            ? "flat_atomic_swap<X>\t%0, %1, %2 %G1\;s_waitcnt\t0\;"
+		      "buffer_inv sc1"
             : "error: cache architecture unspecified");
 	  case 2:
 	    return (TARGET_GLn_CACHE
-		    ? "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
+		    ? "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_WBINVL1_CACHE
-            ? "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
+            ? "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol"
+	    : TARGET_TARGET_SC_CACHE
+            ? "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
+		      "s_waitcnt\tvmcnt(0)\;buffer_inv sc1"
             : "error: cache architecture unspecified");
 	  }
 	break;
@@ -2291,24 +2327,31 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_atomic_swap<X>\t%0, %1, %2 glc\;"
+	    return "s_dcache_wb_vol\;s_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		   "s_waitcnt\tlgkmcnt(0)";
 	  case 1:
 	    return (TARGET_GLn_CACHE
-		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0"
 		    : TARGET_WBINVL1_CACHE
-            ? "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
+            ? "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
+		      "s_waitcnt\t0"
+	    : TARGET_TARGET_SC_CACHE
+            ? "buffer_inv sc1\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0"
             : "error: cache architecture unspecified");
 	  case 2:
 	    return (TARGET_GLn_CACHE
 		    ? "buffer_gl1_inv\;buffer_gl0_inv\;"
-		      "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
+		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)"
 		    : TARGET_WBINVL1_CACHE
             ? "buffer_wbinvl1_vol\;"
-		      "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
+		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
+		      "s_waitcnt\tvmcnt(0)"
+	    : TARGET_TARGET_SC_CACHE
+            ? "buffer_inv sc1\;"
+		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)"
             : "error: cache architecture unspecified");
 	  }
@@ -2319,25 +2362,32 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_atomic_swap<X>\t%0, %1, %2 glc\;"
+	    return "s_dcache_wb_vol\;s_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
 	    return (TARGET_GLn_CACHE
-		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
+		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_WBINVL1_CACHE
-            ? "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 glc\;"
+            ? "buffer_wbinvl1_vol\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
 		      "s_waitcnt\t0\;buffer_wbinvl1_vol"
+	    : TARGET_TARGET_SC_CACHE
+            ? "buffer_inv sc1\;flat_atomic_swap<X>\t%0, %1, %2 %G1\;"
+		      "s_waitcnt\t0\;buffer_inv sc1"
             : "error: cache architecture unspecified");
 	  case 2:
 	    return (TARGET_GLn_CACHE
 		    ? "buffer_gl1_inv\;buffer_gl0_inv\;"
-		      "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
+		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_gl1_inv\;buffer_gl0_inv"
 		    : TARGET_WBINVL1_CACHE
             ? "buffer_wbinvl1_vol\;"
-		      "global_atomic_swap<X>\t%0, %A1, %2%O1 glc\;"
+		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
 		      "s_waitcnt\tvmcnt(0)\;buffer_wbinvl1_vol"
+	    : TARGET_TARGET_SC_CACHE
+            ? "buffer_inv sc1\;"
+		      "global_atomic_swap<X>\t%0, %A1, %2%O1 %G1\;"
+		      "s_waitcnt\tvmcnt(0)\;buffer_inv sc1"
             : "error: cache architecture unspecified");
 	  }
 	break;

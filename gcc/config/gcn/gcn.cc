@@ -7102,7 +7102,8 @@ print_operand_address (FILE *file, rtx mem)
    E - print conditional code for v_cmp (eq_u64/ne_u64...)
    A - print address in formatting suitable for given address space.
    O - print offset:n for data share operations.
-   g - print "glc", if appropriate for given MEM
+   G - print "glc" (or for gfx94x: sc0) unconditionally [+ indep. of regnum]
+   g - print "glc" (or for gfx94x: sc0), if appropriate for given MEM
    L - print low-part of a multi-reg value
    H - print second part of a multi-reg value (high-part of 2-reg value)
    J - print third part of a multi-reg value
@@ -7718,10 +7719,13 @@ print_operand (FILE *file, rtx x, int code)
       else
 	output_addr_const (file, x);
       return;
+    case 'G':
+      fputs (TARGET_GLC_NAME, file);
+      return;
     case 'g':
       gcc_assert (xcode == MEM);
       if (MEM_VOLATILE_P (x))
-	fputs (" glc", file);
+	fputs (TARGET_GLC_NAME, file);
       return;
     default:
       output_operand_lossage ("invalid %%xn code");
