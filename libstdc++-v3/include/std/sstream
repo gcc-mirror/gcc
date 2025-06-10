@@ -165,7 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { __rhs._M_sync(const_cast<char_type*>(__rhs._M_string.data()), 0, 0); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
+      // P0408 Efficient access to basic_stringbuf buffer
       explicit
       basic_stringbuf(const allocator_type& __a)
       : basic_stringbuf(ios_base::in | std::ios_base::out, __a)
@@ -233,7 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif // C++26
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
+      // P0408 Efficient access to basic_stringbuf buffer
       basic_stringbuf(basic_stringbuf&& __rhs, const allocator_type& __a)
       : basic_stringbuf(std::move(__rhs), __a, __xfer_bufptrs(__rhs, this))
       { __rhs._M_sync(const_cast<char_type*>(__rhs._M_string.data()), 0, 0); }
@@ -572,7 +572,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
+      // P0408 Efficient access to basic_stringbuf buffer
 
       // The move constructor initializes an __xfer_bufptrs temporary then
       // delegates to this constructor to performs moves during its lifetime.
@@ -693,7 +693,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { __istream_type::set_rdbuf(std::__addressof(_M_stringbuf)); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
+      // P0408 Efficient access to basic_stringbuf buffer
       basic_istringstream(ios_base::openmode __mode, const allocator_type& __a)
       : __istream_type(), _M_stringbuf(__mode | ios_base::in, __a)
       { this->init(std::__addressof(_M_stringbuf)); }
@@ -959,7 +959,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { __ostream_type::set_rdbuf(std::__addressof(_M_stringbuf)); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
+      // P0408 Efficient access to basic_stringbuf buffer
       basic_ostringstream(ios_base::openmode __mode, const allocator_type& __a)
       : __ostream_type(), _M_stringbuf(__mode | ios_base::out, __a)
       { this->init(std::__addressof(_M_stringbuf)); }
@@ -1221,7 +1221,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { __iostream_type::set_rdbuf(std::__addressof(_M_stringbuf)); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-	// P0408 Efficient access to basic_stringbuf buffer
+      // P0408 Efficient access to basic_stringbuf buffer
       basic_stringstream(ios_base::openmode __mode, const allocator_type& __a)
       : __iostream_type(), _M_stringbuf(__mode, __a)
       { this->init(std::__addressof(_M_stringbuf)); }
