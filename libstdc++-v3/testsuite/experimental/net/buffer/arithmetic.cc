@@ -26,7 +26,6 @@ using std::experimental::net::const_buffer;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
   char c[4];
 
   mutable_buffer mb;
@@ -64,7 +63,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
   char c[4];
 
   const_buffer cb;

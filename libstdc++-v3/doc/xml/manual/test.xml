@@ -685,20 +685,6 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
    </para>
 
    <para>
-    Prior to GCC 7.1, <literal>VERIFY</literal> was defined differently.
-    It usually expanded to the standard <literal>assert</literal> macro, but
-    allowed targets to define it to something different. In order to support
-    the alternative expansions of <literal>VERIFY</literal>, before any use
-    of the macro there needed to be a variable called <varname>test</varname>
-    in scope, which was usually defined like so (the attribute avoids
-    warnings about an unused variable):
-    <programlisting>
-    bool test __attribute__((unused)) = true;
-    </programlisting>
-    This is no longer needed, and should not be added to new tests.
-   </para>
-
-   <para>
     The testsuite uses the DejaGnu framework to compile and run the tests.
     Test cases are normal C++ files which contain special directives in
     comments.  These directives look like <literal>{ dg-* ... }</literal>
