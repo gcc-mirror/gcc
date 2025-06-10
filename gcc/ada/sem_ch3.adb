@@ -4163,7 +4163,7 @@ package body Sem_Ch3 is
 
       procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id) is
          Obj_Id  : constant Entity_Id := Defining_Identifier (Obj_Decl);
-         Obj_Typ : constant Entity_Id := Etype (Obj_Id);
+         Obj_Typ : Entity_Id := Etype (Obj_Id);
          Func_Id : constant Entity_Id := Return_Applies_To (Scope (Obj_Id));
          R_Typ   : constant Entity_Id := Etype (Func_Id);
          Indic   : constant Node_Id   :=
@@ -4197,6 +4197,15 @@ package body Sem_Ch3 is
 
          if Error_Posted (Obj_Decl) or else Error_Posted (Indic) then
             return;
+         end if;
+
+         --  The return object type could have been rewritten into a
+         --  constrained type, so for the legality checks that follow we need
+         --  to recover the nominal unconstrained type.
+
+         if Is_Constr_Subt_For_U_Nominal (Obj_Typ) then
+            Obj_Typ := Etype (Obj_Typ);
+            pragma Assert (not Is_Constrained (Obj_Typ));
          end if;
 
          --  "return access T" case; check that the return statement also has
@@ -4267,7 +4276,7 @@ package body Sem_Ch3 is
 
             --  AI05-103: for elementary types, subtypes must statically match
 
-            if Is_Constrained (R_Typ) or else Is_Access_Type (R_Typ) then
+            if Is_Elementary_Type (R_Typ) then
                if not Subtypes_Statically_Match (Obj_Typ, R_Typ) then
                   Error_No_Match (Indic);
                end if;
@@ -4283,8 +4292,7 @@ package body Sem_Ch3 is
             --  code is expanded on the basis of the base type (see subprogram
             --  Stream_Base_Type).
 
-            elsif Nkind (Indic) = N_Subtype_Indication
-              and then not Subtypes_Statically_Compatible (Obj_Typ, R_Typ)
+            elsif not Subtypes_Statically_Compatible (Obj_Typ, R_Typ)
               and then not Is_TSS (Func_Id, TSS_Stream_Input)
             then
                Error_Msg_N
