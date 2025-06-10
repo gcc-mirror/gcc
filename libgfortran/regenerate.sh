@@ -793,10 +793,6 @@ generated/spread_c16.c
 generated/spread_c17.c
 "
 
-i_isobinding_c="
-runtime/ISO_Fortran_binding.c
-"
-
 gfor_built_specific_src="
 generated/_abs_c4.F90
 generated/_abs_c8.F90
@@ -1233,5 +1229,22 @@ done
 for f in ${gfor_misc_specifics} ; do
   ${M4} -Dfile=$f -I./m4 misc_specifics.m4 > $f.tmp
   ../move-if-change $f.tmp $f
+done
+
+# Check that all generated files are listed in Makefile.am
+
+for i in generated/*.c generated/*.F90 ; do
+  if ! grep -q "$i" Makefile.am ; then
+    echo "File $i is not present in Makefile.am"
+  fi
+done
+
+# Check that all generated files listed in Makefile.am actually exist
+
+genlist=`tr ' ' '\n' < Makefile.am | grep 'generated/'`
+for i in $genlist ; do
+  if ! test -e "$i" ; then
+    echo "File $i listed in Makefile.am does not exist"
+  fi
 done
 

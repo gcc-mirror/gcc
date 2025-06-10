@@ -240,102 +240,61 @@ runtime/stop.c
 
 endif
 
-i_all_c= \
+i_matmul_c= \
+generated/matmul_i1.c \
+generated/matmul_i2.c \
+generated/matmul_i4.c \
+generated/matmul_i8.c \
+generated/matmul_i16.c \
+generated/matmul_r4.c \
+generated/matmul_r8.c \
+generated/matmul_r10.c \
+generated/matmul_r16.c \
+generated/matmul_r17.c \
+generated/matmul_c4.c \
+generated/matmul_c8.c \
+generated/matmul_c10.c \
+generated/matmul_c16.c \
+generated/matmul_c17.c
+
+i_matmulavx128_c= \
+generated/matmulavx128_i1.c \
+generated/matmulavx128_i2.c \
+generated/matmulavx128_i4.c \
+generated/matmulavx128_i8.c \
+generated/matmulavx128_i16.c \
+generated/matmulavx128_r4.c \
+generated/matmulavx128_r8.c \
+generated/matmulavx128_r10.c \
+generated/matmulavx128_r16.c \
+generated/matmulavx128_r17.c \
+generated/matmulavx128_c4.c \
+generated/matmulavx128_c8.c \
+generated/matmulavx128_c10.c \
+generated/matmulavx128_c16.c \
+generated/matmulavx128_c17.c
+
+i_matmull_c= \
+generated/matmul_l4.c \
+generated/matmul_l8.c \
+generated/matmul_l16.c
+
+gfor_built_src= \
 generated/all_l1.c \
 generated/all_l2.c \
 generated/all_l4.c \
 generated/all_l8.c \
-generated/all_l16.c
-
-i_any_c= \
+generated/all_l16.c \
 generated/any_l1.c \
 generated/any_l2.c \
 generated/any_l4.c \
 generated/any_l8.c \
-generated/any_l16.c
-
-i_bessel_c= \
-generated/bessel_r4.c \
-generated/bessel_r8.c \
-generated/bessel_r10.c \
-generated/bessel_r16.c \
-generated/bessel_r17.c
-
-i_count_c= \
+generated/any_l16.c \
 generated/count_1_l.c \
 generated/count_2_l.c \
 generated/count_4_l.c \
 generated/count_8_l.c \
-generated/count_16_l.c
-
-i_iall_c= \
-generated/iall_i1.c \
-generated/iall_i2.c \
-generated/iall_i4.c \
-generated/iall_i8.c \
-generated/iall_i16.c
-
-i_iany_c= \
-generated/iany_i1.c \
-generated/iany_i2.c \
-generated/iany_i4.c \
-generated/iany_i8.c \
-generated/iany_i16.c
-
-i_iparity_c= \
-generated/iparity_i1.c \
-generated/iparity_i2.c \
-generated/iparity_i4.c \
-generated/iparity_i8.c \
-generated/iparity_i16.c
-
-i_findloc0_c= \
-generated/findloc0_i1.c \
-generated/findloc0_i2.c \
-generated/findloc0_i4.c \
-generated/findloc0_i8.c \
-generated/findloc0_i16.c \
-generated/findloc0_r4.c \
-generated/findloc0_r8.c \
-generated/findloc0_r10.c \
-generated/findloc0_r16.c \
-generated/findloc0_r17.c \
-generated/findloc0_c4.c \
-generated/findloc0_c8.c \
-generated/findloc0_c10.c \
-generated/findloc0_c16.c \
-generated/findloc0_c17.c
-
-i_findloc0s_c= \
-generated/findloc0_s1.c \
-generated/findloc0_s4.c
-
-i_findloc1_c= \
-generated/findloc1_i1.c \
-generated/findloc1_i2.c \
-generated/findloc1_i4.c \
-generated/findloc1_i8.c \
-generated/findloc1_i16.c \
-generated/findloc1_r4.c \
-generated/findloc1_r8.c \
-generated/findloc1_r10.c \
-generated/findloc1_r16.c \
-generated/findloc1_r17.c \
-generated/findloc1_c4.c \
-generated/findloc1_c8.c \
-generated/findloc1_c10.c \
-generated/findloc1_c16.c \
-generated/findloc1_c17.c
-
-i_findloc1s_c= \
-generated/findloc1_s1.c \
-generated/findloc1_s4.c
-
-i_findloc2s_c= \
-generated/findloc2_s1.c \
-generated/findloc2_s4.c
-
-i_maxloc0_c= \
+generated/count_16_l.c \
 generated/maxloc0_4_i1.c \
 generated/maxloc0_8_i1.c \
 generated/maxloc0_16_i1.c \
@@ -380,17 +339,7 @@ generated/maxloc0_8_r16.c \
 generated/maxloc0_16_r16.c \
 generated/maxloc0_4_r17.c \
 generated/maxloc0_8_r17.c \
-generated/maxloc0_16_r17.c
-
-i_maxloc0s_c = \
-generated/maxloc0_4_s1.c \
-generated/maxloc0_4_s4.c \
-generated/maxloc0_8_s1.c \
-generated/maxloc0_8_s4.c \
-generated/maxloc0_16_s1.c \
-generated/maxloc0_16_s4.c
-
-i_maxloc1_c= \
+generated/maxloc0_16_r17.c \
 generated/maxloc1_4_i1.c \
 generated/maxloc1_8_i1.c \
 generated/maxloc1_16_i1.c \
@@ -435,25 +384,7 @@ generated/maxloc1_8_r16.c \
 generated/maxloc1_16_r16.c \
 generated/maxloc1_4_r17.c \
 generated/maxloc1_8_r17.c \
-generated/maxloc1_16_r17.c
-
-i_maxloc1s_c= \
-generated/maxloc1_4_s1.c \
-generated/maxloc1_4_s4.c \
-generated/maxloc1_8_s1.c \
-generated/maxloc1_8_s4.c \
-generated/maxloc1_16_s1.c \
-generated/maxloc1_16_s4.c
-
-i_maxloc2s_c= \
-generated/maxloc2_4_s1.c \
-generated/maxloc2_4_s4.c \
-generated/maxloc2_8_s1.c \
-generated/maxloc2_8_s4.c \
-generated/maxloc2_16_s1.c \
-generated/maxloc2_16_s4.c
-
-i_maxval_c= \
+generated/maxloc1_16_r17.c \
 generated/maxval_i1.c \
 generated/maxval_i2.c \
 generated/maxval_i4.c \
@@ -468,17 +399,7 @@ generated/maxval_r4.c \
 generated/maxval_r8.c \
 generated/maxval_r10.c \
 generated/maxval_r16.c \
-generated/maxval_r17.c
-
-i_maxval0s_c=\
-generated/maxval0_s1.c \
-generated/maxval0_s4.c
-
-i_maxval1s_c=\
-generated/maxval1_s1.c \
-generated/maxval1_s4.c
-
-i_minloc0_c= \
+generated/maxval_r17.c \
 generated/minloc0_4_i1.c \
 generated/minloc0_8_i1.c \
 generated/minloc0_16_i1.c \
@@ -523,17 +444,7 @@ generated/minloc0_8_r16.c \
 generated/minloc0_16_r16.c \
 generated/minloc0_4_r17.c \
 generated/minloc0_8_r17.c \
-generated/minloc0_16_r17.c
-
-i_minloc0s_c = \
-generated/minloc0_4_s1.c \
-generated/minloc0_4_s4.c \
-generated/minloc0_8_s1.c \
-generated/minloc0_8_s4.c \
-generated/minloc0_16_s1.c \
-generated/minloc0_16_s4.c
-
-i_minloc1_c= \
+generated/minloc0_16_r17.c \
 generated/minloc1_4_i1.c \
 generated/minloc1_8_i1.c \
 generated/minloc1_16_i1.c \
@@ -578,25 +489,7 @@ generated/minloc1_8_r16.c \
 generated/minloc1_16_r16.c \
 generated/minloc1_4_r17.c \
 generated/minloc1_8_r17.c \
-generated/minloc1_16_r17.c
-
-i_minloc1s_c= \
-generated/minloc1_4_s1.c \
-generated/minloc1_4_s4.c \
-generated/minloc1_8_s1.c \
-generated/minloc1_8_s4.c \
-generated/minloc1_16_s1.c \
-generated/minloc1_16_s4.c
-
-i_minloc2s_c= \
-generated/minloc2_4_s1.c \
-generated/minloc2_4_s4.c \
-generated/minloc2_8_s1.c \
-generated/minloc2_8_s4.c \
-generated/minloc2_16_s1.c \
-generated/minloc2_16_s4.c
-
-i_minval_c= \
+generated/minloc1_16_r17.c \
 generated/minval_i1.c \
 generated/minval_i2.c \
 generated/minval_i4.c \
@@ -611,48 +504,7 @@ generated/minval_r4.c \
 generated/minval_r8.c \
 generated/minval_r10.c \
 generated/minval_r16.c \
-generated/minval_r17.c
-
-i_minval0s_c=\
-generated/minval0_s1.c \
-generated/minval0_s4.c
-
-i_minval1s_c=\
-generated/minval1_s1.c \
-generated/minval1_s4.c
-
-i_norm2_c= \
-generated/norm2_r4.c \
-generated/norm2_r8.c \
-generated/norm2_r10.c \
-generated/norm2_r16.c \
-generated/norm2_r17.c
-
-i_parity_c = \
-generated/parity_l1.c \
-generated/parity_l2.c \
-generated/parity_l4.c \
-generated/parity_l8.c \
-generated/parity_l16.c
-
-i_sum_c= \
-generated/sum_i1.c \
-generated/sum_i2.c \
-generated/sum_i4.c \
-generated/sum_i8.c \
-generated/sum_i16.c \
-generated/sum_r4.c \
-generated/sum_r8.c \
-generated/sum_r10.c \
-generated/sum_r16.c \
-generated/sum_r17.c \
-generated/sum_c4.c \
-generated/sum_c8.c \
-generated/sum_c10.c \
-generated/sum_c16.c \
-generated/sum_c17.c
-
-i_product_c= \
+generated/minval_r17.c \
 generated/product_i1.c \
 generated/product_i2.c \
 generated/product_i4.c \
@@ -667,55 +519,66 @@ generated/product_c4.c \
 generated/product_c8.c \
 generated/product_c10.c \
 generated/product_c16.c \
-generated/product_c17.c
-
-i_matmul_c= \
-generated/matmul_i1.c \
-generated/matmul_i2.c \
-generated/matmul_i4.c \
-generated/matmul_i8.c \
-generated/matmul_i16.c \
-generated/matmul_r4.c \
-generated/matmul_r8.c \
-generated/matmul_r10.c \
-generated/matmul_r16.c \
-generated/matmul_r17.c \
-generated/matmul_c4.c \
-generated/matmul_c8.c \
-generated/matmul_c10.c \
-generated/matmul_c16.c \
-generated/matmul_c17.c
-
-i_matmulavx128_c= \
-generated/matmulavx128_i1.c \
-generated/matmulavx128_i2.c \
-generated/matmulavx128_i4.c \
-generated/matmulavx128_i8.c \
-generated/matmulavx128_i16.c \
-generated/matmulavx128_r4.c \
-generated/matmulavx128_r8.c \
-generated/matmulavx128_r10.c \
-generated/matmulavx128_r16.c \
-generated/matmulavx128_r17.c \
-generated/matmulavx128_c4.c \
-generated/matmulavx128_c8.c \
-generated/matmulavx128_c10.c \
-generated/matmulavx128_c16.c \
-generated/matmulavx128_c17.c
-
-i_matmull_c= \
-generated/matmul_l4.c \
-generated/matmul_l8.c \
-generated/matmul_l16.c
-
-i_shape_c= \
+generated/product_c17.c \
+generated/sum_i1.c \
+generated/sum_i2.c \
+generated/sum_i4.c \
+generated/sum_i8.c \
+generated/sum_i16.c \
+generated/sum_r4.c \
+generated/sum_r8.c \
+generated/sum_r10.c \
+generated/sum_r16.c \
+generated/sum_r17.c \
+generated/sum_c4.c \
+generated/sum_c8.c \
+generated/sum_c10.c \
+generated/sum_c16.c \
+generated/sum_c17.c \
+generated/bessel_r4.c \
+generated/bessel_r8.c \
+generated/bessel_r10.c \
+generated/bessel_r16.c \
+generated/bessel_r17.c \
+generated/iall_i1.c \
+generated/iall_i2.c \
+generated/iall_i4.c \
+generated/iall_i8.c \
+generated/iall_i16.c \
+generated/iany_i1.c \
+generated/iany_i2.c \
+generated/iany_i4.c \
+generated/iany_i8.c \
+generated/iany_i16.c \
+generated/iparity_i1.c \
+generated/iparity_i2.c \
+generated/iparity_i4.c \
+generated/iparity_i8.c \
+generated/iparity_i16.c \
+generated/norm2_r4.c \
+generated/norm2_r8.c \
+generated/norm2_r10.c \
+generated/norm2_r16.c \
+generated/norm2_r17.c \
+generated/parity_l1.c \
+generated/parity_l2.c \
+generated/parity_l4.c \
+generated/parity_l8.c \
+generated/parity_l16.c \
 generated/shape_i1.c \
 generated/shape_i2.c \
 generated/shape_i4.c \
 generated/shape_i8.c \
-generated/shape_i16.c
-
-i_reshape_c= \
+generated/shape_i16.c \
+generated/eoshift1_4.c \
+generated/eoshift1_8.c \
+generated/eoshift1_16.c \
+generated/eoshift3_4.c \
+generated/eoshift3_8.c \
+generated/eoshift3_16.c \
+generated/cshift1_4.c \
+generated/cshift1_8.c \
+generated/cshift1_16.c \
 generated/reshape_i4.c \
 generated/reshape_i8.c \
 generated/reshape_i16.c \
@@ -728,19 +591,118 @@ generated/reshape_c4.c \
 generated/reshape_c8.c \
 generated/reshape_c10.c \
 generated/reshape_c16.c \
-generated/reshape_c17.c
-
-i_eoshift1_c= \
-generated/eoshift1_4.c \
-generated/eoshift1_8.c \
-generated/eoshift1_16.c
-
-i_eoshift3_c= \
-generated/eoshift3_4.c \
-generated/eoshift3_8.c \
-generated/eoshift3_16.c
-
-i_cshift0_c= \
+generated/reshape_c17.c \
+generated/in_pack_i1.c \
+generated/in_pack_i2.c \
+generated/in_pack_i4.c \
+generated/in_pack_i8.c \
+generated/in_pack_i16.c \
+generated/in_pack_r4.c \
+generated/in_pack_r8.c \
+generated/in_pack_r10.c \
+generated/in_pack_r16.c \
+generated/in_pack_r17.c \
+generated/in_pack_c4.c \
+generated/in_pack_c8.c \
+generated/in_pack_c10.c \
+generated/in_pack_c16.c \
+generated/in_pack_c17.c \
+generated/in_unpack_i1.c \
+generated/in_unpack_i2.c \
+generated/in_unpack_i4.c \
+generated/in_unpack_i8.c \
+generated/in_unpack_i16.c \
+generated/in_unpack_r4.c \
+generated/in_unpack_r8.c \
+generated/in_unpack_r10.c \
+generated/in_unpack_r16.c \
+generated/in_unpack_r17.c \
+generated/in_unpack_c4.c \
+generated/in_unpack_c8.c \
+generated/in_unpack_c10.c \
+generated/in_unpack_c16.c \
+generated/in_unpack_c17.c \
+generated/pow_i4_i4.c \
+generated/pow_i8_i4.c \
+generated/pow_i16_i4.c \
+generated/pow_r16_i4.c \
+generated/pow_r17_i4.c \
+generated/pow_c4_i4.c \
+generated/pow_c8_i4.c \
+generated/pow_c10_i4.c \
+generated/pow_c16_i4.c \
+generated/pow_c17_i4.c \
+generated/pow_i4_i8.c \
+generated/pow_i8_i8.c \
+generated/pow_i16_i8.c \
+generated/pow_r4_i8.c \
+generated/pow_r8_i8.c \
+generated/pow_r10_i8.c \
+generated/pow_r16_i8.c \
+generated/pow_r17_i8.c \
+generated/pow_c4_i8.c \
+generated/pow_c8_i8.c \
+generated/pow_c10_i8.c \
+generated/pow_c16_i8.c \
+generated/pow_c17_i8.c \
+generated/pow_i4_i16.c \
+generated/pow_i8_i16.c \
+generated/pow_i16_i16.c \
+generated/pow_r4_i16.c \
+generated/pow_r8_i16.c \
+generated/pow_r10_i16.c \
+generated/pow_r16_i16.c \
+generated/pow_r17_i16.c \
+generated/pow_c4_i16.c \
+generated/pow_c8_i16.c \
+generated/pow_c10_i16.c \
+generated/pow_c16_i16.c \
+generated/pow_c17_i16.c \
+generated/pack_i1.c \
+generated/pack_i2.c \
+generated/pack_i4.c \
+generated/pack_i8.c \
+generated/pack_i16.c \
+generated/pack_r4.c \
+generated/pack_r8.c \
+generated/pack_r10.c \
+generated/pack_r16.c \
+generated/pack_r17.c \
+generated/pack_c4.c \
+generated/pack_c8.c \
+generated/pack_c10.c \
+generated/pack_c16.c \
+generated/pack_c17.c \
+generated/unpack_i1.c \
+generated/unpack_i2.c \
+generated/unpack_i4.c \
+generated/unpack_i8.c \
+generated/unpack_i16.c \
+generated/unpack_r4.c \
+generated/unpack_r8.c \
+generated/unpack_r10.c \
+generated/unpack_r16.c \
+generated/unpack_r17.c \
+generated/unpack_c4.c \
+generated/unpack_c8.c \
+generated/unpack_c10.c \
+generated/unpack_c16.c \
+generated/unpack_c17.c \
+generated/spread_i1.c \
+generated/spread_i2.c \
+generated/spread_i4.c \
+generated/spread_i8.c \
+generated/spread_i16.c \
+generated/spread_r4.c \
+generated/spread_r8.c \
+generated/spread_r10.c \
+generated/spread_r16.c \
+generated/spread_r17.c \
+generated/spread_c4.c \
+generated/spread_c8.c \
+generated/spread_c10.c \
+generated/spread_c16.c \
+generated/spread_c17.c \
 generated/cshift0_i1.c \
 generated/cshift0_i2.c \
 generated/cshift0_i4.c \
@@ -755,14 +717,7 @@ generated/cshift0_c4.c \
 generated/cshift0_c8.c \
 generated/cshift0_c10.c \
 generated/cshift0_c16.c \
-generated/cshift0_c17.c
-
-i_cshift1_c= \
-generated/cshift1_4.c \
-generated/cshift1_8.c \
-generated/cshift1_16.c
-
-i_cshift1a_c = \
+generated/cshift0_c17.c \
 generated/cshift1_4_i1.c \
 generated/cshift1_4_i2.c \
 generated/cshift1_4_i4.c \
@@ -807,81 +762,87 @@ generated/cshift1_16_c4.c \
 generated/cshift1_16_c8.c \
 generated/cshift1_16_c10.c \
 generated/cshift1_16_c16.c \
-generated/cshift1_16_c17.c
-
-in_pack_c = \
-generated/in_pack_i1.c \
-generated/in_pack_i2.c \
-generated/in_pack_i4.c \
-generated/in_pack_i8.c \
-generated/in_pack_i16.c \
-generated/in_pack_r4.c \
-generated/in_pack_r8.c \
-generated/in_pack_r10.c \
-generated/in_pack_r16.c \
-generated/in_pack_r17.c \
-generated/in_pack_c4.c \
-generated/in_pack_c8.c \
-generated/in_pack_c10.c \
-generated/in_pack_c16.c \
-generated/in_pack_c17.c
-
-in_unpack_c = \
-generated/in_unpack_i1.c \
-generated/in_unpack_i2.c \
-generated/in_unpack_i4.c \
-generated/in_unpack_i8.c \
-generated/in_unpack_i16.c \
-generated/in_unpack_r4.c \
-generated/in_unpack_r8.c \
-generated/in_unpack_r10.c \
-generated/in_unpack_r16.c \
-generated/in_unpack_r17.c \
-generated/in_unpack_c4.c \
-generated/in_unpack_c8.c \
-generated/in_unpack_c10.c \
-generated/in_unpack_c16.c \
-generated/in_unpack_c17.c
-
-i_pow_c = \
-generated/pow_i4_i4.c \
-generated/pow_i8_i4.c \
-generated/pow_i16_i4.c \
-generated/pow_r16_i4.c \
-generated/pow_r17_i4.c \
-generated/pow_c4_i4.c \
-generated/pow_c8_i4.c \
-generated/pow_c10_i4.c \
-generated/pow_c16_i4.c \
-generated/pow_c17_i4.c \
-generated/pow_i4_i8.c \
-generated/pow_i8_i8.c \
-generated/pow_i16_i8.c \
-generated/pow_r4_i8.c \
-generated/pow_r8_i8.c \
-generated/pow_r10_i8.c \
-generated/pow_r16_i8.c \
-generated/pow_r17_i8.c \
-generated/pow_c4_i8.c \
-generated/pow_c8_i8.c \
-generated/pow_c10_i8.c \
-generated/pow_c16_i8.c \
-generated/pow_c17_i8.c \
-generated/pow_i4_i16.c \
-generated/pow_i8_i16.c \
-generated/pow_i16_i16.c \
-generated/pow_r4_i16.c \
-generated/pow_r8_i16.c \
-generated/pow_r10_i16.c \
-generated/pow_r16_i16.c \
-generated/pow_r17_i16.c \
-generated/pow_c4_i16.c \
-generated/pow_c8_i16.c \
-generated/pow_c10_i16.c \
-generated/pow_c16_i16.c \
-generated/pow_c17_i16.c
-
-i_powu_c = \
+generated/cshift1_16_c17.c \
+generated/findloc0_i1.c \
+generated/findloc0_i2.c \
+generated/findloc0_i4.c \
+generated/findloc0_i8.c \
+generated/findloc0_i16.c \
+generated/findloc0_r4.c \
+generated/findloc0_r8.c \
+generated/findloc0_r10.c \
+generated/findloc0_r16.c \
+generated/findloc0_r17.c \
+generated/findloc0_c4.c \
+generated/findloc0_c8.c \
+generated/findloc0_c10.c \
+generated/findloc0_c16.c \
+generated/findloc0_c17.c \
+generated/findloc0_s1.c \
+generated/findloc0_s4.c \
+generated/findloc1_i1.c \
+generated/findloc1_i2.c \
+generated/findloc1_i4.c \
+generated/findloc1_i8.c \
+generated/findloc1_i16.c \
+generated/findloc1_r4.c \
+generated/findloc1_r8.c \
+generated/findloc1_r10.c \
+generated/findloc1_r16.c \
+generated/findloc1_r17.c \
+generated/findloc1_c4.c \
+generated/findloc1_c8.c \
+generated/findloc1_c10.c \
+generated/findloc1_c16.c \
+generated/findloc1_c17.c \
+generated/findloc1_s1.c \
+generated/findloc1_s4.c \
+generated/findloc2_s1.c \
+generated/findloc2_s4.c \
+generated/maxloc0_4_s1.c \
+generated/maxloc0_4_s4.c \
+generated/maxloc0_8_s1.c \
+generated/maxloc0_8_s4.c \
+generated/maxloc0_16_s1.c \
+generated/maxloc0_16_s4.c \
+generated/maxloc1_4_s1.c \
+generated/maxloc1_4_s4.c \
+generated/maxloc1_8_s1.c \
+generated/maxloc1_8_s4.c \
+generated/maxloc1_16_s1.c \
+generated/maxloc1_16_s4.c \
+generated/maxloc2_4_s1.c \
+generated/maxloc2_4_s4.c \
+generated/maxloc2_8_s1.c \
+generated/maxloc2_8_s4.c \
+generated/maxloc2_16_s1.c \
+generated/maxloc2_16_s4.c \
+generated/maxval0_s1.c \
+generated/maxval0_s4.c \
+generated/maxval1_s1.c \
+generated/maxval1_s4.c \
+generated/minloc0_4_s1.c \
+generated/minloc0_4_s4.c \
+generated/minloc0_8_s1.c \
+generated/minloc0_8_s4.c \
+generated/minloc0_16_s1.c \
+generated/minloc0_16_s4.c \
+generated/minloc1_4_s1.c \
+generated/minloc1_4_s4.c \
+generated/minloc1_8_s1.c \
+generated/minloc1_8_s4.c \
+generated/minloc1_16_s1.c \
+generated/minloc1_16_s4.c \
+generated/minloc2_4_s1.c \
+generated/minloc2_4_s4.c \
+generated/minloc2_8_s1.c \
+generated/minloc2_8_s4.c \
+generated/minloc2_16_s1.c \
+generated/minloc2_16_s4.c \
+generated/minval0_s1.c \
+generated/minval0_s4.c \
+generated/minval1_s1.c \
+generated/minval1_s4.c \
 generated/pow_m1_m1.c \
 generated/pow_m1_m2.c \
 generated/pow_m1_m4.c \
@@ -906,94 +867,14 @@ generated/pow_m16_m1.c \
 generated/pow_m16_m2.c \
 generated/pow_m16_m4.c \
 generated/pow_m16_m8.c \
-generated/pow_m16_m16.c
+generated/pow_m16_m16.c \
+$(i_matmul_c) $(i_matmull_c) $(i_matmulavx128_c) \
+selected_int_kind.inc selected_real_kind.inc kinds.h \
+kinds.inc c99_protos.inc fpu-target.h fpu-target.inc \
+include/ISO_Fortran_binding.h runtime/ISO_Fortran_binding.c
 
-i_pack_c = \
-generated/pack_i1.c \
-generated/pack_i2.c \
-generated/pack_i4.c \
-generated/pack_i8.c \
-generated/pack_i16.c \
-generated/pack_r4.c \
-generated/pack_r8.c \
-generated/pack_r10.c \
-generated/pack_r16.c \
-generated/pack_r17.c \
-generated/pack_c4.c \
-generated/pack_c8.c \
-generated/pack_c10.c \
-generated/pack_c16.c \
-generated/pack_c17.c
-
-i_unpack_c = \
-generated/unpack_i1.c \
-generated/unpack_i2.c \
-generated/unpack_i4.c \
-generated/unpack_i8.c \
-generated/unpack_i16.c \
-generated/unpack_r4.c \
-generated/unpack_r8.c \
-generated/unpack_r10.c \
-generated/unpack_r16.c \
-generated/unpack_r17.c \
-generated/unpack_c4.c \
-generated/unpack_c8.c \
-generated/unpack_c10.c \
-generated/unpack_c16.c \
-generated/unpack_c17.c
-
-i_spread_c = \
-generated/spread_i1.c \
-generated/spread_i2.c \
-generated/spread_i4.c \
-generated/spread_i8.c \
-generated/spread_i16.c \
-generated/spread_r4.c \
-generated/spread_r8.c \
-generated/spread_r10.c \
-generated/spread_r16.c \
-generated/spread_r17.c \
-generated/spread_c4.c \
-generated/spread_c8.c \
-generated/spread_c10.c \
-generated/spread_c16.c \
-generated/spread_c17.c
-
-i_isobinding_c = \
-runtime/ISO_Fortran_binding.c
-
-m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
-	m4/any.m4 m4/count.m4 m4/maxloc0.m4 m4/maxloc1.m4 m4/maxval.m4 \
-	m4/minloc0.m4 m4/minloc1.m4 m4/minval.m4 m4/product.m4 m4/sum.m4 \
-	m4/matmul.m4 m4/matmull.m4 m4/ifunction_logical.m4 \
-	m4/ctrig.m4 m4/cexp.m4 m4/chyp.m4 m4/mtype.m4 \
-	m4/specific.m4 m4/specific2.m4 m4/head.m4 m4/shape.m4 m4/reshape.m4 \
-	m4/eoshift1.m4 m4/eoshift3.m4 \
-	m4/pow.m4 \
-	m4/misc_specifics.m4 m4/pack.m4 \
-	m4/unpack.m4 m4/spread.m4 m4/bessel.m4 m4/norm2.m4 m4/parity.m4 \
-	m4/iall.m4 m4/iany.m4 m4/iparity.m4 m4/iforeach-s.m4 m4/findloc0.m4 \
-	m4/findloc0s.m4 m4/ifindloc0.m4 m4/findloc1.m4 m4/ifindloc1.m4 \
-	m4/findloc2s.m4 m4/ifindloc2.m4
-
-gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
-	$(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
-	$(i_product_c) $(i_sum_c) $(i_bessel_c) $(i_iall_c) $(i_iany_c) \
-	$(i_iparity_c) $(i_norm2_c) $(i_parity_c) \
-	$(i_matmul_c) $(i_matmull_c) $(i_shape_c) $(i_eoshift1_c) \
-	$(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
-	$(i_pow_c) $(i_pack_c) $(i_unpack_c) $(i_matmulavx128_c) \
-	$(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
-	$(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc \
-	include/ISO_Fortran_binding.h \
-	$(i_cshift1a_c) $(i_maxloc0s_c) $(i_minloc0s_c) $(i_maxloc1s_c) \
-	$(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
-	$(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c) \
-	$(i_findloc0_c) $(i_findloc0s_c) $(i_findloc1_c) $(i_findloc1s_c) \
-	$(i_findloc2s_c) $(i_isobinding_c) $(i_powu_c)
-
-# Machine generated specifics
-gfor_built_specific_src= \
+# Specifics
+gfor_specific_src= \
 generated/_abs_c4.F90 \
 generated/_abs_c8.F90 \
 generated/_abs_c10.F90 \
@@ -1131,9 +1012,7 @@ generated/_anint_r4.F90 \
 generated/_anint_r8.F90 \
 generated/_anint_r10.F90 \
 generated/_anint_r16.F90 \
-generated/_anint_r17.F90
-
-gfor_built_specific2_src= \
+generated/_anint_r17.F90 \
 generated/_sign_i4.F90 \
 generated/_sign_i8.F90 \
 generated/_sign_i16.F90 \
@@ -1162,14 +1041,8 @@ generated/_mod_r4.F90 \
 generated/_mod_r8.F90 \
 generated/_mod_r10.F90 \
 generated/_mod_r16.F90 \
-generated/_mod_r17.F90
-
-gfor_misc_specifics = generated/misc_specifics.F90
-
-gfor_specific_src= \
-$(gfor_built_specific_src) \
-$(gfor_built_specific2_src) \
-$(gfor_misc_specifics) \
+generated/_mod_r17.F90 \
+generated/misc_specifics.F90 \
 intrinsics/dprod_r8.f90 \
 intrinsics/f2c_specifics.F90 \
 intrinsics/random_init.f90
@@ -1221,8 +1094,7 @@ ieee_exceptions.mod: ieee/ieee_exceptions.lo
 ieee_arithmetic.mod: ieee/ieee_arithmetic.lo
 	:
 
-BUILT_SOURCES=$(gfor_built_src) $(gfor_built_specific_src) \
-	$(gfor_built_specific2_src) $(gfor_misc_specifics)
+BUILT_SOURCES=$(gfor_built_src)
 
 libgfortran_la_SOURCES = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
 	$(gfor_helper_src) $(gfor_ieee_src) $(gfor_io_headers) $(gfor_specific_src)
@@ -1262,7 +1134,7 @@ include/ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding.h
 clean-local:
 	-rm -rf include $(version_dep)
 
-EXTRA_DIST = $(m4_files)
+EXTRA_DIST = m4
 
 # target overrides
 -include $(tmake_file)
