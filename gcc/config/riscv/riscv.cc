@@ -302,6 +302,7 @@ struct riscv_tune_param
   bool vector_unaligned_access;
   bool use_divmod_expansion;
   bool overlap_op_by_pieces;
+  bool speculative_sched_vsetvl;
   unsigned int fusible_ops;
   const struct cpu_vector_cost *vec_costs;
   const char *function_align;
@@ -464,6 +465,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
   NULL,						/* function_align */
@@ -486,6 +488,7 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
   NULL,						/* function_align */
@@ -508,6 +511,7 @@ static const struct riscv_tune_param sifive_p400_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
   NULL,						/* function_align */
@@ -530,6 +534,7 @@ static const struct riscv_tune_param sifive_p600_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
   NULL,						/* function_align */
@@ -552,6 +557,7 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   false,					/* vector_unaligned_access */
   false,	/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
   NULL,						/* function_align */
@@ -574,6 +580,7 @@ static const struct riscv_tune_param xiangshan_nanhu_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_ZEXTW | RISCV_FUSE_ZEXTH,          /* fusible_ops */
   NULL,						/* vector cost */
   NULL,						/* function_align */
@@ -596,6 +603,7 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   true,						/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   true,						/* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
   NULL,						/* function_align */
@@ -618,6 +626,7 @@ static const struct riscv_tune_param tt_ascalon_d8_tune_info = {
   true,						/* vector_unaligned_access */
   true,						/* use_divmod_expansion */
   true,						/* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
   NULL,						/* function_align */
@@ -640,6 +649,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   false,					/* vector_unaligned_access */
   false,					/* use_divmod_expansion */
   false,					/* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
   NULL,						/* function_align */
@@ -662,6 +672,7 @@ static const struct riscv_tune_param mips_p8700_tune_info = {
   false,        /* vector_unaligned_access */
   true,         /* use_divmod_expansion */
   false,        /* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
   RISCV_FUSE_NOTHING,				/* fusible_ops */
   NULL,         /* vector cost */
   NULL,         /* function_align */
@@ -10441,6 +10452,27 @@ riscv_sched_adjust_cost (rtx_insn *, int, rtx_insn *insn, int cost,
   return new_cost;
 }
 
+/* Implement TARGET_SCHED_CAN_SPECULATE_INSN hook.  Return true if insn can
+   can be scheduled for speculative execution.  Reject vsetvl instructions to
+   prevent the scheduler from hoisting them out of basic blocks without
+   checking for data dependencies PR117974.  */
+static bool
+riscv_sched_can_speculate_insn (rtx_insn *insn)
+{
+  /* Gate speculative scheduling of vsetvl instructions behind tune param.  */
+  if (tune_param->speculative_sched_vsetvl)
+    return true;
+
+  switch (get_attr_type (insn))
+    {
+      case TYPE_VSETVL:
+      case TYPE_VSETVL_PRE:
+	return false;
+      default:
+	return true;
+    }
+}
+
 /* Auxiliary function to emit RISC-V ELF attribute. */
 static void
 riscv_emit_attribute ()
@@ -14744,6 +14776,9 @@ synthesize_and (rtx operands[3])
 
 #undef  TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST riscv_sched_adjust_cost
+
+#undef TARGET_SCHED_CAN_SPECULATE_INSN
+#define TARGET_SCHED_CAN_SPECULATE_INSN riscv_sched_can_speculate_insn
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL riscv_function_ok_for_sibcall
