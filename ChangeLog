@@ -1,3 +1,12 @@
+2025-06-09  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* configure.ac: Special case cpu_type for x86_64.
+	* configure: Regenerate.
+
+2025-06-09  Peter Bergner  <bergner@tenstorrent.com>
+
+	* MAINTAINERS: Update my email address and add myself to DCO.
+
 2025-05-28  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* Makefile.def: Fix typo in cpu_type

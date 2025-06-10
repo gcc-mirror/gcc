@@ -1,3 +1,92 @@
+2025-06-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120510
+	* gcc.dg/pr120510.c
+
+2025-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/120495
+	PR c++/115605
+	* g++.dg/coroutines/pr120495.C: New test.
+	* g++.dg/pr115605.C: New test.
+
+2025-06-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120606
+	* gm2/pim/pass/forarray.mod: New test.
+
+2025-06-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119779
+	* gm2.dg/doc/examples/run/pass/doc-examples-run-pass.exp: New test.
+	* gm2.dg/doc/examples/run/pass/exampleadd2.mod: New test.
+
+2025-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* gcc.dg/html-output/missing-semicolon.py: Update expected <title>
+	text.  Drop out-of-date comment.
+
+2025-06-09  Alfie Richards  <alfie.richards@arm.com>
+
+	PR testsuite/120519
+	* g++.target/powerpc/mvc-symbols1.C: Modify tests.
+	* g++.target/powerpc/mvc-symbols2.C: Ditto.
+	* g++.target/powerpc/mvc-symbols3.C: Ditto.
+	* g++.target/powerpc/mvc-symbols4.C: Ditto.
+
+2025-06-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_16.c: New test.
+
+2025-06-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512f-pr103750-3.c: New test.
+
+2025-06-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add asm check
+	for vrem.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+
+2025-06-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for vrem.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vrem-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vrem-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vrem-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vrem-run-1-i8.c: New test.
+
+2025-06-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv32gcv.c: Adjust the
+	asm check for vrem.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv64gcv.c: Ditto.
+
 2025-06-08  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* gcc.dg/tree-prof/clone-merge-1.c: Enable only for

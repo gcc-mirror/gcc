@@ -1,3 +1,259 @@
+2025-06-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Constrain_Index): In the case of a fixed-lower-bound index,
+	set Etype of the newly created itype's Scalar_Range from the index's Etype.
+	* sem_ch12.adb (Validate_Array_Type_Instance): If the actual subtype is
+	a fixed-lower-bound type, then check again the Etype of its Scalar_Range.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Fix conditions for legality checks on
+	formal type declarations.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): If pragmas apply to a formal array
+	type, then set the flags on the base type.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Subtype): Clarify code.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.ads (Process_Subtype): Add formal.
+	* sem_ch3.adb (Process_Subtype): Use new formal.
+	(Analyze_Subtype_Declaration, Array_Type_Declaration,
+	Build_Derived_Access_Type): Pass new actual.
+	* sem_ch4.adb (Find_Type_Of_Object): Likewise.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch6.adb (Set_Formal_Mode): Extend profile. Move parts of the
+	body…
+	(Process_Formals): … here. Move call to Set_Formal_Mode earlier. Call
+	Set_Is_Not_Self_Hidden in second traversal.
+
+2025-06-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Use the Base_Type of the
+	subtype provided by the context as the subtype of the temporary object
+	initialized by the aggregate.
+
+2025-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* par-ch4.adb (P_Function_Name): Delete body.
+	(P_Qualified_Simple_Name_Resync): Do not raise Error_Resync on an
+	operator symbol followed by something else than a dot.
+	* par-ch6.adb (P_Subprogram): Do not call P_Function_Name.
+	* par.adb (P_Function_Name): Delete declaration.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem.adb (Analyze): Adapt to new Ekinds.
+	* sem_ch3.adb (Analyze_Component_Declaration): Set Ekind early.
+	(Is_Visible_Component, Record_Type_Definition): Adjust.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem.adb (Analyze): Fix comment.
+
+2025-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* par-ch4.adb (P_Name): Remove obsolete references in comments.
+	(P_Qualified_Simple_Name): Call P_Qualified_Simple_Name_Resync.
+	(P_Qualified_Simple_Name_Resync): Adjust a couple of comments.
+
+2025-06-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Call_To_Parent_Dispatching_Op_Must_Be_Mapped): Replace
+	test of Covers with test of Is_Controlling_Formal. Add handling for
+	'Result actuals. Remove Actual_Type and its uses.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Name_Reference): Remove check for selector_name of a
+	selected_component; reuse existing code for indexed components and
+	slices.
+	(Statically_Names_Object): Remove dead code.
+
+2025-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Overlays_Constant): Define in constants and variables.
+	* gen_il-gen-gen_entities.adb (Entity_Kind): Move Overlays_Constant
+	semantic flag to...
+	(Constant_Or_Variable_Kind): ...here.
+	* sem_util.adb (Note_Possible_Modification): Add guard.
+
+2025-06-09  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb: (Make_Build_In_Place_Call_In_Object_Declaration):
+	Deal with renamings transformed into object declarations.
+	* sem_ch8.adb (Analyze_Object_Renaming):
+	Reinstate transformation of a renaming into
+	an object declaration.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Call Mutate_Ekind earlier.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Tweak error handling.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch13.adb (Get_Aspect_Specifications): Save and restore flag while
+	parsing aspect Abstract_State.
+	* par-ch2.adb (P_Pragma): Same while parsing pragma Abstract_State.
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Specialize error message
+	for contract Abstract_State and extended aggregate.
+	* par.adb (Inside_Abstract_State): Add new context flag.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch10.adb (Analyze_Compilation_Unit): Check for generic bodies.
+	* exp_disp.adb (Build_Dispatch_Tables): Likewise.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Find_Overlaid_Entity): Don't call Etype on empty Ent;
+	tune style; move computation of Overl_Typ out of the loop.
+
+2025-06-09  Javier Miranda  <miranda@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Adding
+	documentation.
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: ditto.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Remove test.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_util.adb (Enter_Name): Remove special handling.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_util.adb (Enter_Name): Remove comment.
+
+2025-06-09  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb: Remove a couple of "???" suggesting something that
+	we will likely never do.
+	(Make_Build_In_Place_Call_In_Object_Declaration):
+	When a constraint check is needed, do the check.
+	Do it at the call site for now.
+	The check is still missing in the untagged case,
+	because the caller allocates in that case.
+	* sem_ch8.adb (Analyze_Object_Renaming):
+	Remove obsolete transformation of a renaming into
+	an object declaration. Given that we also (sometimes) tranform
+	object declarations into renamings, this transformation was
+	adding complexity; the new code in
+	Make_Build_In_Place_Call_In_Object_Declaration above
+	would need to explicitly avoid the run-time check in the case of
+	renamings, because renamings are supposed to ignore the nominal
+	subtype. Anyway, it is no longer needed.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Rewrite comment;
+	it IS clear how to do it, but we haven't done it right yet.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* atree.ads (Copy_Node): Fix comment.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): When expanding attribute
+	Valid, use signedness from the validated view, not from its base type.
+
+2025-06-09  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_util.adb (Find_Overlaid_Entity): Add extra parameter to
+	extract the type being overlaid.
+	(Note_Possible_Modification): Adjust call to Find_Overlaid_Entity.
+	(Ultimate_Overlaid_Entity): Likewise.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Likewise.
+	* sem_util.ads (Find_Overlaid_Entity): Add extra parameter to
+	extract the type being overlaid.
+	* freeze.adb (Check_Address_Clause): Likewise.
+
+2025-06-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* contracts.adb (Inherit_Condition): Remove Assoc_List and its uses
+	along with function Check_Condition, since mapping of formals will
+	effectively be done in Build_Class_Wide_Expression (by Replace_Entity).
+	* exp_util.adb (Replace_Entity): Only rewrite entity references in
+	function calls that qualify according to the result of calling the
+	new function Call_To_Parent_Dispatching_Op_Must_Be_Mapped.
+	(Call_To_Parent_Dispatching_Op_Must_Be_Mapped): New function that
+	determines whether a function call to a primitive of Par_Subp
+	associated tagged type needs to be mapped (according to whether
+	it has any actuals that reference controlling formals of the
+	primitive).
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Remove comment.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_util.ads (Current_Entity_In_Scope): Add example in comment.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* atree.ads (Rewrite, Replace): Clarify comments.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* atree.ads (Rewrite): Remove comment.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* atree.adb (Rewrite): Improve readability.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_util.adb (Kill_Current_Values): Tweak condition.
+
+2025-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Insert_Conditional_Object_Declaration): Remove Decl
+	formal parameter, add Typ and Const formal parameters.
+	(Expand_N_Case_Expression): Fix pasto in comment.  Adjust call to
+	Insert_Conditional_Object_Declaration and tidy up surrounding code.
+	(Expand_N_If_Expression): Adjust couple of calls to
+	Insert_Conditional_Object_Declaration.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): Fix error path.
+
+2025-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dourea.adb (Is_Infinity): Rename to...
+	(Is_Infinity_Or_NaN): ...this.
+	("*"): Adjust accordingly.
+	("/"): Likewise.
+	(Sqr): Likewise.
+	* libgnat/s-dorepr.adb (Two_Prod): Likewise.
+	(Two_Sqr): Likewise.
+	* libgnat/s-dorepr__fma.adb (Two_Prod): Likewise.
+
+2025-06-09  Daniel King  <dmking@adacore.com>
+
+	* libgnat/i-cheri.ads
+	(Set_Bounds, Set_Exact_Bounds): Remove wrong intrinsic binding.
+	* libgnat/i-cheri.adb
+	(Set_Bounds, Set_Exact_Bounds): New subprogram bodies.
+
+2025-06-09  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): Add mention.
+
 2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
 
 	* urealp.adb (UR_Negate): Capture array element in a local constant.

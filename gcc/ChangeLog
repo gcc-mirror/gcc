@@ -1,3 +1,122 @@
+2025-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc (maybe_get_sarif_kind): Update for
+	conversion of enum logical_location_kind to enum class.
+	* diagnostic.cc (logical_location_manager::function_p): Likewise.
+	* libgdiagnostics.cc (html-output/missing-semicolon.py::get_kind):
+	Likewise.
+	* logical-location.h (enum logical_location_kind): Convert to...
+	(enum class logical_location_kind): ...this.
+	* selftest-logical-location.cc
+	(test_logical_location_manager::item_from_funcname): Update for
+	conversion of enum logical_location_kind to enum class.
+	* tree-logical-location.cc
+	(tree_logical_location_manager::get_kind): Likewise.
+
+2025-06-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.cc (cgraph_node::apply_scale): New member function.
+	* cgraph.h (struct cgraph_node): declare.
+	* ipa-cp.cc (update_counts_for_self_gen_clones):
+	Use cgraph_node::apply_scale.
+	(update_profiling_info): Do not overwrite local
+	profile when dropping to 0 global profile.
+	(update_specialized_profile): Likewise.
+	* ipa-inline-transform.cc (update_noncloned_counts): Remove.
+	(can_remove_node_now_p_1): Fix formating.
+	(clone_inlined_nodes): Use cgraph_node::apply_scale.
+	* profile-count.cc (profile_count::dump): Do not ICE
+	when count is not compatible with entry block count.
+	* tree-cfg.cc (gimple_verify_flow_info): Check
+	compatibility of count and entry block count.
+
+2025-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* diagnostic-format-html.cc (html_builder::m_title_element): New
+	field.
+	(html_builder::html_builder): Initialize it.  Don't add
+	placeholder text.
+	(html_builder::set_main_input_filename): New.
+	(html_output_format::set_main_input_filename): New.
+	(test_html_diagnostic_context::test_html_diagnostic_context): Call
+	set_main_input_filename on the new sink.
+	(seldtest::test_simple_log): Update expected <title> text.
+	* diagnostic-format-json.cc (diagnostic_output_format_init_json):
+	Return a reference to the new sink.
+	(diagnostic_output_format_init_json_stderr): Likewise.
+	(diagnostic_output_format_init_json_file): Likewise.
+	* diagnostic-format-sarif.cc (sarif_builder::sarif_builder): Drop
+	"main_input_filename_" param, and move adding an artifact for it
+	with diagnostic_artifact_role::analysis_target to...
+	(sarif_builder::set_main_input_filename): ...this new function.
+	(sarif_output_format::set_main_input_filename): New.
+	(sarif_output_format::sarif_output_format): Drop
+	"main_input_filename_" param.
+	(sarif_stream_output_format::sarif_stream_output_format):
+	Likewise.
+	(sarif_file_output_format::sarif_file_output_format): Likewise.
+	(diagnostic_output_format_init_sarif): Return a reference to *FMT.
+	(diagnostic_output_format_init_sarif_stderr): Return a refererence
+	to the new sink.  Drop "main_input_filename_" param.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	(make_sarif_sink): Drop "main_input_filename_" param.
+	(selftest::test_sarif_diagnostic_context::test_sarif_diagnostic_context):
+	Likewise.  Call set_main_input_filename on the new format.
+	(selftest::test_sarif_diagnostic_context::buffered_output_format::buffered_output_format):
+	Drop "main_input_filename_" param.
+	(selftest::test_make_location_object): Likewise.
+	* diagnostic-format-sarif.h
+	(diagnostic_output_format_init_sarif_stderr): Return a refererence
+	to the new sink.  Drop "main_input_filename_" param.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	(make_sarif_sink): Drop "main_input_filename_" param.
+	* diagnostic-format.h
+	(diagnostic_output_format::set_main_input_filename): New vfunc.
+	(diagnostic_output_format_init_json_stderr): Return a refererence
+	to the new sink.
+	(diagnostic_output_format_init_json_file): Likewise.
+	* diagnostic.cc (diagnostic_output_format_init): Likewise.  Call
+	set_main_input_filename on the new sink.
+	* libgdiagnostics.cc (sarif_sink::sarif_sink): Update for above
+	changes.
+	* opts-diagnostic.cc (sarif_scheme_handler::make_sink): Likewise.
+	(handle_OPT_fdiagnostics_add_output_): Likewise.
+	(handle_OPT_fdiagnostics_set_output_): Likewise.
+
+2025-06-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_noce_conversion_profitable_p): Relax
+	condition for adjustments due to copies from promoted SUBREGs.
+
+2025-06-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/extend.texi (outline-atomics): Document the inverse -mno flag.
+
+2025-06-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* params.opt (vect-scalar-cost-multiplier): New.
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters): Use it.
+	* doc/invoke.texi (vect-scalar-cost-multiplier): Document it.
+
+2025-06-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103750
+	* config/i386/i386.cc (ix86_rtx_costs): Adjust rtx_cost for
+	maskload.
+	* config/i386/sse.md (*<avx512>_load<mode>mask_and15): New
+	define_insn_and_split.
+	(*<avx512>_load<mode>mask_and3): Ditto.
+
+2025-06-09  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_vec_dup): Add new
+	case MOD.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op mod.
+
 2025-06-08  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* auto-profile.cc (function_instance::merge): Fix typo.

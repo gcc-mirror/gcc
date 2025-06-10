@@ -1,3 +1,10 @@
+2025-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/120495
+	PR c++/115605
+	* pt.cc (lookup_template_class): Honour provided namespace contexts
+	when looking up class templates.
+
 2025-06-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120555

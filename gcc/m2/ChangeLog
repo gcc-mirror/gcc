@@ -1,3 +1,9 @@
+2025-06-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120606
+	* gm2-compiler/M2Quads.mod (ForLoopLastIterator): Dereference
+	start and end expressions e1 and e2 respectively.
+
 2025-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/119650
