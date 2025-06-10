@@ -6272,6 +6272,33 @@ mark_single_function (tree expr, tsubst_flags_t complain)
   return true;
 }
 
+/* True iff we have started, but not finished, defining FUNCTION_DECL DECL.  */
+
+bool
+fn_being_defined (tree decl)
+{
+  /* DECL_INITIAL is set to error_mark_node in grokfndecl for a definition, and
+     changed to BLOCK by poplevel at the end of the function.  */
+  return (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_INITIAL (decl) == error_mark_node);
+}
+
+/* True if DECL is an instantiation of a function template currently being
+   defined.  */
+
+bool
+fn_template_being_defined (tree decl)
+{
+  if (TREE_CODE (decl) != FUNCTION_DECL
+      || !DECL_LANG_SPECIFIC (decl)
+      || !DECL_TEMPLOID_INSTANTIATION (decl)
+      || DECL_TEMPLATE_INSTANTIATED (decl))
+    return false;
+  tree tinfo = DECL_TEMPLATE_INFO (decl);
+  tree pattern = DECL_TEMPLATE_RESULT (TI_TEMPLATE (tinfo));
+  return fn_being_defined (pattern);
+}
+
 /* Mark DECL (either a _DECL or a BASELINK) as "used" in the program.
    If DECL is a specialization or implicitly declared class member,
    generate the actual definition.  Return false if something goes
@@ -6425,6 +6452,9 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
     maybe_instantiate_decl (decl);
 
   if (!decl_dependent_p (decl)
+      /* Don't require this yet for an instantiation of a function template
+	 we're currently defining (c++/120555).  */
+      && !fn_template_being_defined (decl)
       && !require_deduced_type (decl, complain))
     return false;
 
@@ -6438,9 +6468,6 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
   if (DECL_TEMPLATE_INFO (decl)
       && uses_template_parms (DECL_TI_ARGS (decl)))
     return true;
-
-  if (!require_deduced_type (decl, complain))
-    return false;
 
   if (builtin_pack_fn_p (decl))
     {

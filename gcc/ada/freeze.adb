@@ -6869,9 +6869,10 @@ package body Freeze is
                end if;
             end if;
 
-            --  Static objects require special handling
+            --  Statically allocated objects require special handling
 
             if (Ekind (E) = E_Constant or else Ekind (E) = E_Variable)
+              and then No (Renamed_Object (E))
               and then Is_Statically_Allocated (E)
             then
                Freeze_Static_Object (E);
@@ -10230,10 +10231,16 @@ package body Freeze is
          --  issue an error message saying that this object cannot be imported
          --  or exported. If it has an address clause it is an overlay in the
          --  current partition and the static requirement is not relevant.
-         --  Do not issue any error message when ignoring rep clauses.
+         --  Do not issue any error message when ignoring rep clauses or for
+         --  compiler-generated entities.
 
          if Ignore_Rep_Clauses then
             null;
+
+         elsif not Comes_From_Source (E) then
+            pragma
+              Assert (Nkind (Parent (Declaration_Node (E))) in N_Case_Statement
+                                                             | N_If_Statement);
 
          elsif Is_Imported (E) then
             if No (Address_Clause (E)) then

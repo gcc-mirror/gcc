@@ -7872,9 +7872,8 @@ package body Exp_Attr is
          else
             declare
                Uns  : constant Boolean :=
-                        Is_Unsigned_Type (Ptyp)
-                          or else (Is_Private_Type (Ptyp)
-                                    and then Is_Unsigned_Type (PBtyp));
+                 Is_Unsigned_Type (Validated_View (Ptyp));
+
                Size : Uint;
                P    : Node_Id := Pref;
 
@@ -8602,10 +8601,10 @@ package body Exp_Attr is
             Rewrite (N,
               Make_Op_Multiply (Loc,
                 Make_Attribute_Reference (Loc,
-                  Prefix         => Duplicate_Subexpr (Pref, True),
+                  Prefix         => Duplicate_Subexpr (Pref, Name_Req => True),
                   Attribute_Name => Name_Length),
                 Make_Attribute_Reference (Loc,
-                  Prefix         => Duplicate_Subexpr (Pref, True),
+                  Prefix         => Duplicate_Subexpr (Pref, Name_Req => True),
                   Attribute_Name => Name_Component_Size)));
             Analyze_And_Resolve (N, Typ);
          end if;

@@ -1623,7 +1623,7 @@ package Einfo is
 
 --    Has_Dynamic_Predicate_Aspect
 --       Defined in all types and subtypes. Set if a Dynamic_Predicate aspect
---       was explicitly applied to the type. Generally we treat predicates as
+--       was applied to the type or subtype. Generally we treat predicates as
 --       static if possible, regardless of whether they are specified using
 --       Predicate, Static_Predicate, or Dynamic_Predicate. And if a predicate
 --       can be treated as static (i.e. its expression is predicate-static),

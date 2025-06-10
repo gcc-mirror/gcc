@@ -2362,9 +2362,16 @@ namespace __format
 	const size_t __r = __str.size() - __e; // Length of remainder.
 	auto __overwrite = [&](_CharT* __p, size_t) {
 	  // Apply grouping to the digits before the radix or exponent.
-	  auto __end = std::__add_grouping(__p, __np.thousands_sep(),
+	  int __off = 0;
+	  if (auto __c = __str.front(); __c == '-' || __c == '+' || __c == ' ')
+	    {
+	      *__p = __c;
+	      __off = 1;
+	    }
+	  auto __end = std::__add_grouping(__p + __off, __np.thousands_sep(),
 					   __grp.data(), __grp.size(),
-					   __str.data(), __str.data() + __e);
+					   __str.data() + __off,
+					   __str.data() + __e);
 	  if (__r) // If there's a fractional part or exponent
 	    {
 	      if (__d != __str.npos)

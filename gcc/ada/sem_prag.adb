@@ -14696,19 +14696,18 @@ package body Sem_Prag is
 
             D := Declaration_Node (E);
 
-            if (Nkind (D) = N_Full_Type_Declaration and then Is_Array_Type (E))
+            if (Nkind (D) in N_Full_Type_Declaration
+                           | N_Formal_Type_Declaration
+                  and then Is_Array_Type (E))
               or else
                 (Nkind (D) = N_Object_Declaration
                    and then Ekind (E) in E_Constant | E_Variable
                    and then Nkind (Object_Definition (D)) =
                                        N_Constrained_Array_Definition)
-              or else
-                 (Ada_Version >= Ada_2022
-                   and then Nkind (D) = N_Formal_Type_Declaration)
             then
                --  The flag is set on the base type, or on the object
 
-               if Nkind (D) = N_Full_Type_Declaration then
+               if Is_Array_Type (E) then
                   E := Base_Type (E);
                end if;
 

@@ -1,3 +1,98 @@
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-06-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config.gcc (--with-{arch,tune}): Use .def file to validate gcn
+	processor names.
+	* doc/install.texi (amdgcn*-*-*): Update list of devices supported
+	by --with-arch/--with-tune.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120357
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Create
+	the conditional reduction induction IV increment before the
+	main IV exit.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120341
+	* tree-ssa-loop-im.cc (can_sm_ref_p): STRING_CSTs are readonly.
+	* tree-ssa-phiopt.cc (cond_store_replacement): Likewise.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/120182
+	* dse.cc (canon_address): Constant addresses have no
+	separate store group.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120003
+	* tree-ssa-threadbackward.cc (back_threader::find_paths_to_names):
+	Allow block re-use but do not enlarge the path beyond such a
+	re-use.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119960
+	* tree-vect-slp.cc (vect_slp_can_convert_to_external):
+	Handle cases where defs from multiple BBs are ordered
+	by their dominance relation.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116352
+	* tree-vect-slp.cc (vect_build_slp_tree_2): When compressing
+	operands from a two-operator node make sure the resulting
+	operation does not mix defs from different basic-blocks.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119960
+	* tree-vect-slp.cc (vect_schedule_slp_node): Sanity
+	check dominance check on operand defs.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (get_later_stmt): Robustify against
+	stmts in different BBs, assert when they are unordered.
+
+2025-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-05-15  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::finish_cost):
+	Do not suggest a first epilogue mode for AVX512 sized
+	main loops with X86_TUNE_AVX512_TWO_EPILOGUES as that
+	interferes with using a masked epilogue.
+
 2025-06-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-vect-data-refs.cc (vect_can_force_dr_alignment_p): Return

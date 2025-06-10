@@ -1,3 +1,115 @@
+2025-06-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Constrain_Index): In the case of a fixed-lower-bound index,
+	set Etype of the newly created itype's Scalar_Range from the index's Etype.
+	* sem_ch12.adb (Validate_Array_Type_Instance): If the actual subtype is
+	a fixed-lower-bound type, then check again the Etype of its Scalar_Range.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Fix conditions for legality checks on
+	formal type declarations.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): If pragmas apply to a formal array
+	type, then set the flags on the base type.
+
+2025-06-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Use the Base_Type of the
+	subtype provided by the context as the subtype of the temporary object
+	initialized by the aggregate.
+
+2025-06-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): When expanding attribute
+	Valid, use signedness from the validated view, not from its base type.
+
+2025-06-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* contracts.adb (Inherit_Condition): Remove Assoc_List and its uses
+	along with function Check_Condition, since mapping of formals will
+	effectively be done in Build_Class_Wide_Expression (by Replace_Entity).
+	* exp_util.adb (Replace_Entity): Only rewrite entity references in
+	function calls that qualify according to the result of calling the
+	new function Call_To_Parent_Dispatching_Op_Must_Be_Mapped.
+	(Call_To_Parent_Dispatching_Op_Must_Be_Mapped): New function that
+	determines whether a function call to a primitive of Par_Subp
+	associated tagged type needs to be mapped (according to whether
+	it has any actuals that reference controlling formals of the
+	primitive).
+
+2025-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Insert_Conditional_Object_Declaration): Remove Decl
+	formal parameter, add Typ and Const formal parameters.
+	(Expand_N_Case_Expression): Fix pasto in comment.  Adjust call to
+	Insert_Conditional_Object_Declaration and tidy up surrounding code.
+	(Expand_N_If_Expression): Adjust couple of calls to
+	Insert_Conditional_Object_Declaration.
+
+2025-06-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Constant_Indexing_OK): Add missing support for
+	RM 4.1.6(13/3), and improve performance to avoid climbing more
+	than needed. Add documentation.
+	(Try_Indexing_Function): New subprogram.
+	(Expr_Matches_In_Formal): Added new formals.
+	(Handle_Selected_Component): New subprogram.
+	(Has_IN_Mode): New subprogram.
+	(Try_Container_Indexing): Add documentation, code reorganization
+	and extend its functionality to improve its support for prefixed
+	notation calls.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch10.adb (Install_Siblings.In_Context): Add missing guard.
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Insert_Conditional_Object_Declaration): Make sure the
+	object is allocated properly by the code generator at library level.
+
+2025-06-06  Steve Baird  <baird@adacore.com>
+
+	* sem_ch4.adb
+	(Find_Unary_Types): Because we reanalyze names in an instance,
+	we sometimes have to take steps to filter out extraneous name
+	resolution candidates that happen to be visible at the point of the
+	instance declaration. Remove some code that appears to have been
+	written with this in mind. This is done for two reasons. First, the
+	code sometimes doesn't work (possibly because the In_Instance test
+	is not specific enough - it probably should be testing to see whether
+	we are in an instance of the particular generic in which the result
+	of calling Corresponding_Generic_Type was declared) and causes correct
+	code to be rejected. Second, the code seems to no longer be necessary
+	(possibly because of subsequent fixes in this area which are not
+	specific to unary operators).
+
+2025-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Expand_Record_Aggregate): Use the named form for the
+	second actual parameter in the call to Duplicate_Subexpr.
+	* exp_attr.adb (Expand_Size_Attribute): Likewise.
+	* exp_ch5.adb (Expand_Assign_Array): Likewise.
+	(Expand_Assign_Array_Bitfield): Likewise.
+	(Expand_Assign_Array_Bitfield_Fast): Likewise.
+	* exp_util.ads (Duplicate_Subexpr): Add New_Scope formal parameter.
+	(Duplicate_Subexpr_No_Checks): Likewise.
+	(Duplicate_Subexpr_Move_Checks): Likewise.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Pass Proc_Id as the
+	actual for New_Scope in the calls to Duplicate_Subexpr_No_Checks.
+	(Duplicate_Subexpr): Add New_Scope formal parameter and forward it
+	in the call to New_Copy_Tree.
+	(Duplicate_Subexpr_No_Checks): Likewise.
+	(Duplicate_Subexpr_Move_Checks): Likewise.
+
+2025-06-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Set flag Assignment_OK in the object
+	declaration inserted for the validity checks.
+
 2025-06-05  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch7.adb (Process_Object_Declaration): Avoid generating

@@ -9340,9 +9340,6 @@ package body Sem_Ch12 is
               and then Nkind (Ancestor_Type (N)) in N_Entity
             then
                declare
-                  Root_Typ : constant Entity_Id :=
-                               Root_Type (Ancestor_Type (N));
-
                   Typ : Entity_Id := Ancestor_Type (N);
 
                begin
@@ -9351,7 +9348,7 @@ package body Sem_Ch12 is
                         Switch_View (Typ);
                      end if;
 
-                     exit when Typ = Root_Typ;
+                     exit when Etype (Typ) = Typ;
 
                      Typ := Etype (Typ);
                   end loop;
@@ -14130,6 +14127,16 @@ package body Sem_Ch12 is
                T2 := Entity (Original_Node (I2));
             else
                T2 := Etype (I2);
+            end if;
+
+            --  In the case of a fixed-lower-bound subtype, we want to check
+            --  against the index type's range rather than the range of the
+            --  subtype (which will be seen as unconstrained, and whose bounds
+            --  won't generally match those of the formal unconstrained array
+            --  type's corresponding index type).
+
+            if Is_Fixed_Lower_Bound_Index_Subtype (T2) then
+               T2 := Etype (Scalar_Range (T2));
             end if;
 
             if not Subtypes_Match

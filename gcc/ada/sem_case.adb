@@ -3684,13 +3684,15 @@ package body Sem_Case is
                            --  Use of nonstatic predicate is an error
 
                            if not Is_Discrete_Type (E)
-                             or else not Has_Static_Predicate (E)
+                             or else (not Has_Static_Predicate (E)
+                                        and then
+                                      not Has_Static_Predicate_Aspect (E))
                              or else Has_Dynamic_Predicate_Aspect (E)
                              or else Has_Ghost_Predicate_Aspect (E)
                            then
                               Bad_Predicated_Subtype_Use
-                                ("cannot use subtype& with non-static "
-                                 & "predicate as case alternative",
+                                ("cannot use subtype& with nonstatic "
+                                 & "predicate as choice in case alternative",
                                  Choice, E, Suggest_Static => True);
 
                            --  Static predicate case. The bounds are those of
