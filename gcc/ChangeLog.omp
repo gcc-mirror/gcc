@@ -1,3 +1,22 @@
+2025-06-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-06-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-devices.def: Add gfx942, gfx950 and gfx9-4-generic.
+	* config/gcn/gcn-opts.h (TARGET_CDNA3, TARGET_CDNA3_PLUS,
+	TARGET_GLC_NAME, TARGET_TARGET_SC_CACHE): Define.
+	(TARGET_ARCHITECTED_FLAT_SCRATCH): Use also for CDNA3.
+	* config/gcn/gcn.h (gcn_isa): Add ISA_CDNA3 to the enum.
+	* config/gcn/gcn.cc (print_operand): Update 'g' to use
+	TARGET_GLC_NAME; add 'G' to print TARGET_GLC_NAME unconditionally.
+	* config/gcn/gcn-valu.md (scatter, gather): Use TARGET_GLC_NAME.
+	* config/gcn/gcn.md: Use %G<num> instead of glc; use 'buffer_inv sc1'
+	for TARGET_TARGET_SC_CACHE.
+	* doc/invoke.texi (march): Add gfx942, gfx950 and gfx9-4-generic.
+	* doc/install.texi (amdgcn*-*-*): Add gfx942, gfx950 and gfx9-4-generic.
+	* config/gcn/gcn-tables.opt: Regenerate.
+
 2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

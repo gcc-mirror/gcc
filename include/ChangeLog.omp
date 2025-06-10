@@ -1,3 +1,11 @@
+2025-06-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-06-02  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/120444
+	* cuda/cuda.h (cuMemsetD8, cuMemsetD8Async): Declare.
+
 2025-05-15  Julian Brown  <julian@codesourcery.com>
 
 	* gomp-constants.h (gomp_map_kind): Add GOMP_MAP_TO_GRID,
