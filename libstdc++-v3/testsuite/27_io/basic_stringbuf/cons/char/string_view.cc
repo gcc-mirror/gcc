@@ -161,20 +161,26 @@ void test03()
   alloc_type a{1};
   {
     stringbuf_with_alloc<alloc_type> sbuf(cstr, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( sbuf.get_allocator() == a );
+#endif
     VERIFY( string_view{sbuf.str()} == cstr );
     VERIFY( sbuf.sgetc() == cstr.s[0] );
   }
   {
     stringbuf_with_alloc<alloc_type> sbuf(cstr, std::ios::in, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( sbuf.get_allocator() == a );
+#endif
     VERIFY( string_view{sbuf.str()} == cstr );
     VERIFY( sbuf.sgetc() == cstr.s[0] );
     VERIFY( sbuf.sputc('X') == stringbuf::traits_type::eof() );
   }
   {
     stringbuf_with_alloc<alloc_type> sbuf(cstr, std::ios::out, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( sbuf.get_allocator() == a );
+#endif
     VERIFY( string_view{sbuf.str()} == cstr );
     VERIFY( sbuf.sputc('X') == 'X' );
     VERIFY( sbuf.sgetc() == stringbuf::traits_type::eof() );

@@ -149,21 +149,27 @@ void test03()
   alloc_type a{1};
   {
     ostringstream_with_alloc<alloc_type> ostrstr(cstr, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( ostrstr.rdbuf()->get_allocator() == a );
+#endif
     VERIFY( string_view{ostrstr.str()} == cstr );
     VERIFY( ostrstr.rdbuf()->sgetc() == ostringstream::traits_type::eof() );
     VERIFY( ostrstr.put('X').good() );
   }
   {
     ostringstream_with_alloc<alloc_type> ostrstr(cstr, std::ios::in, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( ostrstr.rdbuf()->get_allocator() == a );
+#endif
     VERIFY( string_view{ostrstr.str()} == cstr );
     VERIFY( ostrstr.rdbuf()->sgetc() == cstr.s[0]);
     VERIFY( ostrstr.put('X').good() );
   }
   {
     ostringstream_with_alloc<alloc_type> ostrstr(cstr, std::ios::out, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( ostrstr.rdbuf()->get_allocator() == a );
+#endif
     VERIFY( string_view{ostrstr.str()} == cstr );
     VERIFY( ostrstr.rdbuf()->sgetc() == ostringstream::traits_type::eof() );
     VERIFY( ostrstr.put('Y').rdstate() == ostrstr.goodbit );

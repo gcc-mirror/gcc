@@ -151,20 +151,26 @@ void test03()
   alloc_type a{1};
   {
     istringstream_with_alloc<alloc_type> istr(cstr, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( istr.rdbuf()->get_allocator() == a );
+#endif
     VERIFY( string_view{istr.str()} == cstr );
     VERIFY( istr.get() == cstr.s[0] );
   }
   {
     istringstream_with_alloc<alloc_type> istr(cstr, std::ios::in, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( istr.rdbuf()->get_allocator() == a );
+#endif
     VERIFY( string_view{istr.str()} == cstr );
     VERIFY( istr.get() == cstr.s[0] );
     VERIFY( istr.rdbuf()->sputc('X') != 'X' );
   }
   {
     istringstream_with_alloc<alloc_type> istr(cstr, std::ios::out, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( istr.rdbuf()->get_allocator() == a );
+#endif
     VERIFY( string_view{istr.str()} == cstr );
     VERIFY( istr.get() == cstr.s[0] );
     VERIFY( istr.rdbuf()->sputc('X') == 'X' );

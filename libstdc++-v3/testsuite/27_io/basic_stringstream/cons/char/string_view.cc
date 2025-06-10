@@ -160,20 +160,26 @@ void test03()
   alloc_type a{1};
   {
     stringstream_with_alloc<alloc_type> strstr(cstr, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( strstr.rdbuf()->get_allocator() == a );
+#endif
     VERIFY( string_view{strstr.str()} == cstr );
     VERIFY( strstr.get() == cstr.s[0] );
   }
   {
     stringstream_with_alloc<alloc_type> strstr(cstr, std::ios::in, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( strstr.rdbuf()->get_allocator() == a );
+#endif
     VERIFY( string_view{strstr.str()} == cstr );
     VERIFY( strstr.get() == cstr.s[0] );
     VERIFY( strstr.put('X').rdstate() == strstr.badbit );
   }
   {
     stringstream_with_alloc<alloc_type> strstr(cstr, std::ios::out, a);
+#if _GLIBCXX_USE_CXX11_ABI
     VERIFY( strstr.rdbuf()->get_allocator() == a );
+#endif
     VERIFY( string_view{strstr.str()} == cstr );
     VERIFY( strstr.put('X').good() );
     VERIFY( strstr.get() == stringstream::traits_type::eof());
