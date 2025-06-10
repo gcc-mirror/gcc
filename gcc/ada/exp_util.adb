@@ -8167,20 +8167,20 @@ package body Exp_Util is
             --  never climb up as far as the N_Expression_With_Actions itself.
 
             when N_Expression_With_Actions =>
-               if N = Expression (P) then
-                  if Is_Empty_List (Actions (P)) then
-                     Append_List_To (Actions (P), Ins_Actions);
-                     Analyze_List (Actions (P));
-                  else
-                     Insert_List_After_And_Analyze
-                       (Last (Actions (P)), Ins_Actions);
-                  end if;
-
-                  return;
-
-               else
+               if Is_List_Member (N) and then List_Containing (N) = Actions (P)
+               then
                   raise Program_Error;
                end if;
+
+               if Is_Empty_List (Actions (P)) then
+                  Append_List_To (Actions (P), Ins_Actions);
+                  Analyze_List (Actions (P));
+               else
+                  Insert_List_After_And_Analyze
+                    (Last (Actions (P)), Ins_Actions);
+               end if;
+
+               return;
 
             --  Case of appearing in the condition of a while expression or
             --  elsif. We insert the actions into the Condition_Actions field.
