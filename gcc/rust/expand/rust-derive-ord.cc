@@ -274,11 +274,9 @@ DeriveOrd::visit_enum (Enum &item)
 
   for (auto &variant : item.get_variants ())
     {
-      auto variant_path
-	= builder.variant_path (type_name,
-				variant->get_identifier ().as_string ());
       auto enum_builder
-	= EnumMatchBuilder (variant_path, recursive_match_fn, builder);
+	= EnumMatchBuilder (type_name, variant->get_identifier ().as_string (),
+			    recursive_match_fn, builder);
 
       switch (variant->get_enum_item_kind ())
 	{

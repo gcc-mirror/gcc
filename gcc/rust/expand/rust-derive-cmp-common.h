@@ -65,8 +65,11 @@ public:
   using ExprFn
     = std::function<std::unique_ptr<Expr> (std::vector<SelfOther> &&)>;
 
-  EnumMatchBuilder (PathInExpression &variant_path, ExprFn fn, Builder &builder)
-    : variant_path (variant_path), fn (fn), builder (builder)
+  EnumMatchBuilder (const std::string &enum_path,
+		    const std::string &variant_path, ExprFn fn,
+		    Builder &builder)
+    : enum_path (enum_path), variant_path (variant_path), fn (fn),
+      builder (builder)
   {}
 
   /**
@@ -84,7 +87,8 @@ public:
   MatchCase strukt (EnumItem &variant);
 
 private:
-  PathInExpression &variant_path;
+  const std::string &enum_path;
+  const std::string &variant_path;
   ExprFn fn;
   Builder &builder;
 };

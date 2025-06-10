@@ -96,6 +96,10 @@ EnumMatchBuilder::tuple (EnumItem &variant_raw)
       });
     }
 
+  // TODO: Replace with `reconstruct()` instead of building these twice
+  auto self_variant_path = builder.variant_path (enum_path, variant_path);
+  auto other_variant_path = builder.variant_path (enum_path, variant_path);
+
   auto self_pattern_items = std::unique_ptr<TupleStructItems> (
     new TupleStructItemsNoRange (std::move (self_patterns)));
   auto other_pattern_items = std::unique_ptr<TupleStructItems> (
@@ -103,12 +107,12 @@ EnumMatchBuilder::tuple (EnumItem &variant_raw)
 
   auto self_pattern = std::unique_ptr<Pattern> (
     new ReferencePattern (std::unique_ptr<Pattern> (new TupleStructPattern (
-			    variant_path, std::move (self_pattern_items))),
+			    self_variant_path, std::move (self_pattern_items))),
 			  false, false, builder.loc));
-  auto other_pattern = std::unique_ptr<Pattern> (
-    new ReferencePattern (std::unique_ptr<Pattern> (new TupleStructPattern (
-			    variant_path, std::move (other_pattern_items))),
-			  false, false, builder.loc));
+  auto other_pattern = std::unique_ptr<Pattern> (new ReferencePattern (
+    std::unique_ptr<Pattern> (new TupleStructPattern (
+      other_variant_path, std::move (other_pattern_items))),
+    false, false, builder.loc));
 
   auto tuple_items = std::make_unique<TuplePatternItemsMultiple> (
     vec (std::move (self_pattern), std::move (other_pattern)));
@@ -155,16 +159,21 @@ EnumMatchBuilder::strukt (EnumItem &variant_raw)
       });
     }
 
+  // TODO: Replace with `reconstruct()` instead of building these twice
+  auto self_variant_path = builder.variant_path (enum_path, variant_path);
+  auto other_variant_path = builder.variant_path (enum_path, variant_path);
+
   auto self_elts = StructPatternElements (std::move (self_fields));
   auto other_elts = StructPatternElements (std::move (other_fields));
 
-  auto self_pattern = std::unique_ptr<Pattern> (
-    new ReferencePattern (std::unique_ptr<Pattern> (new StructPattern (
-			    variant_path, builder.loc, std::move (self_elts))),
-			  false, false, builder.loc));
+  auto self_pattern = std::unique_ptr<Pattern> (new ReferencePattern (
+    std::unique_ptr<Pattern> (new StructPattern (self_variant_path, builder.loc,
+						 std::move (self_elts))),
+    false, false, builder.loc));
   auto other_pattern = std::unique_ptr<Pattern> (
-    new ReferencePattern (std::unique_ptr<Pattern> (new StructPattern (
-			    variant_path, builder.loc, std::move (other_elts))),
+    new ReferencePattern (std::unique_ptr<Pattern> (
+			    new StructPattern (other_variant_path, builder.loc,
+					       std::move (other_elts))),
 			  false, false, builder.loc));
 
   auto tuple_items = std::make_unique<TuplePatternItemsMultiple> (
