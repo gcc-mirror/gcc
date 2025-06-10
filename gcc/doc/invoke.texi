@@ -22614,9 +22614,19 @@ Compile for CDNA2 Instinct MI200 series devices (gfx90a).
 @item gfx90c
 Compile for GCN5 Vega 7 devices (gfx90c).
 
+@item gfx942
+Compile for CDNA3 Instinct MI300 series devices (gfx942). (Experimental)
+
+@item gfx950
+Compile for the CDNA3 gfx950 devices. (Experimental)
+
 @item gfx9-generic
 Compile generic code for Vega devices, executable on the following subset of
 GFX9 devices: gfx900, gfx902, gfx904, gfx906, gfx909 and gfx90c. (Experimental)
+
+@item gfx9-4-generic
+Compile generic code for CDNA3 devices, executable on the following subset of
+GFX9 devices: gfx942 and gfx950. (Experimental)
 
 @item gfx1030
 Compile for RDNA2 gfx1030 devices (GFX10 series).

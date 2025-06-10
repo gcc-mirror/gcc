@@ -1343,11 +1343,11 @@ default set of libraries is selected based on the value of
 @item amdgcn*-*-*
 @var{list} is a comma separated list of ISA names (allowed values:
 @code{gfx900}, @code{gfx902}, @code{gfx904}, @code{gfx906}, @code{gfx908},
-@code{gfx909}, @code{gfx90a}, @code{gfx90c}, @code{gfx9-generic},
-@code{gfx1030}, @code{gfx1031}, @code{gfx1032}, @code{gfx1033},
-@code{gfx1034}, @code{gfx1035}, @code{gfx1036}, @code{gfx10-3-generic},
-@code{gfx1100}, @code{gfx1101}, @code{gfx1102}, @code{gfx1103},
-@code{gfx1150}, @code{gfx1151}, @code{gfx1152}, @code{gfx1153},
+@code{gfx909}, @code{gfx90a}, @code{gfx90c}, @code{gfx942}, @code{gfx950},
+@code{gfx9-generic}, @code{gfx9-4-generic}, @code{gfx1030}, @code{gfx1031},
+@code{gfx1032}, @code{gfx1033}, @code{gfx1034}, @code{gfx1035}, @code{gfx1036},
+@code{gfx10-3-generic}, @code{gfx1100}, @code{gfx1101}, @code{gfx1102},
+@code{gfx1103}, @code{gfx1150}, @code{gfx1151}, @code{gfx1152}, @code{gfx1153},
 @code{gfx11-generic}).  It ought not include the name of the default
 ISA, specified via @option{--with-arch}.  If @var{list} is empty, then there
 will be no multilibs and only the default run-time library will be built.  If
@@ -4057,9 +4057,10 @@ By default, multilib support is built for @code{gfx900}, @code{gfx906},
 requires LLVM 15 or newer.  LLVM 13.0.1 or LLVM 14 can be used by specifying
 a @code{--with-multilib-list=} that does not list any GFX 11 device nor
 @code{gfx1036}.  At least LLVM 16 is required for @code{gfx1150} and
-@code{gfx1151}, LLVM 19 for the generic @code{gfx9-generic},
-@code{gfx10-3-generic}, and @code{gfx11-generic} targets and for
-@code{gfx1152}, while LLVM 20 is required for @code{gfx1153}.
+@code{gfx1151}, LLVM 18 for @code{gfx942}, LLVM 19 for the generic
+@code{gfx9-generic}, @code{gfx9-4-generic}, @code{gfx10-3-generic}, and
+@code{gfx11-generic} targets and for @code{gfx1152}, while LLVM 20 is required
+for @code{gfx950} and @code{gfx1153}.
 
 The supported ISA architectures are listed in the GCC manual. The generic
 ISA targets @code{gfx9-generic}, @code{gfx10-3-generic}, and

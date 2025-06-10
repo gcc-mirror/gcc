@@ -171,7 +171,40 @@ GCN_DEVICE(gfx90c, GFX90C, 0x32, ISA_GCN5,
 	   /* Generic Name */ GFX9_GENERIC
 	   )
 
+GCN_DEVICE(gfx942, GFX942, 0x4c, ISA_CDNA3,
+	   /* XNACK default */ HSACO_ATTR_ANY,
+	   /* SRAM_ECC default */ HSACO_ATTR_ANY,
+	   /* WAVE64 mode */ HSACO_ATTR_UNSUPPORTED,
+	   /* CU mode */ HSACO_ATTR_UNSUPPORTED,
+	   /* Max ISA VGPRs */ 512,
+	   /* Generic code obj version */ 0,  /* non-generic */
+	   /* Architecture Family */ GFX9,
+	   /* Generic Name */ NONE
+	   )
+
+GCN_DEVICE(gfx950, GFX950, 0x4f, ISA_CDNA3,
+	   /* XNACK default */ HSACO_ATTR_ANY,
+	   /* SRAM_ECC default */ HSACO_ATTR_ANY,
+	   /* WAVE64 mode */ HSACO_ATTR_UNSUPPORTED,
+	   /* CU mode */ HSACO_ATTR_UNSUPPORTED,
+	   /* Max ISA VGPRs */ 512,
+	   /* Generic code obj version */ 0,  /* non-generic */
+	   /* Architecture Family */ GFX9,
+	   /* Generic Name */ NONE
+	   )
+
 GCN_DEVICE(gfx9-generic, GFX9_GENERIC, 0x051, ISA_GCN5,
+	   /* XNACK default */ HSACO_ATTR_ANY,
+	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
+	   /* WAVE64 mode */ HSACO_ATTR_UNSUPPORTED,
+	   /* CU mode */ HSACO_ATTR_UNSUPPORTED,
+	   /* Max ISA VGPRs */ 256,
+	   /* Generic code obj version */ 1,
+	   /* Architecture Family */ GFX9,
+	   /* Generic Name */ NONE
+	   )
+
+GCN_DEVICE(gfx9-4-generic, GFX9_4_GENERIC, 0x05f, ISA_CDNA3,
 	   /* XNACK default */ HSACO_ATTR_ANY,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_UNSUPPORTED,
