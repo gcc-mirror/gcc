@@ -9681,8 +9681,8 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
 		|| code == CEIL_MOD_EXPR || code == ROUND_MOD_EXPR);
   if (SCALAR_INT_MODE_P (mode)
       && optimize >= 2
-      && get_range_pos_neg (treeop0) == 1
-      && get_range_pos_neg (treeop1) == 1)
+      && get_range_pos_neg (treeop0, currently_expanding_gimple_stmt) == 1
+      && get_range_pos_neg (treeop1, currently_expanding_gimple_stmt) == 1)
     {
       /* If both arguments are known to be positive when interpreted
 	 as signed, we can expand it as both signed and unsigned
@@ -11366,11 +11366,16 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  /* ???  internal call expansion doesn't follow the usual API
 	     of returning the destination RTX and being passed a desired
 	     target.  */
+	  if (modifier == EXPAND_WRITE)
+	    return DECL_RTL (SSA_NAME_VAR (exp));
 	  rtx dest = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
 	  tree tmplhs = make_tree (TREE_TYPE (exp), dest);
-	  gimple_call_set_lhs (g, tmplhs);
+	  tree var_or_id = SSA_NAME_VAR (exp);
+	  if (!var_or_id)
+	    var_or_id = SSA_NAME_IDENTIFIER (exp);
+	  SET_SSA_NAME_VAR_OR_IDENTIFIER (exp, tmplhs);
 	  expand_internal_call (as_a <gcall *> (g));
-	  gimple_call_set_lhs (g, exp);
+	  SET_SSA_NAME_VAR_OR_IDENTIFIER (exp, var_or_id);
 	  return dest;
 	}
 
@@ -13217,7 +13222,7 @@ maybe_optimize_pow2p_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
       || integer_zerop (*arg1)
       /* If c is known to be non-negative, modulo will be expanded as unsigned
 	 modulo.  */
-      || get_range_pos_neg (treeop0) == 1)
+      || get_range_pos_neg (treeop0, currently_expanding_gimple_stmt) == 1)
     return code;
 
   /* x % c == d where d < 0 && d <= -c should be always false.  */
@@ -13349,7 +13354,8 @@ maybe_optimize_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
   /* If both operands are known to have the sign bit clear, handle
      even the signed modulo case as unsigned.  treeop1 is always
      positive >= 2, checked above.  */
-  if (!TYPE_UNSIGNED (type) && get_range_pos_neg (treeop0) != 1)
+  if (!TYPE_UNSIGNED (type)
+      && get_range_pos_neg (treeop0, currently_expanding_gimple_stmt) != 1)
     sgn = SIGNED;
 
   if (!TYPE_UNSIGNED (type))

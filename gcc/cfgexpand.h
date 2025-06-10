@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern tree gimple_assign_rhs_to_tree (gimple *);
 extern HOST_WIDE_INT estimated_stack_frame_size (struct cgraph_node *);
+extern void expand_remove_edge (edge);
 extern void set_parm_rtl (tree, rtx);
 
 

@@ -1005,9 +1005,8 @@ get_undefined_value_partitions (var_map map)
 }
 
 /* Given the out-of-ssa info object SA (with prepared partitions)
-   eliminate all phi nodes in all basic blocks.  Afterwards no
-   basic block will have phi nodes anymore and there are possibly
-   some RTL instructions inserted on edges.  */
+   eliminate all phi nodes in all basic blocks.  Afterwards there
+   are possibly some RTL instructions inserted on edges.  */
 
 void
 expand_phi_nodes (struct ssaexpand *sa)
@@ -1023,7 +1022,6 @@ expand_phi_nodes (struct ssaexpand *sa)
 	edge_iterator ei;
 	FOR_EACH_EDGE (e, ei, bb->preds)
 	  eliminate_phi (e, &g);
-	set_phi_nodes (bb, NULL);
 	/* We can't redirect EH edges in RTL land, so we need to do this
 	   here.  Redirection happens only when splitting is necessary,
 	   which it is only for critical edges, normally.  For EH edges

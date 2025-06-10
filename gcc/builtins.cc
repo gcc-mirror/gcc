@@ -3529,7 +3529,8 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 
   wide_int min, max;
   int_range_max r;
-  get_global_range_query ()->range_of_expr (r, bound);
+  get_range_query (cfun)->range_of_expr (r, bound,
+					 currently_expanding_gimple_stmt);
   if (r.varying_p () || r.undefined_p ())
     return NULL_RTX;
   min = r.lower_bound ();
@@ -3604,7 +3605,8 @@ determine_block_size (tree len, rtx len_rtx,
 	{
 	  int_range_max r;
 	  tree tmin, tmax;
-	  get_global_range_query ()->range_of_expr (r, len);
+	  gimple *cg = currently_expanding_gimple_stmt;
+	  get_range_query (cfun)->range_of_expr (r, len, cg);
 	  range_type = get_legacy_range (r, tmin, tmax);
 	  if (range_type != VR_UNDEFINED)
 	    {

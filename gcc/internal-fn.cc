@@ -926,7 +926,10 @@ get_min_precision (tree arg, signop sign)
 	{
 	  if (TYPE_UNSIGNED (TREE_TYPE (arg)))
 	    sign = UNSIGNED;
-	  else if (sign == UNSIGNED && get_range_pos_neg (arg) != 1)
+	  else if (sign == UNSIGNED
+		   && (get_range_pos_neg (arg,
+					  currently_expanding_gimple_stmt)
+		       != 1))
 	    return prec + (orig_sign != sign);
 	  prec = TYPE_PRECISION (TREE_TYPE (arg));
 	}
@@ -946,7 +949,8 @@ get_min_precision (tree arg, signop sign)
   if (TREE_CODE (arg) != SSA_NAME)
     return prec + (orig_sign != sign);
   int_range_max r;
-  while (!get_global_range_query ()->range_of_expr (r, arg)
+  gimple *cg = currently_expanding_gimple_stmt;
+  while (!get_range_query (cfun)->range_of_expr (r, arg, cg)
 	 || r.varying_p ()
 	 || r.undefined_p ())
     {
@@ -963,7 +967,8 @@ get_min_precision (tree arg, signop sign)
 		{
 		  if (TYPE_UNSIGNED (TREE_TYPE (arg)))
 		    sign = UNSIGNED;
-		  else if (sign == UNSIGNED && get_range_pos_neg (arg) != 1)
+		  else if (sign == UNSIGNED
+			   && get_range_pos_neg (arg, g) != 1)
 		    return prec + (orig_sign != sign);
 		  prec = TYPE_PRECISION (TREE_TYPE (arg));
 		}
@@ -1301,7 +1306,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 	 unsigned.  */
       res = expand_binop (mode, sub_optab, op0, op1, NULL_RTX, false,
 			  OPTAB_LIB_WIDEN);
-      int pos_neg = get_range_pos_neg (arg0);
+      int pos_neg = get_range_pos_neg (arg0, currently_expanding_gimple_stmt);
       if (pos_neg == 2)
 	/* If ARG0 is known to be always negative, this is always overflow.  */
 	emit_jump (do_error);
@@ -1361,10 +1366,11 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 	 unsigned.  */
       res = expand_binop (mode, code == PLUS_EXPR ? add_optab : sub_optab,
 			  op0, op1, NULL_RTX, false, OPTAB_LIB_WIDEN);
-      int pos_neg = get_range_pos_neg (arg1);
+      int pos_neg = get_range_pos_neg (arg1, currently_expanding_gimple_stmt);
       if (code == PLUS_EXPR)
 	{
-	  int pos_neg0 = get_range_pos_neg (arg0);
+	  int pos_neg0 = get_range_pos_neg (arg0,
+					    currently_expanding_gimple_stmt);
 	  if (pos_neg0 != 3 && pos_neg == 3)
 	    {
 	      std::swap (op0, op1);
@@ -1462,10 +1468,11 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
        the second operand, as subtraction is not commutative) is always
        non-negative or always negative, we can do just one comparison
        and conditional jump.  */
-    int pos_neg = get_range_pos_neg (arg1);
+    int pos_neg = get_range_pos_neg (arg1, currently_expanding_gimple_stmt);
     if (code == PLUS_EXPR)
       {
-	int pos_neg0 = get_range_pos_neg (arg0);
+	int pos_neg0 = get_range_pos_neg (arg0,
+					  currently_expanding_gimple_stmt);
 	if (pos_neg0 != 3 && pos_neg == 3)
 	  {
 	    std::swap (op0, op1);
@@ -1757,8 +1764,8 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
       uns1_p = true;
     }
 
-  int pos_neg0 = get_range_pos_neg (arg0);
-  int pos_neg1 = get_range_pos_neg (arg1);
+  int pos_neg0 = get_range_pos_neg (arg0, currently_expanding_gimple_stmt);
+  int pos_neg1 = get_range_pos_neg (arg1, currently_expanding_gimple_stmt);
   /* Unsigned types with smaller than mode precision, even if they have most
      significant bit set, are still zero-extended.  */
   if (uns0_p && TYPE_PRECISION (TREE_TYPE (arg0)) < GET_MODE_PRECISION (mode))
@@ -2763,9 +2770,9 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
   int prec1 = TYPE_PRECISION (TREE_TYPE (arg1));
   int precres = TYPE_PRECISION (type);
   location_t loc = gimple_location (stmt);
-  if (!uns0_p && get_range_pos_neg (arg0) == 1)
+  if (!uns0_p && get_range_pos_neg (arg0, stmt) == 1)
     uns0_p = true;
-  if (!uns1_p && get_range_pos_neg (arg1) == 1)
+  if (!uns1_p && get_range_pos_neg (arg1, stmt) == 1)
     uns1_p = true;
   int pr = get_min_precision (arg0, uns0_p ? UNSIGNED : SIGNED);
   prec0 = MIN (prec0, pr);
