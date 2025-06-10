@@ -520,7 +520,7 @@
 
 @item smrnmi
 @tab 1.0
-@tab Resumable Non-Maskable Interrupts
+@tab Resumable non-maskable interrupts
 
 @item smstateen
 @tab 1.0
