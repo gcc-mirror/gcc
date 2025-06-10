@@ -2612,7 +2612,7 @@ intrinsic_call_1( cbl_field_t *output, int token,
 
 static bool
 intrinsic_call_2( cbl_field_t *tgt, int token, cbl_refer_t *r1, cbl_refer_t *r2 ) {
-  std::vector<cbl_refer_t> args { *r1, *r2 };
+  std::vector<cbl_refer_t> args { *r1, r2? *r2 : cbl_refer_t() };
   size_t n = intrinsic_invalid_parameter(token, args);
   if( n < args.size() ) {
     error_msg(args[n].loc, "invalid parameter '%s'", args[n].field->name);

@@ -891,6 +891,7 @@ verify_integer( const YDFLTYPE& loc, const cdfval_base_t& val ) {
   return true;
 }
 
+// cppcheck-suppress returnTempReference
 const cdfval_base_t&
 cdfval_base_t::operator()( const YDFLTYPE& loc ) {
   static cdfval_t zero(0);

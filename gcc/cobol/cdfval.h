@@ -38,6 +38,14 @@
 
 bool scanner_parsing();
 
+/* cdfval_base_t has no constructor because otherwise: 
+ * cobol/cdf.h:172:7: note: ‘YDFSTYPE::YDFSTYPE()’ is implicitly deleted 
+ *  because the default definition would be ill-formed:
+ * 172 | union YDFSTYPE
+ * 
+ * We use the derived type cdfval_t, which can be properly constructed and
+ * operated on, but tell Bison only about its POD base class.
+ */
 struct YDFLTYPE;
 struct cdfval_base_t {
   bool off;

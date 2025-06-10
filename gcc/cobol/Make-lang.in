@@ -351,8 +351,7 @@ cobol.srcman:
 cobol.mostlyclean:
 
 cobol.clean:
-	rm -fr gcobol cobol1 cobol/*		\
-	../*/libgcobol/*
+	rm -fr gcobol cobol1 cobol/*
 
 cobol.distclean:
 
