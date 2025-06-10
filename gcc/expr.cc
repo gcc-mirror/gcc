@@ -9879,14 +9879,68 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 	op0 = gen_rtx_fmt_e (TYPE_UNSIGNED (TREE_TYPE (treeop0))
 			     ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);
 
+      else if (SCALAR_INT_MODE_P (GET_MODE (op0))
+	       && optimize >= 2
+	       && SCALAR_INT_MODE_P (mode)
+	       && (GET_MODE_SIZE (as_a <scalar_int_mode> (mode))
+		   > GET_MODE_SIZE (as_a <scalar_int_mode> (GET_MODE (op0))))
+	       && get_range_pos_neg (treeop0,
+				     currently_expanding_gimple_stmt) == 1)
+	{
+	  /* If argument is known to be positive when interpreted
+	     as signed, we can expand it as both sign and zero
+	     extension.  Choose the cheaper sequence in that case.  */
+	  bool speed_p = optimize_insn_for_speed_p ();
+	  rtx uns_ret = NULL_RTX, sgn_ret = NULL_RTX;
+	  do_pending_stack_adjust ();
+	  start_sequence ();
+	  if (target == NULL_RTX)
+	    uns_ret = convert_to_mode (mode, op0, 1);
+	  else
+	    convert_move (target, op0, 1);
+	  rtx_insn *uns_insns = end_sequence ();
+	  start_sequence ();
+	  if (target == NULL_RTX)
+	    sgn_ret = convert_to_mode (mode, op0, 0);
+	  else
+	    convert_move (target, op0, 0);
+	  rtx_insn *sgn_insns = end_sequence ();
+	  unsigned uns_cost = seq_cost (uns_insns, speed_p);
+	  unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
+	  bool was_tie = false;
+
+	  /* If costs are the same then use as tie breaker the other other
+	     factor.  */
+	  if (uns_cost == sgn_cost)
+	    {
+	      uns_cost = seq_cost (uns_insns, !speed_p);
+	      sgn_cost = seq_cost (sgn_insns, !speed_p);
+	      was_tie = true;
+	    }
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, ";; positive extension:%s unsigned cost: %u; "
+				"signed cost: %u\n",
+		     was_tie ? " (needed tie breaker)" : "",
+		     uns_cost, sgn_cost);
+	  if (uns_cost < sgn_cost
+	      || (uns_cost == sgn_cost && TYPE_UNSIGNED (TREE_TYPE (treeop0))))
+	    {
+	      emit_insn (uns_insns);
+	      sgn_ret = uns_ret;
+	    }
+	  else
+	    emit_insn (sgn_insns);
+	  if (target == NULL_RTX)
+	    op0 = sgn_ret;
+	  else
+	    op0 = target;
+	}
       else if (target == 0)
-	op0 = convert_to_mode (mode, op0,
-			       TYPE_UNSIGNED (TREE_TYPE
-					      (treeop0)));
+	op0 = convert_to_mode (mode, op0, TYPE_UNSIGNED (TREE_TYPE (treeop0)));
       else
 	{
-	  convert_move (target, op0,
-			TYPE_UNSIGNED (TREE_TYPE (treeop0)));
+	  convert_move (target, op0, TYPE_UNSIGNED (TREE_TYPE (treeop0)));
 	  op0 = target;
 	}
 
