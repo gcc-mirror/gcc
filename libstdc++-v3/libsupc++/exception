@@ -164,9 +164,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 } // extern "C++"
 
-#if (__cplusplus >= 201103L)
-#include <bits/exception_ptr.h>
-#include <bits/nested_exception.h>
+#if __cplusplus >= 201103L
+# include <bits/exception_ptr.h>
+# include <bits/nested_exception.h>
 #endif
 
 #endif
