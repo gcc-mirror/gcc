@@ -4204,11 +4204,7 @@ package body Sem_Ch3 is
          --  to recover the nominal unconstrained type.
 
          if Is_Constr_Subt_For_U_Nominal (Obj_Typ) then
-            if Nkind (Object_Definition (Obj_Decl)) = N_Subtype_Indication then
-               Obj_Typ := Entity (Subtype_Mark (Object_Definition (Obj_Decl)));
-            else
-               Obj_Typ := Etype (Obj_Typ);
-            end if;
+            Obj_Typ := Entity (Original_Node (Object_Definition (Obj_Decl)));
             pragma Assert (not Is_Constrained (Obj_Typ));
          end if;
 
