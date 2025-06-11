@@ -3767,6 +3767,7 @@ pass_waccess::maybe_check_dealloc_call (gcall *call)
 
       if (is_gimple_call (def_stmt))
 	{
+	  auto_diagnostic_group d;
 	  bool warned = false;
 	  if (gimple_call_alloc_p (def_stmt))
 	    {
