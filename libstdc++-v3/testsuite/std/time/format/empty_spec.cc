@@ -170,6 +170,13 @@ test_duration()
   verify( -di, WIDEN("-40ms") );
   res = std::format(WIDEN("{:>6}"), -di);
   VERIFY( res == WIDEN(" -40ms") );
+}
+
+template<typename _CharT>
+void
+test_duration_fp()
+{
+  std::basic_string<_CharT> res;
 
   const duration<double> df(11.22);
   verify( df, WIDEN("11.22s") );
@@ -179,6 +186,10 @@ test_duration()
   verify( -df, WIDEN("-11.22s") );
   res = std::format(WIDEN("{:=^12}"), -df);
   VERIFY( res == WIDEN("==-11.22s===") );
+
+  // precision accepted but ignored
+  res = std::format(WIDEN("{:.6}"), df);
+  VERIFY( res == WIDEN("11.22s") );
 }
 
 template<typename _CharT>
@@ -294,6 +305,44 @@ test_hh_mm_ss()
 
 template<typename _CharT>
 void
+test_hh_mm_ss_fp()
+{
+  duration<double> dt = 22h + 24min + 54s + 111222333ns;
+  // period controls number of subseconds
+  verify( hms<nanoseconds>(dt),
+	  WIDEN("22:24:54.111222333") );
+  verify( hms<microseconds>(dt),
+	  WIDEN("22:24:54.111222") );
+  verify( hms<milliseconds>(dt),
+	  WIDEN("22:24:54.111") );
+  verify( hms<deciseconds>(dt),
+	  WIDEN("22:24:54.1") );
+  verify( hms<seconds>(dt),
+	  WIDEN("22:24:54") );
+  verify( hms<nanoseconds>(-dt),
+	  WIDEN("-22:24:54.111222333") );
+  verify( hms<microseconds>(-dt),
+	  WIDEN("-22:24:54.111222") );
+  verify( hms<milliseconds>(-dt),
+	  WIDEN("-22:24:54.111") );
+  verify( hms<deciseconds>(-dt),
+	  WIDEN("-22:24:54.1") );
+  verify( hms<seconds>(-dt),
+	  WIDEN("-22:24:54") );
+
+  // but hour and minutes are preserved
+  verify( hms<minutes>(dt),
+	  WIDEN("22:24:54") );
+  verify( hms<hours>(dt),
+	  WIDEN("22:24:54") );
+  verify( hms<minutes>(-dt),
+	  WIDEN("-22:24:54") );
+  verify( hms<hours>(-dt),
+	  WIDEN("-22:24:54") );
+}
+
+template<typename _CharT>
+void
 test_hh_mm_ss_cust()
 {
   const duration<char, deciseconds::period> charRep(123);
@@ -339,9 +388,11 @@ void
 test_durations()
 {
   test_duration<CharT>();
+  test_duration_fp<CharT>();
   test_duration_cust<CharT>();
 
   test_hh_mm_ss<CharT>();
+  test_hh_mm_ss_fp<CharT>();
   test_hh_mm_ss_cust<CharT>();
 }
 
