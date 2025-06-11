@@ -4042,11 +4042,11 @@
 ])
 
 (define_code_iterator any_int_binop_no_shift_v_vdup [
-  plus minus and ior xor mult div udiv mod umod
+  plus minus and ior xor mult div udiv mod umod smax
 ])
 
 (define_code_iterator any_int_binop_no_shift_vdup_v [
-  plus minus and ior xor mult
+  plus minus and ior xor mult smax
 ])
 
 (define_code_iterator any_int_unop [neg not])
