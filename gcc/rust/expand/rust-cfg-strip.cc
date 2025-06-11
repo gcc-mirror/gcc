@@ -2267,7 +2267,7 @@ CfgStrip::visit (AST::IdentifierPattern &pattern)
 
   AST::DefaultASTVisitor::visit (pattern);
 
-  auto &sub_pattern = pattern.get_pattern_to_bind ();
+  auto &sub_pattern = pattern.get_subpattern ();
   if (sub_pattern.is_marked_for_strip ())
     rust_error_at (sub_pattern.get_locus (),
 		   "cannot strip pattern in this position");

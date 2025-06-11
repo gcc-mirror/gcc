@@ -2485,7 +2485,7 @@ TokenCollector::visit (IdentifierPattern &pattern)
   if (pattern.has_subpattern ())
     {
       push (Rust::Token::make (PATTERN_BIND, UNDEF_LOCATION));
-      visit (pattern.get_pattern_to_bind ());
+      visit (pattern.get_subpattern ());
     }
 }
 

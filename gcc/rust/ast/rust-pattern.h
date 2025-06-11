@@ -137,8 +137,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // TODO: is this better? Or is a "vis_pattern" better?
-  Pattern &get_pattern_to_bind ()
+  Pattern &get_subpattern ()
   {
     rust_assert (has_subpattern ());
     return *subpattern;

@@ -1200,7 +1200,7 @@ void
 DefaultASTVisitor::visit (AST::IdentifierPattern &pattern)
 {
   if (pattern.has_subpattern ())
-    visit (pattern.get_pattern_to_bind ());
+    visit (pattern.get_subpattern ());
 }
 
 void

@@ -53,7 +53,7 @@ ASTLoweringPattern::visit (AST::IdentifierPattern &pattern)
   if (pattern.has_subpattern ())
     {
       subpattern = std::unique_ptr<Pattern> (
-	ASTLoweringPattern::translate (pattern.get_pattern_to_bind ()));
+	ASTLoweringPattern::translate (pattern.get_subpattern ()));
     }
   translated
     = new HIR::IdentifierPattern (mapping, pattern.get_ident (),
