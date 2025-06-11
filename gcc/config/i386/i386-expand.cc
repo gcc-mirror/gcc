@@ -3609,7 +3609,7 @@ ix86_expand_int_movcc (rtx operands[])
 	    negate_cc_compare_p = true;
 	}
 
-      diff = ct - cf;
+      diff = (unsigned HOST_WIDE_INT) ct - (unsigned HOST_WIDE_INT) cf;
       /*  Sign bit compares are better done using shifts than we do by using
 	  sbb.  */
       if (sign_bit_compare_p
@@ -3667,7 +3667,8 @@ ix86_expand_int_movcc (rtx operands[])
 		    PUT_CODE (compare_op,
 			      reverse_condition (GET_CODE (compare_op)));
 		}
-	      diff = ct - cf;
+
+	      diff = (unsigned HOST_WIDE_INT) ct - (unsigned HOST_WIDE_INT) cf;
 
 	      if (reg_overlap_mentioned_p (out, compare_op))
 		tmp = gen_reg_rtx (mode);
@@ -3685,7 +3686,8 @@ ix86_expand_int_movcc (rtx operands[])
 	      else
 		{
 		  std::swap (ct, cf);
-		  diff = ct - cf;
+		  diff = (unsigned HOST_WIDE_INT) ct
+			 - (unsigned HOST_WIDE_INT) cf;
 		}
 	      tmp = emit_store_flag (tmp, code, op0, op1, VOIDmode, 0, -1);
 	    }
@@ -3752,9 +3754,11 @@ ix86_expand_int_movcc (rtx operands[])
 		  tmp = expand_simple_unop (mode, NOT, tmp, copy_rtx (tmp), 1);
 		}
 
+	      HOST_WIDE_INT ival = (unsigned HOST_WIDE_INT) cf
+				   - (unsigned HOST_WIDE_INT) ct;
 	      tmp = expand_simple_binop (mode, AND,
 					 copy_rtx (tmp),
-					 gen_int_mode (cf - ct, mode),
+					 gen_int_mode (ival, mode),
 					 copy_rtx (tmp), 1, OPTAB_DIRECT);
 	      if (ct)
 		tmp = expand_simple_binop (mode, PLUS,
@@ -3791,7 +3795,7 @@ ix86_expand_int_movcc (rtx operands[])
 	  if (new_code != UNKNOWN)
 	    {
 	      std::swap (ct, cf);
-	      diff = -diff;
+	      diff = (unsigned HOST_WIDE_INT) ct - (unsigned HOST_WIDE_INT) cf;
 	      code = new_code;
 	    }
 	}
@@ -3994,8 +3998,10 @@ ix86_expand_int_movcc (rtx operands[])
 					 copy_rtx (out), 1, OPTAB_DIRECT);
 	    }
 
+	  HOST_WIDE_INT ival = (unsigned HOST_WIDE_INT) cf
+			       - (unsigned HOST_WIDE_INT) ct;
 	  out = expand_simple_binop (mode, AND, copy_rtx (out),
-				     gen_int_mode (cf - ct, mode),
+				     gen_int_mode (ival, mode),
 				     copy_rtx (out), 1, OPTAB_DIRECT);
 	  if (ct)
 	    out = expand_simple_binop (mode, PLUS, copy_rtx (out), GEN_INT (ct),
