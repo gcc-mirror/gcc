@@ -81,7 +81,8 @@ DeriveVisitor::setup_impl_generics (
     {
       switch (generic->get_kind ())
 	{
-	  case GenericParam::Kind::Lifetime: {
+	case GenericParam::Kind::Lifetime:
+	  {
 	    LifetimeParam &lifetime_param = (LifetimeParam &) *generic.get ();
 
 	    Lifetime l = builder.new_lifetime (lifetime_param.get_lifetime ());
@@ -93,7 +94,8 @@ DeriveVisitor::setup_impl_generics (
 	  }
 	  break;
 
-	  case GenericParam::Kind::Type: {
+	case GenericParam::Kind::Type:
+	  {
 	    TypeParam &type_param = (TypeParam &) *generic.get ();
 
 	    std::unique_ptr<Type> associated_type = builder.single_type_path (
@@ -116,7 +118,8 @@ DeriveVisitor::setup_impl_generics (
 	  }
 	  break;
 
-	  case GenericParam::Kind::Const: {
+	case GenericParam::Kind::Const:
+	  {
 	    ConstGenericParam &const_param
 	      = (ConstGenericParam &) *generic.get ();
 
