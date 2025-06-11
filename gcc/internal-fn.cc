@@ -5561,7 +5561,7 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
   expand_unary_optab_fn (fn, stmt, popcount_optab);
   rtx_insn *popcount_insns = end_sequence ();
   start_sequence ();
-  rtx plhs = expand_normal (lhs);
+  rtx plhs = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx pcmp = emit_store_flag (NULL_RTX, EQ, plhs, const1_rtx, lhsmode, 0, 0);
   if (pcmp == NULL_RTX)
     {
@@ -5603,7 +5603,7 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
     {
       start_sequence ();
       emit_insn (cmp_insns);
-      plhs = expand_normal (lhs);
+      plhs = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
       if (GET_MODE (cmp) != GET_MODE (plhs))
 	cmp = convert_to_mode (GET_MODE (plhs), cmp, 1);
       /* For `<= 1`, we need to produce `2 - cmp` or `cmp ? 1 : 2` as that
