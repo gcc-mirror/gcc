@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "xml-printer.h"
 #include "pretty-print.h"
 #include "selftest.h"
+#include "selftest-xml.h"
 
 namespace xml {
 
@@ -316,14 +317,22 @@ printer::dump () const
 
 namespace selftest {
 
+void
+assert_xml_print_eq (const location &loc,
+		     const xml::node &node,
+		     const char *expected_value)
+{
+  pretty_printer pp;
+  node.write_as_xml (&pp, 0, true);
+  ASSERT_STREQ_AT (loc, pp_formatted_text (&pp), expected_value);
+}
+
 static void
 test_no_dtd ()
 {
   xml::document doc;
-  pretty_printer pp;
-  doc.write_as_xml (&pp, 0, true);
-  ASSERT_STREQ
-    (pp_formatted_text (&pp),
+  ASSERT_XML_PRINT_EQ
+    (doc,
      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 }
 
@@ -343,10 +352,8 @@ test_printer ()
   xp.pop_tag ("bar");
   xp.pop_tag ("foo");
 
-  pretty_printer pp;
-  top.write_as_xml (&pp, 0, true);
-  ASSERT_STREQ
-    (pp_formatted_text (&pp),
+  ASSERT_XML_PRINT_EQ
+    (top,
      "<top>\n"
      "  <foo>\n"
      "    hello\n"
@@ -378,10 +385,8 @@ test_attribute_ordering ()
   xp.set_attr ("naseby", "1645");
   xp.pop_tag ("alphabetical");
 
-  pretty_printer pp;
-  top.write_as_xml (&pp, 0, true);
-  ASSERT_STREQ
-    (pp_formatted_text (&pp),
+  ASSERT_XML_PRINT_EQ
+    (top,
      "<top>\n"
      "  <chronological maldon=\"991\" hastings=\"1066\" edgehill=\"1642\" naseby=\"1645\"/>\n"
      "  <alphabetical edgehill=\"1642\" hastings=\"1066\" maldon=\"991\" naseby=\"1645\"/>\n"

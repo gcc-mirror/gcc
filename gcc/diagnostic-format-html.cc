@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "xml.h"
 #include "xml-printer.h"
 #include "json.h"
+#include "selftest-xml.h"
 
 // struct html_generation_options
 
@@ -729,6 +730,82 @@ add_labelled_value (xml::printer &xp,
   xp.pop_tag ("div");
 }
 
+class html_token_printer : public token_printer
+{
+public:
+  html_token_printer (xml::element &parent_element)
+    /* Ideally pp_token_lists that reach a token_printer should be
+       "balanced", but for now they can have mismatching pp_tokens
+       e.g. a begin_color without an end_color (PR other/120610).
+       Give html_token_printer its own xml::printer as a firewall to
+       limit the scope of the mismatches in the HTML.  */
+    : m_xp (parent_element,
+	    /* Similarly we don't check that the popped tags match.  */
+	    false)
+  {
+  }
+  void print_tokens (pretty_printer */*pp*/,
+		     const pp_token_list &tokens) final override
+  {
+    /* Implement print_tokens by adding child elements to
+       m_parent_element.  */
+    for (auto iter = tokens.m_first; iter; iter = iter->m_next)
+      switch (iter->m_kind)
+	{
+	default:
+	  gcc_unreachable ();
+
+	case pp_token::kind::text:
+	  {
+	    pp_token_text *sub = as_a <pp_token_text *> (iter);
+	    /* The value might be in the obstack, so we may need to
+	       copy it.  */
+	    m_xp.add_text (sub->m_value.get ());
+	    }
+	  break;
+
+	case pp_token::kind::begin_color:
+	  {
+	    pp_token_begin_color *sub = as_a <pp_token_begin_color *> (iter);
+	    gcc_assert (sub->m_value.get ());
+	    m_xp.push_tag_with_class ("span", sub->m_value.get ());
+	  }
+	  break;
+
+	case pp_token::kind::end_color:
+	  m_xp.pop_tag ("span");
+	  break;
+
+	case pp_token::kind::begin_quote:
+	  {
+	    m_xp.add_text (open_quote);
+	    m_xp.push_tag_with_class ("span", "gcc-quoted-text");
+	  }
+	  break;
+	case pp_token::kind::end_quote:
+	  {
+	    m_xp.pop_tag ("span");
+	    m_xp.add_text (close_quote);
+	  }
+	  break;
+
+	case pp_token::kind::begin_url:
+	  {
+	    pp_token_begin_url *sub = as_a <pp_token_begin_url *> (iter);
+	    m_xp.push_tag ("a", true);
+	    m_xp.set_attr ("href", sub->m_value.get ());
+	  }
+	  break;
+	case pp_token::kind::end_url:
+	  m_xp.pop_tag ("a");
+	  break;
+	}
+  }
+
+private:
+  xml::printer m_xp;
+};
+
 /* Make a <div class="gcc-diagnostic"> for DIAGNOSTIC.
 
    If ALERT is true, make it be a PatternFly alert (see
@@ -744,82 +821,6 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 					   diagnostic_t orig_diag_kind,
 					   bool alert)
 {
-  class html_token_printer : public token_printer
-  {
-  public:
-    html_token_printer (xml::element &parent_element)
-      /* Ideally pp_token_lists that reach a token_printer should be
-	 "balanced", but for now they can have mismatching pp_tokens
-	 e.g. a begin_color without an end_color (PR other/120610).
-	 Give html_token_printer its own xml::printer as a firewall to
-	 limit the scope of the mismatches in the HTML.  */
-    : m_xp (parent_element,
-	    /* Similarly we don't check that the popped tags match.  */
-	    false)
-    {
-    }
-    void print_tokens (pretty_printer */*pp*/,
-		       const pp_token_list &tokens) final override
-    {
-      /* Implement print_tokens by adding child elements to
-	 m_parent_element.  */
-      for (auto iter = tokens.m_first; iter; iter = iter->m_next)
-	switch (iter->m_kind)
-	  {
-	  default:
-	    gcc_unreachable ();
-
-	  case pp_token::kind::text:
-	    {
-	      pp_token_text *sub = as_a <pp_token_text *> (iter);
-	      /* The value might be in the obstack, so we may need to
-		 copy it.  */
-	      m_xp.add_text (sub->m_value.get ());
-	    }
-	    break;
-
-	  case pp_token::kind::begin_color:
-	    {
-	      pp_token_begin_color *sub = as_a <pp_token_begin_color *> (iter);
-	      gcc_assert (sub->m_value.get ());
-	      m_xp.push_tag_with_class ("span", sub->m_value.get ());
-	    }
-	    break;
-
-	  case pp_token::kind::end_color:
-	    m_xp.pop_tag ("span");
-	    break;
-
-	  case pp_token::kind::begin_quote:
-	    {
-	      m_xp.add_text (open_quote);
-	      m_xp.push_tag_with_class ("span", "gcc-quoted-text");
-	    }
-	    break;
-	  case pp_token::kind::end_quote:
-	    {
-	      m_xp.pop_tag ("span");
-	      m_xp.add_text (close_quote);
-	    }
-	    break;
-
-	  case pp_token::kind::begin_url:
-	    {
-	      pp_token_begin_url *sub = as_a <pp_token_begin_url *> (iter);
-	      m_xp.push_tag ("a", true);
-	      m_xp.set_attr ("href", sub->m_value.get ());
-	    }
-	    break;
-	  case pp_token::kind::end_url:
-	    m_xp.pop_tag ("a");
-	    break;
-	  }
-    }
-
-  private:
-    xml::printer m_xp;
-  };
-
   const int diag_idx = m_next_diag_id++;
   std::string diag_id;
   {
@@ -1329,6 +1330,53 @@ make_html_sink (diagnostic_context &context,
 
 namespace selftest {
 
+/* Helper for writing tests of html_token_printer.
+   Printing to m_pp will appear as HTML within m_top_element, a <div>.  */
+
+struct token_printer_test
+{
+  token_printer_test ()
+  : m_top_element ("div", true),
+    m_tok_printer (m_top_element)
+  {
+    m_pp.set_token_printer (&m_tok_printer);
+  }
+
+  xml::element m_top_element;
+  html_token_printer m_tok_printer;
+  pretty_printer m_pp;
+};
+
+static void
+test_token_printer ()
+{
+  {
+    token_printer_test t;
+    pp_printf (&t.m_pp, "hello world");
+    ASSERT_XML_PRINT_EQ
+      (t.m_top_element,
+       "<div>hello world</div>\n");
+  }
+
+  {
+    token_printer_test t;
+    pp_printf (&t.m_pp, "%qs: %qs", "foo", "bar");
+    ASSERT_XML_PRINT_EQ
+      (t.m_top_element,
+       "<div>"
+       "`"
+       "<span class=\"gcc-quoted-text\">"
+       "foo"
+       "</span>"
+       "&apos;: `"
+       "<span class=\"gcc-quoted-text\">"
+       "bar"
+       "</span>"
+       "&apos;"
+       "</div>\n");
+  }
+}
+
 /* A subclass of html_output_format for writing selftests.
    The XML output is cached internally, rather than written
    out to a file.  */
@@ -1394,10 +1442,8 @@ test_simple_log ()
 
   const xml::document &doc  = dc.get_document ();
 
-  pretty_printer pp;
-  doc.write_as_xml (&pp, 0, true);
-  ASSERT_STREQ
-    (pp_formatted_text (&pp),
+  ASSERT_XML_PRINT_EQ
+    (doc,
      ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
       "<!DOCTYPE html\n"
       "     PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
@@ -1427,10 +1473,8 @@ test_metadata ()
     diagnostic_metadata metadata;
     metadata.add_cwe (415);
     auto element = b.make_element_for_metadata (metadata);
-    pretty_printer pp;
-    element->write_as_xml (&pp, 0, true);
-    ASSERT_STREQ
-      (pp_formatted_text (&pp),
+    ASSERT_XML_PRINT_EQ
+      (*element,
        "<span class=\"gcc-metadata\">"
        "<span class=\"gcc-metadata-item\">"
        "["
@@ -1448,10 +1492,8 @@ test_metadata ()
 					      "http://example.com");
     metadata.add_rule (rule);
     auto element = b.make_element_for_metadata (metadata);
-    pretty_printer pp;
-    element->write_as_xml (&pp, 0, true);
-    ASSERT_STREQ
-      (pp_formatted_text (&pp),
+    ASSERT_XML_PRINT_EQ
+      (*element,
        "<span class=\"gcc-metadata\">"
        "<span class=\"gcc-metadata-item\">"
        "["
@@ -1470,6 +1512,7 @@ void
 diagnostic_format_html_cc_tests ()
 {
   auto_fix_quotes fix_quotes;
+  test_token_printer ();
   test_simple_log ();
   test_metadata ();
 }
