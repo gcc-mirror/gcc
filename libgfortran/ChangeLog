@@ -1,3 +1,10 @@
+2025-06-10  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/116400
+	* Makefile.am: Remove source file regeneration rules.
+	* Makefile.in: Regenerate.
+	* regenerate.sh: New file.
+
 2025-06-07  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/116400

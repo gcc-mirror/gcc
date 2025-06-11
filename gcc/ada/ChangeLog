@@ -1,3 +1,174 @@
+2025-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gen_il-gen-gen_entities.adb (Formal_Object_Kind): Remove
+	Entry_Component field.
+
+2025-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Remove redundant guard.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Analyze_Inlined_Bodies): Minor comment tweak.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Instantiate_Body): Do not call Add_Scope_To_Clean if
+	the main unit is generic.
+	(Instantiate_Bodies): Do not deal with generic main units here.
+	* sem_ch12.adb (Need_Subprogram_Instance_Body): Return false if the
+	main unit is generic.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (ADA_EXCLUDE_SRCS): Add the 128-bit support files.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Subtype): Factorize code.
+
+2025-06-10  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads (Associated_Node_For_Itype): Document that
+	Parent field may be empty.
+	* vast.adb:  Allow empty Parent in Itypes.
+
+2025-06-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.ads: Revise comment about Dynamic_Predicate flag to make it
+	more accurate.
+	* sem_case.adb (Check_Choices): Test "not Has_Static_Predicate_Aspect"
+	as additional guard for error about use of subtype with nonstatic
+	predicate as a case choice. Improve related error message.
+
+2025-06-10  Tonu Naks  <naks@adacore.com>
+
+	* libgnat/s-valueu.adb: add explict raise
+	* libgnat/s-valueu.ads: update annotation
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch6.adb, sem_ch6.ads (Check_Discriminant_Conformance): Move to …
+	* sem_ch3.adb (Check_Discriminant_Conformance): … here.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Static_Object): Do not issue any error message
+	for compiler-generated entities.
+
+2025-06-10  Bob Duff  <duff@adacore.com>
+
+	* vast.adb: Implement two checks. Improve debugging
+	outputs.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Insert_Conditional_Object_Declaration): Deal with a
+	transient scope being created around the declaration.
+	* freeze.adb (Freeze_Entity): Do not call Freeze_Static_Object for
+	a renaming declaration.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-vafi32.ads: Fix head description.
+	* libgnat/s-vafi64.ads: Likewise.
+	* libgnat/s-vafi128.ads: Likewise.
+
+2025-06-10  Bob Duff  <duff@adacore.com>
+
+	* vast.adb: Initial implementation.
+	* vast.ads: Rename procedure. Remove parameter; body should decide
+	what to do.
+	* lib.ads (ipu): Minor: Rewrite comment for brevity, and because
+	of an inconvenient misspelling.
+	(Num_Units): Not used; remove.
+	(Remove_Unit): Minor: Remove "Currently" (which was current a decade
+	ago from) comment.
+	* lib.adb (Num_Units): Not used; remove.
+	* debug_a.adb (Debug_A_Entry): Fix bug: Use Write_Name_For_Debug,
+	so this won't crash on the Error node.
+	* debug.adb: Document -gnatd_V and -gnatd_W compiler switches.
+	* exp_ch6.adb (Validate_Subprogram_Calls): Remove redundant check for
+	Serious_Errors_Detected. (We turn off code gen when errors are
+	detected.)
+	* frontend.adb: Move decisions into VAST body.
+	* namet.ads (Present): Remove unnecessary overriding; these are
+	inherited by the derived types.
+	* namet.adb (Present): Likewise.
+
+2025-06-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Build_Container_Aggr_Code.To_Int): Apply Enumeration_Pos
+	to Entity (Expr) rather than Expr.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Of_Object): Fix comment.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Analyze_Component_Declaration): Rename constant.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Constrain_Array): Simplify.
+	(Process_Subtype): Adjust.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Copy_Generic_Node): Do not call Root_Type to find
+	the root type of an aggregate of a derived tagged type.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-stusta.adb (Compute_All_Tasks): Skip terminated tasks.
+
+2025-06-10  Viljar Indus  <indus@adacore.com>
+
+	* sem_prag.adb (Is_Configuration_Pragma): Check that nodes
+	preceding the pragma are pragma nodes or originally were
+	pragma nodes.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valued.adb (Integer_to_Decimal): Add Extra parameter and
+	use its value to call Bad_Value on boundary values.
+	(Scan_Decimal): Adjust call to Integer_to_Decimal.
+	(Value_Decimal): Likewise.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.ads (Process_Subtype): New formal.
+	* sem_ch3.adb (Process_Subtype): Likewise.
+	(Analyze_Subtype_Declaration, Access_Type_Declaration): Use new
+	formal.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Subtype): Fix recursive call.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* par-ch5.adb (P_Declare_Statement): Rename local variable.
+	(P_Begin_Statement): Likewise.
+
+2025-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads (Overridden_Operation, Static_Initialization): Remove
+	comments about a reused entity field.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Subtype): Tweak formatting.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Subtype): Add assertion.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Subtype): Factorize initialization of variable.
+
 2025-06-09  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb (Constrain_Index): In the case of a fixed-lower-bound index,

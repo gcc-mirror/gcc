@@ -1,3 +1,246 @@
+2025-06-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* diagnostic-format-html.cc: Include "diagnostic-path.h" and
+	"diagnostic-client-data-hooks.h".
+	(html_builder::m_logical_loc_mgr): New field.
+	(html_builder::m_cur_nesting_levels): New field.
+	(html_builder::m_last_logical_location): New field.
+	(html_builder::m_last_location): New field.
+	(html_builder::m_last_expanded_location): New field.
+	(HTML_STYLE): Add "white-space: pre;" to .source and .annotation.
+	Add "gcc-quoted-text" CSS class.
+	(html_builder::html_builder): Initialize the new fields.  If CSS
+	is enabled, add CDN links to PatternFly 3 stylesheets.
+	(html_builder::add_stylesheet): New.
+	(html_builder::on_report_diagnostic): Add "alert" param to
+	make_element_for_diagnostic, setting it by default, but unsetting
+	it for nested diagnostics below the top level.  Use
+	add_at_nesting_level for nested diagnostics.
+	(add_nesting_level_attr): New.
+	(html_builder::add_at_nesting_level): New.
+	(get_pf_class_for_alert_div): New.
+	(get_pf_class_for_alert_icon): New.
+	(get_label_for_logical_location_kind): New.
+	(add_labelled_value): New.
+	(html_builder::make_element_for_diagnostic): Add leading comment.
+	Add "alert" param.  Drop class="gcc-diagnostic" from <div> tag,
+	instead adding the class for a PatternFly 3 alert if "alert" is
+	true, and adding a <span> with an alert icon, both according to
+	the diagnostic severity.  Add a severity prefix to the message for
+	alerts.  Add any metadata/option text as suffixes to the message.
+	Show any logical location.  Show any physical location.  Don't
+	show the locus if the last location is unchanged within the
+	diagnostic_group.  Wrap any execution path element in a
+	<div id="execution-path"> and add a label to it.  Wrap any
+	generated patch in a <div id="suggested-fix"> and add a label
+	to it.
+	(selftest::test_simple_log): Update expected HTML.
+
+2025-06-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-path-output.cc: Use xml::printer::add_text_from_pp.
+	* diagnostic-show-locus.cc: Likewise.
+	* xml-printer.h (xml::printer::add_text_from_pp): New decl.
+	* xml.cc (xml::node_with_children::add_text_from_pp): New.
+	(xml::printer::add_text_from_pp): New.
+	* xml.h (xml::node_with_children::add_text_from_pp): New decl.
+
+2025-06-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/120610
+	* diagnostic-format-html.cc (html_builder::html_builder): Update
+	for new param of xml::printer::pop_tag.
+	(html_path_label_writer::end_label): Likewise.
+	(html_builder::make_element_for_diagnostic::html_token_printer):
+	Give the instance its own xml::printer.  Update for new param of
+	xml::printer::pop_tag.
+	(html_builder::make_element_for_diagnostic): Give the instance its
+	own xml::printer.
+	(html_builder::make_metadata_element): Update for new param of
+	xml::printer::pop_tag.
+	(html_builder::flush_to_file): Likewise.
+	* diagnostic-path-output.cc (begin_html_stack_frame): Likewise.
+	(begin_html_stack_frame): Likewise.
+	(end_html_stack_frame): Likewise.
+	(print_path_summary_as_html): Likewise.
+	* diagnostic-show-locus.cc
+	(struct to_text::auto_check_tag_nesting): New.
+	(struct to_html:: auto_check_tag_nesting): New.
+	(to_text::pop_html_tag): Change param to const char *.
+	(to_html::pop_html_tag): Likewise; rename param to
+	"expected_name".
+	(default_diagnostic_start_span_fn<to_html>): Update for new param
+	of xml::printer::pop_tag.
+	(layout_printer<to_html>::end_label): Likewise.
+	(layout_printer<Sink>::print_trailing_fixits): Add RAII sentinel
+	to check tag nesting for the HTML case.  Delete stray popping
+	of "td" in the presence of fix-it hints.
+	(layout_printer<Sink>::print_line): Add RAII sentinel
+	to check tag nesting for the HTML case.
+	(diagnostic_source_print_policy::print_as_html): Likewise.
+	(layout_printer<Sink>::print): Likewise.
+	* xml-printer.h (xml::printer::printer): Add optional
+	"check_popped_tags" param.
+	(xml::printer::pop_tag): Add "expected_name" param.
+	(xml::printer::get_num_open_tags): New accessor.
+	(xml::printer::dump): New decl.
+	(xml::printer::m_check_popped_tags): New field.
+	(class xml::auto_check_tag_nesting): New.
+	(class xml::auto_print_element): Update for new param of pop_tag.
+	* xml.cc: Move pragma pop so that the pragma also covers
+	xml::printer's member functions, "dump" in particular.
+	(xml::printer::printer): Add param "check_popped_tags".
+	(xml::printer::pop_tag): Add param "expected_name" and use it to assert
+	that the popped tag is as expected.  Assert that we have a tag to
+	pop.
+	(xml::printer::dump): New.
+	(selftest::test_printer): Update for new param of pop_tag.
+	(selftest::test_attribute_ordering): Likewise.
+
+2025-06-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple-ssa-warn-access.cc
+	(pass_waccess::maybe_check_dealloc_call): Add missing
+	auto_diagnostic_group to nest the "returned from %qD"
+	note within the warning.
+
+2025-06-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.cc (cgraph_node::make_profile_local): New member function.
+	(cgraph_node::make_profile_global0): New member function.
+	(cgraph_node::apply_scale): Do not call adjust_for_ipa_scalling.
+	(cgraph_node::scale_profile_to): New member function.
+	* cgraph.h (cgraph_node::make_profile_local,
+	cgraph_node::make_profile_global0, cgraph_node::scale_profile_to):
+	Declare.
+	* ipa-cp.cc (lenient_count_portion_handling): Fix logic dropping count
+	to local.
+	(update_counts_for_self_gen_clones): Use scale_profile_to.
+	(update_profiling_info): Use make_profile_local, make_profile_global0
+	and scale_profile_to.
+	(update_specialized_profile): Likewise.
+	* ipa-inline-transform.cc (clone_inlined_nodes): Call
+	adjust_for_ipa_scalling.
+
+2025-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120434
+	* expr.cc (expand_expr_real_2) <CASE_CONVERT>: If get_range_pos_neg
+	at -O2 for scalar integer extension suggests the most significant
+	bit of op0 is not set, try both unsigned and signed conversion and
+	choose the cheaper one.  If both are the same cost, choose one
+	based on TYPE_UNSIGNED (TREE_TYPE (treeop0)).
+
+2025-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120434
+	* config/i386/i386.md (*bsr_rex64_2): Rename to ...
+	(*bsr_rex64<u>_2): ... this.  Use any_extend instead of sign_extend.
+	(*bsr_2): Rename to ...
+	(*bsr<u>_2): ... this.  Use any_extend instead of sign_extend.
+	(bsr splitters after those): Use any_extend instead of sign_extend.
+
+2025-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120434
+	* cfgrtl.h (update_bb_for_insn_chain): Declare.
+	* cfgrtl.cc (update_bb_for_insn_chain): No longer static.
+	* cfgexpand.h (expand_remove_edge): Declare.
+	* cfgexpand.cc: Include "gimple-range.h".
+	(head_end_for_bb): New variable.
+	(label_rtx_for_bb): Drop ATTRIBUTE_UNUSED from bb argument.
+	Use head_end_for_bb if possible for non-BB_RTL bbs.
+	(expand_remove_edge): New function.
+	(maybe_cleanup_end_of_block): Use it instead of remove_edge.
+	(expand_gimple_cond): Don't clear EDGE_TRUE_VALUE and
+	EDGE_FALSE_VALUE just yet.  Use head_end_for_bb elts instead
+	of BB_END and update_bb_for_insn_chain instead of update_bb_for_insn.
+	(expand_gimple_tailcall): Use expand_remove_edge instead of
+	remove_edge.  Use head_end_for_bb elts instead of BB_END and
+	update_bb_for_insn_chain instead of update_bb_for_insn.
+	(expand_gimple_basic_block): Don't change bb to BB_RTL here, instead
+	use head_end_for_bb elts instead of BB_HEAD and BB_END.  Use
+	update_bb_for_insn_chain instead of update_bb_for_insn.
+	(pass_expand::execute): Enable ranger before expand_gimple_basic_block
+	calls and create head_end_for_bb vector.  Disable ranger after
+	those calls, turn still non-BB_RTL blocks into BB_RTL and set their
+	BB_HEAD and BB_END from head_end_for_bb elts, and clear EDGE_TRUE_VALUE
+	and EDGE_FALSE_VALUE flags on edges.  Release head_end_for_bb
+	vector.
+	* tree-outof-ssa.cc (expand_phi_nodes): Don't clear phi nodes here.
+	* tree.h (get_range_pos_neg): Add gimple * argument defaulted to NULL.
+	* tree.cc (get_range_pos_neg): Add stmt argument.  Use
+	get_range_query (cfun) instead of get_global_range_query () and pass
+	stmt as third argument to range_of_expr.
+	* expr.cc (expand_expr_divmod): Pass currently_expanding_gimple_stmt
+	to get_range_pos_neg.
+	(expand_expr_real_1) <case SSA_NAME>: Change internal fn handling
+	to avoid temporarily overwriting gimple_call_lhs of ifn, instead
+	temporarily overwrite SSA_NAME_VAR of its lhs.
+	(maybe_optimize_pow2p_mod_cmp): Pass currently_expanding_gimple_stmt
+	to get_range_pos_neg.
+	(maybe_optimize_mod_cmp): Likewise.
+	* internal-fn.cc (get_min_precision): Likewise.  Use
+	get_range_query (cfun) instead of get_global_range_query () and pass
+	currently_expanding_gimple_stmt as third argument to range_of_expr.
+	Pass g to get_range_pos_neg.
+	(expand_addsub_overflow): Pass currently_expanding_gimple_stmt
+	to get_range_pos_neg.
+	(expand_mul_overflow): Likewise.
+	(expand_arith_overflow): Pass stmt to get_range_pos_neg.
+	* gimple-range-edge.cc: Include rtl.h.
+	(gimple_outgoing_range_stmt_p): Return NULL for BB_RTL bbs.
+	(gimple_outgoing_range::calc_switch_range): If default_edge is NULL,
+	assert currently_expanding_to_rtl and return before trying to
+	set range on that edge.
+	* builtins.cc (expand_builtin_strnlen): Use get_range_query (cfun)
+	instead of get_global_range_query () and pass
+	currently_expanding_gimple_stmt as third argument to range_of_expr.
+	(determine_block_size): Likewise.
+	* gimple-range.cc (gimple_ranger::range_on_exit): Set s to NULL
+	instead of last_nondebug_stmt for BB_RTL bbs.
+	* stmt.cc: Include cfgexpand.h.
+	(expand_case): Use expand_remove_edge instead of remove_edge.
+
+2025-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.cc (irange::set_range_from_bitmask): When the bitmask
+	result is a singleton, check if it is contained in the range.
+
+2025-06-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-devices.def: Add gfx942, gfx950 and gfx9-4-generic.
+	* config/gcn/gcn-opts.h (TARGET_CDNA3, TARGET_CDNA3_PLUS,
+	TARGET_GLC_NAME, TARGET_TARGET_SC_CACHE): Define.
+	(TARGET_ARCHITECTED_FLAT_SCRATCH): Use also for CDNA3.
+	* config/gcn/gcn.h (gcn_isa): Add ISA_CDNA3 to the enum.
+	* config/gcn/gcn.cc (print_operand): Update 'g' to use
+	TARGET_GLC_NAME; add 'G' to print TARGET_GLC_NAME unconditionally.
+	* config/gcn/gcn-valu.md (scatter, gather): Use TARGET_GLC_NAME.
+	* config/gcn/gcn.md: Use %G<num> instead of glc; use 'buffer_inv sc1'
+	for TARGET_TARGET_SC_CACHE.
+	* doc/invoke.texi (march): Add gfx942, gfx950 and gfx9-4-generic.
+	* doc/install.texi (amdgcn*-*-*): Add gfx942, gfx950 and gfx9-4-generic.
+	* config/gcn/gcn-tables.opt: Regenerate.
+
+2025-06-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md (lui-constraint<X:mode>and_to_or): Do not use
+	the RTL template for split code.  Emit it directly taking care to avoid
+	emitting a constant load that needed synthesis.  Fix formatting.
+
+2025-06-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/riscv-ext.texi: Regen.
+
+2025-06-10  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_vec_dup): Add new
+	case UMOD.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op umod.
+
 2025-06-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-format-sarif.cc (maybe_get_sarif_kind): Update for

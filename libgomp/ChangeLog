@@ -1,3 +1,8 @@
+2025-06-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4.h (gfx942): New variant function.
+	* testsuite/libgomp.c/declare-variant-4-gfx942.c: New test.
+
 2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
 	    Sandra Loosemore  <sloosemore@baylibre.com>
 

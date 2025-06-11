@@ -1,3 +1,21 @@
+2025-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/max_size_type.h (__max_size_type::_M_val): Make
+	public instead of private.
+	(__max_size_type::_M_msb): Likewise.
+	(__max_diff_type::_M_rep): Likewise.
+	* testsuite/std/ranges/iota/max_size_type.cc: Verify
+	__max_diff_type and __max_size_type are structural.
+
+2025-06-10  Yihan Wang  <yronglin777@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (__can_make_from_tuple): New variable
+	template.
+	(__make_from_tuple_impl): Add static_assert.
+	(make_from_tuple): Constrain using __can_make_from_tuple.
+	* testsuite/20_util/tuple/dr3528.cc: New test.
+
 2025-06-09  Nathan Myers  <ncm@cantrip.org>
 
 	PR libstdc++/119741
