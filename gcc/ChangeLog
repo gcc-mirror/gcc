@@ -1,3 +1,21 @@
+2025-06-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-04-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/120042
+	* tree-vectorizer.h: Include dominance.h.
+
+2025-06-10  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-06-04  Xi Ruoyao  <xry111@xry111.site>
+
+	PR rtl-optimization/120050
+	* ext-dce.cc (ext_dce_process_uses): Break early if a SUBREG in
+	rhs is promoted and the truncation from the inner mode to the
+	outer mode is not a noop when handling SETs.
+
 2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

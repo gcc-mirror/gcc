@@ -1,3 +1,37 @@
+2025-06-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.ads: Revise comment about Dynamic_Predicate flag to make it
+	more accurate.
+	* sem_case.adb (Check_Choices): Test "not Has_Static_Predicate_Aspect"
+	as additional guard for error about use of subtype with nonstatic
+	predicate as a case choice. Improve related error message.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Static_Object): Do not issue any error message
+	for compiler-generated entities.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Insert_Conditional_Object_Declaration): Deal with a
+	transient scope being created around the declaration.
+	* freeze.adb (Freeze_Entity): Do not call Freeze_Static_Object for
+	a renaming declaration.
+
+2025-06-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Build_Container_Aggr_Code.To_Int): Apply Enumeration_Pos
+	to Entity (Expr) rather than Expr.
+
+2025-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Copy_Generic_Node): Do not call Root_Type to find
+	the root type of an aggregate of a derived tagged type.
+
+2025-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-stusta.adb (Compute_All_Tasks): Skip terminated tasks.
+
 2025-06-09  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb (Constrain_Index): In the case of a fixed-lower-bound index,
