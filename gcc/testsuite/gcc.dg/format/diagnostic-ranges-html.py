@@ -19,17 +19,20 @@ def test_message(html_tree):
     diag = get_diag_by_index(html_tree, 0)
     msg = get_message_within_diag(diag)
 
-    assert_tag(msg[0], 'span')
-    assert_class(msg[0], 'gcc-quoted-text')
-    assert_highlighted_text(msg[0][0], 'highlight-a', '%i')
-
+    assert_tag(msg[0], 'strong')
+    assert msg[0].text == 'warning: '
+    
     assert_tag(msg[1], 'span')
     assert_class(msg[1], 'gcc-quoted-text')
-    assert_highlighted_text(msg[1][0], 'highlight-a', 'int')
+    assert_highlighted_text(msg[1][0], 'highlight-a', '%i')
 
     assert_tag(msg[2], 'span')
     assert_class(msg[2], 'gcc-quoted-text')
-    assert_highlighted_text(msg[2][0], 'highlight-b', 'const char *')
+    assert_highlighted_text(msg[2][0], 'highlight-a', 'int')
+
+    assert_tag(msg[3], 'span')
+    assert_class(msg[3], 'gcc-quoted-text')
+    assert_highlighted_text(msg[3][0], 'highlight-b', 'const char *')
 
 def test_annotations(html_tree):
     """

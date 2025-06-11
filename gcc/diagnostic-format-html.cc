@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-format-text.h"
 #include "diagnostic-output-file.h"
 #include "diagnostic-buffer.h"
+#include "diagnostic-path.h"
+#include "diagnostic-client-data-hooks.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "pretty-print-format-impl.h"
@@ -139,26 +141,45 @@ public:
   }
 
 private:
+  void
+  add_stylesheet (std::string url);
+
   std::unique_ptr<xml::element>
   make_element_for_diagnostic (const diagnostic_info &diagnostic,
-			       diagnostic_t orig_diag_kind);
+			       diagnostic_t orig_diag_kind,
+			       bool alert);
 
   std::unique_ptr<xml::element>
   make_metadata_element (label_text label,
 			 label_text url);
 
+  void
+  add_at_nesting_level (size_t nesting_level,
+			std::unique_ptr<xml::element> child_diag_element);
+
+  void
+  push_nesting_level ();
+
+  void
+  pop_nesting_level ();
+
   diagnostic_context &m_context;
   pretty_printer *m_printer;
   const line_maps *m_line_maps;
   html_generation_options m_html_gen_opts;
+  const logical_location_manager *m_logical_loc_mgr;
 
   std::unique_ptr<xml::document> m_document;
   xml::element *m_head_element;
   xml::element *m_title_element;
   xml::element *m_diagnostics_element;
   std::unique_ptr<xml::element> m_cur_diagnostic_element;
+  std::vector<xml::element *> m_cur_nesting_levels;
   int m_next_diag_id; // for handing out unique IDs
   json::array m_ui_focus_ids;
+  logical_location m_last_logical_location;
+  location_t m_last_location;
+  expanded_location m_last_expanded_location;
 };
 
 static std::unique_ptr<xml::element>
@@ -237,8 +258,10 @@ static const char * const HTML_STYLE
      "    .ruler { color: red;\n"
      "              white-space: pre; }\n"
      "    .source { color: blue;\n"
+     "              background-color: white;\n"
      "              white-space: pre; }\n"
      "    .annotation { color: green;\n"
+     "                  background-color: white;\n"
      "                  white-space: pre; }\n"
      "    .linenum-gap { text-align: center;\n"
      "                   border-top: 1px solid black;\n"
@@ -269,6 +292,8 @@ static const char * const HTML_STYLE
      "                   font-weight: bold; }\n"
      "    .highlight-b { color: #3f9c35;\n" // pf-green-400
      "                   font-weight: bold; }\n"
+     "    .gcc-quoted-text { font-weight: bold;\n"
+     "                       font-family: mono; }\n"
      "  </style>\n");
 
 /* A little JavaScript for ease of navigation.
@@ -351,12 +376,18 @@ html_builder::html_builder (diagnostic_context &context,
   m_printer (&pp),
   m_line_maps (line_maps),
   m_html_gen_opts (html_gen_opts),
+  m_logical_loc_mgr (nullptr),
   m_head_element (nullptr),
   m_title_element (nullptr),
   m_diagnostics_element (nullptr),
-  m_next_diag_id (0)
+  m_next_diag_id (0),
+  m_last_location (UNKNOWN_LOCATION),
+  m_last_expanded_location ({})
 {
   gcc_assert (m_line_maps);
+
+  if (auto client_data_hooks = context.get_client_data_hooks ())
+    m_logical_loc_mgr = client_data_hooks->get_logical_location_manager ();
 
   m_document = std::make_unique<xml::document> ();
   m_document->m_doctypedecl = std::make_unique<html_doctypedecl> ();
@@ -374,8 +405,13 @@ html_builder::html_builder (diagnostic_context &context,
 	xml::auto_print_element title (xp, "title", true);
 	m_title_element = xp.get_insertion_point ();
       }
+
       if (m_html_gen_opts.m_css)
-	xp.add_raw (HTML_STYLE);
+	{
+	  add_stylesheet ("https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/css/patternfly.min.css");
+	  add_stylesheet ("https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/css/patternfly-additions.min.css");
+	  xp.add_raw (HTML_STYLE);
+	}
       if (m_html_gen_opts.m_javascript)
 	{
 	  xp.push_tag ("script");
@@ -408,6 +444,18 @@ html_builder::set_main_input_filename (const char *name)
     }
 }
 
+void
+html_builder::add_stylesheet (std::string url)
+{
+  gcc_assert (m_head_element);
+
+  xml::printer xp (*m_head_element);
+  xp.push_tag ("link", false);
+  xp.set_attr ("rel", "stylesheet");
+  xp.set_attr ("type", "text/css");
+  xp.set_attr ("href", std::move (url));
+}
+
 /* Implementation of "on_report_diagnostic" for HTML output.  */
 
 void
@@ -425,8 +473,14 @@ html_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
       fnotice (stderr, "Internal compiler error:\n");
     }
 
+  const int nesting_level = m_context.get_diagnostic_nesting_level ();
+  bool alert = true;
+  if (m_cur_diagnostic_element && nesting_level > 0)
+    alert = false;
+  if (!m_cur_diagnostic_element)
+    m_last_logical_location = logical_location ();
   auto diag_element
-    = make_element_for_diagnostic (diagnostic, orig_diag_kind);
+    = make_element_for_diagnostic (diagnostic, orig_diag_kind, alert);
   if (buffer)
     {
       gcc_assert (!m_cur_diagnostic_element);
@@ -435,12 +489,77 @@ html_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
   else
     {
       if (m_cur_diagnostic_element)
-	/* Nested diagnostic.  */
-	m_cur_diagnostic_element->add_child (std::move (diag_element));
+	{
+	  /* Nested diagnostic.  */
+	  gcc_assert (nesting_level >= 0);
+	  add_at_nesting_level (nesting_level, std::move (diag_element));
+	}
       else
 	/* Top-level diagnostic.  */
-	m_cur_diagnostic_element = std::move (diag_element);
+	{
+	  m_cur_diagnostic_element = std::move (diag_element);
+	  m_cur_nesting_levels.clear ();
+	}
     }
+}
+
+// For ease of comparison with experimental-nesting-show-levels=yes
+
+static void
+add_nesting_level_attr (xml::element &element,
+			int nesting_level)
+{
+  element.set_attr ("nesting-level", std::to_string (nesting_level));
+}
+
+void
+html_builder::
+add_at_nesting_level (size_t nesting_level,
+		      std::unique_ptr<xml::element> child_diag_element)
+{
+  gcc_assert (m_cur_diagnostic_element);
+  while (nesting_level > m_cur_nesting_levels.size ())
+    push_nesting_level ();
+  while (nesting_level < m_cur_nesting_levels.size ())
+    pop_nesting_level ();
+
+  if (nesting_level > 0)
+    {
+      gcc_assert (!m_cur_nesting_levels.empty ());
+      auto current_nesting_level = m_cur_nesting_levels.back ();
+      xml::printer xp (*current_nesting_level);
+      xp.push_tag ("li");
+      add_nesting_level_attr (*xp.get_insertion_point (),
+			      m_cur_nesting_levels.size ());
+      xp.append (std::move (child_diag_element));
+      xp.pop_tag ("li");
+    }
+  else
+    m_cur_diagnostic_element->add_child (std::move (child_diag_element));
+}
+
+void
+html_builder::push_nesting_level ()
+{
+  gcc_assert (m_cur_diagnostic_element);
+  auto new_nesting_level = std::make_unique<xml::element> ("ul", false);
+  add_nesting_level_attr (*new_nesting_level,
+			  m_cur_nesting_levels.size () + 1);
+  xml::element *current_nesting_level = nullptr;
+  if (!m_cur_nesting_levels.empty ())
+    current_nesting_level = m_cur_nesting_levels.back ();
+  m_cur_nesting_levels.push_back (new_nesting_level.get ());
+  if (current_nesting_level)
+    current_nesting_level->add_child (std::move (new_nesting_level));
+  else
+    m_cur_diagnostic_element->add_child (std::move (new_nesting_level));
+}
+
+void
+html_builder::pop_nesting_level ()
+{
+  gcc_assert (m_cur_diagnostic_element);
+  m_cur_nesting_levels.pop_back ();
 }
 
 /* Custom subclass of html_label_writer.
@@ -482,9 +601,148 @@ private:
   int m_next_event_idx;
 };
 
+/* See https://pf3.patternfly.org/v3/pattern-library/widgets/#alerts */
+static const char *
+get_pf_class_for_alert_div (diagnostic_t diag_kind)
+{
+  switch (diag_kind)
+    {
+    case DK_DEBUG:
+    case DK_NOTE:
+      return "alert alert-info";
+
+    case DK_ANACHRONISM:
+    case DK_WARNING:
+      return "alert alert-warning";
+
+    case DK_ERROR:
+    case DK_SORRY:
+    case DK_ICE:
+    case DK_ICE_NOBT:
+    case DK_FATAL:
+      return "alert alert-danger";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static const char *
+get_pf_class_for_alert_icon (diagnostic_t diag_kind)
+{
+  switch (diag_kind)
+    {
+    case DK_DEBUG:
+    case DK_NOTE:
+      return "pficon pficon-info";
+
+    case DK_ANACHRONISM:
+    case DK_WARNING:
+      return "pficon pficon-warning-triangle-o";
+
+    case DK_ERROR:
+    case DK_SORRY:
+    case DK_ICE:
+    case DK_ICE_NOBT:
+    case DK_FATAL:
+      return "pficon pficon-error-circle-o";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static const char *
+get_label_for_logical_location_kind (enum logical_location_kind kind)
+{
+  switch (kind)
+    {
+    default:
+      gcc_unreachable ();
+    case logical_location_kind::unknown:
+      return nullptr;
+
+    /* Kinds within executable code.  */
+    case logical_location_kind::function:
+      return "Function";
+    case logical_location_kind::member:
+      return "Member";
+    case logical_location_kind::module_:
+      return "Module";
+    case logical_location_kind::namespace_:
+      return "Namespace";
+    case logical_location_kind::type:
+      return "Type";
+    case logical_location_kind::return_type:
+      return "Return type";
+    case logical_location_kind::parameter:
+      return "Parameter";
+    case logical_location_kind::variable:
+      return "Variable";
+
+    /* Kinds within XML or HTML documents.  */
+    case logical_location_kind::element:
+      return "Element";
+    case logical_location_kind::attribute:
+      return "Attribute";
+    case logical_location_kind::text:
+      return "Text";
+    case logical_location_kind::comment:
+      return "Comment";
+    case logical_location_kind::processing_instruction:
+      return "Processing Instruction";
+    case logical_location_kind::dtd:
+      return "DTD";
+    case logical_location_kind::declaration:
+      return "Declaration";
+
+  /* Kinds within JSON documents.  */
+    case logical_location_kind::object:
+      return "Object";
+    case logical_location_kind::array:
+      return "Array";
+    case logical_location_kind::property:
+      return "Property";
+    case logical_location_kind::value:
+      return "Value";
+    }
+}
+
+static void
+add_labelled_value (xml::printer &xp,
+		    std::string id,
+		    std::string label,
+		    std::string value,
+		    bool quote_value)
+{
+  xp.push_tag ("div", true);
+  xp.set_attr ("id", id);
+  xp.push_tag ("span");
+  xp.add_text (label);
+  xp.add_text (" ");
+  xp.pop_tag ("span");
+  xp.push_tag ("span");
+  if (quote_value)
+    xp.set_attr ("class", "gcc-quoted-text");
+  xp.add_text (std::move (value));
+  xp.pop_tag ("span");
+  xp.pop_tag ("div");
+}
+
+/* Make a <div class="gcc-diagnostic"> for DIAGNOSTIC.
+
+   If ALERT is true, make it be a PatternFly alert (see
+   https://pf3.patternfly.org/v3/pattern-library/widgets/#alerts) and
+   show severity text (e.g. "error: ").
+
+   If ALERT is false, don't show the severity text and don't show
+   the filename if it's the same as the previous diagnostic within the
+   diagnostic group.  */
+
 std::unique_ptr<xml::element>
 html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
-					   diagnostic_t orig_diag_kind)
+					   diagnostic_t orig_diag_kind,
+					   bool alert)
 {
   class html_token_printer : public token_printer
   {
@@ -562,8 +820,6 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
     xml::printer m_xp;
   };
 
-  auto diag_element = make_div ("gcc-diagnostic");
-
   const int diag_idx = m_next_diag_id++;
   std::string diag_id;
   {
@@ -571,29 +827,74 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
     pp_printf (&pp, "gcc-diag-%i", diag_idx);
     diag_id = pp_formatted_text (&pp);
   }
-  diag_element->set_attr ("id", diag_id);
 
   // TODO: might be nice to emulate the text output format, but colorize it
 
-  auto message_span = make_span ("gcc-message");
-  std::string message_span_id (diag_id + "-message");
-  message_span->set_attr ("id", message_span_id);
-  add_focus_id (message_span_id);
+  /* See https://pf3.patternfly.org/v3/pattern-library/widgets/#alerts
+     which has this example:
+<div class="alert alert-danger">
+  <span class="pficon pficon-error-circle-o"></span>
+  <strong>Hey there is a problem!</strong> Yeah this is really messed up and you should <a href="#" class="alert-link">know about it</a>.
+</div>
+  */
+  auto diag_element = make_div ("gcc-diagnostic");
+  diag_element->set_attr ("id", diag_id);
+  if (alert)
+    diag_element->set_attr ("class",
+			    get_pf_class_for_alert_div (diagnostic.kind));
 
-  xml::printer xp (*message_span.get ());
+  xml::printer xp (*diag_element.get ());
+  const size_t depth_within_alert_div = 1;
+
+  gcc_assert (xp.get_num_open_tags () == depth_within_alert_div);
+
+  if (alert)
+    {
+      xp.push_tag_with_class ("span",
+			      get_pf_class_for_alert_icon (diagnostic.kind),
+			      true);
+      xp.add_text (" ");
+      xp.pop_tag ("span");
+    }
+
+  // The rest goes in the <div>...
+  gcc_assert (xp.get_num_open_tags () == depth_within_alert_div);
+
+  xp.push_tag_with_class ("div", "gcc-message", true);
+  std::string message_alert_id (diag_id + "-message");
+  xp.set_attr ("id", message_alert_id);
+  add_focus_id (message_alert_id);
+
+  const size_t depth_within_message_div = depth_within_alert_div + 1;
+  gcc_assert (xp.get_num_open_tags () == depth_within_message_div);
+
+  // Severity e.g. "warning: "
+  bool show_severity = true;
+  if (!alert)
+    show_severity = false;
+  if (show_severity)
+  {
+    xp.push_tag ("strong");
+    xp.add_text (_(get_diagnostic_kind_text (diagnostic.kind)));
+    xp.pop_tag ("strong");
+    xp.add_text (" ");
+  }
+
+  // Add the message itself:
   html_token_printer tok_printer (*xp.get_insertion_point ());
   m_printer->set_token_printer (&tok_printer);
   pp_output_formatted_text (m_printer, m_context.get_urlifier ());
   m_printer->set_token_printer (nullptr);
   pp_clear_output_area (m_printer);
-  diag_element->add_child (std::move (message_span));
 
+  // Add any metadata as a suffix to the message
   if (diagnostic.metadata)
     {
-      diag_element->add_text (" ");
-      diag_element->add_child
-	(make_element_for_metadata (*diagnostic.metadata));
+      xp.add_text (" ");
+      xp.append (make_element_for_metadata (*diagnostic.metadata));
     }
+
+  // Add any option as a suffix to the message
 
   label_text option_text = label_text::take
     (m_context.make_option_name (diagnostic.option_id,
@@ -603,7 +904,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
       label_text option_url = label_text::take
 	(m_context.make_option_url (diagnostic.option_id));
 
-      diag_element->add_text (" ");
+      xp.add_text (" ");
       auto option_span = make_span ("gcc-option");
       option_span->add_text ("[");
       {
@@ -618,35 +919,110 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 	  option_span->add_text (option_text.get ());
 	option_span->add_text ("]");
       }
-      diag_element->add_child (std::move (option_span));
+      xp.append (std::move (option_span));
+    }
+
+  gcc_assert (xp.get_num_open_tags () == depth_within_message_div);
+
+  xp.pop_tag ("div");
+
+  gcc_assert (xp.get_num_open_tags () == depth_within_alert_div);
+
+  /* Show any logical location.  */
+  if (m_logical_loc_mgr)
+    if (auto client_data_hooks = m_context.get_client_data_hooks ())
+      if (auto logical_loc = client_data_hooks->get_current_logical_location ())
+	if (logical_loc != m_last_logical_location)
+	  {
+	    enum logical_location_kind kind
+	      = m_logical_loc_mgr->get_kind (logical_loc);;
+	    if (const char *label = get_label_for_logical_location_kind (kind))
+	      if (const char *name_with_scope
+		  = m_logical_loc_mgr->get_name_with_scope (logical_loc))
+		add_labelled_value (xp, "logical-location",
+				    label, name_with_scope, true);
+	    m_last_logical_location = logical_loc;
+	  }
+
+  /* Show any physical location.  */
+  const expanded_location s
+    = diagnostic_expand_location (&diagnostic);
+  if (s != m_last_expanded_location
+      || alert)
+    {
+      if (s.file
+	  && (s.file != m_last_expanded_location.file
+	      || alert))
+	add_labelled_value (xp, "file", "File", s.file, false);
+      if (s.line)
+	{
+	  add_labelled_value (xp, "line", "Line", std::to_string (s.line), false);
+	  diagnostic_column_policy column_policy (m_context);
+	  int converted_column = column_policy.converted_column (s);
+	  if (converted_column >= 0)
+	    add_labelled_value (xp, "column", "Column",
+				std::to_string (converted_column),
+				false);
+	}
+      if (s.file)
+	m_last_expanded_location = s;
     }
 
   /* Source (and fix-it hints).  */
   {
-    xml::printer xp (*diag_element);
-    m_context.m_last_location = UNKNOWN_LOCATION;
+    // TODO: m_context.m_last_location should be moved into the sink
+    location_t saved = m_context.m_last_location;
+    m_context.m_last_location = m_last_location;
     m_context.maybe_show_locus_as_html (*diagnostic.richloc,
 					m_context.m_source_printing,
 					diagnostic.kind,
 					xp,
 					nullptr,
 					nullptr);
+    m_context.m_last_location = saved;
+    m_last_location = m_context.m_last_location;
   }
+
+  gcc_assert (xp.get_num_open_tags () == depth_within_alert_div);
 
   /* Execution path.  */
   if (auto path = diagnostic.richloc->get_path ())
     {
-      xml::printer xp (*diag_element);
+      xp.push_tag ("div");
+      xp.set_attr ("id", "execution-path");
+
+      xp.push_tag ("label", true);
+      const int num_events = path->num_events ();
+      pretty_printer pp;
+      pp_printf_n (&pp, num_events,
+		   "Execution path with %i event",
+		   "Execution path with %i events",
+		   num_events);
+      xp.add_text_from_pp (pp);
+      xp.pop_tag ("label");
+
       std::string event_id_prefix (diag_id + "-event-");
       html_path_label_writer event_label_writer (xp, *this,
 						 event_id_prefix);
       diagnostic_source_print_policy dspp (m_context);
       print_path_as_html (xp, *path, m_context, &event_label_writer,
 			  dspp);
+
+      xp.pop_tag ("div");
     }
 
+  gcc_assert (xp.get_num_open_tags () == depth_within_alert_div);
+
   if (auto patch_element = make_element_for_patch (diagnostic))
-    diag_element->add_child (std::move (patch_element));
+    {
+      xp.push_tag ("div");
+      xp.set_attr ("id", "suggested-fix");
+      xp.push_tag ("label", true);
+      xp.add_text ("Suggested fix");
+      xp.pop_tag ("label");
+      xp.append (std::move (patch_element));
+      xp.pop_tag ("div");
+    }
 
   return diag_element;
 }
@@ -1032,8 +1408,9 @@ test_simple_log ()
       "  </head>\n"
       "  <body>\n"
       "    <div class=\"gcc-diagnostic-list\">\n"
-      "      <div class=\"gcc-diagnostic\" id=\"gcc-diag-0\">\n"
-      "        <span class=\"gcc-message\" id=\"gcc-diag-0-message\">this is a test: `<span class=\"gcc-quoted-text\">foo</span>&apos;</span>\n"
+      "      <div class=\"alert alert-danger\" id=\"gcc-diag-0\">\n"
+      "        <span class=\"pficon pficon-error-circle-o\"> </span>\n"
+      "        <div class=\"gcc-message\" id=\"gcc-diag-0-message\"><strong>error: </strong> this is a test: `<span class=\"gcc-quoted-text\">foo</span>&apos;</div>\n"
       "      </div>\n"
       "    </div>\n"
       "  </body>\n"

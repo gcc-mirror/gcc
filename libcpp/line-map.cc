@@ -1949,6 +1949,28 @@ linemap_expand_location (const line_maps *set,
   return xloc;
 }
 
+bool
+operator== (const expanded_location &a,
+	    const expanded_location &b)
+{
+  /* "file" can be null; for them to be equal they must both
+     have either null or nonnull values, and if non-null
+     they must compare as equal.  */
+  if ((a.file == nullptr) != (b.file == nullptr))
+    return false;
+  if (a.file && strcmp (a.file, b.file))
+    return false;
+
+  if (a.line != b.line)
+    return false;
+  if (a.column != b.column)
+    return false;
+  if (a.data != b.data)
+    return false;
+  if (a.sysp != b.sysp)
+    return false;
+  return true;
+}
 
 /* Dump line map at index IX in line table SET to STREAM.  If STREAM
    is NULL, use stderr.  IS_MACRO is true if the caller wants to
