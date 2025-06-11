@@ -382,7 +382,7 @@ html_builder::html_builder (diagnostic_context &context,
 	  /* Escaping rules are different for HTML <script> elements,
 	     so add the script "raw" for now.  */
 	  xp.add_raw (HTML_SCRIPT);
-	  xp.pop_tag (); // script
+	  xp.pop_tag ("script");
 	}
     }
 
@@ -472,7 +472,7 @@ public:
 
   void end_label () final override
   {
-    m_xp.pop_tag (); // span
+    m_xp.pop_tag ("span"); // from begin_label
   }
 
 private:
@@ -489,8 +489,15 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   class html_token_printer : public token_printer
   {
   public:
-    html_token_printer (xml::printer &xp)
-    : m_xp (xp)
+    html_token_printer (xml::element &parent_element)
+      /* Ideally pp_token_lists that reach a token_printer should be
+	 "balanced", but for now they can have mismatching pp_tokens
+	 e.g. a begin_color without an end_color (PR other/120610).
+	 Give html_token_printer its own xml::printer as a firewall to
+	 limit the scope of the mismatches in the HTML.  */
+    : m_xp (parent_element,
+	    /* Similarly we don't check that the popped tags match.  */
+	    false)
     {
     }
     void print_tokens (pretty_printer */*pp*/,
@@ -522,7 +529,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 	    break;
 
 	  case pp_token::kind::end_color:
-	    m_xp.pop_tag ();
+	    m_xp.pop_tag ("span");
 	    break;
 
 	  case pp_token::kind::begin_quote:
@@ -533,7 +540,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 	    break;
 	  case pp_token::kind::end_quote:
 	    {
-	      m_xp.pop_tag ();
+	      m_xp.pop_tag ("span");
 	      m_xp.add_text (close_quote);
 	    }
 	    break;
@@ -546,13 +553,13 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 	    }
 	    break;
 	  case pp_token::kind::end_url:
-	    m_xp.pop_tag ();
+	    m_xp.pop_tag ("a");
 	    break;
 	  }
     }
 
   private:
-    xml::printer &m_xp;
+    xml::printer m_xp;
   };
 
   auto diag_element = make_div ("gcc-diagnostic");
@@ -574,7 +581,7 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
   add_focus_id (message_span_id);
 
   xml::printer xp (*message_span.get ());
-  html_token_printer tok_printer (xp);
+  html_token_printer tok_printer (*xp.get_insertion_point ());
   m_printer->set_token_printer (&tok_printer);
   pp_output_formatted_text (m_printer, m_context.get_urlifier ());
   m_printer->set_token_printer (nullptr);
@@ -680,7 +687,7 @@ html_builder::make_metadata_element (label_text label,
       }
     xp.add_text (label.get ());
     if (url.get ())
-      xp.pop_tag ();
+      xp.pop_tag ("a");
   }
   xp.add_text ("]");
   return item;
@@ -755,7 +762,7 @@ html_builder::flush_to_file (FILE *outf)
       m_ui_focus_ids.print (&pp, true);
       pp_string (&pp, ";\n");
       xp.add_raw (pp_formatted_text (&pp));
-      xp.pop_tag (); // script
+      xp.pop_tag ("script");
     }
   auto top = m_document.get ();
   top->dump (outf);

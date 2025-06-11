@@ -196,13 +196,11 @@ raw::write_as_xml (pretty_printer *pp,
   pp_string (pp, m_xml_src.c_str ());
 }
 
-#if __GNUC__ >= 10
-#  pragma GCC diagnostic pop
-#endif
-
 // class printer
 
-printer::printer (element &insertion_point)
+printer::printer (element &insertion_point,
+		  bool check_popped_tags)
+: m_check_popped_tags (check_popped_tags)
 {
   m_open_tags.push_back (&insertion_point);
 }
@@ -227,9 +225,16 @@ printer::push_tag_with_class (std::string name, std::string class_,
   push_element (std::move (new_element));
 }
 
+/*  Pop the current topmost tag.
+    If m_check_popped_tags, assert that the tag we're popping is
+    EXPECTED_NAME.  */
+
 void
-printer::pop_tag ()
+printer::pop_tag (const char *expected_name ATTRIBUTE_UNUSED)
 {
+  gcc_assert (!m_open_tags.empty ());
+  if (m_check_popped_tags)
+    gcc_assert (expected_name == get_insertion_point ()->m_kind);
   m_open_tags.pop_back ();
 }
 
@@ -274,6 +279,25 @@ printer::get_insertion_point () const
   return m_open_tags.back ();
 }
 
+void
+printer::dump () const
+{
+  pretty_printer pp;
+  pp.set_output_stream (stderr);
+  pp_printf (&pp, "open tags: %i:", (int)m_open_tags.size ());
+  for (auto iter : m_open_tags)
+    pp_printf (&pp, " <%s>", iter->m_kind.c_str ());
+  pp_newline (&pp);
+  pp_printf (&pp, "xml:");
+  pp_newline (&pp);
+  m_open_tags[0]->write_as_xml (&pp, 1, true);
+  pp_flush (&pp);
+}
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
+
 } // namespace xml
 
 #if CHECKING_P
@@ -303,9 +327,9 @@ test_printer ()
   xp.set_attr ("color", "red");
   xp.add_text ("world");
   xp.push_tag ("baz");
-  xp.pop_tag ();
-  xp.pop_tag ();
-  xp.pop_tag ();
+  xp.pop_tag ("baz");
+  xp.pop_tag ("bar");
+  xp.pop_tag ("foo");
 
   pretty_printer pp;
   top.write_as_xml (&pp, 0, true);
@@ -334,13 +358,13 @@ test_attribute_ordering ()
   xp.set_attr ("hastings", "1066");
   xp.set_attr ("edgehill", "1642");
   xp.set_attr ("naseby", "1645");
-  xp.pop_tag ();
+  xp.pop_tag ("chronological");
   xp.push_tag ("alphabetical");
   xp.set_attr ("edgehill", "1642");
   xp.set_attr ("hastings", "1066");
   xp.set_attr ("maldon", "991");
   xp.set_attr ("naseby", "1645");
-  xp.pop_tag ();
+  xp.pop_tag ("alphabetical");
 
   pretty_printer pp;
   top.write_as_xml (&pp, 0, true);
