@@ -69,6 +69,7 @@
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <execinfo.h>
 #include "exceptl.h"
 
@@ -264,7 +265,7 @@ class ec_status_t {
                     ,  operation(file_op_none)
                     ,  mode(file_mode_none_e)
                     ,  user_status(nullptr)
-                    ,  filename(nullptr) 
+                    ,  filename(nullptr)
                       {}
     explicit file_status_t( const cblc_file_t *file )
                     : ifile(file->symbol_table_index)
@@ -558,7 +559,7 @@ __gg__abort(const char *msg)
   abort();
   }
 
-void 
+void
 __gg__mabort()
   {
   __gg__abort("Memory allocation error\n");
@@ -2290,7 +2291,7 @@ static time_t
 cobol_time()
   {
   struct cbl_timespec tp;
-  __gg__clock_gettime(CLOCK_REALTIME, &tp);
+  __gg__clock_gettime(&tp);
   return tp.tv_sec;
   }
 
@@ -2402,11 +2403,27 @@ int_from_digits(const char * &p, int ndigits)
   return retval;
   }
 
-uint64_t
-get_time_nanoseconds()
+// For testing purposes, this undef causes the use of gettimeofday().
+// #undef HAVE_CLOCK_GETTIME
+
+static uint64_t
+get_time_nanoseconds_local()
 {
   // This code was unabashedly stolen from gcc/timevar.cc.
   // It returns the Unix epoch with nine decimal places.
+
+  /*  Note:  I am perplexed.  I have been examining the gcc Makefiles and
+      configure.ac files, and I am unable to locate where HAVE_GETTIMEOFDAY
+      is established.  There have been issues compiling on MacOS, where
+      apparently clock_gettime() is not available.  But I don't see exactly
+      how gettimeofday() gets used, instead.  But without the ability to
+      compile on a MacOS system, I am fumbling along as best I can.
+
+      I decided to simply replace clock_gettime() with getttimeofday() when
+      clock_gettime() isn't available, even though gcc/timevar.cc handles
+      the situation differently.
+
+           -- Bob Dubner, 2025-06-11*/
 
   uint64_t retval = 0;
 
@@ -2415,8 +2432,9 @@ get_time_nanoseconds()
   clock_gettime (CLOCK_REALTIME, &ts);
   retval = ts.tv_sec * 1000000000 + ts.tv_nsec;
   return retval;
-#endif
-#ifdef HAVE_GETTIMEOFDAY
+//#endif
+//#ifdef HAVE_GETTIMEOFDAY
+#else
   struct timeval tv;
   gettimeofday (&tv, NULL);
   retval = tv.tv_sec * 1000000000 + tv.tv_usec * 1000;
@@ -2427,7 +2445,7 @@ get_time_nanoseconds()
 
 extern "C"
 void
-__gg__clock_gettime(clockid_t clk_id, struct cbl_timespec *tp)
+__gg__clock_gettime(struct cbl_timespec *tp)
   {
   const char *p = getenv("GCOBOL_CURRENT_DATE");
 
@@ -2457,9 +2475,7 @@ __gg__clock_gettime(clockid_t clk_id, struct cbl_timespec *tp)
     }
   else
     {
-    timespec tm;
-    clock_gettime(clk_id, &tm);
-    uint64_t ns = get_time_nanoseconds();
+    uint64_t ns = get_time_nanoseconds_local();
     tp->tv_sec  = ns/1000000000;
     tp->tv_nsec = ns%1000000000;
     }
@@ -2472,7 +2488,7 @@ __gg__get_date_hhmmssff()
   char ach[32];
 
   struct cbl_timespec tv;
-  __gg__clock_gettime(CLOCK_REALTIME, &tv);
+  __gg__clock_gettime(&tv);
 
   struct tm tm;
   localtime_r(&tv.tv_sec, &tm);
@@ -3691,7 +3707,7 @@ compare_88( const char    *list,
     }
   else
     {
-    cmpval = cstrncmp (test, 
+    cmpval = cstrncmp (test,
                       PTRCAST(char, conditional_location),
                       conditional_length);
     if( cmpval == 0 && (int)strlen(test) != conditional_length )
@@ -4573,7 +4589,7 @@ __gg__compare_2(cblc_field_t *left_side,
         }
 
       static size_t right_string_size = MINIMUM_ALLOCATION_SIZE;
-      static char *right_string 
+      static char *right_string
                               = static_cast<char *>(malloc(right_string_size));
 
       right_string = format_for_display_internal(

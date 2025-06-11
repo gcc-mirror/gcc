@@ -112,7 +112,7 @@ struct cbl_timespec
   long    tv_nsec;   // Nanoseconds.
   } ;
 
-extern "C" void __gg__clock_gettime(clockid_t clk_id, struct cbl_timespec *tp);
+extern "C" void __gg__clock_gettime(struct cbl_timespec *tp);
 
 extern "C" GCOB_FP128 __gg__float128_from_location(
                                         const cblc_field_t *var,

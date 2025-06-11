@@ -1219,7 +1219,7 @@ __gg__current_date(cblc_field_t *dest)
   {
   // FUNCTION CURRENT-DATE
   struct cbl_timespec tp = {};
-  __gg__clock_gettime(CLOCK_REALTIME, &tp); // time_t tv_sec; long tv_nsec
+  __gg__clock_gettime(&tp); // time_t tv_sec; long tv_nsec
 
   char retval[DATE_STRING_BUFFER_SIZE];
   timespec_to_string(retval, tp);
@@ -1236,7 +1236,7 @@ __gg__seconds_past_midnight(cblc_field_t *dest)
   struct tm tm;
   __int128 retval=0;
   
-  __gg__clock_gettime(CLOCK_REALTIME, &tp); // time_t tv_sec; long tv_nsec
+  __gg__clock_gettime(&tp); // time_t tv_sec; long tv_nsec
   localtime_r(&tp.tv_sec, &tm);
 
   retval += tm.tm_hour;
@@ -1460,7 +1460,7 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
                               size_t input_offset,
                               size_t input_size)
   {
-  // FUNCTION CURRENT-DATE
+  // FUNCTION FORMATTED-CURRENT-DATE
 
   // Establish the destination, and set it to spaces
   char *d    = PTRCAST(char, dest->data);
@@ -1485,7 +1485,7 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
     }
 
   struct cbl_timespec ts = {};
-  __gg__clock_gettime(CLOCK_REALTIME, &ts);
+  __gg__clock_gettime(&ts);
 
   struct tm tm = {};
 #ifdef HAVE_STRUCT_TM_TM_ZONE
@@ -3433,7 +3433,7 @@ __gg__random( cblc_field_t *dest,
     state = (char *)malloc(state_len);
 
     struct cbl_timespec ts;
-    __gg__clock_gettime(CLOCK_REALTIME, &ts);
+    __gg__clock_gettime(&ts);
     initstate_r( ts.tv_nsec, state, state_len, buf);
     }
   int seed = (int)__gg__binary_value_from_qualified_field(&rdigits,
@@ -3473,7 +3473,7 @@ __gg__random_next(cblc_field_t *dest)
     buf->state = NULL;
     state = (char *)malloc(state_len);
     struct cbl_timespec ts;
-    __gg__clock_gettime(CLOCK_REALTIME, &ts);
+    __gg__clock_gettime(&ts);
     initstate_r( ts.tv_nsec, state, state_len, buf);
     }
   random_r(buf, &retval_31);
