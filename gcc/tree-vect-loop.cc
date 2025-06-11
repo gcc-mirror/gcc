@@ -1069,6 +1069,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     using_decrementing_iv_p (false),
     using_select_vl_p (false),
     epil_using_partial_vectors_p (false),
+    allow_mutual_alignment (false),
     partial_load_store_bias (0),
     peeling_for_gaps (false),
     peeling_for_niter (false),

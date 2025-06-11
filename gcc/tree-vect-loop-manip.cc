@@ -3787,10 +3787,11 @@ chain_cond_expr (tree *cond_expr, tree part_cond_expr)
 
    Input:
    COND_EXPR  - input conditional expression.  New conditions will be chained
-                with logical AND operation.
-   LOOP_VINFO - two fields of the loop information are used.
-                LOOP_VINFO_PTR_MASK is the mask used to check the alignment.
-                LOOP_VINFO_MAY_MISALIGN_STMTS contains the refs to be checked.
+		with logical AND operation.
+   LOOP_VINFO - three fields of the loop information are used.
+		LOOP_VINFO_PTR_MASK is the mask used to check the alignment.
+		LOOP_VINFO_MAY_MISALIGN_STMTS contains the refs to be checked.
+		LOOP_VINFO_ALLOW_MUTUAL_ALIGNMENT indicates which check applies.
 
    Output:
    COND_EXPR_STMT_LIST - statements needed to construct the conditional
@@ -3798,7 +3799,20 @@ chain_cond_expr (tree *cond_expr, tree part_cond_expr)
    The returned value is the conditional expression to be used in the if
    statement that controls which version of the loop gets executed at runtime.
 
-   The algorithm makes two assumptions:
+   Based on the boolean value of LOOP_VINFO_ALLOW_MUTUAL_ALIGNMENT, we decide
+   which type of check should be applied and create two different expressions
+   accordingly.
+     1) When LOOP_VINFO_ALLOW_MUTUAL_ALIGNMENT is false, we see if all data refs
+	to be checked are already aligned to an alignment boundary.  We create
+	an expression of "(a_1 | a_2 | a_3 | ... | a_n) & mask", where "a_i" is
+	the address of i'th data reference.
+     2) When LOOP_VINFO_ALLOW_MUTUAL_ALIGNMENT is true, we see if all data refs
+	can be aligned to a boundary after a certain amount of peeling, in other
+	words, their addresses have the same bottom bits according to the mask.
+	We create "((a_1 ^ a_2) | (a_2 ^ a_3) | ... | (a_n-1 ^ a_n)) & mask",
+	where "a_i" is the address of i'th data reference.
+
+   Both algorithms make two assumptions:
      1) The number of bytes "n" in a vector is a power of 2.
      2) An address "a" is aligned if a%n is zero and that this
         test can be done as a&(n-1) == 0.  For example, for 16
@@ -3816,8 +3830,9 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   tree mask_cst;
   unsigned int i;
   tree int_ptrsize_type;
-  char tmp_name[20];
+  char tmp_name[30];
   tree or_tmp_name = NULL_TREE;
+  tree prev_addr_tmp_name = NULL_TREE;
   tree and_tmp_name;
   gimple *and_stmt;
   tree ptrsize_zero;
@@ -3829,16 +3844,19 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 
   int_ptrsize_type = signed_type_for (ptr_type_node);
 
-  /* Create expression (mask & (dr_1 || ... || dr_n)) where dr_i is the address
-     of the first vector of the i'th data reference. */
+  /* If LOOP_VINFO_ALLOW_MUTUAL_ALIGNMENT is true, we should have at least two
+     datarefs to check the mutual alignment.  */
+  gcc_assert (may_misalign_stmts.length () > 1
+	      || !LOOP_VINFO_ALLOW_MUTUAL_ALIGNMENT (loop_vinfo));
 
   FOR_EACH_VEC_ELT (may_misalign_stmts, i, stmt_info)
     {
       gimple_seq new_stmt_list = NULL;
       tree addr_base;
       tree addr_tmp_name;
+      tree xor_tmp_name;
       tree new_or_tmp_name;
-      gimple *addr_stmt, *or_stmt;
+      gimple *addr_stmt, *or_stmt, *xor_stmt;
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       bool negative = tree_int_cst_compare
 	(DR_STEP (STMT_VINFO_DATA_REF (stmt_info)), size_zero_node) < 0;
@@ -3860,20 +3878,56 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
       addr_stmt = gimple_build_assign (addr_tmp_name, NOP_EXPR, addr_base);
       gimple_seq_add_stmt (cond_expr_stmt_list, addr_stmt);
 
-      /* The addresses are OR together.  */
-
-      if (or_tmp_name != NULL_TREE)
-        {
-          /* create: or_tmp = or_tmp | addr_tmp */
-          sprintf (tmp_name, "orptrs%d", i);
-	  new_or_tmp_name = make_temp_ssa_name (int_ptrsize_type, NULL, tmp_name);
-	  or_stmt = gimple_build_assign (new_or_tmp_name, BIT_IOR_EXPR,
-					 or_tmp_name, addr_tmp_name);
-	  gimple_seq_add_stmt (cond_expr_stmt_list, or_stmt);
-          or_tmp_name = new_or_tmp_name;
-        }
+      if (LOOP_VINFO_ALLOW_MUTUAL_ALIGNMENT (loop_vinfo))
+	{
+	  /* Create "((a_1 ^ a_2) | (a_2 ^ a_3) | ... | (a_n-1 ^ a_n)) & mask"
+	     to check mutual alignment.  */
+	  if (prev_addr_tmp_name != NULL_TREE)
+	    {
+	      sprintf (tmp_name, "xorptrs%d_%d", i - 1, i);
+	      xor_tmp_name = make_temp_ssa_name (int_ptrsize_type, NULL,
+						 tmp_name);
+	      xor_stmt = gimple_build_assign (xor_tmp_name, BIT_XOR_EXPR,
+					      prev_addr_tmp_name,
+					      addr_tmp_name);
+	      gimple_seq_add_stmt (cond_expr_stmt_list, xor_stmt);
+	      if (or_tmp_name == NULL_TREE)
+		{
+		  /* Create the 1st XOR when the 2nd data ref is seen.  */
+		  or_tmp_name = xor_tmp_name;
+		}
+	      else
+		{
+		  /* Create: or_tmp = or_tmp | new_xor_tmp.  */
+		  sprintf (tmp_name, "orxors%d", i - 1);
+		  new_or_tmp_name = make_temp_ssa_name (int_ptrsize_type, NULL,
+							tmp_name);
+		  or_stmt = gimple_build_assign (new_or_tmp_name, BIT_IOR_EXPR,
+						 or_tmp_name, xor_tmp_name);
+		  gimple_seq_add_stmt (cond_expr_stmt_list, or_stmt);
+		  or_tmp_name = new_or_tmp_name;
+		}
+	    }
+	  prev_addr_tmp_name = addr_tmp_name;
+	}
       else
-        or_tmp_name = addr_tmp_name;
+	{
+	  /* Create: "(a_1 | a_2 | a_3 | ... | a_n) & mask" to check if all
+	     addresses are already aligned.  */
+	  if (or_tmp_name != NULL_TREE)
+	    {
+	      /* Create: or_tmp = or_tmp | addr_tmp.  */
+	      sprintf (tmp_name, "orptrs%d", i);
+	      new_or_tmp_name = make_temp_ssa_name (int_ptrsize_type, NULL,
+						    tmp_name);
+	      or_stmt = gimple_build_assign (new_or_tmp_name, BIT_IOR_EXPR,
+					     or_tmp_name, addr_tmp_name);
+	      gimple_seq_add_stmt (cond_expr_stmt_list, or_stmt);
+	      or_tmp_name = new_or_tmp_name;
+	    }
+	  else
+	    or_tmp_name = addr_tmp_name;
+	}
 
     } /* end for i */
 

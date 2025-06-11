@@ -20,4 +20,4 @@ unsigned test4(char x, char *vect_a, char *vect_b, int n)
  return ret;
 }
 
-/* { dg-final { scan-tree-dump "Versioning for alignment will be applied" "vect" } } */
+/* { dg-final { scan-tree-dump "Both peeling and versioning will be applied" "vect" } } */
