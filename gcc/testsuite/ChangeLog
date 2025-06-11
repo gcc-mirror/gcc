@@ -1,3 +1,12 @@
+2025-06-10  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/pr120044-1.c: New test.
+	* gcc.dg/ipa/pr120044-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr114864.c: Likewise.
+
 2025-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120123
