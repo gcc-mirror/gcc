@@ -127,4 +127,97 @@ test_vx_binary_reverse_##NAME##_##T##_case_1 (T * restrict out, \
 #define DEF_VX_BINARY_REVERSE_CASE_1_WRAP(T, OP, NAME, BODY) \
   DEF_VX_BINARY_REVERSE_CASE_1(T, OP, NAME, BODY)
 
+#define DEF_MAX_0(T)        \
+static inline T             \
+test_##T##_max_0 (T a, T b) \
+{                           \
+  return a > b ? a : b;     \
+}
+
+#define DEF_MAX_1(T)        \
+static inline T             \
+test_##T##_max_1 (T a, T b) \
+{                           \
+  return a >= b ? a : b;    \
+}
+
+DEF_MAX_0(int8_t)
+DEF_MAX_0(int16_t)
+DEF_MAX_0(int32_t)
+DEF_MAX_0(int64_t)
+
+DEF_MAX_1(int8_t)
+DEF_MAX_1(int16_t)
+DEF_MAX_1(int32_t)
+DEF_MAX_1(int64_t)
+
+#define MAX_FUNC_0(T) test_##T##_max_0
+#define MAX_FUNC_0_WARP(T) MAX_FUNC_0(T)
+
+#define MAX_FUNC_1(T) test_##T##_max_1
+#define MAX_FUNC_1_WARP(T) MAX_FUNC_1(T)
+
+#define DEF_VX_BINARY_CASE_2(T, FUNC, NAME)                      \
+void                                                             \
+test_vx_binary_##NAME##_##FUNC##_##T##_case_2 (T * restrict out, \
+					       T * restrict in,  \
+					       T x, unsigned n)  \
+{                                                                \
+  for (unsigned i = 0; i < n; i++)                               \
+    out[i] = FUNC (in[i], x);                                    \
+}
+#define DEF_VX_BINARY_CASE_2_WRAP(T, FUNC, NAME) \
+  DEF_VX_BINARY_CASE_2(T, FUNC, NAME)
+#define RUN_VX_BINARY_CASE_2(T, NAME, FUNC, out, in, x, n) \
+  test_vx_binary_##NAME##_##FUNC##_##T##_case_2(out, in, x, n)
+#define RUN_VX_BINARY_CASE_2_WRAP(T, NAME, FUNC, out, in, x, n) \
+  RUN_VX_BINARY_CASE_2(T, NAME, FUNC, out, in, x, n)
+
+#define DEF_VX_BINARY_CASE_3(T, FUNC, NAME, BODY)                \
+void                                                             \
+test_vx_binary_##NAME##_##FUNC##_##T##_case_3 (T * restrict out, \
+					       T * restrict in,  \
+					       T x, unsigned n)  \
+{                                                                \
+  unsigned k = 0;                                                \
+  T tmp = x + 3;                                                 \
+                                                                 \
+  while (k < n)                                                  \
+    {                                                            \
+      tmp = tmp ^ 0x82;                                          \
+      BODY(FUNC)                                                 \
+    }                                                            \
+}
+#define DEF_VX_BINARY_CASE_3_WRAP(T, FUNC, NAME, BODY) \
+  DEF_VX_BINARY_CASE_3(T, FUNC, NAME, BODY)
+
+#define VX_BINARY_FUNC_BODY(func)     \
+  out[k + 0] = func (in[k + 0], tmp); \
+  out[k + 1] = func (in[k + 1], tmp); \
+  k += 2;
+
+#define VX_BINARY_FUNC_BODY_X4(op) \
+  VX_BINARY_FUNC_BODY(op)          \
+  VX_BINARY_FUNC_BODY(op)
+
+#define VX_BINARY_FUNC_BODY_X8(op) \
+  VX_BINARY_FUNC_BODY_X4(op)       \
+  VX_BINARY_FUNC_BODY_X4(op)
+
+#define VX_BINARY_FUNC_BODY_X16(op) \
+  VX_BINARY_FUNC_BODY_X8(op)        \
+  VX_BINARY_FUNC_BODY_X8(op)
+
+#define VX_BINARY_FUNC_BODY_X32(op) \
+  VX_BINARY_FUNC_BODY_X16(op)       \
+  VX_BINARY_FUNC_BODY_X16(op)
+
+#define VX_BINARY_FUNC_BODY_X64(op) \
+  VX_BINARY_FUNC_BODY_X32(op)       \
+  VX_BINARY_FUNC_BODY_X32(op)
+
+#define VX_BINARY_FUNC_BODY_X128(op) \
+  VX_BINARY_FUNC_BODY_X64(op)        \
+  VX_BINARY_FUNC_BODY_X64(op)
+
 #endif
