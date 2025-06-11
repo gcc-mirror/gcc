@@ -44,6 +44,7 @@ public:
   void set_attr (const char *name, std::string value);
 
   void add_text (std::string text);
+  void add_text_from_pp (pretty_printer &pp);
 
   void add_raw (std::string text);
 

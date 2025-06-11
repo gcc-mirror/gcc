@@ -65,6 +65,7 @@ struct node_with_children : public node
 {
   void add_child (std::unique_ptr<node> node);
   void add_text (std::string str);
+  void add_text_from_pp (pretty_printer &pp);
 
   std::vector<std::unique_ptr<node>> m_children;
 };

@@ -689,7 +689,7 @@ struct event_range
 	    iter_event.print_desc (pp);
 	    if (event_label_writer)
 	      event_label_writer->begin_label ();
-	    xp.add_text (pp_formatted_text (&pp));
+	    xp.add_text_from_pp (pp);
 	    if (event_label_writer)
 	      event_label_writer->end_label ();
 	  }
@@ -1243,7 +1243,7 @@ print_path_summary_as_html (const path_summary &ps,
 	else
 	  pp_printf (&pp, "events %i-%i",
 		     range->m_start_idx + 1, range->m_end_idx + 1);
-	xp.add_text (pp_formatted_text (&pp));
+	xp.add_text_from_pp (pp);
 	xp.pop_tag ("span");
       }
       if (show_depths)
@@ -1252,7 +1252,7 @@ print_path_summary_as_html (const path_summary &ps,
 	  xp.push_tag_with_class ("span", "depth", true);
 	  pretty_printer pp;
 	  pp_printf (&pp, "(depth %i)", range->m_stack_depth);
-	  xp.add_text (pp_formatted_text (&pp));
+	  xp.add_text_from_pp (pp);
 	  xp.pop_tag ("span");
 	}
       xp.pop_tag ("div");

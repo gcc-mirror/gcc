@@ -614,7 +614,7 @@ struct to_html
   {
     pp_clear_output_area (&m_scratch_pp);
     pp_unicode_character (&m_scratch_pp, ch);
-    m_xp.add_text (pp_formatted_text (&m_scratch_pp));
+    m_xp.add_text_from_pp (m_scratch_pp);
   }
 
   void add_utf8_byte (char b)

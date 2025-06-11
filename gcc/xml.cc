@@ -121,6 +121,11 @@ node_with_children::add_text (std::string str)
   add_child (std::make_unique <text> (std::move (str)));
 }
 
+void
+node_with_children::add_text_from_pp (pretty_printer &pp)
+{
+  add_text (pp_formatted_text (&pp));
+}
 
 /* struct document : public node_with_children.  */
 
@@ -249,6 +254,13 @@ printer::add_text (std::string text)
 {
   element *parent = m_open_tags.back ();
   parent->add_text (std::move (text));
+}
+
+void
+printer::add_text_from_pp (pretty_printer &pp)
+{
+  element *parent = m_open_tags.back ();
+  parent->add_text_from_pp (pp);
 }
 
 void
