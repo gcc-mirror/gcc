@@ -3013,6 +3013,7 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
 
   new_bb = create_basic_block (NEXT_INSN (last), get_last_insn (), bb);
   dest = false_edge->dest;
+  unsigned int dest_idx = false_edge->dest_idx;
   redirect_edge_succ (false_edge, new_bb);
   false_edge->flags |= EDGE_FALLTHRU;
   new_bb->count = false_edge->count ();
@@ -3021,7 +3022,19 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
   if (loop->latch == bb
       && loop->header == dest)
     loop->latch = new_bb;
-  make_single_succ_edge (new_bb, dest, 0);
+  edge e = make_single_succ_edge (new_bb, dest, 0);
+  if ((dest->flags & BB_RTL) == 0
+      && phi_nodes (dest)
+      && e->dest_idx != dest_idx)
+    {
+      /* If there are any PHI nodes on dest, swap the new succ edge
+	 with the one moved into false_edge's former position, so that
+	 PHI arguments don't need adjustment.  */
+      edge e2 = EDGE_PRED (dest, dest_idx);
+      std::swap (e->dest_idx, e2->dest_idx);
+      std::swap (EDGE_PRED (dest, e->dest_idx),
+		 EDGE_PRED (dest, e2->dest_idx));
+    }
   if (BARRIER_P (BB_END (new_bb)))
     BB_END (new_bb) = PREV_INSN (BB_END (new_bb));
   update_bb_for_insn (new_bb);
