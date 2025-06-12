@@ -1133,6 +1133,23 @@
     DONE;
   })
 
+(define_expand "gather_load<mode><vndi>"
+  [(match_operand:V_MOV 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:<VnDI> 2 "register_operand")
+   (match_operand 3 "immediate_operand")
+   (match_operand:SI 4 "gcn_alu_operand")]
+  ""
+  {
+    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[1],
+					  operands[2], operands[4],
+					  INTVAL (operands[3]), NULL);
+
+    emit_insn (gen_gather<mode>_insn_1offset (operands[0], addr, const0_rtx,
+					      const0_rtx, const0_rtx));
+    DONE;
+  })
+
 ; Allow any address expression
 (define_expand "gather<mode>_expr<exec>"
   [(set (match_operand:V_MOV 0 "register_operand")
@@ -1256,6 +1273,23 @@
       emit_insn (gen_scatter<mode>_insn_2offsets (operands[0], addr,
 						  const0_rtx, operands[4],
 						  const0_rtx, const0_rtx));
+    DONE;
+  })
+
+(define_expand "scatter_store<mode><vndi>"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:<VnDI> 1 "register_operand")
+   (match_operand 2 "immediate_operand")
+   (match_operand:SI 3 "gcn_alu_operand")
+   (match_operand:V_MOV 4 "register_operand")]
+  ""
+  {
+    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
+					  operands[1], operands[3],
+					  INTVAL (operands[2]), NULL);
+
+    emit_insn (gen_scatter<mode>_insn_1offset (addr, const0_rtx, operands[4],
+					       const0_rtx, const0_rtx));
     DONE;
   })
 
@@ -4222,6 +4256,32 @@
     DONE;
   })
 
+(define_expand "mask_gather_load<mode><vndi>"
+  [(set:V_MOV (match_operand:V_MOV 0 "register_operand")
+	      (unspec:V_MOV
+		[(match_operand:DI 1 "register_operand")
+		 (match_operand:<VnDI> 2 "register_operand")
+		 (match_operand 3 "immediate_operand")
+		 (match_operand:SI 4 "gcn_alu_operand")
+		 (match_operand:DI 5 "")
+		 (match_operand:V_MOV 6 "maskload_else_operand")]
+		UNSPEC_GATHER))]
+  ""
+  {
+    rtx exec = force_reg (DImode, operands[5]);
+
+    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[1],
+					  operands[2], operands[4],
+					  INTVAL (operands[3]), exec);
+
+    emit_insn (gen_gather<mode>_insn_1offset_exec (operands[0], addr,
+						   const0_rtx, const0_rtx,
+						   const0_rtx,
+						   gcn_gen_undef (<MODE>mode),
+						   exec));
+    DONE;
+  })
+
 (define_expand "mask_scatter_store<mode><vnsi>"
   [(match_operand:DI 0 "register_operand")
    (match_operand:<VnSI> 1 "register_operand")
@@ -4247,6 +4307,27 @@
 						       const0_rtx, operands[4],
 						       const0_rtx, const0_rtx,
 						       exec));
+    DONE;
+  })
+
+(define_expand "mask_scatter_store<mode><vndi>"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:<VnDI> 1 "register_operand")
+   (match_operand 2 "immediate_operand")
+   (match_operand:SI 3 "gcn_alu_operand")
+   (match_operand:V_MOV 4 "register_operand")
+   (match_operand:DI 5 "")]
+  ""
+  {
+    rtx exec = force_reg (DImode, operands[5]);
+
+    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
+					  operands[1], operands[3],
+					  INTVAL (operands[2]), exec);
+
+    emit_insn (gen_scatter<mode>_insn_1offset_exec (addr, const0_rtx,
+						    operands[4], const0_rtx,
+						    const0_rtx, exec));
     DONE;
   })
 
