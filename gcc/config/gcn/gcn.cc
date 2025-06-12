@@ -1995,8 +1995,8 @@ gcn_expand_vector_init (rtx op0, rtx vec)
   rtx addr = gen_reg_rtx (addrmode);
 
   int unit_size = GET_MODE_SIZE (GET_MODE_INNER (GET_MODE (op0)));
-  emit_insn (gen_mulvNsi3_dup (ramp, gen_rtx_REG (offsetmode, VGPR_REGNO (1)),
-			       GEN_INT (unit_size)));
+  emit_insn (gen_mulvNsi3_dup (ramp, GEN_INT (unit_size),
+			       gen_rtx_REG (offsetmode, VGPR_REGNO (1))));
 
   bool simple_repeat = true;
 
