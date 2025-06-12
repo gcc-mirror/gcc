@@ -7813,6 +7813,7 @@ extern bool type_dependent_expression_p_push	(tree);
 extern bool value_dependent_expression_p	(tree);
 extern bool instantiation_dependent_uneval_expression_p (tree);
 extern bool any_value_dependent_elements_p      (const_tree);
+extern bool dependent_template_arg_p		(tree);
 extern bool dependent_omp_for_p			(tree, tree, tree, tree, tree);
 extern tree resolve_typename_type		(tree, bool);
 extern tree template_for_substitution		(tree);
@@ -8842,7 +8843,8 @@ extern hashval_t iterative_hash_constraint      (tree, hashval_t);
 extern hashval_t hash_atomic_constraint         (tree);
 extern void diagnose_constraints                (location_t, tree, tree);
 
-extern void note_failed_type_completion_for_satisfaction (tree);
+extern void note_failed_type_completion		(tree, tsubst_flags_t);
+extern location_t failed_completion_location	(tree);
 
 /* in logic.cc */
 extern bool subsumes                            (tree, tree);

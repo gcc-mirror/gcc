@@ -1836,7 +1836,7 @@ tsubst_parameter_mapping (tree map, tree args, tsubst_flags_t complain, tree in_
 static bool satisfying_constraint;
 
 /* A vector of incomplete types (and of declarations with undeduced return type),
-   appended to by note_failed_type_completion_for_satisfaction.  The
+   appended to by note_failed_type_completion.  The
    satisfaction caches use this in order to keep track of "potentially unstable"
    satisfaction results.
 
@@ -1845,19 +1845,67 @@ static bool satisfying_constraint;
 
 static GTY((deletable)) vec<tree, va_gc> *failed_type_completions;
 
+/* A map of where types were found to be incomplete in SFINAE context, for
+   warning if they are later completed.  */
+
+static GTY((cache)) hash_map<tree, location_t, decl_location_traits> *failed_completions_map;
+
 /* Called whenever a type completion (or return type deduction) failure occurs
    that definitely affects the meaning of the program, by e.g. inducing
    substitution failure.  */
 
 void
-note_failed_type_completion_for_satisfaction (tree t)
+note_failed_type_completion (tree t, tsubst_flags_t complain)
 {
+  if (dependent_template_arg_p (t))
+    return;
+
+  gcc_checking_assert ((TYPE_P (t) && !COMPLETE_TYPE_P (t))
+		       || (DECL_P (t) && undeduced_auto_decl (t)));
+
   if (satisfying_constraint)
+    vec_safe_push (failed_type_completions, t);
+
+  if (TYPE_P (t))
     {
-      gcc_checking_assert ((TYPE_P (t) && !COMPLETE_TYPE_P (t))
-			   || (DECL_P (t) && undeduced_auto_decl (t)));
-      vec_safe_push (failed_type_completions, t);
+      if (!CLASS_TYPE_P (t))
+	return;
+      t = TYPE_MAIN_DECL (t);
     }
+  if (!(complain & tf_error)
+      && warning_enabled_at (DECL_SOURCE_LOCATION (t),
+			     OPT_Wsfinae_incomplete_))
+    {
+      if (warn_sfinae_incomplete > 1)
+	{
+	  if (TREE_CODE (t) == TYPE_DECL)
+	    warning (OPT_Wsfinae_incomplete_,
+		     "failed to complete %qT in SFINAE context", TREE_TYPE (t));
+	  else
+	    warning (OPT_Wsfinae_incomplete_,
+		     "failed to deduce %qD in SFINAE context", t);
+	}
+      if (!failed_completions_map)
+	failed_completions_map
+	  = hash_map<tree, location_t, decl_location_traits>::create_ggc ();
+      failed_completions_map->put (t, input_location);
+    }
+}
+
+/* If T was previously found to be incomplete in SFINAE context, return the
+   location where that happened, otherwise UNKNOWN_LOCATION.  */
+
+location_t
+failed_completion_location (tree t)
+{
+  if (failed_completions_map)
+    {
+      if (TYPE_P (t))
+	t = TYPE_MAIN_DECL (t);
+      if (location_t *p = failed_completions_map->get (t))
+	return *p;
+    }
+  return UNKNOWN_LOCATION;
 }
 
 /* Returns true if the range [BEGIN, END) of elements within the

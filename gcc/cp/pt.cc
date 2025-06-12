@@ -202,7 +202,6 @@ static tree for_each_template_parm_r (tree *, int *, void *);
 static tree copy_default_args_to_explicit_spec_1 (tree, tree);
 static void copy_default_args_to_explicit_spec (tree);
 static bool invalid_nontype_parm_type_p (tree, tsubst_flags_t);
-static bool dependent_template_arg_p (tree);
 static bool dependent_type_p_r (tree);
 static tree tsubst_stmt (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_decl (tree, tree, tsubst_flags_t, bool = true);

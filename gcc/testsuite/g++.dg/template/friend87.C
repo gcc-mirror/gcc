@@ -14,14 +14,14 @@ struct CounterWriter {
 	static constexpr size_t value = current;
 
 	template<typename>
-	friend auto counterFlag(CounterReader<tag, current>) noexcept {}
+	friend auto counterFlag(CounterReader<tag, current>) noexcept {} // { dg-warning -Wsfinae-incomplete }
 };
 
 template<auto tag, auto unique, size_t current = 0, size_t mask = size_t(1) << (sizeof(size_t) * 8 - 1)>
 [[nodiscard]] constexpr size_t counterAdvance() noexcept {
 	if constexpr (!mask) {
 		return CounterWriter<tag, current + 1>::value;
-	} else if constexpr (requires { counterFlag<void>(CounterReader<tag, current | mask>()); }) {
+	} else if constexpr (requires { counterFlag<void>(CounterReader<tag, current | mask>()); }) { // { dg-message "here" }
 		return counterAdvance<tag, unique, current | mask, (mask >> 1)>();
 	} 
 	else {

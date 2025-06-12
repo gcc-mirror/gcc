@@ -18,6 +18,6 @@ template <class T> char f() { return 0; }
 
 struct A;
 static_assert (sizeof (f<A>()) == 1); // { dg-message "first evaluated to 'false' from here" }
-struct A { typedef int type; };
+struct A { typedef int type; };	      // { dg-warning Wsfinae-incomplete }
 static_assert (sizeof (f<A>()) > 1); // { dg-error "assert" }
 static_assert (sizeof (f<A>()) > 1);

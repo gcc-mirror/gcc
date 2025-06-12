@@ -19336,6 +19336,19 @@ finish_function (bool inline_p)
 	}
     }
 
+  if (FNDECL_USED_AUTO (fndecl)
+      && TREE_TYPE (fntype) != DECL_SAVED_AUTO_RETURN_TYPE (fndecl))
+    if (location_t fcloc = failed_completion_location (fndecl))
+      {
+	auto_diagnostic_group adg;
+	if (warning (OPT_Wsfinae_incomplete_,
+		     "defining %qD, which previously failed to be deduced "
+		     "in a SFINAE context", fndecl)
+	    && warn_sfinae_incomplete == 1)
+	  inform (fcloc, "here.  Use %qs for a diagnostic at that point",
+		  "-Wsfinae-incomplete=2");
+      }
+
   /* Remember that we were in class scope.  */
   if (current_class_name)
     ctype = current_class_type;
@@ -19989,7 +20002,7 @@ require_deduced_type (tree decl, tsubst_flags_t complain)
 	/* We probably already complained about deduction failure.  */;
       else if (complain & tf_error)
 	error ("use of %qD before deduction of %<auto%>", decl);
-      note_failed_type_completion_for_satisfaction (decl);
+      note_failed_type_completion (decl, complain);
       return false;
     }
   return true;

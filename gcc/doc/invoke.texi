@@ -266,7 +266,7 @@ in the following sections.
 -Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor
 -Wpessimizing-move  -Wno-placement-new  -Wplacement-new=@var{n}
 -Wrange-loop-construct -Wredundant-move -Wredundant-tags
--Wreorder  -Wregister
+-Wreorder  -Wregister -Wno-sfinae-incomplete
 -Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates
 -Wno-non-template-friend  -Wold-style-cast
 -Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
@@ -4447,6 +4447,20 @@ to filter out those warnings.
 @item -Wno-exceptions @r{(C++ and Objective-C++ only)}
 Disable the warning about the case when an exception handler is shadowed by
 another handler, which can point out a wrong ordering of exception handlers.
+
+@opindex Wsfinae-incomplete
+@opindex Wno-sfinae-incomplete
+Warn about a class that is found to be incomplete, or a function with
+auto return type that has not yet been deduced, in a context where
+that causes substitution failure rather than an error, and then the
+class or function is defined later in the translation unit.  This is
+problematic because template instantiations or concept checks could
+have different results if they first occur either before or after the
+definition.
+
+This warning is enabled by default.  @option{-Wsfinae-incomplete=2}
+adds a warning at the point of substitution failure, to make it easier
+to track down problems flagged by the default mode.
 
 @opindex Wstrict-null-sentinel
 @opindex Wno-strict-null-sentinel
