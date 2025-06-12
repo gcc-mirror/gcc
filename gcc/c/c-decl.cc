@@ -9790,12 +9790,17 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	len += list_length (x);
 
 	/* Use the same allocation policy here that make_node uses, to
-	  ensure that this lives as long as the rest of the struct decl.
-	  All decls in an inline function need to be saved.  */
+	   ensure that this lives as long as the rest of the struct decl.
+	   All decls in an inline function need to be saved.  */
 
-	space = ggc_cleared_alloc<struct lang_type> ();
-	space2 = (sorted_fields_type *) ggc_internal_alloc
-	  (sizeof (struct sorted_fields_type) + len * sizeof (tree));
+	space = ((struct lang_type *)
+		 ggc_internal_cleared_alloc (c_dialect_objc ()
+					     ? sizeof (struct lang_type)
+					     : offsetof (struct lang_type,
+							 info)));
+	space2 = ((sorted_fields_type *)
+		  ggc_internal_alloc (sizeof (struct sorted_fields_type)
+				      + len * sizeof (tree)));
 
 	len = 0;
 	space->s = space2;
@@ -10269,7 +10274,10 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
   /* Record the min/max values so that we can warn about bit-field
      enumerations that are too small for the values.  */
-  lt = ggc_cleared_alloc<struct lang_type> ();
+  lt = ((struct lang_type *)
+	ggc_internal_cleared_alloc (c_dialect_objc ()
+				    ? sizeof (struct lang_type)
+				    : offsetof (struct lang_type, info)));
   lt->enum_min = minnode;
   lt->enum_max = maxnode;
   TYPE_LANG_SPECIFIC (enumtype) = lt;

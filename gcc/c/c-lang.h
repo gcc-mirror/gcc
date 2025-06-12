@@ -35,10 +35,14 @@ struct GTY(()) lang_type {
   /* In an ENUMERAL_TYPE, the min and max values.  */
   tree enum_min;
   tree enum_max;
-  /* In a RECORD_TYPE, information specific to Objective-C, such
-     as a list of adopted protocols or a pointer to a corresponding
-     @interface.  See objc/objc-act.h for details.  */
-  tree objc_info;
+  union maybe_objc_info {
+    /* If not c_dialect_objc, this part is not even allocated.  */
+    char GTY((tag ("0"))) non_objc;
+    /* In a RECORD_TYPE, information specific to Objective-C, such
+       as a list of adopted protocols or a pointer to a corresponding
+       @interface.  See objc/objc-act.h for details.  */
+    tree GTY((tag ("1"))) objc_info;
+  } GTY ((desc ("c_dialect_objc ()"))) info;
 };
 
 struct GTY(()) lang_decl {

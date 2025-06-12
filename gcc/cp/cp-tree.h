@@ -2514,12 +2514,16 @@ struct GTY(()) lang_type {
   tree key_method;
   tree decl_list;
   tree befriending_classes;
-  /* In a RECORD_TYPE, information specific to Objective-C++, such
-     as a list of adopted protocols or a pointer to a corresponding
-     @interface.  See objc/objc-act.h for details.  */
-  tree objc_info;
   /* FIXME reuse another field?  */
   tree lambda_expr;
+  union maybe_objc_info {
+    /* If not c_dialect_objc, this part is not even allocated.  */
+    char GTY((tag ("0"))) non_objc;
+    /* In a RECORD_TYPE, information specific to Objective-C, such
+       as a list of adopted protocols or a pointer to a corresponding
+       @interface.  See objc/objc-act.h for details.  */
+    tree GTY((tag ("1"))) objc_info;
+  } GTY ((desc ("c_dialect_objc ()"))) info;
 };
 
 /* We used to have a variant type for lang_type.  Keep the name of the
