@@ -1,3 +1,13 @@
+2025-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119650
+	* gm2-libs/ARRAYOFCHAR.def: Remove comment about non
+	existent read.
+	* target-independent/m2/Builtins.texi: Regenerate.
+	* target-independent/m2/SYSTEM-iso.texi: Ditto.
+	* target-independent/m2/SYSTEM-pim.texi: Ditto.
+	* target-independent/m2/gm2-libs.texi: Ditto.
+
 2025-06-09  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/120606

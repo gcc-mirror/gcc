@@ -1,3 +1,77 @@
+2025-06-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR middle-end/117811
+	PR testsuite/52641
+	* gcc.dg/torture/pr117811.c: Fix for int < 32 bit.
+
+2025-06-12  Gwenole Beauchesne  <gb.devel@gmail.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/41201
+	PR c++/48026
+	* c-c++-common/pragma-optimize-1.c: New test.
+	* g++.target/i386/vect-pragma-target-1.C: New test.
+	* g++.target/i386/vect-pragma-target-2.C: New test.
+	* gcc.target/i386/vect-pragma-target-1.c: New test.
+	* gcc.target/i386/vect-pragma-target-2.c: New test.
+
+2025-06-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120510
+	* gcc.dg/old-style-prom-4.c: New test.
+
+2025-06-11  Edwin Lu  <ewlu@rivosinc.com>
+
+	* gcc.target/riscv/rvv/vsetvl/pr117974.c: New test.
+
+2025-06-11  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR target/119100
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f16.c: Add vfnmadd and
+	vfnmsub.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_mulop.h: Add support for neg
+	variants. Fix sign for sub.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_mulop_data.h: Add data for neg
+	variants. Fix data for sub.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_mulop_run.h: Rename x to f.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmadd-run-1-f16.c: Add neg
+	argument.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmadd-run-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmadd-run-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsub-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsub-run-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsub-run-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmadd-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmadd-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmadd-run-1-f64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsub-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsub-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsub-run-1-f64.c: New test.
+
+2025-06-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120303
+	* gcc.dg/pr120303.c: New test.
+
+2025-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90693
+	* gcc.target/i386/pr90693-3.c: New test.
+	* gcc.target/i386/pr90693-4.c: New test.
+	* gcc.target/i386/pr90693-5.c: New test.
+	* gcc.target/i386/pr90693-6.c: New test.
+
 2025-06-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116792

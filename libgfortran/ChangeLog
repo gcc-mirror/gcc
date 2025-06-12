@@ -1,3 +1,10 @@
+2025-06-11  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/116400
+	* Makefile.am: Simplify logic.
+	* Makefile.in: Regenerate.
+	* regenerate.sh: Add some checks.
+
 2025-06-10  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/116400

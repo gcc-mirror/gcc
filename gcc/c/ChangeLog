@@ -1,3 +1,34 @@
+2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lang.h (union lang_type::maybe_objc_info): New type.
+	(struct lang_type): Use union maybe_objc_info info member
+	instead of tree objc_info.
+	* c-decl.cc (finish_struct): Allocate struct lang_type using
+	ggc_internal_cleared_alloc instead of ggc_cleared_alloc,
+	and use sizeof (struct lang_type) for ObjC and otherwise
+	offsetof (struct lang_type, info) as size.
+	(finish_enum): Likewise.
+
+2025-06-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120510
+	* c-typeck.cc (composite_type_internal): Activate checking
+	assertions for all types and also inputs.
+	(comptypes_for_composite_check): New helper function.
+	(function_types_compatible_p): Add exception.
+
+2025-06-11  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (function_types_compatible_p): Remove unused
+	variables and return true/false instead of 1/0.
+	(type_lists_compatible_p): Return false instead of 0.
+
+2025-06-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120303
+	* c-parser.cc (c_parser_generic_selection): Handle error
+	condition.
+
 2025-06-09  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/120510

@@ -1,3 +1,275 @@
+2025-06-12  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/mdspan (__mdspan::__mapping_alike): Rename template
+	parameter from M to _M_p.
+	(layout_right::mapping): Replace class with typename in template
+	head.
+	(layout_stride::mapping): Fix typo in comment.
+	* testsuite/23_containers/mdspan/layouts/class_mandate_neg.cc:
+	Changed B to function.
+
+2025-06-12  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (layout_left): Strengthen the exception
+	guarantees of layout_left::mapping(layout_stride::mapping).
+	* testsuite/23_containers/mdspan/layouts/ctors.cc:
+	Simplify tests to reflect the change.
+
+2025-06-12  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/layouts/class_mandate_neg.cc: Add
+	tests for layout_stride.
+	* testsuite/23_containers/mdspan/layouts/ctors.cc: Add test for
+	layout_stride and the interaction with other layouts.
+	* testsuite/23_containers/mdspan/layouts/empty.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/mapping.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/stride.cc: New test.
+
+2025-06-12  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (layout_stride): New class.
+	* src/c++23/std.cc.in: Add layout_stride.
+
+2025-06-12  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/layouts/class_mandate_neg.cc: Add
+	tests for layout_right.
+	* testsuite/23_containers/mdspan/layouts/ctors.cc: Add tests for
+	layout_right and the interaction with layout_left.
+	* testsuite/23_containers/mdspan/layouts/empty.cc: ditto.
+	* testsuite/23_containers/mdspan/layouts/mapping.cc: ditto.
+
+2025-06-12  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (layout_right): New class.
+	* src/c++23/std.cc.in: Add layout_right.
+
+2025-06-12  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* testsuite/23_containers/mdspan/layouts/class_mandate_neg.cc: New test.
+	* testsuite/23_containers/mdspan/layouts/ctors.cc: New test.
+	* testsuite/23_containers/mdspan/layouts/empty.cc: New test.
+	* testsuite/23_containers/mdspan/layouts/mapping.cc: New test.
+
+2025-06-12  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (layout_left): New class.
+	* src/c++23/std.cc.in: Add layout_left.
+
+2025-06-12  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan(__mdspan::_ExtentsStorage): Change name
+	of private member _M_dynamic_extens to _M_dyn_exts.
+	(extents): Change name of private member from _M_dynamic_extents
+	to _M_exts.
+	Fix two instances of whitespace errors.
+	* testsuite/23_containers/mdspan/extents/ctor_default.cc: Fix
+	integer comparison with cmp_equal.
+
+2025-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Improve discussion of copyright
+	notices in new test cases.
+	* doc/html/manual/test.html: Regenerate.
+
+2025-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/create_testsuite_files: Remove incorrect comment about
+	filtering out wchar_t tests.
+
+2025-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120625
+	* include/std/format (__format::__disabled): Remove.
+	(__formatter_disabled): New type.
+	(formatter<char*, wchar_t>, formatter<const char*, wchar_t>)
+	(formatter<char[N], wchar_t>, formatter<string, wchar_t>)
+	(formatter<string_view, wchar_t>): Use __formatter_disabled as
+	base class instead of formatter<__disabled, wchar_t>.
+	* testsuite/std/format/formatter/120625.cc: New test.
+
+2025-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Remove -D prefixes from
+	some macros. Define _GLIBCXX_USE_BUILTIN_TRAIT and
+	_GLIBCXX_HAVE_ICONV macros.
+
+2025-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/exception: Remove redundant parentheses and adjust
+	whitespace.
+
+2025-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits: Restore @cond and @endcond balance.
+
+2025-06-11  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/time/format/empty_spec.cc: New tests.
+	* testsuite/std/time/format/precision.cc: New test.
+
+2025-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_construct.h: Replace std::__addressof with
+	std::addressof in code that doesn't need to compile as C++98.
+	Replace std::__is_constant_evaluated with
+	std::is_constant_evaluated in code that doesn't need to compile
+	as C++17 or earlier.
+	* include/bits/stl_uninitialized.h: Likewise for __addressof.
+
+2025-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Remove note about unused 'test'
+	variables for old definition of VERIFY.
+	* doc/html/manual/test.html: Regenerate.
+	* testsuite/experimental/net/buffer/arithmetic.cc: Remove unused
+	variable.
+	* testsuite/experimental/net/buffer/const.cc: Likewise.
+	* testsuite/experimental/net/buffer/mutable.cc: Likewise.
+	* testsuite/experimental/net/buffer/size.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/cons.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/dest.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/ops.cc: Likewise.
+	* testsuite/ext/special_functions/airy_ai/check_value.cc:
+	Likewise.
+	* testsuite/ext/special_functions/airy_bi/check_value.cc:
+	Likewise.
+	* testsuite/ext/special_functions/conf_hyperg/check_value.cc:
+	Likewise.
+	* testsuite/ext/special_functions/hyperg/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/01_assoc_laguerre/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/02_assoc_legendre/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/02_assoc_legendre/pr86655.cc:
+	Likewise.
+	* testsuite/special_functions/03_beta/check_value.cc: Likewise.
+	* testsuite/special_functions/04_comp_ellint_1/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/05_comp_ellint_2/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/06_comp_ellint_3/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/07_cyl_bessel_i/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/08_cyl_bessel_j/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/09_cyl_bessel_k/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/10_cyl_neumann/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/11_ellint_1/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/12_ellint_2/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/13_ellint_3/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/14_expint/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/15_hermite/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/16_laguerre/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/17_legendre/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/18_riemann_zeta/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/19_sph_bessel/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/20_sph_legendre/check_value.cc:
+	Likewise.
+	* testsuite/special_functions/20_sph_legendre/pr86655.cc:
+	Likewise.
+	* testsuite/special_functions/21_sph_neumann/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/01_assoc_laguerre/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/02_assoc_legendre/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/02_assoc_legendre/pr86655.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/03_beta/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/04_comp_ellint_1/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/05_comp_ellint_2/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/06_comp_ellint_3/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/07_conf_hyperg/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/08_cyl_bessel_i/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/09_cyl_bessel_j/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/10_cyl_bessel_k/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/11_cyl_neumann/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/12_ellint_1/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/13_ellint_2/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/14_ellint_3/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/15_expint/check_value_neg.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/16_hermite/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/17_hyperg/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/18_laguerre/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/19_legendre/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/20_riemann_zeta/check_value_neg.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/21_sph_bessel/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/22_sph_legendre/check_value.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/22_sph_legendre/pr86655.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/special_functions/23_sph_neumann/check_value.cc:
+	Likewise.
+
+2025-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/sstream: Adjust whitespace.
+
+2025-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120390
+	* include/bits/stl_construct.h (_Destroy_aux::__destroy_n): New
+	static member function.
+	(_Destroy_aux<true>::__destroy_n): Likewise.
+	(_Destroy_n_aux): Remove.
+	(_Destroy(ForwardIterator, ForwardIterator)): Remove
+	static_assert. Use is_trivially_destructible instead of
+	__has_trivial_destructor.
+	(_Destroy_n): Likewise. Use _Destroy_aux::__destroy_n instead of
+	_Destroy_n_aux::__destroy_n.
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/destroy_neg.cc:
+	Adjust dg-error strings. Move destroy_n tests to ...
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/destroy_n_neg.cc:
+	New test.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Adjust dg-error strings.
+	* testsuite/23_containers/vector/cons/destructible_neg.cc:
+	Likewise.
+
+2025-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_istringstream/cons/char/string_view.cc:
+	Only check get_allocator() for new string ABI.
+	* testsuite/27_io/basic_ostringstream/cons/char/string_view.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/char/string_view.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringstream/cons/char/string_view.cc:
+	Likewise.
+
 2025-06-10  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/max_size_type.h (__max_size_type::_M_val): Make

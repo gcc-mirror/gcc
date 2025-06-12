@@ -1,3 +1,85 @@
+2025-06-12  Alfie Richards  <alfie.richards@arm.com>
+
+	* cgraph.cc (cgraph_node::record_function_versions): Refactor and
+	rename to...
+	(cgraph_node::add_function_version): new function.
+	* cgraph.h (cgraph_node::record_function_versions): Refactor and
+	rename to...
+	(cgraph_node::add_function_version): new function.
+	* config/aarch64/aarch64.cc (aarch64_get_function_versions_dispatcher):
+	Remove reordering.
+	* config/i386/i386-features.cc (ix86_get_function_versions_dispatcher):
+	Remove reordering.
+	* config/riscv/riscv.cc (riscv_get_function_versions_dispatcher):
+	Remove reordering.
+	* config/rs6000/rs6000.cc (rs6000_get_function_versions_dispatcher):
+	Remove reordering.
+
+2025-06-12  Alfie Richards  <alfie.richards@arm.com>
+
+	* attribs.cc (is_function_default_version): Add target_version logic.
+
+2025-06-12  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Set 4 for SRF,
+	6 for GRR, GNR, CWF, DMR, ARL, PTL.
+
+2025-06-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* diagnostic-format-html.cc: Include "selftest-xml.h".
+	(html_builder::make_element_for_diagnostic): Move...
+	(class html_token_printer): ...from local to the function
+	to the global namespace.
+	(struct selftest::token_printer_test): New.
+	(selftest::test_token_printer): New.
+	(selftest::test_simple_log): Simplify using ASSERT_XML_PRINT_EQ.
+	(selftest::test_metadata): Likewise.
+	(selftest::diagnostic_format_html_cc_tests): Run the new test.
+	* selftest-xml.h: New file.
+	* xml.cc: Include "selftest-xml.h".
+	(selftest::assert_xml_print_eq): New.
+	(selftest::test_no_dtd): Simplify using ASSERT_XML_PRINT_EQ.
+	(selftest::test_printer): Likewise.
+	(selftest::test_attribute_ordering): Likewise.
+
+2025-06-11  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/riscv.cc (struct riscv_tune_param): Add tune
+	param.
+	(riscv_sched_can_speculate_insn): Implement.
+	(TARGET_SCHED_CAN_SPECULATE_INSN): Ditto.
+
+2025-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/120604
+	* config/i386/i386-expand.cc (ix86_expand_int_movcc): Cast operands of
+	signed 64-bit HOST_WIDE_INT subtractions to (unsigned HOST_WIDE_INT).
+
+2025-06-11  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR target/119100
+	* config/riscv/autovec-opt.md (*<optab>_vf_<mode>): Only handle vfmadd
+	and vfmsub.
+	(*vfnmsub_<mode>): New pattern.
+	(*vfnmadd_<mode>): New pattern.
+	* config/riscv/riscv.cc (get_vector_binary_rtx_cost): Add cost model for
+	NEG and VEC_DUPLICATE.
+
+2025-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120434
+	* gimple-range-fold.cc: Include rtl.h.
+	(fold_using_range::range_of_range_op): Handle bb ending with
+	GIMPLE_COND during RTL expansion where there is only one succ
+	edge instead of two.
+
+2025-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal-fn.cc (expand_POPCOUNT): Use
+	expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE) instead of
+	expand_normal (lhs).
+
 2025-06-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116792

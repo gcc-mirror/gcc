@@ -1,3 +1,20 @@
+2025-06-11  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119975
+	* intrinsic.cc (__gg__current_date): Eliminate CLOCK_REALTIME.
+	(__gg__seconds_past_midnight): Likewise.
+	(__gg__formatted_current_date): Likewise.
+	(__gg__random): Likewise.
+	(__gg__random_next): Likewise.
+	* libgcobol.cc: include <sys/time.h>.
+	(__gg__abort): Eliminate CLOCK_REALTIME.
+	(cobol_time): Likewise.
+	(get_time_nanoseconds): Rename.
+	(get_time_nanoseconds_local): Comment; Eliminate CLOCK_REALTIME.
+	(__gg__clock_gettime): Likewise.
+	(__gg__get_date_hhmmssff): Likewise.
+	* libgcobol.h (__gg__clock_gettime): Eliminate clockid_t from declaration.
+
 2025-06-06  Robert Dubner  <rdubner@symas.com>
 	    James K. Lowden  <jklowden@cobolworx.com>
 

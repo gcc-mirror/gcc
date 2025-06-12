@@ -1,3 +1,11 @@
+2025-06-12  Gwenole Beauchesne  <gb.devel@gmail.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/41201
+	PR c++/48026
+	* c-pragma.cc (init_pragma): Use c_register_pragma_with_early_handler
+	instead of c_register_pragma for `#pragma GCC optimize`.
+
 2025-06-03  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/120078

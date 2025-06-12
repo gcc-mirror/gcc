@@ -1,3 +1,10 @@
+2025-06-12  Yuao Ma  <c8ef@outlook.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113152
+	* intrinsic.texi: Document new half-revolution trigonometric
+	functions. Reorder doc for atand.
+
 2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
 	    Sandra Loosemore  <sloosemore@baylibre.com>
 

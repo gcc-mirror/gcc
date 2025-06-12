@@ -1,3 +1,18 @@
+2025-06-12  Alfie Richards  <alfie.richards@arm.com>
+
+	* decl.cc (maybe_version_functions): Change record_function_versions
+	call to add_function_version.
+
+2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (union lang_type::maybe_objc_info): New type.
+	(struct lang_type): Use union maybe_objc_info info member
+	instead of tree objc_info.
+	* lex.cc (copy_lang_type): Use sizeof (struct lang_type)
+	just for ObjC++ and otherwise offsetof (struct lang_type, info).
+	(maybe_add_lang_type_raw): Likewise.
+	(cxx_make_type): Formatting fix.
+
 2025-06-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/120495

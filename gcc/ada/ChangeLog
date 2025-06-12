@@ -1,3 +1,175 @@
+2025-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Variable>: Generate
+	a zero-initialization for the anonymous object of a small aggregate
+	allocated on the stack.
+	(inline_status_for_subprog): Minor tweak.
+
+2025-06-12  Tonu Naks  <naks@adacore.com>
+
+	* comperr.adb: update support instructions
+	* switch.adb: update support instructions
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sinfo.ads: Fix RM reference.
+
+2025-06-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Apply_External_Initialization): Reuse local constant.
+
+2025-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst
+	(Generalized Finalization): Document the actual implementation.
+	(No_Raise): Move to separate section.
+	* gnat_rm.texi: Regenerate.
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-valuer.adb (Scan_Raw_Real): Apply tweak.
+
+2025-06-12  Tonu Naks  <naks@adacore.com>
+
+	* comperr.adb: replace report@ with support@
+	* gnatcmd.adb: replace report@ with support@
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): Fix test.
+	(Build_Derived_Record_Type): Adjust error recovery paths.
+
+2025-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Has_Homonym): Fix inaccuracy in description.
+	* sem_ch8.ads (Find_Direct_Name): Remove obsolete description.
+	* sem_ch12.adb (Analyze_Associations): Rename I_Node parameter
+	into N and adjust description.
+	(Analyze_Subprogram_Instantiation): Add missing description.
+	(Contains_Instance_Of): Fix description.
+	(Associations): Rename Generic_Actual_Rec into Actual_Rec and
+	Gen_Assocs_Rec into Match_Rec.
+	(Analyze_One_Association): Rename I_Node parameter into N.
+	(Check_Fixed_Point_Warning): Rename Gen_Assocs parameter into
+	Match.
+	(Body of Associations): Minor cleanups and tweaks.
+	(Analyze_Associations): Rename I_Node parameter into N and
+	adjust implementation.
+	(Analyze_One_Association): Likewise.
+	(Analyze_Package_Instantiation): Remove obsolete code and clean up.
+	(Check_Fixed_Point_Warning): Rename Gen_Assocs parameter into
+	Match and adjust implementation.
+	(Freeze_Package_Instance): Simplify condition.
+	(Get_Unit_Instantiation_Node): Add support for instantiations of
+	subprograms and stop the loop properly in case of errors.
+	* sem_util.ads (Add_Global_Declaration): Rename N parameter into
+	Decl and fix description.
+	* sem_util.adb (Add_Global_Declaration): Rename N parameter into
+	Decl and adjust implementation.
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-valuer.adb (Scan_Raw_Real): Add RM reference.
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-valuer.adb (Scan_Raw_Real): Remove subexpression. Improve
+	surrounding comments.
+
+2025-06-12  Bob Duff  <duff@adacore.com>
+
+	* vast.adb: Check basic tree properties.
+	* atree.adb (Traverse_Field): Minor.
+	* treepr.adb (Destroy): Minor comment.
+
+2025-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valuer.adb (Round_Extra): Use multiplicative test.
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* einfo-utils.adb (Set_Convention): Remove obsolete test.
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Discriminants): Set Ekind earlier.
+	* sem_util.adb (Enter_Name): Adjust error processing.
+
+2025-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valuef.adb (Integer_To_Fixed): Enable overflow checks.
+	Deal specifically with Val = 2**(Int'Size - 1) if Minus is not set.
+	Exit the loop when V saturates to 0 in the case of (huge) negative
+	exponents.
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_util.adb (Insert_Actions): Refine test.
+
+2025-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (Compiler
+	switches) <-O>: Fix long line.
+	* gnat_ugn.texi: Regenerate.
+
+2025-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (List of
+	all switches): Add -gnatRh subswitch.
+	(Debugging Control): Document -gnatRh subswitch.
+	* opt.ads (List_Representation_Info_Holes): New boolean variable.
+	* repinfo.adb: Add with clause for GNAT.Heap_Sort_G.
+	(List_Common_Type_Info): Relax assertion.
+	(List_Object_Info): Replace assertion with additional test.
+	(List_Record_Layout): If -gnatRh is specified, make sure that the
+	components are ordered by increasing offsets.  Output a comment
+	line giving the number of unused bits if there is a hole between
+	consecutive components.  Streamline the control flow of the loop.
+	(List_Record_Info): Use the original record type giving the layout
+	of components, if any, to display the layout of the record.
+	* switch-c.adb (Scan_Front_End_Switches) <-gnatR>: Add support for
+	-gnatRh subswitch.
+	* usage.adb (Usage): Document -gnatRh subswitch.
+	* gnat_ugn.texi: Regenerate.
+
+2025-06-12  Johannes Kliemann  <kliemann@adacore.com>
+
+	* libgnat/s-secsta.adb (SS_Allocate): Add comment about
+	conservative alignment padding calculation.
+	* libgnat/s-secsta__cheri.adb (SS_Allocate): Add comment about
+	conservative alignment padding calculation.
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_warn.adb (Check_References): Rewrite expression
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Constrain_Index, Make_Index, Array_Type_Declaration,
+	Analyze_Number_Declaration): Remove uses of E_Void.
+
+2025-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* usage.adb (Usage): Justify the documentation of common switches
+	like that of other switches.  Rework that of the -O switch.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (Compiler
+	switches) <-O>: Rework and document 'z' and 'g' operands.
+	* doc/gnat_ugn/gnat_and_program_execution.rst (Optimization Levels):
+	Rework and document -Oz and -Og switches.
+	* gnat_ugn.texi: Regenerate.
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Constrain_Index): Avoid unused itypes.
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Constrain_Index): Factorize return statement.
+
+2025-06-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Numeric_Type): Remove duplicate call.
+
 2025-06-10  Piotr Trojanek  <trojanek@adacore.com>
 
 	* gen_il-gen-gen_entities.adb (Formal_Object_Kind): Remove
