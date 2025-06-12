@@ -1275,13 +1275,13 @@ gen_##PREFIX##vN##SUFFIX (PARAMS) \
 }
 
 #define GEN_VNM_NOEXEC(PREFIX, SUFFIX, PARAMS, ARGS) \
-GEN_VN_NOEXEC (PREFIX, qi##SUFFIX, A(PARAMS), A(ARGS)) \
-GEN_VN_NOEXEC (PREFIX, hi##SUFFIX, A(PARAMS), A(ARGS)) \
-GEN_VN_NOEXEC (PREFIX, hf##SUFFIX, A(PARAMS), A(ARGS)) \
+USE_QHF (GEN_VN_NOEXEC (PREFIX, qi##SUFFIX, A(PARAMS), A(ARGS))) \
+USE_QHF (GEN_VN_NOEXEC (PREFIX, hi##SUFFIX, A(PARAMS), A(ARGS))) \
+USE_QHF (GEN_VN_NOEXEC (PREFIX, hf##SUFFIX, A(PARAMS), A(ARGS))) \
 GEN_VN_NOEXEC (PREFIX, si##SUFFIX, A(PARAMS), A(ARGS)) \
-GEN_VN_NOEXEC (PREFIX, sf##SUFFIX, A(PARAMS), A(ARGS)) \
+USE_QHF (GEN_VN_NOEXEC (PREFIX, sf##SUFFIX, A(PARAMS), A(ARGS))) \
 GEN_VN_NOEXEC (PREFIX, di##SUFFIX, A(PARAMS), A(ARGS)) \
-GEN_VN_NOEXEC (PREFIX, df##SUFFIX, A(PARAMS), A(ARGS)) \
+USE_QHF (GEN_VN_NOEXEC (PREFIX, df##SUFFIX, A(PARAMS), A(ARGS))) \
 static rtx \
 gen_##PREFIX##vNm##SUFFIX (PARAMS) \
 { \
@@ -1289,13 +1289,13 @@ gen_##PREFIX##vNm##SUFFIX (PARAMS) \
   \
   switch (mode) \
     { \
-    case E_QImode: return gen_##PREFIX##vNqi##SUFFIX (ARGS); \
-    case E_HImode: return gen_##PREFIX##vNhi##SUFFIX (ARGS); \
-    case E_HFmode: return gen_##PREFIX##vNhf##SUFFIX (ARGS); \
+    USE_QHF (case E_QImode: return gen_##PREFIX##vNqi##SUFFIX (ARGS);) \
+    USE_QHF (case E_HImode: return gen_##PREFIX##vNhi##SUFFIX (ARGS);) \
+    USE_QHF (case E_HFmode: return gen_##PREFIX##vNhf##SUFFIX (ARGS);) \
     case E_SImode: return gen_##PREFIX##vNsi##SUFFIX (ARGS); \
-    case E_SFmode: return gen_##PREFIX##vNsf##SUFFIX (ARGS); \
+    USE_QHF (case E_SFmode: return gen_##PREFIX##vNsf##SUFFIX (ARGS);) \
     case E_DImode: return gen_##PREFIX##vNdi##SUFFIX (ARGS); \
-    case E_DFmode: return gen_##PREFIX##vNdf##SUFFIX (ARGS); \
+    USE_QHF (case E_DFmode: return gen_##PREFIX##vNdf##SUFFIX (ARGS);) \
     default: \
       break; \
     } \
@@ -1340,13 +1340,13 @@ gen_##PREFIX##vN##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
 }
 
 #define GEN_VNM(PREFIX, SUFFIX, PARAMS, ARGS) \
-GEN_VN (PREFIX, qi##SUFFIX, A(PARAMS), A(ARGS)) \
-GEN_VN (PREFIX, hi##SUFFIX, A(PARAMS), A(ARGS)) \
-GEN_VN (PREFIX, hf##SUFFIX, A(PARAMS), A(ARGS)) \
+USE_QHF (GEN_VN (PREFIX, qi##SUFFIX, A(PARAMS), A(ARGS))) \
+USE_QHF (GEN_VN (PREFIX, hi##SUFFIX, A(PARAMS), A(ARGS))) \
+USE_QHF (GEN_VN (PREFIX, hf##SUFFIX, A(PARAMS), A(ARGS))) \
 GEN_VN (PREFIX, si##SUFFIX, A(PARAMS), A(ARGS)) \
-GEN_VN (PREFIX, sf##SUFFIX, A(PARAMS), A(ARGS)) \
+USE_QHF (GEN_VN (PREFIX, sf##SUFFIX, A(PARAMS), A(ARGS))) \
 GEN_VN (PREFIX, di##SUFFIX, A(PARAMS), A(ARGS)) \
-GEN_VN (PREFIX, df##SUFFIX, A(PARAMS), A(ARGS)) \
+USE_QHF (GEN_VN (PREFIX, df##SUFFIX, A(PARAMS), A(ARGS))) \
 USE_TI (GEN_VN (PREFIX, ti##SUFFIX, A(PARAMS), A(ARGS))) \
 static rtx \
 gen_##PREFIX##vNm##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
@@ -1355,15 +1355,22 @@ gen_##PREFIX##vNm##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
   \
   switch (mode) \
     { \
-    case E_QImode: return gen_##PREFIX##vNqi##SUFFIX (ARGS, merge_src, exec); \
-    case E_HImode: return gen_##PREFIX##vNhi##SUFFIX (ARGS, merge_src, exec); \
-    case E_HFmode: return gen_##PREFIX##vNhf##SUFFIX (ARGS, merge_src, exec); \
-    case E_SImode: return gen_##PREFIX##vNsi##SUFFIX (ARGS, merge_src, exec); \
-    case E_SFmode: return gen_##PREFIX##vNsf##SUFFIX (ARGS, merge_src, exec); \
-    case E_DImode: return gen_##PREFIX##vNdi##SUFFIX (ARGS, merge_src, exec); \
-    case E_DFmode: return gen_##PREFIX##vNdf##SUFFIX (ARGS, merge_src, exec); \
-    case E_TImode: \
-	USE_TI (return gen_##PREFIX##vNti##SUFFIX (ARGS, merge_src, exec);) \
+    USE_QHF (case E_QImode: \
+	return gen_##PREFIX##vNqi##SUFFIX (ARGS, merge_src, exec);) \
+    USE_QHF (case E_HImode: \
+	return gen_##PREFIX##vNhi##SUFFIX (ARGS, merge_src, exec);) \
+    USE_QHF (case E_HFmode: \
+	return gen_##PREFIX##vNhf##SUFFIX (ARGS, merge_src, exec);) \
+    case E_SImode: \
+	return gen_##PREFIX##vNsi##SUFFIX (ARGS, merge_src, exec); \
+    USE_QHF (case E_SFmode: \
+	return gen_##PREFIX##vNsf##SUFFIX (ARGS, merge_src, exec);) \
+    case E_DImode: \
+	return gen_##PREFIX##vNdi##SUFFIX (ARGS, merge_src, exec); \
+    USE_QHF (case E_DFmode: \
+	return gen_##PREFIX##vNdf##SUFFIX (ARGS, merge_src, exec);) \
+    USE_TI (case E_TImode: \
+	return gen_##PREFIX##vNti##SUFFIX (ARGS, merge_src, exec);) \
     default: \
       break; \
     } \
@@ -1372,7 +1379,8 @@ gen_##PREFIX##vNm##SUFFIX (PARAMS, rtx merge_src=NULL, rtx exec=NULL) \
   return NULL_RTX; \
 }
 
-/* These have TImode support.  */
+/* These support everything.  */
+#define USE_QHF(ARGS) ARGS
 #define USE_TI(ARGS) ARGS
 GEN_VNM (mov,, A(rtx dest, rtx src), A(dest, src))
 GEN_VNM (vec_duplicate,, A(rtx dest, rtx src), A(dest, src))
@@ -1382,6 +1390,7 @@ GEN_VNM (vec_duplicate,, A(rtx dest, rtx src), A(dest, src))
 #define USE_TI(ARGS)
 GEN_VNM (add,3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN (add,si3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
+GEN_VN (add,di3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN (add,si3_vcc_dup, A(rtx dest, rtx src1, rtx src2, rtx vcc),
 	A(dest, src1, src2, vcc))
 GEN_VN (add,di3_sext_dup2, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
@@ -1393,15 +1402,20 @@ GEN_VN (add,di3_vcc_zext_dup2, A(rtx dest, rtx src1, rtx src2, rtx vcc),
 GEN_VN (addc,si3, A(rtx dest, rtx src1, rtx src2, rtx vccout, rtx vccin),
 	A(dest, src1, src2, vccout, vccin))
 GEN_VN (and,si3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
-GEN_VN (ashl,si3, A(rtx dest, rtx src, rtx shift), A(dest, src, shift))
 GEN_VNM_NOEXEC (ds_bpermute,, A(rtx dest, rtx addr, rtx src, rtx exec),
 		A(dest, addr, src, exec))
 GEN_VNM (gather,_expr, A(rtx dest, rtx addr, rtx as, rtx vol),
 	 A(dest, addr, as, vol))
-GEN_VN (mul,si3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN (sub,si3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN_NOEXEC (vec_series,si, A(rtx dest, rtx x, rtx c), A(dest, x, c))
 
+/* These do not have QI, HI, or any FP support.  */
+#undef USE_QHF
+#define USE_QHF(ARGS)
+GEN_VNM (ashl,3, A(rtx dest, rtx src, rtx shift), A(dest, src, shift))
+GEN_VNM (mul,3_dup, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
+
+#undef USE_QHF
 #undef USE_TI
 #undef GEN_VNM
 #undef GEN_VN
