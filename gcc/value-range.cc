@@ -2548,15 +2548,14 @@ irange::intersect_bitmask (const irange &r)
   irange_bitmask bm = get_bitmask ();
   irange_bitmask save = bm;
   bm.intersect (r.get_bitmask ());
-  if (save == bm)
-    return false;
-
+  // Use ths opportunity to make sure mask reflects always reflects the
+  // best mask we have.
   m_bitmask = bm;
 
   // Updating m_bitmask may still yield a semantic bitmask (as
   // returned by get_bitmask) which is functionally equivalent to what
   // we originally had.  In which case, there's still no change.
-  if (save == get_bitmask ())
+  if (save == bm || save == get_bitmask ())
     return false;
 
   if (!set_range_from_bitmask ())
