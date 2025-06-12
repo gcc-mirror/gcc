@@ -2307,36 +2307,46 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 
    Return values.
      ADDR_SPACE_FLAT   - return VnDImode vector of absolute addresses.
-     ADDR_SPACE_GLOBAL - return VnSImode vector of offsets.  */
+     ADDR_SPACE_GLOBAL - return VnSImode vector of offsets.
+     64-bit offsets    - return VnDImode vector of absolute addresses. */
 
 rtx
 gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets, rtx scale,
 			   bool unsigned_p, rtx exec)
 {
   int vf = GET_MODE_NUNITS (GET_MODE (offsets));
-  rtx tmpsi = gen_reg_rtx (VnMODE (vf, SImode));
-  rtx tmpdi = gen_reg_rtx (VnMODE (vf, DImode));
+  rtx scaled_offsets = gen_reg_rtx (GET_MODE (offsets));
+  rtx abs_addr = gen_reg_rtx (VnMODE (vf, DImode));
+  bool use_di = GET_MODE_INNER (GET_MODE (scaled_offsets)) == DImode;
 
   if (CONST_INT_P (scale)
       && INTVAL (scale) > 0
       && exact_log2 (INTVAL (scale)) >= 0)
-    emit_insn (gen_ashlvNsi3 (tmpsi, offsets,
-			      GEN_INT (exact_log2 (INTVAL (scale))),
-			      NULL, exec));
+    emit_insn (gen_ashlvNm3 (scaled_offsets, offsets,
+			     GEN_INT (exact_log2 (INTVAL (scale))),
+			     NULL, exec));
   else
-     emit_insn (gen_mulvNsi3_dup (tmpsi, offsets, scale, NULL, exec));
+     emit_insn (gen_mulvNm3_dup (scaled_offsets, scale, offsets, NULL, exec));
 
+  /* No instructions support DImode offsets.  */
+  if (use_di)
+    {
+      emit_insn (gen_addvNdi3_dup (abs_addr, base, scaled_offsets, NULL, exec));
+      return abs_addr;
+    }
   /* "Global" instructions do not support negative register offsets.  */
-  if (as == ADDR_SPACE_FLAT || !unsigned_p)
+  else if (as == ADDR_SPACE_FLAT || !unsigned_p)
     {
       if (unsigned_p)
-	 emit_insn (gen_addvNdi3_zext_dup2 (tmpdi, tmpsi, base, NULL, exec));
+	emit_insn (gen_addvNdi3_zext_dup2 (abs_addr, scaled_offsets, base,
+					   NULL, exec));
       else
-	 emit_insn (gen_addvNdi3_sext_dup2 (tmpdi, tmpsi, base, NULL, exec));
-      return tmpdi;
+	emit_insn (gen_addvNdi3_sext_dup2 (abs_addr, scaled_offsets, base,
+					   NULL, exec));
+      return abs_addr;
     }
   else if (as == ADDR_SPACE_GLOBAL)
-    return tmpsi;
+    return scaled_offsets;
 
   gcc_unreachable ();
 }
