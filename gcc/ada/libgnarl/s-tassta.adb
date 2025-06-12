@@ -133,6 +133,11 @@ package body System.Tasking.Stages is
    --  Different code is used at master completion, in Terminate_Dependents,
    --  due to a need for tighter synchronization with the master.
 
+   function Get_Stack_Base (Self_ID : Task_Id) return System.Address;
+   --  Get the stack base of Self.
+   --
+   --  If the stack base cannot be determined, then Null_Address is returned.
+
    ----------------------
    -- Abort_Dependents --
    ----------------------
@@ -1113,7 +1118,7 @@ package body System.Tasking.Stages is
             --  Address of the base of the stack
 
          begin
-            Stack_Base := Self_ID.Common.Compiler_Data.Pri_Stack_Info.Base;
+            Stack_Base := Get_Stack_Base (Self_ID);
 
             if Stack_Base = Null_Address then
 
@@ -1139,7 +1144,7 @@ package body System.Tasking.Stages is
               (Self_ID.Common.Analyzer,
                Self_ID.Common.Task_Image (1 .. Self_ID.Common.Task_Image_Len),
                Natural (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size),
-               SSE.To_Integer (Stack_Base),
+               Stack_Base,
                Pattern_Size);
             STPO.Unlock_RTS;
             Fill_Stack (Self_ID.Common.Analyzer);
@@ -1965,6 +1970,15 @@ package body System.Tasking.Stages is
 
       System.Task_Primitives.Operations.Finalize_TCB (T);
    end Vulnerable_Free_Task;
+
+   --------------------
+   -- Get_Stack_Base --
+   --------------------
+
+   --  Get_Stack_Base is architecture-specific
+
+   function Get_Stack_Base (Self_ID : Task_Id) return System.Address
+   is separate;
 
 --  Package elaboration code
 

@@ -188,7 +188,8 @@ package body System.Stack_Usage is
       --  allocated byte on the stack.
    begin
       if Parameters.Stack_Grows_Down then
-         if Analyzer.Stack_Base - Stack_Address (Analyzer.Pattern_Size) >
+         if To_Stack_Address (Analyzer.Stack_Base) -
+              Stack_Address (Analyzer.Pattern_Size) >
               To_Stack_Address (Current_Stack_Level'Address) - Guard
          then
             --  No room for a pattern
@@ -198,22 +199,22 @@ package body System.Stack_Usage is
          end if;
 
          Analyzer.Pattern_Limit :=
-           Analyzer.Stack_Base - Stack_Address (Analyzer.Pattern_Size);
+           Analyzer.Stack_Base - Storage_Offset (Analyzer.Pattern_Size);
 
-         if Analyzer.Stack_Base >
+         if To_Stack_Address (Analyzer.Stack_Base) >
               To_Stack_Address (Current_Stack_Level'Address) - Guard
          then
             --  Reduce pattern size to prevent local frame overwrite
 
             Analyzer.Pattern_Size :=
               Integer (To_Stack_Address (Current_Stack_Level'Address) - Guard
-                         - Analyzer.Pattern_Limit);
+                         - To_Stack_Address (Analyzer.Pattern_Limit));
          end if;
 
-         Analyzer.Pattern_Overlay_Address :=
-           To_Address (Analyzer.Pattern_Limit);
+         Analyzer.Pattern_Overlay_Address := Analyzer.Pattern_Limit;
       else
-         if Analyzer.Stack_Base + Stack_Address (Analyzer.Pattern_Size) <
+         if To_Stack_Address (Analyzer.Stack_Base) +
+              Stack_Address (Analyzer.Pattern_Size) <
               To_Stack_Address (Current_Stack_Level'Address) + Guard
          then
             --  No room for a pattern
@@ -223,22 +224,21 @@ package body System.Stack_Usage is
          end if;
 
          Analyzer.Pattern_Limit :=
-           Analyzer.Stack_Base + Stack_Address (Analyzer.Pattern_Size);
+           Analyzer.Stack_Base + Storage_Offset (Analyzer.Pattern_Size);
 
-         if Analyzer.Stack_Base <
+         if To_Stack_Address (Analyzer.Stack_Base) <
            To_Stack_Address (Current_Stack_Level'Address) + Guard
          then
             --  Reduce pattern size to prevent local frame overwrite
 
             Analyzer.Pattern_Size :=
               Integer
-                (Analyzer.Pattern_Limit -
+                (To_Stack_Address (Analyzer.Pattern_Limit) -
                   (To_Stack_Address (Current_Stack_Level'Address) + Guard));
          end if;
 
          Analyzer.Pattern_Overlay_Address :=
-           To_Address (Analyzer.Pattern_Limit -
-                         Stack_Address (Analyzer.Pattern_Size));
+           Analyzer.Pattern_Limit - Storage_Offset (Analyzer.Pattern_Size);
       end if;
 
       --  Declare and fill the pattern buffer
@@ -270,7 +270,7 @@ package body System.Stack_Usage is
      (Analyzer         : in out Stack_Analyzer;
       Task_Name        : String;
       Stack_Size       : Natural;
-      Stack_Base       : Stack_Address;
+      Stack_Base       : System.Address;
       Pattern_Size     : Natural;
       Pattern          : Interfaces.Unsigned_32 := 16#DEAD_BEEF#)
    is
@@ -332,10 +332,10 @@ package body System.Stack_Usage is
 
       if Parameters.Stack_Grows_Down then
          Analyzer.Topmost_Touched_Mark :=
-           Analyzer.Pattern_Limit + Stack_Address (Analyzer.Pattern_Size);
+           Analyzer.Pattern_Limit + Storage_Offset (Analyzer.Pattern_Size);
       else
          Analyzer.Topmost_Touched_Mark :=
-           Analyzer.Pattern_Limit - Stack_Address (Analyzer.Pattern_Size);
+           Analyzer.Pattern_Limit - Storage_Offset (Analyzer.Pattern_Size);
       end if;
 
       if Analyzer.Pattern_Size = 0 then
@@ -349,8 +349,7 @@ package body System.Stack_Usage is
       if System.Parameters.Stack_Grows_Down then
          for J in Stack'Range loop
             if Stack (J) /= Analyzer.Pattern then
-               Analyzer.Topmost_Touched_Mark :=
-                 To_Stack_Address (Stack (J)'Address);
+               Analyzer.Topmost_Touched_Mark := Stack (J)'Address;
                exit;
             end if;
          end loop;
@@ -358,8 +357,7 @@ package body System.Stack_Usage is
       else
          for J in reverse Stack'Range loop
             if Stack (J) /= Analyzer.Pattern then
-               Analyzer.Topmost_Touched_Mark :=
-                 To_Stack_Address (Stack (J)'Address);
+               Analyzer.Topmost_Touched_Mark := Stack (J)'Address;
                exit;
             end if;
          end loop;
@@ -514,8 +512,9 @@ package body System.Stack_Usage is
          Result.Value := Analyzer.Stack_Size;
 
       else
-         Result.Value := Stack_Size (Analyzer.Topmost_Touched_Mark,
-                                     Analyzer.Stack_Base);
+         Result.Value :=
+           Stack_Size (To_Stack_Address (Analyzer.Topmost_Touched_Mark),
+                       To_Stack_Address (Analyzer.Stack_Base));
       end if;
 
       if Analyzer.Result_Id in Result_Array'Range then

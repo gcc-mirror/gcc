@@ -230,7 +230,7 @@ package System.Stack_Usage is
      (Analyzer         : in out Stack_Analyzer;
       Task_Name        : String;
       Stack_Size       : Natural;
-      Stack_Base       : Stack_Address;
+      Stack_Base       : System.Address;
       Pattern_Size     : Natural;
       Pattern          : Interfaces.Unsigned_32 := 16#DEAD_BEEF#);
    --  Should be called before any use of a Stack_Analyzer, to initialize it.
@@ -287,7 +287,7 @@ private
       Task_Name : String (1 .. Task_Name_Length);
       --  Name of the task
 
-      Stack_Base : Stack_Address;
+      Stack_Base : System.Address;
       --  Address of the base of the stack, as given by the caller of
       --  Initialize_Analyzer.
 
@@ -300,10 +300,10 @@ private
       Pattern : Pattern_Type;
       --  Pattern used to recognize untouched memory
 
-      Pattern_Limit : Stack_Address;
+      Pattern_Limit : System.Address;
       --  Bound of the pattern area farthest to the base
 
-      Topmost_Touched_Mark : Stack_Address;
+      Topmost_Touched_Mark : System.Address;
       --  Topmost address of the pattern area whose value it is pointing
       --  at has been modified during execution. If the systematic error are
       --  compensated, it is the topmost value of the stack pointer during
