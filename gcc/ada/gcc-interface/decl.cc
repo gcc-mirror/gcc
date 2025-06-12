@@ -4502,7 +4502,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  if (Known_Esize (gnat_entity))
 	    gnu_size
 	      = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
-			       VAR_DECL, false, false, size_s, type_s);
+			       VAR_DECL, false, false, NULL, NULL);
 
 	  /* ??? The test on Has_Size_Clause must be removed when "unknown" is
 	     no longer represented as Uint_0 (i.e. Use_New_Unknown_Rep).  */
@@ -9693,6 +9693,20 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
 
       post_error_ne_tree (s, gnat_error_node, gnat_object, old_size);
 
+      return NULL_TREE;
+    }
+
+  /* The size of stand-alone objects is always a multiple of the alignment,
+     but that's already enforced for elementary types by the front-end.  */
+  if (kind == VAR_DECL
+      && !component_p
+      && RECORD_OR_UNION_TYPE_P (gnu_type)
+      && !TYPE_FAT_POINTER_P (gnu_type)
+      && !integer_zerop (size_binop (TRUNC_MOD_EXPR, size,
+				     bitsize_int (TYPE_ALIGN (gnu_type)))))
+    {
+      post_error_ne_num ("size for& must be multiple of alignment ^",
+			 gnat_error_node, gnat_object, TYPE_ALIGN (gnu_type));
       return NULL_TREE;
     }
 
