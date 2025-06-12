@@ -15,6 +15,7 @@ DEF_VX_BINARY_CASE_0_WRAP(T, *, mul)
 DEF_VX_BINARY_CASE_0_WRAP(T, /, div)
 DEF_VX_BINARY_CASE_0_WRAP(T, %, rem)
 DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_0_WARP(T), max)
+DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max)
 
 /* { dg-final { scan-assembler-times {vadd.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vsub.vx} 1 } } */
@@ -25,4 +26,4 @@ DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_0_WARP(T), max)
 /* { dg-final { scan-assembler-times {vmul.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vdiv.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vrem.vx} 1 } } */
-/* { dg-final { scan-assembler-times {vmax.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vmax.vx} 2 } } */
