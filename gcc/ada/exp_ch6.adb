@@ -5391,9 +5391,14 @@ package body Exp_Ch6 is
          end if;
 
       --  Note that object declarations are also distributed into conditional
-      --  expressions but we may be invoked before this distribution is done.
+      --  expressions, but we may be invoked before this distribution is done.
+      --  However that's not the case for the declarations of return objects,
+      --  see the twin Is_Optimizable_Declaration predicates that are present
+      --  in Expand_N_Case_Expression and Expand_N_If_Expression of Exp_Ch4.
 
-      elsif Nkind (Uncond_Par) = N_Object_Declaration then
+      elsif Nkind (Uncond_Par) = N_Object_Declaration
+        and then not Is_Return_Object (Defining_Identifier (Uncond_Par))
+      then
          return;
       end if;
 
