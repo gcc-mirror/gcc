@@ -1815,7 +1815,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ranges::enable_view<optional<_Tp>> = true;
 
   template<typename _Tp>
-    inline constexpr auto
+    inline constexpr range_format
       format_kind<optional<_Tp>> = range_format::disabled;
 #endif // __cpp_lib_optional_range_support
 
