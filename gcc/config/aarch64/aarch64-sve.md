@@ -3948,6 +3948,7 @@
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - NOT
+;; - NOTS
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated predicate inverse.
@@ -3970,6 +3971,42 @@
 	  (match_operand:PRED_ALL 1 "register_operand" "Upa")))]
   "TARGET_SVE"
   "not\t%0.b, %1/z, %2.b"
+)
+
+;; Predicated predicate inverse in which the flags are set in the same
+;; way as a PTEST.
+(define_insn "*one_cmpl<mode>3_cc"
+  [(set (reg:CC_NZC CC_REGNUM)
+	(unspec:CC_NZC
+	  [(match_operand:VNx16BI 1 "register_operand" "Upa")
+	   (match_operand 3)
+	   (match_operand:SI 4 "aarch64_sve_ptrue_flag")
+	   (and:PRED_ALL
+	     (not:PRED_ALL
+	       (match_operand:PRED_ALL 2 "register_operand" "Upa"))
+	     (match_dup 3))]
+	  UNSPEC_PTEST))
+   (set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
+	(and:PRED_ALL (not:PRED_ALL (match_dup 2)) (match_dup 3)))]
+  "TARGET_SVE"
+  "nots\t%0.b, %1/z, %2.b"
+)
+
+;; Same, where only the flags result is interesting.
+(define_insn "*one_cmpl<mode>3_ptest"
+  [(set (reg:CC_NZC CC_REGNUM)
+	(unspec:CC_NZC
+	  [(match_operand:VNx16BI 1 "register_operand" "Upa")
+	   (match_operand 3)
+	   (match_operand:SI 4 "aarch64_sve_ptrue_flag")
+	   (and:PRED_ALL
+	     (not:PRED_ALL
+	       (match_operand:PRED_ALL 2 "register_operand" "Upa"))
+	     (match_dup 3))]
+	  UNSPEC_PTEST))
+   (clobber (match_scratch:PRED_ALL 0 "=Upa"))]
+  "TARGET_SVE"
+  "nots\t%0.b, %1/z, %2.b"
 )
 
 ;; =========================================================================
