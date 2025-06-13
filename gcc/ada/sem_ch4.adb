@@ -5603,6 +5603,10 @@ package body Sem_Ch4 is
                   if No (Act_Decl) then
                      Set_Etype (N, Etype (Comp));
 
+                     if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (N)) then
+                        Make_Mutably_Tagged_Conversion (N);
+                     end if;
+
                   else
                      --  If discriminants were present in the component
                      --  declaration, they have been replaced by the

@@ -2354,6 +2354,7 @@ package body Exp_Ch4 is
       Rhs        : Node_Id) return Node_Id
    is
       Loc       : constant Source_Ptr := Sloc (Nod);
+      CW_Comp   : Boolean := False;
       Full_Type : Entity_Id;
       Eq_Op     : Entity_Id;
 
@@ -2383,10 +2384,17 @@ package body Exp_Ch4 is
          Full_Type := Underlying_Type (Full_Type);
       end if;
 
+      if Is_Class_Wide_Equivalent_Type (Full_Type) then
+         CW_Comp := True;
+         Full_Type :=
+           Get_Corresponding_Mutably_Tagged_Type_If_Present (Full_Type);
+         pragma Assert (Is_Tagged_Type (Full_Type));
+      end if;
+
       --  Case of tagged record types
 
       if Is_Tagged_Type (Full_Type) then
-         Eq_Op := Find_Primitive_Eq (Comp_Type);
+         Eq_Op := Find_Primitive_Eq (if CW_Comp then Full_Type else Comp_Type);
          pragma Assert (Present (Eq_Op));
 
          return

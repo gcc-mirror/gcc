@@ -29,6 +29,7 @@ with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Exp_Util;       use Exp_Util;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -101,13 +102,10 @@ package body Exp_Strm is
    --  Loc parameter is used as the Sloc of the created entity.
 
    function Stream_Base_Type (E : Entity_Id) return Entity_Id;
-   --  Stream attributes work on the basis of the base type except for the
-   --  array case. For the array case, we do not go to the base type, but
-   --  to the first subtype if it is constrained. This avoids problems with
-   --  incorrect conversions in the packed array case. Stream_Base_Type is
-   --  exactly this function (returns the base type, unless we have an array
-   --  type whose first subtype is constrained, in which case it returns the
-   --  first subtype).
+   --  For an array type whose whose first subtype is constrained, return
+   --  the first subtype. For the internal representation type corresponding
+   --  to a mutably tagged type, return the mutably tagged type. Otherwise,
+   --  return the base type. Similar to Exp_Put_Image.Put_Image_Base_Type.
 
    --------------------------------
    -- Build_Array_Input_Function --
@@ -1502,6 +1500,7 @@ package body Exp_Strm is
 
       function Make_Field_Attribute (C : Entity_Id) return Node_Id is
          Field_Typ : constant Entity_Id := Stream_Base_Type (Etype (C));
+         Selected  : Node_Id;
 
          TSS_Names : constant array (Name_Input .. Name_Write) of
                        TSS_Name_Type :=
@@ -1524,15 +1523,23 @@ package body Exp_Strm is
             return Make_Null_Statement (Loc);
          end if;
 
+         Selected := Make_Selected_Component (Loc,
+                       Prefix        => Make_Identifier (Loc, Name_V),
+                       Selector_Name => New_Occurrence_Of (C, Loc));
+
+         if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (C)) then
+            Make_Mutably_Tagged_Conversion
+              (Selected,
+               Typ => Get_Corresponding_Mutably_Tagged_Type_If_Present
+                        (Etype (C)));
+         end if;
+
          return
            Make_Attribute_Reference (Loc,
              Prefix         => New_Occurrence_Of (Field_Typ, Loc),
              Attribute_Name => Nam,
-             Expressions    => New_List (
-               Make_Identifier (Loc, Name_S),
-               Make_Selected_Component (Loc,
-                 Prefix        => Make_Identifier (Loc, Name_V),
-                 Selector_Name => New_Occurrence_Of (C, Loc))));
+             Expressions    => New_List (Make_Identifier (Loc, Name_S),
+                                         Selected));
       end Make_Field_Attribute;
 
       ---------------------------
@@ -1808,6 +1815,10 @@ package body Exp_Strm is
 
    function Stream_Base_Type (E : Entity_Id) return Entity_Id is
    begin
+      if Is_Class_Wide_Equivalent_Type (E) then
+         return Corresponding_Mutably_Tagged_Type (E);
+      end if;
+
       if Is_Array_Type (E)
         and then Is_First_Subtype (E)
       then

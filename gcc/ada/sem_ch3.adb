@@ -6819,7 +6819,7 @@ package body Sem_Ch3 is
       --  that the element type is constrained.
 
       if Is_Mutably_Tagged_Type (Element_Type) then
-         Set_Component_Type (T,
+         Set_Component_Type (Base_Type (T),
            Class_Wide_Equivalent_Type (Element_Type));
 
       elsif not Is_Definite_Subtype (Element_Type) then

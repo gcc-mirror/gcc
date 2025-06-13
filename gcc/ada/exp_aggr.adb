@@ -1422,8 +1422,11 @@ package body Exp_Aggr is
                elsif Is_Mutably_Tagged_Type (Comp_Typ)
                  and then Nkind (Expr) = N_Qualified_Expression
                then
-                  Analyze_And_Resolve (Expr_Q, Etype (Expr));
+                  --  Avoid class-wide expected type for aggregate
+                  --  (which would be rejected as illegal)
+                  --  if the aggregate is explicitly qualified.
 
+                  Analyze_And_Resolve (Expr_Q, Etype (Expr));
                else
                   Analyze_And_Resolve (Expr_Q, Comp_Typ);
                end if;
