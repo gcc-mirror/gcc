@@ -6022,7 +6022,8 @@ gnat_to_gnu_profile_type (Entity_Id gnat_type)
   return gnu_type;
 }
 
-/* Return true if TYPE contains only integral data, recursively if need be.  */
+/* Return true if TYPE contains only integral data, recursively if need be.
+   (integral data is to be understood as not floating-point data here).  */
 
 static bool
 type_contains_only_integral_data (tree type)
@@ -6042,7 +6043,7 @@ type_contains_only_integral_data (tree type)
       return type_contains_only_integral_data (TREE_TYPE (type));
 
     default:
-      return INTEGRAL_TYPE_P (type);
+      return INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type);
     }
 
   gcc_unreachable ();
