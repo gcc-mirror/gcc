@@ -47,28 +47,60 @@ namespace ranges
 {
   namespace __detail
   {
+    template<typename _Fp>
+      using __by_ref_or_value_fn
+	= __conditional_t<is_scalar_v<_Fp> || is_empty_v<_Fp>, _Fp, _Fp&>;
+
     template<typename _Comp, typename _Proj>
-      constexpr auto
-      __make_comp_proj(_Comp& __comp, _Proj& __proj)
+      struct _Comp_proj
       {
-	return [&] (auto&& __lhs, auto&& __rhs) -> bool {
-	  using _TL = decltype(__lhs);
-	  using _TR = decltype(__rhs);
-	  return std::__invoke(__comp,
-			       std::__invoke(__proj, std::forward<_TL>(__lhs)),
-			       std::__invoke(__proj, std::forward<_TR>(__rhs)));
-	};
-      }
+	[[no_unique_address]] __by_ref_or_value_fn<_Comp> _M_comp;
+	[[no_unique_address]] __by_ref_or_value_fn<_Proj> _M_proj;
+
+	constexpr
+	_Comp_proj(_Comp& __comp, _Proj& __proj)
+	: _M_comp(__comp), _M_proj(__proj)
+	{ }
+
+	template<typename _Tp, typename _Up>
+	  constexpr bool
+	  operator()(_Tp&& __x, _Up&& __y)
+	  {
+	    return std::__invoke(_M_comp,
+				 std::__invoke(_M_proj, std::forward<_Tp>(__x)),
+				 std::__invoke(_M_proj, std::forward<_Up>(__y)));
+	  }
+      };
+
+    template<typename _Comp, typename _Proj>
+      constexpr _Comp_proj<_Comp, _Proj>
+      __make_comp_proj(_Comp& __comp, _Proj& __proj)
+      { return {__comp, __proj}; }
 
     template<typename _Pred, typename _Proj>
-      constexpr auto
-      __make_pred_proj(_Pred& __pred, _Proj& __proj)
+      struct _Pred_proj
       {
-	return [&] <typename _Tp> (_Tp&& __arg) -> bool {
-	  return std::__invoke(__pred,
-			       std::__invoke(__proj, std::forward<_Tp>(__arg)));
-	};
-      }
+	[[no_unique_address]] __by_ref_or_value_fn<_Pred> _M_pred;
+	[[no_unique_address]] __by_ref_or_value_fn<_Proj> _M_proj;
+
+	constexpr
+	_Pred_proj(_Pred& __pred, _Proj& __proj)
+	: _M_pred(__pred), _M_proj(__proj)
+	{ }
+
+	template<typename _Tp>
+	  constexpr bool
+	  operator()(_Tp&& __x)
+	  {
+	    return std::__invoke(_M_pred,
+				 std::__invoke(_M_proj, std::forward<_Tp>(__x)));
+	  }
+      };
+
+    template<typename _Pred, typename _Proj>
+      constexpr _Pred_proj<_Pred, _Proj>
+      __make_pred_proj(_Pred& __pred, _Proj& __proj)
+      { return {__pred, __proj}; }
   } // namespace __detail
 
   struct __all_of_fn
