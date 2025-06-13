@@ -6570,9 +6570,22 @@ construct_init_block (void)
   add_bb_to_loop (init_block, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
   if (e)
     {
+      unsigned int dest_idx = e->dest_idx;
       first_block = e->dest;
       redirect_edge_succ (e, init_block);
-      make_single_succ_edge (init_block, first_block, flags);
+      e = make_single_succ_edge (init_block, first_block, flags);
+      if ((first_block->flags & BB_RTL) == 0
+	  && phi_nodes (first_block)
+	  && e->dest_idx != dest_idx)
+	{
+	  /* If there are any PHI nodes on dest, swap the new succ edge
+	     with the one moved into false_edge's former position, so that
+	     PHI arguments don't need adjustment.  */
+	  edge e2 = EDGE_PRED (first_block, dest_idx);
+	  std::swap (e->dest_idx, e2->dest_idx);
+	  std::swap (EDGE_PRED (first_block, e->dest_idx),
+		     EDGE_PRED (first_block, e2->dest_idx));
+	}
     }
   else
     make_single_succ_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
