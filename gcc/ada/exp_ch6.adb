@@ -287,10 +287,11 @@ package body Exp_Ch6 is
 
    --  This expansion is necessary in all the cases where the constant object
    --  denoted by the call needs finalization in the current subprogram, which
-   --  excludes return statements, and is not identified with another object
-   --  that will be finalized, which excludes (statically) declared objects,
-   --  dynamically allocated objects, components of aggregates, and targets of
-   --  assignments that are done directly (without intermediate temporaries).
+   --  excludes simple return statements, and is not identified with another
+   --  object that will be finalized, which excludes (statically) declared
+   --  objects, dynamically allocated objects, components of aggregates, and
+   --  targets of assignments that are done directly (without intermediate
+   --  temporaries).
 
    procedure Expand_Non_Function_Return (N : Node_Id);
    --  Expand a simple return statement found in a procedure body, entry body,
