@@ -4472,13 +4472,13 @@ fix = {
 
 /*
  *  Arrange for stdio.h to use stdarg.h to define __gnuc_va_list.
- *  On 4BSD-derived systems, stdio.h defers to machine/ansi.h; that's
- *  OK too.
+ *  On 4BSD-derived systems, stdio.h defers to machine/ansi.h, that's
+ *  OK too. modern macOS includes _stdio.h, and does not need the fix.
  */
 fix = {
     hackname = stdio_stdarg_h;
     files    = stdio.h;
-    bypass   = "include.*(stdarg\.h|machine/ansi\.h)";
+    bypass   = "include.*(stdarg\.h|machine/ansi\.h|_stdio\.h)";
     /*
      * On Solaris 10, this fix is unncessary; <stdio.h> includes
      * <iso/stdio_iso.h>, which includes <sys/va_list.h>.
