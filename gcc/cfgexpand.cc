@@ -2830,6 +2830,31 @@ expand_remove_edge (edge e)
   remove_edge (e);
 }
 
+/* Split edge E during expansion and instead of creating a new
+   bb on that edge, add there BB.  FLAGS should be flags on the
+   new edge from BB to former E->dest.  */
+
+static void
+expand_split_edge (edge e, basic_block bb, int flags)
+{
+  unsigned int dest_idx = e->dest_idx;
+  basic_block dest = e->dest;
+  redirect_edge_succ (e, bb);
+  e = make_single_succ_edge (bb, dest, flags);
+  if ((dest->flags & BB_RTL) == 0
+      && phi_nodes (dest)
+      && e->dest_idx != dest_idx)
+    {
+      /* If there are any PHI nodes on dest, swap the new succ edge
+	 with the one moved into false_edge's former position, so that
+	 PHI arguments don't need adjustment.  */
+      edge e2 = EDGE_PRED (dest, dest_idx);
+      std::swap (e->dest_idx, e2->dest_idx);
+      std::swap (EDGE_PRED (dest, e->dest_idx),
+		 EDGE_PRED (dest, e2->dest_idx));
+    }
+}
+
 
 /* A subroutine of expand_gimple_cond.  Given E, a fallthrough edge
    of a basic block where we just expanded the conditional at the end,
@@ -3013,8 +3038,7 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
 
   new_bb = create_basic_block (NEXT_INSN (last), get_last_insn (), bb);
   dest = false_edge->dest;
-  unsigned int dest_idx = false_edge->dest_idx;
-  redirect_edge_succ (false_edge, new_bb);
+  expand_split_edge (false_edge, new_bb, 0);
   false_edge->flags |= EDGE_FALLTHRU;
   new_bb->count = false_edge->count ();
   loop_p loop = find_common_loop (bb->loop_father, dest->loop_father);
@@ -3022,19 +3046,6 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
   if (loop->latch == bb
       && loop->header == dest)
     loop->latch = new_bb;
-  edge e = make_single_succ_edge (new_bb, dest, 0);
-  if ((dest->flags & BB_RTL) == 0
-      && phi_nodes (dest)
-      && e->dest_idx != dest_idx)
-    {
-      /* If there are any PHI nodes on dest, swap the new succ edge
-	 with the one moved into false_edge's former position, so that
-	 PHI arguments don't need adjustment.  */
-      edge e2 = EDGE_PRED (dest, dest_idx);
-      std::swap (e->dest_idx, e2->dest_idx);
-      std::swap (EDGE_PRED (dest, e->dest_idx),
-		 EDGE_PRED (dest, e2->dest_idx));
-    }
   if (BARRIER_P (BB_END (new_bb)))
     BB_END (new_bb) = PREV_INSN (BB_END (new_bb));
   update_bb_for_insn (new_bb);
@@ -6538,7 +6549,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 static basic_block
 construct_init_block (void)
 {
-  basic_block init_block, first_block;
+  basic_block init_block;
   edge e = NULL;
   int flags;
 
@@ -6569,24 +6580,7 @@ construct_init_block (void)
   init_block->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   add_bb_to_loop (init_block, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
   if (e)
-    {
-      unsigned int dest_idx = e->dest_idx;
-      first_block = e->dest;
-      redirect_edge_succ (e, init_block);
-      e = make_single_succ_edge (init_block, first_block, flags);
-      if ((first_block->flags & BB_RTL) == 0
-	  && phi_nodes (first_block)
-	  && e->dest_idx != dest_idx)
-	{
-	  /* If there are any PHI nodes on dest, swap the new succ edge
-	     with the one moved into false_edge's former position, so that
-	     PHI arguments don't need adjustment.  */
-	  edge e2 = EDGE_PRED (first_block, dest_idx);
-	  std::swap (e->dest_idx, e2->dest_idx);
-	  std::swap (EDGE_PRED (first_block, e->dest_idx),
-		     EDGE_PRED (first_block, e2->dest_idx));
-	}
-    }
+    expand_split_edge (e, init_block, flags);
   else
     make_single_succ_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
 			   EDGE_FALLTHRU);
