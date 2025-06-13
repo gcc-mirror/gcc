@@ -62,6 +62,11 @@ PatternDeclaration::go (AST::Pattern &pattern, Rib::ItemType type,
 void
 PatternDeclaration::visit (AST::IdentifierPattern &pattern)
 {
+  if (pattern.has_subpattern ())
+    {
+      pattern.get_subpattern ().accept_vis (*this);
+    }
+
   Mutability mut = pattern.get_is_mut () ? Mutability::Mut : Mutability::Imm;
   add_new_binding (pattern.get_ident (), pattern.get_node_id (),
 		   BindingTypeInfo (mut, pattern.get_is_ref (),
