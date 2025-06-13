@@ -7,13 +7,13 @@
 using namespace std::chrono;
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
-#define WIDEN(S) WIDEN_(_CharT, S)
+#define WIDEN(S) WIDEN_(CharT, S)
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_empty()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const duration<double> d(33.111222);
   res = std::format(WIDEN("{:.3}"), d);
@@ -33,11 +33,11 @@ test_empty()
   VERIFY( res == WIDEN("3.31112e+10ns") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_Q()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const duration<double> d(7.111222);
   res = std::format(WIDEN("{:.3%Q}"), d);
@@ -56,11 +56,11 @@ test_Q()
   VERIFY( res == WIDEN("7111222000") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_S()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   // Precision is ignored, but period affects output
   const duration<double> d(5.111222);

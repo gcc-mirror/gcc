@@ -76,12 +76,12 @@ test_format_string()
 }
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
-#define WIDEN(S) WIDEN_(_CharT, S)
+#define WIDEN(S) WIDEN_(CharT, S)
 
-template<typename _CharT, typename Range, typename Storage>
+template<typename CharT, typename Range, typename Storage>
 void test_output()
 {
-  using Sv = std::basic_string_view<_CharT>;
+  using Sv = std::basic_string_view<CharT>;
   using T = std::ranges::range_value_t<Range>;
   auto makeRange = [](Storage& s) -> Range {
     if constexpr (std::is_same_v<std::remove_cvref_t<Range>, Storage>)
@@ -91,7 +91,7 @@ void test_output()
 		   std::ranges::data(s) + std::ranges::size(s));
   };
 
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
   size_t size = 0;
 
   Storage v1{1, 2, 3};

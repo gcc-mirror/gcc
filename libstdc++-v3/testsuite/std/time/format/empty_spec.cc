@@ -10,7 +10,7 @@
 using namespace std::chrono;
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
-#define WIDEN(S) WIDEN_(_CharT, S)
+#define WIDEN(S) WIDEN_(CharT, S)
 
 template<typename CharT, typename T>
 void
@@ -34,15 +34,15 @@ test_no_empty_spec()
   }
 }
 
-template<typename T, typename _CharT>
-void verify(const T& t, std::basic_string_view<_CharT> str)
+template<typename T, typename CharT>
+void verify(const T& t, std::basic_string_view<CharT> str)
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   res = std::format(WIDEN("{}"), t);
   VERIFY( res == str );
 
-  std::basic_stringstream<_CharT> os;
+  std::basic_stringstream<CharT> os;
   os << t;
   res = std::move(os).str();
   VERIFY( res == str );
@@ -52,11 +52,11 @@ template<typename T, typename CharT>
 void verify(const T& t, const CharT* str)
 { verify(t, std::basic_string_view<CharT>(str)); }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_padding()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   res = std::format(WIDEN("{:5}"), day(2));
   VERIFY( res == WIDEN("02   ") );
@@ -114,9 +114,9 @@ struct Rep
 
   friend auto operator<=>(Rep, Rep) = default;
 
-  template<typename _CharT>
-  friend std::basic_ostream<_CharT>&
-  operator<<(std::basic_ostream<_CharT>& os, const Rep& t)
+  template<typename CharT>
+  friend std::basic_ostream<CharT>&
+  operator<<(std::basic_ostream<CharT>& os, const Rep& t)
   { return os << t.val << WIDEN("[via <<]"); }
 
   long val;
@@ -140,27 +140,27 @@ struct std::numeric_limits<Rep<Ret>>
   : std::numeric_limits<long>
 { };
 
-template<typename Ret, typename _CharT>
-struct std::formatter<Rep<Ret>, _CharT>
-  : std::formatter<long, _CharT>
+template<typename Ret, typename CharT>
+struct std::formatter<Rep<Ret>, CharT>
+  : std::formatter<long, CharT>
 {
   template<typename Out>
-  typename std::basic_format_context<Out, _CharT>::iterator
-  format(const Rep<Ret>& t, std::basic_format_context<Out, _CharT>& ctx) const
+  typename std::basic_format_context<Out, CharT>::iterator
+  format(const Rep<Ret>& t, std::basic_format_context<Out, CharT>& ctx) const
   {
-    constexpr std::basic_string_view<_CharT> suffix = WIDEN("[via format]");
-    auto out = std::formatter<long, _CharT>::format(t.val, ctx);
+    constexpr std::basic_string_view<CharT> suffix = WIDEN("[via format]");
+    auto out = std::formatter<long, CharT>::format(t.val, ctx);
     return std::ranges::copy(suffix, out).out;
   }
 };
 
 using deciseconds = duration<seconds::rep, std::deci>;
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_duration()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const milliseconds di(40);
   verify( di, WIDEN("40ms") );
@@ -172,11 +172,11 @@ test_duration()
   VERIFY( res == WIDEN(" -40ms") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_duration_fp()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const duration<double> df(11.22);
   verify( df, WIDEN("11.22s") );
@@ -192,11 +192,11 @@ test_duration_fp()
   VERIFY( res == WIDEN("11.22s") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_duration_cust()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
   const duration<char, std::ratio<1, 10>> charRep(123);
   verify( charRep, WIDEN("123ds") );
 
@@ -253,7 +253,7 @@ hms(const duration<Rep, Period>& d)
   return hh_mm_ss<Dur>(duration_cast<Dur>(d));
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_hh_mm_ss()
 {
@@ -303,7 +303,7 @@ test_hh_mm_ss()
 	  WIDEN("-14322:24:54.111222333") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_hh_mm_ss_fp()
 {
@@ -341,7 +341,7 @@ test_hh_mm_ss_fp()
 	  WIDEN("-22:24:54") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_hh_mm_ss_cust()
 {
@@ -396,7 +396,7 @@ test_durations()
   test_hh_mm_ss_cust<CharT>();
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_day()
 {
@@ -408,7 +408,7 @@ test_day()
   verify( day(255), WIDEN("255 is not a valid day") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_month()
 {
@@ -422,7 +422,7 @@ test_month()
   verify( month(255), WIDEN("255 is not a valid month") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_year()
 {
@@ -437,7 +437,7 @@ test_year()
   verify( year(32767),  WIDEN( "32767") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_weekday()
 {
@@ -451,7 +451,7 @@ test_weekday()
   verify( weekday(255), WIDEN("255 is not a valid weekday") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_weekday_indexed()
 {
@@ -466,7 +466,7 @@ test_weekday_indexed()
   verify( weekday(32)[7],  WIDEN("32 is not a valid weekday[7 is not a valid index]") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_weekday_last()
 {
@@ -474,7 +474,7 @@ test_weekday_last()
   verify( weekday(9)[last], WIDEN("9 is not a valid weekday[last]") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_month_day()
 {
@@ -484,7 +484,7 @@ test_month_day()
   verify( month(13)/32, WIDEN("13 is not a valid month/32 is not a valid day") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_month_day_last()
 {
@@ -492,7 +492,7 @@ test_month_day_last()
   verify( month(14)/last, WIDEN("14 is not a valid month/last") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_month_weekday()
 {
@@ -508,7 +508,7 @@ test_month_weekday()
 	  WIDEN("13 is not a valid month/130 is not a valid weekday[0 is not a valid index]") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_month_weekday_last()
 {
@@ -522,7 +522,7 @@ test_month_weekday_last()
 	  WIDEN("13 is not a valid month/10 is not a valid weekday[last]") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_year_month()
 {
@@ -536,7 +536,7 @@ test_year_month()
 	  WIDEN("-32768 is not a valid year/0 is not a valid month") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_year_month_day()
 {
@@ -556,7 +556,7 @@ test_year_month_day()
 	  WIDEN("-32768-14-55 is not a valid date") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_year_month_last()
 {
@@ -570,7 +570,7 @@ test_year_month_last()
 	  WIDEN("-32768 is not a valid year/0 is not a valid month/last") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_year_month_weekday()
 {
@@ -586,7 +586,7 @@ test_year_month_weekday()
 	  WIDEN("-32768 is not a valid year/13 is not a valid month/130 is not a valid weekday[0 is not a valid index]") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_year_month_weekday_last()
 {
@@ -644,14 +644,14 @@ wall_cast(const local_time<Dur2>& tp)
 using decadays = duration<days::rep, std::ratio_multiply<std::deca, days::period>>;
 using kilodays = duration<days::rep, std::ratio_multiply<std::kilo, days::period>>;
 
-template<typename _CharT, typename Clock>
+template<typename CharT, typename Clock>
 void
 test_time_point(bool daysAsTime)
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const auto lt = local_days(2024y/March/22) + 13h + 24min + 54s + 111222333ns;
-  auto strip_time = [daysAsTime](std::basic_string_view<_CharT> sv)
+  auto strip_time = [daysAsTime](std::basic_string_view<CharT> sv)
   { return daysAsTime ? sv : sv.substr(0, 10); };
 
   verify( wall_cast<Clock, nanoseconds>(lt),
@@ -674,11 +674,11 @@ test_time_point(bool daysAsTime)
 	  strip_time(WIDEN("2022-01-08 00:00:00")) );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_leap_second()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const auto st = sys_days(2012y/June/30) + 23h + 59min + 59s + 111222333ns;
   auto tp = clock_cast<utc_clock>(st);
@@ -700,7 +700,7 @@ auto
 make_zoned(const sys_time<Dur2>& st, const time_zone* tz)
 { return zoned_time<Dur>(tz, floor<Dur>(st)); }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_zoned_time()
 {
@@ -734,11 +734,11 @@ auto
 local_fmt(const local_time<Dur2>& lt, std::string* zone)
 { return local_time_format(floor<Dur>(lt), zone); }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_local_time_format()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   std::string abbrev = "Zone";
   const auto lt = local_days(2024y/March/22) + 13h + 24min + 54s + 111222333ns;
@@ -784,7 +784,7 @@ test_time_points()
 }
 
 #if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
-template<typename _CharT>
+template<typename CharT>
 void
 test_sys_info()
 {
@@ -796,13 +796,13 @@ test_sys_info()
     15min,
     "Zone"
   };
-  const std::basic_string_view<_CharT> txt
+  const std::basic_string_view<CharT> txt
     = WIDEN("[2024-03-22 02:00:00,2025-04-11 23:15:10,02:13:04,15min,Zone]");
 
   verify( si, txt );
 
-  std::basic_string<_CharT> res;
-  std::basic_string_view<_CharT> sv;
+  std::basic_string<CharT> res;
+  std::basic_string_view<CharT> sv;
 
   sv = res = std::format(WIDEN("{:65}"), si);
   VERIFY( sv.ends_with(WIDEN("    ")) );
@@ -817,11 +817,11 @@ test_sys_info()
   VERIFY( sv == txt );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void test_local_info()
 {
-  using String = std::basic_string<_CharT>;
-  using StringView = std::basic_string_view<_CharT>;
+  using String = std::basic_string<CharT>;
+  using StringView = std::basic_string_view<CharT>;
 
   const sys_info s1
   {

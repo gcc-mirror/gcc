@@ -7,15 +7,15 @@
 #include <testsuite_hooks.h>
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
-#define WIDEN(S) WIDEN_(_CharT, S)
+#define WIDEN(S) WIDEN_(CharT, S)
 
 using namespace std::chrono;
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_year()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   res = std::format(WIDEN("{:%Y}"), year(0));
   VERIFY( res == WIDEN("0000") );
@@ -77,11 +77,11 @@ test_year()
   VERIFY( res == WIDEN("01") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_month()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   res = std::format(WIDEN("{:%m}"), month(5));
   VERIFY( res == WIDEN("05") );
@@ -93,11 +93,11 @@ test_month()
   VERIFY( res == WIDEN("254") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_day()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   res = std::format(WIDEN("{:%d}"), day(3));
   VERIFY( res == WIDEN("03") );
@@ -118,11 +118,11 @@ test_day()
   VERIFY( res == WIDEN("214") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_date()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   res = std::format(WIDEN("{:%F}"), year(-22)/month(10)/day(20));
   VERIFY( res == WIDEN("-0022-10-20") );
@@ -145,11 +145,11 @@ test_date()
   VERIFY( res == WIDEN("220/100/00") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_weekday()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   res = std::format(WIDEN("{:%w}"), weekday(0));
   VERIFY( res == WIDEN("0") );
@@ -187,11 +187,11 @@ test_weekday()
   VERIFY( res == WIDEN("202") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_hour()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   res = std::format(WIDEN("{:%H}"), 0h + 5min + 6s);
   VERIFY( res == WIDEN("00") );
