@@ -21,6 +21,8 @@
 #define GCC_AARCH64_H_NEOVERSEV2
 
 #include "generic.h"
+#include "vec.h"
+#include "../aarch64-sched-dispatch.h"
 
 static const struct cpu_regmove_cost neoversev2_regmove_cost =
 {
@@ -188,6 +190,142 @@ static const struct cpu_vector_cost neoversev2_vector_cost =
   &neoversev2_vec_issue_info /* issue_info  */
 };
 
+/* Neoverse V2 dispatch constraint types.  */
+enum neoversev2_dispatch_constraint_type
+{
+  TOTAL_SLOTS, /* total slots  */
+  BS01_PIPE,   /* b, s0, s1 pipelines  */
+  M0_PIPE,     /* m0 pipeline  */
+  M_PIPE,      /* m pipelines  */
+  BSM_PIPE,    /* b, s, m pipelines  */
+  V02_PIPE,    /* v0, v2 pipelines  */
+  V13_PIPE,    /* v1, v3 pipelines  */
+  V_PIPE,      /* v pipelines  */
+  L_PIPE       /* l pipelines  */
+};
+
+/* Neoverse V2 dispatch constraints for instruction scheduling.  */
+static const int neoversev2_dispatch_max_slots[] = {
+  16, /* total slots  */
+  4,  /* b, s0, s1 pipelines  */
+  2,  /* m0 pipeline  */
+  4,  /* m pipelines  */
+  8,  /* b, s, m pipelines  */
+  2,  /* v0, v2 pipelines  */
+  2,  /* v1, v3 pipelines  */
+  4,  /* v pipelines  */
+  6   /* l pipelines  */
+};
+
+/* Neoverse V2 dispatch constraint callback function.
+   Determines which constraints apply to an instruction and how many slots
+   it requires.  Returns a vec of (constraint_index, slots_required) pairs.  */
+static vec<std::pair<int, int>>
+neoversev2_dispatch_constraint_callback (rtx_insn *insn)
+{
+  auto dispatch_group = get_attr_neoversev2_dispatch (insn);
+  vec<std::pair<int, int>> constraints = vNULL;
+  int total_slots = 1;
+
+  switch (dispatch_group)
+    {
+    case NEOVERSEV2_DISPATCH_NONE:
+      break;
+
+    case NEOVERSEV2_DISPATCH_BS01:
+      constraints.safe_push ({BS01_PIPE, 1});
+      constraints.safe_push ({BSM_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_BSM:
+      constraints.safe_push ({BSM_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_M:
+      constraints.safe_push ({M_PIPE, 1});
+      constraints.safe_push ({BSM_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_M0:
+      constraints.safe_push ({M0_PIPE, 1});
+      constraints.safe_push ({M_PIPE, 1});
+      constraints.safe_push ({BSM_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_V02:
+      constraints.safe_push ({V02_PIPE, 1});
+      constraints.safe_push ({V_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_V13:
+      constraints.safe_push ({V13_PIPE, 1});
+      constraints.safe_push ({V_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_V:
+      constraints.safe_push ({V_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_L01:
+      constraints.safe_push ({L_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_L:
+      constraints.safe_push ({L_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_BSM_L:
+      constraints.safe_push ({BSM_PIPE, 1});
+      constraints.safe_push ({L_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_M_L:
+      constraints.safe_push ({M_PIPE, 1});
+      constraints.safe_push ({BSM_PIPE, 1});
+      constraints.safe_push ({L_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_M0_V:
+      constraints.safe_push ({M0_PIPE, 1});
+      constraints.safe_push ({M_PIPE, 1});
+      constraints.safe_push ({BSM_PIPE, 1});
+      constraints.safe_push ({V_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_V_V13:
+      constraints.safe_push ({V_PIPE, 2});
+      total_slots = 2;
+      break;
+
+    case NEOVERSEV2_DISPATCH_V_L:
+      constraints.safe_push ({V_PIPE, 1});
+      constraints.safe_push ({L_PIPE, 1});
+      break;
+
+    case NEOVERSEV2_DISPATCH_L01_D:
+      constraints.safe_push ({L_PIPE, 2});
+      total_slots = 2;
+      break;
+
+    case NEOVERSEV2_DISPATCH_L01_V:
+      constraints.safe_push ({V_PIPE, 1});
+      constraints.safe_push ({L_PIPE, 1});
+      break;
+    }
+
+  /* Add total slots constraint  */
+  constraints.safe_push ({TOTAL_SLOTS, total_slots});
+
+  return constraints;
+};
+
+/* Neoverse V2 dispatch constraints configuration.  */
+static const struct dispatch_constraint_info neoversev2_dispatch_constraint_info = {
+  neoversev2_dispatch_max_slots, /* max_slots  */
+  ARRAY_SIZE (neoversev2_dispatch_max_slots), /* num_constraints  */
+  neoversev2_dispatch_constraint_callback /* callback  */
+};
+
 static const struct tune_params neoversev2_tunings =
 {
   &cortexa76_extra_costs,
@@ -221,11 +359,12 @@ static const struct tune_params neoversev2_tunings =
    | AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
    | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT
    | AARCH64_EXTRA_TUNE_AVOID_PRED_RMW
-   | AARCH64_EXTRA_TUNE_AVOID_LDAPUR),	/* tune_flags.  */
+   | AARCH64_EXTRA_TUNE_AVOID_LDAPUR
+   | AARCH64_EXTRA_TUNE_DISPATCH_SCHED),	/* tune_flags.  */
   &generic_armv9a_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALWAYS,   /* ldp_policy_model.  */
   AARCH64_LDP_STP_POLICY_ALWAYS,   /* stp_policy_model.  */
-  nullptr	/* dispatch_constraints.  */
+  &neoversev2_dispatch_constraint_info  /* dispatch_constraints.  */
 };
 
 #endif /* GCC_AARCH64_H_NEOVERSEV2.  */

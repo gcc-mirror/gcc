@@ -684,6 +684,9 @@
 (include "tsv110.md")
 (include "thunderx3t110.md")
 
+;; Dispatch scheduling
+(include "neoversev2.md")
+
 ;; -------------------------------------------------------------------
 ;; Jumps and other miscellaneous insns
 ;; -------------------------------------------------------------------
