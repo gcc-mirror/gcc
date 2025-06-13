@@ -28,7 +28,6 @@
 #include "rust-pattern.h"
 #include "rust-system.h"
 #include "rust-token.h"
-#include <memory>
 
 namespace Rust {
 namespace AST {
