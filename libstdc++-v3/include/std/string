@@ -104,7 +104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const auto __osz = __cont.size();
       const auto __end = __cont.end();
       auto __removed = std::__remove_if(__cont.begin(), __end,
-					__ops::__pred_iter(std::ref(__pred)));
+					std::ref(__pred));
       __cont.erase(__removed, __end);
       return __osz - __cont.size();
     }
@@ -119,7 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const auto __osz = __cont.size();
       const auto __end = __cont.end();
       auto __removed = std::__remove_if(__cont.begin(), __end,
-					__ops::__iter_equals_val(__value));
+					__ops::__equal_to(__value));
       __cont.erase(__removed, __end);
       return __osz - __cont.size();
     }
