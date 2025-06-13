@@ -688,7 +688,10 @@ namespace __format
 		  __out = _M_b_B(__t, std::move(__out), __fc, __c == 'B');
 		  break;
 		case 'c':
-		  __out = _M_c(__t, std::move(__out), __fc, __mod == 'E');
+		case 'r':
+		case 'x':
+		case 'X':
+		  __out = _M_c_r_x_X(__t, std::move(__out), __fc, __c, __mod);
 		  break;
 		case 'C':
 		case 'y':
@@ -739,9 +742,6 @@ namespace __format
 		    __throw_format_error("chrono format error: argument is "
 					 "not a duration");
 		  break;
-		case 'r':
-		  __out = _M_r(__t, __print_sign(), __fc);
-		  break;
 		case 'R':
 		case 'T':
 		  __out = _M_R_T(__t, __print_sign(), __fc, __c == 'T');
@@ -758,12 +758,6 @@ namespace __format
 		case 'W':
 		  __out = _M_U_V_W(__t, std::move(__out), __fc, __c,
 				   __mod == 'O');
-		  break;
-		case 'x':
-		  __out = _M_x(__t, std::move(__out), __fc, __mod == 'E');
-		  break;
-		case 'X':
-		  __out = _M_X(__t, __print_sign(), __fc, __mod == 'E');
 		  break;
 		case 'z':
 		  __out = _M_z(__t, std::move(__out), __fc, (bool)__mod);
@@ -954,11 +948,16 @@ namespace __format
 
       template<typename _Tp, typename _FormatContext>
 	typename _FormatContext::iterator
-	_M_c(const _Tp& __t, typename _FormatContext::iterator __out,
-	     _FormatContext& __ctx, bool __mod = false) const
+	_M_c_r_x_X(const _Tp& __t, typename _FormatContext::iterator __out,
+		   _FormatContext& __ctx, _CharT __conv, _CharT __mod) const
 	{
 	  // %c  Locale's date and time representation.
 	  // %Ec Locale's alternate date and time representation.
+	  // %r  Locale's 12-hour clock time.
+	  // %x  Locale's date rep
+	  // %Ex Locale's alternative date representation.
+	  // %X  Locale's time rep
+	  // %EX Locale's alternative time representation.
 
 	  using namespace chrono;
 	  using ::std::chrono::__detail::__utc_leap_second;
@@ -992,23 +991,30 @@ namespace __format
 	    __tm.tm_zone = const_cast<char*>("UTC");
 #endif
 
-	  auto __d = _S_days(__t); // Either sys_days or local_days.
-	  using _TDays = decltype(__d);
-	  const year_month_day __ymd(__d);
-	  const auto __y = __ymd.year();
-	  const auto __hms = _S_hms(__t);
+	  if (__conv == 'c' || __conv == 'x')
+	  {
+	    auto __d = _S_days(__t); // Either sys_days or local_days.
+	    using _TDays = decltype(__d);
+	    const year_month_day __ymd(__d);
+	    const auto __y = __ymd.year();
 
-	  __tm.tm_year = (int)__y - 1900;
-	  __tm.tm_yday = (__d - _TDays(__y/January/1)).count();
-	  __tm.tm_mon = (unsigned)__ymd.month() - 1;
-	  __tm.tm_mday = (unsigned)__ymd.day();
-	  __tm.tm_wday = weekday(__d).c_encoding();
-	  __tm.tm_hour = __hms.hours().count();
-	  __tm.tm_min = __hms.minutes().count();
-	  __tm.tm_sec = __hms.seconds().count();
+	    __tm.tm_year = (int)__y - 1900;
+	    __tm.tm_yday = (__d - _TDays(__y/January/1)).count();
+	    __tm.tm_mon = (unsigned)__ymd.month() - 1;
+	    __tm.tm_mday = (unsigned)__ymd.day();
+	    __tm.tm_wday = weekday(__d).c_encoding();
+	  }
 
-	  return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm, 'c',
-			       __mod ? 'E' : '\0');
+	  if (__conv != 'x')
+	  {
+	    const auto __hms = _S_hms(__t);
+	    __tm.tm_hour = __hms.hours().count();
+	    __tm.tm_min = __hms.minutes().count();
+	    __tm.tm_sec = __hms.seconds().count();
+	  }
+
+	  return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm,
+			       __conv, __mod);
 	}
 
       template<typename _Tp, typename _FormatContext>
@@ -1349,25 +1355,6 @@ namespace __format
 
       template<typename _Tp, typename _FormatContext>
 	typename _FormatContext::iterator
-	_M_r(const _Tp& __tt, typename _FormatContext::iterator __out,
-	     _FormatContext& __ctx) const
-	{
-	  // %r locale's 12-hour clock time.
-	  auto __t = _S_floor_seconds(__tt);
-	  locale __loc = _M_locale(__ctx);
-	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
-	  const _CharT* __ampm_fmt;
-	  __tp._M_am_pm_format(&__ampm_fmt);
-	  basic_string<_CharT> __fmt(_S_empty_spec);
-	  __fmt.insert(1u, 1u, _S_colon);
-	  __fmt.insert(2u, __ampm_fmt);
-	  using _FmtStr = _Runtime_format_string<_CharT>;
-	  return _M_write(std::move(__out), __loc,
-			  std::format(__loc, _FmtStr(__fmt), __t));
-	}
-
-      template<typename _Tp, typename _FormatContext>
-	typename _FormatContext::iterator
 	_M_R_T(const _Tp& __t, typename _FormatContext::iterator __out,
 	       _FormatContext& __ctx, bool __secs) const
 	{
@@ -1543,53 +1530,6 @@ namespace __format
 	  auto __weeks = chrono::floor<weeks>(__d - __first);
 	  __string_view __sv = _S_two_digits(__weeks.count() + 1);
 	  return __format::__write(std::move(__out), __sv);
-	}
-
-      template<typename _Tp, typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_x(const _Tp& __t, typename _FormatContext::iterator __out,
-	     _FormatContext& __ctx, bool __mod = false) const
-	{
-	  // %x  Locale's date rep
-	  // %Ex Locale's alternative date representation.
-	  locale __loc = _M_locale(__ctx);
-	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
-	  const _CharT* __date_reps[2];
-	  __tp._M_date_formats(__date_reps);
-	  const _CharT* __rep = __date_reps[__mod];
-	  if (!*__rep)
-	    return _M_D(__t, std::move(__out), __ctx);
-
-	  basic_string<_CharT> __fmt(_S_empty_spec);
-	  __fmt.insert(1u, 1u, _S_colon);
-	  __fmt.insert(2u, __rep);
-	  using _FmtStr = _Runtime_format_string<_CharT>;
-	  return _M_write(std::move(__out), __loc,
-			  std::format(__loc, _FmtStr(__fmt), __t));
-	}
-
-      template<typename _Tp, typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_X(const _Tp& __tt, typename _FormatContext::iterator __out,
-	     _FormatContext& __ctx, bool __mod = false) const
-	{
-	  // %X  Locale's time rep
-	  // %EX Locale's alternative time representation.
-	  auto __t = _S_floor_seconds(__tt);
-	  locale __loc = _M_locale(__ctx);
-	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
-	  const _CharT* __time_reps[2];
-	  __tp._M_time_formats(__time_reps);
-	  const _CharT* __rep = __time_reps[__mod];
-	  if (!*__rep)
-	    return _M_R_T(__t, std::move(__out), __ctx, true);
-
-	  basic_string<_CharT> __fmt(_S_empty_spec);
-	  __fmt.insert(1u, 1u, _S_colon);
-	  __fmt.insert(2u, __rep);
-	  using _FmtStr = _Runtime_format_string<_CharT>;
-	  return _M_write(std::move(__out), __loc,
-			  std::format(__loc, _FmtStr(__fmt), __t));
 	}
 
       template<typename _Tp, typename _FormatContext>
