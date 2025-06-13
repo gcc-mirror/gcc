@@ -666,6 +666,12 @@ CompilePatternBindings::visit (HIR::ReferencePattern &pattern)
 void
 CompilePatternBindings::visit (HIR::IdentifierPattern &pattern)
 {
+  if (pattern.has_subpattern ())
+    {
+      CompilePatternBindings::Compile (pattern.get_subpattern (),
+				       match_scrutinee_expr, ctx);
+    }
+
   if (!pattern.get_is_ref ())
     {
       ctx->insert_pattern_binding (pattern.get_mappings ().get_hirid (),
