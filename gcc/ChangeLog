@@ -1,3 +1,13 @@
+2025-06-12  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/120295
+	* ipa-prop.cc (update_jump_functions_after_inlining): Do not
+	combine pass-through jump functions with type-casts changing
+	signedness.
+
 2025-06-10  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:

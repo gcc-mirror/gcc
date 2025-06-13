@@ -1,3 +1,11 @@
+2025-06-12  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/120295
+	* gcc.dg/ipa/pr120295.c: New test.
+
 2025-06-09  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

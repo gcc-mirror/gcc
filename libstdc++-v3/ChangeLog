@@ -1,3 +1,17 @@
+2025-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120625
+	* include/std/format (__format::__disabled): Remove.
+	(__formatter_disabled): New type.
+	(formatter<char*, wchar_t>, formatter<const char*, wchar_t>)
+	(formatter<char[N], wchar_t>, formatter<string, wchar_t>)
+	(formatter<string_view, wchar_t>): Use __formatter_disabled as
+	base class instead of formatter<__disabled, wchar_t>.
+	* testsuite/std/format/formatter/120625.cc: New test.
+
 2025-06-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
