@@ -1,3 +1,46 @@
+2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120638
+	* tree-ssa-math-opts.cc (pass_cse_reciprocals::execute): Call
+	reset_flow_sensitive_info on arg1.
+
+2025-06-12  Stafford Horne  <shorne@gmail.com>
+
+	PR target/120587
+	* config/or1k/or1k.cc (or1k_can_change_mode_class): Allow
+	changing flags mode from BI to SI to allow for paradoxical
+	subregs.
+
+2025-06-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/120604
+	* config/i386/i386-expand.cc (ix86_expand_int_movcc): Make sure
+	we can represent the difference between two 64-bit DImode
+	immediate values in 64-bit HOST_WIDE_INT.
+
+2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120629
+	* cfgexpand.cc (expand_gimple_cond): If dest bb isn't BB_RTL,
+	has any PHI nodes and false_edge->dest_idx before redirection is
+	different from make_single_succ_edge result's dest_idx, swap the
+	latter with the former last pred edge and their dest_idx members.
+
+2025-06-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add new
+	case SMAX.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op smax.
+
+2025-06-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/120624
+	* config/aarch64/aarch64.md (SME_STATE_REGNUM): Expand on comments.
+	* config/aarch64/aarch64-sme.md (aarch64_restore_za): Also set
+	SME_STATE_REGNUM
+
 2025-06-12  Alfie Richards  <alfie.richards@arm.com>
 
 	* cgraph.cc (cgraph_node::record_function_versions): Refactor and

@@ -1,3 +1,77 @@
+2025-06-12  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR libstdc++/119496
+	* include/bits/stl_algo.h: Adjust calls to requested_size.
+	* include/bits/stl_tempbuf.h (requested_size): Rename with
+	an _M_ prefix.
+	* testsuite/17_intro/names.cc: Add a #define for
+	requested_size.
+
+2025-06-12  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/formatfwd.h (format_kind): Move the definition
+	(and some supporting code) from <format>.
+	* include/std/format (format_kind): Likewise.
+	* include/bits/version.def (optional_range_support): Add
+	the feature-testing macro.
+	* include/bits/version.h: Regenerate.
+	* include/std/optional (iterator, const_iterator, begin, end):
+	Add range support.
+	(enable_view): Specialize for std::optional.
+	(format_kind): Specialize for std::optional.
+	* testsuite/20_util/optional/range.cc: New test.
+	* testsuite/20_util/optional/version.cc: Test the new
+	feature-testing macro.
+
+2025-06-12  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (_ChronoFormats::_S_ftz)
+	(_ChronoFormats::_S_ft, _ChronoFormats::_S_t): Define.
+	(__formatter_chrono::_M_format_to_ostream): Remove handling for
+	time_points.
+	(std::formatter<chrono::hh_mm_ss<_Dur>, _CharT>)
+	(std::formatter<chrono::sys_time<_Dur>, _CharT>)
+	(std::formatter<chrono::utc_time<_Dur>, _CharT>)
+	(std::formatter<chrono::tai_time<_Dur>, _CharT>)
+	(std::formatter<chrono::gps_time<_Dur>, _CharT>)
+	(std::formatter<chrono::file_time<_Dur>, _CharT>)
+	(std::formatter<chrono::local_time<_Dur>, _CharT>)
+	(std::formatter<chrono::__detail::__local_time_fmt<_Dur>, _CharT>)
+	(std::formatter<chrono::zoned_time<_Dur>, _CharT>):
+	Define __defSpec, and pass it as argument to _M_prase and
+	constructor of __formatter_chrono.
+
+2025-06-12  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (__format::_ChronoFormats): Define.
+	(__formatter_chrono::__formatter_chrono())
+	(__formatter_chrono::__formatter_chrono(_ChronoSpec<_CharT>)): Define.
+	(__formatter_chrono::_M_parse): Add parameter with default spec,
+	and merge it with new values. Handle '%\0' as weekday index
+	specifier.
+	(__formatter_chrono::_M_a_A, __formatter_chrono::_M_b_B)
+	(__formatter_chrono::_M_C_y_Y, __formatter_chrono::_M_d_e)
+	(__formatter_chrono::_M_F): Support _M_debug flag.
+	(__formatter_chrono::_M_wi, __formatter_chrono::_S_weekday_index):
+	Define.
+	(std::formatter<chrono::day, _CharT>)
+	(std::formatter<chrono::month, _CharT>)
+	(std::formatter<chrono::year, _CharT>)
+	(std::formatter<chrono::weekday, _CharT>)
+	(std::formatter<chrono::weekday_indexed, _CharT>)
+	(std::formatter<chrono::weekday_last, _CharT>)
+	(std::formatter<chrono::month_day, _CharT>)
+	(std::formatter<chrono::month_day_last, _CharT>)
+	(std::formatter<chrono::month_weekday, _CharT>)
+	(std::formatter<chrono::month_weekday_last, _CharT>)
+	(std::formatter<chrono::year_month, _CharT>)
+	(std::formatter<chrono::year_month_day, _CharT>)
+	(std::formatter<chrono::year_month_day_last, _CharT>)
+	(std::formatter<chrono::year_month_weekday, _CharT>)
+	(std::formatter<chrono::year_month_weekday_last, _CharT>):
+	Define __defSpec, and pass it as argument to _M_parse and
+	constructor of __formatter_chrono.
+
 2025-06-12  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/std/mdspan (__mdspan::__mapping_alike): Rename template

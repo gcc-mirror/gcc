@@ -1,3 +1,100 @@
+2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120638
+	* gcc.dg/pr120638.c: New test.
+
+2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120630
+	* gcc.dg/pr120630.c: New test.
+	* gcc.c-torture/execute/pr120630.c: New test.
+
+2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120629
+	* g++.dg/opt/pr120629.C: New test.
+
+2025-06-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add asm check
+	for vmax.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+
+2025-06-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add asm check
+	for vmax.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+
+2025-06-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for max func 1 vmax.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-2-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-2-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-2-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-2-i8.c: New test.
+
+2025-06-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for max func 1 vmax.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-1-i8.c: New test.
+
+2025-06-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/120624
+	* gcc.target/aarch64/sme/za_state_7.c: New test.
+
 2025-06-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR middle-end/117811
