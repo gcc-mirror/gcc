@@ -1,3 +1,78 @@
+2025-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120397
+	* include/bits/stl_uninitialized.h (_UninitDestroyGuard<I,void>):
+	Add new member function _S_destroy and call it from the
+	destructor (for C++17 only).
+	* testsuite/20_util/specialized_algorithms/uninitialized_default_construct/120397.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct/120397.cc:
+	New test.
+
+2025-06-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/120648
+	* include/bits/chrono_io.h (__formatter_chrono::_M_format_to):
+	Handle %c, %r, %x and %X by passing them to _M_c_r_x_X.
+	(__formatter_chrono::_M_c_r_x_X): Reworked from _M_c.
+	(__formatter_chrono::_M_c): Renamed into above.
+	(__formatter_chrono::_M_r, __formatter_chrono::_M_x)
+	(__formatter_chrono::_M_X): Removed.
+	* testsuite/std/time/format/pr117214.cc: New tests for %r, %x,
+	%X with date, time and durations.
+
+2025-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__detail::__by_ref_or_value_fn): New.
+	(__detail::_Comp_proj): New.
+	(__detail::__make_comp_proj): Use it instead.
+	(__detail::_Pred_proj): New.
+	(__detail::__make_pred_proj): Use it instead.
+
+2025-06-13  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR c++/120644
+	* include/std/optional (format_kind): Do not use `auto`.
+
+2025-06-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/23_containers/vector/bool/format.cc: Replaced _CharT
+	with CharT.
+	* testsuite/std/format/debug.cc: Likewise.
+	* testsuite/std/format/ranges/adaptors.cc: Likewise.
+	* testsuite/std/format/ranges/formatter.cc: Likewise.
+	* testsuite/std/format/ranges/map.cc: Likewise.
+	* testsuite/std/format/ranges/sequence.cc: Likewise.
+	* testsuite/std/format/ranges/string.cc: Likewise.
+	* testsuite/std/format/tuple.cc: Likewise.
+	* testsuite/std/time/format/empty_spec.cc: Likewise.
+	* testsuite/std/time/format/pr120114.cc: Likewise.
+	* testsuite/std/time/format/pr120481.cc: Likewise.
+	* testsuite/std/time/format/precision.cc: Likewise.
+
+2025-06-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_format):
+	Remove handling of empty _M_chrono_specs.
+	(__formatter_chrono::_M_format_to_ostream): Changed to accept
+	only chrono::duration and made public.
+	(std::formatter<chrono::duration<_Rep, _Period>, _CharT>):
+	Configure __defSpec and handle empty chrono-spec locally.
+
+2025-06-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (__format::__formatter_chrono_info)
+	[_GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI]: Define.
+	(std::formatter<chrono::sys_info, _CharT>)
+	(std::formatter<chrono::local_inf, _CharT>): Delegate to
+	__format::__formatter_chrono_info.
+	(std::operator<<(basic_ostream<_CharT, _Traits>& const sys_info&)):
+	Use format on sys_info with empty format spec.
+
+2025-06-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/time/format/whitespace.cc: New test.
+
 2025-06-12  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
 
 	PR libstdc++/119496

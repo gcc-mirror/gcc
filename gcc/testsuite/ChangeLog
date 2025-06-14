@@ -1,3 +1,20 @@
+2025-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/116775
+	* g++.dg/coroutines/pr116775.C: New test.
+
+2025-06-13  Spencer Abson  <spencer.abson@arm.com>
+
+	PR target/118150
+	* gcc.target/aarch64/sve/acle/general/not_1.c: New test.
+
+2025-06-13  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR testsuite/119862
+	* gcc.dg/pr119160.c: Added empty definitions for
+	`__cyg_profile_func_enter` and `__cyg_profile_func_exit`
+	functions.
+
 2025-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/120638

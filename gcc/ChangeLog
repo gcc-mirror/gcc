@@ -1,3 +1,35 @@
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120629
+	* cfgexpand.cc (expand_split_edge): New function.
+	(expand_gimple_cond, construct_init_block): Use it.
+
+2025-06-13  Spencer Abson  <spencer.abson@arm.com>
+
+	PR target/118150
+	* config/aarch64/aarch64-sve.md (*one_cmpl<mode>3_cc): New
+	combiner pattern.
+	(*one_cmpl<mode>3_ptest): Likewise.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120629
+	* cfgexpand.cc (construct_init_block): If first_block isn't BB_RTL,
+	has any PHI nodes and false_edge->dest_idx before redirection is
+	different from make_single_succ_edge result's dest_idx, swap the
+	latter with the former last pred edge and their dest_idx members.
+
+2025-06-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.cc (driver::set_up_specs): Use gcc_exec_prefix to
+	read the spec file rather than standard_exec_prefix.
+
+2025-06-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120589
+	* config/mcore/mcore.cc (mcore_mark_dllimport): Don't use
+	gen_rtx_MEM.
+
 2025-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/120638

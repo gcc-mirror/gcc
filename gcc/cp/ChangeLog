@@ -1,3 +1,15 @@
+2025-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/116775
+	* coroutines.cc (analyze_expression_awaits): When we see
+	a builtin_constant_p call, and that contains one or more
+	await expressions, then replace the call with its result
+	and discard the unevaluated operand.
+
+2025-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Set can_throw.
+
 2025-06-12  Alfie Richards  <alfie.richards@arm.com>
 
 	* decl.cc (maybe_version_functions): Change record_function_versions
