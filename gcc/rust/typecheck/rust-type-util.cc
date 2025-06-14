@@ -40,11 +40,11 @@ query_type (HirId reference, TyTy::BaseType **result)
   auto &resolver = *Resolver::get ();
   TypeCheckContext *context = TypeCheckContext::get ();
 
-  if (context->query_in_progress (reference))
-    return false;
-
   if (context->lookup_type (reference, result))
     return true;
+
+  if (context->query_in_progress (reference))
+    return false;
 
   context->insert_query (reference);
 
