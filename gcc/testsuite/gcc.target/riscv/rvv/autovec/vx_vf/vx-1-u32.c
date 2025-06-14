@@ -13,6 +13,8 @@ DEF_VX_BINARY_CASE_0_WRAP(T, |, or)
 DEF_VX_BINARY_CASE_0_WRAP(T, ^, xor)
 DEF_VX_BINARY_CASE_0_WRAP(T, /, div)
 DEF_VX_BINARY_CASE_0_WRAP(T, %, rem)
+DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_0_WARP(T), max)
+DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max)
 
 /* { dg-final { scan-assembler-times {vadd.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vsub.vx} 1 } } */
@@ -22,3 +24,4 @@ DEF_VX_BINARY_CASE_0_WRAP(T, %, rem)
 /* { dg-final { scan-assembler-times {vxor.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vdivu.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vremu.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vmaxu.vx} 2 } } */

@@ -151,6 +151,16 @@ DEF_MAX_1(int16_t)
 DEF_MAX_1(int32_t)
 DEF_MAX_1(int64_t)
 
+DEF_MAX_0(uint8_t)
+DEF_MAX_0(uint16_t)
+DEF_MAX_0(uint32_t)
+DEF_MAX_0(uint64_t)
+
+DEF_MAX_1(uint8_t)
+DEF_MAX_1(uint16_t)
+DEF_MAX_1(uint32_t)
+DEF_MAX_1(uint64_t)
+
 #define MAX_FUNC_0(T) test_##T##_max_0
 #define MAX_FUNC_0_WARP(T) MAX_FUNC_0(T)
 
