@@ -1,3 +1,13 @@
+2025-06-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2025-01-29  Arsen Arsenović  <arsen@aarsen.me>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR d/118477
+	* Make-lang.in (DCOMPILE, DPOSTCOMPILE): Use $(basename $(@F))
+	instead of $(*F).
+
 2025-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

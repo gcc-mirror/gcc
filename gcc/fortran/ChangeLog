@@ -1,3 +1,18 @@
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+		    Daniil Kochergin  <daniil2472s@gmail.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120191
+	* trans-intrinsic.cc (strip_kind_from_actual): Remove.
+	(gfc_conv_intrinsic_minmaxloc): Don't call strip_kind_from_actual.
+	Free and clear kind_arg->expr if non-NULL.  Set back_arg->name to
+	"%VAL" instead of a loop looking for last argument.  Remove actual
+	variable, use array_arg instead.  Free and clear dim_arg->expr if
+	non-NULL for BT_CHARACTER cases instead of using a loop.
+
 2025-04-22  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

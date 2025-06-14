@@ -1,3 +1,10 @@
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* math/expq.c (C): Fix up THREEp96 constant.
+
 2024-06-20  Release Manager
 
 	* GCC 12.4.0 released.

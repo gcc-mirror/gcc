@@ -1,3 +1,22 @@
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43374
+	* c-cppbuiltin.cc (builtin_define_decimal_float_constants): Use
+	get_max_float.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117230
+	* c-warn.cc (sizeof_pointer_memaccess_warning): Only compare
+	TYPE_PRECISION of TREE_TYPE (type) to precision of char if
+	TREE_TYPE (type) is integral type.
+
 2024-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

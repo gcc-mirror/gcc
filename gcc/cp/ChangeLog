@@ -1,3 +1,137 @@
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+		    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113976
+	* decl.cc (grokdeclarator): Don't call cp_apply_type_quals_to_decl
+	on DECL_TEMPLATE_INSTANTIATED VAR_DECLs.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116636
+	* method.cc: Include decl.h.
+	(use_thunk): Temporarily change deprecated_state to
+	UNAVAILABLE_DEPRECATED_SUPPRESS.
+
+2025-06-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116606
+	* decl2.cc (mark_vtable_entries): Temporarily override deprecated_state to
+	UNAVAILABLE_DEPRECATED_SUPPRESS.  Remove a warning_sentinel.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98533
+	PR c++/119123
+	* parser.cc (cp_parser_class_specifier): Update TYPE_FIELDS of
+	variant types in case cp_parser_late_parsing_default_args etc. change
+	TYPE_FIELDS on the main variant.  Add switch_to_class lambda and
+	use it to simplify repeated class switching code.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118763
+	* init.cc (build_new_1): Don't set CLEANUP_EH_ONLY.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118661
+	* constexpr.cc (potential_constant_expression_1): Don't diagnose
+	lvalue-to-rvalue conversion of volatile lvalue if it has NULLPTR_TYPE.
+	* decl2.cc (decl_maybe_constant_var_p): Return true for constexpr
+	decls with NULLPTR_TYPE even if they are volatile.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117827
+	* init.cc (build_new_1): Pass address of a make_tree_vector ()
+	initialized gc tree vector to build_vec_init and append
+	build_disable_temp_cleanup to init_expr from it.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118509
+	* typeck.cc (get_member_function_from_ptrfunc): Wrap force_target_expr
+	with save_expr.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117825
+	* typeck.cc (cp_build_function_call_vec): Don't call
+	check_function_arguments if complain doesn't have tf_warning bit set.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116108
+	* decl.cc (grokdeclarator): Pass TYYPE_MAIN_VARIANT (type)
+	rather than type to same_type_p when checking if the non-static
+	data member doesn't have current class type.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117317
+	* semantics.cc (emit_associated_thunks): Do nothing for
+	!DECL_INTERFACE_KNOWN && DECL_DEFER_OUTPUT fns.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117259
+	* typeck.cc (get_member_function_from_ptrfunc): Use force_target_expr
+	rather than save_expr for instance_ptr and function.  Don't call it
+	for TREE_CONSTANT.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116678
+	* optimize.cc: Include decl.h.
+	(maybe_thunk_body): Temporarily change deprecated_state to
+	UNAVAILABLE_DEPRECATED_SUPPRESS.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116449
+	* typeck.cc (get_member_function_from_ptrfunc): Use save_expr
+	on instance_ptr and function even if it doesn't have side-effects,
+	as long as it isn't a decl.
+
 2025-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/120123

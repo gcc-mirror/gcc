@@ -1,3 +1,372 @@
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/120480
+	* gcc.dg/pr120480.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119834
+	* g++.target/s390/pr119834.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+		    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113976
+	* g++.dg/cpp1y/var-templ87.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118623
+	* gcc.c-torture/execute/pr118623.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113994
+	PR rtl-optimization/116799
+	* gcc.c-torture/execute/pr116799.c: New test.
+	* g++.dg/torture/pr113994.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116636
+	* g++.dg/warn/deprecated-19.C: New test.
+
+2025-06-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116606
+	* g++.dg/ext/attr-unavailable-13.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/110676
+	* gcc.dg/asan/pr110676.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120196
+	* gfortran.dg/pr120196.f90: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_3.f90: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_2.f90: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+		    Daniil Kochergin  <daniil2472s@gmail.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120191
+	* gfortran.dg/pr120191_1.f90: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* g++.dg/opt/pr119327.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119582
+	* gcc.dg/asan/pr119582.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119291
+	* gcc.c-torture/execute/pr119291.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119183
+	* gcc.dg/pr119183.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98533
+	PR c++/119123
+	* g++.dg/cpp0x/pr98533.C: New test.
+	* g++.dg/cpp0x/pr119123.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119000
+	* c-c++-common/gomp/pr119000.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118915
+	* gcc.c-torture/execute/pr118915.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118776
+	* gcc.target/i386/pr118776.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118763
+	* g++.dg/asan/pr118763.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118661
+	* g++.dg/cpp0x/constexpr-volatile4.C: New test.
+	* g++.dg/cpp0x/constexpr-union9.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/117432
+	* gcc.c-torture/execute/pr117432.c: New test.
+	* gcc.target/i386/pr117432.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117827
+	* g++.dg/init/array66.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114877
+	* gcc.dg/torture/builtin-frexp-1.c: Add -Wmaybe-uninitialized as
+	dg-additional-options.
+	(bar): New function.
+	(TESTIT_FREXP2): Rework the macro so that it doesn't test whether
+	nothing has been stored to what the second argument points to, but
+	instead that something has been stored there, whatever it is.
+	(main): Temporarily don't enable the nan tests for -O0.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118509
+	* g++.dg/expr/pmf-4.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117825
+	* g++.dg/warn/pr117825.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116108
+	* g++.dg/cpp1z/class-deduction117.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117745
+	* gcc.dg/pr117745.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102674
+	* gcc.dg/dfp/pr102674.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43374
+	* gcc.dg/dfp/pr43374.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117317
+	* g++.dg/cpp2a/pr117317-1.C: New test.
+	* g++.dg/cpp2a/pr117317-2.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117296
+	* gcc.target/i386/pr117296.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117259
+	* g++.dg/ubsan/pr117259.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117230
+	* c-c++-common/Wsizeof-pointer-memaccess5.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-20  Uros Bizjak  <ubizjak@gmail.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116738
+	* gcc.target/i386/sse-pr116738.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116678
+	* g++.dg/warn/deprecated-20.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/torture/builtin-clear-padding-3.c (main): Compare
+	s2.b.a against -1 rather than (char) -1.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116449
+	* g++.dg/ubsan/pr116449.C: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116287
+	* gcc.target/i386/bmi-pr116287.c: New test.
+	* gcc.target/i386/bmi2-pr116287.c: New test.
+	* gcc.target/i386/tbm-pr116287.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116034
+	PR testsuite/116061
+	* gcc.dg/pr116034.c (g): Change type from int to unsigned short.
+	(foo): Guard memmove call on __SIZEOF_SHORT__ == 2.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-23  Jakub Jelinek  <jakub@redhat.com>
+		    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116034
+	* gcc.dg/pr116034.c: New test.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115527
+	* c-c++-common/torture/builtin-clear-padding-1.c: Add dg-do run
+	directive.
+	* c-c++-common/torture/builtin-clear-padding-2.c: Likewise.
+	* c-c++-common/torture/builtin-clear-padding-3.c: Likewise.
+	* c-c++-common/torture/builtin-clear-padding-4.c: Likewise.
+	* c-c++-common/torture/builtin-clear-padding-5.c: Likewise.
+	* c-c++-common/torture/builtin-clear-padding-6.c: New test.
+
 2025-06-10  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
