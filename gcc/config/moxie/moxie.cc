@@ -328,7 +328,7 @@ moxie_expand_prologue (void)
 }
 
 void
-moxie_expand_epilogue (void)
+moxie_expand_epilogue (int style)
 {
   int regno;
   rtx reg;
@@ -336,6 +336,7 @@ moxie_expand_epilogue (void)
   if (cfun->machine->callee_saved_reg_size != 0)
     {
       reg = gen_rtx_REG (Pmode, MOXIE_R12);
+      if (style) emit_insn (gen_movsi_push(reg));
       if (cfun->machine->callee_saved_reg_size <= 255)
 	{
 	  emit_move_insn (reg, hard_frame_pointer_rtx);
@@ -356,9 +357,11 @@ moxie_expand_epilogue (void)
 	    rtx preg = gen_rtx_REG (Pmode, regno);
 	    emit_insn (gen_movsi_pop (reg, preg));
 	  }
+      if (style) emit_insn (gen_movsi_pop(gen_rtx_REG(Pmode, MOXIE_SP), reg));
     }
 
-  emit_jump_insn (gen_returner ());
+  if (style) emit_jump_insn (gen_eh_returner());
+  else emit_jump_insn (gen_returner ());
 }
 
 /* Implements the macro INITIAL_ELIMINATION_OFFSET, return the OFFSET.  */
