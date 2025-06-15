@@ -1,3 +1,15 @@
+2025-06-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_co_await): Identify diagnostics
+	for initial and final await expressions.
+	(cp_coroutine_transform::wrap_original_function_body): Do
+	not handle initial and final await expressions here ...
+	(cp_coroutine_transform::apply_transforms): ... handle them
+	here and avoid duplicate diagnostics.
+	* coroutines.h: Declare inital and final await expressions
+	in the transform class.  Save the function closing brace
+	location.
+
 2025-06-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/116775

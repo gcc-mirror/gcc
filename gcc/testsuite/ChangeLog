@@ -1,3 +1,23 @@
+2025-06-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-06-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/120423
+	PR rtl-optimization/116389
+	* gcc.target/avr/torture/pr120423-1.c: New test.
+	* gcc.target/avr/torture/pr120423-2.c: New test.
+	* gcc.target/avr/torture/pr120423-116389.c: New test.
+
+2025-06-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/coro1-missing-await-method.C: Adjust for
+	improved diagnostics.
+	* g++.dg/coroutines/coro-missing-final-suspend.C: Likewise.
+	* g++.dg/coroutines/pr104051.C: Move to...
+	* g++.dg/coroutines/pr104051-0.C: ...here.
+	* g++.dg/coroutines/pr104051-1.C: New test.
+
 2025-06-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/116775
