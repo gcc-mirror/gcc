@@ -2196,7 +2196,7 @@ Dump::visit (StructPatternFieldIdentPat &e)
   auto oa = e.get_outer_attrs ();
   do_outer_attrs (oa);
   put_field ("ident", e.get_identifier ().as_string ());
-  put_field ("ident_pattern", e.get_pattern ().as_string ());
+  visit_field ("ident_pattern", e.get_pattern ());
   end ("StructPatternFieldIdentPat");
 }
 
@@ -2314,7 +2314,7 @@ Dump::visit (LetStmt &e)
   auto oa = e.get_outer_attrs ();
   do_outer_attrs (oa);
 
-  put_field ("variable_pattern", e.get_pattern ().as_string ());
+  visit_field ("variable_pattern", e.get_pattern ());
 
   if (e.has_type ())
     visit_field ("type", e.get_type ());
