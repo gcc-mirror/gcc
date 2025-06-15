@@ -5,16 +5,7 @@
 
 #define T uint64_t
 
-DEF_VX_BINARY_CASE_0_WRAP(T, +, add)
-DEF_VX_BINARY_CASE_0(T, -, sub)
-DEF_VX_BINARY_REVERSE_CASE_0(T, -, rsub)
-DEF_VX_BINARY_CASE_0_WRAP(T, &, and)
-DEF_VX_BINARY_CASE_0_WRAP(T, |, or)
-DEF_VX_BINARY_CASE_0_WRAP(T, ^, xor)
-DEF_VX_BINARY_CASE_0_WRAP(T, /, div)
-DEF_VX_BINARY_CASE_0_WRAP(T, %, rem)
-DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_0_WARP(T), max)
-DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max)
+TEST_BINARY_VX_UNSIGNED_0(T)
 
 /* { dg-final { scan-assembler-not {vadd.vx} } } */
 /* { dg-final { scan-assembler-not {vsub.vx} } } */
