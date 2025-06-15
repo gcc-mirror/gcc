@@ -1,3 +1,10 @@
+2025-06-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/120423
+	PR rtl-optimization/116389
+	* config/avr/avr.md [-mno-lra]: Add pre-reload split to transform
+	(left shift of) a paradoxical subreg to a (left shift of) zero-extend.
+
 2025-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

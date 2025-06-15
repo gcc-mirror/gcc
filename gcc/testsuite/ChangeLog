@@ -1,3 +1,11 @@
+2025-06-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/120423
+	PR rtl-optimization/116389
+	* gcc.target/avr/torture/pr120423-1.c: New test.
+	* gcc.target/avr/torture/pr120423-2.c: New test.
+	* gcc.target/avr/torture/pr120423-116389.c: New test.
+
 2025-06-13  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
