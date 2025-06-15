@@ -3345,36 +3345,6 @@
 				    (const_int 8)
 				    (const_int 9))))])
 
-(define_peephole2
-  [(set (match_operand:SI 0 "register_operand")
-	(match_operand:SI 6 "reload_operand"))
-   (set (match_operand:SI 1 "register_operand")
-	(match_operand:SI 7 "reload_operand"))
-   (set (match_operand:SF 2 "register_operand")
-	(match_operand:SF 4 "register_operand"))
-   (set (match_operand:SF 3 "register_operand")
-	(match_operand:SF 5 "register_operand"))]
-  "REGNO (operands[0]) == REGNO (operands[4])
-   && REGNO (operands[1]) == REGNO (operands[5])
-   && peep2_reg_dead_p (4, operands[0])
-   && peep2_reg_dead_p (4, operands[1])"
-  [(set (match_dup 2)
-	(match_dup 6))
-   (set (match_dup 3)
-	(match_dup 7))]
-{
-  HARD_REG_SET regs;
-  int i;
-  CLEAR_HARD_REG_SET (regs);
-  for (i = 0; i <= 3; ++i)
-    if (TEST_HARD_REG_BIT (regs, REGNO (operands[i])))
-      FAIL;
-    else
-      SET_HARD_REG_BIT (regs, REGNO (operands[i]));
-  operands[6] = gen_rtx_MEM (SFmode, XEXP (operands[6], 0));
-  operands[7] = gen_rtx_MEM (SFmode, XEXP (operands[7], 0));
-})
-
 (define_split
   [(clobber (match_operand 0 "register_operand"))]
   "HARD_REGISTER_P (operands[0])
