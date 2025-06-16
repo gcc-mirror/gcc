@@ -15236,7 +15236,15 @@ package body Sem_Elab is
             end if;
 
             Body_Decl := Unit_Declaration_Node (Body_Id);
-            Region    := Find_Early_Call_Region (Body_Decl);
+
+            --  For subprogram bodies in subunits we check where the subprogram
+            --  body stub is declared.
+
+            if Nkind (Parent (Body_Decl)) = N_Subunit then
+               Body_Decl := Corresponding_Stub (Parent (Body_Decl));
+            end if;
+
+            Region := Find_Early_Call_Region (Body_Decl);
 
             --  The freeze node appears prior to the early call region of the
             --  primitive body.
