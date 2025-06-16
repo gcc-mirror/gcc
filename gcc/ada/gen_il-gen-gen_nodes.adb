@@ -469,12 +469,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Subtype_Mark, Node_Id, Default_Empty),
         Sy (Expression, Node_Id, Default_Empty),
         Sm (Kill_Range_Check, Flag),
-        Sm (No_Truncation, Flag)),
-       Nmake_Assert => "True or else Nkind (Expression) /= N_Unchecked_Type_Conversion");
---       Nmake_Assert => "Nkind (Expression) /= N_Unchecked_Type_Conversion");
-   --  Assert that we don't have unchecked conversions of unchecked
-   --  conversions; if Expression might be an unchecked conversion,
-   --  then Tbuild.Unchecked_Convert_To should be used.
+        Sm (No_Truncation, Flag)));
 
    Cc (N_Subtype_Indication, N_Has_Etype,
        (Sy (Subtype_Mark, Node_Id, Default_Empty),
