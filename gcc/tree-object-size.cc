@@ -773,10 +773,12 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
    4th argument TYPE_OF_SIZE: A constant 0 with its TYPE being the same as the TYPE
     of the object referenced by REF_TO_SIZE
    6th argument: A constant 0 with the pointer TYPE to the original flexible
-     array type.
+     array type or pointer field type.
 
    The size of the element can be retrived from the TYPE of the 6th argument
-   of the call, which is the pointer to the array type.  */
+   of the call, which is the pointer to the original flexible array type or
+   the type of the original pointer field.  */
+
 static tree
 access_with_size_object_size (const gcall *call, int object_size_type)
 {
@@ -786,7 +788,7 @@ access_with_size_object_size (const gcall *call, int object_size_type)
 
   gcc_assert (gimple_call_internal_p (call, IFN_ACCESS_WITH_SIZE));
   /* The type of the 6th argument type is the pointer TYPE to the original
-     flexible array type.  */
+     flexible array type or to the original pointer type.  */
   tree pointer_to_array_type = TREE_TYPE (gimple_call_arg (call, 5));
   gcc_assert (POINTER_TYPE_P (pointer_to_array_type));
   tree element_type = TREE_TYPE (TREE_TYPE (pointer_to_array_type));
@@ -1854,6 +1856,17 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
             if (TREE_CODE (rhs) == SSA_NAME
                 && POINTER_TYPE_P (TREE_TYPE (rhs)))
 	      reexamine = merge_object_sizes (osi, var, rhs);
+	    /* Handle the following stmt #2 to propagate the size from the
+	       stmt #1 to #3:
+		1  _1 = .ACCESS_WITH_SIZE (_3, _4, 1, 0, -1, 0B);
+		2  _5 = *_1;
+		3  _6 = __builtin_dynamic_object_size (_5, 1);
+	     */
+	    else if (TREE_CODE (rhs) == MEM_REF
+		     && POINTER_TYPE_P (TREE_TYPE (rhs))
+		     && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
+		     && integer_zerop (TREE_OPERAND (rhs, 1)))
+	      reexamine = merge_object_sizes (osi, var, TREE_OPERAND (rhs, 0));
             else
               expr_object_size (osi, var, rhs);
           }
