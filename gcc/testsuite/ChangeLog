@@ -1,3 +1,47 @@
+2025-06-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Add asm check
+	for vmaxu.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+
+2025-06-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vmaxu.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-1-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-2-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-2-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-2-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmax-run-2-u8.c: New test.
+
 2025-06-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

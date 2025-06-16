@@ -1,3 +1,11 @@
+2025-06-15  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add new
+	case UMAX.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op umax.
+
 2025-06-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
