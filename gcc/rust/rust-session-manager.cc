@@ -1182,14 +1182,6 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   // name resolve it
   Resolver::NameResolution::Resolve (parsed_crate);
 
-  // perform hir lowering
-  std::unique_ptr<HIR::Crate> lowered
-    = HIR::ASTLowering::Resolve (parsed_crate);
-  HIR::Crate &hir = mappings.insert_hir_crate (std::move (lowered));
-
-  // perform type resolution
-  Resolver::TypeResolution::Resolve (hir);
-
   // always restore the crate_num
   mappings.set_current_crate (saved_crate_num);
 

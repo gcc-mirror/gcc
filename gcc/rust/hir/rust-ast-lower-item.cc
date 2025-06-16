@@ -732,6 +732,25 @@ ASTLoweringItem::visit (AST::MacroRulesDefinition &def)
   lower_macro_definition (def);
 }
 
+void
+ASTLoweringItem::visit (AST::ExternCrate &extern_crate)
+{
+  if (extern_crate.references_self ())
+    return;
+
+  auto &mappings = Analysis::Mappings::get ();
+  CrateNum num
+    = mappings.lookup_crate_name (extern_crate.get_referenced_crate ())
+	.value ();
+  AST::Crate &crate = mappings.get_ast_crate (num);
+
+  auto saved_crate_num = mappings.get_current_crate ();
+  mappings.set_current_crate (num);
+  auto lowered = ASTLowering::Resolve (crate);
+  mappings.insert_hir_crate (std::move (lowered));
+  mappings.set_current_crate (saved_crate_num);
+}
+
 HIR::SimplePath
 ASTLoweringSimplePath::translate (const AST::SimplePath &path)
 {

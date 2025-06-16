@@ -51,9 +51,9 @@ public:
   void visit (HIR::ImplBlock &impl_block) override;
   void visit (HIR::ExternBlock &extern_block) override;
   void visit (HIR::Trait &trait_block) override;
+  void visit (HIR::ExternCrate &extern_crate) override;
 
   // nothing to do
-  void visit (HIR::ExternCrate &) override {}
   void visit (HIR::UseDeclaration &) override {}
 
 protected:

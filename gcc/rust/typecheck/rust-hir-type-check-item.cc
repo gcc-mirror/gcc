@@ -737,6 +737,25 @@ TypeCheckItem::visit (HIR::ExternBlock &extern_block)
     }
 }
 
+void
+TypeCheckItem::visit (HIR::ExternCrate &extern_crate)
+{
+  if (extern_crate.references_self ())
+    return;
+
+  auto &mappings = Analysis::Mappings::get ();
+  CrateNum num
+    = mappings.lookup_crate_name (extern_crate.get_referenced_crate ())
+	.value ();
+  HIR::Crate &crate = mappings.get_hir_crate (num);
+
+  CrateNum saved_crate_num = mappings.get_current_crate ();
+  mappings.set_current_crate (num);
+  for (auto &item : crate.get_items ())
+    TypeCheckItem::Resolve (*item);
+  mappings.set_current_crate (saved_crate_num);
+}
+
 std::pair<std::vector<TyTy::SubstitutionParamMapping>, TyTy::RegionConstraints>
 TypeCheckItem::resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
 						 bool &failure_flag)
