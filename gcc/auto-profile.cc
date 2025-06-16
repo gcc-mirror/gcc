@@ -1097,17 +1097,26 @@ afdo_vpt (gimple_stmt_iterator *gsi, const icall_target_map &map,
 }
 
 typedef std::set<basic_block> bb_set;
-typedef std::set<edge> edge_set;
 
 static bool
 is_bb_annotated (const basic_block bb, const bb_set &annotated)
 {
-  return annotated.find (bb) != annotated.end ();
+  if (annotated.find (bb) != annotated.end ())
+    {
+      gcc_checking_assert (bb->count.quality () == AFDO
+			   || !bb->count.nonzero_p ());
+      return true;
+    }
+  gcc_checking_assert (bb->count.quality () != AFDO
+		       || !bb->count.nonzero_p ());
+  return false;
 }
 
 static void
 set_bb_annotated (basic_block bb, bb_set *annotated)
 {
+  gcc_checking_assert (bb->count.quality () == AFDO
+		       || !bb->count.nonzero_p ());
   annotated->insert (bb);
 }
 
@@ -1207,8 +1216,9 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
 	fprintf (dump_file,
 		 " Annotated bb %i with count %" PRId64 "\n",
 		 bb->index, (int64_t)max_count);
+      return true;
     }
-  return true;
+  return false;
 }
 
 /* BB1 and BB2 are in an equivalent class iff:
@@ -1226,7 +1236,7 @@ afdo_find_equiv_class (bb_set *annotated_bb)
   basic_block bb;
 
   FOR_ALL_BB_FN (bb, cfun)
-  bb->aux = NULL;
+    bb->aux = NULL;
 
   FOR_ALL_BB_FN (bb, cfun)
   {
@@ -1238,7 +1248,9 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 	  && bb1->loop_father == bb->loop_father)
 	{
 	  bb1->aux = bb;
-	  if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
+	  if (is_bb_annotated (bb1, *annotated_bb)
+	      && (!is_bb_annotated (bb, *annotated_bb)
+		  || bb1->count > bb->count))
 	    {
 	      if (dump_file)
 		{
@@ -1258,7 +1270,9 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 	  && bb1->loop_father == bb->loop_father)
 	{
 	  bb1->aux = bb;
-	  if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
+	  if (is_bb_annotated (bb1, *annotated_bb)
+	      && (!is_bb_annotated (bb, *annotated_bb)
+		  || bb1->count > bb->count))
 	    {
 	      if (dump_file)
 		{
@@ -1294,49 +1308,88 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
   {
     edge e, unknown_edge = NULL;
     edge_iterator ei;
-    int num_unknown_edge = 0;
-    int num_edge = 0;
+    int num_unknown_edges = 0;
+    int num_edges = 0;
     profile_count total_known_count = profile_count::zero ().afdo ();
 
     FOR_EACH_EDGE (e, ei, is_succ ? bb->succs : bb->preds)
       {
 	gcc_assert (AFDO_EINFO (e) != NULL);
 	if (! AFDO_EINFO (e)->is_annotated ())
-	  num_unknown_edge++, unknown_edge = e;
+	  num_unknown_edges++, unknown_edge = e;
 	else
 	  total_known_count += AFDO_EINFO (e)->get_count ();
-	num_edge++;
+	num_edges++;
+      }
+    if (dump_file)
+      {
+	fprintf (dump_file, "bb %i %s propagating %s edges %i, "
+		 "unknown edges %i, known count ",
+		 bb->index,
+		 is_bb_annotated (bb, *annotated_bb) ? "(annotated)" : "",
+		 is_succ ? "succesors" : "predecessors", num_edges,
+		 num_unknown_edges);
+	total_known_count.dump (dump_file);
+	fprintf (dump_file, " bb count ");
+	bb->count.dump (dump_file);
+	fprintf (dump_file, "\n");
       }
 
     /* Be careful not to annotate block with no successor in special cases.  */
-    if (num_unknown_edge == 0 && total_known_count > bb->count)
+    if (num_unknown_edges == 0 && num_edges
+	&& !is_bb_annotated (bb, *annotated_bb))
       {
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "  Annotating bb %i with count ", bb->index);
+	    total_known_count.dump (dump_file);
+	    fprintf (dump_file, "\n");
+	  }
 	bb->count = total_known_count;
-	if (!is_bb_annotated (bb, *annotated_bb))
-	  set_bb_annotated (bb, annotated_bb);
+	set_bb_annotated (bb, annotated_bb);
 	changed = true;
       }
-    else if (num_unknown_edge == 1 && is_bb_annotated (bb, *annotated_bb))
+    else if (num_unknown_edges == 1 && is_bb_annotated (bb, *annotated_bb))
       {
 	if (bb->count > total_known_count)
 	  {
-	      profile_count new_count = bb->count - total_known_count;
-	      AFDO_EINFO(unknown_edge)->set_count(new_count);
-	      if (num_edge == 1)
-		{
-		  basic_block succ_or_pred_bb = is_succ ? unknown_edge->dest : unknown_edge->src;
-		  if (new_count > succ_or_pred_bb->count)
-		    {
-		      succ_or_pred_bb->count = new_count;
-		      if (!is_bb_annotated (succ_or_pred_bb, *annotated_bb))
-			set_bb_annotated (succ_or_pred_bb, annotated_bb);
-		    }
-		}
-	   }
+	    profile_count new_count = bb->count - total_known_count;
+	    AFDO_EINFO (unknown_edge)->set_count (new_count);
+	  }
 	else
-	  AFDO_EINFO (unknown_edge)->set_count (profile_count::zero().afdo ());
+	  AFDO_EINFO (unknown_edge)->set_count
+		  (profile_count::zero ().afdo ());
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "  Annotated edge %i->%i with count ",
+		     unknown_edge->src->index, unknown_edge->dest->index);
+	    AFDO_EINFO (unknown_edge)->get_count ().dump (dump_file);
+	    fprintf (dump_file, "\n");
+	  }
 	AFDO_EINFO (unknown_edge)->set_annotated ();
 	changed = true;
+      }
+    else if (num_unknown_edges > 1
+	     && is_bb_annotated (bb, *annotated_bb)
+	     && total_known_count >= bb->count)
+      {
+	FOR_EACH_EDGE (e, ei, is_succ ? bb->succs : bb->preds)
+	  {
+	    gcc_assert (AFDO_EINFO (e) != NULL);
+	    if (! AFDO_EINFO (e)->is_annotated ())
+	      {
+		AFDO_EINFO (e)->set_count
+		       	(profile_count::zero ().afdo ());
+		AFDO_EINFO (e)->set_annotated ();
+		if (dump_file)
+		  {
+		    fprintf (dump_file, "  Annotated edge %i->%i with count ",
+			     e->src->index, e->dest->index);
+		    AFDO_EINFO (unknown_edge)->get_count ().dump (dump_file);
+		    fprintf (dump_file, "\n");
+		  }
+	      }
+	  }
       }
   }
   return changed;
@@ -1450,16 +1503,25 @@ afdo_propagate_circuit (const bb_set &annotated_bb)
 static void
 afdo_propagate (bb_set *annotated_bb)
 {
-  basic_block bb;
   bool changed = true;
   int i = 0;
 
+  basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
-  {
-    bb->count = ((basic_block)bb->aux)->count;
-    if (is_bb_annotated ((basic_block)bb->aux, *annotated_bb))
-      set_bb_annotated (bb, annotated_bb);
-  }
+    if (!is_bb_annotated (bb, *annotated_bb)
+	&& is_bb_annotated ((basic_block)bb->aux, *annotated_bb))
+      {
+	bb->count = ((basic_block)bb->aux)->count;
+	set_bb_annotated (bb, annotated_bb);
+	if (dump_file)
+	  {
+	    fprintf (dump_file,
+		     "  Copying count of bb %i to bb %i; count is:",
+		     ((basic_block)bb->aux)->index,
+		     bb->index);
+	    bb->count.dump (dump_file);
+	  }
+      }
 
   while (changed && i++ < 10)
     {
@@ -1471,6 +1533,205 @@ afdo_propagate (bb_set *annotated_bb)
         changed = true;
       afdo_propagate_circuit (*annotated_bb);
     }
+  if (dump_file)
+    fprintf (dump_file, "Propated in %i iterations %s\n",
+	     i, changed ? "; iteration limit reached\n" : "");
+}
+
+/* qsort comparator of sreals.  */
+static int
+cmp (const void *a, const void *b)
+{
+  if (*(const sreal *)a < *(const sreal *)b)
+    return 1;
+  if (*(const sreal *)a > *(const sreal *)b)
+    return -1;
+  return 0;
+}
+
+/* In case given basic block was fully optimized out, AutoFDO
+   will have no data about it.  In this case try to preserve static profile.
+   Identify connected components (in undirected form of CFG) which has
+   no annotations at all.  Look at thir boundaries and try to determine
+   scaling factor and scale.  */
+
+void
+afdo_adjust_guessed_profile (bb_set *annotated_bb)
+{
+  auto_sbitmap visited (last_basic_block_for_fn (cfun));
+  /* Basic blocks of connected component currently processed.  */
+  auto_vec <basic_block, 20> bbs (n_basic_blocks_for_fn (cfun) + 1);
+  /* Scale factors found.  */
+  auto_vec <sreal, 20> scales (n_basic_blocks_for_fn (cfun) + 1);
+  auto_vec <basic_block, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
+
+  bitmap_clear (visited);
+
+  basic_block seed_bb;
+  FOR_BB_BETWEEN (seed_bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
+   if (!is_bb_annotated (seed_bb, *annotated_bb)
+       && bitmap_set_bit (visited, seed_bb->index))
+     {
+       hash_set <basic_block> current_component;
+
+       stack.quick_push (seed_bb);
+       bbs.truncate (0);
+       scales.truncate (0);
+
+       /* Identify connected component starting in BB.  */
+       if (dump_file)
+	 fprintf (dump_file, "Starting connected component in bb %i\n",
+		  seed_bb->index);
+       do
+	 {
+	   basic_block b = stack.pop ();
+
+	   bbs.quick_push (b);
+	   current_component.add (b);
+
+	   for (edge e: b->preds)
+	     if (!is_bb_annotated (e->src, *annotated_bb)
+		 && bitmap_set_bit (visited, e->src->index))
+		stack.quick_push (e->src);
+	   for (edge e: b->succs)
+	     if (!is_bb_annotated (e->dest, *annotated_bb)
+		 && bitmap_set_bit (visited, e->dest->index))
+		stack.quick_push (e->dest);
+	 }
+       while (!stack.is_empty ());
+
+       /* Now visit the component and try to figure out its desired
+	  frequency.  */
+       for (basic_block b : bbs)
+	 {
+	   if (dump_file)
+	     {
+	       fprintf (dump_file, "  visiting bb %i with count ", b->index);
+	       b->count.dump (dump_file);
+	       fprintf (dump_file, "\n");
+	     }
+	   if (!b->count.nonzero_p ())
+	     continue;
+	   /* Sum of counts of annotated edges into B.  */
+	   profile_count annotated_count = profile_count::zero ();
+	   /* Sum of counts of edges into B with source in current
+	      component.  */
+	   profile_count current_component_count = profile_count::zero ();
+	   bool boundary = false;
+
+	   for (edge e: b->preds)
+	     if (AFDO_EINFO (e)->is_annotated ())
+	       {
+		 if (dump_file)
+		   {
+		     fprintf (dump_file, "    Annotated pred edge to %i "
+			      "with count ", e->src->index);
+		     AFDO_EINFO (e)->get_count ().dump (dump_file);
+		     fprintf (dump_file, "\n");
+		   }
+		 boundary = true;
+		 annotated_count += AFDO_EINFO (e)->get_count ();
+	       }
+	     /* If source is anotated, combine with static
+		probability prediction.
+		TODO: We can do better in case some of edges out are
+		annotated and distribute only remaining count out of BB.  */
+	     else if (is_bb_annotated (e->src, *annotated_bb))
+	       {
+		 boundary = true;
+		 if (dump_file)
+		   {
+		     fprintf (dump_file, "    Annotated predecesor %i "
+			      "with count ", e->src->index);
+		     e->src->count.dump (dump_file);
+		     fprintf (dump_file, " edge count using static profile ");
+		     e->count ().dump (dump_file);
+		     fprintf (dump_file, "\n");
+		   }
+		 annotated_count += e->count ();
+	       }
+	     else
+	       {
+		 gcc_checking_assert (current_component.contains (e->src));
+		 current_component_count += e->count ();
+	       }
+	   if (boundary && current_component_count.initialized_p ())
+	     {
+	       profile_count in_count = b->count - current_component_count;
+	       if (dump_file)
+		 {
+		   fprintf (dump_file, "    bb %i in count ", b->index);
+		   in_count.dump (dump_file);
+		   fprintf (dump_file, " should be ");
+		   annotated_count.dump (dump_file);
+		   fprintf (dump_file, "\n");
+		 }
+	       if (in_count.nonzero_p ())
+		 {
+		   sreal scale
+		     = annotated_count.guessed_local ()
+			     .to_sreal_scale (in_count);
+		   if (dump_file)
+		     fprintf (dump_file, "    adding scale %.16f\n",
+			      scale.to_double ());
+		   scales.safe_push (scale);
+		 }
+	     }
+	   for (edge e: b->succs)
+	     if (AFDO_EINFO (e)->is_annotated ())
+	       {
+		 profile_count out_count = e->count ();
+		 profile_count annotated_count = AFDO_EINFO (e)->get_count ();
+		 if (dump_file)
+		   {
+		     fprintf (dump_file, "    edge %i->%i count ",
+			      b->index, e->dest->index);
+		     out_count.dump (dump_file);
+		     fprintf (dump_file, " should be ");
+		     annotated_count.dump (dump_file);
+		     fprintf (dump_file, "\n");
+		   }
+		 if (out_count.nonzero_p ())
+		   {
+		     sreal scale
+		       = annotated_count.guessed_local ()
+			       .to_sreal_scale (out_count);
+		     if (dump_file)
+		       fprintf (dump_file, "    adding scale %.16f\n",
+				scale.to_double ());
+		     scales.safe_push (scale);
+		   }
+	       }
+
+	 }
+       if (!scales.length ())
+	 continue;
+       scales.qsort (cmp);
+       sreal scale = scales[scales.length () / 2];
+       if (dump_file)
+	 fprintf (dump_file, "  Scaling by %.16f\n", scale.to_double ());
+       for (basic_block b : bbs)
+	 if (!(b->count == profile_count::zero ())
+	     && b->count.initialized_p ())
+	   {
+	     profile_count o = b->count;
+	     b->count = b->count.force_guessed () * scale;
+
+	     /* If we scaled to 0, make it auto-fdo since that is treated
+		less agressively.  */
+	     if (!b->count.nonzero_p () && o.nonzero_p ())
+	       b->count = profile_count::zero ().afdo ();
+	     if (dump_file)
+	       {
+		 fprintf (dump_file, "    bb %i count updated ", b->index);
+		 o.dump (dump_file);
+		 fprintf (dump_file, " -> ");
+		 b->count.dump (dump_file);
+		 fprintf (dump_file, "\n");
+	       }
+	   }
+     }
 }
 
 /* Propagate counts on control flow graph and calculate branch
@@ -1482,10 +1743,6 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
   edge e;
   edge_iterator ei;
   basic_block bb;
-
-  calculate_dominance_info (CDI_POST_DOMINATORS);
-  calculate_dominance_info (CDI_DOMINATORS);
-  loop_optimizer_init (0);
 
   FOR_ALL_BB_FN (bb, cfun)
     {
@@ -1501,38 +1758,50 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
   afdo_propagate (annotated_bb);
 
   FOR_EACH_BB_FN (bb, cfun)
-  {
-    int num_unknown_succ = 0;
-    profile_count total_count = profile_count::zero ().afdo ();
-
-    FOR_EACH_EDGE (e, ei, bb->succs)
-    {
-      gcc_assert (AFDO_EINFO (e) != NULL);
-      if (! AFDO_EINFO (e)->is_annotated ())
-        num_unknown_succ++;
-      else
-        total_count += AFDO_EINFO (e)->get_count ();
-    }
-    if (num_unknown_succ == 0 && total_count.nonzero_p ())
+    if (is_bb_annotated (bb, *annotated_bb))
       {
+	bool all_known = false;
+	profile_count total_count = profile_count::zero ().afdo ();
+
 	FOR_EACH_EDGE (e, ei, bb->succs)
 	  {
-	    /* If probability is 1, preserve reliable static prediction
-	       (This is, for example the case of single fallthru edge
-		or single fallthru plus unlikely EH edge.)  */
-	    if (AFDO_EINFO (e)->get_count () == total_count
-		&& e->probability == profile_probability::always ())
-	      ;
-	    else if (AFDO_EINFO (e)->get_count ().nonzero_p ())
-	      e->probability
-		= AFDO_EINFO (e)->get_count ().probability_in (total_count);
-	    /* If probability is zero, preserve reliable static prediction.  */
-	    else if (e->probability.nonzero_p ()
-		     || e->probability.quality () == GUESSED)
-	      e->probability = profile_probability::never ().afdo ();
+	    gcc_assert (AFDO_EINFO (e) != NULL);
+	    if (! AFDO_EINFO (e)->is_annotated ())
+	      {
+		/* If by static profile this edge never happens,
+		   still propagate the rest.  */
+		if (e->probability.nonzero_p ())
+		  {
+		    all_known = true;
+		    break;
+		  }
+	      }
+	    else
+	      total_count += AFDO_EINFO (e)->get_count ();
 	  }
+	if (!all_known || !total_count.nonzero_p ())
+	  continue;
+
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  if (AFDO_EINFO (e)->is_annotated ())
+	    {
+	      /* If probability is 1, preserve reliable static prediction
+		 (This is, for example the case of single fallthru edge
+		  or single fallthru plus unlikely EH edge.)  */
+	      if (AFDO_EINFO (e)->get_count () == total_count
+		  && e->probability == profile_probability::always ())
+		;
+	      else if (AFDO_EINFO (e)->get_count ().nonzero_p ())
+		e->probability
+		  = AFDO_EINFO (e)->get_count ().probability_in (total_count);
+	      /* If probability is zero, preserve reliable static
+		 prediction.  */
+	      else if (e->probability.nonzero_p ()
+		       || e->probability.quality () == GUESSED)
+		e->probability = profile_probability::never ().afdo ();
+	    }
       }
-  }
+  afdo_adjust_guessed_profile (annotated_bb);
   FOR_ALL_BB_FN (bb, cfun)
     {
       bb->aux = NULL;
@@ -1543,10 +1812,6 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
 	    e->aux = NULL;
 	  }
     }
-
-  loop_optimizer_finalize ();
-  free_dominance_info (CDI_DOMINATORS);
-  free_dominance_info (CDI_POST_DOMINATORS);
 }
 
 /* Perform value profile transformation using AutoFDO profile. Add the
@@ -1634,6 +1899,10 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
       return;
     }
 
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
+  loop_optimizer_init (0);
+
   if (dump_file)
     fprintf (dump_file, "\n\nAnnotating BB profile of %s\n",
 	     cgraph_node::get (current_function_decl)->dump_name ());
@@ -1660,39 +1929,62 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
   if (!profile_found)
     {
       if (dump_file)
-	fprintf (dump_file, "No afdo samples found; keeping original profile");
+	fprintf (dump_file, "No afdo samples found"
+		 "; keeping original profile\n");
+
+      loop_optimizer_finalize ();
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
       return;
     }
 
   /* Update profile.  */
-  update_count_by_afdo_count (&ENTRY_BLOCK_PTR_FOR_FN (cfun)->count,
-			      head_count);
-  update_count_by_afdo_count (&EXIT_BLOCK_PTR_FOR_FN (cfun)->count, 0);
-  profile_count max_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+  if (head_count)
+  {
+    update_count_by_afdo_count (&ENTRY_BLOCK_PTR_FOR_FN (cfun)->count,
+				head_count);
+    set_bb_annotated (ENTRY_BLOCK_PTR_FOR_FN (cfun), &annotated_bb);
+    if (!is_bb_annotated (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb, annotated_bb)
+	|| ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
+	   > ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->count)
+      {
+	ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->count
+	    = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+	set_bb_annotated (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb,
+			  &annotated_bb);
+      }
+    if (!is_bb_annotated (EXIT_BLOCK_PTR_FOR_FN (cfun), annotated_bb)
+	|| ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
+	   > EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb->count)
+      {
+	EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb->count
+	    = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+	set_bb_annotated (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb, &annotated_bb);
+      }
+  }
 
-  FOR_EACH_BB_FN (bb, cfun)
-    if (bb->count.quality () != AFDO)
-      update_count_by_afdo_count (&bb->count, 0);
-    else
-      max_count = max_count.max (bb->count);
-
-  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
-      > ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->count)
-    {
-      ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->count
-          = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-      set_bb_annotated (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb, &annotated_bb);
-    }
-  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count
-      > EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb->count)
-    {
-      EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb->count
-          = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
-      set_bb_annotated (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb, &annotated_bb);
-    }
-  gcc_assert (max_count.nonzero_p ());
   /* Calculate, propagate count and probability information on CFG.  */
   afdo_calculate_branch_prob (&annotated_bb);
+
+ /* If we failed to turn some of original guessed profile to global,
+     set basic blocks uninitialized.  */
+  FOR_ALL_BB_FN (bb, cfun)
+    if (!bb->count.ipa_p ())
+      {
+	/* We skip annotating entry profile if it is 0
+	   in hope to be able to determine it better from the
+	   static profile.
+
+	   Now we know we can not derive it from other info,
+	   so set it since it is better than UNKNOWN.  */
+	if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	  bb->count = profile_count::zero ().afdo ();
+	else
+	  bb->count = profile_count::uninitialized ();
+	if (dump_file)
+	  fprintf (dump_file, "  Unknown count of bb %i\n", bb->index);
+	cfun->cfg->full_profile = false;
+      }
 
   cgraph_node::get(current_function_decl)->count
       = ENTRY_BLOCK_PTR_FOR_FN(cfun)->count;
@@ -1705,6 +1997,10 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
       free_dominance_info (CDI_POST_DOMINATORS);
       update_ssa (TODO_update_ssa);
     }
+
+  loop_optimizer_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
 }
 
 /* Wrapper function to invoke early inliner.  */

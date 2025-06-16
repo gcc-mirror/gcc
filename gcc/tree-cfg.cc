@@ -5760,7 +5760,7 @@ gimple_verify_flow_info (void)
   if (!EXIT_BLOCK_PTR_FOR_FN (cfun)
 	->count.compatible_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count))
     {
-      error ("exit block count is not compoatible with entry block count");
+      error ("exit block count is not compatible with entry block count");
       err = true;
     }
 
@@ -5788,7 +5788,7 @@ gimple_verify_flow_info (void)
         }
       if (!bb->count.compatible_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count))
 	{
-	  error ("count of bb %d is not compoatible with entry block count",
+	  error ("count of bb %d is not compatible with entry block count",
 		 bb->index);
 	  err = true;
 	}

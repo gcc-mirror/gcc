@@ -1239,6 +1239,15 @@ public:
       return ret;
     }
 
+  /* Return THIS with quality GUESSED.  */
+  profile_count force_guessed () const
+    {
+      profile_count ret = *this;
+      gcc_checking_assert (initialized_p ());
+      ret.m_quality = GUESSED;
+      return ret;
+    }
+
   /* Return variant of profile count which is always safe to compare
      across functions.  */
   profile_count ipa () const
