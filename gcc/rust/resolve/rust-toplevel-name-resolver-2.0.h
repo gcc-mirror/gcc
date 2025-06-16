@@ -176,7 +176,7 @@ private:
   void visit (AST::Union &union_item) override;
   void visit (AST::ConstantItem &const_item) override;
   void visit (AST::TypeAlias &type_item) override;
-  void visit (AST::ExternCrate &crate) override;
+  void visit_extern_crate (AST::ExternCrate &, AST::Crate &, CrateNum) override;
   void visit (AST::TypeParam &type_param) override;
   void visit (AST::ConstGenericParam &const_param) override;
 

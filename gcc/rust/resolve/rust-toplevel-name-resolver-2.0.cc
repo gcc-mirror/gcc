@@ -173,19 +173,10 @@ insert_macros (std::vector<PROC_MACRO> &macros, NameResolutionContext &ctx)
 }
 
 void
-TopLevel::visit (AST::ExternCrate &crate)
+TopLevel::visit_extern_crate (AST::ExternCrate &extern_crate, AST::Crate &crate,
+			      CrateNum num)
 {
   auto &mappings = Analysis::Mappings::get ();
-  auto num_opt = mappings.lookup_crate_name (crate.get_referenced_crate ());
-
-  if (!num_opt)
-    {
-      rust_error_at (crate.get_locus (), "unknown crate %qs",
-		     crate.get_referenced_crate ().c_str ());
-      return;
-    }
-
-  CrateNum num = *num_opt;
 
   auto attribute_macros = mappings.lookup_attribute_proc_macros (num);
 
@@ -193,40 +184,27 @@ TopLevel::visit (AST::ExternCrate &crate)
 
   auto derive_macros = mappings.lookup_derive_proc_macros (num);
 
-  auto sub_visitor_1 = [&] () {
-    // TODO: Find a way to keep this part clean without the double dispatch.
-    if (derive_macros.has_value ())
-      {
-	insert_macros (derive_macros.value (), ctx);
-	for (auto &macro : derive_macros.value ())
-	  mappings.insert_derive_proc_macro_def (macro);
-      }
-    if (attribute_macros.has_value ())
-      {
-	insert_macros (attribute_macros.value (), ctx);
-	for (auto &macro : attribute_macros.value ())
-	  mappings.insert_attribute_proc_macro_def (macro);
-      }
-    if (bang_macros.has_value ())
-      {
-	insert_macros (bang_macros.value (), ctx);
-	for (auto &macro : bang_macros.value ())
-	  mappings.insert_bang_proc_macro_def (macro);
-      }
-  };
+  // TODO: Find a way to keep this part clean without the double dispatch.
+  if (derive_macros.has_value ())
+    {
+      insert_macros (derive_macros.value (), ctx);
+      for (auto &macro : derive_macros.value ())
+	mappings.insert_derive_proc_macro_def (macro);
+    }
+  if (attribute_macros.has_value ())
+    {
+      insert_macros (attribute_macros.value (), ctx);
+      for (auto &macro : attribute_macros.value ())
+	mappings.insert_attribute_proc_macro_def (macro);
+    }
+  if (bang_macros.has_value ())
+    {
+      insert_macros (bang_macros.value (), ctx);
+      for (auto &macro : bang_macros.value ())
+	mappings.insert_bang_proc_macro_def (macro);
+    }
 
-  auto sub_visitor_2 = [&] () {
-    ctx.canonical_ctx.scope_crate (crate.get_node_id (),
-				   crate.get_referenced_crate (),
-				   std::move (sub_visitor_1));
-  };
-
-  if (crate.has_as_clause ())
-    ctx.scoped (Rib::Kind::Module, crate.get_node_id (), sub_visitor_2,
-		crate.get_as_clause ());
-  else
-    ctx.scoped (Rib::Kind::Module, crate.get_node_id (), sub_visitor_2,
-		crate.get_referenced_crate ());
+  visit (crate);
 }
 
 static bool

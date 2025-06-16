@@ -1189,8 +1189,13 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   mappings.insert_bang_proc_macros (crate_num, bang_macros);
   mappings.insert_derive_proc_macros (crate_num, derive_macros);
 
-  // name resolve it
-  Resolver::NameResolution::Resolve (parsed_crate);
+  // if flag_name_resolution_2_0 is enabled
+  // then we perform resolution later
+  if (!flag_name_resolution_2_0)
+    {
+      // name resolve it
+      Resolver::NameResolution::Resolve (parsed_crate);
+    }
 
   // always restore the crate_num
   mappings.set_current_crate (saved_crate_num);

@@ -394,5 +394,46 @@ DefaultResolver::visit (AST::TypeParam &param)
   ctx.scoped (Rib::Kind::ForwardTypeParamBan, param.get_node_id (), expr_vis);
 }
 
+void
+DefaultResolver::visit_extern_crate (AST::ExternCrate &extern_crate,
+				     AST::Crate &crate, CrateNum num)
+{
+  visit (crate);
+}
+
+void
+DefaultResolver::visit (AST::ExternCrate &crate)
+{
+  auto &mappings = Analysis::Mappings::get ();
+  auto num_opt = mappings.lookup_crate_name (crate.get_referenced_crate ());
+
+  if (!num_opt)
+    {
+      rust_error_at (crate.get_locus (), "unknown crate %qs",
+		     crate.get_referenced_crate ().c_str ());
+      return;
+    }
+
+  CrateNum num = *num_opt;
+
+  AST::Crate &referenced_crate = mappings.get_ast_crate (num);
+
+  auto sub_visitor_1
+    = [&, this] () { visit_extern_crate (crate, referenced_crate, num); };
+
+  auto sub_visitor_2 = [&] () {
+    ctx.canonical_ctx.scope_crate (referenced_crate.get_node_id (),
+				   crate.get_referenced_crate (),
+				   std::move (sub_visitor_1));
+  };
+
+  if (crate.has_as_clause ())
+    ctx.scoped (Rib::Kind::Module, referenced_crate.get_node_id (),
+		sub_visitor_2, crate.get_as_clause ());
+  else
+    ctx.scoped (Rib::Kind::Module, referenced_crate.get_node_id (),
+		sub_visitor_2, crate.get_referenced_crate ());
+}
+
 } // namespace Resolver2_0
 } // namespace Rust

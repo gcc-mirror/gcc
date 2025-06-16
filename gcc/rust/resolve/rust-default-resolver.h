@@ -58,6 +58,9 @@ public:
 
   void visit (AST::TypeParam &) override;
 
+  virtual void visit_extern_crate (AST::ExternCrate &, AST::Crate &, CrateNum);
+  void visit (AST::ExternCrate &) override;
+
   // type dec nodes, which visit their fields or variants by default
   void visit (AST::StructStruct &) override;
   void visit (AST::TupleStruct &) override;
