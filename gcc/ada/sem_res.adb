@@ -12463,16 +12463,6 @@ package body Sem_Res is
          Orig_N := Original_Node (Expression (Orig_N));
          Orig_T := Target_Typ;
 
-         --  If the node is part of a larger expression, the Target_Type
-         --  may not be the original type of the node if the context is a
-         --  condition. Recover original type to see if conversion is needed.
-
-         if Is_Boolean_Type (Orig_T)
-          and then Nkind (Parent (N)) in N_Op
-         then
-            Orig_T := Etype (Parent (N));
-         end if;
-
          --  If we have an entity name, then give the warning if the entity
          --  is the right type, or if it is a loop parameter covered by the
          --  original type (that's needed because loop parameters have an
@@ -12545,6 +12535,16 @@ package body Sem_Res is
             elsif Is_Class_Wide_Type (Orig_T)
               and then Is_Subprogram_Or_Generic_Subprogram (Current_Scope)
               and then Present (Class_Preconditions_Subprogram (Current_Scope))
+            then
+               null;
+
+            --  Do not warn if original source-level conversion was
+            --  between two different types.
+
+            elsif Nkind (Original_Node (N)) = N_Type_Conversion
+              and then
+                Base_Type (Etype (Subtype_Mark (Original_Node (N))))
+                  /= Base_Type (Etype (Expression (Original_Node (N))))
             then
                null;
 
