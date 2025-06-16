@@ -73,28 +73,28 @@ struct cdfval_t : public cdfval_base_t {
     cdfval_base_t::string = NULL;
     cdfval_base_t::number = 0;
   }
-  cdfval_t( const char value[] )
+  cdfval_t( const char value[] ) // cppcheck-suppress noExplicitConstructor
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t::off  = false;
     cdfval_base_t::string = value;
     cdfval_base_t::number = 0;
   }
-  cdfval_t( long long value )
+  cdfval_t( long long value ) // cppcheck-suppress noExplicitConstructor
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t::off  = false;
     cdfval_base_t::string = NULL;
     cdfval_base_t::number = value;
   }
-  cdfval_t( long value )
+  cdfval_t( long value ) // cppcheck-suppress noExplicitConstructor
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t::off  = false;
     cdfval_base_t::string = NULL;
     cdfval_base_t::number = value;
   }
-  cdfval_t( int value )
+  cdfval_t( int value ) // cppcheck-suppress noExplicitConstructor
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t::off  = false;
@@ -109,7 +109,7 @@ struct cdfval_t : public cdfval_base_t {
     HOST_WIDE_INT value = real_to_integer(&r);
     cdfval_base_t::number = value;
   }
-  cdfval_t( const cdfval_base_t& value )
+  cdfval_t( const cdfval_base_t& value ) // cppcheck-suppress noExplicitConstructor
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t *self(this);

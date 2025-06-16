@@ -570,7 +570,7 @@ class cbl_enabled_exceptions_t : protected std::set<cbl_enabled_exception_t>
     : std::set<cbl_enabled_exception_t>(ecs, ecs + nec)
   {}
   void turn_on_off( bool enabled, bool location, ec_type_t type,
-                    std::set<size_t> files );
+                    const std::set<size_t>& files );
 
   const cbl_enabled_exception_t * match( ec_type_t ec, size_t file = 0 ) const;
 

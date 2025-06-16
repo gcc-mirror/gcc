@@ -147,10 +147,10 @@ extern bool cursor_at_sol;
                     fprintf(stderr, "<%s>", cbl_field_type_str((b).field->type)); \
                     } \
                 } \
-            if( (b).nsubscript) \
+            if( (b).nsubscript()) \
                 { \
                 fprintf(stderr,"("); \
-                for(size_t jjj=0; jjj<(b).nsubscript; jjj++) \
+                for(size_t jjj=0; jjj<(b).nsubscript(); jjj++) \
                     { \
                     if(jjj) \
                       { \
@@ -337,13 +337,13 @@ extern bool cursor_at_sol;
     else \
       { \
       gg_fprintf(trace_handle, 1, "%s", gg_string_literal( (b).field->name ? (b).field->name:"")); \
-      if( b.nsubscript ) \
+      if( b.nsubscript() ) \
         { \
         gg_fprintf(trace_handle, 0, "("); \
-        for(unsigned int i=0; i<b.nsubscript; i++) \
+        for(unsigned int i=0; i<b.nsubscript(); i++) \
           { \
           gg_fprintf(trace_handle, 1, "%s", gg_string_literal(    b.subscripts[i].field->name ? b.subscripts[i].field->name : ""  )); \
-          if( i<b.nsubscript-1 ) \
+          if( i<b.nsubscript()-1 ) \
             { \
             gg_fprintf(trace_handle, 0, " "); \
             } \
@@ -506,7 +506,7 @@ class ANALYZE
 class ANALYZE
   {
   public:
-    ANALYZE(const char *)
+    explicit ANALYZE(const char *)
       {
       }
     ~ANALYZE()

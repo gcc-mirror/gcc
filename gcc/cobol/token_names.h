@@ -691,6 +691,7 @@ tokens = {
 	{ "neg", NEG }, // 939
 };
 
+// cppcheck-suppress useInitializationList
 token_names = {
 	"IDENTIFICATION", // 0 (258)
 	"ENVIRONMENT", // 1 (259)

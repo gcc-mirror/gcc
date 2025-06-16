@@ -106,7 +106,7 @@ void gcc_location_set( const YYLTYPE& loc );
 template <typename LOC>
 static void
 location_dump( const char func[], int line, const char tag[], const LOC& loc) {
-  extern int yy_flex_debug;
+  extern int yy_flex_debug; // cppcheck-suppress shadowVariable
   if( yy_flex_debug && gcobol_getenv("update_location") )
     fprintf(stderr, "%s:%d: %s location (%d,%d) to (%d,%d)\n",
             func, line, tag,

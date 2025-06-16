@@ -95,8 +95,8 @@ arithmetic_operation(size_t nC, cbl_num_result_t *C,
                       size_t nA, cbl_refer_t *A,
                       size_t nB, cbl_refer_t *B,
                       cbl_arith_format_t format,
-                      cbl_label_t *error,
-                      cbl_label_t *not_error,
+                      const cbl_label_t *error,
+                      const cbl_label_t *not_error,
                       tree compute_error, // Pointer to int
                       const char *operation,
                       cbl_refer_t *remainder = NULL)
@@ -137,7 +137,7 @@ arithmetic_operation(size_t nC, cbl_num_result_t *C,
 
   // Allocate nC+1 in case this is a divide with a REMAINDER
 
-  cbl_refer_t *results = (cbl_refer_t *)xmalloc((nC+1) * sizeof( cbl_refer_t ));
+  std::vector<cbl_refer_t> results(nC + 1);
   int ncount = 0;
 
   if( nC+1 <= MIN_FIELD_BLOCK_SIZE )
@@ -207,7 +207,7 @@ arithmetic_operation(size_t nC, cbl_num_result_t *C,
 
   build_array_of_treeplets(1, nA, A);
   build_array_of_treeplets(2, nB, B);
-  build_array_of_treeplets(3, ncount, results);
+  build_array_of_treeplets(3, ncount, results.data());
 
   gg_call(VOID,
           operation,
@@ -253,9 +253,6 @@ arithmetic_operation(size_t nC, cbl_num_result_t *C,
     {
     SHOW_PARSE_END
     }
-
-  // We need to release all of the refers we allocated:
-  free(results);
   }
 
 static void
@@ -307,7 +304,7 @@ arithmetic_error_handler( cbl_label_t *error,
   }
 
 static bool
-is_somebody_float(size_t nA, cbl_refer_t *A)
+is_somebody_float(size_t nA, const cbl_refer_t *A)
   {
   bool retval = false;
   for(size_t i=0; i<nA; i++)
@@ -322,7 +319,7 @@ is_somebody_float(size_t nA, cbl_refer_t *A)
   }
 
 static bool
-is_somebody_float(size_t nC, cbl_num_result_t *C)
+is_somebody_float(size_t nC, const cbl_num_result_t *C)
   {
   bool retval = false;
   for(size_t i=0; i<nC; i++)
@@ -337,7 +334,7 @@ is_somebody_float(size_t nC, cbl_num_result_t *C)
   }
 
 static bool
-all_results_binary(size_t nC, cbl_num_result_t *C)
+all_results_binary(size_t nC, const cbl_num_result_t *C)
   {
   bool retval = true;
 
@@ -581,10 +578,6 @@ fast_multiply(size_t nC, cbl_num_result_t *C,
         {
         // This is a MULTIPLY Format 2
         get_binary_value(valB, NULL, B[0].field, refer_offset(B[0]));
-        }
-
-      if(nB)
-        {
         gg_assign(valA, gg_multiply(valA, valB));
         }
 
@@ -993,9 +986,9 @@ parser_add( size_t nC, cbl_num_result_t *C,
   }
 
 void
-parser_add( cbl_refer_t cref,
-            cbl_refer_t aref,
-            cbl_refer_t bref,
+parser_add( const cbl_refer_t& cref,
+            const cbl_refer_t& aref,
+            const cbl_refer_t& bref,
             cbl_round_t rounded)
   {
   // This is the simple and innocent C = A + B
@@ -1215,9 +1208,9 @@ parser_divide(  size_t nC, cbl_num_result_t *C,  // C = A / B
   }
 
 void
-parser_multiply(cbl_refer_t cref,
-                cbl_refer_t aref,
-                cbl_refer_t bref,
+parser_multiply(const cbl_refer_t& cref,
+                const cbl_refer_t& aref,
+                const cbl_refer_t& bref,
                 cbl_round_t rounded )
   {
   cbl_num_result_t C[1];
@@ -1238,11 +1231,11 @@ parser_multiply(cbl_refer_t cref,
   }
 
 void
-parser_divide(  cbl_refer_t cref,
-                cbl_refer_t aref,
-                cbl_refer_t bref,
+parser_divide(  const cbl_refer_t& cref,
+                const cbl_refer_t& aref,
+                const cbl_refer_t& bref,
                 cbl_round_t rounded,
-                cbl_refer_t remainder_ref )
+                const cbl_refer_t& remainder_ref )
   {
   cbl_num_result_t C[1];
   C[0].rounded = rounded;
@@ -1704,9 +1697,9 @@ parser_subtract(size_t nC, cbl_num_result_t *C, // C = B - A
   }
 
 void
-parser_subtract(cbl_refer_t cref, // cref = aref - bref
-                cbl_refer_t aref,
-                cbl_refer_t bref,
+parser_subtract(const cbl_refer_t& cref, // cref = aref - bref
+                const cbl_refer_t& aref,
+                const cbl_refer_t& bref,
                 cbl_round_t rounded )
   {
   cbl_num_result_t C[1];

@@ -271,7 +271,7 @@ function_descr_t *function_descrs_end = function_descrs + COUNT_OF(function_desc
 class cname_cmp {
   const char *cname;
  public:
-  cname_cmp( const char *cname ) : cname(cname) {}
+  explicit cname_cmp( const char *cname ) : cname(cname) {}
 
   bool operator()( const function_descr_t& descr ) {
     return strlen(cname) == strlen(descr.cname) &&
@@ -293,8 +293,8 @@ intrinsic_inconsistent_parameter( size_t n, cbl_refer_t *args ) {
   class commensurate_type {
     cbl_refer_t first;
    public:
-    commensurate_type( const cbl_refer_t& first ) : first(first) {}
-    bool operator()( cbl_refer_t& arg )  const {
+    explicit commensurate_type( const cbl_refer_t& first ) : first(first) {}
+    bool operator()( const cbl_refer_t& arg )  const {
       return is_numeric(first.field) == is_numeric(arg.field);
     }
   };

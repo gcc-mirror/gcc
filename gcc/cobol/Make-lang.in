@@ -34,6 +34,9 @@
 # - the compiler proper (eg: cc1plus)
 # - define the names for selecting the language in LANGUAGES.
 
+# Use strict warnings for this front end.
+cobol-warn = $(STRICT_WARN)
+
 GCOBOL_INSTALL_NAME := $(shell echo gcobol|sed '$(program_transform_name)')
 GCOBOLIO_INSTALL_NAME := $(shell echo gcobol-io|sed '$(program_transform_name)')
 GCOBOL_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobol|sed '$(program_transform_name)')

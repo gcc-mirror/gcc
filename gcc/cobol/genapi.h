@@ -119,26 +119,26 @@ parser_divide(size_t nC, cbl_num_result_t *C,
               void *compute_error = NULL);  // This has to be cast to a tree pointer to int
 
 void
-parser_add( struct cbl_refer_t tgt,
-            struct cbl_refer_t a, struct cbl_refer_t b,
+parser_add( const cbl_refer_t& tgt,
+            const cbl_refer_t& a,  const cbl_refer_t& b,
             enum cbl_round_t = truncation_e );
 
 void
-parser_subtract( struct cbl_refer_t tgt,
-                 struct cbl_refer_t a, struct cbl_refer_t b,
+parser_subtract( const cbl_refer_t& tgt,
+                 const cbl_refer_t& a,  const cbl_refer_t& b,
                  enum cbl_round_t = truncation_e );
 
 void
-parser_multiply( struct cbl_refer_t tgt,
-                 struct cbl_refer_t a, struct cbl_refer_t b,
+parser_multiply( const cbl_refer_t& tgt,
+                 const cbl_refer_t& a,  const cbl_refer_t& b,
                  enum cbl_round_t = truncation_e );
 
 void
-parser_divide( struct cbl_refer_t quotient,
-               struct cbl_refer_t divisor,
-               struct cbl_refer_t dividend,
+parser_divide( const cbl_refer_t& quotient,
+               const cbl_refer_t& divisor,
+               const cbl_refer_t& dividend,
                enum cbl_round_t = truncation_e,
-               struct cbl_refer_t remainder = cbl_refer_t());
+               const cbl_refer_t& remainder = cbl_refer_t());
 
 // void
 // parser_exponentiation(  cbl_refer_t cref,
@@ -225,7 +225,7 @@ parser_perform_conditional_end( struct cbl_perform_tgt_t *tgt );
  * For an in-line loop body, tgt->from.type == LblLoop, and tgt->to is NULL.
  */
 void
-parser_perform( struct cbl_perform_tgt_t *tgt, struct cbl_refer_t N );
+parser_perform( const cbl_perform_tgt_t *tgt, cbl_refer_t N );
 
 /*
  * A simple UNTIL loop uses 1 varys element.  For VARY loops, the
@@ -255,7 +255,7 @@ parser_end_program(const char *name=NULL);
 
 void parser_sleep(cbl_refer_t seconds);
 
-void parser_exit( cbl_refer_t refer, ec_type_t = ec_none_e );
+void parser_exit( const cbl_refer_t& refer, ec_type_t = ec_none_e );
 void parser_exit_section(void);
 void parser_exit_paragraph(void);
 void parser_exit_perform( struct cbl_perform_tgt_t *tgt, bool cycle );
@@ -297,7 +297,7 @@ void
 parser_symbol_add(struct cbl_field_t *field);
 
 void
-parser_initialize(struct cbl_refer_t refer, bool like_parser_symbol_add=false);
+parser_initialize(const cbl_refer_t& refer, bool like_parser_symbol_add=false);
 
 void
 parser_initialize_programs(size_t nprog, struct cbl_refer_t *progs);
@@ -315,7 +315,7 @@ void
 parser_alter( cbl_perform_tgt_t *tgt );
 
 void
-parser_set_conditional88( struct cbl_refer_t tgt, bool which_way );
+parser_set_conditional88( const cbl_refer_t& tgt, bool which_way );
 void
 parser_set_numeric(struct cbl_field_t *tgt, ssize_t value);
 
@@ -406,14 +406,12 @@ void
 parser_sort(cbl_refer_t table,
             bool duplicates,
             cbl_alphabet_t *alphabet,
-            size_t nkey,
-            cbl_key_t *keys );
+            const std::vector<cbl_key_t>& keys );
 void
 parser_file_sort(   cbl_file_t *file,
                     bool duplicates,
                     cbl_alphabet_t *alphabet,
-                    size_t nkey,
-                    cbl_key_t *keys,
+                    const std::vector<cbl_key_t>& keys,
                     size_t ninput,
                     cbl_file_t **inputs,
                     size_t noutput,
@@ -423,8 +421,7 @@ parser_file_sort(   cbl_file_t *file,
 void
 parser_file_merge(  cbl_file_t *file,
                     cbl_alphabet_t *alphabet,
-                    size_t nkey,
-                    cbl_key_t *keys,
+                    const std::vector<cbl_key_t>& keys,
                     size_t ninput,
                     cbl_file_t **inputs,
                     size_t noutput,
@@ -492,12 +489,12 @@ void
 parser_string_overflow_end( cbl_label_t *name );
 
 void
-parser_string(  cbl_refer_t tgt,
-                cbl_refer_t pointer,
-                size_t nsource,
-                cbl_string_src_t *sources,
-                cbl_label_t *overflow,
-                cbl_label_t *not_overflow );
+parser_string(const cbl_refer_t& tgt,
+              const cbl_refer_t& pointer,
+              size_t nsource,
+              cbl_string_src_t *sources,
+              cbl_label_t *overflow,
+              cbl_label_t *not_overflow );
 
 void
 parser_unstring( cbl_refer_t src,
@@ -552,7 +549,7 @@ void parser_entry_activate( size_t iprog, const cbl_label_t *declarative );
 void parser_entry( cbl_field_t *name,
                    size_t narg = 0, cbl_ffi_arg_t args[] = NULL);
 
-bool is_ascending_key(cbl_refer_t key);
+bool is_ascending_key(const cbl_refer_t& key);
 
 void register_main_switch(const char *main_string);
 

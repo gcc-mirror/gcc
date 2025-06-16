@@ -50,4 +50,11 @@ const char * cobol_lineno_save();
 
 unsigned long gb4( size_t input );
 
+template <typename P>
+static inline const void *
+as_voidp( P p ) {
+  return static_cast<const void *>(p);
+}
+
+
 #endif
