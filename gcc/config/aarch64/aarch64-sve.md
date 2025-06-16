@@ -154,8 +154,10 @@
 ;; ---- [FP<-INT] Packs
 ;; ---- [FP<-INT] Unpacks
 ;; ---- [FP<-FP] Packs
+;; ---- [FP<-FP] Truncating conversions
 ;; ---- [FP<-FP] Packs (bfloat16)
 ;; ---- [FP<-FP] Unpacks
+;; ---- [FP<-FP] Extending conversions
 ;; ---- [PRED<-PRED] Packs
 ;; ---- [PRED<-PRED] Unpacks
 ;;
@@ -9524,18 +9526,37 @@
 ;; - FCVTZU
 ;; -------------------------------------------------------------------------
 
-;; Unpredicated conversion of floats to integers of the same size (HF to HI,
-;; SF to SI or DF to DI).
-(define_expand "<optab><mode><v_int_equiv>2"
-  [(set (match_operand:<V_INT_EQUIV> 0 "register_operand")
-	(unspec:<V_INT_EQUIV>
+;; Unpredicated conversion of floats to integers of the same size or wider,
+;; excluding conversions from DF (see below).
+(define_expand "<optab><SVE_HSF:mode><SVE_HSDI:mode>2"
+  [(set (match_operand:SVE_HSDI 0 "register_operand")
+	(unspec:SVE_HSDI
+	  [(match_dup 2)
+	   (match_dup 3)
+	   (match_operand:SVE_HSF 1 "register_operand")]
+	  SVE_COND_FCVTI))]
+  "TARGET_SVE
+   && (~(<SVE_HSDI:self_mask> | <SVE_HSDI:narrower_mask>) & <SVE_HSF:self_mask>) == 0"
+  {
+    operands[2] = aarch64_sve_fp_pred (<SVE_HSDI:MODE>mode, &operands[3]);
+  }
+)
+
+;; SI <- DF can't use SI <- trunc (DI <- DF) without -ffast-math, so this
+;; truncating variant of FCVTZ{S,U} is useful for auto-vectorization.
+;;
+;; DF is the only source mode for which the mask used above doesn't apply,
+;; we define a separate pattern for it here.
+(define_expand "<optab><VNx2DF_ONLY:mode><SVE_2SDI:mode>2"
+  [(set (match_operand:SVE_2SDI 0 "register_operand")
+	(unspec:SVE_2SDI
 	  [(match_dup 2)
 	   (const_int SVE_RELAXED_GP)
-	   (match_operand:SVE_FULL_F 1 "register_operand")]
+	   (match_operand:VNx2DF_ONLY 1 "register_operand")]
 	  SVE_COND_FCVTI))]
   "TARGET_SVE"
   {
-    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
+    operands[2] = aarch64_ptrue_reg (VNx2BImode);
   }
 )
 
@@ -9554,18 +9575,37 @@
   }
 )
 
-;; Predicated narrowing float-to-integer conversion.
-(define_insn "@aarch64_sve_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>"
-  [(set (match_operand:VNx4SI_ONLY 0 "register_operand")
-	(unspec:VNx4SI_ONLY
+;; As above, for pairs used by the auto-vectorizer only.
+(define_insn "*aarch64_sve_<optab>_nontrunc<SVE_PARTIAL_F:mode><SVE_HSDI:mode>"
+  [(set (match_operand:SVE_HSDI 0 "register_operand")
+	(unspec:SVE_HSDI
+	  [(match_operand:<SVE_HSDI:VPRED> 1 "aarch64_predicate_operand")
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:SVE_PARTIAL_F 2 "register_operand")]
+	  SVE_COND_FCVTI))]
+   "TARGET_SVE
+   && (~(<SVE_HSDI:self_mask> | <SVE_HSDI:narrower_mask>) & <SVE_PARTIAL_F:self_mask>) == 0"
+  {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
+     [ w        , Upl , 0 ; *              ] fcvtz<su>\t%0.<SVE_HSDI:Vetype>, %1/m, %2.<SVE_PARTIAL_F:Vetype>
+     [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;fcvtz<su>\t%0.<SVE_HSDI:Vetype>, %1/m, %2.<SVE_PARTIAL_F:Vetype>
+  }
+)
+
+;; Predicated narrowing float-to-integer conversion.  The VNx2DF->VNx4SI
+;; variant is provided for the ACLE, where the zeroed odd-indexed lanes are
+;; significant.  The VNx2DF->VNx2SI variant is provided for auto-vectorization,
+;; where the upper 32 bits of each container are ignored.
+(define_insn "@aarch64_sve_<optab>_trunc<VNx2DF_ONLY:mode><SVE_SI:mode>"
+  [(set (match_operand:SVE_SI 0 "register_operand")
+	(unspec:SVE_SI
 	  [(match_operand:VNx2BI 1 "register_operand")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
 	   (match_operand:VNx2DF_ONLY 2 "register_operand")]
 	  SVE_COND_FCVTI))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
-     [ w        , Upl , 0 ; *              ] fcvtz<su>\t%0.<VNx4SI_ONLY:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>
-     [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;fcvtz<su>\t%0.<VNx4SI_ONLY:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>
+     [ w        , Upl , 0 ; *              ] fcvtz<su>\t%0.<SVE_SI:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>
+     [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;fcvtz<su>\t%0.<SVE_SI:Vetype>, %1/m, %2.<VNx2DF_ONLY:Vetype>
   }
 )
 
@@ -9710,18 +9750,19 @@
 ;; - UCVTF
 ;; -------------------------------------------------------------------------
 
-;; Unpredicated conversion of integers to floats of the same size
-;; (HI to HF, SI to SF or DI to DF).
-(define_expand "<optab><v_int_equiv><mode>2"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+;; Unpredicated conversion of integers to floats of the same size or
+;; narrower.
+(define_expand "<optab><SVE_HSDI:mode><SVE_F:mode>2"
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
 	  [(match_dup 2)
-	   (const_int SVE_RELAXED_GP)
-	   (match_operand:<V_INT_EQUIV> 1 "register_operand")]
+	   (match_dup 3)
+	   (match_operand:SVE_HSDI 1 "register_operand")]
 	  SVE_COND_ICVTF))]
-  "TARGET_SVE"
+  "TARGET_SVE
+   && (~(<SVE_HSDI:self_mask> | <SVE_HSDI:narrower_mask>) & <SVE_F:self_mask>) == 0"
   {
-    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
+    operands[2] = aarch64_sve_fp_pred (<SVE_HSDI:MODE>mode, &operands[3]);
   }
 )
 
@@ -9738,6 +9779,22 @@
   {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
      [ w        , Upl , 0 ; *              ] <su>cvtf\t%0.<SVE_FULL_F:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
      [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;<su>cvtf\t%0.<SVE_FULL_F:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
+  }
+)
+
+;; As above, for pairs that are used by the auto-vectorizer only.
+(define_insn "*aarch64_sve_<optab>_nonextend<SVE_HSDI:mode><SVE_PARTIAL_F:mode>"
+  [(set (match_operand:SVE_PARTIAL_F 0 "register_operand")
+	(unspec:SVE_PARTIAL_F
+	  [(match_operand:<SVE_HSDI:VPRED> 1 "aarch64_predicate_operand")
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:SVE_HSDI 2 "register_operand")]
+	  SVE_COND_ICVTF))]
+  "TARGET_SVE
+   && (~(<SVE_HSDI:self_mask> | <SVE_HSDI:narrower_mask>) & <SVE_PARTIAL_F:self_mask>) == 0"
+  {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
+     [ w        , Upl , 0 ; *              ] <su>cvtf\t%0.<SVE_PARTIAL_F:Vetype>, %1/m, %2.<SVE_HSDI:Vetype>
+     [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;<su>cvtf\t%0.<SVE_PARTIAL_F:Vetype>, %1/m, %2.<SVE_HSDI:Vetype>
   }
 )
 
@@ -9924,6 +9981,27 @@
   }
 )
 
+;; -------------------------------------------------------------------------
+;; ---- [FP<-FP] Truncating conversions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FCVT
+;; -------------------------------------------------------------------------
+
+;; Unpredicated float-to-float truncation.
+(define_expand "trunc<SVE_SDF:mode><SVE_PARTIAL_HSF:mode>2"
+  [(set (match_operand:SVE_PARTIAL_HSF 0 "register_operand")
+       (unspec:SVE_PARTIAL_HSF
+         [(match_dup 2)
+          (match_dup 3)
+          (match_operand:SVE_SDF 1 "register_operand")]
+         SVE_COND_FCVT))]
+  "TARGET_SVE && (~<SVE_SDF:narrower_mask> & <SVE_PARTIAL_HSF:self_mask>) == 0"
+  {
+    operands[2] = aarch64_sve_fp_pred (<SVE_SDF:MODE>mode, &operands[3]);
+  }
+)
+
 ;; Predicated float-to-float truncation.
 (define_insn "@aarch64_sve_<optab>_trunc<SVE_FULL_SDF:mode><SVE_FULL_HSF:mode>"
   [(set (match_operand:SVE_FULL_HSF 0 "register_operand")
@@ -9936,6 +10014,21 @@
   {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
      [ w        , Upl , 0 ; *              ] fcvt\t%0.<SVE_FULL_HSF:Vetype>, %1/m, %2.<SVE_FULL_SDF:Vetype>
      [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;fcvt\t%0.<SVE_FULL_HSF:Vetype>, %1/m, %2.<SVE_FULL_SDF:Vetype>
+  }
+)
+
+;; As above, for pairs that are used by the auto-vectorizer only.
+(define_insn "*aarch64_sve_<optab>_trunc<SVE_SDF:mode><SVE_PARTIAL_HSF:mode>"
+  [(set (match_operand:SVE_PARTIAL_HSF 0 "register_operand")
+       (unspec:SVE_PARTIAL_HSF
+         [(match_operand:<SVE_SDF:VPRED> 1 "aarch64_predicate_operand")
+          (match_operand:SI 3 "aarch64_sve_gp_strictness")
+          (match_operand:SVE_SDF 2 "register_operand")]
+         SVE_COND_FCVT))]
+  "TARGET_SVE && (~<SVE_SDF:narrower_mask> & <SVE_PARTIAL_HSF:self_mask>) == 0"
+  {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
+     [ w        , Upl , 0 ; *              ] fcvt\t%0.<SVE_PARTIAL_HSF:Vetype>, %1/m, %2.<SVE_SDF:Vetype>
+     [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;fcvt\t%0.<SVE_PARTIAL_HSF:Vetype>, %1/m, %2.<SVE_SDF:Vetype>
   }
 )
 
@@ -10081,6 +10174,27 @@
   }
 )
 
+;; -------------------------------------------------------------------------
+;; ---- [FP<-FP] Extending conversions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FCVT
+;; -------------------------------------------------------------------------
+
+;; Unpredicated float-to-float extension.
+(define_expand "extend<SVE_PARTIAL_HSF:mode><SVE_SDF:mode>2"
+  [(set (match_operand:SVE_SDF 0 "register_operand")
+       (unspec:SVE_SDF
+         [(match_dup 2)
+          (match_dup 3)
+          (match_operand:SVE_PARTIAL_HSF 1 "register_operand")]
+         SVE_COND_FCVT))]
+  "TARGET_SVE && (~<SVE_SDF:narrower_mask> & <SVE_PARTIAL_HSF:self_mask>) == 0"
+  {
+    operands[2] = aarch64_sve_fp_pred (<SVE_SDF:MODE>mode, &operands[3]);
+  }
+)
+
 ;; Predicated float-to-float extension.
 (define_insn "@aarch64_sve_<optab>_nontrunc<SVE_FULL_HSF:mode><SVE_FULL_SDF:mode>"
   [(set (match_operand:SVE_FULL_SDF 0 "register_operand")
@@ -10093,6 +10207,21 @@
   {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
      [ w        , Upl , 0 ; *              ] fcvt\t%0.<SVE_FULL_SDF:Vetype>, %1/m, %2.<SVE_FULL_HSF:Vetype>
      [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;fcvt\t%0.<SVE_FULL_SDF:Vetype>, %1/m, %2.<SVE_FULL_HSF:Vetype>
+  }
+)
+
+;; As above, for pairs that are used by the auto-vectorizer only.
+(define_insn "*aarch64_sve_<optab>_nontrunc<SVE_PARTIAL_HSF:mode><SVE_SDF:mode>"
+  [(set (match_operand:SVE_SDF 0 "register_operand")
+	(unspec:SVE_SDF
+	  [(match_operand:<SVE_SDF:VPRED> 1 "aarch64_predicate_operand")
+	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
+	   (match_operand:SVE_PARTIAL_HSF 2 "register_operand")]
+	  SVE_COND_FCVT))]
+  "TARGET_SVE && (~<SVE_SDF:narrower_mask> & <SVE_PARTIAL_HSF:self_mask>) == 0"
+  {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
+     [ w        , Upl , 0 ; *              ] fcvt\t%0.<SVE_SDF:Vetype>, %1/m, %2.<SVE_PARTIAL_HSF:Vetype>
+     [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;fcvt\t%0.<SVE_SDF:Vetype>, %1/m, %2.<SVE_PARTIAL_HSF:Vetype>
   }
 )
 

@@ -541,6 +541,13 @@
 ;; elements.
 (define_mode_iterator SVE_FULL_HSF [VNx8HF VNx4SF])
 
+;; Partial SVE floating-point vector modes that have 16-bit or 32-bit
+;; elements.
+(define_mode_iterator SVE_PARTIAL_HSF [VNx2HF VNx4HF VNx2SF])
+
+;; SVE floating-point vector modes that have 16-bit or 32-bit elements.
+(define_mode_iterator SVE_HSF [SVE_PARTIAL_HSF SVE_FULL_HSF])
+
 ;; Fully-packed SVE integer vector modes that have 16-bit or 64-bit elements.
 (define_mode_iterator SVE_FULL_HDI [VNx8HI VNx2DI])
 
@@ -564,6 +571,9 @@
 ;; Same, but with the appropriate conditions for FMMLA support.
 (define_mode_iterator SVE_MATMULF [(VNx4SF "TARGET_SVE_F32MM")
 				   (VNx2DF "TARGET_SVE_F64MM")])
+
+;; SVE floating-point vector modes that have 32-bit or 64-bit elements.
+(define_mode_iterator SVE_SDF [VNx2SF SVE_FULL_SDF])
 
 ;; Fully-packed SVE vector modes that have 32-bit or smaller elements.
 (define_mode_iterator SVE_FULL_BHS [VNx16QI VNx8HI VNx4SI
@@ -634,6 +644,9 @@
 				VNx4SI VNx2SI
 				VNx2DI])
 
+;; SVE integer vector modes with 32-bit elements.
+(define_mode_iterator SVE_SI [VNx2SI VNx4SI])
+
 (define_mode_iterator SVE_DIx24 [VNx4DI VNx8DI])
 
 ;; SVE modes with 2 or 4 elements.
@@ -648,6 +661,9 @@
 ;; SVE modes with 2 elements.
 (define_mode_iterator SVE_2 [VNx2QI VNx2HI VNx2HF VNx2BF
 			     VNx2SI VNx2SF VNx2DI VNx2DF])
+
+;; SVE SI and DI modes with 2 elements.
+(define_mode_iterator SVE_2SDI [VNx2SI VNx2DI])
 
 ;; SVE integer modes with 2 elements, excluding the widest element.
 (define_mode_iterator SVE_2BHSI [VNx2QI VNx2HI VNx2SI])
@@ -2596,19 +2612,22 @@
 (define_mode_attr data_bytes [(VNx16BI "1") (VNx8BI "2")
 			      (VNx4BI "4") (VNx2BI "8")])
 
-;; Two-nybble mask for partial vector modes: nunits, byte size.
-(define_mode_attr self_mask [(VNx8QI "0x81")
-			     (VNx4QI "0x41")
-			     (VNx2QI "0x21")
-			     (VNx4HI "0x42")
-			     (VNx2HI "0x22")
-			     (VNx2SI "0x24")])
+;; Two-nybble mask for vector modes: nunits, byte size.
+(define_mode_attr self_mask [(VNx2HI "0x22") (VNx2HF "0x22")
+			     (VNx4HI "0x42") (VNx4HF "0x42")
+			     (VNx8HI "0x82") (VNx8HF "0x82")
+			     (VNx2SI "0x24") (VNx2SF "0x24")
+			     (VNx4SI "0x44") (VNx4SF "0x44")
+			     (VNx2DI "0x28") (VNx2DF "0x28")
+			     (VNx8QI "0x81") (VNx4QI "0x41") (VNx2QI "0x21")])
 
-;; For SVE_HSDI vector modes, the mask of narrower modes, encoded as above.
-(define_mode_attr narrower_mask [(VNx8HI "0x81") (VNx4HI "0x41")
-				 (VNx2HI "0x21")
-				 (VNx4SI "0x43") (VNx2SI "0x23")
-				 (VNx2DI "0x27")])
+;; The mask of narrower vector modes, encoded as above.
+(define_mode_attr narrower_mask [(VNx8HI "0x81") (VNx8HF "0x81")
+				 (VNx4HI "0x41") (VNx4HF "0x41")
+				 (VNx2HI "0x21") (VNx2HF "0x21")
+				 (VNx4SI "0x43") (VNx4SF "0x43")
+				 (VNx2SI "0x23") (VNx2SF "0x23")
+				 (VNx2DI "0x27") (VNx2DF "0x27")])
 
 ;; The constraint to use for an SVE [SU]DOT, FMUL, FMLA or FMLS lane index.
 (define_mode_attr sve_lane_con [(VNx8HI "y") (VNx4SI "y") (VNx2DI "x")
