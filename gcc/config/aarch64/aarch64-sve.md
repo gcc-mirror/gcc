@@ -3966,7 +3966,7 @@
 )
 
 ;; Predicated predicate inverse.
-(define_insn "*one_cmpl<mode>3"
+(define_insn "@aarch64_pred_one_cmpl<mode>_z"
   [(set (match_operand:PRED_ALL 0 "register_operand" "=Upa")
 	(and:PRED_ALL
 	  (not:PRED_ALL (match_operand:PRED_ALL 2 "register_operand" "Upa"))
@@ -8637,8 +8637,8 @@
 (define_expand "vec_cmp<mode><vpred>"
   [(set (match_operand:<VPRED> 0 "register_operand")
 	(match_operator:<VPRED> 1 "comparison_operator"
-	  [(match_operand:SVE_FULL_F 2 "register_operand")
-	   (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero")]))]
+	  [(match_operand:SVE_F 2 "register_operand")
+	   (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero")]))]
   "TARGET_SVE"
   {
     aarch64_expand_sve_vec_cmp_float (operands[0], GET_CODE (operands[1]),
@@ -8651,10 +8651,10 @@
 (define_insn "@aarch64_pred_fcm<cmp_op><mode>"
   [(set (match_operand:<VPRED> 0 "register_operand")
 	(unspec:<VPRED>
-	  [(match_operand:<VPRED> 1 "register_operand")
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand")
 	   (match_operand:SI 2 "aarch64_sve_ptrue_flag")
-	   (match_operand:SVE_FULL_F 3 "register_operand")
-	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_F 3 "register_operand")
+	   (match_operand:SVE_F 4 "aarch64_simd_reg_or_zero")]
 	  SVE_COND_FP_CMP_I0))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1   , 3 , 4   ]
@@ -8667,10 +8667,10 @@
 (define_insn "@aarch64_pred_fcmuo<mode>"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
 	(unspec:<VPRED>
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	  [(match_operand:<VPRED> 1 "aarch64_predicate_operand" "Upl")
 	   (match_operand:SI 2 "aarch64_sve_ptrue_flag")
-	   (match_operand:SVE_FULL_F 3 "register_operand" "w")
-	   (match_operand:SVE_FULL_F 4 "register_operand" "w")]
+	   (match_operand:SVE_F 3 "register_operand" "w")
+	   (match_operand:SVE_F 4 "register_operand" "w")]
 	  UNSPEC_COND_FCMUO))]
   "TARGET_SVE"
   "fcmuo\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>"
