@@ -479,13 +479,25 @@
 ;; All fully-packed SVE integer and Advanced SIMD integer modes.
 (define_mode_iterator SVE_ASIMD_FULL_I [SVE_FULL_I VDQ_I])
 
-;; All fully-packed SVE floating-point vector modes.
+;; Fully-packed SVE floating-point vector modes, excluding BF16.
 (define_mode_iterator SVE_FULL_F [VNx8HF VNx4SF VNx2DF])
+
+;; Partial SVE floating-point vector modes, excluding BF16.
+(define_mode_iterator SVE_PARTIAL_F [VNx2HF VNx4HF VNx2SF])
+
+;; SVE floating-point vector modes, excluding BF16.
+(define_mode_iterator SVE_F [SVE_PARTIAL_F SVE_FULL_F])
 
 ;; Fully-packed SVE floating-point vector modes and their scalar equivalents.
 (define_mode_iterator SVE_FULL_F_SCALAR [SVE_FULL_F GPF_HF])
 
-(define_mode_iterator SVE_FULL_F_BF [(VNx8BF "TARGET_SSVE_B16B16") SVE_FULL_F])
+(define_mode_iterator SVE_FULL_F_B16B16 [(VNx8BF "TARGET_SSVE_B16B16") SVE_FULL_F])
+
+(define_mode_iterator SVE_PARTIAL_F_B16B16 [(VNx2BF "TARGET_SSVE_B16B16")
+					    (VNx4BF "TARGET_SSVE_B16B16")
+					    SVE_PARTIAL_F])
+
+(define_mode_iterator SVE_F_B16B16 [SVE_PARTIAL_F_B16B16 SVE_FULL_F_B16B16])
 
 ;; Modes for which (B)FCLAMP is supported.
 (define_mode_iterator SVE_CLAMP_F [(VNx8BF "TARGET_SSVE_B16B16")
@@ -580,14 +592,13 @@
 			     VNx4SI VNx2SI
 			     VNx2DI])
 
+(define_mode_iterator SVE_BF [VNx2BF VNx4BF VNx8BF])
+
 ;; All SVE floating-point vector modes.
-(define_mode_iterator SVE_F [VNx8HF VNx4HF VNx2HF
-			     VNx8BF VNx4BF VNx2BF
-			     VNx4SF VNx2SF
-			     VNx2DF])
+(define_mode_iterator SVE_F_BF [SVE_F SVE_BF])
 
 ;; All SVE vector modes.
-(define_mode_iterator SVE_ALL [SVE_I SVE_F])
+(define_mode_iterator SVE_ALL [SVE_I SVE_F_BF])
 
 ;; All SVE 2-vector modes.
 (define_mode_iterator SVE_FULLx2 [VNx32QI VNx16HI VNx8SI VNx4DI
@@ -2445,7 +2456,9 @@
 			   (VNx8DI "vnx2di") (VNx8DF "vnx2df")])
 
 ;; The predicate mode associated with an SVE data mode.  For structure modes
-;; this is equivalent to the <VPRED> of the subvector mode.
+;; this is equivalent to the <VPRED> of the subvector mode.  For partial
+;; vector modes, this is equivalent to the <VPRED> of a full SVE mode with
+;; the same number of elements.
 (define_mode_attr VPRED [(VNx16QI "VNx16BI") (VNx8QI "VNx8BI")
 			 (VNx4QI "VNx4BI") (VNx2QI "VNx2BI")
 			 (VNx8HI "VNx8BI") (VNx4HI "VNx4BI") (VNx2HI "VNx2BI")
@@ -2611,13 +2624,15 @@
 				 (V2DI "vec") (DI "offset")])
 
 (define_mode_attr b [(V4BF "b") (V4HF "") (V8BF "b") (V8HF "")
-		     (VNx8BF "b") (VNx8HF "") (VNx4SF "") (VNx2DF "")
+		     (VNx2BF "b") (VNx2HF "") (VNx2SF "")
+		     (VNx4BF "b") (VNx4HF "") (VNx4SF "")
+		     (VNx8BF "b") (VNx8HF "") (VNx2DF "")
 		     (VNx16BF "b") (VNx16HF "") (VNx8SF "") (VNx4DF "")
 		     (VNx32BF "b") (VNx32HF "") (VNx16SF "") (VNx8DF "")])
 
-(define_mode_attr is_bf16 [(VNx8BF "true")
-			   (VNx8HF "false")
-			   (VNx4SF "false")
+(define_mode_attr is_bf16 [(VNx2BF "true") (VNx4BF "true") (VNx8BF "true")
+			   (VNx2HF "false") (VNx4HF "false") (VNx8HF "false")
+			   (VNx2SF "false") (VNx4SF "false")
 			   (VNx2DF "false")])
 
 (define_mode_attr aligned_operand [(VNx16QI "register_operand")
