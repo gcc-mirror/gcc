@@ -35,13 +35,13 @@ namespace dts {
     {
       static regmatch_t empty;
       empty.rm_so = empty.rm_eo = -1;
-      regmatch_t& self(*this);
+      regmatch_t& self(*this); // cppcheck-suppress constVariableReference
       self = empty;
     }
     csub_match( const char input[], const regmatch_t& m )
       : input(input)
     {
-      regmatch_t& self(*this);
+      regmatch_t& self(*this); // cppcheck-suppress constVariableReference
       self = m;
       matched = rm_so != -1;
       first =   rm_so == -1? NULL : input + rm_so;
@@ -68,7 +68,6 @@ namespace dts {
 #if __cpp_exceptions
         throw std::logic_error(msg);
 #else
-        pattern = NULL;
         cbl_errx("%s", msg);
 #endif
       }
@@ -78,7 +77,7 @@ namespace dts {
     size_t size() const { return nsubexpr; }
     bool ready() const { return pattern != NULL; }
   private:
-    regex( const regex& ) {}
+    regex( const regex& ) = default;
   };
 
   inline bool regex_search( const char input[], const char *eoinput,
@@ -88,10 +87,10 @@ namespace dts {
       static const char msg[] = "input not NUL-terminated";
       throw std::domain_error( msg );
 #else
-      eoinput = strchr(input, '\0');
+      // eoinput terminates input
+      eoinput = strchr(input, '\0'); // cppcheck-suppress uselessAssignmentPtrArg
 #endif
     }
-    if( eoinput == NULL ) eoinput = strchr(input, '\0');
     auto ncm = re.size();
     cm.resize(ncm);
     std::vector <regmatch_t> cms(ncm);

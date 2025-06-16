@@ -185,6 +185,7 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 %printer { fprintf(yyo, "%s '%s'",
 		   keyword_str($$.token),
 		   $$.string? $$.string : "<nil>" ); } <cdfarg>
+/* cppcheck-suppress invalidPrintfArgType_sint */
 %printer { fprintf(yyo, HOST_SIZE_T_PRINT_DEC " '%s'",
 		   (fmt_size_t)$$.number, $$.string? $$.string : "" ); } <cdfval>
 
@@ -891,9 +892,9 @@ verify_integer( const YDFLTYPE& loc, const cdfval_base_t& val ) {
   return true;
 }
 
-// cppcheck-suppress returnTempReference
 const cdfval_base_t&
 cdfval_base_t::operator()( const YDFLTYPE& loc ) {
   static cdfval_t zero(0);
+  // cppcheck-suppress returnTempReference
   return verify_integer(loc, *this) ? *this : zero;
 }

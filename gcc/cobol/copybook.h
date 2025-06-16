@@ -100,7 +100,7 @@ class copybook_elem_t {
   }
   static char * dequote( const char orig[] ) {
     gcc_assert(quoted(orig));
-    auto name = (char*)xcalloc(1, strlen(orig));
+    auto name = static_cast<char*>(xcalloc(1, strlen(orig)));
     gcc_assert(name);
     char *tgt = name;
 

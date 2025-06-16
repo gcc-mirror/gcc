@@ -515,7 +515,7 @@ get_depending_on_value_from_odo(tree retval, cbl_field_t *odo)
 
 static
 void
-get_depending_on_value(tree retval, cbl_refer_t &refer)
+get_depending_on_value(tree retval, const cbl_refer_t &refer)
   {
   /*  This routine, called only when we know there is an OCCURS DEPENDING ON
       clause, returns the current value of the DEPENDING ON variable.  When
@@ -550,7 +550,7 @@ get_data_offset(cbl_refer_t &refer,
   int all_flags = 0;
   int all_flag_bit = 1;
 
-  if( refer.nsubscript )
+  if( refer.nsubscript() )
     {
     REFER("subscript");
     // We have at least one subscript:
@@ -569,7 +569,7 @@ get_data_offset(cbl_refer_t &refer,
     cbl_field_t *parent = refer.field;
 
     // Note the backwards test, because refer->nsubscript is an unsigned value
-    for(size_t i=refer.nsubscript-1; i<refer.nsubscript; i-- )
+    for(size_t i=refer.nsubscript()-1; i<refer.nsubscript(); i-- )
       {
       // We need to search upward for an ancestor with occurs_max:
       while(parent)
@@ -697,6 +697,8 @@ get_data_offset(cbl_refer_t &refer,
 
   return retval;
   }
+
+static tree tree_type_from_field(const cbl_field_t *field);
 
 void
 get_binary_value( tree value,
@@ -1265,8 +1267,8 @@ get_binary_value( tree value,
     }
   }
 
-tree
-tree_type_from_field(cbl_field_t *field)
+static tree
+tree_type_from_field(const cbl_field_t *field)
   {
   gcc_assert(field);
   return tree_type_from_size(field->data.capacity, field->attr & signable_e);
@@ -1559,7 +1561,7 @@ tree_type_from_size(size_t bytes, int signable)
 
 static
 bool
-refer_has_depends(cbl_refer_t &refer, refer_type_t refer_type)
+refer_has_depends(const cbl_refer_t &refer, refer_type_t refer_type)
   {
   if( suppress_dest_depends )
     {
@@ -1577,7 +1579,7 @@ refer_has_depends(cbl_refer_t &refer, refer_type_t refer_type)
 
   // Check if there there is an occurs with a depending_on in the hierarchy
   bool proceed = false;
-  cbl_field_t *odo = symbol_find_odo(refer.field);
+  const cbl_field_t *odo = symbol_find_odo(refer.field);
   cbl_field_t *depending_on;
   if( odo && odo != refer.field )
     {
@@ -1603,7 +1605,7 @@ refer_has_depends(cbl_refer_t &refer, refer_type_t refer_type)
           {
           parent1 = p;
           }
-        cbl_field_t *parent2 = depending_on;
+        const cbl_field_t *parent2 = depending_on;
         while( (p = parent_of(parent2)) )
           {
           parent2 = p;
@@ -1912,18 +1914,14 @@ char *
 get_literal_string(cbl_field_t *field)
   {
   assert(field->type == FldLiteralA);
-  char *buffer = NULL;
-  size_t buffer_length = 0;
-  if( buffer_length < field->data.capacity+1 )
-    {
-    buffer_length = field->data.capacity+1;
-    buffer = (char *)xrealloc(buffer, buffer_length);
-    }
+  size_t buffer_length = field->data.capacity+1;
+  char *buffer = static_cast<char *>(xcalloc(1, buffer_length));
+
   for(size_t i=0; i<field->data.capacity; i++)
     {
     buffer[i] = ascii_to_internal(field->data.initial[i]);
     }
-  buffer[field->data.capacity] = '\0';
+
   return buffer;
   }
 
@@ -1943,7 +1941,7 @@ refer_is_clean(cbl_refer_t &refer)
 
   return     !refer.all
           && !refer.addr_of
-          && !refer.nsubscript
+          && !refer.nsubscript()
           && !refer.refmod.from
           && !refer.refmod.len
           && !refer_has_depends(refer, refer_source)

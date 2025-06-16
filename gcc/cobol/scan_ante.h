@@ -214,7 +214,11 @@ struct cdf_status_t {
   const char *filename;
   int  token;
   bool parsing;
-  cdf_status_t( int token = 0, bool parsing = true )
+  cdf_status_t()
+    : lineno(yylineno), filename(cobol_filename())
+    , token(0), parsing(true)
+  {}
+  cdf_status_t( int token, bool parsing )
     : lineno(yylineno), filename(cobol_filename())
     , token(token), parsing(parsing)
   {}
@@ -371,7 +375,7 @@ class enter_leave_t {
   enter_leave_t() : entering(NULL), leaving(NULL), filename(NULL) {}
   enter_leave_t(  parser_enter_file_f *entering, const char *filename )
     : entering(entering), leaving(NULL), filename(filename) {}
-  enter_leave_t(parser_leave_file_f *leaving)
+  explicit enter_leave_t(parser_leave_file_f *leaving)
     : entering(NULL), leaving(leaving), filename(NULL) {}
 
   void notify( unsigned int newlines = 0 ) {
@@ -405,7 +409,7 @@ static class input_file_status_t {
     trailing_newlines = std::count(yytext, yytext + yyleng, '\n');
     if( trailing_newlines && yy_flex_debug )
       dbgmsg("adding %u lines after POP", trailing_newlines);
-    inputs.push( parser_leave_file );
+    inputs.push( enter_leave_t(parser_leave_file) );
   }
   void notify() {
     while( ! inputs.empty() ) {
@@ -429,7 +433,7 @@ update_location() {
 
   auto nline = std::count(yytext, yytext + yyleng, '\n');
   if( nline ) {
-    char *p = static_cast<char*>(memrchr(yytext, '\n', yyleng));
+    const char *p = static_cast<char*>(memrchr(yytext, '\n', yyleng));
     loc.last_column = (yytext + yyleng) - p;
   }
 
@@ -666,7 +670,7 @@ bool need_nume_set( bool tf ) {
 static int datetime_format_of( const char input[] );
 
 static int symbol_function_token( const char name[] ) {
-  auto e = symbol_function( 0, name );
+  const auto e = symbol_function( 0, name );
   return e ? symbol_index(e) : 0;
 }
 
@@ -754,7 +758,7 @@ typed_name( const char name[] ) {
     __attribute__((fallthrough));
   case FldLiteralN:
     {
-      auto f = cbl_field_of(e);
+      const auto f = cbl_field_of(e);
       if( type == FldLiteralN ) {
         yylval.numstr.radix =
           f->has_attr(hex_encoded_e)? hexadecimal_e : decimal_e;

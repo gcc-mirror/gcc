@@ -92,7 +92,7 @@ int       get_scaled_rdigits(cbl_field_t *field);
 int       get_scaled_digits(cbl_field_t *field);
 tree      tree_type_from_digits(size_t digits, int signable);
 tree      tree_type_from_size(size_t bytes, int signable);
-tree      tree_type_from_field(cbl_field_t *field);
+
 void      get_binary_value( tree value,
                             tree rdigits,
                             cbl_field_t *field,

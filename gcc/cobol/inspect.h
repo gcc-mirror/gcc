@@ -53,181 +53,162 @@
 static inline bool
 is_active( const cbl_refer_t& refer ) { return NULL != refer.field; }
 
-template <typename DATA>
-struct cbx_inspect_qual_t {
+struct cbl_inspect_qual_t {
   bool initial;
-  DATA identifier_4;
+  cbl_refer_t identifier_4;
 
-  cbx_inspect_qual_t() : initial(false), identifier_4(DATA()) {}
-  cbx_inspect_qual_t( bool initial, const DATA& identifier_4 )
+  cbl_inspect_qual_t() : initial(false), identifier_4(cbl_refer_t()) {}
+  cbl_inspect_qual_t( bool initial, const cbl_refer_t& identifier_4 )
     : initial(initial), identifier_4(identifier_4)
-    {
-      //if( identifier_4.field ) yywarn("%s:qualifying field is '%s'", __func__, identifier_4.field->name);
-    }
-  cbx_inspect_qual_t( const cbx_inspect_qual_t& that )
+    {}
+  cbl_inspect_qual_t( const cbl_inspect_qual_t& that )
     : initial(that.initial)
     , identifier_4(that.identifier_4)
-    {
-      //if( identifier_4.field ) yywarn("%s:qualifying field is '%s'", __func__, identifier_4.field->name);
-    }
+    {}
 
-  cbx_inspect_qual_t& operator=( const cbx_inspect_qual_t& that ) {
+  cbl_inspect_qual_t& operator=( const cbl_inspect_qual_t& that ) {
     initial = that.initial;
     identifier_4 = that.identifier_4;
-    //if( identifier_4.field ) yywarn("%s:qualifying field is '%s'", __func__, identifier_4.field->name);
     return *this;
   }
 
   bool active() const { return is_active(identifier_4); }
-
-  void clear() {
-    initial = false;
-    identifier_4.clear();
-  }
 };
-
-typedef cbx_inspect_qual_t<cbl_refer_t> cbl_inspect_qual_t;
 
 /*
  * Data for INSPECT X TALLYING Y FOR.  Captures information for operands of
  * CHARACTERS/ALL/LEADING.  The CHARACTERS/ALL/LEADING control is kept at the
  * next higher level, and may be repeated for each tally.
  *
- * cbx_inspect_match_t::matching is not used with CHARACTERS
+ * cbl_inspect_match_t::matching is not used with CHARACTERS
  */
-template <typename DATA>
-struct cbx_inspect_match_t {
-  DATA matching;                          // identifier-3/5 or literal-1/3
-  cbx_inspect_qual_t<DATA> before, after; // phrase 1
 
-  cbx_inspect_match_t(
-    const DATA& matching = DATA(),
-    const cbx_inspect_qual_t<DATA>& before = cbx_inspect_qual_t<DATA>(),
-    const cbx_inspect_qual_t<DATA>& after  = cbx_inspect_qual_t<DATA>()
-    )
-    : matching(matching)
+class cbl_inspect_match_t {
+  friend void dump_inspect_match( const cbl_inspect_match_t& M );
+  cbl_refer_t match;  // identifier-3/5 or literal-1/3
+  cbl_refer_t tally;  // collected too soon, belongs to next phrase 
+ public:
+  cbl_inspect_qual_t before, after; // phrase 1
+
+  cbl_inspect_match_t() {}
+  explicit 
+  cbl_inspect_match_t( const cbl_refer_t& matching,
+                       const cbl_inspect_qual_t& before = cbl_inspect_qual_t(),
+                       const cbl_inspect_qual_t& after  = cbl_inspect_qual_t() )
+    : match(matching)
     , before(before)
     , after(after)
   {}
   // match all characters
   bool match_any() const { return !(before.active() || after.active()); }
-};
 
-typedef cbx_inspect_match_t<cbl_refer_t> cbl_inspect_match_t;
+  void save_premature_tally( const cbl_refer_t& tally ) {
+    this->tally = tally; // put it here temporarily
+  }
+  cbl_refer_t premature_tally() {
+    if( !tally.field ) { std::swap(match, tally); }
+    return tally;
+  }
+  
+  const cbl_refer_t& matching( const cbl_refer_t& match ) {
+    return this->match = match;
+  }
+  const cbl_refer_t& matching() const { return match; }
+
+  bool empty() const {
+    return !is_active(match) && !before.active() && !after.active();
+  }
+};
 
 /*
  * Data for INSPECT X REPLACING.  The CHARACTERS/ALL/LEADING/FIRST control is
  * kept at the next higher level, and may be repeated.
  */
-template <typename DATA>
-struct cbx_inspect_replace_t : public cbx_inspect_match_t<DATA> {
-  DATA replacement;
+struct cbl_inspect_replace_t : public cbl_inspect_match_t {
+  cbl_refer_t replacement;
 
-  cbx_inspect_replace_t( const DATA& matching = DATA(),
-                         const DATA& replacement = DATA() )
-    : cbx_inspect_match_t<DATA>(matching)
-    , replacement(replacement)
-  {}
-  cbx_inspect_replace_t( const DATA& matching,
-                         const DATA& replacement,
-                         const cbx_inspect_qual_t<DATA>& before,
-                         const cbx_inspect_qual_t<DATA>& after )
-    : cbx_inspect_match_t<DATA>(matching, before, after)
+  cbl_inspect_replace_t() {}
+  cbl_inspect_replace_t( const cbl_refer_t& matching,
+                         const cbl_refer_t& replacement,
+                         const cbl_inspect_qual_t& before,
+                         const cbl_inspect_qual_t& after )
+    : cbl_inspect_match_t(matching, before, after)
     , replacement(replacement)
   {}
 };
 
-typedef cbx_inspect_replace_t<cbl_refer_t> cbl_inspect_replace_t;
-
 // One partial tally or substitution.
-template <typename DATA>
-struct cbx_inspect_oper_t {
+struct cbl_inspect_oper_t {
   cbl_inspect_bound_t bound;  // CHARACTERS/ALL/LEADING/FIRST
-  size_t n_identifier_3;      // N matches/replaces
-  // either tallies or replaces is NULL
-  cbx_inspect_match_t<DATA> *matches;
-  cbx_inspect_replace_t<DATA> *replaces;
+  // either tallies or replaces is empty
+  std::vector<cbl_inspect_match_t> matches;
+  std::vector<cbl_inspect_replace_t> replaces;
 
-  cbx_inspect_oper_t( cbl_inspect_bound_t bound,
-                      std::list<cbx_inspect_match_t<DATA>> matches )
+  cbl_inspect_oper_t() : bound(bound_characters_e) {}
+
+  explicit cbl_inspect_oper_t( const cbl_inspect_match_t& match,
+                               cbl_inspect_bound_t bound = bound_characters_e )
     : bound(bound)
-    , n_identifier_3( matches.size())
-    , matches(NULL)
-    , replaces(NULL)
-    {
-      this->matches = new cbx_inspect_match_t<DATA>[n_identifier_3];
-      std::copy( matches.begin(), matches.end(), this->matches );
-    }
-
-  cbx_inspect_oper_t( cbl_inspect_bound_t bound,
-                      std::list<cbx_inspect_replace_t<DATA>> replaces )
+  {
+    matches.push_back(match);
+  }
+  explicit cbl_inspect_oper_t( const cbl_inspect_replace_t& replace,
+                               cbl_inspect_bound_t bound = bound_characters_e )
     : bound(bound)
-    , n_identifier_3( replaces.size() )
-    , matches(NULL)
-    , replaces(NULL)
-    {
-      this->replaces = new cbx_inspect_replace_t<DATA>[n_identifier_3];
-      std::copy( replaces.begin(), replaces.end(), this->replaces );
-    }
+  {
+    replaces.push_back(replace);
+  }
 
-  cbx_inspect_oper_t()
-    : bound(bound_characters_e)
-    , n_identifier_3(0)
-    , matches(NULL)
-    , replaces(NULL)
-    {
-      assert( is_valid() );
-    }
+  cbl_inspect_oper_t( cbl_inspect_bound_t bound,
+                      const std::vector<cbl_inspect_match_t>& matches )
+    : bound(bound)
+    , matches(matches)
+    {}
 
-  bool is_valid() const {
-    if( matches && replaces ) return false;
-    if( matches || replaces ) return n_identifier_3 > 0;
-    return n_identifier_3 == 0;
+  cbl_inspect_oper_t( cbl_inspect_bound_t bound,
+                      const std::vector<cbl_inspect_replace_t>& replaces )
+    : bound(bound)
+    , replaces(replaces)
+    {}
+
+  // N matches/replaces
+  size_t n_identifier_3() const {
+    return std::max( matches.size(), replaces.size() );
+  } 
+
+  bool is_valid() const { // only one or the other, never both
+    bool invalid = !matches.empty() && !replaces.empty();
+    return ! invalid;
   }
 };
 
-typedef cbx_inspect_oper_t<cbl_refer_t> cbl_inspect_oper_t;
-
 // One whole tally or substitution.  For REPLACING, nbound == 1
-template <typename DATA>
-struct cbx_inspect_t {
-  DATA tally;                 // identifier-2: NULL without a tally
-  size_t nbound;              // FOR and REPLACING start with a cbl_inspect_bound_t
-  cbx_inspect_oper_t<DATA> *opers;
-
-  cbx_inspect_t( const DATA& tally = DATA() )
-    : tally(tally)
-    , nbound(0)
-    , opers(NULL)
+// FOR and REPLACING start with a cbl_inspect_bound_t
+struct cbl_inspect_t : public std::vector<cbl_inspect_oper_t> {
+  cbl_refer_t tally; // field is NULL for REPLACING
+  cbl_inspect_t() {}
+  cbl_inspect_t( size_t n, const cbl_inspect_oper_t& oper )
+    : std::vector<cbl_inspect_oper_t>(n, oper)
+  {}
+  cbl_inspect_t( const cbl_refer_t& tally,
+                 const std::vector<cbl_inspect_oper_t>& opers )
+    : std::vector<cbl_inspect_oper_t>(opers)
+    , tally(tally)
     {}
-  cbx_inspect_t( const DATA& tally, const cbx_inspect_oper_t<DATA>& oper )
-    : tally(tally)
-    , nbound(1)
-    , opers(NULL)
-    {
-      this->opers = new cbx_inspect_oper_t<DATA>[1];
-      this->opers[0] = oper;
-    }
-  cbx_inspect_t( const DATA& tally,
-                 const std::list<cbx_inspect_oper_t<DATA>>& opers )
-    : tally(tally)
-    , nbound( opers.size() )
-    , opers(NULL)
-    {
-      this->opers = new cbx_inspect_oper_t<DATA>[nbound];
-      std::copy( opers.begin(), opers.end(), this->opers );
-    }
+
+  size_t nbound() const { return size(); }
 };
 
-typedef cbx_inspect_t<cbl_refer_t> cbl_inspect_t;
-
+typedef std::vector<cbl_inspect_t> cbl_inspect_opers_t;
 
 /*
  * Runtime
  */
 
-void parser_inspect( cbl_refer_t input, bool backward,
-                     size_t ninspect, cbl_inspect_t *inspects );
+void parser_inspect( const cbl_refer_t& input,
+                     bool backward,
+                     cbl_inspect_opers_t& inspects );
+
 void parser_inspect_conv( cbl_refer_t input, bool backward,
                           cbl_refer_t original,
                           cbl_refer_t replacement,

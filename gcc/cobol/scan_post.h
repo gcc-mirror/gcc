@@ -116,10 +116,10 @@ datetime_format_of( const char input[] ) {
 
     for( auto p = patterns; p < eopatterns; p++ ) {
       static const int cflags = REG_EXTENDED | REG_ICASE;
-      static char msg[80];
       int erc;
 
       if( 0 != (erc = regcomp(&p->re, p->regex, cflags)) ) {
+        static char msg[80];
         regerror(erc, &p->re, msg, sizeof(msg));
         yywarn("%s:%d: %s: %s", __func__, __LINE__, keyword_str(p->token), msg);
       }

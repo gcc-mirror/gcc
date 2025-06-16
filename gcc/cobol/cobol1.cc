@@ -571,7 +571,7 @@ cobol_name_mangler(const char *cobol_name_)
       }
 
     // Allocate enough space for a prepended underscore and a final '\0'
-    char *cobol_name = (char *)xmalloc(strlen(cobol_name_)+2);
+    char *cobol_name = static_cast<char *>(xmalloc(strlen(cobol_name_)+2));
     size_t n = 0;
     if( cobol_name_[0] >= '0' && cobol_name_[0] <= '9' )
       {

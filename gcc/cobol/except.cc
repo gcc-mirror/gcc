@@ -108,14 +108,16 @@ cbl_enabled_exceptions_t::dump() const {
   std::swap(debug, yydebug);
 }
 
+// cppcheck-suppress-begin [useStlAlgorithm] because why?
 uint32_t 
 cbl_enabled_exceptions_t::status() const {
   uint32_t status_word = 0;
   for( const auto& ena : *this ) {
     status_word |= (EC_ALL_E & ena.ec );
-  }
+  } 
   return status_word;
 }
+// cppcheck-suppress-end useStlAlgorithm
 
 std::vector<uint64_t>
 cbl_enabled_exceptions_t::encode() const {
@@ -133,13 +135,13 @@ void
 cbl_enabled_exceptions_t::turn_on_off( bool enabled,
                                        bool location,
                                        ec_type_t type,
-                                       std::set<size_t> files )
+                                       const std::set<size_t>& files )
 {
   // Update current enabled ECs tree on leaving this function. 
   class update_parser_t {
     const cbl_enabled_exceptions_t& ecs;
   public:
-    update_parser_t(const cbl_enabled_exceptions_t& ecs) : ecs(ecs) {}
+    explicit update_parser_t(const cbl_enabled_exceptions_t& ecs) : ecs(ecs) {}
     ~update_parser_t() {
       tree ena = parser_compile_ecs(ecs.encode());
       current_enabled_ecs(ena);
@@ -243,16 +245,6 @@ cbl_enabled_exceptions_t::match( ec_type_t type, size_t file ) const {
   auto output = enabled_exception_match( begin(), end(), type, file );
   return output != end()? &*output : NULL;
 }
-
-class choose_declarative {
-  size_t program;
- public:
-  choose_declarative( size_t program ) : program(program) {}
-
-  bool operator()( const cbl_declarative_t& dcl ) {
-    return dcl.global || program == symbol_at(dcl.section)->program;
-  }
-};
 
 bool
 sort_supers_last( const cbl_declarative_t& a, const cbl_declarative_t& b ) {
