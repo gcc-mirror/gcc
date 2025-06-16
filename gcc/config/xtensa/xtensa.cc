@@ -198,6 +198,7 @@ static void xtensa_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 static rtx xtensa_delegitimize_address (rtx);
 static reg_class_t xtensa_ira_change_pseudo_allocno_class (int, reg_class_t,
 							   reg_class_t);
+static HARD_REG_SET xtensa_zero_call_used_regs (HARD_REG_SET);
 
 
 
@@ -369,6 +370,9 @@ static reg_class_t xtensa_ira_change_pseudo_allocno_class (int, reg_class_t,
 
 #undef TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
 #define TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS xtensa_ira_change_pseudo_allocno_class
+
+#undef TARGET_ZERO_CALL_USED_REGS
+#define TARGET_ZERO_CALL_USED_REGS xtensa_zero_call_used_regs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5465,6 +5469,58 @@ xtensa_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
     return best_class;
 
   return FLOAT_MODE_P (PSEUDO_REGNO_MODE (regno)) ? FP_REGS : AR_REGS;
+}
+
+/* Implement TARGET_ZERO_CALL_USED_REGS.  */
+
+static HARD_REG_SET
+xtensa_zero_call_used_regs (HARD_REG_SET selected_regs)
+{
+  unsigned int regno;
+  int zeroed_regno = -1;
+  hard_reg_set_iterator hrsi;
+  rtvec argvec, convec;
+
+  EXECUTE_IF_SET_IN_HARD_REG_SET (selected_regs, 1, regno, hrsi)
+    {
+      if (GP_REG_P (regno))
+	{
+	  emit_move_insn (gen_rtx_REG (SImode, regno), const0_rtx);
+	  if (zeroed_regno < 0)
+	    zeroed_regno = regno;
+	  continue;
+	}
+      if (TARGET_BOOLEANS && BR_REG_P (regno))
+	{
+	  gcc_assert (zeroed_regno >= 0);
+	  argvec = rtvec_alloc (1);
+	  RTVEC_ELT (argvec, 0) = gen_rtx_REG (SImode, zeroed_regno);
+	  convec = rtvec_alloc (1);
+	  RTVEC_ELT (convec, 0) = gen_rtx_ASM_INPUT (SImode, "r");
+	  emit_insn (gen_rtx_ASM_OPERANDS (VOIDmode, "wsr\t%0, BR",
+					   "", 0, argvec, convec,
+					   rtvec_alloc (0),
+					   UNKNOWN_LOCATION));
+	  continue;
+	}
+      if (TARGET_HARD_FLOAT && FP_REG_P (regno))
+	{
+	  gcc_assert (zeroed_regno >= 0);
+	  emit_move_insn (gen_rtx_REG (SFmode, regno),
+			  gen_rtx_REG (SFmode, zeroed_regno));
+	  continue;
+	}
+      if (TARGET_MAC16 && ACC_REG_P (regno))
+	{
+	  gcc_assert (zeroed_regno >= 0);
+	  emit_move_insn (gen_rtx_REG (SImode, regno),
+			  gen_rtx_REG (SImode, zeroed_regno));
+	  continue;
+	}
+      CLEAR_HARD_REG_BIT (selected_regs, regno);
+    }
+
+  return selected_regs;
 }
 
 #include "gt-xtensa.h"
