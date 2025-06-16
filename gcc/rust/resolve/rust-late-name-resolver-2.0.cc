@@ -251,10 +251,7 @@ visit_identifier_as_pattern (NameResolutionContext &ctx,
 void
 Late::visit (AST::IdentifierPattern &identifier)
 {
-  if (identifier.has_subpattern ())
-    {
-      DefaultResolver::visit (identifier.get_subpattern ());
-    }
+  DefaultResolver::visit (identifier);
 
   visit_identifier_as_pattern (ctx, identifier.get_ident (),
 			       identifier.get_locus (),
