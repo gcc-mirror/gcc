@@ -206,11 +206,10 @@ struct GTY((for_user)) coroutine_info
   tree traits_type;   /* The cached traits type for this function.  */
   tree handle_type;   /* The cached coroutine handle for this function.  */
   tree self_h_proxy;  /* A handle instance that is used as the proxy for the
-			 one that will eventually be allocated in the coroutine
-			 frame.  */
+			 one that will eventually be built in lowering.  */
   tree promise_proxy; /* Likewise, a proxy promise instance.  */
-  tree from_address;  /* handle_type from_address function.  */
-  tree return_void;   /* The expression for p.return_void() if it exists.  */
+  tree from_address;  /* handle_type from_address() function.  */
+  tree return_void;   /* The expression for p.return_void(), if it exists.  */
   location_t first_coro_keyword; /* The location of the keyword that made this
 				    function into a coroutine.  */
 
@@ -1982,12 +1981,13 @@ struct coro_aw_data
   tree coro_fp;    /* Frame pointer var.  */
   tree resume_idx; /* This is the index var in the frame.  */
   tree i_a_r_c;    /* initial suspend await_resume() was called if true.  */
-  tree self_h;     /* This is a handle to the current coro (frame var).  */
   tree cleanup;    /* This is where to go once we complete local destroy.  */
   tree cororet;    /* This is where to go if we suspend.  */
   tree corocont;   /* This is where to go if we continue.  */
   tree dispatch;   /* This is where we go if we restart the dispatch.  */
   tree conthand;   /* This is the handle for a continuation.  */
+  tree handle_type; /* Handle type for this coroutine...  */
+  tree hfa_m;       /* ... and handle.from_address() for this.  */
   unsigned index;  /* This is our current resume index.  */
 };
 
@@ -2105,6 +2105,18 @@ expand_one_await_expression (tree *expr, tree *await_expr, void *d)
 
   tree suspend = TREE_VEC_ELT (awaiter_calls, 1); /* await_suspend().  */
   tree susp_type = TREE_TYPE (suspend);
+  tree susp_call = suspend;
+  if (TREE_CODE (suspend) == TARGET_EXPR)
+    susp_call = TARGET_EXPR_INITIAL (suspend);
+  gcc_checking_assert (TREE_CODE (susp_call) == CALL_EXPR);
+  tree dummy_ch = build_dummy_object (data->handle_type);
+  r = fold_convert (build_pointer_type (void_type_node), data->coro_fp);
+  vec<tree, va_gc> *args = make_tree_vector_single (r);
+  tree hfa = cp_fold_rvalue (
+    build_new_method_call (dummy_ch, data->hfa_m, &args, NULL_TREE,
+			   LOOKUP_NORMAL, NULL, tf_warning_or_error));
+  release_tree_vector (args);
+  CALL_EXPR_ARG (susp_call, call_expr_nargs (susp_call) - 1) = hfa;
 
   bool is_cont = false;
   /* NOTE: final suspend can't resume; the "resume" label in that case
@@ -2586,22 +2598,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* Now we start building the rewritten function body.  */
   add_stmt (build_stmt (loc, LABEL_EXPR, actor_begin_label));
 
-  /* actor's coroutine 'self handle'.  */
-  tree ash = coro_build_frame_access_expr (actor_frame, coro_self_handle_id,
-					   false, tf_warning_or_error);
-  /* So construct the self-handle from the frame address.  */
-  tree hfa_m = get_coroutine_from_address (orig);
-  /* Should have been set earlier by coro_promise_type_found_p.  */
-  gcc_assert (hfa_m);
-
-  tree r = build1 (CONVERT_EXPR, build_pointer_type (void_type_node), actor_fp);
-  vec<tree, va_gc> *args = make_tree_vector_single (r);
-  tree hfa = build_new_method_call (ash, hfa_m, &args, NULL_TREE, LOOKUP_NORMAL,
-				    NULL, tf_warning_or_error);
-  r = cp_build_init_expr (ash, hfa);
-  finish_expr_stmt (r);
-  release_tree_vector (args);
-
   /* Now we know the real promise, and enough about the frame layout to
      decide where to put things.  */
 
@@ -2616,7 +2612,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   add_stmt (fnbody);
 
   /* Now do the tail of the function; first cleanups.  */
-  r = build_stmt (loc, LABEL_EXPR, del_promise_label);
+  tree r = build_stmt (loc, LABEL_EXPR, del_promise_label);
   add_stmt (r);
 
   /* Destructors for the things we built explicitly.
@@ -2684,6 +2680,12 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   gcc_checking_assert (maybe_cleanup_point_expr_void (r) == r);
   add_stmt (r);
 
+  /* How to construct the handle for this coroutine from the frame address.  */
+  tree hfa_m = get_coroutine_from_address (orig);
+  /* Should have been set earlier by coro_promise_type_found_p.  */
+  gcc_assert (hfa_m);
+  tree handle_type = TREE_TYPE (get_coroutine_self_handle_proxy (orig));
+
   /* We've now rewritten the tree and added the initial and final
      co_awaits.  Now pass over the tree and expand the co_awaits.  */
   tree i_a_r_c = NULL_TREE;
@@ -2692,8 +2694,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 					   false, tf_warning_or_error);
 
   coro_aw_data data = {actor, actor_fp, resume_idx_var, i_a_r_c,
-		       ash, del_promise_label, ret_label,
-		       continue_label, restart_dispatch_label, continuation, 2};
+		       del_promise_label, ret_label,
+		       continue_label, restart_dispatch_label, continuation,
+		       handle_type, hfa_m, 2};
   cp_walk_tree (&actor_body, await_statement_expander, &data, NULL);
 
   BIND_EXPR_BODY (actor_bind) = pop_stmt_list (actor_body);
@@ -4424,16 +4427,6 @@ cp_coroutine_transform::wrap_original_function_body ()
   var_list = promise;
   add_decl_expr (promise);
 
-  /* We need a handle to this coroutine, which is passed to every
-     await_suspend().  This was created on demand when parsing we now link it
-     into our scope.  */
-  var = get_coroutine_self_handle_proxy (orig_fn_decl);
-  DECL_CONTEXT (var) = orig_fn_decl;
-  DECL_SOURCE_LOCATION (var) = loc;
-  DECL_CHAIN (var) = var_list;
-  var_list = var;
-  add_decl_expr (var);
-
   /* If we have function parms, then these will be copied to the coroutine
      frame as per [dcl.fct.def.coroutine] / 13.
      Here, we create a local (proxy) variable for each parm, since the original
@@ -5285,7 +5278,6 @@ cp_coroutine_transform::~cp_coroutine_transform ()
   bool _Coro_frame_needs_free; free the coro frame mem if set.
   bool _Coro_i_a_r_c; [dcl.fct.def.coroutine] / 5.3
   short _Coro_resume_index;
-  handle_type _Coro_self_handle;
   parameter copies (were required).
   local variables saved (including awaitables)
   (maybe) trailing space.
