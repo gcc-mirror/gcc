@@ -554,38 +554,322 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
 				       *index, bound);
 }
 
-/* Return true iff T is an array that was instrumented by SANITIZE_BOUNDS.  */
 
-bool
-ubsan_array_ref_instrumented_p (const_tree t)
+/* Instrument array bounds for the pointer array address which is
+   an INDIRECT_REF to the call to .ACCESS_WITH_SIZE.  We create special
+   builtin, that gets expanded in the sanopt pass, and make an array
+   dimention of it.  POINTER_ADDR is the pointer array's base address.
+   *INDEX is an index to the array.
+   IGNORE_OFF_BY_ONE is true if the POINTER_ADDR is not inside an
+   INDIRECT_REF.
+   Return NULL_TREE if no instrumentation is emitted.  */
+
+tree
+ubsan_instrument_bounds_pointer_address (location_t loc, tree pointer_addr,
+					 tree *index,
+					 bool ignore_off_by_one)
 {
-  if (TREE_CODE (t) != ARRAY_REF)
-    return false;
+  gcc_assert (TREE_CODE (pointer_addr) == INDIRECT_REF);
+  tree call = TREE_OPERAND (pointer_addr, 0);
+  if (!is_access_with_size_p (call))
+    return NULL_TREE;
+  tree bound = get_bound_from_access_with_size (call);
 
-  tree op1 = TREE_OPERAND (t, 1);
-  return TREE_CODE (op1) == COMPOUND_EXPR
-	 && TREE_CODE (TREE_OPERAND (op1, 0)) == CALL_EXPR
-	 && CALL_EXPR_FN (TREE_OPERAND (op1, 0)) == NULL_TREE
-	 && CALL_EXPR_IFN (TREE_OPERAND (op1, 0)) == IFN_UBSAN_BOUNDS;
+  if (ignore_off_by_one)
+    bound = fold_build2 (PLUS_EXPR, TREE_TYPE (bound), bound,
+			 build_int_cst (TREE_TYPE (bound),
+			 1));
+
+  /* Don't emit instrumentation in the most common cases.  */
+  tree idx = NULL_TREE;
+  if (TREE_CODE (*index) == INTEGER_CST)
+    idx = *index;
+  else if (TREE_CODE (*index) == BIT_AND_EXPR
+	   && TREE_CODE (TREE_OPERAND (*index, 1)) == INTEGER_CST)
+    idx = TREE_OPERAND (*index, 1);
+  if (idx
+      && TREE_CODE (bound) == INTEGER_CST
+      && tree_int_cst_sgn (idx) >= 0
+      && tree_int_cst_lt (idx, bound))
+    return NULL_TREE;
+
+  *index = save_expr (*index);
+
+  /* Create an array_type for the corresponding pointer array.  */
+  tree itype = build_range_type (sizetype, size_zero_node, NULL_TREE);
+  /* The array's element type can be get from the return type of the call to
+     .ACCESS_WITH_SIZE.  */
+  tree element_type = TREE_TYPE (TREE_TYPE (TREE_TYPE (call)));
+  tree array_type = build_array_type (element_type, itype);
+  /* Create a "(T *) 0" tree node to describe the array type.  */
+  tree zero_with_type = build_int_cst (build_pointer_type (array_type), 0);
+  return build_call_expr_internal_loc (loc, IFN_UBSAN_BOUNDS,
+				       void_type_node, 3, zero_with_type,
+				       *index, bound);
 }
 
-/* Instrument an ARRAY_REF, if it hasn't already been instrumented.
-   IGNORE_OFF_BY_ONE is true if the ARRAY_REF is inside a ADDR_EXPR.  */
+/* This structure is to combine a factor with its parent and its position
+ * in its parent tree.  */
+struct factor_t
+{
+  tree factor;
+  tree parent; /* the parent tree of this factor.  */
+  int pos;     /* the position of this factor in its parent tree.  */
+};
+
+/* for a multiply expression like:
+    ((long unsigned int) m * (long unsigned int) SAVE_EXPR <n>) * 4
+
+   locate all the factors, the parents of the factor and the position of
+   the factor in its parent, and put them to VEC_FACTORS.  */
+
+static void
+get_factors_from_mul_expr (tree mult_expr, tree parent,
+			   int pos, auto_vec<factor_t> *vec_factors)
+{
+  struct factor_t mult_factor = {0, 0, -1};
+  mult_factor.factor = mult_expr;
+  mult_factor.parent = parent;
+  mult_factor.pos = pos;
+
+  while (CONVERT_EXPR_CODE_P (TREE_CODE (mult_expr)))
+    {
+      mult_factor.parent = mult_expr;
+      mult_factor.pos = 0;
+      mult_expr = TREE_OPERAND (mult_expr, 0);
+      mult_factor.factor = mult_expr;
+    }
+  if (TREE_CODE (mult_expr) != MULT_EXPR)
+    vec_factors->safe_push (mult_factor);
+  else
+    {
+      get_factors_from_mul_expr (TREE_OPERAND (mult_expr, 0), mult_expr,
+				 0, vec_factors);
+      get_factors_from_mul_expr (TREE_OPERAND (mult_expr, 1), mult_expr,
+				 1, vec_factors);
+    }
+}
+
+/* Given an OFFSET expression, and the ELEMENT_SIZE,
+   get the index expression from OFFSET and return it.
+   For example:
+   OFFSET:
+    ((long unsigned int) m * (long unsigned int) SAVE_EXPR <n>) * 4
+   ELEMENT_SIZE:
+    (sizetype) SAVE_EXPR <n> * 4
+   get the index as (long unsigned int) m, and return it.
+   The INDEX_P holds the pointer to the parent tree of the index,
+   INDEX_N holds the position of the index in its parent.  */
+
+static tree
+get_index_from_offset (tree offset, tree *index_p,
+		       int *index_n, tree element_size)
+{
+  if (TREE_CODE (offset) != MULT_EXPR)
+    return NULL_TREE;
+
+  auto_vec<factor_t> e_factors, o_factors;
+  get_factors_from_mul_expr (element_size, NULL, -1, &e_factors);
+  get_factors_from_mul_expr (offset, *index_p, *index_n, &o_factors);
+
+  if (e_factors.is_empty () || o_factors.is_empty ())
+    return NULL_TREE;
+
+  bool all_found = true;
+  for (unsigned i = 0; i < e_factors.length (); i++)
+    {
+      factor_t e_size_factor = e_factors[i];
+      bool found = false;
+      for (unsigned j = 0; j < o_factors.length ();)
+	{
+	  factor_t o_exp_factor = o_factors[j];
+	  if (operand_equal_p (e_size_factor.factor, o_exp_factor.factor))
+	    {
+	      o_factors.unordered_remove (j);
+	      found = true;
+	      break;
+	    }
+	  else
+	    j++;
+	}
+      if (!found)
+	all_found = false;
+    }
+
+  if (!all_found)
+    return NULL_TREE;
+
+  if (o_factors.length () != 1)
+    return NULL_TREE;
+
+  *index_p = o_factors[0].parent;
+  *index_n = o_factors[0].pos;
+  return o_factors[0].factor;
+}
+
+/* For an pointer + offset computation expression, such as,
+   *.ACCESS_WITH_SIZE (p->c, &p->b, 1, 0, -1, 0B)
+    + (sizetype) ((long unsigned int) index * 4
+   Return the index of this pointer array reference,
+   set the parent tree of INDEX to *INDEX_P.
+   set the operand position of the INDEX in the parent tree to *INDEX_N.
+   If failed, return NULL_TREE.  */
+
+static tree
+get_index_from_pointer_addr_expr (tree pointer, tree *index_p, int *index_n)
+{
+  *index_p = NULL_TREE;
+  *index_n = -1;
+  if (TREE_CODE (TREE_OPERAND (pointer, 0)) != INDIRECT_REF)
+    return NULL_TREE;
+  tree call = TREE_OPERAND (TREE_OPERAND (pointer, 0), 0);
+  if (!is_access_with_size_p (call))
+    return NULL_TREE;
+
+  /* Get the pointee type of the call to .ACCESS_WITH_SIZE.
+     This should be the element type of the pointer array.  */
+  tree pointee_type = TREE_TYPE (TREE_TYPE (TREE_TYPE (call)));
+  tree pointee_size = TYPE_SIZE_UNIT (pointee_type);
+
+  tree index_exp = TREE_OPERAND (pointer, 1);
+  *index_p = pointer;
+  *index_n = 1;
+
+  if (!(TREE_CODE (index_exp) != MULT_EXPR
+	&& tree_int_cst_equal (pointee_size, integer_one_node)))
+    {
+      while (CONVERT_EXPR_CODE_P (TREE_CODE (index_exp)))
+	{
+	  *index_p = index_exp;
+	  *index_n = 0;
+	  index_exp = TREE_OPERAND (index_exp, 0);
+	}
+      index_exp = get_index_from_offset (index_exp, index_p,
+					 index_n, pointee_size);
+
+      if (!index_exp)
+      return NULL_TREE;
+    }
+
+  while (CONVERT_EXPR_CODE_P (TREE_CODE (index_exp)))
+    {
+      *index_p = index_exp;
+      *index_n = 0;
+      index_exp = TREE_OPERAND (index_exp, 0);
+    }
+
+  return index_exp;
+}
+
+/* Return TRUE when the EXPR is a pointer array address that could be
+   instrumented.
+   We only instrument an address computation similar as the following:
+      *.ACCESS_WITH_SIZE (p->c, &p->b, 1, 0, -1, 0B)
+	+ (sizetype) ((long unsigned int) index * 4)
+   if the EXPR is instrumentable, return TRUE and
+   set the index to *INDEX.
+   set the *.ACCESS_WITH_SIZE to *BASE.
+   set the parent tree of INDEX to *INDEX_P.
+   set the operand position of the INDEX in the parent tree to INDEX_N.  */
+
+static bool
+is_instrumentable_pointer_array_address (tree expr, tree *base,
+					 tree *index, tree *index_p,
+					 int *index_n)
+{
+  /* For a poiner array address as:
+	(*.ACCESS_WITH_SIZE (p->c, &p->b, 1, 0, -1, 0B)
+	  + (sizetype) ((long unsigned int) index * 4)
+     op0 is the call to *.ACCESS_WITH_SIZE;
+     op1 is the index.  */
+  if (TREE_CODE (expr) != POINTER_PLUS_EXPR)
+    return false;
+
+  tree op0 = TREE_OPERAND (expr, 0);
+  if (TREE_CODE (op0) != INDIRECT_REF)
+    return false;
+  if (!is_access_with_size_p (TREE_OPERAND (op0, 0)))
+    return false;
+  tree op1 = get_index_from_pointer_addr_expr (expr, index_p, index_n);
+  if (op1 != NULL_TREE)
+    {
+      *base = op0;
+      *index = op1;
+      return true;
+    }
+  return false;
+}
+
+/* Return true iff T is an array or an indirect reference that was
+   instrumented by SANITIZE_BOUNDS.  */
+
+bool
+ubsan_array_ref_instrumented_p (tree t)
+{
+  if (TREE_CODE (t) != ARRAY_REF
+      && TREE_CODE (t) != MEM_REF)
+    return false;
+
+  bool is_array = (TREE_CODE (t) == ARRAY_REF);
+  tree op0 = NULL_TREE;
+  tree op1 = NULL_TREE;
+  tree index_p = NULL_TREE;
+  int index_n = 0;
+  if (is_array)
+    {
+      op1 = TREE_OPERAND (t, 1);
+      return TREE_CODE (op1) == COMPOUND_EXPR
+	     && TREE_CODE (TREE_OPERAND (op1, 0)) == CALL_EXPR
+	     && CALL_EXPR_FN (TREE_OPERAND (op1, 0)) == NULL_TREE
+	     && CALL_EXPR_IFN (TREE_OPERAND (op1, 0)) == IFN_UBSAN_BOUNDS;
+    }
+  else if (is_instrumentable_pointer_array_address (t, &op0, &op1,
+						    &index_p, &index_n))
+    return TREE_CODE (op1) == COMPOUND_EXPR
+	   && TREE_CODE (TREE_OPERAND (op1, 0)) == CALL_EXPR
+	   && CALL_EXPR_FN (TREE_OPERAND (op1, 0)) == NULL_TREE
+	   && CALL_EXPR_IFN (TREE_OPERAND (op1, 0)) == IFN_UBSAN_BOUNDS;
+
+  return false;
+}
+
+/* Instrument an ARRAY_REF or an address computation whose base address is
+   a call to .ACCESS_WITH_SIZE, if it hasn't already been instrumented.
+   IGNORE_OFF_BY_ONE is true if the ARRAY_REF is inside a ADDR_EXPR, or the
+   address computation is not inside a INDIRECT_REF.  */
 
 void
 ubsan_maybe_instrument_array_ref (tree *expr_p, bool ignore_off_by_one)
 {
+  tree e = NULL_TREE;
+  tree op0 = NULL_TREE;
+  tree op1 = NULL_TREE;
+  tree index_p = NULL_TREE;  /* the parent tree of INDEX.  */
+  int index_n = 0;  /* the operand position of INDEX in the parent tree.  */
+
   if (!ubsan_array_ref_instrumented_p (*expr_p)
       && sanitize_flags_p (SANITIZE_BOUNDS | SANITIZE_BOUNDS_STRICT)
       && current_function_decl != NULL_TREE)
     {
-      tree op0 = TREE_OPERAND (*expr_p, 0);
-      tree op1 = TREE_OPERAND (*expr_p, 1);
-      tree e = ubsan_instrument_bounds (EXPR_LOCATION (*expr_p), op0, &op1,
-					ignore_off_by_one);
+      if (TREE_CODE (*expr_p) == ARRAY_REF)
+	{
+	  op0 = TREE_OPERAND (*expr_p, 0);
+	  op1 = TREE_OPERAND (*expr_p, 1);
+	  index_p = *expr_p;
+	  index_n = 1;
+	  e = ubsan_instrument_bounds (EXPR_LOCATION (*expr_p), op0,
+				       &op1, ignore_off_by_one);
+	}
+      else if (is_instrumentable_pointer_array_address (*expr_p, &op0, &op1,
+							&index_p, &index_n))
+	e = ubsan_instrument_bounds_pointer_address (EXPR_LOCATION (*expr_p),
+						     op0, &op1,
+						     ignore_off_by_one);
+
+      /* Replace the original INDEX with the instrumented INDEX.  */
       if (e != NULL_TREE)
-	TREE_OPERAND (*expr_p, 1) = build2 (COMPOUND_EXPR, TREE_TYPE (op1),
-					    e, op1);
+	TREE_OPERAND (index_p, index_n)
+	  = build2 (COMPOUND_EXPR, TREE_TYPE (op1), e, op1);
     }
 }
 
