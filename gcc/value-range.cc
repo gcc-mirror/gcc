@@ -2254,6 +2254,94 @@ irange::invert ()
     verify_range ();
 }
 
+// This routine will take the bounds [LB, UB], and apply the bitmask to those
+// values such that both bounds satisfy the bitmask.  TRUE is returned
+// if either bound changes, and they are retuirned as [NEW_LB, NEW_UB].
+// if NEW_UB < NEW_LB, then the entire bound is to be removed as none of
+// the values are valid.
+//   ie,   [4, 14] MASK 0xFFFE  VALUE 0x1
+// means all values must be odd, the new bounds returned will be [5, 13].
+//   ie,   [4, 4] MASK 0xFFFE  VALUE 0x1
+// would return [1, 0] and as the LB < UB,   the entire subrange is invalid
+// and should be removed.
+
+bool
+irange::snap (const wide_int &lb, const wide_int &ub,
+	      wide_int &new_lb, wide_int &new_ub)
+{
+  uint z = wi::ctz (m_bitmask.mask ());
+  if (z == 0)
+    return false;
+  const wide_int &wild_mask = m_bitmask.mask ();
+
+  const wide_int step = (wi::one (TYPE_PRECISION (type ())) << z);
+  const wide_int match_mask = step - 1;
+  const wide_int value = m_bitmask.value () & match_mask;
+
+  wide_int rem_lb = lb & match_mask;
+
+  wi::overflow_type ov_sub;
+  wide_int diff = wi::sub(value, rem_lb, UNSIGNED, &ov_sub);
+  wide_int offset = diff & match_mask;
+
+  wi::overflow_type ov1;
+  new_lb = wi::add (lb, offset, UNSIGNED, &ov1);
+
+  wide_int rem_ub = ub & match_mask;
+  wide_int offset_ub = (rem_ub - value) & match_mask;
+
+  wi::overflow_type ov2;
+  new_ub = wi::sub (ub, offset_ub, UNSIGNED, &ov2);
+
+  // Overflow or inverted range = invalid
+  if (ov1 != wi::OVF_NONE || ov2 != wi::OVF_NONE
+      || wi::lt_p (new_ub, new_lb, TYPE_SIGN (type ())))
+    {
+      new_lb = wi::one (lb.get_precision ());
+      new_ub = wi::zero (ub.get_precision ());
+      return true;
+    }
+  return (new_lb != lb) || (new_ub != ub);
+}
+
+// This method loops through the subranges in THIS, and adjusts any bounds
+// to satisfy the contraints of the BITMASK.  If a subrange is invalid,
+// it is removed.   TRUE is returned if there were any changes.
+
+bool
+irange::snap_subranges ()
+{
+  bool changed = false;
+  int_range_max invalid;
+  unsigned x;
+  wide_int lb, ub;
+  for (x = 0; x < m_num_ranges; x++)
+    {
+      if (snap (lower_bound (x), upper_bound (x), lb, ub))
+	{
+	  changed = true;
+	  //  This subrange is to be completely removed.
+	  if (wi::lt_p (ub, lb, TYPE_SIGN (type ())))
+	    {
+	      int_range<1> tmp (type (), lower_bound (x), upper_bound (x));
+	      invalid.union_ (tmp);
+	      continue;
+	    }
+	  if (lower_bound (x) != lb)
+	    m_base[x * 2] = lb;
+	  if (upper_bound (x) != ub)
+	    m_base[x * 2 + 1] = ub;
+	}
+    }
+  // Remove any subranges which are no invalid.
+  if (!invalid.undefined_p ())
+    {
+      invalid.invert ();
+      intersect (invalid);
+    }
+  return changed;
+}
+
 // If the mask can be trivially converted to a range, do so.
 // Otherwise attempt to remove the lower bits from the range.
 // Return true if the range changed in any way.
@@ -2353,6 +2441,9 @@ irange::set_range_from_bitmask ()
 
   // Make sure we call intersect, so do it first.
   changed = intersect (mask_range) | changed;
+  // Npw make sure each subrange endpoint matches the bitmask.
+  changed |= snap_subranges ();
+
   return changed;
 }
 
