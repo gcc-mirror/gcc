@@ -27,7 +27,7 @@
 
 #include <signal.h>
 #include <sys/ucontext.h>
-
+#include <stdint.h>
 
 /* Since insns are always stored LE, on a BE system the opcodes will
    be loaded byte-reversed.  Therefore, define two sets of opcodes,
@@ -43,6 +43,22 @@
 
 #define MD_FALLBACK_FRAME_STATE_FOR aarch64_fallback_frame_state
 
+#ifndef FPSIMD_MAGIC
+#define FPSIMD_MAGIC 0x46508001
+#endif
+
+#ifndef TPIDR2_MAGIC
+#define TPIDR2_MAGIC 0x54504902
+#endif
+
+#ifndef ZA_MAGIC
+#define ZA_MAGIC 0x54366345
+#endif
+
+#ifndef EXTRA_MAGIC
+#define EXTRA_MAGIC 0x45585401
+#endif
+
 static _Unwind_Reason_Code
 aarch64_fallback_frame_state (struct _Unwind_Context *context,
 			      _Unwind_FrameState * fs)
@@ -56,6 +72,21 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
   {
     siginfo_t info;
     ucontext_t uc;
+  };
+
+  struct tpidr2_block
+  {
+    uint64_t za_save_buffer;
+    uint16_t num_za_save_slices;
+    uint8_t reserved[6];
+  };
+
+  struct za_block
+  {
+    struct _aarch64_ctx head;
+    uint16_t vl;
+    uint16_t reserved[3];
+    uint64_t data;
   };
 
   struct rt_sigframe *rt_;
@@ -103,11 +134,15 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
      field can be used to skip over unrecognized context extensions.
      The end of the context sequence is marked by a context with magic
      0 or size 0.  */
+  struct tpidr2_block *tpidr2 = 0;
+  struct za_block *za_ctx = 0;
+
   for (extension_marker = (struct _aarch64_ctx *) &sc->__reserved;
        extension_marker->magic;
        extension_marker = (struct _aarch64_ctx *)
        ((unsigned char *) extension_marker + extension_marker->size))
     {
+    restart:
       if (extension_marker->magic == FPSIMD_MAGIC)
 	{
 	  struct fpsimd_context *ctx =
@@ -139,10 +174,81 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
 	      fs->regs.reg[AARCH64_DWARF_V0 + i].loc.offset = offset;
 	    }
 	}
+      else if (extension_marker->magic == TPIDR2_MAGIC)
+	{
+	  /* A TPIDR2 context.
+
+	     All the casting is to support big-endian ILP32.  We could read
+	     directly into TPIDR2 otherwise.  */
+	  struct { struct _aarch64_ctx h; uint64_t tpidr2; } *ctx
+		  = (void *)extension_marker;
+#if defined (__ILP32__)
+	  tpidr2 = (struct tpidr2_block *) (uintptr_t) ctx->tpidr2;
+#else
+	  tpidr2 = (struct tpidr2_block *) ctx->tpidr2;
+#endif
+	}
+      else if (extension_marker->magic == ZA_MAGIC)
+	/* A ZA context.  We interpret this later.  */
+	za_ctx = (void *)extension_marker;
+      else if (extension_marker->magic == EXTRA_MAGIC)
+	{
+	  /* Extra context.  The ABI guarantees that the next _aarch64_ctx
+	     in the current list will be the zero terminator, so we can simply
+	     switch to the new list and continue from there.  The new list is
+	     also zero-terminated.
+
+	     As above, the casting is to support big-endian ILP32.  */
+	  struct { struct _aarch64_ctx h; uint64_t next; } *ctx
+		  = (void *)extension_marker;
+#if defined (__ILP32__)
+	  extension_marker = (struct _aarch64_ctx *) (uintptr_t) ctx->next;
+#else
+	  extension_marker = (struct _aarch64_ctx *) ctx->next;
+#endif
+	  goto restart;
+	}
       else
 	{
 	  /* There is context provided that we do not recognize!  */
 	}
+    }
+
+  /* Signal handlers are entered with ZA in the off state (TPIDR2_ELO==0 and
+     PSTATE.ZA==0).  The normal process when transitioning from ZA being
+     dormant to ZA being off is to commit the lazy save; see the AAPCS64
+     for details.  However, this is not done when entering a signal handler.
+     Instead, linux saves the old contents of ZA and TPIDR2_EL0 to the
+     sigcontext without interpreting them further.
+
+     Therefore, if a signal handler throws an exception to code outside the
+     signal handler, the unwinder must commit the lazy save after the fact.
+     Committing a lazy save means:
+
+     (1) Storing the contents of ZA into the buffer provided by TPIDR2_EL0.
+     (2) Setting TPIDR2_EL0 to zero.
+     (3) Turning ZA off.
+
+     (2) and (3) have already been done by the call to __libgcc_arm_za_disable.
+     (1) involves copying data from the ZA sigcontext entry to the
+     corresponding lazy save buffer.  */
+  if (tpidr2 && za_ctx && tpidr2->za_save_buffer)
+    {
+      /* There is a 16-bit vector length (measured in bytes) at ZA_CTX + 8.
+	 The data itself starts at ZA_CTX + 16.
+	 As above, the casting is to support big-endian ILP32.  */
+      uint16_t vl = za_ctx->vl;
+#if defined (__ILP32__)
+      void *save_buffer = (void *) (uintptr_t) tpidr2->za_save_buffer;
+      const void *za_buffer = (void *) (uintptr_t) &za_ctx->data;
+#else
+      void *save_buffer = (void *) tpidr2->za_save_buffer;
+      const void *za_buffer = (void *) &za_ctx->data;
+#endif
+      uint64_t num_slices = tpidr2->num_za_save_slices;
+      if (num_slices > vl)
+	num_slices = vl;
+      memcpy (save_buffer, za_buffer, num_slices * vl);
     }
 
   fs->regs.how[31] = REG_SAVED_OFFSET;
