@@ -1,12 +1,12 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mtune=generic -mno-avx -msse2" } */
+/* { dg-options "-O2 -march=x86-64 -mmemset-strategy=vector_loop:256:noalign,libcall:-1:noalign" } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } {^\t?\.} } } */
 
 /*
 **foo:
 **.LFB[0-9]+:
-**...
+**	.cfi_startproc
 **	pxor	%xmm0, %xmm0
 **	xorl	%eax, %eax
 **	movups	%xmm0, 190\(%rdi\)
@@ -22,6 +22,7 @@
 **	movups	%xmm0, 48\(%rdi,%rdx\)
 **	cmpl	\$192, %eax
 **	jb	.L[0-9]+
+**	ret
 **...
 */
 

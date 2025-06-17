@@ -8,7 +8,11 @@
 **...
 **.LFB[0-9]+:
 **	.cfi_startproc
+**	movq	\$0, 49\(%rdi\)
 **	xorl	%eax, %eax
+**	movq	\$0, 57\(%rdi\)
+**	movq	\$0, 65\(%rdi\)
+**	movq	\$0, 73\(%rdi\)
 **.L[0-9]+:
 **	movl	%eax, %edx
 **	addl	\$32, %eax
@@ -18,6 +22,7 @@
 **	movq	\$0, 24\(%rdi,%rdx\)
 **	cmpl	\$64, %eax
 **	jb	.L[0-9]+
+**	ret
 **...
 */
 

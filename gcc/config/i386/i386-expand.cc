@@ -7899,7 +7899,8 @@ expand_set_or_cpymem_via_loop (rtx destmem, rtx srcmem,
 			       rtx count, machine_mode mode, int unroll,
 			       int expected_size, bool issetmem)
 {
-  rtx_code_label *out_label, *top_label;
+  rtx_code_label *out_label = nullptr;
+  rtx_code_label *top_label = nullptr;
   rtx iter, tmp;
   machine_mode iter_mode = counter_mode (count);
   int piece_size_n = GET_MODE_SIZE (mode) * unroll;
@@ -7907,9 +7908,19 @@ expand_set_or_cpymem_via_loop (rtx destmem, rtx srcmem,
   rtx piece_size_mask = GEN_INT (~((GET_MODE_SIZE (mode) * unroll) - 1));
   rtx size;
   int i;
+  int loop_count;
 
-  top_label = gen_label_rtx ();
-  out_label = gen_label_rtx ();
+  if (expected_size != -1 && CONST_INT_P (count))
+    loop_count = INTVAL (count) / GET_MODE_SIZE (mode) / unroll;
+  else
+    loop_count = -1;
+
+  /* Don't generate the loop if the loop count is 1.  */
+  if (loop_count != 1)
+    {
+      top_label = gen_label_rtx ();
+      out_label = gen_label_rtx ();
+    }
   iter = gen_reg_rtx (iter_mode);
 
   size = expand_simple_binop (iter_mode, AND, count, piece_size_mask,
@@ -7923,7 +7934,8 @@ expand_set_or_cpymem_via_loop (rtx destmem, rtx srcmem,
     }
   emit_move_insn (iter, const0_rtx);
 
-  emit_label (top_label);
+  if (loop_count != 1)
+    emit_label (top_label);
 
   tmp = convert_modes (Pmode, iter_mode, iter, true);
 
@@ -7991,21 +8003,25 @@ expand_set_or_cpymem_via_loop (rtx destmem, rtx srcmem,
   if (tmp != iter)
     emit_move_insn (iter, tmp);
 
-  emit_cmp_and_jump_insns (iter, size, LT, NULL_RTX, iter_mode,
-			   true, top_label);
-  if (expected_size != -1)
+  if (loop_count != 1)
     {
-      expected_size /= GET_MODE_SIZE (mode) * unroll;
-      if (expected_size == 0)
-	predict_jump (0);
-      else if (expected_size > REG_BR_PROB_BASE)
-	predict_jump (REG_BR_PROB_BASE - 1);
+      emit_cmp_and_jump_insns (iter, size, LT, NULL_RTX, iter_mode,
+			       true, top_label);
+      if (expected_size != -1)
+	{
+	  expected_size /= GET_MODE_SIZE (mode) * unroll;
+	  if (expected_size == 0)
+	    predict_jump (0);
+	  else if (expected_size > REG_BR_PROB_BASE)
+	    predict_jump (REG_BR_PROB_BASE - 1);
+	  else
+	    predict_jump (REG_BR_PROB_BASE
+			  - (REG_BR_PROB_BASE + expected_size / 2)
+			    / expected_size);
+	}
       else
-        predict_jump (REG_BR_PROB_BASE - (REG_BR_PROB_BASE + expected_size / 2)
-		      / expected_size);
+	predict_jump (REG_BR_PROB_BASE * 80 / 100);
     }
-  else
-    predict_jump (REG_BR_PROB_BASE * 80 / 100);
   iter = ix86_zero_extend_to_Pmode (iter);
   tmp = expand_simple_binop (Pmode, PLUS, destptr, iter, destptr,
 			     true, OPTAB_LIB_WIDEN);
@@ -8018,7 +8034,8 @@ expand_set_or_cpymem_via_loop (rtx destmem, rtx srcmem,
       if (tmp != srcptr)
 	emit_move_insn (srcptr, tmp);
     }
-  emit_label (out_label);
+  if (loop_count != 1)
+    emit_label (out_label);
 }
 
 /* Divide COUNTREG by SCALE.  */
@@ -8221,19 +8238,11 @@ expand_cpymem_epilogue (rtx destmem, rtx srcmem,
   rtx src, dest;
   if (CONST_INT_P (count))
     {
-      HOST_WIDE_INT countval = INTVAL (count);
-      HOST_WIDE_INT epilogue_size = countval % max_size;
-      int i;
-
-      /* For now MAX_SIZE should be a power of 2.  This assert could be
-	 relaxed, but it'll require a bit more complicated epilogue
-	 expanding.  */
-      gcc_assert ((max_size & (max_size - 1)) == 0);
-      for (i = max_size; i >= 1; i >>= 1)
-	{
-	  if (epilogue_size & i)
-	    destmem = emit_memmov (destmem, &srcmem, destptr, srcptr, i);
-	}
+      unsigned HOST_WIDE_INT countval = UINTVAL (count);
+      unsigned HOST_WIDE_INT epilogue_size = countval % max_size;
+      unsigned int destalign = MEM_ALIGN (destmem);
+      move_by_pieces (destmem, srcmem, epilogue_size, destalign,
+		      RETURN_BEGIN);
       return;
     }
   if (max_size > 8)
@@ -8394,6 +8403,81 @@ expand_setmem_epilogue_via_loop (rtx destmem, rtx destptr, rtx value,
 				 1, max_size / 2, true);
 }
 
+/* Callback routine for store_by_pieces.  Return the RTL of a register
+   containing GET_MODE_SIZE (MODE) bytes in the RTL register op_p which
+   is a word or a word vector register.  If PREV_P isn't nullptr, it
+   has the RTL info from the previous iteration.  */
+
+static rtx
+setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
+			 fixed_size_mode mode)
+{
+  rtx target;
+  by_pieces_prev *prev = (by_pieces_prev *) prev_p;
+  if (prev)
+    {
+      rtx prev_op = prev->data;
+      if (prev_op)
+	{
+	  machine_mode prev_mode = GET_MODE (prev_op);
+	  if (prev_mode == mode)
+	    return prev_op;
+	  if (VECTOR_MODE_P (prev_mode)
+	      && VECTOR_MODE_P (mode)
+	      && GET_MODE_INNER (prev_mode) == GET_MODE_INNER (mode))
+	    {
+	      target = gen_rtx_SUBREG (mode, prev_op, 0);
+	      return target;
+	    }
+	}
+    }
+
+  rtx op = (rtx) op_p;
+  machine_mode op_mode = GET_MODE (op);
+
+  gcc_assert (op_mode == word_mode
+	      || (VECTOR_MODE_P (op_mode)
+		  && GET_MODE_INNER (op_mode) == word_mode));
+
+  if (VECTOR_MODE_P (mode))
+    {
+      gcc_assert (GET_MODE_INNER (mode) == QImode);
+
+      unsigned int op_size = GET_MODE_SIZE (op_mode);
+      unsigned int size = GET_MODE_SIZE (mode);
+      unsigned int nunits = op_size / GET_MODE_SIZE (QImode);
+      machine_mode vec_mode
+	= mode_for_vector (QImode, nunits).require ();
+      target = gen_reg_rtx (vec_mode);
+      op = gen_rtx_SUBREG (vec_mode, op, 0);
+      emit_move_insn (target, op);
+      if (op_size == size)
+	return target;
+
+      rtx tmp = gen_reg_rtx (mode);
+      target = gen_rtx_SUBREG (mode, target, 0);
+      emit_move_insn (tmp, target);
+      return tmp;
+    }
+
+  target = gen_reg_rtx (word_mode);
+  if (VECTOR_MODE_P (op_mode))
+    {
+      op = gen_rtx_SUBREG (word_mode, op, 0);
+      emit_move_insn (target, op);
+    }
+  else
+    target = op;
+
+  if (mode == word_mode)
+    return target;
+
+  rtx tmp = gen_reg_rtx (mode);
+  target = gen_rtx_SUBREG (mode, target, 0);
+  emit_move_insn (tmp, target);
+  return tmp;
+}
+
 /* Output code to set at most count & (max_size - 1) bytes starting by DEST.  */
 static void
 expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
@@ -8403,24 +8487,12 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
 
   if (CONST_INT_P (count))
     {
-      HOST_WIDE_INT countval = INTVAL (count);
-      HOST_WIDE_INT epilogue_size = countval % max_size;
-      int i;
-
-      /* For now MAX_SIZE should be a power of 2.  This assert could be
-	 relaxed, but it'll require a bit more complicated epilogue
-	 expanding.  */
-      gcc_assert ((max_size & (max_size - 1)) == 0);
-      for (i = max_size; i >= 1; i >>= 1)
-	{
-	  if (epilogue_size & i)
-	    {
-	      if (vec_value && i > GET_MODE_SIZE (GET_MODE (value)))
-		destmem = emit_memset (destmem, destptr, vec_value, i);
-	      else
-		destmem = emit_memset (destmem, destptr, value, i);
-	    }
-	}
+      unsigned HOST_WIDE_INT countval = UINTVAL (count);
+      unsigned HOST_WIDE_INT epilogue_size = countval % max_size;
+      unsigned int destalign = MEM_ALIGN (destmem);
+      store_by_pieces (destmem, epilogue_size, setmem_epilogue_gen_val,
+		       vec_value ? vec_value : value, destalign, true,
+		       RETURN_BEGIN);
       return;
     }
   if (max_size > 32)
@@ -8552,6 +8624,7 @@ expand_small_cpymem_or_setmem (rtx destmem, rtx srcmem,
   rtx_code_label *label = ix86_expand_aligntest (count, size, false);
   machine_mode mode = int_mode_for_size (size * BITS_PER_UNIT, 1).else_blk ();
   rtx modesize;
+  rtx scalar_value = value;
   int n;
 
   /* If we do not have vector value to copy, we must reduce size.  */
@@ -8571,10 +8644,56 @@ expand_small_cpymem_or_setmem (rtx destmem, rtx srcmem,
     {
       /* Choose appropriate vector mode.  */
       if (size >= 32)
-	mode = TARGET_AVX ? V32QImode : TARGET_SSE ? V16QImode : DImode;
+	switch (MOVE_MAX)
+	  {
+	  case 64:
+	    if (size >= 64)
+	      {
+		mode = V64QImode;
+		break;
+	      }
+	    /* FALLTHRU */
+	  case 32:
+	    mode = V32QImode;
+	    break;
+	  case 16:
+	    mode = V16QImode;
+	    break;
+	  case 8:
+	    mode = DImode;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
       else if (size >= 16)
 	mode = TARGET_SSE ? V16QImode : DImode;
       srcmem = change_address (srcmem, mode, srcptr);
+    }
+  if (issetmem && vec_value && GET_MODE_SIZE (mode) > size)
+    {
+      /* For memset with vector and the size is smaller than the vector
+	 size, first try the narrower vector, otherwise, use the
+	 original value. */
+      machine_mode inner_mode = GET_MODE_INNER (mode);
+      unsigned int nunits = size / GET_MODE_SIZE (inner_mode);
+      if (nunits > 1)
+	{
+	  mode = mode_for_vector (GET_MODE_INNER (mode),
+				  nunits).require ();
+	  value = gen_rtx_SUBREG (mode, value, 0);
+	}
+      else
+	{
+	  scalar_int_mode smode
+	    = smallest_int_mode_for_size (size * BITS_PER_UNIT).require ();
+	  gcc_assert (GET_MODE_SIZE (GET_MODE (scalar_value))
+		      >= GET_MODE_SIZE (smode));
+	  mode = smode;
+	  if (GET_MODE (scalar_value) == mode)
+	    value = scalar_value;
+	  else
+	    value = gen_rtx_SUBREG (mode, scalar_value, 0);
+	}
     }
   destmem = change_address (destmem, mode, destptr);
   modesize = GEN_INT (GET_MODE_SIZE (mode));
@@ -9179,13 +9298,26 @@ decide_alignment (int align,
 static rtx
 promote_duplicated_reg (machine_mode mode, rtx val)
 {
+  if (val == const0_rtx)
+    return copy_to_mode_reg (mode, CONST0_RTX (mode));
+
   machine_mode valmode = GET_MODE (val);
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+    {
+      /* Duplicate the scalar value for integer vector.  */
+      gcc_assert ((val == const0_rtx || val == constm1_rtx)
+		  || GET_MODE_INNER (mode) == valmode);
+      rtx dup = gen_reg_rtx (mode);
+      bool ok = ix86_expand_vector_init_duplicate (false, mode, dup,
+						   val);
+      gcc_assert (ok);
+      return dup;
+    }
+
   rtx tmp;
   int nops = mode == DImode ? 3 : 2;
 
-  gcc_assert (mode == SImode || mode == DImode || val == const0_rtx);
-  if (val == const0_rtx)
-    return copy_to_mode_reg (mode, CONST0_RTX (mode));
+  gcc_assert (mode == SImode || mode == DImode);
   if (CONST_INT_P (val))
     {
       HOST_WIDE_INT v = INTVAL (val) & 255;
@@ -9413,11 +9545,6 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     return false;
   gcc_assert (alg != no_stringop);
 
-  /* For now vector-version of memset is generated only for memory zeroing, as
-     creating of promoted vector value is very cheap in this case.  */
-  if (issetmem && alg == vector_loop && val_exp != const0_rtx)
-    alg = unrolled_loop;
-
   if (!count)
     count_exp = copy_to_mode_reg (GET_MODE (count_exp), count_exp);
   destreg = ix86_copy_addr_to_reg (XEXP (dst, 0));
@@ -9510,20 +9637,41 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
        && ((desired_align > align && !align_bytes)
 	   || (!count && epilogue_size_needed > 1)));
 
+  /* Destination is aligned after the misaligned prologue.  */
+  bool aligned_dstmem = misaligned_prologue_used;
+
+  if (noalign && !misaligned_prologue_used)
+    {
+      /* Also use misaligned prologue if alignment isn't needed and
+	 destination isn't aligned.   Since alignment isn't needed,
+	 the destination after prologue won't be aligned.  */
+      aligned_dstmem = (GET_MODE_ALIGNMENT (move_mode)
+			<= MEM_ALIGN (dst));
+      if (!aligned_dstmem)
+	misaligned_prologue_used = true;
+    }
+
   /* Do the cheap promotion to allow better CSE across the
      main loop and epilogue (ie one load of the big constant in the
      front of all code.
      For now the misaligned move sequences do not have fast path
      without broadcasting.  */
-  if (issetmem && ((CONST_INT_P (val_exp) || misaligned_prologue_used)))
+  if (issetmem
+      && (alg == vector_loop
+	  || CONST_INT_P (val_exp)
+	  || misaligned_prologue_used))
     {
       if (alg == vector_loop)
 	{
-	  gcc_assert (val_exp == const0_rtx);
-	  vec_promoted_val = promote_duplicated_reg (move_mode, val_exp);
 	  promoted_val = promote_duplicated_reg_to_size (val_exp,
 							 GET_MODE_SIZE (word_mode),
 							 desired_align, align);
+	  /* Duplicate the promoted scalar value if not 0 nor -1.  */
+	  vec_promoted_val
+	    = promote_duplicated_reg (move_mode,
+				      (val_exp == const0_rtx
+				       || val_exp == constm1_rtx)
+				      ? val_exp : promoted_val);
 	}
       else
 	{
@@ -9548,7 +9696,8 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
       if (!issetmem)
         src = change_address (src, BLKmode, srcreg);
       dst = change_address (dst, BLKmode, destreg);
-      set_mem_align (dst, desired_align * BITS_PER_UNIT);
+      if (aligned_dstmem)
+	set_mem_align (dst, desired_align * BITS_PER_UNIT);
       epilogue_size_needed = 0;
       if (need_zero_guard
 	  && min_size < (unsigned HOST_WIDE_INT) size_needed)
