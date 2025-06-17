@@ -1,3 +1,255 @@
+2025-06-16  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/120621
+	* Make-lang.in: Use STRICT_WARN.
+	* cbldiag.h (location_dump): suppress shadowVariable.
+	* cdf-copy.cc (esc): Fix shadowVariable.
+	(copybook_elem_t::open_file): Do not use %m.
+	* cdf.y: suppress invalidPrintfArgType for target format.
+	* cdfval.h (struct cdfval_t): Suppress noExplicitConstructor.
+	* cobol1.cc (cobol_name_mangler): Use C++ cast.
+	* copybook.h (class copybook_elem_t): Same.
+	* dts.h: Fixes and suppressions due to cppcheck.
+	* except.cc (cbl_enabled_exceptions_t::status): Suppress useStlAlgorithm.
+	(cbl_enabled_exceptions_t::turn_on_off): Const parameter.
+	(class choose_declarative): Removed.
+	* genapi.cc (struct called_tree_t): Explicit constructor.
+	(parser_compile_ecs): Cast to void * for %p.
+	(parser_compile_dcls): Same.
+	(parser_statement_begin): Same.
+	(initialize_variable_internal): Use std::vector for subscripts.
+	(parser_initialize): Constification.
+	(get_string_from): Same.
+	(combined_name): Same.
+	(parser_perform): Same.
+	(psa_FldLiteralN): Same.
+	(is_figconst): Const parameter.
+	(is_figconst_t): Same.
+	(parser_exit): Same.
+	(parser_division): Const pointer.
+	(parser_perform_conditional): Whitespace.
+	(parser_set_conditional88): Const parameter.
+	(inspect_tally): Use std::vector.
+	(inspect_replacing): Same.
+	(parser_inspect): Same.
+	(parser_intrinsic_subst): Use std::vector (constuct elements).
+	(parser_intrinsic_call_1): Use std::vector for subscripts.
+	(is_ascending_key): Const pointer.
+	(parser_sort): Use std::vector.
+	(parser_file_sort): Same.
+	(parser_file_merge): Same.
+	(parser_unstring): Same.
+	(parser_string): Same.
+	(parser_call): Const pointer.
+	(parser_program_hierarchy): Use std::vector.
+	(conditional_abs): Const paraemeter.
+	(float_type_of): Same.
+	(initial_from_initial): Set value, quoted or not.
+	(parser_symbol_add): Remove redundant nested test.
+	* genapi.h (parser_add): Const parameters.
+	(parser_subtract): Same.
+	(parser_multiply): Same.
+	(parser_divide): Same.
+	(parser_perform): Same.
+	(parser_exit): Same.
+	(parser_initialize): Same.
+	(parser_set_conditional88): Same.
+	(parser_sort): Same.
+	(parser_file_sort): Same.
+	(parser_file_merge): Same.
+	(parser_string): Same.
+	(is_ascending_key): Same.
+	* genmath.cc (arithmetic_operation): Use std::vector.
+	(is_somebody_float): Const parameter.
+	(all_results_binary): Const parameter.
+	(fast_multiply): Remove redundant nested test.
+	(parser_add): Const parameter.
+	(parser_multiply): Remove redundant nested test.
+	(parser_divide): Const parameter.
+	(parser_subtract): Same.
+	* genutil.cc (get_depending_on_value): Use std::vector.
+	(get_data_offset): Same.
+	(tree_type_from_field): Const parameter.
+	(refer_has_depends): Const pointers.
+	(get_literal_string): RAII.
+	(refer_is_clean): Use std::vector.
+	(get_time_nanoseconds): Newline at EOF.
+	* genutil.h (tree_type_from_field): Remove declaration.
+	* inspect.h (struct cbx_inspect_qual_t): Use std::vector.
+	(struct cbl_inspect_qual_t): Same.
+	(struct cbx_inspect_match_t): Same.
+	(class cbl_inspect_match_t): Same.
+	(struct cbx_inspect_replace_t): Same.
+	(struct cbl_inspect_replace_t): Same.
+	(struct cbx_inspect_oper_t): Same.
+	(struct cbl_inspect_oper_t): Same.
+	(struct cbx_inspect_t): Same.
+	(struct cbl_inspect_t): Same.
+	(parser_inspect): Same.
+	* lexio.cc (indicated): Const pointer.
+	(remove_inline_comment): Scope reduction.
+	(maybe_add_space): Const pointer.
+	(recognize_replacements): C++ cast.
+	(check_source_format_directive): Same.
+	(struct replacing_term_t): Explicit constructor.
+	(parse_replace_pairs): Const reference.
+	(location_in): Const reference.
+	(parse_copy_directive): C++ cast.
+	(parse_replace_last_off): Const parameter.
+	(parse_replace_text): Const reference.
+	(parse_replace_directive): C++ cast.
+	(cdftext::lex_open): Const reference.
+	(cdftext::open_output): Scope reduction.
+	(cdftext::free_form_reference_format): Remove unused variable.
+	(cdftext::process_file): Simplify.
+	* lexio.h (struct bytespan_t): Use nullptr.
+	(struct filespan_t): Initialize icol in constructor.
+	(struct span_t): Suppress confused operatorEqRetRefThis.
+	(struct replace_t): Eliminate single-value constructor.
+	* parse.y: Many const cppcheck reports, and portable bit-shift.
+	* parse_ante.h (reject_refmod): Const parameter.
+	(require_pointer): Same.
+	(require_integer): Same.
+	(struct evaluate_elem_t): Explicit constructor.
+	(struct arith_t): Use std::vector.
+	(class eval_subject_t): Const parameter.
+	(dump_inspect_match): Declare.
+	(struct perform_t): Explicit constructor.
+	(list_add):  Const parameter.
+	(class tokenset_t): Avoid negative array index.
+	(struct file_list_t): Explicit constructor.
+	(struct field_list_t): Same.
+	(struct refer_list_t): Same.
+	(struct refer_marked_list_t): Const parameter.
+	(struct refer_collection_t): Explicit constructor.
+	(struct ast_inspect_oper_t): Remove class.
+	(ast_inspect_oper_t): Same.
+	(struct ast_inspect_t): Same.
+	(struct ast_inspect_list_t): Same.
+	(ast_inspect): Add location.
+	(struct elem_list_t): Explicit constructor.
+	(struct unstring_tgt_t): Same.
+	(struct unstring_tgt_list_t): Same.
+	(struct unstring_into_t): Same.
+	(struct ffi_args_t): Same.
+	(struct file_sort_io_t): Same.
+	(merge_t): Same.
+	(struct vargs_t): Same.
+	(class prog_descr_t): Eliminate single-value constructor.
+	(class program_stack_t): Suppress useStlAlgorithm.
+	(struct rel_part_t): Eliminate single-value constructor.
+	(class log_expr_t): Explicit constructor.
+	(add_debugging_declarative): Rename local variable.
+	(intrinsic_call_2): Const parameter.
+	(invalid_key): Use std::find_if.
+	(parser_add2): Const parameter.
+	(parser_subtract2): Same.
+	(stringify): Same.
+	(unstringify): Same.
+	(anybody_redefines): Same.
+	(ast_call): Same.
+	* parse_util.h (class cname_cmp): Explicit constructor.
+	(intrinsic_inconsistent_parameter): Same.
+	* scan_ante.h (struct cdf_status_t): Eliminate single-value constructor.
+	(class enter_leave_t): Explicit constructor.
+	(update_location): Const pointer, explicit constructor.
+	(symbol_function_token): Const pointer.
+	(typed_name): Same.
+	* scan_post.h (datetime_format_of): Scope reduction.
+	* show_parse.h (class ANALYZE): Use std::vector, explicit consstructor.
+	* symbols.cc (symbol_table_extend): Scope reduction.
+	(cbl_ffi_arg_t::cbl_ffi_arg_t): Define default constructor.
+	(end_of_group): Const pointer.
+	(symbol_find_odo): Const parameter.
+	(rename_not_ok): Same.
+	(field_str): Use %u instead of %d.
+	(struct capacity_of): Const pointer.
+	(symbols_update): Same.
+	(symbol_field_parent_set): Same.
+	(symbol_file_add): Same.
+	(symbol_typedef_add): Same.
+	(symbol_field_add): Use new operator=().
+	(symbol_field): Suppress CastIntegerToAddressAtReturn.
+	(symbol_register): Same.
+	(symbol_file): Suppress knownConditionTrueFalse.
+	(next_program): Const parameter.
+	(symbol_file_record): Same.
+	(class is_section): Explicit constructor.
+	(cbl_file_t::no_key): Remove.
+	(cbl_prog_hier_t::cbl_prog_hier_t): Use std::vector.
+	(symbol_label_add): Assert pointer is not NULL.
+	(symbol_label_section_exists): Const reference in lambda.
+	(expand_picture): Use C++ cast.
+	(symbol_program_callables): Const pointer.
+	(symbol_currency_add): Suppress nullPointerRedundantCheck.
+	(cbl_key_t): Use std::vector.
+	(cbl_occurs_t::field_add): Const parameter.
+	(cbl_occurs_t::index_add): Explicit constructor.
+	(class is_field_at): Same.
+	(cbl_file_key_t::deforward): Scope reduction.
+	(cbl_file_t::keys_str): Use allocated memory only.
+	(file_status_status_of): Const pointer.
+	(is_register_field): Const parameter.
+	* symbols.h (struct cbl_field_data_t): Eliminate single-value constructor.
+	(struct cbl_occurs_bounds_t): Same.
+	(struct cbl_refer_t): Use std::vector.
+	(valid_move): Const parameter.
+	(is_register_field): Same.
+	(struct cbl_key_t): Use std::vector.
+	(struct cbl_substitute_t): Eliminate single-value constructor.
+	(refer_of): Return const reference
+	(struct cbl_ffi_arg_t): Eliminate single-value constructor.
+	(class temporaries_t): Same.
+	(struct cbl_file_key_t): Define default constructor.
+	(struct cbl_file_lock_t): Define copy constructor and operator=().
+	(struct cbl_file_t): Complete default constructor.
+	(struct symbol_elem_t): Explicit constructor.
+	(symbol_elem_of): Suppress cstyleCast.
+	(symbol_redefines): Const parameter.
+	(struct cbl_field_t): Same.
+	(cbl_section_of): Test for NULL pointer.
+	(cbl_field_of): Same.
+	(cbl_label_of): Same.
+	(cbl_special_name_of): Same.
+	(cbl_alphabet_of): Same.
+	(cbl_file_of): Same.
+	(is_figconst): Delete extra "struct" keyword.
+	(is_figconst_low): Same.
+	(is_figconst_zero): Same.
+	(is_figconst_space): Same.
+	(is_figconst_quote): Same.
+	(is_figconst_high): Same.
+	(is_space_value): Same.
+	(is_quoted): Same.
+	(symbol_index): Const parameter.
+	(struct cbl_prog_hier_t): Suppress noExplicitConstructor.
+	(struct cbl_perform_vary_t): Eliminate single-value constructor.
+	(is_signable): Const parameter.
+	(is_temporary): Same.
+	(rename_not_ok): Same.
+	(field_at): Test for NULL pointer.
+	(class procref_base_t): Eliminate single-value constructor.
+	* symfind.cc (is_data_field): Const pointer.
+	(finalize_symbol_map2): Same.
+	(class in_scope): Same.
+	(symbol_match2): Same.
+	* token_names.h: Suppress useInitializationList.
+	* util.cc (normalize_picture): Whitespace and remove extra "continue".
+	(redefine_field): Const pointer.
+	(cbl_field_t::report_invalid_initial_value): Same.
+	(literal_subscript_oob): Rename shadow variable.
+	(cbl_refer_t::subscripts_set): Use std::vector.
+	(cbl_refer_t::str): Same.
+	(cbl_refer_t::deref_str): Same.
+	(locally_unique): Use explicit constructor.
+	(ambiguous_reference): Same.
+	(class unique_stack): Use const reference.
+	(cobol_filename): Const pointer.
+	(verify_format): Scope reduction.
+	(class temp_loc_t): Do not derive from YYLTYPE.
+	(cobol_parse_files): Const pointer.
+	* util.h (as_voidp): Define convenient converter.
+
 2025-06-10  James K. Lowden  <jklowden@cobolworx.com>
 
 	* Make-lang.in: cobol.clean does not remove libgcobol files.

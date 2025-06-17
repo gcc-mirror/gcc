@@ -1,3 +1,94 @@
+2025-06-16  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/sve/pack_fcvt_signed_1.c: Disable the aarch64 vector
+	cost model to preserve this test.
+	* gcc.target/aarch64/sve/pack_fcvt_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/pack_float_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_float_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cvtf_1.c: New test.
+	* gcc.target/aarch64/sve/unpacked_cvtf_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cvtf_3.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fcvt_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fcvt_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fcvtz_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fcvtz_2.c: Likewise.
+
+2025-06-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/51961
+	* gfortran.dg/allocate_with_mold_5.f90: New test.
+
+2025-06-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/friend87.C
+	* g++.dg/cpp2a/concepts-complete1.C
+	* g++.dg/cpp2a/concepts-complete2.C
+	* g++.dg/cpp2a/concepts-complete3.C
+	* g++.dg/cpp2a/concepts-complete4.C: Expect -Wsfinae-incomplete.
+
+2025-06-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Leverage
+	helper macros to avoid code duplication.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add
+	signed and unsigned vx combine test macros.
+
+2025-06-16  Matthieu Longo  <matthieu.longo@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* lib/target-supports.exp:
+	(check_effective_target_aarch64_gas_has_build_attributes): New checker.
+	* gcc.target/aarch64/build-attributes/aarch64-build-attributes.exp: New DejaGNU file.
+	* gcc.target/aarch64/build-attributes/build-attribute-bti.c: New test.
+	* gcc.target/aarch64/build-attributes/build-attribute-gcs.c: New test.
+	* gcc.target/aarch64/build-attributes/build-attribute-pac.c: New test.
+	* gcc.target/aarch64/build-attributes/build-attribute-standard.c: New test.
+	* gcc.target/aarch64/build-attributes/no-build-attribute-bti.c: New test.
+	* gcc.target/aarch64/build-attributes/no-build-attribute-gcs.c: New test.
+	* gcc.target/aarch64/build-attributes/no-build-attribute-pac.c: New test.
+	* gcc.target/aarch64/build-attributes/no-build-attribute-standard.c: New test.
+
+2025-06-16  yxj-github-437  <2457369732@qq.com>
+
+	* g++.dg/cpp0x/variadic-crash7.C: New test.
+
+2025-06-16  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* gcc.target/aarch64/bti-1.c: Emit assembly comments, and update
+	test assertion.
+
+2025-06-16  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-53.c: Update testcase.
+
+2025-06-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/elim_GP_regmove_0.c: Remove.
+	* gcc.target/xtensa/elim_GP_regmove_1.c: Remove.
+
 2025-06-15  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Add asm check

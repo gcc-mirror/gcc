@@ -1,3 +1,152 @@
+2025-06-16  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_sve_valid_pred_p):
+	Declare helper for aarch64_predicate_operand.
+	(aarch64_sve_packed_pred): Declare helper for new expanders.
+	(aarch64_sve_fp_pred): Likewise.
+	* config/aarch64/aarch64-sve.md (<optab><mode><v_int_equiv>2):
+	Extend into...
+	(<optab><SVE_HSF:mode><SVE_HSDI:mode>2): New expander for converting
+	vectors of HF,SF to vectors of HI,SI,DI.
+	(<optab><VNx2DF_ONLY:mode><SVE_2SDI:mode>2): New expander for converting
+	vectors of SI,DI to vectors of DF.
+	(*aarch64_sve_<optab>_nontrunc<SVE_PARTIAL_F:mode><SVE_HSDI:mode>):
+	New pattern to match those we've added here.
+	(@aarch64_sve_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>): Extend
+	into...
+	(@aarch64_sve_<optab>_trunc<VNx2DF_ONLY:mode><SVE_SI:mode>): Match both
+	VNx2SI<-VNx2DF and VNx4SI<-VNx4DF.
+	(<optab><v_int_equiv><mode>2): Extend into...
+	(<optab><SVE_HSDI:mode><SVE_F:mode>2): New expander for converting vectors
+	of HI,SI,DI to vectors of HF,SF,DF.
+	(*aarch64_sve_<optab>_nonextend<SVE_HSDI:mode><SVE_PARTIAL_F:mode>): New
+	pattern to match those we've added here.
+	(trunc<SVE_SDF:mode><SVE_PARTIAL_HSF:mode>2): New expander to handle
+	narrowing ('truncating') FP<-FP conversions.
+	(*aarch64_sve_<optab>_trunc<SVE_SDF:mode><SVE_PARTIAL_HSF:mode>): New
+	pattern to handle those we've added here.
+	(extend<SVE_PARTIAL_HSF:mode><SVE_SDF:mode>2): New expander to handle
+	widening ('extending') FP<-FP conversions.
+	(*aarch64_sve_<optab>_nontrunc<SVE_PARTIAL_HSF:mode><SVE_SDF:mode>): New
+	pattern to handle those we've added here.
+	* config/aarch64/aarch64.cc (aarch64_sve_packed_pred): New function.
+	(aarch64_sve_fp_pred): Likewise.
+	(aarch64_sve_valid_pred_p): Likewise.
+	* config/aarch64/iterators.md (SVE_PARTIAL_HSF): New mode iterator.
+	(SVE_HSF): Likewise.
+	(SVE_SDF): Likewise.
+	(SVE_SI): Likewise.
+	(SVE_2SDI) Likewise.
+	(self_mask):  Extend to all integer/FP vector modes.
+	(narrower_mask): Likewise (excluding QI).
+	* config/aarch64/predicates.md (aarch64_predicate_operand): New special
+	predicate to handle narrower predicate modes.
+
+2025-06-16  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64-sve.md: Replace uses of SVE_FULL_F_BF
+	with SVE_FULL_F_B16B16.
+	Replace use of SVE_F with SVE_F_BF.
+	* config/aarch64/iterators.md (SVE_PARTIAL_F): New iterator for
+	partial SVE FP modes.
+	(SVE_FULL_F_BF): Rename to SVE_FULL_F_B16B16.
+	(SVE_PARTIAL_F_B16B16): New iterator (BF16 included) for partial
+	SVE FP modes.
+	(SVE_F_B16B16): New iterator for all SVE FP modes.
+	(SVE_BF): New iterator for all SVE BF16 modes.
+	(SVE_F): Redefine to exclude BF16 modes.
+	(SVE_F_BF): New iterator to replace the previous SVE_F.
+	(VPRED): Describe the VPRED mapping for partial vector modes.
+	(b): Cover partial FP modes.
+	(is_bf16): Likewise.
+
+2025-06-16  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Document -Wsfinae-incomplete.
+
+2025-06-16  Matthieu Longo  <matthieu.longo@arm.com>
+	    Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config.in: Regenerate.
+	* config/aarch64/aarch64-elf-metadata.h
+	(class aeabi_subsection): New class for BAs.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_pacret_enabled): New function.
+	* config/aarch64/aarch64.cc
+	(HAVE_AS_AEABI_BUILD_ATTRIBUTES): New definition.
+	(aarch64_file_end_indicate_exec_stack): Emit BAss.
+	(aarch64_pacret_enabled): New function.
+	(aarch64_start_file): Indent.
+	* configure: Regenerate.
+	* configure.ac: New configure check for BAs support in binutils.
+
+2025-06-16  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* Makefile.in: Add missing declaration of BACKEND_H.
+	* config.gcc: Add aarch64-elf-metadata.o to extra_objs.
+	* config/aarch64/aarch64-elf-metadata.h: New file
+	* config/aarch64/aarch64-elf-metadata.cc: New file.
+	* config/aarch64/aarch64.cc
+	(GNU_PROPERTY_AARCH64_FEATURE_1_AND): Removed.
+	(GNU_PROPERTY_AARCH64_FEATURE_1_BTI): Likewise.
+	(GNU_PROPERTY_AARCH64_FEATURE_1_PAC): Likewise.
+	(GNU_PROPERTY_AARCH64_FEATURE_1_GCS): Likewise.
+	(aarch64_file_end_indicate_exec_stack): Move GNU properties code to
+	aarch64-elf-metadata.cc
+	* config/aarch64/t-aarch64: Declare target aarch64-elf-metadata.o
+
+2025-06-16  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_file_end_indicate_exec_stack): Emit assembly comments.
+
+2025-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (edge_set): Remove unused typedef.
+	(is_bb_annotated): Sanity check that annotated BBs has
+	quality AFDO and non-anntoated non-AFDO.  Exceptions are
+	zeros.
+	(set_bb_annotated): Verify that BB set annotated has
+	AFDO profile.
+	(afdo_set_bb_count): Do not return true for 0 counts.
+	(afdo_find_equiv_class): Fix formating;
+	do not combine profile of annoated and non-annotated BBs.
+	(afdo_propagate_edge): Fix variable names; dump info
+	about changes; do not change non-annoated BB profiles;
+	if all flow out of BB was decided on, annotate remaining
+	edges with 0.
+	(afdo_propagate): Dump info about copied BB counts
+	and number of iteraitons used.
+	(cmp): New function.
+	(afdo_adjust_guessed_profile): New function.
+	(afdo_calculate_branch_prob): Do not initialize loop
+	optimizer here; call afdo_adjust_guessed_profile.
+	(afdo_annotate_cfg): Initialize profile here;
+	anotate entry/exit blocks only of profile is non-0.
+	* profile-count.h: (profile_count::force_guessed): New.
+	* tree-cfg.cc (gimple_verify_flow_info): Fix typo.
+
+2025-06-16  Jiawei  <jiawei@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: Add b-ext and supm.
+
+2025-06-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/predicates.md (reload_operand):
+	Remove.
+	* config/xtensa/xtensa.md:
+	Remove the peephole2 pattern that was previously added.
+
+2025-06-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md:
+	Remove the peephole2 pattern that was previously added.
+
+2025-06-16  Jiawei  <jiawei@iscas.ac.cn>
+
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1): Handle
+	more logical simplifications.
+
 2025-06-15  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add new

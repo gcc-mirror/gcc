@@ -1,3 +1,8 @@
+2025-06-16  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/120621
+	* common-defs.h (class cbl_enabled_exceptions_t): Const parameter.
+
 2025-06-11  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119975

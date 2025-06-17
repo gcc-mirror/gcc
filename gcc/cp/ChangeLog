@@ -1,3 +1,23 @@
+2025-06-16  Jason Merrill  <jason@redhat.com>
+
+	* constraint.cc (failed_completions_map): New.
+	(note_failed_type_completion): Rename from
+	note_failed_type_completion_for_satisfaction.  Add
+	-Wsfinae-incomplete handling.
+	(failed_completion_location): New.
+	* class.cc (finish_struct_1): Add -Wsfinae-incomplete warning.
+	* decl.cc (require_deduced_type): Adjust.
+	(finish_function): Add -Wsfinae-incomplete warning.
+	* typeck.cc (complete_type_or_maybe_complain): Adjust.
+	(cxx_sizeof_or_alignof_type): Call note_failed_type_completion.
+	* pt.cc (dependent_template_arg_p): No longer static.
+	* cp-tree.h: Adjust.
+
+2025-06-16  yxj-github-437  <2457369732@qq.com>
+
+	* parser.cc (cp_parser_asm_operand_list): Check for unexpanded
+	parameter packs.
+
 2025-06-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (build_co_await): Identify diagnostics

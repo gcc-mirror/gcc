@@ -1,3 +1,8 @@
+2025-06-16  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Wsfinae-incomplete.
+	* c.opt.urls: Regenerate.
+
 2025-06-12  Gwenole Beauchesne  <gb.devel@gmail.com>
 	    Andrew Pinski  <quic_apinski@quicinc.com>
 
