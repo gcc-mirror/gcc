@@ -3788,10 +3788,8 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       return true;
     }
 
-  if (TARGET_ZILSD
-      && (GET_MODE_UNIT_SIZE (mode) == (UNITS_PER_WORD * 2))
-      && ((REG_P (dest) && MEM_P (src))
-	  || (MEM_P (dest) && REG_P (src)))
+  if (TARGET_ZILSD && riscv_2x_xlen_mode_p (mode)
+      && ((REG_P (dest) && MEM_P (src)) || (MEM_P (dest) && REG_P (src)))
       && can_create_pseudo_p ())
     {
       rtx reg = REG_P (dest) ? dest : src;
@@ -3878,7 +3876,7 @@ static int
 riscv_binary_cost (rtx x, int single_insns, int double_insns)
 {
   if (!riscv_v_ext_mode_p (GET_MODE (x))
-      && GET_MODE_SIZE (GET_MODE (x)).to_constant () == UNITS_PER_WORD * 2)
+      && riscv_2x_xlen_mode_p (GET_MODE (x)))
     return COSTS_N_INSNS (double_insns);
   return COSTS_N_INSNS (single_insns);
 }
@@ -10015,9 +10013,7 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	return false;
 
       /* Zilsd require load/store with even-odd reg pair.  */
-      if (TARGET_ZILSD
-	  && (GET_MODE_UNIT_SIZE (mode) == (UNITS_PER_WORD * 2))
-	  && ((regno % 2) != 0))
+      if (TARGET_ZILSD && riscv_2x_xlen_mode_p (mode) && ((regno % 2) != 0))
 	return false;
 
       if (!GP_REG_P (regno + nregs - 1))
