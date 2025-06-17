@@ -6421,6 +6421,29 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	 since structures are incomplete for the back-end.  */
       else if (Convention (gnat_subprog) != Convention_Stubbed)
 	{
+	  /* If we have two entries that may be returned in integer registers,
+	     the larger has power-of-2 size and the smaller is integral, then
+	     extend the smaller to this power-of-2 size to get a return type
+	     with power-of-2 size and no holes, again to speed up accesses.  */
+	  if (list_length (gnu_cico_field_list) == 2
+	      && gnu_cico_only_integral_type)
+	    {
+	      tree typ1 = TREE_TYPE (gnu_cico_field_list);
+	      tree typ2 = TREE_TYPE (DECL_CHAIN (gnu_cico_field_list));
+	      if (INTEGRAL_TYPE_P (typ1)
+		  && integer_pow2p (TYPE_SIZE (typ2))
+		  && tree_int_cst_lt (TYPE_SIZE (typ1), TYPE_SIZE (typ2)))
+		TREE_TYPE (gnu_cico_field_list)
+		  = gnat_type_for_size (TREE_INT_CST_LOW (TYPE_SIZE (typ2)),
+					TYPE_UNSIGNED (typ1));
+	      else if (INTEGRAL_TYPE_P (typ2)
+		       && integer_pow2p (TYPE_SIZE (typ1))
+		       && tree_int_cst_lt (TYPE_SIZE (typ2), TYPE_SIZE (typ1)))
+		TREE_TYPE (DECL_CHAIN (gnu_cico_field_list))
+		  = gnat_type_for_size (TREE_INT_CST_LOW (TYPE_SIZE (typ1)),
+					TYPE_UNSIGNED (typ2));
+	    }
+
 	  finish_record_type (gnu_cico_return_type,
 			      nreverse (gnu_cico_field_list),
 			      0, false);

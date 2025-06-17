@@ -4049,7 +4049,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	    tree gnu_decl;
 
 	    /* Skip any entries that have been already filled in; they must
-	       correspond to In Out parameters.  */
+	       correspond to In Out parameters or previous Out parameters.  */
 	    while (gnu_cico_entry && TREE_VALUE (gnu_cico_entry))
 	      gnu_cico_entry = TREE_CHAIN (gnu_cico_entry);
 
@@ -4059,11 +4059,22 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	    if (DECL_BY_REF_P (gnu_decl))
 	      gnu_decl = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_decl);
 
-	    /* Do any needed references for padded types.  */
-	    TREE_VALUE (gnu_cico_entry)
-	      = convert (TREE_TYPE (TREE_PURPOSE (gnu_cico_entry)), gnu_decl);
+	    TREE_VALUE (gnu_cico_entry) = gnu_decl;
 	  }
+
+      /* Finally, ensure type consistency between TREE_PURPOSE and TREE_VALUE
+	 so that the assignment of the latter to the former can be done.  */
+      tree gnu_cico_entry = gnu_cico_list;
+      while (gnu_cico_entry)
+	{
+	  if (!VOID_TYPE_P (TREE_VALUE (gnu_cico_entry)))
+	    TREE_VALUE (gnu_cico_entry)
+	      = convert (TREE_TYPE (TREE_PURPOSE (gnu_cico_entry)),
+			 TREE_VALUE (gnu_cico_entry));
+	  gnu_cico_entry = TREE_CHAIN (gnu_cico_entry);
+	}
     }
+
   else
     vec_safe_push (gnu_return_label_stack, NULL_TREE);
 
