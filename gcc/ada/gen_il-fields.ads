@@ -850,6 +850,7 @@ package Gen_IL.Fields is
       Original_Protected_Subprogram,
       Original_Record_Component,
       Overlays_Constant,
+      Overridden_Inherited_Operation,
       Overridden_Operation,
       Package_Instantiation,
       Packed_Array_Impl_Type,

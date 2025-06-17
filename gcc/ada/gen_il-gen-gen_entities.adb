@@ -953,6 +953,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Enumeration_Rep_Expr, Node_Id),
         Sm (Esize, Uint),
         Sm (Alignment, Unat),
+        Sm (Overridden_Inherited_Operation, Node_Id),
         Sm (Interface_Name, Node_Id)));
 
    Ab (Subprogram_Kind, Overloadable_Kind,
@@ -981,6 +982,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Machine_Code_Subprogram, Flag),
         Sm (Last_Entity, Node_Id),
         Sm (Linker_Section_Pragma, Node_Id),
+        Sm (Overridden_Inherited_Operation, Node_Id),
         Sm (Overridden_Operation, Node_Id),
         Sm (Protected_Body_Subprogram, Node_Id),
         Sm (No_Raise, Flag),

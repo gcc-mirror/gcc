@@ -3940,9 +3940,21 @@ package Einfo is
 --       Defined in constants and variables. Set if there is an address clause
 --       that causes the entity to overlay a constant object.
 
+--    Overridden_Inherited_Operation
+--       Defined in subprograms and enumeration literals. When set on a
+--       subprogram S, indicates an inherited subprogram that S overrides.
+--       In the case of a privately declared explicit subprogram E that
+--       overrides a private inherited subprogram, and the inherited
+--       subprogram itself overrides another inherited subprogram declared
+--       for a private extension, the field on E will reference the subprogram
+--       inherited by the private extension. This field is used for properly
+--       handling visibility for such privately declared subprograms. This
+--       field is always Empty for enumeration literal entities.
+
 --    Overridden_Operation
 --       Defined in subprograms. For overriding operations, points to the
---       user-defined parent subprogram that is being overridden.
+--       user-defined parent subprogram from which the inherited subprogram
+--       that is being overridden is derived.
 
 --    Package_Instantiation
 --       Defined in packages and generic packages. When defined, this field
@@ -5413,6 +5425,7 @@ package Einfo is
    --    Enumeration_Pos
    --    Enumeration_Rep
    --    Alias
+   --    Overridden_Inherited_Operation
    --    Enumeration_Rep_Expr
    --    Interface_Name $$$
    --    Renamed_Object $$$
@@ -5502,6 +5515,7 @@ package Einfo is
    --    Subps_Index                          (non-generic case only)
    --    Interface_Alias
    --    LSP_Subprogram                       (non-generic case only)
+   --    Overridden_Inherited_Operation
    --    Overridden_Operation
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
@@ -5705,6 +5719,7 @@ package Einfo is
    --    Extra_Accessibility_Of_Result
    --    Last_Entity
    --    Subps_Index
+   --    Overridden_Inherited_Operation
    --    Overridden_Operation
    --    Linker_Section_Pragma
    --    Contract
@@ -5858,6 +5873,7 @@ package Einfo is
    --    Subps_Index                          (non-generic case only)
    --    Interface_Alias
    --    LSP_Subprogram                       (non-generic case only)
+   --    Overridden_Inherited_Operation
    --    Overridden_Operation                 (never for init proc)
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals

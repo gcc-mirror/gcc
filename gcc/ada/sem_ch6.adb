@@ -12133,36 +12133,51 @@ package body Sem_Ch6 is
         and then Present (Find_Dispatching_Type (Alias (S)))
         and then Is_Interface (Find_Dispatching_Type (Alias (S)))
       then
-         --  For private types, when the full-view is processed we propagate to
-         --  the full view the non-overridden entities whose attribute "alias"
-         --  references an interface primitive. These entities were added by
-         --  Derive_Subprograms to ensure that interface primitives are
-         --  covered.
+         declare
+            Private_Operation_Exported_By_Visible_Part : constant Boolean :=
+              Is_Package_Or_Generic_Package (Current_Scope)
+              and then In_Private_Part (Current_Scope)
+              and then Parent_Kind (E) = N_Private_Extension_Declaration
+              and then Nkind (Parent (S)) = N_Full_Type_Declaration
+              and then Full_View (Defining_Identifier (Parent (E)))
+                         = Defining_Identifier (Parent (S));
 
-         --  Inside_Freeze_Actions is non zero when S corresponds with an
-         --  internal entity that links an interface primitive with its
-         --  covering primitive through attribute Interface_Alias (see
-         --  Add_Internal_Interface_Entities).
+         begin
+            --  For private types, when the full view is processed we propagate
+            --  to the full view the nonoverridden entities whose attribute
+            --  "alias" references an interface primitive. These entities were
+            --  added by Derive_Subprograms to ensure that interface primitives
+            --  are covered.
 
-         if Inside_Freezing_Actions = 0
-           and then Is_Package_Or_Generic_Package (Current_Scope)
-           and then In_Private_Part (Current_Scope)
-           and then Parent_Kind (E) = N_Private_Extension_Declaration
-           and then Nkind (Parent (S)) = N_Full_Type_Declaration
-           and then Full_View (Defining_Identifier (Parent (E)))
-                      = Defining_Identifier (Parent (S))
-           and then Alias (E) = Alias (S)
-         then
-            Check_Operation_From_Private_View (S, E);
-            Set_Is_Dispatching_Operation (S);
+            --  Inside_Freeze_Actions is nonzero when S corresponds to an
+            --  internal entity that links an interface primitive with its
+            --  covering primitive through attribute Interface_Alias (see
+            --  Add_Internal_Interface_Entities).
 
-         --  Common case
+            if Inside_Freezing_Actions = 0
+              and then Private_Operation_Exported_By_Visible_Part
+              and then Alias (E) = Alias (S)
+            then
+               Check_Operation_From_Private_View (S, E);
+               Set_Is_Dispatching_Operation (S);
 
-         else
-            Enter_Overloaded_Entity (S);
-            Check_Dispatching_Operation (S, Empty);
-            Check_For_Primitive_Subprogram (Is_Primitive_Subp);
-         end if;
+            --  Common case
+
+            else
+               Enter_Overloaded_Entity (S);
+               Check_Dispatching_Operation (S, Empty);
+               Check_For_Primitive_Subprogram (Is_Primitive_Subp);
+            end if;
+
+            if Private_Operation_Exported_By_Visible_Part
+              and then Type_Conformant (E, S)
+            then
+               --  Record the actual inherited subprogram that's being
+               --  overridden.
+
+               Set_Overridden_Inherited_Operation (S, E);
+            end if;
+         end;
 
          return;
       end if;
@@ -12601,6 +12616,26 @@ package body Sem_Ch6 is
                           and then not Is_Dispatch_Table_Wrapper (S)))
                   then
                      Set_Overridden_Operation    (S, Alias (E));
+
+                     --  Record the actual inherited subprogram that's being
+                     --  overridden. In the case where a subprogram declared
+                     --  in a private part overrides an inherited subprogram
+                     --  that itself is also declared in the private part,
+                     --  and that subprogram in turns overrides a subprogram
+                     --  declared in a package visible part (inherited via
+                     --  a private extension), we record the visible subprogram
+                     --  as the overridden one, so that we can determine
+                     --  visibility properly for prefixed calls to the
+                     --  subprogram made from outside the package. (See
+                     --  Try_Primitive_Operation in Sem_Ch4.)
+
+                     if Present (Overridden_Inherited_Operation (E)) then
+                        Set_Overridden_Inherited_Operation
+                          (S, Overridden_Inherited_Operation (E));
+                     else
+                        Set_Overridden_Inherited_Operation (S, E);
+                     end if;
+
                      Inherit_Subprogram_Contract (S, Alias (E));
 
                      Set_Is_Ada_2022_Only (S, Is_Ada_2022_Only (Alias (E)));
