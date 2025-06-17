@@ -7001,9 +7001,11 @@ Subroutine, function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{UNIT}   @tab An open I/O unit number of type @code{INTEGER}.
-@item @var{VALUES} @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
-on success and a system specific error code otherwise.
+@item @var{VALUES} @tab The type shall be @code{INTEGER, DIMENSION(13)}
+of the default kind.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}
+of the default kind.
+Returns 0 on success and a system specific error code otherwise.
 @end multitable
 
 @item @emph{Example}:
@@ -10306,8 +10308,10 @@ Subroutine, function
 @multitable @columnfractions .15 .70
 @item @var{NAME}   @tab The type shall be @code{CHARACTER} of the default
 kind, a valid path within the file system.
-@item @var{VALUES} @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}.
+@item @var{VALUES} @tab The type shall be @code{INTEGER, DIMENSION(13)}
+of the default kind.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}
+of the default kind.
 Returns 0 on success and a system specific error code otherwise.
 @end multitable
 
@@ -14391,6 +14395,8 @@ The elements that are obtained and stored in the array @code{VALUES}:
 
 Not all these elements are relevant on all systems. 
 If an element is not relevant, it is returned as 0.
+If the value of an element would overflow the range of default integer,
+a -1 is returned instead.
 
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
@@ -14402,9 +14408,11 @@ Subroutine, function
 @multitable @columnfractions .15 .70
 @item @var{NAME}   @tab The type shall be @code{CHARACTER}, of the
 default kind and a valid path within the file system.
-@item @var{VALUES} @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
-on success and a system specific error code otherwise.
+@item @var{VALUES} @tab The type shall be @code{INTEGER, DIMENSION(13)}
+of the default kind.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}
+of the default kind.
+Returns 0 on success and a system specific error code otherwise.
 @end multitable
 
 @item @emph{Example}:

@@ -6507,7 +6507,7 @@ gfc_check_fseek_sub (gfc_expr *unit, gfc_expr *offset, gfc_expr *whence, gfc_exp
 
 
 bool
-gfc_check_fstat (gfc_expr *unit, gfc_expr *array)
+gfc_check_fstat (gfc_expr *unit, gfc_expr *values)
 {
   if (!type_check (unit, 0, BT_INTEGER))
     return false;
@@ -6515,11 +6515,17 @@ gfc_check_fstat (gfc_expr *unit, gfc_expr *array)
   if (!scalar_check (unit, 0))
     return false;
 
-  if (!type_check (array, 1, BT_INTEGER)
+  if (!type_check (values, 1, BT_INTEGER)
       || !kind_value_check (unit, 0, gfc_default_integer_kind))
     return false;
 
-  if (!array_check (array, 1))
+  if (!array_check (values, 1))
+    return false;
+
+  if (!variable_check (values, 1, false))
+    return false;
+
+  if (!array_size_check (values, 1, 13))
     return false;
 
   return true;
@@ -6527,19 +6533,9 @@ gfc_check_fstat (gfc_expr *unit, gfc_expr *array)
 
 
 bool
-gfc_check_fstat_sub (gfc_expr *unit, gfc_expr *array, gfc_expr *status)
+gfc_check_fstat_sub (gfc_expr *unit, gfc_expr *values, gfc_expr *status)
 {
-  if (!type_check (unit, 0, BT_INTEGER))
-    return false;
-
-  if (!scalar_check (unit, 0))
-    return false;
-
-  if (!type_check (array, 1, BT_INTEGER)
-      || !kind_value_check (array, 1, gfc_default_integer_kind))
-    return false;
-
-  if (!array_check (array, 1))
+  if (!gfc_check_fstat (unit, values))
     return false;
 
   if (status == NULL)
@@ -6550,6 +6546,9 @@ gfc_check_fstat_sub (gfc_expr *unit, gfc_expr *array, gfc_expr *status)
     return false;
 
   if (!scalar_check (status, 2))
+    return false;
+
+  if (!variable_check (status, 2, false))
     return false;
 
   return true;
@@ -6589,18 +6588,24 @@ gfc_check_ftell_sub (gfc_expr *unit, gfc_expr *offset)
 
 
 bool
-gfc_check_stat (gfc_expr *name, gfc_expr *array)
+gfc_check_stat (gfc_expr *name, gfc_expr *values)
 {
   if (!type_check (name, 0, BT_CHARACTER))
     return false;
   if (!kind_value_check (name, 0, gfc_default_character_kind))
     return false;
 
-  if (!type_check (array, 1, BT_INTEGER)
-      || !kind_value_check (array, 1, gfc_default_integer_kind))
+  if (!type_check (values, 1, BT_INTEGER)
+      || !kind_value_check (values, 1, gfc_default_integer_kind))
     return false;
 
-  if (!array_check (array, 1))
+  if (!array_check (values, 1))
+    return false;
+
+  if (!variable_check (values, 1, false))
+    return false;
+
+  if (!array_size_check (values, 1, 13))
     return false;
 
   return true;
@@ -6608,28 +6613,22 @@ gfc_check_stat (gfc_expr *name, gfc_expr *array)
 
 
 bool
-gfc_check_stat_sub (gfc_expr *name, gfc_expr *array, gfc_expr *status)
+gfc_check_stat_sub (gfc_expr *name, gfc_expr *values, gfc_expr *status)
 {
-  if (!type_check (name, 0, BT_CHARACTER))
-    return false;
-  if (!kind_value_check (name, 0, gfc_default_character_kind))
-    return false;
-
-  if (!type_check (array, 1, BT_INTEGER)
-      || !kind_value_check (array, 1, gfc_default_integer_kind))
-    return false;
-
-  if (!array_check (array, 1))
+  if (!gfc_check_stat (name, values))
     return false;
 
   if (status == NULL)
     return true;
 
   if (!type_check (status, 2, BT_INTEGER)
-      || !kind_value_check (array, 1, gfc_default_integer_kind))
+      || !kind_value_check (status, 2, gfc_default_integer_kind))
     return false;
 
   if (!scalar_check (status, 2))
+    return false;
+
+  if (!variable_check (status, 2, false))
     return false;
 
   return true;

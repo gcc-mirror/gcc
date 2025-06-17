@@ -35,22 +35,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifdef HAVE_STAT
 
-/* SUBROUTINE STAT(FILE, SARRAY, STATUS)
+/* SUBROUTINE STAT(NAME, VALUES, STATUS)
    CHARACTER(len=*), INTENT(IN) :: FILE
-   INTEGER, INTENT(OUT), :: SARRAY(13)
+   INTEGER, INTENT(OUT), :: VALUES(13)
    INTEGER, INTENT(OUT), OPTIONAL :: STATUS
 
-   FUNCTION STAT(FILE, SARRAY)
+   FUNCTION STAT(NAME, VALUES)
    INTEGER STAT
    CHARACTER(len=*), INTENT(IN) :: FILE
-   INTEGER, INTENT(OUT), :: SARRAY(13)  */
+   INTEGER, INTENT(OUT), :: VALUES(13)  */
 
 /*extern void stat_i4_sub_0 (char *, gfc_array_i4 *, GFC_INTEGER_4 *,
 			   gfc_charlen_type, int);
 internal_proto(stat_i4_sub_0);*/
 
 static void
-stat_i4_sub_0 (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
+stat_i4_sub_0 (char *name, gfc_array_i4 *values, GFC_INTEGER_4 *status,
 	       gfc_charlen_type name_len, int is_lstat __attribute__ ((unused)))
 {
   int val;
@@ -58,12 +58,12 @@ stat_i4_sub_0 (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
   struct stat sb;
 
   /* If the rank of the array is not 1, abort.  */
-  if (GFC_DESCRIPTOR_RANK (sarray) != 1)
-    runtime_error ("Array rank of SARRAY is not 1.");
+  if (GFC_DESCRIPTOR_RANK (values) != 1)
+    runtime_error ("Array rank of VALUES is not 1.");
 
   /* If the array is too small, abort.  */
-  if (GFC_DESCRIPTOR_EXTENT(sarray,0) < 13)
-    runtime_error ("Array size of SARRAY is too small.");
+  if (GFC_DESCRIPTOR_EXTENT(values,0) < 13)
+    runtime_error ("Array size of VALUES is too small.");
 
   /* Make a null terminated copy of the string.  */
   str = fc_strdup (name, name_len);
@@ -80,57 +80,70 @@ stat_i4_sub_0 (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
 
   if (val == 0)
     {
-      index_type stride = GFC_DESCRIPTOR_STRIDE(sarray,0);
+      index_type stride = GFC_DESCRIPTOR_STRIDE(values,0);
+
+      /* Return -1 for any value overflowing INT32_MAX.  */
+      for (int i = 0; i < 13; i++)
+	values->base_addr[i * stride] = -1;
 
       /* Device ID  */
-      sarray->base_addr[0 * stride] = sb.st_dev;
+      if (sb.st_dev <= INT32_MAX)
+	values->base_addr[0 * stride] = sb.st_dev;
 
       /* Inode number  */
-      sarray->base_addr[1 * stride] = sb.st_ino;
+      if (sb.st_ino <= INT32_MAX)
+	values->base_addr[1 * stride] = sb.st_ino;
 
       /* File mode  */
-      sarray->base_addr[2 * stride] = sb.st_mode;
+      if (sb.st_mode <= INT32_MAX)
+	values->base_addr[2 * stride] = sb.st_mode;
 
       /* Number of (hard) links  */
-      sarray->base_addr[3 * stride] = sb.st_nlink;
+      if (sb.st_nlink <= INT32_MAX)
+	values->base_addr[3 * stride] = sb.st_nlink;
 
       /* Owner's uid  */
-      sarray->base_addr[4 * stride] = sb.st_uid;
+      if (sb.st_uid <= INT32_MAX)
+	values->base_addr[4 * stride] = sb.st_uid;
 
       /* Owner's gid  */
-      sarray->base_addr[5 * stride] = sb.st_gid;
+      if (sb.st_gid <= INT32_MAX)
+	values->base_addr[5 * stride] = sb.st_gid;
 
       /* ID of device containing directory entry for file (0 if not available) */
 #if HAVE_STRUCT_STAT_ST_RDEV
-      sarray->base_addr[6 * stride] = sb.st_rdev;
+      if (sb.st_rdev <= INT32_MAX)
+	values->base_addr[6 * stride] = sb.st_rdev;
 #else
-      sarray->base_addr[6 * stride] = 0;
+      values->base_addr[6 * stride] = 0;
 #endif
 
       /* File size (bytes)  */
-      sarray->base_addr[7 * stride] = sb.st_size;
+      if (sb.st_size <= INT32_MAX)
+	values->base_addr[7 * stride] = sb.st_size;
 
       /* Last access time  */
-      sarray->base_addr[8 * stride] = sb.st_atime;
+      if (sb.st_atime <= INT32_MAX)
+	values->base_addr[8 * stride] = sb.st_atime;
 
       /* Last modification time  */
-      sarray->base_addr[9 * stride] = sb.st_mtime;
+      if (sb.st_mtime <= INT32_MAX)
+	values->base_addr[9 * stride] = sb.st_mtime;
 
       /* Last file status change time  */
-      sarray->base_addr[10 * stride] = sb.st_ctime;
+      if (sb.st_ctime <= INT32_MAX)
+	values->base_addr[10 * stride] = sb.st_ctime;
 
       /* Preferred I/O block size (-1 if not available)  */
 #if HAVE_STRUCT_STAT_ST_BLKSIZE
-      sarray->base_addr[11 * stride] = sb.st_blksize;
-#else
-      sarray->base_addr[11 * stride] = -1;
+      if (sb.st_blksize <= INT32_MAX)
+	values->base_addr[11 * stride] = sb.st_blksize;
 #endif
 
       /* Number of blocks allocated (-1 if not available)  */
 #if HAVE_STRUCT_STAT_ST_BLOCKS
-      sarray->base_addr[12 * stride] = sb.st_blocks;
-#else
-      sarray->base_addr[12 * stride] = -1;
+      if (sb.st_blocks <= INT32_MAX)
+	values->base_addr[12 * stride] = sb.st_blocks;
 #endif
     }
 
@@ -144,10 +157,10 @@ extern void stat_i4_sub (char *, gfc_array_i4 *, GFC_INTEGER_4 *,
 iexport_proto(stat_i4_sub);
 
 void
-stat_i4_sub (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
+stat_i4_sub (char *name, gfc_array_i4 *values, GFC_INTEGER_4 *status,
 	     gfc_charlen_type name_len)
 {
-  stat_i4_sub_0 (name, sarray, status, name_len, 0);
+  stat_i4_sub_0 (name, values, status, name_len, 0);
 }
 iexport(stat_i4_sub);
 
@@ -157,17 +170,17 @@ extern void lstat_i4_sub (char *, gfc_array_i4 *, GFC_INTEGER_4 *,
 iexport_proto(lstat_i4_sub);
 
 void
-lstat_i4_sub (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
+lstat_i4_sub (char *name, gfc_array_i4 *values, GFC_INTEGER_4 *status,
 	     gfc_charlen_type name_len)
 {
-  stat_i4_sub_0 (name, sarray, status, name_len, 1);
+  stat_i4_sub_0 (name, values, status, name_len, 1);
 }
 iexport(lstat_i4_sub);
 
 
 
 static void
-stat_i8_sub_0 (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
+stat_i8_sub_0 (char *name, gfc_array_i8 *values, GFC_INTEGER_8 *status,
 	       gfc_charlen_type name_len, int is_lstat __attribute__ ((unused)))
 {
   int val;
@@ -175,12 +188,12 @@ stat_i8_sub_0 (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
   struct stat sb;
 
   /* If the rank of the array is not 1, abort.  */
-  if (GFC_DESCRIPTOR_RANK (sarray) != 1)
-    runtime_error ("Array rank of SARRAY is not 1.");
+  if (GFC_DESCRIPTOR_RANK (values) != 1)
+    runtime_error ("Array rank of VALUES is not 1.");
 
   /* If the array is too small, abort.  */
-  if (GFC_DESCRIPTOR_EXTENT(sarray,0) < 13)
-    runtime_error ("Array size of SARRAY is too small.");
+  if (GFC_DESCRIPTOR_EXTENT(values,0) < 13)
+    runtime_error ("Array size of VALUES is too small.");
 
   /* Make a null terminated copy of the string.  */
   str = fc_strdup (name, name_len);
@@ -197,57 +210,57 @@ stat_i8_sub_0 (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
 
   if (val == 0)
     {
-      index_type stride = GFC_DESCRIPTOR_STRIDE(sarray,0);
+      index_type stride = GFC_DESCRIPTOR_STRIDE(values,0);
 
       /* Device ID  */
-      sarray->base_addr[0] = sb.st_dev;
+      values->base_addr[0] = sb.st_dev;
 
       /* Inode number  */
-      sarray->base_addr[stride] = sb.st_ino;
+      values->base_addr[stride] = sb.st_ino;
 
       /* File mode  */
-      sarray->base_addr[2 * stride] = sb.st_mode;
+      values->base_addr[2 * stride] = sb.st_mode;
 
       /* Number of (hard) links  */
-      sarray->base_addr[3 * stride] = sb.st_nlink;
+      values->base_addr[3 * stride] = sb.st_nlink;
 
       /* Owner's uid  */
-      sarray->base_addr[4 * stride] = sb.st_uid;
+      values->base_addr[4 * stride] = sb.st_uid;
 
       /* Owner's gid  */
-      sarray->base_addr[5 * stride] = sb.st_gid;
+      values->base_addr[5 * stride] = sb.st_gid;
 
       /* ID of device containing directory entry for file (0 if not available) */
 #if HAVE_STRUCT_STAT_ST_RDEV
-      sarray->base_addr[6 * stride] = sb.st_rdev;
+      values->base_addr[6 * stride] = sb.st_rdev;
 #else
-      sarray->base_addr[6 * stride] = 0;
+      values->base_addr[6 * stride] = 0;
 #endif
 
       /* File size (bytes)  */
-      sarray->base_addr[7 * stride] = sb.st_size;
+      values->base_addr[7 * stride] = sb.st_size;
 
       /* Last access time  */
-      sarray->base_addr[8 * stride] = sb.st_atime;
+      values->base_addr[8 * stride] = sb.st_atime;
 
       /* Last modification time  */
-      sarray->base_addr[9 * stride] = sb.st_mtime;
+      values->base_addr[9 * stride] = sb.st_mtime;
 
       /* Last file status change time  */
-      sarray->base_addr[10 * stride] = sb.st_ctime;
+      values->base_addr[10 * stride] = sb.st_ctime;
 
       /* Preferred I/O block size (-1 if not available)  */
 #if HAVE_STRUCT_STAT_ST_BLKSIZE
-      sarray->base_addr[11 * stride] = sb.st_blksize;
+      values->base_addr[11 * stride] = sb.st_blksize;
 #else
-      sarray->base_addr[11 * stride] = -1;
+      values->base_addr[11 * stride] = -1;
 #endif
 
       /* Number of blocks allocated (-1 if not available)  */
 #if HAVE_STRUCT_STAT_ST_BLOCKS
-      sarray->base_addr[12 * stride] = sb.st_blocks;
+      values->base_addr[12 * stride] = sb.st_blocks;
 #else
-      sarray->base_addr[12 * stride] = -1;
+      values->base_addr[12 * stride] = -1;
 #endif
     }
 
@@ -261,10 +274,10 @@ extern void stat_i8_sub (char *, gfc_array_i8 *, GFC_INTEGER_8 *,
 iexport_proto(stat_i8_sub);
 
 void
-stat_i8_sub (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
+stat_i8_sub (char *name, gfc_array_i8 *values, GFC_INTEGER_8 *status,
 	     gfc_charlen_type name_len)
 {
-  stat_i8_sub_0 (name, sarray, status, name_len, 0);
+  stat_i8_sub_0 (name, values, status, name_len, 0);
 }
 
 iexport(stat_i8_sub);
@@ -275,10 +288,10 @@ extern void lstat_i8_sub (char *, gfc_array_i8 *, GFC_INTEGER_8 *,
 iexport_proto(lstat_i8_sub);
 
 void
-lstat_i8_sub (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
+lstat_i8_sub (char *name, gfc_array_i8 *values, GFC_INTEGER_8 *status,
 	     gfc_charlen_type name_len)
 {
-  stat_i8_sub_0 (name, sarray, status, name_len, 1);
+  stat_i8_sub_0 (name, values, status, name_len, 1);
 }
 
 iexport(lstat_i8_sub);
@@ -288,10 +301,10 @@ extern GFC_INTEGER_4 stat_i4 (char *, gfc_array_i4 *, gfc_charlen_type);
 export_proto(stat_i4);
 
 GFC_INTEGER_4
-stat_i4 (char *name, gfc_array_i4 *sarray, gfc_charlen_type name_len)
+stat_i4 (char *name, gfc_array_i4 *values, gfc_charlen_type name_len)
 {
   GFC_INTEGER_4 val;
-  stat_i4_sub (name, sarray, &val, name_len);
+  stat_i4_sub (name, values, &val, name_len);
   return val;
 }
 
@@ -299,32 +312,32 @@ extern GFC_INTEGER_8 stat_i8 (char *, gfc_array_i8 *, gfc_charlen_type);
 export_proto(stat_i8);
 
 GFC_INTEGER_8
-stat_i8 (char *name, gfc_array_i8 *sarray, gfc_charlen_type name_len)
+stat_i8 (char *name, gfc_array_i8 *values, gfc_charlen_type name_len)
 {
   GFC_INTEGER_8 val;
-  stat_i8_sub (name, sarray, &val, name_len);
+  stat_i8_sub (name, values, &val, name_len);
   return val;
 }
 
 
-/* SUBROUTINE LSTAT(FILE, SARRAY, STATUS)
+/* SUBROUTINE LSTAT(NAME, VALUES, STATUS)
    CHARACTER(len=*), INTENT(IN) :: FILE
-   INTEGER, INTENT(OUT), :: SARRAY(13)
+   INTEGER, INTENT(OUT), :: VALUES(13)
    INTEGER, INTENT(OUT), OPTIONAL :: STATUS
 
-   FUNCTION LSTAT(FILE, SARRAY)
+   FUNCTION LSTAT(NAME, VALUES)
    INTEGER LSTAT
    CHARACTER(len=*), INTENT(IN) :: FILE
-   INTEGER, INTENT(OUT), :: SARRAY(13)  */
+   INTEGER, INTENT(OUT), :: VALUES(13)  */
 
 extern GFC_INTEGER_4 lstat_i4 (char *, gfc_array_i4 *, gfc_charlen_type);
 export_proto(lstat_i4);
 
 GFC_INTEGER_4
-lstat_i4 (char *name, gfc_array_i4 *sarray, gfc_charlen_type name_len)
+lstat_i4 (char *name, gfc_array_i4 *values, gfc_charlen_type name_len)
 {
   GFC_INTEGER_4 val;
-  lstat_i4_sub (name, sarray, &val, name_len);
+  lstat_i4_sub (name, values, &val, name_len);
   return val;
 }
 
@@ -332,10 +345,10 @@ extern GFC_INTEGER_8 lstat_i8 (char *, gfc_array_i8 *, gfc_charlen_type);
 export_proto(lstat_i8);
 
 GFC_INTEGER_8
-lstat_i8 (char *name, gfc_array_i8 *sarray, gfc_charlen_type name_len)
+lstat_i8 (char *name, gfc_array_i8 *values, gfc_charlen_type name_len)
 {
   GFC_INTEGER_8 val;
-  lstat_i8_sub (name, sarray, &val, name_len);
+  lstat_i8_sub (name, values, &val, name_len);
   return val;
 }
 
@@ -344,32 +357,32 @@ lstat_i8 (char *name, gfc_array_i8 *sarray, gfc_charlen_type name_len)
 
 #ifdef HAVE_FSTAT
 
-/* SUBROUTINE FSTAT(UNIT, SARRAY, STATUS)
+/* SUBROUTINE FSTAT(UNIT, VALUES, STATUS)
    INTEGER, INTENT(IN) :: UNIT
-   INTEGER, INTENT(OUT) :: SARRAY(13)
+   INTEGER, INTENT(OUT) :: VALUES(13)
    INTEGER, INTENT(OUT), OPTIONAL :: STATUS
 
-   FUNCTION FSTAT(UNIT, SARRAY)
+   FUNCTION FSTAT(UNIT, VALUES)
    INTEGER FSTAT
    INTEGER, INTENT(IN) :: UNIT
-   INTEGER, INTENT(OUT) :: SARRAY(13)  */
+   INTEGER, INTENT(OUT) :: VALUES(13)  */
 
 extern void fstat_i4_sub (GFC_INTEGER_4 *, gfc_array_i4 *, GFC_INTEGER_4 *);
 iexport_proto(fstat_i4_sub);
 
 void
-fstat_i4_sub (GFC_INTEGER_4 *unit, gfc_array_i4 *sarray, GFC_INTEGER_4 *status)
+fstat_i4_sub (GFC_INTEGER_4 *unit, gfc_array_i4 *values, GFC_INTEGER_4 *status)
 {
   int val;
   struct stat sb;
 
   /* If the rank of the array is not 1, abort.  */
-  if (GFC_DESCRIPTOR_RANK (sarray) != 1)
-    runtime_error ("Array rank of SARRAY is not 1.");
+  if (GFC_DESCRIPTOR_RANK (values) != 1)
+    runtime_error ("Array rank of VALUES is not 1.");
 
   /* If the array is too small, abort.  */
-  if (GFC_DESCRIPTOR_EXTENT(sarray,0) < 13)
-    runtime_error ("Array size of SARRAY is too small.");
+  if (GFC_DESCRIPTOR_EXTENT(values,0) < 13)
+    runtime_error ("Array size of VALUES is too small.");
 
   /* Convert Fortran unit number to C file descriptor.  */
   val = unit_to_fd (*unit);
@@ -378,57 +391,70 @@ fstat_i4_sub (GFC_INTEGER_4 *unit, gfc_array_i4 *sarray, GFC_INTEGER_4 *status)
 
   if (val == 0)
     {
-      index_type stride = GFC_DESCRIPTOR_STRIDE(sarray,0);
+      index_type stride = GFC_DESCRIPTOR_STRIDE(values,0);
+
+      /* Return -1 for any value overflowing INT32_MAX.  */
+      for (int i = 0; i < 13; i++)
+	values->base_addr[i * stride] = -1;
 
       /* Device ID  */
-      sarray->base_addr[0 * stride] = sb.st_dev;
+      if (sb.st_dev <= INT32_MAX)
+	values->base_addr[0 * stride] = sb.st_dev;
 
       /* Inode number  */
-      sarray->base_addr[1 * stride] = sb.st_ino;
+      if (sb.st_ino <= INT32_MAX)
+	values->base_addr[1 * stride] = sb.st_ino;
 
       /* File mode  */
-      sarray->base_addr[2 * stride] = sb.st_mode;
+      if (sb.st_mode <= INT32_MAX)
+	values->base_addr[2 * stride] = sb.st_mode;
 
       /* Number of (hard) links  */
-      sarray->base_addr[3 * stride] = sb.st_nlink;
+      if (sb.st_nlink <= INT32_MAX)
+	values->base_addr[3 * stride] = sb.st_nlink;
 
       /* Owner's uid  */
-      sarray->base_addr[4 * stride] = sb.st_uid;
+      if (sb.st_uid <= INT32_MAX)
+	values->base_addr[4 * stride] = sb.st_uid;
 
       /* Owner's gid  */
-      sarray->base_addr[5 * stride] = sb.st_gid;
+      if (sb.st_gid <= INT32_MAX)
+	values->base_addr[5 * stride] = sb.st_gid;
 
       /* ID of device containing directory entry for file (0 if not available) */
 #if HAVE_STRUCT_STAT_ST_RDEV
-      sarray->base_addr[6 * stride] = sb.st_rdev;
+      if (sb.st_rdev <= INT32_MAX)
+	values->base_addr[6 * stride] = sb.st_rdev;
 #else
-      sarray->base_addr[6 * stride] = 0;
+      values->base_addr[6 * stride] = 0;
 #endif
 
       /* File size (bytes)  */
-      sarray->base_addr[7 * stride] = sb.st_size;
+      if (sb.st_size <= INT32_MAX)
+	values->base_addr[7 * stride] = sb.st_size;
 
       /* Last access time  */
-      sarray->base_addr[8 * stride] = sb.st_atime;
+      if (sb.st_atime <= INT32_MAX)
+	values->base_addr[8 * stride] = sb.st_atime;
 
       /* Last modification time  */
-      sarray->base_addr[9 * stride] = sb.st_mtime;
+      if (sb.st_mtime <= INT32_MAX)
+	values->base_addr[9 * stride] = sb.st_mtime;
 
       /* Last file status change time  */
-      sarray->base_addr[10 * stride] = sb.st_ctime;
+      if (sb.st_ctime <= INT32_MAX)
+	values->base_addr[10 * stride] = sb.st_ctime;
 
       /* Preferred I/O block size (-1 if not available)  */
 #if HAVE_STRUCT_STAT_ST_BLKSIZE
-      sarray->base_addr[11 * stride] = sb.st_blksize;
-#else
-      sarray->base_addr[11 * stride] = -1;
+      if (sb.st_blksize <= INT32_MAX)
+	values->base_addr[11 * stride] = sb.st_blksize;
 #endif
 
       /* Number of blocks allocated (-1 if not available)  */
 #if HAVE_STRUCT_STAT_ST_BLOCKS
-      sarray->base_addr[12 * stride] = sb.st_blocks;
-#else
-      sarray->base_addr[12 * stride] = -1;
+      if (sb.st_blocks <= INT32_MAX)
+	values->base_addr[12 * stride] = sb.st_blocks;
 #endif
     }
 
@@ -441,18 +467,18 @@ extern void fstat_i8_sub (GFC_INTEGER_8 *, gfc_array_i8 *, GFC_INTEGER_8 *);
 iexport_proto(fstat_i8_sub);
 
 void
-fstat_i8_sub (GFC_INTEGER_8 *unit, gfc_array_i8 *sarray, GFC_INTEGER_8 *status)
+fstat_i8_sub (GFC_INTEGER_8 *unit, gfc_array_i8 *values, GFC_INTEGER_8 *status)
 {
   int val;
   struct stat sb;
 
   /* If the rank of the array is not 1, abort.  */
-  if (GFC_DESCRIPTOR_RANK (sarray) != 1)
-    runtime_error ("Array rank of SARRAY is not 1.");
+  if (GFC_DESCRIPTOR_RANK (values) != 1)
+    runtime_error ("Array rank of VALUES is not 1.");
 
   /* If the array is too small, abort.  */
-  if (GFC_DESCRIPTOR_EXTENT(sarray,0) < 13)
-    runtime_error ("Array size of SARRAY is too small.");
+  if (GFC_DESCRIPTOR_EXTENT(values,0) < 13)
+    runtime_error ("Array size of VALUES is too small.");
 
   /* Convert Fortran unit number to C file descriptor.  */
   val = unit_to_fd ((int) *unit);
@@ -461,57 +487,57 @@ fstat_i8_sub (GFC_INTEGER_8 *unit, gfc_array_i8 *sarray, GFC_INTEGER_8 *status)
 
   if (val == 0)
     {
-      index_type stride = GFC_DESCRIPTOR_STRIDE(sarray,0);
+      index_type stride = GFC_DESCRIPTOR_STRIDE(values,0);
 
       /* Device ID  */
-      sarray->base_addr[0] = sb.st_dev;
+      values->base_addr[0] = sb.st_dev;
 
       /* Inode number  */
-      sarray->base_addr[stride] = sb.st_ino;
+      values->base_addr[stride] = sb.st_ino;
 
       /* File mode  */
-      sarray->base_addr[2 * stride] = sb.st_mode;
+      values->base_addr[2 * stride] = sb.st_mode;
 
       /* Number of (hard) links  */
-      sarray->base_addr[3 * stride] = sb.st_nlink;
+      values->base_addr[3 * stride] = sb.st_nlink;
 
       /* Owner's uid  */
-      sarray->base_addr[4 * stride] = sb.st_uid;
+      values->base_addr[4 * stride] = sb.st_uid;
 
       /* Owner's gid  */
-      sarray->base_addr[5 * stride] = sb.st_gid;
+      values->base_addr[5 * stride] = sb.st_gid;
 
       /* ID of device containing directory entry for file (0 if not available) */
 #if HAVE_STRUCT_STAT_ST_RDEV
-      sarray->base_addr[6 * stride] = sb.st_rdev;
+      values->base_addr[6 * stride] = sb.st_rdev;
 #else
-      sarray->base_addr[6 * stride] = 0;
+      values->base_addr[6 * stride] = 0;
 #endif
 
       /* File size (bytes)  */
-      sarray->base_addr[7 * stride] = sb.st_size;
+      values->base_addr[7 * stride] = sb.st_size;
 
       /* Last access time  */
-      sarray->base_addr[8 * stride] = sb.st_atime;
+      values->base_addr[8 * stride] = sb.st_atime;
 
       /* Last modification time  */
-      sarray->base_addr[9 * stride] = sb.st_mtime;
+      values->base_addr[9 * stride] = sb.st_mtime;
 
       /* Last file status change time  */
-      sarray->base_addr[10 * stride] = sb.st_ctime;
+      values->base_addr[10 * stride] = sb.st_ctime;
 
       /* Preferred I/O block size (-1 if not available)  */
 #if HAVE_STRUCT_STAT_ST_BLKSIZE
-      sarray->base_addr[11 * stride] = sb.st_blksize;
+      values->base_addr[11 * stride] = sb.st_blksize;
 #else
-      sarray->base_addr[11 * stride] = -1;
+      values->base_addr[11 * stride] = -1;
 #endif
 
       /* Number of blocks allocated (-1 if not available)  */
 #if HAVE_STRUCT_STAT_ST_BLOCKS
-      sarray->base_addr[12 * stride] = sb.st_blocks;
+      values->base_addr[12 * stride] = sb.st_blocks;
 #else
-      sarray->base_addr[12 * stride] = -1;
+      values->base_addr[12 * stride] = -1;
 #endif
     }
 
@@ -524,10 +550,10 @@ extern GFC_INTEGER_4 fstat_i4 (GFC_INTEGER_4 *, gfc_array_i4 *);
 export_proto(fstat_i4);
 
 GFC_INTEGER_4
-fstat_i4 (GFC_INTEGER_4 *unit, gfc_array_i4 *sarray)
+fstat_i4 (GFC_INTEGER_4 *unit, gfc_array_i4 *values)
 {
   GFC_INTEGER_4 val;
-  fstat_i4_sub (unit, sarray, &val);
+  fstat_i4_sub (unit, values, &val);
   return val;
 }
 
@@ -535,10 +561,10 @@ extern GFC_INTEGER_8 fstat_i8 (GFC_INTEGER_8 *, gfc_array_i8 *);
 export_proto(fstat_i8);
 
 GFC_INTEGER_8
-fstat_i8 (GFC_INTEGER_8 *unit, gfc_array_i8 *sarray)
+fstat_i8 (GFC_INTEGER_8 *unit, gfc_array_i8 *values)
 {
   GFC_INTEGER_8 val;
-  fstat_i8_sub (unit, sarray, &val);
+  fstat_i8_sub (unit, values, &val);
   return val;
 }
 
