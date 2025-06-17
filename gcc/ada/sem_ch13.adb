@@ -11407,24 +11407,16 @@ package body Sem_Ch13 is
    ----------------------------------
 
    procedure Check_Aspect_At_Freeze_Point (ASN : Node_Id) is
-      Ident : constant Node_Id := Identifier (ASN);
-      --  Identifier (use Entity field to save expression)
-
       Expr : constant Node_Id := Expression (ASN);
-      --  For cases where using Entity (Identifier) doesn't work
 
-      A_Id : constant Aspect_Id := Get_Aspect_Id (Chars (Ident));
+      A_Id : constant Aspect_Id := Get_Aspect_Id (Chars (Identifier (ASN)));
 
       T : Entity_Id := Empty;
       --  Type required for preanalyze call
 
    begin
-      --  On entry to this procedure, Entity (Ident) contains a copy of the
-      --  original expression from the aspect, saved for this purpose.
-
-      --  On exit from this procedure Entity (Ident) is unchanged, still
-      --  containing that copy, but Expression (Ident) is a preanalyzed copy
-      --  of the expression, preanalyzed just after the freeze point.
+      --  On exit from this procedure, Expression (ASN) is a copy of the
+      --  original expression, preanalyzed just after the freeze point.
 
       --  Make a copy of the expression to be preanalyzed
 
