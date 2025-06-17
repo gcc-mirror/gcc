@@ -18,8 +18,13 @@ void __attribute__((noclone,noinline)) do_shift (v4 *vec, int shift)
 
 int main ()
 {
+#if __SIZEOF_INT__ >= 4
   v4 vec =  {0x1000000, 0x2000, 0x300, 0x40};
   v4 vec2 = {0x100000,  0x200,  0x30,  0x4};
+#else
+  v4 vec =  {0x4000, 0x2000, 0x300, 0x40};
+  v4 vec2 = {0x400,  0x200,  0x30,  0x4};
+#endif
   do_shift (&vec, 4);
   if (memcmp (&vec, &vec2, sizeof (v4)) != 0)
     __builtin_abort ();

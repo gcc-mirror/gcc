@@ -1490,7 +1490,7 @@ convert_affine_scev (class loop *loop, tree type,
   new_step = *step;
   if (TYPE_PRECISION (step_type) > TYPE_PRECISION (ct) && TYPE_UNSIGNED (ct))
     {
-      tree signed_ct = build_nonstandard_integer_type (TYPE_PRECISION (ct), 0);
+      tree signed_ct = signed_type_for (ct);
       new_step = chrec_convert (signed_ct, new_step, at_stmt,
                                 use_overflow_semantics);
     }

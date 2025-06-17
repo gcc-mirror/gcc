@@ -1053,6 +1053,7 @@ pass_cse_reciprocals::execute (function *fun)
 		    continue;
 
 		  gimple_replace_ssa_lhs (call, arg1);
+		  reset_flow_sensitive_info (arg1);
 		  if (gimple_call_internal_p (call) != (ifn != IFN_LAST))
 		    {
 		      auto_vec<tree, 4> args;

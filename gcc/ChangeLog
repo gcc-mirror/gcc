@@ -1,3 +1,65 @@
+2025-06-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/120423
+	PR rtl-optimization/116389
+	* config/avr/avr.md [-mno-lra]: Add pre-reload split to transform
+	(left shift of) a paradoxical subreg to a (left shift of) zero-extend.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120638
+	* tree-ssa-math-opts.cc (pass_cse_reciprocals::execute): Call
+	reset_flow_sensitive_info on arg1.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120547
+	* real.cc (real_from_integer): Remove maxbitlen variable, use
+	len instead of that.  When shifting right, or in 1 if any of the
+	shifted away bits are non-zero.  Formatting fix.
+
+2025-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-chrec.cc (convert_affine_scev): Use signed_type_for instead of
+	build_nonstandard_integer_type.
+
+2025-06-12  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/120295
+	* ipa-prop.cc (update_jump_functions_after_inlining): Do not
+	combine pass-through jump functions with type-casts changing
+	signedness.
+
+2025-06-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-04-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/120042
+	* tree-vectorizer.h: Include dominance.h.
+
+2025-06-10  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-06-04  Xi Ruoyao  <xry111@xry111.site>
+
+	PR rtl-optimization/120050
+	* ext-dce.cc (ext_dce_process_uses): Break early if a SUBREG in
+	rhs is promoted and the truncation from the inner mode to the
+	outer mode is not a noop when handling SETs.
+
 2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

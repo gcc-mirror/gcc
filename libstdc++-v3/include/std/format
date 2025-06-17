@@ -3017,24 +3017,28 @@ namespace __format
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 3944. Formatters converting sequences of char to sequences of wchar_t
 
-  namespace __format { struct __disabled; }
+  struct __formatter_disabled
+  {
+    __formatter_disabled() = delete; // Cannot format char sequence to wchar_t
+    __formatter_disabled(const __formatter_disabled&) = delete;
+    __formatter_disabled& operator=(const __formatter_disabled&) = delete;
+  };
 
-  // std::formatter<__disabled, C> uses the primary template, which is disabled.
   template<>
     struct formatter<char*, wchar_t>
-    : private formatter<__format::__disabled, wchar_t> { };
+    : private __formatter_disabled { };
   template<>
     struct formatter<const char*, wchar_t>
-    : private formatter<__format::__disabled, wchar_t> { };
+    : private __formatter_disabled { };
   template<size_t _Nm>
     struct formatter<char[_Nm], wchar_t>
-    : private formatter<__format::__disabled, wchar_t> { };
+    : private __formatter_disabled { };
   template<class _Traits, class _Allocator>
     struct formatter<basic_string<char, _Traits, _Allocator>, wchar_t>
-    : private formatter<__format::__disabled, wchar_t> { };
+    : private __formatter_disabled { };
   template<class _Traits>
     struct formatter<basic_string_view<char, _Traits>, wchar_t>
-    : private formatter<__format::__disabled, wchar_t> { };
+    : private __formatter_disabled { };
 #endif
 
   /// An iterator after the last character written, and the number of

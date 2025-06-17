@@ -939,10 +939,9 @@ Simpler Accessibility Model
 * Subprogram parameters:: 
 * Function results:: 
 
-No_Raise aspect
+Generalized Finalization
 
-* New specification for Ada.Finalization.Controlled: New specification for Ada Finalization Controlled. 
-* Finalized tagged types:: 
+* Finalizable tagged types:: 
 * Composite types:: 
 * Interoperability with controlled types:: 
 
@@ -30867,27 +30866,24 @@ that the record type must be a root type, in other words not a derived type.
 
 The aspect additionally makes it possible to specify relaxed semantics for
 the finalization operations by means of the @code{Relaxed_Finalization} setting.
-
-Example:
+Here is the archetypal example:
 
 @example
-type Ctrl is record
-  Id : Natural := 0;
+type T is record
+  ...
 end record
   with Finalizable => (Initialize           => Initialize,
                        Adjust               => Adjust,
                        Finalize             => Finalize,
                        Relaxed_Finalization => True);
 
-procedure Adjust     (Obj : in out Ctrl);
-procedure Finalize   (Obj : in out Ctrl);
-procedure Initialize (Obj : in out Ctrl);
+procedure Adjust     (Obj : in out T);
+procedure Finalize   (Obj : in out T);
+procedure Initialize (Obj : in out T);
 @end example
 
-The three procedures have the same profile, taking a single @code{in out T}
-parameter.
-
-We follow the same dynamic semantics as controlled objects:
+The three procedures have the same profile, with a single @code{in out} parameter,
+and also have the same dynamic semantics as for controlled types:
 
 @quotation
 
@@ -30896,98 +30892,49 @@ We follow the same dynamic semantics as controlled objects:
 
 @item 
 @code{Initialize} is called when an object of type @code{T} is declared without
-default expression.
+initialization expression.
 
 @item 
 @code{Adjust} is called after an object of type @code{T} is assigned a new value.
 
 @item 
 @code{Finalize} is called when an object of type @code{T} goes out of scope (for
-stack-allocated objects) or is explicitly deallocated (for heap-allocated
-objects). It is also called when on the value being replaced in an
-assignment.
+stack-allocated objects) or is deallocated (for heap-allocated objects).
+It is also called when the value is replaced by an assignment.
 @end itemize
 @end quotation
 
-However the following differences are enforced by default when compared to the
-current Ada controlled-objects finalization model:
+However, when @code{Relaxed_Finalization} is either @code{True} or not explicitly
+specified, the following differences are implemented relative to the semantics
+of controlled types:
 
 
 @itemize *
 
 @item 
-No automatic finalization of heap allocated objects: @code{Finalize} is only
-called when an object is implicitly deallocated. As a consequence, no-runtime
-support is needed for the implicit case, and no header will be maintained for
-this in heap-allocated controlled objects.
+The compiler has permission to perform no automatic finalization of
+heap-allocated objects: @code{Finalize} is only called when such an object
+is explicitly deallocated, or when the designated object is assigned a new
+value. As a consequence, no runtime support is needed for performing
+implicit deallocation. In particular, no per-object header data is needed
+for heap-allocated objects.
 
-Heap-allocated objects allocated through a nested access type definition will
-hence `not' be deallocated either. The result is simply that memory will be
-leaked in those cases.
+Heap-allocated objects allocated through a nested access type will therefore
+`not' be deallocated either. The result is simply that memory will be leaked
+in this case.
 
 @item 
-The @code{Finalize} procedure should have have the @ref{462,,No_Raise aspect} specified.
-If that’s not the case, a compilation error will be raised.
+The @code{Adjust} and @code{Finalize} procedures are automatically considered as
+having the @ref{466,,No_Raise aspect} specified for them. In particular, the
+compiler has permission to enforce none of the guarantees specified by the
+RM 7.6.1 (14/1) and subsequent subclauses.
 @end itemize
 
-Additionally, two other configuration aspects are added,
-@code{Legacy_Heap_Finalization} and @code{Exceptions_In_Finalize}:
-
-
-@itemize *
-
-@item 
-@code{Legacy_Heap_Finalization}: Uses the legacy automatic finalization of
-heap-allocated objects
-
-@item 
-@code{Exceptions_In_Finalize}: Allow users to have a finalizer that raises exceptions
-`NB!' note that using this aspect introduces execution time penalities.
-@end itemize
-
-@node No_Raise aspect,Inference of Dependent Types in Generic Instantiations,Generalized Finalization,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions id3}@anchor{463}@anchor{gnat_rm/gnat_language_extensions no-raise-aspect}@anchor{462}
-@subsection No_Raise aspect
-
-
-The @code{No_Raise} aspect can be applied to a subprogram to declare that this subprogram is not
-expected to raise any exceptions. Should an exception still occur during the execution of
-this subprogram, @code{Program_Error} is raised.
-
-@menu
-* New specification for Ada.Finalization.Controlled: New specification for Ada Finalization Controlled. 
-* Finalized tagged types:: 
-* Composite types:: 
-* Interoperability with controlled types:: 
-
-@end menu
-
-@node New specification for Ada Finalization Controlled,Finalized tagged types,,No_Raise aspect
-@anchor{gnat_rm/gnat_language_extensions new-specification-for-ada-finalization-controlled}@anchor{464}
-@subsubsection New specification for @code{Ada.Finalization.Controlled}
-
-
-@code{Ada.Finalization.Controlled} is now specified as:
-
-@example
-type Controlled is abstract tagged null record
-   with Initialize => Initialize,
-      Adjust => Adjust,
-      Finalize => Finalize,
-      Legacy_Heap_Finalization, Exceptions_In_Finalize;
-
-      procedure Initialize (Self : in out Controlled) is abstract;
-      procedure Adjust (Self : in out Controlled) is abstract;
-      procedure Finalize (Self : in out Controlled) is abstract;
-@end example
-
-### Examples
-
-A simple example of a ref-counted type:
+Simple example of ref-counted type:
 
 @example
 type T is record
-   Value : Integer;
+   Value     : Integer;
    Ref_Count : Natural := 0;
 end record;
 
@@ -30999,8 +30946,8 @@ type T_Access is access all T;
 type T_Ref is record
    Value : T_Access;
 end record
-   with Adjust   => Adjust,
-      Finalize => Finalize;
+   with Finalizable => (Adjust   => Adjust,
+                        Finalize => Finalize);
 
 procedure Adjust (Ref : in out T_Ref) is
 begin
@@ -31013,7 +30960,7 @@ begin
 end Finalize;
 @end example
 
-A simple file handle that ensures resources are properly released:
+Simple file handle that ensures resources are properly released:
 
 @example
 package P is
@@ -31022,66 +30969,64 @@ package P is
    function Open (Path : String) return File;
 
    procedure Close (F : in out File);
+
 private
    type File is limited record
       Handle : ...;
    end record
-      with Finalize => Close;
+      with Finalizable (Finalize => Close);
+end P;
 @end example
 
-@node Finalized tagged types,Composite types,New specification for Ada Finalization Controlled,No_Raise aspect
-@anchor{gnat_rm/gnat_language_extensions finalized-tagged-types}@anchor{465}
-@subsubsection Finalized tagged types
+@menu
+* Finalizable tagged types:: 
+* Composite types:: 
+* Interoperability with controlled types:: 
+
+@end menu
+
+@node Finalizable tagged types,Composite types,,Generalized Finalization
+@anchor{gnat_rm/gnat_language_extensions finalizable-tagged-types}@anchor{463}
+@subsubsection Finalizable tagged types
 
 
-Aspects are inherited by derived types and optionally overriden by those. The
-compiler-generated calls to the user-defined operations are then
-dispatching whenever it makes sense, i.e. the object in question is of
-class-wide type and the class includes at least one finalized tagged type.
+The aspect is inherited by derived types and the primitives may be overridden
+by the derivation. The compiler-generated calls to these operations are then
+dispatching whenever it makes sense, i.e. when the object in question is of a
+class-wide type and the class includes at least one finalizable tagged type.
 
-However note that for simplicity, it is forbidden to change the value of any of
-those new aspects in derived types.
-
-@node Composite types,Interoperability with controlled types,Finalized tagged types,No_Raise aspect
-@anchor{gnat_rm/gnat_language_extensions composite-types}@anchor{466}
+@node Composite types,Interoperability with controlled types,Finalizable tagged types,Generalized Finalization
+@anchor{gnat_rm/gnat_language_extensions composite-types}@anchor{464}
 @subsubsection Composite types
 
 
-When a finalized type is used as a component of a composite type, the latter
-becomes finalized as well. The three primitives are derived automatically
-in order to call the primitives of their components.
+When a finalizable type is used as a component of a composite type, the latter
+becomes finalizable as well. The three primitives are derived automatically
+in order to call the primitives of their components. The dynamic semantics is
+the same as for controlled components of composite types.
 
-If that composite type was already user-finalized, then the compiler
-calls the primitives of the components so as to stay consistent with today’s
-controlled types’s behavior.
-
-So, @code{Initialize} and @code{Adjust} are called on components before they
-are called on the composite object, but @code{Finalize} is  called on the composite
-object first.
-
-@node Interoperability with controlled types,,Composite types,No_Raise aspect
-@anchor{gnat_rm/gnat_language_extensions interoperability-with-controlled-types}@anchor{467}
+@node Interoperability with controlled types,,Composite types,Generalized Finalization
+@anchor{gnat_rm/gnat_language_extensions interoperability-with-controlled-types}@anchor{465}
 @subsubsection Interoperability with controlled types
 
 
-As a consequence of the redefinition of the @code{Controlled} type as a base type
-with the new aspects defined, interoperability with controlled type naturally
-follows the definition of the above rules. In particular:
+Finalizable types are fully interoperable with controlled types, in particular
+it is possible for a finalizable type to have a controlled component and vice
+versa, but the stricter dynamic semantics, in other words that of controlled
+types, is applied in this case.
+
+@node No_Raise aspect,Inference of Dependent Types in Generic Instantiations,Generalized Finalization,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions no-raise-aspect}@anchor{466}
+@subsection No_Raise aspect
 
 
-@itemize *
-
-@item 
-It is possible to have a new finalized type have a controlled type
-component
-
-@item 
-It is possible to have a controlled type have a finalized type
-component
-@end itemize
+The @code{No_Raise} aspect can be applied to a subprogram to declare that this
+subprogram is not expected to raise an exception. Should an exception still
+be raised during the execution of the subprogram, it is caught at the end of
+this execution and @code{Program_Error} is propagated to the caller.
 
 @node Inference of Dependent Types in Generic Instantiations,External_Initialization Aspect,No_Raise aspect,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions inference-of-dependent-types-in-generic-instantiations}@anchor{468}
+@anchor{gnat_rm/gnat_language_extensions inference-of-dependent-types-in-generic-instantiations}@anchor{467}
 @subsection Inference of Dependent Types in Generic Instantiations
 
 
@@ -31158,7 +31103,7 @@ package Int_Array_Operations is new Array_Operations
 @end example
 
 @node External_Initialization Aspect,Finally construct,Inference of Dependent Types in Generic Instantiations,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions external-initialization-aspect}@anchor{469}
+@anchor{gnat_rm/gnat_language_extensions external-initialization-aspect}@anchor{468}
 @subsection External_Initialization Aspect
 
 
@@ -31199,7 +31144,7 @@ The maximum size of loaded files is limited to 2@w{^31} bytes.
 @end cartouche
 
 @node Finally construct,,External_Initialization Aspect,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions finally-construct}@anchor{46a}
+@anchor{gnat_rm/gnat_language_extensions finally-construct}
 @subsection Finally construct
 
 
@@ -31216,7 +31161,7 @@ This feature is similar to the one with the same name in other languages such as
 @end menu
 
 @node Syntax<2>,Legality Rules<2>,,Finally construct
-@anchor{gnat_rm/gnat_language_extensions id4}@anchor{46b}
+@anchor{gnat_rm/gnat_language_extensions id4}@anchor{46a}
 @subsubsection Syntax
 
 
@@ -31231,7 +31176,7 @@ handled_sequence_of_statements ::=
 @end example
 
 @node Legality Rules<2>,Dynamic Semantics<2>,Syntax<2>,Finally construct
-@anchor{gnat_rm/gnat_language_extensions id5}@anchor{46c}
+@anchor{gnat_rm/gnat_language_extensions id5}@anchor{46b}
 @subsubsection Legality Rules
 
 
@@ -31241,7 +31186,7 @@ to be transferred outside the finally part are forbidden.
 Goto & exit where the target is outside of the finally’s @code{sequence_of_statements} are forbidden
 
 @node Dynamic Semantics<2>,,Legality Rules<2>,Finally construct
-@anchor{gnat_rm/gnat_language_extensions id6}@anchor{46d}
+@anchor{gnat_rm/gnat_language_extensions id6}@anchor{46c}
 @subsubsection Dynamic Semantics
 
 
@@ -31256,7 +31201,7 @@ execution, that is the finally block must be executed in full even if the contai
 aborted, or if the control is transferred out of the block.
 
 @node Security Hardening Features,Obsolescent Features,GNAT language extensions,Top
-@anchor{gnat_rm/security_hardening_features doc}@anchor{46e}@anchor{gnat_rm/security_hardening_features id1}@anchor{46f}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
+@anchor{gnat_rm/security_hardening_features doc}@anchor{46d}@anchor{gnat_rm/security_hardening_features id1}@anchor{46e}@anchor{gnat_rm/security_hardening_features security-hardening-features}@anchor{15}
 @chapter Security Hardening Features
 
 
@@ -31278,7 +31223,7 @@ change.
 @end menu
 
 @node Register Scrubbing,Stack Scrubbing,,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features register-scrubbing}@anchor{470}
+@anchor{gnat_rm/security_hardening_features register-scrubbing}@anchor{469}
 @section Register Scrubbing
 
 
@@ -31314,7 +31259,7 @@ programming languages, see @cite{Using the GNU Compiler Collection (GCC)}.
 @c Stack Scrubbing:
 
 @node Stack Scrubbing,Hardened Conditionals,Register Scrubbing,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features stack-scrubbing}@anchor{471}
+@anchor{gnat_rm/security_hardening_features stack-scrubbing}@anchor{470}
 @section Stack Scrubbing
 
 
@@ -31458,7 +31403,7 @@ Bar_Callable_Ptr.
 @c Hardened Conditionals:
 
 @node Hardened Conditionals,Hardened Booleans,Stack Scrubbing,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features hardened-conditionals}@anchor{472}
+@anchor{gnat_rm/security_hardening_features hardened-conditionals}@anchor{471}
 @section Hardened Conditionals
 
 
@@ -31548,7 +31493,7 @@ be used with other programming languages supported by GCC.
 @c Hardened Booleans:
 
 @node Hardened Booleans,Control Flow Redundancy,Hardened Conditionals,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features hardened-booleans}@anchor{473}
+@anchor{gnat_rm/security_hardening_features hardened-booleans}@anchor{472}
 @section Hardened Booleans
 
 
@@ -31609,7 +31554,7 @@ and more details on that attribute, see @cite{Using the GNU Compiler Collection 
 @c Control Flow Redundancy:
 
 @node Control Flow Redundancy,,Hardened Booleans,Security Hardening Features
-@anchor{gnat_rm/security_hardening_features control-flow-redundancy}@anchor{474}
+@anchor{gnat_rm/security_hardening_features control-flow-redundancy}@anchor{473}
 @section Control Flow Redundancy
 
 
@@ -31777,7 +31722,7 @@ see @cite{Using the GNU Compiler Collection (GCC)}.  These options
 can be used with other programming languages supported by GCC.
 
 @node Obsolescent Features,Compatibility and Porting Guide,Security Hardening Features,Top
-@anchor{gnat_rm/obsolescent_features doc}@anchor{475}@anchor{gnat_rm/obsolescent_features id1}@anchor{476}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{16}
+@anchor{gnat_rm/obsolescent_features doc}@anchor{474}@anchor{gnat_rm/obsolescent_features id1}@anchor{475}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{16}
 @chapter Obsolescent Features
 
 
@@ -31796,7 +31741,7 @@ compatibility purposes.
 @end menu
 
 @node pragma No_Run_Time,pragma Ravenscar,,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id2}@anchor{477}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{478}
+@anchor{gnat_rm/obsolescent_features id2}@anchor{476}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{477}
 @section pragma No_Run_Time
 
 
@@ -31809,7 +31754,7 @@ preferred usage is to use an appropriately configured run-time that
 includes just those features that are to be made accessible.
 
 @node pragma Ravenscar,pragma Restricted_Run_Time,pragma No_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id3}@anchor{479}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{47a}
+@anchor{gnat_rm/obsolescent_features id3}@anchor{478}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{479}
 @section pragma Ravenscar
 
 
@@ -31818,7 +31763,7 @@ The pragma @code{Ravenscar} has exactly the same effect as pragma
 is part of the new Ada 2005 standard.
 
 @node pragma Restricted_Run_Time,pragma Task_Info,pragma Ravenscar,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id4}@anchor{47b}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{47c}
+@anchor{gnat_rm/obsolescent_features id4}@anchor{47a}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{47b}
 @section pragma Restricted_Run_Time
 
 
@@ -31828,7 +31773,7 @@ preferred since the Ada 2005 pragma @code{Profile} is intended for
 this kind of implementation dependent addition.
 
 @node pragma Task_Info,package System Task_Info s-tasinf ads,pragma Restricted_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id5}@anchor{47d}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{47e}
+@anchor{gnat_rm/obsolescent_features id5}@anchor{47c}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{47d}
 @section pragma Task_Info
 
 
@@ -31854,7 +31799,7 @@ in the spec of package System.Task_Info in the runtime
 library.
 
 @node package System Task_Info s-tasinf ads,,pragma Task_Info,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{47f}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{480}
+@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{47e}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{47f}
 @section package System.Task_Info (@code{s-tasinf.ads})
 
 
@@ -31864,7 +31809,7 @@ to support the @code{Task_Info} pragma. The predefined Ada package
 standard replacement for GNAT’s @code{Task_Info} functionality.
 
 @node Compatibility and Porting Guide,GNU Free Documentation License,Obsolescent Features,Top
-@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{481}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{17}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{482}
+@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{480}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{17}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{481}
 @chapter Compatibility and Porting Guide
 
 
@@ -31886,7 +31831,7 @@ applications developed in other Ada environments.
 @end menu
 
 @node Writing Portable Fixed-Point Declarations,Compatibility with Ada 83,,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{483}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{484}
+@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{482}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{483}
 @section Writing Portable Fixed-Point Declarations
 
 
@@ -32008,7 +31953,7 @@ If you follow this scheme you will be guaranteed that your fixed-point
 types will be portable.
 
 @node Compatibility with Ada 83,Compatibility between Ada 95 and Ada 2005,Writing Portable Fixed-Point Declarations,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{485}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{486}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{484}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{485}
 @section Compatibility with Ada 83
 
 
@@ -32036,7 +31981,7 @@ following subsections treat the most likely issues to be encountered.
 @end menu
 
 @node Legal Ada 83 programs that are illegal in Ada 95,More deterministic semantics,,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{487}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{488}
+@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{486}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{487}
 @subsection Legal Ada 83 programs that are illegal in Ada 95
 
 
@@ -32136,7 +32081,7 @@ the fix is usually simply to add the @code{(<>)} to the generic declaration.
 @end itemize
 
 @node More deterministic semantics,Changed semantics,Legal Ada 83 programs that are illegal in Ada 95,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{489}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{48a}
+@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{488}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{489}
 @subsection More deterministic semantics
 
 
@@ -32164,7 +32109,7 @@ which open select branches are executed.
 @end itemize
 
 @node Changed semantics,Other language compatibility issues,More deterministic semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{48b}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{48c}
+@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{48a}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{48b}
 @subsection Changed semantics
 
 
@@ -32239,7 +32184,7 @@ include @code{pragma Interface} and the floating point type attributes
 @end itemize
 
 @node Compatibility between Ada 95 and Ada 2005,Implementation-dependent characteristics,Compatibility with Ada 83,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{48f}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{490}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{48f}
 @section Compatibility between Ada 95 and Ada 2005
 
 
@@ -32311,7 +32256,7 @@ can declare a function returning a value from an anonymous access type.
 @end itemize
 
 @node Implementation-dependent characteristics,Compatibility with Other Ada Systems,Compatibility between Ada 95 and Ada 2005,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{491}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{492}
+@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{490}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{491}
 @section Implementation-dependent characteristics
 
 
@@ -32334,7 +32279,7 @@ transition from certain Ada 83 compilers.
 @end menu
 
 @node Implementation-defined pragmas,Implementation-defined attributes,,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{493}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{494}
+@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{492}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{493}
 @subsection Implementation-defined pragmas
 
 
@@ -32356,7 +32301,7 @@ avoiding compiler rejection of units that contain such pragmas; they are not
 relevant in a GNAT context and hence are not otherwise implemented.
 
 @node Implementation-defined attributes,Libraries,Implementation-defined pragmas,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{495}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{496}
+@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{494}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{495}
 @subsection Implementation-defined attributes
 
 
@@ -32370,7 +32315,7 @@ Ada 83, GNAT supplies the attributes @code{Bit}, @code{Machine_Size} and
 @code{Type_Class}.
 
 @node Libraries,Elaboration order,Implementation-defined attributes,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{497}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{498}
+@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{496}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{497}
 @subsection Libraries
 
 
@@ -32399,7 +32344,7 @@ be preferable to retrofit the application using modular types.
 @end itemize
 
 @node Elaboration order,Target-specific aspects,Libraries,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{499}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{49a}
+@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{498}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{499}
 @subsection Elaboration order
 
 
@@ -32435,7 +32380,7 @@ pragmas either globally (as an effect of the `-gnatE' switch) or locally
 @end itemize
 
 @node Target-specific aspects,,Elaboration order,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{49b}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{49c}
+@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{49a}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{49b}
 @subsection Target-specific aspects
 
 
@@ -32448,10 +32393,10 @@ on the robustness of the original design.  Moreover, Ada 95 (and thus
 Ada 2005 and Ada 2012) are sometimes
 incompatible with typical Ada 83 compiler practices regarding implicit
 packing, the meaning of the Size attribute, and the size of access values.
-GNAT’s approach to these issues is described in @ref{49d,,Representation Clauses}.
+GNAT’s approach to these issues is described in @ref{49c,,Representation Clauses}.
 
 @node Compatibility with Other Ada Systems,Representation Clauses,Implementation-dependent characteristics,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{49e}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{49f}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{49d}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{49e}
 @section Compatibility with Other Ada Systems
 
 
@@ -32494,7 +32439,7 @@ far beyond this minimal set, as described in the next section.
 @end itemize
 
 @node Representation Clauses,Compatibility with HP Ada 83,Compatibility with Other Ada Systems,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{4a0}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{49d}
+@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{49f}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{49c}
 @section Representation Clauses
 
 
@@ -32587,7 +32532,7 @@ with thin pointers.
 @end itemize
 
 @node Compatibility with HP Ada 83,,Representation Clauses,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{4a1}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{4a2}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{4a0}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{4a1}
 @section Compatibility with HP Ada 83
 
 
@@ -32617,7 +32562,7 @@ extension of package System.
 @end itemize
 
 @node GNU Free Documentation License,Index,Compatibility and Porting Guide,Top
-@anchor{share/gnu_free_documentation_license doc}@anchor{4a3}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{4a4}
+@anchor{share/gnu_free_documentation_license doc}@anchor{4a2}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{4a3}
 @chapter GNU Free Documentation License
 
 

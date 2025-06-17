@@ -1,3 +1,12 @@
+2025-06-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-06-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120483
+	* trans-expr.cc (gfc_conv_substring): Use pointer arithmetic on
+	static allocatable char arrays.
+
 2025-06-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

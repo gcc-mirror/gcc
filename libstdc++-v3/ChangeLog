@@ -1,3 +1,41 @@
+2025-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120625
+	* include/std/format (__format::__disabled): Remove.
+	(__formatter_disabled): New type.
+	(formatter<char*, wchar_t>, formatter<const char*, wchar_t>)
+	(formatter<char[N], wchar_t>, formatter<string, wchar_t>)
+	(formatter<string_view, wchar_t>): Use __formatter_disabled as
+	base class instead of formatter<__disabled, wchar_t>.
+	* testsuite/std/format/formatter/120625.cc: New test.
+
+2025-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99832
+	* include/bits/chrono.h (system_clock::to_time_t): Add
+	always_inline attribute to be agnostic to the underlying type of
+	time_t.
+	(system_clock::from_time_t): Add always_inline for consistency
+	with to_time_t.
+	* testsuite/20_util/system_clock/99832.cc: New test.
+
+2025-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-06-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120548
+	* include/std/format (__formatter_fp::_M_localize): Do not
+	include a leading sign character in the string to be grouped.
+	* testsuite/std/format/functions/format.cc: Check grouping when
+	sign is present in the output.
+
 2025-06-06  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
