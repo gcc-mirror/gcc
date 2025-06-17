@@ -24721,6 +24721,28 @@ seq_cost_ignoring_scalar_moves (const rtx_insn *seq, bool speed)
   return cost;
 }
 
+/* *VECTOR is an Advanced SIMD structure mode and *INDEX is a constant index
+   into it.  Narrow *VECTOR and *INDEX so that they reference a single vector
+   of mode SUBVEC_MODE.  IS_DEST is true if *VECTOR is a destination operand,
+   false if it is a source operand.  */
+
+void
+aarch64_decompose_vec_struct_index (machine_mode subvec_mode,
+				    rtx *vector, rtx *index, bool is_dest)
+{
+  auto elts_per_vector = GET_MODE_NUNITS (subvec_mode).to_constant ();
+  auto subvec = UINTVAL (*index) / elts_per_vector;
+  auto subelt = UINTVAL (*index) % elts_per_vector;
+  auto subvec_byte = subvec * GET_MODE_SIZE (subvec_mode);
+  if (is_dest)
+    *vector = simplify_gen_subreg (subvec_mode, *vector, GET_MODE (*vector),
+				   subvec_byte);
+  else
+    *vector = force_subreg (subvec_mode, *vector, GET_MODE (*vector),
+			    subvec_byte);
+  *index = gen_int_mode (subelt, SImode);
+}
+
 /* Expand a vector initialization sequence, such that TARGET is
    initialized to contain VALS.  */
 
