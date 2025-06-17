@@ -250,7 +250,7 @@ cgraph_node::make_profile_global0 (profile_quality quality)
 void
 cgraph_node::apply_scale (profile_count num, profile_count den)
 {
-  if (num == den)
+  if (num == den && !(num == profile_count::zero ()))
     return;
 
   for (cgraph_edge *e = callees; e; e = e->next_callee)
@@ -3759,6 +3759,13 @@ cgraph_node::verify_node (void)
       if (!e->count.compatible_p (count))
 	{
 	  error ("edge count is not compatible with function count");
+	  e->count.debug ();
+	  count.debug ();
+	  error_found = true;
+	}
+      if (inlined_to && !e->count.compatible_p (inlined_to->count))
+	{
+	  error ("edge count is not compatible with inlined to function count");
 	  e->count.debug ();
 	  count.debug ();
 	  error_found = true;
