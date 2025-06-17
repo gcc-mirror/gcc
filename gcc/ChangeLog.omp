@@ -1,3 +1,12 @@
+2025-06-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-06-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-offload.cc (omp_discover_declare_target_tgt_fn_r): Also
+	walk external functions that are declare inline (and have a
+	DECL_SAVED_TREE).
+
 2025-06-10  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
