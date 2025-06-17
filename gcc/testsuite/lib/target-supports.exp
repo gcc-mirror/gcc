@@ -5800,6 +5800,13 @@ proc add_options_for_aarch64_sve { flags } {
     return "$flags -march=armv8.2-a+sve"
 }
 
+proc add_options_for_aarch64_sme { flags } {
+    if { ![istarget aarch64*-*-*] || [check_effective_target_aarch64_sme] } {
+	return "$flags"
+    }
+    return "$flags -march=armv9-a+sme"
+}
+
 # Return 1 if this is an ARM target supporting the FP16 alternative
 # format.  Some multilibs may be incompatible with the options needed.  Also
 # set et_arm_fp16_alternative_flags to the best options to add.
@@ -6537,6 +6544,22 @@ foreach N { 128 256 512 1024 2048 } {
 	    return [aarch64_sve_hw_bits N]
 	}
     }]
+}
+
+# Return true if this is an AArch64 target that can run SME code.
+
+proc check_effective_target_aarch64_sme_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_sme_hw_available {
+	int
+	main (void)
+	{
+	  asm volatile ("rdsvl x0, #1");
+	  return 0;
+	}
+    } [add_options_for_aarch64_sme ""]]
 }
 
 proc check_effective_target_arm_neonv2_hw { } {

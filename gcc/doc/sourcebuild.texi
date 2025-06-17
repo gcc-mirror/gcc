@@ -2379,6 +2379,9 @@ whether it does so by default).
 @item aarch64_sve2p1_hw
 AArch64 target that is able to generate and execute SVE2.1 code (regardless of
 whether it does so by default).
+@item aarch64_sme_hw
+AArch64 target that is able to generate and execute SME code (regardless of
+whether it does so by default).
 
 @item aarch64_fjcvtzs_hw
 AArch64 target that is able to generate and execute armv8.3-a FJCVTZS
