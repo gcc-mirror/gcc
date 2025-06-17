@@ -1457,54 +1457,12 @@ package body Exp_Aggr is
          end if;
 
          if Present (Expr) then
-
-            --  For mutably tagged abstract class-wide types, we rely on the
-            --  type of the initializing expression to initialize the tag of
-            --  each array component.
-
-            --  Generate:
-            --     expr_type!(Indexed_Comp) := expr;
-            --     expr_type!(Indexed_Comp)._tag := expr_type'Tag;
-
-            if Is_Mutably_Tagged_Type (Comp_Typ)
-              and then Is_Abstract_Type (Root_Type (Comp_Typ))
-            then
-               declare
-                  Expr_Type : Entity_Id;
-
-               begin
-                  if Nkind (Expr) in N_Has_Etype
-                    and then Present (Etype (Expr))
-                  then
-                     Expr_Type := Etype (Expr);
-
-                  elsif Nkind (Expr) = N_Qualified_Expression then
-                     Analyze (Subtype_Mark (Expr));
-                     Expr_Type := Etype (Subtype_Mark (Expr));
-
-                  --  Unsupported case
-
-                  else
-                     pragma Assert (False);
-                     raise Program_Error;
-                  end if;
-
-                  Initialize_Component
-                    (N          => N,
-                     Comp       => Unchecked_Convert_To (Expr_Type,
-                                     Indexed_Comp),
-                     Comp_Typ   => Expr_Type,
-                     Init_Expr  => Expr,
-                     Stmts      => Stmts);
-               end;
-            else
-               Initialize_Component
-                 (N          => N,
-                  Comp       => Indexed_Comp,
-                  Comp_Typ   => Comp_Typ,
-                  Init_Expr  => Expr,
-                  Stmts      => Stmts);
-            end if;
+            Initialize_Component
+              (N          => N,
+               Comp       => Indexed_Comp,
+               Comp_Typ   => Comp_Typ,
+               Init_Expr  => Expr,
+               Stmts      => Stmts);
 
          --  Ada 2005 (AI-287): In case of default initialized component, call
          --  the initialization subprogram associated with the component type.
@@ -1519,10 +1477,10 @@ package body Exp_Aggr is
 
          else
             --  For mutably tagged class-wide types, default initialization is
-            --  performed by the init procedure of their root type.
+            --  performed by the init procedure of their specific type.
 
             if Is_Mutably_Tagged_Type (Comp_Typ) then
-               Comp_Typ := Root_Type (Comp_Typ);
+               Comp_Typ := Find_Specific_Type (Comp_Typ);
             end if;
 
             if Present (Base_Init_Proc (Comp_Typ)) then
@@ -8864,7 +8822,15 @@ package body Exp_Aggr is
       else
          Set_No_Ctrl_Actions (Init_Stmt);
 
-         if Tagged_Type_Expansion and then Is_Tagged_Type (Comp_Typ) then
+         if Tagged_Type_Expansion
+           and then Is_Tagged_Type (Comp_Typ)
+
+         --  Cannot adjust the tag when the expected type of the component is
+         --  a mutably tagged (and therefore class-wide) type; each component
+         --  of the aggregate has the tag of its initializing expression.
+
+           and then not Is_Mutably_Tagged_Type (Comp_Typ)
+         then
             declare
                Typ : Entity_Id := Underlying_Type (Comp_Typ);
 
