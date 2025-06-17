@@ -17,3 +17,4 @@ TEST_BINARY_VX_SIGNED_0(T)
 /* { dg-final { scan-assembler-times {vdiv.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vrem.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vmax.vx} 2 } } */
+/* { dg-final { scan-assembler-times {vmin.vx} 2 } } */

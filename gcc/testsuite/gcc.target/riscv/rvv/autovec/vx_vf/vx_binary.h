@@ -167,6 +167,36 @@ DEF_MAX_1(uint64_t)
 #define MAX_FUNC_1(T) test_##T##_max_1
 #define MAX_FUNC_1_WARP(T) MAX_FUNC_1(T)
 
+#define DEF_MIN_0(T)        \
+static inline T             \
+test_##T##_min_0 (T a, T b) \
+{                           \
+  return a > b ? b : a;     \
+}
+
+#define DEF_MIN_1(T)        \
+static inline T             \
+test_##T##_min_1 (T a, T b) \
+{                           \
+  return a >= b ? b : a;    \
+}
+
+DEF_MIN_0(int8_t)
+DEF_MIN_0(int16_t)
+DEF_MIN_0(int32_t)
+DEF_MIN_0(int64_t)
+
+DEF_MIN_1(int8_t)
+DEF_MIN_1(int16_t)
+DEF_MIN_1(int32_t)
+DEF_MIN_1(int64_t)
+
+#define MIN_FUNC_0(T) test_##T##_min_0
+#define MIN_FUNC_0_WARP(T) MIN_FUNC_0(T)
+
+#define MIN_FUNC_1(T) test_##T##_min_1
+#define MIN_FUNC_1_WARP(T) MIN_FUNC_1(T)
+
 #define DEF_VX_BINARY_CASE_2(T, FUNC, NAME)                      \
 void                                                             \
 test_vx_binary_##NAME##_##FUNC##_##T##_case_2 (T * restrict out, \
@@ -241,7 +271,9 @@ test_vx_binary_##NAME##_##FUNC##_##T##_case_3 (T * restrict out, \
   DEF_VX_BINARY_CASE_0_WRAP(T, /, div)                  \
   DEF_VX_BINARY_CASE_0_WRAP(T, %, rem)                  \
   DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_0_WARP(T), max) \
-  DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max)
+  DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max) \
+  DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_0_WARP(T), min) \
+  DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_1_WARP(T), min)
 
 #define TEST_BINARY_VX_UNSIGNED_0(T)                    \
   DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                  \
