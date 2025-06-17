@@ -251,6 +251,7 @@ TYPE
 VAR
    FreeGroup,
    GlobalGroup         : Group ;    (* The global group of all sets.  *)
+   ErrorDepList,       (* The set of symbols with dependency errors.  *)
    VisitedList,
    ChainedList         : Set ;
    HaveInitDefaultTypes: BOOLEAN ;  (* Have we initialized them yet?  *)
@@ -259,9 +260,6 @@ VAR
    action              : IsAction ;
    ConstantResolved,
    enumDeps            : BOOLEAN ;
-
-
-PROCEDURE mystop ; BEGIN END mystop ;
 
 
 (* *************************************************** *)
@@ -1315,14 +1313,26 @@ END CanBeDeclaredPartiallyViaPartialDependants ;
 
 
 (*
-   EmitCircularDependancyError - issue a dependancy error.
+   EmitCircularDependencyError - issue a dependency error.
 *)
 
-PROCEDURE EmitCircularDependancyError (sym: CARDINAL) ;
+PROCEDURE EmitCircularDependencyError (sym: CARDINAL) ;
 BEGIN
-   MetaError1('circular dependancy error found when trying to resolve {%1Uad}',
-              sym)
-END EmitCircularDependancyError ;
+   (* Ensure we only issue one dependency message per symbol for this
+      error classification.  *)
+   IF NOT IsElementInSet (ErrorDepList, sym)
+   THEN
+      IncludeElementIntoSet (ErrorDepList, sym) ;
+      IF IsVar (sym) OR IsParameter (sym)
+      THEN
+         MetaError1 ('circular dependency error found when trying to resolve {%1Had}',
+                     sym)
+      ELSE
+         MetaError1 ('circular dependency error found when trying to resolve {%1Dad}',
+                     sym)
+      END
+   END
+END EmitCircularDependencyError ;
 
 
 TYPE
@@ -1529,17 +1539,17 @@ BEGIN
       IF ForeachTryDeclare (todolist,
                             circulartodo,
                             NotAllDependantsFullyDeclared,
-                            EmitCircularDependancyError)
+                            EmitCircularDependencyError)
       THEN
       ELSIF ForeachTryDeclare (partiallydeclared,
                                circularpartial,
                                NotAllDependantsPartiallyDeclared,
-                               EmitCircularDependancyError)
+                               EmitCircularDependencyError)
       THEN
       ELSIF ForeachTryDeclare (niltypedarrays,
                                circularniltyped,
                                NotAllDependantsPartiallyDeclared,
-                               EmitCircularDependancyError)
+                               EmitCircularDependencyError)
       THEN
       END
    END ;
@@ -2855,13 +2865,8 @@ BEGIN
    n := 1 ;
    Var := GetNth(scope, n) ;
    WHILE Var#NulSym DO
-      IF NOT AllDependantsFullyDeclared(GetSType(Var))
+      IF NOT TypeDependentsDeclared (Var, TRUE)
       THEN
-         mystop
-      END ;
-      IF NOT AllDependantsFullyDeclared(GetSType(Var))
-      THEN
-         EmitCircularDependancyError(GetSType(Var)) ;
          failed := TRUE
       END ;
       INC(n) ;
@@ -3411,15 +3416,55 @@ PROCEDURE DoVariableDeclaration (var: CARDINAL; name: ADDRESS;
                                  isImported, isExported,
                                  isTemporary, isGlobal: BOOLEAN;
                                  scope: tree) ;
+BEGIN
+   IF NOT (IsComponent (var) OR IsVarHeap (var))
+   THEN
+      IF TypeDependentsDeclared (var, TRUE)
+      THEN
+         PrepareGCCVarDeclaration (var, name, isImported, isExported,
+                                   isTemporary, isGlobal, scope)
+      END
+   END
+END DoVariableDeclaration ;
+
+
+(*
+   TypeDependentsDeclared - return TRUE if all type dependents of variable
+                            have been declared.
+*)
+
+PROCEDURE TypeDependentsDeclared (variable: CARDINAL; errorMessage: BOOLEAN) : BOOLEAN ;
+VAR
+   type: CARDINAL ;
+BEGIN
+   type := GetSType (variable) ;
+   IF AllDependantsFullyDeclared (type)
+   THEN
+      RETURN TRUE
+   ELSE
+      IF errorMessage
+      THEN
+         EmitCircularDependencyError (variable) ;
+         ForeachElementInSetDo (GlobalGroup^.ToDoList, EmitCircularDependencyError)
+      END
+   END ;
+   RETURN FALSE
+END TypeDependentsDeclared ;
+
+
+(*
+   PrepareGCCVarDeclaration -
+*)
+
+PROCEDURE PrepareGCCVarDeclaration (var: CARDINAL; name: ADDRESS;
+                                    isImported, isExported,
+                                    isTemporary, isGlobal: BOOLEAN;
+                                    scope: tree) ;
 VAR
    type    : tree ;
    varType : CARDINAL ;
    location: location_t ;
 BEGIN
-   IF IsComponent (var) OR IsVarHeap (var)
-   THEN
-      RETURN
-   END ;
    IF GetMode (var) = LeftValue
    THEN
       (*
@@ -3457,7 +3502,7 @@ BEGIN
                                             isGlobal, scope, NIL)) ;
    WatchRemoveList (var, todolist) ;
    WatchIncludeList (var, fullydeclared)
-END DoVariableDeclaration ;
+END PrepareGCCVarDeclaration ;
 
 
 (*
@@ -3493,7 +3538,6 @@ BEGIN
    THEN
       scope := FindContext (ModSym) ;
       decl := FindOuterModule (variable) ;
-      Assert (AllDependantsFullyDeclared (GetSType (variable))) ;
       PushBinding (ModSym) ;
       DoVariableDeclaration (variable,
                              KeyToCharStar (GetFullSymName (variable)),
@@ -3521,7 +3565,6 @@ BEGIN
    THEN
       scope := FindContext (mainModule) ;
       decl := FindOuterModule (variable) ;
-      Assert (AllDependantsFullyDeclared (GetSType (variable))) ;
       PushBinding (mainModule) ;
       DoVariableDeclaration (variable,
                              KeyToCharStar (GetFullSymName (variable)),
@@ -3618,7 +3661,6 @@ END DeclareImportedVariablesWholeProgram ;
 
 PROCEDURE DeclareLocalVariable (var: CARDINAL) ;
 BEGIN
-   Assert (AllDependantsFullyDeclared (var)) ;
    DoVariableDeclaration (var,
                           KeyToCharStar (GetFullSymName (var)),
                           FALSE,  (* local variables cannot be imported *)
@@ -3662,7 +3704,6 @@ BEGIN
    scope := Mod2Gcc (GetProcedureScope (sym)) ;
    Var := GetNth (sym, i) ;
    WHILE Var # NulSym DO
-      Assert (AllDependantsFullyDeclared (GetSType (Var))) ;
       DoVariableDeclaration (Var,
                              KeyToCharStar (GetFullSymName (Var)),
                              FALSE,   (* inner module variables cannot be imported *)
@@ -6658,6 +6699,7 @@ END InitDeclarations ;
 BEGIN
    FreeGroup := NIL ;
    GlobalGroup := InitGroup () ;
+   ErrorDepList := InitSet (1) ;
    ChainedList := InitSet(1) ;
    WatchList := InitSet(1) ;
    VisitedList := NIL ;
