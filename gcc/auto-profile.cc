@@ -1076,10 +1076,10 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
       fprintf (dump_file, "\n");
     }
 
-  /* FIXME: Count should be initialized.  */
   struct cgraph_edge *new_edge
-      = indirect_edge->make_speculative (direct_call,
-					 profile_count::uninitialized ());
+      = indirect_edge->make_speculative
+		(direct_call,
+		 gimple_bb (stmt)->count.apply_scale (99, 100));
   cgraph_edge::redirect_call_stmt_to_callee (new_edge);
   gimple_remove_histogram_value (cfun, stmt, hist);
   inline_call (new_edge, true, NULL, NULL, false);
@@ -1549,6 +1549,60 @@ cmp (const void *a, const void *b)
   return 0;
 }
 
+/* Add scale ORIG/ANNOTATED to SCALES.  */
+
+static void
+add_scale (vec <sreal> *scales, profile_count annotated, profile_count orig)
+{
+  if (dump_file)
+    {
+      orig.dump (dump_file);
+      fprintf (dump_file, " should be ");
+      annotated.dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
+  if (orig.nonzero_p ())
+    {
+      sreal scale
+	= annotated.guessed_local ()
+		.to_sreal_scale (orig);
+      if (dump_file)
+	fprintf (dump_file, "    adding scale %.16f\n",
+		 scale.to_double ());
+      scales->safe_push (scale);
+    }
+}
+
+/* Scale counts of all basic blocks in BBS by SCALE and convert them to
+   IPA quality.  */
+
+static void
+scale_bbs (const vec <basic_block> &bbs, sreal scale)
+{
+  if (dump_file)
+    fprintf (dump_file, "  Scaling by %.16f\n", scale.to_double ());
+  for (basic_block b : bbs)
+    if (!(b->count == profile_count::zero ())
+	&& b->count.initialized_p ())
+      {
+	profile_count o = b->count;
+	b->count = b->count.force_guessed () * scale;
+
+	/* If we scaled to 0, make it auto-fdo since that is treated
+	   less agressively.  */
+	if (!b->count.nonzero_p () && o.nonzero_p ())
+	  b->count = profile_count::zero ().afdo ();
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "    bb %i count updated ", b->index);
+	    o.dump (dump_file);
+	    fprintf (dump_file, " -> ");
+	    b->count.dump (dump_file);
+	    fprintf (dump_file, "\n");
+	  }
+      }
+}
+
 /* In case given basic block was fully optimized out, AutoFDO
    will have no data about it.  In this case try to preserve static profile.
    Identify connected components (in undirected form of CFG) which has
@@ -1558,26 +1612,33 @@ cmp (const void *a, const void *b)
 void
 afdo_adjust_guessed_profile (bb_set *annotated_bb)
 {
-  auto_sbitmap visited (last_basic_block_for_fn (cfun));
   /* Basic blocks of connected component currently processed.  */
-  auto_vec <basic_block, 20> bbs (n_basic_blocks_for_fn (cfun) + 1);
+  auto_vec <basic_block, 20> bbs (n_basic_blocks_for_fn (cfun));
   /* Scale factors found.  */
-  auto_vec <sreal, 20> scales (n_basic_blocks_for_fn (cfun) + 1);
-  auto_vec <basic_block, 20> stack (n_basic_blocks_for_fn (cfun) + 1);
-
-  bitmap_clear (visited);
+  auto_vec <sreal, 20> scales;
+  auto_vec <basic_block, 20> stack (n_basic_blocks_for_fn (cfun));
 
   basic_block seed_bb;
-  FOR_BB_BETWEEN (seed_bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
-		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
-   if (!is_bb_annotated (seed_bb, *annotated_bb)
-       && bitmap_set_bit (visited, seed_bb->index))
-     {
-       hash_set <basic_block> current_component;
+  unsigned int component_id = 1;
 
+  /* Map from basic block to its component.
+     0   is used for univisited BBs,
+     1   means that BB is annotated,
+     >=2 is an id of the component BB belongs to.  */
+  auto_vec <unsigned int, 20> component;
+  component.safe_grow (last_basic_block_for_fn (cfun));
+  FOR_ALL_BB_FN (seed_bb, cfun)
+    component[seed_bb->index]
+	= is_bb_annotated (seed_bb, *annotated_bb) ? 1 : 0;
+  FOR_ALL_BB_FN (seed_bb, cfun)
+   if (!component[seed_bb->index])
+     {
        stack.quick_push (seed_bb);
+       component_id++;
        bbs.truncate (0);
        scales.truncate (0);
+       component[seed_bb->index] = component_id;
+       profile_count max_count = profile_count::zero ();
 
        /* Identify connected component starting in BB.  */
        if (dump_file)
@@ -1588,18 +1649,32 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 	   basic_block b = stack.pop ();
 
 	   bbs.quick_push (b);
-	   current_component.add (b);
+	   max_count = max_count.max (b->count);
 
 	   for (edge e: b->preds)
-	     if (!is_bb_annotated (e->src, *annotated_bb)
-		 && bitmap_set_bit (visited, e->src->index))
-		stack.quick_push (e->src);
+	     if (!component[e->src->index])
+	       {
+		  stack.quick_push (e->src);
+		  component[e->src->index] = component_id;
+	       }
 	   for (edge e: b->succs)
-	     if (!is_bb_annotated (e->dest, *annotated_bb)
-		 && bitmap_set_bit (visited, e->dest->index))
-		stack.quick_push (e->dest);
+	     if (!component[e->dest->index])
+	       {
+		  stack.quick_push (e->dest);
+		  component[e->dest->index] = component_id;
+	       }
 	 }
        while (!stack.is_empty ());
+
+       /* If all blocks in components has 0 count, we do not need
+	  to scale, only we must convert to IPA quality.  */
+       if (!max_count.nonzero_p ())
+	 {
+	   if (dump_file)
+	     fprintf (dump_file, "  All counts are 0; scale = 1\n");
+	   scale_bbs (bbs, 1);
+	   continue;
+	 }
 
        /* Now visit the component and try to figure out its desired
 	  frequency.  */
@@ -1653,84 +1728,83 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 	       }
 	     else
 	       {
-		 gcc_checking_assert (current_component.contains (e->src));
 		 current_component_count += e->count ();
+		 gcc_checking_assert (component[e->src->index] == component_id);
 	       }
 	   if (boundary && current_component_count.initialized_p ())
 	     {
-	       profile_count in_count = b->count - current_component_count;
 	       if (dump_file)
-		 {
-		   fprintf (dump_file, "    bb %i in count ", b->index);
-		   in_count.dump (dump_file);
-		   fprintf (dump_file, " should be ");
-		   annotated_count.dump (dump_file);
-		   fprintf (dump_file, "\n");
-		 }
-	       if (in_count.nonzero_p ())
-		 {
-		   sreal scale
-		     = annotated_count.guessed_local ()
-			     .to_sreal_scale (in_count);
-		   if (dump_file)
-		     fprintf (dump_file, "    adding scale %.16f\n",
-			      scale.to_double ());
-		   scales.safe_push (scale);
-		 }
+		 fprintf (dump_file, "    bb %i in count ", b->index);
+	       add_scale (&scales,
+			  annotated_count,
+			  b->count - current_component_count);
 	     }
 	   for (edge e: b->succs)
 	     if (AFDO_EINFO (e)->is_annotated ())
 	       {
-		 profile_count out_count = e->count ();
-		 profile_count annotated_count = AFDO_EINFO (e)->get_count ();
 		 if (dump_file)
-		   {
-		     fprintf (dump_file, "    edge %i->%i count ",
-			      b->index, e->dest->index);
-		     out_count.dump (dump_file);
-		     fprintf (dump_file, " should be ");
-		     annotated_count.dump (dump_file);
-		     fprintf (dump_file, "\n");
-		   }
-		 if (out_count.nonzero_p ())
-		   {
-		     sreal scale
-		       = annotated_count.guessed_local ()
-			       .to_sreal_scale (out_count);
-		     if (dump_file)
-		       fprintf (dump_file, "    adding scale %.16f\n",
-				scale.to_double ());
-		     scales.safe_push (scale);
-		   }
+		   fprintf (dump_file, "    edge %i->%i count ",
+			    b->index, e->dest->index);
+		 add_scale (&scales, AFDO_EINFO (e)->get_count (), e->count ());
+	       }
+	     else if (is_bb_annotated (e->dest, *annotated_bb))
+	       {
+		 profile_count annotated_count = e->dest->count;
+		 profile_count out_count = profile_count::zero ();
+		 bool ok = true;
+		 for (edge e2: e->dest->preds)
+		   if (AFDO_EINFO (e2)->is_annotated ())
+		     annotated_count -= AFDO_EINFO (e2)->get_count ();
+		   else if (component[e->src->index] == component_id)
+		     out_count += e->count ();
+		   else if (e->probability.nonzero_p ())
+		     {
+		       ok = false;
+		       break;
+		     }
+		 if (!ok)
+		   continue;
+		 if (dump_file)
+		   fprintf (dump_file,
+			    "    edge %i->%i has annotated sucessor; count ",
+			    b->index, e->dest->index);
+		 add_scale (&scales, annotated_count, e->count ());
 	       }
 
 	 }
-       if (!scales.length ())
-	 continue;
-       scales.qsort (cmp);
-       sreal scale = scales[scales.length () / 2];
-       if (dump_file)
-	 fprintf (dump_file, "  Scaling by %.16f\n", scale.to_double ());
-       for (basic_block b : bbs)
-	 if (!(b->count == profile_count::zero ())
-	     && b->count.initialized_p ())
-	   {
-	     profile_count o = b->count;
-	     b->count = b->count.force_guessed () * scale;
 
-	     /* If we scaled to 0, make it auto-fdo since that is treated
-		less agressively.  */
-	     if (!b->count.nonzero_p () && o.nonzero_p ())
-	       b->count = profile_count::zero ().afdo ();
-	     if (dump_file)
-	       {
-		 fprintf (dump_file, "    bb %i count updated ", b->index);
-		 o.dump (dump_file);
-		 fprintf (dump_file, " -> ");
-		 b->count.dump (dump_file);
-		 fprintf (dump_file, "\n");
-	       }
-	   }
+       /* If we failed to find annotated entry or exit edge,
+	  look for exit edges and scale profile so the dest
+	  BB get all flow it needs.  This is inprecise because
+	  the edge is not annotated and thus BB has more than
+	  one such predecessor.  */
+       if (!scales.length ())
+	 for (basic_block b : bbs)
+	   if (b->count.nonzero_p ())
+	     for (edge e: b->succs)
+	       if (is_bb_annotated (e->dest, *annotated_bb))
+		 {
+		   profile_count annotated_count = e->dest->count;
+		   for (edge e2: e->dest->preds)
+		     if (AFDO_EINFO (e2)->is_annotated ())
+		       annotated_count -= AFDO_EINFO (e2)->get_count ();
+		   if (dump_file)
+		     fprintf (dump_file,
+			      "    edge %i->%i has annotated sucessor;"
+			      " upper bound count ",
+			      b->index, e->dest->index);
+		   add_scale (&scales, annotated_count, e->count ());
+		 }
+       if (!scales.length ())
+	 {
+	   if (dump_file)
+	     fprintf (dump_file,
+		      "  Can not determine count from the boundary; giving up");
+	   continue;
+	 }
+       gcc_checking_assert (scales.length ());
+       scales.qsort (cmp);
+       scale_bbs (bbs, scales[scales.length () / 2]);
      }
 }
 
