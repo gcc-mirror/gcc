@@ -745,7 +745,7 @@ parse_replacing_pair( const char *stmt, const char *estmt ) {
       }
     }
     if( pair.stmt.p ) {
-      yywarn("CDF syntax error '%*s'", (int)pair.stmt.size(), pair.stmt.p);
+      yywarn("CDF syntax error '%.*s'", (int)pair.stmt.size(), pair.stmt.p);
     }
     else {
       // This eliminated a compiler warning about "format-overflow"
@@ -1413,7 +1413,7 @@ preprocess_filter_add( const char input[] ) {
 
   auto filename = find_filter(filter.c_str());
   if( !filename ) {
-    yywarn("preprocessor '%s/%s' not found", getcwd(NULL, 0), filter);
+    yywarn("preprocessor '%s/%s' not found", getcwd(NULL, 0), filter.c_str());
     return false;
   }
   preprocessor_filters.push_back( std::make_pair(xstrdup(filename), options) );
@@ -1546,7 +1546,7 @@ int
 cdftext::open_input( const char filename[] ) {
   int fd = open(filename, O_RDONLY);
   if( fd == -1 ) {
-    dbgmsg( "could not open '%s': %m", filename );
+    dbgmsg( "could not open '%s': %s", filename, xstrerror(errno) );
   }
 
   verbose_file_reader = NULL != getenv("GCOBOL_TEMPDIR");

@@ -360,7 +360,7 @@ show_type(tree type)
   {
   if( !type )
     {
-    cbl_internal_error("The given type is not NULL, and that's just not fair");
+    cbl_internal_error("The given type is not NULL, and that is just not fair");
     }
 
   if( DECL_P(type) )
@@ -369,7 +369,7 @@ show_type(tree type)
     }
   if( !TYPE_P(type) )
     {
-    cbl_internal_error("The given type is not a DECL or a TYPE");
+    cbl_internal_error("The given type is not a declaration or a TYPE");
     }
 
   static char ach[1024];
@@ -520,8 +520,7 @@ gg_find_field_in_struct(const tree base, const char *field_name)
 
   if( !field_decl )
     {
-    yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
-    yywarn("###### Somebody asked for the field %s.%s, which doesn't exist",
+    yywarn("Somebody asked for the field %s.%s, which does not exist",
           IDENTIFIER_POINTER(DECL_NAME(base)),
           field_name);
     gcc_unreachable();
@@ -933,7 +932,7 @@ gg_declare_variable(tree type_decl,
   // causes the storage to be allocated.
 
   // It is routine to let the compiler assign names to stack variables.  The
-  // assembly code doesn't use names for variables on the stack; they are
+  // assembly code does not use names for variables on the stack; they are
   // referenced by offsets to the base pointer.  But static variables have to
   // have names, and there are places in my code generation -- Lord only knows
   // why -- where I didn't give the variables explicit names.  We remedy that
@@ -2161,8 +2160,7 @@ gg_printf(const char *format_string, ...)
     {
     if(nargs >= ARG_LIMIT)
       {
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
-      yywarn("###### You *must* be joking!");
+      yywarn("You *must* be joking");
       gcc_unreachable();
       }
 
@@ -2170,10 +2168,8 @@ gg_printf(const char *format_string, ...)
       {
       // Warning:  This test is not completely reliable, because a garbage
       // byte could have a valid TREE_CODE.  But it does help.
-      yywarn("You nitwit!");
-      yywarn("You forgot to put a NULL_TREE at the end of a "
-                  "gg_printf() again!");
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
+      yywarn("You forgot to put a %<NULL_TREE%> at the end of a "
+                  "%<gg_printf()%> again");
       gcc_unreachable();
       }
 
@@ -2219,8 +2215,7 @@ gg_fprintf(tree fd, int nargs, const char *format_string, ...)
     {
     if(argc >= ARG_LIMIT)
       {
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
-      yywarn("###### You *must* be joking!");
+      yywarn("You *must* be joking");
       gcc_unreachable();
       }
 
@@ -2601,10 +2596,8 @@ gg_tack_on_function_parameters(tree function_decl, ...)
       {
       // Warning:  This test is not completely reliable, because a garbage
       // byte could have a valid TREE_CODE.  But it does help.
-      yywarn("You nitwit!");
-      yywarn("You forgot to put a NULL_TREE at the end of a "
-                  "gg_define_function() again!");
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
+      yywarn("You forgot to put a %<NULL_TREE%> at the end of a "
+                  "%<gg_define_function()%> again");
       gcc_unreachable();
       }
 
@@ -2615,8 +2608,7 @@ gg_tack_on_function_parameters(tree function_decl, ...)
     nparams += 1;
     if(nparams > ARG_LIMIT)
       {
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
-      yywarn("###### %d parameters?  Really?  Are you insane?",ARG_LIMIT+1);
+      yywarn("%d parameters? Really? Are you insane?",ARG_LIMIT+1);
       gcc_unreachable();
       }
     }
@@ -2657,10 +2649,8 @@ gg_define_function(tree return_type, const char *funcname, ...)
       {
       // Warning:  This test is not completely reliable, because a garbage
       // byte could have a valid TREE_CODE.  But it does help.
-      yywarn("You nitwit!");
-      yywarn("You forgot to put a NULL_TREE at the end of a "
-                  "gg_define_function() again!");
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
+      yywarn("You forgot to put a %<NULL_TREE%> at the end of a "
+                  "%<gg_define_function()%> again");
       gcc_unreachable();
       }
 
@@ -2671,9 +2661,7 @@ gg_define_function(tree return_type, const char *funcname, ...)
     nparams += 1;
     if(nparams > ARG_LIMIT)
       {
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
-      yywarn("###### %d parameters?  Really?  Are you insane?",
-                  ARG_LIMIT+1);
+      yywarn("%d parameters? Really? Are you insane?", ARG_LIMIT+1);
       gcc_unreachable();
       }
     }
@@ -2785,10 +2773,8 @@ gg_get_function_decl(tree return_type, const char *funcname, ...)
       {
       // Warning:  This test is not completely reliable, because a garbage
       // byte could have a valid TREE_CODE.  But it does help.
-      yywarn("You nitwit!");
-      yywarn("You forgot to put a NULL_TREE at the end of a "
-            "gg_define_function() again!");
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
+      yywarn("You forgot to put a %<NULL_TREE%> at the end of a "
+            "%<gg_define_function()%> again");
       gcc_unreachable();
       }
 
@@ -2799,8 +2785,7 @@ gg_get_function_decl(tree return_type, const char *funcname, ...)
     nparams += 1;
     if(nparams > ARG_LIMIT)
       {
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
-      yywarn("###### %d parameters?  Really?  Are you insane?",
+      yywarn("%d parameters? Really? Are you insane?",
                   ARG_LIMIT+1);
       gcc_unreachable();
       }
@@ -2909,7 +2894,7 @@ gg_finalize_function()
 
     /* Register this function with cgraph just far enough to get it
     added to our parent's nested function list.  Handy, since the
-    C front end doesn't have such a list.  */
+    C front end does not have such a list.  */
 
     static cgraph_node *node = cgraph_node::get_create (current_function->function_decl);
     gcc_assert(node);
@@ -2925,7 +2910,7 @@ gg_finalize_function()
 
   if( gg_trans_unit.function_stack.back().context_count )
     {
-    cbl_internal_error("Residual context count!");
+    cbl_internal_error("Residual context count");
     }
 
   gg_trans_unit.function_stack.pop_back();
@@ -3070,8 +3055,7 @@ gg_call_expr(tree return_type, const char *function_name, ...)
     {
     if(nargs >= ARG_LIMIT)
       {
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
-      yywarn("###### You *must* be joking!");
+      yywarn("You *must* be joking");
       gcc_unreachable();
       }
 
@@ -3127,8 +3111,7 @@ gg_call(tree return_type, const char *function_name,  ...)
     {
     if(nargs >= ARG_LIMIT)
       {
-      yywarn("###### %10s in %s:%d", __func__, __FILE__,__LINE__ );
-      yywarn("###### You *must* be joking!");
+      yywarn("You *must* be joking");
       gcc_unreachable();
       }
 
@@ -3425,7 +3408,27 @@ gg_trans_unit_var_decl(const char *var_name)
   }
 
 void
-gg_insert_into_assembler(const char *format, ...)
+gg_insert_into_assembler(const char ach[])
+  {
+  if( !optimize )
+    {
+    // Create the required generic tag
+    tree asm_expr = build5_loc( location_from_lineno(),
+                            ASM_EXPR,
+                            VOID,
+                            build_string(strlen(ach), ach),
+                            NULL_TREE,
+                            NULL_TREE,
+                            NULL_TREE,
+                            NULL_TREE);
+
+    // And insert it as a statement
+    gg_append_statement(asm_expr);
+    }
+  }
+
+void
+gg_insert_into_assemblerf(const char *format, ...)
   {
   // Temporarily defeat all ASM_EXPR for optimized code per PR119214
   // The correct solution using LABEL_DECL is forthcoming
@@ -3444,18 +3447,6 @@ gg_insert_into_assembler(const char *format, ...)
     vsnprintf(ach, sizeof(ach), format, ap);
     va_end(ap);
 
-    // Create the required generic tag
-    tree asm_expr = build5_loc( location_from_lineno(),
-                            ASM_EXPR,
-                            VOID,
-                            build_string(strlen(ach), ach),
-                            NULL_TREE,
-                            NULL_TREE,
-                            NULL_TREE,
-                            NULL_TREE);
-    //SET_EXPR_LOCATION (asm_expr, UNKNOWN_LOCATION);
-
-    // And insert it as a statement
-    gg_append_statement(asm_expr);
+    gg_insert_into_assembler(ach);
     }
   }

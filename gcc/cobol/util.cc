@@ -130,7 +130,7 @@ symbol_type_str( enum symbol_type_t type )
     case SymDataSection:
         return "SymDataSection";
     }
-    dbgmsg("%s:%d: invalid symbol_type_t %d", __func__, __LINE__, type);
+    cbl_internal_error("%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type);
     return "???";
 }
 
@@ -179,7 +179,7 @@ cbl_field_type_str( enum cbl_field_type_t type )
   case FldBlob:
     return "FldBlob";
  }
-  dbgmsg("%s:%d: invalid symbol_type_t %d", __func__, __LINE__, type);
+  cbl_internal_error("%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type);
   return "???";
 }
 
@@ -479,7 +479,7 @@ is_elementary( enum cbl_field_type_t type )
     case FldFloat:
       return true; // takes up space
     }
-    dbgmsg("%s:%d: invalid symbol_type_t %d", __func__, __LINE__, type);
+    cbl_internal_error("%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type);
     return false;
 }
 
@@ -902,8 +902,8 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
                                                  return TOUPPER(ch) == 'E';
                                                } );
               if( !has_exponent && data.precision() < pend - p ) {
-                error_msg(loc, "%s cannot represent  VALUE '%s' exactly (max .%zu)",
-                         name, data.initial, pend - p);
+                error_msg(loc, "%s cannot represent VALUE %qs exactly (max %c%zu)",
+                          name, data.initial, '.', pend - p);
               }
             }
           }
@@ -1805,7 +1805,7 @@ class unique_stack : public std::stack<input_file_t>
                   (fmt_size_t)(c.size() - --n), v.lineno, no_wd(wd, v.name) );
         }
       } else {
-        dbgmsg("unable to get current working directory: %m");
+        dbgmsg("unable to get current working directory: %s", xstrerror(errno));
       }
       free(wd);
     }
@@ -1953,6 +1953,8 @@ verify_format( const char gmsgid[] ) {
 static const diagnostic_option_id option_zero;
 size_t parse_error_inc();
 
+void ydferror( const char gmsgid[], ... ) ATTRIBUTE_GCOBOL_DIAG(1, 2);
+
 void
 ydferror( const char gmsgid[], ... ) {
   verify_format(gmsgid);
@@ -2028,6 +2030,9 @@ class temp_loc_t {
 void error_msg( const YYLTYPE& loc, const char gmsgid[], ... ) {
   ERROR_MSG_BODY
 }
+
+void error_msg( const YDFLTYPE& loc, const char gmsgid[], ... )
+  ATTRIBUTE_GCOBOL_DIAG(2, 3);
 
 void error_msg( const YDFLTYPE& loc, const char gmsgid[], ... ) {
   ERROR_MSG_BODY
@@ -2119,7 +2124,7 @@ cobol_fileline_set( const char line[] ) {
       dbgmsg( "%s:%d: could not compile regex: %s", __func__, __LINE__, regexmsg );
       return line;
     }
-    error_msg(yylloc, "invalid #line directive: %s", line );
+    error_msg(yylloc, "invalid %<#line%> directive: %s", line );
     return line;
   }
 
@@ -2129,7 +2134,7 @@ cobol_fileline_set( const char line[] ) {
   int fileline;
 
   if( 1 != sscanf(line_str, "%d", &fileline) )
-    yywarn("could not parse line number %s from #line directive", line_str);
+    yywarn("could not parse line number %s from %<#line%> directive", line_str);
 
   input_file_t input_file( filename, ino_t(0), fileline ); // constructor sets inode
 
@@ -2216,19 +2221,9 @@ cobol_set_debugging( bool flex, bool yacc, bool parser )
   yy_flex_debug = flex? 1 : 0;
   ydfdebug = yydebug = yacc? 1 : 0;
   f_trace_debug = parser? 1 : 0;
-
-  char *ind = getenv("INDICATOR_COLUMN");
-  if( ind ) {
-    int col;
-    if( 1 != sscanf(ind, "%d", &col) ) {
-      yywarn("ignored non-integer value for INDICATOR_COLUMN=%s", ind);
-    }
-    cobol_set_indicator_column(col);
-  }
 }
 
-os_locale_t os_locale = { "UTF-8", xstrdup("C.UTF-8") };
-
+os_locale_t os_locale = { "UTF-8", "C.UTF-8" };
 
 void
 cobol_parse_files (int nfile, const char **files)
@@ -2239,7 +2234,7 @@ cobol_parse_files (int nfile, const char **files)
   } else {
     char *codeset = nl_langinfo(CODESET);
     if( ! codeset ) {
-      yywarn("nl_langinfo failed after setlocale succeeded");
+      yywarn("%<nl_langinfo%> failed after %<setlocale()%> succeeded");
     } else {
       os_locale.codeset = codeset;
     }
@@ -2351,7 +2346,7 @@ dbgmsg(const char *msg, ...) {
 
 void
 dialect_error( const YYLTYPE& loc, const char term[], const char dialect[] ) {
-  error_msg(loc, "%s is not ISO syntax, requires -dialect %s",
+  error_msg(loc, "%s is not ISO syntax, requires %<-dialect %s%>",
            term, dialect);
 }
 

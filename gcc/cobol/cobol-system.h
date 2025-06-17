@@ -60,4 +60,10 @@
 // The following "local" #include is part of the GCC core code
 #include "system.h"
 
+#if (CHECKING_P && GCC_VERSION >= 4001) || GCC_VERSION == BUILDING_GCC_VERSION
+#define ATTRIBUTE_GCOBOL_DIAG(m, n) __attribute__ ((__format__ (__gcc_tdiag__, m, n))) ATTRIBUTE_NONNULL(m)
+#else
+#define ATTRIBUTE_GCOBOL_DIAG(m, n) ATTRIBUTE_NONNULL(m)
+#endif
+
 #endif

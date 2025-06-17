@@ -2836,7 +2836,7 @@ seek_parent( const symbol_elem_t *e, size_t level ) {
 struct symbol_elem_t *
 symbol_field_same_as( cbl_field_t *tgt, const cbl_field_t *src ) {
   if( target_in_src(tgt, src) ) {
-    ERROR_FIELD(tgt, "%s %s  may not reference itself as part of %s %s",
+    ERROR_FIELD(tgt, "%s %s may not reference itself as part of %s %s",
             tgt->level_str(), tgt->name, src->level_str(), src->name);
     return NULL;
   }
@@ -3088,7 +3088,7 @@ cbl_alphabet_t::assign( const YYLTYPE& loc, unsigned char ch, unsigned char high
     return true;
   }
   auto taken = alphabet[ch];
-  error_msg(loc, "ALPHABET %s, character '%c' (X'%x') "
+  error_msg(loc, "ALPHABET %s, character %<%c%> (X%'%x%') "
            "in position %d already defined at position %d",
            name,
            ISPRINT(ch)? ch : '?', ch,
@@ -3493,7 +3493,7 @@ cbl_field_t::internalize() {
   static const size_t noconv = size_t(-1);
 
   if (cd == (iconv_t)-1) {
-    yywarn("failed iconv_open tocode = '%s' fromcode = %s", tocode, fromcode);
+    yywarn("failed %<iconv_open%> tocode = %<%s%> fromcode = %s", tocode, fromcode);
   }
 
   bool using_assumed = fromcode == os_locale.assumed;

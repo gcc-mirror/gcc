@@ -131,13 +131,13 @@ is_numeric( cbl_field_type_t type ) {
   case FldIndex:
     return true;
   }
-  yywarn( "%s:%d: invalid symbol_type_t %d", __func__, __LINE__, type );
+  cbl_internal_error( "%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type );
   return false;
 }
 
 struct os_locale_t {
   char assumed[16];
-  char *codeset;
+  const char *codeset;
 };
 
 const char * cbl_field_attr_str( cbl_field_attr_t attr );
@@ -1216,6 +1216,8 @@ class temporaries_t {
     literal_an() : is_quoted(false), value("???") {}
     literal_an( const char value[], bool is_quoted )
       : is_quoted(is_quoted), value(value) {}
+    literal_an( const literal_an& that )
+      : is_quoted(that.is_quoted), value(that.value) {}
     literal_an& operator=( const literal_an& that ) {
       is_quoted = that.is_quoted;
       value = that.value;
@@ -1495,7 +1497,7 @@ struct cbl_alphabet_t {
   }
 
   void dump() const {
-    yywarn("'%s': %s, '%c' to '%c' (low 0x%02x, high 0x%02x)",
+    yywarn("%qs: %s, %<%c%> to %<%c%> (low 0x%x, high 0x%x)",
           name, encoding_str(encoding),
           low_index, last_index, low_index, high_index);
     if( encoding == custom_encoding_e ) {

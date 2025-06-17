@@ -1383,12 +1383,12 @@ parser_op( struct cbl_refer_t cref,
       break;
       }
     default:
-      cbl_internal_error( "parser_op() doesn't know how to "
-             "evaluate \"%s = %s %c %s\"\n",
-             cref.field->name,
-             aref.field->name,
-             op,
-             bref.field->name);
+      cbl_internal_error( "%<parser_op()%> doesn%'t know how to "
+                          "evaluate %<%s = %s %c %s%>",
+                          cref.field->name,
+                          aref.field->name,
+                          op,
+                          bref.field->name);
       break;
     }
   }

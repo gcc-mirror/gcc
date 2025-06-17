@@ -297,7 +297,7 @@ prelex() {
       token = LEVEL;
       break;
     case YDF_NUMBER:
-      if( yy_flex_debug ) yywarn("final token is YDF_NUMBER");
+      if( yy_flex_debug ) yywarn("final token is %<YDF_NUMBER%>");
       yylval.number = ydflval.number;
       token = LEVEL;
       break;

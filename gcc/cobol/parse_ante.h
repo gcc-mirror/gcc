@@ -335,7 +335,7 @@ struct evaluate_elem_t {
     label.line = yylineno;
     if( -1 == snprintf(label.name, sizeof(label.name),
                        "%.*s_%d", (int)sizeof(label.name)-6, skel, yylineno) ) {
-      yyerror("could not create unique label '%s_%d' because it is too long",
+      yyerror("could not create unique label %<%s_%d%> because it is too long",
               skel, yylineno);
     }
   }
@@ -2116,7 +2116,7 @@ static class current_t {
 	  if( ! dialect_ibm() ) {
 	    error_msg(loc,
 		      "Per ISO a program with DECLARATIVES must begin with a SECTION, "
-		      "requires -dialect ibm");
+		      "requires %<-dialect ibm%>");
 	  }
 	}
       }
@@ -2558,7 +2558,8 @@ is_callable( const cbl_field_t *field ) {
   case FldPointer:
     return true;
   }
-  cbl_internal_error( "%s:%d: invalid symbol_type_t %d", __func__, __LINE__, field->type );
+  cbl_internal_error( "%s:%d: invalid %<symbol_type_t%> %d",
+                      __func__, __LINE__, field->type );
   return false;
 }
 

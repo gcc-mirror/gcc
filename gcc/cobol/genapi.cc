@@ -571,7 +571,7 @@ get_class_condition_string(cbl_field_t *var)
       {
       if( strlen(ach) > sizeof(ach) - 1000  )
         {
-        cbl_internal_error("Nice try, but you can't fire me. I quit!");
+        cbl_internal_error("Nice try, but you cannot fire me.");
         }
 
       // We are working with unquoted strings that contain the values 1 through
@@ -1756,7 +1756,7 @@ get_bytes_needed(cbl_field_t *field)
       }
 
     default:
-      cbl_internal_error("%s(): Knows not the variable type %s for %s",
+      cbl_internal_error("%s: Knows not the variable type %s for %s",
               __func__,
               cbl_field_type_str(field->type),
               field->name );
@@ -2445,10 +2445,10 @@ move_tree(  cbl_field_t  *dest,
 
   if( !moved )
     {
-    dbgmsg("###### %10s in %s:%d\n", __func__, __FILE__, __LINE__ );
-    cbl_internal_error( "I don't know how to MOVE an alphabetical string to %s(%s) \n",
-           cbl_field_type_str(dest->type),
-           dest->name
+    dbgmsg("%10s in %s:%d", __func__, __FILE__, __LINE__ );
+    cbl_internal_error( "I don%'t know how to MOVE an alphabetical string to %s(%s)",
+                        cbl_field_type_str(dest->type),
+                        dest->name
          );
     return;
     }
@@ -2514,7 +2514,7 @@ get_string_from(cbl_field_t *field)
 
       default:
         cbl_internal_error(
-                "%s(): field->type %s must be literal or alphanumeric",
+                "%s: %<field->type%> %s must be literal or alphanumeric",
                 __func__, cbl_field_type_str(field->type));
       break;
       }
@@ -3449,7 +3449,7 @@ internal_perform_through( cbl_label_t *proc_1,
   pseudo_return_push(proc2, return_addr);
 
   // Create the code that will launch the first procedure
-  gg_insert_into_assembler("%s PERFORM %s THROUGH %s",
+  gg_insert_into_assemblerf("%s PERFORM %s THROUGH %s",
                         ASM_COMMENT_START, proc_1->name, proc_2->name);
 
   if( !suppress_nexting )
@@ -6026,7 +6026,7 @@ tree_type_from_field_type(cbl_field_t *field, size_t &nbytes)
         break;
 
       default:
-        cbl_internal_error(  "%s(): Invalid field type %s:",
+        cbl_internal_error(  "%s: Invalid field type %s:",
                 __func__,
                 cbl_field_type_str(field->type));
         break;
@@ -6082,7 +6082,7 @@ is_valuable( cbl_field_type_t type ) {
   case FldPointer:
     return true;
   }
-  cbl_internal_error( "%s:%d: invalid symbol_type_t %d", __func__, __LINE__, type );
+  cbl_internal_error( "%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type );
   return false;
 }
 
@@ -7228,20 +7228,20 @@ parser_logop( struct cbl_field_t *tgt,
 
   if( tgt->type != FldConditional )
     {
-    cbl_internal_error("parser_logop() was called with variable %s on line %d"
-          ", which is not a FldConditional\n",
+    cbl_internal_error("%<parser_logop()%> was called with variable %s on line %d"
+          ", which is not a FldConditional",
           tgt->name, cobol_location().first_line);
     }
   if( a && a->type != FldConditional )
     {
-    cbl_internal_error("parser_logop() was called with variable %s on line %d"
-          ", which is not a FldConditional\n",
+    cbl_internal_error("%<parser_logop()%> was called with variable %s on line %d"
+          ", which is not a FldConditional",
           a->name, cobol_location().first_line);
     }
   if( b && b->type != FldConditional )
     {
-    cbl_internal_error("parser_logop() was called with variable %s on line %d"
-          ", which is not a FldConditional\n",
+    cbl_internal_error("%<parser_logop()%> was called with variable %s on line %d"
+          ", which is not a FldConditional",
           b->name, cobol_location().first_line);
     }
 
@@ -7347,9 +7347,9 @@ parser_relop(   cbl_field_t *tgt,
 
   if( tgt->type != FldConditional )
     {
-    cbl_internal_error("parser_relop() was called with variable %s, "
-          "which is not a FldConditional\n",
-          tgt->name);
+    cbl_internal_error("%<parser_relop%> was called with variable %qs, "
+                       "which is not a FldConditional",
+                       tgt->name);
     }
 
   static tree comp_res = gg_define_variable(INT, "..pr_comp_res", vs_file_static);
@@ -7411,8 +7411,8 @@ parser_relop_long(cbl_field_t *tgt,
 
   if( tgt->type != FldConditional )
     {
-    cbl_internal_error("parser_relop() was called with variable %s, "
-          "which is not a FldConditional\n",
+    cbl_internal_error("%<parser_relop()%> was called with variable %s, "
+          "which is not a FldConditional",
           tgt->name);
     }
 
@@ -7457,8 +7457,8 @@ parser_if( struct cbl_field_t *conditional )
 
   if( conditional->type != FldConditional )
     {
-    cbl_internal_error("parser_if() was called with variable %s, "
-          "which is not a FldConditional\n",
+    cbl_internal_error("%<parser_if()%> was called with variable %s, "
+          "which is not a FldConditional",
           conditional->name);
     }
 
@@ -7708,20 +7708,19 @@ parser_setop( struct cbl_field_t *tgt,
                       integer_zero_node));
           break;
         default:
-          dbgmsg("###### %10s in %s:%d\n", __func__, __FILE__, __LINE__ );
-          cbl_internal_error(
-                "###### candidate %s has unimplemented CVT_type %d(%s)\n",
-                candidate->name,
-                candidate->type,
-                cbl_field_type_str(candidate->type));
+          dbgmsg("%10s in %s:%d", __func__, __FILE__, __LINE__ );
+          cbl_internal_error("candidate %s has unimplemented %<CVT_type%> %d(%s)",
+                             candidate->name,
+                             candidate->type,
+                             cbl_field_type_str(candidate->type));
           gcc_unreachable();
           break;
         }
       break;
 
     default:
-      dbgmsg("###### %10s in %s:%d\n", __func__, __FILE__, __LINE__ );
-      cbl_internal_error("###### unknown setop_t code %d\n", op);
+      dbgmsg("%10s in %s:%d", __func__, __FILE__, __LINE__ );
+      cbl_internal_error("unknown %<setop_t%> code %d", op);
       gcc_unreachable();
       break;
     }
@@ -7917,7 +7916,7 @@ parser_perform_conditional( struct cbl_perform_tgt_t *tgt )
 
   if( !(i < MAXIMUM_UNTILS) )
     {
-    cbl_internal_error("%s:%d: %u exceeds MAXIMUM_UNTILS of %d, line %d",
+    cbl_internal_error("%s:%d: %u exceeds %<MAXIMUM_UNTILS%> of %d, line %d",
                        __func__, __LINE__,
                        i, MAXIMUM_UNTILS, CURRENT_LINE_NUMBER);
     }
@@ -9151,7 +9150,7 @@ parser_file_add(struct cbl_file_t *file)
 
   if( !file )
     {
-    cbl_internal_error("%s(): called with NULL *file", __func__);
+    cbl_internal_error("%s: called with NULL *file", __func__);
     gcc_assert(file);
     }
 
@@ -9276,7 +9275,7 @@ parser_file_add(struct cbl_file_t *file)
   if(file->access == file_inaccessible_e)
     {
     cbl_internal_error(
-          "%s:%d file %s access mode is 'file_inaccessible_e' in %s",
+          "%s:%d file %s access mode is %<file_inaccessible_e%> in %s",
           current_filename.back().c_str(),
           CURRENT_LINE_NUMBER,
           file->name,
@@ -9350,12 +9349,13 @@ parser_file_open( struct cbl_file_t *file, int mode_char )
 
   if( !file )
     {
-    cbl_internal_error("parser_file_open called with NULL *file");
+    cbl_internal_error("%<parser_file_open%> called with NULL *file");
     }
 
   if( !file->var_decl_node )
     {
-    cbl_internal_error("parser_file_open for %s called with NULL var_decl_node", file->name);
+    cbl_internal_error("%<parser_file_open%> for %s called with NULL "
+                       "%<var_decl_node%>", file->name);
     }
 
   if( mode_char == 'a' && (file->access != file_access_seq_e) )
@@ -9429,12 +9429,13 @@ parser_file_close( struct cbl_file_t *file, file_close_how_t how )
 
   if( !file )
     {
-    cbl_internal_error("parser_file_close called with NULL *file");
+    cbl_internal_error("%<parser_file_close%> called with NULL *file");
     }
 
   if( !file->var_decl_node )
     {
-    cbl_internal_error("parser_file_close for %s called with NULL file->var_decl_node", file->name);
+    cbl_internal_error("%<parser_file_close%> for %s called with "
+                       "NULL %<file->var_decl_node%>", file->name);
     }
 
   TRACE1
@@ -9498,27 +9499,29 @@ parser_file_read( struct cbl_file_t *file,
 
   if( !file )
     {
-    cbl_internal_error("parser_file_read called with NULL *file");
+    cbl_internal_error("%<parser_file_read%> called with NULL *file");
     }
 
   if( !file->var_decl_node )
     {
-    cbl_internal_error("parser_file_read for %s called with NULL file->var_decl_node", file->name);
+    cbl_internal_error("%<parser_file_read%> for %s called with "
+                       "NULL %<file->var_decl_node%>", file->name);
     }
 
   if( !file )
     {
-    cbl_internal_error("parser_file_read called with NULL *field");
+    cbl_internal_error("%<parser_file_read%> called with NULL *field");
     }
 
   if( !file->var_decl_node )
     {
-    cbl_internal_error("parser_file_read for %s called with NULL field->var_decl_node", file->name);
+    cbl_internal_error("%<parser_file_read%> for %s called with "
+                       "NULL %<field->var_decl_node%>", file->name);
     }
 
   if( file->access == file_access_seq_e && where >= 0)
     {
-    cbl_internal_error("%s:%d file %s is RELATIVE/SEQUENTIAL, but 'where' >= 0",
+    cbl_internal_error("%s:%d file %s is RELATIVE/SEQUENTIAL, but %<where >= 0%>",
           current_filename.back().c_str(),
           CURRENT_LINE_NUMBER,
           file->name);
@@ -9527,7 +9530,7 @@ parser_file_read( struct cbl_file_t *file,
 
   if( file->access == file_access_rnd_e && where < 0)
     {
-    cbl_internal_error("%s:%d file %s is RELATIVE/RANDOM, but 'where' < 0",
+    cbl_internal_error("%s:%d file %s is RELATIVE/RANDOM, but %<where < 0%>",
           current_filename.back().c_str(),
           CURRENT_LINE_NUMBER,
           file->name);
@@ -9615,23 +9618,23 @@ parser_file_write( cbl_file_t *file,
 
   if( !file )
     {
-    cbl_internal_error("%s(): called with NULL *file", __func__);
+    cbl_internal_error("%s: called with NULL *file", __func__);
     }
 
   if( !file->var_decl_node )
     {
-    cbl_internal_error("%s(): for %s called with NULL file->var_decl_node",
+    cbl_internal_error("%s: for %s called with NULL %<file->var_decl_node%>",
                         __func__, file->name);
     }
 
   if( !file )
     {
-    cbl_internal_error("%s(): called with NULL *field", __func__);
+    cbl_internal_error("%s: called with NULL *field", __func__);
     }
 
   if( !file->var_decl_node )
     {
-    cbl_internal_error( "%s(): for %s called with NULL field->var_decl_node",
+    cbl_internal_error( "%s: for %s called with NULL %<field->var_decl_node%>",
                         __func__,
                         file->name);
     }
@@ -10292,9 +10295,9 @@ inspect_replacing(int backward,
       }
     }
 
-  //fprintf(stderr, "%s(): %ld %ld\n", __func__, int_index, n_integers);
+  //fprintf(stderr, "%s: %ld %ld\n", __func__, int_index, n_integers);
   gcc_assert(int_index  == n_integers);
-  //fprintf(stderr, "%s(): %ld %ld\n", __func__, pcbl_index, n_resolveds);
+  //fprintf(stderr, "%s: %ld %ld\n", __func__, pcbl_index, n_resolveds);
   gcc_assert(pcbl_index == n_resolveds);
 
   // We have built up an array of integers, and an array of cbl_refer_t.
@@ -11477,7 +11480,7 @@ parser_sort(cbl_refer_t tableref,
   gcc_assert(table->var_decl_node);
   if( !is_table(table) )
     {
-    cbl_internal_error(  "%s(): asked to sort %s, but it's not a table",
+    cbl_internal_error(  "%s: asked to sort %s, which is not a table",
             __func__,
             tableref.field->name);
     }
@@ -11605,7 +11608,7 @@ parser_file_sort(   cbl_file_t *workfile,
   else
     {
     // Having both or neither violates SORT syntax
-    cbl_internal_error("%s(): syntax error -- both (or neither) USING "
+    cbl_internal_error("%s: syntax error: both (or neither) USING "
           "and input-proc are specified",
           __func__);
     }
@@ -11735,7 +11738,7 @@ parser_file_sort(   cbl_file_t *workfile,
     }
   else
     {
-    cbl_internal_error("%s(): syntax error -- both (or neither) GIVING "
+    cbl_internal_error("%s: syntax error: both (or neither) GIVING "
           "and output-proc are specified", __func__);
     }
   }
@@ -12147,7 +12150,7 @@ parser_file_merge(  cbl_file_t *workfile,
     }
   else
     {
-    cbl_internal_error("%s(): syntax error -- both (or neither) "
+    cbl_internal_error("%s: syntax error: both (or neither) "
           "files and output-proc are specified", __func__);
     }
   }
@@ -12798,7 +12801,7 @@ create_and_call(size_t narg,
     else
       {
       cbl_internal_error(
-            "%s(): What in the name of Nero's fiddle are we doing here?",
+            "%s: What in the name of Nero are we doing here?",
             __func__);
       }
     }
@@ -13038,7 +13041,7 @@ parser_bitop( struct cbl_field_t *tgt,  // tgt has to be a FldConditional
   if(tgt && tgt->type != FldConditional)
     {
     fprintf(stderr,
-            "%s(): The target %s has to be a FldConditional, not %s\n",
+            "%s: The target %s has to be a FldConditional, not %s\n",
             __func__,
             tgt->name,
             cbl_field_type_str(tgt->type));
@@ -13075,7 +13078,7 @@ parser_bitop( struct cbl_field_t *tgt,  // tgt has to be a FldConditional
     case bit_or_op:
     case bit_xor_op:
       fprintf(stderr,
-              "%s(): The %s operation is not valid\n",
+              "%s: The %s operation is not valid\n",
               __func__,
               ops[op]);
       gcc_unreachable();
@@ -13122,7 +13125,7 @@ parser_bitwise_op(struct cbl_field_t *tgt,
   if( tgt && !is_valuable(tgt->type) && tgt->type != FldLiteralN)
     {
     fprintf(stderr,
-            "%s(): The target %s has to be is_valuable, not %s\n",
+            "%s: The target %s has to be is_valuable, not %s\n",
             __func__,
             tgt->name,
             cbl_field_type_str(tgt->type));
@@ -13136,7 +13139,7 @@ parser_bitwise_op(struct cbl_field_t *tgt,
     case bit_on_op:
     case bit_off_op:
       fprintf(stderr,
-              "%s(): The %s operation is not valid\n",
+              "%s: The %s operation is not valid\n",
               __func__,
               ops[op]);
       gcc_unreachable();
@@ -13749,7 +13752,7 @@ hijack_for_development(const char *funcname)
   // Assume that funcname is lowercase with no hyphens
   enter_program_common(funcname, funcname);
   parser_display_literal("You have been hijacked by a program named \"dubner\"");
-  gg_insert_into_assembler("%s HIJACKED DUBNER CODE START", ASM_COMMENT_START);
+  gg_insert_into_assemblerf("%s HIJACKED DUBNER CODE START", ASM_COMMENT_START);
 
   for(int i=0; i<10; i++)
     {
@@ -13762,7 +13765,7 @@ hijack_for_development(const char *funcname)
             NULL_TREE);
     }
 
-  gg_insert_into_assembler("%s HIJACKED DUBNER CODE END", ASM_COMMENT_START);
+  gg_insert_into_assemblerf("%s HIJACKED DUBNER CODE END", ASM_COMMENT_START);
   gg_return(0);
   }
 
@@ -14083,8 +14086,8 @@ mh_source_is_literalN(cbl_refer_t &destref,
 
       default:
         cbl_internal_error(
-              "In parser_move(%s to %s), the move of FldLiteralN to %s "
-              "hasn't been implemented",
+              "In %<parser_move(%s to %s)%>, the move of FldLiteralN to %s "
+              "is unimplemented",
               sourceref.field->name,
               destref.field->name,
               cbl_field_type_str(destref.field->type));
@@ -14319,8 +14322,8 @@ mh_dest_is_float( cbl_refer_t &destref,
         }
 
       default:
-        cbl_internal_error("In mh_dest_is_float(%s to %s), the "
-                           "move of %s to %s hasn't been implemented",
+        cbl_internal_error("In %<mh_dest_is_float%>(%s to %s), the "
+                           "move of %s to %s is unimplemented",
               sourceref.field->name,
               destref.field->name,
               cbl_field_type_str(sourceref.field->type),
@@ -16349,7 +16352,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
     {
     do
       {
-      fprintf(stderr, "( %d ) %s():", CURRENT_LINE_NUMBER, __func__);
+      fprintf(stderr, "( %d ) %s:", CURRENT_LINE_NUMBER, __func__);
       }
     while(0);
 
@@ -16487,7 +16490,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
     //  Make sure we have a new variable to work with.
     if( !new_var )
       {
-      cbl_internal_error("parser_symbol_add() was called with a NULL new_var\n");
+      cbl_internal_error("%<parser_symbol_add()%> was called with a NULL %<new_var%>");
       }
 
     TRACE1
@@ -16515,7 +16518,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
     if( is_table(new_var) && new_var->data.capacity == 0)
       {
       cbl_internal_error(
-          "%s(): %2.2d %s is a table, but it improperly has a capacity of zero",
+          "%s: %d %s is a table, but it improperly has a capacity of zero",
            __func__,
            new_var->level,
            new_var->name);
@@ -16555,23 +16558,20 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     if( ancestor == new_var )
       {
-      cbl_internal_error("parser_symbol_add(): %s is its own ancestor",
-                          new_var->name);
+      cbl_internal_error("%s: %s is its own ancestor", __func__, new_var->name);
       }
 
     if( !ancestor && (new_var->level > LEVEL01 && new_var->level <= LEVEL49 ) )
       {
-      cbl_internal_error("parser_symbol_add(): %2.2d %s has null ancestor",
-            new_var->level,
-            new_var->name);
+      cbl_internal_error("%s: %d %qs has NULL ancestor", __func__, 
+                         new_var->level, new_var->name);
       }
 
     //  new_var's var_decl_node should be NULL at this point
     if( new_var->var_decl_node )
       {
-      cbl_internal_error( "parser_symbol_add( %s ) improperly has a non-null "
-             "var_decl_node\n",
-             new_var->name);
+      cbl_internal_error( "%s(%s) improperly has a non-null "
+                          "%<var_decl_node%>", __func__, new_var->name);
       }
 
     switch( new_var->type )
@@ -16765,7 +16765,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
         && new_var->type  != FldLiteralN
         && new_var->type  != FldLiteralA )
       {
-      cbl_internal_error(  "%s(): %2.2d %s<%s> improperly has a data.capacity of zero",
+      cbl_internal_error(  "%s: %d %s<%s> improperly has a data.capacity of zero",
               __func__,
               new_var->level,
               new_var->name,
@@ -16832,12 +16832,10 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
         if( !bytes_to_allocate )
           {
-          fprintf(stderr,
-                  "bytes_to_allocate is zero for %s (symbol number "
-                  HOST_SIZE_T_PRINT_DEC ")\n",
-                  new_var->name,
-                  (fmt_size_t)new_var->our_index);
-          gcc_assert(bytes_to_allocate);
+          cbl_internal_error( "%<bytes_to_allocate%> is zero for %s (symbol number "
+                              HOST_SIZE_T_PRINT_DEC ")",
+                              new_var->name,
+                              (fmt_size_t)new_var->our_index);
           }
 
         if( new_var->type == FldIndex && new_var->level == 0 )

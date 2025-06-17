@@ -31,11 +31,13 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
-void cbl_message(int fd, const char *format_string, ...);
-void cbl_internal_error(const char *format_string, ...);
+void cbl_message(int fd, const char *format_string, ...)
+  ATTRIBUTE_PRINTF_2;
+void cbl_internal_error(const char *format_string, ...)
+  ATTRIBUTE_GCOBOL_DIAG(1, 2);
 
-void cbl_err(const char *format_string, ...);
-void cbl_errx(const char *format_string, ...);
+void cbl_err(const char *format_string, ...) ATTRIBUTE_GCOBOL_DIAG(1, 2);
+void cbl_errx(const char *format_string, ...) ATTRIBUTE_GCOBOL_DIAG(1, 2);
 
 bool fisdigit(int c);
 bool fisspace(int c);

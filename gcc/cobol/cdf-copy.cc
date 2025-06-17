@@ -304,7 +304,8 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
       dbgmsg("found copybook file %s", filename);
       this->source.name = xstrdup(filename);
       if( ! cobol_filename(this->source.name, inode_of(fd)) ) {
-        error_msg(source.loc, "recursive copybook: '%s' includes itself", this->source);
+        error_msg(source.loc, "recursive copybook: '%s' includes itself",
+                  this->source.name);
         (void)! close(fd);
         fd = -1;
       }
