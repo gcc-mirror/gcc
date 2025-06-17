@@ -262,7 +262,8 @@ omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
 			       DECL_ATTRIBUTES (decl)))
 	return NULL_TREE;
 
-      if (!DECL_EXTERNAL (decl) && DECL_SAVED_TREE (decl))
+      if (DECL_SAVED_TREE (decl)
+	  && (!DECL_EXTERNAL (decl) || DECL_DECLARED_INLINE_P (decl)))
 	((vec<tree> *) data)->safe_push (decl);
       DECL_ATTRIBUTES (decl) = tree_cons (id, NULL_TREE,
 					  DECL_ATTRIBUTES (decl));
