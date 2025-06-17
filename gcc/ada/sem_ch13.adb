@@ -8862,6 +8862,43 @@ package body Sem_Ch13 is
             Num_Repped_Components   : Nat := 0;
             Num_Unrepped_Components : Nat := 0;
 
+            function Unchecked_Union_Pragma_Pending return Boolean;
+            --  Return True in the corner case of an Unchecked_Union pragma
+            --  occuring after the record representation clause (which
+            --  means that Is_Unchecked_Union will return False for Rectype,
+            --  even though it would return True if called later after the
+            --  pragma is analyzed).
+
+            ------------------------------------
+            -- Unchecked_Union_Pragma_Pending --
+            ------------------------------------
+
+            function Unchecked_Union_Pragma_Pending return Boolean is
+               Decl_List_Element : Node_Id := N;
+               Pragma_Arg : Node_Id;
+            begin
+               while Present (Decl_List_Element) loop
+                  if Nkind (Decl_List_Element) = N_Pragma
+                    and then Get_Pragma_Id (Decl_List_Element) =
+                             Pragma_Unchecked_Union
+                    and then not Is_Empty_List (Pragma_Argument_Associations
+                                                  (Decl_List_Element))
+                  then
+                     Pragma_Arg := Get_Pragma_Arg
+                                     (First (Pragma_Argument_Associations
+                                               (Decl_List_Element)));
+                     if Nkind (Pragma_Arg) = N_Identifier
+                       and then Chars (Pragma_Arg) = Chars (Rectype)
+                     then
+                        return True;
+                     end if;
+                  end if;
+
+                  Next (Decl_List_Element);
+               end loop;
+               return False;
+            end Unchecked_Union_Pragma_Pending;
+
          begin
             --  First count number of repped and unrepped components
 
@@ -8900,8 +8937,10 @@ package body Sem_Ch13 is
                     --  Ignore discriminant in unchecked union, since it is
                     --  not there, and cannot have a component clause.
 
-                    and then (not Is_Unchecked_Union (Rectype)
-                               or else Ekind (Comp) /= E_Discriminant)
+                    and then (Ekind (Comp) /= E_Discriminant
+                              or else not (Is_Unchecked_Union (Rectype)
+                                           or else
+                                             Unchecked_Union_Pragma_Pending))
                   then
                      Error_Msg_Sloc := Sloc (Comp);
                      Error_Msg_NE
