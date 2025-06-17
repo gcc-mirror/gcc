@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc -mabi=lp64 -mcmodel=large" } */
+/* { dg-options "-march=rv64gc -mabi=lp64 -mcmodel=large -fno-pie" } */
 
 int foo(int x, int y)
 {
