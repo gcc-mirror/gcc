@@ -1014,7 +1014,7 @@
    (set_attr "length"	"3")])
 
 
-;; Field extract instructions.
+;; Field extract and insert instructions.
 
 (define_expand "extvsi"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -1147,6 +1147,25 @@
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"6")])
+
+(define_insn "insvsi"
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+a")
+			 (match_operand:SI 1 "extui_fldsz_operand" "i")
+			 (match_operand:SI 2 "const_int_operand" "i"))
+	(match_operand:SI 3 "register_operand" "r"))]
+  "TARGET_DEPBITS"
+{
+  int shift;
+  if (BITS_BIG_ENDIAN)
+    shift = (32 - (INTVAL (operands[1]) + INTVAL (operands[2]))) & 0x1f;
+  else
+    shift = INTVAL (operands[2]) & 0x1f;
+  operands[2] = GEN_INT (shift);
+  return "depbits\t%0, %3, %2, %1";
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
 
 
 ;; Conversions.
