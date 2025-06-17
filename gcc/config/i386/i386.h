@@ -2821,6 +2821,10 @@ struct GTY(()) machine_function {
   /* Cached initial frame layout for the current function.  */
   struct ix86_frame frame;
 
+  /* The components already handled by separate shrink-wrapping, which should
+     not be considered by the prologue and epilogue.  */
+  bool reg_is_wrapped_separately[FIRST_PSEUDO_REGISTER];
+
   /* For -fsplit-stack support: A stack local which holds a pointer to
      the stack arguments for a function with a variable number of
      arguments.  This is set at the start of the function and is used

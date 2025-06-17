@@ -437,6 +437,13 @@ extern rtl_opt_pass *make_pass_align_tight_loops (gcc::context *);
 extern bool ix86_has_no_direct_extern_access;
 extern bool ix86_rpad_gate ();
 
+extern sbitmap ix86_get_separate_components (void);
+extern sbitmap ix86_components_for_bb (basic_block);
+extern void ix86_disqualify_components (sbitmap, edge, sbitmap, bool);
+extern void ix86_emit_prologue_components (sbitmap);
+extern void ix86_emit_epilogue_components (sbitmap);
+extern void ix86_set_handled_components (sbitmap);
+
 /* In i386-expand.cc.  */
 bool ix86_check_builtin_isa_match (unsigned int, HOST_WIDE_INT*,
 				   HOST_WIDE_INT*);

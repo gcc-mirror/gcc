@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-g" }
+! { dg-options "-fno-shrink-wrap -g" }
   integer :: a(10), b(12)
   call sub (a, 10)
   call sub (b, 12)
