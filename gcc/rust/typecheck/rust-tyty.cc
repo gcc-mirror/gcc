@@ -3545,12 +3545,12 @@ ParamType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
   ParamType *p = static_cast<ParamType *> (clone ());
   subst_mappings.on_param_subst (*p, arg);
 
-  // there are two cases one where we substitute directly to a new PARAM and
-  // otherwise
-  if (arg.get_tyty ()->get_kind () == TyTy::TypeKind::PARAM)
+  const BaseType *resolved = arg.get_tyty ();
+  if (resolved->get_kind () == TyTy::TypeKind::PARAM)
     {
-      p->set_ty_ref (arg.get_tyty ()->get_ref ());
-      return p;
+      const ParamType &pp = *static_cast<const ParamType *> (resolved);
+      if (pp.can_resolve ())
+	resolved = pp.resolve ();
     }
 
   // this is the new subst that this needs to pass
