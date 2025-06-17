@@ -4054,8 +4054,8 @@ package body Sem_Aggr is
 
       if Present (Add_Unnamed_Subp)
         and then No (New_Indexed_Subp)
-        and then Present (Etype (Add_Unnamed_Subp))
-        and then Etype (Add_Unnamed_Subp) /= Any_Type
+        and then Present (Entity (Add_Unnamed_Subp))
+        and then Entity (Add_Unnamed_Subp) /= Any_Id
       then
          declare
             Elmt_Type : constant Entity_Id :=
@@ -4101,7 +4101,8 @@ package body Sem_Aggr is
          end;
 
       elsif Present (Add_Named_Subp)
-        and then Etype (Add_Named_Subp) /= Any_Type
+        and then Present (Entity (Add_Named_Subp))
+        and then Entity (Add_Named_Subp) /= Any_Id
       then
          declare
             --  Retrieves types of container, key, and element from the
@@ -4155,7 +4156,8 @@ package body Sem_Aggr is
          end;
 
       elsif Present (Assign_Indexed_Subp)
-        and then Etype (Assign_Indexed_Subp) /= Any_Type
+        and then Present (Entity (Assign_Indexed_Subp))
+        and then Entity (Assign_Indexed_Subp) /= Any_Id
       then
          --  Indexed Aggregate. Positional or indexed component
          --  can be present, but not both. Choices must be static
