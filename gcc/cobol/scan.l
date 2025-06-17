@@ -982,7 +982,7 @@ USE({SPC}FOR)?		{ return USE; }
   BINARY-LONG	   		{ return bcomputable(FldNumericBin5, 4); }
   BINARY-DOUBLE			{ return bcomputable(FldNumericBin5, 8); }
   BINARY-LONG-LONG		{ if( ! dialect_mf() ) {
-				    error_msg(yylloc, "%s requires -dialect mf", yytext);
+				    dialect_error(yylloc, yytext, "mf");
 				  }
 				  return bcomputable(FldNumericBin5, 8);
 				}
@@ -993,7 +993,7 @@ USE({SPC}FOR)?		{ return USE; }
   FLOAT-BINARY-32		{ return ucomputable(FldFloat, 4); }
   FLOAT-BINARY-64		{ return ucomputable(FldFloat, 8); }
   FLOAT-BINARY-128		{ return ucomputable(FldFloat, 16); }
-  FLOAT-DECIMAL-(16|34)		{ not_implemented("USAGE type: FLOAT_DECIMAL");
+  FLOAT-DECIMAL-(16|34)		{ not_implemented("USAGE type: %<FLOAT_DECIMAL%>");
 				  return FLOAT_DECIMAL; // causes syntax error
 				}
   /* 21) The representation and length of a data item described with USAGE
@@ -1019,7 +1019,7 @@ USE({SPC}FOR)?		{ return USE; }
   POINTER           	{ yylval.field_attr = none_e;     return POINTER; }
 
   PROCEDURE-POINTER    	{ if( dialect_gcc() ) {
-			    error_msg(yylloc, "%s requires -dialect ibm or mf", yytext);
+			    dialect_error(yylloc, yytext, "ibm or mf");
 			  }
 			  yylval.field_attr = prog_ptr_e;
 			  return POINTER;  // return it anyway
@@ -2482,10 +2482,9 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 <<EOF>>         {
 
                   if( YY_START == quoted1 || YY_START == quoted2 ) {
-		    error_msg(yylloc, "syntax error: unterminated string '%s'",
+		    error_msg(yylloc, "syntax error: unterminated string %<%s%>",
 			     tmpstring);
 		    return NO_CONDITION;
-		    cbl_internal_error("");
                   }
                   yypop_buffer_state();
 

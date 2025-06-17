@@ -424,30 +424,31 @@ extern bool cursor_at_sol;
 
 // Use CHECK_FIELD when a should be non-null, and a->var_decl_node also should
 // by non-null:
-#define CHECK_FIELD(a)          \
-        do{                     \
-        if(!a)                  \
-            {                   \
-            yywarn("%s(): parameter " #a " is NULL", __func__); \
-            gcc_unreachable();  \
-            }                   \
-        if( !a->var_decl_node && a->type != FldConditional && a->type != FldLiteralA)  \
-            {                   \
-            yywarn("%s() parameter " #a " is variable %s<%s> with NULL var_decl_node", \
-                __func__,       \
-                a->name,        \
-                cbl_field_type_str(a->type) ); \
-            gcc_unreachable();  \
-            }                   \
-        }while(0);
+#define CHECK_FIELD(a)                                                  \
+        do {                                                                  \
+        if(!a)                                                          \
+            {                                                           \
+            yywarn("%s: parameter %<" #a "%> is NULL", __func__);        \
+            gcc_unreachable();                                          \
+            }                                                           \
+        if( !a->var_decl_node && a->type != FldConditional && a->type != FldLiteralA) \
+            {                                                           \
+            yywarn("%s: parameter %<" #a "%> is variable "               \
+                   "%s<%s> with NULL %<var_decl_node%>",                \
+                __func__,                                               \
+                a->name,                                                \
+                cbl_field_type_str(a->type) );                          \
+            gcc_unreachable();                                          \
+            }                                                           \
+        } while(0);
 
-#define CHECK_LABEL(a)            \
-        do{                     \
-        if(!a)                  \
-            {                   \
-            yywarn("%s(): parameter " #a " is NULL", __func__); \
-            gcc_unreachable();  \
-            }                   \
+#define CHECK_LABEL(a)                                                  \
+        do{                                                             \
+        if(!a)                                                          \
+            {                                                           \
+            yywarn("%s: parameter %<" #a "%> is NULL", __func__);       \
+            gcc_unreachable();                                          \
+            }                                                           \
         }while(0);
 
 #ifdef INCORPORATE_ANALYZER

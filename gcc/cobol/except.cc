@@ -77,7 +77,7 @@ ec_level( ec_type_t ec ) {
 
 void
 cbl_enabled_exception_t::dump( int i ) const {
-  cbl_message(2, "cbl_enabled_exception_t: %2d  {%s, %s, %s, %zu}",
+  cbl_message(2, "cbl_enabled_exception_t: %2d  {%s, %s, %zu}",
               i,
               location? "location" : "    none",
               ec_type_str(ec),

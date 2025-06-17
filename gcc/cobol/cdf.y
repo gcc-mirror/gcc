@@ -263,7 +263,7 @@ top:		partials { YYACCEPT; }
 		  YYACCEPT;
 		}
 	|	copy error {
-		  error_msg(@error, "COPY directive must end in a '.'");
+		  error_msg(@error, "COPY directive must end in a %<.%>");
 		  YYABORT;
 		}
 	|	completes { YYACCEPT; }
@@ -365,13 +365,15 @@ cdf_define:	CDF_DEFINE cdf_constant NAME as cdf_expr[value] override
 	|	CDF_DEFINE FEATURE as ON {
 		  auto feature = cbl_gcobol_feature_t($2);
 		  if( ! cobol_gcobol_feature_set(feature, true) ) {
-		    error_msg(@FEATURE, ">>DEFINE %EBCDIC-MODE is invalid within program body");
+		    error_msg(@FEATURE,
+                              "%<>>DEFINE %%EBCDIC-MODE%> is invalid within program body");
 		  }
 		}
 	|	CDF_DEFINE FEATURE as OFF {
 		  auto feature = cbl_gcobol_feature_t($2);
 		  if( ! cobol_gcobol_feature_set(feature, false) ) {
-		    error_msg(@FEATURE, ">>DEFINE %EBCDIC-MODE is invalid within program body");
+		    error_msg(@FEATURE,
+                              "%<>>DEFINE %%EBCDIC-MODE%> is invalid within program body");
 		  }
 		}
 		;
@@ -430,7 +432,7 @@ filenames:      filename {
 		  auto inserted = $$->insert(symbol_index(symbol_elem_of($2)));
 		  if( ! inserted.second ) {
 		    error_msg(@2, "%s: No file-name shall be specified more than "
-			      " once for one exception condition", $filename->name);
+			      "once for one exception condition", $filename->name);
 		  }
 		}
                 ;
@@ -517,7 +519,7 @@ cdf_relexpr:	cdf_relexpr '<' cdf_expr { $$ = $1(@1) <  $3(@3); }
 		    const char *msg = $1.string?
 		      "incommensurate comparison is FALSE: '%s' = %ld" :
 		      "incommensurate comparison is FALSE: %ld = '%s'" ;
-		    error_msg(@1, msg);
+		    error_msg(@1, "%s", msg);
 		  }
 		}
 	|	cdf_relexpr NE cdf_expr
@@ -531,7 +533,7 @@ cdf_relexpr:	cdf_relexpr '<' cdf_expr { $$ = $1(@1) <  $3(@3); }
 		    const char *msg = $1.string?
 		      "incommensurate comparison is FALSE: '%s' = %ld" :
 		      "incommensurate comparison is FALSE: %ld = '%s'" ;
-		    error_msg(@1, msg);
+		    error_msg(@1, "%s", msg);
 		  }
 		}
 	|	cdf_relexpr GE  cdf_expr { $$ = $1(@1) >= $3(@3); }
@@ -567,7 +569,7 @@ cdf_factor:     NAME {
 	| 	NUMSTR {
 		  auto value = integer_literal($NUMSTR);
 		  if( !value.second ) {
-		    error_msg(@1, "CDF error: parsed %s as %ld",
+		    error_msg(@1, "CDF error: parsed %qs as %lld",
 		             $NUMSTR, value.first);
 		    YYERROR;
 		  }
@@ -593,7 +595,7 @@ copybook_name: 	COPY name_one[src]
 		  copybook.library(@lib, $lib.string);
 		  if( -1 == copybook.open(@src, $src.string) ) {
 		    error_msg(@src, "could not open copybook file "
-		             "for '%s' in '%'s'", $src.string, $lib.string);
+		             "for %<%s%> in %<%s%>", $src.string, $lib.string);
 		    YYABORT;
 		  }
 		}

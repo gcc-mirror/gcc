@@ -539,6 +539,9 @@ extern tree gg_trans_unit_var_decl(const char *var_name);
 tree gg_open(tree char_star_A, tree int_B);
 tree gg_close(tree int_A);
 tree gg_get_indirect_reference(tree pointer, tree offset);
-void gg_insert_into_assembler(const char *format, ...);
+
+void gg_insert_into_assembler(const char ach[]);
+void gg_insert_into_assemblerf(const char *format, ...) ATTRIBUTE_PRINTF_1;
+
 void gg_modify_function_type(tree function_decl, tree return_type);
 #endif

@@ -1482,7 +1482,7 @@ program_id:     PROGRAM_ID dot namestr[name] program_as program_attrs[attr] dot
                   const char *name = string_of($name);
                   parser_enter_program( name, false, &main_error );
                   if( main_error ) {
-                    error_msg(@name, "PROGRAM-ID 'main' is invalid with -main option");
+                    error_msg(@name, "PROGRAM-ID 'main' is invalid with %<-main%> option");
                     YYERROR;
                   }
 
@@ -1518,7 +1518,8 @@ function_id:    FUNCTION '.' NAME program_as program_attrs[attr] '.'
                   int main_error = 0;
                   parser_enter_program( $NAME, true, &main_error );
                   if( main_error ) {
-                    error_msg(@NAME, "FUNCTION-ID 'main' is invalid with -main option");
+                    error_msg(@NAME, "FUNCTION-ID %<main%> is invalid "
+                              "with %<-main%> option");
                     YYERROR;
                   }
                   if( symbols_begin() == symbols_end() ) {
@@ -1589,7 +1590,7 @@ opt_binary:     FLOAT_BINARY default_kw is HIGH_ORDER_LEFT
 		{
 		  cbl_unimplementedw("HIGH-ORDER-LEFT was ignored");
 		  if( ! current.option_binary(cbl_options_t::high_order_left_e) ) {
-		    error_msg(@3, "unable to set HIGH_ORDER_LEFT");
+		    error_msg(@3, "unable to set %<HIGH_ORDER_LEFT%>");
 		  }
 		}
         |       FLOAT_BINARY default_kw is HIGH_ORDER_RIGHT[opt]
@@ -2520,7 +2521,7 @@ dev_mnemonic:	device_name is NAME
 		{
 		  auto p = cmd_or_env_special_of($device);
 		  if( !p ) {
-		    error_msg(@device, "%s is not a device name");
+		    error_msg(@device, "%s is not a device name", $device);
 		    YYERROR;
 		  }
 
@@ -2646,7 +2647,7 @@ alphabet_seq:   alphabet_lit[low]
 alphabet_etc:   alphabet_lit
                 {
                   if( $1.len > 1 ) {
-                    error_msg(@1, "'%c' can be only a single letter", $1.data);
+                    error_msg(@1, "%qs can be only a single letter", $1.data);
                     YYERROR;
                   }
                   $$ = (unsigned char)$1.data[0];
@@ -2912,7 +2913,7 @@ fd_clause:      record_desc
                   f->varying_size.explicitly = f->varies();
                   if( f->varying_size.max != 0 ) {
                     if( !(f->varying_size.min <= f->varying_size.max) ) {
-                      error_msg(@1, "%zu must be <= %zu",
+                      error_msg(@1, "%zu must be less than or equal to %zu",
                                 f->varying_size.min, f->varying_size.max);
                       YYERROR;
                     }
@@ -2988,7 +2989,7 @@ rec_contains:   NUMSTR[min] {
                   }
                   $$.max = n;
                   if( !($$.min < $$.max) ) {
-                    error_msg(@max, "FROM (%xz) must be less than TO (%zu)",
+                    error_msg(@max, "FROM (%zu) must be less than TO (%zu)",
                               $$.min, $$.max);
                     YYERROR;
                   }
@@ -3184,7 +3185,7 @@ field:          cdf
                       }
                       initial = string_of(field.data.value_of());
                       if( !initial ) {
-                        error_msg(@1, xstrerror(errno));
+                        error_msg(@1, "could not convert value to string");
                         YYERROR;
                       }
                       char decimal = symbol_decimal_point();
@@ -3638,7 +3639,7 @@ data_descr1:    level_name
                   }
                   if( field_index($thru) <= field_index($orig) ) {
                     error_msg(@orig, "cannot RENAME %s %s THRU %s %s "
-                             "because they're in the wrong order",
+                             "because they are in the wrong order",
 			      $orig->level_str(), name_of($orig),
 			      $thru->level_str(), name_of($thru));
                     YYERROR;
@@ -3680,7 +3681,7 @@ data_descr1:    level_name
                     case FldNumericEdited:
                       if( $field->has_attr(signable_e) ) {
                         error_msg(@2,  "%s has 'S' in PICTURE, cannot be BLANK WHEN ZERO",
-                                  $field->name, cbl_field_type_str($field->type) );
+                                  $field->name );
                       }
                       break;
                     default:
@@ -3891,9 +3892,8 @@ data_clauses:   data_clause
                       auto redefined = symbol_redefines(field);
                       if( redefined && redefined->type == FldPointer ) {
                         if( yydebug ) {
-                          yywarn("expanding %s size from %u bytes to "
-				 HOST_WIDE_INT_PRINT " "
-				 "because it redefines %s with USAGE POINTER",
+                          yywarn("expanding %s size from %u bytes to %wd "
+				 "because it redefines %s with %<USAGE POINTER%>",
                                 field->name, field->size(),
                                 int_size_in_bytes(ptr_type_node),
                                 redefined->name);
@@ -3986,7 +3986,7 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   field->data.capacity = type_capacity(field->type, $4);
                   field->data.digits = $4;
                   if( long(field->data.digits) != $4 ) {
-                    error_msg(@2, "indicated size would be %ld bytes, "
+                    error_msg(@2, "indicated size would be %d bytes, "
                              "maximum data item size is %u",
                              $4, UINT32_MAX);
                   }
@@ -4056,7 +4056,7 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
 		      (dialect_gnu() || dialect_mf()) )
 		  { // PIC X COMP-X or COMP-9
 		    if( ! field->has_attr(all_x_e) ) {
-		      error_msg(@2, "COMP PICTURE requires all X's or all 9's");
+		      error_msg(@2, "COMP PICTURE requires all X%'s or all 9%'s");
                       YYERROR;
 		    }
 		  } else {
@@ -4091,7 +4091,7 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   }
                   ERROR_IF_CAPACITY(@PIC, field);
                   if( !is_numeric_edited($picture) ) {
-                    error_msg(@picture, numed_message);
+                    error_msg(@picture, "%s", numed_message);
                     YYERROR;
                   }
                   field->data.picture = $picture;
@@ -4170,7 +4170,7 @@ alphanum_part:  ALNUM[picture] count
                     $$.nbyte += count; // AX9(3) has count 5
                   }
 		  if( count < 0 ) {
-		    error_msg(@2, "PICTURE count '(%d)' is negative", count );
+		    error_msg(@2, "PICTURE count %<(%d)%> is negative", count );
 		    YYERROR;
 		  }
                 }
@@ -4189,7 +4189,7 @@ nine:           %empty           { $$ = 0; }
                 {
                   $$ = $1;
 		  if( $$ == 0 ) {
-		    error_msg(@1, "'(0)' invalid in PICTURE (ISO 2023 13.18.40.3)");
+		    error_msg(@1, "%<(0)%> invalid in PICTURE (ISO 2023 13.18.40.3)");
 		  }
                 }
                 ;
@@ -4203,14 +4203,14 @@ count:          %empty           { $$ = 0; }
                   REAL_VALUE_TYPE rn = numstr2i($NUMSTR.string, $NUMSTR.radix);
                   $$ = real_to_integer (&rn);
 		  if( $$ == 0 ) {
-		    error_msg(@2, "'(0)' invalid in PICTURE (ISO 2023 13.18.40.3)");
+		    error_msg(@2, "%<0%> invalid in PICTURE (ISO 2023 13.18.40.3)");
 		  }
                 }
 	|	'(' NAME ')'
                 {
 		  auto value = cdf_value($NAME);
 		  if( ! (value && value->is_numeric()) ) {
-		    error_msg(@NAME, "PICTURE '(%s)' requires a CONSTANT value", $NAME );
+		    error_msg(@NAME, "PICTURE %qs requires a CONSTANT value", $NAME );
 		    YYERROR;
 		  }
 		  int nmsg = 0;
@@ -4223,13 +4223,13 @@ count:          %empty           { $$ = 0; }
 		    if( !real_identical (TREE_REAL_CST_PTR (field->data.value_of()),
 				         &vi) ) {
 		      nmsg++;
-		      error_msg(@NAME, "invalid PICTURE count '(%s)'",
+		      error_msg(@NAME, "invalid PICTURE count %<(%s)%>",
 				field->data.initial );
 		    }
 		  }
 		  $$ = value->as_number();
 		  if( $$ <= 0 && !nmsg) {
-		    error_msg(@NAME, "invalid PICTURE count '(%s)'", $NAME );
+		    error_msg(@NAME, "invalid PICTURE count %<(%s)%>", $NAME );
 		  }
                 }
                 ;
@@ -4974,12 +4974,11 @@ statements:                statement { $$ = $1; }
 
 statement:      error {
                   if( current.declarative_section_name() ) {
-		    error_msg(@1, "missing END DECLARATIVES or SECTION name",
-			      nparse_error);
+		    error_msg(@1, "missing END DECLARATIVES or SECTION name");
                     YYABORT;
                   }
                   if( max_errors_exceeded(nparse_error) ) {
-                    error_msg(@1, "max errors %d reached", nparse_error);
+                    error_msg(@1, "max errors %zu reached", nparse_error);
                     YYABORT;
                   }
                 }
@@ -5692,7 +5691,8 @@ end_program:    end_program1[end] '.'
                     gcc_unreachable();
                   }
                   if( !matches ) {
-                    error_msg(@end, "END %s %s' does not match IDENTIFICATION DIVISION '%s'",
+                    error_msg(@end, "END %s %s does not match "
+                                    "%<IDENTIFICATION DIVISION %s%>",
                               token_name, name, prog->name);
                     YYERROR;
                   }
@@ -5723,9 +5723,9 @@ end_program:    end_program1[end] '.'
 		    token_name = "FUNCTION";
                     break;
                   default:
-                    cbl_internal_error( "END token invalid");
+                    cbl_internal_error( "%<END%> token invalid");
                   }
-		  error_msg(@end, "END %s requires NAME before '.'", token_name);
+		  error_msg(@end, "%<END%> %s requires %<NAME%> before %<.%>", token_name);
 		  YYERROR;
 		}
                 ;
@@ -6776,7 +6776,7 @@ move:           MOVE scalar TO move_tgts[tgts]
                 {
                   statement_begin(@1, MOVE);
                   if( $scalar->field->type == FldIndex ) {
-                    error_msg(@1, "'%s' cannot be MOVEd because it's an INDEX",
+                    error_msg(@1, "%qs cannot be MOVEd because it is an %<INDEX%>",
 			     name_of($scalar->field) );
                     YYERROR;
                   }
@@ -7168,20 +7168,20 @@ section_kw:     SECTION
                 {
                   if( $1 ) {
 		    if( *$1 == '-' ) {
-		      error_msg(@1, "SECTION segment %<%s%> is negative", $1);
+		      error_msg(@1, "SECTION segment %qs is negative", $1);
                     } else {
 		      if( dialect_ibm() ) {
 			int sectno;
 			sscanf($1, "%d", &sectno);
 			if( ! (0 <= sectno && sectno <= 99) ) {
-			  error_msg(@1, "SECTION segment %<%s%> must be 0-99", $1);
+			  error_msg(@1, "SECTION segment %qs must be 0-99", $1);
 			} else {
 			  if(false) { // stand-in for warning, someday.
-			    yywarn("SECTION segment %<%s%> was ignored", $1);
+			    yywarn("SECTION segment %qs was ignored", $1);
 			  }
 			}
 		      } else {
-			cbl_unimplemented("SECTION segment %<%s%> is not ISO syntax", $1);
+			cbl_unimplemented("SECTION segment %qs is not ISO syntax", $1);
 		      }
                     }
 		  }
@@ -7932,7 +7932,7 @@ raise:          RAISE EXCEPTION NAME
 			    "EXCEPTION CONDITION: %s", $NAME);
                     YYERROR;
                   }
-                  cbl_unimplemented("RAISE <EXCEPTION OBJECT>");
+                  cbl_unimplemented("RAISE %<EXCEPTION OBJECT%>");
                   YYERROR;
                 }
                 ;
@@ -8009,7 +8009,7 @@ read_body:      NAME read_next read_into read_key
                     YYERROR;
                   }
                   if( $read_key->field && $read_next < 0 ) {
-                    error_msg(@1, "cannot read NEXT with KEY", $$->name);
+                    error_msg(@1, "cannot read NEXT with KEY %qs", $$->name);
                     YYERROR;
                   }
 
@@ -8803,7 +8803,7 @@ search_term:    scalar[key] '=' search_expr[sarg]
                   }
                   if( dimensions($key->field) < $key->nsubscript() ) {
                     error_msg(@1, "too many subscripts: "
-                              "%zu for table of %zu dimensions",
+                              "%u for table of %zu dimensions",
                               $key->nsubscript(), dimensions($key->field) );
                     YYERROR;
                   }
@@ -9137,7 +9137,7 @@ inspect:        INSPECT backward inspected TALLYING tallies
 		    if( is_literal(match) && is_literal(replace) ) {
 		      if( !$match->all && !$replace_oper->all) {
 			if( match->data.capacity != replace->data.capacity ) {
-			  error_msg(@match, "'%s', size %u NOT EQUAL '%s', size %u",
+			  error_msg(@match, "%qs, size %u NOT EQUAL %qs, size %u",
 				    nice_name_of(match), match->data.capacity, 
 				    nice_name_of(replace), replace->data.capacity);
 			  YYERROR;
@@ -10212,8 +10212,8 @@ intrinsic:      function_udf
 								    args.data());
                   if( p != NULL ) {
 		    auto loc = symbol_field_location(field_index(p->field));
-                    error_msg(loc, "FUNCTION %s has "
-                              "inconsistent parameter type %zu ('%s')",
+                    error_msg(loc, "FUNCTION %qs has "
+                              "inconsistent parameter type %zu (%qs)",
                               keyword_str($1), p - args.data(), name_of(p->field) );
                     YYERROR;
                   }
@@ -10290,7 +10290,7 @@ intrinsic:      function_udf
                   location_set(@1);
                   $$ = new_alphanumeric("FIND-STRING");
                   /* auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e)); */
-		  cbl_unimplemented("FIND_STRING");
+		  cbl_unimplemented("%<FIND_STRING%>");
                   /* if( ! intrinsic_call_4($$, FIND_STRING, r1, $r2) ) YYERROR; */
                 }
 
@@ -10757,7 +10757,7 @@ numval_locale:  %empty {
                   $$.arg2 = cbl_refer_t::empty();
                 }
         |       LOCALE NAME  { $$.is_locale = true;  $$.arg2 = NULL;
-                  cbl_unimplemented("NUMVAL_C LOCALE"); YYERROR;
+                  cbl_unimplemented("%<NUMVAL_C LOCALE%>"); YYERROR;
                 }
         |       varg         { $$.is_locale = false; $$.arg2 = $1; }
                 ;
@@ -11541,7 +11541,7 @@ relop_invert(relop_t op) {
   case ge_op: return lt_op;
   case gt_op: return le_op;
   }
-  cbl_errx( "%s:%d: invalid relop_t %d", __func__, __LINE__, op);
+  cbl_internal_error("%s:%d: invalid %<relop_t%> %d", __func__, __LINE__, op);
 
   return relop_t(0); // not reached
 }
@@ -11834,7 +11834,7 @@ current_t::udf_args_valid( const cbl_label_t *L,
       auto tgt = cbl_field_of(symbol_at(udf.linkage_fields.at(i).isym));
       if( ! valid_move(tgt, arg.field) ) {
 	auto loc = symbol_field_location(field_index(arg.field));
-	error_msg(loc, "FUNCTION %s arg %zu, '%s' cannot be passed to %s, type %s",
+	error_msg(loc, "FUNCTION %s argument %zu, '%s' cannot be passed to %s, type %s",
 		  L->name, i, arg.field->pretty_name(),
 		  tgt->pretty_name(), 3 + cbl_field_type_str(tgt->type) );
 	return false;
@@ -12032,7 +12032,7 @@ struct stringify_src_t : public cbl_string_src_t {
 
  protected:
   static void dump_input( const cbl_refer_t& refer ) {
-    yywarn( "%s:\t%s", __func__, field_str(refer.field) );
+    yywarn( "%s: %s", __func__, field_str(refer.field) );
   }
 };
 
@@ -12341,7 +12341,7 @@ numstr2i( const char input[], radix_t radix ) {
   case boolean_e:
     for( const char *p = input; *p != '\0'; p++ ) {
       if( ssize_t(8 * sizeof(integer) - 1) < p - input ) {
-        yywarn("'%s' was accepted as %d", input, integer);
+        yywarn("'%s' was accepted as %zu", input, integer);
         break;
       }
       switch(*p) {
@@ -12351,7 +12351,7 @@ numstr2i( const char input[], radix_t radix ) {
           integer |= ((*p) == '0' ? 0 : 1);
           break;
       default:
-        yywarn("'%s' was accepted as %d", input, integer);
+        yywarn("'%s' was accepted as %zu", input, integer);
 	break;
       }
     }
@@ -12359,7 +12359,7 @@ numstr2i( const char input[], radix_t radix ) {
     return output;
   }
   if( erc == -1 ) {
-    yywarn("'%s' was accepted as %lld", input, output);
+    yywarn("'%s' was accepted as %wd", input, integer);
   }
   return output;
 }
@@ -12982,7 +12982,7 @@ literal_attr( const char prefix[] ) {
   }
 
   // must be [BN]X
-  cbl_internal_error("'%s': invalid literal prefix", prefix);
+  cbl_internal_error("invalid literal prefix: %qs", prefix);
   gcc_unreachable();
   return none_e;
 }

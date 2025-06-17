@@ -159,11 +159,11 @@ numstr_of( const char string[], radix_t radix = decimal_e ) {
     //  exponent is implementor-defined." (We allow 9999.)
     nx = std::count_if(p, eoinput, fisdigit);
     if( 4 < nx ) {
-      error_msg(yylloc, "exponent %s more than 4 digits", ++p);
+      error_msg(yylloc, "exponent %qs more than 4 digits", ++p);
       return NO_CONDITION;
     }
     if( eoinput != std::find(p, eoinput, symbol_decimal_point()) ) {
-      error_msg(yylloc, "exponent includes decimal point", ++p);
+      error_msg(yylloc, "exponent %qs includes decimal point", ++p);
       return NO_CONDITION;
     }
 
@@ -187,7 +187,7 @@ numstr_of( const char string[], radix_t radix = decimal_e ) {
     }
   }
   if( 1 < std::count(input, eoinput, symbol_decimal_point()) ) {
-    error_msg(yylloc, "invalid numeric literal", ++p);
+    error_msg(yylloc, "invalid numeric literal %qs", ++p);
     return NO_CONDITION;
   }
 
@@ -295,7 +295,7 @@ static class parsing_status_t : public std::stack<cdf_status_t> {
   void splat() const {
     int i=0;
     for( const auto& status : c ) {
-      yywarn( "%4d\t%s", ++i, status.str() );
+      yywarn( "%d %s", ++i, status.str() );
     }
   }
 } parsing;
@@ -305,7 +305,7 @@ void field_done() { orig_picture[0] = '\0'; parsing.need_level(true); }
 
 static int scanner_token() {
   if( parsing.empty() ) {
-    error_msg(yylloc, ">>ELSE or >>END-IF without >>IF");
+    error_msg(yylloc, "%<>>ELSE%> or %<>>END-IF%> without %<>>IF%>");
     return NO_CONDITION;
   }
   return parsing.top().token;
@@ -317,33 +317,32 @@ bool scanner_normal()  { return parsing.normal(); }
 void scanner_parsing( int token, bool tf ) {
   parsing.push( cdf_status_t(token, tf) );
   if( yydebug ) {
-    yywarn("%10s: parsing now %5s, depth %lu",
-            keyword_str(token), boolalpha(parsing.on()),
-	   gb4(parsing.size()));
+    yywarn("%s: parsing now %s, depth %zu",
+            keyword_str(token), boolalpha(parsing.on()), parsing.size());
     parsing.splat();
   }
 }
 void scanner_parsing_toggle() {
   if( parsing.empty() ) {
-    error_msg(yylloc, ">>ELSE without >>IF");
+    error_msg(yylloc, "%<>>ELSE%> without %<>>IF%>");
     return;
   }
   parsing.top().toggle();
   if( yydebug ) {
-    yywarn("%10s: parsing now %5s",
+    yywarn("%s: parsing now %s",
             keyword_str(CDF_ELSE), boolalpha(parsing.on()));
   }
 }
 void scanner_parsing_pop() {
   if( parsing.empty() ) {
-    error_msg(yylloc, ">>END-IF without >>IF");
+    error_msg(yylloc, "%<>>END-IF%> without %<>>IF%>");
     return;
   }
   parsing.pop();
   if( yydebug ) {
-    yywarn("%10s: parsing now %5s, depth %lu",
+    yywarn("%s: parsing now %s, depth %zu",
             keyword_str(CDF_END_IF), boolalpha(parsing.on()),
-	   gb4(parsing.size()));
+	   parsing.size());
     parsing.splat();
   }
 }
@@ -792,7 +791,7 @@ typed_name( const char name[] ) {
     return cbl_field_of(e)->level == 88? NAME88 : CLASS_NAME;
     break;
   default:
-    yywarn("%s:%d: invalid symbol type %s for symbol \"%s\"",
+    yywarn("%s:%d: invalid symbol type %s for symbol %qs",
           __func__, __LINE__, cbl_field_type_str(type), name);
     return NAME;
   }

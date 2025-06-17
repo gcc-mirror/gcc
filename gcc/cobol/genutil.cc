@@ -737,7 +737,7 @@ get_binary_value( tree value,
       {
       if( SCALAR_FLOAT_TYPE_P(value) )
         {
-        cbl_internal_error("Can't get float value from %s", field->name);
+        cbl_internal_error("cannot get %<float%> value from %s", field->name);
         }
       else
         {

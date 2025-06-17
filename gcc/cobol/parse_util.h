@@ -348,7 +348,7 @@ intrinsic_invalid_parameter( int token,
                            return token == descr.token;
                          } );
   if( p == function_descrs_end ) {
-    cbl_internal_error( "%s: intrinsic function  %s not found",
+    cbl_internal_error( "%s: intrinsic function %qs not found",
                         __func__, keyword_str(token) );
   }
 
