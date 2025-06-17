@@ -814,6 +814,16 @@ void riscv_frame_info::reset(void)
   arg_pointer_offset = 0;
 }
 
+/* Check if the mode is twice the size of the XLEN mode.  */
+
+static bool
+riscv_2x_xlen_mode_p (machine_mode mode)
+{
+  poly_int64 mode_size = GET_MODE_SIZE (mode);
+  return mode_size.is_constant ()
+	 && (mode_size.to_constant () == UNITS_PER_WORD * 2);
+}
+
 /* Implement TARGET_MIN_ARITHMETIC_PRECISION.  */
 
 static unsigned int
@@ -4023,7 +4033,38 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	      *total = COSTS_N_INSNS (1);
 	      return true;
 	    }
+
+	  /* Register move for XLEN * 2.  */
+	  if (TARGET_ZILSD
+	      && register_operand (SET_SRC (x), GET_MODE (SET_SRC (x)))
+	      && riscv_2x_xlen_mode_p (mode))
+	    {
+	      /* We still need two instruction for move with ZILSD,
+		 but let minus one cost to let subreg split don't.
+		 TODO: Add riscv_tune_param for this.  */
+	      *total = COSTS_N_INSNS (2) - 1;
+	      return true;
+	    }
+
+	  /* Load for XLEN * 2.  */
+	  if (TARGET_ZILSD && MEM_P (SET_SRC (x))
+	      && riscv_2x_xlen_mode_p (mode))
+	    {
+	      /* TODO: Add riscv_tune_param for this.  */
+	      *total = COSTS_N_INSNS (1);
+	      return true;
+	    }
+
 	  riscv_rtx_costs (SET_SRC (x), mode, SET, opno, total, speed);
+	  return true;
+	}
+
+      /* Store for XLEN * 2.  */
+      if (TARGET_ZILSD && MEM_P (SET_DEST (x)) && REG_P (SET_SRC (x))
+	  && riscv_2x_xlen_mode_p (mode))
+	{
+	  /* TODO: Add riscv_tune_param for this.  */
+	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
 
