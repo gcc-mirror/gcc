@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-ipa-afdo-details -fdump-tree-einline-details" } */
+/* { dg-options "-O2 -fdump-ipa-afdo-details -fdump-tree-einline-details --param early-inlining-insns=1" } */
 /* { dg-require-profiling "-fauto-profile" } */ 
 
 volatile int array[1000];
@@ -25,8 +25,8 @@ int main()
 		test(&p);
 	return 0;
 }
-/* { dg-final-use-autofdo { scan-tree-dump "Inlining test" "einline"} } */
+/* { dg-final-use-autofdo { scan-tree-dump "Inlining using auto-profile test" "einline"} } */
 /* { dg-final-use-autofdo { scan-ipa-dump "Checking indirect call -> direct call reta" "afdo"} } */
-/* { dg-final-use-autofdo { scan-ipa-dump "looks good" "afdo"} } */
+/* { dg-final-use-autofdo { scan-ipa-dump-times "looks good" 0 "afdo"} } */
 /* If we inlined reta->test->main, it will contian array[pos].  */
 /* { dg-final-use-autofdo { scan-ipa-dump "array.pos_" "afdo"} } */

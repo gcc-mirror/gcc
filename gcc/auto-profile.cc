@@ -386,7 +386,8 @@ get_function_decl_from_block (tree block)
 /* Store inline stack for STMT in STACK.  */
 
 static void
-get_inline_stack (location_t locus, inline_stack *stack)
+get_inline_stack (location_t locus, inline_stack *stack,
+		  tree fn = current_function_decl)
 {
   if (LOCATION_LOCUS (locus) == UNKNOWN_LOCATION)
     return;
@@ -408,9 +409,7 @@ get_inline_stack (location_t locus, inline_stack *stack)
           locus = tmp_locus;
         }
     }
-  stack->safe_push (
-      std::make_pair (current_function_decl,
-                      get_combined_location (locus, current_function_decl)));
+  stack->safe_push (std::make_pair (fn, get_combined_location (locus, fn)));
 }
 
 /* Return STMT's combined location, which is a 32bit integer in which
@@ -822,7 +821,19 @@ autofdo_source_profile::get_callsite_total_count (
 {
   inline_stack stack;
   stack.safe_push (std::make_pair (edge->callee->decl, 0));
-  get_inline_stack (gimple_location (edge->call_stmt), &stack);
+
+  cgraph_edge *e = edge;
+  do
+    {
+      get_inline_stack (gimple_location (e->call_stmt), &stack,
+			e->caller->decl);
+      /* If caller is inlined, continue building stack.  */
+      if (!e->caller->inlined_to)
+	e = NULL;
+      else
+	e = e->caller->callers;
+    }
+  while (e);
 
   function_instance *s = get_function_instance_by_inline_stack (stack);
   if (s == NULL

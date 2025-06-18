@@ -782,14 +782,6 @@ want_early_inline_function_p (struct cgraph_edge *e)
 
   if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
     ;
-  /* For AutoFDO, we need to make sure that before profile summary, all
-     hot paths' IR look exactly the same as profiled binary. As a result,
-     in einliner, we will disregard size limit and inline those callsites
-     that are:
-       * inlined in the profiled binary, and
-       * the cloned callee has enough samples to be considered "hot".  */
-  else if (flag_auto_profile && afdo_callsite_hot_enough_for_early_inline (e))
-    ;
   else if (!DECL_DECLARED_INLINE_P (callee->decl)
 	   && !opt_for_fn (e->caller->decl, flag_inline_small_functions))
     {
@@ -3117,6 +3109,81 @@ early_inline_small_functions (struct cgraph_node *node)
   return inlined;
 }
 
+/* With auto-fdo inline all functions that was inlined in the train run
+   and inlining seems useful.  That is there are enough samples in the callee
+   function.
+
+   Unlike early inlining, we inline recursively.
+   TODO: We should also integrate VPT.  */
+
+static bool
+inline_functions_by_afdo (struct cgraph_node *node)
+{
+  if (!flag_auto_profile)
+    return false;
+  struct cgraph_edge *e;
+  bool inlined = false;
+
+  for (e = node->callees; e; e = e->next_callee)
+    {
+      struct cgraph_node *callee = e->callee->ultimate_alias_target ();
+
+      if (!e->inline_failed)
+	{
+	  inlined |= inline_functions_by_afdo (e->callee);
+	  continue;
+	}
+      if (!afdo_callsite_hot_enough_for_early_inline (e))
+	continue;
+
+      if (callee->definition
+	  && !ipa_fn_summaries->get (callee))
+	compute_fn_summary (callee, true);
+
+      if (!can_early_inline_edge_p (e))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, e->call_stmt,
+			     "Not inlining %C -> %C using auto-profile, %s.",
+			     e->caller, e->callee,
+			     cgraph_inline_failed_string (e->inline_failed));
+	  continue;
+	}
+      /* We can handle recursive inlining by first producing
+	 inline clone.  */
+      if (e->recursive_p ())
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, e->call_stmt,
+			     "Not inlining %C recursively"
+			     " using auto-profile.\n",
+			     e->callee);
+	  continue;
+	}
+
+      if (dump_enabled_p ())
+	{
+	  if (e->caller->inlined_to)
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, e->call_stmt,
+			     "Inlining using auto-profile %C into %C "
+			     "which is transitively inlined to %C.\n",
+			     callee, e->caller, e->caller->inlined_to);
+	  else
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, e->call_stmt,
+			     "Inlining using auto-profile %C into %C.\n",
+			     callee, e->caller);
+	}
+      inline_call (e, true, NULL, NULL, false);
+      inlined |= inline_functions_by_afdo (e->callee);
+      inlined = true;
+    }
+
+  if (inlined && !node->inlined_to)
+    ipa_update_overall_fn_summary (node);
+
+  return inlined;
+}
+
 unsigned int
 early_inliner (function *fun)
 {
@@ -3192,9 +3259,12 @@ early_inliner (function *fun)
       /* We iterate incremental inlining to get trivial cases of indirect
 	 inlining.  */
       while (iterations < opt_for_fn (node->decl,
-				      param_early_inliner_max_iterations)
-	     && early_inline_small_functions (node))
+				      param_early_inliner_max_iterations))
 	{
+	  bool inlined = early_inline_small_functions (node);
+	  inlined |= inline_functions_by_afdo (node);
+	  if (!inlined)
+	    break;
 	  timevar_push (TV_INTEGRATION);
 	  todo |= optimize_inline_calls (current_function_decl);
 
