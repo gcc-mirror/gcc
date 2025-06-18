@@ -1,3 +1,31 @@
+2025-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116418
+	* g++.dg/eh/pr84968.C: No longer expect an ahead of time diagnostic
+	for the statement-expresssion.  Instantiate the template and expect
+	an incomplete type error instead.
+	* g++.dg/ext/stmtexpr26.C: New test.
+
+2025-06-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-06-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR middle-end/117811
+	PR testsuite/52641
+	* gcc.dg/torture/pr117811.c: Fix for int < 32 bit.
+
+2025-06-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-03-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR middle-end/117811
+	* gcc.dg/torture/pr117811.c: New test.
+
 2025-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

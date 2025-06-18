@@ -1,3 +1,13 @@
+2025-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116418
+	* tree.cc (strip_typedefs_expr) <case STATEMENT_LIST>: Replace
+	this error path with ...
+	<case STMT_EXPR>: ... this, returning the original tree.
+
 2025-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

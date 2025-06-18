@@ -1,3 +1,15 @@
+2025-06-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-03-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR middle-end/117811
+	* optabs.cc (expand_binop_directly): Remove LAST as an argument,
+	instead record the last insn on entry.  Only delete insns if
+	we need to restart and restart by calling ourself, not expand_binop.
+	(expand_binop): Update callers to expand_binop_directly.  If it
+	fails to expand the operation, delete back to LAST.
+
 2025-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
