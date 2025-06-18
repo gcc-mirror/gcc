@@ -1,3 +1,7 @@
+2025-06-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c++/declare_target-2.C: New test.
+
 2025-06-10  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.c/declare-variant-4.h (gfx942): New variant function.

@@ -1,3 +1,25 @@
+2025-06-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120673
+	* gm2-compiler/M2GCCDeclare.mod (ErrorDepList): New
+	global variable set containing every errant dependency symbol.
+	(mystop): Remove.
+	(EmitCircularDependancyError): Replace with ...
+	(EmitCircularDependencyError): ... this.
+	(AssertAllTypesDeclared): Rewrite.
+	(DoVariableDeclaration): Ditto.
+	(TypeDependentsDeclared): New procedure function.
+	(PrepareGCCVarDeclaration): Ditto.
+	(DeclareVariable): Remove assert.
+	(DeclareLocalVariable): Ditto.
+	(Constructor): Initialize ErrorDepList.
+	* gm2-compiler/M2MetaError.mod (doErrorScopeProc): Rewrite
+	and ensure that a symbol with a module scope does not lookup
+	from a definition module.
+	* gm2-compiler/P2SymBuild.mod (BuildType): Rewrite so that
+	a synonym type is created using the token refering to the name
+	on the lhs.
+
 2025-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/119650

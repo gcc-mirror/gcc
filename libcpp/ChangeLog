@@ -1,3 +1,8 @@
+2025-06-17  Jason Merrill  <jason@redhat.com>
+
+	* line-map.cc (linemap_location_from_module_p): Add.
+	* include/line-map.h: Declare it.
+
 2025-06-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116792

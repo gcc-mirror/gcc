@@ -1,3 +1,67 @@
+2025-06-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr8.ads: New test.
+
+2025-06-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120673
+	* gm2/pim/fail/badmodvar.mod: New test.
+	* gm2/pim/fail/cyclictypes.mod: New test.
+	* gm2/pim/fail/cyclictypes2.mod: New test.
+	* gm2/pim/fail/cyclictypes4.mod: New test.
+
+2025-06-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/afdo-vpt-earlyinline.c: New test.
+
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/assume.C: New test.
+
+2025-06-17  Umesh Kalappa  <ukalappa.mips@gmail.com>
+
+	* gcc.target/riscv/zalrsc.c: New test.
+
+2025-06-17  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/warn-spec-3_a.C: New test.
+	* g++.dg/modules/warn-spec-3_b.C: New test.
+	* g++.dg/modules/warn-spec-3_c.C: New test.
+
+2025-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120677
+	* gcc.c-torture/execute/pr120677.c: New test.
+
+2025-06-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113027
+	* gcc.target/aarch64/pr113027-1.c: New test.
+	* gcc.target/aarch64/pr113027-2.c: Likewise.
+	* gcc.target/aarch64/pr113027-3.c: Likewise.
+	* gcc.target/aarch64/pr113027-4.c: Likewise.
+	* gcc.target/aarch64/pr113027-5.c: Likewise.
+	* gcc.target/aarch64/pr113027-6.c: Likewise.
+	* gcc.target/aarch64/pr113027-7.c: Likewise.
+
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/coroutines/unevaluated.C: New test.
+
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/120273
+	* g++.dg/coroutines/pr120273.C: New test.
+
+2025-06-17  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/jump-table-large-code-model.c: Adding
+	-fno-pie.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv32gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv64gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv32gcv-nofm.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv64gcv-nofm.c: Ditto.
+
 2025-06-16  Spencer Abson  <spencer.abson@arm.com>
 
 	* gcc.target/aarch64/sve/pack_fcvt_signed_1.c: Disable the aarch64 vector

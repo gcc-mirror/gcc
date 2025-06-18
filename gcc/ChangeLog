@@ -1,3 +1,55 @@
+2025-06-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (afdo_indirect_call): Compute speculative edge
+	probability.
+	(add_scale): Break out from ...
+	(scale_bbs): Break out from ...
+	(afdo_adjust_guessed_profile): ... here; use componet array instead of
+	current_component hash_map; handle components with only 0 profile;
+	be more agressive on finding scales along the boundary.
+
+2025-06-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.cc (cgraph_node::apply_scale): Special case scaling
+	to profile_count::zero ().
+	(cgraph_node::verify_node): Add extra compatibility check.
+
+2025-06-17  Umesh Kalappa  <ukalappa.mips@gmail.com>
+
+	* config/riscv/sync.md (lrsc_atomic_exchange<mode>): Use scratch
+	register for loop control rather than lr output.
+
+2025-06-17  Jason Merrill  <jason@redhat.com>
+
+	* diagnostic.h (diagnostic_option_classifier): Friend
+	diagnostic_context.
+	(diagnostic_context::get_classification_history): New.
+
+2025-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120677
+	* gimple-crc-optimization.cc (crc_optimization::optimize_crc_loop):
+	Insert before gsi_after_labels instead of gsi_start_bb.  Use
+	gimple_bb (output_crc) instead of output_crc->bb.  Formatting fix.
+
+2025-06-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113027
+	* config/aarch64/aarch64-protos.h (aarch64_decompose_vec_struct_index):
+	Declare.
+	* config/aarch64/aarch64.cc (aarch64_decompose_vec_struct_index): New
+	function.
+	* config/aarch64/iterators.md (VEL, Vel): Add Advanced SIMD
+	structure modes.
+	* config/aarch64/aarch64-simd.md (vec_set<VSTRUCT_QD:mode>)
+	(vec_extract<VSTRUCT_QD:mode>): New patterns.
+
+2025-06-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-offload.cc (omp_discover_declare_target_tgt_fn_r): Also
+	walk external functions that are declare inline (and have a
+	DECL_SAVED_TREE).
+
 2025-06-16  Spencer Abson  <spencer.abson@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_sve_valid_pred_p):

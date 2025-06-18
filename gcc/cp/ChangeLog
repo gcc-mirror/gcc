@@ -1,3 +1,49 @@
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (struct coroutine_info): Update comments.
+	(struct coro_aw_data): Remove self_handle and add in
+	information to create the handle in lowering.
+	(expand_one_await_expression): Build a temporary coroutine
+	handle.
+	(build_actor_fn): Remove reference to the frame copy of the
+	coroutine handle.
+	(cp_coroutine_transform::wrap_original_function_body): Remove
+	reference to the frame copy of the coroutine handle.
+
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (analyze_expression_awaits): Elide assume
+	attributes containing await expressions, since these have
+	side effects.  Emit a diagnostic that this has been done.
+
+2025-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120678
+	* cp-trait.def (IS_TRIVIALLY_DESTRUCTIBLE): Fix nargs.
+
+2025-06-17  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (module_state::write_diagnostic_classification): New.
+	(module_state::write_begin): Call it.
+	(module_state::read_diagnostic_classification): New.
+	(module_state::read_initial): Call it.
+	(dk_string, dump_dc_change): New.
+
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (finish_co_await_expr): Do not allow in an
+	unevaluated context.
+	(finish_co_yield_expr): Likewise.
+
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/120273
+	* coroutines.cc
+	(cp_coroutine_transform::wrap_original_function_body): Use
+	function start and end locations when synthesizing code.
+	(cp_coroutine_transform::cp_coroutine_transform): Set the
+	function end location.
+
 2025-06-16  Jason Merrill  <jason@redhat.com>
 
 	* constraint.cc (failed_completions_map): New.
