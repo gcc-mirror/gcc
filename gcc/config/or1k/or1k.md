@@ -515,6 +515,31 @@
 	(ne:SI (reg:BI SR_F_REGNUM) (const_int 0)))]
   "")
 
+;; Allowing "extending" the BImode SR_F to a general register
+;; avoids 'convert_mode_scalar' from trying to do subregging
+;; which we don't have support for.
+;; We require signed and unsigned extend instructions because
+;; signed comparisons require signed extention, but for SR_F
+;; it doesn't matter.
+
+(define_expand "zero_extendbisi2_sr_f"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(zero_extend:SI (match_operand:BI 1 "sr_f_reg_operand" "")))]
+  ""
+{
+  emit_insn(gen_sne_sr_f (operands[0]));
+  DONE;
+})
+
+(define_expand "extendbisi2_sr_f"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(sign_extend:SI (match_operand:BI 1 "sr_f_reg_operand" "")))]
+  ""
+{
+  emit_insn(gen_sne_sr_f (operands[0]));
+  DONE;
+})
+
 (define_insn_and_split "*scc"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(match_operator:SI 1 "equality_comparison_operator"
