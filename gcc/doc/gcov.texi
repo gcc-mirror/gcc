@@ -1077,7 +1077,7 @@ condition  1 not covered (true)
         -:   12:@}
 @end smallexample
 
-@anchor {gcov prime paths example}
+@anchor{gcov prime paths example}
 When you compile with @option{--coverage -fpath-coverage} and use the
 option @option{-e} your output looks like this:
 
