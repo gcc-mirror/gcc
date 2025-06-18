@@ -116,6 +116,7 @@ public:
 			      sarif_object &thread_flow_loc_obj) const override;
 
   /* Additional functionality.  */
+  enum event_kind get_kind () const { return m_kind; }
   tree get_fndecl () const { return m_effective_fndecl; }
 
   int get_original_stack_depth () const { return m_original_depth; }
@@ -142,7 +143,7 @@ protected:
   checker_event (enum event_kind kind,
 		 const event_loc_info &loc_info);
 
- public:
+ private:
   const enum event_kind m_kind;
  protected:
   location_t m_loc;
