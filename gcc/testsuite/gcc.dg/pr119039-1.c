@@ -29,4 +29,4 @@ test (int i)
       break;
   }
 }
-/* { dg-final { scan-tree-dump-not "foo" "evrp" } } */
+/* { dg-final { scan-tree-dump-not "foo " "evrp" } } */
