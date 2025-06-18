@@ -33,6 +33,7 @@
 #define RISCV_TUNE(TUNE_NAME, PIPELINE_MODEL, TUNE_INFO)
 #endif
 
+RISCV_TUNE("generic", generic, generic_tune_info)
 RISCV_TUNE("rocket", generic, rocket_tune_info)
 RISCV_TUNE("sifive-3-series", generic, rocket_tune_info)
 RISCV_TUNE("sifive-5-series", generic, rocket_tune_info)

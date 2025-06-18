@@ -450,6 +450,29 @@ static const struct cpu_vector_cost generic_vector_cost = {
   &rvv_regmove_vector_cost, /* regmove  */
 };
 
+/* Costs to use when optimizing for generic.  */
+static const struct riscv_tune_param generic_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)},	/* int_mul */
+  {COSTS_N_INSNS (33), COSTS_N_INSNS (65)},	/* int_div */
+  1,						/* issue_rate */
+  4,						/* branch_cost */
+  5,						/* memory_cost */
+  8,						/* fmv_cost */
+  true,						/* slow_unaligned_access */
+  false,					/* vector_unaligned_access */
+  false,					/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
+  false,					/* speculative_sched_vsetvl */
+  RISCV_FUSE_NOTHING,                           /* fusible_ops */
+  NULL,						/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
+};
+
 /* Costs to use when optimizing for rocket.  */
 static const struct riscv_tune_param rocket_tune_info = {
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_add */
