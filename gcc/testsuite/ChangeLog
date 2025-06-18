@@ -1,3 +1,11 @@
+2025-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120677
+	* gcc.c-torture/execute/pr120677.c: New test.
+
 2025-06-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR rtl-optimization/120423

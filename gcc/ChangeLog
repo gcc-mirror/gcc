@@ -1,3 +1,13 @@
+2025-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120677
+	* gimple-crc-optimization.cc (crc_optimization::optimize_crc_loop):
+	Insert before gsi_after_labels instead of gsi_start_bb.  Use
+	gimple_bb (output_crc) instead of output_crc->bb.  Formatting fix.
+
 2025-06-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR rtl-optimization/120423
