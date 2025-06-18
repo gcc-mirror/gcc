@@ -9351,7 +9351,6 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   bool need_zero_guard = false;
   bool noalign;
   machine_mode move_mode = VOIDmode;
-  machine_mode wider_mode;
   int unroll_factor = 1;
   /* TODO: Once value ranges are available, fill in proper data.  */
   unsigned HOST_WIDE_INT min_size = 0;
@@ -9427,6 +9426,7 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
   unroll_factor = 1;
   move_mode = word_mode;
+  int nunits;
   switch (alg)
     {
     case libcall:
@@ -9447,27 +9447,14 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     case vector_loop:
       need_zero_guard = true;
       unroll_factor = 4;
-      /* Find the widest supported mode.  */
-      move_mode = word_mode;
-      while (GET_MODE_WIDER_MODE (move_mode).exists (&wider_mode)
-	     && optab_handler (mov_optab, wider_mode) != CODE_FOR_nothing)
-	move_mode = wider_mode;
-
-      if (TARGET_AVX256_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 128)
-	move_mode = TImode;
-      if (TARGET_AVX512_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 256)
-	move_mode = OImode;
-
-      /* Find the corresponding vector mode with the same size as MOVE_MODE.
-	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
-      if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
+      /* Get the vector mode to move MOVE_MAX bytes.  */
+      nunits = MOVE_MAX / GET_MODE_SIZE (word_mode);
+      if (nunits > 1)
 	{
-	  int nunits = GET_MODE_SIZE (move_mode) / GET_MODE_SIZE (word_mode);
-	  if (!mode_for_vector (word_mode, nunits).exists (&move_mode)
-	      || optab_handler (mov_optab, move_mode) == CODE_FOR_nothing)
-	    move_mode = word_mode;
+	  move_mode = mode_for_vector (word_mode, nunits).require ();
+	  gcc_assert (optab_handler (mov_optab, move_mode)
+		      != CODE_FOR_nothing);
 	}
-      gcc_assert (optab_handler (mov_optab, move_mode) != CODE_FOR_nothing);
       break;
     case rep_prefix_8_byte:
       move_mode = DImode;
