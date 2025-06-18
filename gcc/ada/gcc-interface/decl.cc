@@ -6432,12 +6432,16 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	      tree typ2 = TREE_TYPE (DECL_CHAIN (gnu_cico_field_list));
 	      if (INTEGRAL_TYPE_P (typ1)
 		  && integer_pow2p (TYPE_SIZE (typ2))
+		  && compare_tree_int (TYPE_SIZE (typ2),
+				       MAX_FIXED_MODE_SIZE) <= 0
 		  && tree_int_cst_lt (TYPE_SIZE (typ1), TYPE_SIZE (typ2)))
 		TREE_TYPE (gnu_cico_field_list)
 		  = gnat_type_for_size (TREE_INT_CST_LOW (TYPE_SIZE (typ2)),
 					TYPE_UNSIGNED (typ1));
 	      else if (INTEGRAL_TYPE_P (typ2)
 		       && integer_pow2p (TYPE_SIZE (typ1))
+		       && compare_tree_int (TYPE_SIZE (typ1),
+					    MAX_FIXED_MODE_SIZE) <= 0
 		       && tree_int_cst_lt (TYPE_SIZE (typ2), TYPE_SIZE (typ1)))
 		TREE_TYPE (DECL_CHAIN (gnu_cico_field_list))
 		  = gnat_type_for_size (TREE_INT_CST_LOW (TYPE_SIZE (typ1)),
