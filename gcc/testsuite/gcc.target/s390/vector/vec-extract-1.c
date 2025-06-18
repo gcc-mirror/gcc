@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=z14 -mzarch" } */
+/* { dg-options "-O2 -march=arch11 -mzarch" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 typedef double V2DF __attribute__((vector_size(16)));
@@ -111,17 +111,6 @@ extractnthfloat (V4SF x, int n)
 }
 
 /*
-** sumfirstfloat:
-**	vfasb	%v0,%v24,%v26
-**	br	%r14
-*/
-float
-sumfirstfloat (V4SF x, V4SF y)
-{
-  return (x + y)[0];
-}
-
-/*
 ** extractfirst2:
 **	vlr	%v0,%v24
 **	br	%r14
@@ -179,8 +168,7 @@ extractsingled (V1DF x)
 
 /*
 ** extractsingleld:
-**	vlr	(%v.),%v24
-**	vst	\1,0\(%r2\),3
+**	vst	%v24,0\(%r2\),3
 **	br	%r14
 */
 long double
