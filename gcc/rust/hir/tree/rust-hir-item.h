@@ -1797,6 +1797,8 @@ public:
     return *type;
   }
 
+  bool has_expr () const { return const_expr != nullptr; }
+
   Expr &get_expr () { return *const_expr; }
 
   Identifier get_identifier () const { return identifier; }

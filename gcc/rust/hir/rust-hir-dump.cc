@@ -1926,7 +1926,8 @@ Dump::visit (ConstantItem &e)
   do_vis_item (e);
   put_field ("identifier", e.get_identifier ().as_string ());
   visit_field ("type", e.get_type ());
-  visit_field ("const_expr", e.get_expr ());
+  if (e.has_expr ())
+    visit_field ("const_expr", e.get_expr ());
   end ("ConstantItem");
 }
 

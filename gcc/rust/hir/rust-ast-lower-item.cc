@@ -367,7 +367,9 @@ ASTLoweringItem::visit (AST::ConstantItem &constant)
   HIR::Visibility vis = translate_visibility (constant.get_visibility ());
 
   HIR::Type *type = ASTLoweringType::translate (constant.get_type (), true);
-  HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ());
+  HIR::Expr *expr = nullptr;
+  if (constant.has_expr ())
+    expr = ASTLoweringExpr::translate (constant.get_expr ());
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, constant.get_node_id (),

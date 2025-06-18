@@ -453,7 +453,8 @@ ResolveItem::visit (AST::ConstantItem &constant)
   resolve_visibility (constant.get_visibility ());
 
   ResolveType::go (constant.get_type ());
-  ResolveExpr::go (constant.get_expr (), path, cpath);
+  if (constant.has_expr ())
+    ResolveExpr::go (constant.get_expr (), path, cpath);
 }
 
 void
