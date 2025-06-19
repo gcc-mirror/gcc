@@ -4172,9 +4172,13 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	    }
 	}
 
-      /* Otherwise, if this is a procedure or a function which does not return
-	 by invisible reference, we can do a direct block-copy out.  */
-      else
+      /* Otherwise, if this is a procedure or a function that does not return
+	 by invisible reference, we can do a direct block-copy out, but we do
+	 not need to do it for a null initialization procedure when the _Init
+	 parameter is not passed in since we would copy uninitialized bits.  */
+      else if (!(Is_Null_Init_Proc (gnat_subprog)
+		 && list_length (gnu_cico_list) == 1
+		 && TREE_CODE (TREE_VALUE (gnu_cico_list)) == VAR_DECL))
 	{
 	  tree gnu_retval;
 
