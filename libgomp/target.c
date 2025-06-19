@@ -2641,6 +2641,10 @@ gomp_unload_image_from_device (struct gomp_device_descr *devicep,
     }
 }
 
+#define GOMP_REQUIRES_NAME_BUF_LEN \
+  sizeof ("unified_address, unified_shared_memory, " \
+	  "self_maps, reverse_offload")
+
 static void
 gomp_requires_to_name (char *buf, size_t size, int requires_mask)
 {
@@ -2689,10 +2693,8 @@ GOMP_offload_register_ver (unsigned version, const void *host_table,
 
   if (omp_req && omp_requires_mask && omp_requires_mask != omp_req)
     {
-      char buf1[sizeof ("unified_address, unified_shared_memory, "
-			"self_maps, reverse_offload")];
-      char buf2[sizeof ("unified_address, unified_shared_memory, "
-			"self_maps, reverse_offload")];
+      char buf1[GOMP_REQUIRES_NAME_BUF_LEN];
+      char buf2[GOMP_REQUIRES_NAME_BUF_LEN];
       gomp_requires_to_name (buf2, sizeof (buf2),
 			     omp_req != GOMP_REQUIRES_TARGET_USED
 			     ? omp_req : omp_requires_mask);
@@ -5786,8 +5788,7 @@ gomp_target_init (void)
 		    found = true;
 		if (found)
 		  {
-		    char buf[sizeof ("unified_address, unified_shared_memory, "
-				     "reverse_offload")];
+		    char buf[GOMP_REQUIRES_NAME_BUF_LEN];
 		    gomp_requires_to_name (buf, sizeof (buf), omp_req);
 		    char *name = (char *) malloc (cur_len + 1);
 		    memcpy (name, cur, cur_len);
