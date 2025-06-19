@@ -2937,7 +2937,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   if (stack_parm == 0)
     {
       HOST_WIDE_INT parm_align
-	= (STRICT_ALIGNMENT
+	= ((STRICT_ALIGNMENT || BITS_PER_WORD <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	   ? MAX (DECL_ALIGN (parm), BITS_PER_WORD) : DECL_ALIGN (parm));
 
       SET_DECL_ALIGN (parm, parm_align);
