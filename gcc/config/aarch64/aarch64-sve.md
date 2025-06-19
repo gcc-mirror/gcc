@@ -1344,7 +1344,7 @@
   "TARGET_SVE"
   {
     operands[2] = aarch64_ptrue_reg (<VPRED>mode);
-    operands[3] = CONST0_RTX (<MODE>mode);
+    operands[3] = CONST0_RTX (<VSINGLE>mode);
   }
 )
 
@@ -1354,7 +1354,7 @@
 	(unspec:SVE_STRUCT
 	  [(match_operand:<VPRED> 2 "register_operand" "Upl")
 	   (match_operand:SVE_STRUCT 1 "memory_operand" "m")
-	   (match_operand 3 "aarch64_maskload_else_operand")]
+	   (match_operand:<VSINGLE> 3 "aarch64_maskload_else_operand")]
 	  UNSPEC_LDN))]
   "TARGET_SVE"
   "ld<vector_count><Vesize>\t%0, %2/z, %1"
