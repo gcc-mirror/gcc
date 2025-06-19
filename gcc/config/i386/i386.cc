@@ -9234,10 +9234,9 @@ ix86_expand_prologue (void)
 	 the stack frame saving one cycle of the prologue.  However, avoid
 	 doing this if we have to probe the stack; at least on x86_64 the
 	 stack probe can turn into a call that clobbers a red zone location. */
-      else if ((ix86_using_red_zone ()
+      else if (ix86_using_red_zone ()
 		&& (! TARGET_STACK_PROBE
 		    || frame.stack_pointer_offset < CHECK_STACK_LIMIT))
-	       || crtl->shrink_wrapped_separate)
 	{
 	  HOST_WIDE_INT allocate_offset;
 	  if (crtl->shrink_wrapped_separate)
@@ -9253,11 +9252,6 @@ ix86_expand_prologue (void)
 
 	  ix86_emit_save_regs_using_mov (frame.reg_save_offset);
 	  int_registers_saved = true;
-
-	  if (ix86_using_red_zone ()
-	      && (! TARGET_STACK_PROBE
-		  || frame.stack_pointer_offset < CHECK_STACK_LIMIT))
-	    cfun->machine->red_zone_used = true;
 	}
     }
 
@@ -9377,8 +9371,6 @@ ix86_expand_prologue (void)
       && flag_stack_clash_protection
       && !ix86_target_stack_probe ())
     {
-      gcc_assert (!crtl->shrink_wrapped_separate);
-
       ix86_adjust_stack_and_probe (allocate, int_registers_saved, false);
       allocate = 0;
     }
@@ -9388,8 +9380,6 @@ ix86_expand_prologue (void)
   else if (allocate >= 0 && flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
     {
       const HOST_WIDE_INT probe_interval = get_probe_interval ();
-
-      gcc_assert (!crtl->shrink_wrapped_separate);
 
       if (STACK_CHECK_MOVING_SP)
 	{
@@ -9447,8 +9437,6 @@ ix86_expand_prologue (void)
   else if (!ix86_target_stack_probe ()
 	   || frame.stack_pointer_offset < CHECK_STACK_LIMIT)
     {
-      gcc_assert (!crtl->shrink_wrapped_separate);
-
       pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 			         GEN_INT (-allocate), -1,
 			         m->fs.cfa_reg == stack_pointer_rtx);
