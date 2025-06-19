@@ -1,3 +1,27 @@
+2025-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117792
+	* g++.dg/cpp1z/nontype7.C: New test.
+
+2025-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-08-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116320
+	* g++.dg/template/access42.C: New test.
+
+2025-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-04-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114303
+	* g++.dg/cpp1z/constexpr-if-lambda6.C: New test.
+
 2025-06-17  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,37 @@
+2025-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117792
+	* pt.cc (type_dependent_expression_p): Consider the dependence
+	of the address of each template argument of a function
+	template-id.
+
+2025-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-08-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116320
+	* semantics.cc (check_accessibility_of_qualified_id): Try
+	currently_open_class when using the object type as the
+	effective qualifying type.
+
+2025-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-04-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114303
+	* constraint.cc (tsubst_requires_expr): Clear
+	REQUIRES_EXPR_EXTRA_ARGS before calling build_extra_args.
+	* pt.cc (tree_extra_args): Define.
+	(extract_locals_r): Assert *_EXTRA_ARGS is empty.
+	(tsubst_stmt) <case IF_STMT>: Clear IF_SCOPE on the new
+	IF_STMT.  Call build_extra_args on the new IF_STMT instead
+	of t which might already have IF_STMT_EXTRA_ARGS.
+
 2025-06-17  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
