@@ -16,3 +16,4 @@ TEST_BINARY_VX_UNSIGNED_0(T)
 /* { dg-final { scan-assembler-not {vdivu.vx} } } */
 /* { dg-final { scan-assembler-not {vremu.vx} } } */
 /* { dg-final { scan-assembler-not {vmaxu.vx} } } */
+/* { dg-final { scan-assembler-not {vminu.vx} } } */
