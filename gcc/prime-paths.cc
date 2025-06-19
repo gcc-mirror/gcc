@@ -635,7 +635,7 @@ trie::insert_with_suffix (array_slice<const int> path)
 vec<vec<int>>
 trie::paths () const
 {
-  vec<int> path {};
+  auto_vec<int> path {};
   vec<vec<int>> all {};
   auto iter = paths (path);
   while (iter.next ())
