@@ -1,3 +1,11 @@
+2025-06-18  Jan Beulich  <jbeulich@suse.com>
+
+	* doc/gcov.texi: Drop blank after @anchor.
+
+2025-06-18  Jan Beulich  <jbeulich@suse.com>
+
+	* doc/extend.texi: Fill first argument of @xref{}.
+
 2025-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

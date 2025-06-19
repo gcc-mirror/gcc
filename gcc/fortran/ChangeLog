@@ -1,3 +1,12 @@
+2025-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-06-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/51961
+	* resolve.cc (conformable_arrays): Use modified rank check when
+	MOLD= expression is given.
+
 2025-06-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	Backported from master:
