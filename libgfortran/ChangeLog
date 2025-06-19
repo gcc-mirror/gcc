@@ -1,3 +1,24 @@
+2025-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82480
+	* intrinsics/stat.c (stat_i4_sub_0): Fix argument names.  Rename
+	SARRAY to VALUES also in error message.  When array VALUES is
+	KIND=4, get only stat components that do not overflow INT32_MAX,
+	otherwise set the corresponding VALUES elements to -1.
+	(stat_i4_sub): Fix argument names.
+	(lstat_i4_sub): Likewise.
+	(stat_i8_sub_0): Likewise.
+	(stat_i8_sub): Likewise.
+	(lstat_i8_sub): Likewise.
+	(stat_i4): Likewise.
+	(stat_i8): Likewise.
+	(lstat_i4): Likewise.
+	(lstat_i8): Likewise.
+	(fstat_i4_sub): Likewise.
+	(fstat_i8_sub): Likewise.
+	(fstat_i4): Likewise.
+	(fstat_i8): Likewise.
+
 2025-06-11  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/116400

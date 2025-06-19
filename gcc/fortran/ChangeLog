@@ -1,3 +1,12 @@
+2025-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82480
+	* check.cc (gfc_check_fstat): Extend checks to INTENT(OUT) arguments.
+	(gfc_check_fstat_sub): Likewise.
+	(gfc_check_stat): Likewise.
+	(gfc_check_stat_sub): Likewise.
+	* intrinsic.texi: Adjust documentation.
+
 2025-06-16  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/51961

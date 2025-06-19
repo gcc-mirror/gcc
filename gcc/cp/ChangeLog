@@ -1,3 +1,23 @@
+2025-06-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115908
+	PR c++/118074
+	PR c++/95615
+	* coroutines.cc (coro_frame_refcount_id): New.
+	(coro_init_identifiers): Initialise coro_frame_refcount_id.
+	(build_actor_fn): Set up initial_await_resume_called.  Handle
+	decrementing of the frame reference count.  Return directly to
+	the caller if that is non-zero.
+	(cp_coroutine_transform::wrap_original_function_body): Use a
+	conditional eh-only cleanup around the initial await expression
+	to release the body use on exception before initial await
+	resume.
+	(cp_coroutine_transform::build_ramp_function): Wrap the called
+	body in a cleanup that releases a use of the frame when we
+	return to the ramp.  Implement frame, promise and argument copy
+	destruction via conditional cleanups when the frame use count
+	is zero.
+
 2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (struct coroutine_info): Update comments.

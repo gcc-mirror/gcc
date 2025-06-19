@@ -1,3 +1,115 @@
+2025-06-18  Dimitar Dimitrov  <dimitar@dinux.eu>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/119966
+	* emit-rtl.cc (validate_subreg): Call simplify_subreg_regno
+	instead of checking info.representable_p..
+	* rtl.h (simplify_subreg_regno): Add new argument
+	allow_stack_regs.
+	* rtlanal.cc (simplify_subreg_regno): Do not reject
+	stack-related registers if allow_stack_regs is true.
+
+2025-06-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.cc (irange::intersect_bitmask): Always update the
+	stored mask to reflect the current calculated mask.
+
+2025-06-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/119039
+	* value-range.cc (irange::contains_p): Call wide_int version of
+	contains_p for singleton ranges.
+	(irange::intersect): If either range is a singleton, use
+	contains_p.
+
+2025-06-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/119039
+	* vr-values.cc (simplify_using_ranges::legacy_fold_cond): Remove.
+	(simplify_using_ranges::simplify_switch_using_ranges): Adjust.
+
+2025-06-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.cc (dump_function_to_file): Use flags, not dump_flags.
+
+2025-06-18  Jan Beulich  <jbeulich@suse.com>
+
+	* doc/gcov.texi: Drop blank after @anchor.
+
+2025-06-18  Jan Beulich  <jbeulich@suse.com>
+
+	* doc/extend.texi: Fill first argument of @xref{}.
+
+2025-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120631
+	* real.cc (decimal_from_integer): Add digits argument, if larger than
+	256, use XALLOCAVEC allocated buffer.
+	(real_from_integer): Pass val_in's precision divided by 3 to
+	decimal_from_integer.
+	* dfp.cc (decimal_real_to_integer): For precision > 128 if finite
+	and exponent is large, decrease exponent and multiply resulting
+	wide_int by powers of 10^19.
+
+2025-06-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add
+	new case SMIN.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op smin.
+
+2025-06-18  Lili Cui  <lili.cui@intel.com>
+	    Michael Matz  <matz@suse.de>
+
+	* config/i386/i386-protos.h (ix86_get_separate_components):
+	New function.
+	(ix86_components_for_bb): Likewise.
+	(ix86_disqualify_components): Likewise.
+	(ix86_emit_prologue_components): Likewise.
+	(ix86_emit_epilogue_components): Likewise.
+	(ix86_set_handled_components): Likewise.
+	* config/i386/i386.cc (save_regs_using_push_pop):
+	Split from ix86_compute_frame_layout.
+	(ix86_compute_frame_layout):
+	Use save_regs_using_push_pop.
+	(pro_epilogue_adjust_stack):
+	Use gen_pro_epilogue_adjust_stack_add_nocc.
+	(ix86_expand_prologue): Add some assertions and adjust
+	the stack frame at the beginning of the prolog for shrink
+	wrapping separate.
+	(ix86_emit_save_regs_using_mov):
+	Skip registers that are wrapped separately.
+	(ix86_emit_restore_regs_using_mov): Likewise.
+	(ix86_expand_epilogue): Add some assertions and set
+	restore_regs_via_mov to true for shrink wrapping separate.
+	(ix86_get_separate_components): New function.
+	(ix86_components_for_bb): Likewise.
+	(ix86_disqualify_components): Likewise.
+	(ix86_emit_prologue_components): Likewise.
+	(ix86_emit_epilogue_components): Likewise.
+	(ix86_set_handled_components): Likewise.
+	(TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS): Define.
+	(TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB): Likewise.
+	(TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS): Likewise.
+	(TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS): Likewise.
+	(TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS): Likewise.
+	(TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS): Likewise.
+	* config/i386/i386.h (struct machine_function):Add
+	reg_is_wrapped_separately array for register wrapping
+	information.
+	* config/i386/i386.md
+	(@pro_epilogue_adjust_stack_add_nocc<mode>): New.
+
+2025-06-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120661
+	* value-range.cc (irange::snap): New.
+	(irange::snap_subranges): New.
+	(irange::set_range_from_bitmask): Call snap_subranges.
+	* value-range.h (snap, snap_subranges): New prototypes.
+
 2025-06-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* auto-profile.cc (afdo_indirect_call): Compute speculative edge

@@ -1,3 +1,103 @@
+2025-06-18  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/120621
+	* cbldiag.h (yyerror): Add diagnostic attributes.
+	(yywarn): Same.
+	(error_msg): Same.
+	(yyerrorvl): Same.
+	(cbl_unimplementedw): Same.
+	(cbl_unimplemented): Same.
+	(cbl_unimplemented_at): Same.
+	* cdf-copy.cc (copybook_elem_t::open_file): Supply string argument.
+	* cdf.y: Use %<%>.
+	* cobol-system.h (if): Check GCC_VERSION.
+	(ATTRIBUTE_GCOBOL_DIAG): Define.
+	* except.cc (cbl_enabled_exception_t::dump): Remove extra %s.
+	* genapi.cc (get_class_condition_string): Use acceptable message.
+	(get_bytes_needed): Same.
+	(move_tree): Same.
+	(get_string_from): Same.
+	(internal_perform_through): Same.
+	(tree_type_from_field_type): Same.
+	(is_valuable): Same.
+	(parser_logop): Same.
+	(parser_relop): Same.
+	(parser_relop_long): Same.
+	(parser_if): Same.
+	(parser_setop): Same.
+	(parser_perform_conditional): Same.
+	(parser_file_add): Same.
+	(parser_file_open): Same.
+	(parser_file_close): Same.
+	(parser_file_read): Same.
+	(parser_file_write): Same.
+	(inspect_replacing): Same.
+	(parser_sort): Same.
+	(parser_file_sort): Same.
+	(parser_file_merge): Same.
+	(create_and_call): Same.
+	(parser_bitop): Same.
+	(parser_bitwise_op): Same.
+	(hijack_for_development): Same.
+	(mh_source_is_literalN): Same.
+	(mh_dest_is_float): Same.
+	(parser_symbol_add): Same.
+	* gengen.cc (show_type): Use acceptable message.
+	(gg_find_field_in_struct): Same.
+	(gg_declare_variable): Same.
+	(gg_printf): Same.
+	(gg_fprintf): Same.
+	(gg_tack_on_function_parameters): Same.
+	(gg_define_function): Same.
+	(gg_get_function_decl): Same.
+	(gg_finalize_function): Same.
+	(gg_call_expr): Same.
+	(gg_call): Same.
+	(gg_insert_into_assembler): Define new function.
+	(gg_insert_into_assemblerf): Use gg_insert_into_assembler().
+	* gengen.h (gg_insert_into_assembler): Simpler function declaration.
+	(gg_insert_into_assemblerf): Declare new function.
+	* genmath.cc (parser_op): Use acceptable message.
+	* genutil.cc (get_binary_value): Use acceptable message.
+	* lexio.cc (parse_replacing_pair): Correct diagnostic arguments.
+	(preprocess_filter_add): Same.
+	(cdftext::open_input): Same.
+	* parse.y: Use acceptable messages.
+	* parse_ante.h (struct evaluate_elem_t): Use %<%>.
+	(is_callable): Same.
+	* parse_util.h (intrinsic_invalid_parameter): Use %qs.
+	* scan.l: Use dialect_error().
+	* scan_ante.h (numstr_of): Use %qs.
+	(scanner_token): Quote COBOL tokens in messages.
+	(scanner_parsing): Correct diagnostic message.
+	(scanner_parsing_toggle): Quote COBOL tokens in messages.
+	(scanner_parsing_pop): Same.
+	(typed_name): Use %qs.
+	* scan_post.h (prelex): Quote COBOL tokens in message.
+	* show_parse.h (CHECK_FIELD): Use acceptable message format.
+	(CHECK_LABEL): Same.
+	* symbols.cc (symbol_field_same_as): Remove extra spaces.
+	(cbl_alphabet_t::assign): Use %<%>.
+	(cbl_field_t::internalize): Quote library name in message.
+	* symbols.h (struct os_locale_t): Constify codeset.
+	(class temporaries_t): Add copy constructor.
+	(struct cbl_alphabet_t): Use acceptable message.
+	* util.cc (symbol_type_str): Use cbl_internal_error.
+	(cbl_field_type_str): Same.
+	(is_elementary): Same.
+	(cbl_field_t::report_invalid_initial_value): Use %qs.
+	(class unique_stack): Avoid %m.
+	(ydferror): Declare function with attributes.
+	(error_msg): Same.
+	(cobol_fileline_set): Use %<%>.
+	(os_locale_t): Remove use of xstrdup.
+	(cobol_parse_files): Quote C names in message.
+	(dialect_error): Use %<%>.
+	* util.h (cbl_message): Add attributes.
+	(cbl_internal_error): Same.
+	(cbl_err): Same.
+	(cbl_errx): Same.
+
 2025-06-16  James K. Lowden  <jklowden@cobolworx.com>
 
 	PR cobol/120621

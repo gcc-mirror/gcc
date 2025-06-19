@@ -1,3 +1,112 @@
+2025-06-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr119039-1.c: Add space in search criteria.
+
+2025-06-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115908
+	PR c++/118074
+	PR c++/95615
+	* g++.dg/coroutines/pr115908.C: Move to...
+	* g++.dg/coroutines/torture/pr115908.C: ...here.
+	* g++.dg/coroutines/torture/pr95615-02.C: Move to...
+	* g++.dg/coroutines/torture/pr95615-01-promise-ctor-throws.C: ...here.
+	* g++.dg/coroutines/torture/pr95615-03.C: Move to...
+	* g++.dg/coroutines/torture/pr95615-02-get-return-object-throws.C: ...here.
+	* g++.dg/coroutines/torture/pr95615-01.C: Move to...
+	* g++.dg/coroutines/torture/pr95615-03-initial-suspend-throws.C: ...here.
+	* g++.dg/coroutines/torture/pr95615-04.C: Move to...
+	* g++.dg/coroutines/torture/pr95615-04-initial-await-ready-throws.C: ...here.
+	* g++.dg/coroutines/torture/pr95615-05.C: Move to...
+	* g++.dg/coroutines/torture/pr95615-05-initial-await-suspend-throws.C: ...here.
+	* g++.dg/coroutines/torture/pr95615.inc: Add more cases and ensure that the
+	code completes properly when no exceptions are thrown.
+	* g++.dg/coroutines/torture/pr95615-00-nothing-throws.C: New test.
+	* g++.dg/coroutines/torture/pr95615-06-initial-await-resume-throws.C: New test.
+	* g++.dg/coroutines/torture/pr95615-07-body-throws.C: New test.
+	* g++.dg/coroutines/torture/pr95615-08-initial-suspend-throws-uhe-throws.C: New test.
+	* g++.dg/coroutines/torture/pr95615-09-body-throws-uhe-throws.C: New test.
+
+2025-06-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/119039
+	* gcc.dg/pr119039-2.c: New.
+
+2025-06-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/119039
+	* gcc.dg/pr119039-1.c: New.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust thread counts.
+
+2025-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82480
+	* gfortran.dg/stat_3.f90: New test.
+
+2025-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120631
+	* gcc.dg/dfp/bitint-9.c: New test.
+
+2025-06-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add asm check
+	for vmin.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+
+2025-06-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-2-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-2-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-2-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-2-i8.c: New test.
+
+2025-06-18  Lili Cui  <lili.cui@intel.com>
+	    Michael Matz  <matz@suse.de>
+
+	* gcc.target/x86_64/abi/callabi/leaf-2.c: Adjust the test.
+	* gcc.target/i386/interrupt-16.c: Likewise.
+	* gfortran.dg/guality/arg1.f90: Likewise.
+	* gcc.target/i386/avx10_2-comibf-1.c: Likewise.
+	* g++.target/i386/shrink_wrap_separate.C: New test.
+	* gcc.target/i386/shrink_wrap_separate_check_lea.c: Likewise.
+
+2025-06-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120661
+	* gcc.dg/pr120661-1.c: New.
+	* gcc.dg/pr120661-2.c: New.
+
 2025-06-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/aggr8.ads: New test.

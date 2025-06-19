@@ -1,3 +1,20 @@
+2025-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.h (checker_event::get_kind): New accessor.
+	(checker_event::m_kind): Make private.
+	* checker-path.cc (checker_path::maybe_log): Use accessor for
+	checker_event::m_kind.
+	(checker_path::add_event): Likewise.
+	(checker_path::debug): Likewise.
+	(checker_path::cfg_edge_pair_at_p): Likewise.
+	(checker_path::inject_any_inlined_call_events): Likewise.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Likewise.
+	(diagnostic_manager::prune_for_sm_diagnostic): Likewise.
+	(diagnostic_manager::consolidate_conditions): Likewise.
+	(diagnostic_manager::consolidate_unwind_events): Likewise.
+	(diagnostic_manager::finish_pruning): Likewise.
+
 2025-05-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-event.cc (checker_event::checker_event): Update
