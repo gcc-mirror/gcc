@@ -609,7 +609,7 @@
 ;; Branch instructions
 ;; -------------------------------------------------------------------------
 
-(define_expand "cbranchsi4"
+(define_insn_and_split "cbranchsi4"
   [(set (pc)
 	(if_then_else
 	  (match_operator 0 "comparison_operator"
@@ -618,13 +618,27 @@
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))]
   ""
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
+  rtx label;
+
+  /* Generate *scc */
   or1k_expand_compare (operands);
+  /* Generate *cbranch */
+  label = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
+  emit_jump_insn (gen_rtx_SET (pc_rtx,
+			       gen_rtx_IF_THEN_ELSE (VOIDmode,
+						     operands[0],
+						     label,
+						     pc_rtx)));
+  DONE;
 })
 
 ;; Support FP branching
 
-(define_expand "cbranch<F:mode>4"
+(define_insn_and_split "cbranch<F:mode>4"
   [(set (pc)
 	(if_then_else
 	  (match_operator 0 "fp_comparison_operator"
@@ -633,8 +647,22 @@
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))]
   "TARGET_HARD_FLOAT"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
+  rtx label;
+
+  /* Generate *scc */
   or1k_expand_compare (operands);
+  /* Generate *cbranch */
+  label = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
+  emit_jump_insn (gen_rtx_SET (pc_rtx,
+			       gen_rtx_IF_THEN_ELSE (VOIDmode,
+						     operands[0],
+						     label,
+						     pc_rtx)));
+  DONE;
 })
 
 (define_insn "*cbranch"
