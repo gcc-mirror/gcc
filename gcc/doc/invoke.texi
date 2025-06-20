@@ -17420,6 +17420,9 @@ predicate chain.
 @item uninit-max-num-chains
 Maximum number of predicates ored in the normalized predicate chain.
 
+@item uninit-max-prune-work
+Maximum amount of work done to prune paths where the variable is always initialized.
+
 @item sched-autopref-queue-depth
 Hardware autoprefetcher scheduler model control flag.
 Number of lookahead cycles the model looks into; at '
