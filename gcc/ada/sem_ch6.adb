@@ -7752,6 +7752,7 @@ package body Sem_Ch6 is
               or else not Is_Dispatching_Operation (Subp)
               or else No (Find_Dispatching_Type (Subp))
               or else not Is_Interface (Find_Dispatching_Type (Subp))
+              or else Parent (Subp) not in N_Subprogram_Specification_Id
             then
                null;
 
@@ -11772,16 +11773,18 @@ package body Sem_Ch6 is
          Is_Primitive := False;
 
          if not Comes_From_Source (S) then
+            if Present (Derived_Type) then
 
-            --  Add an inherited primitive for an untagged derived type to
-            --  Derived_Type's list of primitives. Tagged primitives are
-            --  dealt with in Check_Dispatching_Operation. Do this even when
-            --  Extensions_Allowed is False to issue better error messages.
+               --  Add an inherited primitive for an untagged derived type to
+               --  Derived_Type's list of primitives. Tagged primitives are
+               --  dealt with in Check_Dispatching_Operation. Do this even when
+               --  Extensions_Allowed is False to issue better error messages.
 
-            if Present (Derived_Type)
-              and then not Is_Tagged_Type (Derived_Type)
-            then
-               Append_Unique_Elmt (S, Primitive_Operations (Derived_Type));
+               if not Is_Tagged_Type (Derived_Type) then
+                  Append_Unique_Elmt (S, Primitive_Operations (Derived_Type));
+               end if;
+
+               Set_Is_Primitive (S);
             end if;
 
          --  If subprogram is at library level, it is not primitive operation

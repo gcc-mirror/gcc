@@ -1002,6 +1002,17 @@ package body Sem_Ch13 is
       --  aspect has the proper profile. If the name is overloaded, check that
       --  some interpretation is legal.
 
+      procedure Check_Nonoverridable_Aspect_Subprograms
+        (ASN      : Node_Id;
+         E        : Entity_Id;
+         Original : Entity_Id := Empty);
+      --  RM 13.1.1(18.4/6) requires checking that if any of the subprograms
+      --  denoted by a nonoverridable aspect ASN has a parameter or result of
+      --  either type E or access E, then all denoted subprograms are
+      --  primitive. If missing, Original is initialized with ASN and will not
+      --  change during the recursive exploration of aggregate aspects, it is
+      --  used to improve the error message.
+
       procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id);
       --  Given an aspect specification node ASN whose expression is an
       --  optional Boolean, this routines creates the corresponding pragma
@@ -1204,6 +1215,200 @@ package body Sem_Ch13 is
             end;
          end if;
       end Check_Indexing_Functions;
+
+      ---------------------------------------------
+      -- Check_Nonoverridable_Aspect_Subprograms --
+      ---------------------------------------------
+
+      procedure Check_Nonoverridable_Aspect_Subprograms
+        (ASN      : Node_Id;
+         E        : Entity_Id;
+         Original : Node_Id := Empty)
+      is
+         Expr : constant Node_Id   := Expression (ASN);
+         Kind : constant Node_Kind := Nkind (Expr);
+
+         function Required_To_Be_Primitive (Subp : Entity_Id) return Boolean;
+         --  This function returns True if Subp, belonging to a nonoverridable
+         --  aspect of the entity E, is required to be a primitive operation.
+         --  Specifically, whenever either its return type or any of its
+         --  formals are of either type E or access E.
+
+         function Required_To_Be_Primitive (Subp : Entity_Id) return Boolean is
+            Return_Typ  : constant Entity_Id := Etype (Subp);
+            Last_Formal : constant Entity_Id := Last_Entity (Subp);
+            Cursor      : Entity_Id          := First_Entity (Subp);
+         begin
+            if Return_Typ = E
+              or else (Ekind (Return_Typ) in Access_Kind
+                        and then Directly_Designated_Type (Return_Typ) = E)
+            then
+               return True;
+
+            elsif Present (Cursor) then
+               loop
+                  if Etype (Cursor) = E
+                    or else (Ekind (Cursor) in Access_Kind
+                              and then Directly_Designated_Type (Cursor) = E)
+                  then
+                     return True;
+                  end if;
+
+                  exit when Cursor = Last_Formal;
+
+                  Cursor := Next_Entity (Cursor);
+               end loop;
+            end if;
+
+            return False;
+         end Required_To_Be_Primitive;
+
+         --  Local Variables
+
+         Valid   : Boolean   := True;
+         Problem : Entity_Id := Empty;
+
+      --  Start of processing for Check_Nonoverridable_Aspect_Subprograms
+
+      begin
+         --  If the aspect specification was effectively inherited from the
+         --  parent type (so constructed anew by analysis), then no point
+         --  in validating.
+
+         if not Comes_From_Source (ASN) then
+            return;
+         end if;
+
+         --  If the expression is neither an aggregate nor a node denoting an
+         --  entity, then also no point in validating.
+
+         if Kind not in N_Aggregate | N_Has_Entity then
+            return;
+         end if;
+
+         --  Original should point to ASN if this is the first recursive call
+
+         if No (Original) then
+            Check_Nonoverridable_Aspect_Subprograms
+              (ASN => ASN,
+               E => E,
+               Original => ASN);
+            return;
+         end if;
+
+         if Kind = N_Aggregate then
+            declare
+               Aggregate_List : constant List_Id :=
+                 Component_Associations (Expr);
+               Current : Node_Id := First (Aggregate_List);
+            begin
+               --  Each component association must be checked separately
+
+               while Present (Current) loop
+
+                  Check_Nonoverridable_Aspect_Subprograms
+                    (ASN      => Current,
+                     E        => E,
+                     Original => Original);
+
+                  Next (Current);
+               end loop;
+            end;
+
+         else
+            --  Some expressions may be unanalyzed, as some nonoverridable
+            --  aspects allow forward references. For instance, when the type E
+            --  is defined inside a package body.
+
+            if No (Entity (Expr)) then
+               Analyze (Expr);
+            end if;
+
+            declare
+               Subp : constant Entity_Id := Entity (Expr);
+            begin
+
+               --  No point in validating a node that does not represent a
+               --  subprogram here.
+
+               if not Is_Subprogram (Subp) then
+                  return;
+               end if;
+
+               if not Is_Overloaded (Expr) then
+                  Valid := (if Required_To_Be_Primitive (Subp)
+                             then Is_Primitive (Subp));
+
+                  Problem := Subp;
+
+               else
+                  declare
+                     Found : Boolean := False;
+                     I     : Interp_Index;
+                     It    : Interp;
+                  begin
+                     --  Check whether there is at least one interpretation
+                     --  that is required to be primitive. We iterate over all
+                     --  possible interpretations, as some may be removed.
+
+                     Get_First_Interp (Expr, I, It);
+                     while Present (It.Nam) loop
+
+                        --  If the current interpretation is not declared
+                        --  within the scope of E, then it should not be
+                        --  considered, see RM 13.1.1(8/6).
+
+                        if not Within_Scope (It.Nam, Scope (E)) then
+                           Remove_Interp (I);
+
+                        else
+                           Found := Found
+                             or else Required_To_Be_Primitive (It.Nam);
+                        end if;
+
+                        Get_Next_Interp (I, It);
+                     end loop;
+
+                     if Found then
+
+                        --  To satisfy the legality rule in RM 13.1.1(18.2/5),
+                        --  if there's at least one interpretation that's
+                        --  primitive, then all of them must be primitive;
+                        --  otherwise we emit an error.
+
+                        Get_First_Interp (Expr, I, It);
+                        pragma Warnings (Off, Valid); -- Valid not always True
+                        while Valid and then Present (It.Nam) loop
+
+                           Valid := Valid and then Is_Primitive (It.Nam);
+                           Problem := It.Nam;
+
+                           Get_Next_Interp (I, It);
+                        end loop;
+                     end if;
+                  end;
+               end if;
+            end;
+         end if;
+
+         if not Valid then
+            declare
+               Operation_Kind : constant String :=
+                 (if Comes_From_Source (Problem)
+                   then "declared"
+                   else "inherited");
+            begin
+               Error_Msg_Name_1 := Chars (Identifier (Original));
+               Error_Msg_Name_2 := Chars (E);
+               Error_Msg_Name_3 := Chars (Problem);
+               Error_Msg_Sloc := Sloc (Problem);
+               Error_Msg_N ("nonoverridable aspect % of type % requires % "
+                            & Operation_Kind
+                            & "# to be a primitive operation",
+                            Original);
+            end;
+         end if;
+      end Check_Nonoverridable_Aspect_Subprograms;
 
       -------------------------------------
       -- Make_Pragma_From_Boolean_Aspect --
@@ -1547,6 +1752,14 @@ package body Sem_Ch13 is
 
                if Present (Ritem) then
                   Analyze (Ritem);
+               end if;
+
+               --  All nonoverriding aspects need further legality checks
+
+               if A_Id in Nonoverridable_Aspect_Id
+                 and then Ada_Version >= Ada_2022
+               then
+                  Check_Nonoverridable_Aspect_Subprograms (ASN, E);
                end if;
             end if;
          end if;
@@ -12613,8 +12826,8 @@ package body Sem_Ch13 is
       elsif No (Next_Formal (First_Formal (Subp))) then
          Error_Msg_Sloc := Sloc (Subp);
          Illegal_Indexing
-            ("at least two parameters required for indexing function "
-             & "defined #");
+           ("at least two parameters required for indexing function "
+            & "defined #");
          return;
 
       elsif not Subp_Is_Dispatching_Op_Of_Typ
@@ -12625,7 +12838,7 @@ package body Sem_Ch13 is
       then
          Illegal_Indexing
            ("indexing aspect requires function with first formal "
-             & "applying to type& or its class-wide type");
+            & "applying to type& or its class-wide type");
          return;
 
       elsif Aspect = Aspect_Constant_Indexing
@@ -12634,7 +12847,7 @@ package body Sem_Ch13 is
       then
          Illegal_Indexing
            ("Constant_Indexing must apply to function with "
-             & "access-to-constant formal");
+            & "access-to-constant formal");
          return;
       end if;
 
@@ -12643,8 +12856,8 @@ package body Sem_Ch13 is
       if Aspect = Aspect_Variable_Indexing then
          if not Has_Implicit_Dereference (Ret_Type) then
             Illegal_Indexing
-               ("function for Variable_Indexing must return "
-                & "a reference type");
+              ("function for Variable_Indexing must return "
+               & "a reference type");
             return;
 
          elsif Is_Access_Constant
