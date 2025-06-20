@@ -1,3 +1,20 @@
+2025-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120631
+	* gcc.dg/dfp/bitint-10.c: New test.
+	* gcc.dg/dfp/pr120631.c: New test.
+
+2025-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120631
+	* gcc.dg/dfp/bitint-9.c: New test.
+
 2025-06-18  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
