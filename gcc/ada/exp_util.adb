@@ -6080,11 +6080,17 @@ package body Exp_Util is
             Utyp := Corresponding_Record_Type (Root_Type (Btyp));
 
          else
-            Utyp := Underlying_Type (Root_Type (Btyp));
-
-            if Is_Protected_Type (Utyp) then
-               Utyp := Corresponding_Record_Type (Utyp);
-            end if;
+            declare
+               Root : constant Entity_Id := Underlying_Type (Root_Type (Btyp));
+            begin
+               if Is_Protected_Type (Root) then
+                  Utyp := Corresponding_Record_Type (Root);
+               else
+                  while No (TSS (Utyp, TSS_Finalize_Address)) loop
+                     Utyp := Underlying_Type (Base_Type (Etype (Utyp)));
+                  end loop;
+               end if;
+            end;
          end if;
       end if;
 
