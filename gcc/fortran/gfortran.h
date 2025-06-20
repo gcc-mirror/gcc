@@ -3507,6 +3507,8 @@ void gfc_done_2 (void);
 
 int get_c_kind (const char *, CInteropKind_t *);
 
+const char * gfc_var_name_for_select_type_temp (gfc_expr *);
+
 const char *gfc_closest_fuzzy_match (const char *, char **);
 inline void
 vec_push (char **&optr, size_t &osz, const char *elt)

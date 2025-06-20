@@ -10819,6 +10819,8 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	ref = gfc_copy_ref (ref);
     }
 
+  gfc_expr *orig_expr1 = code->expr1;
+
   /* Add EXEC_SELECT to switch on type.  */
   new_st = gfc_get_code (code->op);
   new_st->expr1 = code->expr1;
@@ -10846,7 +10848,6 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   for (body = code->block; body; body = body->block)
     {
       gfc_symbol *vtab;
-      gfc_expr *e;
       c = body->ext.block.case_list;
 
       /* Generate an index integer expression for address of the
@@ -10854,6 +10855,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	 is stored in c->high and is used to resolve intrinsic cases.  */
       if (c->ts.type != BT_UNKNOWN)
 	{
+	  gfc_expr *e;
 	  if (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
 	    {
 	      vtab = gfc_find_derived_vtab (c->ts.u.derived);
@@ -10886,11 +10888,13 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	 when this case is actually true, so build a new ASSOCIATE
 	 that does precisely this here (instead of using the
 	 'global' one).  */
-
+      const char * var_name = gfc_var_name_for_select_type_temp (orig_expr1);
       if (c->ts.type == BT_CLASS)
-	sprintf (name, "__tmp_class_%s", c->ts.u.derived->name);
+	snprintf (name, sizeof (name), "__tmp_class_%s_%s",
+		  c->ts.u.derived->name, var_name);
       else if (c->ts.type == BT_DERIVED)
-	sprintf (name, "__tmp_type_%s", c->ts.u.derived->name);
+	snprintf (name, sizeof (name), "__tmp_type_%s_%s",
+		  c->ts.u.derived->name, var_name);
       else if (c->ts.type == BT_CHARACTER)
 	{
 	  HOST_WIDE_INT charlen = 0;
@@ -10898,12 +10902,13 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	      && c->ts.u.cl->length->expr_type == EXPR_CONSTANT)
 	    charlen = gfc_mpz_get_hwi (c->ts.u.cl->length->value.integer);
 	  snprintf (name, sizeof (name),
-		    "__tmp_%s_" HOST_WIDE_INT_PRINT_DEC "_%d",
-		    gfc_basic_typename (c->ts.type), charlen, c->ts.kind);
+		    "__tmp_%s_" HOST_WIDE_INT_PRINT_DEC "_%d_%s",
+		    gfc_basic_typename (c->ts.type), charlen, c->ts.kind,
+		    var_name);
 	}
       else
-	sprintf (name, "__tmp_%s_%d", gfc_basic_typename (c->ts.type),
-	         c->ts.kind);
+	snprintf (name, sizeof (name), "__tmp_%s_%d_%s",
+		  gfc_basic_typename (c->ts.type), c->ts.kind, var_name);
 
       st = gfc_find_symtree (ns->sym_root, name);
       gcc_assert (st->n.sym->assoc);
