@@ -361,19 +361,15 @@ DefaultResolver::visit (AST::MatchExpr &expr)
 void
 DefaultResolver::visit (AST::ConstantItem &item)
 {
-  if (item.has_expr ())
-    {
-      auto expr_vis_1
-	= [this, &item] () { AST::DefaultASTVisitor::visit (item); };
+  auto expr_vis_1 = [this, &item] () { AST::DefaultASTVisitor::visit (item); };
 
-      auto expr_vis_2 = [this, &item, &expr_vis_1] () {
-	ctx.canonical_ctx.scope (item.get_node_id (), item.get_identifier (),
-				 std::move (expr_vis_1));
-      };
+  auto expr_vis_2 = [this, &item, &expr_vis_1] () {
+    ctx.canonical_ctx.scope (item.get_node_id (), item.get_identifier (),
+			     std::move (expr_vis_1));
+  };
 
-      // FIXME: Why do we need a Rib here?
-      ctx.scoped (Rib::Kind::ConstantItem, item.get_node_id (), expr_vis_2);
-    }
+  // FIXME: Why do we need a Rib here?
+  ctx.scoped (Rib::Kind::ConstantItem, item.get_node_id (), expr_vis_2);
 }
 
 void
