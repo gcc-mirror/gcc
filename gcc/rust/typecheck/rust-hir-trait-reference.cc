@@ -342,7 +342,15 @@ TraitReference::on_resolved ()
 {
   for (auto &item : item_refs)
     {
-      item.on_resolved ();
+      if (item.get_trait_item_type ()
+	  == TraitItemReference::TraitItemType::TYPE)
+	item.on_resolved ();
+    }
+  for (auto &item : item_refs)
+    {
+      if (item.get_trait_item_type ()
+	  != TraitItemReference::TraitItemType::TYPE)
+	item.on_resolved ();
     }
 }
 

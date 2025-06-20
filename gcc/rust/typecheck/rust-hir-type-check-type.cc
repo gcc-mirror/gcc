@@ -549,8 +549,7 @@ TypeCheckType::resolve_segments (
       bool selfResolveOk = false;
 
       if (first_segment && tySegIsBigSelf
-	  && context->block_context ().is_in_context ()
-	  && context->block_context ().peek ().is_impl_block ())
+	  && context->block_context ().is_in_context ())
 	{
 	  TypeCheckBlockContextItem ctx = context->block_context ().peek ();
 	  TyTy::BaseType *lookup = nullptr;
