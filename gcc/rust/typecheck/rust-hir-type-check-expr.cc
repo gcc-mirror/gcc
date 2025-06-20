@@ -2086,16 +2086,13 @@ TypeCheckExpr::resolve_operator_overload (
 
 HIR::PathIdentSegment
 TypeCheckExpr::resolve_possible_fn_trait_call_method_name (
-  TyTy::BaseType &receiver, TyTy::TypeBoundPredicate *associated_predicate)
+  const TyTy::BaseType &receiver,
+  TyTy::TypeBoundPredicate *associated_predicate)
 {
-  // Question
-  // do we need to probe possible bounds here? I think not, i think when we
-  // support Fn traits they are explicitly specified
-
   // FIXME
   // the logic to map the FnTrait to their respective call trait-item is
   // duplicated over in the backend/rust-compile-expr.cc
-  for (auto &bound : receiver.get_specified_bounds ())
+  for (const auto &bound : receiver.get_specified_bounds ())
     {
       bool found_fn = bound.get_name ().compare ("Fn") == 0;
       bool found_fn_mut = bound.get_name ().compare ("FnMut") == 0;
@@ -2115,6 +2112,34 @@ TypeCheckExpr::resolve_possible_fn_trait_call_method_name (
 	{
 	  *associated_predicate = bound;
 	  return HIR::PathIdentSegment ("call_once");
+	}
+    }
+
+  if (receiver.is<TyTy::ReferenceType> ())
+    {
+      const auto &ref = static_cast<const TyTy::ReferenceType &> (receiver);
+      const auto &underlying = *ref.get_base ();
+      for (const auto &bound : underlying.get_specified_bounds ())
+	{
+	  bool found_fn = bound.get_name ().compare ("Fn") == 0;
+	  bool found_fn_mut = bound.get_name ().compare ("FnMut") == 0;
+	  bool found_fn_once = bound.get_name ().compare ("FnOnce") == 0;
+
+	  if (found_fn)
+	    {
+	      *associated_predicate = bound;
+	      return HIR::PathIdentSegment ("call");
+	    }
+	  else if (found_fn_mut)
+	    {
+	      *associated_predicate = bound;
+	      return HIR::PathIdentSegment ("call_mut");
+	    }
+	  else if (found_fn_once)
+	    {
+	      *associated_predicate = bound;
+	      return HIR::PathIdentSegment ("call_once");
+	    }
 	}
     }
 
