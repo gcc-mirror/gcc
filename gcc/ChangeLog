@@ -1,3 +1,58 @@
+2025-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/120689
+	* function.cc (assign_parm_setup_block): Align parm to at least
+	word alignment even on !STRICT_ALIGNMENT targets, as long as
+	BITS_PER_WORD is not larger than MAX_SUPPORTED_STACK_ALIGNMENT.
+
+2025-06-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120427
+	* config/i386/i386.md (*mov<mode>_and): Changed to
+	define_insn_and_split.  Split it to "mov $0,mem" if not -Oz.
+	(*mov<mode>_or): Changed to define_insn_and_split.  Split it
+	to "mov $-1,mem" if not -Oz.
+	(peephole2): Don't transform "mov $-1,reg" to "push $-1; pop reg"
+	for -Oz since it will be transformed to "or $-1,reg".
+
+2025-06-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR other/115893
+	* doc/install.texi (Prerequisites): Note that Texinfo older
+	than v7.1 may throw incorrect build warnings, cf.
+	https://lists.nongnu.org/archive/html/help-texinfo/2023-11/msg00004.html
+
+2025-06-19  Dongyan Chen  <chendongyan@isrc.iscas.ac.cn>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add "generic" tune.
+	* config/riscv/riscv.cc: Add generic_tune_info.
+	* config/riscv/riscv.h (RISCV_TUNE_STRING_DEFAULT): Change default tune.
+
+2025-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120631
+	* dfp.cc (decimal_real_to_integer): Use result multiplication not just
+	when precision > 128 and dn.exponent > 19, but when precision > 64
+	and dn.exponent > 0.
+
+2025-06-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Use
+	riscv_2x_xlen_mode_p.
+	(riscv_binary_cost): Ditto.
+	(riscv_hard_regno_mode_ok): Ditto.
+
+2025-06-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_cost_model): Add cost model for
+	zilsd.
+
+2025-06-19  Lili Cui  <lili.cui@intel.com>
+
+	PR target/120697
+	* config/i386/i386.cc (ix86_expand_prologue):
+	Remove 3 assertions and associated code.
+
 2025-06-18  Dimitar Dimitrov  <dimitar@dinux.eu>
 	    Richard Sandiford  <richard.sandiford@arm.com>
 	    Andrew Pinski  <quic_apinski@quicinc.com>

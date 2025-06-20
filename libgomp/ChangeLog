@@ -1,3 +1,20 @@
+2025-06-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* target.c (GOMP_REQUIRES_NAME_BUF_LEN): Define.
+	(GOMP_offload_register_ver, gomp_target_init): Use it for the
+	char buffer size.
+
+2025-06-19  Tobias Burnus  <tburnus@baylibre.com>
+	    waffl3x  <waffl3x@baylibre.com>
+
+	* libgomp.texi (omp_init_allocator): Refer to 'Memory allocation'
+	for available memory spaces.
+	(OMP_ALLOCATOR): Move list of traits and predefined memspaces
+	and allocators to ...
+	(Memory allocation): ... here. Document omp(x)::allocator::*;
+	minor wording tweaks, be more explicit about memkind, pinned and
+	pool_size.
+
 2025-06-17  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.c++/declare_target-2.C: New test.
