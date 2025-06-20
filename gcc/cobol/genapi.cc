@@ -957,8 +957,8 @@ parser_compile_ecs( const std::vector<uint64_t>& ecs )
     {
     SHOW_PARSE_HEADER
     char ach[64];
-    snprintf(ach, sizeof(ach), " Size is %ld; retval is %p",
-             ecs.size(), as_voidp(retval));
+    snprintf(ach, sizeof(ach), " Size is %lu; retval is %p",
+             gb4(ecs.size()), as_voidp(retval));
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
     }
@@ -966,8 +966,8 @@ parser_compile_ecs( const std::vector<uint64_t>& ecs )
     {
     TRACE1_HEADER
     char ach[64];
-    snprintf(ach, sizeof(ach), " Size is %ld; retval is %p",
-             ecs.size(), as_voidp(retval));
+    snprintf(ach, sizeof(ach), " Size is %lu; retval is %p",
+             gb4(ecs.size()), as_voidp(retval));
     TRACE1_TEXT_ABC("", ach, "");
     TRACE1_END
     }
@@ -1006,8 +1006,8 @@ parser_compile_dcls( const std::vector<uint64_t>& dcls )
     {
     SHOW_PARSE_HEADER
     char ach[64];
-    snprintf(ach, sizeof(ach), " Size is %ld; retval is %p",
-             dcls.size(), as_voidp(retval));
+    snprintf(ach, sizeof(ach), " Size is %lu; retval is %p",
+             gb4(dcls.size()), as_voidp(retval));
     SHOW_PARSE_TEXT(ach);
     SHOW_PARSE_END
     }
@@ -1015,8 +1015,8 @@ parser_compile_dcls( const std::vector<uint64_t>& dcls )
     {
     TRACE1_HEADER
     char ach[64];
-    snprintf(ach, sizeof(ach), " Size is %ld; retval is %p",
-             dcls.size(), as_voidp(retval));
+    snprintf(ach, sizeof(ach), " Size is %lu; retval is %p",
+             gb4(dcls.size()), as_voidp(retval));
     TRACE1_TEXT_ABC("", ach, "");
     TRACE1_END
     }
@@ -6898,7 +6898,7 @@ parser_division(cbl_division_t division,
 
       // There are 'nusing' elements in the PROCEDURE DIVISION USING list.
 
-      tree parameter;
+      tree parameter = NULL_TREE;
       tree rt_i = gg_define_int();
       for(size_t i=0; i<nusing; i++)
         {
@@ -9932,17 +9932,18 @@ inspect_tally(bool backward,
     {
     SHOW_PARSE_HEADER
     char ach[128];
-    sprintf(ach, "There are %lu identifier_2", identifier_2.size());
+    sprintf(ach, "There are %lu identifier_2", gb4(identifier_2.size()));
     SHOW_PARSE_TEXT(ach);
     for(size_t i=0; i<identifier_2.size(); i++)
       {
       SHOW_PARSE_INDENT
-      sprintf(ach, "%lu: bounds: %lu", i, identifier_2[i].nbound());
+        sprintf(ach, "%lu: bounds: %lu", gb4(i), gb4(identifier_2[i].nbound()));
       SHOW_PARSE_TEXT(ach);
       for(size_t j=0; j<identifier_2[i].nbound(); j++)
         {
         SHOW_PARSE_INDENT
-        sprintf(ach, "    %lu: matches: %lu", j, identifier_2[i][j].matches.size());
+          sprintf(ach, "    %lu: matches: %lu",
+                  gb4(j), gb4(identifier_2[i][j].matches.size()));
         SHOW_PARSE_TEXT(ach);
 
         SHOW_PARSE_INDENT

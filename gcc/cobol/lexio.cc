@@ -1524,11 +1524,11 @@ cdftext::lex_open( const char filename[] ) {
     int status;
     auto kid = wait(&status);
     gcc_assert(pid == kid);
-    if( kid == -1 ) cbl_err( "failed waiting for pid %d", pid);
+    if( kid == -1 ) cbl_err( "failed waiting for pid %ld", static_cast<long>(pid));
 
     if( WIFSIGNALED(status) ) {
-      cbl_errx( "%s pid %d terminated by %s",
-           filter, kid, strsignal(WTERMSIG(status)) );
+      cbl_errx( "%s pid %ld terminated by %s",
+                filter, static_cast<long>(kid), strsignal(WTERMSIG(status)) );
     }
     if( WIFEXITED(status) ) {
       if( (status = WEXITSTATUS(status)) != 0 ) {
