@@ -71,7 +71,7 @@ load256u_ph (void const *p)
   return _mm256_loadu_ph (p);
 }
 
-/* { dg-final { scan-assembler-times "vmovdqu16\[ \\t\]*\[^,\]*,\[^\{\n\]*%ymm\[0-9\]" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[ \\t\]*\[^,\]*,\[^\{\n\]*%ymm\[0-9\]" 1 } } */
 
 __m128h
 __attribute__ ((noinline, noclone))
@@ -80,7 +80,7 @@ load128u_ph (void const *p)
   return _mm_loadu_ph (p);
 }
 
-/* { dg-final { scan-assembler-times "vmovdqu16\[ \\t\]*\[^,\]*,\[^\{\n\]*%xmm\[0-9\]" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[ \\t\]*\[^,\]*,\[^\{\n\]*%xmm\[0-9\]" 1 } } */
 
 void
 __attribute__ ((noinline, noclone))
@@ -89,7 +89,7 @@ store512u_ph (void *p, __m512h a)
   return _mm512_storeu_ph (p, a);
 }
 
-/* { dg-final { scan-assembler-times "vmovdqu16\[ \\t\]*\[^\{\n\]*%zmm\[0-9\], *\[^,\]*" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[ \\t\]*\[^\{\n\]*%zmm\[0-9\], *\[^,\]*" 1 } } */
 
 void
 __attribute__ ((noinline, noclone))
@@ -98,7 +98,7 @@ store256u_ph (void *p, __m256h a)
   return _mm256_storeu_ph (p, a);
 }
 
-/* { dg-final { scan-assembler-times "vmovdqu16\[ \\t\]*\[^\{\n\]*%ymm\[0-9\], *\[^,\]*" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[ \\t\]*\[^\{\n\]*%ymm\[0-9\], *\[^,\]*" 1 } } */
 
 void
 __attribute__ ((noinline, noclone))
@@ -107,7 +107,7 @@ storeu_ph (void *p, __m128h a)
   return _mm_storeu_ph (p, a);
 }
 
-/* { dg-final { scan-assembler-times "vmovdqu16\[ \\t\]*\[^\{\n\]*%xmm\[0-9\], *\[^,\]*" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[ \\t\]*\[^\{\n\]*%xmm\[0-9\], *\[^,\]*" 1 } } */
 
 __m512h
 __attribute__ ((noinline, noclone))

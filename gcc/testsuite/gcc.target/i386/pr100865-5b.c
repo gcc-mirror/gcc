@@ -5,6 +5,6 @@
 #include "pr100865-5a.c"
 
 /* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%(?:r|e)\[^\n\]*, %ymm\[0-9\]+" 1 } } */
-/* { dg-final { scan-assembler-times "vmovdqu16\[\\t \]%ymm\[0-9\]+, " 4 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[\\t \]%ymm\[0-9\]+, " 4 } } */
 /* { dg-final { scan-assembler-not "vpbroadcastd\[\\t \]+%xmm\[0-9\]+, %ymm\[0-9\]+" } } */
 /* { dg-final { scan-assembler-not "vmovdqa" } } */

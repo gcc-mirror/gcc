@@ -5703,7 +5703,7 @@ ix86_get_ssemov (rtx *operands, unsigned size,
 		      : "%vmovaps");
 	  else
 	    opcode = (misaligned_p
-		      ? (TARGET_AVX512BW
+		      ? (TARGET_AVX512BW && evex_reg_p
 			 ? "vmovdqu16"
 			 : "%vmovdqu")
 		      : "%vmovdqa");
@@ -5745,7 +5745,7 @@ ix86_get_ssemov (rtx *operands, unsigned size,
 		      : "%vmovaps");
 	  else
 	    opcode = (misaligned_p
-		      ? (TARGET_AVX512BW
+		      ? (TARGET_AVX512BW && evex_reg_p
 			 ? "vmovdqu8"
 			 : "%vmovdqu")
 		      : "%vmovdqa");
@@ -5765,7 +5765,7 @@ ix86_get_ssemov (rtx *operands, unsigned size,
 		      : "%vmovaps");
 	  else
 	    opcode = (misaligned_p
-		      ? (TARGET_AVX512BW
+		      ? (TARGET_AVX512BW && evex_reg_p
 			 ? "vmovdqu16"
 			 : "%vmovdqu")
 		      : "%vmovdqa");

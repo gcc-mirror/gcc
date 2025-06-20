@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512bw -mavx512vl -O2" } */
-/* { dg-final { scan-assembler-times "(?:vmovdqu8|vinserti128)\[ \\t\]+\[^\{\n\]*\\)\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "(?:vmovdqu8|vextracti128)\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*\\)(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "(?:vmovdqu|vinserti128)\[ \\t\]+\[^\{\n\]*\\)\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "(?:vmovdqu|vextracti128)\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*\\)(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 
