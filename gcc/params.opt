@@ -1189,6 +1189,10 @@ predicate chain.
 Common Joined UInteger Var(param_uninit_max_num_chains) Init(8) IntegerRange(1, 128) Param Optimization
 Maximum number of predicates ored in the normalized predicate chain.
 
+-param=uninit-max-prune-work=
+Common Joined UInteger Var(param_uninit_max_prune_work) Init(100000) Param Optimization
+Maximum amount of work done to prune paths where the variable is always initialized.
+
 -param=uninlined-function-insns=
 Common Joined UInteger Var(param_uninlined_function_insns) Init(2) Optimization IntegerRange(0, 1000000) Param
 Instruction accounted for function prologue, epilogue and other overhead.

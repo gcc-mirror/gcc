@@ -152,7 +152,7 @@ private:
   bool is_use_guarded (gimple *, basic_block, gphi *, unsigned,
 		       hash_set<gphi *> *);
   bool prune_phi_opnds (gphi *, unsigned, gphi *, tree, tree_code,
-			hash_set<gphi *> *, bitmap *);
+			hash_set<gphi *> *, bitmap *, unsigned &);
   bool overlap (gphi *, unsigned, hash_set<gphi *> *, const predicate &);
 
   void collect_phi_def_edges (gphi *, basic_block, vec<edge> *,
