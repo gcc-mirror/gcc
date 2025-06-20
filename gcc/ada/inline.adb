@@ -3797,6 +3797,17 @@ package body Inline is
                           and then Is_Unc;
       end if;
 
+      --  Inlining function calls returning an object of unconstrained type as
+      --  function actuals or in a return statement is not supported: a
+      --  temporary variable will be declared of unconstrained type without
+      --  initializing expression.
+
+      pragma Assert
+        (not Uses_Back_End
+           or else Nkind (Parent (N)) not in
+             N_Function_Call | N_Simple_Return_Statement
+           or else not Is_Unc);
+
       --  Check for an illegal attempt to inline a recursive procedure. If the
       --  subprogram has parameters this is detected when trying to supply a
       --  binding for parameters that already have one. For parameterless

@@ -5227,6 +5227,10 @@ package body Exp_Ch6 is
          --  also Build_Renamed_Body) cannot be expanded here because this may
          --  give rise to order-of-elaboration issues for the types of the
          --  parameters of the subprogram, if any.
+         --
+         --  Expand_Inlined_Call procedure does not support the frontend
+         --  inlining of calls that return unconstrained types used as actuals
+         --  or in return statements.
 
          elsif Present (Unit_Declaration_Node (Subp))
            and then Nkind (Unit_Declaration_Node (Subp)) =
@@ -5235,6 +5239,8 @@ package body Exp_Ch6 is
            and then
              Nkind (Body_To_Inline (Unit_Declaration_Node (Subp))) not in
                                                                        N_Entity
+           and then Nkind (Parent (N)) /= N_Function_Call
+           and then Nkind (Parent (N)) /= N_Simple_Return_Statement
          then
             Expand_Inlined_Call (Call_Node, Subp, Orig_Subp);
 
