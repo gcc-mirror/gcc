@@ -1,7 +1,7 @@
 /* Reduced from SPEC2017 blender: node_texture_util.c.
    The conditional function call was tripping mode switching state machine */
 
-/* { dg-do compile } */
+/* { dg-do compile  { target { rv64 && { ! riscv_abi_e } } } } */
 /* { dg-options " -Ofast -march=rv64gcv_zvl256b -ftree-vectorize -mrvv-vector-bits=zvl" } */
 
 void *a;

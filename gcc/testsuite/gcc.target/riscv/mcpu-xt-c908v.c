@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
 /* { dg-skip-if "-march given" { *-*-* } { "-march=*" } } */
 /* { dg-options "-mcpu=xt-c908v" { target { rv64 } } } */
 /* XuanTie C908v => rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicsr_zifencei_
