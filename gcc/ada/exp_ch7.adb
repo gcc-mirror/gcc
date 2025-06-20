@@ -7906,12 +7906,16 @@ package body Exp_Ch7 is
       if Is_Untagged_Derivation (Typ) then
          if Is_Protected_Type (Typ) then
             Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
-         else
-            Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
 
-            if Is_Protected_Type (Utyp) then
-               Utyp := Corresponding_Record_Type (Utyp);
-            end if;
+         else
+            declare
+               Root : constant Entity_Id :=
+                 Underlying_Type (Root_Type (Base_Type (Typ)));
+            begin
+               if Is_Protected_Type (Root) then
+                  Utyp := Corresponding_Record_Type (Root);
+               end if;
+            end;
          end if;
 
          Ref := Unchecked_Convert_To (Utyp, Ref);
