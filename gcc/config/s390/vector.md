@@ -89,6 +89,13 @@
 (define_mode_iterator VF_HW [(V4SF "TARGET_VXE") V2DF (V1TF "TARGET_VXE")
 			     (TF "TARGET_VXE")])
 
+; FP scalar and vector modes
+(define_mode_iterator VFT_BFP [SF DF
+			      (V1SF "TARGET_VXE") (V2SF "TARGET_VXE") (V4SF "TARGET_VXE")
+			      V1DF V2DF
+			      (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
+
+
 (define_mode_iterator V_8   [V1QI])
 (define_mode_iterator V_16  [V2QI  V1HI])
 (define_mode_iterator V_32  [V4QI  V2HI V1SI V1SF])
@@ -3602,3 +3609,21 @@
 	(umul_highpart:VIT_HW_VXE3_DT (match_operand:VIT_HW_VXE3_DT 1 "register_operand")
 				      (match_operand:VIT_HW_VXE3_DT 2 "register_operand")))]
   "TARGET_VX")
+
+; fmax
+(define_expand "fmax<mode>3"
+  [(set (match_operand:VFT_BFP                  0 "register_operand")
+	(unspec:VFT_BFP [(match_operand:VFT_BFP 1 "register_operand")
+	       (match_operand:VFT_BFP           2 "register_operand")
+	       (const_int 4)]
+	      UNSPEC_FMAX))]
+  "TARGET_VXE")
+
+; fmin
+(define_expand "fmin<mode>3"
+  [(set (match_operand:VFT_BFP                  0 "register_operand")
+	(unspec:VFT_BFP [(match_operand:VFT_BFP 1 "register_operand")
+	       (match_operand:VFT_BFP           2 "register_operand")
+	       (const_int 4)]
+	      UNSPEC_FMIN))]
+  "TARGET_VXE")

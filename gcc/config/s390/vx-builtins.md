@@ -2134,23 +2134,22 @@
   "<vw>fche<sdx>bs\t%v2,%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
-
 (define_insn "vfmin<mode>"
-  [(set (match_operand:VF_HW                0 "register_operand"  "=v")
-	(unspec:VF_HW [(match_operand:VF_HW 1 "register_operand"   "v")
-		       (match_operand:VF_HW 2 "register_operand"   "v")
-		       (match_operand:QI    3 "const_mask_operand" "C")]
-		      UNSPEC_VEC_VFMIN))]
+  [(set (match_operand:VFT_BFP                  0 "register_operand"  "=v")
+	(unspec:VFT_BFP [(match_operand:VFT_BFP 1 "register_operand"   "v")
+		         (match_operand:VFT_BFP 2 "register_operand"   "v")
+		         (match_operand:QI      3 "const_mask_operand" "C")]
+		        UNSPEC_FMIN))]
   "TARGET_VXE"
   "<vw>fmin<sdx>b\t%v0,%v1,%v2,%b3"
   [(set_attr "op_type" "VRR")])
 
 (define_insn "vfmax<mode>"
-  [(set (match_operand:VF_HW                0 "register_operand"  "=v")
-	(unspec:VF_HW [(match_operand:VF_HW 1 "register_operand"   "v")
-		       (match_operand:VF_HW 2 "register_operand"   "v")
-		       (match_operand:QI    3 "const_mask_operand" "C")]
-		      UNSPEC_VEC_VFMAX))]
+  [(set (match_operand:VFT_BFP                  0 "register_operand"  "=v")
+	(unspec:VFT_BFP [(match_operand:VFT_BFP 1 "register_operand"   "v")
+		         (match_operand:VFT_BFP 2 "register_operand"   "v")
+		         (match_operand:QI      3 "const_mask_operand" "C")]
+		        UNSPEC_FMAX))]
   "TARGET_VXE"
   "<vw>fmax<sdx>b\t%v0,%v1,%v2,%b3"
   [(set_attr "op_type" "VRR")])
