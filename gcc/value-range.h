@@ -111,6 +111,7 @@ public:
   bool operator== (const vrange &) const;
   bool operator!= (const vrange &r) const { return !(*this == r); }
   void dump (FILE *) const;
+  virtual void verify_range () const { }
 protected:
   vrange (enum value_range_discriminator d) : m_discriminator (d) { }
   ENUM_BITFIELD(value_range_kind) m_kind : 8;
@@ -323,6 +324,7 @@ public:
   virtual void update_bitmask (const class irange_bitmask &) override;
   virtual irange_bitmask get_bitmask () const override;
 
+  virtual void verify_range () const;
 protected:
   void maybe_resize (int needed);
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
@@ -335,7 +337,6 @@ protected:
 
   void normalize_kind ();
 
-  void verify_range ();
 
   // Hard limit on max ranges allowed.
   static const int HARD_MAX_RANGES = 255;
@@ -421,7 +422,7 @@ public:
   bool contains_p (const wide_int &) const;
   wide_int lower_bound () const;
   wide_int upper_bound () const;
-  void verify_range () const;
+  virtual void verify_range () const;
   irange_bitmask get_bitmask () const final override;
   void update_bitmask (const irange_bitmask &) final override;
 protected:
@@ -593,14 +594,13 @@ public:
   bool nan_signbit_p (bool &signbit) const;
   bool known_isnormal () const;
   bool known_isdenormal_or_zero () const;
-
+  virtual void verify_range () const;
 protected:
   virtual bool contains_p (tree cst) const override;
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
 
 private:
   bool internal_singleton_p (REAL_VALUE_TYPE * = NULL) const;
-  void verify_range ();
   bool normalize_kind ();
   bool union_nans (const frange &);
   bool intersect_nans (const frange &);
@@ -798,6 +798,7 @@ public:
   void update_bitmask (const class irange_bitmask &bm)
   { return m_vrange->update_bitmask (bm); }
   void accept (const vrange_visitor &v) const { m_vrange->accept (v); }
+  void verify_range () const { m_vrange->verify_range (); }
 private:
   void init (tree type);
   void init (const vrange &);

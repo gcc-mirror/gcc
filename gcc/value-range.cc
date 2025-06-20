@@ -1205,7 +1205,7 @@ frange::supports_type_p (const_tree type) const
 }
 
 void
-frange::verify_range ()
+frange::verify_range () const
 {
   if (!undefined_p ())
     gcc_checking_assert (HONOR_NANS (m_type) || !maybe_isnan ());
@@ -1515,7 +1515,7 @@ irange::set (tree min, tree max, value_range_kind kind)
 // Check the validity of the range.
 
 void
-irange::verify_range ()
+irange::verify_range () const
 {
   gcc_checking_assert (m_discriminator == VR_IRANGE);
   if (m_kind == VR_UNDEFINED)
