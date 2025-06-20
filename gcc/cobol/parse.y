@@ -11409,8 +11409,8 @@ keyword_str( int token ) {
   switch( token ) {
   case YYEOF:   return "YYEOF";
   case YYEMPTY: return "YYEMPTY";
-  case YYerror: return "YYerror";
-  case YYUNDEF: return "invalid token";
+  case 256:     return "YYerror";
+  case 257:     return "invalid token"; // YYUNDEF
   }
   
   if( token < 256 ) {
@@ -12359,7 +12359,7 @@ numstr2i( const char input[], radix_t radix ) {
     return output;
   }
   if( erc == -1 ) {
-    yywarn("'%s' was accepted as %wd", input, integer);
+    yywarn("'%s' was accepted as %zu", input, integer);
   }
   return output;
 }
@@ -13141,7 +13141,7 @@ literal_subscripts_valid( YYLTYPE loc, const cbl_refer_t& name ) {
 
     // X(0): subscript 1 of for out of range for 02 X OCCURS 4 to 6
     error_msg(loc, "%s(%s): subscript %zu out of range "
-                   "for %s %s OCCURS %lu%s",
+                   "for %s %s OCCURS %zu%s",
 	      oob->name, subscript_names.c_str(), 1 + isub,
 	      oob->level_str(), oob->name,
 	      oob->occurs.bounds.lower, upper_phrase );

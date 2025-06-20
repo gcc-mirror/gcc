@@ -824,17 +824,20 @@ wait_for_the_child(void) {
   }
 
   if( WIFSIGNALED(status) ) {
-    yywarn( "process %d terminated by %s", pid, strsignal(WTERMSIG(status)) );
+    yywarn( "process %ld terminated by %s", 
+	    static_cast<long>(pid), strsignal(WTERMSIG(status)) );
     return false;
   }
   if( WIFEXITED(status) ) {
     if( WEXITSTATUS(status) != 0 ) {
-      yywarn("process %d exited with status %d", pid, status);
+      yywarn("process %ld exited with status %d",
+             static_cast<long>(pid), status);
       return false;
     }
   }
   if( yy_flex_debug ) {
-    yywarn("process %d exited with status %d", pid, status);
+    yywarn("process %ld exited with status %d",
+           static_cast<long>(pid), status);
   }
   return true;
 }
