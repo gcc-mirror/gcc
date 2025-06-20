@@ -1,3 +1,27 @@
+2025-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120631
+	* dfp.cc (decimal_real_to_integer): Use result multiplication not just
+	when precision > 128 and dn.exponent > 19, but when precision > 64
+	and dn.exponent > 0.
+
+2025-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120631
+	* real.cc (decimal_from_integer): Add digits argument, if larger than
+	256, use XALLOCAVEC allocated buffer.
+	(real_from_integer): Pass val_in's precision divided by 3 to
+	decimal_from_integer.
+	* dfp.cc (decimal_real_to_integer): For precision > 128 if finite
+	and exponent is large, decrease exponent and multiply resulting
+	wide_int by powers of 10^19.
+
 2025-06-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
