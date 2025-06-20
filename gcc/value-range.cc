@@ -1552,6 +1552,11 @@ irange::verify_range ()
       gcc_checking_assert (ub.get_precision () == prec);
       int c = wi::cmp (lb, ub, TYPE_SIGN (m_type));
       gcc_checking_assert (c == 0 || c == -1);
+      // Previous UB should be lower than LB
+      if (i > 0)
+	gcc_checking_assert (wi::lt_p (upper_bound (i - 1),
+				       lb,
+				       TYPE_SIGN (m_type)));
     }
   m_bitmask.verify_mask ();
 }
@@ -1628,7 +1633,7 @@ irange::contains_p (const wide_int &cst) const
   if (undefined_p ())
     return false;
 
-  // Check is the known bits in bitmask exclude CST.
+  // Check if the known bits in bitmask exclude CST.
   if (!m_bitmask.member_p (cst))
     return false;
 
@@ -2269,7 +2274,7 @@ irange::invert ()
 
 // This routine will take the bounds [LB, UB], and apply the bitmask to those
 // values such that both bounds satisfy the bitmask.  TRUE is returned
-// if either bound changes, and they are retuirned as [NEW_LB, NEW_UB].
+// if either bound changes, and they are returned as [NEW_LB, NEW_UB].
 // if NEW_UB < NEW_LB, then the entire bound is to be removed as none of
 // the values are valid.
 //   ie,   [4, 14] MASK 0xFFFE  VALUE 0x1
@@ -2285,30 +2290,29 @@ irange::snap (const wide_int &lb, const wide_int &ub,
   uint z = wi::ctz (m_bitmask.mask ());
   if (z == 0)
     return false;
-  const wide_int &wild_mask = m_bitmask.mask ();
 
   const wide_int step = (wi::one (TYPE_PRECISION (type ())) << z);
   const wide_int match_mask = step - 1;
   const wide_int value = m_bitmask.value () & match_mask;
 
+  bool ovf = false;
+
   wide_int rem_lb = lb & match_mask;
-
-  wi::overflow_type ov_sub;
-  wide_int diff = wi::sub(value, rem_lb, UNSIGNED, &ov_sub);
-  wide_int offset = diff & match_mask;
-
-  wi::overflow_type ov1;
-  new_lb = wi::add (lb, offset, UNSIGNED, &ov1);
+  wide_int offset = (value - rem_lb) & match_mask;
+  new_lb = lb + offset;
+  // Check for overflows at +INF
+  if (wi::lt_p (new_lb, lb, TYPE_SIGN (type ())))
+    ovf = true;
 
   wide_int rem_ub = ub & match_mask;
   wide_int offset_ub = (rem_ub - value) & match_mask;
-
-  wi::overflow_type ov2;
-  new_ub = wi::sub (ub, offset_ub, UNSIGNED, &ov2);
+  new_ub = ub - offset_ub;
+  // Check for underflows at -INF
+  if (wi::gt_p (new_ub, ub, TYPE_SIGN (type ())))
+    ovf = true;
 
   // Overflow or inverted range = invalid
-  if (ov1 != wi::OVF_NONE || ov2 != wi::OVF_NONE
-      || wi::lt_p (new_ub, new_lb, TYPE_SIGN (type ())))
+  if (ovf || wi::lt_p (new_ub, new_lb, TYPE_SIGN (type ())))
     {
       new_lb = wi::one (lb.get_precision ());
       new_ub = wi::zero (ub.get_precision ());
@@ -2454,7 +2458,7 @@ irange::set_range_from_bitmask ()
 
   // Make sure we call intersect, so do it first.
   changed = intersect (mask_range) | changed;
-  // Npw make sure each subrange endpoint matches the bitmask.
+  // Now make sure each subrange endpoint matches the bitmask.
   changed |= snap_subranges ();
 
   return changed;
@@ -2548,7 +2552,7 @@ irange::intersect_bitmask (const irange &r)
   irange_bitmask bm = get_bitmask ();
   irange_bitmask save = bm;
   bm.intersect (r.get_bitmask ());
-  // Use ths opportunity to make sure mask reflects always reflects the
+  // Use ths opportunity to make sure mask always reflects the
   // best mask we have.
   m_bitmask = bm;
 
