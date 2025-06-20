@@ -585,9 +585,8 @@ gcn_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     case XNACK_MASK_HI_REG:
     case TBA_HI_REG:
     case TMA_HI_REG:
-      return mode == SImode;
     case VCC_HI_REG:
-      return false;
+      return mode == SImode;
     case EXEC_HI_REG:
       return mode == SImode /*|| mode == V32BImode */ ;
     case SCC_REG:
