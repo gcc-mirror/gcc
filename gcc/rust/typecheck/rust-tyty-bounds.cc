@@ -105,7 +105,7 @@ TypeBoundsProbe::scan ()
     }
 
   // marker traits...
-  assemble_sized_builtin ();
+  assemble_marker_builtins ();
 
   // add auto trait bounds
   for (auto *auto_trait : mappings.get_auto_traits ())
@@ -113,7 +113,7 @@ TypeBoundsProbe::scan ()
 }
 
 void
-TypeBoundsProbe::assemble_sized_builtin ()
+TypeBoundsProbe::assemble_marker_builtins ()
 {
   const TyTy::BaseType *raw = receiver->destructure ();
 
@@ -132,7 +132,6 @@ TypeBoundsProbe::assemble_sized_builtin ()
     case TyTy::POINTER:
     case TyTy::PARAM:
     case TyTy::FNDEF:
-    case TyTy::FNPTR:
     case TyTy::BOOL:
     case TyTy::CHAR:
     case TyTy::INT:
@@ -140,13 +139,20 @@ TypeBoundsProbe::assemble_sized_builtin ()
     case TyTy::FLOAT:
     case TyTy::USIZE:
     case TyTy::ISIZE:
-    case TyTy::CLOSURE:
     case TyTy::INFER:
     case TyTy::NEVER:
     case TyTy::PLACEHOLDER:
     case TyTy::PROJECTION:
     case TyTy::OPAQUE:
       assemble_builtin_candidate (LangItem::Kind::SIZED);
+      break;
+
+    case TyTy::FNPTR:
+    case TyTy::CLOSURE:
+      assemble_builtin_candidate (LangItem::Kind::SIZED);
+      assemble_builtin_candidate (LangItem::Kind::FN_ONCE);
+      assemble_builtin_candidate (LangItem::Kind::FN);
+      assemble_builtin_candidate (LangItem::Kind::FN_MUT);
       break;
 
       // FIXME str and slice need to be moved and test cases updated
