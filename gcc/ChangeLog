@@ -1,3 +1,13 @@
+2025-06-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-05-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/119971
+	* config/riscv/bitmanip.md (rotation with masked count): Rewrite
+	as define_insn patterns.  Fix formatting.
+	* config/riscv/riscv.md (shift with masked count): Similarly.
+
 2025-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

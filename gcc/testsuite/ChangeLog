@@ -1,3 +1,12 @@
+2025-06-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-05-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/119971
+	* gcc.target/riscv/pr119971.c: New test.
+	* gcc.target/riscv/zbb-rol-ror-03.c: Adjust test slightly.
+
 2025-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
