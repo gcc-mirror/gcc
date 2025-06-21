@@ -1,3 +1,11 @@
+2025-06-20  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116674
+	* g++.dg/vect/pr116674.cc: New testcase.
+
 2025-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

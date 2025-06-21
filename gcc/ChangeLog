@@ -1,3 +1,12 @@
+2025-06-20  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116674
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Support
+	re-analysis.
+
 2025-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
