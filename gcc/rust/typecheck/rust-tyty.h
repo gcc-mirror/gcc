@@ -593,6 +593,9 @@ private:
 
   TypeBoundPredicate (mark_is_error);
 
+  void get_trait_hierachy (
+    std::function<void (const Resolver::TraitReference &)> callback) const;
+
   DefId reference;
   location_t locus;
   bool error_flag;

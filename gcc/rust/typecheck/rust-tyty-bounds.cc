@@ -754,16 +754,34 @@ size_t
 TypeBoundPredicate::get_num_associated_bindings () const
 {
   size_t count = 0;
-  auto trait_ref = get ();
-  for (const auto &trait_item : trait_ref->get_trait_items ())
-    {
-      bool is_associated_type
-	= trait_item.get_trait_item_type ()
-	  == Resolver::TraitItemReference::TraitItemType::TYPE;
-      if (is_associated_type)
-	count++;
-    }
+
+  get_trait_hierachy ([&count] (const Resolver::TraitReference &ref) {
+    for (const auto &trait_item : ref.get_trait_items ())
+      {
+	bool is_associated_type
+	  = trait_item.get_trait_item_type ()
+	    == Resolver::TraitItemReference::TraitItemType::TYPE;
+	if (is_associated_type)
+	  count++;
+      }
+  });
+
   return count;
+}
+
+void
+TypeBoundPredicate::get_trait_hierachy (
+  std::function<void (const Resolver::TraitReference &)> callback) const
+{
+  auto trait_ref = get ();
+  callback (*trait_ref);
+
+  for (auto &super : super_traits)
+    {
+      const auto &super_trait_ref = *super.get ();
+      callback (super_trait_ref);
+      super.get_trait_hierachy (callback);
+    }
 }
 
 TypeBoundPredicateItem
