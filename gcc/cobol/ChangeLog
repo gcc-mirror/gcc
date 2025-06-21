@@ -1,3 +1,14 @@
+2025-06-20  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/120621
+	* genapi.cc (parser_compile_ecs): Cast argument to unsigned long.
+	(parser_compile_dcls): Same.
+	(parser_division): RAII.
+	(inspect_tally): Cast argument to unsigned long.
+	* lexio.cc (cdftext::lex_open): Cast pid_t to long.
+	* parse.y: hard-code values for old versions of Bison, and message format.
+	* scan_ante.h (wait_for_the_child): Cast pid_t to long.
+
 2025-06-18  James K. Lowden  <jklowden@cobolworx.com>
 
 	PR cobol/120621

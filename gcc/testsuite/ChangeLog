@@ -1,3 +1,84 @@
+2025-06-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120701
+	* gcc.dg/pr120701.c: New.
+
+2025-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120654
+	* gcc.dg/torture/pr120654.c: New testcase.
+
+2025-06-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120708
+	* gcc.target/i386/memcpy-pr120708-1.c: New test.
+	* gcc.target/i386/memcpy-pr120708-2.c: Likewise.
+	* gcc.target/i386/memcpy-pr120708-3.c: Likewise.
+	* gcc.target/i386/memcpy-pr120708-4.c: Likewise.
+	* gcc.target/i386/memcpy-pr120708-5.c: Likewise.
+	* gcc.target/i386/memcpy-pr120708-6.c: Likewise.
+	* gcc.target/i386/memset-pr120708-1.c: Likewise.
+	* gcc.target/i386/memset-pr120708-2.c: Likewise.
+	* gcc.target/i386/memcpy-strategy-1.c: Drop dg-skip-if.  Replace
+	-march=atom with -mno-avx -msse2 -mtune=generic
+	-mtune-ctrl=^sse_typeless_stores.
+	* gcc.target/i386/memcpy-strategy-2.c: Likewise.
+	* gcc.target/i386/memcpy-vector_loop-1.c: Likewise.
+	* gcc.target/i386/memcpy-vector_loop-2.c: Likewise.
+	* gcc.target/i386/memset-vector_loop-1.c: Likewise.
+	* gcc.target/i386/memset-vector_loop-2.c: Likewise.
+
+2025-06-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_single-37.c: Force rocket tuning.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-17.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-18.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-19.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_bb_prop-20.c: Likewise.
+
+2025-06-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Add asm check
+	for vminu.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+
+2025-06-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macors.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add
+	test data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-1-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-2-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-2-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-2-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmin-run-2-u8.c: New test.
+
 2025-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/120689

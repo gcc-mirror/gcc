@@ -1,3 +1,10 @@
+2025-06-20  Sosutha Sethuramapandian  <ssethuramapa@marvell.com>
+
+	PR target/110181
+	* longlong.h  [__riscv] (count_leading_zeros): Define.
+	[__riscv] (count_trailing_zeros): Likewise.
+	[__riscv] (COUNT_LEADING_ZEROS_0): Likewise.
+
 2025-06-02  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR libgomp/120444

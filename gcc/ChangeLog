@@ -1,3 +1,68 @@
+2025-06-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120701
+	* value-range.cc (irange::verify_range): Verify range pairs are
+	sorted properly.
+	(irange::snap): Check for over/underflow properly.
+
+2025-06-20  Andrew Stubbs  <ams@baylibre.com>
+
+	PR target/120722
+	* config/gcn/gcn.cc (gcn_hard_regno_mode_ok): Allow SImode in VCC_HI.
+
+2025-06-20  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/120634
+	* prime-paths.cc (struct auto_vec_vec): Add constructor from
+	vec.
+	(test_split_components): Use auto_vec_vec.
+	(test_scc_internal_prime_paths): Ditto.
+	(test_scc_entry_exit_paths): Ditto.
+	(test_complete_prime_paths): Ditto.
+	(test_entry_prime_paths): Ditto.
+	(test_singleton_path): Ditto.
+
+2025-06-20  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/120634
+	* prime-paths.cc (trie::paths): Use auto_vec.
+
+2025-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120654
+	* vr-values.cc (range_fits_type_p): Check for undefined_p ()
+	before accessing type ().
+
+2025-06-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120708
+	* config/i386/i386-expand.cc (ix86_expand_set_or_cpymem): Use
+	MOVE_MAX to get the widest vector mode in vector loop.
+
+2025-06-20  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/or1k.cc (or1k_noce_conversion_profitable_p): New
+	function.
+	(or1k_is_cmov_insn): New function.
+	(TARGET_NOCE_CONVERSION_PROFITABLE_P): Define macro.
+	* config/or1k/or1k.md (cbranchsi4): Convert to insn_and_split.
+	(cbranch<mode>4): Convert to insn_and_split.
+
+2025-06-20  Stafford Horne  <shorne@gmail.com>
+
+	PR target/120587
+	* config/or1k/or1k.md (zero_extendbisi2_sr_f): New expand.
+	(extendbisi2_sr_f): New expand.
+	* config/or1k/predicates.md (sr_f_reg_operand): New predicate.
+
+2025-06-20  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add
+	new case UMIN.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op umin.
+
 2025-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/120689
