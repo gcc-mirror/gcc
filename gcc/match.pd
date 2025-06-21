@@ -2357,7 +2357,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* ~~x -> x */
 (simplify
   (bit_not (bit_not @0))
-  @0)
+  (non_lvalue @0))
 
 /* zero_one_valued_p will match when a value is known to be either
    0 or 1 including constants 0 or 1.
@@ -4037,7 +4037,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (negate (nop_convert? (negate @1)))
   (if (!TYPE_OVERFLOW_SANITIZED (type)
        && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@1)))
-   (view_convert @1)))
+   (non_lvalue (view_convert @1))))
 
  /* We can't reassociate floating-point unless -fassociative-math
     or fixed-point plus or minus because of saturation to +-Inf.  */
@@ -5767,7 +5767,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (conj (convert? (conj @0)))
  (if (tree_nop_conversion_p (TREE_TYPE (@0), type))
-  (convert @0)))
+  (non_lvalue (convert @0))))
 
 /* conj({x,y}) -> {x,-y}  */
 (simplify
