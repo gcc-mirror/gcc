@@ -4402,7 +4402,7 @@
 )
 
 (define_insn "prefetch"
-  [(prefetch (match_operand 0 "address_operand" "r")
+  [(prefetch (match_operand 0 "prefetch_operand" "Q")
              (match_operand 1 "imm5_operand" "i")
              (match_operand 2 "const_int_operand" "n"))]
   "TARGET_ZICBOP"
@@ -4422,7 +4422,7 @@
 				      (const_string "4")))])
 
 (define_insn "riscv_prefetchi_<mode>"
-  [(unspec_volatile:X [(match_operand:X 0 "address_operand" "r")
+  [(unspec_volatile:X [(match_operand:X 0 "prefetch_operand" "Q")
               (match_operand:X 1 "imm5_operand" "i")]
               UNSPECV_PREI)]
   "TARGET_ZICBOP"
