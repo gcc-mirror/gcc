@@ -3084,7 +3084,7 @@ copy_cfg_body (copy_body_data * id,
   /* Register specific tree functions.  */
   gimple_register_cfg_hooks ();
 
-  /* If we are inlining just region of the function, make sure to connect
+  /* If we are offlining region of the function, make sure to connect
      new entry to ENTRY_BLOCK_PTR_FOR_FN (cfun).  Since new entry can be
      part of loop, we must compute frequency and probability of
      ENTRY_BLOCK_PTR_FOR_FN (cfun) based on the frequencies and
@@ -3093,12 +3093,14 @@ copy_cfg_body (copy_body_data * id,
     {
       edge e;
       edge_iterator ei;
-      den = profile_count::zero ();
+      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = profile_count::zero ();
 
       FOR_EACH_EDGE (e, ei, new_entry->preds)
 	if (!e->src->aux)
-	  den += e->count ();
-      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = den;
+	  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count += e->count ();
+      /* Do not scale - the profile of offlined region should
+	 remain unchanged.  */
+      num = den = profile_count::one ();
     }
 
   profile_count::adjust_for_ipa_scaling (&num, &den);
