@@ -2287,7 +2287,7 @@ bool
 irange::snap (const wide_int &lb, const wide_int &ub,
 	      wide_int &new_lb, wide_int &new_ub)
 {
-  uint z = wi::ctz (m_bitmask.mask ());
+  int z = wi::ctz (m_bitmask.mask ());
   if (z == 0)
     return false;
 
