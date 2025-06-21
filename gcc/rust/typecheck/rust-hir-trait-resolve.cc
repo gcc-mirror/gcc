@@ -444,10 +444,26 @@ TraitItemReference::associated_type_set (TyTy::BaseType *ty) const
 {
   rust_assert (get_trait_item_type () == TraitItemType::TYPE);
 
+  // this isnt super safe there are cases like the FnTraits where the type is
+  // set to the impls placeholder associated type. For example
+  //
+  // type Output = F::Output; -- see the fn trait impls in libcore
+  //
+  // then this projection ends up resolving back to this placeholder so it just
+  // ends up being cyclical
+
   TyTy::BaseType *item_ty = get_tyty ();
   rust_assert (item_ty->get_kind () == TyTy::TypeKind::PLACEHOLDER);
   TyTy::PlaceholderType *placeholder
     = static_cast<TyTy::PlaceholderType *> (item_ty);
+
+  if (ty->is<TyTy::ProjectionType> ())
+    {
+      const auto &projection = *static_cast<const TyTy::ProjectionType *> (ty);
+      const auto resolved = projection.get ();
+      if (resolved == item_ty)
+	return;
+    }
 
   placeholder->set_associated_type (ty->get_ty_ref ());
 }
