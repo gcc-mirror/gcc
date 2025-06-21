@@ -1098,6 +1098,43 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
       }
       break;
 
+    case TyTy::CLOSURE:
+      {
+	TyTy::ClosureType &type = *static_cast<TyTy::ClosureType *> (rtype);
+	auto this_ret_type = ltype->get_return_type ();
+	auto other_ret_type = type.get_return_type ();
+
+	auto unified_result
+	  = resolve_subtype (TyTy::TyWithLocation (this_ret_type),
+			     TyTy::TyWithLocation (other_ret_type));
+	if (unified_result->get_kind () == TyTy::TypeKind::ERROR)
+	  {
+	    return new TyTy::ErrorType (0);
+	  }
+
+	if (ltype->num_params () != type.get_num_params ())
+	  {
+	    return new TyTy::ErrorType (0);
+	  }
+
+	for (size_t i = 0; i < ltype->num_params (); i++)
+	  {
+	    auto this_param = ltype->get_param_type_at (i);
+	    auto other_param = type.get_param_type_at (i);
+
+	    auto unified_param
+	      = resolve_subtype (TyTy::TyWithLocation (this_param),
+				 TyTy::TyWithLocation (other_param));
+	    if (unified_param->get_kind () == TyTy::TypeKind::ERROR)
+	      {
+		return new TyTy::ErrorType (0);
+	      }
+	  }
+
+	return ltype->clone ();
+      }
+      break;
+
     case TyTy::TUPLE:
     case TyTy::BOOL:
     case TyTy::CHAR:
@@ -1117,7 +1154,6 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
     case TyTy::PLACEHOLDER:
     case TyTy::PROJECTION:
     case TyTy::DYNAMIC:
-    case TyTy::CLOSURE:
     case TyTy::OPAQUE:
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
