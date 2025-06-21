@@ -270,6 +270,21 @@ test_vx_binary_##NAME##_##FUNC##_##T##_case_3 (T * restrict out, \
   VX_BINARY_FUNC_BODY_X64(op)        \
   VX_BINARY_FUNC_BODY_X64(op)
 
+#define DEF_SAT_U_ADD(T)                   \
+T                                          \
+test_##T##_sat_add (T a, T b)              \
+{                                          \
+  return (a + b) | (-(T)((T)(a + b) < a)); \
+}
+
+DEF_SAT_U_ADD(uint8_t)
+DEF_SAT_U_ADD(uint16_t)
+DEF_SAT_U_ADD(uint32_t)
+DEF_SAT_U_ADD(uint64_t)
+
+#define SAT_U_ADD_FUNC(T) test_##T##_sat_add
+#define SAT_U_ADD_FUNC_WRAP(T) SAT_U_ADD_FUNC(T)
+
 #define TEST_BINARY_VX_SIGNED_0(T)                      \
   DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                  \
   DEF_VX_BINARY_CASE_0_WRAP(T, -, sub)                  \
@@ -285,18 +300,19 @@ test_vx_binary_##NAME##_##FUNC##_##T##_case_3 (T * restrict out, \
   DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_0_WARP(T), min) \
   DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_1_WARP(T), min)
 
-#define TEST_BINARY_VX_UNSIGNED_0(T)                    \
-  DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                  \
-  DEF_VX_BINARY_CASE_0_WRAP(T, -, sub)                  \
-  DEF_VX_BINARY_REVERSE_CASE_0_WRAP(T, -, rsub)         \
-  DEF_VX_BINARY_CASE_0_WRAP(T, &, and)                  \
-  DEF_VX_BINARY_CASE_0_WRAP(T, |, or)                   \
-  DEF_VX_BINARY_CASE_0_WRAP(T, ^, xor)                  \
-  DEF_VX_BINARY_CASE_0_WRAP(T, /, div)                  \
-  DEF_VX_BINARY_CASE_0_WRAP(T, %, rem)                  \
-  DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_0_WARP(T), max) \
-  DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max) \
-  DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_0_WARP(T), min) \
-  DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_1_WARP(T), min)
+#define TEST_BINARY_VX_UNSIGNED_0(T)                       \
+  DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                     \
+  DEF_VX_BINARY_CASE_0_WRAP(T, -, sub)                     \
+  DEF_VX_BINARY_REVERSE_CASE_0_WRAP(T, -, rsub)            \
+  DEF_VX_BINARY_CASE_0_WRAP(T, &, and)                     \
+  DEF_VX_BINARY_CASE_0_WRAP(T, |, or)                      \
+  DEF_VX_BINARY_CASE_0_WRAP(T, ^, xor)                     \
+  DEF_VX_BINARY_CASE_0_WRAP(T, /, div)                     \
+  DEF_VX_BINARY_CASE_0_WRAP(T, %, rem)                     \
+  DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_0_WARP(T), max)    \
+  DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max)    \
+  DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_0_WARP(T), min)    \
+  DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_1_WARP(T), min)    \
+  DEF_VX_BINARY_CASE_2_WRAP(T, SAT_U_ADD_FUNC(T), sat_add)
 
 #endif
