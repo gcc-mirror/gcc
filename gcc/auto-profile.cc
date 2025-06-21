@@ -243,9 +243,13 @@ public:
      is found.  */
   bool get_count_info (location_t loc, count_info *info) const;
 
-  /* Read the inlined indirect call target profile for STMT and store it in
-     MAP, return the total count for all inlined indirect calls.  */
-  gcov_type find_icall_target_map (gcall *stmt, icall_target_map *map) const;
+  /* Read the inlined indirect call target profile for STMT in FN and store it
+     in MAP, return the total count for all inlined indirect calls.  */
+  gcov_type find_icall_target_map (tree fn, gcall *stmt,
+				   icall_target_map *map) const;
+
+  /* Remove inlined indirect call target profile for STMT in FN.  */
+  void remove_icall_target (tree fn, gcall *stmt);
 
   /* Mark LOC as annotated.  */
   void mark_annotated (location_t loc);
@@ -302,20 +306,26 @@ public:
   function_instance *get_function_instance_by_decl (tree decl) const;
 
   /* Find count_info for a given gimple STMT. If found, store the count_info
-     in INFO and return true; otherwise return false.  */
-  bool get_count_info (gimple *stmt, count_info *info) const;
+     in INFO and return true; otherwise return false.
+     NODE can be used to specify particular inline clone.  */
+  bool get_count_info (gimple *stmt, count_info *info,
+		       cgraph_node *node = NULL) const;
 
   /* Find count_info for a given gimple location GIMPLE_LOC. If found,
-     store the count_info in INFO and return true; otherwise return false.  */
-  bool get_count_info (location_t gimple_loc, count_info *info) const;
+     store the count_info in INFO and return true; otherwise return false.
+     NODE can be used to specify particular inline clone.  */
+  bool get_count_info (location_t gimple_loc, count_info *info,
+		       cgraph_node *node = NULL) const;
 
   /* Find total count of the callee of EDGE.  */
   gcov_type get_callsite_total_count (struct cgraph_edge *edge) const;
 
-  /* Update value profile INFO for STMT from the inlined indirect callsite.
-     Return true if INFO is updated.  */
-  bool update_inlined_ind_target (gcall *stmt, count_info *info);
+  /* Update value profile INFO for STMT within NODE from the inlined indirect
+     callsite.  Return true if INFO is updated.  */
+  bool update_inlined_ind_target (gcall *stmt, count_info *info,
+				  cgraph_node *node);
 
+  void remove_icall_target (cgraph_edge *e);
 private:
   /* Map from function_instance name index (in string_table) to
      function_instance.  */
@@ -383,6 +393,24 @@ get_function_decl_from_block (tree block)
   return BLOCK_ABSTRACT_ORIGIN (block);
 }
 
+/* Dump STACK to F.  */
+
+static void
+dump_inline_stack (FILE *f, inline_stack *stack)
+{
+  bool first = true;
+  for (decl_lineno &p : *stack)
+    {
+      fprintf(f, "%s%s:%i.%i",
+	      first ? "" : "; ",
+	      IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p.first)),
+	      p.second >> 16,
+	      p.second & 65535);
+      first = false;
+    }
+  fprintf (f, "\n");
+}
+
 /* Store inline stack for STMT in STACK.  */
 
 static void
@@ -412,12 +440,35 @@ get_inline_stack (location_t locus, inline_stack *stack,
   stack->safe_push (std::make_pair (fn, get_combined_location (locus, fn)));
 }
 
+/* Same as get_inline_stack for a given node which may be
+   an inline clone.  If NODE is NULL, assume current_function_decl.  */
+static void
+get_inline_stack_in_node (location_t locus, inline_stack *stack,
+			  cgraph_node *node)
+{
+  if (!node)
+    return get_inline_stack (locus, stack);
+  do
+    {
+      get_inline_stack (locus, stack, node->decl);
+      /* If caller is inlined, continue building stack.  */
+      if (!node->inlined_to)
+	node = NULL;
+      else
+	{
+	  locus = gimple_location (node->callers->call_stmt);
+	  node = node->callers->caller;
+	}
+    }
+  while (node);
+}
+
 /* Return STMT's combined location, which is a 32bit integer in which
    higher 16 bits stores the line offset of LOC to the start lineno
    of DECL, The lower 16 bits stores the discriminator.  */
 
 static unsigned
-get_relative_location_for_stmt (gimple *stmt)
+get_relative_location_for_stmt (tree fn, gimple *stmt)
 {
   location_t locus = gimple_location (stmt);
   if (LOCATION_LOCUS (locus) == UNKNOWN_LOCATION)
@@ -428,25 +479,7 @@ get_relative_location_for_stmt (gimple *stmt)
     if (LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (block)) != UNKNOWN_LOCATION)
       return get_combined_location (locus,
                                     get_function_decl_from_block (block));
-  return get_combined_location (locus, current_function_decl);
-}
-
-/* Return true if BB contains indirect call.  */
-
-static bool
-has_indirect_call (basic_block bb)
-{
-  gimple_stmt_iterator gsi;
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gimple *stmt = gsi_stmt (gsi);
-      if (gimple_code (stmt) == GIMPLE_CALL && !gimple_call_internal_p (stmt)
-          && (gimple_call_fn (stmt) == NULL
-              || TREE_CODE (gimple_call_fn (stmt)) != FUNCTION_DECL))
-        return true;
-    }
-  return false;
+  return get_combined_location (locus, fn);
 }
 
 /* Member functions for string_table.  */
@@ -584,8 +617,7 @@ void function_instance::merge (function_instance *other)
       pos_counts[iter->first].count += iter->second.count;
 }
 
-/* Store the profile info for LOC in INFO. Return TRUE if profile info
-   is found.  */
+/* Return profile info for LOC in INFO.  */
 
 bool
 function_instance::get_count_info (location_t loc, count_info *info) const
@@ -601,11 +633,11 @@ function_instance::get_count_info (location_t loc, count_info *info) const
    MAP, return the total count for all inlined indirect calls.  */
 
 gcov_type
-function_instance::find_icall_target_map (gcall *stmt,
+function_instance::find_icall_target_map (tree fn, gcall *stmt,
                                           icall_target_map *map) const
 {
   gcov_type ret = 0;
-  unsigned stmt_offset = get_relative_location_for_stmt (stmt);
+  unsigned stmt_offset = get_relative_location_for_stmt (fn, stmt);
 
   for (callsite_map::const_iterator iter = callsites.begin ();
        iter != callsites.end (); ++iter)
@@ -622,6 +654,28 @@ function_instance::find_icall_target_map (gcall *stmt,
       ret += iter->second->total_count ();
     }
   return ret;
+}
+
+/* Remove the inlined indirect call target profile for STMT.  */
+
+void
+function_instance::remove_icall_target (tree fn, gcall *stmt)
+{
+  unsigned stmt_offset = get_relative_location_for_stmt (fn, stmt);
+  int n = 0;
+
+  for (callsite_map::const_iterator iter = callsites.begin ();
+       iter != callsites.end ();)
+    if (iter->first.first != stmt_offset)
+      ++iter;
+    else
+      {
+	iter = callsites.erase (iter);
+	n++;
+      }
+  /* TODO: If we add support for multiple targets, we may want to
+     remove only those we succesfully inlined.  */
+  gcc_assert (n);
 }
 
 /* Read the profile and create a function_instance with head count as
@@ -671,6 +725,9 @@ function_instance::read_function_instance (function_instance_stack *stack,
       unsigned num_targets = gcov_read_unsigned ();
       gcov_type count = gcov_read_counter ();
       s->pos_counts[offset].count = count;
+      afdo_profile_info->sum_max = std::max (afdo_profile_info->sum_max,
+					     count);
+
       for (unsigned j = 0; j < stack->length (); j++)
         (*stack)[j]->total_count_ += count;
       for (unsigned j = 0; j < num_targets; j++)
@@ -718,20 +775,22 @@ autofdo_source_profile::get_function_instance_by_decl (tree decl) const
    in INFO and return true; otherwise return false.  */
 
 bool
-autofdo_source_profile::get_count_info (gimple *stmt, count_info *info) const
+autofdo_source_profile::get_count_info (gimple *stmt, count_info *info,
+					cgraph_node *node) const
 {
-  return get_count_info (gimple_location (stmt), info);
+  return get_count_info (gimple_location (stmt), info, node);
 }
 
 bool
 autofdo_source_profile::get_count_info (location_t gimple_loc,
-					count_info *info) const
+					count_info *info,
+					cgraph_node *node) const
 {
   if (LOCATION_LOCUS (gimple_loc) == cfun->function_end_locus)
     return false;
 
   inline_stack stack;
-  get_inline_stack (gimple_loc, &stack);
+  get_inline_stack_in_node (gimple_loc, &stack, node);
   if (stack.length () == 0)
     return false;
   function_instance *s = get_function_instance_by_inline_stack (stack);
@@ -745,7 +804,8 @@ autofdo_source_profile::get_count_info (location_t gimple_loc,
 
 bool
 autofdo_source_profile::update_inlined_ind_target (gcall *stmt,
-                                                   count_info *info)
+						   count_info *info,
+						   cgraph_node *node)
 {
   if (dump_file)
     {
@@ -756,12 +816,12 @@ autofdo_source_profile::update_inlined_ind_target (gcall *stmt,
   if (LOCATION_LOCUS (gimple_location (stmt)) == cfun->function_end_locus)
     {
       if (dump_file)
-	fprintf (dump_file, " good locus\n");
+	fprintf (dump_file, " bad locus (funciton end)\n");
       return false;
     }
 
   count_info old_info;
-  get_count_info (stmt, &old_info);
+  get_count_info (stmt, &old_info, node);
   gcov_type total = 0;
   for (icall_target_map::const_iterator iter = old_info.targets.begin ();
        iter != old_info.targets.end (); ++iter)
@@ -784,7 +844,7 @@ autofdo_source_profile::update_inlined_ind_target (gcall *stmt,
     }
 
   inline_stack stack;
-  get_inline_stack (gimple_location (stmt), &stack);
+  get_inline_stack_in_node (gimple_location (stmt), &stack, node);
   if (stack.length () == 0)
     {
       if (dump_file)
@@ -795,22 +855,44 @@ autofdo_source_profile::update_inlined_ind_target (gcall *stmt,
   if (s == NULL)
     {
       if (dump_file)
-	fprintf (dump_file, " function not found in inline stack\n");
+	{
+	  fprintf (dump_file, " function not found in inline stack:");
+	  dump_inline_stack (dump_file, &stack);
+	}
       return false;
     }
   icall_target_map map;
-  if (s->find_icall_target_map (stmt, &map) == 0)
+  if (s->find_icall_target_map (node ? node->decl
+				: current_function_decl,
+				stmt, &map) == 0)
     {
       if (dump_file)
-	fprintf (dump_file, " no target map\n");
+	{
+	  fprintf (dump_file, " no target map for stack: ");
+	  dump_inline_stack (dump_file, &stack);
+	}
       return false;
     }
   for (icall_target_map::const_iterator iter = map.begin ();
        iter != map.end (); ++iter)
     info->targets[iter->first] = iter->second;
   if (dump_file)
-    fprintf (dump_file, " looks good\n");
+    {
+      fprintf (dump_file, " looks good; stack:");
+      dump_inline_stack (dump_file, &stack);
+    }
   return true;
+}
+
+void
+autofdo_source_profile::remove_icall_target (cgraph_edge *e)
+{
+  autofdo::inline_stack stack;
+  autofdo::get_inline_stack_in_node (gimple_location (e->call_stmt),
+				     &stack, e->caller);
+  autofdo::function_instance *s
+	  = get_function_instance_by_inline_stack (stack);
+  s->remove_icall_target (e->caller->decl, e->call_stmt);
 }
 
 /* Find total count of the callee of EDGE.  */
@@ -822,18 +904,8 @@ autofdo_source_profile::get_callsite_total_count (
   inline_stack stack;
   stack.safe_push (std::make_pair (edge->callee->decl, 0));
 
-  cgraph_edge *e = edge;
-  do
-    {
-      get_inline_stack (gimple_location (e->call_stmt), &stack,
-			e->caller->decl);
-      /* If caller is inlined, continue building stack.  */
-      if (!e->caller->inlined_to)
-	e = NULL;
-      else
-	e = e->caller->callers;
-    }
-  while (e);
+  get_inline_stack_in_node (gimple_location (edge->call_stmt), &stack,
+			    edge->caller);
 
   function_instance *s = get_function_instance_by_inline_stack (stack);
   if (s == NULL
@@ -1000,19 +1072,35 @@ read_profile (void)
        decide if it needs to promote and inline.  */
 
 static bool
-afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
-                    bool transform)
+afdo_indirect_call (gcall *stmt, const icall_target_map &map,
+		    bool transform, cgraph_edge *indirect_edge)
 {
-  gimple *gs = gsi_stmt (*gsi);
   tree callee;
 
   if (map.size () == 0)
-    return false;
-  gcall *stmt = dyn_cast <gcall *> (gs);
-  if (!stmt
-      || gimple_call_internal_p (stmt)
-      || gimple_call_fndecl (stmt) != NULL_TREE)
-    return false;
+    {
+      if (dump_file)
+	fprintf (dump_file, "No targets found\n");
+      return false;
+    }
+  if (!stmt)
+    {
+      if (dump_file)
+	fprintf (dump_file, "No call statement\n");
+      return false;
+    }
+  if (gimple_call_internal_p (stmt))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Internal call\n");
+      return false;
+    }
+  if (gimple_call_fndecl (stmt) != NULL_TREE)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Call is already direct\n");
+      return false;
+    }
 
   gcov_type total = 0;
   icall_target_map::const_iterator max_iter = map.end ();
@@ -1026,38 +1114,47 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
     }
   struct cgraph_node *direct_call = cgraph_node::get_for_asmname (
       get_identifier (afdo_string_table->get_name (max_iter->first)));
-  if (direct_call == NULL || !direct_call->profile_id)
-    return false;
+  if (direct_call == NULL)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Failed to find cgraph node for %s\n",
+		 afdo_string_table->get_name (max_iter->first));
+      return false;
+    }
 
   callee = gimple_call_fn (stmt);
 
-  histogram_value hist = gimple_alloc_histogram_value (
-      cfun, HIST_TYPE_INDIR_CALL, stmt, callee);
-  hist->n_counters = 4;
-  hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
-  gimple_add_histogram_value (cfun, stmt, hist);
-
-  /* Total counter */
-  hist->hvalue.counters[0] = total;
-  /* Number of value/counter pairs */
-  hist->hvalue.counters[1] = 1;
-  /* Value */
-  hist->hvalue.counters[2] = direct_call->profile_id;
-  /* Counter */
-  hist->hvalue.counters[3] = max_iter->second;
-
   if (!transform)
-    return false;
+    {
+      if (!direct_call->profile_id)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "No profile id\n");
+	  return false;
+	}
+      histogram_value hist = gimple_alloc_histogram_value (
+	  cfun, HIST_TYPE_INDIR_CALL, stmt, callee);
+      hist->n_counters = 4;
+      hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
+      gimple_add_histogram_value (cfun, stmt, hist);
 
-  cgraph_node* current_function_node = cgraph_node::get (current_function_decl);
+      /* Total counter */
+      hist->hvalue.counters[0] = total;
+      /* Number of value/counter pairs */
+      hist->hvalue.counters[1] = 1;
+      /* Value */
+      hist->hvalue.counters[2] = direct_call->profile_id;
+      /* Counter */
+      hist->hvalue.counters[3] = max_iter->second;
 
-  /* If the direct call is a recursive call, don't promote it since
-     we are not set up to inline recursive calls at this stage. */
-  if (direct_call == current_function_node)
-    return false;
-
-  struct cgraph_edge *indirect_edge
-      = current_function_node->get_edge (stmt);
+      if (!direct_call->profile_id)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Histogram attached\n");
+	  return false;
+	}
+      return false;
+    }
 
   if (dump_file)
     {
@@ -1067,16 +1164,10 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
       print_generic_expr (dump_file, direct_call->decl, TDF_SLIM);
     }
 
-  if (direct_call == NULL)
+  if (!direct_call->definition)
     {
       if (dump_file)
-        fprintf (dump_file, " not transforming\n");
-      return false;
-    }
-  if (DECL_STRUCT_FUNCTION (direct_call->decl) == NULL)
-    {
-      if (dump_file)
-        fprintf (dump_file, " no declaration\n");
+	fprintf (dump_file, " no definition available\n");
       return false;
     }
 
@@ -1087,13 +1178,9 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
       fprintf (dump_file, "\n");
     }
 
-  struct cgraph_edge *new_edge
-      = indirect_edge->make_speculative
+  indirect_edge->make_speculative
 		(direct_call,
 		 gimple_bb (stmt)->count.apply_scale (99, 100));
-  cgraph_edge::redirect_call_stmt_to_callee (new_edge);
-  gimple_remove_histogram_value (cfun, stmt, hist);
-  inline_call (new_edge, true, NULL, NULL, false);
   return true;
 }
 
@@ -1101,10 +1188,10 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
    histograms and adds them to list VALUES.  */
 
 static bool
-afdo_vpt (gimple_stmt_iterator *gsi, const icall_target_map &map,
-          bool transform)
+afdo_vpt (gcall *gs, const icall_target_map &map,
+	  bool transform, cgraph_edge *indirect_edge)
 {
-  return afdo_indirect_call (gsi, map, transform);
+  return afdo_indirect_call (gs, map, transform, indirect_edge);
 }
 
 typedef std::set<basic_block> bb_set;
@@ -1150,7 +1237,7 @@ update_count_by_afdo_count (profile_count *count, gcov_type c)
    Return TRUE if BB is annotated.  */
 
 static bool
-afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
+afdo_set_bb_count (basic_block bb)
 {
   gimple_stmt_iterator gsi;
   gcov_type max_count = 0;
@@ -1163,22 +1250,26 @@ afdo_set_bb_count (basic_block bb, const stmt_set &promoted)
       count_info info;
       gimple *stmt = gsi_stmt (gsi);
       if (gimple_clobber_p (stmt) || is_gimple_debug (stmt))
-        continue;
+	continue;
       if (afdo_source_profile->get_count_info (stmt, &info))
-        {
-          if (info.count > max_count)
-            max_count = info.count;
+	{
+	  if (info.count > max_count)
+	    max_count = info.count;
 	  if (dump_file && info.count)
 	    {
 	      fprintf (dump_file, "  count %" PRIu64 " in stmt: ",
 		       (int64_t)info.count);
 	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	    }
-          has_annotated = true;
-          if (info.targets.size () > 0
-              && promoted.find (stmt) == promoted.end ())
-            afdo_vpt (&gsi, info.targets, false);
-        }
+	  has_annotated = true;
+	  gcall *call = dyn_cast <gcall *> (gsi_stmt (gsi));
+	  /* TODO; if inlined early and indirect call was not optimized out,
+	     we will end up speculating again.  Early inliner should remove
+	     all targets for edges it speculated into safely.  */
+	  if (call
+	      && info.targets.size () > 0)
+	    afdo_vpt (call, info.targets, false, NULL);
+	}
     }
 
   if (!has_annotated)
@@ -1899,76 +1990,10 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
     }
 }
 
-/* Perform value profile transformation using AutoFDO profile. Add the
-   promoted stmts to PROMOTED_STMTS. Return TRUE if there is any
-   indirect call promoted.  */
-
-static bool
-afdo_vpt_for_early_inline (stmt_set *promoted_stmts)
-{
-  basic_block bb;
-  if (afdo_source_profile->get_function_instance_by_decl (
-          current_function_decl) == NULL)
-    return false;
-
-  compute_fn_summary (cgraph_node::get (current_function_decl), true);
-
-  bool has_vpt = false;
-  FOR_EACH_BB_FN (bb, cfun)
-  {
-    if (!has_indirect_call (bb))
-      continue;
-    gimple_stmt_iterator gsi;
-
-    gcov_type bb_count = 0;
-    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      {
-        count_info info;
-	gimple *stmt = gsi_stmt (gsi);
-        if (afdo_source_profile->get_count_info (stmt, &info))
-          bb_count = MAX (bb_count, info.count);
-      }
-
-    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      {
-        gcall *stmt = dyn_cast <gcall *> (gsi_stmt (gsi));
-        /* IC_promotion and early_inline_2 is done in multiple iterations.
-           No need to promoted the stmt if its in promoted_stmts (means
-           it is already been promoted in the previous iterations).  */
-        if ((!stmt) || gimple_call_fn (stmt) == NULL
-            || TREE_CODE (gimple_call_fn (stmt)) == FUNCTION_DECL
-            || promoted_stmts->find (stmt) != promoted_stmts->end ())
-          continue;
-
-        count_info info;
-        afdo_source_profile->get_count_info (stmt, &info);
-        info.count = bb_count;
-        if (afdo_source_profile->update_inlined_ind_target (stmt, &info))
-          {
-            /* Promote the indirect call and update the promoted_stmts.  */
-            promoted_stmts->insert (stmt);
-            if (afdo_vpt (&gsi, info.targets, true))
-              has_vpt = true;
-          }
-      }
-  }
-
-  if (has_vpt)
-    {
-      unsigned todo = optimize_inline_calls (current_function_decl);
-      if (todo & TODO_update_ssa_any)
-       update_ssa (TODO_update_ssa);
-      return true;
-    }
-
-  return false;
-}
-
-/* Annotate auto profile to the control flow graph. Do not annotate value
-   profile for stmts in PROMOTED_STMTS.  */
+/* Annotate auto profile to the control flow graph.  */
 
 static void
-afdo_annotate_cfg (const stmt_set &promoted_stmts)
+afdo_annotate_cfg (void)
 {
   basic_block bb;
   bb_set annotated_bb;
@@ -1997,7 +2022,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
   bool profile_found = head_count > 0;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      if (afdo_set_bb_count (bb, promoted_stmts))
+      if (afdo_set_bb_count (bb))
 	{
 	  if (bb->count.quality () == AFDO)
 	    {
@@ -2125,45 +2150,8 @@ auto_profile (void)
 
     push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
-    /* First do indirect call promotion and early inline to make the
-       IR match the profiled binary before actual annotation.
-
-       This is needed because an indirect call might have been promoted
-       and inlined in the profiled binary. If we do not promote and
-       inline these indirect calls before annotation, the profile for
-       these promoted functions will be lost.
-
-       e.g. foo() --indirect_call--> bar()
-       In profiled binary, the callsite is promoted and inlined, making
-       the profile look like:
-
-       foo: {
-         loc_foo_1: count_1
-         bar@loc_foo_2: {
-           loc_bar_1: count_2
-           loc_bar_2: count_3
-         }
-       }
-
-       Before AutoFDO pass, loc_foo_2 is not promoted thus not inlined.
-       If we perform annotation on it, the profile inside bar@loc_foo2
-       will be wasted.
-
-       To avoid this, we promote loc_foo_2 and inline the promoted bar
-       function before annotation, so the profile inside bar@loc_foo2
-       will be useful.  */
-    autofdo::stmt_set promoted_stmts;
-    unsigned int todo = 0;
-    for (int i = 0; i < 10; i++)
-      {
-	if (!flag_value_profile_transformations
-	    || !autofdo::afdo_vpt_for_early_inline (&promoted_stmts))
-	  break;
-	todo |= early_inline ();
-      }
-
-    todo |= early_inline ();
-    autofdo::afdo_annotate_cfg (promoted_stmts);
+    unsigned int todo = early_inline ();
+    autofdo::afdo_annotate_cfg ();
     compute_function_frequency ();
 
     /* Local pure-const may imply need to fixup the cfg.  */
@@ -2225,11 +2213,91 @@ afdo_callsite_hot_enough_for_early_inline (struct cgraph_edge *edge)
          temporarily set it to afdo_profile_info to calculate hotness.  */
       profile_info = autofdo::afdo_profile_info;
       is_hot = maybe_hot_count_p (NULL, pcount);
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Call %s -> %s has %s afdo profile count ",
+		   edge->caller->dump_name (), edge->callee->dump_name (),
+		   is_hot ? "hot" : "cold");
+	  pcount.dump (dump_file);
+	  fprintf (dump_file, "\n");
+	}
       profile_info = saved_profile_info;
       return is_hot;
     }
 
   return false;
+}
+
+/* Do indirect call promotion during early inlining to make the
+   IR match the profiled binary before actual annotation.
+
+   This is needed because an indirect call might have been promoted
+   and inlined in the profiled binary.  If we do not promote and
+   inline these indirect calls before annotation, the profile for
+   these promoted functions will be lost.
+
+   e.g. foo() --indirect_call--> bar()
+   In profiled binary, the callsite is promoted and inlined, making
+   the profile look like:
+
+   foo: {
+     loc_foo_1: count_1
+     bar@loc_foo_2: {
+       loc_bar_1: count_2
+       loc_bar_2: count_3
+     }
+   }
+
+   Before AutoFDO pass, loc_foo_2 is not promoted thus not inlined.
+   If we perform annotation on it, the profile inside bar@loc_foo2
+   will be wasted.
+
+   To avoid this, we promote loc_foo_2 and inline the promoted bar
+   function before annotation, so the profile inside bar@loc_foo2
+   will be useful.  */
+
+bool
+afdo_vpt_for_early_inline (cgraph_node *node)
+{
+  if (!node->indirect_calls)
+    return false;
+  bool changed = false;
+  cgraph_node *outer = node->inlined_to ? node->inlined_to : node;
+  if (autofdo::afdo_source_profile->get_function_instance_by_decl
+	  (outer->decl) == NULL)
+    return false;
+  for (cgraph_edge *e = node->indirect_calls; e; e = e->next_callee)
+    {
+      gcov_type bb_count = 0;
+      autofdo::count_info info;
+      basic_block bb = gimple_bb (e->call_stmt);
+
+      /* TODO: This is quadratic; cache the value.  */
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  autofdo::count_info info;
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (autofdo::afdo_source_profile->get_count_info (stmt, &info, node))
+	    bb_count = MAX (bb_count, info.count);
+	}
+      autofdo::afdo_source_profile->get_count_info (e->call_stmt, &info, node);
+      info.count = bb_count;
+      if (!autofdo::afdo_source_profile->update_inlined_ind_target
+		      (e->call_stmt, &info, node))
+	continue;
+      changed |= autofdo::afdo_vpt (e->call_stmt, info.targets, true, e);
+    }
+  return changed;
+}
+
+/* If speculation used during early inline, remove the target
+   so we do not speculate the indirect edge again during afdo pass.  */
+
+void
+remove_afdo_speculative_target (cgraph_edge *e)
+{
+  autofdo::afdo_source_profile->remove_icall_target (e);
 }
 
 namespace

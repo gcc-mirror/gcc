@@ -13,20 +13,26 @@ struct wrapptr
 int test (struct wrapptr *p)
 {
 	int s = 0;
+	int (*ret)(int) = p->ret;
 	for (int pos = 0; pos < 1000; pos++)
-	  s+p->ret(pos);
+	  ret(pos);
 	if (s)
 		__builtin_printf ("sum error\n");
 }
 int main()
 {
-	struct wrapptr p={reta};
 	for (int i = 0; i < 10000; i++)
+	{
+		struct wrapptr p={reta};
+
+
+
 		test(&p);
+	}
 	return 0;
 }
 /* { dg-final-use-autofdo { scan-tree-dump "Inlining using auto-profile test" "einline"} } */
-/* { dg-final-use-autofdo { scan-ipa-dump "Checking indirect call -> direct call reta" "afdo"} } */
-/* { dg-final-use-autofdo { scan-ipa-dump-times "looks good" 0 "afdo"} } */
+/* { dg-final-use-autofdo { scan-tree-dump "Checking indirect call -> direct call ret_" "einline"} } */
+/* { dg-final-use-autofdo { scan-tree-dump "looks good" "einline"} } */
 /* If we inlined reta->test->main, it will contian array[pos].  */
-/* { dg-final-use-autofdo { scan-ipa-dump "array.pos_" "afdo"} } */
+/* { dg-final-use-autofdo { scan-tree-dump "array.pos_" "einline"} } */

@@ -4846,7 +4846,9 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
     goto egress;
 
   cg_edge = id->dst_node->get_edge (stmt);
-  gcc_checking_assert (cg_edge);
+  /* Edge should exist and speculations should be resolved at this
+     stage.  */
+  gcc_checking_assert (cg_edge && !cg_edge->speculative);
   /* First, see if we can figure out what function is being called.
      If we cannot, then there is no hope of inlining the function.  */
   if (cg_edge->indirect_unknown_callee)

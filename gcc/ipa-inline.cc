@@ -3113,29 +3113,39 @@ early_inline_small_functions (struct cgraph_node *node)
    and inlining seems useful.  That is there are enough samples in the callee
    function.
 
-   Unlike early inlining, we inline recursively.
-   TODO: We should also integrate VPT.  */
+   Unlike early inlining, we inline recursively.  Profile data is also used
+   to produce speculative calls which we then inline.  In the case some
+   speculatin was introduced, set SPECULATIVE_CALLS.  */
 
 static bool
-inline_functions_by_afdo (struct cgraph_node *node)
+inline_functions_by_afdo (struct cgraph_node *node, bool *speculative_calls)
 {
   if (!flag_auto_profile)
     return false;
   struct cgraph_edge *e;
   bool inlined = false;
 
-  for (e = node->callees; e; e = e->next_callee)
+  *speculative_calls |= afdo_vpt_for_early_inline (node);
+
+  cgraph_edge *next;
+  for (e = node->callees; e; e = next)
     {
-      struct cgraph_node *callee = e->callee->ultimate_alias_target ();
+      next = e->next_callee;
 
       if (!e->inline_failed)
 	{
-	  inlined |= inline_functions_by_afdo (e->callee);
+	  inlined |= inline_functions_by_afdo (e->callee, speculative_calls);
 	  continue;
 	}
       if (!afdo_callsite_hot_enough_for_early_inline (e))
-	continue;
+	{
+	  /* If we do not want to inline, remove the speculation.  */
+	  if (e->speculative)
+	    cgraph_edge::resolve_speculation (e);
+	  continue;
+	}
 
+      struct cgraph_node *callee = e->callee->ultimate_alias_target ();
       if (callee->definition
 	  && !ipa_fn_summaries->get (callee))
 	compute_fn_summary (callee, true);
@@ -3147,6 +3157,9 @@ inline_functions_by_afdo (struct cgraph_node *node)
 			     "Not inlining %C -> %C using auto-profile, %s.",
 			     e->caller, e->callee,
 			     cgraph_inline_failed_string (e->inline_failed));
+	  /* If we do not want to inline, remove the speculation.  */
+	  if (e->speculative)
+	    cgraph_edge::resolve_speculation (e);
 	  continue;
 	}
       /* We can handle recursive inlining by first producing
@@ -3158,6 +3171,9 @@ inline_functions_by_afdo (struct cgraph_node *node)
 			     "Not inlining %C recursively"
 			     " using auto-profile.\n",
 			     e->callee);
+	  /* If we do not want to inline, remove the speculation.  */
+	  if (e->speculative)
+	    cgraph_edge::resolve_speculation (e);
 	  continue;
 	}
 
@@ -3173,8 +3189,10 @@ inline_functions_by_afdo (struct cgraph_node *node)
 			     "Inlining using auto-profile %C into %C.\n",
 			     callee, e->caller);
 	}
+      if (e->speculative)
+	remove_afdo_speculative_target (e);
       inline_call (e, true, NULL, NULL, false);
-      inlined |= inline_functions_by_afdo (e->callee);
+      inlined |= inline_functions_by_afdo (e->callee, speculative_calls);
       inlined = true;
     }
 
@@ -3262,10 +3280,20 @@ early_inliner (function *fun)
 				      param_early_inliner_max_iterations))
 	{
 	  bool inlined = early_inline_small_functions (node);
-	  inlined |= inline_functions_by_afdo (node);
+	  bool speculative_calls = false;
+	  inlined |= inline_functions_by_afdo (node, &speculative_calls);
 	  if (!inlined)
 	    break;
 	  timevar_push (TV_INTEGRATION);
+	  if (speculative_calls)
+	    {
+	      cgraph_edge *next;
+	      for (cgraph_edge *e = node->callees; e; e = next)
+		{
+		  next = e->next_callee;
+		  cgraph_edge::redirect_call_stmt_to_callee (e);
+		}
+	    }
 	  todo |= optimize_inline_calls (current_function_decl);
 
 	  /* Technically we ought to recompute inline parameters so the new
