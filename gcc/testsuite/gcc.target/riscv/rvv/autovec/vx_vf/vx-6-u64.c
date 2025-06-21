@@ -17,6 +17,7 @@ DEF_VX_BINARY_CASE_3_WRAP(T, MAX_FUNC_0_WARP(T), max, VX_BINARY_FUNC_BODY)
 DEF_VX_BINARY_CASE_3_WRAP(T, MAX_FUNC_1_WARP(T), max, VX_BINARY_FUNC_BODY)
 DEF_VX_BINARY_CASE_3_WRAP(T, MIN_FUNC_0_WARP(T), min, VX_BINARY_FUNC_BODY)
 DEF_VX_BINARY_CASE_3_WRAP(T, MIN_FUNC_1_WARP(T), min, VX_BINARY_FUNC_BODY)
+DEF_VX_BINARY_CASE_3_WRAP(T, SAT_U_ADD_FUNC_WRAP(T), sat_add, VX_BINARY_FUNC_BODY)
 
 /* { dg-final { scan-assembler-not {vadd.vx} } } */
 /* { dg-final { scan-assembler-not {vsub.vx} } } */
@@ -28,3 +29,4 @@ DEF_VX_BINARY_CASE_3_WRAP(T, MIN_FUNC_1_WARP(T), min, VX_BINARY_FUNC_BODY)
 /* { dg-final { scan-assembler-not {vremu.vx} } } */
 /* { dg-final { scan-assembler-not {vmaxu.vx} } } */
 /* { dg-final { scan-assembler-not {vminu.vx} } } */
+/* { dg-final { scan-assembler-not {vsaddu.vx} } } */
