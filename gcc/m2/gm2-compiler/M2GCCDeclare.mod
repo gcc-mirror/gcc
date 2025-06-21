@@ -2927,14 +2927,12 @@ BEGIN
       DeclareTypesConstantsProcedures(scope) ; (* will resolved TYPEs and CONSTs on the ToDo  *)
                                                (* lists.                                      *)
       ForeachModuleDo(DeclareProcedure) ;
-      (*
-         now that all types have been resolved it is safe to declare
-         variables
-      *)
+      (* Now that all types have been resolved it is safe to declare
+         variables.  *)
       AssertAllTypesDeclared(scope) ;
       DeclareGlobalVariables(scope) ;
       ForeachImportedDo(scope, DeclareImportedVariables) ;
-      (* now it is safe to declare all procedures *)
+      (* Now it is safe to declare all procedures.  *)
       ForeachProcedureDo(scope, DeclareProcedure) ;
       ForeachInnerModuleDo(scope, WalkTypesInModule) ;
       ForeachInnerModuleDo(scope, DeclareTypesConstantsProcedures) ;
@@ -2963,14 +2961,12 @@ BEGIN
                                                (* lists.                                      *)
       ForeachModuleDo(DeclareProcedure) ;
       ForeachModuleDo(DeclareModuleInit) ;
-      (*
-         now that all types have been resolved it is safe to declare
-         variables
-      *)
+      (* Now that all types have been resolved it is safe to declare
+         variables.  *)
       AssertAllTypesDeclared(scope) ;
       DeclareGlobalVariablesWholeProgram(scope) ;
       ForeachImportedDo(scope, DeclareImportedVariablesWholeProgram) ;
-      (* now it is safe to declare all procedures *)
+      (* Now it is safe to declare all procedures.  *)
       ForeachProcedureDo(scope, DeclareProcedure) ;
       ForeachInnerModuleDo(scope, WalkTypesInModule) ;
       ForeachInnerModuleDo(scope, DeclareTypesConstantsProcedures) ;
