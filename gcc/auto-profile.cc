@@ -353,6 +353,13 @@ static autofdo_source_profile *afdo_source_profile;
 /* gcov_summary structure to store the profile_info.  */
 static gcov_summary *afdo_profile_info;
 
+/* Scaling factor for afdo data.  Compared to normal profile
+   AFDO profile counts are much lower, depending on sampling
+   frequency.  We scale data up to reudce effects of roundoff
+   errors.  */
+
+static gcov_type afdo_count_scale = 1;
+
 /* Helper functions.  */
 
 /* Return the original name of NAME: strip the suffix that starts
@@ -650,8 +657,8 @@ function_instance::find_icall_target_map (tree fn, gcall *stmt,
           get_identifier (afdo_string_table->get_name (callee)));
       if (node == NULL)
         continue;
-      (*map)[callee] = iter->second->total_count ();
-      ret += iter->second->total_count ();
+      (*map)[callee] = iter->second->total_count () * afdo_count_scale;
+      ret += iter->second->total_count () * afdo_count_scale;
     }
   return ret;
 }
@@ -826,6 +833,7 @@ autofdo_source_profile::update_inlined_ind_target (gcall *stmt,
   for (icall_target_map::const_iterator iter = old_info.targets.begin ();
        iter != old_info.targets.end (); ++iter)
     total += iter->second;
+  total *= afdo_count_scale;
 
   /* Program behavior changed, original promoted (and inlined) target is not
      hot any more. Will avoid promote the original target.
@@ -913,7 +921,7 @@ autofdo_source_profile::get_callsite_total_count (
 	 != s->name()))
     return 0;
 
-  return s->total_count ();
+  return s->total_count () * afdo_count_scale;
 }
 
 /* Read AutoFDO profile and returns TRUE on success.  */
@@ -972,6 +980,23 @@ autofdo_source_profile::read ()
 	  map_[fun_id]->merge (s);
 	}
     }
+  /* Scale up the profile, but leave some bits in case some counts gets
+     bigger than sum_max eventually.  */
+  if (afdo_profile_info->sum_max)
+    afdo_count_scale
+      = MAX (((gcov_type)1 << (profile_count::n_bits / 2))
+	     / afdo_profile_info->sum_max, 1);
+  if (dump_file)
+    fprintf (dump_file, "Max count in profile %" PRIu64 "\n"
+			"Setting scale %" PRIu64 "\n"
+			"Scaled max count %" PRIu64 "\n"
+			"Hot count threshold %" PRIu64 "\n",
+	     (int64_t)afdo_profile_info->sum_max,
+	     (int64_t)afdo_count_scale,
+	     (int64_t)(afdo_profile_info->sum_max * afdo_count_scale),
+	     (int64_t)(afdo_profile_info->sum_max * afdo_count_scale
+		       / param_hot_bb_count_fraction));
+  afdo_profile_info->sum_max *= afdo_count_scale;
   g->get_dumps ()->dump_finish (profile_pass_num);
   return true;
 }
@@ -1112,6 +1137,7 @@ afdo_indirect_call (gcall *stmt, const icall_target_map &map,
       if (max_iter == map.end () || max_iter->second < iter->second)
         max_iter = iter;
     }
+  total *= afdo_count_scale;
   struct cgraph_node *direct_call = cgraph_node::get_for_asmname (
       get_identifier (afdo_string_table->get_name (max_iter->first)));
   if (direct_call == NULL)
@@ -1145,7 +1171,7 @@ afdo_indirect_call (gcall *stmt, const icall_target_map &map,
       /* Value */
       hist->hvalue.counters[2] = direct_call->profile_id;
       /* Counter */
-      hist->hvalue.counters[3] = max_iter->second;
+      hist->hvalue.counters[3] = max_iter->second * afdo_count_scale;
 
       if (!direct_call->profile_id)
 	{
@@ -1313,11 +1339,13 @@ afdo_set_bb_count (basic_block bb)
 
   if (max_count)
     {
-      update_count_by_afdo_count (&bb->count, max_count);
+      update_count_by_afdo_count (&bb->count, max_count * afdo_count_scale);
       if (dump_file)
 	fprintf (dump_file,
-		 " Annotated bb %i with count %" PRId64 "\n",
-		 bb->index, (int64_t)max_count);
+		 " Annotated bb %i with count %" PRId64
+		 ", scaled to %" PRId64 "\n",
+		 bb->index, (int64_t)max_count,
+		 (int64_t)(max_count * afdo_count_scale));
       return true;
     }
   return false;
@@ -1361,6 +1389,7 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 			   bb1->index,
 			   bb->index);
 		  bb1->count.dump (dump_file);
+		  fprintf (dump_file, "\n");
 		}
 	      bb->count = bb1->count;
 	      set_bb_annotated (bb, annotated_bb);
@@ -1383,6 +1412,7 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 			   bb1->index,
 			   bb->index);
 		  bb1->count.dump (dump_file);
+		  fprintf (dump_file, "\n");
 		}
 	      bb->count = bb1->count;
 	      set_bb_annotated (bb, annotated_bb);
@@ -2018,7 +2048,7 @@ afdo_annotate_cfg (void)
 	     cgraph_node::get (current_function_decl)->dump_name ());
 
   /* In the first pass only store non-zero counts.  */
-  gcov_type head_count = s->head_count ();
+  gcov_type head_count = s->head_count () * autofdo::afdo_count_scale;
   bool profile_found = head_count > 0;
   FOR_EACH_BB_FN (bb, cfun)
     {
