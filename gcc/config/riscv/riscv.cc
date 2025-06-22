@@ -1078,16 +1078,16 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	  /* Now iterate over the bits we want to clear until the cost is
 	     too high or we're done.  */
 	  nval = value ^ HOST_WIDE_INT_C (-1);
-	  nval &= HOST_WIDE_INT_C (~0x7fffffff);
+	  nval &= ~HOST_WIDE_INT_C (0x7fffffff);
 	  while (nval && alt_cost < cost)
 	    {
 	      HOST_WIDE_INT bit = ctz_hwi (nval);
 	      alt_codes[alt_cost].code = AND;
-	      alt_codes[alt_cost].value = ~(1UL << bit);
+	      alt_codes[alt_cost].value = ~(HOST_WIDE_INT_UC (1) << bit);
 	      alt_codes[alt_cost].use_uw = false;
 	      alt_codes[alt_cost].save_temporary = false;
 	      alt_cost++;
-	      nval &= ~(1UL << bit);
+	      nval &= ~(HOST_WIDE_INT_UC (1) << bit);
 	    }
 
 	  if (nval == 0 && alt_cost <= cost)
