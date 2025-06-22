@@ -914,12 +914,33 @@ autofdo_source_profile::get_callsite_total_count (
 
   get_inline_stack_in_node (gimple_location (edge->call_stmt), &stack,
 			    edge->caller);
+  if (dump_file)
+    {
+      if (!edge->caller->inlined_to)
+	fprintf (dump_file, "Looking up afdo profile for call %s -> %s stack:",
+		 edge->caller->dump_name (), edge->callee->dump_name ());
+      else
+	fprintf (dump_file, "Looking up afdo profile for call %s -> %s transitively %s stack:",
+		 edge->caller->dump_name (), edge->callee->dump_name (),
+		 edge->caller->inlined_to->dump_name ());
+      dump_inline_stack (dump_file, &stack);
+    }
 
   function_instance *s = get_function_instance_by_inline_stack (stack);
-  if (s == NULL
-      ||(afdo_string_table->get_index_by_decl (edge->callee->decl)
-	 != s->name()))
-    return 0;
+  if (s == NULL)
+    {
+      if (dump_file)
+	fprintf (dump_file, "No function instance found\n");
+      return 0;
+    }
+  if (afdo_string_table->get_index_by_decl (edge->callee->decl) != s->name ())
+    {
+      if (dump_file)
+	fprintf (dump_file, "Mismatched name of callee %s and profile %s\n",
+		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (edge->callee->decl)),
+		 afdo_string_table->get_name (s->name ()));
+      return 0;
+    }
 
   return s->total_count () * afdo_count_scale;
 }
@@ -1263,7 +1284,7 @@ update_count_by_afdo_count (profile_count *count, gcov_type c)
    Return TRUE if BB is annotated.  */
 
 static bool
-afdo_set_bb_count (basic_block bb)
+afdo_set_bb_count (basic_block bb, hash_set <basic_block> &zero_bbs)
 {
   gimple_stmt_iterator gsi;
   gcov_type max_count = 0;
@@ -1347,6 +1368,13 @@ afdo_set_bb_count (basic_block bb)
 		 bb->index, (int64_t)max_count,
 		 (int64_t)(max_count * afdo_count_scale));
       return true;
+    }
+  else
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 " bb %i has statements with 0 count\n", bb->index);
+      zero_bbs.add (bb);
     }
   return false;
 }
@@ -2050,9 +2078,10 @@ afdo_annotate_cfg (void)
   /* In the first pass only store non-zero counts.  */
   gcov_type head_count = s->head_count () * autofdo::afdo_count_scale;
   bool profile_found = head_count > 0;
+  hash_set <basic_block> zero_bbs;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      if (afdo_set_bb_count (bb))
+      if (afdo_set_bb_count (bb, zero_bbs))
 	{
 	  if (bb->count.quality () == AFDO)
 	    {
@@ -2063,14 +2092,30 @@ afdo_annotate_cfg (void)
 	}
     }
   /* Exit without clobbering static profile if there was no
-     non-zero count.
-     ??? Instead of keeping guessed profile we can introduce
-     GUESSED_GLOBAL0_AFDO.  */
+     non-zero count.  */
   if (!profile_found)
     {
-      if (dump_file)
-	fprintf (dump_file, "No afdo samples found"
-		 "; keeping original profile\n");
+      /* create_gcov only dumps symbols with some samples in them.
+	 This means that we get nonempty zero_bbs only if some
+	 nonzero counts in profile were not matched with statements.
+	 ??? We can adjust create_gcov to also recordinfo
+	 about function with no samples.  Then we can distinguish
+	 between lost profiles which should be kept local and
+	 real functions with 0 samples during train run.  */
+      if (zero_bbs.is_empty ())
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "No afdo samples found"
+		     "; Setting global count to afdo0\n");
+	}
+      else
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Setting global count to afdo0\n");
+	}
+      FOR_ALL_BB_FN (bb, cfun)
+	if (bb->count.quality () == GUESSED_LOCAL)
+	  bb->count = bb->count.global0afdo ();
 
       loop_optimizer_finalize ();
       free_dominance_info (CDI_DOMINATORS);
