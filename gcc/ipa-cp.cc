@@ -4773,6 +4773,8 @@ update_profiling_info (struct cgraph_node *orig_node,
 	 to global0adjusted or to local if we have partial training.  */
       if (opt_for_fn (orig_node->decl, flag_profile_partial_training))
 	orig_node->make_profile_local ();
+      if (new_sum.quality () == AFDO)
+	orig_node->make_profile_global0 (GUESSED_GLOBAL0_AFDO);
       else
 	orig_node->make_profile_global0 (GUESSED_GLOBAL0_ADJUSTED);
       orig_edges_processed = true;
@@ -4802,6 +4804,8 @@ update_profiling_info (struct cgraph_node *orig_node,
 		 the latter and bail out.  */
               if (opt_for_fn (orig_node->decl, flag_profile_partial_training))
 		orig_node->make_profile_local ();
+	      else if (orig_nonrec_call_count.quality () == AFDO)
+		orig_node->make_profile_global0 (GUESSED_GLOBAL0_AFDO);
 	      else
 		orig_node->make_profile_global0 (GUESSED_GLOBAL0_ADJUSTED);
 	      return;

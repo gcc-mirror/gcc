@@ -39,8 +39,9 @@ const char *profile_quality_names[] =
 {
   "uninitialized",
   "guessed_local",
-  "guessed_global0",
+  "guessed_global0afdo",
   "guessed_global0adjusted",
+  "guessed_global0",
   "guessed",
   "afdo",
   "adjusted",
@@ -76,8 +77,9 @@ const char *profile_quality_display_names[] =
 {
   NULL,
   "estimated locally",
-  "estimated locally, globally 0",
+  "estimated locally, globally 0 auto FDO",
   "estimated locally, globally 0 adjusted",
+  "estimated locally, globally 0",
   "guessed",
   "auto FDO",
   "adjusted",
@@ -184,11 +186,11 @@ profile_probability::dump (char *buffer) const
       else
 	buffer += sprintf (buffer, "%3.1f%%", (double)m_val * 100 / max_probability);
 
-      if (m_quality == ADJUSTED)
+      if (quality () == ADJUSTED)
 	sprintf (buffer, " (adjusted)");
-      else if (m_quality == AFDO)
+      else if (quality () == AFDO)
 	sprintf (buffer, " (auto FDO)");
-      else if (m_quality == GUESSED)
+      else if (quality () == GUESSED)
 	sprintf (buffer, " (guessed)");
     }
 }
@@ -246,7 +248,7 @@ profile_probability::stream_in (class lto_input_block *ib)
 {
   profile_probability ret;
   ret.m_val = streamer_read_uhwi (ib);
-  ret.m_quality = (profile_quality) streamer_read_uhwi (ib);
+  ret.m_adjusted_quality = streamer_read_uhwi (ib);
   return ret;
 }
 
@@ -256,7 +258,7 @@ void
 profile_probability::stream_out (struct output_block *ob)
 {
   streamer_write_uhwi (ob, m_val);
-  streamer_write_uhwi (ob, m_quality);
+  streamer_write_uhwi (ob, m_adjusted_quality);
 }
 
 /* Stream THIS to OB.  */
@@ -265,7 +267,7 @@ void
 profile_probability::stream_out (struct lto_output_stream *ob)
 {
   streamer_write_uhwi_stream (ob, m_val);
-  streamer_write_uhwi_stream (ob, m_quality);
+  streamer_write_uhwi_stream (ob, m_adjusted_quality);
 }
 
 /* Compute RES=(a*b + c/2)/c capping and return false if overflow happened.  */
@@ -406,6 +408,8 @@ profile_count::combine_with_ipa_count (profile_count ipa)
     return *this;
   if (ipa == zero ())
     return this->global0 ();
+  if (ipa == afdo_zero ())
+    return this->global0afdo ();
   return this->global0adjusted ();
 }
 
@@ -495,7 +499,7 @@ profile_probability::sqrt () const
   if (!initialized_p () || *this == never () || *this == always ())
     return *this;
   profile_probability ret = *this;
-  ret.m_quality = MIN (ret.m_quality, ADJUSTED);
+  ret.set_quality (MIN (ret.quality (), ADJUSTED));
   uint32_t min_range = m_val;
   uint32_t max_range = max_probability;
   if (!m_val)

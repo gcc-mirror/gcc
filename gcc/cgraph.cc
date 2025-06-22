@@ -200,7 +200,8 @@ cgraph_node::make_profile_local ()
 }
 
 /* Turn profile to global0.  Walk into inlined functions.
-   QUALITY must be GUESSED_GLOBAL0 or GUESSED_GLOBAL0_ADJUSTED  */
+   QUALITY must be GUESSED_GLOBAL0, GUESSED_GLOBAL0_ADJUSTED
+   or GUESSED_GLOBAL0_AFDO  */
 void
 cgraph_node::make_profile_global0 (profile_quality quality)
 {
@@ -219,6 +220,14 @@ cgraph_node::make_profile_global0 (profile_quality quality)
 	return;
       count = count.global0adjusted ();
     }
+  else if (quality == GUESSED_GLOBAL0_AFDO)
+    {
+      if (count.quality () == GUESSED_GLOBAL0
+	  || count.quality () == GUESSED_GLOBAL0_ADJUSTED
+	  || count.quality () == GUESSED_GLOBAL0_AFDO)
+	return;
+      count = count.global0afdo ();
+    }
   else
     gcc_unreachable ();
   for (cgraph_edge *e = callees; e; e = e->next_callee)
@@ -231,6 +240,8 @@ cgraph_node::make_profile_global0 (profile_quality quality)
 	e->count = e->count.global0 ();
       else if (quality == GUESSED_GLOBAL0_ADJUSTED)
 	e->count = e->count.global0adjusted ();
+      else if (quality == GUESSED_GLOBAL0_AFDO)
+	e->count = e->count.global0afdo ();
       else
 	gcc_unreachable ();
     }
@@ -241,6 +252,8 @@ cgraph_node::make_profile_global0 (profile_quality quality)
       e->count = e->count.global0 ();
     else if (quality == GUESSED_GLOBAL0_ADJUSTED)
       e->count = e->count.global0adjusted ();
+    else if (quality == GUESSED_GLOBAL0_AFDO)
+      e->count = e->count.global0afdo ();
     else
       gcc_unreachable ();
 }
