@@ -1,15 +1,5 @@
 # Dependencies for compiler sources that are generated at build time
 
-# Note: can't use ?= here, not supported by older versions of GNU Make
-
-ifeq ($(origin CP), undefined)
-CP=cp
-endif
-
-ifeq ($(origin MKDIR), undefined)
-MKDIR=mkdir -p
-endif
-
 fsrcdir := $(shell cd $(srcdir);${PWD_COMMAND})
 
 GEN_IL_INCLUDES = -I$(fsrcdir)/ada
