@@ -185,6 +185,11 @@ ada.serial = gnat1$(exeext)
 # variable conveys what we need for this, set to "g++" if not bootstrapping,
 # ".../xg++" otherwise.
 
+GNATMAKE_FOR_HOST = $(GNATMAKE)
+GNATBIND_FOR_HOST = $(GNATBIND)
+GNATLINK_FOR_HOST = $(subst gnatmake,gnatlink,$(GNATMAKE))
+GNATLS_FOR_HOST   = $(subst gnatmake,gnatls,$(GNATMAKE))
+
 # There are too many Ada sources to check against here.  Let's
 # always force the recursive make.
 ifeq ($(build), $(host))
@@ -214,20 +219,16 @@ ifeq ($(build), $(host))
         CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
         ADA_INCLUDES="-I../generated -I$(RTS_DIR)/../adainclude -I$(RTS_DIR)" \
-        GNATMAKE="gnatmake" \
-        GNATBIND="gnatbind" \
-        GNATLINK="gnatlink" \
+        GNATMAKE="$(GNATMAKE_FOR_HOST)" \
+        GNATBIND="$(GNATBIND_FOR_HOST)" \
+        GNATLINK="$(GNATLINK_FOR_HOST)" \
         LIBGNAT=""
   endif
 else
   # Build is different from host so we are either building a canadian cross
   # or a cross-native compiler. We provide defaults for tools targeting the
-  # host platform, but they can be overriden by just setting <tool>_FOR_HOST
+  # host platform, but they can be overridden by just setting <tool>_FOR_HOST
   # variables.
-  GNATMAKE_FOR_HOST=$(host_noncanonical)-gnatmake
-  GNATBIND_FOR_HOST=$(host_noncanonical)-gnatbind
-  GNATLINK_FOR_HOST=$(host_noncanonical)-gnatlink
-  GNATLS_FOR_HOST=$(host_noncanonical)-gnatls
 
   ifeq ($(host), $(target))
     # This is a cross native. All the sources are taken from the currently
