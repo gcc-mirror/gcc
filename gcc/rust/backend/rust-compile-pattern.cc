@@ -369,31 +369,55 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
 	rust_assert (items_no_range.get_patterns ().size ()
 		     == variant->num_fields ());
 
-	size_t tuple_field_index = 0;
-	for (auto &pattern : items_no_range.get_patterns ())
+	if (adt->is_enum ())
 	  {
-	    // find payload union field of scrutinee
-	    tree payload_ref
-	      = Backend::struct_field_expression (match_scrutinee_expr, 1,
-						  pattern->get_locus ());
+	    size_t tuple_field_index = 0;
+	    for (auto &pattern : items_no_range.get_patterns ())
+	      {
+		// find payload union field of scrutinee
+		tree payload_ref
+		  = Backend::struct_field_expression (match_scrutinee_expr, 1,
+						      pattern->get_locus ());
 
-	    tree variant_ref
-	      = Backend::struct_field_expression (payload_ref, variant_index,
-						  pattern->get_locus ());
+		tree variant_ref
+		  = Backend::struct_field_expression (payload_ref,
+						      variant_index,
+						      pattern->get_locus ());
 
-	    tree field_expr
-	      = Backend::struct_field_expression (variant_ref,
-						  tuple_field_index++,
-						  pattern->get_locus ());
+		tree field_expr
+		  = Backend::struct_field_expression (variant_ref,
+						      tuple_field_index++,
+						      pattern->get_locus ());
 
-	    tree check_expr_sub
-	      = CompilePatternCheckExpr::Compile (*pattern, field_expr, ctx);
-	    check_expr = Backend::arithmetic_or_logical_expression (
-	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
-	      check_expr_sub, pattern->get_locus ());
+		tree check_expr_sub
+		  = CompilePatternCheckExpr::Compile (*pattern, field_expr,
+						      ctx);
+		check_expr = Backend::arithmetic_or_logical_expression (
+		  ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+		  check_expr_sub, pattern->get_locus ());
+	      }
 	  }
+	else
+	  {
+	    // For non-enum TupleStructPatterns
+	    size_t tuple_field_index = 0;
+	    for (auto &pattern : items_no_range.get_patterns ())
+	      {
+		tree field_expr
+		  = Backend::struct_field_expression (match_scrutinee_expr,
+						      tuple_field_index++,
+						      pattern->get_locus ());
+
+		tree check_expr_sub
+		  = CompilePatternCheckExpr::Compile (*pattern, field_expr,
+						      ctx);
+		check_expr = Backend::arithmetic_or_logical_expression (
+		  ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+		  check_expr_sub, pattern->get_locus ());
+	      }
+	  }
+	break;
       }
-      break;
     }
 }
 
