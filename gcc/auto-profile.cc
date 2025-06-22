@@ -1265,8 +1265,8 @@ set_bb_annotated (basic_block bb, bb_set *annotated)
   annotated->insert (bb);
 }
 
-/* Update profile_count by known autofdo count.  */
-void
+/* Update COUNT by known autofdo count C.  */
+static void
 update_count_by_afdo_count (profile_count *count, gcov_type c)
 {
   if (c)
@@ -1277,6 +1277,19 @@ update_count_by_afdo_count (profile_count *count, gcov_type c)
 	   || count->quality () == GUESSED
 	   || count->quality () == GUESSED_LOCAL)
     *count = profile_count::zero ().afdo ();
+}
+
+/* Update COUNT by known autofdo count C.  */
+static void
+update_count_by_afdo_count (profile_count *count, profile_count c)
+{
+  if (c.nonzero_p ())
+    *count = c;
+  /* In case we have guessed profile which is already zero, preserve
+     quality info.  */
+  else if (count->nonzero_p ()
+	   || count->quality () < c.quality ())
+    *count = c;
 }
 
 /* For a given BB, set its execution count. Attach value profile if a stmt
@@ -1419,7 +1432,7 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 		  bb1->count.dump (dump_file);
 		  fprintf (dump_file, "\n");
 		}
-	      bb->count = bb1->count;
+	      update_count_by_afdo_count (&bb->count, bb1->count);
 	      set_bb_annotated (bb, annotated_bb);
 	    }
 	}
@@ -1442,7 +1455,7 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 		  bb1->count.dump (dump_file);
 		  fprintf (dump_file, "\n");
 		}
-	      bb->count = bb1->count;
+	      update_count_by_afdo_count (&bb->count, bb1->count);
 	      set_bb_annotated (bb, annotated_bb);
 	    }
 	}
@@ -1505,7 +1518,7 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
 	    total_known_count.dump (dump_file);
 	    fprintf (dump_file, "\n");
 	  }
-	bb->count = total_known_count;
+	update_count_by_afdo_count (&bb->count, total_known_count);
 	set_bb_annotated (bb, annotated_bb);
 	changed = true;
       }
@@ -1531,7 +1544,7 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
       }
     else if (num_unknown_edges > 1
 	     && is_bb_annotated (bb, *annotated_bb)
-	     && total_known_count >= bb->count)
+	     && (total_known_count >= bb->count || !bb->count.nonzero_p ()))
       {
 	FOR_EACH_EDGE (e, ei, is_succ ? bb->succs : bb->preds)
 	  {
@@ -1671,7 +1684,7 @@ afdo_propagate (bb_set *annotated_bb)
     if (!is_bb_annotated (bb, *annotated_bb)
 	&& is_bb_annotated ((basic_block)bb->aux, *annotated_bb))
       {
-	bb->count = ((basic_block)bb->aux)->count;
+	update_count_by_afdo_count (&bb->count, ((basic_block)bb->aux)->count);
 	set_bb_annotated (bb, annotated_bb);
 	if (dump_file)
 	  {
@@ -1994,7 +2007,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
   FOR_EACH_BB_FN (bb, cfun)
     if (is_bb_annotated (bb, *annotated_bb))
       {
-	bool all_known = false;
+	bool all_known = true;
 	profile_count total_count = profile_count::zero ().afdo ();
 
 	FOR_EACH_EDGE (e, ei, bb->succs)
@@ -2006,7 +2019,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
 		   still propagate the rest.  */
 		if (e->probability.nonzero_p ())
 		  {
-		    all_known = true;
+		    all_known = false;
 		    break;
 		  }
 	      }
@@ -2091,6 +2104,22 @@ afdo_annotate_cfg (void)
 	  set_bb_annotated (bb, &annotated_bb);
 	}
     }
+  /* We try to preserve static profile for BBs with 0
+     afdo samples, but if even static profile agrees with 0,
+     consider it final so propagation works better.  */
+  for (basic_block bb : zero_bbs)
+    if (bb->count.nonzero_p ())
+      {
+	update_count_by_afdo_count (&bb->count, 0);
+	set_bb_annotated (bb, &annotated_bb);
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "  Annotating bb %i with count ", bb->index);
+	    bb->count.dump (dump_file);
+	    fprintf (dump_file,
+		     " (has 0 count in both static and afdo profile)\n");
+	  }
+      }
   /* Exit without clobbering static profile if there was no
      non-zero count.  */
   if (!profile_found)
