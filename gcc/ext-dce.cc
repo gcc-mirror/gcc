@@ -442,6 +442,11 @@ ext_dce_try_optimize_insn (rtx_insn *insn, rtx set)
 	  print_rtl_single (dump_file, new_pattern);
 	  fprintf (dump_file, "\n");
 	}
+
+      /* INSN may have a REG_EQUAL note indicating that the value was
+	 sign or zero extended.  That note is no longer valid since we've
+	 just removed the extension.  Just wipe the notes.  */
+      remove_reg_equal_equiv_notes (insn, true);
     }
   else
     {
