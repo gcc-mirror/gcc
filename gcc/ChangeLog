@@ -1,3 +1,61 @@
+2025-06-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-inline.cc (copy_cfg_body): Fix profile of split functions.
+
+2025-06-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118241
+	* config/riscv/predicates.md (prefetch_operand): New predicate.
+	* config/riscv/constraints.md (Q): New constraint.
+	* config/riscv/riscv.md (prefetch): Use new predicate and constraint.
+	(riscv_prefetchi_<mode>): Similarly.
+
+2025-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120746
+	* value-range.cc (irange::snap): Use int type instead of uint.
+
+2025-06-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (dump_inline_stack): New function.
+	(get_inline_stack_in_node): New function.
+	(get_relative_location_for_stmt): Add FN parameter.
+	(has_indirect_call): Remove.
+	(function_instance::find_icall_target_map): Add FN parameter.
+	(function_instance::remove_icall_target): New function.
+	(function_instance::read_function_instance): Set sum_max.
+	(autofdo_source_profile::get_count_info): Add NODE parameter.
+	(autofdo_source_profile::update_inlined_ind_target): Add NODE parameter.
+	(autofdo_source_profile::remove_icall_target): New function.
+	(afdo_indirect_call): Add INDIRECT_EDGE parameter; dump reason
+	for failure; do not check for recursion; do not inline call.
+	(afdo_vpt): Add INDIRECT_EDGE parameter.
+	(afdo_set_bb_count): Do not take PROMOTED set.
+	(afdo_vpt_for_early_inline): Remove.
+	(afdo_annotate_cfg): Do not take PROMOTED set.
+	(auto_profile): Do not call afdo_vpt_for_early_inline.
+	(afdo_callsite_hot_enough_for_early_inline): Dump count.
+	(remove_afdo_speculative_target): New function.
+	* auto-profile.h (afdo_vpt_for_early_inline): Declare.
+	(remove_afdo_speculative_target): Declare.
+	* ipa-inline.cc (inline_functions_by_afdo): Do VPT.
+	(early_inliner): Redirecct edges if inlining happened.
+	* tree-inline.cc (expand_call_inline): Add sanity check.
+
+2025-06-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (get_inline_stack): Add fn parameter.
+	* ipa-inline.cc (want_early_inline_function_p): Do not care
+	about AFDO.
+	(inline_functions_by_afdo): New function.
+	(early_inliner): Use it.
+
+2025-06-21  Pan Li  <pan2.li@intel.com>
+
+	PR target/120652
+	* config/riscv/autovec.md: Add immediate_operand for
+	select_vl operand 2.
+
 2025-06-20  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/120701

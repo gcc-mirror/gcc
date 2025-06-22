@@ -1,3 +1,27 @@
+2025-06-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118241
+	* gcc.target/riscv/pr118241.c: New test.
+
+2025-06-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/afdo-vpt-earlyinline.c: Update template.
+	* gcc.dg/tree-prof/indir-call-prof-2.c: Update template.
+
+2025-06-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/afdo-vpt-earlyinline.c: Update template.
+	* gcc.dg/tree-prof/indir-call-prof-2.c: Likewise.
+	* gcc.dg/tree-prof/afdo-inline.c: New test.
+
+2025-06-21  Pan Li  <pan2.li@intel.com>
+
+	PR target/120652
+	* gcc.target/riscv/rvv/autovec/pr120652-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr120652-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr120652-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr120652.h: New test.
+
 2025-06-20  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/120701
