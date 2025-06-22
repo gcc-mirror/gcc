@@ -104,6 +104,8 @@ INSTALL_DATA_DATE = cp -p
 MAKEINFO = makeinfo
 TEXI2DVI = texi2dvi
 TEXI2PDF = texi2pdf
+
+GNATMAKE_FOR_BUILD = gnatmake
 GNATBIND_FLAGS = -static -x
 ADA_CFLAGS =
 ADAFLAGS = -W -Wall -gnatpg -gnata -gnatU
@@ -629,7 +631,7 @@ OSCONS_EXTRACT=$(GCC_FOR_ADA_RTS) $(GNATLIBCFLAGS_FOR_C) -S s-oscons-tmplt.i
 	-$(MKDIR) ./bldtools/oscons
 	$(RM) $(addprefix ./bldtools/oscons/,$(notdir $^))
 	$(CP) $^ ./bldtools/oscons
-	(cd ./bldtools/oscons ; gnatmake xoscons)
+	(cd ./bldtools/oscons ; $(GNATMAKE_FOR_BUILD) xoscons)
 
 $(RTSDIR)/s-oscons.ads: ../stamp-gnatlib1-$(RTSDIR) s-oscons-tmplt.c gsocket.h ./bldtools/oscons/xoscons
 	$(RM) $(RTSDIR)/s-oscons-tmplt.i $(RTSDIR)/s-oscons-tmplt.s
