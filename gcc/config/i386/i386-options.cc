@@ -760,63 +760,63 @@ static unsigned HOST_WIDE_INT initial_ix86_arch_features[X86_ARCH_LAST] = {
 /* This table must be in sync with enum processor_type in i386.h.  */
 static const struct processor_costs *processor_cost_table[] =
 {
-  &generic_cost,
-  &i386_cost,
-  &i486_cost,
-  &pentium_cost,
-  &lakemont_cost,
-  &pentiumpro_cost,
-  &pentium4_cost,
-  &nocona_cost,
-  &core_cost,
-  &core_cost,
-  &core_cost,
-  &core_cost,
-  &atom_cost,
-  &slm_cost,
-  &slm_cost,
-  &slm_cost,
-  &tremont_cost,
-  &alderlake_cost,
-  &alderlake_cost,
-  &alderlake_cost,
-  &skylake_cost,
-  &skylake_cost,
-  &icelake_cost,
-  &icelake_cost,
-  &icelake_cost,
-  &skylake_cost,
-  &icelake_cost,
-  &skylake_cost,
-  &icelake_cost,
-  &alderlake_cost,
-  &icelake_cost,
-  &icelake_cost,
-  &icelake_cost,
-  &alderlake_cost,
-  &alderlake_cost,
-  &alderlake_cost,
-  &icelake_cost,
-  &intel_cost,
-  &lujiazui_cost,
-  &yongfeng_cost,
-  &shijidadao_cost,
-  &geode_cost,
-  &k6_cost,
-  &athlon_cost,
-  &k8_cost,
-  &amdfam10_cost,
-  &bdver_cost,
-  &bdver_cost,
-  &bdver_cost,
-  &bdver_cost,
-  &btver1_cost,
-  &btver2_cost,
-  &znver1_cost,
-  &znver2_cost,
-  &znver3_cost,
-  &znver4_cost,
-  &znver5_cost
+  &generic_cost,	/* PROCESSOR_GENERIC.		*/
+  &i386_cost,		/* PROCESSOR_I386.		*/
+  &i486_cost,		/* PROCESSOR_I486.		*/
+  &pentium_cost,	/* PROCESSOR_PENTIUM.		*/
+  &lakemont_cost,	/* PROCESSOR_LAKEMONT.		*/
+  &pentiumpro_cost,	/* PROCESSOR_PENTIUMPRO.	*/
+  &pentium4_cost,	/* PROCESSOR_PENTIUM4.		*/
+  &nocona_cost,		/* PROCESSOR_NOCONA.		*/
+  &core_cost,		/* PROCESSOR_CORE2.		*/
+  &core_cost,		/* PROCESSOR_NEHALEM.		*/
+  &core_cost,		/* PROCESSOR_SANDYBRIDGE.	*/
+  &core_cost,		/* PROCESSOR_HASWELL.		*/
+  &atom_cost,		/* PROCESSOR_BONNELL.		*/
+  &slm_cost,		/* PROCESSOR_SILVERMONT.	*/
+  &slm_cost,		/* PROCESSOR_GOLDMONT.		*/
+  &slm_cost,		/* PROCESSOR_GOLDMONT_PLUS.	*/
+  &tremont_cost,	/* PROCESSOR_TREMONT.		*/
+  &alderlake_cost,	/* PROCESSOR_SIERRAFOREST.	*/
+  &alderlake_cost,	/* PROCESSOR_GRANDRIDGE.	*/
+  &alderlake_cost,	/* PROCESSOR_CLEARWATERFOREST.	*/
+  &skylake_cost,	/* PROCESSOR_SKYLAKE.	*/
+  &skylake_cost,	/* PROCESSOR_SKYLAKE_AVX512.	*/
+  &icelake_cost,	/* PROCESSOR_CANNONLAKE.	*/
+  &icelake_cost,	/* PROCESSOR_ICELAKE_CLIENT.	*/
+  &icelake_cost,	/* PROCESSOR_ICELAKE_SERVER.	*/
+  &skylake_cost,	/* PROCESSOR_CASCADELAKE.	*/
+  &icelake_cost,	/* PROCESSOR_TIGERLAKE.		*/
+  &skylake_cost,	/* PROCESSOR_COOPERLAKE.	*/
+  &icelake_cost,	/* PROCESSOR_SAPPHIRERAPIDS.	*/
+  &alderlake_cost,	/* PROCESSOR_ALDERLAKE.		*/
+  &icelake_cost,	/* PROCESSOR_ROCKETLAKE.	*/
+  &icelake_cost,	/* PROCESSOR_GRANITERAPIDS.	*/
+  &icelake_cost,	/* PROCESSOR_GRANITERAPIDS_D.	*/
+  &alderlake_cost,	/* PROCESSOR_ARROWLAKE.		*/
+  &alderlake_cost,	/* PROCESSOR_ARROWLAKE_S.	*/
+  &alderlake_cost,	/* PROCESSOR_PANTHERLAKE.	*/
+  &icelake_cost,	/* PROCESSOR_DIAMONDRAPIDS.	*/
+  &intel_cost,		/* PROCESSOR_INTEL.		*/
+  &lujiazui_cost,	/* PROCESSOR_LUJIAZUI.		*/
+  &yongfeng_cost,	/* PROCESSOR_YONGFENG.		*/
+  &shijidadao_cost,	/* PROCESSOR_SHIJIDADAO.	*/
+  &geode_cost,		/* PROCESSOR_GEODE.		*/
+  &k6_cost,		/* PROCESSOR_K6.		*/
+  &athlon_cost,		/* PROCESSOR_ATHLON.		*/
+  &k8_cost,		/* PROCESSOR_K8.		*/
+  &amdfam10_cost,	/* PROCESSOR_AMDFAM10.		*/
+  &bdver_cost,		/* PROCESSOR_BDVER1.		*/
+  &bdver_cost,		/* PROCESSOR_BDVER2.		*/
+  &bdver_cost,		/* PROCESSOR_BDVER3.		*/
+  &bdver_cost,		/* PROCESSOR_BDVER4.		*/
+  &btver1_cost,		/* PROCESSOR_BTVER1.		*/
+  &btver2_cost,		/* PROCESSOR_BTVER2.		*/
+  &znver1_cost,		/* PROCESSOR_ZNVER1.		*/
+  &znver2_cost,		/* PROCESSOR_ZNVER2.		*/
+  &znver3_cost,		/* PROCESSOR_ZNVER3.		*/
+  &znver4_cost,		/* PROCESSOR_ZNVER4.		*/
+  &znver5_cost		/* PROCESSOR_ZNVER5.		*/
 };
 
 /* Guarantee that the array is aligned with enum processor_type.  */
