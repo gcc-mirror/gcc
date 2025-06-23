@@ -4,10 +4,10 @@
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
 
-/* { dg-final { scan-assembler-times "addc" 36 } } */
+/* { dg-final { scan-assembler-times "addc" 32 } } */
 /* { dg-final { scan-assembler-times "shll" 14 } } */
-/* { dg-final { scan-assembler-times "add\tr" 12 } } */
-/* { dg-final { scan-assembler-not "movt" } } */
+/* { dg-final { scan-assembler-times "add\tr" 16 } } */
+/* { dg-final { scan-assembler-times "movt" 4 } } */
 
 /* { dg-final { scan-assembler-times "add\t#1" 1 } } */
 
@@ -184,28 +184,28 @@ test_022 (int a, int b, int c, int d)
 int
 test_023 (int a, int b, int c, int d)
 {
-  // 1x shll, 1x addc
+  // 1x shll, 1x add
   return a + ((b >> 31) & 1);
 }
 
 int
 test_024 (int a, int b, int c, int d)
 {
-  // 1x shll, 1x addc
+  // 1x shll, 1x add
   return ((b >> 31) & 1) + a;
 }
 
 int
 test_025 (int a, int b, int c, int d)
 {
-  // 1x shll, 1x addc
+  // 1x shll, 1x add
   return ((a >> 31) & 1) + a;
 }
 
 int
 test_026 (int a, int b, int c, int d)
 {
-  // 1x shll, 1x addc
+  // 1x shll, 1x add
   return a + ((a >> 31) & 1);
 }
 

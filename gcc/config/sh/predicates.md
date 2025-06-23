@@ -630,9 +630,7 @@
 ;; Same as treg_set_expr but disallow constants 0 and 1 which can be loaded
 ;; into the T bit.
 (define_predicate "treg_set_expr_not_const01"
-  (and (match_test "op != const0_rtx")
-       (match_test "op != const1_rtx")
-       (match_operand 0 "treg_set_expr")))
+  (match_test "sh_recog_treg_set_expr_not_01 (op, mode)"))
 
 ;; A predicate describing the T bit register in any form.
 (define_predicate "t_reg_operand"
