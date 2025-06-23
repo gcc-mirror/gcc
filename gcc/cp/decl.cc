@@ -8923,10 +8923,12 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
 
       /* Update the type of the corresponding TEMPLATE_DECL to match.  */
-      if (DECL_LANG_SPECIFIC (decl)
-	  && DECL_TEMPLATE_INFO (decl)
-	  && DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (decl)) == decl)
-	TREE_TYPE (DECL_TI_TEMPLATE (decl)) = type;
+      if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
+	{
+	  tree tmpl = template_for_substitution (decl);
+	  if (DECL_TEMPLATE_RESULT (tmpl) == decl)
+	    TREE_TYPE (tmpl) = type;
+	}
     }
 
   if (ensure_literal_type_for_constexpr_object (decl) == error_mark_node)

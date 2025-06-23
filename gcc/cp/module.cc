@@ -8213,6 +8213,10 @@ trees_out::decl_value (tree decl, depset *dep)
       inner = DECL_TEMPLATE_RESULT (decl);
       inner_tag = insert (inner, WK_value);
 
+      /* On stream-in we assume that a template and its result will
+	 have the same type.  */
+      gcc_checking_assert (TREE_TYPE (decl) == TREE_TYPE (inner));
+
       if (streaming_p ())
 	{
 	  int code = TREE_CODE (inner);
@@ -12325,7 +12329,8 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	{
 	  dump (dumper::MERGE)
 	    && dump ("Propagating deduced return type to %N", existing);
-	  FNDECL_USED_AUTO (e_inner) = true;
+	  gcc_checking_assert (existing == e_inner);
+	  FNDECL_USED_AUTO (existing) = true;
 	  DECL_SAVED_AUTO_RETURN_TYPE (existing) = TREE_TYPE (e_type);
 	  TREE_TYPE (existing) = change_return_type (TREE_TYPE (d_type), e_type);
 	}
