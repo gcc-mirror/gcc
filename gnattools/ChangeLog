@@ -1,3 +1,13 @@
+2025-06-22  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/120106
+	* configure.ac: Remove ACX_NONCANONICAL_HOST and add ACX_PROG_GNAT.
+	* configure: Regenerate.
+	* Makefile.in: Do not substitute host_noncanonical but substitute
+	GNATMAKE and GNATBIND.
+	Set GNAT{MAKE,BIND,LINK_LS}_FOR_HOST from GNAT{MAKE,BIND} instead
+	of using hardcoded commands.
+
 2025-04-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/119440

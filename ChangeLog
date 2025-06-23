@@ -1,3 +1,11 @@
+2025-06-22  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/120106
+	* Makefile.tpl: Add GNATMAKE_FOR_BUILD to {HOST,BASE_TARGET}_EXPORTS
+	* Makefile.in: Regenerate.
+	* configure.ac: Set the default and substitute the variable.
+	* configure: Regenerate.
+
 2025-06-09  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* configure.ac: Special case cpu_type for x86_64.

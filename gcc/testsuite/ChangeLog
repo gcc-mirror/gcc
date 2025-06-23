@@ -1,3 +1,13 @@
+2025-06-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/119830
+	* gcc.target/riscv/pr119830.c: New test.
+
+2025-06-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120731
+	* gm2/pimlib/logitech/run/pass/teststrings.mod: New test.
+
 2025-06-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/118241

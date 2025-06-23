@@ -1,3 +1,10 @@
+2025-06-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120731
+	* gm2-libs-log/Strings.def (Delete): Rewrite comment.
+	* gm2-libs-log/Strings.mod (Pos): Rewrite.
+	(PosLower): New procedure function.
+
 2025-06-21  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2GCCDeclare.mod (StartDeclareModuleScopeSeparate):

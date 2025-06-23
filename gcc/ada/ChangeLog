@@ -1,3 +1,20 @@
+2025-06-22  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/120106
+	* gcc-interface/Make-lang.in: Set GNAT{MAKE,BIND,LINK_LS}_FOR_HOST
+	from GNAT{MAKE,BIND} instead of using hardcoded commands.
+
+2025-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Make-generated.in: Remove obsolete stuff.
+
+2025-06-22  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/120106
+	PR ada/120106
+	* Make-generated.in: Use GNATMAKE_FOR_BUILD instead of gnatmake.
+	* gcc-interface/Makefile.in: Likewise.
+
 2025-06-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/120665

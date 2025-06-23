@@ -1,3 +1,84 @@
+2025-06-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/119830
+	* config/riscv/riscv.cc (riscv_build_integer_1): Make arithmetic in bclr case
+	clean for 32 bit hosts.
+
+2025-06-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/120550
+	* ext-dce.cc (ext_dce_try_optimize_insn): Drop REG_EQUAL/REG_EQUIV
+	notes on modified insns.
+
+2025-06-22  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.h (TARGET_DEPBITS): New macro.
+	* config/xtensa/xtensa.md (insvsi): New insn pattern.
+
+2025-06-22  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_zero_call_used_regs):
+	New prototype and function.
+	(TARGET_ZERO_CALL_USED_REGS): Define macro.
+
+2025-06-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (update_count_by_afdo_count): Make static;
+	add variant accepting profile_count.
+	(afdo_find_equiv_class): Use update_count_by_afdo_count.
+	(afdo_propagate_edge): Likewise.
+	(afdo_propagate): Likewise.
+	(afdo_calculate_branch_prob): Fix handling of all_known.
+	(afdo_annotate_cfg): Annotate by 0 where both afdo and static
+	profile agrees.
+
+2025-06-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (afdo_set_bb_count): Dump inline stacks
+	and reasons when lookup failed.
+	(afdo_set_bb_count): Record info about BBs with zero AFDO count.
+	(afdo_annotate_cfg): Set profile to global0_afdo if there are
+	no samples in profile.
+
+2025-06-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-profile.cc (ipa_profile): Use widest_int to avoid
+	possible overflows.
+
+2025-06-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (autofdo::afdo_count_scale): New.
+	(autofdo_source_profile::update_inlined_ind_target): Scale
+	counts.
+	(autofdo_source_profile::read): Set scale and dump
+	statistics.
+	(afdo_indirect_call): Scale.
+	(afdo_set_bb_count): Scale.
+	(afdo_find_equiv_class): Fix dumps.
+	(afdo_annotate_cfg): Scale.
+
+2025-06-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.cc (cgraph_node::make_profile_global0): Support
+	GUESSED_GLOBAL0_AFDO
+	* ipa-cp.cc (update_profiling_info): Use
+	GUESSED_GLOBAL0_AFDO.
+	* profile-count.cc (profile_probability::dump): Use
+	quality ().
+	(profile_probability::stream_in): Use m_adjusted_quality.
+	(profile_probability::stream_out): Use m_adjusted_quality.
+	(profile_count::combine_with_ipa_count): Use quality ().
+	(profile_probability::sqrt): Likewise.
+	* profile-count.h (enum profile_quality): Add
+	GUESSED_GLOBAL0_AFDO; reoder GUESSED_GLOBAL0_ADJUSTED and
+	GUESSED_GLOBAL0.
+	(profile_probability): Add min_quality; replase m_quality
+	by m_adjused_quality; add set_quality; update all users
+	of quality.
+	(profile_count): Set n_bits to 60; make m_quality 4 bits;
+	update uses of quality.
+	(profile_count::afdo_zero, profile_count::globa0afdo): New.
+
 2025-06-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-inline.cc (copy_cfg_body): Fix profile of split functions.
