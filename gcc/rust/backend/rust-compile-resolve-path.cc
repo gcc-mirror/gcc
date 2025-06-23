@@ -187,13 +187,18 @@ ResolvePathRef::resolve_with_node_id (
     }
 
   // Handle unit struct
+  tree resolved_item = error_mark_node;
   if (lookup->get_kind () == TyTy::TypeKind::ADT)
-    return attempt_constructor_expression_lookup (lookup, ctx, mappings,
-						  expr_locus);
+    resolved_item
+      = attempt_constructor_expression_lookup (lookup, ctx, mappings,
+					       expr_locus);
+
+  if (!error_operand_p (resolved_item))
+    return resolved_item;
 
   // let the query system figure it out
-  tree resolved_item = query_compile (ref, lookup, final_segment, mappings,
-				      expr_locus, is_qualified_path);
+  resolved_item = query_compile (ref, lookup, final_segment, mappings,
+				 expr_locus, is_qualified_path);
   if (resolved_item != error_mark_node)
     {
       TREE_USED (resolved_item) = 1;
