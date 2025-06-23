@@ -1722,19 +1722,17 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	  new_rtx = instantiate_new_reg (SUBREG_REG (x), &offset);
 	  if (new_rtx == NULL)
 	    continue;
+	  start_sequence ();
 	  if (maybe_ne (offset, 0))
-	    {
-	      start_sequence ();
-	      new_rtx = expand_simple_binop
-		(GET_MODE (new_rtx), PLUS, new_rtx,
-		 gen_int_mode (offset, GET_MODE (new_rtx)),
-		 NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	      seq = end_sequence ();
-	      emit_insn_before (seq, insn);
-	    }
-	  x = simplify_gen_subreg (recog_data.operand_mode[i], new_rtx,
-				   GET_MODE (new_rtx), SUBREG_BYTE (x));
+	    new_rtx = expand_simple_binop
+	      (GET_MODE (new_rtx), PLUS, new_rtx,
+	       gen_int_mode (offset, GET_MODE (new_rtx)),
+	       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	  x = force_subreg (recog_data.operand_mode[i], new_rtx,
+			    GET_MODE (new_rtx), SUBREG_BYTE (x));
 	  gcc_assert (x);
+	  seq = end_sequence ();
+	  emit_insn_before (seq, insn);
 	  break;
 
 	default:
