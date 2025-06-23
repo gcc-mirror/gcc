@@ -982,20 +982,18 @@
 
 ; vmhb, vmhh, vmhf, vmhg, vmhq
 (define_insn "vec_smulh<mode>"
-  [(set (match_operand:VIT_HW_VXE3_DT 0 "register_operand"                       "=v")
-	(unspec:VIT_HW_VXE3_DT [(match_operand:VIT_HW_VXE3_DT 1 "register_operand" "v")
-				(match_operand:VIT_HW_VXE3_DT 2 "register_operand" "v")]
-			       UNSPEC_VEC_SMULT_HI))]
+  [(set (match_operand:VIT_HW_VXE3_DT 0 "register_operand"                              "=v")
+	(smul_highpart:VIT_HW_VXE3_DT (match_operand:VIT_HW_VXE3_DT 1 "register_operand" "v")
+				      (match_operand:VIT_HW_VXE3_DT 2 "register_operand" "v")))]
   "TARGET_VX"
   "vmh<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
 ; vmlhb, vmlhh, vmlhf, vmlhg, vmlhq
 (define_insn "vec_umulh<mode>"
-  [(set (match_operand:VIT_HW_VXE3_DT 0 "register_operand"                       "=v")
-	(unspec:VIT_HW_VXE3_DT [(match_operand:VIT_HW_VXE3_DT 1 "register_operand" "v")
-				(match_operand:VIT_HW_VXE3_DT 2 "register_operand" "v")]
-			       UNSPEC_VEC_UMULT_HI))]
+  [(set (match_operand:VIT_HW_VXE3_DT 0 "register_operand"                              "=v")
+	(umul_highpart:VIT_HW_VXE3_DT (match_operand:VIT_HW_VXE3_DT 1 "register_operand" "v")
+				      (match_operand:VIT_HW_VXE3_DT 2 "register_operand" "v")))]
   "TARGET_VX"
   "vmlh<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])

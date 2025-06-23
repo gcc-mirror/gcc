@@ -3576,3 +3576,29 @@
 ; vec_unpacks_float_lo
 ; vec_unpacku_float_hi
 ; vec_unpacku_float_lo
+
+(define_expand "avg<mode>3_ceil"
+  [(set (match_operand:VIT_HW_VXE3_T                        0 "register_operand")
+	(unspec:VIT_HW_VXE3_T [(match_operand:VIT_HW_VXE3_T 1 "register_operand")
+			       (match_operand:VIT_HW_VXE3_T 2 "register_operand")]
+			      UNSPEC_VEC_AVG))]
+  "TARGET_VX")
+
+(define_expand "uavg<mode>3_ceil"
+  [(set (match_operand:VIT_HW_VXE3_T                        0 "register_operand")
+	(unspec:VIT_HW_VXE3_T [(match_operand:VIT_HW_VXE3_T 1 "register_operand")
+			       (match_operand:VIT_HW_VXE3_T 2 "register_operand")]
+			      UNSPEC_VEC_AVGU))]
+  "TARGET_VX")
+
+(define_expand "smul<mode>3_highpart"
+  [(set (match_operand:VIT_HW_VXE3_DT 0 "register_operand")
+	(smul_highpart:VIT_HW_VXE3_DT (match_operand:VIT_HW_VXE3_DT 1 "register_operand")
+				      (match_operand:VIT_HW_VXE3_DT 2 "register_operand")))]
+  "TARGET_VX")
+
+(define_expand "umul<mode>3_highpart"
+  [(set (match_operand:VIT_HW_VXE3_DT 0 "register_operand")
+	(umul_highpart:VIT_HW_VXE3_DT (match_operand:VIT_HW_VXE3_DT 1 "register_operand")
+				      (match_operand:VIT_HW_VXE3_DT 2 "register_operand")))]
+  "TARGET_VX")
