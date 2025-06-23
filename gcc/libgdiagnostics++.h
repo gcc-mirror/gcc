@@ -329,6 +329,17 @@ public:
 				       version);
   }
 
+  bool
+  add_sink_from_spec (const char *option_name,
+		      const char *spec,
+		      manager control_mgr)
+  {
+    return diagnostic_manager_add_sink_from_spec (m_inner,
+						  option_name,
+						  spec,
+						  control_mgr.m_inner);
+  }
+
   void
   write_patch (FILE *dst_stream)
   {
@@ -381,6 +392,8 @@ public:
   diagnostic
   begin_diagnostic (enum diagnostic_level level);
 
+  void
+  set_analysis_target (file f);
 
   diagnostic_manager *m_inner;
   bool m_owned;
@@ -681,6 +694,12 @@ inline diagnostic
 manager::begin_diagnostic (enum diagnostic_level level)
 {
   return diagnostic (diagnostic_begin (m_inner, level));
+}
+
+inline void
+manager::set_analysis_target (file f)
+{
+  diagnostic_manager_set_analysis_target (m_inner, f.m_inner);
 }
 
 } // namespace libgdiagnostics

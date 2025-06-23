@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-client-data-hooks.h"
 #include "diagnostic-format-sarif.h"
 #include "diagnostic-format-text.h"
+#include "diagnostic-output-spec.h"
 #include "logical-location.h"
 #include "edit-context.h"
 #include "libgdiagnostics.h"
@@ -1982,4 +1983,68 @@ diagnostic_logical_location_get_decorated_name (const diagnostic_logical_locatio
   FAIL_IF_NULL (loc);
 
   return loc->m_decorated_name.get_str ();
+}
+
+namespace {
+
+struct spec_context : public diagnostics_output_spec::context
+{
+public:
+  spec_context (const char *option_name,
+		diagnostic_manager &affected_mgr,
+		diagnostic_manager &control_mgr)
+  : context (option_name, affected_mgr.get_line_table ()),
+    m_control_mgr (control_mgr)
+  {}
+
+  void report_error_va (const char *gmsgid, va_list *ap) const final override
+  {
+    diagnostic *diag
+      = diagnostic_begin (&m_control_mgr, DIAGNOSTIC_LEVEL_ERROR);
+    diagnostic_finish_va (diag, gmsgid, ap);
+  }
+
+  const char *
+  get_base_filename () const final override
+  {
+    return nullptr;
+  }
+
+private:
+  diagnostic_manager &m_control_mgr;
+};
+
+} // anon namespace
+
+/* Public entrypoint.  */
+
+int
+diagnostic_manager_add_sink_from_spec (diagnostic_manager *affected_mgr,
+				       const char *option_name,
+				       const char *spec,
+				       diagnostic_manager *control_mgr)
+{
+  FAIL_IF_NULL (affected_mgr);
+  FAIL_IF_NULL (option_name);
+  FAIL_IF_NULL (spec);
+  FAIL_IF_NULL (control_mgr);
+
+  spec_context ctxt (option_name, *affected_mgr, *control_mgr);
+  auto inner_sink = ctxt.parse_and_make_sink (spec, affected_mgr->get_dc ());
+  if (!inner_sink)
+    return -1;
+  affected_mgr->get_dc ().add_sink (std::move (inner_sink));
+  return 0;
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_manager_set_analysis_target (diagnostic_manager *mgr,
+					const diagnostic_file *file)
+{
+  FAIL_IF_NULL (mgr);
+  FAIL_IF_NULL (file);
+
+  mgr->get_dc ().set_main_input_filename (file->get_name ());
 }

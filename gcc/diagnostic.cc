@@ -525,6 +525,13 @@ diagnostic_context::supports_fnotice_on_stderr_p () const
 }
 
 void
+diagnostic_context::set_main_input_filename (const char *filename)
+{
+  for (auto sink : m_output_sinks)
+    sink->set_main_input_filename (filename);
+}
+
+void
 diagnostic_context::
 set_client_data_hooks (std::unique_ptr<diagnostic_client_data_hooks> hooks)
 {

@@ -103,6 +103,7 @@ selftest::run_tests ()
   diagnostic_format_html_cc_tests ();
   diagnostic_format_json_cc_tests ();
   diagnostic_format_sarif_cc_tests ();
+  diagnostic_output_spec_cc_tests ();
   edit_context_cc_tests ();
   fold_const_cc_tests ();
   spellcheck_cc_tests ();
@@ -112,7 +113,6 @@ selftest::run_tests ()
   simple_diagnostic_path_cc_tests ();
   lazy_diagnostic_path_cc_tests ();
   attribs_cc_tests ();
-  opts_diagnostic_cc_tests ();
   path_coverage_cc_tests ();
 
   /* This one relies on most of the above.  */

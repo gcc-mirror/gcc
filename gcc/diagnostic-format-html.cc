@@ -426,6 +426,7 @@ html_builder::html_builder (diagnostic_context &context,
       {
 	xml::auto_print_element title (xp, "title", true);
 	m_title_element = xp.get_insertion_point ();
+	m_title_element->add_text (" ");
       }
 
       if (m_html_gen_opts.m_css)

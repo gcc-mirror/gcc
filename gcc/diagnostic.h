@@ -840,6 +840,8 @@ public:
     return m_option_classifier.m_classification_history;
   }
 
+  void set_main_input_filename (const char *filename);
+
 private:
   void error_recursion () ATTRIBUTE_NORETURN;
 

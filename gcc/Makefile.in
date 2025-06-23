@@ -1858,6 +1858,7 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	diagnostic-format-text.o \
 	diagnostic-global-context.o \
 	diagnostic-macro-unwinding.o \
+	diagnostic-output-spec.o \
 	diagnostic-path.o \
 	diagnostic-path-output.o \
 	diagnostic-show-locus.o \
