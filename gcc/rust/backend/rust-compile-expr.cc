@@ -1338,6 +1338,28 @@ CompileExpr::visit (HIR::CallExpr &expr)
   };
 
   auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
+  if (ctx->const_context_p ())
+    {
+      if (!FUNCTION_POINTER_TYPE_P (TREE_TYPE (fn_address)))
+	{
+	  rust_error_at (expr.get_locus (),
+			 "calls in constants are limited to constant "
+			 "functions, tuple structs and tuple variants");
+	  return;
+	}
+
+      if (TREE_CODE (fn_address) == ADDR_EXPR)
+	{
+	  tree fndecl = TREE_OPERAND (fn_address, 0);
+	  if (!DECL_DECLARED_CONSTEXPR_P (fndecl))
+	    {
+	      rust_error_at (expr.get_locus (),
+			     "calls in constants are limited to constant "
+			     "functions, tuple structs and tuple variants");
+	      return;
+	    }
+	}
+    }
 
   // is this a closure call?
   bool possible_trait_call

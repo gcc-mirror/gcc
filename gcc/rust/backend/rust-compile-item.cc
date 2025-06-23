@@ -297,5 +297,65 @@ CompileItem::visit (HIR::Module &module)
     CompileItem::compile (item.get (), ctx);
 }
 
+void
+CompileItem::visit (HIR::TupleStruct &tuple_struct_decl)
+{
+  TyTy::BaseType *lookup = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (
+	tuple_struct_decl.get_mappings ().get_hirid (), &lookup))
+    {
+      rust_error_at (tuple_struct_decl.get_locus (), "failed to resolve type");
+      return;
+    }
+
+  if (lookup->is_concrete ())
+    TyTyResolveCompile::compile (ctx, lookup);
+}
+
+void
+CompileItem::visit (HIR::Enum &enum_decl)
+{
+  TyTy::BaseType *lookup = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (enum_decl.get_mappings ().get_hirid (),
+				       &lookup))
+    {
+      rust_error_at (enum_decl.get_locus (), "failed to resolve type");
+      return;
+    }
+
+  if (lookup->is_concrete ())
+    TyTyResolveCompile::compile (ctx, lookup);
+}
+
+void
+CompileItem::visit (HIR::Union &union_decl)
+{
+  TyTy::BaseType *lookup = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (union_decl.get_mappings ().get_hirid (),
+				       &lookup))
+    {
+      rust_error_at (union_decl.get_locus (), "failed to resolve type");
+      return;
+    }
+
+  if (lookup->is_concrete ())
+    TyTyResolveCompile::compile (ctx, lookup);
+}
+
+void
+CompileItem::visit (HIR::StructStruct &struct_decl)
+{
+  TyTy::BaseType *lookup = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (struct_decl.get_mappings ().get_hirid (),
+				       &lookup))
+    {
+      rust_error_at (struct_decl.get_locus (), "failed to resolve type");
+      return;
+    }
+
+  if (lookup->is_concrete ())
+    TyTyResolveCompile::compile (ctx, lookup);
+}
+
 } // namespace Compile
 } // namespace Rust

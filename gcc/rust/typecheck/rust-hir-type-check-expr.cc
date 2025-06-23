@@ -1726,16 +1726,22 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
 void
 TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 {
-  TypeCheckContextItem current_context = context->peek_context ();
-  TyTy::FnType *current_context_fndecl = current_context.get_context_type ();
-
+  std::vector<TyTy::SubstitutionParamMapping> subst_refs;
   HirId ref = expr.get_mappings ().get_hirid ();
   DefId id = expr.get_mappings ().get_defid ();
-  RustIdent ident{current_context_fndecl->get_ident ().path, expr.get_locus ()};
+  RustIdent ident{CanonicalPath::create_empty (), expr.get_locus ()};
 
-  // get from parent context
-  std::vector<TyTy::SubstitutionParamMapping> subst_refs
-    = current_context_fndecl->clone_substs ();
+  if (context->have_function_context ())
+    {
+      TypeCheckContextItem current_context = context->peek_context ();
+      TyTy::FnType *current_context_fndecl
+	= current_context.get_context_type ();
+
+      ident = RustIdent{current_context_fndecl->get_ident ().path,
+			expr.get_locus ()};
+
+      subst_refs = current_context_fndecl->clone_substs ();
+    }
 
   std::vector<TyTy::TyVar> parameter_types;
   for (auto &p : expr.get_params ())
