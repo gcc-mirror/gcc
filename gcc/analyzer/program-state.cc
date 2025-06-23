@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "digraph.h"
 #include "diagnostic-event-id.h"
+#include "diagnostic-state.h"
+#include "graphviz.h"
 
 #include "text-art/tree-widget.h"
 #include "text-art/dump.h"
@@ -48,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/state-purge.h"
 #include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
+#include "analyzer/ana-state-to-diagnostic-state.h"
 
 #if ENABLE_ANALYZER
 
@@ -1222,6 +1225,18 @@ program_state::make_dump_widget (const text_art::dump_widget_info &dwi) const
   }
 
   return state_widget;
+}
+
+void
+program_state::dump_dot (const extrinsic_state &ext_state) const
+{
+  auto doc = make_xml (ext_state);
+  auto graph = make_dot_graph_from_xml_state (*doc);
+
+  pretty_printer pp;
+  dot::writer w (pp);
+  graph->print (w);
+  pp_flush (&pp);
 }
 
 /* Update this program_state to reflect a top-level call to FUN.

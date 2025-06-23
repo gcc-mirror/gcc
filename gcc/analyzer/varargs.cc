@@ -205,7 +205,11 @@ public:
   {
     return s != m_started;
   }
-  std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
+
+  std::unique_ptr<pending_diagnostic>
+  on_leak (tree var,
+	   const program_state *old_state,
+	   const program_state *new_state) const final override;
 
   /* State for a va_list that is the result of a va_start or va_copy.  */
   state_t m_started;
@@ -460,10 +464,14 @@ class va_list_leak : public va_list_sm_diagnostic
 {
 public:
   va_list_leak (const va_list_state_machine &sm,
-		const svalue *ap_sval, tree ap_tree)
+		const svalue *ap_sval, tree ap_tree,
+		const program_state *final_state)
   : va_list_sm_diagnostic (sm, ap_sval, ap_tree),
-    m_start_event_fnname (NULL)
+    m_start_event_fnname (NULL),
+    m_final_state ()
   {
+    if (final_state)
+      m_final_state = std::make_unique<program_state> (*final_state);
   }
 
   int get_controlling_option () const final override
@@ -524,9 +532,16 @@ public:
     return true;
   }
 
+  const program_state *
+  get_final_state () const final override
+  {
+    return m_final_state.get ();
+  }
+
 private:
   diagnostic_event_id_t m_start_event;
   const char *m_start_event_fnname;
+  std::unique_ptr<program_state> m_final_state;
 };
 
 /* Update state machine for a "va_start" call.  */
@@ -633,9 +648,11 @@ va_list_state_machine::on_va_end (sm_context &sm_ctxt,
    (for complaining about leaks of values in state 'started').  */
 
 std::unique_ptr<pending_diagnostic>
-va_list_state_machine::on_leak (tree var) const
+va_list_state_machine::on_leak (tree var,
+				const program_state *,
+				const program_state *new_state) const
 {
-  return std::make_unique<va_list_leak> (*this, nullptr, var);
+  return std::make_unique<va_list_leak> (*this, nullptr, var, new_state);
 }
 
 } // anonymous namespace

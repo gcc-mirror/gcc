@@ -36,7 +36,7 @@ public:
   {
   public:
     item (const bit_range &br,
-	  tree field,
+	  const_tree field,
 	  bool is_padding)
     : m_bit_range (br),
       m_field (field),
@@ -69,16 +69,19 @@ public:
     }
 
     bit_range m_bit_range;
-    tree m_field;
+    const_tree m_field;
     bool m_is_padding;
   };
 
-  record_layout (tree record_type);
+  record_layout (const_tree record_type);
 
   void dump_to_pp (pretty_printer *pp) const;
   DEBUG_FUNCTION void dump () const;
 
   const record_layout::item *get_item_at (bit_offset_t offset) const;
+
+  auto begin () const { return m_items.begin (); }
+  auto end () const { return m_items.end (); }
 
 private:
   void maybe_pad_to (bit_offset_t next_offset);

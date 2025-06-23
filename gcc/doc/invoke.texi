@@ -6131,6 +6131,18 @@ in this release.
 
 @end table
 
+There is also this key intended for use by GCC developers, rather than
+end-users, and subject to change or removal without notice:
+
+@table @gcctabopt
+
+@item xml-state=@r{[}yes@r{|}no@r{]}
+This is a debugging feature and defaults to @code{no}.
+If @code{xml-state=yes}, then attempt to capture detailed state information
+from @option{-fanalyzer} in the generated SARIF.
+
+@end table
+
 @item experimental-html
 Emit diagnostics to a file in HTML format.  This scheme is experimental,
 and may go away in future GCC releases.  The keys and details of the output
@@ -6151,6 +6163,35 @@ leading absolute or relative path.  If not specified, it defaults to
 @item javascript=@r{[}yes@r{|}no@r{]}
 Add an embedded <script> to the generated HTML providing a barebones UI
 for viewing results.  Defaults to yes.
+
+@end table
+
+There are also these keys intended for use by GCC developers, rather than
+end-users, and subject to change or removal without notice:
+
+@table @gcctabopt
+
+@item show-state-diagrams=@r{[}yes@r{|}no@r{]}
+This is a debugging feature and defaults to @code{no}.
+If @code{show-state-diagrams=yes}, then attempt to use @command{dot} to
+generate SVG diagrams in the generated HTML, visualizing the state at each
+event in a diagnostic path.
+These are visible by pressing ``j'' and ``k'' to single-step forward and
+backward through events.  Enabling this option will slow down
+HTML generation.
+
+@item show-state-diagrams-dot-src=@r{[}yes@r{|}no@r{]}
+This is a debugging feature and defaults to @code{no}.
+If @code{show-state-diagrams-dot-src=yes}
+then if @code{show-state-diagrams=yes},
+the generated state diagrams will also show the .dot source input to
+GraphViz used for the diagram.
+
+@item show-state-diagrams-xml=@r{[}yes@r{|}no@r{]}
+This is a debugging feature and defaults to @code{no}.
+If @code{show-state-diagrams-xml=yes}
+then if @code{show-state-diagrams=yes}, the generated state diagrams will
+also show an XML representation of the state.
 
 @end table
 

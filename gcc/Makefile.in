@@ -1325,6 +1325,7 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
 # Analyzer object files
 ANALYZER_OBJS = \
 	analyzer/access-diagram.o \
+	analyzer/ana-state-to-diagnostic-state.o \
 	analyzer/analysis-plan.o \
 	analyzer/analyzer.o \
 	analyzer/analyzer-language.o \
@@ -1537,7 +1538,6 @@ OBJS = \
 	godump.o \
 	graph.o \
 	graphds.o \
-	graphviz.o \
 	graphite.o \
 	graphite-isl-ast-to-gimple.o \
 	graphite-dependences.o \
@@ -1861,7 +1861,9 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	diagnostic-path.o \
 	diagnostic-path-output.o \
 	diagnostic-show-locus.o \
+	diagnostic-state-to-dot.o \
 	edit-context.o \
+	graphviz.o pex.o \
 	pretty-print.o intl.o \
 	json.o json-parsing.o \
 	xml.o \

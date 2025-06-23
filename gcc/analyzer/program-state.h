@@ -22,6 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_PROGRAM_STATE_H
 
 #include "text-art/widget.h"
+#include "text-art/tree-widget.h"
+
+#include "analyzer/store.h"
+
+namespace xml { class document; }
 
 namespace ana {
 
@@ -242,6 +247,12 @@ public:
 		     bool multiline, FILE *outf) const;
   void dump (const extrinsic_state &ext_state, bool simple) const;
   void dump () const;
+
+  std::unique_ptr<xml::document> make_xml (const extrinsic_state &ext_state) const;
+  void dump_xml_to_pp (const extrinsic_state &ext_state, pretty_printer *pp) const;
+  void dump_xml_to_file (const extrinsic_state &ext_state, FILE *outf) const;
+  void dump_xml (const extrinsic_state &ext_state) const;
+  void dump_dot (const extrinsic_state &ext_state) const;
 
   std::unique_ptr<json::object>
   to_json (const extrinsic_state &ext_state) const;

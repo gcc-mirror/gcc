@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-event-id.h"
 #include "logical-location.h"
 
+namespace xml { class document; }
+
 class sarif_builder;
 class sarif_object;
 
@@ -169,6 +171,11 @@ class diagnostic_event
 			      sarif_object &/*thread_flow_loc_obj*/) const
   {
   }
+
+  /* Hook for capturing state at this event, potentially for visualizing
+     in HTML output.  */
+  virtual std::unique_ptr<xml::document>
+  maybe_make_xml_state (bool debug) const;
 
   label_text get_desc (pretty_printer &ref_pp) const;
 };

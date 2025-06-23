@@ -9,7 +9,9 @@ def html_tree_from_env():
     return ET.parse(html_filename)
 
 XHTML = 'http://www.w3.org/1999/xhtml'
-ns = {'xhtml': XHTML}
+SVG   = 'http://www.w3.org/2000/svg'
+ns = {'xhtml': XHTML,
+      'svg'  : SVG}
 
 def make_tag(local_name):
     return f'{{{XHTML}}}' + local_name

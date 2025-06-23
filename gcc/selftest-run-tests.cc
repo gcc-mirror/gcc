@@ -81,6 +81,7 @@ selftest::run_tests ()
   ordered_hash_map_tests_cc_tests ();
   splay_tree_cc_tests ();
   xml_cc_tests ();
+  graphviz_cc_tests ();
 
   /* Mid-level data structures.  */
   input_cc_tests ();

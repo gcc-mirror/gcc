@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print-urlifier.h"
 #include "demangle.h"
 #include "backtrace.h"
+#include "xml.h"
 
 /* A json::array where the values are "unique" as per
    SARIF v2.1.0 section 3.7.3 ("Array properties with unique values").  */
@@ -2959,6 +2960,20 @@ populate_thread_flow_location_object (sarif_result &result,
      via a property bag.  */
   ev.maybe_add_sarif_properties (*this, tfl_obj);
 
+  if (get_opts ().m_xml_state)
+    if (auto xml_state = ev.maybe_make_xml_state (true))
+      {
+	sarif_property_bag &props = tfl_obj.get_or_create_properties ();
+
+	pretty_printer pp;
+	xml_state->write_as_xml (&pp, 0, true);
+
+#define PROPERTY_PREFIX "gcc/diagnostic_event/"
+	props.set_string (PROPERTY_PREFIX "xml_state",
+			  pp_formatted_text (&pp));
+#undef PROPERTY_PREFIX
+      }
+
   /* "location" property (SARIF v2.1.0 section 3.38.3).  */
   tfl_obj.set<sarif_location>
     ("location",
@@ -4101,7 +4116,8 @@ make_sarif_sink (diagnostic_context &context,
 // struct sarif_generation_options
 
 sarif_generation_options::sarif_generation_options ()
-: m_version (sarif_version::v2_1_0)
+: m_version (sarif_version::v2_1_0),
+  m_xml_state (false)
 {
 }
 

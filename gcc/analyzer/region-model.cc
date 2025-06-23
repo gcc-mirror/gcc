@@ -7798,7 +7798,7 @@ private:
   static void
   complain_about_fully_uninit_item (const record_layout::item &item)
   {
-    tree field = item.m_field;
+    const_tree field = item.m_field;
     bit_size_t num_bits = item.m_bit_range.m_size_in_bits;
     if (item.m_is_padding)
       {
@@ -7859,7 +7859,7 @@ private:
   static void
   complain_about_partially_uninit_item (const record_layout::item &item)
   {
-    tree field = item.m_field;
+    const_tree field = item.m_field;
     if (item.m_is_padding)
       inform (DECL_SOURCE_LOCATION (field),
 	      "padding after field %qD is partially uninitialized",

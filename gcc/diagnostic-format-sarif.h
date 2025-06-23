@@ -101,6 +101,7 @@ struct sarif_generation_options
   sarif_generation_options ();
 
   enum sarif_version m_version;
+  bool m_xml_state;
 };
 
 extern std::unique_ptr<diagnostic_output_format>

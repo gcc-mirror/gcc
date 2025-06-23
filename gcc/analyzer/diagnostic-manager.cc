@@ -687,6 +687,11 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
   for (unsigned i = 0; i < m_notes.length (); i++)
     if (!m_notes[i]->equal_p (*other.m_notes[i]))
       return false;
+
+  // Don't deduplicate dump_path_diagnostic instances
+  if (!strcmp (m_d->get_kind (), "dump_path_diagnostic"))
+    return this == &other;
+
   return (m_sm == other.m_sm
 	  /* We don't compare m_enode.  */
 	  && m_snode == other.m_snode
@@ -1581,6 +1586,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   /* This is the diagnostic_path subclass that will be built for
      the diagnostic.  */
   checker_path emission_path (get_logical_location_manager (),
+			      eg.get_ext_state (),
 			      get_logger ());
 
   /* Populate emission_path with a full description of EPATH.  */

@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "xml.h"
 #include "xml-printer.h"
+#include "diagnostic-state.h"
+#include "graphviz.h"
 #include "json.h"
 #include "selftest-xml.h"
 
@@ -48,7 +50,10 @@ along with GCC; see the file COPYING3.  If not see
 
 html_generation_options::html_generation_options ()
 : m_css (true),
-  m_javascript (true)
+  m_javascript (true),
+  m_show_state_diagrams (false),
+  m_show_state_diagram_xml (false),
+  m_show_state_diagram_dot_src (false)
 {
 }
 
@@ -140,6 +145,9 @@ public:
   {
     m_ui_focus_ids.append_string (focus_id.c_str ());
   }
+
+  std::unique_ptr<xml::node>
+  maybe_make_state_diagram (const diagnostic_event &event);
 
 private:
   void
@@ -310,14 +318,27 @@ const char * const HTML_SCRIPT
      "      const element_id = focus_ids[focus_idx];\n"
      "      return document.getElementById(element_id);\n"
      "  }\n"
+     "  function get_any_state_diagram (focus_idx)\n"
+     "  {\n"
+     "      const element_id = focus_ids[focus_idx];\n"
+     "      return document.getElementById(element_id + \"-state-diagram\");\n"
+     "  }\n"
      "  function unhighlight_current_focus_idx ()\n"
      "  {\n"
      "      get_focus_span (current_focus_idx).classList.remove ('selected');\n"
+     "      state_diagram = get_any_state_diagram (current_focus_idx);\n"
+     "      if (state_diagram) {\n"
+     "          state_diagram.style.visibility = \"hidden\";\n"
+     "      }\n"
      "  }\n"
      "  function highlight_current_focus_idx ()\n"
      "  {\n"
      "      const el = get_focus_span (current_focus_idx);\n"
      "      el.classList.add ('selected');\n"
+     "      state_diagram = get_any_state_diagram (current_focus_idx);\n"
+     "      if (state_diagram) {\n"
+     "          state_diagram.style.visibility = \"visible\";\n"
+     "      }\n"
      "      // Center the element on the screen\n"
      "      const top_y = el.getBoundingClientRect ().top + window.pageYOffset;\n"
      "      const middle = top_y - (window.innerHeight / 2);\n"
@@ -563,6 +584,58 @@ html_builder::pop_nesting_level ()
   m_cur_nesting_levels.pop_back ();
 }
 
+static void
+print_pre_source (xml::printer &xp, const char *text)
+{
+  xp.push_tag_with_class ("pre", "source", true);
+  xp.add_text (text);
+  xp.pop_tag ("pre");
+}
+
+std::unique_ptr<xml::node>
+html_builder::maybe_make_state_diagram (const diagnostic_event &event)
+{
+  if (!m_html_gen_opts.m_show_state_diagrams)
+    return nullptr;
+
+  /* Get XML state document; if we're going to print it later, also request
+     the debug version.  */
+  auto xml_state
+    = event.maybe_make_xml_state (m_html_gen_opts.m_show_state_diagram_xml);
+  if (!xml_state)
+    return nullptr;
+
+  // Convert it to .dot AST
+  auto graph = make_dot_graph_from_xml_state (*xml_state);
+  gcc_assert (graph);
+
+  auto wrapper = std::make_unique<xml::element> ("div", false);
+  xml::printer xp (*wrapper);
+
+  if (m_html_gen_opts.m_show_state_diagram_xml)
+    {
+      // For debugging, show the XML src inline:
+      pretty_printer pp;
+      xml_state->write_as_xml (&pp, 0, true);
+      print_pre_source (xp, pp_formatted_text (&pp));
+    }
+
+  if (m_html_gen_opts.m_show_state_diagram_dot_src)
+    {
+      // For debugging, show the dot src inline:
+      pretty_printer pp;
+      dot::writer w (pp);
+      graph->print (w);
+      print_pre_source (xp, pp_formatted_text (&pp));
+    }
+
+  // Turn the .dot into SVG and splice into place
+  auto svg = dot::make_svg_from_graph (*graph);
+  xp.append (std::move (svg));
+
+  return wrapper;
+}
+
 /* Custom subclass of html_label_writer.
    Wrap labels within a <span> element, supplying them with event IDs.
    Add the IDs to the list of focus IDs.  */
@@ -572,34 +645,59 @@ class html_path_label_writer : public html_label_writer
 public:
   html_path_label_writer (xml::printer &xp,
 			  html_builder &builder,
+			  const diagnostic_path &path,
 			  const std::string &event_id_prefix)
   : m_xp (xp),
     m_html_builder (builder),
+    m_path (path),
     m_event_id_prefix (event_id_prefix),
-    m_next_event_idx (0)
+    m_next_event_idx (0),
+    m_curr_event_id ()
   {
   }
 
   void begin_label () final override
   {
+    m_curr_event_id = m_next_event_idx++;
     m_xp.push_tag_with_class ("span", "event", true);
-    pretty_printer pp;
-    pp_printf (&pp, "%s%i",
-	       m_event_id_prefix.c_str (), m_next_event_idx++);
-    m_xp.set_attr ("id", pp_formatted_text (&pp));
-    m_html_builder.add_focus_id (pp_formatted_text (&pp));
+    m_xp.set_attr ("id", get_element_id ());
+    m_html_builder.add_focus_id (get_element_id ());
   }
 
   void end_label () final override
   {
+    const diagnostic_event &event
+      = m_path.get_event (m_curr_event_id.zero_based ());
+    if (auto state_doc = m_html_builder.maybe_make_state_diagram (event))
+    {
+      m_xp.push_tag_with_class ("div", "state-diagram", false);
+      m_xp.set_attr ("id", get_element_id () + "-state-diagram");
+      m_xp.set_attr ("style",
+		     ("position: absolute;"
+		      " z-index: 1;"
+		      " visibility: hidden;"));
+      m_xp.append (std::move (state_doc));
+      m_xp.pop_tag ("div");
+    }
+
     m_xp.pop_tag ("span"); // from begin_label
   }
 
 private:
+  std::string
+  get_element_id () const
+  {
+    gcc_assert (m_curr_event_id.known_p ());
+    return (m_event_id_prefix
+	    + std::to_string (m_curr_event_id.zero_based ()));
+  }
+
   xml::printer &m_xp;
   html_builder &m_html_builder;
+  const diagnostic_path &m_path;
   const std::string &m_event_id_prefix;
   int m_next_event_idx;
+  diagnostic_event_id_t m_curr_event_id;
 };
 
 /* See https://pf3.patternfly.org/v3/pattern-library/widgets/#alerts */
@@ -1013,8 +1111,9 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
       xp.pop_tag ("label");
 
       std::string event_id_prefix (diag_id + "-event-");
-      html_path_label_writer event_label_writer (xp, *this,
+      html_path_label_writer event_label_writer (xp, *this, *path,
 						 event_id_prefix);
+
       diagnostic_source_print_policy dspp (m_context);
       print_path_as_html (xp, *path, m_context, &event_label_writer,
 			  dspp);

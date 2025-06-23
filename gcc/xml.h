@@ -30,6 +30,8 @@ struct node;
     struct document;
     struct element;
   struct doctypedecl;
+  struct comment;
+  struct raw;
 
 struct node
 {
@@ -38,7 +40,11 @@ struct node
 			     int depth, bool indent) const = 0;
   virtual text *dyn_cast_text ()
   {
-    return 0;
+    return nullptr;
+  }
+  virtual element *dyn_cast_element ()
+  {
+    return nullptr;
   }
   void dump (FILE *out) const;
   void DEBUG_FUNCTION dump () const { dump (stderr); }
@@ -66,6 +72,9 @@ struct node_with_children : public node
   void add_child (std::unique_ptr<node> node);
   void add_text (std::string str);
   void add_text_from_pp (pretty_printer &pp);
+  void add_comment (std::string str);
+
+  element *find_child_element (std::string kind) const;
 
   std::vector<std::unique_ptr<node>> m_children;
 };
@@ -90,15 +99,36 @@ struct element : public node_with_children
     m_preserve_whitespace (preserve_whitespace)
   {}
 
+  element *dyn_cast_element () final override
+  {
+    return this;
+  }
+
   void write_as_xml (pretty_printer *pp,
 		     int depth, bool indent) const final override;
 
   void set_attr (const char *name, std::string value);
+  const char *get_attr (const char *name) const;
 
   std::string m_kind;
   bool m_preserve_whitespace;
   std::map<std::string, std::string> m_attributes;
   std::vector<std::string> m_key_insertion_order;
+};
+
+/* An XML comment.  */
+
+struct comment : public node
+{
+  comment (std::string text)
+  : m_text (std::move (text))
+  {
+  }
+
+  void write_as_xml (pretty_printer *pp,
+		     int depth, bool indent) const final override;
+
+  std::string m_text;
 };
 
 /* A fragment of raw XML source, to be spliced in directly.

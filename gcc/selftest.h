@@ -239,6 +239,7 @@ extern void gcc_urlifier_cc_tests ();
 extern void ggc_tests_cc_tests ();
 extern void gimple_cc_tests ();
 extern void gimple_range_tests ();
+extern void graphviz_cc_tests ();
 extern void hash_map_tests_cc_tests ();
 extern void hash_set_tests_cc_tests ();
 extern void input_cc_tests ();

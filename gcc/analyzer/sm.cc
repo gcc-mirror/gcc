@@ -116,9 +116,11 @@ state_machine::get_state_by_name (const char *name) const
 /* Base implementation of state_machine::on_leak.  */
 
 std::unique_ptr<pending_diagnostic>
-state_machine::on_leak (tree var ATTRIBUTE_UNUSED) const
+state_machine::on_leak (tree var ATTRIBUTE_UNUSED,
+			const program_state *old_state ATTRIBUTE_UNUSED,
+			const program_state *new_state ATTRIBUTE_UNUSED) const
 {
-  return NULL;
+  return nullptr;
 }
 
 /* Dump a multiline representation of this state machine to PP.  */
@@ -156,6 +158,21 @@ state_machine::to_json () const
   }
 
   return sm_obj;
+}
+
+void
+state_machine::add_state_to_xml (xml_state &out_xml,
+				 const svalue &sval,
+				 state_machine::state_t state) const
+{
+  // no-op
+}
+
+void
+state_machine::add_global_state_to_xml (xml_state &out_xml,
+					state_machine::state_t state) const
+{
+  // no-op
 }
 
 /* class sm_context.  */

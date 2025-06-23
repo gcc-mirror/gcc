@@ -30,6 +30,10 @@ extern void __analyzer_dump (void);
 /* Emit a warning describing the size of the base region of (*ptr).  */
 extern void __analyzer_dump_capacity (const void *ptr);
 
+/* When reached, dump GraphViz .dot source to stderr for a diagram
+   describing the analyzer’s state.  */
+extern void __analyzer_dump_dot (void);
+
 /* Dump information about what decls have escaped at this point on the path.  */
 extern void __analyzer_dump_escaped (void);
 
@@ -57,6 +61,9 @@ extern void __analyzer_dump_region_model (void);
    (which can be of any type) with respect to NAME.
    This is for use when debugging, and may be of use in DejaGnu tests.  */
 extern void __analyzer_dump_state (const char *name, ...);
+
+/* Dump copious information about the analyzer’s state when reached.  */
+extern void __analyzer_dump_xml (void);
 
 /* Emit a warning with text "TRUE", FALSE" or "UNKNOWN" based on the
    truthfulness of the argument.  */

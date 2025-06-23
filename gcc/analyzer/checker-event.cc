@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "inlining-iterator.h"
 #include "tree-logical-location.h"
 #include "diagnostic-format-sarif.h"
+#include "xml.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -106,7 +107,8 @@ event_kind_to_string (enum event_kind ek)
 
 checker_event::checker_event (enum event_kind kind,
 			      const event_loc_info &loc_info)
-: m_kind (kind), m_loc (loc_info.m_loc),
+: m_path (nullptr),
+  m_kind (kind), m_loc (loc_info.m_loc),
   m_original_fndecl (loc_info.m_fndecl),
   m_effective_fndecl (loc_info.m_fndecl),
   m_original_depth (loc_info.m_depth),
@@ -211,15 +213,39 @@ checker_event::debug () const
    pertinent data within the sm-state).  */
 
 void
-checker_event::prepare_for_emission (checker_path *,
+checker_event::prepare_for_emission (checker_path *path,
 				     pending_diagnostic *pd,
 				     diagnostic_event_id_t emission_id)
 {
+  m_path = path;
   m_pending_diagnostic = pd;
   m_emission_id = emission_id;
 
   auto pp = global_dc->clone_printer ();
   print_desc (*pp.get ());
+}
+
+std::unique_ptr<xml::document>
+checker_event::maybe_make_xml_state (bool debug) const
+{
+  const program_state *state = get_program_state ();
+  if (!state)
+    return nullptr;
+
+  gcc_assert (m_path);
+  const extrinsic_state &ext_state = m_path->get_ext_state ();
+
+  auto result = state->make_xml (ext_state);
+
+  if (debug)
+    {
+      pretty_printer pp;
+      text_art::theme *theme = global_dc->get_diagram_theme ();
+      text_art::dump_to_pp (*state, theme, &pp);
+      result->add_comment (pp_formatted_text (&pp));
+    }
+
+  return result;
 }
 
 /* class debug_event : public checker_event.  */
@@ -344,12 +370,14 @@ region_creation_event_debug::print_desc (pretty_printer &pp) const
 
 /* class function_entry_event : public checker_event.  */
 
-function_entry_event::function_entry_event (const program_point &dst_point)
+function_entry_event::function_entry_event (const program_point &dst_point,
+					    const program_state &state)
 : checker_event (event_kind::function_entry,
 		 event_loc_info (dst_point.get_supernode
 				   ()->get_start_location (),
 				 dst_point.get_fndecl (),
-				 dst_point.get_stack_depth ()))
+				 dst_point.get_stack_depth ())),
+  m_state (state)
 {
 }
 
@@ -555,6 +583,12 @@ superedge_event::should_filter_p (int verbosity) const
       break;
     }
   return false;
+}
+
+const program_state *
+superedge_event::get_program_state () const
+{
+  return &m_eedge.m_dest->get_state ();
 }
 
 /* superedge_event's ctor.  */
@@ -867,6 +901,14 @@ tree
 call_event::get_callee_fndecl () const
 {
   return m_dest_snode->m_fun->decl;
+}
+
+const program_state *
+call_event::get_program_state () const
+{
+  /* Use the state at the source (at the caller),
+     rather than the one at the dest, which has a frame for the callee.  */
+  return &m_eedge.m_src->get_state ();
 }
 
 /* class return_event : public superedge_event.  */
@@ -1211,6 +1253,15 @@ diagnostic_event::meaning
 warning_event::get_meaning () const
 {
   return meaning (VERB_danger, NOUN_unknown);
+}
+
+const program_state *
+warning_event::get_program_state () const
+{
+  if (m_program_state)
+    return m_program_state.get ();
+  else
+    return &m_enode->get_state ();
 }
 
 } // namespace ana

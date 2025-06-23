@@ -108,9 +108,10 @@ public:
     {
     public:
       recursive_function_entry_event (const program_point &dst_point,
+				      const program_state &dst_state,
 				      const infinite_recursion_diagnostic &pd,
 				      bool topmost)
-      : function_entry_event (dst_point),
+      : function_entry_event (dst_point, dst_state),
 	m_pd (pd),
 	m_topmost (topmost)
       {
@@ -148,15 +149,17 @@ public:
       {
 	gcc_assert (m_prev_entry_event == NULL);
 	std::unique_ptr<checker_event> prev_entry_event
-	  = std::make_unique <recursive_function_entry_event> (dst_point,
-							       *this, false);
+	  = std::make_unique <recursive_function_entry_event>
+	      (dst_point,
+	       dst_node->get_state (),
+	       *this, false);
 	m_prev_entry_event = prev_entry_event.get ();
 	emission_path->add_event (std::move (prev_entry_event));
       }
     else if (eedge.m_dest == m_new_entry_enode)
       emission_path->add_event
 	(std::make_unique<recursive_function_entry_event>
-	   (dst_point, *this, true));
+	 (dst_point, dst_node->get_state (), *this, true));
     else
       pending_diagnostic::add_function_entry_event (eedge, emission_path);
   }

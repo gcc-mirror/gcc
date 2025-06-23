@@ -128,6 +128,22 @@ node_with_children::add_text_from_pp (pretty_printer &pp)
   add_text (pp_formatted_text (&pp));
 }
 
+void
+node_with_children::add_comment (std::string str)
+{
+  add_child (std::make_unique <comment> (std::move (str)));
+}
+
+element *
+node_with_children::find_child_element (std::string kind) const
+{
+  for (auto &iter : m_children)
+    if (element *e = iter->dyn_cast_element ())
+      if (e->m_kind == kind)
+	return e;
+  return nullptr;
+}
+
 /* struct document : public node_with_children.  */
 
 void
@@ -191,6 +207,33 @@ element::set_attr (const char *name, std::string value)
   if (iter == m_attributes.end ())
     m_key_insertion_order.push_back (name);
   m_attributes[name] = std::move (value);
+}
+
+const char *
+element::get_attr (const char *name) const
+{
+  auto iter = m_attributes.find (name);
+  if (iter == m_attributes.end ())
+    return nullptr;
+  return iter->second.c_str ();
+}
+
+// struct comment : public node
+
+void
+comment::write_as_xml (pretty_printer *pp,
+		       int depth, bool indent) const
+{
+  if (indent)
+    {
+      for (int i = 0; i < depth; ++i)
+	pp_string (pp, "  ");
+    }
+  pp_string (pp, "<!-- ");
+  write_escaped_text (pp, m_text.c_str ());
+  pp_string (pp, " -->");
+  if (indent)
+    pp_newline (pp);
 }
 
 // struct raw : public node
@@ -363,6 +406,15 @@ test_printer ()
      "    </bar>\n"
      "  </foo>\n"
      "</top>\n");
+
+  xml::element *foo = top.find_child_element ("foo");
+  ASSERT_TRUE (foo);
+  ASSERT_EQ (top.find_child_element ("not-foo"), nullptr);
+  xml::element *bar = foo->find_child_element ("bar");
+  ASSERT_TRUE (bar);
+  ASSERT_STREQ (bar->get_attr ("size"), "3");
+  ASSERT_STREQ (bar->get_attr ("color"), "red");
+  ASSERT_EQ (bar->get_attr ("airspeed-velocity"), nullptr);
 }
 
 // Verify that element attributes preserve insertion order.
@@ -393,6 +445,19 @@ test_attribute_ordering ()
      "</top>\n");
 }
 
+static void
+test_comment ()
+{
+  xml::document doc;
+  doc.add_comment ("hello");
+  doc.add_comment ("world");
+  ASSERT_XML_PRINT_EQ
+    (doc,
+     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+     "<!-- hello -->\n"
+     "<!-- world -->\n");
+
+}
 /* Run all of the selftests within this file.  */
 
 void
@@ -401,6 +466,7 @@ xml_cc_tests ()
   test_no_dtd ();
   test_printer ();
   test_attribute_ordering ();
+  test_comment ();
 }
 
 } // namespace selftest

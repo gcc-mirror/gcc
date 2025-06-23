@@ -32,8 +32,10 @@ class checker_path : public diagnostic_path
 {
 public:
   checker_path (const logical_location_manager &logical_loc_mgr,
+		const extrinsic_state &ext_state,
 		logger *logger)
   : diagnostic_path (logical_loc_mgr),
+    m_ext_state (ext_state),
     m_thread ("main"),
     m_logger (logger)
   {}
@@ -58,6 +60,8 @@ public:
   {
     return m_thread;
   }
+
+  const extrinsic_state &get_ext_state () const { return m_ext_state; }
 
   checker_event *get_checker_event (int idx)
   {
@@ -139,6 +143,8 @@ public:
 
 private:
   DISABLE_COPY_AND_ASSIGN(checker_path);
+
+  const extrinsic_state &m_ext_state;
 
   simple_diagnostic_thread m_thread;
 

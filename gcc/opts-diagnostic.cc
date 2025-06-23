@@ -450,6 +450,7 @@ sarif_scheme_handler::make_sink (const context &ctxt,
   enum sarif_serialization_kind serialization_kind
     = sarif_serialization_kind::json;
   enum sarif_version version = sarif_version::v2_1_0;
+  bool xml_state = false;
   for (auto& iter : parsed_arg.m_kvs)
     {
       const std::string &key = iter.first;
@@ -487,12 +488,20 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 	    return nullptr;
 	  continue;
 	}
+      if (key == "xml-state")
+	{
+	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
+				 xml_state))
+	    return nullptr;
+	  continue;
+	}
 
       /* Key not found.  */
       auto_vec<const char *> known_keys;
       known_keys.safe_push ("file");
       known_keys.safe_push ("serialization");
       known_keys.safe_push ("version");
+      known_keys.safe_push ("xml-state");
       ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
 			       known_keys);
       return nullptr;
@@ -517,6 +526,7 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 
   sarif_generation_options sarif_gen_opts;
   sarif_gen_opts.m_version = version;
+  sarif_gen_opts.m_xml_state = xml_state;
 
   std::unique_ptr<sarif_serialization_format> serialization_obj;
   switch (serialization_kind)
@@ -547,6 +557,10 @@ html_scheme_handler::make_sink (const context &ctxt,
   bool css = true;
   label_text filename;
   bool javascript = true;
+  bool show_state_diagrams = false;
+  bool show_state_diagram_xml = false;
+  bool show_state_diagram_dot_src = false;
+
   for (auto& iter : parsed_arg.m_kvs)
     {
       const std::string &key = iter.first;
@@ -570,12 +584,36 @@ html_scheme_handler::make_sink (const context &ctxt,
 	    return nullptr;
 	  continue;
 	}
+      if (key == "show-state-diagrams")
+	{
+	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
+				 show_state_diagrams))
+	    return nullptr;
+	  continue;
+	}
+      if (key == "show-state-diagram-dot-src")
+	{
+	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
+				 show_state_diagram_dot_src))
+	    return nullptr;
+	  continue;
+	}
+      if (key == "show-state-diagram-xml")
+	{
+	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
+				 show_state_diagram_xml))
+	    return nullptr;
+	  continue;
+	}
 
       /* Key not found.  */
       auto_vec<const char *> known_keys;
       known_keys.safe_push ("css");
       known_keys.safe_push ("file");
       known_keys.safe_push ("javascript");
+      known_keys.safe_push ("show-state-diagrams");
+      known_keys.safe_push ("show-state-diagram-dot-src");
+      known_keys.safe_push ("show-state-diagram-xml");
       ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
 			       known_keys);
       return nullptr;
@@ -600,6 +638,9 @@ html_scheme_handler::make_sink (const context &ctxt,
   html_generation_options html_gen_opts;
   html_gen_opts.m_css = css;
   html_gen_opts.m_javascript = javascript;
+  html_gen_opts.m_show_state_diagrams = show_state_diagrams;
+  html_gen_opts.m_show_state_diagram_xml = show_state_diagram_xml;
+  html_gen_opts.m_show_state_diagram_dot_src = show_state_diagram_dot_src;
 
   auto sink = make_html_sink (ctxt.m_dc,
 			      *line_table,

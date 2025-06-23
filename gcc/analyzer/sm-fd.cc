@@ -116,7 +116,11 @@ public:
 		     const svalue *rhs) const final override;
 
   bool can_purge_p (state_t s) const final override;
-  std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
+
+  std::unique_ptr<pending_diagnostic>
+  on_leak (tree var,
+	   const program_state *old_state,
+	   const program_state *new_state) const final override;
 
   bool is_unchecked_fd_p (state_t s) const;
   bool is_valid_fd_p (state_t s) const;
@@ -477,7 +481,14 @@ protected:
 class fd_leak : public fd_diagnostic
 {
 public:
-  fd_leak (const fd_state_machine &sm, tree arg) : fd_diagnostic (sm, arg) {}
+  fd_leak (const fd_state_machine &sm, tree arg,
+	   const program_state *final_state)
+  : fd_diagnostic (sm, arg),
+    m_final_state ()
+  {
+    if (final_state)
+      m_final_state = std::make_unique<program_state> (*final_state);
+  }
 
   const char *
   get_kind () const final override
@@ -543,8 +554,15 @@ public:
     return true;
   }
 
+  const program_state *
+  get_final_state () const final override
+  {
+    return m_final_state.get ();
+  }
+
 private:
   diagnostic_event_id_t m_open_event;
+  std::unique_ptr<program_state> m_final_state;
 };
 
 class fd_access_mode_mismatch : public fd_param_diagnostic
@@ -1528,7 +1546,7 @@ fd_state_machine::on_open (sm_context &sm_ctxt, const supernode *node,
   else
     {
       sm_ctxt.warn (node, stmt, NULL_TREE,
-		    std::make_unique<fd_leak> (*this, NULL_TREE));
+		    std::make_unique<fd_leak> (*this, NULL_TREE, nullptr));
     }
 }
 
@@ -1541,7 +1559,7 @@ fd_state_machine::on_creat (sm_context &sm_ctxt, const supernode *node,
     sm_ctxt.on_transition (node, stmt, lhs, m_start, m_unchecked_write_only);
   else
     sm_ctxt.warn (node, stmt, NULL_TREE,
-		  std::make_unique<fd_leak> (*this, NULL_TREE));
+		  std::make_unique<fd_leak> (*this, NULL_TREE, nullptr));
 }
 
 void
@@ -1792,7 +1810,7 @@ fd_state_machine::on_socket (const call_details &cd,
 	}
       else
 	sm_ctxt.warn (node, &call, NULL_TREE,
-		      std::make_unique<fd_leak> (*this, NULL_TREE));
+		      std::make_unique<fd_leak> (*this, NULL_TREE, nullptr));
     }
   else
     {
@@ -2185,7 +2203,7 @@ fd_state_machine::on_accept (const call_details &cd,
 	}
       else
 	sm_ctxt.warn (node, &call, NULL_TREE,
-		      std::make_unique<fd_leak> (*this, NULL_TREE));
+		      std::make_unique<fd_leak> (*this, NULL_TREE, nullptr));
     }
   else
     {
@@ -2321,9 +2339,11 @@ fd_state_machine::can_purge_p (state_t s) const
 }
 
 std::unique_ptr<pending_diagnostic>
-fd_state_machine::on_leak (tree var) const
+fd_state_machine::on_leak (tree var,
+			   const program_state *,
+			   const program_state *new_state) const
 {
-  return std::make_unique<fd_leak> (*this, var);
+  return std::make_unique<fd_leak> (*this, var, new_state);
 }
 } // namespace
 

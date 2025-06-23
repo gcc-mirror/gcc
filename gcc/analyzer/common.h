@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_COMMON_H
 
 #include "config.h"
+#define INCLUDE_MAP
+#define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
