@@ -22501,7 +22501,8 @@ c_parser_oacc_update (c_parser *parser)
 */
 
 #define OACC_WAIT_CLAUSE_MASK						\
-	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC) )
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_ASYNC)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_IF) )
 
 static tree
 c_parser_oacc_wait (location_t loc, c_parser *parser, char *p_name)
