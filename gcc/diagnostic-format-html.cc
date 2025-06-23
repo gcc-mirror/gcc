@@ -799,6 +799,16 @@ public:
 	case pp_token::kind::end_url:
 	  m_xp.pop_tag ("a");
 	  break;
+
+	case pp_token::kind::event_id:
+	  {
+	    pp_token_event_id *sub = as_a <pp_token_event_id *> (iter);
+	    gcc_assert (sub->m_event_id.known_p ());
+	    m_xp.add_text ("(");
+	    m_xp.add_text (std::to_string (sub->m_event_id.one_based ()));
+	    m_xp.add_text (")");
+	  }
+	  break;
 	}
   }
 
@@ -1374,6 +1384,15 @@ test_token_printer ()
        "</span>"
        "&apos;"
        "</div>\n");
+  }
+
+  {
+    token_printer_test t;
+    diagnostic_event_id_t event_id (0);
+    pp_printf (&t.m_pp, "foo %@ bar", &event_id);
+    ASSERT_XML_PRINT_EQ
+      (t.m_top_element,
+       "<div>foo (1) bar</div>\n");
   }
 }
 
