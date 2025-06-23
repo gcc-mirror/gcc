@@ -75,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "opts.h"
 #include "gimple-range.h"
+#include "rtl-iter.h"
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
@@ -4458,9 +4459,10 @@ expand_gimple_stmt (gimple *stmt)
    tailcall) and the normal result happens via a sqrt instruction.  */
 
 static basic_block
-expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
+expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru,
+			rtx_insn *asan_epilog_seq)
 {
-  rtx_insn *last2, *last;
+  rtx_insn *last2, *last, *first = get_last_insn ();
   edge e;
   edge_iterator ei;
   profile_probability probability;
@@ -4477,6 +4479,58 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru)
   return NULL;
 
  found:
+
+  if (asan_epilog_seq)
+    {
+      /* We need to emit a copy of the asan_epilog_seq before
+	 the insns emitted by expand_gimple_stmt above.  The sequence
+	 can contain labels, which need to be remapped.  */
+      hash_map<rtx, rtx> label_map;
+      start_sequence ();
+      emit_note (NOTE_INSN_DELETED);
+      for (rtx_insn *insn = asan_epilog_seq; insn; insn = NEXT_INSN (insn))
+	switch (GET_CODE (insn))
+	  {
+	  case INSN:
+	  case CALL_INSN:
+	  case JUMP_INSN:
+	    emit_copy_of_insn_after (insn, get_last_insn ());
+	    break;
+	  case CODE_LABEL:
+	    label_map.put ((rtx) insn, (rtx) emit_label (gen_label_rtx ()));
+	    break;
+	  case BARRIER:
+	    emit_barrier ();
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+      for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	if (JUMP_P (insn))
+	  {
+	    subrtx_ptr_iterator::array_type array;
+	    FOR_EACH_SUBRTX_PTR (iter, array, &PATTERN (insn), ALL)
+	      {
+		rtx *loc = *iter;
+		if (LABEL_REF_P (*loc))
+		  {
+		    rtx *lab = label_map.get ((rtx) label_ref_label (*loc));
+		    gcc_assert (lab);
+		    set_label_ref_label (*loc, as_a <rtx_insn *> (*lab));
+		  }
+	      }
+	    if (JUMP_LABEL (insn))
+	      {
+		rtx *lab = label_map.get (JUMP_LABEL (insn));
+		gcc_assert (lab);
+		JUMP_LABEL (insn) = *lab;
+	      }
+	  }
+      asan_epilog_seq = NEXT_INSN (get_insns ());
+      end_sequence ();
+      emit_insn_before (asan_epilog_seq, NEXT_INSN (first));
+    }
+
   /* ??? Wouldn't it be better to just reset any pending stack adjust?
      Any instructions emitted here are about to be deleted.  */
   do_pending_stack_adjust ();
@@ -6142,7 +6196,7 @@ reorder_operands (basic_block bb)
 /* Expand basic block BB from GIMPLE trees to RTL.  */
 
 static basic_block
-expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
+expand_gimple_basic_block (basic_block bb, rtx_insn *asan_epilog_seq)
 {
   gimple_stmt_iterator gsi;
   gimple *stmt = NULL;
@@ -6447,14 +6501,16 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	{
 	  gcall *call_stmt = dyn_cast <gcall *> (stmt);
 	  if (call_stmt
+	      && asan_epilog_seq
 	      && gimple_call_tail_p (call_stmt)
-	      && disable_tail_calls)
+	      && !gimple_call_must_tail_p (call_stmt))
 	    gimple_call_set_tail (call_stmt, false);
 
 	  if (call_stmt && gimple_call_tail_p (call_stmt))
 	    {
 	      bool can_fallthru;
-	      new_bb = expand_gimple_tailcall (bb, call_stmt, &can_fallthru);
+	      new_bb = expand_gimple_tailcall (bb, call_stmt, &can_fallthru,
+					       asan_epilog_seq);
 	      if (new_bb)
 		{
 		  if (can_fallthru)
@@ -7227,7 +7283,7 @@ pass_expand::execute (function *fun)
   head_end_for_bb.create (last_basic_block_for_fn (fun));
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR_FOR_FN (fun),
 		  next_bb)
-    bb = expand_gimple_basic_block (bb, var_ret_seq != NULL_RTX);
+    bb = expand_gimple_basic_block (bb, var_ret_seq);
   disable_ranger (fun);
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR_FOR_FN (fun),
 		  next_bb)
