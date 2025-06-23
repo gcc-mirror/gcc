@@ -2090,7 +2090,7 @@ public:
   {
   }
 
-  void print (pretty_printer *pp) const
+  void print (pretty_printer *pp) const final override
   {
     if (m_fndecl)
       pp_printf (pp, "if %qD throws an exception...", m_fndecl);
