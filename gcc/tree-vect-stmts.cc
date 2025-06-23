@@ -14744,7 +14744,6 @@ supportable_indirect_convert_operation (code_helper code,
   bool found_mode = false;
   scalar_mode lhs_mode = GET_MODE_INNER (TYPE_MODE (vectype_out));
   scalar_mode rhs_mode = GET_MODE_INNER (TYPE_MODE (vectype_in));
-  opt_scalar_mode mode_iter;
   tree_code tc1, tc2, code1, code2;
 
   tree cvt_type = NULL_TREE;
