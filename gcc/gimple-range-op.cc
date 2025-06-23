@@ -1416,7 +1416,7 @@ gimple_range_op_handler::maybe_builtin_call ()
       m_operator = &op_cfn_signbit;
       break;
 
-    CASE_FLT_FN (BUILT_IN_ISINF):
+    CASE_FLT_FN (CFN_BUILT_IN_ISINF):
       m_op1 = gimple_call_arg (call, 0);
       m_operator = &op_cfn_isinf;
       break;
