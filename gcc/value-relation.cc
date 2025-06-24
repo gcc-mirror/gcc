@@ -202,12 +202,6 @@ adjust_equivalence_range (vrange &range)
     }
  }
 
-// This vector maps a relation to the equivalent tree code.
-
-static const tree_code relation_to_code [VREL_LAST] = {
-  ERROR_MARK, ERROR_MARK, LT_EXPR, LE_EXPR, GT_EXPR, GE_EXPR, EQ_EXPR,
-  NE_EXPR };
-
 // Given an equivalence set EQUIV, set all the bits in B that are still valid
 // members of EQUIV in basic block BB.
 
