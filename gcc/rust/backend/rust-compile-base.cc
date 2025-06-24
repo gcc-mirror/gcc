@@ -689,7 +689,7 @@ HIRCompileBase::compile_function (
 
   unsigned int flags = 0;
   tree fndecl = Backend::function (compiled_fn_type, ir_symbol_name,
-				   "" /* asm_name */, flags, locus);
+				   tl::nullopt /* asm_name */, flags, locus);
 
   setup_fndecl (fndecl, is_main_fn, fntype->has_substitutions_defined (),
 		visibility, qualifiers, outer_attrs);
@@ -807,11 +807,12 @@ HIRCompileBase::compile_constant_item (
   // machineary that we already have. This means the best approach is to
   // make a _fake_ function with a block so it can hold onto temps then
   // use our constexpr code to fold it completely or error_mark_node
-  Backend::typed_identifier receiver;
+  Backend::typed_identifier receiver ("", NULL_TREE, UNKNOWN_LOCATION);
   tree compiled_fn_type = Backend::function_type (
     receiver, {}, {Backend::typed_identifier ("_", const_type, locus)}, NULL,
     locus);
-  tree fndecl = Backend::function (compiled_fn_type, ident, "", 0, locus);
+  tree fndecl
+    = Backend::function (compiled_fn_type, ident, tl::nullopt, 0, locus);
   TREE_READONLY (fndecl) = 1;
 
   tree enclosing_scope = NULL_TREE;

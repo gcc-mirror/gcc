@@ -27,6 +27,8 @@
 #include "rust-linemap.h"
 #include "rust-diagnostics.h"
 #include "util/rust-operators.h"
+#include "util/rust-ggc.h"
+#include "util/optional.h"
 #include "tree.h"
 #include "rust-gcc.h"
 
@@ -42,21 +44,23 @@ class Bvariable;
 
 namespace Backend {
 
+namespace GGC {
+
+using Rust::GGC::Ident;
+
+} // namespace GGC
+
 void init ();
 
 // Name/type/location.  Used for function parameters, struct fields,
 // interface methods.
 struct typed_identifier
 {
-  std::string name;
+  GGC::Ident name;
   tree type;
   location_t location;
 
-  typed_identifier () : name (), type (NULL_TREE), location (UNKNOWN_LOCATION)
-  {}
-
-  typed_identifier (const std::string &a_name, tree a_type,
-		    location_t a_location)
+  typed_identifier (GGC::Ident a_name, tree a_type, location_t a_location)
     : name (a_name), type (a_type), location (a_location)
   {}
 };
@@ -133,7 +137,7 @@ tree array_type (tree element_type, tree length);
 // created via placeholder_pointer_type, placeholder_struct_type, or
 // placeholder_array_type..  (It may be called for a pointer,
 // struct, or array type in a case like "type P *byte; type Q P".)
-tree named_type (const std::string &name, tree, location_t);
+tree named_type (GGC::Ident name, tree, location_t);
 
 // Return the size of a type.
 int64_t type_size (tree);
@@ -314,8 +318,7 @@ void block_add_statements (tree, const std::vector<tree> &);
 // be put into a unique section if possible; this is intended to
 // permit the linker to garbage collect the variable if it is not
 // referenced.  LOCATION is where the variable was defined.
-Bvariable *global_variable (const std::string &name,
-			    const std::string &asm_name, tree btype,
+Bvariable *global_variable (GGC::Ident name, GGC::Ident asm_name, tree btype,
 			    bool is_external, bool is_hidden,
 			    bool in_unique_section, location_t location);
 
@@ -339,18 +342,18 @@ void global_variable_set_init (Bvariable *, tree);
 // the function, as otherwise the variable would be on the heap).
 // LOCATION is where the variable is defined.  For each local variable
 // the frontend will call init_statement to set the initial value.
-Bvariable *local_variable (tree function, const std::string &name, tree type,
+Bvariable *local_variable (tree function, GGC::Ident name, tree type,
 			   Bvariable *decl_var, location_t location);
 
 // Create a function parameter.  This is an incoming parameter, not
 // a result parameter (result parameters are treated as local
 // variables).  The arguments are as for local_variable.
-Bvariable *parameter_variable (tree function, const std::string &name,
-			       tree type, location_t location);
+Bvariable *parameter_variable (tree function, GGC::Ident name, tree type,
+			       location_t location);
 
 // Create a static chain parameter.  This is the closure parameter.
-Bvariable *static_chain_variable (tree function, const std::string &name,
-				  tree type, location_t location);
+Bvariable *static_chain_variable (tree function, GGC::Ident name, tree type,
+				  location_t location);
 
 // Create a temporary variable.  A temporary variable has no name,
 // just a type.  We pass in FUNCTION and BLOCK in case they are
@@ -369,10 +372,10 @@ Bvariable *temporary_variable (tree fndecl, tree bind_tree, tree type,
 
 // Labels.
 
-// Create a new label.  NAME will be empty if this is a label
+// Create a new label.  NAME will be tl::nullopt if this is a label
 // created by the frontend for a loop construct.  The location is
 // where the label is defined.
-tree label (tree, const std::string &name, location_t);
+tree label (tree, tl::optional<GGC::Ident> name, location_t);
 
 // Create a statement which defines a label.  This statement will be
 // put into the codestream at the point where the label should be
@@ -408,12 +411,12 @@ static const unsigned int function_does_not_return = 1 << 2;
 static const unsigned int function_in_unique_section = 1 << 3;
 
 // Declare or define a function of FNTYPE.
-// NAME is the Go name of the function.  ASM_NAME, if not the empty
-// string, is the name that should be used in the symbol table; this
+// NAME is the Go name of the function.  ASM_NAME, if not tl::nullopt,
+// is the name that should be used in the symbol table; this
 // will be non-empty if a magic extern comment is used.  FLAGS is
 // bit flags described above.
-tree function (tree fntype, const std::string &name,
-	       const std::string &asm_name, unsigned int flags, location_t);
+tree function (tree fntype, GGC::Ident name, tl::optional<GGC::Ident> asm_name,
+	       unsigned int flags, location_t);
 
 // Create a statement that runs all deferred calls for FUNCTION.  This should
 // be a statement that looks like this in C++:

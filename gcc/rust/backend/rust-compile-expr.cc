@@ -714,7 +714,8 @@ CompileExpr::visit (HIR::LoopExpr &expr)
 	loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
     }
 
-  tree loop_begin_label = Backend::label (fnctx.fndecl, "", expr.get_locus ());
+  tree loop_begin_label
+    = Backend::label (fnctx.fndecl, tl::nullopt, expr.get_locus ());
   tree loop_begin_label_decl
     = Backend::label_definition_statement (loop_begin_label);
   ctx->add_statement (loop_begin_label_decl);
@@ -756,7 +757,8 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
 				    start_location, end_location);
   ctx->push_block (loop_block);
 
-  tree loop_begin_label = Backend::label (fnctx.fndecl, "", expr.get_locus ());
+  tree loop_begin_label
+    = Backend::label (fnctx.fndecl, tl::nullopt, expr.get_locus ());
   tree loop_begin_label_decl
     = Backend::label_definition_statement (loop_begin_label);
   ctx->add_statement (loop_begin_label_decl);
@@ -1143,9 +1145,8 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   // setup the end label so the cases can exit properly
   tree fndecl = fnctx.fndecl;
   location_t end_label_locus = expr.get_locus (); // FIXME
-  tree end_label
-    = Backend::label (fndecl, "" /* empty creates an artificial label */,
-		      end_label_locus);
+  // tl::nullopt creates an artificial label
+  tree end_label = Backend::label (fndecl, tl::nullopt, end_label_locus);
   tree end_label_decl_statement
     = Backend::label_definition_statement (end_label);
 

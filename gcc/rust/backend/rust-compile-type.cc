@@ -189,7 +189,7 @@ TyTyResolveCompile::visit (const TyTy::ClosureType &type)
 void
 TyTyResolveCompile::visit (const TyTy::FnType &type)
 {
-  Backend::typed_identifier receiver;
+  Backend::typed_identifier receiver ("", NULL_TREE, UNKNOWN_LOCATION);
   std::vector<Backend::typed_identifier> parameters;
   std::vector<Backend::typed_identifier> results;
 
