@@ -5018,6 +5018,9 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	loc = LOCATION_LOCUS (DECL_SOURCE_LOCATION (fn));
       if (loc == UNKNOWN_LOCATION)
 	loc = BUILTINS_LOCATION;
+      if (has_discriminator (gimple_location (stmt)))
+	loc = location_with_discriminator
+		(loc, get_discriminator_from_loc (gimple_location (stmt)));
       id->block = make_node (BLOCK);
       BLOCK_ABSTRACT_ORIGIN (id->block) = DECL_ORIGIN (fn);
       BLOCK_SOURCE_LOCATION (id->block) = loc;
