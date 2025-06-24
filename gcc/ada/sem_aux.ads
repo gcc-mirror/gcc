@@ -105,7 +105,7 @@ package Sem_Aux is
    --  this is equivalent to First_Entity. The exception arises for tagged
    --  types, where the tag itself is prepended to the front of the entity
    --  chain, so the First_Discriminant function steps past the tag if it is
-   --  present.  When called on a private type with unknown discriminants, the
+   --  present. When called on a private type with unknown discriminants, the
    --  function always returns Empty.
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
