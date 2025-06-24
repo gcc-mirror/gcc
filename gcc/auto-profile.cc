@@ -1315,7 +1315,7 @@ afdo_set_bb_count (basic_block bb, hash_set <basic_block> &zero_bbs)
 	{
 	  if (info.count > max_count)
 	    max_count = info.count;
-	  if (dump_file && info.count)
+	  if (dump_file)
 	    {
 	      fprintf (dump_file, "  count %" PRIu64 " in stmt: ",
 		       (int64_t)info.count);
@@ -2108,7 +2108,7 @@ afdo_annotate_cfg (void)
      afdo samples, but if even static profile agrees with 0,
      consider it final so propagation works better.  */
   for (basic_block bb : zero_bbs)
-    if (bb->count.nonzero_p ())
+    if (!bb->count.nonzero_p ())
       {
 	update_count_by_afdo_count (&bb->count, 0);
 	set_bb_annotated (bb, &annotated_bb);
