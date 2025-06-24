@@ -1,3 +1,20 @@
+2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* c-c++-common/asan/pr120608-1.c: New test.
+	* c-c++-common/asan/pr120608-2.c: New test.
+
+2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* g++.dg/asan/pr120608.C: New test.
+
 2025-06-20  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:

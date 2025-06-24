@@ -1,3 +1,30 @@
+2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* tree-tailcall.cc (empty_eh_cleanup): Ignore .ASAN_MARK (POISON)
+	internal calls for the cfun->has_musttail case and diag_musttail.
+	(find_tail_calls): Likewise.
+
+2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* cfgexpand.cc: Include rtl-iter.h.
+	(expand_gimple_tailcall): Add ASAN_EPILOG_SEQ argument, if non-NULL
+	and expand_gimple_stmt emitted a tail call, emit a copy of that
+	insn sequence before the call sequence.
+	(expand_gimple_basic_block): Remove DISABLE_TAIL_CALLS argument, add
+	ASAN_EPILOG_SEQ argument.  Disable tail call flag only on non-musttail
+	calls if that flag is set, pass it to expand_gimple_tailcall.
+	(pass_expand::execute): Pass VAR_RET_SEQ directly as last
+	expand_gimple_basic_block argument rather than its comparison with
+	NULL.
+
 2025-06-20  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:
