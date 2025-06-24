@@ -7,8 +7,12 @@ DEF_VF_MULOP_CASE_0 (_Float16, +, +, add)
 DEF_VF_MULOP_CASE_0 (_Float16, -, +, sub)
 DEF_VF_MULOP_CASE_0 (_Float16, +, -, nadd)
 DEF_VF_MULOP_CASE_0 (_Float16, -, -, nsub)
+DEF_VF_MULOP_ACC_CASE_0 (_Float16, +, +, acc)
+DEF_VF_MULOP_ACC_CASE_0 (_Float16, -, +, sac)
 
 /* { dg-final { scan-assembler-times {vfmadd.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfmsub.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfnmadd.vf} 1 } } */
 /* { dg-final { scan-assembler-times {vfnmsub.vf} 1 } } */
+/* { dg-final { scan-assembler-times {vfmacc.vf} 1 } } */
+/* { dg-final { scan-assembler-times {vfmsac.vf} 1 } } */

@@ -14,15 +14,15 @@ main ()
   for (i = 0; i < sizeof (TEST_DATA) / sizeof (TEST_DATA[0]); i++)
     {
       T f = TEST_DATA[i][0][0];
-      T *in = TEST_DATA[i][1];
-      T *out = TEST_DATA[i][2];
+      T *b = TEST_DATA[i][1];
+      T *c = TEST_DATA[i][2];
       T *expect = TEST_DATA[i][3];
 
-      TEST_RUN (T, NAME, out, in, f, N);
+      TEST_RUN (T, NAME, c, b, f, N);
 
       for (k = 0; k < N; k++)
 	{
-	  T diff = expect[k] - out[k];
+	  T diff = expect[k] - TEST_OUT[k];
 	  if (TYPE_FABS (diff, T) > .01 * TYPE_FABS (expect[k], T))
 	    __builtin_abort ();
 	}

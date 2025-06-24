@@ -1721,24 +1721,26 @@
 ;; - vfmsub.vf
 ;; - vfnmadd.vf
 ;; - vfnmsub.vf
+;; - vfmacc.vf
+;; - vfmsac.vf
 ;; =============================================================================
 
-;; vfmadd.vf, vfmsub.vf
+;; vfmadd.vf, vfmsub.vf, vfmacc.vf, vfmsac.vf
 (define_insn_and_split "*<optab>_vf_<mode>"
-  [(set (match_operand:V_VLSF 0 "register_operand"		"=vd")
+  [(set (match_operand:V_VLSF 0 "register_operand")
     (plus_minus:V_VLSF
 	    (mult:V_VLSF
 	      (vec_duplicate:V_VLSF
-		(match_operand:<VEL> 1 "register_operand"	"  f"))
-	      (match_operand:V_VLSF 2 "register_operand"	"  0"))
-	    (match_operand:V_VLSF 3 "register_operand"		" vr")))]
+		(match_operand:<VEL> 1 "register_operand"))
+	      (match_operand:V_VLSF 2 "register_operand"))
+	    (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
   {
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3],
-		 operands[2]};
+		 RVV_VUNDEF(<MODE>mode)};
     riscv_vector::emit_vlmax_insn (code_for_pred_mul_scalar (<CODE>, <MODE>mode),
 				   riscv_vector::TERNARY_OP_FRM_DYN, ops);
     DONE;

@@ -5,12 +5,12 @@
 #include "vf_mulop_data.h"
 
 #define T    double
-#define NAME nsub
+#define NAME sub
 
-DEF_VF_MULOP_CASE_0_WRAP (T, -, -, NAME)
+DEF_VF_MULOP_ACC_CASE_0_WRAP (T, -, +, NAME)
 
 #define TEST_DATA                        TEST_MULOP_DATA_WRAP(T, NAME)
-#define TEST_RUN(T, NAME, out, in, x, n) RUN_VF_MULOP_CASE_0_WRAP(T, NAME, out, in, x, n)
-#define TEST_OUT c
+#define TEST_RUN(T, NAME, c, b, x, n) RUN_VF_MULOP_ACC_CASE_0_WRAP(T, NAME, b, c, x, n)
+#define TEST_OUT b
 
 #include "vf_mulop_run.h"
