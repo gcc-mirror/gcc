@@ -227,6 +227,18 @@ sat_s_add_imm_##T##_fmt_1##_##INDEX (T x)             \
 #define RUN_SAT_S_ADD_IMM_FMT_1(INDEX, T, x, expect) \
   if (sat_s_add_imm##_##T##_fmt_1##_##INDEX(x) != expect) __builtin_abort ()
 
+#define DEF_SAT_S_ADD_IMM_FMT_2(INDEX, T, UT, IMM, MIN, MAX) \
+T __attribute__((noinline))                                  \
+sat_s_add_imm_##T##_fmt_2##_##INDEX (T x)                    \
+{                                                            \
+  T sum = (T)((UT)x + (UT)IMM);                                   \
+  return ((x ^ sum) < 0 && (x ^ IMM) >= 0) ?                 \
+    (-(T)(x < 0) ^ MAX) : sum;                         \
+}
+
+#define RUN_SAT_S_ADD_IMM_FMT_2(INDEX, T, x, expect) \
+  if (sat_s_add_imm##_##T##_fmt_2##_##INDEX(x) != expect) __builtin_abort ()
+
 /******************************************************************************/
 /* Saturation Sub (Unsigned and Signed)                                       */
 /******************************************************************************/
