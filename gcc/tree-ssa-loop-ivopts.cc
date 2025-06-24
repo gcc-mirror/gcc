@@ -2117,11 +2117,15 @@ idx_record_use (tree base, tree *idx,
    signedness of TOP and BOT.  */
 
 static bool
-constant_multiple_of (tree top, tree bot, widest_int *mul)
+constant_multiple_of (tree top, tree bot, widest_int *mul,
+		      struct ivopts_data *data)
 {
   aff_tree aff_top, aff_bot;
-  tree_to_aff_combination (top, TREE_TYPE (top), &aff_top);
-  tree_to_aff_combination (bot, TREE_TYPE (bot), &aff_bot);
+  tree_to_aff_combination_expand (top, TREE_TYPE (top), &aff_top,
+				  &data->name_expansion_cache);
+  tree_to_aff_combination_expand (bot, TREE_TYPE (bot), &aff_bot,
+				  &data->name_expansion_cache);
+
   poly_widest_int poly_mul;
   if (aff_combination_constant_multiple_p (&aff_top, &aff_bot, &poly_mul)
       && poly_mul.is_constant (mul))
@@ -3945,13 +3949,14 @@ determine_common_wider_type (tree *a, tree *b)
 }
 
 /* Determines the expression by that USE is expressed from induction variable
-   CAND at statement AT in LOOP.  The expression is stored in two parts in a
-   decomposed form.  The invariant part is stored in AFF_INV; while variant
-   part in AFF_VAR.  Store ratio of CAND.step over USE.step in PRAT if it's
-   non-null.  Returns false if USE cannot be expressed using CAND.  */
+   CAND at statement AT in DATA's current loop.  The expression is stored in
+   two parts in a decomposed form.  The invariant part is stored in AFF_INV;
+   while variant part in AFF_VAR.  Store ratio of CAND.step over USE.step in
+   PRAT if it's non-null.  Returns false if USE cannot be expressed using
+   CAND.  */
 
 static bool
-get_computation_aff_1 (class loop *loop, gimple *at, struct iv_use *use,
+get_computation_aff_1 (struct ivopts_data *data, gimple *at, struct iv_use *use,
 		       struct iv_cand *cand, class aff_tree *aff_inv,
 		       class aff_tree *aff_var, widest_int *prat = NULL)
 {
@@ -3966,7 +3971,7 @@ get_computation_aff_1 (class loop *loop, gimple *at, struct iv_use *use,
   if (TYPE_PRECISION (utype) > TYPE_PRECISION (ctype))
     return false;
 
-  var = var_at_stmt (loop, cand, at);
+  var = var_at_stmt (data->current_loop, cand, at);
   uutype = unsigned_type_for (utype);
 
   /* If the conversion is not noop, perform it.  */
@@ -4011,7 +4016,7 @@ get_computation_aff_1 (class loop *loop, gimple *at, struct iv_use *use,
       gcc_assert (gimple_assign_lhs (use->stmt) == cand->var_after);
       rat = 1;
     }
-  else if (!constant_multiple_of (ustep, cstep, &rat))
+  else if (!constant_multiple_of (ustep, cstep, &rat, data))
     return false;
 
   if (prat)
@@ -4030,7 +4035,7 @@ get_computation_aff_1 (class loop *loop, gimple *at, struct iv_use *use,
   tree_to_aff_combination (var, uutype, aff_var);
 
   /* We need to shift the value if we are after the increment.  */
-  if (stmt_after_increment (loop, cand, at))
+  if (stmt_after_increment (data->current_loop, cand, at))
     {
       aff_tree cstep_aff;
 
@@ -4053,16 +4058,17 @@ get_computation_aff_1 (class loop *loop, gimple *at, struct iv_use *use,
 }
 
 /* Determines the expression by that USE is expressed from induction variable
-   CAND at statement AT in LOOP.  The expression is stored in a decomposed
-   form into AFF.  Returns false if USE cannot be expressed using CAND.  */
+   CAND at statement AT in DATA's current loop.  The expression is stored in a
+   decomposed form into AFF.  Returns false if USE cannot be expressed using
+   CAND.  */
 
 static bool
-get_computation_aff (class loop *loop, gimple *at, struct iv_use *use,
+get_computation_aff (struct ivopts_data *data, gimple *at, struct iv_use *use,
 		     struct iv_cand *cand, class aff_tree *aff)
 {
   aff_tree aff_var;
 
-  if (!get_computation_aff_1 (loop, at, use, cand, aff, &aff_var))
+  if (!get_computation_aff_1 (data, at, use, cand, aff, &aff_var))
     return false;
 
   aff_combination_add (aff, &aff_var);
@@ -4092,16 +4098,17 @@ get_use_type (struct iv_use *use)
 }
 
 /* Determines the expression by that USE is expressed from induction variable
-   CAND at statement AT in LOOP.  The computation is unshared.  */
+   CAND at statement AT in DATA's current loop.  The computation is
+   unshared.  */
 
 static tree
-get_computation_at (class loop *loop, gimple *at,
+get_computation_at (struct ivopts_data *data, gimple *at,
 		    struct iv_use *use, struct iv_cand *cand)
 {
   aff_tree aff;
   tree type = get_use_type (use);
 
-  if (!get_computation_aff (loop, at, use, cand, &aff))
+  if (!get_computation_aff (data, at, use, cand, &aff))
     return NULL_TREE;
   unshare_aff_combination (&aff);
   return fold_convert (type, aff_combination_to_tree (&aff));
@@ -4111,10 +4118,10 @@ get_computation_at (class loop *loop, gimple *at,
    is more expensive.  Intended for debug stmts.  */
 
 static tree
-get_debug_computation_at (class loop *loop, gimple *at,
+get_debug_computation_at (struct ivopts_data *data, gimple *at,
 			  struct iv_use *use, struct iv_cand *cand)
 {
-  if (tree ret = get_computation_at (loop, at, use, cand))
+  if (tree ret = get_computation_at (data, at, use, cand))
     return ret;
 
   tree ubase = use->iv->base, ustep = use->iv->step;
@@ -4131,7 +4138,7 @@ get_debug_computation_at (class loop *loop, gimple *at,
      try to express
      use = ubase + (var - cbase) / ratio.  */
   if (!constant_multiple_of (cstep, fold_convert (TREE_TYPE (cstep), ustep),
-			     &rat))
+			     &rat, data))
     return NULL_TREE;
 
   bool neg_p = false;
@@ -4160,7 +4167,7 @@ get_debug_computation_at (class loop *loop, gimple *at,
       && TYPE_PRECISION (utype) + bits > TYPE_PRECISION (ctype))
     return NULL_TREE;
 
-  var = var_at_stmt (loop, cand, at);
+  var = var_at_stmt (data->current_loop, cand, at);
 
   if (POINTER_TYPE_P (ctype))
     {
@@ -4170,7 +4177,7 @@ get_debug_computation_at (class loop *loop, gimple *at,
       var = fold_convert (ctype, var);
     }
 
-  if (stmt_after_increment (loop, cand, at))
+  if (stmt_after_increment (data->current_loop, cand, at))
     var = fold_build2 (MINUS_EXPR, TREE_TYPE (var), var,
 		       unshare_expr (cstep));
 
@@ -4873,8 +4880,7 @@ get_computation_cost (struct ivopts_data *data, struct iv_use *use,
 	return infinite_cost;
     }
 
-  if (!get_computation_aff_1 (data->current_loop, at, use,
-			      cand, &aff_inv, &aff_var, &rat)
+  if (!get_computation_aff_1 (data, at, use, cand, &aff_inv, &aff_var, &rat)
       || !wi::fits_shwi_p (rat))
     return infinite_cost;
 
@@ -7358,8 +7364,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
     }
 
   aff_tree aff_inv, aff_var;
-  if (!get_computation_aff_1 (data->current_loop, use->stmt,
-			      use, cand, &aff_inv, &aff_var))
+  if (!get_computation_aff_1 (data, use->stmt, use, cand, &aff_inv, &aff_var))
     gcc_unreachable ();
 
   unshare_aff_combination (&aff_inv);
@@ -7556,7 +7561,7 @@ rewrite_use_address (struct ivopts_data *data,
   bool ok;
 
   adjust_iv_update_pos (cand, use);
-  ok = get_computation_aff (data->current_loop, use->stmt, use, cand, &aff);
+  ok = get_computation_aff (data, use->stmt, use, cand, &aff);
   gcc_assert (ok);
   unshare_aff_combination (&aff);
 
@@ -7659,7 +7664,7 @@ rewrite_use_compare (struct ivopts_data *data,
 
   /* The induction variable elimination failed; just express the original
      giv.  */
-  comp = get_computation_at (data->current_loop, use->stmt, use, cand);
+  comp = get_computation_at (data, use->stmt, use, cand);
   gcc_assert (comp != NULL_TREE);
   gcc_assert (use->op_p != NULL);
   *use->op_p = force_gimple_operand_gsi (&bsi, comp, true,
@@ -7790,7 +7795,7 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 		  if (best_cand == NULL || best_pref < cand_pref)
 		    {
 		      tree this_comp
-			= get_debug_computation_at (data->current_loop,
+			= get_debug_computation_at (data,
 						    SSA_NAME_DEF_STMT (def),
 						    &dummy_use, cand);
 		      if (this_comp)
