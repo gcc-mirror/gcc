@@ -19036,6 +19036,12 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if (TARGET_SME && !TARGET_SVE2)
     sorry ("no support for %qs without %qs", "sme", "sve2");
 
+  /* Set scalar costing to a high value such that we always pick
+     vectorization.  Increase scalar costing by 10000%.  */
+  if (opts->x_flag_aarch64_max_vectorization)
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_vect_scalar_cost_multiplier, 10000);
+
   aarch64_override_options_after_change_1 (opts);
 }
 
@@ -19786,6 +19792,8 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
      OPT_msign_return_address_ },
   { "outline-atomics", aarch64_attr_bool, true, NULL,
      OPT_moutline_atomics},
+  { "max-vectorization", aarch64_attr_bool, false, NULL,
+     OPT_mmax_vectorization},
   { NULL, aarch64_attr_custom, false, NULL, OPT____ }
 };
 

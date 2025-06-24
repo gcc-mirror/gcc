@@ -22074,6 +22074,15 @@ used directly.  The same applies when using @option{-mcpu=} when the
 selected cpu supports the @samp{lse} feature.
 This option is on by default.
 
+@item -mmax-vectorization
+@itemx -mno-max-vectorization
+Enable or disable an override to vectorizer cost model making vectorization
+always appear profitable.  This option can be combined with
+@option{-mautovec-preference} allowing precise control over which ISA will be
+used for auto-vectorization.  Unlike @option{-fno-vect-cost-model} or
+@option{-fvect-cost-model=unlimited} this option does not turn off cost
+comparison between different vector modes.
+
 @opindex march
 @item -march=@var{name}
 Specify the name of the target architecture and, optionally, one or

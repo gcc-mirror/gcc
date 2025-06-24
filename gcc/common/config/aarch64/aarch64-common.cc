@@ -142,6 +142,10 @@ aarch64_handle_option (struct gcc_options *opts,
       opts->x_aarch64_flag_outline_atomics = val;
       return true;
 
+    case OPT_mmax_vectorization:
+      opts->x_flag_aarch64_max_vectorization = val;
+      return true;
+
     default:
       return true;
     }

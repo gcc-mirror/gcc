@@ -290,6 +290,10 @@ msve-vector-bits=
 Target RejectNegative Joined Enum(sve_vector_bits) Var(aarch64_sve_vector_bits) Init(SVE_SCALABLE)
 -msve-vector-bits=<number>	Set the number of bits in an SVE vector register.
 
+mmax-vectorization
+Target Var(flag_aarch64_max_vectorization) Save
+Override the scalar cost model such that vectorization is always profitable.
+
 mverbose-cost-dump
 Target Undocumented Var(flag_aarch64_verbose_cost)
 Enables verbose cost model dumping in the debug dump files.
