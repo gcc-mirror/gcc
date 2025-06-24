@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=core-avx2" } */
-/* { dg-final { scan-assembler "vmovd\[\\t \]" } } */
+/* { dg-final { scan-assembler "vmovd\[\\t \]" { target { ! ilp32 } } } } */
 
 int foo (void);
 int a;

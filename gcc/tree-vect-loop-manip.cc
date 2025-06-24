@@ -2794,7 +2794,6 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
   tree niters_vector, step_vector, type = TREE_TYPE (niters);
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   edge pe = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
-  tree log_vf = NULL_TREE;
 
   /* If epilogue loop is required because of data accesses with gaps, we
      subtract one iteration from the total number of iterations here for
@@ -2820,22 +2819,25 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
   if (vf.is_constant (&const_vf)
       && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
-      /* Create: niters >> log2(vf) */
+      /* Create: niters / vf, which is equivalent to niters >> log2(vf) when
+		 vf is a power of two, and when not we approximate using a
+		 truncating division.  */
       /* If it's known that niters == number of latch executions + 1 doesn't
-	 overflow, we can generate niters >> log2(vf); otherwise we generate
-	 (niters - vf) >> log2(vf) + 1 by using the fact that we know ratio
+	 overflow, we can generate niters / vf; otherwise we generate
+	 (niters - vf) / vf + 1 by using the fact that we know ratio
 	 will be at least one.  */
-      log_vf = build_int_cst (type, exact_log2 (const_vf));
+      tree var_vf = build_int_cst (type, const_vf);
       if (niters_no_overflow)
-	niters_vector = fold_build2 (RSHIFT_EXPR, type, ni_minus_gap, log_vf);
+	niters_vector = fold_build2 (TRUNC_DIV_EXPR, type, ni_minus_gap,
+				     var_vf);
       else
 	niters_vector
 	  = fold_build2 (PLUS_EXPR, type,
-			 fold_build2 (RSHIFT_EXPR, type,
+			 fold_build2 (TRUNC_DIV_EXPR, type,
 				      fold_build2 (MINUS_EXPR, type,
 						   ni_minus_gap,
-						   build_int_cst (type, vf)),
-				      log_vf),
+						   var_vf),
+				      var_vf),
 			 build_int_cst (type, 1));
       step_vector = build_one_cst (type);
     }
@@ -2854,16 +2856,17 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
       /* Peeling algorithm guarantees that vector loop bound is at least ONE,
 	 we set range information to make niters analyzer's life easier.
 	 Note the number of latch iteration value can be TYPE_MAX_VALUE so
-	 we have to represent the vector niter TYPE_MAX_VALUE + 1 >> log_vf.  */
-      if (stmts != NULL && log_vf)
+	 we have to represent the vector niter TYPE_MAX_VALUE + 1 / vf.  */
+      if (stmts != NULL && const_vf > 0)
 	{
 	  if (niters_no_overflow)
 	    {
 	      int_range<1> vr (type,
 			       wi::one (TYPE_PRECISION (type)),
-			       wi::rshift (wi::max_value (TYPE_PRECISION (type),
-							  TYPE_SIGN (type)),
-					   exact_log2 (const_vf),
+			       wi::div_trunc (wi::max_value
+							(TYPE_PRECISION (type),
+							 TYPE_SIGN (type)),
+					   const_vf,
 					   TYPE_SIGN (type)));
 	      set_range_info (niters_vector, vr);
 	    }
@@ -2901,13 +2904,12 @@ vect_gen_vector_loop_niters_mult_vf (loop_vec_info loop_vinfo,
   /* We should be using a step_vector of VF if VF is variable.  */
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo).to_constant ();
   tree type = TREE_TYPE (niters_vector);
-  tree log_vf = build_int_cst (type, exact_log2 (vf));
   tree tree_vf = build_int_cst (type, vf);
   basic_block exit_bb = LOOP_VINFO_IV_EXIT (loop_vinfo)->dest;
 
   gcc_assert (niters_vector_mult_vf_ptr != NULL);
-  tree niters_vector_mult_vf = fold_build2 (LSHIFT_EXPR, type,
-					    niters_vector, log_vf);
+  tree niters_vector_mult_vf = fold_build2 (MULT_EXPR, type,
+					    niters_vector, tree_vf);
 
   /* If we've peeled a vector iteration then subtract one full vector
      iteration.  */
