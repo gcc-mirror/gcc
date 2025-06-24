@@ -797,7 +797,7 @@ static const struct processor_costs *processor_cost_table[] =
   &alderlake_cost,	/* PROCESSOR_ARROWLAKE_S.	*/
   &alderlake_cost,	/* PROCESSOR_PANTHERLAKE.	*/
   &icelake_cost,	/* PROCESSOR_DIAMONDRAPIDS.	*/
-  &intel_cost,		/* PROCESSOR_INTEL.		*/
+  &alderlake_cost,	/* PROCESSOR_INTEL.		*/
   &lujiazui_cost,	/* PROCESSOR_LUJIAZUI.		*/
   &yongfeng_cost,	/* PROCESSOR_YONGFENG.		*/
   &shijidadao_cost,	/* PROCESSOR_SHIJIDADAO.	*/

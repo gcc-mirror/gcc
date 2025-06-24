@@ -35227,8 +35227,8 @@ Produce code optimized for the most current Intel processors, which are
 Haswell and Silvermont for this version of GCC.  If you know the CPU
 on which your code will run, then you should use the corresponding
 @option{-mtune} or @option{-march} option instead of @option{-mtune=intel}.
-But, if you want your application performs better on both Haswell and
-Silvermont, then you should use this option.
+But, if you want your application performs better on both Diamond Rapids
+and Clearwater Forest, then you should use this option.
 
 As new Intel processors are deployed in the marketplace, the behavior of
 this option will change.  Therefore, if you upgrade to a newer version of

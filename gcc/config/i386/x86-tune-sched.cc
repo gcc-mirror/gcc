@@ -45,7 +45,6 @@ ix86_issue_rate (void)
     case PROCESSOR_LAKEMONT:
     case PROCESSOR_BONNELL:
     case PROCESSOR_SILVERMONT:
-    case PROCESSOR_INTEL:
     case PROCESSOR_K6:
     case PROCESSOR_BTVER2:
     case PROCESSOR_PENTIUM4:
@@ -81,6 +80,7 @@ ix86_issue_rate (void)
     case PROCESSOR_YONGFENG:
     case PROCESSOR_SHIJIDADAO:
     case PROCESSOR_SIERRAFOREST:
+    case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
     /* For znver5 decoder can handle 4 or 8 instructions per cycle,
        op cache 12 instruction/cycle, dispatch 8 instructions
@@ -497,6 +497,7 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
     case PROCESSOR_HASWELL:
     case PROCESSOR_TREMONT:
     case PROCESSOR_ALDERLAKE:
+    case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
       /* Stack engine allows to execute push&pop instructions in parall.  */
       if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
@@ -519,7 +520,6 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
       break;
 
     case PROCESSOR_SILVERMONT:
-    case PROCESSOR_INTEL:
       if (!reload_completed)
 	return cost;
 
