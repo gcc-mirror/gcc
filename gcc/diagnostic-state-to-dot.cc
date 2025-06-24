@@ -51,9 +51,9 @@ enum class dynalloc_state
 };
 
 static const char *
-get_color_for_dynalloc_state (enum dynalloc_state dynalloc_state)
+get_color_for_dynalloc_state (enum dynalloc_state dynalloc_st)
 {
-  switch (dynalloc_state)
+  switch (dynalloc_st)
     {
     default:
       gcc_unreachable ();
@@ -242,7 +242,7 @@ private:
 		int num_columns,
 		const xml::element &input_element,
 		std::string heading,
-		enum style style,
+		enum style styl,
 		enum dynalloc_state dynalloc_state)
   {
     xp.push_tag ("tr", true);
@@ -258,7 +258,7 @@ private:
 	color = "white";
       }
     else
-      switch (style)
+      switch (styl)
 	{
 	default:
 	  gcc_unreachable ();
@@ -323,12 +323,12 @@ private:
     else if (input_element->m_kind == "heap-buffer")
       {
 	const char *extents = input_element->get_attr ("dynamic-extents");
-	enum dynalloc_state dynalloc_state = get_dynalloc_state (*input_element);
+	enum dynalloc_state dynalloc_st = get_dynalloc_state (*input_element);
 	if (auto region_id = input_element->get_attr ("region_id"))
-	    m_region_id_to_dynalloc_state[region_id] = dynalloc_state;
+	    m_region_id_to_dynalloc_state[region_id] = dynalloc_st;
 	const char *type = input_element->get_attr ("type");
 	pretty_printer pp;
-	switch (dynalloc_state)
+	switch (dynalloc_st)
 	  {
 	  default:
 	    gcc_unreachable ();
@@ -375,7 +375,7 @@ private:
 	add_title_tr (id_of_node, xp, num_columns, *input_element,
 		      pp_formatted_text (&pp),
 		      style::h2,
-		      dynalloc_state);
+		      dynalloc_st);
       }
     else
       {
