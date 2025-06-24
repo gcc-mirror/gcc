@@ -402,6 +402,8 @@ public:
 
   const Lifetime &get_lifetime () const { return lifetime.value (); }
 
+  Lifetime &get_lifetime () { return lifetime.value (); }
+
   std::string as_string () const;
 
   location_t get_locus () const { return locus; }
