@@ -355,30 +355,30 @@ test_hh_mm_ss_cust()
   // +plus returns long, so formatted as long
   const duration<Rep<long>, std::milli> asLong(dt.count());
   verify( hms<milliseconds>(asLong),
-	  WIDEN("22:24:54.123[via format]") );
+	  WIDEN("22:24:54.123") );
   verify( hms<deciseconds>(asLong),
-	  WIDEN("22:24:54.1[via format]") );
+	  WIDEN("22:24:54.1") );
   verify( hms<seconds>(asLong),
 	  WIDEN("22:24:54") );
   verify( hms<milliseconds>(-asLong),
-	  WIDEN("-22:24:54.123[via format]") );
+	  WIDEN("-22:24:54.123") );
   verify( hms<deciseconds>(-asLong),
-	  WIDEN("-22:24:54.1[via format]") );
+	  WIDEN("-22:24:54.1") );
   verify( hms<seconds>(-asLong),
 	  WIDEN("-22:24:54") );
 
   // +asRep returns Rep<>, so formatted as Rep<>
   const duration<Rep<>, std::milli> asRep(dt.count());
   verify( hms<milliseconds>(asRep),
-	  WIDEN("22:24:54.123[via format]") );
+	  WIDEN("22:24:54.123") );
   verify( hms<deciseconds>(asRep),
-	  WIDEN("22:24:54.1[via format]") );
+	  WIDEN("22:24:54.1") );
   verify( hms<seconds>(asLong),
 	  WIDEN("22:24:54") );
   verify( hms<milliseconds>(-asLong),
-	  WIDEN("-22:24:54.123[via format]") );
+	  WIDEN("-22:24:54.123") );
   verify( hms<deciseconds>(-asLong),
-	  WIDEN("-22:24:54.1[via format]") );
+	  WIDEN("-22:24:54.1") );
   verify( hms<seconds>(-asLong),
 	  WIDEN("-22:24:54") );
 }

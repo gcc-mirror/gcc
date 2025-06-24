@@ -2305,8 +2305,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __r *= 10;
 	return __r;
       }
-
-      template<typename _Duration> struct __utc_leap_second;
     }
     /// @endcond
 
@@ -2481,29 +2479,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__byte_duration<ratio<1>>   _M_s{};
 	bool			    _M_is_neg{};
 	__subseconds<precision>	    _M_ss{};
-
-	template<typename> friend struct __detail::__utc_leap_second;
       };
-
-    /// @cond undocumented
-    namespace __detail
-    {
-      // Represents a time that is within a leap second insertion.
-      template<typename _Duration>
-	struct __utc_leap_second
-	{
-	  explicit
-	  __utc_leap_second(const sys_time<_Duration>& __s)
-	  : _M_date(chrono::floor<days>(__s)), _M_time(__s - _M_date)
-	  {
-	    ++_M_time._M_s;
-	  }
-
-	  sys_days _M_date;
-	  hh_mm_ss<common_type_t<_Duration, days>> _M_time;
-	};
-    }
-    /// @endcond
 
     // 12/24 HOURS FUNCTIONS
 
