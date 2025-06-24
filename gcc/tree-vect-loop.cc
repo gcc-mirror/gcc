@@ -1074,6 +1074,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     peeling_for_gaps (false),
     peeling_for_niter (false),
     early_breaks (false),
+    user_unroll (false),
     no_data_dependencies (false),
     has_mask_store (false),
     scalar_loop_scaling (profile_probability::uninitialized ()),
@@ -3429,27 +3430,50 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
 		     res ? "succeeded" : "failed",
 		     GET_MODE_NAME (loop_vinfo->vector_mode));
 
-  if (res && !LOOP_VINFO_EPILOGUE_P (loop_vinfo) && suggested_unroll_factor > 1)
+  auto user_unroll = LOOP_VINFO_LOOP (loop_vinfo)->unroll;
+  if (res && !LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+      /* Check to see if the user wants to unroll or if the target wants to.  */
+      && (suggested_unroll_factor > 1 || user_unroll > 1))
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
+      if (suggested_unroll_factor == 1)
+	{
+	  int assumed_vf = vect_vf_for_cost (loop_vinfo);
+	  suggested_unroll_factor = user_unroll / assumed_vf;
+	  if (suggested_unroll_factor > 1)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+			 "setting unroll factor to %d based on user requested "
+			 "unroll factor %d and suggested vectorization "
+			 "factor: %d\n",
+			 suggested_unroll_factor, user_unroll, assumed_vf);
+	    }
+	}
+
+	if (suggested_unroll_factor > 1)
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_NOTE, vect_location,
 			 "***** Re-trying analysis for unrolling"
 			 " with unroll factor %d and slp %s.\n",
 			 suggested_unroll_factor,
 			 slp_done_for_suggested_uf ? "on" : "off");
-      loop_vec_info unroll_vinfo
-	= vect_create_loop_vinfo (loop, shared, loop_form_info, NULL);
-      unroll_vinfo->vector_mode = vector_mode;
-      unroll_vinfo->suggested_unroll_factor = suggested_unroll_factor;
-      opt_result new_res = vect_analyze_loop_2 (unroll_vinfo, fatal, NULL,
-						slp_done_for_suggested_uf);
-      if (new_res)
-	{
-	  delete loop_vinfo;
-	  loop_vinfo = unroll_vinfo;
-	}
-      else
-	delete unroll_vinfo;
+	    loop_vec_info unroll_vinfo
+		= vect_create_loop_vinfo (loop, shared, loop_form_info, NULL);
+	    unroll_vinfo->vector_mode = vector_mode;
+	    unroll_vinfo->suggested_unroll_factor = suggested_unroll_factor;
+	    opt_result new_res
+		= vect_analyze_loop_2 (unroll_vinfo, fatal, NULL,
+				       slp_done_for_suggested_uf);
+	    if (new_res)
+	      {
+		delete loop_vinfo;
+		loop_vinfo = unroll_vinfo;
+		LOOP_VINFO_USER_UNROLL (loop_vinfo) = user_unroll > 1;
+	      }
+	    else
+	      delete unroll_vinfo;
+	  }
     }
 
   /* Remember the autodetected vector mode.  */
@@ -12042,6 +12066,13 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	dump_printf_loc (MSG_NOTE, vect_location, "Disabling unrolling due to"
 			 " variable-length vectorization factor\n");
     }
+
+  /* When we have unrolled the loop due to a user requested value we should
+     leave it up to the RTL unroll heuristics to determine if it's still worth
+     while to unroll more.  */
+  if (LOOP_VINFO_USER_UNROLL (loop_vinfo))
+    loop->unroll = 0;
+
   /* Free SLP instances here because otherwise stmt reference counting
      won't work.  */
   slp_instance instance;

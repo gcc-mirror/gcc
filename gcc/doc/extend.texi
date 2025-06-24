@@ -10382,6 +10382,11 @@ loop or a @code{#pragma GCC ivdep}, and applies only to the loop that follows.
 @var{n} is an integer constant expression specifying the unrolling factor.
 The values of @math{0} and @math{1} block any unrolling of the loop.
 
+If the loop was vectorized the unroll factor specified will be used to seed the
+vectorizer unroll factor.  Whether the loop is unrolled or not will be
+determined by target costing.  The resulting vectorized loop may still be
+unrolled more in later passes depending on the target costing.
+
 @end table
 
 @node Thread-Local
