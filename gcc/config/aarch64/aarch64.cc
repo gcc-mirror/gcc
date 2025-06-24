@@ -19042,6 +19042,14 @@ aarch64_override_options_internal (struct gcc_options *opts)
     SET_OPTION_IF_UNSET (opts, &global_options_set,
 			 param_vect_scalar_cost_multiplier, 10000);
 
+  /* Synchronize the -mautovec-preference and aarch64_autovec_preference using
+     whichever one is not default.  If both are set then prefer the param flag
+     over the parameters.  */
+  if (opts->x_autovec_preference != AARCH64_AUTOVEC_DEFAULT)
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 aarch64_autovec_preference,
+			 opts->x_autovec_preference);
+
   aarch64_override_options_after_change_1 (opts);
 }
 

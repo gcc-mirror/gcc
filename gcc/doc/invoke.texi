@@ -17627,20 +17627,9 @@ The precision of division is proportional to this param when division
 approximation is enabled.  The default value is 2.
 
 @item aarch64-autovec-preference
-Force an ISA selection strategy for auto-vectorization.
-@table @samp
-@item default
-Use the default heuristics.
-@item asimd-only
-Use only Advanced SIMD for auto-vectorization.
-@item sve-only
-Use only SVE for auto-vectorization.
-@item prefer-asimd
-Use both Advanced SIMD and SVE.  Prefer Advanced SIMD when the costs are
-deemed equal.
-@item prefer-sve
-Use both Advanced SIMD and SVE.  Prefer SVE when the costs are deemed equal.
-@end table
+An old alias for @option{-mautovec-preference}.  If both
+@option{-mautovec-preference} and @option{--param=aarch64-autovec-preference}
+are passed, the @option{--param} value will be used.
 
 @item aarch64-ldp-policy
 Fine-grained policy for load pairs.
@@ -22082,6 +22071,27 @@ always appear profitable.  This option can be combined with
 used for auto-vectorization.  Unlike @option{-fno-vect-cost-model} or
 @option{-fvect-cost-model=unlimited} this option does not turn off cost
 comparison between different vector modes.
+
+@item -mautovec-preference=@var{name}
+Force an ISA selection strategy for auto-vectorization.  The possible
+values of @var{name} are:
+@table @samp
+@item default
+Use the default heuristics.
+@item asimd-only
+Use only Advanced SIMD for auto-vectorization.
+@item sve-only
+Use only SVE for auto-vectorization.
+@item prefer-asimd
+Use both Advanced SIMD and SVE.  Prefer Advanced SIMD when the costs are
+deemed equal.
+@item prefer-sve
+Use both Advanced SIMD and SVE.  Prefer SVE when the costs are deemed equal.
+@end table
+
+For best performance it is highly recommended to use @option{-mcpu} or
+@option{-mtune} instead.  This parameter should only be used for code
+exploration.
 
 @opindex march
 @item -march=@var{name}
