@@ -1,3 +1,286 @@
+2025-06-23  Sam James  <sam@gentoo.org>
+	    Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/120795
+	* ext-dce.cc (ext_dce_try_optimize_insn): Enable rescan in
+	remove_reg_equal_equiv_notes call.
+
+2025-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	PR testsuite/116163
+	PR sarif-replay/120792
+	* Makefile.in (OBJS-libcommon): Add diagnostic-output-spec.o.
+	* diagnostic-format-html.cc (html_builder::html_builder): Ensure
+	title is non-empty.
+	* diagnostic-output-spec.cc: New file, taken from material in
+	opts-diagnostic.cc.
+	* diagnostic-output-spec.h: New file.
+	* diagnostic.cc (diagnostic_context::set_main_input_filename):
+	New.
+	* diagnostic.h (diagnostic_context::set_main_input_filename): New
+	decl.
+	* doc/libgdiagnostics/topics/compatibility.rst
+	(LIBGDIAGNOSTICS_ABI_2): New.
+	* doc/libgdiagnostics/topics/diagnostic-manager.rst
+	(diagnostic_manager_add_sink_from_spec): New.
+	(diagnostic_manager_set_analysis_target): New.
+	* libgdiagnostics++.h (manager::add_sink_from_spec): New.
+	(manager::set_analysis_target): New.
+	* libgdiagnostics.cc: Include "diagnostic-output-spec.h".
+	(struct spec_context): New.
+	(diagnostic_manager_add_sink_from_spec): New.
+	(diagnostic_manager_set_analysis_target): New.
+	* libgdiagnostics.h
+	(LIBDIAGNOSTICS_HAVE_diagnostic_manager_add_sink_from_spec): New
+	define.
+	(diagnostic_manager_add_sink_from_spec): New decl.
+	(LIBDIAGNOSTICS_HAVE_diagnostic_manager_set_analysis_target): New
+	define.
+	(diagnostic_manager_set_analysis_target): New decl.
+	* libgdiagnostics.map (LIBGDIAGNOSTICS_ABI_2): New.
+	* libsarifreplay.cc (sarif_replayer::handle_artifact_obj): Looks
+	for "analysisTarget" in roles and call set_analysis_target using
+	the artifact if found.
+	* opts-diagnostic.cc: Refactor, moving material to
+	diagnostic-output-spec.cc.
+	(struct opt_spec_context): New.
+	(handle_OPT_fdiagnostics_add_output_): Use opt_spec_context.
+	(handle_OPT_fdiagnostics_set_output_): Likewise.
+	* sarif-replay.cc: Define INCLUDE_STRING.
+	(struct options): Add m_extra_output_specs.
+	(usage_msg): Add -fdiagnostics-add-output=SCHEME.
+	(str_starts_with): New.
+	(parse_options): Add -fdiagnostics-add-output=SCHEME.
+	(main): Likewise.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	diagnostic_output_spec_cc_tests rather than
+	opts_diagnostic_cc_tests.
+	* selftest.h (selftest::diagnostic_output_spec_cc_tests):
+	Replace...
+	(selftest::opts_diagnostic_cc_tests): ...this.
+
+2025-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* Makefile.in (ANALYZER_OBJS): Add
+	analyzer/ana-state-to-diagnostic-state.o.
+	(OBJS): Move graphviz.o to...
+	(OBJS-libcommon): ...here.  Add diagnostic-state-to-dot.o and pex.o.
+	* diagnostic-format-html.cc: Include "diagnostic-state.h" and
+	"graphviz.h".
+	(html_generation_options::html_generation_options): Initialize the
+	new flags.
+	(HTML_SCRIPT): Add function "get_any_state_diagram".  Use it
+	when changing current focus id to update the visibility of the
+	pertinent diagram, if any.
+	(print_pre_source): New.
+	(html_builder::maybe_make_state_diagram): New.
+	(html_path_label_writer::html_path_label_writer): Add "path" param.
+	Initialize m_path and m_curr_event_id.
+	(html_path_label_writer::begin_label): Store current event id.
+	(html_path_label_writer::end_label): Attempt to make a state
+	diagram and add it if successful.
+	(html_path_label_writer::get_element_id): New.
+	(html_path_label_writer::m_path): New field.
+	(html_path_label_writer::m_curr_event_id): New field.
+	(html_builder::make_element_for_diagnostic): Pass path to label
+	writer.
+	* diagnostic-format-html.h
+	(html_generation_options::m_show_state_diagrams): New field.
+	(html_generation_options::m_show_state_diagram_xml): New field.
+	(html_generation_options::m_show_state_diagram_dot_src): New field.
+	* diagnostic-format-sarif.cc: Include "xml.h".
+	(populate_thread_flow_location_object): If requested, attempt to
+	generate xml state and add it to the proeprty bag as
+	"gcc/diagnostic_event/xml_state" in xml source form.
+	(sarif_generation_options::sarif_generation_options): Initialize
+	m_xml_state.
+	* diagnostic-format-sarif.h
+	(sarif_generation_options::m_xml_state): New field.
+	* diagnostic-path.cc: Define INCLUDE_MAP.  Include "xml.h".
+	(diagnostic_event::maybe_make_xml_state): New.
+	* diagnostic-path.h (class xml::document): New forward decl.
+	(diagnostic_event::maybe_make_xml_state): New vfunc decl.
+	* diagnostic-state-to-dot.cc: New file.
+	* diagnostic-state.h: New file.
+	* digraph.cc: Define INCLUDE_STRING and INCLUDE_VECTOR.
+	* doc/analyzer.texi: Document state diagrams in html output.
+	(__analyzer_dump_dot): New.
+	(__analyzer_dump_xml): New.
+	* doc/invoke.texi (sarif): Add "xml-state" key.
+	(experimental-html): Add keys "show-state-diagrams",
+	"show-state-diagrams-dot-src" and "show-state-diagrams-xml".
+	* graphviz.cc: Define INCLUDE_MAP, INCLUDE_STRING, and
+	INCLUDE_VECTOR.  Include "xml.h", "xml-printer.h", "pex.h" and
+	"selftest.h".
+	(graphviz_out::graphviz_out): Extract...
+	(dot::writer::writer): ...this.
+	(graphviz_out::write_indent): Convert to...
+	(dot::writer::write_indent): ...this.
+	(graphviz_out::print): Use get_pp.
+	(graphviz_out::println): Likewise.
+	(graphviz_out::begin_tr): Likewise.
+	(graphviz_out::end_tr): Likewise.
+	(graphviz_out::begin_td): Likewise.
+	(graphviz_out::end_td): Likewise.
+	(graphviz_out::begin_trtd): Likewise.
+	(graphviz_out::end_tdtr): Likewise.
+	(dot::ast_node::dump): New.
+	(dot::id::id): New.
+	(dot::id::print): New.
+	(dot::id::is_identifier_p): New.
+	(dot::kv_pair::print): New.
+	(dot::attr_list::print): New.
+	(dot::stmt_list::print): New.
+	(dot::stmt_list::add_edge): New.
+	(dot::stmt_list::add_attr): New.
+	(dot::graph::print): New.
+	(dot::stmt_with_attr_list::set_label): New.
+	(dot::node_stmt::print): New.
+	(dot::attr_stmt::print): New.
+	(dot::kv_stmt::print): New.
+	(dot::node_id::print): New.
+	(dot::port::print): New.
+	(dot::edge_stmt::print): New.
+	(dot::subgraph::print): New.
+	(dot::make_svg_document_buffer_from_graph): New.
+	(dot::make_svg_from_graph): New.
+	(selftest:test_ids): New.
+	(selftest:test_trivial_graph): New.
+	(selftest:test_layout_example): New.
+	(selftest:graphviz_cc_tests): New.
+	* graphviz.h (xml::node): New forward decl.
+	(class graphviz_out): Split out into...
+	(class dot::writer): ...this new class
+	(struct dot::ast_node): New.
+	(struct dot::id): New.
+	(struct dot::kv_pair): New.
+	(struct dot::attr_list): New.
+	(struct dot::stmt_list): New.
+	(struct dot::graph): New.
+	(struct dot::stmt): New.
+	(struct dot::stmt_with_attr_list): New.
+	(struct dot::node_stmt): New.
+	(struct dot::attr_stmt): New.
+	(struct dot::kv_stmt): New.
+	(enum class dot::compass_pt): New.
+	(struct dot::port): New.
+	(struct dot::node_id): New.
+	(struct dot::edge_stmt): New.
+	(struct dot::subgraph): New.
+	(dot::make_svg_from_graph): New.
+	* opts-diagnostic.cc (sarif_scheme_handler::make_sink): Add
+	"xml-state" flag.
+	(html_scheme_handler::make_sink): Add flags "show-state-diagrams",
+	"show-state-diagram-dot-src", and "show-state-diagram-xml".
+	* pex.cc: New file.
+	* pex.h: New file.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	graphviz_cc_tests.
+	* selftest.h (selftest::graphviz_cc_tests): New decl.
+	* xml.cc (xml::node_with_children::add_comment): New.
+	(xml::node_with_children::find_child_element): New.
+	(xml::element::get_attr): New.
+	(xml::comment::write_as_xml): New.
+	(selftest::test_printer): Add coverage of find_child_element and
+	get_attr.
+	(selftest::test_comment): New.
+	(selftest::xml_cc_tests): Call test_comment.
+	* xml.h: New forward decls.
+	(xml::node::dyn_cast_text): Use nullptr.
+	(xml::node::dyn_cast_element): New vfunc.
+	(xml::node_with_children::add_comment): New decl.
+	(xml::node_with_children::find_child_element): New decl.
+	(xml::element::dyn_cast_element): New vfunc impl.
+	(xml::element::get_attr): New decl.
+	(struct xml::comment): New xml::node subclass.
+
+2025-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* diagnostic-format-html.cc (html_token_printer::print_tokens):
+	Handle pp_token::kind::event_id.
+	(selftest::test_token_printer): Add coverage of printing an event
+	id.
+
+2025-06-23  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_dup_vec): Add
+	new case US_PLUS.
+	(expand_vx_binary_vec_vec_dup): Ditto.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op us_plus.
+
+2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* tree-tailcall.cc (empty_eh_cleanup): Ignore .ASAN_MARK (POISON)
+	internal calls for the cfun->has_musttail case and diag_musttail.
+	(find_tail_calls): Likewise.
+
+2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* cfgexpand.cc: Include rtl-iter.h.
+	(expand_gimple_tailcall): Add ASAN_EPILOG_SEQ argument, if non-NULL
+	and expand_gimple_stmt emitted a tail call, emit a copy of that
+	insn sequence before the call sequence.
+	(expand_gimple_basic_block): Remove DISABLE_TAIL_CALLS argument, add
+	ASAN_EPILOG_SEQ argument.  Disable tail call flag only on non-musttail
+	calls if that flag is set, pass it to expand_gimple_tailcall.
+	(pass_expand::execute): Pass VAR_RET_SEQ directly as last
+	expand_gimple_basic_block argument rather than its comparison with
+	NULL.
+
+2025-06-23  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* tree-vect-data-refs.cc (vect_peeling_supportable): Return new
+	enum values to indicate if combined peeling and versioning can
+	potentially support vectorization.
+	(vect_enhance_data_refs_alignment): Support combined peeling and
+	versioning in vectorization analysis.
+	* tree-vect-loop-manip.cc (vect_create_cond_for_align_checks):
+	Add a new type of runtime check for mutually aligned DRs.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Set
+	default value of allow_mutual_alignment in the initializer list.
+	* tree-vectorizer.h (enum peeling_support): Define type of
+	peeling support for function vect_peeling_supportable.
+	(LOOP_VINFO_ALLOW_MUTUAL_ALIGNMENT): New access macro.
+
+2025-06-23  Mikael Morin  <morin-mikael@orange.fr>
+
+	* match.pd (`-(-X)`, `~(~X)`, `conj(conj(X))`): Add a
+	NON_LVALUE_EXPR wrapper to the simplification of doubled unary
+	operators NEGATE_EXPR, BIT_NOT_EXPR and CONJ_EXPR.
+
+2025-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120729
+	* gimple-predicate-analysis.h (uninit_analysis::prune_phi_opnds):
+	Add argument of work budget remaining.
+	* gimple-predicate-analysis.cc (uninit_analysis::prune_phi_opnds):
+	Likewise.  Maintain and honor it throughout the recursion.
+	* params.opt (uninit-max-prune-work): New.
+	* doc/invoke.texi (uninit-max-prune-work): Document.
+
+2025-06-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120721
+	* function.cc (instantiate_virtual_regs_in_insn): Use force_subreg
+	instead of simplify_gen_subreg when instantiating an rvalue SUBREG.
+
+2025-06-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120728
+	* config/i386/i386.cc (ix86_get_ssemov): Use vmovdqu16/vmovdqu8
+	only with EVEX register operands.
+
+2025-06-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-options.cc (processor_cost_table): Add a
+	PROCESSOR_XXX comment to each entry.
+
 2025-06-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR target/119830

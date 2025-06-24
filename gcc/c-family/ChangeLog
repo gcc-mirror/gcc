@@ -1,3 +1,7 @@
+2025-06-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-omp.cc (c_finish_oacc_wait): Handle if clause.
+
 2025-06-16  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -Wsfinae-incomplete.

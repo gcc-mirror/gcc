@@ -1,3 +1,7 @@
+2025-06-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (OACC_WAIT_CLAUSE_MASK): Add if clause.
+
 2025-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lang.h (union lang_type::maybe_objc_info): New type.

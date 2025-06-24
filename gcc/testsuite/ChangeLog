@@ -1,3 +1,128 @@
+2025-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	PR testsuite/116163
+	PR sarif-replay/120792
+	* sarif-replay.dg/2.1.0-valid/signal-1-check-html.py: New test
+	script.
+	* sarif-replay.dg/2.1.0-valid/signal-1.c.sarif: Add html and sarif
+	generation to options.  Invoke the new script to verify that HTML
+	and SARIF is generated.
+	* sarif-replay.dg/2.1.0-valid/signal-1-check-sarif-roundtrip.py: New file.
+
+2025-06-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/goacc/acc-wait-1.c: New test.
+	* gfortran.dg/goacc/acc-wait-1.f90: New test.
+
+2025-06-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120784
+	* gfortran.dg/interface_63.f90: New test.
+
+2025-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* g++.dg/analyzer/state-diagram.C: New test.
+	* gcc.dg/analyzer/analyzer-decls.h (__analyzer_dump_dot): New
+	decl.
+	(__analyzer_dump_xml): New decl.
+	* gcc.dg/analyzer/state-diagram-1-sarif.py: New test script.
+	* gcc.dg/analyzer/state-diagram-1.c: New test.
+	* gcc.dg/analyzer/state-diagram-2.c: New test.
+	* gcc.dg/analyzer/state-diagram-3.c: New test.
+	* gcc.dg/analyzer/state-diagram-4.c: New test.
+	* gcc.dg/analyzer/state-diagram-5-html.py: New test script.
+	* gcc.dg/analyzer/state-diagram-5-sarif.py: New test script.
+	* gcc.dg/analyzer/state-diagram-5.c: New test.
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc: Define INCLUDE_STRING.
+	* gcc.dg/plugin/analyzer_gil_plugin.cc: Likewise.
+	* gcc.dg/plugin/analyzer_kernel_plugin.cc: Likewise.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.cc: Likewise.
+	* lib/htmltest.py (ns): Add SVG namespace.
+	* lib/sarif.py (get_result_by_index): New.
+	(get_xml_state): New.
+
+2025-06-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Add asm check
+	for vsaddu.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+
+2025-06-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsadd-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsadd-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsadd-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vsadd-run-1-u8.c: New test.
+
+2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* c-c++-common/asan/pr120608-1.c: New test.
+	* c-c++-common/asan/pr120608-2.c: New test.
+
+2025-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* g++.dg/asan/pr120608.C: New test.
+
+2025-06-23  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* gcc.dg/vect/vect-early-break_133_pfa6.c: Adjust test.
+
+2025-06-23  Mikael Morin  <morin-mikael@orange.fr>
+
+	* gfortran.dg/non_lvalue_1.f90: New test.
+
+2025-06-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120721
+	* g++.dg/torture/pr120721.C: New test.
+
+2025-06-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120728
+	* gcc.target/i386/avx512bw-vmovdqu16-1.c: Scan vmovdqu for
+	non-EVEX register operands.
+	* gcc.target/i386/avx512bw-vmovdqu8-1.c: Likewise.
+	* gcc.target/i386/avx512fp16-13.c: Likewise.
+	* gcc.target/i386/pr100865-10b.c: Likewise.
+	* gcc.target/i386/pr100865-3.c: Likewise.
+	* gcc.target/i386/pr100865-4b.c: Likewise.
+	* gcc.target/i386/pr100865-5b.c: Likewise.
+	* gcc.target/i386/pr90773-15.c: Likewise.
+	* gcc.target/i386/pr90773-16.c: Likewise.
+	* gcc.target/i386/pr90773-17.c: Likewise.
+	* gcc.target/i386/pr95483-5.c: Likewise.
+	* gcc.target/i386/pr120728.c: New test.
+
 2025-06-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR target/119830

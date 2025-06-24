@@ -1,3 +1,7 @@
+2025-06-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (OACC_WAIT_CLAUSE_MASK): Ass if clause.
+
 2025-06-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/115908
