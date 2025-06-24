@@ -2800,8 +2800,9 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       else if (POINTER_TYPE_P (TREE_TYPE (tmp)))
 	{
 	  tree diff;
-	  diff = fold_build2 (MINUS_EXPR, size_type_node, start.expr,
-			      build_one_cst (size_type_node));
+	  diff = fold_build2 (MINUS_EXPR, gfc_charlen_type_node, start.expr,
+			      build_one_cst (gfc_charlen_type_node));
+	  diff = fold_convert (size_type_node, diff);
 	  se->expr
 	    = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (tmp), tmp, diff);
 	}
