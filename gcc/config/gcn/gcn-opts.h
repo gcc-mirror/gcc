@@ -84,8 +84,11 @@ enum hsaco_attr_type
 #define TARGET_DPP8 TARGET_RDNA2_PLUS
 /* Device requires CDNA1-style manually inserted wait states for AVGPRs.  */
 #define TARGET_AVGPR_CDNA1_NOPS TARGET_CDNA1
-/* Whether to use the 'globally coherent' (glc) or the 'scope' (sc0, sc1) flag
-   for scalar memory operations. The string starts on purpose with a space.  */
+/* Whether to use the 'globally coherent' (glc) or the 'scope' (sc0) flag
+   for non-scalar memory operations. The string starts on purpose with a space.
+   Note: for scalar memory operations (i.e. 's_...'), 'glc' is still used.
+   CDNA3 also uses 'nt' instead of 'slc' and 'sc1' instead of 'scc'; however,
+   there is no non-scalar user so far.  */
 #define TARGET_GLC_NAME (TARGET_CDNA3 ? " sc0" : " glc")
 /* The metadata on different devices need different granularity.  */
 #define TARGET_VGPR_GRANULARITY \

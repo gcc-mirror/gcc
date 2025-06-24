@@ -7103,6 +7103,8 @@ print_operand_address (FILE *file, rtx mem)
    O - print offset:n for data share operations.
    G - print "glc" (or for gfx94x: sc0) unconditionally [+ indep. of regnum]
    g - print "glc" (or for gfx94x: sc0), if appropriate for given MEM
+       NOTE: Do not use 'G' or 'g with scalar memory access ('s_...') as those
+       require "glc" also with gfx94x.
    L - print low-part of a multi-reg value
    H - print second part of a multi-reg value (high-part of 2-reg value)
    J - print third part of a multi-reg value

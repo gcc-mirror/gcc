@@ -206,7 +206,7 @@
 ;	 vdata: vgpr0-255
 ;	 srsrc: sgpr0-102
 ;	 soffset: sgpr0-102
-;	 flags: offen, idxen, %G, lds, slc, tfe
+;	 flags: offen, idxen, glc, lds, slc, tfe
 ;
 ; mtbuf - Typed memory buffer operation. Two words
 ;	 offset: 12-bit constant
@@ -216,10 +216,10 @@
 ;	 vdata: vgpr0-255
 ;	 srsrc: sgpr0-102
 ;	 soffset: sgpr0-102
-;	 flags: offen, idxen, %G, lds, slc, tfe
+;	 flags: offen, idxen, glc, lds, slc, tfe
 ;
 ; flat - flat or global memory operations
-;	 flags: %G, slc
+;	 flags: {CDNA3: sc0, nt, sc1 | otherwise: glc, slc, scc}
 ;	 addr: vgpr0-255
 ;	 data: vgpr0-255
 ;	 vdst: vgpr0-255
@@ -1987,7 +1987,7 @@
    (use (match_operand 3 "const_int_operand"))]
   "0 /* Disabled.  */"
   "@
-   s_atomic_<bare_mnemonic><X>\t%0, %1, %2 %G2\;s_waitcnt\tlgkmcnt(0)
+   s_atomic_<bare_mnemonic><X>\t%0, %1, %2 glc\;s_waitcnt\tlgkmcnt(0)
    flat_atomic_<bare_mnemonic><X>\t%0, %1, %2 %G2\;s_waitcnt\t0
    global_atomic_<bare_mnemonic><X>\t%0, %A1, %2%O1 %G2\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
@@ -2054,7 +2054,7 @@
 	  UNSPECV_ATOMIC))]
   ""
   "@
-   s_atomic_cmpswap<X>\t%0, %1, %2 %G2\;s_waitcnt\tlgkmcnt(0)
+   s_atomic_cmpswap<X>\t%0, %1, %2 glc\;s_waitcnt\tlgkmcnt(0)
    flat_atomic_cmpswap<X>\t%0, %1, %2 %G2\;s_waitcnt\t0
    global_atomic_cmpswap<X>\t%0, %A1, %2%O1 %G2\;s_waitcnt\tvmcnt(0)"
   [(set_attr "type" "smem,flat,flat")
@@ -2096,7 +2096,7 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_load%o0\t%0, %A1 %G1\;s_waitcnt\tlgkmcnt(0)";
+	    return "s_load%o0\t%0, %A1 glc\;s_waitcnt\tlgkmcnt(0)";
 	  case 1:
 	    return (TARGET_RDNA2 /* Not GFX11.  */
 		    ? "flat_load%o0\t%0, %A1%O1 %G1 dlc\;s_waitcnt\t0"
@@ -2113,7 +2113,7 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_load%o0\t%0, %A1 %G1\;s_waitcnt\tlgkmcnt(0)\;"
+	    return "s_load%o0\t%0, %A1 glc\;s_waitcnt\tlgkmcnt(0)\;"
 		   "s_dcache_wb_vol";
 	  case 1:
 	    return (TARGET_RDNA2
@@ -2147,7 +2147,7 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_load%o0\t%0, %A1 %G1\;"
+	    return "s_dcache_wb_vol\;s_load%o0\t%0, %A1 glc\;"
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
 	    return (TARGET_RDNA2
@@ -2196,7 +2196,7 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_store%o1\t%1, %A0 %G1\;s_waitcnt\tlgkmcnt(0)";
+	    return "s_store%o1\t%1, %A0 glc\;s_waitcnt\tlgkmcnt(0)";
 	  case 1:
 	    return "flat_store%o1\t%A0, %1%O0 %G1\;s_waitcnt\t0";
 	  case 2:
@@ -2208,7 +2208,7 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 %G1";
+	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 glc";
 	  case 1:
 	    return (TARGET_GLn_CACHE
 		    ? "buffer_gl1_inv\;buffer_gl0_inv\;flat_store%o1\t%A0, %1%O0 %G1"
@@ -2233,7 +2233,7 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 %G1\;"
+	    return "s_dcache_wb_vol\;s_store%o1\t%1, %A0 glc\;"
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
 	    return (TARGET_GLn_CACHE
@@ -2282,7 +2282,7 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_atomic_swap<X>\t%0, %1, %2 %G1\;s_waitcnt\tlgkmcnt(0)";
+	    return "s_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\tlgkmcnt(0)";
 	  case 1:
 	    return "flat_atomic_swap<X>\t%0, %1, %2 %G1\;s_waitcnt\t0";
 	  case 2:
@@ -2296,7 +2296,7 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_atomic_swap<X>\t%0, %1, %2 %G1\;s_waitcnt\tlgkmcnt(0)\;"
+	    return "s_atomic_swap<X>\t%0, %1, %2 glc\;s_waitcnt\tlgkmcnt(0)\;"
 		   "s_dcache_wb_vol\;s_dcache_inv_vol";
 	  case 1:
 	    return (TARGET_GLn_CACHE
@@ -2327,7 +2327,7 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_atomic_swap<X>\t%0, %1, %2 %G1\;"
+	    return "s_dcache_wb_vol\;s_atomic_swap<X>\t%0, %1, %2 glc\;"
 		   "s_waitcnt\tlgkmcnt(0)";
 	  case 1:
 	    return (TARGET_GLn_CACHE
@@ -2362,7 +2362,7 @@
 	switch (which_alternative)
 	  {
 	  case 0:
-	    return "s_dcache_wb_vol\;s_atomic_swap<X>\t%0, %1, %2 %G1\;"
+	    return "s_dcache_wb_vol\;s_atomic_swap<X>\t%0, %1, %2 glc\;"
 		   "s_waitcnt\tlgkmcnt(0)\;s_dcache_inv_vol";
 	  case 1:
 	    return (TARGET_GLn_CACHE
