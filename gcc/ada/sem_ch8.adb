@@ -4270,6 +4270,40 @@ package body Sem_Ch8 is
          Local_Restrict.Check_Actual_Subprogram_For_Instance
            (Actual_Subp_Name => Nam, Formal_Subp => Formal_Spec);
       end if;
+
+      --  If pragma Short_Circuit_And_Or is specified, then we give an error
+      --  for renaming an operator that is made short circuit.
+      --  For example, this is illegal:
+      --
+      --      function My_And (X, Y: Boolean) return Boolean renames "and";
+      --
+      --  if "and" denotes the usual predefined Boolean operator. Otherwise,
+      --  the semantics are confusing (sometimes short circuit, and sometimes
+      --  not, for calls to My_And). If we ever relax this rule, we will need
+      --  to clean up that run-time semantics.
+
+      if Short_Circuit_And_Or
+        and then Chars (Old_S) in Name_Op_And | Name_Op_Or
+        and then In_Extended_Main_Source_Unit (N)
+        and then Etype (Old_S) = Standard_Boolean
+        and then Is_Intrinsic_Subprogram (Old_S)
+      then
+         if Comes_From_Source (N) then
+            Error_Msg_N
+              ("pragma Short_Circuit_And_Or disallows renaming of " &
+               "operator", N);
+
+         --  Same error in case of an instantiation with My_And => "and"
+
+         elsif Present (Corresponding_Formal_Spec (N)) then
+            Error_Msg_N
+              ("pragma Short_Circuit_And_Or disallows passing of " &
+               "operator as a generic actual", N);
+
+         else
+            raise Program_Error;
+         end if;
+      end if;
    end Analyze_Subprogram_Renaming;
 
    -------------------------

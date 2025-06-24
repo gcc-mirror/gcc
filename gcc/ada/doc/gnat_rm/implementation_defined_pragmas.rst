@@ -5914,13 +5914,33 @@ Syntax:
   pragma Short_Circuit_And_Or;
 
 
-This configuration pragma causes any occurrence of the AND operator applied to
-operands of type Standard.Boolean to be short-circuited (i.e. the AND operator
-is treated as if it were AND THEN). Or is similarly treated as OR ELSE. This
-may be useful in the context of certification protocols requiring the use of
-short-circuited logical operators. If this configuration pragma occurs locally
-within the file being compiled, it applies only to the file being compiled.
+This configuration pragma causes the predefined AND and OR operators of
+type Standard.Boolean to have short-circuit semantics. That is, they
+behave like AND THEN and OR ELSE; the right-hand side is not evaluated
+if the left-hand side determines the result. This may be useful in the
+context of certification protocols requiring the use of short-circuited
+logical operators.
+
 There is no requirement that all units in a partition use this option.
+However, mixing of short-circuit and non-short-circuit semantics can be
+confusing. Therefore, the recommended use is to put the pragma in a
+configuration file that applies to the whole program. Alternatively, if
+you have a legacy library that should not use this pragma, you can put
+it in a separate library project that does not use the pragma.
+In any case, fine-grained mixing of the different semantics is not
+recommended. If pragma ``Short_Circuit_And_Or`` is specified, then it
+is illegal to rename the predefined Boolean AND and OR, or to pass
+them to generic formal functions; this corresponds to the fact that
+AND THEN and OR ELSE cannot be renamed nor passed as generic formal
+functions.
+
+Note that this pragma has no effect on other logical operators --
+predefined operators of modular types, array-of-boolean types and types
+derived from Standard.Boolean, nor user-defined operators.
+
+See also the pragma ``Unevaluated_Use_Of_Old`` and the restriction
+``No_Direct_Boolean_Operators``, which may be useful in conjunction
+with ``Short_Circuit_And_Or``.
 
 Pragma Short_Descriptors
 ========================
