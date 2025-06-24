@@ -2199,8 +2199,7 @@ namespace __format
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
       {
-	return _M_f._M_parse(__pc, __format::_Month|__format::_Day,
-			     __defSpec);
+	return _M_f._M_parse(__pc, __format::_Month, __defSpec);
       }
 
       template<typename _Out>
