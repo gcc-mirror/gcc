@@ -507,11 +507,6 @@ vect_def_types_match (enum vect_def_type dta, enum vect_def_type dtb)
 	      && (dtb == vect_external_def || dtb == vect_constant_def)));
 }
 
-static const int cond_expr_maps[3][5] = {
-  { 4, -1, -2, 1, 2 },
-  { 4, -2, -1, 1, 2 },
-  { 4, -1, -2, 2, 1 }
-};
 static const int no_arg_map[] = { 0 };
 static const int arg0_map[] = { 1, 0 };
 static const int arg1_map[] = { 1, 1 };
