@@ -2698,6 +2698,8 @@ public:
   Expr &get_guard_expr () { return *guard_expr; }
 
   location_t get_locus () const { return locus; }
+
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
 };
 
 /* A "match case" - a correlated match arm and resulting expression. Not
