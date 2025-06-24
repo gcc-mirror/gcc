@@ -707,3 +707,45 @@
           integer (acc_handle_kind) async_
         end subroutine
       end interface
+
+      interface
+        subroutine acc_attach (ptr_addr) bind(C)
+          type(*), dimension(..) :: ptr_addr
+        end subroutine
+      end interface
+
+      interface
+        subroutine acc_attach_async (ptr_addr, async_arg) bind(C)
+          import :: acc_handle_kind
+          type(*), dimension(..) :: ptr_addr
+          integer(acc_handle_kind), value :: async_arg
+        end subroutine
+      end interface
+
+      interface
+        subroutine acc_detach (ptr_addr) bind(C)
+          type(*), dimension(..) :: ptr_addr
+        end subroutine
+      end interface
+
+      interface
+        subroutine acc_detach_async (ptr_addr, async_arg) bind(C)
+          import :: acc_handle_kind
+          type(*), dimension(..) :: ptr_addr
+          integer(acc_handle_kind), value :: async_arg
+        end subroutine
+      end interface
+
+      interface
+        subroutine acc_detach_finalize (ptr_addr) bind(C)
+          type(*), dimension(..) :: ptr_addr
+        end subroutine
+      end interface
+
+      interface
+        subroutine acc_detach_finalize_async(ptr_addr, async_arg)bind(C)
+          import :: acc_handle_kind
+          type(*), dimension(..) :: ptr_addr
+          integer(acc_handle_kind), value :: async_arg
+        end subroutine
+      end interface

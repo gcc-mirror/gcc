@@ -377,6 +377,57 @@ get_intrinsic_for_code (gfc_code *code)
 }
 
 
+/* Handle the OpenACC routines acc_attach{,_async} and
+   acc_detach{,_finalize}{,_async} explicitly.  This is required as the
+   the corresponding device pointee is attached to the corresponding device
+   pointer, but if a temporary array descriptor is created for the call,
+   that one is used as pointer instead of the original pointer.  */
+
+tree
+gfc_trans_call_acc_attach_detach (gfc_code *code)
+{
+  stmtblock_t block;
+  gfc_se ptr_addr_se, async_se;
+  tree fn;
+
+  fn = code->resolved_sym->backend_decl;
+  if (fn == NULL)
+    {
+      fn = gfc_get_symbol_decl (code->resolved_sym);
+      code->resolved_sym->backend_decl = fn;
+    }
+
+  gfc_start_block (&block);
+
+  gfc_init_se (&ptr_addr_se, NULL);
+  ptr_addr_se.descriptor_only = 1;
+  ptr_addr_se.want_pointer = 1;
+  gfc_conv_expr (&ptr_addr_se, code->ext.actual->expr);
+  gfc_add_block_to_block (&block, &ptr_addr_se.pre);
+  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (ptr_addr_se.expr)))
+    ptr_addr_se.expr = gfc_conv_descriptor_data_get (ptr_addr_se.expr);
+  ptr_addr_se.expr = build_fold_addr_expr (ptr_addr_se.expr);
+
+  bool async = code->ext.actual->next != NULL;
+  if (async)
+    {
+      gfc_init_se (&async_se, NULL);
+      gfc_conv_expr (&async_se, code->ext.actual->next->expr);
+      fn = build_call_expr_loc (gfc_get_location (&code->loc), fn, 2,
+				ptr_addr_se.expr, async_se.expr);
+    }
+  else
+    fn = build_call_expr_loc (gfc_get_location (&code->loc),
+			      fn, 1, ptr_addr_se.expr);
+  gfc_add_expr_to_block (&block, fn);
+  gfc_add_block_to_block (&block, &ptr_addr_se.post);
+  if (async)
+    gfc_add_block_to_block (&block, &async_se.post);
+
+  return gfc_finish_block (&block);
+}
+
+
 /* Translate the CALL statement.  Builds a call to an F95 subroutine.  */
 
 tree
@@ -392,12 +443,31 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
   tree tmp;
   bool is_intrinsic_mvbits;
 
+  gcc_assert (code->resolved_sym);
+
+  /* Unfortunately, acc_attach* and acc_detach* need some special treatment for
+     attaching the the pointee to a pointer as GCC might introduce a temporary
+     array descriptor, whose data component is then used as to be attached to
+     pointer.  */
+  if (flag_openacc
+      && code->resolved_sym->attr.subroutine
+      && code->resolved_sym->formal
+      && code->resolved_sym->formal->sym->ts.type == BT_ASSUMED
+      && code->resolved_sym->formal->sym->attr.dimension
+      && code->resolved_sym->formal->sym->as->type == AS_ASSUMED_RANK
+      && startswith (code->resolved_sym->name, "acc_")
+      && (!strcmp (code->resolved_sym->name + 4, "attach")
+	  || !strcmp (code->resolved_sym->name + 4, "attach_async")
+	  || !strcmp (code->resolved_sym->name + 4, "detach")
+	  || !strcmp (code->resolved_sym->name + 4, "detach_async")
+	  || !strcmp (code->resolved_sym->name + 4, "detach_finalize")
+	  || !strcmp (code->resolved_sym->name + 4, "detach_finalize_async")))
+    return gfc_trans_call_acc_attach_detach (code);
+
   /* A CALL starts a new block because the actual arguments may have to
      be evaluated first.  */
   gfc_init_se (&se, NULL);
   gfc_start_block (&se.pre);
-
-  gcc_assert (code->resolved_sym);
 
   ss = gfc_ss_terminator;
   if (code->resolved_sym->attr.elemental)

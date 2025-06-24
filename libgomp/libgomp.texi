@@ -5967,19 +5967,19 @@ address to pointing to the corresponding device data.
 @item @emph{Prototype}: @tab @code{void acc_attach_async(h_void **ptr_addr, int async);}
 @end multitable
 
-@c @item @emph{Fortran}:
-@c @multitable @columnfractions .20 .80
-@c @item @emph{Interface}: @tab @code{subroutine acc_attach(ptr_addr)}
-@c @item @emph{Interface}: @tab @code{subroutine acc_attach_async(ptr_addr, async_arg)}
-@c @item                   @tab @code{type(*), dimension(..) :: ptr_addr}
-@c @item                   @tab @code{integer(acc_handle_kind), value :: async_arg}
-@c @end multitable
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine acc_attach(ptr_addr)}
+@item @emph{Interface}: @tab @code{subroutine acc_attach_async(ptr_addr, async_arg)}
+@item                   @tab @code{type(*), dimension(..) :: ptr_addr}
+@item                   @tab @code{integer(acc_handle_kind), value :: async_arg}
+@end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.34.
-@c  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
-@c 3.2.29.
+ @uref{https://www.openacc.org, OpenACC specification v3.3}, section
+3.2.29.
 @end table
 
 
@@ -5999,21 +5999,21 @@ address to pointing to the corresponding host data.
 @item @emph{Prototype}: @tab @code{void acc_detach_finalize_async(h_void **ptr_addr, int async);}
 @end multitable
 
-@c @item @emph{Fortran}:
-@c @multitable @columnfractions .20 .80
-@c @item @emph{Interface}: @tab @code{subroutine acc_detach(ptr_addr)}
-@c @item @emph{Interface}: @tab @code{subroutine acc_detach_async(ptr_addr, async_arg)}
-@c @item @emph{Interface}: @tab @code{subroutine acc_detach_finalize(ptr_addr)}
-@c @item @emph{Interface}: @tab @code{subroutine acc_detach_finalize_async(ptr_addr, async_arg)}
-@c @item                   @tab @code{type(*), dimension(..) :: ptr_addr}
-@c @item                   @tab @code{integer(acc_handle_kind), value :: async_arg}
-@c @end multitable
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine acc_detach(ptr_addr)}
+@item @emph{Interface}: @tab @code{subroutine acc_detach_async(ptr_addr, async_arg)}
+@item @emph{Interface}: @tab @code{subroutine acc_detach_finalize(ptr_addr)}
+@item @emph{Interface}: @tab @code{subroutine acc_detach_finalize_async(ptr_addr, async_arg)}
+@item                   @tab @code{type(*), dimension(..) :: ptr_addr}
+@item                   @tab @code{integer(acc_handle_kind), value :: async_arg}
+@end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.35.
-@c  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
-@c 3.2.29.
+@uref{https://www.openacc.org, OpenACC specification v3.3}, section
+3.2.29.
 @end table
 
 
