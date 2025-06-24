@@ -9443,8 +9443,6 @@ ix86_expand_prologue (void)
     }
   else
     {
-      gcc_assert (!crtl->shrink_wrapped_separate);
-
       rtx eax = gen_rtx_REG (Pmode, AX_REG);
       rtx r10 = NULL;
       const bool sp_is_cfa_reg = (m->fs.cfa_reg == stack_pointer_rtx);
