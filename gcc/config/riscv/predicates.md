@@ -27,7 +27,7 @@
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
 
-;; REG or REG+D where D fits in a simm12 and has the low 4 bits
+;; REG or REG+D where D fits in a simm12 and has the low 5 bits
 ;; off.  The REG+D form can be reloaded into a temporary if needed
 ;; after FP elimination if that exposes an invalid offset.
 (define_predicate "prefetch_operand"
