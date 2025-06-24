@@ -280,11 +280,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Forward declarations
   template<typename>
-    struct is_reference;
-  template<typename>
-    struct is_function;
-  template<typename>
-    struct is_void;
+    struct is_object;
   template<typename>
     struct remove_cv;
   template<typename>
@@ -294,21 +290,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename>
     struct __is_array_unknown_bounds;
 
+  // An object type which is not an unbounded array.
+  // It might still be an incomplete type, but if this is false_type
+  // then we can be certain it's not a complete object type.
+  template<typename _Tp>
+    using __maybe_complete_object_type
+      = __and_<is_object<_Tp>, __not_<__is_array_unknown_bounds<_Tp>>>;
+
   // Helper functions that return false_type for incomplete classes,
   // incomplete unions and arrays of known bound from those.
 
-  template <typename _Tp, size_t = sizeof(_Tp)>
-    constexpr true_type __is_complete_or_unbounded(__type_identity<_Tp>)
-    { return {}; }
+  // More specialized overload for complete object types (returning true_type).
+  template<typename _Tp,
+	   typename = __enable_if_t<__maybe_complete_object_type<_Tp>::value>,
+	   size_t = sizeof(_Tp)>
+    constexpr true_type
+    __is_complete_or_unbounded(__type_identity<_Tp>)
+    { return {}; };
 
-  template <typename _TypeIdentity,
-      typename _NestedType = typename _TypeIdentity::type>
-    constexpr typename __or_<
-      is_reference<_NestedType>,
-      is_function<_NestedType>,
-      is_void<_NestedType>,
-      __is_array_unknown_bounds<_NestedType>
-    >::type __is_complete_or_unbounded(_TypeIdentity)
+  // Less specialized overload for reference and unknown-bound array types
+  // (returning true_type), and incomplete types (returning false_type).
+  template<typename _TypeIdentity,
+	   typename _NestedType = typename _TypeIdentity::type>
+    constexpr typename __not_<__maybe_complete_object_type<_NestedType>>::type
+    __is_complete_or_unbounded(_TypeIdentity)
     { return {}; }
 
   // __remove_cv_t (std::remove_cv_t for C++11).
