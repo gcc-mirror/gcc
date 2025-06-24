@@ -20,6 +20,7 @@
 #define RUST_HIR_VISITOR_H
 
 #include "rust-hir-full-decls.h"
+#include "rust-ast.h"
 
 namespace Rust {
 namespace HIR {
@@ -153,6 +154,310 @@ public:
   virtual void visit (SliceType &type) = 0;
   virtual void visit (InferredType &type) = 0;
   virtual void visit (BareFunctionType &type) = 0;
+};
+
+class DefaultHIRVisitor : public HIRFullVisitor
+{
+public:
+  virtual void visit_where_clause (WhereClause &);
+  virtual void visit_where_clause (const WhereClause &);
+  virtual void visit_named_function_param (NamedFunctionParam &param);
+  virtual void visit_function_param (FunctionParam &param);
+  virtual void visit_self_param (SelfParam &param);
+  virtual void visit_match_arm (MatchArm &arm);
+  virtual void visit_match_case (MatchCase &);
+  virtual void visit_struct_field (StructField &field);
+  virtual void visit_generic_args (GenericArgs &args);
+  virtual void visit_qualified_path_type (QualifiedPathType &);
+  virtual void visit_path_expr_segment (PathExprSegment &segment);
+  virtual void visit_closure_param (ClosureParam &param);
+  virtual void visit_loop_label (LoopLabel &);
+
+  virtual void visit_attribute (AST::Attribute &attr)
+  {
+    visit_attribute (static_cast<const AST::Attribute &> (attr));
+  }
+  virtual void visit_attribute (const AST::Attribute &attr) {}
+  template <typename T> void visit_outer_attrs (T &node)
+  {
+    for (auto &attr : node.get_outer_attrs ())
+      visit_attribute (attr);
+  }
+  template <typename T> void visit_inner_attrs (T &node)
+  {
+    for (auto &attr : node.get_inner_attrs ())
+      visit_attribute (attr);
+  }
+
+  virtual void visit (WhereClauseItem &node) { walk (node); }
+
+  virtual void visit (Lifetime &node) override { walk (node); }
+  virtual void visit (LifetimeParam &node) override { walk (node); }
+  virtual void visit (PathInExpression &node) override { walk (node); }
+  virtual void visit (TypePathSegment &node) override { walk (node); }
+  virtual void visit (TypePathSegmentGeneric &node) override { walk (node); }
+  virtual void visit (TypePathSegmentFunction &node) override { walk (node); }
+  virtual void visit (TypePath &node) override { walk (node); }
+  virtual void visit (QualifiedPathInExpression &node) override { walk (node); }
+  virtual void visit (QualifiedPathInType &node) override { walk (node); }
+  virtual void visit (LiteralExpr &node) override { walk (node); }
+  virtual void visit (BorrowExpr &node) override { walk (node); }
+  virtual void visit (DereferenceExpr &node) override { walk (node); }
+  virtual void visit (ErrorPropagationExpr &node) override { walk (node); }
+  virtual void visit (NegationExpr &node) override { walk (node); }
+  virtual void visit (ArithmeticOrLogicalExpr &node) override { walk (node); }
+  virtual void visit (ComparisonExpr &node) override { walk (node); }
+  virtual void visit (LazyBooleanExpr &node) override { walk (node); }
+  virtual void visit (TypeCastExpr &node) override { walk (node); }
+  virtual void visit (AssignmentExpr &node) override { walk (node); }
+  virtual void visit (CompoundAssignmentExpr &node) override { walk (node); }
+  virtual void visit (GroupedExpr &node) override { walk (node); }
+  virtual void visit (ArrayElemsValues &node) override { walk (node); }
+  virtual void visit (ArrayElemsCopied &node) override { walk (node); }
+  virtual void visit (ArrayExpr &node) override { walk (node); }
+  virtual void visit (ArrayIndexExpr &node) override { walk (node); }
+  virtual void visit (TupleExpr &node) override { walk (node); }
+  virtual void visit (TupleIndexExpr &node) override { walk (node); }
+  virtual void visit (StructExprStruct &node) override { walk (node); }
+  virtual void visit (StructExprFieldIdentifier &node) override { walk (node); }
+  virtual void visit (StructExprFieldIdentifierValue &node) override
+  {
+    walk (node);
+  }
+  virtual void visit (StructExprFieldIndexValue &node) override { walk (node); }
+  virtual void visit (StructExprStructFields &node) override { walk (node); }
+  virtual void visit (StructExprStructBase &node) override { walk (node); }
+  virtual void visit (CallExpr &node) override { walk (node); }
+  virtual void visit (MethodCallExpr &node) override { walk (node); }
+  virtual void visit (FieldAccessExpr &node) override { walk (node); }
+  virtual void visit (ClosureExpr &node) override { walk (node); }
+  virtual void visit (BlockExpr &node) override { walk (node); }
+  virtual void visit (AnonConst &node) override { walk (node); }
+  virtual void visit (ConstBlock &node) override { walk (node); }
+  virtual void visit (ContinueExpr &node) override { walk (node); }
+  virtual void visit (BreakExpr &node) override { walk (node); }
+  virtual void visit (RangeFromToExpr &node) override { walk (node); }
+  virtual void visit (RangeFromExpr &node) override { walk (node); }
+  virtual void visit (RangeToExpr &node) override { walk (node); }
+  virtual void visit (RangeFullExpr &node) override { walk (node); }
+  virtual void visit (RangeFromToInclExpr &node) override { walk (node); }
+  virtual void visit (RangeToInclExpr &node) override { walk (node); }
+  virtual void visit (ReturnExpr &node) override { walk (node); }
+  virtual void visit (UnsafeBlockExpr &node) override { walk (node); }
+  virtual void visit (LoopExpr &node) override { walk (node); }
+  virtual void visit (WhileLoopExpr &node) override { walk (node); }
+  virtual void visit (WhileLetLoopExpr &node) override { walk (node); }
+  virtual void visit (IfExpr &node) override { walk (node); }
+  virtual void visit (IfExprConseqElse &node) override { walk (node); }
+  virtual void visit (MatchExpr &node) override { walk (node); }
+  virtual void visit (AwaitExpr &node) override { walk (node); }
+  virtual void visit (AsyncBlockExpr &node) override { walk (node); }
+  virtual void visit (InlineAsm &node) override { walk (node); }
+  virtual void visit (LlvmInlineAsm &node) override { walk (node); }
+  virtual void visit (TypeParam &node) override { walk (node); }
+  virtual void visit (ConstGenericParam &node) override { walk (node); }
+  virtual void visit (LifetimeWhereClauseItem &node) override { walk (node); }
+  virtual void visit (TypeBoundWhereClauseItem &node) override { walk (node); }
+  virtual void visit (Module &node) override { walk (node); }
+  virtual void visit (ExternCrate &node) override { walk (node); }
+  virtual void visit (UseTreeGlob &node) override { walk (node); }
+  virtual void visit (UseTreeList &node) override { walk (node); }
+  virtual void visit (UseTreeRebind &node) override { walk (node); }
+  virtual void visit (UseDeclaration &node) override { walk (node); }
+  virtual void visit (Function &node) override { walk (node); }
+  virtual void visit (TypeAlias &node) override { walk (node); }
+  virtual void visit (StructStruct &node) override { walk (node); }
+  virtual void visit (TupleStruct &node) override { walk (node); }
+  virtual void visit (EnumItem &node) override { walk (node); }
+  virtual void visit (EnumItemTuple &node) override { walk (node); }
+  virtual void visit (EnumItemStruct &node) override { walk (node); }
+  virtual void visit (EnumItemDiscriminant &node) override { walk (node); }
+  virtual void visit (Enum &node) override { walk (node); }
+  virtual void visit (Union &node) override { walk (node); }
+  virtual void visit (ConstantItem &node) override { walk (node); }
+  virtual void visit (StaticItem &node) override { walk (node); }
+  virtual void visit (TraitItemFunc &node) override { walk (node); }
+  virtual void visit (TraitItemConst &node) override { walk (node); }
+  virtual void visit (TraitItemType &node) override { walk (node); }
+  virtual void visit (Trait &node) override { walk (node); }
+  virtual void visit (ImplBlock &node) override { walk (node); }
+  virtual void visit (ExternalStaticItem &node) override { walk (node); }
+  virtual void visit (ExternalFunctionItem &node) override { walk (node); }
+  virtual void visit (ExternalTypeItem &node) override { walk (node); }
+  virtual void visit (ExternBlock &node) override { walk (node); }
+  virtual void visit (LiteralPattern &node) override { walk (node); }
+  virtual void visit (IdentifierPattern &node) override { walk (node); }
+  virtual void visit (WildcardPattern &node) override { walk (node); }
+  virtual void visit (RangePatternBoundLiteral &node) override { walk (node); }
+  virtual void visit (RangePatternBoundPath &node) override { walk (node); }
+  virtual void visit (RangePatternBoundQualPath &node) override { walk (node); }
+  virtual void visit (RangePattern &node) override { walk (node); }
+  virtual void visit (ReferencePattern &node) override { walk (node); }
+  virtual void visit (StructPatternFieldTuplePat &node) override
+  {
+    walk (node);
+  }
+  virtual void visit (StructPatternFieldIdentPat &node) override
+  {
+    walk (node);
+  }
+  virtual void visit (StructPatternFieldIdent &node) override { walk (node); }
+  virtual void visit (StructPattern &node) override { walk (node); }
+  virtual void visit (TupleStructItemsNoRange &node) override { walk (node); }
+  virtual void visit (TupleStructItemsRange &node) override { walk (node); }
+  virtual void visit (TupleStructPattern &node) override { walk (node); }
+  virtual void visit (TuplePatternItemsMultiple &node) override { walk (node); }
+  virtual void visit (TuplePatternItemsRanged &node) override { walk (node); }
+  virtual void visit (TuplePattern &node) override { walk (node); }
+  virtual void visit (SlicePattern &node) override { walk (node); }
+  virtual void visit (AltPattern &node) override { walk (node); }
+  virtual void visit (EmptyStmt &node) override { walk (node); }
+  virtual void visit (LetStmt &node) override { walk (node); }
+  virtual void visit (ExprStmt &node) override { walk (node); }
+  virtual void visit (TraitBound &node) override { walk (node); }
+  virtual void visit (ImplTraitType &node) override { walk (node); }
+  virtual void visit (TraitObjectType &node) override { walk (node); }
+  virtual void visit (ParenthesisedType &node) override { walk (node); }
+  virtual void visit (TupleType &node) override { walk (node); }
+  virtual void visit (NeverType &node) override { walk (node); }
+  virtual void visit (RawPointerType &node) override { walk (node); }
+  virtual void visit (ReferenceType &node) override { walk (node); }
+  virtual void visit (ArrayType &node) override { walk (node); }
+  virtual void visit (SliceType &node) override { walk (node); }
+  virtual void visit (InferredType &node) override { walk (node); }
+  virtual void visit (BareFunctionType &node) override { walk (node); }
+
+protected:
+  virtual void walk (WhereClauseItem &) final;
+
+  virtual void walk (Lifetime &) final;
+  virtual void walk (LifetimeParam &) final;
+  virtual void walk (PathInExpression &) final;
+  virtual void walk (TypePathSegment &) final;
+  virtual void walk (TypePathSegmentGeneric &) final;
+  virtual void walk (TypePathSegmentFunction &) final;
+  virtual void walk (TypePath &) final;
+  virtual void walk (QualifiedPathInExpression &) final;
+  virtual void walk (QualifiedPathInType &) final;
+
+  virtual void walk (LiteralExpr &) final;
+  virtual void walk (BorrowExpr &) final;
+  virtual void walk (DereferenceExpr &) final;
+  virtual void walk (ErrorPropagationExpr &) final;
+  virtual void walk (NegationExpr &) final;
+  virtual void walk (ArithmeticOrLogicalExpr &) final;
+  virtual void walk (ComparisonExpr &) final;
+  virtual void walk (LazyBooleanExpr &) final;
+  virtual void walk (TypeCastExpr &) final;
+  virtual void walk (AssignmentExpr &) final;
+  virtual void walk (CompoundAssignmentExpr &) final;
+  virtual void walk (GroupedExpr &) final;
+
+  virtual void walk (ArrayElemsValues &) final;
+  virtual void walk (ArrayElemsCopied &) final;
+  virtual void walk (ArrayExpr &) final;
+  virtual void walk (ArrayIndexExpr &) final;
+  virtual void walk (TupleExpr &) final;
+  virtual void walk (TupleIndexExpr &) final;
+  virtual void walk (StructExprStruct &) final;
+  virtual void walk (StructExprFieldIdentifier &) final;
+  virtual void walk (StructExprFieldIdentifierValue &) final;
+  virtual void walk (StructExprFieldIndexValue &) final;
+  virtual void walk (StructExprStructFields &) final;
+  virtual void walk (StructExprStructBase &) final;
+  virtual void walk (CallExpr &) final;
+  virtual void walk (MethodCallExpr &) final;
+  virtual void walk (FieldAccessExpr &) final;
+  virtual void walk (ClosureExpr &) final;
+  virtual void walk (BlockExpr &) final;
+  virtual void walk (AnonConst &) final;
+  virtual void walk (ConstBlock &) final;
+  virtual void walk (ContinueExpr &) final;
+  virtual void walk (BreakExpr &) final;
+  virtual void walk (RangeFromToExpr &) final;
+  virtual void walk (RangeFromExpr &) final;
+  virtual void walk (RangeToExpr &) final;
+  virtual void walk (RangeFullExpr &) final;
+  virtual void walk (RangeFromToInclExpr &) final;
+  virtual void walk (RangeToInclExpr &) final;
+  virtual void walk (ReturnExpr &) final;
+  virtual void walk (UnsafeBlockExpr &) final;
+  virtual void walk (LoopExpr &) final;
+  virtual void walk (WhileLoopExpr &) final;
+  virtual void walk (WhileLetLoopExpr &) final;
+  virtual void walk (IfExpr &) final;
+  virtual void walk (IfExprConseqElse &) final;
+  virtual void walk (MatchExpr &) final;
+  virtual void walk (AwaitExpr &) final;
+  virtual void walk (AsyncBlockExpr &) final;
+  virtual void walk (InlineAsm &) final;
+  virtual void walk (LlvmInlineAsm &) final;
+  virtual void walk (TypeParam &) final;
+  virtual void walk (ConstGenericParam &) final;
+  virtual void walk (LifetimeWhereClauseItem &) final;
+  virtual void walk (TypeBoundWhereClauseItem &) final;
+  virtual void walk (Module &) final;
+  virtual void walk (ExternCrate &) final;
+  virtual void walk (UseTreeGlob &) final;
+  virtual void walk (UseTreeList &) final;
+  virtual void walk (UseTreeRebind &) final;
+  virtual void walk (UseDeclaration &) final;
+  virtual void walk (Function &) final;
+  virtual void walk (TypeAlias &) final;
+  virtual void walk (StructStruct &) final;
+  virtual void walk (TupleStruct &) final;
+  virtual void walk (EnumItem &) final;
+  virtual void walk (EnumItemTuple &) final;
+  virtual void walk (EnumItemStruct &) final;
+  virtual void walk (EnumItemDiscriminant &) final;
+  virtual void walk (Enum &) final;
+  virtual void walk (Union &) final;
+  virtual void walk (ConstantItem &) final;
+  virtual void walk (StaticItem &) final;
+  virtual void walk (TraitItemFunc &) final;
+  virtual void walk (TraitItemConst &) final;
+  virtual void walk (TraitItemType &) final;
+  virtual void walk (Trait &) final;
+  virtual void walk (ImplBlock &) final;
+  virtual void walk (ExternalStaticItem &) final;
+  virtual void walk (ExternalFunctionItem &) final;
+  virtual void walk (ExternalTypeItem &) final;
+  virtual void walk (ExternBlock &) final;
+  virtual void walk (LiteralPattern &) final;
+  virtual void walk (IdentifierPattern &) final;
+  virtual void walk (WildcardPattern &) final;
+  virtual void walk (RangePatternBoundLiteral &) final;
+  virtual void walk (RangePatternBoundPath &) final;
+  virtual void walk (RangePatternBoundQualPath &) final;
+  virtual void walk (RangePattern &) final;
+  virtual void walk (ReferencePattern &) final;
+  virtual void walk (StructPatternFieldTuplePat &) final;
+  virtual void walk (StructPatternFieldIdentPat &) final;
+  virtual void walk (StructPatternFieldIdent &) final;
+  virtual void walk (StructPattern &) final;
+  virtual void walk (TupleStructItemsNoRange &) final;
+  virtual void walk (TupleStructItemsRange &) final;
+  virtual void walk (TupleStructPattern &) final;
+  virtual void walk (TuplePatternItemsMultiple &) final;
+  virtual void walk (TuplePatternItemsRanged &) final;
+  virtual void walk (TuplePattern &) final;
+  virtual void walk (SlicePattern &) final;
+  virtual void walk (AltPattern &) final;
+  virtual void walk (EmptyStmt &) final;
+  virtual void walk (LetStmt &) final;
+  virtual void walk (ExprStmt &) final;
+  virtual void walk (TraitBound &) final;
+  virtual void walk (ImplTraitType &) final;
+  virtual void walk (TraitObjectType &) final;
+  virtual void walk (ParenthesisedType &) final;
+  virtual void walk (TupleType &) final;
+  virtual void walk (NeverType &) final;
+  virtual void walk (RawPointerType &) final;
+  virtual void walk (ReferenceType &) final;
+  virtual void walk (ArrayType &) final;
+  virtual void walk (SliceType &) final;
+  virtual void walk (InferredType &) final;
+  virtual void walk (BareFunctionType &) final;
 };
 
 class HIRFullVisitorBase : public HIRFullVisitor
