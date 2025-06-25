@@ -2652,11 +2652,9 @@ package body Exp_Ch3 is
                --  may have an incomplete type. In that case, it must also be
                --  replaced by the formal of the Init_Proc.
 
-               if Nkind (Parent (Rec_Type)) = N_Full_Type_Declaration
-                 and then Present (Incomplete_View (Parent (Rec_Type)))
-               then
+               if Present (Incomplete_View (Rec_Type)) then
                   Append_Elmt (
-                    N  => Incomplete_View (Parent (Rec_Type)),
+                    N  => Incomplete_View (Rec_Type),
                     To => Map);
                   Append_Elmt (
                     N  => Defining_Identifier
@@ -3764,6 +3762,21 @@ package body Exp_Ch3 is
                   else
                      Actions := Build_Assignment (Id, Expression (Decl));
                   end if;
+
+               --  Expand components with constructors to have the 'Make
+               --  attribute.
+
+               elsif Present (Constructor_Name (Typ))
+                 and then Present (Default_Constructor (Typ))
+               then
+                  Set_Expression (Decl,
+                    Make_Attribute_Reference (Loc,
+                      Attribute_Name => Name_Make,
+                      Prefix         =>
+                        Subtype_Indication
+                          (Component_Definition (Decl))));
+                  Analyze (Expression (Decl));
+                  Actions := Build_Assignment (Id, Expression (Decl));
 
                --  CPU, Dispatching_Domain, Priority, and Secondary_Stack_Size
                --  components are filled in with the corresponding rep-item
@@ -5423,18 +5436,12 @@ package body Exp_Ch3 is
             --  with an initial value, its Init_Proc will never be called. The
             --  initial value itself may have been expanded into assignments,
             --  in which case the declaration has the No_Initialization flag.
-            --  The exception is when the initial value is a 2-pass aggregate,
-            --  because the special expansion used for it creates a temporary
-            --  that needs a fully-fledged initialization.
 
             if Is_Itype (Base)
               and then Nkind (Associated_Node_For_Itype (Base)) =
                                                     N_Object_Declaration
               and then
-                ((Present (Expression (Associated_Node_For_Itype (Base)))
-                    and then not
-                      Is_Two_Pass_Aggregate
-                        (Expression (Associated_Node_For_Itype (Base))))
+                (Present (Expression (Associated_Node_For_Itype (Base)))
                   or else No_Initialization (Associated_Node_For_Itype (Base)))
             then
                null;
@@ -6760,11 +6767,12 @@ package body Exp_Ch3 is
    procedure Expand_N_Object_Declaration (N : Node_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
       Def_Id   : constant Entity_Id  := Defining_Identifier (N);
-      Expr     : constant Node_Id    := Expression (N);
       Obj_Def  : constant Node_Id    := Object_Definition (N);
       Typ      : constant Entity_Id  := Etype (Def_Id);
       Base_Typ : constant Entity_Id  := Base_Type (Typ);
       Next_N   : constant Node_Id    := Next (N);
+
+      Expr : Node_Id := Expression (N);
 
       Special_Ret_Obj : constant Boolean := Is_Special_Return_Object (Def_Id);
       --  If this is a special return object, it will be allocated differently
@@ -7482,7 +7490,11 @@ package body Exp_Ch3 is
       --  Don't do anything for deferred constants. All proper actions will be
       --  expanded during the full declaration.
 
-      if No (Expr) and Constant_Present (N) then
+      if No (Expr)
+        and then Constant_Present (N)
+        and then (No (Constructor_Name (Typ))
+                   or else No (Default_Constructor (Typ)))
+      then
          return;
       end if;
 
@@ -7505,6 +7517,21 @@ package body Exp_Ch3 is
         and then Related_Type (Def_Id) = Implementation_Base_Type (Typ)
       then
          return;
+      end if;
+
+      --  Expand objects with default constructors to have the 'Make
+      --  attribute.
+
+      if Comes_From_Source (N)
+        and then No (Expr)
+        and then Present (Constructor_Name (Typ))
+        and then Present (Default_Constructor (Typ))
+      then
+         Expr := Make_Attribute_Reference (Loc,
+                   Attribute_Name => Name_Make,
+                   Prefix         => Object_Definition (N));
+         Set_Expression (N, Expr);
+         Analyze_And_Resolve (Expr);
       end if;
 
       --  Make shared memory routines for shared passive variable
@@ -8293,12 +8320,15 @@ package body Exp_Ch3 is
             --  where the object has been initialized by a call to a function
             --  returning on the primary stack (see Expand_Ctrl_Function_Call)
             --  since no copy occurred, given that the type is by-reference.
+            --  Likewise if it is initialized by a 2-pass aggregate, since the
+            --  actual initialization will only occur during the second pass.
             --  Similarly, no adjustment is needed if we are going to rewrite
             --  the object declaration into a renaming declaration.
 
             if Needs_Finalization (Typ)
               and then not Is_Inherently_Limited_Type (Typ)
               and then Nkind (Expr_Q) /= N_Function_Call
+              and then not Is_Two_Pass_Aggregate (Expr_Q)
               and then not Rewrite_As_Renaming
             then
                Adj_Call :=
@@ -8711,8 +8741,9 @@ package body Exp_Ch3 is
                   --  be illegal in some cases (such as converting access-
                   --  to-unconstrained to access-to-constrained), but the
                   --  the unchecked conversion will presumably fail to work
-                  --  right in just such cases. It's not clear at all how to
-                  --  handle this.
+                  --  right in just such cases. In order to handle this
+                  --  properly, in the Caller_Allocation case, the callee
+                  --  needs to do the constraint check.
 
                   Alloc_Stmt :=
                     Make_If_Statement (Loc,

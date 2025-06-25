@@ -38,14 +38,6 @@
 --  bounds of function return results were also fixed, and use of & removed for
 --  efficiency reasons.
 
---  Ghost code, loop invariants and assertions in this unit are meant for
---  analysis only, not for run-time checking, as it would be too costly
---  otherwise. This is enforced by setting the assertion policy to Ignore.
-
-pragma Assertion_Policy (Ghost          => Ignore,
-                         Loop_Invariant => Ignore,
-                         Assert         => Ignore);
-
 with Ada.Strings.Maps; use Ada.Strings.Maps;
 
 package body Ada.Strings.Fixed with SPARK_Mode is
@@ -153,12 +145,9 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       Right : Character) return String
    is
    begin
-      return Result : String (1 .. Left) with Relaxed_Initialization do
+      return Result : String (1 .. Left) do
          for J in Result'Range loop
             Result (J) := Right;
-            pragma Loop_Invariant
-              (for all K in 1 .. J =>
-                 Result (K)'Initialized and then Result (K) = Right);
          end loop;
       end return;
    end "*";
@@ -168,82 +157,15 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       Right : String) return String
    is
       Ptr : Integer := 0;
-
-      --  Parts of the proof involving manipulations with the modulo operator
-      --  are complicated for the prover and can't be done automatically in
-      --  the global subprogram. That's why we isolate them in these two ghost
-      --  lemmas.
-
-      procedure Lemma_Mod (K : Integer) with
-        Ghost,
-        Pre =>
-          Right'Length /= 0
-          and then Ptr mod Right'Length = 0
-          and then Ptr in 0 .. Natural'Last - Right'Length
-          and then K in Ptr .. Ptr + Right'Length - 1,
-        Post => K mod Right'Length = K - Ptr;
-      --  Lemma_Mod is applied to an index considered in Lemma_Split to prove
-      --  that it has the right value modulo Right'Length.
-
-      procedure Lemma_Split (Result : String) with
-        Ghost,
-        Relaxed_Initialization => Result,
-        Pre                    =>
-          Right'Length /= 0
-            and then Result'First = 1
-            and then Result'Last >= 0
-            and then Ptr mod Right'Length = 0
-            and then Ptr in 0 .. Result'Last - Right'Length
-            and then Result (Result'First .. Ptr + Right'Length)'Initialized
-            and then Result (Ptr + 1 .. Ptr + Right'Length) = Right,
-        Post                   =>
-          (for all K in Ptr + 1 .. Ptr + Right'Length =>
-            Result (K) = Right (Right'First + (K - 1) mod Right'Length));
-      --  Lemma_Split is used after Result (Ptr + 1 .. Ptr + Right'Length) is
-      --  updated to Right and concludes that the characters match for each
-      --  index when taken modulo Right'Length, as the considered slice starts
-      --  at index 1 modulo Right'Length.
-
-      ---------------
-      -- Lemma_Mod --
-      ---------------
-
-      procedure Lemma_Mod (K : Integer) is null;
-
-      -----------------
-      -- Lemma_Split --
-      -----------------
-
-      procedure Lemma_Split (Result : String)
-      is
-      begin
-         for K in Ptr + 1 .. Ptr + Right'Length loop
-            Lemma_Mod (K - 1);
-            pragma Loop_Invariant
-              (for all J in Ptr + 1 .. K =>
-                 Result (J) = Right (Right'First + (J - 1) mod Right'Length));
-         end loop;
-      end Lemma_Split;
-
-   --  Start of processing for "*"
-
    begin
       if Right'Length = 0 then
          return "";
       end if;
 
-      return Result : String (1 .. Left * Right'Length)
-        with Relaxed_Initialization
-      do
+      return Result : String (1 .. Left * Right'Length) do
          for J in 1 .. Left loop
             Result (Ptr + 1 .. Ptr + Right'Length) := Right;
-            Lemma_Split (Result);
             Ptr := Ptr + Right'Length;
-            pragma Loop_Invariant (Ptr = J * Right'Length);
-            pragma Loop_Invariant (Result (1 .. Ptr)'Initialized);
-            pragma Loop_Invariant
-              (for all K in 1 .. Ptr =>
-                 Result (K) = Right (Right'First + (K - 1) mod Right'Length));
          end loop;
       end return;
    end "*";
@@ -255,8 +177,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
    function Delete
      (Source  : String;
       From    : Positive;
-      Through : Natural) return String
-   is
+      Through : Natural) return String is
    begin
       if From > Through then
          declare
@@ -279,9 +200,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
             Result_Length : constant Integer := Front_Len + Back_Len;
             --  Length of result
          begin
-            return Result : String (1 .. Result_Length)
-              with Relaxed_Initialization
-            do
+            return Result : String (1 .. Result_Length) do
                Result (1 .. Front_Len) :=
                  Source (Source'First .. From - 1);
 
@@ -325,14 +244,11 @@ package body Ada.Strings.Fixed with SPARK_Mode is
            Result_Type (Source (Source'First .. Source'First + (Count - 1)));
 
       else
-         return Result : Result_Type with Relaxed_Initialization do
+         return Result : Result_Type do
             Result (1 .. Source'Length) := Source;
 
             for J in Source'Length + 1 .. Count loop
                Result (J) := Pad;
-               pragma Loop_Invariant
-                 (for all K in Source'Length + 1 .. J =>
-                    Result (K)'Initialized and then Result (K) = Pad);
             end loop;
          end return;
       end if;
@@ -342,8 +258,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
      (Source  : in out String;
       Count   : Natural;
       Justify : Alignment := Left;
-      Pad     : Character := Space)
-   is
+      Pad     : Character := Space) is
    begin
       Move (Source  => Head (Source, Count, Pad),
             Target  => Source,
@@ -362,37 +277,21 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       New_Item : String) return String
    is
       Front : constant Integer := Before - Source'First;
-
    begin
       if Before - 1 not in Source'First - 1 .. Source'Last then
          raise Index_Error;
       end if;
 
-      return Result : String (1 .. Source'Length + New_Item'Length)
-        with Relaxed_Initialization
-      do
+      return Result : String (1 .. Source'Length + New_Item'Length) do
          Result (1 .. Front) :=
            Source (Source'First .. Before - 1);
          Result (Front + 1 .. Front + New_Item'Length) :=
            New_Item;
 
-         pragma Assert
-           (Result (1 .. Before - Source'First)
-            = Source (Source'First .. Before - 1));
-         pragma Assert
-           (Result
-              (Before - Source'First + 1
-               .. Before - Source'First + New_Item'Length)
-            = New_Item);
-
          if Before <= Source'Last then
             Result (Front + New_Item'Length + 1 .. Result'Last) :=
               Source (Before .. Source'Last);
          end if;
-
-         pragma Assert
-           (Result (1 .. Before - Source'First)
-            = Source (Source'First .. Before - 1));
       end return;
    end Insert;
 
@@ -400,8 +299,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
      (Source   : in out String;
       Before   : Positive;
       New_Item : String;
-      Drop     : Truncation := Error)
-   is
+      Drop     : Truncation := Error) is
    begin
       Move (Source => Insert (Source, Before, New_Item),
             Target => Source,
@@ -536,38 +434,14 @@ package body Ada.Strings.Fixed with SPARK_Mode is
          Front         : constant Integer := Position - Source'First;
 
       begin
-         return Result : String (1 .. Result_Length)
-           with Relaxed_Initialization
-         do
+         return Result : String (1 .. Result_Length) do
             Result (1 .. Front) := Source (Source'First .. Position - 1);
-            pragma Assert
-              (Result (1 .. Position - Source'First)
-               = Source (Source'First .. Position - 1));
             Result (Front + 1 .. Front + New_Item'Length) := New_Item;
-            pragma Assert
-              (Result
-                 (Position - Source'First + 1
-                  .. Position - Source'First + New_Item'Length)
-               = New_Item);
 
             if Position <= Source'Last - New_Item'Length then
                Result (Front + New_Item'Length + 1 .. Result'Last) :=
                  Source (Position + New_Item'Length .. Source'Last);
-
-               pragma Assert
-                 (Result
-                    (Position - Source'First + New_Item'Length + 1
-                     .. Result'Last)
-                  = Source (Position + New_Item'Length .. Source'Last));
             end if;
-
-            pragma Assert
-              (if Position <= Source'Last - New_Item'Length
-               then
-                  Result
-                    (Position - Source'First + New_Item'Length + 1
-                     .. Result'Last)
-                  = Source (Position + New_Item'Length .. Source'Last));
          end return;
       end;
    end Overwrite;
@@ -576,8 +450,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
      (Source   : in out String;
       Position : Positive;
       New_Item : String;
-      Drop     : Truncation := Right)
-   is
+      Drop     : Truncation := Right) is
    begin
       Move (Source => Overwrite (Source, Position, New_Item),
             Target => Source,
@@ -612,39 +485,14 @@ package body Ada.Strings.Fixed with SPARK_Mode is
             --  Length of result
 
          begin
-            return Result : String (1 .. Result_Length)
-              with Relaxed_Initialization do
+            return Result : String (1 .. Result_Length) do
                Result (1 .. Front_Len) := Source (Source'First .. Low - 1);
-               pragma Assert
-                 (Result (1 .. Integer'Max (0, Low - Source'First))
-                  = Source (Source'First .. Low - 1));
                Result (Front_Len + 1 .. Front_Len + By'Length) := By;
-               pragma Assert
-                 (Result
-                    (Integer'Max (0, Low - Source'First) + 1
-                     .. Integer'Max (0, Low - Source'First) + By'Length)
-                  = By);
 
                if High < Source'Last then
                   Result (Front_Len + By'Length + 1 .. Result'Last) :=
                     Source (High + 1 .. Source'Last);
                end if;
-
-               pragma Assert
-                 (Result (1 .. Integer'Max (0, Low - Source'First))
-                  = Source (Source'First .. Low - 1));
-               pragma Assert
-                 (Result
-                    (Integer'Max (0, Low - Source'First) + 1
-                     .. Integer'Max (0, Low - Source'First) + By'Length)
-                  = By);
-               pragma Assert
-                 (if High < Source'Last
-                  then
-                     Result
-                    (Integer'Max (0, Low - Source'First) + By'Length + 1
-                     .. Result'Last)
-                  = Source (High + 1 .. Source'Last));
             end return;
          end;
       else
@@ -659,8 +507,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       By       : String;
       Drop     : Truncation := Error;
       Justify  : Alignment  := Left;
-      Pad      : Character  := Space)
-   is
+      Pad      : Character  := Space) is
    begin
       Move (Replace_Slice (Source, Low, High, By), Source, Drop, Justify, Pad);
    end Replace_Slice;
@@ -675,7 +522,6 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       Pad    : Character := Space) return String
    is
       subtype Result_Type is String (1 .. Count);
-
    begin
       if Count = 0 then
          return "";
@@ -686,12 +532,9 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       --  Pad on left
 
       else
-         return Result : Result_Type with Relaxed_Initialization do
+         return Result : Result_Type do
             for J in 1 .. Count - Source'Length loop
                Result (J) := Pad;
-               pragma Loop_Invariant
-                 (for all K in 1 .. J =>
-                    Result (K)'Initialized and then Result (K) = Pad);
             end loop;
 
             if Source'Length /= 0 then
@@ -705,8 +548,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
      (Source  : in out String;
       Count   : Natural;
       Justify : Alignment := Left;
-      Pad     : Character := Space)
-   is
+      Pad     : Character := Space) is
    begin
       Move (Source  => Tail (Source, Count, Pad),
             Target  => Source,
@@ -721,35 +563,21 @@ package body Ada.Strings.Fixed with SPARK_Mode is
 
    function Translate
      (Source  : String;
-      Mapping : Maps.Character_Mapping) return String
-   is
+      Mapping : Maps.Character_Mapping) return String is
    begin
-      return Result : String (1 .. Source'Length)
-        with Relaxed_Initialization
-      do
+      return Result : String (1 .. Source'Length) do
          for J in Source'Range loop
             Result (J - (Source'First - 1)) := Value (Mapping, Source (J));
-            pragma Loop_Invariant
-              (for all K in Source'First .. J =>
-                 Result (K - (Source'First - 1))'Initialized);
-            pragma Loop_Invariant
-              (for all K in Source'First .. J =>
-                 Result (K - (Source'First - 1)) =
-                   Value (Mapping, Source (K)));
          end loop;
       end return;
    end Translate;
 
    procedure Translate
      (Source  : in out String;
-      Mapping : Maps.Character_Mapping)
-   is
+      Mapping : Maps.Character_Mapping) is
    begin
       for J in Source'Range loop
          Source (J) := Value (Mapping, Source (J));
-         pragma Loop_Invariant
-           (for all K in Source'First .. J =>
-              Source (K) = Value (Mapping, Source'Loop_Entry (K)));
       end loop;
    end Translate;
 
@@ -759,23 +587,9 @@ package body Ada.Strings.Fixed with SPARK_Mode is
    is
       pragma Unsuppress (Access_Check);
    begin
-      return Result : String (1 .. Source'Length)
-        with Relaxed_Initialization
-      do
+      return Result : String (1 .. Source'Length) do
          for J in Source'Range loop
             Result (J - (Source'First - 1)) := Mapping.all (Source (J));
-            pragma Annotate (GNATprove, False_Positive,
-                             "call via access-to-subprogram",
-                             "function Mapping must always terminate");
-            pragma Loop_Invariant
-              (for all K in Source'First .. J =>
-                 Result (K - (Source'First - 1))'Initialized);
-            pragma Loop_Invariant
-              (for all K in Source'First .. J =>
-                 Result (K - (Source'First - 1)) = Mapping (Source (K)));
-            pragma Annotate (GNATprove, False_Positive,
-                             "call via access-to-subprogram",
-                             "function Mapping must always terminate");
          end loop;
       end return;
    end Translate;
@@ -788,15 +602,6 @@ package body Ada.Strings.Fixed with SPARK_Mode is
    begin
       for J in Source'Range loop
          Source (J) := Mapping.all (Source (J));
-         pragma Annotate (GNATprove, False_Positive,
-                          "call via access-to-subprogram",
-                          "function Mapping must always terminate");
-         pragma Loop_Invariant
-           (for all K in Source'First .. J =>
-              Source (K) = Mapping (Source'Loop_Entry (K)));
-         pragma Annotate (GNATprove, False_Positive,
-                          "call via access-to-subprogram",
-                          "function Mapping must always terminate");
       end loop;
    end Translate;
 
@@ -872,8 +677,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
      (Source  : in out String;
       Side    : Trim_End;
       Justify : Alignment := Left;
-      Pad     : Character := Space)
-   is
+      Pad     : Character := Space) is
    begin
       Move (Trim (Source, Side),
             Source,
@@ -887,7 +691,6 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       Right  : Maps.Character_Set) return String
    is
       High, Low : Integer;
-
    begin
       Low := Index (Source, Set => Left, Test => Outside, Going => Forward);
 
@@ -908,7 +711,6 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       declare
          Result_Length : constant Integer := High - Low + 1;
          subtype Result_Type is String (1 .. Result_Length);
-
       begin
          return Result_Type (Source (Low .. High));
       end;
@@ -919,8 +721,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       Left    : Maps.Character_Set;
       Right   : Maps.Character_Set;
       Justify : Alignment := Strings.Left;
-      Pad     : Character := Space)
-   is
+      Pad     : Character := Space) is
    begin
       Move (Source  => Trim (Source, Left, Right),
             Target  => Source,

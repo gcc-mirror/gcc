@@ -34,12 +34,12 @@ package body System.Double_Real is
    function Is_NaN (N : Num) return Boolean is (N /= N);
    --  Return True if N is a NaN
 
-   function Is_Infinity (N : Num) return Boolean is (Is_NaN (N - N));
-   --  Return True if N is an infinity. Used to avoid propagating meaningless
-   --  errors when the result of a product is an infinity.
+   function Is_Infinity_Or_NaN (N : Num) return Boolean is (Is_NaN (N - N));
+   --  Return True if N is either an infinity or NaN. Used to avoid propagating
+   --  meaningless errors when the result of a product is an infinity or NaN.
 
    function Is_Zero (N : Num) return Boolean is (N = -N);
-   --  Return True if N is a Zero. Used to preserve the sign when the result of
+   --  Return True if N is a zero. Used to preserve the sign when the result of
    --  a product is a zero.
 
    package Product is
@@ -151,7 +151,7 @@ package body System.Double_Real is
       P : constant Double_T := Two_Prod (A.Hi, B);
 
    begin
-      if Is_Infinity (P.Hi) or else Is_Zero (P.Hi) then
+      if Is_Infinity_Or_NaN (P.Hi) or else Is_Zero (P.Hi) then
          return (P.Hi, 0.0);
       else
          return Quick_Two_Sum (P.Hi, P.Lo + A.Lo * B);
@@ -162,7 +162,7 @@ package body System.Double_Real is
       P : constant Double_T := Two_Prod (A.Hi, B.Hi);
 
    begin
-      if Is_Infinity (P.Hi) or else Is_Zero (P.Hi) then
+      if Is_Infinity_Or_NaN (P.Hi) or else Is_Zero (P.Hi) then
          return (P.Hi, 0.0);
       else
          return Quick_Two_Sum (P.Hi, P.Lo + A.Hi * B.Lo + A.Lo * B.Hi);
@@ -178,7 +178,7 @@ package body System.Double_Real is
       P, R   : Double_T;
 
    begin
-      if Is_Infinity (B) or else Is_Zero (B) then
+      if Is_Infinity_Or_NaN (B) or else Is_Zero (B) then
          return (A.Hi / B, 0.0);
       end if;
       pragma Annotate (CodePeer, Intentional, "test always false",
@@ -202,7 +202,7 @@ package body System.Double_Real is
       R, S       : Double_T;
 
    begin
-      if Is_Infinity (B.Hi) or else Is_Zero (B.Hi) then
+      if Is_Infinity_Or_NaN (B.Hi) or else Is_Zero (B.Hi) then
          return (A.Hi / B.Hi, 0.0);
       end if;
       pragma Annotate (CodePeer, Intentional, "test always false",
@@ -228,7 +228,7 @@ package body System.Double_Real is
       Q : constant Double_T := Two_Sqr (A.Hi);
 
    begin
-      if Is_Infinity (Q.Hi) or else Is_Zero (Q.Hi) then
+      if Is_Infinity_Or_NaN (Q.Hi) or else Is_Zero (Q.Hi) then
          return (Q.Hi, 0.0);
       else
          return Quick_Two_Sum (Q.Hi, Q.Lo + 2.0 * A.Hi * A.Lo + A.Lo * A.Lo);

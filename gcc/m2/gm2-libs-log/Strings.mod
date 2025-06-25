@@ -83,39 +83,62 @@ END Delete ;
 
 
 (*
-   Pos - return the first position of, substr, in, str.
+   PosLower - return the first position of substr in str.
+*)
+
+PROCEDURE PosLower (substr, str: ARRAY OF CHAR) : CARDINAL ;
+VAR
+   i, strLen, substrLen   : INTEGER ;
+   strS, substrS, scratchS: DynamicStrings.String ;
+BEGIN
+   strS := DynamicStrings.InitString (str) ;
+   substrS := DynamicStrings.InitString (substr) ;
+   strLen := DynamicStrings.Length (strS) ;
+   substrLen := DynamicStrings.Length (substrS) ;
+   i := 0 ;
+   REPEAT
+      i := DynamicStrings.Index (strS, DynamicStrings.char (substrS, 0), i) ;
+      IF i < 0
+      THEN
+         (* No match on first character therefore return now.  *)
+         strS := DynamicStrings.KillString (strS) ;
+         substrS := DynamicStrings.KillString (substrS) ;
+         scratchS := DynamicStrings.KillString (scratchS) ;
+         RETURN( HIGH (str) + 1 )
+      ELSIF i + substrLen <= strLen
+      THEN
+         scratchS := DynamicStrings.Slice (strS, i, i + substrLen) ;
+         IF DynamicStrings.Equal (scratchS, substrS)
+         THEN
+            strS := DynamicStrings.KillString (strS) ;
+            substrS := DynamicStrings.KillString (substrS) ;
+            scratchS := DynamicStrings.KillString (scratchS) ;
+            RETURN( i )
+         END ;
+         scratchS := DynamicStrings.KillString (scratchS)
+      END ;
+      INC (i)
+   UNTIL i >= strLen ;
+   strS := DynamicStrings.KillString (strS) ;
+   substrS := DynamicStrings.KillString (substrS) ;
+   scratchS := DynamicStrings.KillString (scratchS) ;
+   RETURN( HIGH (str) + 1 )
+END PosLower ;
+
+
+(*
+   Pos - return the first position of substr in str.
+         If substr is not found in str then it returns
+         HIGH (str) + 1.
 *)
 
 PROCEDURE Pos (substr, str: ARRAY OF CHAR) : CARDINAL ;
-VAR
-   i, k, l   : INTEGER ;
-   s1, s2, s3: DynamicStrings.String ;
 BEGIN
-   s1 := DynamicStrings.InitString(str) ;
-   s2 := DynamicStrings.InitString(substr) ;
-   k := DynamicStrings.Length(s1) ;
-   l := DynamicStrings.Length(s2) ;
-   i := 0 ;
-   REPEAT
-      i := DynamicStrings.Index(s1, DynamicStrings.char(s2, 0), i) ;
-      IF i>=0
-      THEN
-         s3 := DynamicStrings.Slice(s1, i, l) ;
-         IF DynamicStrings.Equal(s3, s2)
-         THEN
-            s1 := DynamicStrings.KillString(s1) ;
-            s2 := DynamicStrings.KillString(s2) ;
-            s3 := DynamicStrings.KillString(s3) ;
-            RETURN( i )
-         END ;
-         s3 := DynamicStrings.KillString(s3)
-      END ;
-      INC(i)
-   UNTIL i>=k ;
-   s1 := DynamicStrings.KillString(s1) ;
-   s2 := DynamicStrings.KillString(s2) ;
-   s3 := DynamicStrings.KillString(s3) ;
-   RETURN( HIGH(str)+1 )
+   IF Length (substr) <= Length (str)
+   THEN
+      RETURN PosLower (substr, str)
+   END ;
+   RETURN( HIGH (str) + 1 )
 END Pos ;
 
 
@@ -129,11 +152,11 @@ PROCEDURE Copy (str: ARRAY OF CHAR;
 VAR
    s1, s2: DynamicStrings.String ;
 BEGIN
-   s1 := DynamicStrings.InitString(str) ;
-   s2 := DynamicStrings.Slice(s1, index, index+length) ;
-   DynamicStrings.CopyOut(result, s2) ;
-   s1 := DynamicStrings.KillString(s1) ;
-   s2 := DynamicStrings.KillString(s2)
+   s1 := DynamicStrings.InitString (str) ;
+   s2 := DynamicStrings.Slice (s1, index, index+length) ;
+   DynamicStrings.CopyOut (result, s2) ;
+   s1 := DynamicStrings.KillString (s1) ;
+   s2 := DynamicStrings.KillString (s2)
 END Copy ;
 
 

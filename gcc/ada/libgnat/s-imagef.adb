@@ -31,24 +31,8 @@
 
 with System.Image_I;
 with System.Img_Util; use System.Img_Util;
-with System.Value_I_Spec;
-with System.Value_U_Spec;
 
 package body System.Image_F is
-
-   --  Contracts, ghost code, loop invariants and assertions in this unit are
-   --  meant for analysis only, not for run-time checking, as it would be too
-   --  costly otherwise. This is enforced by setting the assertion policy to
-   --  Ignore.
-
-   pragma Assertion_Policy (Assert             => Ignore,
-                            Assert_And_Cut     => Ignore,
-                            Contract_Cases     => Ignore,
-                            Ghost              => Ignore,
-                            Loop_Invariant     => Ignore,
-                            Pre                => Ignore,
-                            Post               => Ignore,
-                            Subprogram_Variant => Ignore);
 
    Maxdigs : constant Natural := Int'Width - 2;
    --  Maximum number of decimal digits that can be represented in an Int.
@@ -70,14 +54,7 @@ package body System.Image_F is
    --  if the small is larger than 1, and smaller than 2**(Int'Size - 1) / 10
    --  if the small is smaller than 1.
 
-   package Uns_Spec is new System.Value_U_Spec (Uns);
-   package Int_Spec is new System.Value_I_Spec (Int, Uns, Uns_Spec);
-
-   package Image_I is new System.Image_I
-     (Int    => Int,
-      Uns    => Uns,
-      U_Spec => Uns_Spec,
-      I_Spec => Int_Spec);
+   package Image_I is new System.Image_I (Int);
 
    procedure Set_Image_Integer
      (V : Int;
@@ -233,7 +210,6 @@ package body System.Image_F is
       Aft0 : Natural)
    is
       pragma Assert (S'First = 1);
-
    begin
       --  Add space at start for non-negative numbers
 

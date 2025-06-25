@@ -32,18 +32,19 @@ class node;
 class printer
 {
 public:
-  printer (element &insertion_point);
+  printer (element &insertion_point, bool check_popped_tags = true);
 
   void push_tag (std::string name,
 		 bool preserve_whitespace = false);
   void push_tag_with_class (std::string name,
 			    std::string class_,
 			    bool preserve_whitespace = false);
-  void pop_tag ();
+  void pop_tag (const char *expected_name);
 
   void set_attr (const char *name, std::string value);
 
   void add_text (std::string text);
+  void add_text_from_pp (pretty_printer &pp);
 
   void add_raw (std::string text);
 
@@ -53,9 +54,38 @@ public:
 
   element *get_insertion_point () const;
 
+  size_t get_num_open_tags () const { return m_open_tags.size (); }
+
+  void DEBUG_FUNCTION dump () const;
+
 private:
   // borrowed ptrs:
   std::vector<element *> m_open_tags;
+  bool m_check_popped_tags;
+};
+
+/* RAII class for ensuring that the tags nested correctly.
+   Verify that within an instance's lifetime that any pushes
+   to the printer's insertion point have been popped by the end.  */
+
+class auto_check_tag_nesting
+{
+public:
+  auto_check_tag_nesting (const printer &xp)
+  : m_xp (xp),
+    m_initial_insertion_element (xp.get_insertion_point ())
+  {
+  }
+  ~auto_check_tag_nesting ()
+  {
+    /* Verify that we didn't pop too many tags within the printer,
+       or leave any tags open.  */
+    gcc_assert (m_initial_insertion_element == m_xp.get_insertion_point ());
+  }
+
+private:
+  const printer &m_xp;
+  const element *m_initial_insertion_element;
 };
 
 // RAII for push/pop element on xml::printer
@@ -66,17 +96,19 @@ public:
   auto_print_element (printer &printer,
 		      std::string name,
 		      bool preserve_whitespace = false)
-  : m_printer (printer)
+  : m_printer (printer),
+    m_name (std::move (name))
   {
-    m_printer.push_tag (name, preserve_whitespace);
+    m_printer.push_tag (m_name, preserve_whitespace);
   }
   ~auto_print_element ()
   {
-    m_printer.pop_tag ();
+    m_printer.pop_tag (m_name.c_str ());
   }
 
 private:
   printer &m_printer;
+  std::string m_name;
 };
 
 } // namespace xml

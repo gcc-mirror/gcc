@@ -97,6 +97,8 @@ range_op_table::range_op_table ()
   set (INTEGER_CST, op_cst);
   set (NOP_EXPR, op_cast);
   set (CONVERT_EXPR, op_cast);
+  set (FLOAT_EXPR, op_cast);
+  set (FIX_TRUNC_EXPR, op_cast);
   set (PLUS_EXPR, op_plus);
   set (ABS_EXPR, op_abs);
   set (MINUS_EXPR, op_minus);
@@ -165,7 +167,7 @@ dispatch_trio (unsigned lhs, unsigned op1, unsigned op2)
 // of the routines in range_operator.  Note the last 3 characters are
 // shorthand for the LHS, OP1, and OP2 range discriminator class.
 // Reminder, single operand instructions use the LHS type for op2, even if
-// unused. so FLOAT = INT would be RO_FIF.
+// unused.  So FLOAT = INT would be RO_FIF.
 
 const unsigned RO_III =	dispatch_trio (VR_IRANGE, VR_IRANGE, VR_IRANGE);
 const unsigned RO_IFI = dispatch_trio (VR_IRANGE, VR_FRANGE, VR_IRANGE);
@@ -298,10 +300,10 @@ range_op_handler::op1_range (vrange &r, tree type,
 	return m_operator->op1_range (as_a <irange> (r), type,
 				      as_a <irange> (lhs),
 				      as_a <irange> (op2), rel);
-      case RO_IFF:
+      case RO_IFI:
 	return m_operator->op1_range (as_a <irange> (r), type,
 				      as_a <frange> (lhs),
-				      as_a <frange> (op2), rel);
+				      as_a <irange> (op2), rel);
       case RO_PPP:
 	return m_operator->op1_range (as_a <prange> (r), type,
 				      as_a <prange> (lhs),
@@ -322,10 +324,6 @@ range_op_handler::op1_range (vrange &r, tree type,
 	return m_operator->op1_range (as_a <frange> (r), type,
 				      as_a <irange> (lhs),
 				      as_a <frange> (op2), rel);
-      case RO_FII:
-	return m_operator->op1_range (as_a <frange> (r), type,
-				      as_a <irange> (lhs),
-				      as_a <irange> (op2), rel);
       case RO_FFF:
 	return m_operator->op1_range (as_a <frange> (r), type,
 				      as_a <frange> (lhs),
@@ -778,21 +776,14 @@ range_operator::fold_range (irange &r, tree type,
 
 bool
 range_operator::fold_range (frange &, tree, const irange &,
-			   const frange &, relation_trio) const
+			    const frange &, relation_trio) const
 {
   return false;
 }
 
 bool
 range_operator::op1_range (irange &, tree, const frange &,
-			  const frange &, relation_trio) const
-{
-  return false;
-}
-
-bool
-range_operator::op1_range (frange &, tree, const irange &,
-			  const irange &, relation_trio) const
+			   const irange &, relation_trio) const
 {
   return false;
 }
@@ -855,10 +846,13 @@ range_operator::op1_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
 
 bool
 range_operator::op1_op2_relation_effect (irange &lhs_range ATTRIBUTE_UNUSED,
-				       tree type ATTRIBUTE_UNUSED,
-				       const irange &op1_range ATTRIBUTE_UNUSED,
-				       const irange &op2_range ATTRIBUTE_UNUSED,
-				       relation_kind rel ATTRIBUTE_UNUSED) const
+					 tree type ATTRIBUTE_UNUSED,
+					 const irange &op1_range
+					 ATTRIBUTE_UNUSED,
+					 const irange &op2_range
+					 ATTRIBUTE_UNUSED,
+					 relation_kind rel
+					 ATTRIBUTE_UNUSED) const
 {
   return false;
 }
@@ -874,7 +868,7 @@ range_operator::overflow_free_p (const irange &, const irange &,
 
 void
 range_operator::update_bitmask (irange &, const irange &,
-				       const irange &) const
+				const irange &) const
 {
 }
 
@@ -1815,7 +1809,7 @@ operator_plus::wi_fold (irange &r, tree type,
 
 static relation_kind
 plus_minus_ranges (irange &r_ov, irange &r_normal, const irange &offset,
-		bool add_p)
+		   bool add_p)
 {
   relation_kind kind = VREL_VARYING;
   // For now, only deal with constant adds.  This could be extended to ranges
@@ -3349,9 +3343,9 @@ wi_optimize_signed_bitwise_op (irange &r, tree type,
 
 relation_kind
 operator_bitwise_and::lhs_op1_relation (const irange &lhs,
-				 const irange &op1,
-				 const irange &op2,
-				 relation_kind) const
+					const irange &op1,
+					const irange &op2,
+					relation_kind) const
 {
   if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
     return VREL_VARYING;

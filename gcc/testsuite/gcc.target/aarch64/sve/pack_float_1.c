@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize" } */
+/* { dg-options "-O2 -ftree-vectorize --param aarch64-vect-compare-costs=0" } */
 
 void __attribute__ ((noinline, noclone))
 pack_float_plus_1point1 (float *d, double *s, int size)

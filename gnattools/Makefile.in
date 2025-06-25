@@ -33,7 +33,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 # Nonstandard autoconf-set variables.
 LN_S=@LN_S@
 target_noncanonical=@target_noncanonical@
-host_noncanonical=@host_noncanonical@
+GNATMAKE=@GNATMAKE@
+GNATBIND=@GNATBIND@
 
 # Variables for the user (or the top level) to override.
 exeext = @EXEEXT@
@@ -115,17 +116,11 @@ TOOLS_FLAGS_TO_PASS_RE= \
 	"TOOLSCASE=cross"
 
 # Variables for gnattools, cross
-ifeq ($(build), $(host))
-  GNATMAKE_FOR_HOST=gnatmake
-  GNATLINK_FOR_HOST=gnatlink
-  GNATBIND_FOR_HOST=gnatbind
-  GNATLS_FOR_HOST=gnatls
-else
-  GNATMAKE_FOR_HOST=$(host_noncanonical)-gnatmake
-  GNATLINK_FOR_HOST=$(host_noncanonical)-gnatlink
-  GNATBIND_FOR_HOST=$(host_noncanonical)-gnatbind
-  GNATLS_FOR_HOST=$(host_noncanonical)-gnatls
-endif
+# See configure.ac for what "cross" means here.
+GNATMAKE_FOR_HOST = $(GNATMAKE)
+GNATBIND_FOR_HOST = $(GNATBIND)
+GNATLINK_FOR_HOST = $(subst gnatmake,gnatlink,$(GNATMAKE))
+GNATLS_FOR_HOST   = $(subst gnatmake,gnatls,$(GNATMAKE))
 
 # Put the host RTS dir first in the PATH to hide the default runtime
 # files that are among the sources

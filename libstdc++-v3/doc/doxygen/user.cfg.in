@@ -2350,8 +2350,8 @@ PREDEFINED             = __cplusplus=202002L \
                          "_GLIBCXX_END_NAMESPACE_CONTAINER= " \
                          "_GLIBCXX_END_NAMESPACE_CXX11= " \
                          "_GLIBCXX_END_NAMESPACE_LDBL= " \
-			 "-D_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(X)= " \
-			 "-D_GLIBCXX_END_INLINE_ABI_NAMESPACE(X)= " \
+			 "_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(X)= " \
+			 "_GLIBCXX_END_INLINE_ABI_NAMESPACE(X)= " \
                          "_GLIBCXX_TEMPLATE_ARGS=...  " \
                          "_GLIBCXX_DEPRECATED= " \
                          "_GLIBCXX_DEPRECATED_SUGGEST(E)= " \
@@ -2414,6 +2414,8 @@ PREDEFINED             = __cplusplus=202002L \
                          _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE \
                          _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED \
                          _GLIBCXX_HAVE_BUILTIN_LAUNDER \
+			 "_GLIBCXX_USE_BUILTIN_TRAIT(X)=1" \
+			 _GLIBCXX_HAVE_ICONV=1 \
 			 "_GLIBCXX_DOXYGEN_ONLY(X)=X " \
 			 __exception_ptr=__unspecified__ \
 

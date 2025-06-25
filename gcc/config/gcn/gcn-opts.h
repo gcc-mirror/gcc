@@ -33,7 +33,8 @@ extern enum gcn_isa {
   ISA_RDNA2,
   ISA_RDNA3,
   ISA_CDNA1,
-  ISA_CDNA2
+  ISA_CDNA2,
+  ISA_CDNA3
 } gcn_isa;
 
 #define TARGET_GCN5 (gcn_isa == ISA_GCN5)
@@ -41,6 +42,8 @@ extern enum gcn_isa {
 #define TARGET_CDNA1_PLUS (gcn_isa >= ISA_CDNA1)
 #define TARGET_CDNA2 (gcn_isa == ISA_CDNA2)
 #define TARGET_CDNA2_PLUS (gcn_isa >= ISA_CDNA2)
+#define TARGET_CDNA3 (gcn_isa == ISA_CDNA3)
+#define TARGET_CDNA3_PLUS (gcn_isa >= ISA_CDNA3)
 #define TARGET_RDNA2 (gcn_isa == ISA_RDNA2)
 #define TARGET_RDNA2_PLUS (gcn_isa >= ISA_RDNA2 && gcn_isa < ISA_CDNA1)
 #define TARGET_RDNA3 (gcn_isa == ISA_RDNA3)
@@ -81,18 +84,22 @@ enum hsaco_attr_type
 #define TARGET_DPP8 TARGET_RDNA2_PLUS
 /* Device requires CDNA1-style manually inserted wait states for AVGPRs.  */
 #define TARGET_AVGPR_CDNA1_NOPS TARGET_CDNA1
+/* Whether to use the 'globally coherent' (glc) or the 'scope' (sc0, sc1) flag
+   for scalar memory operations. The string starts on purpose with a space.  */
+#define TARGET_GLC_NAME (TARGET_CDNA3 ? " sc0" : " glc")
 /* The metadata on different devices need different granularity.  */
 #define TARGET_VGPR_GRANULARITY \
   (TARGET_RDNA3 ? 12 \
    : TARGET_RDNA2_PLUS || TARGET_CDNA2_PLUS ? 8 \
    : 4)
 /* This mostly affects the metadata.  */
-#define TARGET_ARCHITECTED_FLAT_SCRATCH TARGET_RDNA3
+#define TARGET_ARCHITECTED_FLAT_SCRATCH (TARGET_RDNA3 || TARGET_CDNA3)
 /* Device has Sub-DWord Addressing instrucions.  */
 #define TARGET_SDWA (!TARGET_RDNA3)
 /* Different devices uses different cache control instructions.  */
-#define TARGET_WBINVL1_CACHE (!TARGET_RDNA2_PLUS)
+#define TARGET_WBINVL1_CACHE (!TARGET_RDNA2_PLUS && !TARGET_CDNA3)
 #define TARGET_GLn_CACHE TARGET_RDNA2_PLUS
+#define TARGET_TARGET_SC_CACHE TARGET_CDNA3
 /* Some devices have TGSPLIT, which needs at least metadata.  */
 #define TARGET_TGSPLIT TARGET_CDNA2_PLUS
 

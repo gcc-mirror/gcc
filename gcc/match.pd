@@ -2177,6 +2177,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (view_convert (rshift (view_convert:ntype @0) @1))
     (convert (rshift (convert:ntype @0) @1))))))
 
+#if GIMPLE
+ /* Fold ((x + y) >> 1 into IFN_AVG_FLOOR (x, y) if x and y are vectors in
+    which each element is known to have at least one leading zero bit.  */
+(simplify
+ (rshift (plus:cs @0 @1) integer_onep)
+ (if (VECTOR_TYPE_P (type)
+      && direct_internal_fn_supported_p (IFN_AVG_FLOOR, type, OPTIMIZE_FOR_BOTH)
+      && wi::clz (get_nonzero_bits (@0)) > 0
+      && wi::clz (get_nonzero_bits (@1)) > 0)
+  (IFN_AVG_FLOOR @0 @1)))
+#endif
+
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
    when profitable.
    For bitwise binary operations apply operand conversions to the
@@ -2345,7 +2357,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* ~~x -> x */
 (simplify
   (bit_not (bit_not @0))
-  @0)
+  (non_lvalue @0))
 
 /* zero_one_valued_p will match when a value is known to be either
    0 or 1 including constants 0 or 1.
@@ -4025,7 +4037,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (negate (nop_convert? (negate @1)))
   (if (!TYPE_OVERFLOW_SANITIZED (type)
        && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@1)))
-   (view_convert @1)))
+   (non_lvalue (view_convert @1))))
 
  /* We can't reassociate floating-point unless -fassociative-math
     or fixed-point plus or minus because of saturation to +-Inf.  */
@@ -5755,7 +5767,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (conj (convert? (conj @0)))
  (if (tree_nop_conversion_p (TREE_TYPE (@0), type))
-  (convert @0)))
+  (non_lvalue (convert @0))))
 
 /* conj({x,y}) -> {x,-y}  */
 (simplify
@@ -11327,13 +11339,59 @@ and,
 	  (vec_perm @2 @5 { op0; })))))))))))
 
 
-/* Match count trailing zeroes for simplify_count_trailing_zeroes in fwprop.
+/* Match count trailing zeroes for simplify_count_zeroes in forwprop.
    The canonical form is array[((x & -x) * C) >> SHIFT] where C is a magic
    constant which when multiplied by a power of 2 contains a unique value
    in the top 5 or 6 bits.  This is then indexed into a table which maps it
    to the number of trailing zeroes.  */
 (match (ctz_table_index @1 @2 @3)
   (rshift (mult (bit_and:c (negate @1) @1) INTEGER_CST@2) INTEGER_CST@3))
+
+/* Match count leading zeros for simplify_count_zeroes in forwprop.
+   One canonical form is 31 - array[idx] where IDX is computed from X
+   by first setting all bits from the topmost set bits down via a
+   series of shifts and ors to X' and then computing (X' * C) >> SHIFT.  */
+(match (clz_table_index @1 @2 @3)
+  (rshift (mult
+   (bit_ior (rshift
+     (bit_ior@d (rshift
+       (bit_ior@c (rshift
+         (bit_ior@b (rshift
+	   (bit_ior@a (rshift @1 INTEGER_CST@c1) @1)
+	   INTEGER_CST@c2) @a)
+	 INTEGER_CST@c4) @b)
+       INTEGER_CST@c8) @c)
+     INTEGER_CST@c16) @d) INTEGER_CST@2) INTEGER_CST@3)
+  (if (INTEGRAL_TYPE_P (type)
+       && TYPE_UNSIGNED (type)
+       && TYPE_PRECISION (type) == 32
+       && compare_tree_int (@c1, 1) == 0
+       && compare_tree_int (@c2, 2) == 0
+       && compare_tree_int (@c4, 4) == 0
+       && compare_tree_int (@c8, 8) == 0
+       && compare_tree_int (@c16, 16) == 0)))
+(match (clz_table_index @1 @2 @3)
+  (rshift (mult
+   (bit_ior (rshift
+     (bit_ior@e (rshift
+       (bit_ior@d (rshift
+         (bit_ior@c (rshift
+           (bit_ior@b (rshift
+	     (bit_ior@a (rshift @1 INTEGER_CST@c1) @1)
+	     INTEGER_CST@c2) @a)
+	   INTEGER_CST@c4) @b)
+         INTEGER_CST@c8) @c)
+       INTEGER_CST@c16) @d)
+     INTEGER_CST@c32) @e) INTEGER_CST@2) INTEGER_CST@3)
+  (if (INTEGRAL_TYPE_P (type)
+       && TYPE_UNSIGNED (type)
+       && TYPE_PRECISION (type) == 64
+       && compare_tree_int (@c1, 1) == 0
+       && compare_tree_int (@c2, 2) == 0
+       && compare_tree_int (@c4, 4) == 0
+       && compare_tree_int (@c8, 8) == 0
+       && compare_tree_int (@c16, 16) == 0
+       && compare_tree_int (@c32, 32) == 0)))
 
 /* Floatint point/integer comparison and integer->integer
    or floating point -> float point conversion.  */

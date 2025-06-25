@@ -2239,7 +2239,7 @@ copy_bb (copy_body_data *id, basic_block bb,
 		}
 	      else if (nargs != 0)
 		{
-		  tree newlhs = create_tmp_reg_or_ssa_name (integer_type_node);
+		  tree newlhs = make_ssa_name (integer_type_node);
 		  count = build_int_cst (integer_type_node, nargs);
 		  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
 						  PLUS_EXPR, newlhs, count);
@@ -3084,7 +3084,7 @@ copy_cfg_body (copy_body_data * id,
   /* Register specific tree functions.  */
   gimple_register_cfg_hooks ();
 
-  /* If we are inlining just region of the function, make sure to connect
+  /* If we are offlining region of the function, make sure to connect
      new entry to ENTRY_BLOCK_PTR_FOR_FN (cfun).  Since new entry can be
      part of loop, we must compute frequency and probability of
      ENTRY_BLOCK_PTR_FOR_FN (cfun) based on the frequencies and
@@ -3093,12 +3093,14 @@ copy_cfg_body (copy_body_data * id,
     {
       edge e;
       edge_iterator ei;
-      den = profile_count::zero ();
+      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = profile_count::zero ();
 
       FOR_EACH_EDGE (e, ei, new_entry->preds)
 	if (!e->src->aux)
-	  den += e->count ();
-      ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = den;
+	  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count += e->count ();
+      /* Do not scale - the profile of offlined region should
+	 remain unchanged.  */
+      num = den = profile_count::one ();
     }
 
   profile_count::adjust_for_ipa_scaling (&num, &den);
@@ -4846,7 +4848,9 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
     goto egress;
 
   cg_edge = id->dst_node->get_edge (stmt);
-  gcc_checking_assert (cg_edge);
+  /* Edge should exist and speculations should be resolved at this
+     stage.  */
+  gcc_checking_assert (cg_edge && !cg_edge->speculative);
   /* First, see if we can figure out what function is being called.
      If we cannot, then there is no hope of inlining the function.  */
   if (cg_edge->indirect_unknown_callee)
@@ -5014,6 +5018,9 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	loc = LOCATION_LOCUS (DECL_SOURCE_LOCATION (fn));
       if (loc == UNKNOWN_LOCATION)
 	loc = BUILTINS_LOCATION;
+      if (has_discriminator (gimple_location (stmt)))
+	loc = location_with_discriminator
+		(loc, get_discriminator_from_loc (gimple_location (stmt)));
       id->block = make_node (BLOCK);
       BLOCK_ABSTRACT_ORIGIN (id->block) = DECL_ORIGIN (fn);
       BLOCK_SOURCE_LOCATION (id->block) = loc;

@@ -159,11 +159,11 @@ numstr_of( const char string[], radix_t radix = decimal_e ) {
     //  exponent is implementor-defined." (We allow 9999.)
     nx = std::count_if(p, eoinput, fisdigit);
     if( 4 < nx ) {
-      error_msg(yylloc, "exponent %s more than 4 digits", ++p);
+      error_msg(yylloc, "exponent %qs more than 4 digits", ++p);
       return NO_CONDITION;
     }
     if( eoinput != std::find(p, eoinput, symbol_decimal_point()) ) {
-      error_msg(yylloc, "exponent includes decimal point", ++p);
+      error_msg(yylloc, "exponent %qs includes decimal point", ++p);
       return NO_CONDITION;
     }
 
@@ -187,7 +187,7 @@ numstr_of( const char string[], radix_t radix = decimal_e ) {
     }
   }
   if( 1 < std::count(input, eoinput, symbol_decimal_point()) ) {
-    error_msg(yylloc, "invalid numeric literal", ++p);
+    error_msg(yylloc, "invalid numeric literal %qs", ++p);
     return NO_CONDITION;
   }
 
@@ -214,7 +214,11 @@ struct cdf_status_t {
   const char *filename;
   int  token;
   bool parsing;
-  cdf_status_t( int token = 0, bool parsing = true )
+  cdf_status_t()
+    : lineno(yylineno), filename(cobol_filename())
+    , token(0), parsing(true)
+  {}
+  cdf_status_t( int token, bool parsing )
     : lineno(yylineno), filename(cobol_filename())
     , token(token), parsing(parsing)
   {}
@@ -291,7 +295,7 @@ static class parsing_status_t : public std::stack<cdf_status_t> {
   void splat() const {
     int i=0;
     for( const auto& status : c ) {
-      yywarn( "%4d\t%s", ++i, status.str() );
+      yywarn( "%d %s", ++i, status.str() );
     }
   }
 } parsing;
@@ -301,7 +305,7 @@ void field_done() { orig_picture[0] = '\0'; parsing.need_level(true); }
 
 static int scanner_token() {
   if( parsing.empty() ) {
-    error_msg(yylloc, ">>ELSE or >>END-IF without >>IF");
+    error_msg(yylloc, "%<>>ELSE%> or %<>>END-IF%> without %<>>IF%>");
     return NO_CONDITION;
   }
   return parsing.top().token;
@@ -313,31 +317,32 @@ bool scanner_normal()  { return parsing.normal(); }
 void scanner_parsing( int token, bool tf ) {
   parsing.push( cdf_status_t(token, tf) );
   if( yydebug ) {
-    yywarn("%10s: parsing now %5s, depth %zu",
+    yywarn("%s: parsing now %s, depth %zu",
             keyword_str(token), boolalpha(parsing.on()), parsing.size());
     parsing.splat();
   }
 }
 void scanner_parsing_toggle() {
   if( parsing.empty() ) {
-    error_msg(yylloc, ">>ELSE without >>IF");
+    error_msg(yylloc, "%<>>ELSE%> without %<>>IF%>");
     return;
   }
   parsing.top().toggle();
   if( yydebug ) {
-    yywarn("%10s: parsing now %5s",
+    yywarn("%s: parsing now %s",
             keyword_str(CDF_ELSE), boolalpha(parsing.on()));
   }
 }
 void scanner_parsing_pop() {
   if( parsing.empty() ) {
-    error_msg(yylloc, ">>END-IF without >>IF");
+    error_msg(yylloc, "%<>>END-IF%> without %<>>IF%>");
     return;
   }
   parsing.pop();
   if( yydebug ) {
-    yywarn("%10s: parsing now %5s, depth %zu",
-            keyword_str(CDF_END_IF), boolalpha(parsing.on()), parsing.size());
+    yywarn("%s: parsing now %s, depth %zu",
+            keyword_str(CDF_END_IF), boolalpha(parsing.on()),
+	   parsing.size());
     parsing.splat();
   }
 }
@@ -369,7 +374,7 @@ class enter_leave_t {
   enter_leave_t() : entering(NULL), leaving(NULL), filename(NULL) {}
   enter_leave_t(  parser_enter_file_f *entering, const char *filename )
     : entering(entering), leaving(NULL), filename(filename) {}
-  enter_leave_t(parser_leave_file_f *leaving)
+  explicit enter_leave_t(parser_leave_file_f *leaving)
     : entering(NULL), leaving(leaving), filename(NULL) {}
 
   void notify( unsigned int newlines = 0 ) {
@@ -403,7 +408,7 @@ static class input_file_status_t {
     trailing_newlines = std::count(yytext, yytext + yyleng, '\n');
     if( trailing_newlines && yy_flex_debug )
       dbgmsg("adding %u lines after POP", trailing_newlines);
-    inputs.push( parser_leave_file );
+    inputs.push( enter_leave_t(parser_leave_file) );
   }
   void notify() {
     while( ! inputs.empty() ) {
@@ -427,7 +432,7 @@ update_location() {
 
   auto nline = std::count(yytext, yytext + yyleng, '\n');
   if( nline ) {
-    char *p = static_cast<char*>(memrchr(yytext, '\n', yyleng));
+    const char *p = static_cast<char*>(memrchr(yytext, '\n', yyleng));
     loc.last_column = (yytext + yyleng) - p;
   }
 
@@ -577,7 +582,8 @@ binary_integer_usage( const char name[]) {
   std::transform(name, name + strlen(name), uname, ftoupper);
 
   dbgmsg("%s:%d: checking %s in %zu keyword_aliases",
-	 __func__, __LINE__, uname, keyword_aliases.size() );
+	 __func__, __LINE__, uname,
+	 keyword_aliases.size() );
 
   std::string key = uname;
   auto alias = keyword_aliases.find(key);
@@ -663,7 +669,7 @@ bool need_nume_set( bool tf ) {
 static int datetime_format_of( const char input[] );
 
 static int symbol_function_token( const char name[] ) {
-  auto e = symbol_function( 0, name );
+  const auto e = symbol_function( 0, name );
   return e ? symbol_index(e) : 0;
 }
 
@@ -751,7 +757,7 @@ typed_name( const char name[] ) {
     __attribute__((fallthrough));
   case FldLiteralN:
     {
-      auto f = cbl_field_of(e);
+      const auto f = cbl_field_of(e);
       if( type == FldLiteralN ) {
         yylval.numstr.radix =
           f->has_attr(hex_encoded_e)? hexadecimal_e : decimal_e;
@@ -785,7 +791,7 @@ typed_name( const char name[] ) {
     return cbl_field_of(e)->level == 88? NAME88 : CLASS_NAME;
     break;
   default:
-    yywarn("%s:%d: invalid symbol type %s for symbol \"%s\"",
+    yywarn("%s:%d: invalid symbol type %s for symbol %qs",
           __func__, __LINE__, cbl_field_type_str(type), name);
     return NAME;
   }
@@ -818,17 +824,20 @@ wait_for_the_child(void) {
   }
 
   if( WIFSIGNALED(status) ) {
-    yywarn( "process %d terminated by %s", pid, strsignal(WTERMSIG(status)) );
+    yywarn( "process %ld terminated by %s", 
+	    static_cast<long>(pid), strsignal(WTERMSIG(status)) );
     return false;
   }
   if( WIFEXITED(status) ) {
     if( WEXITSTATUS(status) != 0 ) {
-      yywarn("process %d exited with status %d", pid, status);
+      yywarn("process %ld exited with status %d",
+             static_cast<long>(pid), status);
       return false;
     }
   }
   if( yy_flex_debug ) {
-    yywarn("process %d exited with status %d", pid, status);
+    yywarn("process %ld exited with status %d",
+           static_cast<long>(pid), status);
   }
   return true;
 }

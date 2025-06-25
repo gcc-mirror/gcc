@@ -1279,18 +1279,31 @@ make_dispatcher_decl (const tree decl)
   return func_decl;
 }
 
-/* Returns true if DECL is multi-versioned using the target attribute, and this
-   is the default version.  This function can only be used for targets that do
-   not support the "target_version" attribute.  */
+/* Returns true if DECL a multiversioned default.
+   With the target attribute semantics, returns true if the function is marked
+   as default with the target version.
+   With the target_version attribute semantics, returns true if the function
+   is either not annotated, or annotated as default.  */
 
 bool
 is_function_default_version (const tree decl)
 {
-  if (TREE_CODE (decl) != FUNCTION_DECL
-      || !DECL_FUNCTION_VERSIONED (decl))
+  tree attr;
+  if (TREE_CODE (decl) != FUNCTION_DECL)
     return false;
-  tree attr = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
-  gcc_assert (attr);
+  if (TARGET_HAS_FMV_TARGET_ATTRIBUTE)
+    {
+      if (!DECL_FUNCTION_VERSIONED (decl))
+	return false;
+      attr = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
+      gcc_assert (attr);
+    }
+  else
+    {
+      attr = lookup_attribute ("target_version", DECL_ATTRIBUTES (decl));
+      if (!attr)
+	return true;
+    }
   attr = TREE_VALUE (TREE_VALUE (attr));
   return (TREE_CODE (attr) == STRING_CST
 	  && strcmp (TREE_STRING_POINTER (attr), "default") == 0);

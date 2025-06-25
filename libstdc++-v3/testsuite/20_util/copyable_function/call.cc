@@ -204,13 +204,14 @@ test05()
 }
 
 struct Incomplete;
+enum CompleteEnum : int;
 
 void
 test_params()
 {
-  std::copyable_function<void(Incomplete)> f1;
-  std::copyable_function<void(Incomplete&)> f2;
-  std::copyable_function<void(Incomplete&&)> f3;
+  std::copyable_function<void(Incomplete&)> f1;
+  std::copyable_function<void(Incomplete&&)> f2;
+  std::copyable_function<void(CompleteEnum)> f4;
 }
 
 int main()

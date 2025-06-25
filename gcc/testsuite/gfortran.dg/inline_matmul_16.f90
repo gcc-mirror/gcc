@@ -58,4 +58,4 @@ program main
      end do
   end do
 end program main
-! { dg-final { scan-tree-dump-times "_gfortran_matmul" 1 "optimized" } }
+! { dg-final { scan-tree-dump-not "_gfortran_matmul" "optimized" } }

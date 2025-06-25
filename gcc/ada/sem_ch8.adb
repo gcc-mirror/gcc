@@ -77,6 +77,7 @@ with Style;
 with Table;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
+with Uname;          use Uname;
 with Warnsw;         use Warnsw;
 
 package body Sem_Ch8 is
@@ -4300,6 +4301,44 @@ package body Sem_Ch8 is
 
       begin
          pragma Assert (Nkind (Clause) = N_Use_Package_Clause);
+
+         --  Perform "use implies with" expansion (when extensions are enabled)
+         --  by inserting an extra with clause since redundant clauses don't
+         --  really matter.
+
+         if All_Extensions_Allowed and then Is_In_Context_Clause (Clause) then
+            declare
+               Unum        : Unit_Number_Type;
+               With_Clause : constant Node_Id :=
+                 Make_With_Clause (Sloc (Clause),
+                   Name => New_Copy_Tree (Pack));
+            begin
+               --  Attempt to load the unit mentioned in the use clause
+
+               Unum := Load_Unit
+                         (Load_Name  => Get_Unit_Name (With_Clause),
+                          Required   => False,
+                          Subunit    => False,
+                          Error_Node => Clause,
+                          With_Node  => With_Clause);
+
+               --  Either we can't file the unit or the use clause is a
+               --  reference to a nested package - in that case just handle
+               --  the use clause normally.
+
+               if Unum /= No_Unit then
+
+                  Set_Library_Unit (With_Clause, Cunit (Unum));
+                  Set_Is_Implicit_With (With_Clause);
+
+                  Analyze (With_Clause);
+                  Expand_With_Clause
+                   (With_Clause, Name (With_Clause),
+                     Enclosing_Comp_Unit_Node (Clause));
+               end if;
+            end;
+         end if;
+
          Analyze (Pack);
 
          --  Verify that the package standard is not directly named in a
@@ -8365,7 +8404,8 @@ package body Sem_Ch8 is
 
             if Is_Overloaded (P) then
 
-               --  The prefix must resolve to a unique enclosing construct
+               --  The prefix must resolve to a unique enclosing construct, per
+               --  the last sentence of RM 4.1.3 (13).
 
                declare
                   Found : Boolean := False;
@@ -8379,6 +8419,7 @@ package body Sem_Ch8 is
                         if Found then
                            Error_Msg_N (
                               "prefix must be unique enclosing scope", N);
+                           Change_Selected_Component_To_Expanded_Name (N);
                            Set_Entity (N, Any_Id);
                            Set_Etype  (N, Any_Type);
                            return;
@@ -9504,6 +9545,11 @@ package body Sem_Ch8 is
            and then Present (Scope (Entity (E)))
          then
             Mark_Use_Package (Scope (Entity (E)));
+
+            --  Additionally mark the types of the formals and the return
+            --  types as used when dealing with an overloaded operator.
+
+            Mark_Parameters (Entity (E));
          end if;
 
          Curr := Current_Use_Clause (Base);
@@ -9878,28 +9924,8 @@ package body Sem_Ch8 is
 
    procedure Premature_Usage (N : Node_Id) is
       Kind : constant Node_Kind := Nkind (Parent (Entity (N)));
-      E    : Entity_Id := Entity (N);
 
    begin
-      --  Within an instance, the analysis of the actual for a formal object
-      --  does not see the name of the object itself. This is significant only
-      --  if the object is an aggregate, where its analysis does not do any
-      --  name resolution on component associations. (see 4717-008). In such a
-      --  case, look for the visible homonym on the chain.
-
-      if In_Instance and then Present (Homonym (E)) then
-         E := Homonym (E);
-         while Present (E) and then not In_Open_Scopes (Scope (E)) loop
-            E := Homonym (E);
-         end loop;
-
-         if Present (E) then
-            Set_Entity (N, E);
-            Set_Etype (N, Etype (E));
-            return;
-         end if;
-      end if;
-
       case Kind is
          when N_Component_Declaration =>
             Error_Msg_N

@@ -73,7 +73,7 @@ Format of DEFINE_RISCV_EXT:
 
 DEFINE_RISCV_EXT(
   /* NAME */ e,
-  /* UPPERCAE_NAME */ RVE,
+  /* UPPERCASE_NAME */ RVE,
   /* FULL_NAME */ "Reduced base integer extension",
   /* DESC */ "",
   /* URL */ ,
@@ -86,7 +86,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ i,
-  /* UPPERCAE_NAME */ RVI,
+  /* UPPERCASE_NAME */ RVI,
   /* FULL_NAME */ "Base integer extension",
   /* DESC */ "",
   /* URL */ ,
@@ -101,7 +101,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ m,
-  /* UPPERCAE_NAME */ MUL,
+  /* UPPERCASE_NAME */ MUL,
   /* FULL_NAME */ "Integer multiplication and division extension",
   /* DESC */ "",
   /* URL */ ,
@@ -114,7 +114,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ a,
-  /* UPPERCAE_NAME */ ATOMIC,
+  /* UPPERCASE_NAME */ ATOMIC,
   /* FULL_NAME */ "Atomic extension",
   /* DESC */ "",
   /* URL */ ,
@@ -129,7 +129,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ f,
-  /* UPPERCAE_NAME */ HARD_FLOAT,
+  /* UPPERCASE_NAME */ HARD_FLOAT,
   /* FULL_NAME */ "Single-precision floating-point extension",
   /* DESC */ "",
   /* URL */ ,
@@ -144,7 +144,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ d,
-  /* UPPERCAE_NAME */ DOUBLE_FLOAT,
+  /* UPPERCASE_NAME */ DOUBLE_FLOAT,
   /* FULL_NAME */ "Double-precision floating-point extension",
   /* DESC */ "",
   /* URL */ ,
@@ -159,7 +159,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ c,
-  /* UPPERCAE_NAME */ RVC,
+  /* UPPERCASE_NAME */ RVC,
   /* FULL_NAME */ "Compressed extension",
   /* DESC */ "",
   /* URL */ ,
@@ -183,7 +183,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ b,
-  /* UPPERCAE_NAME */ RVB,
+  /* UPPERCASE_NAME */ RVB,
   /* FULL_NAME */ "b extension",
   /* DESC */ "",
   /* URL */ ,
@@ -196,7 +196,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ v,
-  /* UPPERCAE_NAME */ RVV,
+  /* UPPERCASE_NAME */ RVV,
   /* FULL_NAME */ "Vector extension",
   /* DESC */ "",
   /* URL */ ,
@@ -209,7 +209,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ h,
-  /* UPPERCAE_NAME */ RVH,
+  /* UPPERCASE_NAME */ RVH,
   /* FULL_NAME */ "Hypervisor extension",
   /* DESC */ "",
   /* URL */ ,
@@ -222,7 +222,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zic64b,
-  /* UPPERCAE_NAME */ ZIC64B,
+  /* UPPERCASE_NAME */ ZIC64B,
   /* FULL_NAME */ "Cache block size isf 64 bytes",
   /* DESC */ "",
   /* URL */ ,
@@ -235,7 +235,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zicbom,
-  /* UPPERCAE_NAME */ ZICBOM,
+  /* UPPERCASE_NAME */ ZICBOM,
   /* FULL_NAME */ "Cache-block management extension",
   /* DESC */ "",
   /* URL */ ,
@@ -248,7 +248,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zicbop,
-  /* UPPERCAE_NAME */ ZICBOP,
+  /* UPPERCASE_NAME */ ZICBOP,
   /* FULL_NAME */ "Cache-block prefetch extension",
   /* DESC */ "",
   /* URL */ ,
@@ -261,7 +261,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zicboz,
-  /* UPPERCAE_NAME */ ZICBOZ,
+  /* UPPERCASE_NAME */ ZICBOZ,
   /* FULL_NAME */ "Cache-block zero extension",
   /* DESC */ "",
   /* URL */ ,
@@ -274,7 +274,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ ziccamoa,
-  /* UPPERCAE_NAME */ ZICCAMOA,
+  /* UPPERCASE_NAME */ ZICCAMOA,
   /* FULL_NAME */ "Main memory supports all atomics in A",
   /* DESC */ "",
   /* URL */ ,
@@ -287,7 +287,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ ziccif,
-  /* UPPERCAE_NAME */ ZICCIF,
+  /* UPPERCASE_NAME */ ZICCIF,
   /* FULL_NAME */ "Main memory supports instruction fetch with atomicity requirement",
   /* DESC */ "",
   /* URL */ ,
@@ -300,7 +300,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zicclsm,
-  /* UPPERCAE_NAME */ ZICCLSM,
+  /* UPPERCASE_NAME */ ZICCLSM,
   /* FULL_NAME */ "Main memory supports misaligned loads/stores",
   /* DESC */ "",
   /* URL */ ,
@@ -313,7 +313,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ ziccrse,
-  /* UPPERCAE_NAME */ ZICCRSE,
+  /* UPPERCASE_NAME */ ZICCRSE,
   /* FULL_NAME */ "Main memory supports forward progress on LR/SC sequences",
   /* DESC */ "",
   /* URL */ ,
@@ -326,7 +326,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zicfilp,
-  /* UPPERCAE_NAME */ ZICFILP,
+  /* UPPERCASE_NAME */ ZICFILP,
   /* FULL_NAME */ "zicfilp extension",
   /* DESC */ "",
   /* URL */ ,
@@ -339,7 +339,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zicfiss,
-  /* UPPERCAE_NAME */ ZICFISS,
+  /* UPPERCASE_NAME */ ZICFISS,
   /* FULL_NAME */ "zicfiss extension",
   /* DESC */ "",
   /* URL */ ,
@@ -352,7 +352,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zicntr,
-  /* UPPERCAE_NAME */ ZICNTR,
+  /* UPPERCASE_NAME */ ZICNTR,
   /* FULL_NAME */ "Standard extension for base counters and timers",
   /* DESC */ "",
   /* URL */ ,
@@ -365,7 +365,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zicond,
-  /* UPPERCAE_NAME */ ZICOND,
+  /* UPPERCASE_NAME */ ZICOND,
   /* FULL_NAME */ "Integer conditional operations extension",
   /* DESC */ "",
   /* URL */ ,
@@ -378,7 +378,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zicsr,
-  /* UPPERCAE_NAME */ ZICSR,
+  /* UPPERCASE_NAME */ ZICSR,
   /* FULL_NAME */ "Control and status register access extension",
   /* DESC */ "",
   /* URL */ ,
@@ -391,7 +391,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zifencei,
-  /* UPPERCAE_NAME */ ZIFENCEI,
+  /* UPPERCASE_NAME */ ZIFENCEI,
   /* FULL_NAME */ "Instruction-fetch fence extension",
   /* DESC */ "",
   /* URL */ ,
@@ -404,7 +404,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zihintntl,
-  /* UPPERCAE_NAME */ ZIHINTNTL,
+  /* UPPERCASE_NAME */ ZIHINTNTL,
   /* FULL_NAME */ "Non-temporal locality hints extension",
   /* DESC */ "",
   /* URL */ ,
@@ -417,7 +417,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zihintpause,
-  /* UPPERCAE_NAME */ ZIHINTPAUSE,
+  /* UPPERCASE_NAME */ ZIHINTPAUSE,
   /* FULL_NAME */ "Pause hint extension",
   /* DESC */ "",
   /* URL */ ,
@@ -430,7 +430,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zihpm,
-  /* UPPERCAE_NAME */ ZIHPM,
+  /* UPPERCASE_NAME */ ZIHPM,
   /* FULL_NAME */ "Standard extension for hardware performance counters",
   /* DESC */ "",
   /* URL */ ,
@@ -443,7 +443,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zimop,
-  /* UPPERCAE_NAME */ ZIMOP,
+  /* UPPERCASE_NAME */ ZIMOP,
   /* FULL_NAME */ "zimop extension",
   /* DESC */ "",
   /* URL */ ,
@@ -456,7 +456,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zilsd,
-  /* UPPERCAE_NAME */ ZILSD,
+  /* UPPERCASE_NAME */ ZILSD,
   /* FULL_NAME */ "Load/Store pair instructions extension",
   /* DESC */ "",
   /* URL */ ,
@@ -469,7 +469,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zmmul,
-  /* UPPERCAE_NAME */ ZMMUL,
+  /* UPPERCASE_NAME */ ZMMUL,
   /* FULL_NAME */ "Integer multiplication extension",
   /* DESC */ "",
   /* URL */ ,
@@ -482,7 +482,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ za128rs,
-  /* UPPERCAE_NAME */ ZA128RS,
+  /* UPPERCASE_NAME */ ZA128RS,
   /* FULL_NAME */ "Reservation set size of 128 bytes",
   /* DESC */ "",
   /* URL */ ,
@@ -495,7 +495,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ za64rs,
-  /* UPPERCAE_NAME */ ZA64RS,
+  /* UPPERCASE_NAME */ ZA64RS,
   /* FULL_NAME */ "Reservation set size of 64 bytes",
   /* DESC */ "",
   /* URL */ ,
@@ -508,7 +508,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zaamo,
-  /* UPPERCAE_NAME */ ZAAMO,
+  /* UPPERCASE_NAME */ ZAAMO,
   /* FULL_NAME */ "zaamo extension",
   /* DESC */ "",
   /* URL */ ,
@@ -521,7 +521,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zabha,
-  /* UPPERCAE_NAME */ ZABHA,
+  /* UPPERCASE_NAME */ ZABHA,
   /* FULL_NAME */ "zabha extension",
   /* DESC */ "",
   /* URL */ ,
@@ -534,7 +534,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zacas,
-  /* UPPERCAE_NAME */ ZACAS,
+  /* UPPERCASE_NAME */ ZACAS,
   /* FULL_NAME */ "zacas extension",
   /* DESC */ "",
   /* URL */ ,
@@ -547,7 +547,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zalrsc,
-  /* UPPERCAE_NAME */ ZALRSC,
+  /* UPPERCASE_NAME */ ZALRSC,
   /* FULL_NAME */ "zalrsc extension",
   /* DESC */ "",
   /* URL */ ,
@@ -560,7 +560,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zawrs,
-  /* UPPERCAE_NAME */ ZAWRS,
+  /* UPPERCASE_NAME */ ZAWRS,
   /* FULL_NAME */ "Wait-on-reservation-set extension",
   /* DESC */ "",
   /* URL */ ,
@@ -573,7 +573,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zama16b,
-  /* UPPERCAE_NAME */ ZAMA16B,
+  /* UPPERCASE_NAME */ ZAMA16B,
   /* FULL_NAME */ "Zama16b extension",
   /* DESC */ "Misaligned loads, stores, and AMOs to main memory regions that do"
 	     " not cross a naturally aligned 16-byte boundary are atomic.",
@@ -587,7 +587,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zfa,
-  /* UPPERCAE_NAME */ ZFA,
+  /* UPPERCASE_NAME */ ZFA,
   /* FULL_NAME */ "Additional floating-point extension",
   /* DESC */ "",
   /* URL */ ,
@@ -600,7 +600,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zfbfmin,
-  /* UPPERCAE_NAME */ ZFBFMIN,
+  /* UPPERCASE_NAME */ ZFBFMIN,
   /* FULL_NAME */ "zfbfmin extension",
   /* DESC */ "",
   /* URL */ ,
@@ -613,7 +613,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zfh,
-  /* UPPERCAE_NAME */ ZFH,
+  /* UPPERCASE_NAME */ ZFH,
   /* FULL_NAME */ "Half-precision floating-point extension",
   /* DESC */ "",
   /* URL */ ,
@@ -626,7 +626,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zfhmin,
-  /* UPPERCAE_NAME */ ZFHMIN,
+  /* UPPERCASE_NAME */ ZFHMIN,
   /* FULL_NAME */ "Minimal half-precision floating-point extension",
   /* DESC */ "",
   /* URL */ ,
@@ -639,7 +639,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zfinx,
-  /* UPPERCAE_NAME */ ZFINX,
+  /* UPPERCASE_NAME */ ZFINX,
   /* FULL_NAME */ "Single-precision floating-point in integer registers extension",
   /* DESC */ "",
   /* URL */ ,
@@ -652,7 +652,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zdinx,
-  /* UPPERCAE_NAME */ ZDINX,
+  /* UPPERCASE_NAME */ ZDINX,
   /* FULL_NAME */ "Double-precision floating-point in integer registers extension",
   /* DESC */ "",
   /* URL */ ,
@@ -665,7 +665,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zca,
-  /* UPPERCAE_NAME */ ZCA,
+  /* UPPERCASE_NAME */ ZCA,
   /* FULL_NAME */ "Integer compressed instruction extension",
   /* DESC */ "",
   /* URL */ ,
@@ -709,7 +709,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zcb,
-  /* UPPERCAE_NAME */ ZCB,
+  /* UPPERCASE_NAME */ ZCB,
   /* FULL_NAME */ "Simple compressed instruction extension",
   /* DESC */ "",
   /* URL */ ,
@@ -722,7 +722,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zcd,
-  /* UPPERCAE_NAME */ ZCD,
+  /* UPPERCASE_NAME */ ZCD,
   /* FULL_NAME */ "Compressed double-precision floating point loads and stores extension",
   /* DESC */ "",
   /* URL */ ,
@@ -735,7 +735,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zce,
-  /* UPPERCAE_NAME */ ZCE,
+  /* UPPERCASE_NAME */ ZCE,
   /* FULL_NAME */ "Compressed instruction extensions for embedded processors",
   /* DESC */ "",
   /* URL */ ,
@@ -754,7 +754,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zcf,
-  /* UPPERCAE_NAME */ ZCF,
+  /* UPPERCASE_NAME */ ZCF,
   /* FULL_NAME */ "Compressed single-precision floating point loads and stores extension",
   /* DESC */ "",
   /* URL */ ,
@@ -767,7 +767,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zcmop,
-  /* UPPERCAE_NAME */ ZCMOP,
+  /* UPPERCASE_NAME */ ZCMOP,
   /* FULL_NAME */ "zcmop extension",
   /* DESC */ "",
   /* URL */ ,
@@ -780,7 +780,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zcmp,
-  /* UPPERCAE_NAME */ ZCMP,
+  /* UPPERCASE_NAME */ ZCMP,
   /* FULL_NAME */ "Compressed push pop extension",
   /* DESC */ "",
   /* URL */ ,
@@ -793,7 +793,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zcmt,
-  /* UPPERCAE_NAME */ ZCMT,
+  /* UPPERCASE_NAME */ ZCMT,
   /* FULL_NAME */ "Table jump instruction extension",
   /* DESC */ "",
   /* URL */ ,
@@ -806,7 +806,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zclsd,
-  /* UPPERCAE_NAME */ ZCLSD,
+  /* UPPERCASE_NAME */ ZCLSD,
   /* FULL_NAME */ "Compressed load/store pair instructions extension",
   /* DESC */ "",
   /* URL */ ,
@@ -819,7 +819,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zba,
-  /* UPPERCAE_NAME */ ZBA,
+  /* UPPERCASE_NAME */ ZBA,
   /* FULL_NAME */ "Address calculation extension",
   /* DESC */ "",
   /* URL */ ,
@@ -832,7 +832,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zbb,
-  /* UPPERCAE_NAME */ ZBB,
+  /* UPPERCASE_NAME */ ZBB,
   /* FULL_NAME */ "Basic bit manipulation extension",
   /* DESC */ "",
   /* URL */ ,
@@ -845,7 +845,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zbc,
-  /* UPPERCAE_NAME */ ZBC,
+  /* UPPERCASE_NAME */ ZBC,
   /* FULL_NAME */ "Carry-less multiplication extension",
   /* DESC */ "",
   /* URL */ ,
@@ -858,7 +858,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zbkb,
-  /* UPPERCAE_NAME */ ZBKB,
+  /* UPPERCASE_NAME */ ZBKB,
   /* FULL_NAME */ "Cryptography bit-manipulation extension",
   /* DESC */ "",
   /* URL */ ,
@@ -871,7 +871,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zbkc,
-  /* UPPERCAE_NAME */ ZBKC,
+  /* UPPERCASE_NAME */ ZBKC,
   /* FULL_NAME */ "Cryptography carry-less multiply extension",
   /* DESC */ "",
   /* URL */ ,
@@ -884,7 +884,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zbkx,
-  /* UPPERCAE_NAME */ ZBKX,
+  /* UPPERCASE_NAME */ ZBKX,
   /* FULL_NAME */ "Cryptography crossbar permutation extension",
   /* DESC */ "",
   /* URL */ ,
@@ -897,7 +897,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zbs,
-  /* UPPERCAE_NAME */ ZBS,
+  /* UPPERCASE_NAME */ ZBS,
   /* FULL_NAME */ "Single-bit operation extension",
   /* DESC */ "",
   /* URL */ ,
@@ -910,7 +910,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zk,
-  /* UPPERCAE_NAME */ ZK,
+  /* UPPERCASE_NAME */ ZK,
   /* FULL_NAME */ "Standard scalar cryptography extension",
   /* DESC */ "",
   /* URL */ ,
@@ -923,7 +923,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zkn,
-  /* UPPERCAE_NAME */ ZKN,
+  /* UPPERCASE_NAME */ ZKN,
   /* FULL_NAME */ "NIST algorithm suite extension",
   /* DESC */ "",
   /* URL */ ,
@@ -936,7 +936,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zknd,
-  /* UPPERCAE_NAME */ ZKND,
+  /* UPPERCASE_NAME */ ZKND,
   /* FULL_NAME */ "AES Decryption extension",
   /* DESC */ "",
   /* URL */ ,
@@ -949,7 +949,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zkne,
-  /* UPPERCAE_NAME */ ZKNE,
+  /* UPPERCASE_NAME */ ZKNE,
   /* FULL_NAME */ "AES Encryption extension",
   /* DESC */ "",
   /* URL */ ,
@@ -962,7 +962,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zknh,
-  /* UPPERCAE_NAME */ ZKNH,
+  /* UPPERCASE_NAME */ ZKNH,
   /* FULL_NAME */ "Hash function extension",
   /* DESC */ "",
   /* URL */ ,
@@ -975,7 +975,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zkr,
-  /* UPPERCAE_NAME */ ZKR,
+  /* UPPERCASE_NAME */ ZKR,
   /* FULL_NAME */ "Entropy source extension",
   /* DESC */ "",
   /* URL */ ,
@@ -988,7 +988,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zks,
-  /* UPPERCAE_NAME */ ZKS,
+  /* UPPERCASE_NAME */ ZKS,
   /* FULL_NAME */ "ShangMi algorithm suite extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1001,7 +1001,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zksed,
-  /* UPPERCAE_NAME */ ZKSED,
+  /* UPPERCASE_NAME */ ZKSED,
   /* FULL_NAME */ "SM4 block cipher extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1014,7 +1014,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zksh,
-  /* UPPERCAE_NAME */ ZKSH,
+  /* UPPERCASE_NAME */ ZKSH,
   /* FULL_NAME */ "SM3 hash function extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1027,7 +1027,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zkt,
-  /* UPPERCAE_NAME */ ZKT,
+  /* UPPERCASE_NAME */ ZKT,
   /* FULL_NAME */ "Data independent execution latency extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1040,7 +1040,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ ztso,
-  /* UPPERCAE_NAME */ ZTSO,
+  /* UPPERCASE_NAME */ ZTSO,
   /* FULL_NAME */ "Total store ordering extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1053,7 +1053,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvbb,
-  /* UPPERCAE_NAME */ ZVBB,
+  /* UPPERCASE_NAME */ ZVBB,
   /* FULL_NAME */ "Vector basic bit-manipulation extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1066,7 +1066,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvbc,
-  /* UPPERCAE_NAME */ ZVBC,
+  /* UPPERCASE_NAME */ ZVBC,
   /* FULL_NAME */ "Vector carryless multiplication extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1079,7 +1079,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zve32f,
-  /* UPPERCAE_NAME */ ZVE32F,
+  /* UPPERCASE_NAME */ ZVE32F,
   /* FULL_NAME */ "Vector extensions for embedded processors",
   /* DESC */ "",
   /* URL */ ,
@@ -1092,7 +1092,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zve32x,
-  /* UPPERCAE_NAME */ ZVE32X,
+  /* UPPERCASE_NAME */ ZVE32X,
   /* FULL_NAME */ "Vector extensions for embedded processors",
   /* DESC */ "",
   /* URL */ ,
@@ -1105,7 +1105,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zve64d,
-  /* UPPERCAE_NAME */ ZVE64D,
+  /* UPPERCASE_NAME */ ZVE64D,
   /* FULL_NAME */ "Vector extensions for embedded processors",
   /* DESC */ "",
   /* URL */ ,
@@ -1118,7 +1118,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zve64f,
-  /* UPPERCAE_NAME */ ZVE64F,
+  /* UPPERCASE_NAME */ ZVE64F,
   /* FULL_NAME */ "Vector extensions for embedded processors",
   /* DESC */ "",
   /* URL */ ,
@@ -1131,7 +1131,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zve64x,
-  /* UPPERCAE_NAME */ ZVE64X,
+  /* UPPERCASE_NAME */ ZVE64X,
   /* FULL_NAME */ "Vector extensions for embedded processors",
   /* DESC */ "",
   /* URL */ ,
@@ -1144,7 +1144,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvfbfmin,
-  /* UPPERCAE_NAME */ ZVFBFMIN,
+  /* UPPERCASE_NAME */ ZVFBFMIN,
   /* FULL_NAME */ "Vector BF16 converts extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1157,7 +1157,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvfbfwma,
-  /* UPPERCAE_NAME */ ZVFBFWMA,
+  /* UPPERCASE_NAME */ ZVFBFWMA,
   /* FULL_NAME */ "zvfbfwma extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1170,7 +1170,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvfh,
-  /* UPPERCAE_NAME */ ZVFH,
+  /* UPPERCASE_NAME */ ZVFH,
   /* FULL_NAME */ "Vector half-precision floating-point extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1183,7 +1183,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvfhmin,
-  /* UPPERCAE_NAME */ ZVFHMIN,
+  /* UPPERCASE_NAME */ ZVFHMIN,
   /* FULL_NAME */ "Vector minimal half-precision floating-point extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1196,7 +1196,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvkb,
-  /* UPPERCAE_NAME */ ZVKB,
+  /* UPPERCASE_NAME */ ZVKB,
   /* FULL_NAME */ "Vector cryptography bit-manipulation extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1209,7 +1209,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvkg,
-  /* UPPERCAE_NAME */ ZVKG,
+  /* UPPERCASE_NAME */ ZVKG,
   /* FULL_NAME */ "Vector GCM/GMAC extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1222,7 +1222,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvkn,
-  /* UPPERCAE_NAME */ ZVKN,
+  /* UPPERCASE_NAME */ ZVKN,
   /* FULL_NAME */ "Vector NIST Algorithm Suite extension",
   /* DESC */ "@samp{zvkn} will expand to",
   /* URL */ ,
@@ -1235,7 +1235,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvknc,
-  /* UPPERCAE_NAME */ ZVKNC,
+  /* UPPERCASE_NAME */ ZVKNC,
   /* FULL_NAME */ "Vector NIST Algorithm Suite with carryless multiply extension, @samp{zvknc}",
   /* DESC */ "",
   /* URL */ ,
@@ -1248,7 +1248,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvkned,
-  /* UPPERCAE_NAME */ ZVKNED,
+  /* UPPERCASE_NAME */ ZVKNED,
   /* FULL_NAME */ "Vector AES block cipher extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1261,7 +1261,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvkng,
-  /* UPPERCAE_NAME */ ZVKNG,
+  /* UPPERCASE_NAME */ ZVKNG,
   /* FULL_NAME */ "Vector NIST Algorithm Suite with GCM extension, @samp{zvkng} will expand",
   /* DESC */ "",
   /* URL */ ,
@@ -1274,7 +1274,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvknha,
-  /* UPPERCAE_NAME */ ZVKNHA,
+  /* UPPERCASE_NAME */ ZVKNHA,
   /* FULL_NAME */ "Vector SHA-2 secure hash extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1287,7 +1287,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvknhb,
-  /* UPPERCAE_NAME */ ZVKNHB,
+  /* UPPERCASE_NAME */ ZVKNHB,
   /* FULL_NAME */ "Vector SHA-2 secure hash extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1300,7 +1300,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvks,
-  /* UPPERCAE_NAME */ ZVKS,
+  /* UPPERCASE_NAME */ ZVKS,
   /* FULL_NAME */ "Vector ShangMi algorithm suite extension, @samp{zvks} will expand",
   /* DESC */ "",
   /* URL */ ,
@@ -1313,7 +1313,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvksc,
-  /* UPPERCAE_NAME */ ZVKSC,
+  /* UPPERCASE_NAME */ ZVKSC,
   /* FULL_NAME */ "Vector ShangMi algorithm suite with carryless multiplication extension,",
   /* DESC */ "",
   /* URL */ ,
@@ -1326,7 +1326,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvksed,
-  /* UPPERCAE_NAME */ ZVKSED,
+  /* UPPERCASE_NAME */ ZVKSED,
   /* FULL_NAME */ "Vector SM4 Block Cipher extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1339,7 +1339,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvksg,
-  /* UPPERCAE_NAME */ ZVKSG,
+  /* UPPERCASE_NAME */ ZVKSG,
   /* FULL_NAME */ "Vector ShangMi algorithm suite with GCM extension, @samp{zvksg} will expand",
   /* DESC */ "",
   /* URL */ ,
@@ -1352,7 +1352,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvksh,
-  /* UPPERCAE_NAME */ ZVKSH,
+  /* UPPERCASE_NAME */ ZVKSH,
   /* FULL_NAME */ "Vector SM3 Secure Hash extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1365,7 +1365,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvkt,
-  /* UPPERCAE_NAME */ ZVKT,
+  /* UPPERCASE_NAME */ ZVKT,
   /* FULL_NAME */ "Vector data independent execution latency extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1378,7 +1378,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl1024b,
-  /* UPPERCAE_NAME */ ZVL1024B,
+  /* UPPERCASE_NAME */ ZVL1024B,
   /* FULL_NAME */ "Minimum vector length standard extensions",
   /* DESC */ "",
   /* URL */ ,
@@ -1391,7 +1391,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl128b,
-  /* UPPERCAE_NAME */ ZVL128B,
+  /* UPPERCASE_NAME */ ZVL128B,
   /* FULL_NAME */ "Minimum vector length standard extensions",
   /* DESC */ "",
   /* URL */ ,
@@ -1404,7 +1404,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl16384b,
-  /* UPPERCAE_NAME */ ZVL16384B,
+  /* UPPERCASE_NAME */ ZVL16384B,
   /* FULL_NAME */ "zvl16384b extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1417,7 +1417,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl2048b,
-  /* UPPERCAE_NAME */ ZVL2048B,
+  /* UPPERCASE_NAME */ ZVL2048B,
   /* FULL_NAME */ "Minimum vector length standard extensions",
   /* DESC */ "",
   /* URL */ ,
@@ -1430,7 +1430,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl256b,
-  /* UPPERCAE_NAME */ ZVL256B,
+  /* UPPERCASE_NAME */ ZVL256B,
   /* FULL_NAME */ "Minimum vector length standard extensions",
   /* DESC */ "",
   /* URL */ ,
@@ -1443,7 +1443,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl32768b,
-  /* UPPERCAE_NAME */ ZVL32768B,
+  /* UPPERCASE_NAME */ ZVL32768B,
   /* FULL_NAME */ "zvl32768b extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1456,7 +1456,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl32b,
-  /* UPPERCAE_NAME */ ZVL32B,
+  /* UPPERCASE_NAME */ ZVL32B,
   /* FULL_NAME */ "Minimum vector length standard extensions",
   /* DESC */ "",
   /* URL */ ,
@@ -1469,7 +1469,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl4096b,
-  /* UPPERCAE_NAME */ ZVL4096B,
+  /* UPPERCASE_NAME */ ZVL4096B,
   /* FULL_NAME */ "Minimum vector length standard extensions",
   /* DESC */ "",
   /* URL */ ,
@@ -1482,7 +1482,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl512b,
-  /* UPPERCAE_NAME */ ZVL512B,
+  /* UPPERCASE_NAME */ ZVL512B,
   /* FULL_NAME */ "Minimum vector length standard extensions",
   /* DESC */ "",
   /* URL */ ,
@@ -1495,7 +1495,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl64b,
-  /* UPPERCAE_NAME */ ZVL64B,
+  /* UPPERCASE_NAME */ ZVL64B,
   /* FULL_NAME */ "Minimum vector length standard extensions",
   /* DESC */ "",
   /* URL */ ,
@@ -1508,7 +1508,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl65536b,
-  /* UPPERCAE_NAME */ ZVL65536B,
+  /* UPPERCASE_NAME */ ZVL65536B,
   /* FULL_NAME */ "zvl65536b extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1521,7 +1521,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl8192b,
-  /* UPPERCAE_NAME */ ZVL8192B,
+  /* UPPERCASE_NAME */ ZVL8192B,
   /* FULL_NAME */ "zvl8192b extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1534,7 +1534,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zhinx,
-  /* UPPERCAE_NAME */ ZHINX,
+  /* UPPERCASE_NAME */ ZHINX,
   /* FULL_NAME */ "Half-precision floating-point in integer registers extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1547,7 +1547,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ zhinxmin,
-  /* UPPERCAE_NAME */ ZHINXMIN,
+  /* UPPERCASE_NAME */ ZHINXMIN,
   /* FULL_NAME */ "Minimal half-precision floating-point in integer registers extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1560,7 +1560,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ sdtrig,
-  /* UPPERCAE_NAME */ SDTRIG,
+  /* UPPERCASE_NAME */ SDTRIG,
   /* FULL_NAME */ "sdtrig extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1573,7 +1573,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ sha,
-  /* UPPERCAE_NAME */ SHA,
+  /* UPPERCASE_NAME */ SHA,
   /* FULL_NAME */ "The augmented hypervisor extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1586,7 +1586,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ shcounterenw,
-  /* UPPERCAE_NAME */ SHCOUNTERENW,
+  /* UPPERCASE_NAME */ SHCOUNTERENW,
   /* FULL_NAME */ "Support writeable enables for any supported counter",
   /* DESC */ "",
   /* URL */ ,
@@ -1599,7 +1599,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ shgatpa,
-  /* UPPERCAE_NAME */ SHGATPA,
+  /* UPPERCASE_NAME */ SHGATPA,
   /* FULL_NAME */ "SvNNx4 mode supported for all modes supported by satp",
   /* DESC */ "",
   /* URL */ ,
@@ -1611,8 +1611,21 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ shlcofideleg,
+  /* UPPERCASE_NAME */ SHLCOFIDELEG,
+  /* FULL_NAME */ "Delegating LCOFI interrupts to VS-mode",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"h"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sh,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ shtvala,
-  /* UPPERCAE_NAME */ SHTVALA,
+  /* UPPERCASE_NAME */ SHTVALA,
   /* FULL_NAME */ "The htval register provides all needed values",
   /* DESC */ "",
   /* URL */ ,
@@ -1625,7 +1638,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ shvstvala,
-  /* UPPERCAE_NAME */ SHVSTVALA,
+  /* UPPERCASE_NAME */ SHVSTVALA,
   /* FULL_NAME */ "The vstval register provides all needed values",
   /* DESC */ "",
   /* URL */ ,
@@ -1638,7 +1651,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ shvstvecd,
-  /* UPPERCAE_NAME */ SHVSTVECD,
+  /* UPPERCASE_NAME */ SHVSTVECD,
   /* FULL_NAME */ "The vstvec register supports Direct mode",
   /* DESC */ "",
   /* URL */ ,
@@ -1651,7 +1664,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ shvsatpa,
-  /* UPPERCAE_NAME */ SHVSATPA,
+  /* UPPERCASE_NAME */ SHVSATPA,
   /* FULL_NAME */ "The vsatp register supports all modes supported by satp",
   /* DESC */ "",
   /* URL */ ,
@@ -1664,7 +1677,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ smaia,
-  /* UPPERCAE_NAME */ SMAIA,
+  /* UPPERCASE_NAME */ SMAIA,
   /* FULL_NAME */ "Advanced interrupt architecture extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1676,8 +1689,34 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ smcntrpmf,
+  /* UPPERCASE_NAME */ SMCNTRPMF,
+  /* FULL_NAME */ "Cycle and instret privilege mode filtering",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sm,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ smcsrind,
+  /* UPPERCASE_NAME */ SMCSRIND,
+  /* FULL_NAME */ "Machine-Level Indirect CSR Access",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr", "sscsrind"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sm,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ smepmp,
-  /* UPPERCAE_NAME */ SMEPMP,
+  /* UPPERCASE_NAME */ SMEPMP,
   /* FULL_NAME */ "PMP Enhancements for memory access and execution prevention on Machine mode",
   /* DESC */ "",
   /* URL */ ,
@@ -1690,7 +1729,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ smmpm,
-  /* UPPERCAE_NAME */ SMMPM,
+  /* UPPERCASE_NAME */ SMMPM,
   /* FULL_NAME */ "smmpm extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1703,7 +1742,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ smnpm,
-  /* UPPERCAE_NAME */ SMNPM,
+  /* UPPERCASE_NAME */ SMNPM,
   /* FULL_NAME */ "smnpm extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1715,8 +1754,21 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ smrnmi,
+  /* UPPERCASE_NAME */ SMRNMI,
+  /* FULL_NAME */ "Resumable non-maskable interrupts",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sm,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ smstateen,
-  /* UPPERCAE_NAME */ SMSTATEEN,
+  /* UPPERCASE_NAME */ SMSTATEEN,
   /* FULL_NAME */ "State enable extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1729,7 +1781,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ smdbltrp,
-  /* UPPERCAE_NAME */ SMDBLTRP,
+  /* UPPERCASE_NAME */ SMDBLTRP,
   /* FULL_NAME */ "Double Trap Extensions",
   /* DESC */ "",
   /* URL */ ,
@@ -1742,7 +1794,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ ssaia,
-  /* UPPERCAE_NAME */ SSAIA,
+  /* UPPERCASE_NAME */ SSAIA,
   /* FULL_NAME */ "Advanced interrupt architecture extension for supervisor-mode",
   /* DESC */ "",
   /* URL */ ,
@@ -1754,8 +1806,21 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ ssccptr,
+  /* UPPERCASE_NAME */ SSCCPTR,
+  /* FULL_NAME */ "Main memory supports page table reads",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ sscofpmf,
-  /* UPPERCAE_NAME */ SSCOFPMF,
+  /* UPPERCASE_NAME */ SSCOFPMF,
   /* FULL_NAME */ "Count overflow & filtering extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1767,8 +1832,34 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ sscounterenw,
+  /* UPPERCASE_NAME */ SSCOUNTERENW,
+  /* FULL_NAME */ "Support writeable enables for any supported counter",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ sscsrind,
+  /* UPPERCASE_NAME */ SSCSRIND,
+  /* FULL_NAME */ "Supervisor-Level Indirect CSR Access",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ ssnpm,
-  /* UPPERCAE_NAME */ SSNPM,
+  /* UPPERCASE_NAME */ SSNPM,
   /* FULL_NAME */ "ssnpm extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1781,7 +1872,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ sspm,
-  /* UPPERCAE_NAME */ SSPM,
+  /* UPPERCASE_NAME */ SSPM,
   /* FULL_NAME */ "sspm extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1794,7 +1885,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ ssstateen,
-  /* UPPERCAE_NAME */ SSSTATEEN,
+  /* UPPERCASE_NAME */ SSSTATEEN,
   /* FULL_NAME */ "State-enable extension for supervisor-mode",
   /* DESC */ "",
   /* URL */ ,
@@ -1807,7 +1898,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ sstc,
-  /* UPPERCAE_NAME */ SSTC,
+  /* UPPERCASE_NAME */ SSTC,
   /* FULL_NAME */ "Supervisor-mode timer interrupts extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1819,8 +1910,34 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ sstvala,
+  /* UPPERCASE_NAME */ SSTVALA,
+  /* FULL_NAME */ "Stval provides all needed values",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ sstvecd,
+  /* UPPERCASE_NAME */ SSTVECD,
+  /* FULL_NAME */ "Stvec supports Direct mode",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ ssstrict,
-  /* UPPERCAE_NAME */ SSSTRICT,
+  /* UPPERCASE_NAME */ SSSTRICT,
   /* FULL_NAME */ "ssstrict extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1833,7 +1950,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ ssdbltrp,
-  /* UPPERCAE_NAME */ SSDBLTRP,
+  /* UPPERCASE_NAME */ SSDBLTRP,
   /* FULL_NAME */ "Double Trap Extensions",
   /* DESC */ "",
   /* URL */ ,
@@ -1845,8 +1962,21 @@ DEFINE_RISCV_EXT(
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
 DEFINE_RISCV_EXT(
+  /* NAME */ ssu64xl,
+  /* UPPERCASE_NAME */ SSU64XL,
+  /* FULL_NAME */ "UXLEN=64 must be supported",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ ss,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
   /* NAME */ supm,
-  /* UPPERCAE_NAME */ SUPM,
+  /* UPPERCASE_NAME */ SUPM,
   /* FULL_NAME */ "supm extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1859,7 +1989,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ svinval,
-  /* UPPERCAE_NAME */ SVINVAL,
+  /* UPPERCASE_NAME */ SVINVAL,
   /* FULL_NAME */ "Fine-grained address-translation cache invalidation extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1872,7 +2002,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ svnapot,
-  /* UPPERCAE_NAME */ SVNAPOT,
+  /* UPPERCASE_NAME */ SVNAPOT,
   /* FULL_NAME */ "NAPOT translation contiguity extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1885,7 +2015,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ svpbmt,
-  /* UPPERCAE_NAME */ SVPBMT,
+  /* UPPERCASE_NAME */ SVPBMT,
   /* FULL_NAME */ "Page-based memory types extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1898,7 +2028,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ svvptc,
-  /* UPPERCAE_NAME */ SVVPTC,
+  /* UPPERCASE_NAME */ SVVPTC,
   /* FULL_NAME */ "svvptc extension",
   /* DESC */ "",
   /* URL */ ,
@@ -1911,11 +2041,11 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ svadu,
-  /* UPPERCAE_NAME */ SVADU,
+  /* UPPERCASE_NAME */ SVADU,
   /* FULL_NAME */ "Hardware Updating of A/D Bits extension",
   /* DESC */ "",
   /* URL */ ,
-  /* DEP_EXTS */ ({}),
+  /* DEP_EXTS */ ({"zicsr"}),
   /* SUPPORTED_VERSIONS */ ({{1, 0}}),
   /* FLAG_GROUP */ sv,
   /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
@@ -1924,11 +2054,24 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ svade,
-  /* UPPERCAE_NAME */ SVADE,
+  /* UPPERCASE_NAME */ SVADE,
   /* FULL_NAME */ "Cause exception when hardware updating of A/D bits is disabled",
   /* DESC */ "",
   /* URL */ ,
-  /* DEP_EXTS */ ({}),
+  /* DEP_EXTS */ ({"zicsr"}),
+  /* SUPPORTED_VERSIONS */ ({{1, 0}}),
+  /* FLAG_GROUP */ sv,
+  /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT(
+  /* NAME */ svbare,
+  /* UPPERCASE_NAME */ SVBARE,
+  /* FULL_NAME */ "Satp mode bare is supported",
+  /* DESC */ "",
+  /* URL */ ,
+  /* DEP_EXTS */ ({"zicsr"}),
   /* SUPPORTED_VERSIONS */ ({{1, 0}}),
   /* FLAG_GROUP */ sv,
   /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,

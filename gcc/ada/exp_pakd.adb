@@ -904,7 +904,8 @@ package body Exp_Pakd is
          --  discriminants, so we treat it as a default/per-object expression.
 
          Set_Parent (Len_Expr, Typ);
-         Preanalyze_Spec_Expression (Len_Expr, Standard_Long_Long_Integer);
+         Preanalyze_And_Resolve_Spec_Expression
+           (Len_Expr, Standard_Long_Long_Integer);
 
          --  Use a modular type if possible. We can do this if we have
          --  static bounds, and the length is small enough, and the length
@@ -1525,21 +1526,24 @@ package body Exp_Pakd is
 
       Get_Base_And_Bit_Offset (Prefix (N), Base, Offset);
 
-      Rewrite (N,
-        Unchecked_Convert_To (RTE (RE_Address),
-          Make_Op_Add (Loc,
-            Left_Opnd =>
-              Unchecked_Convert_To (RTE (RE_Integer_Address),
-                Make_Attribute_Reference (Loc,
-                  Prefix         => Base,
-                  Attribute_Name => Name_Address)),
+      Offset := Unchecked_Convert_To (RTE (RE_Storage_Offset), Offset);
 
-            Right_Opnd =>
-              Unchecked_Convert_To (RTE (RE_Integer_Address),
-                Make_Op_Divide (Loc,
-                  Left_Opnd => Offset,
-                  Right_Opnd =>
-                    Make_Integer_Literal (Loc, System_Storage_Unit))))));
+      Rewrite (N,
+        Make_Function_Call (Loc,
+          Name =>
+            Make_Expanded_Name (Loc,
+              Chars         => Name_Op_Add,
+              Prefix        =>
+                New_Occurrence_Of (RTU_Entity (System_Storage_Elements), Loc),
+              Selector_Name => Make_Identifier (Loc, Name_Op_Add)),
+          Parameter_Associations => New_List (
+            Make_Attribute_Reference (Loc,
+              Prefix         => Base,
+              Attribute_Name => Name_Address),
+            Make_Op_Divide (Loc,
+              Left_Opnd  => Offset,
+              Right_Opnd =>
+                Make_Integer_Literal (Loc, System_Storage_Unit)))));
 
       Analyze_And_Resolve (N, RTE (RE_Address));
    end Expand_Packed_Address_Reference;

@@ -884,7 +884,7 @@
 ;; Where C1 is not a LUI operand, but ~C1 is a LUI operand
 
 (define_insn_and_split "*lui_constraint<X:mode>_and_to_or"
-	[(set (match_operand:X 0 "register_operand" "=r")
+  [(set (match_operand:X 0 "register_operand" "=r")
 	(plus:X (and:X (match_operand:X 1 "register_operand" "r")
 		       (match_operand 2 "const_int_operand"))
 		(match_operand 3 "const_int_operand")))
@@ -898,13 +898,21 @@
 	<= riscv_const_insns (operands[3], false)))"
   "#"
   "&& reload_completed"
-  [(set (match_dup 4) (match_dup 5))
-   (set (match_dup 0) (ior:X (match_dup 1) (match_dup 4)))
-   (set (match_dup 4) (match_dup 6))
-   (set (match_dup 0) (minus:X (match_dup 0) (match_dup 4)))]
+  [(const_int 0)]
   {
     operands[5] = GEN_INT (~INTVAL (operands[2]));
     operands[6] = GEN_INT ((~INTVAL (operands[2])) | (-INTVAL (operands[3])));
+
+    /* This is always a LUI operand, so it's safe to just emit.  */
+    emit_move_insn (operands[4], operands[5]);
+
+    rtx x = gen_rtx_IOR (word_mode, operands[1], operands[4]);
+    emit_move_insn (operands[0], x);
+
+    /* This may require multiple steps to synthesize.  */
+    riscv_emit_move (operands[4], operands[6]);
+    x = gen_rtx_MINUS (word_mode, operands[0], operands[4]);
+    emit_move_insn (operands[0], x);
   }
   [(set_attr "type" "arith")])
 
@@ -4394,7 +4402,7 @@
 )
 
 (define_insn "prefetch"
-  [(prefetch (match_operand 0 "address_operand" "r")
+  [(prefetch (match_operand 0 "prefetch_operand" "Q")
              (match_operand 1 "imm5_operand" "i")
              (match_operand 2 "const_int_operand" "n"))]
   "TARGET_ZICBOP"
@@ -4414,7 +4422,7 @@
 				      (const_string "4")))])
 
 (define_insn "riscv_prefetchi_<mode>"
-  [(unspec_volatile:X [(match_operand:X 0 "address_operand" "r")
+  [(unspec_volatile:X [(match_operand:X 0 "prefetch_operand" "Q")
               (match_operand:X 1 "imm5_operand" "i")]
               UNSPECV_PREI)]
   "TARGET_ZICBOP"
@@ -4833,6 +4841,24 @@
   "mv\tt2,%0"
   [(set_attr "type" "move")
    (set_attr "mode" "<MODE>")])
+
+;; If we're trying to create 0 or 2^n-1 based on the result of
+;; a test such as (lt (reg) (const_int 0)), we'll see a splat of
+;; the sign bit across a GPR using srai, then a logical and to
+;; mask off high bits.  We can replace the logical and with
+;; a logical right shift which works without constant synthesis
+;; for larger constants.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (ashiftrt:X (match_operand:X 1 "register_operand")
+			   (match_operand 2 "const_int_operand"))
+	       (match_operand 3 "const_int_operand")))]
+  "(INTVAL (operands[2]) == BITS_PER_WORD - 1
+    && exact_log2 (INTVAL (operands[3]) + 1) >= 0)"
+  [(set (match_dup 0) (ashiftrt:X (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (lshiftrt:X (match_dup 0) (match_dup 3)))]
+  { operands[3] = GEN_INT (BITS_PER_WORD
+			   - exact_log2 (INTVAL (operands[3]) + 1)); })
 
 (include "bitmanip.md")
 (include "crypto.md")

@@ -64,6 +64,14 @@ package body Osint is
    --  Used in Locate_File as a fake directory when Name is already an
    --  absolute path.
 
+   procedure Get_Current_Dir
+     (Dir : System.Address; Length : System.Address);
+   pragma Import (C, Get_Current_Dir, "__gnat_get_current_dir");
+
+   Max_Path : Integer;
+   pragma Import (C, Max_Path, "__gnat_max_path_len");
+   --  Maximum length of a path name
+
    -------------------------------------
    -- Use of Name_Find and Name_Enter --
    -------------------------------------
@@ -1426,6 +1434,24 @@ package body Osint is
       Smart_Find_File (N, Source, Full_File, Attr.all);
    end Full_Source_Name;
 
+   ---------------------
+   -- Get_Current_Dir --
+   ---------------------
+
+   function Get_Current_Dir return String is
+      Path_Len : Natural := Max_Path;
+      Buffer   : String (1 .. 1 + Max_Path + 1);
+
+   begin
+      Get_Current_Dir (Buffer'Address, Path_Len'Address);
+
+      if Path_Len = 0 then
+         raise Program_Error;
+      end if;
+
+      return Buffer (1 .. Path_Len);
+   end Get_Current_Dir;
+
    -------------------
    -- Get_Directory --
    -------------------
@@ -1517,15 +1543,6 @@ package body Osint is
      (Search_Dir : String;
       File_Type  : Search_File_Type) return String_Ptr
    is
-      procedure Get_Current_Dir
-        (Dir    : System.Address;
-         Length : System.Address);
-      pragma Import (C, Get_Current_Dir, "__gnat_get_current_dir");
-
-      Max_Path : Integer;
-      pragma Import (C, Max_Path, "__gnat_max_path_len");
-      --  Maximum length of a path name
-
       Current_Dir        : String_Ptr;
       Default_Search_Dir : String_Access;
       Default_Suffix_Dir : String_Access;
@@ -2732,6 +2749,84 @@ package body Osint is
    end Read_Source_File;
 
    -------------------
+   -- Relative_Path --
+   -------------------
+
+   function Relative_Path (Path : String; Ref : String) return String is
+      Norm_Path : constant String :=
+        Normalize_Pathname (Name => Path, Resolve_Links => False);
+      Norm_Ref  : constant String :=
+        Normalize_Pathname (Name => Ref, Resolve_Links => False);
+      Rel_Path : Bounded_String;
+      Last     : Natural := Norm_Ref'Last;
+      Old      : Natural;
+      Depth    : Natural := 0;
+
+   begin
+      pragma Assert (System.OS_Lib.Is_Absolute_Path (Norm_Path));
+      pragma Assert (System.OS_Lib.Is_Absolute_Path (Norm_Ref));
+      pragma Assert (System.OS_Lib.Is_Directory (Norm_Ref));
+
+      --  If the root drives are different on Windows then we cannot create a
+      --  relative path.
+
+      if Root (Norm_Path) /= Root (Norm_Ref) then
+         return Norm_Path;
+      end if;
+
+      if Norm_Path = Norm_Ref then
+         return ".";
+      end if;
+
+      loop
+         exit when Last - Norm_Ref'First + 1 <= Norm_Path'Length
+           and then
+             Norm_Path
+               (Norm_Path'First ..
+                    Norm_Path'First + Last - Norm_Ref'First) =
+             Norm_Ref (Norm_Ref'First .. Last);
+
+         Old := Last;
+         for J in reverse Norm_Ref'First .. Last - 1 loop
+            if Is_Directory_Separator (Norm_Ref (J)) then
+               Depth := Depth + 1;
+               Last  := J;
+               exit;
+            end if;
+         end loop;
+
+         if Old = Last then
+            --  No Dir_Separator in Ref... Let's return Path
+            return Norm_Path;
+         end if;
+      end loop;
+
+      --  Move up the directory chain to the common point
+
+      for I in 1 .. Depth loop
+         Append (Rel_Path, ".." & System.OS_Lib.Directory_Separator);
+      end loop;
+
+      --  Avoid starting the relative path with a directory separator
+
+      if Last < Norm_Path'Length
+        and then Is_Directory_Separator (Norm_Path (Norm_Path'First + Last))
+      then
+         Last := Last + 1;
+      end if;
+
+      --  Add the rest of the path from the common point
+
+      Append
+        (Rel_Path,
+         Norm_Path
+           (Norm_Path'First + Last - Norm_Ref'First + 1 ..
+                Norm_Path'Last));
+
+      return To_String (Rel_Path);
+   end Relative_Path;
+
+   -------------------
    -- Relocate_Path --
    -------------------
 
@@ -2787,6 +2882,25 @@ package body Osint is
 
       return new String'(Path);
    end Relocate_Path;
+
+   ----------
+   -- Root --
+   ----------
+
+   function Root (Path : String) return String is
+      Last : Natural := Path'First;
+   begin
+      pragma Assert (System.OS_Lib.Is_Absolute_Path (Path));
+
+      for I in Path'Range loop
+         if Is_Directory_Separator (Path (I)) then
+            Last := I;
+            exit;
+         end if;
+      end loop;
+
+      return Path (Path'First .. Last);
+   end Root;
 
    -----------------
    -- Set_Program --

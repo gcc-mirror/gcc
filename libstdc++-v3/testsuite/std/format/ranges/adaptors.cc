@@ -19,7 +19,7 @@ is_format_string_for(const char* str, Args&&... args)
 }
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
-#define WIDEN(S) WIDEN_(_CharT, S)
+#define WIDEN(S) WIDEN_(CharT, S)
 
 template<template<typename Tp> class Adaptor>
 void
@@ -66,13 +66,13 @@ template<typename T>
 constexpr auto std::format_kind<NotFormattableCont<T>>
   = std::range_format::disabled;
 
-template<typename _CharT,
+template<typename CharT,
 	 template<typename Tp, typename Cont = std::vector<Tp>> class Adaptor>
 void
 test_output()
 {
   const std::vector<int> v{3, 2, 1};
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
   Adaptor<int, std::vector<int>> q(std::from_range, v);
 
   res = std::format(WIDEN("{}"), q);
@@ -88,9 +88,9 @@ test_output()
   VERIFY( res == WIDEN("==[0x03, 0x02, 0x01]===") );
 
   // Sequence output is always used
-  Adaptor<_CharT, std::basic_string<_CharT>> qs(
+  Adaptor<CharT, std::basic_string<CharT>> qs(
     std::from_range,
-    std::basic_string_view<_CharT>(WIDEN("321")));
+    std::basic_string_view<CharT>(WIDEN("321")));
 
   res = std::format(WIDEN("{}"), qs);
   VERIFY( res == WIDEN("['3', '2', '1']") );
@@ -114,13 +114,13 @@ test_output()
   res = std::format(WIDEN("{}"), mq);
   VERIFY( res == WIDEN("[3, 2, 1]") );
 
-  static_assert(!std::formattable<const Adaptor<MutFormat>, _CharT>);
+  static_assert(!std::formattable<const Adaptor<MutFormat>, CharT>);
 
-  static_assert(!std::formattable<Adaptor<NoFormat>, _CharT>);
-  static_assert(!std::formattable<const Adaptor<NoFormat>, _CharT>);
+  static_assert(!std::formattable<Adaptor<NoFormat>, CharT>);
+  static_assert(!std::formattable<const Adaptor<NoFormat>, CharT>);
 
   // Formatter check if container is formattable, not container elements.
-  static_assert(!std::formattable<Adaptor<int, NotFormattableCont<int>>, _CharT>);
+  static_assert(!std::formattable<Adaptor<int, NotFormattableCont<int>>, CharT>);
 }
 
 template<template<typename Tp, typename Cont = std::vector<Tp>> class Adaptor>
@@ -135,12 +135,12 @@ test_adaptor()
   static_assert(!std::formattable<Adaptor<int>, char32_t>);
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_compare()
 {
   const std::vector<int> v{3, 2, 1};
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
   std::priority_queue<int, std::vector<int>, std::greater<>> q(
      std::from_range, v);
 

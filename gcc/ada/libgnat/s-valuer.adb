@@ -135,7 +135,9 @@ package body System.Value_R is
       B : constant Uns := Uns (Base);
 
    begin
-      if Digit >= Base / 2 then
+      --  Beware that Base may be odd
+
+      if 2 * Unsigned (Digit) >= Base then
 
          --  If Extra is maximum, round Value
 
@@ -578,8 +580,8 @@ package body System.Value_R is
       if Str (Index) in '0' .. '9' then
          After_Point := False;
 
-         --  If this is a digit it can indicates either the float decimal
-         --  part or the base to use.
+         --  If this is a digit it can indicate either the integral part or the
+         --  base to use.
 
          Scan_Integral_Digits
            (Str, Index, Max, Base, False, Value, Scale, N,
@@ -602,7 +604,8 @@ package body System.Value_R is
          Bad_Value (Str);
       end if;
 
-      --  Check if the first number encountered is a base
+      --  Check if the first number encountered is a base. ':' is allowed in
+      --  place of '#' in virtue of RM J.2 (3).
 
       pragma Assert (Index >= Str'First);
 
@@ -611,7 +614,13 @@ package body System.Value_R is
       then
          Base_Char := Str (Index);
 
-         if N = 1 and then Value (1) in 2 .. 16 then
+         --  Functionally, "(Parts = 1 or else N = 1)" in the condition of the
+         --  following if statement could replaced by the simpler "N = 1". The
+         --  reason we use a more complicated expression is to accommodate
+         --  machine-code-based coverage tools: the simple version makes it
+         --  impossible to fully cover generic instances of System.Value_R with
+         --  Parts = 1.
+         if (Parts = 1 or else N = 1) and then Value (1) in 2 .. 16 then
             Base := Unsigned (Value (1));
          else
             Base_Violation := True;
@@ -630,10 +639,10 @@ package body System.Value_R is
          end if;
       end if;
 
-      --  Scan the integral part if still necessary
+      --  Scan the integral part if there was a base and no point right after
 
       if Base_Char /= ASCII.NUL and then not After_Point then
-         if Index > Max or else As_Digit (Str (Index)) not in Valid_Digit then
+         if As_Digit (Str (Index)) not in Valid_Digit then
             Bad_Value (Str);
          end if;
 

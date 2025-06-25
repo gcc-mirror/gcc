@@ -1548,6 +1548,7 @@ begin
          | Pragma_Priority_Specific_Dispatching
          | Pragma_Profile
          | Pragma_Profile_Warnings
+         | Pragma_Program_Exit
          | Pragma_Propagate_Exceptions
          | Pragma_Provide_Shift_Operators
          | Pragma_Psect_Object

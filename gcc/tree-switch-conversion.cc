@@ -1030,6 +1030,9 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       DECL_IGNORED_P (decl) = 1;
+      /* The decl is mergable since we don't take the address ever and
+	 just reading from it. */
+      DECL_MERGEABLE (decl) = 1;
       if (offloading_function_p (cfun->decl))
 	DECL_ATTRIBUTES (decl)
 	  = tree_cons (get_identifier ("omp declare target"), NULL_TREE,

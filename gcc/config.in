@@ -355,6 +355,12 @@
 #endif
 
 
+/* Define if your assembler supports AEABI build attributes. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_AEABI_BUILD_ATTRIBUTES
+#endif
+
+
 /* Define if your assembler supports architecture modifiers. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_ARCHITECTURE_MODIFIERS

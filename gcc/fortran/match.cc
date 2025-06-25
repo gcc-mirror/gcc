@@ -7171,9 +7171,11 @@ select_type_push (gfc_symbol *sel)
 /* Set the temporary for the current intrinsic SELECT TYPE selector.  */
 
 static gfc_symtree *
-select_intrinsic_set_tmp (gfc_typespec *ts)
+select_intrinsic_set_tmp (gfc_typespec *ts, const char *var_name)
 {
-  char name[GFC_MAX_SYMBOL_LEN];
+  /* Keep size in sync with the buffer size in resolve_select_type as it
+     determines the final name through truncation.  */
+  char name[GFC_MAX_SYMBOL_LEN + 12 + 1];
   gfc_symtree *tmp;
   HOST_WIDE_INT charlen = 0;
   gfc_symbol *selector = select_type_stack->selector;
@@ -7192,12 +7194,12 @@ select_intrinsic_set_tmp (gfc_typespec *ts)
     charlen = gfc_mpz_get_hwi (ts->u.cl->length->value.integer);
 
   if (ts->type != BT_CHARACTER)
-    sprintf (name, "__tmp_%s_%d", gfc_basic_typename (ts->type),
-	     ts->kind);
+    snprintf (name, sizeof (name), "__tmp_%s_%d_%s",
+	      gfc_basic_typename (ts->type), ts->kind, var_name);
   else
     snprintf (name, sizeof (name),
-	      "__tmp_%s_" HOST_WIDE_INT_PRINT_DEC "_%d",
-	      gfc_basic_typename (ts->type), charlen, ts->kind);
+	      "__tmp_%s_" HOST_WIDE_INT_PRINT_DEC "_%d_%s",
+	      gfc_basic_typename (ts->type), charlen, ts->kind, var_name);
 
   gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
   sym = tmp->n.sym;
@@ -7239,7 +7241,9 @@ select_type_set_tmp (gfc_typespec *ts)
       return;
     }
 
-  tmp = select_intrinsic_set_tmp (ts);
+  gfc_expr *select_type_expr = gfc_state_stack->construct->expr1;
+  const char *var_name = gfc_var_name_for_select_type_temp (select_type_expr);
+  tmp = select_intrinsic_set_tmp (ts, var_name);
 
   if (tmp == NULL)
     {
@@ -7247,9 +7251,11 @@ select_type_set_tmp (gfc_typespec *ts)
 	return;
 
       if (ts->type == BT_CLASS)
-	sprintf (name, "__tmp_class_%s", ts->u.derived->name);
+	snprintf (name, sizeof (name), "__tmp_class_%s_%s", ts->u.derived->name,
+		  var_name);
       else
-	sprintf (name, "__tmp_type_%s", ts->u.derived->name);
+	snprintf (name, sizeof (name), "__tmp_type_%s_%s", ts->u.derived->name,
+		  var_name);
 
       gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
       sym = tmp->n.sym;

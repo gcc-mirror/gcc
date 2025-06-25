@@ -331,7 +331,7 @@ __gnat_ttyname (int filedes ATTRIBUTE_UNUSED)
 #endif /* defined (__vxworks) */
 }
 #endif
-
+
 #if defined (__linux__) || defined (__sun__) \
   || defined (WINNT) \
   || defined (__MACHTEN__) || defined (__hpux__) || defined (_AIX) \
@@ -1069,6 +1069,11 @@ int
 _getpagesize (void)
 {
   return getpagesize ();
+}
+
+int
+__gnat_has_cap_sys_nice () {
+  return 0;
 }
 #endif
 

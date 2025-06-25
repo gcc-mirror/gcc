@@ -110,8 +110,8 @@ extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, unsigned char);
 
 /* errout: */
 
-#define Error_Msg_N		errout__error_msg_n
-#define Error_Msg_NE		errout__error_msg_ne
+#define Error_Msg_N		errout__error_msg_n_gigi
+#define Error_Msg_NE		errout__error_msg_ne_gigi
 #define Set_Identifier_Casing	errout__set_identifier_casing
 
 extern void Error_Msg_N			(String_Pointer, Node_Id);

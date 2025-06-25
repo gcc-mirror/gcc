@@ -7931,6 +7931,17 @@ finish_struct_1 (tree t)
       return;
     }
 
+  if (location_t fcloc = failed_completion_location (t))
+    {
+      auto_diagnostic_group adg;
+      if (warning (OPT_Wsfinae_incomplete_,
+		   "defining %qT, which previously failed to be complete "
+		   "in a SFINAE context", t)
+	  && warn_sfinae_incomplete == 1)
+	inform (fcloc, "here.  Use %qs for a diagnostic at that point",
+		"-Wsfinae-incomplete=2");
+    }
+
   /* If this type was previously laid out as a forward reference,
      make sure we lay it out again.  */
   TYPE_SIZE (t) = NULL_TREE;

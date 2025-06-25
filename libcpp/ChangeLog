@@ -1,3 +1,17 @@
+2025-06-17  Jason Merrill  <jason@redhat.com>
+
+	* line-map.cc (linemap_location_from_module_p): Add.
+	* include/line-map.h: Declare it.
+
+2025-06-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* include/line-map.h (typedef expanded_location): Convert to...
+	(struct expanded_location): ...this.
+	(operator==): New decl, for expanded_location.
+	(operator!=): Likewise.
+	* line-map.cc (operator==): New decl, for expanded_location.
+
 2025-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/108900

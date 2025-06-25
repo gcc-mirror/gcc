@@ -650,10 +650,16 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     We no longer require that, because most tests are uninteresting
     and contain no "original authorship", and so would not be protected
     by copyright anyway.
-    If you do want to add the FSF copyright notice and GPL licence text,
+    Adding the FSF copyright notice to new tests is incorrect unless you
+    (or your employer) have a copyright assignment on file with the FSF,
+    or if the test contains code copied from another test under FSF copyright.
+    In particular, new tests that contain original code are not copyright FSF
+    if contributed under the <link xmlns:xlink="http://www.w3.org/1999/xlink"
+      xlink:href="https://gcc.gnu.org/dco.html">DCO</link> terms.
+    If new tests do add the FSF copyright notice and GPL licence text,
     then the first copyright year should correspond to the date
-    the file was checked in to version control. If a test is copied from
-    an existing file it should retain the copyright years from the
+    the file was checked in to version control. If the test code is copied
+    from an existing file it should retain the copyright years from the
     original file.
    </para>
 
@@ -682,20 +688,6 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
     <function>__builtin_abort</function>
     (to avoid using <literal>assert</literal> and being affected by
     <literal>NDEBUG</literal>).
-   </para>
-
-   <para>
-    Prior to GCC 7.1, <literal>VERIFY</literal> was defined differently.
-    It usually expanded to the standard <literal>assert</literal> macro, but
-    allowed targets to define it to something different. In order to support
-    the alternative expansions of <literal>VERIFY</literal>, before any use
-    of the macro there needed to be a variable called <varname>test</varname>
-    in scope, which was usually defined like so (the attribute avoids
-    warnings about an unused variable):
-    <programlisting>
-    bool test __attribute__((unused)) = true;
-    </programlisting>
-    This is no longer needed, and should not be added to new tests.
    </para>
 
    <para>

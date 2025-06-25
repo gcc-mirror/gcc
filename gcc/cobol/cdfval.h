@@ -38,6 +38,14 @@
 
 bool scanner_parsing();
 
+/* cdfval_base_t has no constructor because otherwise: 
+ * cobol/cdf.h:172:7: note: ‘YDFSTYPE::YDFSTYPE()’ is implicitly deleted 
+ *  because the default definition would be ill-formed:
+ * 172 | union YDFSTYPE
+ * 
+ * We use the derived type cdfval_t, which can be properly constructed and
+ * operated on, but tell Bison only about its POD base class.
+ */
 struct YDFLTYPE;
 struct cdfval_base_t {
   bool off;
@@ -65,28 +73,28 @@ struct cdfval_t : public cdfval_base_t {
     cdfval_base_t::string = NULL;
     cdfval_base_t::number = 0;
   }
-  cdfval_t( const char value[] )
+  cdfval_t( const char value[] ) // cppcheck-suppress noExplicitConstructor
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t::off  = false;
     cdfval_base_t::string = value;
     cdfval_base_t::number = 0;
   }
-  cdfval_t( long long value )
+  cdfval_t( long long value ) // cppcheck-suppress noExplicitConstructor
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t::off  = false;
     cdfval_base_t::string = NULL;
     cdfval_base_t::number = value;
   }
-  cdfval_t( long value )
+  cdfval_t( long value ) // cppcheck-suppress noExplicitConstructor
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t::off  = false;
     cdfval_base_t::string = NULL;
     cdfval_base_t::number = value;
   }
-  cdfval_t( int value )
+  cdfval_t( int value ) // cppcheck-suppress noExplicitConstructor
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t::off  = false;
@@ -101,7 +109,7 @@ struct cdfval_t : public cdfval_base_t {
     HOST_WIDE_INT value = real_to_integer(&r);
     cdfval_base_t::number = value;
   }
-  cdfval_t( const cdfval_base_t& value )
+  cdfval_t( const cdfval_base_t& value ) // cppcheck-suppress noExplicitConstructor
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t *self(this);
@@ -116,6 +124,6 @@ const cdfval_t *
 cdf_value( const char name[] );
 
 bool
-cdf_value( const char name[], cdfval_t value );
+cdf_value( const char name[], const cdfval_t& value );
 
 #endif

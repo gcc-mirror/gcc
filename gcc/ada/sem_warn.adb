@@ -1712,17 +1712,11 @@ package body Sem_Warn is
 
               and then Ekind (E1) /= E_Class_Wide_Type
 
-              --  Objects other than parameters of task types are allowed to
-              --  be non-referenced, since they start up tasks.
+              --  Objects that are not parameters and whose types have tasks
+              --  are allowed to be non-referenced since they start up tasks.
 
-              and then ((Ekind (E1) /= E_Variable
-                          and then Ekind (E1) /= E_Constant
-                          and then Ekind (E1) /= E_Component)
-
-                         --  Check that E1T is not a task or a composite type
-                         --  with a task component.
-
-                         or else not Has_Task (E1T))
+              and then not (Ekind (E1) in E_Variable | E_Constant | E_Component
+                            and then Has_Task (E1T))
 
               --  For subunits, only place warnings on the main unit itself,
               --  since parent units are not completely compiled.
@@ -4670,9 +4664,11 @@ package body Sem_Warn is
                      if Nkind (Parent (LA)) in N_Procedure_Call_Statement
                                              | N_Parameter_Association
                      then
-                        Error_Msg_NE
-                          ("?m?& modified by call, but value overwritten #!",
-                           LA, Ent);
+                        if Warn_On_All_Unread_Out_Parameters then
+                           Error_Msg_NE
+                            ("?m?& modified by call, but value overwritten #!",
+                             LA, Ent);
+                        end if;
                      else
                         Error_Msg_NE -- CODEFIX
                           ("?m?useless assignment to&, value overwritten #!",

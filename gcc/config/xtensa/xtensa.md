@@ -41,6 +41,8 @@
   UNSPEC_LSETUP_START
   UNSPEC_LSETUP_END
   UNSPEC_FRAME_BLOCKAGE
+  UNSPEC_CEIL
+  UNSPEC_FLOOR
 ])
 
 (define_c_enum "unspecv" [
@@ -102,6 +104,11 @@
 (define_code_iterator any_float [float unsigned_float])
 (define_code_attr m_float [(float "float") (unsigned_float "ufloat")])
 (define_code_attr s_float [(float "") (unsigned_float "uns")])
+
+;; This iterator and attribute allow FP-to-integer rounding of two types
+;; to be generated from one template.
+(define_int_iterator ANY_ROUND [UNSPEC_CEIL UNSPEC_FLOOR])
+(define_int_attr m_round [(UNSPEC_CEIL "ceil") (UNSPEC_FLOOR "floor")])
 
 
 ;; Attributes.
@@ -1007,7 +1014,7 @@
    (set_attr "length"	"3")])
 
 
-;; Field extract instructions.
+;; Field extract and insert instructions.
 
 (define_expand "extvsi"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -1141,6 +1148,25 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"6")])
 
+(define_insn "insvsi"
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+a")
+			 (match_operand:SI 1 "extui_fldsz_operand" "i")
+			 (match_operand:SI 2 "const_int_operand" "i"))
+	(match_operand:SI 3 "register_operand" "r"))]
+  "TARGET_DEPBITS"
+{
+  int shift;
+  if (BITS_BIG_ENDIAN)
+    shift = (32 - (INTVAL (operands[1]) + INTVAL (operands[2]))) & 0x1f;
+  else
+    shift = INTVAL (operands[2]) & 0x1f;
+  operands[2] = GEN_INT (shift);
+  return "depbits\t%0, %3, %2, %1";
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
 
 ;; Conversions.
 
@@ -1168,12 +1194,7 @@
 	(any_fix:SI (mult:SF (match_operand:SF 1 "register_operand" "f")
 			     (match_operand:SF 2 "fix_scaling_operand" "F"))))]
   "TARGET_HARD_FLOAT"
-{
-  static char result[64];
-  sprintf (result, "<m_fix>.s\t%%0, %%1, %d",
-	   REAL_EXP (CONST_DOUBLE_REAL_VALUE (operands[2])) - 1);
-  return result;
-}
+  "<m_fix>.s\t%0, %1, %U2"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
@@ -1192,12 +1213,36 @@
 	(mult:SF (any_float:SF (match_operand:SI 1 "register_operand" "a"))
 		 (match_operand:SF 2 "float_scaling_operand" "F")))]
   "TARGET_HARD_FLOAT"
-{
-  static char result[64];
-  sprintf (result, "<m_float>.s\t%%0, %%1, %d",
-	   1 - REAL_EXP (CONST_DOUBLE_REAL_VALUE (operands[2])));
-  return result;
-}
+  "<m_float>.s\t%0, %1, %V2"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "l<m_round>sfsi2"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(match_operand:SF 1 "register_operand" "f")] ANY_ROUND))]
+  "TARGET_HARD_FLOAT"
+  "<m_round>.s\t%0, %1, 0"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*l<m_round>sfsi2_2x"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(plus:SF (match_operand:SF 1 "register_operand" "f")
+			     (match_dup 1))] ANY_ROUND))]
+  "TARGET_HARD_FLOAT"
+  "<m_round>.s\t%0, %1, 1"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"3")])
+
+(define_insn "*l<m_round>sfsi2_scaled"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(mult:SF (match_operand:SF 1 "register_operand" "f")
+			     (match_operand:SF 2 "fix_scaling_operand" "F"))] ANY_ROUND))]
+  "TARGET_HARD_FLOAT"
+  "<m_round>.s\t%0, %1, %U2"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
@@ -3319,36 +3364,6 @@
 				    (const_int 8)
 				    (const_int 9))))])
 
-(define_peephole2
-  [(set (match_operand:SI 0 "register_operand")
-	(match_operand:SI 6 "reload_operand"))
-   (set (match_operand:SI 1 "register_operand")
-	(match_operand:SI 7 "reload_operand"))
-   (set (match_operand:SF 2 "register_operand")
-	(match_operand:SF 4 "register_operand"))
-   (set (match_operand:SF 3 "register_operand")
-	(match_operand:SF 5 "register_operand"))]
-  "REGNO (operands[0]) == REGNO (operands[4])
-   && REGNO (operands[1]) == REGNO (operands[5])
-   && peep2_reg_dead_p (4, operands[0])
-   && peep2_reg_dead_p (4, operands[1])"
-  [(set (match_dup 2)
-	(match_dup 6))
-   (set (match_dup 3)
-	(match_dup 7))]
-{
-  HARD_REG_SET regs;
-  int i;
-  CLEAR_HARD_REG_SET (regs);
-  for (i = 0; i <= 3; ++i)
-    if (TEST_HARD_REG_BIT (regs, REGNO (operands[i])))
-      FAIL;
-    else
-      SET_HARD_REG_BIT (regs, REGNO (operands[i]));
-  operands[6] = gen_rtx_MEM (SFmode, XEXP (operands[6], 0));
-  operands[7] = gen_rtx_MEM (SFmode, XEXP (operands[7], 0));
-})
-
 (define_split
   [(clobber (match_operand 0 "register_operand"))]
   "HARD_REGISTER_P (operands[0])
@@ -3433,50 +3448,4 @@ FALLTHRU:;
   imm0 = value - imm1 - 128;
   operands[1] = GEN_INT (imm0);
   operands[2] = GEN_INT (imm1);
-})
-
-(define_peephole2
-  [(set (match_operand 0 "register_operand")
-	(match_operand 1 "register_operand"))]
-  "REG_NREGS (operands[0]) == 1 && GP_REG_P (REGNO (operands[0]))
-   && REG_NREGS (operands[1]) == 1 && GP_REG_P (REGNO (operands[1]))
-   && peep2_reg_dead_p (1, operands[1])"
-  [(const_int 0)]
-{
-  basic_block bb = BLOCK_FOR_INSN (curr_insn);
-  rtx_insn *head = BB_HEAD (bb), *insn;
-  rtx dest = operands[0], src = operands[1], pattern, t_dest, dest_orig;
-  for (insn = PREV_INSN (curr_insn);
-       insn && insn != head;
-       insn = PREV_INSN (insn))
-    if (CALL_P (insn))
-      break;
-    else if (INSN_P (insn))
-      {
-	if (GET_CODE (pattern = PATTERN (insn)) == SET
-	    && REG_P (t_dest = SET_DEST (pattern))
-	    && REG_NREGS (t_dest) == 1
-	    && REGNO (t_dest) == REGNO (src))
-	{
-	  dest_orig = SET_DEST (pattern);
-	  SET_DEST (pattern) = gen_rtx_REG (GET_MODE (t_dest),
-					    REGNO (dest));
-	  extract_insn (insn);
-	  if (!constrain_operands (true, get_enabled_alternatives (insn)))
-	    {
-	      SET_DEST (pattern) = dest_orig;
-	      goto ABORT;
-	    }
-	  df_insn_rescan (insn);
-	  goto FALLTHRU;
-	}
-	if (reg_overlap_mentioned_p (dest, pattern)
-	    || reg_overlap_mentioned_p (src, pattern)
-	    || set_of (dest, insn)
-	    || set_of (src, insn))
-	  break;
-      }
-ABORT:
-  FAIL;
-FALLTHRU:;
 })

@@ -60,6 +60,10 @@
     (and (match_operand 0 "register_operand")
 	 (match_test "TARGET_ROR"))))
 
+(define_predicate "sr_f_reg_operand"
+  (and (match_operand 0 "register_operand")
+       (match_test "REGNO (op) == SR_F_REGNUM")))
+
 (define_predicate "call_insn_operand"
   (ior (and (match_code "symbol_ref")
 	    (match_test "!TARGET_CMODEL_LARGE"))

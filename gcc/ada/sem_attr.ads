@@ -319,6 +319,12 @@ package Sem_Attr is
       --  This attribute is identical to the Object_Size attribute. It is
       --  provided for compatibility with the DEC attribute of this name.
 
+      ----------
+      -- Make --
+      ----------
+
+      Attribute_Make => True,
+
       ----------------------
       -- Max_Integer_Size --
       ----------------------

@@ -147,6 +147,7 @@ package Snames is
    --  Names of aspects for which there are no matching pragmas or attributes
    --  so that they need to be included for aspect specification use.
 
+   Name_Constructor                    : constant Name_Id := N + $;
    Name_Default_Value                  : constant Name_Id := N + $;
    Name_Default_Component_Value        : constant Name_Id := N + $;
    Name_Designated_Storage_Model       : constant Name_Id := N + $;
@@ -659,6 +660,7 @@ package Snames is
    --  correctly recognize and process Priority. Priority is a standard Ada 95
    --  pragma.
 
+   Name_Program_Exit                   : constant Name_Id := N + $; -- GNAT
    Name_Provide_Shift_Operators        : constant Name_Id := N + $; -- GNAT
    Name_Psect_Object                   : constant Name_Id := N + $; -- GNAT
    Name_Pure                           : constant Name_Id := N + $;
@@ -1080,6 +1082,7 @@ package Snames is
    Name_Img                            : constant Name_Id := N + $; -- GNAT
    Name_Input                          : constant Name_Id := N + $;
    Name_Machine                        : constant Name_Id := N + $;
+   Name_Make                           : constant Name_Id := N + $; -- GNAT
    Name_Max                            : constant Name_Id := N + $;
    Name_Min                            : constant Name_Id := N + $;
    Name_Model                          : constant Name_Id := N + $;
@@ -1614,6 +1617,7 @@ package Snames is
       Attribute_Img,
       Attribute_Input,
       Attribute_Machine,
+      Attribute_Make,
       Attribute_Max,
       Attribute_Min,
       Attribute_Model,
@@ -1952,6 +1956,7 @@ package Snames is
       Pragma_Predicate_Failure,
       Pragma_Preelaborate,
       Pragma_Pre_Class,
+      Pragma_Program_Exit,
       Pragma_Provide_Shift_Operators,
       Pragma_Psect_Object,
       Pragma_Pure,

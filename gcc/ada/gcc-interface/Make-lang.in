@@ -185,6 +185,11 @@ ada.serial = gnat1$(exeext)
 # variable conveys what we need for this, set to "g++" if not bootstrapping,
 # ".../xg++" otherwise.
 
+GNATMAKE_FOR_HOST = $(GNATMAKE)
+GNATBIND_FOR_HOST = $(GNATBIND)
+GNATLINK_FOR_HOST = $(subst gnatmake,gnatlink,$(GNATMAKE))
+GNATLS_FOR_HOST   = $(subst gnatmake,gnatls,$(GNATMAKE))
+
 # There are too many Ada sources to check against here.  Let's
 # always force the recursive make.
 ifeq ($(build), $(host))
@@ -214,20 +219,16 @@ ifeq ($(build), $(host))
         CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
         ADA_INCLUDES="-I../generated -I$(RTS_DIR)/../adainclude -I$(RTS_DIR)" \
-        GNATMAKE="gnatmake" \
-        GNATBIND="gnatbind" \
-        GNATLINK="gnatlink" \
+        GNATMAKE="$(GNATMAKE_FOR_HOST)" \
+        GNATBIND="$(GNATBIND_FOR_HOST)" \
+        GNATLINK="$(GNATLINK_FOR_HOST)" \
         LIBGNAT=""
   endif
 else
   # Build is different from host so we are either building a canadian cross
   # or a cross-native compiler. We provide defaults for tools targeting the
-  # host platform, but they can be overriden by just setting <tool>_FOR_HOST
+  # host platform, but they can be overridden by just setting <tool>_FOR_HOST
   # variables.
-  GNATMAKE_FOR_HOST=$(host_noncanonical)-gnatmake
-  GNATBIND_FOR_HOST=$(host_noncanonical)-gnatbind
-  GNATLINK_FOR_HOST=$(host_noncanonical)-gnatlink
-  GNATLS_FOR_HOST=$(host_noncanonical)-gnatls
 
   ifeq ($(host), $(target))
     # This is a cross native. All the sources are taken from the currently
@@ -315,23 +316,17 @@ GNAT_ADA_OBJS =	\
  ada/cstand.o	\
  ada/debug.o	\
  ada/debug_a.o	\
- ada/diagnostics-brief_emitter.o      \
- ada/diagnostics-constructors.o      \
- ada/diagnostics-converter.o      \
- ada/diagnostics-json_utils.o      \
- ada/diagnostics-pretty_emitter.o      \
- ada/diagnostics-repository.o      \
- ada/diagnostics-sarif_emitter.o      \
- ada/diagnostics-switch_repository.o      \
- ada/diagnostics-utils.o      \
- ada/diagnostics.o      \
  ada/einfo-entities.o \
  ada/einfo-utils.o \
  ada/einfo.o	\
  ada/elists.o	\
  ada/err_vars.o	\
+ ada/errid.o \
  ada/errout.o	\
  ada/erroutc.o	\
+ ada/erroutc-pretty_emitter.o \
+ ada/erroutc-sarif_emitter.o \
+ ada/errsw.o \
  ada/eval_fat.o	\
  ada/exp_aggr.o	\
  ada/exp_spark.o	\
@@ -380,6 +375,7 @@ GNAT_ADA_OBJS =	\
  ada/impunit.o	\
  ada/inline.o	\
  ada/itypes.o	\
+ ada/json_utils.o \
  ada/krunch.o	\
  ada/layout.o	\
  ada/lib-load.o	\
@@ -562,8 +558,6 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-secsta.o	\
  ada/libgnat/s-soflin.o	\
  ada/libgnat/s-soliin.o	\
- ada/libgnat/s-spark.o	\
- ada/libgnat/s-spcuop.o	\
  ada/libgnat/s-stache.o	\
  ada/libgnat/s-stalib.o	\
  ada/libgnat/s-stoele.o	\
@@ -575,11 +569,8 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-trasym.o \
  ada/libgnat/s-unstyp.o	\
  ada/libgnat/s-valint.o	\
- ada/libgnat/s-valspe.o	\
  ada/libgnat/s-valuns.o	\
  ada/libgnat/s-valuti.o	\
- ada/libgnat/s-vs_int.o \
- ada/libgnat/s-vs_uns.o \
  ada/libgnat/s-wchcnv.o	\
  ada/libgnat/s-wchcon.o	\
  ada/libgnat/s-wchjis.o	\
@@ -615,23 +606,17 @@ GNATBIND_OBJS = \
  ada/casing.o     \
  ada/csets.o      \
  ada/debug.o      \
- ada/diagnostics-brief_emitter.o      \
- ada/diagnostics-constructors.o      \
- ada/diagnostics-converter.o      \
- ada/diagnostics-json_utils.o      \
- ada/diagnostics-pretty_emitter.o      \
- ada/diagnostics-repository.o      \
- ada/diagnostics-sarif_emitter.o      \
- ada/diagnostics-switch_repository.o      \
- ada/diagnostics-utils.o      \
- ada/diagnostics.o      \
  ada/einfo-entities.o \
  ada/einfo-utils.o \
  ada/einfo.o      \
  ada/elists.o     \
  ada/err_vars.o   \
+ ada/errid.o      \
  ada/errout.o     \
  ada/erroutc.o    \
+ ada/erroutc-sarif_emitter.o \
+ ada/erroutc-pretty_emitter.o \
+ ada/errsw.o      \
  ada/exit.o       \
  ada/final.o      \
  ada/fmap.o       \
@@ -639,6 +624,7 @@ GNATBIND_OBJS = \
  ada/gnatbind.o   \
  ada/gnatvsn.o    \
  ada/hostparm.o   \
+ ada/json_utils.o \
  ada/lib.o        \
  ada/link.o       \
  ada/namet.o      \

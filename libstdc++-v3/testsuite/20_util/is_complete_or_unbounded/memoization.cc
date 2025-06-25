@@ -23,7 +23,7 @@ struct X;
 static_assert(
   !std::__is_complete_or_unbounded(std::__type_identity<X>{}), "error");
 
-struct X{};
+struct X{};			// { dg-warning Wsfinae-incomplete }
 static_assert(
   std::__is_complete_or_unbounded(std::__type_identity<X>{}),
   "Result memoized. This leads to worse diagnostics");

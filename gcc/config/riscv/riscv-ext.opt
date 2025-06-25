@@ -325,6 +325,8 @@ Mask(SHCOUNTERENW) Var(riscv_sh_subext)
 
 Mask(SHGATPA) Var(riscv_sh_subext)
 
+Mask(SHLCOFIDELEG) Var(riscv_sh_subext)
+
 Mask(SHTVALA) Var(riscv_sh_subext)
 
 Mask(SHVSTVALA) Var(riscv_sh_subext)
@@ -335,11 +337,17 @@ Mask(SHVSATPA) Var(riscv_sh_subext)
 
 Mask(SMAIA) Var(riscv_sm_subext)
 
+Mask(SMCNTRPMF) Var(riscv_sm_subext)
+
+Mask(SMCSRIND) Var(riscv_sm_subext)
+
 Mask(SMEPMP) Var(riscv_sm_subext)
 
 Mask(SMMPM) Var(riscv_sm_subext)
 
 Mask(SMNPM) Var(riscv_sm_subext)
+
+Mask(SMRNMI) Var(riscv_sm_subext)
 
 Mask(SMSTATEEN) Var(riscv_sm_subext)
 
@@ -347,7 +355,13 @@ Mask(SMDBLTRP) Var(riscv_sm_subext)
 
 Mask(SSAIA) Var(riscv_ss_subext)
 
+Mask(SSCCPTR) Var(riscv_ss_subext)
+
 Mask(SSCOFPMF) Var(riscv_ss_subext)
+
+Mask(SSCOUNTERENW) Var(riscv_ss_subext)
+
+Mask(SSCSRIND) Var(riscv_ss_subext)
 
 Mask(SSNPM) Var(riscv_ss_subext)
 
@@ -357,9 +371,15 @@ Mask(SSSTATEEN) Var(riscv_ss_subext)
 
 Mask(SSTC) Var(riscv_ss_subext)
 
+Mask(SSTVALA) Var(riscv_ss_subext)
+
+Mask(SSTVECD) Var(riscv_ss_subext)
+
 Mask(SSSTRICT) Var(riscv_ss_subext)
 
 Mask(SSDBLTRP) Var(riscv_ss_subext)
+
+Mask(SSU64XL) Var(riscv_ss_subext)
 
 Mask(SUPM) Var(riscv_su_subext)
 
@@ -374,6 +394,8 @@ Mask(SVVPTC) Var(riscv_sv_subext)
 Mask(SVADU) Var(riscv_sv_subext)
 
 Mask(SVADE) Var(riscv_sv_subext)
+
+Mask(SVBARE) Var(riscv_sv_subext)
 
 Mask(XCVALU) Var(riscv_xcv_subext)
 

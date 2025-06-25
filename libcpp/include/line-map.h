@@ -1111,6 +1111,10 @@ extern location_t linemap_module_loc
 extern void linemap_module_reparent
   (line_maps *, location_t loc, location_t new_parent);
 
+/* TRUE iff the location comes from a module import.  */
+extern bool linemap_location_from_module_p
+  (const line_maps *, location_t);
+
 /* Restore the linemap state such that the map at LWM-1 continues.
    Return start location of the new map.  */
 extern location_t linemap_module_restore
@@ -1280,7 +1284,7 @@ linemap_location_before_p (const line_maps *set,
   return linemap_compare_locations (set, loc_a, loc_b) >= 0;
 }
 
-typedef struct
+struct expanded_location
 {
   /* The name of the source file involved.  */
   const char *file;
@@ -1294,7 +1298,18 @@ typedef struct
 
   /* In a system header?. */
   bool sysp;
-} expanded_location;
+};
+
+extern bool
+operator== (const expanded_location &a,
+	    const expanded_location &b);
+inline bool
+operator!= (const expanded_location &a,
+	    const expanded_location &b)
+{
+  return !(a == b);
+}
+
 
 /* This is enum is used by the function linemap_resolve_location
    below.  The meaning of the values is explained in the comment of

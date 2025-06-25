@@ -31,11 +31,13 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
-void cbl_message(int fd, const char *format_string, ...);
-void cbl_internal_error(const char *format_string, ...);
+void cbl_message(int fd, const char *format_string, ...)
+  ATTRIBUTE_PRINTF_2;
+void cbl_internal_error(const char *format_string, ...)
+  ATTRIBUTE_GCOBOL_DIAG(1, 2);
 
-void cbl_err(const char *format_string, ...);
-void cbl_errx(const char *format_string, ...);
+void cbl_err(const char *format_string, ...) ATTRIBUTE_GCOBOL_DIAG(1, 2);
+void cbl_errx(const char *format_string, ...) ATTRIBUTE_GCOBOL_DIAG(1, 2);
 
 bool fisdigit(int c);
 bool fisspace(int c);
@@ -47,6 +49,14 @@ void cobol_set_pp_option(int opt);
 
 const char * cobol_filename_restore();
 const char * cobol_lineno_save();
+
+unsigned long gb4( size_t input );
+
+template <typename P>
+static inline const void *
+as_voidp( P p ) {
+  return static_cast<const void *>(p);
+}
 
 
 #endif

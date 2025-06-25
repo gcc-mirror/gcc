@@ -915,7 +915,7 @@ fold_build_vec_cmp (tree_code code, tree type, tree arg0, tree arg1,
   tree cmp_type = truth_type_for (type);
   tree zero_vec = build_zero_cst (type);
   tree minus_one_vec = build_minus_one_cst (type);
-  tree temp = create_tmp_reg_or_ssa_name (cmp_type);
+  tree temp = make_ssa_name (cmp_type);
   gimple *g = gimple_build_assign (temp, code, arg0, arg1);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
   return fold_build3 (VEC_COND_EXPR, type, temp, minus_one_vec, zero_vec);
@@ -1106,7 +1106,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
       if (TREE_TYPE (src_ptr) != src_type)
 	src_ptr = build1 (NOP_EXPR, src_type, src_ptr);
 
-      tree src = create_tmp_reg_or_ssa_name (TREE_TYPE (src_type));
+      tree src = make_ssa_name (TREE_TYPE (src_type));
       gimplify_assign (src, build_simple_mem_ref (src_ptr), &new_seq);
 
       /* If we are not disassembling an accumulator/pair or our destination is
@@ -1130,7 +1130,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
 	{
 	  new_decl = rs6000_builtin_decls[RS6000_BIF_XXMFACC_INTERNAL];
 	  new_call = gimple_build_call (new_decl, 1, src);
-	  src = create_tmp_reg_or_ssa_name (vector_quad_type_node);
+	  src = make_ssa_name (vector_quad_type_node);
 	  gimple_call_set_lhs (new_call, src);
 	  gimple_seq_add_stmt (&new_seq, new_call);
 	}
@@ -1146,7 +1146,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
 	  unsigned index = WORDS_BIG_ENDIAN ? i : nvec - 1 - i;
 	  tree dst = build2 (MEM_REF, unsigned_V16QI_type_node, dst_base,
 			     build_int_cst (dst_type, index * 16));
-	  tree dstssa = create_tmp_reg_or_ssa_name (unsigned_V16QI_type_node);
+	  tree dstssa = make_ssa_name (unsigned_V16QI_type_node);
 	  new_call = gimple_build_call (new_decl, 2, src,
 					build_int_cstu (uint16_type_node, i));
 	  gimple_call_set_lhs (new_call, dstssa);
@@ -1204,7 +1204,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
     {
       /* This built-in has a pass-by-reference accumulator input, so load it
 	 into a temporary accumulator for use as a pass-by-value input.  */
-      op[0] = create_tmp_reg_or_ssa_name (vector_quad_type_node);
+      op[0] = make_ssa_name (vector_quad_type_node);
       for (unsigned i = 1; i < nopnds; i++)
 	op[i] = gimple_call_arg (stmt, i);
       gimplify_assign (op[0], build_simple_mem_ref (acc), &new_seq);
@@ -1252,9 +1252,9 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
     }
 
   if (fncode == RS6000_BIF_BUILD_PAIR || fncode == RS6000_BIF_ASSEMBLE_PAIR_V)
-    lhs = create_tmp_reg_or_ssa_name (vector_pair_type_node);
+    lhs = make_ssa_name (vector_pair_type_node);
   else
-    lhs = create_tmp_reg_or_ssa_name (vector_quad_type_node);
+    lhs = make_ssa_name (vector_quad_type_node);
   gimple_call_set_lhs (new_call, lhs);
   gimple_seq_add_stmt (&new_seq, new_call);
   gimplify_assign (build_simple_mem_ref (acc), lhs, &new_seq);
@@ -1450,7 +1450,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
-      temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+      temp = make_ssa_name (TREE_TYPE (arg1));
       g = gimple_build_assign (temp, BIT_NOT_EXPR, arg1);
       gimple_set_location (g, gimple_location (stmt));
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
@@ -1472,7 +1472,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
-      temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+      temp = make_ssa_name (TREE_TYPE (arg1));
       g = gimple_build_assign (temp, BIT_AND_EXPR, arg0, arg1);
       gimple_set_location (g, gimple_location (stmt));
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
@@ -1512,7 +1512,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
-      temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+      temp = make_ssa_name (TREE_TYPE (arg1));
       g = gimple_build_assign (temp, BIT_NOT_EXPR, arg1);
       gimple_set_location (g, gimple_location (stmt));
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
@@ -1552,7 +1552,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
-      temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+      temp = make_ssa_name (TREE_TYPE (arg1));
       g = gimple_build_assign (temp, BIT_IOR_EXPR, arg0, arg1);
       gimple_set_location (g, gimple_location (stmt));
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
@@ -1643,7 +1643,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
-      temp = create_tmp_reg_or_ssa_name (TREE_TYPE (arg1));
+      temp = make_ssa_name (TREE_TYPE (arg1));
       g = gimple_build_assign (temp, BIT_XOR_EXPR, arg0, arg1);
       gimple_set_location (g, gimple_location (stmt));
       gsi_insert_before (gsi, g, GSI_SAME_STMT);

@@ -131,13 +131,13 @@ is_numeric( cbl_field_type_t type ) {
   case FldIndex:
     return true;
   }
-  yywarn( "%s:%d: invalid symbol_type_t %d", __func__, __LINE__, type );
+  cbl_internal_error( "%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type );
   return false;
 }
 
 struct os_locale_t {
   char assumed[16];
-  char *codeset;
+  const char *codeset;
 };
 
 const char * cbl_field_attr_str( cbl_field_attr_t attr );
@@ -173,7 +173,7 @@ class cbl_domain_elem_t {
   {
     if( value && ! is_numeric ) {
       auto s = consistent_encoding_check(loc, value);
-      if( s ) value = s;
+      if( s ) this->value = s;
     }
   }
   const char *name() const { return value; }
@@ -264,7 +264,18 @@ struct cbl_field_data_t {
     explicit etc_t( tree v = build_zero_cst (float128_type_node)) : value(v) {}
   } etc;
 
-  cbl_field_data_t( uint32_t memsize=0,  uint32_t capacity=0 )
+  cbl_field_data_t()
+    : memsize(0)
+    , capacity(0)
+    , digits(0)
+    , rdigits(0)
+    , initial(0)
+    , picture(0)
+    , etc_type(value_e)
+    , etc()
+  {}
+
+  cbl_field_data_t( uint32_t memsize,  uint32_t capacity )
     : memsize(memsize)
     , capacity(capacity)
     , digits(0)
@@ -326,6 +337,10 @@ struct cbl_field_data_t {
   tree& operator=( tree v) {
     etc_type = value_e;
     return etc.value = v;
+  } 
+  tree& operator=(int i) {
+    etc_type = value_e;
+    return etc.value = build_int_cst_type(integer_type_node, i);
   } 
 
   void set_real_from_capacity( REAL_VALUE_TYPE *r ) const {
@@ -412,8 +427,11 @@ struct cbl_occurs_bounds_t {
   // variable size table.  lower can be zero.
   size_t lower, upper;
 
-  cbl_occurs_bounds_t(size_t lower=0, size_t upper=0)
+  cbl_occurs_bounds_t()
+    : lower(0), upper(0) {}
+  explicit cbl_occurs_bounds_t(size_t lower, size_t upper=0)
     : lower(lower), upper(upper) {}
+
   size_t ntimes() const {
     return upper;
   }
@@ -446,12 +464,12 @@ struct cbl_occurs_t {
 
   void key_alloc( bool ascending );
   void key_field_add( cbl_field_t *field );
-  void index_add( cbl_field_t *field );
+  void index_add( const cbl_field_t *field );
   cbl_occurs_key_t * key_of( cbl_field_t *field );
   bool subscript_ok( const cbl_field_t *subscript ) const;
 
 protected:
-  void field_add( cbl_field_list_t& fields, cbl_field_t *field );
+  void field_add( cbl_field_list_t& fields, const cbl_field_t *field );
 };
 
 /*
@@ -641,7 +659,7 @@ struct cbl_refer_t;
 struct cbl_span_t {
   cbl_refer_t *from, *len;
 
-  cbl_span_t( cbl_refer_t *from, cbl_refer_t *len = NULL )
+  explicit cbl_span_t( cbl_refer_t *from, cbl_refer_t *len = NULL )
     : from(from), len(len) {};
   bool is_active() const { return !( from == NULL && len == NULL ); }
 
@@ -655,49 +673,63 @@ struct cbl_refer_t {
   cbl_field_t *field;
   cbl_label_t *prog_func;
   bool all, addr_of;
-  uint32_t nsubscript;
-  cbl_refer_t *subscripts;  // indices
+  std::vector<cbl_refer_t> subscripts;  // indices
   cbl_span_t refmod;        // substring bounds
 
   cbl_refer_t()
-    : field(NULL), prog_func(NULL)
+    : loc(), field(NULL), prog_func(NULL)
     , all(NULL), addr_of(false)
-    , nsubscript(0), subscripts(NULL), refmod(NULL)
+    , refmod(NULL)
   {}
+  // cppcheck-suppress noExplicitConstructor
   cbl_refer_t( cbl_field_t *field, bool all = false )
-    : field(field), prog_func(NULL)
+    : loc(), field(field), prog_func(NULL)
     , all(all), addr_of(false)
-    , nsubscript(0), subscripts(NULL), refmod(NULL)
+    , refmod(NULL)
   {}
   cbl_refer_t( const YYLTYPE& loc, cbl_field_t *field, bool all = false )
     : loc(loc), field(field), prog_func(NULL)
     , all(all), addr_of(false)
-    , nsubscript(0), subscripts(NULL), refmod(NULL)
+    , refmod(NULL)
   {}
   cbl_refer_t( cbl_field_t *field, cbl_span_t& refmod )
-    : field(field), prog_func(NULL)
+    : loc(), field(field), prog_func(NULL)
     , all(false), addr_of(false)
-    , nsubscript(0), subscripts(NULL), refmod(refmod)
+    , refmod(refmod)
   {}
   cbl_refer_t( cbl_field_t *field,
-               size_t nsubscript, cbl_refer_t *subscripts,
+               const std::vector<cbl_refer_t>& subscripts,
                cbl_span_t refmod = cbl_span_t(NULL) )
-    : field(field), prog_func(NULL)
+    : loc(), field(field), prog_func(NULL)
     , all(false), addr_of(false)
-    , nsubscript(nsubscript) , subscripts( new cbl_refer_t[nsubscript] )
+    , subscripts(subscripts)
     , refmod(refmod)
-  {
-    std::copy(subscripts, subscripts + nsubscript, this->subscripts);
-  }
+  {}
   explicit cbl_refer_t( cbl_label_t *prog_func, bool addr_of = true )
-    : field(NULL), prog_func(prog_func)
+    : loc(), field(NULL), prog_func(prog_func)
     , all(false), addr_of(addr_of)
-    , nsubscript(0), subscripts(NULL), refmod(cbl_span_t(NULL))
+    , refmod(cbl_span_t(NULL))
   {}
 
-  cbl_refer_t duplicate() const {
-    return cbl_refer_t( field, nsubscript, subscripts, refmod );
+  cbl_refer_t( const cbl_refer_t& that ) = default;
+
+  cbl_refer_t& operator=( const cbl_refer_t& that ) {
+    loc = that.loc;
+    field = that.field;
+    prog_func = that.prog_func;
+    all = that.all;
+    addr_of = that.addr_of;
+    subscripts = that.subscripts;
+    refmod = that.refmod;
+    return *this;
   }
+    
+  
+  cbl_refer_t duplicate() const {
+    return cbl_refer_t( field, subscripts, refmod );
+  }
+
+  uint32_t nsubscript() const { return subscripts.size(); }
 
   static cbl_refer_t *empty();
 
@@ -709,8 +741,8 @@ struct cbl_refer_t {
   }
 
   bool is_pointer() const { return addr_of || field->type == FldPointer; }
-  bool is_reference() const { return nsubscript > 0 || refmod.is_active(); }
-  bool is_table_reference() const  { return nsubscript > 0; }
+  bool is_reference() const { return nsubscript() > 0 || refmod.is_active(); }
+  bool is_table_reference() const  { return nsubscript() > 0; }
   bool is_refmod_reference() const  { return refmod.is_active(); }
 
   size_t subscripts_set( const std::list<cbl_refer_t>& subs );
@@ -775,7 +807,7 @@ struct field_key_t {
   }
 };
 
-bool valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src );
+bool valid_move( const cbl_field_t *tgt, const cbl_field_t *src );
 
 #define record_area_name_stem "_ra_"
 
@@ -785,8 +817,7 @@ is_record_area( const cbl_field_t *field ) {
   return 0 == memcmp(field->name, stem, sizeof(stem)-1);
 }
 
-bool
-is_register_field(cbl_field_t *field);
+bool is_register_field( const cbl_field_t *field );
 
 static inline bool
 is_constant( const cbl_field_t *field ) {
@@ -804,17 +835,20 @@ symbol_field_type_update( cbl_field_t *field,
                           cbl_field_type_t type, bool is_usage );
 
 struct sort_key_t;
+struct sort_key_t;
 
 struct cbl_key_t {
   bool ascending;
-  size_t nfield;
-  cbl_field_t **fields;
+  std::vector<const cbl_field_t*> fields;
 
-  cbl_key_t() : ascending(false), nfield(0), fields(0) {}
-  cbl_key_t( size_t nfield, cbl_field_t **fields, bool ascending = true )
-    : ascending(ascending), nfield(nfield), fields(fields) {}
-  cbl_key_t( const sort_key_t& src );
+  cbl_key_t() : ascending(true) {}
+  explicit cbl_key_t( sort_key_t src );
   explicit cbl_key_t( const cbl_occurs_key_t& that );
+  cbl_key_t( size_t nfield, cbl_field_t **fields, bool ascending = true )
+    : ascending(ascending)
+    , fields(fields, fields + nfield)
+  {}
+  cbl_key_t& operator=( const sort_key_t& that );
 };
 
 enum cbl_label_type_t {
@@ -911,8 +945,12 @@ struct cbl_substitute_t {
   subst_fl_t first_last;
   cbl_refer_t orig, replacement;
 
-  cbl_substitute_t( bool anycase = false, char first_last = 0,
-                    cbl_refer_t *orig = NULL, cbl_refer_t *replacement = NULL )
+  cbl_substitute_t()
+    : anycase(false)
+    , first_last(subst_all_e)
+  {}
+  cbl_substitute_t( bool anycase, char first_last,
+                    cbl_refer_t *orig, cbl_refer_t *replacement )
     : anycase(anycase)
     , first_last(subst_fl_t(first_last))
     , orig( orig? *orig : cbl_refer_t() )
@@ -945,7 +983,10 @@ struct cbl_num_result_t {
   enum cbl_round_t rounded;
   struct cbl_refer_t refer;
 
-  static cbl_refer_t refer_of( const cbl_num_result_t& res ) { return res.refer; }
+  static const cbl_refer_t&
+  refer_of( const cbl_num_result_t& res ) {
+    return res.refer;
+  }
 };
 
 void parser_symbol_add( struct cbl_field_t *new_var );
@@ -957,8 +998,9 @@ struct cbl_ffi_arg_t {
   cbl_ffi_arg_attr_t attr;
   cbl_refer_t refer; // refer::field == NULL is OMITTED
 
-  cbl_ffi_arg_t( cbl_refer_t* refer = NULL,
-                 cbl_ffi_arg_attr_t attr = none_of_e );
+  cbl_ffi_arg_t();
+  cbl_ffi_arg_t( cbl_refer_t* refer,
+                 cbl_ffi_arg_attr_t attr );
   cbl_ffi_arg_t( cbl_ffi_crv_t crv,
                  cbl_refer_t* refer,
                  cbl_ffi_arg_attr_t attr = none_of_e );
@@ -1171,8 +1213,11 @@ class temporaries_t {
   struct literal_an {
     bool is_quoted;
     std::string value;
-    literal_an( const char value[] = "???", bool is_quoted = false )
+    literal_an() : is_quoted(false), value("???") {}
+    literal_an( const char value[], bool is_quoted )
       : is_quoted(is_quoted), value(value) {}
+    literal_an( const literal_an& that )
+      : is_quoted(that.is_quoted), value(that.value) {}
     literal_an& operator=( const literal_an& that ) {
       is_quoted = that.is_quoted;
       value = that.value;
@@ -1419,10 +1464,10 @@ struct cbl_alphabet_t {
   add_sequence( const YYLTYPE& loc, const unsigned char seq[] ) {
     if( low_index == 0 ) low_index = seq[0];
 
-    unsigned char high_value = last_index > 0? alphabet[last_index] + 1 : 0;
+    unsigned char last = last_index > 0? alphabet[last_index] + 1 : 0;
 
     for( const unsigned char *p = seq; !end_of_string(p); p++  ) {
-      assign(loc, *p, high_value++);
+      assign(loc, *p, last++);
     }
   }
 
@@ -1430,10 +1475,10 @@ struct cbl_alphabet_t {
   add_interval( const YYLTYPE& loc, unsigned char low, unsigned char high ) {
     if( low_index == 0 ) low_index = low;
 
-    unsigned char high_value = alphabet[last_index];
+    unsigned char last = alphabet[last_index];
 
     for( unsigned char ch = low; ch < high; ch++  ) {
-      assign(loc, ch, high_value++);
+      assign(loc, ch, last++);
     }
   }
 
@@ -1452,7 +1497,7 @@ struct cbl_alphabet_t {
   }
 
   void dump() const {
-    yywarn("'%s': %s, '%c' to '%c' (low 0x%02x, high 0x%02x)",
+    yywarn("%qs: %s, %<%c%> to %<%c%> (low 0x%x, high 0x%x)",
           name, encoding_str(encoding),
           low_index, last_index, low_index, high_index);
     if( encoding == custom_encoding_e ) {
@@ -1513,9 +1558,19 @@ struct cbl_file_key_t {
   cbl_name_t name;
   size_t leftmost; // START or READ named leftmost field in key
   size_t nfield;
-  size_t *fields;
+  size_t *fields; // cppcheck-suppress unsafeClassCanLeak
 
-  cbl_file_key_t( size_t field = 0, bool unique = true )
+  cbl_file_key_t()
+    : unique(true)
+    , leftmost(0)
+    , nfield(0)
+    , fields(nullptr)
+  {
+    memset(name, '\0', sizeof(name));
+  }
+
+  // Construct a key of length 1 having a single field. 
+  explicit cbl_file_key_t( size_t field, bool unique = true )
     : unique(unique)
     , leftmost(0)
     , nfield(1)
@@ -1524,19 +1579,33 @@ struct cbl_file_key_t {
     fields[0] = field;
     memset(name, '\0', sizeof(name));
   }
-  cbl_file_key_t( const cbl_file_key_t *that )
-    : unique(that->unique)
-    , leftmost(that->leftmost)
-    , nfield(that->nfield)
-  {
-    memcpy(name, that->name, sizeof(name));
-    fields = new size_t[nfield];
-    std::copy( that->fields, that->fields + that->nfield, fields );
-  }
 
   cbl_file_key_t( cbl_name_t name,
                   const std::list<cbl_field_t *>& fields,
                   bool is_unique );
+
+  // The copy constructor and assignment operator exist to quell reports from
+  // cppcheck. When these objects are copied, the copy still points to the
+  // original data.
+  cbl_file_key_t( const cbl_file_key_t& that )
+    : unique(that.unique)
+    , leftmost(that.leftmost)
+    , nfield(that.nfield)
+      // cppcheck-suppress copyCtorPointerCopying
+    , fields(that.fields)
+  {
+    strcpy(name, that.name);
+  }
+  ~cbl_file_key_t() {}
+  cbl_file_key_t& operator=( const cbl_file_key_t& that ) {
+    unique = that.unique;
+    leftmost = that.leftmost;
+    nfield = that.nfield;
+    // cppcheck-suppress copyCtorPointerCopying
+    fields = that.fields;
+    strcpy(name, that.name);
+    return *this;
+  }
 
   uint32_t size();
   void deforward( size_t ifile );
@@ -1551,12 +1620,12 @@ struct cbl_file_key_t {
 struct cbl_file_lock_t {
   bool multiple;
   enum lock_mode_t { unlocked_e, manual_e, record_e, automatic_e } mode;
+  cbl_file_lock_t() : multiple(false), mode(unlocked_e) {}
   bool mode_set( int token );
   bool locked() const { return mode != unlocked_e; }
 };
 
 struct cbl_file_t {
-  static cbl_file_key_t no_key;
   enum cbl_file_org_t org;
   enum file_entry_type_t entry_type;
   uint32_t attr;
@@ -1583,15 +1652,32 @@ struct cbl_file_t {
   tree var_decl_node;           // GENERIC tag for the run-time FIELD structure
 
   cbl_file_t()
-    : org(file_disorganized_e),
-      access(file_access_seq_e)
+    : org(file_disorganized_e)
+    , entry_type(fd_e)
+    , attr(0), reserve(0), same_record_as(0)
+    , padding('\0')
+    , optional(false)
+    , varying_size{ false, 0, 0 }
+    , access(file_access_seq_e)
+    , filename(0)
+    , default_record(0)
+    , nkey(0)
+    , keys(nullptr)
+    , password(0), user_status(0), vsam_status(0), record_length(0)
+    , line(0)
+    , addresses(nullptr)
+    , var_decl_node(nullptr)
   {
-    keys = &no_key;
+    memset(name, '\0', sizeof(name));
   }
   
   bool varies() const { return varying_size.min != varying_size.max; }
   bool validate() const;
   void deforward();
+  cbl_file_key_t * keys_update( cbl_file_key_t * keys ) {
+    if( this->keys ) delete[] this->keys;
+    return this->keys = keys;
+  }
   char * keys_str() const;
   int  key_one( cbl_field_t *field ) const {
     auto ekey = keys + nkey, p = ekey;
@@ -1636,13 +1722,11 @@ struct symbol_elem_t {
     cbl_alphabet_t     alphabet;
     cbl_file_t         file;
     cbl_section_t      section;
-    symbol_elem_u() {
-      static const cbl_field_t empty = {};
-      field = empty;
-    }
+    symbol_elem_u() : field() {}
   } elem;
   
-  symbol_elem_t( symbol_type_t type = SymField, size_t program = 0 )
+  symbol_elem_t() : type(SymField), program(0) {}
+  explicit symbol_elem_t( symbol_type_t type, size_t program = 0 )
     : type(type), program(program)
   {}
 
@@ -1712,6 +1796,7 @@ static inline symbol_elem_t *
 symbol_elem_of( cbl_label_t *label ) {
   size_t n = offsetof(struct symbol_elem_t, elem.label);
   return
+    // cppcheck-suppress cstyleCast
     reinterpret_cast<struct symbol_elem_t *>((char*)label - n);
 }
 
@@ -1719,6 +1804,7 @@ static inline const symbol_elem_t *
 symbol_elem_of( const cbl_label_t *label ) {
   size_t n = offsetof(symbol_elem_t, elem.label);
   return
+    // cppcheck-suppress cstyleCast
     reinterpret_cast<const symbol_elem_t *>((const char*)label - n);
 }
 
@@ -1726,6 +1812,7 @@ static inline symbol_elem_t *
 symbol_elem_of( cbl_special_name_t *special ) {
   size_t n = offsetof(symbol_elem_t, elem.special);
   return
+    // cppcheck-suppress cstyleCast
     reinterpret_cast<symbol_elem_t *>((char*)special - n);
 }
 
@@ -1733,6 +1820,7 @@ static inline symbol_elem_t *
 symbol_elem_of( cbl_alphabet_t *alphabet ) {
   size_t n = offsetof(symbol_elem_t, elem.alphabet);
   return
+    // cppcheck-suppress cstyleCast
     reinterpret_cast<symbol_elem_t *>((char*)alphabet - n);
 }
 
@@ -1740,12 +1828,14 @@ static inline symbol_elem_t *
 symbol_elem_of( cbl_file_t *file ) {
   size_t n = offsetof(struct symbol_elem_t, elem.file);
   return
+    // cppcheck-suppress cstyleCast
     reinterpret_cast<struct symbol_elem_t *>((char*)file - n);
 }
 static inline const symbol_elem_t *
 symbol_elem_of( const cbl_file_t *file ) {
   size_t n = offsetof(symbol_elem_t, elem.file);
   return
+    // cppcheck-suppress cstyleCast
     reinterpret_cast<const symbol_elem_t *>((const char*)file - n);
 }
 
@@ -1753,18 +1843,20 @@ static inline symbol_elem_t *
 symbol_elem_of( cbl_field_t *field ) {
   size_t n = offsetof(struct symbol_elem_t, elem.field);
   return
+    // cppcheck-suppress cstyleCast
     reinterpret_cast<struct symbol_elem_t *>((char*)field - n);
 }
 static inline const symbol_elem_t *
 symbol_elem_of( const cbl_field_t *field ) {
   size_t n = offsetof(symbol_elem_t, elem.field);
   return
+    // cppcheck-suppress cstyleCast
     reinterpret_cast<const symbol_elem_t *>((const char*)field - n);
 }
 
 symbol_elem_t * symbols_begin( size_t first = 0 );
 symbol_elem_t * symbols_end(void);
-cbl_field_t   * symbol_redefines( const struct cbl_field_t *field );
+cbl_field_t   * symbol_redefines( const cbl_field_t *field );
 
 void build_symbol_map();
 bool update_symbol_map( symbol_elem_t *e );
@@ -1780,7 +1872,7 @@ symbol_find( size_t program, std::list<const char *> names );
 symbol_elem_t * symbol_find_of( size_t program,
                                 std::list<const char *> names, size_t group );
 
-struct cbl_field_t *symbol_find_odo( cbl_field_t * field );
+struct cbl_field_t *symbol_find_odo( const cbl_field_t * field );
 size_t dimensions( const cbl_field_t *field );
 
 const symbol_elem_t * symbol_field_current_record();
@@ -1804,54 +1896,54 @@ bool redefine_field( cbl_field_t *field );
 
 static inline struct cbl_section_t *
 cbl_section_of( struct symbol_elem_t *e ) {
-  assert(e->type == SymDataSection);
+  assert(e && e->type == SymDataSection);
   return &e->elem.section;
 }
 
 static inline struct cbl_field_t *
 cbl_field_of( struct symbol_elem_t *e ) {
-  assert(e->type == SymField);
+  assert(e && e->type == SymField);
   return &e->elem.field;
 }
-static inline const struct cbl_field_t *
-cbl_field_of( const struct symbol_elem_t *e ) {
-  assert(e->type == SymField);
+static inline const cbl_field_t *
+cbl_field_of( const symbol_elem_t *e ) {
+  assert(e && e->type == SymField);
   return &e->elem.field;
 }
 
 static inline struct cbl_label_t *
 cbl_label_of( struct symbol_elem_t *e ) {
-  assert(e->type == SymLabel);
+  assert(e && e->type == SymLabel);
   return &e->elem.label;
 }
 
-static inline const struct cbl_label_t *
-cbl_label_of( const struct symbol_elem_t *e ) {
-  assert(e->type == SymLabel);
+static inline const cbl_label_t *
+cbl_label_of( const symbol_elem_t *e ) {
+  assert(e && e->type == SymLabel);
   return &e->elem.label;
 }
 
 static inline struct cbl_special_name_t *
 cbl_special_name_of( struct symbol_elem_t *e ) {
-  assert(e->type == SymSpecial);
+  assert(e && e->type == SymSpecial);
   return &e->elem.special;
 }
 
 static inline struct cbl_alphabet_t *
 cbl_alphabet_of( struct symbol_elem_t *e ) {
-  assert(e->type == SymAlphabet);
+  assert(e && e->type == SymAlphabet);
   return &e->elem.alphabet;
 }
 
 static inline struct cbl_file_t *
 cbl_file_of( struct symbol_elem_t *e ) {
-  assert(e->type == SymFile);
+  assert(e && e->type == SymFile);
   return &e->elem.file;
 }
 
-static inline const struct cbl_file_t *
-cbl_file_of( const struct symbol_elem_t *e ) {
-  assert(e->type == SymFile);
+static inline const cbl_file_t *
+cbl_file_of( const symbol_elem_t *e ) {
+  assert(e && e->type == SymFile);
   return &e->elem.file;
 }
 
@@ -1870,43 +1962,43 @@ is_procedure( const symbol_elem_t& e ) {
 }
 
 static inline bool
-is_figconst(const struct cbl_field_t *field ) {
-    return ((field->attr & FIGCONST_MASK) != 0 );
+is_figconst(const cbl_field_t *field ) {
+    return (field->attr & FIGCONST_MASK) != 0;
 }
 
 static inline bool
-is_figconst_low( const struct cbl_field_t *field ) {
-  return ((field->attr & FIGCONST_MASK) == low_value_e );
+is_figconst_low( const cbl_field_t *field ) {
+  return (field->attr & FIGCONST_MASK) == low_value_e;
 }
 
 static inline bool
-is_figconst_zero( const struct cbl_field_t *field ) {
-  return ((field->attr & FIGCONST_MASK) == zero_value_e );
+is_figconst_zero( const cbl_field_t *field ) {
+  return (field->attr & FIGCONST_MASK) == zero_value_e;
 }
 
 static inline bool
-is_figconst_space( const struct cbl_field_t *field ) {
-  return ((field->attr & FIGCONST_MASK) == space_value_e );
+is_figconst_space( const cbl_field_t *field ) {
+  return (field->attr & FIGCONST_MASK) == space_value_e;
 }
 
 static inline bool
-is_figconst_quote( const struct cbl_field_t *field ) {
-  return ((field->attr & FIGCONST_MASK) == quote_value_e );
+is_figconst_quote( const cbl_field_t *field ) {
+  return (field->attr & FIGCONST_MASK) == quote_value_e;
 }
 
 static inline bool
-is_figconst_high( const struct cbl_field_t *field ) {
-  return ((field->attr & FIGCONST_MASK) == high_value_e );
+is_figconst_high( const cbl_field_t *field ) {
+  return (field->attr & FIGCONST_MASK) == high_value_e;
 }
 
 static inline bool
-is_space_value( const struct cbl_field_t *field ) {
-  return( (strcmp(field->name, "SPACE") == 0)
-            || (strcmp(field->name, "SPACES") == 0) );
+is_space_value( const cbl_field_t *field ) {
+  return (strcmp(field->name, "SPACE") == 0)
+      || (strcmp(field->name, "SPACES") == 0);
 }
 
 static inline bool
-is_quoted( const struct cbl_field_t *field ) {
+is_quoted( const cbl_field_t *field ) {
   return field->has_attr(quoted_e);
 }
 
@@ -1926,7 +2018,7 @@ struct cbl_until_addresses_t {
     struct cbl_label_addresses_t test;  // The test at the bottom of the body
     struct cbl_label_addresses_t testA; // Starting point of a TEST_AFTER loop
     struct cbl_label_addresses_t setup; // The actual entry point
-    size_t number_of_conditionals;
+    unsigned int number_of_conditionals;
     struct cbl_label_addresses_t condover[MAXIMUM_UNTILS];  // Jumping over the conditional
     struct cbl_label_addresses_t condinto[MAXIMUM_UNTILS];  // Jumping into the conditional
     struct cbl_label_addresses_t condback[MAXIMUM_UNTILS];  // Jumping back from the conditional
@@ -1934,7 +2026,7 @@ struct cbl_until_addresses_t {
 };
 
 size_t symbol_index(); // nth after first program symbol
-size_t symbol_index( const struct symbol_elem_t *e );
+size_t symbol_index( const symbol_elem_t *e );
 struct symbol_elem_t * symbol_at( size_t index );
 
 struct cbl_options_t {
@@ -1986,17 +2078,20 @@ symbol_field_forward_add( size_t program, size_t parent,
 struct cbl_field_t * symbol_field_forward( size_t index );
 
 struct cbl_prog_hier_t {
-  size_t nlabel;
   struct program_label_t {
     size_t ordinal;
     cbl_label_t label;
-    program_label_t() : ordinal(0) {}
-    program_label_t( const symbol_elem_t& e ) {
+    program_label_t() : ordinal(0), label() {}
+    // because std::copy_if:
+    // cppcheck-suppress noExplicitConstructor 
+    program_label_t( const symbol_elem_t& e ) { 
+      assert(is_program(e));
       ordinal = symbol_index(&e);
       label = e.elem.label;
     }
-  } *labels;
-
+  };
+  std::vector<program_label_t> labels;
+  
   cbl_prog_hier_t();
 };
 
@@ -2008,13 +2103,11 @@ struct cbl_prog_hier_t {
 struct cbl_perform_tgt_t {
   struct cbl_until_addresses_t addresses;
 
-  cbl_perform_tgt_t() : ifrom(0), ito(0) {}
-  cbl_perform_tgt_t( cbl_label_t * from, cbl_label_t *to = NULL )
-    : ifrom( from? symbol_index(symbol_elem_of(from)) : 0 )
+  cbl_perform_tgt_t() : addresses(), ifrom(0), ito(0) {}
+  explicit cbl_perform_tgt_t( cbl_label_t * from, cbl_label_t *to = NULL )
+    : addresses(), ifrom( from? symbol_index(symbol_elem_of(from)) : 0 )
     , ito( to? symbol_index(symbol_elem_of(to)) : 0 )
-  {
-    addresses = {};
-  }
+  {}
 
   cbl_label_t * from( cbl_label_t * label ) {
     ifrom = symbol_index(symbol_elem_of(label));
@@ -2052,10 +2145,11 @@ struct cbl_perform_vary_t {
   struct cbl_refer_t  by;       // numeric
   struct cbl_field_t *until;    // FldConditional
 
-  cbl_perform_vary_t( const cbl_refer_t& varying = cbl_refer_t(),
-                      const cbl_refer_t& from = cbl_refer_t(),
-                      const cbl_refer_t& by = cbl_refer_t(),
-                      cbl_field_t *until = NULL )
+  cbl_perform_vary_t() : until(nullptr) {}
+  cbl_perform_vary_t( const cbl_refer_t& varying,
+                      const cbl_refer_t& from,
+                      const cbl_refer_t& by,
+                      cbl_field_t *until )
     : varying(varying)
     , from(from)
     , by(by)
@@ -2077,12 +2171,12 @@ is_literal( const cbl_field_t *field ) {
 }
 
 static inline bool
-is_signable( const struct cbl_field_t *field ) {
+is_signable( const cbl_field_t *field ) {
   return field->attr & signable_e;
 }
 
 static inline bool
-is_temporary( const struct cbl_field_t *field ) {
+is_temporary( const cbl_field_t *field ) {
   return field->attr & intermediate_e;
 }
 
@@ -2217,7 +2311,7 @@ struct symbol_elem_t * symbol_special( size_t program, const char name[] );
 struct symbol_elem_t * symbol_alphabet( size_t program, const char name[] );
 
 struct symbol_elem_t * symbol_file( size_t program, const char name[] );
-struct cbl_field_t   * symbol_file_record( struct cbl_file_t *file );
+struct cbl_field_t   * symbol_file_record( const cbl_file_t *file );
 cbl_file_t::varying_t symbol_file_record_sizes( struct cbl_file_t *file );
 struct cbl_section_t * symbol_section( size_t program,
                                        struct cbl_section_t *section );
@@ -2227,7 +2321,7 @@ size_t symbol_label_id( const cbl_label_t *label );
 struct cbl_field_t * parent_of( const cbl_field_t *f );
  const cbl_field_t * occurs_in( const cbl_field_t *f );
 
-cbl_field_t *rename_not_ok( cbl_field_t *first, cbl_field_t *last);
+cbl_field_t *rename_not_ok( const cbl_field_t *first, const cbl_field_t *last);
 bool immediately_follows( const cbl_field_t *first );
 bool is_variable_length( const cbl_field_t *field );
 
@@ -2240,7 +2334,7 @@ uint64_t numeric_group_attrs( const cbl_field_t *field );
 static inline struct cbl_field_t *
 field_at( size_t index ) {
   struct symbol_elem_t *e = symbol_at(index);
-  assert(e->type == SymField);
+  assert(e && e->type == SymField);
 
   return &e->elem.field;
 }
@@ -2252,21 +2346,21 @@ size_t symbols_update( size_t first, bool parsed_ok = true );
 void symbol_table_init(void);
 void symbol_table_check(void);
 
-struct symbol_elem_t * symbol_typedef_add( size_t program,
-                                           struct cbl_field_t *field );
-struct symbol_elem_t * symbol_field_add( size_t program,
-                                         struct cbl_field_t *field );
-struct cbl_label_t *   symbol_label_add( size_t program,
-                                         struct cbl_label_t *label );
-struct cbl_label_t *   symbol_program_add( size_t program, cbl_label_t *input );
-struct symbol_elem_t * symbol_special_add( size_t program,
-                                         struct cbl_special_name_t *special );
-struct symbol_elem_t * symbol_alphabet_add( size_t program,
-                                         struct cbl_alphabet_t *alphabet );
-struct symbol_elem_t * symbol_file_add( size_t program,
-                                         struct cbl_file_t *file );
-struct symbol_elem_t * symbol_section_add( size_t program,
-                                         struct cbl_section_t *section );
+symbol_elem_t * symbol_typedef_add( size_t program,
+                                    cbl_field_t *field );
+symbol_elem_t * symbol_field_add( size_t program,
+                                  cbl_field_t *field );
+cbl_label_t *   symbol_label_add( size_t program,
+                                  cbl_label_t *label );
+cbl_label_t *   symbol_program_add( size_t program, cbl_label_t *input );
+symbol_elem_t * symbol_special_add( size_t program,
+				    cbl_special_name_t *special );
+symbol_elem_t * symbol_alphabet_add( size_t program,
+				     const cbl_alphabet_t *alphabet );
+symbol_elem_t * symbol_file_add( size_t program,
+				 cbl_file_t *file );
+symbol_elem_t * symbol_section_add( size_t program,
+				    cbl_section_t *section );
 
 void symbol_field_location( size_t ifield, const YYLTYPE& loc );
 YYLTYPE symbol_field_location( size_t ifield );
@@ -2302,8 +2396,9 @@ class procref_base_t {
 private:
   const char *section_name, *paragraph_name;
 public:
-  procref_base_t( const char *section_name = NULL,
-                  const char *paragraph_name = NULL )
+  procref_base_t() : section_name(nullptr) , paragraph_name(nullptr) {}
+  procref_base_t( const char *section_name,
+                  const char *paragraph_name )
     : section_name(section_name)
     , paragraph_name(paragraph_name)
   {}
@@ -2370,7 +2465,7 @@ refer_type_str( const cbl_refer_t *r ) {
 
 enum cbl_field_type_t symbol_field_type( size_t program, const char name[] );
 
-struct symbol_elem_t * symbol_parent( const struct symbol_elem_t *e );
+struct symbol_elem_t * symbol_parent( const symbol_elem_t *e );
 
 int length_of_picture(const char *picture);
 int rdigits_of_picture(const char *picture);

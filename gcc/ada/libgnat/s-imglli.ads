@@ -33,33 +33,12 @@
 --  and ``Ada.Text_IO.Integer_IO`` conversions routines for signed integer
 --  types larger than Size ``Integer'Size``.
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore. Postconditions and
---  contract cases should not be executed at runtime as well, in order not to
---  slow down the execution of these functions.
-
-pragma Assertion_Policy (Pre                => Ignore,
-                         Post               => Ignore,
-                         Contract_Cases     => Ignore,
-                         Ghost              => Ignore,
-                         Subprogram_Variant => Ignore);
-
 with System.Image_I;
-with System.Unsigned_Types;
-with System.Vs_LLI;
-with System.Vs_LLU;
 
 package System.Img_LLI
   with SPARK_Mode
 is
-   subtype Long_Long_Unsigned is Unsigned_Types.Long_Long_Unsigned;
-
-   package Impl is new Image_I
-     (Int    => Long_Long_Integer,
-      Uns    => Long_Long_Unsigned,
-      U_Spec => System.Vs_LLU.Spec,
-      I_Spec => System.Vs_LLI.Spec);
+   package Impl is new Image_I (Long_Long_Integer);
 
    procedure Image_Long_Long_Integer
      (V : Long_Long_Integer;

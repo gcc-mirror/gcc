@@ -146,7 +146,8 @@ class Prog:
             '# of unresolved testcases\t',
             '# of unsupported tests\t\t',
             '# of paths in test names\t',
-            '# of duplicate test names\t'
+            '# of duplicate test names\t',
+            '# of unexpected core files\t'
         ]
         self.runs = dict()
 

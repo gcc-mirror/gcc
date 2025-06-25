@@ -24,13 +24,10 @@
 ------------------------------------------------------------------------------
 
 --  This package is the entry point for VAST: Verifier for the Ada Semantic
---  Tree.
-
-with Types; use Types;
+--  Tree. It walks the expanded trees, and verifies their validity.
 
 package VAST is
 
-   procedure Check_Tree (GNAT_Root : Node_Id);
-   --  Check the validity of the given Root tree
+   procedure VAST;
 
 end VAST;

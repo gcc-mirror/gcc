@@ -1,3 +1,18 @@
+2025-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	PR testsuite/116163
+	PR sarif-replay/120792
+	* dg-lint/dg-lint: Add -fdiagnostics-add-output.
+	* dg-lint/libgdiagnostics.py: Add
+	diagnostic_manager_add_sink_from_spec.
+	(Manager.add_sink_from_spec): New.
+
+2025-06-23  Andrew Burgess  <aburgess@redhat.com>
+
+	* dg-extract-results.py: Handle GDB's unexpected core file count.
+	* dg-extract-results.sh: Likewise.
+
 2025-05-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gen_autofdo_event.py: Add support for AMD Zen 3 and

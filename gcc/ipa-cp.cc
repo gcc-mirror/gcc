@@ -4528,7 +4528,7 @@ lenient_count_portion_handling (profile_count remainder, cgraph_node *orig_node)
   if (remainder.ipa_p () && !remainder.ipa ().nonzero_p ()
       && orig_node->count.ipa_p () && orig_node->count.ipa ().nonzero_p ()
       && opt_for_fn (orig_node->decl, flag_profile_partial_training))
-    remainder = remainder.guessed_local ();
+    remainder = orig_node->count.guessed_local ();
 
   return remainder;
 }
@@ -4666,19 +4666,12 @@ update_counts_for_self_gen_clones (cgraph_node *orig_node,
   unsigned i = 0;
   for (cgraph_node *n : self_gen_clones)
     {
-      profile_count orig_count = n->count;
       profile_count new_count
 	= (redist_sum / self_gen_clones.length () + other_edges_count[i]);
       new_count = lenient_count_portion_handling (new_count, orig_node);
-      n->count = new_count;
-      profile_count::adjust_for_ipa_scaling (&new_count, &orig_count);
+      n->scale_profile_to (new_count);
       for (cgraph_edge *cs = n->callees; cs; cs = cs->next_callee)
-	{
-	  cs->count = cs->count.apply_scale (new_count, orig_count);
-	  processed_edges.add (cs);
-	}
-      for (cgraph_edge *cs = n->indirect_calls; cs; cs = cs->next_callee)
-	cs->count = cs->count.apply_scale (new_count, orig_count);
+	processed_edges.add (cs);
 
       i++;
     }
@@ -4776,16 +4769,14 @@ update_profiling_info (struct cgraph_node *orig_node,
   bool orig_edges_processed = false;
   if (new_sum > orig_node_count)
     {
-      /* TODO: Profile has alreay gone astray, keep what we have but lower it
-	 to global0 category.  */
-      remainder = orig_node->count.global0 ();
-
-      for (cgraph_edge *cs = orig_node->callees; cs; cs = cs->next_callee)
-	cs->count = cs->count.global0 ();
-      for (cgraph_edge *cs = orig_node->indirect_calls;
-	   cs;
-	   cs = cs->next_callee)
-	cs->count = cs->count.global0 ();
+      /* Profile has alreay gone astray, keep what we have but lower it
+	 to global0adjusted or to local if we have partial training.  */
+      if (opt_for_fn (orig_node->decl, flag_profile_partial_training))
+	orig_node->make_profile_local ();
+      if (new_sum.quality () == AFDO)
+	orig_node->make_profile_global0 (GUESSED_GLOBAL0_AFDO);
+      else
+	orig_node->make_profile_global0 (GUESSED_GLOBAL0_ADJUSTED);
       orig_edges_processed = true;
     }
   else if (stats.rec_count_sum.nonzero_p ())
@@ -4811,20 +4802,12 @@ update_profiling_info (struct cgraph_node *orig_node,
 	      /* The NEW_NODE count and counts of all its outgoing edges
 		 are still unmodified copies of ORIG_NODE's.  Just clear
 		 the latter and bail out.  */
-	      profile_count zero;
               if (opt_for_fn (orig_node->decl, flag_profile_partial_training))
-                zero = profile_count::zero ().guessed_local ();
+		orig_node->make_profile_local ();
+	      else if (orig_nonrec_call_count.quality () == AFDO)
+		orig_node->make_profile_global0 (GUESSED_GLOBAL0_AFDO);
 	      else
-		zero = profile_count::adjusted_zero ();
-	      orig_node->count = zero;
-	      for (cgraph_edge *cs = orig_node->callees;
-		   cs;
-		   cs = cs->next_callee)
-		cs->count = zero;
-	      for (cgraph_edge *cs = orig_node->indirect_calls;
-		   cs;
-		   cs = cs->next_callee)
-		cs->count = zero;
+		orig_node->make_profile_global0 (GUESSED_GLOBAL0_ADJUSTED);
 	      return;
 	    }
 	}
@@ -4873,27 +4856,10 @@ update_profiling_info (struct cgraph_node *orig_node,
     remainder = lenient_count_portion_handling (orig_node_count - new_sum,
 						orig_node);
 
-  new_sum = orig_node_count.combine_with_ipa_count (new_sum);
-  new_node->count = new_sum;
-  orig_node->count = remainder;
-
-  profile_count orig_new_node_count = orig_node_count;
-  profile_count::adjust_for_ipa_scaling (&new_sum, &orig_new_node_count);
-  for (cgraph_edge *cs = new_node->callees; cs; cs = cs->next_callee)
-    cs->count = cs->count.apply_scale (new_sum, orig_new_node_count);
-  for (cgraph_edge *cs = new_node->indirect_calls; cs; cs = cs->next_callee)
-    cs->count = cs->count.apply_scale (new_sum, orig_new_node_count);
+  new_node->scale_profile_to (new_sum);
 
   if (!orig_edges_processed)
-    {
-      profile_count::adjust_for_ipa_scaling (&remainder, &orig_node_count);
-      for (cgraph_edge *cs = orig_node->callees; cs; cs = cs->next_callee)
-	cs->count = cs->count.apply_scale (remainder, orig_node_count);
-      for (cgraph_edge *cs = orig_node->indirect_calls;
-	   cs;
-	   cs = cs->next_callee)
-	cs->count = cs->count.apply_scale (remainder, orig_node_count);
-    }
+    orig_node->scale_profile_to (remainder);
 
   if (dump_file)
     {
@@ -4911,35 +4877,23 @@ update_specialized_profile (struct cgraph_node *new_node,
 			    struct cgraph_node *orig_node,
 			    profile_count redirected_sum)
 {
-  struct cgraph_edge *cs;
-  profile_count new_node_count, orig_node_count = orig_node->count.ipa ();
-
   if (dump_file)
     {
       fprintf (dump_file, "    the sum of counts of redirected  edges is ");
       redirected_sum.dump (dump_file);
       fprintf (dump_file, "\n    old ipa count of the original node is ");
-      orig_node_count.dump (dump_file);
+      orig_node->count.dump (dump_file);
       fprintf (dump_file, "\n");
     }
-  if (!orig_node_count.nonzero_p ())
+  if (!orig_node->count.ipa ().nonzero_p ()
+      || !redirected_sum.nonzero_p ())
     return;
 
-  new_node_count = new_node->count;
-  new_node->count += redirected_sum;
-  orig_node->count
-    = lenient_count_portion_handling (orig_node->count - redirected_sum,
-				      orig_node);
+  orig_node->scale_profile_to
+    (lenient_count_portion_handling (orig_node->count.ipa () - redirected_sum,
+				     orig_node));
 
-  for (cs = new_node->callees; cs; cs = cs->next_callee)
-    cs->count += cs->count.apply_scale (redirected_sum, new_node_count);
-
-  for (cs = orig_node->callees; cs; cs = cs->next_callee)
-    {
-      profile_count dec = cs->count.apply_scale (redirected_sum,
-						 orig_node_count);
-      cs->count -= dec;
-    }
+  new_node->scale_profile_to (new_node->count.ipa () + redirected_sum);
 
   if (dump_file)
     {

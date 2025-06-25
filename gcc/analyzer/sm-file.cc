@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer-selftests.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
+#include "analyzer/program-state.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-details.h"
@@ -72,7 +73,11 @@ public:
 		     const svalue *rhs) const final override;
 
   bool can_purge_p (state_t s) const final override;
-  std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
+
+  std::unique_ptr<pending_diagnostic>
+  on_leak (tree var,
+	   const program_state *old_state,
+	   const program_state *new_state) const final override;
 
   /* State for a FILE * returned from fopen that hasn't been checked for
      NULL.
@@ -226,9 +231,14 @@ private:
 class file_leak : public file_diagnostic
 {
 public:
-  file_leak (const fileptr_state_machine &sm, tree arg)
-    : file_diagnostic (sm, arg)
-  {}
+  file_leak (const fileptr_state_machine &sm, tree arg,
+	     const program_state *final_state)
+  : file_diagnostic (sm, arg),
+    m_final_state ()
+  {
+    if (final_state)
+      m_final_state = std::make_unique<program_state> (*final_state);
+  }
 
   const char *get_kind () const final override { return "file_leak"; }
 
@@ -286,8 +296,15 @@ public:
     return true;
   }
 
+  const program_state *
+  get_final_state () const final override
+  {
+    return m_final_state.get ();
+  }
+
 private:
   diagnostic_event_id_t m_fopen_event;
+  std::unique_ptr<program_state> m_final_state;
 };
 
 /* fileptr_state_machine's ctor.  */
@@ -492,9 +509,11 @@ fileptr_state_machine::can_purge_p (state_t s) const
    state 'unchecked' and 'nonnull'.  */
 
 std::unique_ptr<pending_diagnostic>
-fileptr_state_machine::on_leak (tree var) const
+fileptr_state_machine::on_leak (tree var,
+				const program_state *,
+				const program_state *new_state) const
 {
-  return std::make_unique<file_leak> (*this, var);
+  return std::make_unique<file_leak> (*this, var, new_state);
 }
 
 } // anonymous namespace

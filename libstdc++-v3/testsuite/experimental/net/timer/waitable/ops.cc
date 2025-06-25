@@ -29,8 +29,6 @@ using std::error_code;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   io_context ctx;
   error_code ec;
   bool complete = false;
@@ -57,8 +55,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   io_context ctx;
   error_code ec1, ec2;
 

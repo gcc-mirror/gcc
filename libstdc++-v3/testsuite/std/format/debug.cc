@@ -26,13 +26,13 @@ fdebug(std::wstring_view t)
 
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
-#define WIDEN(S) WIDEN_(_CharT, S)
+#define WIDEN(S) WIDEN_(CharT, S)
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_basic_escapes()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const auto tab = WIDEN("\t");
   res = fdebug(tab);
@@ -71,11 +71,11 @@ test_basic_escapes()
   VERIFY( res == WIDEN(R"('\'')") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_ascii_escapes()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const auto in = WIDEN("\x10 abcde\x7f\t0123");
   res = fdebug(in);
@@ -88,11 +88,11 @@ test_ascii_escapes()
   VERIFY( res == WIDEN(R"('a')") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_extended_ascii()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const auto in = WIDEN("Åëÿ");
   res = fdebug(in);
@@ -100,7 +100,7 @@ test_extended_ascii()
 
   static constexpr bool __test_characters
 #if UNICODE_ENC
-    = sizeof(_CharT) >= 2;
+    = sizeof(CharT) >= 2;
 #else // ISO8859-1
     = true;
 #endif // UNICODE_ENC
@@ -116,12 +116,12 @@ test_extended_ascii()
   }
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_unicode_escapes()
 {
 #if UNICODE_ENC
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const auto in = WIDEN(
     "\u008a"     // Cc, Control,             Line Tabulation Set,
@@ -143,7 +143,7 @@ test_unicode_escapes()
   res = fdebug(in);
   VERIFY( res == out );
 
-  if constexpr (sizeof(_CharT) >= 2)
+  if constexpr (sizeof(CharT) >= 2)
   {
     res = fdebug(in[0]);
     VERIFY( res == WIDEN(R"('\u{8a}')") );
@@ -157,7 +157,7 @@ test_unicode_escapes()
     VERIFY( res == WIDEN(R"('\u{2029}')") );
   }
 
-  if constexpr (sizeof(_CharT) >= 4)
+  if constexpr (sizeof(CharT) >= 4)
   {
     res = fdebug(in[5]);
     VERIFY( res == WIDEN("'\U0001f984'") );
@@ -165,25 +165,25 @@ test_unicode_escapes()
 #endif // UNICODE_ENC
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_grapheme_extend()
 {
 #if UNICODE_ENC
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   const auto vin = WIDEN("o\u0302\u0323");
   res = fdebug(vin);
   VERIFY( res == WIDEN("\"o\u0302\u0323\"") );
 
-  std::basic_string_view<_CharT> in = WIDEN("\t\u0302\u0323");
+  std::basic_string_view<CharT> in = WIDEN("\t\u0302\u0323");
   res = fdebug(in);
   VERIFY( res == WIDEN(R"("\t\u{302}\u{323}")") );
 
   res = fdebug(in.substr(1));
   VERIFY( res == WIDEN(R"("\u{302}\u{323}")") );
 
-  if constexpr (sizeof(_CharT) >= 2)
+  if constexpr (sizeof(CharT) >= 2)
   {
     res = fdebug(in[1]);
     VERIFY( res == WIDEN(R"('\u{302}')") );
@@ -191,13 +191,13 @@ test_grapheme_extend()
 #endif // UNICODE_ENC
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_replacement_char()
 {
 #if UNICODE_ENC
-  std::basic_string<_CharT> repl = WIDEN("\uFFFD");
-  std::basic_string<_CharT> res = fdebug(repl);
+  std::basic_string<CharT> repl = WIDEN("\uFFFD");
+  std::basic_string<CharT> res = fdebug(repl);
   VERIFY( res == WIDEN("\"\uFFFD\"") );
 
   repl = WIDEN("\uFFFD\uFFFD");
@@ -268,13 +268,13 @@ test_ill_formed_utf32()
 #endif // UNICODE_ENC
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_fill()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
-  std::basic_string_view<_CharT> in = WIDEN("a\t\x10\u00ad");
+  std::basic_string_view<CharT> in = WIDEN("a\t\x10\u00ad");
   res = std::format(WIDEN("{:10?}"), in.substr(0, 1));
   VERIFY( res == WIDEN(R"("a"       )") );
 
@@ -299,11 +299,11 @@ test_fill()
   VERIFY( res == WIDEN(R"(="\u{ad}"=)") );
 
   // width is 2
-  std::basic_string_view<_CharT> in2 = WIDEN("\u1100");
+  std::basic_string_view<CharT> in2 = WIDEN("\u1100");
   res = std::format(WIDEN("{:*^10?}"), in2);
   VERIFY( res == WIDEN("***\"\u1100\"***") );
 
-  if constexpr (sizeof(_CharT) >= 2)
+  if constexpr (sizeof(CharT) >= 2)
   {
     res = std::format(WIDEN("{:=^10?}"), in[3]);
     VERIFY( res == WIDEN(R"(='\u{ad}'=)") );
@@ -314,14 +314,14 @@ test_fill()
 #endif // UNICODE_ENC
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_prec()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
   // with ? escpaed presentation is copied to ouput, same as source
 
-  std::basic_string_view<_CharT> in = WIDEN("a\t\x10\u00ad");
+  std::basic_string_view<CharT> in = WIDEN("a\t\x10\u00ad");
   res = std::format(WIDEN("{:.2?}"), in.substr(0, 1));
   VERIFY( res == WIDEN(R"("a)") );
 
@@ -335,7 +335,7 @@ test_prec()
   res = std::format(WIDEN("{:.10?}"), in.substr(3));
   VERIFY( res == WIDEN(R"("\u{ad}")") );
 
-  std::basic_string_view<_CharT> in2 = WIDEN("\u1100");
+  std::basic_string_view<CharT> in2 = WIDEN("\u1100");
   res = std::format(WIDEN("{:.3?}"), in2);
   VERIFY( res == WIDEN("\"\u1100") );
 #endif // UNICODE_ENC
@@ -759,38 +759,38 @@ private:
   std::formatter<T, CharT> under;
 };
 
-template<typename _CharT, typename StrT>
+template<typename CharT, typename StrT>
 void
 test_formatter_str()
 {
-  _CharT buf[]{ 'a', 'b', 'c', 0 };
+  CharT buf[]{ 'a', 'b', 'c', 0 };
   DebugWrapper<StrT> in{ buf };
-  std::basic_string<_CharT> res = std::format(WIDEN("{:?}"), in );
+  std::basic_string<CharT> res = std::format(WIDEN("{:?}"), in );
   VERIFY( res == WIDEN(R"("abc")") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_formatter_arr()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
-  DebugWrapper<_CharT[3]> in3{ 'a', 'b', 'c' };
+  DebugWrapper<CharT[3]> in3{ 'a', 'b', 'c' };
   res = std::format(WIDEN("{:?}"), in3 );
   VERIFY( res == WIDEN(R"("abc")") );
 
   // We print all characters, including null-terminator
-  DebugWrapper<_CharT[4]> in4{ 'a', 'b', 'c', 0 };
+  DebugWrapper<CharT[4]> in4{ 'a', 'b', 'c', 0 };
   res = std::format(WIDEN("{:?}"), in4 );
   VERIFY( res == WIDEN(R"("abc\u{0}")") );
 }
 
-template<typename _CharT, typename SrcT>
+template<typename CharT, typename SrcT>
 void
 test_formatter_char()
 {
   DebugWrapper<SrcT> in{ 'a' };
-  std::basic_string<_CharT> res = std::format(WIDEN("{:?}"), in);
+  std::basic_string<CharT> res = std::format(WIDEN("{:?}"), in);
   VERIFY( res == WIDEN(R"('a')") );
 }
 

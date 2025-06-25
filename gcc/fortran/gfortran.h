@@ -3302,8 +3302,10 @@ typedef struct
   int flag_init_logical;
   int flag_init_character;
   char flag_init_character_value;
-  bool disable_omp_is_initial_device;
-  bool disable_acc_on_device;
+  bool disable_omp_is_initial_device:1;
+  bool disable_omp_get_initial_device:1;
+  bool disable_omp_get_num_devices:1;
+  bool disable_acc_on_device:1;
 
   int fpe;
   int fpe_summary;
@@ -3504,6 +3506,8 @@ void gfc_done_1 (void);
 void gfc_done_2 (void);
 
 int get_c_kind (const char *, CInteropKind_t *);
+
+const char * gfc_var_name_for_select_type_temp (gfc_expr *);
 
 const char *gfc_closest_fuzzy_match (const char *, char **);
 inline void

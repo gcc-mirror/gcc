@@ -273,6 +273,12 @@
 #define _GLIBCXX_NOEXCEPT_QUAL
 #endif
 
+#if __cpp_auto_cast
+# define _GLIBCXX_AUTO_CAST(X) auto(X)
+#else
+# define _GLIBCXX_AUTO_CAST(X) ::std::__decay_t<decltype((X))>(X)
+#endif
+
 // Macro for extern template, ie controlling template linkage via use
 // of extern keyword on template declaration. As documented in the g++
 // manual, it inhibits all implicit instantiations and is used

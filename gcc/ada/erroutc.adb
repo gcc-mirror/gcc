@@ -491,6 +491,134 @@ package body Erroutc is
         E_Msg.Kind in Warning | Info | Style and then E_Msg.Warn_Chr /= "  ";
    end Has_Switch_Tag;
 
+   --------------------
+   -- Next_Error_Msg --
+   --------------------
+
+   procedure Next_Error_Msg (E : in out Error_Msg_Id) is
+   begin
+      loop
+         E := Errors.Table (E).Next;
+         exit when E = No_Error_Msg;
+         exit when not Errors.Table (E).Deleted
+           and then not Errors.Table (E).Msg_Cont;
+      end loop;
+   end Next_Error_Msg;
+
+   ---------------------------
+   -- Next_Continuation_Msg --
+   ---------------------------
+
+   procedure Next_Continuation_Msg (E : in out Error_Msg_Id) is
+   begin
+      E := Errors.Table (E).Next;
+
+      if E = No_Error_Msg or else not Errors.Table (E).Msg_Cont then
+         E := No_Error_Msg;
+      end if;
+   end Next_Continuation_Msg;
+
+   ----------------------
+   -- Primary_Location --
+   ----------------------
+
+   function Primary_Location (E : Error_Msg_Object) return Labeled_Span_Id is
+      L : Labeled_Span_Id;
+   begin
+      L := E.Locations;
+      while L /= No_Labeled_Span loop
+         if Locations.Table (L).Is_Primary then
+            return L;
+         end if;
+
+         L := Locations.Table (L).Next;
+      end loop;
+
+      return No_Labeled_Span;
+   end Primary_Location;
+
+   ------------------
+   -- Get_Human_Id --
+   ------------------
+
+   function Get_Human_Id (E : Error_Msg_Object) return String_Ptr is
+   begin
+      if E.Switch = No_Switch_Id then
+         return Diagnostic_Entries (E.Id).Human_Id;
+      else
+         return Get_Switch (E).Human_Id;
+      end if;
+   end Get_Human_Id;
+
+   --------------------
+   -- Get_Doc_Switch --
+   --------------------
+
+   function Get_Doc_Switch (E : Error_Msg_Object) return String is
+   begin
+      if Warning_Doc_Switch
+        and then E.Warn_Chr /= "  "
+        and then E.Kind in Info
+          | Style
+          | Warning
+      then
+         if E.Switch = No_Switch_Id then
+            if E.Warn_Chr = "* " then
+               return "[restriction warning]";
+
+               --  Info messages can have a switch tag but they should not have
+               --  a default switch tag.
+
+            elsif E.Kind /= Info then
+
+               --  For Default_Warning
+
+               return "[enabled by default]";
+            end if;
+         else
+            declare
+               S : constant Switch_Type := Get_Switch (E);
+            begin
+               return "[-" & S.Short_Name.all & "]";
+            end;
+         end if;
+      end if;
+
+      return "";
+   end Get_Doc_Switch;
+
+   ----------------
+   -- Get_Switch --
+   ----------------
+
+   function Get_Switch (E : Error_Msg_Object) return Switch_Type is
+   begin
+      return Get_Switch (E.Switch);
+   end Get_Switch;
+
+   -------------------
+   -- Get_Switch_Id --
+   -------------------
+
+   function Get_Switch_Id (E : Error_Msg_Object) return Switch_Id is
+   begin
+      return Get_Switch_Id (E.Kind, E.Warn_Chr);
+   end Get_Switch_Id;
+
+   function Get_Switch_Id
+     (Kind : Error_Msg_Type; Warn_Chr : String) return Switch_Id is
+   begin
+      if Warn_Chr = "$ " then
+         return Get_Switch_Id ("gnatel");
+      elsif Kind in Warning | Info then
+         return Get_Switch_Id ("gnatw" & Warn_Chr);
+      elsif Kind = Style then
+         return Get_Switch_Id ("gnaty" & Warn_Chr);
+      else
+         return No_Switch_Id;
+      end if;
+   end Get_Switch_Id;
+
    -------------
    -- Matches --
    -------------
@@ -752,7 +880,7 @@ package body Erroutc is
    -- Output_Text_Within --
    ------------------------
 
-   procedure Output_Text_Within (Txt : String_Ptr; Line_Length : Nat) is
+   procedure Output_Text_Within (Txt : String; Line_Length : Nat) is
       Offs : constant Nat := Column - 1;
       --  Offset to start of message, used for continuations
 
@@ -869,98 +997,62 @@ package body Erroutc is
 
    procedure Output_Msg_Text (E : Error_Msg_Id) is
 
-      E_Msg : Error_Msg_Object renames Errors.Table (E);
-      Text  : constant String_Ptr := E_Msg.Text;
-      Tag   : constant String := Get_Warning_Tag (E);
-      Txt   : String_Ptr;
-
-      Line_Length : constant Nat :=
+      E_Msg       : Error_Msg_Object renames Errors.Table (E);
+      Text        : constant String_Ptr := E_Msg.Text;
+      Tag         : constant String     := Get_Warning_Tag (E);
+      SGR_Code    : constant String     := Get_SGR_Code (E_Msg);
+      Kind_Prefix : constant String     :=
+        (if E_Msg.Kind = Style then Style_Prefix
+         else Kind_To_String (E_Msg) & ": ");
+      Buf         : Bounded_String (Max_Msg_Length);
+      Line_Length : constant Nat        :=
         (if Error_Msg_Line_Length = 0 then Nat'Last
          else Error_Msg_Line_Length);
 
    begin
+      --  Prefix with "error:" rather than warning.
+      --  Additionally include the style suffix when needed.
+
+      if E_Msg.Warn_Err then
+
+         Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
+
+         Append
+           (Buf,
+            SGR_Error & "error: " & SGR_Reset &
+            (if E_Msg.Kind = Style then Style_Prefix else ""));
+
+      --  Print the message kind prefix
+      --  * Info/Style/Warning messages
+      --  * Check messages that are not continuations in the pretty printer
+      --  * Error messages when error tags are allowed
+
+      elsif E_Msg.Kind in Info | Style | Warning
+        or else
+        (E_Msg.Kind in High_Check | Medium_Check | Low_Check
+         and then not (E_Msg.Msg_Cont and then Debug_Flag_FF))
+        or else
+        (E_Msg.Kind in Error | Non_Serious_Error
+         and then Opt.Unique_Error_Tag)
+      then
+         Append (Buf, SGR_Code & Kind_Prefix & SGR_Reset);
+      end if;
+
+      Append (Buf, Text.all);
+
       --  Postfix warning tag to message if needed
 
       if Tag /= "" and then Warning_Doc_Switch then
-         Txt := new String'(Text.all & ' ' & Tag);
-      else
-         Txt := Text;
+         Append (Buf, ' ' & Tag);
       end if;
 
-      --  If -gnatdF is used, continuation messages follow the main message
-      --  with only an indentation of two space characters, without repeating
-      --  any prefix.
+      --  Postfix [warning-as-error] at the end
 
-      if Debug_Flag_FF and then E_Msg.Msg_Cont then
-         null;
-
-      --  For info messages, prefix message with "info: "
-
-      elsif E_Msg.Kind = Info then
-         Txt := new String'(SGR_Note & "info: " & SGR_Reset & Txt.all);
-
-      --  Warning treated as error
-
-      elsif E_Msg.Warn_Err then
-
-      --  We prefix with "error:" rather than warning: and postfix
-      --  [warning-as-error] at the end.
-
-         Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
-         Txt := new String'(SGR_Error & "error: " & SGR_Reset
-                            & Txt.all & " [warning-as-error]");
-
-      --  Normal warning, prefix with "warning: "
-
-      elsif E_Msg.Kind = Warning then
-         Txt := new String'(SGR_Warning & "warning: " & SGR_Reset & Txt.all);
-
-      --  No prefix needed for style message, "(style)" is there already
-
-      elsif E_Msg.Kind = Style then
-         if Txt (Txt'First .. Txt'First + 6) = "(style)" then
-            Txt := new String'(SGR_Warning & "(style)" & SGR_Reset
-                               & Txt (Txt'First + 7 .. Txt'Last));
-         end if;
-
-      --  No prefix needed for check message, severity is there already
-
-      elsif E_Msg.Kind in High_Check | Medium_Check | Low_Check then
-
-         --  The message format is "severity: ..."
-         --
-         --  Enclose the severity with an SGR control string if requested
-
-         if Use_SGR_Control then
-            declare
-               Msg   : String renames Text.all;
-               Colon : Natural := 0;
-            begin
-               --  Find first colon
-
-               for J in Msg'Range loop
-                  if Msg (J) = ':' then
-                     Colon := J;
-                     exit;
-                  end if;
-               end loop;
-
-               pragma Assert (Colon > 0);
-
-               Txt := new String'(SGR_Error
-                                  & Msg (Msg'First .. Colon)
-                                  & SGR_Reset
-                                  & Msg (Colon + 1 .. Msg'Last));
-            end;
-         end if;
-
-      --  All other cases, add "error: " if unique error tag set
-
-      elsif Opt.Unique_Error_Tag then
-         Txt := new String'(SGR_Error & "error: " & SGR_Reset & Txt.all);
+      if E_Msg.Warn_Err then
+         Append (Buf, " [warning-as-error]");
       end if;
 
-      Output_Text_Within (Txt, Line_Length);
+      Output_Text_Within (To_String (Buf), Line_Length);
    end Output_Msg_Text;
 
    ---------------------
@@ -1056,36 +1148,46 @@ package body Erroutc is
 
          --  Check style message
 
-         if Msg'Length > 7
-           and then Msg (Msg'First .. Msg'First + 6) = "(style)"
+         if Msg'Length > Style_Prefix'Length
+           and then
+             Msg (Msg'First .. Msg'First + Style_Prefix'Length - 1) =
+             Style_Prefix
          then
             Error_Msg_Kind := Style;
 
             --  Check info message
 
-         elsif Msg'Length > 6
-           and then Msg (Msg'First .. Msg'First + 5) = "info: "
+         elsif Msg'Length > Info_Prefix'Length
+           and then
+             Msg (Msg'First .. Msg'First + Info_Prefix'Length - 1) =
+             Info_Prefix
          then
             Error_Msg_Kind := Info;
 
             --  Check high check message
 
-         elsif Msg'Length > 6
-           and then Msg (Msg'First .. Msg'First + 5) = "high: "
+         elsif Msg'Length > High_Prefix'Length
+           and then
+             Msg (Msg'First .. Msg'First + High_Prefix'Length - 1) =
+             High_Prefix
          then
             Error_Msg_Kind := High_Check;
 
             --  Check medium check message
 
-         elsif Msg'Length > 8
-           and then Msg (Msg'First .. Msg'First + 7) = "medium: "
+         elsif Msg'Length > Medium_Prefix'Length
+           and then
+             Msg (Msg'First .. Msg'First + Medium_Prefix'Length - 1) =
+             Medium_Prefix
          then
             Error_Msg_Kind := Medium_Check;
 
             --  Check low check message
 
-         elsif Msg'Length > 5
-           and then Msg (Msg'First .. Msg'First + 4) = "low: "
+         elsif Msg'Length > Low_Prefix'Length
+           and then
+             Msg (Msg'First .. Msg'First + Low_Prefix'Length - 1) =
+             Low_Prefix
          then
             Error_Msg_Kind := Low_Check;
          end if;

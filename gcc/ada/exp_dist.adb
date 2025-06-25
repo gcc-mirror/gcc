@@ -10980,6 +10980,7 @@ package body Exp_Dist is
             if not Constrained or else Depth > 1 then
                Inner_Any := Make_Defining_Identifier (Loc,
                               New_External_Name ('A', Depth));
+               Mutate_Ekind (Inner_Any, E_Variable);
                Set_Etype (Inner_Any, RTE (RE_Any));
             else
                Inner_Any := Empty;
@@ -10988,6 +10989,7 @@ package body Exp_Dist is
             if Present (Counter) then
                Inner_Counter := Make_Defining_Identifier (Loc,
                                   New_External_Name ('J', Depth));
+               Mutate_Ekind (Inner_Counter, E_Variable);
             else
                Inner_Counter := Empty;
             end if;

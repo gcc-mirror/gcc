@@ -3475,7 +3475,7 @@ __gnat_lwp_self (void)
 }
 #endif
 
-#if defined (__linux__)
+#if defined (__linux__) || defined (__ANDROID__)
 #include <sched.h>
 
 /* glibc versions earlier than 2.7 do not define the routines to handle

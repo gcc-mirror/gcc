@@ -3736,19 +3736,16 @@ expand_call (tree exp, rtx target, int ignore)
 		   next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
 		   flags, args_so_far);
 
-      if (flag_ipa_ra)
+      rtx_call_insn *last;
+      rtx datum = NULL_RTX;
+      if (fndecl != NULL_TREE)
 	{
-	  rtx_call_insn *last;
-	  rtx datum = NULL_RTX;
-	  if (fndecl != NULL_TREE)
-	    {
-	      datum = XEXP (DECL_RTL (fndecl), 0);
-	      gcc_assert (datum != NULL_RTX
-			  && GET_CODE (datum) == SYMBOL_REF);
-	    }
-	  last = last_call_insn ();
-	  add_reg_note (last, REG_CALL_DECL, datum);
+	  datum = XEXP (DECL_RTL (fndecl), 0);
+	  gcc_assert (datum != NULL_RTX
+		      && GET_CODE (datum) == SYMBOL_REF);
 	}
+      last = last_call_insn ();
+      add_reg_note (last, REG_CALL_DECL, datum);
 
       /* If the call setup or the call itself overlaps with anything
 	 of the argument setup we probably clobbered our call address.
@@ -4804,13 +4801,10 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	       struct_value_size, call_cookie, valreg,
 	       old_inhibit_defer_pop + 1, call_fusage, flags, args_so_far);
 
-  if (flag_ipa_ra)
-    {
-      rtx datum = orgfun;
-      gcc_assert (GET_CODE (datum) == SYMBOL_REF);
-      rtx_call_insn *last = last_call_insn ();
-      add_reg_note (last, REG_CALL_DECL, datum);
-    }
+  rtx datum = orgfun;
+  gcc_assert (GET_CODE (datum) == SYMBOL_REF);
+  rtx_call_insn *last = last_call_insn ();
+  add_reg_note (last, REG_CALL_DECL, datum);
 
   /* Right-shift returned value if necessary.  */
   if (!pcc_struct_value

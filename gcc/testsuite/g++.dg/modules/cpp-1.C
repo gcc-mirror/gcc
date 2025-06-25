@@ -1,4 +1,5 @@
 // { dg-do preprocess }
+// { dg-additional-options -fno-modules }
 
 module bob;
 #if 1
@@ -11,4 +12,4 @@ import gru;
 EXPORT import mabel;
 int i;
 
-// { dg-final { scan-file cpp-1.i "cpp-1.C\"\n\n\nmodule bob;\n\nexport import stuart;\n\n\n\nimport gru;\n\n import mabel;\n" } }
+// { dg-final { scan-file cpp-1.i "cpp-1.C\"\n\n\n\nmodule bob;\n\nexport import stuart;\n\n\n\nimport gru;\n\n import mabel;\n" } }

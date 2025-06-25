@@ -52,8 +52,8 @@ c_finish_oacc_wait (location_t loc, tree parms, tree clauses)
   vec_alloc (args, nparms + 2);
   stmt = builtin_decl_explicit (BUILT_IN_GOACC_WAIT);
 
-  if (omp_find_clause (clauses, OMP_CLAUSE_ASYNC))
-    t = OMP_CLAUSE_ASYNC_EXPR (clauses);
+  if ((t = omp_find_clause (clauses, OMP_CLAUSE_ASYNC)))
+    t = OMP_CLAUSE_ASYNC_EXPR (t);
   else
     t = build_int_cst (integer_type_node, GOMP_ASYNC_SYNC);
 
@@ -70,6 +70,11 @@ c_finish_oacc_wait (location_t loc, tree parms, tree clauses)
     }
 
   stmt = build_call_expr_loc_vec (loc, stmt, args);
+
+  t = omp_find_clause (clauses, OMP_CLAUSE_IF);
+  if (t)
+    stmt = build3_loc (input_location, COND_EXPR, void_type_node,
+		       OMP_CLAUSE_IF_EXPR (t), stmt, NULL_TREE);
 
   vec_free (args);
 

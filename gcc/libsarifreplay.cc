@@ -966,6 +966,17 @@ sarif_replayer::handle_artifact_obj (const json::object &artifact_obj)
   auto file = m_output_mgr.new_file (artifact_loc_uri->get_string (),
 				     sarif_source_language);
 
+  // 3.24.6 "roles" property
+  const property_spec_ref prop_roles
+    ("artifact", "roles", "3.24.6");
+  if (auto roles_obj
+      = get_optional_property<json::array> (artifact_obj,
+					    prop_roles))
+    for (auto iter : *roles_obj)
+      if (auto str = require_string (*iter, prop_roles))
+	if (!strcmp (str->get_string (), "analysisTarget"))
+	  m_output_mgr.set_analysis_target (file);
+
   // Set contents, if available
   const property_spec_ref prop_contents
     ("artifact", "contents", "3.24.8");

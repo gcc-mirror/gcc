@@ -26,7 +26,6 @@ using std::experimental::net::mutable_buffer;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
   char c[4];
 
   mutable_buffer mb;
@@ -44,7 +43,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
   char c[32];
 
   std::vector<mutable_buffer> mv{ {c, 0}, {c, 32}, {c, 16}, {c, 3}, {c, 0} };

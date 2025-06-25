@@ -320,6 +320,7 @@ package body Inline is
    --    Exit_Cases
    --    Postcondition
    --    Precondition
+   --    Program_Exit
    --    Refined_Global
    --    Refined_Depends
    --    Refined_Post
@@ -1005,9 +1006,9 @@ package body Inline is
          end loop;
 
          --  The list of inlined subprograms is an overestimate, because it
-         --  includes inlined functions called from functions that are compiled
-         --  as part of an inlined package, but are not themselves called. An
-         --  accurate computation of just those subprograms that are needed
+         --  includes inlined subprograms called from subprograms that are
+         --  declared in an inlined package, but are not themselves called.
+         --  An accurate computation of just those subprograms that are needed
          --  requires that we perform a transitive closure over the call graph,
          --  starting from calls in the main compilation unit.
 
@@ -4077,6 +4078,7 @@ package body Inline is
             --  Replace call with temporary and create its declaration
 
             Temp := Make_Temporary (Loc, 'C');
+            Mutate_Ekind (Temp, E_Constant);
             Set_Is_Internal (Temp);
 
             --  For the unconstrained case, the generated temporary has the
@@ -4922,11 +4924,17 @@ package body Inline is
               and then Ekind (Info.Fin_Scop) = E_Package_Body
             then
                Set_In_Package_Body (Spec_Entity (Info.Fin_Scop), True);
+               Instantiate_Package_Body (Info);
+               Set_In_Package_Body (Spec_Entity (Info.Fin_Scop), False);
+            else
+               Instantiate_Package_Body (Info);
             end if;
 
-            Instantiate_Package_Body (Info);
+            --  No need to generate cleanups if the main unit is generic
 
-            if Present (Info.Fin_Scop) then
+            if Present (Info.Fin_Scop)
+               and then not Is_Generic_Unit (Main_Unit_Entity)
+            then
                Scop := Info.Fin_Scop;
 
                --  If the enclosing finalization scope is dynamic, the instance
@@ -4939,12 +4947,6 @@ package body Inline is
                end if;
 
                Add_Scope_To_Clean (Scop);
-
-               --  Reset the In_Package_Body flag if it was set above
-
-               if Ekind (Info.Fin_Scop) = E_Package_Body then
-                  Set_In_Package_Body (Spec_Entity (Info.Fin_Scop), False);
-               end if;
             end if;
 
          --  For subprogram instances, always instantiate the body
@@ -4964,10 +4966,6 @@ package body Inline is
          Expander_Active := (Operating_Mode = Opt.Generate_Code);
          Push_Scope (Standard_Standard);
          To_Clean := New_Elmt_List;
-
-         if Is_Generic_Unit (Cunit_Entity (Main_Unit)) then
-            Start_Generic;
-         end if;
 
          --  A body instantiation may generate additional instantiations, so
          --  the following loop must scan to the end of a possibly expanding
@@ -5007,16 +5005,10 @@ package body Inline is
             Pending_Instantiations.Init;
          end if;
 
-         --  We can now complete the cleanup actions of scopes that contain
-         --  pending instantiations (skipped for generic units, since we
-         --  never need any cleanups in generic units).
+         --  Expand the cleanup actions of scopes that contain instantiations
 
-         if Expander_Active
-           and then not Is_Generic_Unit (Main_Unit_Entity)
-         then
+         if Expander_Active then
             Cleanup_Scopes;
-         elsif Is_Generic_Unit (Cunit_Entity (Main_Unit)) then
-            End_Generic;
          end if;
 
          Pop_Scope;
@@ -5271,6 +5263,7 @@ package body Inline is
                                         | Name_Exit_Cases
                                         | Name_Postcondition
                                         | Name_Precondition
+                                        | Name_Program_Exit
                                         | Name_Refined_Global
                                         | Name_Refined_Depends
                                         | Name_Refined_Post

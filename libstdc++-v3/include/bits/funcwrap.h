@@ -199,7 +199,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      };
 
    template<typename _Tp>
-     using __param_t = __conditional_t<is_scalar_v<_Tp>, _Tp, _Tp&&>;
+     consteval bool
+     __pass_by_value()
+     {
+       // n.b. sizeof(Incomplete&) is ill-formed for incomplete types,
+       // so we check is_reference_v first.
+       if constexpr (is_reference_v<_Tp> || is_scalar_v<_Tp>)
+	 return true;
+       else
+	 // n.b. we already asserted that types are complete in wrappers,
+	 // avoid triggering additional errors from this function.
+	 if constexpr (std::__is_complete_or_unbounded(__type_identity<_Tp>()))
+	   if constexpr (sizeof(_Tp) <= 2 * sizeof(void*))
+	     return is_trivially_move_constructible_v<_Tp>
+		    && is_trivially_destructible_v<_Tp>;
+       return false;
+     }
+
+   template<typename _Tp>
+     using __param_t = __conditional_t<__pass_by_value<_Tp>(), _Tp, _Tp&&>;
 
    template<bool _Noex, typename _Ret, typename... _Args>
      using _Invoker = _Base_invoker<_Noex, remove_cv_t<_Ret>, __param_t<_Args>...>;

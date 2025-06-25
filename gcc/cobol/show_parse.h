@@ -147,10 +147,10 @@ extern bool cursor_at_sol;
                     fprintf(stderr, "<%s>", cbl_field_type_str((b).field->type)); \
                     } \
                 } \
-            if( (b).nsubscript) \
+            if( (b).nsubscript()) \
                 { \
                 fprintf(stderr,"("); \
-                for(size_t jjj=0; jjj<(b).nsubscript; jjj++) \
+                for(size_t jjj=0; jjj<(b).nsubscript(); jjj++) \
                     { \
                     if(jjj) \
                       { \
@@ -337,13 +337,13 @@ extern bool cursor_at_sol;
     else \
       { \
       gg_fprintf(trace_handle, 1, "%s", gg_string_literal( (b).field->name ? (b).field->name:"")); \
-      if( b.nsubscript ) \
+      if( b.nsubscript() ) \
         { \
         gg_fprintf(trace_handle, 0, "("); \
-        for(unsigned int i=0; i<b.nsubscript; i++) \
+        for(unsigned int i=0; i<b.nsubscript(); i++) \
           { \
           gg_fprintf(trace_handle, 1, "%s", gg_string_literal(    b.subscripts[i].field->name ? b.subscripts[i].field->name : ""  )); \
-          if( i<b.nsubscript-1 ) \
+          if( i<b.nsubscript()-1 ) \
             { \
             gg_fprintf(trace_handle, 0, " "); \
             } \
@@ -424,30 +424,31 @@ extern bool cursor_at_sol;
 
 // Use CHECK_FIELD when a should be non-null, and a->var_decl_node also should
 // by non-null:
-#define CHECK_FIELD(a)          \
-        do{                     \
-        if(!a)                  \
-            {                   \
-            yywarn("%s(): parameter " #a " is NULL", __func__); \
-            gcc_unreachable();  \
-            }                   \
-        if( !a->var_decl_node && a->type != FldConditional && a->type != FldLiteralA)  \
-            {                   \
-            yywarn("%s() parameter " #a " is variable %s<%s> with NULL var_decl_node", \
-                __func__,       \
-                a->name,        \
-                cbl_field_type_str(a->type) ); \
-            gcc_unreachable();  \
-            }                   \
-        }while(0);
+#define CHECK_FIELD(a)                                                  \
+        do {                                                                  \
+        if(!a)                                                          \
+            {                                                           \
+            yywarn("%s: parameter %<" #a "%> is NULL", __func__);        \
+            gcc_unreachable();                                          \
+            }                                                           \
+        if( !a->var_decl_node && a->type != FldConditional && a->type != FldLiteralA) \
+            {                                                           \
+            yywarn("%s: parameter %<" #a "%> is variable "               \
+                   "%s<%s> with NULL %<var_decl_node%>",                \
+                __func__,                                               \
+                a->name,                                                \
+                cbl_field_type_str(a->type) );                          \
+            gcc_unreachable();                                          \
+            }                                                           \
+        } while(0);
 
-#define CHECK_LABEL(a)            \
-        do{                     \
-        if(!a)                  \
-            {                   \
-            yywarn("%s(): parameter " #a " is NULL", __func__); \
-            gcc_unreachable();  \
-            }                   \
+#define CHECK_LABEL(a)                                                  \
+        do{                                                             \
+        if(!a)                                                          \
+            {                                                           \
+            yywarn("%s: parameter %<" #a "%> is NULL", __func__);       \
+            gcc_unreachable();                                          \
+            }                                                           \
         }while(0);
 
 #ifdef INCORPORATE_ANALYZER
@@ -506,7 +507,7 @@ class ANALYZE
 class ANALYZE
   {
   public:
-    ANALYZE(const char *)
+    explicit ANALYZE(const char *)
       {
       }
     ~ANALYZE()

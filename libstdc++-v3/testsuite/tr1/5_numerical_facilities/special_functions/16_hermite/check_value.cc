@@ -1904,7 +1904,6 @@ template<typename Ret, unsigned int Num>
   void
   test(const testcase_hermite<Ret> (&data)[Num], Ret toler)
   {
-    bool test __attribute__((unused)) = true;
     const Ret eps = std::numeric_limits<Ret>::epsilon();
     Ret max_abs_diff = -Ret(1);
     Ret max_abs_frac = -Ret(1);

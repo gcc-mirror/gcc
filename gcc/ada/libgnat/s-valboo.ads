@@ -29,32 +29,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore. Postconditions and
---  contract cases should not be executed at runtime as well, in order not to
---  slow down the execution of these functions.
-
-pragma Assertion_Policy (Pre            => Ignore,
-                         Post           => Ignore,
-                         Contract_Cases => Ignore,
-                         Ghost          => Ignore);
-
-with System.Val_Spec;
-
 package System.Val_Bool
   with SPARK_Mode
 is
    pragma Preelaborate;
 
-   function Value_Boolean (Str : String) return Boolean
-   with
-     Pre  => System.Val_Spec.Is_Boolean_Image_Ghost (Str, True)
-       or else System.Val_Spec.Is_Boolean_Image_Ghost (Str, False),
-     Post =>
-       Value_Boolean'Result =
-         (Str (System.Val_Spec.First_Non_Space_Ghost
-            (Str, Str'First, Str'Last)) in 't' | 'T');
+   function Value_Boolean (Str : String) return Boolean;
    --  Computes Boolean'Value (Str)
 
 end System.Val_Bool;

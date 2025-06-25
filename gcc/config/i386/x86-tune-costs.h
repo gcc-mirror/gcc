@@ -4065,19 +4065,36 @@ struct processor_costs shijidadao_cost = {
 
 
 
-/* Generic should produce code tuned for Core-i7 (and newer chips)
-   and btver1 (and newer chips).  */
+/* Generic should produce code tuned for Haswell (and newer chips)
+   and znver1 (and newer chips):
+   1. Don't align memory.
+   2. For known sizes, prefer vector loop, unroll loop with 4 moves or
+      stores per iteration without aligning the loop, up to 256 bytes.
+   3. For unknown sizes, use memcpy/memset.
+   4. Since each loop iteration has 4 stores and 8 stores for zeroing
+      with unroll loop may be needed, change CLEAR_RATIO to 10 so that
+      zeroing up to 72 bytes are fully unrolled with 9 stores without
+      SSE.
+ */
 
 static stringop_algs generic_memcpy[2] = {
-  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
-             {-1, libcall, false}}},
-  {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
+  {libcall,
+   {{256, vector_loop, true},
+    {256, unrolled_loop, true},
+    {-1, libcall, true}}},
+  {libcall,
+   {{256, vector_loop, true},
+    {256, unrolled_loop, true},
+    {-1, libcall, true}}}};
 static stringop_algs generic_memset[2] = {
-  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
-             {-1, libcall, false}}},
-  {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
-             {-1, libcall, false}}}};
+  {libcall,
+   {{256, vector_loop, true},
+    {256, unrolled_loop, true},
+    {-1, libcall, true}}},
+  {libcall,
+   {{256, vector_loop, true},
+    {256, unrolled_loop, true},
+    {-1, libcall, true}}}};
 static const
 struct processor_costs generic_cost = {
   {
@@ -4134,7 +4151,7 @@ struct processor_costs generic_cost = {
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  6,					/* CLEAR_RATIO */
+  10,					/* CLEAR_RATIO */
   {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */

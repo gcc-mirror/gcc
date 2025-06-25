@@ -133,6 +133,7 @@ is
    function C_Length_Ghost (Item : char_array) return size_t
    with
      Ghost,
+     Import,
      Pre  => Is_Nul_Terminated (Item),
      Post => C_Length_Ghost'Result <= Item'Last - Item'First
        and then Item (Item'First + C_Length_Ghost'Result) = nul
@@ -274,6 +275,7 @@ is
    function C_Length_Ghost (Item : wchar_array) return size_t
    with
      Ghost,
+     Import,
      Pre  => Is_Nul_Terminated (Item),
      Post => C_Length_Ghost'Result <= Item'Last - Item'First
        and then Item (Item'First + C_Length_Ghost'Result) = wide_nul
@@ -395,6 +397,7 @@ is
    function C_Length_Ghost (Item : char16_array) return size_t
    with
      Ghost,
+     Import,
      Pre  => Is_Nul_Terminated (Item),
      Post => C_Length_Ghost'Result <= Item'Last - Item'First
        and then Item (Item'First + C_Length_Ghost'Result) = char16_nul
@@ -510,6 +513,7 @@ is
    function C_Length_Ghost (Item : char32_array) return size_t
    with
      Ghost,
+     Import,
      Pre  => Is_Nul_Terminated (Item),
      Post => C_Length_Ghost'Result <= Item'Last - Item'First
        and then Item (Item'First + C_Length_Ghost'Result) = char32_nul

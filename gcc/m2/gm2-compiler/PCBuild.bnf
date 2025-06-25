@@ -65,7 +65,7 @@ FROM M2Quads IMPORT Top, PushT, PopT, PushTF, PopTF, PopNothing, OperandT, Opera
                     PushTFA,
                     PushTFn, PopTFn, PushTFtok, PopTtok, PopTFtok, PushTtok, PushTFntok,
                     PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto,
-                    DupFrame,
+                    DupFrame, Annotate,
                     BuildTypeForConstructor, BuildConstructor, BuildConstructorEnd,
                     PopConstructor,
                     NextConstructorField, SilentBuildConstructor,
@@ -118,6 +118,7 @@ FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput
                         PutIncluded,
                         IsVarParam, IsProcedure, IsDefImp, IsModule,
                         IsRecord, IsProcType,
+                        GetCurrentModule, IsInnerModule, IsImported,
                         RequestSym,
                         GetSym, GetLocalSym ;
 
@@ -412,6 +413,68 @@ BEGIN
    Expect(realtok, stopset0, stopset1, stopset2)
 END Real ;
 
+
+(*
+   PushTFQualident - push the result of the Qualident
+                     to the stack.  It checks to see if init
+		     is a procedure or proc type and if so
+		     it does not push the return type.
+*)
+
+PROCEDURE PushTFQualident (tok, tokstart: CARDINAL;
+                           init: CARDINAL) ;
+BEGIN
+   IF tok#tokstart
+   THEN
+      tok := MakeVirtualTok (tokstart, tokstart, tok)
+   END ;
+   IF IsProcedure (init) OR IsProcType (init)
+   THEN
+      PushTtok (init, tok) ;
+      Annotate ("%1s(%1d)||qualident procedure/proctype") ;
+   ELSE
+      Annotate ("%1s(%1d)|%1s(%1d)||qualident|type") ;
+      PushTFtok (init, GetType (init), tok) ;
+   END
+END PushTFQualident ;
+
+
+(*
+   CheckModuleQualident - check to see if the beginning ident of the qualident is an
+                          imported module.
+*)
+
+PROCEDURE CheckModuleQualident (stopset0: SetOfStop0;
+                                stopset1: SetOfStop1;
+				stopset2: SetOfStop2) ;
+VAR
+   name         : Name ;
+   init,
+   nextLevel,
+   tok, tokstart: CARDINAL ;
+BEGIN
+   PopTtok (name, tokstart) ;
+   tok := tokstart ;
+   init := RequestSym (tok, name) ;
+   IF IsImported (GetCurrentModule (), init) AND (IsDefImp (init) OR IsModule (init))
+   THEN
+      WHILE IsDefImp (init) OR IsModule (init) DO
+         Expect (periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
+         StartScope (init) ;
+         Ident (stopset0, stopset1, stopset2) ;
+	 PopTtok (name, tok) ;
+         nextLevel := RequestSym (tok, name) ;
+         EndScope ;
+	 CheckCanBeImported (init, nextLevel) ;
+	 init := nextLevel
+      END ;
+      PushTFQualident (tok, tokstart, init) ;
+      PutIncluded (init)
+   ELSE
+      PushTFQualident (tok, tokstart, init)
+   END
+END CheckModuleQualident ;
+
 % module PCBuild end
 BEGIN
    BlockState := InitState ()
@@ -569,37 +632,11 @@ ImplementationOrProgramModule :=                                           % Pus
 
 Number := Integer | Real =:
 
-Qualident :=                                                               % VAR name          : Name ;
-                                                                                 init, ip1,
-                                                                                 tokstart, tok : CARDINAL ; %
-             Ident
+Qualident := Ident
                                                                            % IF IsAutoPushOn()
                                                                              THEN
-                                                                                PopTtok(name, tokstart) ;
-										tok := tokstart ;
-                                                                                init := RequestSym (tok, name) ;
-                                                                                WHILE IsDefImp (init) OR IsModule (init) DO
-                                                                                   Expect (periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
-                                                                                   StartScope (init) ;
-                                                                                   Ident (stopset0, stopset1, stopset2) ;
-                                                                                   PopTtok (name, tok) ;
-                                                                                   ip1 := RequestSym (tok, name) ;
-                                                                                   PutIncluded(ip1) ;
-                                                                                   EndScope ;
-                                                                                   CheckCanBeImported(init, ip1) ;
-                                                                                   init := ip1
-                                                                                END ;
-										IF tok#tokstart
-										THEN
-										   tok := MakeVirtualTok (tokstart, tokstart, tok)
-										END ;
-                                                                                IF IsProcedure(init) OR IsProcType(init)
-                                                                                THEN
-                                                                                   PushTtok(init, tok)
-                                                                                ELSE
-                                                                                   PushTFtok(init, GetType(init), tok) ;
-                                                                                END
-                                                                             ELSE %
+     										CheckModuleQualident (stopset0, stopset1, stopset2)
+                                                                             ELSE (* just parse qualident *) %
              { "." Ident }                                                 % END %
            =:
 

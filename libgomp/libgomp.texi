@@ -603,7 +603,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @code{omp_get_device_teams_thread_limit}, and
       @code{omp_set_device_teams_thread_limit} routines @tab N @tab
 @item @code{omp_target_memset} and @code{omp_target_memset_async} routines
-      @tab N @tab
+      @tab Y @tab
 @item Fortran version of the interop runtime routines @tab Y @tab
 @item Routines for obtaining memory spaces/allocators for shared/device memory
       @tab N @tab
@@ -1802,6 +1802,11 @@ Returns the number of available non-host devices.
 
 The effect of running this routine in a @code{target} region is unspecified.
 
+Note that in GCC the function is marked pure, i.e. as returning always the
+same number.  When GCC was not configured to support offloading, it is replaced
+by zero; compile with @option{-fno-builtin-omp_get_num_devices} if a run-time
+function is desired.
+
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{int omp_get_num_devices(void);}
@@ -1811,6 +1816,9 @@ The effect of running this routine in a @code{target} region is unspecified.
 @multitable @columnfractions .20 .80
 @item @emph{Interface}: @tab @code{integer function omp_get_num_devices()}
 @end multitable
+
+@item @emph{See also}:
+@ref{omp_get_initial_device}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.31.
@@ -1950,6 +1958,12 @@ the value of @code{omp_initial_device}.
 
 The effect of running this routine in a @code{target} region is unspecified.
 
+Note that GCC inlines this function unless you compile with
+@option{-fno-builtin-omp_get_initial_device}.  If GCC was not configured to
+support offloading, it expands to constant zero; in non-host code it expands
+to @code{omp_initial_device}; and otherwise it is replaced with a call to
+@code{omp_get_num_devices}.
+
 @item @emph{C/C++}
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{int omp_get_initial_device(void);}
@@ -1984,8 +1998,8 @@ pointers on devices. They have C linkage and do not throw exceptions.
 * omp_target_memcpy_async:: Copy data between devices asynchronously
 * omp_target_memcpy_rect:: Copy a subvolume of data between devices
 * omp_target_memcpy_rect_async:: Copy a subvolume of data between devices asynchronously
-@c * omp_target_memset:: <fixme>/TR12
-@c * omp_target_memset_async:: <fixme>/TR12
+* omp_target_memset:: Set bytes in device memory
+* omp_target_memset_async:: Set bytes in device memory asynchronously
 * omp_target_associate_ptr:: Associate a device pointer with a host pointer
 * omp_target_disassociate_ptr:: Remove device--host pointer association
 * omp_get_mapped_ptr:: Return device pointer to a host pointer
@@ -2395,6 +2409,98 @@ the initial device.
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.8
+@end table
+
+
+@node omp_target_memset
+@subsection @code{omp_target_memset} -- Set bytes in device memory
+@table @asis
+@item @emph{Description}:
+This routine fills memory on the device identified by device number
+@var{device_num}.  Starting from the device address @var{ptr}, the first
+@var{count} bytes are set to the value @var{val}, converted to
+@code{unsigned char}. If @var{count} is zero, the routine has no effect;
+if @var{ptr} is @code{NULL}, the behavior is unspecified.  The function
+returns @var{ptr}.
+
+The @var{device_num} must be a conforming device number and @var{ptr} must be
+a valid device pointer for that device.  Running this routine in a
+@code{target} region except on the initial device is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void *omp_target_memcpy(void *ptr,}
+@item                   @tab @code{                        int val,}
+@item                   @tab @code{                        size_t count,}
+@item                   @tab @code{                        int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_target_memset( &}
+@item                   @tab @code{    ptr, val, count, device_num) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_size_t), value :: count}
+@item                   @tab @code{integer(c_int), value :: val, device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_target_memset_async}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 25.8.1
+@end table
+
+
+
+@node omp_target_memset_async
+@subsection @code{omp_target_memset} -- Set bytes in device memory asynchronously
+@table @asis
+@item @emph{Description}:
+This routine fills memory on the device identified by device number
+@var{device_num}.  Starting from the device address @var{ptr}, the first
+@var{count} bytes are set to the value @var{val}, converted to
+@code{unsigned char}. If @var{count} is zero, the routine has no effect;
+if @var{ptr} is @code{NULL}, the behavior is unspecified.  Task dependence
+is expressed by passing an array of depend objects to @var{depobj_list}, where
+the number of array elements is passed as @var{depobj_count}; if the count is
+zero, the @var{depobj_list} argument is ignored.  In C++ and Fortran, the
+@var{depobj_list} argument can also be omitted in that case.  The function
+returns @var{ptr}.
+
+The @var{device_num} must be a conforming device number and @var{ptr} must be
+a valid device pointer for that device.  Running this routine in a
+@code{target} region except on the initial device is not supported.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void *omp_target_memcpy_async(void *ptr,}
+@item                   @tab @code{                        int val,}
+@item                   @tab @code{                        size_t count,}
+@item                   @tab @code{                        int device_num,}
+@item                   @tab @code{                        int depobj_count,}
+@item                   @tab @code{                        omp_depend_t *depobj_list)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_target_memset_async( &}
+@item                   @tab @code{    ptr, val, count, device_num, &}
+@item                   @tab @code{    depobj_count, depobj_list) bind(C)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int}
+@item                   @tab @code{type(c_ptr), value :: ptr}
+@item                   @tab @code{integer(c_size_t), value :: count}
+@item                   @tab @code{integer(c_int), value :: val, device_num, depobj_count}
+@item                   @tab @code{integer(omp_depend_kind), optional :: depobj_list(*)}
+@end multitable
+
+
+@item @emph{See also}:
+@ref{omp_target_memset}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 25.8.2
 @end table
 
 
@@ -3038,6 +3144,11 @@ and Fortran or used with @code{NULL} as argument in C and C++.  If successful,
 In GCC, the effect of running this routine in a @code{target} region that is not
 the initial device is unspecified.
 
+GCC implements the OpenMP 6.0 version of this function for C and C++, which is not
+compatible with its type signature in previous versions of the OpenMP specification.
+In older versions, the type @code{int*} was used for the @var{ret_code} argument
+in place of a pointer to the enumerated type @code{omp_interop_rc_t}.
+
 @c Implementation remark: In GCC, the Fortran interface differs from the one shown
 @c below: the function has C binding and @var{interop} and @var{property_id} are
 @c passed by value, which permits use of the same ABI as the C function.  This does
@@ -3084,6 +3195,11 @@ and Fortran or used with @code{NULL} as argument in C and C++.  If successful,
 In GCC, the effect of running this routine in a @code{target} region that is not
 the initial device is unspecified.
 
+GCC implements the OpenMP 6.0 version of this function for C and C++, which is not
+compatible with its type signature in previous versions of the OpenMP specification.
+In older versions, the type @code{int*} was used for the @var{ret_code} argument
+in place of a pointer to the enumerated type @code{omp_interop_rc_t}.
+
 @c Implementation remark: In GCC, the Fortran interface differs from the one shown
 @c below: the function has C binding and @var{interop} and @var{property_id} are
 @c passed by value, which permits use of the same ABI as the C function.  This does
@@ -3129,6 +3245,11 @@ and Fortran or used with @code{NULL} as argument in C and C++.  If successful,
 
 In GCC, the effect of running this routine in a @code{target} region that is not
 the initial device is unspecified.
+
+GCC implements the OpenMP 6.0 version of this function for C and C++, which is not
+compatible with its type signature in previous versions of the OpenMP specification.
+In older versions, the type @code{int*} was used for the @var{ret_code} argument
+in place of a pointer to the enumerated type @code{omp_interop_rc_t}.
 
 @c Implementation remark: In GCC, the Fortran interface differs from the one shown
 @c below: @var{interop} and @var{property_id} are passed by value.  This does not
@@ -3256,6 +3377,11 @@ the @var{ret_code} in human-readable form.
 The behavior is unspecified if value of @var{ret_code} was not set by an
 interoperability routine invoked for @var{interop}.
 
+GCC implements the OpenMP 6.0 version of this function for C and C++, which is not
+compatible with its type signature in previous versions of the OpenMP specification.
+In older versions, the type @code{int} was used for the @var{ret_code} argument
+in place of the enumerated type @code{omp_interop_rc_t}.
+
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{const char *omp_get_interop_rc_desc(const omp_interop_t interop,
@@ -3327,7 +3453,7 @@ traits; if an allocator that fulfills the requirements cannot be created,
 @code{omp_null_allocator} is returned.
 
 The predefined memory spaces and available traits can be found at
-@ref{OMP_ALLOCATOR}, where the trait names have to be prefixed by
+@ref{Memory allocation}, where the trait names have to be prefixed by
 @code{omp_atk_} (e.g. @code{omp_atk_pinned}) and the named trait values by
 @code{omp_atv_} (e.g. @code{omp_atv_true}); additionally, @code{omp_atv_default}
 may be used as trait value to specify that the default value should be used.
@@ -3350,7 +3476,7 @@ may be used as trait value to specify that the default value should be used.
 @end multitable
 
 @item @emph{See also}:
-@ref{OMP_ALLOCATOR}, @ref{Memory allocation}, @ref{omp_destroy_allocator}
+@ref{Memory allocation}, @ref{OMP_ALLOCATOR}, @ref{omp_destroy_allocator}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.2
@@ -3931,62 +4057,14 @@ The value can either be a predefined allocator or a predefined memory space
 or a predefined memory space followed by a colon and a comma-separated list
 of memory trait and value pairs, separated by @code{=}.
 
+See @ref{Memory allocation} for a list of supported prefedined allocators,
+memory spaces, and traits.
+
 Note: The corresponding device environment variables are currently not
 supported.  Therefore, the non-host @var{def-allocator-var} ICVs are always
 initialized to @code{omp_default_mem_alloc}.  However, on all devices,
 the @code{omp_set_default_allocator} API routine can be used to change
 value.
-
-@multitable @columnfractions .45 .45
-@headitem Predefined allocators @tab Associated predefined memory spaces
-@item omp_default_mem_alloc     @tab omp_default_mem_space
-@item omp_large_cap_mem_alloc   @tab omp_large_cap_mem_space
-@item omp_const_mem_alloc       @tab omp_const_mem_space
-@item omp_high_bw_mem_alloc     @tab omp_high_bw_mem_space
-@item omp_low_lat_mem_alloc     @tab omp_low_lat_mem_space
-@item omp_cgroup_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
-@item omp_pteam_mem_alloc       @tab omp_low_lat_mem_space (implementation defined)
-@item omp_thread_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
-@item ompx_gnu_pinned_mem_alloc @tab omp_default_mem_space (GNU extension)
-@end multitable
-
-The predefined allocators use the default values for the traits,
-as listed below.  Except that the last three allocators have the
-@code{access} trait set to @code{cgroup}, @code{pteam}, and
-@code{thread}, respectively.
-
-@multitable @columnfractions .25 .40 .25
-@headitem Trait @tab Allowed values @tab Default value
-@item @code{sync_hint} @tab @code{contended}, @code{uncontended},
-                            @code{serialized}, @code{private}
-                       @tab @code{contended}
-@item @code{alignment} @tab Positive integer being a power of two
-                       @tab 1 byte
-@item @code{access}    @tab @code{all}, @code{cgroup},
-                            @code{pteam}, @code{thread}
-                       @tab @code{all}
-@item @code{pool_size} @tab Positive integer
-                       @tab See @ref{Memory allocation}
-@item @code{fallback}  @tab @code{default_mem_fb}, @code{null_fb},
-                            @code{abort_fb}, @code{allocator_fb}
-                       @tab See below
-@item @code{fb_data}   @tab @emph{unsupported as it needs an allocator handle}
-                       @tab (none)
-@item @code{pinned}    @tab @code{true}, @code{false}
-                       @tab See below
-@item @code{partition} @tab @code{environment}, @code{nearest},
-                            @code{blocked}, @code{interleaved}
-                       @tab @code{environment}
-@end multitable
-
-For the @code{fallback} trait, the default value is @code{null_fb} for the
-@code{omp_default_mem_alloc} allocator and any allocator that is associated
-with device memory; for all other allocators, it is @code{default_mem_fb}
-by default.
-
-For the @code{pinned} trait, the default value is @code{true} for
-predefined allocator @code{ompx_gnu_pinned_mem_alloc} (a GNU extension), and
-@code{false} for all others.
 
 Examples:
 @smallexample
@@ -5846,7 +5924,7 @@ This function copies device memory from one memory location to another
 on the current device.  It copies @var{bytes} bytes of data from the device
 address, specified by @var{data_dev_src}, to the device address
 @var{data_dev_dest}.  The @code{_async} version performs the transfer
-asnychronously using the queue associated with @var{async_arg}.
+asynchronously using the queue associated with @var{async_arg}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -6757,6 +6835,7 @@ on more architectures, GCC currently does not match any @code{arch} or
       @tab See @code{-march=} in ``Nvidia PTX Options''
 @end multitable
 
+
 @node Memory allocation
 @section Memory allocation
 
@@ -6791,11 +6870,94 @@ The description below applies to:
       @code{_Alignof} and C++'s @code{alignof}.
 @end itemize
 
-For the available predefined allocators and, as applicable, their associated
-predefined memory spaces and for the available traits and their default values,
-see @ref{OMP_ALLOCATOR}.  Predefined allocators without an associated memory
-space use the @code{omp_default_mem_space} memory space.  See additionally
-@ref{Offload-Target Specifics}.
+GCC supports the following predefined allocators and predefined memory spaces:
+
+@multitable @columnfractions .45 .45
+@headitem Predefined allocators @tab Associated predefined memory spaces
+@item omp_default_mem_alloc     @tab omp_default_mem_space
+@item omp_large_cap_mem_alloc   @tab omp_large_cap_mem_space
+@item omp_const_mem_alloc       @tab omp_const_mem_space
+@item omp_high_bw_mem_alloc     @tab omp_high_bw_mem_space
+@item omp_low_lat_mem_alloc     @tab omp_low_lat_mem_space
+@item omp_cgroup_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
+@item omp_pteam_mem_alloc       @tab omp_low_lat_mem_space (implementation defined)
+@item omp_thread_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
+@item ompx_gnu_pinned_mem_alloc @tab omp_default_mem_space (GNU extension)
+@end multitable
+
+Each predefined allocator, including @code{omp_null_allocator}, has a corresponding
+allocator class template that meet the C++ allocator completeness requirements.
+These are located in the @code{omp::allocator} namespace, and the
+@code{ompx::allocator} namespace for gnu extensions.  This allows the
+allocator-aware C++ standard library containers to use OpenMP allocation routines;
+for instance:
+
+@smallexample
+std::vector<int, omp::allocator::cgroup_mem<int>> vec;
+@end smallexample
+
+The following allocator templates are supported:
+
+@multitable @columnfractions .45 .45
+@headitem Predefined allocators @tab Associated allocator template
+@item omp_null_allocator        @tab omp::allocator::null_allocator
+@item omp_default_mem_alloc     @tab omp::allocator::default_mem
+@item omp_large_cap_mem_alloc   @tab omp::allocator::large_cap_mem
+@item omp_const_mem_alloc       @tab omp::allocator::const_mem
+@item omp_high_bw_mem_alloc     @tab omp::allocator::high_bw_mem
+@item omp_low_lat_mem_alloc     @tab omp::allocator::low_lat_mem
+@item omp_cgroup_mem_alloc      @tab omp::allocator::cgroup_mem
+@item omp_pteam_mem_alloc       @tab omp::allocator::pteam_mem
+@item omp_thread_mem_alloc      @tab omp::allocator::thread_mem
+@item ompx_gnu_pinned_mem_alloc @tab ompx::allocator::gnu_pinned_mem
+@end multitable
+
+The following traits are available when constructing a new allocator;
+if a trait is not specified or with the value @code{default}, the
+specified default value is used for that trait.  The predefined
+allocators use the default values of each trait, except that the
+@code{omp_cgroup_mem_alloc}, @code{omp_pteam_mem_alloc}, and
+@code{omp_thread_mem_alloc} allocators have the @code{access} trait
+set to @code{cgroup}, @code{pteam}, and @code{thread}, respectively.
+For each trait, a named constant prefixed by @code{omp_atk_} exists;
+for each non-numeric value, a named constant prefixed by @code{omp_atv_}
+exists.
+
+@multitable @columnfractions .25 .40 .25
+@headitem Trait @tab Allowed values @tab Default value
+@item @code{sync_hint} @tab @code{contended}, @code{uncontended},
+                            @code{serialized}, @code{private}
+                       @tab @code{contended}
+@item @code{alignment} @tab Positive integer being a power of two
+                       @tab 1 byte
+@item @code{access}    @tab @code{all}, @code{cgroup},
+                            @code{pteam}, @code{thread}
+                       @tab @code{all}
+@item @code{pool_size} @tab Positive integer (bytes)
+                       @tab See below.
+@item @code{fallback}  @tab @code{default_mem_fb}, @code{null_fb},
+                            @code{abort_fb}, @code{allocator_fb}
+                       @tab See below
+@item @code{fb_data}   @tab @emph{allocator handle}
+                       @tab (none)
+@item @code{pinned}    @tab @code{true}, @code{false}
+                       @tab See below
+@item @code{partition} @tab @code{environment}, @code{nearest},
+                            @code{blocked}, @code{interleaved}
+                       @tab @code{environment}
+@end multitable
+
+For the @code{fallback} trait, the default value is @code{null_fb} for the
+@code{omp_default_mem_alloc} allocator and any allocator that is associated
+with device memory; for all other allocators, it is @code{default_mem_fb}
+by default.
+
+For the @code{pinned} trait, the default value is @code{true} for
+predefined allocator @code{ompx_gnu_pinned_mem_alloc} (a GNU extension), and
+@code{false} for all others.
+
+The following description applies to the initial device (the host) and largely
+also to non-host devices; for the latter, also see @ref{Offload-Target Specifics}.
 
 For the memory spaces, the following applies:
 @itemize
@@ -6810,14 +6972,16 @@ For the memory spaces, the following applies:
 @end itemize
 
 On Linux systems, where the @uref{https://github.com/memkind/memkind, memkind
-library} (@code{libmemkind.so.0}) is available at runtime, it is used when
-creating memory allocators requesting
+library} (@code{libmemkind.so.0}) is available at runtime and the respective
+memkind kind is supported, it is used when creating memory allocators requesting
 
 @itemize
-@item the memory space @code{omp_high_bw_mem_space}
-@item the memory space @code{omp_large_cap_mem_space}
-@item the @code{partition} trait @code{interleaved}; note that for
-      @code{omp_large_cap_mem_space} the allocation will not be interleaved
+@item the @code{partition} trait @code{interleaved} except when the memory space
+      is @code{omp_large_cap_mem_space} (uses @code{MEMKIND_HBW_INTERLEAVE})
+@item the memory space is @code{omp_high_bw_mem_space}  (uses
+      @code{MEMKIND_HBW_PREFERRED})
+@item the memory space is @code{omp_large_cap_mem_space} (uses
+      @code{MEMKIND_DAX_KMEM_ALL} or, if not available, @code{MEMKIND_DAX_KMEM})
 @end itemize
 
 On Linux systems, where the @uref{https://github.com/numactl/numactl, numa
@@ -6843,10 +7007,15 @@ a @code{nearest} allocation.
 Additional notes regarding the traits:
 @itemize
 @item The @code{pinned} trait is supported on Linux hosts, but is subject to
-      the OS @code{ulimit}/@code{rlimit} locked memory settings.
+      the OS @code{ulimit}/@code{rlimit} locked memory settings.  It currently
+      uses @code{mmap} and is therefore optimized for few allocations, including
+      large data.  If the conditions for numa or memkind allocations are
+      fulfilled, those allocators are used instead.
 @item The default for the @code{pool_size} trait is no pool and for every
       (re)allocation the associated library routine is called, which might
-      internally use a memory pool.
+      internally use a memory pool.  Currently, the same applies when a
+      @code{pool_size} has been specified, except that once allocations exceed
+      the the pool size, the action of the @code{fallback} trait applies.
 @item For the @code{partition} trait, the partition part size will be the same
       as the requested size (i.e. @code{interleaved} or @code{blocked} has no
       effect), except for @code{interleaved} when the memkind library is
@@ -6855,12 +7024,14 @@ Additional notes regarding the traits:
       that allocated the memory; on Linux, this is in particular the case when
       the memory placement policy is set to preferred.
 @item The @code{access} trait has no effect such that memory is always
-      accessible by all threads.
+      accessible by all threads. (Except on supported no-host devices.)
 @item The @code{sync_hint} trait has no effect.
 @end itemize
 
 See also:
 @ref{Offload-Target Specifics}
+
+
 
 @c ---------------------------------------------------------------------
 @c Offload-Target Specifics

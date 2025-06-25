@@ -200,6 +200,15 @@ test_wrapper_widget ()
 }
 
 static void
+test_empty_wrapper_widget ()
+{
+  style_manager sm;
+  wrapper_widget w (nullptr);
+  canvas c (w.to_canvas (sm));
+  ASSERT_CANVAS_STREQ (c, false, "");
+}
+
+static void
 test_vbox_1 ()
 {
   style_manager sm;
@@ -263,6 +272,7 @@ text_art_widget_cc_tests ()
   test_test_widget ();
   test_text_widget ();
   test_wrapper_widget ();
+  test_empty_wrapper_widget ();
   test_vbox_1 ();
   test_vbox_2 ();
   test_canvas_widget ();

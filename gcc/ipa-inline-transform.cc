@@ -58,27 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 int ncalls_inlined;
 int nfunctions_inlined;
 
-/* Scale counts of NODE edges by NUM/DEN.  */
-
-static void
-update_noncloned_counts (struct cgraph_node *node,
-			 profile_count num, profile_count den)
-{
-  struct cgraph_edge *e;
-
-  profile_count::adjust_for_ipa_scaling (&num, &den);
-
-  for (e = node->callees; e; e = e->next_callee)
-    {
-      if (!e->inline_failed)
-        update_noncloned_counts (e->callee, num, den);
-      e->count = e->count.apply_scale (num, den);
-    }
-  for (e = node->indirect_calls; e; e = e->next_callee)
-    e->count = e->count.apply_scale (num, den);
-  node->count = node->count.apply_scale (num, den);
-}
-
 /* We removed or are going to remove the last call to NODE.
    Return true if we can and want proactively remove the NODE now.
    This is important to do, since we want inliner to know when offline
@@ -93,7 +72,7 @@ can_remove_node_now_p_1 (struct cgraph_node *node, struct cgraph_edge *e)
     {
       cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
       if ((alias->callers && alias->callers != e)
-          || !can_remove_node_now_p_1 (alias, e))
+	  || !can_remove_node_now_p_1 (alias, e))
 	return false;
     }
   /* FIXME: When address is taken of DECL_EXTERNAL function we still
@@ -212,7 +191,10 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	    }
 	  duplicate = false;
 	  e->callee->externally_visible = false;
-          update_noncloned_counts (e->callee, e->count, e->callee->count);
+	  profile_count num = e->count;
+	  profile_count den = e->callee->count;
+	  profile_count::adjust_for_ipa_scaling (&num, &den);
+	  e->callee->apply_scale (num, den);
 
 	  dump_callgraph_transformation (e->callee, inlining_into,
 					 "inlining to");

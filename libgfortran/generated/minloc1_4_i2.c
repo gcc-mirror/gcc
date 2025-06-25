@@ -32,13 +32,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define HAVE_BACK_ARG 1
 
 
-extern void minloc1_4_i2 (gfc_array_i4 * const restrict, 
+extern void minloc1_4_i2 (gfc_array_i4 * const restrict,
 	gfc_array_i2 * const restrict, const index_type * const restrict, GFC_LOGICAL_4 back);
 export_proto(minloc1_4_i2);
 
 void
-minloc1_4_i2 (gfc_array_i4 * const restrict retarray, 
-	gfc_array_i2 * const restrict array, 
+minloc1_4_i2 (gfc_array_i4 * const restrict retarray,
+	gfc_array_i2 * const restrict array,
 	const index_type * const restrict pdim, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -226,15 +226,15 @@ minloc1_4_i2 (gfc_array_i4 * const restrict retarray,
 }
 
 
-extern void mminloc1_4_i2 (gfc_array_i4 * const restrict, 
+extern void mminloc1_4_i2 (gfc_array_i4 * const restrict,
 	gfc_array_i2 * const restrict, const index_type * const restrict,
 	gfc_array_l1 * const restrict, GFC_LOGICAL_4 back);
 export_proto(mminloc1_4_i2);
 
 void
-mminloc1_4_i2 (gfc_array_i4 * const restrict retarray, 
-	gfc_array_i2 * const restrict array, 
-	const index_type * const restrict pdim, 
+mminloc1_4_i2 (gfc_array_i4 * const restrict retarray,
+	gfc_array_i2 * const restrict array,
+	const index_type * const restrict pdim,
 	gfc_array_l1 * const restrict mask, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -459,15 +459,15 @@ mminloc1_4_i2 (gfc_array_i4 * const restrict retarray,
 }
 
 
-extern void sminloc1_4_i2 (gfc_array_i4 * const restrict, 
+extern void sminloc1_4_i2 (gfc_array_i4 * const restrict,
 	gfc_array_i2 * const restrict, const index_type * const restrict,
 	GFC_LOGICAL_4 *, GFC_LOGICAL_4 back);
 export_proto(sminloc1_4_i2);
 
 void
-sminloc1_4_i2 (gfc_array_i4 * const restrict retarray, 
-	gfc_array_i2 * const restrict array, 
-	const index_type * const restrict pdim, 
+sminloc1_4_i2 (gfc_array_i4 * const restrict retarray,
+	gfc_array_i2 * const restrict array,
+	const index_type * const restrict pdim,
 	GFC_LOGICAL_4 * mask, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];

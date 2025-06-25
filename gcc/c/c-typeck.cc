@@ -136,6 +136,7 @@ static int lvalue_or_else (location_t, const_tree, enum lvalue_use);
 static void record_maybe_used_decl (tree);
 static bool comptypes_internal (const_tree, const_tree,
 				struct comptypes_data *data);
+static bool comptypes_check_for_composite (tree t1, tree t2);
 
 /* Return true if EXP is a null pointer constant, false otherwise.  */
 
@@ -613,6 +614,17 @@ c_type_tag (const_tree t)
   return name;
 }
 
+/* Remove qualifiers but not atomic.  For arrays remove qualifiers
+   on the element type but also do not remove atomic.  */
+static tree
+remove_qualifiers (tree t)
+{
+  if (!t || t == error_mark_node)
+    return t;
+  return TYPE_ATOMIC (strip_array_types (t))
+	 ? c_build_qualified_type (TYPE_MAIN_VARIANT (t), TYPE_QUAL_ATOMIC)
+	 : TYPE_MAIN_VARIANT (t);
+}
 
 
 /* Return the composite type of two compatible types.
@@ -846,12 +858,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	  n = finish_struct (input_location, n, fields, attributes, NULL,
 			     &expr);
 
-	  n = qualify_type (n, t1);
-
-	  gcc_checking_assert (!TYPE_NAME (n) || comptypes (n, t1));
-	  gcc_checking_assert (!TYPE_NAME (n) || comptypes (n, t2));
-
-	  return n;
+	  return qualify_type (n, t1);
 	}
       /* FALLTHRU */
     case ENUMERAL_TYPE:
@@ -915,15 +922,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	for (; p1 && p1 != void_list_node;
 	     p1 = TREE_CHAIN (p1), p2 = TREE_CHAIN (p2), n = TREE_CHAIN (n))
 	  {
-	     tree mv1 = TREE_VALUE (p1);
-	     if (mv1 && mv1 != error_mark_node
-		 && TREE_CODE (mv1) != ARRAY_TYPE)
-	       mv1 = TYPE_MAIN_VARIANT (mv1);
-
-	     tree mv2 = TREE_VALUE (p2);
-	     if (mv2 && mv2 != error_mark_node
-		 && TREE_CODE (mv2) != ARRAY_TYPE)
-	       mv2 = TYPE_MAIN_VARIANT (mv2);
+	     tree mv1 = remove_qualifiers (TREE_VALUE (p1));
+	     tree mv2 = remove_qualifiers (TREE_VALUE (p2));
 
 	    /* A null type means arg type is not specified.
 	       Take whatever the other function type has.  */
@@ -1003,8 +1003,14 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 tree
 composite_type (tree t1, tree t2)
 {
+  gcc_checking_assert (comptypes_check_for_composite (t1, t2));
+
   struct composite_cache cache = { };
-  return composite_type_internal (t1, t2, &cache);
+  tree n = composite_type_internal (t1, t2, &cache);
+
+  gcc_checking_assert (comptypes_check_for_composite (n, t1));
+  gcc_checking_assert (comptypes_check_for_composite (n, t2));
+  return n;
 }
 
 /* Return the type of a conditional expression between pointers to
@@ -1017,9 +1023,6 @@ static tree
 common_pointer_type (tree t1, tree t2)
 {
   tree attributes;
-  tree pointed_to_1, mv1;
-  tree pointed_to_2, mv2;
-  tree target;
   unsigned target_quals;
   addr_space_t as1, as2, as_common;
   int quals1, quals2;
@@ -1041,15 +1044,11 @@ common_pointer_type (tree t1, tree t2)
   attributes = targetm.merge_type_attributes (t1, t2);
 
   /* Find the composite type of the target types, and combine the
-     qualifiers of the two types' targets.  Do not lose qualifiers on
-     array element types by taking the TYPE_MAIN_VARIANT.  */
-  mv1 = pointed_to_1 = TREE_TYPE (t1);
-  mv2 = pointed_to_2 = TREE_TYPE (t2);
-  if (TREE_CODE (mv1) != ARRAY_TYPE)
-    mv1 = TYPE_MAIN_VARIANT (pointed_to_1);
-  if (TREE_CODE (mv2) != ARRAY_TYPE)
-    mv2 = TYPE_MAIN_VARIANT (pointed_to_2);
-  target = composite_type (mv1, mv2);
+     qualifiers of the two types' targets.  */
+  tree pointed_to_1 = TREE_TYPE (t1);
+  tree pointed_to_2 = TREE_TYPE (t2);
+  tree target = composite_type (TYPE_MAIN_VARIANT (pointed_to_1),
+				TYPE_MAIN_VARIANT (pointed_to_2));
 
   /* Strip array types to get correct qualifier for pointers to arrays */
   quals1 = TYPE_QUALS_NO_ADDR_SPACE (strip_array_types (pointed_to_1));
@@ -1454,15 +1453,38 @@ comptypes_verify (tree type1, tree type2)
 }
 
 struct comptypes_data {
+
+  /* output */
   bool enum_and_int_p;
   bool different_types_p;
   bool warning_needed;
+
+  /* context */
   bool anon_field;
   bool pointedto;
+
+  /* configuration */
   bool equiv;
+  bool ignore_promoting_args;
 
   const struct tagged_tu_seen_cache* cache;
 };
+
+
+/* Helper function for composite_type.  This function ignores when the
+   function type of an old-style declaration is incompatible with a type
+   of a declaration with prototype because some are arguments are not
+   self-promoting.  This is ignored only for function types but not
+   ignored in a nested context.  */
+
+static bool
+comptypes_check_for_composite (tree t1, tree t2)
+{
+  struct comptypes_data data = { };
+  data.ignore_promoting_args = FUNCTION_TYPE == TREE_CODE (t1);
+  return comptypes_internal (t1, t2, &data);
+}
+
 
 /* C implementation of compatible_types_for_indirection_note_p.  */
 
@@ -1593,6 +1615,10 @@ comptypes_equiv_p (tree type1, tree type2)
    permitted in C11 typedef redeclarations, then this sets
    'different_types_p' in DATA to true; it is never set to
    false, but may or may not be set if the types are incompatible.
+   If two functions types are not compatible only because one is
+   an old-style definition that does not have self-promoting arguments,
+   then this can be ignored by setting 'ignore_promoting_args_p'.
+   For 'equiv' we can compute equivalency classes (see above).
    This differs from comptypes, in that we don't free the seen
    types.  */
 
@@ -1791,15 +1817,9 @@ comp_target_types (location_t location, tree ttl, tree ttr)
     val_ped = comptypes (mvl, mvr);
 
   /* Qualifiers on element types of array types that are
-     pointer targets are lost by taking their TYPE_MAIN_VARIANT.  */
-
-  mvl = (TYPE_ATOMIC (strip_array_types (mvl))
-	 ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvl), TYPE_QUAL_ATOMIC)
-	 : TYPE_MAIN_VARIANT (mvl));
-
-  mvr = (TYPE_ATOMIC (strip_array_types (mvr))
-	 ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvr), TYPE_QUAL_ATOMIC)
-	 : TYPE_MAIN_VARIANT (mvr));
+     pointer targets are also removed.  */
+  mvl = remove_qualifiers (mvl);
+  mvr = remove_qualifiers (mvr);
 
   enum_and_int_p = false;
   val = comptypes_check_enum_int (mvl, mvr, &enum_and_int_p);
@@ -2022,14 +2042,8 @@ static bool
 function_types_compatible_p (const_tree f1, const_tree f2,
 			     struct comptypes_data *data)
 {
-  tree args1, args2;
-  /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  int val = 1;
-  int val1;
-  tree ret1, ret2;
-
-  ret1 = TREE_TYPE (f1);
-  ret2 = TREE_TYPE (f2);
+  tree ret1 = TREE_TYPE (f1);
+  tree ret2 = TREE_TYPE (f2);
 
   /* 'volatile' qualifiers on a function's return type used to mean
      the function is noreturn.  */
@@ -2041,12 +2055,17 @@ function_types_compatible_p (const_tree f1, const_tree f2,
   if (TYPE_VOLATILE (ret2))
     ret2 = build_qualified_type (TYPE_MAIN_VARIANT (ret2),
 				 TYPE_QUALS (ret2) & ~TYPE_QUAL_VOLATILE);
-  val = comptypes_internal (ret1, ret2, data);
-  if (val == 0)
-    return 0;
 
-  args1 = TYPE_ARG_TYPES (f1);
-  args2 = TYPE_ARG_TYPES (f2);
+  bool ignore_pargs = data->ignore_promoting_args;
+  data->ignore_promoting_args = false;
+
+  if (!comptypes_internal (ret1, ret2, data))
+    return false;
+
+  data->ignore_promoting_args = ignore_pargs;
+
+  tree args1 = TYPE_ARG_TYPES (f1);
+  tree args2 = TYPE_ARG_TYPES (f2);
 
   if ((args1 == NULL_TREE) != (args2 == NULL_TREE))
     data->different_types_p = true;
@@ -2057,40 +2076,33 @@ function_types_compatible_p (const_tree f1, const_tree f2,
   if (args1 == NULL_TREE)
     {
       if (TYPE_NO_NAMED_ARGS_STDARG_P (f1) != TYPE_NO_NAMED_ARGS_STDARG_P (f2))
-	return 0;
-      if (!self_promoting_args_p (args2))
-	return 0;
+	return false;
+      if (!(data->ignore_promoting_args || self_promoting_args_p (args2)))
+	return false;
+      data->ignore_promoting_args = false;
       /* If one of these types comes from a non-prototype fn definition,
 	 compare that with the other type's arglist.
 	 If they don't match, ask for a warning (but no error).  */
       if (TYPE_ACTUAL_ARG_TYPES (f1)
-	  && type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1),
-				      data) != 1)
-	{
-	  val = 1;
-	  data->warning_needed = true;
-	}
-      return val;
+	  && !type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1), data))
+	 data->warning_needed = true;
+      return true;
     }
   if (args2 == NULL_TREE)
     {
       if (TYPE_NO_NAMED_ARGS_STDARG_P (f1) != TYPE_NO_NAMED_ARGS_STDARG_P (f2))
-	return 0;
-      if (!self_promoting_args_p (args1))
-	return 0;
+	return false;
+      if (!(data->ignore_promoting_args || self_promoting_args_p (args1)))
+	return false;
+      data->ignore_promoting_args = false;
       if (TYPE_ACTUAL_ARG_TYPES (f2)
-	  && type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2),
-				      data) != 1)
-	{
-	  val = 1;
-	  data->warning_needed = true;
-	}
-      return val;
+	  && !type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2), data))
+	data->warning_needed = true;
+      return true;
     }
 
   /* Both types have argument lists: compare them and propagate results.  */
-  val1 = type_lists_compatible_p (args1, args2, data);
-  return val1;
+  return type_lists_compatible_p (args1, args2, data);
 }
 
 /* Check two lists of types for compatibility, returning false for
@@ -2102,25 +2114,16 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 {
   while (1)
     {
-      tree a1, mv1, a2, mv2;
       if (args1 == NULL_TREE && args2 == NULL_TREE)
 	return true;
       /* If one list is shorter than the other,
 	 they fail to match.  */
       if (args1 == NULL_TREE || args2 == NULL_TREE)
-	return 0;
-      mv1 = a1 = TREE_VALUE (args1);
-      mv2 = a2 = TREE_VALUE (args2);
-      if (mv1 && mv1 != error_mark_node && TREE_CODE (mv1) != ARRAY_TYPE)
-	mv1 = (TYPE_ATOMIC (mv1)
-	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv1),
-					 TYPE_QUAL_ATOMIC)
-	       : TYPE_MAIN_VARIANT (mv1));
-      if (mv2 && mv2 != error_mark_node && TREE_CODE (mv2) != ARRAY_TYPE)
-	mv2 = (TYPE_ATOMIC (mv2)
-	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv2),
-					 TYPE_QUAL_ATOMIC)
-	       : TYPE_MAIN_VARIANT (mv2));
+	return false;
+      tree a1 = TREE_VALUE (args1);
+      tree a2 = TREE_VALUE (args2);
+      tree mv1 = remove_qualifiers (a1);
+      tree mv2 = remove_qualifiers (a2);
       /* A null pointer instead of a type
 	 means there is supposed to be an argument
 	 but nothing is specified about what type it has.
@@ -2130,12 +2133,12 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
       if (a1 == NULL_TREE)
 	{
 	  if (c_type_promotes_to (a2) != a2)
-	    return 0;
+	    return false;
 	}
       else if (a2 == NULL_TREE)
 	{
 	  if (c_type_promotes_to (a1) != a1)
-	    return 0;
+	    return false;
 	}
       /* If one of the lists has an error marker, ignore this arg.  */
       else if (TREE_CODE (a1) == ERROR_MARK
@@ -2157,18 +2160,12 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 	      for (memb = TYPE_FIELDS (a1);
 		   memb; memb = DECL_CHAIN (memb))
 		{
-		  tree mv3 = TREE_TYPE (memb);
-		  if (mv3 && mv3 != error_mark_node
-		      && TREE_CODE (mv3) != ARRAY_TYPE)
-		    mv3 = (TYPE_ATOMIC (mv3)
-			   ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv3),
-						     TYPE_QUAL_ATOMIC)
-			   : TYPE_MAIN_VARIANT (mv3));
+		  tree mv3 = remove_qualifiers (TREE_TYPE (memb));
 		  if (comptypes_internal (mv3, mv2, data))
 		    break;
 		}
 	      if (memb == NULL_TREE)
-		return 0;
+		return false;
 	    }
 	  else if (TREE_CODE (a2) == UNION_TYPE
 		   && (TYPE_NAME (a2) == NULL_TREE
@@ -2181,21 +2178,15 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 	      for (memb = TYPE_FIELDS (a2);
 		   memb; memb = DECL_CHAIN (memb))
 		{
-		  tree mv3 = TREE_TYPE (memb);
-		  if (mv3 && mv3 != error_mark_node
-		      && TREE_CODE (mv3) != ARRAY_TYPE)
-		    mv3 = (TYPE_ATOMIC (mv3)
-			   ? c_build_qualified_type (TYPE_MAIN_VARIANT (mv3),
-						     TYPE_QUAL_ATOMIC)
-			   : TYPE_MAIN_VARIANT (mv3));
+		  tree mv3 = remove_qualifiers (TREE_TYPE (memb));
 		  if (comptypes_internal (mv3, mv1, data))
 		    break;
 		}
 	      if (memb == NULL_TREE)
-		return 0;
+		return false;
 	    }
 	  else
-	    return 0;
+	    return false;
 	}
 
       args1 = TREE_CHAIN (args1);
@@ -7479,10 +7470,7 @@ find_anonymous_field_with_type (tree struct_type, tree type)
        field != NULL_TREE;
        field = TREE_CHAIN (field))
     {
-      tree fieldtype = (TYPE_ATOMIC (TREE_TYPE (field))
-			? c_build_qualified_type (TREE_TYPE (field),
-						  TYPE_QUAL_ATOMIC)
-			: TYPE_MAIN_VARIANT (TREE_TYPE (field)));
+      tree fieldtype = remove_qualifiers (TREE_TYPE (field));
       if (DECL_NAME (field) == NULL
 	  && comptypes (type, fieldtype))
 	{
@@ -7520,10 +7508,7 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
   gcc_assert (RECORD_OR_UNION_TYPE_P (rhs_struct_type));
 
   gcc_assert (POINTER_TYPE_P (type));
-  lhs_main_type = (TYPE_ATOMIC (TREE_TYPE (type))
-		   ? c_build_qualified_type (TREE_TYPE (type),
-					     TYPE_QUAL_ATOMIC)
-		   : TYPE_MAIN_VARIANT (TREE_TYPE (type)));
+  lhs_main_type = remove_qualifiers (TREE_TYPE (type));
 
   found_field = NULL_TREE;
   found_sub_field = false;
@@ -7534,10 +7519,7 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
       if (DECL_NAME (field) != NULL_TREE
 	  || !RECORD_OR_UNION_TYPE_P (TREE_TYPE (field)))
 	continue;
-      tree fieldtype = (TYPE_ATOMIC (TREE_TYPE (field))
-			? c_build_qualified_type (TREE_TYPE (field),
-						  TYPE_QUAL_ATOMIC)
-			: TYPE_MAIN_VARIANT (TREE_TYPE (field)));
+      tree fieldtype = remove_qualifiers (TREE_TYPE (field));
       if (comptypes (lhs_main_type, fieldtype))
 	{
 	  if (found_field != NULL_TREE)
@@ -8294,23 +8276,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
       tree ttl = TREE_TYPE (type);
       tree ttr = TREE_TYPE (rhstype);
-      tree mvl = ttl;
-      tree mvr = ttr;
       bool is_opaque_pointer;
       bool target_cmp = false;   /* Cache comp_target_types () result.  */
       addr_space_t asl;
       addr_space_t asr;
 
-      if (TREE_CODE (mvl) != ARRAY_TYPE)
-	mvl = (TYPE_ATOMIC (mvl)
-	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvl),
-					 TYPE_QUAL_ATOMIC)
-	       : TYPE_MAIN_VARIANT (mvl));
-      if (TREE_CODE (mvr) != ARRAY_TYPE)
-	mvr = (TYPE_ATOMIC (mvr)
-	       ? c_build_qualified_type (TYPE_MAIN_VARIANT (mvr),
-					 TYPE_QUAL_ATOMIC)
-	       : TYPE_MAIN_VARIANT (mvr));
+      tree mvl = remove_qualifiers (ttl);
+      tree mvr = remove_qualifiers (ttr);
+
       /* Opaque pointers are treated like void pointers.  */
       is_opaque_pointer = vector_targets_convertible_p (ttl, ttr);
 

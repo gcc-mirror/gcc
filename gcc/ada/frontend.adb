@@ -506,9 +506,7 @@ begin
 
    --  Verify the validity of the tree
 
-   if Debug_Flag_Underscore_VV then
-      VAST.Check_Tree (Cunit (Main_Unit));
-   end if;
+   VAST.VAST;
 
    --  Validate all the subprogram calls; this work will be done by VAST; in
    --  the meantime it is done to check extra formals and it can be disabled

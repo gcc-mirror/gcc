@@ -158,7 +158,7 @@ package body Exp_Ch6 is
       Alloc_Form_Exp : Node_Id             := Empty;
       Pool_Exp       : Node_Id             := Empty);
    --  Ada 2005 (AI-318-02): If the result type of a build-in-place call needs
-   --  them, add the actuals parameters BIP_Alloc_Form and BIP_Storage_Pool.
+   --  them, add the actual parameters BIP_Alloc_Form and BIP_Storage_Pool.
    --  If Alloc_Form_Exp is present, then pass it for the first parameter,
    --  otherwise pass a literal corresponding to the Alloc_Form parameter
    --  (which must not be Unspecified in that case). If Pool_Exp is present,
@@ -442,9 +442,7 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      --  Locate the implicit allocation form parameter in the called function.
-      --  Maybe it would be better for each implicit formal of a build-in-place
-      --  function to have a flag or a Uint attribute to identify it. ???
+      --  Locate the implicit allocation form parameter in the called function
 
       Alloc_Form_Formal := Build_In_Place_Formal (Function_Id, BIP_Alloc_Form);
 
@@ -928,9 +926,6 @@ package body Exp_Ch6 is
       Formal_Suffix : constant String := BIP_Formal_Suffix (Kind);
 
    begin
-      --  Maybe it would be better for each implicit formal of a build-in-place
-      --  function to have a flag or a Uint attribute to identify it. ???
-
       --  The return type in the function declaration may have been a limited
       --  view, and the extra formals for the function were not generated at
       --  that point. At the point of call the full view must be available and
@@ -2469,11 +2464,6 @@ package body Exp_Ch6 is
             --  to be created and access to it must be passed to the function
             --  (and ensure that we have an activation chain defined for tasks
             --  and a Master variable).
-
-            --  Currently we limit such functions to those with inherently
-            --  limited result subtypes, but eventually we plan to expand the
-            --  functions that are treated as build-in-place to include other
-            --  composite result types.
 
             --  But do not do it here for intrinsic subprograms since this will
             --  be done properly after the subprogram is expanded.
@@ -8562,12 +8552,10 @@ package body Exp_Ch6 is
    procedure Make_Build_In_Place_Call_In_Anonymous_Context
      (Function_Call : Node_Id)
    is
-      Loc             : constant Source_Ptr := Sloc (Function_Call);
-      Func_Call       : constant Node_Id := Unqual_Conv (Function_Call);
-      Function_Id     : Entity_Id;
-      Result_Subt     : Entity_Id;
-      Return_Obj_Id   : Entity_Id;
-      Return_Obj_Decl : Entity_Id;
+      Loc         : constant Source_Ptr := Sloc (Function_Call);
+      Func_Call   : constant Node_Id    := Unqual_Conv (Function_Call);
+      Function_Id : Entity_Id;
+      Result_Subt : Entity_Id;
 
    begin
       --  If the call has already been processed to add build-in-place actuals
@@ -8579,10 +8567,6 @@ package body Exp_Ch6 is
       if Is_Expanded_Build_In_Place_Call (Func_Call) then
          return;
       end if;
-
-      --  Mark the call as processed as a build-in-place call
-
-      Set_Is_Expanded_Build_In_Place_Call (Func_Call);
 
       if Is_Entity_Name (Name (Func_Call)) then
          Function_Id := Entity (Name (Func_Call));
@@ -8601,8 +8585,13 @@ package body Exp_Ch6 is
       --  If the build-in-place function returns a controlled object, then the
       --  object needs to be finalized immediately after the context. Since
       --  this case produces a transient scope, the servicing finalizer needs
-      --  to name the returned object. Create a temporary which is initialized
-      --  with the function call:
+      --  to name the returned object.
+
+      --  If the build-in-place function returns a definite subtype, then an
+      --  object also needs to be created and an access value designating it
+      --  passed as an actual.
+
+      --  Create a temporary which is initialized with the function call:
       --
       --    Temp_Id : Func_Type := BIP_Func_Call;
       --
@@ -8610,74 +8599,24 @@ package body Exp_Ch6 is
       --  the expander using the appropriate mechanism in Make_Build_In_Place_
       --  Call_In_Object_Declaration.
 
-      if Needs_Finalization (Result_Subt) then
+      if Needs_Finalization (Result_Subt)
+        or else Caller_Known_Size (Func_Call, Result_Subt)
+      then
          declare
             Temp_Id   : constant Entity_Id := Make_Temporary (Loc, 'R');
-            Temp_Decl : Node_Id;
-
-         begin
-            --  Reset the guard on the function call since the following does
-            --  not perform actual call expansion.
-
-            Set_Is_Expanded_Build_In_Place_Call (Func_Call, False);
-
-            Temp_Decl :=
+            Temp_Decl : constant Node_Id   :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp_Id,
-                Object_Definition =>
-                  New_Occurrence_Of (Result_Subt, Loc),
-                Expression =>
-                  New_Copy_Tree (Function_Call));
+                Aliased_Present     => True,
+                Object_Definition   => New_Occurrence_Of (Result_Subt, Loc),
+                Expression          => Relocate_Node (Function_Call));
 
+         begin
+            Set_Assignment_OK (Temp_Decl);
             Insert_Action (Function_Call, Temp_Decl);
-
             Rewrite (Function_Call, New_Occurrence_Of (Temp_Id, Loc));
             Analyze (Function_Call);
          end;
-
-      --  When the result subtype is definite, an object of the subtype is
-      --  declared and an access value designating it is passed as an actual.
-
-      elsif Caller_Known_Size (Func_Call, Result_Subt) then
-
-         --  Create a temporary object to hold the function result
-
-         Return_Obj_Id := Make_Temporary (Loc, 'R');
-         Set_Etype (Return_Obj_Id, Result_Subt);
-
-         Return_Obj_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Return_Obj_Id,
-             Aliased_Present     => True,
-             Object_Definition   => New_Occurrence_Of (Result_Subt, Loc));
-
-         Set_No_Initialization (Return_Obj_Decl);
-
-         Insert_Action (Func_Call, Return_Obj_Decl);
-
-         --  When the function has a controlling result, an allocation-form
-         --  parameter must be passed indicating that the caller is allocating
-         --  the result object. This is needed because such a function can be
-         --  called as a dispatching operation and must be treated similarly
-         --  to functions with unconstrained result subtypes.
-
-         Add_Unconstrained_Actuals_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
-
-         Add_Collection_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id);
-
-         Add_Task_Actuals_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Make_Identifier (Loc, Name_uMaster));
-
-         --  Add an implicit actual to the function call that provides access
-         --  to the caller's return object.
-
-         Add_Access_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id, New_Occurrence_Of (Return_Obj_Id, Loc));
-
-         pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
-         pragma Assert (Check_BIP_Actuals (Func_Call, Function_Id));
 
       --  When the result subtype is unconstrained, the function must allocate
       --  the return object in the secondary stack, so appropriate implicit
@@ -8702,6 +8641,10 @@ package body Exp_Ch6 is
 
          Add_Access_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, Empty);
+
+         --  Mark the call as processed as a build-in-place call
+
+         Set_Is_Expanded_Build_In_Place_Call (Func_Call);
 
          pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
          pragma Assert (Check_BIP_Actuals (Func_Call, Function_Id));
@@ -8873,6 +8816,25 @@ package body Exp_Ch6 is
           and then
         not Has_Foreign_Convention (Return_Applies_To (Scope (Obj_Def_Id)));
 
+      Constraint_Check_Needed : constant Boolean :=
+        (Has_Discriminants (Obj_Typ) or else Is_Array_Type (Obj_Typ))
+         and then Is_Tagged_Type (Obj_Typ)
+         and then Nkind (Original_Node (Obj_Decl)) /=
+                    N_Object_Renaming_Declaration
+         and then Is_Constrained (Obj_Typ);
+      --  We are processing a call in the context of something like
+      --  "X : T := F (...);". This is True if we need to do a constraint
+      --  check, because T has constrained bounds or discriminants,
+      --  and F is returning an unconstrained subtype.
+      --  We are currently doing the check at the call site,
+      --  which is possible only in the callee-allocates case,
+      --  which is why we have Is_Tagged_Type above.
+      --  ???The check is missing in the untagged caller-allocates case.
+      --  ???The check for renaming declarations above is needed because
+      --  Sem_Ch8.Analyze_Object_Renaming sometimes changes a renaming
+      --  into an object declaration. We probably shouldn't do that,
+      --  but for now, we need this check.
+
    --  Start of processing for Make_Build_In_Place_Call_In_Object_Declaration
 
    begin
@@ -8915,15 +8877,16 @@ package body Exp_Ch6 is
               Subtype_Indication =>
                 New_Occurrence_Of (Designated_Type, Loc)));
 
-      --  The access type and its accompanying object must be inserted after
-      --  the object declaration in the constrained case, so that the function
-      --  call can be passed access to the object. In the indefinite case, or
+      --  The access type and its object must be inserted after the object
+      --  declaration in the caller-allocates case, so that the function call
+      --  can be passed access to the object. In the caller-allocates case, or
       --  if the object declaration is for a return object, the access type and
       --  object must be inserted before the object, since the object
       --  declaration is rewritten to be a renaming of a dereference of the
       --  access object.
 
-      if Definite and then not Is_OK_Return_Object then
+      if Definite and not Is_OK_Return_Object and not Constraint_Check_Needed
+      then
          Insert_Action_After (Obj_Decl, Ptr_Typ_Decl);
       else
          Insert_Action (Obj_Decl, Ptr_Typ_Decl);
@@ -9004,7 +8967,7 @@ package body Exp_Ch6 is
       --  to the (specific) result type of the function is inserted to handle
       --  the case where the object is declared with a class-wide type.
 
-      elsif Definite then
+      elsif Definite and not Constraint_Check_Needed then
          Caller_Object := Unchecked_Convert_To
            (Result_Subt, New_Occurrence_Of (Obj_Def_Id, Loc));
 
@@ -9142,8 +9105,8 @@ package body Exp_Ch6 is
       --  itself the return expression of an enclosing BIP function, then mark
       --  the object as having no initialization.
 
-      if Definite and then not Is_OK_Return_Object then
-
+      if Definite and not Is_OK_Return_Object and not Constraint_Check_Needed
+      then
          Set_Expression (Obj_Decl, Empty);
          Set_No_Initialization (Obj_Decl);
 
@@ -9202,6 +9165,10 @@ package body Exp_Ch6 is
          Analyze (Obj_Decl);
          Replace_Renaming_Declaration_Id
            (Obj_Decl, Original_Node (Obj_Decl));
+
+         if Constraint_Check_Needed then
+            Apply_Constraint_Check (Call_Deref, Obj_Typ);
+         end if;
       end if;
 
       pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
@@ -9909,6 +9876,13 @@ package body Exp_Ch6 is
                   return Skip;
                end if;
 
+            --  Skip calls placed in unexpanded initialization expressions
+
+            when N_Object_Declaration =>
+               if No_Initialization (Nod) then
+                  return Skip;
+               end if;
+
             --  Skip calls placed in subprogram specifications since function
             --  calls initializing default parameter values will be processed
             --  when the call to the subprogram is found (if the default actual
@@ -9964,14 +9938,14 @@ package body Exp_Ch6 is
    --  Start of processing for Validate_Subprogram_Calls
 
    begin
-      --  No action required if we are not generating code or compiling sources
-      --  that have errors.
+      --  No action if we are not generating code (including if we have
+      --  errors).
 
-      if Serious_Errors_Detected > 0
-        or else Operating_Mode /= Generate_Code
-      then
+      if Operating_Mode /= Generate_Code then
          return;
       end if;
+
+      pragma Assert (Serious_Errors_Detected = 0);
 
       Check_Calls (N);
    end Validate_Subprogram_Calls;

@@ -649,7 +649,7 @@ ftms = {
   };
   values = {
     v = 1;
-    /* For when there's no gthread.  */
+    // For when there is no gthread.
     cxxmin = 17;
     hosted = yes;
     gthread = no;
@@ -848,6 +848,14 @@ ftms = {
   values = {
     v = 201606;
     cxxmin = 17;
+  };
+};
+
+ftms = {
+  name = optional_range_support;
+  values = {
+    v = 202406;
+    cxxmin = 26;
   };
 };
 
@@ -1661,6 +1669,14 @@ ftms = {
 };
 
 ftms = {
+  name = ranges_starts_ends_with;
+  values = {
+    v = 202106;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = constexpr_bitset;
   values = {
     v = 202202;
@@ -1982,6 +1998,15 @@ ftms = {
   name = polymorphic;
   values = {
     v = 202502;
+    cxxmin = 26;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = sstream_from_string_view;
+  values = {
+    v = 202306;
     cxxmin = 26;
     hosted = yes;
   };

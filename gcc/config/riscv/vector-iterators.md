@@ -4041,8 +4041,12 @@
   smax umax smin umin mult div udiv mod umod
 ])
 
-(define_code_iterator any_int_binop_no_shift_vx [
-  plus minus and ior xor mult
+(define_code_iterator any_int_binop_no_shift_v_vdup [
+  plus minus and ior xor mult div udiv mod umod smax umax smin umin us_plus
+])
+
+(define_code_iterator any_int_binop_no_shift_vdup_v [
+  plus minus and ior xor mult smax umax smin umin us_plus
 ])
 
 (define_code_iterator any_int_unop [neg not])

@@ -1,3 +1,8 @@
+2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* objcp-decl.h (TYPE_OBJC_INFO): Define to info.objc_info
+	instead of objc_info.
+
 2024-11-22  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR bootstrap/117737

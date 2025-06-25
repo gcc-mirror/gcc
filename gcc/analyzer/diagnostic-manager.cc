@@ -687,6 +687,11 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
   for (unsigned i = 0; i < m_notes.length (); i++)
     if (!m_notes[i]->equal_p (*other.m_notes[i]))
       return false;
+
+  // Don't deduplicate dump_path_diagnostic instances
+  if (!strcmp (m_d->get_kind (), "dump_path_diagnostic"))
+    return this == &other;
+
   return (m_sm == other.m_sm
 	  /* We don't compare m_enode.  */
 	  && m_snode == other.m_snode
@@ -1581,6 +1586,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   /* This is the diagnostic_path subclass that will be built for
      the diagnostic.  */
   checker_path emission_path (get_logical_location_manager (),
+			      eg.get_ext_state (),
 			      get_logger ());
 
   /* Populate emission_path with a full description of EPATH.  */
@@ -2599,19 +2605,19 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		{
 		  label_text sval_desc = sval->get_desc ();
 		  log ("considering event %i (%s), with sval: %qs, state: %qs",
-		       idx, event_kind_to_string (base_event->m_kind),
+		       idx, event_kind_to_string (base_event->get_kind ()),
 		       sval_desc.get (), state->get_name ());
 		}
 	      else
 		log ("considering event %i (%s), with global state: %qs",
-		     idx, event_kind_to_string (base_event->m_kind),
+		     idx, event_kind_to_string (base_event->get_kind ()),
 		     state->get_name ());
 	    }
 	  else
 	    log ("considering event %i", idx);
 	}
 
-      switch (base_event->m_kind)
+      switch (base_event->get_kind ())
 	{
 	default:
 	  gcc_unreachable ();
@@ -2718,7 +2724,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		log ("filtering events %i and %i: CFG edge", idx, idx + 1);
 		path->delete_event (idx);
 		/* Also delete the corresponding event_kind::end_cfg_edge.  */
-		gcc_assert (path->get_checker_event (idx)->m_kind
+		gcc_assert (path->get_checker_event (idx)->get_kind ()
 			    == event_kind::end_cfg_edge);
 		path->delete_event (idx);
 	      }
@@ -3109,7 +3115,7 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 	    continue;
 
 	  /* Are we looking for a run of all TRUE edges, or all FALSE edges?  */
-	  gcc_assert (old_start_ev->m_kind == event_kind::start_cfg_edge);
+	  gcc_assert (old_start_ev->get_kind () == event_kind::start_cfg_edge);
 	  const start_cfg_edge_event *old_start_cfg_ev
 	    = (const start_cfg_edge_event *)old_start_ev;
 	  const cfg_superedge& first_cfg_sedge
@@ -3132,7 +3138,7 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 	    {
 	      const checker_event *iter_ev
 		= path->get_checker_event (next_idx);
-	      gcc_assert (iter_ev->m_kind == event_kind::start_cfg_edge);
+	      gcc_assert (iter_ev->get_kind () == event_kind::start_cfg_edge);
 	      const start_cfg_edge_event *iter_cfg_ev
 		= (const start_cfg_edge_event *)iter_ev;
 	      const cfg_superedge& iter_cfg_sedge
@@ -3190,11 +3196,13 @@ diagnostic_manager::consolidate_unwind_events (checker_path *path) const
        start_idx++)
     {
       /* Find a run of consecutive unwind_event instances.  */
-      if (path->get_checker_event (start_idx)->m_kind != event_kind::unwind)
+      if (path->get_checker_event (start_idx)->get_kind ()
+	  != event_kind::unwind)
 	continue;
       int iter_idx = start_idx + 1;
       while (iter_idx < (int)path->num_events ())
-	if (path->get_checker_event (iter_idx)->m_kind == event_kind::unwind)
+	if (path->get_checker_event (iter_idx)->get_kind ()
+	    == event_kind::unwind)
 	  ++iter_idx;
 	else
 	  break;
@@ -3232,7 +3240,7 @@ diagnostic_manager::finish_pruning (checker_path *path) const
       while (idx >= 0 && idx < (signed)path->num_events ())
 	{
 	  checker_event *base_event = path->get_checker_event (idx);
-	  if (base_event->m_kind == event_kind::function_entry)
+	  if (base_event->get_kind () == event_kind::function_entry)
 	    {
 	      log ("filtering event %i:"
 		   " function entry for purely intraprocedural path", idx);

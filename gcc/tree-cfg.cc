@@ -5757,6 +5757,12 @@ gimple_verify_flow_info (void)
       error ("probability of edge from entry block not initialized");
       err = true;
     }
+  if (!EXIT_BLOCK_PTR_FOR_FN (cfun)
+	->count.compatible_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count))
+    {
+      error ("exit block count is not compatible with entry block count");
+      err = true;
+    }
 
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -5780,6 +5786,12 @@ gimple_verify_flow_info (void)
 		err = true;
 	      }
         }
+      if (!bb->count.compatible_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count))
+	{
+	  error ("count of bb %d is not compatible with entry block count",
+		 bb->index);
+	  err = true;
+	}
 
       /* Skip labels on the start of basic block.  */
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -8327,7 +8339,7 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	    fprintf (file, ", ");
 
 	  tree name = get_attribute_name (chain);
-	  print_generic_expr (file, name, dump_flags);
+	  print_generic_expr (file, name, flags);
 	  if (TREE_VALUE (chain) != NULL_TREE)
 	    {
 	      fprintf (file, " (");
@@ -8338,13 +8350,13 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 				"omp declare variant base"))
 		{
 		  tree a = TREE_VALUE (chain);
-		  print_generic_expr (file, TREE_PURPOSE (a), dump_flags);
+		  print_generic_expr (file, TREE_PURPOSE (a), flags);
 		  fprintf (file, " match ");
 		  print_omp_context_selector (file, TREE_VALUE (a),
-					      dump_flags);
+					      flags);
 		}
 	      else
-		print_generic_expr (file, TREE_VALUE (chain), dump_flags);
+		print_generic_expr (file, TREE_VALUE (chain), flags);
 	      fprintf (file, ")");
 	    }
 	}
@@ -8366,7 +8378,7 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	}
 
       print_generic_expr (file, TREE_TYPE (TREE_TYPE (fndecl)),
-			  dump_flags | TDF_SLIM);
+			  flags | TDF_SLIM);
       fprintf (file, " __GIMPLE (%s",
 	       (fun->curr_properties & PROP_ssa) ? "ssa"
 	       : (fun->curr_properties & PROP_cfg) ? "cfg"
@@ -8379,7 +8391,7 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	    fprintf (file, ",%s(%" PRIu64 ")",
 		     profile_quality_as_string (bb->count.quality ()),
 		     bb->count.value ());
-	  if (dump_flags & TDF_UID)
+	  if (flags & TDF_UID)
 	    fprintf (file, ")\n%sD_%u (", function_name (fun),
 		     DECL_UID (fndecl));
 	  else
@@ -8388,8 +8400,8 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
     }
   else
     {
-      print_generic_expr (file, TREE_TYPE (fntype), dump_flags);
-      if (dump_flags & TDF_UID)
+      print_generic_expr (file, TREE_TYPE (fntype), flags);
+      if (flags & TDF_UID)
 	fprintf (file, " %sD.%u %s(", function_name (fun), DECL_UID (fndecl),
 		 tmclone ? "[tm-clone] " : "");
       else
@@ -8400,9 +8412,9 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
   arg = DECL_ARGUMENTS (fndecl);
   while (arg)
     {
-      print_generic_expr (file, TREE_TYPE (arg), dump_flags);
+      print_generic_expr (file, TREE_TYPE (arg), flags);
       fprintf (file, " ");
-      print_generic_expr (file, arg, dump_flags);
+      print_generic_expr (file, arg, flags);
       if (DECL_CHAIN (arg))
 	fprintf (file, ", ");
       arg = DECL_CHAIN (arg);

@@ -33,33 +33,12 @@
 --  signed integer types larger than Long_Long_Integer, and also for conversion
 --  operations required in Text_IO.Integer_IO for such types.
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore. Postconditions and
---  contract cases should not be executed at runtime as well, in order not to
---  slow down the execution of these functions.
-
-pragma Assertion_Policy (Pre                => Ignore,
-                         Post               => Ignore,
-                         Contract_Cases     => Ignore,
-                         Ghost              => Ignore,
-                         Subprogram_Variant => Ignore);
-
 with System.Image_I;
-with System.Unsigned_Types;
-with System.Vs_LLLI;
-with System.Vs_LLLU;
 
 package System.Img_LLLI
   with SPARK_Mode
 is
-   subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
-
-   package Impl is new Image_I
-     (Int    => Long_Long_Long_Integer,
-      Uns    => Long_Long_Long_Unsigned,
-      U_Spec => System.Vs_LLLU.Spec,
-      I_Spec => System.Vs_LLLI.Spec);
+   package Impl is new Image_I (Long_Long_Long_Integer);
 
    procedure Image_Long_Long_Long_Integer
      (V : Long_Long_Long_Integer;

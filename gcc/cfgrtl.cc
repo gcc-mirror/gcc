@@ -538,7 +538,7 @@ emit_insn_at_entry (rtx insn)
    The insn chain range is inclusive
    (i.e. both BEGIN and END will be updated. */
 
-static void
+void
 update_bb_for_insn_chain (rtx_insn *begin, rtx_insn *end, basic_block bb)
 {
   rtx_insn *insn;

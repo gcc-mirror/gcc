@@ -3609,7 +3609,11 @@ ix86_expand_int_movcc (rtx operands[])
 	    negate_cc_compare_p = true;
 	}
 
-      diff = ct - cf;
+      diff = (unsigned HOST_WIDE_INT) ct - cf;
+      /* Make sure we can represent the difference between the two values.  */
+      if ((diff > 0) != ((cf < 0) != (ct < 0) ? cf < 0 : cf < ct))
+	return false;
+
       /*  Sign bit compares are better done using shifts than we do by using
 	  sbb.  */
       if (sign_bit_compare_p
@@ -3667,7 +3671,12 @@ ix86_expand_int_movcc (rtx operands[])
 		    PUT_CODE (compare_op,
 			      reverse_condition (GET_CODE (compare_op)));
 		}
-	      diff = ct - cf;
+
+	      diff = (unsigned HOST_WIDE_INT) ct - cf;
+	      /* Make sure we can represent the difference
+		 between the two values.  */
+	      if ((diff > 0) != ((cf < 0) != (ct < 0) ? cf < 0 : cf < ct))
+		return false;
 
 	      if (reg_overlap_mentioned_p (out, compare_op))
 		tmp = gen_reg_rtx (mode);
@@ -3685,7 +3694,12 @@ ix86_expand_int_movcc (rtx operands[])
 	      else
 		{
 		  std::swap (ct, cf);
-		  diff = ct - cf;
+
+		  diff = (unsigned HOST_WIDE_INT) ct - cf;
+		  /* Make sure we can represent the difference
+		     between the two values.  */
+		  if ((diff > 0) != ((cf < 0) != (ct < 0) ? cf < 0 : cf < ct))
+		    return false;
 		}
 	      tmp = emit_store_flag (tmp, code, op0, op1, VOIDmode, 0, -1);
 	    }
@@ -3752,9 +3766,15 @@ ix86_expand_int_movcc (rtx operands[])
 		  tmp = expand_simple_unop (mode, NOT, tmp, copy_rtx (tmp), 1);
 		}
 
+	      HOST_WIDE_INT ival = (unsigned HOST_WIDE_INT) cf - ct;
+	      /* Make sure we can represent the difference
+		 between the two values.  */
+	      if ((ival > 0) != ((ct < 0) != (cf < 0) ? ct < 0 : ct < cf))
+		return false;
+
 	      tmp = expand_simple_binop (mode, AND,
 					 copy_rtx (tmp),
-					 gen_int_mode (cf - ct, mode),
+					 gen_int_mode (ival, mode),
 					 copy_rtx (tmp), 1, OPTAB_DIRECT);
 	      if (ct)
 		tmp = expand_simple_binop (mode, PLUS,
@@ -3791,7 +3811,13 @@ ix86_expand_int_movcc (rtx operands[])
 	  if (new_code != UNKNOWN)
 	    {
 	      std::swap (ct, cf);
-	      diff = -diff;
+
+	      diff = (unsigned HOST_WIDE_INT) ct - cf;
+	      /* Make sure we can represent the difference
+		 between the two values.  */
+	      if ((diff > 0) != ((cf < 0) != (ct < 0) ? cf < 0 : cf < ct))
+		return false;
+
 	      code = new_code;
 	    }
 	}
@@ -3994,8 +4020,14 @@ ix86_expand_int_movcc (rtx operands[])
 					 copy_rtx (out), 1, OPTAB_DIRECT);
 	    }
 
+	  HOST_WIDE_INT ival = (unsigned HOST_WIDE_INT) cf - ct;
+	  /* Make sure we can represent the difference
+	     between the two values.  */
+	  if ((ival > 0) != ((ct < 0) != (cf < 0) ? ct < 0 : ct < cf))
+	    return false;
+
 	  out = expand_simple_binop (mode, AND, copy_rtx (out),
-				     gen_int_mode (cf - ct, mode),
+				     gen_int_mode (ival, mode),
 				     copy_rtx (out), 1, OPTAB_DIRECT);
 	  if (ct)
 	    out = expand_simple_binop (mode, PLUS, copy_rtx (out), GEN_INT (ct),
@@ -9319,7 +9351,6 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   bool need_zero_guard = false;
   bool noalign;
   machine_mode move_mode = VOIDmode;
-  machine_mode wider_mode;
   int unroll_factor = 1;
   /* TODO: Once value ranges are available, fill in proper data.  */
   unsigned HOST_WIDE_INT min_size = 0;
@@ -9395,6 +9426,7 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
   unroll_factor = 1;
   move_mode = word_mode;
+  int nunits;
   switch (alg)
     {
     case libcall:
@@ -9415,27 +9447,14 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     case vector_loop:
       need_zero_guard = true;
       unroll_factor = 4;
-      /* Find the widest supported mode.  */
-      move_mode = word_mode;
-      while (GET_MODE_WIDER_MODE (move_mode).exists (&wider_mode)
-	     && optab_handler (mov_optab, wider_mode) != CODE_FOR_nothing)
-	move_mode = wider_mode;
-
-      if (TARGET_AVX256_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 128)
-	move_mode = TImode;
-      if (TARGET_AVX512_SPLIT_REGS && GET_MODE_BITSIZE (move_mode) > 256)
-	move_mode = OImode;
-
-      /* Find the corresponding vector mode with the same size as MOVE_MODE.
-	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
-      if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
+      /* Get the vector mode to move MOVE_MAX bytes.  */
+      nunits = MOVE_MAX / GET_MODE_SIZE (word_mode);
+      if (nunits > 1)
 	{
-	  int nunits = GET_MODE_SIZE (move_mode) / GET_MODE_SIZE (word_mode);
-	  if (!mode_for_vector (word_mode, nunits).exists (&move_mode)
-	      || optab_handler (mov_optab, move_mode) == CODE_FOR_nothing)
-	    move_mode = word_mode;
+	  move_mode = mode_for_vector (word_mode, nunits).require ();
+	  gcc_assert (optab_handler (mov_optab, move_mode)
+		      != CODE_FOR_nothing);
 	}
-      gcc_assert (optab_handler (mov_optab, move_mode) != CODE_FOR_nothing);
       break;
     case rep_prefix_8_byte:
       move_mode = DImode;
@@ -10122,6 +10141,9 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	  else if (lookup_attribute ("no_callee_saved_registers",
 				     TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
 	    call_no_callee_saved_registers = true;
+	  if (fndecl == current_function_decl
+	      && decl_binds_to_current_def_p (fndecl))
+	    cfun->machine->recursive_function = true;
 	}
     }
   else

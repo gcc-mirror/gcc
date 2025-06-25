@@ -928,6 +928,8 @@ class region_model_context
 
   virtual const exploded_graph *get_eg () const = 0;
 
+  virtual const program_state *get_state () const = 0;
+
   /* Hooks for detecting infinite loops.  */
   virtual void maybe_did_work () = 0;
   virtual bool checking_for_infinite_loop_p () const = 0;
@@ -989,6 +991,8 @@ public:
 
   const gimple *get_stmt () const override { return NULL; }
   const exploded_graph *get_eg () const override { return NULL; }
+  const program_state *get_state () const override { return nullptr; }
+
   void maybe_did_work () override {}
   bool checking_for_infinite_loop_p () const override { return false; }
   void on_unusable_in_infinite_loop () override {}
@@ -1165,6 +1169,14 @@ class region_model_context_decorator : public region_model_context
 	return m_inner->get_eg ();
     else
 	return nullptr;
+  }
+
+  const program_state *get_state () const override
+  {
+    if (m_inner)
+      return m_inner->get_state ();
+    else
+      return nullptr;
   }
 
   void maybe_did_work () override

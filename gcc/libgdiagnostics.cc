@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-client-data-hooks.h"
 #include "diagnostic-format-sarif.h"
 #include "diagnostic-format-text.h"
+#include "diagnostic-output-spec.h"
 #include "logical-location.h"
 #include "edit-context.h"
 #include "libgdiagnostics.h"
@@ -307,45 +308,45 @@ public:
 	gcc_unreachable ();
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION:
-	return LOGICAL_LOCATION_KIND_FUNCTION;
+	return logical_location_kind::function;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MEMBER:
-	return LOGICAL_LOCATION_KIND_MEMBER;
+	return logical_location_kind::member;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MODULE:
-	return LOGICAL_LOCATION_KIND_MODULE;
+	return logical_location_kind::module_;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_NAMESPACE:
-	return LOGICAL_LOCATION_KIND_NAMESPACE;
+	return logical_location_kind::namespace_;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TYPE:
-	return LOGICAL_LOCATION_KIND_TYPE;
+	return logical_location_kind::type;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_RETURN_TYPE:
-	return LOGICAL_LOCATION_KIND_RETURN_TYPE;
+	return logical_location_kind::return_type;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PARAMETER:
-	return LOGICAL_LOCATION_KIND_PARAMETER;
+	return logical_location_kind::parameter;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE:
-	return LOGICAL_LOCATION_KIND_VARIABLE;
+	return logical_location_kind::variable;
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ELEMENT:
-	return LOGICAL_LOCATION_KIND_ELEMENT;
+	return logical_location_kind::element;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ATTRIBUTE:
-	return LOGICAL_LOCATION_KIND_ATTRIBUTE;
+	return logical_location_kind::attribute;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TEXT:
-	return LOGICAL_LOCATION_KIND_TEXT;
+	return logical_location_kind::text;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_COMMENT:
-	return LOGICAL_LOCATION_KIND_COMMENT;
+	return logical_location_kind::comment;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION:
-	return LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION;
+	return logical_location_kind::processing_instruction;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DTD:
-	return LOGICAL_LOCATION_KIND_DTD;
+	return logical_location_kind::dtd;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DECLARATION:
-	return LOGICAL_LOCATION_KIND_DECLARATION;
+	return logical_location_kind::declaration;
 
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT:
-	  return LOGICAL_LOCATION_KIND_OBJECT;
+	  return logical_location_kind::object;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY:
-	return LOGICAL_LOCATION_KIND_ARRAY;
+	return logical_location_kind::array;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY:
-	return LOGICAL_LOCATION_KIND_PROPERTY;
+	return logical_location_kind::property;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE:
-	return LOGICAL_LOCATION_KIND_VALUE;
+	return logical_location_kind::value;
       }
   }
 
@@ -1191,10 +1192,10 @@ sarif_sink::sarif_sink (diagnostic_manager &mgr,
   auto serialization = std::make_unique<sarif_serialization_format_json> (true);
   auto inner_sink = make_sarif_sink (mgr.get_dc (),
 				     *mgr.get_line_table (),
-				     main_input_file->get_name (),
 				     std::move (serialization),
 				     sarif_gen_opts,
 				     std::move (output_file));
+  inner_sink->set_main_input_filename (main_input_file->get_name ());
   mgr.get_dc ().add_sink (std::move (inner_sink));
 }
 
@@ -1982,4 +1983,68 @@ diagnostic_logical_location_get_decorated_name (const diagnostic_logical_locatio
   FAIL_IF_NULL (loc);
 
   return loc->m_decorated_name.get_str ();
+}
+
+namespace {
+
+struct spec_context : public diagnostics_output_spec::context
+{
+public:
+  spec_context (const char *option_name,
+		diagnostic_manager &affected_mgr,
+		diagnostic_manager &control_mgr)
+  : context (option_name, affected_mgr.get_line_table ()),
+    m_control_mgr (control_mgr)
+  {}
+
+  void report_error_va (const char *gmsgid, va_list *ap) const final override
+  {
+    diagnostic *diag
+      = diagnostic_begin (&m_control_mgr, DIAGNOSTIC_LEVEL_ERROR);
+    diagnostic_finish_va (diag, gmsgid, ap);
+  }
+
+  const char *
+  get_base_filename () const final override
+  {
+    return nullptr;
+  }
+
+private:
+  diagnostic_manager &m_control_mgr;
+};
+
+} // anon namespace
+
+/* Public entrypoint.  */
+
+int
+diagnostic_manager_add_sink_from_spec (diagnostic_manager *affected_mgr,
+				       const char *option_name,
+				       const char *spec,
+				       diagnostic_manager *control_mgr)
+{
+  FAIL_IF_NULL (affected_mgr);
+  FAIL_IF_NULL (option_name);
+  FAIL_IF_NULL (spec);
+  FAIL_IF_NULL (control_mgr);
+
+  spec_context ctxt (option_name, *affected_mgr, *control_mgr);
+  auto inner_sink = ctxt.parse_and_make_sink (spec, affected_mgr->get_dc ());
+  if (!inner_sink)
+    return -1;
+  affected_mgr->get_dc ().add_sink (std::move (inner_sink));
+  return 0;
+}
+
+/* Public entrypoint.  */
+
+void
+diagnostic_manager_set_analysis_target (diagnostic_manager *mgr,
+					const diagnostic_file *file)
+{
+  FAIL_IF_NULL (mgr);
+  FAIL_IF_NULL (file);
+
+  mgr->get_dc ().set_main_input_filename (file->get_name ());
 }

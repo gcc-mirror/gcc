@@ -10,5 +10,5 @@ foo (int c)
 }
 
 /* { dg-final { scan-assembler-times "vpbroadcastb\[\\t \]+%.*, %xmm\[0-9\]+" 1 } } */
-/* { dg-final { scan-assembler-times "vmovdqu8\[\\t \]+%xmm\[0-9\]+, \\(%\[\^,\]+\\)" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[\\t \]+%xmm\[0-9\]+, \\(%\[\^,\]+\\)" 1 } } */
 /* { dg-final { scan-assembler-times "movb\[\\t \]+%.*, 16\\(%\[\^,\]+\\)" 1 } } */

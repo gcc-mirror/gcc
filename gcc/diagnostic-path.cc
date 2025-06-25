@@ -20,12 +20,14 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_ALGORITHM
+#define INCLUDE_MAP
 #define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
 #include "diagnostic-path.h"
+#include "xml.h"
 
 /* Disable warnings about missing quoting in GCC diagnostics for the print
    calls below.  */
@@ -152,6 +154,15 @@ diagnostic_event::get_desc (pretty_printer &ref_pp) const
   pp_show_color (pp.get ()) = false;
   print_desc (*pp.get ());
   return label_text::take (xstrdup (pp_formatted_text (pp.get ())));
+}
+
+// Base implementation of diagnostic_event::maybe_make_xml_state
+
+std::unique_ptr<xml::document>
+diagnostic_event::maybe_make_xml_state (bool) const
+{
+  // Don't attempt to make a state document:
+  return nullptr;
 }
 
 /* class diagnostic_path.  */

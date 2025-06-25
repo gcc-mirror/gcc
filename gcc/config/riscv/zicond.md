@@ -234,5 +234,39 @@
 				      (const_int 0)
 				      (match_dup 4)))])
 
+;; We can splat the sign bit across a GPR with a arithmetic right shift
+;; which gives us a 0, -1 result.  We then turn on bit #0 unconditionally
+;; which results in 1, -1.  There's probably other cases that could be
+;; handled, this seems particularly important though.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(plus:X (if_then_else:X (ge:X (match_operand:X 1 "register_operand")
+				      (const_int 0))
+				(match_operand 2 "const_int_operand")
+				(match_operand 3 "const_int_operand"))
+		(match_operand 4 "const_int_operand")))]
+  "((TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV)
+    && INTVAL (operands[2]) + INTVAL (operands[4]) == 1
+    && INTVAL (operands[3]) + INTVAL (operands[4]) == -1)"
+  [(set (match_dup 0) (ashiftrt:X (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (ior:X (match_dup 0) (const_int 1)))]
+  { operands[2] = GEN_INT (GET_MODE_BITSIZE (word_mode) - 1); })
 
-
+;; Similarly, but the condition and true/false values are reversed
+;;
+;; Note the case where the condition is reversed, but not the true/false
+;; values.  Or vice-versa is not handled because we don't support 4->3
+;; splits.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(plus:X (if_then_else:X (lt:X (match_operand:X 1 "register_operand")
+				      (const_int 0))
+				(match_operand 2 "const_int_operand")
+				(match_operand 3 "const_int_operand"))
+		(match_operand 4 "const_int_operand")))]
+  "((TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV)
+    && INTVAL (operands[2]) + INTVAL (operands[4]) == -1
+    && INTVAL (operands[3]) + INTVAL (operands[4]) == 1)"
+  [(set (match_dup 0) (ashiftrt:X (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (ior:X (match_dup 0) (const_int 1)))]
+  { operands[2] = GEN_INT (GET_MODE_BITSIZE (word_mode) - 1); })

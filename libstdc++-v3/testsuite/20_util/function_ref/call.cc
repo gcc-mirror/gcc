@@ -164,16 +164,16 @@ test05()
 }
 
 struct Incomplete;
+enum CompleteEnum : int;
 
 void
 test_params()
 {
   auto f = [](auto&&) {};
-  // There is discussion if this is supported.
-  // std::function_ref<void(Incomplete)> f1(f);
-  std::function_ref<void(Incomplete&)> f2(f);
-  // See PR120259, this should be supported.
-  // std::function_ref<void(Incomplete&&)> f3(f);
+  std::function_ref<void(Incomplete&)> f1(f);
+  // See PR libstdc++/120259, this should be supported.
+  // std::function_ref<void(Incomplete&&)> f2(f);
+  std::function_ref<void(CompleteEnum)> f3(f);
 }
 
 int main()

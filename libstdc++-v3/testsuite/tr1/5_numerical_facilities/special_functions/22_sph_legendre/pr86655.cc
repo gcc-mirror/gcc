@@ -36,7 +36,6 @@ template<typename _Tp>
   void
   test_m_gt_l()
   {
-    bool test __attribute__((unused)) = true;
     unsigned int larr[4] = {0u, 1u, 2u, 5u};
     for (unsigned int l = 0; l < 4; ++l)
       for (unsigned int m = larr[l] + 1u; m <= larr[l] + 2u; ++m)

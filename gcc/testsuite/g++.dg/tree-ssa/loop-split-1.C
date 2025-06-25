@@ -6,6 +6,7 @@
 #include <cmath>
 
 constexpr unsigned s = 100000000;
+double d = 0.0;
 
 int main()
 {
@@ -19,7 +20,7 @@ int main()
         if(i == 0)
             a[i] = b[i] * c[i];
         else
-            a[i] = (b[i] + c[i]) * c[i-1] * std::log(i);
+            a[i] = (b[i] + c[i]) * c[i-1] * std::log(i + d);
     }
 }
 /* { dg-final { scan-tree-dump-times "loop split" 1 "lsplit" } } */

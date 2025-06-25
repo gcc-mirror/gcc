@@ -124,13 +124,13 @@ verify_bounds( size_t pos, size_t size, const char input[] ) {
  */
 const char *
 esc( size_t len, const char input[] ) {
-  static char spaces[] = "([,;]?[[:space:]])+";
-  static char spaceD[] = "(\n {6}D" "|" "[,;]?[[:space:]])+";
+  static const char space[]  = "([,;]?[[:space:]])+";
+  static const char spaceD[] = "(\n {6}D" "|" "[,;]?[[:space:]])+";
   static char buffer[64 * 1024];
   char *p = buffer;
   const char *eoinput = input + len;
 
-  const char *spacex = is_reference_format()? spaceD : spaces;
+  const char *spacex = is_reference_format()? spaceD : space;
 
   for( const char *s=input; *s && s < eoinput; s++ ) {
     *p = '\0';
@@ -279,7 +279,7 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
     dbgmsg("copybook_elem_t::open_file: trying %s", path);
 
     if( (this->fd = open(path, O_RDONLY)) == -1 ) {
-      dbgmsg("could not open %s: %m", path);
+      dbgmsg("could not open %s: %s", path, xstrerror(errno));
       return fd;
     }
     this->source.name = path;
@@ -304,9 +304,10 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
       dbgmsg("found copybook file %s", filename);
       this->source.name = xstrdup(filename);
       if( ! cobol_filename(this->source.name, inode_of(fd)) ) {
-	error_msg(source.loc, "recursive copybook: '%s' includes itself", this->source);
-	(void)! close(fd);
-	fd = -1;
+        error_msg(source.loc, "recursive copybook: '%s' includes itself",
+                  this->source.name);
+        (void)! close(fd);
+        fd = -1;
       }
       dbgmsg("%s: opened %s as fd %d", __func__, source.name, fd);
       return fd;

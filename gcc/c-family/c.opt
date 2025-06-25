@@ -938,7 +938,7 @@ C ObjC C++ ObjC++ CPP(cpp_warn_invalid_utf8) CppReason(CPP_W_INVALID_UTF8) Var(w
 Warn about invalid UTF-8 characters.
 
 Wjump-misses-init
-C ObjC Var(warn_jump_misses_init) Warning LangEnabledby(C ObjC,Wc++-compat)
+C ObjC Var(warn_jump_misses_init) Warning LangEnabledBy(C ObjC,Wc++-compat)
 Warn when a jump misses a variable initialization.
 
 Enum
@@ -1318,6 +1318,14 @@ Warn when a value is moved to itself with std::move.
 Wsequence-point
 C ObjC C++ ObjC++ Var(warn_sequence_point) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about possible violations of sequence point rules.
+
+Wsfinae-incomplete=
+C++ ObjC++ Var(warn_sfinae_incomplete) Warning Init(1) Joined RejectNegative UInteger IntegerRange(0, 2)
+Warn about an incomplete type affecting semantics in a non-error context.
+
+Wsfinae-incomplete
+C++ ObjC++ Warning Alias(Wsfinae-incomplete=, 1, 0)
+Warn about an incomplete type affecting semantics in a non-error context.
 
 Wshadow-ivar
 ObjC ObjC++ Var(warn_shadow_ivar) EnabledBy(Wshadow) Init(1) Warning

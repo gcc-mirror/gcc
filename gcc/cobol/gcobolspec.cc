@@ -82,7 +82,7 @@ static bool need_libgcobol = true;
 // #define NOISY 1
 
 static void
-append_arg(const struct cl_decoded_option arg)
+append_arg(const cl_decoded_option& arg)
   {
 #ifdef NOISY
   static int counter = 1;

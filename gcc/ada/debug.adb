@@ -168,7 +168,7 @@ package body Debug is
    --  d_A  Stop generation of ALI file
    --  d_B  Warn on build-in-place function calls
    --  d_C
-   --  d_D  Use improved diagnostics
+   --  d_D
    --  d_E  Print diagnostics and switch repository
    --  d_F  Encode full invocation paths in ALI files
    --  d_G
@@ -186,8 +186,8 @@ package body Debug is
    --  d_S
    --  d_T  Output trace information on invocation path recording
    --  d_U  Disable prepending messages with "error:".
-   --  d_V  Enable verifications on the expanded tree
-   --  d_W
+   --  d_V  Enable VAST (verifications on the expanded tree)
+   --  d_W  Enable VAST in verbose mode
    --  d_X  Disable assertions to check matching of extra formals
    --  d_Y
    --  d_Z
@@ -1065,8 +1065,11 @@ package body Debug is
    --  d_U  Disable prepending 'error:' to error messages. This used to be the
    --       default and can be seen as the opposite of -gnatU.
 
-   --  d_V  Enable verification of the expanded code before calling the backend
-   --       and generate error messages on each inconsistency found.
+   --  d_V  Enable VAST (Verifier for the Ada Semantic Tree). This does
+   --       verification of the expanded code before calling the backend.
+
+   --  d_W  Same as d_V, but also prints lots of tracing/debugging output
+   --       as it walks the tree.
 
    --  d_X  Disable assertions to check matching of extra formals; switch added
    --       temporarily to disable these checks until this work is complete if

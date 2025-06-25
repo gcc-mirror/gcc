@@ -39,7 +39,7 @@ compiles \*[lang] source code to object code, and optionally produces an
 executable binary or shared object.  As a GCC component, it accepts
 all options that affect code-generation and linking.  Options specific
 to \*[lang] are listed below.
-.Bl -tag -width \0\0debug
+.Bl -tag -width "\0\0debug"
 .It Fl main Ar filename
 .Nm
 will generate a
@@ -197,14 +197,12 @@ Otherwise, columns 1-6 are examined. If those characters are all digits
 or blanks, the file is assumed to be in
 .Em "fixed-form reference format",
 also with the indicator in column 7.
-
 If not auto-detected as 
 .Em "fixed-form reference format" 
 or 
 .Em "extended source format",
 the file is assumed to be in 
 .Em "free-form reference format".
-
 .Pp
 .
 .It Fl fcobol-exceptions Ar exception Op Ns , Ns Ar exception Ns ...
@@ -1088,7 +1086,7 @@ the directive must appear before
 .Pp
 To test a feature-set variable, use
 .Dl >>IF Ar feature Li DEFINED
-..
+.
 .Ss Copybooks
 .Nm
 supports the CDF
@@ -1294,7 +1292,7 @@ stores and converts
 numbers.  Converting the floating-point value to the numeric display
 value 0055110 is done by multiplying 55.109999...\& by 1,000 and then
 truncating the result to an integer.  And it turns out that even
-though 55.11 can’t be represented in floating-point as an exact value,
+though 55.11 can't be represented in floating-point as an exact value,
 the product of the multiplication, 55110, is an exact value.
 .Pp
 In cases where it is important for conversions to have predictable
@@ -1325,7 +1323,7 @@ specified for a calculation, then the intermediate result becomes a
 .
 .Ss A warning about binary floating point comparison
 The cardinal rule when doing comparisons involving floating-point
-values: Never, ever, test for equality.  It’s just not worth the hassle.
+values: Never, ever, test for equality.  It's just not worth the hassle.
 .Pp
 For example:
 .Bd -literal
@@ -1361,7 +1359,7 @@ and you really test the code.  And then avoid it anyway.
 .Pp
 Finally, it is observably the case that the
 .Nm
-implementations of floating-point conversions and comparisons don’t
+implementations of floating-point conversions and comparisons don't
 precisely match the behavior of other \*[lang] compilers.
 .Pp
 You have been warned.

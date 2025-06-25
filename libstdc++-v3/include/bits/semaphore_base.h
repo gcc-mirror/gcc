@@ -46,87 +46,90 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  template<bool _Platform_wait>
-  struct __semaphore_base
+  struct __semaphore_impl
   {
-    using __count_type = __conditional_t<_Platform_wait,
-					 __detail::__platform_wait_t,
-					 ptrdiff_t>;
+    using __count_type = ptrdiff_t;
 
     static constexpr ptrdiff_t _S_max
       = __gnu_cxx::__int_traits<__count_type>::__max;
 
     constexpr explicit
-    __semaphore_base(__count_type __count) noexcept
+    __semaphore_impl(__count_type __count) noexcept
     : _M_counter(__count)
     { }
 
-    __semaphore_base(const __semaphore_base&) = delete;
-    __semaphore_base& operator=(const __semaphore_base&) = delete;
+    __semaphore_impl(const __semaphore_impl&) = delete;
+    __semaphore_impl& operator=(const __semaphore_impl&) = delete;
 
-    static _GLIBCXX_ALWAYS_INLINE __count_type
-    _S_get_current(__count_type* __counter) noexcept
+    // Load the current counter value.
+    _GLIBCXX_ALWAYS_INLINE __count_type
+    _M_get_current() const noexcept
+    { return __atomic_impl::load(&_M_counter, memory_order::acquire); }
+
+    // Try to acquire the semaphore (i.e. decrement the counter).
+    // Returns false if the current counter is zero, or if another thread
+    // changes the value first. In the latter case, __cur is set to the new
+    // value.
+    _GLIBCXX_ALWAYS_INLINE bool
+    _M_do_try_acquire(__count_type& __cur) noexcept
     {
-      return __atomic_impl::load(__counter, memory_order::acquire);
-    }
+      if (__cur == 0)
+	return false; // Cannot decrement when it's already zero.
 
-    static _GLIBCXX_ALWAYS_INLINE bool
-    _S_do_try_acquire(__count_type* __counter, __count_type __old) noexcept
-    {
-      if (__old == 0)
-	return false;
-
-      return __atomic_impl::compare_exchange_strong(__counter,
-						    __old, __old - 1,
+      return __atomic_impl::compare_exchange_strong(&_M_counter,
+						    __cur, __cur - 1,
 						    memory_order::acquire,
 						    memory_order::relaxed);
     }
 
-    _GLIBCXX_ALWAYS_INLINE void
+    // Keep trying to acquire the semaphore in a loop until it succeeds.
+    void
     _M_acquire() noexcept
     {
-      auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
-      auto const __pred = [this](__count_type __cur) {
-	return _S_do_try_acquire(&this->_M_counter, __cur);
-      };
-      std::__atomic_wait_address(&_M_counter, __pred, __vfn, true);
+      auto __vfn = [this]{ return _M_get_current(); };
+      _Available __is_available{__vfn()};
+      while (!_M_do_try_acquire(__is_available._M_val))
+	if (!__is_available())
+	  std::__atomic_wait_address(&_M_counter, __is_available, __vfn, true);
     }
 
+    // Try to acquire the semaphore, retrying a small number of times
+    // in case of contention.
     bool
     _M_try_acquire() noexcept
     {
-      auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
-      auto const __pred = [this](__count_type __cur) {
-	return _S_do_try_acquire(&this->_M_counter, __cur);
-      };
-      using __detail::__wait_clock_t;
-      return std::__atomic_wait_address_for(&_M_counter, __pred, __vfn,
-					    __wait_clock_t::duration(),
-					    true);
+      // The fastest implementation of this function is just _M_do_try_acquire
+      // but that can fail under contention even when _M_count > 0.
+      // Using _M_try_acquire_for(0ns) will retry a few times in a loop.
+      return _M_try_acquire_for(__detail::__wait_clock_t::duration{});
     }
 
     template<typename _Clock, typename _Duration>
-      _GLIBCXX_ALWAYS_INLINE bool
+      bool
       _M_try_acquire_until(const chrono::time_point<_Clock, _Duration>& __atime) noexcept
       {
-	auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
-	auto const __pred = [this](__count_type __cur) {
-	  return _S_do_try_acquire(&this->_M_counter, __cur);
-	};
-	return std::__atomic_wait_address_until(&_M_counter, __pred, __vfn,
-						__atime, true);
+	auto __vfn = [this]{ return _M_get_current(); };
+	_Available __is_available{__vfn()};
+	while (!_M_do_try_acquire(__is_available._M_val))
+	  if (!__is_available())
+	    if (!std::__atomic_wait_address_until(&_M_counter, __is_available,
+						  __vfn, __atime, true))
+	      return false; // timed out
+	return true;
       }
 
     template<typename _Rep, typename _Period>
-      _GLIBCXX_ALWAYS_INLINE bool
+      bool
       _M_try_acquire_for(const chrono::duration<_Rep, _Period>& __rtime) noexcept
       {
-	auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
-	auto const __pred = [this](__count_type __cur) {
-	  return _S_do_try_acquire(&this->_M_counter, __cur);
-	};
-	return std::__atomic_wait_address_for(&_M_counter, __pred, __vfn,
-					      __rtime, true);
+	auto __vfn = [this]{ return _M_get_current(); };
+	_Available __is_available{__vfn()};
+	while (!_M_do_try_acquire(__is_available._M_val))
+	  if (!__is_available())
+	    if (!std::__atomic_wait_address_for(&_M_counter, __is_available,
+						__vfn, __rtime, true))
+	      return false; // timed out
+	return true;
       }
 
     _GLIBCXX_ALWAYS_INLINE ptrdiff_t
@@ -140,14 +143,158 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   private:
-    alignas(_Platform_wait ? __detail::__platform_wait_alignment
-			   : __alignof__(__count_type))
-    __count_type _M_counter;
+    struct _Available
+    {
+      __count_type _M_val; // Cache of the last value loaded from _M_counter.
+
+      // Returns true if the cached value is non-zero and so it should be
+      // possible to acquire the semaphore.
+      bool operator()() const noexcept { return _M_val > 0; }
+
+      // Argument should be the latest value of the counter.
+      // Returns true (and caches the value) if it's non-zero, meaning it
+      // should be possible to acquire the semaphore. Returns false otherwise.
+      bool operator()(__count_type __cur) noexcept
+      {
+	if (__cur == 0)
+	  return false;
+	_M_val = __cur;
+	return true;
+      }
+    };
+
+    alignas(__atomic_ref<__count_type>::required_alignment)
+      __count_type _M_counter;
   };
 
-  template<ptrdiff_t _Max>
-    using __semaphore_impl
-      = __semaphore_base<(_Max <= __semaphore_base<true>::_S_max)>;
+  // Optimized specialization using __platform_wait (if available)
+  template<bool _Binary>
+  struct __platform_semaphore_impl
+  {
+    using __count_type = __detail::__platform_wait_t;
+
+    static constexpr ptrdiff_t _S_max
+      = _Binary ? 1 : __gnu_cxx::__int_traits<__count_type>::__max;
+
+    constexpr explicit
+    __platform_semaphore_impl(__count_type __count) noexcept
+    : _M_counter(__count)
+    { }
+
+    __platform_semaphore_impl(__platform_semaphore_impl&) = delete;
+    __platform_semaphore_impl& operator=(const __platform_semaphore_impl&) = delete;
+
+    // Load the current counter value.
+    _GLIBCXX_ALWAYS_INLINE __count_type
+    _M_get_current() const noexcept
+    {
+      if constexpr (_Binary)
+	return 1; // Not necessarily true, but optimistically assume it is.
+      else
+	return __atomic_impl::load(&_M_counter, memory_order::acquire);
+    }
+
+    // Try to acquire the semaphore (i.e. decrement the counter).
+    // Returns false if the current counter is zero, or if another thread
+    // changes the value first. In the latter case, __cur is set to the new
+    // value.
+    _GLIBCXX_ALWAYS_INLINE bool
+    _M_do_try_acquire(__count_type& __cur) noexcept
+    {
+      if (__cur == 0)
+	return false; // Cannot decrement when it's already zero.
+
+      return __atomic_impl::compare_exchange_strong(&_M_counter,
+						    __cur, __cur - 1,
+						    memory_order::acquire,
+						    memory_order::relaxed);
+    }
+
+    // Keep trying to acquire the semaphore in a loop until it succeeds.
+    void
+    _M_acquire() noexcept
+    {
+      auto __val = _M_get_current();
+      while (!_M_do_try_acquire(__val))
+	if (__val == 0)
+	  {
+	    std::__atomic_wait_address_v(&_M_counter, __val, __ATOMIC_ACQUIRE,
+					 true);
+	    __val = _M_get_current();
+	  }
+    }
+
+    // Try to acquire the semaphore.
+    bool
+    _M_try_acquire() noexcept
+    {
+      if constexpr (_Binary)
+	{
+	  __count_type __val = 1;
+	  // Do not expect much contention on binary semaphore, only try once.
+	  return _M_do_try_acquire(__val);
+	}
+      else
+	// Fastest implementation of this function is just _M_do_try_acquire
+	// but that can fail under contention even when _M_count > 0.
+	// Using _M_try_acquire_for(0ns) will retry a few times in a loop.
+	return _M_try_acquire_for(__detail::__wait_clock_t::duration{});
+    }
+
+    template<typename _Clock, typename _Duration>
+      bool
+      _M_try_acquire_until(const chrono::time_point<_Clock, _Duration>& __atime) noexcept
+      {
+	auto __val = _M_get_current();
+	while (!_M_do_try_acquire(__val))
+	  if (__val == 0)
+	    {
+	      if (!std::__atomic_wait_address_until_v(&_M_counter, 0,
+						      __ATOMIC_ACQUIRE,
+						      __atime, true))
+		return false; // timed out
+	      __val = _M_get_current();
+	    }
+	return true;
+      }
+
+    template<typename _Rep, typename _Period>
+      bool
+      _M_try_acquire_for(const chrono::duration<_Rep, _Period>& __rtime) noexcept
+      {
+	auto __val = _M_get_current();
+	while (!_M_do_try_acquire(__val))
+	  if (__val == 0)
+	    {
+	      if (!std::__atomic_wait_address_for_v(&_M_counter, 0,
+						    __ATOMIC_ACQUIRE,
+						    __rtime, true))
+		return false; // timed out
+	      __val = _M_get_current();
+	    }
+	return true;
+      }
+
+    _GLIBCXX_ALWAYS_INLINE ptrdiff_t
+    _M_release(ptrdiff_t __update) noexcept
+    {
+      auto __old = __atomic_impl::fetch_add(&_M_counter, __update,
+					    memory_order::release);
+      if (__old == 0 && __update > 0)
+	__atomic_notify_address(&_M_counter, true, true);
+      return __old;
+    }
+
+  protected:
+    alignas(__detail::__platform_wait_alignment) __count_type _M_counter;
+  };
+
+  template<ptrdiff_t _Max, typename _Tp = __detail::__platform_wait_t>
+    using _Semaphore_impl
+      = __conditional_t<__platform_wait_uses_type<_Tp>
+			  && _Max <= __gnu_cxx::__int_traits<_Tp>::__max,
+			__platform_semaphore_impl<(_Max <= 1)>,
+			__semaphore_impl>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

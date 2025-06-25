@@ -3760,7 +3760,7 @@ sra_get_max_scalarization_size (void)
   /* If the user didn't set PARAM_SRA_MAX_SCALARIZATION_SIZE_<...>,
      fall back to a target default.  */
   unsigned HOST_WIDE_INT max_scalarization_size
-    = get_move_ratio (optimize_speed_p) * UNITS_PER_WORD;
+    = get_move_ratio (optimize_speed_p) * MOVE_MAX;
 
   if (optimize_speed_p)
     {

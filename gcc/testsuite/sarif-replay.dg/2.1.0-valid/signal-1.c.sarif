@@ -2,6 +2,8 @@
 
    The dg directives were stripped out from the generated .sarif
    to avoid confusing DejaGnu for this test.   */
+/* { dg-additional-options "-fdiagnostics-add-output=experimental-html:file=signal-1.c.sarif.html,javascript=no" } */
+/* { dg-additional-options "-fdiagnostics-add-output=sarif:file=signal-1.c.roundtrip.sarif" } */
 
 {"$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
  "version": "2.1.0",
@@ -211,3 +213,11 @@ In function 'custom_logger':
                   |      |   (7) call to ‘fprintf’ from within signal handler
                   |
    { dg-end-multiline-output "" } */
+
+/* Use a Python script to verify various properties about the generated
+   .html file:
+   { dg-final { run-html-pytest signal-1.c.sarif "2.1.0-valid/signal-1-check-html.py" } } */
+
+/* Use a Python script to verify various properties about the *generated*
+   .sarif file:
+   { dg-final { run-sarif-pytest signal-1.c.roundtrip "2.1.0-valid/signal-1-check-sarif-roundtrip.py" } } */

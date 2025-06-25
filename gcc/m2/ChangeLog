@@ -1,3 +1,91 @@
+2025-06-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120731
+	* gm2-libs-log/Strings.def (Delete): Rewrite comment.
+	* gm2-libs-log/Strings.mod (Pos): Rewrite.
+	(PosLower): New procedure function.
+
+2025-06-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GCCDeclare.mod (StartDeclareModuleScopeSeparate):
+	Reformat statement comments.
+	(StartDeclareModuleScopeWholeProgram): Ditto.
+
+2025-06-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120673
+	* gm2-compiler/M2GCCDeclare.mod (ErrorDepList): New
+	global variable set containing every errant dependency symbol.
+	(mystop): Remove.
+	(EmitCircularDependancyError): Replace with ...
+	(EmitCircularDependencyError): ... this.
+	(AssertAllTypesDeclared): Rewrite.
+	(DoVariableDeclaration): Ditto.
+	(TypeDependentsDeclared): New procedure function.
+	(PrepareGCCVarDeclaration): Ditto.
+	(DeclareVariable): Remove assert.
+	(DeclareLocalVariable): Ditto.
+	(Constructor): Initialize ErrorDepList.
+	* gm2-compiler/M2MetaError.mod (doErrorScopeProc): Rewrite
+	and ensure that a symbol with a module scope does not lookup
+	from a definition module.
+	* gm2-compiler/P2SymBuild.mod (BuildType): Rewrite so that
+	a synonym type is created using the token refering to the name
+	on the lhs.
+
+2025-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119650
+	* gm2-libs/ARRAYOFCHAR.def: Remove comment about non
+	existent read.
+	* target-independent/m2/Builtins.texi: Regenerate.
+	* target-independent/m2/SYSTEM-iso.texi: Ditto.
+	* target-independent/m2/SYSTEM-pim.texi: Ditto.
+	* target-independent/m2/gm2-libs.texi: Ditto.
+
+2025-06-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120606
+	* gm2-compiler/M2Quads.mod (ForLoopLastIterator): Dereference
+	start and end expressions e1 and e2 respectively.
+
+2025-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119650
+	PR modula2/117203
+	* gm2-compiler/P2Build.bnf (CheckModuleQualident): New
+	procedure.
+	(Qualident): Rewrite.
+	* gm2-compiler/P3Build.bnf (PushTFQualident): New procedure.
+	(CheckModuleQualident): Ditto.
+	(Qualident): Rewrite.
+	* gm2-compiler/PCBuild.bnf (PushTFQualident): New procedure.
+	(CheckModuleQualident): Ditto.
+	(Qualident): Rewrite.
+	* gm2-compiler/PHBuild.bnf (PushTFQualident): New procedure.
+	(CheckModuleQualident): Ditto.
+	(Qualident): Rewrite.
+	* gm2-libs/ARRAYOFCHAR.def: New file.
+	* gm2-libs/ARRAYOFCHAR.mod: New file.
+	* gm2-libs/CFileSysOp.def: New file.
+	* gm2-libs/CHAR.def: New file.
+	* gm2-libs/CHAR.mod: New file.
+	* gm2-libs/FileSysOp.def: New file.
+	* gm2-libs/FileSysOp.mod: New file.
+	* gm2-libs/String.def: New file.
+	* gm2-libs/String.mod: New file.
+	* gm2-libs/StringFileSysOp.def: New file.
+	* gm2-libs/StringFileSysOp.mod: New file.
+
+2025-06-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120542
+	* gm2-compiler/M2Quads.mod (BuildReturnLower): New procedure.
+	(BuildReturn): Allow return without an expression from
+	module initialization blocks.  Generate an error if an
+	expression is provided.  Call BuildReturnLower if no error
+	was seen.
+
 2025-06-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/120474

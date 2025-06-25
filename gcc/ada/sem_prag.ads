@@ -97,6 +97,7 @@ package Sem_Prag is
       Pragma_Preelaborable_Initialization => True,
       Pragma_Preelaborate                 => True,
       Pragma_Priority                     => True,
+      Pragma_Program_Exit                 => True,
       Pragma_Pure                         => True,
       Pragma_Pure_Function                => True,
       Pragma_Refined_Depends              => True,
@@ -156,6 +157,7 @@ package Sem_Prag is
       Pragma_Pre_Class                 => True,
       Pragma_Precondition              => True,
       Pragma_Predicate                 => True,
+      Pragma_Program_Exit              => True,
       Pragma_Refined_Post              => True,
       Pragma_Subprogram_Variant        => True,
       Pragma_Test_Case                 => True,
@@ -229,6 +231,7 @@ package Sem_Prag is
       Pragma_Pre                 => True,
       Pragma_Pre_Class           => True,
       Pragma_Precondition        => True,
+      Pragma_Program_Exit        => True,
       Pragma_Pure                => True,
       Pragma_Pure_Function       => True,
       Pragma_Refined_Depends     => True,
@@ -325,6 +328,13 @@ package Sem_Prag is
    --  Freeze_Id denotes the entity of [generic] package body or [generic]
    --  subprogram body which caused "freezing" of the related contract where
    --  the pragma resides.
+
+   procedure Analyze_Program_Exit_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty);
+   --  Perform full analysis of delayed pragma Program_Exit. Freeze_Id is the
+   --  entity of [generic] package body or [generic] subprogram body which
+   --  caused "freezing" of the related contract where the pragma resides.
 
    procedure Analyze_Refined_Depends_In_Decl_Part (N : Node_Id);
    --  Preform full analysis of delayed pragma Refined_Depends. This routine
@@ -494,6 +504,7 @@ package Sem_Prag is
    --    Pre
    --    Pre_Class
    --    Precondition
+   --    Program_Exit
    --    Refined_Depends
    --    Refined_Global
    --    Refined_Post

@@ -21,10 +21,24 @@ def test_metadata(html_tree):
 
     diag = diag_list.find('xhtml:div', ns)
     assert diag is not None
-    assert diag.attrib['class'] == 'gcc-diagnostic'
+    assert diag.attrib['class'] == 'alert alert-warning'
 
-    spans = diag.findall('xhtml:span', ns)
-    metadata = spans[1]
+    icon = diag.find('xhtml:span', ns)
+    assert icon.attrib['class'] == 'pficon pficon-warning-triangle-o'
+
+    message = diag.find("./xhtml:div[@class='gcc-message']", ns)
+    assert message.attrib['id'] == 'gcc-diag-0-message'
+
+    assert message[0].tag == make_tag('strong')
+    assert message[0].text == 'warning: '
+    assert message[0].tail == " never use '"
+
+    assert message[1].tag == make_tag('span')
+    assert message[1].attrib['class'] == 'gcc-quoted-text'
+    assert message[1].text == 'gets'
+    assert message[1].tail == "' "
+    
+    metadata = message[2]
     assert metadata.attrib['class'] == 'gcc-metadata'
     assert metadata[0].tag == make_tag('span')
     assert metadata[0].attrib['class'] == 'gcc-metadata-item'
@@ -57,21 +71,3 @@ def test_metadata(html_tree):
     annotation_tr = rows[1]
     assert_annotation_line(annotation_tr,
                            '  ^~~~~~~~~~')
-
-# For reference, here's the generated HTML:
-"""
-  <body>
-    <div class="gcc-diagnostic-list">
-      <div class="gcc-diagnostic">
-        <span class="gcc-message">never use &apos;<span class="gcc-quoted-text">gets</span>&apos;</span> 
-        <span class="gcc-metadata"><span class="gcc-metadata-item">[<a href="https://cwe.mitre.org/data/definitions/242.html">CWE-242</a>]</span><span class="gcc-metadata-item">[<a href="https://example.com/">STR34-C</a>]</span></span><table class="locus">
-<tbody class="line-span">
-<tr><td class="linenum">   10</td> <td class="source">  gets (buf);</td></tr>
-<tr><td class="linenum"/><td class="annotation">  ^~~~~~~~~~</td></tr>
-</tbody>
-</table>
-
-      </div>
-    </div>
-  </body>
-"""

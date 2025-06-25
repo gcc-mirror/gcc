@@ -6417,7 +6417,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
   if (TREE_CLOBBER_P (init)
       && CLOBBER_KIND (init) < CLOBBER_OBJECT_END)
-    /* Only handle clobbers ending the lifetime of objects.  */
+    /* Only handle clobbers ending the lifetime of objects.
+       ??? We should probably set CONSTRUCTOR_NO_CLEARING.  */
     return void_node;
 
   /* First we figure out where we're storing to.  */
@@ -9282,8 +9283,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   /* After verify_constant because reduced_constant_expression_p can unset
      CONSTRUCTOR_NO_CLEARING.  */
-  if (!non_constant_p
-      && TREE_CODE (r) == CONSTRUCTOR && CONSTRUCTOR_NO_CLEARING (r))
+  if (TREE_CODE (r) == CONSTRUCTOR && CONSTRUCTOR_NO_CLEARING (r))
     {
       if (!allow_non_constant)
 	error ("%qE is not a constant expression because it refers to "
@@ -9492,7 +9492,34 @@ tree
 maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
 		      mce_value manifestly_const_eval /* = mce_unknown */)
 {
+  tree orig_t = t;
   tree r;
+
+  if (EXPR_P (t) && manifestly_const_eval == mce_unknown)
+    {
+      /* Look up each operand in the cv_cache first to see if we've already
+	 reduced it, and reuse that result to avoid quadratic behavior if
+	 we're called when building up a large expression.  */
+      int n = cp_tree_operand_length (t);
+      tree *ops = XALLOCAVEC (tree, n);
+      bool rebuild = false;
+      for (int i = 0; i < n; ++i)
+	{
+	  ops[i] = TREE_OPERAND (t, i);
+	  if (tree *cached = hash_map_safe_get (cv_cache, ops[i]))
+	    if (*cached != ops[i])
+	      {
+		ops[i] = *cached;
+		rebuild = true;
+	      }
+	}
+      if (rebuild)
+	{
+	  t = copy_node (t);
+	  for (int i = 0; i < n; ++i)
+	    TREE_OPERAND (t, i) = ops[i];
+	}
+    }
 
   if (!is_nondependent_constant_expression (t))
     {
@@ -9511,6 +9538,10 @@ maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
     return fold_to_constant (t);
 
   if (manifestly_const_eval != mce_unknown)
+    /* TODO: Extend the cache to be mce_value aware.  And if we have a
+       previously cached mce_unknown result that's TREE_CONSTANT, it means
+       the reduced value is independent of mce_value and so we should
+       be able to reuse it in the mce_true/false case.  */
     return cxx_eval_outermost_constant_expr (t, true, true,
 					     manifestly_const_eval, false, decl);
 
@@ -9540,7 +9571,7 @@ maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
 		       || (TREE_CONSTANT (t) && !TREE_CONSTANT (r))
 		       || !cp_tree_equal (r, t));
   if (!c.evaluation_restricted_p ())
-    cv_cache->put (t, r);
+    cv_cache->put (orig_t, r);
   return r;
 }
 
@@ -11028,6 +11059,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case CO_AWAIT_EXPR:
     case CO_YIELD_EXPR:
     case CO_RETURN_EXPR:
+      if (flags & tf_error)
+	constexpr_error (cp_expr_loc_or_loc (t, input_location), fundef_p,
+			 "%qE is not a constant expression", t);
       return false;
 
     /* Assume a TU-local entity is not constant, we'll error later when

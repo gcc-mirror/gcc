@@ -15,7 +15,7 @@ template<typename Extents>
       if(exts.static_extent(i) == std::dynamic_extent)
 	VERIFY(exts.extent(i) == 0);
       else
-	VERIFY(exts.extent(i) == Extents::static_extent(i));
+	VERIFY(std::cmp_equal(exts.extent(i), Extents::static_extent(i)));
   }
 
 constexpr bool

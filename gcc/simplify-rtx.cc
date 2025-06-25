@@ -4063,6 +4063,20 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && rtx_equal_p (XEXP (XEXP (op0, 0), 0), op1))
 	return simplify_gen_binary (IOR, mode, XEXP (op0, 1), op1);
 
+      /* Convert (xor (and (rotate (~1) A) B) (ashift 1 A))
+	 into B | (1 << A).  */
+      if (SHIFT_COUNT_TRUNCATED
+	  && GET_CODE (op0) == AND
+	  && GET_CODE (XEXP (op0, 0)) == ROTATE
+	  && CONST_INT_P (XEXP (XEXP (op0, 0), 0))
+	  && INTVAL (XEXP (XEXP (op0, 0), 0)) == -2
+	  && GET_CODE (op1) == ASHIFT
+	  && CONST_INT_P (XEXP (op1, 0))
+	  && INTVAL (XEXP (op1, 0)) == 1
+	  && rtx_equal_p (XEXP (XEXP (op0, 0), 1), XEXP (op1, 1))
+	  && !side_effects_p (XEXP (op1, 1)))
+	return simplify_gen_binary (IOR, mode, XEXP (op0, 1), op1);
+
       tem = simplify_with_subreg_not (code, mode, op0, op1);
       if (tem)
 	return tem;

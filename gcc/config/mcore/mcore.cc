@@ -2984,9 +2984,7 @@ mcore_mark_dllimport (tree decl)
   /* ??? At least I think that's why we do this.  */
   idp = get_identifier (newname);
 
-  newrtl = gen_rtx_MEM (Pmode,
-		    gen_rtx_SYMBOL_REF (Pmode,
-			     IDENTIFIER_POINTER (idp)));
+  newrtl = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
   XEXP (DECL_RTL (decl), 0) = newrtl;
 }
 

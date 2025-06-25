@@ -79,6 +79,8 @@ nonseq    (([''][[:alnum:]]+][''])|([""][[:alnum:]]+[""]))
 INTEGER   0*[1-9][[:digit:]]*
 INTEGERZ  [[:digit:]]+
 
+NONWORD   [^[:alnum:]$_-]+
+
 SPC  [[:space:]]+
 OSPC [[:space:]]*
 EOL  \r?\n
@@ -980,7 +982,7 @@ USE({SPC}FOR)?		{ return USE; }
   BINARY-LONG	   		{ return bcomputable(FldNumericBin5, 4); }
   BINARY-DOUBLE			{ return bcomputable(FldNumericBin5, 8); }
   BINARY-LONG-LONG		{ if( ! dialect_mf() ) {
-				    error_msg(yylloc, "%s requires -dialect mf", yytext);
+				    dialect_error(yylloc, yytext, "mf");
 				  }
 				  return bcomputable(FldNumericBin5, 8);
 				}
@@ -991,7 +993,7 @@ USE({SPC}FOR)?		{ return USE; }
   FLOAT-BINARY-32		{ return ucomputable(FldFloat, 4); }
   FLOAT-BINARY-64		{ return ucomputable(FldFloat, 8); }
   FLOAT-BINARY-128		{ return ucomputable(FldFloat, 16); }
-  FLOAT-DECIMAL-(16|34)		{ not_implemented("USAGE type: FLOAT_DECIMAL");
+  FLOAT-DECIMAL-(16|34)		{ not_implemented("USAGE type: %<FLOAT_DECIMAL%>");
 				  return FLOAT_DECIMAL; // causes syntax error
 				}
   /* 21) The representation and length of a data item described with USAGE
@@ -1017,7 +1019,7 @@ USE({SPC}FOR)?		{ return USE; }
   POINTER           	{ yylval.field_attr = none_e;     return POINTER; }
 
   PROCEDURE-POINTER    	{ if( dialect_gcc() ) {
-			    error_msg(yylloc, "%s requires -dialect ibm or mf", yytext);
+			    dialect_error(yylloc, yytext, "ibm or mf");
 			  }
 			  yylval.field_attr = prog_ptr_e;
 			  return POINTER;  // return it anyway
@@ -1795,126 +1797,128 @@ USE({SPC}FOR)?		{ return USE; }
 }
 
 <function>{
+  ABS/{NONWORD}				{ pop_return ABS; }
+  ACOS/{NONWORD}			{ pop_return ACOS; }
+  ANNUITY/{NONWORD}			{ pop_return ANNUITY; }
+  ASIN/{NONWORD}			{ pop_return ASIN; }
+  ATAN/{NONWORD}			{ pop_return ATAN; }
+  BASECONVERT/{NONWORD}			{ pop_return BASECONVERT; }
+  BIT-OF/{NONWORD}			{ pop_return BIT_OF; }
+  BIT-TO-CHAR/{NONWORD}			{ pop_return BIT_TO_CHAR; }
+  BOOLEAN-OF-INTEGER/{NONWORD}		{ pop_return BOOLEAN_OF_INTEGER; }
+  BYTE-LENGTH/{NONWORD}			{ pop_return BYTE_LENGTH; }
+  CHAR-NATIONAL/{NONWORD}		{ pop_return CHAR_NATIONAL; }
+  CHAR/{NONWORD}			{ pop_return CHAR; }
+  COMBINED-DATETIME/{NONWORD}		{ pop_return COMBINED_DATETIME; }
+  CONCAT/{NONWORD}			{ pop_return CONCAT; }
+  CONTENT-LENGTH/{NONWORD}		{ pop_return NO_CONDITION; /* GNU only*/ }
+  CONTENT-OF/{NONWORD}			{ pop_return NO_CONDITION; /* GNU only*/ }
+  CONVERT/{NONWORD}			{ pop_return CONVERT; }
+  COS/{NONWORD}				{ pop_return COS; }
+  CURRENCY-SYBOL/{NONWORD}		{ pop_return NO_CONDITION; /* GNU only*/ }
+  CURRENT-DATE/{NONWORD}		{ pop_return CURRENT_DATE; }
+  DATE-OF-INTEGER/{NONWORD}		{ pop_return DATE_OF_INTEGER; }
+  DATE-TO-YYYYMMDD/{NONWORD}		{ pop_return DATE_TO_YYYYMMDD; }
+  DAY-OF-INTEGER/{NONWORD}		{ pop_return DAY_OF_INTEGER; }
+  DAY-TO-YYYYDDD/{NONWORD}		{ pop_return DAY_TO_YYYYDDD; }
+  DISPLAY-OF/{NONWORD}			{ pop_return DISPLAY_OF; }
+  E/{NONWORD}				{ pop_return E; }
 
+  EXCEPTION-FILE-N/{NONWORD}		{ pop_return EXCEPTION_FILE_N; }
+  EXCEPTION-FILE/{NONWORD}		{ pop_return EXCEPTION_FILE; }
+  EXCEPTION-LOCATION-N/{NONWORD}	{ pop_return EXCEPTION_LOCATION_N; }
+  EXCEPTION-LOCATION/{NONWORD}		{ pop_return EXCEPTION_LOCATION; }
+  EXCEPTION-STATEMENT/{NONWORD}		{ pop_return EXCEPTION_STATEMENT; }
+  EXCEPTION-STATUS/{NONWORD}		{ pop_return EXCEPTION_STATUS; }
 
-  ABS{OSPC}/[(]?			{ pop_return ABS; }
-  ACOS{OSPC}/[(]?			{ pop_return ACOS; }
-  ANNUITY{OSPC}/[(]?			{ pop_return ANNUITY; }
-  ASIN{OSPC}/[(]?			{ pop_return ASIN; }
-  ATAN{OSPC}/[(]?			{ pop_return ATAN; }
-  BASECONVERT{OSPC}/[(]?		{ pop_return BASECONVERT; }
-  BIT-OF{OSPC}/[(]?			{ pop_return BIT_OF; }
-  BIT-TO-CHAR{OSPC}/[(]?		{ pop_return BIT_TO_CHAR; }
-  BOOLEAN-OF-INTEGER{OSPC}/[(]?		{ pop_return BOOLEAN_OF_INTEGER; }
-  BYTE-LENGTH{OSPC}/[(]?		{ pop_return BYTE_LENGTH; }
-  CHAR-NATIONAL{OSPC}/[(]?		{ pop_return CHAR_NATIONAL; }
-  CHAR{OSPC}/[(]?			{ pop_return CHAR; }
-  COMBINED-DATETIME{OSPC}/[(]?		{ pop_return COMBINED_DATETIME; }
-  CONCAT{OSPC}/[(]?			{ pop_return CONCAT; }
-  CONTENT-LENGTH{OSPC}/[(]?		{ pop_return NO_CONDITION; /* GNU only*/ }
-  CONTENT-OF{OSPC}/[(]?			{ pop_return NO_CONDITION; /* GNU only*/ }
-  CONVERT{OSPC}/[(]?			{ pop_return CONVERT; }
-  COS{OSPC}/[(]?			{ pop_return COS; }
-  CURRENCY-SYBOL{OSPC}/[(]?		{ pop_return NO_CONDITION; /* GNU only*/ }
-  CURRENT-DATE{OSPC}/[(]?		{ pop_return CURRENT_DATE; }
-  DATE-OF-INTEGER{OSPC}/[(]?		{ pop_return DATE_OF_INTEGER; }
-  DATE-TO-YYYYMMDD{OSPC}/[(]?		{ pop_return DATE_TO_YYYYMMDD; }
-  DAY-OF-INTEGER{OSPC}/[(]?		{ pop_return DAY_OF_INTEGER; }
-  DAY-TO-YYYYDDD{OSPC}/[(]?		{ pop_return DAY_TO_YYYYDDD; }
-  DISPLAY-OF{OSPC}/[(]?			{ pop_return DISPLAY_OF; }
-  E{OSPC}/[(]?				{ pop_return E; }
+  EXP/{NONWORD}				{ pop_return EXP; }
+  EXP10/{NONWORD}			{ pop_return EXP10; }
+  FACTORIAL/{NONWORD}			{ pop_return FACTORIAL; }
+  FIND-STRING/{NONWORD}			{ pop_return FIND_STRING; }
 
-  EXCEPTION-FILE-N{OSPC}/[(]?		{ pop_return EXCEPTION_FILE_N; }
-  EXCEPTION-FILE{OSPC}/[(]?		{ pop_return EXCEPTION_FILE; }
-  EXCEPTION-LOCATION-N{OSPC}/[(]?	{ pop_return EXCEPTION_LOCATION_N; }
-  EXCEPTION-LOCATION{OSPC}/[(]?		{ pop_return EXCEPTION_LOCATION; }
-  EXCEPTION-STATEMENT{OSPC}/[(]?	{ pop_return EXCEPTION_STATEMENT; }
-  EXCEPTION-STATUS{OSPC}/[(]?		{ pop_return EXCEPTION_STATUS; }
+  FORMATTED-CURRENT-DATE/{NONWORD}	{ BEGIN(datetime_fmt);
+					  return FORMATTED_CURRENT_DATE; }
+  FORMATTED-DATE/{NONWORD}		{ BEGIN(datetime_fmt); return FORMATTED_DATE; }
+  FORMATTED-DATETIME/{NONWORD}		{ BEGIN(datetime_fmt); return FORMATTED_DATETIME; }
+  FORMATTED-TIME/{NONWORD}		{ BEGIN(datetime_fmt); return FORMATTED_TIME; }
+  FRACTION-PART/{NONWORD}		{ pop_return FRACTION_PART; }
 
-  EXP{OSPC}/[(]?			{ pop_return EXP; }
-  EXP10{OSPC}/[(]?			{ pop_return EXP10; }
-  FACTORIAL{OSPC}/[(]?			{ pop_return FACTORIAL; }
-  FIND-STRING{OSPC}/[(]?		{ pop_return FIND_STRING; }
+  HEX-OF/{NONWORD}			{ pop_return HEX_OF; }
+  HEX-TO-CHAR/{NONWORD}			{ pop_return HEX_TO_CHAR; }
+  HIGHEST-ALGEBRAIC/{NONWORD}		{ pop_return HIGHEST_ALGEBRAIC; }
 
-  FORMATTED-CURRENT-DATE{OSPC}/[(]?	{ BEGIN(datetime_fmt); return FORMATTED_CURRENT_DATE; }
-  FORMATTED-DATE{OSPC}/[(]?		{ BEGIN(datetime_fmt); return FORMATTED_DATE; }
-  FORMATTED-DATETIME{OSPC}/[(]?		{ BEGIN(datetime_fmt); return FORMATTED_DATETIME; }
-  FORMATTED-TIME{OSPC}/[(]?		{ BEGIN(datetime_fmt); return FORMATTED_TIME; }
-  FRACTION-PART{OSPC}/[(]?		{ pop_return FRACTION_PART; }
-
-  HEX-OF{OSPC}/[(]?			{ pop_return HEX_OF; }
-  HEX-TO-CHAR{OSPC}/[(]?		{ pop_return HEX_TO_CHAR; }
-  HIGHEST-ALGEBRAIC{OSPC}/[(]?		{ pop_return HIGHEST_ALGEBRAIC; }
-
-  INTEGER{OSPC}/[(]?			{ pop_return INTEGER; }
-  INTEGER-OF-BOOLEAN{OSPC}/[(]?		{ pop_return INTEGER_OF_BOOLEAN; }
-  INTEGER-OF-DATE{OSPC}/[(]?		{ pop_return INTEGER_OF_DATE; }
-  INTEGER-OF-DAY{OSPC}/[(]?		{ pop_return INTEGER_OF_DAY; }
-  INTEGER-OF-FORMATTED-DATE{OSPC}/[(]?	{ BEGIN(datetime_fmt); return INTEGER_OF_FORMATTED_DATE; }
-  INTEGER-PART{OSPC}/[(]?		{ pop_return INTEGER_PART; }
-  LENGTH{OSPC}/[(]?			{ pop_return LENGTH; }
-  LOCALE-COMPARE{OSPC}/[(]?		{ pop_return LOCALE_COMPARE; }
-  LOCALE-DATE{OSPC}/[(]?		{ pop_return LOCALE_DATE; }
-  LOCALE-TIME{OSPC}/[(]?		{ pop_return LOCALE_TIME; }
-  LOCALE-TIME-FROM-SECONDS{OSPC}/[(]?	{ pop_return LOCALE_TIME_FROM_SECONDS; }
-  LOG{OSPC}/[(]?			{ pop_return LOG; }
-  LOG10{OSPC}/[(]?			{ pop_return LOG10; }
-  LOWER-CASE{OSPC}/[(]?			{ pop_return LOWER_CASE; }
-  LOWEST-ALGEBRAIC{OSPC}/[(]?		{ pop_return LOWEST_ALGEBRAIC; }
-  MAX{OSPC}/[(]?			{ pop_return MAXX; }
-  MEAN{OSPC}/[(]?			{ pop_return MEAN; }
-  MEDIAN{OSPC}/[(]?			{ pop_return MEDIAN; }
-  MIDRANGE{OSPC}/[(]?			{ pop_return MIDRANGE; }
-  MIN{OSPC}/[(]?			{ pop_return MINN; }
-  MOD{OSPC}/[(]?			{ pop_return MOD; }
-  MODULE-NAME{OSPC}/[(]?		{ pop_return MODULE_NAME; }
-  NATIONAL-OF{OSPC}/[(]?		{ pop_return NATIONAL_OF; }
-  NUMVAL{OSPC}/[(]?			{ pop_return NUMVAL; }
-  NUMVAL-C{OSPC}/[(]?			{ pop_return NUMVAL_C; }
-  NUMVAL-F{OSPC}/[(]?			{ pop_return NUMVAL_F; }
-  ORD{OSPC}/[(]?			{ pop_return ORD; }
-  ORD-MAX{OSPC}/[(]?			{ pop_return ORD_MAX; }
-  ORD-MIN{OSPC}/[(]?			{ pop_return ORD_MIN; }
-  PI{OSPC}/[(]?				{ pop_return PI; }
-  PRESENT-VALUE{OSPC}/[(]?		{ pop_return PRESENT_VALUE; }
+  INTEGER/{NONWORD}			{ pop_return INTEGER; }
+  INTEGER-OF-BOOLEAN/{NONWORD}		{ pop_return INTEGER_OF_BOOLEAN; }
+  INTEGER-OF-DATE/{NONWORD}		{ pop_return INTEGER_OF_DATE; }
+  INTEGER-OF-DAY/{NONWORD}		{ pop_return INTEGER_OF_DAY; }
+  INTEGER-OF-FORMATTED-DATE/{NONWORD}	{ BEGIN(datetime_fmt);
+					  return INTEGER_OF_FORMATTED_DATE; }
+  INTEGER-PART/{NONWORD}		{ pop_return INTEGER_PART; }
+  LENGTH/{NONWORD}			{ pop_return LENGTH; }
+  LOCALE-COMPARE/{NONWORD}		{ pop_return LOCALE_COMPARE; }
+  LOCALE-DATE/{NONWORD}			{ pop_return LOCALE_DATE; }
+  LOCALE-TIME/{NONWORD}			{ pop_return LOCALE_TIME; }
+  LOCALE-TIME-FROM-SECONDS/{NONWORD}	{ pop_return LOCALE_TIME_FROM_SECONDS; }
+  LOG/{NONWORD}				{ pop_return LOG; }
+  LOG10/{NONWORD}			{ pop_return LOG10; }
+  LOWER-CASE/{NONWORD}			{ pop_return LOWER_CASE; }
+  LOWEST-ALGEBRAIC/{NONWORD}		{ pop_return LOWEST_ALGEBRAIC; }
+  MAX/{NONWORD}				{ pop_return MAXX; }
+  MEAN/{NONWORD}			{ pop_return MEAN; }
+  MEDIAN/{NONWORD}			{ pop_return MEDIAN; }
+  MIDRANGE/{NONWORD}			{ pop_return MIDRANGE; }
+  MIN/{NONWORD}				{ pop_return MINN; }
+  MOD/{NONWORD}				{ pop_return MOD; }
+  MODULE-NAME/{NONWORD}			{ pop_return MODULE_NAME; }
+  NATIONAL-OF/{NONWORD}			{ pop_return NATIONAL_OF; }
+  NUMVAL/{NONWORD}			{ pop_return NUMVAL; }
+  NUMVAL-C/{NONWORD}			{ pop_return NUMVAL_C; }
+  NUMVAL-F/{NONWORD}			{ pop_return NUMVAL_F; }
+  ORD/{NONWORD}				{ pop_return ORD; }
+  ORD-MAX/{NONWORD}			{ pop_return ORD_MAX; }
+  ORD-MIN/{NONWORD}			{ pop_return ORD_MIN; }
+  PI/{NONWORD}				{ pop_return PI; }
+  PRESENT-VALUE/{NONWORD}		{ pop_return PRESENT_VALUE; }
 
   RANDOM{OSPC}{PARENS}			{ pop_return RANDOM; }
   RANDOM{OSPC}[(]		 	{ pop_return RANDOM_SEED; }
   RANDOM			 	{ pop_return RANDOM; }
 
-  RANGE{OSPC}/[(]?			{ pop_return RANGE; }
-  REM{OSPC}/[(]?			{ pop_return REM; }
-  REVERSE{OSPC}/[(]?			{ pop_return REVERSE; }
-  SECONDS-FROM-FORMATTED-TIME{OSPC}/[(]? { BEGIN(datetime_fmt);
+  RANGE/{NONWORD}			{ pop_return RANGE; }
+  REM/{NONWORD}				{ pop_return REM; }
+  REVERSE/{NONWORD}			{ pop_return REVERSE; }
+  SECONDS-FROM-FORMATTED-TIME/{NONWORD} { BEGIN(datetime_fmt);
 					   return SECONDS_FROM_FORMATTED_TIME; }
-  SECONDS-PAST-MIDNIGHT{OSPC}/[(]?	{ pop_return SECONDS_PAST_MIDNIGHT; }
-  SIGN{OSPC}/[(]?			{ pop_return SIGN; }
-  SIN{OSPC}/[(]?			{ pop_return SIN; }
-  SMALLEST-ALGEBRAIC{OSPC}/[(]?		{ pop_return SMALLEST_ALGEBRAIC; }
-  SQRT{OSPC}/[(]?			{ pop_return SQRT; }
-  STANDARD-COMPARE{OSPC}/[(]?		{ pop_return STANDARD_COMPARE; }
-  STANDARD-DEVIATION{OSPC}/[(]?		{ pop_return STANDARD_DEVIATION; }
-  SUBSTITUTE{OSPC}/[(]?			{ pop_return SUBSTITUTE; }
-  SUM{OSPC}/[(]?			{ pop_return SUM; }
-  TAN{OSPC}/[(]?			{ pop_return TAN; }
-  TEST-DATE-YYYYMMDD{OSPC}/[(]?		{ pop_return TEST_DATE_YYYYMMDD; }
-  TEST-DAY-YYYYDDD{OSPC}/[(]?		{ pop_return TEST_DAY_YYYYDDD; }
-  TEST-FORMATTED-DATETIME{OSPC}/[(]?	{ BEGIN(datetime_fmt); return TEST_FORMATTED_DATETIME; }
-  TEST-NUMVAL{OSPC}/[(]?		{ pop_return TEST_NUMVAL; }
-  TEST-NUMVAL-C{OSPC}/[(]?		{ pop_return TEST_NUMVAL_C; }
-  TEST-NUMVAL-F{OSPC}/[(]?		{ pop_return TEST_NUMVAL_F; }
-  TRIM{OSPC}/[(]?			{ pop_return TRIM; }
-  ULENGTH{OSPC}/[(]?			{ pop_return ULENGTH; }
-  UPOS{OSPC}/[(]?			{ pop_return UPOS; }
-  UPPER-CASE{OSPC}/[(]?			{ pop_return UPPER_CASE; }
-  USUBSTR{OSPC}/[(]?			{ pop_return USUBSTR; }
-  USUPPLEMENTARY{OSPC}/[(]?		{ pop_return USUPPLEMENTARY; }
-  UUID4{OSPC}/[(]?			{ pop_return UUID4; }
-  UVALID{OSPC}/[(]?			{ pop_return UVALID; }
-  UWIDTH{OSPC}/[(]?			{ pop_return UWIDTH; }
-  VARIANCE{OSPC}/[(]?			{ pop_return VARIANCE; }
-  WHEN-COMPILED{OSPC}/[(]?		{ pop_return WHEN_COMPILED; }
-  YEAR-TO-YYYY{OSPC}/[(]?		{ pop_return YEAR_TO_YYYY; }
+  SECONDS-PAST-MIDNIGHT/{NONWORD}	{ pop_return SECONDS_PAST_MIDNIGHT; }
+  SIGN/{NONWORD}			{ pop_return SIGN; }
+  SIN/{NONWORD}				{ pop_return SIN; }
+  SMALLEST-ALGEBRAIC/{NONWORD}		{ pop_return SMALLEST_ALGEBRAIC; }
+  SQRT/{NONWORD}			{ pop_return SQRT; }
+  STANDARD-COMPARE/{NONWORD}		{ pop_return STANDARD_COMPARE; }
+  STANDARD-DEVIATION/{NONWORD}		{ pop_return STANDARD_DEVIATION; }
+  SUBSTITUTE/{NONWORD}			{ pop_return SUBSTITUTE; }
+  SUM/{NONWORD}				{ pop_return SUM; }
+  TAN/{NONWORD}				{ pop_return TAN; }
+  TEST-DATE-YYYYMMDD/{NONWORD}		{ pop_return TEST_DATE_YYYYMMDD; }
+  TEST-DAY-YYYYDDD/{NONWORD}		{ pop_return TEST_DAY_YYYYDDD; }
+  TEST-FORMATTED-DATETIME/{NONWORD}	{ BEGIN(datetime_fmt); return TEST_FORMATTED_DATETIME; }
+  TEST-NUMVAL/{NONWORD}			{ pop_return TEST_NUMVAL; }
+  TEST-NUMVAL-C/{NONWORD}		{ pop_return TEST_NUMVAL_C; }
+  TEST-NUMVAL-F/{NONWORD}		{ pop_return TEST_NUMVAL_F; }
+  TRIM/{NONWORD}			{ pop_return TRIM; }
+  ULENGTH/{NONWORD}			{ pop_return ULENGTH; }
+  UPOS/{NONWORD}			{ pop_return UPOS; }
+  UPPER-CASE/{NONWORD}			{ pop_return UPPER_CASE; }
+  USUBSTR/{NONWORD}			{ pop_return USUBSTR; }
+  USUPPLEMENTARY/{NONWORD}		{ pop_return USUPPLEMENTARY; }
+  UUID4/{NONWORD}			{ pop_return UUID4; }
+  UVALID/{NONWORD}			{ pop_return UVALID; }
+  UWIDTH/{NONWORD}			{ pop_return UWIDTH; }
+  VARIANCE/{NONWORD}			{ pop_return VARIANCE; }
+  WHEN-COMPILED/{NONWORD}		{ pop_return WHEN_COMPILED; }
+  YEAR-TO-YYYY/{NONWORD}		{ pop_return YEAR_TO_YYYY; }
+
+  /* Matches above include NONWORD because the NAME tests below are otherwise longer, */
 
   {NAME}{OSPC}/[(] { /* If /{OSPC}, "dangerous trailing context" "*/
                   auto name = null_trim(xstrdup(yytext));
@@ -2478,10 +2482,9 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 <<EOF>>         {
 
                   if( YY_START == quoted1 || YY_START == quoted2 ) {
-		    error_msg(yylloc, "syntax error: unterminated string '%s'",
+		    error_msg(yylloc, "syntax error: unterminated string %<%s%>",
 			     tmpstring);
 		    return NO_CONDITION;
-		    cbl_internal_error("");
                   }
                   yypop_buffer_state();
 

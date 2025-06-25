@@ -39,9 +39,8 @@ with System.Image_D;
 package System.Img_Decimal_32 is
 
    subtype Int32 is Interfaces.Integer_32;
-   subtype Uns32 is Interfaces.Unsigned_32;
 
-   package Impl is new Image_D (Int32, Uns32);
+   package Impl is new Image_D (Int32);
 
    procedure Image_Decimal32
      (V     : Int32;

@@ -91,6 +91,8 @@ struct auto_sbitmap_vector
 /* A silly RAII wrpaper for automatically releasing a vec<vec<int>>.  */
 struct auto_vec_vec : vec<vec<int>>
 {
+  auto_vec_vec () = default;
+  auto_vec_vec (vec<vec<int>> v) : vec<vec<int>>(v) {}
   ~auto_vec_vec () { release_vec_vec (*this); }
 };
 
@@ -635,7 +637,7 @@ trie::insert_with_suffix (array_slice<const int> path)
 vec<vec<int>>
 trie::paths () const
 {
-  vec<int> path {};
+  auto_vec<int> path {};
   vec<vec<int>> all {};
   auto iter = paths (path);
   while (iter.next ())
@@ -1658,8 +1660,8 @@ test_split_components ()
   int nscc = graphds_scc (cfg, NULL);
   auto_graph ccfg (disconnect_sccs (cfg));
 
-  vec<vec<int>> entries {};
-  vec<vec<int>> exits {};
+  auto_vec_vec entries {};
+  auto_vec_vec exits {};
   entries.safe_grow_cleared (nscc);
   exits.safe_grow_cleared (nscc);
 
@@ -1707,7 +1709,7 @@ test_split_components ()
      because other graph inconsistencies are easier to detect.  */
 
   /* Count and check singleton components.  */
-  vec<int> scc_size {};
+  auto_vec<int> scc_size {};
   scc_size.safe_grow_cleared (nscc);
   for (int i = 0; i != cfg->n_vertices; ++i)
     scc_size[cfg->vertices[i].component]++;
@@ -1722,14 +1724,14 @@ test_split_components ()
   /* Manually unroll the loop finding the simple paths starting at the
      vertices in the SCCs.  In this case there is only the one SCC.  */
   trie ccfg_paths;
-  simple_paths (ccfg, ccfg_paths, 2);
-  simple_paths (ccfg, ccfg_paths, 4);
-  simple_paths (ccfg, ccfg_paths, 5);
-  simple_paths (ccfg, ccfg_paths, 6);
-  simple_paths (ccfg, ccfg_paths, 7);
-  simple_paths (ccfg, ccfg_paths, 9);
+  auto_vec_vec (simple_paths (ccfg, ccfg_paths, 2));
+  auto_vec_vec (simple_paths (ccfg, ccfg_paths, 4));
+  auto_vec_vec (simple_paths (ccfg, ccfg_paths, 5));
+  auto_vec_vec (simple_paths (ccfg, ccfg_paths, 6));
+  auto_vec_vec (simple_paths (ccfg, ccfg_paths, 7));
+  auto_vec_vec (simple_paths (ccfg, ccfg_paths, 9));
   /* Then in+out of trie.  */
-  vec<vec<int>> xscc_internal_pp = ccfg_paths.paths ();
+  auto_vec_vec xscc_internal_pp = ccfg_paths.paths ();
   trie scc_internal_pp;
   for (auto &p : xscc_internal_pp)
     scc_internal_pp.insert_with_suffix (p);
@@ -1782,7 +1784,7 @@ test_scc_internal_prime_paths ()
   add_edge (scc, 9, 7);
   add_edge (scc, 7, 2);
 
-  vec<vec<int>> paths = prime_paths (scc, 100);
+  auto_vec_vec paths = prime_paths (scc, 100);
   const int p01[] = { 5, 7, 2, 4, 6, 9 };
   const int p02[] = { 4, 6, 9, 7, 2, 4 };
   const int p03[] = { 2, 4, 6, 9, 7, 2 };
@@ -1806,7 +1808,6 @@ test_scc_internal_prime_paths ()
   ASSERT_TRUE (any_equal_p (p09, paths));
   ASSERT_TRUE (any_equal_p (p10, paths));
   ASSERT_TRUE (any_equal_p (p11, paths));
-  release_vec_vec (paths);
 }
 
 /* Test the entry/exit path helpers for the strongly connected component in
@@ -1825,13 +1826,13 @@ test_scc_entry_exit_paths ()
   add_edge (scc, 7, 2);
 
   trie scc_internal_trie;
-  simple_paths (scc, scc_internal_trie, 2);
-  simple_paths (scc, scc_internal_trie, 4);
-  simple_paths (scc, scc_internal_trie, 5);
-  simple_paths (scc, scc_internal_trie, 6);
-  simple_paths (scc, scc_internal_trie, 7);
-  simple_paths (scc, scc_internal_trie, 9);
-  vec<vec<int>> scc_prime_paths = scc_internal_trie.paths ();
+  auto_vec_vec (simple_paths (scc, scc_internal_trie, 2));
+  auto_vec_vec (simple_paths (scc, scc_internal_trie, 4));
+  auto_vec_vec (simple_paths (scc, scc_internal_trie, 5));
+  auto_vec_vec (simple_paths (scc, scc_internal_trie, 6));
+  auto_vec_vec (simple_paths (scc, scc_internal_trie, 7));
+  auto_vec_vec (simple_paths (scc, scc_internal_trie, 9));
+  auto_vec_vec scc_prime_paths = scc_internal_trie.paths ();
 
   trie entry_exits {};
   scc_entry_exit_paths (scc_prime_paths, 2, 2, entry_exits);
@@ -1867,8 +1868,6 @@ test_scc_entry_exit_paths ()
   ASSERT_EQ (count (entries), 2);
   ASSERT_TRUE (contains (entries, p07));
   ASSERT_TRUE (contains (entries, p08));
-
-  release_vec_vec (scc_prime_paths);
 }
 
 static void
@@ -1893,7 +1892,7 @@ test_complete_prime_paths ()
     for (graph_edge *e = cfg->vertices[i].succ; e; e = e->succ_next)
       bitmap_set_bit (edges[e->src], e->dest);
 
-  vec<trie> ccfg_paths {};
+  auto_vec<trie> ccfg_paths {};
   ccfg_paths.safe_grow_cleared (6);
   ccfg_paths[0].insert (array_slice <const int> (ccfg_single + 0, 1));
   ccfg_paths[1].insert (array_slice <const int> (ccfg_single + 1, 1));
@@ -1997,7 +1996,7 @@ test_entry_prime_paths ()
   exit_prime_paths.insert (ep03);
   exit_prime_paths.insert (ep04);
 
-  vec<int> sccs = binary_search_scc_map ();
+  auto_vec<int> sccs = binary_search_scc_map ();
 
   trie epp = scc_entry_prime_paths (cfg, scc_entry_paths,
 				    complete_prime_paths,
@@ -2022,14 +2021,13 @@ test_singleton_path ()
   auto_graph cfg (new_graph (3));
   add_edge (cfg, 0, 2);
   add_edge (cfg, 2, 1);
-  vec<vec<int>> paths = prime_paths (cfg, 100);
+  auto_vec_vec paths = prime_paths (cfg, 100);
 
   ASSERT_EQ (paths.length (), 1);
   ASSERT_EQ (paths[0].length (), 3);
   ASSERT_EQ (paths[0][0], 0);
   ASSERT_EQ (paths[0][1], 2);
   ASSERT_EQ (paths[0][2], 1);
-  release_vec_vec (paths);
 }
 
 void

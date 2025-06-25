@@ -12,6 +12,12 @@ DEF_VX_BINARY_CASE_1_WRAP(T, &, and, VX_BINARY_BODY_X16)
 DEF_VX_BINARY_CASE_1_WRAP(T, |, or, VX_BINARY_BODY_X16)
 DEF_VX_BINARY_CASE_1_WRAP(T, ^, xor, VX_BINARY_BODY_X16)
 DEF_VX_BINARY_CASE_1_WRAP(T, *, mul, VX_BINARY_BODY_X16)
+DEF_VX_BINARY_CASE_1_WRAP(T, /, div, VX_BINARY_BODY_X16)
+DEF_VX_BINARY_CASE_1_WRAP(T, %, rem, VX_BINARY_BODY_X16)
+DEF_VX_BINARY_CASE_3_WRAP(T, MAX_FUNC_0_WARP(T), max, VX_BINARY_FUNC_BODY_X8)
+DEF_VX_BINARY_CASE_3_WRAP(T, MAX_FUNC_1_WARP(T), max, VX_BINARY_FUNC_BODY_X8)
+DEF_VX_BINARY_CASE_3_WRAP(T, MIN_FUNC_0_WARP(T), min, VX_BINARY_FUNC_BODY_X8)
+DEF_VX_BINARY_CASE_3_WRAP(T, MIN_FUNC_1_WARP(T), min, VX_BINARY_FUNC_BODY_X8)
 
 /* { dg-final { scan-assembler {vadd.vx} } } */
 /* { dg-final { scan-assembler {vsub.vx} } } */
@@ -20,3 +26,7 @@ DEF_VX_BINARY_CASE_1_WRAP(T, *, mul, VX_BINARY_BODY_X16)
 /* { dg-final { scan-assembler {vor.vx} } } */
 /* { dg-final { scan-assembler {vxor.vx} } } */
 /* { dg-final { scan-assembler {vmul.vx} } } */
+/* { dg-final { scan-assembler {vdiv.vx} } } */
+/* { dg-final { scan-assembler {vrem.vx} } } */
+/* { dg-final { scan-assembler {vmax.vx} } } */
+/* { dg-final { scan-assembler {vmin.vx} } } */

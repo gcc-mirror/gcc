@@ -29,11 +29,11 @@ with Atree;            use Atree;
 with Checks;           use Checks;
 with Contracts;        use Contracts;
 with Debug;            use Debug;
-with Diagnostics.Constructors; use Diagnostics.Constructors;
 with Einfo;            use Einfo;
 with Einfo.Entities;   use Einfo.Entities;
 with Einfo.Utils;      use Einfo.Utils;
 with Elists;           use Elists;
+with Errid;            use Errid;
 with Errout;           use Errout;
 with Exp_Ch3;          use Exp_Ch3;
 with Exp_Disp;         use Exp_Disp;
@@ -54,6 +54,7 @@ with Restrict;         use Restrict;
 with Rident;           use Rident;
 with Rtsfind;          use Rtsfind;
 with Sem;              use Sem;
+with Sem_Aggr;         use Sem_Aggr;
 with Sem_Aux;          use Sem_Aux;
 with Sem_Case;         use Sem_Case;
 with Sem_Cat;          use Sem_Cat;
@@ -1620,6 +1621,7 @@ package body Sem_Ch13 is
       --    Part_Of
       --    Post
       --    Pre
+      --    Program_Exit
       --    Refined_Depends
       --    Refined_Global
       --    Refined_Post
@@ -1872,11 +1874,11 @@ package body Sem_Ch13 is
       --  analyzed right now.
 
       --  Note that there is a special handling for Pre, Post, Test_Case,
-      --  Contract_Cases, Always_Terminates, Exit_Cases, Exceptional_Cases and
-      --  Subprogram_Variant aspects. In these cases, we do not have to worry
-      --  about delay issues, since the pragmas themselves deal with delay of
-      --  visibility for the expression analysis. Thus, we just insert the
-      --  pragma after the node N.
+      --  Contract_Cases, Always_Terminates, Exit_Cases, Exceptional_Cases,
+      --  Program_Exit and Subprogram_Variant aspects. In these cases, we do
+      --  not have to worry about delay issues, since the pragmas themselves
+      --  deal with delay of visibility for the expression analysis. Thus, we
+      --  just insert the pragma after the node N.
 
       if No (L) then
          return;
@@ -3873,6 +3875,89 @@ package body Sem_Ch13 is
                   goto Continue;
                end Initial_Condition;
 
+               --  Initialize
+
+               when Aspect_Initialize => Initialize : declare
+                  Aspect_Comp : Node_Id;
+                  Type_Comp   : Node_Id;
+                  Typ  : Entity_Id;
+                  Dummy_Aggr : Node_Id;
+               begin
+                  --  Error checking
+
+                  if not All_Extensions_Allowed then
+                     goto Continue;
+                  end if;
+
+                  if Ekind (E) /= E_Procedure then
+                     Error_Msg_N ("Initialize must apply to a constructor", N);
+                  end if;
+
+                  if Present (Expressions (Expression (Aspect))) then
+                     Error_Msg_N ("only component associations allowed", N);
+                  end if;
+
+                  --  Install the others for the aggregate if necessary
+
+                  Typ := Etype (First_Entity (E));
+
+                  if No (First_Entity (Typ)) then
+                     Error_Msg_N
+                       ("Initialize can only apply to contructors"
+                         & " whose type has one or more components", N);
+                  end if;
+
+                  Aspect_Comp :=
+                    First (Component_Associations (Expression (Aspect)));
+                  Type_Comp := First_Entity (Typ);
+                  while Present (Type_Comp) loop
+                     if No (Aspect_Comp) then
+                        Append_To
+                          (Component_Associations (Expression (Aspect)),
+                             Make_Component_Association (Loc,
+                               Choices     =>
+                                 New_List (Make_Others_Choice (Loc)),
+                               Box_Present => True));
+                        exit;
+                     elsif Nkind (First (Choices (Aspect_Comp)))
+                             = N_Others_Choice
+                     then
+                        exit;
+                     end if;
+
+                     Next (Aspect_Comp);
+                     Next_Entity (Type_Comp);
+                  end loop;
+
+                  --  Push the scope and formals for analysis
+
+                  Push_Scope (E);
+                  Install_Formals (Defining_Unit_Name (Specification (N)));
+
+                  --  Analyze the components
+
+                  Aspect_Comp :=
+                    First (Component_Associations (Expression (Aspect)));
+                  while Present (Aspect_Comp) loop
+                     if Present (Expression (Aspect_Comp)) then
+                        Analyze (Expression (Aspect_Comp));
+                     end if;
+
+                     Next (Aspect_Comp);
+                  end loop;
+
+                  --  Do a psuedo pass over the aggregate to ensure it is valid
+
+                  Expander_Active := False;
+                  Dummy_Aggr := New_Copy_Tree (Expression (Aspect));
+                  Resolve_Aggregate (Dummy_Aggr, Typ);
+                  Expander_Active := True;
+
+                  --  Return the scope
+
+                  End_Scope;
+               end Initialize;
+
                --  Initializes
 
                --  Aspect Initializes is never delayed because it is equivalent
@@ -4346,6 +4431,10 @@ package body Sem_Ch13 is
                   Analyze_Aspect_Implicit_Dereference;
                   goto Continue;
 
+               when Aspect_Constructor =>
+                  Set_Constructor_Name (E, Expr);
+                  Set_Needs_Construction (E);
+
                --  Dimension
 
                when Aspect_Dimension =>
@@ -4366,8 +4455,9 @@ package body Sem_Ch13 is
                --  Case 4: Aspects requiring special handling
 
                --  Pre/Post/Test_Case/Contract_Cases/Always_Terminates/
-               --  Exceptional_Cases/Exit_Cases and Subprogram_Variant whose
-               --  corresponding pragmas take care of the delay.
+               --  Exceptional_Cases/Exit_Cases/Program_Exit and
+               --  Subprogram_Variant whose corresponding pragmas take care of
+               --  the delay.
 
                --  Pre/Post
 
@@ -4568,6 +4658,19 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Exit_Cases);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Program_Exit
+
+               when Aspect_Program_Exit =>
+                  Aitem := Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Program_Exit);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -6105,6 +6208,7 @@ package body Sem_Ch13 is
                declare
                   Expr  : constant Node_Id := Expression (N);
                   O_Ent : Entity_Id;
+                  O_Typ : Entity_Id;
                   Off   : Boolean;
 
                begin
@@ -6117,7 +6221,7 @@ package body Sem_Ch13 is
                      return;
                   end if;
 
-                  Find_Overlaid_Entity (N, O_Ent, Off);
+                  Find_Overlaid_Entity (N, O_Ent, O_Typ, Off);
 
                   if Present (O_Ent) then
 
@@ -6170,10 +6274,10 @@ package body Sem_Ch13 is
 
                      if (Is_Record_Type (Etype (U_Ent))
                           or else Is_Array_Type (Etype (U_Ent)))
-                       and then (Is_Record_Type (Etype (O_Ent))
-                                  or else Is_Array_Type (Etype (O_Ent)))
+                       and then (Is_Record_Type (O_Typ)
+                                  or else Is_Array_Type (O_Typ))
                        and then Reverse_Storage_Order (Etype (U_Ent)) /=
-                                Reverse_Storage_Order (Etype (O_Ent))
+                                Reverse_Storage_Order (O_Typ)
                      then
                         Error_Msg_N
                           ("??overlay changes scalar storage order", Expr);
@@ -6278,11 +6382,6 @@ package body Sem_Ch13 is
                   then
                      Set_Check_Address_Alignment (N);
                   end if;
-
-                  --  Kill the size check code, since we are not allocating
-                  --  the variable, it is somewhere else.
-
-                  Kill_Size_Check_Code (U_Ent);
                end;
 
             --  Not a valid entity for an address clause
@@ -6502,7 +6601,8 @@ package body Sem_Ch13 is
                --  and restored before and after analysis.
 
                Push_Type (U_Ent);
-               Preanalyze_Spec_Expression (Expr, RTE (RE_CPU_Range));
+               Preanalyze_And_Resolve_Spec_Expression
+                 (Expr, RTE (RE_CPU_Range));
                Pop_Type (U_Ent);
 
                --  AI12-0117-1, "Restriction No_Tasks_Unassigned_To_CPU":
@@ -6592,10 +6692,8 @@ package body Sem_Ch13 is
                --  The visibility to the components must be restored
 
                Push_Type (U_Ent);
-
-               Preanalyze_Spec_Expression
+               Preanalyze_And_Resolve_Spec_Expression
                  (Expr, RTE (RE_Dispatching_Domain));
-
                Pop_Type (U_Ent);
             end if;
 
@@ -6674,10 +6772,8 @@ package body Sem_Ch13 is
                --  The visibility to the components must be restored
 
                Push_Type (U_Ent);
-
-               Preanalyze_Spec_Expression
+               Preanalyze_And_Resolve_Spec_Expression
                  (Expr, RTE (RE_Interrupt_Priority));
-
                Pop_Type (U_Ent);
 
                --  Check the No_Task_At_Interrupt_Priority restriction
@@ -6843,7 +6939,8 @@ package body Sem_Ch13 is
                   --  The visibility to the components must be restored
 
                   Push_Type (U_Ent);
-                  Preanalyze_Spec_Expression (Expr, Standard_Integer);
+                  Preanalyze_And_Resolve_Spec_Expression
+                    (Expr, Standard_Integer);
                   Pop_Type (U_Ent);
 
                   if not Is_OK_Static_Expression (Expr) then
@@ -7154,7 +7251,7 @@ package body Sem_Ch13 is
             else
                Small := Expr_Value_R (Expr);
 
-               if Small <= Ureal_0 then
+               if not UR_Is_Positive (Small) then
                   Error_Msg_N ("small value must be greater than zero", Expr);
                   return;
                end if;
@@ -10039,8 +10136,8 @@ package body Sem_Ch13 is
 
                   --  If the predicate pragma comes from an aspect, replace the
                   --  saved expression because we need the subtype references
-                  --  replaced for the calls to Preanalyze_Spec_Expression in
-                  --  Check_Aspect_At_xxx routines.
+                  --  replaced for the calls to Preanalyze_And_Resolve_Spec_
+                  --  Expression in Check_Aspect_At_xxx routines.
 
                   if Present (Asp) then
                      Set_Expression_Copy (Asp, New_Copy_Tree (Arg2_Copy));
@@ -10806,7 +10903,8 @@ package body Sem_Ch13 is
       --  name, so we need to verify that one of these interpretations is
       --  the one available at at the freeze point.
 
-      elsif A_Id in Aspect_Input
+      elsif A_Id in Aspect_Constructor
+                  | Aspect_Input
                   | Aspect_Output
                   | Aspect_Read
                   | Aspect_Write
@@ -10853,12 +10951,14 @@ package body Sem_Ch13 is
                      | Aspect_Static_Predicate
             then
                Push_Type (Ent);
-               Preanalyze_Spec_Expression (Freeze_Expr, Standard_Boolean);
+               Preanalyze_And_Resolve_Spec_Expression
+                 (Freeze_Expr, Standard_Boolean);
                Pop_Type (Ent);
 
             elsif A_Id = Aspect_Priority then
                Push_Type (Ent);
-               Preanalyze_Spec_Expression (Freeze_Expr, Any_Integer);
+               Preanalyze_And_Resolve_Spec_Expression
+                 (Freeze_Expr, Any_Integer);
                Pop_Type (Ent);
 
             else
@@ -10908,7 +11008,8 @@ package body Sem_Ch13 is
          elsif A_Id in Aspect_Default_Component_Value | Aspect_Default_Value
             and then Is_Private_Type (T)
          then
-            Preanalyze_Spec_Expression (End_Decl_Expr, Full_View (T));
+            Preanalyze_And_Resolve_Spec_Expression
+              (End_Decl_Expr, Full_View (T));
 
          --  The following aspect expressions may contain references to
          --  components and discriminants of the type.
@@ -10922,14 +11023,15 @@ package body Sem_Ch13 is
                      | Aspect_Static_Predicate
          then
             Push_Type (Ent);
-            Preanalyze_Spec_Expression (End_Decl_Expr, T);
+            Preanalyze_And_Resolve_Spec_Expression (End_Decl_Expr, T);
             Pop_Type (Ent);
 
          elsif A_Id = Aspect_Predicate_Failure then
-            Preanalyze_Spec_Expression (End_Decl_Expr, Standard_String);
+            Preanalyze_And_Resolve_Spec_Expression
+              (End_Decl_Expr, Standard_String);
 
          elsif Present (End_Decl_Expr) then
-            Preanalyze_Spec_Expression (End_Decl_Expr, T);
+            Preanalyze_And_Resolve_Spec_Expression (End_Decl_Expr, T);
          end if;
 
          Err :=
@@ -11112,7 +11214,8 @@ package body Sem_Ch13 is
          --  Special case, the expression of these aspects is just an entity
          --  that does not need any resolution, so just analyze.
 
-         when Aspect_Input
+         when Aspect_Constructor
+            | Aspect_Input
             | Aspect_Output
             | Aspect_Put_Image
             | Aspect_Read
@@ -11324,6 +11427,7 @@ package body Sem_Ch13 is
             | Aspect_GNAT_Annotate
             | Aspect_Implicit_Dereference
             | Aspect_Initial_Condition
+            | Aspect_Initialize
             | Aspect_Initializes
             | Aspect_Max_Entry_Queue_Length
             | Aspect_Max_Queue_Length
@@ -11333,6 +11437,7 @@ package body Sem_Ch13 is
             | Aspect_Postcondition
             | Aspect_Pre
             | Aspect_Precondition
+            | Aspect_Program_Exit
             | Aspect_Refined_Depends
             | Aspect_Refined_Global
             | Aspect_Refined_Post
@@ -11359,7 +11464,7 @@ package body Sem_Ch13 is
       --  the aspect_specification cause freezing (RM 13.14(7.2/5)).
 
       if Present (Expression (ASN)) then
-         Preanalyze_Spec_Expression (Expression (ASN), T);
+         Preanalyze_And_Resolve_Spec_Expression (Expression (ASN), T);
       end if;
    end Check_Aspect_At_Freeze_Point;
 
@@ -12082,18 +12187,15 @@ package body Sem_Ch13 is
 
          if not Check_Primitive_Function (Subp, Typ) then
             if Present (Ref_Node) then
-               if Debug_Flag_Underscore_DD then
-                  Record_Default_Iterator_Not_Primitive_Error
-                    (Ref_Node, Subp);
-               else
-                  Error_Msg_N ("improper function for default iterator!",
-                     Ref_Node);
-                  Error_Msg_Sloc := Sloc (Subp);
-                  Error_Msg_NE
-                     ("\\default iterator defined # "
-                     & "must be a local primitive or class-wide function",
-                     Ref_Node, Subp);
-               end if;
+               Error_Msg_N
+                 ("improper function for default iterator!",
+                  Ref_Node,
+                  GNAT0001);
+               Error_Msg_Sloc := Sloc (Subp);
+               Error_Msg_NE
+                  ("\\default iterator defined # "
+                  & "must be a local primitive or class-wide function",
+                  Ref_Node, Subp);
             end if;
 
             return False;
@@ -13928,7 +14030,7 @@ package body Sem_Ch13 is
                         Next (First (Pragma_Argument_Associations (Ritem)));
                   begin
                      Push_Type (E);
-                     Preanalyze_Spec_Expression
+                     Preanalyze_And_Resolve_Spec_Expression
                        (Expression (Arg), Standard_Boolean);
                      Pop_Type (E);
                   end;
@@ -15786,27 +15888,36 @@ package body Sem_Ch13 is
          --  anyway, no reason to be too strict about this.
 
          if not Relaxed_RM_Semantics then
-            if Debug_Flag_Underscore_DD then
-
-               S := First_Subtype (T);
-               if Present (Freeze_Node (S)) then
-                  Record_Representation_Too_Late_Error
-                    (Rep    => N,
-                     Freeze => Freeze_Node (S),
-                     Def    => S);
-               else
-                  Error_Msg_N ("|representation item appears too late!", N);
-               end if;
-
+            S := First_Subtype (T);
+            if Present (Freeze_Node (S)) then
+               Error_Msg_N
+                 (Msg        =>
+                    "record representation cannot be specified" &
+                    " after the type is frozen",
+                  N          => N,
+                  Error_Code => GNAT0005,
+                  Label      =>
+                    "record representation clause specified here",
+                  Spans      =>
+                    (1 =>
+                       Secondary_Labeled_Span
+                         (N     => Freeze_Node (S),
+                          Label =>
+                            "Type " & To_Name (S) &
+                            " is frozen here"),
+                     2 =>
+                       Secondary_Labeled_Span
+                         (N     => S,
+                          Label =>
+                            "Type " & To_Name (S) &
+                            " is declared here")));
+               Error_Msg_Sloc := Sloc (Freeze_Node (S));
+               Error_Msg_N
+                 ("\\move the record representation clause" &
+                  " before the freeze point #",
+                  N);
             else
                Error_Msg_N ("|representation item appears too late!", N);
-
-               S := First_Subtype (T);
-               if Present (Freeze_Node (S)) then
-                  Error_Msg_NE
-                    ("??no more representation items for }",
-                     Freeze_Node (S), S);
-               end if;
             end if;
          end if;
       end Too_Late;
@@ -16343,6 +16454,9 @@ package body Sem_Ch13 is
                   when Aspect_Invariant
                      | Aspect_Predicate_Failure
                   =>
+                     null;
+
+                  when Aspect_Constructor =>
                      null;
 
                   when Aspect_Dynamic_Predicate

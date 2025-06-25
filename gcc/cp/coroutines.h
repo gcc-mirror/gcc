@@ -102,6 +102,7 @@ private:
   tree orig_fn_decl;		 /* The original function decl.  */
   tree orig_fn_body = NULL_TREE; /* The original function body.  */
   location_t fn_start = UNKNOWN_LOCATION;
+  location_t fn_end = UNKNOWN_LOCATION;
   tree resumer = error_mark_node;
   tree destroyer = error_mark_node;
   tree coroutine_body = NULL_TREE;
@@ -126,6 +127,10 @@ private:
   bool inline_p = false;
   bool valid_coroutine = false;
 
+  tree initial_await = error_mark_node;
+  tree final_await = error_mark_node;
+
+  void analyze_fn_parms ();
   void wrap_original_function_body ();
   bool build_ramp_function ();
 };

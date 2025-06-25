@@ -7,7 +7,7 @@
 #include "coro1-ret-int-yield-int.h"
 
 coro1
-bar0 () // { dg-error {no member named 'await_suspend' in 'coro1::suspend_always_prt'} }
+bar0 ()
 {
   co_await coro1::suspend_never_prt{}; // { dg-error {no member named 'await_ready' in 'coro1::suspend_never_prt'} }
   co_yield 5; // { dg-error {no member named 'await_suspend' in 'coro1::suspend_always_prt'} }

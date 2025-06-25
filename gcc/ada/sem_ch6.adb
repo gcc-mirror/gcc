@@ -225,7 +225,10 @@ package body Sem_Ch6 is
    --  Create the declaration for an inequality operator that is implicitly
    --  created by a user-defined equality operator that yields a boolean.
 
-   procedure Set_Formal_Mode (Formal_Id : Entity_Id);
+   procedure Set_Formal_Mode
+     (Formal_Id : Entity_Id;
+      Spec      : N_Parameter_Specification_Id;
+      Subp_Id   : Entity_Id);
    --  Set proper Ekind to reflect formal mode (in, out, in out), and set
    --  miscellaneous other attributes.
 
@@ -581,14 +584,19 @@ package body Sem_Ch6 is
             Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
             Push_Scope (Def_Id);
             Install_Formals (Def_Id);
-            Preanalyze_Spec_Expression (Expr, Typ);
+            Preanalyze_And_Resolve_Spec_Expression (Expr, Typ);
             End_Scope;
          else
             Push_Scope (Def_Id);
             Install_Formals (Def_Id);
-            Preanalyze_Spec_Expression (Expr, Typ);
+            Preanalyze_And_Resolve_Spec_Expression (Expr, Typ);
             Check_Limited_Return (Orig_N, Expr, Typ);
             End_Scope;
+         end if;
+
+         if Is_Incomplete_Type (Typ) then
+            Error_Msg_NE
+              ("premature usage of incomplete}", Expr, First_Subtype (Typ));
          end if;
 
          --  In the case of an expression function marked with the aspect
@@ -617,7 +625,7 @@ package body Sem_Ch6 is
                   begin
                      Set_Checking_Potentially_Static_Expression (True);
 
-                     Preanalyze_Spec_Expression (Exp_Copy, Typ);
+                     Preanalyze_And_Resolve_Spec_Expression (Exp_Copy, Typ);
 
                      if not Is_Static_Expression (Exp_Copy) then
                         Error_Msg_N
@@ -2270,6 +2278,23 @@ package body Sem_Ch6 is
       end if;
 
       Formal := First_Formal (Spec_Id);
+
+      --  The first parameter of a borrowing traversal function might be an IN
+      --  or an IN OUT parameter.
+
+      if Present (Formal)
+        and then Ekind (Etype (Spec_Id)) = E_Anonymous_Access_Type
+        and then not Is_Access_Constant (Etype (Spec_Id))
+      then
+         if Ekind (Formal) = E_Out_Parameter then
+            Error_Msg_Code := GEC_Out_Parameter_In_Function;
+            Error_Msg_N
+              ("first parameter of traversal function cannot have mode `OUT` "
+               & "in SPARK '[[]']", Formal);
+         end if;
+         Next_Formal (Formal);
+      end if;
+
       while Present (Formal) loop
          if Ekind (Spec_Id) in E_Function | E_Generic_Function
            and then not Is_Function_With_Side_Effects (Spec_Id)
@@ -4581,7 +4606,7 @@ package body Sem_Ch6 is
       Analyze_SPARK_Subprogram_Specification (Specification (N));
 
       --  A function with side effects shall not be an expression function
-      --  (SPARK RM 6.1.11(6)).
+      --  (SPARK RM 6.1.12(6)).
 
       if Present (Spec_Id)
         and then (Is_Expression_Function (Spec_Id)
@@ -4644,10 +4669,8 @@ package body Sem_Ch6 is
                --  an incomplete tagged type declaration, get the class-wide
                --  type of the incomplete tagged type to match Find_Type_Name.
 
-               if Nkind (Parent (Etyp)) = N_Full_Type_Declaration
-                 and then Present (Incomplete_View (Parent (Etyp)))
-               then
-                  Etyp := Class_Wide_Type (Incomplete_View (Parent (Etyp)));
+               if Present (Incomplete_View (Etype (Etyp))) then
+                  Etyp := Class_Wide_Type (Incomplete_View (Etype (Etyp)));
                end if;
 
                Set_Directly_Designated_Type (Etype (Spec_Id), Etyp);
@@ -5379,6 +5402,89 @@ package body Sem_Ch6 is
 
          End_Scope;
 
+         --  Register the subprogram in a Constructor_List when it is a valid
+         --  constructor.
+
+         if All_Extensions_Allowed
+           and then Present (First_Formal (Designator))
+         then
+
+            declare
+               First_Form_Type : constant Entity_Id :=
+                 Etype (First_Formal (Designator));
+
+               Construct : Elmt_Id;
+            begin
+               --  Valid constructors have a "controlling" formal of a type
+               --  with the Constructor aspect specified. Additionally, the
+               --  subprogram name must match value described by the aspect.
+
+               --  Additionally, constructor declarations must exist within the
+               --  same scope as the type declaration and before the type is
+               --  frozen.
+
+               --  For example:
+               --
+               --     type Foo is null record with Constructor => Bar;
+               --
+               --     procedure Bar (Self : in out Foo);
+               --
+
+               if Present (Constructor_Name (First_Form_Type))
+                 and then Current_Scope = Scope (First_Form_Type)
+                 and then Chars (Constructor_Name (First_Form_Type))
+                            = Chars (Designator)
+                 and then Ekind (Designator) = E_Procedure
+                 and then Nkind (Parent (N)) = N_Subprogram_Declaration
+               then
+                  --  If the constructor list is empty than we don't have to
+                  --  look for duplicates - we simply create the list and
+                  --  add it.
+
+                  if No (Constructor_List (First_Form_Type)) then
+                     Set_Constructor_List
+                       (First_Form_Type, New_Elmt_List (Designator));
+
+                  --  Otherwise, we need to check the constructor hasen't
+                  --  already been added (e.g. a specification and body) and
+                  --  that there isn't a constructor with the same number of
+                  --  type of formals.
+
+                  --  NOTE: The Constructor_List is sorted by the number of
+                  --  parameters.
+
+                  else
+                     Construct := First_Elmt
+                                    (Constructor_List (First_Form_Type));
+
+                     --  Skip over constructors with less than the number of
+                     --  parameters than Designator ???
+
+                     --  Loop through the constructors looking for ones which
+                     --  "match."
+
+                     Outter : loop
+
+                        --  When we are at the end of the constructor list we
+                        --  know there are no matches, so it is safe to add.
+
+                        if No (Construct) then
+                           Append_Elmt
+                             (Designator,
+                              Constructor_List (First_Form_Type));
+                           exit Outter;
+                        end if;
+
+                        --  Loop through the formals and check the formals
+                        --  match on type ???
+
+                        Next_Elmt (Construct);
+                     end loop Outter;
+                  end if;
+               end if;
+            end;
+         end if;
+
       --  The subprogram scope is pushed and popped around the processing of
       --  the return type for consistency with call above to Process_Formals
       --  (which itself can call Analyze_Return_Type), and to ensure that any
@@ -6094,7 +6200,7 @@ package body Sem_Ch6 is
 
                      if NewD then
                         Push_Scope (New_Id);
-                        Preanalyze_Spec_Expression
+                        Preanalyze_And_Resolve_Spec_Expression
                           (Default_Value (New_Formal), Etype (New_Formal));
                         End_Scope;
                      end if;
@@ -6359,249 +6465,6 @@ package body Sem_Ch6 is
          Compute_Returns_By_Ref (Designator);
       end if;
    end Check_Delayed_Subprogram;
-
-   ------------------------------------
-   -- Check_Discriminant_Conformance --
-   ------------------------------------
-
-   procedure Check_Discriminant_Conformance
-     (N        : Node_Id;
-      Prev     : Entity_Id;
-      Prev_Loc : Node_Id)
-   is
-      Old_Discr      : Entity_Id := First_Discriminant (Prev);
-      New_Discr      : Node_Id   := First (Discriminant_Specifications (N));
-      New_Discr_Id   : Entity_Id;
-      New_Discr_Type : Entity_Id;
-
-      procedure Conformance_Error (Msg : String; N : Node_Id);
-      --  Post error message for conformance error on given node. Two messages
-      --  are output. The first points to the previous declaration with a
-      --  general "no conformance" message. The second is the detailed reason,
-      --  supplied as Msg. The parameter N provide information for a possible
-      --  & insertion in the message.
-
-      -----------------------
-      -- Conformance_Error --
-      -----------------------
-
-      procedure Conformance_Error (Msg : String; N : Node_Id) is
-      begin
-         Error_Msg_Sloc := Sloc (Prev_Loc);
-         Error_Msg_N -- CODEFIX
-           ("not fully conformant with declaration#!", N);
-         Error_Msg_NE (Msg, N, N);
-      end Conformance_Error;
-
-   --  Start of processing for Check_Discriminant_Conformance
-
-   begin
-      while Present (Old_Discr) and then Present (New_Discr) loop
-         New_Discr_Id := Defining_Identifier (New_Discr);
-
-         --  The subtype mark of the discriminant on the full type has not
-         --  been analyzed so we do it here. For an access discriminant a new
-         --  type is created.
-
-         if Nkind (Discriminant_Type (New_Discr)) = N_Access_Definition then
-            New_Discr_Type :=
-              Access_Definition (N, Discriminant_Type (New_Discr));
-
-         else
-            Find_Type (Discriminant_Type (New_Discr));
-            New_Discr_Type := Etype (Discriminant_Type (New_Discr));
-
-            --  Ada 2005: if the discriminant definition carries a null
-            --  exclusion, create an itype to check properly for consistency
-            --  with partial declaration.
-
-            if Is_Access_Type (New_Discr_Type)
-              and then Null_Exclusion_Present (New_Discr)
-            then
-               New_Discr_Type :=
-                 Create_Null_Excluding_Itype
-                   (T           => New_Discr_Type,
-                    Related_Nod => New_Discr,
-                    Scope_Id    => Current_Scope);
-            end if;
-         end if;
-
-         if not Conforming_Types
-                  (Etype (Old_Discr), New_Discr_Type, Fully_Conformant)
-         then
-            Conformance_Error ("type of & does not match!", New_Discr_Id);
-            return;
-         else
-            --  Treat the new discriminant as an occurrence of the old one,
-            --  for navigation purposes, and fill in some semantic
-            --  information, for completeness.
-
-            Generate_Reference (Old_Discr, New_Discr_Id, 'r');
-            Set_Etype (New_Discr_Id, Etype (Old_Discr));
-            Set_Scope (New_Discr_Id, Scope (Old_Discr));
-         end if;
-
-         --  Names must match
-
-         if Chars (Old_Discr) /= Chars (Defining_Identifier (New_Discr)) then
-            Conformance_Error ("name & does not match!", New_Discr_Id);
-            return;
-         end if;
-
-         --  Default expressions must match
-
-         declare
-            NewD : constant Boolean :=
-                     Present (Expression (New_Discr));
-            OldD : constant Boolean :=
-                     Present (Expression (Parent (Old_Discr)));
-
-            function Has_Tagged_Limited_Partial_View
-              (Typ : Entity_Id) return Boolean;
-            --  Returns True iff Typ has a tagged limited partial view.
-
-            function Is_Derived_From_Immutably_Limited_Type
-              (Typ : Entity_Id) return Boolean;
-            --  Returns True iff Typ is a derived type (tagged or not)
-            --  whose ancestor type is immutably limited. The unusual
-            --  ("unusual" is one word for it) thing about this function
-            --  is that it handles the case where the ancestor name's Entity
-            --  attribute has not been set yet.
-
-            -------------------------------------
-            -- Has_Tagged_Limited_Partial_View --
-            -------------------------------------
-
-            function Has_Tagged_Limited_Partial_View
-              (Typ : Entity_Id) return Boolean
-            is
-               Priv : constant Entity_Id := Incomplete_Or_Partial_View (Typ);
-            begin
-               return Present (Priv)
-                 and then not Is_Incomplete_Type (Priv)
-                 and then Is_Tagged_Type (Priv)
-                 and then Limited_Present (Parent (Priv));
-            end Has_Tagged_Limited_Partial_View;
-
-            --------------------------------------------
-            -- Is_Derived_From_Immutably_Limited_Type --
-            --------------------------------------------
-
-            function Is_Derived_From_Immutably_Limited_Type
-              (Typ : Entity_Id) return Boolean
-            is
-               Type_Def : constant Node_Id := Type_Definition (Parent (Typ));
-               Parent_Name : Node_Id;
-            begin
-               if Nkind (Type_Def) /= N_Derived_Type_Definition then
-                  return False;
-               end if;
-               Parent_Name := Subtype_Indication (Type_Def);
-               if Nkind (Parent_Name) = N_Subtype_Indication then
-                  Parent_Name := Subtype_Mark (Parent_Name);
-               end if;
-               if Parent_Name not in N_Has_Entity_Id
-                 or else No (Entity (Parent_Name))
-               then
-                  Find_Type (Parent_Name);
-               end if;
-               return Is_Immutably_Limited_Type (Entity (Parent_Name));
-            end Is_Derived_From_Immutably_Limited_Type;
-
-         begin
-            if NewD or OldD then
-
-               --  The old default value has been analyzed and expanded,
-               --  because the current full declaration will have frozen
-               --  everything before. The new default values have not been
-               --  expanded, so expand now to check conformance.
-
-               if NewD then
-                  Preanalyze_Spec_Expression
-                    (Expression (New_Discr), New_Discr_Type);
-               end if;
-
-               if not (NewD and OldD)
-                 or else not Fully_Conformant_Expressions
-                              (Expression (Parent (Old_Discr)),
-                               Expression (New_Discr))
-
-               then
-                  Conformance_Error
-                    ("default expression for & does not match!",
-                     New_Discr_Id);
-                  return;
-               end if;
-
-               if NewD
-                 and then Ada_Version >= Ada_2005
-                 and then Nkind (Discriminant_Type (New_Discr)) =
-                            N_Access_Definition
-                 and then not Is_Immutably_Limited_Type
-                                (Defining_Identifier (N))
-
-                 --  Check for a case that would be awkward to handle in
-                 --  Is_Immutably_Limited_Type (because sem_aux can't
-                 --  "with" sem_util).
-
-                 and then not Has_Tagged_Limited_Partial_View
-                                (Defining_Identifier (N))
-
-                 --  Check for another case that would be awkward to handle
-                 --  in Is_Immutably_Limited_Type
-
-                 and then not Is_Derived_From_Immutably_Limited_Type
-                                (Defining_Identifier (N))
-               then
-                  Error_Msg_N
-                    ("(Ada 2005) default value for access discriminant "
-                     & "requires immutably limited type",
-                     Expression (New_Discr));
-                  return;
-               end if;
-            end if;
-         end;
-
-         --  In Ada 83 case, grouping must match: (A,B : X) /= (A : X; B : X)
-
-         if Ada_Version = Ada_83 then
-            declare
-               Old_Disc : constant Node_Id := Declaration_Node (Old_Discr);
-
-            begin
-               --  Grouping (use of comma in param lists) must be the same
-               --  This is where we catch a misconformance like:
-
-               --    A, B : Integer
-               --    A : Integer; B : Integer
-
-               --  which are represented identically in the tree except
-               --  for the setting of the flags More_Ids and Prev_Ids.
-
-               if More_Ids (Old_Disc) /= More_Ids (New_Discr)
-                 or else Prev_Ids (Old_Disc) /= Prev_Ids (New_Discr)
-               then
-                  Conformance_Error
-                    ("grouping of & does not match!", New_Discr_Id);
-                  return;
-               end if;
-            end;
-         end if;
-
-         Next_Discriminant (Old_Discr);
-         Next (New_Discr);
-      end loop;
-
-      if Present (Old_Discr) then
-         Conformance_Error ("too few discriminants!", Defining_Identifier (N));
-         return;
-
-      elsif Present (New_Discr) then
-         Conformance_Error
-           ("too many discriminants!", Defining_Identifier (New_Discr));
-         return;
-      end if;
-   end Check_Discriminant_Conformance;
 
    -----------------------------------------
    -- Check_Formal_Subprogram_Conformance --
@@ -12963,13 +12826,10 @@ package body Sem_Ch6 is
    --  Start of processing for Process_Formals
 
    begin
-      --  In order to prevent premature use of the formals in the same formal
-      --  part, the Ekind is left undefined until all default expressions are
-      --  analyzed. The Ekind is established in a separate loop at the end.
-
       Param_Spec := First (T);
       while Present (Param_Spec) loop
          Formal := Defining_Identifier (Param_Spec);
+         Set_Formal_Mode (Formal, Param_Spec, Current_Scope);
          Set_Never_Set_In_Source (Formal, True);
          Enter_Name (Formal);
 
@@ -13207,7 +13067,7 @@ package body Sem_Ch6 is
             --  Do the special preanalysis of the expression (see section on
             --  "Handling of Default Expressions" in the spec of package Sem).
 
-            Preanalyze_Spec_Expression (Default, Formal_Type);
+            Preanalyze_And_Resolve_Spec_Expression (Default, Formal_Type);
 
             --  An access to constant cannot be the default for
             --  an access parameter that is an access to variable.
@@ -13287,12 +13147,48 @@ package body Sem_Ch6 is
          Analyze_Return_Type (Related_Nod);
       end if;
 
-      --  Now set the kind (mode) of each formal
-
       Param_Spec := First (T);
       while Present (Param_Spec) loop
          Formal := Defining_Identifier (Param_Spec);
-         Set_Formal_Mode (Formal);
+         Set_Is_Not_Self_Hidden (Formal);
+
+         --  Set Is_Known_Non_Null for access parameters since the language
+         --  guarantees that access parameters are always non-null. We also set
+         --  Can_Never_Be_Null, since there is no way to change the value.
+
+         if Nkind (Parameter_Type (Param_Spec)) = N_Access_Definition then
+
+            --  Ada 2005 (AI-231): In Ada 95, access parameters are always non-
+            --  null; In Ada 2005, only if then null_exclusion is explicit.
+
+            if Ada_Version < Ada_2005
+              or else Can_Never_Be_Null (Etype (Formal))
+            then
+               Set_Is_Known_Non_Null (Formal);
+               Set_Can_Never_Be_Null (Formal);
+            end if;
+
+         --  Ada 2005 (AI-231): Null-exclusion access subtype
+
+         elsif Is_Access_Type (Etype (Formal))
+           and then Can_Never_Be_Null (Etype (Formal))
+         then
+            Set_Is_Known_Non_Null (Formal);
+
+            --  We can also set Can_Never_Be_Null (thus preventing some junk
+            --  access checks) for the case of an IN parameter, which cannot
+            --  be changed, or for an IN OUT parameter, which can be changed
+            --  but not to a null value. But for an OUT parameter, the initial
+            --  value passed in can be null, so we can't set this flag in that
+            --  case.
+
+            if Ekind (Formal) /= E_Out_Parameter then
+               Set_Can_Never_Be_Null (Formal);
+            end if;
+         end if;
+
+         Set_Mechanism (Formal, Default_Mechanism);
+         Set_Formal_Validity (Formal);
 
          if Ekind (Formal) = E_In_Parameter then
             Default := Expression (Param_Spec);
@@ -13563,23 +13459,23 @@ package body Sem_Ch6 is
    -- Set_Formal_Mode --
    ---------------------
 
-   procedure Set_Formal_Mode (Formal_Id : Entity_Id) is
-      Spec : constant Node_Id   := Parent (Formal_Id);
-      Id   : constant Entity_Id := Scope (Formal_Id);
-
+   procedure Set_Formal_Mode
+     (Formal_Id : Entity_Id;
+      Spec      : N_Parameter_Specification_Id;
+      Subp_Id   : Entity_Id) is
    begin
       --  Note: we set Is_Known_Valid for IN parameters and IN OUT parameters
       --  since we ensure that corresponding actuals are always valid at the
       --  point of the call.
 
       if Out_Present (Spec) then
-         if Is_Entry (Id)
-           or else Is_Subprogram_Or_Generic_Subprogram (Id)
+         if Is_Entry (Subp_Id)
+           or else Is_Subprogram_Or_Generic_Subprogram (Subp_Id)
          then
-            Set_Has_Out_Or_In_Out_Parameter (Id, True);
+            Set_Has_Out_Or_In_Out_Parameter (Subp_Id, True);
          end if;
 
-         if Ekind (Id) in E_Function | E_Generic_Function then
+         if Ekind (Subp_Id) in E_Function | E_Generic_Function then
 
             --  [IN] OUT parameters allowed for functions in Ada 2012
 
@@ -13616,45 +13512,6 @@ package body Sem_Ch6 is
       else
          Mutate_Ekind (Formal_Id, E_In_Parameter);
       end if;
-
-      Set_Is_Not_Self_Hidden (Formal_Id);
-
-      --  Set Is_Known_Non_Null for access parameters since the language
-      --  guarantees that access parameters are always non-null. We also set
-      --  Can_Never_Be_Null, since there is no way to change the value.
-
-      if Nkind (Parameter_Type (Spec)) = N_Access_Definition then
-
-         --  Ada 2005 (AI-231): In Ada 95, access parameters are always non-
-         --  null; In Ada 2005, only if then null_exclusion is explicit.
-
-         if Ada_Version < Ada_2005
-           or else Can_Never_Be_Null (Etype (Formal_Id))
-         then
-            Set_Is_Known_Non_Null (Formal_Id);
-            Set_Can_Never_Be_Null (Formal_Id);
-         end if;
-
-      --  Ada 2005 (AI-231): Null-exclusion access subtype
-
-      elsif Is_Access_Type (Etype (Formal_Id))
-        and then Can_Never_Be_Null (Etype (Formal_Id))
-      then
-         Set_Is_Known_Non_Null (Formal_Id);
-
-         --  We can also set Can_Never_Be_Null (thus preventing some junk
-         --  access checks) for the case of an IN parameter, which cannot
-         --  be changed, or for an IN OUT parameter, which can be changed but
-         --  not to a null value. But for an OUT parameter, the initial value
-         --  passed in can be null, so we can't set this flag in that case.
-
-         if Ekind (Formal_Id) /= E_Out_Parameter then
-            Set_Can_Never_Be_Null (Formal_Id);
-         end if;
-      end if;
-
-      Set_Mechanism (Formal_Id, Default_Mechanism);
-      Set_Formal_Validity (Formal_Id);
    end Set_Formal_Mode;
 
    -------------------------

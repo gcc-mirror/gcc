@@ -124,6 +124,13 @@ cdll.diagnostic_add_fix_it_hint_replace.argtypes \
        ctypes.c_char_p]
 cdll.diagnostic_add_fix_it_hint_replace.restype = None
 
+cdll.diagnostic_manager_add_sink_from_spec.argtypes \
+    = [c_diagnostic_manager_ptr,
+       ctypes.c_char_p,
+       ctypes.c_char_p,
+       c_diagnostic_manager_ptr]
+cdll.diagnostic_manager_add_sink_from_spec.restype = ctypes.c_int
+
 # Helper functions
 
 def _to_utf8(s: str):
@@ -155,6 +162,16 @@ class Manager:
         cdll.diagnostic_manager_add_text_sink (self.c_mgr,
                                                c_stderr,
                                                DIAGNOSTIC_COLORIZE_IF_TTY)
+
+    def add_sink_from_spec(self, option_name: str, scheme: str, control_mgr):
+        assert self.c_mgr
+        assert control_mgr.c_mgr
+        res = cdll.diagnostic_manager_add_sink_from_spec (self.c_mgr,
+                                                          _to_utf8(option_name),
+                                                          _to_utf8(scheme),
+                                                          control_mgr.c_mgr)
+        if res:
+            raise RuntimeError()
 
     def get_file(self, path: str, sarif_lang: str = None):
         assert self.c_mgr

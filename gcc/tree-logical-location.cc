@@ -90,18 +90,18 @@ tree_logical_location_manager::get_kind (key k) const
   switch (TREE_CODE (node))
     {
     default:
-      return LOGICAL_LOCATION_KIND_UNKNOWN;
+      return logical_location_kind::unknown;
     case FUNCTION_DECL:
-      return LOGICAL_LOCATION_KIND_FUNCTION;
+      return logical_location_kind::function;
     case PARM_DECL:
-      return LOGICAL_LOCATION_KIND_PARAMETER;
+      return logical_location_kind::parameter;
     case VAR_DECL:
-      return LOGICAL_LOCATION_KIND_VARIABLE;
+      return logical_location_kind::variable;
     case NAMESPACE_DECL:
-      return LOGICAL_LOCATION_KIND_NAMESPACE;
+      return logical_location_kind::namespace_;
 
     case RECORD_TYPE:
-      return LOGICAL_LOCATION_KIND_TYPE;
+      return logical_location_kind::type;
     }
 }
 

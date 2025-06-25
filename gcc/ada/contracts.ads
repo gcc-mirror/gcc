@@ -56,6 +56,7 @@ package Contracts is
    --    Part_Of
    --    Postcondition
    --    Precondition
+   --    Program_Exit
    --    Refined_Depends
    --    Refined_Global
    --    Refined_Post
@@ -90,6 +91,7 @@ package Contracts is
    --    Global             (stand alone subprogram body)
    --    Postcondition      (stand alone subprogram body)
    --    Precondition       (stand alone subprogram body)
+   --    Program_Exit       (stand alone subprogram body)
    --    Refined_Depends
    --    Refined_Global
    --    Refined_Post
@@ -110,6 +112,7 @@ package Contracts is
    --    Global
    --    Postcondition
    --    Precondition
+   --    Program_Exit
    --    Subprogram_Variant
    --    Test_Case
    --
@@ -186,6 +189,7 @@ package Contracts is
    --    Global
    --    Postcondition
    --    Precondition
+   --    Program_Exit
    --    Refined_Depends
    --    Refined_Global
    --    Refined_Post

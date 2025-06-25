@@ -587,6 +587,11 @@
   return aarch64_simd_shift_imm_p (op, mode, false);
 })
 
+(define_special_predicate "aarch64_predicate_operand"
+  (and (match_code "reg,subreg")
+       (match_test "register_operand (op, GET_MODE (op))")
+       (match_test "aarch64_sve_valid_pred_p (op, mode)")))
+
 (define_predicate "aarch64_simd_imm_zero"
   (and (match_code "const,const_vector")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))

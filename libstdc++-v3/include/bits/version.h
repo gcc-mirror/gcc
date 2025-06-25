@@ -955,6 +955,16 @@
 #endif /* !defined(__cpp_lib_optional) && defined(__glibcxx_want_optional) */
 #undef __glibcxx_want_optional
 
+#if !defined(__cpp_lib_optional_range_support)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_optional_range_support 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_optional_range_support)
+#   define __cpp_lib_optional_range_support 202406L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_optional_range_support) && defined(__glibcxx_want_optional_range_support) */
+#undef __glibcxx_want_optional_range_support
+
 #if !defined(__cpp_lib_destroying_delete)
 # if (__cplusplus >= 202002L) && (__cpp_impl_destroying_delete)
 #  define __glibcxx_destroying_delete 201806L
@@ -1848,6 +1858,16 @@
 #endif /* !defined(__cpp_lib_ranges_find_last) && defined(__glibcxx_want_ranges_find_last) */
 #undef __glibcxx_want_ranges_find_last
 
+#if !defined(__cpp_lib_ranges_starts_ends_with)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_ranges_starts_ends_with 202106L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges_starts_ends_with)
+#   define __cpp_lib_ranges_starts_ends_with 202106L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_ranges_starts_ends_with) && defined(__glibcxx_want_ranges_starts_ends_with) */
+#undef __glibcxx_want_ranges_starts_ends_with
+
 #if !defined(__cpp_lib_constexpr_bitset)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED && (__cpp_constexpr_dynamic_alloc)
 #  define __glibcxx_constexpr_bitset 202202L
@@ -2222,5 +2242,15 @@
 # endif
 #endif /* !defined(__cpp_lib_polymorphic) && defined(__glibcxx_want_polymorphic) */
 #undef __glibcxx_want_polymorphic
+
+#if !defined(__cpp_lib_sstream_from_string_view)
+# if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
+#  define __glibcxx_sstream_from_string_view 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_sstream_from_string_view)
+#   define __cpp_lib_sstream_from_string_view 202306L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_sstream_from_string_view) && defined(__glibcxx_want_sstream_from_string_view) */
+#undef __glibcxx_want_sstream_from_string_view
 
 #undef __glibcxx_want_all

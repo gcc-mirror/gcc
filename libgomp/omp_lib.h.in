@@ -505,6 +505,31 @@
       end interface
 
       interface
+        function omp_target_memset (ptr, val, count, device_num) bind(c)
+          use, intrinsic :: iso_c_binding, only : c_ptr, c_int, c_size_t
+          type(c_ptr) omp_target_memset
+          type(c_ptr), value :: ptr
+          integer(c_size_t), value :: count
+          integer(c_int), value :: val, device_num
+        end function omp_target_memset
+      end interface
+
+      interface
+        function omp_target_memset_async (ptr, val, count, device_num,          &
+     &                                    depobj_count, depobj_list)            &
+     &      bind(c)
+          use, intrinsic :: iso_c_binding, only : c_ptr, c_int, c_size_t
+          import :: omp_depend_kind
+          type(c_ptr) :: omp_target_memset_async
+          type(c_ptr), value :: ptr
+          integer(c_size_t), value :: count
+          integer(c_int), value :: val, device_num, depobj_count
+          integer(omp_depend_kind), optional :: depobj_list(*)
+        end function omp_target_memset_async
+      end interface
+
+
+      interface
         function omp_target_associate_ptr (host_ptr, device_ptr, size,          &
      &                                     device_offset, device_num)           &
      &      bind(c)

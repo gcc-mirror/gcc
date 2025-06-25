@@ -29,32 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Ghost code, loop invariants and assertions in this unit are meant for
---  analysis only, not for run-time checking, as it would be too costly
---  otherwise. This is enforced by setting the assertion policy to Ignore.
-
-pragma Assertion_Policy (Ghost          => Ignore,
-                         Loop_Invariant => Ignore,
-                         Assert         => Ignore);
-
 package body System.Img_Bool
   with SPARK_Mode
 is
-
-   --  Local lemmas
-
-   procedure Lemma_Is_First_Non_Space_Ghost (S : String; R : Positive) with
-     Ghost,
-     Pre => R in S'Range and then S (R) /= ' '
-       and then System.Val_Spec.Only_Space_Ghost (S, S'First, R - 1),
-     Post => System.Val_Spec.First_Non_Space_Ghost (S, S'First, S'Last) = R;
-
-   ------------------------------------
-   -- Lemma_Is_First_Non_Space_Ghost --
-   ------------------------------------
-
-   procedure Lemma_Is_First_Non_Space_Ghost (S : String; R : Positive) is null;
-
    -------------------
    -- Image_Boolean --
    -------------------
@@ -69,11 +46,9 @@ is
       if V then
          S (1 .. 4) := "TRUE";
          P := 4;
-         Lemma_Is_First_Non_Space_Ghost (S, 1);
       else
          S (1 .. 5) := "FALSE";
          P := 5;
-         Lemma_Is_First_Non_Space_Ghost (S, 1);
       end if;
    end Image_Boolean;
 

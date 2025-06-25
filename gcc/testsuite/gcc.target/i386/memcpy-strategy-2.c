@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { *-*-* } { "-march=*" } { "-march=atom" } } */
-/* { dg-options "-O2 -march=atom -mmemcpy-strategy=vector_loop:3000:align,libcall:-1:align" } */
+/* { dg-options "-O2 -mno-avx -msse2 -mtune=generic -mtune-ctrl=^sse_typeless_stores -mmemcpy-strategy=vector_loop:3000:align,libcall:-1:align" } */
 /* { dg-final { scan-assembler-times "movdqa" 8 } } */
 
 char a[2048];

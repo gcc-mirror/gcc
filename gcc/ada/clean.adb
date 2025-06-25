@@ -319,7 +319,9 @@ package body Clean is
                   Delete ("", Executable);
                end if;
 
-               Delete_Binder_Generated_Files (Get_Current_Dir, Source);
+               Delete_Binder_Generated_Files
+                 (GNAT.Directory_Operations.Get_Current_Dir,
+                  Source);
             end;
          end if;
       end loop;
@@ -405,7 +407,8 @@ package body Clean is
       Source : File_Name_Type)
    is
       Source_Name : constant String   := Get_Name_String (Source);
-      Current     : constant String   := Get_Current_Dir;
+      Current : constant String :=
+        GNAT.Directory_Operations.Get_Current_Dir;
       Last        : constant Positive := B_Start'Length + Source_Name'Length;
       File_Name   : String (1 .. Last + 4);
 

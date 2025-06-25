@@ -2,6 +2,7 @@
 // { dg-require-effective-target hosted }
 
 #include <functional>
+#include <string_view>
 #include <testsuite_hooks.h>
 
 using std::copyable_function;
@@ -14,6 +15,21 @@ static_assert( !std::is_constructible_v<std::copyable_function<void()&>,
 					std::copyable_function<void()&&>> );
 static_assert( !std::is_constructible_v<std::copyable_function<void() const>,
 					std::copyable_function<void()>> );
+
+using FuncType = int(int);
+
+// Top level const qualifiers are ignored and decay is performed in parameters
+// of function_types.
+static_assert( std::is_same_v<std::copyable_function<void(int const)>,
+			      std::copyable_function<void(int)>> );
+static_assert( std::is_same_v<std::copyable_function<void(int[2])>,
+			      std::copyable_function<void(int*)>>);
+static_assert( std::is_same_v<std::copyable_function<void(int[])>,
+			      std::copyable_function<void(int*)>>);
+static_assert( std::is_same_v<std::copyable_function<void(int const[5])>,
+			      std::copyable_function<void(int const*)>>);
+static_assert( std::is_same_v<std::copyable_function<void(FuncType)>,
+			      std::copyable_function<void(FuncType*)>>);
 
 // Non-trivial args, guarantess that type is not passed by copy
 struct CountedArg
@@ -240,6 +256,24 @@ test06()
   VERIFY( f2(c) == 2 );
 }
 
+void
+test07()
+{
+  // Scalar types and small trivially move constructible types are passed
+  // by value to invoker. So int&& signature is not compatible for such types.
+  auto fi = [](CountedArg const& arg, int) noexcept { return arg.counter; };
+  std::copyable_function<int(CountedArg, int) const noexcept> ci1(fi);
+  VERIFY( ci1(c, 0) == 1 );
+  std::copyable_function<int(CountedArg, int&&) const noexcept> ci2(ci1);
+  VERIFY( ci2(c, 0) == 2 );
+
+  auto fs = [](CountedArg const& arg, std::string_view) noexcept { return arg.counter; };
+  std::copyable_function<int(CountedArg, std::string_view) const noexcept> cs1(fs);
+  VERIFY( cs1(c, "") == 1 );
+  std::copyable_function<int(CountedArg, std::string_view&&) const noexcept> cs2(cs1);
+  VERIFY( cs2(c, "") == 2 );
+}
+
 int main()
 {
   test01();
@@ -248,4 +282,5 @@ int main()
   test04();
   test05();
   test06();
+  test07();
 }

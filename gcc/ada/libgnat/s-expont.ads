@@ -32,44 +32,13 @@
 --  This package provides functions for signed integer exponentiation. This
 --  is the version of the package with checks enabled.
 
-with Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
-
 generic
-
    type Int is range <>;
 
 package System.Expont
   with Pure, SPARK_Mode
 is
-   --  Preconditions in this unit are meant for analysis only, not for run-time
-   --  checking, so that the expected exceptions are raised. This is enforced
-   --  by setting the corresponding assertion policy to Ignore. Postconditions
-   --  and contract cases should not be executed at runtime as well, in order
-   --  not to slow down the execution of these functions.
-
-   pragma Assertion_Policy (Pre            => Ignore,
-                            Post           => Ignore,
-                            Contract_Cases => Ignore,
-                            Ghost          => Ignore);
-
-   package BI_Ghost renames Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
-   subtype Big_Integer is BI_Ghost.Big_Integer with Ghost;
-   use type BI_Ghost.Big_Integer;
-
-   package Signed_Conversion is new BI_Ghost.Signed_Conversions (Int => Int);
-
-   function Big (Arg : Int) return Big_Integer is
-     (Signed_Conversion.To_Big_Integer (Arg))
-   with Ghost;
-
-   function In_Int_Range (Arg : Big_Integer) return Boolean is
-     (BI_Ghost.In_Range (Arg, Big (Int'First), Big (Int'Last)))
-   with Ghost;
-
-   function Expon (Left : Int; Right : Natural) return Int
-   with
-     Pre  => In_Int_Range (Big (Left) ** Right),
-     Post => Expon'Result = Left ** Right;
+   function Expon (Left : Int; Right : Natural) return Int;
    --  Calculate ``Left`` ** ``Right``. If ``Left`` is 0 then 0 is returned
    --  and if ``Right`` is 0 then 1 is returned. In all other cases the result
    --  is set to 1 and then computed in a loop as follows:

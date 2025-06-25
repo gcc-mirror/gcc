@@ -633,10 +633,8 @@ package Lib is
    --  Same as above, but for Source_Ptr
 
    function ipu (N : Node_Or_Entity_Id) return Boolean;
-   --  Same as In_Predefined_Unit, but renamed so it can assist debugging.
-   --  Otherwise, there is a disambiguous name conflict in the two versions of
-   --  In_Predefined_Unit which makes it inconvient to set as a breakpoint
-   --  condition.
+   --  Same as In_Predefined_Unit, but renamed to this unambiguous name for use
+   --  in the debugger.
 
    function In_Predefined_Unit (N : Node_Or_Entity_Id) return Boolean;
    --  Returns True if the given node or entity appears within the source text
@@ -720,12 +718,9 @@ package Lib is
    procedure Lock;
    --  Lock internal tables before calling back end
 
-   function Num_Units return Nat;
-   --  Number of units currently in unit table
-
    procedure Remove_Unit (U : Unit_Number_Type);
-   --  Remove unit U from unit table. Currently this is effective only if U is
-   --  the last unit currently stored in the unit table.
+   --  Remove unit U from unit table. U must be the last unit currently stored
+   --  in the unit table.
 
    procedure Replace_Linker_Option_String
      (S            : String_Id;
@@ -871,54 +866,13 @@ private
       Has_RACW               : Boolean;
       Dynamic_Elab           : Boolean;
       No_Elab_Code_All       : Boolean;
-      Filler                 : Boolean;
       Loading                : Boolean;
       OA_Setting             : Character;
 
       Is_Predefined_Renaming : Boolean;
       Is_Internal_Unit       : Boolean;
       Is_Predefined_Unit     : Boolean;
-      Filler2                : Boolean;
    end record;
-
-   --  The following representation clause ensures that the above record
-   --  has no holes. We do this so that when instances of this record are
-   --  written by Tree_Gen, we do not write uninitialized values to the file.
-
-   for Unit_Record use record
-      Unit_File_Name         at  0 range 0 .. 31;
-      Unit_Name              at  4 range 0 .. 31;
-      Munit_Index            at  8 range 0 .. 31;
-      Expected_Unit          at 12 range 0 .. 31;
-      Source_Index           at 16 range 0 .. 31;
-      Cunit                  at 20 range 0 .. 31;
-      Cunit_Entity           at 24 range 0 .. 31;
-      Dependency_Num         at 28 range 0 .. 31;
-      Ident_String           at 32 range 0 .. 31;
-      Main_Priority          at 36 range 0 .. 31;
-      Main_CPU               at 40 range 0 .. 31;
-      Primary_Stack_Count    at 44 range 0 .. 31;
-      Sec_Stack_Count        at 48 range 0 .. 31;
-      Serial_Number          at 52 range 0 .. 31;
-      Version                at 56 range 0 .. 31;
-      Error_Location         at 60 range 0 .. 31;
-      Fatal_Error            at 64 range 0 ..  7;
-      Generate_Code          at 65 range 0 ..  7;
-      Has_RACW               at 66 range 0 ..  7;
-      Dynamic_Elab           at 67 range 0 ..  7;
-      No_Elab_Code_All       at 68 range 0 ..  7;
-      Filler                 at 69 range 0 ..  7;
-      OA_Setting             at 70 range 0 ..  7;
-      Loading                at 71 range 0 ..  7;
-
-      Is_Predefined_Renaming at 72 range 0 .. 7;
-      Is_Internal_Unit       at 73 range 0 .. 7;
-      Is_Predefined_Unit     at 74 range 0 .. 7;
-      Filler2                at 75 range 0 .. 7;
-   end record;
-
-   for Unit_Record'Size use 76 * 8;
-   --  This ensures that we did not leave out any fields
 
    package Units is new Table.Table (
      Table_Component_Type => Unit_Record,

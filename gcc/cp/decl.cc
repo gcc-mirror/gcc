@@ -1311,7 +1311,15 @@ maybe_version_functions (tree newdecl, tree olddecl, bool record)
     }
 
   if (record)
-    cgraph_node::record_function_versions (olddecl, newdecl);
+    {
+      /* Add the new version to the function version structure.  */
+      cgraph_node *fn_node = cgraph_node::get_create (olddecl);
+      cgraph_function_version_info *fn_v = fn_node->function_version ();
+      if (!fn_v)
+	fn_v = fn_node->insert_new_function_version ();
+
+      cgraph_node::add_function_version (fn_v, newdecl);
+    }
 
   return true;
 }
@@ -11330,9 +11338,9 @@ grokfndecl (tree ctype,
 		  "cannot declare %<::main%> to be %qs", "consteval");
       if (!publicp)
 	error_at (location, "cannot declare %<::main%> to be static");
-      if (current_lang_depth () != 0)
+      if (current_lang_name != lang_name_cplusplus)
 	pedwarn (location, OPT_Wpedantic, "cannot declare %<::main%> with a"
-		 " linkage specification");
+		 " linkage specification other than %<extern \"C++\"%>");
       if (module_attach_p ())
 	error_at (location, "cannot attach %<::main%> to a named module");
       inlinep = 0;
@@ -19339,6 +19347,19 @@ finish_function (bool inline_p)
 	}
     }
 
+  if (FNDECL_USED_AUTO (fndecl)
+      && TREE_TYPE (fntype) != DECL_SAVED_AUTO_RETURN_TYPE (fndecl))
+    if (location_t fcloc = failed_completion_location (fndecl))
+      {
+	auto_diagnostic_group adg;
+	if (warning (OPT_Wsfinae_incomplete_,
+		     "defining %qD, which previously failed to be deduced "
+		     "in a SFINAE context", fndecl)
+	    && warn_sfinae_incomplete == 1)
+	  inform (fcloc, "here.  Use %qs for a diagnostic at that point",
+		  "-Wsfinae-incomplete=2");
+      }
+
   /* Remember that we were in class scope.  */
   if (current_class_name)
     ctype = current_class_type;
@@ -19992,7 +20013,7 @@ require_deduced_type (tree decl, tsubst_flags_t complain)
 	/* We probably already complained about deduction failure.  */;
       else if (complain & tf_error)
 	error ("use of %qD before deduction of %<auto%>", decl);
-      note_failed_type_completion_for_satisfaction (decl);
+      note_failed_type_completion (decl, complain);
       return false;
     }
   return true;

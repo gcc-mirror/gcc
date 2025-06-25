@@ -425,10 +425,11 @@ namespace ranges
       using __rep = unsigned long long;
 #endif
       static constexpr size_t _S_rep_bits = sizeof(__rep) * __CHAR_BIT__;
-    private:
+
       __rep _M_val = 0;
       unsigned _M_msb:1 = 0;
 
+    private:
       constexpr explicit
       __max_size_type(__rep __val, int __msb) noexcept
 	: _M_val(__val), _M_msb(__msb)
@@ -752,7 +753,6 @@ namespace ranges
       { return !(__l < __r); }
 #endif
 
-    private:
       __max_size_type _M_rep = 0;
 
       friend class __max_size_type;

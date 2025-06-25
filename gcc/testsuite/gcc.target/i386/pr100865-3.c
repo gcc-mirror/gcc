@@ -11,6 +11,6 @@ foo (void)
 }
 
 /* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%(?:r|e)\[^\n\]*, %xmm\[0-9\]+" 1 } } */
-/* { dg-final { scan-assembler-times "vmovdqu8\[\\t \]%xmm\[0-9\]+, \\(%\[\^,\]+\\)" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[\\t \]%xmm\[0-9\]+, \\(%\[\^,\]+\\)" 1 } } */
 /* { dg-final { scan-assembler-not "vpbroadcastd\[\\t \]+%xmm\[0-9\]+, %xmm\[0-9\]+" } } */
 /* { dg-final { scan-assembler-not "vmovdqa" } } */

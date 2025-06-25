@@ -29,77 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.SPARK.Cut_Operations; use System.SPARK.Cut_Operations;
 with System.Val_Util;             use System.Val_Util;
 
 package body System.Value_U is
-
-   --  Ghost code, loop invariants and assertions in this unit are meant for
-   --  analysis only, not for run-time checking, as it would be too costly
-   --  otherwise. This is enforced by setting the assertion policy to Ignore.
-
-   pragma Assertion_Policy (Ghost              => Ignore,
-                            Loop_Invariant     => Ignore,
-                            Assert             => Ignore,
-                            Assert_And_Cut     => Ignore,
-                            Subprogram_Variant => Ignore);
-
-   use type Spec.Uns_Option;
-   use type Spec.Split_Value_Ghost;
-
-   --  Local lemmas
-
-   procedure Lemma_Digit_Not_Last
-     (Str  : String;
-      P    : Integer;
-      From : Integer;
-      To   : Integer)
-   with Ghost,
-     Pre  => Str'Last /= Positive'Last
-       and then From in Str'Range
-       and then To in From .. Str'Last
-       and then Str (From) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F'
-       and then P in From .. To
-       and then P <= Spec.Last_Hexa_Ghost (Str (From .. To)) + 1
-       and then Spec.Is_Based_Format_Ghost (Str (From .. To)),
-     Post =>
-       (if Str (P) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F'
-        then P <= Spec.Last_Hexa_Ghost (Str (From .. To)));
-
-   procedure Lemma_Underscore_Not_Last
-     (Str  : String;
-      P    : Integer;
-      From : Integer;
-      To   : Integer)
-   with Ghost,
-     Pre  => Str'Last /= Positive'Last
-       and then From in Str'Range
-       and then To in From .. Str'Last
-       and then Str (From) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F'
-       and then P in From .. To
-       and then Str (P) = '_'
-       and then P <= Spec.Last_Hexa_Ghost (Str (From .. To)) + 1
-       and then Spec.Is_Based_Format_Ghost (Str (From .. To)),
-     Post => P + 1 <= Spec.Last_Hexa_Ghost (Str (From .. To))
-       and then Str (P + 1) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F';
-
-   -----------------------------
-   -- Local lemma null bodies --
-   -----------------------------
-
-   procedure Lemma_Digit_Not_Last
-     (Str  : String;
-      P    : Integer;
-      From : Integer;
-      To   : Integer)
-   is null;
-
-   procedure Lemma_Underscore_Not_Last
-     (Str  : String;
-      P    : Integer;
-      From : Integer;
-      To   : Integer)
-   is null;
 
    -----------------------
    -- Scan_Raw_Unsigned --
@@ -132,36 +64,6 @@ package body System.Value_U is
       Digit : Uns;
       --  Digit value
 
-      Ptr_Old       : constant Integer := Ptr.all
-      with Ghost;
-      Last_Num_Init : constant Integer :=
-        Last_Number_Ghost (Str (Ptr.all .. Max))
-      with Ghost;
-      Init_Val      : constant Spec.Uns_Option :=
-        Spec.Scan_Based_Number_Ghost (Str, Ptr.all, Last_Num_Init)
-      with Ghost;
-      Starts_As_Based : constant Boolean :=
-        Spec.Raw_Unsigned_Starts_As_Based_Ghost (Str, Last_Num_Init, Max)
-      with Ghost;
-      Last_Num_Based  : constant Integer :=
-        (if Starts_As_Based
-         then Spec.Last_Hexa_Ghost (Str (Last_Num_Init + 2 .. Max))
-         else Last_Num_Init)
-      with Ghost;
-      Is_Based        : constant Boolean :=
-        Spec.Raw_Unsigned_Is_Based_Ghost
-          (Str, Last_Num_Init, Last_Num_Based, Max)
-      with Ghost;
-      Based_Val       : constant Spec.Uns_Option :=
-        (if Starts_As_Based and then not Init_Val.Overflow
-         then Spec.Scan_Based_Number_Ghost
-           (Str, Last_Num_Init + 2, Last_Num_Based, Init_Val.Value)
-         else Init_Val)
-      with Ghost;
-      First_Exp       : constant Integer :=
-        (if Is_Based then Last_Num_Based + 2 else Last_Num_Init + 1)
-      with Ghost;
-
    begin
       --  We do not tolerate strings with Str'Last = Positive'Last
 
@@ -171,7 +73,15 @@ package body System.Value_U is
       end if;
 
       P := Ptr.all;
-      Spec.Lemma_Scan_Based_Number_Ghost_Step (Str, P, Last_Num_Init);
+
+      --  Exit when the initial string to parse is empty
+
+      if Max < P then
+         raise Program_Error with
+            "Scan end Max=" & Max'Img &
+            " is smaller than scan end Ptr=" & P'Img;
+      end if;
+
       Uval := Character'Pos (Str (P)) - Character'Pos ('0');
       pragma Assert (Str (P) in '0' .. '9');
       P := P + 1;
@@ -189,14 +99,6 @@ package body System.Value_U is
       begin
          --  Loop through decimal digits
          loop
-            pragma Loop_Invariant (P in P'Loop_Entry .. Last_Num_Init + 1);
-            pragma Loop_Invariant
-              (if Overflow then Init_Val.Overflow);
-            pragma Loop_Invariant
-              (if not Overflow
-               then Init_Val = Spec.Scan_Based_Number_Ghost
-                 (Str, P, Last_Num_Init, Acc => Uval));
-
             exit when P > Max;
 
             Digit := Character'Pos (Str (P)) - Character'Pos ('0');
@@ -205,8 +107,6 @@ package body System.Value_U is
 
             if Digit > 9 then
                if Str (P) = '_' then
-                  Spec.Lemma_Scan_Based_Number_Ghost_Underscore
-                    (Str, P, Last_Num_Init, Acc => Uval);
                   Scan_Underscore (Str, P, Ptr, Max, False);
                else
                   exit;
@@ -215,54 +115,22 @@ package body System.Value_U is
             --  Accumulate result, checking for overflow
 
             else
-               pragma Assert
-                 (By
-                    (Str (P) in '0' .. '9',
-                     By
-                       (Character'Pos (Str (P)) >= Character'Pos ('0'),
-                        Uns '(Character'Pos (Str (P))) >=
-                            Character'Pos ('0'))));
-               Spec.Lemma_Scan_Based_Number_Ghost_Step
-                 (Str, P, Last_Num_Init, Acc => Uval);
-               Spec.Lemma_Scan_Based_Number_Ghost_Overflow
-                 (Str, P, Last_Num_Init, Acc => Uval);
-
                if Uval <= Umax then
                   Uval := 10 * Uval + Digit;
-                  pragma Assert
-                    (if not Overflow
-                     then Init_Val = Spec.Scan_Based_Number_Ghost
-                            (Str, P + 1, Last_Num_Init, Acc => Uval));
-
                elsif Uval > Umax10 then
                   Overflow := True;
-
                else
                   Uval := 10 * Uval + Digit;
 
                   if Uval < Umax10 then
                      Overflow := True;
                   end if;
-                  pragma Assert
-                    (if not Overflow
-                     then Init_Val = Spec.Scan_Based_Number_Ghost
-                            (Str, P + 1, Last_Num_Init, Acc => Uval));
-
                end if;
 
                P := P + 1;
             end if;
          end loop;
-         Spec.Lemma_Scan_Based_Number_Ghost_Base
-            (Str, P, Last_Num_Init, Acc => Uval);
       end;
-
-      pragma Assert_And_Cut
-        (By
-           (P = Last_Num_Init + 1,
-            P > Max or else Str (P) not in '_' | '0' .. '9')
-         and then Overflow = Init_Val.Overflow
-         and then (if not Overflow then Init_Val.Value = Uval));
 
       Ptr.all := P;
 
@@ -295,10 +163,6 @@ package body System.Value_U is
             --  Numbers bigger than UmaxB overflow if multiplied by base
 
          begin
-            pragma Assert
-              (if Str (P) in '0' .. '9' | 'A' .. 'F' | 'a' .. 'f'
-               then Spec.Is_Based_Format_Ghost (Str (P .. Max)));
-
             --  Loop to scan out based integer value
 
             loop
@@ -321,48 +185,10 @@ package body System.Value_U is
                --  already stored in Ptr.all.
 
                else
-                  pragma Assert
-                    (By
-                       (Spec.Only_Hexa_Ghost (Str, P, Last_Num_Based),
-                        P > Last_Num_Init + 1
-                        and Spec.Only_Hexa_Ghost
-                          (Str, Last_Num_Init + 2, Last_Num_Based)));
-                  Spec.Lemma_Scan_Based_Number_Ghost_Base
-                    (Str, P, Last_Num_Based, Base, Uval);
                   Uval := Base;
                   Base := 10;
-                  pragma Assert (Ptr.all = Last_Num_Init + 1);
-                  pragma Assert
-                    (if Starts_As_Based
-                     then By
-                       (P = Last_Num_Based + 1,
-                        P <= Last_Num_Based + 1
-                        and Str (P) not in
-                        '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_'));
-                  pragma Assert (not Is_Based);
-                  pragma Assert (if not Overflow then Uval = Init_Val.Value);
                   exit;
                end if;
-
-               pragma Loop_Invariant (P in P'Loop_Entry .. Last_Num_Based);
-               pragma Loop_Invariant
-                 (Str (P) in '0' .. '9' | 'a' .. 'f' | 'A' .. 'F'
-                  and then Digit = Spec.Hexa_To_Unsigned_Ghost (Str (P)));
-               pragma Loop_Invariant
-                 (if Overflow'Loop_Entry then Overflow);
-               pragma Loop_Invariant
-                 (if Overflow then
-                    (Overflow'Loop_Entry or else Based_Val.Overflow));
-               pragma Loop_Invariant
-                 (if not Overflow
-                  then Based_Val = Spec.Scan_Based_Number_Ghost
-                    (Str, P, Last_Num_Based, Base, Uval));
-               pragma Loop_Invariant (Ptr.all = Last_Num_Init + 1);
-
-               Spec.Lemma_Scan_Based_Number_Ghost_Step
-                 (Str, P, Last_Num_Based, Base, Uval);
-               Spec.Lemma_Scan_Based_Number_Ghost_Overflow
-                 (Str, P, Last_Num_Based, Base, Uval);
 
                --  If digit is too large, just signal overflow and continue.
                --  The idea here is to keep scanning as long as the input is
@@ -375,24 +201,14 @@ package body System.Value_U is
 
                elsif Uval <= Umax then
                   Uval := Base * Uval + Digit;
-                  pragma Assert
-                    (if not Overflow
-                     then Based_Val = Spec.Scan_Based_Number_Ghost
-                       (Str, P + 1, Last_Num_Based, Base, Uval));
-
                elsif Uval > UmaxB then
                   Overflow := True;
-
                else
                   Uval := Base * Uval + Digit;
 
                   if Uval < UmaxB then
                      Overflow := True;
                   end if;
-                  pragma Assert
-                    (if not Overflow
-                     then Based_Val = Spec.Scan_Based_Number_Ghost
-                       (Str, P + 1, Last_Num_Based, Base, Uval));
                end if;
 
                --  If at end of string with no base char, not a based number
@@ -411,85 +227,21 @@ package body System.Value_U is
 
                if Str (P) = Base_Char then
                   Ptr.all := P + 1;
-                  pragma Assert (P = Last_Num_Based + 1);
-                  pragma Assert (Ptr.all = Last_Num_Based + 2);
-                  pragma Assert
-                    (By
-                       (Is_Based,
-                        So
-                          (Starts_As_Based,
-                           So
-                             (Last_Num_Based < Max,
-                              Str (Last_Num_Based + 1) = Base_Char
-                              and Base_Char = Str (Last_Num_Init + 1)))));
-                  Spec.Lemma_Scan_Based_Number_Ghost_Base
-                    (Str, P, Last_Num_Based, Base, Uval);
                   exit;
 
                --  Deal with underscore
 
                elsif Str (P) = '_' then
-                  Lemma_Underscore_Not_Last (Str, P, Last_Num_Init + 2, Max);
-                  Spec.Lemma_Scan_Based_Number_Ghost_Underscore
-                    (Str, P, Last_Num_Based, Base, Uval);
                   Scan_Underscore (Str, P, Ptr, Max, True);
-                  pragma Assert
-                    (if not Overflow
-                     then Based_Val = Spec.Scan_Based_Number_Ghost
-                       (Str, P, Last_Num_Based, Base, Uval));
-                  pragma Assert (Str (P) not in '_' | Base_Char);
                end if;
-
-               Lemma_Digit_Not_Last (Str, P, Last_Num_Init + 2, Max);
-               pragma Assert (Str (P) not in '_' | Base_Char);
             end loop;
          end;
-         pragma Assert
-           (if Starts_As_Based then P = Last_Num_Based + 1
-            else P = Last_Num_Init + 2);
-         pragma Assert
-           (By
-              (Overflow /= Spec.Scan_Split_No_Overflow_Ghost
-                   (Str, Ptr_Old, Max),
-               So
-                 (Last_Num_Init < Max - 1
-                  and then Str (Last_Num_Init + 1) in '#' | ':',
-                  Overflow =
-                    (Init_Val.Overflow
-                     or else Init_Val.Value not in 2 .. 16
-                     or else (Starts_As_Based and Based_Val.Overflow)))));
       end if;
-
-      pragma Assert_And_Cut
-        (Overflow /= Spec.Scan_Split_No_Overflow_Ghost (Str, Ptr_Old, Max)
-         and then Ptr.all = First_Exp
-         and then Base in 2 .. 16
-         and then
-           (if not Overflow then
-                (if Is_Based then Base = Init_Val.Value else Base = 10))
-         and then
-           (if not Overflow then
-                (if Is_Based then Uval = Based_Val.Value
-                 else Uval = Init_Val.Value)));
 
       --  Come here with scanned unsigned value in Uval. The only remaining
       --  required step is to deal with exponent if one is present.
 
       Scan_Exponent (Str, Ptr, Max, Expon);
-
-      pragma Assert
-        (By
-           (Ptr.all = Spec.Raw_Unsigned_Last_Ghost (Str, Ptr_Old, Max),
-            Ptr.all =
-              (if not Starts_As_Exponent_Format_Ghost (Str (First_Exp .. Max))
-               then First_Exp
-               elsif Str (First_Exp + 1) in '-' | '+' then
-                 Last_Number_Ghost (Str (First_Exp + 2 .. Max)) + 1
-               else Last_Number_Ghost (Str (First_Exp + 1 .. Max)) + 1)));
-      pragma Assert
-        (if not Overflow
-         then Spec.Scan_Split_Value_Ghost (Str, Ptr_Old, Max) =
-           (Uval, Base, Expon));
 
       if Expon /= 0 and then Uval /= 0 then
 
@@ -500,66 +252,22 @@ package body System.Value_U is
          declare
             UmaxB : constant Uns := Uns'Last / Base;
             --  Numbers bigger than UmaxB overflow if multiplied by base
-
-            Res_Val : constant Spec.Uns_Option :=
-              Spec.Exponent_Unsigned_Ghost (Uval, Expon, Base)
-            with Ghost;
          begin
             for J in 1 .. Expon loop
-               pragma Loop_Invariant
-                 (if Overflow'Loop_Entry then Overflow);
-               pragma Loop_Invariant
-                 (if Overflow
-                  then Overflow'Loop_Entry or else Res_Val.Overflow);
-               pragma Loop_Invariant (Uval /= 0);
-               pragma Loop_Invariant
-                 (if not Overflow
-                  then Res_Val = Spec.Exponent_Unsigned_Ghost
-                    (Uval, Expon - J + 1, Base));
-
-               pragma Assert
-                 ((Uval > UmaxB) = Spec.Scan_Overflows_Ghost (0, Base, Uval));
-
                if Uval > UmaxB then
-                  Spec.Lemma_Exponent_Unsigned_Ghost_Overflow
-                     (Uval, Expon - J + 1, Base);
                   Overflow := True;
                   exit;
                end if;
 
-               Spec.Lemma_Exponent_Unsigned_Ghost_Step
-                  (Uval, Expon - J + 1, Base);
-
                Uval := Uval * Base;
             end loop;
-            Spec.Lemma_Exponent_Unsigned_Ghost_Base (Uval, 0, Base);
-
-            pragma Assert
-              (Overflow /=
-                 Spec.Raw_Unsigned_No_Overflow_Ghost (Str, Ptr_Old, Max));
-            pragma Assert (if not Overflow then Res_Val = (False, Uval));
          end;
       end if;
-      Spec.Lemma_Exponent_Unsigned_Ghost_Base (Uval, Expon, Base);
-      pragma Assert
-        (if Expon = 0 or else Uval = 0 then
-            Spec.Exponent_Unsigned_Ghost (Uval, Expon, Base) = (False, Uval));
-      pragma Assert
-        (Overflow /=
-           Spec.Raw_Unsigned_No_Overflow_Ghost (Str, Ptr_Old, Max));
-      pragma Assert
-        (if not Overflow then
-            Uval = Spec.Scan_Raw_Unsigned_Ghost (Str, Ptr_Old, Max));
 
       --  Return result, dealing with overflow
 
       if Overflow then
          Bad_Value (Str);
-         pragma Annotate
-           (GNATprove, Intentional,
-            "call to nonreturning subprogram might be executed",
-            "it is expected that Constraint_Error is raised in case of"
-            & " overflow");
       else
          Res := Uval;
       end if;
@@ -608,15 +316,7 @@ package body System.Value_U is
       if Str'Last = Positive'Last then
          declare
             subtype NT is String (1 .. Str'Length);
-            procedure Prove_Is_Unsigned_Ghost with
-              Ghost,
-              Pre  => Str'Length < Natural'Last
-              and then not Only_Space_Ghost (Str, Str'First, Str'Last)
-              and then Spec.Is_Unsigned_Ghost (Spec.Slide_To_1 (Str)),
-              Post => Spec.Is_Unsigned_Ghost (NT (Str));
-            procedure Prove_Is_Unsigned_Ghost is null;
          begin
-            Prove_Is_Unsigned_Ghost;
             return Value_Unsigned (NT (Str));
          end;
 
@@ -626,12 +326,6 @@ package body System.Value_U is
          declare
             V : Uns;
             P : aliased Integer := Str'First;
-            Non_Blank : constant Positive := First_Non_Space_Ghost
-              (Str, Str'First, Str'Last)
-            with Ghost;
-            Fst_Num   : constant Positive :=
-              (if Str (Non_Blank) = '+' then Non_Blank + 1 else Non_Blank)
-            with Ghost;
          begin
             declare
                P_Acc : constant not null access Integer := P'Access;
@@ -639,16 +333,7 @@ package body System.Value_U is
                Scan_Unsigned (Str, P_Acc, Str'Last, V);
             end;
 
-            pragma Assert
-              (P = Spec.Raw_Unsigned_Last_Ghost (Str, Fst_Num, Str'Last));
-            pragma Assert
-              (V = Spec.Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Str'Last));
-
             Scan_Trailing_Blanks (Str, P);
-
-            pragma Assert
-              (Spec.Is_Value_Unsigned_Ghost
-                 (Spec.Slide_If_Necessary (Str), V));
             return V;
          end;
       end if;

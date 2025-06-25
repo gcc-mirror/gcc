@@ -226,13 +226,11 @@ package body Lib.Load is
          Fatal_Error            => Error_Detected,
          Generate_Code          => False,
          Has_RACW               => False,
-         Filler                 => False,
          Ident_String           => Empty,
 
          Is_Predefined_Renaming => Ren_Name,
          Is_Predefined_Unit     => Pre_Name or Ren_Name,
          Is_Internal_Unit       => Pre_Name or Ren_Name or GNAT_Name,
-         Filler2                => False,
 
          Loading                => False,
          Main_Priority          => Default_Main_Priority,
@@ -374,13 +372,11 @@ package body Lib.Load is
             Fatal_Error            => None,
             Generate_Code          => True,
             Has_RACW               => False,
-            Filler                 => False,
             Ident_String           => Empty,
 
             Is_Predefined_Renaming => Ren_Name,
             Is_Predefined_Unit     => Pre_Name or Ren_Name,
             Is_Internal_Unit       => Pre_Name or Ren_Name or GNAT_Name,
-            Filler2                => False,
 
             Loading                => True,
             Main_Priority          => Default_Main_Priority,
@@ -760,13 +756,11 @@ package body Lib.Load is
                Fatal_Error            => None,
                Generate_Code          => False,
                Has_RACW               => False,
-               Filler                 => False,
                Ident_String           => Empty,
 
                Is_Predefined_Renaming => Ren_Name,
                Is_Predefined_Unit     => Pre_Name or Ren_Name,
                Is_Internal_Unit       => Pre_Name or Ren_Name or GNAT_Name,
-               Filler2                => False,
 
                Loading                => True,
                Main_Priority          => Default_Main_Priority,

@@ -505,40 +505,47 @@ private:
 };
 
 /* Populate CONTEXT in preparation for JSON output (either to stderr, or
-   to a file).  */
+   to a file) using FMT.  Return a reference to *FMT.  */
 
-static void
+static diagnostic_output_format &
 diagnostic_output_format_init_json (diagnostic_context &context,
 				    std::unique_ptr<json_output_format> fmt)
 {
+  gcc_assert (fmt);
+  diagnostic_output_format &out = *fmt;
+
   /* Don't colorize the text.  */
   pp_show_color (fmt->get_printer ()) = false;
   context.set_show_highlight_colors (false);
 
   context.set_output_format (std::move (fmt));
+
+  return out;
 }
 
-/* Populate CONTEXT in preparation for JSON output to stderr.  */
+/* Populate CONTEXT in preparation for JSON output to stderr.
+   Return a reference to the context's new sink.  */
 
-void
+diagnostic_output_format &
 diagnostic_output_format_init_json_stderr (diagnostic_context &context,
 					   bool formatted)
 {
-  diagnostic_output_format_init_json
+  return diagnostic_output_format_init_json
     (context,
      std::make_unique<json_stderr_output_format> (context,
 						  formatted));
 }
 
 /* Populate CONTEXT in preparation for JSON output to a file named
-   BASE_FILE_NAME.gcc.json.  */
+   BASE_FILE_NAME.gcc.json.
+   Return a reference to the context's new sink.  */
 
-void
+diagnostic_output_format &
 diagnostic_output_format_init_json_file (diagnostic_context &context,
 					 bool formatted,
 					 const char *base_file_name)
 {
-  diagnostic_output_format_init_json
+  return diagnostic_output_format_init_json
     (context,
      std::make_unique<json_file_output_format> (context,
 						formatted,

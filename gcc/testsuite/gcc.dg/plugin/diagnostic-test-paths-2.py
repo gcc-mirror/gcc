@@ -21,9 +21,16 @@ def test_paths(html_tree):
 
     diag = diag_list.find('xhtml:div', ns)
     assert diag is not None
-    assert diag.attrib['class'] == 'gcc-diagnostic'
+    assert diag.attrib['class'] == 'alert alert-danger'
+    assert diag.attrib['id'] == 'gcc-diag-0'
 
-    event_ranges = diag.find('xhtml:div', ns)
+    exec_path = diag.find("./xhtml:div[@id='execution-path']", ns)
+    assert exec_path is not None
+
+    label = exec_path.find('xhtml:label', ns)
+    assert label.text == 'Execution path with 3 events'
+    
+    event_ranges = exec_path.find('xhtml:div', ns)
     assert_class(event_ranges, 'event-ranges')
 
     frame_margin = event_ranges.find('xhtml:table', ns)

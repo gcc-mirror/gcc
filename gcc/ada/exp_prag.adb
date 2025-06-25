@@ -3083,6 +3083,16 @@ package body Exp_Prag is
    end Expand_Pragma_Loop_Variant;
 
    --------------------------------
+   -- Expand_Pragma_Program_Exit --
+   --------------------------------
+
+   procedure Expand_Pragma_Program_Exit (Prag : Node_Id) is
+      pragma Unreferenced (Prag);
+   begin
+      null;
+   end Expand_Pragma_Program_Exit;
+
+   --------------------------------
    -- Expand_Pragma_Psect_Object --
    --------------------------------
 

@@ -29,34 +29,34 @@ along with GCC; see the file COPYING3.  If not see
    Roughly corresponds to logicalLocation's "kind" property in SARIF v2.1.0
    (section 3.33.7).  */
 
-enum logical_location_kind
+enum class logical_location_kind
 {
-  LOGICAL_LOCATION_KIND_UNKNOWN,
+  unknown,
 
   /* Kinds within executable code.  */
-  LOGICAL_LOCATION_KIND_FUNCTION,
-  LOGICAL_LOCATION_KIND_MEMBER,
-  LOGICAL_LOCATION_KIND_MODULE,
-  LOGICAL_LOCATION_KIND_NAMESPACE,
-  LOGICAL_LOCATION_KIND_TYPE,
-  LOGICAL_LOCATION_KIND_RETURN_TYPE,
-  LOGICAL_LOCATION_KIND_PARAMETER,
-  LOGICAL_LOCATION_KIND_VARIABLE,
+  function,
+  member,
+  module_,
+  namespace_,
+  type,
+  return_type,
+  parameter,
+  variable,
 
   /* Kinds within XML or HTML documents.  */
-  LOGICAL_LOCATION_KIND_ELEMENT,
-  LOGICAL_LOCATION_KIND_ATTRIBUTE,
-  LOGICAL_LOCATION_KIND_TEXT,
-  LOGICAL_LOCATION_KIND_COMMENT,
-  LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION,
-  LOGICAL_LOCATION_KIND_DTD,
-  LOGICAL_LOCATION_KIND_DECLARATION,
+  element,
+  attribute,
+  text,
+  comment,
+  processing_instruction,
+  dtd,
+  declaration,
 
   /* Kinds within JSON documents.  */
-  LOGICAL_LOCATION_KIND_OBJECT,
-  LOGICAL_LOCATION_KIND_ARRAY,
-  LOGICAL_LOCATION_KIND_PROPERTY,
-  LOGICAL_LOCATION_KIND_VALUE
+  object,
+  array,
+  property,
+  value
 };
 
 /* We want to efficiently support passing around logical locations in the

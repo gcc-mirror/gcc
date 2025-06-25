@@ -308,7 +308,7 @@ loop optimizer          Zdenek Dvorak           <ook@ucw.cz>
 LTO                     Richard Biener          <rguenther@suse.de>
 LTO plugin              Cary Coutant            <ccoutant@gmail.com>
 Plugin                  Le-Chun Wu              <lcwu@google.com>
-register allocation     Peter Bergner           <bergner@linux.ibm.com>
+register allocation     Peter Bergner           <bergner@tenstorrent.com>
 register allocation     Kenneth Zadeck          <zadeck@naturalbridge.com>
 register allocation     Seongbae Park           <seongbae.park@gmail.com>
 riscv port              Robin Dapp              <rdapp.gcc@gmail.com>
@@ -358,7 +358,7 @@ Serge Belyshev                  -               <belyshev@depni.sinp.msu.ru>
 Jon Beniston                    jbeniston       <jon@beniston.com>
 Andrew Bennett                  -               <andrew.bennett@imgtec.com>
 Andrew Benson                   abensonca       <abensonca@gmail.com>
-Peter Bergner                   bergner         <bergner@linux.ibm.com>
+Peter Bergner                   bergner         <bergner@tenstorrent.com>
 Daniel Berlin                   dberlin         <dberlin@dberlin.org>
 Pat Bernardi                    -               <bernardi@adacore.com>
 Jan Beulich                     -               <jbeulich@suse.com>
@@ -934,6 +934,7 @@ information.
 
 
 Soumya AR                                       <soumyaa@nvidia.com>
+Peter Bergner                                   <bergner@tenstorrent.com>
 Dhruv Chawla                                    <dhruvc@nvidia.com>
 Juergen Christ                                  <jchrist@linux.ibm.com>
 Giuseppe D'Angelo                               <giuseppe.dangelo@kdab.com>

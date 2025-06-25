@@ -34,9 +34,7 @@
 --  point types whose Small is the ratio of two Int values.
 
 generic
-
    type Int is range <>;
-   type Uns is mod <>;
 
    with procedure Scaled_Divide
           (X, Y, Z : Int;

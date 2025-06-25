@@ -23,12 +23,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Errid; use Errid;
 with Namet.Sp; use Namet.Sp;
 with Stringt;  use Stringt;
 with Uintp;    use Uintp;
 
 with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
-with Diagnostics.Constructors; use Diagnostics.Constructors;
 
 separate (Par)
 package body Endh is
@@ -899,6 +899,8 @@ package body Endh is
 
       Wrong_End_Start : Source_Ptr;
       Wrong_End_Finish : Source_Ptr;
+
+      Wrong_End_Span : Source_Span;
    begin
       --  Suppress message if this was a potentially junk entry (e.g. a record
       --  entry where no record keyword was present).
@@ -936,31 +938,38 @@ package body Endh is
       elsif End_Type = E_Loop then
          if Error_Msg_Node_1 = Empty then
 
-            if Debug_Flag_Underscore_DD then
+            Wrong_End_Start := Token_Ptr;
 
-               --  TODO: This is a quick hack to get the location of the
-               --  END LOOP for the demonstration.
+            while Token /= Tok_Semicolon loop
+               Scan; -- past semicolon
+            end loop;
 
-               Wrong_End_Start := Token_Ptr;
+            Wrong_End_Finish := Token_Ptr;
 
-               while Token /= Tok_Semicolon loop
-                  Scan; -- past semicolon
-               end loop;
+            Wrong_End_Span :=
+              To_Span
+                (First => Wrong_End_Start,
+                 Ptr   => Wrong_End_Start,
+                 Last  => Wrong_End_Finish);
 
-               Wrong_End_Finish := Token_Ptr;
+            Restore_Scan_State (Scan_State);
 
-               Restore_Scan_State (Scan_State);
-
-               Record_End_Loop_Expected_Error
-                 (End_Loc   => To_Span (First => Wrong_End_Start,
-                                        Ptr   => Wrong_End_Start,
-                                        Last  => Wrong_End_Finish),
-                  Start_Loc => Error_Msg_Sloc);
-
-            else
-               Error_Msg_SC -- CODEFIX
-                 ("`END LOOP;` expected@ for LOOP#!");
-            end if;
+            Error_Msg -- CODEFIX
+              (Msg        => "`END LOOP;` expected@ for LOOP#!",
+               Flag_Span  => Wrong_End_Span,
+               N          => Empty,
+               Error_Code => GNAT0004,
+               Spans      =>
+                 (1 => Secondary_Labeled_Span (To_Span (Error_Msg_Sloc))),
+               Fixes      =>
+                 (1 =>
+                    Fix
+                      (Description => "Replace with 'end loop;'",
+                       Edits       =>
+                         (1 =>
+                            Edit
+                              (Text => "end loop;",
+                               Span => Wrong_End_Span)))));
          else
             Error_Msg_SC -- CODEFIX
               ("`END LOOP &;` expected@!");

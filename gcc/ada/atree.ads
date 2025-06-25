@@ -285,34 +285,29 @@ package Atree is
 
    procedure Copy_Node (Source, Destination : Node_Or_Entity_Id);
    --  Copy the entire contents of the source node to the destination node.
-   --  The contents of the source node is not affected. If the source node
-   --  has an extension, then the destination must have an extension also.
-   --  The parent pointer of the destination and its list link, if any, are
-   --  not affected by the copy. Note that parent pointers of descendants
-   --  are not adjusted, so the descendants of the destination node after
-   --  the Copy_Node is completed have dubious parent pointers. Note that
-   --  this routine does NOT copy aspect specifications, the Has_Aspects
-   --  flag in the returned node will always be False. The caller must deal
-   --  with copying aspect specifications where this is required.
+   --  The contents of the source node is not affected. The parent pointer of
+   --  the destination and its list link, if any, are not affected by the copy.
+   --  Note that parent pointers of descendants are not adjusted, so the
+   --  descendants of the destination node after the Copy_Node is completed
+   --  have dubious parent pointers.
 
    function New_Copy (Source : Node_Id) return Node_Id;
    --  This function allocates a new node, and then initializes it by copying
    --  the contents of the source node into it. The contents of the source node
    --  is not affected. The target node is always marked as not being in a list
-   --  (even if the source is a list member), and not overloaded. The new node
-   --  will have an extension if the source has an extension. New_Copy (Empty)
-   --  returns Empty, and New_Copy (Error) returns Error. Note that, unlike
-   --  Copy_Separate_Tree, New_Copy does not recursively copy any descendants,
-   --  so in general parent pointers are not set correctly for the descendants
-   --  of the copied node.
+   --  (even if the source is a list member), and not overloaded.
+   --  New_Copy (Empty) returns Empty, and New_Copy (Error) returns Error. Note
+   --  that, unlike Copy_Separate_Tree, New_Copy does not recursively copy any
+   --  descendants, so in general parent pointers are not set correctly for the
+   --  descendants of the copied node.
 
    function Relocate_Node (Source : Node_Id) return Node_Id;
    --  Source is a non-entity node that is to be relocated. A new node is
    --  allocated, and the contents of Source are copied to this node, using
    --  New_Copy. The parent pointers of descendants of the node are then
    --  adjusted to point to the relocated copy. The original node is not
-   --  modified, but the parent pointers of its descendants are no longer
-   --  valid. The new copy is always marked as not overloaded. This routine is
+   --  modified, but the parent pointers of its children no longer point back
+   --  at it. The new copy is always marked as not overloaded. This routine is
    --  used in conjunction with the tree rewrite routines (see descriptions of
    --  Replace/Rewrite).
    --
@@ -537,16 +532,13 @@ package Atree is
    procedure Rewrite (Old_Node, New_Node : Node_Id);
    --  This is used when a complete subtree is to be replaced. Old_Node is the
    --  root of the old subtree to be replaced, and New_Node is the root of the
-   --  newly constructed replacement subtree. The actual mechanism is to swap
-   --  the contents of these two nodes fixing up the parent pointers of the
-   --  replaced node (we do not attempt to preserve parent pointers for the
-   --  original node).
-   --  ??? The above explanation is incorrect, instead Copy_Node is called.
+   --  newly constructed replacement subtree.
    --
    --  Note: New_Node may not contain references to Old_Node, for example as
-   --  descendants, since the rewrite would make such references invalid. If
-   --  New_Node does need to reference Old_Node, then these references should
-   --  be to a relocated copy of Old_Node (see Relocate_Node procedure).
+   --  descendants, since the rewrite would turn them into cyclic
+   --  self-references. If New_Node does need to reference Old_Node, then these
+   --  references should be to a relocated copy of Old_Node (see Relocate_Node
+   --  procedure).
    --
    --  Note: The Original_Node function applied to Old_Node (which has now
    --  been replaced by the contents of New_Node), can be used to obtain the
@@ -560,10 +552,8 @@ package Atree is
    --  original contents of the Old_Node, but rather the New_Node value.
    --  Replace also preserves the setting of Comes_From_Source.
    --
-   --  Note that New_Node must not contain references to Old_Node, for example
-   --  as descendants, since the rewrite would make such references invalid. If
-   --  New_Node does need to reference Old_Node, then these references should
-   --  be to a relocated copy of Old_Node (see Relocate_Node procedure).
+   --  The note in the documentation of Rewrite about the risk of creating
+   --  cyclic references also applies here.
    --
    --  Replace is used in certain circumstances where it is desirable to
    --  suppress any history of the rewriting operation. Notably, it is used

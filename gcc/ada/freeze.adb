@@ -715,10 +715,11 @@ package body Freeze is
          then
             declare
                O_Ent : Entity_Id;
+               O_Typ : Entity_Id;
                Off   : Boolean;
 
             begin
-               Find_Overlaid_Entity (Addr, O_Ent, Off);
+               Find_Overlaid_Entity (Addr, O_Ent, O_Typ, Off);
 
                if Ekind (O_Ent) = E_Constant
                  and then Etype (O_Ent) = Typ
@@ -6869,9 +6870,10 @@ package body Freeze is
                end if;
             end if;
 
-            --  Static objects require special handling
+            --  Statically allocated objects require special handling
 
             if (Ekind (E) = E_Constant or else Ekind (E) = E_Variable)
+              and then No (Renamed_Object (E))
               and then Is_Statically_Allocated (E)
             then
                Freeze_Static_Object (E);
@@ -9389,16 +9391,17 @@ package body Freeze is
       --  pre/postconditions during expansion of the subprogram body, the
       --  subprogram is already installed.
 
-      --  Call Preanalyze_Spec_Expression instead of Preanalyze_And_Resolve
-      --  for the sake of consistency with Analyze_Expression_Function.
+      --  Call Preanalyze_And_Resolve_Spec_Expression instead of Preanalyze_
+      --  And_Resolve for the sake of consistency with Analyze_Expression_
+      --  Function.
 
       if Def_Id /= Current_Scope then
          Push_Scope (Def_Id);
          Install_Formals (Def_Id);
-         Preanalyze_Spec_Expression (Dup_Expr, Typ);
+         Preanalyze_And_Resolve_Spec_Expression (Dup_Expr, Typ);
          End_Scope;
       else
-         Preanalyze_Spec_Expression (Dup_Expr, Typ);
+         Preanalyze_And_Resolve_Spec_Expression (Dup_Expr, Typ);
       end if;
 
       --  Restore certain attributes of Def_Id since the preanalysis may
@@ -10230,10 +10233,16 @@ package body Freeze is
          --  issue an error message saying that this object cannot be imported
          --  or exported. If it has an address clause it is an overlay in the
          --  current partition and the static requirement is not relevant.
-         --  Do not issue any error message when ignoring rep clauses.
+         --  Do not issue any error message when ignoring rep clauses or for
+         --  compiler-generated entities.
 
          if Ignore_Rep_Clauses then
             null;
+
+         elsif not Comes_From_Source (E) then
+            pragma
+              Assert (Nkind (Parent (Declaration_Node (E))) in N_Case_Statement
+                                                             | N_If_Statement);
 
          elsif Is_Imported (E) then
             if No (Address_Clause (E)) then

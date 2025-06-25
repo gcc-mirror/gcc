@@ -1605,7 +1605,9 @@ procedure Gnatls is
                Name_Len := 0;
 
                if not Is_Absolute_Path (Self (First .. Last)) then
-                  Add_Str_To_Name_Buffer (Get_Current_Dir);  -- ??? System call
+                  Add_Str_To_Name_Buffer
+                    (GNAT.Directory_Operations.Get_Current_Dir);
+
                   Add_Char_To_Name_Buffer (Directory_Separator);
                end if;
 

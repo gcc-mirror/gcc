@@ -18,5 +18,5 @@ foo (int i)
 /* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)bp" } } */
 /* { dg-final { scan-assembler-not "(push|pop)l\[\\t \]*%edi" { target ia32 } } } */
 /* { dg-final { scan-assembler-not "(push|pop)q\[\\t \]*%r\[0-9\]+" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "pushq\[\\t \]*%rdi" 1 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "popq\[\\t \]*%rdi" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "(pushq.*%rdi|subq.*\\\$8,.*%rsp)" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "(popq.*%rdi|addq.*\\\$8,.*%rsp)" 1 { target { ! ia32 } } } } */

@@ -191,11 +191,12 @@ handle_errno(cblc_file_t *file, const char *function, const char *msg)
 
 static
 char *
-get_filename( cblc_file_t *file,
+get_filename( const cblc_file_t *file,
               int is_quoted)
   {
   static size_t fname_size = MINIMUM_ALLOCATION_SIZE;
-  static char *fname = (char *)malloc(MINIMUM_ALLOCATION_SIZE);
+  static char *fname = static_cast<char *>(malloc(MINIMUM_ALLOCATION_SIZE));
+  massert(fname);
   fname = internal_to_console(&fname,
                               &fname_size,
                               file->filename,
@@ -205,14 +206,15 @@ get_filename( cblc_file_t *file,
     {
     // We have been given something that might be the name of an
     // environment variable that contains the filename:
-    char *p_from_environment = getenv(fname);
+    const char *p_from_environment = getenv(fname);
     if( p_from_environment )
       {
       if( strlen(p_from_environment)+1 > fname_size )
         {
         fname_size = strlen(p_from_environment)+1;
         free(fname);
-        fname = (char *)malloc(fname_size);
+        fname = static_cast<char *>(malloc(fname_size));
+        massert(fname);
         }
       strcpy(fname, p_from_environment);
       }
@@ -272,7 +274,7 @@ __gg__set_user_status(cblc_field_t *ustatus, cblc_file_t *file)
   }
 
 static long
-max_value(cblc_field_t *key)
+max_value(const cblc_field_t *key)
   {
   long retval;
   if( key->digits )
@@ -537,7 +539,8 @@ relative_file_delete_varying(cblc_file_t *file, bool is_random)
 
   size_t payload_length;
 
-  unsigned char *stash = (unsigned char *)malloc(file->default_record->capacity);
+  unsigned char *stash = static_cast<unsigned char *>(malloc(file->default_record->capacity));
+  massert(stash);
   memcpy(stash, file->default_record->data, file->default_record->capacity);
   long starting_pos = ftell(file->file_pointer);
 
@@ -654,7 +657,8 @@ relative_file_delete(cblc_file_t *file, bool is_random)
 
   char record_marker;
 
-  unsigned char *stash = (unsigned char *)malloc(file->default_record->capacity);
+  unsigned char *stash = static_cast<unsigned char *>(malloc(file->default_record->capacity));
+  massert(stash);
   memcpy(stash, file->default_record->data, file->default_record->capacity);
 
   long starting_pos = ftell(file->file_pointer);
@@ -829,7 +833,7 @@ read_an_indexed_record( cblc_file_t *file,
     goto done;
     }
 
-  record_length  = ach[0]<<8;
+  record_length  = static_cast<long>(ach[0])<<8;
   record_length += ach[1];
   if(ach[2] != 0)
     {
@@ -906,7 +910,7 @@ position_state_preserve(cblc_file_t *file, position_state_t &state)
   }
 
 static void
-position_state_restore(cblc_file_t *file, position_state_t &state)
+position_state_restore(cblc_file_t *file, const position_state_t &state)
   {
   file->recent_key = state.recent_key;
   fseek(file->file_pointer, state.starting_position, SEEK_SET);
@@ -973,7 +977,8 @@ indexed_file_delete(cblc_file_t *file, bool is_random)
   // and the record area itself are unchanged by the delete operation.
 
   // So, we save the current record area:
-  stash = (unsigned char *)malloc(file->record_area_max);
+  stash = static_cast<unsigned char *>(malloc(file->record_area_max));
+  massert(stash);
   memcpy(stash, file->default_record->data, file->record_area_max);
 
   // And the position state of our file
@@ -1051,8 +1056,6 @@ indexed_file_delete(cblc_file_t *file, bool is_random)
       // we find one, we check to see if the keys match.  If the keys don't
       // match, then we have to remove the existing one from the index.
 
-      std::vector<unsigned char> the_key
-                                     = file_indexed_make_key(file, key_number);
       bool deleting = true;
       while(deleting)
         {
@@ -1069,6 +1072,7 @@ indexed_file_delete(cblc_file_t *file, bool is_random)
             deleting = true;
             break;
             }
+
           it++;
           }
         }
@@ -1234,7 +1238,7 @@ indexed_file_start( cblc_file_t *file,
           file->io_status = FsErrno;
           }
         }
-      else if( result < 0 )
+      else // if( result < 0 )
         {
         // The index is less than the key.
         if(    relop == lt_op
@@ -1656,7 +1660,7 @@ sequential_file_rewrite( cblc_file_t *file, size_t length )
 
   if( file->record_area_min != file->record_area_max )
     {
-    unsigned char preamble[4] =
+    const unsigned char preamble[4] =
       {
       (unsigned char)(bytes_to_write>>8),
       (unsigned char)(bytes_to_write),
@@ -1687,7 +1691,6 @@ done:
   // Per the standard, return the file location pointer back to whence it came:
   fseek(file->file_pointer, starting_position, SEEK_SET);
   handle_ferror(file, __func__, "fseek() error");
-  file->prior_op = file_op_rewrite;
   file->prior_op = file_op_rewrite;
   establish_status(file, starting_position);
   }
@@ -1804,7 +1807,7 @@ relative_file_rewrite_varying( cblc_file_t *file, bool is_random )
 done:
   // Per the standard, return the file location pointer back to whence it came:
   fseek(file->file_pointer, starting_position, SEEK_SET);
-  handle_ferror(file, __func__, "fseek() error"); 
+  handle_ferror(file, __func__, "fseek() error");
   file->prior_op = file_op_rewrite;
   establish_status(file, starting_position);
   }
@@ -1905,7 +1908,7 @@ relative_file_rewrite( cblc_file_t *file, size_t length, bool is_random )
 done:
   // Per the standard, return the file location pointer back to whence it came:
   fseek(file->file_pointer, starting_position, SEEK_SET);
-  handle_ferror(file, __func__, "fseek() error"); 
+  handle_ferror(file, __func__, "fseek() error");
   file->prior_op = file_op_rewrite;
   establish_status(file, starting_position);
   }
@@ -2210,7 +2213,7 @@ __io__file_rewrite(cblc_file_t *file, size_t length, bool is_random)
 
 static void
 relative_file_write_varying(cblc_file_t    *file,
-                            unsigned char  *location,
+                      const unsigned char  *location,
                             size_t          length,
                             bool            is_random)
   {
@@ -2359,7 +2362,7 @@ done:
 
 static void
 relative_file_write(cblc_file_t    *file,
-                    unsigned char  *location,
+              const unsigned char  *location,
                     size_t          length,
                     bool            is_random)
   {
@@ -2374,7 +2377,7 @@ relative_file_write(cblc_file_t    *file,
   file->io_status = FsErrno;
 
   long necessary_file_size;
-  unsigned char achPostamble[] = {internal_cr, internal_newline};
+  const unsigned char achPostamble[] = {internal_cr, internal_newline};
 
   relative_file_parameters rfp;
 
@@ -2493,7 +2496,7 @@ done:
 
 static void
 sequential_file_write(cblc_file_t    *file,
-                      unsigned char  *location,
+                const unsigned char  *location,
                       size_t          length,
                       int             after,
                       int             lines)
@@ -2609,7 +2612,7 @@ sequential_file_write(cblc_file_t    *file,
           {
           // Because of the min/max mismatch, we require a preamble:
           // The first two bytes are the big-endian character count
-          unsigned char preamble[4] =
+          const unsigned char preamble[4] =
             {
             (unsigned char)(characters_to_write>>8),
             (unsigned char)(characters_to_write),
@@ -2681,7 +2684,7 @@ done:
 
 static void
 indexed_file_write( cblc_file_t    *file,
-                    unsigned char  *location,
+              const unsigned char  *location,
                     size_t          length,
                     bool            is_random)
   {
@@ -2752,13 +2755,13 @@ indexed_file_write( cblc_file_t    *file,
     // We are allowed to do the write, but only if there will be no key
     // violations as a result:
 
-    for(size_t  key_number=1;
-                key_number<file->supplemental->indexes.size();
-                key_number++)
+    for(size_t  keynum=1;
+                keynum<file->supplemental->indexes.size();
+                keynum++)
       {
-      if( file->supplemental->uniques[key_number] )
+      if( file->supplemental->uniques[keynum] )
         {
-        long record_position = file_indexed_first_position(file, key_number);
+        long record_position = file_indexed_first_position(file, keynum);
         if( record_position != -1 )
           {
           // No can do, because we already have a unique key with that value
@@ -2849,7 +2852,7 @@ done:
 
 static void
 __io__file_write(   cblc_file_t    *file,
-                    unsigned char  *location,
+              const unsigned char  *location,
                     size_t          length,
                     int             after,
                     int             lines,
@@ -2983,7 +2986,7 @@ line_sequential_file_read(  cblc_file_t *file)
       {
       break;
       }
-    if( ch == file->delimiter || ch == EOF )
+    if( ch == EOF )
       {
       hit_eof = true;
       clearerr(file->file_pointer);
@@ -3647,6 +3650,7 @@ indexed_file_read(  cblc_file_t  *file,
       goto done;
       }
 
+    // cppcheck-suppress derefInvalidIteratorRedundantCheck
     fpos = file_index->current_iterator->second;
 
     if( file_index->current_iterator == file_index->key_to_position.end() )
@@ -3728,6 +3732,7 @@ indexed_file_read(  cblc_file_t  *file,
 
     // We are ready to proceed
 
+    // cppcheck-suppress derefInvalidIteratorRedundantCheck
     fpos = file_index->current_iterator->second;
     if( file_index->current_iterator == file_index->key_to_position.end() )
       {
@@ -3922,7 +3927,6 @@ file_indexed_open(cblc_file_t *file)
     {
     if( file->key_numbers[index] != current_key_number )
       {
-      file_index_t file_index;
       file->supplemental->indexes.push_back(file_index);
       current_key_number = file->key_numbers[index];
       file->supplemental->uniques.push_back(file->uniques[index]);
@@ -3952,7 +3956,8 @@ file_indexed_open(cblc_file_t *file)
         // We need to open the file for reading, and build the
         // maps for each index:
         static size_t fname_size = MINIMUM_ALLOCATION_SIZE;
-        static char *fname = (char *)malloc(fname_size);
+        static char *fname = static_cast<char *>(malloc(fname_size));
+        massert(fname);
 
         internal_to_console(&fname,
                             &fname_size,
@@ -3969,7 +3974,8 @@ file_indexed_open(cblc_file_t *file)
           }
 
         // Stash the existing record area:
-        stash = (unsigned char *)malloc(file->record_area_max);
+        stash = static_cast<unsigned char *>(malloc(file->record_area_max));
+        massert(stash);
         memcpy( stash,
                 file->default_record->data,
                 file->record_area_max);
@@ -4111,7 +4117,8 @@ __gg__file_reopen(cblc_file_t *file, int mode_char)
       }
 
     static size_t fname_size = MINIMUM_ALLOCATION_SIZE;
-    static char *fname = (char *)malloc(fname_size);
+    static char *fname = static_cast<char *>(malloc(fname_size));
+    massert(fname)
     internal_to_console(&fname,
                         &fname_size,
                         file->filename,
@@ -4465,7 +4472,7 @@ public:
   typedef void (read_t)( cblc_file_t *file,
                          int where );
   typedef void (write_t)( cblc_file_t *file,
-                          unsigned char  *location,
+                          const unsigned char  *location,
                           size_t length,
                           int after,
                           int lines,

@@ -307,6 +307,9 @@ private:
      diagnostic.  */
   vec<diagnostic_classification_change_t> m_classification_history;
 
+  /* For diagnostic_context::get_classification_history, declared later.  */
+  friend class diagnostic_context;
+
   /* For pragma push/pop.  */
   vec<int> m_push_list;
 };
@@ -829,6 +832,15 @@ public:
   {
     m_abort_on_error = val;
   }
+
+  /* Accessor for use in serialization, e.g. by C++ modules.  */
+  auto &
+  get_classification_history ()
+  {
+    return m_option_classifier.m_classification_history;
+  }
+
+  void set_main_input_filename (const char *filename);
 
 private:
   void error_recursion () ATTRIBUTE_NORETURN;

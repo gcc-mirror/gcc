@@ -2,6 +2,7 @@
 /* { dg-options "-g" } */
 
 #define INCLUDE_MEMORY
+#define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "gcc-plugin.h"
 #include "config.h"

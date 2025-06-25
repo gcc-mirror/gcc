@@ -364,6 +364,12 @@ class pending_diagnostic
 				tree var, state_machine::state_t state,
 				checker_path *emission_path);
 
+  virtual const program_state *
+  get_final_state () const
+  {
+    return nullptr;
+  }
+
   /* Vfunc for determining that this pending_diagnostic supercedes OTHER,
      and that OTHER should therefore not be emitted.
      They have already been tested for being at the same stmt.  */

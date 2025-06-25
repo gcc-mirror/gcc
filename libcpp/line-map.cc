@@ -767,6 +767,17 @@ linemap_module_restore (line_maps *set, line_map_uint_t lwm)
   return 0;
 }
 
+/* TRUE iff the location comes from a module import.  */
+
+bool
+linemap_location_from_module_p (const line_maps *set, location_t loc)
+{
+  const line_map_ordinary *map = linemap_ordinary_map_lookup (set, loc);
+  while (map && map->reason != LC_MODULE)
+    map = linemap_included_from_linemap (set, map);
+  return !!map;
+}
+
 /* Returns TRUE if the line table set tracks token locations across
    macro expansion, FALSE otherwise.  */
 
@@ -1949,6 +1960,28 @@ linemap_expand_location (const line_maps *set,
   return xloc;
 }
 
+bool
+operator== (const expanded_location &a,
+	    const expanded_location &b)
+{
+  /* "file" can be null; for them to be equal they must both
+     have either null or nonnull values, and if non-null
+     they must compare as equal.  */
+  if ((a.file == nullptr) != (b.file == nullptr))
+    return false;
+  if (a.file && strcmp (a.file, b.file))
+    return false;
+
+  if (a.line != b.line)
+    return false;
+  if (a.column != b.column)
+    return false;
+  if (a.data != b.data)
+    return false;
+  if (a.sysp != b.sysp)
+    return false;
+  return true;
+}
 
 /* Dump line map at index IX in line table SET to STREAM.  If STREAM
    is NULL, use stderr.  IS_MACRO is true if the caller wants to

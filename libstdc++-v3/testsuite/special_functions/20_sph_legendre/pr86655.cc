@@ -37,7 +37,6 @@ template<typename _Tp>
   void
   test_m_gt_l()
   {
-    bool test __attribute__((unused)) = true;
     for (auto l : {0u, 1u, 2u, 5u})
       for (auto m : {l + 1u, l + 2u})
 	for (auto i : {-2, -1, 0, 1, 2})

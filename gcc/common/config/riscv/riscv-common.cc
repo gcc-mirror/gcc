@@ -290,15 +290,15 @@ static const riscv_profiles riscv_profiles_table[] =
   /* RVA23 contains all mandatory base ISA for RVA22U64 and the new extension
      'v,zihintntl,zvfhmin,zvbb,zvkt,zicond,zimop,zcmop,zfa,zawrs' as mandatory
      extensions.  */
-  {"rva23u64", "rv64imafdcv_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
+  {"rva23u64", "rv64imafdcbv_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
    "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
    "_zicboz_zfhmin_zkt_zvfhmin_zvbb_zvkt_zihintntl_zicond_zimop_zcmop_zcb"
-   "_zfa_zawrs"},
+   "_zfa_zawrs_supm"},
 
   /* RVB23 contains all mandatory base ISA for RVA22U64 and the new extension
      'zihintntl,zicond,zimop,zcmop,zfa,zawrs' as mandatory
      extensions.  */
-  {"rvb23u64", "rv64imafdc_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
+  {"rvb23u64", "rv64imafdcb_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
    "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
    "_zicboz_zfhmin_zkt_zihintntl_zicond_zimop_zcmop_zcb"
    "_zfa_zawrs"},
@@ -1129,8 +1129,10 @@ riscv_subset_list::check_implied_ext ()
 void
 riscv_subset_list::handle_combine_ext ()
 {
-  for (const auto &[ext_name, ext_info] : riscv_ext_infos)
+  for (const auto &pair : riscv_ext_infos)
     {
+      const std::string &ext_name = pair.first;
+      auto &ext_info = pair.second;
       bool is_combined = true;
       /* Skip if this extension don't need to combine.  */
       if (!ext_info.need_combine_p ())
@@ -1558,20 +1560,27 @@ riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
   if (opts)
     {
       /* Clean up target flags before we set.  */
-      for (const auto &[ext_name, ext_info] : riscv_ext_infos)
-	ext_info.clean_opts (opts);
+      for (const auto &pair : riscv_ext_infos)
+	{
+	  auto &ext_info = pair.second;
+	  ext_info.clean_opts (opts);
+	}
 
       if (subset_list->xlen () == 32)
 	opts->x_riscv_isa_flags &= ~MASK_64BIT;
       else if (subset_list->xlen () == 64)
 	opts->x_riscv_isa_flags |= MASK_64BIT;
 
-      for (const auto &[ext_name, ext_info] : riscv_ext_infos)
-	if (subset_list->lookup (ext_name.c_str ()))
-	  {
-	    /* Set the extension flag.  */
-	    ext_info.set_opts (opts);
-	  }
+      for (const auto &pair : riscv_ext_infos)
+	{
+	  const std::string &ext_name = pair.first;
+	  auto &ext_info = pair.second;
+	  if (subset_list->lookup (ext_name.c_str ()))
+	    {
+	      /* Set the extension flag.  */
+	      ext_info.set_opts (opts);
+	    }
+	}
     }
 }
 

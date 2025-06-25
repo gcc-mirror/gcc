@@ -47,6 +47,8 @@
 #include "langhooks.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "value-range.h"
+#include "tree-ssanames.h"
 #include "aarch64-sve-builtins.h"
 #include "aarch64-sve-builtins-base.h"
 #include "aarch64-sve-builtins-sve2.h"
@@ -3664,7 +3666,8 @@ gimple_folder::fold_pfalse ()
 /* Convert the lhs and all non-boolean vector-type operands to TYPE.
    Pass the converted variables to the callback FP, and finally convert the
    result back to the original type. Add the necessary conversion statements.
-   Return the new call.  */
+   Return the new call. Note the tree argument to the callback FP, can only
+   be set once; it will always be a SSA_NAME.  */
 gimple *
 gimple_folder::convert_and_fold (tree type,
 				 gimple *(*fp) (gimple_folder &,
@@ -3675,7 +3678,7 @@ gimple_folder::convert_and_fold (tree type,
   tree old_ty = TREE_TYPE (lhs);
   gimple_seq stmts = NULL;
   bool convert_lhs_p = !useless_type_conversion_p (type, old_ty);
-  tree lhs_conv = convert_lhs_p ? create_tmp_var (type) : lhs;
+  tree lhs_conv = convert_lhs_p ? make_ssa_name (type) : lhs;
   unsigned int num_args = gimple_call_num_args (call);
   auto_vec<tree, 16> args_conv;
   args_conv.safe_grow (num_args);

@@ -211,7 +211,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-nallfl$(objext) \
   a-nalofl$(objext) \
   a-nashfl$(objext) \
-  a-nbnbig$(objext) \
   a-nbnbin$(objext) \
   a-nbnbre$(objext) \
   a-ncelfu$(objext) \
@@ -745,8 +744,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-shasto$(objext) \
   s-soflin$(objext) \
   s-soliin$(objext) \
-  s-spark$(objext) \
-  s-spcuop$(objext) \
   s-spsufi$(objext) \
   s-stache$(objext) \
   s-stalib$(objext) \
@@ -772,7 +769,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-vaenu8$(objext) \
   s-vafi32$(objext) \
   s-vafi64$(objext) \
-  s-vaispe$(objext) \
   s-valboo$(objext) \
   s-valcha$(objext) \
   s-valflt$(objext) \
@@ -782,7 +778,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-vallli$(objext) \
   s-valllu$(objext) \
   s-valrea$(objext) \
-  s-valspe$(objext) \
   s-valued$(objext) \
   s-valuef$(objext) \
   s-valuei$(objext) \
@@ -792,14 +787,9 @@ GNATRTL_NONTASKING_OBJS= \
   s-valuns$(objext) \
   s-valuti$(objext) \
   s-valwch$(objext) \
-  s-vauspe$(objext) \
   s-veboop$(objext) \
   s-vector$(objext) \
   s-vercon$(objext) \
-  s-vs_int$(objext) \
-  s-vs_lli$(objext) \
-  s-vs_llu$(objext) \
-  s-vs_uns$(objext) \
   s-wchcnv$(objext) \
   s-wchcon$(objext) \
   s-wchjis$(objext) \
@@ -1046,8 +1036,6 @@ GNATRTL_128BIT_OBJS = \
   s-vafi128$(objext) \
   s-valllli$(objext) \
   s-vallllu$(objext) \
-  s-vsllli$(objext) \
-  s-vslllu$(objext) \
   s-widllli$(objext) \
   s-widlllu$(objext)
 
@@ -1419,24 +1407,32 @@ ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out arm% aarch64 linux-android%,$(target_cpu) $(target_os))),)
 
   LIBGNAT_TARGET_PAIRS = \
+  a-exetim.adb<libgnarl/a-exetim__posix.adb \
+  a-exetim.ads<libgnarl/a-exetim__default.ads \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
+  a-synbar.adb<libgnarl/a-synbar__posix.adb \
+  a-synbar.ads<libgnarl/a-synbar__posix.ads \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__android.adb \
-  s-osinte.adb<libgnarl/s-osinte__android.adb \
   s-osinte.ads<libgnarl/s-osinte__android.ads \
+  s-osinte.adb<libgnarl/s-osinte__android.adb \
   s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
-  s-taprop.adb<libgnarl/s-taprop__posix.adb \
+  s-parame.adb<libgnat/s-parame__aarch64-linux.adb \
+  s-taprop.adb<libgnarl/s-taprop__linux.adb \
+  s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
+  s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
+  s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
-  s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
-  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-arm.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
-  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
 
   # ARM and aarch64 rely on different unwinding mechanisms, and as
   # a 64bit target, aarch64 can also incorporate support for 128bit
@@ -3246,8 +3242,92 @@ ADA_EXCLUDE_SRCS =\
   i-vxwoio.adb i-vxwoio.ads i-vxwork.ads \
   s-linux.ads  s-vxwext.adb s-vxwext.ads s-win32.ads  s-winext.ads \
   s-stchop.ads s-stchop.adb \
-  s-strcom.adb s-strcom.ads s-thread.ads \
+  s-strcom.ads s-strcom.adb \
+  s-thread.ads \
   s-qnx.ads \
+  s-arit128.ads s-arit128.adb \
+  s-casi128.ads s-casi128.adb \
+  s-caun128.ads s-caun128.adb \
+  s-exnllli.ads \
+  s-expllli.ads \
+  s-explllu.ads \
+  s-fode128.ads \
+  s-fofi128.ads \
+  s-imde128.ads \
+  s-imfi128.ads \
+  s-imglllb.ads \
+  s-imgllli.ads \
+  s-imglllu.ads \
+  s-imglllw.ads \
+  s-pack65.ads s-pack65.adb \
+  s-pack66.ads s-pack66.adb \
+  s-pack67.ads s-pack67.adb \
+  s-pack68.ads s-pack68.adb \
+  s-pack69.ads s-pack69.adb \
+  s-pack70.ads s-pack70.adb \
+  s-pack71.ads s-pack71.adb \
+  s-pack72.ads s-pack72.adb \
+  s-pack73.ads s-pack73.adb \
+  s-pack74.ads s-pack74.adb \
+  s-pack75.ads s-pack75.adb \
+  s-pack76.ads s-pack76.adb \
+  s-pack77.ads s-pack77.adb \
+  s-pack78.ads s-pack78.adb \
+  s-pack79.ads s-pack79.adb \
+  s-pack80.ads s-pack80.adb \
+  s-pack81.ads s-pack81.adb \
+  s-pack82.ads s-pack82.adb \
+  s-pack83.ads s-pack83.adb \
+  s-pack84.ads s-pack84.adb \
+  s-pack85.ads s-pack85.adb \
+  s-pack86.ads s-pack86.adb \
+  s-pack87.ads s-pack87.adb \
+  s-pack88.ads s-pack88.adb \
+  s-pack89.ads s-pack89.adb \
+  s-pack90.ads s-pack90.adb \
+  s-pack91.ads s-pack91.adb \
+  s-pack92.ads s-pack92.adb \
+  s-pack93.ads s-pack93.adb \
+  s-pack94.ads s-pack94.adb \
+  s-pack95.ads s-pack95.adb \
+  s-pack96.ads s-pack96.adb \
+  s-pack97.ads s-pack97.adb \
+  s-pack98.ads s-pack98.adb \
+  s-pack99.ads s-pack99.adb \
+  s-pack100.ads s-pack100.adb \
+  s-pack101.ads s-pack101.adb \
+  s-pack102.ads s-pack102.adb \
+  s-pack103.ads s-pack103.adb \
+  s-pack104.ads s-pack104.adb \
+  s-pack105.ads s-pack105.adb \
+  s-pack106.ads s-pack106.adb \
+  s-pack107.ads s-pack107.adb \
+  s-pack108.ads s-pack108.adb \
+  s-pack109.ads s-pack109.adb \
+  s-pack110.ads s-pack110.adb \
+  s-pack111.ads s-pack111.adb \
+  s-pack112.ads s-pack112.adb \
+  s-pack113.ads s-pack113.adb \
+  s-pack114.ads s-pack114.adb \
+  s-pack115.ads s-pack115.adb \
+  s-pack116.ads s-pack116.adb \
+  s-pack117.ads s-pack117.adb \
+  s-pack118.ads s-pack118.adb \
+  s-pack119.ads s-pack119.adb \
+  s-pack120.ads s-pack120.adb \
+  s-pack121.ads s-pack121.adb \
+  s-pack122.ads s-pack122.adb \
+  s-pack123.ads s-pack123.adb \
+  s-pack124.ads s-pack124.adb \
+  s-pack125.ads s-pack125.adb \
+  s-pack126.ads s-pack126.adb \
+  s-pack127.ads s-pack127.adb \
+  s-vade128.ads \
+  s-vafi128.ads \
+  s-valllli.ads \
+  s-vallllu.ads \
+  s-widllli.ads \
+  s-widlllu.ads
 
 # ADA_EXCLUDE_SRCS without the sources used by the target
 ADA_EXCLUDE_FILES=$(filter-out \

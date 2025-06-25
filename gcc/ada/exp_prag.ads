@@ -72,4 +72,8 @@ package Exp_Prag is
    --  of Prag is replaced with a reference to procedure with checks for the
    --  variant expressions.
 
+   procedure Expand_Pragma_Program_Exit (Prag : Node_Id);
+   --  This routine only exists for consistency with other pragmas, since
+   --  Program_Exit has no meaningful expansion.
+
 end Exp_Prag;

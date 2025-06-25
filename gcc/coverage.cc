@@ -1253,6 +1253,9 @@ coverage_obj_finish (vec<constructor_elt, va_gc> *ctor,
 void
 coverage_init (const char *filename)
 {
+  /* If we are in LTO, the profile will be read from object files.  */
+  if (in_lto_p)
+    return;
   const char *original_filename = filename;
   int original_len = strlen (original_filename);
 #if HAVE_DOS_BASED_FILE_SYSTEM

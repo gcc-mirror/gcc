@@ -463,11 +463,13 @@ package Einfo is
 
 --       For an access_to_protected_subprogram parameter it is the declaration
 --       of the corresponding formal parameter.
---
---       Itypes have no explicit declaration, and therefore are not attached to
---       the tree: their Parent field is always empty. The Associated_Node_For_
---       Itype is the only way to determine the construct that leads to the
---       creation of a given itype entity.
+
+--       Itypes need not have an explicit declaration, in which case they are
+--       not attached to the tree through the Parent field, which is empty. In
+--       other cases, they have one and are attached to the tree through the
+--       Parent field as usual. Associated_Node_For_Itype should be used to
+--       determine the construct that leads to the creation of a given itype
+--       entity.
 
 --    Associated_Storage_Pool [root type only]
 --       Defined in simple and general access type entities. References the
@@ -832,12 +834,6 @@ package Einfo is
 --       Default_Value aspect specification for the type, or inherited
 --       on derivation.
 
---    Default_Expr_Function
---       Defined in parameters. It holds the entity of the parameterless
---       function that is built to evaluate the default expression if it is
---       more complex than a simple identifier or literal. For the latter
---       simple cases or if there is no default value, this field is Empty.
-
 --    Default_Expressions_Processed
 --       A flag in subprograms (functions, operators, procedures) and in
 --       entries and entry families used to indicate that default expressions
@@ -863,12 +859,6 @@ package Einfo is
 --       Defined in fixed and decimal types. Points to a universal real
 --       that holds value of delta for the type, as given in the declaration
 --       or as inherited by a subtype or derived type.
-
---    Dependent_Instances
---       Defined in packages that are instances. Holds list of instances
---       of inner generics. Used to place freeze nodes for those instances
---       after that of the current one, i.e. after the corresponding generic
---       bodies.
 
 --    Depends_On_Private
 --       Defined in all type entities. Set if the type is private or if it
@@ -1462,11 +1452,6 @@ package Einfo is
 --       associates generic parameters with the corresponding instances, in
 --       those cases where the instance is an entity.
 
---    Handler_Records
---       Defined in subprogram and package entities. Points to a list of
---       identifiers referencing the handler record entities for the
---       corresponding unit.
-
 --    Has_Aliased_Components [implementation base type only]
 --       Defined in array type entities. Indicates that the component type
 --       of the array is aliased. Should this also be set for records to
@@ -1623,7 +1608,7 @@ package Einfo is
 
 --    Has_Dynamic_Predicate_Aspect
 --       Defined in all types and subtypes. Set if a Dynamic_Predicate aspect
---       was explicitly applied to the type. Generally we treat predicates as
+--       was applied to the type or subtype. Generally we treat predicates as
 --       static if possible, regardless of whether they are specified using
 --       Predicate, Static_Predicate, or Dynamic_Predicate. And if a predicate
 --       can be treated as static (i.e. its expression is predicate-static),
@@ -1704,7 +1689,7 @@ package Einfo is
 --
 --    Has_Homonym
 --       Defined in all entities. Set if an entity has a homonym in the same
---       scope. Used by the backend to generate unique names for all entities.
+--       scope. Used by Exp_Dbug to generate unique names for all entities.
 
 --    Has_Implicit_Dereference
 --       Defined in types and discriminants. Set if the type has an aspect
@@ -2261,6 +2246,11 @@ package Einfo is
 --       not empty, the instantiation, which appears in a package declaration,
 --       is relocated to the corresponding package body, which must have a
 --       corresponding nonlimited with_clause.
+
+--    Incomplete_View
+--       Defined in all entities. Present in those that are completions of
+--       incomplete types. Denotes the corresponding incomplete view declared
+--       by the incomplete declaration.
 
 --    Indirect_Call_Wrapper
 --       Defined on subprogram entities. Set if the subprogram has class-wide
@@ -2967,6 +2957,11 @@ package Einfo is
 --       fully constructed, since it simply indicates the last state.
 --       Thus this flag has no meaning to the backend.
 
+--    Is_Large_Unconstrained_Definite
+--       Defined in record types. Used to detect types with default
+--       discriminant values that have exaggerated sizes and emit warnings
+--       about them.
+
 --    Is_Limited_Composite
 --       Defined in all entities. Set for composite types that have a limited
 --       component. Used to enforce the rule that operations on the composite
@@ -3638,7 +3633,7 @@ package Einfo is
 --       subprogram or the formal's Extra_Accessibility - whichever one is
 --       lesser. The Minimum_Accessibility field then points to this object.
 
---    Modulus [base type only]
+--    Modulus [implementation base type only]
 --       Defined in modular types. Contains the modulus. For the binary case,
 --       this will be a power of 2, but if Non_Binary_Modulus is set, then it
 --       will not be a power of 2.
@@ -3657,11 +3652,6 @@ package Einfo is
 --       is present for the private type. Used to check that the full type has
 --       preelaborable initialization at freeze time (this has to be deferred
 --       to the freeze point because of the rule about overriding Initialize).
-
---    Needs_Activation_Record
---       Defined on generated subprogram types. Indicates that a call through
---       a named or anonymous access to subprogram requires an activation
---       record when compiling with unnesting for C or LLVM.
 
 --    Needs_Debug_Info
 --       Defined in all entities. Set if the entity requires normal debugging
@@ -3904,7 +3894,7 @@ package Einfo is
 --       Defined in E_Access_Subprogram_Type entities. Set only if the access
 --       type was generated by the expander as part of processing an access-
 --       to-protected-subprogram type. Points to the access-to-protected-
---       subprogram type.
+--       subprogram type. Read by CodePeer.
 
 --    Original_Array_Type
 --       Defined in modular types and array types and subtypes. Set only if
@@ -3939,17 +3929,12 @@ package Einfo is
 --         Points to the component in the base type.
 
 --    Overlays_Constant
---       Defined in all entities. Set only for E_Constant or E_Variable for
---       which there is an address clause that causes the entity to overlay
---       a constant object.
+--       Defined in constants and variables. Set if there is an address clause
+--       that causes the entity to overlay a constant object.
 
 --    Overridden_Operation
 --       Defined in subprograms. For overriding operations, points to the
---       user-defined parent subprogram that is being overridden. Note: this
---       attribute uses the same field as Static_Initialization. The latter
---       is only defined for internal initialization procedures, for which
---       Overridden_Operation is irrelevant. Thus this attribute must not be
---       set for init_procs.
+--       user-defined parent subprogram that is being overridden.
 
 --    Package_Instantiation
 --       Defined in packages and generic packages. When defined, this field
@@ -4176,14 +4161,6 @@ package Einfo is
 --       refine the state, in other words, all the hidden states that appear in
 --       the constituent_list of aspect/pragma Refined_State.
 
---    Register_Exception_Call
---       Defined in exception entities. When an exception is declared,
---       a call is expanded to Register_Exception. This field points to
---       the expanded N_Procedure_Call_Statement node for this call. It
---       is used for Import/Export_Exception processing to modify the
---       register call to make appropriate entries in the special tables
---       used for handling these pragmas at run time.
-
 --    Related_Array_Object
 --       Defined in array types and subtypes. Used only for the base type
 --       and subtype created for an anonymous array object. Set to point
@@ -4383,11 +4360,6 @@ package Einfo is
 --       set, in which case this is the entity for the associated instance of
 --       System.Shared_Storage.Shared_Var_Procs. See Exp_Smem for full details.
 
---    Size_Check_Code
---       Defined in constants and variables. Normally Empty. Set if code is
---       generated to check the size of the object. This field is used to
---       suppress this code if a subsequent address clause is encountered.
-
 --    Size_Clause (synthesized)
 --       Applies to all entities. If a size or value size clause is present in
 --       the rep item chain for an entity then that attribute definition clause
@@ -4516,9 +4488,7 @@ package Einfo is
 --       initialized statically. The value of this attribute is a positional
 --       aggregate whose components are compile-time static values. Used
 --       when available in object declarations to eliminate the call to the
---       initialization procedure, and to minimize elaboration code. Note:
---       This attribute uses the same field as Overridden_Operation, which is
---       irrelevant in init_procs.
+--       initialization procedure, and to minimize elaboration code.
 
 --    Static_Real_Or_String_Predicate
 --       Defined in real types/subtypes with static predicates (with the two
@@ -4986,7 +4956,6 @@ package Einfo is
    --    Materialize_Entity
    --    Needs_Debug_Info
    --    Never_Set_In_Source
-   --    Overlays_Constant
    --    Referenced
    --    Referenced_As_LHS
    --    Referenced_As_Out_Parameter
@@ -5158,10 +5127,9 @@ package Einfo is
    --  E_Access_Subprogram_Type
    --    Equivalent_Type                       (remote types only)
    --    Directly_Designated_Type
-   --    Needs_No_Actuals
    --    Original_Access_Type
+   --    Needs_No_Actuals
    --    Can_Use_Internal_Rep
-   --    Needs_Activation_Record
    --    Associated_Storage_Pool $$$
    --    Interface_Name $$$
    --    (plus type attributes)
@@ -5200,7 +5168,6 @@ package Einfo is
    --    Directly_Designated_Type
    --    Storage_Size_Variable                 is this needed ???
    --    Can_Use_Internal_Rep
-   --    Needs_Activation_Record
    --    (plus type attributes)
 
    --  E_Anonymous_Access_Type
@@ -5311,12 +5278,11 @@ package Einfo is
    --    Actual_Subtype
    --    Renamed_Object
    --    Renamed_Entity $$$
-   --    Size_Check_Code                       (constants only)
    --    Prival_Link                           (privals only)
    --    Interface_Name                        (constants only)
    --    Related_Type                          (constants only)
    --    Initialization_Statements
-   --    BIP_Initialization_Call
+   --    BIP_Initialization_Call               (constants only)
    --    Finalization_Master_Node
    --    Last_Aggregate_Assignment
    --    Activation_Record_Component
@@ -5346,6 +5312,7 @@ package Einfo is
    --    Is_Volatile_Full_Access
    --    Optimize_Alignment_Space              (constants only)
    --    Optimize_Alignment_Time               (constants only)
+   --    Overlays_Constant                     (constants only)
    --    SPARK_Pragma_Inherited                (constants only)
    --    Stores_Attribute_Old_Prefix           (constants only)
    --    Treat_As_Volatile
@@ -5472,7 +5439,6 @@ package Einfo is
    --    Esize
    --    Alignment
    --    Renamed_Entity
-   --    Register_Exception_Call
    --    Interface_Name
    --    Activation_Record_Component
    --    Discard_Names
@@ -5508,7 +5474,6 @@ package Einfo is
    --  E_Function
    --  E_Generic_Function
    --    Mechanism                            (Mechanism_Type)
-   --    Handler_Records                      (non-generic case only)
    --    Protected_Body_Subprogram
    --    Next_Inlined_Subprogram
    --    Elaboration_Entity                   (not implicit /=)
@@ -5662,7 +5627,6 @@ package Einfo is
    --    Renamed_Object
    --    Spec_Entity
    --    Default_Value
-   --    Default_Expr_Function
    --    Protected_Formal
    --    Extra_Constrained
    --    Minimum_Accessibility
@@ -5773,8 +5737,6 @@ package Einfo is
 
    --  E_Package
    --  E_Generic_Package
-   --    Dependent_Instances                  (for an instance)
-   --    Handler_Records                      (non-generic case only)
    --    Generic_Homonym                      (generic case only)
    --    Associated_Formal_Package
    --    Elaboration_Entity
@@ -5834,7 +5796,6 @@ package Einfo is
    --    Scope_Depth                          (synth)
 
    --  E_Package_Body
-   --    Handler_Records                      (non-generic case only)
    --    Related_Instance                     (non-generic case only)
    --    First_Entity
    --    Spec_Entity
@@ -5869,7 +5830,6 @@ package Einfo is
    --  E_Procedure
    --  E_Generic_Procedure
    --    Associated_Node_For_Itype $$$ E_Procedure
-   --    Handler_Records                      (non-generic case only)
    --    Protected_Body_Subprogram
    --    Next_Inlined_Subprogram
    --    Elaboration_Entity
@@ -6197,7 +6157,6 @@ package Einfo is
    --    Renamed_Object
    --    Renamed_Entity $$$
    --    Discriminal_Link $$$
-   --    Size_Check_Code
    --    Prival_Link
    --    Interface_Name
    --    Shared_Var_Procs_Instance
@@ -6241,6 +6200,7 @@ package Einfo is
    --    OK_To_Rename
    --    Optimize_Alignment_Space
    --    Optimize_Alignment_Time
+   --    Overlays_Constant
    --    SPARK_Pragma_Inherited
    --    Suppress_Initialization
    --    Treat_As_Volatile
@@ -6269,7 +6229,6 @@ package Einfo is
    --    Entry_Formal $$$
    --    Esize $$$
    --    First_Entity $$$
-   --    Handler_Records $$$
    --    Interface_Name $$$
    --    Last_Entity $$$
    --    Renamed_Entity $$$

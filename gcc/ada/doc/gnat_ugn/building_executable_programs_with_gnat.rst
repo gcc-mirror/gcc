@@ -2112,7 +2112,7 @@ Alphabetical List of All Switches
 
 .. index:: -gnatR  (gcc)
 
-:switch:`-gnatR[0|1|2|3|4][e][j][m][s]`
+:switch:`-gnatR[0|1|2|3|4][e][h][m][j][s]`
   Output representation information for declared types, objects and
   subprograms. Note that this switch is not allowed if a previous
   :switch:`-gnatD` switch has been given, since these two switches
@@ -2259,15 +2259,16 @@ Alphabetical List of All Switches
   ======= ==================================================================
    *n*     Effect
   ------- ------------------------------------------------------------------
-  *0*      No optimization, the default setting if no :switch:`-O` appears
-  *1*      Normal optimization, the default if you specify :switch:`-O` without an
-           operand. A good compromise between code quality and compilation
-           time.
-  *2*      Extensive optimization, may improve execution time, possibly at
+  *0*      No optimization, the default setting if no :switch:`-O` appears.
+  *1*      Moderate optimization, same as :switch:`-O` without an operand.
+           A good compromise between code quality and compilation time.
+  *2*      Extensive optimization, should improve execution time, possibly at
            the cost of substantially increased compilation time.
-  *3*      Same as :switch:`-O2`, and also includes inline expansion for small
-           subprograms in the same unit.
-  *s*      Optimize space usage
+  *3*      Full optimization, may further improve execution time, possibly at
+           the cost of substantially larger generated code.
+  *s*      Optimize for size (code and data) rather than speed.
+  *z*      Optimize aggressively for size (code and data) rather than speed.
+  *g*      Optimize for debugging experience rather than speed.
   ======= ==================================================================
 
   See also :ref:`Optimization_Levels`.
@@ -6088,7 +6089,7 @@ Debugging Control
 
 .. index:: -gnatR  (gcc)
 
-:switch:`-gnatR[0|1|2|3|4][e][j][m][s]`
+:switch:`-gnatR[0|1|2|3|4][e][h][m][j][s]`
   This switch controls output from the compiler of a listing showing
   representation information for declared types, objects and subprograms.
   For :switch:`-gnatR0`, no information is output (equivalent to omitting
@@ -6116,17 +6117,21 @@ Debugging Control
   extended representation information for record sub-components of records
   is included.
 
+  If the switch is followed by a ``h`` (e.g. :switch:`-gnatR3h`), then
+  the components of records are sorted by increasing offsets and holes
+  between consecutive components are flagged.
+
   If the switch is followed by an ``m`` (e.g. :switch:`-gnatRm`), then
   subprogram conventions and parameter passing mechanisms for all the
   subprograms are included.
 
-  If the switch is followed by a ``j`` (e.g., :switch:`-gnatRj`), then
+  If the switch is followed by a ``j`` (e.g. :switch:`-gnatRj`), then
   the output is in the JSON data interchange format specified by the
   ECMA-404 standard. The semantic description of this JSON output is
   available in the specification of the Repinfo unit present in the
   compiler sources.
 
-  If the switch is followed by an ``s`` (e.g., :switch:`-gnatR3s`), then
+  If the switch is followed by an ``s`` (e.g. :switch:`-gnatR3s`), then
   the output is to a file with the name :file:`file.rep` where ``file`` is
   the name of the corresponding source file, except if ``j`` is also
   specified, in which case the file name is :file:`file.json`.

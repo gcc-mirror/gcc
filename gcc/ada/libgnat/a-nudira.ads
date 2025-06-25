@@ -44,37 +44,59 @@ generic
    type Result_Subtype is (<>);
 
 package Ada.Numerics.Discrete_Random with
-  SPARK_Mode => Off
+  SPARK_Mode => On,
+  Always_Terminates
 is
 
    --  Basic facilities
 
-   type Generator is limited private;
+   type Generator is limited private with Default_Initial_Condition;
 
-   function Random (Gen : Generator) return Result_Subtype;
+   function Random (Gen : Generator) return Result_Subtype with
+     Global => null,
+     Side_Effects;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
 
    function Random
      (Gen   : Generator;
       First : Result_Subtype;
       Last  : Result_Subtype) return Result_Subtype
-     with Post => Random'Result in First .. Last;
+     with
+       Post => Random'Result in First .. Last,
+       Global => null,
+       Side_Effects;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
 
-   procedure Reset (Gen : Generator; Initiator : Integer);
-   procedure Reset (Gen : Generator);
+   procedure Reset (Gen : Generator; Initiator : Integer) with
+     Global => null;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
+
+   procedure Reset (Gen : Generator) with
+     Global => null;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
 
    --  Advanced facilities
 
    type State is private;
 
-   procedure Save  (Gen : Generator; To_State   : out State);
-   procedure Reset (Gen : Generator; From_State : State);
+   procedure Save  (Gen : Generator; To_State   : out State) with
+     Global => null;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
+
+   procedure Reset (Gen : Generator; From_State : State) with
+     Global => null;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
 
    Max_Image_Width : constant := System.Random_Numbers.Max_Image_Width;
 
-   function Image (Of_State    : State)  return String;
-   function Value (Coded_State : String) return State;
+   function Image (Of_State    : State)  return String with
+     Global => null;
+   function Value (Coded_State : String) return State with
+     Global => null;
 
 private
+
+   pragma SPARK_Mode (Off);
 
    type Generator is new System.Random_Numbers.Generator;
 

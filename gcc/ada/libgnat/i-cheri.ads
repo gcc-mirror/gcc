@@ -273,8 +273,7 @@ is
      (Cap    : in out Capability;
       Length :        Bounds_Length)
    with
-     Import, Convention => Intrinsic,
-     External_Name => "__builtin_cheri_bounds_set";
+     Inline;
    --  Narrow the bounds of a capability so that the lower bound is the
    --  current address and the upper bound is suitable for the Length.
    --
@@ -287,8 +286,7 @@ is
      (Cap    : in out Capability;
       Length :        Bounds_Length)
    with
-     Import, Convention => Intrinsic,
-     External_Name => "__builtin_cheri_bounds_set_exact";
+     Inline;
    --  Narrow the bounds of a capability so that the lower bound is the
    --  current address and the upper bound is suitable for the Length.
    --

@@ -69,12 +69,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	//
 	// If __r is the index of a dynamic extent, then
 	// _S_dynamic_index[__r] is the index of that extent in
-	// _M_dynamic_extents.
+	// _M_dyn_exts.
 	static constexpr auto _S_dynamic_index = [] consteval
 	{
 	  array<size_t, _S_rank+1> __ret;
 	  size_t __dyn = 0;
-	  for(size_t __i = 0; __i < _S_rank; ++__i)
+	  for (size_t __i = 0; __i < _S_rank; ++__i)
 	    {
 	      __ret[__i] = __dyn;
 	      __dyn += _S_is_dyn(_Extents[__i]);
@@ -105,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  auto __se = _Extents[__r];
 	  if (__se == dynamic_extent)
-	    return _M_dynamic_extents[_S_dynamic_index[__r]];
+	    return _M_dyn_exts[_S_dynamic_index[__r]];
 	  else
 	    return __se;
 	}
@@ -114,12 +114,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  constexpr void
 	  _M_init_dynamic_extents(_GetOtherExtent __get_extent) noexcept
 	  {
-	    for(size_t __i = 0; __i < _S_rank_dynamic; ++__i)
+	    for (size_t __i = 0; __i < _S_rank_dynamic; ++__i)
 	      {
 		size_t __di = __i;
 		if constexpr (_OtherRank != _S_rank_dynamic)
 		  __di = _S_dynamic_index_inv[__i];
-		_M_dynamic_extents[__i] = _S_int_cast(__get_extent(__di));
+		_M_dyn_exts[__i] = _S_int_cast(__get_extent(__di));
 	      }
 	  }
 
@@ -144,9 +144,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      { return __exts[__i]; });
 	  }
 
+	static constexpr span<const size_t>
+	_S_static_extents(size_t __begin, size_t __end) noexcept
+	{
+	  return {_Extents.data() + __begin, _Extents.data() + __end};
+	}
+
+	constexpr span<const _IndexType>
+	_M_dynamic_extents(size_t __begin, size_t __end) const noexcept
+	requires (_Extents.size() > 0)
+	{
+	  return {_M_dyn_exts + _S_dynamic_index[__begin],
+		  _M_dyn_exts + _S_dynamic_index[__end]};
+	}
+
       private:
 	using _S_storage = __array_traits<_IndexType, _S_rank_dynamic>::_Type;
-	[[no_unique_address]] _S_storage _M_dynamic_extents{};
+	[[no_unique_address]] _S_storage _M_dyn_exts{};
       };
 
     template<typename _OIndexType, typename _SIndexType>
@@ -158,6 +172,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       concept
       __valid_static_extent = _Extent == dynamic_extent
 	|| _Extent <= numeric_limits<_IndexType>::max();
+  }
+
+  namespace __mdspan
+  {
+    template<typename _Extents>
+      constexpr span<const size_t>
+      __static_extents(size_t __begin = 0, size_t __end = _Extents::rank())
+      noexcept
+      { return _Extents::_S_storage::_S_static_extents(__begin, __end); }
+
+    template<typename _Extents>
+      constexpr span<const typename _Extents::index_type>
+      __dynamic_extents(const _Extents& __exts, size_t __begin = 0,
+			size_t __end = _Extents::rank()) noexcept
+      {
+	return __exts._M_exts._M_dynamic_extents(__begin, __end);
+      }
   }
 
   template<typename _IndexType, size_t... _Extents>
@@ -197,7 +228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if constexpr (rank() == 0)
 	  __builtin_trap();
 	else
-	  return _M_dynamic_extents._M_extent(__r);
+	  return _M_exts._M_extent(__r);
       }
 
       constexpr
@@ -233,14 +264,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	requires (_S_is_compatible_extents<_OExtents...>())
 	constexpr explicit(_S_ctor_explicit<_OIndexType, _OExtents...>())
 	extents(const extents<_OIndexType, _OExtents...>& __other) noexcept
-	: _M_dynamic_extents(__other._M_dynamic_extents)
+	: _M_exts(__other._M_exts)
 	{ }
 
       template<__mdspan::__valid_index_type<index_type>... _OIndexTypes>
 	requires (sizeof...(_OIndexTypes) == rank()
 		  || sizeof...(_OIndexTypes) == rank_dynamic())
 	constexpr explicit extents(_OIndexTypes... __exts) noexcept
-	: _M_dynamic_extents(span<const _IndexType, sizeof...(_OIndexTypes)>(
+	: _M_exts(span<const _IndexType, sizeof...(_OIndexTypes)>(
 	    initializer_list{_S_storage::_S_int_cast(__exts)...}))
 	{ }
 
@@ -248,15 +279,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	requires (_Nm == rank() || _Nm == rank_dynamic())
 	constexpr explicit(_Nm != rank_dynamic())
 	extents(span<_OIndexType, _Nm> __exts) noexcept
-	: _M_dynamic_extents(span<const _OIndexType, _Nm>(__exts))
+	: _M_exts(span<const _OIndexType, _Nm>(__exts))
 	{ }
-
 
       template<__mdspan::__valid_index_type<index_type> _OIndexType, size_t _Nm>
 	requires (_Nm == rank() || _Nm == rank_dynamic())
 	constexpr explicit(_Nm != rank_dynamic())
 	extents(const array<_OIndexType, _Nm>& __exts) noexcept
-	: _M_dynamic_extents(span<const _OIndexType, _Nm>(__exts))
+	: _M_exts(span<const _OIndexType, _Nm>(__exts))
 	{ }
 
       template<typename _OIndexType, size_t... _OExtents>
@@ -276,9 +306,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
     private:
+      friend span<const size_t>
+      __mdspan::__static_extents<extents>(size_t, size_t);
+
+      friend span<const index_type>
+      __mdspan::__dynamic_extents<extents>(const extents&, size_t, size_t);
+
       using _S_storage = __mdspan::_ExtentsStorage<
 	_IndexType, array<size_t, sizeof...(_Extents)>{_Extents...}>;
-      [[no_unique_address]] _S_storage _M_dynamic_extents;
+      [[no_unique_address]] _S_storage _M_exts;
 
       template<typename _OIndexType, size_t... _OExtents>
 	friend class extents;
@@ -286,6 +322,69 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __mdspan
   {
+    template<typename _Tp, size_t _Nm>
+      constexpr bool
+      __contains_zero(span<_Tp, _Nm> __exts) noexcept
+      {
+	for (size_t __i = 0; __i < __exts.size(); ++__i)
+	  if (__exts[__i] == 0)
+	    return true;
+	return false;
+      }
+
+    template<typename _Extents>
+      constexpr bool
+      __empty(const _Extents& __exts) noexcept
+      {
+	if constexpr (__contains_zero(__static_extents<_Extents>()))
+	  return true;
+	else if constexpr (_Extents::rank_dynamic() > 0)
+	  return __contains_zero(__dynamic_extents(__exts));
+	else
+	  return false;
+      }
+
+    constexpr size_t
+    __static_extents_prod(const auto& __sta_exts) noexcept
+    {
+      size_t __ret = 1;
+      for (auto __factor : __sta_exts)
+	if (__factor != dynamic_extent)
+	  __ret *= __factor;
+      return __ret;
+    }
+
+    template<typename _Extents>
+      constexpr typename _Extents::index_type
+      __exts_prod(const _Extents& __exts, size_t __begin, size_t __end) noexcept
+      {
+	using _IndexType = typename _Extents::index_type;
+
+	size_t __ret = 1;
+	if constexpr (_Extents::rank_dynamic() != _Extents::rank())
+	  {
+	    auto __sta_exts = __static_extents<_Extents>(__begin, __end);
+	    __ret = __static_extents_prod(__sta_exts);
+	    if (__ret == 0)
+	      return 0;
+	  }
+
+	if constexpr (_Extents::rank_dynamic() > 0)
+	  for (auto __factor : __dynamic_extents(__exts, __begin, __end))
+	    __ret *= size_t(__factor);
+	return _IndexType(__ret);
+      }
+
+    template<typename _Extents>
+      constexpr typename _Extents::index_type
+      __fwd_prod(const _Extents& __exts, size_t __r) noexcept
+      { return __exts_prod(__exts, 0, __r); }
+
+    template<typename _Extents>
+      constexpr typename _Extents::index_type
+      __rev_prod(const _Extents& __exts, size_t __r) noexcept
+      { return __exts_prod(__exts, __r + 1, __exts.rank()); }
+
     template<typename _IndexType, size_t... _Counts>
       auto __build_dextents_type(integer_sequence<size_t, _Counts...>)
 	-> extents<_IndexType, ((void) _Counts, dynamic_extent)...>;
@@ -303,6 +402,607 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     requires (is_convertible_v<_Integrals, size_t> && ...)
     explicit extents(_Integrals...) ->
       extents<size_t, __mdspan::__dynamic_extent<_Integrals>()...>;
+
+  struct layout_left
+  {
+    template<typename _Extents>
+      class mapping;
+  };
+
+  struct layout_right
+  {
+    template<typename _Extents>
+      class mapping;
+  };
+
+  struct layout_stride
+  {
+    template<typename _Extents>
+      class mapping;
+  };
+
+  namespace __mdspan
+  {
+    template<typename _Tp>
+      constexpr bool __is_extents = false;
+
+    template<typename _IndexType, size_t... _Extents>
+      constexpr bool __is_extents<extents<_IndexType, _Extents...>> = true;
+
+    template<typename _Extents, typename... _Indices>
+      constexpr typename _Extents::index_type
+      __linear_index_left(const _Extents& __exts, _Indices... __indices)
+      noexcept
+      {
+	using _IndexType = typename _Extents::index_type;
+	_IndexType __res = 0;
+	if constexpr (sizeof...(__indices) > 0)
+	  {
+	    _IndexType __mult = 1;
+	    auto __update = [&, __pos = 0u](_IndexType __idx) mutable
+	      {
+		__res += __idx * __mult;
+		__mult *= __exts.extent(__pos);
+		++__pos;
+	      };
+	    (__update(__indices), ...);
+	  }
+	return __res;
+      }
+
+    template<typename _Extents,
+             typename _IndexType = typename _Extents::index_type>
+      consteval _IndexType
+      __static_quotient(_IndexType __nom = numeric_limits<_IndexType>::max())
+      {
+	auto __sta_exts = __static_extents<_Extents>();
+	for (auto __factor : __sta_exts)
+	  {
+	    if (__factor != dynamic_extent)
+	      __nom /= _IndexType(__factor);
+	    if (__nom == 0)
+	      break;
+	  }
+	return __nom;
+      }
+
+    template<typename _Extents>
+      constexpr bool
+      __is_representable_extents(const _Extents& __exts) noexcept
+      {
+	using _IndexType = _Extents::index_type;
+
+	if constexpr (__contains_zero(__static_extents<_Extents>()))
+	  return true;
+	else
+	  {
+	    constexpr auto __sta_quo = __static_quotient<_Extents>();
+	    if constexpr (_Extents::rank_dynamic() == 0)
+	      return __sta_quo != 0;
+	    else
+	      {
+		auto __dyn_exts = __dynamic_extents(__exts);
+		if (__contains_zero(__dyn_exts))
+		  return true;
+
+		if constexpr (__sta_quo == 0)
+		  return false;
+		else
+		  {
+		    auto __dyn_quo = _IndexType(__sta_quo);
+		    for (auto __factor : __dyn_exts)
+		      {
+			__dyn_quo /= __factor;
+			if (__dyn_quo == 0)
+			  return false;
+		      }
+		    return true;
+		  }
+	      }
+	  }
+      }
+
+    template<typename _Extents, typename _IndexType>
+      concept __representable_size = _Extents::rank_dynamic() != 0
+	|| __contains_zero(__static_extents<_Extents>())
+	|| (__static_quotient<_Extents, _IndexType>() != 0);
+
+    template<typename _Layout, typename _Mapping>
+      concept __mapping_of =
+	is_same_v<typename _Layout::mapping<typename _Mapping::extents_type>,
+		  _Mapping>;
+
+    template<typename _Mapping>
+      concept __standardized_mapping = __mapping_of<layout_left, _Mapping>
+				       || __mapping_of<layout_right, _Mapping>
+				       || __mapping_of<layout_stride, _Mapping>;
+
+    // A tag type to create internal ctors.
+    class __internal_ctor
+    { };
+  }
+
+  template<typename _Extents>
+    class layout_left::mapping
+    {
+    public:
+      using extents_type = _Extents;
+      using index_type = typename extents_type::index_type;
+      using size_type = typename extents_type::size_type;
+      using rank_type = typename extents_type::rank_type;
+      using layout_type = layout_left;
+
+      static_assert(__mdspan::__representable_size<extents_type, index_type>,
+	"The size of extents_type must be representable as index_type");
+
+      constexpr
+      mapping() noexcept = default;
+
+      constexpr
+      mapping(const mapping&) noexcept = default;
+
+      constexpr
+      mapping(const extents_type& __extents) noexcept
+      : _M_extents(__extents)
+      { __glibcxx_assert(__mdspan::__is_representable_extents(_M_extents)); }
+
+      template<typename _OExtents>
+	requires is_constructible_v<extents_type, _OExtents>
+	constexpr explicit(!is_convertible_v<_OExtents, extents_type>)
+	mapping(const mapping<_OExtents>& __other) noexcept
+	: mapping(__other.extents(), __mdspan::__internal_ctor{})
+	{ }
+
+      template<typename _OExtents>
+	requires (extents_type::rank() <= 1)
+		  && is_constructible_v<extents_type, _OExtents>
+	constexpr explicit(!is_convertible_v<_OExtents, extents_type>)
+	mapping(const layout_right::mapping<_OExtents>& __other) noexcept
+	: mapping(__other.extents(), __mdspan::__internal_ctor{})
+	{ }
+
+      // noexcept for consistency with other layouts.
+      template<typename _OExtents>
+	requires is_constructible_v<extents_type, _OExtents>
+	constexpr explicit(extents_type::rank() > 0)
+	mapping(const layout_stride::mapping<_OExtents>& __other) noexcept
+	: mapping(__other.extents(), __mdspan::__internal_ctor{})
+	{ __glibcxx_assert(*this == __other); }
+
+      constexpr mapping&
+      operator=(const mapping&) noexcept = default;
+
+      constexpr const extents_type&
+      extents() const noexcept { return _M_extents; }
+
+      constexpr index_type
+      required_span_size() const noexcept
+      { return __mdspan::__fwd_prod(_M_extents, extents_type::rank()); }
+
+      template<__mdspan::__valid_index_type<index_type>... _Indices>
+	requires (sizeof...(_Indices) == extents_type::rank())
+	constexpr index_type
+	operator()(_Indices... __indices) const noexcept
+	{
+	  return __mdspan::__linear_index_left(_M_extents,
+	    static_cast<index_type>(__indices)...);
+	}
+
+      static constexpr bool
+      is_always_unique() noexcept { return true; }
+
+      static constexpr bool
+      is_always_exhaustive() noexcept { return true; }
+
+      static constexpr bool
+      is_always_strided() noexcept { return true; }
+
+      static constexpr bool
+      is_unique() noexcept { return true; }
+
+      static constexpr bool
+      is_exhaustive() noexcept { return true; }
+
+      static constexpr bool
+      is_strided() noexcept { return true; }
+
+      constexpr index_type
+      stride(rank_type __i) const noexcept
+      requires (extents_type::rank() > 0)
+      {
+	__glibcxx_assert(__i < extents_type::rank());
+	return __mdspan::__fwd_prod(_M_extents, __i);
+      }
+
+      template<typename _OExtents>
+	requires (extents_type::rank() == _OExtents::rank())
+	friend constexpr bool
+	operator==(const mapping& __self, const mapping<_OExtents>& __other)
+	noexcept
+	{ return __self.extents() == __other.extents(); }
+
+    private:
+      template<typename _OExtents>
+	constexpr explicit
+	mapping(const _OExtents& __oexts, __mdspan::__internal_ctor) noexcept
+	: _M_extents(__oexts)
+	{
+	  static_assert(__mdspan::__representable_size<_OExtents, index_type>,
+	    "The size of OtherExtents must be representable as index_type");
+	  __glibcxx_assert(__mdspan::__is_representable_extents(_M_extents));
+	}
+
+	[[no_unique_address]] extents_type _M_extents{};
+    };
+
+  namespace __mdspan
+  {
+    template<typename _Extents, typename... _Indices>
+      constexpr typename _Extents::index_type
+      __linear_index_right(const _Extents& __exts, _Indices... __indices)
+      noexcept
+      {
+	using _IndexType = typename _Extents::index_type;
+	array<_IndexType, sizeof...(__indices)> __ind_arr{__indices...};
+	_IndexType __res = 0;
+	if constexpr (sizeof...(__indices) > 0)
+	  {
+	    _IndexType __mult = 1;
+	    auto __update = [&, __pos = __exts.rank()](_IndexType) mutable
+	      {
+		--__pos;
+		__res += __ind_arr[__pos] * __mult;
+		__mult *= __exts.extent(__pos);
+	      };
+	    (__update(__indices), ...);
+	  }
+	return __res;
+      }
+  }
+
+  template<typename _Extents>
+    class layout_right::mapping
+    {
+    public:
+      using extents_type = _Extents;
+      using index_type = typename extents_type::index_type;
+      using size_type = typename extents_type::size_type;
+      using rank_type = typename extents_type::rank_type;
+      using layout_type = layout_right;
+
+      static_assert(__mdspan::__representable_size<extents_type, index_type>,
+	"The size of extents_type must be representable as index_type");
+
+      constexpr
+      mapping() noexcept = default;
+
+      constexpr
+      mapping(const mapping&) noexcept = default;
+
+      constexpr
+      mapping(const extents_type& __extents) noexcept
+      : _M_extents(__extents)
+      { __glibcxx_assert(__mdspan::__is_representable_extents(_M_extents)); }
+
+      template<typename _OExtents>
+	requires is_constructible_v<extents_type, _OExtents>
+	constexpr explicit(!is_convertible_v<_OExtents, extents_type>)
+	mapping(const mapping<_OExtents>& __other) noexcept
+	: mapping(__other.extents(), __mdspan::__internal_ctor{})
+	{ }
+
+      template<typename _OExtents>
+	requires (extents_type::rank() <= 1)
+	    && is_constructible_v<extents_type, _OExtents>
+	constexpr explicit(!is_convertible_v<_OExtents, extents_type>)
+	mapping(const layout_left::mapping<_OExtents>& __other) noexcept
+	: mapping(__other.extents(), __mdspan::__internal_ctor{})
+	{ }
+
+      template<typename _OExtents>
+	requires is_constructible_v<extents_type, _OExtents>
+	constexpr explicit(extents_type::rank() > 0)
+	mapping(const layout_stride::mapping<_OExtents>& __other) noexcept
+	: mapping(__other.extents(), __mdspan::__internal_ctor{})
+	{ __glibcxx_assert(*this == __other); }
+
+      constexpr mapping&
+      operator=(const mapping&) noexcept = default;
+
+      constexpr const extents_type&
+      extents() const noexcept { return _M_extents; }
+
+      constexpr index_type
+      required_span_size() const noexcept
+      { return __mdspan::__fwd_prod(_M_extents, extents_type::rank()); }
+
+      template<__mdspan::__valid_index_type<index_type>... _Indices>
+	requires (sizeof...(_Indices) == extents_type::rank())
+	constexpr index_type
+	operator()(_Indices... __indices) const noexcept
+	{
+	  return __mdspan::__linear_index_right(
+	    _M_extents, static_cast<index_type>(__indices)...);
+	}
+
+      static constexpr bool
+      is_always_unique() noexcept
+      { return true; }
+
+      static constexpr bool
+      is_always_exhaustive() noexcept
+      { return true; }
+
+      static constexpr bool
+      is_always_strided() noexcept
+      { return true; }
+
+      static constexpr bool
+      is_unique() noexcept
+      { return true; }
+
+      static constexpr bool
+      is_exhaustive() noexcept
+      { return true; }
+
+      static constexpr bool
+      is_strided() noexcept
+      { return true; }
+
+      constexpr index_type
+      stride(rank_type __i) const noexcept
+      requires (extents_type::rank() > 0)
+      {
+	__glibcxx_assert(__i < extents_type::rank());
+	return __mdspan::__rev_prod(_M_extents, __i);
+      }
+
+      template<typename _OExtents>
+	requires (extents_type::rank() == _OExtents::rank())
+	friend constexpr bool
+	operator==(const mapping& __self, const mapping<_OExtents>& __other)
+	noexcept
+	{ return __self.extents() == __other.extents(); }
+
+    private:
+      template<typename _OExtents>
+	constexpr explicit
+	mapping(const _OExtents& __oexts, __mdspan::__internal_ctor) noexcept
+	: _M_extents(__oexts)
+	{
+	  static_assert(__mdspan::__representable_size<_OExtents, index_type>,
+	    "The size of OtherExtents must be representable as index_type");
+	  __glibcxx_assert(__mdspan::__is_representable_extents(_M_extents));
+	}
+
+	[[no_unique_address]] extents_type _M_extents{};
+    };
+
+  namespace __mdspan
+  {
+    template<typename _Mp>
+      concept __mapping_alike = requires
+      {
+	requires __is_extents<typename _Mp::extents_type>;
+	{ _Mp::is_always_strided() } -> same_as<bool>;
+	{ _Mp::is_always_exhaustive() } -> same_as<bool>;
+	{ _Mp::is_always_unique() } -> same_as<bool>;
+	bool_constant<_Mp::is_always_strided()>::value;
+	bool_constant<_Mp::is_always_exhaustive()>::value;
+	bool_constant<_Mp::is_always_unique()>::value;
+      };
+
+    template<typename _Mapping>
+      constexpr typename _Mapping::index_type
+      __offset(const _Mapping& __m) noexcept
+      {
+	using _IndexType = typename _Mapping::index_type;
+	constexpr auto __rank = _Mapping::extents_type::rank();
+
+	if constexpr (__standardized_mapping<_Mapping>)
+	  return 0;
+	else if (__empty(__m.extents()))
+	  return 0;
+	else
+	  {
+	    auto __impl = [&__m]<size_t... _Counts>(index_sequence<_Counts...>)
+	      { return __m(((void) _Counts, _IndexType(0))...); };
+	    return __impl(make_index_sequence<__rank>());
+	  }
+      }
+
+    template<typename _Mapping, typename... _Indices>
+      constexpr typename _Mapping::index_type
+      __linear_index_strides(const _Mapping& __m, _Indices... __indices)
+      noexcept
+      {
+	using _IndexType = typename _Mapping::index_type;
+	_IndexType __res = 0;
+	if constexpr (sizeof...(__indices) > 0)
+	  {
+	    auto __update = [&, __pos = 0u](_IndexType __idx) mutable
+	      {
+		__res += __idx * __m.stride(__pos++);
+	      };
+	    (__update(__indices), ...);
+	  }
+	return __res;
+      }
+  }
+
+  template<typename _Extents>
+    class layout_stride::mapping
+    {
+    public:
+      using extents_type = _Extents;
+      using index_type = typename extents_type::index_type;
+      using size_type = typename extents_type::size_type;
+      using rank_type = typename extents_type::rank_type;
+      using layout_type = layout_stride;
+
+      static_assert(__mdspan::__representable_size<extents_type, index_type>,
+	"The size of extents_type must be representable as index_type");
+
+      constexpr
+      mapping() noexcept
+      {
+	// The precondition is either statically asserted, or automatically
+	// satisfied because dynamic extents are zero-initialized.
+	size_t __stride = 1;
+	for (size_t __i = extents_type::rank(); __i > 0; --__i)
+	  {
+	    _M_strides[__i - 1] = index_type(__stride);
+	    __stride *= size_t(_M_extents.extent(__i - 1));
+	  }
+      }
+
+      constexpr
+      mapping(const mapping&) noexcept = default;
+
+      template<__mdspan::__valid_index_type<index_type> _OIndexType>
+	constexpr
+	mapping(const extents_type& __exts,
+		span<_OIndexType, extents_type::rank()> __strides) noexcept
+	: _M_extents(__exts)
+	{
+	  for (size_t __i = 0; __i < extents_type::rank(); ++__i)
+	    _M_strides[__i] = index_type(as_const(__strides[__i]));
+	}
+
+      template<__mdspan::__valid_index_type<index_type> _OIndexType>
+	constexpr
+	mapping(const extents_type& __exts,
+		const array<_OIndexType, extents_type::rank()>& __strides)
+	noexcept
+	: mapping(__exts,
+		  span<const _OIndexType, extents_type::rank()>(__strides))
+	{ }
+
+      template<__mdspan::__mapping_alike _StridedMapping>
+	requires (is_constructible_v<extents_type,
+				     typename _StridedMapping::extents_type>
+		  && _StridedMapping::is_always_unique()
+		  && _StridedMapping::is_always_strided())
+	constexpr explicit(!(
+	  is_convertible_v<typename _StridedMapping::extents_type, extents_type>
+	  && __mdspan::__standardized_mapping<_StridedMapping>))
+	mapping(const _StridedMapping& __other) noexcept
+	: _M_extents(__other.extents())
+	{
+	  using _OIndexType = _StridedMapping::index_type;
+	  using _OExtents = _StridedMapping::extents_type;
+
+	  __glibcxx_assert(__mdspan::__offset(__other) == 0);
+	  static_assert(__mdspan::__representable_size<_OExtents, index_type>,
+	    "The size of StridedMapping::extents_type must be representable as"
+	    " index_type");
+	  if constexpr (cmp_greater(numeric_limits<_OIndexType>::max(),
+				    numeric_limits<index_type>::max()))
+	    __glibcxx_assert(!cmp_less(numeric_limits<index_type>::max(),
+				       __other.required_span_size())
+		&& "other.required_span_size() must be representable"
+		   " as index_type");
+	  if constexpr (extents_type::rank() > 0)
+	    for (size_t __i = 0; __i < extents_type::rank(); ++__i)
+	      _M_strides[__i] = index_type(__other.stride(__i));
+	}
+
+      constexpr mapping&
+      operator=(const mapping&) noexcept = default;
+
+      constexpr const extents_type&
+      extents() const noexcept { return _M_extents; }
+
+      constexpr array<index_type, extents_type::rank()>
+      strides() const noexcept
+      {
+	array<index_type, extents_type::rank()> __ret;
+	for (size_t __i = 0; __i < extents_type::rank(); ++__i)
+	  __ret[__i] = _M_strides[__i];
+	return __ret;
+      }
+
+      constexpr index_type
+      required_span_size() const noexcept
+      {
+	if (__mdspan::__empty(_M_extents))
+	  return 0;
+
+	index_type __ret = 1;
+	for (size_t __i = 0; __i < extents_type::rank(); ++__i)
+	  __ret += (_M_extents.extent(__i) - 1) * _M_strides[__i];
+	return __ret;
+      }
+
+      template<__mdspan::__valid_index_type<index_type>... _Indices>
+	requires (sizeof...(_Indices) == extents_type::rank())
+	constexpr index_type
+	operator()(_Indices... __indices) const noexcept
+	{
+	  return __mdspan::__linear_index_strides(*this,
+	    static_cast<index_type>(__indices)...);
+	}
+
+      static constexpr bool
+      is_always_unique() noexcept { return true; }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4266. layout_stride::mapping should treat empty mappings as exhaustive
+      static constexpr bool
+      is_always_exhaustive() noexcept
+      {
+	return (_Extents::rank() == 0) || __mdspan::__contains_zero(
+	    __mdspan::__static_extents<extents_type>());
+      }
+
+      static constexpr bool
+      is_always_strided() noexcept { return true; }
+
+      static constexpr bool
+      is_unique() noexcept { return true; }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4266. layout_stride::mapping should treat empty mappings as exhaustive
+      constexpr bool
+      is_exhaustive() const noexcept
+      {
+	if constexpr (!is_always_exhaustive())
+	  {
+	    constexpr auto __rank = extents_type::rank();
+	    auto __size = __mdspan::__fwd_prod(_M_extents, __rank);
+	    if(__size > 0)
+	      return __size == required_span_size();
+	  }
+	return true;
+      }
+
+      static constexpr bool
+      is_strided() noexcept { return true; }
+
+      constexpr index_type
+      stride(rank_type __r) const noexcept { return _M_strides[__r]; }
+
+      template<__mdspan::__mapping_alike _OMapping>
+	requires ((extents_type::rank() == _OMapping::extents_type::rank())
+		  && _OMapping::is_always_strided())
+	friend constexpr bool
+	operator==(const mapping& __self, const _OMapping& __other) noexcept
+	{
+	  if (__self.extents() != __other.extents())
+	    return false;
+	  if constexpr (extents_type::rank() > 0)
+	    for (size_t __i = 0; __i < extents_type::rank(); ++__i)
+	      if (!cmp_equal(__self.stride(__i), __other.stride(__i)))
+		return false;
+	  return __mdspan::__offset(__other) == 0;
+	}
+
+    private:
+      using _S_strides_t = typename __array_traits<index_type,
+						   extents_type::rank()>::_Type;
+      [[no_unique_address]] extents_type _M_extents;
+      [[no_unique_address]] _S_strides_t _M_strides;
+    };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }

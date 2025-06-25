@@ -16,8 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++20 } }
-// { dg-require-effective-target pthread }
-// { dg-require-gthreads "" }
+// { dg-require-effective-target gthreads { target { ! *-*-linux* } } }
+// { dg-require-effective-target hosted }
 
 #include <semaphore>
 

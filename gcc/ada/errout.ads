@@ -30,6 +30,7 @@
 
 with Err_Vars;
 with Erroutc;
+with Errid;    use Errid;
 with Namet;    use Namet;
 with Table;
 with Types;    use Types;
@@ -580,6 +581,19 @@ package Errout is
    --  client to set this to No_Error_Msg and then test it to see if a warning
    --  message has been issued.
 
+   subtype Labeled_Span_Type is Erroutc.Labeled_Span_Type;
+   subtype Fix_Type is Erroutc.Fix_Type;
+   subtype Edit_Type is Erroutc.Edit_Type;
+
+   type Labeled_Span_Array is
+     array (Positive range <>) of Labeled_Span_Type;
+   type Fix_Array is array (Positive range <>) of Fix_Type;
+   type Edit_Array is array (Positive range <>) of Edit_Type;
+
+   No_Locations : constant Labeled_Span_Array (1 .. 0) := (others => <>);
+   No_Fixes     : constant Fix_Array (1 .. 0) := (others => <>);
+   No_Edits     : constant Edit_Array (1 .. 0) := (others => <>);
+
    procedure Delete_Warning_And_Continuations (Msg : Error_Msg_Id);
    --  Deletes the given warning message and all its continuations. This is
    --  typically used in conjunction with reading the value of Warning_Msg.
@@ -713,11 +727,24 @@ package Errout is
    procedure Error_Msg
      (Msg : String; Flag_Location : Source_Ptr; N : Node_Id);
    procedure Error_Msg
-     (Msg : String; Flag_Span : Source_Span; N : Node_Id);
+     (Msg        : String;
+      Flag_Span  : Source_Span;
+      N          : Node_Id;
+      Error_Code : Diagnostic_Id := No_Diagnostic_Id;
+      Label      : String := "";
+      Spans      : Labeled_Span_Array := No_Locations;
+      Fixes      : Fix_Array := No_Fixes);
    --  Output a message at specified location. Can be called from the parser
    --  or the semantic analyzer. If N is set, points to the relevant node for
    --  this message. The version with a span is preferred whenever possible,
    --  in other cases the version with a location can still be used.
+   --
+   --  @param Error_Code is the unique identifier for that kind of message.
+   --  @param Label specifies an optional short label that will be displayed
+   --  under the Flag_Span.
+   --  @param Spans specifies other spans with labels that will be highlighted
+   --  in the error message.
+   --  @param Fixes contains a list of possible fixes for the error message.
 
    procedure Error_Msg
      (Msg                    : String;
@@ -753,7 +780,13 @@ package Errout is
    --  Output a message at the start of the previous token. This routine can
    --  be called only from the parser, since it references Prev_Token_Ptr.
 
-   procedure Error_Msg_N (Msg : String; N : Node_Or_Entity_Id);
+   procedure Error_Msg_N
+     (Msg        : String;
+      N          : Node_Or_Entity_Id;
+      Error_Code : Diagnostic_Id := No_Diagnostic_Id;
+      Label      : String := "";
+      Spans      : Labeled_Span_Array := No_Locations;
+      Fixes      : Fix_Array := No_Fixes);
    --  Output a message at the Sloc of the given node. This routine can be
    --  called from the parser or the semantic analyzer, although the call from
    --  the latter is much more common (and is the most usual way of generating
@@ -762,6 +795,9 @@ package Errout is
    --  suppressed if the node N already has a message posted, or if it is a
    --  warning and N is an entity node for which warnings are suppressed.
 
+   procedure Error_Msg_N_Gigi (Msg : String; N : Node_Or_Entity_Id);
+   --  This is a wrapper for the Error_Msg_N method that gets linked to gigi.
+   --
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Error_Msg_F (Msg : String; N : Node_Id);
@@ -771,15 +807,23 @@ package Errout is
    --  want for placing an error message flag in the right place.
 
    procedure Error_Msg_NE
-     (Msg : String;
-      N   : Node_Or_Entity_Id;
-      E   : Node_Or_Entity_Id);
+     (Msg        : String;
+      N          : Node_Or_Entity_Id;
+      E          : Node_Or_Entity_Id;
+      Error_Code : Diagnostic_Id := No_Diagnostic_Id;
+      Label      : String := "";
+      Spans      : Labeled_Span_Array := No_Locations;
+      Fixes      : Fix_Array := No_Fixes);
    --  Output a message at the Sloc of the given node N, with an insertion of
    --  the name from the given entity node E. This is used by the semantic
    --  routines, where this is a common error message situation. The Msg text
    --  will contain a & or } as usual to mark the insertion point. This
    --  routine can be called from the parser or the analyzer.
 
+   procedure Error_Msg_NE_Gigi
+     (Msg : String; N : Node_Or_Entity_Id; E : Node_Or_Entity_Id);
+   --  This is a wrapper for the Error_Msg_NE method that gets linked to gigi.
+   --
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Error_Msg_FE
@@ -795,10 +839,14 @@ package Errout is
       E             : Node_Or_Entity_Id;
       Flag_Location : Source_Ptr);
    procedure Error_Msg_NEL
-     (Msg       : String;
-      N         : Node_Or_Entity_Id;
-      E         : Node_Or_Entity_Id;
-      Flag_Span : Source_Span);
+     (Msg        : String;
+      N          : Node_Or_Entity_Id;
+      E          : Node_Or_Entity_Id;
+      Flag_Span  : Source_Span;
+      Error_Code : Diagnostic_Id := No_Diagnostic_Id;
+      Label      : String := "";
+      Spans      : Labeled_Span_Array := No_Locations;
+      Fixes      : Fix_Array := No_Fixes);
    --  Exactly the same as Error_Msg_NE, except that the flag is placed at
    --  the specified Flag_Location/Flag_Span instead of at Sloc (N).
 
@@ -826,6 +874,16 @@ package Errout is
    --  placing error msgs. Note that this procedure uses Original_Node to look
    --  at the original source tree, since that's what we want for placing an
    --  error message flag in the right place.
+
+   function To_Full_Span (N : Node_Id) return Source_Span;
+   --  Creates a Source_Span by calculating the positions of its first and last
+   --  node contained by N in the source code and sets the span to point at the
+   --  location of N.
+
+   function To_Full_Span_First (N : Node_Id) return Source_Span;
+   --  Creates a Source_Span by calculating the positions of its first and last
+   --  node contained by N in the source code and sets the span to point to the
+   --  starting position of the span.
 
    function First_Node (C : Node_Id) return Node_Id;
    --  Return the first output of First_And_Last_Nodes
@@ -966,6 +1024,32 @@ package Errout is
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message
 
+   function Labeled_Span
+     (Span       : Source_Span;
+      Label      : String := "";
+      Is_Primary : Boolean := True;
+      Is_Region  : Boolean := False)
+      return Labeled_Span_Type;
+   --  Constructs a Labeled_Span structure with all of its attributes.
+
+   function Primary_Labeled_Span
+     (Span : Source_Span; Label : String := "") return Labeled_Span_Type;
+   function Primary_Labeled_Span
+     (N : Node_Or_Entity_Id; Label : String := "") return Labeled_Span_Type;
+   --  Shorthand function for creating Primary Labeled_Spans
+
+   function Secondary_Labeled_Span
+     (Span : Source_Span; Label : String := "") return Labeled_Span_Type;
+   function Secondary_Labeled_Span
+     (N : Node_Or_Entity_Id; Label : String := "") return Labeled_Span_Type;
+   --  Shorthand function for creating Secondary Labeled_Spans
+
+   function Edit (Text : String; Span : Source_Span) return Edit_Type;
+   --  Constructs a Edit structure with all of its attributes.
+
+   function Fix (Description : String; Edits : Edit_Array) return Fix_Type;
+   --  Constructs a Fix structure with all of its attributes.
+
    ------------------------------------
    -- SPARK Error Output Subprograms --
    ------------------------------------
@@ -1027,5 +1111,9 @@ package Errout is
    --  the body of this package (see Special_Msg_Delete).
    --  Function Is_Size_Too_Small_Message tests for it by testing a prefix.
    --  The function and constant should be kept in synch.
+
+   function To_Name (E : Entity_Id) return String;
+   --  Converts an entities name into a String as if the '&' insertion
+   --  character was used.
 
 end Errout;

@@ -7,10 +7,10 @@
 #include "coro1-ret-int-yield-int.h"
 
 coro1
-my_coro () // { dg-error {no member named 'final_suspend' in} }
+my_coro ()
 {
   co_return 0;
-}
+} // { dg-error {no member named 'final_suspend' in} }
 
 // check we have not messed up continuation of the compilation.
 template <class... Args>

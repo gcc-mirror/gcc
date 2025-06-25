@@ -112,6 +112,8 @@ class impl_region_model_context : public region_model_context
   const gimple *get_stmt () const override { return m_stmt; }
   const exploded_graph *get_eg () const override { return m_eg; }
 
+  const program_state *get_state () const override { return m_new_state; }
+
   void maybe_did_work () override;
   bool checking_for_infinite_loop_p () const override { return false; }
   void on_unusable_in_infinite_loop () override {}

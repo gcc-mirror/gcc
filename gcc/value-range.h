@@ -344,6 +344,8 @@ private:
   bool intersect_bitmask (const irange &r);
   bool union_bitmask (const irange &r);
   bool set_range_from_bitmask ();
+  bool snap_subranges ();
+  bool snap (const wide_int &, const wide_int &, wide_int &, wide_int &);
 
   bool intersect (const wide_int& lb, const wide_int& ub);
   bool union_append (const irange &r);

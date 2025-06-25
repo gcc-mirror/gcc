@@ -303,6 +303,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Is_Known_Guaranteed_ABE, Flag),
         Sm (Is_SPARK_Mode_On_Node, Flag),
         Sm (No_Elaboration_Check, Flag),
+        Sm (Is_Expanded_Constructor_Call, Flag),
         Sm (Is_Expanded_Prefixed_Call, Flag)));
 
    Cc (N_Function_Call, N_Subprogram_Call,
@@ -533,8 +534,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Discriminant_Specifications, List_Id, Default_No_List),
         Sy (Type_Definition, Node_Id),
         Sy (Aspect_Specifications, List_Id, Default_No_List),
-        Sm (Discr_Check_Funcs_Built, Flag),
-        Sm (Incomplete_View, Node_Id)));
+        Sm (Discr_Check_Funcs_Built, Flag)));
 
    Cc (N_Incomplete_Type_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
@@ -1030,8 +1030,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Accept_Statement, Node_Id),
         Sy (Condition, Node_Id, Default_Empty),
         Sy (Statements, List_Id, Default_Empty_List),
-        Sy (Pragmas_Before, List_Id, Default_No_List),
-        Sm (Accept_Handler_Records, List_Id)));
+        Sy (Pragmas_Before, List_Id, Default_No_List)));
 
    Cc (N_Delay_Alternative, Node_Kind,
        (Sy (Delay_Statement, Node_Id),

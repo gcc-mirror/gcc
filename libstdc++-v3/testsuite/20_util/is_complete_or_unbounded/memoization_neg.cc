@@ -25,5 +25,5 @@
 struct X;
 constexpr bool res_incomplete = std::is_move_constructible<X>::value; // { dg-error "required from here" }
 
-struct X{};
+struct X{};							       // { dg-warning Wsfinae-incomplete }
 constexpr bool res_complete = std::is_default_constructible<X>::value; // { dg-bogus "required from here" }

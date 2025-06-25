@@ -1037,6 +1037,7 @@ package body Einfo.Utils is
                   Id = Pragma_Contract_Cases            or else
                   Id = Pragma_Exceptional_Cases         or else
                   Id = Pragma_Exit_Cases                or else
+                  Id = Pragma_Program_Exit              or else
                   Id = Pragma_Subprogram_Variant        or else
                   Id = Pragma_Test_Case;
 
@@ -2638,14 +2639,7 @@ package body Einfo.Utils is
       --  anonymous protected types, since protected types always have the
       --  default convention.
 
-      if Present (Etype (E))
-        and then (Is_Object (E)
-
-                   --  Allow E_Void (happens for pragma Convention appearing
-                   --  in the middle of a record applying to a component)
-
-                   or else Ekind (E) = E_Void)
-      then
+      if Present (Etype (E)) and then Is_Object (E) then
          declare
             Typ : constant Entity_Id := Etype (E);
 

@@ -7,13 +7,13 @@
 #include <testsuite_hooks.h>
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
-#define WIDEN(S) WIDEN_(_CharT, S)
+#define WIDEN(S) WIDEN_(CharT, S)
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_from_format_string()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
   using namespace std::chrono_literals;
   auto date = 2025y/std::chrono::May/05d;
 
@@ -27,24 +27,24 @@ test_from_format_string()
   VERIFY( res == WIDEN("====2025-05-05\U0001f921====") );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_formatted_value()
 {
   // Custom time_put facet which returns Ideographic Telegraph Symbol
   // for given month for Om.
-  struct TimePut : std::time_put<_CharT>
+  struct TimePut : std::time_put<CharT>
   {
-    using iter_type = std::time_put<_CharT>::iter_type;
-    using char_type = std::time_put<_CharT>::char_type;
+    using iter_type = std::time_put<CharT>::iter_type;
+    using char_type = std::time_put<CharT>::char_type;
 
     iter_type
     do_put(iter_type out, std::ios_base& io, char_type fill, const tm* t,
 	   char format, char modifier) const override
     {
       if (format != 'm' && modifier != 'm')
-	return std::time_put<_CharT>::do_put(out, io, fill, t, format, modifier);
-      std::basic_string_view<_CharT> str;
+	return std::time_put<CharT>::do_put(out, io, fill, t, format, modifier);
+      std::basic_string_view<CharT> str;
       switch (t->tm_mon)
        {
 	 case 0:
@@ -89,7 +89,7 @@ test_formatted_value()
   };
   const std::locale loc(std::locale::classic(), new TimePut);
 
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
 
   res = std::format(loc, WIDEN("{:<1L%Om}"), std::chrono::January);
   VERIFY( res == WIDEN("\u32C0") );

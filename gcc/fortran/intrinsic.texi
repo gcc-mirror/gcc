@@ -24,15 +24,22 @@ Some basic guidelines for editing this document:
 
 @tex
 \gdef\acosd{\mathop{\rm acosd}\nolimits}
-\gdef\asind{\mathop{\rm asind}\nolimits}
-\gdef\atand{\mathop{\rm atand}\nolimits}
-\gdef\acos{\mathop{\rm acos}\nolimits}
-\gdef\asin{\mathop{\rm asin}\nolimits}
-\gdef\atan{\mathop{\rm atan}\nolimits}
 \gdef\acosh{\mathop{\rm acosh}\nolimits}
+\gdef\acospi{\mathop{\rm acospi}\nolimits}
+\gdef\acos{\mathop{\rm acos}\nolimits}
+\gdef\asind{\mathop{\rm asind}\nolimits}
 \gdef\asinh{\mathop{\rm asinh}\nolimits}
+\gdef\asinpi{\mathop{\rm asinpi}\nolimits}
+\gdef\asin{\mathop{\rm asin}\nolimits}
+\gdef\atan2pi{\mathop{\rm atan2pi}\nolimits}
+\gdef\atand{\mathop{\rm atand}\nolimits}
 \gdef\atanh{\mathop{\rm atanh}\nolimits}
+\gdef\atanpi{\mathop{\rm atanpi}\nolimits}
+\gdef\atan{\mathop{\rm atan}\nolimits}
 \gdef\cosd{\mathop{\rm cosd}\nolimits}
+\gdef\cospi{\mathop{\rm cospi}\nolimits}
+\gdef\sinpi{\mathop{\rm sinpi}\nolimits}
+\gdef\tanpi{\mathop{\rm tanpi}\nolimits}
 @end tex
 
 
@@ -49,6 +56,7 @@ Some basic guidelines for editing this document:
 * @code{ACOS}:          ACOS,      Arccosine function
 * @code{ACOSD}:         ACOSD,     Arccosine function, degrees
 * @code{ACOSH}:         ACOSH,     Inverse hyperbolic cosine function
+* @code{ACOSPI}:        ACOSPI,    Circular arc cosine function
 * @code{ADJUSTL}:       ADJUSTL,   Left adjust a string
 * @code{ADJUSTR}:       ADJUSTR,   Right adjust a string
 * @code{AIMAG}:         AIMAG,     Imaginary part of complex number
@@ -62,12 +70,15 @@ Some basic guidelines for editing this document:
 * @code{ASIN}:          ASIN,      Arcsine function
 * @code{ASIND}:         ASIND,     Arcsine function, degrees
 * @code{ASINH}:         ASINH,     Inverse hyperbolic sine function
+* @code{ASINPI}:        ASINPI,    Circular arc sine function
 * @code{ASSOCIATED}:    ASSOCIATED, Status of a pointer or pointer/target pair
 * @code{ATAN}:          ATAN,      Arctangent function
-* @code{ATAND}:         ATAND,     Arctangent function, degrees
 * @code{ATAN2}:         ATAN2,     Arctangent function
 * @code{ATAN2D}:        ATAN2D,    Arctangent function, degrees
+* @code{ATAN2PI}:       ATAN2PI,   Circular arc tangent function
+* @code{ATAND}:         ATAND,     Arctangent function, degrees
 * @code{ATANH}:         ATANH,     Inverse hyperbolic tangent function
+* @code{ATANPI}:        ATANPI,    Circular arc tangent function
 * @code{ATOMIC_ADD}:    ATOMIC_ADD, Atomic ADD operation
 * @code{ATOMIC_AND}:    ATOMIC_AND, Atomic bitwise AND operation
 * @code{ATOMIC_CAS}:    ATOMIC_CAS, Atomic compare and swap
@@ -116,6 +127,7 @@ Some basic guidelines for editing this document:
 * @code{COS}:           COS,       Cosine function
 * @code{COSD}:          COSD,      Cosine function, degrees
 * @code{COSH}:          COSH,      Hyperbolic cosine function
+* @code{COSPI}:         COSPI,     Circular cosine function
 * @code{COTAN}:         COTAN,     Cotangent function
 * @code{COTAND}:        COTAND,    Cotangent function, degrees
 * @code{COUNT}:         COUNT,     Count occurrences of TRUE in an array
@@ -296,6 +308,7 @@ Some basic guidelines for editing this document:
 * @code{SIN}:           SIN,       Sine function
 * @code{SIND}:          SIND,      Sine function, degrees
 * @code{SINH}:          SINH,      Hyperbolic sine function
+* @code{SINPI}:         SINPI,     Circular sine function
 * @code{SIZE}:          SIZE,      Function to determine the size of an array
 * @code{SIZEOF}:        SIZEOF,    Determine the size in bytes of an expression
 * @code{SLEEP}:         SLEEP,     Sleep for the specified number of seconds
@@ -312,6 +325,7 @@ Some basic guidelines for editing this document:
 * @code{TAN}:           TAN,       Tangent function
 * @code{TAND}:          TAND,      Tangent function, degrees
 * @code{TANH}:          TANH,      Hyperbolic tangent function
+* @code{TANPI}:         TANPI,     Circular tangent function
 * @code{TEAM_NUMBER}:   TEAM_NUMBER, Retrieve team id of given team
 * @code{THIS_IMAGE}:    THIS_IMAGE, Cosubscript index of this image
 * @code{TIME}:          TIME,      Time function
@@ -750,6 +764,62 @@ Fortran 2008 and later
 @item @emph{See also}:
 Inverse function: @*
 @ref{COSH}
+@end table
+
+
+
+@node ACOSPI
+@section @code{ACOSPI} --- Circular arc cosine function
+@fnindex ACOSPI
+@cindex trigonometric function, cosine, inverse
+
+@table @asis
+@item @emph{Description}:
+@code{ACOSPI(X)} computes @math{ \acos(x) / \pi}, which is a measure
+of an angle in half-revolutions.
+
+@item @emph{Standard}:
+Fortran 2023
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = ACOSPI(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL} with @math{-1 \leq x \leq 1}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has the same type and kind as @var{X}.
+It is expressed in half-revolutions and satisfies
+@math{ 0 \leq \acospi (x) \leq  1}.
+
+@item @emph{Example}:
+@smallexample
+program test_acospi
+  implicit none
+  real, parameter :: x = 0.123, y(3) = [0.123, 0.45, 0.8]
+  real, parameter :: a = acospi(x), b(3) = acospi(y)
+  call foo(x, y)
+contains
+  subroutine foo(u, v)
+    real, intent(in) :: u, v(:)
+    real :: f, g(size(v))
+    f = acospi(u)
+    g = acospi(v)
+    if (abs(a - f) > 8 * epsilon(f)) stop 1
+    if (any(abs(g - b) > 8 * epsilon(f))) stop 2
+  end subroutine foo
+end program test_acospi
+@end smallexample
+
+@item @emph{See also}:
+@ref{ASINPI} @*
+@ref{ATAN2PI} @*
+@ref{ATANPI} @*
 @end table
 
 
@@ -1469,6 +1539,62 @@ Inverse function: @*
 
 
 
+@node ASINPI
+@section @code{ASINPI} --- Circular arc sine function
+@fnindex ASINPI
+@cindex trigonometric function, sine, inverse
+
+@table @asis
+@item @emph{Description}:
+@code{ASINPI(X)} computes @math{ \asin(x) / \pi}, which is a measure
+of an angle in half-revolutions.
+
+@item @emph{Standard}:
+Fortran 2023
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = ASINPI(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL} with @math{-1 \leq x \leq 1}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has the same type and kind as @var{X}.
+It is expressed in half-revolutions and satisfies
+@math{ -0.5 \leq \asinpi (x) \leq  0.5}.
+
+@item @emph{Example}:
+@smallexample
+program test_asinpi
+  implicit none
+  real, parameter :: x = 0.123, y(3) = [0.123, 0.45, 0.8]
+  real, parameter :: a = asinpi(x), b(3) = asinpi(y)
+  call foo(x, y)
+contains
+  subroutine foo(u, v)
+    real, intent(in) :: u, v(:)
+    real :: f, g(size(v))
+    f = asinpi(u)
+    g = asinpi(v)
+    if (abs(a - f) > 8 * epsilon(f)) stop 1
+    if (any(abs(g - b) > 8 * epsilon(f))) stop 2
+  end subroutine foo
+end program test_asinpi
+@end smallexample
+
+@item @emph{See also}:
+@ref{ACOSPI} @*
+@ref{ATAN2PI} @*
+@ref{ATANPI} @*
+@end table
+
+
+
 @node ASSOCIATED
 @section @code{ASSOCIATED} --- Status of a pointer or pointer/target pair 
 @fnindex ASSOCIATED
@@ -1608,68 +1734,6 @@ Degrees function: @*
 
 
 
-@node ATAND
-@section @code{ATAND} --- Arctangent function, degrees
-@fnindex ATAND
-@fnindex DATAND
-@cindex trigonometric function, tangent, inverse, degrees
-@cindex tangent, inverse, degrees
-
-@table @asis
-@item @emph{Synopsis}:
-@multitable @columnfractions .80
-@item @code{RESULT = ATAND(X)}
-@item @code{RESULT = ATAND(Y, X)}
-@end multitable
-
-@item @emph{Description}:
-@code{ATAND(X)} computes the arctangent of @var{X} in degrees (inverse of
-@ref{TAND}).
-
-@item @emph{Class}:
-Elemental function
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL}.
-@item @var{Y} @tab The type and kind type parameter shall be the same as @var{X}.
-@end multitable
-
-@item @emph{Return value}:
-The return value is of the same type and kind as @var{X}.
-If @var{Y} is present, the result is identical to @code{ATAN2D(Y, X)}.
-Otherwise, the result is in degrees and lies in the range
-@math{-90 \leq \atand(x) \leq 90}.
-
-@item @emph{Example}:
-@smallexample
-program test_atand
-  real(8) :: x = 2.866_8
-  real(4) :: x1 = 1.e0_4, y1 = 0.5e0_4
-  x = atand(x)
-  x1 = atand(y1, x1)
-end program test_atand
-@end smallexample
-
-@item @emph{Specific names}:
-@multitable @columnfractions .23 .23 .20 .30
-@headitem Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{ATAND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 2023
-@item @code{DATAND(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
-@end multitable
-
-@item @emph{Standard}:
-Fortran 2023
-
-@item @emph{See also}:
-Inverse function: @*
-@ref{TAND} @*
-Radians function: @*
-@ref{ATAN}
-@end table
-
-
-
 @node ATAN2
 @section @code{ATAN2} --- Arctangent function 
 @fnindex ATAN2
@@ -1798,6 +1862,117 @@ Radians function: @*
 @ref{ATAN2}
 @end table
 
+
+
+@node ATAN2PI
+@section @code{ATAN2PI} --- Circular arc tangent function
+@fnindex ATAN2PI
+@cindex trigonometric function, tangent, inverse
+
+@table @asis
+@item @emph{Description}:
+@code{ATAN2PI(Y, X)} computes @math{ {\rm {atan2}}(y, x) / \pi},
+and provides a measure of an angle in half-revolutions within
+the proper quadrant.
+
+@item @emph{Standard}:
+Fortran 2023
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = ATAN2PI(Y, X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{Y} @tab The type shall be @code{REAL}.
+@item @var{X} @tab The type and kind type parameter shall be the
+same as @var{Y}.  If @var{Y} is zero, then @var{X} shall be nonzero.
+@end multitable
+
+@item @emph{Return value}:
+The return value has the same type and kind type parameter as @var{Y}
+and satisfies @math{-1 \leq {\rm {atan2}}(y, x) / \pi \leq 1}.
+
+@item @emph{Example}:
+@smallexample
+program test_atan2pi
+  real(kind=4) :: x = 1.e0_4, y = 0.5e0_4
+  x = atan2pi(y, x)
+end program test_atan2pi
+@end smallexample
+
+@item @emph{See also}:
+@ref{ACOSPI} @*
+@ref{ASINPI} @*
+@ref{ATANPI} @*
+@end table
+
+
+
+@node ATAND
+@section @code{ATAND} --- Arctangent function, degrees
+@fnindex ATAND
+@fnindex DATAND
+@cindex trigonometric function, tangent, inverse, degrees
+@cindex tangent, inverse, degrees
+
+@table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = ATAND(X)}
+@item @code{RESULT = ATAND(Y, X)}
+@end multitable
+
+@item @emph{Description}:
+@code{ATAND(X)} computes the arctangent of @var{X} in degrees (inverse of
+@ref{TAND}).
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL}.
+@item @var{Y} @tab The type and kind type parameter shall be the same as @var{X}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}.
+If @var{Y} is present, the result is identical to @code{ATAN2D(Y, X)}.
+Otherwise, the result is in degrees and lies in the range
+@math{-90 \leq \atand(x) \leq 90}.
+
+@item @emph{Example}:
+@smallexample
+program test_atand
+  real(8) :: x = 2.866_8
+  real(4) :: x1 = 1.e0_4, y1 = 0.5e0_4
+  x = atand(x)
+  x1 = atand(y1, x1)
+end program test_atand
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .23 .23 .20 .30
+@headitem Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{ATAND(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 2023
+@item @code{DATAND(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
+@end multitable
+
+@item @emph{Standard}:
+Fortran 2023
+
+@item @emph{See also}:
+Inverse function: @*
+@ref{TAND} @*
+Radians function: @*
+@ref{ATAN}
+@end table
+
+
+
 @node ATANH
 @section @code{ATANH} --- Inverse hyperbolic tangent function
 @fnindex ATANH
@@ -1847,6 +2022,70 @@ Fortran 2008 and later
 @item @emph{See also}:
 Inverse function: @*
 @ref{TANH}
+@end table
+
+
+
+@node ATANPI
+@section @code{ATANPI} --- Circular arc tangent function
+@fnindex ATANPI
+@cindex trigonometric function, tangent, inverse
+
+@table @asis
+@item @emph{Description}:
+@code{ATANPI(X)} computes @math{ \atan(x) / \pi}.
+@code{ATANPI(Y, X)} computes @math{ {\rm atan2}(y, x) / \pi}.
+These provide a measure of an angle in half-revolutions.
+
+@item @emph{Standard}:
+Fortran 2023
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{RESULT = ATANPI(X)}
+@item @code{RESULT = ATANPI(Y, X)}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{Y} @tab The type shall be @code{REAL}.
+@item @var{X} @tab If @var{Y} appears, @var{X} shall have the same type
+and kind as @var{Y}.  If @var{Y} is zero, then @var{X} shall not be zero.
+If @var{Y} does not appear in a function reference, then @var{X} shall be
+@code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has the same type and kind as @var{X}.
+It is expressed in half-revolutions and satisfies
+@math{ -0.5 \leq \atanpi (x) \leq  0.5}.
+
+@item @emph{Example}:
+@smallexample
+program test_atanpi
+  implicit none
+  real, parameter :: x = 0.123, y(3) = [0.123, 0.45, 0.8]
+  real, parameter :: a = atanpi(x), b(3) = atanpi(y)
+  call foo(x, y)
+contains
+  subroutine foo(u, v)
+    real, intent(in) :: u, v(:)
+    real :: f, g(size(v))
+    f = atanpi(u)
+    g = atanpi(v)
+    if (abs(a - f) > 8 * epsilon(f)) stop 1
+    if (any(abs(g - b) > 8 * epsilon(f))) stop 2
+  end subroutine foo
+end program test_atanpi
+@end smallexample
+
+@item @emph{See also}:
+@ref{ACOSPI} @*
+@ref{ASINPI} @*
+@ref{ATAN2PI} @*
 @end table
 
 
@@ -4391,6 +4630,57 @@ Inverse function: @*
 
 
 
+@node COSPI
+@section @code{COSPI} --- Circular cosine function
+@fnindex COSPI
+@cindex trigonometric function, cosine
+@cindex cosine
+
+@table @asis
+@item @emph{Description}:
+@code{COSPI(X)} computes @math{\cos(\pi x)} without performing
+an explicit multiplication by @math{\pi}.  This is achieved
+through argument reduction where @math{ x = n + r } with
+@math{n} an integer and @math{0 \leq r \le 1}.
+Due to the
+properties of floating-point arithmetic, the useful range
+for @var{X} is defined by
+@code{ABS(X) <= REAL(2,KIND(X))**DIGITS(X)}.
+
+@item @emph{Standard}:
+Fortran 2023
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = COSPI(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}.
+The result is in half-revolutions and satisfies
+@math{ -1 \leq \cospi (x) \leq 1}.
+
+@item @emph{Example}:
+@smallexample
+program test_cospi
+  real :: x = 0.0
+  x = cospi(x)
+end program test_cospi
+@end smallexample
+
+@item @emph{See also}:
+@ref{ACOSPI} @*
+@ref{COS} @*
+@end table
+
+
+
 @node COTAN
 @section @code{COTAN} --- Cotangent function
 @fnindex COTAN
@@ -6711,9 +7001,11 @@ Subroutine, function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{UNIT}   @tab An open I/O unit number of type @code{INTEGER}.
-@item @var{VALUES} @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
-on success and a system specific error code otherwise.
+@item @var{VALUES} @tab The type shall be @code{INTEGER, DIMENSION(13)}
+of the default kind.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}
+of the default kind.
+Returns 0 on success and a system specific error code otherwise.
 @end multitable
 
 @item @emph{Example}:
@@ -10016,8 +10308,10 @@ Subroutine, function
 @multitable @columnfractions .15 .70
 @item @var{NAME}   @tab The type shall be @code{CHARACTER} of the default
 kind, a valid path within the file system.
-@item @var{VALUES} @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}.
+@item @var{VALUES} @tab The type shall be @code{INTEGER, DIMENSION(13)}
+of the default kind.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}
+of the default kind.
 Returns 0 on success and a system specific error code otherwise.
 @end multitable
 
@@ -13677,6 +13971,57 @@ a GNU extension
 
 
 
+@node SINPI
+@section @code{SINPI} --- Circular sine function
+@fnindex SINPI
+@cindex trigonometric function, sine
+@cindex sine
+
+@table @asis
+@item @emph{Description}:
+@code{SINPI(X)} computes @math{\sin(\pi x)} without performing
+an explicit multiplication by @math{\pi}.  This is achieved
+through argument reduction where @math{ |x| = n + r } with
+@math{n} an integer and @math{0 \leq r \le 1}.
+Due to the
+properties of floating-point arithmetic, the useful range
+for @var{X} is defined by
+@code{ABS(X) <= REAL(2,KIND(X))**DIGITS(X)}.
+
+@item @emph{Standard}:
+Fortran 2023
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = SINPI(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}.
+The result is in half-revolutions and satisfies
+@math{ -1 \leq \sinpi (x) \leq 1}.
+
+@item @emph{Example}:
+@smallexample
+program test_sinpi
+  real :: x = 0.0
+  x = sinpi(x)
+end program test_sinpi
+@end smallexample
+
+@item @emph{See also}:
+@ref{ASINPI} @*
+@ref{SIN} @*
+@end table
+
+
+
 @node SIZE
 @section @code{SIZE} --- Determine the size of an array
 @fnindex SIZE
@@ -14050,6 +14395,8 @@ The elements that are obtained and stored in the array @code{VALUES}:
 
 Not all these elements are relevant on all systems. 
 If an element is not relevant, it is returned as 0.
+If the value of an element would overflow the range of default integer,
+a -1 is returned instead.
 
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
@@ -14061,9 +14408,11 @@ Subroutine, function
 @multitable @columnfractions .15 .70
 @item @var{NAME}   @tab The type shall be @code{CHARACTER}, of the
 default kind and a valid path within the file system.
-@item @var{VALUES} @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
-on success and a system specific error code otherwise.
+@item @var{VALUES} @tab The type shall be @code{INTEGER, DIMENSION(13)}
+of the default kind.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}
+of the default kind.
+Returns 0 on success and a system specific error code otherwise.
 @end multitable
 
 @item @emph{Example}:
@@ -14570,6 +14919,55 @@ Fortran 2018 and later.
 @item @emph{See also}:
 @ref{GET_TEAM}, @*
 @ref{TEAM_NUMBER}
+@end table
+
+
+
+@node TANPI
+@section @code{TANPI} --- Circular tangent function
+@fnindex TANPI
+@cindex trigonometric function, tangent
+@cindex tangent
+
+@table @asis
+@item @emph{Description}:
+@code{TANPI(X)} computes @math{\tan(\pi x)} without performing
+an explicit multiplication by @math{\pi}.  This is achieved
+through argument reduction where @math{ |x| = n + r } with
+@math{n} an integer and @math{0 \leq r \le 1}.
+Due to the
+properties of floating-point arithmetic, the useful range
+for @var{X} is defined by
+@code{ABS(X) <= REAL(2,KIND(X))**DIGITS(X)}.
+
+@item @emph{Standard}:
+Fortran 2023
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = TANPI(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_tanpi
+  real :: x = 0.0
+  x = tanpi(x)
+end program test_tanpi
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATANPI} @*
+@ref{TAN} @*
 @end table
 
 

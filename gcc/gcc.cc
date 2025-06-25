@@ -8506,11 +8506,13 @@ driver::set_up_specs () const
   spec_machine_suffix = just_machine_suffix;
 #endif
 
+  const char *exec_prefix
+    = gcc_exec_prefix ? gcc_exec_prefix : standard_exec_prefix;
   /* We need to check standard_exec_prefix/spec_machine_suffix/specs
      for any override of as, ld and libraries.  */
-  specs_file = (char *) alloca (strlen (standard_exec_prefix)
-		       + strlen (spec_machine_suffix) + sizeof ("specs"));
-  strcpy (specs_file, standard_exec_prefix);
+  specs_file = (char *) alloca (
+    strlen (exec_prefix) + strlen (spec_machine_suffix) + sizeof ("specs"));
+  strcpy (specs_file, exec_prefix);
   strcat (specs_file, spec_machine_suffix);
   strcat (specs_file, "specs");
   if (access (specs_file, R_OK) == 0)

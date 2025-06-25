@@ -1331,7 +1331,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	size_type __sz = this->_M_impl._M_finish - this->_M_impl._M_start;
 	if (__sz > max_size ())
-	  __builtin_unreachable ();
+	  __builtin_unreachable();
 	return __sz;
       }
 

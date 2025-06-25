@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains routines for scanning values for ordinary fixed point
---  types up to 128-bit small and mantissa, for use in Text_IO.Decimal_IO, and
---  the Value attribute for such decimal types.
+--  This package contains the routines for supporting the Value attribute for
+--  ordinary fixed point types up to 128-bit small and mantissa, and also for
+--  conversion operations required in Text_IO.Fixed_IO for such types.
 
 with Interfaces;
 with System.Arith_128;

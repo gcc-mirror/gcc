@@ -1408,8 +1408,9 @@ static bool
 or1k_can_change_mode_class (machine_mode from, machine_mode to,
 			    reg_class_t rclass)
 {
+  /* Allow cnoverting special flags to SI mode subregs.  */
   if (rclass == FLAG_REGS)
-    return from == to;
+    return from == to || (from == BImode && to == SImode);
   return true;
 }
 
@@ -1653,6 +1654,63 @@ or1k_rtx_costs (rtx x, machine_mode mode, int outer_code, int /* opno */,
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS or1k_rtx_costs
 
+static bool
+or1k_is_cmov_insn (rtx_insn *seq)
+{
+  rtx_insn *curr_insn = seq;
+  rtx set = NULL_RTX;
+
+  /* The pattern may start with a simple set with register operands.  Skip
+     through any of those.  */
+  while (curr_insn)
+    {
+      set = single_set (curr_insn);
+      if (!set
+	  || !REG_P (SET_DEST (set)))
+	return false;
+
+      /* If it's not a simple reg or immediate break.  */
+      if (REG_P (SET_SRC (set)) || CONST_INT_P (SET_SRC (set)))
+	curr_insn = NEXT_INSN (curr_insn);
+      else
+	break;
+    }
+
+  if (!curr_insn)
+    return false;
+
+  /* The next instruction should be a compare.  OpenRISC has many operators used
+     for comparison so skip and confirm the next is IF_THEN_ELSE.  */
+  curr_insn = NEXT_INSN (curr_insn);
+  if (!curr_insn)
+    return false;
+
+  /* And the last instruction should be an IF_THEN_ELSE.  */
+  set = single_set (curr_insn);
+  if (!set
+      || !REG_P (SET_DEST (set))
+      || GET_CODE (SET_SRC (set)) != IF_THEN_ELSE)
+    return false;
+
+  return !NEXT_INSN (curr_insn);
+}
+
+/* Implement TARGET_NOCE_CONVERSION_PROFITABLE_P.  We detect if the conversion
+   resulted in a l.cmov instruction and if so we consider it more profitable than
+   branch instructions.  */
+
+static bool
+or1k_noce_conversion_profitable_p (rtx_insn *seq,
+				    struct noce_if_info *if_info)
+{
+  if (TARGET_CMOV)
+    return or1k_is_cmov_insn (seq);
+
+  return default_noce_conversion_profitable_p (seq, if_info);
+}
+
+#undef TARGET_NOCE_CONVERSION_PROFITABLE_P
+#define TARGET_NOCE_CONVERSION_PROFITABLE_P or1k_noce_conversion_profitable_p
 
 /* A subroutine of the atomic operation splitters.  Jump to LABEL if
    COND is true.  Mark the jump as unlikely to be taken.  */

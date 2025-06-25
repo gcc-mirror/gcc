@@ -68,6 +68,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class function_ref<_Res(_ArgTypes...) _GLIBCXX_MOF_CV
 		       noexcept(_Noex)>
     {
+      static_assert(
+	(std::__is_complete_or_unbounded(__type_identity<_ArgTypes>()) && ...),
+	"each parameter type must be a complete class");
+
       using _Invoker = __polyfunc::_Invoker<_Noex, _Res, _ArgTypes...>;
       using _Signature = _Invoker::_Signature;
 

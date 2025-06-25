@@ -30,7 +30,7 @@ namespace ana {
 
 /* class record_layout.  */
 
-record_layout::record_layout (tree record_type)
+record_layout::record_layout (const_tree record_type)
 {
   gcc_assert (TREE_CODE (record_type) == RECORD_TYPE);
 

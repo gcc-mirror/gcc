@@ -185,7 +185,10 @@ pending_diagnostic::add_function_entry_event (const exploded_edge &eedge,
 {
   const exploded_node *dst_node = eedge.m_dest;
   const program_point &dst_point = dst_node->get_point ();
-  emission_path->add_event (std::make_unique<function_entry_event> (dst_point));
+  const program_state &dst_state = dst_node->get_state ();
+  emission_path->add_event
+    (std::make_unique<function_entry_event> (dst_point,
+					     dst_state));
 }
 
 /* Base implementation of pending_diagnostic::add_call_event.
@@ -241,7 +244,8 @@ pending_diagnostic::add_final_event (const state_machine *sm,
     (std::make_unique<warning_event>
      (loc_info,
       enode,
-      sm, var, state));
+      sm, var, state,
+      get_final_state ()));
 }
 
 } // namespace ana

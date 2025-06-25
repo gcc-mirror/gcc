@@ -2939,19 +2939,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #ifdef __cpp_lib_make_from_tuple // C++ >= 17
+  template <typename _Tp, typename _Tuple, typename _Seq
+	      = make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>>
+    constexpr bool __can_make_from_tuple = false;
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3528. make_from_tuple can perform (the equivalent of) a C-style cast
+  template <typename _Tp, typename _Tuple, size_t... _Idx>
+    constexpr bool __can_make_from_tuple<_Tp, _Tuple, index_sequence<_Idx...>>
+      = is_constructible_v<_Tp,
+			   decltype(std::get<_Idx>(std::declval<_Tuple>()))...>;
+
   template <typename _Tp, typename _Tuple, size_t... _Idx>
     constexpr _Tp
     __make_from_tuple_impl(_Tuple&& __t, index_sequence<_Idx...>)
-    { return _Tp(std::get<_Idx>(std::forward<_Tuple>(__t))...); }
+    {
+      static_assert(__can_make_from_tuple<_Tp, _Tuple, index_sequence<_Idx...>>);
+      return _Tp(std::get<_Idx>(std::forward<_Tuple>(__t))...);
+    }
 
 #if __cpp_lib_tuple_like // >= C++23
   template <typename _Tp, __tuple_like _Tuple>
 #else
   template <typename _Tp, typename _Tuple>
 #endif
-    constexpr _Tp
+    constexpr auto
     make_from_tuple(_Tuple&& __t)
     noexcept(__unpack_std_tuple<is_nothrow_constructible, _Tp, _Tuple>)
+#ifdef __cpp_concepts // >= C++20
+    -> _Tp
+    requires __can_make_from_tuple<_Tp, _Tuple>
+#else
+    -> __enable_if_t<__can_make_from_tuple<_Tp, _Tuple>, _Tp>
+#endif
     {
       constexpr size_t __n = tuple_size_v<remove_reference_t<_Tuple>>;
 #if __has_builtin(__reference_constructs_from_temporary)

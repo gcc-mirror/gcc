@@ -30,6 +30,17 @@ struct html_generation_options
 
   bool m_css;
   bool m_javascript;
+
+  // Debugging options:
+
+  // If true, attempt to show state diagrams at events
+  bool m_show_state_diagrams;
+
+  // If true, show the XML form of the state with such diagrams
+  bool m_show_state_diagram_xml;
+
+  // If true, show the .dot source used for the diagram
+  bool m_show_state_diagram_dot_src;
 };
 
 extern diagnostic_output_file

@@ -47,28 +47,60 @@ namespace ranges
 {
   namespace __detail
   {
+    template<typename _Fp>
+      using __by_ref_or_value_fn
+	= __conditional_t<is_scalar_v<_Fp> || is_empty_v<_Fp>, _Fp, _Fp&>;
+
     template<typename _Comp, typename _Proj>
-      constexpr auto
-      __make_comp_proj(_Comp& __comp, _Proj& __proj)
+      struct _Comp_proj
       {
-	return [&] (auto&& __lhs, auto&& __rhs) -> bool {
-	  using _TL = decltype(__lhs);
-	  using _TR = decltype(__rhs);
-	  return std::__invoke(__comp,
-			       std::__invoke(__proj, std::forward<_TL>(__lhs)),
-			       std::__invoke(__proj, std::forward<_TR>(__rhs)));
-	};
-      }
+	[[no_unique_address]] __by_ref_or_value_fn<_Comp> _M_comp;
+	[[no_unique_address]] __by_ref_or_value_fn<_Proj> _M_proj;
+
+	constexpr
+	_Comp_proj(_Comp& __comp, _Proj& __proj)
+	: _M_comp(__comp), _M_proj(__proj)
+	{ }
+
+	template<typename _Tp, typename _Up>
+	  constexpr bool
+	  operator()(_Tp&& __x, _Up&& __y)
+	  {
+	    return std::__invoke(_M_comp,
+				 std::__invoke(_M_proj, std::forward<_Tp>(__x)),
+				 std::__invoke(_M_proj, std::forward<_Up>(__y)));
+	  }
+      };
+
+    template<typename _Comp, typename _Proj>
+      constexpr _Comp_proj<_Comp, _Proj>
+      __make_comp_proj(_Comp& __comp, _Proj& __proj)
+      { return {__comp, __proj}; }
 
     template<typename _Pred, typename _Proj>
-      constexpr auto
-      __make_pred_proj(_Pred& __pred, _Proj& __proj)
+      struct _Pred_proj
       {
-	return [&] <typename _Tp> (_Tp&& __arg) -> bool {
-	  return std::__invoke(__pred,
-			       std::__invoke(__proj, std::forward<_Tp>(__arg)));
-	};
-      }
+	[[no_unique_address]] __by_ref_or_value_fn<_Pred> _M_pred;
+	[[no_unique_address]] __by_ref_or_value_fn<_Proj> _M_proj;
+
+	constexpr
+	_Pred_proj(_Pred& __pred, _Proj& __proj)
+	: _M_pred(__pred), _M_proj(__proj)
+	{ }
+
+	template<typename _Tp>
+	  constexpr bool
+	  operator()(_Tp&& __x)
+	  {
+	    return std::__invoke(_M_pred,
+				 std::__invoke(_M_proj, std::forward<_Tp>(__x)));
+	  }
+      };
+
+    template<typename _Pred, typename _Proj>
+      constexpr _Pred_proj<_Pred, _Proj>
+      __make_pred_proj(_Pred& __pred, _Proj& __proj)
+      { return {__pred, __proj}; }
   } // namespace __detail
 
   struct __all_of_fn
@@ -437,6 +469,254 @@ namespace ranges
   };
 
   inline constexpr __search_n_fn search_n{};
+
+#if __glibcxx_ranges_starts_ends_with // C++ >= 23
+  struct __starts_with_fn
+  {
+    template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
+	     input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
+	     typename _Pred = ranges::equal_to,
+	     typename _Proj1 = identity, typename _Proj2 = identity>
+      requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
+      constexpr bool
+      operator()(_Iter1 __first1, _Sent1 __last1,
+		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      {
+	iter_difference_t<_Iter1> __n1 = -1;
+	iter_difference_t<_Iter2> __n2 = -1;
+	if constexpr (sized_sentinel_for<_Sent1, _Iter1>)
+	  __n1 = __last1 - __first1;
+	if constexpr (sized_sentinel_for<_Sent2, _Iter2>)
+	  __n2 = __last2 - __first2;
+	return _S_impl(std::move(__first1), __last1, __n1,
+		       std::move(__first2), __last2, __n2,
+		       std::move(__pred),
+		       std::move(__proj1), std::move(__proj2));
+      }
+
+    template<input_range _Range1, input_range _Range2,
+	     typename _Pred = ranges::equal_to,
+	     typename _Proj1 = identity, typename _Proj2 = identity>
+      requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
+				     _Pred, _Proj1, _Proj2>
+      constexpr bool
+      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      {
+	range_difference_t<_Range1> __n1 = -1;
+	range_difference_t<_Range2> __n2 = -1;
+	if constexpr (sized_range<_Range1>)
+	  __n1 = ranges::size(__r1);
+	if constexpr (sized_range<_Range2>)
+	  __n2 = ranges::size(__r2);
+	return _S_impl(ranges::begin(__r1), ranges::end(__r1), __n1,
+		       ranges::begin(__r2), ranges::end(__r2), __n2,
+		       std::move(__pred),
+		       std::move(__proj1), std::move(__proj2));
+      }
+
+  private:
+    template<typename _Iter1, typename _Sent1, typename _Iter2, typename _Sent2,
+	     typename _Pred,
+	     typename _Proj1, typename _Proj2>
+      static constexpr bool
+      _S_impl(_Iter1 __first1, _Sent1 __last1, iter_difference_t<_Iter1> __n1,
+	      _Iter2 __first2, _Sent2 __last2, iter_difference_t<_Iter2> __n2,
+	      _Pred __pred, _Proj1 __proj1, _Proj2 __proj2)
+      {
+	if (__first2 == __last2) [[unlikely]]
+	  return true;
+	else if (__n1 == -1 || __n2 == -1)
+	  return ranges::mismatch(std::move(__first1), __last1,
+				  std::move(__first2), __last2,
+				  std::move(__pred),
+				  std::move(__proj1), std::move(__proj2)).in2 == __last2;
+	else if (__n1 < __n2)
+	  return false;
+	else if constexpr (random_access_iterator<_Iter1>)
+	  return ranges::equal(__first1, __first1 + iter_difference_t<_Iter1>(__n2),
+			       std::move(__first2), __last2,
+			       std::move(__pred),
+			       std::move(__proj1), std::move(__proj2));
+	else
+	  return ranges::equal(counted_iterator(std::move(__first1),
+						iter_difference_t<_Iter1>(__n2)),
+			       default_sentinel,
+			       std::move(__first2), __last2,
+			       std::move(__pred),
+			       std::move(__proj1), std::move(__proj2));
+      }
+
+    friend struct __ends_with_fn;
+  };
+
+  inline constexpr __starts_with_fn starts_with{};
+
+  struct __ends_with_fn
+  {
+    template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
+	     input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
+	     typename _Pred = ranges::equal_to,
+	     typename _Proj1 = identity, typename _Proj2 = identity>
+      requires (forward_iterator<_Iter1> || sized_sentinel_for<_Sent1, _Iter1>)
+	&& (forward_iterator<_Iter2> || sized_sentinel_for<_Sent2, _Iter2>)
+	&& indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
+      constexpr bool
+      operator()(_Iter1 __first1, _Sent1 __last1,
+		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      {
+	iter_difference_t<_Iter1> __n1 = -1;
+	iter_difference_t<_Iter2> __n2 = -1;
+	if constexpr (sized_sentinel_for<_Sent1, _Iter1>)
+	  __n1 = __last1 - __first1;
+	if constexpr (sized_sentinel_for<_Sent2, _Iter2>)
+	  __n2 = __last2 - __first2;
+	return _S_impl(std::move(__first1), __last1, __n1,
+		       std::move(__first2), __last2, __n2,
+		       std::move(__pred),
+		       std::move(__proj1), std::move(__proj2));
+      }
+
+    template<input_range _Range1, input_range _Range2,
+	     typename _Pred = ranges::equal_to,
+	     typename _Proj1 = identity, typename _Proj2 = identity>
+      requires (forward_range<_Range1> || sized_range<_Range1>)
+	&& (forward_range<_Range2> || sized_range<_Range2>)
+	&& indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
+				 _Pred, _Proj1, _Proj2>
+      constexpr bool
+      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
+		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
+      {
+	range_difference_t<_Range1> __n1 = -1;
+	range_difference_t<_Range2> __n2 = -1;
+	if constexpr (sized_range<_Range1>)
+	  __n1 = ranges::size(__r1);
+	if constexpr (sized_range<_Range2>)
+	  __n2 = ranges::size(__r2);
+	return _S_impl(ranges::begin(__r1), ranges::end(__r1), __n1,
+		       ranges::begin(__r2), ranges::end(__r2), __n2,
+		       std::move(__pred),
+		       std::move(__proj1), std::move(__proj2));
+      }
+
+  private:
+    template<typename _Iter1, typename _Sent1,
+	     typename _Iter2, typename _Sent2,
+	     typename _Pred,
+	     typename _Proj1, typename _Proj2>
+      static constexpr bool
+      _S_impl(_Iter1 __first1, _Sent1 __last1, iter_difference_t<_Iter1> __n1,
+	      _Iter2 __first2, _Sent2 __last2, iter_difference_t<_Iter2> __n2,
+	      _Pred __pred, _Proj1 __proj1, _Proj2 __proj2)
+      {
+	if constexpr (!random_access_iterator<_Iter1>
+		      && bidirectional_iterator<_Iter1> && same_as<_Iter1, _Sent1>
+		      && bidirectional_iterator<_Iter2> && same_as<_Iter2, _Sent2>)
+	  return starts_with._S_impl(std::make_reverse_iterator(__last1),
+				     std::make_reverse_iterator(__first1),
+				     __n1,
+				     std::make_reverse_iterator(__last2),
+				     std::make_reverse_iterator(__first2),
+				     __n2,
+				     std::move(__pred),
+				     std::move(__proj1), std::move(__proj2));
+
+	if (__first2 == __last2) [[unlikely]]
+	  return true;
+
+	if constexpr (forward_iterator<_Iter2>)
+	  if (__n2 == -1)
+	    __n2 = ranges::distance(__first2, __last2);
+
+	// __glibcxx_assert(__n2 != -1);
+
+	if (__n1 != -1)
+	  {
+	    if (__n1 < __n2)
+	      return false;
+	    auto __shift = __n1 - iter_difference_t<_Iter1>(__n2);
+	    if (random_access_iterator<_Iter1>
+		|| !bidirectional_iterator<_Iter1>
+		|| !same_as<_Iter1, _Sent1>
+		|| __shift < __n2)
+	      {
+		ranges::advance(__first1, __shift);
+		return ranges::equal(std::move(__first1), __last1,
+				     std::move(__first2), __last2,
+				     std::move(__pred),
+				     std::move(__proj1), std::move(__proj2));
+	      }
+	  }
+
+	if constexpr (bidirectional_iterator<_Iter1> && same_as<_Iter1, _Sent1>)
+	  {
+	    _Iter1 __it1 = __last1;
+	    if (__n1 != -1)
+	      ranges::advance(__it1, -iter_difference_t<_Iter1>(__n2));
+	    else
+	      {
+		// We can't use ranges::advance if the haystack size is
+		// unknown, since we need to detect and return false if
+		// it's smaller than the needle.
+		iter_difference_t<_Iter2> __m = __n2;
+		while (__m != 0 && __it1 != __first1)
+		  {
+		    --__m;
+		    --__it1;
+		  }
+		if (__m != 0)
+		  return false;
+	      }
+	    return ranges::equal(__it1, __last1,
+				 std::move(__first2), __last2,
+				 std::move(__pred),
+				 std::move(__proj1), std::move(__proj2));
+	  }
+	else if constexpr (forward_iterator<_Iter1>)
+	  {
+	    // __glibcxx_assert(__n1 == -1);
+	    _Iter1 __prev_first1;
+	    __n1 = 0;
+	    while (true)
+	      {
+		iter_difference_t<_Iter2> __m = __n2;
+		_Iter1 __it1 = __first1;
+		while (__m != 0 && __it1 != __last1)
+		  {
+		    ++__n1;
+		    --__m;
+		    ++__it1;
+		  }
+		if (__m != 0)
+		  {
+		    // __glibcxx_assert(__it1 == __last1);
+		    if (__n1 < __n2)
+		      return false;
+		    __first1 = ranges::next(__prev_first1,
+					    iter_difference_t<_Iter1>(__n2 - __m));
+		    break;
+		  }
+		__prev_first1 = __first1;
+		__first1 = __it1;
+	      }
+	    return ranges::equal(__first1, __last1,
+				 std::move(__first2), __last2,
+				 std::move(__pred),
+				 std::move(__proj1), std::move(__proj2));
+	  }
+	else
+	  // If the haystack is non-forward then it must be sized, in which case
+	  // we already returned via the __n1 != 1 case.
+	  __builtin_unreachable();
+      }
+
+  };
+
+  inline constexpr __ends_with_fn ends_with{};
+#endif // __glibcxx_ranges_starts_ends_with
 
   struct __find_end_fn
   {
@@ -1218,6 +1498,9 @@ namespace ranges
 	if (__first == __last)
 	  return {std::move(__first), std::move(__result)};
 
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 4269. unique_copy passes arguments to its predicate backwards
+
 	// TODO: perform a closer comparison with reference implementations
 	if constexpr (forward_iterator<_Iter>)
 	  {
@@ -1250,8 +1533,8 @@ namespace ranges
 	    while (++__first != __last)
 	      {
 		if (!(bool)std::__invoke(__comp,
-					 std::__invoke(__proj, *__first),
-					 std::__invoke(__proj, __value)))
+					 std::__invoke(__proj, __value),
+					 std::__invoke(__proj, *__first)))
 		  {
 		    __value = *__first;
 		    *++__result = __value;

@@ -48,7 +48,7 @@ bool is_range_formatter_spec_for(CharT const* spec, Rg&& rg)
 }
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
-#define WIDEN(S) WIDEN_(_CharT, S)
+#define WIDEN(S) WIDEN_(CharT, S)
 
 void
 test_format_string()
@@ -81,14 +81,14 @@ test_format_string()
 template<typename Range>
 void test_output()
 {
-  using _CharT = std::ranges::range_value_t<Range>;
-  auto makeRange = [](std::basic_string<_CharT>& s) {
+  using CharT = std::ranges::range_value_t<Range>;
+  auto makeRange = [](std::basic_string<CharT>& s) {
     return Range(s.data(), s.data() + s.size());
   };
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
   size_t size = 0;
 
-  std::basic_string<_CharT> s1 = WIDEN("abcd");
+  std::basic_string<CharT> s1 = WIDEN("abcd");
   res = std::format(WIDEN("{}"), makeRange(s1));
   VERIFY( res == WIDEN("['a', 'b', 'c', 'd']") );
 
@@ -122,7 +122,7 @@ void test_output()
   res = std::format(WIDEN("{:=^8s}"), makeRange(s1));
   VERIFY( res == WIDEN("==abcd==") );
 
-  std::basic_string<_CharT> s2(512, static_cast<_CharT>('a'));
+  std::basic_string<CharT> s2(512, static_cast<CharT>('a'));
   res = std::format(WIDEN("{:=^8s}"), makeRange(s2));
   VERIFY( res == s2 );
 

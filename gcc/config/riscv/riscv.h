@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifndef RISCV_TUNE_STRING_DEFAULT
-#define RISCV_TUNE_STRING_DEFAULT "rocket"
+#define RISCV_TUNE_STRING_DEFAULT "generic"
 #endif
 
 extern const char *riscv_expand_arch (int argc, const char **argv);

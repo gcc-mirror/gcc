@@ -83,6 +83,7 @@
 #include "rtlanal.h"
 #include "tree-dfa.h"
 #include "asan.h"
+#include "aarch64-elf-metadata.h"
 #include "aarch64-feature-deps.h"
 #include "config/arm/aarch-common.h"
 #include "config/arm/aarch-common-protos.h"
@@ -107,6 +108,10 @@
 /* Maximum bytes set for an inline memset expansion.  With -Os use 3 STP
    and 1 MOVI/DUP (same size as a call).  */
 #define MAX_SET_SIZE(speed) (speed ? 256 : 96)
+
+#ifndef HAVE_AS_AEABI_BUILD_ATTRIBUTES
+#define HAVE_AS_AEABI_BUILD_ATTRIBUTES 0
+#endif
 
 /* Flags that describe how a function shares certain architectural state
    with its callers.
@@ -3853,6 +3858,44 @@ aarch64_sve_same_pred_for_ptest_p (rtx *pred1, rtx *pred2)
   bool ptrue2_p = (pred2[0] == CONSTM1_RTX (mode)
 		   || INTVAL (pred2[1]) == SVE_KNOWN_PTRUE);
   return (ptrue1_p && ptrue2_p) || rtx_equal_p (pred1[0], pred2[0]);
+}
+
+
+/* Generate a predicate to control partial SVE mode DATA_MODE as if it
+   were fully packed, enabling the defined elements only.  */
+rtx
+aarch64_sve_packed_pred (machine_mode data_mode)
+{
+  unsigned int container_bytes
+    = aarch64_sve_container_bits (data_mode) / BITS_PER_UNIT;
+  /* Enable the significand of each container only.  */
+  rtx ptrue = force_reg (VNx16BImode, aarch64_ptrue_all (container_bytes));
+  /* Predicate at the element size.  */
+  machine_mode pmode
+    = aarch64_sve_pred_mode (GET_MODE_UNIT_SIZE (data_mode)).require ();
+  return gen_lowpart (pmode, ptrue);
+}
+
+/* Generate a predicate and strictness value to govern a floating-point
+   operation with SVE mode DATA_MODE.
+
+   If DATA_MODE is a partial vector mode, this pair prevents the operation
+   from interpreting undefined elements - unless we don't need to suppress
+   their trapping behavior.  */
+rtx
+aarch64_sve_fp_pred (machine_mode data_mode, rtx *strictness)
+{
+   unsigned int vec_flags = aarch64_classify_vector_mode (data_mode);
+   if (flag_trapping_math && (vec_flags & VEC_PARTIAL))
+     {
+       if (strictness)
+	 *strictness = gen_int_mode (SVE_STRICT_GP, SImode);
+       return aarch64_sve_packed_pred (data_mode);
+     }
+   if (strictness)
+     *strictness = gen_int_mode (SVE_RELAXED_GP, SImode);
+   /* Use the VPRED mode.  */
+   return aarch64_ptrue_reg (aarch64_sve_pred_mode (data_mode));
 }
 
 /* Emit a comparison CMP between OP0 and OP1, both of which have mode
@@ -8754,6 +8797,13 @@ aarch_bti_j_insn_p (rtx_insn *insn)
 
   rtx pat = PATTERN (insn);
   return GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == UNSPECV_BTI_J;
+}
+
+/* Return TRUE if Pointer Authentication for the return address is enabled.  */
+bool
+aarch64_pacret_enabled (void)
+{
+  return (aarch_ra_sign_scope != AARCH_FUNCTION_NONE);
 }
 
 /* Return TRUE if Guarded Control Stack is enabled.  */
@@ -18986,6 +19036,20 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if (TARGET_SME && !TARGET_SVE2)
     sorry ("no support for %qs without %qs", "sme", "sve2");
 
+  /* Set scalar costing to a high value such that we always pick
+     vectorization.  Increase scalar costing by 10000%.  */
+  if (opts->x_flag_aarch64_max_vectorization)
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 param_vect_scalar_cost_multiplier, 10000);
+
+  /* Synchronize the -mautovec-preference and aarch64_autovec_preference using
+     whichever one is not default.  If both are set then prefer the param flag
+     over the parameters.  */
+  if (opts->x_autovec_preference != AARCH64_AUTOVEC_DEFAULT)
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 aarch64_autovec_preference,
+			 opts->x_autovec_preference);
+
   aarch64_override_options_after_change_1 (opts);
 }
 
@@ -19736,6 +19800,8 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
      OPT_msign_return_address_ },
   { "outline-atomics", aarch64_attr_bool, true, NULL,
      OPT_moutline_atomics},
+  { "max-vectorization", aarch64_attr_bool, false, NULL,
+     OPT_mmax_vectorization},
   { NULL, aarch64_attr_custom, false, NULL, OPT____ }
 };
 
@@ -20862,7 +20928,6 @@ aarch64_get_function_versions_dispatcher (void *decl)
   struct cgraph_node *node = NULL;
   struct cgraph_node *default_node = NULL;
   struct cgraph_function_version_info *node_v = NULL;
-  struct cgraph_function_version_info *first_v = NULL;
 
   tree dispatch_decl = NULL;
 
@@ -20879,36 +20944,15 @@ aarch64_get_function_versions_dispatcher (void *decl)
   if (node_v->dispatcher_resolver != NULL)
     return node_v->dispatcher_resolver;
 
-  /* Find the default version and make it the first node.  */
-  first_v = node_v;
-  /* Go to the beginning of the chain.  */
-  while (first_v->prev != NULL)
-    first_v = first_v->prev;
-  default_version_info = first_v;
-  while (default_version_info != NULL)
-    {
-      if (get_feature_mask_for_version
-	    (default_version_info->this_node->decl) == 0ULL)
-	break;
-      default_version_info = default_version_info->next;
-    }
+  /* The default node is always the beginning of the chain.  */
+  default_version_info = node_v;
+  while (default_version_info->prev)
+    default_version_info = default_version_info->prev;
+  default_node = default_version_info->this_node;
 
   /* If there is no default node, just return NULL.  */
-  if (default_version_info == NULL)
+  if (!is_function_default_version (default_node->decl))
     return NULL;
-
-  /* Make default info the first node.  */
-  if (first_v != default_version_info)
-    {
-      default_version_info->prev->next = default_version_info->next;
-      if (default_version_info->next)
-	default_version_info->next->prev = default_version_info->prev;
-      first_v->prev = default_version_info;
-      default_version_info->next = first_v;
-      default_version_info->prev = NULL;
-    }
-
-  default_node = default_version_info->this_node;
 
   if (targetm.has_ifunc_p ())
     {
@@ -23707,6 +23751,19 @@ aarch64_simd_shift_imm_p (rtx x, machine_mode mode, bool left)
     return IN_RANGE (INTVAL (x), 1, bit_width);
 }
 
+
+/* Check whether X can control SVE mode MODE.  */
+bool
+aarch64_sve_valid_pred_p (rtx x, machine_mode mode)
+{
+  machine_mode pred_mode = GET_MODE (x);
+  if (!aarch64_sve_pred_mode_p (pred_mode))
+    return false;
+
+  return known_ge (GET_MODE_NUNITS (pred_mode),
+		   GET_MODE_NUNITS (mode));
+}
+
 /* Return the bitmask CONST_INT to select the bits required by a zero extract
    operation of width WIDTH at bit position POS.  */
 
@@ -24680,6 +24737,28 @@ seq_cost_ignoring_scalar_moves (const rtx_insn *seq, bool speed)
   return cost;
 }
 
+/* *VECTOR is an Advanced SIMD structure mode and *INDEX is a constant index
+   into it.  Narrow *VECTOR and *INDEX so that they reference a single vector
+   of mode SUBVEC_MODE.  IS_DEST is true if *VECTOR is a destination operand,
+   false if it is a source operand.  */
+
+void
+aarch64_decompose_vec_struct_index (machine_mode subvec_mode,
+				    rtx *vector, rtx *index, bool is_dest)
+{
+  auto elts_per_vector = GET_MODE_NUNITS (subvec_mode).to_constant ();
+  auto subvec = UINTVAL (*index) / elts_per_vector;
+  auto subelt = UINTVAL (*index) % elts_per_vector;
+  auto subvec_byte = subvec * GET_MODE_SIZE (subvec_mode);
+  if (is_dest)
+    *vector = simplify_gen_subreg (subvec_mode, *vector, GET_MODE (*vector),
+				   subvec_byte);
+  else
+    *vector = force_subreg (subvec_mode, *vector, GET_MODE (*vector),
+			    subvec_byte);
+  *index = gen_int_mode (subelt, SImode);
+}
+
 /* Expand a vector initialization sequence, such that TARGET is
    initialized to contain VALS.  */
 
@@ -25355,7 +25434,6 @@ aarch64_start_file (void)
 }
 
 /* Emit load exclusive.  */
-
 static void
 aarch64_emit_load_exclusive (machine_mode mode, rtx rval,
 			     rtx mem, rtx model_rtx)
@@ -29986,60 +30064,43 @@ aarch64_can_tag_addresses ()
 
 /* Implement TARGET_ASM_FILE_END for AArch64.  This adds the AArch64 GNU NOTE
    section at the end if needed.  */
-#define GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
-#define GNU_PROPERTY_AARCH64_FEATURE_1_BTI	(1U << 0)
-#define GNU_PROPERTY_AARCH64_FEATURE_1_PAC	(1U << 1)
-#define GNU_PROPERTY_AARCH64_FEATURE_1_GCS	(1U << 2)
 void
 aarch64_file_end_indicate_exec_stack ()
 {
   file_end_indicate_exec_stack ();
 
-  unsigned feature_1_and = 0;
-  if (aarch_bti_enabled ())
-    feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_BTI;
-
-  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
-    feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_PAC;
-
-  if (aarch64_gcs_enabled ())
-    feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_GCS;
-
-  if (feature_1_and)
+  /* Check whether the current assembler supports AEABI build attributes, if
+     not fallback to .note.gnu.property section.  */
+  if (HAVE_AS_AEABI_BUILD_ATTRIBUTES)
     {
-      /* Generate .note.gnu.property section.  */
-      switch_to_section (get_section (".note.gnu.property",
-				      SECTION_NOTYPE, NULL));
+      using namespace aarch64;
+      aeabi_subsection<BA_TagFeature_t, bool, 3>
+	aeabi_subsec ("aeabi_feature_and_bits", true);
 
-      /* PT_NOTE header: namesz, descsz, type.
-	 namesz = 4 ("GNU\0")
-	 descsz = 16 (Size of the program property array)
-		  [(12 + padding) * Number of array elements]
-	 type   = 5 (NT_GNU_PROPERTY_TYPE_0).  */
-      assemble_align (POINTER_SIZE);
-      assemble_integer (GEN_INT (4), 4, 32, 1);
-      assemble_integer (GEN_INT (ROUND_UP (12, POINTER_BYTES)), 4, 32, 1);
-      assemble_integer (GEN_INT (5), 4, 32, 1);
+      aeabi_subsec.append (
+	make_aeabi_attribute (Tag_Feature_BTI, aarch_bti_enabled ()));
+      aeabi_subsec.append (
+	make_aeabi_attribute (Tag_Feature_PAC, aarch64_pacret_enabled ()));
+      aeabi_subsec.append (
+	make_aeabi_attribute (Tag_Feature_GCS, aarch64_gcs_enabled ()));
 
-      /* PT_NOTE name.  */
-      assemble_string ("GNU", 4);
+      if (!aeabi_subsec.empty ())
+	aeabi_subsec.write (asm_out_file);
+    }
+  else
+    {
+      aarch64::section_note_gnu_property gnu_properties;
 
-      /* PT_NOTE contents for NT_GNU_PROPERTY_TYPE_0:
-	 type   = GNU_PROPERTY_AARCH64_FEATURE_1_AND
-	 datasz = 4
-	 data   = feature_1_and.  */
-      assemble_integer (GEN_INT (GNU_PROPERTY_AARCH64_FEATURE_1_AND), 4, 32, 1);
-      assemble_integer (GEN_INT (4), 4, 32, 1);
-      assemble_integer (GEN_INT (feature_1_and), 4, 32, 1);
+      if (aarch_bti_enabled ())
+	gnu_properties.bti_enabled ();
+      if (aarch64_pacret_enabled ())
+	gnu_properties.pac_enabled ();
+      if (aarch64_gcs_enabled ())
+	gnu_properties.gcs_enabled ();
 
-      /* Pad the size of the note to the required alignment.  */
-      assemble_align (POINTER_SIZE);
+      gnu_properties.write ();
     }
 }
-#undef GNU_PROPERTY_AARCH64_FEATURE_1_GCS
-#undef GNU_PROPERTY_AARCH64_FEATURE_1_PAC
-#undef GNU_PROPERTY_AARCH64_FEATURE_1_BTI
-#undef GNU_PROPERTY_AARCH64_FEATURE_1_AND
 
 /* Helper function for straight line speculation.
    Return what barrier should be emitted for straight line speculation

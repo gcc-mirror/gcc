@@ -2538,6 +2538,13 @@ operation_could_trap_helper_p (enum tree_code op,
       /* Constructing an object cannot trap.  */
       return false;
 
+    case FIX_TRUNC_EXPR:
+    case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
+    case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
+      /* The FIX_TRUNC family are always potentially trapping.  */
+      return flag_trapping_math;
+
     case COND_EXPR:
     case VEC_COND_EXPR:
       /* Whether *COND_EXPR can trap depends on whether the

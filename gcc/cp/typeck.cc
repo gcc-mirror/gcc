@@ -156,7 +156,7 @@ complete_type_or_maybe_complain (tree type, tree value, tsubst_flags_t complain)
     {
       if (complain & tf_error)
 	cxx_incomplete_type_diagnostic (value, type, DK_ERROR);
-      note_failed_type_completion_for_satisfaction (type);
+      note_failed_type_completion (type, complain);
       return NULL_TREE;
     }
   else
@@ -2084,7 +2084,14 @@ cxx_sizeof_or_alignof_type (location_t loc, tree type, enum tree_code op,
 
   bool dependent_p = dependent_type_p (type);
   if (!dependent_p)
-    complete_type (type);
+    {
+      complete_type (type);
+      if (!COMPLETE_TYPE_P (type))
+	/* Call this here because the incompleteness diagnostic comes from
+	   c_sizeof_or_alignof_type instead of
+	   complete_type_or_maybe_complain.  */
+	note_failed_type_completion (type, complain);
+    }
   if (dependent_p
       /* VLA types will have a non-constant size.  In the body of an
 	 uninstantiated template, we don't need to try to compute the
@@ -2106,7 +2113,7 @@ cxx_sizeof_or_alignof_type (location_t loc, tree type, enum tree_code op,
 
   return c_sizeof_or_alignof_type (loc, complete_type (type),
 				   op == SIZEOF_EXPR, std_alignof,
-				   complain);
+				   complain & (tf_warning_or_error));
 }
 
 /* Return the size of the type, without producing any warnings for

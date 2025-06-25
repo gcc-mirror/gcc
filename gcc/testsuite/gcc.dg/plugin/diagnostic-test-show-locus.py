@@ -46,7 +46,8 @@ def test_very_wide_line(html_tree):
 def test_fixit_insert(html_tree):
     diag = get_diag_by_index(html_tree, 3)
     msg = get_message_within_diag(diag)
-    assert msg.text == 'example of insertion hints'
+    assert msg[0].text == 'warning: '
+    assert msg[0].tail == ' example of insertion hints'
 
     src = get_locus_within_diag(diag)
 
@@ -62,7 +63,8 @@ def test_fixit_insert(html_tree):
 def test_fixit_remove(html_tree):
     diag = get_diag_by_index(html_tree, 4)
     msg = get_message_within_diag(diag)
-    assert msg.text == 'example of a removal hint'
+    assert msg[0].text == 'warning: '
+    assert msg[0].tail == ' example of a removal hint'
 
     src = get_locus_within_diag(diag)
 
@@ -78,7 +80,8 @@ def test_fixit_remove(html_tree):
 def test_fixit_replace(html_tree):
     diag = get_diag_by_index(html_tree, 5)
     msg = get_message_within_diag(diag)
-    assert msg.text == 'example of a replacement hint'
+    assert msg[0].text == 'warning: '
+    assert msg[0].tail == ' example of a replacement hint'
 
     src = get_locus_within_diag(diag)
 
@@ -94,7 +97,8 @@ def test_fixit_replace(html_tree):
 def test_fixit_insert_newline(html_tree):
     diag = get_diag_by_index(html_tree, 6)
     msg = get_message_within_diag(diag)
-    assert msg.text == 'example of newline insertion hint'
+    assert msg[0].text == 'warning: '
+    assert msg[0].tail == ' example of newline insertion hint'
 
     src = get_locus_within_diag(diag)
 

@@ -1,3 +1,78 @@
+2025-06-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (OACC_WAIT_CLAUSE_MASK): Add if clause.
+
+2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lang.h (union lang_type::maybe_objc_info): New type.
+	(struct lang_type): Use union maybe_objc_info info member
+	instead of tree objc_info.
+	* c-decl.cc (finish_struct): Allocate struct lang_type using
+	ggc_internal_cleared_alloc instead of ggc_cleared_alloc,
+	and use sizeof (struct lang_type) for ObjC and otherwise
+	offsetof (struct lang_type, info) as size.
+	(finish_enum): Likewise.
+
+2025-06-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120510
+	* c-typeck.cc (composite_type_internal): Activate checking
+	assertions for all types and also inputs.
+	(comptypes_for_composite_check): New helper function.
+	(function_types_compatible_p): Add exception.
+
+2025-06-11  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (function_types_compatible_p): Remove unused
+	variables and return true/false instead of 1/0.
+	(type_lists_compatible_p): Return false instead of 0.
+
+2025-06-11  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120303
+	* c-parser.cc (c_parser_generic_selection): Handle error
+	condition.
+
+2025-06-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120510
+	* c-typeck.cc (remove_qualifiers): New function.
+	(composite_type_internal): Use it.
+	(comp_target_types): Use it.
+	(type_lists_compatible_p): Use it.
+	(find_anonymous_field_with_type): Use it.
+	(convert_to_anonymous_field): Use it.
+	(convert_for_assignment): Use it.
+
+2025-06-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120510
+	* c-typeck.cc (composite_type_internal): Activate checking
+	assertion for arrays.
+	(common_pointer_type): Remove qualifiers also from arrays.
+
+2025-06-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/120510
+	* c-typeck.cc (composite_types_internal): Handle arrays
+	declared with atomic for function arguments.
+
+2025-06-03  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (composite_type_internal,composite_type): Move
+	checking assertions.
+
+2025-06-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/116892
+	* c-decl.cc (finish_enum): Propagate TYPE_PACKED.
+
+2025-06-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_context_selector): Call
+	convert_lvalue_to_rvalue and c_objc_common_truthvalue_conversion
+	on the expression for OMP_TRAIT_PROPERTY_BOOL_EXPR.
+
 2025-06-01  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/120380

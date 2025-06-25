@@ -1,3 +1,162 @@
+2025-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82480
+	* intrinsics/stat.c (stat_i4_sub_0): Fix argument names.  Rename
+	SARRAY to VALUES also in error message.  When array VALUES is
+	KIND=4, get only stat components that do not overflow INT32_MAX,
+	otherwise set the corresponding VALUES elements to -1.
+	(stat_i4_sub): Fix argument names.
+	(lstat_i4_sub): Likewise.
+	(stat_i8_sub_0): Likewise.
+	(stat_i8_sub): Likewise.
+	(lstat_i8_sub): Likewise.
+	(stat_i4): Likewise.
+	(stat_i8): Likewise.
+	(lstat_i4): Likewise.
+	(lstat_i8): Likewise.
+	(fstat_i4_sub): Likewise.
+	(fstat_i8_sub): Likewise.
+	(fstat_i4): Likewise.
+	(fstat_i8): Likewise.
+
+2025-06-11  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/116400
+	* Makefile.am: Simplify logic.
+	* Makefile.in: Regenerate.
+	* regenerate.sh: Add some checks.
+
+2025-06-10  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/116400
+	* Makefile.am: Remove source file regeneration rules.
+	* Makefile.in: Regenerate.
+	* regenerate.sh: New file.
+
+2025-06-07  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/116400
+	* generated/iall_i1.c: Regenerate.
+	* generated/iall_i16.c: Regenerate.
+	* generated/iall_i2.c: Regenerate.
+	* generated/iall_i4.c: Regenerate.
+	* generated/iall_i8.c: Regenerate.
+	* generated/iany_i1.c: Regenerate.
+	* generated/iany_i16.c: Regenerate.
+	* generated/iany_i2.c: Regenerate.
+	* generated/iany_i4.c: Regenerate.
+	* generated/iany_i8.c: Regenerate.
+	* generated/iparity_i1.c: Regenerate.
+	* generated/iparity_i16.c: Regenerate.
+	* generated/iparity_i2.c: Regenerate.
+	* generated/iparity_i4.c: Regenerate.
+	* generated/iparity_i8.c: Regenerate.
+	* generated/matmulavx128_c10.c: Regenerate.
+	* generated/matmulavx128_c16.c: Regenerate.
+	* generated/matmulavx128_c17.c: Regenerate.
+	* generated/matmulavx128_c4.c: Regenerate.
+	* generated/matmulavx128_c8.c: Regenerate.
+	* generated/matmulavx128_i1.c: Regenerate.
+	* generated/matmulavx128_i16.c: Regenerate.
+	* generated/matmulavx128_i2.c: Regenerate.
+	* generated/matmulavx128_i4.c: Regenerate.
+	* generated/matmulavx128_i8.c: Regenerate.
+	* generated/matmulavx128_r10.c: Regenerate.
+	* generated/matmulavx128_r16.c: Regenerate.
+	* generated/matmulavx128_r17.c: Regenerate.
+	* generated/matmulavx128_r4.c: Regenerate.
+	* generated/matmulavx128_r8.c: Regenerate.
+	* generated/maxloc1_16_i1.c: Regenerate.
+	* generated/maxloc1_16_i16.c: Regenerate.
+	* generated/maxloc1_16_i2.c: Regenerate.
+	* generated/maxloc1_16_i4.c: Regenerate.
+	* generated/maxloc1_16_i8.c: Regenerate.
+	* generated/maxloc1_16_r10.c: Regenerate.
+	* generated/maxloc1_16_r16.c: Regenerate.
+	* generated/maxloc1_16_r17.c: Regenerate.
+	* generated/maxloc1_16_r4.c: Regenerate.
+	* generated/maxloc1_16_r8.c: Regenerate.
+	* generated/maxloc1_4_i1.c: Regenerate.
+	* generated/maxloc1_4_i16.c: Regenerate.
+	* generated/maxloc1_4_i2.c: Regenerate.
+	* generated/maxloc1_4_i4.c: Regenerate.
+	* generated/maxloc1_4_i8.c: Regenerate.
+	* generated/maxloc1_4_r10.c: Regenerate.
+	* generated/maxloc1_4_r16.c: Regenerate.
+	* generated/maxloc1_4_r17.c: Regenerate.
+	* generated/maxloc1_4_r4.c: Regenerate.
+	* generated/maxloc1_4_r8.c: Regenerate.
+	* generated/maxloc1_8_i1.c: Regenerate.
+	* generated/maxloc1_8_i16.c: Regenerate.
+	* generated/maxloc1_8_i2.c: Regenerate.
+	* generated/maxloc1_8_i4.c: Regenerate.
+	* generated/maxloc1_8_i8.c: Regenerate.
+	* generated/maxloc1_8_r10.c: Regenerate.
+	* generated/maxloc1_8_r16.c: Regenerate.
+	* generated/maxloc1_8_r17.c: Regenerate.
+	* generated/maxloc1_8_r4.c: Regenerate.
+	* generated/maxloc1_8_r8.c: Regenerate.
+	* generated/maxval_i1.c: Regenerate.
+	* generated/maxval_i16.c: Regenerate.
+	* generated/maxval_i2.c: Regenerate.
+	* generated/maxval_i4.c: Regenerate.
+	* generated/maxval_i8.c: Regenerate.
+	* generated/maxval_r10.c: Regenerate.
+	* generated/maxval_r16.c: Regenerate.
+	* generated/maxval_r17.c: Regenerate.
+	* generated/maxval_r4.c: Regenerate.
+	* generated/maxval_r8.c: Regenerate.
+	* generated/minloc1_16_i1.c: Regenerate.
+	* generated/minloc1_16_i16.c: Regenerate.
+	* generated/minloc1_16_i2.c: Regenerate.
+	* generated/minloc1_16_i4.c: Regenerate.
+	* generated/minloc1_16_i8.c: Regenerate.
+	* generated/minloc1_16_r10.c: Regenerate.
+	* generated/minloc1_16_r16.c: Regenerate.
+	* generated/minloc1_16_r17.c: Regenerate.
+	* generated/minloc1_16_r4.c: Regenerate.
+	* generated/minloc1_16_r8.c: Regenerate.
+	* generated/minloc1_4_i1.c: Regenerate.
+	* generated/minloc1_4_i16.c: Regenerate.
+	* generated/minloc1_4_i2.c: Regenerate.
+	* generated/minloc1_4_i4.c: Regenerate.
+	* generated/minloc1_4_i8.c: Regenerate.
+	* generated/minloc1_4_r10.c: Regenerate.
+	* generated/minloc1_4_r16.c: Regenerate.
+	* generated/minloc1_4_r17.c: Regenerate.
+	* generated/minloc1_4_r4.c: Regenerate.
+	* generated/minloc1_4_r8.c: Regenerate.
+	* generated/minloc1_8_i1.c: Regenerate.
+	* generated/minloc1_8_i16.c: Regenerate.
+	* generated/minloc1_8_i2.c: Regenerate.
+	* generated/minloc1_8_i4.c: Regenerate.
+	* generated/minloc1_8_i8.c: Regenerate.
+	* generated/minloc1_8_r10.c: Regenerate.
+	* generated/minloc1_8_r16.c: Regenerate.
+	* generated/minloc1_8_r17.c: Regenerate.
+	* generated/minloc1_8_r4.c: Regenerate.
+	* generated/minloc1_8_r8.c: Regenerate.
+	* generated/minval_i1.c: Regenerate.
+	* generated/minval_i16.c: Regenerate.
+	* generated/minval_i2.c: Regenerate.
+	* generated/minval_i4.c: Regenerate.
+	* generated/minval_i8.c: Regenerate.
+	* generated/minval_r10.c: Regenerate.
+	* generated/minval_r16.c: Regenerate.
+	* generated/minval_r17.c: Regenerate.
+	* generated/minval_r4.c: Regenerate.
+	* generated/minval_r8.c: Regenerate.
+	* generated/norm2_r10.c: Regenerate.
+	* generated/norm2_r16.c: Regenerate.
+	* generated/norm2_r17.c: Regenerate.
+	* generated/norm2_r4.c: Regenerate.
+	* generated/norm2_r8.c: Regenerate.
+	* generated/parity_l1.c: Regenerate.
+	* generated/parity_l16.c: Regenerate.
+	* generated/parity_l2.c: Regenerate.
+	* generated/parity_l4.c: Regenerate.
+	* generated/parity_l8.c: Regenerate.
+
 2025-06-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/119856

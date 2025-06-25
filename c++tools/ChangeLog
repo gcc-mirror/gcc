@@ -1,3 +1,8 @@
+2025-06-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* configure.ac: Don't check `--enable-default-pie`.
+	* configure: Regen.
+
 2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (ax_lib_socket_nsl.m4): Don't sinclude.

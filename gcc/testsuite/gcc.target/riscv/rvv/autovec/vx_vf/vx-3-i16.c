@@ -5,13 +5,7 @@
 
 #define T int16_t
 
-DEF_VX_BINARY_CASE_0_WRAP(T, +, add)
-DEF_VX_BINARY_CASE_0_WRAP(T, -, sub)
-DEF_VX_BINARY_REVERSE_CASE_0_WRAP(T, -, rsub)
-DEF_VX_BINARY_CASE_0_WRAP(T, &, and)
-DEF_VX_BINARY_CASE_0_WRAP(T, |, or)
-DEF_VX_BINARY_CASE_0_WRAP(T, ^, xor)
-DEF_VX_BINARY_CASE_0_WRAP(T, *, mul)
+TEST_BINARY_VX_SIGNED_0(T)
 
 /* { dg-final { scan-assembler-not {vadd.vx} } } */
 /* { dg-final { scan-assembler-not {vsub.vx} } } */
@@ -20,3 +14,7 @@ DEF_VX_BINARY_CASE_0_WRAP(T, *, mul)
 /* { dg-final { scan-assembler-not {vor.vx} } } */
 /* { dg-final { scan-assembler-not {vxor.vx} } } */
 /* { dg-final { scan-assembler-not {vmul.vx} } } */
+/* { dg-final { scan-assembler-not {vdiv.vx} } } */
+/* { dg-final { scan-assembler-not {vrem.vx} } } */
+/* { dg-final { scan-assembler-not {vmax.vx} } } */
+/* { dg-final { scan-assembler-not {vmin.vx} } } */

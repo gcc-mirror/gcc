@@ -556,7 +556,7 @@ spill_pseudos (void)
 		fprintf (lra_dump_file,
 			 "Changing spilled pseudos to memory in insn #%u\n",
 			 INSN_UID (insn));
-	      lra_push_insn (insn);
+	      lra_push_insn_and_update_insn_regno_info (insn);
 	      if (lra_reg_spill_p || targetm.different_addr_displacement_p ())
 		lra_set_used_insn_alternative (insn, LRA_UNKNOWN_ALT);
 	    }

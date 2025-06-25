@@ -56,3 +56,45 @@ Responsibilities include:
    This will flush output to all of the output sinks, and clean up.
 
    The parameter must be non-NULL.
+
+.. function:: int diagnostic_manager_add_sink_from_spec (diagnostic_manager *affected_mgr, \
+				       const char *option_name, \
+				       const char *spec, \
+				       diagnostic_manager *control_mgr)
+
+   This function can be used to support option processing similar to GCC's
+   :option:`-fdiagnostics-add-output=`.  This allows command-line tools to
+   support the same domain-specific language for specifying output sink
+   as GCC does.
+
+   The function will attempt to parse :param:`spec` as if it were
+   an argument to GCC's :option:`-fdiagnostics-add-output=OUTPUT-SPEC`.
+   If successful, it will add an output sink to :param:`affected_mgr` and return zero.
+   Otherwise, it will emit an error diagnostic to :param:`control_mgr` and
+   return non-zero.
+
+   :param:`affected_mgr` and :param:`control_mgr` can be the same manager,
+   or be different managers.
+
+   This function was added in :ref:`LIBGDIAGNOSTICS_ABI_2`; you can
+   test for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBDIAGNOSTICS_HAVE_diagnostic_manager_add_sink_from_spec
+
+
+.. function:: void diagnostic_manager_set_analysis_target (diagnostic_manager *mgr, \
+	                                                   const diagnostic_file *file)
+
+   This function sets the "main input file" of :param:`mgr` to be
+   :param:`file`.
+   This affects the :code:`<title>` of generated HTML and
+   the :code:`role` of the artifact in SARIF output (SARIF v2.1.0 section 3.24.6).
+
+   This function was added in :ref:`LIBGDIAGNOSTICS_ABI_2`; you can
+   test for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBDIAGNOSTICS_HAVE_diagnostic_manager_set_analysis_target

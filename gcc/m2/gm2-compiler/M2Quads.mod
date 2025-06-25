@@ -4646,6 +4646,8 @@ BEGIN
                    BySym) ;
       MetaErrorDecl (BySym, TRUE)
    ELSE
+      e1 := DereferenceLValue (e1tok, e1) ;
+      e2 := DereferenceLValue (e2tok, e2) ;
       GenQuadOTypetok (bytok, LastForIteratorOp, LastIterator,
                        Make2Tuple (e1, e2), BySym, FALSE, FALSE,
                        bytok, MakeVirtual2Tok (e1tok, e2tok), bytok)
@@ -11299,6 +11301,35 @@ END CheckReturnType ;
 
 
 (*
+   BuildReturnLower - check the return type and value to ensure type
+                      compatibility and no range overflow will occur.
+*)
+
+PROCEDURE BuildReturnLower (tokcombined, tokexpr: CARDINAL; e1, t1: CARDINAL) ;
+VAR
+   e2, t2: CARDINAL ;
+BEGIN
+   (* This will check that the type returned is compatible with
+      the formal return type of the procedure.  *)
+   CheckReturnType (tokcombined, CurrentProc, e1, t1) ;
+   (* Dereference LeftValue if necessary.  *)
+   IF GetMode (e1) = LeftValue
+   THEN
+      t2 := GetSType (CurrentProc) ;
+      e2 := MakeTemporary (tokexpr, RightValue) ;
+      PutVar(e2, t2) ;
+      CheckPointerThroughNil (tokexpr, e1) ;
+      doIndrX (tokexpr, e2, e1) ;
+      e1 := e2
+   END ;
+   (* Here we check the data contents to ensure no overflow.  *)
+   BuildRange (InitReturnRangeCheck (tokcombined, CurrentProc, e1)) ;
+   GenQuadOtok (tokcombined, ReturnValueOp, e1, NulSym, CurrentProc, FALSE,
+                tokcombined, UnknownTokenNo, GetDeclaredMod (CurrentProc))
+END BuildReturnLower ;
+
+
+(*
    BuildReturn - Builds the Return part of the procedure.
                  tokreturn is the location of the RETURN keyword.
                  The Stack is expected to contain:
@@ -11317,7 +11348,6 @@ PROCEDURE BuildReturn (tokreturn: CARDINAL) ;
 VAR
    tokcombined,
    tokexpr    : CARDINAL ;
-   e2, t2,
    e1, t1,
    t, f,
    Des        : CARDINAL ;
@@ -11337,26 +11367,18 @@ BEGIN
    tokcombined := MakeVirtualTok (tokreturn, tokreturn, tokexpr) ;
    IF e1 # NulSym
    THEN
-      (* this will check that the type returned is compatible with
-         the formal return type of the procedure.  *)
-      CheckReturnType (tokcombined, CurrentProc, e1, t1) ;
-      (* dereference LeftValue if necessary *)
-      IF GetMode (e1) = LeftValue
+      (* Check we are in a procedure scope and that the procedure has a return type.  *)
+      IF CurrentProc = NulSym
       THEN
-         t2 := GetSType (CurrentProc) ;
-         e2 := MakeTemporary (tokexpr, RightValue) ;
-         PutVar(e2, t2) ;
-         CheckPointerThroughNil (tokexpr, e1) ;
-         doIndrX (tokexpr, e2, e1) ;
-	 (* here we check the data contents to ensure no overflow.  *)
-         BuildRange (InitReturnRangeCheck (tokcombined, CurrentProc, e2)) ;
-         GenQuadOtok (tokcombined, ReturnValueOp, e2, NulSym, CurrentProc, FALSE,
-                      tokcombined, UnknownTokenNo, GetDeclaredMod (CurrentProc))
+         MetaErrorT0 (tokcombined,
+                      '{%1E} attempting to return a value when not in a procedure scope')
+      ELSIF GetSType (CurrentProc) = NulSym
+      THEN
+         MetaErrorT1 (tokcombined,
+                      'attempting to return a value from procedure {%1Ea} which does not have a return type',
+                     CurrentProc)
       ELSE
-	 (* here we check the data contents to ensure no overflow.  *)
-         BuildRange (InitReturnRangeCheck (tokcombined, CurrentProc, e1)) ;
-         GenQuadOtok (tokcombined, ReturnValueOp, e1, NulSym, CurrentProc, FALSE,
-                      tokcombined, UnknownTokenNo, GetDeclaredMod (CurrentProc))
+         BuildReturnLower (tokcombined, tokexpr, e1, t1)
       END
    END ;
    GenQuadO (tokcombined, GotoOp, NulSym, NulSym, PopWord (ReturnStack), FALSE) ;

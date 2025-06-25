@@ -6048,6 +6048,10 @@ gfc_trans_oacc_wait_directive (gfc_code *code)
     args->quick_push (gfc_convert_expr_to_tree (&block, el->expr));
 
   stmt = build_call_expr_loc_vec (loc, stmt, args);
+  if (clauses->if_expr)
+    stmt = build3_loc (input_location, COND_EXPR, void_type_node,
+		       gfc_convert_expr_to_tree (&block, clauses->if_expr),
+		       stmt, NULL_TREE);
   gfc_add_expr_to_block (&block, stmt);
 
   vec_free (args);

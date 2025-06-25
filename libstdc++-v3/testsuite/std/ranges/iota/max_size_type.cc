@@ -400,6 +400,13 @@ static_assert(max_diff_t(max_size_t(1)
 			 << (numeric_limits<max_size_t>::digits-1))
 	      == numeric_limits<max_diff_t>::min());
 
+// Verify that the types are structural types and can therefore be used
+// as NTTP types.
+template<max_size_t V> struct Su { static_assert(V*V == V+132); };
+template<max_diff_t V> struct Ss { static_assert(V*V == V+132); };
+template struct Su<12>;
+template struct Ss<12>;
+
 int
 main()
 {

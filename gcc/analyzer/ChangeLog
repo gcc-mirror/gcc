@@ -1,3 +1,152 @@
+2025-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc
+	(exception_thrown_from_unrecognized_call::print): Add
+	"final override" to vfunc.
+
+2025-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* ana-state-to-diagnostic-state.cc: New file.
+	* ana-state-to-diagnostic-state.h: New file.
+	* checker-event.cc: Include "xml.h".
+	(checker_event::checker_event): Initialize m_path.
+	(checker_event::prepare_for_emission): Store the path pointer into
+	m_path.
+	(checker_event::maybe_make_xml_state): New.
+	(function_entry_event::function_entry_event): Add "state" param
+	and use it to initialize m_state.
+	(superedge_event::get_program_state): New.
+	(call_event::get_program_state): New.
+	(warning_event::get_program_state): New.
+	* checker-event.h (checker_event::get_program_state): New vfunc.
+	(checker_event::maybe_make_xml_state): New decl.
+	(checker_event::m_path): New field.
+	(statement_event::get_program_state): New vfunc impl.
+	(function_entry_event::function_entry_event): Add "state" param.
+	(function_entry_event::get_program_state): New vfunc impl.
+	(function_entry_event::m_state): New field.
+	(state_change_event::get_program_state): New vfunc impl.
+	(superedge_event::get_program_state): New vfunc decl.
+	(warning_event::warning_event): Add "program_state_" param and
+	copy it.
+	(warning_event::get_program_state): New vfunc decl.
+	(warning_event::m_program_state): New field.
+	* checker-path.h (checker_path::checker_path): Add ext_state param.
+	(checker_path::get_ext_state): New accessor.
+	(checker_path::m_ext_state): New field.
+	* common.h: Define INCLUDE_MAP and INCLUDE_STRING.
+	* diagnostic-manager.cc (saved_diagnostic::operator==): Don't
+	deduplicate dump_path_diagnostic instances.
+	(diagnostic_manager::emit_saved_diagnostic): Pass ext_state to
+	checker_path ctor.
+	* engine.cc:
+	(impl_region_model_context::on_state_leak): Pass old and new state
+	to state_machine::on_leak.
+	(exploded_node::on_stmt_pre): Implement __analyzer_dump_xml and
+	__analyzer_dump_dot.
+	* exploded-graph.h (impl_region_model_context::get_state): New.
+	* infinite-recursion.cc
+	(recursive_function_entry_event::recursive_function_entry_event):
+	Add "dst_state" param and pass to function_entry_event ctor.
+	(infinite_recursion_diagnostic::add_function_entry_event): Pass state
+	to event ctor.
+	* kf-analyzer.cc: Include "analyzer/program-state.h"
+	(dump_path_diagnostic::dump_path_diagnostic): Add "state" param.
+	(dump_path_diagnostic::get_final_state): New.
+	(dump_path_diagnostic::m_state): New field.
+	(kf_analyzer_dump_path::impl_call_pre): Pass state to warning.
+	* pending-diagnostic.cc
+	(pending_diagnostic::add_function_entry_event): Pass state to
+	function_entry_event.
+	(pending_diagnostic::add_final_event): Likewise to warning_event.
+	* pending-diagnostic.h (pending_diagnostic::get_final_state): New
+	vfunc decl.
+	* program-state.cc: Include "diagnostic-state.h", "graphviz.h" and
+	"analyzer/ana-state-to-diagnostic-state.h".
+	(program_state::dump_dot): New.
+	* program-state.h: Include "text-art/tree-widget.h" and
+	"analyzer/store.h".
+	(class xml::document): New forward decl.
+	(make_xml): New.
+	(dump_xml_to_pp): New.
+	(dump_xml_to_file): New.
+	(dump_xml): New.
+	(dump_dot): New.
+	* record-layout.cc (record_layout::record_layout): Make param
+	const_tree.
+	* record-layout.h (item::item): Likewise.
+	(item::m_field): Likewise.
+	(record_layout::record_layout): Likewise.
+	(record_layout::begin): New.
+	(record_layout::end): New.
+	* region-model.cc
+	(exposure_through_uninit_copy::complain_about_fully_uninit_item):
+	Use const_tree.
+	(exposure_through_uninit_copy::complain_about_partially_uninit_item):
+	Likewise.
+	* region-model.h (region_model_context::get_state): New vfunc.
+	(noop_region_model_context::get_state): New.
+	(region_model_context_decorator::get_state): New.
+	* sm-fd.cc (fd_leak::fd_leak): Add "final_state" param and capture
+	it if present.
+	(fd_leak::get_final_state): New.
+	(fd_leak::m_final_state): New.
+	(fd_state_machine::on_open): Pass nullptr for new "final_state"
+	param.
+	(fd_state_machine::on_creat): Likewise.
+	(fd_state_machine::on_socket): Likewise.
+	(fd_state_machine::on_accept): Likewise.
+	(fd_state_machine::on_leak): Add state params and pass new state
+	as final state to fd_leak ctor.
+	* sm-file.cc: Include "analyzer/program-state.h".
+	(file_leak::file_leak): Add "final_state" param and capture it if
+	present.
+	(file_leak::get_final_state): New.
+	(file_leak::m_final_state): New.
+	(fileptr_state_machine::on_leak): Add state params and pass new
+	state as final state to fd_leak ctor.
+	* sm-malloc.cc: Include
+	"analyzer/ana-state-to-diagnostic-state.h".
+	(malloc_leak::malloc_leak): Add "final_state" param and use it.
+	(malloc_leak::get_final_state): New vfunc impl.
+	(malloc_leak::m_final_state): New field.
+	(malloc_state_machine::on_leak): Add state params; capture final
+	state.
+	(malloc_state_machine::add_state_to_xml): New.
+	* sm.cc (state_machine::on_leak): Add "old_state" and "new_state"
+	params.  Use nullptr.
+	(state_machine::add_state_to_xml): New.
+	(state_machine::add_global_state_to_xml): New.
+	* sm.h (class xml_state): New forward decl.
+	(state_machine::on_leak): Add state params.
+	(state_machine::add_state_to_xml): New vfunc decl.
+	(state_machine::add_global_state_to_xml): New vfunc decl.
+	* store.h (bit_range::operator<): New.
+	* varargs.cc (va_list_leak::va_list_leak): Add final_state param
+	and capture it if non-null.
+	(va_list_leak::get_final_state): New.
+	(va_list_leak::m_final_state): New.
+	(va_list_state_machine::on_leak): Add state params and pass final
+	state to va_list_leak ctor.
+
+2025-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.h (checker_event::get_kind): New accessor.
+	(checker_event::m_kind): Make private.
+	* checker-path.cc (checker_path::maybe_log): Use accessor for
+	checker_event::m_kind.
+	(checker_path::add_event): Likewise.
+	(checker_path::debug): Likewise.
+	(checker_path::cfg_edge_pair_at_p): Likewise.
+	(checker_path::inject_any_inlined_call_events): Likewise.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Likewise.
+	(diagnostic_manager::prune_for_sm_diagnostic): Likewise.
+	(diagnostic_manager::consolidate_conditions): Likewise.
+	(diagnostic_manager::consolidate_unwind_events): Likewise.
+	(diagnostic_manager::finish_pruning): Likewise.
+
 2025-05-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-event.cc (checker_event::checker_event): Update

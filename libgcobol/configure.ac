@@ -232,6 +232,17 @@ AC_SEARCH_LIBS([sinf128], [c m], libgcobol_have_sinf128=yes)
 libgcobol_have_cacosf128=no
 AC_SEARCH_LIBS([cacosf128], [c m], libgcobol_have_cacosf128=yes)
 
+# Copied from gcc/configure.ac. 2025-06-05 R.J.Dubner
+# At least for glibc, clock_gettime is in librt.  But don't pull that
+# in if it still doesn't give us the function we want.
+ac_cv_func_clock_gettime=no
+if test $ac_cv_func_clock_gettime = no; then
+  AC_CHECK_LIB(rt, clock_gettime,
+    [LIBS="-lrt $LIBS"
+     AC_DEFINE(HAVE_CLOCK_GETTIME, 1,
+	       [Define to 1 if you have the `clock_gettime' function.])])
+fi
+
 have_iec_60559_libc_support=no
 if test "x$ac_cv_func_strtof128$ac_cv_func_strfromf128" = xyesyes \
    && test "x$libgcobol_have_sinf128$libgcobol_have_cacosf128" = xyesyes; then

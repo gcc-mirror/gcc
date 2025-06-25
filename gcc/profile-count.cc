@@ -39,8 +39,9 @@ const char *profile_quality_names[] =
 {
   "uninitialized",
   "guessed_local",
-  "guessed_global0",
+  "guessed_global0afdo",
   "guessed_global0adjusted",
+  "guessed_global0",
   "guessed",
   "afdo",
   "adjusted",
@@ -76,8 +77,9 @@ const char *profile_quality_display_names[] =
 {
   NULL,
   "estimated locally",
-  "estimated locally, globally 0",
+  "estimated locally, globally 0 auto FDO",
   "estimated locally, globally 0 adjusted",
+  "estimated locally, globally 0",
   "guessed",
   "auto FDO",
   "adjusted",
@@ -94,9 +96,16 @@ profile_count::dump (FILE *f, struct function *fun) const
   else if (fun && initialized_p ()
 	   && fun->cfg
 	   && ENTRY_BLOCK_PTR_FOR_FN (fun)->count.initialized_p ())
-    fprintf (f, "%" PRId64 " (%s, freq %.4f)", m_val,
-	     profile_quality_display_names[m_quality],
-	     to_sreal_scale (ENTRY_BLOCK_PTR_FOR_FN (fun)->count).to_double ());
+    {
+      if (compatible_p (ENTRY_BLOCK_PTR_FOR_FN (fun)->count))
+	fprintf (f, "%" PRId64 " (%s, freq %.4f)", m_val,
+		 profile_quality_display_names[m_quality],
+		 to_sreal_scale
+		   (ENTRY_BLOCK_PTR_FOR_FN (fun)->count).to_double ());
+      else
+	fprintf (f, "%" PRId64 " (%s, incompatible with entry block count)",
+		 m_val, profile_quality_display_names[m_quality]);
+    }
   else
     fprintf (f, "%" PRId64 " (%s)", m_val,
 	     profile_quality_display_names[m_quality]);
@@ -177,11 +186,11 @@ profile_probability::dump (char *buffer) const
       else
 	buffer += sprintf (buffer, "%3.1f%%", (double)m_val * 100 / max_probability);
 
-      if (m_quality == ADJUSTED)
+      if (quality () == ADJUSTED)
 	sprintf (buffer, " (adjusted)");
-      else if (m_quality == AFDO)
+      else if (quality () == AFDO)
 	sprintf (buffer, " (auto FDO)");
-      else if (m_quality == GUESSED)
+      else if (quality () == GUESSED)
 	sprintf (buffer, " (guessed)");
     }
 }
@@ -239,7 +248,7 @@ profile_probability::stream_in (class lto_input_block *ib)
 {
   profile_probability ret;
   ret.m_val = streamer_read_uhwi (ib);
-  ret.m_quality = (profile_quality) streamer_read_uhwi (ib);
+  ret.m_adjusted_quality = streamer_read_uhwi (ib);
   return ret;
 }
 
@@ -249,7 +258,7 @@ void
 profile_probability::stream_out (struct output_block *ob)
 {
   streamer_write_uhwi (ob, m_val);
-  streamer_write_uhwi (ob, m_quality);
+  streamer_write_uhwi (ob, m_adjusted_quality);
 }
 
 /* Stream THIS to OB.  */
@@ -258,7 +267,7 @@ void
 profile_probability::stream_out (struct lto_output_stream *ob)
 {
   streamer_write_uhwi_stream (ob, m_val);
-  streamer_write_uhwi_stream (ob, m_quality);
+  streamer_write_uhwi_stream (ob, m_adjusted_quality);
 }
 
 /* Compute RES=(a*b + c/2)/c capping and return false if overflow happened.  */
@@ -344,6 +353,10 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
     return 1;
   if (!in.m_val)
     return m_val * 4;
+  /* Auto-FDO 0 really just means that we have no samples.
+     Treat it as small non-zero frequency.  */
+  if (!m_val && quality () == AFDO)
+    return (sreal)1 / (sreal)in.m_val;
   return (sreal)m_val / (sreal)in.m_val;
 }
 
@@ -395,10 +408,12 @@ profile_count::combine_with_ipa_count (profile_count ipa)
     return *this;
   if (ipa == zero ())
     return this->global0 ();
+  if (ipa == afdo_zero ())
+    return this->global0afdo ();
   return this->global0adjusted ();
 }
 
-/* Sae as profile_count::combine_with_ipa_count but within function with count
+/* Same as profile_count::combine_with_ipa_count but within function with count
    IPA2.  */
 profile_count
 profile_count::combine_with_ipa_count_within (profile_count ipa,
@@ -410,7 +425,16 @@ profile_count::combine_with_ipa_count_within (profile_count ipa,
   if (ipa2.ipa () == ipa2 && ipa.initialized_p ())
     ret = ipa;
   else
-    ret = combine_with_ipa_count (ipa);
+    {
+      /* For inconsistent profiles we may end up having ipa2 of GLOBAL0
+	 while ipa is non-zero (i.e. non-zero IPA counters within function
+	 executed 0 times).  Be sure we produce GLOBAL0 as well
+	 so counters remain compatible.  */
+      if (ipa.nonzero_p ()
+	  && ipa2.ipa ().initialized_p ())
+	ipa = ipa2.ipa ();
+      ret = combine_with_ipa_count (ipa);
+    }
   gcc_checking_assert (ret.compatible_p (ipa2));
   return ret;
 }
@@ -475,7 +499,7 @@ profile_probability::sqrt () const
   if (!initialized_p () || *this == never () || *this == always ())
     return *this;
   profile_probability ret = *this;
-  ret.m_quality = MIN (ret.m_quality, ADJUSTED);
+  ret.set_quality (MIN (ret.quality (), ADJUSTED));
   uint32_t min_range = m_val;
   uint32_t max_range = max_probability;
   if (!m_val)

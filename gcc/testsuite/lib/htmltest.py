@@ -9,7 +9,9 @@ def html_tree_from_env():
     return ET.parse(html_filename)
 
 XHTML = 'http://www.w3.org/1999/xhtml'
-ns = {'xhtml': XHTML}
+SVG   = 'http://www.w3.org/2000/svg'
+ns = {'xhtml': XHTML,
+      'svg'  : SVG}
 
 def make_tag(local_name):
     return f'{{{XHTML}}}' + local_name
@@ -83,14 +85,11 @@ def get_diag_by_index(html_tree, index):
     assert diag_list is not None
     assert_class(diag_list, 'gcc-diagnostic-list')
 
-    diags = diag_list.findall('xhtml:div', ns)
-    diag = diags[index]
-    assert_class(diag, 'gcc-diagnostic')
+    diag = diag_list.find(f"xhtml:div[@id='gcc-diag-{index}']", ns)
     return diag
 
 def get_message_within_diag(diag_element):
-    msg = diag_element.find('xhtml:span', ns)
-    assert_class(msg, 'gcc-message')
+    msg = diag_element.find("xhtml:div[@class='gcc-message']", ns)
     return msg
 
 def get_locus_within_diag(diag_element):

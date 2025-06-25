@@ -380,9 +380,17 @@ def skip_file(filename):
 def main(argv):
     parser = argparse.ArgumentParser()#usage=__doc__)
     parser.add_argument('paths', nargs='+', type=pathlib.Path)
+    parser.add_argument('-fdiagnostics-add-output', action='append')
     opts = parser.parse_args(argv[1:])
 
     ctxt = Context()
+    control_mgr = libgdiagnostics.Manager()
+    control_mgr.add_text_sink()
+    for scheme in opts.fdiagnostics_add_output:
+        ctxt.mgr.add_sink_from_spec("-fdiagnostics-add-output=",
+                                    scheme,
+                                    control_mgr)
+
     for path in opts.paths:
         if path.is_dir():
             for dirpath, dirnames, filenames in os.walk(path):

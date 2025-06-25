@@ -307,16 +307,16 @@ package body Comperr is
 
                   Write_Str
                     ("| Please submit a bug report by email " &
-                     "to report@adacore.com.");
+                     "to support@adacore.com.");
                   End_Line;
 
                   Write_Str
-                    ("| GAP members can alternatively use GNAT Tracker:");
+                    ("| GAP members can alternatively use GNATtracker:");
                   End_Line;
 
                   Write_Str
-                    ("| https://www.adacore.com/login?mode=gap " &
-                     "section 'Create New Ticket'.");
+                    ("| https://support.adacore.com/csm " &
+                     "by using the button 'Create A New Case'.");
                   End_Line;
 
                   Write_Str
@@ -326,17 +326,17 @@ package body Comperr is
 
                else
                   Write_Str
-                    ("| Please submit a bug report using GNAT Tracker:");
+                    ("| Please submit a bug report using GNATtracker at");
                   End_Line;
 
                   Write_Str
-                    ("| https://www.adacore.com/login " &
-                     "section 'Create New Ticket'.");
+                    ("| https://support.adacore.com/csm " &
+                     "by using the button 'Create New Case'.");
                   End_Line;
 
                   Write_Str
                     ("| Or submit a bug report by email " &
-                     "to report@adacore.com");
+                     "to support@adacore.com");
                   End_Line;
 
                   Write_Str

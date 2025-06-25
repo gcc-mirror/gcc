@@ -26,11 +26,10 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
-with Debug;          use Debug;
-with Diagnostics.Constructors; use Diagnostics.Constructors;
 with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
+with Errid;          use Errid;
 with Errout;         use Errout;
 with Expander;       use Expander;
 with Exp_Tss;        use Exp_Tss;
@@ -4038,22 +4037,25 @@ package body Sem_Aggr is
       if Present (First (Expressions (N)))
         and then Present (First (Component_Associations (N)))
       then
-         if Debug_Flag_Underscore_DD then
-            Record_Mixed_Container_Aggregate_Error
-              (Aggr       => N,
-               Pos_Elem   => First (Expressions (N)),
-               Named_Elem => First (Component_Associations (N)));
-         else
-            Error_Msg_N
-              ("container aggregate cannot be both positional and named", N);
-         end if;
+         Error_Msg_N
+           (Msg        =>
+              "container aggregate cannot be both positional and named",
+            N          => N,
+            Error_Code => GNAT0006,
+            Spans      =>
+              (1 =>
+                 Secondary_Labeled_Span
+                   (First (Expressions (N)), "positional element "),
+               2 =>
+                 Secondary_Labeled_Span
+                   (First (Component_Associations (N)), "named element")));
          return;
       end if;
 
       if Present (Add_Unnamed_Subp)
         and then No (New_Indexed_Subp)
-        and then Present (Etype (Add_Unnamed_Subp))
-        and then Etype (Add_Unnamed_Subp) /= Any_Type
+        and then Present (Entity (Add_Unnamed_Subp))
+        and then Entity (Add_Unnamed_Subp) /= Any_Id
       then
          declare
             Elmt_Type : constant Entity_Id :=
@@ -4099,7 +4101,8 @@ package body Sem_Aggr is
          end;
 
       elsif Present (Add_Named_Subp)
-        and then Etype (Add_Named_Subp) /= Any_Type
+        and then Present (Entity (Add_Named_Subp))
+        and then Entity (Add_Named_Subp) /= Any_Id
       then
          declare
             --  Retrieves types of container, key, and element from the
@@ -4153,7 +4156,8 @@ package body Sem_Aggr is
          end;
 
       elsif Present (Assign_Indexed_Subp)
-        and then Etype (Assign_Indexed_Subp) /= Any_Type
+        and then Present (Entity (Assign_Indexed_Subp))
+        and then Entity (Assign_Indexed_Subp) /= Any_Id
       then
          --  Indexed Aggregate. Positional or indexed component
          --  can be present, but not both. Choices must be static
@@ -6984,6 +6988,30 @@ package body Sem_Aggr is
       --  Check the dimensions of the components in the record aggregate
 
       Analyze_Dimension_Extension_Or_Record_Aggregate (N);
+
+      --  Do a pass for constructors which rely on things being fully expanded
+
+      declare
+         function Resolve_Make_Expr (N : Node_Id) return Traverse_Result;
+         --  Recurse in the aggregate and resolve references to 'Make
+
+         function Resolve_Make_Expr (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Attribute_Reference
+              and then Attribute_Name (N) = Name_Make
+            then
+               Set_Analyzed (N, False);
+               Resolve (N);
+            end if;
+
+            return OK;
+         end Resolve_Make_Expr;
+
+         procedure Search_And_Resolve_Make_Expr is new
+           Traverse_Proc (Resolve_Make_Expr);
+      begin
+         Search_And_Resolve_Make_Expr (N);
+      end;
    end Resolve_Record_Aggregate;
 
    -----------------------------

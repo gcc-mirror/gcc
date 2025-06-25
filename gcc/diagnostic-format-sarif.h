@@ -41,21 +41,18 @@ diagnostic_output_format_open_sarif_file (diagnostic_context &context,
 					  const char *base_file_name,
 					  enum sarif_serialization_kind serialization_kind);
 
-extern void
+extern diagnostic_output_format &
 diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 					    const line_maps *line_maps,
-					    const char *main_input_filename_,
 					    bool formatted);
-extern void
+extern diagnostic_output_format &
 diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 					  line_maps *line_maps,
-					  const char *main_input_filename_,
 					  bool formatted,
 					  const char *base_file_name);
-extern void
+extern diagnostic_output_format &
 diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 					    const line_maps *line_maps,
-					    const char *main_input_filename_,
 					    bool formatted,
 					    FILE *stream);
 
@@ -104,12 +101,12 @@ struct sarif_generation_options
   sarif_generation_options ();
 
   enum sarif_version m_version;
+  bool m_xml_state;
 };
 
 extern std::unique_ptr<diagnostic_output_format>
 make_sarif_sink (diagnostic_context &context,
 		 const line_maps &line_maps,
-		 const char *main_input_filename_,
 		 std::unique_ptr<sarif_serialization_format> serialization_format,
 		 const sarif_generation_options &sarif_gen_opts,
 		 diagnostic_output_file output_file);

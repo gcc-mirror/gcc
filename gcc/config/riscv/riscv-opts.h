@@ -164,6 +164,7 @@ enum riscv_tls_type {
   (TARGET_VECTOR && riscv_mautovec_segment)
 
 #define GPR2VR_COST_UNPROVIDED -1
+#define FPR2VR_COST_UNPROVIDED -1
 
 /* Extra extension flags, used for carry extra info for a RISC-V extension.  */
 enum

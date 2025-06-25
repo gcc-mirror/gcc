@@ -280,11 +280,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Forward declarations
   template<typename>
-    struct is_reference;
-  template<typename>
-    struct is_function;
-  template<typename>
-    struct is_void;
+    struct is_object;
   template<typename>
     struct remove_cv;
   template<typename>
@@ -294,21 +290,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename>
     struct __is_array_unknown_bounds;
 
+  // An object type which is not an unbounded array.
+  // It might still be an incomplete type, but if this is false_type
+  // then we can be certain it's not a complete object type.
+  template<typename _Tp>
+    using __maybe_complete_object_type
+      = __and_<is_object<_Tp>, __not_<__is_array_unknown_bounds<_Tp>>>;
+
   // Helper functions that return false_type for incomplete classes,
   // incomplete unions and arrays of known bound from those.
 
-  template <typename _Tp, size_t = sizeof(_Tp)>
-    constexpr true_type __is_complete_or_unbounded(__type_identity<_Tp>)
-    { return {}; }
+  // More specialized overload for complete object types (returning true_type).
+  template<typename _Tp,
+	   typename = __enable_if_t<__maybe_complete_object_type<_Tp>::value>,
+	   size_t = sizeof(_Tp)>
+    constexpr true_type
+    __is_complete_or_unbounded(__type_identity<_Tp>)
+    { return {}; };
 
-  template <typename _TypeIdentity,
-      typename _NestedType = typename _TypeIdentity::type>
-    constexpr typename __or_<
-      is_reference<_NestedType>,
-      is_function<_NestedType>,
-      is_void<_NestedType>,
-      __is_array_unknown_bounds<_NestedType>
-    >::type __is_complete_or_unbounded(_TypeIdentity)
+  // Less specialized overload for reference and unknown-bound array types
+  // (returning true_type), and incomplete types (returning false_type).
+  template<typename _TypeIdentity,
+	   typename _NestedType = typename _TypeIdentity::type>
+    constexpr typename __not_<__maybe_complete_object_type<_NestedType>>::type
+    __is_complete_or_unbounded(_TypeIdentity)
     { return {}; }
 
   // __remove_cv_t (std::remove_cv_t for C++11).
@@ -1036,8 +1041,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_array_unknown_bounds<_Tp[]>
     : public true_type
     { };
+  /// @endcond
 
   // Destructible and constructible type properties.
+
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_destructible)
+  /// is_destructible
+  template<typename _Tp>
+    struct is_destructible
+    : public __bool_constant<__is_destructible(_Tp)>
+    { };
+#else
+  /// @cond undocumented
 
   // In N3290 is_destructible does not say anything about function
   // types and abstract types, see LWG 2049. This implementation
@@ -1090,7 +1105,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
+#endif
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_nothrow_destructible)
+  /// is_nothrow_destructible
+  template<typename _Tp>
+    struct is_nothrow_destructible
+    : public __bool_constant<__is_nothrow_destructible(_Tp)>
+    { };
+#else
   /// @cond undocumented
 
   // is_nothrow_destructible requires that is_destructible is
@@ -1144,6 +1167,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
+#endif
 
   /// @cond undocumented
   template<typename _Tp, typename... _Args>
@@ -1451,6 +1475,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_trivially_destructible)
+  /// is_trivially_destructible
+  template<typename _Tp>
+    struct is_trivially_destructible
+    : public __bool_constant<__is_trivially_destructible(_Tp)>
+    { };
+#else
   /// is_trivially_destructible
   template<typename _Tp>
     struct is_trivially_destructible
@@ -1460,7 +1491,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
-
+#endif
 
   /// has_virtual_destructor
   template<typename _Tp>
@@ -3581,8 +3612,13 @@ template <typename _Tp>
   inline constexpr bool is_move_assignable_v
     = __is_assignable(__add_lval_ref_t<_Tp>, __add_rval_ref_t<_Tp>);
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_destructible)
+template <typename _Tp>
+  inline constexpr bool is_destructible_v = __is_destructible(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_destructible_v = is_destructible<_Tp>::value;
+#endif
 
 template <typename _Tp, typename... _Args>
   inline constexpr bool is_trivially_constructible_v
@@ -3609,7 +3645,11 @@ template <typename _Tp>
     = __is_trivially_assignable(__add_lval_ref_t<_Tp>,
 				__add_rval_ref_t<_Tp>);
 
-#if __cpp_concepts
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_trivially_destructible)
+template <typename _Tp>
+  inline constexpr bool is_trivially_destructible_v
+    = __is_trivially_destructible(_Tp);
+#elif __cpp_concepts
 template <typename _Tp>
   inline constexpr bool is_trivially_destructible_v = false;
 
@@ -3654,9 +3694,15 @@ template <typename _Tp>
   inline constexpr bool is_nothrow_move_assignable_v
     = __is_nothrow_assignable(__add_lval_ref_t<_Tp>, __add_rval_ref_t<_Tp>);
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_nothrow_destructible)
+template <typename _Tp>
+  inline constexpr bool is_nothrow_destructible_v
+    = __is_nothrow_destructible(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_nothrow_destructible_v =
     is_nothrow_destructible<_Tp>::value;
+#endif
 
 template <typename _Tp>
   inline constexpr bool has_virtual_destructor_v

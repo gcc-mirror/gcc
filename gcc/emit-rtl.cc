@@ -975,8 +975,9 @@ validate_subreg (machine_mode omode, machine_mode imode,
 
   /* Verify that the offset is representable.  */
 
-  /* For hard registers, we already have most of these rules collected in
-     subreg_offset_representable_p.  */
+  /* Ensure that subregs of hard registers can be folded.  In other words,
+     the hardware register must be valid in the subreg's outer mode,
+     and consequently the subreg can be replaced with a hardware register.  */
   if (reg && REG_P (reg) && HARD_REGISTER_P (reg))
     {
       unsigned int regno = REGNO (reg);
@@ -987,7 +988,9 @@ validate_subreg (machine_mode omode, machine_mode imode,
       else if (!REG_CAN_CHANGE_MODE_P (regno, imode, omode))
 	return false;
 
-      return subreg_offset_representable_p (regno, imode, offset, omode);
+      /* Pass true to allow_stack_regs because targets like x86
+	 expect to be able to take subregs of the stack pointer.  */
+      return simplify_subreg_regno (regno, imode, offset, omode, true) >= 0;
     }
   /* Do not allow normal SUBREG with stricter alignment than the inner MEM.
 
@@ -998,10 +1001,11 @@ validate_subreg (machine_mode omode, machine_mode imode,
 	   && known_le (osize, isize))
     return false;
 
-  /* The outer size must be ordered wrt the register size, otherwise
-     we wouldn't know at compile time how many registers the outer
-     mode occupies.  */
-  if (!ordered_p (osize, regsize))
+  /* If ISIZE is greater than REGSIZE, the inner value is split into blocks
+     of size REGSIZE.  The outer size must then be ordered wrt REGSIZE,
+     otherwise we wouldn't know at compile time how many blocks the
+     outer mode occupies.  */
+  if (maybe_gt (isize, regsize) && !ordered_p (osize, regsize))
     return false;
 
   /* For normal pseudo registers, we want most of the same checks.  Namely:
@@ -3689,7 +3693,11 @@ next_nonnote_nondebug_insn (rtx_insn *insn)
 
 /* Return the next insn after INSN that is not a NOTE nor DEBUG_INSN,
    but stop the search before we enter another basic block.  This
-   routine does not look inside SEQUENCEs.  */
+   routine does not look inside SEQUENCEs.
+   NOTE: This can potentially bleed into next BB. If current insn is
+	 last insn of BB, followed by a code_label before the start of
+	 the next BB, code_label will be returned. But this is the
+	 behavior rest of gcc assumes/relies on e.g. get_last_bb_insn.  */
 
 rtx_insn *
 next_nonnote_nondebug_insn_bb (rtx_insn *insn)

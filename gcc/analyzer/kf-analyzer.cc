@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/region-model.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/call-details.h"
+#include "analyzer/program-state.h"
 
 #if ENABLE_ANALYZER
 
@@ -260,6 +261,11 @@ class dump_path_diagnostic
   : public pending_diagnostic_subclass<dump_path_diagnostic>
 {
 public:
+  dump_path_diagnostic (const program_state &state)
+  : m_state (state)
+  {
+  }
+
   int get_controlling_option () const final override
   {
     return 0;
@@ -280,6 +286,15 @@ public:
   {
     return true;
   }
+
+  const program_state *
+  get_final_state () const final override
+  {
+    return &m_state;
+  }
+
+private:
+  program_state m_state;
 };
 
 /* Handle calls to "__analyzer_dump_path" by queuing a diagnostic at this
@@ -297,7 +312,8 @@ public:
     region_model_context *ctxt = cd.get_ctxt ();
     if (!ctxt)
       return;
-    ctxt->warn (std::make_unique<dump_path_diagnostic> ());
+    if (const program_state *state = ctxt->get_state ())
+      ctxt->warn (std::make_unique<dump_path_diagnostic> (*state));
   }
 };
 

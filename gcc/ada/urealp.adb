@@ -34,7 +34,7 @@ package body Urealp is
    --  add 1 to No_Ureal, since "+" means something different for Ureals).
 
    type Ureal_Entry is record
-      Num  : Uint;
+      Num : Uint;
       --  Numerator (always non-negative)
 
       Den : Uint;
@@ -47,20 +47,6 @@ package body Urealp is
       Negative : Boolean;
       --  Flag set if value is negative
    end record;
-
-   --  The following representation clause ensures that the above record
-   --  has no holes. We do this so that when instances of this record are
-   --  written, we do not write uninitialized values to the file.
-
-   for Ureal_Entry use record
-      Num      at  0 range 0 .. 31;
-      Den      at  4 range 0 .. 31;
-      Rbase    at  8 range 0 .. 31;
-      Negative at 12 range 0 .. 31;
-   end record;
-
-   for Ureal_Entry'Size use 16 * 8;
-   --  This ensures that we did not leave out any fields
 
    package Ureals is new Table.Table (
      Table_Component_Type => Ureal_Entry,
@@ -832,7 +818,7 @@ package body Urealp is
          return Store_Ureal
                   ((Num      => Uint_1,
                     Den      => -N,
-                    Rbase    => UI_To_Int (UR_Trunc (Bas)),
+                    Rbase    => UI_To_Int (IBas),
                     Negative => Neg));
 
       --  If the exponent is negative then we raise the numerator and the
@@ -1251,12 +1237,13 @@ package body Urealp is
    ---------------
 
    function UR_Negate (Real : Ureal) return Ureal is
+      Val : constant Ureal_Entry := Ureals.Table (Real);
    begin
       return Store_Ureal
-               ((Num      => Ureals.Table (Real).Num,
-                 Den      => Ureals.Table (Real).Den,
-                 Rbase    => Ureals.Table (Real).Rbase,
-                 Negative => not Ureals.Table (Real).Negative));
+               ((Num      => Val.Num,
+                 Den      => Val.Den,
+                 Rbase    => Val.Rbase,
+                 Negative => not Val.Negative));
    end UR_Negate;
 
    ------------

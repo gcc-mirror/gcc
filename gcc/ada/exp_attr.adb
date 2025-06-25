@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Accessibility;  use Accessibility;
+with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
 with Debug;          use Debug;
@@ -88,8 +89,10 @@ package body Exp_Attr is
       function Attribute_Op_Hash (Id : Entity_Id) return Header_Num is
         (Header_Num (Id mod Map_Size));
 
-      --  Cache used to avoid building duplicate subprograms for a single
-      --  type/streaming-attribute pair.
+      --  Caches used to avoid building duplicate subprograms for a single
+      --  type/attribute pair (where the attribute is either Put_Image or
+      --  one of the four streaming attributes). The type used as a key in
+      --  in accessing these maps should not be the entity of a subtype.
 
       package Read_Map is new GNAT.HTable.Simple_HTable
         (Header_Num => Header_Num,
@@ -282,8 +285,8 @@ package body Exp_Attr is
        (In_Same_Extended_Unit (Subp_Unit, Attr_Ref_Unit)
          --  If subp declared in unit body, then we don't want to refer
          --  to it from within unit spec so return False in that case.
-         and then not (Body_Required (Attr_Ref_Unit)
-                       and not Body_Required (Subp_Unit)));
+         and then not (not Is_Body (Unit (Attr_Ref_Unit))
+                       and Is_Body (Unit (Subp_Unit))));
    --  Returns True if it is ok to refer to a cached subprogram declared in
    --  Subp_Unit from the point of an attribute reference occurring in
    --  Attr_Ref_Unit. Both arguments are usually N_Compilation_Nodes,
@@ -4669,7 +4672,7 @@ package body Exp_Attr is
          end if;
 
          if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Input_Map.Set (P_Type, Fname);
+            Cached_Attribute_Ops.Input_Map.Set (U_Type, Fname);
          end if;
       end Input;
 
@@ -4982,6 +4985,316 @@ package body Exp_Attr is
              Attribute_Name => Name_Object_Size));
 
          Analyze_And_Resolve (N, Typ);
+
+      ----------
+      -- Make --
+      ----------
+
+      when Attribute_Make =>
+         declare
+            Params    : List_Id;
+            Param     : Node_Id;
+            Par       : Node_Id;
+            Construct : Entity_Id;
+            Obj       : Node_Id := Empty;
+            Make_Expr : Node_Id := N;
+
+            Formal       : Entity_Id;
+            Replace_Expr : Node_Id;
+            Init_Param   : Node_Id;
+            Construct_Call : Node_Id;
+            Curr_Nam : Node_Id := Empty;
+
+            function Replace_Formal_Ref
+              (N : Node_Id) return Traverse_Result;
+
+            function Replace_Formal_Ref
+              (N : Node_Id) return Traverse_Result is
+            begin
+               if Is_Entity_Name (N)
+                 and then Chars (Formal) = Chars (N)
+               then
+                  Rewrite (N,
+                    New_Copy_Tree (Replace_Expr));
+               end if;
+
+               return OK;
+            end Replace_Formal_Ref;
+
+            procedure Search_And_Replace_Formal is new
+              Traverse_Proc (Replace_Formal_Ref);
+
+         begin
+            --  Remove side effects for constructor call
+
+            Param := First (Expressions (N));
+            while Present (Param) loop
+               if Nkind (Param) = N_Parameter_Association then
+                  Remove_Side_Effects (Explicit_Actual_Parameter (Param),
+                                       Check_Side_Effects => False);
+               else
+                  Remove_Side_Effects (Param, Check_Side_Effects => False);
+               end if;
+
+               Next (Param);
+            end loop;
+
+            --  Construct the parameters list
+
+            Params := New_Copy_List (Expressions (N));
+            if Is_Empty_List (Params) then
+               Params := New_List;
+            end if;
+
+            --  Identify the enclosing parent for the non-copy cases
+
+            Par := Parent (N);
+            if Nkind (Par) = N_Qualified_Expression then
+               Par       := Parent (Par);
+               Make_Expr := Par;
+            end if;
+            if Nkind (Par) = N_Allocator then
+               Par := Parent (Par);
+               Curr_Nam := Make_Explicit_Dereference
+                            (Loc, Prefix => Empty);
+               Obj := Curr_Nam;
+            end if;
+
+            declare
+               Base_Obj : Node_Id := Empty;
+               Typ_Comp : Entity_Id;
+               Agg_Comp : Entity_Id;
+               Comp_Nam : Node_Id := Empty;
+            begin
+               while Nkind (Par) not in N_Object_Declaration
+                                      | N_Assignment_Statement
+               loop
+                  if Nkind (Par) = N_Aggregate then
+                     Typ_Comp := First_Entity (Etype (Par));
+                     Agg_Comp := First (Expressions (Par));
+                     loop
+                        if No (Agg_Comp) then
+                           return;
+                        end if;
+
+                        if Agg_Comp = Make_Expr then
+                           Comp_Nam :=
+                             Make_Selected_Component (Loc,
+                               Prefix => Empty,
+                               Selector_Name =>
+                                 New_Occurrence_Of (Typ_Comp, Loc));
+
+                           Make_Expr := Parent (Make_Expr);
+                           Par       := Parent (Par);
+                           exit;
+                        end if;
+
+                        Next_Entity (Typ_Comp);
+                        Next (Agg_Comp);
+                     end loop;
+                  elsif Nkind (Par) = N_Component_Association then
+                     Comp_Nam :=
+                       Make_Selected_Component (Loc,
+                         Prefix => Empty,
+                         Selector_Name =>
+                           Make_Identifier (Loc,
+                             (Chars (First (Choices (Par))))));
+
+                     Make_Expr := Parent (Parent (Make_Expr));
+                     Par       := Parent (Parent (Par));
+                  else
+                     declare
+                        Temp : constant Entity_Id :=
+                          Make_Temporary (Loc, 'T', N);
+                     begin
+                        Rewrite (N,
+                          Make_Expression_With_Actions (Loc,
+                            Actions => New_List (
+                              Make_Object_Declaration (Loc,
+                                Defining_Identifier => Temp,
+                                Object_Definition   =>
+                                  New_Occurrence_Of (Typ, Loc),
+                                Expression          =>
+                                  New_Copy_Tree (N))),
+                            Expression => New_Occurrence_Of (Temp, Loc)));
+                        Analyze_And_Resolve (N);
+                        return;
+                     end;
+                  end if;
+
+                  if No (Curr_Nam) then
+                     Curr_Nam := Comp_Nam;
+                     Obj      := Curr_Nam;
+                  elsif Has_Prefix (Curr_Nam) then
+                     Set_Prefix (Curr_Nam, Comp_Nam);
+                     Curr_Nam := Comp_Nam;
+                  end if;
+               end loop;
+
+               Base_Obj := (case Nkind (Par) is
+                              when N_Assignment_Statement =>
+                                 New_Copy_Tree (Name (Par)),
+                              when N_Object_Declaration =>
+                                 New_Occurrence_Of
+                                   (Defining_Identifier (Par), Loc),
+                              when others => (raise Program_Error));
+
+               if Present (Curr_Nam) then
+                  Set_Prefix (Curr_Nam, Base_Obj);
+               else
+                  Obj := Base_Obj;
+               end if;
+            end;
+
+            Prepend_To (Params, Obj);
+
+            --  Find the constructor we are interested in by doing a
+            --  pseudo-pass to resolve the constructor call.
+
+            declare
+               Dummy_Params : List_Id := New_Copy_List (Expressions (N));
+               Dummy_Self   : Node_Id;
+               Dummy_Block  : Node_Id;
+               Dummy_Call   : Node_Id;
+               Dummy_Id     : Entity_Id := Make_Temporary (Loc, 'D', N);
+            begin
+               if Is_Empty_List (Dummy_Params) then
+                  Dummy_Params := New_List;
+               end if;
+
+               Dummy_Self := Make_Object_Declaration (Loc,
+                               Defining_Identifier => Dummy_Id,
+                               Object_Definition   =>
+                                  New_Occurrence_Of (Typ, Loc));
+               Prepend_To (Dummy_Params, New_Occurrence_Of (Dummy_Id, Loc));
+
+               Dummy_Call := Make_Procedure_Call_Statement (Loc,
+                               Parameter_Associations => Dummy_Params,
+                               Name                   =>
+                                 (if not Has_Prefix (Pref) then
+                                     Make_Identifier (Loc,
+                                       Chars (Constructor_Name (Typ)))
+                                  else
+                                     Make_Expanded_Name (Loc,
+                                       Chars =>
+                                         Chars (Constructor_Name (Typ)),
+                                       Prefix =>
+                                         New_Copy_Tree (Prefix (Pref)),
+                                       Selector_Name =>
+                                         Make_Identifier (Loc,
+                                          Chars (Constructor_Name (Typ))))));
+               Set_Is_Expanded_Constructor_Call (Dummy_Call, True);
+
+               Dummy_Block := Make_Block_Statement (Loc,
+                                Declarations => New_List (Dummy_Self),
+                                Handled_Statement_Sequence =>
+                                  Make_Handled_Sequence_Of_Statements (Loc,
+                                    Statements => New_List (Dummy_Call)));
+
+               Expander_Active := False;
+
+               Insert_After_And_Analyze
+                 (Enclosing_Declaration_Or_Statement (Par), Dummy_Block);
+
+               Expander_Active := True;
+
+               --  Finally, we can get the constructor based on our pseudo-pass
+
+               Construct := Entity (Name (Dummy_Call));
+
+               --  Replace the Typ'Make attribute with an aggregate featuring
+               --  then relevant aggregate from the correct constructor's
+               --  Inializeaspect if it is present - otherwise, simply use a
+               --  box.
+
+               if Has_Aspect (Construct, Aspect_Initialize) then
+                  Rewrite (N,
+                    New_Copy_Tree
+                      (Find_Value_Of_Aspect (Construct, Aspect_Initialize)));
+
+                  Param  := Next (First (Params));
+                  Formal := Next_Entity (First_Entity (Construct));
+                  while Present (Param) loop
+                     if Nkind (Param) = N_Parameter_Association then
+                        Formal := Selector_Name (Param);
+                        Replace_Expr := Explicit_Actual_Parameter (Param);
+                     else
+                        Replace_Expr := Param;
+                     end if;
+
+                     Init_Param := First (Component_Associations (N));
+                     while Present (Init_Param) loop
+                        Search_And_Replace_Formal (Expression (Init_Param));
+
+                        Next (Init_Param);
+                     end loop;
+
+                     if Nkind (Param) /= N_Parameter_Association then
+                        Next_Entity (Formal);
+                     end if;
+                     Next (Param);
+                  end loop;
+
+                  Init_Param := First (Component_Associations (N));
+                  while Present (Init_Param) loop
+                     if Nkind (Expression (Init_Param)) = N_Attribute_Reference
+                       and then Attribute_Name
+                                  (Expression (Init_Param)) = Name_Make
+                     then
+                        Insert_After (Par,
+                          Make_Assignment_Statement (Loc,
+                            Name       =>
+                              Make_Selected_Component (Loc,
+                                Prefix =>
+                                  New_Copy_Tree (First (Params)),
+                                Selector_Name =>
+                                  Make_Identifier (Loc,
+                                    Chars (First (Choices (Init_Param))))),
+                            Expression =>
+                              New_Copy_Tree (Expression (Init_Param))));
+
+                        Rewrite (Expression (Init_Param),
+                          Make_Aggregate (Loc,
+                            Expressions            => New_List,
+                            Component_Associations => New_List (
+                              Make_Component_Association (Loc,
+                                Choices     =>
+                                  New_List (Make_Others_Choice (Loc)),
+                                Expression  => Empty,
+                                Box_Present => True))));
+                     end if;
+
+                     Next (Init_Param);
+                  end loop;
+               else
+                  Rewrite (N,
+                    Make_Aggregate (Loc,
+                      Expressions            => New_List,
+                      Component_Associations => New_List (
+                        Make_Component_Association (Loc,
+                          Choices     => New_List (Make_Others_Choice (Loc)),
+                          Expression  => Empty,
+                          Box_Present => True))));
+               end if;
+
+               --  Rewrite this block to be null and pretend it didn't happen
+
+               Rewrite (Dummy_Block, Make_Null_Statement (Loc));
+            end;
+
+            Analyze_And_Resolve (N, Typ);
+
+            --  Finally, insert the constructor call
+
+            Construct_Call :=
+              Make_Procedure_Call_Statement (Loc,
+                Name                   =>
+                  New_Occurrence_Of (Construct, Loc),
+                Parameter_Associations => Params);
+
+            Set_Is_Expanded_Constructor_Call (Construct_Call);
+            Insert_After (Par, Construct_Call);
+         end;
 
       --------------
       -- Mantissa --
@@ -5750,7 +6063,7 @@ package body Exp_Attr is
          Rewrite_Attribute_Proc_Call (Pname);
 
          if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Output_Map.Set (P_Type, Pname);
+            Cached_Attribute_Ops.Output_Map.Set (U_Type, Pname);
          end if;
       end Output;
 
@@ -6669,7 +6982,7 @@ package body Exp_Attr is
          Rewrite_Attribute_Proc_Call (Pname);
 
          if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Read_Map.Set (P_Type, Pname);
+            Cached_Attribute_Ops.Read_Map.Set (U_Type, Pname);
          end if;
       end Read;
 
@@ -7870,9 +8183,8 @@ package body Exp_Attr is
          else
             declare
                Uns  : constant Boolean :=
-                        Is_Unsigned_Type (Ptyp)
-                          or else (Is_Private_Type (Ptyp)
-                                    and then Is_Unsigned_Type (PBtyp));
+                 Is_Unsigned_Type (Validated_View (Ptyp));
+
                Size : Uint;
                P    : Node_Id := Pref;
 
@@ -8349,7 +8661,7 @@ package body Exp_Attr is
          Rewrite_Attribute_Proc_Call (Pname);
 
          if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Write_Map.Set (P_Type, Pname);
+            Cached_Attribute_Ops.Write_Map.Set (U_Type, Pname);
          end if;
       end Write;
 
@@ -8600,10 +8912,10 @@ package body Exp_Attr is
             Rewrite (N,
               Make_Op_Multiply (Loc,
                 Make_Attribute_Reference (Loc,
-                  Prefix         => Duplicate_Subexpr (Pref, True),
+                  Prefix         => Duplicate_Subexpr (Pref, Name_Req => True),
                   Attribute_Name => Name_Length),
                 Make_Attribute_Reference (Loc,
-                  Prefix         => Duplicate_Subexpr (Pref, True),
+                  Prefix         => Duplicate_Subexpr (Pref, Name_Req => True),
                   Attribute_Name => Name_Component_Size)));
             Analyze_And_Resolve (N, Typ);
          end if;
@@ -8951,15 +9263,22 @@ package body Exp_Attr is
          return Empty;
       end if;
 
-      if Nam = TSS_Stream_Read then
-         Ent := Cached_Attribute_Ops.Read_Map.Get (Typ);
-      elsif Nam = TSS_Stream_Write then
-         Ent := Cached_Attribute_Ops.Write_Map.Get (Typ);
-      elsif Nam = TSS_Stream_Input then
-         Ent := Cached_Attribute_Ops.Input_Map.Get (Typ);
-      elsif Nam = TSS_Stream_Output then
-         Ent := Cached_Attribute_Ops.Output_Map.Get (Typ);
-      end if;
+      declare
+         function U_Base return Entity_Id is
+           (Underlying_Type (Base_Type (Typ)));
+         --  Return the right type node for use in a C_A_O map lookup.
+         --  In particular, we do not want the entity for a subtype.
+      begin
+         if Nam = TSS_Stream_Read then
+            Ent := Cached_Attribute_Ops.Read_Map.Get (U_Base);
+         elsif Nam = TSS_Stream_Write then
+            Ent := Cached_Attribute_Ops.Write_Map.Get (U_Base);
+         elsif Nam = TSS_Stream_Input then
+            Ent := Cached_Attribute_Ops.Input_Map.Get (U_Base);
+         elsif Nam = TSS_Stream_Output then
+            Ent := Cached_Attribute_Ops.Output_Map.Get (U_Base);
+         end if;
+      end;
 
       Cached_Attribute_Ops.Validate_Cached_Candidate
         (Subp => Ent, Attr_Ref => Attr_Ref);

@@ -1,4 +1,5 @@
 // { dg-do preprocess }
+// { dg-additional-options -fno-modules }
 
 #define NAME(X) X;
 

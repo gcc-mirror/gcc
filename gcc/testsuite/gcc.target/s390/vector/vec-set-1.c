@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=z14 -mzarch" } */
+/* { dg-options "-O2 -march=arch11 -mzarch" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 typedef double V2DF __attribute__((vector_size(16)));
@@ -69,7 +69,7 @@ set1dfn (V1DF x, double y, int n)
 
 /*
 ** setsf0:
-**	lgdr	(%r.),%f0
+**	vlgvf	(%r.),%v0,0
 **	vlvgf	%v24,\1,0
 **	br	%r14
 */
@@ -82,7 +82,7 @@ setsf0 (V4SF x, float y)
 
 /*
 ** setsf1:
-**	lgdr	(%r.),%f0
+**	vlgvf	(%r.),%v0,0
 **	vlvgf	%v24,\1,1
 **	br	%r14
 */
@@ -94,8 +94,8 @@ setsf1 (V4SF x, float y)
 }
 
 /*
-** setsf0:
-**	lgdr	(%r.),%f0
+** setsf2:
+**	vlgvf	(%r.),%v0,0
 **	vlvgf	%v24,\1,2
 **	br	%r14
 */
@@ -107,8 +107,8 @@ setsf2 (V4SF x, float y)
 }
 
 /*
-** setsf1:
-**	lgdr	(%r.),%f0
+** setsf3:
+**	vlgvf	(%r.),%v0,0
 **	vlvgf	%v24,\1,3
 **	br	%r14
 */
@@ -121,7 +121,7 @@ setsf3 (V4SF x, float y)
 
 /*
 ** setsfn:
-**	lgdr	(%r.),%f0
+**	vlgvf	(%r.),%v0,0
 **	vlvgf	%v24,\1,0\(%r2\)
 **	br	%r14
 */
@@ -129,5 +129,12 @@ V4SF
 setsfn (V4SF x, float y, int n)
 {
   x[n] = y;
+  /* Make sure to read all FPRs such that the "save GPRs in FPRs" optimization
+     cannot be used.  That optimization has a memory clobber on SP restore
+     causing DSE to fail to eliminate dead stores in leaf functions using this
+     optimization.  */
+  asm volatile ("" : : "f" (y), "f" (y), "f" (y), "f" (y), "f" (y), "f" (y),
+		       "f" (y), "f" (y), "f" (y), "f" (y), "f" (y), "f" (y),
+		       "f" (y), "f" (y), "f" (y), "f" (y));
   return x;
 }

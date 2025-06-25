@@ -89,7 +89,7 @@ checker_path::maybe_log (logger *logger, const char *desc) const
     {
       logger->start_log_line ();
       logger->log_partial ("%s[%i]: %s ", desc, i,
-			   event_kind_to_string (m_events[i]->m_kind));
+			   event_kind_to_string (m_events[i]->get_kind ()));
       m_events[i]->dump (logger->get_printer ());
       logger->end_log_line ();
     }
@@ -103,7 +103,7 @@ checker_path::add_event (std::unique_ptr<checker_event> event)
       m_logger->start_log_line ();
       m_logger->log_partial ("added event[%i]: %s ",
 			     m_events.length (),
-			     event_kind_to_string (event.get ()->m_kind));
+			     event_kind_to_string (event.get ()->get_kind ()));
       event.get ()->dump (m_logger->get_printer ());
       m_logger->end_log_line ();
     }
@@ -123,7 +123,7 @@ checker_path::debug () const
       fprintf (stderr,
 	       "[%i]: %s \"%s\"\n",
 	       i,
-	       event_kind_to_string (m_events[i]->m_kind),
+	       event_kind_to_string (m_events[i]->get_kind ()),
 	       event_desc.get ());
     }
 }
@@ -167,8 +167,8 @@ checker_path::cfg_edge_pair_at_p (unsigned idx) const
 {
   if (m_events.length () < idx + 1)
     return false;
-  return (m_events[idx]->m_kind == event_kind::start_cfg_edge
-	  && m_events[idx + 1]->m_kind == event_kind::end_cfg_edge);
+  return (m_events[idx]->get_kind () == event_kind::start_cfg_edge
+	  && m_events[idx + 1]->get_kind () == event_kind::end_cfg_edge);
 }
 
 /* Consider a call from "outer" to "middle" which calls "inner",
@@ -254,7 +254,7 @@ checker_path::inject_any_inlined_call_events (logger *logger)
 	{
 	  logger->start_log_line ();
 	  logger->log_partial ("event[%i]: %s ", ev_idx,
-			       event_kind_to_string (curr_event->m_kind));
+			       event_kind_to_string (curr_event->get_kind ()));
 	  curr_event->dump (logger->get_printer ());
 	  logger->end_log_line ();
 	  for (inlining_iterator iter (curr_event->get_location ());

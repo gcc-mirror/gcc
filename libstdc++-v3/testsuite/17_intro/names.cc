@@ -404,4 +404,8 @@
 # endif
 #endif
 
+// PR libstdc++/119496
+// _Temporary_buffer used to have a member with this name
+#define requested_size 1
+
 #include <bits/stdc++.h>

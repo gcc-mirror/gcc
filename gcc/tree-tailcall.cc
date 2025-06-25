@@ -528,6 +528,10 @@ empty_eh_cleanup (basic_block bb, int *eh_has_tsan_func_exit, int cnt)
 	  *eh_has_tsan_func_exit = 1;
 	  continue;
 	}
+      if (eh_has_tsan_func_exit
+	  && sanitize_flags_p (SANITIZE_ADDRESS)
+	  && asan_mark_p (g, ASAN_MARK_POISON))
+	continue;
       if (is_gimple_resx (g) && stmt_can_throw_external (cfun, g))
 	return true;
       return false;
@@ -618,6 +622,12 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	  else if (retry_tsan_func_exit == 1)
 	    continue;
 	}
+
+      if (cfun->has_musttail
+	  && sanitize_flags_p (SANITIZE_ADDRESS)
+	  && asan_mark_p (stmt, ASAN_MARK_POISON)
+	  && diag_musttail)
+	continue;
 
       if (!last_stmt)
 	last_stmt = stmt;
@@ -994,6 +1004,12 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	  has_tsan_func_exit = true;
 	  continue;
 	}
+
+      if (cfun->has_musttail
+	  && sanitize_flags_p (SANITIZE_ADDRESS)
+	  && asan_mark_p (stmt, ASAN_MARK_POISON)
+	  && diag_musttail)
+	continue;
 
       if (gimple_code (stmt) != GIMPLE_ASSIGN)
 	{

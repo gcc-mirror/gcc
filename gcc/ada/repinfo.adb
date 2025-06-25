@@ -30,6 +30,7 @@ with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
+with GNAT.Heap_Sort_G;
 with Lib;            use Lib;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -76,20 +77,6 @@ package body Repinfo is
       Op2  : Node_Ref_Or_Val;
       Op3  : Node_Ref_Or_Val;
    end record;
-
-   --  The following representation clause ensures that the above record
-   --  has no holes. We do this so that when instances of this record are
-   --  written, we do not write uninitialized values to the file.
-
-   for Exp_Node use record
-      Expr at  0 range 0 .. 31;
-      Op1  at  4 range 0 .. 31;
-      Op2  at  8 range 0 .. 31;
-      Op3  at 12 range 0 .. 31;
-   end record;
-
-   for Exp_Node'Size use 16 * 8;
-   --  This ensures that we did not leave out any fields
 
    package Rep_Table is new Table.Table (
       Table_Component_Type => Exp_Node,
@@ -427,9 +414,9 @@ package body Repinfo is
             Write_Line (";");
          end if;
 
-      --  Alignment is not always set for task, protected, and class-wide
-      --  types, or when doing semantic analysis only. Representation aspects
-      --  are not computed for types in a generic unit.
+      --  Alignment is not always set for concurrent types, class-wide types,
+      --  cloned subtypes, or when doing semantic analysis only. Representation
+      --  aspects are not computed for types declared in a generic unit.
 
       else
          --  Add unknown alignment entry in JSON format to ensure the format is
@@ -440,11 +427,13 @@ package body Repinfo is
             Write_Unknown_Val;
          end if;
 
-         pragma Assert
-           (not Expander_Active or else
-              Is_Concurrent_Type (Ent) or else
-              Is_Class_Wide_Type (Ent) or else
-              Sem_Util.In_Generic_Scope (Ent));
+         pragma Assert (not Expander_Active
+           or else Is_Concurrent_Type (Ent)
+           or else Is_Class_Wide_Type (Ent)
+           or else (Ekind (Ent) = E_Record_Subtype
+                     and then Present (Cloned_Subtype (Ent))
+                     and then Has_Delayed_Freeze (Cloned_Subtype (Ent)))
+           or else Sem_Util.In_Generic_Scope (Ent));
       end if;
    end List_Common_Type_Info;
 
@@ -870,8 +859,7 @@ package body Repinfo is
       --  generic unit, or if the back end is not being run), don't try to
       --  print them.
 
-      pragma Assert (Known_Esize (Ent) = Known_Alignment (Ent));
-      if not Known_Alignment (Ent) then
+      if not Known_Esize (Ent) or else not Known_Alignment (Ent) then
          return;
       end if;
 
@@ -896,6 +884,7 @@ package body Repinfo is
 
          Write_Eol;
          Write_Line ("}");
+
       else
          Write_Str ("for ");
          List_Name (Ent);
@@ -1237,11 +1226,135 @@ package body Repinfo is
          Starting_First_Bit : Uint := Uint_0;
          Prefix             : String := "")
       is
-         Comp  : Entity_Id;
-         First : Boolean := True;
+         function First_Comp_Or_Discr (Ent : Entity_Id) return Entity_Id;
+         --  Like First_Component_Or_Discriminant, but reorder the components
+         --  according to their bit offset if need be.
+
+         -------------------------
+         -- First_Comp_Or_Discr --
+         -------------------------
+
+         function First_Comp_Or_Discr (Ent : Entity_Id) return Entity_Id is
+
+            function Is_Placed_Before (C1, C2 : Entity_Id) return Boolean;
+            --  Return True if component C1 is placed before component C2
+
+            ----------------------
+            -- Is_Placed_Before --
+            ----------------------
+
+            function Is_Placed_Before (C1, C2 : Entity_Id) return Boolean is
+            begin
+               return Known_Static_Component_Bit_Offset (C1)
+                 and then Known_Static_Component_Bit_Offset (C2)
+                 and then
+                   Component_Bit_Offset (C1) < Component_Bit_Offset (C2);
+            end Is_Placed_Before;
+
+            --  Local variables
+
+            Comp    : Entity_Id;
+            N_Comp  : Natural := 0;
+            Prev    : Entity_Id;
+            Reorder : Boolean := False;
+
+         --  Start of processing for First_Comp_Or_Discr
+
+         begin
+            --  Reordering is needed only for -gnatRh
+
+            if not List_Representation_Info_Holes then
+               return First_Component_Or_Discriminant (Ent);
+            end if;
+
+            --  Count the number of components and whether reordering is needed
+
+            Comp := First_Component_Or_Discriminant (Ent);
+            Prev := Comp;
+
+            while Present (Comp) loop
+               N_Comp := N_Comp + 1;
+
+               if not Reorder then
+                  Reorder := Is_Placed_Before (Comp, Prev);
+               end if;
+
+               Prev := Comp;
+               Next_Component_Or_Discriminant (Comp);
+            end loop;
+
+            --  Reorder the components, if need be, by directly reshuffling the
+            --  list of entities between First_Entity and Last_Entity, which is
+            --  safe because we are invoked after compilation is finished.
+
+            if Reorder then
+               declare
+                  Comps : array (Natural range 0 .. N_Comp) of Entity_Id;
+                  --  Support array for the heapsort
+
+                  function Lt (Op1, Op2 : Natural) return Boolean is
+                    (Is_Placed_Before (Comps (Op1), Comps (Op2)));
+                  --  Compare function for the heapsort
+
+                  procedure Move (From : Natural; To : Natural);
+                  pragma Inline (Move);
+                  --  Move procedure for the heapsort
+
+                  ----------
+                  -- Move --
+                  ----------
+
+                  procedure Move (From : Natural; To : Natural) is
+                  begin
+                     Comps (To) := Comps (From);
+                  end Move;
+
+                  package HS is new GNAT.Heap_Sort_G (Lt => Lt, Move => Move);
+                  --  The heapsort for record components
+
+               begin
+                  --  Pack the components into the array
+
+                  N_Comp := 0;
+                  Comp := First_Component_Or_Discriminant (Ent);
+
+                  while Present (Comp) loop
+                     N_Comp := N_Comp + 1;
+                     Comps (N_Comp) := Comp;
+
+                     Next_Component_Or_Discriminant (Comp);
+                  end loop;
+
+                  --  Sort the array
+
+                  HS.Sort (N_Comp);
+
+                  --  Unpack the component into the list of entities
+
+                  Set_First_Entity (Ent, Comps (1));
+                  Set_Prev_Entity (Comps (1), Empty);
+                  for J in 1 .. N_Comp - 1 loop
+                     Set_Next_Entity (Comps (J), Comps (J + 1));
+                     Set_Prev_Entity (Comps (J + 1), Comps (J));
+                  end loop;
+                  Set_Next_Entity (Comps (N_Comp), Empty);
+                  Set_Last_Entity (Ent, Comps (N_Comp));
+               end;
+            end if;
+
+            return First_Component_Or_Discriminant (Ent);
+         end First_Comp_Or_Discr;
+
+         --  Local variables
+
+         Bit_Offset : Uint := Uint_0;
+         Comp       : Entity_Id;
+         First      : Boolean := True;
+
+      --  Start of processing for List_Record_Layout
 
       begin
-         Comp := First_Component_Or_Discriminant (Ent);
+         Comp := First_Comp_Or_Discr (Ent);
          while Present (Comp) loop
 
             --  Skip a completely hidden discriminant or a discriminant in an
@@ -1251,69 +1364,98 @@ package body Repinfo is
               and then (Is_Completely_Hidden (Comp)
                          or else Is_Unchecked_Union (Ent))
             then
-               goto Continue;
-            end if;
+               null;
 
             --  Skip _Parent component in extension (to avoid overlap)
 
-            if Chars (Comp) = Name_uParent then
-               goto Continue;
-            end if;
+            elsif Chars (Comp) = Name_uParent then
+               null;
 
             --  All other cases
 
-            declare
-               Ctyp : constant Entity_Id := Underlying_Type (Etype (Comp));
-               Npos : constant Uint      := Normalized_Position (Comp);
-               Fbit : constant Uint      := Normalized_First_Bit (Comp);
-               Spos : Uint;
-               Sbit : Uint;
+            else
+               declare
+                  C : constant Entity_Id :=
+                        (if Known_Normalized_Position (Comp)
+                         then Comp
+                         else Original_Record_Component (Comp));
+                  --  The Parent_Subtype in an extension is not back-annotated
+                  --  but its layout is the same as that of the parent type.
 
-            begin
-               Get_Decoded_Name_String (Chars (Comp));
-               Set_Casing (Unit_Casing);
+                  Ctyp : constant Entity_Id := Underlying_Type (Etype (C));
 
-               --  If extended information is requested, recurse fully into
-               --  record components, i.e. skip the outer level.
+               begin
+                  Get_Decoded_Name_String (Chars (C));
+                  Set_Casing (Unit_Casing);
 
-               if List_Representation_Info_Extended
-                 and then Is_Record_Type (Ctyp)
-                 and then Known_Static_Normalized_Position (Comp)
-                 and then Known_Static_Normalized_First_Bit (Comp)
-               then
-                  Spos := Starting_Position  + Npos;
-                  Sbit := Starting_First_Bit + Fbit;
+                  --  If extended information is requested, recurse fully into
+                  --  record components, i.e. skip the outer level.
 
-                  if Sbit >= SSU then
-                     Spos := Spos + 1;
-                     Sbit := Sbit - SSU;
-                  end if;
+                  if List_Representation_Info_Extended
+                    and then Is_Record_Type (Ctyp)
+                    and then Known_Static_Normalized_Position (C)
+                    and then Known_Static_Normalized_First_Bit (C)
+                  then
+                     declare
+                        Npos : constant Uint := Normalized_Position (C);
+                        Fbit : constant Uint := Normalized_First_Bit (C);
+                        Pref : constant String :=
+                                 Prefix & Name_Buffer (1 .. Name_Len) & ".";
 
-                  List_Record_Layout (Ctyp,
-                    Spos, Sbit, Prefix & Name_Buffer (1 .. Name_Len) & ".");
+                        Spos : Uint;
+                        Sbit : Uint;
 
-                  goto Continue;
-               end if;
+                     begin
+                        Spos := Starting_Position  + Npos;
+                        Sbit := Starting_First_Bit + Fbit;
 
-               if List_Representation_Info_To_JSON then
-                  if First then
-                     Write_Eol;
-                     First := False;
+                        if Sbit >= SSU then
+                           Spos := Spos + 1;
+                           Sbit := Sbit - SSU;
+                        end if;
+
+                        List_Record_Layout (Ctyp, Spos, Sbit, Pref);
+                     end;
+
                   else
-                     Write_Line (",");
+                     if List_Representation_Info_To_JSON then
+                        if First then
+                           Write_Eol;
+                           First := False;
+                        else
+                           Write_Line (",");
+                        end if;
+                     end if;
+
+                     --  If information about holes is requested, update the
+                     --  current bit offset and report any (static) gap.
+
+                     if List_Representation_Info_Holes
+                       and then Known_Static_Component_Bit_Offset (C)
+                     then
+                        declare
+                           Gap : constant Uint :=
+                                   Component_Bit_Offset (C) - Bit_Offset;
+                        begin
+                           if Gap > Uint_0 then
+                              Write_Str ("   -- ");
+                              UI_Write (Gap, Decimal);
+                              Write_Line (" bits unused --");
+                           end if;
+
+                           if Known_Static_Esize (C) then
+                              Bit_Offset :=
+                                Component_Bit_Offset (C) + Esize (C);
+                           end if;
+                        end;
+                     end if;
+
+                     List_Component_Layout
+                       (C, Starting_Position, Starting_First_Bit, Prefix);
                   end if;
-               end if;
+               end;
+            end if;
 
-               --  The Parent_Subtype in an extension is not back-annotated
-
-               List_Component_Layout (
-                 (if Known_Normalized_Position (Comp)
-                  then Comp
-                  else Original_Record_Component (Comp)),
-                 Starting_Position, Starting_First_Bit, Prefix);
-            end;
-
-         <<Continue>>
             Next_Component_Or_Discriminant (Comp);
          end loop;
       end List_Record_Layout;
@@ -1624,6 +1766,17 @@ package body Repinfo is
          end loop;
       end List_Structural_Record_Layout;
 
+      --  Use the original record type giving the layout of components
+      --  to avoid repeated reordering when -gnatRh is specified.
+
+      Rec : constant Entity_Id :=
+        (if Ekind (Ent) = E_Record_Subtype
+           and then Present (Cloned_Subtype (Ent))
+         then (if Is_Private_Type (Cloned_Subtype (Ent))
+               then Full_View (Cloned_Subtype (Ent))
+               else Cloned_Subtype (Ent))
+         else Ent);
+
    --  Start of processing for List_Record_Info
 
    begin
@@ -1638,7 +1791,7 @@ package body Repinfo is
       --  First find out max line length and max starting position
       --  length, for the purpose of lining things up nicely.
 
-      Compute_Max_Length (Ent);
+      Compute_Max_Length (Rec);
 
       --  Then do actual output based on those values
 
@@ -1650,21 +1803,21 @@ package body Repinfo is
          --  declared in the extended main source unit for the time being,
          --  because otherwise declarations might not be processed at all.
 
-         if Is_Base_Type (Ent) then
+         if Is_Base_Type (Rec) then
             begin
-               List_Structural_Record_Layout (Ent, Ent);
+               List_Structural_Record_Layout (Rec, Rec);
 
             exception
                when Incomplete_Layout
                   | Not_In_Extended_Main
                =>
-                  List_Record_Layout (Ent);
+                  List_Record_Layout (Rec);
 
                when others =>
                   raise Program_Error;
             end;
          else
-            List_Record_Layout (Ent);
+            List_Record_Layout (Rec);
          end if;
 
          Write_Eol;
@@ -1674,7 +1827,7 @@ package body Repinfo is
          List_Name (Ent);
          Write_Line (" use record");
 
-         List_Record_Layout (Ent);
+         List_Record_Layout (Rec);
 
          Write_Line ("end record;");
       end if;

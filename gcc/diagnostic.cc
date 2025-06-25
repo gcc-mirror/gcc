@@ -525,6 +525,13 @@ diagnostic_context::supports_fnotice_on_stderr_p () const
 }
 
 void
+diagnostic_context::set_main_input_filename (const char *filename)
+{
+  for (auto sink : m_output_sinks)
+    sink->set_main_input_filename (filename);
+}
+
+void
 diagnostic_context::
 set_client_data_hooks (std::unique_ptr<diagnostic_client_data_hooks> hooks)
 {
@@ -1059,17 +1066,17 @@ logical_location_manager::function_p (key k) const
     {
     default:
       gcc_unreachable ();
-    case LOGICAL_LOCATION_KIND_UNKNOWN:
-    case LOGICAL_LOCATION_KIND_MODULE:
-    case LOGICAL_LOCATION_KIND_NAMESPACE:
-    case LOGICAL_LOCATION_KIND_TYPE:
-    case LOGICAL_LOCATION_KIND_RETURN_TYPE:
-    case LOGICAL_LOCATION_KIND_PARAMETER:
-    case LOGICAL_LOCATION_KIND_VARIABLE:
+    case logical_location_kind::unknown:
+    case logical_location_kind::module_:
+    case logical_location_kind::namespace_:
+    case logical_location_kind::type:
+    case logical_location_kind::return_type:
+    case logical_location_kind::parameter:
+    case logical_location_kind::variable:
       return false;
 
-    case LOGICAL_LOCATION_KIND_FUNCTION:
-    case LOGICAL_LOCATION_KIND_MEMBER:
+    case logical_location_kind::function:
+    case logical_location_kind::member:
       return true;
     }
 }
@@ -1865,6 +1872,7 @@ diagnostic_output_format_init (diagnostic_context &context,
 			       enum diagnostics_output_format format,
 			       bool json_formatting)
 {
+  diagnostic_output_format *new_sink = nullptr;
   switch (format)
     {
     default:
@@ -1874,31 +1882,31 @@ diagnostic_output_format_init (diagnostic_context &context,
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR:
-      diagnostic_output_format_init_json_stderr (context,
-						 json_formatting);
+      new_sink = &diagnostic_output_format_init_json_stderr (context,
+							     json_formatting);
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE:
-      diagnostic_output_format_init_json_file (context,
-					       json_formatting,
-					       base_file_name);
+      new_sink = &diagnostic_output_format_init_json_file (context,
+							   json_formatting,
+							   base_file_name);
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR:
-      diagnostic_output_format_init_sarif_stderr (context,
-						  line_table,
-						  main_input_filename_,
-						  json_formatting);
+      new_sink = &diagnostic_output_format_init_sarif_stderr (context,
+							      line_table,
+							      json_formatting);
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE:
-      diagnostic_output_format_init_sarif_file (context,
-						line_table,
-						main_input_filename_,
-						json_formatting,
-						base_file_name);
+      new_sink = &diagnostic_output_format_init_sarif_file (context,
+							line_table,
+							    json_formatting,
+							    base_file_name);
       break;
     }
+  if (new_sink)
+    new_sink->set_main_input_filename (main_input_filename_);
 }
 
 /* Initialize this context's m_diagrams based on CHARSET.

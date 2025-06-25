@@ -28,8 +28,6 @@ using std::experimental::net::io_context;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   std::error_code ec;
 
   io_context ctx;

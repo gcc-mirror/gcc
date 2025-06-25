@@ -1,3 +1,81 @@
+2025-06-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* target.c (GOMP_REQUIRES_NAME_BUF_LEN): Define.
+	(GOMP_offload_register_ver, gomp_target_init): Use it for the
+	char buffer size.
+
+2025-06-19  Tobias Burnus  <tburnus@baylibre.com>
+	    waffl3x  <waffl3x@baylibre.com>
+
+	* libgomp.texi (omp_init_allocator): Refer to 'Memory allocation'
+	for available memory spaces.
+	(OMP_ALLOCATOR): Move list of traits and predefined memspaces
+	and allocators to ...
+	(Memory allocation): ... here. Document omp(x)::allocator::*;
+	minor wording tweaks, be more explicit about memkind, pinned and
+	pool_size.
+
+2025-06-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c++/declare_target-2.C: New test.
+
+2025-06-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4.h (gfx942): New variant function.
+	* testsuite/libgomp.c/declare-variant-4-gfx942.c: New test.
+
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* libgomp.texi (omp_get_num_devices, omp_get_intrinsic_device):
+	Document builtin handling.
+
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR target/120530
+	* testsuite/libgomp.c/target-map-zero-sized-3.c (main): Add missing
+	map clause; remove unused variable.
+
+2025-06-04  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* libgomp.texi (omp_interop_{int,ptr,str,rc_desc}): Add note about
+	the 'ret_code' type change in OpenMP 6.
+
+2025-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/120444
+	* testsuite/libgomp.c-c++-common/omp_target_memset-3.c (test_it):
+	Change ptr argument type from void * to int8_t *.
+	(main): Change ptr variable type from void * to int8_t * and cast
+	omp_target_alloc result to the latter type.
+
+2025-06-02  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/120444
+	* libgomp-plugin.h (GOMP_OFFLOAD_memset): Declare.
+	* libgomp.h (struct gomp_device_descr): Add memset_func.
+	* libgomp.map (GOMP_6.0.1): Add omp_target_memset{,_async}.
+	* libgomp.texi (Device Memory Routines): Document them.
+	* omp.h.in (omp_target_memset, omp_target_memset_async): Declare.
+	* omp_lib.f90.in (omp_target_memset, omp_target_memset_async):
+	Add interfaces.
+	* omp_lib.h.in (omp_target_memset, omp_target_memset_async): Likewise.
+	* plugin/cuda-lib.def: Add cuMemsetD8.
+	* plugin/plugin-gcn.c (struct hsa_runtime_fn_info): Add
+	hsa_amd_memory_fill_fn.
+	(init_hsa_runtime_functions): DLSYM_OPT_FN load it.
+	(GOMP_OFFLOAD_memset): New.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memset): New.
+	* target.c (omp_target_memset_int, omp_target_memset,
+	omp_target_memset_async_helper, omp_target_memset_async): New.
+	(gomp_load_plugin_for_device): Add DLSYM (memset).
+	* testsuite/libgomp.c-c++-common/omp_target_memset.c: New test.
+	* testsuite/libgomp.c-c++-common/omp_target_memset-2.c: New test.
+	* testsuite/libgomp.c-c++-common/omp_target_memset-3.c: New test.
+	* testsuite/libgomp.fortran/omp_target_memset.f90: New test.
+	* testsuite/libgomp.fortran/omp_target_memset-2.f90: New test.
+
 2025-05-30  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.c++/target-std__valarray-1.C: New.

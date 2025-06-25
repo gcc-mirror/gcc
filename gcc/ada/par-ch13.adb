@@ -503,6 +503,8 @@ package body Ch13 is
                  or else A_Id = Aspect_Refined_Depends
                then
                   Inside_Depends := True;
+               elsif A_Id = Aspect_Abstract_State then
+                  Inside_Abstract_State := True;
                end if;
 
                --  Note that we have seen an Import aspect specification.
@@ -529,9 +531,10 @@ package body Ch13 is
                   Set_Expression (Aspect, P_Expression);
                end if;
 
-               --  Unconditionally reset flag for Inside_Depends
+               --  Unconditionally reset flag for being inside aspects
 
-               Inside_Depends := False;
+               Inside_Depends        := False;
+               Inside_Abstract_State := False;
             end if;
 
             --  Add the aspect to the resulting list only when it was properly

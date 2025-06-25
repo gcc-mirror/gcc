@@ -152,10 +152,6 @@ public:
 			  relation_trio = TRIO_VARYING) const;
   virtual bool op1_range (irange &r, tree type,
 			  const frange &lhs,
-			  const frange &op2,
-			  relation_trio = TRIO_VARYING) const;
-  virtual bool op1_range (frange &r, tree type,
-			  const irange &lhs,
 			  const irange &op2,
 			  relation_trio = TRIO_VARYING) const;
 

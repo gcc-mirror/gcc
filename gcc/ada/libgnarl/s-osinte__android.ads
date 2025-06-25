@@ -147,7 +147,20 @@ package System.OS_Interface is
    --  Not clear why these two signals are reserved. Perhaps they are not
    --  supported by this version of GNU/Linux ???
 
-   type sigset_t is private;
+   --  struct sigaction fields are of different sizes and come in different
+   --  order on ARM vs aarch64.  As this source is shared by the two
+   --  configurations, fetch the type definition through System.Linux, which
+   --  is specialized.
+
+   type sigset_t is
+     array (0 .. OS_Constants.SIZEOF_sigset - 1) of Interfaces.C.unsigned_char;
+   pragma Convention (C, sigset_t);
+   for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
+
+   package Android_Sigaction is new
+     System.Linux.Android_Sigaction (sigset_t => sigset_t);
+
+   type struct_sigaction is new Android_Sigaction.struct_sigaction;
 
    function sigaddset (set : access sigset_t; sig : Signal) return int;
    pragma Import (C, sigaddset, "_sigaddset");
@@ -172,14 +185,6 @@ package System.OS_Interface is
       X_data   : union_type_3;
    end record;
    pragma Convention (C, siginfo_t);
-
-   type struct_sigaction is record
-      sa_handler  : System.Address;
-      sa_mask     : sigset_t;
-      sa_flags    : Interfaces.C.int;
-      sa_restorer : System.Address;
-   end record;
-   pragma Convention (C, struct_sigaction);
 
    type struct_sigaction_ptr is access all struct_sigaction;
 
@@ -258,6 +263,14 @@ package System.OS_Interface is
    function getpid return pid_t;
    pragma Import (C, getpid, "getpid");
 
+   PR_SET_NAME : constant := 15;
+   PR_GET_NAME : constant := 16;
+
+   function prctl
+     (option : int;
+      arg    : unsigned_long) return int;
+   pragma Import (C_Variadic_1, prctl, "prctl");
+
    -------------
    -- Threads --
    -------------
@@ -276,9 +289,11 @@ package System.OS_Interface is
      new Ada.Unchecked_Conversion (unsigned_long, pthread_t);
 
    subtype pthread_mutex_t   is System.OS_Locks.pthread_mutex_t;
+   type pthread_rwlock_t     is limited private;
    type pthread_cond_t       is limited private;
    type pthread_attr_t       is limited private;
    type pthread_mutexattr_t  is limited private;
+   type pthread_rwlockattr_t is limited private;
    type pthread_condattr_t   is limited private;
    type pthread_key_t        is private;
 
@@ -286,11 +301,6 @@ package System.OS_Interface is
 
    PTHREAD_SCOPE_PROCESS : constant := 1;
    PTHREAD_SCOPE_SYSTEM  : constant := 0;
-
-   --  Read/Write lock not supported on Android.
-
-   subtype pthread_rwlock_t     is pthread_mutex_t;
-   subtype pthread_rwlockattr_t is pthread_mutexattr_t;
 
    -----------
    -- Stack --
@@ -388,6 +398,43 @@ package System.OS_Interface is
 
    function pthread_mutex_unlock (mutex : access pthread_mutex_t) return int;
    pragma Import (C, pthread_mutex_unlock, "pthread_mutex_unlock");
+
+   function pthread_rwlockattr_init
+     (attr : access pthread_rwlockattr_t) return int;
+   pragma Import (C, pthread_rwlockattr_init, "pthread_rwlockattr_init");
+
+   function pthread_rwlockattr_destroy
+     (attr : access pthread_rwlockattr_t) return int;
+   pragma Import (C, pthread_rwlockattr_destroy, "pthread_rwlockattr_destroy");
+
+   PTHREAD_RWLOCK_PREFER_READER_NP              : constant := 0;
+   PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP : constant := 1;
+
+   --  No PTHREAD_RWLOCK_PREFER_WRITER_NP in Android's pthread.h API level 29
+
+   function pthread_rwlockattr_setkind_np
+     (attr : access pthread_rwlockattr_t;
+      pref : int) return int;
+   pragma Import
+     (C, pthread_rwlockattr_setkind_np, "pthread_rwlockattr_setkind_np");
+
+   function pthread_rwlock_init
+     (mutex : access pthread_rwlock_t;
+      attr  : access pthread_rwlockattr_t) return int;
+   pragma Import (C, pthread_rwlock_init, "pthread_rwlock_init");
+
+   function pthread_rwlock_destroy
+     (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_destroy, "pthread_rwlock_destroy");
+
+   function pthread_rwlock_rdlock (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_rdlock, "pthread_rwlock_rdlock");
+
+   function pthread_rwlock_wrlock (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_wrlock, "pthread_rwlock_wrlock");
+
+   function pthread_rwlock_unlock (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_unlock, "pthread_rwlock_unlock");
 
    function pthread_condattr_init
      (attr : access pthread_condattr_t) return int;
@@ -581,23 +628,6 @@ package System.OS_Interface is
 
 private
 
-   type sigset_t is
-     array (0 .. OS_Constants.SIZEOF_sigset - 1) of unsigned_char;
-   pragma Convention (C, sigset_t);
-   for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
-
-   pragma Warnings (Off);
-   for struct_sigaction use record
-      sa_handler at Linux.sa_handler_pos range 0 .. Standard'Address_Size - 1;
-      sa_mask    at Linux.sa_mask_pos
-        range 0 .. OS_Constants.SIZEOF_sigset * 8 - 1;
-      sa_flags   at Linux.sa_flags_pos
-        range 0 .. Interfaces.C.int'Size - 1;
-   end record;
-   --  We intentionally leave sa_restorer unspecified and let the compiler
-   --  append it after the last field, so disable corresponding warning.
-   pragma Warnings (On);
-
    type pid_t is new int;
 
    type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
@@ -631,6 +661,18 @@ private
    end record;
    pragma Convention (C, pthread_mutexattr_t);
    for pthread_mutexattr_t'Alignment use Interfaces.C.int'Alignment;
+
+   type pthread_rwlockattr_t is record
+      Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCKATTR_SIZE);
+   end record;
+   pragma Convention (C, pthread_rwlockattr_t);
+   for pthread_rwlockattr_t'Alignment use Interfaces.C.unsigned_long'Alignment;
+
+   type pthread_rwlock_t is record
+      Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCK_SIZE);
+   end record;
+   pragma Convention (C, pthread_rwlock_t);
+   for pthread_rwlock_t'Alignment use Interfaces.C.unsigned_long'Alignment;
 
    type pthread_cond_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_COND_SIZE);

@@ -298,7 +298,7 @@ get_default_value (tree var)
 	{
 	  val.lattice_val = VARYING;
 	  val.mask = -1;
-	  if (flag_tree_bit_ccp)
+	  if (flag_tree_bit_ccp && !VECTOR_TYPE_P (TREE_TYPE (var)))
 	    {
 	      wide_int nonzero_bits = get_nonzero_bits (var);
 	      tree value;
@@ -2491,11 +2491,11 @@ evaluate_stmt (gimple *stmt)
       is_constant = (val.lattice_val == CONSTANT);
     }
 
+  tree lhs = gimple_get_lhs (stmt);
   if (flag_tree_bit_ccp
+      && lhs && TREE_CODE (lhs) == SSA_NAME && !VECTOR_TYPE_P (TREE_TYPE (lhs))
       && ((is_constant && TREE_CODE (val.value) == INTEGER_CST)
-	  || !is_constant)
-      && gimple_get_lhs (stmt)
-      && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME)
+	  || !is_constant))
     {
       tree lhs = gimple_get_lhs (stmt);
       wide_int nonzero_bits = get_nonzero_bits (lhs);
@@ -2567,7 +2567,12 @@ insert_clobber_before_stack_restore (tree saved_val, tree var,
       {
 	clobber = build_clobber (TREE_TYPE (var), CLOBBER_STORAGE_END);
 	clobber_stmt = gimple_build_assign (var, clobber);
-
+	/* Manually update the vdef/vuse here. */
+	gimple_set_vuse (clobber_stmt, gimple_vuse (stmt));
+	gimple_set_vdef (clobber_stmt, make_ssa_name (gimple_vop (cfun)));
+	gimple_set_vuse (stmt, gimple_vdef (clobber_stmt));
+	SSA_NAME_DEF_STMT (gimple_vdef (clobber_stmt)) = clobber_stmt;
+	update_stmt (stmt);
 	i = gsi_for_stmt (stmt);
 	gsi_insert_before (&i, clobber_stmt, GSI_SAME_STMT);
       }
@@ -3020,7 +3025,7 @@ do_ssa_ccp (bool nonzero_p)
   ccp_propagate.ssa_propagate ();
   if (ccp_finalize (nonzero_p || flag_ipa_bit_cp))
     {
-      todo = (TODO_cleanup_cfg | TODO_update_ssa);
+      todo = TODO_cleanup_cfg;
 
       /* ccp_finalize does not preserve loop-closed ssa.  */
       loops_state_clear (LOOP_CLOSED_SSA);

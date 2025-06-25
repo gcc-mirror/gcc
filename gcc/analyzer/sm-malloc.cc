@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-event-id.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "xml-printer.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -37,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-event.h"
 #include "analyzer/exploded-graph.h"
 #include "analyzer/inlining-iterator.h"
+#include "analyzer/ana-state-to-diagnostic-state.h"
 
 #if ENABLE_ANALYZER
 
@@ -403,7 +405,11 @@ public:
 		     const frame_region *) const final override;
 
   bool can_purge_p (state_t s) const final override;
-  std::unique_ptr<pending_diagnostic> on_leak (tree var) const final override;
+
+  std::unique_ptr<pending_diagnostic>
+  on_leak (tree var,
+	   const program_state *old_state,
+	   const program_state *new_state) const final override;
 
   bool reset_when_passed_to_unknown_fn_p (state_t s,
 					  bool is_mutable) const final override;
@@ -428,6 +434,11 @@ public:
       sm_state_map *smap,
       const svalue *new_ptr_sval,
       const extrinsic_state &ext_state) const;
+
+  void
+  add_state_to_xml (xml_state &out_xml,
+		    const svalue &sval,
+		    state_machine::state_t state) const final override;
 
   standard_deallocator_set m_free;
   standard_deallocator_set m_scalar_delete;
@@ -1414,8 +1425,14 @@ private:
 class malloc_leak : public malloc_diagnostic
 {
 public:
-  malloc_leak (const malloc_state_machine &sm, tree arg)
-  : malloc_diagnostic (sm, arg) {}
+  malloc_leak (const malloc_state_machine &sm, tree arg,
+	       const program_state *final_state)
+  : malloc_diagnostic (sm, arg),
+    m_final_state ()
+  {
+    if (final_state)
+      m_final_state = std::make_unique<program_state> (*final_state);
+  }
 
   const char *get_kind () const final override { return "malloc_leak"; }
 
@@ -1475,8 +1492,15 @@ public:
     return true;
   }
 
+  const program_state *
+  get_final_state () const final override
+  {
+    return m_final_state.get ();
+  }
+
 private:
   diagnostic_event_id_t m_alloc_event;
+  std::unique_ptr<program_state> m_final_state;
 };
 
 class free_of_non_heap : public malloc_diagnostic
@@ -2589,9 +2613,11 @@ malloc_state_machine::can_purge_p (state_t s) const
    'nonnull').  */
 
 std::unique_ptr<pending_diagnostic>
-malloc_state_machine::on_leak (tree var) const
+malloc_state_machine::on_leak (tree var,
+			       const program_state *,
+			       const program_state *new_state) const
 {
-  return std::make_unique<malloc_leak> (*this, var);
+  return std::make_unique<malloc_leak> (*this, var, new_state);
 }
 
 /* Implementation of state_machine::reset_when_passed_to_unknown_fn_p vfunc
@@ -2698,6 +2724,30 @@ malloc_state_machine::transition_ptr_sval_non_null (region_model *model,
     const extrinsic_state &ext_state) const
 {
   smap->set_state (model, new_ptr_sval, m_free.m_nonnull, NULL, ext_state);
+}
+
+void
+malloc_state_machine::add_state_to_xml (xml_state &out_xml,
+					const svalue &sval,
+					state_machine::state_t state) const
+{
+  if (const region *reg = sval.maybe_get_region ())
+    {
+      auto &reg_element = out_xml.get_or_create_element (*reg);
+      auto alloc_state = as_a_allocation_state (state);
+      gcc_assert (alloc_state);
+
+      reg_element.set_attr ("dynamic-alloc-state", state->get_name ());
+      if (alloc_state->m_deallocators)
+	{
+	  pretty_printer pp;
+	  alloc_state->m_deallocators->dump_to_pp (&pp);
+	  reg_element.set_attr ("expected-deallocators", pp_formatted_text (&pp));
+	}
+      if (alloc_state->m_deallocator)
+	reg_element.set_attr ("deallocator",
+			      alloc_state->m_deallocator->m_name);
+    }
 }
 
 } // anonymous namespace

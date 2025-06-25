@@ -66,8 +66,11 @@ is
    pragma Inline ("+");
    --  Address arithmetic on chars_ptr value
 
-   function Position_Of_Nul (Into : char_array) return size_t;
-   --  Returns position of the first Nul in Into or Into'Last + 1 if none
+   procedure Position_Of_Nul
+     (Into : char_array; Found : out Boolean; Index : out size_t);
+   --  If into contains a Nul character, Found is set to True and Index
+   --  contains the position of the first Nul character in Into. Otherwise
+   --  Found is set to False and the value of Index is not meaningful.
 
    --  We can't use directly System.Memory because the categorization is not
    --  compatible, so we directly import here the malloc and free routines.
@@ -107,6 +110,7 @@ is
    --------------------
 
    function New_Char_Array (Chars : char_array) return chars_ptr is
+      Found   : Boolean;
       Index   : size_t;
       Pointer : chars_ptr;
 
@@ -114,24 +118,25 @@ is
       --  Get index of position of null. If Index > Chars'Last,
       --  nul is absent and must be added explicitly.
 
-      Index := Position_Of_Nul (Into => Chars);
-      Pointer := Memory_Alloc ((Index - Chars'First + 1));
+      Position_Of_Nul (Into => Chars, Found => Found, Index => Index);
 
       --  If nul is present, transfer string up to and including nul
 
-      if Index <= Chars'Last then
-         Update (Item   => Pointer,
-                 Offset => 0,
-                 Chars  => Chars (Chars'First .. Index),
-                 Check  => False);
+      if Found then
+         Pointer := Memory_Alloc (Index - Chars'First + 1);
+
+         Update
+           (Item   => Pointer,
+            Offset => 0,
+            Chars  => Chars (Chars'First .. Index),
+            Check  => False);
       else
          --  If original string has no nul, transfer whole string and add
          --  terminator explicitly.
 
-         Update (Item   => Pointer,
-                 Offset => 0,
-                 Chars  => Chars,
-                 Check  => False);
+         Pointer := Memory_Alloc (Chars'Length + 1);
+
+         Update (Item => Pointer, Offset => 0, Chars => Chars, Check => False);
          Poke (nul, Into => Pointer + size_t'(Chars'Length));
       end if;
 
@@ -148,20 +153,33 @@ is
       --  the result, and doesn't copy the string on the stack, otherwise its
       --  use is limited when used from tasks on large strings.
 
-      Result : constant chars_ptr := Memory_Alloc (Str'Length + 1);
+      Len : Natural := 0;
+      --  Length of the longest prefix of Str that doesn't contain NUL
 
-      Result_Array : char_array  (1 .. Str'Length + 1);
-      for Result_Array'Address use To_Address (Result);
-      pragma Import (Ada, Result_Array);
-
-      Count : size_t;
-
+      Result : chars_ptr;
    begin
-      To_C
-        (Item       => Str,
-         Target     => Result_Array,
-         Count      => Count,
-         Append_Nul => True);
+      for C of Str loop
+         if C = ASCII.NUL then
+            exit;
+         end if;
+         Len := Len + 1;
+      end loop;
+
+      Result := Memory_Alloc (size_t (Len) + 1);
+
+      declare
+         Result_Array : char_array (1 .. size_t (Len) + 1)
+         with Address => To_Address (Result), Import, Convention => Ada;
+
+         Count : size_t;
+      begin
+         To_C
+           (Item       => Str (Str'First .. Str'First + Len - 1),
+            Target     => Result_Array,
+            Count      => Count,
+            Append_Nul => True);
+      end;
+
       return Result;
    end New_String;
 
@@ -187,19 +205,19 @@ is
    -- Position_Of_Nul --
    ---------------------
 
-   function Position_Of_Nul (Into : char_array) return size_t is
+   procedure Position_Of_Nul
+     (Into : char_array; Found : out Boolean; Index : out size_t) is
    begin
-      pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
-                       "early returns for performance");
+      Found := False;
+      Index := 0;
+
       for J in Into'Range loop
          if Into (J) = nul then
-            return J;
+            Found := True;
+            Index := J;
+            return;
          end if;
       end loop;
-
-      return Into'Last + 1;
-
-      pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
    end Position_Of_Nul;
 
    ------------
@@ -231,18 +249,21 @@ is
      (Item      : char_array_access;
       Nul_Check : Boolean := False) return chars_ptr
    is
+      Found : Boolean;
+      Index : size_t;
    begin
       pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
                        "early returns for performance");
       if Item = null then
          return Null_Ptr;
-      elsif Nul_Check
-        and then Position_Of_Nul (Into => Item.all) > Item'Last
-      then
-         raise Terminator_Error;
-      else
-         return To_chars_ptr (Item (Item'First)'Address);
+      elsif Nul_Check then
+         Position_Of_Nul (Item.all, Found, Index);
+         if not Found then
+            raise Terminator_Error;
+         end if;
       end if;
+
+      return To_chars_ptr (Item (Item'First)'Address);
 
       pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
    end To_Chars_Ptr;
@@ -260,6 +281,11 @@ is
       Index : chars_ptr := Item + Offset;
 
    begin
+      --  Check for null pointer as mandated by the RM.
+      if Item = Null_Ptr then
+         raise Dereference_Error;
+      end if;
+
       if Check and then Offset + Chars'Length  > Strlen (Item) then
          raise Update_Error;
       end if;

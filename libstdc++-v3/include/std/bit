@@ -166,7 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // Variant for power of two _Nd which the compiler can
 	  // easily pattern match.
 	  constexpr unsigned __uNd = _Nd;
-	  const unsigned __r = __s;
+	  const auto __r = static_cast<unsigned>(__s);
 	  return (__x << (__r % __uNd)) | (__x >> ((-__r) % __uNd));
 	}
       const int __r = __s % _Nd;
@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // Variant for power of two _Nd which the compiler can
 	  // easily pattern match.
 	  constexpr unsigned __uNd = _Nd;
-	  const unsigned __r = __s;
+	  const auto __r = static_cast<unsigned>(__s);
 	  return (__x >> (__r % __uNd)) | (__x << ((-__r) % __uNd));
 	}
       const int __r = __s % _Nd;

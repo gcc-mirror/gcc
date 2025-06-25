@@ -96,8 +96,8 @@ A new edition of the ISO C standard was published in 1999 as ISO/IEC
 development, drafts of this standard version were referred to as
 @dfn{C9X}.)  GCC has substantially
 complete support for this standard version; see
-@uref{https://gcc.gnu.org/c99status.html} for details.  To select this
-standard, use @option{-std=c99} or @option{-std=iso9899:1999}.  
+@uref{https://gcc.gnu.org/projects/c-status.html} for details.  To select
+this standard, use @option{-std=c99} or @option{-std=iso9899:1999}.
 
 Errors in the 1999 ISO C standard were corrected in three Technical
 Corrigenda published in 2001, 2004 and 2007.  GCC does not support the

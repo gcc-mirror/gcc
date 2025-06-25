@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "gimple-range.h"
 #include "value-range-storage.h"
+#include "rtl.h"
 
 // If there is a range control statement at the end of block BB, return it.
 // Otherwise return NULL.
@@ -39,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 gimple *
 gimple_outgoing_range_stmt_p (basic_block bb)
 {
+  if (bb->flags & BB_RTL)
+    return NULL;
   gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
   if (!gsi_end_p (gsi))
     {
@@ -188,6 +191,14 @@ gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
       // It'll get reclaimed when the obstack is freed.  This seems less
       // intrusive than allocating max ranges for each case.
       slot = m_range_allocator->clone (case_range);
+    }
+
+  if (default_edge == NULL)
+    {
+      /* During expansion the default edge could have been removed
+	 if the default is unreachable.  */
+      gcc_assert (currently_expanding_to_rtl);
+      return;
     }
 
   vrange_storage *&slot = m_edge_table->get_or_insert (default_edge, &existed);

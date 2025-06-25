@@ -109,7 +109,7 @@
 --  pragmas that appear with subprogram specifications rather than in the body.
 
 --  Collectively we call these Spec_Expressions. The routine that performs the
---  special analysis is called Preanalyze_Spec_Expression.
+--  special analysis is called Preanalyze_And_Resolve_Spec_Expression.
 
 --  Expansion has to be deferred since you can't generate code for expressions
 --  that reference types that have not been frozen yet. As an example, consider
@@ -198,11 +198,11 @@
 --  strict preanalysis of other expressions is that we do carry out freezing
 --  in the former (for static scalar expressions) but not in the latter. The
 --  routine that performs preanalysis of default expressions is called
---  Preanalyze_Spec_Expression and is in Sem_Ch3. The routine that performs
---  strict preanalysis and corresponding resolution is in Sem_Res and it is
---  called Preanalyze_And_Resolve. Preanalyze_Spec_Expression relaxes the
---  strictness of Preanalyze_And_Resolve setting to True the global boolean
---  variable In_Spec_Expression before calling Preanalyze_And_Resolve.
+--  Preanalyze_And_Resolve_Spec_Expression and is in Sem_Ch3. The routine that
+--  performs strict preanalysis and corresponding resolution is in Sem_Res and
+--  it is called Preanalyze_And_Resolve. Preanalyze_And_Resolve_Spec_Expression
+--  relaxes the strictness of Preanalyze_And_Resolve setting to True the global
+--  boolean variable In_Spec_Expression before calling Preanalyze_And_Resolve.
 
 with Alloc;
 with Einfo.Entities; use Einfo.Entities;

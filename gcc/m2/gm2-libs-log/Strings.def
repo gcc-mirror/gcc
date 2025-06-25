@@ -53,7 +53,9 @@ PROCEDURE Delete (VAR str: ARRAY OF CHAR; index: CARDINAL; length: CARDINAL) ;
 
 
 (*
-   Pos - return the first position of, substr, in, str.
+   Pos - return the first position of substr in str.
+         If substr is not found in str then it returns
+         HIGH (str) + 1.
 *)
 
 PROCEDURE Pos (substr, str: ARRAY OF CHAR) : CARDINAL ;

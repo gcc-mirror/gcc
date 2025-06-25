@@ -168,8 +168,9 @@ package GNAT.Dynamic_Tables is
       --
       --     Tab : Table_Type renames X.Table (First .. X.Last);
       --
-      --  Note: The Table component must come first. See declarations of
-      --  SCO_Unit_Table and SCO_Table in scos.h.
+      --  Note: The Table component must come first to simplify interfacing
+      --  with C, similar to how we do it for the Table unit; see declarations
+      --  of Names_Ptr and Names_Char_Ptr in namet.h.
 
       Locked : Boolean := False;
       --  Table reallocation is permitted only if this is False. A client may

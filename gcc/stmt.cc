@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "dumpfile.h"
 #include "builtins.h"
+#include "cfgexpand.h"
 
 
 /* Functions and data structures for expanding case statements.  */
@@ -1025,7 +1026,7 @@ expand_case (gswitch *stmt)
       && gimple_seq_unreachable_p (bb_seq (default_edge->dest)))
     {
       default_label = NULL;
-      remove_edge (default_edge);
+      expand_remove_edge (default_edge);
       default_edge = NULL;
     }
 

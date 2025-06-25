@@ -405,18 +405,17 @@
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	  UNSPEC_SYNC_EXCHANGE))
    (set (match_dup 1)
-	(match_operand:GPR 2 "register_operand" "0"))
+	(match_operand:GPR 2 "reg_or_0_operand" "rJ"))
    (clobber (match_scratch:GPR 4 "=&r"))]	  ;; tmp_1
   "!TARGET_ZAAMO && TARGET_ZALRSC"
   {
     return "1:\;"
-	   "lr.<amo>%I3\t%4, %1\;"
-	   "sc.<amo>%J3\t%0, %0, %1\;"
-	   "bnez\t%0, 1b\;"
-	   "mv\t%0, %4";
+	   "lr.<amo>%I3\t%0, %1\;"
+	   "sc.<amo>%J3\t%4, %z2, %1\;"
+	   "bnez\t%4, 1b\";
   }
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 16))])
+   (set (attr "length") (const_int 12))])
 
 (define_expand "atomic_exchange<mode>"
   [(match_operand:SHORT 0 "register_operand") ;; old value at mem

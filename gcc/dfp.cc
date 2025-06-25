@@ -619,11 +619,21 @@ decimal_real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
   decNumber dn, dn2, dn3;
   REAL_VALUE_TYPE to;
   char string[256];
+  int scale = 0;
 
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;
   set.round = DEC_ROUND_DOWN;
   decimal128ToNumber ((const decimal128 *) r->sig, &dn);
+  if (precision > 64 && decNumberIsFinite (&dn) && dn.exponent > 0)
+    {
+      /* libdecNumber doesn't really handle too large integers.
+	 So when precision is large and exponent as well, trim the
+	 exponent and adjust the resulting wide_int by multiplying
+	 it multiple times with powers of ten.  */
+      scale = dn.exponent;
+      dn.exponent = 0;
+    }
 
   decNumberToIntegralValue (&dn2, &dn, &set);
   decNumberZero (&dn3);
@@ -633,7 +643,74 @@ decimal_real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
      function.  */
   decNumberToString (&dn, string);
   real_from_string (&to, string);
-  return real_to_integer (&to, fail, precision);
+  bool failp = false;
+  wide_int w = real_to_integer (&to, &failp, precision);
+  if (failp)
+    *fail = true;
+  if (scale && !failp)
+    {
+      bool isneg = wi::neg_p (w);
+      if (isneg)
+	w = -w;
+      enum wi::overflow_type ovf = wi::OVF_NONE;
+      unsigned HOST_WIDE_INT pow10s[] = {
+	HOST_WIDE_INT_UC (10),
+	HOST_WIDE_INT_UC (100),
+	HOST_WIDE_INT_UC (1000),
+	HOST_WIDE_INT_UC (10000),
+	HOST_WIDE_INT_UC (100000),
+	HOST_WIDE_INT_UC (1000000),
+	HOST_WIDE_INT_UC (10000000),
+	HOST_WIDE_INT_UC (100000000),
+	HOST_WIDE_INT_UC (1000000000),
+	HOST_WIDE_INT_UC (10000000000),
+	HOST_WIDE_INT_UC (100000000000),
+	HOST_WIDE_INT_UC (1000000000000),
+	HOST_WIDE_INT_UC (10000000000000),
+	HOST_WIDE_INT_UC (100000000000000),
+	HOST_WIDE_INT_UC (1000000000000000),
+	HOST_WIDE_INT_UC (10000000000000000),
+	HOST_WIDE_INT_UC (100000000000000000),
+	HOST_WIDE_INT_UC (1000000000000000000),
+	HOST_WIDE_INT_UC (10000000000000000000),
+      };
+      int s = scale % 19;
+      if (s)
+	{
+	  wide_int wm = wi::uhwi (pow10s[s - 1], w.get_precision ());
+	  w = wi::umul (w, wm, &ovf);
+	  if (ovf)
+	    scale = 0;
+	}
+      scale /= 19;
+      wide_int wm = wi::uhwi (pow10s[18], w.get_precision ());
+      while (scale)
+	{
+	  if (scale & 1)
+	    {
+	      w = wi::umul (w, wm, &ovf);
+	      if (ovf)
+		break;
+	    }
+	  scale >>= 1;
+	  if (!scale)
+	    break;
+	  wm = wi::umul (wm, wm, &ovf);
+	  if (ovf)
+	    break;
+	}
+      if (ovf)
+	{
+	  *fail = true;
+	  if (isneg)
+	    return wi::set_bit_in_zero (precision - 1, precision);
+	  else
+	    return ~wi::set_bit_in_zero (precision - 1, precision);
+	}
+      if (isneg)
+	w = -w;
+    }
+  return w;
 }
 
 /* Perform the decimal floating point operation described by CODE.

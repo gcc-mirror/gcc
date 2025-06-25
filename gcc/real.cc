@@ -101,7 +101,7 @@ static int do_compare (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *, int);
 static void do_fix_trunc (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 
 static unsigned long rtd_divmod (REAL_VALUE_TYPE *, REAL_VALUE_TYPE *);
-static void decimal_from_integer (REAL_VALUE_TYPE *);
+static void decimal_from_integer (REAL_VALUE_TYPE *, int);
 static void decimal_integer_string (char *, const REAL_VALUE_TYPE *,
 				    size_t);
 
@@ -2230,19 +2230,12 @@ real_from_integer (REAL_VALUE_TYPE *r, format_helper fmt,
     {
       unsigned int len = val_in.get_precision ();
       int i, j, e = 0;
-      int maxbitlen = MAX_BITSIZE_MODE_ANY_INT + HOST_BITS_PER_WIDE_INT;
       const unsigned int realmax = (SIGNIFICAND_BITS / HOST_BITS_PER_WIDE_INT
 				    * HOST_BITS_PER_WIDE_INT);
 
       memset (r, 0, sizeof (*r));
       r->cl = rvc_normal;
       r->sign = wi::neg_p (val_in, sgn);
-
-      /* We have to ensure we can negate the largest negative number.  */
-      wide_int val = wide_int::from (val_in, maxbitlen, sgn);
-
-      if (r->sign)
-	val = -val;
 
       /* Ensure a multiple of HOST_BITS_PER_WIDE_INT, ceiling, as elt
 	 won't work with precisions that are not a multiple of
@@ -2252,7 +2245,13 @@ real_from_integer (REAL_VALUE_TYPE *r, format_helper fmt,
       /* Ensure we can represent the largest negative number.  */
       len += 1;
 
-      len = len/HOST_BITS_PER_WIDE_INT * HOST_BITS_PER_WIDE_INT;
+      len = len / HOST_BITS_PER_WIDE_INT * HOST_BITS_PER_WIDE_INT;
+
+      /* We have to ensure we can negate the largest negative number.  */
+      wide_int val = wide_int::from (val_in, len, sgn);
+
+      if (r->sign)
+	val = -val;
 
       /* Cap the size to the size allowed by real.h.  */
       if (len > realmax)
@@ -2260,14 +2259,18 @@ real_from_integer (REAL_VALUE_TYPE *r, format_helper fmt,
 	  HOST_WIDE_INT cnt_l_z;
 	  cnt_l_z = wi::clz (val);
 
-	  if (maxbitlen - cnt_l_z > realmax)
+	  if (len - cnt_l_z > realmax)
 	    {
-	      e = maxbitlen - cnt_l_z - realmax;
+	      e = len - cnt_l_z - realmax;
 
 	      /* This value is too large, we must shift it right to
 		 preserve all the bits we can, and then bump the
-		 exponent up by that amount.  */
-	      val = wi::lrshift (val, e);
+		 exponent up by that amount, but or in 1 if any of
+		 the shifted out bits are non-zero.  */
+	      if (wide_int::from (val, e, UNSIGNED) != 0)
+		val = wi::set_bit (wi::lrshift (val, e), 0);
+	      else
+		val = wi::lrshift (val, e);
 	    }
 	  len = realmax;
 	}
@@ -2306,7 +2309,9 @@ real_from_integer (REAL_VALUE_TYPE *r, format_helper fmt,
     }
 
   if (fmt.decimal_p ())
-    decimal_from_integer (r);
+    /* We need at most one decimal digits for each 3 bits of input
+       precision.  */
+    decimal_from_integer (r, val_in.get_precision () / 3);
   if (fmt)
     real_convert (r, fmt, r);
 }
@@ -2361,12 +2366,21 @@ decimal_integer_string (char *str, const REAL_VALUE_TYPE *r_orig,
 /* Convert a real with an integral value to decimal float.  */
 
 static void
-decimal_from_integer (REAL_VALUE_TYPE *r)
+decimal_from_integer (REAL_VALUE_TYPE *r, int digits)
 {
   char str[256];
 
-  decimal_integer_string (str, r, sizeof (str) - 1);
-  decimal_real_from_string (r, str);
+  if (digits <= 256)
+    {
+      decimal_integer_string (str, r, sizeof (str) - 1);
+      decimal_real_from_string (r, str);
+    }
+  else
+    {
+      char *s = XALLOCAVEC (char, digits);
+      decimal_integer_string (s, r, digits - 1);
+      decimal_real_from_string (r, s);
+    }
 }
 
 /* Returns 10**2**N.  */

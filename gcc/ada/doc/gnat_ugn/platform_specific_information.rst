@@ -2212,11 +2212,12 @@ Setting Stack Size from ``gnatlink``
 You can specify the program stack size at link time. On most versions
 of Windows, starting with XP, this is mostly useful to set the size of
 the main stack (environment task). The other task stacks are set with
-pragma Storage_Size or with the *gnatbind -d* command.
+pragma Storage_Size or with the *gnatbind -d* command. The specified size will
+become the reserved memory size of the underlying thread.
 
 Since very old versions of Windows (2000, NT4, etc.) don't allow setting the
-reserve size of individual tasks, the link-time stack size applies to all
-tasks, and pragma Storage_Size has no effect.
+reserve size of individual tasks, for those versions the link-time stack size
+applies to all tasks, and pragma Storage_Size has no effect.
 In particular, Stack Overflow checks are made against this
 link-time specified size.
 

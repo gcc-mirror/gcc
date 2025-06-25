@@ -74,6 +74,7 @@
 #define __glibcxx_want_ranges_contains
 #define __glibcxx_want_ranges_find_last
 #define __glibcxx_want_ranges_fold
+#define __glibcxx_want_ranges_starts_ends_with
 #define __glibcxx_want_robust_nonmodifying_seq_ops
 #define __glibcxx_want_sample
 #define __glibcxx_want_shift

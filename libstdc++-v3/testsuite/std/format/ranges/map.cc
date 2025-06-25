@@ -57,7 +57,7 @@ bool is_range_formatter_spec_for(CharT const* spec, Rg&& rg)
 }
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
-#define WIDEN(S) WIDEN_(_CharT, S)
+#define WIDEN(S) WIDEN_(CharT, S)
 
 void
 test_format_string()
@@ -83,10 +83,10 @@ test_format_string()
   VERIFY( !is_format_string_for("{:{}m}", std::vector<std::pair<int, int>>(), 1.0f) );
 }
 
-template<typename _CharT, typename Range>
+template<typename CharT, typename Range>
 void test_output(bool mapIsDefault)
 {
-  using Sv = std::basic_string_view<_CharT>;
+  using Sv = std::basic_string_view<CharT>;
   using Pt = std::ranges::range_value_t<Range>;
   using Ft = std::remove_cvref_t<std::tuple_element_t<0, Pt>>;
   using St = std::remove_cvref_t<std::tuple_element_t<1, Pt>>;
@@ -94,7 +94,7 @@ void test_output(bool mapIsDefault)
     return Range(s.data(), s.data() + s.size());
   };
 
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
   size_t size = 0;
 
   Ft f1[]{1, 2, 3};

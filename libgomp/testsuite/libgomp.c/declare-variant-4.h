@@ -37,6 +37,13 @@ gfx90c (void)
 
 __attribute__ ((noipa))
 int
+gfx942 (void)
+{
+  return 0x942;
+}
+
+__attribute__ ((noipa))
+int
 gfx1030 (void)
 {
   return 0x1030;
@@ -68,6 +75,7 @@ gfx1103 (void)
 #pragma omp declare variant(gfx908) match(device = {isa("gfx908")})
 #pragma omp declare variant(gfx90a) match(device = {isa("gfx90a")})
 #pragma omp declare variant(gfx90c) match(device = {isa("gfx90c")})
+#pragma omp declare variant(gfx942) match(device = {isa("gfx942")})
 #pragma omp declare variant(gfx1030) match(device = {isa("gfx1030")})
 #pragma omp declare variant(gfx1036) match(device = {isa("gfx1036")})
 #pragma omp declare variant(gfx1100) match(device = {isa("gfx1100")})

@@ -362,12 +362,11 @@ package body Ch6 is
 
             if Func then
                Inst_Node := New_Node (N_Function_Instantiation, Fproc_Sloc);
-               Set_Name (Inst_Node, P_Function_Name);
             else
                Inst_Node := New_Node (N_Procedure_Instantiation, Fproc_Sloc);
-               Set_Name (Inst_Node, P_Qualified_Simple_Name);
             end if;
 
+            Set_Name (Inst_Node, P_Qualified_Simple_Name);
             Set_Defining_Unit_Name (Inst_Node, Name_Node);
             Set_Generic_Associations (Inst_Node, P_Generic_Actual_Part_Opt);
             P_Aspect_Specifications (Inst_Node, Semicolon => True);

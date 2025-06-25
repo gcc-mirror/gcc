@@ -3,9 +3,7 @@
 # Constructs lists of source files (full pathnames) to test.  Two
 # files are constructed: testsuite_files, which is used to test with
 # the default dg-runtest command, and testsuite_files_interactive,
-# which is used to test cases that require input to be entered. In
-# addition, both lists are pruned of wchar_t tests if the toolchain
-# under test does not support wchar_t functionality.
+# which is used to test cases that require input to be entered.
 #
 # We mimic the mkcheck script in that the first time this is run, all
 # existing files are listed in "testsuite_files" in the output

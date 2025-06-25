@@ -479,13 +479,25 @@
 ;; All fully-packed SVE integer and Advanced SIMD integer modes.
 (define_mode_iterator SVE_ASIMD_FULL_I [SVE_FULL_I VDQ_I])
 
-;; All fully-packed SVE floating-point vector modes.
+;; Fully-packed SVE floating-point vector modes, excluding BF16.
 (define_mode_iterator SVE_FULL_F [VNx8HF VNx4SF VNx2DF])
+
+;; Partial SVE floating-point vector modes, excluding BF16.
+(define_mode_iterator SVE_PARTIAL_F [VNx2HF VNx4HF VNx2SF])
+
+;; SVE floating-point vector modes, excluding BF16.
+(define_mode_iterator SVE_F [SVE_PARTIAL_F SVE_FULL_F])
 
 ;; Fully-packed SVE floating-point vector modes and their scalar equivalents.
 (define_mode_iterator SVE_FULL_F_SCALAR [SVE_FULL_F GPF_HF])
 
-(define_mode_iterator SVE_FULL_F_BF [(VNx8BF "TARGET_SSVE_B16B16") SVE_FULL_F])
+(define_mode_iterator SVE_FULL_F_B16B16 [(VNx8BF "TARGET_SSVE_B16B16") SVE_FULL_F])
+
+(define_mode_iterator SVE_PARTIAL_F_B16B16 [(VNx2BF "TARGET_SSVE_B16B16")
+					    (VNx4BF "TARGET_SSVE_B16B16")
+					    SVE_PARTIAL_F])
+
+(define_mode_iterator SVE_F_B16B16 [SVE_PARTIAL_F_B16B16 SVE_FULL_F_B16B16])
 
 ;; Modes for which (B)FCLAMP is supported.
 (define_mode_iterator SVE_CLAMP_F [(VNx8BF "TARGET_SSVE_B16B16")
@@ -529,6 +541,13 @@
 ;; elements.
 (define_mode_iterator SVE_FULL_HSF [VNx8HF VNx4SF])
 
+;; Partial SVE floating-point vector modes that have 16-bit or 32-bit
+;; elements.
+(define_mode_iterator SVE_PARTIAL_HSF [VNx2HF VNx4HF VNx2SF])
+
+;; SVE floating-point vector modes that have 16-bit or 32-bit elements.
+(define_mode_iterator SVE_HSF [SVE_PARTIAL_HSF SVE_FULL_HSF])
+
 ;; Fully-packed SVE integer vector modes that have 16-bit or 64-bit elements.
 (define_mode_iterator SVE_FULL_HDI [VNx8HI VNx2DI])
 
@@ -552,6 +571,9 @@
 ;; Same, but with the appropriate conditions for FMMLA support.
 (define_mode_iterator SVE_MATMULF [(VNx4SF "TARGET_SVE_F32MM")
 				   (VNx2DF "TARGET_SVE_F64MM")])
+
+;; SVE floating-point vector modes that have 32-bit or 64-bit elements.
+(define_mode_iterator SVE_SDF [VNx2SF SVE_FULL_SDF])
 
 ;; Fully-packed SVE vector modes that have 32-bit or smaller elements.
 (define_mode_iterator SVE_FULL_BHS [VNx16QI VNx8HI VNx4SI
@@ -580,14 +602,13 @@
 			     VNx4SI VNx2SI
 			     VNx2DI])
 
+(define_mode_iterator SVE_BF [VNx2BF VNx4BF VNx8BF])
+
 ;; All SVE floating-point vector modes.
-(define_mode_iterator SVE_F [VNx8HF VNx4HF VNx2HF
-			     VNx8BF VNx4BF VNx2BF
-			     VNx4SF VNx2SF
-			     VNx2DF])
+(define_mode_iterator SVE_F_BF [SVE_F SVE_BF])
 
 ;; All SVE vector modes.
-(define_mode_iterator SVE_ALL [SVE_I SVE_F])
+(define_mode_iterator SVE_ALL [SVE_I SVE_F_BF])
 
 ;; All SVE 2-vector modes.
 (define_mode_iterator SVE_FULLx2 [VNx32QI VNx16HI VNx8SI VNx4DI
@@ -623,6 +644,9 @@
 				VNx4SI VNx2SI
 				VNx2DI])
 
+;; SVE integer vector modes with 32-bit elements.
+(define_mode_iterator SVE_SI [VNx2SI VNx4SI])
+
 (define_mode_iterator SVE_DIx24 [VNx4DI VNx8DI])
 
 ;; SVE modes with 2 or 4 elements.
@@ -637,6 +661,9 @@
 ;; SVE modes with 2 elements.
 (define_mode_iterator SVE_2 [VNx2QI VNx2HI VNx2HF VNx2BF
 			     VNx2SI VNx2SF VNx2DI VNx2DF])
+
+;; SVE SI and DI modes with 2 elements.
+(define_mode_iterator SVE_2SDI [VNx2SI VNx2DI])
 
 ;; SVE integer modes with 2 elements, excluding the widest element.
 (define_mode_iterator SVE_2BHSI [VNx2QI VNx2HI VNx2SI])
@@ -1678,6 +1705,30 @@
 		       (SI   "SI") (HI    "HI")
 		       (QI   "QI")
 		       (V4BF "BF") (V8BF "BF")
+		       (V2x8QI "QI") (V2x4HI "HI")
+		       (V2x2SI "SI") (V2x1DI "DI")
+		       (V2x4HF "HF") (V2x2SF "SF")
+		       (V2x1DF "DF") (V2x4BF "BF")
+		       (V3x8QI "QI") (V3x4HI "HI")
+		       (V3x2SI "SI") (V3x1DI "DI")
+		       (V3x4HF "HF") (V3x2SF "SF")
+		       (V3x1DF "DF") (V3x4BF "BF")
+		       (V4x8QI "QI") (V4x4HI "HI")
+		       (V4x2SI "SI") (V4x1DI "DI")
+		       (V4x4HF "HF") (V4x2SF "SF")
+		       (V4x1DF "DF") (V4x4BF "BF")
+		       (V2x16QI "QI") (V2x8HI "HI")
+		       (V2x4SI "SI") (V2x2DI "DI")
+		       (V2x8HF "HF") (V2x4SF "SF")
+		       (V2x2DF "DF") (V2x8BF "BF")
+		       (V3x16QI "QI") (V3x8HI "HI")
+		       (V3x4SI "SI") (V3x2DI "DI")
+		       (V3x8HF "HF") (V3x4SF "SF")
+		       (V3x2DF "DF") (V3x8BF "BF")
+		       (V4x16QI "QI") (V4x8HI "HI")
+		       (V4x4SI "SI") (V4x2DI "DI")
+		       (V4x8HF "HF") (V4x4SF "SF")
+		       (V4x2DF "DF") (V4x8BF "BF")
 		       (VNx16QI "QI") (VNx8QI "QI") (VNx4QI "QI") (VNx2QI "QI")
 		       (VNx8HI "HI") (VNx4HI "HI") (VNx2HI "HI")
 		       (VNx8HF "HF") (VNx4HF "HF") (VNx2HF "HF")
@@ -1699,6 +1750,30 @@
 		       (DF   "df") (SI   "si")
 		       (HI   "hi") (QI   "qi")
 		       (V4BF "bf") (V8BF "bf")
+		       (V2x8QI "qi") (V2x4HI "hi")
+		       (V2x2SI "si") (V2x1DI "di")
+		       (V2x4HF "hf") (V2x2SF "sf")
+		       (V2x1DF "df") (V2x4BF "bf")
+		       (V3x8QI "qi") (V3x4HI "hi")
+		       (V3x2SI "si") (V3x1DI "di")
+		       (V3x4HF "hf") (V3x2SF "sf")
+		       (V3x1DF "df") (V3x4BF "bf")
+		       (V4x8QI "qi") (V4x4HI "hi")
+		       (V4x2SI "si") (V4x1DI "di")
+		       (V4x4HF "hf") (V4x2SF "sf")
+		       (V4x1DF "df") (V4x4BF "bf")
+		       (V2x16QI "qi") (V2x8HI "hi")
+		       (V2x4SI "si") (V2x2DI "di")
+		       (V2x8HF "hf") (V2x4SF "sf")
+		       (V2x2DF "df") (V2x8BF "bf")
+		       (V3x16QI "qi") (V3x8HI "hi")
+		       (V3x4SI "si") (V3x2DI "di")
+		       (V3x8HF "hf") (V3x4SF "sf")
+		       (V3x2DF "df") (V3x8BF "bf")
+		       (V4x16QI "qi") (V4x8HI "hi")
+		       (V4x4SI "si") (V4x2DI "di")
+		       (V4x8HF "hf") (V4x4SF "sf")
+		       (V4x2DF "df") (V4x8BF "bf")
 		       (VNx16QI "qi") (VNx8QI "qi") (VNx4QI "qi") (VNx2QI "qi")
 		       (VNx8HI "hi") (VNx4HI "hi") (VNx2HI "hi")
 		       (VNx8HF "hf") (VNx4HF "hf") (VNx2HF "hf")
@@ -2445,7 +2520,9 @@
 			   (VNx8DI "vnx2di") (VNx8DF "vnx2df")])
 
 ;; The predicate mode associated with an SVE data mode.  For structure modes
-;; this is equivalent to the <VPRED> of the subvector mode.
+;; this is equivalent to the <VPRED> of the subvector mode.  For partial
+;; vector modes, this is equivalent to the <VPRED> of a full SVE mode with
+;; the same number of elements.
 (define_mode_attr VPRED [(VNx16QI "VNx16BI") (VNx8QI "VNx8BI")
 			 (VNx4QI "VNx4BI") (VNx2QI "VNx2BI")
 			 (VNx8HI "VNx8BI") (VNx4HI "VNx4BI") (VNx2HI "VNx2BI")
@@ -2583,19 +2660,22 @@
 (define_mode_attr data_bytes [(VNx16BI "1") (VNx8BI "2")
 			      (VNx4BI "4") (VNx2BI "8")])
 
-;; Two-nybble mask for partial vector modes: nunits, byte size.
-(define_mode_attr self_mask [(VNx8QI "0x81")
-			     (VNx4QI "0x41")
-			     (VNx2QI "0x21")
-			     (VNx4HI "0x42")
-			     (VNx2HI "0x22")
-			     (VNx2SI "0x24")])
+;; Two-nybble mask for vector modes: nunits, byte size.
+(define_mode_attr self_mask [(VNx2HI "0x22") (VNx2HF "0x22")
+			     (VNx4HI "0x42") (VNx4HF "0x42")
+			     (VNx8HI "0x82") (VNx8HF "0x82")
+			     (VNx2SI "0x24") (VNx2SF "0x24")
+			     (VNx4SI "0x44") (VNx4SF "0x44")
+			     (VNx2DI "0x28") (VNx2DF "0x28")
+			     (VNx8QI "0x81") (VNx4QI "0x41") (VNx2QI "0x21")])
 
-;; For SVE_HSDI vector modes, the mask of narrower modes, encoded as above.
-(define_mode_attr narrower_mask [(VNx8HI "0x81") (VNx4HI "0x41")
-				 (VNx2HI "0x21")
-				 (VNx4SI "0x43") (VNx2SI "0x23")
-				 (VNx2DI "0x27")])
+;; The mask of narrower vector modes, encoded as above.
+(define_mode_attr narrower_mask [(VNx8HI "0x81") (VNx8HF "0x81")
+				 (VNx4HI "0x41") (VNx4HF "0x41")
+				 (VNx2HI "0x21") (VNx2HF "0x21")
+				 (VNx4SI "0x43") (VNx4SF "0x43")
+				 (VNx2SI "0x23") (VNx2SF "0x23")
+				 (VNx2DI "0x27") (VNx2DF "0x27")])
 
 ;; The constraint to use for an SVE [SU]DOT, FMUL, FMLA or FMLS lane index.
 (define_mode_attr sve_lane_con [(VNx8HI "y") (VNx4SI "y") (VNx2DI "x")
@@ -2611,13 +2691,15 @@
 				 (V2DI "vec") (DI "offset")])
 
 (define_mode_attr b [(V4BF "b") (V4HF "") (V8BF "b") (V8HF "")
-		     (VNx8BF "b") (VNx8HF "") (VNx4SF "") (VNx2DF "")
+		     (VNx2BF "b") (VNx2HF "") (VNx2SF "")
+		     (VNx4BF "b") (VNx4HF "") (VNx4SF "")
+		     (VNx8BF "b") (VNx8HF "") (VNx2DF "")
 		     (VNx16BF "b") (VNx16HF "") (VNx8SF "") (VNx4DF "")
 		     (VNx32BF "b") (VNx32HF "") (VNx16SF "") (VNx8DF "")])
 
-(define_mode_attr is_bf16 [(VNx8BF "true")
-			   (VNx8HF "false")
-			   (VNx4SF "false")
+(define_mode_attr is_bf16 [(VNx2BF "true") (VNx4BF "true") (VNx8BF "true")
+			   (VNx2HF "false") (VNx4HF "false") (VNx8HF "false")
+			   (VNx2SF "false") (VNx4SF "false")
 			   (VNx2DF "false")])
 
 (define_mode_attr aligned_operand [(VNx16QI "register_operand")

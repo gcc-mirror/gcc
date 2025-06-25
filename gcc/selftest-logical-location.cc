@@ -90,7 +90,7 @@ test_logical_location_manager::item_from_funcname (const char *funcname)
   if (item **slot = m_name_to_item_map.get (funcname))
     return *slot;
 
-  item *i = new item (LOGICAL_LOCATION_KIND_FUNCTION, funcname);
+  item *i = new item (logical_location_kind::function, funcname);
   m_name_to_item_map.put (funcname, i);
   return i;
 }

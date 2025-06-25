@@ -47,7 +47,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
   char c[4];
 
   mutable_buffer b;

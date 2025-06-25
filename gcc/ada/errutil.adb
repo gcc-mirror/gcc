@@ -25,7 +25,9 @@
 
 with Atree;    use Atree;
 with Err_Vars; use Err_Vars;
+with Errid;    use Errid;
 with Erroutc;  use Erroutc;
+with Errsw;    use Errsw;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Output;   use Output;
@@ -211,7 +213,11 @@ package body Errutil is
             Uncond              => Is_Unconditional_Msg,
             Msg_Cont            => Continuation,
             Deleted             => False,
-            Kind                => Error_Msg_Kind));
+            Kind                => Error_Msg_Kind,
+            Id                  => No_Diagnostic_Id,
+            Switch              => No_Switch_Id,
+            Locations           => No_Labeled_Span,
+            Fixes               => No_Fix));
 
       Cur_Msg := Errors.Last;
       Prev_Msg := No_Error_Msg;

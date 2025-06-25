@@ -48,7 +48,7 @@ extern int yydebug;
 static bool
 is_data_field( symbol_elem_t& e ) {
   if( e.type != SymField ) return false;
-  auto f = cbl_field_of(&e);
+  const auto f = cbl_field_of(&e);
   if( f->name[0] == '\0' ) return false;
   if( is_filler(f) ) return false;
 
@@ -129,7 +129,7 @@ finalize_symbol_map2() {
   for( auto& elem : symbol_map2 ) {
     auto& fields( elem.second );
     fields.remove_if( []( auto isym ) {
-			auto f = cbl_field_of(symbol_at(isym));
+			const auto f = cbl_field_of(symbol_at(isym));
 			return f->type == FldInvalid;
 		      } );
     if( fields.empty() ) empties.insert(elem.first);
@@ -275,8 +275,8 @@ update_symbol_map( symbol_elem_t *e ) {
 class is_name {
   const char *name;
 public:
-  is_name( const char *name ) : name(name) {}
-  bool operator()( symbol_map_t::value_type& elem ) {
+  explicit is_name( const char *name ) : name(name) {}
+  bool operator()( const symbol_map_t::value_type& elem ) {
     const bool tf = elem.first == name;
     return tf;
   }
@@ -298,7 +298,7 @@ class reduce_ancestry {
   static symbol_map_t::mapped_type
     candidates_only( const symbol_map_t::value_type& elem ) { return elem.second; }
 public:
-  reduce_ancestry( const symbol_map_t& groups )
+  explicit reduce_ancestry( const symbol_map_t& groups )
     : candidates( groups.size() )
     {
       std::transform( groups.begin(), groups.end(), candidates.begin(),
@@ -331,7 +331,7 @@ public:
 class different_program {
   size_t program;
 public:
-  different_program( size_t program ) : program(program) {}
+  explicit different_program( size_t program ) : program(program) {}
   bool operator()( const symbol_map_t::value_type& item ) const {
     return ! item.first.same_program(program);
   }
@@ -341,16 +341,16 @@ class in_scope {
   size_t program;
 
   static size_t prog_of( size_t program ) {
-    auto L = cbl_label_of(symbol_at(program));
+    const auto L = cbl_label_of(symbol_at(program));
     return L->parent;
   }
 
 public:
-  in_scope( size_t program ) : program(program) {}
+  explicit in_scope( size_t program ) : program(program) {}
 
   // A symbol is in scope if it's defined by this program or by an ancestor.
   bool operator()( const symbol_map_t::value_type& item ) const {
-    symbol_elem_t *e = symbol_at(item.second.front());
+    const symbol_elem_t *e = symbol_at(item.second.front());
     for( size_t prog = this->program; prog != 0; prog = prog_of(prog) ) {
       if( e->program == prog ) return true;
     }
@@ -430,7 +430,7 @@ symbol_match2( size_t program,
   auto plist = symbol_map2.find(key);
   if( plist != symbol_map2.end() ) {
     for( auto candidate : plist->second ) {
-      auto e = symbol_at(candidate);
+      const auto e = symbol_at(candidate);
       if( name_has_names( e, names, local ) ) {
         fields.push_back( symbol_index(e) );
       }
@@ -561,7 +561,7 @@ symbol_find( size_t program, std::list<const char *> names ) {
 class in_group {
   size_t group;
 public:
-  in_group( size_t group ) : group(group) {}
+  explicit in_group( size_t group ) : group(group) {}
 
   bool operator()( symbol_map_t::const_reference elem ) const {
     return 0 < std::count( elem.second.begin(),

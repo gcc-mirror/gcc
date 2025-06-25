@@ -65,6 +65,7 @@
 #include "inspect.h"
 #include "../../libgcobol/io.h"
 #include "genapi.h"
+#include "genutil.h"
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -94,6 +95,22 @@ get_current_dir_name ()
 }
 #endif
 
+/*
+ * For printing messages, usually the size of the thing is some kind of string
+ * length, and doesn't really need a size_t.  For message formatting, use a
+ * simple unsigned long, and warn if that's no good.  "gb4" here stands for 
+ * "4 Gigabytes".
+ */
+unsigned long
+gb4( size_t input ) {
+  if( input != static_cast<unsigned long>(input) ) {
+    yywarn("size too large to print: %lx:%lx",
+	   (unsigned long)(input >> (4 * sizeof(unsigned long))),
+	   static_cast<unsigned long>(input));
+  }
+  return input;
+}
+  
 const char *
 symbol_type_str( enum symbol_type_t type )
 {
@@ -113,7 +130,7 @@ symbol_type_str( enum symbol_type_t type )
     case SymDataSection:
         return "SymDataSection";
     }
-    dbgmsg("%s:%d: invalid symbol_type_t %d", __func__, __LINE__, type);
+    cbl_internal_error("%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type);
     return "???";
 }
 
@@ -162,7 +179,7 @@ cbl_field_type_str( enum cbl_field_type_t type )
   case FldBlob:
     return "FldBlob";
  }
-  dbgmsg("%s:%d: invalid symbol_type_t %d", __func__, __LINE__, type);
+  cbl_internal_error("%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type);
   return "???";
 }
 
@@ -348,51 +365,50 @@ normalize_picture( char picture[] )
     regmatch_t pmatch[4];
 
     if( (erc = regcomp(preg, regex, cflags)) != 0 ) {
-        regerror(erc, preg, regexmsg, sizeof(regexmsg));
-        dbgmsg( "%s:%d: could not compile regex: %s", __func__, __LINE__, regexmsg );
-        return picture;
+      regerror(erc, preg, regexmsg, sizeof(regexmsg));
+      dbgmsg( "%s:%d: could not compile regex: %s", __func__, __LINE__, regexmsg );
+      return picture;
     }
 
     while( (erc = regexec(preg, picture, COUNT_OF(pmatch), pmatch, 0)) == 0 ) {
-        assert(pmatch[1].rm_so != -1 && pmatch[1].rm_so < pmatch[1].rm_eo);
-        size_t len = pmatch[1].rm_eo - pmatch[1].rm_so;
-        assert(len == 1);
-        const char *start = picture + pmatch[1].rm_so;
+      assert(pmatch[1].rm_so != -1 && pmatch[1].rm_so < pmatch[1].rm_eo);
+      size_t len = pmatch[1].rm_eo - pmatch[1].rm_so;
+      assert(len == 1);
+      const char *start = picture + pmatch[1].rm_so;
 
-        assert(pmatch[2].rm_so != -2 && pmatch[2].rm_so < pmatch[2].rm_eo);
-        len = pmatch[2].rm_eo - pmatch[2].rm_so;
-        assert(len > 0);
+      assert(pmatch[2].rm_so != -2 && pmatch[2].rm_so < pmatch[2].rm_eo);
+      len = pmatch[2].rm_eo - pmatch[2].rm_so;
+      assert(len > 0);
 
-        /*
-         * Overwrite e.g. A(4) with AAAA.
-         */
-        assert(pmatch[2].rm_so == pmatch[1].rm_eo + 1); // character paren number
-        p = picture + pmatch[2].rm_so;
-        len = 0;
-        fmt_size_t lenf = 0;
-        if( 1 != sscanf(p, "%" GCC_PRISZ "u", &lenf) ) {
-            dbgmsg("%s:%d: no number found in '%s'", __func__, __LINE__, p);
-            goto irregular;
-        }
-        len = lenf;
-        if( len == 0 ) {
-            dbgmsg("%s:%d: ZERO length found in '%s'", __func__, __LINE__, p);
-            goto irregular;
-        }
+      /*
+       * Overwrite e.g. A(4) with AAAA.
+       */
+      assert(pmatch[2].rm_so == pmatch[1].rm_eo + 1); // character paren number
+      p = picture + pmatch[2].rm_so;
+      len = 0;
+      fmt_size_t lenf = 0;
+      if( 1 != sscanf(p, "%" GCC_PRISZ "u", &lenf) ) {
+        dbgmsg("%s:%d: no number found in '%s'", __func__, __LINE__, p);
+        goto irregular;
+      }
+      len = lenf;
+      if( len == 0 ) {
+        dbgmsg("%s:%d: ZERO length found in '%s'", __func__, __LINE__, p);
+        goto irregular;
+      }
 
-	std::vector <char> pic(len + 1, '\0');
-        memset(pic.data(), *start, len);
-        const char *finish = picture + pmatch[2].rm_eo,
-                    *eopicture = picture + strlen(picture);
+      std::vector <char> pic(len + 1, '\0');
+      memset(pic.data(), *start, len);
+      const char *finish = picture + pmatch[2].rm_eo,
+        *eopicture = picture + strlen(picture);
 
-        p = xasprintf( "%*s%s%*s",
-		       (int)(start - picture), picture,
-		       pic.data(),
-		       (int)(eopicture - finish), finish );
+      p = xasprintf( "%*s%s%*s",
+                     (int)(start - picture), picture,
+                     pic.data(),
+                     (int)(eopicture - finish), finish );
 
-        free(picture);
-        picture = p;
-        continue;
+      free(picture);
+      picture = p;
     }
     assert(erc == REG_NOMATCH);
 
@@ -463,7 +479,7 @@ is_elementary( enum cbl_field_type_t type )
     case FldFloat:
       return true; // takes up space
     }
-    dbgmsg("%s:%d: invalid symbol_type_t %d", __func__, __LINE__, type);
+    cbl_internal_error("%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type);
     return false;
 }
 
@@ -775,7 +791,7 @@ symbol_field_type_update( cbl_field_t *field,
 
 bool
 redefine_field( cbl_field_t *field ) {
-  cbl_field_t *primary = symbol_redefines(field);
+  const cbl_field_t *primary = symbol_redefines(field);
   bool fOK = true;
 
   if( !primary ) return false;
@@ -823,7 +839,7 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
         // 8 or more, we need do no further testing because we assume
         // everything fits.
         if( data.capacity < 8 ) {
-          auto p = strchr(data.initial, symbol_decimal_point());
+          const auto p = strchr(data.initial, symbol_decimal_point());
           if( p && atoll(p+1) != 0 ) {
             error_msg(loc, "integer type %s VALUE '%s' "
                      "requires integer VALUE",
@@ -886,8 +902,8 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
                                                  return TOUPPER(ch) == 'E';
                                                } );
               if( !has_exponent && data.precision() < pend - p ) {
-                error_msg(loc, "%s cannot represent  VALUE '%s' exactly (max .%zu)",
-                         name, data.initial, pend - p);
+                error_msg(loc, "%s cannot represent VALUE %qs exactly (max %c%zu)",
+                          name, data.initial, '.', pend - p);
               }
             }
           }
@@ -945,8 +961,7 @@ const cbl_field_t *
 literal_subscript_oob( const cbl_refer_t& r, size_t& isub /* output */)  {
   // Verify literal subscripts if dimensions are correct.
   size_t ndim(dimensions(r.field));
-  if( ndim == 0 || ndim != r.nsubscript ) return NULL;
-  cbl_refer_t *esub = r.subscripts + r.nsubscript;
+  if( ndim == 0 || ndim != r.nsubscript() ) return NULL;
   std::vector<cbl_field_t *> dims( ndim, NULL );
   auto pdim = dims.end();
 
@@ -964,22 +979,20 @@ literal_subscript_oob( const cbl_refer_t& r, size_t& isub /* output */)  {
    * for the corresponding dimension.  Return the first subscript not
    * meeting those criteria, if any.
    */
-  auto p = std::find_if( r.subscripts, esub,
-                         [&pdim]( const cbl_refer_t& r ) {
+  auto psub = std::find_if( r.subscripts.begin(), r.subscripts.end(),
+                         [pdim]( const cbl_refer_t& r ) mutable {
                            const auto& occurs((*pdim)->occurs);
                            pdim++;
                            return ! occurs.subscript_ok(r.field);
                          } );
-  isub = p - r.subscripts;
-  return p == esub? NULL : dims[isub];
+  isub = psub - r.subscripts.begin(); 
+  return psub == r.subscripts.end()? NULL : dims[isub];
 }
 
 size_t
 cbl_refer_t::subscripts_set( const std::list<cbl_refer_t>& subs ) {
-  nsubscript = subs.size();
-  subscripts = new cbl_refer_t[nsubscript];
-  std::copy( subs.begin(), subs.end(), subscripts );
-
+  subscripts.clear();
+  std::copy( subs.begin(), subs.end(), std::back_inserter(subscripts) );
   return dimensions(field);
 }
 
@@ -987,7 +1000,7 @@ const char *
 cbl_refer_t::str() const {
   static char subscripts[64];
   sprintf(subscripts, "(%u of " HOST_SIZE_T_PRINT_UNSIGNED " dimensions)",
-          nsubscript, (fmt_size_t)dimensions(field));
+          nsubscript(), (fmt_size_t)dimensions(field));
   char *output = xasprintf("%s %s %s",
                            field? field_str(field) : "(none)",
                            0 < dimensions(field)? subscripts : "",
@@ -1003,18 +1016,18 @@ cbl_refer_t::name() const {
 
 const char *
 cbl_refer_t::deref_str() const {
-  std::vector<char> dimstr(nsubscript * 16, '\0');
+  std::vector<char> dimstr(nsubscript() * 16, '\0');
   dimstr.at(0) = '(';
   auto p = dimstr.begin() + 1;
 
   if( !field ) return name();
 
-  for( auto sub = subscripts; sub <  subscripts + nsubscript; sub++ ) {
-    auto initial = sub->field->data.initial ? sub->field->data.initial : "?";
+  for( const auto& sub : subscripts ) {
+    auto initial = sub.field->data.initial ? sub.field->data.initial : "?";
     size_t len = dimstr.end() - p;
     p += snprintf( &*p, len, "%s ", initial );
   }
-  if( 0 < nsubscript ) {
+  if( ! subscripts.empty() ) {
     *--p = ')';
   }
   char *output = xasprintf("%s%s", field->name, dimstr.data());
@@ -1366,20 +1379,13 @@ public:
   {
     assert(isym);
   }
-  procdef_t( const procref_base_t& ref )
+  explicit procdef_t( const procref_base_t& ref )
     : procref_base_t(ref)
     , isym(0)
   {}
 
   bool operator<( const procdef_t& that ) const {
     return procref_base_t(*this) < procref_base_t(that);
-  }
-
-  bool operator<( const procref_base_t& that ) const {
-    if( that.has_section() ) {
-      return procref_base_t(*this) < that;
-    }
-    return strcasecmp(paragraph(), that.paragraph()) < 0;
   }
 
   cbl_label_t * label_of() const {
@@ -1412,7 +1418,7 @@ static procedures_t::iterator current_procedure = programs.end()->second.end();
 class procedure_match {
   const procref_base_t& ref;
 public:
-  procedure_match( const procref_base_t& ref ) : ref(ref) {}
+  explicit procedure_match( const procref_base_t& ref ) : ref(ref) {}
   // Match a 2-name reference to section & paragraph, else to one or the other.
   bool operator()( procedures_t::const_reference elem ) {
     const procdef_t& key = elem.first;
@@ -1440,7 +1446,7 @@ locally_unique( size_t program, const procdef_t& key, const procref_t& ref ) {
   const char *section_name = ref.has_section()? ref.section() : key.section();
   procref_base_t full_ref(section_name, ref.paragraph());
 
-  return 1 == procedures.count(full_ref);
+  return 1 == procedures.count(procdef_t(full_ref));
 }
 
 // Add each section and paragraph to the map as it occurs in the Cobol text.
@@ -1502,9 +1508,9 @@ ambiguous_reference( size_t program ) {
     if( proc.second.end() != ambiguous ) {
       if( yydebug ) {
         dbgmsg("%s: %s of '%s' has " HOST_SIZE_T_PRINT_UNSIGNED
-              "potential matches", __func__,
-              ambiguous->paragraph(), ambiguous->section(),
-              (fmt_size_t)procedures.count(*ambiguous));
+               "potential matches", __func__,
+               ambiguous->paragraph(), ambiguous->section(),
+               (fmt_size_t)procedures.count(procdef_t(*ambiguous)));
       }
       return new procref_t(*ambiguous);
     }
@@ -1531,7 +1537,7 @@ intradeclarative_reference() {
 class next_group {
   size_t isym;
 public:
-  next_group( symbol_elem_t *group ) : isym(symbol_index(group)) {}
+ explicit next_group( const symbol_elem_t *group ) : isym(symbol_index(group)) {}
 
   // return true if elem is not a member of the group
   bool operator()( const symbol_elem_t& elem ) {
@@ -1578,7 +1584,7 @@ public:
   static bool
   any_redefines( const cbl_field_t& field, const symbol_elem_t *group ) {
     for( const cbl_field_t *f = &field; f && f->parent > 0; f = parent_of(f) ) {
-      symbol_elem_t *e = symbol_at(f->parent);
+      const symbol_elem_t *e = symbol_at(f->parent);
       if( e == group || e->type != SymField ) break;
       if( symbol_redefines(f) ) return true;
     }
@@ -1779,7 +1785,7 @@ class unique_stack : public std::stack<input_file_t>
   
   bool push( const value_type& value ) {
     auto ok = std::none_of( c.cbegin(), c.cend(),
-                            [value]( auto& that ) {
+                            [value]( const auto& that ) {
                               return value == that;
                                 } );
     if( ok ) {
@@ -1799,7 +1805,7 @@ class unique_stack : public std::stack<input_file_t>
                   (fmt_size_t)(c.size() - --n), v.lineno, no_wd(wd, v.name) );
         }
       } else {
-        dbgmsg("unable to get current working directory: %m");
+        dbgmsg("unable to get current working directory: %s", xstrerror(errno));
       }
       free(wd);
     }
@@ -1817,7 +1823,7 @@ class unique_stack : public std::stack<input_file_t>
   void print() const {
     std::string input( top().name );
     printf( "%s: ", input.c_str() );
-    for( auto name : all_names ) {
+    for( const auto& name : all_names ) {
       if( name != input ) 
 	printf( "\\\n\t%s ", name.c_str() );
     }
@@ -1846,7 +1852,7 @@ void cobol_set_pp_option(int opt) {
  * to enforce uniqueness, and the scanner to maintain line numbers.
  */
 bool cobol_filename( const char *name, ino_t inode ) {
-  line_map *lines = NULL;
+  const line_map *lines = NULL;
   if( inode == 0 ) {
     auto p = old_filenames.find(name);
     if( p == old_filenames.end() ) {
@@ -1926,11 +1932,9 @@ verify_format( const char gmsgid[] ) {
   static regex_t re;
   static int cflags = REG_EXTENDED;
   static int status = regcomp( &re, pattern, cflags );
-  static char errbuf[80];
-
-
 
   if( status != 0 ) {
+    static char errbuf[80];
     int n = regerror(status, &re, errbuf, sizeof(errbuf));
     gcc_assert(size_t(n) < sizeof(errbuf));
     fprintf(stderr, "%s:%d: %s", __func__, __LINE__, errbuf);
@@ -1948,6 +1952,8 @@ verify_format( const char gmsgid[] ) {
 
 static const diagnostic_option_id option_zero;
 size_t parse_error_inc();
+
+void ydferror( const char gmsgid[], ... ) ATTRIBUTE_GCOBOL_DIAG(1, 2);
 
 void
 ydferror( const char gmsgid[], ... ) {
@@ -1971,7 +1977,7 @@ extern YYLTYPE yylloc;
  * the global token_location, which is passed to the diagnostic framework. The
  * original value is restored when the instantiated variable goes out of scope.
  */
-class temp_loc_t : protected YYLTYPE {
+class temp_loc_t {
   location_t orig;
  public:
   temp_loc_t() : orig(token_location) {
@@ -1979,10 +1985,10 @@ class temp_loc_t : protected YYLTYPE {
 
     gcc_location_set(yylloc); // use lookahead location
   }
-  temp_loc_t( const YYLTYPE& loc) : orig(token_location) {
+  explicit temp_loc_t( const YYLTYPE& loc) : orig(token_location) {
     gcc_location_set(loc);
   }
-  temp_loc_t( const YDFLTYPE& loc) : orig(token_location) {
+  explicit temp_loc_t( const YDFLTYPE& loc) : orig(token_location) {
     YYLTYPE lloc = {
       loc.first_line, loc.first_column,
       loc.last_line,  loc.last_column };
@@ -2024,6 +2030,9 @@ class temp_loc_t : protected YYLTYPE {
 void error_msg( const YYLTYPE& loc, const char gmsgid[], ... ) {
   ERROR_MSG_BODY
 }
+
+void error_msg( const YDFLTYPE& loc, const char gmsgid[], ... )
+  ATTRIBUTE_GCOBOL_DIAG(2, 3);
 
 void error_msg( const YDFLTYPE& loc, const char gmsgid[], ... ) {
   ERROR_MSG_BODY
@@ -2115,7 +2124,7 @@ cobol_fileline_set( const char line[] ) {
       dbgmsg( "%s:%d: could not compile regex: %s", __func__, __LINE__, regexmsg );
       return line;
     }
-    error_msg(yylloc, "invalid #line directive: %s", line );
+    error_msg(yylloc, "invalid %<#line%> directive: %s", line );
     return line;
   }
 
@@ -2125,7 +2134,7 @@ cobol_fileline_set( const char line[] ) {
   int fileline;
 
   if( 1 != sscanf(line_str, "%d", &fileline) )
-    yywarn("could not parse line number %s from #line directive", line_str);
+    yywarn("could not parse line number %s from %<#line%> directive", line_str);
 
   input_file_t input_file( filename, ino_t(0), fileline ); // constructor sets inode
 
@@ -2141,22 +2150,25 @@ cobol_fileline_set( const char line[] ) {
   return file.name;
 }
 
+//#define TIMING_PARSE
+#ifdef TIMING_PARSE
 class cbl_timespec {
-  struct timespec now;
+  uint64_t now; // Nanoseconds
  public:
   cbl_timespec() {
-    clock_gettime(CLOCK_MONOTONIC, &now);
+    now = get_time_nanoseconds();
   }
   double ns() const {
-    return now.tv_sec * 1000000000 + now.tv_nsec;
+    return now;
   }
   friend double operator-( const cbl_timespec& now, const cbl_timespec& then );
 };
 
 double
-operator-( const cbl_timespec& then, const cbl_timespec& now ) {
+operator-( const cbl_timespec& now, const cbl_timespec& then ) {
   return (now.ns() - then.ns()) / 1000000000;
 }
+#endif
 
 static int
 parse_file( const char filename[] )
@@ -2172,15 +2184,20 @@ parse_file( const char filename[] )
     return 0;
   }
 
+#ifdef TIMING_PARSE
   cbl_timespec start;
+#endif
 
   int erc = yyparse();
 
+#ifdef TIMING_PARSE
   cbl_timespec finish;
   double dt  = finish - start;
+  printf("Overall parse & generate time is %.6f seconds\n", dt);
+#endif
+
   parser_leave_file();
 
-  //printf("Overall parse & generate time is %.6f seconds\n", dt);
 
   fclose (yyin);
 
@@ -2204,30 +2221,20 @@ cobol_set_debugging( bool flex, bool yacc, bool parser )
   yy_flex_debug = flex? 1 : 0;
   ydfdebug = yydebug = yacc? 1 : 0;
   f_trace_debug = parser? 1 : 0;
-
-  char *ind = getenv("INDICATOR_COLUMN");
-  if( ind ) {
-    int col;
-    if( 1 != sscanf(ind, "%d", &col) ) {
-      yywarn("ignored non-integer value for INDICATOR_COLUMN=%s", ind);
-    }
-    cobol_set_indicator_column(col);
-  }
 }
 
-os_locale_t os_locale = { "UTF-8", xstrdup("C.UTF-8") };
-
+os_locale_t os_locale = { "UTF-8", "C.UTF-8" };
 
 void
 cobol_parse_files (int nfile, const char **files)
 {
-  char * opaque = setlocale(LC_CTYPE, "");
+  const char * opaque = setlocale(LC_CTYPE, "");
   if( ! opaque ) {
     yywarn("setlocale: unable to initialize LOCALE");
   } else {
     char *codeset = nl_langinfo(CODESET);
     if( ! codeset ) {
-      yywarn("nl_langinfo failed after setlocale succeeded");
+      yywarn("%<nl_langinfo%> failed after %<setlocale()%> succeeded");
     } else {
       os_locale.codeset = codeset;
     }
@@ -2339,7 +2346,7 @@ dbgmsg(const char *msg, ...) {
 
 void
 dialect_error( const YYLTYPE& loc, const char term[], const char dialect[] ) {
-  error_msg(loc, "%s is not ISO syntax, requires -dialect %s",
+  error_msg(loc, "%s is not ISO syntax, requires %<-dialect %s%>",
            term, dialect);
 }
 

@@ -1,3 +1,241 @@
+2025-06-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (OACC_WAIT_CLAUSE_MASK): Ass if clause.
+
+2025-06-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115908
+	PR c++/118074
+	PR c++/95615
+	* coroutines.cc (coro_frame_refcount_id): New.
+	(coro_init_identifiers): Initialise coro_frame_refcount_id.
+	(build_actor_fn): Set up initial_await_resume_called.  Handle
+	decrementing of the frame reference count.  Return directly to
+	the caller if that is non-zero.
+	(cp_coroutine_transform::wrap_original_function_body): Use a
+	conditional eh-only cleanup around the initial await expression
+	to release the body use on exception before initial await
+	resume.
+	(cp_coroutine_transform::build_ramp_function): Wrap the called
+	body in a cleanup that releases a use of the frame when we
+	return to the ramp.  Implement frame, promise and argument copy
+	destruction via conditional cleanups when the frame use count
+	is zero.
+
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (struct coroutine_info): Update comments.
+	(struct coro_aw_data): Remove self_handle and add in
+	information to create the handle in lowering.
+	(expand_one_await_expression): Build a temporary coroutine
+	handle.
+	(build_actor_fn): Remove reference to the frame copy of the
+	coroutine handle.
+	(cp_coroutine_transform::wrap_original_function_body): Remove
+	reference to the frame copy of the coroutine handle.
+
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (analyze_expression_awaits): Elide assume
+	attributes containing await expressions, since these have
+	side effects.  Emit a diagnostic that this has been done.
+
+2025-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120678
+	* cp-trait.def (IS_TRIVIALLY_DESTRUCTIBLE): Fix nargs.
+
+2025-06-17  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (module_state::write_diagnostic_classification): New.
+	(module_state::write_begin): Call it.
+	(module_state::read_diagnostic_classification): New.
+	(module_state::read_initial): Call it.
+	(dk_string, dump_dc_change): New.
+
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (finish_co_await_expr): Do not allow in an
+	unevaluated context.
+	(finish_co_yield_expr): Likewise.
+
+2025-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/120273
+	* coroutines.cc
+	(cp_coroutine_transform::wrap_original_function_body): Use
+	function start and end locations when synthesizing code.
+	(cp_coroutine_transform::cp_coroutine_transform): Set the
+	function end location.
+
+2025-06-16  Jason Merrill  <jason@redhat.com>
+
+	* constraint.cc (failed_completions_map): New.
+	(note_failed_type_completion): Rename from
+	note_failed_type_completion_for_satisfaction.  Add
+	-Wsfinae-incomplete handling.
+	(failed_completion_location): New.
+	* class.cc (finish_struct_1): Add -Wsfinae-incomplete warning.
+	* decl.cc (require_deduced_type): Adjust.
+	(finish_function): Add -Wsfinae-incomplete warning.
+	* typeck.cc (complete_type_or_maybe_complain): Adjust.
+	(cxx_sizeof_or_alignof_type): Call note_failed_type_completion.
+	* pt.cc (dependent_template_arg_p): No longer static.
+	* cp-tree.h: Adjust.
+
+2025-06-16  yxj-github-437  <2457369732@qq.com>
+
+	* parser.cc (cp_parser_asm_operand_list): Check for unexpanded
+	parameter packs.
+
+2025-06-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_co_await): Identify diagnostics
+	for initial and final await expressions.
+	(cp_coroutine_transform::wrap_original_function_body): Do
+	not handle initial and final await expressions here ...
+	(cp_coroutine_transform::apply_transforms): ... handle them
+	here and avoid duplicate diagnostics.
+	* coroutines.h: Declare inital and final await expressions
+	in the transform class.  Save the function closing brace
+	location.
+
+2025-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/116775
+	* coroutines.cc (analyze_expression_awaits): When we see
+	a builtin_constant_p call, and that contains one or more
+	await expressions, then replace the call with its result
+	and discard the unevaluated operand.
+
+2025-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Set can_throw.
+
+2025-06-12  Alfie Richards  <alfie.richards@arm.com>
+
+	* decl.cc (maybe_version_functions): Change record_function_versions
+	call to add_function_version.
+
+2025-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (union lang_type::maybe_objc_info): New type.
+	(struct lang_type): Use union maybe_objc_info info member
+	instead of tree objc_info.
+	* lex.cc (copy_lang_type): Use sizeof (struct lang_type)
+	just for ObjC++ and otherwise offsetof (struct lang_type, info).
+	(maybe_add_lang_type_raw): Likewise.
+	(cxx_make_type): Formatting fix.
+
+2025-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/120495
+	PR c++/115605
+	* pt.cc (lookup_template_class): Honour provided namespace contexts
+	when looking up class templates.
+
+2025-06-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120555
+	* decl2.cc (fn_being_defined, fn_template_being_defined): New.
+	(mark_used): Check fn_template_being_defined.
+
+2025-06-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120224
+	* pt.cc (tsubst_function_decl): Return error_mark_node if
+	substituting into the formal parameter list failed.
+	(tsubst_decl) <case PARM_DECL>: Return error_mark_node
+	upon TREE_TYPE substitution failure, when in a SFINAE
+	context.  Return error_mark_node upon DECL_CHAIN substitution
+	failure.
+
+2025-06-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118340
+	* constexpr.cc (maybe_constant_value): First try looking up each
+	operand in the cv_cache and reusing the result.
+
+2025-06-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (analyze_fn_parms): Move from free function..
+	(cp_coroutine_transform::analyze_fn_parms):... to method.
+	(cp_coroutine_transform::apply_transforms): Adjust call to
+	analyze_fn_parms.
+	* coroutines.h: Declare analyze_fn_parms.
+
+2025-06-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (expand_one_await_expression): Set the
+	initial_await_resume_called flag here.
+	(build_actor_fn): Populate the frame accessor for the
+	initial_await_resume_called flag.
+	(cp_coroutine_transform::wrap_original_function_body): Do
+	not modify the initial_await expression to include the
+	initial_await_resume_called flag here.
+
+2025-06-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120502
+	* cp-gimplify.cc (cp_fold_r) [TARGET_EXPR]: Do constexpr evaluation
+	before genericize.
+	* constexpr.cc (cxx_eval_store_expression): Add comment.
+
+2025-06-03  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.h (operator|, operator|=): Define for WMB_Flags.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* method.cc (destructible_expr): Fix refs and arrays of unknown
+	bound.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120506
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Always check
+	CONSTRUCTOR_NO_CLEARING.
+
+2025-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Remove an unused
+	label, guard the frame deallocation correctly, use
+	simpler APIs to build if and return statements.
+
+2025-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/118903
+	* constexpr.cc (potential_constant_expression_1): Emit
+	an error when co_await et. al. are used in constexpr
+	contexts.
+
+2025-06-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* error.cc (dump_expr): Add co_await, co_yield and co_return.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* method.cc (destructible_expr): Handle non-classes.
+	(constructible_expr): Check for abstract class here...
+	(is_xible_helper): ...not here.
+
+2025-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107600
+	* semantics.cc (trait_expr_value) [CPTK_HAS_TRIVIAL_DESTRUCTOR]:
+	Add cp_unevaluated.
+
+2025-06-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* cp-tree.h (maybe_convert_cond): Declare.
+	* parser.cc (cp_parser_omp_context_selector): Call
+	maybe_convert_cond and fold_build_cleanup_point_expr on the
+	expression for OMP_TRAIT_PROPERTY_BOOL_EXPR.
+	* pt.cc (tsubst_omp_context_selector): Likewise.
+	* semantics.cc (maybe_convert_cond): Remove static declaration.
+
 2025-05-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/113563

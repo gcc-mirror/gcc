@@ -1185,6 +1185,10 @@ predicate chain.
 Common Joined UInteger Var(param_uninit_max_num_chains) Init(8) IntegerRange(1, 128) Param Optimization
 Maximum number of predicates ored in the normalized predicate chain.
 
+-param=uninit-max-prune-work=
+Common Joined UInteger Var(param_uninit_max_prune_work) Init(100000) Param Optimization
+Maximum amount of work done to prune paths where the variable is always initialized.
+
 -param=uninlined-function-insns=
 Common Joined UInteger Var(param_uninlined_function_insns) Init(2) Optimization IntegerRange(0, 1000000) Param
 Instruction accounted for function prologue, epilogue and other overhead.
@@ -1252,6 +1256,10 @@ The maximum factor which the loop vectorizer applies to the cost of statements i
 -param=vect-induction-float=
 Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRange(0, 1) Param Optimization
 Enable loop vectorization of floating point inductions.
+
+-param=vect-scalar-cost-multiplier=
+Common Joined UInteger Var(param_vect_scalar_cost_multiplier) Init(100) IntegerRange(0, 10000) Param Optimization
+The scaling multiplier as a percentage to apply to all scalar loop costing when performing vectorization profitability analysis.  The default value is 100.
 
 -param=vrp-block-limit=
 Common Joined UInteger Var(param_vrp_block_limit) Init(150000) Optimization Param

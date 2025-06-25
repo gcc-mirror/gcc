@@ -397,17 +397,18 @@ __cond_wait_until(__condvar& __cv, mutex& __mx,
 }
 #endif // ! HAVE_PLATFORM_TIMED_WAIT
 
-// Like __spin_impl, always returns _M_has_val == true.
+// Unlike __spin_impl, does not always return _M_has_val == true.
+// If the deadline has already passed then no fresh value is loaded.
 __wait_result_type
 __spin_until_impl(const __platform_wait_t* __addr,
 		  const __wait_args_base& __args,
 		  const __wait_clock_t::time_point& __deadline)
 {
-  auto __t0 = __wait_clock_t::now();
   using namespace literals::chrono_literals;
 
-  __platform_wait_t __val{};
-  auto __now = __wait_clock_t::now();
+  __wait_result_type __res{};
+  auto __t0 = __wait_clock_t::now();
+  auto __now = __t0;
   for (; __now < __deadline; __now = __wait_clock_t::now())
     {
       auto __elapsed = __now - __t0;
@@ -422,16 +423,21 @@ __spin_until_impl(const __platform_wait_t* __addr,
 	__thread_yield();
       else
 	{
-	  auto __res = __detail::__spin_impl(__addr, __args);
+	  __res = __detail::__spin_impl(__addr, __args);
 	  if (!__res._M_timeout)
 	    return __res;
 	}
 
-      __atomic_load(__addr, &__val, __args._M_order);
-      if (__val != __args._M_old)
-	return { ._M_val = __val, ._M_has_val = true, ._M_timeout = false };
+      __atomic_load(__addr, &__res._M_val, __args._M_order);
+      __res._M_has_val = true;
+      if (__res._M_val != __args._M_old)
+	{
+	  __res._M_timeout = false;
+	  return __res;
+	}
     }
-  return { ._M_val = __val, ._M_has_val = true, ._M_timeout = true };
+  __res._M_timeout = true;
+  return __res;
 }
 } // namespace
 

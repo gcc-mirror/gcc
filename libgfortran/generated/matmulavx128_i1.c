@@ -49,7 +49,7 @@ matmul_i1_avx128_fma3 (gfc_array_i1 * const restrict retarray,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx,fma")));
 internal_proto(matmul_i1_avx128_fma3);
 void
-matmul_i1_avx128_fma3 (gfc_array_i1 * const restrict retarray, 
+matmul_i1_avx128_fma3 (gfc_array_i1 * const restrict retarray,
 	gfc_array_i1 * const restrict a, gfc_array_i1 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
@@ -619,7 +619,7 @@ matmul_i1_avx128_fma4 (gfc_array_i1 * const restrict retarray,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx,fma4")));
 internal_proto(matmul_i1_avx128_fma4);
 void
-matmul_i1_avx128_fma4 (gfc_array_i1 * const restrict retarray, 
+matmul_i1_avx128_fma4 (gfc_array_i1 * const restrict retarray,
 	gfc_array_i1 * const restrict a, gfc_array_i1 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {

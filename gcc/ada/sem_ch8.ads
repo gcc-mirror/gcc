@@ -100,11 +100,6 @@ package Sem_Ch8 is
    --  entries in the current scope, and that will give all homonyms that are
    --  declared before the point of call in the current scope. This is useful
    --  for example in the processing for pragma Inline.
-   --
-   --  Flag Errors_OK should be set when error diagnostics are desired. Flag
-   --  Marker_OK should be set when a N_Variable_Reference_Marker needs to be
-   --  generated for a SPARK object in order to detect elaboration issues. Flag
-   --  Reference_OK should be set when N must generate a cross reference.
 
    procedure Find_Selected_Component (N : Node_Id);
    --  Resolve various cases of selected components, recognize expanded names

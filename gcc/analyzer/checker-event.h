@@ -116,6 +116,7 @@ public:
 			      sarif_object &thread_flow_loc_obj) const override;
 
   /* Additional functionality.  */
+  enum event_kind get_kind () const { return m_kind; }
   tree get_fndecl () const { return m_effective_fndecl; }
 
   int get_original_stack_depth () const { return m_original_depth; }
@@ -126,6 +127,12 @@ public:
   virtual bool is_call_p () const { return false; }
   virtual bool is_function_entry_p () const  { return false; }
   virtual bool is_return_p () const  { return false; }
+
+  virtual const program_state *
+  get_program_state () const { return nullptr; }
+
+  std::unique_ptr<xml::document>
+  maybe_make_xml_state (bool debug) const final override;
 
   /* For use with %@.  */
   const diagnostic_event_id_t *get_id_ptr () const
@@ -142,7 +149,8 @@ protected:
   checker_event (enum event_kind kind,
 		 const event_loc_info &loc_info);
 
- public:
+ private:
+  const checker_path *m_path;
   const enum event_kind m_kind;
  protected:
   location_t m_loc;
@@ -223,6 +231,12 @@ public:
 		   const program_state &dst_state);
 
   void print_desc (pretty_printer &) const final override;
+
+  const program_state *
+  get_program_state () const final override
+  {
+    return &m_dst_state;
+  }
 
   const gimple * const m_stmt;
   const program_state m_dst_state;
@@ -334,17 +348,29 @@ private:
 class function_entry_event : public checker_event
 {
 public:
-  function_entry_event (const event_loc_info &loc_info)
-  : checker_event (event_kind::function_entry, loc_info)
+  function_entry_event (const event_loc_info &loc_info,
+			const program_state &state)
+  : checker_event (event_kind::function_entry, loc_info),
+    m_state (state)
   {
   }
 
-  function_entry_event (const program_point &dst_point);
+  function_entry_event (const program_point &dst_point,
+			const program_state &state);
 
   void print_desc (pretty_printer &pp) const override;
   meaning get_meaning () const override;
 
   bool is_function_entry_p () const final override { return true; }
+
+  const program_state *
+  get_program_state () const final override
+  {
+    return &m_state;
+  }
+
+private:
+  const program_state &m_state;
 };
 
 /* Subclass of checker_event describing a state change.  */
@@ -364,6 +390,12 @@ public:
 
   void print_desc (pretty_printer &pp) const final override;
   meaning get_meaning () const override;
+
+  const program_state *
+  get_program_state () const final override
+  {
+    return &m_dst_state;
+  }
 
   const function *get_dest_function () const
   {
@@ -406,6 +438,9 @@ public:
   const callgraph_superedge& get_callgraph_superedge () const;
 
   bool should_filter_p (int verbosity) const;
+
+  const program_state *
+  get_program_state () const override;
 
  protected:
   superedge_event (enum event_kind kind, const exploded_edge &eedge,
@@ -516,6 +551,9 @@ public:
   meaning get_meaning () const override;
 
   bool is_call_p () const final override;
+
+  const program_state *
+  get_program_state () const final override;
 
 protected:
   tree get_caller_fndecl () const;
@@ -791,15 +829,21 @@ public:
   warning_event (const event_loc_info &loc_info,
 		 const exploded_node *enode,
 		 const state_machine *sm,
-		 tree var, state_machine::state_t state)
+		 tree var, state_machine::state_t state,
+		 const program_state *program_state_ = nullptr)
   : checker_event (event_kind::warning, loc_info),
     m_enode (enode),
     m_sm (sm), m_var (var), m_state (state)
   {
+    if (program_state_)
+      m_program_state = std::make_unique<program_state> (*program_state_);
   }
 
   void print_desc (pretty_printer &pp) const final override;
   meaning get_meaning () const override;
+
+  const program_state *
+  get_program_state () const final override;
 
   const exploded_node *get_exploded_node () const { return m_enode; }
 
@@ -808,6 +852,9 @@ private:
   const state_machine *m_sm;
   tree m_var;
   state_machine::state_t m_state;
+  /* Optional copy of program state, for when this is different from
+     m_enode's state:  */
+  std::unique_ptr<program_state> m_program_state;
 };
 
 } // namespace ana

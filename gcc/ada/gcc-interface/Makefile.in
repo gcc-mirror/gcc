@@ -104,6 +104,8 @@ INSTALL_DATA_DATE = cp -p
 MAKEINFO = makeinfo
 TEXI2DVI = texi2dvi
 TEXI2PDF = texi2pdf
+
+GNATMAKE_FOR_BUILD = gnatmake
 GNATBIND_FLAGS = -static -x
 ADA_CFLAGS =
 ADAFLAGS = -W -Wall -gnatpg -gnata -gnatU
@@ -328,16 +330,11 @@ GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o alloc.o \
  switch.o switch-m.o table.o targparm.o tempdir.o types.o uintp.o \
  uname.o urealp.o usage.o widechar.o warnsw.o \
  seinfo.o einfo-entities.o einfo-utils.o sinfo-nodes.o sinfo-utils.o \
- diagnostics-brief_emitter.o  \
- diagnostics-constructors.o  \
- diagnostics-converter.o  \
- diagnostics-json_utils.o  \
- diagnostics-pretty_emitter.o  \
- diagnostics-repository.o  \
- diagnostics-sarif_emitter.o  \
- diagnostics-switch_repository.o  \
- diagnostics-utils.o  \
- diagnostics.o  \
+ errid.o \
+ errsw.o \
+ erroutc-pretty_emitter.o \
+ erroutc-sarif_emitter.o \
+ json_utils.o
  $(EXTRA_GNATMAKE_OBJS)
 
 # Make arch match the current multilib so that the RTS selection code
@@ -634,7 +631,7 @@ OSCONS_EXTRACT=$(GCC_FOR_ADA_RTS) $(GNATLIBCFLAGS_FOR_C) -S s-oscons-tmplt.i
 	-$(MKDIR) ./bldtools/oscons
 	$(RM) $(addprefix ./bldtools/oscons/,$(notdir $^))
 	$(CP) $^ ./bldtools/oscons
-	(cd ./bldtools/oscons ; gnatmake xoscons)
+	(cd ./bldtools/oscons ; $(GNATMAKE_FOR_BUILD) xoscons)
 
 $(RTSDIR)/s-oscons.ads: ../stamp-gnatlib1-$(RTSDIR) s-oscons-tmplt.c gsocket.h ./bldtools/oscons/xoscons
 	$(RM) $(RTSDIR)/s-oscons-tmplt.i $(RTSDIR)/s-oscons-tmplt.s

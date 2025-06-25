@@ -23,16 +23,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Atree;
 with Fmap;
 with Fname.UF;
 with Lib;
-with Namet; use Namet;
-with Osint; use Osint;
-with Output; use Output;
-with Sinfo.Nodes;
+with Namet;         use Namet;
+with Osint;         use Osint;
+with Output;        use Output;
+with Sinfo.Nodes;   use Sinfo.Nodes;
 with System.CRTL;
 with System.OS_Lib; use System.OS_Lib;
-with Types; use Types;
+with Types;         use Types;
+with Uname;
 
 procedure Generate_Minimal_Reproducer is
    Reproducer_Generation_Failed : exception;
@@ -85,6 +87,26 @@ procedure Generate_Minimal_Reproducer is
    Oracle_Path : constant String :=
      Dirname & Directory_Separator & Executable_Name ("oracle");
 
+   Main_Library_Item : constant Node_Id := Unit (Lib.Cunit (Main_Unit));
+
+   --  There is a special case that we need to detect: when the main library
+   --  item is the instantiation of a generic that has a body, and the
+   --  instantiation of generic bodies has started. We start by binding whether
+   --  the main library item is an instantiation to the following constant.
+   Main_Is_Instantiation : constant Boolean :=
+     Nkind (Atree.Original_Node (Main_Library_Item))
+     in N_Generic_Instantiation;
+
+   --  If the main library item is an instantiation and its unit name is a body
+   --  name, it means that Make_Instance_Unit has been called. We need to use
+   --  the corresponding spec name to reconstruct the on-disk form of the
+   --  semantic closure.
+   Main_Unit_Name : constant Unit_Name_Type :=
+     (if Main_Is_Instantiation
+        and then Uname.Is_Body_Name (Lib.Unit_Name (Main_Unit))
+      then Uname.Get_Spec_Name (Lib.Unit_Name (Main_Unit))
+      else Lib.Unit_Name (Main_Unit));
+
    Result : Integer;
 begin
    Create_Semantic_Closure_Project :
@@ -118,25 +140,30 @@ begin
       end if;
 
       for J in Main_Unit .. Lib.Last_Unit loop
-         declare
-            Path : File_Name_Type :=
-              Fmap.Mapped_Path_Name (Lib.Unit_File_Name (J));
+         --  We skip library units that fall under one of the following cases:
+         --  - Internal library units.
+         --  - Units that were synthesized for child subprograms without spec
+         --    files.
+         --  - Dummy entries that Add_Preprocessing_Dependency puts in
+         --    Lib.Units.
+         --  Those cases correspond to the conjuncts in the condition below.
+         if not Lib.Is_Internal_Unit (J)
+           and then Comes_From_Source (Lib.Cunit (J))
+           and then Lib.Unit_Name (J) /= No_Unit_Name
+         then
+            declare
+               Path : File_Name_Type :=
+                 Fmap.Mapped_Path_Name (Lib.Unit_File_Name (J));
 
-            Default_File_Name : constant String :=
-              Fname.UF.Get_Default_File_Name (Lib.Unit_Name (J));
+               Unit_Name : constant Unit_Name_Type :=
+                 (if J = Main_Unit then Main_Unit_Name else Lib.Unit_Name (J));
 
-            File_Copy_Path : constant String :=
-              Src_Dir_Path & Directory_Separator & Default_File_Name;
+               Default_File_Name : constant String :=
+                 Fname.UF.Get_Default_File_Name (Unit_Name);
 
-            --  We may have synthesized units for child subprograms without
-            --  spec files. We need to filter out those units because we would
-            --  create bogus spec files that break compilation if we didn't.
-            Is_Synthetic_Subprogram_Spec : constant Boolean :=
-              not Sinfo.Nodes.Comes_From_Source (Lib.Cunit (J));
-         begin
-            if not Lib.Is_Internal_Unit (J)
-              and then not Is_Synthetic_Subprogram_Spec
-            then
+               File_Copy_Path : constant String :=
+                 Src_Dir_Path & Directory_Separator & Default_File_Name;
+            begin
                --  Mapped_Path_Name might have returned No_File. This has been
                --  observed for files with a Source_File_Name pragma.
                if Path = No_File then
@@ -153,8 +180,8 @@ begin
 
                   pragma Assert (Success);
                end;
-            end if;
-         end;
+            end;
+         end if;
       end loop;
    end Create_Semantic_Closure_Project;
 
@@ -197,7 +224,7 @@ begin
              (Fmap.Mapped_Path_Name (Lib.Unit_File_Name (Main_Unit)));
 
          Default_Main_Name : constant String :=
-           Fname.UF.Get_Default_File_Name (Lib.Unit_Name (Main_Unit));
+           Fname.UF.Get_Default_File_Name (Main_Unit_Name);
 
          New_Main_Path : constant String :=
            Src_Dir_Path & Directory_Separator & Default_Main_Name;
@@ -228,7 +255,8 @@ begin
          Write_Eol;
          Write_Line ("   Args : constant GNAT.OS_Lib.Argument_List :=");
 
-         Write_Str ("     (new String'(""-gnatd_M"")");
+         Write_Str
+           ("     (new String'(""-quiet""), new String'(""-gnatd_M"")");
 
          --  The following way of iterating through the command line arguments
          --  was copied from Set_Targ. TODO factorize???

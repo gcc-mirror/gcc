@@ -2,6 +2,7 @@
 // { dg-require-effective-target hosted }
 
 #include <functional>
+#include <string_view>
 #include <testsuite_hooks.h>
 
 using std::move_only_function;
@@ -14,6 +15,21 @@ static_assert( !std::is_constructible_v<std::move_only_function<void()&>,
 					std::move_only_function<void()&&>> );
 static_assert( !std::is_constructible_v<std::move_only_function<void() const>,
 					std::move_only_function<void()>> );
+
+using FuncType = int(int);
+
+// Top level const qualifiers are ignored in function types, and decay
+// is performed.
+static_assert( std::is_same_v<std::move_only_function<void(int const)>,
+			      std::move_only_function<void(int)>> );
+static_assert( std::is_same_v<std::move_only_function<void(int[2])>,
+			      std::move_only_function<void(int*)>>);
+static_assert( std::is_same_v<std::move_only_function<void(int[])>,
+			      std::move_only_function<void(int*)>>);
+static_assert( std::is_same_v<std::move_only_function<void(int const[5])>,
+			      std::move_only_function<void(int const*)>>);
+static_assert( std::is_same_v<std::move_only_function<void(FuncType)>,
+			      std::move_only_function<void(FuncType*)>>);
 
 // Non-trivial args, guarantess that type is not passed by copy
 struct CountedArg
@@ -177,6 +193,24 @@ test06()
   VERIFY( m1(c) == 2 );
 }
 
+void
+test07()
+{
+  // Scalar types and small trivially move constructible types are passed
+  // by value to invoker. So int&& signature is not compatible for such types.
+  auto fi = [](CountedArg const& arg, int) noexcept { return arg.counter; };
+  std::move_only_function<int(CountedArg, int) const noexcept> mi1(fi);
+  VERIFY( mi1(c, 0) == 1 );
+  std::move_only_function<int(CountedArg, int&&) const noexcept> mi2(std::move(mi1));
+  VERIFY( mi2(c, 0) == 2 );
+
+  auto fs = [](CountedArg const& arg, std::string_view) noexcept { return arg.counter; };
+  std::move_only_function<int(CountedArg, std::string_view) const noexcept> ms1(fs);
+  VERIFY( ms1(c, "") == 1 );
+  std::move_only_function<int(CountedArg, std::string_view&&) const noexcept> ms2(std::move(ms1));
+  VERIFY( ms2(c, "") == 2 );
+}
+
 int main()
 {
   test01();
@@ -185,4 +219,5 @@ int main()
   test04();
   test05();
   test06();
+  test07();
 }

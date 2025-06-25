@@ -32,28 +32,15 @@
 --  This package contains routines for scanning modular Unsigned
 --  values for use in Text_IO.Modular_IO, and the Value attribute.
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore. Postconditions and
---  contract cases should not be executed at runtime as well, in order not to
---  slow down the execution of these functions.
-
-pragma Assertion_Policy (Pre                => Ignore,
-                         Post               => Ignore,
-                         Contract_Cases     => Ignore,
-                         Ghost              => Ignore,
-                         Subprogram_Variant => Ignore);
-
 with System.Unsigned_Types;
 with System.Value_U;
-with System.Vs_Uns;
 
 package System.Val_Uns with SPARK_Mode is
    pragma Preelaborate;
 
    subtype Unsigned is Unsigned_Types.Unsigned;
 
-   package Impl is new Value_U (Unsigned, System.Vs_Uns.Spec);
+   package Impl is new Value_U (Unsigned);
 
    procedure Scan_Raw_Unsigned
      (Str : String;

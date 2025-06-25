@@ -159,7 +159,7 @@ Wmissing-noreturn
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-noreturn)
 
 Wmusttail-local-addr
-UrlSuffix(gcc/Warning-Options.html#index-Wno-musttail-local-addr)
+UrlSuffix(gcc/Warning-Options.html#index-Wmusttail-local-addr)
 
 Wmaybe-musttail-local-addr
 UrlSuffix(gcc/Warning-Options.html#index-Wmaybe-musttail-local-addr)

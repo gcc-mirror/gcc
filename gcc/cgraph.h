@@ -1256,6 +1256,21 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      it is not used in any other non-standard way.  */
   bool only_called_directly_p (void);
 
+  /* Turn profile to global0.  Walk into inlined functions.  */
+  void make_profile_local ();
+
+  /* Turn profile to global0.  Walk into inlined functions.  */
+  void make_profile_global0 (profile_quality quality);
+
+  /* Scale profile by NUM/DEN.  Walk into inlined funtion.  */
+  void apply_scale (profile_count num, profile_count den);
+
+  /* Scale profile to given IPA_COUNT.
+     IPA_COUNT should pass ipa_p () with a single exception.
+     It can be also GUESSED_LOCAL in case we want to
+     drop any IPA info about the profile.  */
+  void scale_profile_to (profile_count ipa_count);
+
   /* Return true when function is only called directly or it has alias.
      i.e. it is not externally visible, address was not taken and
      it is not used in any other non-standard way.  */
@@ -1324,9 +1339,9 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
     return m_summary_id;
   }
 
-  /* Record that DECL1 and DECL2 are semantically identical function
-     versions.  */
-  static void record_function_versions (tree decl1, tree decl2);
+  /* Adds DECL to the FN_V structure of semantically identical functions.  */
+  static void add_function_version (cgraph_function_version_info *fn_v,
+				    tree decl);
 
   /* Remove the cgraph_function_version_info and cgraph_node for DECL.  This
      DECL is a duplicate declaration.  */

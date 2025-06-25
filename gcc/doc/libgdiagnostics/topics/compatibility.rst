@@ -177,3 +177,12 @@ acccessing values within a :type:`diagnostic_logical_location`:
   * :func:`diagnostic_logical_location_get_fully_qualified_name`
 
   * :func:`diagnostic_logical_location_get_decorated_name`
+
+``LIBGDIAGNOSTICS_ABI_2``
+-------------------------
+``LIBGDIAGNOSTICS_ABI_2`` covers the addition of these functions for
+supporting command-line options and SARIF playback:
+
+  * :func:`diagnostic_manager_add_sink_from_spec`
+
+  * :func:`diagnostic_manager_set_analysis_target`

@@ -947,6 +947,7 @@ bool aarch64_parallel_select_half_p (machine_mode, rtx);
 bool aarch64_pars_overlap_p (rtx, rtx);
 bool aarch64_simd_scalar_immediate_valid_for_move (rtx, scalar_int_mode);
 bool aarch64_simd_shift_imm_p (rtx, machine_mode, bool);
+bool aarch64_sve_valid_pred_p (rtx, machine_mode);
 bool aarch64_sve_ptrue_svpattern_p (rtx, struct simd_immediate_info *);
 bool aarch64_simd_valid_and_imm (rtx);
 bool aarch64_simd_valid_and_imm_fmov (rtx, unsigned int * = NULL);
@@ -1028,6 +1029,8 @@ rtx aarch64_ptrue_reg (machine_mode, unsigned int);
 rtx aarch64_ptrue_reg (machine_mode, machine_mode);
 rtx aarch64_pfalse_reg (machine_mode);
 bool aarch64_sve_same_pred_for_ptest_p (rtx *, rtx *);
+rtx aarch64_sve_packed_pred (machine_mode);
+rtx aarch64_sve_fp_pred (machine_mode, rtx *);
 void aarch64_emit_load_store_through_mode (rtx, rtx, machine_mode);
 bool aarch64_expand_maskloadstore (rtx *, machine_mode);
 void aarch64_emit_sve_pred_move (rtx, rtx, rtx);
@@ -1036,6 +1039,7 @@ bool aarch64_maybe_expand_sve_subreg_move (rtx, rtx);
 rtx aarch64_replace_reg_mode (rtx, machine_mode);
 void aarch64_split_sve_subreg_move (rtx, rtx, rtx);
 void aarch64_expand_prologue (void);
+void aarch64_decompose_vec_struct_index (machine_mode, rtx *, rtx *, bool);
 void aarch64_expand_vector_init (rtx, rtx);
 void aarch64_sve_expand_vector_init_subvector (rtx, rtx);
 void aarch64_sve_expand_vector_init (rtx, rtx);
@@ -1267,6 +1271,7 @@ void aarch64_expand_reversed_crc_using_pmull (scalar_mode, scalar_mode, rtx *);
 
 void aarch64_expand_fp_spaceship (rtx, rtx, rtx, rtx);
 
+extern bool aarch64_pacret_enabled ();
 extern bool aarch64_gcs_enabled ();
 
 extern unsigned aarch64_data_alignment (const_tree exp, unsigned align);

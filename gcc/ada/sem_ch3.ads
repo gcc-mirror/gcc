@@ -236,19 +236,23 @@ package Sem_Ch3 is
    --  Always False in Ada 95 mode. Equivalent to OK_For_Limited_Init_In_05 in
    --  Ada 2005 mode.
 
-   procedure Preanalyze_Assert_Expression (N : Node_Id; T : Entity_Id);
-   --  Wrapper on Preanalyze_Spec_Expression for assertion expressions, so that
-   --  In_Assertion_Expr can be properly adjusted.
+   procedure Preanalyze_And_Resolve_Assert_Expression
+     (N : Node_Id;
+      T : Entity_Id);
+   --  Wrapper on Preanalyze_And_Resolve_Spec_Expression for assertion
+   --  expressions, so that In_Assertion_Expr can be properly adjusted.
    --
    --  This routine must not be called when N is the root of a subtree that is
    --  not in its final place since it freezes static expression entities,
    --  which would be misplaced in the tree. Preanalyze_And_Resolve must be
    --  used in such a case to avoid reporting spurious errors.
 
-   procedure Preanalyze_Assert_Expression (N : Node_Id);
+   procedure Preanalyze_And_Resolve_Assert_Expression (N : Node_Id);
    --  Similar to the above, but without forcing N to be of a particular type
 
-   procedure Preanalyze_Spec_Expression (N : Node_Id; T : Entity_Id);
+   procedure Preanalyze_And_Resolve_Spec_Expression
+     (N : Node_Id;
+      T : Entity_Id);
    --  Default and per object expressions do not freeze their components, and
    --  must be analyzed and resolved accordingly. The analysis is done by
    --  calling the Preanalyze_And_Resolve routine and setting the global
@@ -262,6 +266,9 @@ package Sem_Ch3 is
    --  not in its final place since it freezes static expression entities,
    --  which would be misplaced in the tree. Preanalyze_And_Resolve must be
    --  used in such a case to avoid reporting spurious errors.
+
+   procedure Preanalyze_And_Resolve_Spec_Expression (N : Node_Id);
+   --  Similar to the above, but without forcing N to be of a particular type
 
    procedure Process_Full_View (N : Node_Id; Full_T, Priv_T : Entity_Id);
    --  Process some semantic actions when the full view of a private type is
@@ -294,10 +301,12 @@ package Sem_Ch3 is
    --  in this case the bounds are captured if necessary using this name.
 
    function Process_Subtype
-     (S           : Node_Id;
-      Related_Nod : Node_Id;
-      Related_Id  : Entity_Id := Empty;
-      Suffix      : Character := ' ') return Entity_Id;
+     (S                  : Node_Id;
+      Related_Nod        : Node_Id;
+      Related_Id         : Entity_Id := Empty;
+      Suffix             : Character := ' ';
+      Excludes_Null      : Boolean := False;
+      Incomplete_Type_OK : Boolean := False) return Entity_Id;
    --  Process a subtype indication S and return corresponding entity.
    --  Related_Nod is the node where the potential generated implicit types
    --  will be inserted. The Related_Id and Suffix parameters are used to

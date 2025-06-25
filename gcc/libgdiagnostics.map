@@ -83,3 +83,10 @@ LIBGDIAGNOSTICS_ABI_1 {
     diagnostic_logical_location_get_fully_qualified_name;
     diagnostic_logical_location_get_decorated_name;
 } LIBGDIAGNOSTICS_ABI_0;
+
+# Add hooks needed for HTML output from sarif-replay
+LIBGDIAGNOSTICS_ABI_2 {
+  global:
+    diagnostic_manager_add_sink_from_spec;
+    diagnostic_manager_set_analysis_target;
+} LIBGDIAGNOSTICS_ABI_1;

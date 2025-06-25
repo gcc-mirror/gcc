@@ -1081,10 +1081,12 @@ package body Exp_Util is
                 Make_Attribute_Reference (Loc,
                   Prefix         =>
                     (if Is_Allocate then
-                       Duplicate_Subexpr_No_Checks (Expression (Alloc_Expr))
+                       Duplicate_Subexpr_No_Checks
+                         (Expression (Alloc_Expr), New_Scope => Proc_Id)
                      else
                        Make_Explicit_Dereference (Loc,
-                         Duplicate_Subexpr_No_Checks (Expr))),
+                         Duplicate_Subexpr_No_Checks
+                           (Expr, New_Scope => Proc_Id))),
                   Attribute_Name => Name_Alignment)));
          end if;
 
@@ -1137,7 +1139,9 @@ package body Exp_Util is
                   if Is_RTE (Etype (Temp), RE_Tag_Ptr) then
                      Param :=
                        Make_Explicit_Dereference (Loc,
-                         Prefix => Duplicate_Subexpr_No_Checks (Temp));
+                         Prefix =>
+                           Duplicate_Subexpr_No_Checks
+                             (Temp, New_Scope => Proc_Id));
 
                   --  In the default case, obtain the tag of the object about
                   --  to be allocated / deallocated. Generate:
@@ -1157,7 +1161,9 @@ package body Exp_Util is
 
                      Param :=
                        Make_Attribute_Reference (Loc,
-                         Prefix         => Duplicate_Subexpr_No_Checks (Temp),
+                         Prefix         =>
+                           Duplicate_Subexpr_No_Checks
+                             (Temp, New_Scope => Proc_Id),
                          Attribute_Name => Name_Tag);
                   end if;
 
@@ -1517,7 +1523,123 @@ package body Exp_Util is
             New_E := Type_Map.Get (Entity (N));
 
             if Present (New_E) then
-               Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
+               declare
+
+                  Ctrl_Type : constant Entity_Id
+                    := Find_Dispatching_Type (Par_Subp);
+
+                  function Call_To_Parent_Dispatching_Op_Must_Be_Mapped
+                    (Call_Node : Node_Id) return Boolean;
+                  --  If Call_Node is a call to a primitive function F of the
+                  --  tagged type T associated with Par_Subp that either has
+                  --  any actuals that are controlling formals of Par_Subp,
+                  --  or else the call to F is an actual parameter of an
+                  --  enclosing call to a primitive of T that has any actuals
+                  --  that are controlling formals of Par_Subp (and recursively
+                  --  up the tree of enclosing function calls), returns True;
+                  --  otherwise returns False. Returning True implies that the
+                  --  call to F must be mapped to a call that instead targets
+                  --  the corresponding function F of the tagged type for which
+                  --  Subp is a primitive function.
+
+                  --------------------------------------------------
+                  -- Call_To_Parent_Dispatching_Op_Must_Be_Mapped --
+                  --------------------------------------------------
+
+                  function Call_To_Parent_Dispatching_Op_Must_Be_Mapped
+                    (Call_Node : Node_Id) return Boolean
+                  is
+                     pragma Assert (Nkind (Call_Node) = N_Function_Call);
+
+                     Actual           : Node_Id := First_Actual (Call_Node);
+                     Actual_Or_Prefix : Node_Id;
+
+                  begin
+                     if Is_Entity_Name (Name (Call_Node))
+                       and then Is_Dispatching_Operation
+                                  (Entity (Name (Call_Node)))
+                       and then
+                            Is_Ancestor
+                              (Ctrl_Type,
+                               Find_Dispatching_Type
+                                 (Entity (Name (Call_Node))))
+                     then
+                        while Present (Actual) loop
+
+                           --  Account for 'Old and explicit dereferences,
+                           --  picking up the prefix object in those cases.
+
+                           if (Nkind (Actual) = N_Attribute_Reference
+                                and then Attribute_Name (Actual) = Name_Old)
+                             or else Nkind (Actual) = N_Explicit_Dereference
+                           then
+                              Actual_Or_Prefix := Prefix (Actual);
+                           else
+                              Actual_Or_Prefix := Actual;
+                           end if;
+
+                           --  If at least one actual is a controlling formal
+                           --  parameter of a class-wide Pre/Post aspect's
+                           --  subprogram, the rule in RM 6.1.1(7) applies,
+                           --  and we want to map the call to target the
+                           --  corresponding function of the derived type.
+
+                           if Nkind (Actual_Or_Prefix)
+                                in N_Identifier
+                                 | N_Expanded_Name
+                                 | N_Operator_Symbol
+
+                             and then Is_Formal (Entity (Actual_Or_Prefix))
+
+                             and then Is_Controlling_Formal
+                                        (Entity (Actual_Or_Prefix))
+                           then
+                              return True;
+
+                           --  RM 6.1.1(7) also applies to Result attributes
+                           --  of primitive functions with controlling results.
+
+                           elsif Is_Attribute_Result (Actual)
+                             and then Has_Controlling_Result (Subp)
+                           then
+                              return True;
+                           end if;
+
+                           Next_Actual (Actual);
+                        end loop;
+
+                        if Nkind (Parent (Call_Node)) = N_Function_Call then
+                           return
+                             Call_To_Parent_Dispatching_Op_Must_Be_Mapped
+                               (Parent (Call_Node));
+                        end if;
+
+                        return False;
+
+                     else
+                        return False;
+                     end if;
+                  end Call_To_Parent_Dispatching_Op_Must_Be_Mapped;
+
+               begin
+                  --  If N's entity is in the map, then the entity is either
+                  --  a formal of the parent subprogram that should necessarily
+                  --  be mapped, or it's a function call's target entity that
+                  --  that should be mapped if the call involves any actuals
+                  --  that reference formals of the parent subprogram (or the
+                  --  function call is part of an enclosing call that similarly
+                  --  qualifies for mapping). Rewrite a node that references
+                  --  any such qualified entity to a new node referencing the
+                  --  corresponding entity associated with the derived type.
+
+                  if not Is_Subprogram (Entity (N))
+                    or else Nkind (Parent (N)) /= N_Function_Call
+                    or else
+                      Call_To_Parent_Dispatching_Op_Must_Be_Mapped (Parent (N))
+                  then
+                     Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
+                  end if;
+               end;
             end if;
 
             --  Update type of function call node, which should be the same as
@@ -1956,7 +2078,7 @@ package body Exp_Util is
          --  time capture the visibility of the proper package part.
 
          Set_Parent (Expr, Typ_Decl);
-         Preanalyze_Assert_Expression (Expr, Any_Boolean);
+         Preanalyze_And_Resolve_Assert_Expression (Expr, Any_Boolean);
 
          --  Save a copy of the expression with all replacements and analysis
          --  already taken place in case a derived type inherits the pragma.
@@ -1969,8 +2091,8 @@ package body Exp_Util is
 
          --  If the pragma comes from an aspect specification, replace the
          --  saved expression because all type references must be substituted
-         --  for the call to Preanalyze_Spec_Expression in Check_Aspect_At_xxx
-         --  routines.
+         --  for the call to Preanalyze_And_Resolve_Spec_Expression in
+         --  Check_Aspect_At_xxx routines.
 
          if Present (DIC_Asp) then
             Set_Expression_Copy (DIC_Asp, New_Copy_Tree (Expr));
@@ -3217,7 +3339,7 @@ package body Exp_Util is
                --  part.
 
                Set_Parent (Expr, Parent (Prag_Expr));
-               Preanalyze_Assert_Expression (Expr, Any_Boolean);
+               Preanalyze_And_Resolve_Assert_Expression (Expr, Any_Boolean);
 
                --  Save a copy of the expression when T is tagged to detect
                --  errors and capture the visibility of the proper package part
@@ -3229,8 +3351,8 @@ package body Exp_Util is
 
                --  If the pragma comes from an aspect specification, replace
                --  the saved expression because all type references must be
-               --  substituted for the call to Preanalyze_Spec_Expression in
-               --  Check_Aspect_At_xxx routines.
+               --  substituted for the call to Preanalyze_And_Resolve_Spec_
+               --  Expression in Check_Aspect_At_xxx routines.
 
                if Present (Prag_Asp) then
                   Set_Expression_Copy (Prag_Asp, New_Copy_Tree (Expr));
@@ -5062,12 +5184,13 @@ package body Exp_Util is
 
    function Duplicate_Subexpr
      (Exp          : Node_Id;
-      Name_Req     : Boolean := False;
-      Renaming_Req : Boolean := False) return Node_Id
+      New_Scope    : Entity_Id := Empty;
+      Name_Req     : Boolean   := False;
+      Renaming_Req : Boolean   := False) return Node_Id
    is
    begin
       Remove_Side_Effects (Exp, Name_Req, Renaming_Req);
-      return New_Copy_Tree (Exp);
+      return New_Copy_Tree (Exp, New_Scope => New_Scope);
    end Duplicate_Subexpr;
 
    ---------------------------------
@@ -5076,8 +5199,9 @@ package body Exp_Util is
 
    function Duplicate_Subexpr_No_Checks
      (Exp          : Node_Id;
-      Name_Req     : Boolean := False;
-      Renaming_Req : Boolean := False) return Node_Id
+      New_Scope    : Entity_Id := Empty;
+      Name_Req     : Boolean   := False;
+      Renaming_Req : Boolean   := False) return Node_Id
    is
       New_Exp : Node_Id;
 
@@ -5087,7 +5211,7 @@ package body Exp_Util is
          Name_Req     => Name_Req,
          Renaming_Req => Renaming_Req);
 
-      New_Exp := New_Copy_Tree (Exp);
+      New_Exp := New_Copy_Tree (Exp, New_Scope => New_Scope);
       Remove_Checks (New_Exp);
       return New_Exp;
    end Duplicate_Subexpr_No_Checks;
@@ -5098,14 +5222,15 @@ package body Exp_Util is
 
    function Duplicate_Subexpr_Move_Checks
      (Exp          : Node_Id;
-      Name_Req     : Boolean := False;
-      Renaming_Req : Boolean := False) return Node_Id
+      New_Scope    : Entity_Id := Empty;
+      Name_Req     : Boolean   := False;
+      Renaming_Req : Boolean   := False) return Node_Id
    is
       New_Exp : Node_Id;
 
    begin
       Remove_Side_Effects (Exp, Name_Req, Renaming_Req);
-      New_Exp := New_Copy_Tree (Exp);
+      New_Exp := New_Copy_Tree (Exp, New_Scope => New_Scope);
       Remove_Checks (Exp);
       return New_Exp;
    end Duplicate_Subexpr_Move_Checks;
@@ -8103,19 +8228,31 @@ package body Exp_Util is
                   return;
                end if;
 
-            --  the expansion of Task and protected type declarations can
+            --  The expansion of task and protected type declarations can
             --  create declarations for temporaries which, like other actions
-            --  are inserted and analyzed before the current declaraation.
-            --  However, the current scope is the synchronized type, and
-            --  for unnesting it is critical that the proper scope for these
-            --  generated entities be the enclosing one.
+            --  are inserted and analyzed before the current declaration.
+            --  However, in some cases, the current scope is the synchronized
+            --  type, and for unnesting it is critical that the proper scope
+            --  for these generated entities be the enclosing one.
 
             when N_Task_Type_Declaration
                | N_Protected_Type_Declaration =>
 
-               Push_Scope (Scope (Current_Scope));
-               Insert_List_Before_And_Analyze (P, Ins_Actions);
-               Pop_Scope;
+               declare
+                  Skip_Scope : constant Boolean :=
+                    Ekind (Current_Scope) in Concurrent_Kind;
+               begin
+                  if Skip_Scope then
+                     Push_Scope (Scope (Current_Scope));
+                  end if;
+
+                  Insert_List_Before_And_Analyze (P, Ins_Actions);
+
+                  if Skip_Scope then
+                     Pop_Scope;
+                  end if;
+               end;
+
                return;
 
             --  A special case, N_Raise_xxx_Error can act either as a statement
@@ -10871,11 +11008,10 @@ package body Exp_Util is
          --  operator on private type might not be visible and won't be
          --  resolved.
 
-         else pragma Assert (Is_RTE (Base_Type (Typ), RE_Big_Integer)
-                               or else
-                             Is_RTE (Base_Type (Typ), RO_GH_Big_Integer)
-                               or else
-                             Is_RTE (Base_Type (Typ), RO_SP_Big_Integer));
+         else
+            pragma Assert
+              (Is_RTE (Base_Type (Typ), RE_Big_Integer)
+               or else Is_RTE (Base_Type (Typ), RO_SP_Big_Integer));
             return
               Make_Function_Call (Loc,
                 Name                   =>
@@ -14466,7 +14602,16 @@ package body Exp_Util is
       else
          N := First (L);
          while Present (N) loop
-            if not Side_Effect_Free (N, Name_Req, Variable_Ref) then
+            if Nkind (N) = N_Parameter_Association then
+               if not
+                 Side_Effect_Free
+                  (Explicit_Actual_Parameter (N), Name_Req, Variable_Ref)
+               then
+                  return False;
+               end if;
+
+               Next (N);
+            elsif not Side_Effect_Free (N, Name_Req, Variable_Ref) then
                return False;
             else
                Next (N);

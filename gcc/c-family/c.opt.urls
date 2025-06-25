@@ -756,6 +756,12 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-self-move)
 Wsequence-point
 UrlSuffix(gcc/Warning-Options.html#index-Wno-sequence-point)
 
+Wsfinae-incomplete=
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-sfinae-incomplete)
+
+Wsfinae-incomplete
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-sfinae-incomplete)
+
 Wshadow-ivar
 UrlSuffix(gcc/Warning-Options.html#index-Wno-shadow-ivar)
 

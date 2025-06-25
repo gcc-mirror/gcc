@@ -8,6 +8,6 @@ struct A;
 
 static_assert(!C<A>);
 
-struct A { static constexpr bool value = false; };
+struct A { static constexpr bool value = false; }; // { dg-warning Wsfinae-incomplete }
 
 static_assert(C<A>); // { dg-error "assert" }

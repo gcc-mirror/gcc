@@ -1161,7 +1161,7 @@
        && (((unsigned HOST_WIDE_INT)INTVAL(operands[2]) + 0x1000) < 0x2000))"
   {
     addr_space_t as = INTVAL (operands[3]);
-    const char *glc = INTVAL (operands[4]) ? " glc" : "";
+    const char *glc = INTVAL (operands[4]) ? TARGET_GLC_NAME : "";
 
     static char buf[200];
     if (AS_FLAT_P (as))
@@ -1221,7 +1221,7 @@
     && (((unsigned HOST_WIDE_INT)INTVAL(operands[3]) + 0x1000) < 0x2000))"
   {
     addr_space_t as = INTVAL (operands[4]);
-    const char *glc = INTVAL (operands[5]) ? " glc" : "";
+    const char *glc = INTVAL (operands[5]) ? TARGET_GLC_NAME : "";
 
     static char buf[200];
     if (AS_GLOBAL_P (as))
@@ -1288,7 +1288,7 @@
 	&& (((unsigned HOST_WIDE_INT)INTVAL(operands[1]) + 0x1000) < 0x2000))"
   {
     addr_space_t as = INTVAL (operands[3]);
-    const char *glc = INTVAL (operands[4]) ? " glc" : "";
+    const char *glc = INTVAL (operands[4]) ? TARGET_GLC_NAME : "";
 
     static char buf[200];
     if (AS_FLAT_P (as))
@@ -1345,7 +1345,7 @@
     && (((unsigned HOST_WIDE_INT)INTVAL(operands[2]) + 0x1000) < 0x2000))"
   {
     addr_space_t as = INTVAL (operands[4]);
-    const char *glc = INTVAL (operands[5]) ? " glc" : "";
+    const char *glc = INTVAL (operands[5]) ? TARGET_GLC_NAME : "";
 
     static char buf[200];
     if (AS_GLOBAL_P (as))

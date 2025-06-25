@@ -56,6 +56,14 @@ enum dr_alignment_support {
   dr_aligned
 };
 
+/* Define type of peeling support to indicate how peeling for alignment can help
+   make vectorization supported.  */
+enum peeling_support {
+  peeling_known_supported,
+  peeling_maybe_supported,
+  peeling_unsupported
+};
+
 /* Define type of def-use cross-iteration cycle.  */
 enum vect_def_type {
   vect_uninitialized_def = 0,
@@ -946,6 +954,13 @@ public:
      epilogue of loop.  */
   bool epil_using_partial_vectors_p;
 
+  /* True if we've decided to use peeling with versioning together, which allows
+     unaligned unsupported data refs to be uniformly aligned after a certain
+     amount of peeling (mutual alignment).  Otherwise, we use versioning alone
+     so these data refs must be already aligned to a power-of-two boundary
+     without peeling.  */
+  bool allow_mutual_alignment;
+
   /* The bias for len_load and len_store.  For now, only 0 and -1 are
      supported.  -1 must be used when a backend does not support
      len_load/len_store with a length of zero.  */
@@ -969,6 +984,10 @@ public:
 
   /* Main loop IV cond.  */
   gcond* loop_iv_cond;
+
+  /* True if we have an unroll factor requested by the user through pragma GCC
+     unroll.  */
+  bool user_unroll;
 
   /* True if there are no loop carried data dependencies in the loop.
      If loop->safelen <= 1, then this is always true, either the loop
@@ -1070,6 +1089,7 @@ public:
 #define LOOP_VINFO_USING_SELECT_VL_P(L) (L)->using_select_vl_p
 #define LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P(L)                             \
   (L)->epil_using_partial_vectors_p
+#define LOOP_VINFO_ALLOW_MUTUAL_ALIGNMENT(L) (L)->allow_mutual_alignment
 #define LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS(L) (L)->partial_load_store_bias
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
 #define LOOP_VINFO_MAX_VECT_FACTOR(L)      (L)->max_vectorization_factor
@@ -1094,6 +1114,7 @@ public:
 #define LOOP_VINFO_CHECK_UNEQUAL_ADDRS(L)  (L)->check_unequal_addrs
 #define LOOP_VINFO_CHECK_NONZERO(L)        (L)->check_nonzero
 #define LOOP_VINFO_LOWER_BOUNDS(L)         (L)->lower_bounds
+#define LOOP_VINFO_USER_UNROLL(L)          (L)->user_unroll
 #define LOOP_VINFO_GROUPED_STORES(L)       (L)->grouped_stores
 #define LOOP_VINFO_SLP_INSTANCES(L)        (L)->slp_instances
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor

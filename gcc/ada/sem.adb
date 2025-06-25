@@ -765,12 +765,11 @@ package body Sem is
          E : constant Entity_Id := Defining_Entity_Or_Empty (N);
       begin
          if Present (E) then
-            if Ekind (E) = E_Void
-              and then Nkind (N) = N_Component_Declaration
+            if Nkind (N) = N_Component_Declaration
               and then Present (Scope (E))
               and then Ekind (Scope (E)) = E_Record_Type
             then
-               null; -- Set it later, in Analyze_Component_Declaration
+               null; -- Set it later, in Record_Type_Definition
             elsif not Is_Not_Self_Hidden (E) then
                Set_Is_Not_Self_Hidden (E);
             end if;

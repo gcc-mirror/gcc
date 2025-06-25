@@ -45,6 +45,15 @@ package Sem_Ch10 is
    --  set when Ent is a tagged type and its class-wide type needs to appear
    --  in the tree.
 
+   procedure Expand_With_Clause (Item : Node_Id; Nam : Node_Id; N : Node_Id);
+   --  When a child unit appears in a context clause, the implicit withs on
+   --  parents are made explicit, and with clauses are inserted in the context
+   --  clause before the one for the child. If a parent in the with_clause
+   --  is a renaming, the implicit with_clause is on the renaming whose name
+   --  is mentioned in the with_clause, and not on the package it renames.
+   --  N is the compilation unit whose list of context items receives the
+   --  implicit with_clauses.
+
    procedure Install_Context (N : Node_Id; Chain : Boolean := True);
    --  Installs the entities from the context clause of the given compilation
    --  unit into the visibility chains. This is done before analyzing a unit.

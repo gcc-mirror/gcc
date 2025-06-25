@@ -83,11 +83,8 @@ package body Debug_A is
 
          case Nkind (N) is
             when N_Has_Chars =>
-               Write_Str (" """);
-               if Present (Chars (N)) then
-                  Write_Str (Get_Name_String (Chars (N)));
-               end if;
-               Write_Str ("""");
+               Write_Str (" ");
+               Write_Name_For_Debug (Chars (N));
             when others => null;
          end case;
 

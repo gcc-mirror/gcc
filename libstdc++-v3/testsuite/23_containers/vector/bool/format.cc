@@ -21,7 +21,7 @@ is_format_string_for(const char* str, Args&&... args)
 }
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
-#define WIDEN(S) WIDEN_(_CharT, S)
+#define WIDEN(S) WIDEN_(CharT, S)
 
 void
 test_format_string()
@@ -34,11 +34,11 @@ test_format_string()
   VERIFY( !is_format_string_for("{:{}}", v[0], 1.0f) );
 }
 
-template<typename _CharT>
+template<typename CharT>
 void
 test_output()
 {
-  std::basic_string<_CharT> res;
+  std::basic_string<CharT> res;
   size_t size = 0;
   std::vector<bool> v{true, false};
 

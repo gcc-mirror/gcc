@@ -56,7 +56,7 @@ class symbol_pair_t
 {
   const symbol_elem_t *first, *last;
 public:
-  symbol_pair_t( const symbol_elem_t * first, const symbol_elem_t * end = NULL )
+  explicit symbol_pair_t( const symbol_elem_t * first, const symbol_elem_t * end = NULL )
     : first(first), last(end)
   {}
 
@@ -136,11 +136,9 @@ static struct symbol_table_t {
 
 static symbol_table_t&
 symbol_table_extend() {
-  static FILE *mapped;
 
   if( symbols.nelem == 0 ) {  // first time: create file & set initial capacity
-    assert(mapped == NULL && symbols.fd == -1);
-
+    FILE *mapped;
     if( (mapped = tmpfile()) == NULL ) {
       cbl_err( "could not create temporary file for symbol table");
     }
@@ -160,8 +158,8 @@ symbol_table_extend() {
   off_t len = symbols.size();
 
   if( 0 != ftruncate(symbols.fd, len) ) {
-    cbl_err( "%s:%d:could not extend symbol table to %zu elements",
-        __func__, __LINE__, symbols.capacity);
+    cbl_err( "%s:%d: could not extend symbol table to %lu elements",
+	     __func__, __LINE__, gb4(symbols.capacity));
   }
 
   /*
@@ -229,6 +227,12 @@ cbl_span_t::from_field() { assert(from); return from->field; }
 cbl_field_t *
 cbl_span_t::len_field()  { assert(len); return len->field; }
 
+cbl_ffi_arg_t::cbl_ffi_arg_t()
+  : optional(false)
+  , crv(by_reference_e)
+  , attr(none_of_e)
+{}
+
 cbl_ffi_arg_t::
 cbl_ffi_arg_t( cbl_refer_t* refer, cbl_ffi_arg_attr_t attr )
   : optional(false)
@@ -280,7 +284,7 @@ class group_size_t {
 enum  { constq = constant_e | quoted_e };
 
 static symbol_elem_t
-elementize( cbl_field_t& field ) {
+elementize( const cbl_field_t& field ) {
   symbol_elem_t sym (SymField);
   sym.elem.field = field;
   return sym;
@@ -907,7 +911,7 @@ end_of_group( const cbl_field_t *group, const cbl_field_t *field ) {
 class eog_t {
   const cbl_field_t * group;
 public:
-  eog_t( const symbol_elem_t *e ) : group(cbl_field_of(e)) {}
+  explicit eog_t( const symbol_elem_t *e ) : group(cbl_field_of(e)) {}
 
   bool operator()( symbol_elem_t& e ) {
     return e.type == SymField && end_of_group(group, cbl_field_of(&e));
@@ -927,7 +931,7 @@ end_of_group( size_t igroup ) {
       if( e->program != group->program ) return isym;
       if( e->type == SymLabel ) return isym; // end of data division
       if( e->type == SymField ) {
-        auto f = cbl_field_of(e);
+        const auto f = cbl_field_of(e);
         if( f->level == LEVEL77 || f->level == 66 ) return isym;
         if( f->level == 1 && f->parent != igroup ) {
           return isym;
@@ -938,7 +942,7 @@ end_of_group( size_t igroup ) {
   }
 
   eog_t eog(symbol_at(igroup));
-  symbol_elem_t *e = std::find_if( symbols_begin(++igroup), symbols_end(), eog );
+  const symbol_elem_t *e = std::find_if( symbols_begin(++igroup), symbols_end(), eog );
   return e - symbols_begin();
 }
 
@@ -993,7 +997,7 @@ symbol_find_odo_debug( cbl_field_t * field ) {
 
 // Return OCCURS DEPENDING ON table subordinate to field, if any.
 struct cbl_field_t *
-symbol_find_odo( cbl_field_t * field ) {
+symbol_find_odo( const cbl_field_t * field ) {
   size_t bog = field_index(field), eog = end_of_group(bog);
   auto e = std::find_if( symbol_at(bog), symbol_at_impl(eog, true), has_odo );
   return e == symbol_at_impl(eog, true)? NULL : cbl_field_of(e);
@@ -1170,7 +1174,7 @@ static struct symbol_elem_t *
         // If an 01 record exists for the FD/SD, use its capacity as the
         // default_record capacity.
         if( p != symbols_end() ) {
-          auto record = cbl_field_of(p);
+          const auto record = cbl_field_of(p);
           assert(record->level == 1);
           e = calculate_capacity(p);
           auto record_size = std::max(record->data.memsize,
@@ -1339,19 +1343,18 @@ immediately_follows( const cbl_field_t *field ) {
 
 bool
 is_variable_length( const cbl_field_t *field ) {
-  bool odo = false;
-  std::find_if( symbol_at(field_index(field)) + 1, symbols_end(),
-                [&odo, field]( const auto& elem ) {
-                  if( elem.type == SymField ) {
-                    auto f = cbl_field_of(&elem);
-                    if( f->level <= field->level ) return true;
-                    if( f->occurs.depending_on ) {
-                      odo = true;
-                      return true;
-                    }
-                  }
-                  return false;
-                } );
+  // RENAMES may be included in end_of_group.
+  size_t isym = field_index(field),  esym = end_of_group(isym);
+  bool odo = std::any_of( symbol_at(isym) + 1, symbol_at_impl(esym), 
+			  [field]( const auto& elem ) {
+			    if( elem.type == SymField ) {
+			      auto f = cbl_field_of(&elem);
+			      if( field->level < f->level ) { // exclude RENAMES
+				return 0 < f->occurs.depending_on;
+			      }
+			    }
+			    return false;
+			  } );
   return odo;
 }
 
@@ -1363,7 +1366,7 @@ is_variable_length( const cbl_field_t *field ) {
  *  occurs-depending table."
 */
 cbl_field_t *
-rename_not_ok( cbl_field_t *first, cbl_field_t *last) {
+rename_not_ok( const cbl_field_t *first, const cbl_field_t *last) {
   symbol_elem_t
     *beg = symbol_at(field_index(first)),
     *end = symbol_at(field_index(last));
@@ -1464,7 +1467,7 @@ field_str( const cbl_field_t *field ) {
   }
 
   pend += snprintf(pend, string + sizeof(string) - pend,
-                   "%02d %-20s ", field->level, name);
+                   "%02u %-20s ", field->level, name);
 
   char offset[32] = "";
   if( field->level > 1 ) {
@@ -1575,7 +1578,7 @@ struct capacity_of {
 
   capacity_of operator()( symbol_elem_t& elem ) {
     if( elem.type == SymField ) {
-      cbl_field_t *f = cbl_field_of(&elem);
+      const cbl_field_t *f = cbl_field_of(&elem);
       if( is_elementary(f->type) ) {
         capacity += field_size(f);
       }
@@ -1704,7 +1707,6 @@ symbols_update( size_t first, bool parsed_ok ) {
     case 1:
       pend = calculate_capacity(p);
       if( dialect_mf() && is_table(field) ) {
-        cbl_field_t *field = cbl_field_of(p);
         if( field->data.memsize < field->size() ) {
           field->data.memsize = field->size();
         }
@@ -1743,7 +1745,7 @@ symbols_update( size_t first, bool parsed_ok ) {
 
     bool size_invalid = field->data.memsize > 0 && symbol_redefines(field);
     if( size_invalid ) { // redefine of record area is ok
-      auto redefined = symbol_redefines(field);
+      const auto redefined = symbol_redefines(field);
       size_invalid = ! is_record_area(redefined);
     }
     if( !field->is_valid() || size_invalid )
@@ -1826,7 +1828,7 @@ symbols_update( size_t first, bool parsed_ok ) {
     }
 
     // Verify REDEFINing field has no ODO components
-    auto parent = symbol_redefines(field);
+    const auto parent = symbol_redefines(field);
     if( parent && !is_record_area(parent) && is_variable_length(field) ) {
       ERROR_FIELD(field, "line %d: REDEFINES field %s cannot be variable length",
                field->line, field->name);
@@ -2016,15 +2018,15 @@ symbol_in_file( symbol_elem_t *e ) {
 }
 #endif
 
-static struct cbl_field_t *
-symbol_field_parent_set( struct cbl_field_t *field )
+static cbl_field_t *
+symbol_field_parent_set( cbl_field_t *field )
 {
   if( field->level == 01 ) return NULL;
   if( field->level == 77 ) return NULL;
   if( field->level == 78 ) return NULL;
 
   struct symbol_elem_t *e = symbols.elems + symbols.nelem - 1;
-  struct symbol_elem_t *first = symbols.elems + symbols.first_program;
+  const struct symbol_elem_t *first = symbols.elems + symbols.first_program;
 
   for( ; field->parent == 0 && e >= first; e-- ) {
     if( ! (e->type == SymField && cbl_field_of(e)->level > 0) ) {
@@ -2102,7 +2104,7 @@ class parent_elem_set
 private:
   size_t parent_index;
 public:
-  parent_elem_set( size_t parent_index )
+  explicit parent_elem_set( size_t parent_index )
     : parent_index(parent_index)
   {}
   void operator()( struct symbol_elem_t& e ) {
@@ -2406,7 +2408,7 @@ symbol_file_add( size_t program, cbl_file_t *file ) {
     return NULL;
   }
 
-  struct symbol_elem_t sym = { SymFile, program };
+  symbol_elem_t sym{ SymFile, program };
   sym.elem.file = *file;
 
   e = symbol_add(&sym);
@@ -2419,9 +2421,9 @@ symbol_file_add( size_t program, cbl_file_t *file ) {
   return e;
 }
 
-struct symbol_elem_t *
-symbol_alphabet_add( size_t program, struct cbl_alphabet_t *alphabet ) {
-  struct symbol_elem_t sym{ SymAlphabet, program };
+symbol_elem_t *
+symbol_alphabet_add( size_t program, const cbl_alphabet_t *alphabet ) {
+  symbol_elem_t sym{ SymAlphabet, program };
   sym.elem.alphabet = *alphabet;
   return symbol_add(&sym);
 }
@@ -2464,7 +2466,7 @@ symbol_typedef_add( size_t program, struct cbl_field_t *field ) {
   auto e = symbols_end() - 1;
   assert( symbols_begin() < e );
   if( e->type == SymField ) {
-    auto f = cbl_field_of(e);
+    const auto f = cbl_field_of(e);
     if( f == field ) return e;
   }
 
@@ -2502,7 +2504,7 @@ struct symbol_elem_t *
 symbol_field_add( size_t program, struct cbl_field_t *field )
 {
   field->our_index = symbols.nelem;
-  cbl_field_t *parent = symbol_field_parent_set( field );
+  const cbl_field_t *parent = symbol_field_parent_set( field );
   if( parent && parent->type == FldGroup) {
     // Inherit effects of parent's USAGE, as though it appeared 1st in the
     // member's definition.
@@ -2514,7 +2516,7 @@ symbol_field_add( size_t program, struct cbl_field_t *field )
     if( is_numeric(parent->usage) && parent->data.capacity > 0 ) {
       field->type = parent->usage;
       field->data = parent->data;
-      field->data = 0.0;
+      field->data = 0;
       field->data.initial = NULL;
     }
   }
@@ -2633,6 +2635,7 @@ symbol_field( size_t program, size_t parent, const char name[] )
   return p != end? &*p : NULL;
 }
 
+// cppcheck-suppress-begin [CastIntegerToAddressAtReturn] obviously not true
 symbol_elem_t *
 symbol_register( const char name[] )
 {
@@ -2648,6 +2651,7 @@ symbol_register( const char name[] )
 
   return p;
 }
+// cppcheck-suppress-end [CastIntegerToAddressAtReturn]
 
 // Find current 01 record during Level 66 construction.
 const symbol_elem_t *
@@ -2710,11 +2714,12 @@ symbol_literalA( size_t program, const char name[] )
 struct symbol_elem_t *
 symbol_file( size_t program, const char name[] ) {
   size_t nelem = symbols.nelem;
-  struct symbol_elem_t key = { SymFile, program }, *e = &key;
+  symbol_elem_t key{ SymFile, program }, *e = &key;
 
   assert(strlen(name) < sizeof(key.elem.file.name));
   strcpy(key.elem.file.name, name);
 
+  // cppcheck-suppress-begin [knownConditionTrueFalse]
   do {
     e = static_cast<struct symbol_elem_t *>(lfind( &key, symbols.elems,
                                                    &nelem, sizeof(*e),
@@ -2723,6 +2728,7 @@ symbol_file( size_t program, const char name[] ) {
     key.program = cbl_label_of(symbol_at(key.program))->parent;
     if( key.program == 0 ) break; // no file without a program
   } while( !e );
+  // cppcheck-suppress-end [knownConditionTrueFalse]
 
   if( e ) {
     assert(e->type == SymFile);
@@ -2830,7 +2836,7 @@ seek_parent( const symbol_elem_t *e, size_t level ) {
 struct symbol_elem_t *
 symbol_field_same_as( cbl_field_t *tgt, const cbl_field_t *src ) {
   if( target_in_src(tgt, src) ) {
-    ERROR_FIELD(tgt, "%s %s  may not reference itself as part of %s %s",
+    ERROR_FIELD(tgt, "%s %s may not reference itself as part of %s %s",
             tgt->level_str(), tgt->name, src->level_str(), src->name);
     return NULL;
   }
@@ -2916,7 +2922,7 @@ symbol_file_same_record_area( std::list<cbl_file_t*>& files ) {
 }
 
 static symbol_elem_t *
-next_program( symbol_elem_t *elem ) {
+next_program( const symbol_elem_t *elem ) {
   size_t start = elem? symbol_index(elem) : 0;
   symbol_elem_t * e =
     std::find_if( symbols_begin(start), symbols_end(), is_program );
@@ -2954,14 +2960,14 @@ is_numeric_constant( const char name[] ) {
 
 // get default record layout for a file
 struct cbl_field_t *
-symbol_file_record( struct cbl_file_t *file ) {
+symbol_file_record( const cbl_file_t *file ) {
   return cbl_field_of(symbol_at(file->default_record));
 }
 
 class is_section {
   cbl_section_type_t section_type;
  public:
-  is_section( cbl_section_type_t sect ) : section_type(sect) {}
+  explicit is_section( cbl_section_type_t sect ) : section_type(sect) {}
   bool operator()( symbol_elem_t& e ) const {
     return e.type == SymDataSection && cbl_section_of(&e)->type == section_type;
   }
@@ -2971,8 +2977,6 @@ class is_section {
 static bool fd_record_size_cmp( const symbol_elem_t& a, const symbol_elem_t& b ) {
   return cbl_field_of(&a)->data.capacity < cbl_field_of(&b)->data.capacity;
 }
-
-cbl_file_key_t cbl_file_t::no_key;
 
 /*
  * Find largest and smallest record defined for a file.  The rule is:
@@ -3084,7 +3088,7 @@ cbl_alphabet_t::assign( const YYLTYPE& loc, unsigned char ch, unsigned char high
     return true;
   }
   auto taken = alphabet[ch];
-  error_msg(loc, "ALPHABET %s, character '%c' (X'%x') "
+  error_msg(loc, "ALPHABET %s, character %<%c%> (X%'%x%') "
            "in position %d already defined at position %d",
            name,
            ISPRINT(ch)? ch : '?', ch,
@@ -3230,7 +3234,6 @@ parser_symbol_add2( cbl_field_t *field ) {
 
 static cbl_field_t *
 new_literal_add( const char initial[], uint32_t len, enum cbl_field_attr_t attr ) {
-  static char empty[2] = "\0";
   cbl_field_t *field = NULL;
   if( !(attr & quoted_e) )
     {
@@ -3240,6 +3243,7 @@ new_literal_add( const char initial[], uint32_t len, enum cbl_field_attr_t attr 
     }
   else
     {
+    static char empty[2] = "\0";
     field = new_temporary_impl(FldLiteralA);
     field->attr |= attr;
     field->data.initial = len > 0? initial : empty;
@@ -3489,7 +3493,7 @@ cbl_field_t::internalize() {
   static const size_t noconv = size_t(-1);
 
   if (cd == (iconv_t)-1) {
-    yywarn("failed iconv_open tocode = '%s' fromcode = %s", tocode, fromcode);
+    yywarn("failed %<iconv_open%> tocode = %<%s%> fromcode = %s", tocode, fromcode);
   }
 
   bool using_assumed = fromcode == os_locale.assumed;
@@ -3606,12 +3610,9 @@ cbl_label_t::explicit_parent() const {
 }
 
 cbl_prog_hier_t::cbl_prog_hier_t() {
-  nlabel = std::count_if( symbols_begin(), symbols_end(), is_program );
-  assert(nlabel >0);
-  labels = new cbl_prog_hier_t::program_label_t[nlabel];
-
   std::copy_if( symbols_begin(), symbols_end(),
-                labels, is_program );
+                std::back_inserter(labels), is_program );
+  assert(! labels.empty());
 }
 
 /*
@@ -3704,7 +3705,8 @@ symbol_label_add( size_t program, cbl_label_t *input )
   if( (e = symbol_add(&elem)) == NULL ) {
     cbl_errx("%s:%d: could not add '%s'", __func__, __LINE__, label->name);
   }
-
+  assert(e);
+  
   common_callables_update( symbol_index(e) );
 
   // restore munged line number unless symbol_add returned an existing label
@@ -3725,7 +3727,7 @@ symbol_label_section_exists( size_t eval_label_index ) {
   bool has_section = std::any_of( ++eval, symbols_end(),
                                [program = eval->program]( const auto& sym ) {
                                  if( program == sym.program && sym.type == SymLabel ) {
-                                   auto& L(sym.elem.label);
+                                   const auto& L(sym.elem.label);
 				   // true if the symbol is an explicit label.
                                    return L.type == LblSection &&  L.name[0] != '_'; 
                                  }
@@ -3877,7 +3879,7 @@ expand_picture(const char *picture)
     {
     assert(strlen(picture) < PICTURE_MAX); // guaranteed by picset() in scanner
     size_t retval_length = PICTURE_MAX;
-    char *retval = (char *)xmalloc(retval_length);
+    char *retval = static_cast<char *>(xmalloc(retval_length));
     size_t index = 0;
 
     int ch;
@@ -3906,7 +3908,7 @@ expand_picture(const char *picture)
             if( index + repeat >= retval_length )
                 {
                 retval_length <<= 1;
-                retval = (char *)xrealloc(retval, retval_length);
+                retval = static_cast<char *>(xrealloc(retval, retval_length));
                 }
 
             while(repeat--)
@@ -3919,7 +3921,7 @@ expand_picture(const char *picture)
             if( index >= retval_length )
                 {
                 retval_length <<= 1;
-                retval = (char *)xrealloc(retval, retval_length);
+                retval = static_cast<char *>(xrealloc(retval, retval_length));
                 }
             retval[index++] = ch;
             }
@@ -3928,7 +3930,7 @@ expand_picture(const char *picture)
     if( index >= retval_length )
         {
         retval_length <<= 1;
-        retval = (char *)xrealloc(retval, retval_length);
+        retval = static_cast<char *>(xrealloc(retval, retval_length));
         }
     retval[index++] = '\0';
 
@@ -3951,7 +3953,6 @@ expand_picture(const char *picture)
                 {
                 pcurrency[i] = 'B';
                 }
-            dest_length += sign_length;
             }
         }
 
@@ -4182,7 +4183,7 @@ symbol_program_callables( size_t program ) {
     if( e->type != SymLabel ) continue;
     if( e->elem.label.type != LblProgram ) continue;
 
-    auto prog = cbl_label_of(e);
+    const auto prog = cbl_label_of(e);
     if( program == symbol_index(e) && !prog->recursive ) continue;
 
     if( (self->parent == prog->parent && prog->common) ||
@@ -4216,6 +4217,7 @@ symbol_program_local( const char tgt_name[] ) {
  */
 std::map<char, const char *> currencies;
 
+// cppcheck-suppress-begin [nullPointerRedundantCheck]
 bool
 symbol_currency_add( const char symbol[], const char sign[] ) {
   // In service of CURRENCY sign PICTURE SYMBOL symbol
@@ -4227,6 +4229,7 @@ symbol_currency_add( const char symbol[], const char sign[] ) {
   currencies[*symbol] = sign;
   return true;
 }
+// cppcheck-suppress-end [nullPointerRedundantCheck]
 
 const char *
 symbol_currency( char sign ) {
@@ -4249,24 +4252,19 @@ bool decimal_is_comma() { return decimal_point == ','; }
 /*
  * A cbl_occurs_key_t is part of a field definition, and comprises
  * size_t symbol indexes.  A cbl_key_t is a list of field pointers,
- * and can be created ad hoc to describe a sort. We can construct a
+ * and can be created ad hoc to describe a sort. We construct a
  * cbl_key_t from cbl_occurs_key_t.
  */
 cbl_key_t::
 cbl_key_t( const cbl_occurs_key_t& that )
   : ascending(that.ascending)
 {
-  if( that.field_list.nfield == 0 ) {
-    *this = cbl_key_t();
-    return;
-  }
-
-  nfield = that.field_list.nfield;
-  fields = static_cast<cbl_field_t**>( xcalloc(nfield,
-                                                   sizeof(*fields)) );
-  for( size_t i=0; i < that.field_list.nfield; i++ ) {
-    fields[i] = cbl_field_of(symbol_at(that.field_list.fields[i]));
-  }
+  std::transform( that.field_list.fields,
+                  that.field_list.fields + that.field_list.nfield,
+                  std::back_inserter(fields),
+                  []( size_t isym ) {
+                    return cbl_field_of(symbol_at(isym));
+                  } );
 }
 
 void
@@ -4279,7 +4277,7 @@ cbl_occurs_t::key_alloc( bool ascending ) {
 }
 
 void
-cbl_occurs_t::field_add( cbl_field_list_t& field_list, cbl_field_t *field ) {
+cbl_occurs_t::field_add( cbl_field_list_t& field_list, const cbl_field_t *field ) {
   cbl_field_list_t list = field_list;
   size_t ifield = field_index(field);
   auto nbytes = sizeof(list.fields[0]) * (list.nfield + 1);
@@ -4297,14 +4295,14 @@ cbl_occurs_t::key_field_add( cbl_field_t *field ) {
 }
 
 void
-cbl_occurs_t::index_add( cbl_field_t *field ) {
+cbl_occurs_t::index_add( const cbl_field_t *field ) {
   field_add(indexes, field);
 }
 
 class is_field_at {
   cbl_field_t *field;
  public:
- is_field_at( cbl_field_t *field ) : field(field) {}
+ explicit is_field_at( cbl_field_t *field ) : field(field) {}
   bool operator()( size_t isym ) const  {
     return field == field_at(isym);
   }
@@ -4472,11 +4470,11 @@ cbl_file_key_t::deforward( size_t ifile ) {
   const auto file = cbl_file_of(symbol_at(ifile));
   std::transform( fields, fields + nfield, fields,
                   [ifile, file]( size_t fwd ) {
-                    static std::map<size_t, int> keys;
                     auto ifield = symbol_forward_to(fwd);
                     const auto field = cbl_field_of(symbol_at(ifield));
 
                     if( is_forward(field) && yydebug ) {
+                      static std::map<size_t, int> keys;
                       dbgmsg("%s:%d: key %d: #" HOST_SIZE_T_PRINT_UNSIGNED " %s of %s is %s",
                             "deforward", __LINE__,
                             keys[ifile]++, (fmt_size_t)ifield, field->name, file->name,
@@ -4563,27 +4561,12 @@ cbl_file_t::deforward() {
 
 char *
 cbl_file_t::keys_str() const {
-  std::vector <char *> ks(nkey);
-  std::transform(keys, keys + nkey, ks.begin(),
-                 []( const cbl_file_key_t& key ) {
-                   return key.str();
-                 } );
-  size_t n = 4 * nkey + std::accumulate(ks.begin(), ks.end(), 0,
-                                        []( int n, const char *s ) {
-                                          return n +  strlen(s);
-                                        } );
-  char *output = static_cast<char*>( xcalloc(1, n) ), *p = output;
-  const char *sep = "";
-
-  *p++ = '[';
-  for( auto k : ks ) {
-    p = stpcpy(p, sep);
-    p = stpcpy(p, k);
-    sep = ", ";
-    free(k);
+  std::string names = "[";
+  for( cbl_file_key_t *p = keys;  p < keys + nkey; p++ ) {
+    names += p->str();
+    names += p + 1 < keys + nkey ? "," : "]";
   }
-  *p++ = ']';
-  return output;
+  return xasprintf("%s", names.c_str());
 }
 
 /*
@@ -4645,7 +4628,7 @@ cbl_file_status_cmp( const void *K, const void *E ) {
 static long
 file_status_status_of( file_status_t status ) {
   size_t n = COUNT_OF(file_status_fields);
-  file_status_field_t *fs, key { status };
+  const file_status_field_t *fs, key { status };
 
   fs = (file_status_field_t*)lfind( &key, file_status_fields,
                                     &n, sizeof(*fs), cbl_file_status_cmp );
@@ -4675,7 +4658,7 @@ ast_file_status_between( file_status_t lower, file_status_t upper ) {
 }
 
 bool
-is_register_field(cbl_field_t *field)
+is_register_field(const cbl_field_t *field)
   {
   // TRUE when the field is an executable-level global variable of the type we
   // are calling a "register", like RETURN-CODE or UPSI or the like:

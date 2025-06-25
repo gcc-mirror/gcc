@@ -1589,6 +1589,44 @@
   "&& 1"
   [(set (match_dup 0) (match_dup 1))])
 
+(define_insn_and_split "*<avx512>_load<mode>mask_and15"
+  [(set (match_operand:V48_AVX512VL_4 0 "register_operand" "=v")
+	(vec_merge:V48_AVX512VL_4
+	 (unspec:V48_AVX512VL_4
+	  [(match_operand:V48_AVX512VL_4 1 "memory_operand" "m")]
+	  UNSPEC_MASKLOAD)
+	 (match_operand:V48_AVX512VL_4 2 "nonimm_or_0_operand" "0C")
+	 (and:QI
+	  (match_operand:QI 3 "register_operand" "Yk")
+	  (const_int 15))))]
+  "TARGET_AVX512F"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V48_AVX512VL_4
+	 (unspec:V48_AVX512VL_4 [(match_dup 1)] UNSPEC_MASKLOAD)
+	 (match_dup 2)
+	 (match_dup 3)))])
+
+(define_insn_and_split "*<avx512>_load<mode>mask_and3"
+  [(set (match_operand:V8_AVX512VL_2 0 "register_operand" "=v")
+	(vec_merge:V8_AVX512VL_2
+	 (unspec:V8_AVX512VL_2
+	  [(match_operand:V8_AVX512VL_2 1 "memory_operand" "m")]
+	  UNSPEC_MASKLOAD)
+	 (match_operand:V8_AVX512VL_2 2 "nonimm_or_0_operand" "0C")
+	 (and:QI
+	  (match_operand:QI 3 "register_operand" "Yk")
+	  (const_int 3))))]
+  "TARGET_AVX512F"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V8_AVX512VL_2
+	 (unspec:V8_AVX512VL_2 [(match_dup 1)] UNSPEC_MASKLOAD)
+	 (match_dup 2)
+	 (match_dup 3)))])
+
 (define_expand "<avx512>_load<mode>_mask"
   [(set (match_operand:VI12_AVX512VL 0 "register_operand")
 	(vec_merge:VI12_AVX512VL
@@ -13418,7 +13456,7 @@
 		     (const_int 6) (const_int 14)])))]
   "TARGET_AVX512F"
   "vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
-  [(set_attr "type" "sselog1")
+  [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "mode" "V8DF")])
 
@@ -13449,7 +13487,7 @@
 		     (const_int 2) (const_int 6)])))]
   "TARGET_AVX && <mask_avx512vl_condition>"
   "vmovddup\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
-  [(set_attr "type" "sselog1")
+  [(set_attr "type" "ssemov")
    (set_attr "prefix" "<mask_prefix>")
    (set_attr "mode" "V4DF")])
 
@@ -27839,7 +27877,7 @@
    %vmovddup\t{%1, %0|%0, %1}
    movlhps\t%0, %0"
   [(set_attr "isa" "sse2_noavx,avx,avx512f,sse3,noavx")
-   (set_attr "type" "sselog1,sselog1,ssemov,sselog1,ssemov")
+   (set_attr "type" "sselog1,sselog1,ssemov,ssemov,ssemov")
    (set_attr "prefix" "orig,maybe_evex,evex,maybe_vex,orig")
    (set (attr "mode")
 	(cond [(and (eq_attr "alternative" "2")

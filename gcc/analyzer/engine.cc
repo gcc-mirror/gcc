@@ -925,7 +925,9 @@ impl_region_model_context::on_state_leak (const state_machine &sm,
     }
 
   tree leaked_tree_for_diag = fixup_tree_for_diagnostic (leaked_tree);
-  std::unique_ptr<pending_diagnostic> pd = sm.on_leak (leaked_tree_for_diag);
+  std::unique_ptr<pending_diagnostic> pd = sm.on_leak (leaked_tree_for_diag,
+						       m_old_state,
+						       m_new_state);
   if (pd)
     {
       pending_location ploc (m_enode_for_diag,
@@ -1576,6 +1578,16 @@ exploded_node::on_stmt_pre (exploded_graph &eg,
 	  /* Handle the builtin "__analyzer_dump" by dumping state
 	     to stderr.  */
 	  state->dump (eg.get_ext_state (), true);
+	  return;
+	}
+      else if (is_special_named_call_p (call, "__analyzer_dump_xml", 0))
+	{
+	  state->dump_xml (eg.get_ext_state ());
+	  return;
+	}
+      else if (is_special_named_call_p (call, "__analyzer_dump_dot", 0))
+	{
+	  state->dump_dot (eg.get_ext_state ());
 	  return;
 	}
       else if (is_special_named_call_p (call, "__analyzer_dump_state", 2))

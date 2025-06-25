@@ -2783,16 +2783,31 @@ package body Exp_Ch7 is
             Master_Node_Id :=
               Make_Defining_Identifier (Master_Node_Loc,
                 Chars => New_External_Name (Chars (Obj_Id), Suffix => "MN"));
+
             Master_Node_Decl :=
               Make_Master_Node_Declaration (Master_Node_Loc,
                 Master_Node_Id, Obj_Id);
 
             Push_Scope (Scope (Obj_Id));
+
+            --  Avoid generating duplicate names for master nodes
+
+            if Ekind (Obj_Id) = E_Loop_Parameter
+              and then
+                Present (Current_Entity_In_Scope (Chars (Master_Node_Id)))
+            then
+               Set_Chars (Master_Node_Id,
+                 New_External_Name (Chars (Obj_Id),
+                   Suffix => "MN",
+                   Suffix_Index => -1));
+            end if;
+
             if not Has_Strict_Ctrl_Objs or else Count = 1 then
                Prepend_To (Decls, Master_Node_Decl);
             else
                Insert_Before (Decl, Master_Node_Decl);
             end if;
+
             Analyze (Master_Node_Decl);
             Pop_Scope;
 
