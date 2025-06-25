@@ -3820,6 +3820,8 @@ remove_redundant_vector_load (void)
 
   if (replaced)
     {
+      auto_vec<rtx_insn *> control_flow_insns;
+
       /* (Re-)discover loops so that bb->loop_father can be used in the
 	 analysis below.  */
       calculate_dominance_info (CDI_DOMINATORS);
@@ -3835,6 +3837,20 @@ remove_redundant_vector_load (void)
 		rtx set = gen_rtx_SET (load->broadcast_reg,
 				       load->broadcast_source);
 		insn = emit_insn_after (set, load->def_insn);
+
+		if (cfun->can_throw_non_call_exceptions)
+		  {
+		    /* Handle REG_EH_REGION note in DEF_INSN.  */
+		    rtx note = find_reg_note (load->def_insn,
+					      REG_EH_REGION, nullptr);
+		    if (note)
+		      {
+			control_flow_insns.safe_push (load->def_insn);
+			add_reg_note (insn, REG_EH_REGION,
+				      XEXP (note, 0));
+		      }
+		  }
+
 		if (dump_file)
 		  {
 		    fprintf (dump_file, "\nAdd:\n\n");
@@ -3854,6 +3870,22 @@ remove_redundant_vector_load (void)
 	  }
 
       loop_optimizer_finalize ();
+
+      if (!control_flow_insns.is_empty ())
+	{
+	  free_dominance_info (CDI_DOMINATORS);
+
+	  FOR_EACH_VEC_ELT (control_flow_insns, i, insn)
+	    if (control_flow_insn_p (insn))
+	      {
+		/* Split the block after insn.  There will be a fallthru
+		   edge, which is OK so we keep it.  We have to create
+		   the exception edges ourselves.  */
+		bb = BLOCK_FOR_INSN (insn);
+		split_block (bb, insn);
+		rtl_make_eh_edge (NULL, bb, BB_END (bb));
+	      }
+	}
 
       df_process_deferred_rescans ();
     }
