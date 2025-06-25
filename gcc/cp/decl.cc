@@ -11330,7 +11330,12 @@ grokfndecl (tree ctype,
 	pedwarn (location, OPT_Wpedantic, "cannot declare %<::main%> with a"
 		 " linkage specification other than %<extern \"C++\"%>");
       if (module_attach_p ())
-	error_at (location, "cannot attach %<::main%> to a named module");
+	{
+	  auto_diagnostic_group adg;
+	  error_at (location, "cannot attach %<::main%> to a named module");
+	  inform (location, "use %<extern \"C++\"%> to attach it to the "
+		  "global module instead");
+	}
       inlinep = 0;
       publicp = 1;
     }
