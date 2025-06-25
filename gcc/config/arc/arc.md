@@ -842,6 +842,9 @@ archs4x, archs4xd"
 ; Optab prefix for sign/zero-extending operations
 (define_code_attr su_optab [(sign_extend "") (zero_extend "u")])
 
+;; Code iterator for sign/zero extension
+(define_code_iterator ANY_EXTEND [sign_extend zero_extend])
+
 (define_insn "*<SEZ_prefix>xt<SQH_postfix>_cmp0_noout"
   [(set (match_operand 0 "cc_set_register" "")
 	(compare:CC_ZN (SEZ:SI (match_operand:SQH 1 "register_operand" "r"))
@@ -1067,6 +1070,36 @@ archs4x, archs4xd"
    (set_attr "type" "compare,compare,compare,shift,compare")
    (set_attr "cond" "set_zn")
    (set_attr "length" "*,4,4,4,8")])
+
+(define_expand "<su_optab>mulvsi4"
+  [(ANY_EXTEND:DI (match_operand:SI 0 "register_operand"))
+   (ANY_EXTEND:DI (match_operand:SI 1 "register_operand"))
+   (ANY_EXTEND:DI (match_operand:SI 2 "register_operand"))
+   (label_ref (match_operand 3 "" ""))]
+  "TARGET_MPY"
+  {
+    emit_insn (gen_<su_optab>mulsi3_Vcmp (operands[0], operands[1],
+					  operands[2]));
+    arc_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
+    DONE;
+  })
+
+(define_insn "<su_optab>mulsi3_Vcmp"
+  [(parallel
+    [(set
+      (reg:CC_V CC_REG)
+      (compare:CC_V
+       (mult:DI
+	(ANY_EXTEND:DI (match_operand:SI 1 "register_operand"  "%0,r,r,r"))
+	(ANY_EXTEND:DI (match_operand:SI 2 "nonmemory_operand"  "I,L,r,C32")))
+       (ANY_EXTEND:DI (mult:SI (match_dup 1) (match_dup 2)))))
+     (set (match_operand:SI 0 "register_operand"	       "=r,r,r,r")
+	  (mult:SI (match_dup 1) (match_dup 2)))])]
+  "register_operand (operands[1], SImode)
+   || register_operand (operands[2], SImode)"
+  "mpy<su_optab>.f\\t%0,%1,%2"
+  [(set_attr "length" "4,4,4,8")
+   (set_attr "type"   "multi")])
 
 (define_insn "*mulsi3_cmp0"
   [(set (reg:CC_Z CC_REG)
