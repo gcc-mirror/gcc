@@ -419,6 +419,8 @@
       return code == EQ || code == NE;
     case E_CC_Cmode:
       return code == LTU || code == GEU;
+    case E_CC_Vmode:
+      return code == EQ || code == NE;
     case E_CC_FP_GTmode:
       return code == GT || code == UNLE;
     case E_CC_FP_GEmode:
@@ -451,7 +453,12 @@
 })
 
 (define_predicate "equality_comparison_operator"
-  (match_code "eq, ne"))
+  (match_code "eq, ne")
+  {
+    machine_mode opmode = GET_MODE (XEXP (op, 0));
+    return opmode != CC_Vmode;
+  }
+)
 
 (define_predicate "ge_lt_comparison_operator"
   (match_code "ge, lt"))

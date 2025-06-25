@@ -1436,6 +1436,13 @@ get_arc_condition_code (rtx comparison)
 	case GEU : return ARC_CC_NC;
 	default : gcc_unreachable ();
 	}
+    case E_CC_Vmode:
+      switch (GET_CODE (comparison))
+	{
+	case EQ : return ARC_CC_NV;
+	case NE : return ARC_CC_V;
+	default : gcc_unreachable ();
+	}
     case E_CC_FP_GTmode:
       if (TARGET_ARGONAUT_SET && TARGET_SPFP)
 	switch (GET_CODE (comparison))
@@ -11542,6 +11549,21 @@ arc_libm_function_max_error (unsigned cfn, machine_mode mode,
     }
   return default_libm_function_max_error (cfn, mode, boundary_p);
 }
+
+void
+arc_gen_unlikely_cbranch (enum rtx_code cmp, machine_mode cc_mode, rtx label)
+{
+  rtx cc_reg, x;
+
+  cc_reg = gen_rtx_REG (cc_mode, CC_REG);
+  label = gen_rtx_LABEL_REF (VOIDmode, label);
+
+  x = gen_rtx_fmt_ee (cmp, VOIDmode, cc_reg, const0_rtx);
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, label, pc_rtx);
+
+  emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
+}
+
 
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p

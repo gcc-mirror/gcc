@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 CC_MODE (CC_ZN);
 CC_MODE (CC_Z);
+CC_MODE (CC_V);
 CC_MODE (CC_C);
 CC_MODE (CC_FP_GT);
 CC_MODE (CC_FP_GE);

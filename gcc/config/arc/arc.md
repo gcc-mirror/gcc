@@ -2734,6 +2734,56 @@ archs4x, archs4xd"
 }
   [(set_attr "length" "8")])
 
+(define_insn "addsi3_v"
+ [(set (match_operand:SI       0 "register_operand"  "=r,r,r,  r")
+       (plus:SI (match_operand:SI 1 "register_operand"   "r,r,0,  r")
+		(match_operand:SI 2 "nonmemory_operand"  "r,L,I,C32")))
+  (set (reg:CC_V CC_REG)
+       (compare:CC_V (sign_extend:DI (plus:SI (match_dup 1)
+					      (match_dup 2)))
+		     (plus:DI (sign_extend:DI (match_dup 1))
+			      (sign_extend:DI (match_dup 2)))))]
+ ""
+ "add.f\\t%0,%1,%2"
+ [(set_attr "cond"   "set")
+  (set_attr "type"   "compare")
+  (set_attr "length" "4,4,4,8")])
+
+(define_expand "addvsi4"
+  [(match_operand:SI 0 "register_operand")
+   (match_operand:SI 1 "register_operand")
+   (match_operand:SI 2 "nonmemory_operand")
+   (label_ref (match_operand 3 "" ""))]
+  ""
+  "emit_insn (gen_addsi3_v (operands[0], operands[1], operands[2]));
+   arc_gen_unlikely_cbranch (NE, CC_Vmode, operands[3]);
+   DONE;")
+
+(define_insn "addsi3_c"
+ [(set (match_operand:SI       0 "register_operand"  "=r,r,r,  r")
+       (plus:SI (match_operand:SI 1 "register_operand"   "r,r,0,  r")
+		(match_operand:SI 2 "nonmemory_operand"  "r,L,I,C32")))
+  (set (reg:CC_C CC_REG)
+       (compare:CC_C (plus:SI (match_dup 1)
+			      (match_dup 2))
+		     (match_dup 1)))]
+ ""
+ "add.f\\t%0,%1,%2"
+ [(set_attr "cond"   "set")
+  (set_attr "type"   "compare")
+  (set_attr "length" "4,4,4,8")])
+
+(define_expand "uaddvsi4"
+  [(match_operand:SI 0 "register_operand")
+   (match_operand:SI 1 "register_operand")
+   (match_operand:SI 2 "nonmemory_operand")
+   (label_ref (match_operand 3 "" ""))]
+  ""
+  "emit_insn (gen_addsi3_c (operands[0], operands[1], operands[2]));
+   arc_gen_unlikely_cbranch (LTU, CC_Cmode, operands[3]);
+   DONE;")
+
+
 (define_insn "add_f"
   [(set (reg:CC_C CC_REG)
 	(compare:CC_C
