@@ -76,21 +76,30 @@ along with GCC; see the file COPYING3.  If not see
      standalone symbol, or a clone of a function that is inlined into another
      function.
 
-   Phase 2: Early inline + value profile transformation.
-     Early inline uses autofdo_source_profile to find if a callsite is:
+   Phase 2: AFDO inline + value profile transformation.
+     This happens during early optimization.
+     During early inlning AFDO inliner is executed which
+     uses autofdo_source_profile to find if a callsite is:
         * inlined in the profiled binary.
         * callee body is hot in the profiling run.
      If both condition satisfies, early inline will inline the callsite
      regardless of the code growth.
-     Phase 2 is an iterative process. During each iteration, we also check
-     if an indirect callsite is promoted and inlined in the profiling run.
-     If yes, vpt will happen to force promote it and in the next iteration,
-     einline will inline the promoted callsite in the next iteration.
+
+     Performing this early has benefit of doing early optimizations
+     before read IPA passe and getting more "context sensitivity" of
+     the profile read.  Profile of inlined functions may differ
+     significantly form one inline instance to another and from the
+     offline version.
+
+     This is controlled by -fauto-profile-inlinig and is independent
+     of -fearly-inlining.
 
    Phase 3: Annotate control flow graph.
      AutoFDO uses a separate pass to:
         * Annotate basic block count
         * Estimate branch probability
+	* Use earlier static profile to fill in the gaps
+	  if AFDO profile is ambigous
 
    After the above 3 phases, all profile is readily annotated on the GCC IR.
    AutoFDO tries to reuse all FDO infrastructure as much as possible to make
@@ -2217,18 +2226,6 @@ afdo_annotate_cfg (void)
   free_dominance_info (CDI_POST_DOMINATORS);
 }
 
-/* Wrapper function to invoke early inliner.  */
-
-static unsigned int
-early_inline ()
-{
-  compute_fn_summary (cgraph_node::get (current_function_decl), true);
-  unsigned int todo = early_inliner (cfun);
-  if (todo & TODO_update_ssa_any)
-    update_ssa (TODO_update_ssa);
-  return todo;
-}
-
 /* Use AutoFDO profile to annoate the control flow graph.
    Return the todo flag.  */
 
@@ -2254,14 +2251,8 @@ auto_profile (void)
 
     push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
-    unsigned int todo = early_inline ();
     autofdo::afdo_annotate_cfg ();
     compute_function_frequency ();
-
-    /* Local pure-const may imply need to fixup the cfg.  */
-    todo |= execute_fixup_cfg ();
-    if (todo & TODO_cleanup_cfg)
-      cleanup_tree_cfg ();
 
     free_dominance_info (CDI_DOMINATORS);
     free_dominance_info (CDI_POST_DOMINATORS);
