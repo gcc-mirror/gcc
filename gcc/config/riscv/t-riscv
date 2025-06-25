@@ -229,8 +229,41 @@ s-riscv-ext.texi: build/gen-riscv-ext-texi$(build_exeext)
 	$(SHELL) $(srcdir)/../move-if-change tmp-riscv-ext.texi $(srcdir)/doc/riscv-ext.texi
 	$(STAMP) s-riscv-ext.texi
 
-# Run `riscv-regen' after you changed or added anything from riscv-ext*.def
+RISCV_CORES_DEFS = \
+  $(srcdir)/config/riscv/riscv-cores.def
+
+build/gen-riscv-mtune-texi.o: $(srcdir)/config/riscv/gen-riscv-mtune-texi.cc \
+	$(RISCV_CORES_DEFS)
+	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) -c $< -o $@
+
+build/gen-riscv-mcpu-texi.o: $(srcdir)/config/riscv/gen-riscv-mcpu-texi.cc \
+	$(RISCV_CORES_DEFS)
+	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) -c $< -o $@
+
+build/gen-riscv-mtune-texi$(build_exeext): build/gen-riscv-mtune-texi.o
+	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ $<
+
+build/gen-riscv-mcpu-texi$(build_exeext): build/gen-riscv-mcpu-texi.o
+	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ $<
+
+$(srcdir)/doc/riscv-mtune.texi: $(RISCV_CORES_DEFS)
+$(srcdir)/doc/riscv-mtune.texi: s-riscv-mtune.texi ; @true
+
+$(srcdir)/doc/riscv-mcpu.texi: $(RISCV_CORES_DEFS)
+$(srcdir)/doc/riscv-mcpu.texi: s-riscv-mcpu.texi ; @true
+
+s-riscv-mtune.texi: build/gen-riscv-mtune-texi$(build_exeext)
+	$(RUN_GEN) build/gen-riscv-mtune-texi$(build_exeext) > tmp-riscv-mtune.texi
+	$(SHELL) $(srcdir)/../move-if-change tmp-riscv-mtune.texi $(srcdir)/doc/riscv-mtune.texi
+	$(STAMP) s-riscv-mtune.texi
+
+s-riscv-mcpu.texi: build/gen-riscv-mcpu-texi$(build_exeext)
+	$(RUN_GEN) build/gen-riscv-mcpu-texi$(build_exeext) > tmp-riscv-mcpu.texi
+	$(SHELL) $(srcdir)/../move-if-change tmp-riscv-mcpu.texi $(srcdir)/doc/riscv-mcpu.texi
+	$(STAMP) s-riscv-mcpu.texi
+
+# Run `riscv-regen' after you changed or added anything from riscv-ext*.def and riscv-cores*.def
 
 .PHONY: riscv-regen
 
-riscv-regen: s-riscv-ext.texi s-riscv-ext.opt
+riscv-regen: s-riscv-ext.texi s-riscv-ext.opt s-riscv-mtune.texi s-riscv-mcpu.texi

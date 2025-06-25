@@ -1,0 +1,59 @@
+@c Copyright (C) 2025 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc/doc/include/fdl.texi.
+
+@c This file is generated automatically using
+@c  gcc/config/riscv/gen-riscv-mtune-texi.cc from:
+@c       gcc/config/riscv/riscv-cores.def
+
+@c Please *DO NOT* edit manually.
+
+@samp{Tune Name}
+
+@opindex mtune
+@item -mtune=@var{processor-string}
+Optimize the output for the given processor, specified by microarchitecture or
+particular CPU name.  Permissible values for this option are:
+
+
+@samp{generic},
+
+@samp{rocket},
+
+@samp{sifive-3-series},
+
+@samp{sifive-5-series},
+
+@samp{sifive-7-series},
+
+@samp{sifive-p400-series},
+
+@samp{sifive-p600-series},
+
+@samp{tt-ascalon-d8},
+
+@samp{thead-c906},
+
+@samp{xt-c908},
+
+@samp{xt-c908v},
+
+@samp{xt-c910},
+
+@samp{xt-c910v2},
+
+@samp{xt-c920},
+
+@samp{xt-c920v2},
+
+@samp{xiangshan-nanhu},
+
+@samp{xiangshan-kunminghu},
+
+@samp{generic-ooo},
+
+@samp{size},
+
+@samp{mips-p8700},
+
+and all valid options for @option{-mcpu=}.
