@@ -2235,7 +2235,7 @@ rtx_properties::try_to_add_src (const_rtx x, unsigned int flags)
 	{
 	  has_pre_post_modify = true;
 
-	  unsigned int addr_flags = (base_flags
+	  unsigned int addr_flags = (flags
 				     | rtx_obj_flags::IS_PRE_POST_MODIFY
 				     | rtx_obj_flags::IS_READ);
 	  try_to_add_dest (XEXP (x, 0), addr_flags);
