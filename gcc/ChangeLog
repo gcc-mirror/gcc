@@ -1,3 +1,149 @@
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119706
+	* gimple-expr.cc (is_gimple_mem_ref_addr): Also allow
+	POLY_INT_CST.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119534
+	* tree-vect-stmts.cc (get_load_store_type): Reject
+	VECTOR_BOOLEAN_TYPE_P offset vector type for emulated gathers.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119119
+	* gimplify.cc (is_gimple_mem_rhs_or_call): All empty CTORs
+	are OK when not a register type.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119057
+	* tree-vect-loop.cc (check_reduction_path): Add argument
+	specifying whether we're analyzing the inner loop of a
+	double reduction.  Do not allow extra uses outside of the
+	double reduction cycle in this case.
+	(vect_is_simple_reduction): Adjust.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117424
+	* tree-eh.cc (tree_could_trap_p): Verify the base is
+	fully contained within a decl.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117113
+	* gimple-loop-jam.cc (unroll_jam_possible_p): Detect when
+	we cannot handle virtual SSA update.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR lto/114501
+	* ipa-free-lang-data.cc (find_decls_types_r): Explicitly
+	handle CONSTRUCTORs as walk_tree handling of those is
+	incomplete.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/113207
+	* ipa-free-lang-data.cc (free_lang_data_in_type): First drop
+	const/volatile qualifiers from function argument types,
+	then build a simplified type.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): Add comment.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	PR tree-optimization/115347
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): For a zero
+	distance vector still make sure to not have an inner
+	loop with zero distance.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111245
+	* ipa-modref.cc (modref_access_analysis::analyze_store): Do
+	not guard the check of whether the stmt could throw by
+	cfun->can_throw_non_call_exceptions.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115110
+	* tree-ssa-alias.cc (view_converted_memref_p): Fix.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101478
+	* gimplify.cc (gimplify_addr_expr): Check we still have an
+	ADDR_EXPR before calling recompute_tree_invariant_for_addr_expr.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87984
+	* tree-ssa-dom.cc (dom_opt_dom_walker::optimize_stmt): Do
+	not perform redundant store elimination to hard register
+	variables.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt):
+	Likewise.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111125
+	* tree-vect-slp.cc (vect_slp_function): Split at novector
+	loop entry, do not push blocks in novector loops.
+
 2025-06-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:

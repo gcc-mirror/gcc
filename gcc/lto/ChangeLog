@@ -1,3 +1,12 @@
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91299
+	* lto-symtab.cc (lto_symtab_merge_symbols): Set DECL_EXTERNAL
+	only after calling get_availability.
+
 2024-06-20  Release Manager
 
 	* GCC 12.4.0 released.
