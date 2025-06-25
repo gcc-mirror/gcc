@@ -24465,7 +24465,8 @@ resolve_nondeduced_context (tree orig_expr, tsubst_flags_t complain)
 	}
       if (good == 1)
 	{
-	  mark_used (goodfn);
+	  if (!mark_used (goodfn, complain) && !(complain & tf_error))
+	    return error_mark_node;
 	  expr = goodfn;
 	  if (baselink)
 	    expr = build_baselink (BASELINK_BINFO (baselink),
