@@ -80,12 +80,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  virtual bool gate (function *) final override
     {
       return flag_avoid_store_forwarding && optimize >= 1;
     }
 
-  virtual unsigned int execute (function *) override;
+  virtual unsigned int execute (function *) final override;
 }; // class pass_rtl_avoid_store_forwarding
 
 /* Handler for finding and avoiding store forwardings.  */
