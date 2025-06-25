@@ -822,6 +822,7 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
   tree tmp, error_cond;
   stmtblock_t on_error;
   tree status_type = status ? TREE_TYPE (status) : NULL_TREE;
+  bool cond_is_true = cond == boolean_true_node;
 
   /* If successful and stat= is given, set status to 0.  */
   if (status != NULL_TREE)
@@ -834,11 +835,13 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
   tmp = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
 			 size, build_int_cst (size_type_node, 1));
 
-  tmp = build_call_expr_loc (input_location,
-			     builtin_decl_explicit (BUILT_IN_MALLOC), 1, tmp);
-  if (cond == boolean_true_node)
+  if (!cond_is_true)
+    tmp = build_call_expr_loc (input_location,
+			       builtin_decl_explicit (BUILT_IN_MALLOC), 1, tmp);
+  else
     tmp = alt_alloc;
-  else if (cond)
+
+  if (!cond_is_true && cond)
     tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp), cond,
 		      alt_alloc, tmp);
 
