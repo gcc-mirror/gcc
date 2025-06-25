@@ -699,8 +699,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return true; }
-  virtual unsigned int execute (function *);
+  virtual bool gate (function *) final override { return true; }
+  virtual unsigned int execute (function *) final override;
   opt_pass * clone () final override { return new pass_sccopy (m_ctxt); }
 }; // class pass_sccopy
 
