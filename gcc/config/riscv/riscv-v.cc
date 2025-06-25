@@ -4723,7 +4723,7 @@ prepare_ternary_operands (rtx *ops)
 				   ops[4], ops[1], ops[6], ops[7], ops[9]));
       ops[5] = ops[4] = ops[0];
     }
-  else
+  else if (VECTOR_MODE_P (GET_MODE (ops[2])))
     {
       /* Swap the multiplication ops if the fallback value is the
 	 second of the two.  */
@@ -4733,8 +4733,10 @@ prepare_ternary_operands (rtx *ops)
       /* TODO: ??? Maybe we could support splitting FMA (a, 4, b)
 	 into PLUS (ASHIFT (a, 2), b) according to uarchs.  */
     }
-  gcc_assert (rtx_equal_p (ops[5], RVV_VUNDEF (mode))
-	      || rtx_equal_p (ops[5], ops[2]) || rtx_equal_p (ops[5], ops[4]));
+  gcc_assert (
+    rtx_equal_p (ops[5], RVV_VUNDEF (mode)) || rtx_equal_p (ops[5], ops[2])
+    || (!VECTOR_MODE_P (GET_MODE (ops[2])) && rtx_equal_p (ops[5], ops[3]))
+    || rtx_equal_p (ops[5], ops[4]));
 }
 
 /* Expand VEC_MASK_LEN_{LOAD_LANES,STORE_LANES}.  */
