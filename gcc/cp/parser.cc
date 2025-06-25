@@ -10835,6 +10835,14 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	    goto pop;
 	}
 
+      /* If we skipped build_cplus_new in build_cxx_call because of decltype_p,
+	 call it now that we know current.lhs is a subexpression.  */
+      if (decltype_p && !processing_template_decl
+	  && TREE_CODE (current.lhs) == CALL_EXPR
+	  && CLASS_TYPE_P (TREE_TYPE (current.lhs)))
+	current.lhs = build_cplus_new (TREE_TYPE (current.lhs), current.lhs,
+				       tf_warning_or_error);
+
      get_rhs:
       current.tree_type = binops_by_token[token->type].tree_type;
       current.loc = token->location;

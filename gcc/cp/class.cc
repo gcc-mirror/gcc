@@ -8350,6 +8350,15 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	    *nonnull = 1;
 	  return TREE_TYPE (instance);
 	}
+      if (CLASS_TYPE_P (TREE_TYPE (instance)))
+	{
+	  /* We missed a build_cplus_new somewhere, likely due to tf_decltype
+	     mishandling.  */
+	  gcc_checking_assert (false);
+	  if (nonnull)
+	    *nonnull = 1;
+	  return TREE_TYPE (instance);
+	}
       return NULL_TREE;
 
     case SAVE_EXPR:
