@@ -558,8 +558,8 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
 
-  virtual bool overflow_free_p (const irange &lh, const irange &rh,
-				relation_trio = TRIO_VARYING) const;
+  bool overflow_free_p (const irange &lh, const irange &rh,
+			relation_trio = TRIO_VARYING) const final override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
@@ -634,8 +634,8 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
 
-  virtual bool overflow_free_p (const irange &lh, const irange &rh,
-				relation_trio = TRIO_VARYING) const;
+  bool overflow_free_p (const irange &lh, const irange &rh,
+			relation_trio = TRIO_VARYING) const final override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
@@ -720,8 +720,8 @@ public:
 		const REAL_VALUE_TYPE &lh_lb, const REAL_VALUE_TYPE &lh_ub,
 		const REAL_VALUE_TYPE &rh_lb, const REAL_VALUE_TYPE &rh_ub,
 		relation_kind kind) const final override;
-  virtual bool overflow_free_p (const irange &lh, const irange &rh,
-				relation_trio = TRIO_VARYING) const;
+  bool overflow_free_p (const irange &lh, const irange &rh,
+			relation_trio = TRIO_VARYING) const final override;
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }

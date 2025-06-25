@@ -315,7 +315,7 @@ public:
   virtual relation_kind lhs_op1_relation (const prange &lhs,
 					  const prange &op1,
 					  const irange &op2,
-					  relation_kind) const;
+					  relation_kind) const final override;
   void update_bitmask (prange &r, const prange &lh, const irange &rh) const
     { update_known_bitmask (r, POINTER_PLUS_EXPR, lh, rh); }
 } op_pointer_plus;
