@@ -100,7 +100,6 @@ public:
 
 private:
   tree orig_fn_decl;		 /* The original function decl.  */
-  tree orig_fn_body = NULL_TREE; /* The original function body.  */
   location_t fn_start = UNKNOWN_LOCATION;
   location_t fn_end = UNKNOWN_LOCATION;
   tree resumer = error_mark_node;
