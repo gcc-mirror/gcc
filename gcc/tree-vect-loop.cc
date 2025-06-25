@@ -4126,6 +4126,10 @@ pop:
 	  if (op.ops[2] == op.ops[opi])
 	    neg = ! neg;
 	}
+      /* For an FMA the reduction code is the PLUS if the addition chain
+	 is the reduction.  */
+      else if (op.code == IFN_FMA && opi == 2)
+	op.code = PLUS_EXPR;
       if (CONVERT_EXPR_CODE_P (op.code)
 	  && tree_nop_conversion_p (op.type, TREE_TYPE (op.ops[0])))
 	;
@@ -8068,6 +8072,19 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "in-order reduction chain without SLP.\n");
+	      return false;
+	    }
+	  /* Code generation doesn't support function calls other
+	     than .COND_*.  */
+	  if (!op.code.is_tree_code ()
+	      && !(op.code.is_internal_fn ()
+		   && conditional_internal_fn_code (internal_fn (op.code))
+			!= ERROR_MARK))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "in-order reduction chain operation not "
+				 "supported.\n");
 	      return false;
 	    }
 	  STMT_VINFO_REDUC_TYPE (reduc_info)
