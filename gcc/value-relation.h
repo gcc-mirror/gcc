@@ -235,7 +235,7 @@ public:
   void dump (FILE *f) const final override;
 protected:
   virtual relation_chain *next_relation (basic_block, relation_chain *,
-					 tree) const;
+					 tree) const override;
   bool m_do_trans_p;
   bitmap m_tmp, m_tmp2;
   bitmap m_relation_set;  // Index by ssa-name. True if a relation exists
