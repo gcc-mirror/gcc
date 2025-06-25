@@ -1991,14 +1991,17 @@ static void
 gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 			      tree offset, gfc_se * se, gfc_expr * expr)
 {
-  tree tmp;
+  tree tmp, offset_eval;
 
   gfc_conv_expr (se, expr);
 
   /* Store the value.  */
   tmp = build_fold_indirect_ref_loc (input_location,
 				 gfc_conv_descriptor_data_get (desc));
-  tmp = gfc_build_array_ref (tmp, offset, NULL);
+  /* The offset may change, so get its value now and use that to free memory.
+   */
+  offset_eval = gfc_evaluate_now (offset, &se->pre);
+  tmp = gfc_build_array_ref (tmp, offset_eval, NULL);
 
   if (expr->expr_type == EXPR_FUNCTION && expr->ts.type == BT_DERIVED
       && expr->ts.u.derived->attr.alloc_comp)
@@ -3150,8 +3153,7 @@ finish:
      the reference.  */
   if ((expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS)
        && finalblock.head != NULL_TREE)
-    gfc_add_block_to_block (&loop->post, &finalblock);
-
+    gfc_prepend_expr_to_block (&loop->post, finalblock.head);
 }
 
 
