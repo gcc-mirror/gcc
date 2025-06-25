@@ -1553,6 +1553,13 @@ arc_select_cc_mode (enum rtx_code op, rtx x, rtx y)
   machine_mode mode = GET_MODE (x);
   rtx x1;
 
+  /* Matches all instructions which can do .f and clobbers only Z flag.  */
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && y == const0_rtx
+      && GET_CODE (x) == MULT
+      && (op == EQ || op == NE))
+    return CC_Zmode;
+
   /* For an operation that sets the condition codes as a side-effect, the
      C and V flags is not set as for cmp, so we can only use comparisons where
      this doesn't matter.  (For LT and GE we can use "mi" and "pl"

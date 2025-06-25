@@ -1068,11 +1068,37 @@ archs4x, archs4xd"
    (set_attr "cond" "set_zn")
    (set_attr "length" "*,4,4,4,8")])
 
-;; The next two patterns are for plos, ior, xor, and, and mult.
+(define_insn "*mulsi3_cmp0"
+  [(set (reg:CC_Z CC_REG)
+	(compare:CC_Z
+	 (mult:SI
+	  (match_operand:SI 1 "register_operand"  "%r,0,r")
+	  (match_operand:SI 2 "nonmemory_operand" "rL,I,i"))
+	 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand"    "=r,r,r")
+	(mult:SI (match_dup 1) (match_dup 2)))]
+ "TARGET_MPY"
+ "mpy%?.f\\t%0,%1,%2"
+ [(set_attr "length" "4,4,8")
+  (set_attr "type" "multi")])
+
+(define_insn "*mulsi3_cmp0_noout"
+  [(set (reg:CC_Z CC_REG)
+	(compare:CC_Z
+	 (mult:SI
+	  (match_operand:SI 0 "register_operand"   "%r,r,r")
+	  (match_operand:SI 1 "nonmemory_operand"  "rL,I,i"))
+	 (const_int 0)))]
+ "TARGET_MPY"
+ "mpy%?.f\\t0,%0,%1"
+ [(set_attr "length" "4,4,8")
+  (set_attr "type" "multi")])
+
+;; The next two patterns are for plus, ior, xor, and.
 (define_insn "*commutative_binary_cmp0_noout"
   [(set (match_operand 0 "cc_set_register" "")
 	(match_operator 4 "zn_compare_operator"
-	  [(match_operator:SI 3 "commutative_operator"
+	  [(match_operator:SI 3 "commutative_operator_sans_mult"
 	     [(match_operand:SI 1 "register_operand" "%r,r")
 	      (match_operand:SI 2 "nonmemory_operand" "rL,Cal")])
 	   (const_int 0)]))]
@@ -1085,7 +1111,7 @@ archs4x, archs4xd"
 (define_insn "*commutative_binary_cmp0"
   [(set (match_operand 3 "cc_set_register" "")
 	(match_operator 5 "zn_compare_operator"
-	  [(match_operator:SI 4 "commutative_operator"
+	  [(match_operator:SI 4 "commutative_operator_sans_mult"
 	     [(match_operand:SI 1 "register_operand"  "%0, 0,r,r")
 	      (match_operand:SI 2 "nonmemory_operand" "rL,rI,r,Cal")])
 	   (const_int 0)]))
