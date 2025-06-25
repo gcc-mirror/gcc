@@ -3187,7 +3187,7 @@ copy_derived_types:
     for (c = derived->components; c; c = c->next)
       {
 	/* Do not add a caf_token field for class container components.  */
-	if ((codimen || coarray_flag) && !c->attr.dimension
+	if (codimen && coarray_flag && !c->attr.dimension
 	    && !c->attr.codimension && (c->attr.allocatable || c->attr.pointer)
 	    && !derived->attr.is_class)
 	  {

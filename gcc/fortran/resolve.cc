@@ -16841,8 +16841,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
     return false;
 
   /* Now add the caf token field, where needed.  */
-  if (flag_coarray != GFC_FCOARRAY_NONE
-      && !sym->attr.is_class && !sym->attr.vtype)
+  if (flag_coarray == GFC_FCOARRAY_LIB && !sym->attr.is_class
+      && !sym->attr.vtype)
     {
       for (c = sym->components; c; c = c->next)
 	if (!c->attr.dimension && !c->attr.codimension
