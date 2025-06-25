@@ -3532,8 +3532,10 @@ ix86_broadcast_inner (rtx op, machine_mode mode,
       *insn_p = nullptr;
       return const0_rtx;
     }
-  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-	   && (op == constm1_rtx || op == CONSTM1_RTX (mode)))
+  else if ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	    && (op == constm1_rtx || op == CONSTM1_RTX (mode)))
+	    || (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+		&& float_vector_all_ones_operand (op, mode)))
     {
       *scalar_mode_p = QImode;
       *kind_p = X86_CSE_CONSTM1_VECTOR;
