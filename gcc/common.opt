@@ -1187,6 +1187,10 @@ Common Joined RejectNegative Var(auto_profile_file)
 Use sample profile information for call graph node weights. The profile
 file is specified in the argument.
 
+fauto-profile-inlining
+Common Var(flag_auto_profile_inlining) Init(1) Optimization
+Perform inlining using auto-profile.
+
 ; -fcheck-bounds causes gcc to generate array bounds checks.
 ; For C, C++ and ObjC: defaults off.
 ; For Java: defaults to on.

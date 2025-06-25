@@ -573,7 +573,7 @@ Objective-C and Objective-C++ Dialects}.
 -fmin-function-alignment=[@var{n}]
 -fno-allocation-dce -fallow-store-data-races
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}]
--fauto-inc-dec  -fbranch-probabilities
+-fauto-profile-inlining -fauto-inc-dec  -fbranch-probabilities
 -fcaller-saves
 -fcombine-stack-adjustments  -fconserve-stack
 -ffold-mem-offsets
@@ -15502,6 +15502,12 @@ E.g.
 create_gcov --binary=your_program.unstripped --profile=perf.data \
     --gcov=profile.afdo
 @end smallexample
+
+@opindex fauto-profile-inlining
+@item -fauto-profile-inlining
+When auto-profile is available inline all relevant functions which was
+inlined in the tran run before reading the profile feedback.  This improves
+context sensitivity of the profile.  Enabled by default.
 @end table
 
 The following options control compiler behavior regarding floating-point
