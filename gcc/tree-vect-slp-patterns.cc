@@ -786,7 +786,7 @@ compatible_complex_nodes_p (slp_compat_nodes_map_t *compat_cache,
   if (is_gimple_call (a_stmt))
     {
 	if (!compatible_calls_p (dyn_cast <gcall *> (a_stmt),
-				 dyn_cast <gcall *> (b_stmt)))
+				 dyn_cast <gcall *> (b_stmt), false))
 	  return false;
     }
   else if (!is_gimple_assign (a_stmt))

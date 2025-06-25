@@ -986,13 +986,18 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
    to be combined into the same SLP group.  */
 
 bool
-compatible_calls_p (gcall *call1, gcall *call2)
+compatible_calls_p (gcall *call1, gcall *call2, bool allow_two_operators)
 {
   unsigned int nargs = gimple_call_num_args (call1);
   if (nargs != gimple_call_num_args (call2))
     return false;
 
-  if (gimple_call_combined_fn (call1) != gimple_call_combined_fn (call2))
+  auto cfn1 = gimple_call_combined_fn (call1);
+  auto cfn2 = gimple_call_combined_fn (call2);
+  if (cfn1 != cfn2
+      && (!allow_two_operators
+	  || !((cfn1 == CFN_FMA || cfn1 == CFN_FMS)
+	       && (cfn2 == CFN_FMA || cfn2 == CFN_FMS))))
     return false;
 
   if (gimple_call_internal_p (call1))
@@ -1354,10 +1359,14 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		   || rhs_code != IMAGPART_EXPR)
 	       /* Handle mismatches in plus/minus by computing both
 		  and merging the results.  */
-	       && !((first_stmt_code == PLUS_EXPR
-		     || first_stmt_code == MINUS_EXPR)
-		    && (alt_stmt_code == PLUS_EXPR
-			|| alt_stmt_code == MINUS_EXPR)
+	       && !((((first_stmt_code == PLUS_EXPR
+		       || first_stmt_code == MINUS_EXPR)
+		      && (alt_stmt_code == PLUS_EXPR
+			  || alt_stmt_code == MINUS_EXPR))
+		     || ((first_stmt_code == CFN_FMA
+			  || first_stmt_code == CFN_FMS)
+			 && (alt_stmt_code == CFN_FMA
+			     || alt_stmt_code == CFN_FMS)))
 		    && rhs_code == alt_stmt_code)
 	       && !(first_stmt_code.is_tree_code ()
 		    && rhs_code.is_tree_code ()
@@ -1406,7 +1415,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	    {
 	      if (!is_a <gcall *> (stmts[0]->stmt)
 		  || !compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
-					  call_stmt))
+					  call_stmt, true))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3055,24 +3064,35 @@ fail:
       SLP_TREE_CODE (node) = VEC_PERM_EXPR;
       SLP_TREE_CHILDREN (node).quick_push (one);
       SLP_TREE_CHILDREN (node).quick_push (two);
-      gassign *stmt = as_a <gassign *> (stmts[0]->stmt);
-      enum tree_code code0 = gimple_assign_rhs_code (stmt);
+      enum tree_code code0 = ERROR_MARK;
       enum tree_code ocode = ERROR_MARK;
+      if (gassign *stmt = dyn_cast <gassign *> (stmts[0]->stmt))
+	code0 = gimple_assign_rhs_code (stmt);
       stmt_vec_info ostmt_info;
       unsigned j = 0;
       FOR_EACH_VEC_ELT (stmts, i, ostmt_info)
 	{
-	  gassign *ostmt = as_a <gassign *> (ostmt_info->stmt);
-	  if (gimple_assign_rhs_code (ostmt) != code0)
+	  int op = 0;
+	  if (gassign *ostmt = dyn_cast <gassign *> (ostmt_info->stmt))
 	    {
-	      SLP_TREE_LANE_PERMUTATION (node).safe_push (std::make_pair (1, i));
-	      ocode = gimple_assign_rhs_code (ostmt);
-	      j = i;
+	      if (gimple_assign_rhs_code (ostmt) != code0)
+		{
+		  ocode = gimple_assign_rhs_code (ostmt);
+		  op = 1;
+		  j = i;
+		}
 	    }
 	  else
-	    SLP_TREE_LANE_PERMUTATION (node).safe_push (std::make_pair (0, i));
+	    {
+	      if (gimple_call_combined_fn (stmts[0]->stmt)
+		  != gimple_call_combined_fn (ostmt_info->stmt))
+		{
+		  op = 1;
+		  j = i;
+		}
+	    }
+	  SLP_TREE_LANE_PERMUTATION (node).safe_push (std::make_pair (op, i));
 	}
-
       SLP_TREE_CODE (one) = code0;
       SLP_TREE_CODE (two) = ocode;
       SLP_TREE_LANES (one) = stmts.length ();
