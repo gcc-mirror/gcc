@@ -31,9 +31,8 @@ bool addi_overflow (int32_t a, int32_t *res)
 /*
  * add.f  r0,r0,r1
  * st_s   r0,[r2]
- * mov_s  r0,1
  * j_s.d  [blink]
- * mov.hs r0,0
+ * rlc    r0,0
  */
 bool uadd_overflow (uint32_t a, uint32_t b, uint32_t *res)
 {
@@ -75,9 +74,8 @@ bool addi_overflow_p (int32_t a, int32_t res)
 
 /*
  * add.f   0,r0,r1
- * mov_s   r0,1
  * j_s.d   [blink]
- * mov.hs  r0,0
+ * rlc     r0,0
  */
 bool uadd_overflow_p (uint32_t a, uint32_t b, uint32_t res)
 {
@@ -95,6 +93,6 @@ bool uaddi_overflow_p (uint32_t a, uint32_t res)
 
 /* { dg-final { scan-assembler-times "add.f\\s\+"   7 } } */
 /* { dg-final { scan-assembler-times "mov\.nv\\s\+" 4 } } */
-/* { dg-final { scan-assembler-times "mov\.hs\\s\+" 2 } } */
+/* { dg-final { scan-assembler-times "rlc\\s\+"     2 } } */
 /* { dg-final { scan-assembler-times "seths\\s\+"   2 } } */
 /* { dg-final { scan-assembler-not   "cmp" } } */
