@@ -135,7 +135,7 @@ class path_label : public range_label
     return result;
   }
 
-  const label_effects *get_effects (unsigned /*range_idx*/) const
+  const label_effects *get_effects (unsigned /*range_idx*/) const final override
   {
     return &m_effects;
   }

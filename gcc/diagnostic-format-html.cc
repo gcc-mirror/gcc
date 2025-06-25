@@ -1311,7 +1311,7 @@ public:
   {
     m_builder.emit_diagram (diagram);
   }
-  void after_diagnostic (const diagnostic_info &)
+  void after_diagnostic (const diagnostic_info &) final override
   {
     /* No-op, but perhaps could show paths here.  */
   }
