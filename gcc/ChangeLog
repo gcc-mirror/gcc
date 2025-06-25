@@ -1,3 +1,145 @@
+2025-06-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-opts.h (TARGET_GLC_NAME): Fix and extend the
+	description in the comment.
+	* config/gcn/gcn.cc (print_operand): Extend the comment about
+	'G' and 'g'.
+	* config/gcn/gcn.md: Use 'glc' instead of %G where appropriate.
+
+2025-06-24  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR target/119100
+	* config/riscv/autovec-opt.md (*<optab>_vf_<mode>): Handle both add and
+	acc FMA variants.
+	* config/riscv/vector.md (*pred_mul_<optab><mode>_scalar_undef): New.
+
+2025-06-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md
+	(@pro_epilogue_adjust_stack_add_nocc<mode>): Add type attribute.
+	(pro_epilogue_adjust_stack_add_nocc peephole2 pattern):
+	Convert pro_epilogue_adjust_stack_add_nocc variant to
+	pro_epilogue_adjust_stack_add when FLAGS_REG is dead.
+
+2025-06-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_load): Remove non-SLP
+	paths and propagate out ncopies == 1.
+
+2025-06-24  Marc Poulhiès  <poulhies@adacore.com>
+
+	* diagnostic-state-to-dot.cc (get_color_for_dynalloc_state):
+	Rename argument dynalloc_state to dynalloc_st.
+	(add_title_tr): Rename argument style to styl.
+	(on_xml_node): Rename local variable dynalloc_state to dynalloc_st.
+
+2025-06-24  Yuao Ma  <c8ef@outlook.com>
+
+	* tree-call-cdce.cc (edom_only_function): Remove atan.
+
+2025-06-24  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/vector.md (VF): Don't restrict modes.
+	(VEC_SET_SINGLEFLOAT): Ditto.
+
+2025-06-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_override_options_internal): Set
+	value of parameter based on option.
+	* config/aarch64/aarch64.opt (autovec-preference): New.
+	* doc/invoke.texi (autovec-preference): Document it.
+
+2025-06-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.opt (max-vectorization): New.
+	* config/aarch64/aarch64.cc (aarch64_override_options_internal): Save
+	and restore option.
+	Implement it through vect-scalar-cost-multiplier.
+	(aarch64_attributes): Default to off.
+	* common/config/aarch64/aarch64-common.cc (aarch64_handle_option):
+	Initialize option.
+	* doc/extend.texi (max-vectorization): Document attribute.
+	* doc/invoke.texi (max-vectorization): Document flag.
+
+2025-06-24  hongtao.liu  <hongtao.liu@intel.com>
+
+	PR target/115842
+	* tree-ssa-loop-ivopts.cc (determine_group_iv_cost_address):
+	Don't recalculate inv_expr when group-candidate cost
+	calucalution.
+
+2025-06-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/extend.texi: Document pragma unroll interaction with vectorizer.
+	* tree-vectorizer.h (LOOP_VINFO_USER_UNROLL): New.
+	(class _loop_vec_info): Add user_unroll.
+	* tree-vect-loop.cc (vect_analyze_loop_1): Set
+	suggested_unroll_factor and retry.
+	(_loop_vec_info::_loop_vec_info): Initialize user_unroll.
+	(vect_transform_loop): Clear the loop->unroll value if the pragma was
+	used.
+
+2025-06-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-loop-manip.cc (vect_gen_vector_loop_niters,
+	vect_gen_vector_loop_niters_mult_vf): Remove uses of log_vf.
+
+2025-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/92080
+	* config/i386/i386-expand.cc (ix86_expand_call): Set
+	recursive_function to true for recursive call.
+	* config/i386/i386-features.cc (ix86_place_single_vector_set):
+	Add an argument for inner scalar, default to nullptr.  Set the
+	source from inner scalar if not nullptr.
+	(ix86_get_vector_load_mode): Renamed to ...
+	(ix86_get_vector_cse_mode): This.  Add an argument for scalar mode
+	and handle integer and float scalar modes.
+	(replace_vector_const): Add an argument for scalar mode and pass
+	it to ix86_get_vector_load_mode.
+	(x86_cse_kind): New.
+	(redundant_load): Likewise.
+	(ix86_broadcast_inner): Likewise.
+	(remove_redundant_vector_load): Also support const0_rtx and
+	constm1_rtx broadcasts.  Handle vector broadcasts from constant
+	and variable scalars.
+	* config/i386/i386.h (machine_function): Add recursive_function.
+
+2025-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/70308
+	PR target/101366
+	PR target/102294
+	PR target/108585
+	PR target/118276
+	PR target/119596
+	PR target/119703
+	PR target/119704
+	* config/i386/x86-tune-costs.h (generic_memcpy): Updated.
+	(generic_memset): Likewise.
+	(generic_cost): Change CLEAR_RATIO to 10.
+
+2025-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-inline.cc (expand_call_inline): Preserve discriminator.
+
+2025-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (afdo_set_bb_count): Dump also 0 count stmts.
+	(afdo_annotate_cfg): Fix conditional for block having non-zero static
+	profile.
+
+2025-06-24  Lili Cui  <lili.cui@intel.com>
+
+	PR target/120741
+	* config/i386/i386.cc (ix86_expand_prologue):
+	Remove 1 assertion.
+
+2025-06-24  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118241
+	* config/riscv/predicates.md: Fix comment typo in recent change.
+
 2025-06-23  Sam James  <sam@gentoo.org>
 	    Jeff Law  <jlaw@ventanamicro.com>
 

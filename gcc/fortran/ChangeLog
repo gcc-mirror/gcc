@@ -1,3 +1,31 @@
+2025-06-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-stmt.cc (gfc_trans_call_acc_attach_detach): New.
+	(gfc_trans_call): Call it.
+
+2025-06-24  Harald Anlauf  <anlauf@gmx.de>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/120743
+	* trans-expr.cc (gfc_conv_substring): Substring indices are of
+	type gfc_charlen_type_node.  Convert to size_type_node for
+	pointer arithmetic only after offset adjustments have been made.
+
+2025-06-24  Mikael Morin  <morin-mikael@orange.fr>
+
+	* misc.cc (gfc_var_name_for_select_type_temp): New function.
+	* gfortran.h (gfc_var_name_for_select_type_temp): Declare it.
+	* resolve.cc (resolve_select_type): Pick a discriminating name
+	from the SELECT TYPE variable reference and use it in the name
+	of the temporary variable that is generated.  Truncate name to
+	the buffer size.
+	* match.cc (select_type_set_tmp): Likewise.  Pass the
+	discriminating name...
+	(select_intrinsic_set_tmp): ... to this function.  Use the
+	discriminating name likewise.  Augment the buffer size to match
+	that of select_type_set_tmp and resolve_select_type.
+
 2025-06-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	* openmp.cc (OACC_WAIT_CLAUSES): Add if clause.

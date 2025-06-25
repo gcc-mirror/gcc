@@ -1,3 +1,13 @@
+2025-06-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (acc_attach, acc_detach): Update for Fortran
+	version.
+	* openacc.f90 (acc_attach{,_async}, acc_detach{,_finalize}{,_async}):
+	Add.
+	* openacc_lib.h: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc-attach-detach-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/acc-attach-detach-2.f90: New test.
+
 2025-06-19  Tobias Burnus  <tburnus@baylibre.com>
 
 	* target.c (GOMP_REQUIRES_NAME_BUF_LEN): Define.

@@ -1,3 +1,10 @@
+2025-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120773
+	* decl.cc (grokfndecl): Implement C++26 P3618R0 - Allow attaching
+	main to the global module.  Only pedwarn for current_lang_name
+	other than lang_name_cplusplus and adjust pedwarn wording.
+
 2025-06-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	* parser.cc (OACC_WAIT_CLAUSE_MASK): Ass if clause.

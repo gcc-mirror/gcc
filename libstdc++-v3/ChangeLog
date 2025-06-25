@@ -1,3 +1,13 @@
+2025-06-24  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120717
+	* include/std/type_traits (__maybe_complete_object_type): New
+	helper trait, factored out from ...
+	(__is_complete_or_unbounded): ... here.  Only check sizeof on a
+	__maybe_complete_object_type type.  Fix formatting.
+	* testsuite/20_util/is_complete_or_unbounded/120717.cc: New test.
+
 2025-06-16  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/20_util/is_complete_or_unbounded/memoization.cc

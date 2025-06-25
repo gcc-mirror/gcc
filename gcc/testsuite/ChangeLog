@@ -1,3 +1,157 @@
+2025-06-24  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR target/119100
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f16.c: Add vfmacc and vfmsac.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_mulop.h: Add support for acc
+	variants.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_mulop_run.h: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmadd-run-1-f16.c: Define
+	TEST_OUT.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmadd-run-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmadd-run-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsub-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsub-run-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsub-run-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmadd-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmadd-run-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmadd-run-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsub-run-1-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsub-run-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsub-run-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmacc-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmacc-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmacc-run-1-f64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsac-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsac-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfmsac-run-1-f64.c: New test.
+
+2025-06-24  Harald Anlauf  <anlauf@gmx.de>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/120743
+	* gfortran.dg/pr120743.f90: New test.
+
+2025-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120773
+	* g++.dg/parse/linkage5.C: Don't expect error on
+	extern "C++" int main ();.
+	* g++.dg/parse/linkage7.C: New test.
+	* g++.dg/parse/linkage8.C: New test.
+	* g++.dg/modules/main-2.C: New test.
+	* g++.dg/modules/main-3.C: New test.
+
+2025-06-24  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-extract-1.c: Fix test on arch11.
+	* gcc.target/s390/vector/vec-set-1.c: Run test on arch11.
+	* gcc.target/s390/vector/vec-extract-2.c: New test.
+
+2025-06-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/autovec_param_asimd-only_2.c: New test.
+	* gcc.target/aarch64/autovec_param_default_2.c: New test.
+	* gcc.target/aarch64/autovec_param_prefer-asimd_2.c: New test.
+	* gcc.target/aarch64/autovec_param_prefer-sve_2.c: New test.
+	* gcc.target/aarch64/autovec_param_sve-only_2.c: New test.
+
+2025-06-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_17.c: New test.
+	* gcc.target/aarch64/sve/cost_model_18.c: New test.
+
+2025-06-24  Mikael Morin  <morin-mikael@orange.fr>
+
+	* gfortran.dg/select_type_51.f90: New test.
+
+2025-06-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/unroll-vect.c: New test.
+
+2025-06-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/i386/pr64110.c: Update testcase.
+
+2025-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/keylocker-aesdecwide128kl.c: Updated to expect
+	movdqa instead pxor.
+	* gcc.target/i386/keylocker-aesdecwide256kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesencwide128kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesencwide256kl.c: Likewise.
+	* gcc.target/i386/pr92080-4.c: New test.
+	* gcc.target/i386/pr92080-5.c: Likewise.
+	* gcc.target/i386/pr92080-6.c: Likewise.
+	* gcc.target/i386/pr92080-7.c: Likewise.
+	* gcc.target/i386/pr92080-8.c: Likewise.
+	* gcc.target/i386/pr92080-9.c: Likewise.
+	* gcc.target/i386/pr92080-10.c: Likewise.
+	* gcc.target/i386/pr92080-11.c: Likewise.
+	* gcc.target/i386/pr92080-12.c: Likewise.
+	* gcc.target/i386/pr92080-13.c: Likewise.
+	* gcc.target/i386/pr92080-14.c: Likewise.
+	* gcc.target/i386/pr92080-15.c: Likewise.
+	* gcc.target/i386/pr92080-16.c: Likewise.
+	* gcc.target/i386/pr92080-17.c: Likewise.
+	* gcc.target/i386/pr92080-18.c: Likewise.
+	* gcc.target/i386/pr92080-19.c: Likewise.
+	* gcc.target/i386/pr92080-20.c: Likewise.
+
+2025-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/70308
+	PR target/101366
+	PR target/102294
+	PR target/108585
+	PR target/118276
+	PR target/119596
+	PR target/119703
+	PR target/119704
+	* g++.target/i386/memset-pr101366-1.C: New test.
+	* g++.target/i386/memset-pr101366-2.C: Likewise.
+	* g++.target/i386/memset-pr108585-1a.C: Likewise.
+	* g++.target/i386/memset-pr108585-1b.C: Likewise.
+	* g++.target/i386/memset-pr118276-1a.C: Likewise.
+	* g++.target/i386/memset-pr118276-1b.C: Likewise.
+	* g++.target/i386/memset-pr118276-1c.C: Likewise.
+	* gcc.target/i386/memcpy-strategy-12.c: Likewise.
+	* gcc.target/i386/memcpy-strategy-13.c: Likewise.
+	* gcc.target/i386/memset-pr70308-1a.c: Likewise.
+	* gcc.target/i386/memset-pr70308-1b.c: Likewise.
+	* gcc.target/i386/memset-strategy-25.c: Likewise.
+	* gcc.target/i386/memset-strategy-26.c: Likewise.
+	* gcc.target/i386/memset-strategy-27.c: Likewise.
+	* gcc.target/i386/memset-strategy-28.c: Likewise.
+	* gcc.target/i386/memset-strategy-29.c: Likewise.
+	* gcc.target/i386/memset-strategy-30.c: Likewise.
+	* gcc.target/i386/memset-strategy-31.c: Likewise.
+	* gcc.target/i386/auto-init-padding-3.c: Expect XMM stores.
+	* gcc.target/i386/auto-init-padding-9.c: Likewise.
+	* gcc.target/i386/mvc17.c: Fail with "rep mov"
+	* gcc.target/i386/pr111657-1.c: Scan for unrolled loop.  Fail
+	with "rep mov".
+	* gcc.target/i386/shrink_wrap_1.c: Also pass
+	-mmemset-strategy=rep_8byte:-1:align.
+	* gcc.target/i386/sw-1.c: Also pass -mstringop-strategy=rep_byte.
+
+2025-06-24  Lili Cui  <lili.cui@intel.com>
+
+	PR target/120741
+	* gcc.target/i386/pr120741.c: New test.
+	* gcc.target/i386/shrink-wrap-separate-mingw.c: Likewise.
+
 2025-06-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116792
