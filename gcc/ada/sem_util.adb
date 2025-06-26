@@ -35,6 +35,7 @@ with Exp_Ch11;       use Exp_Ch11;
 with Exp_Util;       use Exp_Util;
 with Fname;          use Fname;
 with Freeze;         use Freeze;
+with Ghost;          use Ghost;
 with Itypes;         use Itypes;
 with Lib;            use Lib;
 with Lib.Xref;       use Lib.Xref;
@@ -1923,6 +1924,10 @@ package body Sem_Util is
    -- Build_Elaboration_Entity --
    ------------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Build_Elaboration_Entity (N : Node_Id; Spec_Id : Entity_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
       Decl     : Node_Id;
@@ -1955,6 +1960,12 @@ package body Sem_Util is
             Get_Name_String (Chars (Ent));
          end if;
       end Set_Package_Name;
+
+      --  Local variables
+
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
 
    --  Start of processing for Build_Elaboration_Entity
 
@@ -2003,6 +2014,11 @@ package body Sem_Util is
          return;
       end if;
 
+      --  Elaboration entity is never a ghost object, regardless of the context
+      --  in which this routine is called.
+
+      Install_Ghost_Region (None, N);
+
       --  Here we need the elaboration entity
 
       --  Construct name of elaboration entity as xxx_E, where xxx is the unit
@@ -2043,6 +2059,8 @@ package body Sem_Util is
 
       Set_Has_Qualified_Name       (Elab_Ent);
       Set_Has_Fully_Qualified_Name (Elab_Ent);
+
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_Elaboration_Entity;
 
    --------------------------------
