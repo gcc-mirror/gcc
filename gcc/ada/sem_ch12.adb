@@ -14371,8 +14371,21 @@ package body Sem_Ch12 is
          elsif
            Scope (Scope (Base_Type (Etype (A_Gen_T)))) = Scope (A_Gen_T)
          then
-            Ancestor :=
-              Get_Instance_Of (Base_Type (Etype (A_Gen_T)));
+            declare
+               Formal_Ancestor : constant Entity_Id :=
+                 Base_Type (Etype (A_Gen_T));
+            begin
+               Ancestor := Get_Instance_Of (Formal_Ancestor);
+
+               --  Handle (rare) case where Get_Instance_Of found nothing in
+               --  the map.
+
+               if Ancestor = Formal_Ancestor then
+                  Ancestor :=
+                    Get_Instance_Of
+                      (Base_Type (Etype (Get_Instance_Of (A_Gen_T))));
+               end if;
+            end;
 
          --  The type may be a local derivation, or a type extension of a
          --  previous formal, or of a formal of a parent package.
