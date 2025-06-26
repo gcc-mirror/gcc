@@ -210,8 +210,7 @@ write_cache_item (FILE* f, ltrans_file_cache::item *item, const char* dir)
 ltrans_file_cache::ltrans_file_cache (const char* dir, const char* prefix,
 				      const char* suffix,
 				      size_t soft_cache_size):
-  dir (dir), prefix (prefix), suffix (suffix),
-  soft_cache_size (soft_cache_size)
+  dir (dir), suffix (suffix),  soft_cache_size (soft_cache_size)
 {
   if (!dir) return;
 
