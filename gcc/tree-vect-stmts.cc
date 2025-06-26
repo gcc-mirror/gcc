@@ -13947,6 +13947,23 @@ vect_chooses_same_modes_p (vec_info *vinfo, machine_mode vector_mode)
   return true;
 }
 
+/* Return true if replacing VECTOR_MODE with ALT_VECTOR_MODE would not
+   change the chosen vector modes for analysis of a loop.  */
+
+bool
+vect_chooses_same_modes_p (machine_mode vector_mode,
+			   machine_mode alt_vector_mode)
+{
+  return (VECTOR_MODE_P (vector_mode)
+	  && VECTOR_MODE_P (alt_vector_mode)
+	  && (related_vector_mode (vector_mode,
+				   GET_MODE_INNER (alt_vector_mode))
+	      == alt_vector_mode)
+	  && (related_vector_mode (alt_vector_mode,
+				   GET_MODE_INNER (vector_mode))
+	      == vector_mode));
+}
+
 /* Function vect_is_simple_use.
 
    Input:

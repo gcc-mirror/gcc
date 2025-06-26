@@ -3494,13 +3494,8 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
       mode_i += 1;
     }
   if (mode_i + 1 < vector_modes.length ()
-      && VECTOR_MODE_P (autodetected_vector_mode)
-      && (related_vector_mode (vector_modes[mode_i + 1],
-			       GET_MODE_INNER (autodetected_vector_mode))
-	  == autodetected_vector_mode)
-      && (related_vector_mode (autodetected_vector_mode,
-			       GET_MODE_INNER (vector_modes[mode_i + 1]))
-	  == vector_modes[mode_i + 1]))
+      && vect_chooses_same_modes_p (autodetected_vector_mode,
+				    vector_modes[mode_i + 1]))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
@@ -3723,6 +3718,22 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
 	     FIRST_VINFO_VF.  */
 	  if (!supports_partial_vectors
 	      && maybe_ge (cached_vf_per_mode[mode_i], first_vinfo_vf))
+	    {
+	      mode_i++;
+	      if (mode_i == vector_modes.length ())
+		break;
+	      continue;
+	    }
+	  /* We would need an exhaustive search to find all modes we
+	     skipped but that would lead to the same result as the
+	     analysis it was skipped for and where we'd could check
+	     cached_vf_per_mode against.
+	     Check for the autodetected mode, which is the common
+	     situation on x86 which does not perform cost comparison.  */
+	  if (!supports_partial_vectors
+	      && maybe_ge (cached_vf_per_mode[0], first_vinfo_vf)
+	      && vect_chooses_same_modes_p (autodetected_vector_mode,
+					    vector_modes[mode_i]))
 	    {
 	      mode_i++;
 	      if (mode_i == vector_modes.length ())
