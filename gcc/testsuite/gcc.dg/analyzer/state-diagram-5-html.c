@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fdiagnostics-add-output=sarif:xml-state=yes" } */
+/* { dg-require-dot "" } */
 /* { dg-additional-options "-fdiagnostics-add-output=experimental-html:javascript=no,show-state-diagrams=yes" } */
 /* { dg-additional-options "-fdiagnostics-show-caret" } */
 
@@ -36,13 +36,6 @@ void test (void)
   __analyzer_dump_path ();
    { dg-end-multiline-output "" } */
 
-/* Verify that some JSON was written to a file with the expected name.  */
-/* { dg-final { verify-sarif-file } } */
-
-/* Use a Python script to verify various properties about the generated
-   .sarif file:
-   { dg-final { run-sarif-pytest state-diagram-5.c "state-diagram-5-sarif.py" } } */
-
 /* Use a Python script to verify various properties about the generated
    .html file:
-   { dg-final { run-html-pytest state-diagram-5.c "state-diagram-5-html.py" } } */
+   { dg-final { run-html-pytest state-diagram-5-html.c "state-diagram-5-html.py" } } */

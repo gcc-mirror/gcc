@@ -317,6 +317,7 @@ printer::add_raw (std::string text)
 void
 printer::push_element (std::unique_ptr<element> new_element)
 {
+  gcc_assert (new_element.get ());
   element *parent = m_open_tags.back ();
   m_open_tags.push_back (new_element.get ());
   parent->add_child (std::move (new_element));
@@ -325,6 +326,7 @@ printer::push_element (std::unique_ptr<element> new_element)
 void
 printer::append (std::unique_ptr<node> new_node)
 {
+  gcc_assert (new_node.get ());
   element *parent = m_open_tags.back ();
   parent->add_child (std::move (new_node));
 }

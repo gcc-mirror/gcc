@@ -632,7 +632,8 @@ html_builder::maybe_make_state_diagram (const diagnostic_event &event)
 
   // Turn the .dot into SVG and splice into place
   auto svg = dot::make_svg_from_graph (*graph);
-  xp.append (std::move (svg));
+  if (svg)
+    xp.append (std::move (svg));
 
   return wrapper;
 }
