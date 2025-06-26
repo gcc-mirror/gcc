@@ -4860,6 +4860,7 @@
   { operands[3] = GEN_INT (BITS_PER_WORD
 			   - exact_log2 (INTVAL (operands[3]) + 1)); })
 
+;; Standard extensions and pattern for optimization
 (include "bitmanip.md")
 (include "crypto.md")
 (include "sync.md")
@@ -4867,19 +4868,21 @@
 (include "sync-ztso.md")
 (include "peephole.md")
 (include "pic.md")
-(include "generic.md")
-(include "sifive-7.md")
-(include "sifive-p400.md")
-(include "sifive-p600.md")
-(include "thead.md")
-(include "generic-vector-ooo.md")
-(include "generic-ooo.md")
-(include "vector.md")
 (include "vector-crypto.md")
 (include "vector-bfloat16.md")
 (include "zicond.md")
 (include "sfb.md")
 (include "zc.md")
+(include "vector.md")
+;; Vendor extensions
+(include "thead.md")
 (include "corev.md")
+;; Pipeline models
+(include "generic.md")
 (include "xiangshan.md")
 (include "mips-p8700.md")
+(include "sifive-7.md")
+(include "sifive-p400.md")
+(include "sifive-p600.md")
+(include "generic-vector-ooo.md")
+(include "generic-ooo.md")
