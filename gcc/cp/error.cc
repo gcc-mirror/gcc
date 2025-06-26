@@ -308,7 +308,7 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   diagnostic_text_starter (context) = cp_diagnostic_text_starter;
   /* diagnostic_finalizer is already c_diagnostic_text_finalizer.  */
   context->set_format_decoder (cp_printer);
-  context->m_adjust_diagnostic_info = cp_adjust_diagnostic_info;
+  context->set_adjust_diagnostic_info_callback (cp_adjust_diagnostic_info);
 }
 
 /* Dump an '@module' name suffix for DECL, if it's attached to an import.  */

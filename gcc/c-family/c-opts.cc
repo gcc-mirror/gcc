@@ -192,7 +192,7 @@ void
 c_common_diagnostics_set_defaults (diagnostic_context *context)
 {
   diagnostic_text_finalizer (context) = c_diagnostic_text_finalizer;
-  context->m_opt_permissive = OPT_fpermissive;
+  context->set_permissive_option (OPT_fpermissive);
 }
 
 /* Input charset configuration for diagnostics.  */

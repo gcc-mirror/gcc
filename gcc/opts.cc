@@ -2872,7 +2872,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_Wfatal_errors:
-      dc->m_fatal_errors = value;
+      dc->set_fatal_errors (value);
       break;
 
     case OPT_Wstack_usage_:

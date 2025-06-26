@@ -377,7 +377,7 @@ gnat_init (void)
   line_table->default_range_bits = 0;
 
   /* Register our internal error function.  */
-  global_dc->m_internal_error = &internal_error_function;
+  global_dc->set_internal_error_callback (&internal_error_function);
 
   return true;
 }

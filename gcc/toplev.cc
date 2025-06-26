@@ -1029,7 +1029,7 @@ internal_error_reentered (diagnostic_context *, const char *, va_list *)
 static void
 internal_error_function (diagnostic_context *, const char *, va_list *)
 {
-  global_dc->m_internal_error = internal_error_reentered;
+  global_dc->set_internal_error_callback (internal_error_reentered);
   warn_if_plugins ();
   emergency_dump_function ();
 }
@@ -1091,7 +1091,7 @@ general_init (const char *argv0, bool init_signals, unique_argv original_argv)
     = global_options_init.x_flag_show_column;
   global_dc->set_show_highlight_colors
     (global_options_init.x_flag_diagnostics_show_highlight_colors);
-  global_dc->m_internal_error = internal_error_function;
+  global_dc->set_internal_error_callback (internal_error_function);
   const unsigned lang_mask = lang_hooks.option_lang_mask ();
   global_dc->set_option_manager
     (std::make_unique<compiler_diagnostic_option_manager> (*global_dc,
@@ -1289,7 +1289,7 @@ process_options ()
 
   /* Avoid any informative notes in the second run of -fcompare-debug.  */
   if (flag_compare_debug)
-    diagnostic_inhibit_notes (global_dc);
+    global_dc->inhibit_notes ();
 
   if (flag_section_anchors && !target_supports_section_anchors_p ())
     {
