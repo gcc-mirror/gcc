@@ -179,6 +179,14 @@ public:
 	     diagnostic_context &dc,
 	     const char *unparsed_arg,
 	     const scheme_name_and_params &parsed_arg) const final override;
+
+private:
+  static sarif_generation_options
+  make_sarif_gen_opts (enum sarif_version version,
+		       bool xml_state);
+
+  static std::unique_ptr<sarif_serialization_format>
+  make_sarif_serialization_object (enum sarif_serialization_kind);
 };
 
 class html_scheme_handler : public output_factory::scheme_handler
@@ -505,20 +513,9 @@ sarif_scheme_handler::make_sink (const context &ctxt,
   if (!output_file)
     return nullptr;
 
-  sarif_generation_options sarif_gen_opts;
-  sarif_gen_opts.m_version = version;
-  sarif_gen_opts.m_xml_state = xml_state;
+  auto sarif_gen_opts = make_sarif_gen_opts (version, xml_state);
 
-  std::unique_ptr<sarif_serialization_format> serialization_obj;
-  switch (serialization_kind)
-    {
-    default:
-      gcc_unreachable ();
-    case sarif_serialization_kind::json:
-      serialization_obj
-	= std::make_unique<sarif_serialization_format_json> (true);
-      break;
-    }
+  auto serialization_obj = make_sarif_serialization_object (serialization_kind);
 
   auto sink = make_sarif_sink (dc,
 			       *ctxt.get_affected_location_mgr (),
@@ -526,6 +523,30 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 			       sarif_gen_opts,
 			       std::move (output_file));
   return sink;
+}
+
+sarif_generation_options
+sarif_scheme_handler::make_sarif_gen_opts (enum sarif_version version,
+					   bool xml_state)
+{
+  sarif_generation_options sarif_gen_opts;
+  sarif_gen_opts.m_version = version;
+  sarif_gen_opts.m_xml_state = xml_state;
+  return sarif_gen_opts;
+}
+
+std::unique_ptr<sarif_serialization_format>
+sarif_scheme_handler::
+make_sarif_serialization_object (enum sarif_serialization_kind kind)
+{
+  switch (kind)
+    {
+    default:
+      gcc_unreachable ();
+    case sarif_serialization_kind::json:
+      return std::make_unique<sarif_serialization_format_json> (true);
+      break;
+    }
 }
 
 /* class html_scheme_handler : public output_factory::scheme_handler.  */
