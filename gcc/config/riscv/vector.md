@@ -6848,9 +6848,43 @@
 	          (match_operand:<VEL> 2 "register_operand"))
 	        (match_operand:V_VLSF 3 "register_operand")))
 	    (match_operand:V_VLSF 4 "register_operand"))
-	  (match_operand:V_VLSF 5 "register_operand")))]
+	  (match_operand:V_VLSF 5 "vector_merge_operand")))]
   "TARGET_VECTOR"
-{})
+{
+  riscv_vector::prepare_ternary_operands (operands);
+})
+
+(define_insn "*pred_mul_neg_<optab><mode>_scalar_undef"
+  [(set (match_operand:V_VLSF 0 "register_operand"           "=vd,vd, vr, vr")
+	(if_then_else:V_VLSF
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" " vm, vm,Wc1,Wc1")
+	     (match_operand 6 "vector_length_operand"    "rvl,rvl,rvl,rvl")
+	     (match_operand 7 "const_int_operand"        "  i,  i,  i,  i")
+	     (match_operand 8 "const_int_operand"        "  i,  i,  i,  i")
+	     (match_operand 9 "const_int_operand"        "  i,  i,  i,  i")
+	     (match_operand 10 "const_int_operand"       "  i,  i,  i,  i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)
+	     (reg:SI FRM_REGNUM)] UNSPEC_VPREDICATE)
+	  (plus_minus:V_VLSF
+	    (neg:V_VLSF
+	      (mult:V_VLSF
+		(vec_duplicate:V_VLSF
+		  (match_operand:<VEL> 3 "register_operand"  "  f,  f,  f,  f"))
+		(match_operand:V_VLSF 4 "register_operand"   "  0, vr,  0, vr")))
+	    (match_operand:V_VLSF 5 "register_operand"       " vr,  0, vr,  0"))
+	  (match_operand:V_VLSF 2 "vector_undef_operand")))]
+  "TARGET_VECTOR"
+  "@
+   vf<nmsub_nmadd>.vf\t%0,%3,%5%p1
+   vf<nmsac_nmacc>.vf\t%0,%3,%4%p1
+   vf<nmsub_nmadd>.vf\t%0,%3,%5%p1
+   vf<nmsac_nmacc>.vf\t%0,%3,%4%p1"
+  [(set_attr "type" "vfmuladd")
+   (set_attr "mode" "<MODE>")
+   (set (attr "frm_mode")
+	(symbol_ref "riscv_vector::get_frm_mode (operands[10])"))])
 
 (define_insn "*pred_<nmsub_nmadd><mode>_scalar"
   [(set (match_operand:V_VLSF 0 "register_operand"            "=vd, vr")

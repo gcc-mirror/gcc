@@ -113,8 +113,9 @@
   VF_MULOP_ACC_BODY_X128 (op, neg)
 
 #define DEF_VF_MULOP_ACC_CASE_1(T, OP, NEG, NAME, BODY)                        \
-  T test_vf_mulop_acc_##NAME##_##T##_case_1 (T *restrict out, T *restrict in,  \
-					     T x, unsigned n)                  \
+  void test_vf_mulop_acc_##NAME##_##T##_case_1 (T *restrict out,               \
+						T *restrict in, T x,           \
+						unsigned n)                    \
   {                                                                            \
     unsigned k = 0;                                                            \
     T tmp = x + 3;                                                             \

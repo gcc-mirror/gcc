@@ -1723,6 +1723,8 @@
 ;; - vfnmsub.vf
 ;; - vfmacc.vf
 ;; - vfmsac.vf
+;; - vfnmacc.vf
+;; - vfnmsac.vf
 ;; =============================================================================
 
 ;; vfmadd.vf, vfmsub.vf, vfmacc.vf, vfmsac.vf
@@ -1748,22 +1750,22 @@
   [(set_attr "type" "vfmuladd")]
 )
 
-;; vfnmsub.vf
+;; vfnmsub.vf, vfnmsac.vf
 (define_insn_and_split "*vfnmsub_<mode>"
-  [(set (match_operand:V_VLSF 0 "register_operand"		"=vd")
+  [(set (match_operand:V_VLSF 0 "register_operand")
     (minus:V_VLSF
-	    (match_operand:V_VLSF 3 "register_operand"		" vr")
-	    (mult:V_VLSF
-	      (vec_duplicate:V_VLSF
-		(match_operand:<VEL> 1 "register_operand"	"  f"))
-	      (match_operand:V_VLSF 2 "register_operand"	"  0"))))]
+      (match_operand:V_VLSF 3 "register_operand")
+      (mult:V_VLSF
+	(vec_duplicate:V_VLSF
+	  (match_operand:<VEL> 1 "register_operand"))
+	(match_operand:V_VLSF 2 "register_operand"))))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
   {
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3],
-		 operands[2]};
+		 RVV_VUNDEF(<MODE>mode)};
     riscv_vector::emit_vlmax_insn (code_for_pred_mul_neg_scalar (PLUS, <MODE>mode),
 				   riscv_vector::TERNARY_OP_FRM_DYN, ops);
     DONE;
@@ -1771,23 +1773,23 @@
   [(set_attr "type" "vfmuladd")]
 )
 
-;; vfnmadd.vf
+;; vfnmadd.vf, vfnmacc.vf
 (define_insn_and_split "*vfnmadd_<mode>"
-  [(set (match_operand:V_VLSF 0 "register_operand"	"=vd")
+  [(set (match_operand:V_VLSF 0 "register_operand")
     (minus:V_VLSF
       (mult:V_VLSF
 	(neg:V_VLSF
-	  (match_operand:V_VLSF 2 "register_operand"	"  0"))
+	  (match_operand:V_VLSF 2 "register_operand"))
 	(vec_duplicate:V_VLSF
-	  (match_operand:<VEL> 1 "register_operand"	"  f")))
-      (match_operand:V_VLSF 3 "register_operand"	" vr")))]
+	  (match_operand:<VEL> 1 "register_operand")))
+      (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(const_int 0)]
   {
     rtx ops[] = {operands[0], operands[1], operands[2], operands[3],
-		 operands[2]};
+		 RVV_VUNDEF(<MODE>mode)};
     riscv_vector::emit_vlmax_insn (code_for_pred_mul_neg_scalar (MINUS, <MODE>mode),
 				   riscv_vector::TERNARY_OP_FRM_DYN, ops);
     DONE;

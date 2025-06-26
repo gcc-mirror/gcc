@@ -9,3 +9,5 @@
 /* { dg-final { scan-assembler-not {vfnmsub.vf} } } */
 /* { dg-final { scan-assembler-not {vfmacc.vf} } } */
 /* { dg-final { scan-assembler-not {vfmsac.vf} } } */
+/* { dg-final { scan-assembler-not {vfnmacc.vf} } } */
+/* { dg-final { scan-assembler-not {vfnmsac.vf} } } */
