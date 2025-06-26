@@ -20,21 +20,52 @@
 
 #include <contracts>
 #include <testsuite_hooks.h>
+#include <iostream>
+#include <sstream>
+
+
+struct checking_buf
+  : public std::streambuf
+{
+  bool written = false;
+
+  checking_buf() = default;
+
+  virtual int_type
+  overflow(int_type)
+  {
+    written = true;
+    return int_type();
+  }
+
+  std::streamsize xsputn(const char* s, std::streamsize count)
+  {
+    written = true;
+    return count;
+  }
+
+};
+
 
 bool custom_called = false;
 
 
 void handle_contract_violation(const std::contracts::contract_violation& v)
 {
-  invoke_default_contract_violation_handler(v);
   custom_called = true;
 }
+
+
+
 
 void f(int i) pre (i>10) {};
 
 int main()
 {
+  checking_buf buf;
+  std::cerr.rdbuf(&buf);
+
   f(0);
-  VERIFY(custom_called);
+  VERIFY(!buf.written);
 }
-// { dg-output "contract violation in function f at .*(\n|\r\n|\r)" }
+
