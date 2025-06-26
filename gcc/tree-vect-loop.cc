@@ -3701,8 +3701,15 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
     vector_modes[0] = autodetected_vector_mode;
   mode_i = 0;
 
-  bool supports_partial_vectors =
-    partial_vectors_supported_p () && param_vect_partial_vector_usage != 0;
+  bool supports_partial_vectors = param_vect_partial_vector_usage != 0;
+  machine_mode mask_mode;
+  if (supports_partial_vectors
+      && !partial_vectors_supported_p ()
+      && !(VECTOR_MODE_P (first_loop_vinfo->vector_mode)
+	   && targetm.vectorize.get_mask_mode
+		(first_loop_vinfo->vector_mode).exists (&mask_mode)
+	   && SCALAR_INT_MODE_P (mask_mode)))
+    supports_partial_vectors = false;
   poly_uint64 first_vinfo_vf = LOOP_VINFO_VECT_FACTOR (first_loop_vinfo);
 
   loop_vec_info orig_loop_vinfo = first_loop_vinfo;
