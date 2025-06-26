@@ -5293,7 +5293,7 @@ match
 gfc_match_nullify (void)
 {
   gfc_code *tail;
-  gfc_expr *e, *p;
+  gfc_expr *e, *p = NULL;
   match m;
 
   tail = NULL;
