@@ -1,3 +1,15 @@
+2025-06-25  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/time/format/precision.cc: New tests.
+
+2025-06-25  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/120650
+	* include/bits/chrono_io.h
+	(formatter<chrono::month_day_last,_CharT>::parse): Call _M_parse with
+	only Month being available.
+	* testsuite/std/time/format/data_not_present_neg.cc: New test.
+
 2025-06-24  Patrick Palka  <ppalka@redhat.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

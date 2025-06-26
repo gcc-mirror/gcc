@@ -1,3 +1,40 @@
+2025-06-25  Luis Silva  <luiss@synopsys.com>
+
+	* gcc.target/arc/mult-cmp0.c: New test.
+
+2025-06-25  Luis Silva  <luiss@synopsys.com>
+
+	* gcc.target/arc/overflow-1.c: Replace mov.hs with rlc.
+
+2025-06-25  Shahab Vahedi  <shahab@synopsys.com>
+
+	* gcc.target/arc/overflow-2.c: New file.
+
+2025-06-25  Shahab Vahedi  <shahab@synopsys.com>
+
+	* gcc.target/arc/overflow-1.c: New file
+
+2025-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109892
+	* gcc.dg/vect/vect-reduc-fma-1.c: New testcase.
+	* gcc.dg/vect/vect-reduc-fma-2.c: Likewise.
+	* gcc.dg/vect/vect-reduc-fma-3.c: Likewise.
+
+2025-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120808
+	* gcc.dg/vect/bb-slp-pr120808.c: New testcase.
+
+2025-06-25  Alfie Richards  <alfie.richards@arm.com>
+
+	* gcc.target/aarch64/sve/adr_7.c: New test.
+
+2025-06-25  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-rva23s.c: New test.
+	* gcc.target/riscv/arch-rvb23s.c: New test.
+
 2025-06-24  Paul-Antoine Arras  <parras@baylibre.com>
 
 	PR target/119100

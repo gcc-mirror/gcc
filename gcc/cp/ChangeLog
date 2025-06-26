@@ -1,3 +1,8 @@
+2025-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* coroutines.h (class cp_coroutine_transform): Remove member
+	orig_fn_body.
+
 2025-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/120773

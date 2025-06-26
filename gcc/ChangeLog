@@ -1,3 +1,198 @@
+2025-06-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-features.cc (ix86_place_single_vector_set):
+	Add debug dump.
+	(replace_vector_const): Likewise.
+	(remove_redundant_vector_load): Likewise.
+
+2025-06-25  Luis Silva  <luiss@synopsys.com>
+
+	* config/arc/arc.md (<su_optab>mulvsi4): New define_expand.
+	(<su_optab>mulsi3_Vcmp): New define_insn.
+
+2025-06-25  Luis Silva  <luiss@synopsys.com>
+
+	* config/arc/arc.cc (arc_select_cc_mode): Handle multiplication
+	results compared against zero, selecting CC_Zmode.
+	* config/arc/arc.md (*mulsi3_cmp0): New define_insn.
+	(*mulsi3_cmp0_noout): New define_insn.
+
+2025-06-25  Shahab Vahedi  <shahab@synopsys.com>
+
+	* config/arc/arc.md (subsi3_v, subvsi4, subsi3_c): New patterns.
+
+2025-06-25  Shahab Vahedi  <shahab@synopsys.com>
+
+	* config/arc/arc-modes.def (CC_V): New mode.
+	* config/arc/arc-protos.h (arc_gen_unlikely_cbranch): New
+	function declaration.
+	* config/arc/arc.cc (arc_gen_unlikely_cbranch): New
+	function.
+	(get_arc_condition_code): Handle new mode.
+	* config/arc/arc.md (addvsi3_v, addvsi4, addsi3_c, uaddvsi4): New
+	patterns.
+	* config/arc/predicates.md (proper_comparison_operator): Handel
+	the new V_mode.
+	(equality_comparison_operator): Likewise.
+
+2025-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* diagnostic-path-output.cc (path_label::get_effects): Mark as
+	final override.
+	* diagnostic-format-html.cc
+	(html_output_format::after_diagnostic): Likewise.
+
+2025-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* gimple-range-op.cc
+	(gimple_range_op_handler::maybe_builtin_call): Use
+	CFN_BUILT_IN_ISINF instead of BUILT_IN_ISINF.
+
+2025-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* value-relation.h (class dom_oracle): Mark member function
+	next_relation as override.
+
+2025-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-ssa-propagate.h (class substitute_and_fold_engine): Mark
+	member functions value_of_expr and range_of_expr as override.
+
+2025-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* range-op-mixed.h (class operator_plus): Mark member function
+	overflow_free_p as final override.
+	(class operator_minus): Likewise.
+	(class operator_mult): Likewise.
+	* range-op-ptr.cc (class pointer_plus_operator): Mark member
+	function lhs_op1_relation as final override.
+	* range-op.cc (class operator_div::): Mark member functions
+	op2_range and update_bitmask as final override.
+	(class operator_logical_and): Mark member functions fold_range,
+	op1_range and op2_range as final override.  Remove unnecessary
+	virtual.
+	(class operator_logical_or): Likewise.
+	(class operator_logical_not): Mark member functions fold_range and
+	op1_range as final override.  Remove unnecessary virtual.
+	formatting easier.
+	(class operator_absu): Mark member functions wi_fold as final
+	override.
+
+2025-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* gimple-ssa-sccopy.cc (class pass_sccopy): Mark member functions
+	gate and execute as final override.
+
+2025-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* avoid-store-forwarding.cc (class
+	pass_rtl_avoid_store_forwarding): Mark member function gate as
+	final override.
+
+2025-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (relation_to_code): Remove.
+
+2025-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.cc (frange::verify_range): Constify.
+	(irange::verify_range): Constify.
+	* value-range.h (vrange::verify_range): New.
+	(irange::verify_range): Make public.
+	(prange::verify_range): Make public.
+	(prange::verify_range): Make public.
+	(value_range::verify_range): New.
+
+2025-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.cc (irange::get_bitmask): Return original mask if
+	result is unknown.
+	(assert_snap_result): New.
+	(test_irange_snap_bounds): New.
+	(range_tests_misc): Call test_irange_snap_bounds.
+
+2025-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109892
+	* tree-vect-loop.cc (check_reduction_path): Handle fma.
+	(vectorizable_reduction): Apply FOLD_LEFT_REDUCTION code
+	generation constraints.
+
+2025-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120808
+	* tree-vectorizer.h (compatible_calls_p): Add flag to
+	indicate a FMA/FMS pair is allowed.
+	* tree-vect-slp.cc (compatible_calls_p): Likewise.
+	(vect_build_slp_tree_1): Allow mixed .FMA/.FMS as two-operator.
+	(vect_build_slp_tree_2): Handle calls in two-operator SLP build.
+	* tree-vect-slp-patterns.cc (compatible_complex_nodes_p):
+	Adjust.
+
+2025-06-25  Alfie Richards  <alfie.richards@arm.com>
+
+	* tree-ssa-loop-ivopts.cc (constant_multiple_of): Change
+	tree_to_aff_combination to tree_to_aff_combination_expand and add
+	parameter to take ivopts_data.
+	(get_computation_aff_1): Change parameters and calls to include
+	ivopts_data.
+	(get_computation_aff): Ditto.
+	(get_computation_at) Ditto.:
+	(get_debug_computation_at) Ditto.:
+	(get_computation_cost) Ditto.:
+	(rewrite_use_nonlinear_expr) Ditto.:
+	(rewrite_use_address) Ditto.:
+	(rewrite_use_compare) Ditto.:
+	(remove_unused_ivs) Ditto.:
+
+2025-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120745
+	* rtl-ssa/changes.cc (process_uses_of_deleted_def): Rewrite to
+	handle deletions of non-degenerate phis.
+
+2025-06-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120815
+	* common/config/i386/i386-common.cc (processor_alias_table):
+	Replace CPU_SLM/PTA_NEHALEM with CPU_HASWELL/PTA_HASWELL for
+	PROCESSOR_INTEL.
+	* config/i386/i386-options.cc (processor_cost_table): Replace
+	intel_cost with alderlake_cost.
+	* config/i386/x86-tune-costs.h (intel_cost): Removed.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Treat
+	PROCESSOR_INTEL like PROCESSOR_ALDERLAKE.
+	(ix86_adjust_cost): Likewise.
+	* doc/invoke.texi: Update -mtune=intel for Diamond Rapids and
+	Clearwater Forest.
+
+2025-06-25  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h (PTA_ALDERLAKE): Use PTA_GOLDMONT_PLUS
+	as base to remove PTA_CLDEMOTE.
+	(PTA_SIERRAFOREST): Add PTA_CLDEMOTE since PTA_ALDERLAKE
+	does not include that anymore.
+	* doc/invoke.texi: Update texi file.
+
+2025-06-25  Jiawei  <jiawei@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc: New Profiles.
+
+2025-06-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* common.opt: (fauto-profile-inlining): New
+	* doc/invoke.texi (-fauto-profile-inlining): Document.
+	* ipa-inline.cc (inline_functions_by_afdo): Check
+	flag_auto_profile.
+	(early_inliner): Also do inline_functions_by_afdo with
+	!flag_early_inlining.
+
+2025-06-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc: Update toplevel comment.
+	(early_inline): Remove.
+	(auto_profile): Don't do early inlining.
+
 2025-06-24  Tobias Burnus  <tburnus@baylibre.com>
 
 	* config/gcn/gcn-opts.h (TARGET_GLC_NAME): Fix and extend the
