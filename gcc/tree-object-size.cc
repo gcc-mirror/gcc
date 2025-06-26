@@ -464,6 +464,93 @@ compute_object_offset (tree expr, const_tree var)
   return size_binop (code, base, off);
 }
 
+/* Return true if CONTAINER has a field of type INNER at OFFSET.  */
+
+static bool
+inner_at_offset (tree container, tree inner, tree offset)
+{
+  gcc_assert (RECORD_OR_UNION_TYPE_P (container));
+
+  for (tree t = TYPE_FIELDS (container); t; t = DECL_CHAIN (t))
+    {
+      if (TREE_CODE (t) != FIELD_DECL)
+	continue;
+
+      /* Skip over fields at bit offsets that are not BITS_PER_UNIT aligned
+	 to avoid an accidental truncated match with BYTE_POSITION below since
+	 the address of such fields cannot be taken.  */
+      if (wi::bit_and (wi::to_offset (DECL_FIELD_BIT_OFFSET (t)),
+		       BITS_PER_UNIT - 1) != 0)
+	continue;
+
+      tree byte_offset = byte_position (t);
+      if (TREE_CODE (byte_offset) != INTEGER_CST
+	  || tree_int_cst_lt (offset, byte_offset))
+	return false;
+
+      /* For an array, check the element type, otherwise the actual type.  This
+	 deliberately does not support the case of jumping from a pointer to
+	 the middle of an array to its containing struct.  */
+      tree t_type = TREE_TYPE (t);
+      if (((TREE_CODE (t_type) == ARRAY_TYPE && TREE_TYPE (t_type) == inner)
+	   || t_type == inner)
+	  && tree_int_cst_equal (byte_offset, offset))
+	return true;
+
+      /* Nested structure or union, adjust the expected offset and dive in.  */
+      if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (t))
+	  && inner_at_offset (TREE_TYPE (t), inner,
+			      fold_build2 (MINUS_EXPR, sizetype, offset,
+					   byte_offset)))
+	return true;
+    }
+
+  return false;
+}
+
+/* For the input MEMREF of type MEMREF_TYPE, look for the presence of a field
+   of BASE_TYPE at OFFSET and return an adjusted WHOLESIZE if found.  */
+
+static tree
+get_wholesize_for_memref (tree memref, tree wholesize)
+{
+  tree base = TREE_OPERAND (memref, 0);
+  tree offset = fold_convert (sizetype, TREE_OPERAND (memref, 1));
+  tree memref_type = TREE_TYPE (memref);
+  tree base_type = TREE_TYPE (base);
+
+  if (POINTER_TYPE_P (base_type))
+    base_type = TREE_TYPE ((base_type));
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "wholesize_for_memref: ");
+      print_generic_expr (dump_file, wholesize, dump_flags);
+      fprintf (dump_file, ", offset: ");
+      print_generic_expr (dump_file, offset, dump_flags);
+      fprintf (dump_file, "\n");
+    }
+
+  if (TREE_CODE (offset) != INTEGER_CST
+      || compare_tree_int (offset, offset_limit) < 0
+      || !RECORD_OR_UNION_TYPE_P (memref_type))
+    return wholesize;
+
+  offset = fold_build1 (NEGATE_EXPR, sizetype, offset);
+
+  if (inner_at_offset (memref_type, base_type, offset))
+    wholesize = size_binop (PLUS_EXPR, wholesize, offset);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "    new wholesize: ");
+      print_generic_expr (dump_file, wholesize, dump_flags);
+      fprintf (dump_file, "\n");
+    }
+
+  return wholesize;
+}
+
 /* Returns the size of the object designated by DECL considering its
    initializer if it either has one or if it would not affect its size,
    otherwise the size of the object without the initializer when MIN
@@ -536,7 +623,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	{
 	  compute_builtin_object_size (TREE_OPERAND (pt_var, 0),
 				       object_size_type & ~OST_SUBOBJECT, &sz);
-	  wholesize = sz;
+	  wholesize = get_wholesize_for_memref (pt_var, sz);
 	}
       else
 	{
@@ -548,6 +635,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	    {
 	      sz = object_sizes_get (osi, SSA_NAME_VERSION (var));
 	      wholesize = object_sizes_get (osi, SSA_NAME_VERSION (var), true);
+	      wholesize = get_wholesize_for_memref (pt_var, wholesize);
 	    }
 	  else
 	    sz = wholesize = size_unknown (object_size_type);
