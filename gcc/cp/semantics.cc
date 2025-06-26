@@ -13593,8 +13593,10 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_DEDUCIBLE:
       return type_targs_deducible_from (type1, type2);
 
-    /* __array_rank is handled in finish_trait_expr. */
+    /* __array_rank and __builtin_type_order are handled in
+       finish_trait_expr.  */
     case CPTK_RANK:
+    case CPTK_TYPE_ORDER:
       gcc_unreachable ();
 
 #define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
@@ -13724,6 +13726,12 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
       tree trait_expr = make_node (TRAIT_EXPR);
       if (kind == CPTK_RANK)
 	TREE_TYPE (trait_expr) = size_type_node;
+      else if (kind == CPTK_TYPE_ORDER)
+	{
+	  tree val = type_order_value (type1, type1);
+	  if (val != error_mark_node)
+	    TREE_TYPE (trait_expr) = TREE_TYPE (val);
+	}
       else
 	TREE_TYPE (trait_expr) = boolean_type_node;
       TRAIT_EXPR_TYPE1 (trait_expr) = type1;
@@ -13831,6 +13839,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_UNION:
     case CPTK_IS_VOLATILE:
     case CPTK_RANK:
+    case CPTK_TYPE_ORDER:
       break;
 
     case CPTK_IS_LAYOUT_COMPATIBLE:
@@ -13870,6 +13879,8 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
 	++rank;
       val = build_int_cst (size_type_node, rank);
     }
+  else if (kind == CPTK_TYPE_ORDER)
+    val = type_order_value (type1, type2);
   else
     val = (trait_expr_value (kind, type1, type2)
 	   ? boolean_true_node : boolean_false_node);

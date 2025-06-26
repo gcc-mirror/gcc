@@ -2012,6 +2012,16 @@ ftms = {
   };
 };
 
+ftms = {
+  name = type_order;
+  values = {
+    v = 202506;
+    cxxmin = 26;
+    extra_cond = "__has_builtin(__builtin_type_order) "
+    "&& __cpp_lib_three_way_comparison >= 201907L";
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";

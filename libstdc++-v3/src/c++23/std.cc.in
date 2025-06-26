@@ -888,6 +888,10 @@ export namespace std
   using std::partial_order;
   using std::strong_order;
   using std::weak_order;
+#if __glibcxx_type_order >= 202506L
+  using std::type_order;
+  using std::type_order_v;
+#endif
 }
 
 // 28.4 <complex>

@@ -2253,4 +2253,14 @@
 #endif /* !defined(__cpp_lib_sstream_from_string_view) && defined(__glibcxx_want_sstream_from_string_view) */
 #undef __glibcxx_want_sstream_from_string_view
 
+#if !defined(__cpp_lib_type_order)
+# if (__cplusplus >  202302L) && (__has_builtin(__builtin_type_order) && __cpp_lib_three_way_comparison >= 201907L)
+#  define __glibcxx_type_order 202506L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_type_order)
+#   define __cpp_lib_type_order 202506L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_type_order) && defined(__glibcxx_want_type_order) */
+#undef __glibcxx_want_type_order
+
 #undef __glibcxx_want_all

@@ -114,6 +114,7 @@ DEFTRAIT_TYPE (REMOVE_CVREF, "__remove_cvref", 1)
 DEFTRAIT_TYPE (REMOVE_EXTENT, "__remove_extent", 1)
 DEFTRAIT_TYPE (REMOVE_POINTER, "__remove_pointer", 1)
 DEFTRAIT_TYPE (REMOVE_REFERENCE, "__remove_reference", 1)
+DEFTRAIT_EXPR (TYPE_ORDER, "__builtin_type_order", 2)
 DEFTRAIT_TYPE (TYPE_PACK_ELEMENT, "__type_pack_element", -1)
 DEFTRAIT_TYPE (UNDERLYING_TYPE, "__underlying_type", 1)
 

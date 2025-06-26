@@ -35,6 +35,7 @@
 #endif
 
 #define __glibcxx_want_three_way_comparison
+#define __glibcxx_want_type_order
 #include <bits/version.h>
 
 #if __cplusplus > 201703L && __cpp_impl_three_way_comparison >= 201907L
@@ -1261,6 +1262,28 @@ namespace std _GLIBCXX_VISIBILITY(default)
 					 std::declval<_Up&>()));
   } // namespace __detail
   /// @endcond
+
+#if __glibcxx_type_order >= 202506L // C++ >= 26
+  /// Total ordering of types.
+  /// @since C++26
+
+  template<typename _Tp, typename _Up>
+    struct type_order
+    {
+      static constexpr strong_ordering value = __builtin_type_order(_Tp, _Up);
+      using value_type = strong_ordering;
+      using type = type_order<_Tp, _Up>;
+      constexpr operator value_type() const noexcept { return value; }
+      constexpr value_type operator()() const noexcept { return value; }
+    };
+
+  /// @ingroup variable_templates
+  /// @since C++26
+  template<typename _Tp, typename _Up>
+    inline constexpr strong_ordering type_order_v
+      = __builtin_type_order(_Tp, _Up);
+#endif // __glibcxx_type_order >= 202506L
+
 #endif // __cpp_lib_three_way_comparison >= 201907L
 } // namespace std
 

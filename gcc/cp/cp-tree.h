@@ -7557,6 +7557,8 @@ extern bool ctor_omit_inherited_parms		(tree);
 extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);
+extern tree type_order_value			(tree, tree);
+
 /* In module.cc  */
 class module_state; /* Forward declare.  */
 inline bool modules_p () { return flag_modules != 0; }
