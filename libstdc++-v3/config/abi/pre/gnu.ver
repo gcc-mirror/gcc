@@ -2902,11 +2902,10 @@ CXXABI_1.3.16 {
 CXXABI_1.3.17 {
     # std::exception_ptr::_M_exception_ptr_cast
     _ZNKSt15__exception_ptr13exception_ptr21_M_exception_ptr_castERKSt9type_info;
-}
 #ifdef __riscv
-CXXABI_1.3.16;
+} CXXABI_1.3.16;
 #else
-CXXABI_1.3.15;
+} CXXABI_1.3.15;
 #endif
 
 # Symbols in the support library (libsupc++) supporting transactional memory.
