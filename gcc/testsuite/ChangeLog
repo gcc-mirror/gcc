@@ -1,3 +1,35 @@
+2025-06-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-06-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/ventana-16122.c: New test.
+
+2025-06-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-05-01  Paul Thomas  <pault@gcc.gnu.org>
+		    and Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/119948
+	* gfortran.dg/pr119948.f90: New test.
+
+2025-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-06-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/120624
+	* gcc.target/aarch64/sme/za_state_7.c: New test.
+
+2025-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-05-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120347
+	* gcc.dg/torture/pr120347.c: New test.
+
 2025-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

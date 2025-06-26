@@ -1,3 +1,41 @@
+2025-06-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-06-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md (lui-constraint<X:mode>and_to_or): Do not use
+	the RTL template for split code.  Emit it directly taking care to avoid
+	emitting a constant load that needed synthesis.  Fix formatting.
+
+2025-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-06-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/120624
+	* config/aarch64/aarch64.md (SME_STATE_REGNUM): Expand on comments.
+	* config/aarch64/aarch64-sme.md (aarch64_restore_za): Also set
+	SME_STATE_REGNUM
+
+2025-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-05-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120347
+	* rtlanal.cc (rtx_properties::try_to_add_src): Don't drop the
+	IN_MEM_LOAD and IN_MEM_STORE flags for autoinc registers.
+	* rtl-ssa/changes.cc (recog_level2): Check whether an
+	RTX_AUTOINCed register also appears outside of an address.
+
+2025-06-25  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h (PTA_ALDERLAKE): Use PTA_GOLDMONT_PLUS
+	as base to remove PTA_CLDEMOTE.
+	(PTA_SIERRAFOREST): Add PTA_CLDEMOTE since PTA_ALDERLAKE
+	does not include that anymore.
+	* doc/invoke.texi: Update texi file.
+
 2025-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
