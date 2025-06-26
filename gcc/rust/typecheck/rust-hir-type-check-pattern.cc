@@ -463,6 +463,17 @@ void
 TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 {
   std::unique_ptr<HIR::TuplePatternItems> items;
+
+  // Check whether parent is tuple
+  auto resolved_parent = parent->destructure ();
+  if (resolved_parent->get_kind () != TyTy::TUPLE)
+    {
+      rust_error_at (pattern.get_locus (), "expected %s, found tuple",
+		     parent->as_string ().c_str ());
+      return;
+    }
+  TyTy::TupleType &par = *static_cast<TyTy::TupleType *> (resolved_parent);
+
   switch (pattern.get_items ().get_item_type ())
     {
     case HIR::TuplePatternItems::ItemType::MULTIPLE:
@@ -470,19 +481,9 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	auto &ref = static_cast<HIR::TuplePatternItemsMultiple &> (
 	  pattern.get_items ());
 
-	auto resolved_parent = parent->destructure ();
-	if (resolved_parent->get_kind () != TyTy::TUPLE)
-	  {
-	    rust_error_at (pattern.get_locus (), "expected %s, found tuple",
-			   parent->as_string ().c_str ());
-	    break;
-	  }
-
 	const auto &patterns = ref.get_patterns ();
 	size_t nitems_to_resolve = patterns.size ();
 
-	TyTy::TupleType &par
-	  = *static_cast<TyTy::TupleType *> (resolved_parent);
 	if (patterns.size () != par.get_fields ().size ())
 	  {
 	    emit_pattern_size_error (pattern, par.get_fields ().size (),
@@ -507,11 +508,53 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 
     case HIR::TuplePatternItems::ItemType::RANGED:
       {
-	// HIR::TuplePatternItemsRanged &ref
-	//   = *static_cast<HIR::TuplePatternItemsRanged *> (
-	//     pattern.get_items ().get ());
-	// TODO
-	rust_unreachable ();
+	HIR::TuplePatternItemsRanged &ref
+	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
+
+	// Check whether size of lower and upper patterns <= parent size
+	const auto &lower = ref.get_lower_patterns ();
+	const auto &upper = ref.get_upper_patterns ();
+	size_t min_size_required = lower.size () + upper.size ();
+
+	if (par.get_fields ().size () > min_size_required)
+	  {
+	    emit_pattern_size_error (pattern, par.get_fields ().size (),
+				     min_size_required);
+	    // TODO attempt to continue to do typechecking even after wrong size
+	    break;
+	  }
+
+	// Resolve lower patterns
+	std::vector<TyTy::TyVar> pattern_elems;
+	for (size_t i = 0; i < lower.size (); i++)
+	  {
+	    auto &p = lower[i];
+	    TyTy::BaseType *par_type = par.get_field (i);
+
+	    TyTy::BaseType *elem = TypeCheckPattern::Resolve (*p, par_type);
+	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
+	  }
+
+	// Pad pattern_elems until needing to resolve upper patterns
+	size_t rest_end = par.get_fields ().size () - upper.size ();
+	for (size_t i = lower.size (); i < rest_end; i++)
+	  {
+	    TyTy::BaseType *par_type = par.get_field (i);
+	    pattern_elems.push_back (TyTy::TyVar (par_type->get_ref ()));
+	  }
+
+	// Resolve upper patterns
+	for (size_t i = 0; i < upper.size (); i++)
+	  {
+	    auto &p = upper[i];
+	    TyTy::BaseType *par_type = par.get_field (rest_end + i);
+
+	    TyTy::BaseType *elem = TypeCheckPattern::Resolve (*p, par_type);
+	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
+	  }
+
+	infered = new TyTy::TupleType (pattern.get_mappings ().get_hirid (),
+				       pattern.get_locus (), pattern_elems);
       }
       break;
     }
