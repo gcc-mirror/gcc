@@ -118,7 +118,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace contracts
 {
 
-void invoke_default_contract_violation_handler(const std::contracts::contract_violation& violation)
+void invoke_default_contract_violation_handler(const std::contracts::contract_violation& violation) noexcept
 {
   return __handle_contract_violation(violation);
 }
