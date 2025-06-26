@@ -800,7 +800,11 @@ function_instance::merge (function_instance *other,
    Otherwise turn FN toplevel.  Return true if new toplevel function
    was introduced.
    If new toplevel functions are created and NEW_FUNCTIONS != NULL,
-   add them to NEW_FUNCTIONS.  */
+   add them to NEW_FUNCTIONS.
+
+   TODO: When offlining indirect call we lose information about the
+   call target.  It should be possible to add it into
+   targets histogram.  */
 
 bool
 function_instance::offline (function_instance *fn,
@@ -1118,46 +1122,49 @@ autofdo_source_profile::offline_external_functions ()
      may introduce new functions by offlining.  */
   for (auto const &iter : map_)
     fns.safe_push (iter.second);
-  for (function_instance *f : fns)
-    if (!seen.contains (afdo_string_table->get_index
-			  (afdo_string_table->get_name (f->name ()))))
-      {
-	f->offline_if_in_set (seen, fns);
-	if (dump_file)
-	  fprintf (dump_file, "Removing external %s\n",
-		   afdo_string_table->get_name (f->name ()));
-	map_.erase (afdo_string_table->get_index
-		    (afdo_string_table->get_name (f->name ())));
-	delete f;
-      }
-    else
-      {
-	f->remove_external_functions (seen, to_symbol_name, fns);
-	int index = afdo_string_table->get_index
-		      (afdo_string_table->get_name (f->name ()));
-	int *newn = to_symbol_name.get (index);
-	if (newn)
-	  {
-	    if (map_.count (*newn))
-	      {
-		if (dump_file)
-		  fprintf (dump_file, "Merging duplicate symbol %s\n",
-			   afdo_string_table->get_name (f->name ()));
-		function_instance *to = map_[index];
-		if (to != f)
-		  {
-		    map_[index]->merge (f);
-		    delete f;
-		  }
-	      }
-	    else
-	      {
-		auto iter = map_.find (index);
-		map_[*newn] = iter->second;
-		map_.erase (iter);
-	      }
-	  }
-      }
+  for (unsigned int i = 0; i < fns.length (); i++)
+    {
+      function_instance *f = fns[i];
+      if (!seen.contains (afdo_string_table->get_index
+			    (afdo_string_table->get_name (f->name ()))))
+	{
+	  f->offline_if_in_set (seen, fns);
+	  if (dump_file)
+	    fprintf (dump_file, "Removing external %s\n",
+		     afdo_string_table->get_name (f->name ()));
+	  map_.erase (afdo_string_table->get_index
+		      (afdo_string_table->get_name (f->name ())));
+	  delete f;
+	}
+      else
+	{
+	  f->remove_external_functions (seen, to_symbol_name, fns);
+	  int index = afdo_string_table->get_index
+			(afdo_string_table->get_name (f->name ()));
+	  int *newn = to_symbol_name.get (index);
+	  if (newn)
+	    {
+	      if (map_.count (*newn))
+		{
+		  if (dump_file)
+		    fprintf (dump_file, "Merging duplicate symbol %s\n",
+			     afdo_string_table->get_name (f->name ()));
+		  function_instance *to = map_[index];
+		  if (to != f)
+		    {
+		      map_[index]->merge (f);
+		      delete f;
+		    }
+		}
+	      else
+		{
+		  auto iter = map_.find (index);
+		  map_[*newn] = iter->second;
+		  map_.erase (iter);
+		}
+	    }
+	}
+    }
   if (dump_file)
     for (auto const &iter : map_)
       {
@@ -2950,7 +2957,7 @@ namespace
 const pass_data pass_data_ipa_auto_profile_offline = {
   SIMPLE_IPA_PASS, "afdo_offline", /* name */
   OPTGROUP_NONE,           /* optinfo_flags */
-  TV_IPA_AUTOFDO,          /* tv_id */
+  TV_IPA_AUTOFDO_OFFLINE,  /* tv_id */
   0,                       /* properties_required */
   0,                       /* properties_provided */
   0,                       /* properties_destroyed */
@@ -2962,7 +2969,7 @@ class pass_ipa_auto_profile_offline : public simple_ipa_opt_pass
 {
 public:
   pass_ipa_auto_profile_offline (gcc::context *ctxt)
-      : simple_ipa_opt_pass (pass_data_ipa_auto_profile, ctxt)
+      : simple_ipa_opt_pass (pass_data_ipa_auto_profile_offline, ctxt)
   {
   }
 
