@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fno-early-inlining -fdump-ipa-profile-optimized -fdump-ipa-afdo-optimized" } */
+/* { dg-options "-O2 -fno-early-inlining -fdump-ipa-profile-details -fdump-tree-einline-details" } */
 volatile int one;
 static int
 add1 (int val)
@@ -31,5 +31,5 @@ main (void)
 }
 /* { dg-final-use-not-autofdo { scan-ipa-dump "Indirect call -> direct call.* add1 .will resolve by ipa-profile" "profile"} } */
 /* { dg-final-use-not-autofdo { scan-ipa-dump "Indirect call -> direct call.* sub1 .will resolve by ipa-profile" "profile"} } */
-/* { dg-final-use-autofdo { scan-tree-dump "Inlining add1/. into main/" "einline"} } */
-/* { dg-final-use-autofdo { scan-tree-dump "Inlining sub1/. into main/" "einline"} } */
+/* { dg-final-use-autofdo { scan-tree-dump "Inlining using auto-profile add1/. into do_op/. which is transitively inlined to main/" "einline"} } */
+/* { dg-final-use-autofdo { scan-tree-dump "Inlining using auto-profile sub1/. into do_op/. which is transitively inlined to main/" "einline"} } */

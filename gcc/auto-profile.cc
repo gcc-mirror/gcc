@@ -147,6 +147,10 @@ typedef std::map<unsigned, gcov_type> icall_target_map;
    to direct call.  */
 typedef std::set<gimple *> stmt_set;
 
+/* Set and map used to translate name indexes.  */
+typedef hash_set<int_hash <int, -1, -2>> name_index_set;
+typedef hash_map<int_hash <int, -1, -2>, int> name_index_map;
+
 /* Represent count info of an inline stack.  */
 class count_info
 {
@@ -233,6 +237,8 @@ public:
   {
     return total_count_;
   }
+
+  /* Return head count or -1 if unknown.  */
   gcov_type
   head_count () const
   {
@@ -246,7 +252,24 @@ public:
 
   /* Merge profile of clones.  Note that cloning hasnt been performed when
      we annotate the CFG (at this stage).  */
-  void merge (function_instance *other);
+  void merge (function_instance *other,
+	      vec <function_instance *> *new_functions = NULL);
+
+  /* Turn inline instance to offline.  */
+  static bool offline (function_instance *fn,
+		       vec <function_instance *> *new_functions);
+
+  /* Offline all inlined functions with name in SEEN.
+     If new toplevel functions are created, add them to NEW_FUNCTIONS.  */
+  void offline_if_in_set (name_index_set &seen,
+			  vec <function_instance *> &new_functions);
+
+  /* Walk inlined functions and if their name is not in SEEN
+     remove it.  */
+
+  void remove_external_functions (name_index_set &seen,
+				  name_index_map &to_symbol_name,
+				  vec <function_instance *> &new_functions);
 
   /* Store the profile info for LOC in INFO. Return TRUE if profile info
      is found.  */
@@ -263,6 +286,42 @@ public:
   /* Mark LOC as annotated.  */
   void mark_annotated (location_t loc);
 
+  void dump (FILE *f, int indent = 0, bool nested = false) const;
+
+  void dump_inline_stack (FILE *f) const;
+
+  DEBUG_FUNCTION void debug () const;
+
+  /* Mark function as removed from indir target list.  */
+  void
+  remove_icall_target ()
+  {
+    removed_icall_target_ = true;
+  }
+
+  /* Reutrn true if function is removed from indir target list.  */
+  bool
+  removed_icall_target ()
+  {
+    return removed_icall_target_;
+  }
+
+  /* Set inlined_to pointer.  */
+  void
+  set_inlined_to (function_instance *inlined_to)
+  {
+    gcc_checking_assert (inlined_to != this);
+    inlined_to_ = inlined_to;
+  }
+
+  /* Return pointer to the function instance this function is inlined
+     to or NULL if it is outer instance.  */
+  function_instance *
+  inlined_to () const
+  {
+    return inlined_to_;
+  }
+
 private:
   /* Callsite, represented as (decl_lineno, callee_function_name_index).  */
   typedef std::pair<unsigned, unsigned> callsite;
@@ -271,7 +330,8 @@ private:
   typedef std::map<callsite, function_instance *> callsite_map;
 
   function_instance (unsigned name, gcov_type head_count)
-      : name_ (name), total_count_ (0), head_count_ (head_count)
+      : name_ (name), total_count_ (0), head_count_ (head_count),
+      removed_icall_target_ (false), inlined_to_ (NULL)
   {
   }
 
@@ -292,6 +352,13 @@ private:
 
   /* Map from source location to count_info.  */
   position_count_map pos_counts;
+
+  /* True if function was removed from indir target list.  */
+  bool removed_icall_target_;
+
+  /* Pointer to outer function instance or NULL if this
+     is a toplevel one.  */
+  function_instance *inlined_to_;
 };
 
 /* Profile for all functions.  */
@@ -314,6 +381,11 @@ public:
   /* For a given DECL, returns the top-level function_instance.  */
   function_instance *get_function_instance_by_decl (tree decl) const;
 
+  /* For a given name index, returns the top-level function_instance.  */
+  function_instance *get_function_instance_by_name_index (int) const;
+
+  void add_function_instance (function_instance *);
+
   /* Find count_info for a given gimple STMT. If found, store the count_info
      in INFO and return true; otherwise return false.
      NODE can be used to specify particular inline clone.  */
@@ -335,6 +407,9 @@ public:
 				  cgraph_node *node);
 
   void remove_icall_target (cgraph_edge *e);
+
+  /* Offline all functions not defined in the current translation unit.  */
+  void offline_external_functions ();
 private:
   /* Map from function_instance name index (in string_table) to
      function_instance.  */
@@ -409,6 +484,17 @@ get_function_decl_from_block (tree block)
   return BLOCK_ABSTRACT_ORIGIN (block);
 }
 
+/* Dump LOC to F.  */
+
+static void
+dump_afdo_loc (FILE *f, unsigned loc)
+{
+  if (loc & 65535)
+    fprintf (f, "%i.%i", loc >> 16, loc & 65535);
+  else
+    fprintf (f, "%i", loc >> 16);
+}
+
 /* Dump STACK to F.  */
 
 static void
@@ -417,11 +503,10 @@ dump_inline_stack (FILE *f, inline_stack *stack)
   bool first = true;
   for (decl_lineno &p : *stack)
     {
-      fprintf(f, "%s%s:%i.%i",
-	      first ? "" : "; ",
-	      IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p.first)),
-	      p.second >> 16,
-	      p.second & 65535);
+      fprintf (f, "%s%s:",
+	       first ? "" : "; ",
+	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p.first)));
+      dump_afdo_loc (f, p.second);
       first = false;
     }
   fprintf (f, "\n");
@@ -612,25 +697,297 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
   return NULL;
 }
 
-/* Merge profile of clones.  Note that cloning hasnt been performed when
+/* Merge profile of OTHER to THIS.  Note that cloning hasnt been performed when
    we annotate the CFG (at this stage).  */
 
-void function_instance::merge (function_instance *other)
+void
+function_instance::merge (function_instance *other,
+			  vec <function_instance *> *new_functions)
 {
+  gcc_checking_assert (other != this
+		       && afdo_string_table->get_index
+			       (afdo_string_table->get_name (other->name ()))
+		          == afdo_string_table->get_index
+				  (afdo_string_table->get_name (name ())));
   total_count_ += other->total_count_;
-  head_count_ += other->head_count_;
+  if (other->total_count () && total_count () && other->head_count () == -1)
+    head_count_ = -1;
+  else if (head_count_ != -1)
+    head_count_ += other->head_count_;
 
+  bool changed = true;
+
+  while (changed)
+    {
+      changed = false;
+      /* If both function instances agree on particular inlined function,
+	 merge profiles. Otherwise offline the instance.  */
+      for (callsite_map::const_iterator iter = other->callsites.begin ();
+	   iter != other->callsites.end ();)
+	if (callsites.count (iter->first) == 0)
+	  {
+	    for (function_instance *s = this; s; s = s->inlined_to ())
+	      s->total_count_ -= iter->second->total_count ();
+	    function_instance *f = iter->second;
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "  Mismatch in inlined functions;"
+			 " offlining in merge source:");
+		f->dump_inline_stack (dump_file);
+		fprintf (dump_file, "\n");
+	      }
+	    other->callsites.erase (iter);
+	    function_instance::offline (f, new_functions);
+	    /* Start from begining as merging might have offlined
+	       some functions in the case of recursive inlining.   */
+	    iter = other->callsites.begin ();
+	  }
+	else
+	  ++iter;
+      for (callsite_map::const_iterator iter = callsites.begin ();
+	   iter != callsites.end ();)
+	if (other->callsites.count (iter->first) == 0)
+	  {
+	    function_instance *f = iter->second;
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "  Mismatch in inlined functions;"
+			 " offlining in merge destination:");
+		f->dump_inline_stack (dump_file);
+		fprintf (dump_file, "\n");
+	      }
+	    callsites.erase (iter);
+	    function_instance::offline (f, new_functions);
+	    iter = callsites.begin ();
+	    changed = true;
+	  }
+	else
+	  ++iter;
+    }
   for (callsite_map::const_iterator iter = other->callsites.begin ();
        iter != other->callsites.end (); ++iter)
-    if (callsites.count (iter->first) == 0)
-      callsites[iter->first] = iter->second;
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "    Merging profile for inlined function\n"
+		   "      from: ");
+	  iter->second->dump_inline_stack (dump_file);
+	  fprintf (dump_file, "\n      to  : " );
+	  callsites[iter->first]->dump_inline_stack (dump_file);
+	  fprintf (dump_file, "\n");
+	}
+
+      callsites[iter->first]->merge (iter->second, new_functions);
+    }
 
   for (position_count_map::const_iterator iter = other->pos_counts.begin ();
        iter != other->pos_counts.end (); ++iter)
     if (pos_counts.count (iter->first) == 0)
       pos_counts[iter->first] = iter->second;
     else
-      pos_counts[iter->first].count += iter->second.count;
+      {
+        pos_counts[iter->first].count += iter->second.count;
+	for (icall_target_map::const_iterator titer
+	       = iter->second.targets.begin ();
+	     titer != iter->second.targets.end (); ++titer)
+	  pos_counts[iter->first].targets[titer->first]
+	    += titer->second;
+      }
+}
+
+/* Make inline function FN offline.
+   If tolevel function of same name already exists, then merge profiles.
+   Otherwise turn FN toplevel.  Return true if new toplevel function
+   was introduced.
+   If new toplevel functions are created and NEW_FUNCTIONS != NULL,
+   add them to NEW_FUNCTIONS.  */
+
+bool
+function_instance::offline (function_instance *fn,
+			    vec <function_instance *> *new_functions)
+{
+  gcc_assert (fn->inlined_to ());
+  for (function_instance *s = fn->inlined_to (); s; s = s->inlined_to ())
+    s->total_count_ -= fn->total_count ();
+  function_instance *to
+    = afdo_source_profile->get_function_instance_by_name_index (fn->name ());
+  fn->set_inlined_to (NULL);
+  if (to)
+    {
+      if (dump_file)
+        {
+	  fprintf (dump_file, "  Merging to offline instance: ");
+	  to->dump_inline_stack (dump_file);
+	  fprintf (dump_file, "\n");
+	}
+      to->merge (fn);
+      delete fn;
+      return false;
+    }
+  if (dump_file)
+    {
+      fprintf (dump_file, "  Added as offline instance: ");
+      fn->dump_inline_stack (dump_file);
+      fprintf (dump_file, "\n");
+    }
+  if (fn->total_count ())
+    fn->head_count_ = -1;
+  afdo_source_profile->add_function_instance (fn);
+  if (new_functions)
+    new_functions->safe_push (fn);
+  return true;
+}
+
+/* Offline all inlined functions with name in SEEN.
+   If new toplevel functions are created, add them to NEW_FUNCTIONS.  */
+
+void
+function_instance::offline_if_in_set (name_index_set &seen,
+				      vec <function_instance *> &new_functions)
+{
+  for (callsite_map::const_iterator iter = callsites.begin ();
+       iter != callsites.end ();)
+    if (seen.contains (afdo_string_table->get_index
+			(afdo_string_table->get_name (iter->first.second))))
+      {
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "Offlining function inlined to other module: ");
+	    iter->second->dump_inline_stack (dump_file);
+	    fprintf (dump_file, "\n");
+	  }
+	for (function_instance *s = this; s; s = s->inlined_to ())
+	  s->total_count_ -= iter->second->total_count ();
+	function_instance::offline (iter->second, &new_functions);
+	iter = callsites.erase (iter);
+      }
+    else
+      {
+	iter->second->offline_if_in_set (seen, new_functions);
+	++iter;
+      }
+}
+
+/* Walk inlined functions and if their name is not in SEEN
+   remove it.  Also rename function names as given by
+   to_symbol_name map.  */
+
+void
+function_instance::remove_external_functions
+	(name_index_set &seen,
+         name_index_map &to_symbol_name,
+         vec <function_instance *> &new_functions)
+{
+  auto_vec <callsite, 20> to_rename;
+  for (callsite_map::const_iterator iter = callsites.begin ();
+       iter != callsites.end ();)
+    if (!seen.contains (afdo_string_table->get_index
+			(afdo_string_table->get_name (iter->first.second))))
+      {
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "  Removing external inline: ");
+	    iter->second->dump_inline_stack (dump_file);
+	    fprintf (dump_file, "\n");
+	  }
+	iter->second->offline_if_in_set (seen, new_functions);
+	delete iter->second;
+	iter = callsites.erase (iter);
+      }
+    else
+      {
+	gcc_checking_assert ((int)iter->first.second
+			     == iter->second->name ());
+	int *newn = to_symbol_name.get (iter->first.second);
+	if (newn)
+	  {
+	    iter->second->name_ = *newn;
+	    to_rename.safe_push (iter->first);
+	  }
+	iter->second->remove_external_functions
+	  (seen, to_symbol_name, new_functions);
+	++iter;
+      }
+  for (auto &key : to_rename)
+    {
+      auto iter = callsites.find (key);
+      callsite key2 = key;
+      key2.second = *to_symbol_name.get (key.second);
+      callsites[key2] = iter->second;
+      callsites.erase (iter);
+    }
+}
+
+/* Dump instance to F indented by INDENT.  */
+
+void
+function_instance::dump (FILE *f, int indent, bool nested) const
+{
+  if (!nested)
+    fprintf (f, "%*s%s total:%" PRIu64 " head:%" PRId64 "\n",
+	     indent, "", afdo_string_table->get_name (name ()),
+	     (int64_t)total_count (), (int64_t)head_count ());
+  else
+    fprintf (f, " total:%" PRIu64 "\n", (int64_t)total_count ());
+  for (auto const &iter : pos_counts)
+    {
+      fprintf (f, "%*s", indent + 2, "");
+      dump_afdo_loc (f, iter.first);
+      fprintf (f, ": %" PRIu64, (int64_t)iter.second.count);
+
+      for (auto const &titer : iter.second.targets)
+	fprintf (f, "  %s:%" PRIu64,
+		 afdo_string_table->get_name (titer.first),
+		 (int64_t)titer.second);
+      fprintf (f,"\n");
+    }
+  for (auto const &iter : callsites)
+    {
+      fprintf (f, "%*s", indent + 2, "");
+      dump_afdo_loc (f, iter.first.first);
+      fprintf (f, ": %s", afdo_string_table->get_name (iter.first.second));
+      iter.second->dump (f, indent + 2, true);
+    }
+}
+
+/* Dump inline path.  */
+
+void
+function_instance::dump_inline_stack (FILE *f) const
+{
+  auto_vec <callsite, 20> stack;
+  const function_instance *p = this, *s = inlined_to ();
+  while (s)
+    {
+      bool found = false;
+      for (callsite_map::const_iterator iter = s->callsites.begin ();
+	   iter != s->callsites.end (); ++iter)
+	if (iter->second == p)
+	  {
+	    gcc_checking_assert (!found
+				 && (int)iter->first.second == p->name ());
+	    stack.safe_push ({iter->first.first, s->name ()});
+	    found = true;
+	  }
+      gcc_checking_assert (found);
+      p = s;
+      s = s->inlined_to ();
+    }
+  for (callsite &s: stack)
+    {
+      fprintf (f, "%s:", afdo_string_table->get_name (s.second));
+      dump_afdo_loc (f, s.first);
+      fprintf (f, " ");
+    }
+  fprintf (f, "%s", afdo_string_table->get_name (name ()));
+}
+
+/* Dump instance to stderr.  */
+
+void
+function_instance::debug () const
+{
+  dump (stderr);
 }
 
 /* Return profile info for LOC in INFO.  */
@@ -660,8 +1017,9 @@ function_instance::find_icall_target_map (tree fn, gcall *stmt,
     {
       unsigned callee = iter->second->name ();
       /* Check if callsite location match the stmt.  */
-      if (iter->first.first != stmt_offset)
-        continue;
+      if (iter->first.first != stmt_offset
+	  || iter->second->removed_icall_target ())
+	continue;
       struct cgraph_node *node = cgraph_node::get_for_asmname (
           get_identifier (afdo_string_table->get_name (callee)));
       if (node == NULL)
@@ -680,18 +1038,132 @@ function_instance::remove_icall_target (tree fn, gcall *stmt)
   unsigned stmt_offset = get_relative_location_for_stmt (fn, stmt);
   int n = 0;
 
-  for (callsite_map::const_iterator iter = callsites.begin ();
-       iter != callsites.end ();)
-    if (iter->first.first != stmt_offset)
-      ++iter;
-    else
+  for (auto iter : callsites)
+    if (iter.first.first == stmt_offset)
       {
-	iter = callsites.erase (iter);
+	iter.second->remove_icall_target ();
 	n++;
       }
   /* TODO: If we add support for multiple targets, we may want to
      remove only those we succesfully inlined.  */
   gcc_assert (n);
+}
+
+/* Offline all functions not defined in the current unit.
+   We will not be able to early inline them.
+   Doint so early will get VPT decisions more realistic.  */
+
+void
+autofdo_source_profile::offline_external_functions ()
+{
+  /* First check all available definitions and mark their names as
+     visible.  */
+  cgraph_node *node;
+  name_index_set seen;
+  name_index_map to_symbol_name;
+  FOR_EACH_DEFINED_FUNCTION (node)
+    {
+      char *name
+	  = get_original_name
+		  (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
+      int index = afdo_string_table->get_index (name);
+      int index2 = afdo_string_table->get_index
+		      (lang_hooks.dwarf_name (node->decl, 0));
+      if (index != -1 && index2 != -1 && index != index2)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Adding dwarf->symbol rename %s->%s\n",
+		     afdo_string_table->get_name (index2), name);
+	  to_symbol_name.put (index2, index);
+	  seen.add (index2);
+	}
+      if (index == -1)
+	index = index2;
+      if (index >= 0)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "%s is defined in node %s\n",
+		     afdo_string_table->get_name (index),
+		     node->dump_name ());
+	  seen.add (index);
+	}
+      else
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file,
+		       "Node %s not in auto profile (%s neither %s)\n",
+		       node->dump_name (),
+		       name,
+		       lang_hooks.dwarf_name (node->decl, 0));
+	    }
+	}
+      free (name);
+    }
+
+  /* Now process all tolevel (offline) function instances.  
+    
+     If instance has no definition in this translation unit,
+     first offline all inlined functions which are defined here
+     (so we do not lose porfile due to cross-module inlining
+     done by link-time optimizers).
+
+     If instance has a definition, look into all inlined functions
+     and remove external ones (result of cross-module inlining).
+
+     TODO: after early-inlining we ought to offline all functions
+     that were not inlined.  */
+  auto_vec <function_instance *>fns;
+  /* Poppulate worklist with all functions to process.  Processing
+     may introduce new functions by offlining.  */
+  for (auto const &iter : map_)
+    fns.safe_push (iter.second);
+  for (function_instance *f : fns)
+    if (!seen.contains (afdo_string_table->get_index
+			  (afdo_string_table->get_name (f->name ()))))
+      {
+	f->offline_if_in_set (seen, fns);
+	if (dump_file)
+	  fprintf (dump_file, "Removing external %s\n",
+		   afdo_string_table->get_name (f->name ()));
+	map_.erase (afdo_string_table->get_index
+		    (afdo_string_table->get_name (f->name ())));
+	delete f;
+      }
+    else
+      {
+	f->remove_external_functions (seen, to_symbol_name, fns);
+	int index = afdo_string_table->get_index
+		      (afdo_string_table->get_name (f->name ()));
+	int *newn = to_symbol_name.get (index);
+	if (newn)
+	  {
+	    if (map_.count (*newn))
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Merging duplicate symbol %s\n",
+			   afdo_string_table->get_name (f->name ()));
+		function_instance *to = map_[index];
+		if (to != f)
+		  {
+		    map_[index]->merge (f);
+		    delete f;
+		  }
+	      }
+	    else
+	      {
+		auto iter = map_.find (index);
+		map_[*newn] = iter->second;
+		map_.erase (iter);
+	      }
+	  }
+      }
+  if (dump_file)
+    for (auto const &iter : map_)
+      {
+	seen.contains (iter.second->name ());
+	iter.second->dump (dump_file);
+      }
 }
 
 /* Read the profile and create a function_instance with head count as
@@ -733,6 +1205,8 @@ function_instance::read_function_instance (function_instance_stack *stack,
   unsigned num_pos_counts = gcov_read_unsigned ();
   unsigned num_callsites = gcov_read_unsigned ();
   function_instance *s = new function_instance (name, head_count);
+  if (!stack->is_empty ())
+    s->set_inlined_to (stack->last ());
   stack->safe_push (s);
 
   for (unsigned i = 0; i < num_pos_counts; i++)
@@ -758,7 +1232,7 @@ function_instance::read_function_instance (function_instance_stack *stack,
     {
       unsigned offset = gcov_read_unsigned ();
       function_instance *callee_function_instance
-          = read_function_instance (stack, 0);
+          = read_function_instance (stack, -1);
       s->callsites[std::make_pair (offset, callee_function_instance->name ())]
           = callee_function_instance;
     }
@@ -785,6 +1259,29 @@ autofdo_source_profile::get_function_instance_by_decl (tree decl) const
     return NULL;
   name_function_instance_map::const_iterator ret = map_.find (index);
   return ret == map_.end () ? NULL : ret->second;
+}
+
+/* For a given NAME_INDEX, returns the top-level function_instance.  */
+
+function_instance *
+autofdo_source_profile::get_function_instance_by_name_index (int name_index)
+       	const
+{
+  name_index = afdo_string_table->get_index
+    (afdo_string_table->get_name (name_index));
+  name_function_instance_map::const_iterator ret = map_.find (name_index);
+  return ret == map_.end () ? NULL : ret->second;
+}
+
+/* Add function instance FN.  */
+
+void
+autofdo_source_profile::add_function_instance (function_instance *fn)
+{
+  int index = afdo_string_table->get_index
+		(afdo_string_table->get_name (fn->name ()));
+  gcc_checking_assert (map_.count (index) == 0);
+  map_[index] = fn;
 }
 
 /* Find count_info for a given gimple STMT. If found, store the count_info
@@ -975,6 +1472,9 @@ autofdo_source_profile::read ()
       return false;
     }
 
+  gcc_checking_assert (!afdo_source_profile);
+  afdo_source_profile = this;
+
   /* Skip the length of the section.  */
   gcov_read_unsigned ();
 
@@ -1008,6 +1508,7 @@ autofdo_source_profile::read ()
 			    afdo_string_table->get_name (s->name ()));
 	    }
 	  map_[fun_id]->merge (s);
+	  delete s;
 	}
     }
   /* Scale up the profile, but leave some bits in case some counts gets
@@ -1040,10 +1541,10 @@ autofdo_source_profile::get_function_instance_by_inline_stack (
 {
   name_function_instance_map::const_iterator iter = map_.find (
       afdo_string_table->get_index_by_decl (stack[stack.length () - 1].first));
-  if (iter == map_.end())
+  if (iter == map_.end ())
     return NULL;
   function_instance *s = iter->second;
-  for (unsigned i = stack.length() - 1; i > 0; i--)
+  for (unsigned i = stack.length () - 1; i > 0; i--)
     {
       s = s->get_function_instance_by_decl (
           stack[i].second, stack[i - 1].first);
@@ -1100,7 +1601,7 @@ read_profile (void)
 
   /* string_table.  */
   afdo_string_table = new string_table ();
-  if (!afdo_string_table->read())
+  if (!afdo_string_table->read ())
     {
       error ("cannot read string table from %s", auto_profile_file);
       return;
@@ -2094,8 +2595,13 @@ afdo_annotate_cfg (void)
   loop_optimizer_init (0);
 
   if (dump_file)
-    fprintf (dump_file, "\n\nAnnotating BB profile of %s\n",
-	     cgraph_node::get (current_function_decl)->dump_name ());
+    {
+      fprintf (dump_file, "\n\nAnnotating BB profile of %s\n",
+	       cgraph_node::get (current_function_decl)->dump_name ());
+      fprintf (dump_file, "\n");
+      s->dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
 
   /* In the first pass only store non-zero counts.  */
   gcov_type head_count = s->head_count () * autofdo::afdo_count_scale;
@@ -2162,7 +2668,7 @@ afdo_annotate_cfg (void)
     }
 
   /* Update profile.  */
-  if (head_count)
+  if (head_count > 0)
   {
     update_count_by_afdo_count (&ENTRY_BLOCK_PTR_FOR_FN (cfun)->count,
 				head_count);
@@ -2209,8 +2715,8 @@ afdo_annotate_cfg (void)
 	cfun->cfg->full_profile = false;
       }
 
-  cgraph_node::get(current_function_decl)->count
-      = ENTRY_BLOCK_PTR_FOR_FN(cfun)->count;
+  cgraph_node::get (current_function_decl)->count
+      = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   update_max_bb_count ();
   profile_status_for_fn (cfun) = PROFILE_READ;
   if (flag_value_profile_transformations)
@@ -2436,4 +2942,49 @@ simple_ipa_opt_pass *
 make_pass_ipa_auto_profile (gcc::context *ctxt)
 {
   return new pass_ipa_auto_profile (ctxt);
+}
+
+namespace
+{
+
+const pass_data pass_data_ipa_auto_profile_offline = {
+  SIMPLE_IPA_PASS, "afdo_offline", /* name */
+  OPTGROUP_NONE,           /* optinfo_flags */
+  TV_IPA_AUTOFDO,          /* tv_id */
+  0,                       /* properties_required */
+  0,                       /* properties_provided */
+  0,                       /* properties_destroyed */
+  0,                       /* todo_flags_start */
+  0,                       /* todo_flags_finish */
+};
+
+class pass_ipa_auto_profile_offline : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_auto_profile_offline (gcc::context *ctxt)
+      : simple_ipa_opt_pass (pass_data_ipa_auto_profile, ctxt)
+  {
+  }
+
+  /* opt_pass methods: */
+  bool
+  gate (function *) final override
+  {
+    return flag_auto_profile;
+  }
+  unsigned int
+  execute (function *) final override
+  {
+    if (autofdo::afdo_source_profile)
+      autofdo::afdo_source_profile->offline_external_functions ();
+    return 0;
+  }
+}; // class pass_ipa_auto_profile
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_ipa_auto_profile_offline (gcc::context *ctxt)
+{
+  return new pass_ipa_auto_profile_offline (ctxt);
 }

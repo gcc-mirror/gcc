@@ -520,6 +520,8 @@ extern simple_ipa_opt_pass *make_pass_ipa_strub_mode (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_strub (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_tree_profile (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_auto_profile (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_auto_profile_offline
+		(gcc::context *ctxt);
 
 extern simple_ipa_opt_pass *make_pass_build_ssa_passes (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_local_optimization_passes (gcc::context *ctxt);
