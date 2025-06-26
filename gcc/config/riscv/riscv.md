@@ -4868,12 +4868,12 @@
 (include "sync-ztso.md")
 (include "peephole.md")
 (include "pic.md")
+(include "vector.md")
 (include "vector-crypto.md")
 (include "vector-bfloat16.md")
 (include "zicond.md")
 (include "sfb.md")
 (include "zc.md")
-(include "vector.md")
 ;; Vendor extensions
 (include "thead.md")
 (include "corev.md")
