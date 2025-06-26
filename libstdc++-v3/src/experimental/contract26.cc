@@ -29,8 +29,7 @@
 # include <cxxabi.h>
 #endif
 
-__attribute__ ((weak)) void
-handle_contract_violation (const std::contracts::contract_violation &violation) noexcept
+void __handle_contract_violation(const std::contracts::contract_violation &violation) noexcept
 {
 #if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE
 
@@ -112,11 +111,43 @@ handle_contract_violation (const std::contracts::contract_violation &violation) 
 #endif
 }
 
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+namespace contracts
+{
+
+void invoke_default_contract_violation_handler(const std::contracts::contract_violation& violation)
+{
+  return __handle_contract_violation(violation);
+}
+
+}
+}
+
+__attribute__ ((weak)) void
+handle_contract_violation (const std::contracts::contract_violation &violation)
+{
+  return __handle_contract_violation(violation);
+}
+
 #if _GLIBCXX_INLINE_VERSION
 // The compiler expects the contract_violation class to be in an unversioned
 // namespace, so provide a forwarding function with the expected symbol name.
 extern "C" void
-_Z25handle_contract_violationRKNSt12contract_violationE
+_Z25handle_contract_violationRKNSt9contracts18contract_violationE
 (const std::contracts::contract_violation &violation)
 { handle_contract_violation(violation); }
+
+extern "C" void
+_Z27__handle_contract_violationRKNSt9contracts18contract_violationE
+(const std::contracts::contract_violation &violation)
+{ __handle_contract_violation(violation); }
+
+extern "C" void
+_Z41invoke_default_contract_violation_handlerRKNSt9contracts18contract_violationE
+(const std::contracts::contract_violation &violation)
+{ invoke_default_contract_violation_handler(violation); }
+
 #endif

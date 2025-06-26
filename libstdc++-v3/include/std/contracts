@@ -106,7 +106,7 @@ namespace contracts
 	evaluation_semantic semantic() const noexcept { return _M_evaluation_semantic; }
 	};
 
-//void invoke_default_contract_violation_handler(const contract_violation&);
+  void invoke_default_contract_violation_handler(const contract_violation&);
 
 } // namespace contracts
 
