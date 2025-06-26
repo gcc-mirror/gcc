@@ -80,6 +80,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
   /// Throw the object pointed to by the exception_ptr.
   void rethrow_exception(exception_ptr) __attribute__ ((__noreturn__));
 
+#if __cpp_lib_exception_ptr_cast >= 202506L
+  template<typename _Ex>
+  const _Ex* exception_ptr_cast(const exception_ptr&) noexcept;
+  template<typename _Ex>
+  void exception_ptr_cast(const exception_ptr&&) = delete;
+#endif
+
   namespace __exception_ptr
   {
     using std::rethrow_exception; // So that ADL finds it.
@@ -109,6 +116,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
       friend void std::rethrow_exception(exception_ptr);
       template<typename _Ex>
       friend exception_ptr std::make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT;
+#if __cpp_lib_exception_ptr_cast >= 202506L
+      template<typename _Ex>
+      friend const _Ex* std::exception_ptr_cast(const exception_ptr&) noexcept;
+#endif
+
+      const void* _M_exception_ptr_cast(const type_info&) const
+	_GLIBCXX_USE_NOEXCEPT;
 
     public:
       exception_ptr() _GLIBCXX_USE_NOEXCEPT;
@@ -282,6 +296,20 @@ namespace std _GLIBCXX_VISIBILITY(default)
     inline exception_ptr
     make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT
     { return exception_ptr(); }
+#endif
+
+#if __cpp_lib_exception_ptr_cast >= 202506L
+  template<typename _Ex>
+    [[__gnu__::__always_inline__]]
+    inline const _Ex* exception_ptr_cast(const exception_ptr& __p) noexcept
+    {
+#ifdef __cpp_rtti
+      const type_info &__id = typeid(const _Ex&);
+      return static_cast<const _Ex*>(__p._M_exception_ptr_cast(__id));
+#else
+      return nullptr;
+#endif
+    }
 #endif
 
 #undef _GLIBCXX_EH_PTR_USED

@@ -241,6 +241,7 @@ check_version(symbol& test, bool added)
 #ifdef __riscv
       known_versions.push_back("CXXABI_1.3.16");
 #endif
+      known_versions.push_back("CXXABI_1.3.17");
       known_versions.push_back("CXXABI_IEEE128_1.3.13");
       known_versions.push_back("CXXABI_TM_1");
       known_versions.push_back("CXXABI_FLOAT128");

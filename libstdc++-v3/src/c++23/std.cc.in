@@ -1054,6 +1054,9 @@ export namespace std
   using std::throw_with_nested;
   using std::uncaught_exception;
   using std::uncaught_exceptions;
+#if __cpp_lib_exception_ptr_cast >= 202506L
+  using std::exception_ptr_cast;
+#endif
 }
 
 // 34.4 <execution>

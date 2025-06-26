@@ -38,6 +38,7 @@
 #include <bits/exception.h>
 
 #define __glibcxx_want_uncaught_exceptions
+#define __glibcxx_want_exception_ptr_cast
 #include <bits/version.h>
 
 extern "C++" {
