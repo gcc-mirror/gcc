@@ -3395,6 +3395,15 @@ make_pass_remove_partial_avx_dependency (gcc::context *ctxt)
 static machine_mode
 ix86_get_vector_cse_mode (unsigned int size, machine_mode smode)
 {
+  /* Use the inner scalar mode of vector broadcast source in:
+
+     (set (reg:V8DF 394)
+	  (vec_duplicate:V8DF (reg:V2DF 190 [ alpha ])))
+
+     to compute the vector mode for broadcast from vector source.
+   */
+  if (VECTOR_MODE_P (smode))
+    smode = GET_MODE_INNER (smode);
   scalar_mode s_mode = as_a <scalar_mode> (smode);
   poly_uint64 nunits = size / GET_MODE_SIZE (smode);
   machine_mode mode = mode_for_vector (s_mode, nunits).require ();
