@@ -1436,13 +1436,13 @@ lra_update_fp2sp_elimination (int *spilled_pseudos)
       setup_can_eliminate (ep, false);
     }
   else
-    ep = NULL;
+    for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+      if (ep->from == FRAME_POINTER_REGNUM && ep->to == STACK_POINTER_REGNUM)
+	setup_can_eliminate (ep, false);
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
 	     "	   Frame pointer can not be eliminated anymore\n");
   frame_pointer_needed = true;
-  CLEAR_HARD_REG_SET (set);
-  add_to_hard_reg_set (&set, Pmode, HARD_FRAME_POINTER_REGNUM);
   /* If !lra_reg_spill_p, we likely have incomplete range information
      for pseudos assigned to the frame pointer that will have to be
      spilled, and so we may end up incorrectly sharing them unless we
@@ -1451,11 +1451,9 @@ lra_update_fp2sp_elimination (int *spilled_pseudos)
     /* If lives ranges changed, update the aggregate live ranges in
        slots as well before spilling any further pseudos.  */
     lra_recompute_slots_live_ranges ();
+  CLEAR_HARD_REG_SET (set);
+  add_to_hard_reg_set (&set, Pmode, HARD_FRAME_POINTER_REGNUM);
   n = spill_pseudos (set, spilled_pseudos);
-  if (!ep)
-    for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-      if (ep->from == FRAME_POINTER_REGNUM && ep->to == STACK_POINTER_REGNUM)
-	setup_can_eliminate (ep, false);
   return n;
 }
 
