@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <random>
+#include <ranges>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
@@ -67,9 +68,39 @@ test02()
   return x[3] == 4;
 }
 
+constexpr bool
+test03()
+{
+  // PR libstdc++/100795 - ranges::sort should not use std::sort directly
+#if __SIZEOF_INT128__
+  auto v = std::views::iota(__int128(0), __int128(20));
+#else
+  auto v = std::views::iota(0ll, 20ll);
+#endif
+
+  int storage[20] = {2,5,4,3,1,6,7,9,10,8,11,14,12,13,15,16,18,0,19,17};
+  auto w = v | std::views::transform([&](auto i) -> int& { return storage[i]; });
+  using type = decltype(w);
+  using cat = std::iterator_traits<std::ranges::iterator_t<type>>::iterator_category;
+  static_assert( std::same_as<cat, std::output_iterator_tag> );
+  static_assert( std::ranges::random_access_range<type> );
+
+  ranges::nth_element(w, w.begin() + 10);
+  VERIFY( w[10] == 10 );
+
+  ranges::nth_element(w, w.begin() + 5, std::ranges::greater{});
+  VERIFY( w[5] == 19 - 5 );
+
+  ranges::nth_element(w, w.begin() + 15, std::ranges::greater{}, std::negate{});
+  VERIFY( w[15] == 15 );
+
+  return true;
+}
+
 int
 main()
 {
   test01();
   static_assert(test02());
+  static_assert(test03());
 }

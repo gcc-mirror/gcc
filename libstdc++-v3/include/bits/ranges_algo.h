@@ -2805,6 +2805,33 @@ namespace ranges
 
   inline constexpr __is_sorted_fn is_sorted{};
 
+  namespace __detail
+  {
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __introselect(_Iter __first, _Iter __nth, _Iter __last,
+		    iter_difference_t<_Iter> __depth_limit, _Comp __comp)
+      {
+	while (__last - __first > 3)
+	  {
+	    if (__depth_limit == 0)
+	      {
+		__detail::__heap_select(__first, __nth + 1, __last, __comp);
+		// Place the nth largest element in its final position.
+		ranges::iter_swap(__first, __nth);
+		return;
+	      }
+	    --__depth_limit;
+	    _Iter __cut = __detail::__unguarded_partition_pivot(__first, __last, __comp);
+	    if (__cut <= __nth)
+	      __first = __cut;
+	    else
+	      __last = __cut;
+	  }
+	__detail::__insertion_sort(__first, __last, __comp);
+      }
+  } // namespace __detail
+
   struct __nth_element_fn
   {
     template<random_access_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -2814,11 +2841,21 @@ namespace ranges
       operator()(_Iter __first, _Iter __nth, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	auto __lasti = ranges::next(__first, __last);
-	_GLIBCXX_STD_A::nth_element(std::move(__first), std::move(__nth),
-				    __lasti,
-				    __detail::__make_comp_proj(__comp, __proj));
-	return __lasti;
+	if constexpr (!same_as<_Iter, _Sent>)
+	  return (*this)(__first, __nth, ranges::next(__first, __last),
+			 std::move(__comp), std::move(__proj));
+	else
+	  {
+	    if (__first == __last || __nth == __last)
+	      return __last;
+
+	    auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
+	    auto __n = __detail::__to_unsigned_like(__last - __first);
+	    __detail::__introselect(__first, __nth, __last,
+				    std::__bit_width(__n) * 2,
+				    __comp_proj);
+	    return __last;
+	  }
       }
 
     template<random_access_range _Range,
