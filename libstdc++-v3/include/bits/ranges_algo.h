@@ -1839,14 +1839,70 @@ namespace ranges
       operator()(_Iter __first, _Sent __last, _Out __out,
 		 iter_difference_t<_Iter> __n, _Gen&& __g) const
       {
+	// FIXME: Correctly handle integer-class difference types.
 	if constexpr (forward_iterator<_Iter>)
 	  {
-	    // FIXME: Forwarding to std::sample here requires computing __lasti
-	    // which may take linear time.
-	    auto __lasti = ranges::next(__first, __last);
-	    return _GLIBCXX_STD_A::
-	      sample(std::move(__first), std::move(__lasti), std::move(__out),
-		     __n, std::forward<_Gen>(__g));
+	    using _Size = iter_difference_t<_Iter>;
+	    using __distrib_type = uniform_int_distribution<_Size>;
+	    using __param_type = typename __distrib_type::param_type;
+	    using _USize = __detail::__make_unsigned_like_t<_Size>;
+	    using __uc_type
+	      = common_type_t<typename remove_reference_t<_Gen>::result_type, _USize>;
+
+	    if (__first == __last)
+	      return __out;
+
+	    __distrib_type __d{};
+	    _Size __unsampled_sz = ranges::distance(__first, __last);
+	    __n = std::min(__n, __unsampled_sz);
+
+	    // If possible, we use __gen_two_uniform_ints to efficiently produce
+	    // two random numbers using a single distribution invocation:
+
+	    const __uc_type __urngrange = __g.max() - __g.min();
+	    if (__urngrange / __uc_type(__unsampled_sz) >= __uc_type(__unsampled_sz))
+	      // I.e. (__urngrange >= __unsampled_sz * __unsampled_sz) but without
+	      // wrapping issues.
+	      {
+		while (__n != 0 && __unsampled_sz >= 2)
+		  {
+		    const pair<_Size, _Size> __p =
+		      __gen_two_uniform_ints(__unsampled_sz, __unsampled_sz - 1, __g);
+
+		    --__unsampled_sz;
+		    if (__p.first < __n)
+		      {
+			*__out = *__first;
+			++__out;
+			--__n;
+		      }
+
+		    ++__first;
+
+		    if (__n == 0) break;
+
+		    --__unsampled_sz;
+		    if (__p.second < __n)
+		      {
+			*__out = *__first;
+			++__out;
+			--__n;
+		      }
+
+		    ++__first;
+		  }
+	      }
+
+	    // The loop above is otherwise equivalent to this one-at-a-time version:
+
+	    for (; __n != 0; ++__first)
+	      if (__d(__g, __param_type{0, --__unsampled_sz}) < __n)
+		{
+		  *__out = *__first;
+		  ++__out;
+		  --__n;
+		}
+	    return __out;
 	  }
 	else
 	  {
@@ -1867,7 +1923,7 @@ namespace ranges
 		if (__k < __n)
 		  __out[__k] = *__first;
 	      }
-	    return __out + __sample_sz;
+	    return __out + iter_difference_t<_Out>(__sample_sz);
 	  }
       }
 
