@@ -478,7 +478,7 @@ scan_operands (class data *d, rtx part, int this_address_p,
       d->operand[opno].n_alternatives
 	= n_occurrences (',', d->operand[opno].constraint) + 1;
       d->operand[opno].address_p = 0;
-      d->operand[opno].eliminable = 0;
+      d->operand[opno].eliminable = 1;
       return;
 
     case MATCH_OPERATOR:
