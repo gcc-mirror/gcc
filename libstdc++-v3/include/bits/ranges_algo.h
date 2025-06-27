@@ -3133,6 +3133,80 @@ namespace ranges
   inline constexpr __partition_fn partition{};
 
 #if _GLIBCXX_HOSTED
+  namespace __detail
+  {
+    // Like find_if_not(), but uses and updates a count of the
+    // remaining range length instead of comparing against an end
+    // iterator.
+    template<typename _Iter, typename _Pred, typename _Distance>
+      constexpr _Iter
+      __find_if_not_n(_Iter __first, _Distance& __len, _Pred __pred)
+      {
+	for (; __len; --__len,  (void) ++__first)
+	  if (!__pred(*__first))
+	    break;
+	return __first;
+      }
+
+    template<typename _Iter, typename _Sent, typename _Pointer,
+	     typename _Pred, typename _Distance>
+      constexpr subrange<_Iter>
+      __stable_partition_adaptive(_Iter __first, _Sent __last,
+				  _Pred __pred, _Distance __len,
+				  _Pointer __buffer,
+				  _Distance __buffer_size)
+      {
+	if (__len == 1)
+	  return {__first, ranges::next(__first, 1)};
+
+	if (__len <= __buffer_size)
+	  {
+	    _Iter __result1 = __first;
+	    _Pointer __result2 = __buffer;
+
+	    // The precondition guarantees that !__pred(__first), so
+	    // move that element to the buffer before starting the loop.
+	    // This ensures that we only call __pred once per element.
+	    *__result2 = ranges::iter_move(__first);
+	    ++__result2;
+	    ++__first;
+	    for (; __first != __last; ++__first)
+	      if (__pred(*__first))
+		{
+		  *__result1 = ranges::iter_move(__first);
+		  ++__result1;
+		}
+	      else
+		{
+		  *__result2 = ranges::iter_move(__first);
+		  ++__result2;
+		}
+
+	    ranges::move(__buffer, __result2, __result1);
+	    return {__result1, __first};
+	  }
+
+	_Iter __middle = __first;
+	ranges::advance(__middle, __len / 2);
+	_Iter __left_split
+	  = __detail::__stable_partition_adaptive(__first, __middle, __pred,
+						  __len / 2, __buffer,
+						  __buffer_size).begin();
+
+	// Advance past true-predicate values to satisfy this
+	// function's preconditions.
+	_Distance __right_len = __len - __len / 2;
+	_Iter __right_split = __detail::__find_if_not_n(__middle, __right_len, __pred);
+
+	if (__right_len)
+	  __right_split
+	    = __detail::__stable_partition_adaptive(__right_split, __last, __pred,
+						    __right_len, __buffer, __buffer_size).begin();
+
+	return ranges::rotate(__left_split, __middle, __right_split);
+      }
+  } // namespace __detail
+
   struct __stable_partition_fn
   {
     template<bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -3144,11 +3218,33 @@ namespace ranges
       operator()(_Iter __first, _Sent __last,
 		 _Pred __pred, _Proj __proj = {}) const
       {
-	auto __lasti = ranges::next(__first, __last);
-	auto __middle
-	  = std::stable_partition(std::move(__first), __lasti,
-				  __detail::__make_pred_proj(__pred, __proj));
-	return {std::move(__middle), std::move(__lasti)};
+	__first = ranges::find_if_not(__first, __last, __pred, __proj);
+
+	if (__first == __last)
+	  return {__first, __first};
+
+	using _DistanceType = iter_difference_t<_Iter>;
+	const _DistanceType __len = ranges::distance(__first, __last);
+
+	auto __pred_proj = __detail::__make_pred_proj(__pred, __proj);
+
+#if __glibcxx_constexpr_algorithms >= 202306L // >= C++26
+	if consteval {
+	  // Simulate a _Temporary_buffer of length 1:
+	  iter_value_t<_Iter> __buf = ranges::iter_move(__first);
+	  *__first = std::move(__buf);
+	  return __detail::__stable_partition_adaptive(__first, __last,
+						       __pred_proj,
+						       __len, &__buf,
+						       _DistanceType(1));
+	}
+#endif
+
+	_Temporary_buffer<_Iter, iter_value_t<_Iter>> __buf(__first, ptrdiff_t(__len));
+	return __detail::__stable_partition_adaptive(__first, __last,
+						     __pred_proj,
+						     __len, __buf.begin(),
+						     _DistanceType(__buf.size()));
       }
 
     template<bidirectional_range _Range, typename _Proj = identity,
