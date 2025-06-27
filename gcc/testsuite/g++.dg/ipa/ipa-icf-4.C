@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-icf-optimized-missed -fno-inline -fno-ipa-modref" } */
+/* { dg-options "-O2 -fdump-ipa-icf-optimized-missed -fno-inline -fno-ipa-modref -fno-implicit-constexpr" } */
 
 namespace {
 struct A

@@ -1,7 +1,7 @@
 // Test for mangling of simple testcase involving construction vtables.
 
 // { dg-do compile }
-// { dg-options "-fno-inline -fabi-compat-version=0" }
+// { dg-options "-fno-inline -fabi-compat-version=0 -fno-implicit-constexpr" }
 
 struct A {
   virtual void f () { }

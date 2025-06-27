@@ -1,5 +1,5 @@
 // PR c++/50618
-// { dg-options "-fdump-rtl-expand" }
+// { dg-options "-fdump-rtl-expand -fno-implicit-constexpr" }
 // { dg-do run }
 
 struct Base
