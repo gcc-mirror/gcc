@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <random>
+#include <ranges>
 #include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
@@ -62,8 +63,37 @@ test01()
     }
 }
 
+void
+test02()
+{
+  // PR libstdc++/100795 - ranges::stable_sort should not use std::stable_sort
+  // directly
+#if __SIZEOF_INT128__
+  auto v = std::views::iota(__int128(0), __int128(20));
+#else
+  auto v = std::views::iota(0ll, 20ll);
+#endif
+
+  int storage[20] = {2,5,4,3,1,6,7,9,10,8,11,14,12,13,15,16,18,0,19,17};
+  auto w = v | std::views::transform([&](auto i) -> int& { return storage[i]; });
+  using type = decltype(w);
+  using cat = std::iterator_traits<std::ranges::iterator_t<type>>::iterator_category;
+  static_assert( std::same_as<cat, std::output_iterator_tag> );
+  static_assert( std::ranges::random_access_range<type> );
+
+  ranges::stable_sort(w);
+  VERIFY( ranges::equal(w, v) );
+
+  ranges::stable_sort(w, std::ranges::greater{});
+  VERIFY( ranges::equal(w, v | std::views::reverse) );
+
+  ranges::stable_sort(w, std::ranges::greater{}, std::negate{});
+  VERIFY( ranges::equal(w, v) );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

@@ -2388,6 +2388,169 @@ namespace ranges
 
   inline constexpr __sort_fn sort{};
 
+  namespace __detail
+  {
+    // This is a helper function for the __merge_sort_loop routines.
+    template<typename _Iter, typename _Out, typename _Comp>
+      _Out
+      __move_merge(_Iter __first1, _Iter __last1,
+		   _Iter __first2, _Iter __last2,
+		   _Out __result, _Comp __comp)
+      {
+	while (__first1 != __last1 && __first2 != __last2)
+	  {
+	    if (__comp(*__first2, *__first1))
+	      {
+		*__result = ranges::iter_move(__first2);
+		++__first2;
+	      }
+	    else
+	      {
+		*__result = ranges::iter_move(__first1);
+		++__first1;
+	      }
+	    ++__result;
+	  }
+	return ranges::move(__first2, __last2,
+			    ranges::move(__first1, __last1, __result).out).out;
+      }
+
+    template<typename _Iter, typename _Out, typename _Distance, typename _Comp>
+      void
+      __merge_sort_loop(_Iter __first, _Iter __last, _Out __result,
+			_Distance __step_size, _Comp __comp)
+      {
+	const _Distance __two_step = 2 * __step_size;
+
+	while (__last - __first >= __two_step)
+	  {
+	    __result = __detail::__move_merge(__first, __first + __step_size,
+					      __first + __step_size,
+					      __first + __two_step,
+					      __result, __comp);
+	    __first += __two_step;
+	  }
+	__step_size = ranges::min(_Distance(__last - __first), __step_size);
+
+	__detail::__move_merge(__first, __first + __step_size,
+			       __first + __step_size, __last, __result, __comp);
+      }
+
+    template<typename _Iter, typename _Distance, typename _Compare>
+      constexpr void
+      __chunk_insertion_sort(_Iter __first, _Iter __last,
+			     _Distance __chunk_size, _Compare __comp)
+      {
+	while (__last - __first >= __chunk_size)
+	  {
+	    __detail::__insertion_sort(__first, __first + __chunk_size, __comp);
+	    __first += __chunk_size;
+	  }
+	__detail::__insertion_sort(__first, __last, __comp);
+      }
+
+    template<typename _Iter, typename _Pointer, typename _Comp>
+      void
+      __merge_sort_with_buffer(_Iter __first, _Iter __last,
+			       _Pointer __buffer, _Comp __comp)
+      {
+	using _Distance = iter_difference_t<_Iter>;
+
+	const _Distance __len = __last - __first;
+	const _Pointer __buffer_last = __buffer + ptrdiff_t(__len);
+
+	constexpr int __chunk_size = 7;
+	_Distance __step_size = __chunk_size;
+	__detail::__chunk_insertion_sort(__first, __last, __step_size, __comp);
+
+	while (__step_size < __len)
+	  {
+	    __detail::__merge_sort_loop(__first, __last, __buffer,
+					__step_size, __comp);
+	    __step_size *= 2;
+	    __detail::__merge_sort_loop(__buffer, __buffer_last, __first,
+					ptrdiff_t(__step_size), __comp);
+	    __step_size *= 2;
+	  }
+      }
+
+    template<typename _Iter, typename _Pointer, typename _Comp>
+      void
+      __merge_adaptive(_Iter __first, _Iter __middle, _Iter __last,
+		       iter_difference_t<_Iter> __len1,
+		       iter_difference_t<_Iter> __len2,
+		       _Pointer __buffer, _Comp __comp); // defined near inplace_merge
+
+    template<typename _Iter, typename _Distance, typename _Pointer, typename _Comp>
+      void
+      __merge_adaptive_resize(_Iter __first, _Iter __middle, _Iter __last,
+			      _Distance __len1, _Distance __len2,
+			      _Pointer __buffer, _Distance __buffer_size,
+			      _Comp __comp); // defined near inplace_merge
+
+    template<typename _Iter, typename _Distance, typename _Comp>
+      constexpr void
+      __merge_without_buffer(_Iter __first, _Iter __middle, _Iter __last,
+			     _Distance __len1, _Distance __len2,
+			     _Comp __comp); // defined near inplace_merge
+
+    template<typename _Iter, typename _Pointer, typename _Comp>
+      void
+      __stable_sort_adaptive(_Iter __first, _Iter __middle, _Iter __last,
+			     _Pointer __buffer, _Comp __comp)
+      {
+	__detail::__merge_sort_with_buffer(__first, __middle, __buffer, __comp);
+	__detail::__merge_sort_with_buffer(__middle, __last, __buffer, __comp);
+
+	__detail::__merge_adaptive(__first, __middle, __last,
+				   __middle - __first, __last - __middle,
+				   __buffer, __comp);
+      }
+
+    template<typename _Iter, typename _Pointer, typename _Distance, typename _Comp>
+      void
+      __stable_sort_adaptive_resize(_Iter __first, _Iter __last,
+				    _Pointer __buffer, _Distance __buffer_size,
+				    _Comp __comp)
+      {
+	const _Distance __len = (__last - __first + 1) / 2;
+	const _Iter __middle = __first + __len;
+	if (__len > __buffer_size)
+	  {
+	    __detail::__stable_sort_adaptive_resize(__first, __middle, __buffer,
+						    __buffer_size, __comp);
+	    __detail::__stable_sort_adaptive_resize(__middle, __last, __buffer,
+						    __buffer_size, __comp);
+	    __detail::__merge_adaptive_resize(__first, __middle, __last,
+					      _Distance(__middle - __first),
+					      _Distance(__last - __middle),
+					      __buffer, __buffer_size,
+					      __comp);
+	  }
+	else
+	  __detail::__stable_sort_adaptive(__first, __middle, __last,
+					   __buffer, __comp);
+      }
+
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __inplace_stable_sort(_Iter __first, _Iter __last, _Comp __comp)
+      {
+	if (__last - __first < 15)
+	  {
+	    __detail::__insertion_sort(__first, __last, __comp);
+	    return;
+	  }
+	_Iter __middle = __first + (__last - __first) / 2;
+	__detail::__inplace_stable_sort(__first, __middle, __comp);
+	__detail::__inplace_stable_sort(__middle, __last, __comp);
+	__detail::__merge_without_buffer(__first, __middle, __last,
+					 __middle - __first,
+					 __last - __middle,
+					 __comp);
+      }
+  } // namespace __detail
+
   struct __stable_sort_fn
   {
     template<random_access_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -2398,10 +2561,46 @@ namespace ranges
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	auto __lasti = ranges::next(__first, __last);
-	std::stable_sort(std::move(__first), __lasti,
-			 __detail::__make_comp_proj(__comp, __proj));
-	return __lasti;
+	if constexpr (!same_as<_Iter, _Sent>)
+	  return (*this)(__first, ranges::next(__first, __last),
+			 std::move(__comp), std::move(__proj));
+	else
+	  {
+	    using _DistanceType = iter_difference_t<_Iter>;
+
+	    if (__first == __last)
+	      return __last;
+
+	    auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
+
+#if _GLIBCXX_HOSTED
+# if __glibcxx_constexpr_algorithms >= 202306L // >= C++26
+	    if consteval {
+	      __detail::__inplace_stable_sort(__first, __last, __comp_proj);
+	      return __last;
+	    }
+# endif
+
+	    typedef _Temporary_buffer<_Iter, iter_value_t<_Iter>> _TmpBuf;
+	    // __stable_sort_adaptive sorts the range in two halves,
+	    // so the buffer only needs to fit half the range at once.
+	    _TmpBuf __buf(__first, ptrdiff_t((__last - __first + 1) / 2));
+
+	    if (__buf._M_requested_size() == __buf.size()) [[likely]]
+	      __detail::__stable_sort_adaptive(__first,
+					       __first + _DistanceType(__buf.size()),
+					       __last, __buf.begin(), __comp_proj);
+	    else if (__buf.begin()) [[unlikely]]
+	      __detail::__inplace_stable_sort(__first, __last, __comp_proj);
+	    else
+	      __detail::__stable_sort_adaptive_resize(__first, __last, __buf.begin(),
+						      _DistanceType(__buf.size()),
+						      __comp_proj);
+#else
+	    __detail::__inplace_stable_sort(__first, __last, __comp_proj);
+#endif
+	    return __last;
+	  }
       }
 
     template<random_access_range _Range,
