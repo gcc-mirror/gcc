@@ -457,7 +457,9 @@ gfc_match_end_interface (void)
 
       if (current_interface.sym->attr.use_assoc
 	  && current_interface.sym->attr.use_rename
-	  && current_interface.sym->ns->use_stmts->rename)
+	  && current_interface.sym->ns->use_stmts->rename
+	  && (current_interface.sym->ns->use_stmts->rename->local_name[0]
+	      != '\0'))
 	local_name = current_interface.sym->ns->use_stmts->rename->local_name;
 
       if (type != current_interface.type
