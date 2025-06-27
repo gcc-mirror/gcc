@@ -209,6 +209,8 @@ public:
 
   std::string as_string () const override;
 
+  location_t get_locus () const { return locus; }
+
   void accept_vis (HIRFullVisitor &vis) override;
 
   Lifetime &get_lifetime () { return lifetime; }

@@ -73,6 +73,8 @@ public:
   }
 
   std::string as_string () const;
+
+  location_t get_locus () const { return locus; }
 };
 } // namespace HIR
 } // namespace Rust

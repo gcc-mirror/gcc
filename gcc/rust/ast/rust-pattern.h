@@ -948,7 +948,7 @@ public:
    * is empty). */
   bool has_struct_pattern_elems () const { return !elems.is_empty (); }
 
-  location_t get_locus () const override { return path.get_locus (); }
+  location_t get_locus () const override { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 

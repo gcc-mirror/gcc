@@ -1192,6 +1192,8 @@ public:
 
   std::string as_string () const override;
 
+  location_t get_locus () const { return locus; }
+
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
@@ -1247,6 +1249,8 @@ public:
   ArrayElemsCopied &operator= (ArrayElemsCopied &&other) = default;
 
   std::string as_string () const override;
+
+  location_t get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1776,6 +1780,8 @@ public:
   bool is_invalid () const { return base_struct == nullptr; }
 
   std::string as_string () const;
+
+  location_t get_locus () const { return locus; }
 
   // TODO: is this better? Or is a "vis_block" better?
   Expr &get_base_struct ()
