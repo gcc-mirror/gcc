@@ -9195,7 +9195,7 @@ NoError:
 @item unused
 This feature is intended for program-generated code that may contain 
 unused labels, but which is compiled with @option{-Wall}.  It is
-not normally appropriate to use in it human-written code, though it
+not normally appropriate to use it in human-written code, though it
 could be useful in cases where the code that jumps to the label is
 contained within an @code{#ifdef} conditional.
 
