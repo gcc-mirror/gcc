@@ -1,6 +1,6 @@
 /* { dg-do compile { target rv64 } } */
 /* { dg-options "-march=rv64gcb -mabi=lp64" } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-g" "-Oz" "-Os" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-Oz" "-Os" } } */
 
 __attribute__ ((noipa)) unsigned
 foo (unsigned b, unsigned e, unsigned i)
