@@ -61,7 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 
    There are three phases in AutoFDO:
 
-   Phase 1: Read profile from the profile data file.
+   Phase 1: At startup.
+     Read profile from the profile data file.
      The following info is read from the profile datafile:
         * string_table: a map between function name and its index.
         * autofdo_source_profile: a map from function_instance name to
@@ -76,7 +77,14 @@ along with GCC; see the file COPYING3.  If not see
      standalone symbol, or a clone of a function that is inlined into another
      function.
 
-   Phase 2: AFDO inline + value profile transformation.
+   Phase 2: In afdo_offline pass.
+     Remove function instances from other translation units
+     and offline all cross-translation unit inlining done during train
+     run compilation.  This is necessary to not lose profiles with
+     LTO train run.
+
+   Phase 3: During early optimization.
+     AFDO inline + value profile transformation.
      This happens during early optimization.
      During early inlning AFDO inliner is executed which
      uses autofdo_source_profile to find if a callsite is:
@@ -94,14 +102,19 @@ along with GCC; see the file COPYING3.  If not see
      This is controlled by -fauto-profile-inlinig and is independent
      of -fearly-inlining.
 
-   Phase 3: Annotate control flow graph.
-     AutoFDO uses a separate pass to:
+   Phase 4: In AFDO pass.
+     Offline all functions that has been inlined in the
+     train run but were not inlined in early inlining nor AFDO
+     inline.
+
+   Phase 5: In AFDO pass.
+     Annotate control flow graph.
         * Annotate basic block count
         * Estimate branch probability
 	* Use earlier static profile to fill in the gaps
 	  if AFDO profile is ambigous
 
-   After the above 3 phases, all profile is readily annotated on the GCC IR.
+   After the above 5 phases, all profile is readily annotated on the GCC IR.
    AutoFDO tries to reuse all FDO infrastructure as much as possible to make
    use of the profile. E.g. it uses existing mechanism to calculate the basic
    block/edge frequency, as well as the cgraph node/edge count.
@@ -232,6 +245,11 @@ public:
   {
     return name_;
   }
+  int
+  set_name (int index)
+  {
+    return name_ = index;
+  }
   gcov_type
   total_count () const
   {
@@ -253,11 +271,11 @@ public:
   /* Merge profile of clones.  Note that cloning hasnt been performed when
      we annotate the CFG (at this stage).  */
   void merge (function_instance *other,
-	      vec <function_instance *> *new_functions = NULL);
+	      vec <function_instance *> &new_functions);
 
-  /* Turn inline instance to offline.  */
-  static bool offline (function_instance *fn,
-		       vec <function_instance *> *new_functions);
+  /* Look for inline instancs that was not realized and
+     remove them while possibly merging them to offline variants.  */
+  void offline_if_not_realized (vec <function_instance *> &new_functions);
 
   /* Offline all inlined functions with name in SEEN.
      If new toplevel functions are created, add them to NEW_FUNCTIONS.  */
@@ -322,6 +340,43 @@ public:
     return inlined_to_;
   }
 
+  /* Mark function as realized.  */
+  void
+  set_realized ()
+  {
+    realized_ = true;
+  }
+
+  /* Return true if function is realized.  */
+  bool
+  realized_p ()
+  {
+    return realized_;
+  }
+
+  /* Mark function as in_worklist.  */
+  void
+  set_in_worklist ()
+  {
+    gcc_checking_assert (!inlined_to_ && !in_worklist_p ());
+    in_worklist_ = true;
+  }
+
+  void
+  clear_in_worklist ()
+  {
+    gcc_checking_assert (!inlined_to_ && in_worklist_p ());
+    in_worklist_ = false;
+  }
+
+
+  /* Return true if function is in_worklist.  */
+  bool
+  in_worklist_p ()
+  {
+    return in_worklist_;
+  }
+
 private:
   /* Callsite, represented as (decl_lineno, callee_function_name_index).  */
   typedef std::pair<unsigned, unsigned> callsite;
@@ -331,7 +386,8 @@ private:
 
   function_instance (unsigned name, gcov_type head_count)
       : name_ (name), total_count_ (0), head_count_ (head_count),
-      removed_icall_target_ (false), inlined_to_ (NULL)
+      removed_icall_target_ (false), realized_ (false),
+      in_worklist_ (false), inlined_to_ (NULL)
   {
   }
 
@@ -356,9 +412,21 @@ private:
   /* True if function was removed from indir target list.  */
   bool removed_icall_target_;
 
+  /* True if function exists in IL.  I.e. for toplevel instance we
+     have corresponding symbol and for inline instance we inlined
+     to it.  */
+  bool realized_;
+
+  /* Ture if function is in worklist for merging/offlining.  */
+  bool in_worklist_;
+
   /* Pointer to outer function instance or NULL if this
      is a toplevel one.  */
   function_instance *inlined_to_;
+
+  /* Turn inline instance to offline.  */
+  static bool offline (function_instance *fn,
+		       vec <function_instance *> &new_functions);
 };
 
 /* Profile for all functions.  */
@@ -410,6 +478,8 @@ public:
 
   /* Offline all functions not defined in the current translation unit.  */
   void offline_external_functions ();
+
+  void offline_unrealized_inlines ();
 private:
   /* Map from function_instance name index (in string_table) to
      function_instance.  */
@@ -426,6 +496,8 @@ private:
   get_function_instance_by_inline_stack (const inline_stack &stack) const;
 
   name_function_instance_map map_;
+
+  auto_vec <function_instance *> duplicate_functions_;
 };
 
 /* Store the strings read from the profile data file.  */
@@ -564,23 +636,35 @@ get_inline_stack_in_node (location_t locus, inline_stack *stack,
   while (node);
 }
 
-/* Return STMT's combined location, which is a 32bit integer in which
-   higher 16 bits stores the line offset of LOC to the start lineno
-   of DECL, The lower 16 bits stores the discriminator.  */
+/* Return combined location of LOCUS within BLOCK that is in
+   function FN.
+
+   This is a 32bit integer in which higher 16 bits stores the line offset of
+   LOC to the start lineno of DECL, The lower 16 bits stores the
+   discriminator.  */
+
+static unsigned
+get_relative_location_for_locus (tree fn, tree block, location_t locus)
+{
+  if (LOCATION_LOCUS (locus) == UNKNOWN_LOCATION)
+    return UNKNOWN_LOCATION;
+
+  for (; block && (TREE_CODE (block) == BLOCK);
+       block = BLOCK_SUPERCONTEXT (block))
+    if (inlined_function_outer_scope_p (block))
+      return get_combined_location (locus,
+                                    get_function_decl_from_block (block));
+  return get_combined_location (locus, fn);
+}
+
+/* Return combined location of STMT in function FN.  */
 
 static unsigned
 get_relative_location_for_stmt (tree fn, gimple *stmt)
 {
-  location_t locus = gimple_location (stmt);
-  if (LOCATION_LOCUS (locus) == UNKNOWN_LOCATION)
-    return UNKNOWN_LOCATION;
-
-  for (tree block = gimple_block (stmt); block && (TREE_CODE (block) == BLOCK);
-       block = BLOCK_SUPERCONTEXT (block))
-    if (LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (block)) != UNKNOWN_LOCATION)
-      return get_combined_location (locus,
-                                    get_function_decl_from_block (block));
-  return get_combined_location (locus, fn);
+  return get_relative_location_for_locus
+	  (fn, LOCATION_BLOCK (gimple_location (stmt)),
+	   gimple_location (stmt));
 }
 
 /* Member functions for string_table.  */
@@ -662,6 +746,7 @@ string_table::read ()
 
 function_instance::~function_instance ()
 {
+  gcc_assert (!in_worklist_p ());
   for (callsite_map::iterator iter = callsites.begin ();
        iter != callsites.end (); ++iter)
     delete iter->second;
@@ -702,8 +787,9 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
 
 void
 function_instance::merge (function_instance *other,
-			  vec <function_instance *> *new_functions)
+			  vec <function_instance *> &new_functions)
 {
+  /* Do not merge to itself and only merge functions of same name.  */
   gcc_checking_assert (other != this
 		       && afdo_string_table->get_index
 			       (afdo_string_table->get_name (other->name ()))
@@ -726,8 +812,6 @@ function_instance::merge (function_instance *other,
 	   iter != other->callsites.end ();)
 	if (callsites.count (iter->first) == 0)
 	  {
-	    for (function_instance *s = this; s; s = s->inlined_to ())
-	      s->total_count_ -= iter->second->total_count ();
 	    function_instance *f = iter->second;
 	    if (dump_file)
 	      {
@@ -736,17 +820,27 @@ function_instance::merge (function_instance *other,
 		f->dump_inline_stack (dump_file);
 		fprintf (dump_file, "\n");
 	      }
+	    /* We already merged outer part of the function acounting
+	       the inlined calll; compensate.  */
+	    for (function_instance *s = this; s; s = s->inlined_to ())
+	      {
+		s->total_count_ -= f->total_count ();
+		gcc_checking_assert (s->total_count_ >= 0);
+	      }
 	    other->callsites.erase (iter);
 	    function_instance::offline (f, new_functions);
 	    /* Start from begining as merging might have offlined
-	       some functions in the case of recursive inlining.   */
+	       some functions in the case of recursive inlining.  */
 	    iter = other->callsites.begin ();
 	  }
 	else
 	  ++iter;
       for (callsite_map::const_iterator iter = callsites.begin ();
 	   iter != callsites.end ();)
-	if (other->callsites.count (iter->first) == 0)
+	if (other->callsites.count (iter->first) == 0
+	    /* If we already inlined, keep the profile.  It is better
+	       then loosing it completely.  */
+	    && !iter->second->realized_p ())
 	  {
 	    function_instance *f = iter->second;
 	    if (dump_file)
@@ -772,9 +866,11 @@ function_instance::merge (function_instance *other,
 	  fprintf (dump_file, "    Merging profile for inlined function\n"
 		   "      from: ");
 	  iter->second->dump_inline_stack (dump_file);
-	  fprintf (dump_file, "\n      to  : " );
+	  fprintf (dump_file, " total:%" PRIu64 "\n      to  : ",
+		   (int64_t)iter->second->total_count ());
 	  callsites[iter->first]->dump_inline_stack (dump_file);
-	  fprintf (dump_file, "\n");
+	  fprintf (dump_file, " total:%" PRIu64 "\n",
+		   (int64_t)callsites[iter->first]->total_count ());
 	}
 
       callsites[iter->first]->merge (iter->second, new_functions);
@@ -808,25 +904,33 @@ function_instance::merge (function_instance *other,
 
 bool
 function_instance::offline (function_instance *fn,
-			    vec <function_instance *> *new_functions)
+			    vec <function_instance *> &new_functions)
 {
-  gcc_assert (fn->inlined_to ());
+  gcc_checking_assert (fn->inlined_to ());
   for (function_instance *s = fn->inlined_to (); s; s = s->inlined_to ())
-    s->total_count_ -= fn->total_count ();
+    {
+      s->total_count_ -= fn->total_count ();
+      gcc_checking_assert (s->total_count_ >= 0);
+    }
   function_instance *to
     = afdo_source_profile->get_function_instance_by_name_index (fn->name ());
   fn->set_inlined_to (NULL);
+  /* If there is offline function of same name, we need to merge profile.
+     Delay this by adding function to a worklist so we do not run into
+     problem with recursive inlining.  */
   if (to)
     {
+      if (fn->in_worklist_p ())
+	return false;
+      fn->set_in_worklist ();
+      new_functions.safe_push (fn);
       if (dump_file)
-        {
-	  fprintf (dump_file, "  Merging to offline instance: ");
+	{
+	  fprintf (dump_file, "  Recoding duplicate: ");
 	  to->dump_inline_stack (dump_file);
 	  fprintf (dump_file, "\n");
 	}
-      to->merge (fn);
-      delete fn;
-      return false;
+      return true;
     }
   if (dump_file)
     {
@@ -837,8 +941,8 @@ function_instance::offline (function_instance *fn,
   if (fn->total_count ())
     fn->head_count_ = -1;
   afdo_source_profile->add_function_instance (fn);
-  if (new_functions)
-    new_functions->safe_push (fn);
+  fn->set_in_worklist ();
+  new_functions.safe_push (fn);
   return true;
 }
 
@@ -854,16 +958,18 @@ function_instance::offline_if_in_set (name_index_set &seen,
     if (seen.contains (afdo_string_table->get_index
 			(afdo_string_table->get_name (iter->first.second))))
       {
+	function_instance *f = iter->second;
 	if (dump_file)
 	  {
 	    fprintf (dump_file, "Offlining function inlined to other module: ");
-	    iter->second->dump_inline_stack (dump_file);
+	    f->dump_inline_stack (dump_file);
 	    fprintf (dump_file, "\n");
 	  }
-	for (function_instance *s = this; s; s = s->inlined_to ())
-	  s->total_count_ -= iter->second->total_count ();
-	function_instance::offline (iter->second, &new_functions);
 	iter = callsites.erase (iter);
+	function_instance::offline (f, new_functions);
+	/* Start from begining as merging might have offlined
+	   some functions in the case of recursive inlining.  */
+	iter = callsites.begin ();
       }
     else
       {
@@ -888,15 +994,17 @@ function_instance::remove_external_functions
     if (!seen.contains (afdo_string_table->get_index
 			(afdo_string_table->get_name (iter->first.second))))
       {
+	function_instance *f = iter->second;
 	if (dump_file)
 	  {
 	    fprintf (dump_file, "  Removing external inline: ");
-	    iter->second->dump_inline_stack (dump_file);
+	    f->dump_inline_stack (dump_file);
 	    fprintf (dump_file, "\n");
 	  }
-	iter->second->offline_if_in_set (seen, new_functions);
-	delete iter->second;
 	iter = callsites.erase (iter);
+	f->set_inlined_to (NULL);
+	f->offline_if_in_set (seen, new_functions);
+	delete f;
       }
     else
       {
@@ -905,7 +1013,8 @@ function_instance::remove_external_functions
 	int *newn = to_symbol_name.get (iter->first.second);
 	if (newn)
 	  {
-	    iter->second->name_ = *newn;
+	    iter->second->set_name (*newn);
+	    gcc_checking_assert (iter->second->inlined_to ());
 	    to_rename.safe_push (iter->first);
 	  }
 	iter->second->remove_external_functions
@@ -920,6 +1029,34 @@ function_instance::remove_external_functions
       callsites[key2] = iter->second;
       callsites.erase (iter);
     }
+}
+
+/* Look for inline instances that was not realized and
+   remove them while possibly merging them to offline variants.  */
+
+void
+function_instance::offline_if_not_realized
+	(vec <function_instance *> &new_functions)
+{
+  for (callsite_map::const_iterator iter = callsites.begin ();
+       iter != callsites.end ();)
+    if (!iter->second->realized_p ())
+      {
+	function_instance *f = iter->second;
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "Offlining unrealized inline ");
+	    f->dump_inline_stack (dump_file);
+	    fprintf (dump_file, "\n");
+	  }
+	iter = callsites.erase (iter);
+	offline (f, new_functions);
+      }
+    else
+      {
+	iter->second->offline_if_not_realized (new_functions);
+	++iter;
+      }
 }
 
 /* Dump instance to F indented by INDENT.  */
@@ -1105,8 +1242,8 @@ autofdo_source_profile::offline_external_functions ()
       free (name);
     }
 
-  /* Now process all tolevel (offline) function instances.  
-    
+  /* Now process all tolevel (offline) function instances.
+
      If instance has no definition in this translation unit,
      first offline all inlined functions which are defined here
      (so we do not lose porfile due to cross-module inlining
@@ -1117,18 +1254,41 @@ autofdo_source_profile::offline_external_functions ()
 
      TODO: after early-inlining we ought to offline all functions
      that were not inlined.  */
-  auto_vec <function_instance *>fns;
+  vec <function_instance *>&fns = duplicate_functions_;
   /* Poppulate worklist with all functions to process.  Processing
      may introduce new functions by offlining.  */
   for (auto const &iter : map_)
-    fns.safe_push (iter.second);
-  for (unsigned int i = 0; i < fns.length (); i++)
     {
-      function_instance *f = fns[i];
-      if (!seen.contains (afdo_string_table->get_index
-			    (afdo_string_table->get_name (f->name ()))))
+      iter.second->set_in_worklist ();
+      fns.safe_push (iter.second);
+    }
+  while (fns.length ())
+    {
+      function_instance *f = fns.pop ();
+      int index = afdo_string_table->get_index
+		    (afdo_string_table->get_name (f->name ()));
+      gcc_checking_assert (f->in_worklist_p ());
+
+      /* If map has different function_instance of same name, then
+	 this is a duplicated entry which needs to be merged.  */
+      if (map_.count (index) && map_[index] != f)
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Merging duplicate instance: ");
+	      f->dump_inline_stack (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
+	  map_[index]->merge (f, fns);
+	  gcc_checking_assert (!f->inlined_to ());
+	  f->clear_in_worklist ();
+	  delete f;
+	}
+      /* If name was not seen in the symbol table, remove it.  */
+      else if (!seen.contains (index))
 	{
 	  f->offline_if_in_set (seen, fns);
+	  f->clear_in_worklist ();
 	  if (dump_file)
 	    fprintf (dump_file, "Removing external %s\n",
 		     afdo_string_table->get_name (f->name ()));
@@ -1136,11 +1296,13 @@ autofdo_source_profile::offline_external_functions ()
 		      (afdo_string_table->get_name (f->name ())));
 	  delete f;
 	}
+      /* If this is offline function instance seen in this
+	 translation unit offline external inlines and possibly
+	 rename from dwarf name.  */
       else
 	{
 	  f->remove_external_functions (seen, to_symbol_name, fns);
-	  int index = afdo_string_table->get_index
-			(afdo_string_table->get_name (f->name ()));
+	  f->clear_in_worklist ();
 	  int *newn = to_symbol_name.get (index);
 	  if (newn)
 	    {
@@ -1152,13 +1314,14 @@ autofdo_source_profile::offline_external_functions ()
 		  function_instance *to = map_[index];
 		  if (to != f)
 		    {
-		      map_[index]->merge (f);
+		      map_[index]->merge (f, fns);
 		      delete f;
 		    }
 		}
 	      else
 		{
 		  auto iter = map_.find (index);
+		  f->set_name (*newn);
 		  map_[*newn] = iter->second;
 		  map_.erase (iter);
 		}
@@ -1171,6 +1334,62 @@ autofdo_source_profile::offline_external_functions ()
 	seen.contains (iter.second->name ());
 	iter.second->dump (dump_file);
       }
+}
+
+/* Offline all inline functions that are not marked as realized.
+   This will merge their profile into offline versions where available.
+   Also remove all functions we will no longer use.  */
+
+void
+autofdo_source_profile::offline_unrealized_inlines ()
+{
+  auto_vec <function_instance *>fns;
+  /* Poppulate worklist with all functions to process.  Processing
+     may introduce new functions by offlining.  */
+  for (auto const &iter : map_)
+    {
+      fns.safe_push (iter.second);
+      iter.second->set_in_worklist ();
+    }
+  while (fns.length ())
+    {
+      function_instance *f = fns.pop ();
+      int index = afdo_string_table->get_index
+		    (afdo_string_table->get_name (f->name ()));
+      f->offline_if_not_realized (fns);
+      gcc_checking_assert ((map_.count (index) == 1 || !f->realized_p ())
+			   && f->in_worklist_p ());
+
+      /* If this is duplicated instance, merge it into one in map.  */
+      if (map_.count (index) && map_[index] != f)
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Merging duplicate instance: ");
+	      f->dump_inline_stack (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
+	  map_[index]->merge (f, fns);
+	  f->clear_in_worklist ();
+	  gcc_checking_assert (!f->inlined_to ());
+	  delete f;
+	}
+      /* If function is not in symbol table, remove it.  */
+      else if (!f->realized_p ())
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Removing optimized out function %s\n",
+		     afdo_string_table->get_name (f->name ()));
+	  map_.erase (index);
+	  f->clear_in_worklist ();
+	  delete f;
+	}
+      else
+	f->clear_in_worklist ();
+    }
+  if (dump_file)
+    for (auto const &iter : map_)
+      iter.second->dump (dump_file);
 }
 
 /* Read the profile and create a function_instance with head count as
@@ -1514,8 +1733,8 @@ autofdo_source_profile::read ()
 	      dump_printf_loc (MSG_NOTE, loc, "Merging profile for %s\n",
 			    afdo_string_table->get_name (s->name ()));
 	    }
-	  map_[fun_id]->merge (s);
-	  delete s;
+	  s->set_in_worklist ();
+	  duplicate_functions_.safe_push (s);
 	}
     }
   /* Scale up the profile, but leave some bits in case some counts gets
@@ -2578,6 +2797,67 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
     }
 }
 
+/* Walk scope block BLOCK and mark all inlined functions as realized.  */
+
+void
+walk_block (tree fn, function_instance *s, tree block)
+{
+  if (inlined_function_outer_scope_p (block))
+    {
+      unsigned loc = get_relative_location_for_locus
+		      (fn, BLOCK_SUPERCONTEXT (block),
+		       BLOCK_SOURCE_LOCATION (block));
+      function_instance *ns
+	= s->get_function_instance_by_decl
+		  (loc, BLOCK_ABSTRACT_ORIGIN (block));
+      if (!ns)
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, " Failed to find inlined instance:");
+	      s->dump_inline_stack (dump_file);
+	      fprintf (dump_file, ":");
+	      dump_afdo_loc (dump_file, loc);
+	      fprintf (dump_file, " %s\n",
+		       IDENTIFIER_POINTER
+			 (DECL_ASSEMBLER_NAME (BLOCK_ABSTRACT_ORIGIN (block))));
+	    }
+	  return;
+	}
+      s = ns;
+      if (dump_file)
+	{
+	  fprintf (dump_file, " Marking realized inline: ");
+	  s->dump_inline_stack (dump_file);
+	  fprintf (dump_file, "\n");
+	}
+      s->set_realized ();
+    }
+  for (tree t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
+    walk_block (fn, s, t);
+}
+
+/* Mark all functions we have code for as realized.  */
+
+static void
+mark_realized_functions (void)
+{
+  cgraph_node *node;
+  FOR_EACH_DEFINED_FUNCTION (node)
+    {
+      function_instance *s
+	  = afdo_source_profile->get_function_instance_by_decl (node->decl);
+      if (!s)
+	continue;
+      if (dump_file)
+	fprintf (dump_file, "Marking realized %s\n",
+		 afdo_string_table->get_name (s->name ()));
+      s->set_realized ();
+      if (DECL_INITIAL (node->decl) != error_mark_node)
+	walk_block (node->decl, s, DECL_INITIAL (node->decl));
+    }
+}
+
 /* Annotate auto profile to the control flow graph.  */
 
 static void
@@ -2592,7 +2872,7 @@ afdo_annotate_cfg (void)
   if (s == NULL)
     {
       if (dump_file)
-	fprintf (dump_file, "No afdo profile for %s",
+	fprintf (dump_file, "No afdo profile for %s\n",
 		 cgraph_node::get (current_function_decl)->dump_name ());
       return;
     }
@@ -2752,6 +3032,8 @@ auto_profile (void)
 
   init_node_map (true);
   profile_info = autofdo::afdo_profile_info;
+  mark_realized_functions ();
+  afdo_source_profile->offline_unrealized_inlines ();
 
   FOR_EACH_FUNCTION (node)
   {
@@ -2770,7 +3052,6 @@ auto_profile (void)
     free_dominance_info (CDI_DOMINATORS);
     free_dominance_info (CDI_POST_DOMINATORS);
     cgraph_edge::rebuild_edges ();
-    compute_fn_summary (cgraph_node::get (current_function_decl), true);
     pop_cfun ();
   }
 

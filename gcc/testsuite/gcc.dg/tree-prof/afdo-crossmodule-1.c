@@ -25,5 +25,5 @@ main()
 	return n != s;
 }
 /* { dg-final-use-autofdo { scan-ipa-dump "Removing external inline: main:5 bar" "afdo_offline"} } */
-/* { dg-final-use-autofdo { scan-ipa-dump "Offlining function inlined to other module: bar:2 main:5 foo" "afdo_offline"} } */
+/* { dg-final-use-autofdo { scan-ipa-dump "Offlining function inlined to other module: bar:2 foo" "afdo_offline"} } */
 /* { dg-final-use-autofdo { scan-tree-dump "Indirect call -> speculative call foo.. => foo2" "einline"} } */
