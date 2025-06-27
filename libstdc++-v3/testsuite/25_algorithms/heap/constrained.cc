@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <random>
+#include <ranges>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
@@ -97,10 +98,55 @@ test02()
   return ok;
 }
 
+constexpr bool
+test03()
+{
+  // PR libstdc++/100795 - ranges::heap algos should not use std::heap directly
+#if __SIZEOF_INT128__
+  auto v = std::views::iota(__int128(0), __int128(20));
+#else
+  auto v = std::views::iota(0ll, 20ll);
+#endif
+
+  int storage[20] = {2,5,4,3,1,6,7,9,10,8,11,14,12,13,15,16,18,0,19,17};
+  auto w = v | std::views::transform([&](auto i) -> int& { return storage[i]; });
+  using type = decltype(w);
+  using cat = std::iterator_traits<std::ranges::iterator_t<type>>::iterator_category;
+  static_assert( std::same_as<cat, std::output_iterator_tag> );
+  static_assert( std::ranges::random_access_range<type> );
+
+  for (int i = 1; i < 20; i++)
+    ranges::push_heap(w.begin(), w.begin() + i);
+  ranges::sort_heap(w);
+  VERIFY( ranges::equal(w, v) );
+  ranges::make_heap(w);
+  auto it = ranges::pop_heap(w);
+  VERIFY( it[-1] == 19 );
+
+  for (int i = 1; i < 20; i++)
+    ranges::push_heap(w.begin(), w.begin() + i, std::ranges::greater{});
+  ranges::sort_heap(w, std::ranges::greater{});
+  VERIFY( ranges::equal(w, v | std::views::reverse) );
+  ranges::make_heap(w, std::ranges::greater{});
+  it = ranges::pop_heap(w, std::ranges::greater{});
+  VERIFY( it[-1] == 0 );
+
+  for (int i = 1; i < 20; i++)
+    ranges::push_heap(w.begin(), w.begin() + i, std::ranges::greater{}, std::negate{});
+  ranges::sort_heap(w, std::ranges::greater{}, std::negate{});
+  VERIFY( ranges::equal(w, v) );
+  ranges::make_heap(w, std::ranges::greater{}, std::negate{});
+  it = ranges::pop_heap(w, std::ranges::greater{}, std::negate{});
+  VERIFY( it[-1] == 19 );
+
+  return true;
+}
+
 int
 main()
 {
   test01<test_range>();
   test01<test_container>();
   static_assert(test02());
+  static_assert(test03());
 }

@@ -1913,6 +1913,28 @@ namespace ranges
 
   inline constexpr __shuffle_fn shuffle{};
 
+  namespace __detail
+  {
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __push_heap(_Iter __first,
+		  iter_difference_t<_Iter> __holeIndex,
+		  iter_difference_t<_Iter> __topIndex,
+		  iter_value_t<_Iter> __value,
+		  _Comp __comp)
+      {
+	auto __parent = (__holeIndex - 1) / 2;
+	while (__holeIndex > __topIndex
+	       && __comp(*(__first + __parent), __value))
+	  {
+	    *(__first + __holeIndex) = ranges::iter_move(__first + __parent);
+	    __holeIndex = __parent;
+	    __parent = (__holeIndex - 1) / 2;
+	  }
+	*(__first + __holeIndex) = std::move(__value);
+      }
+  } // namespace __detail
+
   struct __push_heap_fn
   {
     template<random_access_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -1922,10 +1944,17 @@ namespace ranges
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	auto __lasti = ranges::next(__first, __last);
-	std::push_heap(__first, __lasti,
-		       __detail::__make_comp_proj(__comp, __proj));
-	return __lasti;
+	if constexpr (!same_as<_Iter, _Sent>)
+	  return (*this)(__first, ranges::next(__first, __last),
+			 std::move(__comp), std::move(__proj));
+	else
+	  {
+	    auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
+	    __detail::__push_heap(__first, (__last - __first) - 1,
+				  0, ranges::iter_move(__last - 1),
+				  __comp_proj);
+	    return __last;
+	  }
       }
 
     template<random_access_range _Range,
@@ -1941,6 +1970,48 @@ namespace ranges
 
   inline constexpr __push_heap_fn push_heap{};
 
+  namespace __detail
+  {
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __adjust_heap(_Iter __first,
+		    iter_difference_t<_Iter> __holeIndex,
+		    iter_difference_t<_Iter> __len,
+		    iter_value_t<_Iter> __value,
+		    _Comp __comp)
+      {
+	auto __topIndex = __holeIndex;
+	auto __secondChild = __holeIndex;
+	while (__secondChild < (__len - 1) / 2)
+	  {
+	    __secondChild = 2 * (__secondChild + 1);
+	    if (__comp(*(__first + __secondChild),
+		       *(__first + (__secondChild - 1))))
+	      __secondChild--;
+	    *(__first + __holeIndex) = ranges::iter_move(__first + __secondChild);
+	    __holeIndex = __secondChild;
+	  }
+	if ((__len & 1) == 0 && __secondChild == (__len - 2) / 2)
+	  {
+	    __secondChild = 2 * (__secondChild + 1);
+	    *(__first + __holeIndex) = ranges::iter_move(__first + (__secondChild - 1));
+	    __holeIndex = __secondChild - 1;
+	  }
+	__detail::__push_heap(__first, __holeIndex, __topIndex,
+			      std::move(__value), __comp);
+      }
+
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __pop_heap(_Iter __first, _Iter __last, _Iter __result, _Comp __comp)
+      {
+	iter_value_t<_Iter> __value = ranges::iter_move(__result);
+	*__result = ranges::iter_move(__first);
+	__detail::__adjust_heap(__first, 0, __last - __first,
+				std::move(__value), __comp);
+      }
+  } // namespace __detail
+
   struct __pop_heap_fn
   {
     template<random_access_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -1950,10 +2021,18 @@ namespace ranges
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	auto __lasti = ranges::next(__first, __last);
-	std::pop_heap(__first, __lasti,
-		      __detail::__make_comp_proj(__comp, __proj));
-	return __lasti;
+	if constexpr (!same_as<_Iter, _Sent>)
+	  return (*this)(__first, ranges::next(__first, __last),
+			 std::move(__comp), std::move(__proj));
+	else
+	  {
+	    if (__last - __first > 1)
+	      {
+		auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
+		__detail::__pop_heap(__first, __last - 1, __last - 1, __comp_proj);
+	      }
+	    return __last;
+	  }
       }
 
     template<random_access_range _Range,
@@ -1978,10 +2057,29 @@ namespace ranges
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	auto __lasti = ranges::next(__first, __last);
-	std::make_heap(__first, __lasti,
-		       __detail::__make_comp_proj(__comp, __proj));
-	return __lasti;
+	if constexpr (!same_as<_Iter, _Sent>)
+	  return (*this)(__first, ranges::next(__first, __last),
+			 std::move(__comp), std::move(__proj));
+	else
+	  {
+	    const auto __len = __last - __first;
+	    if (__len < 2)
+	      return __last;
+
+	    auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
+	    auto __parent = (__len - 2) / 2;
+	    while (true)
+	      {
+		iter_value_t<_Iter> __value = ranges::iter_move(__first + __parent);
+		__detail::__adjust_heap(__first, __parent, __len,
+					std::move(__value),
+					__comp_proj);
+		if (__parent == 0)
+		  break;
+		__parent--;
+	      }
+	    return __last;
+	  }
       }
 
     template<random_access_range _Range,
@@ -2006,10 +2104,20 @@ namespace ranges
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	auto __lasti = ranges::next(__first, __last);
-	std::sort_heap(__first, __lasti,
-		       __detail::__make_comp_proj(__comp, __proj));
-	return __lasti;
+	if constexpr (!same_as<_Iter, _Sent>)
+	  return (*this)(__first, ranges::next(__first, __last),
+			 std::move(__comp), std::move(__proj));
+	else
+	  {
+	    auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
+	    _Iter __ret = __last;
+	    while (__last - __first > 1)
+	      {
+		--__last;
+		__detail::__pop_heap(__first, __last, __last, __comp_proj);
+	      }
+	    return __ret;
+	  }
       }
 
     template<random_access_range _Range,
