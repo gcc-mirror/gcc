@@ -503,7 +503,7 @@ check_add_new_comp_handle_array (gfc_expr *e, gfc_symbol *type,
 				 gfc_symbol *add_data)
 {
   gfc_component *comp;
-  int cnt = -1;
+  static int cnt = -1;
   gfc_symtree *caller_image;
   gfc_code *pre_code = caf_accessor_prepend;
   bool static_array_or_scalar = true;
@@ -566,7 +566,7 @@ check_add_new_comp_handle_array (gfc_expr *e, gfc_symbol *type,
   else
     {
       comp->initializer = gfc_copy_expr (e);
-      if (e_attr.dimension)
+      if (e_attr.dimension && e->rank)
 	{
 	  comp->attr.dimension = 1;
 	  comp->as = get_arrayspec_from_expr (e);
