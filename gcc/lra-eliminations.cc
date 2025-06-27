@@ -1415,6 +1415,14 @@ lra_update_fp2sp_elimination (int *spilled_pseudos)
   if (frame_pointer_needed || !targetm.frame_pointer_required ())
     return 0;
   gcc_assert (!elimination_fp2sp_occured_p);
+  ep = elimination_map[FRAME_POINTER_REGNUM];
+  if (ep->to == STACK_POINTER_REGNUM)
+    {
+      elimination_map[FRAME_POINTER_REGNUM] = NULL;
+      setup_can_eliminate (ep, false);
+    }
+  else
+    ep = NULL;
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
 	     "	   Frame pointer can not be eliminated anymore\n");
@@ -1422,9 +1430,10 @@ lra_update_fp2sp_elimination (int *spilled_pseudos)
   CLEAR_HARD_REG_SET (set);
   add_to_hard_reg_set (&set, Pmode, HARD_FRAME_POINTER_REGNUM);
   n = spill_pseudos (set, spilled_pseudos);
-  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-    if (ep->from == FRAME_POINTER_REGNUM && ep->to == STACK_POINTER_REGNUM)
-      setup_can_eliminate (ep, false);
+  if (!ep)
+    for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+      if (ep->from == FRAME_POINTER_REGNUM && ep->to == STACK_POINTER_REGNUM)
+	setup_can_eliminate (ep, false);
   return n;
 }
 
