@@ -1615,6 +1615,8 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	      ++i;
 	      break;
 	    }
+	  if (operands[i].reverse)
+	    return NULL_TREE;
 	  if (known_eq (operands[i].off, -1))
 	    return NULL_TREE;
 	  off += operands[i].off;
