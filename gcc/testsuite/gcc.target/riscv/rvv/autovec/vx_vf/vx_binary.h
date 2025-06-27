@@ -282,8 +282,23 @@ DEF_SAT_U_ADD(uint16_t)
 DEF_SAT_U_ADD(uint32_t)
 DEF_SAT_U_ADD(uint64_t)
 
+#define DEF_SAT_U_SUB(T)           \
+T                                  \
+test_##T##_sat_sub (T a, T b)      \
+{                                  \
+  return (a - b) & (-(T)(a >= b)); \
+}
+
+DEF_SAT_U_SUB(uint8_t)
+DEF_SAT_U_SUB(uint16_t)
+DEF_SAT_U_SUB(uint32_t)
+DEF_SAT_U_SUB(uint64_t)
+
 #define SAT_U_ADD_FUNC(T) test_##T##_sat_add
 #define SAT_U_ADD_FUNC_WRAP(T) SAT_U_ADD_FUNC(T)
+
+#define SAT_U_SUB_FUNC(T) test_##T##_sat_sub
+#define SAT_U_SUB_FUNC_WRAP(T) SAT_U_SUB_FUNC(T)
 
 #define TEST_BINARY_VX_SIGNED_0(T)                      \
   DEF_VX_BINARY_CASE_0_WRAP(T, +, add)                  \
@@ -313,6 +328,7 @@ DEF_SAT_U_ADD(uint64_t)
   DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max)    \
   DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_0_WARP(T), min)    \
   DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_1_WARP(T), min)    \
-  DEF_VX_BINARY_CASE_2_WRAP(T, SAT_U_ADD_FUNC(T), sat_add)
+  DEF_VX_BINARY_CASE_2_WRAP(T, SAT_U_ADD_FUNC(T), sat_add) \
+  DEF_VX_BINARY_CASE_2_WRAP(T, SAT_U_SUB_FUNC(T), sat_sub) \
 
 #endif
