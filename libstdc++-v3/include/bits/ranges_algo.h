@@ -3145,6 +3145,215 @@ namespace ranges
 
   inline constexpr __merge_fn merge{};
 
+  namespace __detail
+  {
+    template<typename _Iter1, typename _Iter2, typename _Out, typename _Comp>
+      void
+      __move_merge_adaptive(_Iter1 __first1, _Iter1 __last1,
+			    _Iter2 __first2, _Iter2 __last2,
+			    _Out __result, _Comp __comp)
+      {
+	while (__first1 != __last1 && __first2 != __last2)
+	  {
+	    if (__comp(*__first2, *__first1))
+	      {
+		*__result = ranges::iter_move(__first2);
+		++__first2;
+	      }
+	    else
+	      {
+		*__result = ranges::iter_move(__first1);
+		++__first1;
+	      }
+	    ++__result;
+	  }
+	if (__first1 != __last1)
+	  ranges::move(__first1, __last1, __result);
+      }
+
+    template<typename _Iter1, typename _Iter2, typename _Iter3, typename _Comp>
+      void
+      __move_merge_adaptive_backward(_Iter1 __first1, _Iter1 __last1,
+				     _Iter2 __first2, _Iter2 __last2,
+				     _Iter3 __result, _Comp __comp)
+      {
+	if (__first1 == __last1)
+	  {
+	    ranges::move_backward(__first2, __last2, __result);
+	    return;
+	  }
+	else if (__first2 == __last2)
+	  return;
+
+	--__last1;
+	--__last2;
+	while (true)
+	  {
+	    if (__comp(*__last2, *__last1))
+	      {
+		*--__result = ranges::iter_move(__last1);
+		if (__first1 == __last1)
+		  {
+		    ranges::move_backward(__first2, ++__last2, __result);
+		    return;
+		  }
+		--__last1;
+	      }
+	    else
+	      {
+		*--__result = ranges::iter_move(__last2);
+		if (__first2 == __last2)
+		  return;
+		--__last2;
+	      }
+	  }
+      }
+
+    template<typename _Iter1, typename _Iter2>
+      _Iter1
+      __rotate_adaptive(_Iter1 __first, _Iter1 __middle, _Iter1 __last,
+			iter_difference_t<_Iter1> __len1,
+			iter_difference_t<_Iter1> __len2,
+			_Iter2 __buffer,
+			iter_difference_t<_Iter1> __buffer_size)
+      {
+	_Iter2 __buffer_end;
+	if (__len1 > __len2 && __len2 <= __buffer_size)
+	  {
+	    if (__len2)
+	      {
+		__buffer_end = ranges::move(__middle, __last, __buffer).out;
+		ranges::move_backward(__first, __middle, __last);
+		return ranges::move(__buffer, __buffer_end, __first).out;
+	      }
+	    else
+	      return __first;
+	  }
+	else if (__len1 <= __buffer_size)
+	  {
+	    if (__len1)
+	      {
+		__buffer_end = ranges::move(__first, __middle, __buffer).out;
+		ranges::move(__middle, __last, __first);
+		return ranges::move_backward(__buffer, __buffer_end, __last).out;
+	      }
+	    else
+	      return __last;
+	  }
+	else
+	  return ranges::rotate(__first, __middle, __last).begin();
+      }
+
+    template<typename _Iter, typename _Pointer, typename _Comp>
+      void
+      __merge_adaptive(_Iter __first, _Iter __middle, _Iter __last,
+		       iter_difference_t<_Iter> __len1,
+		       iter_difference_t<_Iter> __len2,
+		       _Pointer __buffer, _Comp __comp)
+      {
+	if (__len1 <= __len2)
+	  {
+	    _Pointer __buffer_end = ranges::move(__first, __middle, __buffer).out;
+	    __detail::__move_merge_adaptive(__buffer, __buffer_end, __middle, __last,
+					    __first, __comp);
+	  }
+	else
+	  {
+	    _Pointer __buffer_end = ranges::move(__middle, __last, __buffer).out;
+	    __detail::__move_merge_adaptive_backward(__first, __middle, __buffer,
+						     __buffer_end, __last, __comp);
+	  }
+      }
+
+    template<typename _Iter, typename _Distance, typename _Pointer, typename _Comp>
+      void
+      __merge_adaptive_resize(_Iter __first, _Iter __middle, _Iter __last,
+			      _Distance __len1, _Distance __len2,
+			      _Pointer __buffer, _Distance __buffer_size,
+			      _Comp __comp)
+      {
+	if (__len1 <= __buffer_size || __len2 <= __buffer_size)
+	  __detail::__merge_adaptive(__first, __middle, __last,
+				     __len1, __len2, __buffer, __comp);
+	else
+	  {
+	    _Iter __first_cut = __first;
+	    _Iter __second_cut = __middle;
+	    _Distance __len11 = 0;
+	    _Distance __len22 = 0;
+	    if (__len1 > __len2)
+	      {
+		__len11 = __len1 / 2;
+		ranges::advance(__first_cut, __len11);
+		__second_cut = ranges::lower_bound(__middle, __last, *__first_cut,
+						   __comp);
+		__len22 = ranges::distance(__middle, __second_cut);
+	      }
+	    else
+	      {
+		__len22 = __len2 / 2;
+		ranges::advance(__second_cut, __len22);
+		__first_cut = ranges::upper_bound(__first, __middle, *__second_cut,
+						  __comp);
+		__len11 = ranges::distance(__first, __first_cut);
+	      }
+
+	    _Iter __new_middle
+	      = __detail::__rotate_adaptive(__first_cut, __middle, __second_cut,
+					    _Distance(__len1 - __len11), __len22,
+					    __buffer, __buffer_size);
+	    __detail::__merge_adaptive_resize(__first, __first_cut, __new_middle,
+					      __len11, __len22,
+					      __buffer, __buffer_size, __comp);
+	    __detail::__merge_adaptive_resize(__new_middle, __second_cut, __last,
+					      _Distance(__len1 - __len11),
+					      _Distance(__len2 - __len22),
+					      __buffer, __buffer_size, __comp);
+	  }
+      }
+
+    template<typename _Iter, typename _Distance, typename _Comp>
+      constexpr void
+      __merge_without_buffer(_Iter __first, _Iter __middle, _Iter __last,
+			     _Distance __len1, _Distance __len2, _Comp __comp)
+      {
+	if (__len1 == 0 || __len2 == 0)
+	  return;
+
+	if (__len1 + __len2 == 2)
+	  {
+	    if (__comp(*__middle, *__first))
+	      ranges::iter_swap(__first, __middle);
+	    return;
+	  }
+
+	_Iter __first_cut = __first;
+	_Iter __second_cut = __middle;
+	_Distance __len11 = 0;
+	_Distance __len22 = 0;
+	if (__len1 > __len2)
+	  {
+	    __len11 = __len1 / 2;
+	    ranges::advance(__first_cut, __len11);
+	    __second_cut = ranges::lower_bound(__middle, __last, *__first_cut, __comp);
+	    __len22 = ranges::distance(__middle, __second_cut);
+	  }
+	else
+	  {
+	    __len22 = __len2 / 2;
+	    ranges::advance(__second_cut, __len22);
+	    __first_cut = ranges::upper_bound(__first, __middle, *__second_cut, __comp);
+	    __len11 = ranges::distance(__first, __first_cut);
+	  }
+
+	_Iter __new_middle = ranges::rotate(__first_cut, __middle, __second_cut).begin();
+	__detail::__merge_without_buffer(__first, __first_cut, __new_middle,
+					 __len11, __len22, __comp);
+	__detail::__merge_without_buffer(__new_middle, __second_cut, __last,
+					 __len1 - __len11, __len2 - __len22, __comp);
+      }
+  } // namespace __detail
+
   struct __inplace_merge_fn
   {
     template<bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -3156,10 +3365,50 @@ namespace ranges
       operator()(_Iter __first, _Iter __middle, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	auto __lasti = ranges::next(__first, __last);
-	std::inplace_merge(std::move(__first), std::move(__middle), __lasti,
-			   __detail::__make_comp_proj(__comp, __proj));
-	return __lasti;
+	if constexpr (!same_as<_Iter, _Sent>)
+	  return (*this)(__first, __middle, ranges::next(__middle, __last),
+			 std::move(__comp), std::move(__proj));
+	else
+	  {
+	    using _DistanceType = iter_difference_t<_Iter>;
+
+	    if (__first == __middle || __middle == __last)
+	      return __last;
+
+	    const _DistanceType __len1 = ranges::distance(__first, __middle);
+	    const _DistanceType __len2 = ranges::distance(__middle, __last);
+
+	    auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
+
+#if _GLIBCXX_HOSTED
+# if __glibcxx_constexpr_algorithms >= 202306L // >= C++26
+	    if consteval {
+	      __detail::__merge_without_buffer(__first, __middle, __last,
+					       __len1, __len2, __comp_proj);
+	      return __last;
+	    }
+# endif
+	    using _TmpBuf = _Temporary_buffer<_Iter, iter_value_t<_Iter>>;
+	    // __merge_adaptive will use a buffer for the smaller of
+	    // [first,middle) and [middle,last).
+	    _TmpBuf __buf(__first, ptrdiff_t(ranges::min(__len1, __len2)));
+
+	    if (__buf.size() == __buf._M_requested_size()) [[likely]]
+	      __detail::__merge_adaptive
+		(__first, __middle, __last, __len1, __len2, __buf.begin(), __comp_proj);
+	    else if (__buf.begin() == 0) [[unlikely]]
+	      __detail::__merge_without_buffer
+		(__first, __middle, __last, __len1, __len2, __comp_proj);
+	    else
+	      __detail::__merge_adaptive_resize
+		(__first, __middle, __last, __len1, __len2, __buf.begin(),
+		 _DistanceType(__buf.size()), __comp_proj);
+#else
+	    __detail::__merge_without_buffer
+	      (__first, __middle, __last, __len1, __len2, __comp_proj);
+#endif
+	    return __last;
+	  }
       }
 
     template<bidirectional_range _Range,
