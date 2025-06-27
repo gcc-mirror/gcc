@@ -1,3 +1,12 @@
+2025-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-06-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120784
+	* interface.cc (gfc_match_end_interface): If a use-associated
+	symbol is renamed, use the local_name for checking.
+
 2025-06-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

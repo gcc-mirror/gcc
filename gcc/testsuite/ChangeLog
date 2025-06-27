@@ -1,3 +1,19 @@
+2025-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-06-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120784
+	* gfortran.dg/interface_63.f90: New test.
+
+2025-06-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120654
+	* gcc.dg/torture/pr120654.c: New testcase.
+
 2025-06-25  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:

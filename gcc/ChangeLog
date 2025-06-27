@@ -1,3 +1,29 @@
+2025-06-26  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (LTO_minor_version): Bump to 1.
+
+2025-06-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120729
+	* gimple-predicate-analysis.h (uninit_analysis::prune_phi_opnds):
+	Add argument of work budget remaining.
+	* gimple-predicate-analysis.cc (uninit_analysis::prune_phi_opnds):
+	Likewise.  Maintain and honor it throughout the recursion.
+	* params.opt (uninit-max-prune-work): New.
+	* doc/invoke.texi (uninit-max-prune-work): Document.
+
+2025-06-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120654
+	* vr-values.cc (range_fits_type_p): Check for undefined_p ()
+	before accessing type ().
+
 2025-06-25  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:
