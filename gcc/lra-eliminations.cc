@@ -1172,7 +1172,16 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
       /* If it is a currently used elimination: update the previous
 	 offset.  */
       if (elimination_map[ep->from] == ep)
-	ep->previous_offset = ep->offset;
+	{
+	  ep->previous_offset = ep->offset;
+	  /* Restore the stack_pointer_rtx into to_rtx, that
+	     lra_update_fp2sp_elimination set to from_rtx, so that the assert
+	     below still checks what it was supposed to check.  */
+	  if (ep->from_rtx == ep->to_rtx
+	      && ep->from != ep->to
+	      && ep->from == FRAME_POINTER_REGNUM)
+	    ep->to_rtx = stack_pointer_rtx;
+	}
 
       prev = ep->prev_can_eliminate;
       setup_can_eliminate (ep, targetm.can_eliminate (ep->from, ep->to));
@@ -1418,7 +1427,12 @@ lra_update_fp2sp_elimination (int *spilled_pseudos)
   ep = elimination_map[FRAME_POINTER_REGNUM];
   if (ep->to == STACK_POINTER_REGNUM)
     {
-      elimination_map[FRAME_POINTER_REGNUM] = NULL;
+      /* Prevent any further uses of fp, say in spill addresses, from being
+	 eliminated to sp and affected by sp offsets.  Alas, deactivating the
+	 elimination altogether causes the next chosen fp elimination to miss
+	 the offset propagation, so it may keep -1 as its prev_offset, and that
+	 will make subsequent offsets incorrect.  */
+      ep->to_rtx = ep->from_rtx;
       setup_can_eliminate (ep, false);
     }
   else
