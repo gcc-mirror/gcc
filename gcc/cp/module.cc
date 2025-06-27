@@ -3097,6 +3097,9 @@ private:
   unsigned section;
   bool writing_local_entities;	/* Whether we might walk into a TU-local
 				   entity we need to emit placeholders for.  */
+  bool walking_bit_field_unit;  /* Whether we're walking the underlying
+				   storage for a bit field.  There's no other
+				   great way to detect this.  */
 #if CHECKING_P
   int importedness;		/* Checker that imports not occurring
 				   inappropriately.  +ve imports ok,
@@ -3263,7 +3266,7 @@ trees_out::trees_out (allocator *mem, module_state *state, depset::hash &deps,
 		      unsigned section)
   :parent (mem), state (state), tree_map (500),
    dep_hash (&deps), ref_num (0), section (section),
-   writing_local_entities (false)
+   writing_local_entities (false), walking_bit_field_unit (false)
 {
 #if CHECKING_P
   importedness = 0;
@@ -6512,7 +6515,10 @@ trees_out::core_vals (tree t)
     case FIELD_DECL:
       WT (t->field_decl.offset);
       WT (t->field_decl.bit_field_type);
-      WT (t->field_decl.qualifier); /* bitfield unit.  */
+      {
+	auto ovr = make_temp_override (walking_bit_field_unit, true);
+	WT (t->field_decl.qualifier); /* bitfield unit.  */
+      }
       WT (t->field_decl.bit_offset);
       WT (t->field_decl.fcontext);
       WT (t->decl_common.initial);
@@ -11272,15 +11278,16 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	      return MK_named;
 	    }
 
-	  if (!DECL_NAME (decl)
-	      && !RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
-	      && !DECL_BIT_FIELD_REPRESENTATIVE (decl))
+	  if (walking_bit_field_unit)
 	    {
 	      /* The underlying storage unit for a bitfield.  We do not
 		 need to dedup it, because it's only reachable through
 		 the bitfields it represents.  And those are deduped.  */
 	      // FIXME: Is that assertion correct -- do we ever fish it
 	      // out and put it in an expr?
+	      gcc_checking_assert (!DECL_NAME (decl)
+				   && !RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
+				   && !DECL_BIT_FIELD_REPRESENTATIVE (decl));
 	      gcc_checking_assert ((TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
 				    ? TREE_CODE (TREE_TYPE (TREE_TYPE (decl)))
 				    : TREE_CODE (TREE_TYPE (decl)))
