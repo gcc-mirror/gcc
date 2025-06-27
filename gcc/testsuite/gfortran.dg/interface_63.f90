@@ -60,3 +60,38 @@ program p
   call myget (i)
   call myget (r)
 end
+
+! Check that we do not regress on the following:
+
+module mod1
+  implicit none
+
+  interface local
+    module procedure local_data
+  end interface local
+
+contains
+
+  logical function local_data (data) result (local)
+    real, intent(in) :: data
+    local = .true.
+  end function local_data
+
+end module mod1
+
+module mod2
+  use mod1, only: local
+  implicit none
+
+  interface local
+     module procedure local_invt
+  end interface local
+
+contains
+
+  logical function local_invt (invt) result (local)
+    integer, intent(in) :: invt
+    local = .true.
+  end function local_invt
+
+end module mod2
