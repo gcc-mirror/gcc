@@ -571,6 +571,9 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
     case POST_INC:
     case PRE_DEC:
     case POST_DEC:
+      /* Recurse to adjust elimination offsets in a spilled pseudo.  */
+      if (GET_CODE (XEXP (x, 0)) == MEM)
+	break;
       /* We do not support elimination of a register that is modified.
 	 elimination_effects has already make sure that this does not
 	 happen.  */
@@ -578,6 +581,9 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 
     case PRE_MODIFY:
     case POST_MODIFY:
+      /* Recurse to adjust elimination offsets in a spilled pseudo.  */
+      if (GET_CODE (XEXP (x, 0)) == MEM)
+	break;
       /* We do not support elimination of a hard register that is
 	 modified.  LRA has already make sure that this does not
 	 happen. The only remaining case we need to consider here is
