@@ -1952,9 +1952,61 @@ namespace ranges
       _Iter
       operator()(_Iter __first, _Sent __last, _Gen&& __g) const
       {
-	auto __lasti = ranges::next(__first, __last);
-	std::shuffle(std::move(__first), __lasti, std::forward<_Gen>(__g));
-	return __lasti;
+	// FIXME: Correctly handle integer-class difference types.
+	if (__first == __last)
+	  return __first;
+
+	using _DistanceType = iter_difference_t<_Iter>;
+	using __ud_type = __detail::__make_unsigned_like_t<_DistanceType>;
+	using __distr_type = std::uniform_int_distribution<__ud_type>;
+	using __p_type = typename __distr_type::param_type;
+
+	using __uc_type
+	  = common_type_t<typename remove_reference_t<_Gen>::result_type, __ud_type>;
+
+	const __uc_type __urngrange = __g.max() - __g.min();
+	const __uc_type __urange = __uc_type(__last - __first);
+
+	if (__urngrange / __urange >= __urange)
+	  // I.e. (__urngrange >= __urange * __urange) but without wrap issues.
+	  {
+	    _Iter __i = __first + 1;
+
+	    // Since we know the range isn't empty, an even number of elements
+	    // means an uneven number of elements /to swap/, in which case we
+	    // do the first one up front:
+
+	    if ((__urange % 2) == 0)
+	      {
+		__distr_type __d{0, 1};
+		ranges::iter_swap(__i++, __first + __d(__g));
+	      }
+
+	    // Now we know that __last - __i is even, so we do the rest in pairs,
+	    // using a single distribution invocation to produce swap positions
+	    // for two successive elements at a time:
+
+	    while (__i != __last)
+	      {
+		const __uc_type __swap_range = __uc_type(__i - __first) + 1;
+
+		const pair<__uc_type, __uc_type> __pospos =
+		  __gen_two_uniform_ints(__swap_range, __swap_range + 1, __g);
+
+		ranges::iter_swap(__i++, __first + __pospos.first);
+		ranges::iter_swap(__i++, __first + __pospos.second);
+	      }
+
+	    return __i;
+	  }
+
+	__distr_type __d;
+
+	_Iter __i = __first + 1;
+	for (; __i != __last; ++__i)
+	  ranges::iter_swap(__i, __first + __d(__g, __p_type(0, __i - __first)));
+
+	return __i;
       }
 
     template<random_access_range _Range, typename _Gen>
