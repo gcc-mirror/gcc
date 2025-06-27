@@ -381,7 +381,9 @@ extern int *lra_point_freq;
 extern int lra_hard_reg_usage[FIRST_PSEUDO_REGISTER];
 
 extern int lra_live_range_iter;
+extern void lra_reset_live_range_list (lra_live_range_t &);
 extern void lra_create_live_ranges (bool, bool);
+extern bool lra_complete_live_ranges (void);
 extern lra_live_range_t lra_copy_live_range_list (lra_live_range_t);
 extern lra_live_range_t lra_merge_live_ranges (lra_live_range_t,
 					       lra_live_range_t);
@@ -417,6 +419,7 @@ extern bool lra_need_for_scratch_reg_p (void);
 extern bool lra_need_for_spills_p (void);
 extern void lra_spill (void);
 extern void lra_final_code_change (void);
+extern void lra_recompute_slots_live_ranges (void);
 
 /* lra-remat.cc:  */
 

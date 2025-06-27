@@ -113,6 +113,15 @@ free_live_range_list (lra_live_range_t lr)
     }
 }
 
+/* Reset and release live range list LR.  */
+void
+lra_reset_live_range_list (lra_live_range_t &lr)
+{
+  lra_live_range_t first = lr;
+  lr = NULL;
+  free_live_range_list (first);
+}
+
 /* Create and return pseudo live range with given attributes.  */
 static lra_live_range_t
 create_live_range (int regno, int start, int finish, lra_live_range_t next)
@@ -1522,6 +1531,19 @@ lra_create_live_ranges (bool all_p, bool dead_insn_p)
   lra_clear_live_ranges ();
   bool res = lra_create_live_ranges_1 (all_p, false);
   lra_assert (! res);
+}
+
+/* Run lra_create_live_ranges if !complete_info_p.  Return FALSE iff
+   live ranges are known to have remained unchanged.  */
+
+bool
+lra_complete_live_ranges (void)
+{
+  if (complete_info_p)
+    return false;
+
+  lra_create_live_ranges (true, true);
+  return true;
 }
 
 /* Finish all live ranges.  */

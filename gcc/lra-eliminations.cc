@@ -1429,6 +1429,14 @@ lra_update_fp2sp_elimination (int *spilled_pseudos)
   frame_pointer_needed = true;
   CLEAR_HARD_REG_SET (set);
   add_to_hard_reg_set (&set, Pmode, HARD_FRAME_POINTER_REGNUM);
+  /* If !lra_reg_spill_p, we likely have incomplete range information
+     for pseudos assigned to the frame pointer that will have to be
+     spilled, and so we may end up incorrectly sharing them unless we
+     get live range information for them.  */
+  if (lra_complete_live_ranges ())
+    /* If lives ranges changed, update the aggregate live ranges in
+       slots as well before spilling any further pseudos.  */
+    lra_recompute_slots_live_ranges ();
   n = spill_pseudos (set, spilled_pseudos);
   if (!ep)
     for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
