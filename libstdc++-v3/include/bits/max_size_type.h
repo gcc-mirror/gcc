@@ -36,6 +36,7 @@
 
 #if __cplusplus > 201703L && __cpp_lib_concepts
 #include <ext/numeric_traits.h>
+#include <bit> // __bit_width
 #include <numbers>
 
 // This header implements unsigned and signed integer-class types (as per
@@ -817,6 +818,16 @@ namespace ranges
       lowest() noexcept
       { return min(); }
     };
+
+  template<>
+  inline constexpr int
+  __bit_width(ranges::__detail::__max_size_type __x) noexcept
+  {
+    if (__x._M_msb)
+      return numeric_limits<ranges::__detail::__max_size_type>::digits;
+    else
+      return std::__bit_width(__x._M_val);
+  }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

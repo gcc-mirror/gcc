@@ -32,6 +32,7 @@
 
 #if __cplusplus > 201703L
 
+#include <bit> // __bit_width
 #if __cplusplus > 202002L
 #include <optional>
 #endif
@@ -2200,6 +2201,154 @@ namespace ranges
 
   inline constexpr __is_heap_fn is_heap{};
 
+  namespace __detail
+  {
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __move_median_to_first(_Iter __result, _Iter __a, _Iter __b, _Iter __c,
+			     _Comp __comp)
+      {
+	if (__comp(*__a, *__b))
+	  {
+	    if (__comp(*__b, *__c))
+	      ranges::iter_swap(__result, __b);
+	    else if (__comp(*__a, *__c))
+	      ranges::iter_swap(__result, __c);
+	    else
+	      ranges::iter_swap(__result, __a);
+	  }
+	else if (__comp(*__a, *__c))
+	  ranges::iter_swap(__result, __a);
+	else if (__comp(*__b, *__c))
+	  ranges::iter_swap(__result, __c);
+	else
+	  ranges::iter_swap(__result, __b);
+      }
+
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __unguarded_linear_insert(_Iter __last, _Comp __comp)
+      {
+	iter_value_t<_Iter> __val = ranges::iter_move(__last);
+	_Iter __next = __last;
+	--__next;
+	while (__comp(__val, *__next))
+	  {
+	    *__last = ranges::iter_move(__next);
+	    __last = __next;
+	    --__next;
+	  }
+	*__last = std::move(__val);
+      }
+
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __insertion_sort(_Iter __first, _Iter __last, _Comp __comp)
+      {
+	if (__first == __last)
+	  return;
+
+	for (_Iter __i = __first + 1; __i != __last; ++__i)
+	  {
+	    if (__comp(*__i, *__first))
+	      {
+		iter_value_t<_Iter> __val = ranges::iter_move(__i);
+		ranges::move_backward(__first, __i, __i + 1);
+		*__first = std::move(__val);
+	      }
+	    else
+	      __detail::__unguarded_linear_insert(__i, __comp);
+	  }
+      }
+
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __unguarded_insertion_sort(_Iter __first, _Iter __last, _Comp __comp)
+      {
+	for (_Iter __i = __first; __i != __last; ++__i)
+	  __detail::__unguarded_linear_insert(__i, __comp);
+      }
+
+    inline constexpr int __sort_threshold = 16;
+
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __final_insertion_sort(_Iter __first, _Iter __last, _Comp __comp)
+      {
+	if (__last - __first > __sort_threshold)
+	  {
+	    __detail::__insertion_sort(__first, __first + __sort_threshold, __comp);
+	    __detail::__unguarded_insertion_sort(__first + __sort_threshold, __last,
+						 __comp);
+	  }
+	else
+	  __detail::__insertion_sort(__first, __last, __comp);
+      }
+
+    template<typename _Iter, typename _Comp>
+      constexpr _Iter
+      __unguarded_partition(_Iter __first, _Iter __last, _Iter __pivot, _Comp __comp)
+      {
+	while (true)
+	  {
+	    while (__comp(*__first, *__pivot))
+	      ++__first;
+	    --__last;
+	    while (__comp(*__pivot, *__last))
+	      --__last;
+	    if (!(__first < __last))
+	      return __first;
+	    ranges::iter_swap(__first, __last);
+	    ++__first;
+	  }
+      }
+
+    template<typename _Iter, typename _Comp>
+      constexpr _Iter
+      __unguarded_partition_pivot(_Iter __first, _Iter __last, _Comp __comp)
+      {
+	_Iter __mid = __first + (__last - __first) / 2;
+	__detail::__move_median_to_first(__first, __first + 1, __mid, __last - 1, __comp);
+	return __detail::__unguarded_partition(__first + 1, __last, __first, __comp);
+      }
+
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __heap_select(_Iter __first, _Iter __middle, _Iter __last, _Comp __comp)
+      {
+	ranges::make_heap(__first, __middle, __comp);
+	for (_Iter __i = __middle; __i < __last; ++__i)
+	  if (__comp(*__i, *__first))
+	    __detail::__pop_heap(__first, __middle, __i, __comp);
+      }
+
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __partial_sort(_Iter __first, _Iter __middle, _Iter __last, _Comp __comp)
+      {
+	__detail::__heap_select(__first, __middle, __last, __comp);
+	ranges::sort_heap(__first, __middle, __comp);
+      }
+
+    template<typename _Iter, typename _Comp>
+      constexpr void
+      __introsort_loop(_Iter __first, _Iter __last, unsigned __depth_limit, _Comp __comp)
+      {
+	while (__last - __first > __sort_threshold)
+	  {
+	    if (__depth_limit == 0)
+	      {
+		__detail::__partial_sort(__first, __last, __last, __comp);
+		return;
+	      }
+	    --__depth_limit;
+	    _Iter __cut = __detail::__unguarded_partition_pivot(__first, __last, __comp);
+	    __detail::__introsort_loop(__cut, __last, __depth_limit, __comp);
+	    __last = __cut;
+	  }
+      }
+  } // namespace __detail
+
   struct __sort_fn
   {
     template<random_access_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -2209,10 +2358,21 @@ namespace ranges
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	auto __lasti = ranges::next(__first, __last);
-	_GLIBCXX_STD_A::sort(std::move(__first), __lasti,
-			     __detail::__make_comp_proj(__comp, __proj));
-	return __lasti;
+	if constexpr (!same_as<_Iter, _Sent>)
+	  return (*this)(__first, ranges::next(__first, __last),
+			 std::move(__comp), std::move(__proj));
+	else
+	  {
+	    if (__first != __last)
+	      {
+		auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
+		auto __n = __detail::__to_unsigned_like(__last - __first);
+		unsigned __depth_limit = (std::__bit_width(__n) - 1) * 2;
+		__detail::__introsort_loop(__first, __last, __depth_limit, __comp_proj);
+		__detail::__final_insertion_sort(__first, __last, __comp_proj);
+	      }
+	    return __last;
+	  }
       }
 
     template<random_access_range _Range,
