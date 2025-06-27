@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-ffp-contract=on" } */
-/* { dg-additional-options "-mfma" { target { x86_64-*-* i?86-*-* } } } */
+/* { dg-additional-options "-mfma -mfpmath=sse" { target { x86_64-*-* i?86-*-* } } } */
 
 void f(double x[restrict], double *y, double *z)
 {
@@ -9,4 +9,4 @@ void f(double x[restrict], double *y, double *z)
 }
 
 /* The following should check for SLP build covering the loads.  */
-/* { dg-final { scan-tree-dump "transform load" "slp2" { target { x86_64-*-* i?86-*-* } } } } */
+/* { dg-final { scan-tree-dump "Found VEC_FMSUBADD pattern" "slp2" { target { x86_64-*-* i?86-*-* } } } } */

@@ -299,18 +299,23 @@ vect_build_swap_evenodd_node (slp_tree node)
    code CODE.  */
 
 static inline bool
-vect_match_expression_p (slp_tree node, tree_code code)
+vect_match_expression_p (slp_tree node, code_helper code)
 {
   if (!node
       || !SLP_TREE_REPRESENTATIVE (node))
     return false;
 
   gimple* expr = STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (node));
-  if (!is_gimple_assign (expr)
-      || gimple_assign_rhs_code (expr) != code)
-    return false;
+  if (is_gimple_assign (expr)
+      && code.is_tree_code ()
+      && gimple_assign_rhs_code (expr) == (tree_code) code)
+    return true;
+  if (is_a <gcall *> (expr)
+      && !code.is_tree_code ()
+      && gimple_call_combined_fn (expr) == (combined_fn) code)
+    return true;
 
-  return true;
+  return false;
 }
 
 /* Check if the given lane permute in PERMUTES matches an alternating sequence
@@ -1494,15 +1499,33 @@ addsub_pattern::recognize (slp_tree_to_load_perm_map_t *,
   unsigned l1 = SLP_TREE_LANE_PERMUTATION (node)[1].first;
   if (l0 == l1)
     return NULL;
+  bool fma_p = false;
   bool l0add_p = vect_match_expression_p (SLP_TREE_CHILDREN (node)[l0],
 					  PLUS_EXPR);
   if (!l0add_p
       && !vect_match_expression_p (SLP_TREE_CHILDREN (node)[l0], MINUS_EXPR))
-    return NULL;
+    {
+      l0add_p = vect_match_expression_p (SLP_TREE_CHILDREN (node)[l0], CFN_FMA);
+      if (!l0add_p
+	  && !vect_match_expression_p (SLP_TREE_CHILDREN (node)[l0], CFN_FMS))
+	return NULL;
+      fma_p = true;
+    }
   bool l1add_p = vect_match_expression_p (SLP_TREE_CHILDREN (node)[l1],
 					  PLUS_EXPR);
+  if (l1add_p && fma_p)
+    return NULL;
   if (!l1add_p
       && !vect_match_expression_p (SLP_TREE_CHILDREN (node)[l1], MINUS_EXPR))
+    {
+      if (!fma_p)
+	return NULL;
+      l1add_p = vect_match_expression_p (SLP_TREE_CHILDREN (node)[l1], CFN_FMA);
+      if (!l1add_p
+	  && !vect_match_expression_p (SLP_TREE_CHILDREN (node)[l1], CFN_FMS))
+	return NULL;
+    }
+  else if (!l1add_p && fma_p)
     return NULL;
 
   slp_tree l0node = SLP_TREE_CHILDREN (node)[l0];
@@ -1527,26 +1550,31 @@ addsub_pattern::recognize (slp_tree_to_load_perm_map_t *,
 
   /* Now we have either { -, +, -, + ... } (!l0add_p) or { +, -, +, - ... }
      (l0add_p), see whether we have FMA variants.  We can only form FMAs
-     if allowed via -ffp-contract=fast.  */
-  if (flag_fp_contract_mode != FP_CONTRACT_FAST
+     if allowed via -ffp-contract=fast or if they were FMA before.  */
+  if (!fma_p
+      && flag_fp_contract_mode != FP_CONTRACT_FAST
       && FLOAT_TYPE_P (SLP_TREE_VECTYPE (l0node)))
     ;
   else if (!l0add_p
-	   && vect_match_expression_p (SLP_TREE_CHILDREN (l0node)[0], MULT_EXPR))
+	   && (fma_p
+	       || vect_match_expression_p (SLP_TREE_CHILDREN (l0node)[0],
+					   MULT_EXPR)))
     {
       /* (c * d) -+ a */
       if (vect_pattern_validate_optab (IFN_VEC_FMADDSUB, node))
 	return new addsub_pattern (node_, IFN_VEC_FMADDSUB);
     }
   else if (l0add_p
-	   && vect_match_expression_p (SLP_TREE_CHILDREN (l1node)[0], MULT_EXPR))
+	   && (fma_p
+	       || vect_match_expression_p (SLP_TREE_CHILDREN (l1node)[0],
+					   MULT_EXPR)))
     {
       /* (c * d) +- a */
       if (vect_pattern_validate_optab (IFN_VEC_FMSUBADD, node))
 	return new addsub_pattern (node_, IFN_VEC_FMSUBADD);
     }
 
-  if (!l0add_p && vect_pattern_validate_optab (IFN_VEC_ADDSUB, node))
+  if (!fma_p && !l0add_p && vect_pattern_validate_optab (IFN_VEC_ADDSUB, node))
     return new addsub_pattern (node_, IFN_VEC_ADDSUB);
 
   return NULL;
@@ -1610,25 +1638,42 @@ addsub_pattern::build (vec_info *vinfo)
 	    sub = SLP_TREE_CHILDREN (node)[l1];
 	    add = SLP_TREE_CHILDREN (node)[l0];
 	  }
-	slp_tree mul = SLP_TREE_CHILDREN (sub)[0];
 	/* Modify the blend node in-place.  */
 	SLP_TREE_CHILDREN (node).safe_grow (3, true);
-	SLP_TREE_CHILDREN (node)[0] = SLP_TREE_CHILDREN (mul)[0];
-	SLP_TREE_CHILDREN (node)[1] = SLP_TREE_CHILDREN (mul)[1];
-	SLP_TREE_CHILDREN (node)[2] = SLP_TREE_CHILDREN (sub)[1];
+	gcall *call;
+	stmt_vec_info srep = SLP_TREE_REPRESENTATIVE (sub);
+	if (vect_match_expression_p (add, CFN_FMA))
+	  {
+	    SLP_TREE_CHILDREN (node)[0] = SLP_TREE_CHILDREN (add)[0];
+	    SLP_TREE_CHILDREN (node)[1] = SLP_TREE_CHILDREN (add)[1];
+	    SLP_TREE_CHILDREN (node)[2] = SLP_TREE_CHILDREN (add)[2];
+	    /* Build IFN_VEC_FMADDSUB from the fms representative
+	       operands.  */
+	    call = gimple_build_call_internal (m_ifn, 3,
+					       gimple_call_arg (srep->stmt, 0),
+					       gimple_call_arg (srep->stmt, 1),
+					       gimple_call_arg (srep->stmt, 2));
+	  }
+	else
+	  {
+	    slp_tree mul = SLP_TREE_CHILDREN (sub)[0];
+	    SLP_TREE_CHILDREN (node)[0] = SLP_TREE_CHILDREN (mul)[0];
+	    SLP_TREE_CHILDREN (node)[1] = SLP_TREE_CHILDREN (mul)[1];
+	    SLP_TREE_CHILDREN (node)[2] = SLP_TREE_CHILDREN (sub)[1];
+	    /* Build IFN_VEC_FMADDSUB from the mul/sub representative
+	       operands.  */
+	    stmt_vec_info mrep = SLP_TREE_REPRESENTATIVE (mul);
+	    call = gimple_build_call_internal (m_ifn, 3,
+					       gimple_assign_rhs1 (mrep->stmt),
+					       gimple_assign_rhs2 (mrep->stmt),
+					       gimple_assign_rhs2 (srep->stmt));
+	  }
 	SLP_TREE_REF_COUNT (SLP_TREE_CHILDREN (node)[0])++;
 	SLP_TREE_REF_COUNT (SLP_TREE_CHILDREN (node)[1])++;
 	SLP_TREE_REF_COUNT (SLP_TREE_CHILDREN (node)[2])++;
 
-	/* Build IFN_VEC_FMADDSUB from the mul/sub representative operands.  */
-	stmt_vec_info srep = SLP_TREE_REPRESENTATIVE (sub);
-	stmt_vec_info mrep = SLP_TREE_REPRESENTATIVE (mul);
-	gcall *call = gimple_build_call_internal (m_ifn, 3,
-						  gimple_assign_rhs1 (mrep->stmt),
-						  gimple_assign_rhs2 (mrep->stmt),
-						  gimple_assign_rhs2 (srep->stmt));
 	gimple_call_set_lhs (call, make_ssa_name
-			     (TREE_TYPE (gimple_assign_lhs (srep->stmt))));
+			     (TREE_TYPE (gimple_get_lhs (srep->stmt))));
 	gimple_call_set_nothrow (call, true);
 	gimple_set_bb (call, gimple_bb (srep->stmt));
 	stmt_vec_info new_rep = vinfo->add_pattern_stmt (call, srep);
