@@ -250,14 +250,14 @@ namespace __format
   operator|=(_ChronoParts& __x, _ChronoParts __y) noexcept
   { return __x = __x | __y; }
 
-  [[__gnu__::__always_inline__]]
   // returns copy of x with all bits from y unset.
+  [[__gnu__::__always_inline__]]
   constexpr _ChronoParts
   operator-(_ChronoParts __x, _ChronoParts __y) noexcept
   { return static_cast<_ChronoParts>((unsigned short)__x & ~(unsigned short)__y); }
 
-  [[__gnu__::__always_inline__]]
   // unsets all bits of x that are set in y
+  [[__gnu__::__always_inline__]]
   constexpr _ChronoParts&
   operator-=(_ChronoParts& __x, _ChronoParts __y) noexcept
   { return __x = __x - __y; }
@@ -873,6 +873,11 @@ namespace __format
       static constexpr const _CharT* _S_minus_empty_spec = _S_chars + 17;
       static constexpr const _CharT* _S_empty_spec = _S_chars + 18;
 
+      [[__gnu__::__always_inline__]]
+      static _Runtime_format_string<_CharT>
+      _S_empty_fs()
+      { return _Runtime_format_string<_CharT>(_S_empty_spec); }
+
       // Return the formatting locale.
       template<typename _FormatContext>
 	std::locale
@@ -1405,7 +1410,7 @@ namespace __format
 		__i = 12;
 	    }
 	  else if (__i >= 100) [[unlikely]]
-	    return std::format_to(std::move(__out), _S_empty_spec, __i);
+	    return std::format_to(std::move(__out), _S_empty_fs(), __i);
 
 	  return __format::__write(std::move(__out), _S_two_digits(__i));
 	}
@@ -1418,11 +1423,15 @@ namespace __format
 	  {
 	    // Decimal number of days, without padding.
 	    auto __d = chrono::floor<chrono::days>(__t._M_hours).count();
-	    return std::format_to(std::move(__out), _S_empty_spec, __d);
+	    return std::format_to(std::move(__out), _S_empty_fs(), __d);
 	  }
 
-	  return std::format_to(std::move(__out), _GLIBCXX_WIDEN("{:03d}"),
-				__t._M_day_of_year.count());
+	  auto __d = __t._M_day_of_year.count();
+	  if (__d >= 1000) [[unlikely]]
+	    return std::format_to(std::move(__out), _S_empty_fs(), __d);
+
+	  _CharT __buf[3];
+	  return __format::__write(std::move(__out), _S_str_d3(__buf, __d));
 	}
 
       template<typename _OutIter>
@@ -1523,7 +1532,7 @@ namespace __format
 
 	  if (__hi >= 100) [[unlikely]]
 	    {
-	      __out = std::format_to(std::move(__out), _S_empty_spec, __hi);
+	      __out = std::format_to(std::move(__out), _S_empty_fs(), __hi);
 	      __sv.remove_prefix(2);
 	    }
 	  else
@@ -1728,8 +1737,8 @@ namespace __format
 	};
       }
 
-      [[__gnu__::__always_inline__]]
       // Fills __buf[0] and __buf[1] with 2 digit value of __n.
+      [[__gnu__::__always_inline__]]
       static void
       _S_fill_two_digits(_CharT* __buf, unsigned __n)
       {
@@ -1738,9 +1747,9 @@ namespace __format
 	__buf[1] = __sv[1];
       }
 
-      [[__gnu__::__always_inline__]]
       // Returns decimal representation of __n.
       // Returned string_view may point to __buf.
+      [[__gnu__::__always_inline__]]
       static basic_string_view<_CharT>
       _S_str_d1(span<_CharT, 3> __buf, unsigned __n)
       {
@@ -1749,15 +1758,23 @@ namespace __format
 	return _S_str_d2(__buf, __n);
       }
 
-      [[__gnu__::__always_inline__]]
       // Returns decimal representation of __n, padded to 2 digits.
       // Returned string_view may point to __buf.
+      [[__gnu__::__always_inline__]]
       static basic_string_view<_CharT>
       _S_str_d2(span<_CharT, 3> __buf, unsigned __n)
       {
 	if (__n < 100) [[likely]]
 	  return _S_two_digits(__n);
+        return _S_str_d3(__buf, __n);
+      }
 
+      // Returns decimal representation of __n, padded to 3 digits.
+      // Returned string_view points to __buf.
+      [[__gnu__::__always_inline__]]
+      static basic_string_view<_CharT>
+      _S_str_d3(span<_CharT, 3> __buf, unsigned __n)
+      {
 	_S_fill_two_digits(__buf.data(), __n / 10);
 	__buf[2] = _S_chars[__n % 10];
 	return __string_view(__buf.data(), 3);
