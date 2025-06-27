@@ -926,11 +926,11 @@ package body Tbuild is
       --  conversion of an unchecked conversion. Extra unchecked conversions
       --  make the .dg output less readable. We can't do this in cases
       --  involving bitfields, because the sizes might not match. The
-      --  "not Is_Scalar_Type" checks avoid such cases.
+      --  Is_Composite_Type checks avoid such cases.
 
       elsif Nkind (Expr) = N_Unchecked_Type_Conversion
-        and then not Is_Scalar_Type (Etype (Expr))
-        and then not Is_Scalar_Type (Typ)
+        and then Is_Composite_Type (Etype (Expr))
+        and then Is_Composite_Type (Typ)
       then
          Set_Subtype_Mark (Expr, New_Occurrence_Of (Typ, Loc));
          Result := Relocate_Node (Expr);
