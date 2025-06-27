@@ -18041,9 +18041,34 @@ expand_perm_with_merge (const struct expand_vec_perm_d &d)
   static const unsigned char lo_perm_qi_swap[16]
     = {17, 1, 19, 3, 21, 5, 23, 7, 25, 9, 27, 11, 29, 13, 31, 15};
 
+  static const unsigned char hi_perm_qi_di[16]
+    = {0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23};
+  static const unsigned char hi_perm_qi_si[16]
+    = {0, 1, 2, 3, 16, 17, 18, 19, 4, 5, 6, 7, 20, 21, 22, 23};
+  static const unsigned char hi_perm_qi_hi[16]
+    = {0, 1, 16, 17, 2, 3, 18, 19, 4, 5, 20, 21, 6, 7, 22, 23};
+
+  static const unsigned char lo_perm_qi_di[16]
+    = {8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31};
+  static const unsigned char lo_perm_qi_si[16]
+    = {8, 9, 10, 11, 24, 25, 26, 27, 12, 13, 14, 15, 28, 29, 30, 31};
+  static const unsigned char lo_perm_qi_hi[16]
+    = {8, 9, 24, 25, 10, 11, 26, 27, 12, 13, 28, 29, 14, 15, 30, 31};
+
+  static const unsigned char hi_perm_hi_si[8] = {0, 1, 8, 9, 2, 3, 10, 11};
+  static const unsigned char hi_perm_hi_di[8] = {0, 1, 2, 3, 8, 9, 10, 11};
+
+  static const unsigned char lo_perm_hi_si[8] = {4, 5, 12, 13, 6, 7, 14, 15};
+  static const unsigned char lo_perm_hi_di[8] = {4, 5, 6, 7, 12, 13, 14, 15};
+
+  static const unsigned char hi_perm_si_di[4] = {0, 1, 4, 5};
+
+  static const unsigned char lo_perm_si_di[4] = {2, 3, 6, 7};
+
   bool merge_lo_p = false;
   bool merge_hi_p = false;
   bool swap_operands_p = false;
+  machine_mode mergemode = d.vmode;
 
   if ((d.nelt == 2 && memcmp (d.perm, hi_perm_di, 2) == 0)
       || (d.nelt == 4 && memcmp (d.perm, hi_perm_si, 4) == 0)
@@ -18075,6 +18100,75 @@ expand_perm_with_merge (const struct expand_vec_perm_d &d)
       merge_lo_p = true;
       swap_operands_p = true;
     }
+  else if (d.nelt == 16)
+    {
+      if (memcmp (d.perm, hi_perm_qi_di, 16) == 0)
+	{
+	  merge_hi_p = true;
+	  mergemode = E_V2DImode;
+	}
+      else if (memcmp (d.perm, hi_perm_qi_si, 16) == 0)
+	{
+	  merge_hi_p = true;
+	  mergemode = E_V4SImode;
+	}
+      else if (memcmp (d.perm, hi_perm_qi_hi, 16) == 0)
+	{
+	  merge_hi_p = true;
+	  mergemode = E_V8HImode;
+	}
+      else if (memcmp (d.perm, lo_perm_qi_di, 16) == 0)
+	{
+	  merge_lo_p = true;
+	  mergemode = E_V2DImode;
+	}
+      else if (memcmp (d.perm, lo_perm_qi_si, 16) == 0)
+	{
+	  merge_lo_p = true;
+	  mergemode = E_V4SImode;
+	}
+      else if (memcmp (d.perm, lo_perm_qi_hi, 16) == 0)
+	{
+	  merge_lo_p = true;
+	  mergemode = E_V8HImode;
+	}
+    }
+  else if (d.nelt == 8)
+    {
+      if (memcmp (d.perm, hi_perm_hi_di, 8) == 0)
+	{
+	  merge_hi_p = true;
+	  mergemode = E_V2DImode;
+	}
+      else if (memcmp (d.perm, hi_perm_hi_si, 8) == 0)
+	{
+	  merge_hi_p = true;
+	  mergemode = E_V4SImode;
+	}
+      else if (memcmp (d.perm, lo_perm_hi_di, 8) == 0)
+	{
+	  merge_lo_p = true;
+	  mergemode = E_V2DImode;
+	}
+      else if (memcmp (d.perm, lo_perm_hi_si, 8) == 0)
+	{
+	  merge_lo_p = true;
+	  mergemode = E_V4SImode;
+	}
+    }
+  else if (d.nelt == 4)
+    {
+      if (memcmp (d.perm, hi_perm_si_di, 4) == 0)
+	{
+	  merge_hi_p = true;
+	  mergemode = E_V2DImode;
+	}
+      else if (memcmp (d.perm, lo_perm_si_di, 4) == 0)
+	{
+	  merge_lo_p = true;
+	  mergemode = E_V2DImode;
+	}
+    }
 
   if (!merge_lo_p && !merge_hi_p)
     return false;
@@ -18082,7 +18176,7 @@ expand_perm_with_merge (const struct expand_vec_perm_d &d)
   if (d.testing_p)
     return merge_lo_p || merge_hi_p;
 
-  rtx op0, op1;
+  rtx op0, op1, target = d.target;
   if (swap_operands_p)
     {
       op0 = d.op1;
@@ -18093,9 +18187,77 @@ expand_perm_with_merge (const struct expand_vec_perm_d &d)
       op0 = d.op0;
       op1 = d.op1;
     }
+  if (mergemode != d.vmode)
+    {
+      target = simplify_gen_subreg (mergemode, target, d.vmode, 0);
+      op0 = simplify_gen_subreg (mergemode, op0, d.vmode, 0);
+      op1 = simplify_gen_subreg (mergemode, op1, d.vmode, 0);
+    }
 
-  s390_expand_merge (d.target, op0, op1, merge_hi_p);
+  s390_expand_merge (target, op0, op1, merge_hi_p);
 
+  return true;
+}
+
+/* Try to expand the vector permute operation described by D using the vector
+   pack instruction vpk.  Return true if vector pack could be used.  */
+static bool
+expand_perm_with_pack (const struct expand_vec_perm_d &d)
+{
+  static const unsigned char qi_hi[16]
+    = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31};
+  static const unsigned char qi_si[16]
+    = {2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31};
+  static const unsigned char qi_di[16]
+    = {4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31};
+
+  static const unsigned char hi_si[8]
+    = {1, 3, 5, 7, 9, 11, 13, 15};
+  static const unsigned char hi_di[8]
+    = {2, 3, 6, 7, 10, 11, 14, 15};
+
+  static const unsigned char si_di[4]
+    = {1, 3, 5, 7};
+
+  machine_mode packmode, resmode;
+  enum insn_code code = CODE_FOR_nothing;
+
+  if (d.nelt == 16 && memcmp (d.perm, qi_hi, 16) == 0)
+    {
+      packmode = E_V8HImode;
+      resmode = E_V16QImode;
+      code = CODE_FOR_vec_pack_trunc_v8hi;
+    }
+  else if ((d.nelt == 16 && memcmp (d.perm, qi_si, 16) == 0)
+	   || (d.nelt == 8 && memcmp (d.perm, hi_si, 8) == 0))
+    {
+      packmode = E_V4SImode;
+      resmode = E_V8HImode;
+      code = CODE_FOR_vec_pack_trunc_v4si;
+    }
+  else if ((d.nelt == 16 && memcmp (d.perm, qi_di, 16) == 0)
+	   || (d.nelt == 8 && memcmp (d.perm, hi_di, 8) == 0)
+	   || (d.nelt == 4 && memcmp (d.perm, si_di, 4) == 0))
+    {
+      packmode = E_V2DImode;
+      resmode = E_V4SImode;
+      code = CODE_FOR_vec_pack_trunc_v2di;
+    }
+
+  if (code == CODE_FOR_nothing)
+    return false;
+
+  if (d.testing_p)
+    return true;
+  rtx target = simplify_gen_subreg (resmode, d.target, d.vmode, 0);
+  rtx op0 = simplify_gen_subreg (packmode,
+				 force_reg (GET_MODE (d.op0), d.op0),
+				 d.vmode, 0);
+  rtx op1 = simplify_gen_subreg (packmode,
+				 force_reg (GET_MODE (d.op1), d.op1),
+				 d.vmode, 0);
+  rtx pat = GEN_FCN (code) (target, op0, op1);
+  emit_insn (pat);
   return true;
 }
 
@@ -18320,6 +18482,9 @@ vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
     return true;
 
   if (expand_perm_with_merge (d))
+    return true;
+
+  if (expand_perm_with_pack (d))
     return true;
 
   if (expand_perm_with_vpdi (d))
