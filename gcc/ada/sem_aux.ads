@@ -31,6 +31,7 @@
 --  require more than minimal semantic knowledge.
 
 with Alloc;
+with Einfo.Entities; use Einfo.Entities;
 with Namet; use Namet;
 with Table;
 with Types; use Types;
@@ -404,6 +405,19 @@ package Sem_Aux is
    pragma Inline (Ultimate_Alias);
    --  Return the last entity in the chain of aliased entities of Prim. If Prim
    --  has no alias return Prim.
+
+   function Unique_Component_Name
+     (Component : Record_Field_Kind_Id) return Name_Id;
+   --  Usually, a record type cannot have two components with the same name.
+   --  But in the case of a component declared in an extension of a tagged
+   --  private (or private extension) parent type, it is possible that some
+   --  ancestor type also has a (non-visible) component with the same name.
+   --  In the common case, this function simply returns the Chars attribute
+   --  of its argument.
+   --  But in the multiple-components-with-the-same-name case, it appends
+   --  a uniquifying suffix. The result in this case will not be a
+   --  syntactically valid Ada identifier, but it will be a syntactically
+   --  valid C identifier.
 
    function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id;
    --  Unit_Id is the simple name of a program unit, this function returns the
