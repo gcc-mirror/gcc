@@ -1094,6 +1094,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_variadic_friend=202403L");
 	  cpp_define (pfile, "__cpp_pack_indexing=202311L");
 	  cpp_define (pfile, "__cpp_pp_embed=202502L");
+	  cpp_define (pfile, "__cpp_constexpr_virtual_inheritance=202506L");
 	}
       if (flag_concepts && cxx_dialect > cxx14)
 	cpp_define (pfile, "__cpp_concepts=202002L");

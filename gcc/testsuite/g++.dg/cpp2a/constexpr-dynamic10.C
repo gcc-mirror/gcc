@@ -5,8 +5,8 @@
 
 struct C { virtual void a(); };
 struct B { virtual void b(); };
-struct A : virtual B, C { virtual void c(); }; // { dg-error "virtual base classes" }
+struct A : virtual B, C { virtual void c(); }; // { dg-error "virtual base classes" "" { target c++23_down } }
 
-constexpr A a; // { dg-error "call" }
+constexpr A a; // { dg-error "call" "" { target c++23_down } }
 
 constexpr bool b1 = (dynamic_cast<C&>((B&)a), false);

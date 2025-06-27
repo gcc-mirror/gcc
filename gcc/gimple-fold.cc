@@ -10276,13 +10276,12 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   access_index = offset / BITS_PER_UNIT / elt_size;
   gcc_checking_assert (offset % (elt_size * BITS_PER_UNIT) == 0);
 
-  /* The C++ FE can now produce indexed fields, and we check if the indexes
-     match.  */
+  /* This code makes an assumption that there are no
+     indexed fileds produced by C++ FE, so we can directly index the array.  */
   if (access_index < CONSTRUCTOR_NELTS (init))
     {
       fn = CONSTRUCTOR_ELT (init, access_index)->value;
-      tree idx = CONSTRUCTOR_ELT (init, access_index)->index;
-      gcc_checking_assert (!idx || tree_to_uhwi (idx) == access_index);
+      gcc_checking_assert (!CONSTRUCTOR_ELT (init, access_index)->index);
       STRIP_NOPS (fn);
     }
   else

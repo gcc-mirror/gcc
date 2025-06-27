@@ -3024,7 +3024,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     /* Vbase cdtors are not relevant.  */;
   else
     {
-      if (constexpr_p)
+      if (constexpr_p && cxx_dialect < cxx26)
 	*constexpr_p = false;
 
       FOR_EACH_VEC_ELT (*vbases, i, base_binfo)

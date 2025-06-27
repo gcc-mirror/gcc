@@ -303,17 +303,19 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	    }
 	}
     }
-  else if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fun)))
+  else if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fun)) && cxx_dialect < cxx26)
     {
       ret = false;
       if (complain)
 	{
 	  if (DECL_CONSTRUCTOR_P (fun))
 	    error ("%<constexpr%> constructor in %q#T that has "
-		   "virtual base classes", DECL_CONTEXT (fun));
+		   "virtual base classes only available with "
+		   "%<-std=c++2c%> or %<-std=gnu++2c%>", DECL_CONTEXT (fun));
 	  else
 	    error ("%<constexpr%> destructor in %q#T that has "
-		   "virtual base classes", DECL_CONTEXT (fun));
+		   "virtual base classes only available with "
+		   "%<-std=c++2c%> or %<-std=gnu++2c%>", DECL_CONTEXT (fun));
 	}
     }
 
@@ -1879,20 +1881,28 @@ addr_of_non_const_var (tree *tp, int *walk_subtrees, void *data)
 
 static tree
 cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
-			     bool *non_constant_p, bool *overflow_p,
-			     bool *non_constant_args)
+			     tree orig_fun, bool *non_constant_p,
+			     bool *overflow_p, bool *non_constant_args)
 {
-  const int nargs = call_expr_nargs (t);
+  int nargs = call_expr_nargs (t);
   tree parms = DECL_ARGUMENTS (fun);
-  int i;
+  int i, j = 0;
+  if (DECL_HAS_IN_CHARGE_PARM_P (fun) && fun != orig_fun)
+    ++nargs;
+  if (DECL_HAS_VTT_PARM_P (fun)
+      && fun != orig_fun
+      && (DECL_COMPLETE_CONSTRUCTOR_P (orig_fun)
+	  || DECL_COMPLETE_DESTRUCTOR_P (orig_fun)))
+    ++nargs;
   /* We don't record ellipsis args below.  */
   int nparms = list_length (parms);
   int nbinds = nargs < nparms ? nargs : nparms;
   tree binds = make_tree_vec (nbinds);
 
   /* The call is not a constant expression if it involves the cdtor for a type
-     with virtual bases.  */
-  if (DECL_HAS_IN_CHARGE_PARM_P (fun) || DECL_HAS_VTT_PARM_P (fun))
+     with virtual bases before C++26.  */
+  if (cxx_dialect < cxx26
+      && (DECL_HAS_IN_CHARGE_PARM_P (fun) || DECL_HAS_VTT_PARM_P (fun)))
     {
       if (!ctx->quiet)
 	{
@@ -1910,7 +1920,30 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
       tree type = parms ? TREE_TYPE (parms) : void_type_node;
       if (parms && DECL_BY_REFERENCE (parms))
 	type = TREE_TYPE (type);
-      x = get_nth_callarg (t, i);
+      if (i == 1
+	  && j == 0
+	  && DECL_HAS_IN_CHARGE_PARM_P (fun)
+	  && orig_fun != fun)
+	{
+	  if (DECL_COMPLETE_CONSTRUCTOR_P (orig_fun)
+	      || DECL_COMPLETE_DESTRUCTOR_P (orig_fun))
+	    x = boolean_true_node;
+	  else
+	    x = boolean_false_node;
+	  j = -1;
+	}
+      else if (i == 2
+	       && j == -1
+	       && DECL_HAS_VTT_PARM_P (fun)
+	       && orig_fun != fun
+	       && (DECL_COMPLETE_CONSTRUCTOR_P (orig_fun)
+		   || DECL_COMPLETE_DESTRUCTOR_P (orig_fun)))
+	{
+	  x = build_zero_cst (type);
+	  j = -2;
+	}
+      else
+	x = get_nth_callarg (t, i + j);
       /* For member function, the first argument is a pointer to the implied
          object.  For a constructor, it might still be a dummy object, in
 	 which case we get the real argument from ctx.  */
@@ -2529,10 +2562,7 @@ get_component_with_type (tree path, tree type, tree stop)
 	dst_ptr + src2dst == src_ptr
    -1: unspecified relationship
    -2: src_type is not a public base of dst_type
-   -3: src_type is a multiple public non-virtual base of dst_type
-
-  Since literal types can't have virtual bases, we only expect hint >=0,
-  -2, or -3.  */
+   -3: src_type is a multiple public non-virtual base of dst_type  */
 
 static tree
 cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
@@ -2568,6 +2598,22 @@ cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
 				      overflow_p);
   if (*non_constant_p)
     return call;
+
+  /* For dynamic_cast from classes with virtual bases we can get something
+     like (virt_base *)(&d + 16) as OBJ.  Try to convert that into
+     d.D.1234 using cxx_fold_indirect_ref.  */
+  if (cxx_dialect >= cxx26 && CONVERT_EXPR_P (obj))
+    {
+      tree objo = obj;
+      STRIP_NOPS (objo);
+      if (TREE_CODE (objo) == POINTER_PLUS_EXPR)
+	{
+	  objo = cxx_fold_indirect_ref (ctx, loc, TREE_TYPE (TREE_TYPE (obj)),
+					obj);
+	  if (objo)
+	    obj = build_fold_addr_expr (objo);
+	}
+    }
 
   /* We expect OBJ to be in form of &d.D.2102 when HINT == 0,
      but when HINT is > 0, it can also be something like
@@ -2916,6 +2962,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       *non_constant_p = true;
       return t;
     }
+  tree orig_fun = fun;
   if (DECL_CLONED_FUNCTION_P (fun) && !DECL_DELETING_DESTRUCTOR_P (fun))
     fun = DECL_CLONED_FUNCTION (fun);
 
@@ -3110,7 +3157,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   bool non_constant_args = false;
   constexpr_call new_call;
   new_call.bindings
-    = cxx_bind_parameters_in_call (ctx, t, fun, non_constant_p,
+    = cxx_bind_parameters_in_call (ctx, t, fun, orig_fun, non_constant_p,
 				   overflow_p, &non_constant_args);
 
   /* We build up the bindings list before we know whether we already have this
@@ -3514,11 +3561,12 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 
 /* Return true if T is a valid constant initializer.  If a CONSTRUCTOR
    initializes all the members, the CONSTRUCTOR_NO_CLEARING flag will be
-   cleared.
+   cleared.  If called recursively on a FIELD_DECL's CONSTRUCTOR, SZ
+   is DECL_SIZE of the FIELD_DECL, otherwise NULL.
    FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */
 
 bool
-reduced_constant_expression_p (tree t)
+reduced_constant_expression_p (tree t, tree sz /* = NULL_TREE */)
 {
   if (t == NULL_TREE)
     return false;
@@ -3586,7 +3634,12 @@ reduced_constant_expression_p (tree t)
 	{
 	  /* If VAL is null, we're in the middle of initializing this
 	     element.  */
-	  if (!reduced_constant_expression_p (e.value))
+	  if (!reduced_constant_expression_p (e.value,
+					      (e.index
+					       && (TREE_CODE (e.index)
+						   == FIELD_DECL))
+					      ? DECL_SIZE (e.index)
+					      : NULL_TREE))
 	    return false;
 	  /* We want to remove initializers for empty fields in a struct to
 	     avoid confusing output_constructor.  */
@@ -3606,7 +3659,16 @@ reduced_constant_expression_p (tree t)
       /* There could be a non-empty field at the end.  */
       for (; field; field = next_subobject_field (DECL_CHAIN (field)))
 	if (!is_really_empty_class (TREE_TYPE (field), /*ignore_vptr*/false))
-	  return false;
+	  {
+	    /* Ignore FIELD_DECLs with bit positions beyond DECL_SIZE of
+	       the parent FIELD_DECL (if any) for classes with virtual
+	       bases.  */
+	    if (cxx_dialect >= cxx26
+		&& sz
+		&& tree_int_cst_le (sz, bit_position (field)))
+	      break;
+	    return false;
+	  }
 ok:
       if (CONSTRUCTOR_NO_CLEARING (t))
 	/* All the fields are initialized.  */
@@ -5868,6 +5930,20 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
   unsigned HOST_WIDE_INT const_nunits;
   if (off == 0 && similar_type_p (optype, type))
     return op;
+  else if (cxx_dialect >= cxx26
+	   && VAR_P (op)
+	   && DECL_VTABLE_OR_VTT_P (op)
+	   && same_type_ignoring_top_level_qualifiers_p (type,
+							 ptrdiff_type_node)
+	   && POINTER_TYPE_P (strip_array_types (optype)))
+    {
+      /* We often read some virtual table elements using ptrdiff_t rather
+	 than pointer type.  */
+      if (tree ret = cxx_fold_indirect_ref_1 (ctx, loc,
+					      strip_array_types (optype),
+					      op, off, empty_base))
+	return fold_convert (type, ret);
+    }
   else if (TREE_CODE (optype) == COMPLEX_TYPE
 	   && similar_type_p (type, TREE_TYPE (optype)))
     {
@@ -5961,8 +6037,13 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 	    if (!tree_fits_uhwi_p (pos))
 	      continue;
 	    unsigned HOST_WIDE_INT upos = tree_to_uhwi (pos);
-	    unsigned HOST_WIDE_INT el_sz
-	      = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (field)));
+	    unsigned HOST_WIDE_INT el_sz;
+	    if (DECL_FIELD_IS_BASE (field)
+		&& CLASS_TYPE_P (optype)
+		&& CLASSTYPE_VBASECLASSES (optype))
+	      el_sz = tree_to_uhwi (DECL_SIZE_UNIT (field));
+	    else
+	      el_sz = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (field)));
 	    if (upos <= off && off < upos + el_sz)
 	      {
 		tree cop = build3 (COMPONENT_REF, TREE_TYPE (field),
@@ -6013,6 +6094,25 @@ cxx_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
      offset positive, so that cxx_fold_indirect_ref_1 can identify
      more folding opportunities.  */
   auto canonicalize_obj_off = [] (tree& obj, tree& off) {
+    if (cxx_dialect >= cxx26)
+      {
+	/* For C++26, we need to fold *(B *)(&x.D.1234 + 32) used
+	   to access virtual base members.  */
+	tree nobj = obj;
+	while (TREE_CODE (nobj) == COMPONENT_REF
+	       && DECL_FIELD_IS_BASE (TREE_OPERAND (nobj, 1)))
+	  nobj = TREE_OPERAND (nobj, 0);
+	if (nobj != obj
+	    && CLASS_TYPE_P (TREE_TYPE (nobj))
+	    && CLASSTYPE_VBASECLASSES (TREE_TYPE (nobj)))
+	  while (obj != nobj)
+	    {
+	      tree field = TREE_OPERAND (obj, 1);
+	      tree pos = byte_position (field);
+	      off = int_const_binop (PLUS_EXPR, off, pos);
+	      obj = TREE_OPERAND (obj, 0);
+	    }
+      }
     while (TREE_CODE (obj) == COMPONENT_REF
 	   /* We need to preserve union member accesses so that we can
 	      later properly diagnose accessing the wrong member.  */
@@ -6051,8 +6151,8 @@ cxx_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
 	{
 	  tree off = integer_zero_node;
 	  canonicalize_obj_off (op, off);
-	  gcc_assert (integer_zerop (off));
-	  return cxx_fold_indirect_ref_1 (ctx, loc, type, op, 0, empty_base);
+	  return cxx_fold_indirect_ref_1 (ctx, loc, type, op,
+					  tree_to_uhwi (off), empty_base);
 	}
     }
   else if (TREE_CODE (sub) == POINTER_PLUS_EXPR

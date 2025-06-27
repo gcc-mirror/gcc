@@ -5,6 +5,9 @@ namespace {
 struct A
 {
   virtual void foo(void) {}
+#if __cpp_constexpr_virtual_inheritance >= 202506L
+  A() {}
+#endif
 };
 struct B: virtual A
 {

@@ -1,12 +1,11 @@
 // Test for mangling of simple testcase involving construction vtables.
 
-// For C++26, the ctor is constant evaluated and so construction vtables
-// aren't needed.
-// { dg-do compile { target c++23_down } }
+// { dg-do compile }
 // { dg-options "-fno-inline -fabi-compat-version=0" }
 
 struct A {
   virtual void f () { }
+  A () {}
 };
 
 struct B: public virtual A { };

@@ -23,7 +23,7 @@ struct U : public S
 struct V : virtual public S
 {
   V () : v (0) {}
-  constexpr ~V () = default;	// { dg-error "explicitly defaulted function 'constexpr V::~V\\(\\)' cannot be declared 'constexpr' because the implicit declaration is not 'constexpr'" }
+  constexpr ~V () = default;	// { dg-error "explicitly defaulted function 'constexpr V::~V\\(\\)' cannot be declared 'constexpr' because the implicit declaration is not 'constexpr'" "" { target c++23_down } }
   int v;
 };
 struct W0

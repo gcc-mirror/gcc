@@ -5,5 +5,5 @@ struct A {};
 
 struct B : virtual A
 {
-  constexpr B() { } // { dg-error "has virtual base classes" }
+  constexpr B() { } // { dg-error "has virtual base classes" "" { target c++23_down } }
 };

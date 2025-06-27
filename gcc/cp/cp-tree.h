@@ -7104,6 +7104,7 @@ extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);
 extern bool uniquely_derived_from_p             (tree, tree);
 extern bool publicly_uniquely_derived_p         (tree, tree);
+extern bool publicly_virtually_derived_p        (tree, tree);
 extern tree common_enclosing_class		(tree, tree);
 
 /* in cvt.cc */
@@ -8914,7 +8915,7 @@ extern tree fold_non_dependent_init		(tree,
 						 bool = false, tree = NULL_TREE);
 extern tree fold_simple				(tree);
 extern tree fold_to_constant			(tree);
-extern bool reduced_constant_expression_p       (tree);
+extern bool reduced_constant_expression_p       (tree, tree = NULL_TREE);
 extern bool is_instantiation_of_constexpr       (tree);
 extern bool var_in_constexpr_fn                 (tree);
 extern bool var_in_maybe_constexpr_fn           (tree);
