@@ -10179,18 +10179,20 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
       base = get_ref_base_and_extent (t, &offset, &size, &max_size, &reverse);
       ctor = get_base_constructor (base, &offset, valueize);
 
-      /* Empty constructor.  Always fold to 0.  */
-      if (ctor == error_mark_node)
-	return build_zero_cst (TREE_TYPE (t));
-      /* We do not know precise address.  */
-      if (!known_size_p (max_size) || maybe_ne (max_size, size))
-	return NULL_TREE;
       /* We cannot determine ctor.  */
       if (!ctor)
 	return NULL_TREE;
-
+      /* Empty constructor.  Always fold to 0.  */
+      if (ctor == error_mark_node)
+	return build_zero_cst (TREE_TYPE (t));
+      /* We do not know precise access.  */
+      if (!known_size_p (max_size) || maybe_ne (max_size, size))
+	return NULL_TREE;
       /* Out of bound array access.  Value is undefined, but don't fold.  */
       if (maybe_lt (offset, 0))
+	return NULL_TREE;
+      /* Access with reverse storage order.  */
+      if (reverse)
 	return NULL_TREE;
 
       tem = fold_ctor_reference (TREE_TYPE (t), ctor, offset, size, base);
@@ -10211,7 +10213,6 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	      && offset.is_constant (&coffset)
 	      && (coffset % BITS_PER_UNIT != 0
 		  || csize % BITS_PER_UNIT != 0)
-	      && !reverse
 	      && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN)
 	    {
 	      poly_int64 bitoffset;
