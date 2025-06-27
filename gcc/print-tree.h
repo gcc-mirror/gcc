@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PRINT_TREE_H
 
 extern void debug_tree (tree);
+extern void debug (tree);
 extern void debug_raw (const tree_node &ref);
 extern void debug_raw (const tree_node *ptr);
 extern void debug (const tree_node &ref);
