@@ -1,4 +1,5 @@
-// { dg-additional-options "-w" }
+// { dg-options "-w" }
+// { dg-output "less\r*\n" }
 
 #![feature(intrinsics)]
 
@@ -381,6 +382,7 @@ impl PartialEq for i32 {
         *self == *other
     }
 }
+impl Eq for i32 {}
 
 impl PartialOrd for i32 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
@@ -419,26 +421,12 @@ impl Ord for i32 {
     }
 }
 
-impl Eq for i32 {}
-
-#[derive(PartialEq, PartialOrd)]
-enum Foo {
-    A,
-    B(i32, i32, i32),
-    C { inner: i32, outer: i32 },
-}
+// ------------
 
 #[derive(Ord, PartialOrd, PartialEq, Eq)]
 struct Bar {
     a: i32,
-}
-
-#[derive(Ord, PartialOrd, PartialEq, Eq)]
-struct BarFull {
-    a: i32,
     b: i32,
-    c: i32,
-    d: i32,
 }
 
 extern "C" {
@@ -451,14 +439,16 @@ fn print(s: &str) {
     }
 }
 
-fn main() {
-    let a = Foo::A;
-    let b = Foo::B(15, 14, 13);
+fn main() -> i32 {
+    let x = Bar { a: 1, b: 2 };
+    let y = Bar { a: 1, b: 3 };
 
-    match a.partial_cmp(&b) {
+    match x.partial_cmp(&y) {
         Option::Some(Ordering::Less) => print("less"),
         Option::Some(Ordering::Greater) => print("greater"),
         Option::Some(Ordering::Equal) => print("equal"),
-        _ => print("uuuuh woops lol"),
+        _ => print("none"),
     }
+
+    0
 }

@@ -288,7 +288,8 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 
 	      auto predicate = get_predicate_from_bound (
 		b->get_path (),
-		tl::nullopt /*this will setup a PLACEHOLDER for self*/);
+		tl::nullopt /*this will setup a PLACEHOLDER for self*/,
+		BoundPolarity::RegularBound, false, true);
 	      if (predicate.is_error ())
 		return &TraitReference::error_node ();
 

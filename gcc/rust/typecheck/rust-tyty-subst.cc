@@ -115,7 +115,8 @@ SubstitutionParamMapping::need_substitution () const
 
 bool
 SubstitutionParamMapping::fill_param_ty (
-  SubstitutionArgumentMappings &subst_mappings, location_t locus)
+  SubstitutionArgumentMappings &subst_mappings, location_t locus,
+  bool needs_bounds_check)
 {
   SubstitutionArg arg = SubstitutionArg::error ();
   bool ok = subst_mappings.get_argument_for_symbol (get_param_ty (), &arg);
@@ -139,8 +140,7 @@ SubstitutionParamMapping::fill_param_ty (
       rust_debug_loc (locus,
 		      "fill_param_ty bounds_compatible: param %s type %s",
 		      param->get_name ().c_str (), type.get_name ().c_str ());
-
-      if (!param->is_implicit_self_trait ())
+      if (needs_bounds_check && !param->is_implicit_self_trait ())
 	{
 	  if (!param->bounds_compatible (type, locus, true))
 	    return false;

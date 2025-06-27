@@ -61,6 +61,39 @@ TypeBoundsProbe::is_bound_satisfied_for_type (TyTy::BaseType *receiver,
   return false;
 }
 
+bool
+TypeBoundsProbe::process_impl_block (
+  HirId id, HIR::ImplBlock *impl,
+  std::vector<std::pair<HIR::TypePath *, HIR::ImplBlock *>>
+    &possible_trait_paths)
+{
+  // we are filtering for trait-impl-blocks
+  if (!impl->has_trait_ref ())
+    return true;
+
+  // can be recursive trait resolution
+  HIR::Trait *t = TraitResolver::ResolveHirItem (impl->get_trait_ref ());
+  if (t == nullptr)
+    return true;
+  // DefId trait_id = t->get_mappings ().get_defid ();
+  // if (context->trait_query_in_progress (trait_id))
+  //   return true;
+
+  HirId impl_ty_id = impl->get_type ().get_mappings ().get_hirid ();
+  TyTy::BaseType *impl_type = nullptr;
+  if (!query_type (impl_ty_id, &impl_type))
+    return true;
+
+  if (!receiver->can_eq (impl_type, false))
+    {
+      if (!impl_type->can_eq (receiver, false))
+	return true;
+    }
+
+  possible_trait_paths.push_back ({&impl->get_trait_ref (), impl});
+  return true;
+}
+
 void
 TypeBoundsProbe::scan ()
 {
@@ -68,31 +101,7 @@ TypeBoundsProbe::scan ()
     possible_trait_paths;
   mappings.iterate_impl_blocks (
     [&] (HirId id, HIR::ImplBlock *impl) mutable -> bool {
-      // we are filtering for trait-impl-blocks
-      if (!impl->has_trait_ref ())
-	return true;
-
-      // can be recursive trait resolution
-      HIR::Trait *t = TraitResolver::ResolveHirItem (impl->get_trait_ref ());
-      if (t == nullptr)
-	return true;
-      DefId trait_id = t->get_mappings ().get_defid ();
-      if (context->trait_query_in_progress (trait_id))
-	return true;
-
-      HirId impl_ty_id = impl->get_type ().get_mappings ().get_hirid ();
-      TyTy::BaseType *impl_type = nullptr;
-      if (!query_type (impl_ty_id, &impl_type))
-	return true;
-
-      if (!receiver->can_eq (impl_type, false))
-	{
-	  if (!impl_type->can_eq (receiver, false))
-	    return true;
-	}
-
-      possible_trait_paths.push_back ({&impl->get_trait_ref (), impl});
-      return true;
+      return process_impl_block (id, impl, possible_trait_paths);
     });
 
   for (auto &path : possible_trait_paths)
@@ -212,7 +221,7 @@ TyTy::TypeBoundPredicate
 TypeCheckBase::get_predicate_from_bound (
   HIR::TypePath &type_path,
   tl::optional<std::reference_wrapper<HIR::Type>> associated_self,
-  BoundPolarity polarity, bool is_qualified_type_path)
+  BoundPolarity polarity, bool is_qualified_type_path, bool is_super_trait)
 {
   TyTy::TypeBoundPredicate lookup = TyTy::TypeBoundPredicate::error ();
   bool already_resolved
@@ -335,7 +344,8 @@ TypeCheckBase::get_predicate_from_bound (
   if (!args.is_empty () || predicate.requires_generic_args ())
     {
       // this is applying generic arguments to a trait reference
-      predicate.apply_generic_arguments (&args, associated_self.has_value ());
+      predicate.apply_generic_arguments (&args, associated_self.has_value (),
+					 is_super_trait);
     }
 
   context->insert_resolved_predicate (type_path.get_mappings ().get_hirid (),
@@ -516,7 +526,8 @@ TypeBoundPredicate::is_object_safe (bool emit_error, location_t locus) const
 
 void
 TypeBoundPredicate::apply_generic_arguments (HIR::GenericArgs *generic_args,
-					     bool has_associated_self)
+					     bool has_associated_self,
+					     bool is_super_trait)
 {
   rust_assert (!substitutions.empty ());
   if (has_associated_self)
@@ -537,23 +548,26 @@ TypeBoundPredicate::apply_generic_arguments (HIR::GenericArgs *generic_args,
     Resolver::TypeCheckContext::get ()->regions_from_generic_args (
       *generic_args));
 
-  apply_argument_mappings (args);
+  apply_argument_mappings (args, is_super_trait);
 }
 
 void
 TypeBoundPredicate::apply_argument_mappings (
-  SubstitutionArgumentMappings &arguments)
+  SubstitutionArgumentMappings &arguments, bool is_super_trait)
 {
   used_arguments = arguments;
   error_flag |= used_arguments.is_error ();
   auto &subst_mappings = used_arguments;
+
+  bool substs_need_bounds_check = !is_super_trait;
   for (auto &sub : get_substs ())
     {
       SubstitutionArg arg = SubstitutionArg::error ();
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok && arg.get_tyty () != nullptr)
-	sub.fill_param_ty (subst_mappings, subst_mappings.get_locus ());
+	sub.fill_param_ty (subst_mappings, subst_mappings.get_locus (),
+			   substs_need_bounds_check);
     }
 
   // associated argument mappings
@@ -574,7 +588,7 @@ TypeBoundPredicate::apply_argument_mappings (
       auto adjusted
 	= super_trait.adjust_mappings_for_this (used_arguments,
 						true /*trait mode*/);
-      super_trait.apply_argument_mappings (adjusted);
+      super_trait.apply_argument_mappings (adjusted, is_super_trait);
     }
 }
 

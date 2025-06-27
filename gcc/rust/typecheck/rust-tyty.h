@@ -539,14 +539,15 @@ public:
 
   std::string get_name () const;
 
-  // check that this predicate is object-safe see:
+  // check that this  is object-safe see:
   // https://doc.rust-lang.org/reference/items/traits.html#object-safety
   bool is_object_safe (bool emit_error, location_t locus) const;
 
   void apply_generic_arguments (HIR::GenericArgs *generic_args,
-				bool has_associated_self);
+				bool has_associated_self, bool is_super_trait);
 
-  void apply_argument_mappings (SubstitutionArgumentMappings &arguments);
+  void apply_argument_mappings (SubstitutionArgumentMappings &arguments,
+				bool is_super_trait);
 
   bool contains_item (const std::string &search) const;
 

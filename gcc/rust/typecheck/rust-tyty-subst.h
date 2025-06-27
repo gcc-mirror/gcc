@@ -51,7 +51,7 @@ public:
   std::string as_string () const;
 
   bool fill_param_ty (SubstitutionArgumentMappings &subst_mappings,
-		      location_t locus);
+		      location_t locus, bool needs_bounds_check = true);
 
   SubstitutionParamMapping clone () const;
 

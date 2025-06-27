@@ -1,4 +1,5 @@
 // { dg-additional-options "-w" }
+/* { dg-output "Foo A < B\r?\nFoo B < C\r?\nFoo C == C\r?\nBar x < y\r?\nBarFull s1 < s2\r?\n" } */
 
 #![feature(intrinsics)]
 
@@ -451,14 +452,67 @@ fn print(s: &str) {
     }
 }
 
-fn main() {
+fn main() -> i32 {
+    // Enum comparison
     let a = Foo::A;
     let b = Foo::B(15, 14, 13);
+    let c = Foo::C {
+        inner: 10,
+        outer: 20,
+    };
 
     match a.partial_cmp(&b) {
-        Option::Some(Ordering::Less) => print("less"),
-        Option::Some(Ordering::Greater) => print("greater"),
-        Option::Some(Ordering::Equal) => print("equal"),
-        _ => print("uuuuh woops lol"),
+        Option::Some(Ordering::Less) => print("Foo A < B"),
+        Option::Some(Ordering::Greater) => print("Foo A > B"),
+        Option::Some(Ordering::Equal) => print("Foo A == B"),
+        _ => print("Foo A ? B"),
     }
+
+    match b.partial_cmp(&c) {
+        Option::Some(Ordering::Less) => print("Foo B < C"),
+        Option::Some(Ordering::Greater) => print("Foo B > C"),
+        Option::Some(Ordering::Equal) => print("Foo B == C"),
+        _ => print("Foo B ? C"),
+    }
+
+    match c.partial_cmp(&c) {
+        Option::Some(Ordering::Less) => print("Foo C < C ???"),
+        Option::Some(Ordering::Greater) => print("Foo C > C ???"),
+        Option::Some(Ordering::Equal) => print("Foo C == C"),
+        _ => print("Foo C ? C"),
+    }
+
+    // Struct comparison: Bar
+    let x = Bar { a: 10 };
+    let y = Bar { a: 20 };
+
+    if x < y {
+        print("Bar x < y");
+    } else if x > y {
+        print("Bar x > y");
+    } else {
+        print("Bar x == y");
+    }
+
+    // Struct comparison: BarFull
+    let s1 = BarFull {
+        a: 1,
+        b: 2,
+        c: 3,
+        d: 4,
+    };
+    let s2 = BarFull {
+        a: 1,
+        b: 2,
+        c: 3,
+        d: 5,
+    };
+
+    match s1.cmp(&s2) {
+        Ordering::Less => print("BarFull s1 < s2"),
+        Ordering::Greater => print("BarFull s1 > s2"),
+        Ordering::Equal => print("BarFull s1 == s2"),
+    }
+
+    0
 }

@@ -37,6 +37,10 @@ public:
 
 private:
   void scan ();
+  bool
+  process_impl_block (HirId id, HIR::ImplBlock *impl,
+		      std::vector<std::pair<HIR::TypePath *, HIR::ImplBlock *>>
+			&possible_trait_paths);
   void assemble_marker_builtins ();
   void add_trait_bound (HIR::Trait *trait);
   void assemble_builtin_candidate (LangItem::Kind item);

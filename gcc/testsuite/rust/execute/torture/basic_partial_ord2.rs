@@ -104,6 +104,19 @@ impl PartialOrd for i32 {
             Option::Some(Ordering::Equal)
         }
     }
+
+    fn lt(&self, other: &Self) -> bool {
+        *self < *other
+    }
+    fn le(&self, other: &Self) -> bool {
+        *self <= *other
+    }
+    fn ge(&self, other: &Self) -> bool {
+        *self >= *other
+    }
+    fn gt(&self, other: &Self) -> bool {
+        *self > *other
+    }
 }
 
 impl Eq for i32 {}
