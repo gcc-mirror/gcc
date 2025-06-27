@@ -881,16 +881,32 @@ namespace __format
       _S_empty_fs()
       { return _Runtime_format_string<_CharT>(_S_empty_spec); }
 
-      // Return the formatting locale.
-      template<typename _FormatContext>
-	std::locale
-	_M_locale(_FormatContext& __fc) const
-	{
-	  if (!_M_spec._M_localized)
-	    return std::locale::classic();
-	  else
-	    return __fc.locale();
-	}
+      static constexpr const _CharT* _S_weekdays[]
+      {
+	_GLIBCXX_WIDEN("Sunday"),
+	_GLIBCXX_WIDEN("Monday"),
+	_GLIBCXX_WIDEN("Tuesday"),
+	_GLIBCXX_WIDEN("Wednesday"),
+	_GLIBCXX_WIDEN("Thursday"),
+	_GLIBCXX_WIDEN("Friday"),
+	_GLIBCXX_WIDEN("Saturday"),
+      };
+
+      static constexpr const _CharT* _S_months[]
+      {
+	_GLIBCXX_WIDEN("January"),
+	_GLIBCXX_WIDEN("February"),
+	_GLIBCXX_WIDEN("March"),
+	_GLIBCXX_WIDEN("April"),
+	_GLIBCXX_WIDEN("May"),
+	_GLIBCXX_WIDEN("June"),
+	_GLIBCXX_WIDEN("July"),
+	_GLIBCXX_WIDEN("August"),
+	_GLIBCXX_WIDEN("September"),
+	_GLIBCXX_WIDEN("October"),
+	_GLIBCXX_WIDEN("November"),
+	_GLIBCXX_WIDEN("December"),
+      };
 
     private:
       template<typename _OutIter>
@@ -1051,15 +1067,15 @@ namespace __format
 		  break;
 		case 'a':
 		case 'A':
-		  __out = _M_a_A(__t._M_weekday, std::move(__out), __fc, __c == 'A');
+		  __out = _M_a_A(__t._M_weekday, std::move(__out), __c == 'A');
 		  break;
 		case 'b':
 		case 'h':
 		case 'B':
-		  __out = _M_b_B(__t._M_month, std::move(__out), __fc, __c == 'B');
+		  __out = _M_b_B(__t._M_month, std::move(__out), __c == 'B');
 		  break;
 		case 'c':
-		  __out = _M_c(__t, std::move(__out), __fc);
+		  __out = _M_c(__t, std::move(__out));
 		  break;
 		case 'C':
 		case 'y':
@@ -1095,7 +1111,7 @@ namespace __format
 		  __out = _M_M(__t._M_minutes, __print_sign());
 		  break;
 		case 'p':
-		  __out = _M_p(__t._M_hours, std::move(__out), __fc);
+		  __out = _M_p(__t._M_hours, std::move(__out));
 		  break;
 		case 'q':
 		  __out = _M_q(__t._M_unit_suffix, std::move(__out));
@@ -1104,7 +1120,7 @@ namespace __format
 		  __out = _M_Q(__t, __print_sign(), __fc);
 		  break;
 		case 'r':
-		  __out = _M_r(__t, __print_sign(), __fc);
+		  __out = _M_r(__t, __print_sign());
 		  break;
 		case 'R':
 		case 'X':
@@ -1183,10 +1199,9 @@ namespace __format
 	  return std::move(__out);
 	}
 
-      template<typename _OutIter, typename _FormatContext>
+      template<typename _OutIter>
 	_OutIter
-	_M_a_A(chrono::weekday __wd, _OutIter __out,
-	       _FormatContext& __ctx, bool __full) const
+	_M_a_A(chrono::weekday __wd, _OutIter __out, bool __full) const
 	{
 	  // %a Locale's abbreviated weekday name.
 	  // %A Locale's full weekday name.
@@ -1199,21 +1214,15 @@ namespace __format
 			__string_view(_GLIBCXX_WIDEN(" is not a valid weekday")));
 	    }
 
-	  locale __loc = _M_locale(__ctx);
-	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
-	  const _CharT* __days[7];
-	  if (__full)
-	    __tp._M_days(__days);
-	  else
-	    __tp._M_days_abbreviated(__days);
-	  __string_view __str(__days[__wd.c_encoding()]);
-	  return _M_write(std::move(__out), __loc, __str);
+	  __string_view __str = _S_weekdays[__wd.c_encoding()];
+	  if (!__full)
+	    __str = __str.substr(0, 3);
+	  return __format::__write(std::move(__out), __str);
 	}
 
-      template<typename _OutIter, typename _FormatContext>
+      template<typename _OutIter>
 	_OutIter
-	_M_b_B(chrono::month __m, _OutIter __out,
-	       _FormatContext& __ctx, bool __full) const
+	_M_b_B(chrono::month __m, _OutIter __out, bool __full) const
 	{
 	  // %b Locale's abbreviated month name.
 	  // %B Locale's full month name.
@@ -1226,28 +1235,22 @@ namespace __format
 			__string_view(_GLIBCXX_WIDEN(" is not a valid month")));
 	    }
 
-	  locale __loc = _M_locale(__ctx);
-	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
-	  const _CharT* __months[12];
-	  if (__full)
-	    __tp._M_months(__months);
-	  else
-	    __tp._M_months_abbreviated(__months);
-	  __string_view __str(__months[(unsigned)__m - 1]);
-	  return _M_write(std::move(__out), __loc, __str);
+	  __string_view __str = _S_months[(unsigned)__m - 1];
+	  if (!__full)
+	    __str = __str.substr(0, 3);
+	  return __format::__write(std::move(__out), __str);
 	}
 
-      template<typename _OutIter, typename _FormatContext>
+      template<typename _OutIter>
 	_OutIter
-	_M_c(const _ChronoData<_CharT>& __t, _OutIter __out,
-	     _FormatContext& __ctx) const
+	_M_c(const _ChronoData<_CharT>& __t, _OutIter __out) const
 	{
 	  // %c  Locale's date and time representation, for C-locale: %a %b %e %T %Y
 	  // %Ec Locale's alternate date and time representation, for C-locale same as above
 
-	  __out = _M_a_A(__t._M_weekday, std::move(__out), __ctx, false);
+	  __out = _M_a_A(__t._M_weekday, std::move(__out), false);
 	  *__out = _S_space;
-	  __out = _M_b_B(__t._M_month, std::move(++__out), __ctx, false);
+	  __out = _M_b_B(__t._M_month, std::move(++__out), false);
 	  *__out = _S_space;
 	  __out = _M_d_e(__t._M_day, std::move(++__out), 'e');
 	  *__out = _S_space;
@@ -1489,20 +1492,15 @@ namespace __format
 	  return __format::__write(std::move(__out), _S_two_digits(__i));
 	}
 
-      template<typename _OutIter, typename _FormatContext>
+      template<typename _OutIter>
 	_OutIter
-	_M_p(chrono::hours __h, _OutIter __out, _FormatContext& __ctx) const
+	_M_p(chrono::hours __h, _OutIter __out) const
 	{
 	  // %p The locale's equivalent of the AM/PM designations.
-	  auto __hi =  __h.count();
-	  if (__hi >= 24) [[unlikely]]
-	    __hi %= 24;
 
-	  locale __loc = _M_locale(__ctx);
-	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
-	  const _CharT* __ampm[2];
-	  __tp._M_am_pm(__ampm);
-	  return _M_write(std::move(__out), __loc, __ampm[__hi >= 12]);
+	  _CharT __buf[2];
+	  _S_fill_ampm(__buf, __h);
+	  return __format::__write(std::move(__out), __string_view(__buf, 2));
 	}
 
       template<typename _OutIter>
@@ -1522,27 +1520,25 @@ namespace __format
 	  return std::vformat_to(std::move(__out), _S_empty_spec, __t._M_ereps);
 	}
 
-      template<typename _OutIter, typename _FormatContext>
+      template<typename _OutIter>
 	_OutIter
-	_M_r(const _ChronoData<_CharT>& __t, _OutIter __out,
-	     _FormatContext& __ctx) const
+	_M_r(const _ChronoData<_CharT>& __t, _OutIter __out) const
 	{
 	  // %r Locale's 12-hour clock time, for C-locale: %I:%M:%S %p
 	  auto __hi = __t._M_hours.count() % 12;
 	  if (__hi == 0)
 	    __hi = 12;
 
-	  _CharT __buf[9];
+	  _CharT __buf[11];
 	  __buf[2] = _S_colon;
 	  __buf[5] = _S_colon;
 	  __buf[8] = _S_space;
 	  _S_fill_two_digits(__buf, __hi);
 	  _S_fill_two_digits(__buf + 3, __t._M_minutes.count());
 	  _S_fill_two_digits(__buf + 6, __t._M_seconds.count());
+	  _S_fill_ampm(__buf + 9, __t._M_hours);
 
-	  __string_view __sv(__buf, 9);
-	  __out = __format::__write(std::move(__out), __sv);
-	  return _M_p(__t._M_hours, std::move(__out), __ctx);
+	  return __format::__write(std::move(__out), __string_view(__buf, 11));
 	}
 
       template<typename _OutIter>
@@ -1606,9 +1602,9 @@ namespace __format
 	    return __out;
 
 	  _CharT __dot = _S_dot;
-	  if (_M_spec._M_localized)
-	    if (auto __loc = __ctx.locale(); __loc != locale::classic())
+	  if (_M_spec._M_localized) [[unlikely]]
 	    {
+	      auto __loc = __ctx.locale();
 	      const auto& __np = use_facet<numpunct<_CharT>>(__loc);
 	      __dot = __np.decimal_point();
 	    }
@@ -1618,8 +1614,8 @@ namespace __format
 	  if (_M_spec._M_floating_point_rep)
 	    {
 	      _Str_sink<_CharT> __sink;
-	      if (_M_spec._M_localized && _M_spec._M_custom_rep)
-		 std::vformat_to(__sink.out(), _M_locale(__ctx),
+	      if (_M_spec._M_localized && _M_spec._M_custom_rep) [[unlikely]]
+		 std::vformat_to(__sink.out(), __ctx.locale(),
 				 _GLIBCXX_WIDEN("{1:0.{2}Lf}"), __t._M_ereps);
 	      else
 		 std::vformat_to(__sink.out(),
@@ -1778,6 +1774,20 @@ namespace __format
 	__buf[1] = __sv[1];
       }
 
+      // Fills __buf[0] and __buf[1] with "AM", "PM" depending on __h.
+      [[__gnu__::__always_inline__]]
+      static void
+      _S_fill_ampm(_CharT* __buf, chrono::hours __h)
+      {
+	auto __hi =  __h.count();
+	if (__hi >= 24) [[unlikely]]
+	  __hi %= 24;
+
+	constexpr const _CharT* __apm = _GLIBCXX_WIDEN("APM");
+	__buf[0] = __apm[__hi >= 12];
+	__buf[1] = __apm[2];
+      }
+
       // Returns decimal representation of __n.
       // Returned string_view may point to __buf.
       [[__gnu__::__always_inline__]]
@@ -1879,7 +1889,6 @@ namespace __format
 	};
 
       using __formatter_chrono<_CharT>::__formatter_chrono;
-      using __formatter_chrono<_CharT>::_M_locale;
       using __formatter_chrono<_CharT>::_M_spec;
 
       template<typename _Duration, typename _ParseContext>
@@ -1907,6 +1916,17 @@ namespace __format
 		  __fmtter.parse(__npc);
 		}
 	  return __res;
+	}
+
+      // Return the formatting locale.
+      template<typename _FormatContext>
+	std::locale
+	_M_locale(_FormatContext& __fc) const
+	{
+	  if (!_M_spec._M_localized)
+	    return std::locale::classic();
+	  else
+	    return __fc.locale();
 	}
 
       // Format duration for empty chrono-specs, e.g. "{}" (C++20 [time.format] p6).
