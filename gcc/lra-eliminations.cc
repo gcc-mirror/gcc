@@ -309,8 +309,18 @@ move_plus_up (rtx x)
   return x;
 }
 
-/* Flag that we already did frame pointer to stack pointer elimination.  */
-static bool elimination_fp2sp_occured_p = false;
+/* Flag that we already applied nonzero stack pointer elimination
+   offset; such sp updates cannot currently be undone.  */
+static bool elimination_2sp_occurred_p = false;
+
+/* Take note of any nonzero sp-OFFSET used in eliminations to sp.  */
+static inline poly_int64
+note_spoff (poly_int64 offset)
+{
+  if (maybe_ne (offset, 0))
+    elimination_2sp_occurred_p = true;
+  return offset;
+}
 
 /* Scan X and replace any eliminable registers (such as fp) with a
    replacement (such as sp) if SUBST_P, plus an offset.  The offset is
@@ -369,13 +379,10 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 	{
 	  rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
 
-	  if (ep->to_rtx == stack_pointer_rtx && ep->from == FRAME_POINTER_REGNUM)
-	    elimination_fp2sp_occured_p = true;
-
 	  if (maybe_ne (update_sp_offset, 0))
 	    {
 	      if (ep->to_rtx == stack_pointer_rtx)
-		return plus_constant (Pmode, to, update_sp_offset);
+		return plus_constant (Pmode, to, note_spoff (update_sp_offset));
 	      return to;
 	    }
 	  else if (update_p)
@@ -385,7 +392,8 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 				  ep->offset
 				  - (insn != NULL_RTX
 				     && ep->to_rtx == stack_pointer_rtx
-				     ? lra_get_insn_recog_data (insn)->sp_offset
+				     ? note_spoff (lra_get_insn_recog_data
+						   (insn)->sp_offset)
 				     : 0));
 	  else
 	    return to;
@@ -402,19 +410,18 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 	      poly_int64 offset, curr_offset;
 	      rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
 
-	      if (ep->to_rtx == stack_pointer_rtx && ep->from == FRAME_POINTER_REGNUM)
-		elimination_fp2sp_occured_p = true;
-
 	      if (! update_p && ! full_p)
 		return simplify_gen_binary (PLUS, Pmode, to, XEXP (x, 1));
 
 	      if (maybe_ne (update_sp_offset, 0))
-		offset = ep->to_rtx == stack_pointer_rtx ? update_sp_offset : 0;
+		offset = (ep->to_rtx == stack_pointer_rtx
+			  ? note_spoff (update_sp_offset)
+			  : 0);
 	      else
 		offset = (update_p
 			  ? ep->offset - ep->previous_offset : ep->offset);
 	      if (full_p && insn != NULL_RTX && ep->to_rtx == stack_pointer_rtx)
-		offset -= lra_get_insn_recog_data (insn)->sp_offset;
+		offset -= note_spoff (lra_get_insn_recog_data (insn)->sp_offset);
 	      if (poly_int_rtx_p (XEXP (x, 1), &curr_offset)
 		  && known_eq (curr_offset, -offset))
 		return to;
@@ -465,15 +472,13 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 	{
 	  rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
 
-	  if (ep->to_rtx == stack_pointer_rtx && ep->from == FRAME_POINTER_REGNUM)
-	    elimination_fp2sp_occured_p = true;
-
 	  if (maybe_ne (update_sp_offset, 0))
 	    {
 	      if (ep->to_rtx == stack_pointer_rtx)
 		return plus_constant (Pmode,
 				      gen_rtx_MULT (Pmode, to, XEXP (x, 1)),
-				      update_sp_offset * INTVAL (XEXP (x, 1)));
+				      note_spoff (update_sp_offset)
+				      * INTVAL (XEXP (x, 1)));
 	      return gen_rtx_MULT (Pmode, to, XEXP (x, 1));
 	    }
 	  else if (update_p)
@@ -486,7 +491,7 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 	      poly_int64 offset = ep->offset;
 
 	      if (insn != NULL_RTX && ep->to_rtx == stack_pointer_rtx)
-		offset -= lra_get_insn_recog_data (insn)->sp_offset;
+		offset -= note_spoff (lra_get_insn_recog_data (insn)->sp_offset);
 	      return
 		plus_constant (Pmode,
 			       gen_rtx_MULT (Pmode, to, XEXP (x, 1)),
@@ -1213,8 +1218,7 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 	     pointer elimination the condition is a bit relaxed and we just require
 	     that actual elimination has not been done yet.   */
 	  gcc_assert (ep->to_rtx != stack_pointer_rtx
-		      || (ep->from == FRAME_POINTER_REGNUM
-			  && !elimination_fp2sp_occured_p)
+		      || !elimination_2sp_occurred_p
 		      || (ep->from < FIRST_PSEUDO_REGISTER
 			  && fixed_regs [ep->from]));
 
@@ -1429,7 +1433,7 @@ lra_update_fp2sp_elimination (int *spilled_pseudos)
 
   if (frame_pointer_needed || !targetm.frame_pointer_required ())
     return 0;
-  gcc_assert (!elimination_fp2sp_occured_p);
+  gcc_assert (!elimination_2sp_occurred_p);
   ep = elimination_map[FRAME_POINTER_REGNUM];
   if (ep->to == STACK_POINTER_REGNUM)
     {
@@ -1499,7 +1503,7 @@ lra_eliminate (bool final_p, bool first_p)
 
   if (first_p)
     {
-      elimination_fp2sp_occured_p = false;
+      elimination_2sp_occurred_p = false;
       init_elimination ();
     }
 
