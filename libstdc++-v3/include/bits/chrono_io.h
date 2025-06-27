@@ -942,9 +942,9 @@ namespace __format
 	  return __out;
 	}
 
-      template<typename _Out, typename _FormatContext>
-	_Out
-	_M_format_to(const _ChronoData<_CharT>& __t, _Out __out,
+      template<typename _OutIter, typename _FormatContext>
+	_OutIter
+	_M_format_to(const _ChronoData<_CharT>& __t, _OutIter __out,
 		     _FormatContext& __fc) const
 	{
 	  auto __first = _M_spec._M_chrono_specs.begin();
@@ -1005,7 +1005,7 @@ namespace __format
 		{
 		// %\0 is extension for handling weekday index
 		case '\0':
-		  __out = _M_wi(__t._M_weekday_index, std::move(__out), __fc);
+		  __out = _M_wi(__t._M_weekday_index, std::move(__out));
 		  break;
 		case 'a':
 		case 'A':
@@ -1022,41 +1022,41 @@ namespace __format
 		case 'C':
 		case 'y':
 		case 'Y':
-		  __out = _M_C_y_Y(__t._M_year, std::move(__out), __fc, __c);
+		  __out = _M_C_y_Y(__t._M_year, std::move(__out), __c);
 		  break;
 		case 'd':
 		case 'e':
-		  __out = _M_d_e(__t._M_day, std::move(__out), __fc, __c);
+		  __out = _M_d_e(__t._M_day, std::move(__out), __c);
 		  break;
 		case 'D':
 		case 'x':
-		  __out = _M_D_x(__t, std::move(__out), __fc);
+		  __out = _M_D_x(__t, std::move(__out));
 		  break;
 		case 'F':
-		  __out = _M_F(__t, std::move(__out), __fc);
+		  __out = _M_F(__t, std::move(__out));
 		  break;
 		case 'g':
 		case 'G':
-		  __out = _M_g_G(__t, std::move(__out), __fc, __c == 'G');
+		  __out = _M_g_G(__t, std::move(__out), __c == 'G');
 		  break;
 		case 'H':
 		case 'I':
-		  __out = _M_H_I(__t._M_hours, __print_sign(), __fc, __c);
+		  __out = _M_H_I(__t._M_hours, __print_sign(), __c);
 		  break;
 		case 'j':
-		  __out = _M_j(__t, __print_sign(), __fc);
+		  __out = _M_j(__t, __print_sign());
 		  break;
 		case 'm':
-		  __out = _M_m(__t._M_month, std::move(__out), __fc);
+		  __out = _M_m(__t._M_month, std::move(__out));
 		  break;
 		case 'M':
-		  __out = _M_M(__t._M_minutes, __print_sign(), __fc);
+		  __out = _M_M(__t._M_minutes, __print_sign());
 		  break;
 		case 'p':
 		  __out = _M_p(__t._M_hours, std::move(__out), __fc);
 		  break;
 		case 'q':
-		  __out = _M_q(__t._M_unit_suffix, std::move(__out), __fc);
+		  __out = _M_q(__t._M_unit_suffix, std::move(__out));
 		  break;
 		case 'Q':
 		  __out = _M_Q(__t, __print_sign(), __fc);
@@ -1066,7 +1066,7 @@ namespace __format
 		  break;
 		case 'R':
 		case 'X':
-		  __out = _M_R_X(__t, __print_sign(), __fc, __c != 'R');
+		  __out = _M_R_X(__t, __print_sign(), __c != 'R');
 		  break;
 		case 'T':
 		  __out = _M_T(__t, __print_sign(), __fc);
@@ -1076,18 +1076,18 @@ namespace __format
 		  break;
 		case 'u':
 		case 'w':
-		  __out = _M_u_w(__t._M_weekday, std::move(__out), __fc, __c);
+		  __out = _M_u_w(__t._M_weekday, std::move(__out), __c);
 		  break;
 		case 'U':
 		case 'V':
 		case 'W':
-		  __out = _M_U_V_W(__t, std::move(__out), __fc, __c);
+		  __out = _M_U_V_W(__t, std::move(__out), __c);
 		  break;
 		case 'z':
-		  __out = _M_z(__t._M_zone_offset, std::move(__out), __fc, (bool)__mod);
+		  __out = _M_z(__t._M_zone_offset, std::move(__out), (bool)__mod);
 		  break;
 		case 'Z':
-		  __out = _M_Z(__t._M_zone_abbrev, std::move(__out), __fc);
+		  __out = _M_Z(__t._M_zone_abbrev, std::move(__out));
 		  break;
 		case 'n':
 		  *__out++ = __literals[0];
@@ -1128,10 +1128,9 @@ namespace __format
 	  return std::move(__out);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_wi(unsigned __wi, typename _FormatContext::iterator __out,
-	      _FormatContext& __ctx) const
+      template<typename _OutIter>
+	_OutIter
+	_M_wi(unsigned __wi, _OutIter __out) const
 	{
 	  // %\0 Extension to format weekday index, used only by empty format spec
 	  _CharT __buf[3];
@@ -1142,9 +1141,9 @@ namespace __format
 	  return std::move(__out);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_a_A(chrono::weekday __wd, typename _FormatContext::iterator __out,
+      template<typename _OutIter, typename _FormatContext>
+	_OutIter
+	_M_a_A(chrono::weekday __wd, _OutIter __out,
 	       _FormatContext& __ctx, bool __full) const
 	{
 	  // %a Locale's abbreviated weekday name.
@@ -1172,9 +1171,9 @@ namespace __format
 	  return _M_write(std::move(__out), __loc, __str);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_b_B(chrono::month __m, typename _FormatContext::iterator __out,
+      template<typename _OutIter, typename _FormatContext>
+	_OutIter
+	_M_b_B(chrono::month __m, _OutIter __out,
 	       _FormatContext& __ctx, bool __full) const
 	{
 	  // %b Locale's abbreviated month name.
@@ -1202,9 +1201,9 @@ namespace __format
 	  return _M_write(std::move(__out), __loc, __str);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_c(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
+      template<typename _OutIter, typename _FormatContext>
+	_OutIter
+	_M_c(const _ChronoData<_CharT>& __t, _OutIter __out,
 	     _FormatContext& __ctx) const
 	{
 	  // %c  Locale's date and time representation, for C-locale: %a %b %e %T %Y
@@ -1214,17 +1213,16 @@ namespace __format
 	  *__out = _S_space;
 	  __out = _M_b_B(__t._M_month, std::move(++__out), __ctx, false);
 	  *__out = _S_space;
-	  __out = _M_d_e(__t._M_day, std::move(++__out), __ctx, 'e');
+	  __out = _M_d_e(__t._M_day, std::move(++__out), 'e');
 	  *__out = _S_space;
-	  __out = _M_R_X(__t, std::move(++__out), __ctx, true);
+	  __out = _M_R_X(__t, std::move(++__out), true);
 	  *__out = _S_space;
-	  return _M_C_y_Y(__t._M_year, std::move(++__out), __ctx, 'Y');
+	  return _M_C_y_Y(__t._M_year, std::move(++__out), 'Y');
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_C_y_Y(chrono::year __y, typename _FormatContext::iterator __out,
-		 _FormatContext& __ctx, _CharT __conv) const
+      template<typename _OutIter>
+	_OutIter
+	_M_C_y_Y(chrono::year __y, _OutIter __out, _CharT __conv) const
 	{
 	  // %C  Year divided by 100 using floored division.
 	  // %EC Locale's alternative preresentation of the century (era name).
@@ -1273,10 +1271,9 @@ namespace __format
 	  return __out;
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_D_x(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
-	       _FormatContext&) const
+      template<typename _OutIter>
+	_OutIter
+	_M_D_x(const _ChronoData<_CharT>& __t, _OutIter __out) const
 	{
 	  // %D  Equivalent to %m/%d/%y
 	  // %x  Locale's date rep, for C-locale: %m/%d/%y
@@ -1308,10 +1305,9 @@ namespace __format
 	  return std::move(__out);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_d_e(chrono::day __d, typename _FormatContext::iterator __out,
-	       _FormatContext& __ctx, _CharT __conv) const
+      template<typename _OutIter>
+	_OutIter
+	_M_d_e(chrono::day __d, _OutIter __out, _CharT __conv) const
 	{
 	  // %d  The day of month as a decimal number.
 	  // %Od Locale's alternative representation.
@@ -1336,10 +1332,9 @@ namespace __format
 	  return std::move(__out);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_F(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
-	     _FormatContext&) const
+      template<typename _OutIter>
+	_OutIter
+	_M_F(const _ChronoData<_CharT>& __t, _OutIter __out) const
 	{
 	  auto __di = (unsigned)__t._M_day;
 	  auto __mi = (unsigned)__t._M_month;
@@ -1376,10 +1371,10 @@ namespace __format
 	  return std::move(__out);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_g_G(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
-	     _FormatContext& __ctx, bool __full) const
+      template<typename _OutIter>
+	_OutIter
+	_M_g_G(const _ChronoData<_CharT>& __t, _OutIter __out,
+	       bool __full) const
 	{
 	  // %g last two decimal digits of the ISO week-based year.
 	  // %G ISO week-based year.
@@ -1389,13 +1384,12 @@ namespace __format
 	  __d -= (__t._M_weekday - Monday) - days(3);
 	  // ISO week-based year is the year that contains that Thursday:
 	  year __y = year_month_day(__d).year();
-	  return _M_C_y_Y(__y, std::move(__out), __ctx, "yY"[__full]);
+	  return _M_C_y_Y(__y, std::move(__out), "yY"[__full]);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_H_I(chrono::hours __h, typename _FormatContext::iterator __out,
-	       _FormatContext& __ctx, _CharT __conv) const
+      template<typename _OutIter>
+	_OutIter
+	_M_H_I(chrono::hours __h, _OutIter __out, _CharT __conv) const
 	{
 	  // %H  The hour (24-hour clock) as a decimal number.
 	  // %OH Locale's alternative representation.
@@ -1416,10 +1410,9 @@ namespace __format
 	  return __format::__write(std::move(__out), _S_two_digits(__i));
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_j(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
-	     _FormatContext&) const
+      template<typename _OutIter>
+	_OutIter
+	_M_j(const _ChronoData<_CharT>& __t, _OutIter __out) const
 	{
 	  if (_M_spec._M_time_only)
 	  {
@@ -1432,10 +1425,9 @@ namespace __format
 				__t._M_day_of_year.count());
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_m(chrono::month __m, typename _FormatContext::iterator __out,
-	     _FormatContext& __ctx) const
+      template<typename _OutIter>
+	_OutIter
+	_M_m(chrono::month __m, _OutIter __out) const
 	{
 	  // %m  month as a decimal number.
 	  // %Om Locale's alternative representation.
@@ -1446,10 +1438,9 @@ namespace __format
 	  return __format::__write(std::move(__out), _S_str_d2(__buf, __i));
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_M(chrono::minutes __m, typename _FormatContext::iterator __out,
-	     _FormatContext& __ctx) const
+      template<typename _OutIter>
+	_OutIter
+	_M_M(chrono::minutes __m, _OutIter __out) const
 	{
 	  // %M  The minute as a decimal number.
 	  // %OM Locale's alternative representation.
@@ -1458,10 +1449,9 @@ namespace __format
 	  return __format::__write(std::move(__out), _S_two_digits(__i));
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_p(chrono::hours __h, typename _FormatContext::iterator __out,
-	     _FormatContext& __ctx) const
+      template<typename _OutIter, typename _FormatContext>
+	_OutIter
+	_M_p(chrono::hours __h, _OutIter __out, _FormatContext& __ctx) const
 	{
 	  // %p The locale's equivalent of the AM/PM designations.
 	  auto __hi =  __h.count();
@@ -1475,27 +1465,26 @@ namespace __format
 	  return _M_write(std::move(__out), __loc, __ampm[__hi >= 12]);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_q(__string_view __us, typename _FormatContext::iterator __out,
-	     _FormatContext&) const
+      template<typename _OutIter>
+	_OutIter
+	_M_q(__string_view __us, _OutIter __out) const
 	{
 	  // %q The duration's unit suffix
 	  return __format::__write(std::move(__out), __us);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_Q(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
-	     _FormatContext& __ctx) const
+      template<typename _OutIter, typename _FormatContext>
+	_OutIter
+	_M_Q(const _ChronoData<_CharT>& __t, _OutIter __out,
+	     _FormatContext&) const
 	{
 	  // %Q The duration's numeric value.
 	  return std::vformat_to(std::move(__out), _S_empty_spec, __t._M_ereps);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_r(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
+      template<typename _OutIter, typename _FormatContext>
+	_OutIter
+	_M_r(const _ChronoData<_CharT>& __t, _OutIter __out,
 	     _FormatContext& __ctx) const
 	{
 	  // %r Locale's 12-hour clock time, for C-locale: %I:%M:%S %p
@@ -1516,10 +1505,10 @@ namespace __format
 	  return _M_p(__t._M_hours, std::move(__out), __ctx);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_R_X(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
-	       _FormatContext& __ctx, bool __secs) const
+      template<typename _OutIter>
+	_OutIter
+	_M_R_X(const _ChronoData<_CharT>& __t, _OutIter __out,
+	       bool __secs) const
 	{
 	  // %R  Equivalent to %H:%M
 	  // %X  Locale's time rep, for C-locale: %H:%M:%S (without subseconds)
@@ -1549,9 +1538,9 @@ namespace __format
 	  return __format::__write(std::move(__out), __sv);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_S(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
+      template<typename _OutIter, typename _FormatContext>
+	_OutIter
+	_M_S(const _ChronoData<_CharT>& __t, _OutIter __out,
 	     _FormatContext& __ctx, bool __subs = true) const
 	{
 	  // %S  Seconds as a decimal number.
@@ -1565,10 +1554,9 @@ namespace __format
 	  return __out;
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_subsecs(const _ChronoData<_CharT>& __t,
-		   typename _FormatContext::iterator __out,
+      template<typename _OutIter, typename _FormatContext>
+	_OutIter
+	_M_subsecs(const _ChronoData<_CharT>& __t, _OutIter __out,
 		   _FormatContext& __ctx) const
 	{
 	  unsigned __prec = _M_spec._M_prec_kind != _WP_none
@@ -1628,20 +1616,19 @@ namespace __format
 
       // %t handled in _M_format
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_T(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
+      template<typename _OutIter, typename _FormatContext>
+	_OutIter
+	_M_T(const _ChronoData<_CharT>& __t, _OutIter __out,
 	     _FormatContext& __ctx) const
 	{
 	  // %T Equivalent to %H:%M:%S, with subseconds
-	  __out = _M_R_X(__t, std::move(__out), __ctx, true);
+	  __out = _M_R_X(__t, std::move(__out), true);
 	  return _M_subsecs(__t, std::move(__out), __ctx);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_u_w(chrono::weekday __wd, typename _FormatContext::iterator __out,
-	       _FormatContext& __ctx, _CharT __conv) const
+      template<typename _OutIter>
+	_OutIter
+	_M_u_w(chrono::weekday __wd, _OutIter __out, _CharT __conv) const
 	{
 	  // %u  ISO weekday as a decimal number (1-7), where Monday is 1.
 	  // %Ou Locale's alternative numeric rep.
@@ -1653,10 +1640,10 @@ namespace __format
 	  return __format::__write(std::move(__out), _S_str_d1(__buf, __wdi));
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_U_V_W(const _ChronoData<_CharT>& __t, typename _FormatContext::iterator __out,
-		 _FormatContext& __ctx, _CharT __conv) const
+      template<typename _OutIter>
+	_OutIter
+	_M_U_V_W(const _ChronoData<_CharT>& __t, _OutIter __out,
+		 _CharT __conv) const
 	{
 	  // %U  Week number of the year as a decimal number, from first Sunday.
 	  // %OU Locale's alternative numeric rep.
@@ -1686,10 +1673,9 @@ namespace __format
 	  return __format::__write(std::move(__out), __sv);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_z(chrono::seconds __ts, typename _FormatContext::iterator __out,
-	     _FormatContext&, bool __mod = false) const
+      template<typename _OutIter>
+	_OutIter
+	_M_z(chrono::seconds __ts, _OutIter __out, bool __mod = false) const
 	{
 	  if (__ts == 0s)
 	    {
@@ -1711,10 +1697,9 @@ namespace __format
 	  return __format::__write(std::move(__out), __sv);
 	}
 
-      template<typename _FormatContext>
-	typename _FormatContext::iterator
-	_M_Z(__string_view __abbrev, typename _FormatContext::iterator __out,
-	     _FormatContext& __ctx) const
+      template<typename _OutIter>
+	_OutIter
+	_M_Z(__string_view __abbrev, _OutIter __out) const
 	{ return __format::__write(std::move(__out), __abbrev);	}
 
       // %% handled in _M_format
