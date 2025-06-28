@@ -511,12 +511,12 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	HIR::TuplePatternItemsRanged &ref
 	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
 
-	// Check whether size of lower and upper patterns <= parent size
 	const auto &lower = ref.get_lower_patterns ();
 	const auto &upper = ref.get_upper_patterns ();
 	size_t min_size_required = lower.size () + upper.size ();
 
-	if (par.get_fields ().size () > min_size_required)
+	// Ensure that size of lower and upper patterns <= parent size
+	if (min_size_required > par.get_fields ().size ())
 	  {
 	    emit_pattern_size_error (pattern, par.get_fields ().size (),
 				     min_size_required);
