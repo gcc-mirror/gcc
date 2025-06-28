@@ -10377,6 +10377,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       char c_mask = CALL_USED_REGISTERS_MASK (is_64bit_ms_abi);
       for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (!fixed_regs[i]
+	    && i != HARD_FRAME_POINTER_REGNUM
 	    && !(ix86_call_used_regs[i] == 1
 		 || (ix86_call_used_regs[i] & c_mask))
 	    && !STACK_REGNO_P (i)

@@ -11,14 +11,12 @@
 **	.cfi_startproc
 **	subq	\$248, %rsp
 **...
-**	movq	%rax, \(%rsp\)
-**	movq	%rdx, 8\(%rsp\)
-**	movq	%rcx, 16\(%rsp\)
-**	movq	%rbx, 24\(%rsp\)
-**	movq	%rsi, 32\(%rsp\)
-**	movq	%rdi, 40\(%rsp\)
-**...
-**	movq	%rbp, 48\(%rsp\)
+**	movq	%rax, 8\(%rsp\)
+**	movq	%rdx, 16\(%rsp\)
+**	movq	%rcx, 24\(%rsp\)
+**	movq	%rbx, 32\(%rsp\)
+**	movq	%rsi, 40\(%rsp\)
+**	movq	%rdi, 48\(%rsp\)
 **	movq	%r8, 56\(%rsp\)
 **	movq	%r9, 64\(%rsp\)
 **	movq	%r10, 72\(%rsp\)
@@ -45,13 +43,12 @@
 **	movq	%r31, 240\(%rsp\)
 **...
 **	call	\*code\(%rip\)
-**	movq	\(%rsp\), %rax
-**	movq	8\(%rsp\), %rdx
-**	movq	16\(%rsp\), %rcx
-**	movq	24\(%rsp\), %rbx
-**	movq	32\(%rsp\), %rsi
-**	movq	40\(%rsp\), %rdi
-**	movq	48\(%rsp\), %rbp
+**	movq	8\(%rsp\), %rax
+**	movq	16\(%rsp\), %rdx
+**	movq	24\(%rsp\), %rcx
+**	movq	32\(%rsp\), %rbx
+**	movq	40\(%rsp\), %rsi
+**	movq	48\(%rsp\), %rdi
 **	movq	56\(%rsp\), %r8
 **	movq	64\(%rsp\), %r9
 **	movq	72\(%rsp\), %r10

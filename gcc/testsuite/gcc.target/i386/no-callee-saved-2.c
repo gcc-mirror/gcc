@@ -26,5 +26,7 @@ foo (void *frame)
   }
 }
 
-/* { dg-final { scan-assembler-not "push" } } */
-/* { dg-final { scan-assembler-not "pop" } } */
+/* { dg-final { scan-assembler-times "push(?:l|q)\[\\t \]*%(?:e|r)bp" 1 } } */
+/* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*%(?:e|r)bp" 1 } } */
+/* { dg-final { scan-assembler-times "push(?:l|q)\[\\t \]*" 1 } } */
+/* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*" 1 } } */

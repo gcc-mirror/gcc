@@ -1043,8 +1043,6 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   if ((cfun->machine->call_saved_registers
        != TYPE_NO_CALLEE_SAVED_REGISTERS)
       && cfun->machine->call_saved_registers != TYPE_PRESERVE_NONE
-      && (cfun->machine->call_saved_registers
-	  != TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP)
       && ix86_type_no_callee_saved_registers_p (type))
     return false;
 
@@ -6774,9 +6772,6 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 
     case TYPE_NO_CALLEE_SAVED_REGISTERS:
     case TYPE_PRESERVE_NONE:
-      return false;
-
-    case TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP:
       if (regno != HARD_FRAME_POINTER_REGNUM)
 	return false;
       break;

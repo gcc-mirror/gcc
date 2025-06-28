@@ -2802,11 +2802,10 @@ enum call_saved_registers_type
      or "no_caller_saved_registers" attribute.  */
   TYPE_NO_CALLER_SAVED_REGISTERS,
   /* The current function is a function specified with the
-     "no_callee_saved_registers" attribute.  */
+     "no_callee_saved_registers" attribute or a function specified with
+     the "noreturn" attribute when compiled with
+     "-mnoreturn-no-callee-saved-registers".  */
   TYPE_NO_CALLEE_SAVED_REGISTERS,
-  /* The current function is a function specified with the "noreturn"
-     attribute.  */
-  TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP,
   /* The current function is a function specified with the
      "preserve_none" attribute.  */
   TYPE_PRESERVE_NONE,

@@ -3280,19 +3280,18 @@ ix86_set_func_type (tree fndecl)
   if (lookup_attribute ("preserve_none",
 			     TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
     no_callee_saved_registers = TYPE_PRESERVE_NONE;
-  else if (lookup_attribute ("no_callee_saved_registers",
-			TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+  else if ((lookup_attribute ("no_callee_saved_registers",
+			      TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+	   || (ix86_noreturn_no_callee_saved_registers
+	       && TREE_THIS_VOLATILE (fndecl)
+	       && optimize
+	       && !optimize_debug
+	       && (TREE_NOTHROW (fndecl) || !flag_exceptions)
+	       && !lookup_attribute ("interrupt",
+				     TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))
+	       && !lookup_attribute ("no_caller_saved_registers",
+				 TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))))
     no_callee_saved_registers = TYPE_NO_CALLEE_SAVED_REGISTERS;
-  else if (ix86_noreturn_no_callee_saved_registers
-	   && TREE_THIS_VOLATILE (fndecl)
-	   && optimize
-	   && !optimize_debug
-	   && (TREE_NOTHROW (fndecl) || !flag_exceptions)
-	   && !lookup_attribute ("interrupt",
-				 TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))
-	   && !lookup_attribute ("no_caller_saved_registers",
-				 TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
-    no_callee_saved_registers = TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP;
 
   if (cfun->machine->func_type == TYPE_UNKNOWN)
     {

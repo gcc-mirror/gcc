@@ -18,7 +18,7 @@ foo (void)
 /* { dg-final { scan-assembler-times "push(?:l|q)\[\\t \]*%(?:e|r)bx" 1 } } */
 /* { dg-final { scan-assembler-times "push(?:l|q)\[\\t \]*%(?:e|r)cx" 1 } } */
 /* { dg-final { scan-assembler-times "push(?:l|q)\[\\t \]*%(?:e|r)dx" 1 } } */
-/* { dg-final { scan-assembler-times "push(?:l|q)\[\\t \]*%(?:e|r)bp" 1 } } */
+/* { dg-final { scan-assembler-not "push(?:l|q)\[\\t \]*%(?:e|r)bp" } } */
 /* { dg-final { scan-assembler-times "push(?:l|q)\[\\t \]*%(?:e|r)si" 1 } } */
 /* { dg-final { scan-assembler-times "push(?:l|q)\[\\t \]*%(?:e|r)di" 1 } } */
 /* { dg-final { scan-assembler-times "pushq\[\\t \]*%r8" 1 { target { ! ia32 } } } } */
@@ -33,7 +33,7 @@ foo (void)
 /* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*%(?:e|r)bx" 1 } } */
 /* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*%(?:e|r)cx" 1 } } */
 /* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*%(?:e|r)dx" 1 } } */
-/* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*%(?:e|r)bp" 1 } } */
+/* { dg-final { scan-assembler-not "pop(?:l|q)\[\\t \]*%(?:e|r)bp" } } */
 /* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*%(?:e|r)si" 1 } } */
 /* { dg-final { scan-assembler-times "pop(?:l|q)\[\\t \]*%(?:e|r)di" 1 } } */
 /* { dg-final { scan-assembler-times "popq\[\\t \]*%r8" 1 { target { ! ia32 } } } } */

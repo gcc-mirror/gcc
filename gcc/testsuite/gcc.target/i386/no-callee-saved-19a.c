@@ -16,9 +16,9 @@
 
 #define NEXT { op_t *op = next; [[gnu::musttail]] return (*op)(op + 1); }
 #ifdef __x86_64__
-# define CLOBBER asm("" ::: "r12","r13","r14","r15","rbp","rbx")
+# define CLOBBER asm("" ::: "r12","r13","r14","r15","rbx")
 #else
-# define CLOBBER asm("" ::: "ebp","ebx")
+# define CLOBBER asm("" ::: "ebx")
 #endif
 #define DONT_SAVE_REGS __attribute__((no_callee_saved_registers))
 #define SAVE_REGS __attribute__((no_caller_saved_registers))
@@ -83,15 +83,14 @@ op_t code[] = { inc, inc, dec, end, };
 **	.cfi_startproc
 **	subq	\$376, %rsp
 **...
-**	movq	%rax, 256\(%rsp\)
-**	movq	%rdx, 264\(%rsp\)
-**	movq	%rcx, 272\(%rsp\)
-**	movq	%rbx, 280\(%rsp\)
-**	movq	%rsi, 288\(%rsp\)
-**	movq	%rdi, 296\(%rsp\)
+**	movq	%rdi, 304\(%rsp\)
 **...
 **	movl	\$code\+8, %edi
-**	movq	%rbp, 304\(%rsp\)
+**	movq	%rax, 264\(%rsp\)
+**	movq	%rdx, 272\(%rsp\)
+**	movq	%rcx, 280\(%rsp\)
+**	movq	%rbx, 288\(%rsp\)
+**	movq	%rsi, 296\(%rsp\)
 **	movq	%r8, 312\(%rsp\)
 **	movq	%r9, 320\(%rsp\)
 **	movq	%r10, 328\(%rsp\)
@@ -132,13 +131,12 @@ op_t code[] = { inc, inc, dec, end, };
 **	movaps	176\(%rsp\), %xmm11
 **	movaps	192\(%rsp\), %xmm12
 **	movaps	208\(%rsp\), %xmm13
-**	movq	256\(%rsp\), %rax
-**	movq	264\(%rsp\), %rdx
-**	movq	272\(%rsp\), %rcx
-**	movq	280\(%rsp\), %rbx
-**	movq	288\(%rsp\), %rsi
-**	movq	296\(%rsp\), %rdi
-**	movq	304\(%rsp\), %rbp
+**	movq	264\(%rsp\), %rax
+**	movq	272\(%rsp\), %rdx
+**	movq	280\(%rsp\), %rcx
+**	movq	288\(%rsp\), %rbx
+**	movq	296\(%rsp\), %rsi
+**	movq	304\(%rsp\), %rdi
 **	movq	312\(%rsp\), %r8
 **	movq	320\(%rsp\), %r9
 **	movq	328\(%rsp\), %r10
@@ -146,8 +144,8 @@ op_t code[] = { inc, inc, dec, end, };
 **	movq	344\(%rsp\), %r12
 **	movq	352\(%rsp\), %r13
 **	movq	360\(%rsp\), %r14
-**	movaps	224\(%rsp\), %xmm14
 **	movq	368\(%rsp\), %r15
+**	movaps	224\(%rsp\), %xmm14
 **	movaps	240\(%rsp\), %xmm15
 **	addq	\$376, %rsp
 **...

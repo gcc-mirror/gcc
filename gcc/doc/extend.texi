@@ -6124,10 +6124,11 @@ pass arguments, unless it takes a variable number of arguments.
 @cindex @code{no_callee_saved_registers} function attribute, x86
 @item no_callee_saved_registers
 Use this attribute to indicate that the specified function has no
-callee-saved registers. That is, all registers can be used as scratch
-registers. For example, this attribute can be used for a function
-called from the interrupt handler assembly stub which will preserve
-all registers and return from interrupt.
+callee-saved registers. That is, all registers, except for stack and
+frame pointers, can be used as scratch registers. For example, this
+attribute can be used for a function called from the interrupt handler
+assembly stub which will preserve all registers and return from
+interrupt.
 
 @cindex @code{preserve_none} function attribute, x86
 @item preserve_none

@@ -51,13 +51,12 @@
 **.LFB[0-9]+:
 **	.cfi_startproc
 **...
-**	movl	%eax, 140\(%esp\)
-**	movl	%edx, 144\(%esp\)
-**	movl	%ecx, 148\(%esp\)
-**	movl	%ebx, 152\(%esp\)
-**	movl	%esi, 156\(%esp\)
-**	movl	%edi, 160\(%esp\)
-**	movl	%ebp, 164\(%esp\)
+**	movl	%eax, 144\(%esp\)
+**	movl	%edx, 148\(%esp\)
+**	movl	%ecx, 152\(%esp\)
+**	movl	%ebx, 156\(%esp\)
+**	movl	%esi, 160\(%esp\)
+**	movl	%edi, 164\(%esp\)
 **	movaps	%xmm0, 12\(%esp\)
 **	movaps	%xmm1, 28\(%esp\)
 **	movaps	%xmm2, 44\(%esp\)
@@ -78,13 +77,12 @@
 **	movaps	96\(%esp\), %xmm5
 **	movaps	112\(%esp\), %xmm6
 **	movaps	128\(%esp\), %xmm7
-**	movl	144\(%esp\), %eax
-**	movl	148\(%esp\), %edx
-**	movl	152\(%esp\), %ecx
-**	movl	156\(%esp\), %ebx
-**	movl	160\(%esp\), %esi
-**	movl	164\(%esp\), %edi
-**	movl	168\(%esp\), %ebp
+**	movl	148\(%esp\), %eax
+**	movl	152\(%esp\), %edx
+**	movl	156\(%esp\), %ecx
+**	movl	160\(%esp\), %ebx
+**	movl	164\(%esp\), %esi
+**	movl	168\(%esp\), %edi
 **...
 **	ret
 **	.cfi_endproc
