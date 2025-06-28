@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fno-early-inlining -fdump-ipa-afdo-all" } */
+/* { dg-options "-O3 -fno-early-inlining -fdump-ipa-afdo_offline-all" } */
 /* { dg-require-profiling "-fauto-profile" } */ 
 
 __attribute__ ((used))
@@ -31,4 +31,4 @@ int main()
 }
 /* We will have profiles for test2 and test2.constprop.0 that will have to be
    merged,  */
-/* { dg-final-use-autofdo { scan-ipa-dump "note: Merging profile for test2" "afdo"} } */
+/* { dg-final-use-autofdo { scan-ipa-dump "Merging duplicate symbol test2" "afdo_offline"} } */

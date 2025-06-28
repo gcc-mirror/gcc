@@ -47,9 +47,11 @@ along with GCC; see the file COPYING3.  If not see
 
   /* Interprocedural optimization passes.  */
   INSERT_PASSES_AFTER (all_small_ipa_passes)
+  /* auto_profile_offline uses dwarf_name hook that only
+     works before free_lang_data.  */
+  NEXT_PASS (pass_ipa_auto_profile_offline);
   NEXT_PASS (pass_ipa_free_lang_data);
   NEXT_PASS (pass_ipa_function_and_variable_visibility);
-  NEXT_PASS (pass_ipa_auto_profile_offline);
   NEXT_PASS (pass_ipa_strub_mode);
   NEXT_PASS (pass_build_ssa_passes);
   PUSH_INSERT_PASSES_WITHIN (pass_build_ssa_passes)
