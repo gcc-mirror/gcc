@@ -14148,7 +14148,7 @@ avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	address registers is extreme stress test for reload.  */
 
   if (GET_MODE_SIZE (mode) >= 4
-      && regno >= REG_X
+      && regno + GET_MODE_SIZE (mode) >= REG_30
       // This problem only concerned the old reload.
       && ! avropt_lra_p)
     return false;
