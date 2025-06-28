@@ -83,6 +83,23 @@ Bvariable::error_variable ()
   return new Bvariable (error_mark_node);
 }
 
+// Get the tree of a variable for use as an expression
+tree
+LocalVariable::get_tree (location_t location) const
+{
+  if (error_operand_p (t))
+    return error_mark_node;
+
+  TREE_USED (t) = 1;
+  return t;
+}
+
+LocalVariable
+LocalVariable::error_variable ()
+{
+  return LocalVariable (error_mark_node);
+}
+
 // This file implements the interface between the Rust frontend proper
 // and the gcc IR.  This implements specific instantiations of
 // abstract classes defined by the Rust frontend proper.  The Rust
@@ -2014,12 +2031,12 @@ global_variable_set_init (Bvariable *var, tree expr_tree)
 
 // Make a local variable.
 
-Bvariable *
+LocalVariable
 local_variable (tree function, GGC::Ident name, tree type_tree,
 		Bvariable *decl_var, location_t location)
 {
   if (error_operand_p (type_tree))
-    return Bvariable::error_variable ();
+    return LocalVariable::error_variable ();
   tree decl = build_decl (location, VAR_DECL, name.as_tree (), type_tree);
   DECL_CONTEXT (decl) = function;
 
@@ -2029,33 +2046,33 @@ local_variable (tree function, GGC::Ident name, tree type_tree,
       SET_DECL_VALUE_EXPR (decl, decl_var->get_decl ());
     }
   rust_preserve_from_gc (decl);
-  return new Bvariable (decl);
+  return LocalVariable (decl);
 }
 
 // Make a function parameter variable.
 
-Bvariable *
+LocalVariable
 parameter_variable (tree function, GGC::Ident name, tree type_tree,
 		    location_t location)
 {
   if (error_operand_p (type_tree))
-    return Bvariable::error_variable ();
+    return LocalVariable::error_variable ();
   tree decl = build_decl (location, PARM_DECL, name.as_tree (), type_tree);
   DECL_CONTEXT (decl) = function;
   DECL_ARG_TYPE (decl) = type_tree;
 
   rust_preserve_from_gc (decl);
-  return new Bvariable (decl);
+  return LocalVariable (decl);
 }
 
 // Make a static chain variable.
 
-Bvariable *
+LocalVariable
 static_chain_variable (tree fndecl, GGC::Ident name, tree type_tree,
 		       location_t location)
 {
   if (error_operand_p (type_tree))
-    return Bvariable::error_variable ();
+    return LocalVariable::error_variable ();
   tree decl = build_decl (location, PARM_DECL, name.as_tree (), type_tree);
   DECL_CONTEXT (decl) = fndecl;
   DECL_ARG_TYPE (decl) = type_tree;
@@ -2076,12 +2093,12 @@ static_chain_variable (tree fndecl, GGC::Ident name, tree type_tree,
   DECL_STATIC_CHAIN (fndecl) = 1;
 
   rust_preserve_from_gc (decl);
-  return new Bvariable (decl);
+  return LocalVariable (decl);
 }
 
 // Make a temporary variable.
 
-Bvariable *
+LocalVariable
 temporary_variable (tree fndecl, tree bind_tree, tree type_tree, tree init_tree,
 		    bool is_address_taken, location_t location,
 		    tree *pstatement)
@@ -2091,7 +2108,7 @@ temporary_variable (tree fndecl, tree bind_tree, tree type_tree, tree init_tree,
       || error_operand_p (fndecl))
     {
       *pstatement = error_mark_node;
-      return Bvariable::error_variable ();
+      return LocalVariable::error_variable ();
     }
 
   tree var;
@@ -2141,7 +2158,7 @@ temporary_variable (tree fndecl, tree bind_tree, tree type_tree, tree init_tree,
 	  || TREE_TYPE (init_tree) == void_type_node))
     *pstatement = compound_statement (init_tree, *pstatement);
 
-  return new Bvariable (var);
+  return LocalVariable (var);
 }
 
 // Make a label.

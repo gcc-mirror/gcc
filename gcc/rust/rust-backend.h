@@ -349,18 +349,18 @@ void global_variable_set_init (Bvariable *, tree);
 // the function, as otherwise the variable would be on the heap).
 // LOCATION is where the variable is defined.  For each local variable
 // the frontend will call init_statement to set the initial value.
-Bvariable *local_variable (tree function, GGC::Ident name, tree type,
-			   Bvariable *decl_var, location_t location);
+LocalVariable local_variable (tree function, GGC::Ident name, tree type,
+			      Bvariable *decl_var, location_t location);
 
 // Create a function parameter.  This is an incoming parameter, not
 // a result parameter (result parameters are treated as local
 // variables).  The arguments are as for local_variable.
-Bvariable *parameter_variable (tree function, GGC::Ident name, tree type,
-			       location_t location);
+LocalVariable parameter_variable (tree function, GGC::Ident name, tree type,
+				  location_t location);
 
 // Create a static chain parameter.  This is the closure parameter.
-Bvariable *static_chain_variable (tree function, GGC::Ident name, tree type,
-				  location_t location);
+LocalVariable static_chain_variable (tree function, GGC::Ident name, tree type,
+				     location_t location);
 
 // Create a temporary variable.  A temporary variable has no name,
 // just a type.  We pass in FUNCTION and BLOCK in case they are
@@ -373,9 +373,9 @@ Bvariable *static_chain_variable (tree function, GGC::Ident name, tree type,
 // variable, and may not be very useful.  This function should
 // return a variable which can be referenced later and should set
 // *PSTATEMENT to a statement which initializes the variable.
-Bvariable *temporary_variable (tree fndecl, tree bind_tree, tree type,
-			       tree init, bool address_is_taken,
-			       location_t location, tree *pstatement);
+LocalVariable temporary_variable (tree fndecl, tree bind_tree, tree type,
+				  tree init, bool address_is_taken,
+				  location_t location, tree *pstatement);
 
 // Labels.
 

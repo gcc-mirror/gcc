@@ -175,7 +175,7 @@ CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
     }
 
   auto receiver_tmp = NULL_TREE;
-  auto receiver
+  Bvariable *receiver
     = Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
 				   TREE_TYPE (lhs), lhs, true,
 				   expr.get_locus (), &receiver_tmp);
@@ -214,7 +214,7 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
   if (ctx->in_fn () && !ctx->const_context_p ())
     {
       auto tmp = NULL_TREE;
-      auto receiver
+      Bvariable *receiver
 	= Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
 				       TREE_TYPE (lhs), lhs, true,
 				       expr.get_locus (), &tmp);
