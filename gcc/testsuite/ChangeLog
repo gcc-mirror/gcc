@@ -1,3 +1,7 @@
+2025-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso20.adb: New test.
+
 2025-06-20  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
