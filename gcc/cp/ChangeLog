@@ -1,3 +1,112 @@
+2025-06-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/120756
+	* pt.cc (resolve_nondeduced_context): Pass complain to mark_used.
+
+2025-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120777
+	* constexpr.cc: Implement C++26 P3533R2 - constexpr virtual
+	inheritance.
+	(is_valid_constexpr_fn): Don't reject constexpr cdtors in classes
+	with virtual bases for C++26, adjust error wording.
+	(cxx_bind_parameters_in_call): Add ORIG_FUN argument, add
+	values for __in_chrg and __vtt_parm arguments when needed.
+	(cxx_eval_dynamic_cast_fn): Adjust function comment, HINT -1
+	should be possible.  For C++26 if obj is cast from POINTER_PLUS_EXPR,
+	attempt to use cxx_fold_indirect_ref to simplify it and if successful,
+	build ADDR_EXPR of that.
+	(cxx_eval_call_expression): Add orig_fun variable, set it to
+	fun before looking through clones, pass it to
+	cxx_bind_parameters_in_call.
+	(reduced_constant_expression_p): Add SZ argument, pass DECL_SIZE
+	of FIELD_DECL e.index to recursive calls and don't return false
+	if SZ is non-NULL and there are unfilled fields with bit position
+	at or above SZ.
+	(cxx_fold_indirect_ref_1): Handle reading of vtables using
+	ptrdiff_t dynamic type instead of some pointer type.  Set el_sz
+	to DECL_SIZE_UNIT value rather than TYPE_SIZE_UNIT of
+	DECL_FIELD_IS_BASE fields in classes with virtual bases.
+	(cxx_fold_indirect_ref): In canonicalize_obj_off lambda look
+	through COMPONENT_REFs with DECL_FIELD_IS_BASE in classes with
+	virtual bases and adjust off correspondingly.  Remove assertion that
+	off is integer_zerop, pass tree_to_uhwi (off) instead of 0 to the
+	cxx_fold_indirect_ref_1 call.
+	* cp-tree.h (publicly_virtually_derived_p): Declare.
+	(reduced_constant_expression_p): Add another tree argument defaulted
+	to NULL_TREE.
+	* method.cc (synthesized_method_walk): Don't clear *constexpr_p
+	if there are virtual bases for C++26.
+	* class.cc (build_base_path): Compute fixed_type_p and
+	virtual_access before checks for build_simple_base_path instead of
+	after that and conditional cp_build_addr_expr.  Use build_simple_path
+	if !virtual_access even when v_binfo is non-NULL.
+	(layout_virtual_bases): For build_base_field calls use
+	access_public_node rather than access_private_node if
+	publicly_virtually_derived_p.
+	(build_vtbl_initializer): Revert 2018-09-18 and 2018-12-11 changes.
+	(publicly_virtually_derived_p): New function.
+
+2025-06-27  Jason Merrill  <jason@redhat.com>
+
+	* class.cc (fixed_type_or_null): Handle class-type CALL_EXPR.
+	* parser.cc (cp_parser_binary_expression): Fix decltype_p handling.
+
+2025-06-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98735
+	PR c++/118904
+	* cp-gimplify.cc (source_location_id): Remove.
+	(fold_builtin_source_location): Use generate_internal_label.
+	* module.cc (enum tree_tag): Add 'tt_internal_id' enumerator.
+	(trees_out::tree_value): Adjust assertion, write definitions
+	of uncontexted VAR_DECLs.
+	(trees_in::tree_value): Read variable definitions.
+	(trees_out::tree_node): Write internal labels, adjust assert.
+	(trees_in::tree_node): Read internal labels.
+
+2025-06-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120040
+	* constexpr.cc (cxx_eval_constant_expression): Handle TYPE_NAME
+	now being a TYPE_DECL rather than just an IDENTIFIER_NODE.
+	* init.cc (build_new_constexpr_heap_type): Build a TYPE_DECL for
+	the returned type; mark the type as artificial.
+	* module.cc (trees_out::type_node): Add some assertions.
+
+2025-06-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98735
+	PR c++/120040
+	* module.cc (trees_out::tree_value): Write TYPE_DECLs.
+	(trees_in::tree_value): Read TYPE_DECLs.
+	(trees_out::tree_node): Support uncontexted TYPE_DECLs, and
+	ensure that all parts of a by-value decl are marked for
+	streaming.
+	(trees_out::get_merge_kind): Treat members of uncontexted types
+	as always unique.
+
+2025-06-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* decl.cc (grokfndecl): Add explanation of how to attach to
+	global module.
+
+2025-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (cxx_initialize_diagnostics): Use
+	diagnostic_context::set_adjust_diagnostic_info_callback.
+
+2025-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-trait.def: Implement C++26 P2830R10 - Constexpr Type Ordering.
+	(TYPE_ORDER): New.
+	* method.cc (type_order_value): Define.
+	* cp-tree.h (type_order_value): Declare.
+	* semantics.cc (trait_expr_value): Use gcc_unreachable also
+	for CPTK_TYPE_ORDER, adjust comment.
+	(finish_trait_expr): Handle CPTK_TYPE_ORDER.
+	* constraint.cc (diagnose_trait_expr): Likewise.
+
 2025-06-25  Martin Jambor  <mjambor@suse.cz>
 
 	* coroutines.h (class cp_coroutine_transform): Remove member

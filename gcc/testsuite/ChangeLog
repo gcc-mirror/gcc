@@ -1,3 +1,165 @@
+2025-06-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/120756
+	* g++.dg/warn/deprecated-22.C: New test.
+
+2025-06-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle81.C: Add -fno-implicit-constexpr.
+	* g++.dg/init/vbase1.C: Likewise.
+	* g++.dg/ipa/ipa-icf-4.C: Likewise.
+
+2025-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso20.adb: New test.
+
+2025-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120777
+	* g++.dg/cpp26/constexpr-virt-inherit1.C: New test.
+	* g++.dg/cpp26/constexpr-virt-inherit2.C: New test.
+	* g++.dg/cpp26/constexpr-virt-inherit3.C: New test.
+	* g++.dg/cpp26/feat-cxx26.C: Add __cpp_constexpr_virtual_inheritance
+	tersts.
+	* g++.dg/cpp2a/constexpr-dtor3.C: Don't expect one error for C++26.
+	* g++.dg/cpp2a/constexpr-dtor16.C: Don't expect errors for C++26.
+	* g++.dg/cpp2a/constexpr-dynamic10.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ice21.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ice4.C: Likewise.
+	* g++.dg/abi/mangle1.C: Guard the test on c++23_down.
+	* g++.dg/abi/mangle81.C: New test.
+	* g++.dg/ipa/ipa-icf-4.C (A::A): For
+	__cpp_constexpr_virtual_inheritance >= 202506L add user provided
+	non-constexpr constructor.
+
+2025-06-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120784
+	* gfortran.dg/interface_63.f90: Extend testcase.
+
+2025-06-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98735
+	PR c++/118904
+	* g++.dg/modules/src-loc-1.h: New test.
+	* g++.dg/modules/src-loc-1_a.H: New test.
+	* g++.dg/modules/src-loc-1_b.C: New test.
+	* g++.dg/modules/src-loc-1_c.C: New test.
+	* g++.dg/modules/ubsan-1_a.C: New test.
+	* g++.dg/modules/ubsan-1_b.C: New test.
+	* g++.dg/ubsan/module-1-aux.cc: New test.
+	* g++.dg/ubsan/module-1.C: New test.
+
+2025-06-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120040
+	* g++.dg/modules/pr120040_a.C: New test.
+	* g++.dg/modules/pr120040_b.C: New test.
+
+2025-06-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/afdo-crossmodule-1.c: Update template.
+
+2025-06-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/119971
+	* gcc.target/riscv/pr119971.c: Fix typo.
+
+2025-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120808
+	* gcc.dg/vect/bb-slp-pr120808.c: Now also expect FMADDSUB
+	patterns to be matched.
+
+2025-06-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120830
+	* g++.target/i386/pr120830.C: New test.
+
+2025-06-26  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/mov64-subreg-1.c: New test.
+	* gcc.target/pru/mov64-subreg-2.c: New test.
+
+2025-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/120809
+	* gcc.dg/analyzer/state-diagram-5.c: Split out into...
+	* gcc.dg/analyzer/state-diagram-5-html.c: ...this, adding
+	dg-require-dot...
+	* gcc.dg/analyzer/state-diagram-5-sarif.c: ...and this.
+
+2025-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/type-order1.C: New test.
+	* g++.dg/cpp26/type-order2.C: New test.
+	* g++.dg/cpp26/type-order3.C: New test.
+
+2025-06-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/120719
+	* gcc.target/i386/crc-builtin-crc32.c: New test.
+
+2025-06-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/afdo-crossmodule-1.c: New test.
+	* gcc.dg/tree-prof/afdo-crossmodule-1b.c: New test.
+
+2025-06-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120711
+	* gfortran.dg/asan/array_constructor_1.f90: New test.
+
+2025-06-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-prof/indir-call-prof-2.c: Update template.
+
+2025-06-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120819
+	* g++.target/i386/pr120819.C: New test.
+
+2025-06-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/119628
+	* gcc.target/i386/no-callee-saved-3.c: Adjust error location.
+	* gcc.target/i386/no-callee-saved-19a.c: New test.
+	* gcc.target/i386/no-callee-saved-19b.c: Likewise.
+	* gcc.target/i386/no-callee-saved-19c.c: Likewise.
+	* gcc.target/i386/no-callee-saved-19d.c: Likewise.
+	* gcc.target/i386/no-callee-saved-19e.c: Likewise.
+	* gcc.target/i386/preserve-none-1.c: Likewise.
+	* gcc.target/i386/preserve-none-2.c: Likewise.
+	* gcc.target/i386/preserve-none-3.c: Likewise.
+	* gcc.target/i386/preserve-none-4.c: Likewise.
+	* gcc.target/i386/preserve-none-5.c: Likewise.
+	* gcc.target/i386/preserve-none-6.c: Likewise.
+	* gcc.target/i386/preserve-none-7.c: Likewise.
+	* gcc.target/i386/preserve-none-8.c: Likewise.
+	* gcc.target/i386/preserve-none-9.c: Likewise.
+	* gcc.target/i386/preserve-none-10.c: Likewise.
+	* gcc.target/i386/preserve-none-11.c: Likewise.
+	* gcc.target/i386/preserve-none-12.c: Likewise.
+	* gcc.target/i386/preserve-none-13.c: Likewise.
+	* gcc.target/i386/preserve-none-14.c: Likewise.
+	* gcc.target/i386/preserve-none-15.c: Likewise.
+	* gcc.target/i386/preserve-none-16.c: Likewise.
+	* gcc.target/i386/preserve-none-17.c: Likewise.
+	* gcc.target/i386/preserve-none-18.c: Likewise.
+	* gcc.target/i386/preserve-none-19.c: Likewise.
+	* gcc.target/i386/preserve-none-20.c: Likewise.
+	* gcc.target/i386/preserve-none-21.c: Likewise.
+	* gcc.target/i386/preserve-none-22.c: Likewise.
+	* gcc.target/i386/preserve-none-23.c: Likewise.
+	* gcc.target/i386/preserve-none-24.c: Likewise.
+	* gcc.target/i386/preserve-none-25.c: Likewise.
+	* gcc.target/i386/preserve-none-26.c: Likewise.
+	* gcc.target/i386/preserve-none-27.c: Likewise.
+	* gcc.target/i386/preserve-none-28.c: Likewise.
+	* gcc.target/i386/preserve-none-29.c: Likewise.
+	* gcc.target/i386/preserve-none-30a.c: Likewise.
+	* gcc.target/i386/preserve-none-30b.c: Likewise.
+
 2025-06-25  Luis Silva  <luiss@synopsys.com>
 
 	* gcc.target/arc/mult-cmp0.c: New test.

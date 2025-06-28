@@ -1,3 +1,8 @@
+2025-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/misc.cc (gnat_init): Use
+	diagnostic_context::set_internal_error_callback.
+
 2025-06-22  Nicolas Boulenguez  <nicolas@debian.org>
 
 	PR ada/120106

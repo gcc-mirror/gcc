@@ -1,3 +1,7 @@
+2025-06-26  Alex Coplan  <alex.coplan@arm.com>
+
+	* mklog.py (main): New.
+
 2025-06-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116792

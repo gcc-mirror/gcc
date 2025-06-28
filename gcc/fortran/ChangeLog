@@ -1,3 +1,30 @@
+2025-06-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120784
+	* interface.cc (gfc_match_end_interface): Detect empty local_name.
+
+2025-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	* match.cc (gfc_match_nullify): Initialize p to NULL;
+
+2025-06-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans.cc (gfc_allocate_using_malloc): Prevent possible memory
+	leak when allocation was already done.
+
+2025-06-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* resolve.cc (resolve_fl_derived0): Do not create the token
+	component when not in coarray lib mode.
+	* trans-types.cc: Do not access the token when not in coarray
+	lib mode.
+
+2025-06-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120711
+	* trans-array.cc (gfc_trans_array_ctor_element): Store the value
+	of the offset for reuse.
+
 2025-06-24  Tobias Burnus  <tburnus@baylibre.com>
 
 	* trans-stmt.cc (gfc_trans_call_acc_attach_detach): New.

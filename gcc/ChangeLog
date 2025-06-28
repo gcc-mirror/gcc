@@ -1,3 +1,336 @@
+2025-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-fold.cc (fold_const_aggregate_ref_1) <COMPONENT_REF>:
+	Bail out immediately if the reference has reverse storage order.
+	* tree-ssa-sccvn.cc (fully_constant_vn_reference_p): Likewise.
+
+2025-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120777
+	* gimple-fold.cc (gimple_get_virt_method_for_vtable): Revert
+	2018-09-18 changes.
+
+2025-06-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98735
+	PR c++/118904
+	* tree.cc (struct identifier_hash): New type.
+	(struct identifier_count_traits): New traits.
+	(internal_label_nums): New hash map.
+	(generate_internal_label): New function.
+	(prefix_for_internal_label): New function.
+	* tree.h (IDENTIFIER_INTERNAL_P): New macro.
+	(generate_internal_label): Declare.
+	(prefix_for_internal_label): Declare.
+	* ubsan.cc (ubsan_ids): Remove.
+	(ubsan_type_descriptor): Use generate_internal_label.
+	(ubsan_create_data): Likewise.
+
+2025-06-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (function_instance::set_name,
+	function_instance::set_realized, function_instnace::realized_p,
+	function_instance::set_in_worklist,
+	function_instance::clear_in_worklist,
+	function_instance::in_worklist_p): New member functions.
+	(function_instance::in_worklist, function_instance::realized_):
+	new.
+	(get_relative_location_for_locus): Break out from ....
+	(get_relative_location_for_stmt): ... here.
+	(function_instance::~function_instance): Sanity check that
+	removed function is not in worklist.
+	(function_instance::merge): Do not offline realized instances.
+	(function_instance::offline): Make private; add duplicate functions
+	to worklist rather then merging immediately.
+	(function_instance::offline_if_in_set):  Cleanup.
+	(function_instance::remove_external_functions): Likewise.
+	(function_instance::offline_if_not_realized): New member function.
+	(autofdo_source_profile::offline_external_functions): Handle delayed
+	functions.
+	(autofdo_source_profile::offline_unrealized_inlines): New member function.
+	(walk_block): New function.
+	(mark_realized_functions): New function.
+	(afdo_annotate_cfg): Fix dump.
+	(auto_profile): Mark realized functions and offline rest; do not compute
+	fn summary.
+
+2025-06-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/113934
+	* config/avr/avr.opt (-mlra): Turn on per default.
+
+2025-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120808
+	* tree-vect-slp-patterns.cc (vect_match_expression_p):
+	Take a code_helper and also match calls.
+	(addsub_pattern::recognize): Handle .FMA/.FMS pairs
+	in addition to PLUS/MINUS.
+	(addsub_pattern::build): Adjust.
+
+2025-06-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_chooses_same_modes_p): New
+	overload.
+	* tree-vect-stmts.cc (vect_chooses_same_modes_p): Likewise.
+	* tree-vect-loop.cc (vect_analyze_loop): Prune epilogue
+	analysis further when not using partial vectors.
+
+2025-06-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop): Consider AVX512
+	style masking when computing supports_partial_vectors.
+
+2025-06-27  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/extend.texi: Fix typo in unsed attribute docs.
+
+2025-06-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120830
+	* config/i386/i386-features.cc (ix86_get_vector_cse_mode): Handle
+	vector broadcast source.
+
+2025-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/120424
+	* lra-eliminations.cc (elimination_2sp_occurred_p): Rename
+	from...
+	(elimination_fp2sp_occured_p): ... this.  Adjust all uses.
+	(lra_eliminate_regs_1): Don't require a from-frame-pointer
+	elimination to set it.
+	(update_reg_eliminate): Likewise to test it.
+
+2025-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/120424
+	* lra-eliminations.cc (lra_eliminate_regs_1): Adjust autoinc
+	addresses that are MEMs.
+
+2025-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/120424
+	* lra-eliminations.cc (lra_update_fp2sp_elimination): Reorder
+	and regroup related statements.
+
+2025-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/120424
+	* lra-eliminations.cc (lra_update_fp2sp_elimination):
+	Avoid sp offsets in further fp2sp eliminations...
+	(update_reg_eliminate): ... and restore to_rtx before assert
+	checking.
+
+2025-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/120424
+	* lra-eliminations.cc (lra_update_fp2sp_elimination):
+	Compute complete live ranges and recompute slots' live ranges
+	if needed.
+	* lra-lives.cc (lra_reset_live_range_list): New.
+	(lra_complete_live_ranges): New.
+	* lra-spills.cc (assign_spill_hard_regs): Reject empty live
+	ranges.
+	(add_pseudo_to_slot): Likewise.
+	(lra_recompute_slots_live_ranges): New.
+	* lra-int.h (lra_reset_live_range_list): Declare.
+	(lra_complete_live_ranges): Declare.
+	(lra_recompute_slots_live_ranges): Declare.
+
+2025-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/120424
+	* genoutput.cc (scan_operands): Make MATCH_SCRATCHes eliminable.
+
+2025-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/120424
+	* lra-eliminations.cc (lra_update_fp2sp_elimination):
+	Inactivate the unused fp2sp elimination right away.
+
+2025-06-26  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.md (reg move splitter): New splitter for 64-bit
+	register moves into two 32-bit moves.
+	(const_int move splitter): New splitter for 64-bit constant
+	integer moves into two 32-bit moves.
+
+2025-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (diagnostic_context::set_permissive_option): New.
+	(diagnostic_context::set_fatal_errors): New.
+	(diagnostic_context::set_internal_error_callback): New.
+	(diagnostic_context::set_adjust_diagnostic_info_callback): New.
+	(diagnostic_context::inhibit_notes): New.
+	(diagnostic_context::m_opt_permissive): Make private.
+	(diagnostic_context::m_fatal_errors): Likewise.
+	(diagnostic_context::m_internal_error): Likewise.
+	(diagnostic_context::m_adjust_diagnostic_info): Likewise.
+	(diagnostic_context::m_inhibit_notes_p): Likewise.
+	(diagnostic_inhibit_notes): Delete.
+	* opts.cc (common_handle_option): Use
+	diagnostic_context::set_fatal_errors.
+	* toplev.cc (internal_error_function): Use
+	diagnostic_context::set_internal_error_callback.
+	(general_init): Likewise.
+	(process_options): Use diagnostic_context::inhibit_notes.
+
+2025-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/120809
+	* diagnostic-format-html.cc
+	(html_builder::maybe_make_state_diagram): Bulletproof against the
+	SVG generation failing.
+	* xml.cc (xml::printer::push_element): Assert that the ptr is
+	nonnull.
+	(xml::printer::append): Likewise.
+
+2025-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-output-spec.cc (sarif_scheme_handler::make_sink):
+	Split out creation of sarif_generation_options and
+	sarif_serialization_format into...
+	(sarif_scheme_handler::make_sarif_gen_opts): ...this...
+	(sarif_scheme_handler::make_sarif_serialization_object): ...and
+	this.
+
+2025-06-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR target/120828
+	* config/riscv/riscv-v.cc (prepare_ternary_operands): Handle the
+	vector-scalar case.
+
+2025-06-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/120719
+	* config/i386/i386.md (crc_rev<SWI124:mode>si4): New expander.
+
+2025-06-26  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.md: Fix build issue.
+
+2025-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	* lto-ltrans-cache.h (class ltrans_file_cache): Remove member prefix.
+	* lto-ltrans-cache.cc (ltrans_file_cache::ltrans_file_cache): Do
+	not initialize member prefix.
+
+2025-06-26  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.md: Add comment and reorder include
+	files.
+
+2025-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-vect-stmts.cc (supportable_indirect_convert_operation):
+	Remove an unused shadowed variable.
+
+2025-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-vect-slp.cc (cond_expr_maps): Remove.
+
+2025-06-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (function_instance::merge): Add TODO.
+	(autofdo_source_profile::offline_external_functions):
+	Do not use range for on the worklist.
+	* timevar.def (TV_IPA_AUTOFDO_OFFLINE): New timevar.
+
+2025-06-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (name_index_set, name_index_map): New types.
+	(dump_afdo_loc): New function.
+	(dump_inline_stack): Simplify.
+	(function_instance::merge): Merge recursively inlined functions;
+	offline if necessary; collect new fnctions.
+	(function_instance::offline): New member function.
+	(function_instance::offline_if_in_set): New member function.
+	(function_instance::remove_external_functions): New member function.
+	(function_instance::dump): New member function.
+	(function_instance::debug): New member function.
+	(function_instance::dump_inline_stack): New member function.
+	(function_instance::find_icall_target_map): Use removed_icall_target.
+	(function_instance::remove_icall_target): Only mark icall target removed.
+	(autofdo_source_profile::offline_external_functions): New function.
+	(function_instance::read_function_instance): Record inlined_to pointers;
+	use -1 for unknown head counts.
+	(autofdo_source_profile::get_function_instance_by_name_index): New
+	function.
+	(autofdo_source_profile::add_function_instance): New member function.
+	(autofdo_source_profile::read): Do not leak memory; fix formatting.
+	(read_profile): Fix formatting.
+	(afdo_annotate_cfg): LIkewise.
+	(class pass_ipa_auto_profile_offline): New pass.
+	(make_pass_ipa_auto_profile_offline): New function.
+	* passes.def (pass_ipa_auto_profile_offline): Add
+	* tree-pass.h (make_pass_ipa_auto_profile): Declare
+
+2025-06-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120819
+	* config/i386/i386-features.cc (ix86_broadcast_inner): Also handle
+	all 1s float vector constant.
+
+2025-06-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120816
+	* config/i386/i386-features.cc (remove_redundant_vector_load):
+	Handle REG_EH_REGION note in DEF_INSN.
+
+2025-06-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/119628
+	* config/i386/i386-expand.cc (ix86_expand_call): Call
+	ix86_type_no_callee_saved_registers_p instead of looking up
+	no_callee_saved_registers attribute.
+	* config/i386/i386-options.cc (ix86_set_func_type): Look up
+	preserve_none attribute.  Check preserve_none attribute for
+	interrupt attribute.  Don't check no_caller_saved_registers nor
+	no_callee_saved_registers conflicts here.
+	(ix86_set_func_type): Check no_callee_saved_registers before
+	checking no_caller_saved_registers attribute.
+	(ix86_set_current_function): Allow SSE with
+	no_caller_saved_registers attribute.
+	(ix86_handle_call_saved_registers_attribute): Check preserve_none,
+	no_callee_saved_registers and no_caller_saved_registers conflicts.
+	(ix86_gnu_attributes): Add preserve_none attribute.
+	* config/i386/i386-protos.h (ix86_type_no_callee_saved_registers_p):
+	New.
+	* config/i386/i386.cc
+	(x86_64_preserve_none_int_parameter_registers): New.
+	(ix86_using_red_zone): Don't use red-zone when there are no
+	caller-saved registers with SSE.
+	(ix86_type_no_callee_saved_registers_p): New.
+	(ix86_function_ok_for_sibcall): Also check TYPE_PRESERVE_NONE
+	and call ix86_type_no_callee_saved_registers_p instead of looking
+	up no_callee_saved_registers attribute.
+	(ix86_comp_type_attributes): Call
+	ix86_type_no_callee_saved_registers_p instead of looking up
+	no_callee_saved_registers attribute.  Return 0 if preserve_none
+	attribute doesn't match in 64-bit mode.
+	(ix86_function_arg_regno_p): For cfun with TYPE_PRESERVE_NONE,
+	use x86_64_preserve_none_int_parameter_registers.
+	(init_cumulative_args): Set preserve_none_abi.
+	(function_arg_64): Use x86_64_preserve_none_int_parameter_registers
+	with preserve_none attribute.
+	(setup_incoming_varargs_64): Use
+	x86_64_preserve_none_int_parameter_registers with preserve_none
+	attribute.
+	(ix86_save_reg): Treat TYPE_PRESERVE_NONE like
+	TYPE_NO_CALLEE_SAVED_REGISTERS.
+	(ix86_nsaved_sseregs): Allow saving XMM registers for
+	no_caller_saved_registers attribute.
+	(ix86_compute_frame_layout): Likewise.
+	(x86_this_parameter): Use
+	x86_64_preserve_none_int_parameter_registers with preserve_none
+	attribute.
+	* config/i386/i386.h (ix86_args): Add preserve_none_abi.
+	(call_saved_registers_type): Add TYPE_PRESERVE_NONE.
+	(machine_function): Change call_saved_registers to 3 bits.
+	* doc/extend.texi: Add preserve_none attribute.  Update
+	no_caller_saved_registers attribute to remove -mgeneral-regs-only
+	restriction.
+
 2025-06-25  H.J. Lu  <hjl.tools@gmail.com>
 
 	* config/i386/i386-features.cc (ix86_place_single_vector_set):

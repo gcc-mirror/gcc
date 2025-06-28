@@ -1,3 +1,265 @@
+2025-06-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100795
+	* include/bits/ranges_algo.h (shuffle_fn::operator()):
+	Reimplement directly, based on the stl_algo.h implementation.
+	* testsuite/25_algorithms/shuffle/constrained.cc (test02):
+	New test.
+
+2025-06-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100795
+	* include/bits/ranges_algo.h (__sample_fn::operator()):
+	Reimplement the forward_iterator branch directly, based
+	on the stl_algo.h implementation.  Add explicit cast to
+	_Out's difference_type in the !forward_iterator branch.
+	* testsuite/25_algorithms/sample/constrained.cc (test02):
+	New test.
+
+2025-06-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100795
+	* include/bits/ranges_algo.h (__detail::__introselect): New,
+	based on the stl_algo.h implementation.
+	(nth_element_fn::operator()): Reimplement in terms of the above.
+	* testsuite/25_algorithms/nth_element/constrained.cc:
+
+2025-06-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100795
+	* include/bits/ranges_algo.h (__detail::__find_if_not_n): New,
+	based on the stl_algo.h implementation.
+	(__detail::__stable_partition_adaptive): Likewise.
+	(__stable_partition_fn::operator()): Reimplement in terms of
+	the above.
+	* testsuite/25_algorithms/stable_partition/constrained.cc
+	(test03): New test.
+
+2025-06-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100795
+	* include/bits/ranges_algo.h (__detail::__move_merge): New,
+	based on the stl_algo.h implementation.
+	(__detail::__merge_sort_loop): Likewise.
+	(__detail::__chunk_insertion_sort): Likewise.
+	(__detail::__merge_sort_with_buffer): Likewise.
+	(__detail::__stable_sort_adaptive): Likewise.
+	(__detail::__stable_sort_adaptive_resize): Likewise.
+	(__detail::__inplace_stable_sort): Likewise.
+	(__stable_sort_fn::operator()): Reimplement in terms of the above.
+	* testsuite/25_algorithms/stable_sort/constrained.cc:
+
+2025-06-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100795
+	* include/bits/ranges_algo.h (__detail::__move_merge_adaptive):
+	New, based on the stl_algo.h implementation.
+	(__detail::__move_merge_adaptive_backward): Likewise.
+	(__detail::__rotate_adaptive): Likewise.
+	(__detail::__merge_adaptive): Likewise.
+	(__detail::__merge_adaptive_resize): Likewise.
+	(__detail::__merge_without_buffer): Likewise.
+	(__inplace_merge_fn::operator()): Reimplement in terms of the
+	above.
+	* testsuite/25_algorithms/inplace_merge/constrained.cc (test03):
+	New test.
+
+2025-06-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100795
+	PR libstdc++/118209
+	* include/bits/max_size_type.h (__bit_width): New explicit
+	specialization for __max_size_type.
+	* include/bits/ranges_algo.h (__detail::__move_median_to_first):
+	New, based on the stl_algo.h implementation.
+	(__detail::__unguarded_liner_insert): Likewise.
+	(__detail::__insertion_sort): Likewise.
+	(__detail::__sort_threshold): Likewise.
+	(__detail::__unguarded_insertion_sort): Likewise.
+	(__detail::__final_insertion_sort): Likewise.
+	(__detail::__unguarded_partition): Likewise.
+	(__detail::__unguarded_partition_pivot): Likewise.
+	(__detail::__heap_select): Likewise.
+	(__detail::__partial_sort): Likewise.
+	(__detail::__introsort_loop): Likewise.
+	(__sort_fn::operator()): Reimplement in terms of the above.
+	* testsuite/25_algorithms/sort/118209.cc: New test.
+	* testsuite/25_algorithms/sort/constrained.cc (test03): New test.
+
+2025-06-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100795
+	* include/bits/ranges_algo.h (__detail::__push_heap): New,
+	based on the stl_heap.h implementation.
+	(__push_heap_fn::operator()): Reimplement in terms of the above.
+	(__detail::__adjust_heap): New, based on the stl_heap.h
+	implementation.
+	(__deatil::__pop_heap): Likewise.
+	(__pop_heap_fn::operator()): Reimplement in terms of the above.
+	(__make_heap_fn::operator()): Likewise.
+	(__sort_heap_fn::operator()): Likewise.
+	* testsuite/25_algorithms/heap/constrained.cc (test03): New
+	test.
+
+2025-06-27  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/110739
+	* include/bits/chrono_io.h (__formatter_chrono::_S_empty_fs): Define.
+	(__formatter_chrono::_S_str_d2): Use _S_str_d3 for 3+ digits and
+	place allways_inline attribute after comment.
+	(__formatter_chrono::_S_str_d3): Extracted from _S_str_d2.
+	(__formatter_chrono::_M_H_I, __formatter_chrono::_M_R_X): Replace
+	_S_empty_spec with _S_empty_fs().
+	(__formatter_chrono::_M_j): Likewise and use _S_str_d3 in common
+	case.
+	(__format::operator-(_ChronoParts, _ChronoParts))
+	(__format::operator-=(_ChronoParts, _ChronoParts))
+	(__formatter_chrono::_S_fill_two_digits)
+	(__formatter_chrono::_S_str_d1): Place always_inline attribute
+	after comment.
+
+2025-06-27  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/110739
+	* include/bits/chrono_io.h (__formatter_chrono::_M_format_to):
+	Rename _Out to _OutIter for consistency, and update calls
+	to specifier functions.
+	(__formatter_chrono::_M_wi, __formatter_chrono::_M_C_y_Y)
+	(__formatter_chrono::_M_D_x, __formatter_chrono::_M_d_e)
+	(__formatter_chrono::_M_F, __formatter_chrono::_M_g_G)
+	(__formatter_chrono::_M_H_I, __formatter_chrono::_M_j)
+	(__formatter_chrono::_M_m, __formatter_chrono::_M_M)
+	(__formatter_chrono::_M_q, __formatter_chrono::_M_R_X)
+	(__formatter_chrono::_M_u_w, __formatter_chrono::_M_U_V_W)
+	(__formatter_chrono::_M_z, __formatter_chrono::_M_z):
+	Remove _FormatContext parameter, and  introduce _OutIter
+	for __out type.
+	(__formatter_chrono::_M_a_A, __formatter_chrono::_M_B_b)
+	(__formatter_chrono::_M_p, __formatter_chrono::_M_Q)
+	(__formatter_chrono::_M_r, __formatter_chrono::_M_S)
+	(__formatter_chrono::_M_subsecs, __formatter_chrono::_M_T):
+	Introduce separate _OutIter template parameter for __out.
+	(__formatter_chrono::_M_c, __formatter_chrono::_M_T):
+	Likewise, and adjust calls to specifiers functions.
+	* testsuite/std/time/format/empty_spec.cc: Make underlying
+	type for Rep configurable.
+
+2025-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/abi/pre/gnu.ver: Keep the closing brace of the
+	CXXABI_1.3.17 symbol group together with the identifier
+	for the inherited group.
+
+2025-06-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/110739
+	* include/bits/chrono_io.h (__formatter_chrono::_M_use_locale_fmt):
+	Define.
+	(__formatter_chrono::_M_locale_fmt): Moved to front of the class.
+	(__formatter_chrono::_M_format_to): Construct and initialize
+	struct tm and call _M_locale_fmt if needed.
+	(__formatter_chrono::_M_c_r_x_X): Split into separate methods.
+	(__formatter_chrono::_M_c, __formatter_chrono::_M_r): Define.
+	(__formatter_chrono::_M_D): Renamed to _M_D_x.
+	(__formatter_chrono::_M_D_x): Renamed from _M_D.
+	(__formatter_chrono::_M_R_T): Split into _M_R_X and _M_T.
+	(__formatter_chrono::_M_R_X): Extracted from _M_R_T.
+	(__formatter_chrono::_M_T): Define in terms of _M_R_X and _M_subsecs.
+	(__formatter_chrono::_M_subsecs): Extracted from _M_S.
+	(__formatter_chrono::_M_S): Replaced __mod with __subs argument,
+	removed _M_locale_fmt call, and delegate to _M_subsecs.
+	(__formatter_chrono::_M_C_y_Y, __formatter_chrono::_M_d_e)
+	(__formatter_chrono::_M_H_I, __formatter_chrono::_M_m)
+	(__formatter_chrono::_M_u_w, __formatter_chrono::_M_U_V_W): Remove
+	__mod argument and call to _M_locale_fmt.
+
+2025-06-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/110739
+	* include/bits/chrono_io.h (__format::__no_timezone_available):
+	Removed, replaced with separate throws in formatter for
+	__local_time_fmt
+	(__format::_ChronoParts): Defined additional enumertors and
+	declared as enum class.
+	(__format::operator&(_ChronoParts, _ChronoParts))
+	(__format::operator&=(_ChronoParts&, _ChronoParts))
+	(__format::operator-(_ChronoParts, _ChronoParts))
+	(__format::operator-=(_ChronoParts&, _ChronoParts))
+	(__format::operator==(_ChronoParts, decltype(nullptr)))
+	(_ChronoSpec::_M_time_only, _ChronoSpec::_M_floating_point_rep)
+	(_ChronoSpec::_M_custom_rep, _ChronoSpec::_M_needed)
+	(_ChronoSpec::_M_needs, __format::_ChronoData): Define.
+	(__format::__formatter_chrono): Redefine to accept _ChronoData.
+	(__formatter_chrono::_M_format_to_ostream): Moved to
+	__formatter_duration.
+	(__format::__formatter_duration): Define.
+	(__formatter_chrono_info::format): Pass value-constructed
+	_ChronoData.
+	(std::formatter<chrono::day, _CharT>)
+	(std::formatter<chrono::month, _CharT>)
+	(std::formatter<chrono::year, _CharT>)
+	(std::formatter<chrono::weekday, _CharT>)
+	(std::formatter<chrono::weekday_indexed, _CharT>)
+	(std::formatter<chrono::weekday_last, _CharT>)
+	(std::formatter<chrono::month_day, _CharT>)
+	(std::formatter<chrono::month_day_last, _CharT>)
+	(std::formatter<chrono::month_weekday, _CharT>)
+	(std::formatter<chrono::month_weekday_indexed, _CharT>)
+	(std::formatter<chrono::month_weekday_last, _CharT>)
+	(std::formatter<chrono::year_month, _CharT>)
+	(std::formatter<chrono::year_month_day, _CharT>)
+	(std::formatter<chrono::year_month_day_last, _CharT>)
+	(std::formatter<chrono::year_month_weekday, _CharT>)
+	(std::formatter<chrono::year_month_weekday_indexed, _CharT>)
+	(std::formatter<chrono::year_month_weekday_last, _CharT>):
+	Construct _ChronoData in format, and configure _M_needed in
+	_ChronoSpec.
+	(std::formatter<chrono::duration<_Rep, _Period>, _CharT>)
+	(std::formatter<chrono::hh_mm_ss<_Duration>, _CharT>)
+	(std::formatter<chrono::sys_time<_Duration>, _CharT>)
+	(std::formatter<chrono::utc_time<_Duration>, _CharT>)
+	(std::formatter<chrono::tai_time<_Duration>, _CharT>)
+	(std::formatter<chrono::gps_time<_Duration>, _CharT>)
+	(std::formatter<chrono::file_time<_Duration>, _CharT>)
+	(std::formatter<chrono::local_time<_Duration>, _CharT>)
+	(std::formatter<chrono::_detail::__local_time_fmt<_Duration>, _CharT>):
+	Reworked in terms of __formatter_duration and _ChronoData.
+	(std::formatter<chrono::_detail::__utc_leap_second<_Duration>, _CharT>):
+	Removed.
+	(_Parser<_Duration>::operator()): Adjusted for _ChronoParts
+	being enum class.
+	* include/std/chrono (__detail::__utc_leap_second): Removed,
+	replaced with simply bumping _M_seconds in _ChronoData.
+	* testsuite/std/time/format/empty_spec.cc: Updated %S integral
+	ouput.
+
+2025-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/version.def (exception_ptr_cast): Add.
+	* include/bits/version.h: Regenerate.
+	* libsupc++/exception: Define __glibcxx_want_exception_ptr_cast before
+	including bits/version.h.
+	* libsupc++/exception_ptr.h (std::exception_ptr_cast): Define.
+	(std::__exception_ptr::exception_ptr::_M_exception_ptr_cast): Declare.
+	* libsupc++/eh_ptr.cc
+	(std::__exception_ptr::exception_ptr::_M_exception_ptr_cast): Define.
+	* src/c++23/std.cc.in (std::exception_ptr_cast): Export.
+	* config/abi/pre/gnu.ver: Export
+	_ZNKSt15__exception_ptr13exception_ptr21_M_exception_ptr_castERKSt9type_info
+	at CXXABI_1.3.17.
+	* testsuite/util/testsuite_abi.cc (check_version): Allow CXXABI_1.3.17.
+	* testsuite/18_support/exception_ptr/exception_ptr_cast.cc: New test.
+
+2025-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/version.def (type_order): New.
+	* include/bits/version.h: Regenerate.
+	* libsupc++/compare: Define __glibcxx_want_type_order before
+	including bits/version.h.
+	(std::type_order, std::type_order_v): New trait and template variable.
+	* src/c++23/std.cc.in (std::type_order, std::type_order_v): Export.
+	* testsuite/18_support/comparisons/type_order/1.cc: New test.
+
 2025-06-25  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* testsuite/std/time/format/precision.cc: New tests.

@@ -1,3 +1,8 @@
+2025-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	* checks/errors/borrowck/rust-borrow-checker-diagnostics.cc
+	(BorrowCheckerDiagnostics::get_loan): Type cast loan to uint32_t.
+
 2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
 
 	* checks/errors/borrowck/rust-bir-place.h
