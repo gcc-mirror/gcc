@@ -1,3 +1,7 @@
+2025-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso20.adb: New test.
+
 2025-06-13  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
