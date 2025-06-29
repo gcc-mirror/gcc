@@ -389,6 +389,7 @@ def main():
     if args.input == '-':
         args.input = None
     if args.directory:
+        global root
         root = args.directory
 
     data = open(args.input, newline='\n') if args.input else sys.stdin
