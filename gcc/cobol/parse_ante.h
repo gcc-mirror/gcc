@@ -2151,9 +2151,19 @@ static class current_t {
      * subprograms, and whether or not they are COMMON. PROGRAM may be
      * the caller, or a subprogram could call COMMON sibling.
      */
+
+    static std::unordered_set<size_t> callers_we_have_seen;
     if( programs.size() == 1 ) {
       if( yydebug ) parser_call_targets_dump();
       for( size_t caller : symbol_program_programs() ) {
+        // We are running through the entire growing list of called programs
+        // at the point of each END PROGRAM.  This confuses the name changing
+        // routines, so we use a std::set to avoid doing callers more than
+        // once.
+        if( callers_we_have_seen.find(caller) != callers_we_have_seen.end() )
+          {
+          continue;
+          }
         const char *caller_name = cbl_label_of(symbol_at(caller))->name;
         for( auto callable : symbol_program_callables(caller) ) {
           auto called = cbl_label_of(symbol_at(callable));
@@ -2161,13 +2171,16 @@ static class current_t {
             called->mangled_name? called->mangled_name : called->name;
 
           size_t n =
-            parser_call_target_update(caller, called->name, mangled_name);
+            parser_call_target_update(caller,
+                                      called->name,
+                                      mangled_name);
           // Zero is not an error
           dbgmsg("updated " HOST_SIZE_T_PRINT_UNSIGNED
                  " calls from #%-3" GCC_PRISZ "u (%s) s/%s/%s/",
                  (fmt_size_t)n, (fmt_size_t)caller, caller_name,
                  called->name, mangled_name);
         }
+      callers_we_have_seen.insert(caller);
       }
       if( yydebug ) parser_call_targets_dump();
     }

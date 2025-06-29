@@ -60,7 +60,8 @@ extern int yylineno;
 #define TSI_BACK (tsi_last(current_function->statement_list_stack.back()))
 
 extern char *cobol_name_mangler(const char *cobol_name);
-static tree gg_attribute_bit_get(struct cbl_field_t *var, cbl_field_attr_t bits);
+static tree gg_attribute_bit_get( struct cbl_field_t *var,
+                                  cbl_field_attr_t bits);
 
 static tree label_list_out_goto;
 static tree label_list_out_label;
@@ -125,8 +126,8 @@ treeplet_fill_source(TREEPLET &treeplet, cbl_refer_t &refer)
 
 tree file_static_variable(tree type, const char *v)
   {
-  // This routine returns a reference to an already-defined file_static variable
-  // You need to know the type that was used for the definition.
+  // This routine returns a reference to an already-defined file_static
+  // variable. You need to know the type that was used for the definition.
   return gg_declare_variable(type, v, NULL, vs_file_static);
   }
 
@@ -142,9 +143,9 @@ static void move_helper(tree        size_error,  // INT
 // set using -f-trace-debug, defined in lang.opt
 int f_trace_debug;
 
-// When doing WRITE statements, the IBM Language Reference and the ISO/IEC_2014
-// standard specify that when the ADVANCING clause is omitted, the default is
-// AFTER ADVANCING 1 LINE.
+// When doing WRITE statements, the IBM Language Reference and the
+// ISO/IEC_2014 standard specify that when the ADVANCING clause is omitted, the
+// default isAFTER ADVANCING 1 LINE.
 //
 // MicroFocus and GnuCOBOL state that the default is BEFORE ADVANCING 1 LINE
 //
@@ -201,7 +202,7 @@ trace1_init()
     trace_handle = gg_define_variable(INT, "trace_handle", vs_static);
     trace_indent = gg_define_variable(INT, "trace_indent", vs_static);
 
-    bTRACE1 = getenv("GCOBOL_TRACE") ? getenv("GCOBOL_TRACE") : gv_trace_switch;
+    bTRACE1 = getenv("GCOBOL_TRACE") ? getenv("GCOBOL_TRACE") :gv_trace_switch;
 
     if( bTRACE1 && strcmp(bTRACE1, "0") != 0 )
       {
@@ -267,11 +268,22 @@ build_main_that_calls_something(const char *something)
 
   gg_set_current_line_number(DEFAULT_LINE_NUMBER);
 
-  gg_define_function( INT,
-                      "main",
-                      INT, "argc",
-                      build_pointer_type(CHAR_P), "argv",
-                      NULL_TREE);
+  tree function_decl = gg_define_function( INT,
+                                           "main",
+                                           "main",
+                                           INT, "argc",
+                                           build_pointer_type(CHAR_P), "argv",
+                                           NULL_TREE);
+
+  // Modify the default settings for main(), as empirically determined from
+  // examining C/C+_+ compilations.  (See the comment for gg_build_fn_decl()).
+    TREE_ADDRESSABLE(function_decl) = 0;
+    TREE_USED(function_decl) = 0;
+    TREE_NOTHROW(function_decl) = 0;
+    TREE_STATIC(function_decl) = 1;
+    DECL_EXTERNAL (function_decl) = 0;
+    TREE_PUBLIC (function_decl) = 1;
+    DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(function_decl) = 1;
 
   // Pick up pointers to the input parameters:
   // First is the INT which is the number of argv[] entries
@@ -701,23 +713,35 @@ struct called_tree_t {
   };
 };
 
-static std::map<program_reference_t, std::list<called_tree_t> > call_targets;
+static std::map<program_reference_t, std::list<tree> > call_targets;
 static std::map<tree, cbl_call_convention_t> called_targets;
 
-static void
-parser_call_target( tree func )
+static
+void
+set_call_convention(tree function_decl, cbl_call_convention_t convention)
   {
-    cbl_call_convention_t convention = current_call_convention();
-    const char *name = IDENTIFIER_POINTER( DECL_NAME(func) );
-    program_reference_t key(current_program_index(), name);
+  called_targets[function_decl] = convention;
+  }
 
-    // Each func is unique and inserted only once.
-    assert( called_targets.find(func) == called_targets.end() );
-    called_targets[func] = convention;
+static
+void
+parser_call_target( const char *name, tree call_expr )
+  {
+  /*  This routine gets called when parser_call() has been invoked with a
+      literal target.  That target is a COBOL name like "prog_2".  However,
+      there is the case when "prog_2" is a forward reference to a contained
+      program nested inside "prog_1".  In that case, the actual definition
+      of "prog_2" will end up with a name like "prog_2.62", and eventually
+      the target of the call will have to be modified from "prog_2" to
+      "prog_2.62".
 
-    called_tree_t value(func, convention);
-    auto& p = call_targets[key];
-    p.push_back(value);
+      We save the call expression for this call, and then we update it later,
+      after we know whether or not it was a forward reference to a local
+      function. */
+
+  program_reference_t key(current_program_index(), name);
+  auto& p = call_targets[key];
+  p.push_back(call_expr);
   }
 
 /*
@@ -729,10 +753,14 @@ parser_call_target( tree func )
 cbl_call_convention_t
 parser_call_target_convention( tree func )
   {
-    auto p = called_targets.find(func);
-    if( p != called_targets.end() ) return p->second;
+  auto p = called_targets.find(func);
+  if( p != called_targets.end() )
+    {
+    // This was found in our list of call targets
+    return p->second;
+    }
 
-    return cbl_call_cobol_e;
+  return cbl_call_cobol_e;
   }
 
 void
@@ -748,7 +776,7 @@ parser_call_targets_dump()
               k.called);
       char ch = '[';
       for( auto func : v ) {
-        fprintf( stderr, "%c %s", ch, IDENTIFIER_POINTER(DECL_NAME(func.node)) );
+        fprintf( stderr, "%c %s", ch, IDENTIFIER_POINTER(DECL_NAME(func)) );
         ch = ',';
       }
       fprintf(stderr, " ]\n");
@@ -760,20 +788,27 @@ parser_call_target_update( size_t caller,
                            const char plain_name[],
                            const char mangled_name[] )
   {
-    auto key = program_reference_t(caller, plain_name);
-    auto p = call_targets.find(key);
-    if( p == call_targets.end() ) return 0;
+  auto key = program_reference_t(caller, plain_name);
+  auto p = call_targets.find(key);
+  if( p == call_targets.end() ) return 0;
 
-    for( auto func : p->second )
-      {
-      func.convention = cbl_call_verbatim_e;
-      DECL_NAME(func.node) = get_identifier(mangled_name);
-      }
-    return p->second.size();
+  for( auto call_expr : p->second )
+    {
+    tree fndecl_type = build_varargs_function_type_array( COBOL_FUNCTION_RETURN_TYPE,
+                       0,     // No parameters yet
+                       NULL); // And, hence, no types
+
+    // Fetch the FUNCTION_DECL for that FUNCTION_TYPE
+    tree function_decl = gg_build_fn_decl(mangled_name, fndecl_type);
+    tree function_address = gg_get_address_of(function_decl);
+
+    TREE_OPERAND(call_expr, 1) = function_address;
+    }
+  return p->second.size();
   }
 
 static tree
-function_handle_from_name(cbl_refer_t &name,
+function_pointer_from_name(cbl_refer_t &name,
                           tree function_return_type)
   {
   Analyze();
@@ -782,70 +817,71 @@ function_handle_from_name(cbl_refer_t &name,
                         function_return_type,
                         0,
                         NULL);
-  tree function_pointer = build_pointer_type(function_type);
-  tree function_handle  = gg_define_variable(function_pointer, "..function_handle.1", vs_stack);
-
+  tree function_pointer_type = build_pointer_type(function_type);
+  tree function_pointer       = gg_define_variable(function_pointer_type,
+                                                  "..function_pointer.1",
+                                                  vs_stack);
   if( name.field->type == FldPointer )
     {
     // If the parameter is a pointer, just pick up the value and head for the
     // exit
     if( refer_is_clean(name) )
       {
-      gg_memcpy(gg_get_address_of(function_handle),
+      gg_memcpy(gg_get_address_of(function_pointer),
                 member(name.field->var_decl_node, "data"),
                 sizeof_pointer);
       }
     else
       {
-      gg_memcpy(gg_get_address_of(function_handle),
+      gg_memcpy(gg_get_address_of(function_pointer),
                 qualified_data_location(name),
                 sizeof_pointer);
       }
-    return function_handle;
+    return function_pointer;
     }
   else if( use_static_call() && is_literal(name.field) )
     {
-    // It's a literal, and we are using static calls. Generate the CALL, and
-    // pass the address expression to parser_call_target().  That will cause
-    // parser_call_target_update() to replace any nested CALL "foo" with the
-    // local "foo.60" name.
+    tree fndecl_type = build_varargs_function_type_array( function_return_type,
+                       0,     // No parameters yet
+                       NULL); // And, hence, no types
 
-    // We create a reference to it, which is later resolved by the linker.
-    tree addr_expr = gg_get_function_address( function_return_type,
-                                              name.field->data.initial);
-    gg_assign(function_handle, addr_expr);
-
-    tree func = TREE_OPERAND(addr_expr, 0);
-    parser_call_target(func); // add function to list of call targets
+    // Fetch the FUNCTION_DECL for that FUNCTION_TYPE
+    tree function_decl = gg_build_fn_decl(name.field->data.initial,
+                                          fndecl_type);
+    // Take the address of the function decl:
+    tree address_of_function = gg_get_address_of(function_decl);
+    gg_assign(function_pointer, address_of_function);
     }
   else
     {
-    // This is not a literal or static
+    // We are not using static calls.
     if( name.field->type == FldLiteralA )
       {
-      gg_assign(function_handle,
+      gg_assign(function_pointer,
                 gg_cast(build_pointer_type(function_type),
-                        gg_call_expr(VOID_P,
-                                    "__gg__function_handle_from_literal",
-                                    build_int_cst_type(INT, current_function->our_symbol_table_index),
-                                    gg_string_literal(name.field->data.initial),
-                                    NULL_TREE)));
+                        gg_call_expr( VOID_P,
+                                  "__gg__function_handle_from_literal",
+                                  build_int_cst_type(INT,
+                                    current_function->our_symbol_table_index),
+                                  gg_string_literal(name.field->data.initial),
+                                  NULL_TREE)));
       }
     else
       {
-      gg_assign(function_handle,
+      gg_assign(function_pointer,
                 gg_cast(build_pointer_type(function_type),
                         gg_call_expr( VOID_P,
-                                      "__gg__function_handle_from_name",
-                                      build_int_cst_type(INT, current_function->our_symbol_table_index),
-                                      gg_get_address_of(name.field->var_decl_node),
-                                      refer_offset(name),
-                                      refer_size_source(  name),
-                                      NULL_TREE)));
+                                "__gg__function_handle_from_name",
+                                build_int_cst_type(INT,
+                                current_function->our_symbol_table_index),
+                                gg_get_address_of(name.field->var_decl_node),
+                                refer_offset(name),
+                                refer_size_source(  name),
+                                NULL_TREE)));
       }
     }
 
-  return function_handle;
+  return function_pointer;
   }
 
 void
@@ -879,11 +915,11 @@ parser_initialize_programs(size_t nprogs, struct cbl_refer_t *progs)
 
   for( size_t i=0; i<nprogs; i++ )
     {
-    tree function_handle = function_handle_from_name( progs[i],
-                                                    COBOL_FUNCTION_RETURN_TYPE);
+    tree function_pointer = function_pointer_from_name( progs[i],
+                                                        COBOL_FUNCTION_RETURN_TYPE);
     gg_call(VOID,
             "__gg__to_be_canceled",
-            gg_cast(SIZE_T, function_handle),
+            gg_cast(SIZE_T, function_pointer),
             NULL_TREE);
     }
   }
@@ -1077,7 +1113,7 @@ set_exception_environment( tree ecs, tree dcls )
   }
 
 void
-parser_statement_begin( const cbl_name_t statement_name, 
+parser_statement_begin( const cbl_name_t statement_name,
                         tree ecs,
                         tree dcls )
   {
@@ -1116,7 +1152,7 @@ parser_statement_begin( const cbl_name_t statement_name,
   // operation, we need to store the location information and do the exception
   // overhead:
 
-  static const std::set<std::string> file_ops = 
+  static const std::set<std::string> file_ops =
     {
     "OPEN",
     "CLOSE",
@@ -3707,7 +3743,10 @@ parser_leave_file()
     {
     SHOW_PARSE_HEADER
     char ach[256];
-    sprintf(ach, "leaving level:%d %s", file_level, current_filename.back().c_str());
+    sprintf(ach,
+            "leaving level:%d %s",
+            file_level,
+            current_filename.back().c_str());
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
     }
@@ -3717,6 +3756,13 @@ parser_leave_file()
     }
   file_level -= 1;
   current_filename.pop_back();
+
+  if( file_level == 0 )
+    {
+    // We are leaving the top-level file, which means this compilation is
+    // done, done, done.
+    gg_leaving_the_source_code_file();
+    }
   }
 
 void
@@ -3731,15 +3777,16 @@ enter_program_common(const char *funcname, const char *funcname_)
   // have no parameters.  We'll chain the parameters on in parser_division(),
   // when we process PROCEDURE DIVISION USING...
 
-  gg_define_function_with_no_parameters( COBOL_FUNCTION_RETURN_TYPE,
-                                         funcname,
-                                         funcname_);
+  gg_define_function(COBOL_FUNCTION_RETURN_TYPE,
+                     funcname,
+                     funcname_,
+                     NULL_TREE);
 
   current_function->first_time_through =
-    gg_define_variable(INT,
-                        "_first_time_through",
-                        vs_static,
-                        integer_one_node);
+                                  gg_define_variable(INT,
+                                                      "_first_time_through",
+                                                      vs_static,
+                                                      integer_one_node);
 
   gg_create_goto_pair(&current_function->skip_init_goto,
                       &current_function->skip_init_label);
@@ -3763,8 +3810,6 @@ enter_program_common(const char *funcname, const char *funcname_)
 
   current_function->current_section = NULL;
   current_function->current_paragraph = NULL;
-
-  current_function->is_truly_nested = false;
 
   // Text conversion must be initialized before the code generated by
   // parser_symbol_add runs.
@@ -3825,20 +3870,31 @@ parser_enter_program( const char *funcname_,
   // The first thing we have to do is mangle this name.  This is safe even
   // though the end result will be mangled again, because the mangler doesn't
   // change a mangled name.
-  char *mangled_name = cobol_name_mangler(funcname_);
+   
+  char *mangled_name;
+ 
+  if( current_call_convention() == cbl_call_cobol_e )
+    {
+    mangled_name = cobol_name_mangler(funcname_);
+    }
+  else
+    {
+    mangled_name = xstrdup(funcname_);
+    }
 
   size_t parent_index = current_program_index();
-  char funcname[128];
+  char *funcname;
   if( parent_index )
     {
     // This is a nested function.  Tack on the parent_index to the end of it.
-    sprintf(funcname, "%s." HOST_SIZE_T_PRINT_DEC, mangled_name,
-            (fmt_size_t)parent_index);
+    funcname = xasprintf( "%s." HOST_SIZE_T_PRINT_DEC,
+                          mangled_name,
+                          (fmt_size_t)parent_index);
     }
   else
     {
     // This is a top-level function; just use the straight mangled name
-    strcpy(funcname, mangled_name);
+    funcname = xstrdup(mangled_name);
     }
   free(mangled_name);
 
@@ -3904,6 +3960,8 @@ parser_enter_program( const char *funcname_,
     TRACE1_TEXT("\"")
     TRACE1_END
     }
+
+  free(funcname);
   }
 
 void
@@ -5973,7 +6031,7 @@ tree_type_from_field_type(cbl_field_t *field, size_t &nbytes)
       case FldNumericDisplay:
       case FldNumericBinary:
       case FldPacked:
-        if( field->data.digits > 18 )
+      if( field->data.digits > 18 )
           {
           retval = UINT128;
           nbytes = 16;
@@ -6031,14 +6089,14 @@ tree_type_from_field_type(cbl_field_t *field, size_t &nbytes)
                 cbl_field_type_str(field->type));
         break;
       }
-    }
-  if( retval == SIZE_T && field->attr & signable_e )
-    {
-    retval = SSIZE_T;
-    }
-  if( retval == UINT128 && field->attr & signable_e )
-    {
-    retval = INT128;
+    if( retval == SIZE_T && field->attr & signable_e )
+      {
+      retval = SSIZE_T;
+      }
+    if( retval == UINT128 && field->attr & signable_e )
+      {
+      retval = INT128;
+      }
     }
   return retval;
   }
@@ -6054,12 +6112,13 @@ restore_local_variables()
 
 static inline bool
 is_valuable( cbl_field_type_t type ) {
+  /*  The name of this routine is a play on words, in English.  It doesn't
+      mean "Is worth a lot".  It means "Can be converted to a value." */
   switch ( type ) {
   case FldInvalid:
   case FldGroup:
   case FldAlphanumeric:
   case FldNumericEdited:
-  case FldAlphaEdited:
   case FldLiteralA:
   case FldClass:
   case FldConditional:
@@ -6072,6 +6131,7 @@ is_valuable( cbl_field_type_t type ) {
   // COBOL form to a little-endian binary representation so that they
   // can be conveyed BY CONTENT/BY VALUE in a CALL or user-defined
   // function activation.
+  case FldAlphaEdited:
   case FldNumericDisplay:
   case FldNumericBinary:
   case FldFloat:
@@ -6126,7 +6186,7 @@ parser_exit_program(void)  // exits back to COBOL only, else continue
 
 static
 void
-pe_stuff(cbl_refer_t refer, ec_type_t ec)
+program_end_stuff(cbl_refer_t refer, ec_type_t ec)
   {
   // This is the moral equivalent of a C "return xyz;".
 
@@ -6148,9 +6208,6 @@ pe_stuff(cbl_refer_t refer, ec_type_t ec)
     tree retval   = gg_define_variable(return_type);
 
     gg_assign(retval, gg_cast(return_type, integer_zero_node));
-
-    gg_modify_function_type(current_function->function_decl,
-                            return_type);
 
     if( is_valuable( field_type ) )
       {
@@ -6254,7 +6311,7 @@ parser_exit( const cbl_refer_t& refer, ec_type_t ec )
     IF( current_function->called_by_main_counter, eq_op, integer_zero_node )
       {
       // This function wasn't called by main, so we treat it like a GOBACK
-      pe_stuff(refer, ec);
+      program_end_stuff(refer, ec);
       }
     ELSE
       {
@@ -6265,7 +6322,7 @@ parser_exit( const cbl_refer_t& refer, ec_type_t ec )
         // This was a recursive call into the function originally called by
         // main.  Because we are under the control of a calling program, we
         // treat this like a GOBACK
-        pe_stuff(refer, ec);
+        program_end_stuff(refer, ec);
         }
       ELSE
         {
@@ -6290,7 +6347,7 @@ parser_exit( const cbl_refer_t& refer, ec_type_t ec )
       {
       }
       ENDIF
-    pe_stuff(refer, ec);
+    program_end_stuff(refer, ec);
     }
   }
 
@@ -6802,6 +6859,10 @@ parser_division(cbl_division_t division,
       {
       parser_local_add(returning);
       current_function->returning = returning;
+
+      size_t nbytes = 0;
+      tree returning_type = tree_type_from_field_type(returning, nbytes);
+      gg_modify_function_type(current_function->function_decl, returning_type);
       }
 
     // Stash the returning variables for use during parser_return()
@@ -12462,11 +12523,11 @@ static
 void
 create_and_call(size_t narg,
                 cbl_ffi_arg_t args[],
-                tree function_handle,
+                tree function_pointer,
+                const char *funcname,
                 tree returned_value_type,
                 cbl_refer_t returned,
-                cbl_label_t *not_except
-                )
+                cbl_label_t *not_except)
   {
   // We have a good function handle, so we are going to create a call
   tree *arguments = NULL;
@@ -12687,27 +12748,66 @@ create_and_call(size_t narg,
   gg_assign(var_decl_call_parameter_count,
             build_int_cst_type(INT, narg));
 
-  gg_assign(var_decl_call_parameter_signature,
-            gg_cast(CHAR_P, function_handle));
+  tree call_expr = NULL_TREE;
+  if( function_pointer )
+    {
+    gg_assign(var_decl_call_parameter_signature,
+              gg_cast(CHAR_P, function_pointer));
 
-  tree call_expr = gg_call_expr_list( returned_value_type,
-                                      function_handle,
+    call_expr = gg_call_expr_list(returned_value_type,
+                                  function_pointer,
+                                  narg,
+                                  arguments );
+    }
+  else
+    {
+    tree fndecl_type = build_varargs_function_type_array( returned_value_type,
+                       0,     // No parameters yet
+                       NULL); // And, hence, no types
+
+    // Fetch the FUNCTION_DECL for that FUNCTION_TYPE
+    tree function_decl = gg_build_fn_decl(funcname, fndecl_type);
+    set_call_convention(function_decl, current_call_convention());
+    
+    // Take the address of the function decl:
+    tree address_of_function = gg_get_address_of(function_decl);
+
+    // Stash that address as the called program's signature:
+    tree address_as_char_p = gg_cast(CHAR_P, address_of_function);
+    tree assigment = gg_assign( var_decl_call_parameter_signature,
+                                address_as_char_p);
+    // The source of the assigment is the second element of a MODIFY_EXPR
+    parser_call_target( funcname, assigment );
+
+    // Create the call_expr from that address
+    call_expr = build_call_array_loc( location_from_lineno(),
+                                      returned_value_type,
+                                      address_of_function,
                                       narg,
-                                      arguments );
+                                      arguments);
+    // Among other possibilities, this might be a forward reference to a
+    // contained function.  The name  here is "prog2", and ultimately will need
+    // to be replaced with a call to "prog2.62".  So, this call expr goes into
+    // a list of call expressions whose function_decl targets will be replaced.
+    parser_call_target( funcname, call_expr );
+    }
+
   tree returned_value;
+
   if( returned.field )
     {
-    returned_value = gg_define_variable(returned_value_type);
+    // Because the CALL had a RETURNING clause, RETURN-CODE doesn't return a
+    // value.  So, we make sure it is zero
+    //// gg_assign(var_decl_return_code, build_int_cst_type(SHORT, 0));
 
-    // We are expecting a return value of type CHAR_P, SSIZE_T, SIZE_T,
-    // UINT128 or INT128
+    // We expect the return value to be a 64-bit or 128-bit integer.  How
+    // we treat that returned value depends on the target.
+
+    // Pick up that value:
+    returned_value = gg_define_variable(returned_value_type);
     push_program_state();
     gg_assign(returned_value, gg_cast(returned_value_type, call_expr));
     pop_program_state();
-
-    // Because the CALL had a RETURNING clause, RETURN-CODE doesn't return a
-    // value.  So, we make sure it is zero
-////    gg_assign(var_decl_return_code, build_int_cst_type(SHORT, 0));
 
     if( returned_value_type == CHAR_P )
       {
@@ -12918,39 +13018,49 @@ parser_call(   cbl_refer_t name,
   // We are getting close to establishing the function_type.  To do that,
   // we want to establish the function's return type.
 
-//  gg_push_context();
   size_t nbytes;
   tree returned_value_type = tree_type_from_field_type(returned.field, nbytes);
 
-  tree function_handle = function_handle_from_name( name,
-                                                    returned_value_type);
-  if(    (use_static_call() && is_literal(name.field))
-      || (name.field && name.field->type == FldPointer) )
+  if( use_static_call() && is_literal(name.field) )
     {
-    // If these conditions are true, then we know we have a good
-    // function_handle, and we don't need to check
+    // name is a literal
     create_and_call(narg,
                     args,
-                    function_handle,
+                    NULL_TREE,
+                    name.field->data.initial,
                     returned_value_type,
                     returned,
-                    not_except
-                    );
+                    not_except);
+    }
+  else if( name.field && name.field->type == FldPointer )
+    {
+    tree function_pointer = function_pointer_from_name( name,
+                                                        returned_value_type);
+    // This is call-by-pointer; we know function_pointer is good:
+    create_and_call(narg,
+                    args,
+                    function_pointer,
+                    nullptr,
+                    returned_value_type,
+                    returned,
+                    not_except);
     }
   else
     {
+    tree function_pointer = function_pointer_from_name( name,
+                                                      returned_value_type);
     // We might not have a good handle, so we have to check:
-    IF( function_handle,
+    IF( function_pointer,
         ne_op,
-        gg_cast(TREE_TYPE(function_handle), null_pointer_node) )
+        gg_cast(TREE_TYPE(function_pointer), null_pointer_node) )
       {
-      create_and_call(narg,
-                      args,
-                      function_handle,
-                      returned_value_type,
-                      returned,
-                      not_except
-                      );
+    create_and_call(narg,
+                    args,
+                    function_pointer,
+                    nullptr,
+                    returned_value_type,
+                    returned,
+                    not_except);
       }
     ELSE
       {
@@ -12998,8 +13108,6 @@ parser_call(   cbl_refer_t name,
     gg_append_statement( not_except->structs.call_exception->bottom.label );
     free( not_except->structs.call_exception );
     }
-//  gg_pop_context();
-
   }
 
 // Set global variable to use alternative ENTRY point.
@@ -13195,10 +13303,10 @@ parser_set_pointers( size_t ntgt, cbl_refer_t *tgts, cbl_refer_t source )
             || source.field->type == FldLiteralA))
       {
       // This is something like SET varp TO ENTRY "ref".
-      tree function_handle = function_handle_from_name(source,
+      tree function_pointer = function_pointer_from_name(source,
                                                    COBOL_FUNCTION_RETURN_TYPE);
       gg_memcpy(qualified_data_location(tgts[i]),
-                gg_get_address_of(function_handle),
+                gg_get_address_of(function_pointer),
                 sizeof_pointer);
       }
     else
@@ -13453,7 +13561,7 @@ parser_program_hierarchy( const cbl_prog_hier_t& hier )
         // We haven't seen this caller before
         callers.insert(caller);
 
-        char ach[2*sizeof(cbl_name_t)];
+        char ach[3*sizeof(cbl_name_t)];
         tree names_table_type = build_array_type_nelts(CHAR_P, mol->second.size()+1);
         sprintf(ach, "..our_accessible_functions_" HOST_SIZE_T_PRINT_DEC,
                 (fmt_size_t)caller);
@@ -13480,7 +13588,9 @@ parser_program_hierarchy( const cbl_prog_hier_t& hier )
               callee != mol->second.end();
               callee++ )
           {
-          sprintf(ach, "%s." HOST_SIZE_T_PRINT_DEC, (*callee)->name,
+          sprintf(ach,
+                  "%s." HOST_SIZE_T_PRINT_DEC,
+                  (*callee)->name,
                   (fmt_size_t)(*callee)->parent_node->our_index);
 
           CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr_names),
@@ -16238,13 +16348,27 @@ psa_FldLiteralA(struct cbl_field_t *field )
   // We have the original nul-terminated text at data.initial.  We have a
   // copy of it in buffer[] in the internal codeset.
 
+  static const char name_base[] = "_literal_a_";
+
   // We will reuse a single static structure for each string
   static std::unordered_map<std::string, int> seen_before;
+
   std::string field_string(buffer);
+
+#if 0
+  /*  This code is suppoed to re-use literals, and seems to work just fine in
+      x86_64-linux and on an Apple aarch64 M1 Macbook Pro.  But on an M1
+      mini, using -Os optimization, attempts were made in the generated
+      assembly language to define _literal_a_1 more than once.
+
+      I didn't know how to try to track this one down, so I decided simply to
+      punt by removing the code.
+
+      I am leaving the code here because of a conviction that it someday should
+      be tracked down. */
+
   std::unordered_map<std::string, int>::const_iterator it =
               seen_before.find(field_string);
-
-  static const char name_base[] = "_literal_a_";
 
   if( it != seen_before.end() )
     {
@@ -16258,9 +16382,11 @@ psa_FldLiteralA(struct cbl_field_t *field )
                                                   vs_file_static);
     }
   else
+#endif    
     {
     // We have not seen that string before
-    static int nvar = 1;
+    static int nvar = 0;
+    nvar += 1;
     seen_before[field_string] = nvar;
 
     char ach[32];
@@ -16280,7 +16406,6 @@ psa_FldLiteralA(struct cbl_field_t *field )
     TREE_USED(field->var_decl_node) = 1;
     TREE_STATIC(field->var_decl_node) = 1;
     DECL_PRESERVE_P (field->var_decl_node) = 1;
-    nvar += 1;
     }
 //  TRACE1
 //    {
@@ -16564,7 +16689,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     if( !ancestor && (new_var->level > LEVEL01 && new_var->level <= LEVEL49 ) )
       {
-      cbl_internal_error("%s: %d %qs has NULL ancestor", __func__, 
+      cbl_internal_error("%s: %d %qs has NULL ancestor", __func__,
                          new_var->level, new_var->name);
       }
 
