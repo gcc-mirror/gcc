@@ -26,4 +26,4 @@ int foo (int num)
   return 1;
 }
 /* { dg-final { scan-rtl-dump "The components we wrap separately are \\\[sep 40\\\]" "pro_and_epilogue" } } */
-/* { dg-final { scan-assembler "leaq.*(%rsp)" } } */
+/* { dg-final { scan-assembler "lea(l|q).*(%rsp)" } } */
