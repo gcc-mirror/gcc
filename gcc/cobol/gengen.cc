@@ -136,6 +136,14 @@ tree bool_false_node;
 
 struct cbl_translation_unit_t gg_trans_unit;
 
+// This set is used to prevent duplicated top-level program names from breaking
+// the compiler when a source code module makes that mistake.
+static std::unordered_set<std::string> names_we_have_seen;
+
+// This vector is used to process the function_decls at the point we leave 
+// the file.
+static std::vector<tree> finalized_function_decls;
+
 void
 gg_build_translation_unit(const char *filename)
   {
@@ -354,13 +362,12 @@ adjust_for_type(tree type)
   return retval;
   }
 
-static
 char *
-show_type(tree type)
+gg_show_type(tree type)
   {
   if( !type )
     {
-    cbl_internal_error("The given type is not NULL, and that is just not fair");
+    cbl_internal_error("The given type is NULL, and that is just not fair");
     }
 
   if( DECL_P(type) )
@@ -372,11 +379,14 @@ show_type(tree type)
     cbl_internal_error("The given type is not a declaration or a TYPE");
     }
 
-  static char ach[1024];
+  static char ach[1100];
+  static char ach2[1024];
+  static char ach3[1024];
   switch( TREE_CODE(type) )
     {
     case POINTER_TYPE:
-      sprintf(ach, "POINTER");
+      strcpy(ach2, gg_show_type(TREE_TYPE(type)));
+      sprintf(ach, "POINTER to %s", ach2);
       break;
 
     case VOID_TYPE:
@@ -405,11 +415,8 @@ show_type(tree type)
       break;
 
     case FUNCTION_TYPE:
-      sprintf(ach, "FUNCTION");
-//      sprintf(ach,
-//              "%3ld-bit %s INT",
-//              TREE_INT_CST_LOW(TYPE_SIZE(type)),
-//              (TYPE_UNSIGNED(type) ? "unsigned" : "  signed"));
+      strcpy(ach3, gg_show_type(TREE_TYPE(type)));
+      sprintf(ach, "FUNCTION returning %s", ach3);
       break;
 
     default:
@@ -419,7 +426,7 @@ show_type(tree type)
   return ach;
   }
 
-void
+tree
 gg_assign(tree dest, const tree source)
   {
   // This does the equivalent of a C/C++ "dest = source".  When X1 is set, it
@@ -430,6 +437,7 @@ gg_assign(tree dest, const tree source)
   // This routine also provides for the possibility that the assignment is
   // for a source that is a function invocation, as in
   //    "dest = function_call()"
+  tree stmt = NULL_TREE;
 
   saw_pointer = false;
   tree dest_type = adjust_for_type(TREE_TYPE(dest));
@@ -452,11 +460,11 @@ gg_assign(tree dest, const tree source)
 
   if( okay )
     {
-    tree stmt = build2_loc( location_from_lineno(),
-                            MODIFY_EXPR,
-                            TREE_TYPE(dest),
-                            dest,
-                            source);
+    stmt = build2_loc(location_from_lineno(),
+                      MODIFY_EXPR,
+                      TREE_TYPE(dest),
+                      dest,
+                      source);
     gg_append_statement(stmt);
     }
   else
@@ -465,20 +473,25 @@ gg_assign(tree dest, const tree source)
     // the same.  This is a compilation-time error, since we want the caller to
     // have sorted the types out explicitly.  If we don't throw an error here,
     // the gimple reduction will do so.  Better to do it here, when we know
-    // where we are.
-    dbgmsg("Inefficient assignment");
-    if(DECL_P(dest) && DECL_NAME(dest))
+    // where we are.S
+    static const int debugging = 1;
+    if( debugging )
       {
-      dbgmsg("   Destination is %s", IDENTIFIER_POINTER(DECL_NAME(dest)));
+      fprintf(stderr, "Inefficient assignment\n");
+      if(DECL_P(dest) && DECL_NAME(dest))
+        {
+        fprintf(stderr, "   Destination is %s\n", IDENTIFIER_POINTER(DECL_NAME(dest)));
+        }
+      fprintf(stderr, "   dest type   is %s%s\n", gg_show_type(dest_type), p2 ? "_P" : "");
+      if(DECL_P(source) && DECL_NAME(source))
+        {
+        fprintf(stderr, "   Source      is %s\n", IDENTIFIER_POINTER(DECL_NAME(source)));
+        }
+      fprintf(stderr, "   source type is %s%s\n", gg_show_type(source_type), p2 ? "_P" : "");
       }
-    dbgmsg("   dest type   is %s%s", show_type(dest_type), p2 ? "_P" : "");
-    if(DECL_P(source) && DECL_NAME(source))
-      {
-      dbgmsg("   Source      is %s", IDENTIFIER_POINTER(DECL_NAME(source)));
-      }
-    dbgmsg("   source type is %s%s", show_type(source_type), p2 ? "_P" : "");
-    gcc_unreachable();
+    cbl_internal_error("Attempting an assignment of differing types.");
     }
+  return stmt;
   }
 
 tree
@@ -2467,22 +2480,99 @@ chain_parameter_to_function(tree function_decl, const tree param_type,  const ch
     }
   }
 
-void
-gg_modify_function_type(tree function_decl, tree return_type)
+/*  There are five ways that we use function_decls:
+
+    1, We define a main() entry point.
+    2. We call a function that turns out to be a static "t" function local to the source code module.
+    3. We define an global "T" function, and possibly call it later.
+    4. We call a function that we define later in the source code module.
+    5. We call a function that ends up being an extern that is not defined in the source code module.
+
+    Cases 3. and 4. turn out to require the same flags.  Here are the combinations of
+    flags that are required for each flavor of function_decl.  This was empirically
+    determind by compiling a C++ program with sample code for each type.
+
+                            | addressable | used | nothrow | static | external | public | no_instrument
+main                        |             |      |         |   X    |          |   X    |    X
+local                       |  X          |  X   |   X     |   X    |          |        |    X
+external defined inside     |  X          |  X   |   X     |   X    |          |   X    |    X
+external defined elsewhere  |  X          |  X   |         |        |   X      |   X    |
+
+*/
+
+
+static std::unordered_map<std::string, tree> map_of_function_decls;
+
+static
+std::string function_decl_key(const char *funcname, tree fndecl_type)
   {
-  tree fndecl_type = build_varargs_function_type_array( return_type,
-                     0,     // No parameters yet
-                     NULL); // And, hence, no types
-  TREE_TYPE(function_decl)  = fndecl_type;
-  tree resdecl = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, return_type);
-  DECL_CONTEXT (resdecl) = function_decl;
-  DECL_RESULT (function_decl) = resdecl;
+  std::string retval;
+  retval += funcname;
+  retval += gg_show_type(TREE_TYPE(fndecl_type));
+  return retval;
   }
 
 tree
-gg_define_function_with_no_parameters(tree return_type,
-                                      const char *funcname,
-                                      const char *unmangled_name)
+gg_peek_fn_decl(const char *funcname, tree fndecl_type)
+  {
+  // When funcname is found in map_of_function_decls, this routine returns
+  // the type of the return value of that function decl.
+
+  tree retval = NULL_TREE;
+  std::string key = function_decl_key(funcname, fndecl_type);
+  std::unordered_map<std::string, tree>::const_iterator it =
+          map_of_function_decls.find(key);
+  if( it != map_of_function_decls.end() )
+    {
+    // This function_decl has already been defined.
+    retval = TREE_TYPE(TREE_TYPE(it->second));
+    }
+  return retval;
+  }
+  
+tree
+gg_build_fn_decl(const char *funcname, tree fndecl_type)
+  {
+  tree function_decl;
+  
+  std::string key = function_decl_key(funcname, fndecl_type);
+  std::unordered_map<std::string, tree>::const_iterator it =
+          map_of_function_decls.find(key);
+  if( it != map_of_function_decls.end() )
+    {
+    // This function_decl has already been defined.  Just return it; the caller
+    // is responsible for modifying it, if necessary.
+    function_decl = it->second;
+    }
+  else
+    {
+    // When creating a never-seen function_decl, we default to the type used
+    // for calling a function defined elsewhere.  It's up to our caller to
+    // modify the flags, for example if this is part of creating a function.
+
+    function_decl = build_fn_decl(funcname, fndecl_type);
+
+    // These are the bits shown in the table in the comment up above
+    TREE_ADDRESSABLE(function_decl) = 1;
+    TREE_USED(function_decl) = 1;
+    TREE_NOTHROW(function_decl) = 0;
+    TREE_STATIC(function_decl) = 0;
+    DECL_EXTERNAL (function_decl) = 1;
+    TREE_PUBLIC (function_decl) = 1;
+    DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(function_decl) = 0;
+
+    DECL_PRESERVE_P (function_decl) = 0;
+    DECL_ARTIFICIAL(function_decl) = 0;
+    map_of_function_decls[key] = function_decl;
+    }
+  return function_decl;
+  }
+
+tree
+gg_define_function( tree return_type,
+                    const char *funcname,
+                    const char *unmangled_name,
+                    ...)
   {
   // This routine builds a function_decl, puts it on the stack, and
   // gives it a context.
@@ -2490,145 +2580,13 @@ gg_define_function_with_no_parameters(tree return_type,
   // At this time we don't know how many parameters this function expects, so
   // we set things up and we'll tack on the parameters later.
 
-  // Create the FUNCTION_TYPE for that array:
-  // int nparams = 1;
-  // tree types[1] = {VOID_P};
-  // const char *names[1] = {"_p1"};
+  /*  There is some bookkeeping we need to do to avoid crashing.
 
-  // tree fndecl_type = build_varargs_function_type_array( return_type,
-  // nparams,
-  // types);
+      It's possible for the source code to have two top-level functions with
+      the same name.  This is a compile-time error, but the GCC processing gets
+      upset when it happens.  We'll prevent it from happening here:
 
-  tree fndecl_type = build_varargs_function_type_array( return_type,
-                     0,     // No parameters yet
-                     NULL); // And, hence, no types
-
-  // Create the FUNCTION_DECL for that FUNCTION_TYPE
-  tree function_decl = build_fn_decl (funcname, fndecl_type);
-
-  // Some of this stuff is magical, and is based on compiling C programs
-  // and just mimicking the results.
-  TREE_ADDRESSABLE(function_decl) = 1;
-  TREE_STATIC(function_decl) = 1;
-  DECL_EXTERNAL (function_decl) = 0;
-  DECL_PRESERVE_P (function_decl) = 0;
-  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(function_decl) = 1;
-  DECL_ARTIFICIAL(function_decl) = 0;
-  TREE_NOTHROW(function_decl) = 0;
-  TREE_USED(function_decl) = 1;
-
-  // This code makes COBOL nested programs actual visible on the
-  // source code "trans_unit_decl" level, but with non-public "static"
-  // visibility.
-  if( gg_trans_unit.function_stack.size() == 0 )
-    {
-    // gg_trans_unit.function_stack is empty, so our context is
-    // the compilation module, and we need to be public:
-    DECL_CONTEXT (function_decl) = gg_trans_unit.trans_unit_decl;
-    TREE_PUBLIC(function_decl) = 1;
-    }
-  else
-    {
-    // The stack has something in it, so we are building a nested function.
-    // Make the current function our context
-    DECL_CONTEXT (function_decl) = gg_trans_unit.trans_unit_decl;
-    TREE_PUBLIC(function_decl) = 0;
-
-    // This function is file static, but nobody calls it, so without
-    // intervention -O1+ optimizations will discard it.
-    DECL_PRESERVE_P (function_decl) = 1;
-
-    // Append this function to the list of functions and variables
-    // associated with the computation module.
-    gg_append_var_decl(function_decl);
-    }
-
-  // Establish the RESULT_DECL for the function:
-  tree resdecl = build_decl (location_from_lineno(), RESULT_DECL, NULL_TREE, return_type);
-  DECL_CONTEXT (resdecl) = function_decl;
-  DECL_RESULT (function_decl) = resdecl;
-
-  // The function_decl has a .function member, a pointer to struct_function.
-  // This is quietly, almost invisibly, extremely important.  You need to
-  // call this routine after DECL_RESULT has been established:
-
-  allocate_struct_function(function_decl, false);
-
-  struct gg_function_t new_function = {};
-  new_function.context_count = 0;
-  new_function.function_decl = function_decl;
-  new_function.our_name = IDENTIFIER_POINTER(DECL_NAME(function_decl));
-  new_function.our_unmangled_name = xstrdup(unmangled_name);
-  new_function.function_address = gg_get_function_address(VOID, new_function.our_name);
-
-  // Each program on the stack gets a unique identifier.  This is used, for
-  // example, to make sure that static variables have unique names.
-  static size_t program_id = 0;
-  new_function.program_id_number = program_id++;
-
-  // With everything established, put this function_decl on the stack
-  gg_trans_unit.function_stack.push_back(new_function);
-
-  // All we need is a context, and we are ready to go:
-  gg_push_context();
-  return function_decl;
-  }
-
-void
-gg_tack_on_function_parameters(tree function_decl, ...)
-  {
-  int nparams = 0;
-
-  tree types[ARG_LIMIT];
-  const char *names[ARG_LIMIT];
-
-  va_list params;
-  va_start(params, function_decl);
-  for(;;)
-    {
-    tree var_type = va_arg(params, tree);
-    if( !var_type )
-      {
-      break;
-      }
-
-    if( TREE_CODE(var_type) >= NUM_TREE_CODES)
-      {
-      // Warning:  This test is not completely reliable, because a garbage
-      // byte could have a valid TREE_CODE.  But it does help.
-      yywarn("You forgot to put a %<NULL_TREE%> at the end of a "
-                  "%<gg_define_function()%> again");
-      gcc_unreachable();
-      }
-
-    const char *name = va_arg(params, const char *);
-
-    types[nparams] = var_type;
-    names[nparams] = name;
-    nparams += 1;
-    if(nparams > ARG_LIMIT)
-      {
-      yywarn("%d parameters? Really? Are you insane?",ARG_LIMIT+1);
-      gcc_unreachable();
-      }
-    }
-  va_end(params);
-
-  // Chain the names onto the variables list:
-  for(int i=0; i<nparams; i++)
-    {
-    chain_parameter_to_function(function_decl, types[i], names[i]);
-    }
-  }
-
-void
-gg_define_function(tree return_type, const char *funcname, ...)
-  {
-  // This routine builds a function_decl, puts it on the stack, and
-  // gives it a context.
-
-  // After the funcname, we expect the formal parameters: pairs of types/names
-  // terminated by a NULL_TREE
+      */
 
   int nparams = 0;
 
@@ -2636,7 +2594,7 @@ gg_define_function(tree return_type, const char *funcname, ...)
   const char *names[ARG_LIMIT];
 
   va_list params;
-  va_start(params,funcname);
+  va_start(params, unmangled_name);
   for(;;)
     {
     tree var_type = va_arg(params, tree);
@@ -2667,24 +2625,27 @@ gg_define_function(tree return_type, const char *funcname, ...)
     }
   va_end(params);
 
-  // Create the FUNCTION_TYPE for that array:
+  std::unordered_set<std::string>::const_iterator it =
+          names_we_have_seen.find(funcname);
+  if( it != names_we_have_seen.end() )
+    {
+    static int bum_counter = 1;
+    // We have seen this name before.  Replace it with something unique:
+    char ach[32];
+    sprintf(ach, "..no_dupes.%d", bum_counter++);
+    funcname = ach;
+    }
+  else
+    {
+    names_we_have_seen.insert(funcname);
+    }
+
   tree fndecl_type = build_varargs_function_type_array( return_type,
                      nparams,
                      types);
 
   // Create the FUNCTION_DECL for that FUNCTION_TYPE
-  tree function_decl = build_fn_decl (funcname, fndecl_type);
-
-  // Some of this stuff is magical, and is based on compiling C programs
-  // and just mimicking the results.
-  TREE_ADDRESSABLE(function_decl) = 1;
-  TREE_STATIC(function_decl) = 1;
-  DECL_EXTERNAL (function_decl) = 0;
-  DECL_PRESERVE_P (function_decl) = 0;
-  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(function_decl) = 1;
-  DECL_ARTIFICIAL(function_decl) = 0;
-  TREE_NOTHROW(function_decl) = 0;
-  TREE_USED(function_decl) = 1;
+  tree function_decl = gg_build_fn_decl (funcname, fndecl_type);
 
   // This code makes COBOL nested programs actual visible on the
   // source code "trans_unit_decl" level, but with non-public "static"
@@ -2692,22 +2653,40 @@ gg_define_function(tree return_type, const char *funcname, ...)
   if( gg_trans_unit.function_stack.size() == 0 )
     {
     // gg_trans_unit.function_stack is empty, so our context is
-    // the compilation module, and we need to be public:
+    // the compilation module, and we need to be public because this is a
+    // top-level function with global scope:
+
+    // These are the bits shown in the table for gg_build_fn_decl()
+    TREE_ADDRESSABLE(function_decl) = 1;
+    TREE_USED(function_decl) = 1;
+    TREE_NOTHROW(function_decl) = 1;
+    TREE_STATIC(function_decl) = 1;
+    DECL_EXTERNAL (function_decl) = 0;
+    TREE_PUBLIC (function_decl) = 1;
+    DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(function_decl) = 1;
     DECL_CONTEXT (function_decl) = gg_trans_unit.trans_unit_decl;
-    TREE_PUBLIC(function_decl) = 1;
     }
   else
     {
-    // The stack has something in it, so we are building a nested function.
-    // Make the current function our context
+    // The stack has something in it, so we are building a contained
+    // program-id.  Such function are implemented local static functions.
+    //
+    // It's not necessarily true that a static call to such a function will be
+    // part of the source code (the call can be through a variable), and so
+    // optimization routines can decide the function isn't used and can
+    // therefore be optimized away.  The preserve flag prevents that.
+
+    // These are the bits shown in the table for gg_build_fn_decl()
+    TREE_ADDRESSABLE(function_decl) = 1;
+    TREE_USED(function_decl) = 1;
+    TREE_NOTHROW(function_decl) = 1;
+    TREE_STATIC(function_decl) = 1;
+    DECL_EXTERNAL (function_decl) = 0;
+    TREE_PUBLIC (function_decl) = 0;
+    DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(function_decl) = 1;
     DECL_CONTEXT (function_decl) = gg_trans_unit.trans_unit_decl;
-
-    // We need to make it public, because otherwise COBOL CALL "func"
-    // won't be able to find it, because dlopen/dlsym won't find it.
-    TREE_PUBLIC(function_decl) = 0;
-
-    // Append this function to the list of functions and variables
-    // associated with the computation module.
+    DECL_CONTEXT(function_decl) = gg_trans_unit.trans_unit_decl;
+    DECL_PRESERVE_P (function_decl) = 1;
     gg_append_var_decl(function_decl);
     }
 
@@ -2731,6 +2710,9 @@ gg_define_function(tree return_type, const char *funcname, ...)
   struct gg_function_t new_function = {};
   new_function.context_count = 0;
   new_function.function_decl = function_decl;
+  new_function.our_name = IDENTIFIER_POINTER(DECL_NAME(function_decl));
+  new_function.our_unmangled_name = xstrdup(unmangled_name);
+  new_function.function_address = gg_get_address_of(function_decl);
 
   // Each program on the stack gets a unique identifier.  This is used, for
   // example, to make sure that static variables have unique names.
@@ -2742,6 +2724,19 @@ gg_define_function(tree return_type, const char *funcname, ...)
 
   // All we need is a context, and we are ready to go:
   gg_push_context();
+  return function_decl;
+  }
+
+void
+gg_modify_function_type(tree function_decl, tree return_type)
+  {
+  tree fndecl_type = build_varargs_function_type_array( return_type,
+                     0,     // No parameters yet
+                     NULL); // And, hence, no types
+  TREE_TYPE(function_decl)  = fndecl_type;
+  tree resdecl = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, return_type);
+  DECL_CONTEXT (resdecl) = function_decl;
+  DECL_RESULT (function_decl) = resdecl;
   }
 
 tree
@@ -2860,51 +2855,49 @@ gg_finalize_function()
   // Finish off the context
   gg_pop_context();
 
-  if( gg_trans_unit.function_stack.back().is_truly_nested )
-    {
-    // This code is for true nested functions.
+  /*  Because COBOL functions can be misleadingly referenced before they
+    defined, and because our compiler is single pass, we need to defer
+    actually passing the function_decls to the middle end until we are
+    done with the entire compilation unit.
 
-    /////////  DANGER, WILL ROBINSON!
-    /////////  This is all well and good.  It does not, however, work.
-    /////////  I tried to implement it because I had a Brilliant Idea for
-    /////////  building COBOL paragraphs in a way that would easily allow
-    /////////  the GDB "NEXT" command to step over a PERFORM <paragraph>.
-    /////////  But, alas, I realized that it was just not going to work.
-    /////////
-    /////////  Pity.
-    /////////
-    /////////  But at that point, I was here, and I am leaving this uncooked
-    /////////  code in case I someday want to return to it.  If it becomes
-    /////////  your job, rather than mine, I encourage you to write a C
-    /////////  program that uses the GNU extensions that allow true nested
-    /////////  functions, and reverse engineer the "finish_function"
-    /////////  function, and get it working.
-    /////////
-    /////////  Good luck.  Bob Dubner, 2022-08-13
+    An actual example:
 
-    // Because this is a nested function, let's make sure that it actually
-    // has a function that it is nested within
-    gcc_assert(gg_trans_unit.function_stack.size() > 1 );
+      IDENTIFICATION DIVISION.
+      PROGRAM-ID. A.
+      DATA DIVISION.
+      WORKING-STORAGE SECTION.
+      01  CWD          PIC X(100).
+      01  LEN_OF_CWD   PIC 999 VALUE 100.
+      PROCEDURE DIVISION.
+          CALL    "getcwd" USING BY REFERENCE CWD BY VALUE LEN_OF_CWD
+          DISPLAY CWD
+          goback.
+      END PROGRAM A.
+      IDENTIFICATION DIVISION.
+      PROGRAM-ID. B.
+      DATA DIVISION.
+      WORKING-STORAGE SECTION.
+      01  CWD          PIC X(100).
+      01  RETURNED-CWD PIC X(100).
+      01  LEN_OF_CWD   PIC 999 VALUE 100.
+      PROCEDURE DIVISION.
+          CALL    "getcwd" USING BY REFERENCE CWD BY VALUE LEN_OF_CWD RETURNING RETURNED-CWD
+          DISPLAY RETURNED-CWD
+          goback.
+      END PROGRAM B.
 
-    /* Genericize before inlining.  Delay genericizing nested functions
-       until their parent function is genericized.  Since finalizing
-       requires GENERIC, delay that as well.  */
+    When we encounter the first call to getcwd, we have no clue as to the
+    type of the return value, so we assume it is COBOL_FUNCTION_RETURN_TYPE
 
-    // This is the comment in gcc/c/c-decl.c:
+    When we encounter the second call, we learn that it returns CHAR_P. But
+    an attempt to change the return type of the function_decl will result
+    in problems if the function_decl of A is processed by the middle end
+    before we get a chance to change the getcwd functiona_decl.
 
-    /* Register this function with cgraph just far enough to get it
-    added to our parent's nested function list.  Handy, since the
-    C front end does not have such a list.  */
+    Hence the need for finalized_function_decls, which gets processed
+    at the end of the file.  */
 
-    static cgraph_node *node = cgraph_node::get_create (current_function->function_decl);
-    gcc_assert(node);
-
-    }
-  else
-    {
-    // This makes the function visible on the source code module level.
-    cgraph_node::finalize_function (current_function->function_decl, true);
-    }
+  finalized_function_decls.push_back(current_function->function_decl);
 
   dump_function (TDI_original, current_function->function_decl);
 
@@ -2914,6 +2907,18 @@ gg_finalize_function()
     }
 
   gg_trans_unit.function_stack.pop_back();
+  }
+
+void
+gg_leaving_the_source_code_file()
+  {
+  for(  std::vector<tree>::const_iterator it=finalized_function_decls.begin();
+        it != finalized_function_decls.end();
+        it++ )
+    {
+    //This makes the function visible on the source code module level.
+    cgraph_node::finalize_function(*it, true);
+    }
   }
 
 void
@@ -3148,7 +3153,7 @@ gg_call(tree return_type, const char *function_name,  ...)
   }
 
 tree
-gg_call_expr_list(tree return_type, tree function_name, int param_count, tree args[])
+gg_call_expr_list(tree return_type, tree function_pointer, int param_count, tree args[])
   {
   // Generalized caller. param_count is the count of params in the arg[]]
 
@@ -3165,7 +3170,7 @@ gg_call_expr_list(tree return_type, tree function_name, int param_count, tree ar
 
   tree the_call = build_call_array_loc(location_from_lineno(),
                                        return_type,
-                                       function_name,
+                                       function_pointer,
                                        param_count,
                                        args);
   // This routine returns the call_expr; the caller will have to deal with it
@@ -3407,6 +3412,9 @@ gg_trans_unit_var_decl(const char *var_name)
   return NULL_TREE;
   }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+
 void
 gg_insert_into_assembler(const char ach[])
   {
@@ -3450,3 +3458,5 @@ gg_insert_into_assemblerf(const char *format, ...)
     gg_insert_into_assembler(ach);
     }
   }
+
+#pragma GCC diagnostic pop

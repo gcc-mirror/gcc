@@ -206,11 +206,6 @@ struct gg_function_t
     // logical way: All programs are siblings, with the context being the source
     // code module.  The nested aspect is not reflected in the GENERIC tree.
 
-    // Truly nested functions are implemented within the generic tree; the
-    // nested function is completely inside the outer function.  This was
-    // implemented to support paragraphs as callable entities.
-    bool is_truly_nested;
-
     // This variable, which appears on the stack, contains the exit_address
     // for the terminating proc of a PERFORM A or PERFORM A THROUGH B
     tree perform_exit_address;
@@ -300,7 +295,7 @@ extern tree gg_trunc(tree integer_type, tree float_var);
 extern tree gg_cast(tree type, tree var);
 
 // Assignment, that is to say, A = B
-extern void gg_assign(tree dest, const tree source);
+extern tree gg_assign(tree dest, const tree source);
 
 // struct creation and field access
 // Create struct, and access a field in a struct
@@ -456,13 +451,16 @@ extern tree gg_strncmp(tree char_star_A, tree char_star_B, tree size_t_N);
 extern void gg_return(tree operand = NULL_TREE);
 
 // These routines are the preample and postamble that bracket everything else
-extern void gg_define_function(tree return_type, const char *funcname, ...);
-extern tree gg_define_function_with_no_parameters(tree return_type,
-                                                  const char *funcname,
-                                                  const char *unmangled_name);
+extern tree gg_build_fn_decl(const char *funcname, tree fndecl_type);
+extern tree gg_peek_fn_decl(const char *funcname);
+extern tree gg_define_function( tree return_type,
+                                const char *funcname,
+                                const char *unmangled_name,
+                                ...);
 extern void chain_parameter_to_function( tree function_decl,
                                         const tree param_type,
                                         const char *name);
+extern void gg_modify_function_type(tree function_decl, tree return_type);
 
 extern void gg_finalize_function();
 extern void gg_push_context();
@@ -471,7 +469,9 @@ extern void gg_pop_context();
 // These are a generalized call constructor.  The first for when you just want
 // the function called, because you don't care about the return value.  The others
 // are for when you do need the return value.
-extern tree gg_call_expr_list(tree return_type,        tree function_name, int param_count, tree[]);
+extern tree gg_call_expr_list(tree return_type,
+                              tree function_pointer,
+                              int param_count, tree[]);
 
 // The following is a garden-variety call, with known return type and known
 // but in the case where the return value is unimportant.
@@ -505,9 +505,6 @@ void gg_goto(tree pointer);
 void gg_record_statement_list_start();
 tree gg_record_statement_list_finish();
 
-// These routines are in support of PERFORM PARAGRAPH
-extern tree gg_get_function_decl(tree return_type, const char *funcname, ...);
-
 // Used to call system exit()
 extern void gg_exit(tree exit_code);
 extern void gg_abort();
@@ -528,7 +525,7 @@ extern tree gg_indirect(tree pointer, tree byte_offset = NULL_TREE);
 extern tree gg_string_literal(const char *string);
 
 #define CURRENT_LINE_NUMBER (cobol_location().first_line)
-location_t location_from_lineno();
+extern location_t location_from_lineno();
 
 // When set to true, use UNKNOWN_LOCATION instead of CURRENT_LINE_NUMBER
 extern void gg_set_current_line_number(int line_number);
@@ -536,12 +533,13 @@ extern int  gg_get_current_line_number();
 
 extern tree gg_trans_unit_var_decl(const char *var_name);
 
-tree gg_open(tree char_star_A, tree int_B);
-tree gg_close(tree int_A);
-tree gg_get_indirect_reference(tree pointer, tree offset);
+extern tree gg_open(tree char_star_A, tree int_B);
+extern tree gg_close(tree int_A);
+extern tree gg_get_indirect_reference(tree pointer, tree offset);
 
-void gg_insert_into_assembler(const char ach[]);
-void gg_insert_into_assemblerf(const char *format, ...) ATTRIBUTE_PRINTF_1;
+extern void gg_insert_into_assembler(const char ach[]);
+extern void gg_insert_into_assemblerf(const char *format, ...) ATTRIBUTE_PRINTF_1;
 
-void gg_modify_function_type(tree function_decl, tree return_type);
+extern char *gg_show_type(tree type);
+extern void gg_leaving_the_source_code_file();
 #endif
