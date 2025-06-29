@@ -1,3 +1,25 @@
+2025-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/concat6.adb: New test.
+
+2025-06-28  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120644
+	* g++.dg/modules/auto-7.h: New test.
+	* g++.dg/modules/auto-7_a.H: New test.
+	* g++.dg/modules/auto-7_b.C: New test.
+
+2025-06-28  Lili Cui  <lili.cui@intel.com>
+
+	PR target/120818
+	* g++.target/i386/shrink_wrap_separate.C: Relax the check.
+
+2025-06-28  Jan Hubicka  <hubicka@ucw.cz>
+	    Kugan Vivekanandarajah   <kvivekananda@nvidia.com>
+
+	* gcc.dg/tree-prof/clone-test.c: New test.
+	* gcc.dg/tree-prof/clone-merge-1.c: Updae template.
+
 2025-06-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/120756

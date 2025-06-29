@@ -1,3 +1,41 @@
+2025-06-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR debug/120849
+	* print-tree.cc (debug): New.
+	* print-tree.h (debug): Likewise.
+
+2025-06-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/120856
+	* config/avr/avr.cc (avr_hard_regno_mode_ok) [-mno-lra]: Deny
+	hard regs >= 4 bytes that overlap Y.
+
+2025-06-28  Jan Hubicka  <hubicka@ucw.cz>
+	    Kugan Vivekanandarajah   <kvivekananda@nvidia.com>
+
+	* auto-profile.cc (get_original_name): Only strip suffixes introduced
+	after auto-fdo annotation.
+	(string_table::get_index_by_decl):  Simplify.
+	(string_table::add_name): New member function.
+	(string_table::read): Micro-optimize allocation.
+	(function_instance::get_function_instance_by_decl): Dump reasons
+	for failure; try to compensate lost discriminators.
+	(function_instance::merge): Simplify sanity check; do not check
+	for realized flag; fix merging of targets.
+	(function_instance::offline_if_in_set): Simplify.
+	(function_instance::dump): Sanity check that names are consistent.
+	(autofdo_source_profile::offline_external_functions): Also handle
+	stripping suffixes.
+	(walk_block): Move up in source.
+	(autofdo_source_profile::offline_unrealized_inlines): Also compute
+	realized functions.
+	(autofdo_source_profile::get_function_instance_by_name_index): Simplify.
+	(autofdo_source_profile::add_function_instance): Simplify.
+	(autofdo_source_profile::read): Do not strip suffxies; error on duplicates.
+	(mark_realized_functions): Remove.
+	(auto_profile): Do not call mark_realized_functions.
+	* passes.def: Move auto_profile_offline before free_lang_data.
+
 2025-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-fold.cc (fold_const_aggregate_ref_1) <COMPONENT_REF>:

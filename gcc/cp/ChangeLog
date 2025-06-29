@@ -1,3 +1,22 @@
+2025-06-28  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (trees_out::walking_bit_field_unit): New flag.
+	(trees_out::trees_out): Initialize it.
+	(trees_out::core_vals): Set it.
+	(trees_out::get_merge_kind): Use it, move previous ad-hoc check
+	into assertion.
+
+2025-06-28  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120644
+	* decl.cc (cp_finish_decl): Also propagate type to partial
+	templates.
+	* module.cc (trees_out::decl_value): Add assertion that the
+	TREE_TYPE of a streamed template decl matches its inner.
+	(trees_in::is_matching_decl): Clarify function return type
+	deduction should only occur for non-TEMPLATE_DECL.
+	* pt.cc (template_for_substitution): Handle partial specs.
+
 2025-06-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/120756
