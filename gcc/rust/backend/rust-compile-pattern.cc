@@ -430,8 +430,50 @@ CompilePatternCheckExpr::visit (HIR::TuplePattern &pattern)
     {
     case HIR::TuplePatternItems::RANGED:
       {
-	// TODO
-	gcc_unreachable ();
+	auto &items
+	  = static_cast<HIR::TuplePatternItemsRanged &> (pattern.get_items ());
+	size_t tuple_field_index = 0;
+
+	// lookup the type to find out number of fields
+	TyTy::BaseType *ty = nullptr;
+	bool ok = ctx->get_tyctx ()->lookup_type (
+	  pattern.get_mappings ().get_hirid (), &ty);
+	rust_assert (ok);
+	rust_assert (ty->get_kind () == TyTy::TypeKind::TUPLE);
+
+	// compile check expr for lower patterns
+	for (auto &pat : items.get_lower_patterns ())
+	  {
+	    tree field_expr
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_field_index++,
+						  pat->get_locus ());
+
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (*pat, field_expr, ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, pat->get_locus ());
+	  }
+
+	// skip the fields that are not checked
+	tuple_field_index = static_cast<TyTy::TupleType &> (*ty).num_fields ()
+			    - items.get_upper_patterns ().size ();
+
+	// compile check expr for upper patterns
+	for (auto &pat : items.get_upper_patterns ())
+	  {
+	    tree field_expr
+	      = Backend::struct_field_expression (match_scrutinee_expr,
+						  tuple_field_index++,
+						  pat->get_locus ());
+
+	    tree check_expr_sub
+	      = CompilePatternCheckExpr::Compile (*pat, field_expr, ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, pat->get_locus ());
+	  }
       }
       break;
 
