@@ -1,0 +1,27 @@
+DEFINITION MODULE IOChanUtils ;
+
+(*
+    Title      : IOChanUtils
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Sat Jun 28 23:33:06 2025
+    Revision   : $Version$
+    Description: provides additional procedures to work on
+                 ChanIds.
+*)
+
+FROM DynamicStrings IMPORT String ;
+
+IMPORT IOChan ;
+
+
+(*
+   GetFileName - returns the filename as a new string associated
+                 with chanid c.  This string should be killed by
+                 the caller.
+*)
+
+PROCEDURE GetFileName (c: IOChan.ChanId) : String ;
+
+
+END IOChanUtils.

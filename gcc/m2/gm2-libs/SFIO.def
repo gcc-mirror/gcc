@@ -29,8 +29,6 @@ DEFINITION MODULE SFIO ;
 FROM DynamicStrings IMPORT String ;
 FROM FIO IMPORT File ;
 
-EXPORT QUALIFIED OpenToRead, OpenToWrite, OpenForRandom, Exists, WriteS, ReadS ;
-
 
 (*
    Exists - returns TRUE if a file named, fname exists for reading.
@@ -89,6 +87,14 @@ PROCEDURE WriteS (file: File; s: String) : String ;
 *)
 
 PROCEDURE ReadS (file: File) : String ;
+
+
+(*
+   GetFileName - return a new string containing the name of the file.
+                 The string should be killed by the caller.
+*)
+
+PROCEDURE GetFileName (file: File) : String ;
 
 
 END SFIO.
