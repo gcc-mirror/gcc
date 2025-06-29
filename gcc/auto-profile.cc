@@ -144,10 +144,17 @@ private:
 };
 
 /* Represent a source location: (function_decl, lineno).  */
-typedef std::pair<tree, unsigned> decl_lineno;
+struct decl_lineno
+{
+  tree decl;
+  /* Relative locations stored in auto-profile.  */
+  unsigned int afdo_loc;
+  /* Actual location afdo_loc was computed from used to output diagnostics.  */
+  location_t location;
+};
 
 /* Represent an inline stack. vector[0] is the leaf node.  */
-typedef auto_vec<decl_lineno> inline_stack;
+typedef auto_vec<decl_lineno, 20> inline_stack;
 
 /* String array that stores function names.  */
 typedef auto_vec<char *> string_vector;
@@ -273,9 +280,11 @@ public:
   }
 
   /* Traverse callsites of the current function_instance to find one at the
-     location of LINENO and callee name represented in DECL.  */
+     location of LINENO and callee name represented in DECL.
+     LOCATION should match LINENO and is used to output diagnostics.  */
   function_instance *get_function_instance_by_decl (unsigned lineno,
-                                                    tree decl) const;
+						    tree decl,
+						    location_t location) const;
 
   /* Merge profile of clones.  Note that cloning hasnt been performed when
      we annotate the CFG (at this stage).  */
@@ -620,8 +629,8 @@ dump_inline_stack (FILE *f, inline_stack *stack)
     {
       fprintf (f, "%s%s:",
 	       first ? "" : "; ",
-	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p.first)));
-      dump_afdo_loc (f, p.second);
+	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p.decl)));
+      dump_afdo_loc (f, p.afdo_loc);
       first = false;
     }
   fprintf (f, "\n");
@@ -649,11 +658,11 @@ get_inline_stack (location_t locus, inline_stack *stack,
 
           tree decl = get_function_decl_from_block (block);
           stack->safe_push (
-              std::make_pair (decl, get_combined_location (locus, decl)));
+	      {decl, get_combined_location (locus, decl), locus});
           locus = tmp_locus;
         }
     }
-  stack->safe_push (std::make_pair (fn, get_combined_location (locus, fn)));
+  stack->safe_push ({fn, get_combined_location (locus, fn), locus});
 }
 
 /* Same as get_inline_stack for a given node which may be
@@ -696,7 +705,7 @@ get_relative_location_for_locus (tree fn, tree block, location_t locus)
        block = BLOCK_SUPERCONTEXT (block))
     if (inlined_function_outer_scope_p (block))
       return get_combined_location (locus,
-                                    get_function_decl_from_block (block));
+				    get_function_decl_from_block (block));
   return get_combined_location (locus, fn);
 }
 
@@ -806,7 +815,8 @@ function_instance::~function_instance ()
 
 function_instance *
 function_instance::get_function_instance_by_decl (unsigned lineno,
-                                                  tree decl) const
+						  tree decl,
+						  location_t location) const
 {
   int func_name_idx = afdo_string_table->get_index_by_decl (decl);
   if (func_name_idx != -1)
@@ -816,31 +826,26 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
       if (ret != callsites.end ())
         return ret->second;
     }
-  if (dump_file)
-    {
-      for (auto const &iter : callsites)
-	if (iter.first.first == lineno)
-	  {
-	    fprintf (dump_file, "Looking for %s:",
-		     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
-	    dump_afdo_loc (dump_file, lineno);
-	    fprintf (dump_file, " in ");
-	    this->dump_inline_stack (dump_file);
-	    fprintf (dump_file, " has mismatching call at smae loc to %s\n",
-		     afdo_string_table->get_name (iter.first.second));
-	  }
-    }
-  /* ??? If this is used to determine count, we will end up over-eastimating it
-     if offlined function has multiple callers.  */
   if (DECL_FROM_INLINE (decl))
     {
       function_instance
        	*ret =  get_function_instance_by_decl (lineno,
-						DECL_ABSTRACT_ORIGIN (decl));
-      if (ret && dump_file)
-	fprintf (dump_file, "Passing to offline instance:%s\n",
-		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+						DECL_ABSTRACT_ORIGIN (decl),
+						location);
       return ret;
+    }
+  if (dump_enabled_p ())
+    {
+      for (auto const &iter : callsites)
+	if (iter.first.first == lineno)
+	  dump_printf_loc (MSG_NOTE | MSG_PRIORITY_INTERNALS,
+			   dump_user_location_t::from_location_t (location),
+			   "auto-profile has mismatched function name %s"
+			   " instaed of %s at loc %i:%i",
+			   afdo_string_table->get_name (iter.first.second),
+			   IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+			   lineno << 16,
+			   lineno & 65535);
     }
 
   return NULL;
@@ -1487,7 +1492,8 @@ walk_block (tree fn, function_instance *s, tree block)
 		       BLOCK_SOURCE_LOCATION (block));
       function_instance *ns
 	= s->get_function_instance_by_decl
-		  (loc, BLOCK_ABSTRACT_ORIGIN (block));
+		  (loc, BLOCK_ABSTRACT_ORIGIN (block),
+		   BLOCK_SOURCE_LOCATION (block));
       if (!ns)
 	{
 	  if (dump_file)
@@ -1545,7 +1551,8 @@ autofdo_source_profile::offline_unrealized_inlines ()
 		  fprintf (dump_file, "Marking realized %s\n",
 			   afdo_string_table->get_name (index));
 		f->set_realized ();
-		if (DECL_INITIAL (n->decl) != error_mark_node)
+		if (DECL_INITIAL (n->decl)
+		    && DECL_INITIAL (n->decl) != error_mark_node)
 		  walk_block (n->decl, f, DECL_INITIAL (n->decl));
 	      }
 	    if (n->next_sharing_asm_name)
@@ -1729,7 +1736,7 @@ autofdo_source_profile::get_count_info (location_t gimple_loc,
   function_instance *s = get_function_instance_by_inline_stack (stack);
   if (s == NULL)
     return false;
-  return s->get_count_info (stack[0].second, info);
+  return s->get_count_info (stack[0].afdo_loc, info);
 }
 
 /* Update value profile INFO for STMT from the inlined indirect callsite.
@@ -1836,7 +1843,7 @@ autofdo_source_profile::get_callsite_total_count (
     struct cgraph_edge *edge) const
 {
   inline_stack stack;
-  stack.safe_push (std::make_pair (edge->callee->decl, 0));
+  stack.safe_push ({edge->callee->decl, 0, UNKNOWN_LOCATION});
 
   get_inline_stack_in_node (gimple_location (edge->call_stmt), &stack,
 			    edge->caller);
@@ -1948,35 +1955,58 @@ autofdo_source_profile::get_function_instance_by_inline_stack (
     const inline_stack &stack) const
 {
   name_function_instance_map::const_iterator iter = map_.find (
-      afdo_string_table->get_index_by_decl (stack[stack.length () - 1].first));
+      afdo_string_table->get_index_by_decl (stack[stack.length () - 1].decl));
   if (iter == map_.end ())
     {
       if (dump_file)
 	fprintf (dump_file, "No offline instance for %s\n",
 		 IDENTIFIER_POINTER
-		   (DECL_ASSEMBLER_NAME (stack[stack.length () - 1].first)));
+		   (DECL_ASSEMBLER_NAME (stack[stack.length () - 1].decl)));
       return NULL;
     }
   function_instance *s = iter->second;
   for (unsigned i = stack.length () - 1; i > 0; i--)
     {
       function_instance *os = s;
-      s = s->get_function_instance_by_decl (stack[i].second,
-					    stack[i - 1].first);
-      /* Try lost locus.  */
+      s = s->get_function_instance_by_decl (stack[i].afdo_loc,
+					    stack[i - 1].decl,
+					    stack[i].location);
+      /* Try lost discriminator.  */
       if (!s)
-	s = os->get_function_instance_by_decl (stack[i].second & ~65535,
-						stack[i - 1].first);
+	{
+	  s = os->get_function_instance_by_decl (stack[i].afdo_loc & ~65535,
+						 stack[i - 1].decl,
+						 stack[i].location);
+	  if (s && dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE | MSG_PRIORITY_INTERNALS,
+			       dump_user_location_t::from_location_t
+				 (stack[i].location),
+				"auto-profile apparently has a missing "
+				"discriminator for inlined call "
+				"of %s at relative loc %i:%i\n",
+			       IDENTIFIER_POINTER
+				(DECL_ASSEMBLER_NAME (stack[i - 1].decl)),
+			       stack[i].afdo_loc >> 16,
+			       stack[i].afdo_loc & 65535);
+	    }
+	}
       if (s == NULL)
 	{
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "No instance for %s at loc ",
-		       IDENTIFIER_POINTER
-			(DECL_ASSEMBLER_NAME (stack[i - 1].first)));
-	      dump_afdo_loc (dump_file, stack[i].second);
-	      fprintf (dump_file, "\n");
-	    }
+	  /* afdo inliner extends the stack by last entry with unknown
+	     location while chekcing if function was inlined during train run.
+	     We do not want to print diagnostics about every function
+	     which is not inlined.  */
+	  if (s && dump_enabled_p () && stack[i].location != UNKNOWN_LOCATION)
+	    dump_printf_loc (MSG_NOTE | MSG_PRIORITY_INTERNALS,
+			     dump_user_location_t::from_location_t
+			       (stack[i].location),
+			      "auto-profile has no inlined function instance "
+			      "for inlined call of %s at relative loc %i:%i\n",
+			     IDENTIFIER_POINTER
+			      (DECL_ASSEMBLER_NAME (stack[i - 1].decl)),
+			     stack[i].afdo_loc >> 16,
+			     stack[i].afdo_loc & 65535);
 	  return NULL;
 	}
     }
