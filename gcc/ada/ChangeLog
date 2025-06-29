@@ -1,3 +1,14 @@
+2025-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/120854
+	* sem_eval.adb (Get_String_Val): Be prepared for an integer literal
+	after a serious error is detected, and raise PE on other nodes.
+
+2025-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/120665
+	* sem_aggr.adb (Resolve_Container_Aggregate): Use robust guards.
+
 2025-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/gnat_rm/gnat_language_extensions.rst

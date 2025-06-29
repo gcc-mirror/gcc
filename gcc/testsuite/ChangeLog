@@ -1,3 +1,11 @@
+2025-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/concat6.adb: New test.
+
+2025-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr8.ads: New test.
+
 2025-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/sso20.adb: New test.
