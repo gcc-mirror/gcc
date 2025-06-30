@@ -30,7 +30,6 @@
 
 (define_c_enum "unspec"
   [UNSPEC_VSX_ASSEMBLE
-   UNSPEC_MMA_EXTRACT
    UNSPEC_MMA_PMXVBF16GER2
    UNSPEC_MMA_PMXVBF16GER2NN
    UNSPEC_MMA_PMXVBF16GER2NP
@@ -398,29 +397,8 @@
    (match_operand 2 "const_0_to_1_operand")]
   "TARGET_MMA"
 {
-  rtx src;
-  int regoff = INTVAL (operands[2]);
-  src = gen_rtx_UNSPEC (V16QImode,
-			gen_rtvec (2, operands[1], GEN_INT (regoff)),
-			UNSPEC_MMA_EXTRACT);
-  emit_move_insn (operands[0], src);
-  DONE;
-})
-
-(define_insn_and_split "*vsx_disassemble_pair"
-  [(set (match_operand:V16QI 0 "mma_disassemble_output_operand" "=mwa")
-       (unspec:V16QI [(match_operand:OO 1 "vsx_register_operand" "wa")
-		      (match_operand 2 "const_0_to_1_operand")]
-		      UNSPEC_MMA_EXTRACT))]
-  "TARGET_MMA
-   && vsx_register_operand (operands[1], OOmode)"
-  "#"
-  "&& reload_completed"
-  [(const_int 0)]
-{
-  int reg = REGNO (operands[1]);
-  int regoff = INTVAL (operands[2]);
-  rtx src = gen_rtx_REG (V16QImode, reg + regoff);
+  int regoff = INTVAL (operands[2]) * 16;
+  rtx src = simplify_gen_subreg (V16QImode, operands[1], OOmode, regoff);
   emit_move_insn (operands[0], src);
   DONE;
 })
@@ -472,29 +450,8 @@
    (match_operand 2 "const_0_to_3_operand")]
   "TARGET_MMA"
 {
-  rtx src;
-  int regoff = INTVAL (operands[2]);
-  src = gen_rtx_UNSPEC (V16QImode,
-			gen_rtvec (2, operands[1], GEN_INT (regoff)),
-			UNSPEC_MMA_EXTRACT);
-  emit_move_insn (operands[0], src);
-  DONE;
-})
-
-(define_insn_and_split "*mma_disassemble_acc"
-  [(set (match_operand:V16QI 0 "mma_disassemble_output_operand" "=mwa")
-       (unspec:V16QI [(match_operand:XO 1 "fpr_reg_operand" "d")
-		      (match_operand 2 "const_0_to_3_operand")]
-		      UNSPEC_MMA_EXTRACT))]
-  "TARGET_MMA
-   && fpr_reg_operand (operands[1], XOmode)"
-  "#"
-  "&& reload_completed"
-  [(const_int 0)]
-{
-  int reg = REGNO (operands[1]);
-  int regoff = INTVAL (operands[2]);
-  rtx src = gen_rtx_REG (V16QImode, reg + regoff);
+  int regoff = INTVAL (operands[2]) * 16;
+  rtx src = simplify_gen_subreg (V16QImode, operands[1], XOmode, regoff);
   emit_move_insn (operands[0], src);
   DONE;
 })
