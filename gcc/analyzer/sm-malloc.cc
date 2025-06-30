@@ -2196,19 +2196,27 @@ malloc_state_machine::on_stmt (sm_context &sm_ctxt,
 		  unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
 		  unsigned int idx2
 		    = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+		  unsigned int idx3 = idx2;
+		  if (tree chain2 = TREE_CHAIN (TREE_CHAIN (args)))
+		    idx3 = TREE_INT_CST_LOW (TREE_VALUE (chain2)) - 1;
 		  if (idx < gimple_call_num_args (stmt)
-		      && idx2 < gimple_call_num_args (stmt))
+		      && idx2 < gimple_call_num_args (stmt)
+		      && idx3 < gimple_call_num_args (stmt))
 		    {
 		      tree arg = gimple_call_arg (stmt, idx);
 		      tree arg2 = gimple_call_arg (stmt, idx2);
+		      tree arg3 = gimple_call_arg (stmt, idx3);
 		      if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE
 			  || !INTEGRAL_TYPE_P (TREE_TYPE (arg2))
-			  || integer_zerop (arg2))
+			  || !INTEGRAL_TYPE_P (TREE_TYPE (arg3))
+			  || integer_zerop (arg2)
+			  || integer_zerop (arg3))
 			continue;
-		      if (integer_nonzerop (arg2))
+		      if (integer_nonzerop (arg2) && integer_nonzerop (arg3))
 			;
 		      else
-			/* FIXME: Use ranger here to query arg2 range?  */
+			/* FIXME: Use ranger here to query arg2 and arg3
+			   ranges?  */
 			continue;
 		      handle_nonnull (sm_ctxt, node, stmt, fndecl, arg, idx);
 		    }

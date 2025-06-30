@@ -90,6 +90,14 @@ DEF_LIST_INT_INT (5,0)
 DEF_LIST_INT_INT (5,6)
 #undef DEF_LIST_INT_INT
 
+/* Construct a tree for a list of three integers.  */
+#define DEF_LIST_INT_INT_INT(VALUE1, VALUE2, VALUE3)			 \
+  DEF_ATTR_TREE_LIST (ATTR_LIST_##VALUE1##_##VALUE2##_##VALUE3,		 \
+		      ATTR_NULL, ATTR_##VALUE1,				 \
+		      ATTR_LIST_##VALUE2##_##VALUE3)
+DEF_LIST_INT_INT_INT (1,2,3)
+#undef DEF_LIST_INT_INT_INT
+
 /* Construct trees for identifiers used in built-in function attributes.
    The construction contributes to startup costs so only attributes that
    are used to define built-ins should be defined here.  */
@@ -209,6 +217,12 @@ DEF_ATTR_TREE_LIST (ATTR_NONNULL_1, ATTR_NONNULL, ATTR_LIST_1, ATTR_NULL)
 DEF_ATTR_TREE_LIST (ATTR_NONNULL_2, ATTR_NONNULL, ATTR_LIST_2, ATTR_NULL)
 /* Functions whose third parameter is a nonnull pointer.  */
 DEF_ATTR_TREE_LIST (ATTR_NONNULL_3, ATTR_NONNULL, ATTR_LIST_3, ATTR_NULL)
+/* Functions whose selected pointer parameter(s) are conditionally
+   nonnull.  */
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_IF123_LIST, ATTR_NONNULL_IF_NONZERO, \
+			ATTR_LIST_1_2_3, ATTR_NULL)
+DEF_ATTR_TREE_LIST (ATTR_NONNULL_4_IF123_LIST, ATTR_NONNULL, \
+			ATTR_LIST_4, ATTR_NONNULL_IF123_LIST)
 /* Nothrow functions with the sentinel(1) attribute. */
 DEF_ATTR_TREE_LIST (ATTR_NOTHROW_SENTINEL_1, ATTR_SENTINEL, ATTR_LIST_1, \
 			ATTR_NOTHROW_LIST)

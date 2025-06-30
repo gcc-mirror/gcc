@@ -5749,8 +5749,8 @@ struct nonnull_arg_ctx
   /* The function whose arguments are being checked and its type (used
      for calls through function pointers).  */
   const_tree fndecl, fntype;
-  /* For nonnull_if_nonzero, index of the other argument.  */
-  unsigned HOST_WIDE_INT other;
+  /* For nonnull_if_nonzero, index of the other arguments.  */
+  unsigned HOST_WIDE_INT other1, other2;
   /* True if a warning has been issued.  */
   bool warned_p;
 };
@@ -5818,6 +5818,7 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
 	    check_function_arguments_recurse (check_nonnull_arg, &ctx,
 					      argarray[i], i + 1,
 					      OPT_Wnonnull);
+	  a = NULL_TREE;
 	}
     }
   if (a == NULL_TREE)
@@ -5829,17 +5830,25 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
 	unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
 	unsigned int idx2
 	  = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	unsigned int idx3 = idx2;
+	if (tree chain2 = TREE_CHAIN (TREE_CHAIN (args)))
+	  idx3 = TREE_INT_CST_LOW (TREE_VALUE (chain2)) - 1;
 	if (idx < (unsigned) nargs - firstarg
 	    && idx2 < (unsigned) nargs - firstarg
+	    && idx3 < (unsigned) nargs - firstarg
 	    && INTEGRAL_TYPE_P (TREE_TYPE (argarray[firstarg + idx2]))
-	    && integer_nonzerop (argarray[firstarg + idx2]))
+	    && integer_nonzerop (argarray[firstarg + idx2])
+	    && INTEGRAL_TYPE_P (TREE_TYPE (argarray[firstarg + idx3]))
+	    && integer_nonzerop (argarray[firstarg + idx3]))
 	  {
-	    ctx.other = firstarg + idx2 + 1;
+	    ctx.other1 = firstarg + idx2 + 1;
+	    ctx.other2 = firstarg + idx3 + 1;
 	    check_function_arguments_recurse (check_nonnull_arg, &ctx,
 					      argarray[firstarg + idx],
 					      firstarg + idx + 1,
 					      OPT_Wnonnull);
-	    ctx.other = 0;
+	    ctx.other1 = 0;
+	    ctx.other2 = 0;
 	  }
       }
   return ctx.warned_p;
@@ -6023,14 +6032,25 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
     }
   else
     {
-      if (pctx->other)
+      if (pctx->other1 && pctx->other2 != pctx->other1)
+	warned = warning_at (loc, OPT_Wnonnull,
+			     "argument %u null where non-null expected "
+			     "because arguments %u and %u are nonzero",
+			     (unsigned) param_num,
+			     TREE_CODE (pctx->fntype) == METHOD_TYPE
+			     ? (unsigned) pctx->other1 - 1
+			     : (unsigned) pctx->other1,
+			     TREE_CODE (pctx->fntype) == METHOD_TYPE
+			     ? (unsigned) pctx->other2 - 1
+			     : (unsigned) pctx->other2);
+      else if (pctx->other1)
 	warned = warning_at (loc, OPT_Wnonnull,
 			     "argument %u null where non-null expected "
 			     "because argument %u is nonzero",
 			     (unsigned) param_num,
 			     TREE_CODE (pctx->fntype) == METHOD_TYPE
-			     ? (unsigned) pctx->other - 1
-			     : (unsigned) pctx->other);
+			     ? (unsigned) pctx->other1 - 1
+			     : (unsigned) pctx->other1);
       else
 	warned = warning_at (loc, OPT_Wnonnull,
 			     "argument %u null where non-null expected",
@@ -6039,7 +6059,7 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
 	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
 		"in a call to function %qD declared %qs",
 		pctx->fndecl,
-		pctx->other ? "nonnull_if_nonzero" : "nonnull");
+		pctx->other1 ? "nonnull_if_nonzero" : "nonnull");
     }
 
   if (warned)
@@ -6295,7 +6315,7 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
      to do this if format checking is enabled.  */
   if (warn_nonnull)
     {
-      nonnull_arg_ctx ctx = { loc, fndecl, fntype, 0, false };
+      nonnull_arg_ctx ctx = { loc, fndecl, fntype, 0, 0, false };
       warned_p = check_function_nonnull (ctx, nargs, argarray);
     }
 

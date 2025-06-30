@@ -4629,17 +4629,24 @@ pass_post_ipa_warn::execute (function *fun)
 	      unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
 	      unsigned int idx2
 		= TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	      unsigned int idx3 = idx2;
+	      if (tree chain2 = TREE_CHAIN (TREE_CHAIN (args)))
+		idx3 = TREE_INT_CST_LOW (TREE_VALUE (chain2)) - 1;
 	      if (idx < gimple_call_num_args (stmt)
-		  && idx2 < gimple_call_num_args (stmt))
+		  && idx2 < gimple_call_num_args (stmt)
+		  && idx3 < gimple_call_num_args (stmt))
 		{
 		  tree arg = gimple_call_arg (stmt, idx);
 		  tree arg2 = gimple_call_arg (stmt, idx2);
+		  tree arg3 = gimple_call_arg (stmt, idx3);
 		  if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE
 		      || !integer_zerop (arg)
 		      || !INTEGRAL_TYPE_P (TREE_TYPE (arg2))
+		      || !INTEGRAL_TYPE_P (TREE_TYPE (arg3))
 		      || integer_zerop (arg2)
+		      || integer_zerop (arg3)
 		      || ((TREE_CODE (fntype) == METHOD_TYPE || closure)
-			  && (idx == 0 || idx2 == 0)))
+			  && (idx == 0 || idx2 == 0 || idx3 == 0)))
 		    continue;
 		  if (!integer_nonzerop (arg2)
 		      && !tree_expr_nonzero_p (arg2))
@@ -4654,17 +4661,40 @@ pass_post_ipa_warn::execute (function *fun)
 		      if (range_includes_zero_p (vr))
 			continue;
 		    }
+		  if (idx2 != idx3
+		      && !integer_nonzerop (arg3)
+		      && !tree_expr_nonzero_p (arg3))
+		    {
+		      if (TREE_CODE (arg3) != SSA_NAME || optimize < 2)
+			continue;
+		      if (!ranger)
+			ranger = enable_ranger (cfun);
+
+		      int_range_max vr;
+		      get_range_query (cfun)->range_of_expr (vr, arg3, stmt);
+		      if (range_includes_zero_p (vr))
+			continue;
+		    }
 		  unsigned argno = idx + 1;
 		  unsigned argno2 = idx2 + 1;
+		  unsigned argno3 = idx3 + 1;
 		  location_t loc = (EXPR_HAS_LOCATION (arg)
 				    ? EXPR_LOCATION (arg)
 				    : gimple_location (stmt));
 		  auto_diagnostic_group d;
 
-		  if (!warning_at (loc, OPT_Wnonnull,
-				   "argument %u null where non-null "
-				   "expected because argument %u is "
-				   "nonzero", argno, argno2))
+		  if (idx2 != idx3)
+		    {
+		      if (!warning_at (loc, OPT_Wnonnull,
+				       "argument %u null where non-null "
+				       "expected because arguments %u and %u "
+				       "are nonzero", argno, argno2, argno3))
+			continue;
+		    }
+		  else if (!warning_at (loc, OPT_Wnonnull,
+					"argument %u null where non-null "
+					"expected because argument %u is "
+					"nonzero", argno, argno2))
 		    continue;
 
 		  tree fndecl = gimple_call_fndecl (stmt);

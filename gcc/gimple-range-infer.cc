@@ -197,23 +197,41 @@ gimple_infer_range::gimple_infer_range (gimple *s, range_query *q,
 	    unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
 	    unsigned int idx2
 	      = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	    unsigned int idx3 = idx2;
+	    if (tree chain2 = TREE_CHAIN (TREE_CHAIN (args)))
+	      idx3 = TREE_INT_CST_LOW (TREE_VALUE (chain2)) - 1;
 	    if (idx < gimple_call_num_args (s)
-		&& idx2 < gimple_call_num_args (s))
+		&& idx2 < gimple_call_num_args (s)
+		&& idx3 < gimple_call_num_args (s))
 	      {
 		tree arg = gimple_call_arg (s, idx);
 		tree arg2 = gimple_call_arg (s, idx2);
+		tree arg3 = gimple_call_arg (s, idx3);
 		if (!POINTER_TYPE_P (TREE_TYPE (arg))
 		    || !INTEGRAL_TYPE_P (TREE_TYPE (arg2))
-		    || integer_zerop (arg2))
+		    || !INTEGRAL_TYPE_P (TREE_TYPE (arg3))
+		    || integer_zerop (arg2)
+		    || integer_zerop (arg3))
 		  continue;
-		if (integer_nonzerop (arg2))
+		if (integer_nonzerop (arg2) && integer_nonzerop (arg3))
 		  add_nonzero (arg);
 		else
 		  {
 		    value_range r (TREE_TYPE (arg2));
 		    if (q->range_of_expr (r, arg2, s)
 			&& !r.contains_p (build_zero_cst (TREE_TYPE (arg2))))
-		      add_nonzero (arg);
+		      {
+			if (idx2 == idx3)
+			  add_nonzero (arg);
+			else
+			  {
+			    value_range r2 (TREE_TYPE (arg3));
+			    tree zero3 = build_zero_cst (TREE_TYPE (arg3));
+			    if (q->range_of_expr (r2, arg3, s)
+				&& !r2.contains_p (zero3))
+			      add_nonzero (arg);
+			  }
+		      }
 		  }
 	      }
 	  }

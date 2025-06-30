@@ -489,7 +489,7 @@ const struct attribute_spec c_common_gnu_attributes[] =
 			      handle_tls_model_attribute, NULL },
   { "nonnull",                0, -1, false, true, true, false,
 			      handle_nonnull_attribute, NULL },
-  { "nonnull_if_nonzero",     2, 2, false, true, true, false,
+  { "nonnull_if_nonzero",     2, 3, false, true, true, false,
 			      handle_nonnull_if_nonzero_attribute, NULL },
   { "nonstring",              0, 0, true, false, false, false,
 			      handle_nonstring_attribute, NULL },
@@ -5034,12 +5034,21 @@ handle_nonnull_if_nonzero_attribute (tree *node, tree name,
   tree type = *node;
   tree pos = TREE_VALUE (args);
   tree pos2 = TREE_VALUE (TREE_CHAIN (args));
+  tree chain2 = TREE_CHAIN (TREE_CHAIN (args));
+  tree pos3 = NULL_TREE;
+  if (chain2)
+    pos3 = TREE_VALUE (chain2);
   tree val = positional_argument (type, name, pos, POINTER_TYPE, 1);
   tree val2 = positional_argument (type, name, pos2, INTEGER_TYPE, 2);
-  if (val && val2)
+  tree val3 = NULL_TREE;
+  if (chain2)
+    val3 = positional_argument (type, name, pos3, INTEGER_TYPE, 3);
+  if (val && val2 && (!chain2 || val3))
     {
       TREE_VALUE (args) = val;
       TREE_VALUE (TREE_CHAIN (args)) = val2;
+      if (chain2)
+	TREE_VALUE (chain2) = val3;
     }
   else
     *no_add_attrs = true;

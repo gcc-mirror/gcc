@@ -2887,13 +2887,18 @@ my_memcpy (void *dest, const void *src, size_t len)
 @cindex @code{nonnull_if_nonzero} function attribute
 @item nonnull_if_nonzero
 @itemx nonnull_if_nonzero (@var{arg-index}, @var{arg2-index})
+@itemx nonnull_if_nonzero (@var{arg-index}, @var{arg2-index}, @var{arg3-index})
 The @code{nonnull_if_nonzero} attribute is a conditional version of the
-@code{nonnull} attribute.  It has two arguments, the first argument
+@code{nonnull} attribute.  It has two or three arguments, the first argument
 shall be argument index of a pointer argument which must be in some
 cases non-null and the second argument shall be argument index of an
 integral argument (other than boolean).  If the integral argument is
 zero, the pointer argument can be null, if it is non-zero, the pointer
-argument must not be null.
+argument must not be null.  If three arguments are provided, the third
+argument shall be argument index of another integral argument (other than
+boolean) and the pointer argument can be null if either of the integral
+arguments are zero and if both are non-zero, the pointer argument must not
+be null.
 
 @smallexample
 extern void *
@@ -2903,12 +2908,21 @@ extern void *
 my_memcpy2 (void *dest, const void *src, size_t len)
         __attribute__((nonnull_if_nonzero (1, 3),
                        nonnull_if_nonzero (2, 3)));
+extern size_t
+my_fread (void *buf, size_t size, size_t count, FILE *stream)
+        __attribute__((nonnull (4),
+                       nonnull_if_nonzero (1, 2, 3)));
 @end smallexample
 
 With these declarations, it is invalid to call
 @code{my_memcpy (NULL, NULL, 0);} or to
-call @code{my_memcpy2 (NULL, NULL, 4);} but it is valid
-to call @code{my_memcpy2 (NULL, NULL, 0);}.  This attribute should be
+call @code{my_memcpy2 (NULL, NULL, 4);} or to call
+@code{my_fread(@var{buf}, 0, 0, NULL);} or to call
+@code{my_fread(NULL, 1, 1, @var{stream});} but it is valid
+to call @code{my_memcpy2 (NULL, NULL, 0);} or
+@code{my_fread(NULL, 0, 0, @var{stream});} or
+@code{my_fread(NULL, 0, 1, @var{stream});} or
+@code{my_fread(NULL, 1, 0, @var{stream});}.  This attribute should be
 used on declarations which have e.g.@: an exception for zero sizes,
 in which case null may be passed.
 

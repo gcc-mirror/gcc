@@ -3154,16 +3154,20 @@ infer_nonnull_range_by_dereference (gimple *stmt, tree op)
 }
 
 /* Return true if OP can be inferred to be a non-NULL after STMT
-   executes by using attributes.  If OP2 is non-NULL and nonnull_if_nonzero
-   is the only attribute implying OP being non-NULL and the corresponding
-   argument isn't non-zero INTEGER_CST, set *OP2 to the corresponding
-   argument and return true (in that case returning true doesn't mean
-   OP can be unconditionally inferred to be non-NULL, but conditionally).  */
+   executes by using attributes.  If OP2 and OP3 are non-NULL and
+   nonnull_if_nonzero is the only attribute implying OP being non-NULL
+   and the corresponding argument(s) aren't non-zero INTEGER_CST, set *OP2
+   and *OP3 to the corresponding arguments and return true (in that case
+   returning true doesn't mean OP can be unconditionally inferred to be
+   non-NULL, but conditionally).  */
 bool
-infer_nonnull_range_by_attribute (gimple *stmt, tree op, tree *op2)
+infer_nonnull_range_by_attribute (gimple *stmt, tree op, tree *op2, tree *op3)
 {
   if (op2)
-    *op2 = NULL_TREE;
+    {
+      *op2 = NULL_TREE;
+      *op3 = NULL_TREE;
+    }
 
   /* We can only assume that a pointer dereference will yield
      non-NULL if -fdelete-null-pointer-checks is enabled.  */
@@ -3220,26 +3224,33 @@ infer_nonnull_range_by_attribute (gimple *stmt, tree op, tree *op2)
 	  unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
 	  unsigned int idx2
 	    = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+	  unsigned int idx3 = idx2;
+	  if (tree chain2 = TREE_CHAIN (TREE_CHAIN (args)))
+	    idx3 = TREE_INT_CST_LOW (TREE_VALUE (chain2)) - 1;
 	  if (idx < gimple_call_num_args (stmt)
 	      && idx2 < gimple_call_num_args (stmt)
+	      && idx3 < gimple_call_num_args (stmt)
 	      && operand_equal_p (op, gimple_call_arg (stmt, idx), 0))
 	    {
 	      tree arg2 = gimple_call_arg (stmt, idx2);
-	      if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2)))
+	      tree arg3 = gimple_call_arg (stmt, idx3);
+	      if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2))
+		  || !INTEGRAL_TYPE_P (TREE_TYPE (arg3)))
 		return false;
-	      if (integer_nonzerop (arg2))
+	      if (integer_nonzerop (arg2) && integer_nonzerop (arg3))
 		return true;
-	      if (integer_zerop (arg2))
+	      if (integer_zerop (arg2) || integer_zerop (arg3))
 		return false;
 	      if (op2)
 		{
 		  /* This case is meant for ubsan instrumentation.
-		     The caller can check at runtime if *OP2 is
+		     The caller can check at runtime if *OP2 and *OP3 are
 		     non-zero and OP is null.  */
 		  *op2 = arg2;
+		  *op3 = arg3;
 		  return true;
 		}
-	      return tree_expr_nonzero_p (arg2);
+	      return tree_expr_nonzero_p (arg2) && tree_expr_nonzero_p (arg3);
 	    }
 	}
     }
