@@ -235,6 +235,8 @@ struct span_t {
 
   int size() const { return pend - p; }
 
+  size_t nlines() const { return p && pend? std::count(p, pend, '\n') : 0; }
+
   span_t dup() const {
     auto  output = new char[size() + 1];
     auto eout = std::copy(p, pend, output);
@@ -244,6 +246,13 @@ struct span_t {
   const char * has_nul() const {
     auto p = std::find(this->p, pend, '\0');
     return p != pend? p : NULL;
+  }
+
+  bool at_eol() const {
+    return p < pend && '\n' == pend[-1];
+  }
+  const char * optional_eol() const {
+    return at_eol() ? "" : "\n";
   }
 };
 

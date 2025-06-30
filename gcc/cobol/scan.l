@@ -88,7 +88,7 @@ BLANK_EOL   [[:blank:]]*{EOL}
 BLANK_OEOL  [[:blank:]]*{EOL}?
 
 
-DOTSEP    [.][[:space:]]
+DOTSEP    [.]+[[:space:]]
 DOTEOL    [[:blank:]]*[.]{BLANK_EOL}
 
 SKIP	  [[:blank:]]*SKIP[123][[:blank:]]*[.]?{BLANK_EOL}
@@ -178,7 +178,7 @@ NL       [[:blank:]]*\r?\n[[:blank:]]*
 
 PUSH_FILE \f?[#]FILE{SPC}PUSH{SPC}[^\f]+\f
 POP_FILE  \f?[#]FILE{SPC}POP\f
-LINE_DIRECTIVE [#]line{SPC}[[:alnum:]]+{SPC}[""''].+\n
+LINE_DIRECTIVE ^[#]line{SPC}[[:alnum:]]+{SPC}[""''].+\n
 
 %x procedure_div ident_state addr_of function classify
 %x program_id_state comment_entries
@@ -272,6 +272,7 @@ PROCEDURE{SPC}DIVISION	{ yy_push_state(procedure_div);
 }
 
 <ident_state>{
+  ID(ENTIFICATION)?{SPC}DIVISION	{ myless(0); yy_pop_state(); }
   AS{SPC}[""] 	{ yy_push_state(quoted2); return AS; }
   AS{SPC}[''] 	{ yy_push_state(quoted1); return AS; }
   IS		{ pop_return IS; }
@@ -327,6 +328,15 @@ CENTER		{
 		  yylval.string = xstrdup(yytext);
 		  return typed_name(yytext);
 		}
+
+	/* figurative constants that are otherwise matched as names */
+
+ZEROE?S?/{OSPC}{DOTSEP}		{ return ZERO; }
+SPACES?/{OSPC}{DOTSEP}		{ yylval.string = NULL; return SPACES; }
+QUOTES?/{OSPC}{DOTSEP}		{ return QUOTES; }
+NULLS?/{OSPC}{DOTSEP}		{ return NULLS; }
+LOW-VALUES?/{OSPC}{DOTSEP}	{ return LOW_VALUES; }
+HIGH-VALUES?/{OSPC}{DOTSEP}	{ return HIGH_VALUES; }
 
 BINARY				{ return BINARY; }
 CLASSIFICATION			{ return CLASSIFICATION; }
@@ -858,8 +868,9 @@ ANUM            { return ANUM; }
 ALTERNATE	{ return ALTERNATE; }
 ALTER		{ return ALTER; }
 ALSO		{ return ALSO; }
-ALPHABET	{ return ALPHABET; }
-ALPHABETIC	{ return ALPHABETIC; }
+
+ALPHABET		{ return ALPHABET; }
+ALPHABETIC		{ return ALPHABETIC; }
 ALPHABETIC-LOWER	{ return ALPHABETIC_LOWER; }
 ALPHABETIC-UPPER	{ return ALPHABETIC_UPPER; }
 ALPHANUMERIC            { return ALPHANUMERIC; }
@@ -1394,9 +1405,8 @@ USE({SPC}FOR)?		{ return USE; }
 <name_state>{
   ^[[:blank:]]+
   ^{BLANK_EOL}
+  {NAME}		|
   {NAME}/{OSPC}[.]	{ yy_pop_state();
-    			  yylval.string = xstrdup(yytext); return NAME; }
-  {NAME} 		{ yy_pop_state();
     			  yylval.string = xstrdup(yytext); return NAME; }
 
   Z?['']                { yylval.literal.set_prefix(yytext, yyleng-1);
@@ -1501,11 +1511,11 @@ USE({SPC}FOR)?		{ return USE; }
   {GREATER_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return GE; }
   {GREATER_THAN}			{ return '>'; }
 
-  {ISNT}{SPC}">="        { return '<'; }
-  {ISNT}{SPC}">"         { return LE;  }
-  {ISNT}{SPC}"="         { return NE;  }
-  {ISNT}{SPC}"<"         { return GE;  }
-  {ISNT}{SPC}"<="        { return '>'; }
+  {ISNT}{OSPC}">="        { verify_ws(yytext[yyleng - 3]); return '<'; }
+  {ISNT}{OSPC}">"         { verify_ws(yytext[yyleng - 2]); return LE;  }
+  {ISNT}{OSPC}"="         { verify_ws(yytext[yyleng - 2]); return NE;  }
+  {ISNT}{OSPC}"<"         { verify_ws(yytext[yyleng - 2]); return GE;  }
+  {ISNT}{OSPC}"<="        { verify_ws(yytext[yyleng - 3]); return '>'; }
 
   {ISNT}{SPC}GREATER{SPC}(THAN)?{SPC}{OR_EQUAL}/[[:space:]] { return '<'; }
   {ISNT}{SPC}GREATER{SPC}(THAN)?	{ return LE; }
@@ -1513,13 +1523,35 @@ USE({SPC}FOR)?		{ return USE; }
   {ISNT}{SPC}LESS{SPC}(THAN)?		{ return GE; }
   {ISNT}{SPC}LESS{SPC}(THAN)?{SPC}{OR_EQUAL}/[[:space:]] { return '>'; }
 
-  [*]{2}{SPC}[+]	{ return POW; }
-  "**"        		{ return POW; }
+  [*]{2}	{ return POW; }
+
+  /* 
+   * "A boolean operator specifies the type of boolean operation to be performed
+   *  on one or two operands, for a unary operator or binary operator,
+   *  respectively."
+   * Binary boolean operators
+   *  B-AND B-OR B-XOR
+   * Unary boolean operator
+   *  B-NOT
+   * Boolean shift operators
+   *  B-SHIFT-L B-SHIFT-LC B-SHIFT-R B-SHIFT-RC
+   */
+
+B-AND
+B-OR
+B-XOR
+B-NOT
+B-SHIFT-L
+B-SHIFT-LC
+B-SHIFT-R
+B-SHIFT-RC
+
 }
 
 <procedure_div>{
   (ID|IDENTIFICATION|ENVIRONMENT|DATA|PROCEDURE){SPC}DIVISION  {
-			    myless(0); yy_pop_state(); }
+			          myless(0); BEGIN(INITIAL); }
+  PROGRAM-ID{OSPC}{DOTSEP}	{ myless(0); BEGIN(INITIAL); }
 
   EXIT{SPC}/(PROGRAM|SECTION|PARAGRAPH|PERFORM) {
 			  return EXIT; }
@@ -1586,6 +1618,7 @@ USE({SPC}FOR)?		{ return USE; }
   DELIMITER                     { return DELIMITER; }
   ENVIRONMENT                   { return ENVIRONMENT; }
 
+			/* After name state, pop out of procedure_div state. */
   END{SPC}PROGRAM        { yy_push_state(name_state);
                                   return program_level() > 1?
                                          END_SUBPROGRAM : END_PROGRAM; }
@@ -1614,22 +1647,8 @@ USE({SPC}FOR)?		{ return USE; }
 
   SECTION{OSPC}[.]{SPC}/USE[[:space:]]	{ yylval.string = NULL; return SECTION; }
 
-  {NAME}{OSPC}[.]({SPC}(EJECT|SKIP[123]))*{SPC}EXIT{OSPC}/{DOTSEP} {
+  [.]({SPC}(EJECT|SKIP[123]))*{SPC}EXIT{OSPC}/{DOTSEP} {
                    // EXIT format-1 is a "continue" statement
-                   yylval.string = xstrdup(yytext);
-		   auto p = strchr(yylval.string, '.');
-		   assert(p);
-		   assert( ISSPACE(p[1]) );
-		   *p = '\0';
-		   while( p > yylval.string && ISSPACE(p[-1]) ) {
-		     *--p = '\0';
-		   }
-
-		   int token;
-		   if( 0 != (token = binary_integer_usage(yylval.string)) )return token;
-                   if( 0 != (token = keyword_tok(yylval.string)) ) return token;
-                   if( is_integer_token() ) return numstr_of(yylval.string);
-                   return typed_name(yylval.string);
                  }
   {NAME}/{OSPC}{DOTSEP} {
 		   assert(YY_START == procedure_div);
@@ -2013,7 +2032,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
                   }
                   return token;
                 }
-  [.][[:blank:].]+  	{ return '.'; }
+  [.]+[[:blank:].]+  	{ return '.'; }
 }
 
 <exception>{
@@ -2111,36 +2130,42 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 }
 
 <*>{
-  {PUSH_FILE}	{
-			yy_set_bol(true);
-			auto top_file = cobol_lineno_save();
-			if( top_file ) {
-			  if( yy_flex_debug ) dbgmsg("  saving line %4d of %s",
-						     yylineno, top_file);
-			}
-			// "\f#file push <name>": name starts at offset 13.
-			char *filename = xstrdup(yytext);
-			filename[yyleng - 1] = '\0'; // kill the trailing formfeed
-			filename += 12;
-			if( yytext[0] != '\f' ) {
-			  dbgmsg("logic warning: filename was adjusted to %s", --filename);
-			}
-			input_file_status.enter(filename);
-		}
+  {PUSH_FILE}		{
+			  yy_set_bol(true);
+			  auto top_file = cobol_lineno(yylineno);
+			  if( top_file ) {
+			    if( yy_flex_debug ) dbgmsg("  saving line %4d of %s",
+			  			       yylineno, top_file);
+			  }
+			  // "\f#file push <name>": name starts at offset 13.
+			  char *filename = xstrdup(yytext);
+			  filename[yyleng - 1] = '\0'; // kill the trailing formfeed
+			  filename += 12;
+			  if( yytext[0] != '\f' ) {
+			    dbgmsg("logic warning: filename was adjusted to %s",
+				   --filename);
+			  }
+			  input_file_status.enter(filename);
+			  yylineno = 1;
+			  reset_location();
+  			}
 
-  {POP_FILE}{OSPC} 	{
-			yy_set_bol(true);
-			input_file_status.leave();
-		}
+  {POP_FILE}	 	{
+			  yy_set_bol(true);
+			  input_file_status.leave();
+			  yylineno = cobol_lineno();
+			}
 
-  {LINE_DIRECTIVE} {	cobol_fileline_set(yytext); }
+  {LINE_DIRECTIVE} 	{
+      			  yylineno = cobol_fileline_set(yytext);
+			  reset_location();
+			}
 }
 
 
 <*>OR 				{ return OR; }
 <*>AND				{ return AND; }
 <*>{DOTSEP}[[:blank:].]+$	{ return '.'; }
-<*>[*/+-]{SPC}[+]		{ return *yytext; }
 <*>[().=*/+&-]			{ return *yytext; }
 <*>[[:blank:]]+
 <*>\r?\n
@@ -2154,48 +2179,48 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 <*>{
   ACCEPT	{ return ACCEPT; }
   ACCESS	{ return ACCESS; }
-  ADD	{ return ADD; }
+  ADD		{ return ADD; }
   ADDRESS	{ return ADDRESS; }
   ADVANCING	{ return ADVANCING; }
-  AFTER	{ return AFTER; }
-  ALL	{ return ALL; }
+  AFTER		{ return AFTER; }
+  ALL		{ return ALL; }
   ALLOCATE	{ return ALLOCATE; }
   ALPHABET	{ return ALPHABET; }
   ALPHABETIC	{ return ALPHABETIC; }
   ALPHABETIC-LOWER	{ return ALPHABETIC_LOWER; }
   ALPHABETIC-UPPER	{ return ALPHABETIC_UPPER; }
-  ALPHANUMERIC	{ return ALPHANUMERIC; }
+  ALPHANUMERIC		{ return ALPHANUMERIC; }
   ALPHANUMERIC-EDITED	{ return ALPHANUMERIC_EDITED; }
-  ALSO	{ return ALSO; }
+  ALSO		{ return ALSO; }
   ALTERNATE	{ return ALTERNATE; }
-  AND	{ return AND; }
-  ANY	{ return ANY; }
+  AND		{ return AND; }
+  ANY		{ return ANY; }
   ANYCASE	{ return ANYCASE; }
-  ARE	{ return ARE; }
-  AREA	{ return AREA; }
-  AREAS	{ return AREAS; }
-  AS	{ return AS; }
+  ARE		{ return ARE; }
+  AREA		{ return AREA; }
+  AREAS		{ return AREAS; }
+  AS		{ return AS; }
   ASCENDING	{ return ASCENDING; }
-  ASSIGN	{ return ASSIGN; }
-  AT	{ return AT; }
-  BASED	{ return BASED; }
+  ASSIGN		{ return ASSIGN; }
+  AT		{ return AT; }
+  BASED		{ return BASED; }
   BEFORE	{ return BEFORE; }
   BINARY	{ return BINARY; }
-  BIT	{ return BIT; }
-  BLANK	{ return BLANK; }
-  BLOCK	{ return BLOCK_kw; }
+  BIT		{ return BIT; }
+  BLANK		{ return BLANK; }
+  BLOCK		{ return BLOCK_kw; }
   BOTTOM	{ return BOTTOM; }
-  BY	{ return BY; }
-  CALL	{ return CALL; }
+  BY		{ return BY; }
+  CALL		{ return CALL; }
   CANCEL	{ return CANCEL; }
-  CF	{ return CF; }
-  CH	{ return CH; }
+  CF		{ return CF; }
+  CH		{ return CH; }
   CHARACTER	{ return CHARACTER; }
   CHARACTERS	{ return CHARACTERS; }
-  CLASS	{ return CLASS; }
-  CLOSE	{ return CLOSE; }
-  CODE	{ return CODE; }
-  COMMA	{ return COMMA; }
+  CLASS		{ return CLASS; }
+  CLOSE		{ return CLOSE; }
+  CODE		{ return CODE; }
+  COMMA		{ return COMMA; }
   COMMIT	{ return COMMIT; }
   COMMON	{ return COMMON; }
   CONDITION	{ return CONDITION; }
@@ -2206,14 +2231,14 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   CONTROL	{ return CONTROL; }
   CONTROLS	{ return CONTROLS; }
   CONVERTING	{ return CONVERTING; }
-  COPY	{ return COPY; }
-  COUNT	{ return COUNT; }
+  COPY		{ return COPY; }
+  COUNT		{ return COUNT; }
   CURRENCY	{ return CURRENCY; }
-  DATA	{ return DATA; }
-  DATE	{ return DATE; }
-  DAY	{ return DAY; }
+  DATA		{ return DATA; }
+  DATE		{ return DATE; }
+  DAY		{ return DAY; }
   DAY-OF-WEEK	{ return DAY_OF_WEEK; }
-  DE	{ return DE; }
+  DE		{ return DE; }
   DECIMAL-POINT	{ return DECIMAL_POINT; }
   DECLARATIVES	{ return DECLARATIVES; }
   DEFAULT	{ return DEFAULT; }
@@ -2225,12 +2250,12 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   DETAIL	{ return DETAIL; }
   DISPLAY	{ return DISPLAY; }
   DIVIDE	{ return DIVIDE; }
-  DOWN	{ return DOWN; }
+  DOWN		{ return DOWN; }
   DUPLICATES	{ return DUPLICATES; }
   DYNAMIC	{ return DYNAMIC; }
-  EC	{ return EC; }
-  ELSE	{ return ELSE; }
-  END	{ return END; }
+  EC		{ return EC; }
+  ELSE		{ return ELSE; }
+  END		{ return END; }
   END-ACCEPT	{ return END_ACCEPT; }
   END-ADD	{ return END_ADD; }
   END-CALL	{ return END_CALL; }
@@ -2248,100 +2273,99 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   END-SUBTRACT	{ return END_SUBTRACT; }
   END-WRITE	{ return END_WRITE; }
   ENVIRONMENT	{ return ENVIRONMENT; }
-  EQUAL	{ return EQUAL; }
-  ERROR	{ return ERROR; }
+  EQUAL		{ return EQUAL; }
+  ERROR		{ return ERROR; }
   EVALUATE	{ return EVALUATE; }
   EXCEPTION	{ return EXCEPTION; }
-  EXIT	{ return EXIT; }
+  EXIT		{ return EXIT; }
   EXTEND	{ return EXTEND; }
   EXTERNAL	{ return EXTERNAL; }
 
-  FD	{ return FD; }
-  FINAL	{ return FINAL; }
+  FD		{ return FD; }
+  FINAL		{ return FINAL; }
   FINALLY	{ return FINALLY; }
-  FIRST	{ return FIRST; }
+  FIRST		{ return FIRST; }
   FOOTING	{ return FOOTING; }
-  FOR	{ return FOR; }
-  FREE	{ return FREE; }
-  FROM	{ return FROM; }
+  FOR		{ return FOR; }
+  FREE		{ return FREE; }
+  FROM		{ return FROM; }
   FUNCTION	{ return FUNCTION; }
   GENERATE	{ return GENERATE; }
   GIVING	{ return GIVING; }
   GLOBAL	{ return GLOBAL; }
-  GO	{ return GO; }
+  GO		{ return GO; }
   GOBACK	{ return GOBACK; }
-  GROUP	{ return GROUP; }
+  GROUP		{ return GROUP; }
   HEADING	{ return HEADING; }
-  IDENTIFICATION	{ return IDENTIFICATION_DIV; }
-  IF	{ return IF; }
-  IN	{ return IN; }
-  INDEX	{ return INDEX; }
+  IF		{ return IF; }
+  IN		{ return IN; }
+  INDEX		{ return INDEX; }
   INDEXED	{ return INDEXED; }
   INDICATE	{ return INDICATE; }
   INITIAL	{ return INITIAL; }
   INITIALIZE	{ return INITIALIZE; }
   INITIATE	{ return INITIATE; }
-  INPUT	{ return INPUT; }
+  INPUT		{ return INPUT; }
   INSPECT	{ return INSPECT; }
   INTERFACE	{ return INTERFACE; }
-  INTO	{ return INTO; }
+  INTO		{ return INTO; }
   INVOKE	{ return INVOKE; }
-  IS	{ return IS; }
-  KEY	{ return KEY; }
-  LAST	{ return LAST; }
+  IS		{ return IS; }
+  KEY		{ return KEY; }
+  LAST		{ return LAST; }
   LEADING	{ return LEADING; }
-  LEFT	{ return LEFT; }
+  LEFT		{ return LEFT; }
   LENGTH	{ return LENGTH; }
-  LIMIT	{ return LIMIT; }
+  LIMIT		{ return LIMIT; }
   LIMITS	{ return LIMITS; }
   LINAGE	{ return LINAGE; }
-  LINE	{ return LINE; }
+  LINE		{ return LINE; }
   LINE-COUNTER	{ return LINE_COUNTER; }
-  LINES	{ return LINES; }
+  LINES		{ return LINES; }
   LINKAGE	{ return LINKAGE; }
   LOCAL-STORAGE	{ return LOCAL_STORAGE; }
   LOCALE	{ return LOCALE; }
   LOCATION	{ return LOCATION; }
-  LOCK	{ return LOCK; }
-  MERGE	{ return MERGE; }
-  MODE	{ return MODE; }
-  MOVE	{ return MOVE; }
+  LOCK		{ return LOCK; }
+  MERGE		{ return MERGE; }
+  MODE		{ return MODE; }
+  MOVE		{ return MOVE; }
   MULTIPLY	{ return MULTIPLY; }
   NATIONAL	{ return NATIONAL; }
   NATIONAL-EDITED	{ return NATIONAL_EDITED; }
   NATIVE	{ return NATIVE; }
   NEGATIVE	{ return NEGATIVE; }
   NESTED	{ return NESTED; }
-  NEXT	{ return NEXT; }
-  NO	{ return NO; }
-  NOT	{ return NOT; }
+  NEXT		{ return NEXT; }
+  NO		{ return NO; }
+  NOT		{ return NOT; }
   NUMBER	{ return NUMBER; }
   NUMERIC	{ return NUMERIC; }
   NUMERIC-EDITED	{ return NUMERIC_EDITED; }
   OCCURS	{ return OCCURS; }
-  OF	{ return OF; }
-  OFF	{ return OFF; }
+  OF		{ return OF; }
+  OFF		{ return OFF; }
   OMITTED	{ return OMITTED; }
-  ON	{ return ON; }
-  OPEN	{ return OPEN; }
+  ON		{ return ON; }
+  OPEN		{ return OPEN; }
   OPTIONAL	{ return OPTIONAL; }
   OPTIONS	{ return OPTIONS; }
-  OR	{ return OR; }
-  ORDER	{ return ORDER; }
-  ORGANIZATION	{ return ORGANIZATION; }
-  OTHER	{ return OTHER; }
+  OR		{ return OR; }
+  ORDER		{ return ORDER; }
+  ORGANI[SZ]ATION	{ return ORGANIZATION; }
+  OTHER		{ return OTHER; }
   OUTPUT	{ return OUTPUT; }
   OVERFLOW	{ return OVERFLOW_kw; }
   OVERRIDE	{ return OVERRIDE; }
   PACKED-DECIMAL	{ return PACKED_DECIMAL; }
-  PAGE	{ return PAGE; }
+  PAGE		{ return PAGE; }
   PAGE-COUNTER	{ return PAGE_COUNTER; }
   PERFORM	{ return PERFORM; }
-  PF	{ return PF; }
-  PH	{ return PH; }
-  PIC	{ return PIC; }
+  PF		{ return PF; }
+  PH		{ return PH; }
+  PIC		{ return PIC; }
   PICTURE	{ return PICTURE; }
-  PLUS	{ return PLUS; }
+  PLUS		{ return PLUS; }
   POINTER	{ return POINTER; }
   POSITIVE	{ return POSITIVE; }
   PROCEDURE	{ return PROCEDURE; }
@@ -2350,15 +2374,15 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   PROPERTY	{ return PROPERTY; }
   PROTOTYPE	{ return PROTOTYPE; }
   QUOTES	{ return QUOTES; }
-  RAISE	{ return RAISE; }
+  RAISE		{ return RAISE; }
   RAISING	{ return RAISING; }
   RANDOM	{ return RANDOM; }
-  RD	{ return RD; }
-  READ	{ return READ; }
+  RD		{ return RD; }
+  READ		{ return READ; }
   RECORD	{ return RECORD; }
   RECORDS	{ return RECORDS; }
   REDEFINES	{ return REDEFINES; }
-  REEL	{ return REEL; }
+  REEL		{ return REEL; }
   REFERENCE	{ return REFERENCE; }
   RELATIVE	{ return RELATIVE; }
   RELEASE	{ return RELEASE; }
@@ -2372,20 +2396,20 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   REPORTS	{ return REPORTS; }
   REPOSITORY	{ return REPOSITORY; }
   RESERVE	{ return RESERVE; }
-  RESET	{ return RESET; }
+  RESET		{ return RESET; }
   RESUME	{ return RESUME; }
   RETURN	{ return RETURN; }
   RETURNING	{ return RETURNING; }
   REWIND	{ return REWIND; }
   REWRITE	{ return REWRITE; }
-  RF	{ return RF; }
-  RH	{ return RH; }
-  RIGHT	{ return RIGHT; }
+  RF		{ return RF; }
+  RH		{ return RH; }
+  RIGHT		{ return RIGHT; }
   ROUNDED	{ return ROUNDED; }
-  RUN	{ return RUN; }
-  SAME	{ return SAME; }
+  RUN		{ return RUN; }
+  SAME		{ return SAME; }
   SCREEN	{ return SCREEN; }
-  SD	{ return SD; }
+  SD		{ return SD; }
   SEARCH	{ return SEARCH; }
   SECTION	{ return SECTION; }
   SELECT	{ return SELECT; }
@@ -2393,56 +2417,56 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   SEPARATE	{ return SEPARATE; }
   SEQUENCE	{ return SEQUENCE; }
   SEQUENTIAL	{ return SEQUENTIAL; }
-  SET	{ return SET; }
+  SET		{ return SET; }
   SHARING	{ return SHARING; }
-  SIGN	{ return SIGN; }
-  SIZE	{ return SIZE; }
-  SORT	{ return SORT; }
+  SIGN		{ return SIGN; }
+  SIZE		{ return SIZE; }
+  SORT		{ return SORT; }
   SORT-MERGE	{ return SORT_MERGE; }
   SOURCE	{ return SOURCE; }
-  SPACE	{ return SPACE; }
+  SPACE		{ return SPACE; }
   SPACES	{ return SPACES; }
   SPECIAL-NAMES	{ return SPECIAL_NAMES; }
   STANDARD	{ return STANDARD; }
   STANDARD-1	{ return STANDARD_1; }
-  START	{ return START; }
+  START		{ return START; }
   STATUS	{ return STATUS; }
-  STOP	{ return STOP; }
+  STOP		{ return STOP; }
   SUBTRACT	{ return SUBTRACT; }
-  SUM	{ return SUM; }
+  SUM		{ return SUM; }
   SUPPRESS	{ return SUPPRESS; }
   SYMBOLIC	{ return SYMBOLIC; }
   TALLYING	{ return TALLYING; }
   TERMINATE	{ return TERMINATE; }
-  TEST	{ return TEST; }
-  THAN	{ return THAN; }
-  THEN	{ return THEN; }
-  THRU	{ return THRU; }
-  TIME	{ return TIME; }
-  TIMES	{ return TIMES; }
-  TO	{ return TO; }
-  TOP	{ return TOP; }
+  TEST		{ return TEST; }
+  THAN		{ return THAN; }
+  THEN		{ return THEN; }
+  THRU		{ return THRU; }
+  TIME		{ return TIME; }
+  TIMES		{ return TIMES; }
+  TO		{ return TO; }
+  TOP		{ return TOP; }
   TRAILING	{ return TRAILING; }
 
-  TYPE	{ return TYPE; }
+  TYPE		{ return TYPE; }
   TYPEDEF	{ return TYPEDEF; }
-  UNIT	{ return UNIT; }
-  UNTIL	{ return UNTIL; }
-  UP	{ return UP; }
-  UPON	{ return UPON; }
-  USAGE	{ return USAGE; }
-  USE	{ return USE; }
-  USING	{ return USING; }
-  VALUE	{ return VALUE; }
+  UNIT		{ return UNIT; }
+  UNTIL		{ return UNTIL; }
+  UP		{ return UP; }
+  UPON		{ return UPON; }
+  USAGE		{ return USAGE; }
+  USE		{ return USE; }
+  USING		{ return USING; }
+  VALUE		{ return VALUE; }
   VARYING	{ return VARYING; }
-  WHEN	{ return WHEN; }
-  WITH	{ return WITH; }
+  WHEN		{ return WHEN; }
+  WITH		{ return WITH; }
   WORKING-STORAGE	{ return WORKING_STORAGE; }
-  WRITE	{ return WRITE; }
+  WRITE		{ return WRITE; }
 
   ZERO	|
   ZEROES	|
-  ZEROS	{ return ZERO; }
+  ZEROS		{ return ZERO; }
 }
 
 <*>{
@@ -2479,28 +2503,13 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 		  return NO_CONDITION;
 		}
 
-<<EOF>>         {
-
-                  if( YY_START == quoted1 || YY_START == quoted2 ) {
+<quoted1,quoted2>{
+  <<EOF>> 	{
 		    error_msg(yylloc, "syntax error: unterminated string %<%s%>",
 			     tmpstring);
 		    return NO_CONDITION;
-                  }
-                  yypop_buffer_state();
-
-                  if ( !YY_CURRENT_BUFFER ) {
-		    return 0;
-                  }
-
-                  if( ! wait_for_the_child() ) {
-                    yyterminate();
-                  }
-		  cobol_filename_restore();
-   		  parser_leave_file();
-
-		  if( yydebug ) yywarn("resume parsing '%s'", cobol_filename());
-		  yy_set_bol(true);
-                }
+		}
+}
 
 %%
 

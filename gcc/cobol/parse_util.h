@@ -283,6 +283,15 @@ class cname_cmp {
   }
 };
 
+static int
+intrinsic_token_of( const char name[] ) {
+  auto pdescr = std::find_if( function_descrs, function_descrs_end,
+                              [name]( const function_descr_t& descr ) {
+                                return 0 == strcmp(name, descr.name);
+                              } );
+  return pdescr == function_descrs_end? 0 : pdescr->token;
+}
+
 /*
  * For variadic intrinsic functions, ensure all parameters are commensurate.
  * Return pointer in 1st inconsistent parameter type.

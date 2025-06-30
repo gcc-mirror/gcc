@@ -692,7 +692,7 @@
 %type   <string>        fd_name picture_sym name66 paragraph_name
 %type   <literal>       literalism
 %type   <number>        bound advance_when org_clause1 read_next
-%type   <number>        access_mode multiple lock_how lock_mode
+%type   <number>        access_mode multiple lock_how lock_mode org_is
 %type   <select_clauses> select_clauses
 %type   <select_clause> select_clause  access_clause alt_key_clause
                         assign_clause collate_clause status_clause
@@ -831,6 +831,9 @@
 %type	<opt_arith>	opt_arith_type
 %type	<module_type>	module_type
 
+%type   <nameloc>       repo_func_name                        
+%type   <namelocs>      repo_func_names
+
 %union {
     bool boolean;
     int number;
@@ -840,6 +843,8 @@
     cbl_field_attr_t field_attr;
     ec_type_t ec_type;
     ec_list_t* ec_list;
+    cbl_nameloc_t  *nameloc;
+    cbl_namelocs_t *namelocs;
            declarative_list_t* dcl_list_t;
            isym_list_t* isym_list;
     struct { radix_t radix; char *string; } numstr;
@@ -2193,14 +2198,28 @@ org_clause:     org_clause1[org]
                   $$.file->org = static_cast<cbl_file_org_t>($org);
                 }
                 ;
-org_is:         %empty
-        |       ORGANIZATION is
+org_is:         %empty                 { $$ = 0; }
+        |       ORGANIZATION is        { $$ = 0; }
+        |       ORGANIZATION is RECORD { $$ = RECORD; }
+        |                       RECORD { $$ = RECORD; }
                 ;
                 // file_sequential is the proper default
-org_clause1:    org_is      SEQUENTIAL { $$ = file_sequential_e; }
-        |       org_is LINE SEQUENTIAL { $$ = file_line_sequential_e; }
-        |       org_is      RELATIVE   { $$ = file_relative_e; }
-        |       org_is      INDEXED    { $$ = file_indexed_e; }
+org_clause1:    org_is      SEQUENTIAL {
+                  $$ = $1 == RECORD? file_line_sequential_e : file_sequential_e;
+                }
+        |       org_is LINE SEQUENTIAL
+                {
+                  if( $1 ) error_msg(@2, "syntax error: invalid %<RECORD%>");
+                  $$ = file_line_sequential_e;
+                }
+        |       org_is      RELATIVE {
+                  if( $1 ) error_msg(@2, "syntax error: invalid %<RECORD%>");
+                  $$ = file_relative_e;
+                }
+        |       org_is      INDEXED    { 
+                  if( $1 ) error_msg(@2, "syntax error: invalid %<RECORD%>");
+                  $$ = file_indexed_e;
+                }
                 ;
 
                 /*
@@ -2328,36 +2347,59 @@ repo_expands:   %empty
 repo_interface: INTERFACE NAME repo_as repo_expands
                 ;
 
-repo_func:      FUNCTION repo_func_names INTRINSIC
-                {
-		  auto namelocs( name_queue.pop() );
-                  for( const auto& nameloc : namelocs ) {
-                      current.repository_add(nameloc.name);
+repo_func:      FUNCTION repo_func_names[namelocs] INTRINSIC {
+                  for( const auto& nameloc : *$namelocs ) {
+                    if( 0 == intrinsic_token_of(nameloc.name) ) {
+                      error_msg(nameloc.loc,
+                                "no such intrinsic function: %qs",
+                                nameloc.name);
+                      continue;
+                    }
+                    current.repository_add(nameloc.name);
                   }
                 }
         |       FUNCTION ALL INTRINSIC
                 {
                   current.repository_add_all();
                 }
-        |       FUNCTION repo_func_names
-                ;
-repo_func_names:
-                repo_func_name
-        |       repo_func_names repo_func_name
-                ;
-repo_func_name: NAME {
-                  if( ! current.repository_add($NAME) ) { // add intrinsic by name
-                    auto token = current.udf_in($NAME);
-                    if( !token ) {
-                      error_msg(@NAME, "%s is not defined here as a user-defined function",
-                                $NAME);
-                      current.udf_dump();
-                      YYERROR;
+        |       FUNCTION repo_func_names[namelocs] {
+		  // We allow multiple names because GnuCOBOL does.  ISO says 1.
+                  for( const auto& nameloc : *$namelocs ) {
+                    if( 0 != intrinsic_token_of(nameloc.name) ) {
+                      error_msg(nameloc.loc,
+                                "intrinsic function %qs requires INTRINSIC",
+                                nameloc.name);
+                      continue;
                     }
-                    auto e = symbol_function(0, $NAME);
+                    auto token = current.udf_in(nameloc.name);
+                    if( !token ) {
+                      error_msg(nameloc.loc, 
+                                "%s is not defined here as a user-defined function",
+                                nameloc.name);
+                      continue;
+                    }
+                    auto e = symbol_function(0, nameloc.name);
                     assert(e);
                     current.repository_add(symbol_index(e)); // add UDF to repository
                   }
+                }
+                ;
+repo_func_names:
+                repo_func_name[name] {
+                  $$ = new cbl_namelocs_t(1, *$name);
+                  delete $name;
+                }
+        |       repo_func_names repo_func_name[name] {
+                  $$ = $1;
+                  $$->push_back(*$name);
+                  delete $name;
+                }
+                ;
+repo_func_name: NAME repo_as {
+                  if( ! $repo_as.empty() ) {
+                    cbl_unimplemented_at(@repo_as, "%qs", $repo_as.data);
+                  }
+                  $$ = new cbl_nameloc_t(@NAME, $NAME);
                 }
                 ;
 
@@ -6383,17 +6425,17 @@ eval_abbrs:	rel_term[a] {
 		  auto& ev( eval_stack.current() );
 		  auto subj( ev.subject() );
 		  if( !subj ) {
-		    error_msg(@1, "WHEN %s phrase exceeds "
+		    error_msg(@1, "WHEN %qs phrase exceeds "
 			     "subject set count of %zu",
-			     $a.term->name(), ev.subject_count());
+                              nice_name_of($a.term->field), ev.subject_count());
 		    YYERROR;
 		  }
 		  if( ! ev.compatible($a.term->field) ) {
 		    auto obj($a.term->field);
 		    error_msg(@1, "subject %s, type %s, "
-			     "cannot be compared %s, type %s",
-			     subj->name, 3 + cbl_field_type_str(subj->type),
-			     obj->name,	 3 + cbl_field_type_str(obj->type) );
+                              "cannot be compared %s, type %s",
+                              subj->name, 3 + cbl_field_type_str(subj->type),
+			      obj->name,  3 + cbl_field_type_str(obj->type) );
 		  }
 		  auto result = ev.compare(*$a.term);
 		  if( ! result ) YYERROR;
@@ -11850,7 +11892,10 @@ current_t::repository_add( const char name[]) {
   assert( !programs.empty() );
   function_descr_t arg = function_descr_t::init(name);
   auto parg = std::find( function_descrs, function_descrs_end, arg );
-  if( parg == function_descrs_end ) return false;
+  if( parg == function_descrs_end ) {
+    dbgmsg("%s:%d: no intrinsic %s found", __func__, __LINE__, name);
+    return false;
+  }
   auto p = programs.top().function_repository.insert(*parg);
   if( yydebug ) {
     for( auto descr : programs.top().function_repository ) {

@@ -3635,8 +3635,6 @@ parser_first_statement( int lineno )
     }
   }
 
-#define linemap_add(...)
-
 void
 parser_enter_file(const char *filename)
   {
@@ -3667,9 +3665,6 @@ parser_enter_file(const char *filename)
       main_entry_point = xstrdup(pname);
       }
     }
-
-  // Let the linemap routine know we are working on a new file:
-  linemap_add(line_table, LC_ENTER, 0, filename, 1);
 
   if( file_level == 0 )
     {
@@ -3749,10 +3744,6 @@ parser_leave_file()
             current_filename.back().c_str());
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
-    }
-  if( file_level > 0)
-    {
-    linemap_add(line_table, LC_LEAVE, false, NULL, 0);
     }
   file_level -= 1;
   current_filename.pop_back();

@@ -265,14 +265,6 @@ gg_append_var_decl(tree var_decl)
     }
   }
 
-location_t
-location_from_lineno()
-  {
-  location_t loc;
-  loc = linemap_line_start(line_table, sv_current_line_number, 0);
-  return loc;
-  }
-
 void
 gg_append_statement(tree stmt)
   {

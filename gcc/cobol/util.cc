@@ -1104,10 +1104,8 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
   static_assert(sizeof(matrix[0]) == COUNT_OF(matrix[0]),
                 "matrix should be square");
 
-  for( const cbl_field_t *args[] = {tgt, src}, **p=args;
-       p < args + COUNT_OF(args); p++ ) {
-    auto& f(**p);
-    switch(f.type) {
+  for( auto field : { src, tgt } ) {
+    switch(field->type) {
     case FldClass:
     case FldConditional:
     case FldIndex:
@@ -1119,9 +1117,9 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
     case FldForward:
     case FldBlob:
     default:
-      if( sizeof(matrix[0]) < f.type ) {
+      if( sizeof(matrix[0]) < field->type ) {
         cbl_internal_error("logic error: MOVE %s %s invalid type:",
-                           cbl_field_type_str(f.type), f.name);
+                           cbl_field_type_str(field->type), field->name);
       }
       break;
     }
@@ -1745,11 +1743,10 @@ struct input_file_t {
   ino_t inode;
   int lineno;
   const char *name;
-  const line_map *lines;
 
   input_file_t( const char *name, ino_t inode,
-                int lineno=1, const line_map *lines = NULL )
-    : inode(inode), lineno(lineno), name(name), lines(lines)
+                int lineno=1 )
+    : inode(inode), lineno(lineno), name(name)
   {
     if( inode == 0 ) inode_set();
   }
@@ -1811,6 +1808,12 @@ class unique_stack : public std::stack<input_file_t>
     }
     return false;
   }
+
+  // Look down into the stack. peek(0) == top()
+  const input_file_t& peek( size_t n ) const {
+    gcc_assert( n < size() );
+    return c.at(size() - ++n);
+  } 
   
   void option( int opt ) { // capture other preprocessor options eventually
     assert(opt == 'M');
@@ -1867,17 +1870,34 @@ bool cobol_filename( const char *name, ino_t inode ) {
   }
   linemap_add(line_table, LC_ENTER, sysp, name, 1);
   input_filename_vestige = name;
-  bool pushed = input_filenames.push( input_file_t(name, inode, 1, lines) );
-  input_filenames.top().lineno = yylineno = 1;
+  bool pushed = input_filenames.push( input_file_t(name, inode, 1) );
   return pushed;
 }
 
 const char *
-cobol_lineno_save() {
+cobol_lineno( int lineno ) {
   if( input_filenames.empty() ) return NULL;
   auto& input( input_filenames.top() );
-  input.lineno = yylineno;
+  input.lineno = lineno;
   return input.name;
+}
+
+/*
+ * This function is called from the scanner, usually when a copybook is on top
+ * of the input stack, before the parser retrieves the token and resets the
+ * current filename.  For that reason, we normaly want to line number of the
+ * file that is about to become the current one, which is the one behind top().
+ *
+ * If somehow we arrive here when there is nothing underneath, we return the
+ * current line nubmer, or zero if there's no input.  The only consequence is
+ * that the reported line number might be wrong.
+ */
+int
+cobol_lineno() {
+  if( input_filenames.empty() ) return 0;
+  size_t n = input_filenames.size() < 2? 0 : 1;
+  const auto& input( input_filenames.peek(n) );
+  return input.lineno;
 }
 
 const char *
@@ -1885,7 +1905,7 @@ cobol_filename() {
   return input_filenames.empty()? input_filename_vestige : input_filenames.top().name;
 }
 
-const char *
+void
 cobol_filename_restore() {
   assert(!input_filenames.empty());
   const input_file_t& top( input_filenames.top() );
@@ -1893,17 +1913,16 @@ cobol_filename_restore() {
   input_filename_vestige = top.name;
 
   input_filenames.pop();
-  if( input_filenames.empty() ) return NULL;
+  if( input_filenames.empty() ) return;
 
   auto& input = input_filenames.top();
 
-  input.lines = linemap_add(line_table, LC_LEAVE, sysp, NULL, 0);
-
-  yylineno = input.lineno;
-  return input.name;
+  linemap_add(line_table, LC_LEAVE, sysp, NULL, 0);
 }
 
 static location_t token_location;
+
+location_t location_from_lineno() { return token_location; }
 
 template <typename LOC>
 static void
@@ -2039,16 +2058,6 @@ void error_msg( const YDFLTYPE& loc, const char gmsgid[], ... ) {
 }
 
 void
-cdf_location_set(YYLTYPE loc) {
-  extern YDFLTYPE ydflloc;
-
-  ydflloc.first_line =   loc.first_line;
-  ydflloc.first_column = loc.first_column;
-  ydflloc.last_line =    loc.last_line;
-  ydflloc.last_column =  loc.last_column;
-}
-
-void
 yyerror( const char gmsgid[], ... ) {
   temp_loc_t looker;
   verify_format(gmsgid);
@@ -2101,7 +2110,7 @@ yyerrorvl( int line, const char *filename, const char fmt[], ... ) {
 static inline size_t
 matched_length( const regmatch_t& rm ) { return rm.rm_eo - rm.rm_so; }
 
-const char *
+int
 cobol_fileline_set( const char line[] ) {
   static const char pattern[] = "#line +([[:alnum:]]+) +[\"']([^\"']+). *\n";
   static const int cflags = REG_EXTENDED | REG_ICASE;
@@ -2114,7 +2123,7 @@ cobol_fileline_set( const char line[] ) {
     if( (erc = regcomp(&re, pattern, cflags)) != 0 ) {
         regerror(erc, &re, regexmsg, sizeof(regexmsg));
         dbgmsg( "%s:%d: could not compile regex: %s", __func__, __LINE__, regexmsg );
-        return line;
+        return 0;
     }
     preg = &re;
   }
@@ -2122,10 +2131,10 @@ cobol_fileline_set( const char line[] ) {
     if( erc != REG_NOMATCH ) {
       regerror(erc, preg, regexmsg, sizeof(regexmsg));
       dbgmsg( "%s:%d: could not compile regex: %s", __func__, __LINE__, regexmsg );
-      return line;
+      return 0;
     }
     error_msg(yylloc, "invalid %<#line%> directive: %s", line );
-    return line;
+    return 0;
   }
 
   const char
@@ -2139,15 +2148,13 @@ cobol_fileline_set( const char line[] ) {
   input_file_t input_file( filename, ino_t(0), fileline ); // constructor sets inode
 
   if( input_filenames.empty() ) {
-    input_file.lines = linemap_add(line_table, LC_ENTER, sysp, filename, 1);
     input_filenames.push(input_file);
   }
 
   input_file_t& file = input_filenames.top();
   file = input_file;
-  yylineno = file.lineno;
 
-  return file.name;
+  return file.lineno;
 }
 
 //#define TIMING_PARSE
@@ -2357,7 +2364,7 @@ bool fisdigit(int c)
 bool fisspace(int c)
   {
   return ISSPACE(c);
-  };
+  }
 int  ftolower(int c)
   {
   return TOLOWER(c);
@@ -2369,7 +2376,7 @@ int  ftoupper(int c)
 bool fisprint(int c)
   {
   return ISPRINT(c);
-  };
+  }
 
 // 8.9 Reserved words
 static const std::set<std::string> reserved_words = {

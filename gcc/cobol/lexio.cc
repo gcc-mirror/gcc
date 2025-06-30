@@ -535,7 +535,7 @@ update_yylloc( const csub_match& stmt, const csub_match& term ) {
 
 static replacing_term_t
 parse_replacing_term( const char *stmt, const char *estmt ) {
-  gcc_assert(stmt); gcc_assert(estmt); gcc_assert(stmt < estmt);
+  gcc_assert(stmt); gcc_assert(estmt); gcc_assert(stmt <= estmt);
   replacing_term_t output(stmt);
 
   static const char pattern[] =
@@ -1830,7 +1830,7 @@ void
 cdftext::process_file( filespan_t mfile, int output, bool second_pass ) {
   static size_t nfiles = 0;
 
-  __gnu_cxx::stdio_filebuf<char> outbuf(fdopen(output, "w"), std::ios::out);
+  __gnu_cxx::stdio_filebuf<char> outbuf(fdopen(output, "a"), std::ios::out);
   std::ostream out(&outbuf);
   std::ostream_iterator<char> ofs(out);
 
@@ -1893,12 +1893,12 @@ cdftext::process_file( filespan_t mfile, int output, bool second_pass ) {
       continue; // No active REPLACE directive.
     }
 
-    // 1 segment for COPY, 2 for REPLACE
     std::list<span_t> segments = segment_line(mfile);
 
     for( const auto& segment : segments ) {
       std::copy(segment.p, segment.pend, ofs);
     }
+
     out.flush();
   }
   // end of file
@@ -1922,12 +1922,30 @@ cdftext::segment_line( filespan_t& mfile ) {
     return output;
   }
 
+  /*
+   * If the replacement changes the number of lines in the replaced text, we
+   * need to reset the line number, because the next statement is on a
+   * different line in the manipulated text than in the original.  Before each
+   * replacement, set the original line number.  After each replacement, set
+   * the line number after the elided text on the next line.
+   */
   for( const replace_t& segment : pending ) {
     gcc_assert(mfile.cur <= segment.before.p);
     gcc_assert(segment.before.pend <= mfile.eodata);
 
+    struct { unsigned long ante, post; } lineno = {
+      gb4(mfile.lineno()), gb4(mfile.lineno() + segment.after.nlines())
+    };
+    char *directive = lineno.ante == lineno.post?
+      nullptr : xasprintf("\n#line %lu \"%s\"\n",
+                          lineno.ante, cobol_filename());
+
+    if( directive ) 
+      output.push_back( span_t(strlen(directive), directive) );
     output.push_back( span_t(mfile.cur, segment.before.p) );
     output.push_back( span_t(segment.after.p, segment.after.pend ) );
+    if( directive ) 
+      output.push_back( span_t(strlen(directive), directive) );
 
     mfile.cur = const_cast<char*>(segment.before.pend);
   }
@@ -1943,5 +1961,3 @@ cdftext::segment_line( filespan_t& mfile ) {
 
   return output;
 }
-
-//////// End of the cdf_text.h file

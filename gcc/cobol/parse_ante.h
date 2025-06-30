@@ -102,8 +102,8 @@ void input_file_status_notify();
           (Current).last_column  = YYRHSLOC (Rhs, 0).last_column;       \
         }                                                               \
       location_dump("parse.c", __LINE__, "current", (Current));         \
-      gcc_location_set( location_set(Current) );                        \
       input_file_status_notify();                                       \
+      gcc_location_set( location_set(Current) );                        \
   } while (0)
 
 int yylex(void);
@@ -209,6 +209,9 @@ in_file_section(void) { return current_data_section == file_datasect_e; }
 
 static cbl_refer_t *
 intrinsic_inconsistent_parameter( size_t n, cbl_refer_t *args );
+
+static int
+intrinsic_token_of( const char name[] );
 
 static inline bool
 namcpy(const YYLTYPE& loc, cbl_name_t tgt, const char *src ) {
@@ -3220,6 +3223,11 @@ parser_move_carefully( const char */*F*/, int /*L*/,
       }
     } else {
       if( ! valid_move( tgt.field, src.field ) ) {
+        if( src.field->type == FldPointer &&
+            tgt.field->type == FldPointer ) {
+          if( dialect_mf() || dialect_gnu() ) return true;
+          dialect_error(src.loc, "MOVE POINTER", "mf");
+        }
         if( ! is_index ) {
           char ach[16];
           char stype[32];
@@ -3245,7 +3253,6 @@ parser_move_carefully( const char */*F*/, int /*L*/,
             sprintf(ach, ".%d", tgt.field->data.rdigits);
             strcat(dtype, ach);
             }
-
           error_msg(src.loc,  "cannot MOVE '%s' (%s) to '%s' (%s)",
                     name_of(src.field), stype,
                     name_of(tgt.field), dtype);
