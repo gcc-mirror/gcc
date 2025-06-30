@@ -114,7 +114,7 @@ class path_label : public range_label
     pp_printf (pp.get (), "%@", &event_id);
     pp_space (pp.get ());
 
-    if (meaning.m_verb == diagnostic_event::VERB_danger
+    if (meaning.m_verb == diagnostic_event::verb::danger
 	&& m_allow_emojis)
       {
 	pp_unicode_character (pp.get (), 0x26A0); /* U+26A0 WARNING SIGN.  */

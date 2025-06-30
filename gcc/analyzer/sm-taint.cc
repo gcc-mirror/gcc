@@ -214,8 +214,8 @@ public:
     const final override
   {
     if (change.m_new_state == m_sm.m_tainted)
-      return diagnostic_event::meaning (diagnostic_event::VERB_acquire,
-					diagnostic_event::NOUN_taint);
+      return diagnostic_event::meaning (diagnostic_event::verb::acquire,
+					diagnostic_event::noun::taint);
     return diagnostic_event::meaning ();
   }
 

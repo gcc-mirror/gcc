@@ -3005,9 +3005,9 @@ populate_thread_flow_location_object (sarif_result &result,
 std::unique_ptr<json::array>
 sarif_builder::maybe_make_kinds_array (diagnostic_event::meaning m) const
 {
-  if (m.m_verb == diagnostic_event::VERB_unknown
-      && m.m_noun == diagnostic_event::NOUN_unknown
-      && m.m_property == diagnostic_event::PROPERTY_unknown)
+  if (m.m_verb == diagnostic_event::verb::unknown
+      && m.m_noun == diagnostic_event::noun::unknown
+      && m.m_property == diagnostic_event::property::unknown)
     return nullptr;
 
   auto kinds_arr = std::make_unique<json::array> ();

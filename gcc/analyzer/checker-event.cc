@@ -398,7 +398,7 @@ function_entry_event::print_desc (pretty_printer &pp) const
 diagnostic_event::meaning
 function_entry_event::get_meaning () const
 {
-  return meaning (VERB_enter, NOUN_function);
+  return meaning (verb::enter, noun::function);
 }
 
 /* class state_change_event : public checker_event.  */
@@ -632,9 +632,9 @@ cfg_edge_event::get_meaning () const
 {
   const cfg_superedge& cfg_sedge = get_cfg_superedge ();
   if (cfg_sedge.true_value_p ())
-    return meaning (VERB_branch, PROPERTY_true);
+    return meaning (verb::branch, property::true_);
   else if (cfg_sedge.false_value_p ())
-    return meaning (VERB_branch, PROPERTY_false);
+    return meaning (verb::branch, property::false_);
   else
     return meaning ();
 }
@@ -880,7 +880,7 @@ call_event::print_desc (pretty_printer &pp) const
 diagnostic_event::meaning
 call_event::get_meaning () const
 {
-  return meaning (VERB_call, NOUN_function);
+  return meaning (verb::call, noun::function);
 }
 
 /* Override of checker_event::is_call_p for calls.  */
@@ -964,7 +964,7 @@ return_event::print_desc (pretty_printer &pp) const
 diagnostic_event::meaning
 return_event::get_meaning () const
 {
-  return meaning (VERB_return, NOUN_function);
+  return meaning (verb::return_, noun::function);
 }
 
 /* Override of checker_event::is_return_p for returns.  */
@@ -991,8 +991,8 @@ start_consolidated_cfg_edges_event::print_desc (pretty_printer &pp) const
 diagnostic_event::meaning
 start_consolidated_cfg_edges_event::get_meaning () const
 {
-  return meaning (VERB_branch,
-		  (m_edge_sense ? PROPERTY_true : PROPERTY_false));
+  return meaning (verb::branch,
+		  (m_edge_sense ? property::true_ : property::false_));
 }
 
 /* class inlined_call_event : public checker_event.  */
@@ -1012,7 +1012,7 @@ inlined_call_event::print_desc (pretty_printer &pp) const
 diagnostic_event::meaning
 inlined_call_event::get_meaning () const
 {
-  return meaning (VERB_call, NOUN_function);
+  return meaning (verb::call, noun::function);
 }
 
 /* class setjmp_event : public checker_event.  */
@@ -1252,7 +1252,7 @@ warning_event::print_desc (pretty_printer &pp) const
 diagnostic_event::meaning
 warning_event::get_meaning () const
 {
-  return meaning (VERB_danger, NOUN_unknown);
+  return meaning (verb::danger, noun::unknown);
 }
 
 const program_state *

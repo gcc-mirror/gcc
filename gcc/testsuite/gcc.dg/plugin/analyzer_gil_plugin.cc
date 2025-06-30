@@ -127,11 +127,11 @@ public:
     if (change.is_global_p ())
       {
 	if (change.m_new_state == m_sm.m_released_gil)
-	  return diagnostic_event::meaning (diagnostic_event::VERB_release,
-					    diagnostic_event::NOUN_lock);
+	  return diagnostic_event::meaning (diagnostic_event::verb::release,
+					    diagnostic_event::noun::lock);
 	else if (change.m_new_state == m_sm.get_start_state ())
-	  return diagnostic_event::meaning (diagnostic_event::VERB_acquire,
-					    diagnostic_event::NOUN_lock);
+	  return diagnostic_event::meaning (diagnostic_event::verb::acquire,
+					    diagnostic_event::noun::lock);
       }
     return diagnostic_event::meaning ();
   }

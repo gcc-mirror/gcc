@@ -339,11 +339,11 @@ public:
     const final override
   {
     if (change.m_new_state == m_sm.m_started)
-      return diagnostic_event::meaning (diagnostic_event::VERB_acquire,
-					diagnostic_event::NOUN_resource);
+      return diagnostic_event::meaning (diagnostic_event::verb::acquire,
+					diagnostic_event::noun::resource);
     if (change.m_new_state == m_sm.m_ended)
-      return diagnostic_event::meaning (diagnostic_event::VERB_release,
-					diagnostic_event::NOUN_resource);
+      return diagnostic_event::meaning (diagnostic_event::verb::release,
+					diagnostic_event::noun::resource);
     return diagnostic_event::meaning ();
   }
 

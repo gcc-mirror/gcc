@@ -75,59 +75,59 @@ class diagnostic_event
  public:
   /* Enums for giving a sense of what this event means.
      Roughly corresponds to SARIF v2.1.0 section 3.38.8.  */
-  enum verb
+  enum class verb
   {
-    VERB_unknown,
+    unknown,
 
-    VERB_acquire,
-    VERB_release,
-    VERB_enter,
-    VERB_exit,
-    VERB_call,
-    VERB_return,
-    VERB_branch,
+    acquire,
+    release,
+    enter,
+    exit,
+    call,
+    return_,
+    branch,
 
-    VERB_danger
+    danger
   };
-  enum noun
+  enum class noun
   {
-    NOUN_unknown,
+    unknown,
 
-    NOUN_taint,
-    NOUN_sensitive, // this one isn't in SARIF v2.1.0; filed as https://github.com/oasis-tcs/sarif-spec/issues/530
-    NOUN_function,
-    NOUN_lock,
-    NOUN_memory,
-    NOUN_resource
+    taint,
+    sensitive, // this one isn't in SARIF v2.1.0; filed as https://github.com/oasis-tcs/sarif-spec/issues/530
+    function,
+    lock,
+    memory,
+    resource
   };
-  enum property
+  enum class property
   {
-    PROPERTY_unknown,
+    unknown,
 
-    PROPERTY_true,
-    PROPERTY_false
+    true_,
+    false_
   };
   /* A bundle of such enums, allowing for descriptions of the meaning of
      an event, such as
-     - "acquire memory": meaning (VERB_acquire, NOUN_memory)
-     - "take true branch"": meaning (VERB_branch, PROPERTY_true)
-     - "return from function": meaning (VERB_return, NOUN_function)
+     - "acquire memory": meaning (verb::acquire, noun::memory)
+     - "take true branch"": meaning (verb::branch, property::true)
+     - "return from function": meaning (verb::return, noun::function)
      etc, as per SARIF's threadFlowLocation "kinds" property
      (SARIF v2.1.0 section 3.38.8).  */
   struct meaning
   {
     meaning ()
-    : m_verb (VERB_unknown),
-      m_noun (NOUN_unknown),
-      m_property (PROPERTY_unknown)
+    : m_verb (verb::unknown),
+      m_noun (noun::unknown),
+      m_property (property::unknown)
     {
     }
     meaning (enum verb verb, enum noun noun)
-    : m_verb (verb), m_noun (noun), m_property (PROPERTY_unknown)
+    : m_verb (verb), m_noun (noun), m_property (property::unknown)
     {
     }
     meaning (enum verb verb, enum property property)
-    : m_verb (verb), m_noun (NOUN_unknown), m_property (property)
+    : m_verb (verb), m_noun (noun::unknown), m_property (property)
     {
     }
 

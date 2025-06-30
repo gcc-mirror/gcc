@@ -819,11 +819,11 @@ public:
   {
     if (change.m_old_state == m_sm.get_start_state ()
 	&& unchecked_p (change.m_new_state))
-      return diagnostic_event::meaning (diagnostic_event::VERB_acquire,
-					diagnostic_event::NOUN_memory);
+      return diagnostic_event::meaning (diagnostic_event::verb::acquire,
+					diagnostic_event::noun::memory);
     if (freed_p (change.m_new_state))
-      return diagnostic_event::meaning (diagnostic_event::VERB_release,
-					diagnostic_event::NOUN_memory);
+      return diagnostic_event::meaning (diagnostic_event::verb::release,
+					diagnostic_event::noun::memory);
     return diagnostic_event::meaning ();
   }
 

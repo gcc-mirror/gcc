@@ -77,23 +77,23 @@ diagnostic_event::meaning::maybe_get_verb_str (enum verb v)
     {
     default:
       gcc_unreachable ();
-    case VERB_unknown:
-      return NULL;
-    case VERB_acquire:
+    case verb::unknown:
+      return nullptr;
+    case verb::acquire:
       return "acquire";
-    case VERB_release:
+    case verb::release:
       return "release";
-    case VERB_enter:
+    case verb::enter:
       return "enter";
-    case VERB_exit:
+    case verb::exit:
       return "exit";
-    case VERB_call:
+    case verb::call:
       return "call";
-    case VERB_return:
+    case verb::return_:
       return "return";
-    case VERB_branch:
+    case verb::branch:
       return "branch";
-    case VERB_danger:
+    case verb::danger:
       return "danger";
     }
 }
@@ -108,19 +108,19 @@ diagnostic_event::meaning::maybe_get_noun_str (enum noun n)
     {
     default:
       gcc_unreachable ();
-    case NOUN_unknown:
-      return NULL;
-    case NOUN_taint:
+    case noun::unknown:
+      return nullptr;
+    case noun::taint:
       return "taint";
-    case NOUN_sensitive:
+    case noun::sensitive:
       return "sensitive";
-    case NOUN_function:
+    case noun::function:
       return "function";
-    case NOUN_lock:
+    case noun::lock:
       return "lock";
-    case NOUN_memory:
+    case noun::memory:
       return "memory";
-    case NOUN_resource:
+    case noun::resource:
       return "resource";
     }
 }
@@ -135,11 +135,11 @@ diagnostic_event::meaning::maybe_get_property_str (enum property p)
     {
     default:
       gcc_unreachable ();
-    case PROPERTY_unknown:
-      return NULL;
-    case PROPERTY_true:
+    case property::unknown:
+      return nullptr;
+    case property::true_:
       return "true";
-    case PROPERTY_false:
+    case property::false_:
       return "false";
     }
 }
