@@ -4997,8 +4997,8 @@ This pattern is not allowed to @code{FAIL}.
 Like @samp{vec_load_lanes@var{m}@var{n}}, but takes an additional
 mask operand (operand 2) that specifies which elements of the destination
 vectors should be loaded.  Other elements of the destination vectors are
-taken from operand 3, which is an else operand similar to the one in
-@code{maskload}.
+taken from operand 3, which is an else operand in the subvector mode
+@var{n}, similar to the one in @code{maskload}.
 The operation is equivalent to:
 
 @smallexample
