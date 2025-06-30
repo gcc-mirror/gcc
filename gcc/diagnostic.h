@@ -71,12 +71,6 @@ enum diagnostics_output_format
   /* The default: textual output.  */
   DIAGNOSTICS_OUTPUT_FORMAT_TEXT,
 
-  /* JSON-based output, to stderr.  */
-  DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR,
-
-  /* JSON-based output, to a file.  */
-  DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE,
-
   /* SARIF-based output, as JSON to stderr.  */
   DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR,
 

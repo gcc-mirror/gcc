@@ -100,12 +100,4 @@ diagnostic_output_format_init (diagnostic_context &,
 			       enum diagnostics_output_format,
 			       bool json_formatting);
 
-extern diagnostic_output_format &
-diagnostic_output_format_init_json_stderr (diagnostic_context &context,
-					   bool formatted);
-extern diagnostic_output_format &
-diagnostic_output_format_init_json_file (diagnostic_context &context,
-					 bool formatted,
-					 const char *base_file_name);
-
 #endif /* ! GCC_DIAGNOSTIC_FORMAT_H */

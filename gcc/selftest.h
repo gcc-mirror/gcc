@@ -223,7 +223,6 @@ extern void convert_cc_tests ();
 extern void dbgcnt_cc_tests ();
 extern void diagnostic_color_cc_tests ();
 extern void diagnostic_format_html_cc_tests ();
-extern void diagnostic_format_json_cc_tests ();
 extern void diagnostic_format_sarif_cc_tests ();
 extern void diagnostic_output_spec_cc_tests ();
 extern void diagnostic_path_output_cc_tests ();

@@ -1853,7 +1853,6 @@ OBJS = \
 # no target dependencies.
 OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	diagnostic-format-html.o \
-	diagnostic-format-json.o \
 	diagnostic-format-sarif.o \
 	diagnostic-format-text.o \
 	diagnostic-global-context.o \

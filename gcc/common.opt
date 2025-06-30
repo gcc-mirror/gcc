@@ -1485,7 +1485,7 @@ Common Joined RejectNegative UInteger
 
 fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
--fdiagnostics-format=[text|sarif-stderr|sarif-file|json|json-stderr|json-file]	Select output format.
+-fdiagnostics-format=[text|sarif-stderr|sarif-file]	Select output format.
 
 fdiagnostics-add-output=
 Common Joined RejectNegative
@@ -1526,15 +1526,6 @@ Name(diagnostics_output_format) Type(int)
 
 EnumValue
 Enum(diagnostics_output_format) String(text) Value(DIAGNOSTICS_OUTPUT_FORMAT_TEXT)
-
-EnumValue
-Enum(diagnostics_output_format) String(json) Value(DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR)
-
-EnumValue
-Enum(diagnostics_output_format) String(json-stderr) Value(DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR)
-
-EnumValue
-Enum(diagnostics_output_format) String(json-file) Value(DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE)
 
 EnumValue
 Enum(diagnostics_output_format) String(sarif-stderr) Value(DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR)

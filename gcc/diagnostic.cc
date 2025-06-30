@@ -1881,17 +1881,6 @@ diagnostic_output_format_init (diagnostic_context &context,
       /* The default; do nothing.  */
       break;
 
-    case DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR:
-      new_sink = &diagnostic_output_format_init_json_stderr (context,
-							     json_formatting);
-      break;
-
-    case DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE:
-      new_sink = &diagnostic_output_format_init_json_file (context,
-							   json_formatting,
-							   base_file_name);
-      break;
-
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR:
       new_sink = &diagnostic_output_format_init_sarif_stderr (context,
 							      line_table,
