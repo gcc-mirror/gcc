@@ -61,7 +61,12 @@
 #endif
 
 #define __glibcxx_want_constexpr_bitset
+#define __glibcxx_want_bitset  // ...construct from string_view
 #include <bits/version.h>
+
+#ifdef __cpp_lib_bitset // ...construct from string_view
+# include <string_view>
+#endif
 
 #define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * __SIZEOF_LONG__)
 #define _GLIBCXX_BITSET_WORDS(__n) \
@@ -752,7 +757,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  (Note that %bitset does @e not meet the formal requirements of a
    *  <a href="tables.html#65">container</a>.  Mainly, it lacks iterators.)
    *
-   *  The template argument, @a Nb, may be any non-negative number,
+   *  The template argument, `Nb`, may be any non-negative number,
    *  specifying the number of bits (e.g., "0", "12", "1024*1024").
    *
    *  In the general unoptimized case, storage is allocated in word-sized
@@ -816,28 +821,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef _Base_bitset<_GLIBCXX_BITSET_WORDS(_Nb)> _Base;
       typedef unsigned long _WordT;
 
-#if _GLIBCXX_HOSTED
-      template<class _CharT, class _Traits, class _Alloc>
-      _GLIBCXX23_CONSTEXPR
-      void
-      _M_check_initial_position(const std::basic_string<_CharT, _Traits, _Alloc>& __s,
-				size_t __position) const
+      template<class _Str>
+      _GLIBCXX23_CONSTEXPR void
+      _M_check_initial_position(
+	const _Str& __s, typename _Str::size_type __position) const
       {
 	if (__position > __s.size())
-	  __throw_out_of_range_fmt(__N("bitset::bitset: __position "
-				       "(which is %zu) > __s.size() "
-				       "(which is %zu)"),
-				   __position, __s.size());
+	  __throw_out_of_range_fmt(
+	    __N("bitset::bitset:"
+		" __position (which is %zu) > __s.size() (which is %zu)"),
+	    size_t(__position), size_t(__s.size()));
       }
-#endif // HOSTED
 
       _GLIBCXX23_CONSTEXPR
       void _M_check(size_t __position, const char *__s) const
       {
 	if (__position >= _Nb)
-	  __throw_out_of_range_fmt(__N("%s: __position (which is %zu) "
-				       ">= _Nb (which is %zu)"),
-				   __s, __position, _Nb);
+	  __throw_out_of_range_fmt(
+	    __N("%s: __position (which is %zu) >= _Nb (which is %zu)"),
+	    __s, size_t(__position), size_t(_Nb));
       }
 
       _GLIBCXX23_CONSTEXPR
@@ -954,12 +956,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if _GLIBCXX_HOSTED
       /**
        *  Use a subset of a string.
-       *  @param  __s  A string of @a 0 and @a 1 characters.
-       *  @param  __position  Index of the first character in @a __s to use;
+       *  @param  __s  A string of `0` and `1` characters.
+       *  @param  __position  Index of the first character in `__s` to use;
        *                    defaults to zero.
-       *  @throw  std::out_of_range  If @a pos is bigger the size of @a __s.
+       *  @throw  std::out_of_range  If `__position > __s.size()`.
        *  @throw  std::invalid_argument  If a character appears in the string
-       *                                 which is neither @a 0 nor @a 1.
+       *                                 which is neither `0` nor `1`.
        */
       template<class _CharT, class _Traits, class _Alloc>
 	_GLIBCXX23_CONSTEXPR
@@ -976,13 +978,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  Use a subset of a string.
-       *  @param  __s  A string of @a 0 and @a 1 characters.
-       *  @param  __position  Index of the first character in @a __s to use.
+       *  @param  __s  A string of `0` and `1` characters.
+       *  @param  __position  Index of the first character in `__s` to use.
        *  @param  __n    The number of characters to copy.
-       *  @throw std::out_of_range If @a __position is bigger the size
-       *  of @a __s.
+       *  @throw  std::out_of_range  If `__position > __s.size()`.
        *  @throw  std::invalid_argument  If a character appears in the string
-       *                                 which is neither @a 0 nor @a 1.
+       *                                 which is neither `0` nor `1`.
        */
       template<class _CharT, class _Traits, class _Alloc>
 	_GLIBCXX23_CONSTEXPR
@@ -1008,15 +1009,42 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif // HOSTED
 
+#ifdef __cpp_lib_bitset
+      /**
+       *  Use a subset of a string view.
+       *  @param  __s  A `string_view` of a sequence of `0` and `1` characters.
+       *  @param  __position  Index of the first character in `__s` to use.
+       *  @param  __n    The maximum number of characters from `__s` to use.
+       *  @param  __zero The character corresponding to the value 0.
+       *  @param  __one  The character corresponding to the value 1.
+       *  @throw  std::out_of_range  If `__position > __s.size()`.
+       *  @throw  std::invalid_argument  If a character appears in `__s`
+       *                                 which is neither `0` nor `1`.
+       */
+      template<class _CharT, class _Traits>
+	constexpr explicit
+	bitset(basic_string_view<_CharT, _Traits> __s,
+	  basic_string_view<_CharT, _Traits>::size_type __position = 0,
+	  basic_string_view<_CharT, _Traits>::size_type __n =
+	    basic_string_view<_CharT, _Traits>::npos,
+	  _CharT __zero = _CharT('0'), _CharT __one = _CharT('1'))
+	: _Base()
+	{
+	  _M_check_initial_position(__s, __position);
+	  _M_copy_from_ptr<_CharT, _Traits>(
+	    __s.data(), __s.size(), __position, __n, __zero, __one);
+	}
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  Construct from a character %array.
-       *  @param  __str  An %array of characters @a zero and @a one.
+       *  @param  __str  An %array of characters `__zero` and `__one`.
        *  @param  __n    The number of characters to use.
        *  @param  __zero The character corresponding to the value 0.
        *  @param  __one  The character corresponding to the value 1.
        *  @throw  std::invalid_argument If a character appears in the string
-       *                                which is neither @a __zero nor @a __one.
+       *                                which is neither `__zero` nor `__one`.
        */
       template<typename _CharT>
 	[[__gnu__::__nonnull__]]
@@ -1028,10 +1056,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       _CharT __zero = _CharT('0'), _CharT __one = _CharT('1'))
         : _Base()
         {
-#if _GLIBCXX_HOSTED
 	  if (!__str)
 	    __throw_logic_error(__N("bitset::bitset(const _CharT*, ...)"));
-#endif
 	  using _Traits = typename __bitset::__string<_CharT>::traits_type;
 
 	  if (__n == __bitset::__string<_CharT>::npos)

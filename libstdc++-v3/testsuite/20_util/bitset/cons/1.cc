@@ -47,6 +47,7 @@ void test01(void)
   const size_t n3 = 128;
   try {
     std::bitset<n3> bit03(str01, 5);
+    VERIFY(false);
   }
   catch(std::invalid_argument& fail) {
     VERIFY( true );

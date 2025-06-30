@@ -39,6 +39,8 @@ void test02(void)
   std::bitset<0>  z3(std::string("10101010101"));
   VERIFY( z3.any() == false );
 
+  VERIFY( z1.to_ulong() == 0 );
+  VERIFY( (z1.to_string<char,char_traits<char>,allocator<char> >().empty() ));
   try {
     z1.set(0);
     VERIFY( false );
@@ -49,9 +51,6 @@ void test02(void)
   catch(...) {
     VERIFY( false );
   }
-
-  VERIFY( z1.to_ulong() == 0 );
-  VERIFY( (z1.to_string<char,char_traits<char>,allocator<char> >().empty() ));
 }
 
 int main()

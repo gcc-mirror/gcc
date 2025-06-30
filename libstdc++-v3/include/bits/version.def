@@ -2030,6 +2030,14 @@ ftms = {
   };
 };
 
+ftms = {
+  name = bitset  // ...construct from string_view
+  values = {
+    v = 202306;
+    cxxmin = 26;
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";

@@ -2273,4 +2273,14 @@
 #endif /* !defined(__cpp_lib_exception_ptr_cast) && defined(__glibcxx_want_exception_ptr_cast) */
 #undef __glibcxx_want_exception_ptr_cast
 
+#if !defined(__cpp_lib_bitset)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_bitset 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bitset)
+#   define __cpp_lib_bitset 202306L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_bitset) && defined(__glibcxx_want_bitset) */
+#undef __glibcxx_bitset
+
 #undef __glibcxx_want_all
