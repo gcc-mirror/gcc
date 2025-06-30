@@ -11241,6 +11241,13 @@ package body Sem_Ch13 is
    --  Start of processing for Check_Aspect_At_End_Of_Declarations
 
    begin
+      --  Indicate that the expression comes from an aspect specification,
+      --  which is used in subsequent analysis even if expansion is off.
+
+      if Present (End_Decl_Expr) then
+         Set_Parent (End_Decl_Expr, ASN);
+      end if;
+
       --  In an instance we do not perform the consistency check between freeze
       --  point and end of declarations, because it was done already in the
       --  analysis of the generic. Furthermore, the delayed analysis of an
@@ -11330,13 +11337,6 @@ package body Sem_Ch13 is
             else
                Preanalyze (Freeze_Expr);
             end if;
-         end if;
-
-         --  Indicate that the expression comes from an aspect specification,
-         --  which is used in subsequent analysis even if expansion is off.
-
-         if Present (End_Decl_Expr) then
-            Set_Parent (End_Decl_Expr, ASN);
          end if;
 
          --  In a generic context the original aspect expressions have not
