@@ -1,3 +1,5 @@
+GNATMAKE_FOR_BUILD = gnatmake
+
 # Dependencies for compiler sources that are generated at build time
 
 fsrcdir := $(shell cd $(srcdir);${PWD_COMMAND})
