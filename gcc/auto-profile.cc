@@ -1308,7 +1308,7 @@ autofdo_source_profile::offline_external_functions ()
 	      if (dump_file)
 		fprintf (dump_file,
 			 "string table in auto-profile contains"
-			 " duplicated name %s", n1);
+			 " duplicated name %s\n", n1);
 	      to_symbol_name.put (i, index);
 	    }
 	  continue;
@@ -2491,6 +2491,21 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
 	set_bb_annotated (bb, annotated_bb);
 	changed = true;
       }
+    else if (is_bb_annotated (bb, *annotated_bb)
+	     && bb->count < total_known_count)
+      {
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "  Increasing bb %i count from ",
+		     bb->index);
+	    bb->count.dump (dump_file);
+	    fprintf (dump_file, " to ");
+	    total_known_count.dump (dump_file);
+	    fprintf (dump_file, " hoping to mitigate afdo inconsistency\n");
+	  }
+	bb->count = total_known_count;
+	changed = true;
+      }
     else if (num_unknown_edges == 1 && is_bb_annotated (bb, *annotated_bb))
       {
 	if (bb->count > total_known_count)
@@ -2531,6 +2546,27 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
 		    fprintf (dump_file, "\n");
 		  }
 	      }
+	  }
+      }
+    else if (num_unknown_edges == 0
+	     && is_bb_annotated (bb, *annotated_bb)
+	     && (is_succ ? single_succ_p (bb) : single_pred_p (bb)))
+      {
+	edge e = is_succ ? single_succ_edge (bb) : single_pred_edge (bb);
+	if (AFDO_EINFO (e)->is_annotated ()
+	    && AFDO_EINFO (e)->get_count () < bb->count)
+	  {
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "  Increasing edge %i->%i count from ",
+			 e->src->index, e->dest->index);
+		AFDO_EINFO (e)->get_count ().dump (dump_file);
+		fprintf (dump_file, " to ");
+		bb->count.dump (dump_file);
+		fprintf (dump_file, " hoping to mitigate afdo inconsistency\n");
+	      }
+	    AFDO_EINFO (e)->set_count (bb->count);
+	    changed = true;
 	  }
       }
   }
@@ -2662,10 +2698,11 @@ afdo_propagate (bb_set *annotated_bb)
 		     ((basic_block)bb->aux)->index,
 		     bb->index);
 	    bb->count.dump (dump_file);
+	    fprintf (dump_file, "\n");
 	  }
       }
 
-  while (changed && i++ < 10)
+  while (changed && i++ < 100)
     {
       changed = false;
 
@@ -2676,7 +2713,7 @@ afdo_propagate (bb_set *annotated_bb)
       afdo_propagate_circuit (*annotated_bb);
     }
   if (dump_file)
-    fprintf (dump_file, "Propated in %i iterations %s\n",
+    fprintf (dump_file, "Propagation took %i iterations %s\n",
 	     i, changed ? "; iteration limit reached\n" : "");
 }
 
