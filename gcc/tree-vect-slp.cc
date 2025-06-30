@@ -2849,9 +2849,10 @@ out:
 	  && matches[0]
 	  /* ???  For COND_EXPRs we can swap the comparison operands
 	     as well as the arms under some constraints.  */
-	  && nops == 2
+	  && (nops == 2 || nops == 3)
 	  && oprnds_info[1]->first_dt == vect_internal_def
-	  && is_gimple_assign (stmt_info->stmt)
+	  && (is_gimple_assign (stmt_info->stmt)
+	      || is_gimple_call (stmt_info->stmt))
 	  /* Swapping operands for reductions breaks assumptions later on.  */
 	  && STMT_VINFO_REDUC_IDX (stmt_info) == -1)
 	{
@@ -2866,14 +2867,32 @@ out:
 		    continue;
 		  stmt_vec_info stmt_info = stmts[j];
 		  /* Verify if we can swap operands of this stmt.  */
-		  gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt);
-		  if (!stmt
-		      || !commutative_tree_code (gimple_assign_rhs_code (stmt)))
+		  if (gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt))
 		    {
-		      if (!swap_not_matching)
-			goto fail;
-		      swap_not_matching = false;
-		      break;
+		      tree_code code = gimple_assign_rhs_code (stmt);
+		      if (! commutative_tree_code (code)
+			  && ! commutative_ternary_tree_code (code))
+			{
+			  if (!swap_not_matching)
+			    goto fail;
+			  swap_not_matching = false;
+			  break;
+			}
+		    }
+		  else if (gcall *call = dyn_cast <gcall *> (stmt_info->stmt))
+		    {
+		      internal_fn fn = (gimple_call_internal_p (call)
+					? gimple_call_internal_fn (call)
+					: IFN_LAST);
+		      if ((! commutative_binary_fn_p (fn)
+			   && ! commutative_ternary_fn_p (fn))
+			  || first_commutative_argument (fn) != 0)
+			{
+			  if (!swap_not_matching)
+			    goto fail;
+			  swap_not_matching = false;
+			  break;
+			}
 		    }
 		}
 	    }

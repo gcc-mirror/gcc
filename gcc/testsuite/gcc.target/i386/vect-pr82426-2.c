@@ -1,6 +1,6 @@
 /* i?86 does not have V2SF, x32 does though.  */
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O3 -mavx -mfma -ffp-contract=fast" } */
+/* { dg-options "-O3 -mavx -mfma -ffp-contract=on" } */
 
 struct Matrix
 {
