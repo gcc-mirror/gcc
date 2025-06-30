@@ -1004,6 +1004,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[no_unique_address]] _S_strides_t _M_strides;
     };
 
+  template<typename _ElementType>
+    struct default_accessor
+    {
+      static_assert(!is_array_v<_ElementType>,
+	"ElementType must not be an array type");
+      static_assert(!is_abstract_v<_ElementType>,
+	"ElementType must not be an abstract class type");
+
+      using offset_policy = default_accessor;
+      using element_type = _ElementType;
+      using reference = element_type&;
+      using data_handle_type = element_type*;
+
+      constexpr
+      default_accessor() noexcept = default;
+
+      template<typename _OElementType>
+	requires is_convertible_v<_OElementType(*)[], element_type(*)[]>
+	constexpr
+	default_accessor(default_accessor<_OElementType>) noexcept
+	{ }
+
+      constexpr reference
+      access(data_handle_type __p, size_t __i) const noexcept
+      { return __p[__i]; }
+
+      constexpr data_handle_type
+      offset(data_handle_type __p, size_t __i) const noexcept
+      { return __p + __i; }
+    };
+
 _GLIBCXX_END_NAMESPACE_VERSION
 }
 #endif
