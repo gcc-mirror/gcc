@@ -8978,12 +8978,20 @@ riscv_allocate_and_probe_stack_space (rtx temp1, HOST_WIDE_INT size)
       temp2 = riscv_force_temporary (temp2, gen_int_mode (rounded_size, Pmode));
       insn = emit_insn (gen_sub3_insn (temp2, stack_pointer_rtx, temp2));
 
+      /* The size does not represent actual stack pointer address shift
+	 from the top of the frame, as it might be lowered before.
+	 To consider the correct SP addresses for the CFA notes, it is needed
+	 to correct them with the initial offset value.  */
+      HOST_WIDE_INT initial_cfa_offset
+	= cfun->machine->frame.total_size.to_constant () - size;
+
       if (!frame_pointer_needed)
 	{
 	  /* We want the CFA independent of the stack pointer for the
 	     duration of the loop.  */
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			plus_constant (Pmode, temp1, rounded_size));
+			plus_constant (Pmode, temp1,
+				       initial_cfa_offset + rounded_size));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
@@ -8996,7 +9004,8 @@ riscv_allocate_and_probe_stack_space (rtx temp1, HOST_WIDE_INT size)
 	{
 	  insn = get_last_insn ();
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			plus_constant (Pmode, stack_pointer_rtx, rounded_size));
+			plus_constant (Pmode, stack_pointer_rtx,
+				       initial_cfa_offset + rounded_size));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
