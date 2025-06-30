@@ -71,9 +71,9 @@ call_summary::get_user_facing_desc (pretty_printer *pp) const
       if (tree result = DECL_RESULT (fndecl))
 	{
 	  const region *result_reg
-	    = get_state ().m_region_model->get_lvalue (result, NULL);
+	    = get_state ().m_region_model->get_lvalue (result, nullptr);
 	  const svalue *result_sval
-	    = get_state ().m_region_model->get_store_value (result_reg, NULL);
+	    = get_state ().m_region_model->get_store_value (result_reg, nullptr);
 	  switch (result_sval->get_kind ())
 	    {
 	    default:
@@ -172,7 +172,7 @@ call_summary_replay::call_summary_replay (const call_details &cd,
      This will be a top-level frame, since that's what's in
      the summary.  */
   const frame_region *summary_frame
-    = mgr->get_frame_region (NULL, called_fn);
+    = mgr->get_frame_region (nullptr, called_fn);
 
   unsigned idx = 0;
   for (tree iter_parm = DECL_ARGUMENTS (fndecl); iter_parm;
@@ -210,7 +210,7 @@ call_summary_replay::call_summary_replay (const call_details &cd,
 /* Try to convert SUMMARY_SVAL in the summary to a corresponding svalue
    in the caller, caching the result.
 
-   Return NULL if the conversion is not possible.  */
+   Return nullptr if the conversion is not possible.  */
 
 const svalue *
 call_summary_replay::convert_svalue_from_summary (const svalue *summary_sval)
@@ -252,7 +252,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	const region *summary_reg = region_summary_sval->get_pointee ();
 	const region *caller_reg = convert_region_from_summary (summary_reg);
 	if (!caller_reg)
-	  return NULL;
+	  return nullptr;
 	region_model_manager *mgr = get_manager ();
 	const svalue *caller_ptr
 	  = mgr->get_ptr_svalue (summary_sval->get_type (),
@@ -268,7 +268,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
       return summary_sval;
 
     case SK_SETJMP:
-      return NULL; // TODO
+      return nullptr; // TODO
 
     case SK_INITIAL:
       {
@@ -282,7 +282,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	const region *summary_reg = initial_summary_sval->get_region ();
 	const region *caller_reg = convert_region_from_summary (summary_reg);
 	if (!caller_reg)
-	  return NULL;
+	  return nullptr;
 	const svalue *caller_sval
 	  = m_cd.get_model ()->get_store_value (caller_reg, m_cd.get_ctxt ());
 	return caller_sval;
@@ -295,7 +295,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	const svalue *summary_arg = unaryop_summary_sval->get_arg ();
 	const svalue *caller_arg = convert_svalue_from_summary (summary_arg);
 	if (!caller_arg)
-	  return NULL;
+	  return nullptr;
 	region_model_manager *mgr = get_manager ();
 	return mgr->get_or_create_unaryop (summary_sval->get_type (),
 					   unaryop_summary_sval->get_op (),
@@ -309,11 +309,11 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	const svalue *summary_arg0 = binop_summary_sval->get_arg0 ();
 	const svalue *caller_arg0 = convert_svalue_from_summary (summary_arg0);
 	if (!caller_arg0)
-	  return NULL;
+	  return nullptr;
 	const svalue *summary_arg1 = binop_summary_sval->get_arg1 ();
 	const svalue *caller_arg1 = convert_svalue_from_summary (summary_arg1);
 	if (!caller_arg1)
-	  return NULL;
+	  return nullptr;
 	region_model_manager *mgr = get_manager ();
 	return mgr->get_or_create_binop (summary_sval->get_type (),
 					 binop_summary_sval->get_op (),
@@ -328,10 +328,10 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	region_model_manager *mgr = get_manager ();
 	const svalue *summary_parent_sval = sub_summary_sval->get_parent ();
 	if (!summary_parent_sval)
-	  return NULL;
+	  return nullptr;
 	const region *summary_subregion = sub_summary_sval->get_subregion ();
 	if (!summary_subregion)
-	  return NULL;
+	  return nullptr;
 	return mgr->get_or_create_sub_svalue (summary_sval->get_type (),
 					      summary_parent_sval,
 					      summary_subregion);
@@ -346,13 +346,13 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	const svalue *caller_outer_size
 	  = convert_svalue_from_summary (summary_outer_size);
 	if (!caller_outer_size)
-	  return NULL;
+	  return nullptr;
 	const svalue *summary_inner_sval
 	  = repeated_summary_sval->get_inner_svalue ();
 	const svalue *caller_inner_sval
 	  = convert_svalue_from_summary (summary_inner_sval);
 	if (!caller_inner_sval)
-	  return NULL;
+	  return nullptr;
 	region_model_manager *mgr = get_manager ();
 	return mgr->get_or_create_repeated_svalue (summary_sval->get_type (),
 						   caller_outer_size,
@@ -369,7 +369,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	const svalue *caller_inner_sval
 	  = convert_svalue_from_summary (summary_inner_sval);
 	if (!caller_inner_sval)
-	  return NULL;
+	  return nullptr;
 	region_model_manager *mgr = get_manager ();
 	return mgr->get_or_create_bits_within (summary_sval->get_type (),
 					       bits,
@@ -384,7 +384,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	const svalue *caller_arg_sval
 	  = convert_svalue_from_summary (summary_arg_sval);
 	if (!caller_arg_sval)
-	  return NULL;
+	  return nullptr;
 	region_model_manager *mgr = get_manager ();
 	return mgr->get_or_create_unmergeable (caller_arg_sval);
       }
@@ -400,14 +400,14 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	  = convert_svalue_from_summary (summary_base_sval);
 	if (!(caller_base_sval
 	      && caller_base_sval->can_have_associated_state_p ()))
-	  return NULL;
+	  return nullptr;
 	const svalue *summary_iter_sval
 	  = widening_summary_sval->get_iter_svalue ();
 	const svalue *caller_iter_sval
 	  = convert_svalue_from_summary (summary_iter_sval);
 	if (!(caller_iter_sval
 	      && caller_iter_sval->can_have_associated_state_p ()))
-	  return NULL;
+	  return nullptr;
 	region_model_manager *mgr = get_manager ();
 	return mgr->get_or_create_widening_svalue
 	  (summary_iter_sval->get_type (),
@@ -491,7 +491,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	    const svalue *caller_input
 	      = convert_svalue_from_summary (summary_input);
 	    if (!caller_input)
-	      return NULL;
+	      return nullptr;
 	    inputs.safe_push (caller_input);
 	  }
 	region_model_manager *mgr = get_manager ();
@@ -516,7 +516,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	    const svalue *caller_input
 	      = convert_svalue_from_summary (summary_input);
 	    if (!caller_input)
-	      return NULL;
+	      return nullptr;
 	    inputs.safe_push (caller_input);
 	  }
 	region_model_manager *mgr = get_manager ();
@@ -532,7 +532,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 /* Try to convert SUMMARY_REG in the summary to a corresponding region
    in the caller, caching the result.
 
-   Return NULL if the conversion is not possible.  */
+   Return nullptr if the conversion is not possible.  */
 
 const region *
 call_summary_replay::convert_region_from_summary (const region *summary_reg)
@@ -596,7 +596,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	const svalue *caller_ptr_sval
 	  = convert_svalue_from_summary (summary_ptr_sval);
 	if (!caller_ptr_sval)
-	  return NULL;
+	  return nullptr;
 	const region *caller_reg
 	  = get_caller_model ()->deref_rvalue (caller_ptr_sval,
 					       NULL_TREE,
@@ -619,7 +619,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	  case SSA_NAME:
 	    /* We don't care about writes to locals within
 	       the summary.  */
-	    return NULL;
+	    return nullptr;
 	  case VAR_DECL:
 	    /* We don't care about writes to locals within
 	       the summary.  */
@@ -628,12 +628,12 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	      return summary_reg;
 	    else
 	      /* Otherwise, we don't care about locals.  */
-	      return NULL;
+	      return nullptr;
 	  case RESULT_DECL:
 	    return m_cd.get_lhs_region ();
 	  case PARM_DECL:
 	    /* Writes (by value) to parms should be visible to the caller.  */
-	    return NULL;
+	    return nullptr;
 	  }
       }
       break;
@@ -645,7 +645,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	const region *caller_parent_reg
 	  = convert_region_from_summary (summary_parent_reg);
 	if (!caller_parent_reg)
-	  return NULL;
+	  return nullptr;
 	tree field = summary_field_reg->get_field ();
 	return mgr->get_field_region (caller_parent_reg, field);
       }
@@ -658,12 +658,12 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	const region *caller_parent_reg
 	  = convert_region_from_summary (summary_parent_reg);
 	if (!caller_parent_reg)
-	  return NULL;
+	  return nullptr;
 	const svalue *summary_index = summary_element_reg->get_index ();
 	const svalue *caller_index
 	  = convert_svalue_from_summary (summary_index);
 	if (!caller_index)
-	  return NULL;
+	  return nullptr;
 	return mgr->get_element_region (caller_parent_reg,
 					summary_reg->get_type (),
 					caller_index);
@@ -677,13 +677,13 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	const region *caller_parent_reg
 	  = convert_region_from_summary (summary_parent_reg);
 	if (!caller_parent_reg)
-	  return NULL;
+	  return nullptr;
 	const svalue *summary_byte_offset
 	  = summary_offset_reg->get_byte_offset ();
 	const svalue *caller_byte_offset
 	  = convert_svalue_from_summary (summary_byte_offset);
 	if (!caller_byte_offset)
-	  return NULL;
+	  return nullptr;
 	return mgr->get_offset_region (caller_parent_reg,
 				       summary_reg->get_type (),
 				       caller_byte_offset);
@@ -697,13 +697,13 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	const region *caller_parent_reg
 	  = convert_region_from_summary (summary_parent_reg);
 	if (!caller_parent_reg)
-	  return NULL;
+	  return nullptr;
 	const svalue *summary_byte_size
 	  = summary_sized_reg->get_byte_size_sval (mgr);
 	const svalue *caller_byte_size
 	  = convert_svalue_from_summary (summary_byte_size);
 	if (!caller_byte_size)
-	  return NULL;
+	  return nullptr;
 	return mgr->get_sized_region (caller_parent_reg,
 				       summary_reg->get_type (),
 				       caller_byte_size);
@@ -715,7 +715,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	const region *caller_parent_reg
 	  = convert_region_from_summary (summary_parent_reg);
 	if (!caller_parent_reg)
-	  return NULL;
+	  return nullptr;
 	return mgr->get_cast_region (caller_parent_reg,
 				     summary_reg->get_type ());
       }
@@ -731,7 +731,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
       }
       break;
     case RK_ALLOCA:
-      return NULL;
+      return nullptr;
     case RK_BIT_RANGE:
       {
 	const bit_range_region *summary_bit_range_reg
@@ -740,7 +740,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	const region *caller_parent_reg
 	  = convert_region_from_summary (summary_parent_reg);
 	if (!caller_parent_reg)
-	  return NULL;
+	  return nullptr;
 	const bit_range &bits = summary_bit_range_reg->get_bits ();
 	return mgr->get_bit_range (caller_parent_reg,
 				   summary_reg->get_type (),
@@ -748,14 +748,14 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
       }
       break;
     case RK_VAR_ARG:
-      return NULL;
+      return nullptr;
     }
 }
 
 /* Try to convert SUMMARY_KEY in the summary to a corresponding binding key
    in the caller.
 
-   Return NULL if the conversion is not possible.  */
+   Return nullptr if the conversion is not possible.  */
 
 const binding_key *
 call_summary_replay::convert_key_from_summary (const binding_key *summary_key)
@@ -767,7 +767,7 @@ call_summary_replay::convert_key_from_summary (const binding_key *summary_key)
   const region *summary_reg = symbolic_key->get_region ();
   const region *caller_reg = convert_region_from_summary (summary_reg);
   if (!caller_reg)
-    return NULL;
+    return nullptr;
   region_model_manager *mgr = get_manager ();
   store_manager *store_mgr = mgr->get_store_manager ();
   return store_mgr->get_symbolic_binding (caller_reg);
@@ -780,7 +780,7 @@ call_summary_replay::add_svalue_mapping (const svalue *summary_sval,
 					 const svalue *caller_sval)
 {
   gcc_assert (summary_sval);
-  // CALLER_SVAL can be NULL
+  // CALLER_SVAL can be nullptr
   m_map_svalue_from_summary_to_caller.put (summary_sval, caller_sval);
 }
 
@@ -791,7 +791,7 @@ call_summary_replay::add_region_mapping (const region *summary_reg,
 					 const region *caller_reg)
 {
   gcc_assert (summary_reg);
-  // CALLER_REG can be NULL
+  // CALLER_REG can be nullptr
   m_map_region_from_summary_to_caller.put (summary_reg, caller_reg);
 }
 

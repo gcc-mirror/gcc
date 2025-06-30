@@ -120,23 +120,23 @@ public:
   static function_point before_stmt (const supernode *supernode,
 				     unsigned stmt_idx)
   {
-    return function_point (supernode, NULL, stmt_idx, PK_BEFORE_STMT);
+    return function_point (supernode, nullptr, stmt_idx, PK_BEFORE_STMT);
   }
 
   static function_point after_supernode (const supernode *supernode)
   {
-    return function_point (supernode, NULL, 0, PK_AFTER_SUPERNODE);
+    return function_point (supernode, nullptr, 0, PK_AFTER_SUPERNODE);
   }
 
   /* Support for hash_map.  */
 
   static function_point empty ()
   {
-    return function_point (NULL, NULL, 0, PK_EMPTY);
+    return function_point (nullptr, nullptr, 0, PK_EMPTY);
   }
   static function_point deleted ()
   {
-    return function_point (NULL, NULL, 0, PK_DELETED);
+    return function_point (nullptr, nullptr, 0, PK_DELETED);
   }
 
   static int cmp_within_supernode_1 (const function_point &point_a,
@@ -305,7 +305,7 @@ public:
  private:
   program_point (const function_point &fn_point)
   : m_function_point (fn_point),
-    m_call_string (NULL)
+    m_call_string (nullptr)
   {
   }
 

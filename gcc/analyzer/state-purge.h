@@ -109,7 +109,7 @@ public:
 	= const_cast <decl_map_t&> (m_decl_map).get (decl))
       return *slot;
     else
-      return NULL;
+      return nullptr;
   }
 
   state_purge_per_decl &

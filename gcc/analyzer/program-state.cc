@@ -115,7 +115,7 @@ extrinsic_state::get_model_manager () const
   if (m_engine)
     return m_engine->get_model_manager ();
   else
-    return NULL; /* for selftests.  */
+    return nullptr; /* for selftests.  */
 }
 
 /* Try to find a state machine named NAME.
@@ -258,7 +258,7 @@ DEBUG_FUNCTION void
 sm_state_map::dump (bool simple) const
 {
   tree_dump_pretty_printer pp (stderr);
-  print (NULL, simple, true, &pp);
+  print (nullptr, simple, true, &pp);
   pp_newline (&pp);
 }
 
@@ -420,7 +420,7 @@ sm_state_map::operator== (const sm_state_map &other) const
       const svalue *sval = (*iter).first;
       entry_t e = (*iter).second;
       entry_t *other_slot = const_cast <map_t &> (other.m_map).get (sval);
-      if (other_slot == NULL)
+      if (other_slot == nullptr)
 	return false;
       if (e != *other_slot)
 	return false;
@@ -501,7 +501,7 @@ sm_state_map::get_origin (const svalue *sval,
   if (slot)
     return slot->m_origin;
   else
-    return NULL;
+    return nullptr;
 }
 
 /* Set the state of SID within MODEL to STATE, recording that
@@ -514,7 +514,7 @@ sm_state_map::set_state (region_model *model,
 			 const svalue *origin,
 			 const extrinsic_state &ext_state)
 {
-  if (model == NULL)
+  if (model == nullptr)
     return;
 
   /* Reject attempts to set state on UNKNOWN/POISONED.  */
@@ -771,7 +771,7 @@ sm_state_map::on_unknown_change (const svalue *sval,
 
   for (svalue_set::iterator iter = svals_to_unset.begin ();
        iter != svals_to_unset.end (); ++iter)
-    impl_set_state (*iter, (state_machine::state_t)0, NULL, ext_state);
+    impl_set_state (*iter, (state_machine::state_t)0, nullptr, ext_state);
 }
 
 /* Purge state for things involving SVAL.
@@ -802,7 +802,7 @@ sm_state_map::purge_state_involving (const svalue *sval,
 
   for (svalue_set::iterator iter = svals_to_unset.begin ();
        iter != svals_to_unset.end (); ++iter)
-    impl_set_state (*iter, (state_machine::state_t)0, NULL, ext_state);
+    impl_set_state (*iter, (state_machine::state_t)0, nullptr, ext_state);
 }
 
 /* Comparator for imposing an order on sm_state_map instances.  */
@@ -912,7 +912,7 @@ sm_state_map::can_merge_with_p (const sm_state_map &other,
       state_machine::state_t other_state = other.get_state (sval, ext_state);
       if (state_machine::state_t merged_state
 	    = sm.maybe_get_merged_state (this_state, other_state))
-	(*out)->impl_set_state (sval, merged_state, NULL, ext_state);
+	(*out)->impl_set_state (sval, merged_state, nullptr, ext_state);
       else
 	return false;
     }
@@ -926,7 +926,7 @@ sm_state_map::can_merge_with_p (const sm_state_map &other,
 /* program_state's ctor.  */
 
 program_state::program_state (const extrinsic_state &ext_state)
-: m_region_model (NULL),
+: m_region_model (nullptr),
   m_checker_states (ext_state.get_num_checkers ()),
   m_valid (true)
 {
@@ -960,8 +960,8 @@ sm_state_map::replay_call_summary (call_summary_replay &r,
       const svalue *caller_origin
 	= (summary_origin
 	   ? r.convert_svalue_from_summary (summary_origin)
-	   : NULL);
-      // caller_origin can be NULL.
+	   : nullptr);
+      // caller_origin can be nullptr.
       m_map.put (caller_sval, entry_t (kv.second.m_state, caller_origin));
     }
   m_global_state = summary.m_global_state;
@@ -1009,7 +1009,7 @@ program_state::program_state (program_state &&other)
 : m_region_model (other.m_region_model),
   m_checker_states (other.m_checker_states.length ())
 {
-  other.m_region_model = NULL;
+  other.m_region_model = nullptr;
 
   int i;
   sm_state_map *smap;
@@ -1337,7 +1337,7 @@ program_state::on_edge (exploded_graph &eg,
     return false;
 
   program_state::detect_leaks (enode->get_state (), *this,
-			       NULL, eg.get_ext_state (),
+			       nullptr, eg.get_ext_state (),
 			       &ctxt);
 
   return true;
@@ -1361,7 +1361,7 @@ program_state::push_call (exploded_graph &eg,
                                   &enode->get_state (),
                                   this,
                                   uncertainty,
-				  NULL,
+				  nullptr,
                                   last_stmt);
   m_region_model->update_for_gcall (call_stmt, &ctxt);
 }
@@ -1384,7 +1384,7 @@ program_state::returning_call (exploded_graph &eg,
                                   &enode->get_state (),
                                   this,
                                   uncertainty,
-				  NULL,
+				  nullptr,
                                   last_stmt);
   m_region_model->update_for_return_gcall (call_stmt, &ctxt);
 }
@@ -1442,7 +1442,7 @@ program_state::prune_for_point (exploded_graph &eg,
 		     temporaries keep the value reachable until the frame is
 		     popped.  */
 		  const svalue *sval
-		    = new_state.m_region_model->get_store_value (reg, NULL);
+		    = new_state.m_region_model->get_store_value (reg, nullptr);
 		  if (!new_state.can_purge_p (eg.get_ext_state (), sval)
 		      && SSA_NAME_VAR (ssa_name))
 		    {
@@ -1501,9 +1501,9 @@ program_state::prune_for_point (exploded_graph &eg,
 	  impl_region_model_context ctxt (eg, enode_for_diag,
 					  this,
 					  &new_state,
-					  uncertainty, NULL,
+					  uncertainty, nullptr,
 					  point.get_stmt ());
-	  detect_leaks (*this, new_state, NULL, eg.get_ext_state (), &ctxt);
+	  detect_leaks (*this, new_state, nullptr, eg.get_ext_state (), &ctxt);
 	}
     }
 
@@ -1675,7 +1675,7 @@ program_state::detect_leaks (const program_state &src_state,
      *might* still be reachable in dst_state.  */
   svalue_set known_src_svalues;
   src_state.m_region_model->get_reachable_svalues (&known_src_svalues,
-						   NULL, NULL);
+						   nullptr, nullptr);
   svalue_set maybe_dest_svalues;
   dest_state.m_region_model->get_reachable_svalues (&maybe_dest_svalues,
 						    extra_sval, uncertainty);
@@ -1793,7 +1793,7 @@ test_sm_state_map ()
   tree y = build_global_decl ("y", integer_type_node);
   tree z = build_global_decl ("z", integer_type_node);
 
-  std::unique_ptr<state_machine> sm = make_malloc_state_machine (NULL);
+  std::unique_ptr<state_machine> sm = make_malloc_state_machine (nullptr);
   state_machine::state_t start = sm->get_start_state ();
   std::vector<std::unique_ptr<state_machine>> checkers;
   const state_machine &borrowed_sm = *sm.get ();
@@ -1807,9 +1807,9 @@ test_sm_state_map ()
     const state_machine::state_t TEST_STATE_42 = &test_state_42;
     region_model_manager mgr;
     region_model model (&mgr);
-    const svalue *x_sval = model.get_rvalue (x, NULL);
-    const svalue *y_sval = model.get_rvalue (y, NULL);
-    const svalue *z_sval = model.get_rvalue (z, NULL);
+    const svalue *x_sval = model.get_rvalue (x, nullptr);
+    const svalue *y_sval = model.get_rvalue (y, nullptr);
+    const svalue *z_sval = model.get_rvalue (z, nullptr);
 
     sm_state_map map (borrowed_sm);
     ASSERT_TRUE (map.is_empty_p ());
@@ -1836,16 +1836,16 @@ test_sm_state_map ()
   {
     region_model_manager mgr;
     region_model model (&mgr);
-    const svalue *x_sval = model.get_rvalue (x, NULL);
-    const svalue *y_sval = model.get_rvalue (y, NULL);
-    const svalue *z_sval = model.get_rvalue (z, NULL);
+    const svalue *x_sval = model.get_rvalue (x, nullptr);
+    const svalue *y_sval = model.get_rvalue (y, nullptr);
+    const svalue *z_sval = model.get_rvalue (z, nullptr);
 
     sm_state_map map (borrowed_sm);
     ASSERT_TRUE (map.is_empty_p ());
     ASSERT_EQ (map.get_state (x_sval, ext_state), start);
     ASSERT_EQ (map.get_state (y_sval, ext_state), start);
 
-    model.add_constraint (x, EQ_EXPR, y, NULL);
+    model.add_constraint (x, EQ_EXPR, y, nullptr);
 
     /* Setting x to a state should also update y, as they
        are in the same equivalence class.  */
@@ -1860,8 +1860,8 @@ test_sm_state_map ()
   {
     region_model_manager mgr;
     region_model model (&mgr);
-    const svalue *y_sval = model.get_rvalue (y, NULL);
-    const svalue *z_sval = model.get_rvalue (z, NULL);
+    const svalue *y_sval = model.get_rvalue (y, nullptr);
+    const svalue *z_sval = model.get_rvalue (z, nullptr);
 
     sm_state_map map0 (borrowed_sm);
     sm_state_map map1 (borrowed_sm);
@@ -1895,17 +1895,17 @@ test_sm_state_map ()
 
     region_model_manager mgr;
     region_model model (&mgr);
-    const svalue *x_sval = model.get_rvalue (x, NULL);
-    const svalue *y_sval = model.get_rvalue (y, NULL);
-    const svalue *z_sval = model.get_rvalue (z, NULL);
+    const svalue *x_sval = model.get_rvalue (x, nullptr);
+    const svalue *y_sval = model.get_rvalue (y, nullptr);
+    const svalue *z_sval = model.get_rvalue (z, nullptr);
 
-    map1.impl_set_state (x_sval, TEST_STATE_2, NULL, ext_state);
-    map1.impl_set_state (y_sval, TEST_STATE_3, NULL, ext_state);
-    map1.impl_set_state (z_sval, TEST_STATE_2, NULL, ext_state);
+    map1.impl_set_state (x_sval, TEST_STATE_2, nullptr, ext_state);
+    map1.impl_set_state (y_sval, TEST_STATE_3, nullptr, ext_state);
+    map1.impl_set_state (z_sval, TEST_STATE_2, nullptr, ext_state);
 
-    map2.impl_set_state (z_sval, TEST_STATE_2, NULL, ext_state);
-    map2.impl_set_state (y_sval, TEST_STATE_3, NULL, ext_state);
-    map2.impl_set_state (x_sval, TEST_STATE_2, NULL, ext_state);
+    map2.impl_set_state (z_sval, TEST_STATE_2, nullptr, ext_state);
+    map2.impl_set_state (y_sval, TEST_STATE_3, nullptr, ext_state);
+    map2.impl_set_state (x_sval, TEST_STATE_2, nullptr, ext_state);
 
     ASSERT_EQ (map1.hash (), map2.hash ());
     ASSERT_EQ (map1, map2);
@@ -1923,7 +1923,7 @@ test_program_state_1 ()
      malloc sm-state, pointing to a region on the heap.  */
   tree p = build_global_decl ("p", ptr_type_node);
 
-  std::unique_ptr<state_machine> sm = make_malloc_state_machine (NULL);
+  std::unique_ptr<state_machine> sm = make_malloc_state_machine (nullptr);
   const state_machine::state_t UNCHECKED_STATE
     = sm->get_state_by_name ("unchecked");
 
@@ -1935,13 +1935,13 @@ test_program_state_1 ()
   const svalue *size_in_bytes
     = mgr->get_or_create_unknown_svalue (size_type_node);
   const region *new_reg
-    = model->get_or_create_region_for_heap_alloc (size_in_bytes, NULL);
+    = model->get_or_create_region_for_heap_alloc (size_in_bytes, nullptr);
   const svalue *ptr_sval = mgr->get_ptr_svalue (ptr_type_node, new_reg);
-  model->set_value (model->get_lvalue (p, NULL),
-		    ptr_sval, NULL);
+  model->set_value (model->get_lvalue (p, nullptr),
+		    ptr_sval, nullptr);
   sm_state_map *smap = s.m_checker_states[0];
 
-  smap->impl_set_state (ptr_sval, UNCHECKED_STATE, NULL, ext_state);
+  smap->impl_set_state (ptr_sval, UNCHECKED_STATE, nullptr, ext_state);
   ASSERT_EQ (smap->get_state (ptr_sval, ext_state), UNCHECKED_STATE);
 }
 
@@ -1962,9 +1962,9 @@ test_program_state_2 ()
 
   program_state s (ext_state);
   region_model *model = s.m_region_model;
-  const region *p_reg = model->get_lvalue (p, NULL);
-  const svalue *str_sval = model->get_rvalue (string_cst_ptr, NULL);
-  model->set_value (p_reg, str_sval, NULL);
+  const region *p_reg = model->get_lvalue (p, nullptr);
+  const svalue *str_sval = model->get_rvalue (string_cst_ptr, nullptr);
+  model->set_value (p_reg, str_sval, nullptr);
 }
 
 /* Verify that program_states with identical sm-state can be merged,
@@ -1980,7 +1980,7 @@ test_program_state_merging ()
   engine eng;
   region_model_manager *mgr = eng.get_model_manager ();
   program_point point (program_point::origin (*mgr));
-  extrinsic_state ext_state (make_malloc_state_machine (NULL),
+  extrinsic_state ext_state (make_malloc_state_machine (nullptr),
 			     &eng);
 
   program_state s0 (ext_state);
@@ -1991,20 +1991,20 @@ test_program_state_merging ()
   const svalue *size_in_bytes
     = mgr->get_or_create_unknown_svalue (size_type_node);
   const region *new_reg
-    = model0->get_or_create_region_for_heap_alloc (size_in_bytes, NULL);
+    = model0->get_or_create_region_for_heap_alloc (size_in_bytes, nullptr);
   const svalue *ptr_sval = mgr->get_ptr_svalue (ptr_type_node, new_reg);
   model0->set_value (model0->get_lvalue (p, &ctxt),
 		     ptr_sval, &ctxt);
   sm_state_map *smap = s0.m_checker_states[0];
   const state_machine::state test_state ("test state", 0);
   const state_machine::state_t TEST_STATE = &test_state;
-  smap->impl_set_state (ptr_sval, TEST_STATE, NULL, ext_state);
+  smap->impl_set_state (ptr_sval, TEST_STATE, nullptr, ext_state);
   ASSERT_EQ (smap->get_state (ptr_sval, ext_state), TEST_STATE);
 
   model0->canonicalize ();
 
   /* Verify that canonicalization preserves sm-state.  */
-  ASSERT_EQ (smap->get_state (model0->get_rvalue (p, NULL), ext_state),
+  ASSERT_EQ (smap->get_state (model0->get_rvalue (p, nullptr), ext_state),
 	     TEST_STATE);
 
   /* Make a copy of the program_state.  */
@@ -2021,7 +2021,7 @@ test_program_state_merging ()
   /* Verify that the merged state has the sm-state for "p".  */
   region_model *merged_model = merged.m_region_model;
   sm_state_map *merged_smap = merged.m_checker_states[0];
-  ASSERT_EQ (merged_smap->get_state (merged_model->get_rvalue (p, NULL),
+  ASSERT_EQ (merged_smap->get_state (merged_model->get_rvalue (p, nullptr),
 				     ext_state),
 	     TEST_STATE);
 
@@ -2030,7 +2030,7 @@ test_program_state_merging ()
   merged.validate (ext_state);
 
   /* Verify that the merged state still has the sm-state for "p".  */
-  ASSERT_EQ (merged_smap->get_state (merged_model->get_rvalue (p, NULL),
+  ASSERT_EQ (merged_smap->get_state (merged_model->get_rvalue (p, nullptr),
 				     ext_state),
 	     TEST_STATE);
 
@@ -2047,7 +2047,7 @@ test_program_state_merging_2 ()
   engine eng;
   region_model_manager *mgr = eng.get_model_manager ();
   program_point point (program_point::origin (*mgr));
-  extrinsic_state ext_state (make_signal_state_machine (NULL), &eng);
+  extrinsic_state ext_state (make_signal_state_machine (nullptr), &eng);
 
   const state_machine::state test_state_0 ("test state 0", 0);
   const state_machine::state test_state_1 ("test state 1", 1);

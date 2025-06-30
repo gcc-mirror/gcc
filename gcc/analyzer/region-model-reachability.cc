@@ -68,7 +68,7 @@ reachable_regions::init_cluster (const region *base_reg)
   if (const symbolic_region *sym_reg = base_reg->dyn_cast_symbolic_region ())
     {
       const svalue *ptr = sym_reg->get_pointer ();
-      if (ptr->implicitly_live_p (NULL, m_model))
+      if (ptr->implicitly_live_p (nullptr, m_model))
 	add (base_reg, true);
       switch (ptr->get_kind ())
 	{
@@ -84,7 +84,7 @@ reachable_regions::init_cluster (const region *base_reg)
 	    const region *other_base_reg = init_sval_reg->get_base_region ();
 	    const binding_cluster *other_cluster
 	      = m_store->get_cluster (other_base_reg);
-	    if (other_cluster == NULL
+	    if (other_cluster == nullptr
 		|| !other_cluster->touched_p ())
 	      add (base_reg, true);
 	  }
@@ -131,7 +131,7 @@ reachable_regions::add (const region *reg, bool is_mutable)
   if (binding_cluster *bind_cluster = m_store->get_cluster (base_reg))
     bind_cluster->for_each_value (handle_sval_cb, this);
   else
-    handle_sval (m_model->get_store_value (reg, NULL));
+    handle_sval (m_model->get_store_value (reg, nullptr));
 }
 
 void

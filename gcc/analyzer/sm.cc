@@ -183,7 +183,7 @@ sm_context::get_old_region_model () const
   if (const program_state *old_state = get_old_program_state ())
     return old_state->m_region_model;
   else
-    return NULL;
+    return nullptr;
 }
 
 /* Create instances of the various state machines, each using LOGGER,

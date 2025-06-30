@@ -48,7 +48,7 @@ get_ultimate_function_for_cgraph_edge (cgraph_edge *edge)
 {
   cgraph_node *ultimate_node = edge->callee->ultimate_alias_target ();
   if (!ultimate_node)
-    return NULL;
+    return nullptr;
   return ultimate_node->get_fun ();
 }
 
@@ -59,15 +59,15 @@ supergraph_call_edge (function *fun, const gimple *stmt)
 {
   const gcall *call = dyn_cast<const gcall *> (stmt);
   if (!call)
-    return NULL;
+    return nullptr;
   cgraph_edge *edge
     = cgraph_node::get (fun->decl)->get_edge (const_cast <gimple *> (stmt));
   if (!edge)
-    return NULL;
+    return nullptr;
   if (!edge->callee)
-    return NULL; /* e.g. for a function pointer.  */
+    return nullptr; /* e.g. for a function pointer.  */
   if (!get_ultimate_function_for_cgraph_edge (edge))
-    return NULL;
+    return nullptr;
   return edge;
 }
 
@@ -146,7 +146,8 @@ supergraph::supergraph (logger *logger)
       FOR_ALL_BB_FN (bb, fun)
 	{
 	  /* The initial supernode for the BB gets the phi nodes (if any).  */
-	  supernode *node_for_stmts = add_node (fun, bb, NULL, phi_nodes (bb));
+	  supernode *node_for_stmts
+	    = add_node (fun, bb, nullptr, phi_nodes (bb));
 	  m_bb_to_initial_node.put (bb, node_for_stmts);
 	  for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
 	       gsi_next (&gpi))
@@ -171,12 +172,12 @@ supergraph::supergraph (logger *logger)
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
 	      m_stmt_uids.make_uid_unique (stmt);
 	      if (cgraph_edge *edge = supergraph_call_edge (fun, stmt))
-    		{
-    		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);
-    		  node_for_stmts = add_node (fun, bb, as_a <gcall *> (stmt),
-    		   			     NULL);
-    		  m_cgraph_edge_to_caller_next_node.put (edge, node_for_stmts);
-    		}
+		{
+		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);
+		  node_for_stmts = add_node (fun, bb, as_a <gcall *> (stmt),
+					     nullptr);
+		  m_cgraph_edge_to_caller_next_node.put (edge, node_for_stmts);
+		}
 	       else
 	        {
 	          // maybe call is via a function pointer
@@ -187,13 +188,13 @@ supergraph::supergraph (logger *logger)
 	            if (!edge || !edge->callee)
 	            {
 	              supernode *old_node_for_stmts = node_for_stmts;
-	              node_for_stmts = add_node (fun, bb, call, NULL);
+	              node_for_stmts = add_node (fun, bb, call, nullptr);
 
 	              superedge *sedge
 	                = new callgraph_superedge (old_node_for_stmts,
 	                  			   node_for_stmts,
 	                  			   SUPEREDGE_INTRAPROCEDURAL_CALL,
-	                  			   NULL);
+	                  			   nullptr);
 	              add_edge (sedge);
 	            }
 	          }
@@ -984,25 +985,25 @@ superedge::to_json () const
 }
 
 /* If this is an intraprocedural superedge, return the associated
-   CFG edge.  Otherwise, return NULL.  */
+   CFG edge.  Otherwise, return nullptr.  */
 
 ::edge
 superedge::get_any_cfg_edge () const
 {
   if (const cfg_superedge *sub = dyn_cast_cfg_superedge ())
     return sub->get_cfg_edge ();
-  return NULL;
+  return nullptr;
 }
 
 /* If this is an interprocedural superedge, return the associated
-   cgraph_edge *.  Otherwise, return NULL.  */
+   cgraph_edge *.  Otherwise, return nullptr.  */
 
 cgraph_edge *
 superedge::get_any_callgraph_edge () const
 {
   if (const callgraph_superedge *sub = dyn_cast_callgraph_superedge ())
     return sub->m_cedge;
-  return NULL;
+  return nullptr;
 }
 
 /* Build a description of this superedge (e.g. "true" for the true

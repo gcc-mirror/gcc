@@ -43,7 +43,7 @@ namespace ana {
 call_details::call_details (const gcall &call, region_model *model,
 			    region_model_context *ctxt)
 : m_call (call), m_model (model), m_ctxt (ctxt),
-  m_lhs_type (NULL_TREE), m_lhs_region (NULL)
+  m_lhs_type (NULL_TREE), m_lhs_region (nullptr)
 {
   m_lhs_type = NULL_TREE;
   if (tree lhs = gimple_call_lhs (&call))
@@ -81,7 +81,7 @@ call_details::get_logger () const
   if (m_ctxt)
     return m_ctxt->get_logger ();
   else
-    return NULL;
+    return nullptr;
 }
 
 /* Get any uncertainty_t associated with the region_model_context.  */
@@ -92,7 +92,7 @@ call_details::get_uncertainty () const
   if (m_ctxt)
     return m_ctxt->get_uncertainty ();
   else
-    return NULL;
+    return nullptr;
 }
 
 /* If the callsite has a left-hand-side region, set it to RESULT
@@ -127,25 +127,25 @@ const_fn_p (const call_details &cd)
 
 /* If this CD is known to be a call to a function with
    __attribute__((const)), attempt to get a const_fn_result_svalue
-   based on the arguments, or return NULL otherwise.  */
+   based on the arguments, or return nullptr otherwise.  */
 
 static const svalue *
 maybe_get_const_fn_result (const call_details &cd)
 {
   if (!const_fn_p (cd))
-    return NULL;
+    return nullptr;
 
   unsigned num_args = cd.num_args ();
   if (num_args > const_fn_result_svalue::MAX_INPUTS)
     /* Too many arguments.  */
-    return NULL;
+    return nullptr;
 
   auto_vec<const svalue *> inputs (num_args);
   for (unsigned arg_idx = 0; arg_idx < num_args; arg_idx++)
     {
       const svalue *arg_sval = cd.get_arg_svalue (arg_idx);
       if (!arg_sval->can_have_associated_state_p ())
-	return NULL;
+	return nullptr;
       inputs.quick_push (arg_sval);
     }
 
@@ -222,8 +222,8 @@ call_details::set_any_lhs_with_defaults () const
       if (lookup_function_attribute ("malloc"))
 	{
 	  const region *new_reg
-	    = m_model->get_or_create_region_for_heap_alloc (NULL, m_ctxt);
-	  m_model->mark_region_as_unknown (new_reg, NULL);
+	    = m_model->get_or_create_region_for_heap_alloc (nullptr, m_ctxt);
+	  m_model->mark_region_as_unknown (new_reg, nullptr);
 	  sval = mgr->get_ptr_svalue (get_lhs_type (), new_reg);
 	}
       else
@@ -292,7 +292,7 @@ call_details::get_arg_svalue (unsigned idx) const
 
 /* If argument IDX's svalue at the callsite is of pointer type,
    return the region it points to.
-   Otherwise return NULL.  */
+   Otherwise return nullptr.  */
 
 const region *
 call_details::deref_ptr_arg (unsigned idx) const
@@ -301,7 +301,7 @@ call_details::deref_ptr_arg (unsigned idx) const
   return m_model->deref_rvalue (ptr_sval, get_arg_tree (idx), m_ctxt);
 }
 
-/* Attempt to get the string literal for argument IDX, or return NULL
+/* Attempt to get the string literal for argument IDX, or return nullptr
    otherwise.
    For use when implementing "__analyzer_*" functions that take
    string literals.  */
@@ -316,7 +316,7 @@ call_details::get_arg_string_literal (unsigned idx) const
 	tree string_cst = string_reg->get_string_cst ();
 	return TREE_STRING_POINTER (string_cst);
       }
-  return NULL;
+  return nullptr;
 }
 
 /* Attempt to get the fndecl used at this call, if known, or NULL_TREE

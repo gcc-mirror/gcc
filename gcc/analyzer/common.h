@@ -209,14 +209,14 @@ class region_offset
 {
 public:
   region_offset ()
-  : m_base_region (NULL), m_offset (0), m_sym_offset (NULL)
+  : m_base_region (nullptr), m_offset (0), m_sym_offset (nullptr)
   {
   }
 
   static region_offset make_concrete (const region *base_region,
 				      bit_offset_t offset)
   {
-    return region_offset (base_region, offset, NULL);
+    return region_offset (base_region, offset, nullptr);
   }
   static region_offset make_symbolic (const region *base_region,
 				      const svalue *sym_offset)
@@ -228,8 +228,8 @@ public:
 
   const region *get_base_region () const { return m_base_region; }
 
-  bool concrete_p () const { return m_sym_offset == NULL; }
-  bool symbolic_p () const { return m_sym_offset != NULL; }
+  bool concrete_p () const { return m_sym_offset == nullptr; }
+  bool symbolic_p () const { return m_sym_offset != nullptr; }
 
   bit_offset_t get_bit_offset () const
   {
@@ -306,7 +306,7 @@ public:
   }
 
   virtual const builtin_known_function *
-  dyn_cast_builtin_kf () const { return NULL; }
+  dyn_cast_builtin_kf () const { return nullptr; }
 };
 
 /* Subclass of known_function for builtin functions.  */
@@ -567,13 +567,13 @@ public:
       delete (*iter).second;
   }
 
-  /* Get the instance of T for K if one exists, or NULL.  */
+  /* Get the instance of T for K if one exists, or nullptr.  */
 
   T *get (const key_t &k) const
   {
     if (instance_t **slot = const_cast<inner_map_t &> (m_inner_map).get (k))
       return *slot;
-    return NULL;
+    return nullptr;
   }
 
   /* Take ownership of INSTANCE.  */

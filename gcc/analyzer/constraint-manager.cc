@@ -609,7 +609,7 @@ bounded_ranges::canonicalize ()
     {
       bounded_range *prev = &m_ranges[i - 1];
       const bounded_range *next = &m_ranges[i];
-      if (prev->intersects_p (*next, NULL)
+      if (prev->intersects_p (*next, nullptr)
 	  || (can_plus_one_p (prev->m_upper)
 	      && tree_int_cst_equal (plus_one (prev->m_upper),
 				     next->m_lower)))
@@ -1058,7 +1058,7 @@ bounded_ranges_manager::log_stats (logger *logger, bool show_objs) const
 /* equiv_class's default ctor.  */
 
 equiv_class::equiv_class ()
-: m_constant (NULL_TREE), m_cst_sval (NULL), m_vars ()
+: m_constant (NULL_TREE), m_cst_sval (nullptr), m_vars ()
 {
 }
 
@@ -3024,7 +3024,7 @@ on_liveness_change (const svalue_set &live_svalues,
 		    const region_model *model)
 {
   dead_svalue_purger p (live_svalues, model);
-  purge (p, NULL);
+  purge (p, nullptr);
 }
 
 class svalue_purger
@@ -3047,7 +3047,7 @@ void
 constraint_manager::purge_state_involving (const svalue *sval)
 {
   svalue_purger p (sval);
-  purge (p, NULL);
+  purge (p, nullptr);
 }
 
 /* Comparator for use by constraint_manager::canonicalize.
@@ -3191,7 +3191,7 @@ public:
   {
     /* Special-case for widening.  */
     if (lhs->get_kind () == SK_WIDENING)
-      if (!m_cm_b->get_equiv_class_by_svalue (lhs, NULL))
+      if (!m_cm_b->get_equiv_class_by_svalue (lhs, nullptr))
 	{
 	  /* LHS isn't constrained within m_cm_b.  */
 	  bool sat = m_out->add_constraint (lhs, code, rhs);
@@ -3515,7 +3515,7 @@ test_constraint_conditions ()
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, x);
     ADD_SAT_CONSTRAINT (model, int_42, EQ_EXPR, int_42);
     /* ...even when done directly via svalues: */
-    const svalue *sval_int_42 = model.get_rvalue (int_42, NULL);
+    const svalue *sval_int_42 = model.get_rvalue (int_42, nullptr);
     bool sat = model.get_constraints ()->add_constraint (sval_int_42,
 							  EQ_EXPR,
 							  sval_int_42);
@@ -4304,8 +4304,8 @@ test_purging (void)
     ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 1);
 
     /* Purge state for "a".  */
-    const svalue *sval_a = model.get_rvalue (a, NULL);
-    model.purge_state_involving (sval_a, NULL);
+    const svalue *sval_a = model.get_rvalue (a, nullptr);
+    model.purge_state_involving (sval_a, nullptr);
     model.canonicalize ();
     /* We should have an empty constraint_manager.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 0);
@@ -4322,8 +4322,8 @@ test_purging (void)
     ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 2);
 
     /* Purge state for "a".  */
-    const svalue *sval_a = model.get_rvalue (a, NULL);
-    model.purge_state_involving (sval_a, NULL);
+    const svalue *sval_a = model.get_rvalue (a, nullptr);
+    model.purge_state_involving (sval_a, nullptr);
     model.canonicalize ();
     /* We should just have the constraint/ECs involving b != 0.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
@@ -4341,8 +4341,8 @@ test_purging (void)
     ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 1);
 
     /* Purge state for "a".  */
-    const svalue *sval_a = model.get_rvalue (a, NULL);
-    model.purge_state_involving (sval_a, NULL);
+    const svalue *sval_a = model.get_rvalue (a, nullptr);
+    model.purge_state_involving (sval_a, nullptr);
     model.canonicalize ();
     /* We should just have the EC involving b == 0.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);
@@ -4359,8 +4359,8 @@ test_purging (void)
     ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 0);
 
     /* Purge state for "a".  */
-    const svalue *sval_a = model.get_rvalue (a, NULL);
-    model.purge_state_involving (sval_a, NULL);
+    const svalue *sval_a = model.get_rvalue (a, nullptr);
+    model.purge_state_involving (sval_a, nullptr);
     model.canonicalize ();
     /* We should have an empty constraint_manager.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 0);
@@ -4377,8 +4377,8 @@ test_purging (void)
     ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 1);
 
     /* Purge state for "a".  */
-    const svalue *sval_a = model.get_rvalue (a, NULL);
-    model.purge_state_involving (sval_a, NULL);
+    const svalue *sval_a = model.get_rvalue (a, nullptr);
+    model.purge_state_involving (sval_a, nullptr);
     model.canonicalize ();
     /* We should just have the constraint/ECs involving b != 0.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
@@ -4396,8 +4396,8 @@ test_purging (void)
     ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 0);
 
     /* Purge state for "a".  */
-    const svalue *sval_a = model.get_rvalue (a, NULL);
-    model.purge_state_involving (sval_a, NULL);
+    const svalue *sval_a = model.get_rvalue (a, nullptr);
+    model.purge_state_involving (sval_a, nullptr);
     model.canonicalize ();
     /* We should just have the EC involving b == 0.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);
@@ -4459,8 +4459,8 @@ test_bounded_range ()
   bounded_range br_u8_64_128 (u8_64, u8_128);
   ASSERT_DUMP_BOUNDED_RANGE_EQ (br_u8_64_128, "[64, 128]");
 
-  ASSERT_FALSE (br_u8_0.intersects_p (br_u8_64_128, NULL));
-  ASSERT_FALSE (br_u8_64_128.intersects_p (br_u8_0, NULL));
+  ASSERT_FALSE (br_u8_0.intersects_p (br_u8_64_128, nullptr));
+  ASSERT_FALSE (br_u8_64_128.intersects_p (br_u8_0, nullptr));
 
   bounded_range br_u8_128_255 (u8_128, u8_255);
   ASSERT_DUMP_BOUNDED_RANGE_EQ (br_u8_128_255, "[128, 255]");

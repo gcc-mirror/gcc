@@ -114,7 +114,7 @@ on_finish_translation_unit (const translation_unit &tu)
     return;
 
   FILE *logfile = get_or_create_any_logfile ();
-  log_user the_logger (NULL);
+  log_user the_logger (nullptr);
   if (logfile)
     the_logger.set_logger (new logger (logfile, 0, 0,
 				       *global_dc->get_reference_printer ()));

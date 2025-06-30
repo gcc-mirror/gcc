@@ -46,7 +46,7 @@ class inlining_iterator
 public:
   inlining_iterator (location_t loc)
   : m_abstract_origin (LOCATION_BLOCK (loc)),
-    m_callsite (UNKNOWN_LOCATION), m_fndecl (NULL),
+    m_callsite (UNKNOWN_LOCATION), m_fndecl (NULL_TREE),
     m_next_abstract_origin (NULL)
   {
     prepare_iteration ();
@@ -71,7 +71,7 @@ private:
       return;
     tree block = m_abstract_origin;
     m_callsite = BLOCK_SOURCE_LOCATION (block);
-    m_fndecl = NULL;
+    m_fndecl = NULL_TREE;
     block = BLOCK_SUPERCONTEXT (block);
     while (block && TREE_CODE (block) == BLOCK
 	   && BLOCK_ABSTRACT_ORIGIN (block))

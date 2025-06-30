@@ -385,11 +385,11 @@ class region_model
 			      std::unique_ptr<rejected_constraint> *out);
 
   void update_for_gcall (const gcall &call_stmt,
-                         region_model_context *ctxt,
-                         function *callee = NULL);
+			 region_model_context *ctxt,
+			 function *callee = nullptr);
 
   void update_for_return_gcall (const gcall &call_stmt,
-                                region_model_context *ctxt);
+				region_model_context *ctxt);
 
   const region *push_frame (const function &fun,
 			    const gcall *call_stmt,
@@ -517,9 +517,9 @@ class region_model
   bool can_merge_with_p (const region_model &other_model,
 			 const program_point &point,
 			 region_model *out_model,
-			 const extrinsic_state *ext_state = NULL,
-			 const program_state *state_a = NULL,
-			 const program_state *state_b = NULL) const;
+			 const extrinsic_state *ext_state = nullptr,
+			 const program_state *state_a = nullptr,
+			 const program_state *state_b = nullptr) const;
 
   tree get_fndecl_for_call (const gcall &call,
 			    region_model_context *ctxt);
@@ -600,7 +600,7 @@ class region_model
 
   const builtin_known_function *
   get_builtin_kf (const gcall &call,
-		  region_model_context *ctxt = NULL) const;
+		  region_model_context *ctxt = nullptr) const;
 
   static void
   register_pop_frame_callback (const pop_frame_callback &callback)
@@ -818,7 +818,7 @@ class region_model_context
      Return true if the diagnostic was stored, or false if it was deleted.
      Optionally provide a custom stmt_finder.  */
   virtual bool warn (std::unique_ptr<pending_diagnostic> d,
-		     const stmt_finder *custom_finder = NULL) = 0;
+		     const stmt_finder *custom_finder = nullptr) = 0;
 
   /* Hook for clients to add a note to the last previously stored
      pending diagnostic.  */
@@ -912,13 +912,15 @@ class region_model_context
 		       const state_machine **out_sm,
 		       unsigned *out_sm_idx)
   {
-    return get_state_map_by_name ("malloc", out_smap, out_sm, out_sm_idx, NULL);
+    return get_state_map_by_name ("malloc", out_smap, out_sm, out_sm_idx,
+				  nullptr);
   }
   bool get_taint_map (sm_state_map **out_smap,
 		      const state_machine **out_sm,
 		      unsigned *out_sm_idx)
   {
-    return get_state_map_by_name ("taint", out_smap, out_sm, out_sm_idx, NULL);
+    return get_state_map_by_name ("taint", out_smap, out_sm, out_sm_idx,
+				  nullptr);
   }
 
   bool possibly_tainted_p (const svalue *sval);
@@ -948,7 +950,7 @@ public:
   void on_svalue_leak (const svalue *) override {}
   void on_liveness_change (const svalue_set &,
 			   const region_model *) override {}
-  logger *get_logger () override { return NULL; }
+  logger *get_logger () override { return nullptr; }
   void on_condition (const svalue *lhs ATTRIBUTE_UNUSED,
 		     enum tree_code op ATTRIBUTE_UNUSED,
 		     const svalue *rhs ATTRIBUTE_UNUSED) override
@@ -971,14 +973,14 @@ public:
 
   void on_escaped_function (tree) override {}
 
-  uncertainty_t *get_uncertainty () override { return NULL; }
+  uncertainty_t *get_uncertainty () override { return nullptr; }
 
   void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) override {}
 
   void bifurcate (std::unique_ptr<custom_edge_info> info) override;
   void terminate_path () override;
 
-  const extrinsic_state *get_ext_state () const override { return NULL; }
+  const extrinsic_state *get_ext_state () const override { return nullptr; }
 
   bool get_state_map_by_name (const char *,
 			      sm_state_map **,
@@ -989,8 +991,8 @@ public:
     return false;
   }
 
-  const gimple *get_stmt () const override { return NULL; }
-  const exploded_graph *get_eg () const override { return NULL; }
+  const gimple *get_stmt () const override { return nullptr; }
+  const exploded_graph *get_eg () const override { return nullptr; }
   const program_state *get_state () const override { return nullptr; }
 
   void maybe_did_work () override {}
@@ -1349,7 +1351,7 @@ private:
 class engine
 {
 public:
-  engine (const supergraph *sg = NULL, logger *logger = NULL);
+  engine (const supergraph *sg = nullptr, logger *logger = nullptr);
   const supergraph *get_supergraph () { return m_sg; }
   region_model_manager *get_model_manager () { return &m_mgr; }
   known_function_manager *get_known_function_manager ()
@@ -1408,7 +1410,7 @@ private:
 
 #define ADD_SAT_CONSTRAINT(MODEL, LHS, OP, RHS)	\
   SELFTEST_BEGIN_STMT					\
-    bool sat = (MODEL).add_constraint (LHS, OP, RHS, NULL);	\
+    bool sat = (MODEL).add_constraint (LHS, OP, RHS, nullptr);	\
     ASSERT_TRUE (sat);					\
   SELFTEST_END_STMT
 
@@ -1417,7 +1419,7 @@ private:
 
 #define ADD_UNSAT_CONSTRAINT(MODEL, LHS, OP, RHS)	\
   SELFTEST_BEGIN_STMT					\
-    bool sat = (MODEL).add_constraint (LHS, OP, RHS, NULL);	\
+    bool sat = (MODEL).add_constraint (LHS, OP, RHS, nullptr);	\
     ASSERT_FALSE (sat);				\
   SELFTEST_END_STMT
 

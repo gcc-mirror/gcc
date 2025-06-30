@@ -507,7 +507,7 @@ public:
   concrete_buffer_over_read (const region_model &model,
 			     const region *reg, tree diag_arg,
 			     bit_range range, tree bit_bound)
-  : concrete_past_the_end (model, reg, diag_arg, range, bit_bound, NULL)
+  : concrete_past_the_end (model, reg, diag_arg, range, bit_bound, nullptr)
   {}
 
   const char *get_kind () const final override
@@ -819,7 +819,7 @@ public:
   concrete_buffer_under_read (const region_model &model,
 			      const region *reg, tree diag_arg,
 			      bit_range range)
-  : concrete_out_of_bounds (model, reg, diag_arg, range, NULL)
+  : concrete_out_of_bounds (model, reg, diag_arg, range, nullptr)
   {}
 
   const char *get_kind () const final override
@@ -1119,7 +1119,7 @@ public:
 			     const region *reg, tree diag_arg, tree offset,
 			     tree num_bytes, tree capacity)
   : symbolic_past_the_end (model, reg, diag_arg, offset, num_bytes, capacity,
-			   NULL)
+			   nullptr)
   {
   }
 

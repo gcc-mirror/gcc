@@ -141,7 +141,7 @@ struct assumed_non_null_state : public allocation_state
   assumed_non_null_state (const char *name, unsigned id,
 			  const frame_region *frame)
   : allocation_state (name, id, RS_ASSUMED_NON_NULL,
-		      NULL, NULL),
+		      nullptr, nullptr),
     m_frame (frame)
   {
     gcc_assert (m_frame);
@@ -292,7 +292,7 @@ struct deallocator_set_map_traits
 
   static inline hashval_t hash (const key_type &k)
   {
-    gcc_assert (k != NULL);
+    gcc_assert (k != nullptr);
     gcc_assert (k != reinterpret_cast<key_type> (1));
 
     hashval_t result = 0;
@@ -326,7 +326,7 @@ struct deallocator_set_map_traits
   template <typename T>
   static inline void mark_empty (T &entry)
   {
-    entry.m_key = NULL;
+    entry.m_key = nullptr;
   }
   template <typename T>
   static inline bool is_deleted (const T &entry)
@@ -336,7 +336,7 @@ struct deallocator_set_map_traits
   template <typename T>
   static inline bool is_empty (const T &entry)
   {
-    return entry.m_key == NULL;
+    return entry.m_key == nullptr;
   }
   static const bool empty_zero_p = false;
 };
@@ -535,7 +535,7 @@ deallocator::deallocator (malloc_state_machine *sm,
 			  enum wording wording)
 : m_name (name),
   m_wording (wording),
-  m_freed (sm->add_state ("freed", RS_FREED, NULL, this))
+  m_freed (sm->add_state ("freed", RS_FREED, nullptr, this))
 {
 }
 
@@ -579,8 +579,8 @@ standard_deallocator::standard_deallocator (malloc_state_machine *sm,
 deallocator_set::deallocator_set (malloc_state_machine *sm,
 				  enum wording wording)
 : m_wording (wording),
-  m_unchecked (sm->add_state ("unchecked", RS_UNCHECKED, this, NULL)),
-  m_nonnull (sm->add_state ("nonnull", RS_NONNULL, this, NULL))
+  m_unchecked (sm->add_state ("unchecked", RS_UNCHECKED, this, nullptr)),
+  m_nonnull (sm->add_state ("nonnull", RS_NONNULL, this, nullptr))
 {
 }
 
@@ -625,7 +625,7 @@ custom_deallocator_set::maybe_get_single () const
 {
   if (m_deallocator_vec.length () == 1)
     return m_deallocator_vec[0];
-  return NULL;
+  return nullptr;
 }
 
 void
@@ -673,14 +673,15 @@ standard_deallocator_set::dump_to_pp (pretty_printer *pp) const
   pp_character (pp, '}');
 }
 
-/* Return STATE cast to the custom state subclass, or NULL for the start state.
+/* Return STATE cast to the custom state subclass, or nullptr for the
+   start state.
    Everything should be an allocation_state apart from the start state.  */
 
 static const allocation_state *
 dyn_cast_allocation_state (state_machine::state_t state)
 {
   if (state->get_id () == 0)
-    return NULL;
+    return nullptr;
   return static_cast <const allocation_state *> (state);
 }
 
@@ -1595,9 +1596,9 @@ class deref_before_check : public malloc_diagnostic
 public:
   deref_before_check (const malloc_state_machine &sm, tree arg)
   : malloc_diagnostic (sm, arg),
-    m_deref_enode (NULL),
-    m_deref_expr (NULL),
-    m_check_enode (NULL)
+    m_deref_enode (nullptr),
+    m_deref_expr (nullptr),
+    m_check_enode (nullptr)
   {
     gcc_assert (arg);
   }
@@ -1822,9 +1823,9 @@ malloc_state_machine::malloc_state_machine (logger *logger)
   m_realloc (this, "realloc", WORDING_REALLOCATED)
 {
   gcc_assert (m_start->get_id () == 0);
-  m_null = add_state ("null", RS_FREED, NULL, NULL);
-  m_non_heap = add_state ("non-heap", RS_NON_HEAP, NULL, NULL);
-  m_stop = add_state ("stop", RS_STOP, NULL, NULL);
+  m_null = add_state ("null", RS_FREED, nullptr, nullptr);
+  m_non_heap = add_state ("non-heap", RS_NON_HEAP, nullptr, nullptr);
+  m_stop = add_state ("stop", RS_STOP, nullptr, nullptr);
 }
 
 malloc_state_machine::~malloc_state_machine ()
@@ -1852,7 +1853,7 @@ malloc_state_machine::add_state (const char *name, enum resource_state rs,
    return a custom_deallocator_set for them, consolidating them
    to ensure uniqueness of the sets.
 
-   Return NULL if it has no such attributes.  */
+   Return nullptr if it has no such attributes.  */
 
 const custom_deallocator_set *
 malloc_state_machine::
@@ -1861,7 +1862,7 @@ get_or_create_custom_deallocator_set (tree allocator_fndecl)
   /* Early rejection of decls without attributes.  */
   tree attrs = DECL_ATTRIBUTES (allocator_fndecl);
   if (!attrs)
-    return NULL;
+    return nullptr;
 
   /* Otherwise, call maybe_create_custom_deallocator_set,
      memoizing the result.  */
@@ -1879,7 +1880,7 @@ get_or_create_custom_deallocator_set (tree allocator_fndecl)
    custom_deallocator_set for them, consolidating them
    to ensure uniqueness of the sets.
 
-   Return NULL if it has no such attributes.
+   Return nullptr if it has no such attributes.
 
    Subroutine of get_or_create_custom_deallocator_set which
    memoizes the result.  */
@@ -1910,7 +1911,7 @@ maybe_create_custom_deallocator_set (tree allocator_fndecl)
 
   /* If there weren't any deallocators, bail.  */
   if (deallocator_vec.length () == 0)
-    return NULL;
+    return nullptr;
 
   /* Consolidate, so that we reuse existing deallocator_set
      instances.  */
@@ -2015,7 +2016,7 @@ malloc_state_machine::maybe_assume_non_null (sm_context &sm_ctxt,
 
   tree null_ptr_cst = build_int_cst (TREE_TYPE (ptr), 0);
   tristate known_non_null
-    = old_model->eval_condition (ptr, NE_EXPR, null_ptr_cst, NULL);
+    = old_model->eval_condition (ptr, NE_EXPR, null_ptr_cst, nullptr);
   if (known_non_null.is_unknown ())
     {
       /* Cast away const-ness for cache-like operations.  */
@@ -2408,12 +2409,12 @@ malloc_state_machine::handle_free_of_non_heap (sm_context &sm_ctxt,
 					       const deallocator *d) const
 {
   tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
-  const region *freed_reg = NULL;
+  const region *freed_reg = nullptr;
   if (const program_state *old_state = sm_ctxt.get_old_program_state ())
     {
       const region_model *old_model = old_state->m_region_model;
-      const svalue *ptr_sval = old_model->get_rvalue (arg, NULL);
-      freed_reg = old_model->deref_rvalue (ptr_sval, arg, NULL);
+      const svalue *ptr_sval = old_model->get_rvalue (arg, nullptr);
+      freed_reg = old_model->deref_rvalue (ptr_sval, arg, nullptr);
     }
   sm_ctxt.warn (node, &call, arg,
 		std::make_unique<free_of_non_heap>
@@ -2658,7 +2659,7 @@ malloc_state_machine::maybe_get_merged_states_nonequal (state_t state_a,
     return m_start;
   if (state_a == m_start && assumed_non_null_p (state_b))
     return m_start;
-  return NULL;
+  return nullptr;
 }
 
 /* Return true if calls to FNDECL are known to not affect this sm-state.  */
@@ -2716,11 +2717,11 @@ on_realloc_with_move (region_model *model,
 {
   smap->set_state (model, old_ptr_sval,
 		   m_free.m_deallocator.m_freed,
-		   NULL, ext_state);
+		   nullptr, ext_state);
 
   smap->set_state (model, new_ptr_sval,
 		   m_free.m_nonnull,
-		   NULL, ext_state);
+		   nullptr, ext_state);
 }
 
 /*  Hook for get_or_create_region_for_heap_alloc for the case when we want
@@ -2731,7 +2732,7 @@ malloc_state_machine::transition_ptr_sval_non_null (region_model *model,
     const svalue *new_ptr_sval,
     const extrinsic_state &ext_state) const
 {
-  smap->set_state (model, new_ptr_sval, m_free.m_nonnull, NULL, ext_state);
+  smap->set_state (model, new_ptr_sval, m_free.m_nonnull, nullptr, ext_state);
 }
 
 void

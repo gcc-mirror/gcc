@@ -129,29 +129,29 @@ public:
 
   virtual enum region_kind get_kind () const = 0;
   virtual const frame_region *
-  dyn_cast_frame_region () const { return NULL; }
+  dyn_cast_frame_region () const { return nullptr; }
   virtual const function_region *
-  dyn_cast_function_region () const { return NULL; }
+  dyn_cast_function_region () const { return nullptr; }
   virtual const symbolic_region *
-  dyn_cast_symbolic_region () const { return NULL; }
+  dyn_cast_symbolic_region () const { return nullptr; }
   virtual const decl_region *
-  dyn_cast_decl_region () const { return NULL; }
+  dyn_cast_decl_region () const { return nullptr; }
   virtual const field_region *
-  dyn_cast_field_region () const { return NULL; }
+  dyn_cast_field_region () const { return nullptr; }
   virtual const element_region *
-  dyn_cast_element_region () const { return NULL; }
+  dyn_cast_element_region () const { return nullptr; }
   virtual const offset_region *
-  dyn_cast_offset_region () const { return NULL; }
+  dyn_cast_offset_region () const { return nullptr; }
   virtual const sized_region *
-  dyn_cast_sized_region () const { return NULL; }
+  dyn_cast_sized_region () const { return nullptr; }
   virtual const cast_region *
-  dyn_cast_cast_region () const { return NULL; }
+  dyn_cast_cast_region () const { return nullptr; }
   virtual const string_region *
-  dyn_cast_string_region () const { return NULL; }
+  dyn_cast_string_region () const { return nullptr; }
   virtual const bit_range_region *
-  dyn_cast_bit_range_region () const { return NULL; }
+  dyn_cast_bit_range_region () const { return nullptr; }
   virtual const var_arg_region *
-  dyn_cast_var_arg_region () const { return NULL; }
+  dyn_cast_var_arg_region () const { return nullptr; }
 
   virtual void accept (visitor *v) const;
 
@@ -324,7 +324,7 @@ public:
     key_t (const frame_region *calling_frame, const function &fun)
     : m_calling_frame (calling_frame), m_fun (&fun)
     {
-      /* calling_frame can be NULL.  */
+      /* calling_frame can be nullptr.  */
     }
 
     hashval_t hash () const
@@ -342,12 +342,12 @@ public:
     }
 
     void mark_deleted () { m_fun = reinterpret_cast<function *> (1); }
-    void mark_empty () { m_fun = NULL; }
+    void mark_empty () { m_fun = nullptr; }
     bool is_deleted () const
     {
       return m_fun == reinterpret_cast<function *> (1);
     }
-    bool is_empty () const { return m_fun == NULL; }
+    bool is_empty () const { return m_fun == nullptr; }
 
     const frame_region *m_calling_frame;
     const function *m_fun;
@@ -685,12 +685,12 @@ public:
     }
 
     void mark_deleted () { m_sval_ptr = reinterpret_cast<const svalue *> (1); }
-    void mark_empty () { m_sval_ptr = NULL; }
+    void mark_empty () { m_sval_ptr = nullptr; }
     bool is_deleted () const
     {
       return m_sval_ptr == reinterpret_cast<const svalue *> (1);
     }
-    bool is_empty () const { return m_sval_ptr == NULL; }
+    bool is_empty () const { return m_sval_ptr == nullptr; }
 
     const region *m_parent;
     const svalue *m_sval_ptr;
@@ -744,7 +744,7 @@ public:
   decl_region (symbol::id_t id, const region *parent, tree decl)
   : region (complexity (parent), id, parent, TREE_TYPE (decl)), m_decl (decl),
     m_tracked (calc_tracked_p (decl)),
-    m_ctor_svalue (NULL)
+    m_ctor_svalue (nullptr)
   {}
 
   enum region_kind get_kind () const final override { return RK_DECL; }
@@ -904,12 +904,12 @@ public:
     }
 
     void mark_deleted () { m_index = reinterpret_cast<const svalue *> (1); }
-    void mark_empty () { m_index = NULL; }
+    void mark_empty () { m_index = nullptr; }
     bool is_deleted () const
     {
       return m_index == reinterpret_cast<const svalue *> (1);
     }
-    bool is_empty () const { return m_index == NULL; }
+    bool is_empty () const { return m_index == nullptr; }
 
     const region *m_parent;
     tree m_element_type;
@@ -998,12 +998,12 @@ public:
     }
 
     void mark_deleted () { m_byte_offset = reinterpret_cast<const svalue *> (1); }
-    void mark_empty () { m_byte_offset = NULL; }
+    void mark_empty () { m_byte_offset = nullptr; }
     bool is_deleted () const
     {
       return m_byte_offset == reinterpret_cast<const svalue *> (1);
     }
-    bool is_empty () const { return m_byte_offset == NULL; }
+    bool is_empty () const { return m_byte_offset == nullptr; }
 
     const region *m_parent;
     tree m_element_type;
@@ -1094,12 +1094,12 @@ public:
     }
 
     void mark_deleted () { m_byte_size_sval = reinterpret_cast<const svalue *> (1); }
-    void mark_empty () { m_byte_size_sval = NULL; }
+    void mark_empty () { m_byte_size_sval = nullptr; }
     bool is_deleted () const
     {
       return m_byte_size_sval == reinterpret_cast<const svalue *> (1);
     }
-    bool is_empty () const { return m_byte_size_sval == NULL; }
+    bool is_empty () const { return m_byte_size_sval == nullptr; }
 
     const region *m_parent;
     tree m_element_type;
@@ -1342,12 +1342,12 @@ public:
     }
 
     void mark_deleted () { m_parent = reinterpret_cast<const region *> (1); }
-    void mark_empty () { m_parent = NULL; }
+    void mark_empty () { m_parent = nullptr; }
     bool is_deleted () const
     {
       return m_parent == reinterpret_cast<const region *> (1);
     }
-    bool is_empty () const { return m_parent == NULL; }
+    bool is_empty () const { return m_parent == nullptr; }
 
     const region *m_parent;
     tree m_type;
@@ -1432,12 +1432,12 @@ public:
     {
       m_parent = reinterpret_cast<const frame_region *> (1);
     }
-    void mark_empty () { m_parent = NULL; }
+    void mark_empty () { m_parent = nullptr; }
     bool is_deleted () const
     {
       return m_parent == reinterpret_cast<const frame_region *> (1);
     }
-    bool is_empty () const { return m_parent == NULL; }
+    bool is_empty () const { return m_parent == nullptr; }
 
     const frame_region *m_parent;
     unsigned m_idx;

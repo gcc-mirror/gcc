@@ -659,7 +659,7 @@ state_purge_per_ssa_name::process_point (const function_point &point,
 	    if (snode->entry_p ())
 	      {
 		add_to_worklist
-		  (function_point::before_supernode (snode, NULL),
+		  (function_point::before_supernode (snode, nullptr),
 		   worklist, logger);
 	      }
 	  }
@@ -841,8 +841,8 @@ fully_overwrites_p (const gimple *stmt, tree decl,
 	 We can't just check for equality; consider the case of
 	 "s.field = EXPR;" where the stmt writes to the only field
 	 of "s", and there's no padding.  */
-      const region *lhs_reg = model.get_lvalue (lhs, NULL);
-      const region *decl_reg = model.get_lvalue (decl, NULL);
+      const region *lhs_reg = model.get_lvalue (lhs, nullptr);
+      const region *decl_reg = model.get_lvalue (decl, nullptr);
       if (same_binding_p (lhs_reg, decl_reg,
 			  model.get_manager ()->get_store_manager ()))
 	return true;
@@ -1074,7 +1074,7 @@ state_purge_annotator::add_node_annotations (graphviz_out *gv,
 					     const supernode &n,
 					     bool within_table) const
 {
-  if (m_map == NULL)
+  if (m_map == nullptr)
     return false;
 
   if (within_table)
@@ -1091,7 +1091,7 @@ state_purge_annotator::add_node_annotations (graphviz_out *gv,
       Determine which points to dump.  */
    auto_vec<function_point> points;
    if (n.entry_p () || n.m_returning_call)
-     points.safe_push (function_point::before_supernode (&n, NULL));
+     points.safe_push (function_point::before_supernode (&n, nullptr));
    else
      for (auto inedge : n.m_preds)
        points.safe_push (function_point::before_supernode (&n, inedge));
@@ -1153,7 +1153,7 @@ state_purge_annotator::add_stmt_annotations (graphviz_out *gv,
   if (within_row)
     return;
 
-  if (m_map == NULL)
+  if (m_map == nullptr)
     return;
 
   if (stmt->code == GIMPLE_PHI)

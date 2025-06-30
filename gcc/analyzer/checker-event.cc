@@ -113,7 +113,7 @@ checker_event::checker_event (enum event_kind kind,
   m_effective_fndecl (loc_info.m_fndecl),
   m_original_depth (loc_info.m_depth),
   m_effective_depth (loc_info.m_depth),
-  m_pending_diagnostic (NULL), m_emission_id (),
+  m_pending_diagnostic (nullptr), m_emission_id (),
   m_logical_loc
     (tree_logical_location_manager::key_from_tree (loc_info.m_fndecl))
 {
@@ -498,7 +498,7 @@ state_change_event::print_desc (pretty_printer &pp) const
     }
   else
     {
-      gcc_assert (m_origin == NULL);
+      gcc_assert (m_origin == nullptr);
       pp_printf (&pp,
 		 "global state: %qs -> %qs",
 		 m_from->get_name (),
@@ -744,7 +744,7 @@ start_cfg_edge_event::maybe_describe_condition (bool can_colorize) const
 					   lhs, op, rhs);
 	}
     }
-  return label_text::borrow (NULL);
+  return label_text::borrow (nullptr);
 }
 
 /* Subroutine of maybe_describe_condition above.
@@ -781,9 +781,9 @@ start_cfg_edge_event::maybe_describe_condition (bool can_colorize,
 
   /* Only attempt to generate text for sufficiently simple expressions.  */
   if (!should_print_expr_p (lhs))
-    return label_text::borrow (NULL);
+    return label_text::borrow (nullptr);
   if (!should_print_expr_p (rhs))
-    return label_text::borrow (NULL);
+    return label_text::borrow (nullptr);
 
   /* Special cases for pointer comparisons against NULL.  */
   if (POINTER_TYPE_P (TREE_TYPE (lhs))

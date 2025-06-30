@@ -129,12 +129,12 @@ private:
     }
     template <typename T> static inline void remove (T &entry)
     {
-      entry.m_key = element_t (NULL, NULL);
+      entry.m_key = element_t (nullptr, nullptr);
     }
     static const bool empty_zero_p = true;
     template <typename T> static inline bool is_empty (const T &entry)
     {
-      return entry.m_key.m_caller == NULL;
+      return entry.m_key.m_caller == nullptr;
     }
     template <typename T> static inline bool is_deleted (const T &entry)
     {
@@ -142,8 +142,8 @@ private:
     }
     template <typename T> static inline void mark_empty (T &entry)
     {
-      entry.m_key = element_t (NULL, NULL);
-      entry.m_value = NULL;
+      entry.m_key = element_t (nullptr, nullptr);
+      entry.m_value = nullptr;
     }
     template <typename T> static inline void mark_deleted (T &entry)
     {

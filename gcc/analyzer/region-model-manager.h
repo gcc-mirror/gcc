@@ -31,7 +31,7 @@ namespace ana {
 class region_model_manager
 {
 public:
-  region_model_manager (logger *logger = NULL);
+  region_model_manager (logger *logger = nullptr);
   ~region_model_manager ();
 
   unsigned get_num_symbols () const { return m_next_symbol_id; }

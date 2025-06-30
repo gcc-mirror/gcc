@@ -49,17 +49,17 @@ class impl_region_model_context : public region_model_context
 			     path_context *path_ctxt,
 
 			     const gimple *stmt,
-			     stmt_finder *stmt_finder = NULL,
+			     stmt_finder *stmt_finder = nullptr,
 
 			     bool *out_could_have_done_work = nullptr);
 
   impl_region_model_context (program_state *state,
 			     const extrinsic_state &ext_state,
 			     uncertainty_t *uncertainty,
-			     logger *logger = NULL);
+			     logger *logger = nullptr);
 
   bool warn (std::unique_ptr<pending_diagnostic> d,
-	     const stmt_finder *custom_finder = NULL) final override;
+	     const stmt_finder *custom_finder = nullptr) final override;
   void add_note (std::unique_ptr<pending_note> pn) final override;
   void add_event (std::unique_ptr<checker_event> event) final override;
   void on_svalue_leak (const svalue *) override;
@@ -407,7 +407,7 @@ class exploded_edge : public dedge<eg_traits>
   //private:
   const superedge *const m_sedge;
 
-  /* NULL for most edges; will be non-NULL for special cases
+  /* nullptr for most edges; will be non-NULL for special cases
      such as an unwind from a longjmp to a setjmp, or when
      a signal is delivered to a signal-handler.  */
   std::unique_ptr<custom_edge_info> m_custom_info;
@@ -548,14 +548,14 @@ struct eg_hash_map_traits
 
   static inline hashval_t hash (const key_type &k)
   {
-    gcc_assert (k != NULL);
+    gcc_assert (k != nullptr);
     gcc_assert (k != reinterpret_cast<key_type> (1));
     return k->hash ();
   }
   static inline bool equal_keys (const key_type &k1, const key_type &k2)
   {
-    gcc_assert (k1 != NULL);
-    gcc_assert (k2 != NULL);
+    gcc_assert (k1 != nullptr);
+    gcc_assert (k2 != nullptr);
     gcc_assert (k1 != reinterpret_cast<key_type> (1));
     gcc_assert (k2 != reinterpret_cast<key_type> (1));
     if (k1 && k2)
@@ -577,7 +577,7 @@ struct eg_hash_map_traits
   template <typename T>
   static inline void mark_empty (T &entry)
   {
-    entry.m_key = NULL;
+    entry.m_key = nullptr;
   }
   template <typename T>
   static inline bool is_deleted (const T &entry)
@@ -587,7 +587,7 @@ struct eg_hash_map_traits
   template <typename T>
   static inline bool is_empty (const T &entry)
   {
-    return entry.m_key == NULL;
+    return entry.m_key == nullptr;
   }
   static const bool empty_zero_p = false;
 };
@@ -618,14 +618,14 @@ struct eg_point_hash_map_traits
 
   static inline hashval_t hash (const key_type &k)
   {
-    gcc_assert (k != NULL);
+    gcc_assert (k != nullptr);
     gcc_assert (k != reinterpret_cast<key_type> (1));
     return k->hash ();
   }
   static inline bool equal_keys (const key_type &k1, const key_type &k2)
   {
-    gcc_assert (k1 != NULL);
-    gcc_assert (k2 != NULL);
+    gcc_assert (k1 != nullptr);
+    gcc_assert (k2 != nullptr);
     gcc_assert (k1 != reinterpret_cast<key_type> (1));
     gcc_assert (k2 != reinterpret_cast<key_type> (1));
     if (k1 && k2)
@@ -647,7 +647,7 @@ struct eg_point_hash_map_traits
   template <typename T>
   static inline void mark_empty (T &entry)
   {
-    entry.m_key = NULL;
+    entry.m_key = nullptr;
   }
   template <typename T>
   static inline bool is_deleted (const T &entry)
@@ -657,7 +657,7 @@ struct eg_point_hash_map_traits
   template <typename T>
   static inline bool is_empty (const T &entry)
   {
-    return entry.m_key == NULL;
+    return entry.m_key == nullptr;
   }
   static const bool empty_zero_p = false;
 };
@@ -778,7 +778,7 @@ private:
     int get_scc_id (const exploded_node *enode) const
     {
       const supernode *snode = enode->get_supernode ();
-      if (snode == NULL)
+      if (snode == nullptr)
 	return 0;
       return m_worklist.m_scc.get_scc_id (snode->m_index);
     }
@@ -846,7 +846,7 @@ public:
 				     bool add_to_worklist = true);
   exploded_edge *add_edge (exploded_node *src, exploded_node *dest,
 			   const superedge *sedge, bool could_do_work,
-			   std::unique_ptr<custom_edge_info> custom = NULL);
+			   std::unique_ptr<custom_edge_info> custom = nullptr);
 
   per_program_point_data *
   get_or_create_per_program_point_data (const program_point &);
@@ -979,7 +979,7 @@ public:
   void dump_to_pp (pretty_printer *pp,
 		   const extrinsic_state *ext_state) const;
   void dump (FILE *fp, const extrinsic_state *ext_state) const;
-  void dump (const extrinsic_state *ext_state = NULL) const;
+  void dump (const extrinsic_state *ext_state = nullptr) const;
   void dump_to_file (const char *filename,
 		     const extrinsic_state &ext_state) const;
 
@@ -1044,7 +1044,7 @@ private:
 
 typedef shortest_paths<eg_traits, exploded_path> shortest_exploded_paths;
 
-/* Abstract base class for use when passing NULL as the stmt for
+/* Abstract base class for use when passing nullptr as the stmt for
    a possible warning, allowing the choice of stmt to be deferred
    until after we have an emission path (and know we're emitting a
    warning).  */

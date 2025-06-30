@@ -223,22 +223,22 @@ call_string::cmp_ptr_ptr (const void *pa, const void *pb)
 }
 
 /* Return the pointer to callee of the topmost call in the stack,
-   or NULL if stack is empty.  */
+   or nullptr if stack is empty.  */
 const supernode *
 call_string::get_callee_node () const
 {
   if(m_elements.is_empty ())
-    return NULL;
+    return nullptr;
   return m_elements[m_elements.length () - 1].m_callee;
 }
 
 /* Return the pointer to caller of the topmost call in the stack,
-   or NULL if stack is empty.  */
+   or nullptr if stack is empty.  */
 const supernode *
 call_string::get_caller_node () const
 {
   if(m_elements.is_empty ())
-    return NULL;
+    return nullptr;
   return m_elements[m_elements.length () - 1].m_caller;
 }
 
@@ -266,7 +266,7 @@ call_string::validate () const
 /* ctor for the root/empty call_string.  */
 
 call_string::call_string ()
-: m_parent (NULL), m_elements ()
+: m_parent (nullptr), m_elements ()
 {
 }
 

@@ -55,7 +55,7 @@ public:
   : m_prev_entry_enode (prev_entry_enode),
     m_new_entry_enode (new_entry_enode),
     m_callee_fndecl (callee_fndecl),
-    m_prev_entry_event (NULL)
+    m_prev_entry_event (nullptr)
   {}
 
   const char *get_kind () const final override
@@ -147,7 +147,7 @@ public:
     const program_point &dst_point = dst_node->get_point ();
     if (eedge.m_dest == m_prev_entry_enode)
       {
-	gcc_assert (m_prev_entry_event == NULL);
+	gcc_assert (m_prev_entry_event == nullptr);
 	std::unique_ptr<checker_event> prev_entry_event
 	  = std::make_unique <recursive_function_entry_event>
 	      (dst_point,
@@ -291,7 +291,7 @@ private:
       bool m_found_conjured_svalues;
     };
 
-    const svalue *sval = model.get_rvalue (expr, NULL);
+    const svalue *sval = model.get_rvalue (expr, nullptr);
     conjured_svalue_finder v;
     sval->accept (&v);
     return v.m_found_conjured_svalues;
@@ -351,7 +351,7 @@ exploded_graph::find_previous_entry_to (function *top_of_stack_fun,
     }
 
   /* Not found.  */
-  return NULL;
+  return nullptr;
 }
 
 /* Given BASE_REG within ENCLOSING_FRAME (such as a function parameter),
@@ -385,7 +385,7 @@ remap_enclosing_frame (const region *base_reg,
 	const decl_region *decl_reg = (const decl_region *)base_reg;
 	return equiv_prev_frame->get_region_for_local (mgr,
 						       decl_reg->get_decl (),
-						       NULL);
+						       nullptr);
       }
     }
 }
@@ -427,7 +427,7 @@ sufficiently_different_region_binding_p (exploded_node *new_entry_enode,
 
   /* Get the value within the new frame.  */
   const svalue *new_sval
-    = new_model.get_store_value (base_reg, NULL);
+    = new_model.get_store_value (base_reg, nullptr);
 
   /* If any part of the value is UNKNOWN (e.g. due to hitting
      complexity limits) assume that it differs from the previous
@@ -447,7 +447,7 @@ sufficiently_different_region_binding_p (exploded_node *new_entry_enode,
 	 to the recursion.  */
       const int old_stack_depth = prev_entry_enode->get_stack_depth ();
       if (enclosing_frame->get_stack_depth () < old_stack_depth)
-	prev_sval = prev_model.get_store_value (base_reg, NULL);
+	prev_sval = prev_model.get_store_value (base_reg, nullptr);
       else
 	{
 	  /* Ignore bindings within frames below the new entry node.  */
@@ -469,11 +469,11 @@ sufficiently_different_region_binding_p (exploded_node *new_entry_enode,
 				     equiv_prev_frame,
 				     new_model.get_manager ());
 	  prev_sval
-	    = prev_model.get_store_value (equiv_prev_base_reg, NULL);
+	    = prev_model.get_store_value (equiv_prev_base_reg, nullptr);
 	}
     }
   else
-    prev_sval = prev_model.get_store_value (base_reg, NULL);
+    prev_sval = prev_model.get_store_value (base_reg, nullptr);
 
   /* If the prev_sval contains UNKNOWN (e.g. due to hitting complexity limits)
      assume that it will differ from any new value.  */

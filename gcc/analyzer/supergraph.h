@@ -274,7 +274,7 @@ class supernode : public dnode<supergraph_traits>
 
     i.ptr = gimple_seq_first (*pseq);
     i.seq = pseq;
-    i.bb = i.ptr ? gimple_bb (i.ptr) : NULL;
+    i.bb = i.ptr ? gimple_bb (i.ptr) : nullptr;
 
     return i;
   }
@@ -287,15 +287,15 @@ class supernode : public dnode<supergraph_traits>
   gimple *get_last_stmt () const
   {
     if (m_stmts.length () == 0)
-      return NULL;
+      return nullptr;
     return m_stmts[m_stmts.length () - 1];
   }
 
   gcall *get_final_call () const
   {
     gimple *stmt = get_last_stmt ();
-    if (stmt == NULL)
-      return NULL;
+    if (stmt == nullptr)
+      return nullptr;
     return dyn_cast<gcall *> (stmt);
   }
 
@@ -331,18 +331,18 @@ class superedge : public dedge<supergraph_traits>
 
   enum edge_kind get_kind () const { return m_kind; }
 
-  virtual cfg_superedge *dyn_cast_cfg_superedge () { return NULL; }
-  virtual const cfg_superedge *dyn_cast_cfg_superedge () const { return NULL; }
-  virtual const switch_cfg_superedge *dyn_cast_switch_cfg_superedge () const { return NULL; }
+  virtual cfg_superedge *dyn_cast_cfg_superedge () { return nullptr; }
+  virtual const cfg_superedge *dyn_cast_cfg_superedge () const { return nullptr; }
+  virtual const switch_cfg_superedge *dyn_cast_switch_cfg_superedge () const { return nullptr; }
   virtual const eh_dispatch_cfg_superedge *dyn_cast_eh_dispatch_cfg_superedge () const { return nullptr; }
   virtual const eh_dispatch_try_cfg_superedge *dyn_cast_eh_dispatch_try_cfg_superedge () const { return nullptr; }
   virtual const eh_dispatch_allowed_cfg_superedge *dyn_cast_eh_dispatch_allowed_cfg_superedge () const { return nullptr; }
-  virtual callgraph_superedge *dyn_cast_callgraph_superedge () { return NULL; }
-  virtual const callgraph_superedge *dyn_cast_callgraph_superedge () const { return NULL; }
-  virtual call_superedge *dyn_cast_call_superedge () { return NULL; }
-  virtual const call_superedge *dyn_cast_call_superedge () const { return NULL; }
-  virtual return_superedge *dyn_cast_return_superedge () { return NULL; }
-  virtual const return_superedge *dyn_cast_return_superedge () const { return NULL; }
+  virtual callgraph_superedge *dyn_cast_callgraph_superedge () { return nullptr; }
+  virtual const callgraph_superedge *dyn_cast_callgraph_superedge () const { return nullptr; }
+  virtual call_superedge *dyn_cast_call_superedge () { return nullptr; }
+  virtual const call_superedge *dyn_cast_call_superedge () const { return nullptr; }
+  virtual return_superedge *dyn_cast_return_superedge () { return nullptr; }
+  virtual const return_superedge *dyn_cast_return_superedge () const { return nullptr; }
 
   ::edge get_any_cfg_edge () const;
   cgraph_edge *get_any_callgraph_edge () const;
@@ -594,7 +594,7 @@ template <>
 inline bool
 is_a_helper <const switch_cfg_superedge *>::test (const superedge *sedge)
 {
-  return sedge->dyn_cast_switch_cfg_superedge () != NULL;
+  return sedge->dyn_cast_switch_cfg_superedge () != nullptr;
 }
 
 namespace ana {
@@ -653,7 +653,7 @@ template <>
 inline bool
 is_a_helper <const eh_dispatch_cfg_superedge *>::test (const superedge *sedge)
 {
-  return sedge->dyn_cast_eh_dispatch_cfg_superedge () != NULL;
+  return sedge->dyn_cast_eh_dispatch_cfg_superedge () != nullptr;
 }
 
 namespace ana {
@@ -703,7 +703,7 @@ template <>
 inline bool
 is_a_helper <const eh_dispatch_try_cfg_superedge *>::test (const superedge *sedge)
 {
-  return sedge->dyn_cast_eh_dispatch_try_cfg_superedge () != NULL;
+  return sedge->dyn_cast_eh_dispatch_try_cfg_superedge () != nullptr;
 }
 
 namespace ana {
@@ -753,7 +753,7 @@ template <>
 inline bool
 is_a_helper <const eh_dispatch_allowed_cfg_superedge *>::test (const superedge *sedge)
 {
-  return sedge->dyn_cast_eh_dispatch_allowed_cfg_superedge () != NULL;
+  return sedge->dyn_cast_eh_dispatch_allowed_cfg_superedge () != nullptr;
 }
 
 namespace ana {

@@ -76,7 +76,7 @@ public:
 			   const svalue *,
 			   const extrinsic_state &) const
   {
-    return NULL;
+    return nullptr;
   }
 
   virtual bool
@@ -155,7 +155,7 @@ public:
   }
 
   /* Attempt to get a state for the merger of STATE_A and STATE_B,
-     or return NULL if merging shouldn't occur, so that differences
+     or return nullptr if merging shouldn't occur, so that differences
      between sm-state will lead to separate exploded nodes.
 
      Most state machines will only merge equal states, but can
@@ -176,7 +176,7 @@ public:
 				    state_t state_b ATTRIBUTE_UNUSED) const
   {
     /* By default, non-equal sm states should inhibit merger of enodes.  */
-    return NULL;
+    return nullptr;
   }
 
   void validate (state_t s) const;
@@ -330,7 +330,7 @@ public:
 
   virtual path_context *get_path_context () const
   {
-    return NULL;
+    return nullptr;
   }
 
   /* Are we handling an external function with unknown side effects?  */

@@ -48,15 +48,15 @@ class pass_analyzer : public ipa_opt_pass_d
 public:
    pass_analyzer(gcc::context *ctxt)
    : ipa_opt_pass_d (pass_data_analyzer, ctxt,
-		     NULL, /* generate_summary */
-		     NULL, /* write_summary */
-		     NULL, /* read_summary */
-		     NULL, /* write_optimization_summary */
-		     NULL, /* read_optimization_summary */
-		     NULL, /* stmt_fixup */
+		     nullptr, /* generate_summary */
+		     nullptr, /* write_summary */
+		     nullptr, /* read_summary */
+		     nullptr, /* write_optimization_summary */
+		     nullptr, /* read_optimization_summary */
+		     nullptr, /* stmt_fixup */
 		     0, /* function_transform_todo_flags_start */
-		     NULL, /* function_transform */
-		     NULL) /* variable_transform */
+		     nullptr, /* function_transform */
+		     nullptr) /* variable_transform */
   {}
 
   /* opt_pass methods: */

@@ -173,7 +173,7 @@ private:
     if (id_equal ("exit", DECL_NAME (m_unsafe_fndecl)))
       return "_exit";
 
-    return NULL;
+    return nullptr;
   }
 };
 
@@ -269,7 +269,7 @@ public:
 						       state_entering_handler,
 						       src_enode);
     if (dst_enode)
-      eg->add_edge (src_enode, dst_enode, NULL, /*state_change (),*/
+      eg->add_edge (src_enode, dst_enode, nullptr, /*state_change (),*/
 		    true, /* assume does work  */
 		    std::make_unique<signal_delivery_edge_info_t> ());
   }

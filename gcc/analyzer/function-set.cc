@@ -95,7 +95,7 @@ namespace selftest {
 static void
 test_empty ()
 {
-  function_set fs (NULL, 0);
+  function_set fs (nullptr, 0);
   fs.assert_sorted ();
   fs.assert_sane ();
   ASSERT_FALSE (fs.contains_name_p (""));

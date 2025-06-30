@@ -518,7 +518,7 @@ make_label_text (bool can_colorize, const char *fmt, ...)
 
   va_start (ap, fmt);
 
-  text_info ti (_(fmt), &ap, 0, NULL, &rich_loc);
+  text_info ti (_(fmt), &ap, 0, nullptr, &rich_loc);
   pp_format (pp.get (), &ti);
   pp_output_formatted_text (pp.get ());
 
@@ -549,7 +549,7 @@ make_label_text_n (bool can_colorize, unsigned HOST_WIDE_INT n,
 
   const char *fmt = ngettext (singular_fmt, plural_fmt, n);
 
-  text_info ti (fmt, &ap, 0, NULL, &rich_loc);
+  text_info ti (fmt, &ap, 0, nullptr, &rich_loc);
 
   pp_format (pp.get (), &ti);
   pp_output_formatted_text (pp.get ());

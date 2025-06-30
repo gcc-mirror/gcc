@@ -63,7 +63,7 @@ class epath_finder
 public:
   epath_finder (const exploded_graph &eg)
   : m_eg (eg),
-    m_sep (NULL)
+    m_sep (nullptr)
   {
     /* This is shared by all diagnostics, but only needed if
        !flag_analyzer_feasibility.  */
@@ -125,7 +125,7 @@ private:
    within ENODE.
 
    Ideally we want to report the shortest feasible path.
-   Return NULL if we could not find a feasible path
+   Return nullptr if we could not find a feasible path
    (when flag_analyzer_feasibility is true).
 
    If flag_analyzer_feasibility is false, then simply return the
@@ -177,7 +177,7 @@ epath_finder::get_best_epath (const exploded_node *enode,
 	    logger->log ("rejecting %qs at EN: %i, SN: %i (sd: %i)"
 			 " due to not finding feasible path",
 			 desc, enode->m_index, snode_idx, diag_idx);
-	  return NULL;
+	  return nullptr;
 	}
     }
   else
@@ -221,7 +221,7 @@ class feasible_worklist
 {
 public:
   feasible_worklist (const shortest_paths<eg_traits, exploded_path> &sep)
-  : m_queue (key_t (*this, NULL)),
+  : m_queue (key_t (*this, nullptr)),
     m_sep (sep)
   {
   }
@@ -416,7 +416,7 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
      a limit.  */
 
   /* Set this if we find a feasible path to TARGET_ENODE.  */
-  std::unique_ptr<exploded_path> best_path = NULL;
+  std::unique_ptr<exploded_path> best_path = nullptr;
 
   {
     auto_checking_feasibility sentinel (mgr);
@@ -508,7 +508,7 @@ process_worklist_item (feasible_worklist *worklist,
       std::unique_ptr<rejected_constraint> rc;
       if (succ_state.maybe_update_for_edge (logger, succ_eedge, nullptr, &rc))
 	{
-	  gcc_assert (rc == NULL);
+	  gcc_assert (rc == nullptr);
 	  feasible_node *succ_fnode
 	    = fg->add_node (succ_eedge->m_dest,
 			    succ_state,
@@ -612,7 +612,7 @@ dump_trimmed_graph (const exploded_node *target_enode,
   pp_printf (&pp, "%s.%s.%i.to-en%i.tg.dot",
 	     dump_base_name, desc, diag_idx, target_enode->m_index);
   char *filename = xstrdup (pp_formatted_text (&pp));
-  tg.dump_dot (filename, NULL, args);
+  tg.dump_dot (filename, nullptr, args);
   free (filename);
 }
 
@@ -630,7 +630,7 @@ epath_finder::dump_feasible_graph (const exploded_node *target_enode,
   pp_printf (&pp, "%s.%s.%i.to-en%i.fg.dot",
 	     dump_base_name, desc, diag_idx, target_enode->m_index);
   char *filename = xstrdup (pp_formatted_text (&pp));
-  fg.dump_dot (filename, NULL, args);
+  fg.dump_dot (filename, nullptr, args);
   free (filename);
 }
 
@@ -827,7 +827,7 @@ saved_diagnostic::dump_as_dot_node (pretty_printer *pp) const
 
 /* Use PF to find the best exploded_path for this saved_diagnostic,
    and store it in m_best_epath.
-   If we don't have a specific location in m_loc and m_stmt is still NULL,
+   If we don't have a specific location in m_loc and m_stmt is still nullptr,
    use m_stmt_finder on the epath to populate m_stmt.
    Return true if a best path was found.  */
 
@@ -836,20 +836,20 @@ saved_diagnostic::calc_best_epath (epath_finder *pf)
 {
   logger *logger = pf->get_logger ();
   LOG_SCOPE (logger);
-  m_problem = NULL;
+  m_problem = nullptr;
 
   m_best_epath = pf->get_best_epath (m_enode, m_stmt,
 				     *m_d, m_d->get_kind (), m_idx,
 				     &m_problem);
 
   /* Handle failure to find a feasible path.  */
-  if (m_best_epath == NULL)
+  if (m_best_epath == nullptr)
     return false;
 
   gcc_assert (m_best_epath);
   if (m_loc == UNKNOWN_LOCATION)
     {
-      if (m_stmt == NULL)
+      if (m_stmt == nullptr)
 	{
 	  gcc_assert (m_stmt_finder);
 	  m_stmt = m_stmt_finder->find_stmt (*m_best_epath);
@@ -1198,7 +1198,7 @@ diagnostic_manager::add_diagnostic (const pending_location &ploc,
 				    std::unique_ptr<pending_diagnostic> d)
 {
   gcc_assert (ploc.m_enode);
-  return add_diagnostic (NULL, ploc, NULL_TREE, NULL, 0, std::move (d));
+  return add_diagnostic (nullptr, ploc, NULL_TREE, nullptr, 0, std::move (d));
 }
 
 /* Add PN to the most recent saved_diagnostic.  */
@@ -1343,7 +1343,7 @@ public:
   template <typename T>
   static inline void mark_empty (T &entry)
   {
-    entry.m_key = NULL;
+    entry.m_key = nullptr;
   }
   template <typename T>
   static inline bool is_deleted (const T &entry)
@@ -1353,7 +1353,7 @@ public:
   template <typename T>
   static inline bool is_empty (const T &entry)
   {
-    return entry.m_key == NULL;
+    return entry.m_key == nullptr;
   }
   static const bool empty_zero_p = true;
 };
@@ -1620,7 +1620,7 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
      trailing eedge stashed, add any events for it.  This is for use
      in handling longjmp, to show where a longjmp is rewinding to.  */
   if (sd.m_trailing_eedge)
-    add_events_for_eedge (pb, *sd.m_trailing_eedge, &emission_path, NULL);
+    add_events_for_eedge (pb, *sd.m_trailing_eedge, &emission_path, nullptr);
 
   emission_path.inject_any_inlined_call_events (get_logger ());
 
@@ -1704,7 +1704,7 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
 		{
 		  emission_path->add_region_creation_events
 		    (pb.get_pending_diagnostic (),
-		     reg, NULL,
+		     reg, nullptr,
 		     event_loc_info (DECL_SOURCE_LOCATION (decl),
 				     NULL_TREE,
 				     0),
@@ -1763,7 +1763,7 @@ diagnostic_manager::add_event_on_final_node (const path_builder &pb,
 	= src_model->get_dynamic_extents (base_reg);
 	    const svalue *new_extents
 	= dst_model->get_dynamic_extents (base_reg);
-	    if (old_extents == NULL && new_extents != NULL)
+	    if (old_extents == nullptr && new_extents != nullptr)
 	      switch (base_reg->get_kind ())
 		{
 		default:
@@ -1976,7 +1976,7 @@ struct null_assignment_sm_context : public sm_context
 				    tree var) final override
   {
     const svalue *var_old_sval
-      = m_old_state->m_region_model->get_rvalue (var, NULL);
+      = m_old_state->m_region_model->get_rvalue (var, nullptr);
     const sm_state_map *old_smap = m_old_state->m_checker_states[m_sm_idx];
 
     state_machine::state_t current
@@ -2005,7 +2005,7 @@ struct null_assignment_sm_context : public sm_context
       return;
 
     const svalue *var_new_sval
-      = m_new_state->m_region_model->get_rvalue (var, NULL);
+      = m_new_state->m_region_model->get_rvalue (var, nullptr);
 
     const supernode *supernode = m_point->get_supernode ();
     int stack_depth = m_point->get_stack_depth ();
@@ -2092,7 +2092,7 @@ struct null_assignment_sm_context : public sm_context
     if (!assign_stmt)
      return NULL_TREE;
     if (const svalue *sval
-	= m_new_state->m_region_model->get_gassign_result (assign_stmt, NULL))
+	= m_new_state->m_region_model->get_gassign_result (assign_stmt, nullptr))
       if (tree cst = sval->maybe_get_constant ())
 	if (::zerop(cst))
 	  return gimple_assign_lhs (assign_stmt);
@@ -2253,7 +2253,7 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		  {
 		    const extrinsic_state &ext_state = pb.get_ext_state ();
 		    program_state old_state (iter_state);
-		    iter_state.m_region_model->on_assignment (assign, NULL);
+		    iter_state.m_region_model->on_assignment (assign, nullptr);
 		    for (unsigned i = 0; i < ext_state.get_num_checkers (); i++)
 		      {
 			const state_machine &sm = ext_state.get_sm (i);
@@ -2299,7 +2299,7 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		= src_model->get_dynamic_extents (base_reg);
 	      const svalue *new_extents
 		= dst_model->get_dynamic_extents (base_reg);
-	      if (old_extents == NULL && new_extents != NULL)
+	      if (old_extents == nullptr && new_extents != nullptr)
 		switch (base_reg->get_kind ())
 		  {
 		  default:
@@ -3044,7 +3044,7 @@ same_line_as_p (const expanded_location &ref_exp_loc,
   const checker_event *ev = path->get_checker_event (idx);
   expanded_location idx_exp_loc = expand_location (ev->get_location ());
   gcc_assert (ref_exp_loc.file);
-  if (idx_exp_loc.file == NULL)
+  if (idx_exp_loc.file == nullptr)
     return false;
   if (strcmp (ref_exp_loc.file, idx_exp_loc.file))
     return false;
@@ -3109,7 +3109,7 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 	    = path->get_checker_event (start_idx);
 	  expanded_location start_exp_loc
 	    = expand_location (old_start_ev->get_location ());
-	  if (start_exp_loc.file == NULL)
+	  if (start_exp_loc.file == nullptr)
 	    continue;
 	  if (!same_line_as_p (start_exp_loc, path, start_idx + 1))
 	    continue;

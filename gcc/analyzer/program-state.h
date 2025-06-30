@@ -37,7 +37,7 @@ class extrinsic_state
 public:
   extrinsic_state (std::vector<std::unique_ptr<state_machine>> &&checkers,
 		   engine *eng,
-		   logger *logger = NULL)
+		   logger *logger = nullptr)
   : m_checkers (std::move (checkers)),
     m_logger (logger),
     m_engine (eng)
@@ -47,7 +47,7 @@ public:
   // For use in selftests that use just one state machine
   extrinsic_state (std::unique_ptr<state_machine> sm,
 		   engine *eng,
-		   logger *logger = NULL)
+		   logger *logger = nullptr)
   : m_logger (logger),
     m_engine (eng)
   {
@@ -98,7 +98,7 @@ public:
   {
     /* Default ctor needed by hash_map::empty.  */
     entry_t ()
-    : m_state (0), m_origin (NULL)
+    : m_state (0), m_origin (nullptr)
     {
     }
 

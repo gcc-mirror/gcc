@@ -171,7 +171,7 @@ pending_diagnostic::fixup_location (location_t loc, bool) const
       const line_map_macro *macro_map = linemap_check_macro (map);
       if (fixup_location_in_macro_p (macro_map->macro))
 	loc = linemap_resolve_location (line_table, loc,
-					LRK_MACRO_EXPANSION_POINT, NULL);
+					LRK_MACRO_EXPANSION_POINT, nullptr);
     }
   return loc;
 }

@@ -1116,7 +1116,7 @@ public:
       {
 	logger.start_log_line ();
 	logger.log_partial ("table_x: %i", table_x);
-	access_range range_for_column (NULL, bit_range (0, 0));
+	access_range range_for_column (nullptr, bit_range (0, 0));
 	if (maybe_get_access_range_for_table_x (table_x, &range_for_column))
 	  {
 	    logger.log_partial (": range: ");
@@ -2244,7 +2244,7 @@ private:
     for (int table_x = 0; table_x < t.get_size ().w; table_x++)
       {
 	const int table_y = 1;
-	access_range range_for_column (NULL, bit_range (0, 0));
+	access_range range_for_column (nullptr, bit_range (0, 0));
 	if (m_btm.maybe_get_access_range_for_table_x (table_x,
 						      &range_for_column))
 	  {
@@ -2495,7 +2495,7 @@ private:
     std::vector<bit_offset_t> bit_sizes (num_columns);
     for (unsigned table_x = 0; table_x < num_columns; table_x++)
       {
-	access_range range_for_column (NULL, bit_range (0, 0));
+	access_range range_for_column (nullptr, bit_range (0, 0));
 	if (m_btm.maybe_get_access_range_for_table_x (table_x,
 						      &range_for_column))
 	  {

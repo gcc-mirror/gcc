@@ -122,7 +122,7 @@ pattern_test_state_machine::on_condition (sm_context &sm_ctxt,
 					  enum tree_code op,
 					  const svalue *rhs) const
 {
-  if (stmt == NULL)
+  if (stmt == nullptr)
     return;
 
   tree rhs_cst = rhs->maybe_get_constant ();

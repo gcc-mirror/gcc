@@ -934,7 +934,7 @@ public:
 	 macro when we're describing them.  */
       return linemap_resolve_location (line_table, loc,
 				       LRK_SPELLING_LOCATION,
-				       NULL);
+				       nullptr);
     else
       return pending_diagnostic::fixup_location (loc, primary);
   }
@@ -1060,12 +1060,12 @@ taint_state_machine::alt_get_inherited_state (const sm_state_map &map,
 
 	  case BIT_AND_EXPR:
 	  case RSHIFT_EXPR:
-	    return NULL;
+	    return nullptr;
 	  }
       }
       break;
     }
-  return NULL;
+  return nullptr;
 }
 
 /* Return true iff FNDECL should be considered to be an assertion failure
@@ -1175,7 +1175,7 @@ taint_state_machine::check_control_flow_arg_for_taint (sm_context &sm_ctxt,
 						       tree expr) const
 {
   const region_model *old_model = sm_ctxt.get_old_region_model ();
-  const svalue *sval = old_model->get_rvalue (expr, NULL);
+  const svalue *sval = old_model->get_rvalue (expr, nullptr);
   state_t state = sm_ctxt.get_state (stmt, sval);
   enum bounds b;
   if (get_taint (state, TREE_TYPE (expr), &b))
@@ -1194,7 +1194,7 @@ taint_state_machine::on_condition (sm_context &sm_ctxt,
 				   enum tree_code op,
 				   const svalue *rhs) const
 {
-  if (stmt == NULL)
+  if (stmt == nullptr)
     return;
 
   if (lhs->get_kind () == SK_UNKNOWN
@@ -1492,7 +1492,7 @@ taint_state_machine::check_for_tainted_divisor (sm_context &sm_ctxt,
   if (!INTEGRAL_TYPE_P (TREE_TYPE (divisor_expr)))
     return;
 
-  const svalue *divisor_sval = old_model->get_rvalue (divisor_expr, NULL);
+  const svalue *divisor_sval = old_model->get_rvalue (divisor_expr, nullptr);
 
   state_t state = sm_ctxt.get_state (assign, divisor_sval);
   enum bounds b;
@@ -1793,7 +1793,7 @@ region_model::mark_as_tainted (const svalue *sval,
   if (!ext_state)
     return;
 
-  smap->set_state (this, sval, taint_sm.m_tainted, NULL, *ext_state);
+  smap->set_state (this, sval, taint_sm.m_tainted, nullptr, *ext_state);
 }
 
 /* Return true if SVAL could possibly be attacker-controlled.  */

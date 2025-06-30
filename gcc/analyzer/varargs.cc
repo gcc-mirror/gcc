@@ -298,15 +298,15 @@ get_stateful_arg (sm_context &sm_ctxt, const gcall &call, unsigned arg_idx)
       if (const program_state *new_state = sm_ctxt.get_new_program_state ())
 	{
 	  const region_model *new_model = new_state->m_region_model;
-	  const svalue *ptr_sval = new_model->get_rvalue (ap, NULL);
-	  const region *reg = new_model->deref_rvalue (ptr_sval, ap, NULL);
-	  const svalue *impl_sval = new_model->get_store_value (reg, NULL);
+	  const svalue *ptr_sval = new_model->get_rvalue (ap, nullptr);
+	  const region *reg = new_model->deref_rvalue (ptr_sval, ap, nullptr);
+	  const svalue *impl_sval = new_model->get_store_value (reg, nullptr);
 	  if (const svalue *cast = impl_sval->maybe_undo_cast ())
 	    impl_sval = cast;
 	  return impl_sval;
 	}
     }
-  return NULL;
+  return nullptr;
 }
 
 /* Abstract class for diagnostics relating to va_list_state_machine.  */
@@ -370,7 +370,7 @@ protected:
 		  return "va_end";
 		}
 	  }
-    return NULL;
+    return nullptr;
   }
 
   const va_list_state_machine &m_sm;
@@ -467,7 +467,7 @@ public:
 		const svalue *ap_sval, tree ap_tree,
 		const program_state *final_state)
   : va_list_sm_diagnostic (sm, ap_sval, ap_tree),
-    m_start_event_fnname (NULL),
+    m_start_event_fnname (nullptr),
     m_final_state ()
   {
     if (final_state)
@@ -577,7 +577,7 @@ va_list_state_machine::check_for_ended_va_list (sm_context &sm_ctxt,
 
 /* Get the svalue with associated va_list_state_machine state for
    ARG_IDX of CALL to va_copy, if SM_CTXT supports this,
-   or NULL otherwise.  */
+   or nullptr otherwise.  */
 
 static const svalue *
 get_stateful_va_copy_arg (sm_context &sm_ctxt,
@@ -587,10 +587,10 @@ get_stateful_va_copy_arg (sm_context &sm_ctxt,
   if (const program_state *new_state = sm_ctxt.get_new_program_state ())
     {
       const region_model *new_model = new_state->m_region_model;
-      const svalue *arg = get_va_copy_arg (new_model, NULL, call, arg_idx);
+      const svalue *arg = get_va_copy_arg (new_model, nullptr, call, arg_idx);
       return arg;
     }
-  return NULL;
+  return nullptr;
 }
 
 /* Update state machine for a "va_copy" call.  */
@@ -740,7 +740,7 @@ kf_va_copy::impl_call_pre (const call_details &cd) const
   in_va_list
     = model->check_for_poison (in_va_list,
 			       get_va_list_diag_arg (cd.get_arg_tree (1)),
-			       NULL,
+			       nullptr,
 			       cd.get_ctxt ());
 
   const region *out_dst_reg
@@ -1020,14 +1020,14 @@ va_arg_compatible_types_p (tree lhs_type, tree arg_type, const svalue &arg_sval)
 }
 
 /* If AP_SVAL is a pointer to a var_arg_region, return that var_arg_region.
-   Otherwise return NULL.  */
+   Otherwise return nullptr.  */
 
 static const var_arg_region *
 maybe_get_var_arg_region (const svalue *ap_sval)
 {
   if (const region *reg = ap_sval->maybe_get_region ())
     return reg->dyn_cast_var_arg_region ();
-  return NULL;
+  return nullptr;
 }
 
 /* Handler for "__builtin_va_arg".  */

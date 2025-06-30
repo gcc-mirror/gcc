@@ -658,7 +658,7 @@ binding_map::operator== (const binding_map &other) const
       const svalue *sval = (*iter).second;
       const svalue **other_slot
 	= const_cast <map_t &> (other.m_map).get (key);
-      if (other_slot == NULL)
+      if (other_slot == nullptr)
 	return false;
       if (sval != *other_slot)
 	return false;
@@ -922,7 +922,7 @@ get_svalue_for_ctor_val (tree val, region_model_manager *mgr)
 {
   /* Reuse the get_rvalue logic from region_model.  */
   region_model m (mgr);
-  return m.get_rvalue (path_var (val, 0), NULL);
+  return m.get_rvalue (path_var (val, 0), nullptr);
 }
 
 /* Bind values from CONSTRUCTOR to this map, relative to
@@ -1564,7 +1564,7 @@ binding_cluster::bind_compound_sval (store_manager *mgr,
 void
 binding_cluster::clobber_region (store_manager *mgr, const region *reg)
 {
-  remove_overlapping_bindings (mgr, reg, NULL, NULL);
+  remove_overlapping_bindings (mgr, reg, nullptr, nullptr);
 }
 
 /* Remove any bindings for REG within this cluster.  */
@@ -1684,7 +1684,7 @@ binding_cluster::get_binding (store_manager *mgr,
 			      const region *reg) const
 {
   if (reg->empty_p ())
-    return NULL;
+    return nullptr;
   const binding_key *reg_binding = binding_key::make (mgr, reg);
   const svalue *sval = m_map.get (reg_binding);
   if (sval)
@@ -1752,7 +1752,7 @@ binding_cluster::get_binding_recursive (store_manager *mgr,
 	  return rmm_mgr->get_or_create_sub_svalue (reg->get_type (),
 						    parent_sval, reg);
 	}
-  return NULL;
+  return nullptr;
 }
 
 /* Get any value bound for REG within this cluster.  */
@@ -1800,7 +1800,7 @@ binding_cluster::get_any_binding (store_manager *mgr,
     return compound_sval;
 
   /* Otherwise, the initial value, or uninitialized.  */
-  return NULL;
+  return nullptr;
 }
 
 /* Attempt to get a compound_svalue for the bindings within the cluster
@@ -1812,7 +1812,7 @@ binding_cluster::get_any_binding (store_manager *mgr,
 
    For example, REG could be one element within an array of structs.
 
-   Return the resulting compound_svalue, or NULL if there's a problem.  */
+   Return the resulting compound_svalue, or nullptr if there's a problem.  */
 
 const svalue *
 binding_cluster::maybe_get_compound_binding (store_manager *mgr,
@@ -1821,13 +1821,13 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
   region_offset cluster_offset
     = m_base_region->get_offset (mgr->get_svalue_manager ());
   if (cluster_offset.symbolic_p ())
-    return NULL;
+    return nullptr;
   region_offset reg_offset = reg->get_offset (mgr->get_svalue_manager ());
   if (reg_offset.symbolic_p ())
-    return NULL;
+    return nullptr;
 
   if (reg->empty_p ())
-    return NULL;
+    return nullptr;
 
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
 
@@ -1880,7 +1880,7 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 
 	  bit_size_t reg_bit_size;
 	  if (!reg->get_bit_size (&reg_bit_size))
-	    return NULL;
+	    return nullptr;
 
 	  bit_range reg_range (reg_offset.get_bit_offset (),
 			       reg_bit_size);
@@ -1909,7 +1909,7 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 		 it overlaps with offset_concrete_key.  */
 	      default_map.remove_overlapping_bindings (mgr,
 						       offset_concrete_key,
-						       NULL, NULL, false);
+						       nullptr, nullptr, false);
 	    }
 	  else if (bound_range.contains_p (reg_range, &subrange))
 	    {
@@ -1943,16 +1943,16 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 		 it overlaps with overlap_concrete_key.  */
 	      default_map.remove_overlapping_bindings (mgr,
 						       overlap_concrete_key,
-						       NULL, NULL, false);
+						       nullptr, nullptr, false);
 	    }
 	}
       else
 	/* Can't handle symbolic bindings.  */
-	return NULL;
+	return nullptr;
     }
 
   if (result_map.elements () == 0)
-    return NULL;
+    return nullptr;
 
   /* Merge any bindings from default_map into result_map.  */
   for (auto iter : default_map)
@@ -2030,23 +2030,23 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
 
   /* At least one of CLUSTER_A and CLUSTER_B are non-NULL, but either
      could be NULL.  Handle these cases.  */
-  if (cluster_a == NULL)
+  if (cluster_a == nullptr)
     {
-      gcc_assert (cluster_b != NULL);
+      gcc_assert (cluster_b != nullptr);
       gcc_assert (cluster_b->m_base_region == out_cluster->m_base_region);
       out_cluster->make_unknown_relative_to (cluster_b, out_store, mgr);
       return true;
     }
-  if (cluster_b == NULL)
+  if (cluster_b == nullptr)
     {
-      gcc_assert (cluster_a != NULL);
+      gcc_assert (cluster_a != nullptr);
       gcc_assert (cluster_a->m_base_region == out_cluster->m_base_region);
       out_cluster->make_unknown_relative_to (cluster_a, out_store, mgr);
       return true;
     }
 
   /* The "both inputs are non-NULL" case.  */
-  gcc_assert (cluster_a != NULL && cluster_b != NULL);
+  gcc_assert (cluster_a != nullptr && cluster_b != nullptr);
   gcc_assert (cluster_a->m_base_region == out_cluster->m_base_region);
   gcc_assert (cluster_b->m_base_region == out_cluster->m_base_region);
 
@@ -2319,7 +2319,7 @@ binding_cluster::get_representative_path_vars (const region_model *model,
     }
 }
 
-/* Get any svalue bound to KEY, or NULL.  */
+/* Get any svalue bound to KEY, or nullptr.  */
 
 const svalue *
 binding_cluster::get_any_value (const binding_key *key) const
@@ -2334,16 +2334,16 @@ binding_cluster::get_any_value (const binding_key *key) const
 const svalue *
 binding_cluster::maybe_get_simple_value (store_manager *mgr) const
 {
-  /* Fail gracefully if MGR is NULL to make it easier to dump store
+  /* Fail gracefully if MGR is nullptr to make it easier to dump store
      instances in the debugger.  */
-  if (mgr == NULL)
-    return NULL;
+  if (mgr == nullptr)
+    return nullptr;
 
   if (m_map.elements () != 1)
-    return NULL;
+    return nullptr;
 
   if (m_base_region->empty_p ())
-    return NULL;
+    return nullptr;
 
   const binding_key *key = binding_key::make (mgr, m_base_region);
   return get_any_value (key);
@@ -2467,7 +2467,7 @@ store::operator== (const store &other) const
       binding_cluster *c = (*iter).second;
       binding_cluster **other_slot
 	= const_cast <cluster_map_t &> (other.m_cluster_map).get (reg);
-      if (other_slot == NULL)
+      if (other_slot == nullptr)
 	return false;
       if (*c != **other_slot)
 	return false;
@@ -2520,7 +2520,7 @@ get_sorted_parent_regions (auto_vec<const region *> *out,
 
 /* Dump a representation of this store to PP, using SIMPLE to control how
    svalues and regions are printed.
-   MGR is used for simplifying dumps if non-NULL, but can also be NULL
+   MGR is used for simplifying dumps if non-NULL, but can also be nullptr
    (to make it easier to use from the debugger).  */
 
 void
@@ -2629,7 +2629,7 @@ DEBUG_FUNCTION void
 store::dump (bool simple) const
 {
   tree_dump_pretty_printer pp (stderr);
-  dump_to_pp (&pp, simple, true, NULL);
+  dump_to_pp (&pp, simple, true, nullptr);
   pp_newline (&pp);
 }
 
@@ -2761,7 +2761,7 @@ store::make_dump_widget (const text_art::dump_widget_info &dwi,
   return store_widget;
 }
 
-/* Get any svalue bound to REG, or NULL.  */
+/* Get any svalue bound to REG, or nullptr.  */
 
 const svalue *
 store::get_any_binding (store_manager *mgr, const region *reg) const
@@ -2770,7 +2770,7 @@ store::get_any_binding (store_manager *mgr, const region *reg) const
   binding_cluster **cluster_slot
     = const_cast <cluster_map_t &> (m_cluster_map).get (base_reg);
   if (!cluster_slot)
-    return NULL;
+    return nullptr;
   return (*cluster_slot)->get_any_binding (mgr, reg);
 }
 
@@ -2796,7 +2796,7 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
     {
       /* Reject attempting to bind values into a symbolic region
 	 for an unknown ptr; merely invalidate values below.  */
-      lhs_cluster = NULL;
+      lhs_cluster = nullptr;
 
       /* The LHS of the write is *UNKNOWN.  If the RHS is a pointer,
 	 then treat the region being pointed to as having escaped.  */
@@ -2818,7 +2818,7 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
     {
       /* Reject attempting to bind values into an untracked region;
 	 merely invalidate values below.  */
-      lhs_cluster = NULL;
+      lhs_cluster = nullptr;
     }
 
   /* Bindings to a cluster can affect other clusters if a symbolic
@@ -2838,7 +2838,7 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
       const region *iter_base_reg = (*iter).first;
       binding_cluster *iter_cluster = (*iter).second;
       if (iter_base_reg != lhs_base_reg
-	  && (lhs_cluster == NULL
+	  && (lhs_cluster == nullptr
 	      || lhs_cluster->symbolic_p ()
 	      || iter_cluster->symbolic_p ()))
 	{
@@ -3097,7 +3097,7 @@ store::purge_state_involving (const svalue *sval,
     purge_cluster (iter);
 }
 
-/* Get the cluster for BASE_REG, or NULL (const version).  */
+/* Get the cluster for BASE_REG, or nullptr (const version).  */
 
 const binding_cluster *
 store::get_cluster (const region *base_reg) const
@@ -3108,10 +3108,10 @@ store::get_cluster (const region *base_reg) const
 	= const_cast <cluster_map_t &> (m_cluster_map).get (base_reg))
     return *slot;
   else
-    return NULL;
+    return nullptr;
 }
 
-/* Get the cluster for BASE_REG, or NULL (non-const version).  */
+/* Get the cluster for BASE_REG, or nullptr (non-const version).  */
 
 binding_cluster *
 store::get_cluster (const region *base_reg)
@@ -3121,7 +3121,7 @@ store::get_cluster (const region *base_reg)
   if (binding_cluster **slot = m_cluster_map.get (base_reg))
     return *slot;
   else
-    return NULL;
+    return nullptr;
 }
 
 /* Get the cluster for BASE_REG, creating it if doesn't already exist.  */
@@ -3321,9 +3321,9 @@ store::remove_overlapping_bindings (store_manager *mgr, const region *reg,
 	  delete cluster;
 	  return;
 	}
-      /* Pass NULL for the maybe_live_values here, as we don't want to
+      /* Pass nullptr for the maybe_live_values here, as we don't want to
 	 record the old svalues as being maybe-bound.  */
-      cluster->remove_overlapping_bindings (mgr, reg, uncertainty, NULL);
+      cluster->remove_overlapping_bindings (mgr, reg, uncertainty, nullptr);
     }
 }
 
@@ -3566,7 +3566,7 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 	  caller_sval =
 	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
 	set_value (mgr, caller_dest_reg,
-		   caller_sval, NULL /* uncertainty_t * */);
+		   caller_sval, nullptr /* uncertainty_t * */);
       }
       break;
 
@@ -3591,7 +3591,7 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 	  caller_sval =
 	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
 	set_value (mgr, caller_dest_reg,
-		   caller_sval, NULL /* uncertainty_t * */);
+		   caller_sval, nullptr /* uncertainty_t * */);
       }
       break;
 
@@ -3786,7 +3786,7 @@ assert_disjoint (const location &loc,
 static void
 test_binding_key_overlap ()
 {
-  store_manager mgr (NULL);
+  store_manager mgr (nullptr);
 
   /* Various 8-bit bindings.  */
   const concrete_binding *cb_0_7 = mgr.get_concrete_binding (0, 8);

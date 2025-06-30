@@ -119,7 +119,7 @@ deterministic_p (const gasm *asm_stmt)
 void
 region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
 {
-  logger *logger = ctxt ? ctxt->get_logger () : NULL;
+  logger *logger = ctxt ? ctxt->get_logger () : nullptr;
   LOG_SCOPE (logger);
 
   const unsigned noutputs = gimple_asm_noutputs (stmt);
@@ -216,7 +216,7 @@ region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
 
       tree src_expr = input_tvec[i];
       const svalue *src_sval = get_rvalue (src_expr, ctxt);
-      check_for_poison (src_sval, src_expr, NULL, ctxt);
+      check_for_poison (src_sval, src_expr, nullptr, ctxt);
       input_svals.quick_push (src_sval);
       reachable_regs.handle_sval (src_sval);
 

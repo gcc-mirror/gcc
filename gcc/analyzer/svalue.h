@@ -112,37 +112,37 @@ public:
 		    const char *prefix = nullptr) const;
 
   virtual const region_svalue *
-  dyn_cast_region_svalue () const { return NULL; }
+  dyn_cast_region_svalue () const { return nullptr; }
   virtual const constant_svalue *
-  dyn_cast_constant_svalue () const { return NULL; }
+  dyn_cast_constant_svalue () const { return nullptr; }
   virtual const poisoned_svalue *
-  dyn_cast_poisoned_svalue () const { return NULL; }
+  dyn_cast_poisoned_svalue () const { return nullptr; }
   virtual const setjmp_svalue *
-  dyn_cast_setjmp_svalue () const { return NULL; }
+  dyn_cast_setjmp_svalue () const { return nullptr; }
   virtual const initial_svalue *
-  dyn_cast_initial_svalue () const { return NULL; }
+  dyn_cast_initial_svalue () const { return nullptr; }
   virtual const unaryop_svalue *
-  dyn_cast_unaryop_svalue () const { return NULL; }
+  dyn_cast_unaryop_svalue () const { return nullptr; }
   virtual const binop_svalue *
-  dyn_cast_binop_svalue () const { return NULL; }
+  dyn_cast_binop_svalue () const { return nullptr; }
   virtual const sub_svalue *
-  dyn_cast_sub_svalue () const { return NULL; }
+  dyn_cast_sub_svalue () const { return nullptr; }
   virtual const repeated_svalue *
-  dyn_cast_repeated_svalue () const { return NULL; }
+  dyn_cast_repeated_svalue () const { return nullptr; }
   virtual const bits_within_svalue *
-  dyn_cast_bits_within_svalue () const { return NULL; }
+  dyn_cast_bits_within_svalue () const { return nullptr; }
   virtual const unmergeable_svalue *
-  dyn_cast_unmergeable_svalue () const { return NULL; }
+  dyn_cast_unmergeable_svalue () const { return nullptr; }
   virtual const widening_svalue *
-  dyn_cast_widening_svalue () const { return NULL; }
+  dyn_cast_widening_svalue () const { return nullptr; }
   virtual const compound_svalue *
-  dyn_cast_compound_svalue () const { return NULL; }
+  dyn_cast_compound_svalue () const { return nullptr; }
   virtual const conjured_svalue *
-  dyn_cast_conjured_svalue () const { return NULL; }
+  dyn_cast_conjured_svalue () const { return nullptr; }
   virtual const asm_output_svalue *
-  dyn_cast_asm_output_svalue () const { return NULL; }
+  dyn_cast_asm_output_svalue () const { return nullptr; }
   virtual const const_fn_result_svalue *
-  dyn_cast_const_fn_result_svalue () const { return NULL; }
+  dyn_cast_const_fn_result_svalue () const { return nullptr; }
 
   tree maybe_get_constant () const;
   const region *maybe_get_region () const;
@@ -246,7 +246,7 @@ public:
   : svalue (complexity (reg), id, type),
     m_reg (reg)
   {
-    gcc_assert (m_reg != NULL);
+    gcc_assert (m_reg != nullptr);
   }
 
   enum svalue_kind get_kind () const final override { return SK_REGION; }
@@ -650,7 +650,7 @@ public:
   initial_svalue (symbol::id_t id, tree type, const region *reg)
   : svalue (complexity (reg), id, type), m_reg (reg)
   {
-    gcc_assert (m_reg != NULL);
+    gcc_assert (m_reg != nullptr);
   }
 
   enum svalue_kind get_kind () const final override { return SK_INITIAL; }
@@ -1547,15 +1547,15 @@ public:
 	      && m_idx == other.m_idx);
     }
 
-    /* Use m_stmt to mark empty/deleted, as m_type can be NULL for
+    /* Use m_stmt to mark empty/deleted, as m_type can be NULL_TREE for
        legitimate instances.  */
     void mark_deleted () { m_stmt = reinterpret_cast<const gimple *> (1); }
-    void mark_empty () { m_stmt = NULL; }
+    void mark_empty () { m_stmt = nullptr; }
     bool is_deleted () const
     {
       return m_stmt == reinterpret_cast<const gimple *> (1);
     }
-    bool is_empty () const { return m_stmt == NULL; }
+    bool is_empty () const { return m_stmt == nullptr; }
 
     tree m_type;
     const gimple *m_stmt;
@@ -1568,7 +1568,7 @@ public:
   : svalue (complexity (id_reg), id, type),
     m_stmt (stmt), m_id_reg (id_reg), m_idx (idx)
   {
-    gcc_assert (m_stmt != NULL);
+    gcc_assert (m_stmt != nullptr);
   }
 
   enum svalue_kind get_kind () const final override { return SK_CONJURED; }
@@ -1668,15 +1668,15 @@ public:
       return true;
     }
 
-    /* Use m_asm_string to mark empty/deleted, as m_type can be NULL for
+    /* Use m_asm_string to mark empty/deleted, as m_type can be NULL_TREE for
        legitimate instances.  */
     void mark_deleted () { m_asm_string = reinterpret_cast<const char *> (1); }
-    void mark_empty () { m_asm_string = NULL; }
+    void mark_empty () { m_asm_string = nullptr; }
     bool is_deleted () const
     {
       return m_asm_string == reinterpret_cast<const char *> (1);
     }
-    bool is_empty () const { return m_asm_string == NULL; }
+    bool is_empty () const { return m_asm_string == nullptr; }
 
     tree m_type;
     const char *m_asm_string;
@@ -1813,12 +1813,12 @@ public:
 
     /* Use m_fndecl to mark empty/deleted.  */
     void mark_deleted () { m_fndecl = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_fndecl = NULL; }
+    void mark_empty () { m_fndecl = NULL_TREE; }
     bool is_deleted () const
     {
       return m_fndecl == reinterpret_cast<tree> (1);
     }
-    bool is_empty () const { return m_fndecl == NULL; }
+    bool is_empty () const { return m_fndecl == NULL_TREE; }
 
     tree m_type;
     tree m_fndecl;
