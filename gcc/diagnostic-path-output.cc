@@ -806,7 +806,7 @@ path_summary::path_summary (const path_print_policy &policy,
 {
   const unsigned num_events = path.num_events ();
 
-  event_range *cur_event_range = NULL;
+  event_range *cur_event_range = nullptr;
   for (unsigned idx = 0; idx < num_events; idx++)
     {
       const diagnostic_event &event = path.get_event (idx);
@@ -1194,7 +1194,7 @@ print_path_summary_as_html (const path_summary &ps,
 		     || this_logical_loc != curr_frame->m_logical_loc)
 		{
 		  curr_frame = end_html_stack_frame (xp, std::move (curr_frame));
-		  if (curr_frame == NULL)
+		  if (curr_frame == nullptr)
 		    {
 		      curr_frame
 			= begin_html_stack_frame (xp,
@@ -1211,7 +1211,7 @@ print_path_summary_as_html (const path_summary &ps,
       else
 	{
 	  curr_frame = begin_html_stack_frame (xp,
-					       NULL,
+					       nullptr,
 					       range->m_logical_loc,
 					       range->m_stack_depth,
 					       logical_loc_mgr);
@@ -1366,7 +1366,7 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
 			      colorize,
 			      show_event_links);
 	char *saved_prefix = pp_take_prefix (pp);
-	pp_set_prefix (pp, NULL);
+	pp_set_prefix (pp, nullptr);
 	print_path_summary_as_text (summary, *this,
 				    get_context ().show_path_depths_p ());
 	pp_flush (pp);

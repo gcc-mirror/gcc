@@ -234,7 +234,7 @@ diagnostic_color_dict::parse_envvar_value (const char *const envvar_value)
   size_t name_len = 0, val_len = 0;
 
   name = q = envvar_value;
-  val = NULL;
+  val = nullptr;
   /* From now on, be well-formed or you're gone.  */
   for (;;)
     if (*q == ':' || *q == '\0')
@@ -259,7 +259,7 @@ diagnostic_color_dict::parse_envvar_value (const char *const envvar_value)
 	if (*q == '\0')
 	  return true;
 	name = ++q;
-	val = NULL;
+	val = nullptr;
       }
     else if (*q == '=')
       {
@@ -269,7 +269,7 @@ diagnostic_color_dict::parse_envvar_value (const char *const envvar_value)
 	name_len = q - name;
 	val = ++q; /* Can be the empty string.  */
       }
-    else if (val == NULL)
+    else if (val == nullptr)
       q++; /* Accumulate name.  */
     else if (*q == ';' || (*q >= '0' && *q <= '9'))
       q++; /* Accumulate val.  Protect the terminal from being sent
@@ -308,7 +308,7 @@ should_colorize (void)
 
   handle = GetStdHandle (STD_ERROR_HANDLE);
 
-  if ((handle != INVALID_HANDLE_VALUE) && (handle != NULL))
+  if ((handle != INVALID_HANDLE_VALUE) && (handle != nullptr))
     isconsole = GetConsoleMode (handle, &mode);
 
 #ifdef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -362,10 +362,10 @@ parse_env_vars_for_urls ()
   const char *p;
 
   p = getenv ("GCC_URLS"); /* Plural! */
-  if (p == NULL)
+  if (p == nullptr)
     p = getenv ("TERM_URLS");
 
-  if (p == NULL)
+  if (p == nullptr)
     return URL_FORMAT_DEFAULT;
 
   if (*p == '\0')
@@ -400,7 +400,7 @@ auto_enable_urls ()
   DWORD mode;
 
   handle = GetStdHandle (STD_ERROR_HANDLE);
-  if ((handle == INVALID_HANDLE_VALUE) || (handle == NULL))
+  if ((handle == INVALID_HANDLE_VALUE) || (handle == nullptr))
     return false;
 
   /* If ansi escape sequences aren't supported by the console, then URLs will

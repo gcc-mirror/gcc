@@ -157,11 +157,11 @@ maybe_unwind_expanded_macro_loc (diagnostic_text_output_format &text_output,
            comment above.  */
         location_t resolved_def_loc =
           linemap_resolve_location (line_table, iter->where,
-                                    LRK_MACRO_DEFINITION_LOCATION, NULL);
+                                    LRK_MACRO_DEFINITION_LOCATION, nullptr);
 
 	/* Don't print trace for locations that are reserved or from
 	   within a system header.  */
-        const line_map_ordinary *m = NULL;
+        const line_map_ordinary *m = nullptr;
         location_t l =
           linemap_resolve_location (line_table, resolved_def_loc,
                                     LRK_SPELLING_LOCATION,  &m);
@@ -193,7 +193,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_text_output_format &text_output,
         location_t resolved_exp_loc =
           linemap_resolve_location (line_table,
                                     iter->map->get_expansion_point_location (),
-                                    LRK_MACRO_DEFINITION_LOCATION, NULL);
+                                    LRK_MACRO_DEFINITION_LOCATION, nullptr);
 
 	text_output.append_note (resolved_exp_loc,
 				 "in expansion of macro %qs",

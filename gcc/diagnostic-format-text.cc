@@ -263,7 +263,7 @@ diagnostic_text_output_format::on_diagram (const diagnostic_diagram &diagram)
   pretty_printer *const pp = get_printer ();
 
   char *saved_prefix = pp_take_prefix (pp);
-  pp_set_prefix (pp, NULL);
+  pp_set_prefix (pp, nullptr);
   /* Use a newline before and after and a two-space indent
      to make the diagram stand out a little from the wall of text.  */
   pp_newline (pp);
@@ -471,7 +471,7 @@ update_printer ()
 void
 diagnostic_text_output_format::print_any_cwe (const diagnostic_info &diagnostic)
 {
-  if (diagnostic.metadata == NULL)
+  if (!diagnostic.metadata)
     return;
 
   int cwe = diagnostic.metadata->get_cwe ();
@@ -507,7 +507,7 @@ void
 diagnostic_text_output_format::
 print_any_rules (const diagnostic_info &diagnostic)
 {
-  if (diagnostic.metadata == NULL)
+  if (!diagnostic.metadata)
     return;
 
   for (unsigned idx = 0; idx < diagnostic.metadata->get_num_rules (); idx++)
@@ -522,7 +522,7 @@ print_any_rules (const diagnostic_info &diagnostic)
 	  const char *kind_color
 	    = diagnostic_get_color_for_kind (diagnostic.kind);
 	  pp_string (pp, colorize_start (pp_show_color (pp), kind_color));
-	  char *url = NULL;
+	  char *url = nullptr;
 	  if (pp->supports_urls_p ())
 	    {
 	      url = rule.make_url ();
@@ -639,7 +639,7 @@ void
 diagnostic_text_output_format::report_current_module (location_t where)
 {
   pretty_printer *pp = get_printer ();
-  const line_map_ordinary *map = NULL;
+  const line_map_ordinary *map = nullptr;
 
   if (pp_needs_newline (pp))
     {
@@ -677,7 +677,7 @@ diagnostic_text_output_format::report_current_module (location_t where)
 	      const char *line_col = maybe_line_and_column (s.line, col);
 	      static const char *const msgs[] =
 		{
-		 NULL,
+		 nullptr,
 		 N_("                 from"),
 		 N_("In file included from"),	/* 2 */
 		 N_("        included from"),
@@ -719,7 +719,7 @@ default_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
 {
   pretty_printer *const pp = text_output.get_printer ();
   char *saved_prefix = pp_take_prefix (pp);
-  pp_set_prefix (pp, NULL);
+  pp_set_prefix (pp, nullptr);
   pp_newline (pp);
   diagnostic_show_locus (&text_output.get_context (),
 			 text_output.get_source_printing_options (),

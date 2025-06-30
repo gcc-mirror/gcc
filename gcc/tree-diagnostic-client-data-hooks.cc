@@ -155,7 +155,7 @@ public:
 	     stderr.
 	     Implement this by cleaning up the global timer instance now.  */
 	  delete g_timer;
-	  g_timer = NULL;
+	  g_timer = nullptr;
 	}
   }
 

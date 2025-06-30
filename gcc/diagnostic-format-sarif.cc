@@ -1722,12 +1722,12 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
 
   /* If we don't have any useful information, don't print
      anything.  */
-  if (filename == NULL && function == NULL)
+  if (filename == nullptr && function == nullptr)
     return 0;
 
   /* Skip functions in diagnostic.cc or diagnostic-global-context.cc.  */
   if (closure->m_frames_arr->size () == 0
-      && filename != NULL
+      && filename != nullptr
       && (strcmp (lbasename (filename), "diagnostic.cc") == 0
 	  || strcmp (lbasename (filename),
 		     "diagnostic-global-context.cc") == 0))
@@ -1741,13 +1741,13 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
       return 1;
     }
 
-  char *alc = NULL;
-  if (function != NULL)
+  char *alc = nullptr;
+  if (function != nullptr)
     {
       char *str = cplus_demangle_v3 (function,
 				     (DMGL_VERBOSE | DMGL_ANSI
 				      | DMGL_GNU_V3 | DMGL_PARAMS));
-      if (str != NULL)
+      if (str != nullptr)
 	{
 	  alc = str;
 	  function = str;
@@ -1759,7 +1759,7 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
 	  if (strncmp (function, bt_stop[i], len) == 0
 	      && (function[len] == '\0' || function[len] == '('))
 	    {
-	      if (alc != NULL)
+	      if (alc != nullptr)
 		free (alc);
 	      /* Returning a non-zero value stops the backtrace.  */
 	      return 1;
@@ -1781,7 +1781,7 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
   frame_obj->set_integer ("lineno", lineno);
   closure->m_frames_arr->append (std::move (frame_obj));
 
-  if (alc != NULL)
+  if (alc != nullptr)
     free (alc);
 
   return 0;

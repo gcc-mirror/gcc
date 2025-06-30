@@ -153,7 +153,7 @@ suppress_warning_at (location_t loc, opt_code opt /* = all_warnings */,
 
   const nowarn_spec_t optspec (supp ? opt : opt_code ());
 
-  if (nowarn_spec_t *pspec = nowarn_map ? nowarn_map->get (loc) : NULL)
+  if (nowarn_spec_t *pspec = nowarn_map ? nowarn_map->get (loc) : nullptr)
     {
       if (supp)
 	{
@@ -210,7 +210,7 @@ copy_warning (location_t to, location_t from)
 
   nowarn_spec_t *from_spec;
   if (RESERVED_LOCATION_P (from))
-    from_spec = NULL;
+    from_spec = nullptr;
   else
     from_spec = nowarn_map->get (from);
   if (RESERVED_LOCATION_P (to))

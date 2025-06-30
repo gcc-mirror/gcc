@@ -67,7 +67,7 @@ diagnostic_event::meaning::dump_to_pp (pretty_printer *pp) const
   pp_character (pp, '}');
 }
 
-/* Get a string (or NULL) for V suitable for use within a SARIF
+/* Get a string (or nullptr) for V suitable for use within a SARIF
    threadFlowLocation "kinds" property (SARIF v2.1.0 section 3.38.8).  */
 
 const char *
@@ -98,7 +98,7 @@ diagnostic_event::meaning::maybe_get_verb_str (enum verb v)
     }
 }
 
-/* Get a string (or NULL) for N suitable for use within a SARIF
+/* Get a string (or nullptr) for N suitable for use within a SARIF
    threadFlowLocation "kinds" property (SARIF v2.1.0 section 3.38.8).  */
 
 const char *
@@ -125,7 +125,7 @@ diagnostic_event::meaning::maybe_get_noun_str (enum noun n)
     }
 }
 
-/* Get a string (or NULL) for P suitable for use within a SARIF
+/* Get a string (or nullptr) for P suitable for use within a SARIF
    threadFlowLocation "kinds" property (SARIF v2.1.0 section 3.38.8).  */
 
 const char *

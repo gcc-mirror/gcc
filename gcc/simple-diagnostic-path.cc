@@ -194,7 +194,7 @@ test_intraprocedural_path (pretty_printer *event_pp)
 {
   tree_logical_location_manager mgr;
   tree fntype_void_void
-    = build_function_type_array (void_type_node, 0, NULL);
+    = build_function_type_array (void_type_node, 0, nullptr);
   tree fndecl_foo = build_fn_decl ("foo", fntype_void_void);
 
   simple_diagnostic_path path (mgr, event_pp);

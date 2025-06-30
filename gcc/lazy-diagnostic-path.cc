@@ -98,7 +98,7 @@ public:
   std::unique_ptr<diagnostic_path> make_inner_path () const final override
   {
     tree fntype_void_void
-      = build_function_type_array (void_type_node, 0, NULL);
+      = build_function_type_array (void_type_node, 0, nullptr);
     tree fndecl_foo = build_fn_decl ("foo", fntype_void_void);
     auto path
       = std::make_unique<simple_diagnostic_path> (m_logical_loc_mgr,
