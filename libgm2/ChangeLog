@@ -1,3 +1,10 @@
+2025-06-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117203
+	* libm2iso/Makefile.am (M2DEFS): Add IOChanUtils.def.
+	(M2MODS): Add IOChanUtils.mod.
+	* libm2iso/Makefile.in: Regenerate.
+
 2025-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/119650

@@ -1,3 +1,17 @@
+2025-06-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117203
+	* gm2-libs-log/FileSystem.def (GetFileName): New
+	procedure function.
+	(WriteString): New procedure.
+	* gm2-libs-log/FileSystem.mod (GetFileName): New
+	procedure function.
+	(WriteString): New procedure.
+	* gm2-libs/SFIO.def (GetFileName): New procedure function.
+	* gm2-libs/SFIO.mod (GetFileName): New procedure function.
+	* gm2-libs-iso/IOChanUtils.def: New file.
+	* gm2-libs-iso/IOChanUtils.mod: New file.
+
 2025-06-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/120731

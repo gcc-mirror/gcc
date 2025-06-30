@@ -1,3 +1,71 @@
+2025-06-29  Robert Dubner  <rdubner@symas.com>
+
+	* Make-lang.in: Incorporate gcobol.clean.
+	* except.cc (cbl_enabled_exceptions_t::dump): Update debug message.
+	* genapi.cc (gg_attribute_bit_get): Formatting.
+	(file_static_variable): Formatting.
+	(trace1_init): Formatting.
+	(build_main_that_calls_something): Normalize function_decl use.
+	(parser_call_target): Likewise.
+	(set_call_convention): Likewise.
+	(parser_call_target_convention): Likewise.
+	(parser_call_targets_dump): Likewise.
+	(function_handle_from_name): Likewise.
+	(function_pointer_from_name): Likewise.
+	(parser_initialize_programs): Likewise.
+	(parser_statement_begin): Formatting.
+	(parser_leave_file): Use function_decl FIFO.
+	(enter_program_common): Normalize function_decl use.
+	(parser_enter_program): Normalize function_decl use.
+	(tree_type_from_field_type): Normalize function_decl use.
+	(is_valuable): Comment.
+	(pe_stuff): Change name to program_end_stuff.
+	(program_end_stuff): Likewise.
+	(parser_exit): Likewise.
+	(parser_division): Normalize function_decl use.
+	(create_and_call): Normalize function_decl use.
+	(parser_call): Normalize function_decl use.
+	(parser_set_pointers): Normalize function_decl use.
+	(parser_program_hierarchy): Normalize function_decl use.
+	(psa_FldLiteralA): Defeat attempt to re-use literals. (Fails on some aarch64).
+	(parser_symbol_add): Error message formatting.
+	* genapi.h: Formatting.
+	* gengen.cc (struct cbl_translation_unit_t): Add function_decl FIFO.
+	(show_type): Rename to gg_show_type.
+	(gg_show_type): Correct an error message.
+	(gg_assign): Formatting; change error handling.
+	(gg_modify_function_type): Normalize function_decl use.
+	(gg_define_function_with_no_parameters): Fold into gg_defint_function().
+	(function_decl_key): Normalize function_decl use.
+	(gg_peek_fn_decl): Normalize function_decl use.
+	(gg_build_fn_decl): Normalize function_decl use.
+	(gg_define_function): Normalize function_decl use.
+	(gg_tack_on_function_parameters): Remove.
+	(gg_finalize_function): Normalize function_decl use.
+	(gg_leaving_the_source_code_file): Normalize function_decl use.
+	(gg_call_expr_list): Normalize function_decl use.
+	(gg_trans_unit_var_decl): Normalize function_decl use.
+	(gg_insert_into_assemblerf): New function; formatting.
+	* gengen.h (struct gg_function_t): Eliminate "is_truly_nested" flag.
+	(gg_assign): Incorporate return value.
+	(gg_define_function): Normalize function_decl use.
+	(gg_define_function_with_no_parameters): Eliminate.
+	(gg_build_fn_decl): Normalize function_decl use.
+	(gg_peek_fn_decl): Normalize function_decl use.
+	(gg_modify_function_type): Normalize function_decl use.
+	(gg_call_expr_list): Normalize function_decl use.
+	(gg_get_function_decl): Normalize function_decl use.
+	(location_from_lineno): Prefix with "extern".
+	(gg_open): Likewise.
+	(gg_close): Likewise.
+	(gg_get_indirect_reference): Likewise.
+	(gg_insert_into_assembler): Likewise.
+	(gg_insert_into_assemblerf): Likewise.
+	(gg_show_type): New declaration.
+	(gg_leaving_the_source_code_file): New declaration.
+	* parse.y: Format debugging message.
+	* parse_ante.h: Normalize function_decl use.
+
 2025-06-20  James K. Lowden  <jklowden@cobolworx.com>
 
 	PR cobol/120621

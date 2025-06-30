@@ -1,3 +1,7 @@
+2025-06-29  Filip Kastl  <fkastl@suse.cz>
+
+	* mklog.py: In 'main()', specify variable 'root' as global.
+
 2025-06-26  Alex Coplan  <alex.coplan@arm.com>
 
 	* mklog.py (main): New.

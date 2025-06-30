@@ -1,3 +1,15 @@
+2025-06-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117203
+	* gm2/isolib/run/pass/testdelete2.mod: New test.
+	* gm2/pimlib/logitech/run/pass/testdelete2.mod: New test.
+	* gm2/pimlib/run/pass/testdelete.mod: New test.
+
+2025-06-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/shrink_wrap_separate_check_lea.c: Scan
+	"lea(l|q)", instead of "leaq".
+
 2025-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/concat6.adb: New test.
