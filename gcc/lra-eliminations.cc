@@ -302,9 +302,12 @@ move_plus_up (rtx x)
 				 subreg_lowpart_offset (x_mode,
 							subreg_reg_mode));
       if (cst && CONSTANT_P (cst))
-	return gen_rtx_PLUS (x_mode, lowpart_subreg (x_mode,
-						     XEXP (subreg_reg, 0),
-						     subreg_reg_mode), cst);
+	{
+	  rtx lowpart = lowpart_subreg (x_mode, XEXP (subreg_reg, 0),
+					subreg_reg_mode);
+	  if (lowpart)
+	    return gen_rtx_PLUS (x_mode, lowpart, cst);
+	}
     }
   return x;
 }
