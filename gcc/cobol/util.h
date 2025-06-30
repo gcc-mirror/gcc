@@ -47,8 +47,9 @@ bool fisprint(int c);
 
 void cobol_set_pp_option(int opt);
 
-const char * cobol_filename_restore();
-const char * cobol_lineno_save();
+void cobol_filename_restore();
+const char * cobol_lineno( int );
+int cobol_lineno();
 
 unsigned long gb4( size_t input );
 

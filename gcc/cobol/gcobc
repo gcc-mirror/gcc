@@ -35,6 +35,10 @@
 ##    output set the mode variable.  Everything else is appended to the
 ##    opts variable.
 ##
+##  - -fPIC is added to the command line if $mode is "-shared".  That
+##    option applies only to "certain machines", per the gcc info
+##    manual. For this script to be portable across machines, -fPIC
+##    would have to be set more judiciously.
 
 if [ "$COBCPY" ]
 then
@@ -478,12 +482,13 @@ do
 
         *) if [ -z "$output_name" ]  # first non-option argument is source file name
            then
-               output_name=$(basename ${opt%.*})
+               output_name=$(basename "${opt%.*}")
                case $mode in
                    -c) output_name="$output_name".o
                        ;;
                    -shared)
                        output_name="$output_name".so
+                       opts="$opts -fPIC"
                        ;;
                esac
                opts="$opts -o $output_name"

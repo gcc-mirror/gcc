@@ -373,11 +373,12 @@ class enter_leave_t {
  public:
   enter_leave_t() : entering(NULL), leaving(NULL), filename(NULL) {}
   enter_leave_t(  parser_enter_file_f *entering, const char *filename )
-    : entering(entering), leaving(NULL), filename(filename) {}
+    : entering(entering), leaving(NULL), filename(filename)
+  {}
   explicit enter_leave_t(parser_leave_file_f *leaving)
     : entering(NULL), leaving(leaving), filename(NULL) {}
 
-  void notify( unsigned int newlines = 0 ) {
+  void notify() {
     if( entering ) {
       cobol_filename(filename, 0);
       if( yy_flex_debug ) dbgmsg("starting line %4d of %s",
@@ -386,10 +387,9 @@ class enter_leave_t {
       gcc_assert(leaving == NULL);
     }
     if( leaving ) {
-      auto name = cobol_filename_restore();
-      yylineno += newlines;
+      cobol_filename_restore();
       if( yy_flex_debug ) dbgmsg("resuming line %4d of %s",
-                                 yylineno, name? name : "<none>");
+                                 yylineno, cobol_filename());
       leaving();
       gcc_assert(entering == NULL);
     }
@@ -398,22 +398,17 @@ class enter_leave_t {
 
 static class input_file_status_t {
   std::queue <enter_leave_t> inputs;
-  unsigned int trailing_newlines = 0;
  public:
   void enter(const char *filename) {
     inputs.push( enter_leave_t(parser_enter_file, filename) );
   }
   void leave() {
-    // Add the number of newlines following the POP to yylineno when it's restored. 
-    trailing_newlines = std::count(yytext, yytext + yyleng, '\n');
-    if( trailing_newlines && yy_flex_debug )
-      dbgmsg("adding %u lines after POP", trailing_newlines);
     inputs.push( enter_leave_t(parser_leave_file) );
   }
   void notify() {
     while( ! inputs.empty() ) {
       auto enter_leave = inputs.front();
-      enter_leave.notify(trailing_newlines);
+      enter_leave.notify();
       inputs.pop();
     }
   }
@@ -421,25 +416,59 @@ static class input_file_status_t {
 
 void input_file_status_notify() { input_file_status.notify(); }
 
-void cdf_location_set(YYLTYPE loc);
+/*
+ * parse.y and cdf.y each define a 4-integer struct to hold a token's location. 
+ * parse.y uses   YYLTYPE  yylloc;
+ * cdf.y   uses YDFLLTYPE ydflloc;
+ * 
+ * The structs have identical definitions with different types and of course
+ * names.  We define "conversion" between them for convenience. 
+ * 
+ * Each parser expects its location value to be updated whenever it calls
+ * yylex().  Therefore, here in the lexer we set both locations as each token
+ * is scanned, so that both parsers see the same location.
+ */
+static YDFLTYPE
+ydfltype_of( const YYLTYPE& loc ) {
+  YDFLTYPE output { 
+    loc.first_line,   loc.first_column,
+    loc.last_line,    loc.last_column };
+  return output;
+}
 
+/*
+ * After the input filename and yylineno are set, update the location of the
+ * scanned token.
+ */
 static void
-update_location() {
+update_location( const YYLTYPE *ploc = nullptr ) {
   YYLTYPE loc = {
     yylloc.last_line, yylloc.last_column,
     yylineno,         yylloc.last_column + yyleng
   };
+  if( ploc ) loc = *ploc;
 
-  auto nline = std::count(yytext, yytext + yyleng, '\n');
-  if( nline ) {
-    const char *p = static_cast<char*>(memrchr(yytext, '\n', yyleng));
+  const char *p = static_cast<char*>(memrchr(yytext, '\n', yyleng));
+  if( p ) {
     loc.last_column = (yytext + yyleng) - p;
   }
 
   yylloc = loc;
-  cdf_location_set(loc);
-  location_dump(__func__, __LINE__, "yylloc", yylloc);
+  ydflloc = ydfltype_of(yylloc);
+
+  dbgmsg("  SC: %s location (%d,%d) to (%d,%d)",
+         start_condition_is(),
+         yylloc.first_line, yylloc.first_column,
+         yylloc.last_line,  yylloc.last_column);
 }
+
+static void
+reset_location() {
+  static const YYLTYPE loc { yylineno, 1, yylineno, 1 };
+  update_location(&loc);
+}
+
+#define YY_USER_ACTION update_location();
 
 static void
 trim_location( int nkeep) {
@@ -485,7 +514,8 @@ update_location_col( const char str[], int correction = 0) {
 
 #define YY_USER_INIT do {			\
     static YYLTYPE ones = {1,1, 1,1};		\
-    yylloc = ones;				\
+    yylloc = ones;                              \
+    ydflloc = ydfltype_of(yylloc);              \
   } while(0)
 
 /*
@@ -494,14 +524,10 @@ update_location_col( const char str[], int correction = 0) {
  * updates neither yylval nor yylloc.  That job is left to the actions.
  *
  * The parser relies on yylex to set yylval and yylloc each time it is
- * called. It apparently maintains a separate copy for each term, and uses
+ * called. It maintains a separate copy for each term, and uses
  * YYLLOC_DEFAULT() to update the location of nonterminals.
  */
 #define YY_DECL int lexer(void)
-
-#define YY_USER_ACTION							\
-  update_location();							\
-  if( yy_flex_debug ) dbgmsg("SC: %s", start_condition_is() );
 
 # define YY_INPUT(buf, result, max_size)                        \
 {                                                               \
@@ -600,6 +626,16 @@ binary_integer_usage( const char name[]) {
   return p->second.token;
 }
       
+static void
+verify_ws( const YYLTYPE& loc, const char input[], char ch ) {
+  if( ! fisspace(ch) ) {
+    if( ! (dialect_mf() || dialect_gnu()) ) {
+      dialect_error(loc, "separator space required in %qs", input);
+    }
+  }
+}
+#define verify_ws(C) verify_ws(yylloc, yytext, C)
+
 int
 binary_integer_usage_of( const char name[] ) {
   cbl_name_t uname = {};
@@ -812,35 +848,6 @@ tmpstring_append( int len ) {
 }
 
 #define pop_return yy_pop_state(); return
-
-static bool
-wait_for_the_child(void) {
-  pid_t pid;
-  int status;
-
-  if( (pid = wait(&status)) == -1 ) {
-    yywarn("internal error: no pending child CDF parser process");
-    return false;
-  }
-
-  if( WIFSIGNALED(status) ) {
-    yywarn( "process %ld terminated by %s", 
-	    static_cast<long>(pid), strsignal(WTERMSIG(status)) );
-    return false;
-  }
-  if( WIFEXITED(status) ) {
-    if( WEXITSTATUS(status) != 0 ) {
-      yywarn("process %ld exited with status %d",
-             static_cast<long>(pid), status);
-      return false;
-    }
-  }
-  if( yy_flex_debug ) {
-    yywarn("process %ld exited with status %d",
-           static_cast<long>(pid), status);
-  }
-  return true;
-}
 
 static bool is_not = false;
 

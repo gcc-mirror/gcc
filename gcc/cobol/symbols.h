@@ -2197,7 +2197,7 @@ is_numeric( const cbl_field_t *field ) {
 bool cobol_filename( const char *name );
 const char * cobol_filename();
 
-const char * cobol_fileline_set( const char line[] );
+int cobol_fileline_set( const char line[] );
 
 char *cobol_name_mangler(const char *cobol_name);
 
