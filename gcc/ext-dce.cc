@@ -760,19 +760,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 		    y = XEXP (y, 0);
 		  else if (SUBREG_P (y) && SUBREG_BYTE (y).is_constant ())
 		    {
-		      /* We really want to know the outer code here, ie do we
-			 have (ANY_EXTEND (SUBREG ...)) as we need to know if
-			 the extension matches the SUBREG_PROMOTED state.  In
-			 that case optimizers can turn the extension into a
-			 simple copy.  Which means that bits outside the
-			 SUBREG's mode are actually live.
-
-			 We don't want to mark those bits live unnecessarily
-			 as that inhibits extension elimination in important
-			 cases such as those in Coremark.  So we need that
-			 outer code.
-
-			 But if !TRULY_NOOP_TRUNCATION_MODES_P, the mode
+		      /* If !TRULY_NOOP_TRUNCATION_MODES_P, the mode
 			 change performed by Y would normally need to be a
 			 TRUNCATE rather than a SUBREG.  It is probably the
 			 guarantee provided by SUBREG_PROMOTED_VAR_P that
@@ -782,13 +770,9 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 			 regardless of the outer code.  See PR 120050.  */
 		      if (!REG_P (SUBREG_REG (y))
 			  || (SUBREG_PROMOTED_VAR_P (y)
-			      && ((GET_CODE (SET_SRC (x)) == SIGN_EXTEND
-				   && SUBREG_PROMOTED_SIGNED_P (y))
-				  || (GET_CODE (SET_SRC (x)) == ZERO_EXTEND
-				      && SUBREG_PROMOTED_UNSIGNED_P (y))
-				  || !TRULY_NOOP_TRUNCATION_MODES_P (
-					GET_MODE (y),
-					GET_MODE (SUBREG_REG (y))))))
+			      && (!TRULY_NOOP_TRUNCATION_MODES_P (
+				    GET_MODE (y),
+				    GET_MODE (SUBREG_REG (y))))))
 			break;
 
 		      bit = subreg_lsb (y).to_constant ();
@@ -992,6 +976,81 @@ maybe_clear_subreg_promoted_p (void)
     }
 }
 
+/* Walk the IL and build the transitive closure of all the REGs tied
+   together by copies where either the source or destination is
+   marked in CHANGED_PSEUDOS.  */
+
+static void
+expand_changed_pseudos (void)
+{
+  /* Build a vector of registers related by a copy.  This is meant to
+     speed up the next step by avoiding full IL walks.  */
+  struct copy_pair { rtx first; rtx second; };
+  auto_vec<copy_pair> pairs;
+  for (rtx_insn *insn = get_insns(); insn; insn = NEXT_INSN (insn))
+    {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+
+      rtx pat = PATTERN (insn);
+
+      /* Simple copies to a REG from another REG or SUBREG of a REG.  */
+      if (GET_CODE (pat) == SET
+	  && REG_P (SET_DEST (pat))
+	  && (REG_P (SET_SRC (pat))
+	      || (SUBREG_P (SET_SRC (pat))
+		  && REG_P (SUBREG_REG (SET_SRC (pat))))))
+	{
+	  rtx src = (REG_P (SET_SRC (pat))
+		     ? SET_SRC (pat)
+		     : SUBREG_REG (SET_SRC (pat)));
+	  pairs.safe_push ({ SET_DEST (pat), src });
+	}
+
+      /* Simple copies to a REG from another REG or SUBREG of a REG
+	 held inside a PARALLEL.  */
+      if (GET_CODE (pat) == PARALLEL)
+	{
+	  for (int i = XVECLEN (pat, 0) - 1; i >= 0; i--)
+	    {
+	      rtx elem = XVECEXP (pat, 0, i);
+
+	      if (GET_CODE (elem) == SET
+		  && REG_P (SET_DEST (elem))
+		  && (REG_P (SET_SRC (elem))
+		      || (SUBREG_P (SET_SRC (elem))
+			  && REG_P (SUBREG_REG (SET_SRC (elem))))))
+		{
+		  rtx src = (REG_P (SET_SRC (elem))
+			     ? SET_SRC (elem)
+			     : SUBREG_REG (SET_SRC (elem)));
+		  pairs.safe_push ({ SET_DEST (elem), src });
+		}
+	    }
+	  continue;
+	}
+    }
+
+  /* Now we have a vector with copy pairs.  Iterate over that list
+     updating CHANGED_PSEUDOS as we go.  Eliminate copies from the
+     list as we go as they don't need further processing.  */
+  bool changed = true;
+  while (changed)
+    {
+      changed = false;
+      unsigned int i;
+      copy_pair *p;
+      FOR_EACH_VEC_ELT (pairs, i, p)
+	{
+	  if (bitmap_bit_p (changed_pseudos, REGNO (p->second))
+	      && bitmap_set_bit (changed_pseudos, REGNO (p->first)))
+	    {
+	      pairs.unordered_remove (i);
+	      changed = true;
+	    }
+	}
+    }
+}
 
 /* We optimize away sign/zero extensions in this pass and replace
    them with SUBREGs indicating certain bits are don't cares.
@@ -1004,6 +1063,19 @@ maybe_clear_subreg_promoted_p (void)
 static void
 reset_subreg_promoted_p (void)
 {
+  /* This pass eliminates zero/sign extensions on pseudo regs found
+     in CHANGED_PSEUDOS.  Elimination of those extensions changes if
+     the pseudos are known to hold values extended to wider modes
+     via SUBREG_PROMOTED_VAR.  So we wipe the SUBREG_PROMOTED_VAR
+     state on all affected pseudos.
+
+     But that is insufficient.  We might have a copy from one REG
+     to another (possibly with the source register wrapped with a
+     SUBREG).  We need to wipe SUBREG_PROMOTED_VAR on the transitive
+     closure of the original CHANGED_PSEUDOS and registers they're
+     connected to via copies.  So expand the set.  */
+  expand_changed_pseudos ();
+    
   /* If we removed an extension, that changed the promoted state
      of the destination of that extension.  Thus we need to go
      find any SUBREGs that reference that pseudo and adjust their
