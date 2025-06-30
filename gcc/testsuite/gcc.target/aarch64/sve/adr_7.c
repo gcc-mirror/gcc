@@ -16,8 +16,8 @@ void f(int *p1, int *p2, unsigned long step, unsigned long end, svbool_t pg) {
 // (ie, theres only one scalar add, rather than 3, and the loads and stores use the
 // more complex addressing modes)
 
-/* { dg-final { scan-assembler-not {\tld1w\tz[0-9]+\.d, p[0-9]+/z\[x[0-9]+\.d\]} } } */
-/* { dg-final { scan-assembler-not {\tst1w\tz[0-9]+\.d, p[0-9]+/z\[x[0-9]+\.d\]} } } */
+/* { dg-final { scan-assembler-not {\tld1w\tz[0-9]+\.s, p[0-9]+/z, \[x[0-9]+\]} } } */
+/* { dg-final { scan-assembler-not {\tst1w\tz[0-9]+\.s, p[0-9]+, \[x[0-9]+\]} } } */
 
 /* { dg-final { scan-assembler-times {\tadd\tx[0-9]+, x[0-9]+, x[0-9]+} 1 } } */
 /* { dg-final { scan-assembler-times {\tld1w\tz[0-9]+\.s, p[0-9]+/z, \[x[0-9]+, x[0-9]+, lsl 2\]} 1 } } */
