@@ -600,7 +600,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	      if (has_feature (FEATURE_AVX512F))
 		{
 		  /* Assume Diamond Rapids.  */
-		  if (has_feature (FEATURE_AMX_TRANSPOSE))
+		  if (has_feature (FEATURE_AMX_FP8))
 		    cpu = "diamondrapids";
 		  /* Assume Granite Rapids D.  */
 		  else if (has_feature (FEATURE_AMX_COMPLEX))
