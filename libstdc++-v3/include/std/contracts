@@ -101,7 +101,7 @@ namespace contracts
   // From P3290
     unspecified = 0,
     predicate_false = 1,
-    evaluation_exception = 3
+    evaluation_exception = 2
     /* to be extended with implementation−defined values and by future extensions
 	 Implementation−defined values should have a minimum value of 1000. */
   };
@@ -109,9 +109,9 @@ namespace contracts
   using __vendor_ext = void;
 
   class contract_violation {
-    int version = 0;
-    __vendor_ext* _M_ext = nullptr;
-    const char* _M_comment = nullptr;
+    int _M_version;
+    __vendor_ext* _M_ext;
+    const char* _M_comment;
     detection_mode _M_detection_mode;
     assertion_kind _M_assertion_kind;
     std::source_location _M_source_location;

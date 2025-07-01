@@ -18,8 +18,8 @@
 // { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe" }
 // { dg-do run { target c++2a } }
 
+#include <contracts>
 #include <testsuite_hooks.h>
-#include "../../../include/std/contracts"
 
 bool custom_called = false;
 

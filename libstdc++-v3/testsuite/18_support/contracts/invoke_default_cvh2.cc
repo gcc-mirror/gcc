@@ -18,11 +18,10 @@
 // { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe" }
 // { dg-do run { target c++2a } }
 
+#include <contracts>
 #include <testsuite_hooks.h>
 #include <iostream>
 #include <sstream>
-
-#include "../../../include/std/contracts"
 
 
 struct checking_buf

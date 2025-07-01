@@ -103,7 +103,9 @@ enum constract_assertion_kind {
   CAK_INVALID = 0 ,
   CAK_PRE = 1 ,
   CAK_POST = 2 ,
-  CAK_ASSERT = 3
+  CAK_ASSERT = 3,
+  CAK_MANUAL = 4,
+  CAK_CASSERT = 5,
 };
 
 /* Per P2900R11.  */
@@ -118,6 +120,7 @@ enum contract_evaluation_semantic {
 };
 
 enum constract_detection_mode {
+  CDM_UNSPECIFIED = 0,
   CDM_PREDICATE_FALSE = 1,
   CDM_EVAL_EXCEPTION = 2
 };

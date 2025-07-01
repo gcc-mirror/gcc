@@ -23,7 +23,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include "../../include/std/contracts"
+#include <contracts>
 #if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE
 # include <iostream>
 # include <cxxabi.h>
@@ -58,7 +58,7 @@ void __handle_contract_violation(const std::contracts::contract_violation &viola
        std::cerr << " manual";
        break;
      default:
-       std::cerr << " unknown: " << (int) violation.semantic();
+       std::cerr << " unknown: " << (int) violation.kind();
    }
    delimiter = ", ";
 
@@ -89,7 +89,7 @@ void __handle_contract_violation(const std::contracts::contract_violation &viola
       std::cerr << " unspecified";
       break;
     default:
-      std::cerr << " unknown";
+      std::cerr << " unknown: " << (int) violation.mode();
   }
   delimiter = ", ";
 
