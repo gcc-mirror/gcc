@@ -15,58 +15,44 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe" }
+// { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=ignore" }
 // { dg-do run { target c++2a } }
 
+#include <exception>
+#include <cstdlib>
 #include <testsuite_hooks.h>
+#include <cstring>
 #include <iostream>
-#include <sstream>
 
 #include "../../../include/std/contracts"
 
+struct MyException{};
 
-struct checking_buf
-  : public std::streambuf
+// Test that there is an active exception when we reach the terminate handler.
+void my_term()
 {
-  bool written = false;
-
-  checking_buf() = default;
-
-  virtual int_type
-  overflow(int_type)
-  {
-    written = true;
-    return int_type();
-  }
-
-  std::streamsize xsputn(const char* s, std::streamsize count)
-  {
-    written = true;
-    return count;
-  }
-
-};
-
-
-bool custom_called = false;
+  try { throw; }
+  catch(MyException) { std::exit(0); }
+}
 
 
 void handle_contract_violation(const std::contracts::contract_violation& v)
 {
-  custom_called = true;
+  invoke_default_contract_violation_handler(v);
+  throw MyException{};
 }
-
-
-
-
-void f(int i) pre (i>10) {};
 
 int main()
 {
-  checking_buf buf;
-  std::cerr.rdbuf(&buf);
-
-  f(0);
-  VERIFY(!buf.written);
+  std::set_terminate (my_term);
+  try {
+      std::contracts::handle_enforced_contract_violation(std::nothrow, "test comment");
+  }
+  catch(...)
+  {
+  }
+  // We should not get here
+  return 1;
 }
-
+// { dg-output "contract violation in function int main.* at .*:49: test comment.*" }
+// { dg-output "assertion_kind: manual, semantic: enforce, mode: unspecified, terminating: yes" }
