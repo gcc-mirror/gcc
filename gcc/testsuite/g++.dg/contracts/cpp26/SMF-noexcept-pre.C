@@ -5,7 +5,7 @@
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe " }
 
-#include <experimental/contract>
+#include <contracts>
 #include <exception>
 #include <cstdlib>
 
@@ -19,7 +19,7 @@ void my_term()
 }
 
 
-void handle_contract_violation(const std::experimental::contract_violation& violation)
+void handle_contract_violation(const std::contracts::contract_violation& violation)
 {
   throw MyException{};
 }
