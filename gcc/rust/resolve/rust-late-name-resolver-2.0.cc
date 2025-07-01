@@ -448,20 +448,22 @@ Late::visit_impl_type (AST::Type &type)
   block_big_self = false;
 }
 
-void
-Late::visit (AST::TypePath &type)
+template <typename P>
+static void
+resolve_type_path_like (NameResolutionContext &ctx, bool block_big_self,
+			P &type)
 {
   // should we add type path resolution in `ForeverStack` directly? Since it's
   // quite more complicated.
   // maybe we can overload `resolve_path<Namespace::Types>` to only do
   // typepath-like path resolution? that sounds good
 
-  DefaultResolver::visit (type);
-
   // prevent "impl Self {}" and similar
   if (type.get_segments ().size () == 1
-      && !type.get_segments ().front ()->is_lang_item ()
-      && type.get_segments ().front ()->is_big_self_seg () && block_big_self)
+      && !unwrap_segment_get_lang_item (type.get_segments ().front ())
+	    .has_value ()
+      && unwrap_type_segment (type.get_segments ().front ()).is_big_self_seg ()
+      && block_big_self)
     {
       rust_error_at (type.get_locus (),
 		     "%<Self%> is not valid in the self type of an impl block");
@@ -474,17 +476,17 @@ Late::visit (AST::TypePath &type)
 
   if (!resolved.has_value ())
     {
-      if (!ctx.lookup (type.get_segments ().front ()->get_node_id ()))
+      if (!ctx.lookup (unwrap_segment_node_id (type.get_segments ().front ())))
 	rust_error_at (type.get_locus (), ErrorCode::E0412,
 		       "could not resolve type path %qs",
-		       type.make_debug_string ().c_str ());
+		       unwrap_segment_error_string (type).c_str ());
       return;
     }
 
   if (resolved->is_ambiguous ())
     {
       rust_error_at (type.get_locus (), ErrorCode::E0659, "%qs is ambiguous",
-		     type.make_debug_string ().c_str ());
+		     unwrap_segment_error_string (type).c_str ());
       return;
     }
 
@@ -498,6 +500,14 @@ Late::visit (AST::TypePath &type)
 
   ctx.map_usage (Usage (type.get_node_id ()),
 		 Definition (resolved->get_node_id ()));
+}
+
+void
+Late::visit (AST::TypePath &type)
+{
+  DefaultResolver::visit (type);
+
+  resolve_type_path_like (ctx, block_big_self, type);
 }
 
 void
@@ -576,10 +586,7 @@ Late::visit (AST::StructExprStruct &s)
   visit_inner_attrs (s);
   DefaultResolver::visit (s.get_struct_name ());
 
-  auto resolved = ctx.resolve_path (s.get_struct_name (), Namespace::Types);
-
-  ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
-		 Definition (resolved->get_node_id ()));
+  resolve_type_path_like (ctx, block_big_self, s.get_struct_name ());
 }
 
 void
@@ -590,10 +597,7 @@ Late::visit (AST::StructExprStructBase &s)
   DefaultResolver::visit (s.get_struct_name ());
   visit (s.get_struct_base ());
 
-  auto resolved = ctx.resolve_path (s.get_struct_name (), Namespace::Types);
-
-  ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
-		 Definition (resolved->get_node_id ()));
+  resolve_type_path_like (ctx, block_big_self, s.get_struct_name ());
 }
 
 void
@@ -607,10 +611,7 @@ Late::visit (AST::StructExprStructFields &s)
   for (auto &field : s.get_fields ())
     visit (field);
 
-  auto resolved = ctx.resolve_path (s.get_struct_name (), Namespace::Types);
-
-  ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
-		 Definition (resolved->get_node_id ()));
+  resolve_type_path_like (ctx, block_big_self, s.get_struct_name ());
 }
 
 // needed because Late::visit (AST::GenericArg &) is non-virtual

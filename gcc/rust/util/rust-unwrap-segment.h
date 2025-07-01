@@ -119,4 +119,20 @@ unwrap_segment_get_lang_item (const std::unique_ptr<T> &ptr)
   return unwrap_segment_get_lang_item (*ptr);
 }
 
+/**
+ * Used to output a path in error messages
+ */
+
+inline static std::string
+unwrap_segment_error_string (const AST::TypePath &path)
+{
+  return path.make_debug_string ();
+}
+
+inline static std::string
+unwrap_segment_error_string (const AST::PathInExpression &path)
+{
+  return path.as_simple_path ().as_string ();
+}
+
 } // namespace Rust
