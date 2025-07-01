@@ -1,3 +1,183 @@
+2025-06-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/120242
+	PR rtl-optimization/120627
+	PR rtl-optimization/120736
+	PR rtl-optimization/120813
+	* gcc.dg/torture/pr120242.c: New test.
+	* gcc.dg/torture/pr120627.c: Likewise.
+	* gcc.dg/torture/pr120736.c: Likewise.
+	* gcc.dg/torture/pr120813.c: Likewise.
+
+2025-06-30  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR target/120714
+	* gcc.target/riscv/pr120714.c: New test.
+
+2025-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_gil_plugin.cc
+	(gil_diagnostic::get_meaning_for_state_change): Convert
+	diagnostic_event::meaning enums to enum class.
+
+2025-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/out-of-bounds-diagram-1-json.c: Deleted test.
+	* c-c++-common/diagnostic-format-json-1.c: Deleted test.
+	* c-c++-common/diagnostic-format-json-2.c: Deleted test.
+	* c-c++-common/diagnostic-format-json-3.c: Deleted test.
+	* c-c++-common/diagnostic-format-json-4.c: Deleted test.
+	* c-c++-common/diagnostic-format-json-5.c: Deleted test.
+	* c-c++-common/diagnostic-format-json-file-1.c: Deleted test.
+	* c-c++-common/diagnostic-format-json-stderr-1.c: Deleted test.
+	* c-c++-common/pr106133.c: Deleted test.
+	* g++.dg/pr90462.C: Deleted test.
+	* gcc.dg/plugin/diagnostic-test-paths-3.c: Deleted test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Remove deleted
+	test.
+	* gfortran.dg/diagnostic-format-json-1.F90: Deleted test.
+	* gfortran.dg/diagnostic-format-json-2.F90: Deleted test.
+	* gfortran.dg/diagnostic-format-json-3.F90: Deleted test.
+	* gfortran.dg/diagnostic-format-json-pr105916.F90: Deleted test.
+
+2025-06-30  Christopher Bazley  <chris.bazley@arm.com>
+
+	* gcc.target/aarch64/sve/adr_7.c: Fix regular expressions.
+
+2025-06-30  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Add asm check
+	for vssubu.vx combine.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+
+2025-06-30  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vssub-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vssub-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vssub-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vssub-run-1-u8.c: New test.
+
+2025-06-30  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_trunc-1-u16.c:
+	Update the asm check due to cost model change.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_trunc-1-u32.c:
+	Diito.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_trunc-1-u8.c:
+	Ditto.
+
+2025-06-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_single-21.c: Ignore -Oz.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-26.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-36.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-39.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-41.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-22.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-2.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-4.c: Ditto.
+
+2025-06-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/120659
+	* gcc.target/riscv/pr120659.c: New test.
+
+2025-06-30  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-pr82426.c: Pass explicit -ffp-contract=fast.
+	* gcc.target/i386/vect-pr82426-2.c: New testcase variant with
+	-ffp-contract=on.
+
+2025-06-30  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR target/119100
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f16.c: Add vfnmacc and
+	vfnmsac.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-1-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-2-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-4-f64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_mulop.h (DEF_VF_MULOP_CASE_1):
+	Fix return type.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmacc-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmacc-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmacc-run-1-f64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsac-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsac-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf_vfnmsac-run-1-f64.c: New test.
+
+2025-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/120520
+	PR c/117023
+	* gcc.dg/nonnull-9.c: Tweak for 3 argument nonnull_if_nonzero
+	attribute support, add further tests.
+	* gcc.dg/nonnull-12.c: New test.
+	* gcc.dg/nonnull-13.c: New test.
+	* gcc.dg/nonnull-14.c: New test.
+	* c-c++-common/ubsan/nonnull-8.c: New test.
+	* c-c++-common/ubsan/nonnull-9.c: New test.
+
+2025-06-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120840
+	* gcc.target/i386/no-callee-saved-1.c: Updated.
+	* gcc.target/i386/no-callee-saved-2.c: Likewise.
+	* gcc.target/i386/no-callee-saved-7.c: Likewise.
+	* gcc.target/i386/no-callee-saved-8.c: Likewise.
+	* gcc.target/i386/no-callee-saved-9.c: Likewise.
+	* gcc.target/i386/no-callee-saved-10.c: Likewise.
+	* gcc.target/i386/no-callee-saved-18.c: Likewise.
+	* gcc.target/i386/no-callee-saved-19a.c: Likewise.
+	* gcc.target/i386/no-callee-saved-19c.c: Likewise.
+	* gcc.target/i386/no-callee-saved-19d.c: Likewise.
+	* gcc.target/i386/pr119784a.c: Likewise.
+	* gcc.target/i386/preserve-none-6.c: Likewise.
+	* gcc.target/i386/preserve-none-7.c: Likewise.
+	* gcc.target/i386/preserve-none-12.c: Likewise.
+	* gcc.target/i386/preserve-none-13.c: Likewise.
+	* gcc.target/i386/preserve-none-14.c: Likewise.
+	* gcc.target/i386/preserve-none-15.c: Likewise.
+	* gcc.target/i386/preserve-none-23.c: Likewise.
+	* gcc.target/i386/pr120840-1a.c: New test.
+	* gcc.target/i386/pr120840-1b.c: Likewise.
+	* gcc.target/i386/pr120840-1c.c: Likewise.
+	* gcc.target/i386/pr120840-1d.c: Likewise.
+
 2025-06-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117203

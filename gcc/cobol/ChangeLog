@@ -1,3 +1,51 @@
+2025-06-30  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/120772
+	PR cobol/120779
+	PR cobol/120790
+	PR cobol/120791
+	PR cobol/120794
+	* gcobc: Supply -fPIC for shared objects.
+	* genapi.cc (linemap_add): Delete empty macro.
+	(parser_enter_file): Do not call linemap_add.
+	(parser_leave_file): Same.
+	* gengen.cc (location_from_lineno): Remove function.
+	* lexio.cc (parse_replacing_term): Allow empty term.
+	(cdftext::process_file): Always append to output.
+	(cdftext::segment_line): Output #line directives.
+	* lexio.h (struct span_t): Count lines in span.
+	* parse.y: Revamp REPOSITORY, and minor syntax extensions.
+	* parse_ante.h (input_file_status_notify): Update linemap filename before location.
+	(intrinsic_token_of): Declare.
+	(parser_move_carefully): Support MOVE pointer.
+	* parse_util.h (intrinsic_token_of): New function.
+	* scan.l: New EOF logic, accept NOT=, own yylloc and yylineno.
+	* scan_ante.h (class enter_leave_t): Do not store newline count.
+	(cdf_location_set): Remove declaration.
+	(ydfltype_of): New function.
+	(update_location): Accept location parameter.
+	(reset_location): New function.
+	(YY_USER_ACTION): Use update_location().
+	(YY_USER_INIT): Update CDF location.
+	(verify_ws): New function.
+	(wait_for_the_child): Removed.
+	* symbols.h (cobol_fileline_set): return line number.
+	* util.cc (valid_move): Use range-based for loop.
+	(struct input_file_t): Remove line_map pointer.
+	(class unique_stack): New peek() member function.
+	(cobol_lineno_save): Rename to overload cobol_lineno().
+	(cobol_lineno): Replaces cobol_lineno_save().
+	(cobol_filename): Return void.
+	(location_from_lineno): New function used by genapi.cc.
+	(cdf_location_set): Remove.
+	(matched_length): No change.
+	(cobol_fileline_set): Return line number.
+	(fisspace): Remove extra semicolon.
+	(fisprint): Same.
+	* util.h (cobol_filename_restore): Return void.
+	(cobol_lineno_save): Remove declaration.
+	(cobol_lineno): Declare.
+
 2025-06-29  Robert Dubner  <rdubner@symas.com>
 
 	* Make-lang.in: Incorporate gcobol.clean.

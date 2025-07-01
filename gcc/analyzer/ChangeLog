@@ -1,3 +1,91 @@
+2025-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc: Use nullptr rather than NULL where
+	appropriate.
+	* analyzer-language.cc: Likewise.
+	* analyzer-language.h: Likewise.
+	* analyzer-logging.h: Likewise.
+	* analyzer-pass.cc: Likewise.
+	* analyzer.cc: Likewise.
+	* bounds-checking.cc: Likewise.
+	* call-details.cc: Likewise.
+	* call-string.cc: Likewise.
+	* call-string.h: Likewise.
+	* call-summary.cc: Likewise.
+	* checker-event.cc: Likewise.
+	* common.h: Likewise.
+	* constraint-manager.cc: Likewise.
+	* constraint-manager.h: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* engine.cc: Likewise.
+	* exploded-graph.h: Likewise.
+	* function-set.cc: Likewise
+	* infinite-recursion.cc: Likewise
+	* inlining-iterator.h: Likewise
+	* kf.cc: Likewise
+	* known-function-manager.cc: Likewise
+	* pending-diagnostic.cc: Likewise
+	* program-point.cc: Likewise
+	* program-point.h: Likewise
+	* program-state.cc: Likewise
+	* program-state.h: Likewise
+	* record-layout.cc: Likewise
+	* region-model-asm.cc: Likewise
+	* region-model-manager.cc: Likewise
+	* region-model-manager.h: Likewise
+	* region-model-reachability.cc: Likewise
+	* region-model.cc: Likewise
+	* region-model.h: Likewise
+	* region.cc: Likewise
+	* region.h: Likewise
+	* sm-fd.cc: Likewise
+	* sm-malloc.cc: Likewise
+	* sm-pattern-test.cc: Likewise
+	* sm-signal.cc: Likewise
+	* sm-taint.cc: Likewise
+	* sm.cc: Likewise
+	* sm.h: Likewise
+	* state-purge.cc: Likewise
+	* state-purge.h: Likewise
+	* store.cc: Likewise
+	* store.h: Likewise
+	* supergraph.cc: Likewise
+	* supergraph.h: Likewise
+	* svalue.cc: Likewise
+	* svalue.h: Likewise
+	* varargs.cc: Likewise
+
+2025-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.cc (function_entry_event::get_meaning): Convert
+	diagnostic_event::meaning enums to enum class.
+	(cfg_edge_event::get_meaning): Likewise.
+	(call_event::get_meaning): Likewise.
+	(return_event::get_meaning): Likewise.
+	(start_consolidated_cfg_edges_event::get_meaning): Likewise.
+	(inlined_call_event::get_meaning): Likewise.
+	(warning_event::get_meaning): Likewise.
+	* sm-fd.cc (fd_diagnostic::get_meaning_for_state_change):
+	Likewise.
+	* sm-file.cc (file_diagnostic::get_meaning_for_state_change):
+	Likewise.
+	* sm-malloc.cc (malloc_diagnostic::get_meaning_for_state_change):
+	Likewise.
+	* sm-sensitive.cc
+	(exposure_through_output_file::get_meaning_for_state_change):
+	Likewise.
+	* sm-taint.cc (taint_diagnostic::get_meaning_for_state_change):
+	Likewise.
+	* varargs.cc
+	(va_list_sm_diagnostic::get_meaning_for_state_change): Likewise.
+
+2025-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/120520
+	PR c/117023
+	* sm-malloc.cc (malloc_state_machine::on_stmt): Handle 3 argument
+	nonnull_if_nonzero attribute.
+
 2025-06-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc

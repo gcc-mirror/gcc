@@ -1,3 +1,20 @@
+2025-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/120520
+	PR c/117023
+	* c-attribs.cc (c_common_gnu_attributes): Allow 2 or 3 arguments for
+	nonnull_if_nonzero attribute instead of only 2.
+	(handle_nonnull_if_nonzero_attribute): Handle 3 argument
+	nonnull_if_nonzero.
+	* c-common.cc (struct nonnull_arg_ctx): Rename other member to other1,
+	add other2 member.
+	(check_function_nonnull): Clear a if nonnull attribute has an
+	argument.  Adjust for nonnull_arg_ctx changes.  Handle 3 argument
+	nonnull_if_nonzero attribute.
+	(check_nonnull_arg): Adjust for nonnull_arg_ctx changes, emit different
+	diagnostics for 3 argument nonnull_if_nonzero attributes.
+	(check_function_arguments): Adjust ctx var initialization.
+
 2025-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/120777

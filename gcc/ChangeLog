@@ -1,3 +1,202 @@
+2025-06-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/120242
+	PR rtl-optimization/120627
+	PR rtl-optimization/120736
+	PR rtl-optimization/120813
+	* ext-dce.cc (ext_dce_process_uses): Remove some cases where we
+	unnecessarily expanded live sets for promoted subregs.
+	(expand_changed_pseudos): New function.
+	(reset_subreg_promoted_p): Use it.
+
+2025-06-30  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR target/120714
+	* config/riscv/riscv.cc (riscv_allocate_and_probe_stack_space):
+	Fix SP-addresses in REG_CFA_DEF_CFA notes for stack-clash case.
+
+2025-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-color.cc: Use nullptr rather than NULL.
+	* diagnostic-format-sarif.cc: Likewise.
+	* diagnostic-format-text.cc: Likewise.
+	* diagnostic-macro-unwinding.cc: Likewise.
+	* diagnostic-path-output.cc: Likewise.
+	* diagnostic-path.cc: Likewise.
+	* diagnostic-show-locus.cc: Likewise.
+	* diagnostic-spec.cc: Likewise.
+	* diagnostic.cc: Likewise.
+	* lazy-diagnostic-path.cc: Likewise.
+	* simple-diagnostic-path.cc: Likewise.
+	* tree-diagnostic-client-data-hooks.cc: Likewise.
+
+2025-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc
+	(sarif_builder::maybe_make_kinds_array): Convert
+	diagnostic_event::meaning enums to enum class.
+	* diagnostic-path-output.cc (path_label::get_text): Likewise.
+	* diagnostic-path.cc
+	(diagnostic_event::meaning::maybe_get_verb_str): Likewise.
+	(diagnostic_event::meaning::maybe_get_noun_str): Likewise.
+	(diagnostic_event::meaning::maybe_get_property_str): Likewise.
+	* diagnostic-path.h (diagnostic_event::verb): Likewise.
+	(diagnostic_event::noun): Likewise.
+	(diagnostic_event::property): Likewise.
+	(diagnostic_event::meaning): Likewise.
+
+2025-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Drop diagnostic-format-json.o.
+	* common.opt (fdiagnostics-format=): Drop
+	"json|json-stderr|json-file".
+	(diagnostics_output_format): Drop values "json", "json-stderr",
+	and "json-file".
+	* diagnostic-format-json.cc: Delete file.
+	* diagnostic-format.h
+	(diagnostic_output_format_init_json_stderr): Delete.
+	(diagnostic_output_format_init_json_file): Delete.
+	* diagnostic.cc (diagnostic_output_format_init): Delete cases for
+	DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR and
+	DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE.
+	* diagnostic.h (DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR): Delete.
+	(DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE): Delete.
+	* doc/invoke.texi: Remove references to json output format.
+	* doc/ux.texi: Likewise.
+	* selftest-run-tests.cc (selftest::run_tests): Drop call to
+	deleted selftest::diagnostic_format_json_cc_tests.
+	* selftest.h (selftest::diagnostic_format_json_cc_tests): Delete.
+
+2025-06-30  Mark Wielaard  <mark@klomp.org>
+
+	* common.opt.urls: Regenerate.
+
+2025-06-30  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_vx_binary_vec_vec_dup): Add
+	new case US_MINUS.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Ditto.
+	* config/riscv/vector-iterators.md: Add new op us_minus.
+
+2025-06-30  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/109116
+	* config/rs6000/mma.md (unspec): Delete UNSPEC_MMA_EXTRACT.
+	(vsx_disassemble_pair): Expand into a vector register sized subreg.
+	(mma_disassemble_acc): Likewise.
+	(*vsx_disassemble_pair): Delete.
+	(*mma_disassemble_acc): Likewise.
+
+2025-06-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/sifive-7.md: Add primary vector pipeline model
+	for SiFive 7 series.
+
+2025-06-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/120659
+	* config/riscv/sifive-7.md: Add B extension, fp16 and missing
+	scalar instruction type for sifive-7 pipeline model.
+
+2025-06-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_2): Handle ternary
+	and call operators when swapping operands.
+
+2025-06-30  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR target/119100
+	* config/riscv/autovec-opt.md (*vfnmsub_<mode>,*vfnmadd_<mode>): Handle
+	both add and acc variants.
+	* config/riscv/vector.md (*pred_mul_neg_<optab><mode>_scalar_undef): New
+	pattern.
+
+2025-06-30  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-cores.def (gb10): New entry.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document the above.
+
+2025-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/120520
+	PR c/117023
+	* builtin-attrs.def (DEF_LIST_INT_INT_INT): Define it and
+	use for 1,2,3.
+	(ATTR_NONNULL_IF123_LIST): New DEF_ATTR_TREE_LIST.
+	(ATTR_NONNULL_4_IF123_LIST): Likewise.
+	* builtins.def (BUILT_IN_FWRITE): Use ATTR_NONNULL_4_IF123_LIST
+	instead of ATTR_NONNULL_LIST.
+	(BUILT_IN_FWRITE_UNLOCKED): Likewise.
+	* gimple.h (infer_nonnull_range_by_attribute): Add another optional
+	tree * argument defaulted to NULL.
+	* gimple.cc (infer_nonnull_range_by_attribute): Add OP3 argument,
+	handle 3 argument nonnull_if_nonzero attribute.
+	* builtins.cc (validate_arglist): Handle 3 argument nonnull_if_nonzero
+	attribute.
+	* tree-ssa-ccp.cc (pass_post_ipa_warn::execute): Likewise.
+	* ubsan.cc (instrument_nonnull_arg): Adjust
+	infer_nonnull_range_by_attribute caller, handle 3 argument
+	nonnull_if_nonzero attribute.
+	* gimple-range-infer.cc (gimple_infer_range::gimple_infer_range):
+	Handle 3 argument nonnull_if_nonzero attribute.
+	* doc/extend.texi (nonnull_if_nonzero): Document 3 argument version
+	of the attribute.
+
+2025-06-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/120733
+	* lra-eliminations.cc (move_plus_up): Check whether lowpart_subreg
+	returns null.
+
+2025-06-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (autofdo_source_profile::offline_external_functions):
+	Add missing newline in dump.
+	(afdo_propagate_edge): If annotated BB or edge has too small count
+	bump it up to mitigate profile imprecisions caused by vectorizer.
+	(afdo_propagate): Increase number of iteraitons and fix dump
+
+2025-06-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (struct decl_lineno): Turn to structure; add
+	location.
+	(dump_inline_stack): Update.
+	(get_inline_stack): Update.
+	(get_relative_location_for_locus): Fixup formating.
+	(function_instance::get_function_instance_by_decl): Add
+	LOCATION parameter; improve dumping.
+	(autofdo_source_profile::get_callsite_total_count): Improve dumping;
+	update.
+	(walk_block): Update.
+	(autofdo_source_profile::offline_unrealized_inlines): Update.
+	(autofdo_source_profile::get_count_info): Update.
+
+2025-06-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120840
+	* config/i386/i386-expand.cc (ix86_expand_call): Don't mark
+	hard frame pointer as clobber.
+	* config/i386/i386-options.cc (ix86_set_func_type): Use
+	TYPE_NO_CALLEE_SAVED_REGISTERS instead of
+	TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP.
+	* config/i386/i386.cc (ix86_function_ok_for_sibcall): Remove the
+	TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP check.
+	(ix86_save_reg): Merge TYPE_NO_CALLEE_SAVED_REGISTERS and
+	TYPE_PRESERVE_NONE with TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP.
+	* config/i386/i386.h (call_saved_registers_type): Remove
+	TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP.
+	* doc/extend.texi: Update no_callee_saved_registers documentation.
+
+2025-06-30  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-vsetvl.cc (bitmap_union_of_preds_with_entry):
+	Refactor.
+
+2025-06-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/pipeline-checker: New file.
+
 2025-06-28  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR debug/120849
