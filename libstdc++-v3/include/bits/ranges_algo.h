@@ -1454,7 +1454,7 @@ namespace ranges
 	  if (!std::__invoke(__comp,
 			     std::__invoke(__proj, *__dest),
 			     std::__invoke(__proj, *__first)))
-	    *++__dest = std::move(*__first);
+	    *++__dest = ranges::iter_move(__first);
 	return {++__dest, __first};
       }
 
