@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mtune=generic -mno-sse" } */
+/* { dg-options "-O2 -mtune=generic -mno-sse -fasynchronous-unwind-tables -fdwarf2-cfi-asm" } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } {^\t?\.} } } */
 
