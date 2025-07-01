@@ -58,16 +58,13 @@
 # define _VERIFY_PRINT(S, F, L, P, C) __builtin_printf(S, F, L, P, C)
 #endif
 
-#define VERIFY(fn)                                                      \
-  do                                                                    \
-  {                                                                     \
-    if (! (fn))								\
-      {									\
-	_VERIFY_PRINT("%s:%d: %s: Assertion '%s' failed.\n",		\
-		      __FILE__, __LINE__, __PRETTY_FUNCTION__, #fn);	\
-	__builtin_abort();						\
-      }									\
-  } while (false)
+#define VERIFY(...)							\
+   ((void)((__VA_ARGS__)						\
+	     ? (void)(true ? true : bool(__VA_ARGS__))			\
+	     : (_VERIFY_PRINT("%s:%d: %s: Assertion '%s' failed.\n",	\
+			      __FILE__, __LINE__, __PRETTY_FUNCTION__,	\
+			      #__VA_ARGS__),				\
+		__builtin_abort())))
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
