@@ -11601,11 +11601,12 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	  if (TARGET_64BIT)
 	    {
 	      rtx rax = gen_rtx_REG (Pmode, AX_REG);
+	      rtx rdi = gen_rtx_REG (Pmode, DI_REG);
 	      rtx_insn *insns;
 
 	      start_sequence ();
 	      emit_call_insn
-		(gen_tls_global_dynamic_64 (Pmode, rax, x, caddr));
+		(gen_tls_global_dynamic_64 (Pmode, rax, x, caddr, rdi));
 	      insns = get_insns ();
 	      end_sequence ();
 
