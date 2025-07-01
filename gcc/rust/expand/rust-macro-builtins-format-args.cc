@@ -52,8 +52,15 @@ format_args_parse_arguments (AST::MacroInvocData &invoc)
 
   // TODO: Handle the case where we're not parsing a string literal (macro
   // invocation for e.g.)
-  if (parser.peek_current_token ()->get_id () == STRING_LITERAL)
-    format_expr = parser.parse_literal_expr ();
+  switch (parser.peek_current_token ()->get_id ())
+    {
+    case STRING_LITERAL:
+    case RAW_STRING_LITERAL:
+      format_expr = parser.parse_literal_expr ();
+    default:
+      // do nothing
+      ;
+    }
 
   rust_assert (format_expr);
 
