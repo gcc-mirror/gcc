@@ -120,13 +120,13 @@ namespace contracts
     contract_violation(evaluation_semantic __semantic,
 		       const std::source_location &__location,
 		       const char* __comment):
-		    	   _M_version(0),
-				   _M_ext(nullptr),
-				   _M_comment(__comment),
-				   _M_detection_mode(detection_mode::unspecified),
-				   _M_assertion_kind(assertion_kind::manual),
-				   _M_source_location(__location),
-				   _M_evaluation_semantic(__semantic)
+      _M_version(0),
+      _M_ext(nullptr),
+      _M_comment(__comment),
+      _M_detection_mode(detection_mode::unspecified),
+      _M_assertion_kind(assertion_kind::manual),
+      _M_source_location(__location),
+      _M_evaluation_semantic(__semantic)
     {
 
     }
