@@ -1,5 +1,4 @@
 /* PR middle-end/120631 */
-/* { dg-do run } */
 /* { dg-options "-O2" } */
 
 _Decimal64 a = 1234567891357900000.0dd;

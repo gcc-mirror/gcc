@@ -1,5 +1,5 @@
 /* PR middle-end/120631 */
-/* { dg-do run { target bitint } } */
+/* { dg-require-effective-target bitint } */
 /* { dg-options "-O2" } */
 
 #if __BITINT_MAXWIDTH__ >= 128
