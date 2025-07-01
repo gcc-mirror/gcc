@@ -617,13 +617,6 @@ Late::visit (AST::Trait &trait)
 }
 
 void
-Late::visit (AST::StructStruct &s)
-{
-  auto s_vis = [this, &s] () { AST::DefaultASTVisitor::visit (s); };
-  ctx.scoped (Rib::Kind::Item, s.get_node_id (), s_vis);
-}
-
-void
 Late::visit (AST::StructExprStruct &s)
 {
   visit_outer_attrs (s);

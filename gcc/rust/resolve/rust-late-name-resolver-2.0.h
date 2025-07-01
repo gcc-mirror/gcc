@@ -66,7 +66,6 @@ public:
   void visit (AST::StructExprStruct &) override;
   void visit (AST::StructExprStructBase &) override;
   void visit (AST::StructExprStructFields &) override;
-  void visit (AST::StructStruct &) override;
   void visit (AST::GenericArgs &) override;
   void visit (AST::GenericArg &);
   void visit_closure_params (AST::ClosureExpr &) override;
