@@ -11,6 +11,7 @@ DEFINITION MODULE IOChanUtils ;
 *)
 
 FROM DynamicStrings IMPORT String ;
+FROM FIO IMPORT File ;
 
 IMPORT IOChan ;
 
@@ -22,6 +23,13 @@ IMPORT IOChan ;
 *)
 
 PROCEDURE GetFileName (c: IOChan.ChanId) : String ;
+
+
+(*
+   GetFile - returns the FIO.File associated with ChanId c.
+*)
+
+PROCEDURE GetFile (c: IOChan.ChanId) : File ;
 
 
 END IOChanUtils.
