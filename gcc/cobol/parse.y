@@ -12404,7 +12404,7 @@ numstr2i( const char input[], radix_t radix ) {
     return output;
   }
   if( erc == -1 ) {
-    yywarn("'%s' was accepted as %ld", input, integer);
+    yywarn("'%s' was accepted as %zu", input, integer);
   }
   return output;
 }
