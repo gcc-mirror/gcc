@@ -12,78 +12,60 @@ void gomemmove(void *, void *, uintptr)
 
 // This implementation is necessary since
 // the __builtin_memmove might use __libc_memmove
-// which doesn't require atomicity of 8 byte
+// which doesn't require atomicity of pointer-sized
 // moves.
 
 void
-gomemmove (void *dst, void *src, uintptr len)
+gomemmove(void *dst, void *src, uintptr len)
 {
-#if !defined(__PPC64__)
-  __builtin_memmove(dst, src, len);
-#else
-  uint64 offset, tail;
-  int64 rem;
-  uint64 dwords;
-  uint64 i;
-  char *bdst,*bsrc;
-
-  rem = len;
+  const uintptr ptr_size = sizeof(dst);
+  uintptr tail;
+  uintptr rem;
+  uintptr dwords;
+  uintptr i;
+  char *bdst, *bsrc;
 
   if (len == 0) {
-	return;
+    return;
   }
 
-  // If src and dst don't have the same 8 byte alignment then
-  // there is no issue with copying pointer atomicity. Use the
-  // builtin.
-  if (((uint64)dst % 8) != ((uint64)src % 8) || len < 8) {
-	__builtin_memmove(dst, src, len);
-	return;
+  // We expect pointer-containing values to be pointer-aligned.
+  // If these pointers are not aligned, they don't contain pointers.
+  if ((uintptr)dst % ptr_size != 0 || (uintptr)src % ptr_size != 0 || len < ptr_size) {
+    __builtin_memmove(dst, src, len);
+    return;
   }
 
-  // Length >= 8 && same ptr alignment
-  offset = (uint64)dst % 8;
+  bdst = (char*)dst;
+  bsrc = (char*)src;
 
-  // If not 8 byte alignment, move the intial bytes.
-  if (offset > 0) {
-	__builtin_memmove(dst, src, 8-offset);
-	dst += (8-offset);
-	src += (8-offset);
-	rem -= (8-offset);
-  }
-
-  // Move the tail bytes to make the backward move
-  // easier.
-  tail = rem % 8;
+  // Move the tail bytes to make the backward move easier.
+  rem = len;
+  tail = rem % ptr_size;
   if (tail > 0) {
-	__builtin_memmove(dst+rem-tail, src+rem-tail, tail);
-	rem -= tail;
+    __builtin_memmove(bdst+rem-tail, bsrc+rem-tail, tail);
+    rem -= tail;
   }
 
-  if (rem == 0) {
-	return;
-  }
+  // Must now be pointer alignment and rem is multiple of ptr_size.
+  dwords = rem / ptr_size;
 
-  // Must now be 8 byte alignment and rem is multiple of 8.
-  dwords = len>>3;
+  // Determine if a backwards move is needed.
+  // Forward or backward, move all words.
 
-  // Determine if a backwards move is needed
-  // Forward or backward, move all doublewords
-
-  if ((uint64)(dst - src) < (uint64)rem) {
-	bdst = dst+rem-8;
-	bsrc = src+rem-8;
-	for (i = 0; i<dwords; i++) {
-		*(uint64*)bdst = *(uint64*)bsrc;
-		bdst -= 8;
-		bsrc -= 8;
-	}
+  if ((uintptr)(bdst - bsrc) < rem) {
+    bdst += rem - ptr_size;
+    bsrc += rem - ptr_size;
+    for (i = 0; i<dwords; i++) {
+      *(uintptr*)bdst = *(uintptr*)bsrc;
+      bdst -= ptr_size;
+      bsrc -= ptr_size;
+    }
   } else {
-	for (i = 0; i<dwords; i++) {
-		*(uint64*)dst = *(uint64*)src;
-		dst += 8;
-		src += 8;
-	}
+    for (i = 0; i<dwords; i++) {
+      *(uintptr*)bdst = *(uintptr*)bsrc;
+      bdst += ptr_size;
+      bsrc += ptr_size;
+    }
   }
-#endif
 }
