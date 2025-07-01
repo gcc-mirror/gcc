@@ -660,7 +660,7 @@ namespace ranges
       : _M_value(__value)
       { }
 
-      constexpr
+      constexpr explicit
       iota_view(type_identity_t<_Winc> __value,
 		type_identity_t<_Bound> __bound)
       : _M_value(__value), _M_bound(__bound)
@@ -669,19 +669,19 @@ namespace ranges
 	  __glibcxx_assert( bool(__value <= __bound) );
       }
 
-      constexpr
+      constexpr explicit
       iota_view(_Iterator __first, _Iterator __last)
 	requires same_as<_Winc, _Bound>
 	: iota_view(__first._M_value, __last._M_value)
       { }
 
-      constexpr
+      constexpr explicit
       iota_view(_Iterator __first, unreachable_sentinel_t __last)
 	requires same_as<_Bound, unreachable_sentinel_t>
 	: iota_view(__first._M_value, __last)
       { }
 
-      constexpr
+      constexpr explicit
       iota_view(_Iterator __first, _Sentinel __last)
 	requires (!same_as<_Winc, _Bound>) && (!same_as<_Bound, unreachable_sentinel_t>)
 	: iota_view(__first._M_value, __last._M_bound)
@@ -1811,7 +1811,7 @@ namespace views::__adaptor
 			      && default_initializable<_Pred>)
 	= default;
 
-      constexpr
+      constexpr explicit
       filter_view(_Vp __base, _Pred __pred)
 	: _M_base(std::move(__base)), _M_pred(std::move(__pred))
       { }
@@ -2188,7 +2188,7 @@ namespace views::__adaptor
 				 && default_initializable<_Fp>)
 	= default;
 
-      constexpr
+      constexpr explicit
       transform_view(_Vp __base, _Fp __fun)
 	: _M_base(std::move(__base)), _M_fun(std::move(__fun))
       { }
@@ -2323,7 +2323,7 @@ namespace views::__adaptor
     public:
       take_view() requires default_initializable<_Vp> = default;
 
-      constexpr
+      constexpr explicit
       take_view(_Vp __base, range_difference_t<_Vp> __count)
 	: _M_base(std::move(__base)), _M_count(std::move(__count))
       { }
@@ -2562,7 +2562,7 @@ namespace views::__adaptor
 				  && default_initializable<_Pred>)
 	= default;
 
-      constexpr
+      constexpr explicit
       take_while_view(_Vp __base, _Pred __pred)
 	: _M_base(std::move(__base)), _M_pred(std::move(__pred))
       { }
@@ -2650,7 +2650,7 @@ namespace views::__adaptor
     public:
       drop_view() requires default_initializable<_Vp> = default;
 
-      constexpr
+      constexpr explicit
       drop_view(_Vp __base, range_difference_t<_Vp> __count)
 	: _M_base(std::move(__base)), _M_count(__count)
       { __glibcxx_assert(__count >= 0); }
@@ -2804,7 +2804,7 @@ namespace views::__adaptor
 				  && default_initializable<_Pred>)
 	= default;
 
-      constexpr
+      constexpr explicit
       drop_while_view(_Vp __base, _Pred __pred)
 	: _M_base(std::move(__base)), _M_pred(std::move(__pred))
       { }
@@ -3641,7 +3641,7 @@ namespace views::__adaptor
 				  && default_initializable<_Pattern>)
 	= default;
 
-      constexpr
+      constexpr explicit
       lazy_split_view(_Vp __base, _Pattern __pattern)
 	: _M_base(std::move(__base)), _M_pattern(std::move(__pattern))
       { }
@@ -3649,7 +3649,7 @@ namespace views::__adaptor
       template<input_range _Range>
 	requires constructible_from<_Vp, views::all_t<_Range>>
 	  && constructible_from<_Pattern, single_view<range_value_t<_Range>>>
-	constexpr
+	constexpr explicit
 	lazy_split_view(_Range&& __r, range_value_t<_Range> __e)
 	  : _M_base(views::all(std::forward<_Range>(__r))),
 	    _M_pattern(views::single(std::move(__e)))
@@ -3766,7 +3766,7 @@ namespace views::__adaptor
 			   && default_initializable<_Pattern>)
       = default;
 
-    constexpr
+    constexpr explicit
     split_view(_Vp __base, _Pattern __pattern)
       : _M_base(std::move(__base)), _M_pattern(std::move(__pattern))
     { }
@@ -3774,7 +3774,7 @@ namespace views::__adaptor
     template<forward_range _Range>
       requires constructible_from<_Vp, views::all_t<_Range>>
 	&& constructible_from<_Pattern, single_view<range_value_t<_Range>>>
-    constexpr
+    constexpr explicit
     split_view(_Range&& __r, range_value_t<_Range> __e)
       : _M_base(views::all(std::forward<_Range>(__r))),
 	_M_pattern(views::single(std::move(__e)))
@@ -7295,7 +7295,7 @@ namespace views::__adaptor
 			       && default_initializable<_Pattern>)
       = default;
 
-    constexpr
+    constexpr explicit
     join_with_view(_Vp __base, _Pattern __pattern)
     : _M_base(std::move(__base)), _M_pattern(std::move(__pattern))
     { }
@@ -7303,7 +7303,7 @@ namespace views::__adaptor
     template<input_range _Range>
       requires constructible_from<_Vp, views::all_t<_Range>>
 	&& constructible_from<_Pattern, single_view<range_value_t<_InnerRange>>>
-    constexpr
+    constexpr explicit
     join_with_view(_Range&& __r, range_value_t<_InnerRange> __e)
     : _M_base(views::all(std::forward<_Range>(__r))),
       _M_pattern(views::single(std::move(__e)))
