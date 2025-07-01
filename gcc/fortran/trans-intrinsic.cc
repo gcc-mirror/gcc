@@ -1052,7 +1052,7 @@ conv_caf_func_index (stmtblock_t *block, gfc_namespace *ns, const char *pat,
   index_st->n.sym->value
     = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
 			     &gfc_current_locus);
-  mpz_init_set_si (index_st->n.sym->value->value.integer, -1);
+  mpz_set_si (index_st->n.sym->value->value.integer, -1);
   index_st->n.sym->ts.type = BT_INTEGER;
   index_st->n.sym->ts.kind = gfc_default_integer_kind;
   gfc_set_sym_referenced (index_st->n.sym);

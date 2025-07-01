@@ -697,7 +697,10 @@ check_add_new_component (gfc_symbol *type, gfc_expr *e, gfc_symbol *add_data)
 	  break;
 	case EXPR_FUNCTION:
 	  if (!e->symtree->n.sym->attr.pure
-	      && !e->symtree->n.sym->attr.elemental)
+	      && !e->symtree->n.sym->attr.elemental
+	      && !(e->value.function.isym
+		   && (e->value.function.isym->pure
+		       || e->value.function.isym->elemental)))
 	    /* Treat non-pure/non-elemental functions.  */
 	    check_add_new_comp_handle_array (e, type, add_data);
 	  else
@@ -743,7 +746,6 @@ create_caf_add_data_parameter_type (gfc_expr *expr, gfc_namespace *ns,
   add_data->as->lower[0]
     = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
 			     &expr->where);
-  mpz_init (add_data->as->lower[0]->value.integer);
   mpz_set_si (add_data->as->lower[0]->value.integer, 1);
 
   for (gfc_ref *ref = expr->ref; ref; ref = ref->next)
@@ -763,6 +765,7 @@ create_caf_add_data_parameter_type (gfc_expr *expr, gfc_namespace *ns,
   type->declared_at = expr->where;
   gfc_set_sym_referenced (type);
   gfc_commit_symbol (type);
+  free (name);
   return type;
 }
 
