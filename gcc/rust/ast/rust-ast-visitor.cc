@@ -942,7 +942,7 @@ DefaultASTVisitor::visit (AST::EnumItem &item)
 void
 DefaultASTVisitor::visit (AST::EnumItemTuple &item)
 {
-  DefaultASTVisitor::visit (reinterpret_cast<EnumItem &> (item));
+  DefaultASTVisitor::visit (static_cast<EnumItem &> (item));
   for (auto &field : item.get_tuple_fields ())
     visit (field);
 }
@@ -950,7 +950,7 @@ DefaultASTVisitor::visit (AST::EnumItemTuple &item)
 void
 DefaultASTVisitor::visit (AST::EnumItemStruct &item)
 {
-  DefaultASTVisitor::visit (reinterpret_cast<EnumItem &> (item));
+  DefaultASTVisitor::visit (static_cast<EnumItem &> (item));
   for (auto &field : item.get_struct_fields ())
     visit (field);
 }
@@ -958,7 +958,7 @@ DefaultASTVisitor::visit (AST::EnumItemStruct &item)
 void
 DefaultASTVisitor::visit (AST::EnumItemDiscriminant &item)
 {
-  DefaultASTVisitor::visit (reinterpret_cast<EnumItem &> (item));
+  DefaultASTVisitor::visit (static_cast<EnumItem &> (item));
   visit (item.get_expr ());
 }
 
