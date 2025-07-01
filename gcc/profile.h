@@ -75,7 +75,7 @@ extern void get_working_sets (void);
 
 /* Counter summary from the last set of coverage counts read by
    profile.cc.  */
-extern struct gcov_summary *profile_info;
+extern struct gcov_summary *profile_info, *gcov_profile_info;
 
 /* Return true if any cfg coverage/profiling is enabled; -fprofile-arcs
    -fcondition-coverage -fpath-coverage.  */

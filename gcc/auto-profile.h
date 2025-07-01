@@ -35,4 +35,11 @@ extern bool afdo_vpt_for_early_inline (cgraph_node *node);
    do not repeat it later.  */
 extern void remove_afdo_speculative_target (cgraph_edge *);
 
+/* profile counts determined by AFDO smaller than afdo_hot_bb_threshold are
+   considered cols.  */
+extern gcov_type afdo_hot_bb_threshold;
+
+/* Return ture if COUNT is possiby hot.  */
+extern bool maybe_hot_afdo_count_p (profile_count count);
+
 #endif /* AUTO_PROFILE_H */

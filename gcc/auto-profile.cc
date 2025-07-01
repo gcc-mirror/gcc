@@ -123,6 +123,18 @@ along with GCC; see the file COPYING3.  If not see
 #define DEFAULT_AUTO_PROFILE_FILE "fbdata.afdo"
 #define AUTO_PROFILE_VERSION 2
 
+/* profile counts determined by AFDO smaller than afdo_hot_bb_threshold are
+   considered cols.  */
+gcov_type afdo_hot_bb_threshod = -1;
+
+/* Return ture if COUNT is possiby hot.  */
+bool
+maybe_hot_afdo_count_p (profile_count count)
+{
+  gcc_checking_assert (count.ipa ().initialized_p ());
+  return count.ipa ().to_gcov_type () >= afdo_hot_bb_threshod;
+}
+
 namespace autofdo
 {
 
@@ -1908,9 +1920,6 @@ autofdo_source_profile::read ()
   /* Read in the function/callsite profile, and store it in local
      data structure.  */
   unsigned function_num = gcov_read_unsigned ();
-  int profile_pass_num
-	  = g->get_passes ()->get_pass_auto_profile ()->static_pass_number;
-  g->get_dumps ()->dump_start (profile_pass_num, NULL);
   for (unsigned i = 0; i < function_num; i++)
     {
       function_instance::function_instance_stack stack;
@@ -1926,12 +1935,18 @@ autofdo_source_profile::read ()
 		     "auto-profile contains duplicated function instance %s",
 		     afdo_string_table->get_name (s->name ()));
     }
+  int hot_frac = param_hot_bb_count_fraction;
   /* Scale up the profile, but leave some bits in case some counts gets
      bigger than sum_max eventually.  */
   if (afdo_profile_info->sum_max)
     afdo_count_scale
       = MAX (((gcov_type)1 << (profile_count::n_bits / 2))
 	     / afdo_profile_info->sum_max, 1);
+  afdo_hot_bb_threshod
+    = hot_frac
+      ? afdo_profile_info->sum_max * afdo_count_scale / hot_frac
+      : (gcov_type)profile_count::max_count;
+  set_hot_bb_threshold (afdo_hot_bb_threshod);
   if (dump_file)
     fprintf (dump_file, "Max count in profile %" PRIu64 "\n"
 			"Setting scale %" PRIu64 "\n"
@@ -1940,10 +1955,8 @@ autofdo_source_profile::read ()
 	     (int64_t)afdo_profile_info->sum_max,
 	     (int64_t)afdo_count_scale,
 	     (int64_t)(afdo_profile_info->sum_max * afdo_count_scale),
-	     (int64_t)(afdo_profile_info->sum_max * afdo_count_scale
-		       / param_hot_bb_count_fraction));
+	     (int64_t)afdo_hot_bb_threshod);
   afdo_profile_info->sum_max *= afdo_count_scale;
-  g->get_dumps ()->dump_finish (profile_pass_num);
   return true;
 }
 
@@ -3083,6 +3096,16 @@ afdo_annotate_cfg (void)
       if (dump_file)
 	fprintf (dump_file, "No afdo profile for %s\n",
 		 cgraph_node::get (current_function_decl)->dump_name ());
+      /* create_gcov only dumps symbols with some samples in them.
+	 This means that we get nonempty zero_bbs only if some
+	 nonzero counts in profile were not matched with statements.  */
+      if (!flag_profile_partial_training)
+	{
+	  FOR_ALL_BB_FN (bb, cfun)
+	    if (bb->count.quality () == GUESSED_LOCAL)
+	      bb->count = bb->count.global0afdo ();
+	  update_max_bb_count ();
+	}
       return;
     }
 
@@ -3153,9 +3176,13 @@ afdo_annotate_cfg (void)
 	  if (dump_file)
 	    fprintf (dump_file, "Setting global count to afdo0\n");
 	}
-      FOR_ALL_BB_FN (bb, cfun)
-	if (bb->count.quality () == GUESSED_LOCAL)
-	  bb->count = bb->count.global0afdo ();
+      if (!flag_profile_partial_training)
+	{
+	  FOR_ALL_BB_FN (bb, cfun)
+	    if (bb->count.quality () == GUESSED_LOCAL)
+	      bb->count = bb->count.global0afdo ();
+	  update_max_bb_count ();
+	}
 
       loop_optimizer_finalize ();
       free_dominance_info (CDI_DOMINATORS);
@@ -3305,11 +3332,7 @@ afdo_callsite_hot_enough_for_early_inline (struct cgraph_edge *edge)
     {
       bool is_hot;
       profile_count pcount = profile_count::from_gcov_type (count).afdo ();
-      gcov_summary *saved_profile_info = profile_info;
-      /* At early inline stage, profile_info is not set yet. We need to
-         temporarily set it to afdo_profile_info to calculate hotness.  */
-      profile_info = autofdo::afdo_profile_info;
-      is_hot = maybe_hot_count_p (NULL, pcount);
+      is_hot = maybe_hot_afdo_count_p (pcount);
       if (dump_file)
 	{
 	  fprintf (dump_file, "Call %s -> %s has %s afdo profile count ",
@@ -3318,7 +3341,6 @@ afdo_callsite_hot_enough_for_early_inline (struct cgraph_edge *edge)
 	  pcount.dump (dump_file);
 	  fprintf (dump_file, "\n");
 	}
-      profile_info = saved_profile_info;
       return is_hot;
     }
 
@@ -3471,6 +3493,7 @@ public:
   unsigned int
   execute (function *) final override
   {
+    read_autofdo_file ();
     if (autofdo::afdo_source_profile)
       autofdo::afdo_source_profile->offline_external_functions ();
     return 0;

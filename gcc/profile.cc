@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "file-prefix-map.h"
 
 #include "profile.h"
+#include "auto-profile.h"
 
 struct condcov;
 struct condcov *find_conditions (struct function*);
@@ -97,7 +98,7 @@ struct bb_profile_info {
 
 /* Counter summary from the last set of coverage counts read.  */
 
-gcov_summary *profile_info;
+gcov_summary *profile_info, *gcov_profile_info;
 
 /* Collect statistics on the performance of this pass for the entire source
    file.  */
@@ -112,6 +113,27 @@ static int total_num_times_called;
 static int total_hist_br_prob[20];
 static int total_num_branches;
 static int total_num_conds;
+
+/* Map between auto-fdo and fdo counts used to compare quality
+   of the profiles.  */
+struct afdo_fdo_record
+{
+  cgraph_node *node;
+  struct bb_record
+  {
+    /* Index of the  basic block.  */
+    int index;
+    profile_count afdo;
+    profile_count fdo;
+
+    /* Successors and predecessors in CFG.  */
+    vec <int> preds;
+    vec <int> succs;
+  };
+  vec <bb_record> bbs;
+};
+
+static vec <afdo_fdo_record> afdo_fdo_records;
 
 /* Forward declarations.  */
 static void find_spanning_tree (struct edge_list *);
@@ -472,6 +494,22 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
   BB_INFO (EXIT_BLOCK_PTR_FOR_FN (cfun))->succ_count = 2;
   BB_INFO (ENTRY_BLOCK_PTR_FOR_FN (cfun))->pred_count = 2;
 
+  afdo_fdo_record record = {cgraph_node::get (current_function_decl), vNULL};;
+  if (dump_file && flag_auto_profile)
+    {
+      FOR_ALL_BB_FN (bb, cfun)
+	{
+	  record.bbs.safe_push ({bb->index, bb->count.ipa (),
+				profile_count::uninitialized (), vNULL, vNULL});
+	  record.bbs.last ().preds.reserve (EDGE_COUNT (bb->preds));
+	  for (auto &e : bb->preds)
+	    record.bbs.last ().preds.safe_push (e->src->index);
+	  record.bbs.last ().succs.reserve (EDGE_COUNT (bb->succs));
+	  for (auto &e : bb->succs)
+	    record.bbs.last ().succs.safe_push (e->dest->index);
+	}
+    }
+
   num_edges = read_profile_edge_counts (exec_counts);
 
   if (dump_file)
@@ -811,6 +849,18 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
   bb_gcov_counts.release ();
   delete edge_gcov_counts;
   edge_gcov_counts = NULL;
+
+  if (dump_file && flag_auto_profile)
+    {
+      int i = 0;
+      FOR_ALL_BB_FN (bb, cfun)
+	{
+	  gcc_checking_assert (record.bbs[i].index == bb->index);
+	  record.bbs[i].fdo = bb->count.ipa ();
+	  i++;
+	}
+      afdo_fdo_records.safe_push (record);
+    }
 
   update_max_bb_count ();
 
@@ -1804,6 +1854,65 @@ end_branch_prob (void)
 	}
       fprintf (dump_file, "Total number of conditions: %d\n",
 	       total_num_conds);
+      if (afdo_fdo_records.length ())
+	{
+	  profile_count fdo_sum = profile_count::zero ();
+	  profile_count afdo_sum = profile_count::zero ();
+	  for (const auto &r : afdo_fdo_records)
+	    for (const auto &b : r.bbs)
+	      if (b.fdo.initialized_p () && b.afdo.initialized_p ())
+		{
+		  fdo_sum += b.fdo;
+		  afdo_sum += b.afdo;
+		}
+	  for (auto &r : afdo_fdo_records)
+	    {
+	      for (auto &b : r.bbs)
+		if (b.fdo.initialized_p () && b.afdo.initialized_p ())
+		  {
+		    fprintf (dump_file, "%s bb %i fdo %" PRIu64 " (%s) afdo ",
+			     r.node->dump_name (), b.index,
+			     (int64_t)b.fdo.to_gcov_type (),
+			     maybe_hot_count_p
+				     (NULL, b.fdo.apply_scale (1, 1000))
+			     ? "very hot"
+			     : maybe_hot_count_p (NULL, b.fdo)
+			     ?  "hot" : "cold");
+		    b.afdo.dump (dump_file);
+		    fprintf (dump_file, " (%s) ",
+			     maybe_hot_afdo_count_p
+				     (b.afdo.apply_scale (1, 1000))
+			     ? "very hot"
+			     : maybe_hot_afdo_count_p (b.afdo)
+			     ?  "hot" : "cold");
+		    if (afdo_sum.nonzero_p ())
+		      {
+			profile_count scaled
+			       	= b.afdo.apply_scale (fdo_sum, afdo_sum);
+			fprintf (dump_file, "scaled %" PRIu64,
+				 scaled.to_gcov_type ());
+			if (b.fdo.to_gcov_type ())
+			  fprintf (dump_file, " diff %" PRId64 ", %+2.2f%%",
+				   scaled.to_gcov_type ()
+				   - b.fdo.to_gcov_type (),
+				   (scaled.to_gcov_type ()
+				    - b.fdo.to_gcov_type ()) * 100.0
+				   / b.fdo.to_gcov_type ());
+		      }
+		    fprintf (dump_file, "\n preds");
+		    for (int val : b.preds)
+		      fprintf (dump_file, " %i", val);
+		    b.preds.release ();
+		    fprintf (dump_file, "\n succs");
+		    for (int val : b.succs)
+		      fprintf (dump_file, " %i", val);
+		    b.succs.release ();
+		    fprintf (dump_file, "\n");
+		  }
+	       r.bbs.release ();
+	     }
+	}
+      afdo_fdo_records.release ();
     }
 }
 

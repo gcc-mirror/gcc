@@ -2031,6 +2031,7 @@ tree_profiling (void)
   handle_missing_profiles ();
 
   del_node_map ();
+  end_branch_prob ();
   return 0;
 }
 
@@ -2065,10 +2066,8 @@ public:
 bool
 pass_ipa_tree_profile::gate (function *)
 {
-  /* When profile instrumentation, use or test coverage shall be performed.
-     But for AutoFDO, this there is no instrumentation, thus this pass is
-     disabled.  */
-  return (!in_lto_p && !flag_auto_profile
+  /* When profile instrumentation, use or test coverage shall be performed.  */
+  return (!in_lto_p
 	  && (flag_branch_probabilities || flag_test_coverage
 	      || coverage_instrumentation_p ())
 	  && !seen_error ());

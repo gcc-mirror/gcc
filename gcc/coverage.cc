@@ -235,7 +235,7 @@ read_counts_file (void)
 	}
       else if (tag == GCOV_TAG_OBJECT_SUMMARY)
 	{
-	  profile_info = XCNEW (gcov_summary);
+	  gcov_profile_info = profile_info = XCNEW (gcov_summary);
 	  profile_info->runs = gcov_read_unsigned ();
 	  profile_info->sum_max = gcov_read_unsigned ();
 	}
@@ -1315,9 +1315,7 @@ coverage_init (const char *filename)
   strcpy (da_file_name + prefix_len + len, GCOV_DATA_SUFFIX);
 
   bbg_file_stamp = local_tick;
-  if (flag_auto_profile)
-    read_autofdo_file ();
-  else if (flag_branch_probabilities)
+  if (flag_branch_probabilities)
     read_counts_file ();
 
   /* Name of bbg file.  */

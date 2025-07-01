@@ -355,13 +355,6 @@ finish_optimization_passes (void)
   gcc::dump_manager *dumps = m_ctxt->get_dumps ();
 
   timevar_push (TV_DUMP);
-  if (coverage_instrumentation_p () || flag_test_coverage
-      || flag_branch_probabilities)
-    {
-      dumps->dump_start (m_pass_profile_1->static_pass_number, NULL);
-      end_branch_prob ();
-      dumps->dump_finish (m_pass_profile_1->static_pass_number);
-    }
 
   /* Do whatever is necessary to finish printing the graphs.  */
   for (i = TDI_end; (dfi = dumps->get_dump_file_info (i)) != NULL; ++i)
@@ -2036,6 +2029,7 @@ pass_manager::dump_profile_report () const
 	    fprintf (dump_file, "| %12.0f", profile_record[i].time);
 	    /* Time units changes with profile estimate and feedback.  */
 	    if (i == m_pass_profile_1->static_pass_number
+		|| i == m_pass_ipa_auto_profile_1->static_pass_number
 		|| i == m_pass_ipa_tree_profile_1->static_pass_number)
 	      fprintf (dump_file, "-------------");
 	    else if (rel_time_change)
