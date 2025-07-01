@@ -1,3 +1,13 @@
+2025-06-30  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-06-25  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/120650
+	* include/bits/chrono_io.h
+	(formatter<chrono::month_day_last,_CharT>::parse): Call _M_parse with
+	only Month being available.
+
 2025-06-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

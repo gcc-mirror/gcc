@@ -1,3 +1,39 @@
+2025-06-30  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (Attribute_Max_Size_In_Storage_Elements):
+	Return Storage_Count'Last converted to universal_integer.
+
+2025-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma) <Pragma_No_Component_Reordering>:
+	Call Find_Type on the first argument of the pragma.
+
+2025-06-30  Steve Baird  <baird@adacore.com>
+
+	* exp_put_image.adb (Build_Record_Put_Image_Procedure): If
+	Discriminant_Specifications takes us from the full view of a type
+	to an (intentionally) unanalyzed subtree, then instead find
+	discriminant entities by calling Discriminant_Specifications on
+	the partial view of the type.
+
+2025-06-30  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch6.adb (Check_Delayed_Subprogram, Possible_Freeze): Restrict
+	cases where freezing is delayed.
+	* sem_ch6.ads (Check_Delayed_Subprogram): Improve documentation
+	comment.
+	* sprint.adb (Write_Itype): Improve output.
+
+2025-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Process_Transient_In_Scope): Bail out if the object
+	is an ignored ghost entity.
+
+2025-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Insert_Actions): Extend special treatment applied
+	to freeze nodes to the case of blocks generated for aggregates.
+
 2025-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/120854
