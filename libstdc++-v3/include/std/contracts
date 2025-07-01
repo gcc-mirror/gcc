@@ -79,8 +79,8 @@ namespace contracts
     post = 2,
     assert = 3,
     // From P3290
-    cassert = 4,
-    manual = 5
+    manual = 4,
+    cassert = 5
     /* to be extended with implementation−defined values and by future extensions */
     /* Implementation−defined values should have a minimum value of 1000. */
     };
@@ -98,10 +98,10 @@ namespace contracts
   };
 
   enum class detection_mode  {
-    predicate_false = 1,
-    evaluation_exception = 2,
   // From P3290
-	unspecified = 3
+    unspecified = 0,
+    predicate_false = 1,
+    evaluation_exception = 3
     /* to be extended with implementation−defined values and by future extensions
 	 Implementation−defined values should have a minimum value of 1000. */
   };
@@ -158,9 +158,6 @@ namespace contracts
 	// cannot be assigned to
 	contract_violation& operator=(const contract_violation&) = delete;
 
-	/* see below */
-	//~contract_violation();
-
 	const char* comment() const noexcept { return _M_comment; }
 	detection_mode mode() const noexcept { return _M_detection_mode; }
 	std::exception_ptr evaluation_exception () const noexcept {
@@ -175,7 +172,7 @@ namespace contracts
 	assertion_kind kind() const noexcept { return _M_assertion_kind; }
 	std::source_location location() const noexcept { return _M_source_location; }
 	evaluation_semantic semantic() const noexcept { return _M_evaluation_semantic; }
-	};
+  };
 
   void invoke_default_contract_violation_handler(const contract_violation&) noexcept;
 

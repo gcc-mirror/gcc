@@ -18,16 +18,12 @@
 // { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=quick_enforce" }
 // { dg-do run { target c++2a } }
 
-#include <exception>
-#include <cstdlib>
-#include <testsuite_hooks.h>
-
-#include "../../../include/std/contracts"
+#include <contracts>
 
 int main()
 {
 
   std::contracts::handle_observed_contract_violation(std::nothrow, "test comment");
 }
-// { dg-output "contract violation in function int main.* at .*:30: test comment.*" }
+// { dg-output "contract violation in function int main.* at .*:26: test comment.*" }
 // { dg-output "assertion_kind: manual, semantic: observe, mode: unspecified, terminating: no" }

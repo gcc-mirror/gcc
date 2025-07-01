@@ -18,13 +18,10 @@
 // { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=ignore" }
 // { dg-do run { target c++2a } }
 
+#include <contracts>
 #include <exception>
 #include <cstdlib>
 #include <testsuite_hooks.h>
-#include <cstring>
-#include <iostream>
-
-#include "../../../include/std/contracts"
 
 struct MyException{};
 
@@ -54,5 +51,5 @@ int main()
   // We should not get here
   return 1;
 }
-// { dg-output "contract violation in function int main.* at .*:49: test comment.*" }
+// { dg-output "contract violation in function int main.* at .*:46: test comment.*" }
 // { dg-output "assertion_kind: manual, semantic: enforce, mode: unspecified, terminating: yes" }

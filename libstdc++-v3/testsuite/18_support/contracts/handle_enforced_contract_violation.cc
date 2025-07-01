@@ -18,13 +18,9 @@
 // { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe" }
 // { dg-do run { target c++2a } }
 
+#include <contracts>
 #include <exception>
 #include <cstdlib>
-#include <testsuite_hooks.h>
-#include <cstring>
-#include <iostream>
-
-#include "../../../include/std/contracts"
 
 void my_term()
 {

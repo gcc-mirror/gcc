@@ -18,11 +18,10 @@
 // { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=quick_enforce" }
 // { dg-do run { target c++2a } }
 
+#include <contracts>
 #include <exception>
 #include <cstdlib>
 #include <testsuite_hooks.h>
-
-#include "../../../include/std/contracts"
 
 void my_term()
 {
@@ -38,5 +37,5 @@ int main()
   // We should not get here
   return 1;
 }
-// { dg-output "contract violation in function int main.* at .*:37: test comment.*" }
+// { dg-output "contract violation in function int main.* at .*:36: test comment.*" }
 // { dg-output "assertion_kind: manual, semantic: enforce, mode: unspecified, terminating: yes" }
