@@ -3811,13 +3811,129 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
       }
 
     case COND_EXPR:
-      ret = build_conditional_expr
-	       (loc, TREE_OPERAND (array, 0),
-	       cp_build_array_ref (loc, TREE_OPERAND (array, 1), idx,
-				   complain),
-	       cp_build_array_ref (loc, TREE_OPERAND (array, 2), idx,
-				   complain),
-	       complain);
+      tree op0, op1, op2;
+      op0 = TREE_OPERAND (array, 0);
+      op1 = TREE_OPERAND (array, 1);
+      op2 = TREE_OPERAND (array, 1);
+      if (TREE_SIDE_EFFECTS (idx) || !tree_invariant_p (idx))
+	{
+	  /* If idx could possibly have some SAVE_EXPRs, turning
+	     (op0 ? op1 : op2)[idx] into
+	     op0 ? op1[idx] : op2[idx] can lead into temporaries
+	     initialized in one conditional path and uninitialized
+	     uses of them in the other path.
+	     And if idx is a really large expression, evaluating it
+	     twice is also not optimal.
+	     On the other side, op0 must be sequenced before evaluation
+	     of op1 and op2 and for C++17 op0, op1 and op2 must be
+	     sequenced before idx.
+	     If idx is INTEGER_CST, we can just do the optimization
+	     without any SAVE_EXPRs, if op1 and op2 are both ARRAY_TYPE
+	     VAR_DECLs or COMPONENT_REFs thereof (so their address
+	     is constant or relative to frame), optimize into
+	     (SAVE_EXPR <op0>, SAVE_EXPR <idx>, SAVE_EXPR <op0>)
+	     ? op1[SAVE_EXPR <idx>] : op2[SAVE_EXPR <idx>]
+	     Otherwise avoid this optimization.  */
+	  if (flag_strong_eval_order == 2)
+	    {
+	      if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
+		{
+		  tree xop1 = op1;
+		  tree xop2 = op2;
+		  while (xop1 && handled_component_p (xop1))
+		    {
+		      switch (TREE_CODE (xop1))
+			{
+			case ARRAY_REF:
+			case ARRAY_RANGE_REF:
+			  if (!tree_invariant_p (TREE_OPERAND (xop1, 1))
+			      || TREE_OPERAND (xop1, 2) != NULL_TREE
+			      || TREE_OPERAND (xop1, 3) != NULL_TREE)
+			    {
+			      xop1 = NULL_TREE;
+			      continue;
+			    }
+			  break;
+
+			case COMPONENT_REF:
+			  if (TREE_OPERAND (xop1, 2) != NULL_TREE)
+			    {
+			      xop1 = NULL_TREE;
+			      continue;
+			    }
+			  break;
+
+			default:
+			  break;
+			}
+		      xop1 = TREE_OPERAND (xop1, 0);
+		    }
+		  if (xop1)
+		    STRIP_ANY_LOCATION_WRAPPER (xop1);
+		  while (xop2 && handled_component_p (xop2))
+		    {
+		      switch (TREE_CODE (xop2))
+			{
+			case ARRAY_REF:
+			case ARRAY_RANGE_REF:
+			  if (!tree_invariant_p (TREE_OPERAND (xop2, 1))
+			      || TREE_OPERAND (xop2, 2) != NULL_TREE
+			      || TREE_OPERAND (xop2, 3) != NULL_TREE)
+			    {
+			      xop2 = NULL_TREE;
+			      continue;
+			    }
+			  break;
+
+			case COMPONENT_REF:
+			  if (TREE_OPERAND (xop2, 2) != NULL_TREE)
+			    {
+			      xop2 = NULL_TREE;
+			      continue;
+			    }
+			  break;
+
+			default:
+			  break;
+			}
+		      xop2 = TREE_OPERAND (xop2, 0);
+		    }
+		  if (xop2)
+		    STRIP_ANY_LOCATION_WRAPPER (xop2);
+
+		  if (!xop1
+		      || !xop2
+		      || !(CONSTANT_CLASS_P (xop1)
+			   || decl_address_invariant_p (xop1))
+		      || !(CONSTANT_CLASS_P (xop2)
+			   || decl_address_invariant_p (xop2)))
+		    {
+		      /* Force default conversion on array if
+			 we can't optimize this and array is ARRAY_TYPE
+			 COND_EXPR, we can't leave COND_EXPRs with
+			 ARRAY_TYPE in the IL.  */
+		      array = cp_default_conversion (array, complain);
+		      if (error_operand_p (array))
+			return error_mark_node;
+		      break;
+		    }
+		}
+	      else if (!POINTER_TYPE_P (TREE_TYPE (array))
+		       || !tree_invariant_p (op1)
+		       || !tree_invariant_p (op2))
+		break;
+	    }
+	  if (TREE_SIDE_EFFECTS (idx))
+	    {
+	      idx = save_expr (idx);
+	      op0 = save_expr (op0);
+	      tree tem = build_compound_expr (loc, op0, idx);
+	      op0 = build_compound_expr (loc, tem, op0);
+	    }
+	}
+      op1 = cp_build_array_ref (loc, op1, idx, complain);
+      op2 = cp_build_array_ref (loc, op2, idx, complain);
+      ret = build_conditional_expr (loc, op0, op1, op2, complain);
       protected_set_expr_location (ret, loc);
       return ret;
 
