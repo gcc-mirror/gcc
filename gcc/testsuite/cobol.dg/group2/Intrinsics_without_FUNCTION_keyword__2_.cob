@@ -5,8 +5,8 @@
        ENVIRONMENT      DIVISION.
        CONFIGURATION    SECTION.
        REPOSITORY.
-           FUNCTION     PI
-           FUNCTION     E.
+           FUNCTION     PI INTRINSIC
+           FUNCTION     E  INTRINSIC.
        DATA             DIVISION.
        WORKING-STORAGE  SECTION.
        01  Z            PIC 99V99.
