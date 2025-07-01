@@ -1,7 +1,7 @@
 //Test that a throwing violation handler causes termination with noexcept-observe
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=noexcept_observe " }
-#include <experimental/contract>
+#include <contracts>
 #include <exception>
 #include <cstdlib>
 
@@ -11,7 +11,7 @@ void my_term()
   catch(int) { std::exit(0); }
 }
 
-void handle_contract_violation(const std::experimental::contract_violation& violation)
+void handle_contract_violation(const std::contracts::contract_violation& violation)
 {
   throw 1;
 }
