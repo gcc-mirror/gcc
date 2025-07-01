@@ -1193,7 +1193,7 @@ DEBUG_FUNCTION void
 debug (const tree_node *ptr)
 {
   if (ptr)
-    debug (*ptr);
+    debug_tree (const_cast <tree> (ptr));
   else
     fprintf (stderr, "<nil>\n");
 }
