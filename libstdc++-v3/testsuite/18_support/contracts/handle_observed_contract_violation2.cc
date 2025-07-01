@@ -15,57 +15,31 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe" }
+// { dg-options "-g0 -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=enforce" }
 // { dg-do run { target c++2a } }
 
 #include <contracts>
 #include <testsuite_hooks.h>
-#include <iostream>
-#include <sstream>
 
-
-struct checking_buf
-  : public std::streambuf
-{
-  bool written = false;
-
-  checking_buf() = default;
-
-  virtual int_type
-  overflow(int_type)
-  {
-    written = true;
-    return int_type();
-  }
-
-  std::streamsize xsputn(const char* s, std::streamsize count)
-  {
-    written = true;
-    return count;
-  }
-
-};
-
-
-bool custom_called = false;
-
+struct MyException{};
 
 void handle_contract_violation(const std::contracts::contract_violation& v)
 {
-  custom_called = true;
+  invoke_default_contract_violation_handler(v);
+  throw MyException{};
 }
-
-
-
-
-void f(int i) pre (i>10) {};
 
 int main()
 {
-  checking_buf buf;
-  std::cerr.rdbuf(&buf);
-
-  f(0);
-  VERIFY(!buf.written);
+  bool exception_thrown = false;
+  try {
+      std::contracts::handle_observed_contract_violation("test comment");
+  }
+  catch(MyException)
+  {
+      exception_thrown = true;
+  }
+  VERIFY( exception_thrown == true);
 }
-
+// { dg-output "contract violation in function int main.* at .*:36: test comment.*" }
+// { dg-output "assertion_kind: manual, semantic: observe, mode: unspecified, terminating: no" }

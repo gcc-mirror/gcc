@@ -51,8 +51,14 @@ void __handle_contract_violation(const std::contracts::contract_violation &viola
      case std::contracts::assertion_kind::assert:
        std::cerr << " assert";
        break;
+     case std::contracts::assertion_kind::cassert:
+       std::cerr << " cassert";
+       break;
+     case std::contracts::assertion_kind::manual:
+       std::cerr << " manual";
+       break;
      default:
-       std::cerr << " unknown" << (int) violation.semantic();
+       std::cerr << " unknown: " << (int) violation.kind();
    }
    delimiter = ", ";
 
@@ -66,7 +72,7 @@ void __handle_contract_violation(const std::contracts::contract_violation &viola
       std::cerr << " observe";
       break;
     default:
-      std::cerr << " unknown" << (int) violation.semantic();
+      std::cerr << " unknown: " << (int) violation.semantic();
   }
   delimiter = ", ";
 
@@ -79,8 +85,11 @@ void __handle_contract_violation(const std::contracts::contract_violation &viola
     case std::contracts::detection_mode::evaluation_exception:
       std::cerr << " evaluation_exception";
       break;
+    case std::contracts::detection_mode::unspecified:
+      std::cerr << " unspecified";
+      break;
     default:
-      std::cerr << "unknown";
+      std::cerr << " unknown: " << (int) violation.mode();
   }
   delimiter = ", ";
 
@@ -111,6 +120,12 @@ void __handle_contract_violation(const std::contracts::contract_violation &viola
 #endif
 }
 
+__attribute__ ((weak)) void
+handle_contract_violation (const std::contracts::contract_violation &violation)
+{
+  return __handle_contract_violation(violation);
+}
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -120,17 +135,57 @@ namespace contracts
 
 void invoke_default_contract_violation_handler(const std::contracts::contract_violation& violation) noexcept
 {
-  return __handle_contract_violation(violation);
+  __handle_contract_violation(violation);
 }
 
-}
-}
-
-__attribute__ ((weak)) void
-handle_contract_violation (const std::contracts::contract_violation &violation)
+// From P3290
+[[noreturn]] void handle_enforced_contract_violation(
+      const char* __comment,
+      const std::source_location &__location)
 {
-  return __handle_contract_violation(violation);
+  contract_violation __violation{evaluation_semantic::enforce, __location, __comment};
+  handle_contract_violation(__violation);
+  std::terminate();
 }
+
+[[noreturn]] void handle_enforced_contract_violation(
+    const std::nothrow_t&,
+    const char* __comment,
+    const std::source_location &__location) noexcept
+{
+  contract_violation __violation{evaluation_semantic::enforce, __location, __comment};
+  handle_contract_violation(__violation);
+  std::terminate();
+}
+
+
+void handle_observed_contract_violation(
+      const char* __comment,
+      const std::source_location &__location)
+{
+  contract_violation __violation{evaluation_semantic::observe, __location, __comment};
+  handle_contract_violation(__violation);
+}
+
+void handle_observed_contract_violation(
+    const std::nothrow_t&,
+    const char* __comment,
+    const std::source_location &__location) noexcept
+{
+  contract_violation __violation{evaluation_semantic::observe, __location, __comment};
+  handle_contract_violation(__violation);
+}
+
+[[noreturn]] void handle_quick_enforced_contract_violation(
+    const char*,
+    const std::source_location &) noexcept
+{
+  std::terminate();
+}
+
+}
+}
+
 
 #if _GLIBCXX_INLINE_VERSION
 // The compiler expects the contract_violation class to be in an unversioned
