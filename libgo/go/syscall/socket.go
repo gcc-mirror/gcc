@@ -467,7 +467,7 @@ func Sendto(fd int, p []byte, flags int, to Sockaddr) (err error) {
 
 func recvmsgRaw(fd int, p, oob []byte, flags int, rsa *RawSockaddrAny) (n, oobn int, recvflags int, err error) {
 	var msg Msghdr
-	msg.Name = (*byte)(unsafe.Pointer(&rsa))
+	msg.Name = (*byte)(unsafe.Pointer(rsa))
 	msg.Namelen = uint32(SizeofSockaddrAny)
 	var iov Iovec
 	if len(p) > 0 {
