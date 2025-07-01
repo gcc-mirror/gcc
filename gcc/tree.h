@@ -5347,6 +5347,10 @@ extern tree staticp (tree);
 
 extern tree save_expr (tree);
 
+/* Return true if T is an object with invariant address.  */
+
+extern bool address_invariant_p (tree);
+
 /* Return true if T is function-invariant.  */
 
 extern bool tree_invariant_p (tree);

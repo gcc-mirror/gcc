@@ -4015,6 +4015,38 @@ decl_address_ip_invariant_p (const_tree op)
   return false;
 }
 
+/* Return true if T is an object with invariant address.  */
+
+bool
+address_invariant_p (tree t)
+{
+  while (handled_component_p (t))
+    {
+      switch (TREE_CODE (t))
+	{
+	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
+	  if (!tree_invariant_p (TREE_OPERAND (t, 1))
+	      || TREE_OPERAND (t, 2) != NULL_TREE
+	      || TREE_OPERAND (t, 3) != NULL_TREE)
+	    return false;
+	  break;
+
+	case COMPONENT_REF:
+	  if (TREE_OPERAND (t, 2) != NULL_TREE)
+	    return false;
+	  break;
+
+	default:
+	  break;
+	}
+      t = TREE_OPERAND (t, 0);
+    }
+
+  STRIP_ANY_LOCATION_WRAPPER (t);
+  return CONSTANT_CLASS_P (t) || decl_address_invariant_p (t);
+}
+
 
 /* Return true if T is function-invariant (internal function, does
    not handle arithmetic; that's handled in skip_simple_arithmetic and
@@ -4023,10 +4055,7 @@ decl_address_ip_invariant_p (const_tree op)
 static bool
 tree_invariant_p_1 (tree t)
 {
-  tree op;
-
-  if (TREE_CONSTANT (t)
-      || (TREE_READONLY (t) && !TREE_SIDE_EFFECTS (t)))
+  if (TREE_CONSTANT (t) || (TREE_READONLY (t) && !TREE_SIDE_EFFECTS (t)))
     return true;
 
   switch (TREE_CODE (t))
@@ -4036,30 +4065,7 @@ tree_invariant_p_1 (tree t)
       return true;
 
     case ADDR_EXPR:
-      op = TREE_OPERAND (t, 0);
-      while (handled_component_p (op))
-	{
-	  switch (TREE_CODE (op))
-	    {
-	    case ARRAY_REF:
-	    case ARRAY_RANGE_REF:
-	      if (!tree_invariant_p (TREE_OPERAND (op, 1))
-		  || TREE_OPERAND (op, 2) != NULL_TREE
-		  || TREE_OPERAND (op, 3) != NULL_TREE)
-		return false;
-	      break;
-
-	    case COMPONENT_REF:
-	      if (TREE_OPERAND (op, 2) != NULL_TREE)
-		return false;
-	      break;
-
-	    default:;
-	    }
-	  op = TREE_OPERAND (op, 0);
-	}
-
-      return CONSTANT_CLASS_P (op) || decl_address_invariant_p (op);
+      return address_invariant_p (TREE_OPERAND (t, 0));
 
     default:
       break;
