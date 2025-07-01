@@ -14495,3 +14495,17 @@ proc check_effective_target_xtensa_atomic { } {
 	#endif
     }]
 }
+
+# Return 1 if pi-based trigonometry function is foldable
+# We should remove this after bumping the minimum mpfr version to 4.2.0.
+proc check_effective_target_foldable_pi_based_trigonometry { } {
+    return [check_runtime foldable_pi_based_trigonometry {
+	int
+	main ()
+	{
+	  if (!__builtin_constant_p (__builtin_acospi (0.5)))
+	    __builtin_abort ();
+	  return 0;
+	}
+    }]
+}

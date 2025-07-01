@@ -395,10 +395,14 @@ negate_mathfn_p (combined_fn fn)
     CASE_CFN_ASIN_FN:
     CASE_CFN_ASINH:
     CASE_CFN_ASINH_FN:
+    CASE_CFN_ASINPI:
+    CASE_CFN_ASINPI_FN:
     CASE_CFN_ATAN:
     CASE_CFN_ATAN_FN:
     CASE_CFN_ATANH:
     CASE_CFN_ATANH_FN:
+    CASE_CFN_ATANPI:
+    CASE_CFN_ATANPI_FN:
     CASE_CFN_CASIN:
     CASE_CFN_CASIN_FN:
     CASE_CFN_CASINH:
@@ -432,10 +436,14 @@ negate_mathfn_p (combined_fn fn)
     CASE_CFN_SIN_FN:
     CASE_CFN_SINH:
     CASE_CFN_SINH_FN:
+    CASE_CFN_SINPI:
+    CASE_CFN_SINPI_FN:
     CASE_CFN_TAN:
     CASE_CFN_TAN_FN:
     CASE_CFN_TANH:
     CASE_CFN_TANH_FN:
+    CASE_CFN_TANPI:
+    CASE_CFN_TANPI_FN:
     CASE_CFN_TRUNC:
     CASE_CFN_TRUNC_FN:
       return true;
@@ -14962,6 +14970,8 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_ACOS_FN:
     CASE_CFN_ACOSH:
     CASE_CFN_ACOSH_FN:
+    CASE_CFN_ACOSPI:
+    CASE_CFN_ACOSPI_FN:
     CASE_CFN_CABS:
     CASE_CFN_CABS_FN:
     CASE_CFN_COSH:
@@ -15006,10 +15016,14 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
 
     CASE_CFN_ASINH:
     CASE_CFN_ASINH_FN:
+    CASE_CFN_ASINPI:
+    CASE_CFN_ASINPI_FN:
     CASE_CFN_ATAN:
     CASE_CFN_ATAN_FN:
     CASE_CFN_ATANH:
     CASE_CFN_ATANH_FN:
+    CASE_CFN_ATANPI:
+    CASE_CFN_ATANPI_FN:
     CASE_CFN_CBRT:
     CASE_CFN_CBRT_FN:
     CASE_CFN_CEIL:

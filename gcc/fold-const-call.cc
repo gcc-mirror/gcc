@@ -788,6 +788,36 @@ fold_const_call_ss (real_value *result, combined_fn fn,
     CASE_CFN_TANH_FN:
       return do_mpfr_arg1 (result, mpfr_tanh, arg, format);
 
+#if MPFR_VERSION >= MPFR_VERSION_NUM(4, 2, 0)
+    CASE_CFN_ACOSPI:
+    CASE_CFN_ACOSPI_FN:
+      return (real_compare (GE_EXPR, arg, &dconstm1)
+	      && real_compare (LE_EXPR, arg, &dconst1)
+	      && do_mpfr_arg1 (result, mpfr_acospi, arg, format));
+
+    CASE_CFN_ASINPI:
+    CASE_CFN_ASINPI_FN:
+      return (real_compare (GE_EXPR, arg, &dconstm1)
+	      && real_compare (LE_EXPR, arg, &dconst1)
+	      && do_mpfr_arg1 (result, mpfr_asinpi, arg, format));
+
+    CASE_CFN_ATANPI:
+    CASE_CFN_ATANPI_FN:
+      return do_mpfr_arg1 (result, mpfr_atanpi, arg, format);
+
+    CASE_CFN_COSPI:
+    CASE_CFN_COSPI_FN:
+      return do_mpfr_arg1 (result, mpfr_cospi, arg, format);
+
+    CASE_CFN_SINPI:
+    CASE_CFN_SINPI_FN:
+      return do_mpfr_arg1 (result, mpfr_sinpi, arg, format);
+
+    CASE_CFN_TANPI:
+    CASE_CFN_TANPI_FN:
+      return do_mpfr_arg1 (result, mpfr_tanpi, arg, format);
+#endif
+
     CASE_CFN_ERF:
     CASE_CFN_ERF_FN:
       return do_mpfr_arg1 (result, mpfr_erf, arg, format);
@@ -1431,6 +1461,12 @@ fold_const_call_sss (real_value *result, combined_fn fn,
     CASE_CFN_ATAN2:
     CASE_CFN_ATAN2_FN:
       return do_mpfr_arg2 (result, mpfr_atan2, arg0, arg1, format);
+
+#if MPFR_VERSION >= MPFR_VERSION_NUM(4, 2, 0)
+    CASE_CFN_ATAN2PI:
+    CASE_CFN_ATAN2PI_FN:
+      return do_mpfr_arg2 (result, mpfr_atan2pi, arg0, arg1, format);
+#endif
 
     CASE_CFN_FDIM:
     CASE_CFN_FDIM_FN:
