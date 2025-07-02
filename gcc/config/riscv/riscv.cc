@@ -13347,6 +13347,88 @@ riscv_expand_sssub (rtx dest, rtx x, rtx y)
   emit_move_insn (dest, gen_lowpart (mode, xmode_dest));
 }
 
+/* Implement the Xmode usmul.
+
+   b = SAT_MUL (a, b);
+   =>
+   _1 = a * b;
+   _2 = mulhu (a, b);
+   _overflow_p = _2 == 0;
+   _mask = - _overflow_p;
+   b = _1 | _mask;
+ */
+
+static void
+riscv_expand_xmode_usmul (rtx dest, rtx x, rtx y)
+{
+  machine_mode mode = GET_MODE (dest);
+
+  gcc_assert (mode == Xmode);
+
+  rtx mul = gen_reg_rtx (Xmode);
+  rtx mulhu = gen_reg_rtx (Xmode);
+  rtx overflow_p = gen_reg_rtx (Xmode);
+
+  riscv_emit_binary (MULT, mul, x, y);
+
+  if (TARGET_64BIT)
+    emit_insn (gen_usmuldi3_highpart (mulhu, x, y));
+  else
+    emit_insn (gen_usmulsi3_highpart (mulhu, x, y));
+
+  riscv_emit_binary (NE, overflow_p, mulhu, CONST0_RTX (Xmode));
+  riscv_emit_unary (NEG, overflow_p, overflow_p);
+  riscv_emit_binary (IOR, dest, mul, overflow_p);
+}
+
+/* Implement the non-Xmode usmul.
+
+   b = SAT_MUL (a, b);
+   =>
+   _1 = a * b;
+   _max = (T)-1
+   _overflow_p = _1 > _max;
+   _mask = - _overflow_p;
+   b = _1 | _mask;
+ */
+
+static void
+riscv_expand_non_xmode_usmul (rtx dest, rtx x, rtx y)
+{
+  machine_mode mode = GET_MODE (dest);
+  unsigned bitsize = GET_MODE_BITSIZE (mode).to_constant ();
+
+  gcc_assert (mode != Xmode);
+
+  rtx xmode_x = riscv_extend_to_xmode_reg (x, mode, ZERO_EXTEND);
+  rtx xmode_y = riscv_extend_to_xmode_reg (y, mode, ZERO_EXTEND);
+  rtx xmode_mul = gen_reg_rtx (Xmode);
+  rtx mul_max = gen_reg_rtx (Xmode);
+  rtx overflow_p = gen_reg_rtx (Xmode);
+
+  uint64_t max = ((uint64_t)1 << bitsize) - 1;
+
+  emit_move_insn (mul_max, GEN_INT (max));
+  riscv_emit_binary (MULT, xmode_mul, xmode_x, xmode_y);
+
+  riscv_emit_binary (LTU, overflow_p, mul_max, xmode_mul);
+  riscv_emit_unary (NEG, overflow_p, overflow_p);
+  riscv_emit_binary (IOR, xmode_mul, xmode_mul, overflow_p);
+
+  emit_move_insn (dest, gen_lowpart (mode, xmode_mul));
+}
+
+/* Implements the unsigned saturation mult standard name usmul for int mode.  */
+
+void
+riscv_expand_usmul (rtx dest, rtx x, rtx y)
+{
+  if (GET_MODE (dest) == Xmode)
+    return riscv_expand_xmode_usmul (dest, x, y) ;
+  else
+    return riscv_expand_non_xmode_usmul (dest, x, y);
+}
+
 /* Implement the unsigned saturation truncation for int mode.
 
    b = SAT_TRUNC (a);

@@ -137,6 +137,7 @@ extern void riscv_expand_usadd (rtx, rtx, rtx);
 extern void riscv_expand_ssadd (rtx, rtx, rtx);
 extern void riscv_expand_ussub (rtx, rtx, rtx);
 extern void riscv_expand_sssub (rtx, rtx, rtx);
+extern void riscv_expand_usmul (rtx, rtx, rtx);
 extern void riscv_expand_ustrunc (rtx, rtx);
 extern void riscv_expand_sstrunc (rtx, rtx);
 extern int riscv_register_move_cost (machine_mode, reg_class_t, reg_class_t);
