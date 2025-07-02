@@ -377,7 +377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  std::__niter_base(__last),
 			  __x);
 	  else
-	    std::__do_uninit_copy(__first, __last, __x);
+	    std::__do_uninit_fill(__first, __last, __x);
 	}
 
       // Overload for pointers.
