@@ -21021,9 +21021,6 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 			 "only available with "
 			 "%<-std=c++14%> or %<-std=gnu++14%>");
 	    }
-	  else if (parser->in_template_argument_list_p)
-	    error_at (token->location,
-		     "use of %<auto%> in template argument");
 	  else if (!flag_concepts)
 	    pedwarn (token->location, OPT_Wc__20_extensions,
 		     "use of %<auto%> in parameter declaration "
@@ -21033,6 +21030,11 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 		     "use of %<auto%> in parameter declaration "
 		     "only available with "
 		     "%<-std=c++14%> or %<-std=gnu++14%>");
+
+	  if (parser->in_template_argument_list_p)
+	    permerror_opt (token->location,
+			   OPT_Wabbreviated_auto_in_template_arg,
+			   "use of %<auto%> in template argument");
 	}
       else
 	type = make_auto ();
@@ -21479,6 +21481,10 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
 	  error_at (loc, "cannot declare a parameter with %<decltype(auto)%>");
 	  return error_mark_node;
 	}
+      if (parser->in_template_argument_list_p)
+	permerror_opt (placeholder->location,
+		       OPT_Wabbreviated_auto_in_template_arg,
+		       "use of %<auto%> in template argument");
       tree parm = build_constrained_parameter (con, proto, args);
       return synthesize_implicit_template_parm (parser, parm);
     }

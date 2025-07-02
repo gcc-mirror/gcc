@@ -3816,6 +3816,23 @@ Warn when a type with an ABI tag is used in a context that does not
 have that ABI tag.  See @ref{C++ Attributes} for more information
 about ABI tags.
 
+@opindex Wabbreviated-auto-in-template-arg
+@opindex Wno-abbreviated-auto-in-template-arg
+@item -Wno-abbreviated-auto-in-template-arg
+Disable the error for an @code{auto} placeholder type used within a
+template argument list to declare a C++20 abbreviated function
+template, e.g.
+
+@smallexample
+void f(S<auto>);
+@end smallexample
+
+This feature was proposed in the Concepts TS, but was not adopted into
+C++20; in the standard, a placeholder in a parameter declaration must
+appear as a decl-specifier.  The error can also be reduced to a
+warning by @option{-fpermissive} or
+@option{-Wno-error=abbreviated-auto-in-template-arg}.
+
 @opindex Wcomma-subscript
 @opindex Wno-comma-subscript
 @item -Wcomma-subscript @r{(C++ and Objective-C++ only)}
@@ -6443,6 +6460,7 @@ only by this flag, but it also downgrades some C and C++ diagnostics
 that have their own flag:
 
 @gccoptlist{
+-Wabbreviated-auto-in-template-arg @r{(C++ and Objective-C++ only)}
 -Wdeclaration-missing-parameter-type @r{(C and Objective-C only)}
 -Wimplicit-function-declaration @r{(C and Objective-C only)}
 -Wimplicit-int @r{(C and Objective-C only)}

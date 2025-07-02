@@ -139,6 +139,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Warray-parameter)
 Wassign-intercept
 UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-Wassign-intercept)
 
+Wabbreviated-auto-in-template-arg
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wabbreviated-auto-in-template-arg)
+
 Wbad-function-cast
 UrlSuffix(gcc/Warning-Options.html#index-Wbad-function-cast)
 
