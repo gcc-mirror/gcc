@@ -313,6 +313,15 @@ __INT_N(__int128)
       typedef __true_type __type;
     };
 
+#ifdef _GLIBCXX_USE_FLOAT128
+  template<>
+    struct __is_floating<__float128>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif
+
 #ifdef __STDCPP_FLOAT16_T__
   template<>
     struct __is_floating<_Float16>

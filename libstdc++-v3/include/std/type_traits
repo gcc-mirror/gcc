@@ -532,7 +532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 #endif
 
-#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
+#ifdef _GLIBCXX_USE_FLOAT128
   template<>
     struct __is_floating_point_helper<__float128>
     : public true_type { };
