@@ -3583,6 +3583,37 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 || (wi::eq_p (int_cst_1, itype_max) && wi::eq_p (int_cst_2, limit_1)))
 	 && wi::eq_p (int_cst_3, otype_max)))))))
 
+/* Saturation mult for unsigned integer.  */
+(if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
+  (match (unsigned_integer_sat_mul @0 @1)
+   /* SAT_U_MUL (X, Y) = {
+	WT x = (WT)a * (WT)b;
+	T max = -1;
+	if (x > (WT)(max))
+	  return max;
+	else
+	  return (T)x;
+      }
+      while WT is uint128_t, T is uint8_t, uint16_t, uint32_t or uint64_t.  */
+   (convert@4 (min (widen_mult:c@3 (convert@5 (convert @0))
+				   (convert@6 (convert @1)))
+		   INTEGER_CST@2))
+   (if (types_match (type, @0, @1) && types_match (type, @4))
+    (with
+     {
+      unsigned prec = TYPE_PRECISION (type);
+      unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+      unsigned cvt5_prec = TYPE_PRECISION (TREE_TYPE (@5));
+      unsigned cvt6_prec = TYPE_PRECISION (TREE_TYPE (@6));
+      unsigned hw_int_prec = sizeof (HOST_WIDE_INT) * 8;
+      wide_int c2 = wi::to_wide (@2);
+      wide_int max = wi::mask (prec, false, widen_prec);
+      bool c2_is_max_p = wi::eq_p (c2, max);
+      bool widen_mult_p = cvt5_prec == cvt6_prec && hw_int_prec == cvt5_prec;
+     }
+     (if (widen_prec > prec && c2_is_max_p && widen_mult_p)))))
+)
+
 /* The boundary condition for case 10: IMM = 1:
    SAT_U_SUB = X >= IMM ? (X - IMM) : 0.
    simplify (X != 0 ? X + ~0 : 0) to X - (X != 0).  */

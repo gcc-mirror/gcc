@@ -4064,6 +4064,7 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
 extern bool gimple_unsigned_integer_sat_add (tree, tree*, tree (*)(tree));
 extern bool gimple_unsigned_integer_sat_sub (tree, tree*, tree (*)(tree));
 extern bool gimple_unsigned_integer_sat_trunc (tree, tree*, tree (*)(tree));
+extern bool gimple_unsigned_integer_sat_mul (tree, tree*, tree (*)(tree));
 
 extern bool gimple_signed_integer_sat_add (tree, tree*, tree (*)(tree));
 extern bool gimple_signed_integer_sat_sub (tree, tree*, tree (*)(tree));
@@ -4213,6 +4214,30 @@ match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gassign *stmt)
 
   if (gimple_unsigned_integer_sat_sub (lhs, ops, NULL))
     build_saturation_binary_arith_call_and_replace (gsi, IFN_SAT_SUB, lhs,
+						    ops[0], ops[1]);
+}
+
+/*
+ * Try to match saturation unsigned mul.
+ *   _1 = (unsigned int) a_6(D);
+ *   _2 = (unsigned int) b_7(D);
+ *   x_8 = _1 * _2;
+ *   overflow_9 = x_8 > 255;
+ *   _3 = (unsigned char) overflow_9;
+ *   _4 = -_3;
+ *   _5 = (unsigned char) x_8;
+ *   _10 = _4 | _5;
+ *   =>
+ *   _10 = .SAT_SUB (a_6, b_7);  */
+
+static void
+match_unsigned_saturation_mul (gimple_stmt_iterator *gsi, gassign *stmt)
+{
+  tree ops[2];
+  tree lhs = gimple_assign_lhs (stmt);
+
+  if (gimple_unsigned_integer_sat_mul (lhs, ops, NULL))
+    build_saturation_binary_arith_call_and_replace (gsi, IFN_SAT_MUL, lhs,
 						    ops[0], ops[1]);
 }
 
@@ -6469,6 +6494,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      break;
 
 	    case NOP_EXPR:
+	      match_unsigned_saturation_mul (&gsi, as_a<gassign *> (stmt));
 	      match_unsigned_saturation_trunc (&gsi, as_a<gassign *> (stmt));
 	      match_saturation_add_with_assign (&gsi, as_a<gassign *> (stmt));
 	      break;
