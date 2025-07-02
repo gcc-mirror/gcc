@@ -8690,8 +8690,8 @@
 	  (unspec:<VPRED>
 	    [(match_operand:<VPRED> 1)
 	     (const_int SVE_KNOWN_PTRUE)
-	     (match_operand:SVE_FULL_F 2 "register_operand" "w, w")
-	     (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "Dz, w")]
+	     (match_operand:SVE_F 2 "register_operand" "w, w")
+	     (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "Dz, w")]
 	    SVE_COND_FP_CMP_I0)
 	  (match_operand:<VPRED> 4 "register_operand" "Upl, Upl")))]
   "TARGET_SVE"
@@ -8713,8 +8713,8 @@
 	  (unspec:<VPRED>
 	    [(match_operand:<VPRED> 1)
 	     (const_int SVE_KNOWN_PTRUE)
-	     (match_operand:SVE_FULL_F 2 "register_operand" "w")
-	     (match_operand:SVE_FULL_F 3 "register_operand" "w")]
+	     (match_operand:SVE_F 2 "register_operand" "w")
+	     (match_operand:SVE_F 3 "register_operand" "w")]
 	    UNSPEC_COND_FCMUO)
 	  (match_operand:<VPRED> 4 "register_operand" "Upl")))]
   "TARGET_SVE"
@@ -8740,8 +8740,8 @@
 	      (unspec:<VPRED>
 	        [(match_operand:<VPRED> 1)
 	         (const_int SVE_KNOWN_PTRUE)
-	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
-	         (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "wDz")]
+	         (match_operand:SVE_F 2 "register_operand" "w")
+	         (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "wDz")]
 	        SVE_COND_FP_CMP_I0))
 	    (match_operand:<VPRED> 4 "register_operand" "Upa"))
 	  (match_dup:<VPRED> 1)))
@@ -8777,8 +8777,8 @@
 	      (unspec:<VPRED>
 	        [(match_operand:<VPRED> 1)
 	         (const_int SVE_KNOWN_PTRUE)
-	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
-	         (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "wDz")]
+	         (match_operand:SVE_F 2 "register_operand" "w")
+	         (match_operand:SVE_F 3 "aarch64_simd_reg_or_zero" "wDz")]
 	        SVE_COND_FP_CMP_I0))
 	    (not:<VPRED>
 	      (match_operand:<VPRED> 4 "register_operand" "Upa")))
@@ -8808,6 +8808,7 @@
 }
 )
 
+;; Same for unordered comparisons.
 (define_insn_and_split "*fcmuo<mode>_bic_combine"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
 	(and:<VPRED>
@@ -8816,8 +8817,8 @@
 	      (unspec:<VPRED>
 	        [(match_operand:<VPRED> 1)
 	         (const_int SVE_KNOWN_PTRUE)
-	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
-	         (match_operand:SVE_FULL_F 3 "register_operand" "w")]
+	         (match_operand:SVE_F 2 "register_operand" "w")
+	         (match_operand:SVE_F 3 "register_operand" "w")]
 	        UNSPEC_COND_FCMUO))
 	    (match_operand:<VPRED> 4 "register_operand" "Upa"))
 	  (match_dup:<VPRED> 1)))
@@ -8843,7 +8844,6 @@
 }
 )
 
-;; Same for unordered comparisons.
 (define_insn_and_split "*fcmuo<mode>_nor_combine"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
 	(and:<VPRED>
@@ -8852,8 +8852,8 @@
 	      (unspec:<VPRED>
 	        [(match_operand:<VPRED> 1)
 	         (const_int SVE_KNOWN_PTRUE)
-	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
-	         (match_operand:SVE_FULL_F 3 "register_operand" "w")]
+	         (match_operand:SVE_F 2 "register_operand" "w")
+	         (match_operand:SVE_F 3 "register_operand" "w")]
 	        UNSPEC_COND_FCMUO))
 	    (not:<VPRED>
 	      (match_operand:<VPRED> 4 "register_operand" "Upa")))
