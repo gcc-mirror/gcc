@@ -4573,9 +4573,10 @@
   "&& true"
   [(set (match_dup 3) (match_dup 2))
    (set (match_dup 0)
-	(unspec:SI [(match_dup 3) (subreg:SI (match_dup 1) 0)] CRC))]
+	(unspec:SI [(match_dup 3) (match_dup 1)] CRC))]
   {
     operands[3] = gen_reg_rtx (<MODE>mode);
+    operands[1] = lowpart_subreg (SImode, operands[1], DImode);
   })
 
 ;; With normal or medium code models, if the only use of a pc-relative
