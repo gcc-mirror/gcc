@@ -280,8 +280,8 @@ namespace __format
       // in the format-spec, e.g. "{:L%a}" is localized and locale-specific,
       // but "{:L}" is only localized and "{:%a}" is only locale-specific.
       unsigned _M_locale_specific : 1;
-      // Indicates that we are handling duration.
-      unsigned _M_time_only : 1;
+      // Indicates that we are handling time_point.
+      unsigned _M_time_point : 1;
       // Indicates that duration should be treated as floating point.
       unsigned _M_floating_point_rep : 1;
       // Indicate that duration uses user-defined representation.
@@ -693,8 +693,11 @@ namespace __format
 		  __allowed_mods = _Mod_O;
 		  break;
 		case 'j':
-		  __needed = __spec._M_time_only ? _HoursMinutesSeconds
-						 : _DayOfYear;
+		  __needed = __parts & _DayOfYear;
+		  // If we do not know day-of-year then we must have a duration,
+		  // which is to be formatted as decimal number of days.
+		  if (__needed == _None)
+		    __needed = _HoursMinutesSeconds;
 		  break;
 		case 'm':
 		  __needed = _Month;
@@ -919,7 +922,13 @@ namespace __format
       {
 	switch (__conv)
 	  {
+	  case 'a':
+	  case 'A':
+	  case 'b':
+	  case 'B':
 	  case 'c':
+	  case 'h':
+	  case 'p':
 	  case 'r':
 	  case 'x':
 	  case 'X':
@@ -946,6 +955,32 @@ namespace __format
 	    __out = _M_write(std::move(__out), __loc, __os.view());
 	  return __out;
 	}
+
+      void
+      _M_check_ok(const _ChronoData<_CharT>& __t, _CharT __conv) const
+      {
+	// n.b. for time point all date parts are computed, so
+	// they are always ok.
+	if (_M_spec._M_time_point || _M_spec._M_debug)
+	  return;
+
+	switch (__conv)
+	{
+	case 'a':
+	case 'A':
+	  if (!__t._M_weekday.ok()) [[unlikely]]
+	    __throw_format_error("format error: invalid weekday");
+	  return;
+	case 'b':
+	case 'h':
+	case 'B':
+	  if (!__t._M_month.ok()) [[unlikely]]
+	    __throw_format_error("format error: invalid month");
+	  return;
+	default:
+	  return;
+	}
+      }
 
       template<typename _OutIter, typename _FormatContext>
 	_OutIter
@@ -1003,6 +1038,8 @@ namespace __format
 	  do
 	    {
 	      _CharT __c = *__first++;
+	      _M_check_ok(__t, __c);
+
 	      if (__use_locale_fmt && _S_localized_spec(__c, __mod)) [[unlikely]]
 		__out = _M_locale_fmt(std::move(__out), __fc.locale(),
 				      __tm, __c, __mod);
@@ -1153,11 +1190,8 @@ namespace __format
 	{
 	  // %a Locale's abbreviated weekday name.
 	  // %A Locale's full weekday name.
-	  if (!__wd.ok())
+	  if (_M_spec._M_debug && !__wd.ok())
 	    {
-	      if (!_M_spec._M_debug)
-		__throw_format_error("format error: invalid weekday");
-
 	      _CharT __buf[3];
 	      __out = __format::__write(std::move(__out),
 					_S_str_d1(__buf, __wd.c_encoding()));
@@ -1183,11 +1217,8 @@ namespace __format
 	{
 	  // %b Locale's abbreviated month name.
 	  // %B Locale's full month name.
-	  if (!__m.ok())
+	  if (_M_spec._M_debug && !__m.ok())
 	    {
-	      if (!_M_spec._M_debug)
-		__throw_format_error("format error: invalid month");
-
 	      _CharT __buf[3];
 	      __out = __format::__write(std::move(__out),
 					_S_str_d1(__buf, (unsigned)__m));
@@ -1419,7 +1450,7 @@ namespace __format
 	_OutIter
 	_M_j(const _ChronoData<_CharT>& __t, _OutIter __out) const
 	{
-	  if (_M_spec._M_time_only)
+	  if (!_M_spec._M_needs(_ChronoParts::_DayOfYear))
 	  {
 	    // Decimal number of days, without padding.
 	    auto __d = chrono::floor<chrono::days>(__t._M_hours).count();
@@ -1766,7 +1797,7 @@ namespace __format
       {
 	if (__n < 100) [[likely]]
 	  return _S_two_digits(__n);
-        return _S_str_d3(__buf, __n);
+	return _S_str_d3(__buf, __n);
       }
 
       // Returns decimal representation of __n, padded to 3 digits.
@@ -1811,7 +1842,7 @@ namespace __format
 	  using enum _ChronoParts;
 
 	  _ChronoSpec<_CharT> __res{};
-	  __res._M_time_only = (__parts & _Date) == 0;
+	  __res._M_time_point = (__parts & _DateTime) == _DateTime;
 	  __res._M_floating_point_rep = chrono::treat_as_floating_point_v<_Rep>;
 	  __res._M_custom_rep = !is_arithmetic_v<_Rep>;
 	  __res._M_prec = chrono::hh_mm_ss<_Duration>::fractional_width;
