@@ -1,3 +1,58 @@
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/120919
+	* gcc.target/powerpc/builtin_altivec_tr_stxvr_runnable.c (main): Change
+	sc, ss, si and sll vars from scalars to arrays of 2 elements,
+	initialize and test just the first one though.
+
+2025-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/finalizable2.ads: New test.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120471
+	* g++.dg/ubsan/pr120471.C: New test.
+	* g++.dg/parse/pr120471.C: New test.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/s390/vector/vec-abs-emu.c: Add -fno-stack-protector
+	to dg-options.
+	* gcc.target/s390/vector/vec-max-emu.c: Likewise.
+	* gcc.target/s390/vector/vec-min-emu.c: Likewise.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* c-c++-common/asan/pr120608-3.c: New test.
+	* c-c++-common/asan/pr120608-4.c: New test.
+	* g++.dg/asan/pr120608-3.C: New test.
+	* g++.dg/asan/pr120608-4.C: New test.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119318
+	PR testsuite/120082
+	* gcc.dg/ipa/pr119318.c (main): Expect different result on big endian
+	from little endian, on unexpected endianness or int/int128 sizes don't
+	test anything.  Formatting fixes.
+
 2025-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/concat6.adb: New test.

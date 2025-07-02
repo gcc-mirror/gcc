@@ -1,3 +1,18 @@
+2025-07-01  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-06-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/120648
+	* include/bits/chrono_io.h (__formatter_chrono::_M_format_to):
+	Handle %c, %r, %x and %X by passing them to _M_c_r_x_X.
+	(__formatter_chrono::_M_c_r_x_X): Reworked from _M_c.
+	(__formatter_chrono::_M_c): Renamed into above.
+	(__formatter_chrono::_M_r, __formatter_chrono::_M_x)
+	(__formatter_chrono::_M_X): Removed.
+	* testsuite/std/time/format/pr117214.cc: New tests for %r, %x,
+	%X with date, time and durations.
+
 2025-06-30  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	Backported from master:

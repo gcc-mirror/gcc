@@ -1,3 +1,19 @@
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* passes.def (pass_musttail): Move before pass_sanopt.
+	* tree-tailcall.cc (empty_eh_cleanup): Handle GIMPLE_RESX
+	which doesn't throw externally through recursion on single
+	eh edge (if any and cnt still allows that).
+	(find_tail_calls): Add ESUCC, IGNORED_EDGES and MUST_SEE_BBS
+	arguments.  Handle GIMPLE_CONDs for non-simplified cleanups with
+	finally_tmp temporaries both on backward and forward walks, adjust
+	recursive call.
+	(tree_optimize_tail_calls_1): Adjust find_tail_calls callers.
+
 2025-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-fold.cc (fold_const_aggregate_ref_1) <COMPONENT_REF>:

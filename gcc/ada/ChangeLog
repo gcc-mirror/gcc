@@ -1,3 +1,77 @@
+2025-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/120705
+	* exp_ch6.adb (Needs_BIP_Collection): Always return False if the
+	type has relaxed finalization.
+
+2025-07-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Build_Heap_Or_Pool_Allocator): Test not Has_Relaxed_Finalization
+	as a guard against retrieving BIP_Collection formal (and related code).
+
+2025-07-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Constrain_Corresponding_Record): Inherit Class_Wide_Type on the
+	created constrained subtype.
+
+2025-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Shift_Address_For_Descriptor): Add dummy variable
+	to make sure that System_Storage_Elements is loaded.
+
+2025-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Shift_Address_For_Descriptor): New function.
+	(Make_Address_For_Finalize): Call above function.
+	(Make_Finalize_Address_Stmts): Likewise.
+	* exp_util.ads (Is_Constr_Array_Subt_Of_Unc_With_Controlled): New
+	predicate.
+	* exp_util.adb (Is_Constr_Array_Subt_Of_Unc_With_Controlled): Ditto.
+	(Remove_Side_Effects): Call above predicate.
+	* sem_ch3.adb (Analyze_Object_Declaration): Likewise.
+	* sem_ch4.adb (Analyze_Allocator): Allocate the bounds by setting
+	Is_Constr_Array_Subt_With_Bounds when appropriate.
+
+2025-07-01  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Try_Object_Operation): Handle mutably tagged
+	class-wide type prefix.
+
+2025-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Finalize_Address): Do not go to the root type for
+	array types.
+
+2025-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (Is_Finalizable_Access): New predicate.
+	(Is_Non_BIP_Func_Call): Delete.
+	(Is_Secondary_Stack_BIP_Func_Call): Likewise.
+	* exp_util.adb (Is_Finalizable_Access): New predicate.
+	(Initialized_By_Aliased_BIP_Func_Call): Delete.
+	(Initialized_By_Reference): Likewise.
+	(Is_Aliased): Only consider the nontransient object serviced by
+	the transient scope.
+	(Is_Part_Of_BIP_Return_Statement): Minor tweak.
+	(Is_Finalizable_Transient): Remove calls to Initialized_By_Reference
+	and Initialized_By_Aliased_BIP_Func_Call.
+	Call Is_Finalizable_Access for access objects.
+	(Is_Non_BIP_Func_Call): Delete.
+	(Is_Secondary_Stack_BIP_Func_Call): Likewise.
+	(Requires_Cleanup_Actions): Call Is_Finalizable_Access for access
+	objects.
+	(Side_Effect_Free): Return True for N_Reference.
+	* exp_ch7.adb (Build_Finalizer.Process_Declarations): Call
+	Is_Finalizable_Access for access objects.
+
+2025-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Is_Expression_Of_Func_Return): New predicate.
+	(Is_Related_To_Func_Return): Call Is_Expression_Of_Func_Return.
+	(Remove_Side_Effects): Generate a temporary for a function call
+	that returns a constrained array type with controlled component
+	and an unconstrained first subtype.
+
 2025-06-30  Bob Duff  <duff@adacore.com>
 
 	* exp_attr.adb (Attribute_Max_Size_In_Storage_Elements):
