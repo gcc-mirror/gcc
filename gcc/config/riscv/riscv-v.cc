@@ -1598,7 +1598,7 @@ expand_const_vector_interleaved_stepped_npatterns (rtx target, rtx src,
 	  shifted_vid = gen_reg_rtx (mode);
 	  rtx shift = gen_int_mode (1, Xmode);
 	  rtx shift_ops[] = {shifted_vid, vid, shift};
-	  emit_vlmax_insn (code_for_pred_scalar (ASHIFT, mode), BINARY_OP,
+	  emit_vlmax_insn (code_for_pred_scalar (LSHIFTRT, mode), BINARY_OP,
 			   shift_ops);
 	}
       else
