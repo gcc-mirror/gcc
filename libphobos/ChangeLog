@@ -1,3 +1,8 @@
+2025-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.tgt <i?86-*-darwin1[2-7]>: Also consider minor
+	versions supported.
+
 2025-05-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116792

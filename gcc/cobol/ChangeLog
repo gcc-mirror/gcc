@@ -1,3 +1,11 @@
+2025-07-01  James K. Lowden  <jklowden@cobolworx.com>
+
+	* Make-lang.in: Use && instead of semicolon between commands.
+
+2025-07-01  Robert Dubner  <rdubner@symas.com>
+
+	* parse.y: printf() of size_t is %zu, not %ld.
+
 2025-06-30  James K. Lowden  <jklowden@cobolworx.com>
 
 	PR cobol/120772

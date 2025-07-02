@@ -1,3 +1,24 @@
+2025-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/120789
+	* include/bits/ranges_algo.h (__remove_if_fn::operator()): Use
+	ranges::iter_move(iter) instead of std::move(*iter).
+	* testsuite/25_algorithms/remove_if/120789.cc: New test.
+
+2025-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/120789
+	* include/bits/ranges_algo.h (__unique_fn::operator()): Use
+	ranges::iter_move(iter) instead of std::move(*iter).
+	* testsuite/25_algorithms/unique/120789.cc: New test.
+
+2025-07-01  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (default_accessor): New class.
+	* src/c++23/std.cc.in: Register default_accessor.
+	* testsuite/23_containers/mdspan/accessors/default.cc: New test.
+	* testsuite/23_containers/mdspan/accessors/default_neg.cc: New test.
+
 2025-06-27  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/100795

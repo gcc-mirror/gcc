@@ -1,3 +1,25 @@
+2025-07-01  Harald Anlauf  <anlauf@gmx.de>
+
+	* coarray.cc (check_add_new_component): Treat pure and elemental
+	intrinsic functions the same as non-intrinsic ones.
+	(create_caf_add_data_parameter_type): Fix front-end memleaks.
+	* trans-intrinsic.cc (conv_caf_func_index): Likewise.
+
+2025-07-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120847
+	* coarray.cc (check_add_new_comp_handle_array): Make the count
+	of components static to be able to create more than one.  Create
+	an array component only for array expressions.
+
+2025-07-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120843
+	* resolve.cc (resolve_operator): Report inconsistent coranks
+	only when not referencing this_image.
+	(gfc_op_rank_conformable): Treat coranks as inconformable only
+	when a coindex other then implicit this_image is used.
+
 2025-06-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/120784

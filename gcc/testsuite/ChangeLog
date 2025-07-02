@@ -1,3 +1,128 @@
+2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/ubsan/pointer-counted-by-bounds-2.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-3.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-4.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-5.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds.c: New test.
+
+2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/pointer-counted-by-4-char.c: New test.
+	* gcc.dg/pointer-counted-by-4-float.c: New test.
+	* gcc.dg/pointer-counted-by-4-struct.c: New test.
+	* gcc.dg/pointer-counted-by-4-union.c: New test.
+	* gcc.dg/pointer-counted-by-4.c: New test.
+	* gcc.dg/pointer-counted-by-5.c: New test.
+	* gcc.dg/pointer-counted-by-6.c: New test.
+	* gcc.dg/pointer-counted-by-7.c: New test.
+
+2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/flex-array-counted-by.c: Update test.
+	* gcc.dg/pointer-counted-by-1.c: New test.
+	* gcc.dg/pointer-counted-by-2.c: New test.
+	* gcc.dg/pointer-counted-by-3.c: New test.
+	* gcc.dg/pointer-counted-by.c: New test.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/120919
+	* gcc.target/powerpc/builtin_altivec_tr_stxvr_runnable.c (main): Change
+	sc, ss, si and sll vars from scalars to arrays of 2 elements,
+	initialize and test just the first one though.
+
+2025-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/finalizable2.ads: New test.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/s390/vector/vec-abs-emu.c: Add -fno-stack-protector
+	to dg-options.
+	* gcc.target/s390/vector/vec-max-emu.c: Likewise.
+	* gcc.target/s390/vector/vec-min-emu.c: Likewise.
+
+2025-07-01  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/Intrinsics_without_FUNCTION_keyword__2_.cob:
+	Append INTRINSIC keyword.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120471
+	* g++.dg/ubsan/pr120471.C: New test.
+	* g++.dg/parse/pr120471.C: New test.
+
+2025-07-01  Remi Machet  <rmachet@nvidia.com>
+
+	* gcc.target/aarch64/simd/shrn2subhn.c: New test.
+
+2025-07-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120847
+	* gfortran.dg/coarray/coindexed_7.f90: New test.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119318
+	PR testsuite/120082
+	* gcc.dg/ipa/pr119318.c (main): Expect different result on big endian
+	from little endian, on unexpected endianness or int/int128 sizes don't
+	test anything.  Formatting fixes.
+
+2025-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/preserve-none-1.c (dg-options): Add
+	-fomit-frame-pointer.
+
+2025-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.target/i386/memset-pr101366-1.C (dg-options): Add
+	-fasynchronous-unwind-tables -fdwarf2-cfi-asm.
+	* g++.target/i386/memset-pr101366-2.C: Likewise.
+	* g++.target/i386/memset-pr118276-1a.C: Likewise.
+	* g++.target/i386/memset-pr118276-1b.C: Likewise.
+	* g++.target/i386/memset-pr118276-1c.C: Likewise.
+	* gcc.target/i386/memset-pr70308-1a.c: Likewise.
+	* gcc.target/i386/memset-strategy-25.c: Likewise.
+	* gcc.target/i386/memset-strategy-28.c: Likewise.
+	* gcc.target/i386/memset-strategy-29.c: Likewise.
+	* gcc.target/i386/memset-strategy-30.c: Likewise.
+	* gcc.target/i386/pr92080-17.c: Likewise.
+	* gcc.target/i386/memset-pr70308-1b.c: Likewise.  Also add
+	-fomit-frame-pointer.
+	* g++.target/i386/memset-pr108585-1a.C:  (dg-options): Add
+	-fasynchronous-unwind-tables -fdwarf2-cfi-asm.  Also add
+	-mno-stackrealign -fomit-frame-pointer.
+	* g++.target/i386/memset-pr108585-1b.C: Likewise.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* c-c++-common/asan/pr120608-3.c: New test.
+	* c-c++-common/asan/pr120608-4.c: New test.
+	* g++.dg/asan/pr120608-3.C: New test.
+	* g++.dg/asan/pr120608-4.C: New test.
+
+2025-07-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120843
+	* gfortran.dg/coarray/coindexed_6.f90: New test.
+
+2025-07-01  Yuao Ma  <c8ef@outlook.com>
+
+	* lib/target-supports.exp (foldable_pi_based_trigonometry): New
+	effective target.
+	* gcc.dg/torture/builtin-math-9.c: New test.
+
+2025-07-01  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/120631
+	* gcc.dg/dfp/pr120631.c: Drop overrider of dg-do default action.
+	* gcc.dg/dfp/bitint-9.c: Likewise.
+	* gcc.dg/dfp/bitint-10.c: Likewise.
+
 2025-06-30  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/120242

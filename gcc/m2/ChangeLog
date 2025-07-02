@@ -1,3 +1,9 @@
+2025-07-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120912
+	* gm2-libs-iso/IOChanUtils.def (GetFile): New procedure function.
+	* gm2-libs-iso/IOChanUtils.mod (GetFile): New procedure function.
+
 2025-06-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117203

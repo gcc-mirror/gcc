@@ -1,3 +1,65 @@
+2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* tree-object-size.cc (access_with_size_object_size): Update comments
+	for pointers with .ACCESS_WITH_SIZE.
+	(collect_object_sizes_for): Propagate size info through GIMPLE_ASSIGN
+	for pointers with .ACCESS_WITH_SIZE.
+
+2025-07-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* doc/extend.texi: Extend counted_by attribute to pointer fields in
+	structures. Add one more requirement to pointers with counted_by
+	attribute.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120471
+	* tree.h (address_invariant_p): New function.
+	* tree.cc (address_invariant_p): New function.
+	(tree_invariant_p_1): Use it for ADDR_EXPR handling.  Formatting
+	tweak.
+
+2025-07-01  Remi Machet  <rmachet@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (*shrn_to_subhn_<mode>): Add pattern
+	converting mvn+shrn into mvni+subhn.
+
+2025-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120608
+	* passes.def (pass_musttail): Move before pass_sanopt.
+	* tree-tailcall.cc (empty_eh_cleanup): Handle GIMPLE_RESX
+	which doesn't throw externally through recursion on single
+	eh edge (if any and cnt still allows that).
+	(find_tail_calls): Add ESUCC, IGNORED_EDGES and MUST_SEE_BBS
+	arguments.  Handle GIMPLE_CONDs for non-simplified cleanups with
+	finally_tmp temporaries both on backward and forward walks, adjust
+	recursive call.
+	(tree_optimize_tail_calls_1): Adjust find_tail_calls callers.
+
+2025-07-01  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/aarch64/aarch64-sys-regs.def: Copy from Binutils.
+
+2025-07-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR debug/120902
+	* print-tree.cc (debug with const tree_node *): Call debug_tree
+	instead of debug.
+
+2025-07-01  Yuao Ma  <c8ef@outlook.com>
+
+	* fold-const-call.cc (fold_const_call_ss): Constant fold for
+	single arg pi-based trigonometric builtins.
+	(fold_const_call_sss): Constant fold for double arg pi-based
+	trigonometric builtins.
+	* fold-const.cc (negate_mathfn_p): asinpi/atanpi is odd func.
+	(tree_call_nonnegative_warnv_p): acospi always non-neg,
+	asinpi/atanpi non-neg iff arg non-neg.
+	* tree-call-cdce.cc (can_test_argument_range): Add acospi/asinpi.
+	(edom_only_function): Add acospi/asinpi/cospi/sinpi.
+	(get_no_error_domain): Add acospi/asinpi.
+
 2025-06-30  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/120242
