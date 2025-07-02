@@ -2816,12 +2816,16 @@ epiphany_vector_alignment_reachable (const_tree type, bool is_packed)
 
 static bool
 epiphany_support_vector_misalignment (machine_mode mode, const_tree type,
-				      int misalignment, bool is_packed)
+				      int misalignment, bool is_packed,
+				      bool is_gather_scatter)
 {
+  if (is_gather_scatter)
+    return true;
   if (GET_MODE_SIZE (mode) == 8 && misalignment % 4 == 0)
     return true;
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
-						      is_packed);
+						      is_packed,
+						      is_gather_scatter);
 }
 
 /* STRUCTURE_SIZE_BOUNDARY seems a bit crude in how it enlarges small

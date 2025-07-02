@@ -356,7 +356,8 @@ static int aarch64_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 							 const_tree type,
 							 int misalignment,
-							 bool is_packed);
+							 bool is_packed,
+							 bool is_gather_scatter);
 static machine_mode aarch64_simd_container_mode (scalar_mode, poly_int64);
 static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
 					    aarch64_addr_query_type);
@@ -24414,10 +24415,14 @@ aarch64_simd_vector_alignment_reachable (const_tree type, bool is_packed)
 static bool
 aarch64_builtin_support_vector_misalignment (machine_mode mode,
 					     const_tree type, int misalignment,
-					     bool is_packed)
+					     bool is_packed,
+					     bool is_gather_scatter)
 {
   if (TARGET_SIMD && STRICT_ALIGNMENT)
     {
+      if (is_gather_scatter)
+	return true;
+
       /* Return if movmisalign pattern is not supported for this mode.  */
       if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
         return false;
@@ -24427,7 +24432,8 @@ aarch64_builtin_support_vector_misalignment (machine_mode mode,
 	return false;
     }
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
-						      is_packed);
+						      is_packed,
+						      is_gather_scatter);
 }
 
 /* If VALS is a vector constant that can be loaded into a register

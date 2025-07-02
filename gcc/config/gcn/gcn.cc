@@ -5339,8 +5339,12 @@ gcn_preferred_vector_alignment (const_tree type)
 static bool
 gcn_vectorize_support_vector_misalignment (machine_mode ARG_UNUSED (mode),
 					   const_tree type, int misalignment,
-					   bool is_packed)
+					   bool is_packed,
+					   bool is_gather_scatter)
 {
+  if (is_gather_scatter)
+    return true;
+
   if (is_packed)
     return false;
 

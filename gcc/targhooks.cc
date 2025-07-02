@@ -1556,6 +1556,8 @@ default_builtin_support_vector_misalignment (machine_mode mode,
 					     int misalignment
 					     ATTRIBUTE_UNUSED,
 					     bool is_packed
+					     ATTRIBUTE_UNUSED,
+					     bool is_gather_scatter
 					     ATTRIBUTE_UNUSED)
 {
   if (optab_handler (movmisalign_optab, mode) != CODE_FOR_nothing)

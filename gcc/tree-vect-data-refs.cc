@@ -7479,7 +7479,7 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
   if (misalignment == DR_MISALIGNMENT_UNKNOWN)
     is_packed = not_size_aligned (DR_REF (dr));
   if (targetm.vectorize.support_vector_misalignment (mode, type, misalignment,
-						     is_packed))
+						     is_packed, false))
     return dr_unaligned_supported;
 
   /* Unsupported.  */
