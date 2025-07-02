@@ -1109,6 +1109,8 @@ proc check-function-bodies { args } {
 		append function_regexp ".*"
 	    } elseif { [regexp {^\.L} $line] } {
 		append function_regexp $line "\n"
+	    } elseif { [regexp {^[0-9]+:} $line] } {
+		append function_regexp $line "\n"
 	    } else {
 		append function_regexp $config(line_prefix) $line "\n"
 	    }
