@@ -4,6 +4,8 @@
 #include <stdint-gcc.h>
 #include <stdbool.h>
 
+typedef __uint128_t uint128_t;
+
 /******************************************************************************/
 /* Saturation Add (unsigned and signed)                                       */
 /******************************************************************************/
@@ -647,5 +649,26 @@ sat_s_trunc_##WT##_to_##NT##_fmt_8 (WT x)             \
 
 #define RUN_SAT_S_TRUNC_FMT_8(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_8 (x)
 #define RUN_SAT_S_TRUNC_FMT_8_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_8(NT, WT, x)
+
+/******************************************************************************/
+/* Saturation Mult (unsigned and signed)                                  */
+/******************************************************************************/
+
+#define DEF_SAT_U_MUL_FMT_1(NT, WT)             \
+NT __attribute__((noinline))                    \
+sat_u_mul_##NT##_from_##WT##_fmt_1 (NT a, NT b) \
+{                                               \
+  WT x = (WT)a * (WT)b;                         \
+  NT max = -1;                                  \
+  if (x > (WT)(max))                            \
+    return max;                                 \
+  else                                          \
+    return (NT)x;                               \
+}
+
+#define DEF_SAT_U_MUL_FMT_1_WRAP(NT, WT) DEF_SAT_U_MUL_FMT_1(NT, WT)
+#define RUN_SAT_U_MUL_FMT_1(NT, WT, a, b) \
+  sat_u_mul_##NT##_from_##WT##_fmt_1 (a, b)
+#define RUN_SAT_U_MUL_FMT_1_WRAP(NT, WT, a, b) RUN_SAT_U_MUL_FMT_1(NT, WT, a, b)
 
 #endif
