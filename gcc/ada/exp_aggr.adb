@@ -6732,6 +6732,7 @@ package body Exp_Aggr is
       function Build_Size_Expr (Comp : Node_Id) return Node_Id is
          Lo, Hi       : Node_Id;
          It           : Node_Id;
+         It_Subt      : Entity_Id;
          Siz_Exp      : Node_Id := Empty;
          Choice       : Node_Id;
          Temp_Siz_Exp : Node_Id;
@@ -6806,20 +6807,22 @@ package body Exp_Aggr is
          elsif Nkind (Comp) = N_Iterated_Component_Association then
             if Present (Iterator_Specification (Comp)) then
 
-               --  If the static size of the iterable object is known,
+               --  If the size of the iterable object can be determined,
                --  attempt to return it.
 
                It := Name (Iterator_Specification (Comp));
                Preanalyze (It);
 
-               --  Handle the simplest cases for now where It denotes an array
-               --  object.
+               It_Subt := Etype (It);
+
+               --  Handle the simplest cases for now, where It denotes an array
+               --  object or a container object.
 
                if Nkind (It) in N_Identifier
-                 and then Ekind (Etype (It)) = E_Array_Subtype
+                 and then Ekind (It_Subt) = E_Array_Subtype
                then
                   declare
-                     Idx_N : Node_Id := First_Index (Etype (It));
+                     Idx_N : Node_Id := First_Index (It_Subt);
                      Siz_Exp : Node_Id := Empty;
                   begin
                      while Present (Idx_N) loop
@@ -6852,6 +6855,85 @@ package body Exp_Aggr is
                      end loop;
 
                      return Siz_Exp;
+                  end;
+
+               --  Case of iterating over a container object. Note that this
+               --  must be a simple object, and not something like a function
+               --  call (which might have side effects, and we wouldn't want
+               --  it to be evaluated more than once). We take advantage of
+               --  RM22 4.3.5(40/5), which allows implementation-defined
+               --  behavior for the parameter passed to the Empty function,
+               --  and here use the container Length function when available.
+               --  Class-wide objects are also excluded, since those would
+               --  lead to dispatching, which could call a user-defined
+               --  overriding of Length that might have arbitrary effects.
+
+               elsif Is_Entity_Name (It)
+                 and then Is_Object (Entity (It))
+                 and then Ekind (It_Subt) in Record_Kind
+                 and then not Is_Class_Wide_Type (It_Subt)
+               then
+                  declare
+                     It_Base      : constant Entity_Id := Base_Type (It_Subt);
+                     Empty_Formal : constant Entity_Id :=
+                                      First_Formal (Entity (Empty_Subp));
+                     Length_Subp  : Entity_Id;
+                     Param_List   : List_Id;
+
+                  begin
+                     --  We only determine a nondefault capacity in the case
+                     --  of containers of predefined container types, which
+                     --  generally have a Length function. User-defined
+                     --  containers don't necessarily have such a function,
+                     --  or it may be named differently, or it may have
+                     --  the wrong semantics. The base subtype is tested,
+                     --  since its Sloc will refer to the original container
+                     --  generic in the predefined library, even though it's
+                     --  declared in a package instantiation within the current
+                     --  library unit. Also, this is only done when Empty_Subp
+                     --  has a formal parameter (usually named Capacity), and
+                     --  not in the case of a parameterless Empty function.
+
+                     if In_Predefined_Unit (It_Base)
+                       and then Present (Empty_Formal)
+                     then
+                        --  Look for the container type's Length function in
+                        --  the package where it's defined.
+
+                        Push_Scope (Scope (It_Base));
+
+                        Length_Subp := Current_Entity_In_Scope (Name_Length);
+
+                        Pop_Scope;
+
+                        --  If we found a Length function that has a single
+                        --  parameter of the container type, then expand a call
+                        --  to that, passing the container object named in the
+                        --  iterator_specification, and return that call, which
+                        --  will be used as the "size" of the current aggregate
+                        --  element association.
+
+                        if Present (Length_Subp)
+                          and then Ekind (Length_Subp) = E_Function
+                          and then
+                            Present (First_Entity (Length_Subp))
+                          and then
+                            not Present
+                                  (Next_Entity (First_Entity (Length_Subp)))
+                          and then
+                            Base_Type
+                              (Etype (First_Entity (Length_Subp))) = It_Base
+                        then
+                           Param_List :=
+                             New_List (New_Occurrence_Of (Entity (It), Loc));
+
+                           return
+                             Make_Function_Call (Loc,
+                               Name =>
+                                 New_Occurrence_Of (Length_Subp, Loc),
+                               Parameter_Associations => Param_List);
+                        end if;
+                     end if;
                   end;
                end if;
 
