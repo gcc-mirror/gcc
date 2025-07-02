@@ -649,6 +649,9 @@ private:
   std::unique_ptr<AST::ReturnExpr>
   parse_return_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		     location_t pratt_parsed_loc = UNKNOWN_LOCATION);
+  std::unique_ptr<AST::TryExpr>
+  parse_try_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+		  location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::BreakExpr>
   parse_break_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);

@@ -128,6 +128,7 @@ class RangeFullExpr;
 class RangeFromToInclExpr;
 class RangeToInclExpr;
 class ReturnExpr;
+class TryExpr;
 class UnsafeBlockExpr;
 class LoopLabel;
 class BaseLoopExpr;

@@ -1637,6 +1637,19 @@ ReturnExpr::as_string () const
 }
 
 std::string
+TryExpr::as_string () const
+{
+  /* TODO: find way to incorporate outer attrs - may have to represent in
+   * different style (i.e. something more like BorrowExpr: \n outer attrs) */
+
+  std::string str ("try ");
+
+  str += block_expr->as_string ();
+
+  return str;
+}
+
+std::string
 RangeToExpr::as_string () const
 {
   return ".." + to->as_string ();
@@ -4600,6 +4613,12 @@ RangeToInclExpr::accept_vis (ASTVisitor &vis)
 
 void
 ReturnExpr::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+TryExpr::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

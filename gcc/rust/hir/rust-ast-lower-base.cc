@@ -242,6 +242,9 @@ void
 ASTLoweringBase::visit (AST::ReturnExpr &)
 {}
 void
+ASTLoweringBase::visit (AST::TryExpr &)
+{}
+void
 ASTLoweringBase::visit (AST::UnsafeBlockExpr &)
 {}
 void

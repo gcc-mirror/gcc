@@ -144,6 +144,7 @@ public:
   virtual void visit (AST::RangeToInclExpr &expr) override;
   virtual void visit (AST::BoxExpr &expr) override;
   virtual void visit (AST::ReturnExpr &expr) override;
+  virtual void visit (AST::TryExpr &expr) override;
   virtual void visit (AST::UnsafeBlockExpr &expr) override;
   virtual void visit (AST::LoopExpr &expr) override;
   virtual void visit (AST::WhileLoopExpr &expr) override;

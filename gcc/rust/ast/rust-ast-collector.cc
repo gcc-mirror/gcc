@@ -1371,6 +1371,13 @@ TokenCollector::visit (ReturnExpr &expr)
 }
 
 void
+TokenCollector::visit (TryExpr &expr)
+{
+  push (Rust::Token::make (TRY, expr.get_locus ()));
+  visit (expr.get_block_expr ());
+}
+
+void
 TokenCollector::visit (UnsafeBlockExpr &expr)
 {
   push (Rust::Token::make (UNSAFE, expr.get_locus ()));

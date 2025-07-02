@@ -3700,6 +3700,82 @@ protected:
   }
 };
 
+// Try expression AST node representation
+class TryExpr : public ExprWithBlock
+{
+  std::vector<Attribute> outer_attrs;
+  std::unique_ptr<BlockExpr> block_expr;
+  location_t locus;
+
+  // TODO: find another way to store this to save memory?
+  bool marked_for_strip = false;
+
+public:
+  std::string as_string () const override;
+
+  // Constructor for ReturnExpr.
+  TryExpr (std::unique_ptr<BlockExpr> block_expr,
+	   std::vector<Attribute> outer_attribs, location_t locus)
+    : outer_attrs (std::move (outer_attribs)),
+      block_expr (std::move (block_expr)), locus (locus)
+  {
+    rust_assert (this->block_expr);
+  }
+
+  // Copy constructor with clone
+  TryExpr (TryExpr const &other)
+    : ExprWithBlock (other), outer_attrs (other.outer_attrs),
+      block_expr (other.block_expr->clone_block_expr ()), locus (other.locus),
+      marked_for_strip (other.marked_for_strip)
+  {}
+
+  // Overloaded assignment operator to clone return_expr pointer
+  TryExpr &operator= (TryExpr const &other)
+  {
+    ExprWithBlock::operator= (other);
+    locus = other.locus;
+    marked_for_strip = other.marked_for_strip;
+    outer_attrs = other.outer_attrs;
+
+    block_expr = other.block_expr->clone_block_expr ();
+
+    return *this;
+  }
+
+  // move constructors
+  TryExpr (TryExpr &&other) = default;
+  TryExpr &operator= (TryExpr &&other) = default;
+
+  location_t get_locus () const override final { return locus; }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  // Can't think of any invalid invariants, so store boolean.
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  BlockExpr &get_block_expr () { return *block_expr; }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  {
+    outer_attrs = std::move (new_attrs);
+  }
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::Return; }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  TryExpr *clone_expr_with_block_impl () const override
+  {
+    return new TryExpr (*this);
+  }
+};
+
 // Forward decl - defined in rust-macro.h
 class MacroInvocation;
 

@@ -99,6 +99,7 @@ public:
   void visit (AST::RangeToInclExpr &);
   void visit (AST::BoxExpr &);
   void visit (AST::ReturnExpr &);
+  void visit (AST::TryExpr &);
   void visit (AST::UnsafeBlockExpr &);
   void visit (AST::LoopExpr &);
   void visit (AST::WhileLoopExpr &);

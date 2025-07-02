@@ -7570,6 +7570,34 @@ Parser<ManagedTokenSource>::parse_return_expr (AST::AttrVec outer_attrs,
 			 locus));
 }
 
+// Parses a try expression.
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::TryExpr>
+Parser<ManagedTokenSource>::parse_try_expr (AST::AttrVec outer_attrs,
+					    location_t pratt_parsed_loc)
+{
+  location_t locus = pratt_parsed_loc;
+  if (locus == UNKNOWN_LOCATION)
+    {
+      locus = lexer.peek_token ()->get_locus ();
+      skip_token (TRY);
+    }
+
+  std::unique_ptr<AST::BlockExpr> block_expr = parse_block_expr ();
+
+  if (!block_expr)
+    {
+      Error error (lexer.peek_token ()->get_locus (),
+		   "failed to parse try block expression");
+      add_error (std::move (error));
+
+      return nullptr;
+    }
+
+  return std::unique_ptr<AST::TryExpr> (
+    new AST::TryExpr (std::move (block_expr), std::move (outer_attrs), locus));
+}
+
 /* Parses a break expression (including any label to break to AND any return
  * expression). */
 template <typename ManagedTokenSource>
@@ -12508,6 +12536,9 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
     case RETURN_KW:
       // FIXME: is this really a null denotation expression?
       return parse_return_expr (std::move (outer_attrs), tok->get_locus ());
+    case TRY:
+      // FIXME: is this really a null denotation expression?
+      return parse_try_expr (std::move (outer_attrs), tok->get_locus ());
     case BREAK:
       // FIXME: is this really a null denotation expression?
       return parse_break_expr (std::move (outer_attrs), tok->get_locus ());

@@ -284,6 +284,10 @@ ResolverBase::visit (AST::ReturnExpr &)
 {}
 
 void
+ResolverBase::visit (AST::TryExpr &)
+{}
+
+void
 ResolverBase::visit (AST::UnsafeBlockExpr &)
 {}
 
