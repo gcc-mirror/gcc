@@ -1064,6 +1064,7 @@ enable_versioned_jit
 enable_default_pie
 enable_cet
 enable_s390_excess_float_precision
+enable_x86_64_mfentry
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1842,6 +1843,7 @@ Optional Features:
   --enable-s390-excess-float-precision
                           on s390 targets, evaluate float with double
                           precision when in standards-conforming mode
+  --enable-x86-64-mfentry enable -mfentry by default on x86-64 targets
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -21520,7 +21522,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21523 "configure"
+#line 21525 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21626,7 +21628,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21629 "configure"
+#line 21631 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -35021,6 +35023,46 @@ $as_echo "#define ENABLE_S390_EXCESS_FLOAT_PRECISION 1" >>confdefs.h
   fi
   ;;
 esac
+
+# On x86-64, when profiling is enabled with shrink wrapping, the mcount
+# call may not be placed at the function entry after
+#	pushq %rbp
+#	movq %rsp,%rbp
+# As the result, the profile data may be skewed which makes PGO less
+# effective:
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=120881
+# Enable -mfentry by default on x86-64 to put the profiling counter call
+# before the prologue.
+# Check whether --enable-x86-64-mfentry was given.
+if test "${enable_x86_64_mfentry+set}" = set; then :
+  enableval=$enable_x86_64_mfentry; case "${enableval}" in
+   yes | no | auto)
+     enable_x86_64_mfentry=$enableval
+     ;;
+   *)
+     as_fn_error $? "'$enable_x86_64_mfentry' is an invalid value for --enable-x86-64-mfentry.  Valid choices are 'yes', 'no' and 'auto'." "$LINENO" 5
+     ;;
+   esac
+else
+  enable_x86_64_mfentry=auto
+fi
+
+
+if test x"$enable_x86_64_mfentry" = xauto; then
+  case "${target}" in
+  i?86-*-*gnu* | x86_64-*-*gnu*)
+    # Enable -mfentry by default with glibc on x86.
+    enable_x86_64_mfentry=yes
+    ;;
+  esac
+fi
+
+gif=`if test x$enable_x86_64_mfentry = xyes; then echo 1; else echo 0; fi`
+
+cat >>confdefs.h <<_ACEOF
+#define ENABLE_X86_64_MFENTRY $gif
+_ACEOF
+
 
 # Check if the linker supports '-z now'
 ld_now_support=no

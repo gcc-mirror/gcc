@@ -3,7 +3,7 @@
 /* { dg-do run } */
 /* { dg-require-profiling "-pg" } */
 /* { dg-options "-O2 -pg" } */
-/* { dg-options "-O2 -pg -mtune=core2" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-O2 -pg -mtune=core2 -mfentry -fno-pic" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-options "-O2 -pg -static" { target hppa*-*-hpux* } } */
 
 extern void abort (void);

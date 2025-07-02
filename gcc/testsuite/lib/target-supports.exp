@@ -14528,3 +14528,51 @@ proc check_effective_target_foldable_pi_based_trigonometry { } {
 	}
     }]
 }
+#
+# Return 1 if the x86-64 target enables -mfentry by default, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_fentry { } {
+    global tool
+    global GCC_UNDER_TEST
+
+    if { ![check_effective_target_x86] } {
+	return 0
+    }
+
+    # Need auto-host.h to check linker support.
+    if { ![file exists ../../auto-host.h ] } {
+	return 0
+    }
+
+    return [check_cached_effective_target fentry {
+	# Set up and compile to see if ENABLE_X86_64_MFENTRY is
+	# non-zero.  Include the current process ID in the file
+	# names to prevent conflicts with invocations for multiple
+	# testsuites.
+
+	set src pie[pid].c
+	set obj pie[pid].o
+
+	set f [open $src "w"]
+	puts $f "#include \"../../auto-host.h\""
+	puts $f "#if ENABLE_X86_64_MFENTRY == 0 || !defined __x86_64__"
+	puts $f "# error -mfentry is not enabled by default."
+	puts $f "#endif"
+	close $f
+
+	verbose "check_effective_target_fentry compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $obj object ""]
+
+	file delete $src
+	file delete $obj
+
+	if [string match "" $lines] then {
+	    verbose "check_effective_target_fentry testfile compilation passed" 2
+	    return 1
+	} else {
+	    verbose "check_effective_target_fentry testfile compilation failed" 2
+	    return 0
+	}
+    }]
+}

@@ -2667,6 +2667,17 @@ target binutils supports @code{Intel CET} instructions and disabled
 otherwise.  In this case, the target libraries are configured to get
 additional @option{-fcf-protection} option.
 
+@item --enable-x86-64-mfentry
+@itemx --disable-x86-64-mfentry
+Enable @option {-mfentry} by default on x86-64 to put the profiling
+counter call, @code{__fentry__}, before the prologue so that @option{-pg}
+can be used with @option{-fshrink-wrap} which is enabled at @option{-O1}.
+This configure option is 64-bit only because @code{__fentry__} doesn't
+support PIC in 32-bit mode.
+
+@option{--enable-x86-64-mfentry=auto} is default.  @option{-mfentry} is
+enabled on Linux/x86-64 by default.
+
 @item --with-riscv-attribute=@samp{yes}, @samp{no} or @samp{default}
 Generate RISC-V attribute by default, in order to record extra build
 information in object.

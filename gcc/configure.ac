@@ -7972,6 +7972,41 @@ standards-compatible mode on s390 targets.])
   ;;
 esac
 
+# On x86-64, when profiling is enabled with shrink wrapping, the mcount
+# call may not be placed at the function entry after
+#	pushq %rbp
+#	movq %rsp,%rbp
+# As the result, the profile data may be skewed which makes PGO less
+# effective:
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=120881
+# Enable -mfentry by default on x86-64 to put the profiling counter call
+# before the prologue.
+AC_ARG_ENABLE(x86-64-mfentry,
+  [AS_HELP_STRING([--enable-x86-64-mfentry],
+		  [enable -mfentry by default on x86-64 targets])],
+  [case "${enableval}" in
+   yes | no | auto)
+     enable_x86_64_mfentry=$enableval
+     ;;
+   *)
+     AC_MSG_ERROR(['$enable_x86_64_mfentry' is an invalid value for --enable-x86-64-mfentry.  Valid choices are 'yes', 'no' and 'auto'.])
+     ;;
+   esac],
+  [enable_x86_64_mfentry=auto])
+
+if test x"$enable_x86_64_mfentry" = xauto; then
+  case "${target}" in
+  i?86-*-*gnu* | x86_64-*-*gnu*)
+    # Enable -mfentry by default with glibc on x86.
+    enable_x86_64_mfentry=yes
+    ;;
+  esac
+fi
+
+gif=`if test x$enable_x86_64_mfentry = xyes; then echo 1; else echo 0; fi`
+AC_DEFINE_UNQUOTED(ENABLE_X86_64_MFENTRY, $gif,
+[Define to enable -mfentry by default on x86-64.])
+
 # Check if the linker supports '-z now'
 ld_now_support=no
 AC_MSG_CHECKING(linker -z now option)
