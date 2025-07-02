@@ -9626,7 +9626,8 @@ vectorizable_store (vec_info *vinfo,
 	  data_ref = fold_build2 (MEM_REF, vectype, dataref_ptr,
 				  dataref_offset ? dataref_offset
 				  : build_int_cst (ref_type, 0));
-	  if (alignment_support_scheme == dr_aligned)
+	  if (alignment_support_scheme == dr_aligned
+	      && align >= TYPE_ALIGN_UNIT (vectype))
 	    ;
 	  else
 	    TREE_TYPE (data_ref)
@@ -11659,7 +11660,8 @@ vectorizable_load (vec_info *vinfo,
 		  {
 		    data_ref = fold_build2 (MEM_REF, ltype,
 					    dataref_ptr, offset);
-		    if (alignment_support_scheme == dr_aligned)
+		    if (alignment_support_scheme == dr_aligned
+			&& align >= TYPE_ALIGN_UNIT (ltype))
 		      ;
 		    else
 		      TREE_TYPE (data_ref)
