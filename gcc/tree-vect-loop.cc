@@ -3815,6 +3815,7 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
       /* When we selected a first vectorized epilogue, see if the target
 	 suggests to have another one.  */
       if (!unlimited_cost_model (loop)
+	  && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (orig_loop_vinfo)
 	  && (orig_loop_vinfo->vector_costs->suggested_epilogue_mode ()
 	      != VOIDmode))
 	{
