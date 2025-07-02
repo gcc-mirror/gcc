@@ -1587,7 +1587,7 @@ expand_const_vector (rtx target, rtx src)
 		  rtx shift = gen_int_mode (1, Xmode);
 		  rtx shift_ops[] = {shifted_vid, vid, shift};
 		  emit_vlmax_insn (code_for_pred_scalar
-				   (ASHIFT, mode), BINARY_OP,
+				   (LSHIFTRT, mode), BINARY_OP,
 				   shift_ops);
 		}
 	      else
