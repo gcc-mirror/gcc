@@ -6918,8 +6918,7 @@ package body Exp_Aggr is
                           and then
                             Present (First_Entity (Length_Subp))
                           and then
-                            not Present
-                                  (Next_Entity (First_Entity (Length_Subp)))
+                            No (Next_Entity (First_Entity (Length_Subp)))
                           and then
                             Base_Type
                               (Etype (First_Entity (Length_Subp))) = It_Base
